@@ -41,9 +41,10 @@ class ReportWasteOnePersonAction extends DocumentAction
 		$person = $documentTable->loadItem ($personNdx);
 
 		$report = new \e10pro\reports\waste_cz\ReportWasteOnePerson($documentTable, $person);
-		$report->calendarYear = intval($this->params['data-param-calendar-year']);
-		$report->periodBegin = $report->calendarYear.'-01-01';
-		$report->periodEnd = $report->calendarYear.'-12-31';
+		$report->calendarYear = intval($this->params['data-param-calendar-year'] ?? 0);
+		$report->periodBegin = Utils::createDateTime($this->params['data-param-period-begin']);
+		$report->periodEnd = Utils::createDateTime($this->params['data-param-period-end']);
+
 		$report->codeKindNdx = intval($this->params['data-param-code-kind']);
 
 		$report->init();

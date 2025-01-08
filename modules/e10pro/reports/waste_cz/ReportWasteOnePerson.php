@@ -106,10 +106,21 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		$this->data['reportTitle'] = $this->codeKindDef['reportPersonTitle'] ?? '';
 		$this->data['reportNote'] = $this->codeKindDef['reportPersonOutCodeNote'] ?? '';
 
-		if ($this->dir === WasteReturnEngine::rowDirIn)
-			$this->outboxLinkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
-		else
-			$this->outboxLinkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
+    if ($this->calendarYear)
+    {
+      if ($this->dir == WasteReturnEngine::rowDirIn)
+				$this->outboxLinkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
+      else
+				$this->outboxLinkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
+    }
+    else
+    {
+      if ($this->dir == WasteReturnEngine::rowDirIn)
+				$this->outboxLinkId = 'waste-suppliers-'.$this->periodBegin->format('Ymd').'_'.$this->periodEnd->format('Ymd').'-'.$this->codeKindNdx;
+      else
+				$this->outboxLinkId = 'waste-cust-'.$this->periodBegin->format('Ymd').'_'.$this->periodEnd->format('Ymd').'-'.$this->codeKindNdx;
+    }
+
 
 		$tablePersons = $this->app->table ('e10.persons.persons');
 
@@ -213,7 +224,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 				$id_icp_theirs = $nomencCityRecData['itemId'];
 				$id_icp_theirs_text = [
 					['text' => 'ORP: '.substr($nomencCityRecData['itemId'], 2), 'class' => ''],
-					['text' => $nomencCityRecData['fullName'], 'class' => 'e10-small break']
+					['text' => $nomencCityRecData['fullName'] ?? '---', 'class' => 'e10-small break']
 				];
 			}
 

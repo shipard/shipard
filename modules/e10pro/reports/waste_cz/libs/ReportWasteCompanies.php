@@ -62,22 +62,30 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     if (!$this->codeKindNdx)
       $this->codeKindNdx = intval($this->reportParams ['codeKind']['value']);
 
-    $cpBegin = $this->reportParams ['calendarPeriod']['values'][$this->reportParams ['calendarPeriod']['value']];
-    if (isset($cpBegin['dateBegin']))
-      $this->periodBegin = Utils::createDateTime($cpBegin['dateBegin']);
-    elseif ($cpBegin['calendarYear'] !== 0)
-      $this->periodBegin = Utils::createDateTime(substr($cpBegin['calendarYear'], 1).'-01-01');
+    if (!$this->periodBegin)
+    {
+      $cpBegin = $this->reportParams ['calendarPeriod']['values'][$this->reportParams ['calendarPeriod']['value']];
+      if (isset($cpBegin['dateBegin']))
+        $this->periodBegin = Utils::createDateTime($cpBegin['dateBegin']);
+      elseif ($cpBegin['calendarYear'] !== 0)
+        $this->periodBegin = Utils::createDateTime(substr($cpBegin['calendarYear'], 1).'-01-01');
 
-    if (isset($cpBegin['dateEnd']))
-      $this->periodEnd = Utils::createDateTime($cpBegin['dateEnd']);
-    elseif ($cpBegin['calendarYear'] !== 0)
-      $this->periodEnd = Utils::createDateTime(substr($cpBegin['calendarYear'], 1).'-12-31');
+      if (isset($cpBegin['dateEnd']))
+        $this->periodEnd = Utils::createDateTime($cpBegin['dateEnd']);
+      elseif ($cpBegin['calendarYear'] !== 0)
+        $this->periodEnd = Utils::createDateTime(substr($cpBegin['calendarYear'], 1).'-12-31');
 
-    $this->setInfo('icon', 'reportMonthlyReport');
-    $this->setInfo('param', 'Období', $this->reportParams ['calendarPeriod']['activeTitle']);
+      if (is_string($cpBegin['calendarYear']) && $cpBegin['calendarYear'][0] === 'Y')
+        $this->calendarYear = intval(substr($cpBegin['calendarYear'], 1));
 
-    if (is_string($cpBegin['calendarYear']) && $cpBegin['calendarYear'][0] === 'Y')
-      $this->calendarYear = intval(substr($cpBegin['calendarYear'], 1));
+      $this->setInfo('icon', 'reportMonthlyReport');
+      $this->setInfo('param', 'Období', $this->reportParams ['calendarPeriod']['activeTitle']);
+    }
+    else
+    {
+      $this->periodBegin = Utils::createDateTime($this->periodBegin);
+      $this->periodEnd = Utils::createDateTime($this->periodEnd);
+    }
   }
 
   function createContent ()
@@ -169,10 +177,20 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
   public function createContent_Companies($dir)
   {
-    if ($dir == WasteReturnEngine::rowDirIn)
-      $linkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
+    if ($this->calendarYear)
+    {
+      if ($dir == WasteReturnEngine::rowDirIn)
+        $linkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
+      else
+        $linkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
+    }
     else
-      $linkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
+    {
+      if ($dir == WasteReturnEngine::rowDirIn)
+        $linkId = 'waste-suppliers-'.$this->periodBegin->format('Ymd').'_'.$this->periodEnd->format('Ymd').'-'.$this->codeKindNdx;
+      else
+        $linkId = 'waste-cust-'.$this->periodBegin->format('Ymd').'_'.$this->periodEnd->format('Ymd').'-'.$this->codeKindNdx;
+    }
 
 		/** @var \wkf\core\TableIssues */
 		$tableIssues = $this->app()->table ('wkf.core.issues');
@@ -804,10 +822,20 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
   function loadSendedReports (&$data, $dir)
 	{
-    if ($dir == WasteReturnEngine::rowDirIn)
-      $linkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
+    if ($this->calendarYear)
+    {
+      if ($dir == WasteReturnEngine::rowDirIn)
+        $linkId = 'waste-suppliers-'.$this->calendarYear.'-'.$this->codeKindNdx;
+      else
+        $linkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
+    }
     else
-      $linkId = 'waste-cust-'.$this->calendarYear.'-'.$this->codeKindNdx;
+    {
+      if ($dir == WasteReturnEngine::rowDirIn)
+        $linkId = 'waste-suppliers-'.$this->periodBegin->format('Ymd').'_'.$this->periodEnd->format('Ymd').'-'.$this->codeKindNdx;
+      else
+        $linkId = 'waste-cust-'.$this->periodBegin->format('Ymd').'_'.$this->periodEnd->format('Ymd').'-'.$this->codeKindNdx;
+    }
 
 		/** @var \wkf\core\TableIssues */
 		$tableIssues = $this->app()->table ('wkf.core.issues');
