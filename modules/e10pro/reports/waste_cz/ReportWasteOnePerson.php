@@ -39,7 +39,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 		{
 			$this->periodEnd = Utils::createDateTime($value);
 		}
-		elseif ($param === 'data-param-calendar-year')
+		elseif ($param === 'data-param-calendar-year' && intval($value))
 		{
 			$this->calendarYear = intval($value);
 			$this->data['calendarYear'] = strval ($this->calendarYear);
@@ -115,10 +115,12 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
     }
     else
     {
+			$dpb = Utils::createDateTime($this->periodBegin);
+			$dpe = Utils::createDateTime($this->periodEnd);
       if ($this->dir == WasteReturnEngine::rowDirIn)
-				$this->outboxLinkId = 'waste-suppliers-'.$this->periodBegin->format('Ymd').'_'.$this->periodEnd->format('Ymd').'-'.$this->codeKindNdx;
+				$this->outboxLinkId = 'waste-suppliers-'.$dpb->format('Ymd').'_'.$dpe->format('Ymd').'-'.$this->codeKindNdx;
       else
-				$this->outboxLinkId = 'waste-cust-'.$this->periodBegin->format('Ymd').'_'.$this->periodEnd->format('Ymd').'-'.$this->codeKindNdx;
+				$this->outboxLinkId = 'waste-cust-'.$dpb->format('Ymd').'_'.$dpe->format('Ymd').'-'.$this->codeKindNdx;
     }
 
 
