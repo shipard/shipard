@@ -264,6 +264,12 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		$this->recData ['roundMethod'] = intval($this->app()->cfgItem ('options.e10doc-buy.roundPurchase', 1));
 		$this->recData ['taxCalc'] = 0;
 		$this->recData ['dateDue'] = utils::today();
+
+		if ($this->recData['person'] ?? 0)
+		{
+			$saveData = ['recData' => &$this->recData];
+			$this->resetWasteOrigin($saveData);
+		}
 	}
 
 	function columnLabel ($colDef, $options)
