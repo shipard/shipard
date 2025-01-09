@@ -57,6 +57,8 @@ class DocGenDocumentCreator extends Utility
     $this->docHead ['person'] = $this->srcDocRecData['person'];
     $this->docHead ['otherAddress1'] = $this->srcDocRecData['otherAddress1'];
 
+    $this->docHead ['wasteOrigin'] = $this->srcDocRecData['wasteOrigin'];
+
     $useTransport = 0;
     if ($this->srcDocRecData['transport'] !== 0)
       $useTransport = 1;
