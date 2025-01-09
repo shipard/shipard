@@ -91,11 +91,11 @@ class ReportWasteOnePersonAction extends DocumentAction
 	{
 		$report = new \e10pro\reports\waste_cz\libs\ReportWasteCompanies($this->app());
 		$report->subReportId = 'companiesIn';
-		$report->sendStatus = 'toSend';
 		$report->calendarYear = intval($this->params['data-param-calendar-year']);
 		$report->periodBegin = $this->params['data-param-period-begin'];
 		$report->periodEnd = $this->params['data-param-period-end'];
 		$report->codeKindNdx = $this->params['data-param-code-kind'];
+		$report->sendStatus = $this->params['data-param-send-status'];
 		$report->createPdf();
 
 		$cnt = 0;

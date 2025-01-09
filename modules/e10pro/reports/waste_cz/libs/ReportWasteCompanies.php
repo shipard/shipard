@@ -893,6 +893,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
         'data-param-period-end' => $this->periodEnd->format('Y-m-d'),
         'data-param-calendar-year' => strval($this->calendarYear),
         'data-param-code-kind' => strval($this->codeKindNdx),
+        'data-param-send-status' => strval($this->sendStatus),
         'data-table' => 'e10.persons.persons', 'data-pk' => '0',
         'class' => 'btn-primary'
       ];
