@@ -277,7 +277,9 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
           'btnClass' => 'btn btn-xs btn-success pull-right',
           'data-class' => 'e10pro.reports.waste_cz.libs.SetOfficeWizard',
           'table' => 'e10.persons.persons',
-          'data-addparams' => 'personNdx='.$r['person'].'&dir='.$r['dir'],
+          'data-addparams' => 'personNdx='.$r['person'].'&dir='.$r['dir'].'&periodBegin='.$this->periodBegin->format('Y-m-d').
+                              '&periodEnd='.$this->periodEnd->format('Y-m-d').
+                              '&calendarYear='.$this->calendarYear,
           //'data-srcobjecttype' => 'form-to-save', 'data-srcobjectid' => $this->fid,
         ];
 
