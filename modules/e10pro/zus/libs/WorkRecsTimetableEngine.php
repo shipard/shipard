@@ -10,6 +10,7 @@ use \Shipard\Utils\Utils;
  */
 class WorkRecsTimetableEngine extends Utility
 {
+  var $srcViewerPK = '';
   var $date = NULL;
   var $teacherNdx;
   var $dow = 0;
@@ -24,8 +25,9 @@ class WorkRecsTimetableEngine extends Utility
 
   var $wrColors = ['#1B98E0', '#74d3aeff', '#dd9787ff', '#678d58ff', '#a6c48aff', '#f6e7cbff'];
 
-  public function setParams($teacherNdx, $date)
+  public function setParams($teacherNdx, $date, $srcViewerPK = '')
   {
+    $this->srcViewerPK = $srcViewerPK;
     $this->teacherNdx = $teacherNdx;
     $this->date = Utils::createDateTime($date);
     $this->dow = intval($this->date->format('N')); // 1 = monday
@@ -49,6 +51,7 @@ class WorkRecsTimetableEngine extends Utility
     array_push($q, ' WHERE 1');
     array_push($q, ' AND [beginDate] = %d', $this->date);
     array_push($q, ' AND [person] = %i', $this->teacherNdx);
+    array_push($q, ' AND [docState] IN %in', [4000, 8000]);
     array_push($q, ' ORDER BY beginTime, ndx');
 
     $rows = $this->db()->query($q);
@@ -103,7 +106,7 @@ class WorkRecsTimetableEngine extends Utility
 			$item = [
 				'ndx' => $r['ndx'], 'pobocka' => $r['pobocka'], 'pobockaId' => $r['pobockaId'], 'ucebnaNazev' => $r['ucebnaNazev'],
 				'zacatek' => $r['zacatek'], 'konec' => $r['konec'], 'vyukaNazev' => $r['vyukaNazev'], 'predmetNazev' => $r['predmetNazev'],
-				'sameRows' => 0
+				'sameRows' => 0,
 			];
 
       $wr = $this->searchWorkRec($r['zacatek'], $r['konec']);
@@ -195,7 +198,10 @@ class WorkRecsTimetableEngine extends Utility
     foreach ($this->workRecs as &$wr)
     {
       $item = [
-        'rec' => ['text' => '#'.$wr['ndx'], 'docAction' => 'edit', 'pk' => $wr['ndx'], 'table' => 'e10mnf.core.workRecs'],
+        'rec' => [
+          'text' => '#'.$wr['ndx'], 'docAction' => 'edit', 'pk' => $wr['ndx'], 'table' => 'e10mnf.core.workRecs',
+          'data-srcobjecttype' => 'viewer', 'data-srcobjectid' => 'default', 'data-srcobjectfakepk' => $this->srcViewerPK,
+        ],
         'timeBegin' => $wr['beginTime'],
         'timeEnd' => $wr['endTime'],
       ];

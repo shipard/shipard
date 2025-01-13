@@ -15,7 +15,7 @@ class DCWorkRec extends \Shipard\Base\DocumentCard
   public function addCoreInfo()
   {
     $ee = new \e10pro\zus\libs\WorkRecsTimetableEngine($this->app());
-    $ee->setParams($this->personNdx, $this->date);
+    $ee->setParams($this->personNdx, $this->date, $this->recData['pk']);
     $ee->loadData();
 
     $h = ['pobockaId' => 'Pobočka', 'zacatek' => 'Začátek', 'konec' => 'Konec'];
