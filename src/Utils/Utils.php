@@ -975,6 +975,8 @@ class Utils
 			$t .= " data-srcobjecttype='{$p['data-srcobjecttype']}'";
 		if (isset ($p['data-srcobjectid']))
 			$t .= " data-srcobjectid='{$p['data-srcobjectid']}'";
+		if (isset ($p['data-srcobjectfakepk']))
+			$t .= " data-srcobjectfakepk='{$p['data-srcobjectfakepk']}'";
 
 		$linkClass = 'e10-document-trigger';
 		if (isset ($p['actionClass']))
