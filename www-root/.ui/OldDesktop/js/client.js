@@ -673,7 +673,8 @@ queryParams=viewer.attr("data-queryparams");if(queryParams)urlPath+='&'+queryPar
 df2viewerFocusPK(viewerId,pk){var
 viewerLines=$('#'+viewerId+'Items');var
 rowElement=viewerLines.attr('data-rowelement');var
-oneRow=null;if(rowElement==='tr'){oneRow=viewerLines.find('tr[data-pk="'+pk+'"]').first();if(oneRow.length){oneRow.get(0).scrollIntoView({'block':'center'});viewerItemClick(oneRow);}return;}oneRow=$('#'+viewerId+'Items >[data-pk="'+pk+'"]').first();if(oneRow.length){oneRow.parent().scrollTo(oneRow);viewerItemClick(oneRow);}}var
+oneRow=null;if(rowElement==='tr'){oneRow=viewerLines.find('tr[data-pk="'+pk+'"]').first();if(oneRow.length){var
+ste=oneRow;if(ste.prev().length){ste=ste.prev();if(ste.prev().length)ste=ste.prev();viewerLines.scrollTo(ste);}viewerItemClick(oneRow);}return;}oneRow=$('#'+viewerId+'Items >[data-pk="'+pk+'"]').first();if(oneRow.length){oneRow.parent().scrollTo(oneRow);viewerItemClick(oneRow);}}var
 g_incSearchTimer=0;function
 viewerKeyboard(e,event){var
 viewerId='';if(e.hasClass('e10-inputRefId')||e.hasClass('e10-inputListSearch'))viewerId=searchObjectId($('#'+e.attr('data-sid')+' >div.df2-viewer'),'viewer');else

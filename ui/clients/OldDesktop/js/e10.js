@@ -2472,8 +2472,15 @@ function df2viewerFocusPK (viewerId, pk)
 		oneRow = viewerLines.find('tr[data-pk="' + pk + '"]').first ();
 		if (oneRow.length)
 		{
-			// viewerLines.scrollTo(oneRow);
-			oneRow.get(0).scrollIntoView({'block': 'center'});
+			var ste = oneRow;
+			if (ste.prev().length)
+			{
+				ste = ste.prev();
+				if (ste.prev().length)
+					ste = ste.prev();
+				viewerLines.scrollTo(ste);
+			}
+			//oneRow.get(0).scrollIntoView({'block': 'center'});
 			viewerItemClick (oneRow);
 		}
 		return;
