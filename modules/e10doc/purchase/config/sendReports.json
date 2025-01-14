@@ -13,11 +13,11 @@
     "classId": "e10pro.reports.waste_cz.ReportWasteOnePerson",
     "ndx": 2700
   },
-  "2701": {
+  "2702": {
     "fn": "Přehled dodaných odpadů",
     "cn": "Přehled dodaných odpadů",
     "sc": "POO",
     "classId": "e10pro.reports.waste_cz.ReportWasteOnePersonOut",
-    "ndx": 2701
+    "ndx": 2702
   }
 }

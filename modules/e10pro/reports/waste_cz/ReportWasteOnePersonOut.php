@@ -12,7 +12,6 @@ class ReportWasteOnePersonOut extends \e10pro\reports\waste_cz\ReportWasteOnePer
 	function init ()
 	{
 		parent::init();
-		$this->sendReportNdx = 2701;
 		$this->setReportId('e10pro.reports.waste_cz.reportWasteOnePersonOut');
 
     $this->dir = WasteReturnEngine::rowDirOut;
@@ -22,7 +21,7 @@ class ReportWasteOnePersonOut extends \e10pro\reports\waste_cz\ReportWasteOnePer
 
 	public function loadData ()
 	{
-		$this->sendReportNdx = 2701;
+		$this->sendReportNdx = 2702;
 		parent::loadData();
 
 		$ckDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
@@ -31,6 +30,7 @@ class ReportWasteOnePersonOut extends \e10pro\reports\waste_cz\ReportWasteOnePer
 
 	public function loadData2 ()
 	{
+		$this->sendReportNdx = 2702;
 		parent::loadData2();
 		$ckDef = $this->app()->cfgItem('e10.witems.codesKinds.'.$this->codeKindNdx, NULL);
 		$this->data['reportTitle'] = $ckDef['reportPersonOutTitle'] ?? '';
