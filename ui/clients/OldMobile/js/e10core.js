@@ -145,6 +145,9 @@ function e10client () {
 		if (params != '')
 			urlPath += '&' + params;
 
+		if (e !== null && e.attr('data-action-params'))
+			urlPath += "&" + e.attr('data-action-params');
+
 		e10.server.post(urlPath, postData, function (data) {
 			widget.find("*:first").remove();
 			widget.html(data.object.mainCode);

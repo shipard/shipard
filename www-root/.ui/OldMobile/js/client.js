@@ -19,7 +19,7 @@ className=widget.attr("data-widget-class");var
 widgetParams=widget.attr("data-widget-params");var
 oldWidgetId=widget.attr('id');var
 urlPath="/api/widget/"+className+"/html?fullCode="+fullCode+"&widgetAction="+actionType+'&widgetId='+oldWidgetId;if(widgetParams!='')urlPath+="&"+widgetParams;var
-params=e10.collectFormData(widget);if(params!='')urlPath+='&'+params;e10.server.post(urlPath,postData,function(data){widget.find("*:first").remove();widget.html(data.object.mainCode);e10.widgetTabsInit();});}function
+params=e10.collectFormData(widget);if(params!='')urlPath+='&'+params;if(e!==null&&e.attr('data-action-params'))urlPath+="&"+e.attr('data-action-params');e10.server.post(urlPath,postData,function(data){widget.find("*:first").remove();widget.html(data.object.mainCode);e10.widgetTabsInit();});}function
 e10InlineAction(e){if(e.attr('data-object-class-id')===undefined)return;var
 requestParams={};requestParams['object-class-id']=e.attr('data-object-class-id');requestParams['action-type']=e.attr('data-action-type');elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.attr('data-pk')!==undefined)requestParams['pk']=e.attr('data-pk');e10.server.api(requestParams,function(data){if(e.parent().hasClass('btn-group')){e.parent().find('>button.active').removeClass('active');e.addClass('active');}});}function
 e10StaticTab(e,event){e.parent().find('li.active').removeClass('active');e.addClass('active');e.parent().parent().find('div.e10-static-tab-content>div.active').removeClass('active');$('#'+e.data('content-id')).addClass('active');}function
