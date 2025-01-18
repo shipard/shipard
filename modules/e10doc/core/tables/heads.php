@@ -4346,7 +4346,10 @@ class FormHeads extends TableForm
 		$personRecData = $this->app()->loadItem($saveData['recData']['person'], 'e10.persons.persons');
 		if ($personRecData)
 		{
-			$wasteOrigins = $this->app()->cfgItem ('e10doc.base.wasteOrigins');
+			$wasteOrigins = $this->app()->cfgItem ('e10doc.base.wasteOrigins', NULL);
+			if (!$wasteOrigins)
+				return;
+
 			unset($wasteOrigins[0]);
 			if ($personRecData['personType'] == 1)
 			{ // human
