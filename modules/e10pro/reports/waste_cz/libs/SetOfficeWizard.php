@@ -95,17 +95,19 @@ class SetOfficeWizard extends Wizard
 
     $wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
 
-    $q = ['SELECT * FROM [e10doc_core_heads]'];
-    array_push($q, ' WHERE [person] = %i', $personNdx);
-
+    $q = [];
+		array_push($q, 'SELECT heads.*');
+		array_push($q, ' FROM [e10doc_core_heads] AS [heads]');
+		array_push($q, ' LEFT JOIN [e10_persons_personsContacts] AS [contacts] ON [heads].[otherAddress1] = [contacts].[ndx]');
+    array_push($q, ' WHERE [heads].[person] = %i', $personNdx);
     array_push($q, ' AND [dateAccounting] >= %d', $periodBegin);
 		array_push($q, ' AND [dateAccounting] <= %d', $periodEnd);
-
 		array_push($q, ' AND [docType] IN %in', $docTypes);
-
 		array_push($q, ' AND ([otherAddress1Mode] IS NULL OR [otherAddress1Mode] = %i)', 0);
+
 		if (!$resetAllDocs)
-    	array_push($q, ' AND ([otherAddress1] IS NULL OR [otherAddress1] = %i)', 0);
+    	array_push($q, ' AND ([otherAddress1] IS NULL OR [otherAddress1] = %i', 0, ' OR contacts.flagOffice = %i', 0, ')');
+
     $rows = $this->app()->db()->query($q);
     foreach ($rows as $r)
     {
