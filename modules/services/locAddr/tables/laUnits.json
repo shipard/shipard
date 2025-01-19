@@ -1,0 +1,32 @@
+{
+  "id": "services.locAddr.laUnits", "sql": "services_locAddr_laUnits", "name": "Administrativní člěnění",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "level", "name": "Úroveň", "type": "enumInt",
+			"enumValues": {"0": "Okres", "1": "Kraj", "2": "Region"}},
+    {"id": "laUnitId", "name": "Kód", "type": "int"},
+
+    {"id": "laUnitOwner1", "name": "Kraj", "type": "int", "reference": "services.locAddr.laUnits"},
+    {"id": "laUnitOwner2", "name": "Region", "type": "int", "reference": "services.locAddr.laUnits"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+  ],
+  "views": {
+		"default": {
+			"id": "default", "class": "services.locAddr.ViewLAUnits",
+			"details": {
+        "changes": {"title": "Detail", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "services.locAddr.ViewDetailLAUnit"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "services.locAddr.FormLAUnit"}
+	],
+	"indexes": [
+		{"id": "s1", "columns": ["country", "laUnitId"]}
+	]
+}

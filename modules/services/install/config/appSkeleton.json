@@ -8,6 +8,17 @@
 				{"t1": "Změny", "object": "viewer", "table": "services.persons.regsChangesItems", "viewer": "default", "order": 170000}
 			]
 		},
+		"locAddr": {
+			"url": "/app/srv-locAddr", "objectType": "panel", "zone": "sec", "name": "Adresy", "order": 140000, "cntBigIcons": 6,
+			"items": [
+				{"t1": "Adresy", "object": "viewer", "table": "services.locAddr.addrPlaces", "viewer": "default", "order": 110000},
+				{"t1": "Obce", "object": "viewer", "table": "services.locAddr.cities", "viewer": "default", "order": 112000},
+				{"t1": "Části obcí", "object": "viewer", "table": "services.locAddr.citiesParts", "viewer": "default", "order": 114000},
+				{"t1": "Ulice", "object": "viewer", "table": "services.locAddr.streets", "viewer": "default", "order": 115000},
+				{"t1": "Adm. čl.", "object": "viewer", "table": "services.locAddr.laUnits", "viewer": "default", "order": 120000},
+				{"t1": "PSČ", "object": "viewer", "table": "services.locAddr.zipCodes", "viewer": "default", "order": 140000}
+			]
+		},
 		"money": {
 			"url": "/app/srv-money", "objectType": "panel", "zone": "sec", "name": "Peníze", "order": 190000,
 			"items": [

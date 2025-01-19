@@ -1,0 +1,12 @@
+{
+	"admin": {
+		"viewers": {
+			"services.locAddr.addrPlaces": {"default": 2},
+			"services.locAddr.cities": {"default": 2},
+			"services.locAddr.citiesParts": {"default": 2},
+			"services.locAddr.streets": {"default": 2},
+			"services.locAddr.laUnits": {"default": 2},
+			"services.locAddr.zipCodes": {"default": 2}
+		}
+	}
+}

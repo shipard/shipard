@@ -1,0 +1,29 @@
+{
+  "id": "services.locAddr.streets", "sql": "services_locAddr_streets", "name": "Ulice",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+    {"id": "streetId", "name": "Kód", "type": "int"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
+
+    {"id": "city", "name": "Obec", "type": "int", "reference": "services.locAddr.cities"},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+  ],
+  "views": {
+		"default": {
+			"id": "default", "class": "services.locAddr.ViewStreets",
+			"details": {
+        "changes": {"title": "Detail", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "services.locAddr.ViewDetailStreet"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "services.locAddr.FormStreet"}
+	],
+	"indexes": [
+		{"id": "s1", "columns": ["country", "streetId"]},
+		{"id": "s2", "columns": ["fullName"]}
+	]
+}

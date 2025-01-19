@@ -1,0 +1,9 @@
+{
+  "id": "services.locAddr",
+  "name": "Addres locations",
+	"modules": ["e10/base"],
+  "tables": ["laUnits", "cities", "citiesParts", "streets", "addrPlaces", "zipCodes"],
+  "config": [
+	  {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"}
+  ]
+}

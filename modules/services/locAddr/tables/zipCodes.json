@@ -1,0 +1,27 @@
+{
+  "id": "services.locAddr.zipCodes", "sql": "services_locAddr_zipCodes", "name": "PSČ",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+    {"id": "zipCodeId", "name": "Kód", "type": "int"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
+		{"id": "idName", "name": "ID", "type": "string", "len": 20},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+  ],
+  "views": {
+		"default": {
+			"id": "default", "class": "services.locAddr.ViewZIPCodes",
+			"details": {
+        "changes": {"title": "Detail", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "services.locAddr.ViewDetailZIPCode"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "services.locAddr.FormZIPCode"}
+	],
+	"indexes": [
+		{"id": "s1", "columns": ["country", "zipCodeId"]}
+	]
+}
