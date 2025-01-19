@@ -77,6 +77,7 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 		array_push ($q, ' FROM [e10_persons_personsContacts] AS [contacts]');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [contacts].[person] = %i', $this->recData['ndx']);
+		array_push ($q, ' AND [contacts].[docStateMain] < %i', 4);
 		array_push ($q, ' ORDER BY [contacts].[onTop], [contacts].[systemOrder]');
     $rows = $this->db()->query($q);
     foreach ($rows as $item)
