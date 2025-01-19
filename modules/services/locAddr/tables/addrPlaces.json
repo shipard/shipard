@@ -40,8 +40,8 @@
 	"indexes": [
 		{"id": "s1", "columns": ["country", "addrPlaceId"]},
     {"id": "s2", "columns": ["houseNr1"]},
-    {"id": "s2", "columns": ["street"]},
     {"id": "s3", "columns": ["cityPart"]},
-    {"id": "s4", "columns": ["city"]}
+    {"id": "s4", "columns": ["city"]},
+    {"id": "s5", "columns": ["street"]}
 	]
 }
