@@ -3,7 +3,7 @@
 namespace services\persons\libs\cz;
 
 use services\persons\libs\ImportPersonFromRegs;
-use \Shipard\Utils\Utils ,\Shipard\Utils\Str, \Shipard\Utils\Json;
+use \Shipard\Utils\Utils, \Shipard\Utils\Str, \Shipard\Utils\Json;
 use \services\persons\libs\LogRecord;
 
 /**
@@ -385,7 +385,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
             $zipcode = $addrParts[1] ?? '';
           }
 
-          $specification = $p['NazevProvozovny'] ?? '';
+          $specification = $p['NazevProvozovny']['NazevProvozovny'] ?? '';
           if (isset($p['UmisteniProvozovny']) && $p['UmisteniProvozovny'] !== '')
           {
             if ($specification !== '')
