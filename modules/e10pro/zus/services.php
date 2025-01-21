@@ -813,6 +813,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		if ($hour === 17)
 		{
 			$this->addUsers();
+			$this->addStudents();
 		}
 		if ($hour === 21)
 		{
