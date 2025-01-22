@@ -13,7 +13,11 @@
 							"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
 										"viewer": "default", "order": 910000, "disabledCfgItem": "options.experimental.witemsNewViewer"},
 							"witems2": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
-										"viewer": "byCategories", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"}
+										"viewer": "byCategories", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
+							"itemsGroups": {"t1": "Skupiny položek", "object": "viewer", "table": "e10.witems.itemsGroups",
+										"viewer": "default", "order": 920000},
+							"itemsGroupsItems": {"t1": "Položky skupin", "object": "viewer", "table": "e10.witems.itemsGroupsItems",
+										"viewer": "default", "order": 921000}
 						}
 					}
 				}
