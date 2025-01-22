@@ -1,0 +1,31 @@
+{
+	"id": "e10.witems.itemsGroups", "sql": "e10_witems_itemsGroups", "name": "Skupiny položek",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Jméno", "type": "string", "len": 140},
+    {"id": "shortName", "name": "Zkrácené jméno", "type": "string", "len": 80},
+    {"id": "id", "name": "Zkratka", "type": "string", "len": 20},
+
+    {"id": "order", "name": "Pořadí", "type": "int"},
+
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10.witems.ViewItemsGroups",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItemsGroup"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.witems.FormItemsGroup"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

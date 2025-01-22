@@ -1,0 +1,28 @@
+{
+	"id": "e10.witems.itemsGroupsItems", "sql": "e10_witems_itemsGroupsItems", "name": "Položky skupin položek",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "itemsGroup", "name": "Skupina", "type": "int", "reference": "e10.witems.itemsGroups"},
+    {"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items"},
+
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10.witems.ViewItemsGroupsItems",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10.witems.ViewDetailItemsGroupsItem"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.witems.FormItemsGroupsItem"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}
+

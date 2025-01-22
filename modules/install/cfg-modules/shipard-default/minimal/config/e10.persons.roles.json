@@ -88,7 +88,9 @@
 			"e10.witems.brands": {"default": 2},
 			"e10.witems.relatedKinds": {"default": 2},
 			"e10.witems.codesKinds": {"default": 2},
-			"e10.witems.itemtypes": {"combo": 1}
+			"e10.witems.itemtypes": {"combo": 1},
+			"e10.witems.itemsGroups": {"default": 2},
+			"e10.witems.itemsGroupsItems": {"default": 2}
 		}
 	},
 	"root": {
