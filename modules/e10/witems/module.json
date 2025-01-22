@@ -3,7 +3,7 @@
   "name": "Položky",
   "tables": [
 		"items", "itemsets", "itemtypes", "itemSubTypes", "itemcategories", "itemcategoriesqry", "itemSuppliers",
-		"brands", "units", "relatedKinds", "itemRelated", "codesKinds", "itemCodes"
+		"brands", "units", "relatedKinds", "itemRelated", "codesKinds", "itemCodes", "itemsGroups", "itemsGroupsItems"
 	],
   "config": [
 		{"id": "e10.witems.docStates", "file": "e10.witems.docStates.json"},
