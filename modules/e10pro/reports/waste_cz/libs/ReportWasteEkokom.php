@@ -192,6 +192,7 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       array_push($q, ' LEFT JOIN e10doc_core_heads AS [heads] ON [rows].document = [heads].ndx');
       array_push($q, ' LEFT JOIN e10_persons_persons AS [persons] ON [heads].person = [persons].ndx');
       array_push($q, ' WHERE 1');
+      array_push($q, ' AND [rowType] = %i', 0);
       array_push($q, ' AND [persons].personType = %i', 1); // citizens
       array_push($q, ' AND [heads].[docType] = %s', 'purchase');
       array_push($q, ' AND [heads].[docState] = %s', 4000);
@@ -228,6 +229,7 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       array_push($q, ' LEFT JOIN e10doc_core_heads AS [heads] ON [rows].document = [heads].ndx');
       array_push($q, ' LEFT JOIN e10_persons_persons AS [persons] ON [heads].person = [persons].ndx');
       array_push($q, ' WHERE 1');
+      array_push($q, ' AND [rowType] = %i', 0);
       //array_push($q, ' AND [persons].personType = %i', 1); // citizens
       array_push($q, ' AND [heads].[docType] = %s', 'invno');
       array_push($q, ' AND [heads].[docState] = %s', 4000);
@@ -260,6 +262,7 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       array_push($q, ' LEFT JOIN e10doc_core_heads AS [heads] ON [rows].document = [heads].ndx');
       array_push($q, ' LEFT JOIN e10_persons_persons AS [persons] ON [heads].person = [persons].ndx');
       array_push($q, ' WHERE 1');
+      array_push($q, ' AND [rowType] = %i', 0);
       //array_push($q, ' AND [persons].personType = %i', 1); // citizens
       array_push($q, ' AND [heads].[docType] = %s', 'invno');
       array_push($q, ' AND [heads].[docState] = %s', 4000);
@@ -342,6 +345,7 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       array_push($q, ' LEFT JOIN e10doc_core_heads AS [heads] ON [rows].document = [heads].ndx');
       array_push($q, ' LEFT JOIN e10_persons_persons AS [persons] ON [heads].person = [persons].ndx');
       array_push($q, ' WHERE 1');
+      array_push($q, ' AND [rowType] = %i', 0);
       //array_push($q, ' AND [persons].personType = %i', 1); // citizens
       array_push($q, ' AND [heads].[docType] = %s', 'invno');
       array_push($q, ' AND [heads].[docState] = %s', 4000);
@@ -369,6 +373,7 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       array_push($q, ' LEFT JOIN e10doc_core_heads AS [heads] ON [rows].document = [heads].ndx');
       array_push($q, ' LEFT JOIN e10_persons_persons AS [persons] ON [heads].person = [persons].ndx');
       array_push($q, ' WHERE 1');
+      array_push($q, ' AND [rowType] = %i', 0);
       //array_push($q, ' AND [persons].personType = %i', 1); // citizens
       array_push($q, ' AND [heads].[docType] = %s', 'purchase');
       array_push($q, ' AND [heads].[docState] = %s', 4000);
