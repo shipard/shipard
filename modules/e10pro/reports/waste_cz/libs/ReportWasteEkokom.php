@@ -72,10 +72,12 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
     $this->loadData_In();
     $this->loadData_Out();
     $this->loadData_Out_ByPersons();
+    $this->loadData_InitStates();
   }
 
   public function createContent_Overview()
   {
+    $this->createContent_InitStates();
     $this->createContent_In();
     $this->createContent_Out();
 
@@ -107,24 +109,6 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
 
   public function createContent_Out()
   {
-    /*
-		$data = [];
-		forEach ($this->data['OUT'] as $groupNdx => $groupData)
-    {
-      $item = [
-        'groupId' => $this->itemsGroups[$groupNdx]['fullName'],
-        'sumQuantity' => round($groupData['sumQuantity'] / 1000, 3),
-      ];
-      $data[] = $item;
-    }
-
-		$h = [
-      'groupId' => 'Komodita',
-      'sumQuantity' => '+Množství',
-    ];
-		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data, 'params' => ['precision' => 3]]);
-    */
-
 		$data = [];
 		forEach ($this->data['OUT_BP'] as $groupData)
     {
@@ -148,6 +132,49 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       'useType' => 'Způsob využití',
     ];
 		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data, 'title' => 'Výstup odběratelé', 'params' => ['precision' => 3]]);
+
+
+    // -- summary
+		$data = [];
+		forEach ($this->data['OUT'] as $groupNdx => $groupData)
+    {
+      $item = [
+        'groupId' => $this->itemsGroups[$groupNdx]['fullName'],
+        'sumQuantity' => round($groupData['sumQuantity'] / 1000, 3),
+      ];
+      $data[] = $item;
+    }
+
+		$h = [
+      'groupId' => 'Komodita',
+      'sumQuantity' => '+Množství',
+    ];
+		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data, 'title' => 'Výstup odběratelé CELKEM', 'params' => ['precision' => 3]]);
+  }
+
+  public function createContent_InitStates()
+  {
+		$data = [];
+		forEach ($this->data['IS'] as $groupNdx => $groupData)
+    {
+      $item = [
+        'groupId' => $this->itemsGroups[$groupNdx]['fullName'],
+        'sumQuantity' => round(($groupData['sumQuantityIS'] + $groupData['sumQuantityIn'] - $groupData['sumQuantityOut']) / 1000, 3),
+        'sumQuantityIn' => round($groupData['sumQuantityIn'] / 1000, 3),
+        'sumQuantityOut' => round($groupData['sumQuantityOut'] / 1000, 3),
+        'sumQuantityIS' => round($groupData['sumQuantityIS'] / 1000, 3),
+      ];
+      $data[] = $item;
+    }
+
+		$h = [
+      'groupId' => 'Komodita',
+      'sumQuantityIS' => '+PS 1.1.',
+      'sumQuantityIn' => '+Příjem',
+      'sumQuantityOut' => '+Výdej',
+      'sumQuantity' => '+Množství',
+    ];
+		$this->addContent (['type' => 'table', 'header' => $h, 'table' => $data, 'title' => 'Vstup sklad', 'params' => ['precision' => 3]]);
   }
 
   protected function loadData_In()
@@ -267,12 +294,106 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
     }
   }
 
+  protected function loadData_InitStates()
+  {
+    $limitBegin = $this->periodBegin->format('Y').'-01-01';
+
+    foreach ($this->itemsGroups as $groupNdx => $groupCfg)
+    {
+      $this->data['IS'][$groupNdx] = [
+        'fullName' => $groupCfg['fullName'],
+        'sumQuantityIn' => 0.0, 'sumQuantityOut' => 0.0, 'sumQuantityIS' => 0.0,
+      ];
+    }
+
+    // -- STOCK INIT STATES
+    foreach ($this->itemsGroups as $groupNdx => $groupCfg)
+    {
+      $q = [];
+      array_push($q, 'SELECT SUM([rows].quantity) AS sumQuantity, [rows].[unit]');
+      array_push($q, ' FROM e10doc_core_rows AS [rows]');
+      array_push($q, ' LEFT JOIN e10doc_core_heads AS [heads] ON [rows].document = [heads].ndx');
+      array_push($q, ' LEFT JOIN e10_persons_persons AS [persons] ON [heads].person = [persons].ndx');
+      array_push($q, ' WHERE 1');
+      //array_push($q, ' AND [persons].personType = %i', 1); // citizens
+      array_push($q, ' AND [heads].[docType] = %s', 'stockinst');
+      array_push($q, ' AND [heads].[docState] = %s', 4000);
+      array_push($q, ' AND [heads].[dateAccounting] <= %d', $this->periodBegin);
+      array_push($q, ' AND [heads].[dateAccounting] >= %d', $limitBegin);
+
+      array_push($q, ' AND EXISTS (',
+                     ' SELECT 1 FROM e10_witems_itemsGroupsItems WHERE [item] = [rows].[item] AND itemsGroup = %i', $groupNdx,
+                     ')');
+      array_push($q, ' GROUP BY 2');
+      $rows = $this->app->db()->query($q);
+      foreach ($rows as $r)
+      {
+        $ucc = E10Utils::unitsConversionCoefficient($this->app(), $r['unit'], 'kg');
+        $this->data['IS'][$groupNdx]['sumQuantityIS'] += $r['sumQuantity'] * $ucc;
+      }
+    }
+
+    // -- OUT
+    foreach ($this->itemsGroups as $groupNdx => $groupCfg)
+    {
+      $q = [];
+      array_push($q, 'SELECT SUM([rows].quantity) AS sumQuantity, [rows].[unit]');
+      array_push($q, ' FROM e10doc_core_rows AS [rows]');
+      array_push($q, ' LEFT JOIN e10doc_core_heads AS [heads] ON [rows].document = [heads].ndx');
+      array_push($q, ' LEFT JOIN e10_persons_persons AS [persons] ON [heads].person = [persons].ndx');
+      array_push($q, ' WHERE 1');
+      //array_push($q, ' AND [persons].personType = %i', 1); // citizens
+      array_push($q, ' AND [heads].[docType] = %s', 'invno');
+      array_push($q, ' AND [heads].[docState] = %s', 4000);
+      array_push($q, ' AND [heads].[dateAccounting] < %d', $this->periodBegin);
+      array_push($q, ' AND [heads].[dateAccounting] >= %d', $limitBegin);
+
+      array_push($q, ' AND EXISTS (',
+                     ' SELECT 1 FROM e10_witems_itemsGroupsItems WHERE [item] = [rows].[item] AND itemsGroup = %i', $groupNdx,
+                     ')');
+      array_push($q, ' GROUP BY 2');
+      $rows = $this->app->db()->query($q);
+      foreach ($rows as $r)
+      {
+        $ucc = E10Utils::unitsConversionCoefficient($this->app(), $r['unit'], 'kg');
+        $this->data['IS'][$groupNdx]['sumQuantityOut'] += $r['sumQuantity'] * $ucc;
+      }
+    }
+
+    // -- IN
+    foreach ($this->itemsGroups as $groupNdx => $groupCfg)
+    {
+      $q = [];
+      array_push($q, 'SELECT SUM([rows].quantity) AS sumQuantity, [rows].[unit]');
+      array_push($q, ' FROM e10doc_core_rows AS [rows]');
+      array_push($q, ' LEFT JOIN e10doc_core_heads AS [heads] ON [rows].document = [heads].ndx');
+      array_push($q, ' LEFT JOIN e10_persons_persons AS [persons] ON [heads].person = [persons].ndx');
+      array_push($q, ' WHERE 1');
+      //array_push($q, ' AND [persons].personType = %i', 1); // citizens
+      array_push($q, ' AND [heads].[docType] = %s', 'purchase');
+      array_push($q, ' AND [heads].[docState] = %s', 4000);
+      array_push($q, ' AND [heads].[dateAccounting] < %d', $this->periodBegin);
+      array_push($q, ' AND [heads].[dateAccounting] >= %d', $limitBegin);
+
+      array_push($q, ' AND EXISTS (',
+                     ' SELECT 1 FROM e10_witems_itemsGroupsItems WHERE [item] = [rows].[item] AND itemsGroup = %i', $groupNdx,
+                     ')');
+      array_push($q, ' GROUP BY 2');
+      $rows = $this->app->db()->query($q);
+      foreach ($rows as $r)
+      {
+        $ucc = E10Utils::unitsConversionCoefficient($this->app(), $r['unit'], 'kg');
+        $this->data['IS'][$groupNdx]['sumQuantityIn'] += $r['sumQuantity'] * $ucc;
+      }
+    }
+  }
+
   protected function loadData_ItemsGroups()
   {
     $q = [];
     array_push($q, 'SELECT * FROM e10_witems_itemsGroups');
     array_push($q, ' WHERE 1');
-    array_push($q, ' AND docState = %i', 4000);
+    array_push($q, ' AND docState != %i', 9000);
     array_push($q, ' AND (validFrom IS NULL OR validFrom <= %d)', $this->periodEnd);
     array_push($q, ' AND (validTo IS NULL OR validTo >= %d)', $this->periodBegin);
     array_push($q, ' ORDER BY [order], [fullName]');
