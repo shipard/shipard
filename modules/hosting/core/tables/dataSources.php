@@ -43,6 +43,11 @@ use \e10\base\libs\UtilsBase;
 		if ($recData['dsType'] != 0)
 			$recData['dsDemo'] = 0;
 
+		if ($recData['docState'] == 4000)
+		{
+			$recData['inProgress'] = 0;
+		}
+
 		parent::checkBeforeSave($recData, $ownerData);
 	}
 
