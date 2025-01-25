@@ -145,7 +145,7 @@ class TemplateCore extends \Mustache
 	{
 		try
 		{
-			$t = $this->_renderTemplate ($text);
+			$t = $this->render ($text);
 		}
 		catch (\MustacheException $e)
 		{
