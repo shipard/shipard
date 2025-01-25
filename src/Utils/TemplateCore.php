@@ -141,6 +141,20 @@ class TemplateCore extends \Mustache
 		return $t;
 	}
 
+	public function renderTextSafe ($text)
+	{
+		try
+		{
+			$t = $this->_renderTemplate ($text);
+		}
+		catch (\MustacheException $e)
+		{
+			$t = 'Chyba šablony: '.$e->getMessage();
+		}
+
+		return $t;
+	}
+
 	public function renderSubTemplate ($subtemplateName)
 	{
 		$subtemplateId = utils::parseMarkup($subtemplateName, $this->subTemplateParams);
