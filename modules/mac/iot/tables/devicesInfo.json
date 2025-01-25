@@ -1,0 +1,20 @@
+{
+	"id": "mac.iot.devicesInfo", "sql": "mac_iot_devicesInfo", "name": "Informace o zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "devType", "name": "Typ zařízení", "type": "string", "len": 40},
+		{"id": "fwVersion", "name": "Verze FW", "type": "string", "len": 25},
+		{"id": "osVersion", "name": "Verze OS", "type": "string", "len": 25},
+		{"id": "pwrBatteryLevel", "name": "Stav baterie", "type": "short"},
+		{"id": "pwrBatteryVoltage", "name": "Napětí baterie", "type": "number", "dec": 3},
+		{"id": "uptime", "name": "Uptime", "type": "long"},
+		{"id": "signalLevel", "name": "Signál", "type": "short"},
+		{"id": "lastSeen", "name": "Poslední aktivita", "type": "timestamp"},
+
+		{"id": "dateCreate", "name": "Datum vytvoření", "type": "timestamp"},
+		{"id": "dateUpdate", "name": "Datum aktualizace", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}

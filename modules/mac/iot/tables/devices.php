@@ -249,6 +249,8 @@ class ViewDevices extends TableView
 {
 	//var ?\mac\iot\libs\IotDevicesUtils $iotDevicesUtils = NULL;
 
+	var $devicesInfo = [];
+
 	public function init ()
 	{
 		parent::init();
@@ -292,11 +294,13 @@ class ViewDevices extends TableView
 
 		$listItem ['t2'] = $t2;
 
+		/*
 		$listItem ['t3'] = [];
 		if ($item['uiName'] !== '')
 			$listItem ['t3'][] = ['text' => $item['uiName'], 'class' => ''];
 
 		$listItem ['t3'][] = ['text' => $item['deviceTopic'], 'class' => 'e10-off'];
+		*/
 
 		return $listItem;
 	}
@@ -324,6 +328,58 @@ class ViewDevices extends TableView
 
 		$this->queryMain ($q, 'iotDevices.', ['[fullName]', '[ndx]']);
 		$this->runQuery ($q);
+	}
+
+	function selectRows2()
+	{
+		if (!count ($this->pks))
+			return;
+
+		$q = [];
+		array_push($q, 'SELECT * FROM [mac_iot_devicesInfo] WHERE [device] IN %in', $this->pks);
+		foreach ($this->db()->query($q) as $r)
+		{
+			$this->devicesInfo[$r['device']] = $r->toArray();
+		}
+	}
+
+	function decorateRow (&$item)
+	{
+		if (!isset ($this->devicesInfo [$item ['pk']]))
+			return;
+
+		$labels = [];
+
+		$deviceInfo = $this->devicesInfo [$item ['pk']];
+		if ($deviceInfo['fwVersion'] != '')
+			$labels[] = ['text' => $deviceInfo ['fwVersion'], 'prefix' => 'fw', 'class' => 'label label-default'];
+		if ($deviceInfo['osVersion'] != '')
+			$labels[] = ['text' => $deviceInfo ['osVersion'], 'prefix' => 'os', 'class' => 'label label-default'];
+
+
+		if ($deviceInfo['pwrBatteryLevel'] != 0 || $deviceInfo['pwrBatteryVoltage'] != 0)
+		{
+			$bl = ['text' => $deviceInfo ['pwrBatteryLevel'].'%', 'icon' => 'user/battery', 'class' => 'label label-info'];
+			if ($deviceInfo['pwrBatteryVoltage'] != 0)
+				$bl['suffix'] = $deviceInfo['pwrBatteryVoltage'].'V';
+			$labels[] = $bl;
+		}
+
+		if ($deviceInfo['uptime'] != 0)
+		{
+			$labels[] = ['text' => Utils::secondsToTime($deviceInfo['uptime'], $deviceInfo['uptime'] < 100), 'prefix' => 'upt', 'class' => 'label label-default'];
+		}
+
+		if ($deviceInfo['signalLevel'] != 0)
+		{
+			$labels[] = ['text' => $deviceInfo['signalLevel'], 'icon' => 'user/wifi', 'class' => 'label label-default'];
+		}
+
+		if ($deviceInfo['dateUpdate'] != '')
+			$labels[] = ['text' => Utils::datef($deviceInfo ['dateUpdate'], '%k %T'), 'prefix' => 'upd', 'class' => 'label label-default'];
+
+		if (count($labels))
+			$item ['t3'] = $labels;
 	}
 }
 

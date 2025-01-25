@@ -2,7 +2,7 @@
   "id": "mac.iot",
   "name": "Monitoring And Control - IoT",
   "tables": [
-		"devices", "devicesIOPorts", "devicesCfg", "devicesGroups", "devicesGroupsItems",
+		"devices", "devicesIOPorts", "devicesCfg", "devicesGroups", "devicesGroupsItems", "devicesInfo",
 		"eventsOn", "eventsDo",
 		"setups", "setupsStates",
 		"params",
