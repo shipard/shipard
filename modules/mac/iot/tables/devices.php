@@ -355,12 +355,12 @@ class ViewDevices extends TableView
 			if ($infoOld1h)
 			{
 				$dateLimit = new \DateTime('1 hour ago');
-				array_push ($q, ' OR (EXISTS (SELECT ndx FROM mac_iot_devicesInfo WHERE iotDevices.ndx = device AND mac_iot_devicesInfo.dateUpdate < %d))', $dateLimit);
+				array_push ($q, ' OR (EXISTS (SELECT ndx FROM mac_iot_devicesInfo WHERE iotDevices.ndx = device AND mac_iot_devicesInfo.dateUpdate < %t))', $dateLimit);
 			}
 			if ($infoOld1d)
 			{
 				$dateLimit = new \DateTime('1 day ago');
-				array_push ($q, ' OR (EXISTS (SELECT ndx FROM mac_iot_devicesInfo WHERE iotDevices.ndx = device AND mac_iot_devicesInfo.dateUpdate IS NOT NULL AND mac_iot_devicesInfo.dateUpdate < %d))', $dateLimit);
+				array_push ($q, ' OR (EXISTS (SELECT ndx FROM mac_iot_devicesInfo WHERE iotDevices.ndx = device AND mac_iot_devicesInfo.dateUpdate < %t))', $dateLimit);
 			}
 			if ($infoNone)
 			{
