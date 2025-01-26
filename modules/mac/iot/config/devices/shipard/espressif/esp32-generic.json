@@ -28,5 +28,6 @@
 			"p36": {"title": "GPIO36 / ADC1 CH0", "hwnr": 36, "flags": ["d", "in", "hwInt"]},
 			"p39": {"title": "GPIO39 / ADC1 CH3", "hwnr": 39, "flags": ["d", "in", "hwInt"]}
 		}
-	}
+	},
+	"fwId": "ibl-esp32-wifi"
 }

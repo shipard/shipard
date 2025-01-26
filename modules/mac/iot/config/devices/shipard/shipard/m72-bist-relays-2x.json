@@ -96,5 +96,5 @@
 			"_portDisabled": {"canRouterEnabled": 0}
 		}
 	},
-	"fwId": "iot-box-can-core-sms72-esp32-can"
+	"fwId": "sms72-esp32-can"
 }

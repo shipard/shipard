@@ -58,5 +58,5 @@
 			"_portDisabled": {"espNowServerEnabled": 0}
 		}
 	},
-	"fwId": "iot-box-lan-core-sms72-esp32-eth"
+	"fwId": "sms72-esp32-eth"
 }

@@ -39,5 +39,6 @@
 			"portId": "esp-now",
 			"_portDisabled": {"espNowServerEnabled": 0}
 		}
-	}
+	},
+	"fwId": "sms72-esp32-can"
 }

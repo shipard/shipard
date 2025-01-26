@@ -23,5 +23,5 @@
 			"ext20": {"title": "ext 20 / 5V", "hwnr": 0, "flags": ["pwr", "5v"]}
 		}
 	},
-	"fwId": "iot-box-lan-core-esp32-gateway"
+	"fwId": "ibl-oli-esp32-gateway"
 }
