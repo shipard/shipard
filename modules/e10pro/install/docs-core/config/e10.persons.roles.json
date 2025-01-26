@@ -36,7 +36,8 @@
 			"e10doc.helpers.rowsSettings": {"default": 2},
 			"e10doc.helpers.impDocsSettings": {"default": 2},
 			"e10doc.helpers.wkfSectionsRelations": {"default": 2},
-			"e10doc.base.docRowsVDSCfg": {"default": 2}
+			"e10doc.base.docRowsVDSCfg": {"default": 2},
+			"e10doc.base.wasteOrigins": {"default": 2}
 		},
 		"reports": {
 			"e10pro.reports.tests.docs.ReportBadFiscalPeriod": 2,
