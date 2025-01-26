@@ -102,6 +102,8 @@ class UploadDataReceiver extends Utility
 			'dateUpdate' => new \DateTime(),
 		];
 
+		$pwrInfo = [];
+
 		if (isset($this->data['items']['verFW']))
 			$update['fwVersion'] = $this->data['items']['verFW'];
 		if (isset($this->data['items']['verOS']))
@@ -118,11 +120,24 @@ class UploadDataReceiver extends Utility
 			$update['signalLevel'] = intval($this->data['linkquality']);
 
 		if (isset($this->data['pwr-batt-perc']))
+		{
 			$update['pwrBatteryLevel'] = $this->data['pwr-batt-perc'];
+			$pwrInfo['pwrBatteryLevel'] = $this->data['pwr-batt-perc'];
+		}
 		if (isset($this->data['pwr-batt-voltage']))
+		{
 			$update['pwrBatteryVoltage'] = $this->data['pwr-batt-voltage'];
+			$pwrInfo['pwrBatteryVoltage'] = $this->data['pwr-batt-voltage'];
+		}
 
 		$this->db()->query('UPDATE [mac_iot_devicesInfo] SET ', $update, ' WHERE [ndx] = %i', $deviceInfoNdx);
+
+		if (count($pwrInfo))
+		{
+			$pwrInfo['device'] = $deviceInfoNdx;
+			$pwrInfo['dateTime'] = new \DateTime();
+			$this->db()->query('INSERT INTO [mac_iot_devicesInfoPwr] ', $pwrInfo);
+		}
 
 		return 'OK';
 	}

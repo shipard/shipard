@@ -1,0 +1,13 @@
+{
+	"id": "mac.iot.devicesInfoPwr", "sql": "mac_iot_devicesInfoPwr", "name": "Informace o napájení zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "device", "name": "Zařízení", "type": "int", "reference": "mac.lan.devices"},
+
+		{"id": "pwrBatteryLevel", "name": "Stav baterie", "type": "short"},
+		{"id": "pwrBatteryVoltage", "name": "Napětí baterie", "type": "number", "dec": 3},
+
+		{"id": "dateTime", "name": "Datum a čas", "type": "timestamp"}
+	],
+	"options": ["systemTable"]
+}
