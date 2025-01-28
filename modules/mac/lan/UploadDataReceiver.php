@@ -134,7 +134,7 @@ class UploadDataReceiver extends Utility
 
 		if (count($pwrInfo))
 		{
-			$pwrInfo['device'] = $deviceInfoNdx;
+			$pwrInfo['device'] = $deviceRecData['ndx'];
 			$pwrInfo['dateTime'] = new \DateTime();
 			$this->db()->query('INSERT INTO [mac_iot_devicesInfoPwr] ', $pwrInfo);
 		}
