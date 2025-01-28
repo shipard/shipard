@@ -160,18 +160,21 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
   public function createContent_Out()
   {
 		$data = [];
-		forEach ($this->data[$this->activePeriodId]['OUT_BP'] as $groupData)
+    if (isset($this->data[$this->activePeriodId]['OUT_BP']))
     {
-      $personOid = $this->loadPersonOid ($groupData['personNdx']);
+      forEach ($this->data[$this->activePeriodId]['OUT_BP'] as $groupData)
+      {
+        $personOid = $this->loadPersonOid ($groupData['personNdx']);
 
-      $item = [
-        'groupId' =>  $groupData['groupId'],
-        'personOid' => $personOid,
-        'personName' => $groupData['personName'],
-        'sumQuantity' => round($groupData['sumQuantity'] / 1000, 3),
-        'sumQuantityAccepted' => round($groupData['sumQuantityAccepted'] / 1000, 3),
-      ];
-      $data[] = $item;
+        $item = [
+          'groupId' =>  $groupData['groupId'],
+          'personOid' => $personOid,
+          'personName' => $groupData['personName'],
+          'sumQuantity' => round($groupData['sumQuantity'] / 1000, 3),
+          'sumQuantityAccepted' => round($groupData['sumQuantityAccepted'] / 1000, 3),
+        ];
+        $data[] = $item;
+      }
     }
 
     if ($this->showDetails)
@@ -438,13 +441,16 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       }
     }
 
-    foreach ($this->data[$periodId]['OUT_BP'] as $iid => $iidData)
+    if (isset($this->data[$periodId]['OUT_BP']))
     {
-      $totalDataOut = $this->data[$periodId]['OUT'][$iidData['groupNdx']];
-      if ($totalDataOut['acceptedRatio'] == 1)
-        continue;
+      foreach ($this->data[$periodId]['OUT_BP'] as $iid => $iidData)
+      {
+        $totalDataOut = $this->data[$periodId]['OUT'][$iidData['groupNdx']];
+        if ($totalDataOut['acceptedRatio'] == 1)
+          continue;
 
-      $this->data[$periodId]['OUT_BP'][$iid]['sumQuantityAccepted'] = round($iidData['sumQuantity'] * $totalDataOut['acceptedRatio'], 3);
+        $this->data[$periodId]['OUT_BP'][$iid]['sumQuantityAccepted'] = round($iidData['sumQuantity'] * $totalDataOut['acceptedRatio'], 3);
+      }
     }
   }
 
