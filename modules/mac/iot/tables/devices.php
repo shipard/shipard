@@ -399,7 +399,12 @@ class ViewDevices extends TableView
 
 		$deviceInfo = $this->devicesInfo [$item ['pk']];
 		if ($deviceInfo['fwVersion'] != '')
-			$labels[] = ['text' => $deviceInfo ['fwVersion'], 'prefix' => 'fw', 'class' => 'label label-default'];
+		{
+			$fwlabel = ['text' => $deviceInfo ['fwVersion'], 'prefix' => 'fw', 'class' => 'label label-default'];
+			//if ($deviceInfo['devType'] != '')
+			//	$fwlabel['suffix'] = $deviceInfo['devType'];
+			$labels[] = $fwlabel;
+		}
 		if ($deviceInfo['osVersion'] != '')
 			$labels[] = ['text' => $deviceInfo ['osVersion'], 'prefix' => 'os', 'class' => 'label label-default'];
 
@@ -566,6 +571,18 @@ class ViewDetailDevice extends TableViewDetail
 			$this->addDocumentCard('mac.iot.libs.dc.IoTDeviceIoTBox');
 	}
 }
+
+/**
+ * Class ViewDetailDevicePwr
+ */
+class ViewDetailDevicePwr extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('mac.iot.libs.dc.IoTDevicePwr');
+	}
+}
+
 
 /**
  * Class ViewDetailDeviceCfgScripts

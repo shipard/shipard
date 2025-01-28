@@ -43,6 +43,7 @@
 			"id": "default", "class": "mac.iot.ViewDevices", "help":"prirucka/508",
       "details": {
         "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailDevice"},
+				"power": {"title": "Napájení", "icon": "user/battery", "type": "detail", "class": "mac.iot.ViewDetailDevicePwr"},
         "cfgScripts": {"title": "Nastavení", "icon": "system/detailSettings", "type": "detail", "class": "mac.iot.ViewDetailDeviceCfgScripts"}
       }
 		}
