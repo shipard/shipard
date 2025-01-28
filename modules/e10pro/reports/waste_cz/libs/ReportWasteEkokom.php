@@ -76,7 +76,6 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
 
     $this->loadData_ItemsGroups();
     $this->loadData_AllPeriods();
-    $this->loadData_InitStates();
 
     if ($this->subReportId === 'purchases')
     {
@@ -120,6 +119,7 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       // -- load periods
       foreach ($this->periods as $periodId => $period)
       {
+        $this->loadData_InitStates($periodId);
         $this->loadData_In($period);
         $this->loadData_Out($period);
         $this->loadData_Out_ByPersons($period);
@@ -201,7 +201,9 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       $item = [
         'groupId' => $this->itemsGroups[$groupNdx]['fullName'],
         'sumQuantity' => round($groupData['sumQuantity'] / 1000, 3),
+        'sumQuantityBuy' => round($groupData['sumQuantityBuy'] / 1000, 3),
         'sumQuantityIn' => round($groupData['sumQuantityIn'] / 1000, 3),
+        'sumQuantityIS' => round($groupData['sumQuantityIS'] / 1000, 3),
         'sumQuantityAccepted' => round($groupData['sumQuantityAccepted'] / 1000, 3),
         'acceptedRatio' => strval($groupData['acceptedRatio']),
       ];
@@ -212,7 +214,9 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
       $h = [
         'groupId' => 'Komodita',
         'sumQuantity' => '+Prodej CELKEM',
-        'sumQuantityIn' => '+Nákup OBČANÉ',
+        'sumQuantityBuy' => '+Nákup OBČANÉ',
+        'sumQuantityIS' => '+Sklad',
+        'sumQuantityIn' => '+Vstup OBČANÉ + Sklad',
         'sumQuantityAccepted' => '+Množství UZNANÉ',
         'acceptedRatio' => ' Poměr',
       ];
@@ -344,7 +348,9 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
         'fullName' => $groupCfg['fullName'],
         'sumQuantity' => 0.0,
         'sumQuantityAccepted' => 0.0,
-        'sumQuantityIn' => $this->data[$periodId]['IN'][$groupNdx]['sumQuantity'],
+        'sumQuantityBuy' => $this->data[$periodId]['IN'][$groupNdx]['sumQuantity'],
+        'sumQuantityIn' => $this->data[$periodId]['IN'][$groupNdx]['sumQuantity'] + $this->data[$periodId]['IS'][$groupNdx]['initState'],
+        'sumQuantityIS' => $this->data[$periodId]['IS'][$groupNdx]['initState'],
         'acceptedRatio' => 1,
       ];
 
@@ -442,30 +448,27 @@ class ReportWasteEkokom extends \e10doc\core\libs\reports\GlobalReport
     }
   }
 
-  protected function loadData_InitStates()
+  protected function loadData_InitStates($periodId)
   {
-    foreach ($this->periods as $periodId => $period)
+    foreach ($this->itemsGroups as $groupNdx => $groupCfg)
     {
-      foreach ($this->itemsGroups as $groupNdx => $groupCfg)
-      {
-        $this->data[$periodId]['IS'][$groupNdx] = [
-          'fullName' => $groupCfg['fullName'],
-          'sumQuantityIn' => 0.0,
-          'sumQuantityOut' => 0.0,
-          'sumQuantityIS' => 0.0,
-          'initState' => 0.0,
-        ];
+      $this->data[$periodId]['IS'][$groupNdx] = [
+        'fullName' => $groupCfg['fullName'],
+        'sumQuantityIn' => 0.0,
+        'sumQuantityOut' => 0.0,
+        'sumQuantityIS' => 0.0,
+        'initState' => 0.0,
+      ];
 
-        $prevPeriodId = $this->periods[$periodId]['prevPeriodId'];
-        if ($prevPeriodId === '')
-          continue;
+      $prevPeriodId = $this->periods[$periodId]['prevPeriodId'];
+      if ($prevPeriodId === '')
+        continue;
 
-        $in = $this->data[$prevPeriodId]['IN'][$groupNdx]['sumQuantity'] + $this->data[$prevPeriodId]['IS'][$groupNdx]['initState'];
-        $out = $this->data[$prevPeriodId]['OUT'][$groupNdx]['sumQuantity'];
+      $in = $this->data[$prevPeriodId]['IN'][$groupNdx]['sumQuantity'] + $this->data[$prevPeriodId]['IS'][$groupNdx]['initState'];
+      $out = $this->data[$prevPeriodId]['OUT'][$groupNdx]['sumQuantity'];
 
-        if ($out < $in)
-          $this->data[$periodId]['IS'][$groupNdx]['initState'] = $in - $out;
-      }
+      if ($out < $in)
+        $this->data[$periodId]['IS'][$groupNdx]['initState'] = $in - $out;
     }
   }
 
