@@ -1,0 +1,18 @@
+{
+  "file-portal": {
+    "fn": "Soubory",
+    "appMenu": {
+      "appTitle": "Nevím",
+      "items": [
+        {
+          "title": "Soubory", "icon": "user/folder", "id": "priceList",
+          "objectType": "widget", "classId": "e10pro.fp.libs.apps.WidgetFilePortal"
+        },
+        {
+          "title": "Nastavení", "icon": "system/actionSettings", "id": "settings",
+          "objectType": "widget", "classId": "Shipard.UI.ng.WidgetAppSettings"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+	"panels": {
+		"others": {
+			"items": {
+				"filePortal": {
+					"t1": "Soubory", "object": "subMenu", "icon": "user/folder",
+					"order": 9800000,
+					"subMenu": {
+						"items": {
+							"filePortals": {"t1": "Portály", "object": "viewer", "table": "e10pro.fp.filePortals", "viewer": "default", "order": 100000},
+							"storages": {"t1": "Úložiště", "object": "viewer", "table": "e10pro.fp.storages", "viewer": "default", "order": 110000},
+							"storagesUsers": {"t1": "Uživatelé", "object": "viewer", "table": "e10pro.fp.storagesUsers", "viewer": "default", "order": 120000}
+						}
+					}
+				}
+			}
+		}
+	}
+}

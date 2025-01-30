@@ -1,0 +1,28 @@
+{
+	"id": "e10pro.fp.filePortals", "sql": "e10pro_fp_filePortals", "name": "Souborové portály",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Název", "type": "string", "len": 120},
+    {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},
+
+		{"id": "rootFolder", "name": "Kořenový adresář", "type": "string", "len": 60},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.fp.ViewFilePortals",
+      "details": {
+        "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.fp.ViewDetailFilePortal"}
+      }
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.fp.FormFilePortal"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"options": ["configSource"],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

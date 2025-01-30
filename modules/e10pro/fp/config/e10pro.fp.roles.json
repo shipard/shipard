@@ -1,0 +1,9 @@
+{
+  "admin": {
+		"viewers": {
+			"e10pro.fp.filePortals": {"default": 2},
+			"e10pro.fp.storages": {"default": 2},
+			"e10pro.fp.storagesUsers": {"default": 2}
+		}
+	}
+}
