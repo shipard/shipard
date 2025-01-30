@@ -138,6 +138,24 @@ class Router extends Utility
 		{
 			$object = $this->app->createObject('Shipard.UI.ng.Auth');
 		}
+		elseif ($first === 'files')
+		{ // download files
+			$filesCfg = $this->app()->cfgItem ('registeredClasses.downloadFiles.'.($this->urlPath[1] ?? ''), NULL);
+			if ($filesCfg)
+			{
+				$object = $this->app->createObject($filesCfg['classId']);
+				/*
+				if ($object)
+				{
+					$apiResponseObject->uiRouter = $this->uiRouter;
+					$apiResponseObject->setRequestParams($this->requestParams);
+					$apiResponseObject->run();
+
+				}
+				$object->setDefinition ($filesCfg);
+				*/
+			}
+		}
 		else
 		{
 			if (!$this->checkUserLogin())
@@ -181,6 +199,25 @@ class Router extends Utility
 			error_log("__OLD_API__");
 			return $this->app()->routeApiRun();
 		}
+
+    if (isset($this->urlPath[2]) && $this->urlPath[2] === 'files')
+    {
+			$filesCfg = $this->app()->cfgItem ('registeredClasses.downloadFiles.'.($this->urlPath[3] ?? ''), NULL);
+			if ($filesCfg)
+			{
+        /**  @var \Shipard\Base\ApiObject2 */
+				$apiResponseObject = $this->app->createObject($filesCfg['classId']);
+
+				if ($apiResponseObject)
+				{
+					$apiResponseObject->uiRouter = $this;
+					$apiResponseObject->run();
+          return NULL;
+				}
+				return new \Shipard\Application\Response ($this->app(), 'invalid download object 1', 404);
+			}
+			return new \Shipard\Application\Response ($this->app(), 'invalid download object 2', 404);
+    }
 
 		$requestParamsStr = $this->app()->postData();
 		if ($requestParamsStr === '')
