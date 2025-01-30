@@ -49,7 +49,7 @@ class ShipardWidget {
 	  if (e.getAttribute('data-pk') !== null)
 		  requestParams['pk'] = e.getAttribute('data-pk');
 
-    console.log("__INLINE_ACTION", requestParams);
+    this.apiCallObject(e.getAttribute('data-object-class-id'), requestParams);
   }
 
   openModal(e)

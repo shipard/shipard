@@ -63,11 +63,19 @@ class ShipardWidgetBoard extends ShipardWidget
 
   setParamValue(e)
   {
-    var inputElement = e.parentElement.parentElement.querySelector('input');
-    if (!inputElement)
-      inputElement = e.parentElement.parentElement.parentElement.querySelector('input');
+    const paramName = e.getAttribute('data-param-name');
+    var inputElement = null;
+    if (paramName !== undefined)
+    {
+      inputElement = this.rootElm.querySelector('input[name="' + paramName + '"]');
+    }
+    else
+    {
+      inputElement = e.parentElement.parentElement.querySelector('input');
+      if (!inputElement)
+        inputElement = e.parentElement.parentElement.parentElement.querySelector('input');
+    }
 
-    //console.log("setParamValue1: ", inputElement, e.getAttribute('data-value'));
     if (inputElement)
       inputElement.value = e.getAttribute('data-value');
     //console.log("setParamValue2: ", inputElement, e.getAttribute('data-value'));
