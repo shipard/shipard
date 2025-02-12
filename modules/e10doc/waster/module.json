@@ -3,7 +3,7 @@
   "name": "Hlášení o odpadech",
   "extensions": ["waster"],
   "tables": [
-		"wasteSettings"
+		"wasteSettings", "wasteOps"
   ],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},
@@ -11,6 +11,10 @@
 		{"id": "+appOptions", "file": "e10.appOptions.json"},
     {"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
     {"id": "+e10doc.waster.docModes", "file": "wasteDocModes.json"},
-    {"id": "+e10.docs.types", "file": "e10.docs.types.json"}
+    {"id": "+e10.docs.types", "file": "e10.docs.types.json"},
+    {"id": "+e10doc.waster.wasteOpsTypes", "file": "wasteOpsTypes.json"},
+    {"id": "+e10doc.waster.handlingCodes", "file": "wasteHandlingCodes.json"},
+    {"id": "+dashboards", "file": "dashboards.json"},
+    {"id": "+widgets", "file": "widgets.json"}
   ]
 }

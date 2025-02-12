@@ -1,0 +1,14 @@
+{
+  "0": {
+    "sn": "PS",
+    "fn": "Počáteční stav"
+  },
+  "1": {
+    "sn": "KS",
+    "fn": "Koncový stav"
+  },
+  "2": {
+    "sn": "Převod",
+    "fn": "Převod"
+  }
+}

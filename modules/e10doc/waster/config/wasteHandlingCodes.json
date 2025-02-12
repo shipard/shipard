@@ -1,0 +1,69 @@
+{
+  "A10": {
+    "sn": "A10: Primární produkce odpadu",
+    "fn": "Produkce převzetím odpadů od fyzické osoby - občana mimo obecní systém sběru komunálních odpadů",
+    "dir": 0,
+    "personType": 1,
+    "validFrom": "2025-01-01"
+  },
+  "BN30": {
+    "sn": "BN30: Převzetí odpadů od nepodnikajících fyzických osob - občanů",
+    "fn": "Převzetí zpětně odebraných některých výrobků nebo zpětně odebraných elektrozařízení od právnické osoby nebo fyzické osoby oprávněné k podnikání, která zajišťuje zpětný odběr podle § 37k nebo § 38 zákona nebo převzetí odpadů od nepodnikajících fyzických osob - občanů",
+    "dir": 0,
+    "personType": 1,
+    "validTo": "2024-12-31"
+  },
+  "A00": {
+    "sn": "A00: Produkce odpadu / příjem z převodu",
+    "fn": "Produkce odpadu (vlastní vyprodukovaný odpad)",
+    "dir": 5,
+    "endYearCode": "AN5"
+  },
+  "B00": {
+    "sn": "B00: Převzetí odpadu",
+    "fn": "Odpad převzatý od původce, od zařízení pro nakládání s odpady nebo od obchodníka s odpady",
+    "dir": 0,
+    "endYearCode": "BN5"
+  },
+  "C00": {
+    "sn": "C00: Převod odpadu - Počáteční stav",
+    "fn": "Množství odpadu převedené z minulého roku k 1. lednu vykazovaného roku",
+    "dir": 2,
+    "endYearCode": "CN5"
+  },
+  "BN3": {
+    "sn": "BN3: Předání odpadu obchodníkovi s odpady",
+    "fn": "Předání odpadu (přijatého) do zařízení pro nakládání s odpady nebo obchodníkovi",
+    "dir": 1
+  },
+  "BR12": {
+    "sn": "BR12: Předúprava odpadů (Převod odpadu)",
+    "fn": "Předúprava odpadů k aplikaci některého z postupů uvedených pod označením R1 až R11",
+    "dir": 3,
+    "validTo": "2024-12-31"
+  },
+  "CR12": {
+    "sn": "CR12: Předúprava odpadů (Převod odpadu)",
+    "fn": "Předúprava odpadů k aplikaci některého z postupů uvedených pod označením R1 až R11",
+    "dir": 3,
+    "validTo": "2024-12-31"
+  },
+  "AN5": {
+    "sn": "AN5: Zůstatek vlastního odpadu",
+    "fn": "Zůstatek odpadu vlastního k 31. prosinci vykazovaného roku",
+    "dir": 3,
+    "isEndState": 1
+  },
+  "BN5": {
+    "sn": "BN5: Zůstatek převzatého odpadu",
+    "fn": "Zůstatek odpadu převzatého k 31. prosinci vykazovaného roku",
+    "dir": 3,
+    "isEndState": 1
+  },
+  "CN5": {
+    "sn": "CN5: Zůstatek odpadu z vlastních zásob",
+    "fn": "Zůstatek odpadu převzatého k 31. prosinci vykazovaného roku",
+    "dir": 3,
+    "isEndState": 1
+  }
+}

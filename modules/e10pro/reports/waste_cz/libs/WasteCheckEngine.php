@@ -52,6 +52,7 @@ class WasteCheckEngine extends Utility
 
 			$item = [
 				'wc' => $r['wasteCodeText'],
+        'hc' => $r['wasteHandlingCode'],
 				'quantity' => $r['quantityKG'],
 			];
 
@@ -60,7 +61,7 @@ class WasteCheckEngine extends Utility
 		}
 
     $this->currentWRTableHeader = [
-      'wc' => 'Kód odpadu', 'quantity' => ' Množství kg',
+      'kc' => 'EK', 'wc' => 'Kód odpadu', 'quantity' => ' Množství kg',
     ];
   }
 
@@ -89,13 +90,15 @@ class WasteCheckEngine extends Utility
   {
     $this->checkWRTable = [];
     $this->checkWRTableHeader = [
-      '#' => '#', 'wc' => 'Kód odpadu', 'quantity' => '+Množství kg', 'note' => 'Pozn.'
+      '#' => '#', 'hc' => 'EK', 'wc' => 'Kód odpadu', 'wcm' => 'Kód pro převod', 'quantity' => '+Množství kg', 'note' => 'Pozn.'
     ];
 
     foreach ($this->currentWRData as $wrRow)
     {
 			$item = [
 				'wc' => $wrRow['wasteCodeText'],
+        'hc' => $wrRow['wasteHandlingCode'],
+        'wcm' => $wrRow['wasteCodeTextMove'],
 				'quantity' => $wrRow['quantityKG'],
 			];
 
@@ -123,6 +126,7 @@ class WasteCheckEngine extends Utility
 
         $item = [
           'wc' => $wrRow['wasteCodeText'],
+          'hc' => $wrRow['wasteHandlingCode'],
           'quantity' => $wrRow['quantityKG'],
         ];
 
@@ -146,7 +150,7 @@ class WasteCheckEngine extends Utility
       }
     }
 
-    $t = [['icon' => 'system/actionRecycle', 'text' => 'Hlášení o odpadech']];
+    $t = [['icon' => 'system/actionRecycle', 'text' => 'Hlášení o odpadechX']];
 		$this->checkWRContent = [
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
 			'table' => $this->checkWRTable, 'header' => $this->checkWRTableHeader,

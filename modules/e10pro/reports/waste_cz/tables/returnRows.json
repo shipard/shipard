@@ -2,6 +2,8 @@
   "id": "e10pro.reports.waste_cz.returnRows", "sql": "e10pro_reports_waste_cz_returnRows", "name": "Řádky hlášení o odpadech",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "rowSource", "name": "Zdroj řádku", "type": "enumInt",
+			"enumValues": {"0": "Doklad", "1": "Pohyb odpadu"}},
 
     {"id": "item", "name": "Položka", "type": "int", "reference": "e10.witems.items", "comboViewer": "combo", "options": ["saveOnChange"]},
 		{"id": "dir", "name": "Směr pohybu", "type": "enumInt",
@@ -14,10 +16,17 @@
 		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
 			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
 		{"id": "quantityKG", "name": "Množství v kg", "label": "Množ. kg", "type": "number", "dec": 3},
+		{"id": "wasteHandlingCode", "name": "Evidenční kód", "type": "enumString", "len": 4,
+			"enumCfg": {"cfgItem": "e10doc.waster.handlingCodes", "cfgValue": "", "cfgText": "sn"}},
 
 		{"id": "document", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
 		{"id": "dateAccounting", "name": "Datum","type": "date"},
 		{"id": "calendarYear", "name": "Kalendářní rok", "type": "short"},
+
+		{"id": "wasteOp", "name": "Pohyb", "type": "int", "reference": "e10doc.waster.wasteOps"},
+
+		{"id": "wasteCodeTextMove", "name": "Kód", "type": "string", "len": 20},
+		{"id": "wasteCodeNomencMove", "name": "Kód", "type": "int", "reference": "e10.base.nomencItems"},
 
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
     {"id": "personOffice", "name": "Provozovna", "type": "int", "reference": "e10.persons.personsContacts"},
@@ -25,7 +34,8 @@
 			"enumValues": {"0": "", "1": "Člověk", "2": "Firma"}},
 		{"id": "addressMode", "name": "Typ adresy", "type": "enumInt",
 			"enumValues": {"0": "Provozovna", "1": "ORP"}},
-    {"id": "nomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"}
+    {"id": "nomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"},
+    {"id": "natCityId", "name": "ID obce (IČZUJ)", "type": "int"}
 	],
 	"options": ["systemTable"],
 	"indexes": [

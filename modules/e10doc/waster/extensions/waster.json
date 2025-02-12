@@ -24,5 +24,17 @@
     "forms": [
       {"id": "wastelp", "class": "e10doc.waster.libs.FormWasteLPDocRow"}
     ]
+  },
+  {
+    "table": "e10pro.reports.waste_cz.returnRows",
+    "views": {
+      "wasteCodesAnalysis": {
+				"id": "wasteCodesAnalysis", "class": "e10doc.waster.libs.WDViewWasteCodes",
+				"details": {
+					"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.waster.libs.ViewDetailWasteCodesAnalysis", "order": 1000}
+				}
+			}
+		}
+
   }
 ]
