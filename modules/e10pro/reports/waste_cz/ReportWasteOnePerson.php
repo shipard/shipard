@@ -271,7 +271,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			[
 				'type' => 'table', 'title' => $periodTitle,
 				'table' => \e10\sortByOneKey($this->sumData, 'code'), 'header' => $headerSum,
-				'params' => ['precision' => 3]
+				'params' => ['precision' => 6]
 			]
 		];
 
@@ -280,7 +280,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			[
 				'type' => 'table', 'title' => 'Položkový soupis',
 				'table' => \e10\sortByOneKey($this->itemsData, 'o'), 'header' => $headerItems,
-				'params' => ['precision' => 3, 'tableClass' => 'rowsSmall']]
+				'params' => ['precision' => 6, 'tableClass' => 'rowsSmall']]
 		];
 	}
 }
