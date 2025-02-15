@@ -2,20 +2,18 @@
 
 namespace e10doc\purchase\libs;
 
-
-use e10doc\core\e10utils;
-//use \E10\TableForm;
-//use \E10\Application;
-//use \E10\FormReport;
-//use E10\uiutils;
-use E10\utils;
-use \E10Doc\Core\ViewDetailHead;
+use e10\json;
+use \Shipard\Viewer\TableViewPanel;
 
 
+/**
+ * class ViewPurchaseDocs
+ */
 class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 {
 	var $warehouses;
 	var $paymentMethods;
+
 	public function init ()
 	{
 		$this->docType = 'purchase';
@@ -34,6 +32,8 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 	public function renderRow ($item)
 	{
 		$listItem = parent::renderRow ($item);
+
+		//$listItem['t1'] .= '`'.json_encode($item['otherAddress1']).'`';
 
 		$icon = 'purchaseTicketTransportPerson';
 		if ($item['weighingMachine'] !== 0)
@@ -55,7 +55,7 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 
 		$q [] = 'SELECT heads.[ndx] as ndx, heads.quantity as quantity, [docNumber], [title], heads.[docType] as [docType], [heads].docStateAcc,'.
 						' [sumPrice], [sumBase], [sumTotal], [weightGross], [activateTimeFirst], [activateTimeLast], [weighingMachine],[paymentMethod],'.
-						' [toPay], [cashBoxDir], [dateIssue], [dateAccounting], [person], [currency], [homeCurrency], [symbol1],'.
+						' [toPay], [cashBoxDir], [dateIssue], [dateAccounting], [person], [currency], [homeCurrency], [symbol1], heads.[otherAddress1Mode], heads.otherAddress1,'.
 						' heads.initState as initState, heads.[docState] as docState, heads.[docStateMain] as docStateMain, persons.fullName as personFullName'.
             ' FROM [e10doc_core_heads] as heads'.
 						' LEFT JOIN e10_persons_persons AS persons ON (heads.person = persons.ndx)'.
@@ -70,7 +70,42 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 
 		$this->qryMain($q);
 		$this->runQuery ($q);
-	} // selectRows
+	}
 
-} // class ViewPurchaseDocs
+	protected function extendPanelContentQry (TableViewPanel $panel, array &$qry)
+	{
+		parent::extendPanelContentQry ($panel, $qry);
 
+		$chbxPurchases = [
+			'fromORP' => ['title' => 'Z ORP', 'id' => 'fromORP'],
+			'withBadORP' => ['title' => 'S vadným / prázdným ORP', 'id' => 'withBadORP'],
+		];
+
+		$paramsPurchases = new \Shipard\UI\Core\Params ($this->app());
+		$paramsPurchases->addParam ('checkboxes', 'query.purchases', ['items' => $chbxPurchases]);
+		$qry[] = ['id' => 'purchases', 'style' => 'params', 'title' => 'Výkupy', 'params' => $paramsPurchases];
+	}
+
+	public function qryPanel (array &$q)
+	{
+		parent::qryPanel($q);
+
+		$qv = $this->queryValues();
+
+		$fromORP = isset ($qv['purchases']['fromORP']);
+		$withBadORP = isset ($qv['purchases']['withBadORP']);
+
+		if ($fromORP)
+		{
+			array_push ($q, ' AND [heads].[otherAddress1Mode] = %i', 1);
+			if (!$withBadORP)
+				array_push ($q, ' AND [heads].[personNomencCity] != %i', 0);
+		}
+		if ($withBadORP)
+		{
+			if (!$fromORP)
+				array_push ($q, ' AND [heads].[otherAddress1Mode] = %i', 1);
+			array_push ($q, ' AND [heads].[personNomencCity] = %i', 0);
+		}
+	}
+}

@@ -3164,9 +3164,22 @@ class ViewHeads extends TableView
 			$qry[] = array ('style' => 'params', 'title' => $cg['name'], 'params' => $params);
 		}
 
+		// -- persons
+		$chbxPersonTypes = [
+			'humans' => ['title' => 'Lidé', 'id' => 'humans'], 'companies' => ['title' => 'Společnosti', 'id' => 'companies']
+		];
+		$paramsPersonTypes = new \E10\Params ($this->app());
+		$paramsPersonTypes->addParam ('checkboxes', 'query.personTypes', ['items' => $chbxPersonTypes]);
+		$qry[] = ['id' => 'itemTypes', 'style' => 'params', 'title' => 'Osoby', 'params' => $paramsPersonTypes];
+
+		$this->extendPanelContentQry ($panel, $qry);
+
 		$panel->addContent(array ('type' => 'query', 'query' => $qry));
 	}
 
+	protected function extendPanelContentQry (TableViewPanel $panel, array &$qry)
+	{
+	}
 
 	public function qryCommon (array &$q)
 	{
@@ -3286,6 +3299,17 @@ class ViewHeads extends TableView
 			foreach ($qv['clsf'] as $grpId => $grpItems)
 				array_push ($q, ' AND ([group] = %s', $grpId, ' AND [clsfItem] IN %in', array_keys($grpItems), ')');
 			array_push ($q, ')');
+		}
+
+		// -- person types
+		$humans = isset ($qv['personTypes']['humans']);
+		$companies = isset ($qv['personTypes']['companies']);
+		if ($humans xor $companies)
+		{
+			if ($humans)
+				array_push ($q, ' AND [persons].[company] = 0');
+			else
+				array_push ($q, ' AND [persons].[company] = 1');
 		}
 	}
 
