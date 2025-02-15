@@ -300,16 +300,19 @@ class DocReportBase extends FormReport
         'zipcode' => $r['adrZipCode'],
         'worldCountry' => $r['adrCountry'],
 
-
-
 				'ids' => [],
 			];
 
 			if ($r['id1'] !== '')
+			{
 				$addr['ids'][] = ['title' => 'IČP', 'value' => $r['id1']];
+				$addr['id1'] = $r['id1'];
+			}
 			if ($r['id2'] !== '')
+			{
 				$addr['ids'][] = ['title' => 'IČZ', 'value' => $r['id2']];
-
+				$addr['id2'] = $r['id2'];
+			}
 			return $addr;
 		}
 	}

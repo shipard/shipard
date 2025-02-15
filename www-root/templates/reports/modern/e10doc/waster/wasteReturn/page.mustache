@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>Odpady {{data.head.year}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?16" type="text/css"/>
+</head>
+<body>
+
+	<h1>Tady bude hlavička</h1>
+
+	<div class='pageBreakBefore'></div>
+	<h3>Odpady</h3>
+	{{{@renderContent;dataItem:data.reports.waste;tableClass:rows}}}
+
+	<div class='pageBreakBefore'></div>
+	<h3>Partneři</h3>
+	{{{@renderContent;dataItem:data.reports.partners;tableClass:rows}}}
+</body>
+</html>

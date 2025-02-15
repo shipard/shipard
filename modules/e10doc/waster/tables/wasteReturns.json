@@ -1,0 +1,48 @@
+{
+	"id": "e10doc.waster.wasteReturns", "sql": "e10doc_waster_wasteReturns", "name": "Hlášení o odpadech",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "year", "name": "Rok", "type": "int"},
+		{"id": "dateFrom", "name": "Datum", "type": "date"},
+		{"id": "dateTo", "name": "Datum", "type": "date"},
+
+    {"id": "title", "name": "Název", "type": "string", "len": 80},
+
+    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "personORPId", "name": "ORP sídla", "type": "string", "len": 10},
+		{"id": "personZUJId", "name": "ZUJ sídla", "type": "string", "len": 10},
+    {"id": "personOffice", "name": "Provozovna", "type": "int", "reference": "e10.persons.personsContacts", "comboViewer": "combo"},
+    {"id": "personOfficeORPId", "name": "ORP provozovny", "type": "string", "len": 10},
+    {"id": "personOfficeZUJId", "name": "ZUJ provozovny", "type": "string", "len": 10},
+
+    {"id": "returnToORPId", "name": "Hlášení určeno pro ORP - Kód", "type": "string", "len": 10},
+    {"id": "returnToORPName", "name": "Hlášení určeno pro ORP - Název", "type": "string", "len": 80},
+
+		{"id": "authorFirstName", "name": "Autor - jméno", "label": "Jméno", "type": "string", "len": 80},
+		{"id": "authorLastName", "name": "Autor - příjmení", "label": "Příjmení", "type": "string", "len": 80},
+		{"id": "authorEmail", "name": "Autor - e-mail", "label": "E-mail", "type": "string", "len": 80},
+		{"id": "authorPhonePrefix", "name": "Autor - předvolba telefonu", "label": "Předvolba telefonu", "placeholder": "+420", "type": "string", "len": 25},
+		{"id": "authorPhone", "name": "Autor - telefon", "label": "Telefon", "placeholder": "123 456 789", "type": "string", "len": 25},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"views": [
+		{
+      "id": "default", "class": "e10doc.waster.ViewWasteReturns",
+      "details": {
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10doc.waster.ViewDetailWasteReturn"}
+			}
+    }
+	],
+	"forms": [
+		{"id": "default", "class": "e10doc.waster.FormWasteReturn"}
+	],
+	"reports": [
+		{
+			"id": "wasteReturn", "name": "Hlášení", "class": "e10doc.waster.libs.ReportWasteReturn",  "email": 1, "dropdown": 1
+		}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+}
