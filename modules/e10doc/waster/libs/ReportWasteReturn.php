@@ -45,23 +45,6 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 
 		$this->data['reports']['waste'] = [$this->report->content[0]];
 		$this->data['reports']['partners'] = [$this->report->content[1]];
-
-		/*
-		"address": {
-        "ndx": 346307,
-        "recid": 15040,
-        "specification": "",
-        "street": "M\u00e1chova 2180\/15",
-        "city": "Praha 2 - Vinohrady",
-        "zipcode": "12000",
-        "worldCountry": 60,
-        "ids": [],
-        "countryName": "\u010cesko",
-        "countryNameEng": "Czechia",
-        "countryNameSC2": "cz",
-        "countryLangSC2": "cs"
-    }
-		*/
 	}
 
 	public function createToolbarSaveAs (&$printButton)

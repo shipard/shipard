@@ -667,10 +667,6 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     $this->createContent_Report_Load(1, $data); // humans
     $this->createContent_Report_Load_WasteOps(WasteReturnEngine::rowDirOut, $data); // out ops
 
-    foreach ($this->partners as $partnerId => $partner)
-    {
-    }
-
     $this->setInfo('title', 'Partneři');
     $this->paperOrientation = 'landscape';
 
@@ -867,7 +863,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		}
   }
 
-  protected function registerPartner($item)
+  protected function registerPartner(&$item)
   {
     $ico = $item['oid'] ?? '';
     $icz = $item['icz'] ?? '';
@@ -886,7 +882,14 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
       $partnerId .= $iczuj;
 
     if (isset($this->partners[$partnerId]))
+    {
+      if (isset($item['isCity']))
+      {
+        $partner = $this->partners[$partnerId];
+        $item['city'] = $partner['obec'];
+      }
       return $partnerId;
+    }
 
     $partnerNumber = count($this->partners) + 1;
     $partner = [
@@ -945,6 +948,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
     {
       $partner['isCity'] = 1;
       $partner['obec'] = $this->cityById($partner['iczuj']);
+      $item['city'] = $partner['obec'];
     }
 
     $this->partners[$partnerId] = $partner;
