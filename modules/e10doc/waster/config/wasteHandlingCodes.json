@@ -65,5 +65,20 @@
     "fn": "Zůstatek odpadu převzatého k 31. prosinci vykazovaného roku",
     "dir": 3,
     "isEndState": 1
+  },
+  "AN50": {
+    "sn": "AN50: Inventurní rozdíl – vyrovnání nedostatku vlastního odpadu",
+    "fn": "Inventurní rozdíl – vyrovnání nedostatku vlastního odpadu",
+    "dir": 0
+  },
+  "BN50": {
+    "sn": "BN50: Inventurní rozdíl – vyrovnání nedostatku převzatého odpadu",
+    "fn": "Inventurní rozdíl – vyrovnání nedostatku převzatého odpadu",
+    "dir": 0
+  },
+  "CN50": {
+    "sn": "CN50: Inventurní rozdíl – vyrovnání nedostatku odpadu z vlastních zásob",
+    "fn": "Inventurní rozdíl – vyrovnání nedostatku odpadu z vlastních zásob",
+    "dir": 0
   }
 }
