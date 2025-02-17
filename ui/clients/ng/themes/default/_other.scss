@@ -4,6 +4,20 @@
 	border-color: var(--shpd-primary-subtle);
 }
 
+ol.breadcrumb {
+	list-style: none;
+	margin: 0;
+	padding: 1rem .5rem .2rem .5rem;
+	display: flex;
+	flex-wrap: wrap;
+
+	li:not(:last-child)::after {
+		display: inline-block;
+		margin: 0 0.5rem;
+		content: "/";
+	}
+}
+
 .accordion {
 	margin-top: 1rem;
 	border: 1pt solid var(--shpd-universal-border);

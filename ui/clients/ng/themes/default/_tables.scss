@@ -89,6 +89,22 @@ table.default {
 }
   
 table.fullWidth {width: 100%;}
+
+table.no-border {
+    border-collapse: collapse;
+    border: none !important;
+    box-shadow: none !important;
+    th, td {
+        border: none !important;
+        border-bottom: 1px solid var(--shpd-table-border) !important;
+    }
+}
+
+table.padded {
+    td {
+        padding: .8rem !important;
+    }
+}
   
 /*.e10-pane-table {
 	padding: 6px;
