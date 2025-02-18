@@ -105,6 +105,21 @@ table.padded {
         padding: .8rem !important;
     }
 }
+
+table.hover {
+    tr:hover {
+        background-color: var(--shpd-hover-bg);
+    }
+}
+
+table.striped {
+    tbody tr:nth-child(even) {
+        background-color: var(--shpd-universal-bg);
+    }
+    tbody tr:nth-child(odd) {
+        background-color: transparent;
+    }
+}
   
 /*.e10-pane-table {
 	padding: 6px;

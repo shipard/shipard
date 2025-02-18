@@ -8,7 +8,7 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultLight.css",
         "dm":0,
         "integrity":{
-          "sha384":"48c12fd3e6986428cc409ae27e9221be68a4e2450b02d6959740efdf499a04e01dee319b653556a7a79b4a7ed8bf7124"
+          "sha384":"bd90950ddbb3a413e4af2b0070c796369cc9e123aaa9068e8e692d2c57a2554949eb7eab654c9c8e67407e13b00907b3"
         }
       },
       "systemDefaultDark":{
@@ -16,7 +16,7 @@
         "file":"\/www-root\/.ui\/ng\/themes\/default\/systemDefaultDark.css",
         "dm":1,
         "integrity":{
-          "sha384":"72b749d6798c9af2b23f3b32485c73362fc112f18c4a6b6b18a9f7b77b7e7011dd87f50b179b0c15776ac112c7d86723"
+          "sha384":"257a8f10bd3fdc0b7599f4e03afca1630867a05718af43eee24a6318b2ccf11dd52350696c34203473ec597ec5258f52"
         }
       },
       "systemDefaultColored":{
@@ -45,8 +45,8 @@
       }
     },
     "integrity":{
-      "sha384":"c77fa2b7b67b2234a8332f708f851a652caf45483a051689a790d2e3ec616fe7a348ddbdc5d10fa7540e04c4bc8e322f",
-      "md5":"e10ee6202baf2325df22f709e85f4fb7"
+      "sha384":"51dc4f9bc4de0f7bf42ec18063c830888259efb6a53b5668185ff04eab4496602b442ad0034cf64c06eb87e0c379f6bc",
+      "md5":"6e5f560fbe1792193ddf837b3acc3b79"
     }
   }
 }

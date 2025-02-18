@@ -125,13 +125,17 @@ button.shpd-close {
 
 /* shpd buttons (not used yet) - fix border + shadow */
 .shpd-btn {
-  padding: .3rem 1rem;
+  padding: .4rem 1rem;
   text-align: center;
   text-decoration: none;
   border-radius: 6px;
   font-size: 1rem;
   border: 1px solid var(--shpd-universal-border);
   color: var(--shpd-body-color);
+}
+
+button {
+  line-height: initial !important;
 }
 
 // default buttons

@@ -6,7 +6,7 @@
 
 <div class="container-fluid">
   {{#data.storages.0}}
-    <ol class="breadcrumb"><li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li></ol>
+    <ol class="breadcrumb" style="margin: .9rem 0;"><li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li></ol>
     <table class='default fullWidth no-border padded'>
       <tr>
         <th></th>
@@ -23,13 +23,13 @@
 
   {{^data.storages.0}}
     <!--<h3>{{data.storageName}}</h3>-->
-    <div>
-      <ol class="breadcrumb">
-      <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li>
-      <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='/'>{{data.storageName}}</span></li>
-      {{#data.foldersMenu}}
-        <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='{{rpath}}'>{{name}}</span></li>
-      {{/data.foldersMenu}}
+    <div style="display: flex; margin: .5rem 0;">
+      <ol class="breadcrumb" style="flex-grow: 1;">
+        <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li>
+        <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='/'>{{data.storageName}}</span></li>
+        {{#data.foldersMenu}}
+          <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='{{rpath}}'>{{name}}</span></li>
+        {{/data.foldersMenu}}
       </ol>
 
       <span class='shpd-btn shpd-btn-primary shp-widget-action'
@@ -37,20 +37,21 @@
         data-action-param-fileportal-uid='{{data.filePortalUId}}'
         data-action-param-storage-uid='{{data.storageUId}}'
         data-action-param-active-folder='{{data.activeFolder}}'
-        data-action-param-class-id='e10pro.fp.libs.apps.WizardNewFolder'>Nová složka</span>
+        data-action-param-class-id='e10pro.fp.libs.apps.WizardNewFolder'>{{{@icon;icon:system/actionAdd}}} Nová složka</span>
 
-      <span class='shpd-btn shpd-btn-primary shp-widget-action'
+      <span class='shpd-btn shpd-btn-success shp-widget-action' style="margin-left: .5rem;"
         data-action='wizard'
         data-action-param-upload-url='{{uiRoot}}api/v2/files/upload/fpu/{{data.filePortalUId}}/{{data.storageUId}}{{data.activeFolder}}'
-        data-action-param-class-id='e10pro.fp.libs.apps.WizardUploadFiles'>Nahrát soubory</span>
-
+        data-action-param-class-id='e10pro.fp.libs.apps.WizardUploadFiles'>{{{@icon;icon:system/actionUpload}}} Nahrát soubory</span>
     </div>
 
-    <table class='default fullWidth no-border padded'>
+    <table class='default fullWidth no-border padded hover'>
       <tr>
         <th></th>
-        <th>Název</th>
+        <th style='width: 40%;'>Název</th>
         <th>Velikost</th>
+        <th>Akce</th>
+        <th>Stav</th>
       </tr>
 
       {{#data.activeFolder}}
@@ -58,13 +59,17 @@
           <td style='width: 2rem; text-align: center;'>{{{@icon;icon:user/folder}}}</td>
           <td><span class="shp-widget-action" data-action='set-param-value' data-param-name='doUpFolder' data-value='UP'>Zpět</span></td>
           <td></td>
+          <td></td>
+          <td></td>
         </tr>
       {{/data.activeFolder}}
 
       {{#data.folders}}
         <tr>
-          <td style='width: 2rem; text-align: center;'>{{{@icon;icon:user/folder}}}</td>
+          <td style='width: 2rem; text-align: center; vertical-align: middle;'>{{{@icon;icon:user/folder}}}</td>
           <td><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='{{rpath}}'>{{name}}</span></td>
+          <td></td>
+          <td></td>
           <td></td>
         </tr>
       {{/data.folders}}
@@ -72,10 +77,17 @@
       {{#data.files}}
         <tr>
           <td>{{{@icon;icon:user/file}}}</td>
-          <td>
-            {{name}} <a class='shpd-btn shpd-btn-primary' href='{{uiRoot}}api/v2/files/download/fpd/{{data.filePortalUId}}/{{data.storageUId}}/{{data.activeFolder}}/{{name}}' download="{{name}}">Download</a>
+          <td style='width: 50%; vertical-align: middle;'>
+            {{name}}
           </td>
-          <td>{{fs}}</td>
+          <td style="vertical-align: middle;">{{fs}}</td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span class='shpd-btn shpd-btn-primary' href='{{uiRoot}}api/v2/files/download/fpd/{{data.filePortalUId}}/{{data.storageUId}}/{{data.activeFolder}}/{{name}}' download="{{name}}">{{{@icon;icon:system/actionDownload}}} Stáhnout</span>
+            <button class="shpd-btn shpd-btn-secondary" style="margin-left: .2rem;">{{{@icon;icon:system/iconEmail}}} Odeslat</button>
+          </td>
+          <td style="white-space: nowrap; vertical-align: middle;">
+            <span>Odesláno {{{@icon;icon:system/iconCheck}}}</span> 
+          </td>
         </tr>
       {{/data.files}}
     </table>
