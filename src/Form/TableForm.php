@@ -64,6 +64,9 @@ class TableForm
 
 	var $formContent = [];
 
+	/** @var \Shipard\UI\ng\renderers\TableFormRenderer */
+	var $ngRenderer = NULL;
+	var $requestParams = NULL;
 
 
 	const INPUT_STYLE_RADIO = 1, INPUT_STYLE_OPTION = 2, INPUT_STYLE_MONEY = 3, INPUT_STYLE_DATE = 4, INPUT_STYLE_STRING = 5,
@@ -75,7 +78,7 @@ class TableForm
 	const disOld = 0, disNative = 1, disShipard = 2;
 	var $dateInputStyle = self::disShipard;
 
-	CONST etColumnInput = 1;
+	CONST etColumnInput = 1, etDataInput = 2, etUploadFilesInput = 3;
 
 	// -- column options - lower bits are reserved for dataModel column options
 	const coHidden				= 0x00000100,
@@ -511,6 +514,18 @@ class TableForm
 		}
 	}
 
+	function addDataInput ($columnId, $columnDef, $options = 0, $params = FALSE, $columnPath = '')
+	{
+		$this->formContent[] = [
+			'type' => self::etDataInput,
+			'columnId' => $columnId,
+			'options' => $options,
+			'params' => $params,
+			'columnPath' => $columnPath,
+			'columnDef' => $columnDef,
+		];
+	}
+
 	function addInput ($columnId, $label, $inputStyle = self::INPUT_STYLE_STRING, $options = 0, $len = 0, $params = FALSE, $forcePlaceholder = '', $columnPath = '')
 	{
 		$ip = $this->option('inputPrefix', '');
@@ -868,8 +883,15 @@ class TableForm
 		$this->appendElement ($inputCode, $labelCode);
 	}
 
-	function addInputFiles ()
+	function addInputFiles ($params = NULL)
 	{
+		$this->formContent[] = [
+			'type' => self::etUploadFilesInput,
+			'params' => $params,
+		];
+		if ($this->app()->ngg)
+			return;
+
 		$c = "<div class='e10-att-input-upload'>
 						<h2>Přidat soubory</h2>
 						<input class='e10-att-input-file' name='add-files' data-name='add-files' type='file' onchange='e10AttWidgetFileSelected(this)' multiple='multiple'/>
@@ -1859,7 +1881,7 @@ class TableForm
 			{
 				case 'defaultSave':
 										$class = ' btn-primary e10-savebtn';
-										$icon = '<i class="fa fa-download"></i> ';
+										$icon = $this->app()->ui()->icon('system/actionSave');
 										$btnid = " id='{$this->fid}Save'";
 										if (isset ($btn['noclose']))
 											$params .= " data-noclose='1'";
