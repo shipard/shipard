@@ -17,6 +17,15 @@ class TableFilePortals extends DbTable
 		$this->setName ('e10pro.fp.filePortals', 'e10pro_fp_filePortals', 'Souborové portály');
 	}
 
+	public function checkBeforeSave (&$recData, $ownerData = NULL)
+	{
+		parent::checkBeforeSave ($recData, $ownerData);
+		if (isset ($recData['uid']) && $recData['uid'] === '')
+		{
+			$recData['uid'] = Utils::createToken(8, FALSE, TRUE);
+		}
+	}
+
 	public function createHeader ($recData, $options)
 	{
 		$hdr = parent::createHeader ($recData, $options);
@@ -34,8 +43,9 @@ class TableFilePortals extends DbTable
 
 		foreach ($rows as $r)
     {
-			$list [$r['ndx']] = [
+			$list [$r['uid']] = [
         'ndx' => $r ['ndx'],
+				'uid' => $r ['uid'],
         'fn' => $r ['fullName'],
         'sn' => $r ['shortName'],
 				'rf' => $r ['rootFolder'],
@@ -44,6 +54,38 @@ class TableFilePortals extends DbTable
 
 		$cfg ['e10pro']['fp']['filePortals'] = $list;
 		file_put_contents(__APP_DIR__ . '/config/_e10pro.fp.filePortals.json', Json::lint ($cfg));
+	}
+
+	public function loadUsersPortals($userNdx)
+	{
+		$portals = [];
+		$q = [];
+		array_push($q, 'SELECT [su].*,');
+		array_push($q, ' [storages].[filePortal] AS [portalNdx],');
+		array_push($q, ' [fp].fullName AS [portalFullName], [fp].uid AS [portalUId]');
+		array_push($q, ' FROM [e10pro_fp_storagesUsers] AS [su]');
+		array_push($q, ' LEFT JOIN [e10pro_fp_storages] AS [storages] ON [su].[storage] = [storages].ndx');
+		array_push($q, ' LEFT JOIN [e10pro_fp_filePortals] AS [fp] ON [storages].[filePortal] = [fp].ndx');
+		array_push($q, ' WHERE [su].[user] = %i', $userNdx);
+		array_push($q, ' AND [su].[docState] = %i', 4000);
+
+		$rows = $this->app()->db->query($q);
+		foreach ($rows as $r)
+		{
+			$portalNdx = $r['portalNdx'];
+			$storageNdx = $r['storage'];
+			if (!isset($portals[$portalNdx]))
+			{
+				$portals[$portalNdx] = [
+					'portalFullName' => $r['portalFullName'],
+					'portalUId' => $r['portalUId'],
+					'storages' => [],
+				];
+			}
+			$portals[$portalNdx]['storages'][$storageNdx] = ['test' => 1];
+		}
+
+		return $portals;
 	}
 }
 
@@ -63,6 +105,7 @@ class ViewFilePortals extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item['ndx'];
+		$listItem ['i1'] = ['text' => $item['uid'], 'class' => 'id'];
 
     $listItem ['t1'] = $item['fullName'];
 		$listItem['t2'] = [];

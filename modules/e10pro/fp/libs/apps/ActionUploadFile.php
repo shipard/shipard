@@ -5,9 +5,9 @@ use \Shipard\Base\ApiObject2;
 
 
 /**
- * class ActionDownloadFile
+ * class ActionUploadFile
  */
-class ActionDownloadFile extends ApiObject2
+class ActionUploadFile extends ApiObject2
 {
 	var \e10pro\fp\libs\FilesEngine $filesEngine;
 
@@ -24,7 +24,7 @@ class ActionDownloadFile extends ApiObject2
     {
       if (!isset($this->uiRouter->urlPath[$urlIdx]))
         break;
-      $filesParts[] = $this->uiRouter->urlPath[$urlIdx];
+      $filesParts[] = urldecode($this->uiRouter->urlPath[$urlIdx]);
       $urlIdx++;
     }
     $fileName = '/'.implode('/', $filesParts);
@@ -32,7 +32,7 @@ class ActionDownloadFile extends ApiObject2
     $this->filesEngine = new \e10pro\fp\libs\FilesEngine ($this->app());
 		$this->filesEngine->setFilePortal($filePortalUId);
 		$this->filesEngine->setStorage($fileStorageUId);
-    $this->filesEngine->downloadFile($fileName);
+    $this->filesEngine->uploadFile($fileName);
   }
 
   public function run()

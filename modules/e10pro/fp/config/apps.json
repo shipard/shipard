@@ -5,8 +5,7 @@
       "appTitle": "Nevím",
       "items": [
         {
-          "title": "Soubory", "icon": "user/folder", "id": "priceList",
-          "objectType": "widget", "classId": "e10pro.fp.libs.apps.WidgetFilePortal"
+          "creatorClass": "e10pro.fp.libs.apps.FilePortalUIStructMenuCreator"
         },
         {
           "title": "Nastavení", "icon": "system/actionSettings", "id": "settings",

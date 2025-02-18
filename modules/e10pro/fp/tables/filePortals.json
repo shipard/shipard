@@ -2,6 +2,7 @@
 	"id": "e10pro.fp.filePortals", "sql": "e10pro_fp_filePortals", "name": "Souborové portály",
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "uid", "name": "Unikátní ID", "type": "string", "len": 8, "options": ["ascii"]},
 
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},
     {"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 40},

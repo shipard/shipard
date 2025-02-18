@@ -1,5 +1,8 @@
 {
 	"downloadFiles": {
-		"download": {"classId": "e10pro.fp.libs.apps.ActionDownloadFile"}
+		"fpd": {"classId": "e10pro.fp.libs.apps.ActionDownloadFile"}
+	},
+	"uploadFiles": {
+		"fpu": {"classId": "e10pro.fp.libs.apps.ActionUploadFile"}
 	}
 }

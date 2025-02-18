@@ -17,6 +17,15 @@ class TableStorages extends DbTable
 		$this->setName ('e10pro.fp.storages', 'e10pro_fp_storages', 'Úložiště');
 	}
 
+	public function checkBeforeSave (&$recData, $ownerData = NULL)
+	{
+		parent::checkBeforeSave ($recData, $ownerData);
+		if (isset ($recData['uid']) && $recData['uid'] === '')
+		{
+			$recData['uid'] = Utils::createToken(8, FALSE, TRUE);
+		}
+	}
+
 	public function createHeader ($recData, $options)
 	{
 		$hdr = parent::createHeader ($recData, $options);
@@ -46,12 +55,12 @@ class ViewStorages extends TableView
 		$listItem ['pk'] = $item['ndx'];
 
     $listItem ['t1'] = $item['fullName'];
+		$listItem ['i1'] = ['text' => $item['uid'], 'class' => 'id'];
+
 		$listItem['t2'] = [];
 
 		$listItem['t2'][] = ['text' => $item['fpShortName'], 'class' => 'label label-default'];
-
 		$listItem['t2'][] = ['text' => $item['rootFolder'], 'class' => 'label label-default', 'icon' => 'user/folder'];
-
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 

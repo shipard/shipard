@@ -1,12 +1,12 @@
-<input type='hidden' name='portal' value='1'>
-<input type='hidden' name='storage' value='{{data.storageNdx}}'>
+<input type='hidden' name='portal' value='{{data.filePortalUId}}'>
+<input type='hidden' name='storage' value='{{data.storageUId}}'>
 <input type='hidden' name='doFolder'>
 <input type='hidden' name='doUpFolder'>
 <input type='hidden' name='activeFolder' value='{{data.activeFolder}}'>
 
 <div class="container-fluid">
   {{#data.storages.0}}
-    <ol class="breadcrumb"><li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value='0'>{{{@icon;icon:system/actionHomePage}}}</span></li></ol>
+    <ol class="breadcrumb"><li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li></ol>
     <table class='default fullWidth no-border padded'>
       <tr>
         <th></th>
@@ -15,7 +15,7 @@
       {{#data.storages}}
         <tr>
           <td style='width: 2rem; text-align: center;'>{{{@icon;icon:system/iconUser}}}</td>
-          <td><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value='{{ndx}}'>{{fullName}}</span></td>
+          <td><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value='{{uid}}'>{{fullName}}</span></td>
         </tr>
       {{/data.storages}}
     </table>
@@ -23,14 +23,27 @@
 
   {{^data.storages.0}}
     <!--<h3>{{data.storageName}}</h3>-->
-    <div style='boder: 1px solid red;'>
+    <div>
       <ol class="breadcrumb">
-      <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value='0'>{{{@icon;icon:system/actionHomePage}}}</span></li>
+      <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li>
       <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='/'>{{data.storageName}}</span></li>
       {{#data.foldersMenu}}
         <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='{{rpath}}'>{{name}}</span></li>
       {{/data.foldersMenu}}
       </ol>
+
+      <span class='shpd-btn shpd-btn-primary shp-widget-action'
+        data-action='wizard'
+        data-action-param-fileportal-uid='{{data.filePortalUId}}'
+        data-action-param-storage-uid='{{data.storageUId}}'
+        data-action-param-active-folder='{{data.activeFolder}}'
+        data-action-param-class-id='e10pro.fp.libs.apps.WizardNewFolder'>Nová složka</span>
+
+      <span class='shpd-btn shpd-btn-primary shp-widget-action'
+        data-action='wizard'
+        data-action-param-upload-url='{{uiRoot}}api/v2/files/upload/fpu/{{data.filePortalUId}}/{{data.storageUId}}{{data.activeFolder}}'
+        data-action-param-class-id='e10pro.fp.libs.apps.WizardUploadFiles'>Nahrát soubory</span>
+
     </div>
 
     <table class='default fullWidth no-border padded'>
@@ -60,7 +73,7 @@
         <tr>
           <td>{{{@icon;icon:user/file}}}</td>
           <td>
-            {{name}} <a class='shpd-btn shpd-btn-primary' href='{{uiRoot}}api/v2/files/download{{data.activeFolder}}/{{name}}'>Download</a>
+            {{name}} <a class='shpd-btn shpd-btn-primary' href='{{uiRoot}}api/v2/files/download/fpd/{{data.filePortalUId}}/{{data.storageUId}}/{{data.activeFolder}}/{{name}}' download="{{name}}">Download</a>
           </td>
           <td>{{fs}}</td>
         </tr>
