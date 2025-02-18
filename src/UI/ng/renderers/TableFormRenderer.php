@@ -19,7 +19,7 @@ class TableFormRenderer extends Renderer
   public function setForm (\Shipard\Form\TableForm $form)
   {
     $this->form = $form;
-    //$this->viewer->ngRenderer = $this;
+    $this->form->ngRenderer = $this;
   }
 
   public function render()
@@ -54,6 +54,10 @@ class TableFormRenderer extends Renderer
 		{
 			if ($e['type'] === TableForm::etColumnInput)
 				$this->addColumnInput ($e);
+			elseif ($e['type'] === TableForm::etDataInput)
+				$this->addColumnInput ($e);
+			elseif ($e['type'] === TableForm::etUploadFilesInput)
+				$this->addUploadFilesInput ($e);
 		}
 
 		$this->renderedData['hcContent'] .= "</div>"; // class='container-fluid'>";
@@ -319,21 +323,21 @@ class TableFormRenderer extends Renderer
 
 	function addColumnInput ($e)
 	{
-		/*
-			'type' => self::etColumnInput,
-			'columnId' => $columnId,
-			'options' => $options,
-			'params' => $params,
-			'columnPath' => $columnPath,
-		*/
 		$columnId = $e['columnId'];
 		$options = $e['options'] ?? 0;
 		$params = $e['params'] ?? FALSE;
 		$columnPath = $e['columnPath'] ?? '';
 
-		$col = $this->form->inputColDef($columnId, $columnPath);
+		$col = NULL;
+
+		if ($e['type'] === TableForm::etDataInput)
+			$col = $e['columnDef'] ?? NULL;
+		else
+			$col = $this->form->inputColDef($columnId, $columnPath);
 		if (!$col)
 			return;
+
+		$colOptions = 0;
 
 		if ($columnPath !== '')
 		{
@@ -346,7 +350,7 @@ class TableFormRenderer extends Renderer
 		{
 			//$col = $this->table->column($columnId);
 			$colType = $col ['type'];
-			$colOptions = $col ['options'];
+			$colOptions = $col ['options'] ?? 0;
 		}
 
 		$options |= $colOptions;
@@ -375,6 +379,24 @@ class TableFormRenderer extends Renderer
 			case DataModel::ctShort:			$this->addInputInt ($columnId, $labelText, TableForm::INPUT_STYLE_INT, $options, $columnPath); break;
 			case DataModel::ctLong:				$this->addInputInt ($columnId, $labelText, TableForm::INPUT_STYLE_INT, $options, $columnPath); break;
 		}
+	}
+
+	function addUploadFilesInput($e)
+	{
+		$c = '';
+		$c .= "<div class='shpd-files-upload-input'";
+		if (isset($e['params']))
+		{
+			foreach ($e['params'] as $k => $v)
+				$c .= " data-$k='".utils::es($v)."'";
+		}
+		$c .= ">";
+		$c .= "<h2>Nahrát soubory!</h2>";
+		$c .= "<input name='add-files' data-name='add-files' type='file' multiple='multiple'/>";
+		$c .= "<div class='shpd-files-upload-info'>vyberte soubor(y), které chcete nahrát a stiskněte Odeslat</div>";
+		$c .= "</div>";
+
+		$this->appendCode($c);
 	}
 
 	function addInput ($columnId, $label, $inputStyle = TableForm::INPUT_STYLE_STRING, $options = 0, $len = 0, $params = FALSE, $forcePlaceholder = '', $columnPath = '')

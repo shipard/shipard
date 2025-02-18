@@ -198,7 +198,7 @@ class ShipardWidget {
     this.detectValues(apiParams);
 
     var url = 'api/v2';
-
+    // console.log("API-CALL", apiParams);
     shc.server.post (url, apiParams,
       function (data) {
         console.log("--api-call-success--");
@@ -371,7 +371,10 @@ class ShipardWidget {
   openModalForm(formOp, params, attrs)
   {
     let newEnvelope = document.createElement('data-modal-form-env');
-    newEnvelope.setAttribute('data-request-type', 'dataForm');
+    if (formOp === 'wizard')
+      newEnvelope.setAttribute('data-request-type', 'wizardForm');
+    else
+      newEnvelope.setAttribute('data-request-type', 'dataForm');
     for (const oneParamId in params)
       newEnvelope.setAttribute('data-action-param-'+oneParamId, params[oneParamId]);
     for (const oneParamId in attrs)
@@ -383,9 +386,18 @@ class ShipardWidget {
 
     document.body.appendChild(newEnvelope);
 
+    if (formOp === 'wizard')
+    {
+      newEnvelope.formOp = formOp;
+      newEnvelope.shpWidget = new ShipardWizardForm();
+      newEnvelope.shpWidget.init(newEnvelope);
+      newEnvelope.shpWidget.create(newEnvelope);
+      return;
+    }
     newEnvelope.formOp = formOp;
     newEnvelope.shpWidget = new ShipardTableForm();
     newEnvelope.shpWidget.init(newEnvelope);
+    newEnvelope.shpWidget.create(newEnvelope);
   }
 
   setInnerHTML(elm, html) {

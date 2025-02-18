@@ -5,9 +5,13 @@
 		{"fileName": "mqtt.js"},
 		{"fileName": "camPictsLoader.js"},
 
+		{"fileName": "widgets/filesUploader.js"},
+
 		{"fileName": "widgets/widget.js"},
 		{"fileName": "widgets/tableViewer.js"},
+		{"fileName": "widgets/coreForm.js"},
 		{"fileName": "widgets/tableForm.js"},
+		{"fileName": "widgets/wizardForm.js"},
 		{"fileName": "widgets/widgetBoard.js"},
 		{"fileName": "widgets/touchNumPad.js"},
 		{"fileName": "widgets/terminals/documentCore.js"},

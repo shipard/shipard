@@ -46,7 +46,7 @@ class Router extends \Shipard\Base\Utility
       $this->requestParams['full-code'] = 1;
     }
 
-    /** @var \Api\v2\ApiResponse  */
+    /** @var \Shipard\Api\v2\ApiResponse  */
     $apiResponseObject = NULL;
 
     switch ($requestType)
@@ -55,6 +55,7 @@ class Router extends \Shipard\Base\Utility
       case 'dataViewer': $apiResponseObject = new \Shipard\Api\v2\ApiResponseViewer($this->app()); break;
       case 'dataViewerDetail': $apiResponseObject = new \Shipard\Api\v2\ApiResponseViewerDetail($this->app()); break;
       case 'dataForm': $apiResponseObject = new \Shipard\Api\v2\ApiResponseForm($this->app()); break;
+      case 'wizardForm': $apiResponseObject = new \Shipard\Api\v2\ApiResponseWizardForm($this->app()); break;
       case 'appCommand': $apiResponseObject = new \Shipard\Api\v2\ApiResponseAppCommand($this->app()); break;
       case 'documentCard': $apiResponseObject = new \Shipard\Api\v2\ApiResponseDocumentCard($this->app()); break;
       case 'rest': $apiResponseObject = new \Shipard\Api\v2\ApiResponseRest($this->app()); break;
@@ -68,6 +69,7 @@ class Router extends \Shipard\Base\Utility
     }
 
     $apiResponseObject->uiRouter = $this->uiRouter;
+    $apiResponseObject->uiTemplate = $this->uiRouter->uiTemplate;
     $apiResponseObject->setRequestParams($this->requestParams);
     $apiResponseObject->run();
 

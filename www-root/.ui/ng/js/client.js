@@ -104,6 +104,21 @@ RTCSessionDescription({type:'answer',sdp:atob(data)}));}catch(e){console.warn(e)
 webrtcSendChannel=webrtc.createDataChannel('rtsptowebSendChannel');webrtcSendChannel.onopen=(event)=>{console.log(`${webrtcSendChannel.label}has
 opened`);webrtcSendChannel.send('ping');};webrtcSendChannel.onclose=(_event)=>{console.log(`${webrtcSendChannel.label}has
 closed`);startPlay(videoEl,url);};webrtcSendChannel.onmessage=event=>console.log(event.data);}}class
+ShipardFilesUploader{rootElm=null;inputElm=null;infoElm=null;uploadInProgress=0;uploadDone=false;init(rootElm){this.rootElm=rootElm;this.inputElm=this.rootElm.querySelector('input[type="file"]');this.infoElm=this.rootElm.querySelector('.shpd-files-upload-info');}resetInfo(){var
+info='<table class="default fullWidth">';for(var
+i=0;i<this.inputElm.files.length;i++){var
+file=this.inputElm.files[i];var
+fileSize=0;if(file.size>1024*1024)fileSize=(Math.round(file.size*100/(1024*1024))/100).toString()+'MB';else
+fileSize=(Math.round(file.size*100/1024)/100).toString()+'KB';info+='<tr>'+'<td>'+file.name+"</td><td class='number'>"+fileSize+'</td><td>-</td></tr>';}info+='</table>';this.infoElm.innerHTML=info;}uploadFiles(){this.uploadInProgress=this.inputElm.files.length;let
+baseUrl=this.rootElm.getAttribute('data-upload-url');for(var
+i=0;i<this.inputElm.files.length;i++){let
+file=this.inputElm.files[i];let
+url=baseUrl+'/'+file.name;this.uploadOneFile(url,file,i);}}uploadOneFile(url,file,idx){var
+xhr=new
+XMLHttpRequest();xhr.onload=(e)=>{this.uploadIsDone(idx);};xhr.open("POST",url);xhr.setRequestHeader("Cache-Control","no-cache");xhr.setRequestHeader("Content-Type","application/octet-stream");xhr.send(file);}uploadIsDone(idx){this.uploadInProgress--;if(this.uploadInProgress===0)this.uploadDone=true;let
+table=this.infoElm.querySelector('table');let
+row=table.rows[idx];let
+cell=row.cells[2];cell.style.backgroundColor='green';}}class
 ShipardWidget{rootElm=null;rootId='';numPad=null;init(rootElm){this.rootElm=rootElm;this.rootId=this.rootElm.getAttribute('id');this.on(this,'click','.shp-widget-action',function(e,ownerWidget,event){ownerWidget.widgetAction(e,event)});}widgetAction(e,event){let
 actionId=e.getAttribute('data-action');this.doAction(actionId,e);event.stopPropagation();}doAction(actionId,e){console.log("ACTION-WIDGET: ",actionId);switch(actionId){case'inline-action':return this.inlineAction(e);case'select-main-tab':return this.selectMainTab(e);case'select-simple-tab':return this.selectSimpleTab(e);case'open-popup':return this.openPopup(e);case'open-modal':return this.openModal(e);case'closeModal':return this.closeModal(e);case'treeListGroupOC':return this.treeListGroupOC(e);}return 0;}inlineAction(e){if(e.getAttribute('data-object-class-id')===null)return;var
 requestParams={};requestParams['object-class-id']=e.getAttribute('data-object-class-id');requestParams['action-type']=e.getAttribute('data-action-type');this.elementPrefixedAttributes(e,'data-action-param-',requestParams);if(e.getAttribute('data-pk')!==null)requestParams['pk']=e.getAttribute('data-pk');this.apiCallObject(e.getAttribute('data-object-class-id'),requestParams);}openModal(e){const
@@ -160,14 +175,16 @@ i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
 attrName=attrs.item(i).nodeName;if(attrName.substring(0,prefix.length)!==prefix)continue;var
 attrNameShort=attrName.substring(prefix.length);var
 val=attrs.item(i).nodeValue;data[attrNameShort]=val;}}openModalForm(formOp,params,attrs){let
-newEnvelope=document.createElement('data-modal-form-env');newEnvelope.setAttribute('data-request-type','dataForm');for(const
+newEnvelope=document.createElement('data-modal-form-env');if(formOp==='wizard')newEnvelope.setAttribute('data-request-type','wizardForm');else
+newEnvelope.setAttribute('data-request-type','dataForm');for(const
 oneParamId
 in
 params)newEnvelope.setAttribute('data-action-param-'+oneParamId,params[oneParamId]);for(const
 oneParamId
 in
-attrs)newEnvelope.setAttribute('data-'+oneParamId,attrs[oneParamId]);newEnvelope.id='shc_meid_'+shc.counter++;newEnvelope.innerHTML="čekejte, prosím, data se načítají...";document.body.appendChild(newEnvelope);newEnvelope.formOp=formOp;newEnvelope.shpWidget=new
-ShipardTableForm();newEnvelope.shpWidget.init(newEnvelope);}setInnerHTML(elm,html){elm.innerHTML=html;Array.from(elm.querySelectorAll("script")).forEach(oldScriptEl=>{const
+attrs)newEnvelope.setAttribute('data-'+oneParamId,attrs[oneParamId]);newEnvelope.id='shc_meid_'+shc.counter++;newEnvelope.innerHTML="čekejte, prosím, data se načítají...";document.body.appendChild(newEnvelope);if(formOp==='wizard'){newEnvelope.formOp=formOp;newEnvelope.shpWidget=new
+ShipardWizardForm();newEnvelope.shpWidget.init(newEnvelope);newEnvelope.shpWidget.create(newEnvelope);return;}newEnvelope.formOp=formOp;newEnvelope.shpWidget=new
+ShipardTableForm();newEnvelope.shpWidget.init(newEnvelope);newEnvelope.shpWidget.create(newEnvelope);}setInnerHTML(elm,html){elm.innerHTML=html;Array.from(elm.querySelectorAll("script")).forEach(oldScriptEl=>{const
 newScriptEl=document.createElement("script");Array.from(oldScriptEl.attributes).forEach(attr=>{newScriptEl.setAttribute(attr.name,attr.value)});const
 scriptText=document.createTextNode(oldScriptEl.innerHTML);newScriptEl.appendChild(scriptText);oldScriptEl.parentNode.replaceChild(newScriptEl,oldScriptEl);});}onMqttMessage(serverIndex,topic,payload){}}function
 inputCh(){console.log("--CHANGE--");}class
@@ -207,20 +224,9 @@ if(data['response']['type']==='refreshData'){this.appendNextData(data,1);return;
 initWidgetTableViewer(id){let
 e=document.getElementById(id);e.shpWidget=new
 ShipardTableViewer();e.shpWidget.init(e);return 1;}class
-ShipardTableForm
+ShipardCoreForm
 extends
-ShipardWidget{formData=null;init(e){console.log("ShipardTableForm::init");super.init(e);this.rootElm.style.display='grid';let
-apiParams={'cgType':2,'formOp':e.formOp,};this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('createForm',apiParams);}doAction(actionId,e){switch(actionId){case'saveForm':return this.saveForm(e);case'saveform':return this.saveForm(e);case'closeForm':return this.closeForm(e);}return super.doAction(actionId,e);}saveForm(e){const
-noClose=parseInt(e.getAttribute('data-noclose'));this.getFormData();let
-apiParams={'cgType':2,'formOp':'save','formData':this.formData,'noCloseForm':noClose,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('saveForm',apiParams);return 0;}checkForm(changedInput){this.getFormData();let
-apiParams={'cgType':2,'formOp':'check','formData':this.formData,'noCloseForm':1,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.apiCall('checkForm',apiParams);return 0;}doWidgetResponse(data){if(data['response']['type']==='createForm'){this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);this.on(this,'change','input',function(e,ownerWidget){ownerWidget.inputValueChanged(e)});return;}if(data['response']['type']==='saveForm'){let
-noCloseForm=data['response']['saveResult']['noCloseForm']??0;if(!noCloseForm){const
-parentWidgetType=this.rootElm.getAttribute('data-parent-widget-type');if(parentWidgetType==='viewer'){const
-parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
-parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}else
-if(parentWidgetType==='board'){const
-parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
-parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}this.closeForm();return;}this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}if(data['response']['type']==='checkForm'){this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}super.doWidgetResponse(data);}setFormData(data){this.formData=data;const
+ShipardWidget{formData=null;init(e){console.log("ShipardCoreForm::init");super.init(e);}setFormData(data){this.formData=data;const
 inputs=this.rootElm.querySelectorAll('input, textarea, select');inputs.forEach(input=>{this.setFormInputValue(input);});}setFormInputValue(input){const
 inputId=input.getAttribute('name');if(!inputId)return;const
 iv=this.dataInputValue(inputId);if(input.classList.contains('e10-inputDateN')){let
@@ -231,13 +237,45 @@ inputId=input.getAttribute('name');if(!inputId)return;const
 iv=input.value;let
 siv=iv;if(input.classList.contains('e10-inputDateN')){if(iv===null||iv==='0000-00-00'||iv==='')siv=null;}else
 if(input.classList.contains('e10-inputLogical')){siv=input.checked?1:0;}this.setDataInputValue(inputId,siv);}setDataInputValue(inputId,value){var
-iidParts=inputId.split('.');if(iidParts.length==1){this.formData['recData'][inputId]=value;}}closeForm(e){this.rootElm.remove();return 0;}inputValueChanged(e){if(e.classList.contains('e10-ino-checkOnChange')){this.checkForm(e);}}}class
+iidParts=inputId.split('.');if(iidParts.length==1){this.formData['recData'][inputId]=value;}}}class
+ShipardTableForm
+extends
+ShipardCoreForm{init(e){console.log("ShipardTableForm::init");super.init(e);this.rootElm.style.display='grid';}create(e){let
+apiParams={'cgType':2,'formOp':e.formOp,};this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('createForm',apiParams);}doAction(actionId,e){switch(actionId){case'saveForm':return this.saveForm(e);case'saveform':return this.saveForm(e);case'closeForm':return this.closeForm(e);}return super.doAction(actionId,e);}saveForm(e){const
+noClose=parseInt(e.getAttribute('data-noclose'));this.getFormData();let
+apiParams={'cgType':2,'formOp':'save','formData':this.formData,'noCloseForm':noClose,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('saveForm',apiParams);return 0;}checkForm(changedInput){this.getFormData();let
+apiParams={'cgType':2,'formOp':'check','formData':this.formData,'noCloseForm':1,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.apiCall('checkForm',apiParams);return 0;}doWidgetResponse(data){if(data['response']['type']==='createForm'){this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);this.on(this,'change','input',function(e,ownerWidget){ownerWidget.inputValueChanged(e)});return;}if(data['response']['type']==='saveForm'){let
+noCloseForm=data['response']['saveResult']['noCloseForm']??0;if(!noCloseForm){const
+parentWidgetType=this.rootElm.getAttribute('data-parent-widget-type');if(parentWidgetType==='viewer'){const
+parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
+parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}else
+if(parentWidgetType==='board'){const
+parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
+parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}this.closeForm();return;}this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}if(data['response']['type']==='checkForm'){this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}super.doWidgetResponse(data);}closeForm(e){this.rootElm.remove();return 0;}inputValueChanged(e){if(e.type==='file'){console.log('form-file input CHANGED');this.checkFileUploader(e);return;}if(e.classList.contains('e10-ino-checkOnChange')){this.checkForm(e);}}checkFileUploader(input){console.log('checkFileUploader');let
+fileUploaderElm=input.parentElement;if(fileUploaderElm.fileUploader===undefined){fileUploaderElm.fileUploader=new
+ShipardFilesUploader();fileUploaderElm.fileUploader.init(fileUploaderElm);}fileUploaderElm.fileUploader.resetInfo();}}class
+ShipardWizardForm
+extends
+ShipardTableForm{pageNumber=0;init(e){console.log("ShipardWizardForm::init");super.init(e);this.rootElm.style.display='grid';}create(e){let
+apiParams={'cgType':2,'formOp':e.formOp,'pageNumber':this.pageNumber,};this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('createGuideForm',apiParams);}doAction(actionId,e){console.log("guide form action: ",actionId);switch(actionId){case'wizardnext':return this.wizardNext(e);case'closeForm':return this.closeForm(e);}return super.doAction(actionId,e);}wizardNext(e){if(this.doUploadFiles(e)){setTimeout(function(){this.wizardNext(e);}.bind(this),200);return;}const
+noClose=parseInt(e.getAttribute('data-noclose'));this.pageNumber++;this.getFormData();let
+apiParams={'cgType':2,'formOp':'wizardNext','formData':this.formData,'noCloseForm':noClose,'pageNumber':this.pageNumber,'nazdar':'ahoj',};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.elementPrefixedAttributes(e,'data-action-param-',apiParams);console.log('wizardNext FD: ',this.formData);this.apiCall('wizardNext',apiParams);return 0;}checkForm(changedInput){this.getFormData();let
+apiParams={'cgType':2,'formOp':'check','formData':this.formData,'noCloseForm':1,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.apiCall('checkForm',apiParams);return 0;}doWidgetResponse(data){if(data['response']['type']==='createGuideForm'){console.log("---FROM: CREATE-GUIDE-FORM---",data);this.rootElm.innerHTML=data['response']['hcFull'];if(data['response']['formData']!==undefined)this.setFormData(data['response']['formData']);else
+this.setFormData({recData:{}});console.log('wizardForm: ON....');this.on(this,'change','input',function(e,ownerWidget){ownerWidget.inputValueChanged(e)});return;}if(data['response']['type']==='wizardNext'){let
+noCloseForm=data['response']['saveResult']['noCloseForm']??0;if(!noCloseForm){const
+parentWidgetType=this.rootElm.getAttribute('data-parent-widget-type');if(parentWidgetType==='viewer'){const
+parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
+parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}else
+if(parentWidgetType==='board'){const
+parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
+parentElement=document.getElementById(parentWidgetId);if(parentElement)parentElement.shpWidget.refreshData();}}this.closeForm();return;}this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}if(data['response']['type']==='checkForm'){this.rootElm.innerHTML=data['response']['hcFull'];this.setFormData(data['response']['formData']);return;}super.doWidgetResponse(data);}closeForm(e){this.rootElm.remove();return 0;}doUploadFiles(){console.log('doUploadFiles - CHECK');let
+fileInput=this.rootElm.querySelector('div.shpd-files-upload-input');if(!fileInput||fileInput.fileUploader===undefined)return 0;if(fileInput.fileUploader.uploadInProgress)return 1;if(fileInput.fileUploader.uploadDone)return 0;fileInput.fileUploader.uploadFiles();return 1;}}class
 ShipardWidgetBoard
 extends
 ShipardWidget{elmContent=null;init(e){console.log("ShipardWidgetBoard::init");super.init(e);this.initContent();}initContent(){this.elmContent=this.rootElm.querySelector('.shp-wb-content');}doSwipe(dir){var
 swipeDir=0;if(dir.type==='panleft')swipeDir=1;else
 if(dir.type==='panright')swipeDir=2;if(!swipeDir)return;let
-apiParams={'cgType':2,'swipe':swipeDir};this.apiCall('reloadContent',apiParams);}doAction(actionId,e){console.log("ACTION-BOARD: ",actionId);switch(actionId){case'set-param-value':return this.setParamValue(e);case'newform':return this.actionNewForm(e);case'edit':return this.actionEditForm(e);}return super.doAction(actionId,e);}doWidgetResponse(data){this.setInnerHTML(this.rootElm,data.response.hcMain);this.initContent();super.doWidgetResponse(data);}setParamValue(e){const
+apiParams={'cgType':2,'swipe':swipeDir};this.apiCall('reloadContent',apiParams);}doAction(actionId,e){console.log("ACTION-BOARD: ",actionId);switch(actionId){case'set-param-value':return this.setParamValue(e);case'newform':return this.actionNewForm(e);case'edit':return this.actionEditForm(e);case'wizard':return this.actionWizardForm(e);}return super.doAction(actionId,e);}doWidgetResponse(data){this.setInnerHTML(this.rootElm,data.response.hcMain);this.initContent();super.doWidgetResponse(data);}setParamValue(e){const
 paramName=e.getAttribute('data-param-name');var
 inputElement=null;if(paramName!==undefined){inputElement=this.rootElm.querySelector('input[name="'+paramName+'"]');}else{inputElement=e.parentElement.parentElement.querySelector('input');if(!inputElement)inputElement=e.parentElement.parentElement.parentElement.querySelector('input');}if(inputElement)inputElement.value=e.getAttribute('data-value');let
 apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}actionNewForm(e){var
@@ -245,7 +283,9 @@ formParams={};var
 formAttrs={'parent-widget-id':this.rootElm.getAttribute('id'),'parent-widget-type':'board',};this.elementPrefixedAttributes(this.rootElm,'data-form-param-',formParams);this.elementPrefixedAttributes(e,'data-action-param-',formParams);this.openModalForm('new',formParams,formAttrs);}actionEditForm(e){var
 formParams={};var
 formAttrs={'parent-widget-id':this.rootElm.getAttribute('id'),'parent-widget-type':'board',};this.elementPrefixedAttributes(this.rootElm,'data-form-param-',formParams);this.elementPrefixedAttributes(e,'data-action-param-',formParams);this.openModalForm('edit',formParams,formAttrs);}refreshData(e){let
-apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}}function
+apiParams={'cgType':2};this.apiCall('reloadContent',apiParams);}actionWizardForm(e){var
+formParams={};var
+formAttrs={'parent-widget-id':this.rootElm.getAttribute('id'),'parent-widget-type':'board',};this.elementPrefixedAttributes(this.rootElm,'data-form-param-',formParams);this.elementPrefixedAttributes(e,'data-action-param-',formParams);this.openModalForm('wizard',formParams,formAttrs);}}function
 initWidgetBoard(id){console.log("INIT_BOARD_2!!!!");let
 e=document.getElementById(id);e.shpWidget=new
 ShipardWidgetBoard();e.shpWidget.init(e);return 1;}class

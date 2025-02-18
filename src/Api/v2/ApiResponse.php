@@ -9,6 +9,7 @@ class ApiResponse extends \Shipard\Base\Utility
   var array $responseData = [];
 
   var ?\Shipard\UI\ng\Router $uiRouter = NULL;
+  var ?\Shipard\UI\ng\TemplateUI $uiTemplate = NULL;
 
   public function setRequestParams(array $requestParams)
   {

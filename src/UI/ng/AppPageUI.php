@@ -163,6 +163,12 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
         $widget->uiRouter = $this->uiRouter;
         $widget->uiTemplate = $this->uiTemplate;
 
+        if (isset($menuItem['widgetParams']))
+        {
+          foreach ($menuItem['widgetParams'] as $k => $v)
+            $widget->widgetSystemParams[$k] = $v;
+        }
+
         $responseData = [];
         $widget->init();
         $widget->createResponse($responseData);
@@ -207,14 +213,14 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     }
 
     if ($this->uiRecData['uiType'] === 4)
-    {
+    { // -- system application
       $this->createUIStruct($this->app()->cfgItem('apps.'.$this->uiRecData['appType']));
       $c = $this->createContentCodeInside_UIStruct();
 		  return $c;
     }
 
     if ($this->uiRecData['uiType'] === 5)
-    { // vlastní aplikace
+    { // user defined application
       $this->createUIStruct(json_decode($this->uiRecData['uiStruct'], TRUE));
       $c = $this->createContentCodeInside_UIStruct();
 		  return $c;
@@ -280,6 +286,22 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     {
       if (isset($menuItem['mainRole']) && !$this->app()->hasMainRole($menuItem['mainRole']))
         continue;
+
+      if (isset($menuItem['creatorClass']))
+      {
+        $creatorObject = $this->app()->createObject($menuItem['creatorClass']);
+        if ($creatorObject)
+        {
+          $creatorObject->run();
+          if (isset($creatorObject->subMenuContent['items']))
+          {
+            foreach ($creatorObject->subMenuContent['items'] as $nmiId => $nmi)
+              $items[] = $nmi;
+          }
+          unset($creatorObject);
+        }
+        continue;
+      }
 
       if (!isset($menuItem['id']))
         $menuItem['id'] = $menuId;

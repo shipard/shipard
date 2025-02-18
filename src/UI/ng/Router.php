@@ -200,9 +200,29 @@ class Router extends Utility
 			return $this->app()->routeApiRun();
 		}
 
-    if (isset($this->urlPath[2]) && $this->urlPath[2] === 'files')
+		// -- download files
+    if (isset($this->urlPath[2]) && $this->urlPath[2] === 'files' && isset($this->urlPath[3]) && $this->urlPath[3] === 'download')
     {
-			$filesCfg = $this->app()->cfgItem ('registeredClasses.downloadFiles.'.($this->urlPath[3] ?? ''), NULL);
+			$filesCfg = $this->app()->cfgItem ('registeredClasses.downloadFiles.'.($this->urlPath[4] ?? ''), NULL);
+			if ($filesCfg)
+			{
+        /**  @var \Shipard\Base\ApiObject2 */
+				$apiResponseObject = $this->app->createObject($filesCfg['classId']);
+
+				if ($apiResponseObject)
+				{
+					$apiResponseObject->uiRouter = $this;
+					$apiResponseObject->run();
+          return NULL;
+				}
+				return new \Shipard\Application\Response ($this->app(), 'invalid download object 1', 404);
+			}
+			return new \Shipard\Application\Response ($this->app(), 'invalid download object 2', 404);
+    }
+		// -- upload files
+    if (isset($this->urlPath[2]) && $this->urlPath[2] === 'files' && isset($this->urlPath[3]) && $this->urlPath[3] === 'upload')
+    {
+			$filesCfg = $this->app()->cfgItem ('registeredClasses.uploadFiles.'.($this->urlPath[4] ?? ''), NULL);
 			if ($filesCfg)
 			{
         /**  @var \Shipard\Base\ApiObject2 */

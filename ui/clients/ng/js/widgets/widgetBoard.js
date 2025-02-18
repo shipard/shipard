@@ -45,6 +45,7 @@ class ShipardWidgetBoard extends ShipardWidget
       case 'set-param-value': return this.setParamValue(e);
       case 'newform': return this.actionNewForm(e);
       case 'edit': return this.actionEditForm(e);
+      case 'wizard': return this.actionWizardForm(e);
     }
 
     return super.doAction (actionId, e);
@@ -112,6 +113,18 @@ class ShipardWidgetBoard extends ShipardWidget
   {
     let apiParams = {'cgType': 2};
     this.apiCall('reloadContent', apiParams);
+  }
+
+  actionWizardForm(e)
+  {
+	  var formParams = {};
+	  var formAttrs = {
+      'parent-widget-id': this.rootElm.getAttribute('id'),
+      'parent-widget-type': 'board',
+    };
+    this.elementPrefixedAttributes (this.rootElm, 'data-form-param-', formParams);
+    this.elementPrefixedAttributes (e, 'data-action-param-', formParams);
+    this.openModalForm('wizard', formParams, formAttrs);
   }
 }
 

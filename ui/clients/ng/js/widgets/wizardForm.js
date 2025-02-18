@@ -1,10 +1,13 @@
-class ShipardTableForm extends ShipardCoreForm
+class ShipardWizardForm extends ShipardTableForm
 {
+  pageNumber = 0;
+
   init(e)
   {
-    console.log("ShipardTableForm::init");
+    console.log("ShipardWizardForm::init");
     super.init(e);
     this.rootElm.style.display = 'grid';
+
   }
 
   create(e)
@@ -12,44 +15,54 @@ class ShipardTableForm extends ShipardCoreForm
     let apiParams = {
       'cgType': 2,
       'formOp': e.formOp,
+      'pageNumber': this.pageNumber,
     };
 
     this.elementPrefixedAttributes (e, 'data-action-param-', apiParams);
 
-    this.apiCall('createForm', apiParams);
+    this.apiCall('createGuideForm', apiParams);
   }
 
   doAction (actionId, e)
   {
-    //console.log("form action!", actionId);
+    console.log("guide form action: ", actionId);
     switch (actionId)
     {
-      case 'saveForm': return this.saveForm(e);
-      case 'saveform': return this.saveForm(e);
+      case 'wizardnext': return this.wizardNext(e);
       case 'closeForm': return this.closeForm(e);
     }
 
     return super.doAction(actionId, e);
   }
 
-  saveForm(e)
+  wizardNext(e)
   {
+    if (this.doUploadFiles(e))
+    {
+      setTimeout (function () {this.wizardNext (e);}.bind(this), 200);
+      return;
+    }
+
     const noClose = parseInt(e.getAttribute('data-noclose'));
+    this.pageNumber++;
 
     this.getFormData();
 
     let apiParams = {
       'cgType': 2,
-      'formOp': 'save',
+      'formOp': 'wizardNext',
       'formData': this.formData,
+      //'rd': this.formData['recData'],
       'noCloseForm': noClose,
+      'pageNumber': this.pageNumber,
+      'nazdar': 'ahoj',
     };
 
 
     this.elementPrefixedAttributes (this.rootElm, 'data-action-param-', apiParams);
     this.elementPrefixedAttributes (e, 'data-action-param-', apiParams);
-
-    this.apiCall('saveForm', apiParams);
+    console.log('wizardNext FD: ', this.formData);
+    this.apiCall('wizardNext', apiParams);
 
     return 0;
   }
@@ -78,19 +91,22 @@ class ShipardTableForm extends ShipardCoreForm
   {
     //console.log("doWidgerResponse / FORM: ", data['response']['type']);
 
-    if (data['response']['type'] === 'createForm')
+    if (data['response']['type'] === 'createGuideForm')
     {
+      console.log("---FROM: CREATE-GUIDE-FORM---", data);
       this.rootElm.innerHTML = data['response']['hcFull'];
-      this.setFormData(data['response']['formData']);
+      if (data['response']['formData'] !== undefined)
+        this.setFormData(data['response']['formData']);
+      else
+        this.setFormData({recData: {}});
 
+      console.log('wizardForm: ON....');
       this.on(this, 'change', 'input', function (e, ownerWidget){ownerWidget.inputValueChanged(e)});
 
       return;
     }
-    if (data['response']['type'] === 'saveForm')
+    if (data['response']['type'] === 'wizardNext')
     {
-      //console.log("---SAVE-FORM---", data['response']);
-
       let noCloseForm = data['response']['saveResult']['noCloseForm'] ?? 0;
       //console.log('noCloseForm: ', noCloseForm);
 
@@ -146,31 +162,21 @@ class ShipardTableForm extends ShipardCoreForm
     return 0;
   }
 
-  inputValueChanged(e)
+  doUploadFiles()
   {
-    //console.log("--INPUT-CHANGED--", e);
-    if (e.type === 'file')
-    {
-      console.log('form-file input CHANGED');
-      this.checkFileUploader(e);
-      return;
-    }
+    //let fileInput = form.find (':input.e10-att-input-file').first();
+    console.log('doUploadFiles - CHECK');
+    let fileInput = this.rootElm.querySelector('div.shpd-files-upload-input');
+    if (!fileInput || fileInput.fileUploader === undefined)
+      return 0;
 
-    if (e.classList.contains('e10-ino-checkOnChange'))
-    {
-      this.checkForm(e);
-    }
-  }
+    if (fileInput.fileUploader.uploadInProgress)
+      return 1;
+    if (fileInput.fileUploader.uploadDone)
+      return 0;
 
-  checkFileUploader(input)
-  {
-    console.log('checkFileUploader');
-    let fileUploaderElm = input.parentElement;
-    if (fileUploaderElm.fileUploader === undefined)
-    {
-      fileUploaderElm.fileUploader = new ShipardFilesUploader();
-      fileUploaderElm.fileUploader.init(fileUploaderElm);
-    }
-    fileUploaderElm.fileUploader.resetInfo();
+    fileInput.fileUploader.uploadFiles();
+
+    return 1;
   }
 }

@@ -18,6 +18,8 @@ class ApiResponseBoard extends \Shipard\Api\v2\ApiResponse
     if (!$this->board)
       return;
 
+    $this->board->uiRouter = $this->uiRouter;
+    $this->board->uiTemplate = $this->uiTemplate;
     $this->board->setRequestParams($this->requestParams);
 		$this->board->init();
     $this->board->createResponse($this->responseData);
