@@ -23,7 +23,7 @@
   }
 
 
-  @media only screen and (max-width: 700px) {
+  @media only screen and (width < $sm-width) {
     .app-menu {
       width: calc(100vw - 3rem);
     }
@@ -50,7 +50,7 @@
   }
 
 
-  @media only screen and (min-width: 701px)
+  @media only screen and (width >= $sm-width)
   {
     .app-menu-shp-ng {
       min-width: 20rem;

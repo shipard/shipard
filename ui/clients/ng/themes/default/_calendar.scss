@@ -170,7 +170,7 @@ table.shp-cal-year {
 	}
 }
 
-@media only screen and (max-width: 700px) {
+@media only screen and (width < $sm-width) {
 	table.shp-cal-year {
 		>tbody>tr>td {
 			display: block;
@@ -178,7 +178,7 @@ table.shp-cal-year {
 	}
 }
 
-@media only screen and (min-width: 701px) {
+@media only screen and (width >= $sm-width) {
 	table.shp-cal-year {
 		>tbody>tr>td {
 			width: 33%;

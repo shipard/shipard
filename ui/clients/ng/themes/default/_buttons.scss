@@ -123,7 +123,7 @@ button.shpd-close {
 
 
 
-/* shpd buttons (not used yet) - fix border + shadow */
+/* shpd buttons - fix border + shadow */
 .shpd-btn {
   padding: .4rem 1rem;
   text-align: center;
@@ -177,8 +177,8 @@ button {
 
 // default buttons hover
 .shpd-btn-primary:hover {
-  background-color: var(--shpd-primary-gray);
-  border: 1px solid var(--shpd-primary-gray);
+  background-color: var(--shpd-primary-hover);
+  border: 1px solid var(--shpd-primary-hover);
   color: var(--shpd-btn-color-darks);
 }
 .shpd-btn-primary-light:hover {

@@ -1,4 +1,4 @@
-@media only screen and (max-width: 700px) {
+@media only screen and (width < $lg-width) {
   .app-container-simple {
     display: grid;
     grid-template-columns: 1fr;
@@ -22,7 +22,7 @@
   }
 }
 
-@media only screen and (min-width: 701px) {
+@media only screen and (width >= $lg-width) {
   .app-container-simple {
     display: grid;
     grid-template-columns: 25rem 1fr;

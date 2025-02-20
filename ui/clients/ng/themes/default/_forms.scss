@@ -47,6 +47,11 @@ data-modal-form-env {
 
 
         background-color: var(--shpd-body-bg);
+
+        border-radius: 6px;
+        input {
+          border-radius: 6px;
+        }
       }
 
       .formHeader { grid-area: header; }
@@ -126,11 +131,33 @@ document-card {
 }
 
 
-@media only screen and (min-width: 701px) {
+@media only screen and (width >= $md-width) {
   data-modal-env {
     >div {
       width: 60%;
       margin-left: 20%;
+    }
+  }
+
+  data-modal-form-env {
+    justify-content: center;
+    align-items: center;
+    .formContainer {
+      width: 40rem !important;
+      max-width: 40rem !important;
+      height: 40rem !important;
+      max-height: 90vh !important;
+    }
+  }
+}
+
+@media only screen and (width >= $xxl-width) {
+  data-modal-form-env {
+    .formContainer {
+      width: 60rem !important;
+      max-width: 60rem !important;
+      height: 60rem !important;
+      max-height: 90vh !important;
     }
   }
 }
@@ -150,7 +177,7 @@ form {
   }
   input {
     background-color: var(--shpd-form-input-bg);
-    color: var(--shpd-body-color);
+    color: var(--shpd-body-color);    
   }
   input:focus {
     outline: 0;
