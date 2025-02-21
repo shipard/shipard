@@ -29,6 +29,13 @@ class WasteOpsGenerator extends Utility
   {
     echo "###### ".Utils::datef($periodBegin).' - '.Utils::datef($periodEnd)."\n";
 
+    $this->db()->query('DELETE FROM [e10doc_waster_wasteOps] WHERE [generated] = %i', 1,
+                       ' AND [date] >= %d', $periodBegin, ' AND [date] <= %d', $periodEnd);
+
+    $this->db()->query('DELETE FROM [e10pro_reports_waste_cz_returnRows] WHERE',
+                       ' [dateAccounting] >= %d', $periodBegin, ' AND [dateAccounting] <= %d', $periodEnd,
+                       ' AND [wasteOp] != %i', 0);
+
     $q = [];
     array_push ($q, 'SELECT [rows].wasteCodeNomenc, [rows].wasteCodeText, [rows].wasteHandlingCode,');
     array_push($q, ' [rows].wasteCodeNomencMove, [rows].wasteCodeTextMove,');
