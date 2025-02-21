@@ -5,6 +5,7 @@ namespace e10doc\waster;
 use \Shipard\Viewer\TableViewGrid, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
 use \Shipard\Utils\Utils, \Shipard\Utils\Json;
 
+
 /**
  * class TableWasteOps
  */
@@ -45,6 +46,25 @@ class TableWasteOps extends DbTable
 
 		return $hdr;
 	}
+
+	public function getDocumentLockState ($recData, $form = NULL)
+	{
+		$lock = parent::getDocumentLockState ($recData, $form);
+		if ($lock !== FALSE)
+			return $lock;
+
+		if (isset ($recData['generated']) && $recData['generated'])
+			return ['mainTitle' => 'Uzamčeno', 'subTitle' => 'Automaticky generované pohyby nelze upravovat'];
+
+		return FALSE;
+	}
+
+	function copyDocumentRecord ($srcRecData, $ownerRecord = NULL)
+	{
+		$recData = parent::copyDocumentRecord ($srcRecData, $ownerRecord);
+		$recData ['generated'] = 0;
+		return $recData;
+	}
 }
 
 
@@ -61,7 +81,6 @@ class ViewWasteOps extends TableViewGrid
 
 		parent::init();
 
-
 		$this->gridEditable = TRUE;
 		$this->classes = ['editableGrid'];
 		$this->enableToolbar = FALSE;
@@ -69,10 +88,10 @@ class ViewWasteOps extends TableViewGrid
 
 		$g = [
       'id' => 'ID',
-      'opType' => 'Pohyb',
-      'ec' => 'EK',
+      'opType' => '_Pohyb',
+      'ec' => '_EK',
       'date' => ' Datum',
-      'codes' => 'Kód odpadu',
+      'codes' => '_Kód odpadu',
       'q' => ' Množství',
       'u' => 'Jedn.',
       'codesInfo' => 'Pozn.',
@@ -88,7 +107,8 @@ class ViewWasteOps extends TableViewGrid
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['id'] = $item['ndx'];
 
-    $listItem ['opType'] = $this->wasteOpsTypes[$item['opType']]['sn'];
+		$opIcon = ($item['generated']) ? 'system/iconCogs' : 'system/iconUser';
+    $listItem ['opType'] = ['text' => $this->wasteOpsTypes[$item['opType']]['sn'], 'icon' => $opIcon];
 
     if ($item['opType'] === 2)
     {
@@ -130,6 +150,10 @@ class ViewWasteOps extends TableViewGrid
 			array_push($q, ' AND (');
 			array_push($q,' [niSrc].[shortName] LIKE %s', '%'.$fts.'%');
       array_push($q,' OR [niDst].[shortName] LIKE %s', '%'.$fts.'%');
+			array_push($q,' OR [wo].[wasteCodeTextSrc] LIKE %s', '%'.$fts.'%');
+			array_push($q,' OR [wo].[wasteCodeTextDst] LIKE %s', '%'.$fts.'%');
+			array_push($q,' OR [wo].[wasteHandlingCodeSrc] LIKE %s', '%'.$fts.'%');
+			array_push($q,' OR [wo].[wasteHandlingCodeDst] LIKE %s', '%'.$fts.'%');
 			array_push($q, ')');
 		}
 
@@ -165,7 +189,6 @@ class FormWasteOp extends TableForm
         $this->addColumnInput ('wasteCodeNomencDst');
         $this->addColumnInput ('wasteHandlingCodeDst');
       }
-
 		$this->closeForm ();
 	}
 }
