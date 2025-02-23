@@ -60,6 +60,7 @@ class WasteReturnEngine extends Utility
   public function addAllDocuments()
   {
     $this->addDocuments('purchase', self::rowDirIn);
+    $this->addDocuments('stockin', self::rowDirIn);
     $this->addDocuments('invno', self::rowDirOut);
     $this->addDocuments('stockout', self::rowDirOut);
     $this->addDocuments('wastelp', self::rowDirOut);
@@ -204,6 +205,7 @@ class WasteReturnEngine extends Utility
 		$codesKinds = $this->app()->cfgItem('e10.witems.codesKinds', []);
 
     $personGroups = [18];
+    $codeKind = 1;
 
 		$docWasteOrigin = $headRecData['wasteOrigin'] ?? 0;
 
@@ -228,6 +230,7 @@ class WasteReturnEngine extends Utility
 		array_push ($q, ' AND [codes].[item] = %i', $rowRecData['item']);
 		array_push ($q, ' AND ([codes].[codeDir] = %i', $rowDir, ' OR [codes].[codeDir] = %i)', 0);
 		array_push ($q, ' AND ([codes].[person] = %i', $headRecData['person'], ' OR [codes].[person] = %i)', 0);
+    array_push ($q, ' AND [codes].[codeKind] = %i', $codeKind);
 
 		/*if ($personType == 1) // human
 			array_push ($q, ' AND ([codes].[personType] = %i', 2, ' OR [codes].[personType] = %i)', 0);

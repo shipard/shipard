@@ -46,7 +46,8 @@ class TableWasteSettings extends DbTable
         'y' => $r['calendarYear'],
         'docModes' => [
           'invno' => intval($r['docModeInvoiceOut']),
-          'stockout' => intval($r['docModeStockOut']),
+          'stockin' => intval($r['docModeStockIn']),
+					'stockout' => intval($r['docModeStockOut']),
           'purchase' => intval($r['docModePurchase']),
           'wastelp' => 2,
         ]
@@ -87,6 +88,7 @@ class ViewWasteSettings extends TableView
     $flags = [];
 
     $flags[] = ['text' => 'Faktury vydané: '.$this->wasteDocModes[$item['docModeInvoiceOut']]['sc'], 'class' => 'label label-default', 'icon' => 'docType/invoicesOut'];
+    $flags[] = ['text' => 'Příjemky: '.$this->wasteDocModes[$item['docModeStockIn']]['sc'], 'class' => 'label label-default', 'icon' => 'docType/stockIn'];
     $flags[] = ['text' => 'Výdejky: '.$this->wasteDocModes[$item['docModeStockOut']]['sc'], 'class' => 'label label-default', 'icon' => 'docType/stockOut'];
     $flags[] = ['text' => 'Výkupy: '.$this->wasteDocModes[$item['docModePurchase']]['sc'], 'class' => 'label label-default', 'icon' => 'docTypeRedemptions'];
 
@@ -134,6 +136,7 @@ class FormWasteSettings extends TableForm
 			$this->addColumnInput ('calendarYear');
       $this->addSeparator(self::coH4);
       $this->addColumnInput ('docModeInvoiceOut');
+			$this->addColumnInput ('docModeStockIn');
       $this->addColumnInput ('docModeStockOut');
       $this->addColumnInput ('docModePurchase');
 		$this->closeForm ();
