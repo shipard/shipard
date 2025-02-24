@@ -107,6 +107,7 @@ class VendMsMachineWidget extends \Shipard\UI\Core\UIWidgetBoard
 		$this->widgetSystemParams['data-setup-mode-cards'] = $this->vendmsCfg['setupModeChipIds'];
 		$this->widgetSystemParams['data-setup-url'] =  $this->vendmsCfg['urlSetup'];
 		$this->widgetSystemParams['data-machine-url'] = $this->vendmsCfg['urlMachine'];
+		$this->widgetSystemParams['data-leds-topic'] = $this->vendmsCfg['mqttLeds'];
 
 		$this->code = $this->composeCode();
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $this->code]);

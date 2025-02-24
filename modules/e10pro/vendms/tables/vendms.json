@@ -18,6 +18,7 @@
 		{"id": "mqttTempBottom", "name": "MQTT topic pro teplotu dole", "type": "string", "len": 160},
 		{"id": "mqttRfid", "name": "MQTT topic čtečku karet / čipů", "type": "string", "len": 160},
 		{"id": "mqttBusy", "name": "MQTT topic pro senzor výdeje", "type": "string", "len": 160},
+		{"id": "mqttLeds", "name": "MQTT topic pro LED osvětlení", "type": "string", "len": 160},
 
 		{"id": "setupModeChipIds", "name": "ID čipů pro vstup do Nastaveni", "type": "string", "placeholder": "012345ABC FADC565", "len": 200},
 

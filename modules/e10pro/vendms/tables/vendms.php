@@ -42,6 +42,7 @@ class TableVendMs extends DbTable
 				'mqttTempBottom' => $r['mqttTempBottom'],
 				'mqttRfid' => $r['mqttRfid'],
 				'mqttBusy' => $r['mqttBusy'],
+				'mqttLeds' => $r['mqttLeds'],
 				'setupModeChipIds' => $r['setupModeChipIds'],
 			];
 
@@ -169,6 +170,7 @@ class FormVendMs extends TableForm
 					$this->addColumnInput ('mqttTempTop');
 					$this->addColumnInput ('mqttTempBottom');
 					$this->addColumnInput ('mqttRfid');
+					$this->addColumnInput ('mqttLeds');
 					$this->addColumnInput ('mqttBusy');
 					$this->addColumnInput ('setupModeChipIds');
 				$this->closeTab();
