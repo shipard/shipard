@@ -45,6 +45,7 @@ class TableWarehouses extends DbTable
 				'ndx' => $r ['ndx'], 'fullName' => $r ['fullName'], 'shortName' => $r ['shortName'],
 				'ownerOffice' => $r ['ownerOffice'],
 				'useTransportOnDocs' => $r ['useTransportOnDocs'],
+				'usePersonsOffice' => $r ['usePersonsOffice'],
 			];
 		}
 		// save to file
@@ -135,6 +136,7 @@ class FormWarehouses extends TableForm
 				$this->addColumnInput ('country');
 				$this->addSeparator(self::coH4);
 				$this->addColumnInput ('useTransportOnDocs');
+				$this->addColumnInput ('usePersonsOffice');
 			$this->closeTab ();
 				$this->openTab ();
 					$this->addList ('rows');

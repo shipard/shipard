@@ -17,6 +17,8 @@
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
     {"id": "useTransportOnDocs", "name": "Zadávat na dokladech způsob dopravy", "type": "logical"},
+		{"id": "usePersonsOffice", "name": "Zadávat provozovnu", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Automaticky", "1": "Ne", "2": "Ano"}},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

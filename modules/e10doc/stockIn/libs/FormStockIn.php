@@ -10,6 +10,9 @@ class FormStockIn extends \e10doc\core\FormHeads
 		$taxPayer = $this->recData['taxPayer'];
 		$wdm = $this->wasteDocMode();
 
+		$warehouse = $this->table->app()->cfgItem ('e10doc.warehouses.'.$this->recData['warehouse'], NULL);
+		$usePersonOffice = intval($warehouse['usePersonsOffice'] ?? 0);
+
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', self::SIDEBAR_POS_RIGHT);
 
@@ -25,6 +28,8 @@ class FormStockIn extends \e10doc\core\FormHeads
 		$this->layoutOpen (self::ltHorizontal);
 		$this->layoutOpen (self::ltForm);
 		$this->addColumnInput ("person");
+		if ($usePersonOffice)
+			$this->addColumnInput ('otherAddress1');
 
 		$this->addColumnInput ("symbol1");
 		$this->addColumnInput ("symbol2");

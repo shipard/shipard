@@ -15,6 +15,8 @@ class FormStockOut extends \e10doc\core\FormHeads
 
 		$wdm = $this->wasteDocMode();
 		$whCfg = $this->app()->cfgItem('e10doc.warehouses.'.$this->recData['warehouse'], NULL);
+		$usePersonOffice = intval($whCfg['usePersonsOffice'] ?? 0);
+
 
 		$this->openForm (self::ltNone);
 			$tabs ['tabs'][] = ['text' => 'Záhlaví', 'icon' => 'system/formHeader'];
@@ -26,7 +28,8 @@ class FormStockOut extends \e10doc\core\FormHeads
 
 			$this->openTab ();
 					$this->addColumnInput ('person');
-					$this->addColumnInput ('otherAddress1');
+					if ($usePersonOffice)
+						$this->addColumnInput ('otherAddress1');
 					$this->addColumnInput ('dateIssue');
 					$this->addColumnInput ('dateAccounting');
 					if ($this->table->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0))
