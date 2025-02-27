@@ -801,15 +801,15 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
             $item['street'] = $r['adrStreet'];
             $item['zipCode'] = str_replace(' ', '', $r['adrZipCode']);
 
-            if (($r['id1'] && $r['id1'] !== ''))
+            if ((isset($r['id1']) && $r['id1'] !== ''))
             {
               $item['id1'] = $r['id1'];
               $item['icp'] = $r['id1'];
             }
-            if (($r['id2'] && $r['id2'] !== ''))
+            if ((isset($r['id2']) && $r['id2'] !== ''))
             {
               $item['id2'] = $r['id2'];
-              $item['orp'] = $r['id2'];
+              $item['icz'] = $r['id2'];
             }
 
             if (($item['id1'] ?? '') === '' && ($item['id2'] ?? '') === '')
