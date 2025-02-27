@@ -28,14 +28,32 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->run();
 	}
 
+	public function importPersonsIds()
+	{
+		$fileParam = $this->app()->arg('file');
+		if (!$fileParam)
+		{
+			echo "Missing `--file` param!\n";
+			return FALSE;
+		}
+
+		$labelIsicNdx = intval($this->app()->arg('labelIsicNdx'));
+
+		$e = new \e10pro\vendms\libs\ImportPersonsIds($this->app());
+		$e->fileName = $fileParam;
+		$e->personLabelIsicNdx = $labelIsicNdx;
+
+		$e->run();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'import-isic': return $this->importISIC();
+			case 'import-persons-ids': return $this->importPersonsIds();
 		}
 
 		parent::onCliAction($actionId);
 	}
-
 }
