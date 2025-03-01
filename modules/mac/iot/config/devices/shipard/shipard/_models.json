@@ -1,6 +1,6 @@
 {
-	"m72-controller-eth_V31": {
-		"fn": "Kontroler ETH V31",
+	"m72-controller-eth_V33": {
+		"fn": "Kontroler ETH V3.3",
 		"iotKind": "shib", "iotSubKind": "shib"
 	},
 	"m72-bist-relays-4x": {
@@ -35,6 +35,14 @@
 	},
 	"m72-controller-eth": {
 		"fn": "Kontroler ETH V2 (zrušeno)",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"m72-controller-eth_V31": {
+		"fn": "Kontroler ETH V31",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"eth-box-core_V1": {
+		"fn": "ETH box core",
 		"iotKind": "shib", "iotSubKind": "shib"
 	}
 }

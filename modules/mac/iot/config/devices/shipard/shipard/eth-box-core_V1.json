@@ -1,0 +1,51 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p15": {"title": "qwiic.sda"},
+		"p12": {"title": "qwiic.scl"}
+	},
+	"fields": {
+		"groups": [
+			{"id":  "opts", "title":  "Nastavení"},
+      {"id":  "espNow", "title":  "ESP-NOW server"}
+		],
+		"columns": [
+      {
+        "id": "i2cEnabled", "group":  "opts", "name": "Povolit i2c sběrnici", "type": "logical", "options": ["saveOnChange"]
+      },
+      {
+        "id": "extBoard", "group":  "opts", "name": "Rozšiřující deska", "type": "enumString", "options": ["saveOnChange"],
+				"enumValues": {"none": "Není", "1w": "1-wire teplotní senzory"}
+      },
+			{
+				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"1w": {
+			"type": "bus/1wire",
+			"portId": "1w",
+			"pin": "p16",
+
+			"_portEnabled": {"extBoard": "1w"}
+		},
+
+		"i2c": {
+			"type": "bus/i2c",
+			"portId": "i2c",
+
+			"pinSDA": "p15",
+			"pinSCL": "p14",
+
+			"_portDisabled": {"i2cEnabled": 0}
+		},
+
+    "esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
+		}
+	},
+	"fwId": "eth-box-core"
+}

@@ -133,6 +133,19 @@ class IotDeviceCfgUpdaterIotBox extends \mac\iot\libs\IotDeviceCfgUpdater
 				}
 				continue;
 			}
+			if ($key === '_portEnabled')
+			{
+				$ioPortItem['disabled'] = 1;
+				foreach ($value as $cfgColumnId => $cfgColumnValue)
+				{
+					if (isset($this->deviceSettings[$cfgColumnId]) && $this->deviceSettings[$cfgColumnId] == $cfgColumnValue)
+					{
+						$ioPortItem['disabled'] = 0;
+						break;
+					}
+				}
+				continue;
+			}
 
 			if ($key[0] === '_' || $key === 'type' || $key === 'portId')
 				continue;

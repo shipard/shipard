@@ -1,0 +1,54 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p15": {"title": "qwiic.sda"},
+		"p12": {"title": "qwiic.scl"}
+	},
+	"fields": {
+		"groups": [
+      {"id":  "can", "title":  "CAN bus router"},
+			{"id":  "opts", "title":  "Nastavení"},
+      {"id":  "espNow", "title":  "ESP-NOW server"}
+		],
+		"columns": [
+      {
+        "id": "i2cEnabled", "group":  "opts", "name": "Povolit i2c sběrnici", "type": "logical", "options": ["saveOnChange"]
+      },
+      {
+        "id": "canRouterEnabled", "group":  "can", "name": "Povolit CAN bus router", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+      },
+			{
+				"id": "espNowServerEnabled", "group":  "espNow", "name": "Povolit ESP-NOW server", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"can-bus-router": {
+			"type": "router/can",
+			"portId": "can",
+
+			"pinRX": 33,
+			"pinTX": 32,
+
+			"_portDisabled": {"canRouterEnabled": 0}
+		},
+
+		"i2c": {
+			"type": "bus/i2c",
+			"portId": "i2c",
+
+			"pinSDA": "p15",
+			"pinSCL": "p14",
+
+			"_portDisabled": {"i2cEnabled": 0}
+		},
+
+
+    "esp-now-server": {
+			"type": "networks/esp-now-server",
+			"portId": "esp-now",
+			"_portDisabled": {"espNowServerEnabled": 0}
+		}
+	},
+	"fwId": "sms72-esp32-eth"
+}
