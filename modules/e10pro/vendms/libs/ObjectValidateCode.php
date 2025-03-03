@@ -46,7 +46,7 @@ class ObjectValidateCode extends ApiObject2
   {
     $c = $this->db()->query('SELECT SUM(amount) AS totalCredit FROM [e10pro_vendms_credits] WHERE [person] = %i', $personNdx, ' AND [docState] = %i', 4000)->fetch();
     if ($c)
-      return $c['totalCredit'];
+      return floatval($c['totalCredit']);
 
     return 0;
   }
