@@ -138,22 +138,12 @@ class Router extends Utility
 		{
 			$object = $this->app->createObject('Shipard.UI.ng.Auth');
 		}
-		elseif ($first === 'files')
-		{ // download files
-			$filesCfg = $this->app()->cfgItem ('registeredClasses.downloadFiles.'.($this->urlPath[1] ?? ''), NULL);
-			if ($filesCfg)
+		elseif ($first === 'arq')
+		{ // anonymous requests
+			$requestCfg = $this->app()->cfgItem ('registeredClasses.anonymousRequests.'.($this->urlPath[1] ?? ''), NULL);
+			if ($requestCfg)
 			{
-				$object = $this->app->createObject($filesCfg['classId']);
-				/*
-				if ($object)
-				{
-					$apiResponseObject->uiRouter = $this->uiRouter;
-					$apiResponseObject->setRequestParams($this->requestParams);
-					$apiResponseObject->run();
-
-				}
-				$object->setDefinition ($filesCfg);
-				*/
+				$object = $this->app->createObject($requestCfg['classId']);
 			}
 		}
 		else
@@ -170,6 +160,7 @@ class Router extends Utility
 				$object->uiCfg = $this->uiCfg;
 			}
 		}
+
 		if ($object)
 		{
 			$object->uiRouter = $this;

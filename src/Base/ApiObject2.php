@@ -10,6 +10,7 @@ class ApiObject2 extends Utility
 {
 	var $requestParams = [];
 	var $result = ['success' => 0];
+	var $uiRouter = NULL;
 
 	public function setRequestParams($params)
 	{

@@ -59,17 +59,9 @@ class AppPageBlank extends Utility
 			$this->pageInfo['pageType'] = $this->pageType();
 		}
 
-		if (!$this->appMode)
-			$c .= $this->createPageCodeBegin();
-
-		//$c .= $this->createPageCodeTitle();
-
-		$c .= $this->createContentCodeBegin ();
-		$c .= $this->createContentCodeInside ();
-		$c .= $this->createContentCodeEnd ();
-
-		if (!$this->appMode)
-			$c .= $this->createPageCodeEnd();
+		$c .= $this->createPageCodeBegin();
+		$c .= $this->createContentCodeInside();
+		$c .= $this->createPageCodeEnd();
 
 		return $c;
 	}
@@ -82,18 +74,6 @@ class AppPageBlank extends Utility
 		$this->wss = $this->app->webSocketServers ();
 		$this->createContent();
 		$this->pageTabs = $this->pageTabs();
-	}
-
-	public function createContentCodeBegin ()
-	{
-		$c = '';
-
-		return $c;
-	}
-
-	public function createContentCodeEnd ()
-	{
-		return '';
 	}
 
 	public function createContentCodeInside ()
@@ -151,6 +131,9 @@ class AppPageBlank extends Utility
 
 		//$c .= "<link rel='stylesheet' type='text/css' href='{$scRoot}/bs/5.3/dist/css/bootstrap.min.css?v530'/>\n";
 
+		//$c .= "<link rel='stylesheet' data-name='vs/editor/editor.main' href='{$scRoot}/libs/monaco-editor-0.47/min/vs/editor/editor.main.css'>";
+
+
 		$themeUrl = "$absUrl{$this->app->urlRoot}/www-root/.ui/ng/themes/" . $this->uiThemeId . "/$style?vv=".$this->uiThemeCfg['integrity']['sha384'];
 		$c .= "<link rel='stylesheet' type='text/css' href='$themeUrl'/>\n";
 
@@ -187,6 +170,7 @@ class AppPageBlank extends Utility
 		}
 		else
 		{
+			// -- core files
 			$jsFiles = Utils::loadCfgFile(__SHPD_ROOT_DIR__.'/ui/clients/ng/js/package.json');
 			foreach ($jsFiles['srcFiles'] as $sf)
 			{
@@ -194,6 +178,15 @@ class AppPageBlank extends Utility
 				$c .= "\t<script type=\"text/javascript\" src=\"{$this->app->urlRoot}/www-root/ui-dev/clients/ng/js/{$sf['fileName']}?v=$cs\"></script>\n";
 			}
 
+			// -- libs
+			foreach ($jsFiles['libs'] as $jsLib)
+			{
+				foreach ($jsLib['srcFiles'] as $sf)
+				{
+					$cs = md5_file(__APP_DIR__."/www-root/ui-dev/clients/ng/js/{$sf['fileName']}");
+					$c .= "\t<script type=\"text/javascript\" src=\"{$this->app->urlRoot}/www-root/ui-dev/clients/ng/js/{$sf['fileName']}?v=$cs\"></script>\n";
+				}
+			}
 		}
 		$c .= "<link rel='shortcut icon' sizes='512x512' href='{$pwaIcon}' id='e10-browser-app-icon'>\n";
 		$c .= "<link rel='apple-touch-icon' sizes='180x180' href='{$pwaIcon}'/>\n";
@@ -269,131 +262,8 @@ class AppPageBlank extends Utility
 		return '</div></body></html>';
 	}
 
-	public function createPageCodeTitle ()
-	{
-		$c = '';
-
-		$c .= "<div id='e10-page-header' class='e10mui pageHeader'>";
-
-		$lmb = NULL;
-		if (!$this->embeddMode)
-			$lmb = $this->leftPageHeaderButton();
-		if ($lmb)
-		{
-			$c .= "<span ";
-
-			if (isset ($lmb['action']))
-				$c .= "class='lmb e10-trigger-action' ";
-			else
-				$c .= "class='lmb link' ";
-
-			if (isset ($lmb['backButton']))
-				$c .= "id='e10-back-button'";
-
-			if (isset($lmb['action']))
-				$c .= " data-action='{$lmb['action']}'";
-			else
-				if (isset($lmb['path']))
-					$c .= " data-path='{$lmb['path']}'";
-
-			$c .= ">";
-
-			$c .= $this->app()->ui()->icon($lmb['icon']);
-			$c .= "</span>";
-		}
-
-		$c .= "<div class='pageTitle'>";
-		$c .= "<h1>".Utils::es($this->title1())."</h1>";
-		$c .= "<h2>".Utils::es($this->title2())."</h2>";
-		$c .= '</div>';
-
-		$rmbs = NULL;
-		if (!$this->embeddMode)
-			$rmbs = $this->rightPageHeaderButtons();
-		if ($rmbs)
-		{
-			$c .= "<span class='rmbs'>";
-			foreach ($rmbs as $rmb)
-			{
-				$c .= "<span ";
-
-				if (isset ($rmb['action']))
-					$c .= "class='e10-trigger-action' ";
-				else
-					$c .= "class='link' ";
-
-				if (isset ($rmb['backButton']))
-					$c .= "id='e10-back-button'";
-
-				if (isset($rmb['action']))
-					$c .= " data-action='{$rmb['action']}'";
-				else
-				if (isset($rmb['path']))
-					$c .= " data-path='{$rmb['path']}'";
-				else
-				if (isset($rmb['url']))
-					$c .= " data-url='{$rmb['url']}'";
-
-				if (isset ($rmb['data']))
-				{
-					foreach ($rmb['data'] as $dataKey => $dataValue)
-						$c .= " data-{$dataKey}='{$dataValue}'";
-				}
-
-				$c .= ">";
-
-				$c .= $this->app()->ui()->icon($rmb['icon']);
-				$c .= "</span>";
-			}
-			$c .= '</span>';
-		}
-		if (!$this->embeddMode)
-			$c .= $this->createPageCodeHeaderTabs();
-		$c .= "</div>";
-
-		if ($this->embeddMode)
-		{
-			$embeddParts = [];
-			for($epi = 2; $epi < 6; $epi++)
-			{
-				$up = $this->app->requestPath($epi);
-				if ($up === '')
-					break;
-				$embeddParts[] = $up;
-			}
-
-			if (count($embeddParts))
-				$c .= "<script>const g_initDataPath = '".implode('/', $embeddParts)."';</script>";
-		}
-		return $c;
-	}
-
-	public function createPageCodeHeaderTabs ()
-	{
-		if ($this->pageTabs === FALSE)
-			return '';
-
-		$c = '';
-
-		$c .= "<ul id='e10-page-tabs' class='e10-page-tabs'>";
-		foreach ($this->pageTabs as $tabId => $t)
-		{
-			$class = '';
-			if (isset($t['active']) && $t['active'])
-				$class = 'active';
-
-			$c .= "<li class='$class' id='e10-page-tab-$tabId'>";
-			$c .= Utils::es ($t['text']);
-			$c .= "</li>";
-		}
-		$c .= '</ul>';
-
-		return $c;
-	}
-
 	public function createContent ()
 	{
-
 	}
 
 	public function createCode ()
