@@ -49,6 +49,7 @@ class TableFilePortals extends DbTable
         'fn' => $r ['fullName'],
         'sn' => $r ['shortName'],
 				'rf' => $r ['rootFolder'],
+				'startUrl' => $r ['startUrl'],
       ];
     }
 
@@ -150,6 +151,7 @@ class FormFilePortal extends TableForm
 			$this->addColumnInput ('fullName');
 			$this->addColumnInput ('shortName');
 			$this->addColumnInput ('rootFolder');
+			$this->addColumnInput ('startUrl');
 		$this->closeForm ();
 	}
 }

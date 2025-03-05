@@ -1,0 +1,9 @@
+{
+  "7001": {
+    "fn": "Pozvánka ke stažení souboru",
+    "cn": "Pozvánka ke stažení",
+    "sc": "FPDI",
+    "classId": "e10pro.fp.libs.ReportDownloadInvite",
+    "ndx": 7001
+  }
+}

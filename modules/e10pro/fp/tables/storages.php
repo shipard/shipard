@@ -103,6 +103,8 @@ class FormStorage extends TableForm
 			$this->addColumnInput ('fullName');
 			$this->addColumnInput ('shortName');
 			$this->addColumnInput ('rootFolder');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('emailForSendDownloads');
 		$this->closeForm ();
 	}
 }

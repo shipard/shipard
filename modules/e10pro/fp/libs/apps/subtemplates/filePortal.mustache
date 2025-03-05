@@ -82,11 +82,21 @@
           </td>
           <td style="vertical-align: middle;">{{fs}}</td>
           <td style="white-space: nowrap; vertical-align: middle;">
-            <span class='shpd-btn shpd-btn-primary' href='{{uiRoot}}api/v2/files/download/fpd/{{data.filePortalUId}}/{{data.storageUId}}/{{data.activeFolder}}/{{name}}' download="{{name}}">{{{@icon;icon:system/actionDownload}}} Stáhnout</span>
-            <button class="shpd-btn shpd-btn-secondary" style="margin-left: .2rem;">{{{@icon;icon:system/iconEmail}}} Odeslat</button>
+            <a class='shpd-btn shpd-btn-primary'
+            href='{{uiRoot}}api/v2/files/download/fpd/{{data.filePortalUId}}/{{data.storageUId}}/{{data.activeFolder}}/{{name}}'
+            download="{{name}}">{{{@icon;icon:system/actionDownload}}} Stáhnout</a>
+            <button
+              class="shpd-btn shpd-btn-secondary shp-widget-action" style="margin-left: .2rem;"
+              data-action='wizard'
+              data-action-param-fileportal-uid='{{data.filePortalUId}}'
+              data-action-param-storage-uid='{{data.storageUId}}'
+              data-action-param-active-folder='{{data.activeFolder}}'
+              data-action-param-file-name='{{name}}'
+              data-action-param-class-id='e10pro.fp.libs.apps.WizardDownloadInvite'
+            >{{{@icon;icon:system/iconEmail}}} Odeslat</button>
           </td>
           <td style="white-space: nowrap; vertical-align: middle;">
-            <span>Odesláno {{{@icon;icon:system/iconCheck}}}</span> 
+            <span>Odesláno {{{@icon;icon:system/iconCheck}}}</span>
           </td>
         </tr>
       {{/data.files}}

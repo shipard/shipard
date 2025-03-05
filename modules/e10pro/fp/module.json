@@ -2,11 +2,12 @@
 	"id": "e10pro.fp",
 	"name": "filePortal",
 	"modules": ["wkf/core"],
-	"tables": ["filePortals", "storages", "storagesUsers"],
+	"tables": ["filePortals", "storages", "storagesUsers", "downloadInvites"],
 	"config": [
 		{"id": "+apps", "file": "apps.json"},
 		{"id": "+appSkeleton", "file": "appSkeleton.json"},
 		{"id": "+e10.persons.roles", "file": "e10pro.fp.roles.json"},
-		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+		{"id": "+registeredClasses", "file": "registeredClasses.json"},
+		{"id": "+e10.reports.sendReports", "file": "sendReports.json"}
 	]
 }

@@ -157,9 +157,9 @@ class FilesEngine extends \Shipard\Base\Utility
 		header ("Content-type: $mime");
 		header ("Cache-control: max-age=10368000");
 		header ('Expires: '.gmdate('D, d M Y H:i:s', time()+10368000).'GMT'); // 120 days
-		header ('Content-Disposition: inline; filename=' . basename ($ffn));
-
+    header ("Content-Disposition: ".'attachment'."; filename*=UTF-8''" . rawurlencode(Utils::safeChars(basename($relFileName), TRUE)));
     header ('X-Accel-Redirect: ' . $this->app->urlRoot.substr($ffn, strlen(__APP_DIR__)));
+
     die();
   }
 

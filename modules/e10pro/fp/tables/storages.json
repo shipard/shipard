@@ -10,6 +10,8 @@
 
 		{"id": "rootFolder", "name": "Kořenový adresář", "type": "string", "len": 60},
 
+		{"id": "emailForSendDownloads", "name": "Email pro zasílání výzev ke stažení", "type": "string", "len": 120},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

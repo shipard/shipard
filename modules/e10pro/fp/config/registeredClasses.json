@@ -4,5 +4,8 @@
 	},
 	"uploadFiles": {
 		"fpu": {"classId": "e10pro.fp.libs.apps.ActionUploadFile"}
+	},
+	"anonymousRequests": {
+		"fpid": {"classId": "e10pro.fp.libs.apps.ActionInviteDownloadFile"}
 	}
 }

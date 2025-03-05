@@ -9,6 +9,8 @@
 
 		{"id": "rootFolder", "name": "Kořenový adresář", "type": "string", "len": 60},
 
+		{"id": "startUrl", "name": "Začátek URL", "type": "string", "len": 90},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

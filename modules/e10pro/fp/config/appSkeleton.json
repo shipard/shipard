@@ -9,7 +9,8 @@
 						"items": {
 							"filePortals": {"t1": "Portály", "object": "viewer", "table": "e10pro.fp.filePortals", "viewer": "default", "order": 100000},
 							"storages": {"t1": "Úložiště", "object": "viewer", "table": "e10pro.fp.storages", "viewer": "default", "order": 110000},
-							"storagesUsers": {"t1": "Uživatelé", "object": "viewer", "table": "e10pro.fp.storagesUsers", "viewer": "default", "order": 120000}
+							"storagesUsers": {"t1": "Uživatelé", "object": "viewer", "table": "e10pro.fp.storagesUsers", "viewer": "default", "order": 120000},
+							"downloadInvites": {"t1": "Pozvánky", "object": "viewer", "table": "e10pro.fp.downloadInvites", "viewer": "default", "order": 130000}
 						}
 					}
 				}
