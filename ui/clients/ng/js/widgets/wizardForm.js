@@ -61,7 +61,7 @@ class ShipardWizardForm extends ShipardTableForm
 
     this.elementPrefixedAttributes (this.rootElm, 'data-action-param-', apiParams);
     this.elementPrefixedAttributes (e, 'data-action-param-', apiParams);
-    console.log('wizardNext FD: ', this.formData);
+    //console.log('wizardNext FD: ', this.formData);
     this.apiCall('wizardNext', apiParams);
 
     return 0;
@@ -93,15 +93,15 @@ class ShipardWizardForm extends ShipardTableForm
 
     if (data['response']['type'] === 'createGuideForm')
     {
-      console.log("---FROM: CREATE-GUIDE-FORM---", data);
       this.rootElm.innerHTML = data['response']['hcFull'];
       if (data['response']['formData'] !== undefined)
         this.setFormData(data['response']['formData']);
       else
         this.setFormData({recData: {}});
 
-      console.log('wizardForm: ON....');
       this.on(this, 'change', 'input', function (e, ownerWidget){ownerWidget.inputValueChanged(e)});
+
+      this.focusFirstInput();
 
       return;
     }

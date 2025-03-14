@@ -100,4 +100,11 @@ class ShipardCoreForm extends ShipardWidget
       this.formData['recData'][inputId] = value;
     }
   }
+
+  focusFirstInput()
+  {
+    let firstInput = this.rootElm.querySelector('input:not([type=hidden]), select, textarea');
+    if (firstInput)
+      firstInput.focus();
+  }
 }

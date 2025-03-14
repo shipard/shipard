@@ -103,7 +103,11 @@ URLSearchParams({data:btoa(webrtc.localDescription.sdp)})}).then(response=>respo
 RTCSessionDescription({type:'answer',sdp:atob(data)}));}catch(e){console.warn(e);}});};const
 webrtcSendChannel=webrtc.createDataChannel('rtsptowebSendChannel');webrtcSendChannel.onopen=(event)=>{console.log(`${webrtcSendChannel.label}has
 opened`);webrtcSendChannel.send('ping');};webrtcSendChannel.onclose=(_event)=>{console.log(`${webrtcSendChannel.label}has
-closed`);startPlay(videoEl,url);};webrtcSendChannel.onmessage=event=>console.log(event.data);}}class
+closed`);startPlay(videoEl,url);};webrtcSendChannel.onmessage=event=>console.log(event.data);}startVideoGO2RTC(videoEl){let
+baseUrl='https://test-video.shipard.xxx:4443';let
+streamId='cam1';const
+video=document.createElement('video-stream');video.src=new
+URL('api/ws?src='+encodeURIComponent(streamId),baseUrl);videoEl.appendChild(video);}}class
 ShipardFilesUploader{rootElm=null;inputElm=null;infoElm=null;uploadInProgress=0;uploadDone=false;init(rootElm){this.rootElm=rootElm;this.inputElm=this.rootElm.querySelector('input[type="file"]');this.infoElm=this.rootElm.querySelector('.shpd-files-upload-info');}resetInfo(){var
 info='<table class="default fullWidth">';for(var
 i=0;i<this.inputElm.files.length;i++){var
@@ -237,7 +241,8 @@ inputId=input.getAttribute('name');if(!inputId)return;const
 iv=input.value;let
 siv=iv;if(input.classList.contains('e10-inputDateN')){if(iv===null||iv==='0000-00-00'||iv==='')siv=null;}else
 if(input.classList.contains('e10-inputLogical')){siv=input.checked?1:0;}this.setDataInputValue(inputId,siv);}setDataInputValue(inputId,value){var
-iidParts=inputId.split('.');if(iidParts.length==1){this.formData['recData'][inputId]=value;}}}class
+iidParts=inputId.split('.');if(iidParts.length==1){this.formData['recData'][inputId]=value;}}focusFirstInput(){let
+firstInput=this.rootElm.querySelector('input:not([type=hidden]), select, textarea');if(firstInput)firstInput.focus();}}class
 ShipardTableForm
 extends
 ShipardCoreForm{init(e){console.log("ShipardTableForm::init");super.init(e);this.rootElm.style.display='grid';}create(e){let
@@ -259,9 +264,9 @@ extends
 ShipardTableForm{pageNumber=0;init(e){console.log("ShipardWizardForm::init");super.init(e);this.rootElm.style.display='grid';}create(e){let
 apiParams={'cgType':2,'formOp':e.formOp,'pageNumber':this.pageNumber,};this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('createGuideForm',apiParams);}doAction(actionId,e){console.log("guide form action: ",actionId);switch(actionId){case'wizardnext':return this.wizardNext(e);case'closeForm':return this.closeForm(e);}return super.doAction(actionId,e);}wizardNext(e){if(this.doUploadFiles(e)){setTimeout(function(){this.wizardNext(e);}.bind(this),200);return;}const
 noClose=parseInt(e.getAttribute('data-noclose'));this.pageNumber++;this.getFormData();let
-apiParams={'cgType':2,'formOp':'wizardNext','formData':this.formData,'noCloseForm':noClose,'pageNumber':this.pageNumber,'nazdar':'ahoj',};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.elementPrefixedAttributes(e,'data-action-param-',apiParams);console.log('wizardNext FD: ',this.formData);this.apiCall('wizardNext',apiParams);return 0;}checkForm(changedInput){this.getFormData();let
-apiParams={'cgType':2,'formOp':'check','formData':this.formData,'noCloseForm':1,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.apiCall('checkForm',apiParams);return 0;}doWidgetResponse(data){if(data['response']['type']==='createGuideForm'){console.log("---FROM: CREATE-GUIDE-FORM---",data);this.rootElm.innerHTML=data['response']['hcFull'];if(data['response']['formData']!==undefined)this.setFormData(data['response']['formData']);else
-this.setFormData({recData:{}});console.log('wizardForm: ON....');this.on(this,'change','input',function(e,ownerWidget){ownerWidget.inputValueChanged(e)});return;}if(data['response']['type']==='wizardNext'){let
+apiParams={'cgType':2,'formOp':'wizardNext','formData':this.formData,'noCloseForm':noClose,'pageNumber':this.pageNumber,'nazdar':'ahoj',};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.elementPrefixedAttributes(e,'data-action-param-',apiParams);this.apiCall('wizardNext',apiParams);return 0;}checkForm(changedInput){this.getFormData();let
+apiParams={'cgType':2,'formOp':'check','formData':this.formData,'noCloseForm':1,};this.elementPrefixedAttributes(this.rootElm,'data-action-param-',apiParams);this.apiCall('checkForm',apiParams);return 0;}doWidgetResponse(data){if(data['response']['type']==='createGuideForm'){this.rootElm.innerHTML=data['response']['hcFull'];if(data['response']['formData']!==undefined)this.setFormData(data['response']['formData']);else
+this.setFormData({recData:{}});this.on(this,'change','input',function(e,ownerWidget){ownerWidget.inputValueChanged(e)});this.focusFirstInput();return;}if(data['response']['type']==='wizardNext'){let
 noCloseForm=data['response']['saveResult']['noCloseForm']??0;if(!noCloseForm){const
 parentWidgetType=this.rootElm.getAttribute('data-parent-widget-type');if(parentWidgetType==='viewer'){const
 parentWidgetId=this.rootElm.getAttribute('data-parent-widget-id');if(parentWidgetId){const
