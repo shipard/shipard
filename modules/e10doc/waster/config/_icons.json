@@ -4,5 +4,41 @@
         "fa6pro":"fa-truck-moving",
         "bsi":"bi-truck",
         "mdi":""
+    },
+    "tables/e10doc.waster.wasteOps":{
+        "fa5":"fa-stream",
+        "fa6pro":"fa-stream",
+        "bsi":"bi-list-nested",
+        "mdi":""
+    },
+    "tables/e10doc.waster.wasteReturns":{
+        "fa5":"fa-file-alt",
+        "fa6pro":"fa-file-alt",
+        "bsi":"bi-file-earmark",
+        "mdi":""
+    },
+    "tables/e10doc.base.wasteOrigins":{
+        "fa5":"fa-warehouse",
+        "fa6pro":"fa-warehouse",
+        "bsi":"bi-buildings",
+        "mdi":""
+    },
+    "tables/e10.witems.itemCodes":{
+        "fa5":"fa-barcode",
+        "fa6pro":"fa-barcode",
+        "bsi":"bi-upc",
+        "mdi":""
+    },
+    "tables/e10.witems.itemsGroups":{
+        "fa5":"fa-shopping-bag",
+        "fa6pro":"fa-shopping-bag",
+        "bsi":"bi-bag",
+        "mdi":""
+    },
+    "tables/e10.witems.itemsGroupsItems":{
+        "fa5":"fa-circle",
+        "fa6pro":"fa-circle",
+        "bsi":"bi-circle-fill",
+        "mdi":""
     }
 }

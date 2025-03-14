@@ -1,0 +1,32 @@
+{
+    "tables/e10pro.fp.filePortals":{
+        "fa5": "fa-desktop",
+        "fa6pro": "fa-desktop",
+        "bsi": "bi-display",
+        "mdi": ""
+    },
+    "tables/e10pro.fp.storages":{
+        "fa5": "fa-database",
+        "fa6pro": "fa-database",
+        "bsi": "bi-database",
+        "mdi": ""
+    },
+    "tables/e10pro.fp.storagesUsers":{
+        "fa5": "fa-users",
+        "fa6pro": "fa-users",
+        "bsi": "bi-people",
+        "mdi": ""
+    },
+    "tables/e10pro.fp.downloadInvites":{
+        "fa5": "fa-envelope",
+        "fa6pro": "fa-envelope",
+        "bsi": "bi-envelope",
+        "mdi": ""
+    },
+    "tables/e10pro.fp.downloadsLog":{
+        "fa5": "fa-receipt",
+        "fa6pro": "fa-receipt",
+        "bsi": "bi-receipt",
+        "mdi": ""
+    }
+}
