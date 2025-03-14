@@ -3,6 +3,9 @@
 namespace e10pro\fp\libs;
 
 
+/**
+ * class ReportDownloadInvite
+ */
 class ReportDownloadInvite extends \Shipard\Report\FormReport
 {
 	function init ()
@@ -20,12 +23,18 @@ class ReportDownloadInvite extends \Shipard\Report\FormReport
 	{
 		parent::loadData();
 
-    //$this->sendReportNdx = 102;
+    $this->sendReportNdx = 7001;
 		$this->loadReportsTexts();
 	}
 
 	public function reportWasSent(\Shipard\Report\MailMessage $msg)
 	{
+		$update = [
+			'emailSent' => 1,
+			'tsSent' => new \DateTime(),
+		];
+
+		$this->db()->query('UPDATE [e10pro_fp_downloadInvites] SET ', $update, ' WHERE ndx = %i', $this->recData['ndx']);
 	}
 
 	protected function loadReportsTexts()

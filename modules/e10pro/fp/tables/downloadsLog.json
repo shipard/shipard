@@ -1,0 +1,24 @@
+{
+	"id": "e10pro.fp.downloadsLog", "sql": "e10pro_fp_downloadsLog", "name": "Log stahování",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "storage", "name": "Úložiště", "type": "int", "reference": "e10pro.fp.storages"},
+    {"id": "filePath", "name": "Cesta na soubor", "type": "string", "len": 250},
+    {"id": "baseFileName", "name": "Název souboru", "type": "string", "len": 250},
+		{"id": "user", "name": "Uživatel", "type": "int", "reference": "e10.users.users"},
+		{"id": "invite", "name": "Pozvánka", "type": "int", "reference": "e10pro.fp.downloadInvites"},
+		{"id": "ipAddress", "name": "IP adresa", "type": "string", "len": 45, "options": ["ascii"]},
+    {"id": "tsDownload", "name": "Okamžik stažení", "type": "timestamp"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.fp.ViewDownloadsLog",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10pro.fp.ViewDetailDownloadLog"}
+			}
+		}
+	],
+	"forms": [
+		{"id": "default", "class": "e10pro.fp.FormDownloadLog"}
+	]
+}

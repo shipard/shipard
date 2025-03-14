@@ -70,8 +70,16 @@ class ViewDownloadInvites extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
-//		$listItem ['storage'] = $item['storageFullName'];
-//		$listItem ['user'] = $item['userFullName'];
+		$listItem['t1'] = ['text' => $item['storageFullName'], 'suffix' => $item['email']];
+		$listItem['t2'] = ['text' => $item['authorFullName'], 'icon' => 'system/iconUser'];
+		$listItem['i2'] = [['text' => Utils::datef($item['tsCreated'], '%D%t'), 'icon' => 'system/iconPencil']];
+
+		if ($item['emailSent'])
+		{
+			$listItem['i2'][] = ['text' => Utils::datef($item['tsSent'], '%D%t'), 'icon' => 'system/iconPaperPlane'];
+		}
+
+		$listItem['t3'] = ['text' => $item['filePath'].'/'.$item['baseFileName'], 'icon' => 'system/iconFile'];
 
 		return $listItem;
 	}
@@ -83,10 +91,10 @@ class ViewDownloadInvites extends TableView
 		$q = [];
     array_push ($q, 'SELECT [di].* ');
 		array_push ($q, ', [storages].[fullName] AS [storageFullName]');
-    //array_push ($q, ', [users].[fullName] AS [userFullName]');
+    array_push ($q, ', [authors].[fullName] AS [authorFullName]');
 		array_push ($q, ' FROM [e10pro_fp_downloadInvites] AS [di]');
 		array_push ($q, ' LEFT JOIN [e10pro_fp_storages] AS [storages] ON [di].[storage] = [storages].[ndx]');
-    //array_push ($q, ' LEFT JOIN [e10_users_users] AS [users] ON [di].[user] = [users].[ndx]');
+    array_push ($q, ' LEFT JOIN [e10_users_users] AS [authors] ON [di].[authorUser] = [authors].[ndx]');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext

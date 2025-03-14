@@ -31,8 +31,8 @@ class DownloadInvitesEngine extends \Shipard\Base\Utility
 
       'uid' => '',
 
-      'author' => $this->app()->uiUserNdx(),
-      'created' => new \DateTime(),
+      'authorUser' => $this->app()->uiUserNdx(),
+      'tsCreated' => new \DateTime(),
 
       'docState' => 4000, 'docStateMain' => 2,
     ];
@@ -43,7 +43,7 @@ class DownloadInvitesEngine extends \Shipard\Base\Utility
 	public function sendInvite ($inviteNdx)
 	{
     $tableInvites = $this->app()->table('e10pro.fp.downloadInvites');
-    $inviteRecData = $tableInvites->loadRec($inviteNdx);
+    $inviteRecData = $tableInvites->loadItem($inviteNdx);
     if (!$inviteRecData)
       return;
 
@@ -81,4 +81,19 @@ class DownloadInvitesEngine extends \Shipard\Base\Utility
 
 		$report->reportWasSent($msg);
 	}
+
+  public function sendAll()
+  {
+    $q = [];
+    array_push ($q, 'SELECT * FROM [e10pro_fp_downloadInvites]');
+    array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [emailSent] = %i', 0);
+    array_push ($q, ' AND [docState] = %i', 4000);
+
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      $this->sendInvite($r['ndx']);
+    }
+  }
 }

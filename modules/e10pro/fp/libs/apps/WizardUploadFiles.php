@@ -35,7 +35,7 @@ class WizardUploadFiles extends Wizard
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
 		$this->openForm ();
-			$this->addDataInput('uploadUrl', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'URL pro upload'], /*TableForm::coHidden*/0);
+			$this->addDataInput('uploadUrl', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'URL pro upload'], TableForm::coHidden);
 
 			$this->addInputFiles(['upload-url' => $this->recData['uploadUrl']]);
 		$this->closeForm ();
@@ -43,20 +43,6 @@ class WizardUploadFiles extends Wizard
 
 	public function uploadFiles ()
 	{
-		/*
-		error_log("### CREATE-FOLDER: " . json_encode($this->recData));
-		$filesEngine = new \e10pro\fp\libs\FilesEngine ($this->app());
-
-		$filesEngine->setFilePortal(intval($this->recData['filePortalNdx']));
-		$filesEngine->setStorage(intval($this->recData['storageNdx']));
-		$result = $filesEngine->createNewFolder($this->recData['activeFolder'], $this->recData['folderName']);
-
-		if (!$result)
-			$this->stepResult ['close'] = 1;
-		*/
-
-		//$this->stepResult ['refreshDetail'] = 1;
-		$this->stepResult['AHOJ'] = 12345;
 		$this->stepResult['lastStep'] = 1;
 	}
 

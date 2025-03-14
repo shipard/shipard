@@ -2,7 +2,7 @@
 	"id": "e10pro.fp",
 	"name": "filePortal",
 	"modules": ["wkf/core"],
-	"tables": ["filePortals", "storages", "storagesUsers", "downloadInvites"],
+	"tables": ["filePortals", "storages", "storagesUsers", "downloadInvites", "downloadsLog"],
 	"config": [
 		{"id": "+apps", "file": "apps.json"},
 		{"id": "+appSkeleton", "file": "appSkeleton.json"},

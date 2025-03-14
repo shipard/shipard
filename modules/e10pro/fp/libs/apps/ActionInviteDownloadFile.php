@@ -39,7 +39,7 @@ class ActionInviteDownloadFile extends AppPageAnonymousRequest
     $this->filesEngine = new \e10pro\fp\libs\FilesEngine ($this->app());
 		$this->filesEngine->setFilePortal($portalRecData['uid']);
 		$this->filesEngine->setStorage($storageRecData['uid']);
-    $this->filesEngine->downloadFile($fileName);
+    $this->filesEngine->downloadFile($fileName, $requestRecData['ndx']);
   }
 
   public function run()

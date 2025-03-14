@@ -42,15 +42,19 @@ class WizardDownloadInvite extends Wizard
 		if (!isset($this->recData['emai']))
 			$this->recData['folderName'] = '';
 
+		$storage = $this->app()->db()->query('SELECT * FROM [e10pro_fp_storages] WHERE [uid] = %s', $this->recData['storageUId'])->fetch();
+		if ($storage)
+			$this->recData['emails'] = $storage['emailForSendDownloads'] ?? '';
+
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 
 		$this->openForm ();
 			$this->addDataInput('filePortalUId', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'Portál'], TableForm::coHidden);
 			$this->addDataInput('storageUId', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'Úložiště'], TableForm::coHidden);
 			$this->addDataInput('activeFolder', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'Aktivní složka'], TableForm::coHidden);
-			$this->addDataInput('fileName', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'Soubor']);
+			$this->addDataInput('fileName', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'Soubor'], TableForm::coHidden);
 
-			$this->addDataInput('emails', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'E-mail']);
+			$this->addDataInput('emails', ['type' => DataModel::ctString, 'len' => 100, 'name' => 'E-mail'], TableForm::coFocus);
 
 		$this->closeForm ();
 	}

@@ -58,7 +58,7 @@ class WidgetFilePortal extends \Shipard\UI\Core\UIWidget
 		}
 
 		$this->filesEngine->setActiveFolder($activeFolder);
-		$this->filesEngine->load();
+		$this->filesEngine->loadFiles();
   }
 
 	function renderData()

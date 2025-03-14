@@ -11,8 +11,13 @@
 
     {"id": "email", "name": "Email", "type": "string", "len": 120},
 
+		{"id": "emailSent", "name": "Email odeslán", "type": "logical"},
+
 		{"id": "authorUser", "name": "Autor", "type": "int", "reference": "e10.users.users"},
-    {"id": "created", "name": "Okamžik vytvoření", "type": "timestamp"},
+
+    {"id": "tsCreated", "name": "Okamžik vytvoření", "type": "timestamp"},
+    {"id": "tsSent", "name": "Okamžik odeslání", "type": "timestamp"},
+    {"id": "tsValidTo", "name": "Okamžik ukončení platnosti", "type": "timestamp"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
