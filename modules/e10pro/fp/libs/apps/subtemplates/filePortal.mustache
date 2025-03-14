@@ -30,13 +30,17 @@
     top: 0;
     z-index: 1;
   }
+
+  thead th:first-child, thead th:last-child {
+    border-radius: 0 !important;
+  }
 }
 </style>
 
 <div class="shp-fp">
   {{#data.storages.0}}
     <div class="shp-fp-menu">
-      <ol class="breadcrumb" style="margin: .9rem 0;"><li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li></ol>
+      <ol class="breadcrumb" style="margin: .8rem .5rem;"><li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li></ol>
       <table class='default fullWidth no-border padded'>
         <tr>
           <th></th>
@@ -55,7 +59,7 @@
   {{^data.storages.0}}
     <!--<h3>{{data.storageName}}</h3>-->
     <div class="shp-fp-menu">
-      <div style="display: flex; margin: .5rem 0;">
+      <div style="display: flex; margin: .5rem;">
         <ol class="breadcrumb" style="flex-grow: 1;">
           <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li>
           <li><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='/'>{{data.storageName}}</span></li>
@@ -82,8 +86,8 @@
       <table class='default fullWidth no-border padded hover'>
         <thead>
         <tr>
-          <th></th>
-          <th style='width: 40%;'>Název</th>
+          <th style="width: 1.5rem;"></th>
+          <th style='width: 50%;'>Název</th>
           <th>Velikost</th>
           <th>Akce</th>
           <th>Stav</th>
@@ -92,7 +96,7 @@
 
         {{#data.activeFolder}}
           <tr>
-            <td style='width: 2rem; text-align: center;'>{{{@icon;icon:user/folder}}}</td>
+            <td style='text-align: center;'>{{{@icon;icon:user/folder}}}</td>
             <td><span class="shp-widget-action" data-action='set-param-value' data-param-name='doUpFolder' data-value='UP'>Zpět</span></td>
             <td></td>
             <td></td>
@@ -102,7 +106,7 @@
 
         {{#data.folders}}
           <tr>
-            <td style='width: 2rem; text-align: center; vertical-align: middle;'>{{{@icon;icon:user/folder}}}</td>
+            <td style='text-align: center; vertical-align: middle;'>{{{@icon;icon:user/folder}}}</td>
             <td><span class="shp-widget-action" data-action='set-param-value' data-param-name='doFolder' data-value='{{rpath}}'>{{name}}</span></td>
             <td></td>
             <td></td>
@@ -112,8 +116,8 @@
 
         {{#data.files}}
           <tr>
-            <td>{{{@icon;icon:user/file}}}</td>
-            <td style='width: 50%; vertical-align: middle;'>
+            <td style='vertical-align: middle; text-align: center;'>{{{@icon;icon:user/file}}}</td>
+            <td style='vertical-align: middle;'>
               {{name}}
             </td>
             <td style="vertical-align: middle;">{{fs}}</td>
@@ -131,9 +135,9 @@
                 data-action-param-class-id='e10pro.fp.libs.apps.WizardDownloadInvite'
               >{{{@icon;icon:system/iconEmail}}} Odeslat</button>
             </td>
-            <td style="white-space: nowrap; vertical-align: middle;">
+            <td style="vertical-align: middle;">
               {{#invite}}<span>{{{@icon;icon:system/iconCheck}}} Odesláno {{createDateTime}} na {{email}}</span>{{/invite}}
-              {{#download}}<span>{{{@icon;icon:system/actionDownload}}} Staženo {{dlDateTime}}</span>{{/download}}
+              {{#download}}<span style="white-space: nowrap;">{{{@icon;icon:system/actionDownload}}} Staženo {{dlDateTime}}</span>{{/download}}
             </td>
           </tr>
         {{/data.files}}
