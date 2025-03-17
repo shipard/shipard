@@ -23,6 +23,8 @@ class ReportDownloadInvite extends \Shipard\Report\FormReport
 	{
 		parent::loadData();
 
+		$this->data['downloadUrl'] = $this->table->downloadUrl($this->recData);
+
     $this->sendReportNdx = 7001;
 		$this->loadReportsTexts();
 	}
