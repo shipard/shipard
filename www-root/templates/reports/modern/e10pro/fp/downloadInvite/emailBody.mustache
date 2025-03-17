@@ -1,0 +1,32 @@
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+Dobrý den,
+
+posíláme Vám odkaz na stažení souboru {{data.head.baseFileName}}.
+
+Pro jeho stáhnutí klikněte na následující odkaz:
+{{data.downloadUrl}}
+
+S pozdravem,
+
+--
+  {{cfgItem.options.core.ownerFullName}}
+  {{cfgItem.options.core.ownerPhone}}
+  {{cfgItem.options.core.ownerEmail}}
+
+---------
+
+Hello,
+
+we are sending you a link to download the file {{data.head.baseFileName}}.
+
+Click on the following link to download it:
+{{data.downloadUrl}}
+
+Best wishes,
+
+--
+  {{cfgItem.options.core.ownerFullName}}
+  {{cfgItem.options.core.ownerPhone}}
+  {{cfgItem.options.core.ownerEmail}}
+{{/data.reportTexts.emailBody}}
