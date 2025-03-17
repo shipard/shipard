@@ -32,7 +32,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	{
 		switch ($cronType)
 		{
-			case 'ever': $this->onCronEver(); break;
+			case 'services': $this->onCronEver(); break;
 		}
 		return TRUE;
 	}
