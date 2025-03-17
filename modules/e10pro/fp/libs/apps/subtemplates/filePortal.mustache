@@ -41,11 +41,15 @@
   {{#data.storages.0}}
     <div class="shp-fp-menu">
       <ol class="breadcrumb" style="margin: .8rem .5rem;"><li><span class="shp-widget-action" data-action='set-param-value' data-param-name='storage' data-value=''>{{{@icon;icon:system/actionHomePage}}}</span></li></ol>
+    </div>
+    <div class="shp-fp-content">
       <table class='default fullWidth no-border padded'>
-        <tr>
-          <th></th>
-          <th>Název</th>
-        </tr>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Název</th>
+          </tr>
+        </thead>
         {{#data.storages}}
           <tr>
             <td style='width: 2rem; text-align: center;'>{{{@icon;icon:system/iconUser}}}</td>

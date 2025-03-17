@@ -20,7 +20,7 @@ class TableStorages extends DbTable
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
 	{
 		parent::checkBeforeSave ($recData, $ownerData);
-		if (isset ($recData['uid']) && $recData['uid'] === '')
+		if (!isset ($recData['uid']) || $recData['uid'] == '')
 		{
 			$recData['uid'] = Utils::createToken(8, FALSE, TRUE);
 		}
