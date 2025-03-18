@@ -31,6 +31,9 @@ class DownloadInvitesEngine extends \Shipard\Base\Utility
 
       'uid' => '',
 
+      'tsValidTo' => new \DateTime('+7 days'),
+      'maxDownloadCnt' => 5,
+
       'authorUser' => $this->app()->uiUserNdx(),
       'tsCreated' => new \DateTime(),
 

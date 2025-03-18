@@ -102,12 +102,17 @@ class ViewDownloadInvites extends TableView
 		{
 			array_push ($q, ' AND (');
 			array_push ($q, ' [storages].[fullName] LIKE %s', '%'.$fts.'%');
-			//array_push ($q, ' OR [users].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [di].[baseFileName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
-		$this->queryMain ($q, '[di].', ['[storages].[fullName]', '[ndx]']);
+		$this->queryMain ($q, '[di].', ['di.tsCreated DESC', '[ndx]']);
 		$this->runQuery ($q);
+	}
+
+	public function createToolbar ()
+	{
+		return [];
 	}
 }
 
@@ -130,7 +135,10 @@ class FormDownloadInvite extends TableForm
 			$this->addColumnInput('baseFileName');
 			$this->addColumnInput('email');
 			$this->addColumnInput('authorUser');
-			//$this->addColumnInput('created');
+
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput('tsValidTo');
+			$this->addColumnInput('maxDownloadCnt');
 		$this->closeForm ();
 	}
 }

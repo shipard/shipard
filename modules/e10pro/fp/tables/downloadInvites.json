@@ -17,7 +17,8 @@
 
     {"id": "tsCreated", "name": "Okamžik vytvoření", "type": "timestamp"},
     {"id": "tsSent", "name": "Okamžik odeslání", "type": "timestamp"},
-    {"id": "tsValidTo", "name": "Okamžik ukončení platnosti", "type": "timestamp"},
+    {"id": "tsValidTo", "name": "Okamžik ukončení platnosti", "label": "Platné do", "type": "timestamp"},
+		{"id": "maxDownloadCnt", "name": "Max. počet stažení", "type": "int"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

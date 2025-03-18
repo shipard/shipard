@@ -2,7 +2,7 @@
 
 namespace e10pro\fp;
 
-use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
+use \Shipard\Viewer\TableViewGrid, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
 use \Shipard\Utils\Utils;
 
 
@@ -33,11 +33,27 @@ class TableDownloadsLog extends DbTable
 /**
  * class ViewDownloadsLog
  */
-class ViewDownloadsLog extends TableView
+class ViewDownloadsLog extends TableViewGrid
 {
 	public function init ()
 	{
 		parent::init();
+
+		$this->gridEditable = TRUE;
+		$this->classes = ['editableGrid'];
+		$this->enableToolbar = FALSE;
+		$this->enableDetailSearch = TRUE;
+
+		$g = [
+      'tsd' => 'Datum a čas',
+			'storage' => 'Úložiště',
+			'fp' => 'Složka',
+      'fn' => 'Soubor',
+			'source' => 'Staženo z',
+			'ipAddress' => 'IP adresa',
+		];
+
+		$this->setGrid ($g);
 	}
 
 	public function renderRow ($item)
@@ -45,11 +61,24 @@ class ViewDownloadsLog extends TableView
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
-		$listItem['t1'] = ['text' => $item['storageFullName'], 'suffix' => $item['email']];
-		$listItem['t2'] = ['text' => $item['userFullName'], 'icon' => 'system/iconUser'];
-		$listItem['i2'] = [['text' => Utils::datef($item['tsDownload'], '%D%t'), 'icon' => 'system/actionDownload']];
+		$listItem['tsd'] = Utils::datef($item['tsDownload'], '%D %T');
+		$listItem['fp'] = $item['filePath'];
+		$listItem['fn'] = $item['baseFileName'];
+		$listItem['storage'] = $item['storageFullName'];
+		$listItem['ipAddress'] = $item['ipAddress'];
 
-		$listItem['t3'] = ['text' => $item['filePath'].'/'.$item['baseFileName'], 'icon' => 'system/iconFile'];
+		if ($item['invite'])
+		{
+			$listItem['source'] = ['text' => $item['inviteEmail'], 'suffix' => substr($item['inviteUid'], 0, 4).'...'.substr($item['inviteUid'], -4), 'icon' => 'tables/e10pro.fp.downloadInvites'];
+		}
+		elseif ($item['user'])
+		{
+			$listItem['source'] = ['text' => $item['userFullName'], 'icon' => 'system/iconUser'];
+		}
+		else
+		{
+			$listItem['source'] = '???';
+		}
 
 		return $listItem;
 	}
@@ -62,9 +91,11 @@ class ViewDownloadsLog extends TableView
     array_push ($q, 'SELECT [dl].* ');
 		array_push ($q, ', [storages].[fullName] AS [storageFullName]');
     array_push ($q, ', [users].[fullName] AS [userFullName]');
+		array_push ($q, ', [invites].[email] AS [inviteEmail], [invites].[uid] AS [inviteUid]');
 		array_push ($q, ' FROM [e10pro_fp_downloadsLog] AS [dl]');
 		array_push ($q, ' LEFT JOIN [e10pro_fp_storages] AS [storages] ON [dl].[storage] = [storages].[ndx]');
     array_push ($q, ' LEFT JOIN [e10_users_users] AS [users] ON [dl].[user] = [users].[ndx]');
+		array_push ($q, ' LEFT JOIN [e10pro_fp_downloadInvites] AS [invites] ON [dl].[invite] = [invites].[ndx]');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -72,13 +103,21 @@ class ViewDownloadsLog extends TableView
 		{
 			array_push ($q, ' AND (');
 			array_push ($q, ' [storages].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [dl].[baseFileName] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ' OR [users].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [dl].[ipAddress] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [invites].[email] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
 		}
 
     array_push($q, ' ORDER BY [dl].[tsDownload] DESC, [dl].[ndx] DESC');
     array_push($q, $this->sqlLimit());
 		$this->runQuery ($q);
+	}
+
+	public function createToolbar ()
+	{
+		return [];
 	}
 }
 
@@ -92,6 +131,7 @@ class FormDownloadLog extends TableForm
 	{
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
+		$this->readOnly = 1;
 
 		$this->openForm ();
 			$this->addColumnInput ('storage');

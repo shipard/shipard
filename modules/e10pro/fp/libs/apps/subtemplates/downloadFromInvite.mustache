@@ -1,0 +1,18 @@
+<div class="app-container app-container-status" id='shp-app-window'>
+  <div class="app-content" id='shp-main-app-content' {{{data.appBrowserParams}}}>
+    {{#data.errorInvalidInviteId}}
+      <h1>Neplatný požadavek</h1>
+      <p>Požadavek `{{data.invalidInviteId}}` neexistuje. Zkontrolujte prosím, zda máte správný odkaz...</p>
+    {{/data.errorInvalidInviteId}}
+
+    {{#data.errorInviteExpired}}
+      <h1>Platnost odkazu vypršela {{data.inviteDateExpire}}</h1>
+      <p>Požádejte prosím o nový odkaz.</p>
+    {{/data.errorInviteExpired}}
+
+    {{#data.errorInviteMaxDownloads}}
+      <h1>Byl překročen max. počet stažení ({{data.inviteMaxDownloads}})</h1>
+      <p>Požádejte prosím o nový odkaz.</p>
+    {{/data.errorInviteMaxDownloads}}
+  </div>
+</div>

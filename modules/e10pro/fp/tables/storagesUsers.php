@@ -103,8 +103,8 @@ class FormStoragesUser extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
-			$this->addColumnInput ('storage');
 			$this->addColumnInput ('user');
+			$this->addColumnInput ('storage');
 		$this->closeForm ();
 	}
 }

@@ -115,4 +115,8 @@ class FormStorage extends TableForm
  */
 class ViewDetailStorage extends TableViewDetail
 {
+	function createDetailContent()
+	{
+		$this->addDocumentCard('e10pro.fp.libs.dc.DCStorage');
+	}
 }
