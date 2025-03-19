@@ -145,5 +145,6 @@ class ViewDetailBalance extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
+		$this->addDocumentCard('e10doc.accBal.libs.dc.DCAccBalance');
 	}
 }

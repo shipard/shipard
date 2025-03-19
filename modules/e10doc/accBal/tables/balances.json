@@ -21,7 +21,11 @@
       "details": {
         "default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.accBal.ViewDetailBalance"}
       },
-			"addWizard": {"class": "e10doc.accBal.libs.ImportJsonBalanceWizard", "text": "Načíst JSON"}
+			"addWizard": {"class": "e10doc.accBal.libs.ImportJsonBalanceWizard", "text": "Načíst JSON"},
+			"tools": [
+				{"class": "e10doc.accBal.libs.AccBalancesExportWizard", "icon": "system/actionSave", "text": "Exportovat nastavení saldokont"},
+				{"class": "e10doc.accBal.libs.AccBalancesImportWizard", "icon": "system/iconImport", "text": "Importovat nastavení saldokont"}
+			]
 		}
 	],
 	"forms": [

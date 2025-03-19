@@ -4,6 +4,7 @@ namespace e10doc\accBal\libs;
 
 use \Shipard\base\Utility;
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\Json;
 
 
 /**
@@ -42,16 +43,53 @@ class AccBalanceCfg extends Utility
     }
   }
 
-  public function loadBalancesCfg($balanceNdx = 0)
+  public function exportBalances(array $balances)
+  {
+    $now = new \DateTime();
+
+    $this->balancesCfg = [];
+    $this->loadBalancesCfg($balances);
+
+    $impExpCfg = [
+      'title' => $this->app->cfgItem('dsi.name'),
+      'exportDateTime' => $now->format('Y-m-d H:i:s'),
+      'ver' => sha1(json_encode(array_values($this->balancesCfg))),
+      'balances' => array_values($this->balancesCfg),
+    ];
+    $cfgString = Json::lint($impExpCfg);
+
+    $baseFN = Utils::safeChars('saldokonta-'.str_replace('.', '', $this->app->cfgItem ('dsi.name', '')));
+    $ffn = 'tmp/'.$baseFN . '-json.txt';
+    $url = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid') . '/'. 'tmp/'.$baseFN . '-json.txt';
+
+    file_put_contents($ffn, $cfgString);
+
+    $info = [
+      'url' => $url,
+      'baseName' => $baseFN,
+    ];
+    return $info;
+  }
+
+  public function loadBalancesCfg(int|array $balances = 0)
   {
     $q = [];
     array_push ($q, 'SELECT [balances].* ');
 		array_push ($q, ' FROM [e10doc_accBal_balances] AS [balances]');
 		array_push ($q, ' WHERE 1');
-    if ($balanceNdx)
-      array_push ($q, ' AND [balances].[ndx] = %i', $balanceNdx);
+
+    if (is_array($balances))
+    {
+      array_push ($q, ' AND [balances].[ndx] IN %in', $balances);
+    }
+    elseif ($balances !== 0)
+    {
+      array_push ($q, ' AND [balances].[ndx] = %i', $balances);
+    }
     else
+    {
       array_push($q, ' AND [balances].[docState] IN %in', [4000, 8000]);
+    }
 
     array_push ($q, ' ORDER BY [order], [fullName], [ndx]');
     $rows = $this->db()->query($q);
