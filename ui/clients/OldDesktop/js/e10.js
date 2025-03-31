@@ -3703,7 +3703,7 @@ function e10DecorateFormWidgets (e)
 
 var g_openModals = Array ();
 
-function e10ViewerCreateEditForm (data, formId, srcObjectType, srcObjectId, inlineSourceElement, fakePrimaryKey = null)
+function e10ViewerCreateEditForm (data, formId, srcObjectType, srcObjectId, inlineSourceElement, fakePrimaryKey)
 {
 	var sidebarPos = data.flags.sidebarPos;
 	var infoPanelPos = (data.flags.infoPanelPos === undefined) ? 0 : data.flags.infoPanelPos;
@@ -3729,7 +3729,7 @@ function e10ViewerCreateEditForm (data, formId, srcObjectType, srcObjectId, inli
 	newFormHtml += "></div>";
 
 	newFormHtml +=      "<div id='" + formId + "Form' class='"+formClass+"' data-object='modal' data-formId='"+formId+"' data-srcObjectType='" + srcObjectType + "' data-srcObjectId='" + srcObjectId + "' data-sidebar-element-id='" + sidebarElementId + "' " + flags;
-	if (fakePrimaryKey !== null)
+	if (fakePrimaryKey !== undefined)
 		newFormHtml += " data-fake-pk='" + fakePrimaryKey + "'";
 	newFormHtml +=      ">";
 	newFormHtml +=			"<div id='" + formId + "Header' class='e10-ef-header'></div>" +
