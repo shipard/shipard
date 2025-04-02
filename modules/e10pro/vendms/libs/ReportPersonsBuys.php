@@ -50,16 +50,6 @@ class ReportPersonsBuys extends \e10doc\core\libs\reports\DocReportBase
 
 		parent::loadData();
 
-		// -- person
-		$this->loadData_MainPerson('person', $this->recData['ndx']);
-
-		// -- owner
-		$this->loadData_DocumentOwner ();
-
-		// -- author
-		$authorNdx = $this->app->user()->data ('id');
-		$this->loadData_Author($authorNdx);
-
 		$this->initParams();
 
 		$this->data ['flags']['periodBegin'] = $this->periodBegin;
