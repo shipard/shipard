@@ -1,0 +1,15 @@
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+Dobrý den,
+
+v příloze Vám zasíláme přehled nákupů v automatu:
+{{data.head.fullName}}, {{data.flags.periodValue}}
+
+S pozdravem
+
+--
+{{data.owner.fullName}}
+{{#data.owner_contacts}}
+{{name}}: {{value}}
+{{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}
