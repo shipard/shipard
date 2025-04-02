@@ -42,13 +42,37 @@ class ReportPersonsBuys extends \e10doc\core\libs\reports\DocReportBase
 
 	public function loadData ()
 	{
-		$this->sendReportNdx = 2100;
+		$this->sendReportNdx = 181001;
 
 		$this->tablePersons = $this->app->table('e10.persons.persons');
 		$this->tableDocHeads = $this->app->table('e10doc.core.heads');
 		$this->currencies = $this->app->cfgItem ('e10.base.currencies');
 
 		parent::loadData();
+
+		// -- person
+		$this->loadData_MainPerson('person', $this->recData['ndx']);
+
+		// -- owner
+		$this->loadData_DocumentOwner ();
+
+		// -- author
+		$authorNdx = $this->app->user()->data ('id');
+		$this->loadData_Author($authorNdx);
+
+		$this->initParams();
+
+		$this->data ['flags']['periodBegin'] = $this->periodBegin;
+		$this->data ['flags']['periodEnd'] = Utils::datef($this->periodEnd, '%d');
+	}
+
+	public function loadData2 ()
+	{
+		$this->sendReportNdx = 181001;
+
+		$this->tablePersons = $this->app->table('e10.persons.persons');
+		$this->tableDocHeads = $this->app->table('e10doc.core.heads');
+		$this->currencies = $this->app->cfgItem ('e10.base.currencies');
 
 		// -- person
 		$this->loadData_MainPerson('person', $this->recData['ndx']);
@@ -82,6 +106,7 @@ class ReportPersonsBuys extends \e10doc\core\libs\reports\DocReportBase
 		array_push($q, ' LEFT JOIN e10_witems_items AS items ON [rows].item = items.ndx');
 		array_push($q, ' WHERE heads.docState = 4000 ');
 		array_push($q, ' AND heads.person = %i', $this->recData['ndx']);
+		array_push($q, ' AND rows.item != %i', 0);
 		array_push($q, ' AND heads.dateAccounting >= %d', $this->periodBegin);
 		array_push($q, ' AND heads.dateAccounting <= %d', $this->periodEnd);
 		array_push($q, ' AND heads.docType IN %in', ['invno', 'cashreg']);
@@ -101,6 +126,7 @@ class ReportPersonsBuys extends \e10doc\core\libs\reports\DocReportBase
 		$credit = $this->personsCredit($this->recData['ndx'], $this->periodEnd);
 
 		$headerItems = [
+			'#' => '#',
 			'date' => 'Datum',
 			'time' => 'Čas',
 			'itemId' => ' id',
