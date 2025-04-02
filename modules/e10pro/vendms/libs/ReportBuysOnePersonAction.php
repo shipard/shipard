@@ -1,0 +1,111 @@
+<?php
+
+namespace e10pro\vendms\libs;
+
+use \Shipard\Base\DocumentAction, \Shipard\Report\MailMessage, \Shipard\Utils\Utils;
+
+
+/**
+ * Class ReportBuysOnePersonAction
+ */
+class ReportBuysOnePersonAction extends DocumentAction
+{
+	var $testRun = 0;
+	var $debug = 0;
+	var $maxCount = 0;
+
+	/** @var \e10\persons\TablePersons */
+	var $tablePersons = NULL;
+
+
+	public function init ()
+	{
+		parent::init();
+		$this->tablePersons = $this->app()->table('e10.persons.persons');
+	}
+
+	public function actionName ()
+	{
+		return 'Rozeslat přehled nákupů v automatu';
+	}
+
+	public function sendOne ($personNdx)
+	{
+		$emailsTo = $this->loadEmails($personNdx);
+		if ($emailsTo === '')
+			return;
+
+		$documentTable = $this->app()->table ('e10.persons.persons');
+
+		$person = $documentTable->loadItem ($personNdx);
+
+		$report = new \e10pro\vendms\libs\ReportPersonsBuys($documentTable, $person);
+		$report->periodBegin = Utils::createDateTime($this->params['data-param-period-begin']);
+		$report->periodEnd = Utils::createDateTime($this->params['data-param-period-end']);
+
+		$report->init();
+		$report->renderReport ();
+		$report->createReport ();
+		$msgSubject = $report->createReportPart('emailSubject');
+		$msgBody = $report->createReportPart('emailBody');
+
+		$msg = new MailMessage($this->app());
+
+		$msg->setFrom ($this->app->cfgItem ('options.core.ownerFullName'), $this->app->cfgItem ('options.core.ownerEmail'));
+		$msg->setTo($emailsTo);
+		$msg->setSubject($msgSubject);
+		$msg->setBody($msgBody);
+		$msg->setDocument ('e10.persons.persons', $personNdx, $report);
+		$msg->outboxLinkId = $report->outboxLinkId;
+
+		$attachmentFileName = Utils::safeChars($report->createReportPart ('fileName'));
+		if ($attachmentFileName === '')
+			$attachmentFileName = 'priloha';
+
+		$msg->addAttachment($report->fullFileName, $attachmentFileName.'.pdf', 'application/pdf');
+
+		if ($this->debug)
+		{
+			echo $person['fullName'] . " [" . $emailsTo . "]" . "\n";
+			echo " -> " . $report->fullFileName . "\n";
+		}
+		if ($this->testRun)
+		{
+			if (!is_readable($report->fullFileName))
+			{
+				echo "   -> ERROR: file not found\n";
+			}
+		}
+		else
+		{
+			$msg->sendMail();
+			$msg->saveToOutbox();
+		}
+	}
+
+	public function run ()
+	{
+		$report = new \e10pro\vendms\libs\ReportSalesByPersons($this->app());
+		$report->periodBegin = $this->params['data-param-period-begin'];
+		$report->periodEnd = $this->params['data-param-period-end'];
+		$report->createPdf();
+
+		$cnt = 0;
+		foreach ($report->persons as $personNdx)
+		{
+			$this->sendOne($personNdx);
+
+			$cnt++;
+			if ($this->maxCount && $cnt >= $this->maxCount)
+				break;
+		}
+	}
+
+	public function loadEmails ($personNdx)
+	{
+		if (!$this->tablePersons)
+			$this->tablePersons = $this->app()->table('e10.persons.persons');
+
+		return $this->tablePersons->loadEmailsForReport([$personNdx], 'e10pro.vendms.libs.ReportPersonsBuys');
+	}
+}

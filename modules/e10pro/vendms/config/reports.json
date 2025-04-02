@@ -1,0 +1,4 @@
+[
+	{"name": "Podle osob", "class": "e10pro.vendms.libs.ReportSalesByPersons", "icon": "report/SWLicenses", "group": "e10pro-vendms", "order": 1000},
+	{"name": "Položky", "class": "e10pro.vendms.libs.ReportSalesByItems", "icon": "report/SWLicenses", "group": "e10pro-vendms", "order": 3000}
+]

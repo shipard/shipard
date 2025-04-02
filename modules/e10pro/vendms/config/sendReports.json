@@ -1,0 +1,9 @@
+{
+  "181001": {
+    "fn": "Nákupy v automatu",
+    "cn": "Nákupy v automatu",
+    "sc": "NVA",
+    "classId": "e10pro.vendms.libs.ReportPersonsBuys",
+    "ndx": 181001
+  }
+}

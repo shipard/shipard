@@ -46,12 +46,28 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->run();
 	}
 
+	public function importParentsEmails()
+	{
+		$fileParam = $this->app()->arg('file');
+		if (!$fileParam)
+		{
+			echo "Missing `--file` param!\n";
+			return FALSE;
+		}
+
+		$e = new \e10pro\vendms\libs\ImportParentsEmails($this->app());
+		$e->fileName = $fileParam;
+
+		$e->run();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'import-isic': return $this->importISIC();
 			case 'import-persons-ids': return $this->importPersonsIds();
+			case 'import-parents-emails': return $this->importParentsEmails();
 		}
 
 		parent::onCliAction($actionId);

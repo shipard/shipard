@@ -15,6 +15,9 @@
     {"id": "+e10.persons.properties", "file": "e10.persons.properties.json"},
     {"id": "+e10.base.properties", "file": "e10.persons.propertiesDefs.json"},
     {"id": "+e10.base.propertiesGroups", "file": "e10.persons.propertiesGroups.json"},
-    {"id": "+e10pro.vendms.creditMoveTypes", "file": "creditMoveTypes.json"}
+    {"id": "+e10pro.vendms.creditMoveTypes", "file": "creditMoveTypes.json"},
+		{"id": "+reportsGroups", "file": "reportsGroups.json"},
+		{"id": "+reports", "file": "reports.json"},
+		{"id": "+e10.reports.sendReports", "file": "sendReports.json"}
 	]
 }

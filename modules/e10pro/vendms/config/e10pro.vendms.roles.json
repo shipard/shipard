@@ -8,6 +8,10 @@
 		},
 		"widgets": {
 			"e10pro.vendms.libs.WidgetVendMs": 2
+		},
+		"reports": {
+			"e10pro.vendms.libs.ReportSalesByPersons": 2,
+			"e10pro.vendms.libs.ReportSalesByItems": 2
 		}
 	}
 }
