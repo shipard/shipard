@@ -306,7 +306,7 @@ class WidgetLive extends WidgetBoard
 				{
 					$camNdx = $this->zone['cameras'][$camIndex];
 					$cam = $this->cameras[$camNdx];
-					$srvNdx = $cam['localServer'];
+					$srvNdx = intval($cam['localServer']);
 					if (!isset($usedLocalServers[$srvNdx]))
 					{
 						$usedLocalServers[$srvNdx] = $this->servers[$srvNdx];
@@ -316,6 +316,18 @@ class WidgetLive extends WidgetBoard
 							unset($usedLocalServers[$srvNdx]['cameras']);
 						if (isset($usedLocalServers[$srvNdx]['lan']))
 							unset($usedLocalServers[$srvNdx]['lan']);
+						if (isset($usedLocalServers[$srvNdx]['lanControlDevices']))
+							unset($usedLocalServers[$srvNdx]['lanControlDevices']);
+						if (isset($usedLocalServers[$srvNdx]['httpProxies']))
+							unset($usedLocalServers[$srvNdx]['httpProxies']);
+						if (isset($usedLocalServers[$srvNdx]['iotBoxes']))
+							unset($usedLocalServers[$srvNdx]['iotBoxes']);
+						if (isset($usedLocalServers[$srvNdx]['iotThings']))
+							unset($usedLocalServers[$srvNdx]['iotThings']);
+						if (isset($usedLocalServers[$srvNdx]['iotSensors']))
+							unset($usedLocalServers[$srvNdx]['iotSensors']);
+						if (isset($usedLocalServers[$srvNdx]['iotDataSource']))
+							unset($usedLocalServers[$srvNdx]['iotDataSource']);
 					}
 
 					$c .= $this->gridImgElement($cell, $cam);

@@ -10,8 +10,10 @@ use \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableView, 
 class TableCams extends DbTable
 {
 	CONST
-		ctLanIP = 30,
-		ctIBEsp32 = 31;
+		ctFrigate = 'frigate',
+		ctGo2RTC = 'go2rtc',
+		ctLanIP = '30',
+		ctIBEsp32 = 'esp32cam';
 
 	public function __construct ($dbmodel)
 	{
@@ -67,6 +69,7 @@ class TableCams extends DbTable
 			'ndx' => $cameraNdx,
 			'camRecData' => $camRecData,
 			'camServerNdx' => $camServerNdx,
+			'camType' => $camRecData['camType'],
 		];
 
 		if ($lanRecData['enableVehicleDetect'] ?? 0)
@@ -80,8 +83,16 @@ class TableCams extends DbTable
 		}
 
 		$camInfo['serverInfo'] = [
-			'camUrl' => $server['camerasURL']
+			'camUrl' => $server['camerasURL'],
 		];
+
+		if ($camRecData['camType'] === TableCams::ctFrigate)
+		{
+			$streamUrl = 'https://'.$server['camFrigateFQDN'].':'.$server['camGo2RTCPort'].'/';
+			$camInfo['streamUrl'] = $streamUrl;
+			$camInfo['streamId'] = ($camRecData['streamId'] !== '') ? $camRecData['streamId'] : $camRecData['id'];
+			$camInfo['streamType'] = 'go2rtc';
+		}
 
 		$streams = $this->db()->query('SELECT * FROM [mac_iot_camsStreams] WHERE [iotCam] = %i', $cameraNdx, ' ORDER BY rowOrder, ndx');
 		foreach ($streams as $s)
@@ -154,9 +165,7 @@ class ViewCams extends TableView
 
 		$q [] = 'SELECT [cams].*, ';
 		array_push ($q, ' lanDevices.fullName AS [lanDeviceFullName]');
-		//array_push ($q, ' ioPorts.portId AS [ioPortId], ioPorts.fullName AS [ioPortFullName]');
 		array_push ($q, ' FROM [mac_iot_cams] AS [cams]');
-		//array_push ($q, ' LEFT JOIN [mac_lan_devicesIOPorts] AS ioPorts ON [controls].dstIOPort = ioPorts.ndx');
 		array_push ($q, ' LEFT JOIN [mac_lan_devices] AS lanDevices ON cams.lanDevice = lanDevices.ndx');
 		array_push ($q, ' WHERE 1');
 
@@ -189,19 +198,38 @@ class FormCam  extends TableForm
 
 		//$iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
 
-
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
 					$this->addColumnInput ('camType');
 					$this->addSeparator(self::coH2);
 					$this->addColumnInput ('fullName');
-					$this->addColumnInput ('lan');
-					//if ($this->recData['controlType'] !== 'sendSetupRequest')
-						$this->addColumnInput ('iotDevice');
-            $this->addColumnInput ('lanDevice');
-						$this->addSeparator(self::coH4);
+					$this->addColumnInput ('id');
+					$this->addSeparator(self::coH4);
+
+					if ($this->recData['camType'] === TableCams::ctLanIP)
+					{
+						$this->addColumnInput ('lanDevice');
+						$this->addColumnInput ('lan');
 						$this->addColumnInput ('enableVehicleDetect');
+					}
+					elseif ($this->recData['camType'] === TableCams::ctFrigate)
+					{
+						$this->addColumnInput ('streamId');
+						$this->addColumnInput ('lanDevice');
+						$this->addColumnInput ('lan');
+					}
+					elseif ($this->recData['camType'] === TableCams::ctGo2RTC)
+					{
+						$this->addColumnInput ('streamUrl');
+						$this->addColumnInput ('streamId');
+						$this->addColumnInput ('lanDevice');
+						$this->addColumnInput ('lan');
+					}
+					elseif ($this->recData['camType'] === TableCams::ctIBEsp32)
+					{
+						$this->addColumnInput ('iotDevice');
+					}
 				$this->closeTab ();
 
 				$this->openTab (TableForm::ltNone);

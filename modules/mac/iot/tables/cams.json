@@ -3,12 +3,14 @@
 	"columns": [
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
-    {"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
-
-		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
 		{"id": "camType", "name": "Typ kamery", "type": "enumString", "len": "20", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "mac.iot.cams.types", "cfgValue": "", "cfgText": "fn"}},
+    {"id": "fullName", "name": "Úplný název", "type": "string", "len": 120},
+    {"id": "id", "name": "ID", "type": "string", "len": 40},
+    {"id": "streamId", "name": "ID streamu", "type": "string", "len": 60},
+    {"id": "streamUrl", "name": "URL streamu", "type": "string", "len": 240},
 
+		{"id": "lan", "name": "Síť", "type": "int", "reference": "mac.lan.lans"},
 		{"id": "iotDevice", "name": "IoT zařízení", "type": "int", "reference": "mac.iot.devices", "options": ["saveOnChange"]},
 		{"id": "lanDevice", "name": "LAN zařízení", "type": "int", "reference": "mac.lan.devices", "options": ["saveOnChange"]},
 
