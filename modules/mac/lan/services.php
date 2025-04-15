@@ -15,7 +15,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$s [] = ['end' => '2019-01-31', 'sql' => "UPDATE mac_lan_devicesPorts SET portRole = 10 WHERE vlan != 0 AND portKind IN (5, 6) AND portRole = 0"];
 		$this->doSqlScripts ($s);
 
-		$this->upgradeCameras();
+		//$this->upgradeCameras();
 	}
 
 	protected function upgradeCameras()
