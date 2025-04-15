@@ -140,13 +140,17 @@ class NodeServerCfgUpdater extends Utility
 			{
 				$cfgData['camerasURL'] = 'https://'.$macDeviceCfg['serverFQDN'] . ($cfgData['httpsPort'] !== 443 ? ':'.$cfgData['httpsPort'].'/' : '/');
 
-				if ($macDeviceCfg['httpPictReceiverListenIP'] != '')
+				if (intval($macDeviceCfg['camFrigate'] ?? 0))
 				{
-					$cfgData['httpPictReceiverListenIP'] = $macDeviceCfg['httpPictReceiverListenIP'];
-					$cfgData['httpPictReceiverListenPort'] = $macDeviceCfg['httpPictReceiverListenPort'];
-					if (!$cfgData['httpPictReceiverListenPort'])
-						$cfgData['httpPictReceiverListenPort'] = 8021;
-				}
+					$cfgData['camFrigate'] = 1;
+					$cfgData['camFrigateFQDN'] = $macDeviceCfg['camFrigateFQDN'];
+					$cfgData['camFrigatePort'] = $macDeviceCfg['camFrigatePort'];
+					if (!$cfgData['camFrigatePort'])
+						$cfgData['camFrigatePort'] = 8971;
+					$cfgData['camGo2RTCPort'] = $macDeviceCfg['camGo2RTCPort'];
+					if (!$cfgData['camGo2RTCPort'])
+						$cfgData['camGo2RTCPort'] = 16443;
+					}
 
 				$this->nodeServerConfigCameras($cfgData, $r['ndx'], $r['lan'], $r['mainServerCameras'] === $r['ndx'], $macDeviceCfg);
 				$this->nodeServerConfigLanControl($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);
