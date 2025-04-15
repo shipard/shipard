@@ -27,8 +27,6 @@ class ShipardCamsPictsLoader
         1
       );
     }
-
-    this.camerasTimer = setTimeout(function() {this.reloadImages()}.bind(this), 3000);
   }
 
   setPictures(serverNdx, data)
@@ -66,7 +64,7 @@ class ShipardCamsPictsLoader
           const played = parseInt(camPictElement.getAttribute('data-stream-started'));
           if (!played)
           {
-            this.startVideoRTC(videoElement);
+            this.startVideoGO2RTC(camPictElement);
             camPictElement.setAttribute('data-stream-started', '1');
           }
         }
@@ -84,50 +82,14 @@ class ShipardCamsPictsLoader
     }
   }
 
-  startVideoRTC (videoEl)
+  startVideoGO2RTC (videoEl)
   {
-    const url = videoEl.getAttribute('data-stream-url');
-    const webrtc = new RTCPeerConnection({
-      iceServers: [{
-        urls: ['stun:stun.l.google.com:19302']
-      }],
-      sdpSemantics: 'unified-plan'
-    });
-    webrtc.ontrack = function (event)
-    {
-      console.log(event.streams.length + ' track is delivered');
-      videoEl.srcObject = event.streams[0];
-      videoEl.play();
-    };
-    webrtc.addTransceiver('video', { direction: 'sendrecv' });
-    webrtc.onnegotiationneeded = async function handleNegotiationNeeded () {
-      const offer = await webrtc.createOffer();
-      await webrtc.setLocalDescription(offer);
-      fetch(url, {
-        method: 'POST',
-        body: new URLSearchParams({ data: btoa(webrtc.localDescription.sdp) })
-      })
-        .then(response => response.text())
-        .then(data => {
-          try {
-            webrtc.setRemoteDescription(
-              new RTCSessionDescription({ type: 'answer', sdp: atob(data) })
-            );
-          } catch (e) {
-            console.warn(e);
-          }
-        });
-    };
+    let streamUrl = videoEl.getAttribute('data-stream-url');
+    let streamId = videoEl.getAttribute('data-stream-id');
 
-    const webrtcSendChannel = webrtc.createDataChannel('rtsptowebSendChannel');
-    webrtcSendChannel.onopen = (event) => {
-      console.log(`${webrtcSendChannel.label} has opened`);
-      webrtcSendChannel.send('ping');
-    };
-    webrtcSendChannel.onclose = (_event) => {
-      console.log(`${webrtcSendChannel.label} has closed`);
-      startPlay(videoEl, url);
-    };
-    webrtcSendChannel.onmessage = event => console.log(event.data);
+    const video = document.createElement('video-stream');
+    video.src = new URL('api/ws?src=' + encodeURIComponent(streamId), streamUrl);
+    video.mode = 'webrtc/tcp';
+    videoEl.appendChild(video);
   }
 }

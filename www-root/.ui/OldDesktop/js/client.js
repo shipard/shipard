@@ -1185,7 +1185,8 @@ openUrlPrefix=null;var
 srcObjectType='none';var
 srcObjectId='';if(e!==0){table=e.attr("data-table");addParams=e.attr('data-addparams');if(e.attr('data-open-as'))openAs=e.attr('data-open-as');if(e.attr('data-open-url-prefix'))openUrlPrefix=e.attr('data-open-url-prefix');if(e.attr('data-srcobjecttype')!==undefined)srcObjectType=e.attr('data-srcobjecttype');if(e.attr('data-srcobjectid')!==undefined)srcObjectId=e.attr('data-srcobjectid');}else{table=params.table;addParams=params.addparams;if(params.srcobjecttype!==undefined)srcObjectType=params.srcobjecttype;if(params.srcobjectid!==undefined)srcObjectId=params.srcobjectid;}g_formId++;var
 newElementId="mainEditF"+g_formId;var
-url=table+"/new/?callback=?"+"&newFormId="+newElementId;if(addParams)url+='&'+addParams;if(e!==0&&e.attr('data-pict'))url+='&addPicture='+e.attr('data-pict');if(e!==0&&e.attr('data-copyfrom'))url+='&focusedPK='+e.attr('data-copyfrom')+'&copyDoc=1';url+="&viewPortWidth="+document.documentElement.clientWidth;var
+url=table+"/new/?callback=?"+"&newFormId="+newElementId;if(addParams)url+='&'+addParams;if(e!==0&&e.attr('data-add-snapshot-url'))url+='&addSnapshotUrl='+e.attr('data-add-snapshot-url')+'&addPicture='+e.attr('data-add-snapshot-url');else
+if(e!==0&&e.attr('data-pict'))url+='&addPicture='+e.attr('data-pict');if(e!==0&&e.attr('data-copyfrom'))url+='&focusedPK='+e.attr('data-copyfrom')+'&copyDoc=1';url+="&viewPortWidth="+document.documentElement.clientWidth;var
 postData=e10DocumentData();if(e!==0){var
 dataForm=searchObjectAttr(e,'data-pk');if(dataForm!==null)e10collectFormData(dataForm,postData);}if(openAs){var
 openUrl='/';if(openUrlPrefix)openUrl=openUrlPrefix;openUrl+='app/!/e10-document-trigger/';openUrl+=url;openUrl+='&e10window=popup';var

@@ -88,22 +88,6 @@ class CamsCfgCreator extends Utility
     }
 
     $this->cfgs[$camDef['ndx']] = $camCfg;
-
-    /*
-			$cam = ['ndx' => $r['ndx'], 'id' => $r['id'], 'name' => $r ['fullName'], 'localServer' => $serverNdx, 'cfg' => $macDeviceCfg];
-			if (isset($this->devicesIPs[$r['ndx']][0]))
-				$cam['ip'] = $this->devicesIPs[$r['ndx']][0];
-			if (!isset($cam['cfg']['camLogin']) || $cam['cfg']['camLogin'] === '')
-				$cam['cfg']['camLogin'] = $serverMacDeviceCfg['camLogin'];
-			if (!isset($cam['cfg']['camPasswd']) || $cam['cfg']['camPasswd'] === '')
-				$cam['cfg']['camPasswd'] = $serverMacDeviceCfg['camPasswd'];
-
-			if (isset($macDeviceCfg['enableVehicleDetect']) && $macDeviceCfg['enableVehicleDetect'])
-			{ // make camera mqtt topic
-				$topic = $this->tableIOPorts->mqttTopicBegin().'readers/vd/camera-'.$r['ndx'];
-				$cam['cfg']['vdTopic'] = $topic;
-			}
-    */
   }
 
   protected function createIBEsp32($camDef)
@@ -156,7 +140,7 @@ class CamsCfgCreator extends Utility
       $this->checkLan($r);
 
       $camDef = $r->toArray();
-      if ($camDef['camType'] == TableCams::ctLanIP)
+      if ($camDef['camType'] == TableCams::ctLanIP || $camDef['camType'] == TableCams::ctFrigate || $camDef['camType'] == TableCams::ctGo2RTC)
       {
         $camDef['macDeviceCfg'] = Json::decode($r['macDeviceCfg']);
 

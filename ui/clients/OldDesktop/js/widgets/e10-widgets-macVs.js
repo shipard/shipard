@@ -41,7 +41,6 @@ e10client.prototype.widgets.macVs.reloadLive = function ()
 	}
 	for (var si in e10.widgets.macVs.localServers) {
 		var ws = e10.widgets.macVs.localServers[si];
-		//console.log (ws);
 		var camUrl = ws.camerasURL;
 		var urlPath = ws.camerasURL + "/cameras?callback=?";
 		var jqxhr = $.getJSON(urlPath, function (data) {

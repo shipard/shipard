@@ -4756,7 +4756,9 @@ function e10DocumentAdd (e, params)
 	if (addParams)
 		url += '&' + addParams;
 
-	if (e !== 0 && e.attr('data-pict'))
+	if (e !== 0 && e.attr('data-add-snapshot-url'))
+		url += '&addSnapshotUrl=' + e.attr('data-add-snapshot-url') + '&addPicture=' + e.attr('data-add-snapshot-url');
+	else if (e !== 0 && e.attr('data-pict'))
 		url += '&addPicture=' + e.attr('data-pict');
 
 	if (e !== 0 && e.attr('data-copyfrom'))

@@ -1,9 +1,9 @@
 {
     "OldDesktop": {
         "client.js": {
-            "sha384": "ec8bdbb3a39de395f4bf3a12af3d5b8b3575c87e0bf5144ece01e5992534b00b2c58bdd5f4d57bd1ad8d40cecf4b59aa",
-            "integrity": "sha384-7Ivbs6Od45X0vzoSrz1bizV1yH4L9RROzgHlmSU0sAssWL3V9NV70a2NQM7PS1mq",
-            "ver": "5be9558fdc5c32211589947632501062"
+            "sha384": "283e46df802417e6b581a6fc282825f2784dea4523502853af3d0fc5bddc5b7049e4bc315ab255d09968e13ec272b9c2",
+            "integrity": "sha384-KD5G34AkF+a1gab8KCgl8nhN6kUjUChTrz0Pxb3cW3BJ5LwxWrJV0Jlo4T7CcrnC",
+            "ver": "76d3eb4ed7df9c17736238e9edc74b1f"
         }
     },
     "OldMobile": {
@@ -15,9 +15,9 @@
     },
     "ng": {
         "client.js": {
-            "sha384": "54b46c3b6981a53ed7c150063d6dc3637e6421471076e43a58223ca593da1896cb28b084993a7cadbb55d68664324ecf",
-            "integrity": "sha384-VLRsO2mBpT7XwVAGPW3DY35kIUcQduQ6WCI8pZPaGJbLKLCEmTp8rbtV1oZkMk7P",
-            "ver": "412da0fb4394a39cefaf5d5d1f694b0c"
+            "sha384": "4e9954d60c3abf1614cfb0db95ac85a769c2c9b31942eab6c29dd0a83839b8f5f20f6e4e620d02e8886045544b7cd5a3",
+            "integrity": "sha384-TplU1gw6vxYUz7DblayFp2nCybMZQuq2wp3QqDg5uPXyD25OYg0C6IhgRVRLfNWj",
+            "ver": "b49472a13355520c46e174b84013d4a1"
         },
         "libs": [
             {
@@ -25,6 +25,13 @@
                     "sha384": "f265655ef99caf9f4608dd8af6409361215d42f631e0a2d513be6746d6cc1c1a8877f0cbb3237b8f2c6ff0aee3a24908",
                     "integrity": "sha384-8mVlXvmcr59GCN2K9kCTYSFdQvYx4KLVE75nRtbMHBqId/DLsyN7jyxv8K7jokkI",
                     "ver": "f2d8893705b85487a7549b71fb4e29cd"
+                }
+            },
+            {
+                "go2rtc.js": {
+                    "sha384": "734fd08bf1556fc65dc2861b819e95c19e89429bb46b99fa26582aa0a5ffa614086b3a00ffa93577c45af56bfb25cccc",
+                    "integrity": "sha384-c0/Qi/FVb8ZdwoYbgZ6VwZ6JQpu0a5n6JlgqoKX/phQIazoA/6k1d8Ra9Wv7JczM",
+                    "ver": "0b92abbcb574f586a01bbfc439b877a6"
                 }
             }
         ]

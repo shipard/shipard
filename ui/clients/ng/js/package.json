@@ -33,6 +33,13 @@
 				{"fileName": "libs/IBSerial/IBSerialTerm.js"},
 				{"fileName": "libs/IBSerial/IBMsgParser.js"}
 			]
-		}
+		},
+    {
+      "id": "go2rtc",
+      "srcFiles": [
+        {"fileName": "libs/go2rtc/video-rtc.js"},
+        {"fileName": "libs/go2rtc/video-stream.js"}
+      ]
+    }
 	]
 }

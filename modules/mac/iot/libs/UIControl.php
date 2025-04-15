@@ -622,20 +622,12 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
       }
 
       $picId = $this->registerCamPicture($camInfo);
-      $c .= "<div class='shp-cam-pict' data-cam-ndx='".$camInfo['camServerNdx']."' data-pict-style='".Utils::es($pictStyle)."' id='{$picId}'>";
-
-      if ($pictStyle === 'video')
-      {
-        $streamUrl = $camInfo['streams'][0]['url'] ?? '';
-
-				$c .= "<video autoplay muted playsinline controls";
-      	$c .= " style='width: 100%;'";
-				$c .= " data-stream-url='$streamUrl'>";
-				$c .= '</video>';
-      }
-      else
-        $c .= "<img src='$phUrl' style='max-width: 100%;'>";
-
+      $c .= "<div class='shp-cam-pict' data-cam-ndx='".$camInfo['camServerNdx']."' ";
+      $c .= "data-pict-style='".Utils::es($pictStyle)."' id='{$picId}'";
+      $c .= " data-stream-url='".$camInfo['streamUrl']."' ";
+      $c .= " data-stream-id='".Utils::es($camInfo['streamId'])."' ";
+      $c .= " data-stream-type='".Utils::es($camInfo['streamType'])."' ";
+      $c .= '>';
       $c .= '</div>';
     }
 
