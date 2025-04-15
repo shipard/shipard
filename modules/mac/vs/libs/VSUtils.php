@@ -260,7 +260,7 @@ class VSUtils
 			$btnParams .= "'";
 
 			$te = new \mac\admin\libs\TokensEngine($app);
-			$validTokens = $te->loadLANValidTokens($srv['lan']);
+			$validTokens = $te->loadLANValidTokens($srv['lanNdx']);
 
 			$snaphotBaseFileName = 'img-'.$srv['ndx'].'-'.$cam['ndx'].'-'.base_convert(time(), 10, 36).Utils::createToken(6).'.jpg';
 			$snapshotUrl = 'https://'.$srv['fqdn'].':'.$srv['httpsPort'].'/'.$validTokens[0].'/camera-snapshot'.'/'.$cam['ndx'].'/'.$snaphotBaseFileName;
