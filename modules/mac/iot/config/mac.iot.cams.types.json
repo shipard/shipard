@@ -1,8 +1,14 @@
 {
-	"30": {
-		"fn": "IP LAN"
+	"frigate": {
+		"fn": "Frigate"
 	},
-	"31": {
+	"go2rtc": {
+		"fn": "Go2RTC"
+	},
+	"30": {
+		"fn": "IP LAN (starý systém Shipard)"
+	},
+	"esp32cam": {
 		"fn": "IotBox ESP32-CAM"
 	}
 }
