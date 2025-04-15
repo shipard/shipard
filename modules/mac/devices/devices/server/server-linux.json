@@ -5,7 +5,6 @@
 	"fields": {
 		"columns": [
 			{"id": "enableLC", "group": "general", "name": "Řízení sítě", "type": "logical", "options": ["saveOnChange"]},
-			{"id": "enableCams", "group": "general", "name": "Kamerový server", "type": "logical", "options": ["saveOnChange"]},
 			{"id": "enableRack", "group": "general", "name": "Monitoring a správa racku", "type": "logical", "options": ["saveOnChange"]},
 			{"id": "enableOthers", "group": "general", "name": "Ostatní", "type": "logical", "options": ["saveOnChange"]},
 
@@ -24,11 +23,13 @@
 			{"id": "displayRack2", "group": "rack", "name": "Rack 2", "type": "int", "reference": "mac.lan.racks", "enabled": {"enableRack": 1, "showRacks": 1}},
 			{"id": "displayRack3", "group": "rack", "name": "Rack 3", "type": "int", "reference": "mac.lan.racks", "enabled": {"enableRack": 1, "showRacks": 1}},
 
+			{"id": "enableCams", "group": "cams", "name": "Kamerový server", "type": "logical", "options": ["saveOnChange"]},
 			{"id": "camLogin", "group": "cams", "name": "Výchozí uživatel pro kamery", "type": "string", "len": 30, "enabled": {"enableCams": 1}},
 			{"id": "camPasswd", "group": "cams", "name": "Výchozí heslo pro kamery", "type": "string", "len": 50, "enabled": {"enableCams": 1}},
-
-			{"id": "httpPictReceiverListenIP", "group": "cams", "name": "IP adresa pro HTTP příjem obrázků", "type": "string", "len": 50, "enabled": {"enableCams": 1}},
-			{"id": "httpPictReceiverListenPort", "group": "cams", "name": "Port pro HTTP příjem obrázků", "type": "int", "placeholder": "8021", "enabled": {"enableCams": 1}},
+			{"id": "camFrigate", "group": "cams", "name": "Frigate", "type": "logical", "options": ["saveOnChange"], "enabled": {"enableCams": 1}},
+			{"id": "camFrigateFQDN", "group": "cams", "name": "Frigate - doménové jméno ", "type": "string", "len": 90, "enabled": {"enableCams": 1, "camFrigate": 1}},
+			{"id": "camFrigatePort", "group": "cams", "name": "Frigate - číslo portu", "type": "int", "placeholder": "8971", "enabled": {"enableCams": 1, "camFrigate": 1}},
+			{"id": "camGo2RTCPort", "group": "cams", "name": "Go2RTC - číslo portu", "type": "int", "placeholder": "16443", "enabled": {"enableCams": 1, "camFrigate": 1}},
 
 			{"id": "monNetdataEnabled", "group": "monitoring", "name": "Monitorováno pomocí Netdata", "type": "logical", "options": ["saveOnChange"]},
 			{"id": "monNetdataIPAddress", "group": "monitoring", "name": "Netdata IP adresa", "type": "string", "len": 55, "enabled": {"monNetdataEnabled": 1}},
