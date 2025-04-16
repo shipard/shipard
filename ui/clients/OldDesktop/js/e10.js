@@ -4757,7 +4757,10 @@ function e10DocumentAdd (e, params)
 		url += '&' + addParams;
 
 	if (e !== 0 && e.attr('data-add-snapshot-url'))
-		url += '&addSnapshotUrl=' + e.attr('data-add-snapshot-url') + '&addPicture=' + e.attr('data-add-snapshot-url');
+	{
+		let fn = 'img-'+(Date.now() - 1646000000000)+'-'+Math.floor(Math.random() * 1000)+'.jpg';
+		url += '&addSnapshotUrl=' + e.attr('data-add-snapshot-url') + '&addPicture=' + e.attr('data-add-snapshot-url') + fn;
+	}
 	else if (e !== 0 && e.attr('data-pict'))
 		url += '&addPicture=' + e.attr('data-pict');
 
