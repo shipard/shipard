@@ -22,7 +22,7 @@ class DownloadStatementsRBEmailTxt extends \lib\ebanking\download\DownloadStatem
 		$attachments = \E10\Base\getAttachments ($this->app, 'wkf.core.issues', $this->inboxNdx);
 		foreach ($attachments as $a)
 		{
-			if (mb_substr($a, -4) === '.ZIP')
+			if (strtolower(mb_substr($a, -4)) === '.zip')
 			{
 				$fullFileName = __APP_DIR__.'/att/'.$a;
 				$extractedFileName = '';
