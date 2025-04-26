@@ -13,6 +13,7 @@
 		{"id": "+e10pro.soci.saleTypes", "file": "saleTypes.json"},
 		{"id": "+e10pro.soci.paymentPeriods", "file": "paymentPeriods.json"},
 		{"id": "+e10pro.soci.entryStates", "file": "entryStates.json"},
-		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"}
+		{"id": "+e10.persons.virtualGroups", "file": "e10.persons.virtualGroups.json"},
+		{"id": "+reports", "file": "reports.json"}
 	]
 }

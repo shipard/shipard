@@ -8,5 +8,10 @@
 			"e10.persons.persons": {"soci": 2},
 			"e10pro.soci.entriesInvoicing": {"default": 2}
 		}
+	},
+	"acc": {
+		"reports": {
+			"e10pro.soci.libs.ReportInvoicesDeferredRevenue": 2
+		}
 	}
 }

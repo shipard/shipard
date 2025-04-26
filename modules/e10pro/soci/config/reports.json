@@ -1,0 +1,3 @@
+[
+	{"name": "Faktury 384", "class": "e10pro.soci.libs.ReportInvoicesDeferredRevenue", "icon": "reportInvoices", "group": "e10doc-finance", "order": 980000}
+]
