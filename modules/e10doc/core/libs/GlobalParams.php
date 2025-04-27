@@ -212,7 +212,7 @@ class GlobalParams extends \e10\Params
 
 			$p['calendarYears'][$r['fiscalYear']]['months'][] = array ('title' => $r['calendarMonth'], 'value' => $r['ndx'],
 																																	 'type' => $r['fiscalType'], 'fiscalYear' => $r['fiscalYear'],
-																																	 'dateBegin' => $r['start'], 'order' => $r['localOrder']);
+																																	 'dateBegin' => $r['start'], 'dateEnd' => $r['end'], 'order' => $r['localOrder']);
 		}
 
 		// -- quarters & halfs
@@ -232,12 +232,18 @@ class GlobalParams extends \e10\Params
 				if (!isset($p['calendarYears'][$calYear]['querters'][$qn]))
 					$p['calendarYears'][$calYear]['querters'][$qn] = array ('title' => $qn.'Q', 'value' => strval($mid), 'dateBegin' => $month['dateBegin'], 'fiscalYear' => $month['fiscalYear']);
 				else
+				{
 					$p['calendarYears'][$calYear]['querters'][$qn]['value'] .= ','.$mid;
+					$p['calendarYears'][$calYear]['querters'][$qn]['dateEnd'] = $month['dateEnd'];
+				}
 
 				if (!isset($p['calendarYears'][$calYear]['halfs'][$hn]))
 					$p['calendarYears'][$calYear]['halfs'][$hn] = array ('title' => $hn.'|2', 'value' => strval($mid), 'dateBegin' => $month['dateBegin'], 'fiscalYear' => $month['fiscalYear']);
 				else
+				{
 					$p['calendarYears'][$calYear]['halfs'][$hn]['value'] .= ','.$mid;
+					$p['calendarYears'][$calYear]['halfs'][$hn]['dateEnd'] = $month['dateEnd'];
+				}
 
 				$qmn++;
 				$hmn++;
@@ -252,12 +258,12 @@ class GlobalParams extends \e10\Params
 			if ($this->hasFlag ($p, 'quarters'))
 			{
 				forEach ($year['querters'] as $quart)
-					$p['values'][$quart['value']] = array ('title' => $year['title'].' / '.$quart['title'], 'dateBegin' => $quart['dateBegin'], 'fiscalYear' => $quart['fiscalYear']);
+					$p['values'][$quart['value']] = array ('title' => $year['title'].' / '.$quart['title'], 'dateBegin' => $quart['dateBegin'], 'dateEnd' => $quart['dateEnd'], 'fiscalYear' => $quart['fiscalYear']);
 			}
 			if ($this->hasFlag ($p, 'halfs'))
 			{
 				forEach ($year['halfs'] as $half)
-					$p['values'][$half['value']] = array ('title' => $year['title'].' / '.$half['title'], 'dateBegin' => $half['dateBegin'], 'fiscalYear' => $half['fiscalYear']);
+					$p['values'][$half['value']] = array ('title' => $year['title'].' / '.$half['title'], 'dateBegin' => $half['dateBegin'], 'dateEnd' => $half['dateEnd'], 'fiscalYear' => $half['fiscalYear']);
 			}
 		}
 
