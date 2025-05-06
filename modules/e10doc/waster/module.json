@@ -15,6 +15,7 @@
     {"id": "+e10doc.waster.wasteOpsTypes", "file": "wasteOpsTypes.json"},
     {"id": "+e10doc.waster.handlingCodes", "file": "wasteHandlingCodes.json"},
     {"id": "+dashboards", "file": "dashboards.json"},
-    {"id": "+widgets", "file": "widgets.json"}
+    {"id": "+widgets", "file": "widgets.json"},
+    {"id": "+reports", "file": "reports.json"}
   ]
 }

@@ -25,6 +25,8 @@
 		{"id": "authorPhonePrefix", "name": "Autor - předvolba telefonu", "label": "Předvolba telefonu", "placeholder": "+420", "type": "string", "len": 25},
 		{"id": "authorPhone", "name": "Autor - telefon", "label": "Telefon", "placeholder": "123 456 789", "type": "string", "len": 25},
 
+		{"id": "municipalityData", "name": "Data obce", "type": "int", "reference": "e10.base.attachments"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

@@ -9,7 +9,7 @@ use \Shipard\Utils\Utils;
  */
 class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 {
-	var ?\e10pro\reports\waste_cz\libs\ReportWasteCompanies $report = NULL;
+	var ?\e10doc\waster\libs\ReportWasteReturns $report = NULL;
 
 	function init ()
 	{
@@ -35,7 +35,7 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 
 		$this->data['pokus'] = json_encode($this->data['person']);
 
-		$this->report = new \e10pro\reports\waste_cz\libs\ReportWasteCompanies($this->app);
+		$this->report = new \e10doc\waster\libs\ReportWasteReturns($this->app);
 		$this->report->periodBegin = $this->recData['dateFrom'];
 		$this->report->periodEnd = $this->recData['dateTo'];
 
@@ -135,9 +135,9 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 		$c .= "\t\t\t\t\t<zujNazev>".Utils::es($this->data['person']['addressMain']['city'])."</zujNazev>\n";
 		$c .= "\t\t\t\t\t<ulice>".Utils::es($this->data['person']['addressMain']['street'])."</ulice>\n";
 		$c .= "\t\t\t\t\t<psc>".Utils::es($this->data['person']['addressMain']['zipcode'])."</psc>\n";
-		$c .= "\t\t\t\t\t<cisloOrientacni>".Utils::es($this->data['person']['addressMain']['houseNumber1'])."</cisloOrientacni>\n";
+		$c .= "\t\t\t\t\t<cisloPopisne>".Utils::es($this->data['person']['addressMain']['houseNumber1'])."</cisloPopisne>\n";
 		if (isset($this->data['person']['addressMain']['houseNumber2']))
-			$c .= "\t\t\t\t\t<cisloPopisne>".Utils::es($this->data['person']['addressMain']['houseNumber2'])."</cisloPopisne>\n";
+			$c .= "\t\t\t\t\t<cisloOrientacni>".Utils::es($this->data['person']['addressMain']['houseNumber2'])."</cisloOrientacni>\n";
 		$c .= "\t\t\t\t</adresaCr>\n";
 		$c .= "\t\t\t</adresaNonIszr>\n";
 		$c .= "\t\t</adresaVyber>\n";
@@ -270,15 +270,19 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 					$c .= "\t\t\t\t<icob>".Utils::es($partner['icob'])."</icob>\n";
 					$c .= "\t\t\t</icob>\n";
 				}
-
-				if (isset($partner['icz']))
+				elseif (isset($partner['icz']))
 				{
 					$c .= "\t\t\t<icz>\n";
 					$c .= "\t\t\t\t<icz>".Utils::es($partner['icz'])."</icz>\n";
 					$c .= "\t\t\t</icz>\n";
 				}
-
-				if (isset($partner['icp']))
+				elseif (isset($partner['orp']) && $partner['orp'] != '')
+				{
+					$c .= "\t\t\t<icp>\n";
+					$c .= "\t\t\t\t<icp>".Utils::es($partner['orp'])."</icp>\n";
+					$c .= "\t\t\t</icp>\n";
+				}
+				elseif (isset($partner['icp']))
 				{
 					$c .= "\t\t\t<icp>\n";
 					$c .= "\t\t\t\t<icp>".Utils::es($partner['icp'])."</icp>\n";
@@ -287,17 +291,26 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 
 				$c .= "\t\t\t<nazev>".Utils::es($partner['name'])."</nazev>\n";
 
-				if (isset($partner['ulice']) && $partner['ulice'] != '')
-					$c .= "\t\t\t<ulice>".Utils::es($partner['ulice'])."</ulice>\n";
-				if (isset($partner['cisloPopisne']) && $partner['cisloPopisne'] != '')
-					$c .= "\t\t\t<cisloPopisne>".Utils::es($partner['cisloPopisne'])."</cisloPopisne>\n";
-				if (isset($partner['cisloOrientacni']) && $partner['cisloOrientacni'] != '')
-					$c .= "\t\t\t<cisloOrientacni>".Utils::es($partner['cisloOrientacni'])."</cisloOrientacni>\n";
+				if (isset($partner['orp']) && $partner['orp'] != '')
+				{
+					$c .= "\t\t\t<ulice>".Utils::es('Činnost na území ORP Zlín')."</ulice>\n";
+					$c .= "\t\t\t<obecNazev>".Utils::es('Zlín')."</obecNazev>\n";
+					$c .= "\t\t\t<psc>".Utils::es('76001')."</psc>\n";
+				}
+				else
+				{
+					if (isset($partner['ulice']) && $partner['ulice'] != '')
+						$c .= "\t\t\t<ulice>".Utils::es($partner['ulice'])."</ulice>\n";
+					if (isset($partner['cisloPopisne']) && $partner['cisloPopisne'] != '')
+						$c .= "\t\t\t<cisloPopisne>".Utils::es($partner['cisloPopisne'])."</cisloPopisne>\n";
+					if (isset($partner['cisloOrientacni']) && $partner['cisloOrientacni'] != '')
+						$c .= "\t\t\t<cisloOrientacni>".Utils::es($partner['cisloOrientacni'])."</cisloOrientacni>\n";
+					if (isset($partner['obec']) && $partner['obec'] != '')
+						$c .= "\t\t\t<obecNazev>".Utils::es($partner['obec'])."</obecNazev>\n";
+					if (isset($partner['psc']) && $partner['psc'] != '')
+						$c .= "\t\t\t<psc>".Utils::es($partner['psc'])."</psc>\n";
+					}
 				$c .= "\t\t\t<iczuj>".Utils::es($partner['iczuj'])."</iczuj>\n";
-				if (isset($partner['obec']) && $partner['obec'] != '')
-					$c .= "\t\t\t<obecNazev>".Utils::es($partner['obec'])."</obecNazev>\n";
-				if (isset($partner['psc']) && $partner['psc'] != '')
-					$c .= "\t\t\t<psc>".Utils::es($partner['psc'])."</psc>\n";
 
 				$c .= "\t\t</subjekt>\n";
 			}
