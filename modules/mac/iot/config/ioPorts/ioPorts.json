@@ -74,6 +74,10 @@
 		"name": "Displej Nextion"
 	},
 
+	"power/battusb": {
+		"name": "Baterie/USB", "sensor": 1
+	},
+
 	"bus/i2c": {
 		"name": "Sběrnice I2C"
 	},

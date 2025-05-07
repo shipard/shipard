@@ -1,0 +1,12 @@
+{
+	"name": "Baterie/USB",
+	"title": "Baterie/USB",
+	"useValueKind": 1,
+	"fields": {
+		"columns": [
+			{
+				"id": "i2cBusPortId", "name": "I2C sběrnice", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			}
+		]
+	}
+}

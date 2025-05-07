@@ -41,8 +41,18 @@
 		"fn": "Kontroler ETH V31",
 		"iotKind": "shib", "iotSubKind": "shib"
 	},
+
+	"epd-sh-1248": {
+		"fn": "E-Ink 1248",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+
 	"eth-box-core_V1": {
 		"fn": "ETH box core",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
+	"uart-vm": {
+		"fn": "Prodejní automat",
 		"iotKind": "shib", "iotSubKind": "shib"
 	}
 }

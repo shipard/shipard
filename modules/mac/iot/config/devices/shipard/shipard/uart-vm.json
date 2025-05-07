@@ -1,0 +1,45 @@
+{
+	"gpioLayout": "shipard/espressif/esp32s3-generic",
+	"enabledPins": {
+		"p15": {"title": "qwiic.sda"},
+		"p12": {"title": "qwiic.scl"}
+	},
+	"fields": {
+		"groups": [
+			{"id":  "opts", "title":  "Nastavení"}
+		],
+		"columns": [
+			{
+				"id": "setFanMode", "group":  "opts", "name": "Nastavovat rychlost ventilátoru", "type": "enumInt", "options": ["saveOnChange"],
+				"enumValues": {"1": "Ne", "2": "Ano"}
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"1w": {
+			"type": "bus/1wire",
+			"portId": "1w",
+			"pin": "p16"
+		},
+    "doors": {
+      "type": "input/binary",
+      "portId": "doors",
+      "sendAsAction": 1,
+      "timeout": 250,
+      "pin": "p48"
+    },
+    "rel-fan": {
+      "type": "control/bist-relay",
+      "portId": "REL-FAN",
+      "pin1": "p39",
+      "pin2": "p40"
+    },
+    "rel-cooler": {
+      "type": "control/bist-relay",
+      "portId": "REL-COOLER",
+      "pin1": "p41",
+      "pin2": "p42"
+    }
+	},
+	"fwId": "sms72-esp32-eth"
+}
