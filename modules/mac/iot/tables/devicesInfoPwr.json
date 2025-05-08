@@ -6,6 +6,8 @@
 
 		{"id": "pwrBatteryLevel", "name": "Stav baterie", "type": "short"},
 		{"id": "pwrBatteryVoltage", "name": "Napětí baterie", "type": "number", "dec": 3},
+		{"id": "pwrCharging", "name": "Nabíjí se", "type": "logical"},
+		{"id": "pwrChargeCurrent", "name": "Nabíjecí proud", "type": "number", "dec": 3},
 
 		{"id": "dateTime", "name": "Datum a čas", "type": "timestamp"}
 	],

@@ -9,6 +9,8 @@
 		{"id": "osVersion", "name": "Verze OS", "type": "string", "len": 25},
 		{"id": "pwrBatteryLevel", "name": "Stav baterie", "type": "short"},
 		{"id": "pwrBatteryVoltage", "name": "Napětí baterie", "type": "number", "dec": 3},
+		{"id": "pwrCharging", "name": "Nabíjí se", "type": "logical"},
+		{"id": "pwrChargeCurrent", "name": "Nabíjecí proud", "type": "number", "dec": 3},
 		{"id": "uptime", "name": "Uptime", "type": "long"},
 		{"id": "signalLevel", "name": "Signál", "type": "short"},
 		{"id": "lastSeen", "name": "Poslední aktivita", "type": "timestamp"},

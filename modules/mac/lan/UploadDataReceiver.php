@@ -128,6 +128,12 @@ class UploadDataReceiver extends Utility
 		{
 			$update['pwrBatteryVoltage'] = $this->data['pwr-batt-voltage'];
 			$pwrInfo['pwrBatteryVoltage'] = $this->data['pwr-batt-voltage'];
+
+			$update['pwrCharging'] = intval(($this->data['pwr-charge-current'] ?? 0) != 0);
+			$pwrInfo['pwrCharging'] = $update['pwrCharging'];
+
+			$update['pwrChargeCurrent'] = $this->data['pwr-charge-current'];
+			$pwrInfo['pwrChargeCurrent'] = $this->data['pwr-charge-current'];
 		}
 
 		$this->db()->query('UPDATE [mac_iot_devicesInfo] SET ', $update, ' WHERE [ndx] = %i', $deviceInfoNdx);
