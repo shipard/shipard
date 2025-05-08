@@ -44,7 +44,12 @@
 
 	"epd-sh-1248": {
 		"fn": "E-Ink 1248",
-		"iotKind": "shib", "iotSubKind": "shib"
+		"iotKind": "epd", "iotSubKind": "shib"
+	},
+
+	"epd-sh-small": {
+		"fn": "E-Ink - malý",
+		"iotKind": "epd", "iotSubKind": "shib"
 	},
 
 	"eth-box-core_V1": {

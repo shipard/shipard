@@ -9,6 +9,13 @@
 			{"id":  "opts", "title":  "Nastavení"}
 		],
 		"columns": [
+			{
+				"id": "displayType", "group":  "opts", "name": "Typ displeje", "type": "enumInt", "options": ["saveOnChange"],
+				"enumValues": {
+					"GxEPD2_750c_Z08": "7.5\", 800 x 480, čb + červená (GxEPD2_750c_Z08)",
+					"GxEPD2_583_GDEQ0583T31": "5.83\", 648 x 480, čb (GxEPD2_583_GDEQ0583T31)"
+				}
+			}
 		]
 	},
 	"device": {
@@ -19,7 +26,7 @@
 		"epd": {
 			"type": "display/epaper",
 			"portId": "epd",
-			"displayType": "GxEPD2_1248c"
+			"_cfgColumns": {"displayType": "displayType"}
 		},
 		"i2c": {
 			"type": "bus/i2c",

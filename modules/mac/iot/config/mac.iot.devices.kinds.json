@@ -84,6 +84,16 @@
       }
     }
   },
+  "epd": {
+    "fn": "E-Ink displej",
+    "icon": "system/iconImage",
+    "subTypes": {
+      "sensor": {
+        "fn": "E-ink",
+        "icon": "system/iconImage"
+      }
+    }
+  },
   "shib": {
     "fn": "IoT Box",
     "icon": "tables/mac.iot.devices",

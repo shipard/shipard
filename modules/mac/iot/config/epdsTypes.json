@@ -6,7 +6,7 @@
     "width": 640, "height": 384
   },
   "GxEPD2_750c_Z08": {
-    "fn": "GxEPD2_750c_Z08 (7\", 800 x 480, čb + červená)",
+    "fn": "GxEPD2_750c_Z08 (7.5\", 800 x 480, čb + červená)",
     "cntColors": 3,
     "colors": ["000000", "FFFFFF", "CC0000"],
     "width": 800, "height": 480
@@ -46,7 +46,7 @@
     "width": 400, "height": 300
   },
   "GxEPD2_1248c": {
-    "fn": "GxEPD2_1248c (12.48\", 1304 x 984, čb + červená) [EXPERIMENTAL]",
+    "fn": "GxEPD2_1248c (12.48\", 1304 x 984, čb + červená)",
     "cntColors": 3,
     "colors": ["000000", "FFFFFF", "FF0000"],
     "width": 1304, "height": 984
