@@ -38,7 +38,7 @@ class ESignImageEngine extends Utility
 
   protected function createHTML()
   {
-    $this->template = new \Shipard\Report\TemplateMustache($this->app());
+    $this->template = new \mac\iot\libs\TemplateESigns($this->app());
     $this->template->data['esignNdx'] = $this->esignNdx;
     $this->template->data['displayInfo'] = $this->displayInfo;
 
