@@ -233,7 +233,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $qryString .= "</Kriteria>\n";
     $qryString .= "</VerejnyWebDotaz>\n";
 
-    $uploadUrl = "https://www.rzp.cz/rzp/api3-c/srv/vw/v31/vwinterface/xml";
+    $uploadUrl = "https://rzp.gov.cz/rzp/api3-c/srv/vw/v31/vwinterface/xml";
 		$ch = curl_init();
 		curl_setopt ($ch, CURLOPT_HEADER, 0);
 		curl_setopt ($ch, CURLOPT_URL, $uploadUrl);
@@ -269,7 +269,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $qryString .= "<Historie>0</Historie>\n";
     $qryString .= "</VerejnyWebDotaz>\n";
 
-    $uploadUrl = "https://www.rzp.cz/rzp/api3-c/srv/vw/v31/vwinterface/xml";
+    $uploadUrl = "https://rzp.gov.cz/rzp/api3-c/srv/vw/v31/vwinterface/xml";
 		$ch = curl_init();
 		curl_setopt ($ch, CURLOPT_HEADER, 0);
 		curl_setopt ($ch, CURLOPT_URL, $uploadUrl);
