@@ -4,8 +4,8 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
     {"id": "year", "name": "Rok", "type": "int"},
-		{"id": "dateFrom", "name": "Datum", "type": "date"},
-		{"id": "dateTo", "name": "Datum", "type": "date"},
+		{"id": "dateFrom", "name": "Datum od", "type": "date"},
+		{"id": "dateTo", "name": "Datum do", "type": "date"},
 
     {"id": "title", "name": "Název", "type": "string", "len": 80},
 
