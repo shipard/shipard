@@ -1,6 +1,6 @@
 {
   "A10": {
-    "sn": "A10: Primární produkce odpadu",
+    "sn": "A10: Převzetí odpadů od fyzické osoby - občana mimo obecní systém",
     "fn": "Produkce převzetím odpadů od fyzické osoby - občana mimo obecní systém sběru komunálních odpadů",
     "dir": 0,
     "personType": 1,
@@ -67,6 +67,13 @@
     "dir": 3,
     "validTo": "2024-12-31",
     "sortOrder": 302
+  },
+  "AN4": {
+    "sn": "AN4: Nakládání s odpadem (Převod odpadu)",
+    "fn": "Nakládání s odpadem. Upuštění od odděleného soustředění v zařízení pro nakládání s odpady (úprava)",
+    "dir": 3,
+    "validFrom": "2025-01-01",
+    "sortOrder": 303
   },
   "CR12": {
     "sn": "CR12: Předúprava odpadů (Převod odpadu)",

@@ -53,7 +53,7 @@ class WasteOpsGenerator extends Utility
      // $this->checkWasteOp($r);
       echo "# ".$r['wasteCodeText'].' --> '.$r['wasteCodeTextMove'].' - '.$r['quantityKG']."\n";
 
-      $hcSrc = 'BR12';
+      $hcSrc = 'BR12'; // AN4 in 2025
       $hcDst = 'A00';
 
       $newOp = [
