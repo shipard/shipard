@@ -262,9 +262,7 @@ class VSUtils
 			$te = new \mac\admin\libs\TokensEngine($app);
 			$validTokens = $te->loadLANValidTokens($srv['lanNdx']);
 
-			//$snaphotBaseFileName = 'img-'.$srv['ndx'].'-'.$cam['ndx'].'-'.base_convert(time(), 10, 36).Utils::createToken(6).'.jpg';
-			//$snapshotUrl = 'https://'.$srv['fqdn'].':'.$srv['httpsPort'].'/'.$validTokens[0].'/camera-snapshot'.'/'.$cam['ndx'].'/'.$snaphotBaseFileName;
-			$snapshotUrl = 'https://'.$srv['fqdn'].':'.$srv['httpsPort'].'/camera-snapshot'.'/'.$cam['ndx'].'/';
+			$snapshotUrl = 'https://'.$srv['fqdn'].':'.$srv['httpsPort'].'/'.$validTokens[0].'/camera-snapshot'.'/'.$cam['ndx'].'/';
 			$btnParams .= " data-add-snapshot-url='{$snapshotUrl}'";
 
 			$c .= "<button class='$btnClass'$btnParams style='background-color: transparent;'>";

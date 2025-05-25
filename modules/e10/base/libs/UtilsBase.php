@@ -217,7 +217,7 @@ class UtilsBase
 			}
 			else
 			if ($attachment ['attplace'] === TableAttachments::apRemote)
-				$url = $attachment ['path'];
+				$url = $attachment ['filename'];
 		}
 		else
 		{
@@ -227,7 +227,7 @@ class UtilsBase
 			if ($attachment ['attplace'] === TableAttachments::apE10Remote)
 				$url = $attachment ['path'] . '/' . $attachment ['filename'];
 			if ($attachment ['attplace'] === TableAttachments::apRemote)
-				$url = $attachment ['path'];
+				$url = $attachment ['filename'];
 		}
 		return $url;
 	}

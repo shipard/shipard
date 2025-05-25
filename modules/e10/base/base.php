@@ -957,7 +957,7 @@ function getAttachmentUrl ($app, $attachment, $thumbWidth = 0, $thumbHeight = 0,
 		}
 		else
 		if ($attachment ['attplace'] === TableAttachments::apRemote)
-			$url = $attachment ['path'];
+			$url = $attachment ['filename'];
 	}
 	else
 	{
@@ -967,7 +967,7 @@ function getAttachmentUrl ($app, $attachment, $thumbWidth = 0, $thumbHeight = 0,
 		if ($attachment ['attplace'] === TableAttachments::apE10Remote)
 			$url = $attachment ['path'] . '/' . $attachment ['filename'];
 		if ($attachment ['attplace'] === TableAttachments::apRemote)
-			$url = $attachment ['path'];
+			$url = $attachment ['filename'];
 	}
 	return $url;
 }

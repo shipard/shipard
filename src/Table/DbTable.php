@@ -505,7 +505,7 @@ class DbTable
 			$path_parts = pathinfo ($addPicture);
 			$newAtt = [
 				'tableid' => $this->tableId(), 'recid' => $newNdx, 'atttype' => 'campic', 'name' => $path_parts ['filename'],
-				'path' => $addPicture, 'filename' => '', 'filetype' => $path_parts ['extension'],
+				'path' => '', 'filename' => $addPicture, 'filetype' => $path_parts ['extension'],
 				'attplace' => /* TableAttachments::apRemote */ 2, 'created' => new \DateTime()
 			];
 			$this->dbmodel->db->query ("INSERT INTO [e10_attachments_files]", $newAtt);
@@ -551,7 +551,7 @@ class DbTable
 			$path_parts = pathinfo ($addPicture);
 			$newAtt = [
 				'tableid' => $this->tableId(), 'recid' => $recData ['ndx'], 'atttype' => 'campic', 'name' => $path_parts ['filename'],
-				'path' => $addPicture, 'filename' => '', 'filetype' => $path_parts ['extension'],
+				'path' => '', 'filename' => $addPicture, 'filetype' => $path_parts ['extension'],
 				'attplace' => /* TableAttachments::apRemote */ 2, 'created' => new \DateTime()
 			];
 			$this->dbmodel->db->query ("INSERT INTO [e10_attachments_files]", $newAtt);

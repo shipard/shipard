@@ -62,12 +62,12 @@ class CronApp extends Application
 				chmod ($destPath, Utils::wwwGroup());
 			}
 
-			$path_parts = pathinfo ($r['path']);
+			$path_parts = pathinfo ($r['filename']);
 			$baseFileName =  Utils::safeChars ($path_parts ['filename'].'.'.$path_parts ['extension']);
 
 			$fullFileName = $destPath.$baseFileName;
 
-			if (@copy ($r['path'], $fullFileName) === TRUE)
+			if (@copy ($r['filename'], $fullFileName) === TRUE)
 			{
 				$updateAtt = ['path' => $path, 'filename' => $baseFileName,  'attplace' =>  /* TableAttachments::apLocal */ 0];
 				$this->db()->query ('UPDATE [e10_attachments_files] SET ', $updateAtt, ' WHERE [ndx] = %i', $r['ndx']);
