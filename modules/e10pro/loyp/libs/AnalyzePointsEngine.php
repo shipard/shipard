@@ -9,6 +9,7 @@ use \Shipard\Utils\Utils;
  */
 class AnalyzePointsEngine extends \Shipard\Base\Utility
 {
+  var $loypNdx = 0;
   var $periodBegin = NULL;
   var $periodEnd = NULL;
 
@@ -50,6 +51,7 @@ class AnalyzePointsEngine extends \Shipard\Base\Utility
     array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
     array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [journal].person = [persons].ndx');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [journal].loyp = %i', $this->loypNdx);
 	  array_push ($q, ' AND ([persons].[personType] = %i)', $personType);
     $r = $this->db()->query($q)->fetch();
     $tableRow = ['title' => $title, 'points' => $r['sumCntPoints'],];
@@ -62,6 +64,7 @@ class AnalyzePointsEngine extends \Shipard\Base\Utility
     array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
     array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [journal].person = [persons].ndx');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [journal].loyp = %i', $this->loypNdx);
 	  array_push ($q, ' AND ([persons].[personType] = %i)', $personType);
     array_push ($q, ' GROUP BY 1');
     array_push ($q, ') mm');
@@ -76,6 +79,7 @@ class AnalyzePointsEngine extends \Shipard\Base\Utility
     array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
     array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [journal].person = [persons].ndx');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [journal].loyp = %i', $this->loypNdx);
 	  array_push ($q, ' AND ([persons].[personType] = %i)', $personType);
     $r = $this->db()->query($q)->fetch();
     $tableRow['cnt'] = $r['cntRows'];
@@ -96,11 +100,14 @@ class AnalyzePointsEngine extends \Shipard\Base\Utility
       $q = [];
       array_push ($q, 'SELECT COUNT(DISTINCT(person)) AS cntRows ');
       array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal2]');
-      array_push ($q, ' WHERE person IN (');
+      array_push ($q, ' WHERE 1');
+      array_push ($q, ' AND [journal2].loyp = %i', $this->loypNdx);
+	    array_push ($q, ' AND person IN (');
       array_push ($q, 'SELECT person');
       array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
       array_push ($q, ' LEFT JOIN [e10_persons_persons] AS [persons] ON [journal].person = [persons].ndx');
       array_push ($q, ' WHERE 1');
+      array_push ($q, ' AND [journal].loyp = %i', $this->loypNdx);
       array_push ($q, ' AND ([persons].[personType] = %i)', $personType);
       array_push ($q, ' GROUP BY 1');
       array_push ($q, ' HAVING SUM(cntPoints) BETWEEN %i AND %i', $from, $to);
