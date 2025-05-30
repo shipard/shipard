@@ -47,7 +47,7 @@ class DocsPointsRecalc extends \Shipard\Base\Utility
   public function run()
   {
     $this->dateFrom = Utils::createDateTime('2024-01-01');
-    $this->dateTo = Utils::createDateTime('2024-12-31');
+    $this->dateTo = Utils::createDateTime('2025-12-31');
 
     //$now = new \DateTime();
     //echo "START: ".$now->format('H:i:s')."\n";

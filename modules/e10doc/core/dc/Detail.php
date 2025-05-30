@@ -506,7 +506,7 @@ class Detail extends \Shipard\Base\DocumentCard
 			$this->addContent ('body', $wce->checkWRContent);
 	}
 
-	function createLoyp($recData)
+	function createLoypIn($recData)
 	{
 		if ($this->app()->model()->table ('e10pro.loyp.pointsJournal') === FALSE)
 			return;
@@ -519,6 +519,21 @@ class Detail extends \Shipard\Base\DocumentCard
 
 		if ($dpe->docDetailContent)
 			$this->addContent ('body', $dpe->docDetailContent);
+	}
+
+	function createLoypOut($recData)
+	{
+		if ($this->app()->model()->table ('e10pro.loyp.pointsJournal') === FALSE)
+			return;
+		if ($recData['docType'] !== 'invno')
+			return;
+
+		$dpe = new \e10pro\loyp\libs\DocsPointsOutDetailContent($this->app);
+		$dpe->setDocument($recData);
+		$dpe->createContent();
+
+		if ($dpe->content)
+			$this->addContent ('body', $dpe->content);
 	}
 
 	public function createContentBody ()
@@ -563,7 +578,8 @@ class Detail extends \Shipard\Base\DocumentCard
 
 		$this->addContent ('body', $this->docsRows ());
 
-		$this->createLoyp($this->recData);
+		$this->createLoypIn($this->recData);
+		$this->createLoypOut($this->recData);
 		$this->createWasteReport($this->recData);
 
 		/*

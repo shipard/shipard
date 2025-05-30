@@ -527,6 +527,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			array_push ($q, 'SELECT SUM([journal].cntPoints) AS sumCntPoints');
 			array_push ($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
 			array_push ($q, ' WHERE [person] = %i', $personNdx);
+			array_push ($q, ' AND [loyp] = %i', $this->recData['loyp']);
 			$cntLoypPoints = $this->app()->db()->query($q)->fetch();
 			if ($cntLoypPoints)
 			{
@@ -542,8 +543,9 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			array_push($q, 'SELECT [journal].*');
 			array_push($q, ' FROM [e10pro_loyp_pointsJournal] AS [journal]');
 			array_push($q, ' WHERE 1');
-			array_push($q, ' AND [journal].[person] = %i', $this->recData['person']);
+			array_push($q, ' AND [journal].[person] = %i', $personNdx);
 			array_push($q, ' AND [journal].[rowType] = %i', 2);
+			array_push($q, ' AND [journal].[loyp] = %i', $this->recData['loyp']);
 			array_push($q, ' ORDER BY [journal].ndx DESC');
 			array_push($q, ' LIMIT 2');
 

@@ -92,7 +92,7 @@ class ViewPointsSettings extends TableView
 			forEach ($this->loyps as $loyp)
 			{
 				$bt [] = [
-					'id' => $loyp['ndx'], 'title' => $loyp['sn'], 'active' => $active,
+					'id' => strval($loyp['ndx']), 'title' => $loyp['sn'], 'active' => $active,
 					'addParams' => ['loyp' => $loyp['ndx']]
 				];
 				$active = 0;
@@ -138,6 +138,7 @@ class ViewPointsSettings extends TableView
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
+		$bt = intval($this->bottomTabId ());
 
 		$q = [];
     array_push ($q, 'SELECT [points].*,');
@@ -146,6 +147,11 @@ class ViewPointsSettings extends TableView
     array_push ($q, ' LEFT JOIN [e10_witems_itemcategories] AS [cats] ON [points].witemCategory = [cats].ndx');
 		array_push ($q, ' LEFT JOIN [e10_witems_items] AS [witems] ON [points].[item] = [witems].ndx');
 		array_push ($q, ' WHERE 1');
+
+		if ($bt !== 0)
+		{
+			array_push ($q, ' AND [points].loyp = %i', $bt);
+		}
 
 		// -- fulltext
 		if ($fts != '')

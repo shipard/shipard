@@ -28,6 +28,7 @@ class DCPersonPointsSummary extends \Shipard\Base\DocumentCard
     array_push($q, ' LEFT JOIN e10doc_core_heads AS heads ON journal.document = heads.ndx');
     array_push($q, ' WHERE 1');
 		array_push($q, ' AND [journal].person = %i', $this->personNdx);
+    array_push($q, ' AND [journal].loyp = %i', $this->recData['loyp']);
     array_push($q, ' ORDER BY heads.dateAccounting DESC, heads.docNumber');
 		$t = [];
 		$rows = $this->table->db()->query($q);

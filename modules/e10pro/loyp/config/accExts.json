@@ -1,0 +1,6 @@
+{
+  "loyp-purchases": {
+    "docTypes": ["purchase", "invno"],
+    "engine": "e10pro.loyp.libs.DocsPointsAccExtsEngine"
+  }
+}

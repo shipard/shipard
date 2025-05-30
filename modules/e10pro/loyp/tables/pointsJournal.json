@@ -6,12 +6,18 @@
 		{"id": "rowType", "name": "Typ řádku", "type": "enumInt",
 			"enumValues": {"0": "Prodej", "1": "Výkup",  "2": "Nákup za body"}},
 
+	  {"id": "loyp", "name": "Věrnostní program", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "e10pro.loyp.loyps", "cfgValue": "", "cfgText": "sn"}},
+
 		{"id": "document", "name": "Doklad", "type": "int", "reference": "e10docs.core.heads"},
     {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
     {"id": "cntPoints", "name": "Počet bodů", "type": "number", "dec": 2}
 	],
 	"views": [
-		{"id": "summary", "class": "e10pro.loyp.libs.ViewPointsJournalSummary", "detail": "e10pro.loyp.libs.ViewDetailPointsJournalSummary"}
+		{
+			"id": "summary", "class": "e10pro.loyp.libs.ViewPointsJournalSummary",
+			"detail": "e10pro.loyp.libs.ViewDetailPointsJournalSummary", "ignorePK": 1
+		}
 	],
 	"options": ["systemTable"],
 	"indexes": [

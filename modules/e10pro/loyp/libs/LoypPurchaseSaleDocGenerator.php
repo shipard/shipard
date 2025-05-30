@@ -59,6 +59,7 @@ class LoypPurchaseSaleDocGenerator extends Utility
     $accDate = new \DateTime($this->purchaseDocRecData['dateAccounting']);
 		$newDoc = new CreateDocumentUtility ($this->app);
 		$newDoc->createDocumentHead('invno');
+    $newDoc->docHead['loyp'] = $docRecData['loyp'];
     $newDoc->docHead['loypOtherDoc'] = $this->purchaseDocRecData['ndx'];
 		$newDoc->docHead['person'] = $this->purchaseDocRecData['person'];
     $newDoc->docHead['dateAccounting'] = $accDate;

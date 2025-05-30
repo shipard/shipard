@@ -18,6 +18,12 @@
 		{"id": "dbCounterInvoiceOut", "type": "int", "name": "Číselná řada pro vydané faktury", "reference": "e10doc.base.docnumbers", "group": "invoices"},
     {"id": "warehouse", "name": "Sklad s dárky", "type": "int", "reference": "e10doc.base.warehouses"},
 
+		{"id": "debsAccIdInDr", "name": "Účet Získání bodů - MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccIdInCr", "name": "Účet Získání bodů - DAL", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccIdOutDr", "name": "Účet Uplatnění bodů - MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccIdOutCr", "name": "Účet Uplatnění bodů - DAL", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+    {"id": "pointAccPrice", "name": "Částka za 1 bod", "type": "money"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

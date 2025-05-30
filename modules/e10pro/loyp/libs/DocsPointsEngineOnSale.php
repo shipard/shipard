@@ -27,6 +27,7 @@ class DocsPointsEngineOnSale extends \Shipard\Base\Utility
         $journalItem = [
           'rowType' => 2,
 
+          'loyp' => $this->documentRecData['loyp'],
           'document' => $this->documentNdx,
           'person' => $this->documentRecData['person'],
           'cntPoints' => - $totalPts,

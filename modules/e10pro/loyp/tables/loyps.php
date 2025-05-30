@@ -30,7 +30,7 @@ class TableLoyps extends DbTable
 	public function saveConfig ()
 	{
 		$list = [];
-		$rows = $this->app()->db->query ('SELECT * from [e10pro_loyp_loyps] WHERE [docState] != 9800 ORDER BY [fullName]');
+		$rows = $this->app()->db->query ('SELECT * from [e10pro_loyp_loyps] WHERE [docState] != 9800 ORDER BY [validFrom] DESC, [fullName]');
 
 		foreach ($rows as $r)
     {
@@ -43,6 +43,11 @@ class TableLoyps extends DbTable
 				'pointsSource' => $r ['pointsSource'],
         'dbCounterInvoiceOut' => $r ['dbCounterInvoiceOut'],
         'warehouse' => $r ['warehouse'],
+				'debsAccIdInDr' => $r ['debsAccIdInDr'],
+				'debsAccIdInCr' => $r ['debsAccIdInCr'],
+				'debsAccIdOutDr' => $r ['debsAccIdOutDr'],
+				'debsAccIdOutCr' => $r ['debsAccIdOutCr'],
+				'pointAccPrice' => $r ['pointAccPrice'],
       ];
 
 			if (!Utils::dateIsBlank($r['validFrom']))
@@ -53,6 +58,36 @@ class TableLoyps extends DbTable
 
 		$cfg ['e10pro']['loyp']['loyps'] = $list;
 		file_put_contents(__APP_DIR__ . '/config/_e10pro.loyp.loyps.json', Json::lint ($cfg));
+	}
+
+	function copyDocumentRecord ($srcRecData, $ownerRecord = NULL)
+	{
+		$recData = parent::copyDocumentRecord ($srcRecData, $ownerRecord);
+
+		unset($recData['validFrom']);
+		unset($recData['validTo']);
+
+		return $recData;
+	}
+
+	public function copyDocumentLists ($srcRecData, $dstRecData)
+	{
+		parent::copyDocumentLists ($srcRecData, $dstRecData);
+
+		$q = [];
+		array_push($q, 'SELECT * FROM [e10pro_loyp_pointsSettings]');
+		array_push($q, ' WHERE [loyp] = %i', $srcRecData['ndx']);
+		array_push($q, ' AND [docState] = %i', 4000);
+		array_push($q, ' ORDER BY [ndx]');
+		$rows = $this->app()->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$recData = $r->toArray();
+			unset($recData['ndx']);
+			$recData['loyp'] = $dstRecData['ndx'];
+
+			$this->app()->db()->query('INSERT INTO [e10pro_loyp_pointsSettings]', $recData);
+		}
 	}
 }
 
@@ -133,6 +168,20 @@ class FormLoyp extends TableForm
       $this->addSeparator(self::coH4);
       $this->addColumnInput ('dbCounterInvoiceOut');
       $this->addColumnInput ('warehouse');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('debsAccIdInDr');
+			$this->addColumnInput ('debsAccIdInCr');
+			$this->addColumnInput ('debsAccIdOutDr');
+			$this->addColumnInput ('debsAccIdOutCr');
+			$this->addColumnInput ('pointAccPrice');
+
+			/*
+					{"id": "debsAccIdInDr", "name": "Účet Získání bodů - MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccIdInCr", "name": "Účet Získání bodů - DAL", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccIdOutDr", "name": "Účet Uplatnění bodů - MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccIdOutCr", "name": "Účet Uplatnění bodů - DAL", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+    {"id": "pointAccPrice", "name": "Částka za 1 bod", "type": "money"},
+*/
 		$this->closeForm ();
 	}
 }

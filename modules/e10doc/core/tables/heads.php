@@ -351,6 +351,8 @@ class TableHeads extends DbTable
 
 	public function checkAfterSave2 (&$recData)
 	{
+		$this->doDocsOps ($recData);
+
 		if ($this->app()->model()->table ('e10doc.inventory.journal') !== FALSE)
 			$this->doInventory ($recData);
 
@@ -2527,7 +2529,7 @@ class TableHeads extends DbTable
 
 	public function loadAccounting_debs ($recData)
 	{
-		$accRingColorClasses = [20 => 'e10-bg-t8', 40 => 'e10-bg-t6'];
+		$accRingColorClasses = [20 => 'e10-bg-t8', 40 => 'e10-bg-t6', 120 => 'e10-bg-t5', ];
 
 		$useWorkOrders = intval($this->app()->cfgItem ('options.e10doc-commerce.useWorkOrders', 0));
 		$useProperty = ($this->app()->model()->table ('e10pro.property.property') !== FALSE);

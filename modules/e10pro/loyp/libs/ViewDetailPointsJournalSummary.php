@@ -2,8 +2,7 @@
 
 namespace e10pro\loyp\libs;
 
-use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
-use \Shipard\Utils\Utils;
+use \Shipard\Viewer\TableViewDetail;
 
 
 /**
@@ -13,7 +12,11 @@ class ViewDetailPointsJournalSummary extends TableViewDetail
 {
   public function createDetailContent ()
 	{
-		$rd = ['ndx' => $this->ndx];
+		$parts = explode('_', $this->item['pk']);
+		$personNdx = intval($parts[0]);
+		$loypNdx = intval($parts[1]);
+
+		$rd = ['ndx' => $personNdx, 'loyp' => $loypNdx];
 		$this->addDocumentCard('e10pro.loyp.libs.dc.DCPersonPointsSummary', $rd);
 	}
 }

@@ -7,11 +7,11 @@
 					"order": 9800000,
 					"subMenu": {
 						"items": {
-							"pointsSettings": {"t1": "Nastavení bodů", "object": "viewer", "table": "e10pro.loyp.pointsSettings", "viewer": "default", "order": 100000},
-							"pointsSummary": {"t1": "Stav bodů", "object": "viewer", "table": "e10pro.loyp.pointsJournal", "viewer": "summary", "order": 110000},
+							"pointsSummary": {"t1": "Stav bodů", "object": "viewer", "table": "e10pro.loyp.pointsJournal", "viewer": "summary", "order": 100000},
 							"priceListPoints": {"t1": "Bodový ceník", "object": "viewer", "table": "e10pro.loyp.priceListPoints", "viewer": "default", "order": 120000},
 							"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10pro-loyp", "icon": "system/iconReports", "order": 700000},
-							"loyps": {"t1": "Programy", "object": "viewer", "table": "e10pro.loyp.loyps", "viewer": "default", "order": 800000}
+							"loyps": {"t1": "Programy", "object": "viewer", "table": "e10pro.loyp.loyps", "viewer": "default", "order": 800000},
+							"pointsSettings": {"t1": "Nastavení bodů", "object": "viewer", "table": "e10pro.loyp.pointsSettings", "viewer": "default", "order": 900000}
 						}
 					}
 				}

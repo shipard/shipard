@@ -237,6 +237,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
       $journalItem = [
         'rowType' => 1,
 
+        'loyp' => $this->documentRecData['loyp'],
         'document' => $this->documentNdx,
         'person' => $this->documentRecData['person'],
         'cntPoints' => $this->totalPts,
