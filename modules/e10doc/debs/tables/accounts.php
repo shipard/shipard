@@ -9,6 +9,10 @@ use \E10\TableForm;
 use \E10\HeaderData;
 use \E10\DbTable;
 
+
+/**
+ * class TableAccounts
+ */
 class TableAccounts extends DbTable
 {
 	public function __construct ($dbmodel)
@@ -395,8 +399,9 @@ class FormAccount extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		//$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
-		$tabs ['tabs'][] = array ('text' => 'Účet', 'icon' => 'icon-th');
-		$tabs ['tabs'][] = array ('text' => 'Popis', 'icon' => 'icon-edit');
+		$tabs ['tabs'][] = ['text' => 'Účet', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Popis', 'icon' => 'system/fileText'];
+		$tabs ['tabs'][] = ['text' => 'Historie', 'icon' => 'system/formHistory'];
 
 		$this->openForm ();
 			$this->addColumnInput ("id");
@@ -436,8 +441,11 @@ class FormAccount extends TableForm
 				$this->openTab (TableForm::ltNone);
 					$this->addColumnInput ('note', TableForm::coFullSizeY);
 				$this->closeTab();
+				$this->openTab(self::ltNone);
+					$params = ['tableid' => $this->tableId(),'recid' => $this->recData['ndx']];
+					$this->addViewerWidget('e10.base.docslog', 'e10.base.libs.ViewDocsLogDocHistory', $params);
+				$this->closeTab();
 			$this->closeTabs();
 		$this->closeForm ();
 	}
-} // class FormAccount
-
+}

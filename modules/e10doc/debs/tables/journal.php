@@ -5,12 +5,16 @@ require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 require_once __SHPD_MODULES_DIR__ . 'e10doc/debs/debs.php';
 
 
-use \E10\Application, \E10\utils, E10Doc\Core\e10utils;
+use \E10Doc\Core\e10utils;
 use \E10\TableView, \E10\TableViewDetail;
 use \E10\TableForm;
 use \Shipard\Viewer\TableViewPanel;
 use \E10\DbTable;
 
+
+/**
+ * class TableJournal
+ */
 class TableJournal extends DbTable
 {
 	public function __construct ($dbmodel)
@@ -19,7 +23,6 @@ class TableJournal extends DbTable
 		$this->setName ("e10doc.debs.journal", "e10doc_debs_journal", "Účetní deník");
 	}
 
-
 	public function doIt (&$recData)
 	{
 		$this->db()->query ("DELETE FROM [e10doc_debs_journal] WHERE [document] = %i", $recData['ndx']);
@@ -27,10 +30,21 @@ class TableJournal extends DbTable
 		if ($recData ['docState'] != 4000)
 			return;
 
-		$docAccEngine = new docAccounting ($this->app());
-		$docAccEngine->setDocument ($recData);
-		$docAccEngine->run();
-		$docAccEngine->save();
+		$testNewAccounting = $this->app()->cfgItem ('options.experimental.testNewDocsAccounting', 0);
+		if ($testNewAccounting)
+		{
+			$docAccEngine = new \e10doc\debs\libs\AccountingDocEngine($this->app());
+			$docAccEngine->setDocument ($recData);
+			$docAccEngine->run();
+			$docAccEngine->save();
+		}
+		else
+		{
+			$docAccEngine = new docAccounting ($this->app());
+			$docAccEngine->setDocument ($recData);
+			$docAccEngine->run();
+			$docAccEngine->save();
+		}
 
 		if ($docAccEngine->messagess() === FALSE)
 			$recData ['docStateAcc'] = 1;
@@ -39,14 +53,12 @@ class TableJournal extends DbTable
 
 		$this->db()->query ("UPDATE [e10doc_core_heads] SET docStateAcc = %i WHERE ndx = %i", $recData ['docStateAcc'], $recData['ndx']);
 	}
-} // class TableAccounts
+}
 
 
-/*
- * ViewJournalAll
- *
+/**
+ * class ViewJournalAll
  */
-
 class ViewJournalAll extends \E10\TableViewGrid
 {
 	var $centres;
