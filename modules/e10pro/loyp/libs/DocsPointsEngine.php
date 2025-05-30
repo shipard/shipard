@@ -35,6 +35,7 @@ class DocsPointsEngine extends \Shipard\Base\Utility
     array_push ($q, 'SELECT [points].*');
     array_push ($q, ' FROM [e10pro_loyp_pointsSettings] AS [points]');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [points].[loyp] = %i', $this->documentRecData['loyp']);
     array_push ($q, ' AND [points].docState IN %in', [4000, 8000]);
 		array_push ($q, ' AND ([points].[validFrom] IS NULL', ' OR [points].[validFrom] <= %d)', $this->documentRecData['dateAccounting']);
 		array_push ($q, ' AND ([points].[validTo] IS NULL', ' OR [points].[validTo] >= %d)', $this->documentRecData['dateAccounting']);
