@@ -32,6 +32,7 @@ class ReportWorkingHours extends \e10doc\core\libs\reports\DocReportBase
 		$whInfo->loadData();
 
 		$whContent = $whInfo->weeklyContent;
+		$whContent['params'] = ['tableClass' => 'default fullWidht workingHours'];
 		$this->data['whRows'] = [$whContent];
 	}
 }

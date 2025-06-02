@@ -136,6 +136,6 @@ class ViewDetailAbsence extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
-		//$this->addDocumentCard('e10pro.bcards.libs.dc.DCBCard');
+		$this->addDocumentCard('e10pro.emps.libs.dc.DCAbsence');
 	}
 }

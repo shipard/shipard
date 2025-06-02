@@ -6,17 +6,33 @@ use \Shipard\Utils\Utils;
 
 class WorkingHoursInfo extends \Shipard\Base\Utility
 {
+  /** @var \e10pro\emps\tables\WorkingHours */
+  var $tableWorkingHours;
   var $workingHoursNdx = 0;
   var $workingHoursRecData = NULL;
 
+  var $docStateClass = '';
+  var $title = [];
   var $dataWeekly = [];
   var $dataWeeklySum = ['hoursTotal' => 0.0, 'hours1' => 0.0, 'hours2' => 0.0];
   var $weeklyContent = ['table' => [], 'header' => []];
 
   public function setWorkingHours($workingHoursNdx)
   {
+    $this->tableWorkingHours = $this->app()->table('e10pro.emps.workingHours');
     $this->workingHoursNdx = $workingHoursNdx;
     $this->workingHoursRecData = $this->app()->loadItem($workingHoursNdx, 'e10pro.emps.workingHours');
+
+    $docState = $this->tableWorkingHours->getDocumentState ($this->workingHoursRecData);
+		if ($docState)
+		{
+			$docStateClass = $this->tableWorkingHours->getDocumentStateInfo ($docState ['states'], $this->workingHoursRecData, 'styleClass');
+			if ($docStateClass)
+        $this->docStateClass = $docStateClass;
+    }
+
+    $this->title[] = ['text' => Utils::dateFromTo($this->workingHoursRecData['validFrom'], $this->workingHoursRecData['validTo'], NULL), 'class' => 'h1 padd5'];
+
   }
 
   public function loadData()
