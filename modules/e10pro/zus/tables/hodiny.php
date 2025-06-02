@@ -312,6 +312,14 @@ class FormHodina extends TableForm
 			$this->addColumnInput('datum');
 			$this->addColumnInput('zacatek');
 			$this->addColumnInput('konec');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput('nahradniTermin');
+			if ($this->recData['nahradniTermin'])
+			{
+				$this->addColumnInput('nahradaDatum');
+				$this->addColumnInput('nahradaZacatek');
+				$this->addColumnInput('nahradaKonec');
+			}
 		$this->closeTab ();
 
 		$this->openTab (TableForm::ltNone);

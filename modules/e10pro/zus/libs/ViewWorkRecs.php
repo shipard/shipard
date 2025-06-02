@@ -2,7 +2,7 @@
 
 namespace e10pro\zus\libs;
 
-use \Shipard\Viewer\TableViewGrid, \Shipard\Utils\World, \Shipard\Utils\Utils;
+use \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewGrid, \Shipard\Utils\World, \Shipard\Utils\Utils;
 use \e10\base\libs\UtilsBase;
 use \Shipard\Viewer\TableViewPanel;
 
@@ -29,12 +29,14 @@ class ViewWorkRecs extends TableViewGrid
 		$this->enabledPersons = $this->loadEnabledPersons();
 
 		parent::init();
+		$this->setPanels (TableView::sptQuery);
+
 		$this->gridEditable = TRUE;
 		$this->classes = ['editableGrid'];
 		$this->enableToolbar = FALSE;
 		$this->enableDetailSearch = TRUE;
     $this->objectSubType = self::vsMain;
-    $this->linesWidth = 65;
+    $this->linesWidth = 60;
 
 		$g = [
 			'date' => 'Datum',
@@ -148,6 +150,10 @@ class ViewWorkRecs extends TableViewGrid
 			array_push ($q, ')');
 		}
 
+		$qv = $this->queryValues();
+		if (isset ($qv['period']['cal']))
+			Utils::calendarMonthQuery2 ('workrecs.[beginDate]', $q, $qv['period']['cal']);
+
 		// -- active
 		if ($mainQuery == 'active' || $mainQuery == '')
 			array_push ($q, " AND workrecs.[docStateMain] < 4");
@@ -226,5 +232,20 @@ class ViewWorkRecs extends TableViewGrid
 		{
       $item['wrItems'] = $this->workRecsItems [$item ['pk']];
 		}
+	}
+
+	public function createPanelContentQry (TableViewPanel $panel)
+	{
+		$qry = [];
+		$paramsDates = new \e10doc\core\libs\GlobalParams ($panel->table->app());
+		$periodFlags = array('enableAll', 'years');
+		$currentYear = intval($this->now->format('Y'));
+		$paramsDates->addParam ('calendarMonth', 'query.period.cal', ['flags' => $periodFlags, 'years' => [$currentYear, $currentYear - 1]]);
+
+		$paramsDates->detectValues();
+
+		$qry[] = ['id' => 'paramDates', 'style' => 'params', 'title' => 'Období', 'params' => $paramsDates];
+
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }

@@ -187,11 +187,18 @@ class HoursPlanGenerator extends Utility
 				}
 			}
 
-			$item['title'][] = ['text' => utils::datef($r['datum'], '%d'), 'suffix' => $hourLenMinutes.' min', 'icon' => 'system/iconClock', 'class' => 'h2'];
+			$item['title'][] = ['text' => utils::datef($r['datum'], '%d').', '.$r['zacatek'], 'suffix' => $hourLenMinutes.' min', 'icon' => 'system/iconClock', 'class' => 'h2'];
 			if (utils::dateIsBlank($r['datum']))
 			{
 				$item['title'][] = ['text' => 'Není zadáno datum hodiny', 'class' => 'label label-danger', 'icon' => 'system/iconWarning'];
 				$this->addMessage('Vyučovací hodina bez datumu');
+			}
+			if ($r['nahradniTermin'])
+			{
+				$hlm = utils::timeToMinutes($r['nahradaKonec']) - utils::timeToMinutes($r['nahradaZacatek']);
+
+				$item['title'][] = ['text' => 'Náhradní termín: '.utils::datef($r['nahradaDatum'], '%d').', '.$r['nahradaZacatek'], 'suffix' => $hlm.' min', 'icon' => 'system/iconClock', 'class' => 'h2 e10-me'];
+
 			}
 			$this->halfYears[$hy]['attendance']['ALL']['cnt'] += $hourLen;
 

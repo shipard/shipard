@@ -96,7 +96,7 @@ class ReportVykazZakuAHodin extends \e10doc\core\libs\reports\DocReportBase
       $pairId = '';
       $vyukaNdx = $r['vyuka'];
 
-      $pairId .= $r['svpPredmet'].'_';
+      $pairId .= $r['predmet'].'_';
 
       //$pairId .= $r['vyuka'].'_';
       if (!Utils::dateIsBlank($r['datum']))

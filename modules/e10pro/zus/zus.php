@@ -161,6 +161,15 @@ class zusutils
 		return $y;
 	}
 
+	static function skolniRok ($d)
+	{
+		$m = intval($d->format('m'));
+		$y = intval($d->format('Y'));
+		if ($m <= 6)
+			return $y - 1;
+		return $y;
+	}
+
 	static function rocnikVRozvrhu ($app, $rocnik, $typVyuky, $key = 'nazev')
 	{
 		$rocniky = $app->cfgItem ('e10pro.zus.rocniky');
@@ -1341,8 +1350,9 @@ class reportStudium extends \E10\GlobalReport
             ' LEFT JOIN e10_base_places AS places ON studium.misto = places.ndx'.
             ' LEFT JOIN e10pro_zus_oddeleni AS oddeleni ON studium.svpOddeleni = oddeleni.ndx'.
             ' LEFT JOIN e10pro_zus_obory AS obory ON studium.svpObor = obory.ndx'.
-            ' LEFT JOIN e10pro_zus_svp AS svp ON studium.svp = svp.ndx'.
-            ' WHERE studium.stavHlavni = 1';
+            ' LEFT JOIN e10pro_zus_svp AS svp ON studium.svp = svp.ndx';
+
+		array_push ($q, ' WHERE 1');
 
 		array_push ($q, " AND studium.[skolniRok] = %s", $this->reportParams ['skolniRok']['value']);
 
@@ -1839,7 +1849,7 @@ class reportVykazZus extends \E10\GlobalReport
 				}
 			}
 
-			$newitem = ['a' => $rok['nazev'], 'b' => '0' . strval($cisloRadku + $i++), 'c' => $pocetZaku[$idr][0]['XX'],
+			$newitem = ['a' => $rok['nazev'].json_encode($idStupen), 'b' => '0' . strval($cisloRadku + $i++), 'c' => $pocetZaku[$idr][0]['XX'],
 				'd' => $pocetZaku[$idr][1]['XX'], 'e' => $pocetZaku[$idr][0]['TA'], 'f' => $pocetZaku[$idr][0]['VO'],
 				'g' => $pocetZaku[$idr][0]['LDO'], 'h' => $pocetZaku[$idr][0]['HO'], 'i' => '',
 				'_options' => ['cellClasses' => ['b' => 'center']]
