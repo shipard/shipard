@@ -9,7 +9,7 @@
 					"subMenu": {
 						"items": {
 							"workRecs": {"t1": "Výkazy práce", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "default", "order": 10000},
-							"workRecsGrid": {"t1": "Výkazy práce 2", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "grid", "order": 10000},
+							"workRecsGrid": {"t1": "Výkazy práce 2", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "grid", "order": 10000, "enabledCfgItem": "tmpDisabled"},
 							"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10mnf-workRecs", "icon": "system/iconReports", "order": 80000}
 						}
 					}
