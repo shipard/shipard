@@ -4,9 +4,9 @@ namespace e10pro\loyp\libs;
 
 
 /**
- * class DocsPointsAccExtsEngine
+ * class DocsPointsAccExtsEngineIn
  */
-class DocsPointsAccExtsEngine extends \Shipard\Base\Utility
+class DocsPointsAccExtsEngineIn extends \Shipard\Base\Utility
 {
   var ?\e10doc\debs\libs\AccountingDocEngine $accEngine = NULL;
   var $loypCfg = NULL;
@@ -14,6 +14,9 @@ class DocsPointsAccExtsEngine extends \Shipard\Base\Utility
   public function doDocument(\e10doc\debs\libs\AccountingDocEngine $accEngine)
   {
     $this->accEngine = $accEngine;
+
+    if ($this->accEngine->docHead['personType'] == 2) // companies
+      return;
 
     $loypNdx = $this->accEngine->docHead['loyp'];
     if (!$loypNdx)

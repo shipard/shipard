@@ -45,8 +45,7 @@ class TableLoyps extends DbTable
         'warehouse' => $r ['warehouse'],
 				'debsAccIdInDr' => $r ['debsAccIdInDr'],
 				'debsAccIdInCr' => $r ['debsAccIdInCr'],
-				'debsAccIdOutDr' => $r ['debsAccIdOutDr'],
-				'debsAccIdOutCr' => $r ['debsAccIdOutCr'],
+				'debsAccIdOutBalanceDr' => $r ['debsAccIdOutBalanceDr'],
 				'pointAccPrice' => $r ['pointAccPrice'],
       ];
 
@@ -171,17 +170,8 @@ class FormLoyp extends TableForm
 			$this->addSeparator(self::coH4);
 			$this->addColumnInput ('debsAccIdInDr');
 			$this->addColumnInput ('debsAccIdInCr');
-			$this->addColumnInput ('debsAccIdOutDr');
-			$this->addColumnInput ('debsAccIdOutCr');
+			$this->addColumnInput ('debsAccIdOutBalanceDr');
 			$this->addColumnInput ('pointAccPrice');
-
-			/*
-					{"id": "debsAccIdInDr", "name": "Účet Získání bodů - MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
-		{"id": "debsAccIdInCr", "name": "Účet Získání bodů - DAL", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
-		{"id": "debsAccIdOutDr", "name": "Účet Uplatnění bodů - MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
-		{"id": "debsAccIdOutCr", "name": "Účet Uplatnění bodů - DAL", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
-    {"id": "pointAccPrice", "name": "Částka za 1 bod", "type": "money"},
-*/
 		$this->closeForm ();
 	}
 }
