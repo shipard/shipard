@@ -65,7 +65,7 @@ class DocsPointsAccExtsEngineOut extends \Shipard\Base\Utility
 
     foreach ($this->accEngine->docJournal as $jr)
     {
-      if ($jr['accountId'] === $debsAccIdBalanceCr)
+      if ($jr['accountId'] === $debsAccIdBalanceCr || substr($jr['accountId'], 0, 3) === '315')
         $moneyBalance += $jr['money'];
     }
 
@@ -97,7 +97,7 @@ class DocsPointsAccExtsEngineOut extends \Shipard\Base\Utility
         $rowCostsCr = [
           'accountId' => $debsAccIdCosts,
           'side' => 0,
-          'money' => - $moneyCosts,
+          'money' => $moneyCosts,
           'text' => 'Doúčtování nákladů na body',
         ];
       }
@@ -106,8 +106,8 @@ class DocsPointsAccExtsEngineOut extends \Shipard\Base\Utility
         // -- costs CR/DAL
         $rowCostsCr = [
           'accountId' => $debsAccIdCosts,
-          'side' => 1,
-          'money' => $moneyCosts,
+          'side' => 0,
+          'money' => - $moneyCosts,
           'text' => 'Doúčtování nákladů na body',
         ];
       }
