@@ -29,12 +29,27 @@ class ModuleServices extends \e10\cli\ModuleServices
 		$dpr->run();
 	}
 
+	function balanceCleanup()
+	{
+		$docNumber = $this->app->arg('docNumber');
+		if (!$docNumber)
+		{
+			echo "ERROR: param `--docNumber=` not found\n";
+			return;
+		}
+
+		$bce = new \e10pro\loyp\libs\BalanceInvoicesOutCleanup($this->app);
+		$bce->setDocNumber($docNumber);
+		$bce->run();
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'recalc-points': return $this->recalcPoints();
 			case 'reaccounting-points': return $this->reaccountingPoints();
+			case 'balance-cleanup': return $this->balanceCleanup();
 		}
 
 		parent::onCliAction($actionId);
