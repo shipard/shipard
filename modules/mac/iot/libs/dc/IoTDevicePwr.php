@@ -28,13 +28,15 @@ class IoTDevicePwr extends \Shipard\Base\DocumentCard
 		{
 			if (!$firstDT)
 				$firstDT = $row['dateTime'];
-			$state = $row['pwrBatteryLevel'].'-'.$row['pwrBatteryVoltage'];
+			$state = $row['pwrBatteryLevel'].'-'.$row['pwrBatteryVoltage'].'-'.$row['pwrCharging'].'-'.$row['pwrChargeCurrent'];
 			if ($state != $lastState)
 			{
 				$item = [
 					'dt' => Utils::datef($row['dateTime'], '%d%t'),
 					'level' => $row['pwrBatteryLevel'],
 					'voltage' => $row['pwrBatteryVoltage'],
+					'charging' => $row['pwrCharging'],
+					'current' => $row['pwrChargeCurrent'],
 				];
 
 				if ($lastDT)
@@ -44,7 +46,7 @@ class IoTDevicePwr extends \Shipard\Base\DocumentCard
 				$lastDT = $row['dateTime'];
 			}
 
-			$lastState = $row['pwrBatteryLevel'].'-'.$row['pwrBatteryVoltage'];
+			$lastState = $row['pwrBatteryLevel'].'-'.$row['pwrBatteryVoltage'].'-'.$row['pwrCharging'].'-'.$row['pwrChargeCurrent'];
 		}
 
 		if (count($table))
@@ -68,6 +70,8 @@ class IoTDevicePwr extends \Shipard\Base\DocumentCard
 				'level' => ' Stav baterie [%]',
 				'voltage' => ' Napětí baterie',
 				'len' => ' Doba',
+				'charging' => '|Nab.',
+				'current' => ' Proud',
 			];
 
 			$this->addContent ('body', [

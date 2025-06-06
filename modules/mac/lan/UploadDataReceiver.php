@@ -134,6 +134,12 @@ class UploadDataReceiver extends Utility
 
 			$update['pwrChargeCurrent'] = $this->data['pwr-charge-current'];
 			$pwrInfo['pwrChargeCurrent'] = $this->data['pwr-charge-current'];
+
+			if ($pwrInfo['pwrCharging'])
+			{
+				$update['pwrLastChargingDT'] = new \DateTime();
+				$update['pwrLastChargingBL'] = $this->data['pwr-batt-perc'] ?? 0;
+			}
 		}
 
 		$this->db()->query('UPDATE [mac_iot_devicesInfo] SET ', $update, ' WHERE [ndx] = %i', $deviceInfoNdx);
