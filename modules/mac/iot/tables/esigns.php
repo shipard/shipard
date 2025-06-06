@@ -131,7 +131,7 @@ class ViewESigns extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'idName'];
+		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 		$listItem ['t1'] = $item['fullName'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -147,6 +147,11 @@ class ViewESigns extends TableView
 
     $listItem['t2'] = $t2;
 
+		if ($item['iotDevice'])
+		{
+			$listItem['i2'] = ['text' => $item ['pwrBatteryLevel'].'%', 'icon' => 'user/battery', 'class' => 'label label-info'];
+		}
+
 		return $listItem;
 	}
 
@@ -154,19 +159,22 @@ class ViewESigns extends TableView
 	{
 		$fts = $this->fullTextSearch ();
 
-		$q [] = 'SELECT [esigns].*';
-		array_push ($q, ' FROM [mac_iot_esigns] AS [esigns]');
-		array_push ($q, ' WHERE 1');
+		$q = [];
+		array_push($q, 'SELECT [esigns].*,');
+		array_push($q, ' [iotDevicesInfo].[pwrBatteryLevel], [iotDevicesInfo].[pwrBatteryVoltage], [iotDevicesInfo].[pwrCharging], [iotDevicesInfo].[pwrChargeCurrent]');
+		array_push($q, ' FROM [mac_iot_esigns] AS [esigns]');
+		array_push($q, ' LEFT JOIN [mac_iot_devicesInfo] AS [iotDevicesInfo] ON [esigns].iotDevice = iotDevicesInfo.[device]');
+		array_push($q, ' WHERE 1');
 
 		// -- fulltext
 		if ($fts != '')
 		{
-			array_push ($q, ' AND (');
-			array_push ($q, ' [esigns].[fullName] LIKE %s', '%'.$fts.'%');
-			array_push ($q, ')');
+			array_push($q, ' AND (');
+			array_push($q, ' [esigns].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push($q, ')');
 		}
 
-		$this->queryMain ($q, '[esigns].', ['[esigns].[shortName], [fullName]', '[ndx]']);
+		$this->queryMain($q, '[esigns].', ['[esigns].[shortName], [fullName]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 }
