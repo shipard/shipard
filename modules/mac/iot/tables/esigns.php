@@ -193,6 +193,7 @@ class FormESign extends TableForm
 		$tabs ['tabs'][] = ['text' => 'Základní', 'icon' => 'system/formHeader'];
     $tabs ['tabs'][] = ['text' => 'Šablona', 'icon' => 'formText'];
     $tabs ['tabs'][] = ['text' => 'CSS', 'icon' => 'formText'];
+		$tabs ['tabs'][] = ['text' => 'Přílohy', 'icon' => 'system/formAttachments'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);
@@ -219,6 +220,9 @@ class FormESign extends TableForm
         $this->openTab (TableForm::ltNone);
           $this->addInputMemo ('codeStyle', NULL, TableForm::coFullSizeY, DataModel::ctCode);
         $this->closeTab();
+				$this->openTab (TableForm::ltNone);
+					$this->addAttachmentsViewer();
+				$this->closeTab ();
 			$this->closeTabs ();
 		$this->closeForm ();
 	}
