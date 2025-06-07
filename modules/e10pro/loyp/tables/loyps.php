@@ -46,6 +46,7 @@ class TableLoyps extends DbTable
 				'debsAccIdInDr' => $r ['debsAccIdInDr'],
 				'debsAccIdInCr' => $r ['debsAccIdInCr'],
 				'debsAccIdOutBalanceDr' => $r ['debsAccIdOutBalanceDr'],
+				'debsAccIdOutCosts' => $r ['debsAccIdOutCosts'],
 				'pointAccPrice' => $r ['pointAccPrice'],
       ];
 
@@ -171,6 +172,7 @@ class FormLoyp extends TableForm
 			$this->addColumnInput ('debsAccIdInDr');
 			$this->addColumnInput ('debsAccIdInCr');
 			$this->addColumnInput ('debsAccIdOutBalanceDr');
+			$this->addColumnInput ('debsAccIdOutCosts');
 			$this->addColumnInput ('pointAccPrice');
 		$this->closeForm ();
 	}

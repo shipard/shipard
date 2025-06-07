@@ -29,6 +29,7 @@ class DocsPointsAccExtsEngineOut extends \Shipard\Base\Utility
     $debsAccIdBalanceDr = '';
     $debsAccIdBalanceCr = '';
     $debsAccIdCosts = '';
+    $debsAccIdOutCosts = '';
 
     $dir = 0; // IN
     $rowTextBegin = 'Věrnostní body: ';
@@ -38,6 +39,7 @@ class DocsPointsAccExtsEngineOut extends \Shipard\Base\Utility
       $debsAccIdCosts = $this->loypCfg ['debsAccIdInDr'] ?? '';
       $debsAccIdBalanceDr = $this->loypCfg ['debsAccIdInCr'] ?? '';
       $debsAccIdBalanceCr = $this->loypCfg ['debsAccIdOutBalanceDr'] ?? '';
+      $debsAccIdOutCosts = $this->loypCfg ['debsAccIdOutCosts'] ?? '';
       $dir = 1; // OUT
     }
 
@@ -95,7 +97,7 @@ class DocsPointsAccExtsEngineOut extends \Shipard\Base\Utility
       {
         // -- costs DR/MD - negative
         $rowCostsCr = [
-          'accountId' => $debsAccIdCosts,
+          'accountId' => $debsAccIdOutCosts,
           'side' => 0,
           'money' => $moneyCosts,
           'text' => 'Doúčtování nákladů na body',
@@ -105,7 +107,7 @@ class DocsPointsAccExtsEngineOut extends \Shipard\Base\Utility
       {
         // -- costs CR/DAL
         $rowCostsCr = [
-          'accountId' => $debsAccIdCosts,
+          'accountId' => $debsAccIdOutCosts,
           'side' => 0,
           'money' => - $moneyCosts,
           'text' => 'Doúčtování nákladů na body',

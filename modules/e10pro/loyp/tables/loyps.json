@@ -22,6 +22,7 @@
 		{"id": "debsAccIdInCr", "name": "Účet Získání bodů - DAL / Závazky", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
 		{"id": "debsAccIdOutDr", "name": "Účet Uplatnění bodů - MD", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
 		{"id": "debsAccIdOutBalanceDr", "name": "Účet Uplatnění bodů - DAL / Úhrada pohledávky", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
+		{"id": "debsAccIdOutCosts", "name": "Účet Uplatnění bodů - DAL / Doúčtování nákladů", "type": "string", "len": 12, "comboViewer": "combo", "comboTable": "e10doc.debs.accounts"},
 		{"id": "pointAccPrice", "name": "Částka za 1 bod", "type": "money"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},

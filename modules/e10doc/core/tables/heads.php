@@ -372,7 +372,7 @@ class TableHeads extends DbTable
 		$this->doRos($recData);
 		$this->doInbox($recData);
 
-		$this->doDocsOps ($recData);
+		//$this->doDocsOps ($recData);
 	}
 
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
