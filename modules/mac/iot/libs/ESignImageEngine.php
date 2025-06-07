@@ -90,10 +90,12 @@ class ESignImageEngine extends Utility
 
     $convertedFileName = $sc->dstFullFileName.'._c.png';
 
-    $didderPalette = implode(' ', $this->displayInfo['colors']);
-    $cmd = "didder --palette \"{$didderPalette}\" -i ".$sc->dstFullFileName." -o ".$convertedFileName; // -dither FloydSteinberg -define dither:diffusion-amount=85%
-    $cmd .= " -s 0.1 bayer 16x16";
-    exec ($cmd);
+    $ic = new \mac\iot\libs\EPDImageConverter($this->app());
+    $ic->setDisplayInfo($this->displayInfo);
+    $ic->setSrcFileName($sc->dstFullFileName);
+    $ic->setConvertedFileName($convertedFileName);
+    $ic->convertImage();
+
     $urlImage = 'https://'.$this->app()->cfgItem('hostingCfg.serverDomain').'/'.$this->app->cfgItem('dsid').'/tmp/'.basename($convertedFileName);
     $this->esignImgRecData['imagePreviewURL'] = $urlImage;
 
