@@ -48,6 +48,14 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
     }
 
     $data['data'] = $sensorRecData->toArray();
+
+    $data['data']['sensorValueP0'] = round($sensorRecData['sensorValue'], 0);
+    $data['data']['sensorValueP1'] = round($sensorRecData['sensorValue'], 1);
+    $data['data']['sensorValueP2'] = round($sensorRecData['sensorValue'], 2);
+    $data['data']['sensorValuePF0'] = Utils::nf($sensorRecData['sensorValue'], 0);
+    $data['data']['sensorValuePF1'] = Utils::nf($sensorRecData['sensorValue'], 1);
+    $data['data']['sensorValuePF2'] = Utils::nf($sensorRecData['sensorValue'], 2);
+
     $data['valid'] = 1;
 
     $icon = 'tables/mac.iot.sensors';
