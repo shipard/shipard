@@ -149,7 +149,10 @@ class EPDImageCreator extends Utility
     fwrite($ptr, pack('n', $this->displayInfo['width']));           // 6
     fwrite($ptr, pack('n', $this->displayInfo['height']));          // 8
 
-    for ($i = 9; $i <= 64; $i++)
+    fwrite($ptr, pack('C', 1)); // 1 ==> interval is in minutes        // 9
+    fwrite($ptr, pack('n', $this->displayInfo['reloadInterval']));  // 10
+
+    for ($i = 11; $i <= 64; $i++)
       fwrite($ptr, pack('C', 0));
 
     // -- image

@@ -34,6 +34,8 @@
 		{"id": "+mac.iot.epds.types", "file": "epdsTypes.json"},
 		{"id": "+mac.iot.epds.orientation", "file": "epdsOrientation.json"},
 
+		{"id": "+mac.iot.epds.reloadModes", "file": "epds.reloadModes.json"},
+
 	  {"id": "+mac.iot.setups.types", "file": "mac.iot.setups.types.json"},
 
 		{"id": "+mac.iot.cams.types", "file": "mac.iot.cams.types.json"},

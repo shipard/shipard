@@ -35,6 +35,15 @@ class TableESigns extends DbTable
 		if (!$info['esignRecData'])
 			return NULL;
 
+		$info['reloadInterval'] = 10;
+		$info['reloadMode'] = intval($info['esignRecData']['reloadMode'] ?? 0);
+		if ($info['reloadMode'] === 1)
+		{
+			$info['reloadInterval'] = intval($info['esignRecData']['reloadInterval'] ?? 0);
+			if ($info['reloadInterval'] < 1)
+				$info['reloadInterval'] = 10;
+		}
+
 		$epaperCfg = NULL;
 
 		$ioPortRecData = $this->app()->loadItem($info['esignRecData']['iotPort'], 'mac.iot.devicesIOPorts');
@@ -222,6 +231,9 @@ class FormESign extends TableForm
 					if ($this->addSubColumns('vdsData'))
 						$this->addSeparator(self::coH4);
 
+					$this->addColumnInput ('reloadMode');
+					if ($this->recData['reloadMode'] == 1)
+						$this->addColumnInput ('reloadInterval');
 				$this->closeTab ();
         $this->openTab (TableForm::ltNone);
           $this->addInputMemo ('codeTemplate', NULL, TableForm::coFullSizeY, DataModel::ctCode);

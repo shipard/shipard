@@ -19,6 +19,10 @@
 
 		{"id": "vdsData", "name": "Data", "type": "subColumns"},
 
+		{"id": "reloadMode", "name": "Režim obnovení", "type": "enumInt", "options": ["saveOnChange"],
+			"enumCfg": {"cfgItem": "mac.iot.epds.reloadModes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "reloadInterval", "name": "Interval obnovení v minutách", "type": "int"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
