@@ -5,6 +5,7 @@ namespace mac\iot;
 use \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail;
 use \Shipard\Application\DataModel;
 use \Shipard\Utils\Json;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -149,7 +150,14 @@ class ViewESigns extends TableView
 
 		if ($item['iotDevice'])
 		{
-			$listItem['i2'] = ['text' => $item ['pwrBatteryLevel'].'%', 'icon' => 'user/battery', 'class' => 'label label-info'];
+			$bl = ['text' => $item ['pwrBatteryLevel'].'%', 'icon' => 'user/battery', 'class' => 'label label-info'];
+			if ($item['pwrLastChargingDT'])
+			{
+				$now = new \DateTime();
+				$bl['suffix'] = Utils::dateDiffShort($item['pwrLastChargingDT'], $now);
+			}
+
+			$listItem['i2'] = $bl;
 		}
 
 		return $listItem;
@@ -161,7 +169,8 @@ class ViewESigns extends TableView
 
 		$q = [];
 		array_push($q, 'SELECT [esigns].*,');
-		array_push($q, ' [iotDevicesInfo].[pwrBatteryLevel], [iotDevicesInfo].[pwrBatteryVoltage], [iotDevicesInfo].[pwrCharging], [iotDevicesInfo].[pwrChargeCurrent]');
+		array_push($q, ' [iotDevicesInfo].[pwrBatteryLevel], [iotDevicesInfo].[pwrBatteryVoltage], [iotDevicesInfo].[pwrCharging],',
+									 ' [iotDevicesInfo].[pwrChargeCurrent], [iotDevicesInfo].[pwrLastChargingDT]');
 		array_push($q, ' FROM [mac_iot_esigns] AS [esigns]');
 		array_push($q, ' LEFT JOIN [mac_iot_devicesInfo] AS [iotDevicesInfo] ON [esigns].iotDevice = iotDevicesInfo.[device]');
 		array_push($q, ' WHERE 1');

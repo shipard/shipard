@@ -843,6 +843,23 @@ class Utils
 		return $len;
 	}
 
+	static function dateDiffShort3 (\DateTimeInterface $dateBegin, \DateTimeInterface $dateEnd)
+	{
+		$ii = $dateBegin->diff($dateEnd);
+		$len = '';
+
+		if ($ii->d === 0 && $ii->m === 0 && $ii->y === 0)
+			$len = $ii->format ('%hh');
+		elseif ($ii->m === 0 && $ii->y === 0)
+			$len = $ii->format ('%dd');
+		elseif ($ii->y === 0 )
+			$len = $ii->format ('%M měs %dd');
+		elseif ($ii->y > 0 )
+			$len = $ii->format ('%Yr %M měs %dd');
+
+		return $len;
+	}
+
 	static function datePeriodQuery ($column, &$q, $value, $tablePrefix = '')
 	{
 		if (isset ($value[$column]['from']) && $value[$column]['from'] != '')

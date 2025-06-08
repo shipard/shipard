@@ -1,7 +1,7 @@
 <?php
 
 namespace mac\iot\libs;
-use \Shipard\Base\Utility, \Shipard\Utils\Json;
+use \Shipard\Base\Utility, \Shipard\Utils\Json, \Shipard\Utils\Utils;
 
 
 /**
@@ -145,6 +145,13 @@ class ESignImageEngine extends Utility
         $this->esignIoTDeviceInfo = $di->toArray();
         $this->esignIoTDeviceInfo['test'] = 'test';
         $this->esignIoTDeviceInfo['available'] = 1;
+
+        if ($this->esignIoTDeviceInfo['pwrLastChargingDT'])
+        {
+          $now = new \DateTime();
+          $this->esignIoTDeviceInfo['onBattery'] = Utils::dateDiffShort($this->esignIoTDeviceInfo['pwrLastChargingDT'], $now);
+          $this->esignIoTDeviceInfo['onBattery3'] = Utils::dateDiffShort3($this->esignIoTDeviceInfo['pwrLastChargingDT'], $now);
+        }
       }
       else
       {

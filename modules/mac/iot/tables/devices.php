@@ -412,7 +412,13 @@ class ViewDevices extends TableView
 		{
 			$bl = ['text' => $deviceInfo ['pwrBatteryLevel'].'%', 'icon' => 'user/battery', 'class' => 'label label-info'];
 			if ($deviceInfo['pwrBatteryVoltage'] != 0)
-				$bl['suffix'] = $deviceInfo['pwrBatteryVoltage'].'V';
+				$bl['prefix'] = $deviceInfo['pwrBatteryVoltage'].'V';
+
+			if ($deviceInfo['pwrLastChargingDT'])
+			{
+				$bl['suffix'] = Utils::dateDiffShort($deviceInfo['pwrLastChargingDT'], $now);
+			}
+
 			$labels[] = $bl;
 		}
 
