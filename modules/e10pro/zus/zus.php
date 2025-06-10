@@ -1355,6 +1355,7 @@ class reportStudium extends \E10\GlobalReport
 		array_push ($q, ' WHERE 1');
 
 		array_push ($q, " AND studium.[skolniRok] = %s", $this->reportParams ['skolniRok']['value']);
+		array_push ($q, " AND studium.[stav] IN %in", [1200, 8000]);
 
 		if ($this->reportParams ['stupen']['value'] != 0)
 			array_push ($q, " AND studium.[stupen] = %i", $this->reportParams ['stupen']['value']);
