@@ -2,6 +2,8 @@
 
 namespace mac\iot\libs;
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\Json;
+use \e10\base\libs\UtilsBase;
 
 
 /**
@@ -16,6 +18,7 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
     switch ($tagName)
 		{
 			case	'iotSensor' 					: return $this->iotSensor ($params);
+      case  'slideShowImage'			: return $this->slideShowImage($params);
 		}
 
     return parent::resolveCmd($tagCode, $tagName, $params);
@@ -76,5 +79,71 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
 
     $dataItemId = $params['item'] ?? 'data.sensorValue';
     return Utils::cfgItem($data, $dataItemId, 'unknown item');
+  }
+
+  public function slideShowImage(array $params)
+  {
+    $now = new \DateTime();
+    $attatchmentsNdxsParam = $params['attachments'] ?? '';
+    if ($attatchmentsNdxsParam === '')
+    {
+      return 'Missing `attachments` param';
+    }
+    $attsParts = explode (',', $attatchmentsNdxsParam);
+		$ndxs = [];
+		forEach ($attsParts as $num)
+    {
+      $ndx = intval (trim($num));
+      if ($ndx === 0)
+        continue;
+			$ndxs [] = $ndx;
+    }
+    if (count($ndxs) === 0)
+      return 'Invalid `attachments` param';
+
+    $slideShowIdParam = $params['id'] ?? 'slide-show';
+    $slideShowId = sha1($slideShowIdParam);
+    $fn = 'tmp/slide-show-' . $slideShowId . '.json';
+
+    $interval = intval($params['interval'] ?? 30);
+    $nextImageTime = new \DateTime('+' . $interval . ' minutes');
+
+    $nextImageIndex = 0;
+
+    $slideShowCfg = Utils::loadCfgFile($fn);
+    if (!$slideShowCfg)
+    {
+      $slideShowCfg = [
+        'lastImageIndex' => 0,
+        'lastImageNdx' => $ndxs[0],
+        'nextImageTime' => $nextImageTime->format('Y-m-d H:i:s'),
+      ];
+
+      file_put_contents($fn, Json::lint($slideShowCfg));
+    }
+    else
+    { // next image?
+      $nextImageIndex = $slideShowCfg['lastImageIndex'] ?? 0;
+      $nit = Utils::createDateTime($slideShowCfg['nextImageTime']);
+      if ($nit && $now > $nit)
+      {
+        $nextImageIndex++;
+        if ($nextImageIndex >= count($ndxs))
+          $nextImageIndex = 0;
+
+        $slideShowCfg['lastImageIndex'] = $nextImageIndex;
+        $slideShowCfg['lastImageNdx'] = $ndxs[$nextImageIndex];
+        $slideShowCfg['nextImageTime'] = $nextImageTime->format('Y-m-d H:i:s');
+
+        file_put_contents($fn, Json::lint($slideShowCfg));
+      }
+    }
+
+    $attRecData = $this->app()->db()->query('SELECT * FROM [e10_attachments_files] where [ndx] = %i', $ndxs[$nextImageIndex])->fetch();
+    if (!$attRecData)
+      return 'Invalid attachment #' . $ndxs[$nextImageIndex];
+
+    $url = UtilsBase::getAttachmentUrl ($this->app(), $attRecData);
+    return $url;
   }
 }
