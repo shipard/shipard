@@ -29,7 +29,7 @@
   "GxEPD2_730c_GDEY073D46": {
     "fn": "GxEPD2_730c_GDEY073D46 (7.3\", 800 x 480, čb + červená, žlutá, modrá, zelená a oranžová)",
     "cntColors": 7,
-    "colors": ["000000", "FFFFFF", "FF0000", "DDDD00", "0072C6", "00FF00", "FF6700"],
+    "colors": ["282828", "e8e8e8", "a03030", "f8b000", "5098f0", "70a860", "F2A93B"],
     "width": 800, "height": 480
   },
 
