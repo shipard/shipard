@@ -227,6 +227,7 @@
 	{{/data.docs_properties.notes.note-ext}}
 </div>
 
+{{^data.head.disablePrintRows}}
 <table class="rows {{#data.options.docReportsTablesRoundedCorners}} rounded{{/data.options.docReportsTablesRoundedCorners}}">
 	<thead>
 		<tr>
@@ -298,12 +299,12 @@
 		{{/data.rows}}
 	{{/data.flags.multiLineRows}}
 </table>
+{{/data.head.disablePrintRows}}
 
 
 
 
-
-
+{{^data.head.disablePrintVAT}}
 <table class='paymentInfo'>
 	<tr>
 		<td class='qrPayment'>
@@ -421,6 +422,7 @@
 		</td>
 	</tr>
 </table>
+{{/data.head.disablePrintVAT}}
 
 {{#data.options.docReportsInvoicePaymentInfo}}
 	{{#data.balanceInfo.payedCash}}

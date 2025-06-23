@@ -175,6 +175,9 @@
 		  "enumCfg": {"cfgItem": "e10pro.loyp.loyps", "cfgValue": "", "cfgText": "sn"}},
     {"id": "loypOtherDoc", "name": "Související doklad", "type": "int", "reference": "e10doc.core.heads"},
 
+    {"id": "disablePrintRows", "name": "Netisknout řádky dokladu", "type": "logical"},
+    {"id": "disablePrintVAT", "name": "Netisknout rekapitulaci DPH", "type": "logical"},
+
 	  {"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],

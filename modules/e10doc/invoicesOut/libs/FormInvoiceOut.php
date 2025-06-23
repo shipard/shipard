@@ -161,7 +161,8 @@ class FormInvoiceOut extends \E10Doc\Core\FormHeads
 				if ($useDocKinds !== 2)
 					$this->addColumnInput ("docKind");
 
-				$this->addColumnInput ('taxManual');
+				$this->addColumnInput('disablePrintRows');
+				$this->addColumnInput('disablePrintVAT');
 			$this->closeTab ();
 
 			$this->closeTabs ();
