@@ -31,11 +31,12 @@ class EPDImageConverter extends Utility
 
   public function convertImage()
   {
-    $didderPalette = implode(' ', $this->displayInfo['colors']);
+    $didderPalette = implode(' ', $this->displayInfo['colorsDither']);
     //$cmd = "didder --palette \"{$didderPalette}\" -i ".$this->srcFileName." -o ".$this->convertedFileName; // -dither FloydSteinberg -define dither:diffusion-amount=85%
     //$cmd .= " -s 0.1 bayer 16x16";
 
-    $cmd = "didder --palette \"{$didderPalette}\" -i ".$this->srcFileName." -o ".$this->convertedFileName; // -dither FloydSteinberg -define dither:diffusion-amount=85%
+    $cmd = "didder --palette \"{$didderPalette}\" -i ".$this->srcFileName." -o ".$this->convertedFileName;
+    $cmd .= " --brightness 0.2";
     $cmd .= " edm FloydSteinberg";
     exec ($cmd);
   }

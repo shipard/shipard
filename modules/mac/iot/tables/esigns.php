@@ -81,12 +81,13 @@ class TableESigns extends DbTable
 			$info['colors'] = $epaperCfg['colors'];
 			foreach ($epaperCfg['colors'] as $k => $v)
 			{
-				$info['colors2'][] = ['color' => '#'.$v, 'text' => $v];
+				$info['colorsDither'][] = $v['dither'];
+				$info['colorsSimulated'][] = $v['simulated'];
 			}
 
 			$info['displayInfoLabel'] = [['text' => $info['width'].' ✖️ '.$info['height'].'; '.$epaperCfg['cntColors'].'C', 'class' => 'label label-info']];
 			$cc = "<span style='padding: 2px;'>";
-			foreach ($epaperCfg['colors'] as $strColor)
+			foreach ($info['colorsSimulated'] as $strColor)
 			{
 				$cc .= "<span style='width: 1rem; display:inline-block; padding-left: 2px;border: 1px solid #777; background-color: #".$strColor.";'> </span>";
 			}

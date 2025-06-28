@@ -32,7 +32,7 @@ class EPDImageCreator extends Utility
     $this->cntColors = $displayInfo['cntColors'];
     $this->colors = [];
     $colorIndex = 0;
-    foreach ($this->displayInfo['colors'] as $hexC)
+    foreach ($this->displayInfo['colorsDither'] as $hexC)
       $this->colors[hexdec($hexC)] = $colorIndex++;
 
     if ($this->cntColors <= 2)

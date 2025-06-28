@@ -2,59 +2,217 @@
   "GxEPD2_750c": {
     "fn": "GxEPD2_750c (7\", 640 x 384, čb + červená)",
     "cntColors": 3,
-    "colors": ["000000", "FFFFFF", "CC0000"],
+    "colors": [
+      {
+        "dither": "000000",
+        "simulated": "000000",
+        "name": "Black"
+      },
+      {
+        "dither": "FFFFFF",
+        "simulated": "FFFFFF",
+        "name": "White"
+      },
+      {
+        "dither": "CC0000",
+        "simulated": "CC0000",
+        "name": "Red"
+      }
+    ],
     "width": 640, "height": 384
   },
   "GxEPD2_750c_Z08": {
     "fn": "GxEPD2_750c_Z08 (7.5\", 800 x 480, čb + červená)",
     "cntColors": 3,
-    "colors": ["000000", "FFFFFF", "CC0000"],
+    "colors": [
+      {
+        "dither": "000000",
+        "simulated": "000000",
+        "name": "Black"
+      },
+      {
+        "dither": "FFFFFF",
+        "simulated": "FFFFFF",
+        "name": "White"
+      },
+      {
+        "dither": "CC0000",
+        "simulated": "CC0000",
+        "name": "Red"
+      }
+    ],
     "width": 800, "height": 480
   },
-
   "GxEPD2_266c_GDEY0266F51H": {
     "fn": "GxEPD2_266c_GDEY0266F51H (2.66\", 360 x 184, čb + červená + žlutá)",
     "cntColors": 4,
-    "colors": ["000000", "FFFFFF", "CC0000", "CCCC00"],
+    "colors": [
+      {
+        "dither": "000000",
+        "simulated": "000000",
+        "name": "Black"
+      },
+      {
+        "dither": "FFFFFF",
+        "simulated": "FFFFFF",
+        "name": "White"
+      },
+      {
+        "dither": "CC0000",
+        "simulated": "CC0000",
+        "name": "Red"
+      },
+      {
+        "dither": "CCCC00",
+        "simulated": "CCCC00",
+        "name": "Yellow"
+      }
+    ],
     "width": 360, "height": 184
   },
 
   "GxEPD2_583_GDEQ0583T31": {
     "fn": "GxEPD2_583_GDEQ0583T31 (5.83\", 648 x 480, čb)",
     "cntColors": 2,
-    "colors": ["000000", "FFFFFF"],
+    "colors": [
+      {
+        "dither": "000000",
+        "simulated": "000000",
+        "name": "Black"
+      },
+      {
+        "dither": "FFFFFF",
+        "simulated": "FFFFFF",
+        "name": "White"
+      }
+    ],
     "width": 648, "height": 480
   },
 
   "GxEPD2_730c_GDEY073D46": {
     "fn": "GxEPD2_730c_GDEY073D46 (7.3\", 800 x 480, čb + červená, žlutá, modrá, zelená a oranžová)",
     "cntColors": 7,
-    "colors": ["282828", "e8e8e8", "a03030", "FFFF54", "5098f0", "70a860", "F2A93B"],
+    "colors": [
+      {
+        "dither": "111111",
+        "simulated": "282828",
+        "name": "Black"
+      },
+      {
+        "dither": "F0F0F0",
+        "simulated": "e8e8e8",
+        "name": "White"
+      },
+      {
+        "dither": "FF0000",
+        "simulated": "a03030",
+        "name": "Red"
+      },
+      {
+        "dither": "FFFF00",
+        "simulated": "FFFF54",
+        "name": "Yellow"
+      },
+      {
+        "dither": "0000FF",
+        "simulated": "5098f0",
+        "name": "Blue"
+      },
+      {
+        "dither": "00FF00",
+        "simulated": "70a860",
+        "name": "Green"
+      },
+      {
+        "dither": "FFA500",
+        "simulated": "F2A93B",
+        "name": "Orange"
+      }
+    ],
     "width": 800, "height": 480
   },
-
   "GxEPD2_420cy": {
     "fn": "GxEPD2_420c_y (4.2\", 400 x 300, čb + žlutá)",
     "cntColors": 3,
-    "colors": ["000000", "FFFFFF", "FFCA00"],
+    "colors":
+      [
+        {
+          "dither": "000000",
+          "simulated": "000000",
+          "name": "Black"
+        },
+        {
+          "dither": "FFFFFF",
+          "simulated": "FFFFFF",
+          "name": "White"
+        },
+        {
+          "dither": "FFCA00",
+          "simulated": "FFCA00",
+          "name": "Yellow"
+        }
+      ],
     "width": 400, "height": 300
   },
   "GxEPD2_420cr": {
     "fn": "GxEPD2_420c_r (4.2\", 400 x 300, čb + červená) [EXPERIMENTAL]",
     "cntColors": 3,
-    "colors": ["000000", "FFFFFF", "FF0000"],
+    "colors": [
+      {
+        "dither": "000000",
+        "simulated": "000000",
+        "name": "Black"
+      },
+      {
+        "dither": "FFFFFF",
+        "simulated": "FFFFFF",
+        "name": "White"
+      },
+      {
+        "dither": "FF0000",
+        "simulated": "FF0000",
+        "name": "Red"
+      }
+    ],
     "width": 400, "height": 300
   },
   "GxEPD2_1248c": {
     "fn": "GxEPD2_1248c (12.48\", 1304 x 984, čb + červená)",
     "cntColors": 3,
-    "colors": ["000000", "FFFFFF", "FF0000"],
+    "colors": [
+      {
+        "dither": "000000",
+        "simulated": "000000",
+        "name": "Black"
+      },
+      {
+        "dither": "FFFFFF",
+        "simulated": "FFFFFF",
+        "name": "White"
+      },
+      {
+        "dither": "FF0000",
+        "simulated": "FF0000",
+        "name": "Red"
+      }
+    ],
     "width": 1304, "height": 984
   },
   "GxEPD2_1248": {
     "fn": "GxEPD2_1248 (12.48\", 1304 x 984, čb) [EXPERIMENTAL]",
     "cntColors": 2,
-    "colors": ["000000", "FFFFFF"],
+    "colors": [
+      {
+        "dither": "000000",
+        "simulated": "000000",
+        "name": "Black"
+      },
+      {
+        "dither": "FFFFFF",
+        "simulated": "FFFFFF",
+        "name": "White"
+      }
+    ],
     "width": 1304, "height": 984
   }
 }
