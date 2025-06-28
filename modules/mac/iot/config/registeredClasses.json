@@ -4,5 +4,13 @@
 		"iot-mac-set-state": {"classId": "mac.iot.libs.IoTMacStateDataReceiver"},
 		"iot-mac-setup-request": {"classId": "mac.iot.libs.IoTMacSetupRequest"},
 		"iot-mac-esign-image": {"classId": "mac.iot.libs.IoTMacESignImage"}
+	},
+	"feed": {
+		"iot-api": {
+			"classId": "mac.iot.libs.IoTApi"
+		},
+		"esigns-api": {
+			"classId": "mac.iot.libs.ESignsApi"
+		}
 	}
 }
