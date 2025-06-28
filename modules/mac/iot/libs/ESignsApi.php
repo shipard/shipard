@@ -81,9 +81,11 @@ class ESignsApi extends \mac\iot\libs\IoTApi
       return FALSE;
     }
 
-		$esignRecData = $this->db()->query('SELECT * FROM [mac_iot_esigns] WHERE',
-                                       ' [iotDevice] = %i', intval($this->deviceRecData['ndx']),
-                                       ' AND [idName] = %s', $esignId,
+		$esignRecData = $this->db()->query('SELECT [esigns].* FROM [mac_iot_esigns] AS [esigns]',
+                                       ' LEFT JOIN [mac_iot_devicesIOPorts] AS [ports] ON [esigns].[iotPort] = [ports].[ndx]',
+                                       ' WHERE',
+                                       ' [esigns].[iotDevice] = %i', intval($this->deviceRecData['ndx']),
+                                       ' AND [ports].[portId] = %s', $esignId,
                                       )->fetch();
 		if (!$esignRecData)
     {
