@@ -31,7 +31,7 @@ class IoTApi extends Utility
     $devId = $this->app->requestPath(2);
     if (substr($devId, 0, 4) === 'mac:')
     {
-      $this->deviceMAC = substr($devId, 4);
+      $this->deviceMAC = str_replace('-', ':', substr($devId, 4));
       if ($this->deviceMAC === '')
       {
         $this->result['msg'] = 'Missing device MAC';
