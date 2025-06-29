@@ -1,7 +1,7 @@
 <?php
 
 namespace mac\iot\libs;
-use \Shipard\Utils\Json, \Shipard\Base\Utility, \Shipard\Application\Response;
+use \Shipard\Utils\Json, \Shipard\Utils\Utils, \Shipard\Base\Utility, \Shipard\Application\Response;
 
 
 /**
@@ -73,7 +73,10 @@ class IoTApi extends Utility
     switch($this->operation)
     {
       case 'getDeviceCfg':
-        $this->opDeviceCfg();
+        $this->opGetDeviceCfg();
+        break;
+      case 'setDeviceInfo':
+        $this->opSetDeviceInfo();
         break;
       default:
         $this->result['msg'] = 'Unknown operation `'.$this->operation.'`';
@@ -81,7 +84,7 @@ class IoTApi extends Utility
     }
   }
 
-  protected function opDeviceCfg()
+  protected function opGetDeviceCfg()
   {
 		$q[] = 'SELECT * FROM [mac_iot_devicesCfg]';
 		array_push($q, ' WHERE 1');
@@ -95,6 +98,40 @@ class IoTApi extends Utility
       $this->resultData = Json::lint($iotBoxCfg['iotBoxCfg']);
       return;
     }
+  }
+
+  protected function opSetDeviceInfo()
+  {
+		$headers = Utils::getAllHeaders();
+    $topic = $headers['X-IOT-TOPIC'] ?? '';
+
+    $postDataStr = $this->app()->postData();
+    error_log("==== IoTApi::opSetDeviceInfo: topic: `$topic`, postDataStr: ".$postDataStr);
+    if ($postDataStr[0] === '{')
+    {
+      // JSON data
+      $postData = substr($postDataStr, 1);
+      if (!$postData)
+      {
+        $this->result['error'] = 'Invalid JSON POST data';
+        return;
+      }
+
+      if (isset($postData['pwr-batt-voltage']) || isset($postData['items']['verFW']))
+      { // device info
+        $postData['devNdx'] = $this->deviceRecData['ndx'];
+        $udr = new \mac\lan\UploadDataReceiver($this->app());
+        $udr->setData($postData);
+        $res = $udr->run();
+      }
+    }
+    else
+    { // text data
+      $postData = $postDataStr;
+    }
+
+    $this->resultData = 'OK';
+    $this->resultMimeType = 'text/plain';
   }
 
 	public function run ()
