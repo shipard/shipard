@@ -11,11 +11,16 @@ use e10\Utility, \e10\utils, \e10\json, \mac\iot\TableSensors;
  */
 class IoTSensorsDataReceiver extends Utility
 {
+	var $externalData = NULL;
 	var $result = ['success' => 0];
 
 	public function run ()
 	{
-		$data = json_decode($this->app()->postData(), TRUE);
+		if ($this->externalData)
+			$data = $this->externalData;
+		else
+			$data = json_decode($this->app()->postData(), TRUE);
+
 		if (!$data)
 			return;
 

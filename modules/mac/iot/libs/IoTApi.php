@@ -103,14 +103,13 @@ class IoTApi extends Utility
   protected function opSetDeviceInfo()
   {
 		$headers = Utils::getAllHeaders();
-    $topic = $headers['X-IOT-TOPIC'] ?? '';
+    $topic = $headers['x-iot-topic'] ?? '';
 
     $postDataStr = $this->app()->postData();
-    error_log("==== IoTApi::opSetDeviceInfo: topic: `$topic`, postDataStr: ".$postDataStr);
     if ($postDataStr[0] === '{')
     {
       // JSON data
-      $postData = substr($postDataStr, 1);
+      $postData = json_decode($postDataStr, TRUE);
       if (!$postData)
       {
         $this->result['error'] = 'Invalid JSON POST data';
@@ -128,6 +127,22 @@ class IoTApi extends Utility
     else
     { // text data
       $postData = $postDataStr;
+      if (str_starts_with($postDataStr, 'shp/sensors/'))
+      { // sensor value
+        $sensorData = [
+          'serverId' => $this->deviceRecData['nodeServer'],
+          'sensorsData' => [
+            [
+              'topic' => $topic,
+              'value' => $postDataStr,
+              'time' => microtime(),
+            ],
+          ]
+        ];
+        $udr = new \mac\iot\libs\IoTSensorsDataReceiver($this->app());
+        $udr->externalData = $sensorData;
+        $udr->run();
+      }
     }
 
     $this->resultData = 'OK';
