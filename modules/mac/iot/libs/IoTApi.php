@@ -127,7 +127,7 @@ class IoTApi extends Utility
     else
     { // text data
       $postData = $postDataStr;
-      if (str_starts_with($postDataStr, 'shp/sensors/'))
+      if (str_starts_with($topic, 'shp/sensors/'))
       { // sensor value
         $sensorData = [
           'serverId' => $this->deviceRecData['nodeServer'],
