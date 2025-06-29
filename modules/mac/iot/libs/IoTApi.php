@@ -122,7 +122,7 @@ class IoTApi extends Utility
         $postData['devNdx'] = $this->deviceRecData['ndx'];
         $udr = new \mac\lan\UploadDataReceiver($this->app());
         $udr->setData($postData);
-        $res = $udr->run();
+        $res = $udr->doShnIbInfo();
       }
     }
     else

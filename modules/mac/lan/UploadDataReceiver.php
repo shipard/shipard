@@ -76,7 +76,7 @@ class UploadDataReceiver extends Utility
 		return 'OK';
 	}
 
-	protected function doShnIbInfo ()
+	public function doShnIbInfo ()
 	{
 		$deviceRecData = NULL;
 		if (isset($this->data['devId']))
