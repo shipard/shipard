@@ -32,7 +32,7 @@ class StudiesEngine extends Utility
     array_push($q, ' WHERE 1');
     array_push($q, ' AND [smazano] = %i', 0);
     array_push($q, ' AND [stavHlavni] < %i', 4);
-    array_push($q, ' AND [skolniRok] = %s', '2023');
+    array_push($q, ' AND [skolniRok] = %s', '2024');
 
     $cnt = 1;
     $rows = $this->db()->query($q);
@@ -236,7 +236,7 @@ class StudiesEngine extends Utility
 		$this->rocniky = $this->app()->cfgItem ('e10pro.zus.rocniky');
     $this->tableStudium = $this->app()->table('e10pro.zus.studium');
 
-    $this->schoolYearId = '2024';
+    $this->schoolYearId = '2025';
     $this->schoolYearCfg = $this->app()->cfgItem ('e10pro.zus.roky.'.$this->schoolYearId);
 
     $this->generateFromPastYear();
