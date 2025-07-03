@@ -89,7 +89,19 @@ class StudiesEngine extends Utility
       if ($exist)
       {
         if ($this->debug)
-          echo "; INFO - studium EXISTUJE\n";
+          echo "; INFO - studium EXISTUJE";
+
+        if ($exist['stavHlavni'] == 0)
+        {
+          if ($this->debug)
+            echo "; INFO - studium je NEHLAVNÍ";
+
+          $this->db()->query('UPDATE [e10pro_zus_studium] SET [stavHlavni] = 1, [stav] = 1200 WHERE [ndx] = %i', $exist['ndx']);
+        }
+
+        if ($this->debug)
+          echo "\n";
+
         continue;
       }
 
@@ -122,8 +134,8 @@ class StudiesEngine extends Utility
           'oznaceniStudia' => $r ['oznaceniStudia'],
           'pobocka' => $r ['pobocka'],
           'misto' => $r ['misto'],
-          //'stavHlavni' => 1, 'stav' => 1200,
-          'stavHlavni' => 0, 'stav' => 1000,
+          'stavHlavni' => 1, 'stav' => 1200,
+          //'stavHlavni' => 0, 'stav' => 1000,
           'datumNastupuDoSkoly' => $r ['datumNastupuDoSkoly'],
           'datumUkonceniSkoly' => $r ['datumUkonceniSkoly'],
         ];
