@@ -234,6 +234,15 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
           break;
       }
 		}
+
+    // add init states to end states
+    foreach ($data as $wcId => &$wc)
+    {
+      if (isset($wc['quantityIS']))
+      {
+        $wc['quantityState'] += $wc['quantityIS'];
+      }
+    }
   }
 
   public function loadWasteInitStates(&$data)
@@ -385,7 +394,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
             //$cgData['wastesIn'] += $wd['quantityIn'] ?? 0.0;
             //$cgData['wastesOut'] += $wd['quantityOut'] ?? 0.0;
             $cgData['wastesIS'] += $wd['quantityIS'] ?? 0.0;
-            //$cgData['wastesEndState'] += $wd['quantityState'] ?? 0.0;
+            $cgData['wastesEndState'] += $wd['quantityIS'] ?? 0.0;
           }
         }
       }
