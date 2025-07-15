@@ -1,3 +1,4 @@
 [
-	{"name": "Hlášení", "class": "e10doc.waster.libs.ReportWasteReturns", "group": "e10doc-waster"}
+	{"name": "Hlášení", "class": "e10doc.waster.libs.ReportWasteReturns", "group": "e10doc-waster"},
+	{"name": "Stavy", "class": "e10doc.waster.libs.ReportWasteStates", "group": "e10doc-waster"}
 ]
