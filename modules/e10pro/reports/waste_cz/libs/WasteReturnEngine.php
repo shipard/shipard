@@ -29,6 +29,9 @@ class WasteReturnEngine extends Utility
   var $enabledCodesKinds;
 
   CONST rowDirIn = 0, rowDirOut = 1;
+
+  CONST whcDirIn = 0, whcDirOut = 1, whcDirInitState = 2, whcDirMove = 3, whcDirProduction = 5;
+
   CONST personTypeHuman = 1, personTypeCompany = 2;
   var $handlingCodes = NULL;
 
