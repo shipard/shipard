@@ -3174,6 +3174,15 @@ class ViewHeads extends TableView
 		$paramsPersonTypes->addParam ('checkboxes', 'query.personTypes', ['items' => $chbxPersonTypes]);
 		$qry[] = ['id' => 'itemTypes', 'style' => 'params', 'title' => 'Osoby', 'params' => $paramsPersonTypes];
 
+		// -- others
+		$chbxOthers = [
+			'withStock' => ['title' => 'Se skladem', 'id' => 'withStock'], 'withoutStock' => ['title' => 'Bez skladu', 'id' => 'withoutStock']
+		];
+		$paramsOthers = new \E10\Params ($this->app());
+		$paramsOthers->addParam ('checkboxes', 'query.others', ['items' => $chbxOthers]);
+		$qry[] = ['id' => 'itemTypes', 'style' => 'params', 'title' => 'Ostatní', 'params' => $paramsOthers];
+
+
 		$this->extendPanelContentQry ($panel, $qry);
 
 		$panel->addContent(array ('type' => 'query', 'query' => $qry));
@@ -3312,6 +3321,17 @@ class ViewHeads extends TableView
 				array_push ($q, ' AND [persons].[company] = 0');
 			else
 				array_push ($q, ' AND [persons].[company] = 1');
+		}
+
+		// -- others
+		$withStock = isset ($qv['others']['withStock']);
+		$withoutStock = isset ($qv['others']['withoutStock']);
+		if ($withStock xor $withoutStock)
+		{
+			if ($withStock)
+				array_push ($q, ' AND heads.[warehouse] != 0');
+			else
+				array_push ($q, ' AND heads.[warehouse] = 0');
 		}
 	}
 
