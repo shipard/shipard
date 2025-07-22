@@ -42,7 +42,7 @@ class WasteCheckEngine extends Utility
     array_push($q, 'SELECT [rows].*');
 		array_push($q, ' FROM [e10pro_reports_waste_cz_returnRows] as [rows]');
 		array_push($q, ' WHERE [document] = %i', $this->docNdx);
-		array_push($q, ' ORDER BY [ndx] DESC');
+		array_push($q, ' ORDER BY [ndx]');
 
 		$data = [];
 		$rows = $this->db()->query ($q);
@@ -79,8 +79,7 @@ class WasteCheckEngine extends Utility
     $this->newWRErrors = NULL;
 
 		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
-		$wre->year = $cy;
-		$wre->createDataForDocument($this->docRecData['ndx']);
+		$wre->createDataForDocument($this->docRecData);
     $this->newWRData = $wre->wasteReturnRows;
     if ($wre->wasteReturnErrorLabels && count($wre->wasteReturnErrorLabels))
       $this->newWRErrors = $wre->wasteReturnErrorLabels;
@@ -218,8 +217,7 @@ class WasteCheckEngine extends Utility
         echo "* ".$r['docNumber'];
 
       $wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
-      $wre->year = intval(Utils::createDateTime($r['dateAccounting'])->format('Y'));
-      $wre->resetDocument($r['ndx']);
+      $wre->resetDocument($r->toArray());
 
       if ($this->app()->debug)
         echo "\n";

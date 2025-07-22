@@ -13,6 +13,8 @@
 			"enumCfg": {"cfgItem": "e10doc.waster.docModes", "cfgText": "fn"}},
 		{"id": "docModePurchase", "name": "Výkupy", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10doc.waster.docModes", "cfgText": "fn"}},
+		{"id": "docModeMnf", "name": "Výroba", "type": "enumInt",
+			"enumCfg": {"cfgItem": "e10doc.waster.docModes", "cfgText": "fn"}},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

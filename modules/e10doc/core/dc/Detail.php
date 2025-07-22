@@ -407,7 +407,7 @@ class Detail extends \Shipard\Base\DocumentCard
 	public function docsRows ()
 	{
 		$q = [];
-		array_push($q, 'SELECT [rows].text AS rText, [rows].quantity AS rQuantity, [rows].unit AS rUnit, [rows].priceItem AS rPriceItem,');
+		array_push($q, 'SELECT [rows].text AS rText, [rows].quantity AS rQuantity, [rows].unit AS rUnit, [rows].priceItem AS rPriceItem, [rows].operation,');
 		array_push($q, ' [rows].priceAll AS rPriceAll, [rows].item, [rows].ownerRowMain, [rows].ownerRow AS rowOwnerRow,');
 		array_push($q, ' [items].[id] AS [itemId]');
 		array_push($q, ' FROM [e10doc_core_rows] AS [rows] ');

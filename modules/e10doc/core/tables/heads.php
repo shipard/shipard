@@ -1396,8 +1396,7 @@ class TableHeads extends DbTable
 			return;
 
 		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
-		$wre->year = $cy;
-		$wre->resetDocument($recData['ndx']);
+		$wre->resetDocument($recData);
 	}
 
 	public function documentStates ($recData)

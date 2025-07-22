@@ -19,9 +19,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		}
 
 		$wre = new \e10pro\reports\waste_cz\libs\WasteReturnEngine($this->app);
-		$wre->year = $year;
-
-		$wre->run();
+		$wre->resetYear($year);
 	}
 
 

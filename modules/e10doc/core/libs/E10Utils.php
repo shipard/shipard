@@ -472,6 +472,13 @@ class E10Utils
 			return 1;
 		}
 
+		if ($headRecData['docType'] == 'mnf')
+		{
+			if ($rowRecData ['operation'] == 1060702) // Výdej na výrobu
+				return 1;
+			return 2;
+		}
+
 		if ($headRecData['docType'] === 'bank' || $headRecData['docType'] === 'cmnbkp')
 		{
 			if ($rowRecData ['debit'] != 0.0)

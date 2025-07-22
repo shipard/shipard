@@ -112,9 +112,7 @@ class SetOfficeWizard extends Wizard
     foreach ($rows as $r)
     {
       $this->app()->db()->query('UPDATE [e10doc_core_heads] SET otherAddress1 = %i', $officeNdx, ' WHERE [ndx] = %i', $r['ndx']);
-      $wre->year = $year;
-
-      $wre->resetDocument($r['ndx']);
+      $wre->resetDocument($r->toArray());
     }
 
 		$this->stepResult ['close'] = 1;

@@ -49,6 +49,7 @@ class TableWasteSettings extends DbTable
           'stockin' => intval($r['docModeStockIn']),
 					'stockout' => intval($r['docModeStockOut']),
           'purchase' => intval($r['docModePurchase']),
+          'mnf' => intval($r['docModeMnf']),
           'wastelp' => 2,
         ]
       ];
@@ -91,6 +92,7 @@ class ViewWasteSettings extends TableView
     $flags[] = ['text' => 'Příjemky: '.$this->wasteDocModes[$item['docModeStockIn']]['sc'], 'class' => 'label label-default', 'icon' => 'docType/stockIn'];
     $flags[] = ['text' => 'Výdejky: '.$this->wasteDocModes[$item['docModeStockOut']]['sc'], 'class' => 'label label-default', 'icon' => 'docType/stockOut'];
     $flags[] = ['text' => 'Výkupy: '.$this->wasteDocModes[$item['docModePurchase']]['sc'], 'class' => 'label label-default', 'icon' => 'docTypeRedemptions'];
+		$flags[] = ['text' => 'Výroba: '.$this->wasteDocModes[$item['docModeMnf']]['sc'], 'class' => 'label label-default', 'icon' => 'iconProduction'];
 
     $listItem ['t2'] = $flags;
 		$listItem ['icon'] = $this->table->tableIcon ($item);
@@ -139,6 +141,7 @@ class FormWasteSettings extends TableForm
 			$this->addColumnInput ('docModeStockIn');
       $this->addColumnInput ('docModeStockOut');
       $this->addColumnInput ('docModePurchase');
+      $this->addColumnInput ('docModeMnf');
 		$this->closeForm ();
 	}
 }

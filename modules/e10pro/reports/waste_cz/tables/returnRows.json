@@ -16,7 +16,7 @@
 		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
 			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
 		{"id": "quantityKG", "name": "Množství v kg", "label": "Množ. kg", "type": "number", "dec": 3},
-		{"id": "wasteHandlingCode", "name": "Evidenční kód", "type": "enumString", "len": 4,
+		{"id": "wasteHandlingCode", "name": "Evidenční kód", "type": "enumString", "len": 5,
 			"enumCfg": {"cfgItem": "e10doc.waster.handlingCodes", "cfgValue": "", "cfgText": "sn"}},
 
 		{"id": "document", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
@@ -36,6 +36,14 @@
 			"enumValues": {"0": "Provozovna", "1": "ORP"}},
     {"id": "nomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"},
     {"id": "natCityId", "name": "ID obce (IČZUJ)", "type": "int"}
+	],
+	"views": [
+		{
+      "id": "default", "class": "e10pro.reports.waste_cz.ViewWasteReturnRows",
+      "details": {
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10doc.waster.ViewDetailWasteReturnRow"}
+			}
+    }
 	],
 	"options": ["systemTable"],
 	"indexes": [

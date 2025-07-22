@@ -11,6 +11,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 {
 	public function resetWasteOps ()
 	{
+		// TODO: remove
 		$year = intval($this->app->arg('year'));
 		if (!$year)
 		{
