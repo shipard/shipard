@@ -48,7 +48,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
     $this->wasteHandlingCodes = $this->app->cfgItem('e10doc.waster.handlingCodes', []);
 
     $today = Utils::today();
-    $defaultYear = 'Y'.(intval($today->format('Y')) - 1);
+    $defaultYear = 'Y'.(intval($today->format('Y')));
     $this->addParam ('calendarMonth', 'calendarPeriod', ['flags' => ['quarters', 'halfs', 'years'], 'defaultValue' => $defaultYear]);
 
     $ckEnum = $this->codesKindEnum();
