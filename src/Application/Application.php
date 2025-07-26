@@ -102,7 +102,7 @@ class Application extends \Shipard\Application\ApplicationCore
 			$this->setError(500, "uncofigured application");
 			return;
 		}
-		
+
 		self::$appLog->init2();
 
 		// -- load app skeleton
@@ -227,7 +227,6 @@ class Application extends \Shipard\Application\ApplicationCore
 			$this->setAuthenticator ($this->createObject($this->appSkeleton['userManagement']['authenticator']));
 	}
 
-	
 	function connectDb ($dbId = NULL)
 	{
 		$dbKey = 'db';
@@ -1537,6 +1536,26 @@ class Application extends \Shipard\Application\ApplicationCore
 		return new Response($this, "unknown feed", 404);
 	}
 
+	protected function papi ()
+	{
+		self::$appLog->setTaskType(AppLog::ttPapi, AppLog::tkNone);
+
+		$papiId = $this->requestPath(1);
+
+		header ('Access-Control-Allow-Origin: *');
+
+		$papiClass = $this->cfgItem ('registeredClasses.papi.'.$papiId, FALSE);
+		if ($papiClass !== FALSE)
+		{
+			$classId = $papiClass['classId'];
+			$listObject = $this->createObject($classId);
+			$listObject->init();
+			return $listObject->run ();
+		}
+
+		return new Response($this, 'unknown papi', 404);
+	}
+
 	protected function incomingWebhook()
 	{
 		$o = new \integrations\hooks\in\services\Receiver($this);
@@ -2083,6 +2102,8 @@ class Application extends \Shipard\Application\ApplicationCore
 				return $this->routeDisplay ();
 			case 'feed':
 				return $this->feed ();
+			case 'papi':
+				return $this->papi ();
 			case 'hooks':
 				return $this->incomingWebhook();
 			case 'imgs':
@@ -2235,7 +2256,7 @@ class Application extends \Shipard\Application\ApplicationCore
 	{
 		if ($this->cfgServer['useHosting'])
 			$id = '_shp_sid_'.str_replace('.', '_', $this->cfgItem('hostingCfg.hostingDomain'));
-		else	
+		else
 			$id = '_shp_sid_'.str_replace('.', '_', $this->cfgItem('hostingCfg.serverDomain'));
 
 		return $id;
@@ -2265,10 +2286,10 @@ class Application extends \Shipard\Application\ApplicationCore
 	public function setCookie (string $name, string $value, int $expires)
 	{
 		$options = [
-			'expires' => $expires, 
-			'path' => $this->sessionCookiePath(), 
-			'domain' => $this->sessionCookieDomain(), 
-			'secure' => TRUE, 
+			'expires' => $expires,
+			'path' => $this->sessionCookiePath(),
+			'domain' => $this->sessionCookieDomain(),
+			'secure' => TRUE,
 			'httponly' => TRUE,
 			'samesite' => 'strict',
 		];
