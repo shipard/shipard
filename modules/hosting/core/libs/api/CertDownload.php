@@ -53,8 +53,8 @@ class CertDownload extends Utility
 
 	public function init ()
 	{
-    $this->apiKey = $this->app->testGetParam('key');
-    $this->certId = $this->app->testGetParam('id');
+    $this->certId = $this->app->requestPath(2);
+    $this->apiKey = $this->app->requestPath(3);
 	}
 
 	public function run ()
