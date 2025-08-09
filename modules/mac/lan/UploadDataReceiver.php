@@ -119,7 +119,15 @@ class UploadDataReceiver extends Utility
 		if (isset($this->data['linkquality'])) // zigbee devices
 			$update['signalLevel'] = intval($this->data['linkquality']);
 		elseif (isset($this->data['rssiW'])) // shipard iot devices - wifi rssi
-			$update['signalLevel'] = intval(abs($this->data['rssiW']));
+		{
+			$sl = 255 - max(abs(intval($this->data['rssiW'])) - 30, 0);
+			if ($sl < 0)
+				$sl = 0;
+			if ($sl > 255)
+				$sl = 255;
+
+			$update['signalLevel'] = intval($sl);
+		}
 
 		if (isset($this->data['pwr-batt-perc']))
 		{
