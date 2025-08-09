@@ -36,7 +36,7 @@ class EPDImageConverter extends Utility
     //$cmd .= " -s 0.1 bayer 16x16";
 
     $cmd = "didder --palette \"{$didderPalette}\" -i ".$this->srcFileName." -o ".$this->convertedFileName;
-    $cmd .= " --brightness 0.2";
+    //$cmd .= " --brightness 0.2";
     $cmd .= " edm FloydSteinberg";
     exec ($cmd);
   }
