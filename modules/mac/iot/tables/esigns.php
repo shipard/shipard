@@ -154,13 +154,19 @@ class ViewESigns extends TableView
 
     $t2[] = ['text' => $item['idName'], 'class' => 'label label-primary'];
 
+		if ($item['esignKindFullName'])
+			$t2[] = ['text' => $item['esignKindFullName'], 'class' => 'label label-default', 'icon' => 'tables/mac.iot.esignsKinds'];
+
+    $listItem['t2'] = $t2;
+
+		$listItem['t3'] = [];
+
 		$displayInfo = $this->table->getESignInfo($item ['ndx']);
 		if ($displayInfo && ($displayInfo['ok'] ?? 0))
 		{
-			$listItem['i2'] = $displayInfo['displayInfoLabel'];
+			$listItem['t3'][] = $displayInfo['displayInfoLabel'];
+			$listItem['t3'][] = ['text' => '', 'class' => 'break'];
 		}
-
-    $listItem['t2'] = $t2;
 
 		if ($item['iotDevice'])
 		{
@@ -171,7 +177,7 @@ class ViewESigns extends TableView
 				$bl['suffix'] = Utils::dateDiffShort3($item['pwrLastChargingDT'], $now);
 			}
 
-			$listItem['t3'] = [$bl];
+			$listItem['t3'][] = $bl;
 
 			if ($item['signalLevel'] != 0)
 			{
@@ -181,7 +187,7 @@ class ViewESigns extends TableView
 					$sl['prefix'] = $item['wifiSSID'];
 					$sl['title'] = 'Aktivní WiFi SSID: '.$item['wifiSSID'];
 					if ($item['wifiRSSI'] != 0)
-						$sl['title'] = ', RSSI: '.$item['wifiRSSI'];
+						$sl['title'] .= ', RSSI: '.$item['wifiRSSI'];
 				}
 				$listItem['t3'][] = $sl;
 			}
@@ -198,9 +204,11 @@ class ViewESigns extends TableView
 		array_push($q, 'SELECT [esigns].*,');
 		array_push($q, ' [iotDevicesInfo].[pwrBatteryLevel], [iotDevicesInfo].[pwrBatteryVoltage], [iotDevicesInfo].[pwrCharging],');
 		array_push($q, ' [iotDevicesInfo].[pwrChargeCurrent], [iotDevicesInfo].[pwrLastChargingDT], [iotDevicesInfo].[signalLevel],');
-		array_push($q, ' [iotDevicesInfo].[wifiRSSI], [iotDevicesInfo].[wifiSSID]');
+		array_push($q, ' [iotDevicesInfo].[wifiRSSI], [iotDevicesInfo].[wifiSSID],');
+		array_push($q, ' [esignsKinds].[fullName] AS [esignKindFullName]');
 		array_push($q, ' FROM [mac_iot_esigns] AS [esigns]');
 		array_push($q, ' LEFT JOIN [mac_iot_devicesInfo] AS [iotDevicesInfo] ON [esigns].iotDevice = iotDevicesInfo.[device]');
+		array_push($q, ' LEFT JOIN [mac_iot_esignsKinds] AS [esignsKinds] ON [esigns].esignKind = [esignsKinds].ndx');
 		array_push($q, ' WHERE 1');
 
 		// -- fulltext
