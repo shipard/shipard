@@ -174,7 +174,17 @@ class ViewESigns extends TableView
 			$listItem['t3'] = [$bl];
 
 			if ($item['signalLevel'] != 0)
-				$listItem['t3'][] = ['text' => round(($item['signalLevel'] / 255) * 100).'%', 'icon' => 'user/wifi', 'class' => 'label label-default'];
+			{
+				$sl = ['text' => round(($item['signalLevel'] / 255) * 100).'%', 'icon' => 'user/wifi', 'class' => 'label label-default'];
+				if ($item['wifiSSID'] != '')
+				{
+					$sl['prefix'] = $item['wifiSSID'];
+					$sl['title'] = 'Aktivní WiFi SSID: '.$item['wifiSSID'];
+					if ($item['wifiRSSI'] != 0)
+						$sl['title'] = ', RSSI: '.$item['wifiRSSI'];
+				}
+				$listItem['t3'][] = $sl;
+			}
 		}
 
 		return $listItem;
@@ -186,8 +196,9 @@ class ViewESigns extends TableView
 
 		$q = [];
 		array_push($q, 'SELECT [esigns].*,');
-		array_push($q, ' [iotDevicesInfo].[pwrBatteryLevel], [iotDevicesInfo].[pwrBatteryVoltage], [iotDevicesInfo].[pwrCharging],',
-									 ' [iotDevicesInfo].[pwrChargeCurrent], [iotDevicesInfo].[pwrLastChargingDT], [iotDevicesInfo].[signalLevel]');
+		array_push($q, ' [iotDevicesInfo].[pwrBatteryLevel], [iotDevicesInfo].[pwrBatteryVoltage], [iotDevicesInfo].[pwrCharging],');
+		array_push($q, ' [iotDevicesInfo].[pwrChargeCurrent], [iotDevicesInfo].[pwrLastChargingDT], [iotDevicesInfo].[signalLevel],');
+		array_push($q, ' [iotDevicesInfo].[wifiRSSI], [iotDevicesInfo].[wifiSSID]');
 		array_push($q, ' FROM [mac_iot_esigns] AS [esigns]');
 		array_push($q, ' LEFT JOIN [mac_iot_devicesInfo] AS [iotDevicesInfo] ON [esigns].iotDevice = iotDevicesInfo.[device]');
 		array_push($q, ' WHERE 1');

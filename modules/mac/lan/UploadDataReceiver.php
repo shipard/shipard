@@ -1,7 +1,8 @@
 <?php
 
 namespace mac\lan;
-use e10\DbTable, e10\utils, e10\Utility;
+use \Shipard\Table\DbTable, \Shipard\Utils\Utils, \Shipard\Base\Utility;
+use \Shipard\Utils\Str;
 
 
 /**
@@ -51,7 +52,7 @@ class UploadDataReceiver extends Utility
 
 		if ($infoType === 'counters')
 		{
-			$date = utils::createDateTime($this->data['data']['datetime']);
+			$date = Utils::createDateTime($this->data['data']['datetime']);
 			$dateId = $date->format ('Y-m-d').'D';
 			foreach ($this->data['data']['items'] as $counterInfo)
 			{
@@ -127,7 +128,11 @@ class UploadDataReceiver extends Utility
 				$sl = 255;
 
 			$update['signalLevel'] = intval($sl);
+			$update['wifiRSSI'] = intval($this->data['rssiW'] ?? 0);
 		}
+
+		if (isset($this->data['ssidW'])) // shipard iot devices - active SSID
+			$update['wifiSSID'] = Str::upToLen($this->data['ssidW'], 100);
 
 		if (isset($this->data['pwr-batt-perc']))
 		{

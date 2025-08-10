@@ -427,7 +427,17 @@ class ViewDevices extends TableView
 		}
 
 		if ($deviceInfo['signalLevel'] != 0)
-			$labels[] = ['text' => round(($deviceInfo['signalLevel'] / 255) * 100).'%', 'icon' => 'user/wifi', 'class' => 'label label-default'];
+		{
+			$sl = ['text' => round(($deviceInfo['signalLevel'] / 255) * 100).'%', 'icon' => 'user/wifi', 'class' => 'label label-default'];
+			if ($deviceInfo['wifiSSID'] != '')
+			{
+				$sl['prefix'] = $deviceInfo['wifiSSID'];
+				$sl['title'] = 'Aktivní WiFi SSID: '.$deviceInfo['wifiSSID'];
+				if ($deviceInfo['wifiRSSI'] != 0)
+					$sl['title'] .= ', RSSI: '.$deviceInfo['wifiRSSI'];
+			}
+			$labels[] = $sl;
+		}
 
 		if (count($labels))
 			$item ['t3'] = $labels;

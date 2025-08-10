@@ -13,6 +13,8 @@
 		{"id": "pwrChargeCurrent", "name": "Nabíjecí proud", "type": "number", "dec": 3},
 		{"id": "pwrLastChargingDT", "name": "Poslední okamžik nabíjení", "type": "timestamp"},
 		{"id": "pwrLastChargingBL", "name": "Poslední stav baterie po nabíjení", "type": "short"},
+		{"id": "wifiRSSI", "name": "WiFi RSSI", "type": "int"},
+		{"id": "wifiSSID", "name": "WiFi SSID", "type": "string", "len": 100},
 		{"id": "uptime", "name": "Uptime", "type": "long"},
 		{"id": "signalLevel", "name": "Signál", "type": "short"},
 		{"id": "lastSeen", "name": "Poslední aktivita", "type": "timestamp"},
