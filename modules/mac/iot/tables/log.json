@@ -4,6 +4,7 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 
 		{"id": "dt", "name": "Okamžik vytvoření", "type": "timestamp"},
+		{"id": "ipAddr", "name": "IP adresa", "type": "string", "len": 45, "options": ["ascii"]},
 	  {"id": "itemType", "name": "Typ záznamu", "type": "enumInt",
 		  "enumCfg": {"cfgItem": "mac.iot.log.itemTypes", "cfgValue": "", "cfgText": "fn"}},
 		{"id": "itemSubType", "name": "Subtyp záznamu", "type": "string", "len": 40},

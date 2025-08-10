@@ -23,6 +23,16 @@ class TableLog extends DbTable
   public function addLogItem($data)
   {
     $newItem = $data;
+
+    if (!isset($newItem['dt']))
+      $newItem['dt'] = new \DateTime();
+
+    if (!isset($newItem['requestUrl']))
+      $newItem['requestUrl'] = $this->app()->requestPath();
+
+    if (!isset($newItem['ipAddr']))
+      $newItem['ipAddr'] = $_SERVER ['REMOTE_ADDR'] ?? '';
+
     $this->db()->query('INSERT INTO [mac_iot_log] ', $newItem);
   }
 }
@@ -53,6 +63,7 @@ class ViewLog extends TableViewGrid
 			'itemType' => 'Typ',
       'itemSubType' => 'Subtyp',
       'url' => 'URL',
+      'ip' => 'IP adresa',
 		];
 
 		$this->setGrid ($g);
@@ -63,10 +74,10 @@ class ViewLog extends TableViewGrid
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
-    $listItem ['dt'] = $item['dateTime']->format('Y-m-d H:i:s');
-
-    //$listItem ['itemType'] = [['text' => $item['itemFullName'], 'class' => 'block']];
-    //$listItem ['codeInfo'] = [];
+    $listItem ['dt'] = $item['dt']->format('Y-m-d H:i:s');
+    $listItem ['url'] = $item['requestUrl'];
+    $listItem ['itemSubType'] = $item['itemSubType'];
+    $listItem ['ip'] = $item['ipAddr'];
 
 		return $listItem;
 	}

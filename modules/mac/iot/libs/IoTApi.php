@@ -27,8 +27,9 @@ class IoTApi extends Utility
 
 	public function init()
 	{
-		$this->tableLog = new \mac\iot\TableLog($this->db());
+		$this->tableLog = new \mac\iot\TableLog($this->app());
     $this->iotLogItem['dt'] = new \DateTime();
+    $this->iotLogItem['requestUrl'] = $this->app->requestPath();
 	}
 
   protected function detectParams()
