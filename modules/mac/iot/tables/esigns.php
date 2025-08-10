@@ -157,7 +157,7 @@ class ViewESigns extends TableView
 		$displayInfo = $this->table->getESignInfo($item ['ndx']);
 		if ($displayInfo && ($displayInfo['ok'] ?? 0))
 		{
-			$listItem['t3'] = $displayInfo['displayInfoLabel'];
+			$listItem['i2'] = $displayInfo['displayInfoLabel'];
 		}
 
     $listItem['t2'] = $t2;
@@ -168,10 +168,13 @@ class ViewESigns extends TableView
 			if ($item['pwrLastChargingDT'])
 			{
 				$now = new \DateTime();
-				$bl['suffix'] = Utils::dateDiffShort($item['pwrLastChargingDT'], $now);
+				$bl['suffix'] = Utils::dateDiffShort3($item['pwrLastChargingDT'], $now);
 			}
 
-			$listItem['i2'] = $bl;
+			$listItem['t3'] = [$bl];
+
+			if ($item['signalLevel'] != 0)
+				$listItem['t3'][] = ['text' => round(($item['signalLevel'] / 255) * 100).'%', 'icon' => 'user/wifi', 'class' => 'label label-default'];
 		}
 
 		return $listItem;
@@ -184,7 +187,7 @@ class ViewESigns extends TableView
 		$q = [];
 		array_push($q, 'SELECT [esigns].*,');
 		array_push($q, ' [iotDevicesInfo].[pwrBatteryLevel], [iotDevicesInfo].[pwrBatteryVoltage], [iotDevicesInfo].[pwrCharging],',
-									 ' [iotDevicesInfo].[pwrChargeCurrent], [iotDevicesInfo].[pwrLastChargingDT]');
+									 ' [iotDevicesInfo].[pwrChargeCurrent], [iotDevicesInfo].[pwrLastChargingDT], [iotDevicesInfo].[signalLevel]');
 		array_push($q, ' FROM [mac_iot_esigns] AS [esigns]');
 		array_push($q, ' LEFT JOIN [mac_iot_devicesInfo] AS [iotDevicesInfo] ON [esigns].iotDevice = iotDevicesInfo.[device]');
 		array_push($q, ' WHERE 1');
