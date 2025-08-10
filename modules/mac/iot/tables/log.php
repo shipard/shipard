@@ -59,8 +59,9 @@ class ViewLog extends TableViewGrid
 //		$this->setMainQueries ($mq);
 
 		$g = [
-      'dt' => 'Kdy',
+      'dt' => 'Okamžik',
 			'itemType' => 'Typ',
+      'device' => 'Zařízení',
       'itemSubType' => 'Subtyp',
       'url' => 'URL',
       'ip' => 'IP adresa',
@@ -79,6 +80,9 @@ class ViewLog extends TableViewGrid
     $listItem ['itemSubType'] = $item['itemSubType'];
     $listItem ['ip'] = $item['ipAddr'];
 
+    if ($item['iotDeviceFriendlyId'])
+      $listItem ['device'] = ['text' => $item['iotDeviceFriendlyId'], 'class' => 'label label-default', 'icon' => 'tables/mac.iot.devices'];
+
 		return $listItem;
 	}
 
@@ -88,20 +92,19 @@ class ViewLog extends TableViewGrid
 		$fts = $this->fullTextSearch ();
 
 		$q = [];
-    array_push ($q, 'SELECT [iotLog].*');
+    array_push ($q, 'SELECT [iotLog].*, ');
+    array_push ($q, ' [iotDevices].[fullName] AS [iotDevice], [iotDevices].[hwId] AS [deviceHwId], [iotDevices].[friendlyId] AS [iotDeviceFriendlyId]');
 		array_push ($q, ' FROM [mac_iot_log] AS [iotLog]');
+    array_push ($q, ' LEFT JOIN [mac_iot_devices] AS [iotDevices] ON [iotLog].[iotDevice] = [iotDevices].[ndx]');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
 		if ($fts != '')
 		{
-      /*
 			array_push ($q, ' AND (');
-			array_push ($q, ' [items].[fullName] LIKE %s', '%'.$fts.'%');
-			array_push ($q, ' OR [itemCodes].[itemCodeText] LIKE %s', '%'.$fts.'%');
-			//array_push ($q, ' OR [balances].[fullName] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' [iotLog].[requestUrl] LIKE %s', '%'.$fts.'%');
+			array_push ($q, ' OR [iotDevices].[friendlyId] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
-      */
 		}
 
 		array_push ($q, ' ORDER BY [ndx] DESC');
