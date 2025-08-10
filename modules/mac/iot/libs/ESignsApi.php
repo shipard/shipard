@@ -14,6 +14,8 @@ class ESignsApi extends \mac\iot\libs\IoTApi
 
   protected function doOperation()
   {
+    $this->iotLogItem['itemSubType'] = $this->operation;
+
     switch($this->operation)
     {
       case 'getESignImageInfo':

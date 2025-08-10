@@ -21,8 +21,14 @@ class IoTApi extends Utility
   var $resultSaveFileName = '';
   var $resultMimeType = 'application/json';
 
+  var \mac\iot\TableLog $tableLog;
+  var $iotLogItem = [];
+
+
 	public function init()
 	{
+		$this->tableLog = new \mac\iot\TableLog($this->db());
+    $this->iotLogItem['dt'] = new \DateTime();
 	}
 
   protected function detectParams()
@@ -65,11 +71,15 @@ class IoTApi extends Utility
     // -- operation
     $this->operation = $this->app->requestPath(3);
 
+    $this->iotLogItem['iotDevice'] = $this->deviceRecData['ndx'] ?? 0;
+
     return TRUE;
   }
 
   protected function doOperation()
   {
+    $this->iotLogItem['itemSubType'] = $this->operation;
+
     switch($this->operation)
     {
       case 'getDeviceCfg':
@@ -106,6 +116,8 @@ class IoTApi extends Utility
     $topic = $headers['x-iot-topic'] ?? '';
 
     $postDataStr = $this->app()->postData();
+    $this->iotLogItem['requestData'] = $postDataStr;
+
     if ($postDataStr[0] === '{')
     {
       // JSON data
@@ -181,6 +193,13 @@ class IoTApi extends Utility
       $response->setStatus(404);
     }
 
+    $this->saveLogItem();
+
 		return $response;
 	}
+
+  protected function saveLogItem()
+  {
+    $this->tableLog->addLogItem($this->iotLogItem);
+  }
 }

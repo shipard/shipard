@@ -67,7 +67,9 @@
 							"esigns": {"t1": "Cedulky", "object": "viewer", "table": "mac.iot.esigns", "viewer": "default", "order": 44000, "beforeSeparator": 1},
 							"esignsKinds": {"t1": "Typy cedulek", "object": "viewer", "table": "mac.iot.esignsKinds", "viewer": "default", "order": 44100},
 
-							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "order": 90100, "beforeSeparator": 1}
+							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "order": 90100, "beforeSeparator": 1},
+
+							"logs": {"t1": "Logy", "object": "viewer", "table": "mac.iot.log", "viewer": "default", "order": 90800, "beforeSeparator": 1}
 						}
 					}
 				},

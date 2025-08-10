@@ -1,0 +1,22 @@
+{
+	"id": "mac.iot.log", "sql": "mac_iot_log", "name": "Logy IoT zařízení",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "dt", "name": "Okamžik vytvoření", "type": "timestamp"},
+	  {"id": "itemType", "name": "Typ záznamu", "type": "enumInt",
+		  "enumCfg": {"cfgItem": "mac.iot.log.itemTypes", "cfgValue": "", "cfgText": "fn"}},
+		{"id": "itemSubType", "name": "Subtyp záznamu", "type": "string", "len": 40},
+		{"id": "requestUrl", "name": "URL požadavku", "type": "string", "len": 130},
+		{"id": "requestData", "name": "Data požadavku", "type": "memo"},
+		{"id": "iotDevice", "name": "IoT zařízení", "type": "int", "reference": "mac.iot.devices"}
+	],
+	"views": {
+		"default": {
+			"id": "default", "class": "mac.iot.ViewLog",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "mac.iot.ViewDetailLog"}
+			}
+		}
+	}
+}

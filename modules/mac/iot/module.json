@@ -8,6 +8,8 @@
 		"params",
 		"cams", "camsStreams",
 
+		"log",
+
 		"esigns", "esignsKinds", "esignsImgs",
 
 	  "topics", "sensors", "sensorsValues", "sensorsValuesHistory",
@@ -45,6 +47,8 @@
 		{"id": "+mac.iot.events.onEventTypes", "file": "mac.iot.events.onEventTypes.json"},
 		{"id": "+mac.iot.events.doEventTypes", "file": "mac.iot.events.doEventTypes.json"},
 		{"id": "+mac.iot.events.onWhenTypes", "file": "mac.iot.events.onWhenTypes.json"},
+
+		{"id": "+mac.iot.log.itemTypes", "file": "mac.iot.log.itemTypes.json"},
 
 		{"id": "+mac.iot.devices.kinds", "file": "mac.iot.devices.kinds.json"},
 		{"id": "+mac.iot.devices.vendors.shipard", "file": "devices/shipard/vendors.json"},
