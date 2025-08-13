@@ -2,6 +2,7 @@
 
 namespace mac\iot;
 use \Shipard\Table\DbTable, \Shipard\Viewer\TableViewGrid, \Shipard\Viewer\TableViewDetail;
+use \Shipard\Utils\Utils;
 
 
 /**
@@ -45,22 +46,19 @@ class ViewLog extends TableViewGrid
 {
 	public function init ()
 	{
-		//$this->usePanelLeft = TRUE;
-		//$this->createLeftPanel();
-
 		parent::init();
 
+    $this->type = 'form';
 
+    $this->fullWidthToolbar = TRUE;
 		$this->gridEditable = TRUE;
-		$this->classes = ['editableGrid'];
-		$this->enableToolbar = FALSE;
-		$this->enableDetailSearch = TRUE;
-
-//		$this->setMainQueries ($mq);
+		$this->enableToolbar = TRUE;
+		$this->objectSubType = self::vsMain;
+		$this->linesWidth = 70;
+		$this->setPanels (self::sptQuery);
 
 		$g = [
-      'dt' => 'Okamžik',
-			'itemType' => 'Typ',
+      'dt' => '_Okamžik',
       'device' => 'Zařízení',
       'itemSubType' => 'Subtyp',
       'url' => 'URL',
@@ -75,7 +73,7 @@ class ViewLog extends TableViewGrid
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
-    $listItem ['dt'] = $item['dt']->format('Y-m-d H:i:s');
+    $listItem ['dt'] = Utils::datef($item['dt'], '%k').' '.$item['dt']->format('H:i:s');
     $listItem ['url'] = $item['requestUrl'];
     $listItem ['itemSubType'] = $item['itemSubType'];
     $listItem ['ip'] = $item['ipAddr'];
@@ -115,5 +113,13 @@ class ViewLog extends TableViewGrid
 }
 
 
-
-
+/**
+ * class ViewDetailLog
+ */
+class ViewDetailLog extends TableViewDetail
+{
+	public function createDetailContent ()
+	{
+		$this->addDocumentCard('mac.iot.dc.DCLogItem');
+	}
+}

@@ -10,7 +10,9 @@
 		{"id": "itemSubType", "name": "Subtyp záznamu", "type": "string", "len": 40},
 		{"id": "requestUrl", "name": "URL požadavku", "type": "string", "len": 130},
 		{"id": "requestData", "name": "Data požadavku", "type": "memo"},
-		{"id": "iotDevice", "name": "IoT zařízení", "type": "int", "reference": "mac.iot.devices"}
+		{"id": "iotDevice", "name": "IoT zařízení", "type": "int", "reference": "mac.iot.devices"},
+		{"id": "bootMode", "name": "Boot mode", "type": "enumInt",
+			"enumValues": {"0": "none", "1": "boot", "2": "wakeUp"}}
 	],
 	"views": {
 		"default": {
