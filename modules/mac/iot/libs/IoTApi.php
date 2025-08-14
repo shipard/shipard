@@ -137,8 +137,8 @@ class IoTApi extends Utility
         $res = $udr->doShnIbInfo();
       }
 
-      if (isset($postData['bootMode']))
-        $this->iotLogItem['bootMode'] = $postData['bootMode'];
+      if (isset($postData['boot']))
+        $this->iotLogItem['bootMode'] = intval($postData['boot']);
     }
     else
     { // text data
