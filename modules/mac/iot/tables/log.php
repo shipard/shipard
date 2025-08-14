@@ -60,9 +60,7 @@ class ViewLog extends TableViewGrid
 		$g = [
       'dt' => '_Okamžik',
       'device' => 'Zařízení',
-      'itemSubType' => 'Subtyp',
-      'url' => 'URL',
-      'ip' => 'IP adresa',
+      'itemSubType' => 'Akce',
 		];
 
 		$this->setGrid ($g);
@@ -70,12 +68,28 @@ class ViewLog extends TableViewGrid
 
 	public function renderRow ($item)
 	{
+		$requestUrlParts = explode('/', $item['requestUrl']);
+		array_shift($requestUrlParts);
+		$requestUrl = implode('/', $requestUrlParts);
+
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
     $listItem ['dt'] = Utils::datef($item['dt'], '%k').' '.$item['dt']->format('H:i:s');
-    $listItem ['url'] = $item['requestUrl'];
-    $listItem ['itemSubType'] = $item['itemSubType'];
+    $listItem ['itemSubType'] = [
+			['text' => $item['itemSubType'], 'class' => 'e10-bold']
+		];
+
+		if ($item['bootMode'] === 1)
+			$listItem ['itemSubType'][] = ['text' => 'boot', 'class' => 'label label-success'];
+		elseif ($item['bootMode'] === 2)
+		{
+			$bl = ['text' => 'wakeUp', 'class' => 'label label-info'];
+			if ($item['itemSubType'])
+			$listItem ['itemSubType'][] = $bl;
+		}
+
+		$listItem ['itemSubType'][] = ['text' => $requestUrl, 'class' => 'break e10-small'];
     $listItem ['ip'] = $item['ipAddr'];
 
     if ($item['iotDeviceFriendlyId'])
