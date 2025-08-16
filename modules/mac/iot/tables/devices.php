@@ -423,7 +423,7 @@ class ViewDevices extends TableView
 
 		if ($deviceInfo['uptime'] != 0)
 		{
-			$labels[] = ['text' => Utils::secondsToTime($deviceInfo['uptime'], $deviceInfo['uptime'] < 100), 'prefix' => 'upt', 'class' => 'label label-default'];
+			//$labels[] = ['text' => Utils::secondsToTime($deviceInfo['uptime'], $deviceInfo['uptime'] < 100), 'prefix' => 'upt', 'class' => 'label label-default'];
 		}
 
 		if ($deviceInfo['signalLevel'] != 0)
@@ -445,7 +445,7 @@ class ViewDevices extends TableView
 		if ($deviceInfo['dateUpdate'] != NULL)
 		{
 			$lsl = [
-				'text' => Utils::dateDiffShort3($deviceInfo ['dateUpdate'], $now),
+				'text' => Utils::dateDiffShort($deviceInfo ['dateUpdate'], $now),
 				'title' => 'Poslední aktualizace: '.Utils::datef($deviceInfo ['dateUpdate'], '%k %T'),
 				'icon' => 'user/checkSquare', 'class' => 'label label-default'
 			];

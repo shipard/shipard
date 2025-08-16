@@ -191,6 +191,26 @@ class ViewESigns extends TableView
 				}
 				$listItem['t3'][] = $sl;
 			}
+
+			if ($item['dateUpdate'] != NULL)
+			{
+				$lsl = [
+					'text' => Utils::dateDiffShort3($item ['dateUpdate'], $now),
+					'title' => 'Poslední aktualizace: '.Utils::datef($item ['dateUpdate'], '%k %T'),
+					'icon' => 'user/checkSquare', 'class' => 'label label-default'
+				];
+				$age = Utils::dateDiffMinutes($item ['dateUpdate'], $now);
+				if ($age < 120)
+					$lsl['class'] = 'label label-success';
+				elseif ($age < 1440)
+					$lsl['class'] = 'label label-warning';
+				else
+					$lsl['class'] = 'label label-danger';
+
+				if ($age > 120)
+					$listItem['t3'][] = $lsl;
+			}
+
 		}
 
 		return $listItem;
@@ -204,7 +224,7 @@ class ViewESigns extends TableView
 		array_push($q, 'SELECT [esigns].*,');
 		array_push($q, ' [iotDevicesInfo].[pwrBatteryLevel], [iotDevicesInfo].[pwrBatteryVoltage], [iotDevicesInfo].[pwrCharging],');
 		array_push($q, ' [iotDevicesInfo].[pwrChargeCurrent], [iotDevicesInfo].[pwrLastChargingDT], [iotDevicesInfo].[signalLevel],');
-		array_push($q, ' [iotDevicesInfo].[wifiRSSI], [iotDevicesInfo].[wifiSSID],');
+		array_push($q, ' [iotDevicesInfo].[wifiRSSI], [iotDevicesInfo].[wifiSSID], [iotDevicesInfo].[dateUpdate],');
 		array_push($q, ' [esignsKinds].[fullName] AS [esignKindFullName]');
 		array_push($q, ' FROM [mac_iot_esigns] AS [esigns]');
 		array_push($q, ' LEFT JOIN [mac_iot_devicesInfo] AS [iotDevicesInfo] ON [esigns].iotDevice = iotDevicesInfo.[device]');
