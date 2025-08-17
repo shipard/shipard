@@ -1,0 +1,13 @@
+{
+	"name": "BME68x",
+	"title": "BME68x",
+	"useValueKind": 0,
+	"fixedValuesTopic": "sensors/",
+	"fields": {
+		"columns": [
+			{
+				"id": "i2cBusPortId", "name": "I2C sběrnice", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			}
+		]
+	}
+}

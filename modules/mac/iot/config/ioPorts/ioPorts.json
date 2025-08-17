@@ -51,6 +51,9 @@
 	"sensor/meteo-bme280": {
 		"name": "Meteo čidlo BME280", "sensor": 1
 	},
+	"sensor/meteo-bme68x": {
+		"name": "Meteo čidlo BME68x", "sensor": 1
+	},
 	"sensor/meteo-bmp280": {
 		"name": "Meteo čidlo BMP280", "sensor": 1
 	},
