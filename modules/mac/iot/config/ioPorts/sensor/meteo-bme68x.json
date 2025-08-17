@@ -7,6 +7,9 @@
 		"columns": [
 			{
 				"id": "i2cBusPortId", "name": "I2C sběrnice", "type": "enumString", "len": 30, "enumCfgFlags": {"type": "ioPortId"}
+			},
+			{
+				"id": "address", "name": "Adresa (hex)", "type": "string", "len": 2, "placeholder": "77"
 			}
 		]
 	}
