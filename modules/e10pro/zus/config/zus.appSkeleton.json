@@ -35,7 +35,8 @@
 				"workRecs": {
 					"subMenu": {
 						"items": {
-							"workRecsGridZus": {"t1": "Docházka ZUŠ", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "grid-zus", "order": 30000}
+							"workRecsGridZus": {"t1": "Docházka ZUŠ", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "grid-zus", "order": 30000},
+							"attendance": {"t1": "Přehled docházky", "object": "widget", "class": "e10.widgetDashboard", "subclass": "zusAttendance", "icon": "e10.widgetDashboard/board", "order": 34000}
 						}
 					}
 				}

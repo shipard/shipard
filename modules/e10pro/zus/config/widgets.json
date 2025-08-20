@@ -27,5 +27,9 @@
 	{
 		"class": "e10pro.zus.WidgetPlanTeacher",
 		"dashboard": "zustimetable", "panel": "teacher", "order": 2000, "row": "main", "width": 12, "type": "fullsize"
+	},
+	{
+		"name": "Docházka", "class": "e10pro.zus.libs.AttendanceDashboard", "icon": "icon-check",
+		"dashboard": "zusAttendance", "panel": "main", "order": 1001, "row": "main", "width": 12, "type": "wkfWall"
 	}
 ]

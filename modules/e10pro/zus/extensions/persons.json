@@ -2,7 +2,7 @@
   {
     "table": "e10.persons.persons",
     "views": {
-      "students": 
+      "students":
 			{"id": "students", "class": "e10pro.zus.ViewStudents", "title": "Studenti",
 				"details": {
 					"overview": {"title": "Student", "icon": "iconStudents", "type": "detail", "class": "e10pro.zus.ViewDetailStudent", "order": 10},
@@ -14,6 +14,17 @@
 			"teachers": {"id": "teachers", "class": "e10pro.zus.ViewTeachers",
 				"details": {
 					"vysvedceni": {"title": "Vysvědčení", "icon": "tables/e10pro.zus.vysvedceni", "type": "detail", "class": "e10pro.zus.ViewDetailTeachers"}
+				}
+			}
+		}
+  },
+  {
+    "table": "e10pro.emps.workingHours",
+    "views": {
+			"zusAttendance": {
+				"id": "zusAttendance", "class": "e10pro.zus.libs.AttendanceViewer",
+				"details": {
+					"default": {"title": "Docházka", "icon": "tables/e10pro.zus.vysvedceni", "type": "detail", "class": "e10pro.zus.libs.AttendanceViewerDetailDefault"}
 				}
 			}
 		}

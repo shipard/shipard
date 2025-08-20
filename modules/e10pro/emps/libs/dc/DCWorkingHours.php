@@ -26,6 +26,7 @@ class DCWorkingHours extends \Shipard\Base\DocumentCard
 		array_push($q, 'SELECT * FROM [e10pro_emps_workingHours]');
 		array_push($q, ' WHERE 1');
 		array_push($q, ' AND [person] = %i', $this->recData['person']);
+		array_push($q, ' AND [workingHoursKind] = %i', $this->recData['workingHoursKind']);
 		array_push($q, ' AND [ndx] != %i', $this->recData['ndx']);
 		array_push($q, ' ORDER BY [validFrom] DESC');
 		$rows = $this->app()->db()->query($q);

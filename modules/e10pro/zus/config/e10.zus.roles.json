@@ -76,7 +76,8 @@
         },
 		"widgets": {
 			"e10pro.zus.SchoolDayDashboardWidget": 2,
-			"e10pro.zus.SchoolDayDashboardWidget2": 2
+			"e10pro.zus.SchoolDayDashboardWidget2": 2,
+			"e10pro.zus.libs.AttendanceDashboard": 2
 		}
 	},
 	"acc": {

@@ -32,7 +32,6 @@ class WorkingHoursInfo extends \Shipard\Base\Utility
     }
 
     $this->title[] = ['text' => Utils::dateFromTo($this->workingHoursRecData['validFrom'], $this->workingHoursRecData['validTo'], NULL), 'class' => 'h1 padd5'];
-
   }
 
   public function loadData()
@@ -107,5 +106,24 @@ class WorkingHoursInfo extends \Shipard\Base\Utility
 
     $this->weeklyContent['table'] = $table;
     $this->weeklyContent['header'] = $header;
+  }
+
+  public function searchWorkingHours($periodBegin, $periodEnd, $personNdx)
+  {
+    $q = [];
+    array_push($q, 'SELECT * FROM [e10pro_emps_workingHours]');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND ([validFrom] IS NULL OR [validFrom] <= %d)', $periodEnd);
+    array_push($q, ' AND ([validTo] IS NULL OR [validTo] >= %d)', $periodBegin);
+    array_push($q, ' AND [person] = %i', $personNdx);
+    array_push($q, ' ORDER BY [validFrom] DESC');
+
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      return $r['ndx'];
+    }
+
+    return 0;
   }
 }

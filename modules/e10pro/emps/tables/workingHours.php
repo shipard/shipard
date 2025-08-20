@@ -74,9 +74,9 @@ class ViewWorkingHours extends TableView
 		$listItem ['t1'] = $item['personName'];
     $listItem ['t2'] = Utils::dateFromTo($item['validFrom'], $item['validTo'], NULL);
 
-		$ak = $this->absencesKinds[$item['absenceKind']] ?? NULL;
-		if ($ak)
-			$listItem ['i2'] = $ak['sn'];
+		$whk = $this->workingHoursKinds[$item['workingHoursKind']] ?? NULL;
+		if ($whk)
+			$listItem ['i2'] = $whk['sn'];
 
     if ($item['note'] !== '')
       $listItem ['t3'] = $item['note'];

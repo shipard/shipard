@@ -47,6 +47,19 @@
 			}
 		}
 	},
+
+	"zusAttendance": {
+		"___disableTopToolbar": 1,
+		"panels": {
+			"main": {
+				"name": "Docházka", "icon": "iconCurrently", "order": 2000, "fullsize": 1,
+				"rows": {
+					"main": {"order": 10000, "align": "right"}
+				}
+			}
+		}
+	},
+
 	"mobile": {
 		"zusteacher": [
 			{"class": "e10pro.zus.TeachersDashboardWidget"}
