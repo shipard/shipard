@@ -30,6 +30,9 @@
 		{"id": "nahradaZacatek", "name": "Začátek", "type": "time"},
 		{"id": "nahradaKonec", "name": "Konec", "type": "time"},
 
+		{"id": "suplovani", "name": "Hodina bude suplována", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "suplujiciUcitel", "name": "Suplující učitel", "type": "int", "reference": "e10.persons.persons", "comboViewer": "teachers"},
+
 		{"id": "stav", "name": "Stav", "type": "int"},
 		{"id": "stavHlavni", "name": "Hlavní stav", "type": "int"}
 	],

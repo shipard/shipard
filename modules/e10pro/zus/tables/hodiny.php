@@ -320,6 +320,12 @@ class FormHodina extends TableForm
 				$this->addColumnInput('nahradaZacatek');
 				$this->addColumnInput('nahradaKonec');
 			}
+
+			$this->addColumnInput('suplovani');
+			if ($this->recData['suplovani'])
+			{
+				$this->addColumnInput('suplujiciUcitel');
+			}
 		$this->closeTab ();
 
 		$this->openTab (TableForm::ltNone);
