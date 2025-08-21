@@ -815,7 +815,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			$this->addUsers();
 			$this->addStudents();
 		}
-		if ($hour === 21)
+		if ($hour === 20)
 		{
 			$this->closeWorkInProgress();
 		}
