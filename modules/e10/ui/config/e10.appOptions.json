@@ -13,6 +13,13 @@
 		"viewer": "default",
 		"enabledCfgItem": "options.experimental.testNewUI"
 	},
+	"userInterfacesExtApps": {
+		"name": "Externí aplikace", "order": 942000, "group": "ngui",
+		"type": "viewer",
+		"table": "e10.ui.extApps",
+		"viewer": "default",
+		"enabledCfgItem": "options.experimental.testNewUI"
+	},
 
 	"experimental": {
 		"options": [

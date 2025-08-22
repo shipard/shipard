@@ -1,0 +1,20 @@
+{
+	"id": "e10.ui.extApps", "sql": "e10_ui_extApps", "name": "Externí aplikace",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "fullName", "name": "Název", "type": "string", "len": 120},
+		{"id": "url", "name": "URL", "type": "string", "len": 180},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+    {"id": "icon", "name": "Ikona", "type": "string", "len": 50},
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": [
+		{"id": "default", "class": "e10.ui.ViewExtApps", "detail": "e10.ui.ViewDetailExtApp"}
+	],
+	"forms": [
+		{"id": "default", "class": "e10.ui.FormExtApp"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"}
+}

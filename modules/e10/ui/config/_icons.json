@@ -10,5 +10,11 @@
 		"fa6pro": "fa-code",
 		"bsi": "bi-code",
 		"mdi": ""
+	},
+	"tables/e10.ui.extApps": {
+		"fa5":"fa-share-square",
+		"fa6pro":"fa-share-square",
+		"bsi":"bi-arrow-90deg-right",
+		"mdi":"ios_share"
 	}
 }

@@ -1,7 +1,7 @@
 {
   "id": "e10.ui",
   "name": "ui",
-  "tables": ["uis", "uiWidgets"],
+  "tables": ["uis", "uiWidgets", "extApps"],
   "config": [
     {"id": "+e10.appOptions.groups", "file": "appOptionsGroups.json"},
 		{"id": "+appOptions", "file": "e10.appOptions.json"},

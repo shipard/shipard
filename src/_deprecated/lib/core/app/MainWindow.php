@@ -321,6 +321,37 @@ class MainWindow extends \Shipard\Base\BaseObject
 			$c .= "<li id='e10-mm-close'>".$this->app()->ui()->icon('system/actionClose')."</li>";
 		$c .= "</ul>";
 
+		$testNewUI = $this->app()->cfgItem ('options.experimental.testNewUI', 0);
+		if ($testNewUI)
+		{
+			/** @var \e10\ui\TableExtApps */
+			$tableExtApps = $this->app()->table('e10.ui.extApps');
+			$extApps = $tableExtApps->extAppsList();
+			if (count($extApps))
+			{
+				$c .= "<ul class='e10-mm-list'>";
+				$c .= "<li style='width: 5em; text-align: center;'><span style='font-size: 270%;'>".$this->app()->ui()->icon('tables/e10.ui.extApps')."</span></li>";
+				$c .= "<li style='line-height: 1.8;'>";
+				$c .= "<div class='h2'>" . utils::es('Aplikace') . '</div>';
+				foreach ($extApps as $app)
+				{
+					$icon = $app['icon'] === '' ? 'user/hourglass' : $app['icon'];
+					$link = [
+						'type' => 'action', 'action' => 'open-popup',
+						'_element' => 'span',
+						'data-popup-url' => $app['url'],
+						'data-popup-width' => '0.98', 'data-popup-height' => '0.9',
+						'with-shift' => 'tab',
+						'text' => $app['fullName'],
+						'icon' => $icon, 'class' => 'mr1 nowrap',
+						'popup-id' => 'shpd_ext_app_'.md5($app['url']),
+					];
+					$c .= $this->app()->ui()->renderTextLine($link);
+				}
+				$c .= '</ul>';
+			}
+		}
+
 		// -- help
 		if ($dsMode)
 		{
