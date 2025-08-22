@@ -95,7 +95,18 @@ class ViewHours extends TableView
 		$listItem ['subjectName'] = $item['predmetNazev'];
 		$listItem ['homeWork'] = $item['domaciUkol'];
 		$listItem ['withHomeWork'] = $item['sDomacimUkolem'];
-		// ------
+
+		$listItem ['nahradniTermin'] = $item['nahradniTermin'];
+		$listItem ['nahradaDatum'] = $item['nahradaDatum'];
+		$listItem ['nahradaZacatek'] = $item['nahradaZacatek'];
+		$listItem ['nahradaKonec'] = $item['nahradaKonec'];
+
+		$listItem ['suplovani'] = $item['suplovani'];
+		if ($item['suplovani'])
+		{
+			$supl = $this->app()->db()->query('SELECT fullName FROM e10_persons_persons WHERE ndx = %i', $item['suplujiciUcitel'])->fetch();
+			$listItem ['suplujiciUcitel'] = $supl['fullName'] ?? '';
+		}
 
 		return $listItem;
 	}

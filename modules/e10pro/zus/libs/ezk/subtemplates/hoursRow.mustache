@@ -2,7 +2,10 @@
   {{data.listRow.subjectName}}
 </h3>
 <h6 class="d-flex align-items-center mb-1">
-  <span class="flex-fill pb-0">{{data.listRow.date}}</span>
+  <span class="flex-fill pb-0">
+    {{data.listRow.date}}{{#data.listRow.nahradniTermin}} (náhradní termín: {{data.listRow.nahradaDatum}}, {{data.listRow.nahradaZacatek}} - {{data.listRow.nahradaKonec}}){{/data.listRow.nahradniTermin}}
+    {{#data.listRow.suplovani}} (suplováno: {{data.listRow.suplujiciUcitel}}){{/data.listRow.suplovani}}
+  </span>
   {{#data.listRow.withHomeWork}}<span class="shpd-badge shpd-bg-secondary me-2">{{{@icon;icon:user/book}}}</span>{{/data.listRow.withHomeWork}}
   {{#data.listRow.grade}}<span class="shpd-badge shpd-bg-secondary me-2">{{{@icon;icon:user/medal}}} {{data.listRow.grade}}</span>{{/data.listRow.grade}}
   <span class="{{data.listRow.presenceCfg.class}}">{{{@icon;dataItem:data.listRow.presenceCfg.icon}}}</span>
