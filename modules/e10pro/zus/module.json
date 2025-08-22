@@ -5,7 +5,8 @@
 		"obory", "oddeleni", "oddeleniPobocky", "predmety", "svp", "stupne", "rocniky", "teachplanheads", "teachplanrows", "roky",
 		"vysvedceni", "znamky", "akce", "programakci",
 		"prihlasky", "studium", "studiumpre",
-		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni", "omluvenky", "omluvenkyHodiny"
+		"vyuky", "vyukystudenti", "vyukyrozvrh", "hodiny", "hodinydochazka", "hodnoceni", "omluvenky", "omluvenkyHodiny",
+		"msgs", "msgsRecipients"
 	],
 	"modules": ["e10/persons", "wkf/bboard", "wkf/events"],
 	"extensions": ["persons", "wkf", "ezk", "workRecs"],

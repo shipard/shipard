@@ -1,11 +1,6 @@
 <?php
 
 namespace e10pro\zus;
-
-//require_once __APP_DIR__ . '/e10-modules/e10/persons/tables/persons.php';
-//require_once __APP_DIR__ . '/e10-modules/e10/base/base.php';
-//require_once __APP_DIR__ . '/e10-modules/e10pro/zus/zus.php';
-
 use \E10\utils, \E10\Utility, \E10Pro\Zus\zusutils;
 
 
@@ -19,6 +14,42 @@ class DocumentCardETK extends \e10\DocumentCard
 
 	/** @var  \e10pro\zus\HoursPlanGenerator */
 	var $hoursPlanGenerator;
+
+	function createMsgs ()
+	{
+		$table = [];
+		$header = [
+			'date' => 'Datum', 'title' => 'Předmět'
+		];
+		$title = [['icon' => 'tables/e10pro.zus.msgs', 'text' => 'Zprávy pro rodiče', 'class' => 'h2']];
+
+		$q = [];
+		array_push($q, 'SELECT msgs.*');
+		array_push($q, ' FROM e10pro_zus_msgs AS msgs');
+		array_push($q, ' WHERE msgs.vyuka = %i', $this->recData['ndx']);
+		array_push($q, ' ORDER BY msgDate DESC, ndx DESC');
+		array_push($q, ' LIMIT 3');
+		$rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$itm = [
+				'date' => utils::datef($r['msgDate'], '%D'),
+				'title' => ['text' => $r['title'], 'docAction' => 'edit', 'table' => 'e10pro.zus.msgs', 'pk' => $r['ndx']]
+			];
+			$table[] = $itm;
+		}
+
+		$btn = [
+			'text'=> 'Nová zpráva', 'docAction' => 'new', 'table' => 'e10pro.zus.msgs', 'type' => 'button',
+			'actionClass' => 'btn btn-success btn-xs', 'icon' => 'system/actionAdd', 'class' => 'pull-right',
+			'addParams' => "__vyuka=".$this->recData['ndx']
+		];
+		$title[] = $btn;
+
+		$this->addContent('body', [
+			'pane' => 'e10-pane e10-pane-table', 'type' => 'table', 'header' => $header, 'table' => $table,
+			'title' => $title, 'params' => ['hideHeader' => 1]]);
+	}
 
 	function createTimeTable ()
 	{
@@ -80,6 +111,7 @@ class DocumentCardETK extends \e10\DocumentCard
 	public function createContentBody ()
 	{
 		$this->createTimeTable();
+		$this->createMsgs();
 
 		$etkTitle = [];
 		if (count($this->hoursPlanGenerator->newHours))

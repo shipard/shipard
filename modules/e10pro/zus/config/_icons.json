@@ -95,6 +95,12 @@
     "bsi":"bi-virus2",
     "mdi":""
   },
+  "tables/e10pro.zus.msgs": {
+		"fa5": "fa-external-link-alt",
+		"fa6pro": "fa-external-link-alt",
+		"bsi": "bi-link-45deg",
+		"mdi": "link"
+	},
 
   "iconStudents":{
     "fa5":"fa-user-graduate",

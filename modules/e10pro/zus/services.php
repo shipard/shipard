@@ -670,30 +670,6 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
-	public function onCliAction ($actionId)
-	{
-		switch ($actionId)
-		{
-			case 'upgrade-skupinove-dochazky': return $this->upgradeSkupinoveDochazky();
-			case 'send-entries-emails': return $this->sendEntriesEmails();
-			case 'archive-entries': return $this->archiveEntries();
-			case 'archive-students': return $this->archiveStudents();
-			case 'repair-fees': return $this->repairFees();
-			case 'repair-invoices': return $this->repairInvoices();
-			case 'import-contacts': return $this->importContacts();
-			case 'repair-entries': return $this->repairEntries();
-			case 'repair-pids': return $this->repairPIDs();
-			case 'entries-students': return $this->entriesStudents();
-			case 'create-studies': return $this->createStudies();
-			case 'add-users': return $this->addUsers();
-			case 'add-students': return $this->addStudents();
-			case 'sync-students-pull': return $this->syncStudentsPull();
-			case 'close-work-in-progress': return $this->closeWorkInProgress();
-		}
-
-		parent::onCliAction($actionId);
-	}
-
 	public function sendEntriesEmails()
 	{
 		$e = new \e10pro\zus\libs\SendEntriesEmails($this->app());
@@ -800,9 +776,16 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$dsStats->saveToFile();
 	}
 
+	public function sendMsgs()
+	{
+		$e = new \e10pro\zus\libs\MsgsSendEngine($this->app());
+		$e->run();
+	}
+
 	public function onCronEver ()
 	{
 		$this->sendEntriesEmails();
+		$this->$this->sendMsgs();
 	}
 
 	public function onCronHourly ()
@@ -835,5 +818,30 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'stats': $this->onStats(); break;
 		}
 		return TRUE;
+	}
+
+	public function onCliAction ($actionId)
+	{
+		switch ($actionId)
+		{
+			case 'upgrade-skupinove-dochazky': return $this->upgradeSkupinoveDochazky();
+			case 'send-entries-emails': return $this->sendEntriesEmails();
+			case 'archive-entries': return $this->archiveEntries();
+			case 'archive-students': return $this->archiveStudents();
+			case 'repair-fees': return $this->repairFees();
+			case 'repair-invoices': return $this->repairInvoices();
+			case 'import-contacts': return $this->importContacts();
+			case 'repair-entries': return $this->repairEntries();
+			case 'repair-pids': return $this->repairPIDs();
+			case 'entries-students': return $this->entriesStudents();
+			case 'create-studies': return $this->createStudies();
+			case 'add-users': return $this->addUsers();
+			case 'add-students': return $this->addStudents();
+			case 'sync-students-pull': return $this->syncStudentsPull();
+			case 'close-work-in-progress': return $this->closeWorkInProgress();
+			case 'send-msgs': return $this->sendMsgs();
+		}
+
+		parent::onCliAction($actionId);
 	}
 }

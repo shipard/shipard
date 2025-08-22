@@ -1,0 +1,22 @@
+{
+	"id": "e10pro.zus.msgsRecipients", "sql": "e10pro_zus_msgsRecipients", "name": "Příjemci zpráv",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "msg", "name": "Zpráva", "type": "int", "reference": "e10pro.zus.msgs"},
+
+		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
+		{"id": "personContact", "name": "Kontakt", "type": "int", "reference": "e10.persons.personsContacts"},
+
+		{"id": "read", "name": "Přečteno", "type": "logical"},
+		{"id": "readDate", "name": "Datum přečtení", "type": "timestamp"},
+
+		{"id": "sent", "name": "Odesláno", "type": "logical"},
+		{"id": "sentDate", "name": "Datum odeslání", "type": "timestamp"}
+	],
+	"views": [
+		{
+			"id": "default", "class": "e10pro.zus.ViewMsgsRecipients"
+		}
+	],
+	"options": ["systemTable"]
+}
