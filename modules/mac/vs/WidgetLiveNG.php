@@ -81,8 +81,6 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 				$this->cameras[$zoneCamNdx] = $allCameras[$zoneCamNdx];
 			}
 		}
-		//error_log("__ZN `$activeSubZone`: ".json_encode($this->zone['cameras']));
-		//error_log("__CAMS2: !{$this->activeTopTab}! `{$this->zoneNdx}` / `{$activeSubZone}`".json_encode(array_keys($this->cameras)));
 	}
 
 	function createTabs ()
@@ -95,22 +93,10 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 			$tabs['subzone-'.$z['ndx'].'-'.$this->zoneNdx] = ['icon' => $icon, 'text' => $z['sn'], 'action' => 'load-subzone-' . $z['ndx'].'-'.$this->zoneNdx];
 		}
 		$this->toolbar = ['tabs' => $tabs];
-
-		$rt = [
-			//'viewer-mode-smart' => ['text' =>'', 'icon' => 'system/dashboardModeRows', 'action' => 'viewer-mode-smart'],
-			//'viewer-mode-matrix1' => ['text' =>'', 'icon' => 'system/dashboardModeTilesSmall', 'action' => 'viewer-mode-matrix1'],
-			'viewer-mode-matrix2' => ['text' =>'', 'icon' => 'user/eye', 'action' => 'viewer-mode-live'],
-			'viewer-mode-videoArchive' => ['text' =>'', 'icon' => 'system/dashboardModeCamera', 'action' => 'viewer-mode-videoArchive'],
-		];
-
-		$this->toolbar['rightTabs'] = $rt;
 	}
 
 	function createGridDefinition ()
 	{
-
-    //$this->createGridDefinitionSmart();
-
     $this->createGridDefinitionMatrix(1);
 	}
 
@@ -241,27 +227,9 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 		$c .= "<span class='h1 pt1 pb1'>".utils::es('Chyba načítání obrázků ze serveru...').'</span>';
 		$c .= "</div>";
 
-		/*
-		if (count($this->iotSC) && $this->viewerMode !== 'videoArchive')
-		{
-			$c .= "<div style='position: absolute; width: 100%; z-index: 2000; display: flex; padding: 6px; background-color: rgba(0,0,0,.4); top: 0px; height: 3em;'>";
-			foreach ($this->iotSC as $sc)
-			{
-				$c .= $sc['object']->controlCode();
-			}
-			$c .= "</div>";
-
-			$camsStyle = " style='margin-top: 3em;'";
-		}
-		*/
-
 		$c .= "<div class='container-fluid'$camsStyle>";
 		$c .= $this->createGridCodeCell($this->gridDefinition, $usedLocalServers, $camIndex);
 		$c .= "</div>";
-
-		//$c .= "<input type='hidden' id='e10-widget-vs-type' value='{$this->viewerMode}'>";
-
-		//$serversStr = json_encode($usedLocalServers);
 
 		$this->code .= $c;
 	}
@@ -381,38 +349,8 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 
 		$c = '';
 
-		if (isset($cell['type']) && $cell['type'] === 'smart')
-			return "<img id='e10-vs-smart-main-img' style='width: 100%;' src='$phUrl'>";
-
 		$c .= "<div class='e10-vs-img' style='position: relative;'>";
-		if ($this->viewerMode !== 'videoArchive')
-		{ // pictures
-			/*
-			$pictureFolder = ($cam['cfg']['picturesFolder'] === '') ? $cam['ndx'] : $cam['cfg']['picturesFolder'];
-			$class = 'e10-camp';
-			$params = '';
-
-			$class .= ' e10-widget-trigger';
-			$params .= " data-call-function='e10.widgets.macVs.setMainPicture'";
-			if($badgesBig !== '')
-				$params .= " data-badges-code='".base64_encode($badgesBig)."'";
-			*/
-      $c .= "{{{@iotControl;type:camPicture;pictStyle:full;ndx:$cameraNdx}}}";
-
-			//$c .= $badgesSmall;
-		}
-		else
-		{ // video
-			/*
-			$baseFileName = $this->baseVideoFileName ($cam);
-      $baseFileName="AHOJ.jpg";
-			if ($baseFileName)
-			{
-				$c .= "<div class='e10-camv' id='e10-camv-{$cam['ndx']}' data-camera='{$cam['ndx']}' data-cam-url='{$srv['camerasURL']}' data-bfn='$baseFileName'>$baseFileName";
-				$c .= '</div>';
-			}
-			*/
-		}
+		$c .= "{{{@iotControl;type:camPicture;pictStyle:video;ndx:$cameraNdx}}}";
 		$c .= '</div>';
 
     $this->uiTemplate->loadTemplate ('e10pro.templates.basic', 'page.mustache', $c);
@@ -441,27 +379,11 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 
 	public function createContent ()
 	{
-
 		$this->createGridDefinition();
 
 		if (substr ($this->activeTopTab, 0, 8) === 'subzone-')
 		{
-			if ($this->viewerMode === 'videoArchive')
-			{
-        //error_log("_FIXED_");
-				$this->panelStyle = self::psFixed;
-				$this->loadArchiveContent();
-				$this->addDayDateParam();
-				$this->addDayHourParam();
-			}
-
 			$this->createGridCode();
-
-			//error_log("__CC2__".$this->code);
-			//error_log("__CC3__");
-
-			//$this->code = json_encode($this->zone['cameras']).'<br/>'.$this->code;
-
 			$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $this->code]);
 		}
 	}
@@ -474,63 +396,6 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 		return '';
 	}
 
-	public function loadArchiveContent ()
-	{
-		//$this->downloadVideoArchives();
-
-		$doneServers = [];
-		foreach ($this->cameras as $camNdx => $cam)
-		{
-			if (in_array($cam['localServer'], $doneServers))
-				continue;
-
-			$resultString = file_get_contents(__APP_DIR__.'/tmp/e10-vs-archive-'.$cam['localServer'].'.json');
-			if (!$resultString)
-				continue;
-			$resultData = json_decode($resultString, TRUE);
-			if (!$resultData)
-				continue;
-			$this->archiveContent = $resultData;
-			$this->archiveContentByDate += $resultData['days'];
-			$doneServers[] = $cam['localServer'];
-		}
-
-		$dayParam = $this->app->testGetParam('e10-widget-vs-day');
-
-		if ($dayParam !== '')
-		{
-			$this->archiveNow = new \DateTime($dayParam . ' 07.00:00');
-			$this->archiveNowHour = $this->app->testGetParam('e10-widget-vs-hour');
-		}
-		else
-		{
-			$this->archiveNow = new \DateTime('2 hour ago');
-			$this->archiveNowHour = '';
-		}
-
-		$this->archiveNowDate = $this->archiveNow->format('Y-m-d');
-		$this->archiveNowYear = intval($this->archiveNow->format('Y'));
-		$this->archiveNowMonth = intval($this->archiveNow->format('m'));
-		$this->archiveNowDay = intval($this->archiveNow->format('d'));
-
-		$lastHour = '';
-		$firstHour = '';
-		foreach ($this->archiveContentByDate[$this->archiveNowDate] as $hourId => $hourCntFiles)
-		{
-			$this->archiveEnabledHours[] = $hourId;
-			$lastHour = sprintf('%02d', $hourId).'-'.'45';
-			if ($firstHour === '')
-				$firstHour = sprintf('%02d', $hourId).'-'.'00';
-		}
-		if ($this->archiveNowHour === '')
-			$this->archiveNowHour = $lastHour;
-
-		if ($this->archiveNowHour < $firstHour)
-			$this->archiveNowHour = $firstHour;
-		elseif ($this->archiveNowHour > $lastHour)
-			$this->archiveNowHour = $lastHour;
-	}
-
 	public function title()
 	{
 		return FALSE;
@@ -540,123 +405,6 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 	{
 		return 'widget';
 	}
-
-	function addDayDateParam()
-	{
-		$enumDate = [];
-		$paramTitle = 'Den';
-
-		$paramId = 'e10-widget-vs-day';
-		foreach ($this->archiveContentByDate as $dayKey => $dayHours)
-		{
-			$dayDate = new \DateTime($dayKey);
-			$dayTitle = utils::datef ($dayDate, '%n %d');
-			$enumDate[$dayKey] = $dayTitle;
-		}
-
-		$this->addParam ('switch', $paramId, ['defaultValue' => $this->archiveNowDate, 'title' => $paramTitle, 'switch' => $enumDate, 'XXXradioBtn' => 1,'place' => 'panel']);
-	}
-
-	function addDayHourParam ()
-	{
-		$paramId = 'e10-widget-vs-hour';
-		$enumTime = [];
-
-		$cntHourParts = 4;
-		$cntHourPartMinutes = 15;
-
-		for ($hr = 0; $hr < 24; $hr++)
-		{
-			if (!in_array($hr, $this->archiveEnabledHours))
-				continue;
-
-
-			for ($hourPart = 0; $hourPart < $cntHourParts; $hourPart++)
-			{
-				$firstMinute = $hourPart * $cntHourPartMinutes;
-				$t = sprintf('%02d:%02d', $hr, $firstMinute);
-				$pid = sprintf('%02d-%02d', $hr, $firstMinute);
-
-				$enumTime[$pid] = $t;
-			}
-		}
-		$this->addParam ('switch', $paramId, ['defaultValue' => $this->archiveNowHour, 'title' => 'Čas', 'switch' => $enumTime, 'radioBtn' => 2, 'place' => 'panel']);
-	}
-
-	public function downloadVideoArchives ()
-	{
-		$cameras = $this->app->cfgItem('e10.terminals.cameras');
-		$servers = $this->app->cfgItem('e10.terminals.servers');
-		$doneServers = [];
-
-		foreach ($cameras as $camNdx => $cam)
-		{
-			if (in_array($cam['localServer'], $doneServers))
-				continue;
-
-			$srv = $servers[$cam['localServer']];
-			$url = $srv['camerasURL'].'archive';
-
-			$opts = ['http'=> ['timeout' => 10, 'method'=>'GET', 'header'=> "Connection: close\r\n"]];
-			$context = stream_context_create($opts);
-			$resultString = file_get_contents ($url, FALSE, $context);
-			if (!$resultString)
-				continue;
-			$resultData = json_decode ($resultString, TRUE);
-			if (!$resultData)
-				continue;
-
-			file_put_contents(__APP_DIR__.'/tmp/e10-vs-archive-'.$cam['localServer'].'.json', $resultString);
-
-			$doneServers[] = $cam['localServer'];
-		}
-	}
-
-	function createEnumParamCode ($p)
-	{
-		$paramId = $p['paramId'] ?? '';
-		$activeValue = '';
-		if (isset($p['defaultValue']))
-			$activeValue = $p['defaultValue'];
-
-		$c = '';
-
-		$justified = isset($p['justified']) ? intval($p['justified']) : 0;
-		$grpClass = 'btn-group e10-param-inline';
-		if ($justified)
-			$grpClass .= ' btn-group-justified';
-
-		$c .= "<div class='$grpClass' data-paramid='$paramId'>";
-		if (isset ($p['title']))
-			$c .= "<span class='btn btn-default'><b>" . Utils::es($p['title']) . ':</b></span>';
-		$first = TRUE;
-		forEach ($p['enum'] as $pid => $pc)
-		{
-			$t = is_string($pc['title']) ? Utils::es($pc['title']) : Utils::es($pc['title']['text']);
-
-			$class = ($pid == $activeValue) ? 'active ': '';
-			$class .= 'btn btn-default df2-action-trigger';
-
-			if ($justified)
-				$c .= "<div class='btn-group' role='group'>";
-			$c .= "<button data-value='$pid' data-title='$t' class='$class'";
-
-			if (isset($pc['data']))
-			{
-				foreach ($pc['data'] as $btnPartId => $btnPartValue)
-					$c .= ' data-'.$btnPartId."='".$btnPartValue."'";
-			}
-
-			$c .= '>' . $this->app()->ui()->composeTextLine($pc['title']);
-			$c .= '</button>';
-			if ($justified)
-				$c .= '</div>';
-		}
-		$c .= '</div>';
-
-		return $c;
-	}
-
 
 	function createCodeToolbar ()
 	{
@@ -670,14 +418,11 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 		if (!count ($this->toolbar['tabs']))
 			$tabsClass .= ' e10-wf-tabs-inside-viewer';
 
-		//$c .= "<div class='$tabsClass'>";
-
 		foreach ($this->toolbar as $key => $obj)
 		{
 			if ($key === 'tabs')
 			{
 				$c .= "<input type='hidden' name='topTabId' id='{$this->widgetId}_mainTabs_Value' data-wid='$this->widgetId' value='{$this->activeTopTab}'>";
-
         $c .= "<ul class='nav nav-pills' id='{$this->widgetId}_mainTabs'>\n";
 
 				foreach ($this->toolbar['tabs'] as $tabId => $tab)
@@ -686,10 +431,6 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 					if (isset($tab['title']))
 						$tabParams = ' title="'.utils::es($tab['title']).'"';
 					$active = ($this->activeTopTab === $tabId) ? ' active' : '';
-
-					//if (isset($tab['action']))
-					//	$c .= "<li class='tab e10-widget-trigger{$active}' data-action='{$tab['action']}' data-tabid='{$tabId}'$tabParams>";
-					//else
           $c .= "<li class='nav-item'>\n";
 
           $c .= "<a class='shp-widget-action nav-link$active' href='#' data-tabs='mainTabs' data-tab-id='{$tabId}' data-action='select-main-tab'>";
@@ -706,18 +447,13 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
           }
           $c .= "</a>";
 
-//					if (isset($tab['ntfBadgeId']))
-//						$c .= "<span class='e10-ntf-badge' id='{$tab['ntfBadgeId']}' style='display:none; left: auto;'></span>";
-
 					$c .= "</li>\n";
 				}
 				$c .= "</ul>\n";
 			}
 
-
 			if ($key === 'rightTabs')
 			{
-
 				//$c .= "<input type='hidden' name='e10-widget-topTab-right' id='e10-widget-topTab-value-right' value='{$this->activeTopTabRight}'>";
         $c .= "<input type='hidden' name='rightTabId' id='{$this->widgetId}_rightTabs_Value' data-wid='$this->widgetId' value='{$this->activeTopTabRight}'>";
 				$c .= "<div class='btn-group' role='group' id='{$this->widgetId}_rightTabs' style='margin-left: auto;'>";
@@ -759,102 +495,4 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 
 		return $c;
 	}
-
-  public function createContentInside__DELETE ()
-	{
-		//$cr = new \Shipard\UI\Core\ContentRenderer ($this->app);
-		//$cr->setWidget($this);
-
-		$c = '';
-		return $c;
-		if (1)
-		{
-      $c .= "<div class='d-flex'>";
-      //$c .= "<div class='container-fluid'>";
-			$c .= $this->renderContentTitle();
-      $c .= '</div>';
-
-			$c .= "<div class='e10-widget-content e10-widget-board e10-widget-" . $this->widgetType() . "'>";
-				$c .= "<div class='e10-wr-data'>";
-				//$c .= $cr->createCode();
-				$c .= "</div>";
-
-				if ($this->panelStyle != self::psNone)
-				{
-					if ($this->panelStyle === self::psFloat)
-					{
-						$c .= "<div class='e10-wr-params close'>";
-						$c .= "<div class='tlbr e10-reportPanel-toggle'><i class='fa fa-bars'></i></div>";
-					}
-					else
-						$c .= "<div class='e10-wr-params {$this->panelWidth} fixed'>";
-					$c .= "<div class='params' id='e10-widget-panel'>";
-					//$c .= $this->createPanelCode();
-					$c .= "</div>";
-					$c .= "</div>";
-				}
-			$c .= '</div>';
-
-      //$c .= '</div>';
-		}
-
-
-		//$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $c]);
-		//else
-		//	$c .= $cr->createCode();
-
-		return $c;
-	}
-
-  public function renderContentXXX ($forceFullCode = FALSE)
-	{
-		$fullCode = 0; //intval($this->app->testGetParam('fullCode'));
-		if ($forceFullCode)
-			$fullCode = 1;
-		if ($this->forceFullCode)
-			$fullCode = 1;
-
-		$c = '';
-
-		if (1 || $fullCode)
-		{
-			$params = "data-object='widget' data-request-type='widgetBoard' data-class-id='{$this->definition['class']}'";
-			$pv = [];
-			forEach ($this->params->getParams() as $paramId => $paramContent)
-			{
-				$pv [$paramId] = $paramId.'='.$this->reportParams [$paramId]['value'];
-			}
-			$params .= " data-widget-params='".implode('&', $pv)."'";
-
-			if ($this->app()->remote !== '')
-				$params .= " data-remote='".$this->app()->remote."'";
-
-			foreach ($this->widgetSystemParams as $wspId => $wspValue)
-				$params .= " $wspId='$wspValue'";
-
-			$c .= "<div id='{$this->widgetId}' class='{$this->widgetMainClass} e10-widget-".$this->widgetType()."' $params>";
-		}
-
-		$c .= $this->createContentInside();
-
-		if ($fullCode)
-			$c .= '</div>';
-
-		//if ($fullCode)
-		//	$c .= "\n<script>(() => {initWidgetVS ('{$this->widgetId}');})();</script>";
-
-		return $c;
-	}
-
-  protected function uiTemplate()
-  {
-    //$this->template = new \Shipard\UI\ng\TemplateUI ($this->app());
-
-  }
-
-	public function prepareData()
-	{
-	}
 }
-
-
