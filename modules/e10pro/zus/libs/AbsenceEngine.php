@@ -49,6 +49,9 @@ class AbsenceEngine extends Utility
 
 	protected function loadTimetable ()
 	{
+    if (Utils::dateIsBlank($this->absenceRecData['dateBegin']) || Utils::dateIsBlank($this->absenceRecData['dateEnd']))
+      return;
+
     $dateBegin = new \DateTime($this->absenceRecData['dateBegin']->format('Y-m-d'));
     $dateEnd = new \DateTime($this->absenceRecData['dateEnd']->format('Y-m-d'));
     $date = Utils::createDateTime($dateBegin);
