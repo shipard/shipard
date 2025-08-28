@@ -570,7 +570,7 @@ class HoursPlanGenerator extends Utility
 
 
 		$item = ['rozvrh' => $rozvrh, 'date' => clone $date];
-		if ($item['date'] > $this->startDate)
+		if ($item['date'] >= $this->startDate)
 		{
 			$this->newHours[$this->cntNew] = $item;
 			$this->cntNew++;
