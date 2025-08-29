@@ -117,6 +117,12 @@ class AccessGateCheck extends Utility
 			$this->requestParams['cam'] = $this->requestParams['srcPayload']['cam'];
 			$this->requestParams['value'] = $this->requestParams['srcPayload']['lp'];
 		}
+		elseif (isset($this->requestParams['srcPayload']['type']) && $this->requestParams['srcPayload']['type'] === 'lpr')
+		{
+			$this->requestParams['type'] = 'vd';
+			$this->requestParams['cam'] = $this->requestParams['srcPayload']['camera'];
+			$this->requestParams['value'] = $this->requestParams['srcPayload']['plate'];
+		}
 
 		if (!isset($this->requestTypes[$this->requestParams['type']]))
 			return $this->setResult('Wrong `type` param');
@@ -166,7 +172,7 @@ class AccessGateCheck extends Utility
 		if (!$this->checkGate1())
 		{
 			return FALSE;
-		}	
+		}
 		$this->logInfo['state'] = TableLog::lsAccessDenied;
 
 		if ($this->mainKeyType == 0)
@@ -174,7 +180,7 @@ class AccessGateCheck extends Utility
 			if (!$this->checkKey())
 			{
 				return FALSE;
-			}	
+			}
 
 			if ($this->tagAssignmentRecData['assignType'] === 0)
 			{
@@ -222,7 +228,17 @@ class AccessGateCheck extends Utility
 		// -- camera
 		if (isset($this->requestParams['cam']))
 		{
-			$this->cameraRecData = $this->tableDevices->loadItem($this->requestParams['cam']);
+			$camNdx = intval($this->requestParams['cam']);
+			if ($camNdx)
+			{
+				$this->cameraRecData = $this->tableDevices->loadItem($this->requestParams['cam']);
+			}
+			else
+			{
+				$camRec = $this->db()->query('SELECT * FROM [mac_lan_devices] WHERE [id] = %s', $this->requestParams['cam'])->fetch();
+				if ($camRec)
+					$this->cameraRecData = $camRec->toArray();
+			}
 			if (!$this->cameraRecData)
 				return $this->setResult('Invalid `cam` id '.$this->requestParams['cam']);
 			elseif ($this->cameraRecData['docState'] !== 4000 && $this->cameraRecData['docState'] !== 8000)
@@ -322,21 +338,21 @@ class AccessGateCheck extends Utility
 		$this->logInfo['person'] = $this->personNdx;
 
 		// -- access levels based on users groups
-		$usersGroups = $this->db()->query ('SELECT [group] FROM [e10_persons_personsgroups] WHERE [person] = %i', $this->personNdx)->fetchPairs(NULL, 'group');		
+		$usersGroups = $this->db()->query ('SELECT [group] FROM [e10_persons_personsgroups] WHERE [person] = %i', $this->personNdx)->fetchPairs(NULL, 'group');
 		$groupsAccessLevels = [];
 		if (count($usersGroups))
 		{
-			$groupsAccessLevels = $this->db()->query ('SELECT srcRecId FROM [e10_base_doclinks]', 
-													' WHERE [linkId] = %s', 'mac-acccess-levels-pg', 
+			$groupsAccessLevels = $this->db()->query ('SELECT srcRecId FROM [e10_base_doclinks]',
+													' WHERE [linkId] = %s', 'mac-acccess-levels-pg',
 													' AND [srcTableId] = %s', 'mac.access.levels', ' AND [dstTableId] = %s', 'e10.persons.groups',
 													' AND [dstRecId] IN %in', $usersGroups)->fetchPairs(NULL, 'srcRecId');
-		}										
+		}
 
 		// -- access level
 		$q[] = 'SELECT accessLevels.* FROM [mac_access_personsAccessLevels] AS [accessLevels]';
 		array_push($q, ' LEFT JOIN [mac_access_personsAccess] AS [personsAccess] ON [accessLevels].personAccess = [personsAccess].ndx');
 		array_push($q, ' WHERE 1');
-		
+
 		array_push($q, ' AND (');
 		array_push($q, ' personsAccess.person = %i', $this->personNdx);
 		if (count($groupsAccessLevels))
