@@ -10,7 +10,7 @@ use \Shipard\Base\Utility;
 class MsgsSendEngine extends Utility
 {
 	var $msgNdx = 0;
-  var $maxCount = 10;
+  var $maxCount = 50;
 
   public function setMsg($msNdx)
   {

@@ -785,7 +785,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 	public function onCronEver ()
 	{
 		$this->sendEntriesEmails();
-		$this->$this->sendMsgs();
+		$this->sendMsgs();
 	}
 
 	public function onCronHourly ()
