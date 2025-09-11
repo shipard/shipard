@@ -32,7 +32,7 @@ class WorkRecsTimetableEngine extends Utility
     $this->date = Utils::createDateTime($date);
     $this->dow = intval($this->date->format('N')); // 1 = monday
 
-    $this->academicYear = '2024';
+    $this->academicYear = strval($this->academicYear($this->date));
   }
 
   public function loadData()
@@ -246,4 +246,13 @@ class WorkRecsTimetableEngine extends Utility
 
     return 0;
   }
+
+	protected function academicYear ($d)
+	{
+		$m = intval($d->format('m'));
+		$y = intval($d->format('Y'));
+		if ($m <= 6)
+			return $y - 1;
+		return $y;
+	}
 }
