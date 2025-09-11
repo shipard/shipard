@@ -121,7 +121,7 @@ class AccessGateCheck extends Utility
 		{
 			$this->requestParams['type'] = 'vd';
 			$this->requestParams['cam'] = $this->requestParams['srcPayload']['camera'];
-			$this->requestParams['value'] = $this->requestParams['srcPayload']['plate'];
+			$this->requestParams['value'] = str_replace(' ', '', $this->requestParams['srcPayload']['plate']);
 		}
 
 		if (!isset($this->requestTypes[$this->requestParams['type']]))
