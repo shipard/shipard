@@ -101,6 +101,8 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
 
       $empName = $row[4] ?? NULL;
       $empPersonalId = $row[13] ?? NULL;
+      if (!$empPersonalId)
+        $empPersonalId = $row[14] ?? NULL; // from 2025/07
       if (!$empName || !$empPersonalId)
         continue;
 
