@@ -15,8 +15,8 @@ class PersonsImport extends Utility
   /** @var \e10pro\soci\TableEntries */
   var $tableEntries;
 
-  var $sociPeriod = 'AY1';
-  var $sociPeriodId = '-24/25';
+  var $sociPeriod = 'AY2';
+  var $sociPeriodId = '-25/26';
 
   var $personLabelNdx = 2;
 
@@ -155,7 +155,7 @@ class PersonsImport extends Utility
 		$cnt = 0;
     $file = fopen($this->fileName, "r");
 
-    while ($cols = fgetcsv($file, null, ','))
+    while ($cols = fgetcsv($file, null, ';'))
     {
       if ($cnt === 0)
       {
