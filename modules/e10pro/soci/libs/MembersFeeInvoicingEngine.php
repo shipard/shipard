@@ -9,14 +9,14 @@ use \Shipard\Utils\Str;
  */
 class MembersFeeInvoicingEngine extends \Shipard\Base\Utility
 {
-	var $periodNdx = 1;
+	var $periodNdx = 2;
 	var $periodCfg = NULL;
 	var $entryKindCfg;
 	var $periodBegin;
 	var $periodEnd;
 	var $periodHalf;
 
-	var $sociPeriod = 'AY1';
+	var $sociPeriod = 'AY2';
 
 	var $needMemberInWorkorder = 1;
 
