@@ -7,7 +7,8 @@
 				{"t1": "Výkupy", "object": "viewer", "table": "e10doc.core.heads", "viewer": "purchase", "icon":"docTypeRedemptions", "order": 110},
 				{"t1": "Pokladna", "object": "viewer", "table": "e10doc.core.heads", "viewer": "cash",
 					"icon": "docType/cash", "order": 600000},
-				{"t1": "Ceník", "object": "report", "class": "e10pro.reports.pricelist.priceListPurchase", "subclass": "", "icon": "iconPriceList", "order": 990000}
+				{"t1": "Ceník", "object": "report", "class": "e10pro.reports.pricelist.priceListPurchase", "subclass": "", "icon": "iconPriceList", "order": 990000},
+				{"t1": "Prov. deník", "object": "viewer", "table": "e10pro.purchase.operationalLog", "viewer": "default", "order": 210000}
 			],
 			"smallItems": [
 				{"t1": "Registrace", "object": "viewer", "table": "e10pro.custreg.registrations", "viewer": "default", "order": 10000, "hint": "terminal"}

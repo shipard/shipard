@@ -3,7 +3,8 @@
 		"name": "Výkupna",
 		"viewers": {
 			"e10.persons.persons": {"suppliers": 2},
-			"e10doc.core.heads": {"purchase": 2, "cashregister": 2}
+			"e10doc.core.heads": {"purchase": 2, "cashregister": 2},
+			"e10pro.purchase.operationalLog": {"default": 2}
 		},
 		"documents": {
 			"e10doc.core.heads": [
@@ -12,7 +13,8 @@
 		},
 		"reports": {"e10pro.reports.terminal_daily.reportDaily": 1,
 			"e10pro.purchase.reportBalancePurchasesCash": 2,
-			"e10pro.reports.pricelist.priceListPurchase": 2
+			"e10pro.reports.pricelist.priceListPurchase": 2,
+			"e10pro.purchase.libs.OperationalLogReport": 2
 		}
 	},
 	"acc": {

@@ -1,0 +1,25 @@
+{
+  "id": "e10pro.purchase.operationalLog", "sql": "e10pro_purchase_operationalLog", "name": "Provozní deník",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "recordType", "name": "Typ záznamu", "type": "enumInt",
+			"enumValues": {"0": "Ostatní", "99": "Denní přehled"}},
+    {"id": "title", "name": "Název", "type": "string", "len": 120},
+    {"id": "date", "name": "Datum záznamu", "type": "date"},
+    {"id": "text", "name": "Text", "type": "memo"},
+		{"id": "author", "name": "Autor", "type": "int", "reference": "e10.persons.persons"},
+
+    {"id": "docState", "name": "Stav", "type": "int"},
+    {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": [
+    {"id": "default", "class": "e10pro.purchase.ViewOperationalLog", "detail": "e10pro.purchase.ViewDetailOperationalLog"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10pro.purchase.FormOperationalLog"}
+  ],
+  "order": [{"column": "title", "order": "ASC"}],
+  "fullText": ["title", "text"],
+  "autocomplete": {"row": "title"}
+}

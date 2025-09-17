@@ -1,4 +1,5 @@
 [
 	{"name": "Neuhrazené výkupy", "class": "e10pro.purchase.reportBalancePurchasesCash", "icon": "docTypePurchaseTicket", "group": "e10doc-balance", "order": 7000},
-	{"name": "Nevyfakturované výkupy", "class": "e10pro.purchase.reportBalancePurchasesInvoice", "icon": "docTypePurchaseTicket", "group": "e10doc-balance", "order": 7100}
+	{"name": "Nevyfakturované výkupy", "class": "e10pro.purchase.reportBalancePurchasesInvoice", "icon": "docTypePurchaseTicket", "group": "e10doc-balance", "order": 7100},
+	{"name": "Provozní deník", "class": "e10pro.purchase.libs.OperationalLogReport", "group": "e10doc-waster", "icon": "tables/e10pro.purchase.operationalLog", "order": 1700000}
 ]

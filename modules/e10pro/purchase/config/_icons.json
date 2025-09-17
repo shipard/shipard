@@ -1,5 +1,10 @@
 {
-
+	"tables/e10pro.purchase.operationalLog":{
+		"fa5": "fa-book",
+		"fa6pro": "fa-book",
+		"bsi": "bi-book",
+		"mdi": "auto_stories"
+	},
 	"iconPriceList":{
 		"fa5": "fa-dollar-sign",
 		"fa6pro": "fa-usd-square",
