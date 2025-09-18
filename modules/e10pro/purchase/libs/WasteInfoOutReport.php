@@ -24,8 +24,9 @@ class WasteInfoOutReport extends \e10doc\core\libs\reports\DocReport
 		$wie = new \e10pro\purchase\libs\WasteInfoEngine($this->app());
 		$wie->setDocument($this->recData['ndx']);
 		$wie->loadData();
-
-		$this->data['infoWasteCodes'] = array_values($wie->wasteCodes);
+		$this->data['infoWasteCodes'] = $wie->wasteCodes;
+		$wie->loadWasteReportInfo($this->data);
+		$this->data['infoWasteCodes'] = array_values($this->data['infoWasteCodes']);
 	}
 
 	public function createToolbarSaveAs (&$printButton)

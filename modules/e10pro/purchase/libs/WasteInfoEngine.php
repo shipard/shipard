@@ -73,5 +73,38 @@ class WasteInfoEngine extends Utility
       $wcData['quantityPrint'] = Utils::nf($wcData['quantity'], 3);
     }
   }
+
+	public function loadWasteReportInfo(&$reportData)
+	{
+		$wnn = [];
+		foreach ($reportData['rows'] as $r)
+		{
+			if (isset($r['rowItemCodes']))
+			{
+				foreach ($r['rowItemCodes'] as $ic)
+				{
+					$wasteCode = $ic['itemCodeText'] ?? '';
+					if ($wasteCode === '')
+						continue;
+					$wasteCodeId = 'W'.$wasteCode;
+					if (!isset($reportData['infoWasteCodes'][$wasteCodeId]))
+						continue;
+					$txt = $r['text'] ?? '';
+					if (isset($r['itemDecription']) && $r['itemDecription'] !== '')
+						$txt .= ' ('.$r['itemDecription'].')';
+
+					if (!in_array($txt, $wnn[$wasteCodeId] ?? []))
+					{
+						$wnn[$wasteCodeId][] = $txt;
+						$reportData['infoWasteCodes'][$wasteCodeId]['wasteNotes'][] = [
+							'text' => $r['text'],
+							'textFull' => $txt,
+							'description' => $r['itemDecription'] ?? '',
+						];
+					}
+				}
+			}
+		}
+	}
 }
 
