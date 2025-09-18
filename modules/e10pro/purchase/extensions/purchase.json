@@ -5,6 +5,13 @@
 			"condo-invoicesOut": {
 				"id": "portal-purchases", "class": "e10pro.purchase.libs.apps.ViewPurchases"
 			}
-		}
+		},
+		"reports": [
+			{
+				"id": "wasteInfoOut", "name": "PIO", "class": "e10pro.purchase.libs.WasteInfoOutReport",
+				"queryCol": "docType", "queryColValues": ["invno"],
+				"email": 1, "dropdown": 1
+			}
+		]
 	}
 ]
