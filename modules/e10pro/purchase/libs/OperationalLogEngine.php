@@ -4,6 +4,7 @@ namespace e10pro\purchase\libs;
 
 use \Shipard\Base\Utility, \Shipard\Utils\Utils;
 use \e10doc\core\libs\E10Utils;
+use \Shipard\Utils\TableRenderer;
 
 
 /**
@@ -74,7 +75,7 @@ class OperationalLogEngine extends Utility
       'date' => $date,
       'author' => key($this->authors),
       'title' => 'Denní přehled: '.Utils::datef($date, '%n %d'),
-      'text' => $this->createLogRecordText(),
+      'text' => $this->createLogRecordText($date),
       'recordType' => 99, 'docState' => 4000, 'docStateMain' => 2,
     ];
 
@@ -91,7 +92,7 @@ class OperationalLogEngine extends Utility
     }
   }
 
-  protected function createLogRecordText()
+  protected function createLogRecordText($date)
   {
     $text = '## Obsluha informačního systému (výkupy):'."\n";
     foreach ($this->authors as $a)
@@ -129,6 +130,10 @@ class OperationalLogEngine extends Utility
       $totalQuantity += $a['quantity'];
     }
     $text .= "| **Celkem** ||".Utils::nf($totalQuantity, 3).' kg .>'."\n";
+
+    $text .= "\n\n";
+
+    $this->createAtt14($date, $text);
 
     return $text;
   }
@@ -202,6 +207,18 @@ class OperationalLogEngine extends Utility
       $this->wasteCodes[$wc]['count']++;
       $this->wasteCodes[$wc]['quantity'] += $quantity;
     }
+  }
+
+  protected function createAtt14($date, &$text)
+  {
+    $wae = new \e10pro\purchase\libs\WasteAtt14Engine($this->app());
+    $wae->setPeriod($date, $date);
+    $wae->loadData();
+
+    $text .= '## Průběžná evidence odpadů - příloha 14:'."\n";
+
+    $tr = new TableRenderer($wae->dataTable, $wae->dataHeader, ['__tableClass' => 'purchasePriceList'], $this->app());
+    $text .= $tr->render();
   }
 
 	protected function quantity ($quantity, $srcUnit, $dstUnit)
