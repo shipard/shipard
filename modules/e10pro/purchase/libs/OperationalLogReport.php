@@ -23,6 +23,8 @@ class OperationalLogReport extends \e10doc\core\libs\reports\GlobalReport
 
 		if (!$this->periodEnd)
 			$this->periodEnd = Utils::createDateTime($this->reportParams ['calendarMonth']['values'][$this->reportParams ['calendarMonth']['value']]['dateEnd']);
+
+    $this->setInfo('param', 'Období', $this->reportParams['calendarMonth']['activeTitle']);
   }
 
   function createContent ()
@@ -32,7 +34,8 @@ class OperationalLogReport extends \e10doc\core\libs\reports\GlobalReport
 
   public function createContent_All()
   {
-    $text = '';
+    $text = $this->titlePageCode();
+
     $textRenderer = new \lib\core\texts\Renderer($this->app());
     $textRenderer->firstHeaderSize = 3;
 
@@ -61,5 +64,18 @@ class OperationalLogReport extends \e10doc\core\libs\reports\GlobalReport
 
 		$this->addContent (['type' => 'text', 'subtype' => 'rawhtml', 'text' => $text]);
 		$this->setInfo('title', 'Provozní deník');
+  }
+
+  protected function titlePageCode()
+  {
+    $ownerName = $this->app()->cfgItem ('options.core.ownerFullName');
+
+    $c = '';
+    $c .= "<div class='titlePageTitle' style='margin-top: 10cm; font-size: 72pt; text-align: center;'>".Utils::es('Provozní deník')."</div>\n";
+    $c .= "<div class='titlePageTitle' style='margin-top: 24pt; font-size: 24pt; text-align: center;'>".Utils::es($ownerName)."</div>\n";
+    $c .= "<div class='titlePageTitle' style='margin-top: 72pt; font-size: 48pt; text-align: center;'>".Utils::es($this->reportParams['calendarMonth']['activeTitle'])."</div>\n";
+    $c .= "<div class='pageBreakAfter'></div>\n";
+
+    return $c;
   }
 }
