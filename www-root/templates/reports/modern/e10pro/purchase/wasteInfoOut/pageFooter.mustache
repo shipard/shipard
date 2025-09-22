@@ -12,9 +12,10 @@
 	td.author {text-align: right; vertical-align: bottom;}
 	td.logo {text-align: left; width: 33.3%;}
 	img.logo {height: 1.30em;  position: relative;}
-	td.page {text-align: right; width: 33.3%;}
+	td.page {text-align: center; width: 33.3%;}
 	td.isdocLogo {text-align: center; width: 33.3%;}
 	img.isdoc {height: 1.30em;  position: relative;}
+	td.docNumber {text-align: right; width: 33.3%;}
 
 
 </style>
@@ -22,7 +23,7 @@
 
 <table class='footer'>
 	<tr>
-		<td class="ownerInfo">
+		<td class="ownerInfo" colspan="2">
 			{{#data.reportTexts.contactsFooter}}{{{data.reportTexts.contactsFooter}}}{{/data.reportTexts.contactsFooter}}
 			{{^data.reportTexts.contactsFooter}}
 				{{#data.owner_contacts}}
@@ -41,6 +42,10 @@
 
 		<td class='page'>
 		{{@dict;Strana}} <span class="pageNumber"></span> {{@dict;z}} <span class="totalPages"></span>
+		</td>
+
+		<td class="docNumber">
+			{{@dict;K dokladu číslo}}: {{data.head.docNumber}}
 		</td>
 	</tr>
 </table>

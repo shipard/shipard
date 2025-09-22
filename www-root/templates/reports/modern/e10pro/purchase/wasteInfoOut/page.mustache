@@ -3,33 +3,12 @@
 <head>
 	<title>Informace o odpadu</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v291" type="text/css"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?v327" type="text/css"/>
 	<link rel="stylesheet" href="{{dsUrl}}www-root/sc/icons/fa/5/css/all.min.css">
 </head>
 <body>
 
 {{#data.infoWasteCodes}}
-
-	<table class="mainInfo">
-		<tr>
-			<td class="info">
-				<table class="dates">
-					<tr>
-						<td class='label'>{{@dict;Datum vystavení}}:</td><td class='value'>{{data.head.dateIssue}}</td>
-					</tr>
-				</table>
-			<td>
-
-			<td class="info">
-				<table class="docInfo">
-					<tr>
-						<td class='label'>{{@dict;Variabilní symbol}}:</td><td class='value'><b>{{data.head.symbol1}}</b></td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-	</table>
-
 	<table class="infoSecondary">
 		<tr>
 			<td class="supplier">
@@ -172,16 +151,86 @@
 		{{/data.docs_properties.notes.note-ext}}
 	</div>
 
+	<table class="wasteInfo">
+		<tr>
+			<td colspan="2"><span class='hdr'>Informace o odpadu</span></td>
+		</tr>
+		<tr class="borderBottom">
+			<td class="hdr">Katalogové číslo odpadu</td>
+			<td><b style="font-size: 130%;">{{wc}}</b></td>
+		</tr>
+		<tr class="borderBottom">
+			<td class="hdr">Název odpadu</td>
+			<td>{{fullName}}</td>
+		</tr>
+		<tr class="borderBottom">
+			<td class="hdr">Kategorie odpadu</td>
+			<td>O</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="hdr">Množství odpadu ze skupiny 19</td>
+		</tr>
+		{{#moveFrom20To19}}
+			<tr>
+				<td class="wasteInfoOrigin">- který je původem ze skupin 20 (komunální odpady)</td>
+				<td>{{moveFrom20To19.thisMovedQuantity}} kg</td>
+			</tr>
+		{{/moveFrom20To19}}
+		{{#moveFrom1501To19}}
+			<tr>
+				<td class="wasteInfoOrigin">- který je původem ze skupin 1501 (obaly)</td>
+				<td>{{moveFrom1501To19.thisMovedQuantity}} kg</td>
+			</tr>
+		{{/moveFrom1501To19}}
+		{{#moveFrom17To19}}
+			<tr class="borderBottom">
+				<td class="wasteInfoOrigin">- který je původem ze skupin 17 (stavební a demoliční odpady)</td>
+				<td>{{moveFrom17To19.thisMovedQuantity}} kg</td>
+			</tr>
+		{{/moveFrom17To19}}
+		<tr>
+			<td class="hdr" colspan="2">Další údaje o vlastnostech odpadu</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+			    {{#wasteNotes}}
+         			<span class="wasteInfoMore">- {{text}}{{#description}} <small>({{description}})</small>{{/description}}<span><br>
+        		{{/wasteNotes}}
+			</td>
+		</tr>
+	</table>
+	
+	<table class="personResponsible">
+		<tr>
+			<td><span class='hdr'>Osoba zodpovědná za údaje</span></td>
+		</tr>
+		<tr>
+			<td class="hdr">Jméno a příjmení</td>
+			<td>{{data.wasteSettings.wiOutPersonName}}</td>
+		</tr>
+		<tr>
+			<td class="hdr">Telefon</td>
+			<td>{{data.wasteSettings.wiOutEmail}}</td>
+		</tr>
+		<tr>
+			<td class="hdr">E-mail</td>
+			<td>{{data.wasteSettings.wiOutPhone}}</td>
+		</tr>
+	</table>
+	
+	<span class='hdr' style="margin-top: 10pt;">Údaje dodavatele jsou pravdivé a úplné</span>
+	<table class="signed wasteSigned">
+		<tr>
+			<td><span>Jméno</span></td>
+			<td><span>Podpis</span></td>
+			<td><span>Razítko</span></td>
+			<td><span>Datum</span></td>
+		</tr>
+	</table>
 
 
-	<h2>TADY TO BUDE:</h2>
-	<div class='wasteCode'>
-		<b>{{wc}}</b> - {{fullName}} - {{packing}} - {{quantityPrint}} kg<br>
-	</div>
 
-
-
-	<div class='footerNotes'>
+	<!--<div class='footerNotes'>
 		{{#data.additionsExists}}
 			<h4>Poznámky</h4>
 			{{#data.additions}}
@@ -189,11 +238,11 @@
 			{{/data.additions}}
 			<br/>
 		{{/data.additionsExists}}
-	</div>
+	</div>-->
 
-	<div class='reportTextFooter'>
+	<!--<div class='reportTextFooter'>
 		{{#data.reportTexts.subFooter}}{{{data.reportTexts.subFooter}}}{{/data.reportTexts.subFooter}}
-	</div>
+	</div>-->
 
 
 	{{#data.options.docReportsPersonsSigns}}

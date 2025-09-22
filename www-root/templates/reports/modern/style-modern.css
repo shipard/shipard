@@ -247,6 +247,22 @@ table.additionalAddresses td.deliveryAddress div.hdr {font-size: 10pt;}
 
 table.additionalAddresses td div.hdr {font-size: 10pt;}
 
+/* písemné informace o odpadu */
+table.wasteInfo {border-bottom: 2pt solid lightgray; padding-bottom: 3pt; margin-bottom: 3pt;}
+table.wasteInfo td {padding: 3pt 0;}
+
+table.wasteInfo tr.borderBottom {border-bottom: 1pt solid lightgray;}
+table.wasteInfo td.hdr {font-size: 10pt;}
+table.wasteInfo td.wasteInfoOrigin {padding-left: 1rem;}
+table.wasteInfo span.wasteInfoMore {padding-left: 1rem;}
+
+table.personResponsible {border-bottom: 2pt solid lightgray; padding-bottom: 3pt; margin-bottom: 3pt;}
+table.personResponsible td {padding: 3pt 0;}
+table.personResponsible td.hdr {font-size: 10pt;}
+
+table.wasteSigned {margin-top: 60pt;}
+table.wasteSigned tr td {padding: 0 .5rem; margin-top: 50pt;}
+
 /* Objednávky */
 div.orderDescription {margin-top: 5pt;}
 
