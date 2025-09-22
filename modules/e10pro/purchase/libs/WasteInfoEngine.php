@@ -21,6 +21,8 @@ class WasteInfoEngine extends Utility
   var $wasteFromToPeriodBegin = NULL;
   var $wasteFromToPeriodEnd = NULL;
 
+  var $wasteSettings = NULL;
+
   public function setDocument($docNdx)
   {
     $this->docNdx = $docNdx;
@@ -34,6 +36,8 @@ class WasteInfoEngine extends Utility
 
     $this->wasteFromToPeriodBegin = Utils::createDateTime($this->docRecData['dateAccounting']->format('Y').'-01-01');
     $this->wasteFromToPeriodEnd = $this->docRecData['dateAccounting'];
+
+    $this->wasteSettings = $this->app()->cfgItem('e10doc.waster.settings.'.$this->docRecData['dateAccounting']->format('Y'), NULL);
   }
 
   public function loadData()

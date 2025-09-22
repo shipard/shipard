@@ -51,7 +51,10 @@ class TableWasteSettings extends DbTable
           'purchase' => intval($r['docModePurchase']),
           'mnf' => intval($r['docModeMnf']),
           'wastelp' => 2,
-        ]
+				],
+				'wiOutPersonName' => $r['wiOutPersonName'],
+				'wiOutEmail' => $r['wiOutEmail'],
+				'wiOutPhone' => $r['wiOutPhone'],
       ];
 			$list [$r['calendarYear']] = $wsi;
     }
@@ -142,6 +145,11 @@ class FormWasteSettings extends TableForm
       $this->addColumnInput ('docModeStockOut');
       $this->addColumnInput ('docModePurchase');
       $this->addColumnInput ('docModeMnf');
+			$this->addSeparator(self::coH4);
+			$this->addStatic('Osoba odpovědná za Písemné informace o odpadu (prodej):');
+			$this->addColumnInput ('wiOutPersonName');
+			$this->addColumnInput ('wiOutEmail');
+			$this->addColumnInput ('wiOutPhone');
 		$this->closeForm ();
 	}
 }

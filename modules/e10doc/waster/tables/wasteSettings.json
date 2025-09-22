@@ -16,6 +16,10 @@
 		{"id": "docModeMnf", "name": "Výroba", "type": "enumInt",
 			"enumCfg": {"cfgItem": "e10doc.waster.docModes", "cfgText": "fn"}},
 
+		{"id": "wiOutPersonName", "name": "Jméno a příjmení", "type": "string", "len": 120},
+		{"id": "wiOutEmail", "name": "E-mail", "type": "string", "len": 80},
+		{"id": "wiOutPhone", "name": "Telefon", "type": "string", "len": 40},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
