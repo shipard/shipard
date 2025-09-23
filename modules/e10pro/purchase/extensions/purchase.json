@@ -11,6 +11,11 @@
 				"id": "wasteInfoOut", "name": "PIO", "class": "e10pro.purchase.libs.WasteInfoOutReport",
 				"queryCol": "docType", "queryColValues": ["invno"],
 				"email": 1, "dropdown": 1
+			},
+			{
+				"id": "wasteInfoIn", "name": "PIO", "class": "e10pro.purchase.libs.WasteInfoInReport",
+				"queryCol": "docType", "queryColValues": ["purchase"],
+				"email": 1, "dropdown": 1
 			}
 		]
 	}
