@@ -249,7 +249,7 @@ table.additionalAddresses td div.hdr {font-size: 10pt;}
 
 /* písemné informace o odpadu */
 table.wasteInfo {border-bottom: 2pt solid lightgray; padding-bottom: 3pt; margin-bottom: 3pt;}
-table.wasteInfo td {padding: 3pt 0;}
+table.wasteInfo td {padding: 3pt 0; width: 50%;}
 
 table.wasteInfo tr.borderBottom {border-bottom: 1pt solid lightgray;}
 table.wasteInfo td.hdr {font-size: 10pt;}
