@@ -60,6 +60,7 @@ class WasteInfoEngine extends Utility
     elseif ($this->directionIn)
       array_push($q, ' AND [wasteRows].dir = %i', 0); // in
     array_push($q, ' AND [wasteRows].rowSource = %i', 0);
+    array_push($q, ' AND [wasteRows].wasteCodeKind = %i', 1); // waste code
     array_push($q, ' ORDER BY [wasteRows].[ndx]');
 
     $rows = $this->db()->query($q);
