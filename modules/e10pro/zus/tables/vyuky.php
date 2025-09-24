@@ -81,10 +81,16 @@ class TableVyuky extends DbTable
 		$this->checkHoursAttendance($recData);
 	}
 
-	public function checkBeforeSave (&$saveData, $ownerData = NULL)
+	public function checkBeforeSave (&$recData, $ownerData = NULL)
 	{
-		parent::checkBeforeSave($saveData, $ownerData);
-		$this->testValues($saveData);
+		parent::checkBeforeSave($recData, $ownerData);
+
+		$this->testValues($recData);
+
+		if ($recData ['typ'] == 1) // individualni
+		{
+			$recData['ucitel2'] = 0;
+		}
 	}
 
 	public function checkNewRec (&$recData)
