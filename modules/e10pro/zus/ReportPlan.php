@@ -570,4 +570,8 @@ class ReportPlan extends \E10\GlobalReport
 	{
 		return '';
 	}
+
+	protected function createReportHeaderFooter()
+	{
+	}
 }
