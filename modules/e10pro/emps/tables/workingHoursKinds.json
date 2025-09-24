@@ -6,6 +6,13 @@
     {"id": "fullName", "name": "Název", "type": "string", "len": 120},
 		{"id": "shortName", "name": "Zkrácený název", "type": "string", "len": 80},
 
+		{"id": "useTwoHours", "name": "Používat přímou / nepřímou dobu", "type": "logical", "options": ["saveOnChange"]},
+		{"id": "usePedagogicalActivity", "name": "Používat pedagogickou činnost", "type": "logical", "options": ["saveOnChange"]},
+
+		{"id": "wlWeeklyColTitle", "name": "Název Počet pracovních hodin týdně celkem", "type": "string", "len": 120},
+		{"id": "wlWeekly1ColTitle", "name": "Název Týdenní pracovní doba - přímá", "type": "string", "len": 120},
+		{"id": "wlWeekly2ColTitle", "name": "Název Týdenní pracovní doba - nepřímá", "type": "string", "len": 120},
+
 		{"id": "order", "name": "Pořadí", "type": "int"},
 
     {"id": "docState", "name": "Stav", "type": "int"},

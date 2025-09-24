@@ -117,8 +117,12 @@ class ViewWorkingHours extends TableView
  */
 class FormWorkingHours extends TableForm
 {
+	var $workingHoursKind;
+
 	public function renderForm ()
 	{
+		$this->workingHoursKind = $this->app()->cfgItem('e10pro.emps.workingHoursKinds.'.$this->recData['workingHoursKind'], NULL);
+
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 		$this->setFlag ('maximize', 1);
@@ -133,9 +137,24 @@ class FormWorkingHours extends TableForm
 					$this->addColumnInput ('person');
 					$this->addColumnInput ('workingHoursKind');
 					$this->addSeparator(self::coH3);
-					$this->addColumnInput ('wlWeeklyTotal');
-					$this->addColumnInput ('wlWeeklyRatio');
-					$this->addColumnInput ('wlWeekly1');
+					if ($this->workingHoursKind['useTwoHours'] ?? 0)
+					{
+						$this->addColumnInput ('wlWeeklyTotal');
+						if ($this->workingHoursKind['usePedagogicalActivity'] ?? 0)
+							$this->addColumnInput ('wlWeeklyPedagogicalActivity');
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('wlWeekly1');
+						$this->addColumnInput ('wlWeekly2');
+						$this->addColumnInput ('wlWeekly');
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('wlWeeklyRatio');
+					}
+					else
+					{
+						$this->addColumnInput ('wlWeeklyTotal');
+						$this->addColumnInput ('wlWeeklyRatio');
+						$this->addColumnInput ('wlWeekly');
+					}
 					$this->addSeparator(self::coH3);
 					$this->addColumnInput ('validFrom');
 					$this->addColumnInput ('validTo');
@@ -149,6 +168,19 @@ class FormWorkingHours extends TableForm
 				$this->closeTab ();
 			$this->closeTabs();
 		$this->closeForm ();
+	}
+
+	function columnLabel ($colDef, $options)
+	{
+		$this->workingHoursKind = $this->app()->cfgItem('e10pro.emps.workingHoursKinds.'.$this->recData['workingHoursKind'], NULL);
+
+		switch ($colDef ['sql'])
+		{
+			case  'wlWeekly1': return ($this->workingHoursKind['wlWeekly1ColTitle'] !== '' ? $this->workingHoursKind['wlWeekly1ColTitle'] : $colDef['name']);
+			case  'wlWeekly2': return ($this->workingHoursKind['wlWeekly2ColTitle'] !== '' ? $this->workingHoursKind['wlWeekly2ColTitle'] : $colDef['name']);
+		}
+
+		return parent::columnLabel ($colDef, $options);
 	}
 }
 

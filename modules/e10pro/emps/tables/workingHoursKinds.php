@@ -40,7 +40,14 @@ class TableWorkingHoursKinds extends DbTable
 		foreach ($rows as $r)
 		{
 			$item = [
-				'ndx' => $r ['ndx'], 'fn' => $r ['fullName'], 'sn' => $r ['shortName'],
+				'ndx' => $r ['ndx'],
+				'fn' => $r ['fullName'],
+				'sn' => $r ['shortName'],
+				'useTwoHours' => intval($r ['useTwoHours']),
+				'usePedagogicalActivity' => intval($r ['usePedagogicalActivity']),
+				'wlWeeklyColTitle' => $r ['wlWeeklyColTitle'],
+				'wlWeekly1ColTitle' => $r ['wlWeekly1ColTitle'],
+				'wlWeekly2ColTitle' => $r ['wlWeekly2ColTitle'],
 			];
 
 			$list [$r['ndx']] = $item;
@@ -127,6 +134,13 @@ class FormWorkingHoursKind extends TableForm
 					$this->addColumnInput ('fullName');
 					$this->addColumnInput ('shortName');
           $this->addColumnInput ('order');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('useTwoHours');
+					$this->addColumnInput ('usePedagogicalActivity');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('wlWeeklyColTitle');
+					$this->addColumnInput ('wlWeekly1ColTitle');
+					$this->addColumnInput ('wlWeekly2ColTitle');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);
 					$this->addAttachmentsViewer();

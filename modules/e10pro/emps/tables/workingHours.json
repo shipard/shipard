@@ -9,11 +9,15 @@
 
 		{"id": "wlWeeklyTotal", "name": "Týdenní pracovní doba", "type": "number", "dec": 2},
 		{"id": "wlWeeklyRatio", "name": "Výše úvazku", "type": "number", "dec": 4},
-		{"id": "wlWeekly1", "name": "Týdenní pracovní doba - přímá", "type": "number", "dec": 2},
 
-		{"id": "sumWeeklyHoursTotal", "name": "Celkem týdenní pracovní doba", "type": "number", "dec": 2},
+		{"id": "wlWeeklyPedagogicalActivity", "name": "Stanovená výše pedagogické činnosti", "type": "number", "dec": 2},
+		{"id": "wlWeekly", "name": "Počet pracovních hodin týdně celkem", "type": "number", "dec": 2},
+		{"id": "wlWeekly1", "name": "Týdenní pracovní doba - přímá", "type": "number", "dec": 2},
+		{"id": "wlWeekly2", "name": "Týdenní pracovní doba - nepřímá", "type": "number", "dec": 2},
+
 		{"id": "sumWeeklyHours1", "name": "Celkem týdenní pracovní doba - přímá", "type": "number", "dec": 2},
-		{"id": "sumWeeklyHours2", "name": "Celkem týdenní pracovní doba - přímá", "type": "number", "dec": 2},
+		{"id": "sumWeeklyHours2", "name": "Celkem týdenní pracovní doba - nepřímá", "type": "number", "dec": 2},
+		{"id": "sumWeeklyHoursTotal", "name": "Celkem týdenní pracovní doba", "type": "number", "dec": 2},
 		{"id": "calcWeeklyRatio", "name": "Vypočítaná výše úvazku", "type": "number", "dec": 4},
 
 		{"id": "validFrom", "name": "Platnost od", "type": "date"},
