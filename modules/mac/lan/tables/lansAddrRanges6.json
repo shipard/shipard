@@ -5,7 +5,7 @@
 
 		{"id": "prefix", "name": "Prefix", "type": "string", "len": 64},
 		{"id": "prefixLen", "name": "Délka", "type": "enumInt",
-			"enumValues": {"48": "/48", "56": "/56", "64": "/64"}},
+			"enumValues": {"48": "/48", "52": "/52", "56": "/56", "64": "/64"}},
 		{"id": "fullAddress", "name": "Adresa", "type": "string", "len": 44},
 
 		{"id": "rangeType", "name": "Druh", "type": "enumInt", "options": ["saveOnChange"],
