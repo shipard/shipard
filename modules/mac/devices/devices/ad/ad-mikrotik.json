@@ -270,6 +270,14 @@
 					]
 				},
 				"mkt-crs310-1g-5s-4s": {"title": "CRS310-1G-5S-4S+IN"},
+				"mkt-crs310-8g+2s+": {
+					"title": "CRS310-8G+2S+IN",
+					"ports": [
+						{"kind": 5, "count": 8, "maskId": "ether"},
+						{"kind": 6, "count": 2, "maskId": "sfp-sfpplus"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-crs318-16p-2s-out": {
 					"title": "CRS318-16P-2S+OUT",
 					"ports": [
