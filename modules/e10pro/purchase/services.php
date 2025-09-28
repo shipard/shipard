@@ -111,9 +111,25 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$engine->createLogRecords($dateBegin, $dateEnd);
 	}
 
+	protected function createOperationalLogRecordsToday()
+	{
+		$dateBegin = Utils::today();
+		$dateEnd = Utils::today();
+
+		$engine = new \e10pro\purchase\libs\OperationalLogEngine($this->app);
+		$engine->createLogRecords($dateBegin, $dateEnd);
+	}
+
 	public function onCronHourly ()
 	{
 		$this->generateBankOrders();
+
+		$now = new \DateTime ();
+		$hour = intval($now->format('H'));
+		if ($hour === 17)
+		{
+			$this->createOperationalLogRecordsToday();
+		}
 	}
 
 	public function onCron ($cronType)
