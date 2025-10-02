@@ -190,7 +190,7 @@ class ViewVlans extends TableView
 			$this->groupsInfo[$r['srcRecId']][] = $l;
 		}
 
-		// -- address ranges
+		// -- address ranges IPV4
 		$q = [];
 		$q[] = 'SELECT addrRanges.*';
 		array_push ($q, ' FROM [mac_lan_lansAddrRanges] AS addrRanges');
@@ -201,6 +201,20 @@ class ViewVlans extends TableView
 		foreach ($rows as $r)
 		{
 			$l = ['text' => $r['shortName'], 'icon' => 'tables/mac.lan.lansAddrRanges', 'class' => 'label label-default'];
+			$this->addrRanges[$r['vlan']][] = $l;
+		}
+
+		// -- address ranges IPV6
+		$q = [];
+		$q[] = 'SELECT addrRanges.*';
+		array_push ($q, ' FROM [mac_lan_lansAddrRanges6] AS addrRanges');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND addrRanges.vlan IN %in', $this->pks);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$l = ['text' => $r['prefix'], 'icon' => 'tables/mac.lan.lansAddrRanges', 'class' => 'label label-default'];
 			$this->addrRanges[$r['vlan']][] = $l;
 		}
 	}
