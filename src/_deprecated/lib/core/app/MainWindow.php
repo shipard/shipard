@@ -424,15 +424,24 @@ class MainWindow extends \Shipard\Base\BaseObject
 		}
 
 		$c .= "<div class='e10-mm-dsInfo'>";
-		$c .= "<small'>" . utils::es('powered by') . '</small>';
-		$c .= "<a href='https://shipard.org/' target='_blank'><img src='$bottomImgUrl' style='width:100%; max-height: 1.8em; text-align: center; margin-top: .2ex;'></a>";
-		$c .= "<small>";
-		$c .= utils::es('Verze '.__E10_VERSION__.'.'.$si['e10commit']);
-		$c .= ($this->app->mobileMode) ? '.m' : '.d';
-		$c .= ".<span class='visible-xs-inline'>xs</span><span class='visible-sm-inline'>sm</span><span class='visible-md-inline'>md</span><span class='visible-lg-inline'>lg</span>";
-		$c .= utils::es('.'.$si['channelId']);
-		$c .= '&nbsp;#'.utils::es($dsId);
-		$c .= '</small>';
+			$c .= "<small'>" . utils::es('powered by') . '</small>';
+			$c .= "<a href='https://shipard.org/' target='_blank'><img src='$bottomImgUrl' style='width:100%; max-height: 1.8em; text-align: center; margin-top: .2ex;'></a>";
+			$c .= "<small>";
+				$c .= utils::es('Verze '.__E10_VERSION__.'.'.$si['e10commit']);
+				$c .= ($this->app->mobileMode) ? '.m' : '.d';
+				$c .= ".<span class='visible-xs-inline'>xs</span><span class='visible-sm-inline'>sm</span><span class='visible-md-inline'>md</span><span class='visible-lg-inline'>lg</span>";
+				$c .= utils::es('.'.$si['channelId']);
+				$c .= '&nbsp;#'.utils::es($dsId);
+
+				$remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
+				$serverAddr = $_SERVER['SERVER_ADDR'] ?? '';
+				$addrLabel = ['text' => '', 'icon' => 'tables/e10.base.ipaddr', 'class' => '', 'title' => utils::es('client: '.$remoteAddr.', server: '.$serverAddr)];
+				if(filter_var($remoteAddr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
+					$addrLabel['text'] = 'IPv6';
+				else
+					$addrLabel['text'] = 'IPv4';
+				$c .= '&nbsp;'.$this->app()->ui()->renderTextLine($addrLabel);
+			$c .= '</small>';
 		$c .= '</div>';
 
 		$c .= '</div>';
