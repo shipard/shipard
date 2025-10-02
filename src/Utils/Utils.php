@@ -1737,8 +1737,8 @@ class Utils
 	static function clientIp()
 	{
 		$headers = self::getAllHeaders();
-		if (isset($heades['x-forwarded-for']))
-			return $heades['x-forwarded-for'];
+		if (isset($headers['x-forwarded-for']))
+			return $headers['x-forwarded-for'];
 		return $_SERVER['REMOTE_ADDR'] ?? '';
 	}
 
