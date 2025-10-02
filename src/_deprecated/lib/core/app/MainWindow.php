@@ -433,14 +433,14 @@ class MainWindow extends \Shipard\Base\BaseObject
 				$c .= utils::es('.'.$si['channelId']);
 				$c .= '&nbsp;#'.utils::es($dsId);
 
-				$remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
-				$serverAddr = $_SERVER['SERVER_ADDR'] ?? '';
-				$addrLabel = ['text' => '', 'icon' => 'tables/e10.base.ipaddr', 'class' => '', 'title' => utils::es('client: '.$remoteAddr.', server: '.$serverAddr)];
+				$remoteAddr = Utils::clientIp();
+				$addrLabel = ['text' => '', 'icon' => 'tables/e10.base.ipaddr', 'class' => '', 'suffix' => utils::es($remoteAddr)];
 				if(filter_var($remoteAddr, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))
 					$addrLabel['text'] = 'IPv6';
 				else
 					$addrLabel['text'] = 'IPv4';
-				$c .= '&nbsp;'.$this->app()->ui()->renderTextLine($addrLabel);
+				//$addrLabel['text'] .= ': '.$serverAddr;
+				$c .= '<br>'.$this->app()->ui()->renderTextLine($addrLabel);
 			$c .= '</small>';
 		$c .= '</div>';
 

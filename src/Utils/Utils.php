@@ -1734,6 +1734,14 @@ class Utils
 		return $headers;
 	}
 
+	static function clientIp()
+	{
+		$headers = self::getAllHeaders();
+		if (isset($heades['x-forwarded-for']))
+			return $heades['x-forwarded-for'];
+		return $_SERVER['REMOTE_ADDR'] ?? '';
+	}
+
 	static function serverCounter ($key, $inc = FALSE)
 	{
 		$tmpDir = '/var/lib/shipard/tmp';
