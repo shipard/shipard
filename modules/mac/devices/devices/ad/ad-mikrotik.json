@@ -278,6 +278,14 @@
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
 				},
+				"mkt-crs317-1g-16s+rm": {
+					"title": "CRS317-1G-16S+RM",
+					"ports": [
+						{"kind": 5, "count": 1, "maskId": "ether"},
+						{"kind": 6, "count": 16, "maskId": "sfp-sfpplus"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-crs318-16p-2s-out": {
 					"title": "CRS318-16P-2S+OUT",
 					"ports": [
