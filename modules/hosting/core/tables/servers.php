@@ -65,10 +65,12 @@ class ViewServers extends TableView
 		$fts = $this->fullTextSearch ();
 
 		$q[] = 'SELECT [servers].*, [owners].[fullName] AS [ownerFullName],';
-		array_push($q, ' CONCAT(COALESCE([hwServers].name, [servers].name), ', "'-', ", '[servers].[hwServer], ', "'-', ", '[servers].name) AS serverOrder');
+		array_push($q, ' CONCAT(COALESCE([hwServers].name, [servers].name), ', "'-', ", '[servers].[hwServer], ', "'-', ", '[servers].name) AS serverOrder,');
+		array_push($q, ' [webProxies].name AS wpServerName, [webProxies].ipv4 AS wpIPv4, [webProxies].fqdn AS wpServerFqdn');
 		array_push($q, ' FROM [hosting_core_servers] AS [servers]');
 		array_push($q, ' LEFT JOIN [e10_persons_persons] AS [owners] ON [servers].[owner] = [owners].[ndx]');
 		array_push($q, ' LEFT JOIN [hosting_core_servers] AS [hwServers] ON [servers].[hwServer] = [hwServers].[ndx]');
+		array_push($q, ' LEFT JOIN [hosting_core_servers] AS [webProxies] ON [servers].[webProxyServer] = [webProxies].[ndx]');
 		array_push($q, ' WHERE 1');
 
 		if ($fts != '')
@@ -97,40 +99,43 @@ class ViewServers extends TableView
 		$listItem ['t1'] = [['text' => $item['name'], 'class' => ''], ];
 		$listItem ['t2'] = [];
 
-		if ($item['name'] !== $item['id'])
-			$listItem ['t2'][] = ['text' => $item['id'], 'class' => 'label label-default'];
-
 		$fts = $this->fullTextSearch ();
 
 		if ($item['hwMode'] && $fts === '')
 			$listItem['level'] = 1;
 
-		if ($item['osVerId'] !== '')
-			$listItem ['t2'][] = ['text' => $item['osVerId'], 'class' => 'label label-default'];
+		$listItem ['i1'] = ['text' => '#'.$item['gid'], 'class' => 'id', 'suffix' => $item['ndx'], 'prefix' => $item['fqdn']];
 
-		if ($item['shipardServerVerId'] !== '')
-			$listItem ['t2'][] = ['text' => $item['shipardServerVerId'], 'class' => 'label label-default'];
+		$ipsLabels = [];
+		if ($item['ipv4'] !== '')
+			$ipsLabels[] = ['text' => 'ipv4', 'suffix' => $item['ipv4'], 'icon' => 'icon-globe', 'class' => ''];
+		if ($item['ipv6'] !== '')
+			$ipsLabels[] = ['text' => 'ipv6', 'suffix' => $item['ipv6'], 'icon' => 'icon-globe', 'class' => ''];
 
+		if ($item['wpServerName'])
+			$ipsLabels[] = ['text' => $item['wpServerName'], 'suffix' => $item['wpIPv4'], 'icon' => 'system/iconGlobe', 'class' => 'label label-default'];
+		$listItem ['t3'] = [];
+
+		if (count($ipsLabels))
+			$listItem ['t2'] = $ipsLabels;
 
 		if ($item['dsCreateDemo'] != 0)
 		{
 			$cds = $this->serverCreateDSTypes[$item['dsCreateDemo']];
-			$listItem ['t2'][] = ['text' => 'DEMO: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
+			$listItem ['t3'][] = ['text' => 'DEMO: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
 		}
 		if ($item['dsCreateProduction'] != 0)
 		{
 			$cds = $this->serverCreateDSTypes[$item['dsCreateProduction']];
-			$listItem ['t2'][] = ['text' => 'PROD: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
+			$listItem ['t3'][] = ['text' => 'PROD: '.$cds['fn'], 'icon' => 'system/iconDatabase', 'class' => 'label label-info'];
 		}
-
-		$listItem ['i1'] = ['text' => '#'.$item['gid'], 'class' => 'id', 'suffix' => $item['ndx']];
 
 		$props3 = [];
 		if ($item['ownerFullName'])
 			$props3[] = ['text' => $item['ownerFullName'], 'icon' => 'system/iconUser'];
 
 		if (count($props3))
-			$listItem ['t3'] = $props3;
+			$listItem ['t3'] = array_merge($listItem ['t3'], $props3);
 
 		if (!count($listItem ['t2']))
 			$listItem ['t2'] = ' ';
@@ -208,13 +213,19 @@ class FormServer extends TableForm
 			$this->addColumnInput ('gid');
 			$this->addColumnInput ('fqdn');
 
-			$this->addSeparator(self::coH3);
-			$this->addColumnInput ('dsCreateDemo');
-			$this->addColumnInput ('dsCreateProduction');
+			if ($this->recData['serverRole'] === 0)
+			{
+				$this->addSeparator(self::coH3);
+				$this->addColumnInput ('dsCreateDemo');
+				$this->addColumnInput ('dsCreateProduction');
+			}
 
 			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('ipv4');
 			$this->addColumnInput ('ipv6');
+
+			if ($this->recData['serverRole'] <= 1)
+				$this->addColumnInput ('webProxyServer');
 
 			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('hwMode');
@@ -226,6 +237,7 @@ class FormServer extends TableForm
 
 			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('updownIOId');
+			$this->addColumnInput ('beszelUrl');
 			$this->addColumnInput ('netdataUrl');
 
 			$this->addSeparator(self::coH3);

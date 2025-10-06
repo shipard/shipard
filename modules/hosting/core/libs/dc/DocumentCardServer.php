@@ -4,7 +4,7 @@ namespace hosting\core\libs\dc;
 
 
 /**
- * @class DocumentCardServer
+ * class DocumentCardServer
  */
 class DocumentCardServer extends \Shipard\Base\DocumentCard
 {
@@ -20,8 +20,86 @@ class DocumentCardServer extends \Shipard\Base\DocumentCard
     $this->serverInfoCore = json_decode($this->serverInfoRecData['dataCore'], TRUE);
 	}
 
+  protected function createTools()
+  {
+    $toolsButtons = [];
+
+    if ($this->recData['serverRole'] === 1 && $this->recData['fqdn'] !== '')
+    { // incus - server
+      $url = 'https://'.$this->recData['fqdn'].':8443/';
+      $toolsButtons[] = [
+        'type' => 'action', 'action' => 'open-popup',
+        '_element' => 'span',
+        'data-popup-url' => $url,
+        'data-popup-width' => '0.98', 'data-popup-height' => '0.9',
+        'with-shift' => 'tab',
+        'text' => 'Incus',
+        'icon' => 'system/iconTerminal', 'class' => 'mr1 nowrap',
+        'popup-id' => 'shpd_server_app_'.md5($url),
+      ];
+    }
+
+    if (($this->recData['serverRole'] === 0 || $this->recData['serverRole'] === 3) && $this->recData['hwMode'] === 2 && $this->recData['vmId'] !== '')
+    { // incus - instance
+      $hwServerRecData = $this->db()->query('SELECT * FROM [hosting_core_servers] WHERE [ndx] = %i', $this->recData['hwServer'])->fetch();
+      if ($hwServerRecData['fqdn'] !== '')
+      {
+        $url = 'https://'.$hwServerRecData['fqdn'].':8443/'.'ui/project/default/instance/'.$this->recData['vmId'];
+        $toolsButtons[] = [
+          'type' => 'action', 'action' => 'open-popup',
+          '_element' => 'span',
+          'data-popup-url' => $url,
+          'data-popup-width' => '0.98', 'data-popup-height' => '0.9',
+          'with-shift' => 'tab',
+          'text' => 'Incus',
+          'icon' => 'system/iconTerminal', 'class' => 'mr1 nowrap',
+          'popup-id' => 'shpd_server_app_'.md5($url),
+        ];
+      }
+    }
+
+    if ($this->recData['updownIOId'] !== '')
+    { // updown.io
+      $url = 'https://updown.io/'.$this->recData['updownIOId'];
+      $toolsButtons[] = [
+        'type' => 'action', 'action' => 'open-popup',
+        '_element' => 'span',
+        'data-popup-url' => $url,
+        'data-popup-width' => '0.98', 'data-popup-height' => '0.9',
+        'with-shift' => 'tab',
+        'text' => 'upDown.io',
+        'icon' => 'system/iconCheckSquare', 'class' => 'mr1 nowrap',
+        'popup-id' => 'shpd_server_app_'.md5($url),
+      ];
+    }
+
+    if ($this->recData['beszelUrl'] !== '')
+    { // updown.io
+      $url = $this->recData['beszelUrl'];
+      $toolsButtons[] = [
+        'type' => 'action', 'action' => 'open-popup',
+        '_element' => 'span',
+        'data-popup-url' => $url,
+        'data-popup-width' => '0.98', 'data-popup-height' => '0.9',
+        'with-shift' => 'tab',
+        'text' => 'Beszel',
+        'icon' => 'system/iconCheckSquare', 'class' => 'mr1 nowrap',
+        'popup-id' => 'shpd_server_app_'.md5($url),
+      ];
+    }
+
+    if (count($toolsButtons))
+    {
+      $this->addContent ('body', [
+        'pane' => 'e10-pane e10-pane-table', 'type' => 'line', 'line' => $toolsButtons,
+      ]);
+    }
+  }
+
 	public function createContentBody ()
 	{
+		$this->createTools();
+
     if (!$this->serverInfoCore)
     {
       $this->addContent ('body', [

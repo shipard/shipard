@@ -18,18 +18,21 @@
 		{"id": "dsCreateDemo", "name": "Zakládat demonstrační zdroje dat", "type": "enumInt",
 			"enumCfg": {"cfgItem": "hosting.core.serverCreateDSTypes", "cfgValue": "", "cfgText": "fn"}},
     {"id": "dsCreateProduction", "name": "Zakládat ostré zdroje dat", "type": "enumInt",
-      "enumCfg": {"cfgItem": "hosting.core.serverCreateDSTypes", "cfgValue": "", "cfgText": "fn"}},	
-    
-	  {"id": "ipv4", "name": "IPv4 adresa", "type": "string", "len": 16, "options": ["ascii"]},
-		{"id": "ipv6", "name": "IPv6 adresa", "type": "string", "len": 45, "options": ["ascii"]},
+      "enumCfg": {"cfgItem": "hosting.core.serverCreateDSTypes", "cfgValue": "", "cfgText": "fn"}},
+
+	  {"id": "ipv4", "name": "IPv4 adresy", "type": "string", "len": 250, "options": ["ascii"]},
+		{"id": "ipv6", "name": "IPv6 adresy", "type": "string", "len": 250, "options": ["ascii"]},
 
 		{"id": "hwMode", "name": "Mód HW", "type": "enumInt", "options": ["saveOnChange"],
-			"enumCfg": {"cfgItem": "hosting.core.servers.hwModes", "cfgValue": "", "cfgText": "fn"}},	
+			"enumCfg": {"cfgItem": "hosting.core.servers.hwModes", "cfgValue": "", "cfgText": "fn"}},
     {"id": "hwServer", "name": "Server", "type": "int", "reference": "hosting.core.servers"},
     {"id": "vmId", "name": "ID kontejneru / VM", "type": "string", "len": 40},
-  
+
+    {"id": "webProxyServer", "name": "WebProxy server", "type": "int", "reference": "hosting.core.servers"},
+
     {"id": "updownIOId", "name": "updown.io Id", "type": "string", "len": 8},
     {"id": "netdataUrl", "name": "Netdata URL", "type": "string", "len": 180},
+    {"id": "beszelUrl", "name": "Beszel URL", "type": "string", "len": 180},
 
 	  {"id": "owner", "name": "Vlastník", "type": "int", "reference": "e10.persons.persons"},
 
@@ -47,7 +50,7 @@
   ],
 	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
   "views": [
-    {"id": "default", "class": "hosting.core.ViewServers", 
+    {"id": "default", "class": "hosting.core.ViewServers",
       "details": {
 				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailServer"},
         "updown": {"title": "updown.io", "icon": "system/detailDetail", "type": "detail", "class": "hosting.core.ViewDetailServerUpdownIo"},

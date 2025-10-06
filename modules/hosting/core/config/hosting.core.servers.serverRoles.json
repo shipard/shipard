@@ -10,5 +10,9 @@
   "2": {
     "fn": "Servisní Node server",
     "icon": "system/iconCogs"
+  },
+  "3": {
+    "fn": "Web proxy",
+    "icon": "system/iconGlobe"
   }
 }
