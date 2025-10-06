@@ -178,7 +178,7 @@ class TablePersonsContacts extends DbTable
 
 	public function geoCodeLocHash ($recData)
 	{
-		return md5($recData['adrStreet'].'_'.$recData['adrCity'].'_'.$recData['adrZipCode'].'_'.$recData['adrCountry']);
+		return md5(($recData['adrStreet'] ?? '').'_'.($recData['adrCity'] ?? '').'_'.($recData['adrZipCode'] ?? '').'_'.($recData['adrCountry'] ?? ''));
 	}
 }
 

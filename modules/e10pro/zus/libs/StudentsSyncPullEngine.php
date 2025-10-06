@@ -7,16 +7,41 @@ namespace e10pro\zus\libs;
  */
 class StudentsSyncPullEngine extends \e10pro\bume\libs\PersonsSyncPullEngine
 {
-  var $sociPeriod = 'AY1';
+  var $sociPeriod = 'AY2';
 
   protected function checkOnePerson($personNdx, $personInfo)
   {
     if (!isset($personInfo['other']['teacherName']))
+    {
+      echo "No teacherName for person $personNdx: ".$personInfo['rec']['fullName']."\n";
       return;
-
+    }
     $existedWO = $this->db()->query('SELECT * FROM e10mnf_core_workOrders',
                                     ' WHERE title = %s', $personInfo['other']['teacherName'],
                                     ' AND usersPeriod = %s', $this->sociPeriod)->fetch();
+
+    if (!$existedWO)
+    {
+      $newWO = [
+        'title' => $personInfo['other']['teacherName'],
+        'usersPeriod' => $this->sociPeriod,
+        'dbCounter' => 1,
+        'docState' => 1200, 'docStateMain' => 1,
+      ];
+
+      /** @var \e10mnf\core\TableWorkOrders $tableWO */
+      $tableWO = $this->app()->table('e10mnf.core.workOrders');
+      $tableWO->checkNewRec($newWO);
+      $newWONdx = $tableWO->dbInsertRec($newWO);
+
+      $newWO = $tableWO->loadItem($newWONdx);
+      $tableWO->checkDocumentState($newWO);
+      $tableWO->dbUpdateRec($newWO);
+
+      $existedWO = $this->db()->query('SELECT * FROM e10mnf_core_workOrders',
+                                      ' WHERE title = %s', $personInfo['other']['teacherName'],
+                                      ' AND usersPeriod = %s', $this->sociPeriod)->fetch();
+    }
 
     if ($existedWO)
     {
