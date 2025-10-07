@@ -32,6 +32,7 @@ class DbTable
 	function app (){return $this->dbmodel;}
 	function db (){return $this->dbmodel->db;}
 	function saveConfig (){}
+	public function createInfoForHosting(&$hostingInfo){}
 
 
 	public function getCfgItem ($cfgKey, $checkSource)

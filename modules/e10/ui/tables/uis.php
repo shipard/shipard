@@ -87,6 +87,29 @@ class TableUIs extends DbTable
 		$this->createNginxConfigs();
 	}
 
+	public function createInfoForHosting(&$hostingInfo)
+	{
+		$uis = [];
+		$rows = $this->app()->db->query ('SELECT * FROM [e10_ui_uis] WHERE docState != 9800 ORDER BY [urlId]');
+		foreach ($rows as $r)
+		{
+			if (!$r['inProduction'])
+				continue;
+			if ($r['domain'] === '')
+				continue;
+
+      $uiItem = [
+				'ndx' => $r['ndx'],
+				'domain' => $r['domain'],
+			];
+
+      $uis [] = $uiItem;
+		}
+
+		if (count($uis))
+			$hostingInfo['uis'] = $uis;
+	}
+
 	function createNginxConfigs()
 	{
 		$webServers = Utils::loadCfgFile(__APP_DIR__ . '/config/_e10.ui.uis.json');

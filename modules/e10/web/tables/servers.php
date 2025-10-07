@@ -412,6 +412,36 @@ class TableServers extends DbTable
 		$dst[$key] = '/att/'.$image['path'].$image ['filename'];
 	}
 
+	public function createInfoForHosting(&$hostingInfo)
+	{
+		$rows = $this->app()->db->query ('SELECT * FROM [e10_web_servers] WHERE docState != 9800 ORDER BY [order], [fullName]');
+		$servers = [];
+		foreach ($rows as $r)
+		{
+			if (!$r['inProduction'] || $r['domain'] === '')
+				continue;
+
+			$s = [
+				'ndx' => $r['ndx'],
+				'domain' => $r['domain'],
+			];
+
+			if ($r['domainsRedirectHere'] !== '')
+			{
+				$rh = explode (' ', $r['domainsRedirectHere']);
+				foreach ($rh as $oneDomain)
+				{
+					$s['redirectHere'][] = trim($oneDomain);
+				}
+			}
+
+			$servers [] = $s;
+		}
+
+		if (count($servers))
+			$hostingInfo['webServers'] = $servers;
+	}
+
 	public function subColumnsInfo ($recData, $columnId)
 	{
 		$template = new \e10\TemplateCore ($this->app());

@@ -694,6 +694,7 @@ function updateConfiguration ($app, $params = 0)
 	{
 		if ($tblDef ['options'] & DataModel::toConfigSource)
 		{
+			/** @var \Shipard\Table\DbTable $table */
 			$table = $app->table ($tableId);
 			$table->saveConfig ();
 		}
@@ -701,6 +702,25 @@ function updateConfiguration ($app, $params = 0)
 
 	// -- compile
 	compileConfig ();
+
+	// -- info for hosting
+	$infoForHosting = [
+		'dsid' => $app->cfgItem('dsid', ''),
+		'infoCheckSum' => '',
+		'info' => [],
+	];
+	forEach ($app->model()->tables () as $tableId => $tblDef)
+	{
+		if ($tblDef ['options'] & DataModel::toConfigSource)
+		{
+			/** @var \Shipard\Table\DbTable $table */
+			$table = $app->table ($tableId);
+			$table->createInfoForHosting ($infoForHosting['info']);
+		}
+	}
+	$infoForHosting['infoCheckSum'] = sha1 (json_encode ($infoForHosting['info']));
+
+	file_put_contents(__APP_DIR__ . '/config/dsInfoForHosting.json', Utils::json_lint (json_encode ($infoForHosting)));
 
 
 	$objectData ['message'] = 'Nastavení bylo přegenerováno.';
