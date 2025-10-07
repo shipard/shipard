@@ -18,6 +18,7 @@
 		{"id": "uiStruct", "name": "Struktura uživatelského rozhraní", "type": "code", "clng": "json"},
 
 		{"id": "domain", "name": "Doména", "type": "string", "len": 80},
+		{"id": "inProduction", "name": "UI je v ostrém provozu", "type": "logical"},
 
 		{"id": "pwaTitle", "name": "Titulek pro PWA aplikaci", "type": "string", "len": 50},
 		{"id": "pwaIcon", "name": "Ikona PWA aplikace (na ploše)", "type": "int", "reference": "e10.base.attachments", "comboViewer": "images"},

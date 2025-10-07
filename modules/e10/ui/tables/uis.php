@@ -53,6 +53,7 @@ class TableUIs extends DbTable
 				'ndx' => $r['ndx'],
         'uiType' => $r ['uiType'],
 				'fn' => $r ['fullName'],
+				'inProduction' => intval($r ['inProduction']),
 				'pwaStartUrlBegin' => $r['pwaStartUrlBegin'],
 				'pwaTitle' => $r ['pwaTitle'] !== '' ? $r ['pwaTitle'] : $r ['fullName'],
 				'sendRequestsFromEmail' => $r ['sendRequestsFromEmail'],
@@ -99,6 +100,10 @@ class TableUIs extends DbTable
 
 		foreach ($webServers['e10']['ui']['domains'] as $domain => $uiId)
 		{
+			$uiCfg = $webServers['e10']['ui']['uis'][$uiId] ?? NULL;
+			if (!$uiCfg || !($uiCfg['inProduction'] ?? 0))
+				continue;
+
 			$cfg = '';
 
 			$domainParts = explode('.', $domain);
@@ -223,6 +228,11 @@ class ViewUIs extends TableView
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
+		if ($item['inProduction'])
+			$listItem['!error'] = 'e10-success';
+		else
+			$listItem['!error'] = 'e10-off';
+
 		return $listItem;
 	}
 
@@ -294,6 +304,9 @@ class FormUI extends TableForm
 
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('sendRequestsFromEmail');
+
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('inProduction');
 				$this->closeTab ();
 				if ($this->recData['uiType'] === 9)
 				{
