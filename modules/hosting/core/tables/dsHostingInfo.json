@@ -1,0 +1,12 @@
+{
+	"id": "hosting.core.dsHostingInfo", "sql": "hosting_core_dsHostingInfo", "name": "Informace o zdroji dat",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "dataSource", "name": "Zdroj dat", "type": "int", "reference": "hosting.core.dataSources"},
+		{"id": "dateUpdate", "name": "Datum a čas aktualizace", "type": "timestamp"},
+		{"id": "cntWebServers", "name": "Počet webových serverů", "type": "int"},
+		{"id": "cntUIs", "name": "Počet uživatelských rozhraní", "type": "int"},
+		{"id": "data", "name": "Data", "type": "memo"}
+	],
+	"options": ["systemTable"]
+}

@@ -245,6 +245,8 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 		]);
 
 
+		$this->createContentBody_hostingInfo();
+
 		$this->addContent ('body', [
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'line',
 			'line' => ['code' => '<pre>'.Json::lint($this->statsRecData['data']).'</pre>']
@@ -268,6 +270,20 @@ class DocumentCardDataSource extends \Shipard\Base\DocumentCard
 		{
 			$destTable[] = ['p1' => $key, 't1' => $value];
 		}
+	}
+
+	protected function createContentBody_hostingInfo()
+	{
+    $existedInfo = $this->db()->query('SELECT * FROM [hosting_core_dsHostingInfo] WHERE [dataSource] = %i', $this->recData['ndx'])->fetch();
+		if (!$existedInfo)
+			return;
+
+		$info = Json::decode ($existedInfo['data']);
+
+		$this->addContent ('body', [
+			'pane' => 'e10-pane e10-pane-table', 'type' => 'line',
+			'line' => ['code' => '<pre>'.Json::lint($info).'</pre>']
+		]);
 	}
 
 	public function createContent ()
