@@ -719,9 +719,21 @@ function updateConfiguration ($app, $params = 0)
 		}
 	}
 	$infoForHosting['infoCheckSum'] = sha1 (json_encode ($infoForHosting['info']));
-
 	file_put_contents(__APP_DIR__ . '/config/dsInfoForHosting.json', Utils::json_lint (json_encode ($infoForHosting)));
 
+	// -- upload info for hosting to hosting
+	$dsMode = $app->cfgItem ('dsMode', Application::dsmProduction);
+	if ($dsMode === Application::dsmProduction)
+	{
+		$cfgServer = Utils::loadCfgFile(__SHPD_ETC_DIR__.'/server.json');
+		if ($cfgServer)
+		{
+			$url = 'https://'.$cfgServer['hostingDomain'].'/api/objects/call/hosting-ds-info-upload';
+			$ce = new \lib\objects\ClientEngine($app);
+			$ce->apiKey = $cfgServer['hostingApiKey'];
+			$ce->apiCall($url, $infoForHosting);
+		}
+	}
 
 	$objectData ['message'] = 'Nastavení bylo přegenerováno.';
 	$objectData ['finalAction'] = 'reloadPanel';
@@ -749,6 +761,4 @@ class widgetServerInfo extends Widget
 
 		$this->html = $c;
 	}
-
-
 }
