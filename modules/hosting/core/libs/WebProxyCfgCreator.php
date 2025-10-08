@@ -1,7 +1,7 @@
 <?php
 
 namespace hosting\core\libs;
-use \Shipard\Utils\Json, \Shipard\Base\Utility;
+use \Shipard\Utils\Json, \Shipard\Utils\Utils, \Shipard\Base\Utility;
 
 
 /**
@@ -286,14 +286,16 @@ class WebProxyCfgCreator extends Utility
       'cid' => $cid,
     ];
 
-    $fullChain = file_get_contents('/var/lib/shipard/hosting/certs/crt/'.$cid.'/fullchain.pem');
+    $certData = Utils::loadCfgFile('/var/lib/shipard/hosting/certs/active/'.$cid.'/cert.json');
+
+    $fullChain = $certData['files']['chain.pem'] ?? ' ------------ !!! no cert data !!! ------------ ';
     if ($this->forDocumentCard)
-      $fullChain = substr($fullChain, 0, 24).'...'.substr($fullChain, -24);
+      $fullChain = substr($fullChain, 0, 24).' [censored] '.substr($fullChain, -24);
     $this->cfg['certs'][$cid]['fullchain'] = $fullChain;
 
-    $privKey = file_get_contents('/var/lib/shipard/hosting/certs/crt/'.$cid.'/privkey.pem');
+    $privKey = $certData['files']['privkey.pem'] ?? ' ------------ !!! no cert data !!! ------------ ';
     if ($this->forDocumentCard)
-      $privKey = substr($privKey, 0, 24).'...'.substr($privKey, -24);
+      $privKey = substr($privKey, 0, 24).' [censored] '.substr($privKey, -24);
 
     $this->cfg['certs'][$cid]['privkey'] = $privKey;
   }
