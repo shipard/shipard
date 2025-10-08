@@ -1,6 +1,7 @@
 <?php
 
 namespace hosting\core\libs\dc;
+use \Shipard\Utils\Json;
 
 
 /**
@@ -96,10 +97,8 @@ class DocumentCardServer extends \Shipard\Base\DocumentCard
     }
   }
 
-	public function createContentBody ()
+	public function createServerInfo ()
 	{
-		$this->createTools();
-
     if (!$this->serverInfoCore)
     {
       $this->addContent ('body', [
@@ -150,6 +149,40 @@ class DocumentCardServer extends \Shipard\Base\DocumentCard
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
 			'header' => $h, 'table' => $info, 'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
 		]);
+	}
+
+  protected function createServerCfg()
+  {
+    if ($this->recData['serverRole'] === 3)
+    { // webProxy
+      $c = new \hosting\core\libs\WebProxyCfgCreator($this->app());
+      $c->forDocumentCard = 1;
+      $c->setServer($this->recData['ndx']);
+      if ($c->create())
+      {
+        foreach ($c->cfg['cfgFiles'] as $cfgFileId => $cfgFile)
+        {
+          $pc = [
+            'type' => 'text', 'subtype' => 'code', 'text' => $cfgFile,
+            'detailsTitle' => [['text' => $cfgFileId, 'class' => 'e10-me']],
+            'details' => 'e10-pane e10-pane-table'
+          ];
+          $this->addContent('body', $pc);
+        }
+
+        $this->addContent ('body', [
+          'pane' => 'e10-pane e10-pane-table', 'type' => 'line',
+          'line' => ['code' => '<pre>'.Json::lint($c->cfg).'</pre>']
+        ]);
+      }
+    }
+  }
+
+	public function createContentBody ()
+	{
+		$this->createTools();
+    $this->createServerInfo();
+    $this->createServerCfg();
 	}
 
 	public function createContent ()
