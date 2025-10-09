@@ -45,6 +45,8 @@
     {"id": "updownIOSSLValid", "name": "updown.io SSL status", "type": "short"},
     {"id": "updownIOSSLExpire", "name": "updown.io SSL expirace", "type": "timestamp"},
 
+		{"id": "apiDownloadKey", "name": "API klíč", "type": "string", "len": 64},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],

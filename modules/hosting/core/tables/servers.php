@@ -21,6 +21,10 @@ class TableServers extends DbTable
 			$recData ['id'] = 'b' . base_convert (mt_rand (1000, 9999), 10, 35);
 		if ($recData['gid'] == '')
 			$recData ['gid'] = Utils::createRecId($recData, '!06z');
+
+		if ($recData['apiDownloadKey'] === '')
+			$recData['apiDownloadKey'] = Utils::createToken(64);
+
 		parent::checkBeforeSave ($recData, $ownerData);
 	}
 
@@ -242,6 +246,8 @@ class FormServer extends TableForm
 
 			$this->addSeparator(self::coH3);
 			$this->addColumnInput ('owner');
+			$this->addSeparator(self::coH3);
+			$this->addColumnInput ('apiDownloadKey');
 
 		$this->closeForm ();
 	}

@@ -15,6 +15,9 @@
 	"papi": {
 		"certs": {
 			"classId": "hosting.core.libs.api.CertDownload"
+		},
+		"webProxy": {
+			"classId": "hosting.core.libs.api.GetWebProxyConfig"
 		}
 	}
 }
