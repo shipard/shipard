@@ -21,6 +21,7 @@
 	"forms": [
 		{"id": "default", "class": "services.locAddr.FormZIPCode"}
 	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"indexes": [
 		{"id": "s1", "columns": ["country", "zipCodeId"]}
 	]

@@ -185,7 +185,20 @@ class FormAddrPlace extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
+			$this->addColumnInput ('addrPlaceId');
+			$this->addColumnInput ('houseNr1Type');
+			$this->addColumnInput ('houseNr1');
+			$this->addColumnInput ('houseNr2');
+			$this->addColumnInput ('houseNrLetter');
+			$this->addColumnInput ('houseNr');
+			$this->addColumnInput ('street');
+			$this->addColumnInput ('cityPart');
 			$this->addColumnInput ('city');
+			$this->addColumnInput ('zipCode');
+			$this->addColumnInput ('natGeoCoordX');
+			$this->addColumnInput ('natGeoCoordY');
+			$this->addColumnInput ('wgs84lat');
+			$this->addColumnInput ('wgs84lng');
 		$this->closeForm ();
 	}
 }

@@ -22,6 +22,7 @@
 	"forms": [
 		{"id": "default", "class": "services.locAddr.FormCityPart"}
 	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"indexes": [
 		{"id": "s1", "columns": ["country", "cityPartId"]}
 	]

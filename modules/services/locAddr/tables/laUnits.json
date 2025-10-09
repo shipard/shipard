@@ -26,6 +26,7 @@
 	"forms": [
 		{"id": "default", "class": "services.locAddr.FormLAUnit"}
 	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"indexes": [
 		{"id": "s1", "columns": ["country", "laUnitId"]}
 	]

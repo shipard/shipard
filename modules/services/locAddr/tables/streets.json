@@ -22,6 +22,7 @@
 	"forms": [
 		{"id": "default", "class": "services.locAddr.FormStreet"}
 	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"indexes": [
 		{"id": "s1", "columns": ["country", "streetId"]},
 		{"id": "s2", "columns": ["fullName"]}

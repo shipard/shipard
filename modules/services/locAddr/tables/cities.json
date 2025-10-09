@@ -24,6 +24,7 @@
 	"forms": [
 		{"id": "default", "class": "services.locAddr.FormCity"}
 	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
 	"indexes": [
 		{"id": "s1", "columns": ["country", "cityId"]}
 	]
