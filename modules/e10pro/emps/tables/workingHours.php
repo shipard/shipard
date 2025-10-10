@@ -25,6 +25,27 @@ class TableWorkingHours extends DbTable
 		if (!$recNdx)
 			return;
 
+		$workingHoursKind = $this->app()->cfgItem('e10pro.emps.workingHoursKinds.'.$recData['workingHoursKind'], NULL);
+		if (!$workingHoursKind)
+			return;
+
+		if ($workingHoursKind['usePedagogicalActivity'] ?? 0)
+		{
+			$recData['wlWeekly'] = $recData['wlWeeklyPedagogicalActivity'];
+			$recData['wlWeekly2'] = round($recData['wlWeeklyPedagogicalActivity'] - $recData['wlWeekly1'], 2);
+
+		}
+		else
+		{
+			if ($workingHoursKind['useTwoHours'] ?? 0)
+			{
+			}
+		}
+		if ($recData['wlWeekly'])
+			$recData['wlWeeklyRatio'] = round($recData['wlWeekly'] / $recData['wlWeeklyTotal'], 4);
+		else
+			$recData['wlWeeklyRatio'] = 0.0;
+
 		$whInfo = new \e10pro\emps\libs\WorkingHoursInfo($this->app());
 		$whInfo->setWorkingHours($recNdx);
 		$whInfo->loadData();
@@ -152,8 +173,8 @@ class FormWorkingHours extends TableForm
 					else
 					{
 						$this->addColumnInput ('wlWeeklyTotal');
-						$this->addColumnInput ('wlWeeklyRatio');
 						$this->addColumnInput ('wlWeekly');
+						$this->addColumnInput ('wlWeeklyRatio');
 					}
 					$this->addSeparator(self::coH3);
 					$this->addColumnInput ('validFrom');

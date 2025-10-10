@@ -4,15 +4,15 @@
 		{"id": "ndx", "name": "id", "type": "int_ai"},
 		{"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
 
-    {"id": "workingHoursKind", "name": "Druh", "type": "enumInt", "reference": "e10pro.emps.workingHoursKinds",
+    {"id": "workingHoursKind", "name": "Druh", "type": "enumInt", "reference": "e10pro.emps.workingHoursKinds", "options": ["saveOnChange"],
 			"enumCfg": {"cfgItem": "e10pro.emps.workingHoursKinds", "cfgValue": "", "cfgText": "fn"}},
 
-		{"id": "wlWeeklyTotal", "name": "Týdenní pracovní doba", "type": "number", "dec": 2},
+		{"id": "wlWeeklyTotal", "name": "Týdenní pracovní doba", "type": "number", "dec": 2, "options": ["saveOnChange"]},
 		{"id": "wlWeeklyRatio", "name": "Výše úvazku", "type": "number", "dec": 4},
 
-		{"id": "wlWeeklyPedagogicalActivity", "name": "Stanovená výše pedagogické činnosti", "type": "number", "dec": 2},
-		{"id": "wlWeekly", "name": "Počet pracovních hodin týdně celkem", "type": "number", "dec": 2},
-		{"id": "wlWeekly1", "name": "Týdenní pracovní doba - přímá", "type": "number", "dec": 2},
+		{"id": "wlWeeklyPedagogicalActivity", "name": "Stanovená výše pedagogické činnosti", "type": "number", "dec": 2, "options": ["saveOnChange"]},
+		{"id": "wlWeekly", "name": "Počet pracovních hodin týdně celkem", "type": "number", "dec": 2, "options": ["saveOnChange"]},
+		{"id": "wlWeekly1", "name": "Týdenní pracovní doba - přímá", "type": "number", "dec": 2, "options": ["saveOnChange"]},
 		{"id": "wlWeekly2", "name": "Týdenní pracovní doba - nepřímá", "type": "number", "dec": 2},
 
 		{"id": "sumWeeklyHours1", "name": "Celkem týdenní pracovní doba - přímá", "type": "number", "dec": 2},
