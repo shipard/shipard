@@ -69,6 +69,9 @@ class ViewAddrPlaces extends TableView
 		//if ($item['cityPartFullName'] && $item['cityPartFullName'] != $item['cityFullName'])
 		//	$listItem ['t2'][] = ['text' => $item['cityPartFullName'], 'class' => ''];
 
+		if ($item['cityPart2FullName'])
+			$listItem ['t2'][] = ['text' => $item['cityPart2FullName'], 'class' => 'label label-warning'];
+
 		$city = ['text' => $item['cityFullName'], 'class' => 'label label-success'];
 		if ($item['zipCodeIdName'])
 			$city['suffix'] = $item['zipCodeIdName'];
@@ -78,12 +81,12 @@ class ViewAddrPlaces extends TableView
 
 		$listItem ['t2'][] = $city;
 
-		if ($item['laUnitOwner0FullName'] && $item['laUnitOwner0FullName'] != $item['cityFullName'])
-			$listItem ['t2'][] = ['text' => $item['laUnitOwner0FullName'], 'class' => 'label label-default'];
-		if ($item['laUnitOwner1FullName'])
-			$listItem ['t2'][] = ['text' => $item['laUnitOwner1FullName'], 'class' => 'label label-primary'];
 		if ($item['laUnitOwner2FullName'])
 			$listItem ['t2'][] = ['text' => $item['laUnitOwner2FullName'], 'class' => 'label label-info'];
+		if ($item['laUnitOwner1FullName'])
+			$listItem ['t2'][] = ['text' => $item['laUnitOwner1FullName'], 'class' => 'label label-primary'];
+		if ($item['laUnitOwner0FullName'] && $item['laUnitOwner0FullName'] != $item['cityFullName'])
+			$listItem ['t2'][] = ['text' => $item['laUnitOwner0FullName'], 'class' => 'label label-default'];
 
 
 		//$listItem ['i2'] = Utils::dateFromTo($item['validFrom'], $item['validTo'], NULL);
@@ -103,6 +106,7 @@ class ViewAddrPlaces extends TableView
 		array_push ($q, ' [cities].[fullName] AS [cityFullName],');
 		array_push ($q, ' [zipCodes].[idName] AS [zipCodeIdName],');
 		array_push ($q, ' [citiesParts].[fullName] AS [cityPartFullName],');
+		array_push ($q, ' [citiesParts2].[fullName] AS [cityPart2FullName],');
 		array_push ($q, ' [streets].[fullName] AS [streetFullName],');
     array_push ($q, ' [laUnits2].[fullName] AS [laUnitOwner2FullName],');
     array_push ($q, ' [laUnits1].[fullName] AS [laUnitOwner1FullName],');
@@ -111,10 +115,11 @@ class ViewAddrPlaces extends TableView
 		array_push ($q, ' LEFT JOIN [services_locAddr_cities] AS [cities] ON addrPlaces.city = cities.ndx');
 		array_push ($q, ' LEFT JOIN [services_locAddr_zipCodes] AS [zipCodes] ON addrPlaces.zipCode = zipCodes.ndx');
 		array_push ($q, ' LEFT JOIN [services_locAddr_citiesParts] AS [citiesParts] ON addrPlaces.cityPart = citiesParts.ndx');
+		array_push ($q, ' LEFT JOIN [services_locAddr_citiesParts] AS [citiesParts2] ON addrPlaces.cityPart2 = citiesParts2.ndx');
 		array_push ($q, ' LEFT JOIN [services_locAddr_streets] AS [streets] ON addrPlaces.street = streets.ndx');
-    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits2] ON cities.laUnitOwner2 = laUnits2.ndx');
-		array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits1] ON cities.laUnitOwner1 = laUnits1.ndx');
-    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits0] ON cities.laUnitOwner0 = laUnits0.ndx');
+    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits2] ON cities.laUnit2 = laUnits2.ndx');
+		array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits1] ON cities.laUnit1 = laUnits1.ndx');
+    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits0] ON cities.laUnit0 = laUnits0.ndx');
 
 		array_push ($q, ' WHERE 1');
 
@@ -193,12 +198,20 @@ class FormAddrPlace extends TableForm
 			$this->addColumnInput ('houseNr');
 			$this->addColumnInput ('street');
 			$this->addColumnInput ('cityPart');
+			$this->addColumnInput ('cityPart2');
 			$this->addColumnInput ('city');
 			$this->addColumnInput ('zipCode');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('laUnit11');
+			$this->addColumnInput ('laUnit10');
+			$this->addSeparator(self::coH4);
 			$this->addColumnInput ('natGeoCoordX');
 			$this->addColumnInput ('natGeoCoordY');
 			$this->addColumnInput ('wgs84lat');
 			$this->addColumnInput ('wgs84lng');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('validFrom');
+			$this->addColumnInput ('validTo');
 		$this->closeForm ();
 	}
 }

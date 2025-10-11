@@ -1,14 +1,25 @@
 {
-  "id": "services.locAddr.laUnits", "sql": "services_locAddr_laUnits", "name": "Administrativní člěnění",
+  "id": "services.locAddr.laUnits", "sql": "services_locAddr_laUnits", "name": "Administrativní členění",
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
 		{"id": "level", "name": "Úroveň", "type": "enumInt",
-			"enumValues": {"0": "Okres", "1": "Kraj", "2": "Region"}},
+			"enumValues": {
+				"0": "Region",
+				"1": "Kraj",
+				"2": "Okres",
+				"10": "ORP",
+				"11": "ZUJ"
+			}
+		},
     {"id": "laUnitId", "name": "Kód", "type": "int"},
 
+    {"id": "laUnitOwner0", "name": "Region", "type": "int", "reference": "services.locAddr.laUnits"},
     {"id": "laUnitOwner1", "name": "Kraj", "type": "int", "reference": "services.locAddr.laUnits"},
-    {"id": "laUnitOwner2", "name": "Region", "type": "int", "reference": "services.locAddr.laUnits"},
+    {"id": "laUnitOwner2", "name": "Okres", "type": "int", "reference": "services.locAddr.laUnits"},
+
+		{"id": "cityPart2", "name": "Městská část", "type": "int", "reference": "services.locAddr.citiesParts"},
+    {"id": "city", "name": "Obec", "type": "int", "reference": "services.locAddr.cities"},
 
 		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
 

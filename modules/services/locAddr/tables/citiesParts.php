@@ -42,6 +42,13 @@ class ViewCitiesParts extends TableView
 	public function init()
 	{
 		parent::init();
+
+		$bt = [];
+		$bt [] = ['id' => 'ALL', 'title' => 'Vše', 'active' => 1];
+		$bt [] = ['id' => '0', 'title' => 'Části obcí', 'active' => 0];
+		$bt [] = ['id' => '1', 'title' => 'Městské části', 'active' => 0];
+		$this->setBottomTabs ($bt);
+
 		$this->setPanels (TableView::sptQuery);
 	}
 
@@ -51,17 +58,18 @@ class ViewCitiesParts extends TableView
 		$listItem ['t1'] = $item['fullName'];
 
 		$listItem ['i1'] = ['text' => '#'.$item['cityPartId'], 'class' => 'id'];
+		$listItem ['i2'] = ['text' => ($item['cityPartKind'] == 0 ? 'ČO' : 'MČ'), 'class' => 'id'];
 
     $listItem ['t2'] = [];
 
 		if ($item['cityFullName'])
 			$listItem ['t2'][] = ['text' => $item['cityFullName'], 'class' => 'label label-default'];
-		if ($item['laUnitOwner0FullName'])
-			$listItem ['t2'][] = ['text' => $item['laUnitOwner0FullName'], 'class' => 'label label-success'];
-    if ($item['laUnitOwner1FullName'])
-			$listItem ['t2'][] = ['text' => $item['laUnitOwner1FullName'], 'class' => 'label label-primary'];
     if ($item['laUnitOwner2FullName'])
       $listItem ['t2'][] = ['text' => $item['laUnitOwner2FullName'], 'class' => 'label label-info'];
+    if ($item['laUnitOwner1FullName'])
+			$listItem ['t2'][] = ['text' => $item['laUnitOwner1FullName'], 'class' => 'label label-primary'];
+		if ($item['laUnitOwner0FullName'])
+			$listItem ['t2'][] = ['text' => $item['laUnitOwner0FullName'], 'class' => 'label label-success'];
 
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
@@ -81,11 +89,15 @@ class ViewCitiesParts extends TableView
     array_push ($q, ' [laUnits0].[fullName] AS [laUnitOwner0FullName]');
 		array_push ($q, ' FROM [services_locAddr_citiesParts] AS [citiesParts]');
 		array_push ($q, ' LEFT JOIN [services_locAddr_cities] AS [cities] ON citiesParts.city = cities.ndx');
-    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits2] ON cities.laUnitOwner2 = laUnits2.ndx');
-		array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits1] ON cities.laUnitOwner1 = laUnits1.ndx');
-    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits0] ON cities.laUnitOwner0 = laUnits0.ndx');
+    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits2] ON cities.laUnit2 = laUnits2.ndx');
+		array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits1] ON cities.laUnit1 = laUnits1.ndx');
+    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits0] ON cities.laUnit0 = laUnits0.ndx');
 
 		array_push ($q, ' WHERE 1');
+
+		$btId = $this->bottomTabId ();
+		if ($btId !== '' && $btId !== 'ALL')
+			array_push ($q, ' AND [citiesParts].[cityPartKind] = %i', intval($btId));
 
 		// -- fulltext
 		if ($fts != '')
@@ -117,7 +129,11 @@ class FormCityPart extends TableForm
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
 		$this->openForm ();
+			$this->addColumnInput ('cityPartKind');
 			$this->addColumnInput ('fullName');
+			$this->addColumnInput ('city');
+			$this->addColumnInput ('cityPartId');
+			$this->addColumnInput ('laUnit11');
 		$this->closeForm ();
 	}
 }

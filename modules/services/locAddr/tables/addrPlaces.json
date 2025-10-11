@@ -15,8 +15,12 @@
 
     {"id": "street", "name": "Ulice", "type": "int", "reference": "services.locAddr.streets"},
     {"id": "cityPart", "name": "Část obce", "type": "int", "reference": "services.locAddr.citiesParts"},
+    {"id": "cityPart2", "name": "Městská část", "type": "int", "reference": "services.locAddr.citiesParts"},
     {"id": "city", "name": "Obec", "type": "int", "reference": "services.locAddr.cities"},
     {"id": "zipCode", "name": "PSČ", "type": "int", "reference": "services.locAddr.zipCodes"},
+
+    {"id": "laUnit10", "name": "ORP", "type": "int", "reference": "services.locAddr.laUnits"},
+    {"id": "laUnit11", "name": "ZUJ", "type": "int", "reference": "services.locAddr.laUnits"},
 
     {"id": "natGeoCoordX", "name": "Národní geosouřadnice X", "type": "number", "dec": 2},
     {"id": "natGeoCoordY", "name": "Národní geosouřadnice Y", "type": "number", "dec": 2},

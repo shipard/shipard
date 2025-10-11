@@ -21,7 +21,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	public function cliInitialImport ()
 	{
-		echo "cliInitialImportCZ \n";
+		echo "### cliInitialImportCZ \n";
 
 		$ie = new \services\locAddr\libs\imports\cz\ImportEngineCZ($this->app);
 		$ie->init();
@@ -34,6 +34,18 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 		$len = Utils::dateDiffShort($begin, $end);
 		echo "### TOTAL LEN: ".$len."\n";
+		return TRUE;
+	}
+
+	public function cliDropTables ()
+	{
+		$this->app->db()->query('DROP TABLE IF EXISTS [services_locAddr_addrPlaces]');
+		$this->app->db()->query('DROP TABLE IF EXISTS [services_locAddr_streets]');
+		$this->app->db()->query('DROP TABLE IF EXISTS [services_locAddr_cities]');
+		$this->app->db()->query('DROP TABLE IF EXISTS [services_locAddr_citiesParts]');
+		$this->app->db()->query('DROP TABLE IF EXISTS [services_locAddr_laUnits]');
+		$this->app->db()->query('DROP TABLE IF EXISTS [services_locAddr_zipCodes]');
+
 		return TRUE;
 	}
 
@@ -55,6 +67,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			case 'initial-download': return $this->cliInitialDownload();
 			case 'initial-import': return $this->cliInitialImport();
+			case 'drop-tables': return $this->cliDropTables();
 		}
 
 		parent::onCliAction($actionId);

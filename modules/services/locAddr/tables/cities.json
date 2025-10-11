@@ -6,9 +6,12 @@
     {"id": "cityId", "name": "Kód", "type": "int"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
 
-    {"id": "laUnitOwner0", "name": "Okres", "type": "int", "reference": "services.locAddr.laUnits"},
-		{"id": "laUnitOwner1", "name": "Kraj", "type": "int", "reference": "services.locAddr.laUnits"},
-    {"id": "laUnitOwner2", "name": "Region", "type": "int", "reference": "services.locAddr.laUnits"},
+    {"id": "laUnit0", "name": "Region", "type": "int", "reference": "services.locAddr.laUnits"},
+		{"id": "laUnit1", "name": "Kraj", "type": "int", "reference": "services.locAddr.laUnits"},
+    {"id": "laUnit2", "name": "Okres", "type": "int", "reference": "services.locAddr.laUnits"},
+
+		{"id": "laUnit10", "name": "ORP", "type": "int", "reference": "services.locAddr.laUnits"},
+		{"id": "laUnit11", "name": "ZUJ", "type": "int", "reference": "services.locAddr.laUnits"},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"}

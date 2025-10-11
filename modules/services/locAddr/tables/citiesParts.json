@@ -3,10 +3,14 @@
   "columns": [
     {"id": "ndx", "name": "id", "type": "int_ai"},
     {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
-    {"id": "cityPartId", "name": "Kód", "type": "int"},
+		{"id": "cityPartKind", "name": "Druh", "type": "enumInt",
+			"enumValues": {"0": "Část obce", "1": "Městská část"}},
+
+		{"id": "cityPartId", "name": "Kód", "type": "int"},
 		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
 
     {"id": "city", "name": "Obec", "type": "int", "reference": "services.locAddr.cities"},
+		{"id": "laUnit11", "name": "ZUJ", "type": "int", "reference": "services.locAddr.laUnits"},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"}

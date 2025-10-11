@@ -54,12 +54,12 @@ class ViewCities extends TableView
 
     $listItem ['t2'] = [];
 
-		if ($item['laUnitOwner0FullName'])
-			$listItem ['t2'][] = ['text' => $item['laUnitOwner0FullName'], 'class' => 'label label-success'];
-    if ($item['laUnitOwner1FullName'])
-			$listItem ['t2'][] = ['text' => $item['laUnitOwner1FullName'], 'class' => 'label label-primary'];
     if ($item['laUnitOwner2FullName'])
       $listItem ['t2'][] = ['text' => $item['laUnitOwner2FullName'], 'class' => 'label label-info'];
+    if ($item['laUnitOwner1FullName'])
+			$listItem ['t2'][] = ['text' => $item['laUnitOwner1FullName'], 'class' => 'label label-primary'];
+		if ($item['laUnitOwner0FullName'])
+			$listItem ['t2'][] = ['text' => $item['laUnitOwner0FullName'], 'class' => 'label label-success'];
 
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
@@ -76,9 +76,9 @@ class ViewCities extends TableView
     array_push ($q, ' [laUnits1].[fullName] AS [laUnitOwner1FullName],');
     array_push ($q, ' [laUnits0].[fullName] AS [laUnitOwner0FullName]');
 		array_push ($q, ' FROM [services_locAddr_cities] AS [cities]');
-    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits2] ON cities.laUnitOwner2 = laUnits2.ndx');
-		array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits1] ON cities.laUnitOwner1 = laUnits1.ndx');
-    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits0] ON cities.laUnitOwner0 = laUnits0.ndx');
+    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits2] ON cities.laUnit2 = laUnits2.ndx');
+		array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits1] ON cities.laUnit1 = laUnits1.ndx');
+    array_push ($q, ' LEFT JOIN [services_locAddr_laUnits] AS [laUnits0] ON cities.laUnit0 = laUnits0.ndx');
 
 		array_push ($q, ' WHERE 1');
 
@@ -113,6 +113,13 @@ class FormCity extends TableForm
 
 		$this->openForm ();
 			$this->addColumnInput ('fullName');
+			$this->addColumnInput ('cityId');
+
+			$this->addColumnInput ('laUnit0');
+			$this->addColumnInput ('laUnit1');
+			$this->addColumnInput ('laUnit2');
+			$this->addColumnInput ('laUnit10');
+			$this->addColumnInput ('laUnit11');
 		$this->closeForm ();
 	}
 }
