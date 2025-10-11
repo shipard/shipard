@@ -184,7 +184,7 @@ class WebProxyCfgCreator extends Utility
       $cfg .= "  location / {\n";
       $cfg .= "    proxy_set_header X-Forwarded-For ".'$remote_addr'.";\n";
       $cfg .= "    proxy_pass_request_headers on;\n";
-      $cfg .= "    proxy_pass $domain;\n";
+      $cfg .= "    proxy_pass https://$domain;\n";
       $cfg .= "  }\n";
       $cfg .= "}\n";
 
@@ -212,7 +212,7 @@ class WebProxyCfgCreator extends Utility
       $cfg .= "  location / {\n";
       $cfg .= "    proxy_set_header X-Forwarded-For ".'$remote_addr'.";\n";
       $cfg .= "    proxy_pass_request_headers on;\n";
-      $cfg .= "    proxy_pass $domain;\n";
+      $cfg .= "    proxy_pass https://$domain;\n";
       $cfg .= "  }\n";
       $cfg .= "}\n";
 
@@ -244,7 +244,7 @@ class WebProxyCfgCreator extends Utility
       $cfg .= "  location / {\n";
       $cfg .= "    proxy_set_header X-Forwarded-For ".'$remote_addr'.";\n";
       $cfg .= "    proxy_pass_request_headers on;\n";
-      $cfg .= "    proxy_pass $domain;\n";
+      $cfg .= "    proxy_pass https://$domain;\n";
       $cfg .= "  }\n";
       $cfg .= "}\n";
 
