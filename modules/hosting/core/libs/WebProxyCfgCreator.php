@@ -308,7 +308,7 @@ class WebProxyCfgCreator extends Utility
 
     $baseDomain = implode('.', $parts);
 
-    $cid = $this->wildCardCerts[$baseDomain] ?? $baseDomain;
+    $cid = $this->wildCardCerts[$baseDomain] ?? $domain;
 
     return $cid;
   }
