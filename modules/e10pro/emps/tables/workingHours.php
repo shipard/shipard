@@ -31,20 +31,24 @@ class TableWorkingHours extends DbTable
 
 		if ($workingHoursKind['usePedagogicalActivity'] ?? 0)
 		{
-			$recData['wlWeekly'] = $recData['wlWeeklyPedagogicalActivity'];
-			$recData['wlWeekly2'] = round($recData['wlWeeklyPedagogicalActivity'] - $recData['wlWeekly1'], 2);
+			if ($recData['wlWeeklyPedagogicalActivity'])
+				$recData['wlWeeklyRatio'] = round($recData['wlWeekly1'] / $recData['wlWeeklyPedagogicalActivity'], 4);
+			else
+				$recData['wlWeeklyRatio'] = 0.0;
 
+			$recData['wlWeekly'] = round($recData['wlWeeklyTotal'] * $recData['wlWeeklyRatio'], 2);
+			$recData['wlWeekly2'] = round($recData['wlWeekly'] - $recData['wlWeekly1'], 2);
 		}
 		else
 		{
 			if ($workingHoursKind['useTwoHours'] ?? 0)
 			{
 			}
+			if ($recData['wlWeekly'])
+				$recData['wlWeeklyRatio'] = round($recData['wlWeekly'] / $recData['wlWeeklyTotal'], 4);
+			else
+				$recData['wlWeeklyRatio'] = 0.0;
 		}
-		if ($recData['wlWeekly'])
-			$recData['wlWeeklyRatio'] = round($recData['wlWeekly'] / $recData['wlWeeklyTotal'], 4);
-		else
-			$recData['wlWeeklyRatio'] = 0.0;
 
 		$whInfo = new \e10pro\emps\libs\WorkingHoursInfo($this->app());
 		$whInfo->setWorkingHours($recNdx);
@@ -53,11 +57,6 @@ class TableWorkingHours extends DbTable
 		$recData['sumWeeklyHoursTotal'] = $whInfo->dataWeeklySum['hoursTotal'];
 		$recData['sumWeeklyHours1'] = $whInfo->dataWeeklySum['hours1'];
 		$recData['sumWeeklyHours2'] = $whInfo->dataWeeklySum['hours2'];
-
-		if ($recData['wlWeeklyTotal'])
-			$recData['calcWeeklyRatio'] = round($recData['sumWeeklyHoursTotal'] / $recData['wlWeeklyTotal'], 4);
-		else
-			$recData['calcWeeklyRatio'] = 0.0;
 	}
 
 	public function createHeader ($recData, $options)
@@ -163,18 +162,18 @@ class FormWorkingHours extends TableForm
 						$this->addColumnInput ('wlWeeklyTotal');
 						if ($this->workingHoursKind['usePedagogicalActivity'] ?? 0)
 							$this->addColumnInput ('wlWeeklyPedagogicalActivity');
-						$this->addSeparator(self::coH4);
 						$this->addColumnInput ('wlWeekly1');
-						$this->addColumnInput ('wlWeekly2');
-						$this->addColumnInput ('wlWeekly');
 						$this->addSeparator(self::coH4);
-						$this->addColumnInput ('wlWeeklyRatio');
+						$this->addColumnInput ('wlWeekly2', self::coReadOnly);
+						$this->addColumnInput ('wlWeekly', self::coReadOnly);
+						$this->addSeparator(self::coH4);
+						$this->addColumnInput ('wlWeeklyRatio', self::coReadOnly);
 					}
 					else
 					{
 						$this->addColumnInput ('wlWeeklyTotal');
 						$this->addColumnInput ('wlWeekly');
-						$this->addColumnInput ('wlWeeklyRatio');
+						$this->addColumnInput ('wlWeeklyRatio', self::coReadOnly);
 					}
 					$this->addSeparator(self::coH3);
 					$this->addColumnInput ('validFrom');
