@@ -60,6 +60,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       echo Json::lint($data)."\n";
 
     $dest['natAddressGeoId'] = intval($data['kodAdresnihoMista'] ?? 0);
+    $dest['standardized'] = 0;
 
     $partlyStandardized = 0;
 
