@@ -41,6 +41,7 @@
 	"forms": [
 		{"id": "default", "class": "services.locAddr.FormAddrPlace"}
 	],
+  "autocomplete": {"columnValue": "ndx", "columnTitle": "addrPlaceId"},
 	"indexes": [
 		{"id": "s1", "columns": ["country", "addrPlaceId"]},
     {"id": "s2", "columns": ["houseNr1"]},

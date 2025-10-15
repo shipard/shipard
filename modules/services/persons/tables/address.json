@@ -8,6 +8,11 @@
 		{"id": "type", "name": "Druh adresy", "type": "enumInt",
 		  "enumCfg": {"cfgItem": "services.persons.addressTypes", "cfgValue": "", "cfgText": "name"}},
 
+    {"id": "standardized", "name": "Standardizovaná adresa", "type": "enumInt",
+      "enumValues": {"0": "Ne", "1": "Ano", "2": "Částečně"}},
+		{"id": "source", "name": "Zdroj", "type": "enumInt",
+			"enumValues": {"0": "Neznámý", "1": "Ares", "2": "Ares RŽP", "3": "RŽP"}},
+
 		{"id": "specification", "name": "Upřesnění", "type": "string", "len": 160},
     {"id": "street", "name": "Ulice", "type": "string", "len": 250},
     {"id": "city", "name": "Město", "type": "string", "len": 90},
@@ -16,10 +21,49 @@
 
     {"id": "natId", "name": "Národní ID", "type": "string", "len": 20},
     {"id": "natAddressGeoId", "name": "Národní kód adresy", "type": "int"},
+    {"id": "addressPlaceNdx", "name": "Standardizovaná adresa", "type": "int", "reference": "services.locAddr.addrPlaces"},
+
+		{"id": "saHouseNr1Type", "name": "Typ čísla domu", "type": "enumInt",
+			"enumValues": {"0": "Číslo popisné", "1": "Číslo evidenční"}},
+
+    {"id": "saHouseNr1", "name": "Číslo domu", "type": "short"},
+    {"id": "saHouseNr2", "name": "Číslo orientační", "type": "short"},
+    {"id": "saHouseNrLetter", "name": "Číslo orientační - písmeno", "type": "string", "len": 3},
+    {"id": "saHouseNr", "name": "Číslo domovní", "type": "string", "len": 20},
+    {"id": "saZipCodeId", "name": "PSČ", "type": "string", "len": 20},
+    {"id": "saZipCodeNdx", "name": "PSČ", "type": "int", "reference": "services.locAddr.zipCodes"},
+
+    {"id": "saStreetName", "name": "Ulice", "type": "string", "len": 250},
+    {"id": "saCityName", "name": "Město", "type": "string", "len": 90},
+    {"id": "saCityPartName", "name": "Část obce", "type": "string", "len": 90},
+    {"id": "saCityPart2Name", "name": "Městská část", "type": "string", "len": 90},
+
+    {"id": "saStreetId", "name": "Ulice", "type": "int"},
+    {"id": "saCityPartId", "name": "Část obce", "type": "int"},
+    {"id": "saCityPart2Id", "name": "Městská část", "type": "int"},
+    {"id": "saCityId", "name": "Obec", "type": "int"},
+
+    {"id": "saLaUnit10Id", "name": "ORP", "type": "int"},
+    {"id": "saLaUnit11Id", "name": "ZUJ", "type": "int"},
+
+    {"id": "saStreetNdx", "name": "Ulice", "type": "int", "reference": "services.locAddr.streets"},
+    {"id": "saCityPartNdx", "name": "Část obce", "type": "int", "reference": "services.locAddr.citiesParts"},
+    {"id": "saCityPart2Ndx", "name": "Městská část", "type": "int", "reference": "services.locAddr.citiesParts"},
+    {"id": "saCityNdx", "name": "Obec", "type": "int", "reference": "services.locAddr.cities"},
+    {"id": "saLaUnit10Ndx", "name": "ORP", "type": "int", "reference": "services.locAddr.laUnits"},
+    {"id": "saLaUnit11Ndx", "name": "ZUJ", "type": "int", "reference": "services.locAddr.laUnits"},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"}
   ],
+	"views": {
+		"default": {
+			"id": "default", "class": "services.persons.ViewAddresses",
+			"details": {
+				"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "services.persons.ViewDetailAddress"}
+			}
+		}
+	},
   "options": ["systemTable"],
 	"forms": [
 		{"id": "default", "class": "services.persons.FormAddress"}

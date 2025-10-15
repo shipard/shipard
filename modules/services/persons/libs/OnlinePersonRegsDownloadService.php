@@ -54,7 +54,7 @@ final class OnlinePersonRegsDownloadService extends Utility
       $runLen = time() - $startTime;
       if ($this->debug)
         echo ' >>> '.$runLen.' secs (max is '.$this->maxDuration.')'."\n";
-      
+
       if ($runLen > $this->maxDuration)
         break;
     }

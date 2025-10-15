@@ -62,6 +62,7 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 		foreach ($rows as $r)
 		{
 			$item = [
+				'aid' => ['text' => $r['addressId'], 'docAction' => 'edit', 'table' => 'services.persons.address', 'pk' => $r['ndx']],
 				'city' => $r['city'],
 				'zipcode' => $r['zipcode'],
 				'street' => $r['street'],
@@ -80,7 +81,7 @@ class DocumentCardPerson extends \Shipard\Base\DocumentCard
 			$t[] = $item;
 		}
 
-		$h = ['#' => '#', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice', 'spec' => 'Upřesnění', 'natId' => 'natId', 'geoId' => 'geoId', 'validFrom' => 'Od', 'validTo' => 'Do'];
+		$h = ['#' => '#', 'aid' => 'id', 'city' => 'Město', 'zipcode' => 'PSČ', 'street' => 'Ulice', 'spec' => 'Upřesnění', 'natId' => 'natId', 'geoId' => 'geoId', 'validFrom' => 'Od', 'validTo' => 'Do'];
 		$this->addContent ('body', [
 			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
 			'paneTitle' => ['text' => 'Adresy', 'class' => 'h1', 'icon' => 'tables/e10.base.places'],

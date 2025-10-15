@@ -5,7 +5,8 @@
 			"items": [
 				{"t1": "Osoby", "object": "viewer", "table": "services.persons.persons", "viewer": "default", "order": 110000},
 				{"t1": "Aktualizace", "object": "viewer", "table": "services.persons.regsChanges", "viewer": "default", "order": 140000},
-				{"t1": "Změny", "object": "viewer", "table": "services.persons.regsChangesItems", "viewer": "default", "order": 170000}
+				{"t1": "Změny", "object": "viewer", "table": "services.persons.regsChangesItems", "viewer": "default", "order": 170000},
+				{"t1": "Adresy", "object": "viewer", "table": "services.persons.address", "viewer": "default", "order": 770000}
 			]
 		},
 		"locAddr": {

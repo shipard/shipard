@@ -32,7 +32,7 @@ final class PersonRegsImportService extends Utility
       $q = [];
       array_push($q, 'SELECT * FROM [services_persons_persons]');
       array_push($q, ' WHERE 1');
-      array_push($q, ' AND [importState] = %i', 0);
+      //array_push($q, ' AND [importState] = %i', 0);
       array_push($q, ' AND [newDataAvailable] = %i', 2);
       array_push($q, ' AND [valid] = %i', 1);
       array_push($q, ' LIMIT 10');
@@ -62,6 +62,12 @@ final class PersonRegsImportService extends Utility
     $now = new \DateTime();
     if ($this->debug)
       echo $now->format('Y-m-d H:i:s')."\n";
+  }
+
+  public function resetToReimport()
+  {
+    $this->db()->query('UPDATE services_persons_persons SET newDataAvailable = 2, importState = 0 WHERE 1',
+                      ' AND valid = 1 AND importState != 0');
   }
 }
 

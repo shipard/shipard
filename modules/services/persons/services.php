@@ -104,6 +104,12 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function cliPersonRegsImportReset ()
+	{
+		$e = new \services\persons\libs\PersonRegsImportService($this->app);
+		$e->resetToReimport();
+	}
+
 	public function cliPersonAdd ()
 	{
     $e = new \services\persons\libs\PersonData($this->app());
@@ -250,6 +256,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'daily-import-cz': return $this->cliDailyImportCZ();
 			case 'online-person-regs-download': return $this->cliOnlinePersonRegsDownload();
 			case 'person-regs-import': return $this->cliPersonRegsImport();
+			case 'person-regs-import-reset': return $this->cliPersonRegsImportReset();
 			case 'person-refresh': return $this->cliPersonRefresh();
 			case 'person-add': return $this->cliPersonAdd();
 			case 'refresh-import-res': return $this->cliRefreshImportRES();

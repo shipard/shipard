@@ -279,6 +279,10 @@ class PersonData extends \services\persons\libs\CoreObject
 	function addAddress(array $address)
 	{
 		$aid = $address['addressId'];
+		if ($this->app()->debug > 1)
+		{
+			echo "  - addAddress: `{$aid}`".json_encode($address)."\n";
+		}
 		$this->data	['address'][$aid] = $address;
 	}
 
@@ -402,6 +406,13 @@ class PersonData extends \services\persons\libs\CoreObject
 				{
 					$this->db()->query('UPDATE [services_persons_address] SET ', $update, ' WHERE [ndx] = %i', $existedAddr['ndx']);
 					$this->logRecord->addItem('update-person-address', '', ['update' => ['tableId' => 'services.persons.address', 'recId' => $existedAddr['ndx'], 'changes' => $changes]]);
+					if ($this->app()->debug > 1)
+					{
+						echo "--- saveChanges_Address ---\n";
+						echo "  -  FROM: ".json_encode($existedAddr->toArray())."\n";
+						echo "  -    TO: ".json_encode($oneAddr)."\n";
+						echo "  -UPDATE: ".json_encode($update)."\n";
+					}
 				}
 			}
 			else
