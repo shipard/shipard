@@ -1,0 +1,7 @@
+{
+	"papi": {
+		"la-data-sets": {
+			"classId": "services.locAddr.libs.PapiDataSets"
+		}
+	}
+}

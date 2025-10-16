@@ -49,6 +49,15 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function cliExportAdmUnits ()
+	{
+		$exporter = new \services\locAddr\libs\AdmUnitsExport($this->app);
+		$exporter->country = 60;
+		$exporter->export();
+		return TRUE;
+	}
+
+
 	protected function onCronMorning()
 	{
 	}
@@ -68,6 +77,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'initial-download': return $this->cliInitialDownload();
 			case 'initial-import': return $this->cliInitialImport();
 			case 'drop-tables': return $this->cliDropTables();
+			case 'export-adm-units': return $this->cliExportAdmUnits();
 		}
 
 		parent::onCliAction($actionId);

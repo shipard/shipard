@@ -244,6 +244,17 @@ class PersonData extends \services\persons\libs\CoreObject
 				unset($item['ndx']);
 				unset($item['person']);
 				unset($item['addressId']);
+
+				unset($item['addressPlaceNdx']);
+				unset($item['saZipCodeNdx']);
+				unset($item['saStreetNdx']);
+				unset($item['saCityNdx']);
+				unset($item['saCityPartNdx']);
+				unset($item['saCityPart2Ndx']);
+				unset($item['saStreetNoNdx']);
+				unset($item['saLaUnit10Ndx']);
+				unset($item['saLaUnit11Ndx']);
+
 				$item['country'] = World::countryId($this->app, $item['country']);
 			}
 		}
