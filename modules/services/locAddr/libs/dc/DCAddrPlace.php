@@ -13,9 +13,15 @@ class DCAddrPlace extends \Shipard\Base\DocumentCard
     $t = [];
 
     $row = [
-      'p1' => 'Adresní místo',
-			'_options' => ['colSpan' => ['p1' => 3], 'cellClasses' => ['p1' => 'h2 pull-left']],
+      'p1' => [['text' => 'Adresní místo', 'class' => '']],
+			'_options' => ['colSpan' => ['p1' => 3], 'cellClasses' => ['p1' => 'h2'], 'cellCss' => ['p1' => 'text-align: left;']],
     ];
+
+		if ($this->recData['addrPlaceCanceled'])
+		{
+			$row['p1'][] = ['text' => 'ZRUŠENO', 'class' => 'label label-danger ml1 pull-right', 'icon' => 'system/iconWarning'];
+		}
+
     $t[] = $row;
 
 		$addrPlaceButtons = $this->addrPlaceButtons($this->recData['addrPlaceId']);

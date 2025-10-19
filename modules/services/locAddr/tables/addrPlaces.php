@@ -89,9 +89,13 @@ class ViewAddrPlaces extends TableView
 			$listItem ['t2'][] = ['text' => $item['laUnitOwner0FullName'], 'class' => 'label label-default'];
 
 
-		//$listItem ['i2'] = Utils::dateFromTo($item['validFrom'], $item['validTo'], NULL);
-
 		$listItem ['icon'] = $this->table->tableIcon ($item);
+
+		if ($item['addrPlaceCanceled'])
+		{
+			$listItem ['class'] = 'e10-row-minus';
+			$listItem ['!error'] = ' e10-error';
+		}
 
 		return $listItem;
 	}
@@ -214,6 +218,7 @@ class FormAddrPlace extends TableForm
 			$this->addSeparator(self::coH4);
 			$this->addColumnInput ('validFrom');
 			$this->addColumnInput ('validTo');
+			$this->addColumnInput ('addrPlaceCanceled');
 		$this->closeForm ();
 	}
 }

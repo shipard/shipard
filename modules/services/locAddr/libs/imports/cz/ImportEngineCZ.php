@@ -866,6 +866,71 @@ class ImportEngineCZ extends \services\locAddr\libs\imports\ImportEngineCore
     $this->importAddrPlaces();
   }
 
+  public function downloadCanceledAddrPlaces()
+  {
+    // -- https://www.cuzk.gov.cz/ruian/Poskytovani-udaju-ISUI-RUIAN-VDP/Ciselniky-ISUI/Zrusena-adresni-mista.aspx
+
+    $cwd = getcwd();
+    chdir('tmp');
+    array_map('unlink', array_filter((array) glob("UI_ZRUSENA_ADRM*")));
+
+    $this->downloadFile('https://services.cuzk.cz/sestavy/cis/UI_ZRUSENA_ADRM.zip', 'UI_ZRUSENA_ADRM.zip');
+    $this->convertFileToUTF8('UI_ZRUSENA_ADRM.csv', 'UI_ZRUSENA_ADRM_UTF8.csv');
+
+    chdir($cwd);
+  }
+
+  public function importCanceledAddrPlaces()
+  {
+    $this->downloadCanceledAddrPlaces();
+
+    /*
+     * Kód ADM;Platí do;Adresa;Kód obce;Název obce;Název MOMC;Název MOP;Kód části obce;Název části obce;Název ulice;Typ SO;Číslo domovní;Číslo orientační;Znak čísla orientačního;PSČ
+     * 18091997;16.10.2025;Valteřice 98~56301 Výprachtice;581178;Výprachtice;;;187640;Valteřice;;č.p.;98;;;56301
+     * 23607840;16.10.2025;Kotel č.ev. 20~46352 Osečná;564290;Osečná;;;112763;Kotel;;č.ev.;20;;;46352
+     * 19721927;16.10.2025;Mánesova 2764/10~Královo Pole~61200 Brno;582786;Brno;Brno-Královo Pole;;411965;Královo Pole;Mánesova;č.p.;2764;10;;61200
+    */
+
+    echo "# importCanceledAddrPlaces - Zrušená adresní místa\n";
+
+		$cnt = 0;
+    $cntCanceled = 0;
+    $file = fopen('tmp/'.'UI_ZRUSENA_ADRM_UTF8.csv', "r");
+
+    while ($cols = fgetcsv($file, null, ';'))
+    {
+      if ($cnt === 0)
+      {
+        $cnt = 1;
+        continue;
+      }
+
+      $existedAddrPlace = $this->db()->query('SELECT * FROM [services_locAddr_addrPlaces] WHERE [addrPlaceId] = %i', $cols[0],
+                                             ' AND [country] = %i', 60)->fetch();
+      if ($existedAddrPlace)
+      {
+        if (!$existedAddrPlace['addrPlaceCanceled'])
+        {
+          $dateValidTo = \DateTime::createFromFormat('d.m.Y', $cols[1]);
+          $insert = [
+            'validTo' => $dateValidTo ? $dateValidTo->format('Y-m-d') : null,
+            'addrPlaceCanceled' => 1,
+          ];
+
+          $this->db()->query('UPDATE [services_locAddr_addrPlaces] SET ', $insert, ' WHERE [ndx] = %i', $existedAddrPlace['ndx']);
+          $cntCanceled++;
+
+          echo "  * [$cntCanceled] ".$existedAddrPlace['addrPlaceId']." ".$cols[2]."\n";
+        }
+      }
+
+      $cnt++;
+
+      //if ($cntCanceled > 10)
+      //  break;
+    }
+  }
+
   protected function convertFileToUTF8($srvFileName, $dstFileName)
   {
     $cmd = 'iconv -f CP1250 -t UTF-8 '.$srvFileName.' -o '.$dstFileName;

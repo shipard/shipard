@@ -28,7 +28,8 @@
 	  {"id": "wgs84lng", "name": "Zeměpisná délka", "type": "number", "dec": 9},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
-		{"id": "validTo", "name": "Platné do", "type": "date"}
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+    {"id": "addrPlaceCanceled", "name": "Zrušeno", "type": "logical"}
   ],
   "views": {
 		"default": {
