@@ -1,0 +1,38 @@
+{
+    "tables/services.locAddr.addrPlaces":{
+        "fa5": "fa-map-marker-alt",
+		"fa6pro": "fa-map-marker-alt",
+		"bsi": "bi-geo-alt-fill",
+		"mdi": "place"
+    },
+    "tables/services.locAddr.cities":{
+        "fa5":"fa-city",
+        "fa6pro":"fa-university",
+        "bsi":"bi-bank",
+        "mdi":"account_balance"
+    },
+    "tables/services.locAddr.citiesParts":{
+        "fa5":"fa-map-signs",
+        "fa6pro":"fa-map-signs",
+        "bsi":"bi-signpost-2",
+        "mdi":"table_chart"
+    },
+    "tables/services.locAddr.streets":{
+        "fa5": "fa-road",
+        "fa6pro": "fa-road",
+        "bsi": "bi-diagram-2",
+        "mdi": "device_hub"
+    },
+    "tables/services.locAddr.zipCodes":{
+		"fa5":"fa-envelope",
+        "fa6pro":"fa-envelope",
+        "bsi":"bi-envelope",
+        "mdi":"mail"
+    },
+    "tables/services.locAddr.laUnits":{
+        "fa5":"fa-code-branch",
+        "fa6pro":"fa-code-branch",
+        "bsi":"bi-diagram-2-fill",
+        "mdi":"grid_view"
+    }
+}
