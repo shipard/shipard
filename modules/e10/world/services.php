@@ -28,4 +28,22 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$cmd = "cat $dataFileName|MYSQL_PWD={$cfg['db']['password']} mysql --default-character-set=utf8mb4 -u {$cfg['db']['login']} {$cfg['db']['database']}";
 		exec($cmd);
 	}
+
+	protected function cliImportAdmUnits ()
+	{
+		$importer = new \e10\world\libs\ImportAdmUnits($this->app);
+		$importer->country = 60;
+		$importer->run();
+		return TRUE;
+	}
+
+	public function onCliAction ($actionId)
+	{
+		switch ($actionId)
+		{
+			case 'import-adm-units': return $this->cliImportAdmUnits();
+		}
+
+		parent::onCliAction($actionId);
+	}
 }

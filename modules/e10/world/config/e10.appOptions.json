@@ -10,5 +10,9 @@
 	"e10WorldLanguages": {
 		"name": "Jazyky", "order": 8452200, "group": "e10World",
 		"type": "viewer", "table": "e10.world.languages", "viewer": "default"
+	},
+	"e10WorldAdmUnits": {
+		"name": "Administrativní členění", "order": 8452300, "group": "e10World",
+		"type": "viewer", "table": "e10.world.admUnits", "viewer": "default"
 	}
 }

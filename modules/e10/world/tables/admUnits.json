@@ -1,0 +1,42 @@
+{
+  "id": "e10.world.admUnits", "sql": "e10_world_admUnits", "name": "Administrativní členění",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "country", "name": "Země", "type": "int", "reference": "e10.world.countries"},
+		{"id": "level", "name": "Úroveň", "type": "enumInt",
+			"enumValues": {
+				"0": "Region",
+				"1": "Kraj",
+				"2": "Okres",
+				"10": "ORP",
+				"11": "ZUJ"
+			}
+		},
+    {"id": "admUnitId", "name": "Kód", "type": "int"},
+    {"id": "admUnitOwner0", "name": "Region", "type": "int", "reference": "e10.world.admUnits"},
+    {"id": "admUnitOwner1", "name": "Kraj", "type": "int", "reference": "e10.world.admUnits"},
+    {"id": "admUnitOwner2", "name": "Okres", "type": "int", "reference": "e10.world.admUnits"},
+		{"id": "cityPart2", "name": "Městská část", "type": "int", "reference": "e10.world.admUnits"},
+
+		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
+
+		{"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"}
+  ],
+  "views": {
+		"default": {
+			"id": "default", "class": "e10.world.ViewAdmUnits",
+			"details": {
+        "changes": {"title": "Detail", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "e10.world.ViewDetailAdmUnit"}
+			}
+		}
+	},
+	"forms": [
+		{"id": "default", "class": "e10.world.FormAdmUnit"}
+	],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "fullName"},
+	"options": ["systemTable"],
+	"indexes": [
+		{"id": "s1", "columns": ["country", "admUnitId"]}
+	]
+}

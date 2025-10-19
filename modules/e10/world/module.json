@@ -4,7 +4,7 @@
 	"tables": [
 		"languages", "currencies", "territories",
 		"countries", "countryCurrencies", "countryLanguages", "countryTerritories",
-		"currenciesTr", "languagesTr", "countriesTr"
+		"currenciesTr", "languagesTr", "countriesTr", "admUnits"
 	],
 	"config": [
 		{"id": "+e10.world.territoriesTypes", "file": "territoriesTypes.json"},
