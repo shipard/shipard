@@ -2,6 +2,15 @@
 	"papi": {
 		"la-data-sets": {
 			"classId": "services.locAddr.libs.PapiDataSets"
+		},
+		"la-addr-place": {
+			"classId": "services.locAddr.libs.PapiAddrPlace"
+		},
+		"la-addr-places": {
+			"classId": "services.locAddr.libs.PapiAddrPlaces"
+		},
+		"la-addr-places-suggestions": {
+			"classId": "services.locAddr.libs.PapiAddrPlacesSuggestions"
 		}
 	}
 }

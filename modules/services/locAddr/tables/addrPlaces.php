@@ -150,6 +150,8 @@ class ViewAddrPlaces extends TableView
 						array_push ($q, $operator.'[addrPlaces].[street] IN %in', $se->qryStreets);
 					if (count($se->qryCityParts))
 						array_push ($q, $operator.'[addrPlaces].[cityPart] IN %in', $se->qryCityParts);
+					if (count($se->qryCities))
+						array_push ($q, $operator.'[addrPlaces].[city] IN %in', $se->qryCities);
 					array_push ($q, ')');
 				}
 
