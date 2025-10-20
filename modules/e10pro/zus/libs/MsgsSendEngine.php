@@ -27,7 +27,7 @@ class MsgsSendEngine extends Utility
 		$msg->setBody($onePost['text'], FALSE);
 		$msg->addDocAttachments('e10pro.zus.msgs', $this->msgNdx);
 
-		//$msg->sendMail();
+		$msg->sendMail();
 		//$msg->saveToOutbox();
 
 		if ($this->app()->debug)
