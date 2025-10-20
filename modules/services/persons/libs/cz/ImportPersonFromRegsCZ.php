@@ -120,7 +120,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       }
     }
 
-    $dest['saCityPart2Name'] = $data['nazevMestskehoObvodu'] ?? '';
+    $dest['saCityPart2Name'] = $data['nazevMestskehoObvodu'] ?? $data['nazevMestskeCastiObvodu'] ?? '';
     $dest['saCityPart2Id'] = intval($data['kodMestskeCastiObvodu'] ?? 0);
     if ($dest['saCityPart2Id'])
     {
