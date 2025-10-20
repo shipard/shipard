@@ -77,6 +77,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
     $saLaUnit11Id = 0;
     $saLaUnit11Ndx = 0;
+    $saLaUnit10Ndx = 0;
 
     $dest['saStreetName'] = $data['nazevUlice'] ?? '';
     $dest['saStreetId'] = intval($data['kodUlice'] ?? 0);
@@ -95,12 +96,13 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     $dest['saCityId'] = intval($data['kodObce'] ?? 0);
     if ($dest['saCityId'])
     {
-      $cityRec = $this->db()->query('SELECT ndx, laUnit11 FROM [services_locAddr_cities] WHERE [cityId] = %i', $dest['saCityId'],
+      $cityRec = $this->db()->query('SELECT ndx, laUnit11, laUnit10 FROM [services_locAddr_cities] WHERE [cityId] = %i', $dest['saCityId'],
                           ' AND [country] = %i', 60 /* CZ */)->fetch();
       if ($cityRec)
       {
         $dest['saCityNdx'] = $cityRec['ndx'];
         $saLaUnit11Ndx = $cityRec['laUnit11'];
+        $saLaUnit10Ndx = $cityRec['laUnit10'];
         $partlyStandardized = 1;
       }
     }
@@ -167,6 +169,14 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
                           ' ANd [level] = %i', 11, ' AND [country] = %i', 60 /* CZ */)->fetch();
       if ($laUnitRec)
         $dest['saLaUnit11Id'] = $laUnitRec['laUnitId'];
+    }
+    if ($saLaUnit10Ndx)
+    {
+      $dest['saLaUnit10Ndx'] = $saLaUnit10Ndx;
+      $laUnitRec = $this->db()->query('SELECT ndx, laUnitId FROM [services_locAddr_laUnits] WHERE [ndx] = %i', $saLaUnit10Ndx,
+                          ' ANd [level] = %i', 10, ' AND [country] = %i', 60 /* CZ */)->fetch();
+      if ($laUnitRec)
+        $dest['saLaUnit10Id'] = $laUnitRec['laUnitId'];
     }
 
     if (!$dest['standardized'] && $partlyStandardized)
