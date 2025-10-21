@@ -247,6 +247,28 @@ class TablePersonsContacts extends DbTable
       return $unit['ndx'];
     return 0;
   }
+
+	public function addressTextOneLine($recData)
+	{
+		$txt = '';
+		if ($recData['adrStreet'] !== '')
+			$txt .= $recData['adrStreet'];
+		if ($recData['adrCity'] !== '')
+		{
+			if ($txt !== '')
+				$txt .= ', ';
+			$txt .= $recData['adrCity'];
+		}
+		if ($recData['adrZipCode'] !== '')
+		{
+			if ($txt !== '')
+				$txt .= ', ';
+			$txt .= $recData['adrZipCode'];
+		}
+
+		return $txt;
+	}
+
 }
 
 
@@ -404,6 +426,8 @@ class FormPersonContact extends TableForm
 
 		$tabs ['tabs'][] = ['text' => 'Kontakt', 'icon' => 'formContacts'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
+		if ($this->recData['flagStandardized'])
+			$tabs ['tabs'][] = ['text' => 'Info', 'icon' => 'system/iconMapMarker'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);
@@ -443,19 +467,6 @@ class FormPersonContact extends TableForm
 						}
 					}
 
-					/*
-					$this->addSeparator(self::coH4);
-					$this->addColumnInput ('flagContact', self::coRightCheckbox);
-					if ($this->recData['flagContact'])
-					{
-						$this->addColumnInput ('contactName');
-						$this->addColumnInput ('contactRole');
-						$this->addColumnInput ('contactEmail');
-						$this->addColumnInput ('contactPhone');
-						$this->addSeparator(self::coH4);
-						$this->addList ('sendReports', '', TableForm::loAddToFormLayout);
-					}
-					*/
 					$this->renderForm_contact();
 
 					$this->addSeparator(self::coH4);
@@ -466,6 +477,12 @@ class FormPersonContact extends TableForm
 					$this->addColumnInput ('validFrom');
 					$this->addColumnInput ('validTo');
 				$this->closeTab ();
+				if ($this->recData['flagStandardized'])
+				{
+					$this->openTab (self::ltNone);
+						$this->addDocumentCard('e10.persons.libs.dc.DCAddress');
+					$this->closeTab();
+				}
 				$this->closeTabs ();
 		$this->closeForm ();
 	}
@@ -488,18 +505,25 @@ class FormPersonContact extends TableForm
 	protected function renderForm_addrStandardized()
 	{
 		$this->addSeparator(self::coH4);
-		$this->addColumnInput ('addrPlaceInReg', self::coFocus);
-		$this->addColumnInput ('saStreetName');
-		$this->addColumnInput ('saHouseNr');
-		$this->addColumnInput ('saCityPartName');
-		$this->addColumnInput ('saCityPart2Name');
-		$this->addColumnInput ('saCityName');
-		$this->addColumnInput ('saZipCodeId');
+		if (!$this->readOnly)
+			$this->addColumnInput ('addrPlaceInReg', self::coFocus);
+
+		$addInputsOption = 0;
+		if ($this->recData['flagStandardized'])
+			$addInputsOption = self::coReadOnly;
+
+		$this->addColumnInput ('adrSpecification');
+		$this->addColumnInput ('saStreetName', $addInputsOption);
+		$this->addColumnInput ('saHouseNr', $addInputsOption);
+		$this->addColumnInput ('saCityPartName', $addInputsOption);
+		$this->addColumnInput ('saCityPart2Name', $addInputsOption);
+		$this->addColumnInput ('saCityName', $addInputsOption);
+		$this->addColumnInput ('saZipCodeId', $addInputsOption);
+		$this->addColumnInput ('adrCountry');
 		$this->addColumnInput ('saAdmUnit10Ndx');
 		$this->addColumnInput ('saAdmUnit11Ndx');
 //		$this->addColumnInput ('saAdmUnit10Id');
 //		$this->addColumnInput ('saAdmUnit11Id');
-		$this->addColumnInput ('adrCountry');
 	}
 
 	public function loadContactIdsOptions()

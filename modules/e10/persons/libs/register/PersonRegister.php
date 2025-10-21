@@ -355,20 +355,29 @@ class PersonRegister extends Utility
     $newAddress['adrSpecification'] = $regAddr['specification'] ?? '';
 
 		// -- 'old' columns
-		$newAddress['adrStreet'] = $regAddr['saStreetName'] ?? '';
-		if ($newAddress['saHouseNr'] !== '')
-		{
-			if ($newAddress['adrStreet'] === '')
-			{
-				$newAddress['adrStreet'] = $regAddr['saHouseNr1Type'] == 1 ? 'č.ev. ' : 'č.p. ';
-			}
-			else
-				$newAddress['adrStreet'] .= ' ';
-			$newAddress['adrStreet'] .= $regAddr['saHouseNr'];
-		}
-		$newAddress['adrCity'] = $regAddr['saCityName'] ?? '';
-		$newAddress['adrZipCode'] = $regAddr['saZipCodeId'] ?? '';
+    if ($regAddr['source'] == 0)
+    { // OLD adress, use OLD columns
+      $newAddress['adrStreet'] = $regAddr['street'] ?? '';
+      $newAddress['adrCity'] = $regAddr['city'] ?? '';
+      $newAddress['adrZipCode'] = $regAddr['zipcode'] ?? '';
+    }
+    else
+    { // NEW adress, use NEW columns
+      $newAddress['adrStreet'] = $regAddr['saStreetName'] ?? '';
+      if ($newAddress['saHouseNr'] !== '')
+      {
+        if ($newAddress['adrStreet'] === '')
+        {
+          $newAddress['adrStreet'] = $regAddr['saHouseNr1Type'] == 1 ? 'č.ev. ' : 'č.p. ';
+        }
+        else
+          $newAddress['adrStreet'] .= ' ';
+        $newAddress['adrStreet'] .= $regAddr['saHouseNr'];
+      }
+      $newAddress['adrCity'] = $regAddr['saCityName'] ?? '';
+      $newAddress['adrZipCode'] = $regAddr['saZipCodeId'] ?? '';
 
+    }
 
     if ($regAddr['type'] == 0)
       $newAddress['flagMainAddress'] = 1;
@@ -484,9 +493,9 @@ class PersonRegister extends Utility
     {
       if ($cma['flagStandardized'] == 0 && $mar['standardized'] > 0)
       {
-        $this->addDiffMsg('Přepnutí sídla na standardizovanou adresu');
         $newAddrFromReg = $this->createAddressFromReg($mar);
-        $this->makeDiff_CoreAddress($cma, $newAddrFromReg, $update);
+        $this->addDiffMsg('Přepnutí sídla na standardizovanou adresu: '.$this->tablePersonsContact->addressTextOneLine($newAddrFromReg));
+        $this->makeDiff_CoreAddress($cma, $newAddrFromReg, $update, TRUE);
         $this->diff['updates']['e10.persons.personsContacts'][] = ['update' => $update, 'ndx' => $cma['ndx']];
         return;
       }
@@ -509,7 +518,7 @@ class PersonRegister extends Utility
     return 0;
   }
 
-  protected function makeDiff_CoreAddress($currentAddr, $newRegAddr, &$update)
+  protected function makeDiff_CoreAddress($currentAddr, $newRegAddr, &$update, $disableMsgs = FALSE)
   {
     Json::polish($currentAddr);
     foreach ($currentAddr as $k => $v)
@@ -518,7 +527,8 @@ class PersonRegister extends Utility
         continue;
       if ($v != $newRegAddr[$k])
       {
-        $this->addDiffMsg('Změna '.$k.' z `'.$v.'` na `'.$newRegAddr[$k].'`');
+        if (!$disableMsgs)
+          $this->addDiffMsg('Změna '.$k.' z `'.$v.'` na `'.$newRegAddr[$k].'`');
         $update[$k] = $newRegAddr[$k];
       }
     }
@@ -553,9 +563,9 @@ class PersonRegister extends Utility
       {
         if ($cpo['flagStandardized'] == 0 && $registerOffice['standardized'] > 0)
         {
-          $this->addDiffMsg('Přepnutí pobočky na standardizovanou adresu');
           $newAddrFromReg = $this->createAddressFromReg($registerOffice);
-          $this->makeDiff_CoreAddress($cpo, $newAddrFromReg, $update);
+          $this->addDiffMsg('Přepnutí pobočky `'.$cpo['id1'].'` na standardizovanou adresu: '.$this->tablePersonsContact->addressTextOneLine($newAddrFromReg));
+          $this->makeDiff_CoreAddress($cpo, $newAddrFromReg, $update, TRUE);
           $this->diff['updates']['e10.persons.personsContacts'][] = ['update' => $update, 'ndx' => $cpo['ndx']];
           continue;
         }

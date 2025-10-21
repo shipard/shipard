@@ -12,6 +12,9 @@ use \Shipard\Utils\World;
  */
 class DCAddressTechnical extends \Shipard\Base\DocumentCard
 {
+	var $showPersonDocuments = TRUE;
+	var $inForm = FALSE;
+
 	var $info = [];
 
 	public function createContent ()
@@ -77,7 +80,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 
     $h = ['p1' => 'Vlastnost', 'v1' => 'V1', 'v2' => 'V2'];
 		$this->addContent ('body', [
-			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
+			'pane' => 'e10-pane e10-pane-table A1', 'header' => $h, 'table' => $t,
 			'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
 		]);
 
@@ -130,7 +133,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 
 		$mapBtns = $this->mapButtonsWgs84($this->recData['adrLocLat'], $this->recData['adrLocLon']);
     $row = [
-      'p1' => 'WGS-84',
+      'p1' => 'GPS',
       'v1' => [['text' => $this->recData['adrLocLat'].' / '.$this->recData['adrLocLon'], 'class' => 'block']],
     ];
 		$row['v1'] = array_merge($row['v1'], $mapBtns);
@@ -138,10 +141,17 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
     $t[] = $row;
 
 		$h = ['p1' => 'Vlastnost', 'v1' => 'V1', 'v2' => 'V2'];
-		$this->addContent ('body', [
-			'pane' => 'e10-pane e10-pane-table', 'header' => $h, 'table' => $t,
+
+
+		$content = [
+			'pane' => 'e10-pane e10-pane-table A2', 'header' => $h, 'table' => $t,
 			'params' => ['hideHeader' => 1, 'forceTableClass' => 'properties fullWidth']
-		]);
+		];
+
+		if ($this->inForm)
+			unset($content['pane']);
+
+		$this->addContent ('body', $content);
 	}
 
   public function addrPlaceButtons($addrPlaceId)
@@ -152,7 +162,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/adresnimista/'.$addrPlaceId,
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'Detail', 'title' => 'Detail adresního místa '.$addrPlaceId,
-			'icon' => 'system/iconInfo',
+			'icon' => 'system/iconInfo', 'class' => 'ml1',
 		];
 
 		$mapBtns[] = [
@@ -160,7 +170,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mapa/AD/'.$addrPlaceId.'/',
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'Katastr', 'title' => 'Katastrální mapa místa '.$addrPlaceId,
-			'icon' => 'system/iconMapMarker',
+			'icon' => 'system/iconMapMarker', 'class' => 'ml1',
 		];
 
 		return $mapBtns;
@@ -182,7 +192,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://www.openstreetmap.org/?mlat='.$x.'&mlon='.$y.'&zoom=18',
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'osm', 'title' => 'GPS: '.$x.', '.$y,
-			'icon' => 'system/iconMapMarker',
+			'icon' => 'system/iconMapMarker', 'class' => 'ml1',
 		];
 
 		$mapBtns[] = [
@@ -190,7 +200,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://www.openstreetmap.cz/?mlat='.$x.'&mlon='.$y.'&zoom=18',
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'osm.cz', 'title' => 'GPS: '.$x.', '.$y,
-			'icon' => 'system/iconMapMarker',
+			'icon' => 'system/iconMapMarker', 'class' => 'ml1',
 		];
 
 		$mapBtns[] = [
@@ -198,7 +208,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://mapy.cz/fnc/v1/showmap?center='.$y.','.$x.'&zoom=17'.'&marker=true',
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'mapy.cz', 'title' => 'GPS: '.$x.', '.$y,
-			'icon' => 'system/iconMapMarker',
+			'icon' => 'system/iconMapMarker', 'class' => 'ml1',
 		];
 
 		return $mapBtns;
@@ -227,7 +237,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 				'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/ulice/'.$streetId,
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 				'text' => 'Detail', 'title' => 'Detail ulice '.$streetId,
-				'icon' => 'system/iconInfo',
+				'icon' => 'system/iconInfo', 'class' => 'ml1',
 			];
 
 			$actionBtns[] = [
@@ -235,7 +245,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 				'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mapa/UL/'.$streetId.'/',
 				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 				'text' => 'Katastr', 'title' => 'Katastrální mapa ulice '.$streetId,
-				'icon' => 'system/iconMapMarker',
+				'icon' => 'system/iconMapMarker', 'class' => 'ml1',
 			];
 		}
 
@@ -273,7 +283,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/castiobce/'.$cityPartId,
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'Detail', 'title' => 'Detail části obce '.$cityPartId,
-			'icon' => 'system/iconInfo',
+			'icon' => 'system/iconInfo', 'class' => 'ml1',
 		];
 
 		$actionBtns[] = [
@@ -281,7 +291,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mapa/CO/'.$cityPartId.'/',
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'Katastr', 'title' => 'Katastrální mapa části obce '.$cityPartId,
-			'icon' => 'system/iconMapMarker',
+			'icon' => 'system/iconMapMarker', 'class' => 'ml1',
 		];
 
 
@@ -316,7 +326,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mestskecasti/'.$cityPartId,
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'Detail', 'title' => 'Detail městské části '.$cityPartId,
-			'icon' => 'system/iconInfo',
+			'icon' => 'system/iconInfo', 'class' => 'ml1',
 		];
 
 		$actionBtns[] = [
@@ -324,7 +334,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mapa/MC/'.$cityPartId.'/',
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'Katastr', 'title' => 'Katastrální mapa městské části '.$cityPartId,
-			'icon' => 'system/iconMapMarker',
+			'icon' => 'system/iconMapMarker', 'class' => 'ml1',
 		];
 
 
@@ -357,7 +367,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/obce/'.$cityId,
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'Detail', 'title' => 'Detail obce '.$cityId,
-			'icon' => 'system/iconInfo',
+			'icon' => 'system/iconInfo', 'class' => 'ml1',
 		];
 
 		$actionBtns[] = [
@@ -365,7 +375,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mapa/OB/'.$cityId.'/',
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
 			'text' => 'Katastr', 'title' => 'Katastrální mapa obce '.$cityId,
-			'icon' => 'system/iconMapMarker',
+			'icon' => 'system/iconMapMarker', 'class' => 'ml1',
 		];
 
 
@@ -477,11 +487,14 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 	{
     $this->addAddress();
 
-    $this->addContent ('body', [
-      'sumTable' => [
-        'objectId' => 'e10doc.core.libs.SumTablePersonAnalysis',
-        'queryParams' => ['person_ndx' => $this->recData['person']]
-      ]
-    ]);
+		if ($this->showPersonDocuments)
+		{
+			$this->addContent ('body', [
+				'sumTable' => [
+					'objectId' => 'e10doc.core.libs.SumTablePersonAnalysis',
+					'queryParams' => ['person_ndx' => $this->recData['person']]
+				]
+			]);
+		}
 	}
 }
