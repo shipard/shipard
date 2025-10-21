@@ -148,14 +148,31 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       }
     }
 
-    if (intval($data['typCisloDomovni'] ?? 0) == 1)
+    $houseNRTypeARES = intval($data['typCisloDomovni'] ?? 1);
+    $dest['saHouseNr1'] = 0;
+    $dest['saHouseNr2'] = 0;
+    $dest['saHouseNrLetter'] = '';
+    if ($houseNRTypeARES == 1) // číslo popisné (1)
     {
       $dest['saHouseNr1Type'] = 0; // číslo popisné
       $dest['saHouseNr1'] = intval($data['cisloDomovni'] ?? 0);
       $dest['saHouseNr2'] = intval($data['cisloOrientacni'] ?? 0);
       $dest['saHouseNrLetter'] = strval($data['cisloOrientacniPismeno'] ?? '');
 
+    }
+    else
+    { // číslo evidenční (2)
+      $dest['saHouseNr1Type'] = 1; // číslo evidenční
+      $dest['saHouseNr1'] = intval($data['cisloDomovni'] ?? 0);
       $dest['saHouseNr'] = strval($dest['saHouseNr1']);
+    }
+
+    $dest['saHouseNr'] = '';
+    if ($dest['saHouseNr1'] != 0)
+    {
+      //if ($dest['saHouseNr1Type'] === 1)
+      //  $dest['saHouseNr'] .= 'ev.č. ';
+      $dest['saHouseNr'] .= strval($dest['saHouseNr1']);
       if ($dest['saHouseNr2'] != 0)
         $dest['saHouseNr'] .= '/'.$dest['saHouseNr2'];
       if ($dest['saHouseNrLetter'] != '')
@@ -183,24 +200,21 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       $dest['standardized'] = 2;
 
     // -- OLD mode
-    $dest['street'] = $data['nazevUlice'] ?? '';
-    $streetNumber = $data['cisloDomovni'] ?? '';
-    $streetNumber2 = ($data['cisloOrientacni'] ?? '').($data['cisloOrientacniPismeno'] ?? '');
+    $dest['street'] = $dest['saStreetName'] ?? '';
+    if ($dest['street'] === '')
+      $dest['street'] = $dest['saCityPartName'] ?? '';
+    $streetNumber = $dest['saHouseNr'];
 
-    if ($streetNumber2 !== '')
-    {
-      if ($streetNumber !== '')
-        $streetNumber .= '/';
-      $streetNumber .= $streetNumber2;
-    }
     if ($streetNumber !== '')
     {
       if ($dest['street'] !== '')
         $dest['street'] .= ' ';
+      if ($dest['saHouseNr1Type'] === 1)
+        $dest['street'] .= 'ev.č. ';
       $dest['street'] .= $streetNumber;
     }
 
-    $dest['city'] = $data['nazevObce'] ?? '';
+    $dest['city'] = $data['saCityName'] ?? '';
     $dest['zipcode'] = $data['psc'] ?? $data['pscTxt'] ?? '';
   }
 
