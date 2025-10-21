@@ -1,0 +1,17 @@
+{
+  "id": "e10.persons.addrPlacesInReg", "sql": "e10_persons_addrPlacesInReg", "name": "Adresní místa v registru",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+		{"id": "id", "name": "ID", "type": "int"}
+  ],
+	"views": {
+		"default": {
+			"id": "default", "class": "e10.persons.ViewAddrPlacesInReg",
+			"details": {
+				"default": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "order":  0, "class": "e10.persons.libs.viewers.AddrPlaceInRegDetail"}
+			}
+		}
+	},
+  "options": ["systemTable"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "id"}
+}

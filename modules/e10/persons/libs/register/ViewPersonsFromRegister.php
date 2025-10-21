@@ -37,21 +37,6 @@ class ViewPersonsFromRegister extends TableView
     if ($fts === '')
       return;
 
-    /*
-		$q = [];
-    array_push ($q, 'SELECT [persons].* ');
-    array_push ($q, ' FROM [e10_persons_persons] AS [persons]');
-    array_push ($q, ' WHERE 1');
-
-    array_push($q, ' AND [persons].[lastName] LIKE %s', '%'.$fts.'%');
-
-		array_push ($q, ' ORDER BY [persons].[lastName]');
-
-    array_push ($q, $this->sqlLimit());
-    */
-		//$this->runQuery ($q);
-
-
     $url = 'https://data.shipard.org/persons?';
     $url .= http_build_query(['q' => $fts, 'showAs' => 'json']);
 

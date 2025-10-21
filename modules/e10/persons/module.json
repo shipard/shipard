@@ -4,7 +4,7 @@
   "tables": [
 		"persons", "groups", "personsgroups", "connections", "sessions", "address", "requests", "userspasswords", "keys",
 		"personsValidity", "personsLastUse", "categories", "relations", "contacts",
-		"personsContacts", "personsBA"
+		"personsContacts", "personsBA", "addrPlacesInReg"
 	],
 	"extensions": ["persons"],
 	"modules": ["e10/world", "e10/reports"],

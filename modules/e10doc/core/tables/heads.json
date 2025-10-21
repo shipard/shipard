@@ -201,6 +201,7 @@
 	"indexes": [
 		{"id": "docTypeD", "columns": ["docType", "docStateMain", "docNumber DESC"]},
 		{"id": "docType2", "columns": ["docType", "dbCounter", "docStateMain", "docNumber"]},
-		{"id": "s3", "columns": ["person"]}
+		{"id": "s3", "columns": ["person"]},
+    {"id": "fy", "columns": ["fiscalYear"]}
 	]
 }

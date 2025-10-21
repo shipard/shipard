@@ -11,5 +11,6 @@ class ViewAddressTechnicalDetail extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
+		$this->addDocumentCard('e10.persons.libs.dc.DCAddressTechnical');
 	}
 }

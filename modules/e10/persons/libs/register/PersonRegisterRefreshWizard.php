@@ -155,6 +155,7 @@ class PersonRegisterRefreshWizard extends Wizard
 		}
 
 		$this->stepResult ['close'] = 1;
+		$this->stepResult ['refreshDetail'] = 1;
 	}
 
 	public function createHeader ()

@@ -277,6 +277,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			array_push ($q, ' WHERE 1');
 			array_push ($q, ' AND adrLocState = %i', 0, ' AND [flagAddress] = %i', 1);
 			array_push ($q, ' AND docState = %i', 4000);
+			array_push ($q, ' AND flagStandardized = %i', 0);
 			if ($fromCli)
 				array_push ($q, ' ORDER BY ndx ASC');
 			else
@@ -514,6 +515,19 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$e->cleanOldValidity();
 	}
 
+	public function addrStandardize()
+	{
+		$maxCount = intval($this->app->arg('maxCount'));
+
+
+		$e = new \e10\persons\libs\AddrStandardizationCLITool($this->app);
+		if ($maxCount)
+			$e->maxSuccessfullyCount = $maxCount;
+		$e->run();
+
+		return TRUE;
+	}
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
@@ -527,6 +541,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'import-new-persons-ba': return $this->importNewPersonsBA();
 			case 'import-new-persons-ba-clean': return $this->importNewPersonsBAClean();
 			case 'import-new-persons-validity-clean': return $this->importNewPersonsValidityClean();
+
+			case 'addr-standardize': return $this->addrStandardize();
 		}
 
 		parent::onCliAction($actionId);
