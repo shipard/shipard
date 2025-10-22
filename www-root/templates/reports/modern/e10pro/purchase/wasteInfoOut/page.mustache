@@ -92,6 +92,8 @@
 							<b>{{title}}:</b> {{value}}
 						{{/data.personsAddress.ownerOffice.ids}}
 
+						<b>IČZUJ: </b>{{data.personsAddress.ownerOffice.saAdmUnit11Id}}
+
 					</td>
 				{{/data.flags.useAddressOwnerOffice}}
 
@@ -135,6 +137,8 @@
 							<b>{{title}}:</b> {{value}}
 						{{/data.personsAddress.personOffice.ids}}
 
+						<b>IČZUJ: </b>{{data.personsAddress.personOffice.saAdmUnit11Id}}
+
 					</td>
 				{{/data.flags.useAddressPersonOffice}}
 
@@ -167,9 +171,11 @@
 			<td class="hdr">Kategorie odpadu</td>
 			<td>O</td>
 		</tr>
-		<tr>
-			<td colspan="2" class="hdr">Množství odpadu ze skupiny 19</td>
-		</tr>
+		{{#anyMoveTo19}}
+			<tr>
+				<td colspan="2" class="hdr">Množství odpadu ze skupiny 19</td>
+			</tr>
+        {{/anyMoveTo19}}
 		{{#moveFrom20To19}}
 			<tr>
 				<td class="wasteInfoOrigin">- který je původem ze skupin 20 (komunální odpady)</td>

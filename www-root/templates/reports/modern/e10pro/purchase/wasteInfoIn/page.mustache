@@ -64,6 +64,8 @@
 				{{#data.person_identifiers}}
 					<b>{{@dict;dataItem:name}}:</b> {{value}}
 				{{/data.person_identifiers}}
+
+				<b>IČZUJ: </b>{{data.person.address.saAdmUnit11Id}}
 			</td>
 		</tr>
 	</table>
@@ -73,7 +75,7 @@
 			{{#data.flags.usePersonsAddress}}
 				{{#data.flags.useAddressOwnerOffice}}
 					<td>
-						<span class='hdr'>{{@dict;Provozovna dodavatele}}:</span>
+						<span class='hdr'>{{@dict;Provozovna odběratele}}:</span>
 						<span class='address'>
 								{{#data.personsAddress.ownerOffice.specification}}
 									{{data.personsAddress.ownerOffice.specification}}<br/>
@@ -91,6 +93,8 @@
 						{{#data.personsAddress.ownerOffice.ids}}
 							<b>{{title}}:</b> {{value}}
 						{{/data.personsAddress.ownerOffice.ids}}
+
+						<b>IČZUJ: </b>{{data.personsAddress.ownerOffice.saAdmUnit11Id}}
 
 					</td>
 				{{/data.flags.useAddressOwnerOffice}}
@@ -116,7 +120,7 @@
 
 				{{#data.flags.useAddressPersonOffice}}
 					<td>
-						<span class='hdr'>{{@dict;Provozovna odběratele}}:</span>
+						<span class='hdr'>{{@dict;Provozovna dodavatele}}:</span>
 						<span class='address'>
 							{{#data.personsAddress.personOffice.specification}}
 								{{data.personsAddress.personOffice.specification}}<br/>
@@ -135,8 +139,20 @@
 							<b>{{title}}:</b> {{value}}
 						{{/data.personsAddress.personOffice.ids}}
 
+						<b>IČZUJ: </b>{{data.personsAddress.personOffice.saAdmUnit11Id}}
+
 					</td>
 				{{/data.flags.useAddressPersonOffice}}
+
+				{{#data.flags.useORP}}
+					<td>
+						<span class='hdr'>{{@dict;Původ odpadu}}:</span>
+						<span class='address'>
+							<b>ORP: </b>{{data.ORP.code}}<br/>
+							<b>Obec: </b>{{data.ORP.name}}<br/>
+						</span>
+					</td>
+				{{/data.flags.useORP}}
 
 			{{/data.flags.usePersonsAddress}}
 		</tr>
@@ -167,9 +183,11 @@
 			<td class="hdr">Kategorie odpadu</td>
 			<td>O</td>
 		</tr>
-		<tr>
-			<td colspan="2" class="hdr">Množství odpadu ze skupiny 19</td>
-		</tr>
+		{{#anyMoveTo19}}
+			<tr>
+				<td colspan="2" class="hdr">Množství odpadu ze skupiny 19</td>
+			</tr>
+        {{/anyMoveTo19}}
 		{{#moveFrom20To19}}
 			<tr>
 				<td class="wasteInfoOrigin">- který je původem ze skupin 20 (komunální odpady)</td>
