@@ -300,6 +300,9 @@ class DocReportBase extends FormReport
         'zipcode' => $r['adrZipCode'],
         'worldCountry' => $r['adrCountry'],
 
+				'saAdmUnit10Id' => $r['saAdmUnit10Id'],
+				'saAdmUnit11Id' => $r['saAdmUnit11Id'],
+
 				'ids' => [],
 			];
 
