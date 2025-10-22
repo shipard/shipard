@@ -364,6 +364,9 @@ class PersonRegister extends Utility
     else
     { // NEW adress, use NEW columns
       $newAddress['adrStreet'] = $regAddr['saStreetName'] ?? '';
+      if ($newAddress['adrStreet'] === '' && $newAddress['saCityPartName'] !== '')
+        $newAddress['adrStreet'] = $regAddr['saCityPartName'];
+
       if ($newAddress['saHouseNr'] !== '')
       {
         if ($newAddress['adrStreet'] === '')
@@ -372,11 +375,12 @@ class PersonRegister extends Utility
         }
         else
           $newAddress['adrStreet'] .= ' ';
+        if ($regAddr['saHouseNr1Type'] == 1)
+          $newAddress['adrStreet'] .= 'č.ev. ';
         $newAddress['adrStreet'] .= $regAddr['saHouseNr'];
       }
       $newAddress['adrCity'] = $regAddr['saCityName'] ?? '';
       $newAddress['adrZipCode'] = $regAddr['saZipCodeId'] ?? '';
-
     }
 
     if ($regAddr['type'] == 0)
@@ -393,6 +397,23 @@ class PersonRegister extends Utility
         $newAddress['docStateMain'] = 5;
       }
     }
+
+    if (isset($regAddr['wgs84lat']) && isset($regAddr['wgs84lng']))
+    {
+      $newAddress['adrLocLat'] = $regAddr['wgs84lat'] ?? 0.0;
+      $newAddress['adrLocLon'] = $regAddr['wgs84lng'] ?? 0.0;
+      $newAddress['adrLocState'] = 1;
+      $newAddress['adrLocHash'] = $this->tablePersonsContact->geoCodeLocHash ($newAddress);
+    }
+    else
+    {
+      $newAddress['adrLocLat'] = 0.0;
+      $newAddress['adrLocLon'] = 0.0;
+      $newAddress['adrLocState'] = 0;
+      $newAddress['adrLocHash'] = '';
+    }
+    $newAddress['adrLocHash'] = $this->tablePersonsContact->geoCodeLocHash ($newAddress);
+    $newAddress['adrLocTime'] = NULL;
 
     Json::polish($newAddress);
 

@@ -54,8 +54,8 @@
 		{"id": "onTop", "name": "Přišpendlit nahoru", "type": "enumInt",
 			"enumValues": {"99": "Ne", "50": "Ano"}},
 
-	  {"id": "adrLocLat", "name": "Zeměpisná šířka", "type": "number", "dec": 7},
-	  {"id": "adrLocLon", "name": "Zeměpisná délka", "type": "number", "dec": 7},
+	  {"id": "adrLocLat", "name": "Zeměpisná šířka", "type": "number", "dec": 9},
+	  {"id": "adrLocLon", "name": "Zeměpisná délka", "type": "number", "dec": 9},
 	  {"id": "adrLocState", "name": "Stav zaměření na mapě", "type": "enumInt",
 		  "enumValues": {"0": "Nezaměřeno", "1": "Zaměřeno", "2": "Nelze zaměřit"}},
 	  {"id": "adrLocTime", "name": "Okamžik zaměření", "type": "timestamp"},
