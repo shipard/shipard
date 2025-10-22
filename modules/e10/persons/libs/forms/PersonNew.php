@@ -177,6 +177,8 @@ class PersonNew extends TableForm
 						$this->addColumnInput ('optSendDocsAttsUnited');
 					}
 					$this->addColumnInput ('disableRegsChecks');
+					$this->addColumnInput ('personCanceled');
+					$this->addColumnInput ('personCancelDate');
 				$this->closeTab ();
 
 				if ($this->readOnly)

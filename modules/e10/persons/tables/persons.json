@@ -40,6 +40,8 @@
 		{"id": "optSendDocsAttsUnited", "name": "Přílohy dokladů odesílat v PDF dokladu", "type": "logical"},
 
 		{"id": "disableRegsChecks", "name": "Nekontrolovat správnost v registrech", "type": "logical"},
+		{"id": "personCanceled", "name": "Osoba je zrušena", "type": "logical"},
+		{"id": "personCancelDate", "name": "Datum zrušení osoby", "type": "date"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

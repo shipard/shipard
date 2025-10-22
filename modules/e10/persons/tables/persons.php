@@ -842,6 +842,10 @@ class ViewPersonsBase extends TableView
 		if ($unused)
 			array_push($q, ' AND persons.lastUseDate IS NULL');
 
+		$canceled = isset ($qv['others']['canceled']);
+		if ($canceled)
+			array_push($q, ' AND persons.personCanceled = 1');
+
 		$withoutMainAddress = isset ($qv['others']['withoutMainAddress']);
 		if ($withoutMainAddress)
 		{
@@ -929,6 +933,11 @@ class ViewPersonsBase extends TableView
 			//	$listItem ['t2'][] = ['text' => '', 'icon' => 'system/iconCheck', 'class' => 'e10-success e10-off e10-small'];
 		}
 
+		if ($item['personCanceled'])
+		{
+			$listItem ['t2'][] = ['text' => 'ZRUŠENO', 'icon' => 'user/ban', 'class' => 'e10-error'];
+			$listItem ['!error'] = 'e10-error';
+		}
 		return $listItem;
 	}
 
@@ -1017,6 +1026,7 @@ class ViewPersonsBase extends TableView
 			$chbxOthers['withoutMainAddress'] = ['title' => 'Bez sídla', 'id' => 'withoutMainAddress'];
 			$chbxOthers['withMoreMainAddress'] = ['title' => 'S více sídly', 'id' => 'withMoreMainAddress'];
 			$chbxOthers['withoutCompanyId'] = ['title' => 'Firmy bez IČ', 'id' => 'withoutCompanyId'];
+			$chbxOthers['canceled'] = ['title' => 'Zrušené', 'id' => 'canceled'];
 		}
 
 		$paramsOthers = new \E10\Params ($this->app());

@@ -453,6 +453,16 @@ class PersonRegister extends Utility
   {
     $update = [];
 
+    if (isset($this->registerData['person']['validTo']) && !Utils::dateIsBlank($this->registerData['person']['validTo']))
+    {
+      if (!isset($this->personRecData['personCanceled']) || !$this->personRecData['personCanceled'])
+      {
+        $this->addDiffMsg('Osoba je od '.Utils::datef($this->registerData['person']['validTo']).' zrušena');
+        $update['personCanceled'] = 1;
+        $update['personCancelDate'] = $this->registerData['person']['validTo'];
+      }
+    }
+
     $nameFound = in_array($this->registerData['person']['fullName'], $this->personNames);
     if (!$nameFound)
     {
