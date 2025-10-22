@@ -139,6 +139,18 @@ class PersonData extends \services\persons\libs\CoreObject
 			foreach ($rowsAddr as $ra)
 			{
 				$raa = $ra->toArray();
+
+				// -- addressPlace - coordinates
+				if ($ra['addressPlaceNdx'])
+				{
+					$addrPlaceRec = $this->app()->loadItem($ra['addressPlaceNdx'], 'services.locAddr.addrPlaces');
+					if ($addrPlaceRec)
+					{
+						$raa['wgs84lat'] = $addrPlaceRec['wgs84lat'];
+						$raa['wgs84lng'] = $addrPlaceRec['wgs84lng'];
+					}
+				}
+
 				Json::polish($raa);
 				$p['address'][] = $raa;
 			}

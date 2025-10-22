@@ -203,6 +203,8 @@ class FormAddress extends TableForm
 			$this->addColumnInput ('saZipCodeNdx');
 			$this->addColumnInput ('saLaUnit10Ndx');
 			$this->addColumnInput ('saLaUnit11Ndx');
+
+			$this->addColumnInput ('addressPlaceNdx');
 		$this->closeForm ();
 	}
 }
