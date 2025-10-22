@@ -28,26 +28,6 @@ class WasteInfoOutReport extends \e10doc\core\libs\reports\DocReport
 		$wie->loadWasteReportInfo($this->data);
 		$this->data['infoWasteCodes'] = array_values($this->data['infoWasteCodes']);
 		$this->data['wasteSettings'] = $wie->wasteSettings;
-
-		if ($this->recData ['otherAddress1Mode'] == 1)
-		{ // city & code
-			$nomencCityRecData = $this->app()->loadItem($this->recData ['personNomencCity'], 'e10.base.nomencItems');
-
-			$this->data ['flags']['useORP'] = 1;
-			$this->data ['ORP']['code'] = substr($nomencCityRecData['itemId'], 2);
-			$this->data ['ORP']['name'] = $nomencCityRecData['fullName'];
-			$this->data ['flags']['useAddressPersonOffice'] = 0;
-			$this->data ['flags']['usePersonsAddress'] = 1;
-		}
-
-		if ($this->recData['wasteOrigin'])
-		{
-			$wasteOrigin = $this->app()->cfgItem('e10doc.base.wasteOrigins.'.$this->recData['wasteOrigin'], NULL);
-			if ($wasteOrigin)
-			{
-				$this->data['flags']['wasteOrigin']['text'] = ($wasteOrigin['tfr'] !== '') ? $wasteOrigin['tfr'] : $wasteOrigin['fn'];
-			}
-		}
 	}
 
 	public function createToolbarSaveAs (&$printButton)
