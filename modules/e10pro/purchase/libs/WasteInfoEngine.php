@@ -79,6 +79,7 @@ class WasteInfoEngine extends Utility
       {
         $this->wasteCodes[$wc] = [
           'wc' => $r['itemId'],
+          'wcNomenc' => $r['wasteCodeNomenc'],
           'fullName' => $r['fullName'],
           'count' => 0,
           'quantity' => 0.0,
@@ -106,17 +107,28 @@ class WasteInfoEngine extends Utility
       if (substr($wc, 0, 2) !== '19')
         continue;
 
+      $wcData['anyMoveTo19'] = 0;
+
       $info = $this->loadData_WasteFromToInfo($wc, '20', $wcData['quantity']);
       if ($info)
+      {
         $wcData['moveFrom20To19'] = $info;
+        $wcData['anyMoveTo19'] = 1;
+      }
 
       $info = $this->loadData_WasteFromToInfo($wc, '1501', $wcData['quantity']);
       if ($info)
+      {
         $wcData['moveFrom1501To19'] = $info;
+        $wcData['anyMoveTo19'] = 1;
+      }
 
       $info = $this->loadData_WasteFromToInfo($wc, '17', $wcData['quantity']);
       if ($info)
+      {
         $wcData['moveFrom17To19'] = $info;
+        $wcData['anyMoveTo19'] = 1;
+      }
     }
   }
 
