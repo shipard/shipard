@@ -278,6 +278,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			array_push ($q, ' AND adrLocState = %i', 0, ' AND [flagAddress] = %i', 1);
 			array_push ($q, ' AND docState = %i', 4000);
 			array_push ($q, ' AND flagStandardized = %i', 0);
+			array_push ($q, ' AND adrLocManual = %i', 0);
 			if ($fromCli)
 				array_push ($q, ' ORDER BY ndx ASC');
 			else

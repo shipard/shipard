@@ -476,6 +476,13 @@ class FormPersonContact extends TableForm
 				$this->openTab ();
 					$this->addColumnInput ('validFrom');
 					$this->addColumnInput ('validTo');
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('adrLocManual');
+					if ($this->recData['adrLocManual'])
+					{
+						$this->addColumnInput ('adrLocLat');
+						$this->addColumnInput ('adrLocLon');
+					}
 				$this->closeTab ();
 				if ($this->recData['flagStandardized'])
 				{

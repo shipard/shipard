@@ -60,6 +60,7 @@
 		  "enumValues": {"0": "Nezaměřeno", "1": "Zaměřeno", "2": "Nelze zaměřit"}},
 	  {"id": "adrLocTime", "name": "Okamžik zaměření", "type": "timestamp"},
 	  {"id": "adrLocHash", "name": "Hash adresy", "type": "string", "len": 32, "options": ["ascii"]},
+	  {"id": "adrLocManual", "name": "Vlastní zeměpisné souřadnice", "type": "logical", "options": ["saveOnChange"]},
 
     {"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"},
