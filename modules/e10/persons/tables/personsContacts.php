@@ -49,6 +49,11 @@ class TablePersonsContacts extends DbTable
 					$recData['adrLocState'] = 0;
 				}
 			}
+
+			if ($recData['adrLocManual'] ?? 0)
+			{
+				$recData['adrLocState'] = 1;
+			}
 		}
 
 		parent::checkBeforeSave ($recData, $ownerData);

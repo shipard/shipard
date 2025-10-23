@@ -118,13 +118,23 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 
 			if ($item['adrLocState'] === 1)
 			{ // success
+				$x = $item['adrLocLat'];
+				$y = $item['adrLocLon'];
 				$address['c2'][] = [
 					'type' => 'action', 'action' => 'open-popup',
 					'element' => 'span',
 					'data-popup-url' => 'https://maps.google.com/?q='.$item['adrLocLat'].','.$item['adrLocLon'],
 					'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
-					'text' => '', 'title' => 'GPS: '.$item['adrLocLat'].', '.$item['adrLocLon'],
+					'text' => '', 'title' => 'Google mapy: GPS: '.$item['adrLocLat'].', '.$item['adrLocLon'],
 					'icon' => 'system/iconMapMarker', 'class' => 'e10-success mr1'
+				];
+				$address['c2'][] = [
+					'type' => 'action', 'action' => 'open-popup',
+					'element' => 'span',
+					'data-popup-url' => 'https://mapy.cz/fnc/v1/showmap?center='.$y.','.$x.'&zoom=17'.'&marker=true',
+					'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
+					'text' => '', 'title' => 'mapy.cz: GPS: '.$x.', '.$y,
+					'icon' => 'system/iconMapMarker', 'class' => 'e10-success mr1',
 				];
 			}
 			elseif ($item['adrLocState'] === 1)
