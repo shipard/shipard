@@ -45,6 +45,14 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		return TRUE;
 	}
 
+	public function cliImportZujPersons()
+	{
+		$ie = new \services\locAddr\libs\imports\cz\ImportEngineCZ($this->app);
+		$ie->init();
+		$ie->importZujPersons();
+		return TRUE;
+	}
+
 	public function cliDropTables ()
 	{
 		$this->app->db()->query('DROP TABLE IF EXISTS [services_locAddr_addrPlaces]');
@@ -87,6 +95,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'drop-tables': return $this->cliDropTables();
 			case 'export-adm-units': return $this->cliExportAdmUnits();
 			case 'import-canceled-addr-places': return $this->cliImportCanceledAddrPlaces();
+			case 'import-zuj-persons': return $this->cliImportZujPersons();
 		}
 
 		parent::onCliAction($actionId);

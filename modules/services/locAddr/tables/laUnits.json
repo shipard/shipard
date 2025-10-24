@@ -23,6 +23,9 @@
 
 		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
 
+		{"id": "municipalityPersonOid", "name": "IČ obce", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "municipalityPerson", "name": "Osoba obce", "type": "int", "reference": "services.persons.persons"},
+
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"}
   ],

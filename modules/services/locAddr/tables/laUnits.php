@@ -74,6 +74,9 @@ class ViewLAUnits extends TableView
 		if ($item['laUnitOwner0FullName'])
 			$listItem ['t2'][] = ['text' => $item['laUnitOwner0FullName'], 'class' => 'label label-warning'];
 
+		if ($item['municipalityPersonOid'] !== '')
+			$listItem ['i2'][] = ['text' => 'IČ: '.$item['municipalityPersonOid'], 'class' => 'label label-default'];
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
@@ -101,6 +104,7 @@ class ViewLAUnits extends TableView
 		{
 			array_push ($q, ' AND (');
       array_push ($q, '[laUnits].[fullName] LIKE %s', '%'.$fts.'%');
+      array_push ($q, ' OR [laUnits].[municipalityPersonOid] LIKE %s', '%'.$fts.'%');
 			array_push ($q, ')');
     }
 
