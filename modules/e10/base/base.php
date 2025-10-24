@@ -649,7 +649,7 @@ class ListProperties implements \E10\IDocumentList
 
 
 		if (isset($property ['note']) && $property ['note'])
-			$c .= "<label for='$inputNoteId' class='e10-prop-note'><i class='fa fa-pencil'></i></label>".
+			$c .= "<label for='$inputNoteId' class='e10-prop-note'>".$this->formData->app()->ui()->icon('system/iconPencil')."</label>".
 						"<input type='text' placeholder='pozn.' name='{$inputPrefix}.note' class='e10-prop-note' maxlength='50' id='$inputNoteId' data-fid='{$this->formData->fid}'$readOnlyParam/>";
 
 		if (isset($property ['multi']) && $property ['multi'] && !$this->formData->readOnly)
