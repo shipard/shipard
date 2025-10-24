@@ -71,6 +71,25 @@ class WasteAtt14Engine extends Utility
       { // company
         $item['companyId'] = $this->loadPersonId($r['person'], 'oid');
         $item['companyName'] = $r['personFullName'];
+
+        if ($r['personHandover'] != 0)
+        {
+          $personHandover = $this->app()->loadItem($r['personHandover'], 'e10.persons.persons');
+          if ($personHandover)
+          {
+            $item['personName'] = $personHandover['fullName'];
+            $item['personCardId'] = $this->loadPersonId($r['personHandover'], 'idcn');
+
+            $personHandoverAddress = $this->loadPersonAddress($r['personHandover'], 1);
+            $item['personAddress'] = $personHandoverAddress['addressText'] ?? '---';
+          }
+        }
+        elseif ($r['cashPersonName'] != '')
+        {
+          $item['personName'] = $r['cashPersonName'];
+          if ($r['cashPersonID'] != '')
+            $item['personCardId'] = $r['cashPersonID'];
+        }
       }
 
       if ($r['paymentMethod'] !== 8) // LP
