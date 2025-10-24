@@ -65,7 +65,7 @@
 			"enumValues": {"1": "příjem", "2": "výdej"}},
     {"id": "cashPersonName", "name": "Jméno příjemce", "type": "string", "len": 100},
     {"id": "cashPersonID", "name": "OP příjemce", "type": "string", "len": 30},
-	  {"id": "personHandover", "name": "Převzal", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
+	  {"id": "personHandover", "name": "Převzal", "type": "int", "reference": "e10.persons.persons", "comboViewer": "handovers", "options": ["saveOnChange"]},
 		{"id": "personBalance", "name": "Osoba pro saldokonto", "type": "int", "label": "Plátce", "reference": "e10.persons.persons"},
 		{"id": "askPersonBalance", "name": "Nastavit Plátce", "type": "logical", "options": ["saveOnChange"]},
 

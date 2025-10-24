@@ -2,7 +2,8 @@
   {
     "table": "e10.persons.persons",
     "views": {
-      "drivers":  {"id": "drivers", "class": "e10doc.core.libs.ViewPersonsDrivers"}
+      "drivers":  {"id": "drivers", "class": "e10doc.core.libs.ViewPersonsDrivers"},
+      "handovers":  {"id": "handovers", "class": "e10doc.core.libs.ViewPersonsHandovers"}
 		}
   }
 ]

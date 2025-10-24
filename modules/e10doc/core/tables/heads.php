@@ -4278,7 +4278,7 @@ class FormHeads extends TableForm
 			return $cp;
 		}
 
-		if ($srcTableId === 'e10doc.core.heads' && $srcColumnId === 'otherAddress1')
+		if ($srcTableId === 'e10doc.core.heads' && ($srcColumnId === 'otherAddress1' || $srcColumnId === 'personHandover'))
 		{
 			$cp = [
 				'personNdx' => strval ($allRecData ['recData']['person'])
