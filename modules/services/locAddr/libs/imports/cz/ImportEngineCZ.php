@@ -931,6 +931,58 @@ class ImportEngineCZ extends \services\locAddr\libs\imports\ImportEngineCore
     }
   }
 
+  public function importZujPersons()
+  {
+    /*
+     * IČO,Obchodní jméno/název,Datum platnosti,Statistická právní forma (kód),Velikostní kategorie dle počtu zaměstnanců (kód),Institucionální sektor (ESA 2010) (kód),Kraj (kód),Okres (CZ-NUTS) (kód),Obec (kód),Adresa sídla,Datum vzniku,Datum zániku,Způsob zániku (kód),Příznak,Hlavní ekonomická činnost (CZ NACE) (kód),Ostatní ekonomické činnosti (CZ NACE) (kód) (1),Ostatní ekonomické činnosti (CZ NACE) (kód) (2),Ostatní ekonomické činnosti (CZ NACE) (kód) (3),Ostatní ekonomické činnosti (CZ NACE) (kód) (4),Ostatní ekonomické činnosti (CZ NACE) (kód) (5),Ostatní ekonomické činnosti (CZ NACE) (kód) (6),Ostatní ekonomické činnosti (CZ NACE) (kód) (7),Ostatní ekonomické činnosti (CZ NACE) (kód) (8),Ostatní ekonomické činnosti (CZ NACE) (kód) (9),Ostatní ekonomické činnosti (CZ NACE) (kód) (10),Ostatní ekonomické činnosti (CZ NACE) (kód) (11),Ostatní ekonomické činnosti (CZ NACE) (kód) (12),Ostatní ekonomické činnosti (CZ NACE) (kód) (13)
+     * 00035513,"Obec Staré Smrkovice",2025-10-15,801,130,13130,CZ052,CZ0522,573523,"Staré Smrkovice 90, PSČ 50801",1977-01-01,,,,84110
+     * 00038113,"Obec Libchavy",2025-10-15,801,230,13130,CZ053,CZ0534,580147,"Libchavy, Dolní Libchavy 93, PSČ 56116",1976-04-30,,,,84110
+    */
+
+    echo "# importZujPersons - Vazba mezi ZUJ a právnickou osobou\n";
+
+		$cnt = 0;
+    $file = fopen('obce_zuj.csv', "r");
+
+    while ($cols = fgetcsv($file, null, ','))
+    {
+      if ($cnt === 0)
+      {
+        $cnt = 1;
+        continue;
+      }
+
+      $personId = trim($cols[0]);
+      $personName = trim($cols[1]);
+      $zujId = intval($cols[8]);
+      $existedUnit = $this->db()->query('SELECT * FROM [services_locAddr_laUnits] WHERE [laUnitId] = %i', $zujId,
+                                        ' AND [level] = %i', 11, ' AND [country] = %i', 60)->fetch();
+
+      if ($existedUnit)
+      {
+        echo "* ".sprintf('%4d', $cnt).". [$personId] ".$personName." --> ".$zujId.' '.$existedUnit['fullName'];
+
+        $existedPerson = $this->db()->query('SELECT * FROM [services_persons_persons] WHERE [oid] = %s', $personId,
+                                        ' AND [country] = %i', 60)->fetch();
+
+        if ($existedPerson)
+        {
+          echo ' --> '.$existedPerson['fullName'].' ('.$existedPerson['ndx'].')';
+
+          $update = [
+            'municipalityPersonOid' => $personId,
+            'municipalityPerson' => $existedPerson['ndx'],
+          ];
+
+          $this->db()->query('UPDATE [services_locAddr_laUnits] SET ', $update, ' WHERE [ndx] = %i', $existedUnit['ndx']);
+        }
+        echo "\n";
+      }
+
+      $cnt++;
+    }
+  }
+
   protected function convertFileToUTF8($srvFileName, $dstFileName)
   {
     $cmd = 'iconv -f CP1250 -t UTF-8 '.$srvFileName.' -o '.$dstFileName;
