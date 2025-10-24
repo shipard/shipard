@@ -10,10 +10,12 @@ use \Shipard\Viewer\TableViewGrid;
 class ViewItemCodes extends TableViewGrid
 {
 	var $docTypes;
+	var $witemsCodesKinds;
 
 	public function init ()
 	{
 		$this->docTypes = $this->app->cfgItem ('e10.docs.types');
+		$this->witemsCodesKinds = $this->app->cfgItem ('e10.witems.codesKinds');
 
 		//$this->usePanelLeft = TRUE;
 		//$this->createLeftPanel();
@@ -32,6 +34,7 @@ class ViewItemCodes extends TableViewGrid
       'id' => 'ID',
 			'item' => 'Položka',
       'codeId' => 'Kód',
+			'codeKind' => 'Druh kódu',
       'codeInfo' => 'Nastavení',
 		];
 
@@ -58,6 +61,13 @@ class ViewItemCodes extends TableViewGrid
     $listItem ['id'] = $item['itemId'];
 
     $listItem ['item'] = [['text' => $item['itemFullName'], 'class' => 'block']];
+
+		$wcc = $this->witemsCodesKinds[$item['codeKind']] ?? NULL;
+		if ($wcc)
+			$listItem ['codeKind'] = $wcc['fn'];
+		else
+			$listItem ['codeKind'] = '!!! #'.$item['codeKind'];
+
     $listItem ['codeInfo'] = [];
 
     if($askDir)
@@ -88,9 +98,7 @@ class ViewItemCodes extends TableViewGrid
 		array_push ($q, ' LEFT JOIN [e10_persons_persons] AS persons ON itemCodes.person = persons.ndx');
 		array_push ($q, ' LEFT JOIN [e10_persons_groups] AS personsGroups ON itemCodes.personsGroup = personsGroups.ndx');
 		array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomenc ON itemCodes.itemCodeNomenc = nomenc.ndx');
-
 		array_push ($q, ' WHERE 1');
-
 
 		// -- fulltext
 		if ($fts != '')
@@ -102,17 +110,8 @@ class ViewItemCodes extends TableViewGrid
 			array_push ($q, ')');
 		}
 
-
 		array_push ($q, ' ORDER BY [itemFullName], [ndx]');
-
-
     array_push ($q, $this->sqlLimit());
-
-
-		//$this->queryMain ($q, '[ba].', ['[balances].[order]', '[balances].[fullName]', '[ba].[systemOrder]', '[accountId]', '[ndx]']);
 		$this->runQuery ($q);
 	}
 }
-
-
-
