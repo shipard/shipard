@@ -79,6 +79,7 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 		$chbxPurchases = [
 			'fromORP' => ['title' => 'Z ORP', 'id' => 'fromORP'],
 			'withBadORP' => ['title' => 'S vadným / prázdným ORP', 'id' => 'withBadORP'],
+			'withoutPersonHandover' => ['title' => 'Bez osoby Předal', 'id' => 'withoutPersonHandover'],
 		];
 
 		$paramsPurchases = new \Shipard\UI\Core\Params ($this->app());
@@ -106,6 +107,12 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 			if (!$fromORP)
 				array_push ($q, ' AND [heads].[otherAddress1Mode] = %i', 1);
 			array_push ($q, ' AND [heads].[personNomencCity] = %i', 0);
+		}
+
+		$withoutPersonHandover = isset ($qv['purchases']['withoutPersonHandover']);
+		if ($withoutPersonHandover)
+		{
+			array_push ($q, ' AND heads.personHandover = %i', 0);
 		}
 	}
 }
