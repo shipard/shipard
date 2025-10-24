@@ -125,6 +125,11 @@ class ViewPersons extends TableView
 		if ($cleanedName)
 			array_push($q, ' AND [cleanedName] = %i', 1);
 
+		if (isset ($qv['legalForms']) && count($qv['legalForms']))
+		{
+			array_push ($q, ' AND persons.[natLegalType] IN %in', array_keys($qv['legalForms']));
+		}
+
 		// -- fulltext
 		if ($fts != '')
 		{
@@ -229,6 +234,19 @@ class ViewPersons extends TableView
 		$paramsVAT->addParam ('checkboxes', 'query.vat', ['items' => $chbxVAT]);
 		$qry[] = ['id' => 'vat', 'style' => 'params', 'title' => ['text' => 'DPH', 'icon' => 'tables/e10doc.base.taxRegs'], 'params' => $paramsVAT];
 
+		// -- legal forms
+		//--e10.base.nomencItems
+		$legalFormsRows = $this->db()->query ('SELECT * FROM e10_base_nomencItems WHERE [nomencType] = %i', 4,
+																					' AND docState = %i', 4000, ' ORDER BY itemId, fullName');
+		$legalForms = [];
+		foreach ($legalFormsRows as $row)
+		{
+			$legalForms[$row['ndx']] = ['title' => $row['itemId'].' '.$row['fullName'], 'id' => $row['ndx']];
+		}
+		$paramsLF = new \Shipard\UI\Core\Params ($this->app());
+		$paramsLF->addParam ('checkboxes', 'query.legalForms', ['items' => $legalForms]);
+		$qry[] = ['id' => 'legalForms', 'style' => 'params', 'title' => ['text' => 'Právní formy', 'icon' => 'system/iconCogs'], 'params' => $paramsLF];
+
 		// others
 		$chbxOthers = [
 			'cleanedName' => ['title' => 'Začištěné jméno', 'id' => 'cleanedName'],
@@ -260,6 +278,7 @@ class FormPerson extends TableForm
 			$this->addColumnInput ('validTo');
 			$this->addColumnInput ('valid');
 			$this->addColumnInput ('vatID');
+			$this->addColumnInput ('natLegalType');
 		$this->closeForm ();
 	}
 }

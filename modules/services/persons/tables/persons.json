@@ -41,6 +41,7 @@
 		{"id": "fts", "fullText": 1, "columns": ["fullName"]},
 		{"id": "o1", "columns": ["fullName"]},
 		{"id": "vat", "columns": ["vatState", "vatID"]},
-		{"id": "cleanedName", "columns": ["cleanedName"]}
+		{"id": "cleanedName", "columns": ["cleanedName"]},
+		{"id": "natLegalType", "columns": ["natLegalType"]}
 	]
 }
