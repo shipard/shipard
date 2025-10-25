@@ -130,6 +130,14 @@ class AddrStandardizationEngine extends Utility
          'data-addparams' => 'addrPlaceId=' . $item['addrPlaceId'].'&addressNdx='.$this->addressRecData['ndx'],
       ];
 
+      $actionButtons[] = [
+        'type' => 'action', 'action' => 'open-popup',
+        'data-popup-url' => 'http://nahlizenidokn.cuzk.cz/MapaIdentifikace.aspx?l=KN&x=-'.intval($item['natGeoCoordY']).'&y=-'.intval($item['natGeoCoordX']),
+        'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
+        'text' => '', 'title' => 'Nahlížení do Katastru '.$x.', '.$y,
+        'icon' => 'personDataBox', 'class' => 'pull-right',
+      ];
+
       $y = $item['wgs84lng'];
       $x = $item['wgs84lat'];
       $actionButtons[] = [
@@ -140,12 +148,11 @@ class AddrStandardizationEngine extends Utility
         'icon' => 'system/iconMapMarker', 'class' => 'pull-right',
       ];
 
-
       $row = [
         'p1' => $addrInfo,
         'v1' => $actionButtons,
         'v2' => '',
-        '_options' => ['cellClasses' => ['v1' => 'width12em']],
+        '_options' => ['cellClasses' => ['v1' => 'width14em']],
       ];
       $t[] = $row;
 
