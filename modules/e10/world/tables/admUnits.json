@@ -18,6 +18,9 @@
     {"id": "admUnitOwner2", "name": "Okres", "type": "int", "reference": "e10.world.admUnits"},
 		{"id": "cityPart2", "name": "Městská část", "type": "int", "reference": "e10.world.admUnits"},
 
+		{"id": "municipalityPersonOid", "name": "IČ obce", "type": "string", "len": 20, "options": ["ascii"]},
+		{"id": "municipalityPerson", "name": "Osoba obce", "type": "int", "reference": "e10.persons.persons"},
+
 		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},

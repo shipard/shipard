@@ -78,6 +78,11 @@ class ViewAdmUnits extends TableView
 		if ($item['admUnitOwner0FullName'])
 			$listItem ['t2'][] = ['text' => $item['admUnitOwner0FullName'], 'class' => 'label label-warning'];
 
+		if ($item['municipalityPersonOid'] !== '')
+		{
+			$listItem ['i2'][] = ['text' => 'IČ: '.$item['municipalityPersonOid'], 'class' => 'label label-default'];
+		}
+
 		$listItem ['icon'] = $this->table->tableIcon ($item);
 
 		return $listItem;
@@ -137,6 +142,8 @@ class FormAdmUnit extends TableForm
 			$this->addColumnInput ('admUnitOwner2');
 			$this->addColumnInput ('cityPart2');
 			$this->addColumnInput ('admUnitId');
+			$this->addColumnInput ('municipalityPersonOid');
+			$this->addColumnInput ('municipalityPerson');
 		$this->closeForm ();
 	}
 }

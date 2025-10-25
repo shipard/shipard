@@ -27,6 +27,9 @@ class ImportAdmUnits extends Utility
     if (!$this->data)
       return;
 
+    /** @var \e10\persons\TablePersons $tablePersons */
+    $tablePersons = $this->app()->table('e10.persons.persons');
+
     foreach ($this->data as $d)
     {
       $unit = [
@@ -53,6 +56,14 @@ class ImportAdmUnits extends Utility
         $owner2Ndx = $this->ownerIdNdx($d['owner2'], 2);
         if ($owner2Ndx)
           $unit['admUnitOwner2'] = $owner2Ndx;
+      }
+
+      if (isset($d['municipalityPersonOid']))
+      {
+        $unit['municipalityPersonOid'] = $d['municipalityPersonOid'];
+        $personNdx = $tablePersons->searchPerson('ids', 'oid', $unit['municipalityPersonOid']);
+        if ($personNdx)
+          $unit['municipalityPerson'] = $personNdx;
       }
 
       $exist = $this->app()->db()->query('SELECT ndx FROM [e10_world_admUnits] WHERE country = %i', $this->country,
