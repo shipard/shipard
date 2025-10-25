@@ -47,6 +47,10 @@ class AdmUnitsExport extends Utility
         $unit['owner1'] = $r['laUnitOwner1Id'];
       if ($r['laUnitOwner2Id'])
         $unit['owner2'] = $r['laUnitOwner2Id'];
+
+      if ($r['municipalityPersonOid'] && $r['municipalityPerson'])
+        $unit['municipalityPersonOid'] = $r['municipalityPersonOid'];
+
       $units[] = $unit;
     }
 
