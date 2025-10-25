@@ -644,6 +644,41 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
       $this->personDataImport->addID(['idType' => self::idtVATPrimary, 'id' => $regVatId]);
   }
 
+  function doImport_ISDS()
+  {
+    if ($this->app()->debug)
+      echo "* doImport_ISDS; ";
+
+    $regData = $this->regData(self::prtCZISDS, $this->personDataCurrent->personId);
+    if (!$regData)
+    {
+      if ($this->app()->debug)
+        echo "ERROR: no reg data; \n";
+      return;
+    }
+
+    $isdsData = json_decode($regData['srcData'], TRUE);
+    if (!$isdsData)
+    {
+      if ($this->app()->debug)
+        echo "ERROR: parse data failed:\n".$regData."\n\n";
+      return;
+    }
+
+    if (isset($isdsData['Osoba']['ISDS']))
+    {
+      $info = ['govEBoxId' => $isdsData['Osoba']['ISDS']];
+      if ($this->app()->debug)
+        echo "ISDS ID: ".$info['govEBoxId']."\n";
+      $this->personDataImport->setCoreInfo($info);
+    }
+    else
+    {
+      if ($this->app()->debug)
+        echo "ERROR: no ISDS ID in data\n".$regData."\n\n";
+    }
+  }
+
   function clearFullName ($originalName)
 	{
 		$s = str_replace('"', '', $originalName);
@@ -726,6 +761,7 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     $this->doImport_ARES_RZP();
     $this->doImport_RZP();
     $this->doImport_VAT();
+    $this->doImport_ISDS();
   }
 
   public function saveChanges()

@@ -279,6 +279,7 @@ class FormPerson extends TableForm
 			$this->addColumnInput ('valid');
 			$this->addColumnInput ('vatID');
 			$this->addColumnInput ('natLegalType');
+			$this->addColumnInput ('govEBoxId');
 		$this->closeForm ();
 	}
 }

@@ -9,6 +9,7 @@
 		{"id": "fullName", "name": "Název", "type": "string", "len": 240},
 		{"id": "originalName", "name": "Originální název", "type": "string", "len": 240},
 		{"id": "cleanedName", "name": "Začištěné jméno", "type": "logical"},
+		{"id": "govEBoxId", "name": "ID datové schránky", "type": "string", "len": 16, "options": ["ascii"]},
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"},
 		{"id": "valid", "name": "Platné", "type": "logical"},

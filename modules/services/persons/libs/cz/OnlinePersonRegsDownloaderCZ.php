@@ -318,6 +318,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $this->loadARESRzp();
     $this->loadRZP();
     $this->loadVAT();
+    $this->loadISDS();
 
     if ($this->cntUpdates)
     {
@@ -356,6 +357,51 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     }
 
     $this->cntUpdates++;
+  }
+
+  function loadISDS()
+  {
+    if ($this->app()->debug)
+      echo "  * loadISDS; ";
+
+    $logRecord = $this->log->newLogRecord();
+    $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
+    $logRecord->addItem('isds-download-init', '', []);
+
+    $qryString = "";
+    $qryString .= "<GetInfo2Request xmlns=\"http://seznam.gov.cz/ovm/ws/v1\">\n";
+    $qryString .= "<Ico>".$this->personData->personId."</Ico>\n";
+    $qryString .= "</GetInfo2Request>\n";
+
+    $uploadUrl = "https://www.mojedatovaschranka.cz/sds/ws/call";
+		$ch = curl_init();
+		curl_setopt ($ch, CURLOPT_HEADER, 0);
+		curl_setopt ($ch, CURLOPT_URL, $uploadUrl);
+		curl_setopt ($ch, CURLOPT_VERBOSE, 0);
+    curl_setopt ($ch, CURLOPT_HTTPHEADER, ['Content-Type: text/xml']);
+    curl_setopt ($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible;)");
+		curl_setopt ($ch, CURLOPT_POST, 1);
+		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt ($ch, CURLOPT_POSTFIELDS, $qryString);
+		$result = curl_exec ($ch);
+		curl_close ($ch);
+    unset ($ch);
+
+    //print_r($result);
+
+    $xml = new \SimpleXMLElement($result);
+    $xmlData = json_decode(json_encode($xml), TRUE);
+    $jsonDataStr = Json::lint($xmlData);
+
+    if ($this->app()->debug)
+      echo "\n\n".$jsonDataStr."\n\n";
+
+    $this->saveRegisterData ($this->personNdx, self::prtCZISDS, $jsonDataStr, sha1($jsonDataStr), $this->personData->personId);
+
+    $logRecord->setStatus(LogRecord::lstInfo, TRUE);
+
+    if ($this->app()->debug)
+      echo "\n";
   }
 
   public function run()
