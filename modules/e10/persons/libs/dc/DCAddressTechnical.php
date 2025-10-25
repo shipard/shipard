@@ -97,7 +97,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
     ];
     $t[] = $row;
 
-		$addrPlaceButtons = $this->addrPlaceButtons($this->recData['natAddressGeoId']);
+		$addrPlaceButtons = $this->addrPlaceButtons($this->recData['natAddressGeoId'], $this->recData['adrLocLat'], $this->recData['adrLocLon']);
     $row = [
       'p1' => 'RÚIAN',
       'v1' => $this->recData['natAddressGeoId'],
@@ -154,7 +154,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 		$this->addContent ('body', $content);
 	}
 
-  public function addrPlaceButtons($addrPlaceId)
+  public function addrPlaceButtons($addrPlaceId, $x, $y)
 	{
 		$mapBtns = [];
 		$mapBtns[] = [
@@ -404,6 +404,15 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			'text' => '#'.$laUnitId, 'title' => 'Otevřít ZUJ '.$laUnitId,
 			'icon' => 'system/actionOpen',
 		];
+
+		$actionBtns[] = [
+			'type' => 'action', 'action' => 'open-popup',
+			'data-popup-url' => 'https://www.risy.cz/en/vyhledavace/uzemi/'.$laUnitId,
+			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
+			'text' => 'RIS', 'title' => 'Detail ZUJ '.$laUnitId,
+			'icon' => 'system/iconInfo', 'class' => 'ml1',
+		];
+
 
 		/*
 		$actionBtns[] = [

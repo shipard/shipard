@@ -134,7 +134,7 @@ class AddrStandardizationEngine extends Utility
         'type' => 'action', 'action' => 'open-popup',
         'data-popup-url' => 'http://nahlizenidokn.cuzk.cz/MapaIdentifikace.aspx?l=KN&x=-'.intval($item['natGeoCoordY']).'&y=-'.intval($item['natGeoCoordX']),
         'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
-        'text' => '', 'title' => 'Nahlížení do Katastru '.$x.', '.$y,
+        'text' => '', 'title' => 'Nahlížení do Katastru nemovitostí',
         'icon' => 'personDataBox', 'class' => 'pull-right',
       ];
 
