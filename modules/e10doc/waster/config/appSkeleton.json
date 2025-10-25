@@ -28,6 +28,12 @@
 								"viewer": "default", "order": 921000
 							},
 
+							"addresses": {
+								"t1": "Adresy", "object": "viewer", "table": "e10.persons.personsContacts", "icon": "system/iconMapMarker", "viewer": "technicalAddress", "order": 965000,
+								"beforeSeparator":  {"text": "Adresy", "class": "block pl05 pt1", "icon": "submenu/management"}
+							},
+							"admUnits": {"t1": "Adm. členění", "object": "viewer", "table": "e10.world.admUnits", "viewer": "default", "order": 965100},
+
 							"wd": {
 								"t1": "Odpady²",
 								"object": "widget", "class": "e10.widgetDashboard", "subclass": "waster",
