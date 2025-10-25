@@ -639,6 +639,26 @@ class TablePersons extends DbTable
 
 		return parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
 	}
+
+	function searchPerson($group, $id, $value)
+	{
+		$q[] = 'SELECT props.recid';
+
+		array_push ($q,	' FROM [e10_base_properties] AS props');
+		array_push ($q,	' LEFT JOIN [e10_persons_persons] AS persons ON props.recid = persons.ndx');
+		array_push ($q,	' WHERE 1');
+		array_push ($q,	' AND [tableid] = %s', 'e10.persons.persons', ' AND [valueString] = %s', $value);
+		array_push ($q,	' AND [group] = %s', $group, ' AND property = %s', $id);
+		array_push ($q, ' AND [persons].docState = %i', 4000);
+
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			return $r['recid'];
+		}
+
+		return 0;
+	}
 }
 
 
