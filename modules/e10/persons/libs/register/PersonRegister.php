@@ -22,6 +22,7 @@ class PersonRegister extends Utility
 
   var $personOid = '';
   var $personVATIDs = [];
+  var $personGovDataBoxIds = [];
   var $personNdx = 0;
   var $personRecData = NULL;
   var $personNames = [];
@@ -54,6 +55,7 @@ class PersonRegister extends Utility
     $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
     $this->loadPersonOid();
     $this->loadPersonVatIDs();
+    $this->loadPersonGovEBoxIds();
     $this->loadPersonNames();
 
     if ($this->generalFailure)
@@ -109,8 +111,12 @@ class PersonRegister extends Utility
 		$newPerson ['person']['docStateMain'] = $this->addDocStateMain;
 
 		$newPerson ['ids'][] = ['type' => 'oid', 'value' => $this->registerData['person']['oid']];
+
     if (isset($this->registerData['person']['vatID']) && $this->registerData['person']['vatID'] !== '')
 		  $newPerson ['ids'][] = ['type' => 'taxid', 'value' => $this->registerData['person']['vatID']];
+
+    if (isset($this->registerData['person']['govEBoxId']) && $this->registerData['person']['govEBoxId'] !== '')
+		  $newPerson ['contacts'][] = ['type' => 'govDataBox', 'value' => $this->registerData['person']['govEBoxId']];
 
     $this->personNdx = \E10\Persons\createNewPerson ($this->app, $newPerson);
     $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
@@ -184,6 +190,23 @@ class PersonRegister extends Utility
 			if ($r['valueString'] === '')
 				continue;
 			$this->personVATIDs[$r['valueString']] = ['valid' => 0];
+		}
+	}
+
+  protected function loadPersonGovEBoxIds ($forcePersonNdx = 0)
+	{
+    $personNdx = ($forcePersonNdx) ? $forcePersonNdx : $this->personRecData['ndx'];
+
+		$q[] = 'SELECT * FROM [e10_base_properties] AS props';
+		array_push ($q, ' WHERE [recid] = %i', $this->personRecData['ndx']);
+		array_push ($q, ' AND [tableid] = %s', 'e10.persons.persons', 'AND [group] = %s', 'contacts', ' AND property = %s', 'govDataBox');
+
+		$rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			if ($r['valueString'] === '')
+				continue;
+			$this->personGovDataBoxIds[$r['valueString']] = ['valid' => 0];
 		}
 	}
 
@@ -499,6 +522,18 @@ class PersonRegister extends Utility
         'tableid' => 'e10.persons.persons',
         'group' => 'ids', 'property' => 'taxid',
         'valueString' => $this->registerData['person']['vatID'],
+        'created' => new \DateTime(),
+      ];
+    }
+
+    if (isset($this->registerData['person']['govEBoxId']) && $this->registerData['person']['govEBoxId'] !== '' && !isset($this->personGovDataBoxIds[$this->registerData['person']['govEBoxId']]))
+    {
+      $this->addDiffMsg('Nová datová schránka `'.$this->registerData['person']['govEBoxId'].'`');
+      $this->diff['properties']['add'][] = [
+        'recid' => $this->personRecData['ndx'],
+        'tableid' => 'e10.persons.persons',
+        'group' => 'contacts', 'property' => 'govDataBox',
+        'valueString' => $this->registerData['person']['govEBoxId'],
         'created' => new \DateTime(),
       ];
     }
