@@ -68,7 +68,7 @@ class ViewCountries extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 
-		$listItem ['emoji'] = $item['flag'];
+		$listItem ['svgIcon'] = World::countryFlagUrl($this->app, $item['ndx']);
 
 		if ($item['trNameCommon'])
 			$listItem ['t1'] = $item['trNameCommon'];
@@ -96,6 +96,8 @@ class ViewCountries extends TableView
 			$listItem ['i2'][] = ['text' => $item['callingCodes'], 'icon' => 'system/iconPhone', 'class' => 'label label-default'];
 		if ($item['tlds'] && $item['tlds'] !== '')
 			$listItem ['i2'][] = ['text' => $item['tlds'], 'icon' => 'icon-globe', 'class' => 'label label-info'];
+
+		$listItem ['class'] = 'e10-ds e10-docstyle-done';
 
 		return $listItem;
 	}

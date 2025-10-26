@@ -30,6 +30,15 @@ class World
 		return 0;
 	}
 
+	static function countryFlagUrl($app, $countryNdx)
+	{
+		$c = $app->cfgItem('world.data.countries.'.$countryNdx, NULL);
+		if (!$c)
+			return '';
+		$url = $app->urlRoot.'/www-root/sc/icons/flags/world/default/'.$c['i'].'.svg';
+		return $url;
+	}
+
 	static function setCountryInfo(\Shipard\Application\Application $app, int $countryNdx, array &$dst)
 	{
 		$c = $app->cfgItem('world.data.countries.'.$countryNdx, NULL);
