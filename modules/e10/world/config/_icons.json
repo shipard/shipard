@@ -64,5 +64,11 @@
 		"fa6pro": "fa-map-marker-alt",
 		"bsi": "bi-geo-alt-fill",
 		"mdi": "place"
+    },
+    "tables/e10.world.admUnits":{
+        "fa5":"fa-code-branch",
+        "fa6pro":"fa-code-branch",
+        "bsi":"bi-diagram-2-fill",
+        "mdi":"grid_view"
     }
 }

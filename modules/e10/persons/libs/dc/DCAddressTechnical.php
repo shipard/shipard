@@ -91,9 +91,17 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 	{
     $t = [];
 
+    $country = World::country($this->app(), $this->recData['adrCountry']);
+    $countryText = ($country) ? strtoupper($country['i']) : '!!! chybí země !!!';
+		$countryInfo = ['text' => $countryText, 'class' => 'pull-right', 'iconImg' => World::countryFlagUrl($this->app(), $this->recData['adrCountry'])];
+		$spTitle = [
+			['text' => 'Adresní místo', 'class' => ''],
+		];
+		$spTitle[] = $countryInfo;
+
     $row = [
-      'p1' => 'Adresní místo',
-			'_options' => ['colSpan' => ['p1' => 3], 'cellClasses' => ['p1' => 'h2 pull-left']],
+      'p1' => $spTitle,
+			'_options' => ['colSpan' => ['p1' => 3], 'cellClasses' => ['p1' => 'h2'], 'cellCss' => ['p1' => 'text-align: left;']],
     ];
     $t[] = $row;
 
@@ -110,6 +118,7 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 		$this->addAddrPlace_CityPart($t);
 		$this->addAddrPlace_CityPart2($t);
 		$this->addAddrPlace_City($t);
+		$this->addAddrPlace_ZipCode($t);
 
 		$this->addAddrPlace_laUnit11($t);
 		$this->addAddrPlace_laUnit10($t);
@@ -249,11 +258,14 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 			];
 		}
 
+		$hnr = ['text' => $this->recData['saHouseNr'], 'class' => 'label label-default'];
+		if ($this->recData['saHouseNr1Type'])
+			$hnr['prefix'] = 'č.ev.';
 		$row = [
 			'p1' => 'Ulice',
 			'v1' => [
 				['text' => $this->recData['saStreetName'], 'class' => ''],
-				['text' => $this->recData['saHouseNr'], 'class' => 'label label-default'],
+				$hnr ,
 			],
 			'v2' => $actionBtns,
 		];
@@ -262,38 +274,40 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 
   function addAddrPlace_CityPart(&$t)
 	{
-		$cityPartId = $this->recData['saCityPartId'];
-    if (!$cityPartId)
+		$cityPartId = intval($this->recData['saCityPartId']);
+    if (!$cityPartId && $this->recData['saCityPartName'] !== '')
       return;
 
 		$actionBtns = [];
 
-    /*
-		$actionBtns[] = [
-			'type' => 'action', 'action' => 'editform',
-			'data-table' => 'services.locAddr.citiesParts', 'data-pk' => $this->recData['cityPart'],
-			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
-			'text' => '#'.$cityPartId, 'title' => 'Otevřít část obce '.$cityPartId,
-			'icon' => 'system/actionOpen',
-		];
-    */
+		if ($cityPartId)
+		{
+			/*
+			$actionBtns[] = [
+				'type' => 'action', 'action' => 'editform',
+				'data-table' => 'services.locAddr.citiesParts', 'data-pk' => $this->recData['cityPart'],
+				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
+				'text' => '#'.$cityPartId, 'title' => 'Otevřít část obce '.$cityPartId,
+				'icon' => 'system/actionOpen',
+			];
+			*/
 
-		$actionBtns[] = [
-			'type' => 'action', 'action' => 'open-popup',
-			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/castiobce/'.$cityPartId,
-			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
-			'text' => 'Detail', 'title' => 'Detail části obce '.$cityPartId,
-			'icon' => 'system/iconInfo', 'class' => 'ml1',
-		];
+			$actionBtns[] = [
+				'type' => 'action', 'action' => 'open-popup',
+				'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/castiobce/'.$cityPartId,
+				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
+				'text' => 'Detail', 'title' => 'Detail části obce '.$cityPartId,
+				'icon' => 'system/iconInfo', 'class' => 'ml1',
+			];
 
-		$actionBtns[] = [
-			'type' => 'action', 'action' => 'open-popup',
-			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mapa/CO/'.$cityPartId.'/',
-			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
-			'text' => 'Katastr', 'title' => 'Katastrální mapa části obce '.$cityPartId,
-			'icon' => 'system/iconMapMarker', 'class' => 'ml1',
-		];
-
+			$actionBtns[] = [
+				'type' => 'action', 'action' => 'open-popup',
+				'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mapa/CO/'.$cityPartId.'/',
+				'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
+				'text' => 'Katastr', 'title' => 'Katastrální mapa části obce '.$cityPartId,
+				'icon' => 'system/iconMapMarker', 'class' => 'ml1',
+			];
+		}
 
 		$row = [
 			'p1' => 'Část obce',
@@ -382,6 +396,34 @@ class DCAddressTechnical extends \Shipard\Base\DocumentCard
 		$row = [
 			'p1' => 'Obec',
 			'v1' => $this->recData['saCityName'],
+			'v2' => $actionBtns,
+		];
+		$t[] = $row;
+	}
+
+	function addAddrPlace_ZipCode(&$t)
+	{
+		$zipCode = $this->recData['saZipCodeId'];
+
+		$actionBtns = [];
+
+		if ($zipCode === '')
+			return;
+
+		$zipCodeID = str_replace(' ', '', $zipCode);
+		$actionBtns[] = [
+			'type' => 'action', 'action' => 'open-popup',
+			'data-popup-url' => 'https://www.postaonline.cz/detail-pobocky/-/pobocky/detail/'.$zipCodeID,
+			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
+			'text' => 'Pošta', 'title' => 'Pobočka pošty '.$zipCodeID,
+			'icon' => 'user/envelope', 'class' => 'ml1',
+		];
+
+		$row = [
+			'p1' => 'PSČ',
+			'v1' => [
+				['text' => $zipCode, 'class' => ''],
+			],
 			'v2' => $actionBtns,
 		];
 		$t[] = $row;

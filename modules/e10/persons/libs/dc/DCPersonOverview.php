@@ -116,34 +116,6 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
 
 			$address['isContact'] = $item['flagContact'];
 
-			if ($item['adrLocState'] === 1)
-			{ // success
-				$x = $item['adrLocLat'];
-				$y = $item['adrLocLon'];
-				$address['c2'][] = [
-					'type' => 'action', 'action' => 'open-popup',
-					'element' => 'span',
-					'data-popup-url' => 'https://maps.google.com/?q='.$item['adrLocLat'].','.$item['adrLocLon'],
-					'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
-					'text' => '', 'title' => 'Google mapy: GPS: '.$item['adrLocLat'].', '.$item['adrLocLon'],
-					'icon' => 'system/iconMapMarker', 'class' => 'e10-success mr1'
-				];
-				$address['c2'][] = [
-					'type' => 'action', 'action' => 'open-popup',
-					'element' => 'span',
-					'data-popup-url' => 'https://mapy.cz/fnc/v1/showmap?center='.$y.','.$x.'&zoom=17'.'&marker=true',
-					'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
-					'text' => '', 'title' => 'mapy.cz: GPS: '.$x.', '.$y,
-					'icon' => 'system/iconMapMarker', 'class' => 'e10-success mr1',
-				];
-			}
-			elseif ($item['adrLocState'] === 1)
-			{ // error
-				$address['c2'][] = [
-					'text' => '', 'title' => 'Chyba GPS zaměření',
-					'icon' => 'system/iconMapMarker', 'class' => 'e10-error mr1'
-				];
-			}
 
 			$address['c2'][] = ['text' => '', 'docAction' => 'edit', 'table' => 'e10.persons.personsContacts', 'pk' => $item['ndx'], 'class' => 'pull-right', 'icon' => 'system/actionOpen'];
 
@@ -167,6 +139,41 @@ class DCPersonOverview extends \Shipard\Base\DocumentCard
         if ($item['contactPhone'] != '')
           $address['c2'][] = ['text' => $item['contactPhone'], 'class' => 'label label-default', 'icon' => 'system/iconPhone'];
       }
+
+			if ($item['adrLocState'] === 1)
+			{ // success
+				$x = $item['adrLocLat'];
+				$y = $item['adrLocLon'];
+
+				$mapPinClass = $item['flagStandardized'] ? 'e10-me' : 'e10-off';
+
+				/*
+				$address['c2'][] = [
+					'type' => 'action', 'action' => 'open-popup',
+					'element' => 'span',
+					'data-popup-url' => 'https://maps.google.com/?q='.$item['adrLocLat'].','.$item['adrLocLon'],
+					'data-popup-width' => '0.8', 'data-popup-height' => '0.8',
+					'text' => '', 'title' => 'Google mapy: GPS: '.$item['adrLocLat'].', '.$item['adrLocLon'],
+					'icon' => 'system/iconMapMarker', 'class' => 'e10-success mr1'
+				];
+				*/
+				$address['c2'][] = [
+					'type' => 'action', 'action' => 'open-popup',
+					'element' => 'span',
+					'data-popup-url' => 'https://mapy.cz/fnc/v1/showmap?center='.$y.','.$x.'&zoom=17'.'&marker=true',
+					'data-popup-width' => '0.8', 'data-popup-height' => '0.8',
+					'text' => '', 'title' => 'mapy.cz: GPS: '.$x.', '.$y,
+					'icon' => 'system/iconMapMarker', 'class' => $mapPinClass.' mr1',
+				];
+			}
+			elseif ($item['adrLocState'] === 2)
+			{ // error
+				$address['c2'][] = [
+					'text' => '', 'title' => 'Chyba GPS zaměření',
+					'icon' => 'system/iconMapMarker', 'class' => 'e10-error mr1'
+				];
+			}
+
 
 			$this->addresses[$item['ndx']] = $address;
     }
