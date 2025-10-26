@@ -87,6 +87,15 @@ class WasteCheckEngine extends Utility
 
   protected function checkData()
   {
+    $wasteHandlingCodes = $this->app->cfgItem('e10doc.waster.handlingCodes', []);
+    $whcIcons = [ // CONST whcDirIn = 0, whcDirOut = 1, whcDirInitState = 2, whcDirMove = 3, whcDirProduction = 5;
+      0 => 'system/iconPlusSquare',
+      1 => 'system/iconMinusSquare',
+      2 => 'system/actionAdd',
+      3 => 'user/arrowRight',
+      5 => 'user/arrowDown',
+    ];
+
     $this->checkWRTable = [];
     $this->checkWRTableHeader = [
       '#' => '#', 'hc' => 'EK', 'wc' => 'Kód odpadu', 'wcm' => 'Kód pro převod', 'quantity' => '+Množství kg', 'note' => 'Pozn.'
@@ -94,18 +103,21 @@ class WasteCheckEngine extends Utility
 
     foreach ($this->currentWRData as $wrRow)
     {
+      $whc = $wasteHandlingCodes[$wrRow['wasteHandlingCode']] ?? NULL;
+
 			$item = [
 				'wc' => $wrRow['wasteCodeText'],
-        'hc' => $wrRow['wasteHandlingCode'],
+        'hc' => ['text' => $wrRow['wasteHandlingCode'], 'icon' => $whcIcons[$whc['dir']] ?? 'system/iconQuestion'],
         'wcm' => $wrRow['wasteCodeTextMove'],
 				'quantity' => $wrRow['quantityKG'],
+        'note' => [['text' => $whc['hn'] ?? $whc['sn'] ?? '!!!', 'class' => 'e10-small block']]
 			];
 
       $existedRow = $this->searchNewWRRow($wrRow);
       if (!$existedRow)
       {
         $item['_options']['class'] = 'e10-warning2';
-        $item['note'] = 'PŘEBÝVÁ v hlášení';
+        $item['note'][] = ['text' => 'PŘEBÝVÁ v hlášení', 'class' => 'label label-danger'];
         $this->checkOk = 0;
       }
       else
@@ -129,7 +141,7 @@ class WasteCheckEngine extends Utility
           'quantity' => $wrRow['quantityKG'],
         ];
 
-        $item['note'] = 'CHYBÍ v hlášení';
+        $item['note'][] = ['text' => 'CHYBÍ v hlášení', 'class' => 'label label-danger'];
         $item['_options']['class'] = 'e10-warning2';
         $this->checkWRTable[] = $item;
         $this->checkOk = 0;
@@ -149,7 +161,7 @@ class WasteCheckEngine extends Utility
       }
     }
 
-    $t = [['icon' => 'system/actionRecycle', 'text' => 'Hlášení o odpadechX']];
+    $t = [['icon' => 'system/actionRecycle', 'text' => 'Hlášení o odpadech']];
 		$this->checkWRContent = [
 			'pane' => 'e10-pane e10-pane-table', 'type' => 'table',
 			'table' => $this->checkWRTable, 'header' => $this->checkWRTableHeader,
