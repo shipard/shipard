@@ -134,6 +134,10 @@ class UICore extends \Shipard\Base\BaseObject
 		{
 			$i = $this->icons()->icon($p ['icon']);
 		}
+		elseif (isset ($p ['iconImg']))
+		{
+			$i = "<img src='{$p ['iconImg']}' class='inline-icon-img' style='height: 1em;'/>";
+		}
 		elseif (isset ($p ['i']))
 			$i = "<i class='fa fa-{$p ['i']}'></i>";
 		elseif (isset ($p ['icontxt']))
