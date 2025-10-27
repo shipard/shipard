@@ -459,16 +459,25 @@ newItem="<li class='data' data-pk='"+pk+"' data-table='"+table+"'"+'>'+infotext+
 formId=searchObjectId(target,'form');var
 form=$('#'+formId);e10doSizeHints(form);if(target.hasClass('e10-ino-saveOnChange'))e10FormNeedSave(target,-1);}else{var
 valueInput=target.find('input.e10-inputNdx');if(valueInput.is('INPUT')){valueInput.val(pk);target.find('span.btns').show();var
-infotext=e.find('div.df2-list-item-t1').text();target.find('span.e10-refinp-infotext').text(infotext);}else{valueInput=target.find('input.e10-inputRefId, textarea.e10-inputRefId');var
+infotext=e.find('div.df2-list-item-t1').text();target.find('span.e10-refinp-infotext').text(infotext);var
+inputPrefix=searchParentAttr(valueInput,'data-inputprefix');if(inputPrefix==null)inputPrefix='';var
+iel=e.get(0);if(e.attr('data-cc-force')!=undefined){for(var
+i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
+attrName=attrs.item(i).nodeName;if(attrName.substring(0,7)!=='data-cc')continue;var
+valParts=attrs.item(i).nodeValue.split(':');var
+inputId='#'+inputPrefix+valParts[0];var
+inputElement=$(inputId);console.log("DATA-CC: "+inputId+' = ',inputElement);if(inputElement.hasClass('e10-inputLogical')){var
+checkIt=(b64DecodeUnicode(valParts[1])==='1');inputElement[0].checked=checkIt;}else{var
+ivd=b64DecodeUnicode(valParts[1]);console.log("SET-VALUE: "+inputId+' = ',ivd);console.log(inputElement);inputElement.val(b64DecodeUnicode(valParts[1]));}}}}else{valueInput=target.find('input.e10-inputRefId, textarea.e10-inputRefId');var
 inputPrefix=searchParentAttr(valueInput,'data-inputprefix');var
 iel=e.get(0);for(var
 i=0,attrs=iel.attributes,l=attrs.length;i<l;i++){var
 attrName=attrs.item(i).nodeName;if(attrName.substring(0,7)!=='data-cc')continue;var
 valParts=attrs.item(i).nodeValue.split(':');var
 inputId='#'+inputPrefix+valParts[0];var
-inputElement=$(inputId);if(inputElement.hasClass('e10-inputLogical')){var
+inputElement=$(inputId);console.log("DATA-CC: "+inputId+' = ',inputElement);if(inputElement.hasClass('e10-inputLogical')){var
 checkIt=(b64DecodeUnicode(valParts[1])==='1');inputElement[0].checked=checkIt;}else
-inputElement.val(b64DecodeUnicode(valParts[1]));}valueInput.addClass('e10-ino-saveOnChange');}if(event!==0&&event.shiftKey)valueInput.attr('data-softchange','1');e10FormSetAsModified(valueInput);if(valueInput.hasClass('e10-ino-saveOnChange'))valueInput.change();target.find('input.e10-inputRefId').focus();}return;}if(viewer.attr('data-combo-rows-target')){var
+inputElement.val(b64DecodeUnicode(valParts[1]));}valueInput.addClass('e10-ino-saveOnChange');}if(event!==0&&event.shiftKey)valueInput.attr('data-softchange','1');e10FormSetAsModified(valueInput);if(valueInput.hasClass('e10-ino-saveOnChange'))valueInput.change();target.find('input.e10-inputRefId').focus();}return;}if(viewer.attr('data-combo-rows-target')){console.log("data-combo-rows-target");var
 formId=viewer.attr('data-combo-formid-target');var
 form=$('#'+formId);if(form.attr('data-readonly')!==undefined)return;var
 options={"appendRowList":"rows","appendRowItemPK":pk};var
