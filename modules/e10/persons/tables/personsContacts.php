@@ -462,6 +462,10 @@ class FormPersonContact extends TableForm
 							$this->addColumnInput ('adrCity');
 							$this->addColumnInput ('adrZipCode');
 							$this->addColumnInput ('adrCountry');
+							if ($useAdmUnits11)
+							{
+								$this->addColumnInput ('saAdmUnit11Ndx');
+							}
 						}
 						if ($useOfficesIds && $this->idsOptions && (isset($this->idsOptions['id1']) || isset($this->idsOptions['id2'])))
 						{
