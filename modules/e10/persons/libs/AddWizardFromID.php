@@ -1,6 +1,8 @@
 <?php
 
 namespace e10\persons\libs;
+
+use e10\json;
 use \Shipard\Form\Wizard;
 use \Shipard\Utils\World;
 
@@ -20,6 +22,7 @@ class AddWizardFromID extends Wizard
 	{
 		parent::__construct($app, $options);
 		$this->dirtyColsReferences['country'] = 'e10.world.countries';
+		$this->dirtyColsReferences['addrPlaceInReg'] = 'e10.persons.addrPlacesInReg';
 		$this->table = $this->app()->table('e10.persons.persons');
 	}
 
@@ -50,6 +53,8 @@ class AddWizardFromID extends Wizard
 
 	public function renderFormWelcome_AddOnePerson ($sfx, $fields = FALSE)
 	{
+		$useStandardizedAddress = intval($this->app()->cfgItem ('options.persons.useStandardizedAddress', 0));
+
 		if (!isset($this->recData ['country'.$sfx]) || !$this->recData ['country'.$sfx])
 			$this->recData ['country'.$sfx] = World::countryNdx($this->app(), $this->app()->cfgItem ('options.core.ownerDomicile', 'cz'));
 
@@ -57,11 +62,17 @@ class AddWizardFromID extends Wizard
 		$this->addInput('firstName'.$sfx, 'Jméno', self::INPUT_STYLE_STRING, 0, 60);
 		$this->addInput('idcn'.$sfx, 'Čislo OP', self::INPUT_STYLE_STRING, 0, 30);
 		$this->addInput('birthdate'.$sfx, 'Datum narození', self::INPUT_STYLE_DATE);
+
+		$this->addSeparator(self::coH4);
+		if ($useStandardizedAddress)
+			$this->addInputIntRef ('addrPlaceInReg'.$sfx, 'e10.persons.addrPlacesInReg', 'Hledat adresu');
+
 		$this->addInput('street'.$sfx, 'Ulice', self::INPUT_STYLE_STRING, 0, 250);
 		$this->addInput('city'.$sfx, 'Město', self::INPUT_STYLE_STRING, 0, 90);
 		$this->addInput('zipcode'.$sfx, 'PSČ', self::INPUT_STYLE_STRING, 0, 20);
 		$this->addInputIntRef ('country'.$sfx, 'e10.world.countries', 'Stát');
 
+		$this->addSeparator(self::coH4);
 		if ($fields === FALSE || in_array('email', $fields))
 			$this->addInput('email'.$sfx, 'E-mail', self::INPUT_STYLE_STRING, 0, 60);
 		if ($fields === FALSE || in_array('phone', $fields))
@@ -75,6 +86,8 @@ class AddWizardFromID extends Wizard
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', self::SIDEBAR_POS_RIGHT);
     $this->setFlag ('sidebarRefresh', 'always');
+		//$this->setFlag ('maximize', 1);
+		$this->setFlag ('sidebarWidth', '0.35');
 
 		$this->openForm ();
 			$this->renderFormWelcome_AddOnePerson ('');
@@ -99,6 +112,12 @@ class AddWizardFromID extends Wizard
 		$newPerson ['person']['docMain'] = $this->docStateMain;
 
 		$newAddress = [];
+
+		if (isset($this->recData['addrPlaceInReg'.$sfx]) && is_string($this->recData['addrPlaceInReg'.$sfx]) && $this->recData['addrPlaceInReg'.$sfx]['0'] === '{')
+		{
+			$newAddress['addrPlaceInReg'] = json::decode($this->recData['addrPlaceInReg'.$sfx], TRUE);
+		}
+
 		$newAddress ['street'] = $this->recData ['street'.$sfx];
 		$newAddress ['city'] = $this->recData ['city'.$sfx];
 		$newAddress ['zipcode'] = $this->recData ['zipcode'.$sfx];
@@ -126,5 +145,18 @@ class AddWizardFromID extends Wizard
 		$this->tablePersons->docsLog ($this->newPersonNdx);
 
 		return $this->newPersonNdx;
+	}
+
+	public function comboParams ($srcTableId, $srcColumnId, $allRecData, $recData)
+	{
+		if ($srcColumnId === 'addrPlaceInReg')
+		{
+			$cp = [
+				'fromAddWizard' => 1,
+			];
+			return $cp;
+		}
+
+		return parent::comboParams ($srcTableId, $srcColumnId, $allRecData, $recData);
 	}
 }

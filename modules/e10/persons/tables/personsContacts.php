@@ -429,6 +429,7 @@ class FormPersonContact extends TableForm
 
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
+		$this->setFlag ('sidebarWidth', '0.30');
 
 		$tabs ['tabs'][] = ['text' => 'Kontakt', 'icon' => 'formContacts'];
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
@@ -438,8 +439,8 @@ class FormPersonContact extends TableForm
 		$this->openForm ();
 			$this->openTabs ($tabs);
 				$this->openTab ();
+					$this->addColumnInput ('flagAddress', self::coRightCheckbox);
 					$this->openRow();
-						$this->addColumnInput ('flagAddress', self::coRightCheckbox);
 						if ($this->recData['flagAddress'])
 						{
 							$this->addColumnInput ('flagMainAddress', self::coRightCheckbox);

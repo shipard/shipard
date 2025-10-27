@@ -221,6 +221,12 @@ function createNewPersonNew (\Shipard\Application\Application $app, $personData)
         'docState' => 4000, 'docStateMain' => 2,
       ];
 
+			if (isset($address['addrPlaceInReg']) && is_array($address['addrPlaceInReg']))
+			{
+				$tablePersonsContact->applyAddrPlaceInReg($newAddress, $address['addrPlaceInReg']);
+				$newAddress['flagStandardized'] = 1;
+			}
+
 			if ($cntAddr === 0)
 				$newAddress['flagMainAddress'] = 1;
 

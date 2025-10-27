@@ -55,17 +55,17 @@ class TableAddrPlacesInReg extends DbTable
 			$inputParams = " readonly='readonly'";
 
 		$inputCode  = '';
-		$inputCode .= "<div id='{$form->fid}_refinp_$ip{$srcColumnId}' class='$class'$inputParams>";
+		$inputCode .= "<div id='{$form->fid}_refinp_$ip{$srcColumnId}' class='$class padd5'$inputParams>";
 		$inputCode .= "<input type='hidden' name='$inputPrefix{$srcColumnId}' id='inp_$ip{$srcColumnId}' class='$columnInputClass' data-column='$srcColumnId' data-fid='{$form->fid}'/>";
-		$inputCode .= "<input name='$inputPrefix{$srcColumnId}' id='inp_refid_$ip{$srcColumnId}' class='e10-inputRefId e10-viewer-search autofocus' style='width: 80%;' data-column='$srcColumnId' data-srctable='$srcTableId' data-sid='{$form->fid}Sidebar' autocomplete='off' autofocus='autofocus' $inputParams/>";
+		$inputCode .= "<input name='$inputPrefix{$srcColumnId}' id='inp_refid_$ip{$srcColumnId}' class='e10-inputRefId e10-viewer-search autofocus' style='width: 90%;' data-column='$srcColumnId' data-srctable='$srcTableId' data-sid='{$form->fid}Sidebar' autocomplete='off' autofocus='autofocus' $inputParams/>";
 
 		$inputCode .= "<span class='btns' style='display:none;'>";
-		//if (!($options & TableForm::coReadOnly))
-		//	$inputCode .= $this->app()->ui()->icon('system/actionClose', 'e10-inputReference-clearItem').'&nbsp;';
+		if (!($options & TableForm::coReadOnly))
+			$inputCode .= $this->app()->ui()->icon('system/actionClose', 'e10-inputReference-clearItem').'&nbsp;';
 		//$inputCode .= $this->app()->ui()->icon('system/actionOpen', 'e10-inputReference-editItem', 'i', " data-table='$thisTableId' data-pk='0'").'&nbsp;';
 		$inputCode .= "</span>";
 
-		$inputCode .= "<span class='e10-refinp-infotext'>" .$refTitle . '</span>';
+		$inputCode .= "<span class='e10-refinp-infotext block padd5' style='display: none;'>" .$refTitle . '</span>';
 
 		if (intval($pk))
 		{
@@ -93,10 +93,15 @@ class TableAddrPlacesInReg extends DbTable
  */
 class ViewAddrPlacesInReg extends TableView
 {
+	var $fromAddWizard = 0;
+
 	public function init ()
 	{
 		$this->enableDetailSearch = TRUE;
 		$this->objectSubType = TableView::vsDetail;
+
+		if ($this->queryParam ('fromAddWizard') !== FALSE)
+			$this->fromAddWizard = 1;
 
 		parent::init();
 	}
@@ -123,7 +128,7 @@ class ViewAddrPlacesInReg extends TableView
 		if (isset($response['content']))
 			$responseContent = json_decode($response['content'], TRUE);
 
-    if (isset($responseContent['success']) && $responseContent['success'])
+    if (isset($responseContent['success']) && $responseContent['success'] && isset($responseContent['object']['addrPlaces']))
     {
       foreach ($responseContent['object']['addrPlaces'] as $r)
       {
@@ -134,20 +139,26 @@ class ViewAddrPlacesInReg extends TableView
 
 	public function renderRow ($item)
 	{
-//		$listItem ['pk'] = $item ['addrPlaceId'];
 		$listItem ['pk'] = json_encode($item);
-    //$listItem ['data-cc']['addrPlaceInReg'] = strval($item['addrPlaceId']);
-    //$listItem ['data-cc']['stdAddrPlaceData'] = json_encode($item);
 
+		$houseNrTxt = $item['houseNr'];
 		$listItem ['t1'] = [];
 		if ($item['streetFullName'])
 			$listItem ['t1'][] = ['text' => $item['streetFullName'], 'class' => 'label label-default'];
 
 		$houseNr = ['text' => $item['houseNr'], 'class' => 'label label-default'];
+
 		if ($item['houseNr1Type'])
+		{
 			$houseNr['prefix'] = 'č.ev.';
-		elseif ($item['houseNr1Type'] === 0 && !$item['street'] /*&& !$item['cityPart']*/)
+			$houseNrTxt = 'č.ev. '.$houseNrTxt;
+		}
+		elseif ($item['houseNr1Type'] === 0 && !$item['saStreetId'] /*&& !$item['cityPart']*/) // streetFullName
+		{
 			$houseNr['prefix'] = 'č.p.';
+			if ($item['streetFullName'] == '')
+				$houseNrTxt = 'č.p. '.$houseNrTxt;
+		}
 
 		$listItem ['t1'][] = $houseNr;
 
@@ -155,10 +166,7 @@ class ViewAddrPlacesInReg extends TableView
 
 		$listItem ['t2'] = [];
 
-		if ($item['cityPart2FullName'])
-			$listItem ['t2'][] = ['text' => $item['cityPart2FullName'], 'class' => 'label label-warning'];
-
-		$city = ['text' => $item['cityFullName'], 'class' => 'label label-success'];
+		$city = ['text' => $item['cityFullName'], 'class' => 'shp-label e10-bg-t1 e10-fsp_110'];
 		if ($item['zipCodeIdName'])
 			$city['suffix'] = $item['zipCodeIdName'];
 
@@ -167,14 +175,27 @@ class ViewAddrPlacesInReg extends TableView
 
 		$listItem ['t2'][] = $city;
 
-		if ($item['admUnit2FullName'] && $item['admUnit2FullName'] != $item['cityFullName'])
-			$listItem ['t2'][] = ['text' => $item['admUnit2FullName'], 'class' => 'label label-info'];
+		if ($item['cityPart2FullName'])
+			$listItem ['t2'][] = ['text' => $item['cityPart2FullName'], 'class' => 'label label-warning'];
+
+		if ($item['admUnit2FullName'] /*&& $item['admUnit2FullName'] != $item['cityFullName']*/)
+			$listItem ['t2'][] = ['text' => $item['admUnit2FullName'], 'class' => 'shp-label e10-bg-t2'];
 		if ($item['admUnit1FullName'])
 			$listItem ['t2'][] = ['text' => $item['admUnit1FullName'], 'class' => 'label label-primary'];
-		if ($item['admUnit0FullName'] && $item['admUnit0FullName'] != $item['cityFullName'])
-			$listItem ['t2'][] = ['text' => $item['admUnit0FullName'], 'class' => 'label label-default'];
+		//if ($item['admUnit0FullName'] && $item['admUnit0FullName'] != $item['cityFullName'])
+		//	$listItem ['t2'][] = ['text' => $item['admUnit0FullName'], 'class' => 'label label-default'];
 
 		$listItem ['icon'] = '';
+
+		if ($this->fromAddWizard)
+		{
+			$listItem ['data-cc']['force'] = '1';
+			$listItem ['data-cc']['street'] = $item['streetFullName'];
+			if (strlen($houseNrTxt))
+				$listItem ['data-cc']['street'] .= ' '.$houseNrTxt;
+			$listItem ['data-cc']['city'] = $city['text'];
+			$listItem ['data-cc']['zipcode'] = $item['zipCodeIdName'];
+		}
 
 		return $listItem;
 	}
