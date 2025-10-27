@@ -77,10 +77,9 @@ class ShipardWidgetIBSerialTerm extends ShipardWidgetBoard
       this.write(">>>" + command + "\n");
       return 1;
     }
-    console.log("SEND...");
     //let input = this.rootElm.querySelector('input');
     let cmd = this.elmSendCmdInput.value;
-    this.write(cmd + "\n");
+    this.write(">>>" + cmd + "\n");
 
     return 1;
   }

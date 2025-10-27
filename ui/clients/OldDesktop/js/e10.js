@@ -1567,6 +1567,36 @@ function e10viewerDoComboClick (e, event)
 				target.find('span.btns').show();
 				var infotext = e.find ('div.df2-list-item-t1').text ();
 				target.find ('span.e10-refinp-infotext').text (infotext);
+
+				var inputPrefix = searchParentAttr(valueInput, 'data-inputprefix');
+				if (inputPrefix == null)
+					inputPrefix = '';
+				var iel = e.get(0);
+				if (e.attr ('data-cc-force') != undefined)
+				{
+					for (var i = 0, attrs = iel.attributes, l = attrs.length; i < l; i++)
+					{
+						var attrName = attrs.item(i).nodeName;
+						if (attrName.substring(0, 7) !== 'data-cc')
+							continue;
+						var valParts = attrs.item(i).nodeValue.split(':');
+						var inputId = '#'+inputPrefix + valParts[0];
+						var inputElement = $(inputId);
+						console.log("DATA-CC: " + inputId + ' = ', inputElement);
+						if (inputElement.hasClass('e10-inputLogical'))
+						{
+							var checkIt = (b64DecodeUnicode(valParts[1]) === '1');
+							inputElement[0].checked = checkIt;
+						}
+						else
+						{
+							var ivd = b64DecodeUnicode(valParts[1]);
+							console.log("SET-VALUE: " + inputId + ' = ', ivd);
+							console.log(inputElement);
+							inputElement.val (b64DecodeUnicode(valParts[1]));
+						}
+					}
+				}
 			}
 			else
 			{
@@ -1581,6 +1611,7 @@ function e10viewerDoComboClick (e, event)
 					var valParts = attrs.item(i).nodeValue.split(':');
 					var inputId = '#'+inputPrefix + valParts[0];
 					var inputElement = $(inputId);
+					console.log("DATA-CC: " + inputId + ' = ', inputElement);
 					if (inputElement.hasClass('e10-inputLogical'))
 					{
 						var checkIt = (b64DecodeUnicode(valParts[1]) === '1');
@@ -1605,6 +1636,7 @@ function e10viewerDoComboClick (e, event)
 
 	if (viewer.attr ('data-combo-rows-target'))
 	{ // main rows combo
+		console.log("data-combo-rows-target");
 		var formId = viewer.attr ('data-combo-formid-target');
 		var form = $('#' + formId);
 		if (form.attr ('data-readonly') !== undefined)
