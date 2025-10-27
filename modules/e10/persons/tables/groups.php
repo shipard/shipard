@@ -132,11 +132,21 @@ class FormGroups extends TableForm
 		$this->setFlag ('formStyle', 'e10-formStyleSimple');
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_RIGHT);
 
+		$tabs ['tabs'][] = ['text' => 'Skupina', 'icon' => 'system/formHeader'];
+		$tabs ['tabs'][] = ['text' => 'Historie', 'icon' => 'system/formHistory'];
+
 		$this->openForm ();
-			$this->addColumnInput ('name');
-			$this->addColumnInput ('systemGroup');
-			$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
+			$this->openTabs ($tabs);
+				$this->openTab ();
+					$this->addColumnInput ('name');
+					$this->addColumnInput ('systemGroup');
+					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
+				$this->closeTab ();
+				$this->openTab(self::ltNone);
+					$params = ['tableid' => $this->tableId(),'recid' => $this->recData['ndx']];
+					$this->addViewerWidget('e10.base.docslog', 'e10.base.libs.ViewDocsLogDocHistory', $params);
+				$this->closeTab();
+			$this->closeTabs ();
 		$this->closeForm ();
 	}
-
 }
