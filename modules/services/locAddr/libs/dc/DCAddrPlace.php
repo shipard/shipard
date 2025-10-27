@@ -381,7 +381,7 @@ class DCAddrPlace extends \Shipard\Base\DocumentCard
 			'type' => 'action', 'action' => 'open-popup',
 			'data-popup-url' => 'https://vdp.cuzk.cz/vdp/ruian/mapa/AD/'.$addrPlaceId.'/',
 			'data-popup-width' => '0.5', 'data-popup-height' => '0.8',
-			'text' => 'Katastr', 'title' => 'Katastrální mapa místa '.$addrPlaceId,
+			'text' => 'KM', 'title' => 'Katastrální mapa místa '.$addrPlaceId,
 			'icon' => 'system/iconMapMarker',
 		];
 

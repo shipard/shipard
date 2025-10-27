@@ -49,6 +49,9 @@
     {"id": "s3", "columns": ["cityPart"]},
     {"id": "s4", "columns": ["city"]},
     {"id": "s5", "columns": ["street"]},
-    {"id": "s6", "columns": ["city", "cityPart", "houseNr1"]}
+    {"id": "s6", "columns": ["city", "cityPart", "houseNr1"]},
+    {"id": "s7", "columns": ["street", "city", "houseNr1"]},
+    {"id": "s8", "columns": ["street", "houseNr1"]},
+    {"id": "s9", "columns": ["city", "houseNr1"]}
 	]
 }

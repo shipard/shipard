@@ -21,6 +21,8 @@ class SearchAddrPlaceEngine extends Utility
   var $qryCities = [];
   var $qryZipCodes = [];
 
+  var $cntQueryCrits = 0;
+
   public function setText($searchText)
   {
     $this->searchText = $searchText;
@@ -29,8 +31,52 @@ class SearchAddrPlaceEngine extends Utility
     $this->loadAddrParts();
   }
 
+  public function setText2($searchText)
+  {
+    $mainParts = preg_split("/[,]+/", $searchText);
+    foreach ($mainParts as $part)
+    {
+      $part = trim($part);
+      if ($part === '')
+        continue;
+
+      $subParts = preg_split("/[\s]+/", $part);
+      $searchWords = [];
+      foreach ($subParts as $sp)
+      {
+        if (is_numeric($sp) && !str_ends_with($sp, '.'))
+        {
+          $num = intval($sp);
+          if ($num)
+          {
+            $this->setZipCode($sp);
+            if (!count($this->qryZipCodes) && !str_ends_with($sp, '.'))
+              $this->qryNumbers[] = intval($sp);
+          }
+          continue;
+        }
+
+        $searchWords[] = trim($sp);
+      }
+      $st = implode(' ', $searchWords);
+
+      $this->setCityName($st, 0, TRUE);
+      if (count($this->qryCities) > 2)
+        continue;
+      $this->setStreetName($st);
+    }
+
+    $this->cntQueryCrits = (count($this->qryCities) > 0) +
+                            (count($this->qryCityParts) > 0) +
+                            (count($this->qryStreets) > 0) +
+                            (count($this->qryNumbers) > 0) +
+                            (count($this->qryZipCodes) > 0);
+  }
+
   public function setStreetName($streetName)
   {
+    if (Str::strlen($streetName) < 4)
+      return;
     $sn = $streetName;
     $sn2 = preg_replace('/(?:www\.(?:(?i:[a-z-]+)\.)+[a-z-]+|(?:i\.e|e\.g)\.?|\d+\.[A-Z]+)(*SKIP)(*FAIL)|(?<=[.,])(?=\S)/u', ' ',$sn);
 
@@ -44,41 +90,54 @@ class SearchAddrPlaceEngine extends Utility
     else
     {
       $hnrParts = explode('/', $lastPart);
-      if (isset($hnrParts[0]))
+      if (isset($hnrParts[0]) && !str_ends_with($hnrParts[0], '.'))
         $this->qryNumbers[] = intval(trim($hnrParts[0], 'abcdefghij'));
     }
     $streetNameQ = implode(' ', $parts);
 
     $streets = $this->db()->query('SELECT ndx FROM [services_locAddr_streets] WHERE [fullName] = %s', $streetNameQ);
     foreach ($streets as $r)
-      $this->qryStreets[] = $r['ndx'];
-
+    {
+      if (!in_array($r['ndx'], $this->qryStreets))
+        $this->qryStreets[] = $r['ndx'];
+    }
     $streets = $this->db()->query('SELECT ndx FROM [services_locAddr_streets] WHERE [fullName] LIKE %s', $streetNameQ.'%');
     foreach ($streets as $r)
-      $this->qryStreets[] = $r['ndx'];
+      if (!in_array($r['ndx'], $this->qryStreets))
+        $this->qryStreets[] = $r['ndx'];
 
     // -- cities?
     $cities = $this->db()->query('SELECT ndx FROM [services_locAddr_cities] WHERE [fullName] = %s', $streetNameQ);
     foreach ($cities as $r)
-      $this->qryCities[] = $r['ndx'];
+      if (!in_array($r['ndx'], $this->qryCities))
+        $this->qryCities[] = $r['ndx'];
 
     // -- cityParts?
     $cityParts = $this->db()->query('SELECT ndx FROM [services_locAddr_citiesParts] WHERE [fullName] = %s', $streetNameQ);
     foreach ($cityParts as $r)
-      $this->qryCityParts[] = $r['ndx'];
+      if (!in_array($r['ndx'], $this->qryCityParts))
+        $this->qryCityParts[] = $r['ndx'];
   }
 
-  public function setCityName($cityName, $tryLevel = 0)
+  public function setCityName($cityName, $tryLevel = 0, $inCitiesParts = FALSE)
   {
+    if (Str::strlen($cityName) < 4)
+      return;
     $cities = $this->db()->query('SELECT ndx FROM [services_locAddr_cities] WHERE [fullName] = %s', $cityName);
     foreach ($cities as $r)
-      $this->qryCities[] = $r['ndx'];
+    {
+      if (!in_array($r['ndx'], $this->qryCities))
+        $this->qryCities[] = $r['ndx'];
+    }
 
-    if (!count($this->qryCities))
+    if (!count($this->qryCities) || $inCitiesParts)
     {
       $cityParts = $this->db()->query('SELECT ndx FROM [services_locAddr_citiesParts] WHERE [fullName] = %s', $cityName);
       foreach ($cityParts as $r)
-        $this->qryCityParts[] = $r['ndx'];
+      {
+        if (!in_array($r['ndx'], $this->qryCityParts))
+          $this->qryCityParts[] = $r['ndx'];
+      }
     }
 
     if ($tryLevel === 1)
@@ -91,7 +150,7 @@ class SearchAddrPlaceEngine extends Utility
       foreach ($parts as $part)
       {
         $isHouseNr = (strlen($part) === strspn($part, '0123456789abcde/'));
-        if ($isHouseNr)
+        if ($isHouseNr && !str_ends_with($part, '.'))
         {
           $this->qryNumbers[] = intval($part);
           continue;
@@ -171,7 +230,10 @@ class SearchAddrPlaceEngine extends Utility
     {
       $cities = $this->db()->query('SELECT ndx FROM [services_locAddr_cities] WHERE [fullName] LIKE %s', $word.'%');
       foreach ($cities as $r)
-        $this->qryCities[] = $r['ndx'];
+      {
+        if (!in_array($r['ndx'], $this->qryCities))
+          $this->qryCities[] = $r['ndx'];
+      }
     }
   }
 
