@@ -422,6 +422,7 @@ class FormPersonContact extends TableForm
 	public function renderForm ()
 	{
 		$useOfficesIds = intval($this->app()->cfgItem ('options.persons.useOfficesIds', 0));
+		$useAdmUnits11 = intval($this->app()->cfgItem ('options.persons.useAdmUnits11', 0));
 		$this->useStandardizedAddress = intval($this->app()->cfgItem ('options.persons.useStandardizedAddress', 0));
 
 		$this->loadContactIdsOptions();

@@ -107,6 +107,10 @@ class ViewAddressTechnical extends TableView
 				')'
 			);
 		}
+		if (isset ($qv['errors']['withoutAdmUnit11']))
+		{
+			array_push ($q, ' AND [saAdmUnit11Ndx] = %i', 0);
+		}
 		// -- countries
 		if (isset ($qv['personCountries']))
 			array_push ($q, ' AND [contacts].[adrCountry] IN %in', array_keys($qv['personCountries']));
@@ -274,13 +278,13 @@ class ViewAddressTechnical extends TableView
 		$paramsGeoLocation->addParam ('checkboxes', 'query.geoLocation', ['items' => $chbxGeoLocation]);
 		$qry[] = ['id' => 'itemTypes', 'style' => 'params', 'title' => 'GEO lokace', 'params' => $paramsGeoLocation];
 
-
 		// -- errors
 		$chbxErrors = [
 			'withoutCity' => ['title' => 'Bez obce', 'id' => 'withoutCity'],
 			'withoutZip' => ['title' => 'Bez PSČ', 'id' => 'withoutZip'],
 			'blankAddress' => ['title' => 'Prázdná adresa', 'id' => 'blankAddress'],
 			'badCity' => ['title' => 'Vadný název obce', 'id' => 'badCity'],
+			'withoutAdmUnit11' => ['title' => 'Chybí ZUJ', 'id' => 'withoutAdmUnit11'],
 		];
 		$paramsErrors = new \E10\Params ($this->app());
 		$paramsErrors->addParam ('checkboxes', 'query.errors', ['items' => $chbxErrors]);
