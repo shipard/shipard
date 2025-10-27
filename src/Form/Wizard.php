@@ -91,6 +91,7 @@ class Wizard extends \Shipard\Form\TableForm
 
 	function openForm ($layoutType = TableForm::ltForm)
 	{
+		$ip = $this->fid.'_inp_';
 		$formStyleClass = $this->flag ('formStyle', 'e10-formStyleDefault');
 		$formStyleClass .= ' ' . 'test1';
 		$this->stackPush ();
@@ -98,6 +99,7 @@ class Wizard extends \Shipard\Form\TableForm
 		$h = "<div class='df2-form e10-formControl e10-formWizard $formStyleClass' id='{$this->fid}Container'><div id='{$this->fid}' data-object='wizard'";
 		$h .= " data-formid='{$this->formId}'";
 		$h .= " data-wizardpage='{$this->formOp}'";
+		$h .= " data-inputprefix='$ip'";
 		$h .= '>';
 
 		$this->appendCode ($h);
