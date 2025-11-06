@@ -438,6 +438,11 @@ class PersonRegister extends Utility
     $newAddress['adrLocHash'] = $this->tablePersonsContact->geoCodeLocHash ($newAddress);
     $newAddress['adrLocTime'] = NULL;
 
+    if (!$this->useStandardizedAddress)
+    {
+      $newAddress['flagStandardized'] = 0;
+    }
+
     Json::polish($newAddress);
 
     return $newAddress;
