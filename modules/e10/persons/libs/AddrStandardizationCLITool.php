@@ -12,6 +12,7 @@ use \Shipard\Utils\Utils;
 class AddrStandardizationCLITool extends Utility
 {
   var $usedInFiscalYear = 13;
+  var $country = 60; // CZ
   var $personType = 1; // citizens, not companies
 
   var $maxSuccessfullyCount = 3;
@@ -38,6 +39,7 @@ class AddrStandardizationCLITool extends Utility
 		array_push ($q, ' AND [contacts].flagAddress = %i', 1);
     array_push ($q, ' AND [persons].[personType] = %i', $this->personType);
     array_push ($q, ' AND [contacts].[flagStandardized] = 0');
+    array_push ($q, ' AND [contacts].[adrCountry] = %i', $this->country);
     array_push ($q, ' AND [contacts].[docState] = %i', 4000); // active
 
     if ($this->usedInFiscalYear)
