@@ -90,32 +90,54 @@ class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 
 	public function addMessageAttachments(\Shipard\Report\MailMessage $msg)
 	{
+		// -- add document attachments
 		$personRecData = $this->app()->loadItem($this->recData['person'], 'e10.persons.persons');
-		if (!$personRecData || $personRecData['optSendDocsAttsUnited'])
-			return;
+		if ($personRecData && $personRecData['optSendDocsAttsUnited'])
+		{
+			$q = [];
+			array_push($q, 'SELECT links.*, atts.[fileType], atts.[path], atts.[fileName], atts.[name]');
+			array_push($q, ' FROM [e10_base_doclinks] AS [links]');
+			array_push($q, ' LEFT JOIN [e10_attachments_files] AS [atts] ON [links].dstRecId = [atts].ndx');
+			array_push($q, ' WHERE [links].linkId = %s', 'e10docs-send-atts');
+			array_push($q, ' AND [links].srcTableId = %s', 'e10doc.core.heads', ' AND [links].srcRecId = %i', $this->recData['ndx']);
+			array_push($q, ' ORDER BY [links].ndx');
+			$rows = $this->db()->query($q);
+			foreach ($rows as $r)
+			{
+				$attFileName = __APP_DIR__.'/att/'.$r['path'].$r['fileName'];
+				$attName = $r['name'];
 
-    $q = [];
-    array_push($q, 'SELECT links.*, atts.[fileType], atts.[path], atts.[fileName], atts.[name]');
-		array_push($q, ' FROM [e10_base_doclinks] AS [links]');
-		array_push($q, ' LEFT JOIN [e10_attachments_files] AS [atts] ON [links].dstRecId = [atts].ndx');
-		array_push($q, ' WHERE [links].linkId = %s', 'e10docs-send-atts');
-    array_push($q, ' AND [links].srcTableId = %s', 'e10doc.core.heads', ' AND [links].srcRecId = %i', $this->recData['ndx']);
-		array_push($q, ' ORDER BY [links].ndx');
-    $rows = $this->db()->query($q);
-    foreach ($rows as $r)
-    {
-			$attFileName = __APP_DIR__.'/att/'.$r['path'].$r['fileName'];
-			$attName = $r['name'];
+				$fileSuffix = '.'.$r['fileType'];
+				if (!str_ends_with($attName, $fileSuffix))
+					$attName .= $fileSuffix;
 
-			$fileSuffix = '.'.$r['fileType'];
-			if (!str_ends_with($attName, $fileSuffix))
-				$attName .= $fileSuffix;
+				$attName = Utils::safeChars($attName);
 
-			$attName = Utils::safeChars($attName);
+				$mimeType = mime_content_type($attFileName);
+				$msg->addAttachment($attFileName, $attName, $mimeType);
+			}
+		}
 
-			$mimeType = mime_content_type($attFileName);
-			$msg->addAttachment($attFileName, $attName, $mimeType);
-    }
+		// -- check wasteInfoReport
+		if ($this->app()->model()->module ('e10pro.purchase') !== FALSE)
+		{
+			/** @var \e10pro\purchase\libs\WasteInfoOutReport $wiReport */
+			$wiReport = $this->table->getReportData ('e10pro.purchase.libs.WasteInfoOutReport', $this->recData['ndx']);
+			if ($wiReport)
+			{
+				$wiReport->renderReport();
+				$wiReport->createReport();
+				$wiReport->saveReportAs();
+
+				if ($wiReport->data['infoWasteCodes'] && count($wiReport->data['infoWasteCodes']) > 0)
+				{
+					$attName = 'pio-'.$this->recData['docNumber'].'.pdf';
+					$attName = Utils::safeChars($attName);
+					$mimeType = 'application/pdf';
+					$msg->addAttachment($wiReport->fullFileName, $attName, $mimeType);
+				}
+			}
+		}
 	}
 
 	protected function loadBalanceInfo ($item)
