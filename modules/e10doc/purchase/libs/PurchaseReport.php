@@ -1,7 +1,12 @@
 <?php
 
 namespace e10doc\purchase\libs;
+use \Shipard\Utils\Utils;
 
+
+/**
+ * class PurchaseReport
+ */
 class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 {
 	function init ()
@@ -71,6 +76,26 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 			if ($wasteOrigin)
 			{
 				$this->data['flags']['wasteOrigin']['text'] = ($wasteOrigin['tfr'] !== '') ? $wasteOrigin['tfr'] : $wasteOrigin['fn'];
+			}
+		}
+	}
+
+	public function addMessageAttachments(\Shipard\Report\MailMessage $msg)
+	{
+		/** @var \e10pro\purchase\libs\WasteInfoInReport $wiReport */
+		$wiReport = $this->table->getReportData ('e10pro.purchase.libs.WasteInfoInReport', $this->recData['ndx']);
+		if ($wiReport)
+		{
+			$wiReport->renderReport();
+			$wiReport->createReport();
+			$wiReport->saveReportAs();
+
+			if ($wiReport->data['infoWasteCodes'] && count($wiReport->data['infoWasteCodes']) > 0)
+			{
+				$attName = 'pio-'.$this->recData['docNumber'].'.pdf';
+				$attName = Utils::safeChars($attName);
+				$mimeType = 'application/pdf';
+				$msg->addAttachment($wiReport->fullFileName, $attName, $mimeType);
 			}
 		}
 	}
