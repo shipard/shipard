@@ -40,6 +40,8 @@ class TableAdmUnits extends DbTable
  */
 class ViewAdmUnits extends TableView
 {
+	var $fixedLevel = 0;
+
 	public function init()
 	{
 		parent::init();
@@ -47,14 +49,17 @@ class ViewAdmUnits extends TableView
     $this->objectSubType = TableView::vsDetail;
 		$this->enableDetailSearch = TRUE;
 
-		$bt = [];
-		$bt [] = ['id' => 'ALL', 'title' => 'Vše', 'active' => 1];
-		$bt [] = ['id' => '11', 'title' => 'ZUJ', 'active' => 0];
-		$bt [] = ['id' => '10', 'title' => 'ORP', 'active' => 0];
-		$bt [] = ['id' => '2', 'title' => 'OKR', 'active' => 0];
-		$bt [] = ['id' => '1', 'title' => 'KRJ', 'active' => 0];
-		$bt [] = ['id' => '0', 'title' => 'REG', 'active' => 0];
-		$this->setBottomTabs ($bt);
+		if (!$this->fixedLevel)
+		{
+			$bt = [];
+			$bt [] = ['id' => 'ALL', 'title' => 'Vše', 'active' => 1];
+			$bt [] = ['id' => '11', 'title' => 'ZUJ', 'active' => 0];
+			$bt [] = ['id' => '10', 'title' => 'ORP', 'active' => 0];
+			$bt [] = ['id' => '2', 'title' => 'OKR', 'active' => 0];
+			$bt [] = ['id' => '1', 'title' => 'KRJ', 'active' => 0];
+			$bt [] = ['id' => '0', 'title' => 'REG', 'active' => 0];
+			$this->setBottomTabs ($bt);
+		}
 
 		$this->setPanels (TableView::sptQuery);
 	}
@@ -69,7 +74,8 @@ class ViewAdmUnits extends TableView
 		$listItem ['t2'] = [];
 
 		$levels = $this->table->columnInfoEnum('level');
-		$listItem ['t2'][] = ['text' => $levels[$item['level']], 'class' => 'label label-success'];
+		if (!$this->fixedLevel)
+			$listItem ['t2'][] = ['text' => $levels[$item['level']], 'class' => 'label label-success'];
 
 		if ($item['admUnitOwner2FullName'])
 			$listItem ['t2'][] = ['text' => $item['admUnitOwner2FullName'], 'class' => 'label label-info'];
@@ -101,9 +107,16 @@ class ViewAdmUnits extends TableView
 		array_push ($q, ' LEFT JOIN [e10_world_admUnits] AS [admUnits0] ON admUnits.admUnitOwner0 = admUnits0.ndx');
 		array_push ($q, ' WHERE 1');
 
-		$btId = $this->bottomTabId ();
-		if ($btId !== '' && $btId !== 'ALL')
-			array_push ($q, ' AND [admUnits].[level] = %i', intval($btId));
+		if ($this->fixedLevel)
+		{
+			array_push ($q, ' AND [admUnits].[level] = %i', $this->fixedLevel);
+		}
+		else
+		{
+			$btId = $this->bottomTabId ();
+			if ($btId !== '' && $btId !== 'ALL')
+				array_push ($q, ' AND [admUnits].[level] = %i', intval($btId));
+		}
 
 		// -- fulltext
 		if ($fts != '')
@@ -120,6 +133,19 @@ class ViewAdmUnits extends TableView
 
 	public function createPanelContentQry (TableViewPanel $panel)
 	{
+	}
+}
+
+
+/**
+ * class ViewAdmUnitsL11
+ */
+class ViewAdmUnitsL11 extends ViewAdmUnits
+{
+	public function init()
+	{
+		$this->fixedLevel = 11;
+		parent::init();
 	}
 }
 

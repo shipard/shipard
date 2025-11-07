@@ -86,6 +86,7 @@
 
 		{"id": "wasteOrigin", "name": "Původ odpadu", "type": "enumInt",
       "enumCfg": {"cfgItem": "e10doc.base.wasteOrigins", "cfgValue": "", "cfgText": "sn"}},
+    {"id": "wasteOriginAdmUnit", "name": "Obec původu odpadu", "type": "int", "reference": "e10.world.admUnits", "comboViewer": "level11"},
     {"id": "addToWasteReport", "name": "Zařadit do Hlášení o odpadech", "type": "logical"},
 
     {"id": "dateIssue", "name": "Datum vystavení", "type": "date"},

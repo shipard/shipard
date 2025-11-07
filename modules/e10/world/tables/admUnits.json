@@ -32,6 +32,12 @@
 			"details": {
         "changes": {"title": "Detail", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "e10.world.ViewDetailAdmUnit"}
 			}
+		},
+		"level11": {
+			"id": "level11", "class": "e10.world.ViewAdmUnitsL11",
+			"details": {
+        "changes": {"title": "Detail", "icon": "system/detailDetail", "type": "detail", "order":  100, "class": "e10.world.ViewDetailAdmUnit"}
+			}
 		}
 	},
 	"forms": [

@@ -723,6 +723,32 @@ class TableHeads extends DbTable
 		if ($recData['totalCash'] != 0.0)
 			$this->app()->cache->invalidate('e10doc.core.heads', 'cash');
 		$this->app()->cache->invalidate('e10doc.core.heads', 'ALL');
+
+
+		if ($recData['docStateMain'] >= 1 && $recData ['docType'] === 'purchase' && $recData['personType'] === 1)
+		{
+			if (!$recData['wasteOriginAdmUnit'])
+			{
+				$addr = NULL;
+				if ($recData['deliveryAddress'] ?? 0)
+					$addr = $this->app()->loadItem($recData['deliveryAddress'], 'e10.persons.personsContacts');
+				elseif ($recData['otherAddress1'])
+					$addr = $this->app()->loadItem($recData['otherAddress1'], 'e10.persons.personsContacts');
+				elseif ($recData['otherAddress2'])
+					$addr = $this->app()->loadItem($recData['otherAddress2'], 'e10.persons.personsContacts');
+				if ($addr !== NULL)
+				{
+					if ($addr['adrCountry'] !== 60)
+					{ // outside CZ
+						$addr = $this->app()->loadItem($recData['ownerOffice'], 'e10.persons.personsContacts');
+						if ($addr !== NULL)
+							$recData['wasteOriginAdmUnit'] = $addr['saAdmUnit11Ndx'];
+					}
+					else
+						$recData['wasteOriginAdmUnit'] = $addr['saAdmUnit11Ndx'];
+				}
+			}
+		}
 	}
 
 	public function createNewDoc($recData)

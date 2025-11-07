@@ -48,6 +48,16 @@ class WasteInfoInReport extends \e10doc\core\libs\reports\DocReport
 				$this->data['flags']['wasteOrigin']['text'] = ($wasteOrigin['tfr'] !== '') ? $wasteOrigin['tfr'] : $wasteOrigin['fn'];
 			}
 		}
+
+		if ($this->recData['wasteOriginAdmUnit'] && $this->recData['personType'] == 1)
+		{
+			$admUnit = $this->app()->loadItem($this->recData['wasteOriginAdmUnit'], 'e10.world.admUnits');
+			if ($admUnit)
+			{
+				$this->data['woAdmUnit'] = $admUnit;
+				$this->data['woAdmUnitX'] = json_encode($admUnit);
+			}
+		}
 	}
 
 	public function createToolbarSaveAs (&$printButton)

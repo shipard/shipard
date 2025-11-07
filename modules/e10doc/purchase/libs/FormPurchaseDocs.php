@@ -95,11 +95,12 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 						$this->addSeparator(self::coH2);
 						$this->layoutOpen(self::ltVertical);
 							$this->addColumnInput ('wasteOrigin', self::coHeader|self::coColW12);
-							//$this->addColumnInput ('wasteOriginCity', self::coHeader|self::coColW12);
+							if ($this->recData['personType'] == 1) // citizen
+								$this->addColumnInput ('wasteOriginAdmUnit', self::coHeader|self::coColW12);
 						$this->layoutClose();
 
 						if ($this->recData['personType'] == 2)
-						{
+						{ // company
 							$this->addSeparator(self::coH2);
 								$this->layoutOpen(self::ltVertical);
 								$this->addColumnInput ('personHandover', self::coHeader);
@@ -518,7 +519,8 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 		}
 		else
 		{
-			$this->addColumnInput('personNomencCity', self::coNoLabel);
+			//$this->addColumnInput('personNomencCity', self::coNoLabel);
+			$this->addColumnInput ('wasteOriginAdmUnit', self::coNoLabel);
 		}
 
 		if ($this->app()->model()->table ('e10pro.loyp.pointsJournal') !== FALSE)
