@@ -92,7 +92,7 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 
 			if ($wiReport->data['infoWasteCodes'] && count($wiReport->data['infoWasteCodes']) > 0)
 			{
-				$attName = 'pio-'.$this->recData['docNumber'].'.pdf';
+				$attName = 'vykupni-pio-'.$this->recData['docNumber'].'.pdf';
 				$attName = Utils::safeChars($attName);
 				$mimeType = 'application/pdf';
 				$msg->addAttachment($wiReport->fullFileName, $attName, $mimeType);
