@@ -11,7 +11,7 @@ use \Shipard\Utils\Utils;
  */
 class AddrStandardizationCLITool extends Utility
 {
-  var $usedInFiscalYear = 13;
+  var $usedInFiscalYear = 0;
   var $country = 60; // CZ
   var $personType = 1; // citizens, not companies
 
