@@ -152,7 +152,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
     array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
     array_push ($q, ' persons.fullName AS personFullName,');
-    array_push ($q, ' addrs.adrSpecification, addrs.adrCity, addrs.adrZipCode, addrs.adrStreet, addrs.id1, addrs.id2,');
+    array_push ($q, ' addrs.adrSpecification, addrs.adrCity, addrs.adrZipCode, addrs.adrStreet, addrs.id1, addrs.id2, addrs.saAdmUnit11Id,');
 		array_push ($q, ' [rows].[addressMode], [rows].[nomencCity],');
 		array_push ($q, ' [heads].docNumber, [heads].dateAccounting, [heads].otherAddress1Mode, [heads].personNomencCity');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
@@ -209,7 +209,8 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 				$id_icp_theirs = ($r['id1'] != '') ? $r['id1'] : '1';
 				$id_icp_theirs_text = [
 					['text' => 'IČP: '.$id_icp_theirs, 'class' => ''],
-					['text' => implode(', ', $ap), 'class' => 'e10-small break']
+					['text' => implode(', ', $ap), 'class' => 'e10-small break'],
+					['text' => 'IČZUJ: '.$r['saAdmUnit11Id'], 'class' => 'e10-small'],
 				];
 				if ($r['id2'] != '')
 					$id_icp_theirs .= '-'.$r['id2'];
@@ -254,7 +255,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 
 		$headerSum = [
 			'icp_our' => 'Naše IČP', 'icz_our' => 'Naše IČZ', 'icp_theirs' => 'VAŠE IČP/ORP',
-			'code' => 'Kód odpadu', 'title' => 'Název', 'weight' => '+Hmotnost [t]'
+			'code' => 'Kat. č. odpadu', 'title' => 'Název', 'weight' => '+Hmotnost [t]'
 		];
 
 		$periodTitle = '';
@@ -275,7 +276,7 @@ class ReportWasteOnePerson extends \e10doc\core\libs\reports\DocReportBase
 			]
 		];
 
-		$headerItems = ['docNumber' => 'Č. dokladu', 'date' => 'Datum', 'code' => 'Kód odpadu', 'title' => 'Název', 'weight' => '+Hmotnost [t]'];
+		$headerItems = ['docNumber' => 'Č. dokladu', 'date' => 'Datum', 'code' => 'Kat. č. odpadu', 'title' => 'Název', 'weight' => '+Hmotnost [t]'];
 		$this->data['itemsRows'] = [
 			[
 				'type' => 'table', 'title' => 'Položkový soupis',
