@@ -218,24 +218,35 @@
 		</tr>
 	</table>
 	
-	<table class="personResponsible">
-		<tr>
-			<td><span class='hdr'>Osoba zodpovědná za údaje</span></td>
-		</tr>
-		<tr>
-			<td class="hdr">Jméno a příjmení</td>
-			<td></td>
-		</tr>
-		<tr>
-			<td class="hdr">Telefon</td>
-			<td></td>
-		</tr>
-		<tr>
-			<td class="hdr">E-mail</td>
-			<td></td>
-		</tr>
-	</table>
+	{{^data.person.company}}
+		<table class="personResponsible">
+			<tr>
+				<td><span class='hdr'>Osoba zodpovědná za údaje</span></td>
+			</tr>
+			<tr>
+				<td class="hdr">Jméno a příjmení</td>
+				<td>{{data.person.fullName}}</td>
+			</tr>
+			<!--<tr>
+				<td class="hdr">Telefon</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td class="hdr">E-mail</td>
+				<td></td>
+			</tr>-->
+			<tr>
+				<td class="hdr">Obec původu odpadu</td>
+				<td>{{data.woAdmUnit.fullName}}</td>
+			</tr>
+			<tr>
+				<td class="hdr">IČZUJ</td>
+				<td>{{data.woAdmUnit.admUnitId}}</td>
+			</tr>
+		</table>
+	{{/data.person.company}}
 	
+	<!--
 	<span class='hdr' style="margin-top: 10pt;">Údaje dodavatele jsou pravdivé a úplné</span>
 	<table class="signed wasteSigned">
 		<tr>
@@ -245,6 +256,7 @@
 			<td><span>Datum</span></td>
 		</tr>
 	</table>
+	-->
 
 
 
