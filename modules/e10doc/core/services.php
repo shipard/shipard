@@ -375,10 +375,21 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$debug = intval($this->app->arg('debug'));
 
 		$e = new \e10doc\core\libs\PersonValidator($this->app);
+		$e->fromDocs = 1;
 		if ($maxCount)
 			$e->maxCount = $maxCount;
 		if ($debug)
 			$e->debug = $debug;
+		$e->batchCheck();
+	}
+
+	protected function cronValidatePersons()
+	{
+		$maxCount = 20;
+
+		$e = new \e10doc\core\libs\PersonValidator($this->app);
+		$e->fromDocs = 1;
+		$e->maxCount = $maxCount;
 		$e->batchCheck();
 	}
 
@@ -455,11 +466,18 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->setUsersGroups();
 	}
 
+	public function onCronServices()
+	{
+		$this->cronValidatePersons();
+	}
+
+
 	public function onCron ($cronType)
 	{
 		switch ($cronType)
 		{
 			case 'morning': $this->onCronMorning(); break;
+			case 'services':  $this->onCronServices(); break;
 			case 'stats': $this->onStats(); break;
 		}
 		return TRUE;

@@ -10,6 +10,7 @@ class PersonValidator extends Utility
 {
   var $maxCount = 5;
   var $debug = 0;
+  var $fromDocs = 0;
 
   public function batchCheck()
   {
@@ -23,12 +24,27 @@ class PersonValidator extends Utility
     array_push($q, ' AND [company] = %i', 1);
     array_push($q, ' AND [disableRegsChecks] = %i', 0);
 
-    array_push($q, ' AND (');
-    array_push($q, ' EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person');
-      array_push($q, ' AND ([valid] = %i', 0, ' OR ([valid] = %i', 1, ' AND [revalidate] = %i))', 1);
+    if ($this->fromDocs)
+		{
+			$maxOldDate = new \DateTime('1 year ago');
+      $lastCheckDate = new \DateTime('1 day ago');
+			array_push($q, ' AND (');
+      array_push($q, 'NOT EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person)');
+      array_push($q, 'OR EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person',
+            ' AND [updated] < %d', $lastCheckDate, ')');
       array_push($q, ')');
-    array_push($q, ' OR NOT EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person)');
-    array_push($q, ')');
+			array_push($q, ' AND EXISTS (SELECT person FROM e10doc_core_heads WHERE persons.ndx = person AND dateAccounting > %d', $maxOldDate,
+					' AND docType IN %in', ['invno', 'invni', 'cash', 'cashreg', 'purchase'], ')');
+		}
+    else
+    {
+      array_push($q, ' AND (');
+      array_push($q, ' EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person');
+        array_push($q, ' AND ([valid] = %i', 0, ' OR ([valid] = %i', 1, ' AND [revalidate] = %i))', 1);
+        array_push($q, ')');
+      array_push($q, ' OR NOT EXISTS (SELECT ndx FROM e10_persons_personsValidity WHERE persons.ndx = person)');
+      array_push($q, ')');
+    }
 
 		array_push($q, ' LIMIT 0, %i', $this->maxCount);
 
