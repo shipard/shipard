@@ -109,6 +109,10 @@ class AppPageUI extends \Shipard\UI\ng\AppPageBlank
     {
       $this->renderMenuItem($this->uiStruct['appMenu']['rightMenu'], 'rightMenuCode');
     }
+    if (isset($this->uiStruct['appMenu']['inlineTopMenu']))
+    {
+      $this->renderMenuItem($this->uiStruct['appMenu']['inlineTopMenu'], 'inlineTopMenuCode');
+    }
 
     $this->uiTemplate->loadTemplate ('e10pro.templates.basic', 'page.mustache', $templateCode);
 
