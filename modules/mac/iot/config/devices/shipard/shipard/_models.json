@@ -47,6 +47,11 @@
 		"iotKind": "epd", "iotSubKind": "shib"
 	},
 
+	"epd-sh-133-s6": {
+		"fn": "E-Ink 13.3 S6",
+		"iotKind": "epd", "iotSubKind": "shib"
+	},
+
 	"epd-sh-small": {
 		"fn": "E-Ink - malý",
 		"iotKind": "epd", "iotSubKind": "shib"

@@ -1,0 +1,37 @@
+{
+	"gpioLayout": "shipard/espressif/esp32s3-generic",
+	"enabledPins": {
+		"p17": {"title": "qwiic.sda"},
+		"p18": {"title": "qwiic.scl"}
+	},
+	"fields": {
+		"groups": [
+			{"id":  "opts", "title":  "Nastavení"}
+		],
+		"columns": [
+		]
+	},
+	"device": {
+		"ds": 1,
+		"dsWakeupTimer": 300
+	},
+	"fixedIOPorts": {
+		"epd": {
+			"type": "display/epaper",
+			"portId": "epd",
+			"displayType": "133_S6_1600_1200"
+		},
+		"i2c": {
+			"type": "bus/i2c",
+			"portId": "i2c",
+			"pinSDA": "p17",
+			"pinSCL": "p18"
+		},
+		"pwr": {
+			"type": "power/battusb",
+			"portId": "pwr",
+			"i2cBusPortId": "i2c"
+		}
+	},
+	"fwId": "epd-esp32S3-wifi-GxEPD2_1248c"
+}

@@ -214,5 +214,43 @@
       }
     ],
     "width": 1304, "height": 984
+  },
+
+  "133_S6_1600_1200": {
+    "fn": " (13.3\", 1200 x 1600, čb + červená, žlutá, modrá, zelená a oranžová)",
+    "cntColors": 7,
+    "colors": [
+      {
+        "dither": "111111",
+        "simulated": "282828",
+        "name": "Black"
+      },
+      {
+        "dither": "F0F0F0",
+        "simulated": "e8e8e8",
+        "name": "White"
+      },
+      {
+        "dither": "CC0000",
+        "simulated": "a03030",
+        "name": "Red"
+      },
+      {
+        "dither": "FFFF00",
+        "simulated": "FFFF54",
+        "name": "Yellow"
+      },
+      {
+        "dither": "0000FF",
+        "simulated": "5098f0",
+        "name": "Blue"
+      },
+      {
+        "dither": "00FF00",
+        "simulated": "70a860",
+        "name": "Green"
+      }
+    ],
+    "width": 1200, "height": 1600
   }
 }
