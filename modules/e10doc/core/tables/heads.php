@@ -492,7 +492,7 @@ class TableHeads extends DbTable
 			$recData ['askPersonBalance'] = 0;
 		if ($paymentMethod['personForBalance'] ?? 0)
 			$recData ['personBalance'] = $paymentMethod['personForBalance'];
-		elseif (!$recData ['askPersonBalance'])
+		elseif (!intval($recData ['askPersonBalance'] ?? 0))
 			$recData ['personBalance'] = $recData ['person'];
 		if ($recData['paymentMethod'] == 2 || ($paymentMethod['card'] ?? 0))
 		{ // payment terminal
@@ -2117,6 +2117,7 @@ class TableHeads extends DbTable
 						$attachmentFileName = 'priloha';
 
 					$msg->addAttachment($formReport->fullFileName, $attachmentFileName . '.pdf', 'application/pdf');
+					$formReport->addMessageAttachments($msg);
 
 					if ($doEmail && $emails !== '')
 						$msg->sendMail();
