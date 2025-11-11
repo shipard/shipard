@@ -36,6 +36,27 @@ class ESignImageEngine extends Utility
     $this->tableESigns = $this->app()->table('mac.iot.esigns');
   }
 
+  protected function systemCss()
+  {
+    $css = '';
+
+    $css .= ":root {\n";
+    $css .= "\t--esignWidth: ".$this->displayInfo['width']."px;\n";
+    $css .= "\t--esignHeight: ".$this->displayInfo['height']."px;\n";
+    $css .= "\n";
+
+    foreach ($this->displayInfo['colors'] as $color)
+    {
+      $css .= "\t--epdColor".$color['name'].": #".$color['dither'].";\n";
+    }
+
+    $css .= "}\n";
+
+    $css .= "\n\n";
+
+    return $css;
+  }
+
   protected function createHTML()
   {
     $this->template = new \mac\iot\libs\TemplateESigns($this->app());
@@ -45,9 +66,12 @@ class ESignImageEngine extends Utility
     if ($this->esignIoTDeviceInfo)
       $this->template->data['deviceInfo'] = $this->esignIoTDeviceInfo;
 
+    $css = $this->systemCss();
+    $css .= $this->template->renderTextSafe($this->templateCss);
+
     $this->template->data['vds'] = Json::decode($this->esignRecData['vdsData']);
     $this->template->data['dataVer'] = md5(json_encode($this->esignRecData));
-    $this->template->data['cssStyle'] = $this->template->renderTextSafe($this->templateCss);
+    $this->template->data['cssStyle'] = $css;
     $this->htmlCode = $this->template->renderTextSafe($this->templateHtml);
   }
 
