@@ -17,6 +17,7 @@
     {"id": "laUnitOwner0", "name": "Region", "type": "int", "reference": "services.locAddr.laUnits"},
     {"id": "laUnitOwner1", "name": "Kraj", "type": "int", "reference": "services.locAddr.laUnits"},
     {"id": "laUnitOwner2", "name": "Okres", "type": "int", "reference": "services.locAddr.laUnits"},
+    {"id": "laUnitOwner10", "name": "ORP", "type": "int", "reference": "services.locAddr.laUnits"},
 
 		{"id": "cityPart2", "name": "Městská část", "type": "int", "reference": "services.locAddr.citiesParts"},
     {"id": "city", "name": "Obec", "type": "int", "reference": "services.locAddr.cities"},
@@ -25,6 +26,8 @@
 
 		{"id": "municipalityPersonOid", "name": "IČ obce", "type": "string", "len": 20, "options": ["ascii"]},
 		{"id": "municipalityPerson", "name": "Osoba obce", "type": "int", "reference": "services.persons.persons"},
+	  {"id": "wgs84lat", "name": "Zeměpisná šířka", "type": "number", "dec": 9},
+	  {"id": "wgs84lng", "name": "Zeměpisná délka", "type": "number", "dec": 9},
 
 		{"id": "validFrom", "name": "Platné od", "type": "date"},
 		{"id": "validTo", "name": "Platné do", "type": "date"}

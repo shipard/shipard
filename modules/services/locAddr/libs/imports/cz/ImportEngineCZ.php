@@ -983,6 +983,101 @@ class ImportEngineCZ extends \services\locAddr\libs\imports\ImportEngineCore
     }
   }
 
+  public function importZujChecks()
+  {
+    $q = [];
+    array_push($q, 'SELECT * FROM [services_locAddr_laUnits]');
+    array_push($q, ' WHERE 1');
+    array_push($q, ' AND [level] = %i', 11);
+    array_push($q, ' AND [country] = %i', 60);
+    array_push($q, ' ORDER BY ndx');
+
+    $cnt = 1;
+    $rows = $this->db()->query($q);
+    foreach ($rows as $r)
+    {
+      echo '* '.sprintf('%4d', $cnt).". ".$r['laUnitId'].' '.$r['fullName'];
+
+      $mp = $this->app()->loadItem($r['municipalityPerson'], 'services.persons.persons');
+      if (!$mp)
+      {
+        echo " - INVALID MP!\n";
+        continue;
+      }
+
+      $personNdx = $mp['ndx'];
+
+      if ($mp['newDataAvailable'])
+      {
+        echo "; person refresh;";
+        $e = new \services\persons\libs\PersonData($this->app());
+
+        $e->personNdx = $personNdx;
+        $e->refreshImport($personNdx);
+      }
+
+      // -- address
+      $qmpa = [];
+      array_push($qmpa, 'SELECT addresses.*');
+      array_push($qmpa, ' FROM [services_persons_address] AS [addresses]');
+      array_push($qmpa, ' WHERE addresses.person = %i', $personNdx);
+      array_push($qmpa, ' AND addresses.[type] = %i', 0);
+      array_push($qmpa, ' ORDER BY ndx DESC');
+      array_push($qmpa, ' LIMIT 1');
+      $mpAddress = $this->db()->query($qmpa)->fetch();
+      if (!$mpAddress)
+      {
+        echo " - INVALID MP ADDRESS!\n";
+        continue;
+      }
+
+      // -- standardized address place
+      $addressPlace = NULL;
+      if ($mpAddress['addressPlaceNdx'])
+        $addressPlace = $this->app()->loadItem($mpAddress['addressPlaceNdx'], 'services.locAddr.addrPlaces');
+      else
+      {
+        $addrPlaceId = intval($mpAddress['natAddressGeoId']);
+        if ($addrPlaceId)
+          $addressPlace = $this->db()->query('SELECT * FROM [services_locAddr_addrPlaces] WHERE [addrPlaceId] = %i', $addrPlaceId,
+                                             ' AND [country] = %i', 60)->fetch();
+      }
+      if (!$addressPlace)
+      {
+        echo " - INVALID ADDR PLACE `{$mpAddress['addressPlaceNdx']}`!\n";
+        continue;
+      }
+
+      $update = [];
+
+      if ($addressPlace['wgs84lat'] != 0.0 && $addressPlace['wgs84lng'] != 0.0)
+      {
+        echo "; GPS ".$addressPlace['wgs84lat'].", ".$addressPlace['wgs84lng'];
+        $update['wgs84lat'] = $addressPlace['wgs84lat'];
+        $update['wgs84lng'] = $addressPlace['wgs84lng'];
+      }
+
+      $admUnit10 = $this->app()->loadItem($mpAddress['saLaUnit10Ndx'], 'services.locAddr.laUnits');
+      if ($admUnit10)
+      {
+        echo "; ORP ".$admUnit10['laUnitId']." ".$admUnit10['fullName'];
+        $update['laUnitOwner10'] = $admUnit10['ndx'];
+      }
+
+      if (count($update))
+      {
+        $this->db()->query('UPDATE [services_locAddr_laUnits] SET ', $update, ' WHERE [ndx] = %i', $r['ndx']);
+        echo " - UPDATED!";
+      }
+
+      echo "\n";
+
+      $cnt++;
+      //if ($cnt >= 100)
+      //  break;
+    }
+  }
+
   protected function convertFileToUTF8($srvFileName, $dstFileName)
   {
     $cmd = 'iconv -f CP1250 -t UTF-8 '.$srvFileName.' -o '.$dstFileName;

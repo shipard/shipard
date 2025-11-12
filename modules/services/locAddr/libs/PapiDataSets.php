@@ -14,7 +14,7 @@ class PapiDataSets extends Utility
 
 	var $dataSets = ['adm-units'];
 
-	protected function getCertificate ()
+	protected function getDataSet ()
 	{
     if (!$this->dataSetId || !in_array($this->dataSetId, $this->dataSets))
 		{
@@ -41,7 +41,7 @@ class PapiDataSets extends Utility
 
 	public function run ()
 	{
-		$this->getCertificate();
+		$this->getDataSet();
 
 		$response = new Response ($this->app);
 		$response->add ('objectType', 'dataSet');
