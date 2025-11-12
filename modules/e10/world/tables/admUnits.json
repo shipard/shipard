@@ -16,10 +16,13 @@
     {"id": "admUnitOwner0", "name": "Region", "type": "int", "reference": "e10.world.admUnits"},
     {"id": "admUnitOwner1", "name": "Kraj", "type": "int", "reference": "e10.world.admUnits"},
     {"id": "admUnitOwner2", "name": "Okres", "type": "int", "reference": "e10.world.admUnits"},
+    {"id": "admUnitOwner10", "name": "ORP", "type": "int", "reference": "e10.world.admUnits"},
 		{"id": "cityPart2", "name": "Městská část", "type": "int", "reference": "e10.world.admUnits"},
 
 		{"id": "municipalityPersonOid", "name": "IČ obce", "type": "string", "len": 20, "options": ["ascii"]},
 		{"id": "municipalityPerson", "name": "Osoba obce", "type": "int", "reference": "e10.persons.persons"},
+	  {"id": "wgs84lat", "name": "Zeměpisná šířka", "type": "number", "dec": 9},
+	  {"id": "wgs84lng", "name": "Zeměpisná délka", "type": "number", "dec": 9},
 
 		{"id": "fullName", "name": "Název", "type": "string", "len": 160},
 

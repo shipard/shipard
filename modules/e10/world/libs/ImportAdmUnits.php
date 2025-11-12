@@ -37,6 +37,8 @@ class ImportAdmUnits extends Utility
         'admUnitId' => $d['id'],
         'fullName' => $d['fn'],
         'level' => $d['level'],
+        'wgs84lat' => $d['wgs84lat'] ?? 0.0,
+        'wgs84lng' => $d['wgs84lng'] ?? 0.0,
       ];
 
       if (isset($d['owner0']))
@@ -56,6 +58,12 @@ class ImportAdmUnits extends Utility
         $owner2Ndx = $this->ownerIdNdx($d['owner2'], 2);
         if ($owner2Ndx)
           $unit['admUnitOwner2'] = $owner2Ndx;
+      }
+      if (isset($d['owner10']))
+      {
+        $owner10Ndx = $this->ownerIdNdx($d['owner10'], 10);
+        if ($owner10Ndx)
+          $unit['admUnitOwner10'] = $owner10Ndx;
       }
 
       if (isset($d['municipalityPersonOid']))

@@ -166,10 +166,13 @@ class FormAdmUnit extends TableForm
 			$this->addColumnInput ('admUnitOwner0');
 			$this->addColumnInput ('admUnitOwner1');
 			$this->addColumnInput ('admUnitOwner2');
+			$this->addColumnInput ('admUnitOwner10');
 			$this->addColumnInput ('cityPart2');
 			$this->addColumnInput ('admUnitId');
 			$this->addColumnInput ('municipalityPersonOid');
 			$this->addColumnInput ('municipalityPerson');
+			$this->addColumnInput ('wgs84lat');
+			$this->addColumnInput ('wgs84lng');
 		$this->closeForm ();
 	}
 }
