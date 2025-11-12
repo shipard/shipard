@@ -2,28 +2,9 @@
 {{^data.reportTexts.emailBody}}
 {{@dict;Dobrý den}},
 
-{{@dict;v příloze Vám zasíláme fakturu za poskytované služby}}{{#data.head.title}}: {{data.head.title}}{{/data.head.title}}.
-
-{{#data.options.docReportsInvoicePaymentInfo}}{{#data.balanceInfo.paymentDone}}Faktura je uhrazena - NEPLAŤTE!
-{{/data.balanceInfo.paymentDone}}{{/data.options.docReportsInvoicePaymentInfo}}
+{{@dict;v příloze Vám zasíláme Písemné informace o odpadu}}: {{data.head.docNumber}}.
 
 {{@dict;Odběratel}}: {{{data.person.fullName}}}
-{{#data.head.datePeriodBegin}}
-{{@dict;Účtované období}}: {{data.head.datePeriodBegin}} {{@dict;až}} {{data.head.datePeriodEnd}}
-{{/data.head.datePeriodBegin}}
-{{@dict;Celkem k úhradě}}: {{data.head.print.toPay}} {{data.head.print.currency}}
-{{@dict;Variabilní symbol}}: {{data.head.symbol1}}
-{{#data.head.symbol2}}
-{{@dict;Specifický symbol}}: {{data.head.symbol2}}
-{{/data.head.symbol2}}
-{{@dict;Bankovní spojení}}: {{data.myBankAccount.bankAccount}}
-{{#data.myBankAccount.iban}}
-{{@dict;IBAN}}: {{data.myBankAccount.iban}}
-{{/data.myBankAccount.iban}}
-
-
-{{^data.balanceInfo.paymentDone}}{{@dict;Děkujeme za včasnou úhradu}}.
-{{/data.balanceInfo.paymentDone}}
 
 {{@dict;S pozdravem}}
 
