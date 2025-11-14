@@ -53,14 +53,16 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 	{
 		$wh = $this->bottomTabId ();
 
-		$q [] = 'SELECT heads.[ndx] as ndx, heads.quantity as quantity, [docNumber], [title], heads.[docType] as [docType], [heads].docStateAcc,'.
-						' [sumPrice], [sumBase], [sumTotal], [weightGross], [activateTimeFirst], [activateTimeLast], [weighingMachine],[paymentMethod],'.
-						' [toPay], [cashBoxDir], [dateIssue], [dateAccounting], [person], [currency], [homeCurrency], [symbol1], heads.[otherAddress1Mode], heads.otherAddress1,'.
-						' heads.initState as initState, heads.[docState] as docState, heads.[docStateMain] as docStateMain, persons.fullName as personFullName'.
-            ' FROM [e10doc_core_heads] as heads'.
-						' LEFT JOIN e10_persons_persons AS persons ON (heads.person = persons.ndx)'.
-						' WHERE 1';
+		$q = [];
 
+		array_push($q, 'SELECT heads.[ndx] as ndx, heads.quantity as quantity, [docNumber], [title], heads.[docType] as [docType], [heads].docStateAcc,');
+		array_push($q, ' [sumPrice], [sumBase], [sumTotal], [weightGross], [activateTimeFirst], [activateTimeLast], [weighingMachine],[paymentMethod],');
+		array_push($q, ' [toPay], [cashBoxDir], [dateIssue], [dateAccounting], [heads].[person], [currency], [homeCurrency], [symbol1], heads.[otherAddress1Mode], heads.otherAddress1,');
+		array_push($q, ' heads.initState as initState, heads.[docState] as docState, heads.[docStateMain] as docStateMain, persons.fullName as personFullName');
+		array_push($q, ' FROM [e10doc_core_heads] as heads');
+		array_push($q, ' LEFT JOIN e10_persons_persons AS persons ON (heads.person = persons.ndx)');
+		array_push($q, ' LEFT JOIN e10_persons_personsContacts AS offices ON (heads.otherAddress1 = offices.ndx)');
+		array_push($q, ' WHERE 1');
 		$this->qryCommon ($q);
 		$this->qryFulltext ($q);
 
@@ -79,6 +81,8 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 		$chbxPurchases = [
 			'fromORP' => ['title' => 'Z ORP', 'id' => 'fromORP'],
 			'withBadORP' => ['title' => 'S vadným / prázdným ORP', 'id' => 'withBadORP'],
+			'withoutWasteCity' => ['title' => 'Bez Obce původu odpadu', 'id' => 'withoutWasteCity'],
+			'invalidOffice' => ['title' => 'S neplatnou provozovnou', 'id' => 'invalidOffice'],
 			'withoutPersonHandover' => ['title' => 'Bez osoby Předal', 'id' => 'withoutPersonHandover'],
 		];
 
@@ -107,6 +111,22 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 			if (!$fromORP)
 				array_push ($q, ' AND [heads].[otherAddress1Mode] = %i', 1);
 			array_push ($q, ' AND [heads].[personNomencCity] = %i', 0);
+		}
+
+		$withoutWasteCity = isset ($qv['purchases']['withoutWasteCity']);
+		if ($withoutWasteCity)
+		{
+			array_push ($q, ' AND heads.wasteOriginAdmUnit = %i', 0);
+		}
+
+		$invalidOffice = isset ($qv['purchases']['invalidOffice']);
+		if ($invalidOffice)
+		{
+			array_push ($q, ' AND heads.otherAddress1 != %i', 0);
+			array_push ($q, ' AND (');
+				array_push($q,' (offices.validFrom IS NOT NULL AND offices.validFrom > heads.dateAccounting', ')');
+				array_push($q,' OR (offices.validTo IS NOT NULL AND offices.validTo < heads.dateAccounting', ')');
+			array_push ($q, ')');
 		}
 
 		$withoutPersonHandover = isset ($qv['purchases']['withoutPersonHandover']);
