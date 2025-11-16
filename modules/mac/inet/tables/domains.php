@@ -253,7 +253,7 @@ class FormDomain extends TableForm
 					$this->addColumnInput ('owner');
 					$this->addColumnInput ('domainAccount');
 					$this->addColumnInput ('domainAccountDNS');
-					$this->addColumnInput ('dateExpiry');
+					$this->addColumnInput ('dateExpire');
 					$this->addList ('clsf', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();
 				$this->openTab (TableForm::ltNone);

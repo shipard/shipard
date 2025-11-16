@@ -74,7 +74,8 @@ class ViewDomainsRecordsAll extends TableView
 			$props[] = ['text' => Utils::nf($item['ttl']), 'class' => 'label label-default', 'prefix' => 'ttl'];
 		$listItem ['t2'] = $props;
 
-		$listItem ['i2'] = ['text' => '#'.utils::nf($item['registrarId']), 'class' => 'id'];
+		//$listItem ['i2'] = ['text' => '#'.utils::nf($item['registrarId']), 'class' => 'id'];
+		$listItem ['i2'] = ['text' => Utils::datef($item['lastUpdate'], '%S, %T'), 'class' => 'e10-off'];
 
 		return $listItem;
 	}

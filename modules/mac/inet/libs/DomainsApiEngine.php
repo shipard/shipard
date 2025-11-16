@@ -203,7 +203,7 @@ class DomainsApiEngine extends Utility
 
 		// --- dns records
 		//echo " --->`{$this->accountNdx}` ".json_encode($exist->toArray())."\n";
-		if ($exist['domainAccountDNS'] == $this->accountNdx)
+		if (($exist['domainAccountDNS'] ?? 0) == $this->accountNdx)
 		{
 			$this->importDomainDnsRecords ($newNdx);
 		}
@@ -258,6 +258,7 @@ class DomainsApiEngine extends Utility
 				'ttl' => $dnsRecord['ttl'],
 				'registrarId' => $dnsRecord['registrarId'] ?? 0,
 				'displayOrder' => $recordType['displayOrder'] ?? 1,
+				'lastUpdate' => new \DateTime(),
 				'docState' => 4000, 'docStateMain' => 2
 			];
 
@@ -283,6 +284,7 @@ class DomainsApiEngine extends Utility
 
 			if (count($update))
 			{
+				$update['lastUpdate'] = new \DateTime();
 				$newNdx = $this->tableDomainsRecords->dbUpdateRec($update);
 				$this->tableDomainsRecords->docsLog($newNdx);
 			}

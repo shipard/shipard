@@ -16,6 +16,7 @@
 
 		{"id": "versionProvider", "name": "ID verze u poskytovatele", "type": "string", "len": 40, "options": ["ascii"]},
 		{"id": "versionData", "name": "ID verze v datech", "type": "string", "len": 40, "options": ["ascii"]},
+		{"id": "lastUpdate", "name": "Datum a čas aktualizace", "type": "timestamp"},
 
 		{"id": "displayOrder", "name": "Pořadí pro zabrazení", "type": "int"},
 
