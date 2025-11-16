@@ -43,6 +43,23 @@
     ],
     "width": 800, "height": 480
   },
+  "GxEPD2_750_GDEY075T7": {
+    "fn": "GxEPD2_750_GDEY075T7 (7.5\", 800 x 480, čb)",
+    "cntColors": 2 ,
+    "colors": [
+      {
+        "dither": "000000",
+        "simulated": "000000",
+        "name": "Black"
+      },
+      {
+        "dither": "FFFFFF",
+        "simulated": "FFFFFF",
+        "name": "White"
+      }
+    ],
+    "width": 800, "height": 480
+  },
   "GxEPD2_266c_GDEY0266F51H": {
     "fn": "GxEPD2_266c_GDEY0266F51H (2.66\", 360 x 184, čb + červená + žlutá)",
     "cntColors": 4,
