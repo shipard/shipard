@@ -126,6 +126,7 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 			array_push ($q, ' AND (');
 				array_push($q,' (offices.validFrom IS NOT NULL AND offices.validFrom > heads.dateAccounting', ')');
 				array_push($q,' OR (offices.validTo IS NOT NULL AND offices.validTo < heads.dateAccounting', ')');
+				array_push($q,' OR (heads.otherAddress1Mode = %i', 0, 'AND offices.validTo IS NULL', ' AND offices.docState != %i', 4000, ')');
 			array_push ($q, ')');
 		}
 
