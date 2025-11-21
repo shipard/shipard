@@ -14,6 +14,26 @@
 		{"id": "order", "name": "Pořadí", "type": "int"},
 		{"id": "icon", "name": "Ikona", "type": "string", "len": 50},
 
+    {
+			"id": "stateType", "name": "Druh stavu", "type": "enumString", "len": 10,
+			"enumValues": {
+				"other": "Ostatní / nezadáno",
+				"on": "Zapnuto",
+				"off": "Vypnuto",
+				"open": "Otevřeno",
+				"openIn": "Otevřeno dovnitř",
+				"openOut": "Otevřeno ven",
+				"close": "Zavřeno",
+				"auto": "Automaticky",
+				"a": "A",
+				"b": "B",
+				"c": "C",
+				"d": "D",
+				"e": "E",
+				"f": "F"
+			}
+		},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],

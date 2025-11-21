@@ -18,6 +18,7 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
     switch ($tagName)
 		{
 			case	'iotSensor' 					: return $this->iotSensor ($params);
+			case	'iotSetup' 					  : return $this->iotSetup ($params);
       case  'slideShowImage'			: return $this->slideShowImage($params);
 		}
 
@@ -30,7 +31,7 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
 		return $templateStr;
 	}
 
-  public function ioTSensor(array $params)
+  public function iotSensor(array $params)
   {
     $data = ['valid' => 0, 'data' => []];
 
@@ -76,6 +77,39 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
 		}
 
     $data['icon'] = $icon;
+
+    $dataItemId = $params['item'] ?? 'data.sensorValue';
+    return Utils::cfgItem($data, $dataItemId, 'unknown item');
+  }
+
+  public function iotSetup(array $params)
+  {
+    $data = ['valid' => 0, 'data' => []];
+
+    $setupNdx = intval($params['ndx'] ?? 0);
+    if (!$setupNdx)
+    {
+      return 'Missing setup id';
+    }
+
+		$setupRecData = $this->app()->db()->query(
+      'SELECT [setups].*, setupsStates.activeScene AS activeScene FROM [mac_iot_setups] AS [setups] ',
+			'LEFT JOIN [mac_iot_setupsStates] AS setupsStates ON setups.ndx = setupsStates.setup',
+			'WHERE [setups].ndx = %i', $setupNdx)->fetch();
+
+    if (!$setupRecData)
+    {
+      return 'Invalid setup';
+    }
+
+    $setupState = $this->app()->loadItem($setupRecData['activeScene'], 'mac.iot.scenes');
+
+    $setupState['cssClass'] = 'setup-state-' . $setupState['stateType'];
+    $setupState['cssClassFull'] = 'setup-' . $setupNdx . '-state-' . $setupState['stateType'];
+
+    $data['setup'] = $setupRecData->toArray();
+    $data['state'] = $setupState;
+    $data['valid'] = 1;
 
     $dataItemId = $params['item'] ?? 'data.sensorValue';
     return Utils::cfgItem($data, $dataItemId, 'unknown item');

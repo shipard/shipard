@@ -63,12 +63,19 @@ class ViewScenes extends TableView
 		$t2 = [];
 		if ($item['setupName'])
 			$t2[] = ['text' => $item['setupName'], 'class' => 'label label-default', 'icon' => 'tables/mac.iot.setups'];
-		if ($item['placeName'])
-			$t2[] = ['text' => $item['placeName'], 'class' => 'label label-default', 'icon' => 'tables/e10.base.places'];
+		//if ($item['placeName'])
+		//	$t2[] = ['text' => $item['placeName'], 'class' => 'label label-default', 'icon' => 'tables/e10.base.places'];
+
+		if ($item['stateType'] !== '' && $item['stateType'] !== 'other')
+			$t2[] = ['text' => $item['stateType'], 'class' => 'label label-info', '__icon' => 'tables/e10.base.places'];
+
 
 		$listItem['t2']	= $t2;
 
 		$listItem ['i2'] = ['text' => $item['friendlyId'], 'class' => 'label label-default'];
+
+		if ($item['ndx'] === $item['setupActiveScene'])
+			$listItem ['!error'] = 'e10-success';
 
 		return $listItem;
 	}
@@ -79,10 +86,12 @@ class ViewScenes extends TableView
 
 		$q [] = 'SELECT [scenes].*,';
 		array_push ($q, ' setups.fullName AS setupName,');
-		array_push ($q, ' places.fullName AS placeName');
+		array_push ($q, ' places.fullName AS placeName,');
+		array_push ($q, ' setupsStates.activeScene AS setupActiveScene');
 		array_push ($q, ' FROM [mac_iot_scenes] AS [scenes]');
 		array_push ($q, ' LEFT JOIN [mac_iot_setups] AS setups ON scenes.setup = setups.ndx');
 		array_push ($q, ' LEFT JOIN [e10_base_places] AS places ON scenes.place = places.ndx');
+		array_push ($q, ' LEFT JOIN [mac_iot_setupsStates] AS setupsStates ON scenes.setup = setupsStates.setup');
 		array_push ($q, ' WHERE 1');
 
 		// -- fulltext
@@ -125,6 +134,7 @@ class FormScene  extends TableForm
 					$this->addColumnInput ('friendlyId');
 					$this->addColumnInput ('order');
 					$this->addColumnInput ('icon');
+					$this->addColumnInput ('stateType');
 					$this->addList ('doclinks', '', TableForm::loAddToFormLayout);
 				$this->closeTab ();
 
