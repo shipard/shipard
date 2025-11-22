@@ -17,6 +17,7 @@ class WebProxyCfgCreator extends Utility
     'dsServers' => [],
     'dataSources' => [],
     'webServers' => [],
+    'uis' => [],
     'ipv4' => [],
     'certs' => [],
     'cfgFiles' => [],
@@ -123,7 +124,25 @@ class WebProxyCfgCreator extends Utility
               $this->addIPV4Addr($srv['ipv4'], $rh);
           }
 
-          $this->cfg['webServers'][$ws['ndx']] = $wsItem;
+          $wsId = $dsRecData['gid'].'/'.$ws['ndx'];
+          $this->cfg['webServers'][$wsId] = $wsItem;
+        }
+        $addDS = TRUE;
+      }
+
+      if (isset($dsHostingInfo['info']['uis']) && count($dsHostingInfo['info']['uis']))
+      {
+        foreach ($dsHostingInfo['info']['uis'] as $ui)
+        {
+          $wsItem = [
+            'ndx' => $ui['ndx'],
+            'domain' => $ui['domain'],
+            'dsid' => $dsRecData['gid'],
+          ];
+          $this->addIPV4Addr($srv['ipv4'], $ui['domain']);
+
+          $uiId = $dsRecData['gid'].'/'.$ui['ndx'];
+          $this->cfg['uis'][$uiId] = $wsItem;
         }
         $addDS = TRUE;
       }
@@ -147,6 +166,7 @@ class WebProxyCfgCreator extends Utility
     $this->createCfgFiles_nginx_dsServers();
     $this->createCfgFiles_nginx_dataSources();
     $this->createCfgFiles_nginx_webServers();
+    $this->createCfgFiles_nginx_uis();
   }
 
   protected function createCfgFiles_etcHosts()
@@ -272,6 +292,46 @@ class WebProxyCfgCreator extends Utility
       $cfg .= "  return 301 https://$domain" . '$request_uri' . ";\n";
       $cfg .= "}\n";
 
+
+      $this->cfg['cfgFiles'][$fn] = $cfg;
+    }
+  }
+
+  protected function createCfgFiles_nginx_uis()
+  {
+    foreach ($this->cfg['uis'] as $uiNdx => $ui)
+    {
+      $domain = $ui['domain'];
+      $certId = $this->certId($domain);
+      $this->addCert($domain);
+
+      $fn = '/etc/nginx/sites-enabled/ui-'.$domain.'-ui.conf';
+      $cfg = "# ui server #".$ui['dsid']." / ".$domain."\n\n";
+
+      $cfg .= "server {\n";
+      $cfg .= "  listen 443 ssl http2;\n";
+      $cfg .= "  server_name ".$domain.";\n";
+
+      $cfg .= "  ssl_certificate /etc/ssl/shipard-certs/$certId/fullchain.pem;\n";
+      $cfg .= "  ssl_certificate_key /etc/ssl/shipard-certs/$certId/privkey.pem;\n";
+
+      $cfg .= "  include /usr/lib/shipard-node/etc/nginx/shn-https.conf;\n";
+
+      $cfg .= "  location / {\n";
+      $cfg .= "    proxy_set_header X-Forwarded-For ".'$remote_addr'.";\n";
+      $cfg .= "    proxy_pass_request_headers on;\n";
+      $cfg .= "    proxy_pass https://$domain;\n";
+      $cfg .= "  }\n";
+      $cfg .= "}\n";
+
+      // -- redirect from http to https
+      $cfg .= "\n";
+      $cfg .= "server {\n";
+      $cfg .= "  listen 80;\n";
+      $cfg .= "  server_name ".$domain;
+      $cfg .= ";\n";
+      $cfg .= "  return 301 https://$domain" . '$request_uri' . ";\n";
+      $cfg .= "}\n";
 
       $this->cfg['cfgFiles'][$fn] = $cfg;
     }
