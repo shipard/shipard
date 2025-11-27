@@ -76,7 +76,7 @@ class Params extends \Shipard\Base\BaseObject
 		else
 		if ($paramType === 'date')
 		{
-			$pc = array('title' => $options['title'], 'id' => $paramId, 'type' => $paramType, 'value' => '', 'defaultValue' => '', 'options' => $options);
+			$pc = array('title' => $options['title'], 'id' => $paramId, 'type' => $paramType, 'value' => $options['defaultValue'] ?? '', 'defaultValue' => $options['defaultValue'] ?? '', 'options' => $options);
 		}
 		else
 		if ($paramType === 'string')
@@ -438,6 +438,9 @@ class Params extends \Shipard\Base\BaseObject
 
 		$c = '';
 
+		if (isset($p['options']['flags']['inViewerToolbar']))
+			$c .= "<span style='display: inline-block; border-radius: 2px; padding: 1px; color: white;'>";
+		else
 		$c .= "<span style='display: inline-block; border-radius: 4px; padding: 4px; margin-right: 1ex; border: 1px solid rgba(0,0,0,.35); background-color: whitesmoke;'>";
 		if (isset($p['title']))
 			$c .= "<b>".$this->app()->ui()->composeTextLine($p['title']).': </b>';
@@ -445,7 +448,7 @@ class Params extends \Shipard\Base\BaseObject
 		$pch = '';//Utils::es($p['title']);
 		if (1)
 		{
-			$c .= "<input type='text' name='$paramId' class='$inputClass' placeholder='$pch' value='$value'> ";
+			$c .= "<input type='text' name='$paramId' class='$inputClass' style='color: black;' placeholder='$pch' value='$value'> ";
 			if (!$this->app()->ngg)
 				$c .= "<script>$('input.e10-inputDate').datepicker ({duration: 50});</script>";
 		}
