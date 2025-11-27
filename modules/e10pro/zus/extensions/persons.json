@@ -15,6 +15,12 @@
 				"details": {
 					"vysvedceni": {"title": "Vysvědčení", "icon": "tables/e10pro.zus.vysvedceni", "type": "detail", "class": "e10pro.zus.ViewDetailTeachers"}
 				}
+			},
+			"zusAttendanceDaily": {
+				"id": "zusAttendanceDaily", "class": "e10pro.zus.libs.ViewDailyAttendance", "ignorePK": 1,
+				"details": {
+					"default": {"title": "Docházka", "icon": "tables/e10pro.zus.vysvedceni", "type": "detail", "class": "e10pro.zus.libs.ViewDetailDailyAttendance"}
+				}
 			}
 		}
   },

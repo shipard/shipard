@@ -36,8 +36,9 @@
 				"workRecs": {
 					"subMenu": {
 						"items": {
-							"workRecsGridZus": {"t1": "Docházka ZUŠ", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "grid-zus", "order": 30000},
-							"attendance": {"t1": "Přehled docházky", "object": "widget", "class": "e10.widgetDashboard", "subclass": "zusAttendance", "icon": "e10.widgetDashboard/board", "order": 34000}
+							"attendanceDaily": {"t1": "Docházka ZUŠ ", "object": "viewer", "table": "e10.persons.persons", "viewer": "zusAttendanceDaily", "icon": "e10.widgetDashboard/board", "order": 100},
+							"workRecsGridZus": {"t1": "Docházka stará", "object": "viewer", "table": "e10mnf.core.workRecs", "viewer": "grid-zus", "order": 34100, "enabledCfgItem": "__TMP_DISABLED"},
+							"attendance": {"t1": "Přehled docházky", "object": "widget", "class": "e10.widgetDashboard", "subclass": "zusAttendance", "icon": "e10.widgetDashboard/board", "order": 34200, "enabledCfgItem": "__TMP_DISABLED"}
 						}
 					}
 				}

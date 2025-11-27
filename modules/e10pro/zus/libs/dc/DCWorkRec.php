@@ -18,7 +18,7 @@ class DCWorkRec extends \Shipard\Base\DocumentCard
     $ee->setParams($this->personNdx, $this->date, $this->recData['pk']);
     $ee->loadData();
 
-    $h = ['pobockaId' => 'Pobočka', 'zacatek' => 'Začátek', 'konec' => 'Konec'];
+    $h = ['pobockaId' => 'Pobočka', 'zacatek' => 'Začátek', 'konec' => 'Konec', 'vyukaNazev' => 'Výuka'];
     $this->addContent([
       'pane' => 'e10-pane e10-pane-table',
       'header' => $h,

@@ -100,12 +100,14 @@
 	},
 	"emps": {
 		"viewers": {
-			"e10mnf.core.workRecs": {"grid-zus": 2}
+			"e10mnf.core.workRecs": {"grid-zus": 2},
+			"e10.persons.persons": {"zusAttendanceDaily": 2}
 		}
 	},
 	"empsAdm": {
 		"viewers": {
-			"e10mnf.core.workRecs": {"grid-zus": 2}
+			"e10mnf.core.workRecs": {"grid-zus": 2},
+			"e10.persons.persons": {"zusAttendanceDaily": 2}
 		}
 	}
 }
