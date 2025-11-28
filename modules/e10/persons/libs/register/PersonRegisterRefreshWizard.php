@@ -66,7 +66,10 @@ class PersonRegisterRefreshWizard extends Wizard
 					$this->addStatic(['text' => 'Přehled změn', 'class' => 'h2 block ml1']);
 					foreach ($reg->diff['msgs'] as $msg)
 					{
-						$this->addStatic('  ● '.$msg);
+						if ($msg[0] === ' ')
+							$this->addStatic(' '.$msg, self::coBold);
+						else
+							$this->addStatic('  ● '.$msg);
 					}
 				}
 

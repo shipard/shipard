@@ -115,8 +115,11 @@ class PersonRegister extends Utility
     if (isset($this->registerData['person']['vatID']) && $this->registerData['person']['vatID'] !== '')
 		  $newPerson ['ids'][] = ['type' => 'taxid', 'value' => $this->registerData['person']['vatID']];
 
-    if (isset($this->registerData['person']['govEBoxId']) && $this->registerData['person']['govEBoxId'] !== '')
-		  $newPerson ['contacts'][] = ['type' => 'govDataBox', 'value' => $this->registerData['person']['govEBoxId']];
+    if ($this->useStandardizedAddress)
+    {
+      if (isset($this->registerData['person']['govEBoxId']) && $this->registerData['person']['govEBoxId'] !== '')
+        $newPerson ['contacts'][] = ['type' => 'govDataBox', 'value' => $this->registerData['person']['govEBoxId']];
+    }
 
     $this->personNdx = \E10\Persons\createNewPerson ($this->app, $newPerson);
     $this->personRecData = $this->app()->loadItem($this->personNdx, 'e10.persons.persons');
@@ -531,16 +534,19 @@ class PersonRegister extends Utility
       ];
     }
 
-    if (isset($this->registerData['person']['govEBoxId']) && $this->registerData['person']['govEBoxId'] !== '' && !isset($this->personGovDataBoxIds[$this->registerData['person']['govEBoxId']]))
+    if ($this->useStandardizedAddress)
     {
-      $this->addDiffMsg('Nová datová schránka `'.$this->registerData['person']['govEBoxId'].'`');
-      $this->diff['properties']['add'][] = [
-        'recid' => $this->personRecData['ndx'],
-        'tableid' => 'e10.persons.persons',
-        'group' => 'contacts', 'property' => 'govDataBox',
-        'valueString' => $this->registerData['person']['govEBoxId'],
-        'created' => new \DateTime(),
-      ];
+      if (isset($this->registerData['person']['govEBoxId']) && $this->registerData['person']['govEBoxId'] !== '' && !isset($this->personGovDataBoxIds[$this->registerData['person']['govEBoxId']]))
+      {
+        $this->addDiffMsg('Nová datová schránka `'.$this->registerData['person']['govEBoxId'].'`');
+        $this->diff['properties']['add'][] = [
+          'recid' => $this->personRecData['ndx'],
+          'tableid' => 'e10.persons.persons',
+          'group' => 'contacts', 'property' => 'govDataBox',
+          'valueString' => $this->registerData['person']['govEBoxId'],
+          'created' => new \DateTime(),
+        ];
+      }
     }
 
     if (count($update))
@@ -560,7 +566,7 @@ class PersonRegister extends Utility
       $cma = $ma;
     }
 
-    if ($this->useStandardizedAddress)
+    //if ($this->useStandardizedAddress)
     {
       if ($cma['flagStandardized'] == 0 && $mar['standardized'] > 0)
       {
@@ -591,6 +597,7 @@ class PersonRegister extends Utility
 
   protected function makeDiff_CoreAddress($currentAddr, $newRegAddr, &$update, $disableMsgs = FALSE)
   {
+    $first = TRUE;
     Json::polish($currentAddr);
     foreach ($currentAddr as $k => $v)
     {
@@ -599,7 +606,20 @@ class PersonRegister extends Utility
       if ($v != $newRegAddr[$k])
       {
         if (!$disableMsgs)
-          $this->addDiffMsg('Změna '.$k.' z `'.$v.'` na `'.$newRegAddr[$k].'`');
+        {
+          if ($first)
+          {
+            if (intval($newRegAddr['flagOffice'] ?? 0))
+              $this->addDiffMsg(' Změny adresy pobočky '.$newRegAddr['id1'].' `'.$currentAddr['addressText'].'`:');
+            elseif (intval($newRegAddr['flagMainAddress'] ?? 0))
+              $this->addDiffMsg(' Změny adresy sídla `'.$currentAddr['addressText'].'`:');
+            else
+              $this->addDiffMsg(' Změny adresy `'.$currentAddr['addressText'].'`:');
+            $first = FALSE;
+          }
+          $cn = $this->tablePersonsContact->columnName($k);
+          $this->addDiffMsg('Změna '.$cn.' z `'.$v.'` na `'.$newRegAddr[$k].'`');
+        }
         $update[$k] = $newRegAddr[$k];
       }
     }
@@ -630,7 +650,7 @@ class PersonRegister extends Utility
 
       $update = [];
 
-      if ($this->useStandardizedAddress)
+      //if ($this->useStandardizedAddress)
       {
         if ($cpo['flagStandardized'] == 0 && $registerOffice['standardized'] > 0)
         {
