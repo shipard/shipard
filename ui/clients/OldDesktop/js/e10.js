@@ -2087,7 +2087,14 @@ function e10viewerNavPath (viewer, tableName, docPK, listItem)
 		if (activeDetail.is ('LI'))
 			detailId = activeDetail.attr ('data-detail');
 	}
+
 	var apiPath = "/api/detail/" + tableName + "/" + viewerId + '/' + detailId + "/" + docPK + '?mismatch=1';
+
+	var mainQueryInput = viewer.find("div.viewerQuerySelect>input");
+	if (mainQueryInput.is('INPUT'))
+	{
+		apiPath += '&mainQueryId='+mainQueryInput.val();
+	}
 
 	return apiPath;
 }
