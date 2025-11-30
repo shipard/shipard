@@ -83,9 +83,10 @@ camPictElement=document.getElementById(ids[key]);if(!camPictElement){continue;}l
 pictStyle=camPictElement.getAttribute('data-pict-style');if(pictStyle==='video'){const
 played=parseInt(camPictElement.getAttribute('data-stream-started'));if(!played){this.startVideoGO2RTC(camPictElement);camPictElement.setAttribute('data-stream-started','1');}}}}}startVideoGO2RTC(videoEl){let
 streamUrl=videoEl.getAttribute('data-stream-url');let
-streamId=videoEl.getAttribute('data-stream-id');const
+streamId=videoEl.getAttribute('data-stream-id');let
+videoMode=videoEl.getAttribute('data-stream-mode');const
 video=document.createElement('video-stream');video.src=new
-URL('api/ws?src='+encodeURIComponent(streamId),streamUrl);video.mode='webrtc/tcp';videoEl.appendChild(video);}}class
+URL('api/ws?src='+encodeURIComponent(streamId),streamUrl);if(videoMode)video.mode=videoMode;videoEl.appendChild(video);}}class
 ShipardFilesUploader{rootElm=null;inputElm=null;infoElm=null;uploadInProgress=0;uploadDone=false;init(rootElm){this.rootElm=rootElm;this.inputElm=this.rootElm.querySelector('input[type="file"]');this.infoElm=this.rootElm.querySelector('.shpd-files-upload-info');}resetInfo(){var
 info='<table class="default fullWidth">';for(var
 i=0;i<this.inputElm.files.length;i++){var

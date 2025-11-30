@@ -596,7 +596,8 @@ e10viewerNavPath(viewer,tableName,docPK,listItem){var
 viewerId=viewer.attr('data-viewer-view-id');var
 detailId='default';var
 activeDetail=viewer.find('div.e10-mv-ld-tabs >ul >li.active');if(activeDetail.is('LI')){detailId=activeDetail.attr('data-detail');}else{activeDetail=$('#mainViewerDetailMenu li.active');if(activeDetail.is('LI'))detailId=activeDetail.attr('data-detail');}var
-apiPath="/api/detail/"+tableName+"/"+viewerId+'/'+detailId+"/"+docPK+'?mismatch=1';return apiPath;}function
+apiPath="/api/detail/"+tableName+"/"+viewerId+'/'+detailId+"/"+docPK+'?mismatch=1';var
+mainQueryInput=viewer.find("div.viewerQuerySelect>input");if(mainQueryInput.is('INPUT')){apiPath+='&mainQueryId='+mainQueryInput.val();}return apiPath;}function
 viewerMenuLoadViewer(e){var
 objectType=e.attr('data-object');if(objectType===undefined)return;var
 subMenu=$('#mainBrowserLeftMenuSubItems');if(subMenu.hasClass('open')&&objectType!=='subMenu'&&(e.parent().attr('id')==='mainListViewMenu'||e.parent().attr('id')==='smallPanelMenu')){subMenu.removeClass('open').addClass('closed');}$('#mainBrowserRightBarButtonsAdd *').detach();$('#mainBrowserRightBarButtonsEdit *').detach();if(objectType=='viewer'){var
