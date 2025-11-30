@@ -42,10 +42,12 @@ class ShipardCamsPictsLoader
   {
     let streamUrl = videoEl.getAttribute('data-stream-url');
     let streamId = videoEl.getAttribute('data-stream-id');
+    let videoMode = videoEl.getAttribute('data-stream-mode');
 
     const video = document.createElement('video-stream');
     video.src = new URL('api/ws?src=' + encodeURIComponent(streamId), streamUrl);
-    video.mode = 'webrtc/tcp';
+    if (videoMode)
+      video.mode = videoMode;
     videoEl.appendChild(video);
   }
 }

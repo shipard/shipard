@@ -610,7 +610,7 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
     {
       return 'Invalid / missing param `ndx`';
     }
-    $phUrl = $this->app->urlRoot.'/www-root/sc/shipard/ph-image-1920-1080.svg';
+
     foreach ($camsNdxList as $cn)
     {
       $camNdx = intval($cn);
@@ -630,6 +630,29 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
       $c .= '>';
       $c .= '</div>';
     }
+
+    return $c;
+  }
+
+  public function renderGo2Video(array $params)
+  {
+    $c = '';
+
+    $streamId = $params['streamId'] ?? 'bad-stream-id';
+    $streamMode = $params['streamMode'] ?? '';
+    $streamUrl = str_replace('^', ':', $params['streamUrl'] ?? 'bad-stream-id');
+
+    $camInfo = ['ndx' => time(), 'streamId' => $streamId, 'streamUrl' => $streamUrl, 'camServerNdx' => 123456, 'serverInfo' => []];//$this->iotCamsTable->camInfo($camNdx);
+
+    $picId = $this->registerCamPicture($camInfo);
+    $c .= "<div class='shp-cam-pict' ";
+    $c .= "data-pict-style='video' id='{$picId}'";
+    $c .= " data-stream-url='".$camInfo['streamUrl']."' ";
+    $c .= " data-stream-id='".Utils::es($camInfo['streamId'])."' ";
+    if ($streamMode !== '')
+      $c .= " data-stream-mode='".Utils::es($streamMode)."' ";
+    $c .= '>';
+    $c .= '</div>';
 
     return $c;
   }
@@ -709,6 +732,7 @@ class UIControl extends \Shipard\UI\ng\TemplateUIControl
       'iotSensor' => $this->renderIoTSensor($params),
       'controlButton' => $this->renderIoTControlButton($params),
       'camPicture' => $this->renderCamPicture($params),
+      'go2Video' => $this->renderGo2Video($params),
       'iotBoxControl' => $this->renderIotBoxControl($params),
       default => ''
     };
