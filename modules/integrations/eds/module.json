@@ -1,0 +1,12 @@
+{
+  "id": "integrations.eds",
+  "name": "extDataSets",
+  "tables": [
+		"sets", "data"
+	],
+  "config": [
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+    {"id": "integrations.eds.types", "file": "eds.types.json"}
+  ]
+}

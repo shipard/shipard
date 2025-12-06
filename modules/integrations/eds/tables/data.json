@@ -1,0 +1,12 @@
+{
+	"id": "integrations.eds.data", "sql": "integrations_eds_data", "name": "Data externích datových sad",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+		{"id": "edsSet", "name": "Datová sada", "type": "int", "reference": "integrations.eds.sets"},
+    {"id": "data", "name": "Data", "type": "memo"},
+    {"id": "dateUpdated", "name": "Datum aktualizace", "type": "timestamp"},
+    {"id": "dateNextUpdate", "name": "Datum další aktualizace", "type": "timestamp"}
+	],
+  "options": ["systemTable"]
+}

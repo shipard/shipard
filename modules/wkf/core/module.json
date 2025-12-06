@@ -4,7 +4,7 @@
   "tables": [
 		"comments", "issues", "issuesConnections", "filters"
 	],
-	"modules": ["wkf/base", "wkf/docs", "wkf/reports", "integrations/ntf"],
+	"modules": ["wkf/base", "wkf/docs", "wkf/reports", "integrations/ntf", "integrations/eds"],
   "config": [
 		{"id": "+appOptions", "file": "appOptions.json"},
 		{"id": "+e10.base.clsfGroups", "file": "clsfGroups.json"},

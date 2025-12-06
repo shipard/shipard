@@ -1,0 +1,9 @@
+{
+  "": {
+    "fn": "nenastaveno"
+  },
+  "openWeather": {
+    "fn": "OpenWeatherMap",
+    "classId": "integrations.eds.libs.EDSEngineOpenWeather"
+  }
+}

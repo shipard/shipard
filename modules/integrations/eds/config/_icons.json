@@ -1,0 +1,9 @@
+{
+  "tables/integrations.eds.sets":
+  {
+    "fa5": "fa-file-upload",
+		"fa6pro": "fa-file-upload",
+		"bsi": "bi-file-earmark-arrow-up",
+		"mdi": ""
+  }
+}

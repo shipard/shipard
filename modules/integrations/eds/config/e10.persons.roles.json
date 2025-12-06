@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"integrations.eds.sets": {"default": 2}
+		}
+	}
+}

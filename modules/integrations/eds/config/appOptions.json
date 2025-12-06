@@ -1,0 +1,6 @@
+{
+	"edsSets": {
+		"name": "Sady externích dat", "order": 440000, "group": "integrations",
+		"type": "viewer", "table": "integrations.eds.sets", "viewer": "default"
+	}
+}
