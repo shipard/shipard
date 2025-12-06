@@ -1,0 +1,13 @@
+{
+  "id": "integrations.exports",
+  "name": "exports",
+  "tables": [
+		"exports"
+	],
+  "config": [
+		{"id": "+appOptions", "file": "appOptions.json"},
+		{"id": "+e10.persons.roles", "file": "e10.persons.roles.json"},
+    {"id": "integrations.exports.types", "file": "exports.types.json"},
+		{"id": "+registeredClasses", "file": "registeredClasses.json"}
+  ]
+}

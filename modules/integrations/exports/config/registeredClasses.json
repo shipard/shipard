@@ -1,0 +1,7 @@
+{
+	"papi": {
+		"exports": {
+			"classId": "integrations.exports.libs.ExportDownload"
+		}
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"intgrExports": {
+		"name": "Exporty", "order": 450000, "group": "integrations",
+		"type": "viewer", "table": "integrations.exports.exports", "viewer": "default"
+	}
+}

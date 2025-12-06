@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"integrations.exports.exports": {"default": 2}
+		}
+	}
+}
