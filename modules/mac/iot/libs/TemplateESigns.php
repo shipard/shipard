@@ -20,6 +20,7 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
 			case	'iotSensor' 					: return $this->iotSensor ($params);
 			case	'iotSetup' 					  : return $this->iotSetup ($params);
       case  'slideShowImage'			: return $this->slideShowImage($params);
+      case  'dataSet'			        : return $this->dataSet($params);
 		}
 
     return parent::resolveCmd($tagCode, $tagName, $params);
@@ -30,6 +31,45 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
 		$templateStr = file_get_contents(__SHPD_ROOT_DIR__.'/'.$stId.'.mustache');
 		return $templateStr;
 	}
+
+  public function dataSet(array $params)
+  {
+    $sensorNdx = intval($params['id'] ?? 0);
+    if (!$sensorNdx)
+    {
+      return 'Missing dataSet id';
+    }
+
+    $dataSetRecData = $this->app()->db()->query('SELECT * FROM [integrations_eds_data] WHERE [edsSet] = %i', $sensorNdx)->fetch();
+    if (!$dataSetRecData)
+    {
+      return 'Invalid dataSet';
+    }
+
+    $data = Json::decode($dataSetRecData['data']);
+    if (!$data)
+    {
+      return 'Empty dataSet';
+    }
+
+    $dataItemId = $params['item'] ?? '';
+    $varName = intval($params['variable'] ?? 'dataSet');
+    if ($dataItemId !== '')
+      $this->data[$varName] = Utils::cfgItem($data, $dataItemId, 'unknown item');
+    else
+      $this->data[$varName] = $data;
+		$webScriptId = $params['webScript'] ?? '';
+		if ($webScriptId !== '')
+		{
+			$script = new \lib\web\WebScript($this->app());
+			$script->setScriptId($webScriptId);
+			$script->runScript($this->data[$varName], FALSE);
+
+      return $script->resultCode;
+		}
+
+    return Utils::cfgItem($data, $dataItemId, 'unknown item');
+  }
 
   public function iotSensor(array $params)
   {

@@ -67,6 +67,10 @@
 							"esigns": {"t1": "Cedulky", "object": "viewer", "table": "mac.iot.esigns", "viewer": "default", "order": 44000, "beforeSeparator": 1},
 							"esignsKinds": {"t1": "Typy cedulek", "object": "viewer", "table": "mac.iot.esignsKinds", "viewer": "default", "order": 44100},
 
+							"extDataSets": {"t1": "Data", "object": "viewer", "table": "integrations.eds.sets", "viewer": "default", "order": 45100, "beforeSeparator": 1},
+							"webScripts": {"t1": "Skripty", "object": "viewer", "table": "e10.web.scripts", "viewer": "default", "order": 45200, "beforeSeparator": 1},
+
+
 							"users": {"t1": "Uživatelé", "object": "viewer", "table": "mac.iot.users", "viewer": "default", "order": 90100, "beforeSeparator": 1},
 
 							"logs": {"t1": "Logy", "object": "viewer", "table": "mac.iot.log", "viewer": "default", "order": 90800, "beforeSeparator": 1}

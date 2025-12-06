@@ -191,8 +191,8 @@ class ViewESigns extends TableView
 				}
 				$listItem['t3'][] = $sl;
 			}
-
-			if ($item['dateUpdate'] != NULL)
+/*
+			if (!Utils::dateIsBlank($item['dateUpdate']))
 			{
 				$lsl = [
 					'text' => Utils::dateDiffShort3($item ['dateUpdate'], $now),
@@ -210,7 +210,7 @@ class ViewESigns extends TableView
 				if ($age > 120)
 					$listItem['t3'][] = $lsl;
 			}
-
+*/
 		}
 
 		return $listItem;
