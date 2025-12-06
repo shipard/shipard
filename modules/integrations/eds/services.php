@@ -82,7 +82,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$this->edsAllDownload();
 	}
 
-	public function TMP_onCron ($cronType)
+	public function onCron ($cronType)
 	{
 		switch ($cronType)
 		{
