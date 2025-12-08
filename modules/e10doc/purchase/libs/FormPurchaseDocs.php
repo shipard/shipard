@@ -401,7 +401,7 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 			array_push($q, 'SELECT [addrs].*');
 			array_push($q, ' FROM [e10_persons_personsContacts] AS [addrs]');
 			array_push($q, ' WHERE [addrs].[person] = %i', $personNdx);
-			array_push($q, ' AND [addrs].[docState] = %i', 4000);
+			array_push($q, ' AND [addrs].[docState] IN %in', [4000, 8000]);
 			array_push($q, ' AND [addrs].[flagAddress] = %i', 1);
 			array_push($q, ' ORDER BY [addrs].[onTop], [addrs].[systemOrder], [addrs].[adrCity]');
 			$rows = $this->app()->db()->query($q);
@@ -510,8 +510,8 @@ class FormPurchaseDocs extends \e10doc\core\FormHeads
 				}
 				if (count($addrOffices) > 1)
 				{
-					$fk = key($addrOffices);
-					unset($addrOffices[$fk]);
+					//$fk = key($addrOffices);
+					//unset($addrOffices[$fk]);
 				}
 
 				$this->addFormPersonInfo_Address ($addrOffices, 'otherAddress1', $suggestedAddrOffice, $addrTitle);
