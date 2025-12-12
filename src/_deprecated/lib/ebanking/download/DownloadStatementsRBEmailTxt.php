@@ -27,7 +27,7 @@ class DownloadStatementsRBEmailTxt extends \lib\ebanking\download\DownloadStatem
 				$fullFileName = __APP_DIR__.'/att/'.$a;
 				$extractedFileName = '';
 
-				$fileTypes = ['.GPC', '.XML'];
+				$fileTypes = ['.gpc', '.xml'];
 				foreach ($fileTypes as $fileType)
 				{
 					$bsFullFileName = strstr($fullFileName, $fileType, TRUE);
@@ -66,8 +66,8 @@ class DownloadStatementsRBEmailTxt extends \lib\ebanking\download\DownloadStatem
 				$this->statementTextData = $data;
 				break;
 			}
-			elseif (mb_substr($a, -4) === '.PDF')
-			{ // attached PDF statement: Vypis_6041046424_CZK_2019_38.PDF
+			elseif (mb_substr($a, -4) === '.pdf')
+			{ // attached PDF statement: Vypis_6041046424_CZK_2019_38.pdf
 				$coreFileName = substr($a, 0, -4);
 				$fnParts = explode('_', $coreFileName);
 				if (count($fnParts) < 5)
