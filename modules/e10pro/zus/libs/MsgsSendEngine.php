@@ -20,7 +20,7 @@ class MsgsSendEngine extends Utility
 	public function sendOne ($onePost)
 	{
 		$msg = new \Shipard\Report\MailMessage($this->app);
-		$msg->setFrom ($onePost['authorEmail'], $onePost['authorName']);
+		$msg->setFrom ($onePost['authorName'], $onePost['authorEmail']);
 		$msg->setTo($onePost['contactEmail']);
 
 		$msg->setSubject($onePost['title']);
