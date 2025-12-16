@@ -199,7 +199,7 @@ class WebProxyCfgCreator extends Utility
       $cfg .= "  ssl_certificate /etc/ssl/shipard-certs/all.shipard.app/fullchain.pem;\n";
       $cfg .= "  ssl_certificate_key /etc/ssl/shipard-certs/all.shipard.app/privkey.pem;\n";
 
-      $cfg .= "  include /usr/lib/shipard-node/etc/nginx/shn-https.conf;\n";
+      $cfg .= "  include /usr/lib/shipard-node/etc/nginx/shn-https-wpx.conf;\n";
 
       $cfg .= "  location / {\n";
       $cfg .= "    proxy_set_header X-Forwarded-For ".'$remote_addr'.";\n";
@@ -259,7 +259,7 @@ class WebProxyCfgCreator extends Utility
       $cfg .= "  ssl_certificate /etc/ssl/shipard-certs/$certId/fullchain.pem;\n";
       $cfg .= "  ssl_certificate_key /etc/ssl/shipard-certs/$certId/privkey.pem;\n";
 
-      $cfg .= "  include /usr/lib/shipard-node/etc/nginx/shn-https.conf;\n";
+      $cfg .= "  include /usr/lib/shipard-node/etc/nginx/shn-https-wpx.conf;\n";
 
       $cfg .= "  location / {\n";
       $cfg .= "    proxy_set_header X-Forwarded-For ".'$remote_addr'.";\n";
@@ -315,7 +315,7 @@ class WebProxyCfgCreator extends Utility
       $cfg .= "  ssl_certificate /etc/ssl/shipard-certs/$certId/fullchain.pem;\n";
       $cfg .= "  ssl_certificate_key /etc/ssl/shipard-certs/$certId/privkey.pem;\n";
 
-      $cfg .= "  include /usr/lib/shipard-node/etc/nginx/shn-https.conf;\n";
+      $cfg .= "  include /usr/lib/shipard-node/etc/nginx/shn-https-wpx.conf;\n";
 
       $cfg .= "  location / {\n";
       $cfg .= "    proxy_set_header X-Forwarded-For ".'$remote_addr'.";\n";
