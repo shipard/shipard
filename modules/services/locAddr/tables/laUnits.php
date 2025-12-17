@@ -138,6 +138,12 @@ class FormLAUnit extends TableForm
 			$this->addColumnInput ('cityPart2');
 			$this->addColumnInput ('city');
 			$this->addColumnInput ('laUnitId');
+
+			$this->addColumnInput ('municipalityPersonOid');
+			$this->addColumnInput ('municipalityPerson');
+			$this->addColumnInput ('wgs84lat');
+			$this->addColumnInput ('wgs84lng');
+
 		$this->closeForm ();
 	}
 }
@@ -149,5 +155,6 @@ class ViewDetailLAUnit extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
+		$this->addDocumentCard('services.locAddr.libs.dc.DCAdmUnit');
 	}
 }
