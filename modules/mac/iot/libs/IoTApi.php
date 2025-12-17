@@ -145,10 +145,23 @@ class IoTApi extends Utility
       $postData = $postDataStr;
       if (str_starts_with($topic, 'shp/sensors/'))
       { // sensor value
+        // search sensorNdx
+        $sensorNdx = 0;
+        $q = [];
+        array_push ($q, 'SELECT sensors.ndx');
+        array_push ($q, ' FROM [mac_iot_sensors] AS [sensors]');
+        array_push ($q, ' WHERE 1');
+        array_push ($q, ' AND sensors.srcMqttTopic = %s', $topic);
+        array_push ($q, ' AND sensors.docStateMain <= %i', 2);
+        $existedSensor = $this->db()->query($q)->fetch();
+        if ($existedSensor)
+          $sensorNdx = $existedSensor['ndx'];
+
         $sensorData = [
           'serverId' => $this->deviceRecData['nodeServer'],
           'sensorsData' => [
             [
+              'sensorNdx' => $sensorNdx,
               'topic' => $topic,
               'value' => $postDataStr,
               'time' => microtime(),
