@@ -108,6 +108,14 @@ class ViewLAUnits extends TableView
 			array_push ($q, ')');
     }
 
+		$qv = $this->queryValues();
+		$withoutMuniId = $qv['others']['withoutMuniId'] ?? 0;
+		if ($withoutMuniId)
+			array_push ($q, ' AND [laUnits].[municipalityPersonOid] = %s', '');
+		$withoutMuniPerson = $qv['others']['withoutMuniPerson'] ?? 0;
+		if ($withoutMuniPerson)
+			array_push ($q, ' AND [laUnits].[municipalityPerson] = %i', 0);
+
     array_push ($q, ' ORDER BY fullName, ndx');
 		array_push ($q, $this->sqlLimit());
 		$this->runQuery ($q);
@@ -115,6 +123,18 @@ class ViewLAUnits extends TableView
 
 	public function createPanelContentQry (TableViewPanel $panel)
 	{
+		$qry = [];
+
+		// -- others
+		$chbxOthers = [
+			'withoutMuniId' => ['title' => 'Bez IČ obce', 'id' => 'withoutMuniId'],
+			'withoutMuniPerson' => ['title' => 'Bez Osoby obce', 'id' => 'withoutMuniPerson']
+		];
+		$paramsOthers = new \E10\Params ($this->app());
+		$paramsOthers->addParam ('checkboxes', 'query.others', ['items' => $chbxOthers]);
+		$qry[] = ['style' => 'params', 'title' => 'Problémy', 'params' => $paramsOthers];
+
+		$panel->addContent(['type' => 'query', 'query' => $qry]);
 	}
 }
 
