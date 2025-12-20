@@ -164,7 +164,7 @@ class IoTApi extends Utility
               'sensorNdx' => $sensorNdx,
               'topic' => $topic,
               'value' => $postDataStr,
-              'time' => microtime(),
+              'time' => time() * 1000, // in milliseconds
             ],
           ]
         ];
