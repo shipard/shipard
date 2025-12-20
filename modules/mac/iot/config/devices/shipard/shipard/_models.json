@@ -61,6 +61,10 @@
 		"fn": "ETH box core",
 		"iotKind": "shib", "iotSubKind": "shib"
 	},
+	"eth-box-oli_V1": {
+		"fn": "ETH box Olimex",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
 	"uart-vm": {
 		"fn": "Prodejní automat",
 		"iotKind": "shib", "iotSubKind": "shib"
