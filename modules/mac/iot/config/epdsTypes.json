@@ -148,6 +148,45 @@
     ],
     "width": 800, "height": 480
   },
+
+  "GxEPD2_730c_GDEY073D46_6C": {
+    "fn": "GxEPD2_730c_GDEY073D46 (7.3\", 800 x 480, čb + červená, žlutá, modrá a zelená)",
+    "cntColors": 6,
+    "colors": [
+      {
+        "dither": "111111",
+        "simulated": "282828",
+        "name": "Black"
+      },
+      {
+        "dither": "F0F0F0",
+        "simulated": "e8e8e8",
+        "name": "White"
+      },
+      {
+        "dither": "FF0000",
+        "simulated": "a03030",
+        "name": "Red"
+      },
+      {
+        "dither": "FFFF00",
+        "simulated": "FFFF54",
+        "name": "Yellow"
+      },
+      {
+        "dither": "0000FF",
+        "simulated": "5098f0",
+        "name": "Blue"
+      },
+      {
+        "dither": "00FF00",
+        "simulated": "70a860",
+        "name": "Green"
+      }
+    ],
+    "width": 800, "height": 480
+  },
+
   "GxEPD2_420cy": {
     "fn": "GxEPD2_420c_y (4.2\", 400 x 300, čb + žlutá)",
     "cntColors": 3,
