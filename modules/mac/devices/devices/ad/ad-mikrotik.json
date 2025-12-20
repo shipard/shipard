@@ -50,7 +50,14 @@
 				"mkt-rb2011-uias": {"title": "RB2011UiAS-IN / RB2011UiAS-RM"},
 				"mkt-rb3011-uias": {"title": "RB3011UiAS-RM"},
 				"mkt-rb4011-igs": {"title": "RB4011iGS+RM"},
-				"mkt-rb5009-upr-s-in": {"title": "RB5009UPr+S+IN"},
+				"mkt-rb5009-upr-s-in": {
+					"title": "RB5009UPr+S+IN",
+					"ports": [
+						{"kind": 5, "count": 8, "maskId": "ether"},
+						{"kind": 6, "count": 1, "maskId": "sfp-sfpplus"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-rb5009-ug-s-in": {"title": "RB5009UG+S+IN"},
 				"mkt-rb951-ui-2hnd": {
 					"title": "RB951Ui-2HnD",
