@@ -593,4 +593,14 @@ class Wgs84
 
     return ['X' => $X, 'Y' => $Y, 'lat' => $B, 'lng'=> $L];
   }
+
+  static function computeDistance($lat1, $lng1, $lat2, $lng2, $radius = 6378137)
+  {
+    static $x = M_PI / 180;
+    $lat1 *= $x; $lng1 *= $x;
+    $lat2 *= $x; $lng2 *= $x;
+    $distance = 2 * asin(sqrt(pow(sin(($lat1 - $lat2) / 2), 2) + cos($lat1) * cos($lat2) * pow(sin(($lng1 - $lng2) / 2), 2)));
+
+    return $distance * $radius;
+  }
 }
