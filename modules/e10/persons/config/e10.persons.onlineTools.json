@@ -4,6 +4,10 @@
 		"weburl": "https://ares.gov.cz/ekonomicke-subjekty?ico=@ID"
 	},
 	{
+		"type": "oid", "country": "cz", "name": "ROS",
+		"weburl": "https://ares.gov.cz/ekonomicke-subjekty/ros/@ID"
+	},
+	{
 		"type": "oid", "country": "cz", "name": "justice.cz",
 		"weburl": "https://or.justice.cz/ias/ui/rejstrik-$firma?ico=@ID"
 	},
