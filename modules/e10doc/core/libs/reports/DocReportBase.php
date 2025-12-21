@@ -143,6 +143,8 @@ class DocReportBase extends FormReport
 		{
 			foreach ($this->data [$columnId]['lists']['properties'] as $iii)
 			{
+				$this->data [$columnId.'_identifier_'.$iii['property']] = $iii['value'];
+
 				if (!$this->personPropertyEnabled($iii))
 					continue;
 				$name = '';
@@ -302,6 +304,9 @@ class DocReportBase extends FormReport
 
 				'saAdmUnit10Id' => $r['saAdmUnit10Id'],
 				'saAdmUnit11Id' => $r['saAdmUnit11Id'],
+
+				'adrLocLon' => $r['adrLocLon'],
+				'adrLocLat' => $r['adrLocLat'],
 
 				'ids' => [],
 			];
