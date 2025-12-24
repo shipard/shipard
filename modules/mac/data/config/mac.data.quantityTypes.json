@@ -15,8 +15,34 @@
 	"22": {
 		"title": "Úroveň osvětlení", "icon": "quantityTypeLighting"
 	},
+
 	"23": {
 		"title": "Vlhkost", "icon": "quantityTypeHumidity"
+	},
+	"24": {
+		"title": "Oxid uhličitý - CO₂", "icon": "quantityTypeCO2"
+	},
+	"25": {
+		"title": "Index kvality vzduchu - AQI", "icon": "quantityTypeAQI"
+	},
+	"26": {
+		"title": "Těkavé látky - VOC", "icon": "quantityTypeVOC"
+	},
+	"27": {
+		"title": "Oxidy dusíku - NOₓ", "icon": "quantityTypeNOx"
+	},
+
+	"30": {
+		"title": "Pevné částice - PM 1.0 μm", "icon": "quantityTypePM1"
+	},
+	"31": {
+		"title": "Pevné částice - PM 2.5 μm", "icon": "quantityTypePM25"
+	},
+	"32": {
+		"title": "Pevné částice - PM 4 μm", "icon": "quantityTypePM4"
+	},
+	"33": {
+		"title": "Pevné částice - PM 10 μm", "icon": "quantityTypePM10"
 	},
 
 	"70": {
