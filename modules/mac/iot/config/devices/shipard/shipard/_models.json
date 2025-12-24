@@ -65,6 +65,10 @@
 		"fn": "ETH box Olimex",
 		"iotKind": "shib", "iotSubKind": "shib"
 	},
+	"sms50_V1": {
+		"fn": "SMS50 V1",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
 	"uart-vm": {
 		"fn": "Prodejní automat",
 		"iotKind": "shib", "iotSubKind": "shib"

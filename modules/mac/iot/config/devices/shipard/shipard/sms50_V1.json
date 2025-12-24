@@ -1,0 +1,29 @@
+{
+	"gpioLayout": "shipard/espressif/esp32-generic",
+	"enabledPins": {
+		"p21": {"title": "qwiic.sda"},
+		"p22": {"title": "qwiic.scl"}
+	},
+	"fields": {
+		"groups": [
+			{"id":  "opts", "title":  "Nastavení"}
+		],
+		"columns": [
+      {
+        "id": "i2cEnabled", "group":  "opts", "name": "Povolit i2c sběrnici", "type": "logical", "options": ["saveOnChange"]
+      }
+		]
+	},
+	"fixedIOPorts": {
+		"i2c": {
+			"type": "bus/i2c",
+			"portId": "i2c",
+
+			"pinSDA": "p21",
+			"pinSCL": "p22",
+
+			"_portDisabled": {"i2cEnabled": 0}
+		}
+	},
+	"fwId": "sms50-esp32"
+}
