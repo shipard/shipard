@@ -3,7 +3,9 @@
 		"viewers": {
 			"e10doc.waster.wasteSettings": {"default": 2},
 			"e10doc.base.wasteOrigins": {"default": 2},
-			"e10doc.base.wasteOps": {"default": 2}
+			"e10doc.base.wasteOps": {"default": 2},
+			"e10doc.waster.muniReports": {"default": 2},
+			"e10doc.waster.companiesReports": {"default": 2, "defaultIn": 2}
 		}
 	}
 }

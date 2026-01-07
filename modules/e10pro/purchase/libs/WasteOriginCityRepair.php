@@ -3,7 +3,7 @@
 namespace e10pro\purchase\libs;
 use \Shipard\Utils\Utils;
 use \Shipard\Base\Utility;
-use \e10doc\core\libs\E10Utils;
+use \Shipard\Utils\Wgs84;
 
 
 /**
@@ -11,8 +11,26 @@ use \e10doc\core\libs\E10Utils;
  */
 class WasteOriginCityRepair extends Utility
 {
-  public function repairAll($dateBegin, $dateEnd)
+  public function repairAll($wasteReturnNdx)
   {
+    $wasteReturnRecData = $this->app()->loadItem($wasteReturnNdx, 'e10doc.waster.wasteReturns');
+    if (!$wasteReturnRecData)
+    {
+      error_log("ERROR: waste return #$wasteReturnNdx not found!\n");
+      return;
+    }
+
+    $ownerOffice = $this->app()->loadItem($wasteReturnRecData['personOffice'], 'e10.persons.personsContacts');
+    if (!$ownerOffice)
+    {
+      error_log("ERROR: owner office #{$wasteReturnRecData['personOffice']} not found!\n");
+      return;
+    }
+
+    $year = $wasteReturnRecData['year'];
+    $dateBegin = Utils::createDateTime("$year-01-01");
+    $dateEnd = Utils::createDateTime("$year-12-31");
+
     $q = [];
     array_push($q, 'SELECT heads.*');
     array_push($q, ' FROM [e10doc_core_heads] AS [heads]');
@@ -31,7 +49,7 @@ class WasteOriginCityRepair extends Utility
 
       if ($r['personType'] === 1)
       { // citizen
-        $wasteOriginAdmUnit = 0;
+        $wasteOriginAdmUnitNdx = 0;
         if (!$r['wasteOriginAdmUnit'])
         {
           $addr = NULL;
@@ -47,15 +65,46 @@ class WasteOriginCityRepair extends Utility
             { // outside CZ
               $addr = $this->app()->loadItem($r['ownerOffice'], 'e10.persons.personsContacts');
               if ($addr !== NULL)
-                $wasteOriginAdmUnit = $addr['saAdmUnit11Ndx'];
+                $wasteOriginAdmUnitNdx = $addr['saAdmUnit11Ndx'];
             }
             else
-              $wasteOriginAdmUnit = $addr['saAdmUnit11Ndx'];
-          }
+              $wasteOriginAdmUnitNdx = $addr['saAdmUnit11Ndx'];
 
-          if ($wasteOriginAdmUnit)
-            $this->db()->query('UPDATE e10doc_core_heads SET wasteOriginAdmUnit = %i WHERE ndx = %i', $wasteOriginAdmUnit, $r['ndx']);
+            // check distance
+            if ($wasteReturnRecData['muniDistanceLimit'])
+            {
+              $admUnitRecData = $this->app()->loadItem($wasteOriginAdmUnitNdx, 'e10.world.admUnits');
+              if ($admUnitRecData)
+              {
+                $distance = intval(round(Wgs84::computeDistance($ownerOffice['adrLocLat'], $ownerOffice['adrLocLon'], $admUnitRecData['wgs84lat'], $admUnitRecData['wgs84lng']) / 1000, 0));
+                if ($distance > $wasteReturnRecData['muniDistanceLimit'])
+                {
+                  //echo "  -- distance $distance km exceeds limit ".$wasteReturnRecData['muniDistanceLimit']." km, skipping\n";
+                  $wasteOriginAdmUnitNdx = $ownerOffice['saAdmUnit11Ndx'];
+                }
+              }
+            }
+          }
         }
+        else
+        { // check existing max distance
+          if ($wasteReturnRecData['muniDistanceLimit'])
+          {
+            $admUnitRecData = $this->app()->loadItem($r['wasteOriginAdmUnit'], 'e10.world.admUnits');
+            if ($admUnitRecData)
+            {
+              $distance = intval(round(Wgs84::computeDistance($ownerOffice['adrLocLat'], $ownerOffice['adrLocLon'], $admUnitRecData['wgs84lat'], $admUnitRecData['wgs84lng']) / 1000.0, 0));
+              if ($distance > $wasteReturnRecData['muniDistanceLimit'])
+              {
+                //echo "  -- distance $distance km exceeds limit ".$wasteReturnRecData['muniDistanceLimit']." km, skipping\n";
+                $wasteOriginAdmUnitNdx = $ownerOffice['saAdmUnit11Ndx'];
+              }
+            }
+          }
+        }
+
+        if ($wasteOriginAdmUnitNdx)
+          $this->db()->query('UPDATE e10doc_core_heads SET wasteOriginAdmUnit = %i ', $wasteOriginAdmUnitNdx, ' WHERE ndx = %i', $r['ndx']);
       }
     }
   }

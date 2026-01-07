@@ -2,10 +2,11 @@
 
 namespace e10pro\reports\waste_cz\libs;
 
-
 use \Shipard\Utils\Utils;
 use \Shipard\Utils\World;
+use \Shipard\Utils\Wgs84;
 use \e10pro\reports\waste_cz\libs\WasteReturnEngine;
+
 
 /**
  * class ReportWasteCitizens
@@ -45,6 +46,10 @@ class ReportWasteCitizens extends \e10doc\core\libs\reports\GlobalReport
     {
       $this->addParam('switch', 'limitDistance', ['title' => 'Omezit vzdálenost', 'switch' => ['0' => 'Ne', '10' => '10 km', '15' => '15 km', '20' => '20 km', '25' => '25 km', '30' => '30 km', '40' => '40 km', '50' => '50 km', '60' => '60 km', '70' => '70 km', '80' => '80 km', '90' => '90 km', '100' => '100 km'], 'defaultValue' => '0']);
       $this->addParam('switch', 'limitKG', ['title' => 'Limit', 'switch' => ['0' => 'Ne', '100' => '100 kg', '250' => '250 kg', '500' => '500 kg', '1000' => '1 tuna', '5000' => '5 tun'], 'defaultValue' => '0']);
+    }
+    if ($this->subReportId === 'citizensCities3')
+    {
+      $this->addParam('switch', 'limitDistance', ['title' => 'Omezit vzdálenost', 'switch' => ['0' => 'Ne', '10' => '10 km', '15' => '15 km', '20' => '20 km', '25' => '25 km', '30' => '30 km', '40' => '40 km', '50' => '50 km', '60' => '60 km', '70' => '70 km', '80' => '80 km', '90' => '90 km', '100' => '100 km'], 'defaultValue' => '0']);
     }
 
 		parent::init();
@@ -89,6 +94,7 @@ class ReportWasteCitizens extends \e10doc\core\libs\reports\GlobalReport
 			case 'citizensSum': $this->createContent_CitizensSum (); break;
 			case 'citizensCities': $this->createContent_CitizensCities (); break;
       case 'citizensCities2': $this->createContent_CitizensCities2 (); break;
+      case 'citizensCities3': $this->createContent_CitizensCities3 (); break;
 		}
 	}
 
@@ -407,9 +413,153 @@ class ReportWasteCitizens extends \e10doc\core\libs\reports\GlobalReport
       ]]);
     }
 
-		$this->addContent (['type' => 'table', 'header' => $header, 'table' => $data, 'main' => TRUE]);
+		$this->addContent ([
+      'type' => 'table', 'header' => $header, 'table' => $data,
+      'main' => TRUE,
+      'params' => ['tableClass' => 'e10-print-small default stripped']
+    ]);
 
-		$this->setInfo('title', 'Odběr odpadů od občanů za obce');
+		$this->setInfo('title', 'Odběr odpadů od občanů za obce 678');
+  }
+
+  public function createContent_CitizensCities3()
+  {
+    $cntWrongRows = 0;
+    $this->limitDistance = intval($this->reportParams ['limitDistance']['value'] ?? '0');
+    $this->limitKG = intval($this->reportParams ['limitKG']['value'] ?? '0');
+
+    $q = [];
+    array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG,');
+    array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
+    //array_push ($q, ' addrs.saAdmUnit11Id, addrs.adrCity, addrs.adrZipCode, addrs.adrLocLat, addrs.adrLocLon, addrs.adrLocState, addrs.adrCountry,');
+    array_push ($q, ' admUnits.admUnitId, admUnits.fullName AS admUnitName, admUnits.wgs84lat, admUnits.wgs84lng,');
+    array_push ($q, ' admUnits.municipalityPersonOid,');
+    array_push ($q, ' ownerOffices.adrLocLat AS ownerAdrLocLat, ownerOffices.adrLocLon AS ownerAdrLocLon');
+		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
+    array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
+    array_push ($q, ' LEFT JOIN [e10doc_core_heads] AS heads ON [rows].document = heads.ndx');
+    array_push ($q, ' LEFT JOIN [e10_world_admUnits] AS admUnits ON [heads].wasteOriginAdmUnit = admUnits.ndx');
+    array_push ($q, ' LEFT JOIN [e10_persons_personsContacts] AS ownerOffices ON [heads].ownerOffice = ownerOffices.ndx');
+		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
+		array_push ($q, ' AND [rows].personType = %i', 1);
+    array_push ($q, ' AND [rows].[dir] = %i', 0);
+    array_push ($q, ' AND [heads].[docState] = %i', 4000);
+    if ($this->periodBegin)
+      array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
+    if ($this->periodEnd)
+      array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
+
+    array_push ($q, ' GROUP BY admUnits.admUnitId, wasteCodeNomenc');
+    array_push ($q, ' ORDER BY admUnits.fullName, admUnits.admUnitId, wasteCodeNomenc');
+
+		$rows = $this->app->db()->query ($q);
+    $header = [
+      '#' => '#',
+      'admUnitId' => '_IČZUJ',
+      'city' => '_Obec',
+      'cityId' => 'IČ obce',
+      'dist' => ' Vzdál. KM',
+      'totalKG' => '+Celkem kg',
+    ];
+
+		$data = [];
+		forEach ($rows as $r)
+		{
+      $wrong = 0;
+
+      $this->officeLat = $r['ownerAdrLocLat'];
+      $this->officeLon = $r['ownerAdrLocLon'];
+
+      $cityId = $r['adrCountry'].'_'.$r['admUnitId'];
+      $admUnitId = $r['admUnitId'];
+
+      $cityName = $r['admUnitName'];
+      $distance = intval(round(Wgs84::computeDistance($r['wgs84lat'], $r['wgs84lng'], $this->officeLat, $this->officeLon) / 1000, 0));
+
+      if ($admUnitId == 0)
+      {
+        $cityId = '__OTHER__NOADMUNIT11__.'.$cityName;
+        $cityName = 'Chybí IČZUJ '.$cityName;
+        $wrong = 1;
+      }
+      else
+      if ($this->limitDistance && $distance > $this->limitDistance)
+      {
+        //if (!$this->limitKG || $r['quantityKG'] < $this->limitKG)
+        {
+          $cityId = '__OTHER__OVERDISTANCE__';
+          $cityName = 'OSTATNÍ MIMO LIMIT';
+          $admUnitId = '---';
+        }
+      }
+
+      if (!isset($data[$cityId]))
+      {
+        $cityLabels = [];
+
+        if ($r['wgs84lat'] != 0.0 && $r['wgs84lng'] != 0.0 && $cityId !== '__OTHER__OVERDISTANCE__')
+        {
+          $cityLabels[] = [
+            'type' => 'action', 'action' => 'open-popup',
+            'element' => 'span',
+            'data-popup-url' => 'https://mapy.cz/fnc/v1/showmap?center='.$r['wgs84lng'].','.$r['wgs84lat'].'&zoom=12'.'&marker=true',
+            'data-popup-width' => '0.9', 'data-popup-height' => '0.8',
+            'text' => '',
+            'icon' => 'system/iconMapMarker',
+            'class' => 'e10-me', 'btnClass' => '',
+          ];
+        }
+
+        $cityLabels[] = ['text' => $cityName, 'class' => ''];
+
+        $data[$cityId] = [
+          'city' => $cityLabels,
+          'admUnitId' => $admUnitId,
+          'dist' => $distance,
+          'totalKG' => 0.0,
+        ];
+
+        if ($r['municipalityPersonOid'] && $r['municipalityPersonOid'] !== '')
+          $data[$cityId]['cityId'] = ['text' => $r['municipalityPersonOid'], 'class' => 'e10-small'];
+
+        if ($wrong)
+          $data[$cityId]['_options']['class'] = 'e10-error';
+        if ($cityId === '__OTHER__OVERDISTANCE__')
+          $data[$cityId]['_options']['class'] = 'e10-warning1';
+      }
+
+
+      $wid = $r['itemId'];
+      if (!isset($header[$wid]))
+        $header[$wid] = '+'.$r['itemId']/*.': '.$r['fullName']*/;
+
+      if (!isset($data[$cityId][$wid]))
+        $data[$cityId][$wid] = $r['quantityKG'];
+      else
+        $data[$cityId][$wid] += $r['quantityKG'];
+
+      $data[$cityId]['totalKG'] += $r['quantityKG'];
+
+      if ($wrong)
+        $cntWrongRows++;
+		}
+
+    if ($cntWrongRows)
+    {
+      $this->addContent (['type' => 'line', 'line' => [
+        'text' => 'Upozornění: Zvýrazněné řádky obsahují chyby v adresách (výkupy bez IČZUJ)',
+        'class' => 'e10-error padd5 block h2 mb1',
+      ]]);
+    }
+
+		$this->addContent ([
+      'type' => 'table', 'header' => $header, 'table' => $data,
+      'main' => TRUE,
+      'params' => ['tableClass' => 'e10-print-small default stripped']
+    ]);
+
+		$this->setInfo('title', 'Odběr odpadů od občanů za obce 678');
   }
 
   public function subReportsList ()
@@ -418,6 +568,7 @@ class ReportWasteCitizens extends \e10doc\core\libs\reports\GlobalReport
     $d[] = ['id' => 'citizensSum', 'icon' => 'system/personHuman', 'title' => 'Občané'];
     $d[] = ['id' => 'citizensCities', 'icon' => 'system/iconMapMarker', 'title' => 'Občané podle obcí'];
     $d[] = ['id' => 'citizensCities2', 'icon' => 'system/iconMapMarker', 'title' => 'Občané podle obcí 2'];
+    $d[] = ['id' => 'citizensCities3', 'icon' => 'system/iconMapMarker', 'title' => 'Občané podle obcí 3'];
 
 		return $d;
 	}

@@ -3,7 +3,7 @@
   "name": "Hlášení o odpadech",
   "extensions": ["waster"],
   "tables": [
-		"wasteSettings", "wasteOps", "wasteReturns"
+		"wasteSettings", "wasteOps", "wasteReturns", "muniReports", "companiesReports"
   ],
   "config": [
     {"id": "+appSkeleton", "file": "appSkeleton.json"},

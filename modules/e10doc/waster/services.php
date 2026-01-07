@@ -24,11 +24,40 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$wre->run();
 	}
 
+	protected function createMuniReports()
+	{
+		$wasteReturn = intval($this->app->arg('wasteReturn'));
+		if (!$wasteReturn)
+		{
+			echo "ERROR: param `--wasteReturn=' not found...\n";
+			return;
+		}
+
+		$engine = new \e10doc\waster\libs\MuniReportsCreator($this->app);
+		$engine->createAll($wasteReturn);
+	}
+
+	protected function createCompaniesReportsIn()
+	{
+		$wasteReturn = intval($this->app->arg('wasteReturn'));
+		if (!$wasteReturn)
+		{
+			echo "ERROR: param `--wasteReturn=' not found...\n";
+			return;
+		}
+
+		$engine = new \e10doc\waster\libs\CompaniesReportsCreator($this->app);
+		$engine->createAll($wasteReturn);
+	}
+
+
 	public function onCliAction ($actionId)
 	{
 		switch ($actionId)
 		{
 			case 'reset-waste-ops': return $this->resetWasteOps();
+			case 'create-muni-reports': return $this->createMuniReports();
+			case 'create-companies-reports-in': return $this->createCompaniesReportsIn();
 		}
 
 		return parent::onCliAction($actionId);

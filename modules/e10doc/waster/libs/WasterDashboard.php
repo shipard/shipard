@@ -25,7 +25,7 @@ class WasterDashboard extends WidgetBoard
 	public function init ()
 	{
 		$this->addParam ('calendarMonth', 'fiscalYear', ['flags' => ['enableAll', 'years']]);
-		$this->createTabs();
+		//$this->createTabs();
 		parent::init();
 
 		$this->fiscalYear = intval($this->reportParams ['fiscalYear']['value']);

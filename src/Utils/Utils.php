@@ -1005,6 +1005,8 @@ class Utils
 			$t .= " data-table='{$p['table']}'";
 		if (isset($p['data-table']))
 			$t .= " data-table='{$p['data-table']}'";
+		if (isset($p['data-class']))
+			$t .= " data-class='{$p['data-class']}'";
 
 		return $t;
 	}

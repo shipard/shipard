@@ -1,0 +1,14 @@
+{{textMode}}{{#data.reportTexts.emailBody}}{{{data.reportTexts.emailBody}}}{{/data.reportTexts.emailBody}}
+{{^data.reportTexts.emailBody}}
+{{@dict;Dobrý den}},
+
+{{@dict;v příloze Vám zasíláme oznámení o převzatých komunálních odpadech za rok}} {{data.wasteReturn.year}}.
+
+{{@dict;S pozdravem}}
+
+--
+{{data.ownerPerson.fullName}}
+{{#data.owner_contacts}}
+{{name}}: {{value}}
+{{/data.owner_contacts}}
+{{/data.reportTexts.emailBody}}

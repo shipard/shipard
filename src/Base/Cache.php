@@ -24,6 +24,8 @@ class Cache extends BaseObject
 		if (!count($i) || $force)
 		{
 			$o = $this->app->createObject($classId);
+			if (!$o)
+				return ['data' => []];
 			$o->createData();
 			$i = ['data' => $o->data];
 			$this->redis->hSet ($keyId, 'data', json_encode($o->data));

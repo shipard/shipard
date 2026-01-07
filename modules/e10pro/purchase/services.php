@@ -120,7 +120,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$engine->createLogRecords($dateBegin, $dateEnd);
 	}
 
-	protected function wasteOriginCityRepair()
+	protected function createWasteInfoIn()
 	{
 		$dateBegin = Utils::createDateTime($this->app->arg('dateBegin'));
 		if (!$dateBegin)
@@ -142,8 +142,21 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			return;
 		}
 
+		$engine = new \e10pro\purchase\libs\WasteInfoInCreator($this->app);
+		$engine->createAll($dateBegin, $dateEnd);
+	}
+
+	protected function wasteOriginCityRepair()
+	{
+		$wasteReturn = intval($this->app->arg('wasteReturn'));
+		if (!$wasteReturn)
+		{
+			echo "ERROR: param `--wasteReturn=' not found...\n";
+			return;
+		}
+
 		$engine = new \e10pro\purchase\libs\WasteOriginCityRepair($this->app);
-		$engine->repairAll($dateBegin, $dateEnd);
+		$engine->repairAll($wasteReturn);
 	}
 
 	public function onCronHourly ()
@@ -173,6 +186,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			case 'send-waste-report-persons': return $this->sendWasteReportPersons();
 			case 'create-op-log-records': return $this->createOperationalLogRecords();
+			case 'create-waste-info-in': return $this->createWasteInfoIn();
 			case 'waste-origin-city-repair': return $this->wasteOriginCityRepair();
 		}
 

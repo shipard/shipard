@@ -40,5 +40,11 @@
         "fa6pro":"fa-circle",
         "bsi":"bi-circle-fill",
         "mdi":""
-    }
+    },
+	"tables/e10doc.waster.muniReports":{
+			"fa5":"fa-city",
+			"fa6pro":"fa-university",
+			"bsi":"bi-bank",
+			"mdi":"account_balance"
+	}
 }

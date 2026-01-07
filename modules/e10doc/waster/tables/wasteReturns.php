@@ -96,6 +96,7 @@ class FormWasteReturn extends TableForm
 					$this->addColumnInput ('dateFrom');
 					$this->addColumnInput ('dateTo');
 					$this->addColumnInput ('title');
+					$this->addColumnInput ('tabTitle');
 					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('person');
 					$this->addColumnInput ('personORPId');
@@ -113,6 +114,11 @@ class FormWasteReturn extends TableForm
 					$this->addColumnInput ('authorEmail');
 					$this->addColumnInput ('authorPhonePrefix');
 					$this->addColumnInput ('authorPhone');
+
+					$this->addSeparator(self::coH4);
+					$this->addColumnInput ('muniDistanceLimit');
+
+					$this->addSeparator(self::coH4);
 					$this->addColumnInput ('municipalityData');
 				$this->closeTab();
 				$this->openTab (TableForm::ltNone);

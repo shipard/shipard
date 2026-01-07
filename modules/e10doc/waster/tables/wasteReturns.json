@@ -8,6 +8,7 @@
 		{"id": "dateTo", "name": "Datum do", "type": "date"},
 
     {"id": "title", "name": "Název", "type": "string", "len": 80},
+    {"id": "tabTitle", "name": "Zkratka", "type": "string", "len": 30},
 
     {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons"},
     {"id": "personORPId", "name": "ORP sídla", "type": "string", "len": 10},
@@ -24,6 +25,8 @@
 		{"id": "authorEmail", "name": "Autor - e-mail", "label": "E-mail", "type": "string", "len": 80},
 		{"id": "authorPhonePrefix", "name": "Autor - předvolba telefonu", "label": "Předvolba telefonu", "placeholder": "+420", "type": "string", "len": 25},
 		{"id": "authorPhone", "name": "Autor - telefon", "label": "Telefon", "placeholder": "123 456 789", "type": "string", "len": 25},
+
+		{"id": "muniDistanceLimit", "name": "Max. vzdálenost obce od provozovny", "type": "int"},
 
 		{"id": "municipalityData", "name": "Data obce", "type": "int", "reference": "e10.base.attachments"},
 
@@ -46,5 +49,6 @@
 			"id": "wasteReturn", "name": "Hlášení", "class": "e10doc.waster.libs.ReportWasteReturn",  "email": 1, "dropdown": 1
 		}
 	],
-	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"}
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "title"}
 }

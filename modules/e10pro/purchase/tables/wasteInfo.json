@@ -1,0 +1,37 @@
+{
+  "id": "e10pro.purchase.wasteInfo", "sql": "e10pro_purchase_wasteInfo", "name": "Informace o odpadech",
+  "columns": [
+    {"id": "ndx", "name": "id", "type": "int_ai"},
+    {"id": "person", "name": "Osoba", "type": "int", "reference": "e10.persons.persons", "options": ["saveOnChange"]},
+    {"id": "personOffice", "name": "Pobočka", "type": "int", "reference": "e10.persons.personsContacts", "comboViewer": "combo"},
+
+		{"id": "addressMode", "name": "Informace pro", "type": "enumInt", "options": ["saveOnChange"],
+			"enumValues": {"0": "Provozovna", "1": "ORP"}},
+    {"id": "personNomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"},
+
+    {"id": "validFrom", "name": "Platné od", "type": "date"},
+    {"id": "validTo", "name": "Platné do", "type": "date"},
+
+		{"id": "wasteCodeText", "name": "Kód", "type": "string", "len": 20},
+		{"id": "wasteCodeNomenc", "name": "Kat. číslo odpadu", "type": "int", "reference": "e10.base.nomencItems"},
+
+    {"id": "srcDocument", "name": "Doklad", "type": "int", "reference": "e10doc.core.heads"},
+
+    {"id": "owner", "name": "Vlastní Osoba", "type": "int", "reference": "e10.persons.persons"},
+    {"id": "ownerOffice", "name": "Vlastní Pobočka", "type": "int", "reference": "e10.persons.personsContacts", "comboViewer": "combo"},
+
+		{"id": "sentState", "name": "Stav odeslání", "type": "enumInt",
+			"enumValues": {"0": "Neodesláno", "1": "Odesílá se", "2": "Odesláno"}},
+		{"id": "sentDate", "name": "Datum a čas odeslání", "type": "timestamp"},
+
+    {"id": "docState", "name": "Stav", "type": "int"},
+    {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+  ],
+  "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+  "views": [
+    {"id": "default", "class": "e10pro.purchase.ViewWasteInfo", "detail": "e10pro.purchase.ViewDetailWasteInfo"}
+  ],
+  "forms": [
+    {"id": "default", "class": "e10pro.purchase.FormWasteInfo"}
+  ]
+}

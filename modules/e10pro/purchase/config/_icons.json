@@ -5,6 +5,13 @@
 		"bsi": "bi-book",
 		"mdi": "auto_stories"
 	},
+	"tables/e10pro.purchase.wasteInfo":
+	{
+		"fa5": "fa-file-alt",
+		"fa6pro": "fa-file-alt",
+		"bsi": "bi-file-earmark-text-fill",
+		"mdi": "description"
+	},
 	"iconPriceList":{
 		"fa5": "fa-dollar-sign",
 		"fa6pro": "fa-usd-square",

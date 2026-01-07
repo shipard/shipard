@@ -35,6 +35,22 @@
 				}
 			}
 		}
-
-  }
+	},
+  {
+    "table": "e10.persons.persons",
+    "views": {
+      "wasteCompaniesIn": {
+				"id": "wasteCompaniesIn", "class": "e10doc.waster.libs.ViewWasteCompaniesIn",
+				"details": {
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.waster.libs.ViewDetailCompanyIn", "order": 1000}
+				}
+			},
+      "wasteCompaniesOut": {
+				"id": "wasteCompaniesOut", "class": "e10doc.waster.libs.ViewWasteCompaniesOut",
+				"details": {
+					"detail": {"title": "Přehled", "icon": "system/detailDetail", "type": "detail", "class": "e10doc.waster.libs.ViewDetailCompanyOut", "order": 1000}
+				}
+			}
+		}
+	}
 ]

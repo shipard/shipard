@@ -414,7 +414,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 		$this->addContent (
       [
         'type' => 'table', 'header' => $h, 'table' => $this->partners, 'main' => TRUE,
-        'params' => ['tableClass' => 'e10-print-small default']
+        'params' => ['tableClass' => 'e10-print-small default stripped']
       ]);
   }
 

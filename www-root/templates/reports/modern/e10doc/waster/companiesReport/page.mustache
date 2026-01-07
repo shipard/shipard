@@ -1,0 +1,120 @@
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+	<title>OBEC {{data.head.year}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<link rel="stylesheet" href="{{dsUrl}}www-root/templates/reports/modern/style-modern.css?16" type="text/css"/>
+</head>
+<body>
+
+	<table class="infoSecondary">
+		<tr>
+			<td class="supplier">
+				<span class='hdr' id="supplier-address-hdr">{{@dict;Provozovatel}} NAZDAR!:</span>
+				{{#data.reportTexts.supplierAndContacts}}{{{data.reportTexts.supplierAndContacts}}}{{/data.reportTexts.supplierAndContacts}}
+					{{^data.reportTexts.supplierAndContacts}}
+					<span class='address' id="supplier-address-box">
+						{{#data.reportTexts.supplier}}{{{data.reportTexts.supplier}}}<br>{{/data.reportTexts.supplier}}
+						{{^data.reportTexts.supplier}}
+							<span class='title'>{{data.ownerPerson.fullName}}</span>
+							{{#data.ownerPerson.address.specification}}
+								{{data.ownerPerson.address.specification}}<br/>
+							{{/data.ownerPerson.address.specification}}
+							{{data.ownerPerson.address.street}}<br/>
+							{{^data.flags.foreignCountry}}
+								{{data.ownerPerson.address.zipcode}} {{data.ownerPerson.address.city}}<br/>
+							{{/data.flags.foreignCountry}}
+							{{#data.flags.foreignCountry}}
+								{{data.ownerPerson.address.zipcode}} {{data.ownerPerson.address.city}}<br/>
+								{{data.ownerPerson.address.countryNameEng}}
+							{{/data.flags.foreignCountry}}
+
+							</span>
+						{{/data.reportTexts.supplier}}
+							{{#data.reportTexts.contacts}}{{{data.reportTexts.contacts}}}{{/data.reportTexts.contacts}}
+							{{^data.reportTexts.contacts}}
+								{{#data.ownerPerson_identifiers}}
+									<b>{{@dict;dataItem:name}}:</b> {{value}}
+								{{/data.ownerPerson_identifiers}}<br>
+
+								<small>{{cfgItem.options.core.ownerLegalRegInfo}}</small>
+							{{/data.reportTexts.contacts}}
+						{{/data.reportTexts.supplierAndContacts}}
+			</td>
+
+			<td class="customer">
+				<div class='hdr'>{{@dict;Obec}}:<small class='pull-right'>#{{data.companyPerson.id}}</small></div>
+				<span class='title'>{{data.companyPerson.fullName}}</span>
+				<span class='address'>
+					{{#data.companyPerson.address.specification}}
+						{{data.companyPerson.address.specification}}<br/>
+					{{/data.companyPerson.address.specification}}
+					{{data.companyPerson.address.street}}<br/>
+					{{^data.flags.foreignCountry}}
+						{{data.companyPerson.address.zipcode}} {{data.companyPerson.address.city}}<br/>
+					{{/data.flags.foreignCountry}}
+					{{#data.flags.foreignCountry}}
+						{{data.companyPerson.address.zipcode}} {{data.companyPerson.address.city}}<br/>
+						{{data.companyPerson.address.countryNameEng}}
+					{{/data.flags.foreignCountry}}
+				</span>
+
+				{{#data.companyPerson_identifiers}}
+					<b>{{@dict;dataItem:name}}:</b> {{value}}
+				{{/data.companyPerson_identifiers}}
+
+				{{#data.companyPerson.address.saAdmUnit11Id}}<b>IČZUJ: </b>{{data.companyPerson.address.saAdmUnit11Id}}{{/data.companyPerson.address.saAdmUnit11Id}}
+			</td>
+		</tr>
+	</table>
+
+	<table class="additionalAddresses">
+		<tr>
+			<td>
+				<span class='hdr'>{{@dict;Zařízení}}:</span>
+				<span class='address'>
+						{{#data.ownerPerson.ownerOffice.specification}}
+							{{data.ownerPerson.ownerOffice.specification}}<br/>
+						{{/data.ownerPerson.ownerOffice.specification}}
+						{{data.ownerPerson.ownerOffice.street}}<br/>
+						{{^data.flags.foreignCountry}}
+							{{data.ownerPerson.ownerOffice.zipcode}} {{data.ownerPerson.ownerOffice.city}}<br/>
+						{{/data.flags.foreignCountry}}
+						{{#data.flags.foreignCountry}}
+							{{data.ownerPerson.ownerOffice.zipcode}} {{data.ownerPerson.ownerOffice.city}}<br/>
+							{{data.ownerPerson.ownerOffice.countryNameEng}}
+						{{/data.flags.foreignCountry}}
+				</span>
+
+				{{#data.ownerPerson.ownerOffice.ids}}
+					<b>{{title}}:</b> {{value}}
+				{{/data.ownerPerson.ownerOffice.ids}}
+
+				<b>IČZUJ: </b>{{data.ownerPerson.ownerOffice.saAdmUnit11Id}}
+			</td>
+
+			<td>
+			</td>
+		</tr>
+	</table>
+
+	<hr/>
+	Název: {{data.ownerPerson.fullName}}<br/>
+	IČO: {{data.ownerPerson_identifier_oid}}<br/>
+	IČZ: {{data.ownerPerson.office.id2}}<br/>
+	Ulice: {{data.ownerPerson.office.saStreetName}}<br/>
+	Obec: {{data.ownerPerson.office.saCityName}}<br/>
+	<hr/>
+
+	Odpady:<br>
+	{{{@renderContent;dataItem:data.wasteRows;tableClass:rows}}}
+	<br/>
+
+	Oznámení vyplnil: <br>
+	Datum: {{@date}}<br/>
+	Jméno a příjmení: {{data.wasteReturn.authorFirstName}} {{data.wasteReturn.authorLastName}}<br/>
+	Telefon: {{data.wasteReturn.authorPhonePrefix}} {{data.wasteReturn.authorPhone}}<br/>
+	E-mail: {{data.wasteReturn.authorEmail}}<br/>
+
+</body>
+</html>

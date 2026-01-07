@@ -1,53 +1,59 @@
 {
 	"panels": {
-		"others": {
+		"buy": {
 			"items": {
-				"waster": {
-					"t1": "Odpady", "object": "subMenu", "icon": "system/actionRecycle",
-					"order": 9800000,
+					"wastelps": {"t1": "Odpadové protokoly", "object": "viewer", "table": "e10doc.core.heads", "viewer": "wastelps", "icon": "system/actionRecycle", "order": 700000}
+			}
+		},
+		"waster": {
+			"url": "/app/waster", "zone": "sec", "objectType": "panel", "name": "Odpady", "cntBigIcons": 7, "order": 1500000,
+			"items": {
+				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-waster", "icon": "system/iconReports", "order": 100000},
+
+				"companiesIn": {"t1": "Firmy Příjem", "object": "viewer", "table": "e10doc.waster.companiesReports", "viewer": "defaultIn", "icon": "system/personCompany", "order": 111000},
+				"companiesOur": {"t1": "Firmy Výdej", "object": "viewer", "table": "e10.persons.persons", "viewer": "wasteCompaniesOut", "order": 112000},
+				"muniReports": {"t1": "Obce", "object": "viewer", "table": "e10doc.waster.muniReports", "viewer": "default", "order": 113000},
+
+				"wasteJournal": {"t1": "Deník", "object": "viewer", "table": "e10pro.reports.waste_cz.returnRows", "viewer": "default", "order": 121000},
+
+				"addresses": {
+					"t1": "Adresy", "object": "viewer", "table": "e10.persons.personsContacts", "icon": "system/iconMapMarker", "viewer": "technicalAddress", "order": 965000
+				},
+
+				"pioIn": {"t1": "PIO", "object": "viewer", "table": "e10pro.purchase.wasteInfo", "viewer": "default", "order": 220000},
+
+				"settings": {
+					"t1": "Nastavení", "object": "subMenu", "icon": "system/iconSettings",
+					"order": 9900000,
 					"subMenu": {
 						"items": {
-							"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-waster", "icon": "system/iconReports", "order": 100000},
-							"wasteOps": {"t1": "Pohyby odpadů", "object": "viewer", "table": "e10doc.waster.wasteOps", "viewer": "default", "order": 110000},
-							"returns": {"t1": "Hlášení", "object": "viewer", "table": "e10doc.waster.wasteReturns", "viewer": "default", "order": 120000},
-							"wasteJournal": {"t1": "Deník", "object": "viewer", "table": "e10pro.reports.waste_cz.returnRows", "viewer": "default", "order": 121000},
-							"wasteOrigins": {"t1": "Původ odpadů", "object": "viewer", "table": "e10doc.base.wasteOrigins", "viewer": "default", "order": 801000, "beforeSeparator":  {"text": "Nastavení", "class": "block pl05 pt1", "icon": "submenu/management"}},
-							"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
-										"viewer": "default", "order": 910000, "disabledCfgItem": "options.experimental.witemsNewViewer"},
-							"witems2": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
-										"viewer": "byCategories", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
-							"itemCodes": {"t1": "Kódy položek", "object": "viewer", "table": "e10.witems.itemCodes", "viewer": "default", "order": 918000},
-
-							"itemsGroups": {
-								"t1": "Skupiny položek", "object": "viewer", "table": "e10.witems.itemsGroups",
-								"viewer": "default", "order": 920001,
-								"beforeSeparator":  {"text": "Skupiny položek", "class": "block pl05 pt1", "icon": "submenu/management"}
-							},
+							"admUnits": {"t1": "Adm. členění", "object": "viewer", "table": "e10.world.admUnits", "viewer": "default", "order": 965100},
 							"itemsGroupsItems": {
 								"t1": "Položky skupin", "object": "viewer", "table": "e10.witems.itemsGroupsItems",
 								"viewer": "default", "order": 921000
 							},
-
-							"addresses": {
-								"t1": "Adresy", "object": "viewer", "table": "e10.persons.personsContacts", "icon": "system/iconMapMarker", "viewer": "technicalAddress", "order": 965000,
-								"beforeSeparator":  {"text": "Adresy", "class": "block pl05 pt1", "icon": "submenu/management"}
-							},
-							"admUnits": {"t1": "Adm. členění", "object": "viewer", "table": "e10.world.admUnits", "viewer": "default", "order": 965100},
-
-							"wd": {
-								"t1": "Odpady²",
-								"object": "widget", "class": "e10.widgetDashboard", "subclass": "waster",
-								"icon": "system/iconBalance", "order": 900010,
-								"enabledCfgItem": "options.experimental.DISABLED"
+							"itemCodes": {"t1": "Kódy položek", "object": "viewer", "table": "e10.witems.itemCodes", "viewer": "default", "order": 918000},
+							"wasteOrigins": {"t1": "Původ odpadů", "object": "viewer", "table": "e10doc.base.wasteOrigins", "viewer": "default", "order": 801000},
+							"witems": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
+										"viewer": "default", "order": 910000, "disabledCfgItem": "options.experimental.witemsNewViewer"},
+							"wasteOps": {"t1": "Pohyby odpadů", "object": "viewer", "table": "e10doc.waster.wasteOps", "viewer": "default", "order": 110000},
+							"returns": {"t1": "Hlášení", "object": "viewer", "table": "e10doc.waster.wasteReturns", "viewer": "default", "order": 120000},
+							"witems2": {"t1": "Položky", "object": "viewer", "table": "e10.witems.items",
+										"viewer": "byCategories", "order": 910000, "enabledCfgItem": "options.experimental.witemsNewViewer"},
+							"itemsGroups": {
+								"t1": "Skupiny položek", "object": "viewer", "table": "e10.witems.itemsGroups",
+								"viewer": "default", "order": 920001
 							}
 						}
 					}
+				},
+
+				"wd": {
+					"t1": "Odpady²",
+					"object": "widget", "class": "e10.widgetDashboard", "subclass": "waster",
+					"icon": "system/iconBalance", "order": 900010,
+					"enabledCfgItem": "options.experimental.DISABLED"
 				}
-			}
-		},
-		"buy": {
-			"items": {
-					"wastelps": {"t1": "Odpadové protokoly", "object": "viewer", "table": "e10doc.core.heads", "viewer": "wastelps", "icon": "system/actionRecycle", "order": 700000}
 			}
 		}
 	}

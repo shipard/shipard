@@ -274,6 +274,23 @@ class TablePersonsContacts extends DbTable
 		return $txt;
 	}
 
+	public function addressTextRow($recData)
+	{
+      if ($recData['adrSpecification'] != '')
+        $ap[] = $recData['adrSpecification'];
+      if ($recData['adrStreet'] != '')
+        $ap[] = $recData['adrStreet'];
+      if ($recData['adrCity'] != '')
+        $ap[] = $recData['adrCity'];
+      if ($recData['adrZipCode'] != '')
+        $ap[] = $recData['adrZipCode'];
+
+      $country = World::country($this->app(), $recData['adrCountry']);
+      //$ap[] = /*$country['f'].' '.*/$country['t'];
+
+      $address = implode(', ', $ap);
+			return $address;
+	}
 }
 
 
@@ -435,6 +452,7 @@ class FormPersonContact extends TableForm
 		$tabs ['tabs'][] = ['text' => 'Nastavení', 'icon' => 'system/formSettings'];
 		if ($this->recData['flagStandardized'])
 			$tabs ['tabs'][] = ['text' => 'Info', 'icon' => 'system/iconMapMarker'];
+		$tabs ['tabs'][] = ['text' => 'Historie', 'icon' => 'system/formHistory'];
 
 		$this->openForm ();
 			$this->openTabs ($tabs);
@@ -501,7 +519,11 @@ class FormPersonContact extends TableForm
 						$this->addDocumentCard('e10.persons.libs.dc.DCAddress');
 					$this->closeTab();
 				}
-				$this->closeTabs ();
+				$this->openTab(self::ltNone);
+					$params = ['tableid' => $this->tableId(),'recid' => $this->recData['ndx']];
+					$this->addViewerWidget('e10.base.docslog', 'e10.base.libs.ViewDocsLogDocHistory', $params);
+				$this->closeTab();
+			$this->closeTabs ();
 		$this->closeForm ();
 	}
 
