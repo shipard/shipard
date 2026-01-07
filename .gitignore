@@ -23,6 +23,9 @@ www-root/ui-dev
 www-root/sc/icons/fa/6pro/css/
 www-root/sc/icons/fa/6pro/webfonts/
 
+www-root/sc/icons/fa/71pro/css/
+www-root/sc/icons/fa/71pro/webfonts/
+
 !modules/submodules/README.md
 modules/submodules/*
 
