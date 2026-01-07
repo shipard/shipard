@@ -74,7 +74,7 @@ class MuniReportsCreator extends Utility
       array_push($q, ' FROM [e10doc_waster_muniReports] AS [mr]');
       array_push($q, ' WHERE 1');
       array_push($q, ' AND [wasteOriginAdmUnit] = %i', $admUnitNdx);
-      array_push($q, ' AND [year] = %i', $year);
+      array_push($q, ' AND [wasteReturn] = %i', $wasteReturnNdx);
       array_push($q, ' LIMIT 1');
       $existingMR = $this->db()->query($q)->fetch();
 
