@@ -99,30 +99,38 @@
 	</table>
 
 
+	<h3 style="text-align: center;">Formulář pro oznámení o komunálních odpadech převzatých zařízením od fyzických osob obci, na jejímž území odpad vznikl</h3>
 
-	<h3>Oznámení o komunálních odpadech převzatých zařízením od fyzických osob obci, na jejímž území odpad vznikl</h3>
+	<table class="default">
+		<tr><td colspan="2"><b>Oznámení o komunálních odpadech převzatých zařízením od fyzických osob obci, na jejímž území odpad vznikl</b></td></tr>
+		<tr><td colspan="2"><b>Určeno obci, na jejímž území odpad vznikl</b></td></tr>
+		<tr><td>Identifikační číslo osoby (obce) (IČO)</td><td>{{data.muniPerson_identifier_oid}}</td></tr>
+		<tr><td>Obec</td><td>{{data.muniPerson.fullName}}</td></tr>
+		<tr><td>IČZUJ obce</td><td>{{data.wasteOriginAdmUnit.admUnitId}}</td></tr>
+	</table>
 
-	Název obce: {{data.muniPerson.fullName}}<br/>
-	IČ obce: {{data.muniPerson_identifier_oid}}<br/>
-	ZUJ: {{data.wasteOriginAdmUnit.admUnitId}} - {{data.wasteOriginAdmUnit.fullName}}<br/>
+	<table class="default" style="margin-top:.5rem;">
+		<tr><td colspan="2"><b>Identifikace zařízení</b></td></tr>
+		<tr><td>Název zařízení</td><td>{{data.ownerPerson.fullName}}</td></tr>
+		<tr><td>Identifikační číslo osoby (IČO)</td><td>{{data.ownerPerson_identifier_oid}}</td></tr>
+		<tr><td>Identifikační číslo zařízení (IČZ)</td><td>{{data.ownerPerson.office.id2}}</td></tr>
+		<tr><td>Ulice č.p. / č.o.</td><td>{{data.ownerPerson.office.saStreetName}}</td></tr>
+		<tr><td>Obec</td><td>{{data.ownerPerson.office.saCityName}}</td></tr>
+	</table>
 
-	<hr/>
-	Název: {{data.ownerPerson.fullName}}<br/>
-	IČO: {{data.ownerPerson_identifier_oid}}<br/>
-	IČZ: {{data.ownerPerson.office.id2}}<br/>
-	Ulice: {{data.ownerPerson.office.saStreetName}}<br/>
-	Obec: {{data.ownerPerson.office.saCityName}}<br/>
-	<hr/>
+	<table class="default" style="margin-top:.5rem;">
+		<tr><td colspan="2"><b>Převzaté komunální odpady od fyzických osob:</b></td></tr>
+		<tr><td><b>Druh odpadu:</b></td><td>O</td></tr>
+		{{{@renderContent;dataItem:data.wasteRows;tableClass:rows}}}
+	</table>
 
-	Odpady:<br>
-	{{{@renderContent;dataItem:data.wasteRows;tableClass:rows}}}
-	<br/>
-
-	Oznámení vyplnil: <br>
-	Datum: {{@date}}<br/>
-	Jméno a příjmení: {{data.wasteReturn.authorFirstName}} {{data.wasteReturn.authorLastName}}<br/>
-	Telefon: {{data.wasteReturn.authorPhonePrefix}} {{data.wasteReturn.authorPhone}}<br/>
-	E-mail: {{data.wasteReturn.authorEmail}}<br/>
+	<table class="default" style="margin-top:.5rem;">
+		<tr><td colspan="2"><b>Oznámení vyplnil:</b></td></tr>
+		<tr><td>Datum</td><td>{{@date}}</td></tr>
+		<tr><td>Jméno a příjmení</td><td>{{data.wasteReturn.authorFirstName}} {{data.wasteReturn.authorLastName}}</td></tr>
+		<tr><td>Telefon</td><td>{{data.wasteReturn.authorPhonePrefix}} {{data.wasteReturn.authorPhone}}</td></tr>
+		<tr><td>Adresa elektronické pošty</td><td>{{data.wasteReturn.authorEmail}}</td></tr>
+	</table>
 
 </body>
 </html>
