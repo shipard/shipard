@@ -96,9 +96,12 @@ class PersonRegister extends Utility
 
     // -- bank accounts
     $baIds = [];
-    foreach ($this->registerData['bankAccounts'] as $ba)
-      $baIds[] = $ba['bankAccount'];
-    $this->addBankAccounts($baIds);
+    if (isset($this->registerData['bankAccounts']))
+    {
+      foreach ($this->registerData['bankAccounts'] as $ba)
+        $baIds[] = $ba['bankAccount'];
+      $this->addBankAccounts($baIds);
+    }
   }
 
   protected function addPerson_saveBase()
