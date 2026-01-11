@@ -12,7 +12,7 @@ class TableMuniReports extends DbTable
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('e10doc.waster.muniReports', 'e10doc_waster_muniReports', 'Hlášení obcím o odpadech');
+		$this->setName ('e10doc.waster.muniReports', 'e10doc_waster_muniReports', 'Hlášení obcím o odpadech', 1468);
 	}
 
 	public function createHeader ($recData, $options)

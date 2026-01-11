@@ -25,5 +25,6 @@
 		{
 			"id": "muniReport", "name": "Hlášení obci", "class": "e10doc.waster.libs.ReportMuniReport",  "email": 1, "dropdown": 1
 		}
-	]
+	],
+  "ndx": 1468
 }
