@@ -92,7 +92,7 @@ class InvoiceOutReport extends \e10doc\core\libs\reports\DocReport
 	{
 		// -- add document attachments
 		$personRecData = $this->app()->loadItem($this->recData['person'], 'e10.persons.persons');
-		if ($personRecData && $personRecData['optSendDocsAttsUnited'])
+		if ($personRecData && !$personRecData['optSendDocsAttsUnited'])
 		{
 			$q = [];
 			array_push($q, 'SELECT links.*, atts.[fileType], atts.[path], atts.[fileName], atts.[name]');
