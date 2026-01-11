@@ -16,7 +16,7 @@
 	"20": {
 		"fullName": "Sekretariát", "shortName": "Sekretariát", "order": 1000, "icon": "homeSecretariat",
 		"shipardEmailId": "posta",
-		"topSection": 11, "dik": [2, 51, 52, 53, 54, 60, 61, 62]
+		"topSection": 11, "dik": [2, 51, 52, 53, 54, 60, 61, 62, 4]
 	},
 	"21": {
 		"fullName": "Úkoly", "shortName": "Úkoly", "order": 2000, "icon": "homeToDo",
