@@ -13,6 +13,16 @@
 		"dibi/dibi": "4.1.5",
 		"php-mime-mail-parser/php-mime-mail-parser": "^7.0",
 		"picqer/php-barcode-generator": "*",
-		"bigfish/pdf417": "*"
+		"bigfish/pdf417": "*",
+		"dfridrich/czech-data-box": "*"
+	},
+	"config": {
+		"audit": {
+			"ignore": {
+				"PKSA-9qfh-kpgp-dw7t": "The affected component is not in use (EET).",
+				"PKSA-2f54-4t85-fzzg": "The affected component is not in use (EET).",
+				"PKSA-pcdf-qvqm-w4tv": "The affected component is not in use (EET)."
+			}
+		}
 	}
 }
