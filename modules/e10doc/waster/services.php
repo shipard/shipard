@@ -37,6 +37,25 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$engine->createAll($wasteReturn);
 	}
 
+	protected function sendMuniReports()
+	{
+		$wasteReturn = intval($this->app->arg('wasteReturn'));
+		if (!$wasteReturn)
+		{
+			echo "ERROR: param `--wasteReturn=' not found...\n";
+			return;
+		}
+
+		$forceGovBoxId = $this->app->arg('forceGovBoxId');
+
+		$engine = new \e10doc\waster\libs\SendMuniReportsEngine($this->app);
+		$engine->wasteReturnNdx = $wasteReturn;
+		if ($forceGovBoxId !== FALSE)
+			$engine->forceGovBoxId = $forceGovBoxId;
+
+		$engine->sendAll();
+	}
+
 	protected function createCompaniesReportsIn()
 	{
 		$wasteReturn = intval($this->app->arg('wasteReturn'));
@@ -57,6 +76,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		{
 			case 'reset-waste-ops': return $this->resetWasteOps();
 			case 'create-muni-reports': return $this->createMuniReports();
+			case 'send-muni-reports': return $this->sendMuniReports();
 			case 'create-companies-reports-in': return $this->createCompaniesReportsIn();
 		}
 

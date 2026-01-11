@@ -8,7 +8,7 @@
     {"id": "muniPerson", "name": "Právnická osoba obce", "type": "int", "reference": "e10.persons.persons"},
 
 		{"id": "sentState", "name": "Stav odeslání", "type": "enumInt",
-			"enumValues": {"0": "Neodesláno", "1": "Odesílá se", "2": "Odesláno"}},
+			"enumValues": {"0": "Neodesláno", "1": "Odesláno"}},
 		{"id": "sentDate", "name": "Datum a čas odeslání", "type": "timestamp"},
 
     {"id": "docState", "name": "Stav", "type": "int"},

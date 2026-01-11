@@ -91,4 +91,11 @@ class ReportMuniReport extends \e10doc\core\libs\reports\DocReportBase
 		$content = ['type' => 'table', 'header' => $header, 'table' => $data, 'params' => ['precision' => 6]];
     $this->data['wasteRows'] = [$content];
   }
+
+	public function reportWasSent(\Shipard\Report\MailMessage $msg)
+	{
+    parent::reportWasSent($msg);
+
+    $this->db()->query('UPDATE [e10doc_waster_muniReports] SET [sentState] = %i', 1, ', [sentDate] = NOW()', ' WHERE [ndx] = %i', $this->recData['ndx']);
+	}
 }

@@ -48,6 +48,13 @@ class ViewMuniReports extends TableView
 	public function init ()
 	{
 		$this->addTopTabs();
+
+		$bt = [];
+		$bt [] = ['id' => 'ALL', 'title' => 'Vše', 'active' => 1];
+		$bt [] = ['id' => 'sent', 'title' => 'Odeslané', 'active' => 0];
+		$bt [] = ['id' => 'unsent', 'title' => 'Neodeslané', 'active' => 0];
+		$this->setBottomTabs ($bt);
+
 		parent::init();
 	}
 
@@ -96,13 +103,18 @@ class ViewMuniReports extends TableView
 			$listItem ['t3'][] = ['text' => $item['admUnitOwner0FullName'], 'class' => 'label label-warning'];
 
 		$distance = round(Wgs84::computeDistance($item['ownerLat'], $item['ownerLon'], $item['admUnitLat'], $item['admUnitLon']) / 1000, 0);
-		$listItem ['i2'] = ['text' => $distance.' km', 'class' => 'label label-default'];
+		$listItem ['i2'] = [['text' => $distance.' km', 'class' => 'label label-default']];
+
+		if ($item['sentState'] == 1)
+			$listItem ['i2'][] = ['text' => Utils::datef($item['sentDate'], '%k %t'), 'icon' => 'system/iconPaperPlane', 'class' => 'label label-success'];
+
 		return $listItem;
 	}
 
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
+		$btId = $this->bottomTabId ();
 
 		$q = [];
 		array_push($q, 'SELECT [mr].*, muniPersons.fullName AS muniPersonName,');
@@ -125,6 +137,11 @@ class ViewMuniReports extends TableView
 		$wrNdx = intval($bottomTabId);
 		if ($wrNdx !== 0)
 			array_push($q, ' AND [mr].wasteReturn = %i', $wrNdx);
+
+		if ($btId === 'sent')
+			array_push ($q, ' AND [mr].[sentState] = %i', 1);
+		elseif ($btId === 'unsent')
+			array_push ($q, ' AND [mr].[sentState] = %i', 0);
 
 		// -- fulltext
 		if ($fts != '')
