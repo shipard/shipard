@@ -725,7 +725,7 @@ inp=e.parent().parent().find("input").first();inp.val("").focus();viewerIncSearc
 table=searchParentAttr(e,"data-table");if(callUiHook(actionType,table,$(e)))return;if(actionType=="newform"){var
 copyDoc=0;var
 doIt=1;if(event.shiftKey||event.altKey||e.attr('data-copyfrom')){copyDoc=1;if(!event.shiftKey&&!event.altKey)doIt=confirm("Opravdu udělat kopii dokumentu?");else
-if(event.altKey){doIt=confirm("Opravdu udělat kopii dokumentu včetně příloh?");if(doIt)copyDoc=2;}}if(doIt)e10ViewerAddRow(e,copyDoc);return;}if(actionType=="editform"){e10ViewerEditRow(e);return;}if(actionType=="saveform"){if(event.shiftKey&&e.attr('data-noclose')=='1')e.removeAttr('data-noclose');if(!df2saveForm(e))setTimeout(function(){df2ViewerAction(event,e)},50);return;}if(actionType=="cancelform"){e10ViewerCancelForm(e);return;}if(actionType=="deleteform"){e10ViewerDeleteRow(e,'delete');return;}if(actionType=="undeleteform"){e10ViewerDeleteRow(e,'undelete');return;}if(actionType=="close-lv-detail"){e10viewerCloseDetail(e);return;}if(actionType=="print-lv-detail"){e10viewerPrintDetail(e);return;}if(actionType=="print"){e10ViewerPrintDetail(e);return;}if(actionType=="printdirect"){e10ViewerPrintDetailDirect(e);return;}if(actionType=="printviewer"){e10ViewerPrint(e);return;}if(actionType=="help"){e10Help(e);return;}if(actionType=="close-help"){e10CloseHelp(e);return;}if(actionType=="addwizard"){e10ViewerAddWizard(e);return;}if(actionType==="window"){e10ViewerWindow(e);return;}if(actionType=="wizardnext"){e10WizardNext(e);return;}if(actionType==="open-link"){var
+if(event.altKey){doIt=confirm("Opravdu udělat kopii dokumentu včetně příloh?");if(doIt)copyDoc=2;}}if(doIt)e10ViewerAddRow(e,copyDoc);return;}if(actionType=="editform"){e10ViewerEditRow(e);return;}if(actionType=="saveform"){if(event.shiftKey&&e.attr('data-noclose')=='1')e.removeAttr('data-noclose');if(!df2saveForm(e))setTimeout(function(){df2ViewerAction(event,e)},50);return;}if(actionType=="cancelform"){e10ViewerCancelForm(e);return;}if(actionType=="deleteform"){e10ViewerDeleteRow(e,'delete');return;}if(actionType=="undeleteform"){e10ViewerDeleteRow(e,'undelete');return;}if(actionType=="close-lv-detail"){e10viewerCloseDetail(e);return;}if(actionType=="print-lv-detail"){e10viewerPrintDetail(e);return;}if(actionType=="print"){e10ViewerPrintDetail(e);return;}if(actionType=="printdirect"){e10ViewerPrintDetailDirect(e);return;}if(actionType=="printviewer"){e10ViewerPrint(e);return;}if(actionType=="help"){e10Help(e);return;}if(actionType=="close-help"){e10CloseHelp(e);return;}if(actionType=="addwizard"){e10ViewerAddWizard(e,event);return;}if(actionType==="window"){e10ViewerWindow(e);return;}if(actionType=="wizardnext"){e10WizardNext(e);return;}if(actionType==="open-link"){var
 url=e.attr('data-url-download');var
 usePopup=0;var
 shift=0;if((event&&event.altKey))shift=1;var
@@ -758,7 +758,7 @@ btap=bottomTab.attr('data-addparams');if(btap!==undefined){if(ap!='')ap+='&';ap+
 leftPanelList=viewer.find('div.e10-sv-left div.title.active');if(leftPanelList.length&&leftPanelList.attr('data-addparams')){var
 btap=leftPanelList.attr('data-addparams');if(btap!==undefined){if(ap!='')ap+='&';ap+=btap;}}if(button){var
 btap=button.attr('data-addparams');if(btap!==undefined){if(ap!='')ap+='&';ap+=btap;}}return ap;}function
-e10ViewerAddWizard(e){var
+e10ViewerAddWizard(e,event){var
 viewerId=searchParentAttr(e,'data-viewer');var
 viewer=$('#'+viewerId);var
 table=searchParentAttr(viewer,"data-table");var
@@ -772,6 +772,7 @@ focusedRow=viewer.find('ul.e10-viewer-list > li.active');if(focusedRow.is('li'))
 if(e.attr('data-pk'))focusedPK=e.attr('data-pk');g_formId++;var
 newElementId="mainEditF"+g_formId;var
 url="/api/wizard/"+wizardClass+"/0?callback=?&fullTextSearch="+fullTextSearch+"&newFormId="+newElementId;if(addParams)url+='&'+addParams;if(focusedPK!='')url+='&focusedPK='+focusedPK;var
+dataShiftParam=e.attr('data-shift-param');if(dataShiftParam&&(event.shiftKey||event.altKey))url+='&'+dataShiftParam;var
 params=elementAttributes(e,'data-param');if(params)url+='&'+params;var
 postData={};var
 dataFormElementId='mainBrowserTopBar';if(e.attr('data-form-element-id')!=undefined)dataFormElementId=e.attr('data-form-element-id');var

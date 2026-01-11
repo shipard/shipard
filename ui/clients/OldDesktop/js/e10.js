@@ -2842,7 +2842,7 @@ function df2ViewerAction (event, e)
 
 	if (actionType == "addwizard")
 	{
-		e10ViewerAddWizard (e);
+		e10ViewerAddWizard (e, event);
 		return;
 	}
 
@@ -3043,7 +3043,7 @@ function viewerAddParams (viewer, button)
 }
 
 
-function e10ViewerAddWizard (e)
+function e10ViewerAddWizard (e, event)
 {
 	var viewerId = searchParentAttr (e, 'data-viewer');
 	var viewer = $('#' + viewerId);
@@ -3077,6 +3077,10 @@ function e10ViewerAddWizard (e)
 		url += '&' + addParams;
 	if (focusedPK != '')
 		url += '&focusedPK=' + focusedPK;
+
+	var dataShiftParam = e.attr ('data-shift-param');
+	if (dataShiftParam && (event.shiftKey || event.altKey))
+		url += '&' + dataShiftParam;
 
 	var params = elementAttributes (e, 'data-param');
 	if (params)
