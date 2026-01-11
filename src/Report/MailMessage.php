@@ -25,10 +25,12 @@ class MailMessage extends \Shipard\Base\Utility
 	var $attachments = [];
 
 	var $emailsTo;
+	var $govBoxTo;
 	var $fromName;
 	var $fromEmail;
 
 	var $emailSent = FALSE;
+	var $govBoxSent = FALSE;
 	var $reportPrinted = FALSE;
 
 	var $outboxLinkId = '';
@@ -81,13 +83,22 @@ class MailMessage extends \Shipard\Base\Utility
 	public function setTo ($emails)
 	{
 		$this->emailsTo = [];
+		$this->govBoxTo = [];
 		$et = preg_split("/[\s,]+/", $emails);
 		foreach ($et as $oneAddr)
 		{
 			$a = trim($oneAddr);
 			$a = str_replace(' ', '', $a);
-			if ($a !==  '')
-				$this->emailsTo[] = $a;
+
+			if ($a ===  '')
+				continue;
+			if ($a[0] ===  '$')
+			{
+				$this->govBoxTo[] = substr($a, 1);
+				continue;
+			}
+
+			$this->emailsTo[] = $a;
 		}
 	}
 
@@ -148,6 +159,11 @@ class MailMessage extends \Shipard\Base\Utility
 			foreach ($this->emailsTo as $emailTo)
 				$issue['systemInfo']['email']['to'][] = ['address' => $emailTo];
 			$issue['systemInfo']['email']['headers'][] = ['header' => 'message-id', 'value' => $this->messageId];
+		}
+		if ($this->govBoxSent)
+		{
+			foreach ($this->govBoxTo as $govBoxTo)
+				$issue['systemInfo']['govBox']['to'][] = ['boxId' => $govBoxTo];
 		}
 		if ($this->reportPrinted)
 			$issue['systemInfo']['printed'] = ['status' => 1];
@@ -240,6 +256,56 @@ class MailMessage extends \Shipard\Base\Utility
 	function sendMail_headerEncode ($s)
 	{
 		return '=?utf-8?B?'.base64_encode ($s).'?=';
+	}
+
+	public function sendGovBox ()
+	{
+		if (!isset($this->govBoxTo) || !count($this->govBoxTo))
+			return;
+
+		$govBoxes = $this->app()->cfgItem('integrations.govboxes', NULL);
+		if ($govBoxes === NULL)
+			return;
+
+		$gbNdx = key($govBoxes);
+		$govBox = $govBoxes[$gbNdx];
+		$productionMode = ($govBox['testMode'] == 0);
+
+		$files = [];
+		foreach($this->attachments as $att)
+		{
+			$newDstFileName = __APP_DIR__.'/tmp/'.$att['baseFileName'];
+			copy($att['fullFileName'], $newDstFileName);
+			$files[] = $newDstFileName;
+		}
+
+		$dataBox = new \Defr\CzechDataBox\DataBox();
+		$dataBox->loginWithUsernameAndPassword($govBox['login'], $govBox['password'], $productionMode);
+		$simpleApi = $dataBox->getSimpleApi();
+		foreach ($this->govBoxTo as $govBoxToId)
+		{
+			$message = $simpleApi->createBasicDataMessage($govBoxToId, $this->subject, $files);
+			$sentMessage = $simpleApi->sendDataMessage($message);
+			if ($sentMessage->getDmStatus()->getDmStatusCode() !== "0000")
+			{
+    		// Handle errors
+				error_log("####ERROR `".$govBoxToId."`: ".$sentMessage->getDmStatus()->getDmStatusCode());
+			}
+			else
+			{
+				// Message sent successfully
+				$this->govBoxSent = TRUE;
+			}
+		}
+	}
+
+	public function send ($saveToOutbox = TRUE)
+	{
+		$this->sendMail ();
+		$this->sendGovBox ();
+
+		if ($saveToOutbox)
+			$this->saveToOutbox();
 	}
 }
 

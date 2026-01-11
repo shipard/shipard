@@ -1,0 +1,8 @@
+{
+    "tables/integrations.govbox.govboxes": {
+		"fa5": "fa-envelope-open",
+		"fa6pro": "fa-envelope-open",
+		"bsi": "bi-envelope-open",
+		"mdi": "mail"
+    }
+}

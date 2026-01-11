@@ -1,0 +1,7 @@
+{
+	"admin": {
+		"viewers": {
+			"integrations.govbox.govboxes": {"default": 2}
+		}
+	}
+}

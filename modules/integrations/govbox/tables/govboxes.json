@@ -1,0 +1,26 @@
+{
+	"id": "integrations.govbox.govboxes", "sql": "integrations_govbox_govboxes", "name": "Datové schránky",
+	"columns": [
+		{"id": "ndx", "name": "id", "type": "int_ai"},
+
+    {"id": "fullName", "name": "Název", "type": "string", "len": 80},
+		{"id": "govBoxId", "name": "ID schránky", "type": "string", "len": 20},
+		{"id": "login", "name": "Přihlašovací ID", "type": "string", "len": 20},
+		{"id": "password", "name": "Heslo", "type": "string", "len": 80},
+
+    {"id": "testMode", "name": "Testovací režim", "type": "logical"},
+		{"id": "order", "name": "Pořadí", "type": "int"},
+
+		{"id": "docState", "name": "Stav", "type": "int"},
+		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
+	],
+	"states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
+	"views": {
+		"default": {"id": "default", "class": "integrations.govbox.ViewGovboxes"}
+	},
+	"forms": [
+		{"id": "default", "class": "integrations.govbox.FormGovbox"}
+	],
+  "options": ["configSource"],
+	"autocomplete": {"columnValue": "ndx", "columnTitle": "govBoxId"}
+}

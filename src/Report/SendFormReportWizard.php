@@ -7,6 +7,8 @@ use \Shipard\Form\TableForm;
 
 class SendFormReportWizard extends \Shipard\Form\Wizard
 {
+	var $govBoxMode = 0;
+
 	public function __construct($app, $options = NULL)
 	{
 		parent::__construct($app, $options);
@@ -54,6 +56,8 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		if ($focusedPKPrimary)
 			$this->focusedPK = $focusedPKPrimary;
 
+		$this->govBoxMode = intval ($this->app()->testGetParam('govBoxMode'));
+
 		$this->recData['documentNdx'] = $this->focusedPK;
 		$this->recData['documentTable'] = $this->app->testGetParam('documentTable');
 		$this->recData['reportClass'] = $this->app->testGetParam('reportClass');
@@ -74,7 +78,15 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 
 		$item = $documentTable->loadItem ($this->recData['documentNdx']);
 		$documentInfo = $documentTable->getRecordInfo ($item);
-		if (isset($documentInfo['persons']['to']))
+		if ($this->govBoxMode)
+		{
+			if (isset($documentInfo['persons']['to']))
+			{
+				$govBoxes = $tablePersons->loadGovBoxes($documentInfo['persons']['to']);
+				$this->recData['to'] = implode(', ', $govBoxes);
+			}
+		}
+		elseif (isset($documentInfo['persons']['to']))
 		{
 			$this->recData['to'] = $tablePersons->loadEmailsForReport($documentInfo['persons']['to'], $this->recData['reportClass']);
 		}
@@ -149,8 +161,7 @@ class SendFormReportWizard extends \Shipard\Form\Wizard
 		$this->addOtherReports($documentTable, $msg, $report);
 		$report->addMessageAttachments($msg);
 
-		$msg->sendMail();
-		$msg->saveToOutbox();
+		$msg->send();
 		$report->reportWasSent($msg);
 	}
 

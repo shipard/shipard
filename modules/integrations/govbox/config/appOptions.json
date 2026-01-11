@@ -1,0 +1,6 @@
+{
+	"govboxes": {
+		"name": "Datové schránky", "order": 910000, "group": "integrations",
+		"type": "viewer", "table": "integrations.govbox.govboxes", "viewer": "default"
+	}
+}

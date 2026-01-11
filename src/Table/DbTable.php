@@ -1652,13 +1652,21 @@ class DbTable
 
 				if (utils::param($r, 'email', 0))
 				{
+					$govBoxes = $this->app()->cfgItem('integrations.govboxes', NULL);
 					$btn['subButtons'] = [];
-					$btn['subButtons'][] = [
+					$subButton = [
 						'type' => 'action', 'action' => 'addwizard', 'icon' => 'system/iconEmail', 'title' => 'Odeslat emailem',
 						'data-table' => $this->tableId(), 'data-pk' => $recData['ndx'], 'data-class' => 'Shipard.Report.SendFormReportWizard',
 						'data-addparams' => 'reportClass='.$r ['class'].'&documentTable='.$this->tableId().'&focusedPKPrimary='.$recData['ndx'],
 						'btnClass' => 'btn-default'
 					];
+
+					if ($govBoxes)
+					{
+						$subButton['data-shift-param'] = 'govBoxMode=1';
+						$subButton['title'] .= ' - použijte SHIFT pro odeslání do Datové schránky';
+					}
+					$btn['subButtons'][] = $subButton;
 				}
 				if (utils::param($r, 'dropdown', 0))
 				{
