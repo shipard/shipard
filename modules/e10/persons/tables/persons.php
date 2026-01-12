@@ -498,6 +498,29 @@ class TablePersons extends DbTable
 		return '';
 	}
 
+	public function loadGovBoxes ($persons)
+	{
+		if (!count($persons))
+			return [];
+
+		$govBoxes = [];
+
+		$q = [];
+		array_push($q, 'SELECT valueString FROM [e10_base_properties]');
+		array_push($q, ' WHERE [tableid] = %s', 'e10.persons.persons');
+		array_push($q, ' AND [recid] IN %in ', $persons);
+		array_push($q, ' AND [property] = %s', 'govDataBox', ' AND [group] = %s', 'contacts');
+		$rows = $this->db()->query($q);
+		foreach ($rows as $r)
+		{
+			$e = trim($r['valueString']);
+			if ($e !== '')
+				$govBoxes[] = '$'.$e;
+		}
+
+		return $govBoxes;
+	}
+
 	public function createHeader ($recData, $options)
 	{
 		$hdr ['icon'] = $this->icon ($recData);
