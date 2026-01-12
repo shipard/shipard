@@ -274,6 +274,8 @@ class MailMessage extends \Shipard\Base\Utility
 		$files = [];
 		foreach($this->attachments as $att)
 		{
+			if (str_ends_with($att['fullFileName'], '.isdoc'))
+				continue; // .isdoc files are not allowed in data box messages - AT THIS MOMENT
 			$newDstFileName = __APP_DIR__.'/tmp/'.$att['baseFileName'];
 			copy($att['fullFileName'], $newDstFileName);
 			$files[] = $newDstFileName;
@@ -289,7 +291,7 @@ class MailMessage extends \Shipard\Base\Utility
 			if ($sentMessage->getDmStatus()->getDmStatusCode() !== "0000")
 			{
     		// Handle errors
-				error_log("####ERROR `".$govBoxToId."`: ".$sentMessage->getDmStatus()->getDmStatusCode());
+				error_log("####ERROR `".$govBoxToId."`: ".$sentMessage->getDmStatus()->getDmStatusCode()." - ".$sentMessage->getDmStatus()->getDmStatusMessage());
 			}
 			else
 			{
