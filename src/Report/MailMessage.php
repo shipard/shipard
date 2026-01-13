@@ -31,6 +31,7 @@ class MailMessage extends \Shipard\Base\Utility
 
 	var $emailSent = FALSE;
 	var $govBoxSent = FALSE;
+	var $govBoxInfo = [];
 	var $reportPrinted = FALSE;
 
 	var $outboxLinkId = '';
@@ -162,8 +163,7 @@ class MailMessage extends \Shipard\Base\Utility
 		}
 		if ($this->govBoxSent)
 		{
-			foreach ($this->govBoxTo as $govBoxTo)
-				$issue['systemInfo']['govBox']['to'][] = ['boxId' => $govBoxTo];
+			$issue['systemInfo']['govBox'] = $this->govBoxInfo;
 		}
 		if ($this->reportPrinted)
 			$issue['systemInfo']['printed'] = ['status' => 1];
@@ -286,18 +286,20 @@ class MailMessage extends \Shipard\Base\Utility
 		$simpleApi = $dataBox->getSimpleApi();
 		foreach ($this->govBoxTo as $govBoxToId)
 		{
+			$sendInfo = [];
 			$message = $simpleApi->createBasicDataMessage($govBoxToId, $this->subject, $files);
 			$sentMessage = $simpleApi->sendDataMessage($message);
+			$sendInfo['govBoxId'] = $govBoxToId;
+			$sendInfo['messageId'] = $sentMessage->getDmID();
+			$sendInfo['dmStatusCode'] = $sentMessage->getDmStatus()->getDmStatusCode();
+			$sendInfo['dmStatusMessage'] = $sentMessage->getDmStatus()->getDmStatusMessage();
 			if ($sentMessage->getDmStatus()->getDmStatusCode() !== "0000")
 			{
-    		// Handle errors
+				$sendInfo['error'] = 1;
 				error_log("####ERROR `".$govBoxToId."`: ".$sentMessage->getDmStatus()->getDmStatusCode()." - ".$sentMessage->getDmStatus()->getDmStatusMessage());
 			}
-			else
-			{
-				// Message sent successfully
-				$this->govBoxSent = TRUE;
-			}
+			$this->govBoxSent = TRUE;
+			$this->govBoxInfo[] = $sendInfo;
 		}
 	}
 
