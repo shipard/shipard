@@ -37,7 +37,7 @@ class ViewPersonContactsOffices extends TableView
 		array_push ($q, ' FROM [e10_persons_personsContacts] AS [contacts]');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [contacts].[person] = %i', $this->personNdx);
-    array_push ($q, ' AND [contacts].[flagOffice] = %i', 1);
+    array_push ($q, ' AND ([contacts].[flagOffice] = %i', 1, ' OR [contacts].[flagMainAddress] = %i)', 1);
 
 		// -- fulltext
 		if ($fts != '')
