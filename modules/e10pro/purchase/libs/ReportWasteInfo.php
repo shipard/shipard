@@ -57,7 +57,7 @@ class ReportWasteInfo extends \e10doc\core\libs\reports\DocReportBase
 		$tableDocsHeads = $this->app()->table('e10doc.core.heads');
 		$wri = new \e10pro\purchase\libs\WasteInfoInReport($tableDocsHeads, $documentRecData);
 		$wri->loadData();
-		error_log("###".json_encode($wri->data['infoWasteCodes']));
+
 		foreach ($wri->data['infoWasteCodes'] as $iwc)
 		{
 			if ($iwc['wc'] === $wasteCodeRecData['itemId'])

@@ -24,8 +24,6 @@ class ReportCompaniesReportIn extends \e10doc\core\libs\reports\DocReportBase
 
 	function init ()
 	{
-    $this->sendReportNdx = 2700;
-
     parent::init();
 		$this->setReportId('e10doc.waster.companiesReport');
 
@@ -79,8 +77,6 @@ class ReportCompaniesReportIn extends \e10doc\core\libs\reports\DocReportBase
     if ($this->dir === 0)
     {
       $this->loadWasteInfos();
-
-      error_log("XXXX ".json_encode($this->wasteInfos));
     }
 	}
 

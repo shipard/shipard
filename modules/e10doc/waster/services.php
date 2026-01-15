@@ -56,6 +56,25 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$engine->sendAll();
 	}
 
+	protected function sendCompaniesReports()
+	{
+		$wasteReturn = intval($this->app->arg('wasteReturn'));
+		if (!$wasteReturn)
+		{
+			echo "ERROR: param `--wasteReturn=' not found...\n";
+			return;
+		}
+
+		$forceEmailTo = $this->app->arg('forceEmailTo');
+
+		$engine = new \e10doc\waster\libs\SendCompaniesReportsEngine($this->app);
+		$engine->wasteReturnNdx = $wasteReturn;
+		if ($forceEmailTo !== FALSE)
+			$engine->forceEmailTo = $forceEmailTo;
+
+		$engine->sendAll();
+	}
+
 	protected function createCompaniesReportsIn()
 	{
 		$wasteReturn = intval($this->app->arg('wasteReturn'));
@@ -90,6 +109,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'reset-waste-ops': return $this->resetWasteOps();
 			case 'create-muni-reports': return $this->createMuniReports();
 			case 'send-muni-reports': return $this->sendMuniReports();
+			case 'send-companies-reports': return $this->sendCompaniesReports();
 			case 'create-companies-reports-in': return $this->createCompaniesReportsIn();
 			case 'create-companies-reports-out': return $this->createCompaniesReportsOut();
 		}
