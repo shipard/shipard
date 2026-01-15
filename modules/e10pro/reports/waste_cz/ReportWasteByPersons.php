@@ -166,6 +166,7 @@ class ReportWasteByPersons extends \e10pro\reports\waste_cz\ReportWasteCore
 	public function createToolbar ()
 	{
 		$buttons = parent::createToolbar();
+		/*
 		$buttons[] = [
 			'text' => 'Rozeslat hromadně emailem', 'icon' => 'system/iconEmail',
 			'type' => 'action', 'action' => 'addwizard', 'data-class' => 'e10pro.reports.waste_cz.ReportWasteOnePersonWizard',
@@ -173,6 +174,7 @@ class ReportWasteByPersons extends \e10pro\reports\waste_cz\ReportWasteCore
 			'data-table' => 'e10.persons.persons', 'data-pk' => '0',
 			'class' => 'btn-primary'
 		];
+		*/
 		return $buttons;
 	}
 }

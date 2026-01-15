@@ -33,7 +33,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
     if ($this->subReportId === 'companiesIn')
     {
-      $this->addParam('switch', 'sendStatus', ['title' => 'Stav', 'switch' => ['all' => 'Vše', 'toSend' => 'Neodeslané', 'sent' => 'Odeslané'], 'radioBtn' => 1, 'defaultValue' => 'all']);
+      //$this->addParam('switch', 'sendStatus', ['title' => 'Stav', 'switch' => ['all' => 'Vše', 'toSend' => 'Neodeslané', 'sent' => 'Odeslané'], 'radioBtn' => 1, 'defaultValue' => 'all']);
     }
 
     if ($this->subReportId === 'report')
@@ -42,7 +42,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 		parent::init();
 
     if ($this->sendStatus === '')
-      $this->sendStatus = $this->reportParams ['sendStatus']['value'] ?? 'all';
+      $this->sendStatus = /*$this->reportParams ['sendStatus']['value'] ?? */ 'all';
 
     $this->showUnits = intval($this->reportParams ['showUnits']['value'] ?? '0');
 
@@ -484,6 +484,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 	public function createToolbar ()
 	{
 		$buttons = parent::createToolbar();
+    /*
     if ($this->subReportId === 'companiesIn')
     {
       $buttons[] = [
@@ -498,6 +499,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
         'class' => 'btn-primary'
       ];
     }
+    */
 		return $buttons;
 	}
 
