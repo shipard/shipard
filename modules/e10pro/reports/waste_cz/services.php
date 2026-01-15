@@ -62,7 +62,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		switch ($actionId)
 		{
 			case 'reset-waste-return': return $this->resetWasteReturn();
-			case 'repair-waste-return': return $this->repairWasteReturn();
+			//case 'repair-waste-return': return $this->repairWasteReturn();
 		}
 
 		return parent::onCliAction($actionId);

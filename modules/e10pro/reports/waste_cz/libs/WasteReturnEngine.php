@@ -274,8 +274,21 @@ class WasteReturnEngine extends Utility
 
       $hcSrc = 'BR12'; // AN4 in 2025
       if ($r['personType'] == 1) // human
-        $hcSrc = 'AR12';
-      $hcDst = 'A00';
+      {
+        $hcSrc = 'A';
+        $hcDst = 'A00';
+      }
+      else
+      {
+        $hcSrc = 'B';
+        $hcDst = 'A00';
+      }
+
+      if (in_array($r['wasteCodeTextMove'], ["200101", "150102", "170203"]))
+        $hcSrc .= 'R12c';
+      else
+        $hcSrc .= 'R12d';
+
       $newRow = [
         'document' => $r['document'],
         'calendarYear' => $r['calendarYear'],

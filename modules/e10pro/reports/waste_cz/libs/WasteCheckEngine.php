@@ -98,7 +98,7 @@ class WasteCheckEngine extends Utility
 
     $this->checkWRTable = [];
     $this->checkWRTableHeader = [
-      '#' => '#', 'hc' => 'EK', 'wc' => 'Kód odpadu', 'wcm' => 'Kód pro převod', 'quantity' => '+Množství kg', 'note' => 'Pozn.'
+      '#' => '#', 'hc' => '_EK', 'wc' => 'Kód odpadu', 'wcm' => 'Kód pro převod', 'quantity' => '+Množství kg', 'note' => 'Pozn.'
     ];
 
     foreach ($this->currentWRData as $wrRow)
