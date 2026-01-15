@@ -9,7 +9,7 @@
 			"enumValues": {"0": "Příjem", "1": "Výdej"}},
 
 		{"id": "sentState", "name": "Stav odeslání", "type": "enumInt",
-			"enumValues": {"0": "Neodesláno", "1": "Odesílá se", "2": "Odesláno"}},
+			"enumValues": {"0": "Neodesláno", "1": "Odesláno"}},
 		{"id": "sentDate", "name": "Datum a čas odeslání", "type": "timestamp"},
 
     {"id": "docState", "name": "Stav", "type": "int"},
@@ -18,14 +18,23 @@
   "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
   "views": [
     {"id": "default", "class": "e10doc.waster.ViewCompaniesReports", "detail": "e10doc.waster.ViewDetailCompaniesReport"},
-    {"id": "defaultIn", "class": "e10doc.waster.ViewCompaniesReportsIn", "detail": "e10doc.waster.ViewDetailCompaniesReport"}
+    {"id": "defaultIn", "class": "e10doc.waster.ViewCompaniesReportsIn", "detail": "e10doc.waster.ViewDetailCompaniesReport"},
+    {"id": "defaultOut", "class": "e10doc.waster.ViewCompaniesReportsOut", "detail": "e10doc.waster.ViewDetailCompaniesReport"}
   ],
   "forms": [
     {"id": "default", "class": "e10doc.waster.FormCompaniesReport"}
   ],
 	"reports": [
 		{
-			"id": "companiesReport", "name": "Přehled firmám", "class": "e10doc.waster.libs.ReportCompaniesReport",  "email": 1, "dropdown": 1
+			"id": "companiesReportIn", "name": "Přehled odebraných odpadů", "class": "e10doc.waster.libs.ReportCompaniesReportIn",
+      "queryCol": "dir", "queryColValues": [0],
+      "email": 1, "dropdown": 1
+		},
+		{
+			"id": "companiesReportOut", "name": "Přehled dodaných odpadů", "class": "e10doc.waster.libs.ReportCompaniesReportOut",
+      "queryCol": "dir", "queryColValues": [1],
+      "email": 1, "dropdown": 1
 		}
-	]
+	],
+  "ndx": 1469
 }

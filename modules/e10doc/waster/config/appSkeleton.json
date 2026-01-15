@@ -11,7 +11,7 @@
 				"reports": {"t1": "Přehledy", "object": "widget", "class": "Shipard.Report.WidgetReports", "subclass": "e10doc-waster", "icon": "system/iconReports", "order": 100000},
 
 				"companiesIn": {"t1": "Firmy Příjem", "object": "viewer", "table": "e10doc.waster.companiesReports", "viewer": "defaultIn", "icon": "system/personCompany", "order": 111000},
-				"companiesOur": {"t1": "Firmy Výdej", "object": "viewer", "table": "e10.persons.persons", "viewer": "wasteCompaniesOut", "order": 112000},
+				"companiesOut": {"t1": "Firmy Výdej", "object": "viewer", "table": "e10doc.waster.companiesReports", "viewer": "defaultOut", "icon": "system/iconDelivery", "order": 112000},
 				"muniReports": {"t1": "Obce", "object": "viewer", "table": "e10doc.waster.muniReports", "viewer": "default", "order": 113000},
 
 				"wasteJournal": {"t1": "Deník", "object": "viewer", "table": "e10pro.reports.waste_cz.returnRows", "viewer": "default", "order": 121000},

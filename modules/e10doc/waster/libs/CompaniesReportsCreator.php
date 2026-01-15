@@ -31,7 +31,8 @@ class CompaniesReportsCreator extends Utility
     $dateEnd = Utils::createDateTime("$year-12-31");
     $codeKindNdx = 1;
 
-    $this->db()->query('DELETE FROM e10doc_waster_companiesReports');
+    $this->db()->query('DELETE FROM e10doc_waster_companiesReports WHERE wasteReturn = %i', $wasteReturnNdx,
+      ' AND dir = %i', $this->wasteDir);
 
     $q = [];
     array_push ($q, 'SELECT persons.*');

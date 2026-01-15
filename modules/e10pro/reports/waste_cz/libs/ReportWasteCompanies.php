@@ -268,6 +268,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
 
 
         // -- print button
+        /*
         if ($dir === WasteReturnEngine::rowDirIn)
         {
           $btn = ['type' => 'action', 'action' => 'print', 'style' => 'print', 'icon' => 'system/actionPrint', 'text' => 'Přehled',
@@ -314,7 +315,7 @@ class ReportWasteCompanies extends \e10doc\core\libs\reports\GlobalReport
           ];
           $header['wasteCode'][] = $btn;
         }
-
+        */
         $header['_options']['beforeSeparator'] = 'separator';
 
         $data['HDR_'.$r['person']] = $header;

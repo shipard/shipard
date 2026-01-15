@@ -157,7 +157,11 @@ class WasteCompanyInfo extends Utility
 			'code' => 'Kat. č. odpadu', 'title' => 'Název', 'weight' => '+Hmotnost [t]'
 		];
 
-		$periodTitle = 'POKUS 123';
+		if ($this->dir === 0)
+			$periodTitle = 'Přehled odebraných odpadů';
+		else
+			$periodTitle = 'Přehled dodaných odpadů';
+
     /*
 		if ($this->calendarYear)
 		{

@@ -27,11 +27,17 @@
     {"id": "docState", "name": "Stav", "type": "int"},
     {"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
   ],
+	"reports": [
+		{
+			"id": "wasteInfo", "name": "PIO", "class": "e10pro.purchase.libs.ReportWasteInfo",  "email": 1, "dropdown": 1
+		}
+	],
   "states": {"stateColumn": "docState", "mainStateColumn": "docStateMain", "statesCfg": "e10.base.defaultDocStatesArchive"},
   "views": [
     {"id": "default", "class": "e10pro.purchase.ViewWasteInfo", "detail": "e10pro.purchase.ViewDetailWasteInfo"}
   ],
   "forms": [
     {"id": "default", "class": "e10pro.purchase.FormWasteInfo"}
-  ]
+  ],
+  "ndx": 1463
 }

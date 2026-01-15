@@ -1,4 +1,11 @@
 <style>
+	/*table.header {
+		font-family: Arial, Helvetica, sans-serif;
+		width: 100%;
+		margin-left: 1cm;
+		margin-right: 1cm;
+	}*/
+
 	body, html {
 		margin: 0;
 		padding: 0;
@@ -57,9 +64,9 @@
 <table class='header'>
 	<tr>
 		{{#data.options.docReportsHeadLogoRight}}
-			<td class="docInfo">
-				<span class='docName'>{{data.info.reportTitle}}</span><br>
-				{{@dict;rok}}: <b>{{data.wasteReturn.year}}</b>
+			<td class='docInfo'>
+				<span class="docName">{{@dict;Písemná informace o odpadu}}</span><br>
+				<span style="font-size: 75%;">Dle přílohy č. 12 vyhlášky č. 273/2021 Sb.</span>
 			</td>
 			<td class="supplierLogo">
 				{{#data.owner.logo.logo-nadpis.filename}}
@@ -74,9 +81,9 @@
 					<img style="height:24pt;" src='{{{@imgData;dataItem:data.owner.logo.logo-nadpis}}}'>
 				{{/data.owner.logo.logo-nadpis.filename}}
 			</td>
-			<td class="docInfo">
-				<span class='docName'>{{data.info.reportTitle}}</span><br>
-				{{@dict;rok}}: <b>{{data.wasteReturn.year}}</b>
+			<td class='docInfo'>
+				<span class="docName">{{@dict;Písemná informace o odpadu}}</span><br>
+				<span style="font-size: 75%;">Dle přílohy č. 12 vyhlášky č. 273/2021 Sb.</span>
 			</td>
 		{{/data.options.docReportsHeadLogoRight}}
 	</tr>

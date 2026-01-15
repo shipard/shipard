@@ -12,7 +12,7 @@ class TableWasteInfo extends DbTable
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('e10pro.purchase.wasteInfo', 'e10pro_purchase_wasteInfo', 'Informace o odpadech');
+		$this->setName ('e10pro.purchase.wasteInfo', 'e10pro_purchase_wasteInfo', 'Informace o odpadech', 1463);
 	}
 
 	public function checkNewRec (&$recData)
@@ -37,6 +37,14 @@ class TableWasteInfo extends DbTable
 
 		return $hdr;
 	}
+
+	public function getRecordInfo ($recData, $options = 0)
+	{
+		$info = parent::getRecordInfo ($recData, $options);
+		$info ['persons']['to'][] = $recData['person'];
+
+		return $info;
+	}
 }
 
 
@@ -47,10 +55,31 @@ class ViewWasteInfo extends TableView
 {
 	public function init ()
 	{
-		$this->setMainQueries ();
+		//$this->setMainQueries ();
+		$this->addTopTabs();
 
 		parent::init();
 	}
+
+  public function addTopTabs()
+  {
+		$mq = [];
+
+		$q = [];
+		array_push ($q, 'SELECT wasteReturns.* FROM [e10doc_waster_wasteReturns] AS wasteReturns');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND wasteReturns.docState = 4000');
+		array_push ($q, ' ORDER BY wasteReturns.[year] DESC');
+		$rows = $this->table->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			$mq[] = ['id' => strval($r['ndx']), 'title' => $r['tabTitle'] === '' ? $r['year'] : $r['tabTitle'], 'icon' => 'system/filterActive', 'side' => 'left'];
+			//$this->wasteReturns[$r['ndx']] = $r->toArray();
+		}
+
+		$mq[] = ['id' => 'all', 'title' => 'Vše', 'icon' => 'system/filterAll'];
+		$this->setMainQueries ($mq);
+  }
 
 	public function renderRow ($item)
 	{
@@ -79,6 +108,10 @@ class ViewWasteInfo extends TableView
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
+		//$btId = $this->bottomTabId ();
+
+		$wasteReturnNdx = intval($this->mainQueryId ());
+		$wasteReturn = $this->app()->loadItem($wasteReturnNdx, 'e10doc.waster.wasteReturns');
 
 		$q = [];
 		array_push($q, 'SELECT [wi].*, persons.fullName AS personName, nomenc.fullName AS wasteCodeFullName,');
@@ -90,6 +123,15 @@ class ViewWasteInfo extends TableView
 		array_push($q, ' LEFT JOIN e10_persons_personsContacts AS personOffices ON wi.personOffice = personOffices.ndx');
 		array_push($q, ' LEFT JOIN e10_base_nomencItems AS cities ON wi.personNomencCity = cities.ndx');
 		array_push($q, ' WHERE 1');
+
+		if ($wasteReturn)
+		{
+			array_push ($q, ' AND [wi].[validFrom] >= %d', $wasteReturn['dateFrom'], ' AND [wi].[validFrom] <= %d', $wasteReturn['dateTo']);
+
+//			    {"id": "validFrom", "name": "Platné od", "type": "date"},
+//    {"id": "validTo", "name": "Platné do", "type": "date"},
+
+		}
 
 		// -- fulltext
 		if ($fts != '')

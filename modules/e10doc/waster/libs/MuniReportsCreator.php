@@ -29,19 +29,7 @@ class MuniReportsCreator extends Utility
     $dateEnd = Utils::createDateTime("$year-12-31");
     $codeKindNdx = 1;
 
-    $this->db()->query('DELETE FROM e10doc_waster_muniReports');
-
-    /*
-    $q = [];
-    array_push($q, 'SELECT DISTINCT heads.wasteOriginAdmUnit');
-    array_push($q, ' FROM [e10doc_core_heads] AS [heads]');
-    array_push($q, ' WHERE 1');
-    array_push($q, ' AND heads.docType = %s', 'purchase');
-    array_push($q, ' AND heads.docState = %i', 4000);
-    array_push($q, ' AND heads.personType = %i', 1); // citizens
-    array_push($q, ' AND heads.dateAccounting >= %d', $dateBegin);
-    array_push($q, ' AND heads.dateAccounting <= %d', $dateEnd);
-    */
+    //$this->db()->query('DELETE FROM e10doc_waster_muniReports');
 
     $q = [];
     array_push ($q, 'SELECT SUM([rows].quantityKG) as quantityKG, heads.wasteOriginAdmUnit');

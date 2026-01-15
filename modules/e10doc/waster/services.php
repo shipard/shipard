@@ -69,6 +69,19 @@ class ModuleServices extends \E10\CLI\ModuleServices
 		$engine->createAll($wasteReturn);
 	}
 
+	protected function createCompaniesReportsOut()
+	{
+		$wasteReturn = intval($this->app->arg('wasteReturn'));
+		if (!$wasteReturn)
+		{
+			echo "ERROR: param `--wasteReturn=' not found...\n";
+			return;
+		}
+
+		$engine = new \e10doc\waster\libs\CompaniesReportsCreator($this->app);
+		$engine->wasteDir = 1;
+		$engine->createAll($wasteReturn);
+	}
 
 	public function onCliAction ($actionId)
 	{
@@ -78,6 +91,7 @@ class ModuleServices extends \E10\CLI\ModuleServices
 			case 'create-muni-reports': return $this->createMuniReports();
 			case 'send-muni-reports': return $this->sendMuniReports();
 			case 'create-companies-reports-in': return $this->createCompaniesReportsIn();
+			case 'create-companies-reports-out': return $this->createCompaniesReportsOut();
 		}
 
 		return parent::onCliAction($actionId);

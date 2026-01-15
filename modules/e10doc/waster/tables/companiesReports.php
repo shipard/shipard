@@ -4,6 +4,7 @@ namespace e10doc\waster;
 use \Shipard\Utils\Utils, \Shipard\Viewer\TableView, \Shipard\Viewer\TableViewDetail, \Shipard\Form\TableForm, \Shipard\Table\DbTable;
 use \Shipard\Utils\Wgs84;
 
+
 /**
  * Class TableCompaniesReports
  */
@@ -12,7 +13,7 @@ class TableCompaniesReports extends DbTable
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ('e10doc.waster.companiesReports', 'e10doc_waster_companiesReports', 'Přehledy firmám o odpadech');
+		$this->setName ('e10doc.waster.companiesReports', 'e10doc_waster_companiesReports', 'Přehledy firmám o odpadech', 1469);
 	}
 
 	public function createHeader ($recData, $options)
@@ -30,6 +31,11 @@ class TableCompaniesReports extends DbTable
 		return $hdr;
 	}
 
+	public function tableIcon ($recData, $options = NULL)
+	{
+		return ($recData['dir'] === 0) ? 'system/personCompany' : 'system/iconDelivery';
+	}
+
 	public function getRecordInfo ($recData, $options = 0)
 	{
 		$info = parent::getRecordInfo ($recData, $options);
@@ -45,9 +51,18 @@ class TableCompaniesReports extends DbTable
  */
 class ViewCompaniesReports extends TableView
 {
+	var $dir = 0;
+
 	public function init ()
 	{
 		$this->addTopTabs();
+
+		$bt = [];
+		$bt [] = ['id' => 'ALL', 'title' => 'Vše', 'active' => 1];
+		$bt [] = ['id' => 'sent', 'title' => 'Odeslané', 'active' => 0];
+		$bt [] = ['id' => 'unsent', 'title' => 'Neodeslané', 'active' => 0];
+		$this->setBottomTabs ($bt);
+
 		parent::init();
 	}
 
@@ -75,36 +90,18 @@ class ViewCompaniesReports extends TableView
 	{
 		$listItem ['pk'] = $item ['ndx'];
 		$listItem ['icon'] = $this->table->tableIcon($item);
-    //$listItem ['i1'] = ['text' => Utils::nf($item['admUnitId']), 'class' => 'id'];
 		$listItem ['t1'] = $item['companyPersonName'];
 
-		/*
-    $mpProps = [];
-    if ($item['municipalityPersonOid'] !== '')
-      $mpProps[] = ['text' => $item['municipalityPersonOid'], 'class' => 'label label-default'];
+		if ($item['sentState'] == 1)
+			$listItem ['i2'][] = ['text' => Utils::datef($item['sentDate'], '%k %t'), 'icon' => 'system/iconPaperPlane', 'class' => 'label label-success'];
 
-    if ($item['muniPersonName'] !== '')
-      $mpProps[] = ['text' => $item['muniPersonName'], 'class' => ''];
-
-    $listItem ['t2'] = $mpProps;
-
-		$listItem ['t3'] = [];
-		if ($item['admUnitOwner2FullName'])
-			$listItem ['t3'][] = ['text' => $item['admUnitOwner2FullName'], 'class' => 'label label-info'];
-		if ($item['admUnitOwner1FullName'])
-			$listItem ['t3'][] = ['text' => $item['admUnitOwner1FullName'], 'class' => 'label label-primary'];
-		if ($item['admUnitOwner0FullName'])
-			$listItem ['t3'][] = ['text' => $item['admUnitOwner0FullName'], 'class' => 'label label-warning'];
-
-		$distance = round(Wgs84::computeDistance($item['ownerLat'], $item['ownerLon'], $item['admUnitLat'], $item['admUnitLon']) / 1000, 0);
-		$listItem ['i2'] = ['text' => $distance.' km', 'class' => 'label label-default'];
-		*/
 		return $listItem;
 	}
 
 	public function selectRows ()
 	{
 		$fts = $this->fullTextSearch ();
+		$btId = $this->bottomTabId ();
 
 		$q = [];
 		array_push($q, 'SELECT [cr].*, companyPersons.fullName AS companyPersonName');
@@ -114,10 +111,17 @@ class ViewCompaniesReports extends TableView
 		array_push($q, ' LEFT JOIN [e10_persons_personsContacts] AS [ownerOffices] ON wr.personOffice = ownerOffices.ndx');
 		array_push($q, ' WHERE 1');
 
+		array_push($q, ' AND [cr].[dir] = %i', $this->dir);
+
 		$bottomTabId = $this->mainQueryId ();
 		$wrNdx = intval($bottomTabId);
 		if ($wrNdx !== 0)
 			array_push($q, ' AND [cr].wasteReturn = %i', $wrNdx);
+
+		if ($btId === 'sent')
+			array_push ($q, ' AND [cr].[sentState] = %i', 1);
+		elseif ($btId === 'unsent')
+			array_push ($q, ' AND [cr].[sentState] = %i', 0);
 
 		// -- fulltext
 		if ($fts != '')
@@ -148,6 +152,19 @@ class ViewCompaniesReportsIn extends ViewCompaniesReports
 		parent::init();
 	}
 }
+
+/**
+ * class ViewCompaniesReportsOut
+ */
+class ViewCompaniesReportsOut extends ViewCompaniesReports
+{
+	public function init ()
+	{
+		$this->dir = 1;
+		parent::init();
+	}
+}
+
 
 /**
  * class ViewDetailCompaniesReport
