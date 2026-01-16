@@ -12,6 +12,7 @@ class WasteCompanyInfo extends Utility
   var $periodBegin = NULL;
   var $periodEnd = NULL;
   var $personNdx = 0;
+	var $personICOB = '';
 
   var $codeKindDef = NULL;
   var $codeKindNdx = 1;
@@ -31,6 +32,27 @@ class WasteCompanyInfo extends Utility
   public function setPerson ($personNdx)
   {
     $this->personNdx = $personNdx;
+
+		$this->personICOB = $this->personICOB($this->personNdx);
+  }
+
+  protected function personICOB($personNdx)
+  {
+		$q = [];
+    array_push ($q, 'SELECT * FROM [e10_base_properties] AS props');
+		array_push ($q, ' WHERE [recid] = %i', $personNdx);
+		array_push ($q, ' AND [tableid] = %s', 'e10.persons.persons', 'AND [group] = %s', 'ids', ' AND property = %s', 'cz_icob');
+
+    $rows = $this->db()->query ($q);
+		foreach ($rows as $r)
+		{
+			if ($r['valueString'] === '')
+				continue;
+			$id = trim($r['valueString']);
+      return $id;
+		}
+
+    return '';
   }
 
   public function loadData()
@@ -104,19 +126,28 @@ class WasteCompanyInfo extends Utility
 			if ($r['addressMode'] === 0)
 			{ // office
 				$id_icp_theirs = ($r['id1'] != '') ? $r['id1'] : '1';
-				$id_icp_theirs_text = [
-					['text' => 'IČP: '.$id_icp_theirs, 'class' => ''],
-					['text' => implode(', ', $ap), 'class' => 'e10-small break'],
-					['text' => 'IČZUJ: '.$r['saAdmUnit11Id'], 'class' => 'e10-small'],
-				];
-				if ($r['id2'] != '')
-					$id_icp_theirs .= '-'.$r['id2'];
-				if ($r['id2'] != '')
+				$id_icp_theirs_text = [];
+
+				if ($this->personICOB != '')
 				{
-					$id_icp_theirs_text[] = [
-						['text' => 'IČZ: '.$r['id2'], 'class' => 'break'],
-					];
+					$id_icp_theirs_text[] = ['text' => 'IČOB: '.$this->personICOB, 'class' => 'break'];//'IČOB: '.;
 				}
+				else
+				{
+					if ($r['id2'] != '')
+						$id_icp_theirs .= '-'.$r['id2'];
+					if ($r['id2'] != '')
+					{
+						$id_icp_theirs_text[] = ['text' => 'IČZ: '.$r['id2'], 'class' => 'break'];
+
+					}
+					elseif ($id_icp_theirs != '')
+					{
+						$id_icp_theirs_text[] = ['text' => 'IČP: '.$id_icp_theirs, 'class' => ''];
+					}
+				}
+				$id_icp_theirs_text [] = ['text' => implode(', ', $ap), 'class' => 'e10-small break'];
+				$id_icp_theirs_text [] = ['text' => 'IČZUJ: '.$r['saAdmUnit11Id'], 'class' => 'e10-small'];
 			}
 			else
 			{ // city
