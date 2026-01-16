@@ -184,7 +184,7 @@ class WasteCompanyInfo extends Utility
 		$headerSum = [
 			//'icp_our' => 'Naše IČP', 'icz_our' => 'Naše IČZ',
 
-      'icp_theirs' => 'IČP/ORP',
+      'icp_theirs' => 'IČP/ORP/IČZ/IČOB',
 			'code' => 'Kat. č. odpadu', 'title' => 'Název', 'weight' => '+Hmotnost [t]'
 		];
 
