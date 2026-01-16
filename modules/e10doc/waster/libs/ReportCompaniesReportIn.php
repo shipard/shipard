@@ -34,10 +34,10 @@ class ReportCompaniesReportIn extends \e10doc\core\libs\reports\DocReportBase
 	{
     $this->dir = $this->recData['dir'];
 
-    if (!$this->dir === 0)
+    if ($this->dir === 0)
       $this->sendReportNdx = 2700;
     else
-      $this->sendReportNdx = 2700;
+      $this->sendReportNdx = 2702;
 
 		parent::loadData();
 
