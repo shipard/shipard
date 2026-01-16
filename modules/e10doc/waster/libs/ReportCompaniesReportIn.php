@@ -73,6 +73,7 @@ class ReportCompaniesReportIn extends \e10doc\core\libs\reports\DocReportBase
 		$this->data['person']['addressOffice'] = $this->loadPersonAddress($this->data['wasteReturn']['person'], 0, $this->data['wasteReturn']['personOffice']);
 
     $this->data['info']['reportTitle'] = ($this->dir === 0) ? 'Přehled odebraných odpadů' : 'Přehled dodaných odpadů';
+    $this->data['info']['fileTitle'] = ($this->dir === 0) ? 'oznameni-odebrane-odpady' : 'oznameni-dodane-odpady';
 
     if ($this->dir === 0)
     {
