@@ -2,6 +2,7 @@
 
 namespace e10doc\waster\libs;
 use \Shipard\Utils\Utils;
+use \Shipard\Utils\Json;
 use \Shipard\Utils\World;
 use \e10pro\reports\waste_cz\libs\WasteReturnEngine;
 use \e10doc\core\libs\E10Utils;
@@ -82,13 +83,20 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
         $this->calendarYear = intval(substr($cpBegin['calendarYear'], 1));
 
       $this->setInfo('icon', 'reportMonthlyReport');
-      $this->setInfo('param', 'Období', $this->reportParams ['calendarPeriod']['activeTitle'].' ('.Utils::datef($this->periodBegin, '%d').' - '.Utils::datef($this->periodEnd, '%d').')');
     }
     else
     {
       $this->periodBegin = Utils::createDateTime($this->periodBegin);
       $this->periodEnd = Utils::createDateTime($this->periodEnd);
     }
+
+    /*
+      $dday = '2025-12-01';
+      $this->periodBegin = Utils::createDateTime($dday);
+      $this->periodEnd = Utils::createDateTime($dday);
+    */
+
+    $this->setInfo('param', 'Období', $this->reportParams ['calendarPeriod']['activeTitle'].' ('.Utils::datef($this->periodBegin, '%d').' - '.Utils::datef($this->periodEnd, '%d').')');
 
     $checkWasteGroupsYear = 'Y'.$this->periodBegin->format('Y');
     $this->checksGroups = $this->app->cfgItem('e10doc.waster.checkWasteGroups.'.$checkWasteGroupsYear, NULL);
@@ -258,7 +266,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
 
     $q = [];
 
-    array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG, [rows].[dir], [rows].[wasteHandlingCode],');
+    array_push ($q, 'SELECT [rows].wasteCodeNomenc, SUM([rows].quantityKG) as quantityKG, [rows].[dir], [rows].[wasteHandlingCode], [rows].[unit],');
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
@@ -268,7 +276,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
     array_push ($q, ' AND [rows].[dateAccounting] >= %d', $periodYearBegin);
     array_push ($q, ' AND [rows].[dateAccounting] < %d', $this->periodBegin);
 
-		array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].[wasteHandlingCode]');
+		array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].[wasteHandlingCode], [rows].[unit]');
     array_push ($q, ' ORDER BY nomencItems.fullName, nomencItems.itemId');
 
 		$rows = $this->app->db()->query ($q);
@@ -286,6 +294,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
         ];
       }
 
+      $quantity = $this->quantity($r['quantityKG'], 'kg', $this->dstUnits);
       $data[$wcId]['quantityState'] ??= 0.0;
       $whc = $this->wasteHandlingCodes[$r['wasteHandlingCode']] ?? NULL;
       switch ($whc['dir'])
@@ -293,13 +302,13 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
         case WasteReturnEngine::whcDirIn:
         case WasteReturnEngine::whcDirInitState:
           $data[$wcId]['quantityIS'] ??= 0.0;
-          $data[$wcId]['quantityIS'] += $r['quantityKG'];
-          $data[$wcId]['quantityState'] += $r['quantityKG'];
+          $data[$wcId]['quantityIS'] += $quantity;
+          $data[$wcId]['quantityState'] += $quantity;
           break;
         case WasteReturnEngine::whcDirOut:
           $data[$wcId]['quantityIS'] ??= 0.0;
-          $data[$wcId]['quantityIS'] -= $r['quantityKG'];
-          $data[$wcId]['quantityState'] -= $r['quantityKG'];
+          $data[$wcId]['quantityIS'] -= $quantity;
+          $data[$wcId]['quantityState'] -= $quantity;
           break;
       }
 		}
@@ -378,6 +387,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
         'stocksEndState' => 0.0,
       ];
 
+      $isUwc = [];
       foreach ($cg['wasteCodesInOut'] as $wasteCode)
       {
         foreach ($wastesData as $wd)
@@ -387,7 +397,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
             $cgData['wastesIn'] += $wd['quantityIn'] ?? 0.0;
             $cgData['wastesOut'] += $wd['quantityOut'] ?? 0.0;
             $cgData['wastesEndState'] += $wd['quantityState'] ?? 0.0;
-            //$cgData['wastesIS'] += $wd['quantityIS'] ?? 0.0;
+            $isUwc[$wasteCode] = TRUE;
           }
         }
       }
@@ -397,10 +407,9 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
         {
           if ($wd['wasteCode'] == $wasteCode)
           {
-            //$cgData['wastesIn'] += $wd['quantityIn'] ?? 0.0;
-            //$cgData['wastesOut'] += $wd['quantityOut'] ?? 0.0;
             $cgData['wastesIS'] += $wd['quantityIS'] ?? 0.0;
-            $cgData['wastesEndState'] += $wd['quantityIS'] ?? 0.0;
+            if (!isset($isUwc[$wasteCode]))
+              $cgData['wastesEndState'] += $wd['quantityIS'] ?? 0.0;
           }
         }
       }
@@ -421,25 +430,25 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
 
     foreach ($data as &$d)
     {
-      if (abs($d['wastesIn'] - $d['stocksIn']) < 0.000001)
+      if (abs($d['wastesIn'] - $d['stocksIn']) < 0.000050)
       {
         $d['_options']['cellClasses']['wastesIn'] = 'e10-row-plus';
         $d['_options']['cellClasses']['stocksIn'] = 'e10-row-plus';
       }
 
-      if (abs($d['wastesOut'] - $d['stocksOut']) < 0.000001)
+      if (abs($d['wastesOut'] - $d['stocksOut']) < 0.000050)
       {
         $d['_options']['cellClasses']['wastesOut'] = 'e10-row-plus';
         $d['_options']['cellClasses']['stocksOut'] = 'e10-row-plus';
       }
 
-      if (abs($d['wastesIS'] - $d['stocksIS']) < 0.000001)
+      if (abs($d['wastesIS'] - $d['stocksIS']) < 0.000050)
       {
         $d['_options']['cellClasses']['wastesIS'] = 'e10-row-plus';
         $d['_options']['cellClasses']['stocksIS'] = 'e10-row-plus';
       }
 
-      if (abs($d['wastesEndState'] - $d['stocksEndState']) < 0.000001)
+      if (abs($d['wastesEndState'] - $d['stocksEndState']) < 0.000050)
       {
         $d['_options']['cellClasses']['wastesEndState'] = 'e10-row-plus';
         $d['_options']['cellClasses']['stocksEndState'] = 'e10-row-plus';
@@ -465,8 +474,12 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
     ];
     $this->addContent([
       'type' => 'table', 'header' => $h, 'table' => $data, //'title' => $title,
-      'main' => TRUE, 'params' => ['precision' => $this->dstDecimals]
+      'main' => TRUE, 'params' => ['precision' => $this->dstDecimals, 'forceTableClass' => 'fullWidth default stripped']
     ]);
+
+    $this->setInfo('note', '1', 'Všechna množství jsou v tunách');
+
+    //$this->addContent(['type' => 'text', 'subtype' => 'code', 'text' => Json::lint($this->stockData)]);
 
     $this->setInfo('title', 'Kontrola Odpady vs Zásoby');
   }
