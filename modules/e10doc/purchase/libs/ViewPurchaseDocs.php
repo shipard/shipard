@@ -84,6 +84,7 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 			'withoutWasteCity' => ['title' => 'Bez Obce původu odpadu', 'id' => 'withoutWasteCity'],
 			'invalidOffice' => ['title' => 'S neplatnou provozovnou', 'id' => 'invalidOffice'],
 			'withoutPersonHandover' => ['title' => 'Bez osoby Předal', 'id' => 'withoutPersonHandover'],
+			'withoutAdmUnit11' => ['title' => 'Bez IČZUJ', 'id' => 'withoutAdmUnit11'],
 		];
 
 		$paramsPurchases = new \Shipard\UI\Core\Params ($this->app());
@@ -134,6 +135,15 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 		if ($withoutPersonHandover)
 		{
 			array_push ($q, ' AND heads.personHandover = %i', 0);
+		}
+
+		$withoutAdmUnit11 = isset ($qv['purchases']['withoutAdmUnit11']);
+		if ($withoutAdmUnit11)
+		{
+			array_push ($q, ' AND heads.otherAddress1Mode = %i', 0);
+			array_push ($q, ' AND (');
+				array_push($q,' offices.saAdmUnit11Id = %i', 0);
+			array_push ($q, ')');
 		}
 	}
 }
