@@ -79,13 +79,27 @@ class PurchaseInfo extends DataView
 
     $table = [];
     $header = ['title' => 'Značka'];
+
+    $header2 = [
+      ['title' => 'Značka', '_options' => ['rowSpan' => ['title' => 2]]],
+      ['title' => '', '_options' => []]
+    ];
+
     $valuesCols = [];
     foreach ($dates as $dateId)
     {
-      $header[$dateId.'-quantity'] = Utils::datef($dateId, '%k').' ['.$this->dstUnit.']';
-      $header[$dateId.'-taxBaseHc'] = Utils::datef($dateId, '%k').' - [Kč]';
+      $header[$dateId.'-quantity'] = '+'.Utils::datef($dateId, '%n %k').' ['.$this->dstUnit.']';
+      $header[$dateId.'-taxBaseHc'] = '+'.Utils::datef($dateId, '%n %k').' - [Kč]';
       $valuesCols[] = $dateId.'-quantity';
       $valuesCols[] = $dateId.'-taxBaseHc';
+
+      $header2[0][$dateId.'-quantity'] = Utils::datef($dateId, '%n %k');
+      $header2[0]['_options']['colSpan'][$dateId.'-quantity'] = 2;
+      $header2[0]['_options']['cellClasses'][$dateId.'-quantity'] = 'center';
+
+      $header2[1][$dateId.'-quantity'] = $this->dstUnit;
+      $header2[1][$dateId.'-taxBaseHc'] = 'Kč';
+      $header2[1]['_options']['cellClasses'][$dateId.'-quantity'] = 'center';
     }
 
     foreach ($brands as $brandId => $brandInfo)
@@ -93,7 +107,7 @@ class PurchaseInfo extends DataView
       if (!isset($table[$brandId]))
       {
         $row = [
-          'title' => $brandInfo['sn'] ?? '-- Nezařazeno --',
+          'title' => $brandInfo['sn'] ?? '---',
         ];
 
         foreach ($dates as $dateId)
@@ -114,15 +128,16 @@ class PurchaseInfo extends DataView
 		{
 			$csRow = ['title' => 'Ostatní'];
       foreach ($valuesCols as $vc)
-			  $csRow[$vc] = $cutedSum[$vc];
+			  $csRow[$vc] = intval($cutedSum[$vc]);
 			$tableShort['BSUM'] = $csRow;
 		}
 
     $this->data['tableShort'] = $tableShort;
     $this->data['table'] = $table;
     $this->data['header'] = $header;
+    $this->data['header2'] = $header2;
 
-    $params = [];
+    $params = ['header' => $header2];
 
     $tr = new \Shipard\Utils\TableRenderer($tableShort, $header, $params, $this->app());
 		$tableHtmlCode = $tr->render();
