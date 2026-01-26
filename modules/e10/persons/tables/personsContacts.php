@@ -290,20 +290,21 @@ class TablePersonsContacts extends DbTable
 
 	public function addressTextRow($recData)
 	{
-      if ($recData['adrSpecification'] != '')
-        $ap[] = $recData['adrSpecification'];
-      if ($recData['adrStreet'] != '')
-        $ap[] = $recData['adrStreet'];
-      if ($recData['adrCity'] != '')
-        $ap[] = $recData['adrCity'];
-      if ($recData['adrZipCode'] != '')
-        $ap[] = $recData['adrZipCode'];
+		$ap = [];
+		if ($recData['adrSpecification'] != '')
+			$ap[] = $recData['adrSpecification'];
+		if ($recData['adrStreet'] != '')
+			$ap[] = $recData['adrStreet'];
+		if ($recData['adrCity'] != '')
+			$ap[] = $recData['adrCity'];
+		if ($recData['adrZipCode'] != '')
+			$ap[] = $recData['adrZipCode'];
 
-      $country = World::country($this->app(), $recData['adrCountry']);
-      //$ap[] = /*$country['f'].' '.*/$country['t'];
+		//$country = World::country($this->app(), $recData['adrCountry']);
+		//$ap[] = /*$country['f'].' '.*/$country['t'];
 
-      $address = implode(', ', $ap);
-			return $address;
+		$address = implode(', ', $ap);
+		return $address;
 	}
 }
 
