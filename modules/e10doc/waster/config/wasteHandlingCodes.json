@@ -5,6 +5,7 @@
     "hn": "Převzetí od občanů",
     "dir": 0,
     "personType": 1,
+    "endYearCode": "AN5",
     "validFrom": "2025-01-01",
     "sortOrder": 200
   },
@@ -91,7 +92,7 @@
     "sortOrder": 302
   },
   "XR12d": {
-    "sn": "XR12c:Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
+    "sn": "XR12d: Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
     "fn": "Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
     "dir": 3,
     "validFrom": "2025-01-01",
@@ -107,7 +108,7 @@
     "sortOrder": 302
   },
   "AR12d": {
-    "sn": "AR12d:Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
+    "sn": "AR12d: Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
     "fn": "Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
     "dir": 3,
     "validFrom": "2025-01-01",
@@ -120,8 +121,22 @@
     "validFrom": "2025-01-01",
     "sortOrder": 302
   },
+  "CR12c": {
+    "sn": "CR12c: Úprava před recyklací nebo zpětným získáváním organických látek (papír, plasty)",
+    "fn": "Úprava před recyklací nebo zpětným získáváním organických látek (papír, plasty)",
+    "dir": 3,
+    "validFrom": "2025-01-01",
+    "sortOrder": 302
+  },
   "BR12d": {
-    "sn": "BR12d:Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
+    "sn": "BR12d: Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
+    "fn": "Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
+    "dir": 3,
+    "validFrom": "2025-01-01",
+    "sortOrder": 302
+  },
+  "CR12d": {
+    "sn": "CR12d: Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
     "fn": "Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
     "dir": 3,
     "validFrom": "2025-01-01",

@@ -91,7 +91,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
     }
 
     /*
-      $dday = '2025-12-01';
+      $dday = '2025-10-15';
       $this->periodBegin = Utils::createDateTime($dday);
       $this->periodEnd = Utils::createDateTime($dday);
     */
@@ -228,7 +228,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
 
         case WasteReturnEngine::whcDirProduction:
         case WasteReturnEngine::whcDirMove:
-          if (($whc['isEndState'] ?? 0) == 0)
+          if (intval($whc['isEndState'] ?? 0) == 0)
           {
             if ($r['dir'] == WasteReturnEngine::rowDirIn)
             {
@@ -296,17 +296,20 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
 
       $quantity = $this->quantity($r['quantityKG'], 'kg', $this->dstUnits);
       $data[$wcId]['quantityState'] ??= 0.0;
+      $data[$wcId]['quantityIS'] ??= 0.0;
       $whc = $this->wasteHandlingCodes[$r['wasteHandlingCode']] ?? NULL;
       switch ($whc['dir'])
       {
         case WasteReturnEngine::whcDirIn:
         case WasteReturnEngine::whcDirInitState:
-          $data[$wcId]['quantityIS'] ??= 0.0;
+//        case WasteReturnEngine::whcDirProduction:
+//          $data[$wcId]['quantityIS'] ??= 0.0;
           $data[$wcId]['quantityIS'] += $quantity;
           $data[$wcId]['quantityState'] += $quantity;
           break;
         case WasteReturnEngine::whcDirOut:
-          $data[$wcId]['quantityIS'] ??= 0.0;
+//        case WasteReturnEngine::whcDirMove:
+  //        $data[$wcId]['quantityIS'] ??= 0.0;
           $data[$wcId]['quantityIS'] -= $quantity;
           $data[$wcId]['quantityState'] -= $quantity;
           break;
@@ -394,6 +397,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
         {
           if ($wd['wasteCode'] == $wasteCode)
           {
+            //$cgData['wastesIS'] += $wd['quantityIS'] ?? 0.0;
             $cgData['wastesIn'] += $wd['quantityIn'] ?? 0.0;
             $cgData['wastesOut'] += $wd['quantityOut'] ?? 0.0;
             $cgData['wastesEndState'] += $wd['quantityState'] ?? 0.0;
@@ -479,7 +483,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
 
     $this->setInfo('note', '1', 'Všechna množství jsou v tunách');
 
-    //$this->addContent(['type' => 'text', 'subtype' => 'code', 'text' => Json::lint($this->stockData)]);
+    $this->addContent(['type' => 'text', 'subtype' => 'code', 'text' => Json::lint($wastesData)]);
 
     $this->setInfo('title', 'Kontrola Odpady vs Zásoby');
   }

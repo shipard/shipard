@@ -152,9 +152,11 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
     $this->loadMunicipalityData();
 
     $this->createContent_Report_Load_WasteOps(WasteReturnEngine::rowDirIn, $data); // in ops
+    $this->createContent_Report_Load_WasteMoves(WasteReturnEngine::rowDirIn, $data); // in moves
     $this->createContent_Report_Load(2, WasteReturnEngine::rowDirIn, $data); // companies IN
     $this->createContent_Report_Load(1, WasteReturnEngine::rowDirIn, $data); // humans
     $this->createContent_Report_Load_WasteOps(WasteReturnEngine::rowDirOut, $data); // out ops
+    $this->createContent_Report_Load_WasteMoves(WasteReturnEngine::rowDirOut, $data); // out moves
     $this->createContent_Report_Load(2, WasteReturnEngine::rowDirOut, $data); // companies OUT
 
     $sum = [
@@ -175,8 +177,10 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       $header['_options']['beforeSeparator'] = 'separator';
       $t[] = $header;
 
+      $stripCounter = 0;
       $sum ['wc'] = ['in' => 0.0, 'out' => 0.0];
       $rows = \e10\sortByOneKey($groupRows['rows'], 'order');
+      $cntSubRows = count($rows);
       foreach ($rows as $row)
       {
         if (isset($row['quantityIn']))
@@ -208,7 +212,11 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
             $row['pid'] = $partner['number'];
         }
 
+        if ($cntSubRows > 4 && $stripCounter % 2 && !isset($row['_options']['class']))
+          $row['_options']['class'] = 'e10-bg-t9';
+
         $t[] = $row;
+        $stripCounter++;
       }
 
       $sumRow = [
@@ -247,7 +255,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 		$this->addContent (
       [
         'type' => 'table', 'header' => $h, 'table' => $t, 'main' => TRUE,
-        'params' => ['tableClass' => 'e10-print-small default', 'precision' => ($this->showUnits === 1) ? 6 : 2]
+        'params' => ['tableClass' => 'e10-print-small', 'precision' => ($this->showUnits === 1) ? 6 : 2]
       ]);
 
     $this->setInfo('title', 'Roční hlášení o produkci a nakládání s odpady');
@@ -265,10 +273,12 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
     $this->loadMunicipalityData();
 
     $this->createContent_Report_Load_WasteOps(WasteReturnEngine::rowDirIn, $data); // in ops
+    $this->createContent_Report_Load_WasteMoves(WasteReturnEngine::rowDirIn, $data); // in moves
     $this->createContent_Report_Load(2, WasteReturnEngine::rowDirIn, $data); // companies IN
     $this->createContent_Report_Load(1, WasteReturnEngine::rowDirIn, $data); // humans
     $this->createContent_Report_Load_WasteOps(WasteReturnEngine::rowDirOut, $data); // out ops
     $this->createContent_Report_Load(2, WasteReturnEngine::rowDirOut, $data); // companies OUT
+    $this->createContent_Report_Load_WasteMoves(WasteReturnEngine::rowDirOut, $data); // out moves
 
 
     $sumData = $this->createContent_Report_Load_WasteSums($data);
@@ -301,9 +311,15 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
       $quantityState = 0.0;
 
+      $mainGLSums = [];//['in' => 0.0, 'out' => 0.0];
+
       $rows = \e10\sortByOneKey($groupRows['rows'], 'order', TRUE);
       foreach (/*$groupRows['rows']*/$rows as $hc => $hcRow)
       {
+        $mainLetter = $hc[0];
+        if (!isset($mainGLSums[$mainLetter]))
+          $mainGLSums[$mainLetter] = ['letter' => $mainLetter, 'in' => 0.0, 'out' => 0.0];
+
         $sumRow = [
           'hc' => $hc,
           // 'qs' => $hccData['in'] - $hccData['out'],
@@ -321,6 +337,9 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
         $wcSum['quantityIn'] += $sumRow['quantityIn'] ?? 0.0;
         $wcSum['quantityOut'] += $sumRow['quantityOut'] ?? 0.0;
+
+        $mainGLSums[$mainLetter]['in'] += $sumRow['quantityIn'] ?? 0.0;
+        $mainGLSums[$mainLetter]['out'] += $sumRow['quantityOut'] ?? 0.0;
 
         $quantityState += $sumRow['quantityIn'] ?? 0.0;
         $quantityState -= $sumRow['quantityOut'] ?? 0.0;
@@ -342,29 +361,24 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
       $t[] = $sumRow;
 
-      if (abs(round($sumRow['quantityIn'] - $sumRow['quantityOut'], 6)) >= 0.000001)
+      foreach ($mainGLSums as $mgls)
       {
-        $wcc = $groupRows['wasteCode'];
-        foreach ($this->hcStates[$wcc] as $hcc => $hccData)
-        {
-          if (abs(round($hccData['in'] - $hccData['out'], 6)) < 0.000001)
-            continue;
+        $letterRest = round($mgls['in'] - $mgls['out'], 6);
+        $sumRow = [
+          'hc' => 'Zůstatek '.$mgls['letter'].':',
+          'quantityIn' => $mgls['in'],
+          'quantityOut' => $mgls['out'],
+          'qs' => $letterRest,
+        ];
 
-          $item = [
-            'hc' => $hcc.': '.round($sumRow['quantityIn'] - $sumRow['quantityOut'], 6).' / '.json_encode($hccData),
-            //'quantityIn' => $hccData['in'],
-            //'quantityOut' => $hccData['out'],
-          ];
+        if (abs(round($sumRow['quantityIn'] - $sumRow['quantityOut'], 6)) >= 0.000001)
+          $sumRow['_options']['cellClasses']['qs'] = 'e10-warning3';
 
-          $t[] = $item;
-        }
+        $t[] = $sumRow;
       }
-
-
     }
 
 		$h = [
-      //'#' => '#',
       'hc' => 'Evidenční kód nakládání',
       'quantityIn' => ' Příjem '.(($this->showUnits === 1) ? '[t]' : '[kg]'),
       'quantityOut' => ' Výdej '.(($this->showUnits === 1) ? '[t]' : '[kg]'),
@@ -376,7 +390,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
         'params' => ['tableClass' => 'e10-print-small default', 'precision' => ($this->showUnits === 1) ? 6 : 2]
       ]);
 
-    $this->setInfo('title', 'Roční hlášení o produkci a nakládání s odpady');
+    $this->setInfo('title', 'Roční hlášení o produkci a nakládání s odpady 789');
     $this->paperOrientation = 'landscape';
   }
 
@@ -428,12 +442,12 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
     $q = [];
 
-    if ($personType === 2) // companies
+    if ($personType == 2) // companies
     {
       array_push ($q, 'SELECT [rows].person, [rows].personOffice, [rows].wasteCodeNomenc, [rows].wasteHandlingCode, [rows].[dir], [rows].[addressMode], [rows].[nomencCity],');
       array_push ($q, ' SUM([rows].quantityKG) as quantityKG,');
       array_push ($q, ' nomencItems.fullName, nomencItems.itemId,');
-      array_push ($q, ' persons.fullName AS personFullName,');
+      array_push ($q, ' persons.fullName AS personFullName, addrs.saAdmUnit11Id,');
       array_push ($q, ' addrs.adrCity, addrs.adrStreet, addrs.adrZipCode, addrs.id1, addrs.id2');
       array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
       array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
@@ -465,7 +479,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       //[rows].quantityKG
       array_push ($q, ' AND [rows].[quantityKG] != 0');
 
-		  array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].person, [rows].addressMode, [rows].personOffice, [rows].nomencCity, [rows].[dir], [rows].wasteHandlingCode');
+		  array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].person, [rows].addressMode, [rows].personOffice, addrs.saAdmUnit11Id, [rows].[dir], [rows].wasteHandlingCode');
       array_push ($q, ' ORDER BY [rows].wasteCodeNomenc, persons.fullName');
     }
     else
@@ -485,7 +499,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       $pn = '';
       $order = $r['itemId'].'_'.$r['dir'].'_'.$r['wasteHandlingCode'];
 
-      if ($personType === 2)
+      if ($personType == 2)
       { // companies
         $personOid = $this->personOid($r['person']);
         $personICOB = $this->personICOB($r['person']);
@@ -535,6 +549,8 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
             $item['city'] = $r['adrCity'];
             $item['street'] = $r['adrStreet'];
             $item['zipCode'] = str_replace(' ', '', $r['adrZipCode']);
+
+            $item['id4'] = strval($r['saAdmUnit11Id']);
 
             if ((isset($r['id1']) && $r['id1'] !== ''))
             {
@@ -597,22 +613,28 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       $hcc = $item['hc'];
       if ($wasteDir == WasteReturnEngine::rowDirIn)
       {
+        if ($item['hc'] == 'XR12d')
+        {
+          error_log("### IN XR12d: ".json_encode($item));
+        }
         if (!isset($this->hcStates[$wcc]))
         {
           $this->hcStates[$wcc] = [
             'C00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
             'A00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
             'B00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
-            'BN30' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
-            'A10' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN4'],
-          ];
+            //'BN30' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
+            'A10' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
+
+            //'XN3' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
+            ];
         }
 
         $this->hcStates[$wcc][$hcc]['in'] += $item['quantityIn'];
         $data[$gid]['rows'][] = $item;
       }
       elseif ($wasteDir == WasteReturnEngine::rowDirOut)
-      {
+      { // XX1
         $totalToOut = $item['quantityOut'];
         $restOut = $item['quantityOut'];
         foreach ($this->hcStates[$wcc] as $stateHC => &$states)
@@ -666,6 +688,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       $item['id4'] = strval($r['iczuj']);
       $item['isCity'] = 1;
       $item['partnerId'] = $this->registerPartner($item);
+      $wcc = $r['wasteCode'];
 
       if (!isset($data[$gid]))
       {
@@ -675,6 +698,21 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
           'rows' => [],
         ];
       }
+
+      if (!isset($this->hcStates[$wcc]))
+      {
+        $this->hcStates[$wcc] = [
+          'C00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
+          'A00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
+          'B00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
+          //'BN30' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
+          'A10' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
+
+          //'XN3' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
+          ];
+      }
+      $hcc = $r['hc'];
+      $this->hcStates[$wcc][$hcc]['in'] += $item['quantityIn'];
 
       $data[$gid]['rows'][] = $item;
       $cnt++;
@@ -741,7 +779,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       $partner['iczuj'] = $item['id4'];
     else
     {
-      $partner['iczuj'] = strval($this->natCityId($item['city'] ?? ''));
+      //$partner['iczuj'] = strval($this->natCityId($item['city'] ?? ''));
     }
     if (isset($item['street']) && $item['street'] !== '')
     {
@@ -777,21 +815,6 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
     $this->partners[$partnerId] = $partner;
 
     return $partnerId;
-  }
-
-  protected function natCityId($city)
-  {
-    $natCityId = 585068;
-
-    $nc = $this->db()->query('SELECT * FROM e10_base_nomencItems WHERE shortName = %s', $city, ' AND [level] = %i', 2, ' AND id LIKE %s', 'cz-orp%')->fetch();
-    if ($nc)
-    {
-      $natCityId = intval(substr($nc['itemId'], 2));
-      if ($natCityId)
-        return $natCityId;
-    }
-    //error_log('SRCH-ICZUJ: '.json_encode($city));
-    return $natCityId;
   }
 
   protected function cityById($cityId)
@@ -860,8 +883,10 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
             'C00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
             'A00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
             'B00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
-            'BN30' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
-            'A10' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN4'],
+            //'BN30' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
+            'A10' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
+
+            //'XN3' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
           ];
         }
 
@@ -885,6 +910,132 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       }
 
       $data[$gid]['rows'][] = $item;
+
+      $cnt++;
+		}
+  }
+
+  public function createContent_Report_Load_WasteMoves($dir, &$data)
+  {
+    $q = [];
+    array_push ($q, 'SELECT [rows].wasteCodeNomenc, [rows].[dir], [rows].wasteHandlingCode, ');
+    array_push ($q, ' SUM([rows].quantityKG) as quantityKG,');
+    array_push ($q, ' nomencItems.fullName, nomencItems.itemId');
+    array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
+    array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
+		array_push ($q, ' WHERE 1');
+		array_push ($q, ' AND [rows].rowSource = %i', 0);
+    array_push ($q, ' AND [rows].dir = %i', $dir);
+    array_push ($q, ' AND [rows].personType = %i', 0);
+    array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
+
+    if ($this->periodBegin)
+      array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
+    if ($this->periodEnd)
+      array_push ($q, ' AND [rows].[dateAccounting] <= %d', $this->periodEnd);
+
+    array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].[dir], [rows].wasteHandlingCode');
+    array_push ($q, ' ORDER BY [rows].wasteCodeNomenc');
+
+    $cnt = 0;
+		$rows = $this->app->db()->query ($q);
+		forEach ($rows as $r)
+		{
+      $gid = 'G'.$r['itemId'];
+
+      if ($dir == WasteReturnEngine::rowDirIn)
+        $order = $r['itemId'].'_'.$r['dir'].'_'.'00'.'000000000';
+      else
+        $order = $r['itemId'].'_'.$r['dir'].'_'.'77'.'AAAAAAAAA';
+
+      $item = [
+        'wasteCode' => $r['itemId'],
+        'wasteName' => $r['fullName'],
+        'hc' => $r['wasteHandlingCode'],
+        'order' => $order,
+        'rs' => 1,
+      ];
+
+      $wcc = $r['itemId'];
+      $hcc = $item['hc'];
+
+      if ($r['dir'] == WasteReturnEngine::rowDirIn)
+      {
+        if ($this->showUnits === 1)
+          $item['quantityIn'] = round($r['quantityKG'] / 1000, 6);
+        else
+          $item['quantityIn'] = $r['quantityKG'];
+
+        if (!isset($this->hcStates[$wcc]))
+        {
+          $this->hcStates[$wcc] = [
+            'C00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
+            'A00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
+            'B00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
+            //'BN30' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
+            'A10' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
+
+            //'XN3' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
+          ];
+        }
+
+        $this->hcStates[$wcc][$hcc]['in'] += $item['quantityIn'];
+      }
+      elseif ($r['dir'] == WasteReturnEngine::rowDirOut)
+      {
+        if ($this->showUnits === 1)
+          $item['quantityOut'] = round($r['quantityKG'] / 1000, 6);
+        else
+        $item['quantityOut'] = $r['quantityKG'];
+      }
+
+      if (!isset($data[$gid]))
+      {
+        $data[$gid] = [
+          'wasteCode' => $r['itemId'],
+          'wasteName' => $r['fullName'],
+          'rows' => [],
+        ];
+      }
+
+      if ($dir == WasteReturnEngine::rowDirIn)
+      {
+        $data[$gid]['rows'][] = $item;
+      }
+      if ($dir == WasteReturnEngine::rowDirOut)
+      {
+        if ($hcc[0] === 'X')
+        {
+          $totalToOut = $item['quantityOut'];
+          $restOut = $item['quantityOut'];
+
+          foreach ($this->hcStates[$wcc] as $stateHC => &$states)
+          {
+            $available = $states['in'] - $states['out'];
+            if ($available <= 0.0)
+              continue;
+            $thisOut = $totalToOut;
+            if ($available <= $thisOut)
+              $thisOut = $available;
+
+            $states['out'] += $thisOut;
+            $itemOut = $item;
+            $itemOut['quantityOut'] = $thisOut;
+            $itemOut['hc'] = $stateHC['0'].substr($hcc, 1);
+
+            $totalToOut -= $thisOut;
+
+            $data[$gid]['rows'][] = $itemOut;
+
+            if ($totalToOut <= 0.0)
+              break;
+          }
+        }
+        else
+        {
+          $data[$gid]['rows'][] = $item;
+        }
+      }
 
       $cnt++;
 		}
@@ -951,89 +1102,19 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
   protected function loadMunicipalityData()
   {
+    /*
     if ($this->wasteReturnRecData['municipalityData'] ?? 0)
     {
       $this->loadMunicipalityData_File();
       return;
     }
-
+    */
     $mde = new \e10doc\waster\libs\MunicipalityData($this->app());
     $mde->periodBegin = $this->periodBegin;
     $mde->periodEnd = $this->periodEnd;
     $mde->loadFromDb();
     $mde->createMunicipalityData();
     $this->municipalityData = $mde->municipalityData;
-  }
-
-  protected function loadMunicipalityData_File()
-  {
-    $sum20 = 0.0;
-    $returnNdx = $this->wasteReturnRecData['ndx'];
-    $returnRecData = $this->app()->loadItem($returnNdx, 'e10doc.waster.wasteReturns');
-    if (!$returnRecData)
-      return;
-    if (!isset($returnRecData['municipalityData']))
-      return;
-
-    $attRecData = $this->db()->query ('SELECT * FROM [e10_attachments_files] WHERE [ndx] = %i', $returnRecData['municipalityData'])->fetch();
-    $fileName = 'att/'.$attRecData['path'] . $attRecData['filename'];
-
-    $file = fopen($fileName, "r");
-
-    $cnt = 0;
-    while ($cols = fgetcsv($file, null, ','))
-    {
-      if ($cnt === 0)
-      {
-        $cnt = 1;
-        continue;
-      }
-
-      if (($cols[2] ?? '') === '')
-        continue;
-
-
-      $iczuj = strval($this->natCityId($cols[7] ?? ''));
-
-      $item = [
-        'wasteCode' => $cols[2],
-        'hc' => $cols[4],
-        'quantity' => floatval($cols[5]),
-        'cityName' => $cols[7],
-        'iczuj' => $iczuj,
-      ];
-
-      $wcc = $item['wasteCode'];
-      $hcc = $item['hc'];
-      $order = $wcc.'_'.'0'.'_'.$hcc.'_'.$cnt;
-      $item['order'] = $order;
-
-      if (!isset($this->hcStates[$wcc]))
-      {
-        $this->hcStates[$wcc] = [
-          'C00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
-          'A00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN3'],
-          'B00' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
-          'BN30' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'BN3'],
-          'A10' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'AN4'],
-        ];
-      }
-
-      $this->hcStates[$wcc][$hcc]['in'] += $item['quantity'];
-
-      if ($wcc == '200140')
-        $sum20 += $item['quantity'];
-
-      //error_log("ITEM: ".json_encode($item));
-
-      $this->municipalityData[] = $item;
-
-      $cnt++;
-    }
-
-    error_log("SUM-20: ".$sum20);
-
-    fclose($file);
   }
 
   public function subReportsList ()

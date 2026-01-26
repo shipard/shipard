@@ -13,7 +13,7 @@
 		{"id": "wasteCodeTextDst", "name": "Převést na", "type": "string", "len": 10},
 		{"id": "wasteCodeNomencDst", "name": "Převést na", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "combo"},
 
-    {"id": "quantity", "name": "Množství", "type": "number", "dec": 3, "options": ["saveOnChange"]},
+    {"id": "quantity", "name": "Množství", "type": "number", "dec": 6, "options": ["saveOnChange"]},
 		{"id": "unit", "name": "Jednotka", "type": "enumString", "len": 8,
 			"enumCfg": {"cfgItem": "e10.witems.units", "cfgValue": "", "cfgText": "shortcut"}},
     {"id": "wasteHandlingCodeSrc", "name": "Evidenční kód", "type": "enumString", "len": 5,
