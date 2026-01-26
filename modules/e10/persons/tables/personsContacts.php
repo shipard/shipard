@@ -54,6 +54,20 @@ class TablePersonsContacts extends DbTable
 			{
 				$recData['adrLocState'] = 1;
 			}
+
+			if (!($recData['flagStandardized'] ?? 0))
+			{
+				if (isset($recData['saAdmUnit10Ndx']) && $recData['saAdmUnit10Ndx'] != 0)
+				{
+					$admUnitRecData = $this->app()->loadItem($recData['saAdmUnit10Ndx'], 'e10.world.admUnits');
+					$recData['saAdmUnit10Id'] = $admUnitRecData['admUnitId'] ?? 0;
+				}
+				if (isset($recData['saAdmUnit11Ndx']) && $recData['saAdmUnit11Ndx'] != 0)
+				{
+					$admUnitRecData = $this->app()->loadItem($recData['saAdmUnit11Ndx'], 'e10.world.admUnits');
+					$recData['saAdmUnit11Id'] = $admUnitRecData['admUnitId'] ?? 0;
+				}
+			}
 		}
 
 		parent::checkBeforeSave ($recData, $ownerData);
