@@ -123,6 +123,13 @@ class ViewAdmUnits extends TableView
 		{
 			array_push ($q, ' AND (');
       array_push ($q, '[admUnits].[fullName] LIKE %s', '%'.$fts.'%');
+
+			$numId = intval($fts);
+			if ($numId == intval($fts))
+			{
+				array_push ($q, ' OR [admUnits].[admUnitId] = %i', $numId);
+			}
+
 			array_push ($q, ')');
     }
 
