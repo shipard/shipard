@@ -104,6 +104,11 @@ class TablePersonsContacts extends DbTable
 		if ($recData['adrZipCode'] !== '')
 			$refTitle[] = ['text' => $recData['adrZipCode']];
 
+		if ($recData['id1'] !== '')
+			$refTitle[] = ['text' => ' IČP: '.$recData['id1'], 'class' => ''];
+		if ($recData['id2'] !== '')
+			$refTitle[] = ['text' => ' IČZ: '.$recData['id2'], 'class' => ''];
+
 		return $refTitle;
 	}
 
@@ -340,6 +345,7 @@ class ViewPersonsContactsCombo extends TableView
 		array_push ($q, ' FROM [e10_persons_personsContacts] AS [contacts]');
 		array_push ($q, ' WHERE 1');
 		array_push ($q, ' AND [contacts].[person] = %i', $this->personNdx);
+		array_push ($q, ' AND [contacts].[flagAddress] = %i', 1);
 
 		// -- fulltext
 		if ($fts != '')
@@ -403,7 +409,10 @@ class ViewPersonsContactsCombo extends TableView
       if ($item['id1'] !== '')
         $addressFlags[] = ['text' => 'IČP: '.$item['id1'], 'class' => 'label label-default'];
 
-      $listItem['t1'] = $address;
+      if ($item['id2'] !== '')
+        $addressFlags[] = ['text' => 'IČZ: '.$item['id2'], 'class' => 'label label-default'];
+
+			$listItem['t1'] = $address;
 
       if (count($addressFlags))
         $listItem['t2'] = $addressFlags;
