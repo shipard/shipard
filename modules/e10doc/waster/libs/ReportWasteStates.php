@@ -175,7 +175,9 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
     array_push ($q, ' nomencItems.fullName, nomencItems.itemId');
 		array_push ($q, ' FROM e10pro_reports_waste_cz_returnRows AS [rows]');
     array_push ($q, ' LEFT JOIN [e10_base_nomencItems] AS nomencItems ON [rows].wasteCodeNomenc = nomencItems.ndx');
+    array_push ($q, ' LEFT JOIN [e10doc_waster_wasteOps] AS wasteOps ON [rows].wasteOp = wasteOps.ndx');
 		array_push ($q, ' WHERE 1');
+    array_push ($q, ' AND (wasteOps.excludeFromStatesCheck IS NULL OR wasteOps.excludeFromStatesCheck = 0)');
     array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
     if ($this->periodBegin)
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);

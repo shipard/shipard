@@ -3202,8 +3202,15 @@ class ViewHeads extends TableView
 
 		// -- others
 		$chbxOthers = [
-			'withStock' => ['title' => 'Se skladem', 'id' => 'withStock'], 'withoutStock' => ['title' => 'Bez skladu', 'id' => 'withoutStock']
+			'withStock' => ['title' => 'Se skladem', 'id' => 'withStock'],
+			'withoutStock' => ['title' => 'Bez skladu', 'id' => 'withoutStock'],
 		];
+
+		if ($this->app->model()->module ('e10doc.waster') !== FALSE)
+		{
+			$chbxOthers ['wasteError'] = ['title' => 'Chyba v odpadech', 'id' => 'wasteError'];
+		}
+
 		$paramsOthers = new \E10\Params ($this->app());
 		$paramsOthers->addParam ('checkboxes', 'query.others', ['items' => $chbxOthers]);
 		$qry[] = ['id' => 'itemTypes', 'style' => 'params', 'title' => 'Ostatní', 'params' => $paramsOthers];
@@ -3359,6 +3366,11 @@ class ViewHeads extends TableView
 			else
 				array_push ($q, ' AND heads.[warehouse] = 0');
 		}
+
+		if (isset ($qv['others']['wasteError']))
+		{
+			array_push ($q, ' AND heads.[docStateWaste] = %i', 9);
+		}
 	}
 
 	function globalDetailEnabled($detailId, $detailCfg)
@@ -3378,6 +3390,8 @@ class ViewHeads extends TableView
 
 		if ($this->accounting)
 			array_push($q, ' heads.docStateAcc as docStateAcc,');
+
+		array_push($q, ' heads.docStateWaste as docStateWaste,');
 
 		array_push($q, ' persons.fullName as personFullName, heads.[paymentMethod],');
 		array_push($q, ' heads.[rosReg] as rosReg, heads.[rosState] as rosState,');

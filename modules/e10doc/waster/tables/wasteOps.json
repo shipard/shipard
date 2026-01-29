@@ -22,6 +22,7 @@
       "enumCfg": {"cfgItem": "e10doc.waster.handlingCodes", "cfgValue": "", "cfgText": "sn"}},
 
 		{"id": "generated", "name": "Generování", "type": "logical"},
+		{"id": "excludeFromStatesCheck", "name": "Vyloučit z kontroly stavů", "type": "logical"},
 
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}

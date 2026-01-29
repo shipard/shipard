@@ -314,7 +314,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       $mainGLSums = [];//['in' => 0.0, 'out' => 0.0];
 
       $rows = \e10\sortByOneKey($groupRows['rows'], 'order', TRUE);
-      foreach (/*$groupRows['rows']*/$rows as $hc => $hcRow)
+      foreach ($rows as $hc => $hcRow)
       {
         $mainLetter = $hc[0];
         if (!isset($mainGLSums[$mainLetter]))
@@ -365,7 +365,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       {
         $letterRest = round($mgls['in'] - $mgls['out'], 6);
         $sumRow = [
-          'hc' => 'Zůstatek '.$mgls['letter'].':',
+          'hc' => [['text' => 'Zůstatek '.$mgls['letter'].':', 'class' => 'e10-italic']],
           'quantityIn' => $mgls['in'],
           'quantityOut' => $mgls['out'],
           'qs' => $letterRest,
@@ -373,6 +373,35 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
         if (abs(round($sumRow['quantityIn'] - $sumRow['quantityOut'], 6)) >= 0.000001)
           $sumRow['_options']['cellClasses']['qs'] = 'e10-warning3';
+
+        $addESQuantity = round($sumRow['quantityIn'] - $sumRow['quantityOut'], 6);
+        $endStateHC = $mgls['letter'].'N5';
+        if ($addESQuantity > 0.0)
+        {
+          $btn = [
+            'text' => 'Přidat KS: '.$addESQuantity. ' t', 'docAction' => 'new', 'table' => 'e10doc.waster.wasteOps',
+            'type' => 'button', 'actionClass' => 'btn btn-xs btn-success pull-right', 'icon' => 'system/actionAdd',
+            'addParams' => '__opType=1&__wasteHandlingCodeSrc='.$endStateHC.'&__quantity='.$addESQuantity.'&__unit=t'.'&__date='.$this->periodEnd->format('Y-m-d').'&__wasteCodeNomencSrc='.$groupRows['wasteCodeNomenc'],
+          ] ;
+          $sumRow['hc'][] = $btn;
+        }
+
+        $qwop = [];
+        array_push( $qwop, 'SELECT * FROM e10doc_waster_wasteOps');
+        array_push( $qwop, ' WHERE 1');
+        array_push( $qwop, ' AND [opType] = %i', 1);
+        array_push( $qwop, ' AND [wasteHandlingCodeSrc] = %s', $endStateHC);
+        array_push( $qwop, ' AND [wasteCodeNomencSrc] = %i', $groupRows['wasteCodeNomenc']);
+        array_push( $qwop, ' AND [date] = %d', $this->periodEnd->format('Y-m-d'));
+        $rowsWOp = $this->app()->db()->query ($qwop);
+        foreach ($rowsWOp as $rwo)
+        {
+          $btn = [
+            'text' => 'Upravit KS '.$endStateHC.': '.$rwo['quantity'].' t', 'docAction' => 'edit', 'table' => 'e10doc.waster.wasteOps', 'pk' => $rwo['ndx'],
+            'type' => 'button', 'actionClass' => 'btn btn-xs btn-primary pull-right', 'icon' => 'system/actionOpen',
+          ] ;
+          $sumRow['hc'][] = $btn;
+        }
 
         $t[] = $sumRow;
       }
@@ -390,7 +419,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
         'params' => ['tableClass' => 'e10-print-small default', 'precision' => ($this->showUnits === 1) ? 6 : 2]
       ]);
 
-    $this->setInfo('title', 'Roční hlášení o produkci a nakládání s odpady 789');
+    $this->setInfo('title', 'Roční hlášení o produkci a nakládání s odpady');
     $this->paperOrientation = 'landscape';
   }
 
@@ -514,6 +543,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
       $item = [
         'wasteCode' => $r['itemId'],
+        'wasteCodeNomenc' => $r['wasteCodeNomenc'],
         'wasteName' => $r['fullName'],
         'hc' => $r['wasteHandlingCode'],
         'oid' => $personOid,
@@ -604,6 +634,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       {
         $data[$gid] = [
           'wasteCode' => $r['itemId'],
+          'wasteCodeNomenc' => $r['wasteCodeNomenc'],
           'wasteName' => $r['fullName'],
           'rows' => [],
         ];
@@ -694,6 +725,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       {
         $data[$gid] = [
           'wasteCode' => $r['wasteCode'],
+          'wasteCodeNomenc' => $r['wasteCodeNomenc'],
           'wasteName' => $r['wasteCode'],
           'rows' => [],
         ];
@@ -858,12 +890,13 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       if ($dir == WasteReturnEngine::rowDirIn)
         $order = $r['itemId'].'_'.$r['dir'].'_'.'00'.'000000000';
       else
-        $order = $r['itemId'].'_'.$r['dir'].'_'.'ZZ'.'ZZZZZZZZZ';
+        $order = $r['itemId'].'_'.$r['dir'].'_'.'ZZ'.'XXXXXXXXX';
 
       $item = [
         'wasteCode' => $r['itemId'],
         'wasteName' => $r['fullName'],
         'hc' => $r['wasteHandlingCode'],
+        'woDir' => $dir,
         'order' => $order,
         'rs' => 1,
       ];
@@ -904,12 +937,28 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       {
         $data[$gid] = [
           'wasteCode' => $r['itemId'],
+          'wasteCodeNomenc' => $r['wasteCodeNomenc'],
           'wasteName' => $r['fullName'],
           'rows' => [],
         ];
       }
 
-      $data[$gid]['rows'][] = $item;
+      $rowAdded = FALSE;
+      foreach ($data[$gid]['rows'] as &$existingRow)
+      {
+        if ($existingRow['hc'] === $item['hc']  && isset($existingRow['woDir']) && $existingRow['woDir'] === $item['woDir'])
+        {
+          if ($dir == WasteReturnEngine::rowDirIn)
+            $existingRow['quantityIn'] += $item['quantityIn'];
+          else
+            $existingRow['quantityOut'] += $item['quantityOut'];
+          $rowAdded = TRUE;
+          break;
+        }
+      }
+
+      if (!$rowAdded)
+        $data[$gid]['rows'][] = $item;
 
       $cnt++;
 		}
@@ -946,13 +995,15 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       if ($dir == WasteReturnEngine::rowDirIn)
         $order = $r['itemId'].'_'.$r['dir'].'_'.'00'.'000000000';
       else
-        $order = $r['itemId'].'_'.$r['dir'].'_'.'77'.'AAAAAAAAA';
+        $order = $r['itemId'].'_'.$r['dir'].'_'.'ZZ'.'ZZZZZZZZZ';
 
       $item = [
         'wasteCode' => $r['itemId'],
+        'wasteCodeNomenc' => $r['wasteCodeNomenc'],
         'wasteName' => $r['fullName'],
         'hc' => $r['wasteHandlingCode'],
         'order' => $order,
+        'woDir' => $dir,
         'rs' => 1,
       ];
 
@@ -993,6 +1044,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       {
         $data[$gid] = [
           'wasteCode' => $r['itemId'],
+          'wasteCodeNomenc' => $r['wasteCodeNomenc'],
           'wasteName' => $r['fullName'],
           'rows' => [],
         ];
@@ -1000,7 +1052,22 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
       if ($dir == WasteReturnEngine::rowDirIn)
       {
-        $data[$gid]['rows'][] = $item;
+        $rowAdded = FALSE;
+        foreach ($data[$gid]['rows'] as &$existingRow)
+        {
+          if ($existingRow['hc'] === $item['hc']  && isset($existingRow['woDir']) && $existingRow['woDir'] === $item['woDir'])
+          {
+            if ($dir == WasteReturnEngine::rowDirIn)
+              $existingRow['quantityIn'] += $item['quantityIn'];
+            else
+              $existingRow['quantityOut'] += $item['quantityOut'];
+            $rowAdded = TRUE;
+            break;
+          }
+        }
+
+        if (!$rowAdded)
+          $data[$gid]['rows'][] = $item;
       }
       if ($dir == WasteReturnEngine::rowDirOut)
       {
@@ -1053,6 +1120,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       {
         $sumData[$gid] = [
           'wasteCode' => $groupRows['wasteCode'],
+          'wasteCodeNomenc' => $groupRows['wasteCodeNomenc'],
           'wasteName' => $groupRows['wasteName'],
           'rows' => [],
         ];

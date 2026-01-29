@@ -89,6 +89,8 @@ class FormMnfDocs extends \E10Doc\Core\FormHeads
 {
 	public function renderForm ()
 	{
+		$wdm = $this->wasteDocMode();
+
 		$this->setFlag ('maximize', 1);
 		$this->setFlag ('sidebarPos', TableForm::SIDEBAR_POS_LEFT);
 
@@ -111,6 +113,17 @@ class FormMnfDocs extends \E10Doc\Core\FormHeads
 					//$this->addColumnInput ("mnfQuantity", DataModel::coSaveOnChange);
 					//$this->addColumnInput ("mnfUnit", DataModel::coSaveOnChange);
 					$this->addColumnInput ("mnfType", DataModel::coSaveOnChange);
+				$this->layoutClose ();
+				$this->layoutOpen (TableForm::ltForm);
+					if ($wdm === 1)
+					{
+						$this->addColumnInput ('addToWasteReport');
+					}
+					elseif ($wdm === 2)
+					{
+						$this->addSeparator(self::coH3);
+						$this->addColumnInput ('excludeFromWasteReport');
+					}
 				$this->layoutClose ();
 			$this->layoutClose ();
 		$this->closeTab ();

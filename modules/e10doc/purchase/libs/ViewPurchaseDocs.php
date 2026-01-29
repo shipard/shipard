@@ -56,7 +56,7 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 		$q = [];
 
 		array_push($q, 'SELECT heads.[ndx] as ndx, heads.quantity as quantity, [docNumber], [title], heads.[docType] as [docType], [heads].docStateAcc,');
-		array_push($q, ' [sumPrice], [sumBase], [sumTotal], [weightGross], [activateTimeFirst], [activateTimeLast], [weighingMachine],[paymentMethod],');
+		array_push($q, ' [sumPrice], [sumBase], [sumTotal], [weightGross], [activateTimeFirst], [activateTimeLast], [weighingMachine],[paymentMethod],[docStateWaste],');
 		array_push($q, ' [toPay], [cashBoxDir], [dateIssue], [dateAccounting], [heads].[person], [currency], [homeCurrency], [symbol1], heads.[otherAddress1Mode], heads.otherAddress1,');
 		array_push($q, ' heads.initState as initState, heads.[docState] as docState, heads.[docStateMain] as docStateMain, persons.fullName as personFullName');
 		array_push($q, ' FROM [e10doc_core_heads] as heads');

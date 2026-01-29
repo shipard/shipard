@@ -73,6 +73,7 @@ class MunicipalityData extends Utility
           'cityName' => $cityName,
           'natCityId' => $natCityId,
           'wasteCode' => $wasteCode,
+          'wasteCodeNomenc' => $r['wasteCodeNomenc'],
           'quantityKG' => $r['quantityKG'],
           'hc' => $r['wasteHandlingCode'],
         ];
@@ -121,8 +122,9 @@ class MunicipalityData extends Utility
         'iczuj' => $rr['natCityId'] ?? '',
         'cityCounter' => $cityCounter,
         'wasteCode' => strval($rr['wasteCode']),
+        'wasteCodeNomenc' => $rr['wasteCodeNomenc'],
         'quantity' => round($rr['quantityKG'] / 1000, 6),
-        'order' => $rr['wasteCode'].'_'.'0'.'_'.$rr['hc'].'_',
+        'order' => $rr['wasteCode'].'_'.'0'.'_'.'98'.'_'.'8888888',
       ];
       $this->municipalityData[] = $item;
     }

@@ -88,6 +88,9 @@
       "enumCfg": {"cfgItem": "e10doc.base.wasteOrigins", "cfgValue": "", "cfgText": "sn"}},
     {"id": "wasteOriginAdmUnit", "name": "Obec původu odpadu", "type": "int", "reference": "e10.world.admUnits", "comboViewer": "level11"},
     {"id": "addToWasteReport", "name": "Zařadit do Hlášení o odpadech", "type": "logical"},
+    {"id": "excludeFromWasteReport", "name": "Vyloučit z Hlášení o odpadech", "type": "logical"},
+    {"id": "docStateWaste", "name": "Stav odpadů", "type": "enumInt",
+				"enumValues": {"0": "Neodpadový doklad", "1": "V pořádku", "9": "Chyba"}},
 
     {"id": "dateIssue", "name": "Datum vystavení", "type": "date"},
     {"id": "dateDue", "name": "Datum splatnosti", "type": "date"},

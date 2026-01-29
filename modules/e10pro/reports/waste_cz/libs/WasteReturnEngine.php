@@ -64,6 +64,7 @@ class WasteReturnEngine extends Utility
 
   public function doOneDocument(array $docRecData)
   {
+    $this->wasteReturnErrorLabels = [];
     $this->wasteReturnRows = [];
 
     $docType = $docRecData['docType'] ?? '';
@@ -100,6 +101,8 @@ class WasteReturnEngine extends Utility
 
     if ($wasteSettings['docModes'][$docType] === 1)
       array_push ($q, ' AND [heads].addToWasteReport = %i', 1);
+    elseif ($wasteSettings['docModes'][$docType] === 2)
+      array_push ($q, ' AND [heads].excludeFromWasteReport = %i', 0);
 
     array_push ($q, ' AND [rows].[document] = %i', $docNdx);
     array_push ($q, ' ORDER BY [heads].[docNumber], [rows].[ndx]');
@@ -114,13 +117,10 @@ class WasteReturnEngine extends Utility
 			$this->tableHeads->loadDocRowItemsCodes($row, $r['personType'], $row, NULL, $rowDestData, $allDestData);
       $moveCode = $this->loadCodeForMove($row, $row);
 
-      if ($this->onlyCreateData)
+      if (isset($rowDestData['rowItemCodesDataErrors']))
       {
-        if (isset($rowDestData['rowItemCodesDataErrors']))
-        {
-          foreach ($rowDestData['rowItemCodesDataErrors'] as $errLbl)
-            $this->wasteReturnErrorLabels[] = $errLbl;
-        }
+        foreach ($rowDestData['rowItemCodesDataErrors'] as $errLbl)
+          $this->wasteReturnErrorLabels[] = $errLbl;
       }
 
       $rd = $rowDir;
@@ -209,6 +209,17 @@ class WasteReturnEngine extends Utility
     }
 
     $this->addMoveRows();
+
+    if (!$this->onlyCreateData)
+    {
+      if (!count($this->wasteReturnErrorLabels))
+        $docRecData ['docStateWaste'] = 1;
+      else
+      {
+        $docRecData ['docStateWaste'] = 9;
+      }
+      $this->db()->query ("UPDATE [e10doc_core_heads] SET docStateWaste = %i WHERE ndx = %i", $docRecData ['docStateWaste'], $docRecData['ndx']);
+    }
   }
 
   public function addDocuments($year, $docType)
@@ -245,6 +256,8 @@ class WasteReturnEngine extends Utility
 
     if ($wasteSettings['docModes'][$docType] === 1)
       array_push ($q, ' AND [heads].addToWasteReport = %i', 1);
+    elseif ($wasteSettings['docModes'][$docType] === 2)
+      array_push ($q, ' AND [heads].excludeFromWasteReport = %i', 0);
 
     array_push ($q, ' AND [heads].dateAccounting >= %d', $this->dateBegin);
     array_push ($q, ' AND [heads].dateAccounting <= %d', $this->dateEnd);
@@ -300,6 +313,8 @@ class WasteReturnEngine extends Utility
         'wasteHandlingCode' => $hcSrc,
         'wasteCodeNomenc' => $r['wasteCodeNomenc'],
         'wasteCodeText' => $r['wasteCodeText'],
+
+        'personType' => 0,
 
         'wasteCodeKind' => 1,
       ];

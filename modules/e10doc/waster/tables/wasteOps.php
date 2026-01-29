@@ -189,6 +189,9 @@ class FormWasteOp extends TableForm
         $this->addColumnInput ('wasteCodeNomencDst');
         $this->addColumnInput ('wasteHandlingCodeDst');
       }
+
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('excludeFromStatesCheck');
 		$this->closeForm ();
 	}
 }
