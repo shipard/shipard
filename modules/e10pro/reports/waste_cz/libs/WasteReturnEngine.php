@@ -194,6 +194,16 @@ class WasteReturnEngine extends Utility
 
         // CONST whcDirIn = 0, whcDirOut = 1, whcDirInitState = 2, whcDirMove = 3, whcDirProduction = 5;
         $handlingCode = $this->handlingCode($whcDir, $newRow, $docRecData);
+
+        $cfgOwnerPersonNdx = intval($this->app()->cfgItem ('options.core.ownerPerson', 0));
+        if ($docRecData['person'] === $cfgOwnerPersonNdx && $whcDir == self::whcDirIn /*&& $docRecData['docType'] !== 'purchase'*/)
+        {
+          $handlingCode = 'A00';
+          $newRow['person'] = 0;
+          $newRow['personType'] = 0;
+          $newRow['addressMode'] = 0;
+        }
+
         $newRow['wasteHandlingCode'] = $handlingCode;
 
         if ($this->onlyCreateData)

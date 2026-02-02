@@ -30,6 +30,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
   var $stockItemsNdxs = NULL;
   var $stockItems = [];
   var $stockData = [];
+  var $stockDataCorrections = [];
 
   var $wasteCodesMainItems = [];
 
@@ -428,6 +429,11 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
           $cgData['stocksOut'] += $this->stockData[$itemNdx]['out'] ?? 0.0;
           $cgData['stocksIS'] += $this->stockData[$itemNdx]['initState'] ?? 0.0;
           $cgData['stocksEndState'] += $this->stockData[$itemNdx]['endState'] ?? 0.0;
+
+          if (isset($this->stockDataCorrections[$itemNdx]['in']))
+            $cgData['stocksIn'] -= $this->stockDataCorrections[$itemNdx]['in'];
+          if (isset($this->stockDataCorrections[$itemNdx]['out']))
+            $cgData['stocksOut'] -= $this->stockDataCorrections[$itemNdx]['out'];
         }
       }
 
@@ -485,7 +491,7 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
 
     $this->setInfo('note', '1', 'Všechna množství jsou v tunách');
 
-    $this->addContent(['type' => 'text', 'subtype' => 'code', 'text' => Json::lint($wastesData)]);
+    //$this->addContent(['type' => 'text', 'subtype' => 'code', 'text' => Json::lint($this->stockDataCorrections)]);
 
     $this->setInfo('title', 'Kontrola Odpady vs Zásoby');
   }
@@ -609,6 +615,48 @@ class ReportWasteStates extends \e10doc\core\libs\reports\GlobalReport
         }
 
         $this->stockItems[$dstStockItemNdx]['setItems'][$itemNdx] = $itemRecData;
+      }
+    }
+
+    $this->loadStockCorrections();
+  }
+
+  protected function loadStockCorrections()
+  {
+		$q = [];
+		array_push($q, 'SELECT [docsHeads].ndx,');
+		array_push($q, ' [journal].[quantity] AS jQuantity, [journal].[price] AS jPrice, [journal].[unit] AS jUnit, [journal].[item] AS jItem, [journal].[moveTypeOrder] AS moveTypeOrder');
+		array_push($q, ' FROM [e10doc_core_heads] AS [docsHeads]');
+
+		array_push($q, ' LEFT JOIN [e10doc_inventory_journal] AS [journal] ON ([docsHeads].ndx = [journal].docHead)');
+
+		array_push($q, ' WHERE 1');
+    array_push($q, ' AND [docsHeads].[dateAccounting] >= %d', $this->periodBegin);
+    array_push($q, ' AND [docsHeads].[dateAccounting] <= %d', $this->periodEnd);
+    array_push($q, ' AND [docsHeads].[excludeFromWasteReport] = %i', 1);
+    array_push($q, ' AND [docsHeads].[docState] = %i', 4000);
+		array_push($q, ' ORDER BY [docsHeads].ndx, [journal].ndx');
+
+		$rows = $this->db()->query($q);
+		forEach ($rows as $r)
+		{
+      $itemNdx = $r['jItem'];
+
+      if (!isset($this->stockDataCorrections[$itemNdx]))
+      {
+        $this->stockDataCorrections[$itemNdx] = ['in' => 0.0, 'out' => 0.0,];
+      }
+
+      switch ($r['moveTypeOrder'])
+      {
+        case self::mtoIn:
+        case self::mtoMnfInAssembly:
+          $this->stockDataCorrections[$itemNdx]['in'] += $this->quantity($r['jQuantity'], $r['jUnit'], $this->dstUnits);
+          break;
+        case self::mtoOut:
+        case self::mtoMnfOutAssembly:
+          $this->stockDataCorrections[$itemNdx]['out'] += $this->quantity(- $r['jQuantity'], $r['jUnit'], $this->dstUnits);
+          break;
       }
     }
   }
