@@ -44,6 +44,16 @@ class TablePrihlasky extends DbTable
 		$rocnik = $this->app()->cfgItem ('e10pro.zus.rocniky.'.$recData['rocnik'], FALSE);
 		if ($rocnik !== FALSE)
 			$recData['stupen'] = $rocnik['stupen'];
+
+		if (isset($recData['rodneCislo']))
+		{
+			$pid = trim($recData ['rodneCislo']);
+			if (strlen($pid) === 10)
+			{
+				$pid = substr($recData ['rodneCislo'], 0, 6).'/'.substr($recData['rodneCislo'], 6);
+				$recData ['rodneCislo'] = $pid;
+			}
+		}
 	}
 
 	public function createName ($who, &$recData)
