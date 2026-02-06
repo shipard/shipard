@@ -82,7 +82,7 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
     }
 
 		$sensorRecData = $this->app()->db()->query(
-      'SELECT [sensors].*, sensorsValues.value AS sensorValue FROM [mac_iot_sensors] AS [sensors] ',
+      'SELECT [sensors].*, sensorsValues.value AS sensorValue, sensorsValues.[time] AS sensorTime FROM [mac_iot_sensors] AS [sensors] ',
 			'LEFT JOIN [mac_iot_sensorsValues] AS sensorsValues ON sensors.ndx = sensorsValues.ndx',
 			'WHERE [sensors].ndx = %i', $sensorNdx)->fetch();
 
@@ -99,6 +99,15 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
     $data['data']['sensorValuePF0'] = Utils::nf($sensorRecData['sensorValue'], 0);
     $data['data']['sensorValuePF1'] = Utils::nf($sensorRecData['sensorValue'], 1);
     $data['data']['sensorValuePF2'] = Utils::nf($sensorRecData['sensorValue'], 2);
+    $data['class'] = '';
+
+    $now = new \DateTime();
+    $valueAgeSecs = Utils::dateDiffSeconds ($sensorRecData['sensorTime'], $now);
+    if ($valueAgeSecs > 600)
+    {
+      $data['flags']['outdated'] = 1;
+      $data['class'] .= 'outdated';
+    }
 
     $data['valid'] = 1;
 
