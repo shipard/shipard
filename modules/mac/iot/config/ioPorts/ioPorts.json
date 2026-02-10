@@ -69,6 +69,9 @@
 	"sensor/meteo-bh1750": {
 		"name": "Měřič osvětlení BH1750", "sensor": 1, "dataType": "numeric"
 	},
+	"sensor/accel-lis2dw12": {
+		"name": "Akcelerometr LIS2DW12", "sensor": 1
+	},
 	"sensor/distance-us": {
 		"name": "Měřič vzdálenosti (ultrazvukový)", "sensor": 1, "dataType": "numeric"
 	},
