@@ -566,6 +566,16 @@ class WasteReturnEngine extends Utility
         $newRow ['wasteCodeText'] = $r['wasteCodeTextDst'];
         $this->db()->query('INSERT INTO [e10pro_reports_waste_cz_returnRows]', $newRow);
       }
+      elseif ($r['opType'] == 3)
+      { // inverturní rozdíl - přebytek [-]
+        $newRow ['dir'] = self::rowDirOut;
+        $this->db()->query('INSERT INTO [e10pro_reports_waste_cz_returnRows]', $newRow);
+      }
+      elseif ($r['opType'] == 4)
+      { // inverturní rozdíl - nedostatek [+]
+        $newRow ['dir'] = self::rowDirIn;
+        $this->db()->query('INSERT INTO [e10pro_reports_waste_cz_returnRows]', $newRow);
+      }
     }
   }
 

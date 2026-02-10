@@ -1873,4 +1873,35 @@ class Utils
 			return substr($className, $pos + 1);
     return $pos;
 	}
+
+	static function sortByOneKey(array $array, $key, $dict = false, $asc = true, $requierdKey = FALSE, $sortFlags = SORT_REGULAR)
+	{
+			$result = [];
+
+			$values = [];
+			foreach ($array as $id => $value)
+			{
+				if ($requierdKey && !$value[$requierdKey])
+					continue;
+				$values[$id] = isset($value[$key]) ? $value[$key] : 0;
+			}
+
+			if ($asc)
+			{
+				asort($values, $sortFlags);
+			}
+			else
+			{
+				arsort($values, $sortFlags);
+			}
+
+			if ($dict)
+				foreach ($values as $key => $value)
+					$result[$key] = $array[$key];
+			else
+				foreach ($values as $key => $value)
+					$result[] = $array[$key];
+
+			return $result;
+	}
 }

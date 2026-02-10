@@ -74,6 +74,7 @@ class MunicipalityData extends Utility
           'natCityId' => $natCityId,
           'wasteCode' => $wasteCode,
           'wasteCodeNomenc' => $r['wasteCodeNomenc'],
+          'wasteName' => $r['fullName'] ?? '???',
           'quantityKG' => $r['quantityKG'],
           'hc' => $r['wasteHandlingCode'],
         ];
@@ -123,6 +124,7 @@ class MunicipalityData extends Utility
         'cityCounter' => $cityCounter,
         'wasteCode' => strval($rr['wasteCode']),
         'wasteCodeNomenc' => $rr['wasteCodeNomenc'],
+        'wasteName' => $rr['wasteName'] ?? '---',
         'quantity' => round($rr['quantityKG'] / 1000, 6),
         'order' => $rr['wasteCode'].'_'.'0'.'_'.'98'.'_'.'8888888',
       ];
@@ -130,7 +132,7 @@ class MunicipalityData extends Utility
     }
   }
 
-  protected function cityById($cityId)
+  protected function cityById_TMP($cityId)
   {
     $nc = $this->db()->query('SELECT * FROM e10_base_nomencItems WHERE itemId = %s', 'CZ'.$cityId)->fetch();
     if ($nc)

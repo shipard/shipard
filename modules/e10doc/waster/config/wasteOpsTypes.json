@@ -10,5 +10,13 @@
   "2": {
     "sn": "Převod",
     "fn": "Převod"
+  },
+  "3": {
+    "sn": "Inventurní rozdíl - přebytek [-]",
+    "fn": "Inventurní rozdíl - přebytek [-]"
+  },
+  "4": {
+    "sn": "Inventurní rozdíl - nedostatek [+]",
+    "fn": "Inventurní rozdíl - nedostatek [+]"
   }
 }

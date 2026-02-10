@@ -112,7 +112,7 @@
     "fn": "Úprava před recyklací nebo zpětným získáváním kovů a sloučenin kovů",
     "dir": 3,
     "validFrom": "2025-01-01",
-    "sortOrder": 302
+    "sortOrder": 310
   },
   "BR12c": {
     "sn": "BR12c: Úprava před recyklací nebo zpětným získáváním organických látek (papír, plasty)",
@@ -189,18 +189,44 @@
     "sn": "AN50: Inventurní rozdíl – vyrovnání nedostatku vlastního odpadu",
     "fn": "Inventurní rozdíl – vyrovnání nedostatku vlastního odpadu",
     "dir": 0,
-    "sortOrder": 222
+    "initStateHC": "A00",
+    "sortOrder": 103
   },
   "BN50": {
     "sn": "BN50: Inventurní rozdíl – vyrovnání nedostatku převzatého odpadu",
     "fn": "Inventurní rozdíl – vyrovnání nedostatku převzatého odpadu",
     "dir": 0,
-    "sortOrder": 221
+    "initStateHC": "B00",
+    "sortOrder": 102
   },
   "CN50": {
     "sn": "CN50: Inventurní rozdíl – vyrovnání nedostatku odpadu z vlastních zásob",
     "fn": "Inventurní rozdíl – vyrovnání nedostatku odpadu z vlastních zásob",
     "dir": 0,
-    "sortOrder": 220
+    "initStateHC": "C00",
+    "sortOrder": 101
+  },
+
+  "AN53": {
+    "sn": "AN53: Inventurní rozdíl – vyrovnání přebytku vlastního odpadu",
+    "fn": "Inventurní rozdíl – vyrovnání přebytku vlastního odpadu",
+    "dir": 1,
+    "initStateHC": "A00",
+    "sortOrder": 114
+  },
+  "BN53": {
+    "sn": "BN53: Inventurní rozdíl – vyrovnání přebytku převzatého odpadu",
+    "fn": "Inventurní rozdíl – vyrovnání přebytku převzatého odpadu",
+    "dir": 1,
+    "initStateHC": "B00",
+    "sortOrder": 115
+  },
+  "CN53": {
+    "sn": "CN53: Inventurní rozdíl – vyrovnání přebytku odpadu z vlastních zásob",
+    "fn": "Inventurní rozdíl – vyrovnání přebytku odpadu z vlastních zásob",
+    "dir": 1,
+    "initStateHC": "C00",
+    "sortOrder": 116
   }
+
 }
