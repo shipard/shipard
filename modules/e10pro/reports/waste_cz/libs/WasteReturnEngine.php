@@ -89,7 +89,7 @@ class WasteReturnEngine extends Utility
 		array_push ($q, ' [rows].item AS item, [rows].unit AS unit, [rows].quantity, [rows].itemType, [rows].taxBase, [rows].document, [rows].operation AS operation,');
 		array_push ($q, ' heads.docNumber as docNumber, heads.dateAccounting as dateAccounting, heads.warehouse as warehouse,');
     array_push ($q, ' heads.docType AS docType, heads.cashBoxDir AS cashBoxDir, heads.personType, heads.person,');
-    array_push ($q, ' heads.otherAddress1,  heads.otherAddress1Mode, heads.deliveryAddress, heads.personNomencCity, heads.wasteOrigin');
+    array_push ($q, ' heads.otherAddress1,  heads.otherAddress1Mode, heads.deliveryAddress, heads.wasteOriginAdmUnit, heads.wasteOrigin');
 		array_push ($q, ' FROM e10doc_core_rows AS [rows]');
 		array_push ($q, ' LEFT JOIN e10doc_core_heads AS heads ON [rows].document = heads.ndx');
 		array_push ($q, ' LEFT JOIN e10_persons_persons AS persons ON heads.person = persons.ndx');
@@ -189,7 +189,7 @@ class WasteReturnEngine extends Utility
           if ($r['otherAddress1Mode'] == 0)
             $newRow['personOffice'] = intval($r['otherAddress1']); // office
           else
-            $newRow['nomencCity'] = intval($r['personNomencCity']); // city
+            $newRow['nomencCity'] = intval($r['wasteOriginAdmUnit']); // city
         }
 
         // CONST whcDirIn = 0, whcDirOut = 1, whcDirInitState = 2, whcDirMove = 3, whcDirProduction = 5;

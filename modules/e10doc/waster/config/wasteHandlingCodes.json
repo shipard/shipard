@@ -7,6 +7,7 @@
     "personType": 1,
     "endYearCode": "AN5",
     "validFrom": "2025-01-01",
+    "initStateHC": "A00",
     "sortOrder": 200
   },
   "BN30": {
@@ -143,20 +144,6 @@
     "sortOrder": 302
   },
 
-  "AN4": {
-    "sn": "AN4: Nakládání s odpadem (Převod odpadu)",
-    "fn": "Nakládání s odpadem. Upuštění od odděleného soustředění v zařízení pro nakládání s odpady (úprava)",
-    "dir": 3,
-    "validFrom": "2025-01-01",
-    "sortOrder": 303
-  },
-  "BN4": {
-    "sn": "AN4: Nakládání s odpadem (Převod odpadu)",
-    "fn": "Nakládání s odpadem. Upuštění od odděleného soustředění v zařízení pro nakládání s odpady (úprava)",
-    "dir": 3,
-    "validFrom": "2025-01-01",
-    "sortOrder": 304
-  },
   "CR12": {
     "sn": "CR12: Předúprava odpadů (Převod odpadu)",
     "fn": "Předúprava odpadů k aplikaci některého z postupů uvedených pod označením R1 až R11",

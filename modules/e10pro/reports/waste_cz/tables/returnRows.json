@@ -34,7 +34,7 @@
 			"enumValues": {"0": "", "1": "Člověk", "2": "Firma"}},
 		{"id": "addressMode", "name": "Typ adresy", "type": "enumInt",
 			"enumValues": {"0": "Provozovna", "1": "ORP"}},
-    {"id": "nomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"},
+    {"id": "nomencCity", "name": "ZUJ původu odpadu", "type": "int", "reference": "e10.world.admUnits", "comboViewer": "level11"},
     {"id": "natCityId", "name": "ID obce (IČZUJ)", "type": "int"}
 	],
 	"views": [

@@ -33,6 +33,8 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
   var $wasteHandlingCodes = NULL;
 
+  var $oneWasteCode = '';
+
 	public function init ()
 	{
     $this->wasteHandlingCodes = $this->app()->cfgItem('e10doc.waster.handlingCodes', []);
@@ -521,6 +523,9 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 		array_push ($q, ' AND [rows].personType = %i', $personType);
     array_push ($q, ' AND [rows].[dir] = %i', $wasteDir);
 
+    if ($this->oneWasteCode !== '')
+      array_push ($q, ' AND nomencItems.itemId = %s', $this->oneWasteCode);
+
     array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
 
     if ($this->periodBegin)
@@ -533,7 +538,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       //[rows].quantityKG
       array_push ($q, ' AND [rows].[quantityKG] != 0');
 
-		  array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].person, [rows].addressMode, [rows].personOffice, addrs.saAdmUnit11Id, [rows].[dir], [rows].wasteHandlingCode');
+		  array_push ($q, ' GROUP BY wasteCodeNomenc, [rows].person, [rows].addressMode, [rows].personOffice, addrs.saAdmUnit11Id, [rows].[nomencCity], [rows].[dir], [rows].wasteHandlingCode');
       array_push ($q, ' ORDER BY [rows].wasteCodeNomenc, persons.fullName');
     }
     else
@@ -607,6 +612,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
             $item['zipCode'] = str_replace(' ', '', $r['adrZipCode']);
 
             $item['id4'] = strval($r['saAdmUnit11Id']);
+            $item['city'] = $this->cityById($r['saAdmUnit11Id']);
 
             if ((isset($r['id1']) && $r['id1'] !== ''))
             {
@@ -640,13 +646,17 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
         }
         else
         { // city
-          $nomencCityRecData = $this->app()->loadItem($r['nomencCity'], 'e10.base.nomencItems');
-          $orp = substr($nomencCityRecData['itemId'] ?? '', 2);
+          $admUnit11Data = $this->app()->loadItem($r['nomencCity'], 'e10.world.admUnits'); // ZUJ
+          $zujId = strval($admUnit11Data['admUnitId'] ?? '!!!');
+          $admUnit10Data = $this->app()->loadItem($admUnit11Data['admUnitOwner10'], 'e10.world.admUnits'); // ORP
+          $orpId = strval($admUnit10Data['admUnitId'] ?? '!!!');
+
           $item['id1'] = [
-            ['text' => 'ORP: '.$orp, 'class' => ''],
+            ['text' => 'ORP: '.$orpId, 'suffix' => $admUnit10Data['fullName'] ?? '!!!!', 'class' => ''],
+            ['text' => 'ZUJ: '.$zujId, 'suffix' => $admUnit11Data['fullName'] ?? '!!!!', 'class' => ''],
           ];
-          $item['id1'][0]['suffix'] = $nomencCityRecData['fullName'] ?? '!!!!';
-          $item['id_orp'] = $orp;
+          $item['id_orp'] = $orpId;
+          $item['id4'] = $zujId;
         }
       }
       else
@@ -668,6 +678,8 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
       $wcc = $r['itemId'];
       $hcc = $item['hc'];
+      $hcCfg = $this->wasteHandlingCodes[$hcc] ?? NULL;
+
       if ($wasteDir == WasteReturnEngine::rowDirIn)
       {
         if (!isset($this->hcStates[$wcc]))
@@ -680,7 +692,11 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
             ];
         }
 
-        $this->hcStates[$wcc][$hcc]['in'] += $item['quantityIn'];
+        if (isset($hcCfg['initStateHC']))
+          $this->hcStates[$wcc][$hcCfg['initStateHC']]['in'] += $item['quantityIn'];
+        else
+          $this->hcStates[$wcc][$hcc]['in'] += $item['quantityIn'];
+
         $data[$gid]['rows'][] = $item;
       }
       elseif ($wasteDir == WasteReturnEngine::rowDirOut)
@@ -740,6 +756,8 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       $item['isCity'] = 1;
       $item['partnerId'] = $this->registerPartner($item);
       $wcc = $r['wasteCode'];
+      $hcc = $r['hc'];
+      $hcCfg = $this->wasteHandlingCodes[$hcc] ?? NULL;
 
       if (!isset($data[$gid]))
       {
@@ -763,8 +781,10 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
           //'XN3' => ['in' => 0.0, 'out' => 0.0, 'outHc' => 'CN3'],
           ];
       }
-      $hcc = $r['hc'];
-      $this->hcStates[$wcc][$hcc]['in'] += $item['quantityIn'];
+      if (isset($hcCfg['initStateHC']))
+        $this->hcStates[$wcc][$hcCfg['initStateHC']]['in'] += $item['quantityIn'];
+      else
+        $this->hcStates[$wcc][$hcc]['in'] += $item['quantityIn'];
 
       $data[$gid]['rows'][] = $item;
       $cnt++;
@@ -871,10 +891,10 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 
   protected function cityById($cityId)
   {
-    $nc = $this->db()->query('SELECT * FROM e10_base_nomencItems WHERE itemId = %s', 'CZ'.$cityId)->fetch();
+    $nc = $this->db()->query('SELECT * FROM e10_world_admUnits WHERE admUnitId = %i', intval($cityId), ' AND [level] = %i', 11)->fetch();
     if ($nc)
     {
-      return $nc['shortName'];
+      return $nc['fullName'];
     }
 
     return '';
@@ -892,6 +912,9 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
 		array_push ($q, ' AND [rows].rowSource = %i', 1);
     array_push ($q, ' AND [rows].dir = %i', $dir);
     array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
+
+    if ($this->oneWasteCode !== '')
+      array_push ($q, ' AND nomencItems.itemId = %s', $this->oneWasteCode);
 
     if ($this->periodBegin)
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
@@ -1001,6 +1024,9 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
     array_push ($q, ' AND [rows].dir = %i', $dir);
     array_push ($q, ' AND [rows].personType = %i', 0);
     array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
+
+    if ($this->oneWasteCode !== '')
+      array_push ($q, ' AND nomencItems.itemId = %s', $this->oneWasteCode);
 
     if ($this->periodBegin)
       array_push ($q, ' AND [rows].[dateAccounting] >= %d', $this->periodBegin);
@@ -1199,6 +1225,8 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
     $mde = new \e10doc\waster\libs\MunicipalityData($this->app());
     $mde->periodBegin = $this->periodBegin;
     $mde->periodEnd = $this->periodEnd;
+    if ($this->oneWasteCode !== '')
+      $mde->oneWasteCode = $this->oneWasteCode;
     $mde->loadFromDb();
     $mde->createMunicipalityData();
     $this->municipalityData = $mde->municipalityData;

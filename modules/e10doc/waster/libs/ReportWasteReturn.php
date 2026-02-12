@@ -82,7 +82,7 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 		$si = $this->app->cfgItem ('serverInfo', 0);
 		$shpVer = __E10_VERSION__.'.'.$si['e10commit'];
 
-		$c .= '<F_ODP_PROD xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2023" revision="1">'."\n";
+		$c .= '<F_ODP_PROD xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2025" revision="1">'."\n";
 		$c .= "<meta-info>\n";
 			$c .= "\t<user-agent>SHIPARD</user-agent>\n";
 			$c .= "\t<user-agent-version>".$shpVer."</user-agent-version>\n";
@@ -112,43 +112,46 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 				$c .= "\t\t<radne/>";
 			$c .= "\t</radneDoplneneHlaseni>\n";
 			$c .= "\t<rok>".$this->recData['year']."</rok>\n";
+
 			$c .= "\t<overovatel>\n";
 				$c .= "\t\t<orpSop>\n";
 					$c .= "\t\t\t<orpSopKod>".Utils::es($this->recData['returnToORPId'])."</orpSopKod>\n";
 					$c .= "\t\t\t<orpSopText>".Utils::es($this->recData['returnToORPName'])."</orpSopText>\n";
 				$c .= "\t\t</orpSop>\n";
 			$c .= "\t</overovatel>\n";
-			$c .= "\t<overovatelOstatni/>\n";
-			$c .= "\t<ohlasovatel>\n";
-			$c .= "\t<spolecnostVyber>\n";
 
-			$c .= "\t\t<pravnickaOsoba>\n";
-			$c .= "\t\t\t<nazev>".Utils::es($this->data['person']['fullName'])."</nazev>\n";
-			$c .= "\t\t\t<ic>".Utils::es($this->data['person']['oid'])."</ic>\n";
-			$c .= "\t\t</pravnickaOsoba>\n";
-		$c .= "\t</spolecnostVyber>\n";
-		$c .= "\t<adresa>\n";
-		$c .= "\t\t<adresaVyber>\n";
-		$c .= "\t\t\t<adresaNonIszr>\n";
-		$c .= "\t\t\t\t<adresaCr>\n";
-		$c .= "\t\t\t\t\t<zujKod>".Utils::es($this->recData['personZUJId'])."</zujKod>\n";
-		$c .= "\t\t\t\t\t<zujNazev>".Utils::es($this->data['person']['addressMain']['city'])."</zujNazev>\n";
-		$c .= "\t\t\t\t\t<ulice>".Utils::es($this->data['person']['addressMain']['street'])."</ulice>\n";
-		$c .= "\t\t\t\t\t<psc>".Utils::es($this->data['person']['addressMain']['zipcode'])."</psc>\n";
-		$c .= "\t\t\t\t\t<cisloPopisne>".Utils::es($this->data['person']['addressMain']['houseNumber1'])."</cisloPopisne>\n";
-		if (isset($this->data['person']['addressMain']['houseNumber2']))
-			$c .= "\t\t\t\t\t<cisloOrientacni>".Utils::es($this->data['person']['addressMain']['houseNumber2'])."</cisloOrientacni>\n";
-		$c .= "\t\t\t\t</adresaCr>\n";
-		$c .= "\t\t\t</adresaNonIszr>\n";
-		$c .= "\t\t</adresaVyber>\n";
-		$c .= "\t</adresa>\n";
-		$c .= "\t</ohlasovatel>\n";
+			$c .= "\t<overovatelOstatni/>\n";
+
+			$c .= "\t<ohlasovatel>\n";
+				$c .= "\t<spolecnostVyber>\n";
+					$c .= "\t\t<pravnickaOsoba>\n";
+					$c .= "\t\t\t<nazev>".Utils::es($this->data['person']['fullName'])."</nazev>\n";
+					$c .= "\t\t\t<ic>".Utils::es($this->data['person']['oid'])."</ic>\n";
+					$c .= "\t\t</pravnickaOsoba>\n";
+				$c .= "\t</spolecnostVyber>\n";
+
+				$c .= "\t<adresa>\n";
+				$c .= "\t\t<adresaVyber>\n";
+				$c .= "\t\t\t<adresaNonIszr>\n";
+				$c .= "\t\t\t\t<adresaCr>\n";
+				$c .= "\t\t\t\t\t<zujKod>".Utils::es($this->recData['personZUJId'])."</zujKod>\n";
+				$c .= "\t\t\t\t\t<zujNazev>".Utils::es($this->data['person']['addressMain']['city'])."</zujNazev>\n";
+				$c .= "\t\t\t\t\t<ulice>".Utils::es($this->data['person']['addressMain']['street'])."</ulice>\n";
+				$c .= "\t\t\t\t\t<psc>".Utils::es($this->data['person']['addressMain']['zipcode'])."</psc>\n";
+				$c .= "\t\t\t\t\t<cisloPopisne>".Utils::es($this->data['person']['addressMain']['houseNumber1'])."</cisloPopisne>\n";
+				if (isset($this->data['person']['addressMain']['houseNumber2']))
+					$c .= "\t\t\t\t\t<cisloOrientacni>".Utils::es($this->data['person']['addressMain']['houseNumber2'])."</cisloOrientacni>\n";
+				$c .= "\t\t\t\t</adresaCr>\n";
+				$c .= "\t\t\t</adresaNonIszr>\n";
+				$c .= "\t\t</adresaVyber>\n";
+				$c .= "\t</adresa>\n";
+			$c .= "\t</ohlasovatel>\n";
 		$c .= "\t<ohlasovatelOstatni>\n";
 		$c .= "\t\t<orp>".Utils::es($this->recData['personORPId'])."</orp>\n";
 		$c .= "\t</ohlasovatelOstatni>\n";
 		$c .= "\t<provozovna>\n";
 		$c .= "\t\t<nuloveHlaseni>false</nuloveHlaseni>\n";
-		$c .= "\t\t<ohlasovatelHlasiZa>PROVOZOVNA_MIMO_SIDLO</ohlasovatelHlasiZa>\n";
+		$c .= "\t\t<typHlaseni>STACIONARNI_ZARIZENI</typHlaseni>\n";
 		$c .= "\t\t<skladPuvodce>false</skladPuvodce>\n";
 		if (isset($this->data['person']['addressOffice']['id2']))
 		{
@@ -171,10 +174,30 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 		$c .= "\t</adresa>\n";
 		$c .= "\t<orp>".Utils::es($this->recData['personOfficeORPId'])."</orp>\n";
 		$c .= "\t</provozovna>\n";
+
 		$c .= "\t<provozovnaOstatni>\n";
-		$c .= "\t<zapojeniDoSystemuSberuKomunOdpadu/>\n";
-		$c .= "\t<udajeOObecnimSystemuNakladani/>\n";
+			$c .= "\t<smluvniZapojeniDoObecnihoSystemu/>\n";
+			$c .= "\t<typZarizeni>Stacionární zařízení dle § 14 odst. 1</typZarizeni>\n";
+			$c .= "\t<batTechnologie>0</batTechnologie>\n";
+
+			$c .= "\t<povoleniAPovoleneCinnosti>\n";
+				$c .= "\t\t<udajOPovoleni>§14 odst. 1 zákona 185/2001 Sb.</udajOPovoleni>\n";
+				$c .= "\t\t<povoleneCinnosti>Balení, paketace, dělení a lisování odpadu</povoleneCinnosti>\n";
+				$c .= "\t\t<povoleneCinnosti>Sběr a výkup odpadu kromě autovraků a elektroZařízení dle části 4. dílu 8. zákona</povoleneCinnosti>\n";
+			$c .= "\t</povoleniAPovoleneCinnosti>\n";
+
+			$c .= "\t<zarizeniPodporeneOpzp>0</zarizeniPodporeneOpzp>\n";
+			$c .= "\t<produkovaniNeboNakladaniSOdpadyObsahujicimiPops>0</produkovaniNeboNakladaniSOdpadyObsahujicimiPops>\n";
+			$c .= "\t<obecOhlasujeUdajeOObecnimSystemuNakladani/>\n";
+			$c .= "\t<malyPodnik>0</malyPodnik>\n";
+			$c .= "\t<stredniPodnik>1</stredniPodnik>\n";
+			$c .= "\t<provozovnaProvadiSpotrebniCinnost>\n";
+			$c .= "\t\t<ne/>\n";
+			$c .= "\t</provozovnaProvadiSpotrebniCinnost>\n";
+			$c .= "\t<otevritList7>0</otevritList7>\n";
+			$c .= "\t<otevritList8>0</otevritList8>\n";
 		$c .= "\t</provozovnaOstatni>\n";
+
 		$c .= "\t<hlaseniVyplnil>\n";
 		$c .= "\t\t<jmeno>".Utils::es($this->recData['authorFirstName'])."</jmeno>\n";
 		$c .= "\t\t<prijmeni>".Utils::es($this->recData['authorLastName'])."</prijmeni>\n";
@@ -185,8 +208,8 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 		$c .= "\t\t\t\t<cislo>".Utils::es($this->recData['authorPhone'])."</cislo>\n";
 		$c .= "\t\t\t</telefon>\n";
 		$c .= "\t\t</kontakt>\n";
-		$c .= "<datumVyplneni>".$today->format('Y-m-d')."</datumVyplneni>\n";
-		$c .= "</hlaseniVyplnil>\n";
+		$c .= "\t\t<datumVyplneni>".$today->format('Y-m-d')."</datumVyplneni>\n";
+		$c .= "\t</hlaseniVyplnil>\n";
 
 		$c .= "</sekce1>\n";
 
@@ -216,12 +239,12 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 					$c .= "\t\t\t<celkem>".sprintf('%.6f', $row['quantityIn'])."</celkem>\n";
 
 				if (isset($row['quantityOut']) && $row['quantityOut'] != 0.0)
-					$c .= "\t\t\t<zTohoDleSloupce7>".sprintf('%.6f', $row['quantityOut'])."</zTohoDleSloupce7>\n";
+					$c .= "\t\t\t<zTohoDleEvidencnihoKodu>".sprintf('%.6f', $row['quantityOut'])."</zTohoDleEvidencnihoKodu>\n";
 
 				$c .= "\t\t</mnozstviOdpadu>\n";
-				$c .= "\t\t<kodZpusobuNakladani>\n";
+				$c .= "\t\t<evidencniKod>\n";
 				$c .= "\t\t\t<kod>".Utils::es($row['hc'])."</kod>\n";
-				$c .= "\t\t</kodZpusobuNakladani>\n";
+				$c .= "\t\t</evidencniKod>\n";
 
 				if (isset($row['partnerId']))
 				{
@@ -309,7 +332,7 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 						$c .= "\t\t\t<obecNazev>".Utils::es($partner['obec'])."</obecNazev>\n";
 					if (isset($partner['psc']) && $partner['psc'] != '')
 						$c .= "\t\t\t<psc>".Utils::es($partner['psc'])."</psc>\n";
-					}
+				}
 				$c .= "\t\t\t<iczuj>".Utils::es($partner['iczuj'])."</iczuj>\n";
 
 				$c .= "\t\t</subjekt>\n";

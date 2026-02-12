@@ -23,6 +23,8 @@ class MunicipalityData extends Utility
   var $headerCities = NULL;
   var $municipalityData = [];
 
+  var $oneWasteCode = '';
+
 
   public function loadData()
   {
@@ -42,6 +44,10 @@ class MunicipalityData extends Utility
     array_push ($q, ' LEFT JOIN [e10_world_admUnits] AS admUnits ON [heads].wasteOriginAdmUnit = admUnits.ndx');
 
     array_push ($q, ' WHERE 1');
+
+    if ($this->oneWasteCode !== '')
+      array_push ($q, ' AND nomencItems.itemId = %s', $this->oneWasteCode);
+
     array_push ($q, ' AND [rows].[wasteCodeKind] = %i', $this->codeKindNdx);
 		array_push ($q, ' AND [rows].personType = %i', 1);
     array_push ($q, ' AND [rows].[dir] = %i', 0);
