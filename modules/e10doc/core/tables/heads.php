@@ -3204,6 +3204,7 @@ class ViewHeads extends TableView
 		$chbxOthers = [
 			'withStock' => ['title' => 'Se skladem', 'id' => 'withStock'],
 			'withoutStock' => ['title' => 'Bez skladu', 'id' => 'withoutStock'],
+			'invalidItem' => ['title' => 'S neplatnými položkami', 'id' => 'invalidItem'],
 		];
 
 		if ($this->app->model()->module ('e10doc.waster') !== FALSE)
@@ -3370,6 +3371,17 @@ class ViewHeads extends TableView
 		if (isset ($qv['others']['wasteError']))
 		{
 			array_push ($q, ' AND heads.[docStateWaste] = %i', 9);
+		}
+
+		if (isset ($qv['others']['invalidItem']))
+		{
+			array_push ($q, ' AND EXISTS (SELECT [rows].ndx FROM e10doc_core_rows AS [rows] ',
+																		'LEFT JOIN e10_witems_items AS items ON [rows].item = items.ndx ',
+																		'WHERE heads.ndx = [rows].document AND (',
+																						'([items].validFrom IS NOT NULL AND [items].validFrom > heads.dateAccounting)',
+																						' OR ([items].validTo IS NOT NULL AND [items].validTo < heads.dateAccounting)',
+																					')',
+			')');
 		}
 	}
 
