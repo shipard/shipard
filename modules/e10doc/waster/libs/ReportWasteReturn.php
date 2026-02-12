@@ -316,9 +316,10 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
 
 				if (isset($partner['orp']) && $partner['orp'] != '')
 				{
-					$c .= "\t\t\t<ulice>".Utils::es('Činnost na území ORP Zlín')."</ulice>\n";
-					$c .= "\t\t\t<obecNazev>".Utils::es('Zlín')."</obecNazev>\n";
-					$c .= "\t\t\t<psc>".Utils::es('76001')."</psc>\n";
+					$admUnit10Name = $this->admUnitNameById($partner['orp'], 10);
+
+					$c .= "\t\t\t<ulice>".Utils::es('Činnost na území ORP '.$admUnit10Name)."</ulice>\n";
+					$c .= "\t\t\t<obecNazev>".Utils::es($admUnit10Name)."</obecNazev>\n";
 				}
 				else
 				{
@@ -380,4 +381,15 @@ class ReportWasteReturn extends \e10doc\core\libs\reports\DocReportBase
       }
     }
 	}
+
+  protected function admUnitNameById($cityId, $level)
+  {
+    $nc = $this->db()->query('SELECT * FROM e10_world_admUnits WHERE admUnitId = %i', intval($cityId), ' AND [level] = %i', $level)->fetch();
+    if ($nc)
+    {
+      return $nc['fullName'];
+    }
+
+    return '';
+  }
 }
