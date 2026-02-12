@@ -151,11 +151,15 @@ class WasteCompanyInfo extends Utility
 			}
 			else
 			{ // city
-        $nomencCityRecData = $this->app()->loadItem($r['nomencCity'], 'e10.base.nomencItems');
-				$id_icp_theirs = $nomencCityRecData['itemId'];
+				$admUnit11Data = $this->app()->loadItem($r['nomencCity'], 'e10.world.admUnits'); // ZUJ
+				$zujId = strval($admUnit11Data['admUnitId'] ?? '!!!');
+				$admUnit10Data = $this->app()->loadItem($admUnit11Data['admUnitOwner10'], 'e10.world.admUnits'); // ORP
+				$orpId = strval($admUnit10Data['admUnitId'] ?? '!!!');
+
+				$id_icp_theirs = $orpId.'-'.$zujId;
 				$id_icp_theirs_text = [
-					['text' => 'ORP: '.substr($nomencCityRecData['itemId'], 2), 'class' => ''],
-					['text' => $nomencCityRecData['fullName'] ?? '---', 'class' => 'e10-small break']
+					['text' => 'ORP: '.$orpId, 'suffix' => $admUnit10Data['fullName'] ?? '---', 'class' => 'break'],
+					['text' => 'ZUJ: '.$zujId, 'suffix' => $admUnit11Data['fullName'] ?? '---', 'class' => 'break']
 				];
 			}
 

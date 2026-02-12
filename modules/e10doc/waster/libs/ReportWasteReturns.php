@@ -168,7 +168,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
       'total' => ['in' => 0.0, 'out' => 0.0],
     ];
 
-    $data = Utils::sortByOneKey($data, 'wasteCode', TRUE, TRUE, FALSE, SORT_STRING);
+    $data = Utils::sortByOneKey($data, 'wasteCode', TRUE, TRUE, FALSE, SORT_NUMERIC);
 
     $t = [];
     foreach ($data as $gid => $groupRows)
@@ -284,7 +284,7 @@ class ReportWasteReturns extends \e10doc\core\libs\reports\GlobalReport
     $this->createContent_Report_Load_WasteMoves(WasteReturnEngine::rowDirOut, $data); // out moves
     $this->createContent_Report_Load(2, WasteReturnEngine::rowDirOut, $data); // companies OUT
 
-    $data = Utils::sortByOneKey($data, 'wasteCode', TRUE, TRUE, FALSE, SORT_STRING);
+    $data = Utils::sortByOneKey($data, 'wasteCode', TRUE, TRUE, FALSE, SORT_NUMERIC);
 
     $sumData = $this->createContent_Report_Load_WasteSums($data);
 
