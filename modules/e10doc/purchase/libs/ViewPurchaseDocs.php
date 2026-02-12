@@ -111,7 +111,7 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 		{
 			if (!$fromORP)
 				array_push ($q, ' AND [heads].[otherAddress1Mode] = %i', 1);
-			array_push ($q, ' AND [heads].[personNomencCity] = %i', 0);
+			array_push ($q, ' AND [heads].[wasteOriginAdmUnit] = %i', 0);
 		}
 
 		$withoutWasteCity = isset ($qv['purchases']['withoutWasteCity']);
