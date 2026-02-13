@@ -7,8 +7,7 @@
 
 		{"id": "addressMode", "name": "Informace pro", "type": "enumInt", "options": ["saveOnChange"],
 			"enumValues": {"0": "Provozovna", "1": "ORP"}},
-    {"id": "personNomencCity", "name": "Obec", "type": "int", "reference": "e10.base.nomencItems", "comboViewer": "addressNomencCity"},
-
+    {"id": "personNomencCity", "name": "ZUJ původu odpadu", "type": "int", "reference": "e10.world.admUnits", "comboViewer": "level11"},
     {"id": "validFrom", "name": "Platné od", "type": "date"},
     {"id": "validTo", "name": "Platné do", "type": "date"},
 

@@ -100,7 +100,7 @@ class ViewWasteInfo extends TableView
 		}
 		else
 		{ // city
-			$listItem ['i2'] = ['text' => 'ORP', 'suffix' => $item['personNomencCityId'] ?? '---'];
+			$listItem ['i2'] = ['text' => 'ZUJ', 'suffix' => $item['admUnitId11Id'] ?? '---'];
 		}
 		return $listItem;
 	}
@@ -116,21 +116,17 @@ class ViewWasteInfo extends TableView
 		$q = [];
 		array_push($q, 'SELECT [wi].*, persons.fullName AS personName, nomenc.fullName AS wasteCodeFullName,');
 		array_push($q, ' personOffices.id1 AS personOfficeID1,');
-		array_push($q, ' cities.itemId AS personNomencCityId');
+		array_push($q, ' admUnits11.admUnitId AS admUnitId11Id');
 		array_push($q, ' FROM [e10pro_purchase_wasteInfo] AS [wi]');
 		array_push($q, ' LEFT JOIN e10_persons_persons AS persons ON wi.person = persons.ndx');
 		array_push($q, ' LEFT JOIN e10_base_nomencItems AS nomenc ON wi.wasteCodeNomenc = nomenc.ndx');
 		array_push($q, ' LEFT JOIN e10_persons_personsContacts AS personOffices ON wi.personOffice = personOffices.ndx');
-		array_push($q, ' LEFT JOIN e10_base_nomencItems AS cities ON wi.personNomencCity = cities.ndx');
+		array_push($q, ' LEFT JOIN e10_world_admUnits AS admUnits11 ON wi.personNomencCity = admUnits11.ndx');
 		array_push($q, ' WHERE 1');
 
 		if ($wasteReturn)
 		{
 			array_push ($q, ' AND [wi].[validFrom] >= %d', $wasteReturn['dateFrom'], ' AND [wi].[validFrom] <= %d', $wasteReturn['dateTo']);
-
-//			    {"id": "validFrom", "name": "Platné od", "type": "date"},
-//    {"id": "validTo", "name": "Platné do", "type": "date"},
-
 		}
 
 		// -- fulltext

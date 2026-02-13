@@ -15,7 +15,6 @@ class WasteInfoInCreator extends Utility
   {
     $this->db()->query('DELETE FROM e10pro_purchase_wasteInfo');
 
-
     $q = [];
     array_push($q, 'SELECT heads.*');
     array_push($q, ' FROM [e10doc_core_heads] AS [heads]');
@@ -51,7 +50,7 @@ class WasteInfoInCreator extends Utility
         if ($addressMode === 0)
           array_push($q, ' AND [personOffice] = %i', $r['otherAddress1']);
         else
-          array_push($q, ' AND [personNomencCity] = %i', $r['personNomencCity']);
+          array_push($q, ' AND [personNomencCity] = %i', $r['wasteOriginAdmUnit']);
 
         array_push($q, ' LIMIT 1');
         $existingWI = $this->db()->query($q)->fetch();
@@ -80,7 +79,7 @@ class WasteInfoInCreator extends Utility
         }
         else
         {
-          $newWI['personNomencCity'] = $r['personNomencCity'];
+          $newWI['personNomencCity'] = $r['wasteOriginAdmUnit'];
         }
 
         $this->db()->query('INSERT INTO [e10pro_purchase_wasteInfo]', $newWI);
