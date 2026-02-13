@@ -61,11 +61,17 @@ class PurchaseReport extends \e10doc\core\libs\reports\DocReport
 
 		if ($this->recData ['otherAddress1Mode'] == 1)
 		{ // city & code
-			$nomencCityRecData = $this->app()->loadItem($this->recData ['personNomencCity'], 'e10.base.nomencItems');
+			$admUnit11Data = $this->app()->loadItem($this->recData['wasteOriginAdmUnit'], 'e10.world.admUnits'); // ZUJ
+			$zujId = strval($admUnit11Data['admUnitId'] ?? '!!!');
+			$admUnit10Data = $this->app()->loadItem($admUnit11Data['admUnitOwner10'], 'e10.world.admUnits'); // ORP
+			$orpId = strval($admUnit10Data['admUnitId'] ?? '!!!');
 
 			$this->data ['flags']['useORP'] = 1;
-			$this->data ['ORP']['code'] = substr($nomencCityRecData['itemId'], 2);
-			$this->data ['ORP']['name'] = $nomencCityRecData['fullName'];
+			$this->data ['ORP']['code'] = $orpId;
+			$this->data ['ORP']['name'] = $admUnit10Data['fullName'] ?? '!!!';
+			$this->data ['ZUJ']['code'] = $zujId;
+			$this->data ['ZUJ']['name'] = $admUnit11Data['fullName'] ?? '!!!';
+
 			$this->data ['flags']['useAddressPersonOffice'] = 0;
 			$this->data ['flags']['usePersonsAddress'] = 1;
 		}
