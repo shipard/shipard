@@ -83,6 +83,7 @@ class WasteInfoEngine extends Utility
           'fullName' => $r['fullName'],
           'count' => 0,
           'quantity' => 0.0,
+          'price' => 0.0,
           'wasteNotes' => [],
         ];
       }
@@ -187,6 +188,7 @@ class WasteInfoEngine extends Utility
 	public function loadWasteReportInfo(&$reportData)
 	{
 		$wnn = [];
+    $pricedRows = [];
 		foreach ($reportData['rows'] as $r)
 		{
 			if (isset($r['rowItemCodes']))
@@ -212,6 +214,12 @@ class WasteInfoEngine extends Utility
 							'description' => $r['itemDecription'] ?? '',
 						];
 					}
+
+          if (!isset($pricedRows[$r['ndx']]))
+          {
+            $pricedRows[$r['ndx']] = $r;
+            $reportData['infoWasteCodes'][$wasteCodeId]['price'] += $r['priceAll'] ?? 0.0;
+          }
 				}
 			}
 		}

@@ -18,6 +18,12 @@ class WasteAtt14Engine extends Utility
   var $dataTable = [];
   var $dataHeader = [];
 
+  var $enabledWasteCodes = [
+    '020110', '120101', '120103', '150104', '160104', '160106', '160117',
+    '160118', '160801', '170401', '170402', '170403', '170404', '170405', '170406', '170407',
+    '170411', '200140',
+  ];
+
 
   public function setPeriod($periodBegin, $periodEnd)
   {
@@ -27,6 +33,9 @@ class WasteAtt14Engine extends Utility
 
   public function loadData()
   {
+    /** @var \e10doc\core\TableHeads $tableHeads */
+    $tableHeads = $this->app()->table('e10doc.core.heads');
+
     $pms = [
       0 => 'BP', 1 => 'HP', 2 => 'BK', 3 => 'DOB', 4 => 'FP', 5 => 'PL',
       6 => 'SD doklad', 7 => 'INK', 8 => 'LP', 9 => 'ŠK', 10 => 'PP',
@@ -48,60 +57,72 @@ class WasteAtt14Engine extends Utility
     $rows = $this->db()->query($q);
     foreach ($rows as $r)
     {
-      $item = [
-        'docNumber' => $r['docNumber'],
-        'date' => Utils::datef($r['activateTimeFirst'], '%d'),
-        'time' => Utils::datef($r['activateTimeFirst'], '%T'),
-        'personNdx' => $r['person'],
-        'personType' => $r['personType'],
+      $pioReport = new \e10pro\purchase\libs\WasteInfoInReport($tableHeads, $r->toArray());
+      $pioReport->loadData();
 
-        'amount' => $r['sumTotal'],
-        'currency' => $r['currency'],
-      ];
+      foreach ($pioReport->data['infoWasteCodes'] as $wc)
+      {
+        $baseWasteCode = substr($wc['wc'], 0, 6);
+        if (!in_array($baseWasteCode, $this->enabledWasteCodes))
+          continue;
 
-      if ($r['personType'] === 1)
-      { // citizen
-        $item['personCardId'] = $this->loadPersonId($r['person'], 'idcn');
-        $item['personName'] = $r['personFullName'];
+        $item = [
+          'docNumber' => $r['docNumber'],
+          'wasteCode' => $wc['wc'],
+          'date' => Utils::datef($r['activateTimeFirst'], '%d'),
+          'time' => Utils::datef($r['activateTimeFirst'], '%T'),
+          'personNdx' => $r['person'],
+          'personType' => $r['personType'],
 
-        $personAddress = $this->loadPersonAddress($r['person'], 1);
-        $item['personAddress'] = $personAddress['addressText'] ?? '---';
-      }
-      else
-      { // company
-        $item['companyId'] = $this->loadPersonId($r['person'], 'oid');
-        $item['companyName'] = $r['personFullName'];
+          'amount' => $wc['price'],
+          'currency' => $r['currency'],
+        ];
 
-        if ($r['personHandover'] != 0)
-        {
-          $personHandover = $this->app()->loadItem($r['personHandover'], 'e10.persons.persons');
-          if ($personHandover)
+        if ($r['personType'] === 1)
+        { // citizen
+          $item['personCardId'] = $this->loadPersonId($r['person'], 'idcn');
+          $item['personName'] = $r['personFullName'];
+
+          $personAddress = $this->loadPersonAddress($r['person'], 1);
+          $item['personAddress'] = $personAddress['addressText'] ?? '---';
+        }
+        else
+        { // company
+          $item['companyId'] = $this->loadPersonId($r['person'], 'oid');
+          $item['companyName'] = $r['personFullName'];
+
+          if ($r['personHandover'] != 0)
           {
-            $item['personName'] = $personHandover['fullName'];
-            $item['personCardId'] = $this->loadPersonId($r['personHandover'], 'idcn');
+            $personHandover = $this->app()->loadItem($r['personHandover'], 'e10.persons.persons');
+            if ($personHandover)
+            {
+              $item['personName'] = $personHandover['fullName'];
+              $item['personCardId'] = $this->loadPersonId($r['personHandover'], 'idcn');
 
-            $personHandoverAddress = $this->loadPersonAddress($r['personHandover'], 1);
-            $item['personAddress'] = $personHandoverAddress['addressText'] ?? '---';
+              $personHandoverAddress = $this->loadPersonAddress($r['personHandover'], 1);
+              $item['personAddress'] = $personHandoverAddress['addressText'] ?? '---';
+            }
+          }
+          elseif ($r['cashPersonName'] != '')
+          {
+            $item['personName'] = $r['cashPersonName'];
+            if ($r['cashPersonID'] != '')
+              $item['personCardId'] = $r['cashPersonID'];
           }
         }
-        elseif ($r['cashPersonName'] != '')
-        {
-          $item['personName'] = $r['cashPersonName'];
-          if ($r['cashPersonID'] != '')
-            $item['personCardId'] = $r['cashPersonID'];
-        }
+
+        if ($r['paymentMethod'] !== 8) // LP
+          $item['amountPaid'] = ['text' => Utils::nf($wc['price'], 2), 'suffix' => strtoupper($r['currency'])];
+        $item['pm'] = $pms[$r['paymentMethod']] ?? '#'.$r['paymentMethod'];
+
+        $this->dataTable[] = $item;
       }
-
-      if ($r['paymentMethod'] !== 8) // LP
-        $item['amountPaid'] = ['text' => Utils::nf($r['sumTotal'], 2), 'suffix' => strtoupper($r['currency'])];
-      $item['pm'] = $pms[$r['paymentMethod']] ?? '#'.$r['paymentMethod'];
-
-      $this->dataTable[] = $item;
     }
 
     $this->dataHeader = [
       '#' => '#',
       'docNumber' => 'Poř. č.',
+      'wasteCode' => 'KČ odpadu',
       'date' => 'Datum',
       'time' => 'Čas',
       'personName' => 'Jméno osoby',
