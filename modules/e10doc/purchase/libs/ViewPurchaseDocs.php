@@ -105,7 +105,7 @@ class ViewPurchaseDocs extends \E10Doc\Core\ViewHeads
 		{
 			array_push ($q, ' AND [heads].[otherAddress1Mode] = %i', 1);
 			if (!$withBadORP)
-				array_push ($q, ' AND [heads].[personNomencCity] != %i', 0);
+				array_push ($q, ' AND [heads].[wasteOriginAdmUnit] != %i', 0);
 		}
 		if ($withBadORP)
 		{
