@@ -48,6 +48,8 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 	var $modulesPath;
 	var $quiet = FALSE;
 
+	var $debug = 0;
+
 	var $shpdServerCmd = 'shpd-server';
 	var $shpdAppCmd = 'shpd-app';
 
@@ -1202,6 +1204,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 							"   host-check:  check this host\r\n" .
 							"   host-cleanup:cleanup this host\r\n" .
 							"   host-upgrade:upgrade e10 packages\r\n" .
+							"   download-certs:download certificates defined in /etc/shipard/certs.json\r\n" .
 							"   help:        general help\r\n" .
 							"\r\nSee 'shpd-server help <command>' for more information on a specific command.\r\n" .
 							"\r\n";
@@ -1274,6 +1277,12 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 		$dsCreator->run();
 
 		return TRUE;
+	}
+
+	public function downloadCerts()
+	{
+		$cd = new \Shipard\CLI\Server\CertsDownloader($this);
+		return $cd->run();
 	}
 
 	public function hostingCfg ($requiredFields = NULL)
@@ -1419,6 +1428,7 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			return $this->manager->err ('Need to be root');
 
 		$this->quiet = $this->arg ("quiet");
+		$this->debug = intval($this->arg('debug'));
 
 		switch ($this->command ())
 		{
@@ -1443,6 +1453,9 @@ class ShpdServerApp extends \Shipard\Application\ApplicationCore
 			case  "server-after-pkgs-upgrade":return $this->serverAfterPkgsUpgrade();
 			case  "server-get-hosting-info":	return $this->getHostingInfo();
 			case  "server-create-hosting-ds":	return $this->serverCreateHostingDataSources();
+
+			case	'download-certs':						return $this->downloadCerts();
+
 			case	'netdata-alarm':						return $this->netDataAlarm();
 
 			case	'install-shpd-tools':				return $this->installShpdTools();
