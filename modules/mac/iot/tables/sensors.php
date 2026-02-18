@@ -129,7 +129,7 @@ class ViewSensors extends TableView
 	public function renderRow ($item)
 	{
 		$listItem ['pk'] = $item ['ndx'];
-		$listItem ['i1'] = ['text' => $item['idName'].' #'.$item['ndx'], 'class' => 'id'];
+		$listItem ['i1'] = ['text' => '#'.$item['ndx'], 'class' => 'id'];
 
 		if ($item['fullName'] !== '')
 			$listItem ['t1'] = $item['fullName'];

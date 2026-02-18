@@ -1,72 +1,72 @@
 {
 	"0": {
-		"title": "Neznámé", "icon": "quantityTypeUnknown"
+		"title": "Neznámé", "icon": "quantityTypeUnknown", "unit": "", "id": "unknown"
 	},
 	"1": {
-		"title": "Teplota", "icon": "quantityTypeTemperature"
+		"title": "Teplota", "icon": "quantityTypeTemperature", "unit": "°C", "id": "temperature"
 	},
 
 	"20": {
-		"title": "Hmotnost", "icon": "quantityTypeWeight"
+		"title": "Hmotnost", "icon": "quantityTypeWeight", "unit": "g", "id": "weight"
 	},
 	"21": {
-		"title": "Tlak", "icon": "quantityTypePressure"
+		"title": "Tlak", "icon": "quantityTypePressure", "unit": "hPa", "id": "pressure"
 	},
 	"22": {
-		"title": "Úroveň osvětlení", "icon": "quantityTypeLighting"
+		"title": "Úroveň osvětlení", "icon": "quantityTypeLighting", "unit": "Lux", "id": "lighting"
 	},
 
 	"23": {
-		"title": "Vlhkost", "icon": "quantityTypeHumidity"
+		"title": "Vlhkost", "icon": "quantityTypeHumidity", "unit": "%", "id": "humidity"
 	},
 	"24": {
-		"title": "Oxid uhličitý - CO₂", "icon": "quantityTypeCO2"
+		"title": "Oxid uhličitý - CO₂", "icon": "quantityTypeCO2", "unit": "ppm", "id": "co2"
 	},
 	"25": {
-		"title": "Index kvality vzduchu - AQI", "icon": "quantityTypeAQI"
+		"title": "Index kvality vzduchu - AQI", "icon": "quantityTypeAQI", "unit": "", "id": "aqi"
 	},
 	"26": {
-		"title": "Těkavé látky - VOC", "icon": "quantityTypeVOC"
+		"title": "Těkavé látky - VOC", "icon": "quantityTypeVOC", "unit": "", "id": "voc"
 	},
 	"27": {
-		"title": "Oxidy dusíku - NOₓ", "icon": "quantityTypeNOx"
+		"title": "Oxidy dusíku - NOₓ", "icon": "quantityTypeNOx", "unit": "", "id": "nox"
 	},
 
 	"30": {
-		"title": "Pevné částice - PM 1.0 μm", "icon": "quantityTypePM1"
+		"title": "Pevné částice - PM 1.0 μm", "icon": "quantityTypePM1", "unit": "μg/m³", "id": "pm1"
 	},
 	"31": {
-		"title": "Pevné částice - PM 2.5 μm", "icon": "quantityTypePM25"
+		"title": "Pevné částice - PM 2.5 μm", "icon": "quantityTypePM25", "unit": "μg/m³", "id": "pm25"
 	},
 	"32": {
-		"title": "Pevné částice - PM 4 μm", "icon": "quantityTypePM4"
+		"title": "Pevné částice - PM 4 μm", "icon": "quantityTypePM4", "unit": "μg/m³", "id": "pm4"
 	},
 	"33": {
-		"title": "Pevné částice - PM 10 μm", "icon": "quantityTypePM10"
+		"title": "Pevné částice - PM 10 μm", "icon": "quantityTypePM10", "unit": "μg/m³", "id": "pm10"
 	},
 
 	"70": {
-		"title": "Otáčky", "icon": "quantityTypeSpeed"
+		"title": "Otáčky", "icon": "quantityTypeSpeed", "unit": "rpm", "id": "speed"
 	},
 	"71": {
-		"title": "Průtok", "icon": "quantityTypeFlow"
+		"title": "Průtok", "icon": "quantityTypeFlow", "unit": "m³/h", "id": "flow"
 	},
 
 	"80": {
-		"title": "Text", "icon": "quantityTypeText"
+		"title": "Text", "icon": "quantityTypeText", "unit": "", "id": "text"
 	},
 
 	"90": {
-		"title": "Logická hodnota", "icon": "quantityTypeLogicalValue"
+		"title": "Logická hodnota", "icon": "quantityTypeLogicalValue", "unit": "", "id": "logicalValue"
 	},
 	"93": {
-		"title": "Pohybové čidlo", "icon": "quantityTypeMotionSensor"
+		"title": "Pohybové čidlo", "icon": "quantityTypeMotionSensor", "unit": "", "id": "motionSensor"
 	},
 	"96": {
-		"title": "Otevřeno/zavřeno", "icon": "quantityTypeOpenedClosed"
+		"title": "Otevřeno/zavřeno", "icon": "quantityTypeOpenedClosed", "unit": "", "id": "openedClosed"
 	},
 
 	"100": {
-		"title": "Množtví dat", "icon": "quantityTypeDataAmount"
+		"title": "Množtví dat", "icon": "quantityTypeDataAmount", "unit": "", "id": "dataAmount"
 	}
 }
