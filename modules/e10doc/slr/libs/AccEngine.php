@@ -200,7 +200,7 @@ class AccEngine extends Utility
           'centre' => $r['centre'] ?? 0,
         ];
 
-        if (!$docRowDr['centre'] && $this->empRecData['centre'])
+        if (!$docRowDr['centre'] && ($this->empRecData['centre'] ?? 0))
           $docRowDr['centre'] = $this->empRecData['centre'];
 
         // -- credit / DAL
@@ -379,10 +379,13 @@ class AccEngine extends Utility
     array_push($q, 'SELECT * FROM [e10doc_slr_deductions]');
     array_push($q, ' WHERE [emp] = %i', $empNdx);
     array_push($q, ' AND [slrItem] = %i', $empRecRow['slrItem']);
-    array_push($q, ' AND [bankAccount] = %s', $empRecRow['bankAccount']);
+    if (($empRecRow['bankAccount'] ?? '') !== '')
+      array_push($q, ' AND [bankAccount] = %s', $empRecRow['bankAccount']);
     array_push($q, ' AND [symbol1] = %s', $empRecRow['symbol1']);
-    array_push($q, ' AND [symbol2] = %s', $empRecRow['symbol2']);
-    array_push($q, ' AND [symbol3] = %s', $empRecRow['symbol3']);
+    if (($empRecRow['symbol2'] ?? '') !== '')
+      array_push($q, ' AND [symbol2] = %s', $empRecRow['symbol2']);
+    if (($empRecRow['symbol3'] ?? '') !== '')
+      array_push($q, ' AND [symbol3] = %s', $empRecRow['symbol3']);
     array_push($q, ' AND [docState] != %i', 9800);
 		array_push($q, ' AND ([validFrom] IS NULL OR [validFrom] <= %d)', $this->accountingFirstDay);
 		array_push($q, ' AND ([validTo] IS NULL OR [validTo] >= %d)', $this->accountingFirstDay);

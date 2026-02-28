@@ -145,10 +145,13 @@ class ImportEngineCZPerm extends \e10doc\slr\libs\ImportEngine
     array_push($q, 'SELECT * FROM [e10doc_slr_deductions]');
     array_push($q, ' WHERE [emp] = %i', $empNdx);
     array_push($q, ' AND [slrItem] = %i', $empRecRow['slrItem']);
-    array_push($q, ' AND [bankAccount] = %s', $empRecRow['bankAccount']);
+    if (($empRecRow['bankAccount'] ?? '') !== '')
+      array_push($q, ' AND [bankAccount] = %s', $empRecRow['bankAccount']);
     array_push($q, ' AND [symbol1] = %s', $empRecRow['symbol1']);
-    array_push($q, ' AND [symbol2] = %s', $empRecRow['symbol2']);
-    array_push($q, ' AND [symbol3] = %s', $empRecRow['symbol3']);
+    if (($empRecRow['symbol2'] ?? '') !== '')
+      array_push($q, ' AND [symbol2] = %s', $empRecRow['symbol2']);
+    if (($empRecRow['symbol3'] ?? '') !== '')
+      array_push($q, ' AND [symbol3] = %s', $empRecRow['symbol3']);
     array_push($q, ' AND [docState] != %i', 9800);
 
     $deduction = $this->db()->query($q)->fetch();
