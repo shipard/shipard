@@ -138,6 +138,9 @@ class AccEngine extends Utility
           $item['symbol2'] = $deduction['symbol2'];
           $item['symbol3'] = $deduction['symbol3'];
           $item['person'] = $deduction['payTo'];
+
+          if ($deduction['symbol2'] === '')
+            $item['symbol2'] = sprintf("%04d%02d", $this->importRecData['calendarYear'], $this->importRecData['calendarMonth']);
         }
         else
         {
