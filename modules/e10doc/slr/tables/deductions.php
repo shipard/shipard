@@ -158,6 +158,6 @@ class ViewDetailDeduction extends TableViewDetail
 {
 	public function createDetailContent ()
 	{
-		//$this->addDocumentCard('e10doc.slr.dc.DCImport');
+		$this->addDocumentCard('e10doc.slr.dc.DCDeduction');
 	}
 }
