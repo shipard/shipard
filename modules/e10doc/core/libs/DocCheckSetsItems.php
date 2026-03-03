@@ -229,6 +229,8 @@ class DocCheckSetsItems extends \e10doc\core\libs\DocCheck
 	function createDocRowSetRows($row, $itemSetsRows)
 	{
 		$docRowSetRows = [];
+		if ($row['operation'] == 10400015)
+			return $docRowSetRows;
 
 		$docType = $this->app()->cfgItem ('e10.docs.types.' . $this->docRecData['docType'], NULL);
 
