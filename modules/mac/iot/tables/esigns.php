@@ -54,6 +54,7 @@ class TableESigns extends DbTable
 			{
 				$epaperCfg = $this->app()->cfgItem('mac.iot.epds.types.'.$portCfg['displayType'], NULL);
 				$info['orientation'] = intval($info['esignRecData']['orientation'] ?? 0);
+				$info['epaperCfg'] = $epaperCfg;
 			}
 		}
 		elseif ($info['esignRecData']['esignKind'])
@@ -61,11 +62,13 @@ class TableESigns extends DbTable
 			$esignKindRecData = $this->app()->loadItem($info['esignRecData']['esignKind'], 'mac.iot.esignsKinds');
 			$epaperCfg = $this->app()->cfgItem('mac.iot.epds.types.'.$esignKindRecData['displayType'], NULL);
 			$info['orientation'] = intval($esignKindRecData['orientation'] ?? 0);
+			$info['epaperCfg'] = $epaperCfg;
 		}
 
 		if ($epaperCfg)
 		{
 			$info['ok'] = 1;
+			$info['rotateOnServer'] = $epaperCfg['rotateOnServer'] ?? 0;
 
 			if ($info['orientation'] === 0 || $info['orientation'] === 2)
 			{

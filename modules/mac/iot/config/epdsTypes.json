@@ -307,6 +307,7 @@
         "name": "Green"
       }
     ],
-    "width": 1200, "height": 1600
+    "width": 1200, "height": 1600,
+    "rotateOnServer": 1
   }
 }
