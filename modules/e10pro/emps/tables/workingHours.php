@@ -4,6 +4,7 @@ namespace e10pro\emps;
 
 use \Shipard\Viewer\TableView, \Shipard\Form\TableForm, \Shipard\Table\DbTable, \Shipard\Viewer\TableViewDetail;
 use \Shipard\Utils\Utils;
+use \Shipard\Form\FormSidebar;
 
 
 /**
@@ -201,6 +202,51 @@ class FormWorkingHours extends TableForm
 		}
 
 		return parent::columnLabel ($colDef, $options);
+	}
+
+	protected function renderMainSidebar ($allRecData, $recData)
+	{
+		if ($this->app->model()->module ('e10pro.zus') === FALSE)
+			return '';
+		$now = new \DateTime();
+		$academicYear = ($now->format('n') < 9) ? ($now->format('Y') - 1) : $now->format('Y');
+
+		$validFrom = Utils::createDateTime($this->recData['validFrom']);
+		if ($validFrom)
+			$academicYear = ($validFrom->format('n') < 9) ? ($validFrom->format('Y') - 1) : $validFrom->format('Y');
+
+		$plan = new \e10pro\zus\libs\PlanTeacher($this->app());
+		$plan->getPlan($this->recData['person'], $academicYear);
+
+
+		$header = [
+			'pobockaId' => 'Pobočka',
+			'zacatek' => 'Od',
+			'konec' => 'Do',
+			//'vyukaNazev' => 'Výuka',
+			'predmetNazev' => 'Předmět',
+			//'rocnik' => 'Ročník',
+			//'ucebnaNazev' => 'Učebna'
+		];
+		$table = $plan->plan->data;
+
+		$this->addContent ([
+			'pane' => 'e10-pane e10-pane-table',
+			'paneTitle' => 'Rozvrh',
+			'type' => 'table', 'table' => $table, 'header' => $header
+		]);
+
+
+		$c = '';
+		$c .= "<div style='font-size: 118%;'>";
+		$c .= $this->app->ui()->renderTableFromArray ($table, $header);
+		$c .= "</div>";
+
+		$sideBar = new FormSidebar ($this->app());
+		$sideBar->addTab('t1', 'Rozvrh');
+		$sideBar->setTabContent('t1', $c);
+
+		$this->sidebar = $sideBar->createHtmlCode();
 	}
 }
 
