@@ -238,7 +238,7 @@ class FormWorkingHours extends TableForm
 
 
 		$c = '';
-		$c .= "<div style='font-size: 118%;'>";
+		$c .= "<div style='font-size:118%; background-color: #f0f0f0; padding: 0px;' class='e10-reportContent'>";
 		$c .= $this->app->ui()->renderTableFromArray ($table, $header);
 		$c .= "</div>";
 
