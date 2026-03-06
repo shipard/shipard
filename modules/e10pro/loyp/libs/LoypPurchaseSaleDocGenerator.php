@@ -67,6 +67,7 @@ class LoypPurchaseSaleDocGenerator extends Utility
 		$newDoc->docHead['author'] = $this->app()->userNdx();
     $newDoc->docHead['warehouse'] = $warehouse;
     $newDoc->docHead['dbCounter'] = $dbCounter;
+    $newDoc->docHead['docKind'] = $loypCfg['docKindInvoiceOut'] ?? 0;
 		$newDoc->docHead['title'] = 'Dárek k výkupu '.$this->purchaseDocRecData['docNumber'];
 
     foreach ($this->docRows as $docRow)

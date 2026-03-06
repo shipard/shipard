@@ -14,6 +14,7 @@ class ReAccountingPointsEngine extends Utility
   var $tableHeads;
 
   var $loypNdx = 0;
+	var $loypCfg = NULL;
 	var $docNdx = 0;
 
 	public function init ()
@@ -28,6 +29,8 @@ class ReAccountingPointsEngine extends Utility
 
 	public function doAllDocs ()
 	{
+		$this->loypCfg = $this->app()->cfgItem('e10pro.loyp.loyps.'.$this->loypNdx, NULL);
+
 		$docTypes = ['invno', 'purchase'];
 		foreach ($docTypes as $docType)
 			$this->doAllDocsOneDocType ($docType);
@@ -40,6 +43,11 @@ class ReAccountingPointsEngine extends Utility
 		array_push($q, ' WHERE docType = %s', $docType);
 		array_push($q, ' AND heads.docState = %i', 4000);
     array_push($q, ' AND heads.loyp = %i', $this->loypNdx);
+
+		if ($docType === 'invno')
+		{
+			array_push($q, ' AND heads.dbCounter = %i', $this->loypCfg['dbCounterInvoiceOut']);
+		}
 
     /*
 		if ($this->fiscalYear)
@@ -69,6 +77,23 @@ class ReAccountingPointsEngine extends Utility
 	{
 		if ($this->app()->debug)
 			echo ("# {$docRecData['docNumber']} ({$docRecData['docType']}); {$docRecData['dateAccounting']}");
+
+		if ($docRecData['docType'] == 'invno')
+		{
+			$wantedDocKind = $this->loypCfg['docKindInvoiceOut'] ?? 0;
+			if ($wantedDocKind && $docRecData['docKind'] != $wantedDocKind)
+			{
+				$this->db()->query ('UPDATE [e10doc_core_heads] SET docKind = %i', $wantedDocKind, ' WHERE ndx = %i', $docRecData['ndx']);
+				$docRecData['docKind'] = $wantedDocKind;
+
+				$ae = new \e10doc\core\libs\ReAccountingEngine($this->app());
+				$ae->init();
+				$ae->setDocument($docRecData['ndx']);
+				$ae->run();
+
+				$docRecData = $this->tableHeads->loadItem($docRecData['ndx']);
+			}
+		}
 
 		$this->db()->query ("DELETE FROM [e10doc_debs_journal] WHERE [document] = %i", $docRecData['ndx'], ' AND [accRing] = %i', 120);
 
