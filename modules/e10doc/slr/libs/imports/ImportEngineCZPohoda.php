@@ -64,12 +64,23 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
       $excelEngine->getSheetAsTable ($spreadsheet, 0, $table, 60);
 
       if (isset($table[0][1]) && $table[0][1] === 'Přehled mezd')
+      {
         $this->srcData['prehled-mezd'] = $table;
+        if ($this->app()->debug)
+          echo "     - Přehled mezd"."\n";
+      }
       elseif (isset($table[0][1]) && $table[0][1] === 'Soupis sociálního pojištění')
+      {
         $this->srcData['soupis-socialniho'] = $table;
+        if ($this->app()->debug)
+          echo "     - Soupis sociálního pojištění"."\n";
+      }
       elseif (isset($table[0][1]) && $table[0][1] === 'Soupis zdravotního pojištění')
+      {
         $this->srcData['soupis-zdravotniho'] = $table;
-
+        if ($this->app()->debug)
+          echo "     - Soupis zdravotního pojištění"."\n";
+      }
       unset($spreadsheet);
       unset($excelEngine);
     }
@@ -93,9 +104,13 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
 
     $iid = sprintf('%02d/%04d', $this->importRecData['calendarMonth'], $this->importRecData['calendarYear']);
 
+    //if ($this->app()->debug)
+    //  echo "Přehled mezd1: ".json_encode($this->srcData['prehled-mezd'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n";
     $pm = $this->srcData['prehled-mezd'];
     foreach ($pm as $rowId => $row)
     {
+      //if ($this->app()->debug)
+      //  echo "Přehled mezd2: `{$row[1]}` / `$iid`\n";
       if ($row[1] !== $iid)
         continue;
 
@@ -103,8 +118,14 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
       $empPersonalId = $row[13] ?? NULL;
       if (!$empPersonalId)
         $empPersonalId = $row[14] ?? NULL; // from 2025/07
+      if (!$empPersonalId)
+        $empPersonalId = $row[15] ?? NULL; // from 2026/01
       if (!$empName || !$empPersonalId)
+      {
+        if ($this->app()->debug)
+          echo "-- SKIP: no empName '{$empName}' or empPersonalId '{$empPersonalId}': ".json_encode($row, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)."\n";
         continue;
+      }
 
       $empRecData = $this->loadEmp($empPersonalId, $empName);
 
@@ -116,6 +137,8 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
 
         $empAmounts[] = $value;
       }
+      if ($this->app()->debug)
+        echo "-- EMP AMOUNTS: ".json_encode($empAmounts)."\n";
 
       foreach ($empAmounts as $empAmoundNdx => $empAmount)
       {
@@ -135,6 +158,8 @@ class ImportEngineCZPohoda extends \e10doc\slr\libs\ImportEngine
           $empAmount = - $empAmount;
 
         $oneItem = ['amount' => $empAmount, 'hours' => 0];
+        if ($this->app()->debug)
+          echo "-- ADD ONE ITEM: ".json_encode($oneItem)."\n";
         $this->addOneItem($empRecData, $slrItemRecData['ndx'], $oneItem);
       }
     }
