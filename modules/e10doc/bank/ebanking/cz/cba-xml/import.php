@@ -87,6 +87,8 @@ class Import extends \E10Doc\Bank\ebankingImportDoc
 						$s3 = substr($s3, 2);
 					if ($s3 === '0000')
 						$s3 = '';
+					if (strlen($s3) > 10)
+						$s3 = substr($s3, 0, 10);
 					$this->setRowInfo('symbol3', $s3);
 				}
 
