@@ -184,10 +184,10 @@ class BankOrderReport extends \e10doc\core\libs\reports\DocReport
 
 	public function saveAsFileName ($type)
 	{
-		$fn = 'Příkaz-';
+		$fn = 'Prikaz-';
 		switch ($type)
 		{
-			case 'cz/bank-order-giro-kpc': 					$fn .= 'k-úhradě-'; break;
+			case 'cz/bank-order-giro-kpc': 					$fn .= 'k-uhrade-'; break;
 			case 'cz/bank-order-direct-debit-kpc':	$fn .= 'k-inkasu-'; break;
 		}
 		$fn .= $this->recData['docNumber'].'.kpc';
