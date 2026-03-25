@@ -8,7 +8,7 @@
 	{"id": "cz.gpc", "name": "GPC", "srcCharset": "CP1250",
 		"checkRegExp": "/^074(.+)\\s075(.+)/", "checkRegExp2": "/^074(.+)\\s/"},
 	{"id": "cz.cspor-xml", "name": "Česká spořitelna / XML", "srcCharset": "CP1250",
-		"checkRegExp": "/<exportStatements>(\\s+)<exportStatement>/"},
+		"checkRegExp": "/<exportStatements>/"},
 	{"id": "cz.cspor-csv", "name": "Česká spořitelna / CSV", "srcCharset": "CP1250",
 		"checkRegExp": "/(.+)Datum splatnosti\\\";(.+)Datum odpisu\\\";/"},
 	{"id": "cz.csob-slk", "name": "ČSOB / SLK", "srcCharset": "CP1250",
