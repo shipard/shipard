@@ -147,8 +147,15 @@
 						{"kind": 10, "count": 1, "maskId": "mng"}
 					]
 				},
-				"mkt-xap_map": {"title": "mAP"},
-
+				"mkt-xap_map": {
+					"title": "mAP",
+					"wirelessMode": "wireless",
+					"ports": [
+						{"kind": 5, "count": 2, "maskId": "ether"},
+						{"kind": 1, "count": 1, "maskId": "wlan"},
+						{"kind": 10, "count": 1, "maskId": "mng"}
+					]
+				},
 				"mkt-xap_wap-d2": {
 					"title": "wAP ac",
 					"typeIds": ["RBwAPG-5HacD2HnD"],
