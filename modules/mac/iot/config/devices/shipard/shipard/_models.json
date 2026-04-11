@@ -69,6 +69,10 @@
 		"fn": "SMS50 V1",
 		"iotKind": "shib", "iotSubKind": "shib"
 	},
+	"vt-btns4": {
+		"fn": "Tlačítka 4x",
+		"iotKind": "shib", "iotSubKind": "shib"
+	},
 	"uart-vm": {
 		"fn": "Prodejní automat",
 		"iotKind": "shib", "iotSubKind": "shib"

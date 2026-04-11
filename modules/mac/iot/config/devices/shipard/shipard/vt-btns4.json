@@ -1,0 +1,123 @@
+{
+	"gpioLayout": "shipard/espressif/esp32s3-generic",
+	"enabledPins": {
+		"p17": {"title": "qwiic.sda"},
+		"p18": {"title": "qwiic.scl"}
+	},
+	"fields": {
+		"groups": [
+			{"id":  "b1", "title":  "Tlačítko 1"},
+			{"id":  "b2", "title":  "Tlačítko 2"},
+			{"id":  "b3", "title":  "Tlačítko 3"},
+			{"id":  "b4", "title":  "Tlačítko 4"},
+			{"id":  "enc", "title":  "Enkodér"},
+			{"id":  "opts", "title":  "Nastavení"}
+		],
+		"columns": [
+      {
+				"id": "btn1Enabled", "group":  "b1", "name": "Tlačítko 1 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "btn1PortId", "group":  "b1", "name": "ID portu Tlačítka 1", "label": "ID portu", "type": "string", "len": 30, "enabled": {"btn1Enabled": "1"}
+			},
+			{
+				"id": "btn1FullName", "group":  "b1", "name": "Název portu Tlačítka 1", "label": "Název", "type": "string", "len": 80, "enabled": {"btn1Enabled": "1"}
+			},
+
+      {
+				"id": "btn2Enabled", "group":  "b2", "name": "Tlačítko 2 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "btn2PortId", "group":  "b2", "name": "ID portu Tlačítka 2", "label": "ID portu", "type": "string", "len": 30, "enabled": {"btn2Enabled": "1"}
+			},
+			{
+				"id": "btn2FullName", "group":  "b2", "name": "Název portu Tlačítka 2", "label": "Název", "type": "string", "len": 80, "enabled": {"btn2Enabled": "1"}
+			},
+
+      {
+				"id": "btn3Enabled", "group":  "b3", "name": "Tlačítko 3 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "btn3PortId", "group":  "b3", "name": "ID portu Tlačítka 3", "label": "ID portu", "type": "string", "len": 30, "enabled": {"btn3Enabled": "1"}
+			},
+			{
+				"id": "btn3FullName", "group":  "b3", "name": "Název portu Tlačítka 3", "label": "Název", "type": "string", "len": 80, "enabled": {"btn3Enabled": "1"}
+			},
+
+      {
+				"id": "btn4Enabled", "group":  "b4", "name": "Tlačítko 4 je povoleno", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "btn4PortId", "group":  "b4", "name": "ID portu Tlačítka 4", "label": "ID portu", "type": "string", "len": 30, "enabled": {"btn4Enabled": "1"}
+			},
+			{
+				"id": "btn4FullName", "group":  "b4", "name": "Název portu Tlačítka 4", "label": "Název", "type": "string", "len": 80, "enabled": {"btn4Enabled": "1"}
+			},
+
+      {
+				"id": "encEnabled", "group":  "enc", "name": "Enkodér je povolen", "label": "Povoleno", "type": "logical", "options": ["saveOnChange"]
+			},
+			{
+				"id": "btnEncPortId", "group":  "enc", "name": "ID portu tlačítka Enkodéru", "label": "ID portu tlačítka", "type": "string", "len": 30, "enabled": {"encEnabled": "1"}
+			},
+			{
+				"id": "btnEncFullName", "group":  "enc", "name": "Název portu tlačítka Enkodéru", "label": "Název", "type": "string", "len": 80, "enabled": {"encEnabled": "1"}
+			}
+		]
+	},
+	"fixedIOPorts": {
+		"btn1": {
+			"type": "input/binary",
+			"portId": "btn1",
+			"pin": "p15",
+			"sendAsAction": 1,
+			"_rowColumns": {"btn1PortId": "portId", "btn1FullName": "fullName"},
+      "_portDisabled": {"btn1Enabled": 0}
+		},
+		"btn2": {
+			"type": "input/binary",
+			"portId": "btn2",
+			"pin": "p1",
+			"sendAsAction": 1,
+			"_rowColumns": {"btn2PortId": "portId", "btn2FullName": "fullName"},
+      "_portDisabled": {"btn2Enabled": 0}
+		},
+		"btn3": {
+			"type": "input/binary",
+			"portId": "btn3",
+			"pin": "p21",
+			"sendAsAction": 1,
+			"_rowColumns": {"btn3PortId": "portId", "btn3FullName": "fullName"},
+      "_portDisabled": {"btn3Enabled": 0}
+		},
+		"btn4": {
+			"type": "input/binary",
+			"portId": "btn4",
+			"pin": "p16",
+			"sendAsAction": 1,
+			"_rowColumns": {"btn4PortId": "portId", "btn4FullName": "fullName"},
+      "_portDisabled": {"btn4Enabled": 0}
+		},
+		"btnEnc": {
+			"type": "input/binary",
+			"portId": "btnEnc",
+			"pin": "p7",
+			"sendAsAction": 1,
+			"_rowColumns": {"btnEncPortId": "portId", "btnEncFullName": "fullName"},
+      "_portDisabled": {"encEnabled": 0}
+		},
+
+		"i2c": {
+			"type": "bus/i2c",
+			"portId": "i2c",
+			"pinSDA": "p17",
+			"pinSCL": "p18"
+		},
+		"pwr": {
+			"type": "power/battusb",
+			"portId": "pwr",
+			"i2cBusPortId": "i2c"
+		}
+	},
+	"fwId": "vt-btns"
+}
