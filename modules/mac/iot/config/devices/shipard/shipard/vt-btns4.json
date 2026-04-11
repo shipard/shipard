@@ -2,7 +2,11 @@
 	"gpioLayout": "shipard/espressif/esp32s3-generic",
 	"enabledPins": {
 		"p17": {"title": "qwiic.sda"},
-		"p18": {"title": "qwiic.scl"}
+		"p18": {"title": "qwiic.scl"},
+
+		"p4": {"title": "leds"},
+		"p39": {"title": "buzzer"},
+		"p45": {"title": "enable.5V"}
 	},
 	"fields": {
 		"groups": [
