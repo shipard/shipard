@@ -64,5 +64,6 @@
 	],
 	"forms": [
 		{"id": "default", "class": "e10mnf.core.FormWorkRec"}
-	]
+	],
+	"options": ["disableCopyRecords"]
 }
