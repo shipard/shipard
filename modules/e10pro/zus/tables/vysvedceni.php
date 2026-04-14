@@ -371,6 +371,7 @@ class FormVysvedceni extends TableForm
 				$this->addColumnInput ("svpOddeleni", $covi);
 				$this->addColumnInput ("urovenStudia", $covi);
 				$this->addColumnInput ("typVysvedceni", $covi);
+				$this->addColumnInput ("statniObcanstvi");
 			$this->closeTab ();
 
 			$this->openTab (TableForm::ltNone);
@@ -505,11 +506,13 @@ class VysvedceniReportOpis extends FormReport
 	public function loadData ()
 	{
 		$skolniRok = $this->app->cfgItem ('e10pro.zus.roky.'.$this->recData ['skolniRok']);
+		$seznamStObcansctvi = $this->table->columnInfoEnum ('statniObcanstvi', 'cfgText');
+		$stObcan = $seznamStObcansctvi[$this->recData ['statniObcanstvi']] ?? 'Česká republika';
 
 		$this->data ['svpOddeleni'] = $this->app()->cfgItem ("e10pro.zus.svp.{$this->recData ['svp']}.pojmenovani");
 
     $this->data ['stat'] = "Česká republika";
-    $this->data ['stObcan'] = "Česká republika";
+    $this->data ['stObcan'] = $stObcan;
     $this->data ['rokVystaveni'] = strval(intval($this->recData ['skolniRok']) + 1);
     $this->data ['datumVystaveni1pol'] = $this->datum($skolniRok['V1']);
     $this->data ['datumVystaveni2pol'] = $this->datum($skolniRok['V2']);
@@ -550,10 +553,6 @@ class VysvedceniReportOpis extends FormReport
 		$tablePersons = $this->app->table ('e10.persons.persons');
 		$this->data ['student'] = $this->table->loadItem ($this->recData ['student'], 'e10_persons_persons');
 		$this->data ['student']['lists'] = $tablePersons->loadLists ($this->data ['student']);
-
-    if ($this->data ['student']['lastName'] == 'Kieu') {
-      $this->data ['stObcan'] = 'Viet Nam';
-    }
 
 		$bdate = \E10\base\searchArrayItem ($this->data ['student']['lists']['properties'], 'property', 'birthdate');
 		if ($bdate)
