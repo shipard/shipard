@@ -82,7 +82,7 @@ class DocsPointsAccExtsEngineOut extends \Shipard\Base\Utility
 
     // -- balance CR/DAL
     $rowCr = [
-      'accountId' => $debsAccIdBalanceCr,
+      'accountId' => /*$debsAccIdBalanceCr*/ '395801',
       'side' => 1,
       'symbol1' => $this->accEngine->docHead['symbol1'],
       'money' => $moneyBalance, //$moneyPoints,
