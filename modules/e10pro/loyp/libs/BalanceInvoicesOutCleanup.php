@@ -49,8 +49,9 @@ class BalanceInvoicesOutCleanup extends \Shipard\Base\Utility
 		array_push($q, '	LEFT JOIN e10doc_core_heads as heads ON saldo.docHead = heads.ndx');
 		array_push($q, ' WHERE');
 
-		array_push($q, ' saldo.[fiscalYear] = %i AND ', $fiscalYear);
-		array_push($q, ' EXISTS (',
+		array_push($q, ' saldo.[fiscalYear] = %i', $fiscalYear);
+		array_push($q, ' AND persons.[company] = %i', 0);
+		array_push($q, ' AND EXISTS (',
 			'	SELECT pairId, sum(amount) as amount, sum(request) as request, sum(payment) as payment',
 			'	FROM [e10doc_balance_journal] as q',
 			'	WHERE q.[type] = %i', $balance['id'], ' AND q.pairId = saldo.pairId AND q.[fiscalYear] = %i ', $fiscalYear,
