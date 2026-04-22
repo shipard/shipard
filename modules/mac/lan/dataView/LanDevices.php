@@ -2,7 +2,7 @@
 
 namespace mac\lan\dataView;
 
-use e10\Utility;
+use e10\Utility, \Shipard\Utils\Json;
 
 
 /**
@@ -28,6 +28,7 @@ class LanDevices extends \lib\dataView\DataView
 		$this->checkRequestParamsList('deviceKinds');
 		$this->checkRequestParamsList('rack');
 		$this->checkRequestParamsList('lan');
+		$this->checkRequestParamsList('pks');
 
 		$this->devicesKinds = $this->app()->cfgItem ('mac.lan.devices.kinds');
 	}
@@ -53,6 +54,9 @@ class LanDevices extends \lib\dataView\DataView
 
 		if (isset($this->requestParams['lan']))
 			array_push ($q, ' AND devices.[lan] IN %in', $this->requestParams['lan']);
+
+		if (isset($this->requestParams['pks']))
+			array_push ($q, ' AND devices.[ndx] IN %in', $this->requestParams['pks']);
 
 		if (isset($this->requestParams['deviceKinds']))
 			array_push ($q, ' AND devices.[deviceKind] IN %in', $this->requestParams['deviceKinds']);
@@ -82,6 +86,20 @@ class LanDevices extends \lib\dataView\DataView
 				$item['deviceKind'] = '#'.$r['deviceKind'];
 			if ($r['rackName'])
 				$item['rack'] = $r['rackName'];
+
+			$macDeviceCfg = Json::decode($r['macDeviceCfg'], TRUE);
+			if ($macDeviceCfg)
+			{
+				$s = ':;"';
+				$qrCodeData = '';
+				if (isset($macDeviceCfg['wifiSSID']))
+					$qrCodeData = 'WIFI:S:'.addcslashes($macDeviceCfg['wifiSSID'], $s).';T:WPA;P:'.addcslashes($macDeviceCfg['wifiPassword'], $s).';;';
+
+				if ($qrCodeData !== '')
+					$macDeviceCfg['wifiQRCodeData'] = $qrCodeData;
+
+				$item['macDeviceCfg'] = $macDeviceCfg;
+			}
 
 			$t[$r['ndx']] = $item;
 			$pks[] = $r['ndx'];
@@ -344,5 +362,11 @@ class LanDevices extends \lib\dataView\DataView
 			$data[$deviceNdx]['osInfo'] = $osInfo;
 			unset($data[$deviceNdx]['osInfo'][0]['icon']);
 		}
+	}
+
+	protected function renderDataAs($showAs)
+	{
+		$this->data['lanDevices'] = $this->data;
+		return '';
 	}
 }
