@@ -392,6 +392,7 @@ class WidgetLiveNG extends \Shipard\UI\Core\UIWidgetBoard
 	{
 		if ($this->fullCode)
 			return "\n<script>(() => {initWidgetVS ('{$this->widgetId}');})();</script>";
+//			return "\n<script>(() => {initWidgetVS ('{$this->widgetId}');})();</script>" . "<script type=\"text/javascript\" integrity=\"sha384-c0/Qi/FVb8ZdwoYbgZ6VwZ6JQpu0a5n6JlgqoKX/phQIazoA/6k1d8Ra9Wv7JczM\" src=\"/www-root/.ui/ng/js/go2rtc.js?v=0b92abbcb574f586a01bbfc439b877a6\"></script>";
 
 		return '';
 	}

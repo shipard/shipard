@@ -6,7 +6,7 @@ use \Shipard\Utils\Utils;
 
 class ModuleServices
 {
-	/** @var \Shipard\Application\Application $app */
+	/** @var \Shipard\CLI\Application $app */
 	protected $app;
 	public $initConfig;
 

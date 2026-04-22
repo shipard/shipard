@@ -238,6 +238,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	protected function onCronEver()
 	{
+		if (!$this->app()->production())
+			return;
 		$this->downloadRegsChangeSetsContents();
 		$this->prepareRegsChangeItems();
 		$this->doChangeSetItemsDone();
@@ -245,6 +247,8 @@ class ModuleServices extends \E10\CLI\ModuleServices
 
 	protected function onCronQueue()
 	{
+		if (!$this->app()->production())
+			return;
 		$this->doChangeSetItems(3);
 	}
 

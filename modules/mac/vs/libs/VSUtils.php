@@ -345,4 +345,33 @@ class VSUtils
 	{
 		return self::camerasBar ($app, 'left');
 	}
+
+	static function camerasSnapshotUrl (\Shipard\Application\Application $app, $camNdx, $fileId)
+	{
+		$cameras = $app->cfgItem('mac.cameras', []);
+		$servers = $app->cfgItem('mac.localServers', []);
+
+		$camPicturesList = ['servers' => []];
+
+
+		$cameraNdx = $camNdx;
+
+		$cam = $cameras[$cameraNdx];
+		$srv = $servers[$cam['localServer']];
+
+
+		if (!isset($camPicturesList['servers'][$cam['localServer']]))
+		{
+			$camPicturesList['servers'][$cam['localServer']] = ['ndx' => $cam['localServer'], 'url' => $srv['camerasURL']];
+		}
+
+
+		$te = new \mac\admin\libs\TokensEngine($app);
+		$validTokens = $te->loadLANValidTokens($srv['lanNdx']);
+
+		$snapshotUrl = 'https://'.$srv['fqdn'].':'.$srv['httpsPort'].'/'.$validTokens[0].'/camera-snapshot'.'/'.$cam['ndx'].'/img-'.$fileId.'.jpg';
+
+		return $snapshotUrl;
+	}
+
 }

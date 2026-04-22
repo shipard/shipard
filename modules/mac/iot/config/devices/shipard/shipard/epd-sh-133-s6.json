@@ -2,7 +2,9 @@
 	"gpioLayout": "shipard/espressif/esp32s3-generic",
 	"enabledPins": {
 		"p17": {"title": "qwiic.sda"},
-		"p18": {"title": "qwiic.scl"}
+		"p18": {"title": "qwiic.scl"},
+		"p4": {"title": "button.2"},
+		"p9": {"title": "button.1"}
 	},
 	"fields": {
 		"groups": [
@@ -33,5 +35,5 @@
 			"i2cBusPortId": "i2c"
 		}
 	},
-	"fwId": "epd-esp32S3-wifi-GxEPD2_1248c"
+	"fwId": "ed60"
 }

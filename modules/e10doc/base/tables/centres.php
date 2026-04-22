@@ -67,7 +67,7 @@ class ViewCentres extends TableView
 		$listItem ['t2'] = $item['shortName'];
 		$listItem ['i1'] = $item['id'];
 		$listItem ['icon'] = $this->table->tableIcon ($item);
-		
+
 		return $listItem;
 	}
 
@@ -110,6 +110,6 @@ class FormCentre extends TableForm
 			$this->addColumnInput ('shortName');
 			$this->addColumnInput ('id');
 		$this->closeForm ();
-	}	
+	}
 }
 

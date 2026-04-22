@@ -35,6 +35,8 @@ class Utility
 	{
 		$this->messagess [] = array ('text' => $msgText);
 		$this->errors += 1;
+		if (is_array($msgText))
+			$msgText = json_encode($msgText);
 		error_log ($msgText);
 		return FALSE;
 	}

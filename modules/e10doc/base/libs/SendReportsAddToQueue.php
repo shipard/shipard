@@ -54,7 +54,7 @@ class SendReportsAddToQueue extends Utility
     if (!$this->dbCounterNdx)
       return;
 
-    $this->dataTimeLimit = new \DateTime('3 days ago');
+    $this->dataTimeLimit = new \DateTime('8 days ago');
 
     $this->addToQueue();
   }

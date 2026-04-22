@@ -22,8 +22,6 @@ class IotAction extends E10ApiObject
 
 	/** @var \mac\iot\TableControls */
 	var $tableControls;
-	/** @var \mac\iot\TableThings */
-	var $tableThings;
 	/** @var \mac\lan\TableLans */
 	var $tableLans;
 	/** @var \mac\lan\TableDevices */
@@ -52,7 +50,7 @@ class IotAction extends E10ApiObject
 
 		if ($this->actionType === 'set-scene')
 		{
-			
+
 			$iotDevicesUtils = new \mac\iot\libs\IotDevicesUtils($this->app());
 			$setupNdx = $this->requestParam('setup', 0);
 			$setupTopic = $iotDevicesUtils->iotSetupTopic($setupNdx);
@@ -96,7 +94,7 @@ class IotAction extends E10ApiObject
 				'mqttTopic' => $deviceTopic,
 				'mqttPayload' => json_encode($setData),
 			];
-		}	
+		}
 		elseif ($this->actionType === 'send-setup-request')
 		{
 			/*
@@ -167,13 +165,13 @@ class IotAction extends E10ApiObject
 		{
 			error_log("___PARAM_ERROR___");
 			return FALSE;
-		}	
+		}
 
 		if ($this->lanControlURL === '')
 		{
 			error_log("__ERROR_lanControlURL__");
 			return FALSE;
-		}	
+		}
 		$url = $this->lanControlURL.'control/';
 
 		$result = utils::http_post($url, json_encode($this->requestData));

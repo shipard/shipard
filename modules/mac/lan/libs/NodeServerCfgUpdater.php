@@ -150,7 +150,11 @@ class NodeServerCfgUpdater extends Utility
 					$cfgData['camGo2RTCPort'] = $macDeviceCfg['camGo2RTCPort'];
 					if (!$cfgData['camGo2RTCPort'])
 						$cfgData['camGo2RTCPort'] = 16443;
-					}
+
+					$loginInfo = ['salt' => time(), 'user' => $macDeviceCfg['camGo2RTCUser'] ?? '', 'password' => $macDeviceCfg['camGo2RTCPassword'] ?? ''];
+					$loginInfoStr = base64_encode(json_encode($loginInfo));
+					$cfgData['go2rtcApiLoginInfo'] = $loginInfoStr;
+				}
 
 				$this->nodeServerConfigCameras($cfgData, $r['ndx'], $r['lan'], $r['mainServerCameras'] === $r['ndx'], $macDeviceCfg);
 				$this->nodeServerConfigLanControl($cfgData, $r['ndx'], $r['lan'], $r['mainServerLanControl'] === $r['ndx']);

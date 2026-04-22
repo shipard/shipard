@@ -11,7 +11,7 @@
     {"id": "standardized", "name": "Standardizovaná adresa", "type": "enumInt",
       "enumValues": {"0": "Ne", "1": "Ano", "2": "Částečně"}},
 		{"id": "source", "name": "Zdroj", "type": "enumInt",
-			"enumValues": {"0": "Neznámý", "1": "Ares", "2": "Ares RŽP", "3": "RŽP"}},
+			"enumValues": {"0": "Neznámý", "1": "Ares", "2": "Ares RŽP", "3": "RŽP", "4": "Ares ROS"}},
 
 		{"id": "specification", "name": "Upřesnění", "type": "string", "len": 160},
     {"id": "street", "name": "Ulice", "type": "string", "len": 250},

@@ -384,6 +384,73 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     $this->personDataImport->addAddress($officeAddress);
   }
 
+  function doImport_ARES_ROS()
+  {
+    if ($this->app()->debug)
+      echo "* doImport_ARES_ROS; ";
+
+    $regData = $this->regData(self::prtCZAresROS, $this->personDataCurrent->personId);
+    if (!$regData)
+    {
+      if ($this->app()->debug)
+        echo "ERROR; no regs data found\n";
+      return;
+    }
+
+    $rzpData = Json::decode($regData['srcData']);
+		if (!$rzpData)
+		{
+      if ($this->app()->debug)
+        echo "parse ERROR!\n";
+      return;
+    }
+
+    if (isset($rzpData['zaznamy']))
+    {
+      foreach ($rzpData['zaznamy'] as $zaznam)
+      {
+        if (!isset($zaznam['provozovny']))
+          continue;
+        foreach ($zaznam['provozovny'] as $provozovna)
+        {
+          $this->doImport_ARES_ROS_Provozovna($provozovna);
+        }
+
+        break; // only first record?
+      }
+    }
+
+    if ($this->app()->debug)
+      echo "\n";
+  }
+
+  protected function doImport_ARES_ROS_Provozovna($bb)
+  {
+    $officeId = strval($bb['icp'] ?? '');
+    if ($officeId === '')
+    {
+      //echo "ERROR: no ICP in RZP provozovna data: ".json_encode($bb)."\n";
+      return;
+    }
+    $officeAddress = [
+      'addressId' => 'O'.$officeId,
+      'specification' => $bb['umisteniProvozovny'] ?? '',
+      'source' => 4,
+      'type' => 1, // provozovna
+    ];
+    $this->createAddressARES($bb['adresaProvozovny'], $officeAddress);
+
+    if (isset($bb['icp']))
+      $officeAddress['natId'] = strval($bb['icp']);
+
+    if (isset($bb['datumZahajeniCinnosti']['datum']))
+      $officeAddress['validFrom'] = $bb['datumZahajeniCinnosti']['datum'];
+    if (isset($bb['datumUkonceniCinnosti']['datum']))
+      $officeAddress['validTo'] = $bb['datumUkonceniCinnosti']['datum'];
+
+    $this->personDataImport->addAddress($officeAddress);
+  }
+
   function doImport_RZP()
   {
     if (!$this->useRZP)
@@ -418,7 +485,9 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
         foreach ($officesList as $p)
         {
-          $officeId = $p['IdentifikacniCisloProvozovny'];
+          $officeId = $p['IdentifikacniCisloProvozovny'] ?? '';
+          if ($officeId === '')
+            continue;
           $addressId = 'O'.$officeId;
 
           $addrParts = explode(',', $p['ZmenaAdresy']['TextAdresy']);
@@ -471,6 +540,11 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
             $dp = explode('.', $p['UkonceniCinnosti']);
             $newAddress['validTo'] = $dp[2].'-'.$dp[1].'-'.$dp[0];
           }
+          elseif (isset($p['UkonceniProvozovani']))
+          {
+            $dp = explode('.', $p['UkonceniProvozovani']);
+            $newAddress['validTo'] = $dp[2].'-'.$dp[1].'-'.$dp[0];
+          }
 
           $newAddress['source'] = 3;
 
@@ -482,12 +556,28 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
 
           if (!isset($this->personDataImport->data['address'][$addressId]))
           {
+            //echo "\n\n###### ADDING RZP ADDRESS: ".json_encode($officeAddress)."\n";
             $this->personDataImport->addAddress($officeAddress);
           }
           else
           {
             //if ((!isset($this->personDataImport->data['address'][$addressId]) || $this->personDataImport->data['address'][$addressId]['specification'] === '' && $specification !== ''))
             $this->personDataImport->data['address'][$addressId]['specification'] = Str::upToLen($specification, 160);
+
+            if (isset($officeAddress['validTo']))
+            {
+              if (!isset($this->personDataImport->data['address'][$addressId]['validTo']))
+                $this->personDataImport->data['address'][$addressId]['validTo'] = $officeAddress['validTo'];
+              elseif ($this->personDataImport->data['address'][$addressId]['validTo'] < $officeAddress['validTo'])
+                $this->personDataImport->data['address'][$addressId]['validTo'] = $officeAddress['validTo'];
+            }
+            else
+            {
+              if (isset($this->personDataImport->data['address'][$addressId]['validTo']))
+                unset($this->personDataImport->data['address'][$addressId]['validTo']);
+            }
+
+            //echo "\n\n###### UPDATE RZP ADDRESS: ".json_encode($officeAddress)."\n";
           }
         }
       }
@@ -758,8 +848,10 @@ class ImportPersonFromRegsCZ extends ImportPersonFromRegs
     if ($this->app()->debug)
       echo "* doImport\n";
     $this->doImport_ARES_Core();
-    $this->doImport_ARES_RZP();
-    $this->doImport_RZP();
+
+    $this->doImport_ARES_ROS();
+    //$this->doImport_ARES_RZP();
+    //$this->doImport_RZP();
     $this->doImport_VAT();
     $this->doImport_ISDS();
   }

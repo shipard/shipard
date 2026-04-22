@@ -66,6 +66,9 @@ div.e10-reportHeader span.owner>span {white-space:pre;}
 ol.e10-reportNotes, p.e10-reportNotes {font-size: 90%; line-height: 1.4em; margin-top: 1em;}
 ol.e10-reportNotes {padding: 0px; margin: 0px; margin-left: 1.8em; margin-top: 1em; }
 
+table.stripped tbody tr:nth-child(even) {background-color: #F0F0F0 !important;}
+table.stripped tbody tr:nth-child(odd) {background-color: #FAFAFA !important;}
+
 
 /* ---------
          * Calendars

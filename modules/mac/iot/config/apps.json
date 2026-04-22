@@ -1,0 +1,18 @@
+{
+  "iot-shp-ib": {
+    "fn": "Ovládací panel Iot Zařízení",
+    "appMenu": {
+      "appTitle": "Ovládací panel Iot Zařízení",
+      "items": [
+        {
+          "title": "Zařízení", "icon": "user/clock", "id": "device",
+          "objectType": "widget", "classId": "mac.iot.libs.IBSerialTerm"
+        },
+        {
+          "title": "Nastavení", "icon": "system/actionSettings", "id": "settings",
+          "objectType": "widget", "classId": "Shipard.UI.ng.WidgetAppSettings"
+        }
+      ]
+    }
+  }
+}

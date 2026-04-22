@@ -179,6 +179,7 @@ class TablePersons extends DbTable
 
 		$inputCode .= "<span class='e10-refinp-infotext'>" .$refTitle . '</span>';
 
+		/*
 		if (intval($pk))
 		{
 			$clsf = \E10\Base\ListClassification::referenceWidget($form, $srcColumnId, $this, $pk);
@@ -187,6 +188,8 @@ class TablePersons extends DbTable
 				$inputCode .= "<div style='padding: 2px; clear: both; margin: 4px; '>".$clsf['html'].'</div>';
 			}
 		}
+		*/
+
 		$inputCode .= '</div>';
 
 		$info ['widgetCode'] = NULL;

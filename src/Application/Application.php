@@ -2064,6 +2064,7 @@ class Application extends \Shipard\Application\ApplicationCore
 		$uiDomains = $this->cfgItem ('e10.ui.domains', NULL);
 		if ($nonAppsHosts && in_array($_SERVER['HTTP_HOST'], $nonAppsHosts))
 		{
+			//error_log("___WEB_PAGE: ");
 			$page = $this->callFunction ('e10.web.checkWebPage');
 			$response = new Response ($this, $page ['code'], $page ['status']);
 			if (isset ($page['mimeType']))

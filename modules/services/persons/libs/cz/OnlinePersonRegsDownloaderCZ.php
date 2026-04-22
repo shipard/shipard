@@ -135,6 +135,51 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
       echo "\n";
   }
 
+  function loadAresROS()
+  {
+    if ($this->app()->debug)
+      echo "  * loadAresROS; ";
+
+    $logRecord = $this->log->newLogRecord();
+    $logRecord->init(LogRecord::liDownloadRegisterData, 'services.persons.persons', $this->personNdx);
+
+    $url = 'https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/ekonomicke-subjekty-ros/'.$this->personData->personId;
+    if ($this->app()->debug)
+      echo "  url: `{$url}`; ";
+
+    $logRecord->addItem('ares-ros-download-init', '', ['url' => $url]);
+    $file = @file_get_contents ($url);
+
+		if (!$file)
+    {
+      if ($this->app()->debug)
+        echo "ERROR-DOWNLOAD-FAILED; \n";
+      $logRecord->addItem('ares-ros-download-failed', '', ['result' => $file]);
+      $logRecord->setStatus(LogRecord::lstError, TRUE);
+      return;
+    }
+
+    $data = json_decode($file, TRUE);
+		if (!$data)
+		{
+      if ($this->app()->debug)
+        echo "ERROR-PARSE; \n";
+
+      $logRecord->addItem('ares-ros-download-parse-error', '', ['json-text' => $file]);
+      $logRecord->setStatus(LogRecord::lstError, TRUE);
+      return;
+    }
+
+    if ($this->app()->debug)
+      echo "OK; ";
+
+    $this->saveRegisterData ($this->personNdx, self::prtCZAresROS, Json::lint($data), sha1($file), $this->personData->personId);
+
+    $logRecord->setStatus(LogRecord::lstInfo, TRUE);
+
+    if ($this->app()->debug)
+      echo "\n";
+  }
 
   /**
    * https://adisspr.mfcr.cz/pmd/dokumentace/webove-sluzby-spolehlivost-platcu
@@ -230,6 +275,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $qryString .= "<Kriteria>\n";
     $qryString .= "<IdentifikacniCislo>".$this->personData->personId."</IdentifikacniCislo>\n";
     $qryString .= "<PlatnostZaznamu>0</PlatnostZaznamu>\n";
+    $qryString .= "<Historie>1</Historie>\n";
     $qryString .= "</Kriteria>\n";
     $qryString .= "</VerejnyWebDotaz>\n";
 
@@ -266,7 +312,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
     $qryString .= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     $qryString .="<VerejnyWebDotaz \n xmlns=\"urn:cz:isvs:rzp:schemas:VerejnaCast:v1\" \n version=\"3.1\">\n";
     $qryString .= "<PodnikatelID>".$podnikatelID."</PodnikatelID>\n";
-    $qryString .= "<Historie>0</Historie>\n";
+    $qryString .= "<Historie>1</Historie>\n";
     $qryString .= "</VerejnyWebDotaz>\n";
 
     $uploadUrl = "https://rzp.gov.cz/rzp/api3-c/srv/vw/v31/vwinterface/xml";
@@ -315,6 +361,7 @@ class OnlinePersonRegsDownloaderCZ extends \services\persons\libs\OnlinePersonRe
   function loadFromRegisters ()
   {
     $this->loadARESCore();
+    $this->loadAresROS();
     $this->loadARESRzp();
     $this->loadRZP();
     $this->loadVAT();

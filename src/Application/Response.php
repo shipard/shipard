@@ -121,6 +121,8 @@ class Response
 		if ($this->saveFileName !== '')
 			header ("Content-Disposition: ".$this->contentDisposition."; filename*=UTF-8''" . rawurlencode(Utils::safeChars($this->saveFileName, TRUE)));
 
+		//Utils::debugBacktrace();
+
 		header ("Content-type: " . $this->mimeType ());
 
 		header("HTTP/1.1 " . self::$messages [$this->status]);

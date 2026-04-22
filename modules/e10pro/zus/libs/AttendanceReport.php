@@ -52,6 +52,8 @@ class AttendanceReport extends \Shipard\Report\GlobalReport
 		array_push ($q, ' WHERE 1');
     if ($this->workingHoursNdx)
       array_push ($q, ' AND wh.ndx = %i', $this->workingHoursNdx);
+
+    array_push ($q, ' AND wh.docState IN %in', [4000, 8000]);
 		array_push ($q, ' AND (wh.validFrom IS NULL OR wh.validFrom <= %d', $this->periodBegin, ')');
 		array_push ($q, ' AND (wh.validTo IS NULL OR wh.validTo >= %d', $this->periodEnd, ')');
     array_push ($q, ' ORDER BY [persons].[lastName], [persons].[firstName] ');

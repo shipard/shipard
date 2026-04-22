@@ -65,6 +65,33 @@ class TableWasteOps extends DbTable
 		$recData ['generated'] = 0;
 		return $recData;
 	}
+
+	public function columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, TableForm $form = NULL)
+	{
+		if (!$form)
+			return TRUE;
+
+		$opDate = Utils::createDateTime($form->recData['date']);
+		if (!$opDate)
+			return TRUE;
+
+		if ($columnId === 'wasteHandlingCodeSrc')
+		{
+			if (isset($cfgItem['validFrom']) && $opDate < Utils::createDateTime($cfgItem['validFrom']))
+				return FALSE;
+			if (isset($cfgItem['validTo']) && $opDate > Utils::createDateTime($cfgItem['validTo']))
+				return FALSE;
+
+			if ($form->recData['opType'] == 0 && intval($cfgItem['dir'] ?? 0) != 2) // init states
+				return FALSE;
+			if ($form->recData['opType'] == 1 && intval($cfgItem['dir'] ?? 0) != 3) // end states
+				return FALSE;
+
+			return TRUE;
+		}
+
+		return parent::columnInfoEnumTest ($columnId, $cfgKey, $cfgItem, $form);
+	}
 }
 
 

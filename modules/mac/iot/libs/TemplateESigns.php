@@ -4,6 +4,7 @@ namespace mac\iot\libs;
 use \Shipard\Utils\Utils;
 use \Shipard\Utils\Json;
 use \e10\base\libs\UtilsBase;
+use \mac\vs\libs\VSUtils;
 
 
 /**
@@ -21,6 +22,8 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
 			case	'iotSetup' 					  : return $this->iotSetup ($params);
       case  'slideShowImage'			: return $this->slideShowImage($params);
       case  'dataSet'			        : return $this->dataSet($params);
+      case  'cameraSnapshotUrl'		: return $this->cameraSnapshotUrl($params);
+      case	'barCodeImg'					: return $this->barCodeImg ($params);
 		}
 
     return parent::resolveCmd($tagCode, $tagName, $params);
@@ -229,4 +232,27 @@ class TemplateESigns extends \Shipard\Utils\TemplateCore
     $url = UtilsBase::getAttachmentUrl ($this->app(), $attRecData);
     return $url;
   }
+
+  public function cameraSnapshotUrl(array $params)
+  {
+  }
+
+	public function barCodeImg($params)
+	{
+		$textData = '';
+
+		if (isset ($params['dataItem']))
+			$textData = $this->_getVariable($params['dataItem']);
+		elseif (isset ($params['textData']))
+			$textData = $params['textData'];
+
+		$codeType = 'qr';
+		if (isset ($params['codeType']))
+			$codeType = $params['codeType'];
+
+		$barCodeGenerator = new \lib\tools\bc\BarCodeGenerator($this->app);
+		$barCodeGenerator->textData = $textData;
+		$barCodeGenerator->create($codeType);
+		return $barCodeGenerator->url;
+	}
 }

@@ -4,7 +4,7 @@ namespace E10Doc\Core;
 
 require_once __SHPD_MODULES_DIR__ . 'e10doc/core/core.php';
 
-use \E10\Application, \E10\utils, \E10\FormReport, \Shipard\Form\FormSidebar, \Shipard\Viewer\TableViewPanel;
+use \Shipard\Application\Application, \E10\utils, \E10\FormReport, \Shipard\Form\FormSidebar, \Shipard\Viewer\TableViewPanel;
 use E10\ContentRenderer;
 use \E10\TableViewDetail;
 use \E10\DbTable;

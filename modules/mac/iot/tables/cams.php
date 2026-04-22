@@ -92,6 +92,15 @@ class TableCams extends DbTable
 			$camInfo['streamUrl'] = $streamUrl;
 			$camInfo['streamId'] = ($camRecData['streamId'] !== '') ? $camRecData['streamId'] : $camRecData['id'];
 			$camInfo['streamType'] = 'go2rtc';
+
+			//$camInfo['go2rtcUser'] = $server['camGo2RTCUser'] ?? '';
+			//$camInfo['go2rtcPassword'] = $server['camGo2RTCPassword'] ?? '';
+
+			//error_log("GO2RTC USER: ".$camInfo['go2rtcUser'].", PASSWORD: ".$camInfo['go2rtcPassword']);
+
+			//$loginInfo = ['salt' => time(), 'user' => $camInfo['camGo2RTCUser'], 'password' => $camInfo['go2rtcPassword']];
+			//$loginInfoStr = base64_encode(json_encode($loginInfo));
+			$camInfo['go2rtcApiLoginInfo'] = $server['go2rtcApiLoginInfo'] ?? '';
 		}
 
 		$streams = $this->db()->query('SELECT * FROM [mac_iot_camsStreams] WHERE [iotCam] = %i', $cameraNdx, ' ORDER BY rowOrder, ndx');

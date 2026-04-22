@@ -326,7 +326,7 @@ class PersonData extends \services\persons\libs\CoreObject
 
 		foreach ($new as $key => $value)
 		{
-			if (!isset($old[$key]) || $value !== $old[$key])
+			if (!isset($old[$key]) || $value != $old[$key])
 			{
 				$updateRec[$key] = $value;
 				$changes[$key] = ['from' => $old[$key] ?? '', 'to' => $value];

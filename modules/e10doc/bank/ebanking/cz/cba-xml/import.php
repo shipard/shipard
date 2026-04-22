@@ -57,8 +57,8 @@ class Import extends \E10Doc\Bank\ebankingImportDoc
 					$bankAccount = '';
 				$this->setRowInfo ('bankAccount', $bankAccount);
 
-				$money = $this->parseNumber ($row['Amt']);
-				if ($row['CdtDbtInd'] === 'DBIT')
+				$money = $this->parseNumber ($row['Amt'] ?? '0');
+				if ($row['CdtDbtInd'] ?? '' === 'DBIT')
 					$money = - $money;
 				$this->setRowInfo ('money', $money);
 

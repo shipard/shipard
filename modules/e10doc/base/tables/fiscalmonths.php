@@ -17,7 +17,7 @@ class TableFiscalMonths extends DbTable
 	public function __construct ($dbmodel)
 	{
 		parent::__construct ($dbmodel);
-		$this->setName ("e10doc.base.fiscalmonths", "e10doc_base_fiscalmonths", "Fiskální období - měsíční");
+		$this->setName ('e10doc.base.fiscalmonths', 'e10doc_base_fiscalmonths', 'Fiskální období - měsíční');
 	}
 
 	public function checkBeforeSave (&$recData, $ownerData = NULL)
@@ -36,9 +36,9 @@ class TableFiscalMonths extends DbTable
 	}
 }
 
-/* 
+/*
  * FormFiscalMonths
- * 
+ *
  */
 
 class FormFiscalMonths extends TableForm
@@ -46,15 +46,12 @@ class FormFiscalMonths extends TableForm
 	public function renderForm ()
 	{
 		$this->openForm (TableForm::ltGrid);
-			$this->addColumnInput ("fiscalType", TableForm::coColW2);
-			$this->addColumnInput ("localOrder", TableForm::coColW2);
-			$this->addColumnInput ("calendarYear", TableForm::coColW2);
-			$this->addColumnInput ("calendarMonth",TableForm::coColW2);
-			$this->addColumnInput ("start", TableForm::coColW2);
-			$this->addColumnInput ("end", TableForm::coColW2);
+			$this->addColumnInput ('fiscalType', TableForm::coColW2);
+			$this->addColumnInput ('localOrder', TableForm::coColW2);
+			$this->addColumnInput ('calendarYear', TableForm::coColW2);
+			$this->addColumnInput ('calendarMonth',TableForm::coColW2);
+			$this->addColumnInput ('start', TableForm::coColW2);
+			$this->addColumnInput ('end', TableForm::coColW2);
 		$this->closeForm ();
 	}
-} // class FormFiscalMonths
-
-
-
+}

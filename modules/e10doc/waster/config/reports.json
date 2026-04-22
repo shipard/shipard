@@ -1,4 +1,5 @@
 [
 	{"name": "Hlášení", "class": "e10doc.waster.libs.ReportWasteReturns", "group": "e10doc-waster"},
-	{"name": "Stavy", "class": "e10doc.waster.libs.ReportWasteStates", "group": "e10doc-waster"}
+	{"name": "Stavy", "class": "e10doc.waster.libs.ReportWasteStates", "group": "e10doc-waster"},
+	{"name": "Výdejky vs Faktury", "class": "e10doc.gen.libs.ReportStockInvoices", "group": "e10doc-waster", "order": 7000}
 ]
