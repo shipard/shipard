@@ -106,6 +106,37 @@ class WorkingHoursInfo extends \Shipard\Base\Utility
 
     $this->weeklyContent['table'] = $table;
     $this->weeklyContent['header'] = $header;
+
+    $headerRecap = [
+      'wlWeeklyTotal' => '|Týdenní pracovní doba',
+      'wlWeeklyPedagogicalActivity' => '|Stanovená výše přímé pedagogické činnosti',
+      'wlWeekly1' => '|Přímá pedagogická činnost',
+      'wlWeekly2' => '|Práce související s přímou pedagogickou činností',
+      'wlWeekly' => '|Počet pracovních hodin týdně celkem',
+      'wlWeeklyRatio' => '|Výše úvazku'
+    ];
+    $rowRecap[] = [
+      'wlWeeklyTotal' => $this->workingHoursRecData['wlWeeklyTotal'],
+      'wlWeeklyPedagogicalActivity' => $this->workingHoursRecData['wlWeeklyPedagogicalActivity'],
+      'wlWeekly1' => $this->workingHoursRecData['wlWeekly1'],
+      'wlWeekly2' => $this->workingHoursRecData['wlWeekly2'],
+      'wlWeekly' => $this->workingHoursRecData['wlWeekly'],
+      'wlWeeklyRatio' => str_replace('.', ',', strval($this->workingHoursRecData['wlWeeklyRatio'])),
+    ];
+
+    $this->weeklyContent['all'] = [
+      'tables' => [
+        'recap' => [
+          'header' => $headerRecap,
+          'table' => $rowRecap
+        ],
+        'weekly' => [
+          'header' => $header,
+          'table' => $table,
+          'params' => ['tableClass' => 'default fullWidth mt1']
+        ],
+      ]
+    ];
   }
 
   public function searchWorkingHours($periodBegin, $periodEnd, $personNdx)

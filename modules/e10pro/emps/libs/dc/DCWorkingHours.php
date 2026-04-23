@@ -16,7 +16,7 @@ class DCWorkingHours extends \Shipard\Base\DocumentCard
 		$whInfo->setWorkingHours($this->recData['ndx']);
 		$whInfo->loadData();
 
-		$whContent = $whInfo->weeklyContent;
+		$whContent = $whInfo->weeklyContent['all'];
 		$whContent['pane'] = 'e10-pane e10-pane-table e10-ds '.$whInfo->docStateClass;
 		$whContent['paneTitle'] = $whInfo->title;
 		$this->addContent('body', $whContent);
@@ -39,7 +39,7 @@ class DCWorkingHours extends \Shipard\Base\DocumentCard
 			$whInfo->setWorkingHours($r['ndx']);
 			$whInfo->loadData();
 
-			$whContent = $whInfo->weeklyContent;
+			$whContent = $whInfo->weeklyContent['all'];
 			$whContent['pane'] = 'e10-pane e10-pane-table e10-ds '.$whInfo->docStateClass;
 			$whContent['paneTitle'] = $whInfo->title;
 			$whContent['paneTitle'][] = [
