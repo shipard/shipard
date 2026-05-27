@@ -5,6 +5,7 @@ use \Shipard\Utils\Utils;
 use \Shipard\Utils\Str;
 use \Shipard\Utils\Json;
 use \lib\dataView\DataView;
+use \Shipard\Utils\World;
 
 
 /**
@@ -22,6 +23,8 @@ class DataViewPersons extends DataView
 	var $enabledCountries = ['cz', 'sk'];
 	var $enabledShowAs = ['html', 'json'];
 
+	var $formatMode = '';
+
 	protected function init()
 	{
 		parent::init();
@@ -33,6 +36,8 @@ class DataViewPersons extends DataView
 
 		if ($this->requestParams['showAs'] === '')
 			$this->requestParams['showAs'] = 'html';
+
+		$this->formatMode = $this->app()->testGetParam('formatMode');
 
 		if (!in_array($this->requestParams['showAs'], $this->enabledShowAs))
 		{
@@ -152,6 +157,16 @@ class DataViewPersons extends DataView
 		{
 			$this->data['search'][$r['ndx']] = $r->toArray();
 			$this->data['search'][$r['ndx']]['validToH'] = Utils::datef($r['validTo'], '%d');
+
+			if ($this->formatMode === 'ns')
+			{
+				$this->data['search'][$r['ndx']]['country'] = World::countryId($this->app, $this->data['search'][$r['ndx']]['country']);
+				$this->data['search'][$r['ndx']]['validFrom'] = $r['validFrom'] ? $r['validFrom']->format('Y-m-d') : null;
+				$this->data['search'][$r['ndx']]['validTo'] = $r['validTo'] ? $r['validTo']->format('Y-m-d') : null;
+				unset ($this->data['search'][$r['ndx']]['created']);
+				unset ($this->data['search'][$r['ndx']]['updated']);
+				unset ($this->data['search'][$r['ndx']]['validToH']);
+			}
 			$pks[] = $r['ndx'];
 		}
 
@@ -179,10 +194,19 @@ class DataViewPersons extends DataView
 
 		if ($personData->data)
 		{
-			$personData->prepareDataExport();
-			$personData->prepareDataShow();
-			$this->data['person'] = $personData->dataShow;
-			$this->data['person']['json'] = Json::lint($personData->dataExport);
+			if ($this->formatMode === 'ns')
+			{
+				// New Shipard canonical (shpd.persons.person.v1).
+				$canonical = $personData->createDataInNewFormat();
+				$this->data['person']['json'] = Json::lint($canonical);
+			}
+			else
+			{
+				$personData->prepareDataExport();
+				$personData->prepareDataShow();
+				$this->data['person'] = $personData->dataShow;
+				$this->data['person']['json'] = Json::lint($personData->dataExport);
+			}
 		}
 		else
 		{

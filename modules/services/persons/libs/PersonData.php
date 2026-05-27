@@ -290,6 +290,238 @@ class PersonData extends \services\persons\libs\CoreObject
 		}
 	}
 
+	/**
+	 * Build a `shpd.persons.person.v1` canonical payload from $this->data.
+	 * Caller must run loadById() (or loadCoreData()) first. Returns the
+	 * canonical as an associative array ready for json_encode.
+	 *
+	 * Output is consumed by Nový Shipard's PersonApplier::apply() — see
+	 * docs/exchange-format-persons.md in the shipard/shpd repo.
+	 */
+	public function createDataInNewFormat(): array
+	{
+		$person       = $this->data['person']       ?? [];
+		$addresses    = $this->data['address']      ?? [];
+		$ids          = $this->data['ids']          ?? [];
+		$bankAccounts = $this->data['bankAccounts'] ?? [];
+
+		// Country ndx → ISO ("cz", "sk", …). Header is always numeric in
+		// $this->data (Json::polish doesn't touch ints); default to CZ.
+		$country = $this->countryIdFromNdx($person['country'] ?? 60) ?? 'cz';
+
+		$companyId = $this->normalize($person['oid'] ?? null);
+		$vatActive = ((int) ($person['vatState'] ?? 99)) === 1;
+
+		// ids[] → flat fields. idtVATPrimary (0) carries the DIČ string
+		// ("CZ12345678"). idtOIDPrimary (2) is redundant with person.oid.
+		$taxId = null;
+		foreach ($ids as $idRow)
+		{
+			if ((int) ($idRow['idType'] ?? -1) === self::idtVATPrimary)
+			{
+				$taxId = $this->normalize($idRow['id'] ?? null);
+				break;
+			}
+		}
+		// taxId and vatId share the CZ "DIČ" string; vatId is suppressed
+		// when the firm is not a VAT payer.
+		$vatId = $vatActive ? ($this->normalize($person['vatID'] ?? null) ?? $taxId) : null;
+
+		// valid=1 → still active; valid=0 → closed (use validTo as closedDate).
+		$isClosed = ((int) ($person['valid'] ?? 0)) !== 1;
+
+		return [
+			'format'        => 'shpd.persons.person',
+			'formatVersion' => '1.0',
+
+			'source' => [
+				'kind'        => 'import.shipardRegistry',
+				'fetchedAt'   => (new \DateTime())->format(\DateTime::ATOM),
+				'registryRef' => $country . '/' . ($companyId ?? ''),
+			],
+
+			'personType' => 'company',          // always company per Fáze 1
+			'country'    => $country,
+			'personId'   => null,
+
+			'companyId'         => $companyId,
+			'taxId'             => $taxId,
+			'vatId'             => $vatId,
+			'courtRegistration' => null,
+			'govEBoxId'         => $this->normalize($person['govEBoxId'] ?? null),
+
+			'name' => [
+				'fullName' => $this->normalize($person['fullName'] ?? null),
+			],
+
+			'status' => [
+				'isClosed'   => $isClosed,
+				'closedDate' => $isClosed ? $this->dateString($person['validTo'] ?? null) : null,
+				'isOwn'      => false,
+			],
+
+			'addresses'    => $this->buildNewFormatAddresses($addresses, $country),
+			'bankAccounts' => $this->buildNewFormatBankAccounts($bankAccounts),
+			'contacts'     => [],
+		];
+	}
+
+	/**
+	 * Map legacy `services_persons_address` rows to canonical Address
+	 * sub-objects. All records are emitted — including historical entries
+	 * with validTo set — so the new Shipard applier preserves the full
+	 * lineage.
+	 *
+	 * Legacy `type` mapping:
+	 *   0 → 1 (Sídlo)
+	 *   1 → 3 (Provozovna); natId becomes placeRegId with placeRegType="ICP"
+	 */
+	private function buildNewFormatAddresses(array $addresses, string $defaultCountry): array
+	{
+		$out = [];
+		foreach ($addresses as $addr)
+		{
+			$legacyType = (int) ($addr['type'] ?? 0);
+			$isProvozovna = ($legacyType === 1);
+			$addressType = match ($legacyType) {
+				0       => 1,  // Sídlo
+				1       => 3,  // Provozovna
+				default => 1,
+			};
+
+			$countryAddr = $this->countryIdFromNdx($addr['country'] ?? null) ?? $defaultCountry;
+
+			$street   = $this->normalize($addr['saStreetName'] ?? null)
+			         ?? $this->normalize($addr['street']       ?? null);
+			$houseNr  = $this->normalize($addr['saHouseNr']    ?? null);
+			$orientNr = (int) ($addr['saHouseNr2'] ?? 0);
+			$city     = $this->normalize($addr['saCityName']     ?? null)
+			         ?? $this->normalize($addr['city']           ?? null);
+			$cityPart = $this->normalize($addr['saCityPartName'] ?? null);
+			$zip      = $this->normalize($addr['zipcode']        ?? null);
+
+			// saCityId is the ZÚJ kód (matches saLaUnit11Id); cast to string
+			// because canonical divisionCode is a string FK lookup against
+			// world_divisions.code.
+			$divisionCode = !empty($addr['saCityId'])        ? (string) $addr['saCityId']        : null;
+			$registryCode = !empty($addr['natAddressGeoId']) ? (string) $addr['natAddressGeoId'] : null;
+
+			$out[] = [
+				'addressType'    => $addressType,
+				'name'           => null,
+				'placeRegType'   => $isProvozovna ? 'ICP' : null,
+				'placeRegId'     => $isProvozovna ? $this->normalize($addr['natId'] ?? null) : null,
+				'isStandardized' => (bool) ($addr['standardized'] ?? false),
+
+				'street'            => $street,
+				'houseNumber'       => $houseNr,
+				'orientationNumber' => $orientNr > 0 ? (string) $orientNr : null,
+				'city'              => $city,
+				'cityPart'          => $cityPart,
+				'district'          => null,
+				'zip'               => $zip,
+				'country'           => $countryAddr,
+				'registryCode'      => $registryCode,
+				'divisionCode'      => $divisionCode,
+
+				'latitude'  => isset($addr['wgs84lat']) ? (float) $addr['wgs84lat'] : null,
+				'longitude' => isset($addr['wgs84lng']) ? (float) $addr['wgs84lng'] : null,
+				'manualGps' => false,
+
+				'displayLine'  => $this->composeDisplayLine($street, $houseNr, $city, $zip),
+				'displayBlock' => $this->composeDisplayBlock($street, $houseNr, $city, $zip),
+
+				'orderPos'  => 0,
+				'validFrom' => $this->dateString($addr['validFrom'] ?? null),
+				'validTo'   => $this->dateString($addr['validTo']   ?? null),
+				'note'      => null,
+			];
+		}
+		return $out;
+	}
+
+	private function buildNewFormatBankAccounts(array $accounts): array
+	{
+		$out = [];
+		foreach ($accounts as $bank)
+		{
+			$out[] = [
+				'name'          => null,
+				'accountNumber' => $this->normalize($bank['bankAccount'] ?? null),
+				'iban'          => null,            // not derivable serverside
+				'bic'           => null,
+				'currency'      => null,
+				'source'        => 2,               // vatRegistry (bank.bankAccountSources)
+				'orderPos'      => 0,
+				'validFrom'     => $this->dateString($bank['validFrom'] ?? null),
+				'validTo'       => $this->dateString($bank['validTo']   ?? null),
+			];
+		}
+		return $out;
+	}
+
+	// ── Helpers ───────────────────────────────────────────────────────────────────
+
+	private function countryIdFromNdx(mixed $value): ?string
+	{
+		if (is_int($value) && $value > 0)
+			return strtolower(World::countryId($this->app, $value)) ?: null;
+		if (is_string($value) && ctype_digit($value) && (int) $value > 0)
+			return strtolower(World::countryId($this->app, (int) $value)) ?: null;
+		if (is_string($value) && trim($value) !== '')
+			return strtolower(trim($value));
+		return null;
+	}
+
+	private function composeDisplayLine(?string $street, ?string $house, ?string $city, ?string $zip): ?string
+	{
+		$left = $street !== null ? ($house !== null ? "$street $house" : $street) : null;
+		$right = null;
+		if ($city !== null)
+			$right = $zip !== null ? ($this->formatZip($zip) . ' ' . $city) : $city;
+		elseif ($zip !== null)
+			$right = $this->formatZip($zip);
+		$parts = array_filter([$left, $right]);
+		return $parts === [] ? null : implode(', ', $parts);
+	}
+
+	private function composeDisplayBlock(?string $street, ?string $house, ?string $city, ?string $zip): ?string
+	{
+		$lines = [];
+		if ($street !== null)
+			$lines[] = $house !== null ? "$street $house" : $street;
+		if ($city !== null || $zip !== null)
+		{
+			$cityLine = trim(($zip !== null ? $this->formatZip($zip) . ' ' : '') . ($city ?? ''));
+			if ($cityLine !== '')
+				$lines[] = $cityLine;
+		}
+		return $lines === [] ? null : implode("\n", $lines);
+	}
+
+	private function formatZip(string $zip): string
+	{
+		return (strlen($zip) === 5 && ctype_digit($zip))
+			? substr($zip, 0, 3) . ' ' . substr($zip, 3)
+			: $zip;
+	}
+
+	private function dateString(mixed $value): ?string
+	{
+		if ($value instanceof \DateTimeInterface)
+			return $value->format('Y-m-d');
+		if (is_string($value) && $value !== '')
+			return $value;
+		return null;
+	}
+
+	private function normalize(mixed $value): ?string
+	{
+		if (!is_string($value)) return null;
+		$trimmed = trim($value);
+		return $trimmed === '' ? null : $trimmed;
+	}
+
 	function setCoreInfo(array $data)
   {
 		if (!$this->data)
