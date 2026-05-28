@@ -43,7 +43,7 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 | `number-series`     | ✅ Fáze 02  | Číselné řady dokladů (jen typy známé v novém DS).    |
 | `item-kinds`        | ✅ Fáze 02  | Druhy položek (s mapováním na seedované system_code).|
 | `all-codebooks`     | ✅ Fáze 02  | Všechny číselníky v pořadí závislostí.               |
-| `persons`           | ⏳ Fáze 03  | Import osob.                                         |
+| `persons`           | ✅ Fáze 03  | Osoby (lidé + firmy) přes exchange applier.          |
 | `items`             | ⏳ Fáze 04  | Import položek.                                      |
 | `docs`              | ⏳ Fáze 05  | Import dokladů.                                      |
 | `all`               | ⏳ Fáze 06  | Orchestrace všech fází v pořadí závislostí.          |
@@ -53,6 +53,7 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 - `--verbose`, `-v` — verbose výstup (HTTP requesty + per-row debug na stderr).
 - `--dry-run` — neprovádět zápisy do cílového Shipardu.
 - `--continue-on-error` — pokračovat i když jednotlivý řádek selže (default: stop).
+- `--limit=N` — zpracuj jen prvních N řádků (jen exchange runnery, vhodné pro testing).
 
 ### Idempotence
 
@@ -103,7 +104,7 @@ varuje na stderr, pokud má soubor jiná práva.
 - [x] Bootstrap (modul, dispatcher, HTTP klient, lokální mapa).
 - [x] `status` — sanity check.
 - [x] Číselníky (Fáze 02).
-- [ ] Osoby (Fáze 03).
+- [x] Osoby (Fáze 03).
 - [ ] Položky (Fáze 04).
 - [ ] Doklady (Fáze 05).
 

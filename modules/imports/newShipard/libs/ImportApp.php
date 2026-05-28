@@ -75,9 +75,11 @@ class ImportApp
 			case 'item-kinds':        return (new runners\ItemKindsRunner($this->context()))->run();
 			case 'all-codebooks':     return (new runners\AllCodebooksRunner($this->context()))->run();
 
+			// Phase 03 — persons
+			case 'persons':           return (new runners\PersonsRunner($this->context()))->run();
+
 			// Following subcommands will be wired in later phases:
 			//   case 'all':           → orchestrate codebooks → persons → items → docs
-			//   case 'persons':       → Phase 03
 			//   case 'items':         → Phase 04
 			//   case 'docs':          → Phase 05
 		}
@@ -114,10 +116,14 @@ class ImportApp
 		echo "    item-kinds        Item kinds (itemtypes).\n";
 		echo "    all-codebooks     All of the above in dependency order.\n";
 		echo "\n";
+		echo "  Phase 03 — persons:\n";
+		echo "    persons           Persons (people + companies) via exchange flow.\n";
+		echo "\n";
 		echo "Common options:\n";
 		echo "  --verbose, -v        More verbose output (HTTP + per-row debug).\n";
 		echo "  --dry-run            Do not perform writes against the target.\n";
 		echo "  --continue-on-error  Skip failed rows instead of aborting the runner.\n";
+		echo "  --limit=N            Process only the first N source rows (exchange runners only).\n";
 		echo "\n";
 		return true;
 	}

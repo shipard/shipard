@@ -37,9 +37,18 @@ class HttpException extends \RuntimeException
 	}
 
 	/**
-	 * Pokud server vrátil structured validation errors (HTTP 422 obvykle),
-	 * vypíše je v kompaktní formě "field=value [code: message]; ..." pro
-	 * lepší ladění. Jinak prázdno.
+	 * Pokud server vrátil structured validation errors, vypíše je v kompaktní
+	 * formě "field [code]: message; ..." pro lepší ladění.
+	 *
+	 * Podporuje dva shapes:
+	 *
+	 *   1. Generic CRUD validator (422 VALIDATION_ERROR):
+	 *      error.details = [{field, code, message}, ...]
+	 *
+	 *   2. Exchange applier (400/422 schema_invalid / validation_failed):
+	 *      error.details.canonical._resolve.issues = [{severity, path, code, message}, ...]
+	 *
+	 * Jinak prázdno.
 	 */
 	private function formatDetails(): string
 	{
@@ -47,15 +56,31 @@ class HttpException extends \RuntimeException
 		if (!is_array($details) || $details === [])
 			return '';
 
+		// Exchange shape — issues v canonical._resolve.issues.
+		$issues = $details['canonical']['_resolve']['issues'] ?? null;
+		if (is_array($issues) && $issues !== [])
+			return $this->formatIssues($issues);
+
+		// Generic CRUD shape — flat array of {field, code, message}.
+		return $this->formatIssues($details);
+	}
+
+	/**
+	 * @param array<int, array<string, mixed>> $issues
+	 */
+	private function formatIssues(array $issues): string
+	{
 		$parts = [];
-		foreach ($details as $d)
+		foreach ($issues as $d)
 		{
 			if (!is_array($d))
 				continue;
-			$field   = $d['field']   ?? '?';
-			$code    = $d['code']    ?? '?';
-			$message = $d['message'] ?? '';
-			$parts[] = "{$field} [{$code}]: {$message}";
+			$path     = $d['path']     ?? $d['field']    ?? '?';
+			$code     = $d['code']     ?? '?';
+			$message  = $d['message']  ?? '';
+			$severity = $d['severity'] ?? null;
+			$prefix   = is_string($severity) ? "[{$severity} {$code}]" : "[{$code}]";
+			$parts[]  = "{$path} {$prefix}: {$message}";
 		}
 		return $parts === [] ? '' : ' | details: ' . implode('; ', $parts);
 	}
