@@ -10,6 +10,7 @@ starého Shipardu do nového Shipardu přes HTTPS REST API.
 | 01 | [01-bootstrap.md](01-bootstrap.md) | ✅ Hotovo | Modul, CLI dispatcher, HTTP klient, LocalIdMap, `status` subcommand. |
 | 02 | [02-codebooks.md](02-codebooks.md) | ✅ Hotovo | Číselníky — vat-registrations, fiscal-years/months, bank-accounts, cost-centers, warehouses, cash-desks, number-series, item-kinds + `all-codebooks` orchestrátor. |
 | 03 | [03-persons.md](03-persons.md) | ✅ Hotovo | Osoby přes `/_exchange/persons/person/apply`. |
+| 03a | [03a-rate-limiting.md](03a-rate-limiting.md) | ✅ Hotovo | Rate limiting v HTTP klientu — respect 429 `_retry_after`, proaktivní throttling, exp. backoff pro 5xx/network. Patch cross-cutting pro všechny fáze. |
 | 04 | (TBD) | Plán | Položky přes `/_exchange/items/item/apply`. |
 | 05 | (TBD) | Plán | Doklady přes `/_exchange/docs/document/apply`. S filtrem `--from` / `--to` na `dateAccounting`. |
 | 06 | (TBD) | Plán | Polish — `all` orchestrátor (codebooks + persons + items + docs), hromadné statistiky, wrapper script pro UX, retry logic, případné UI feedback. |

@@ -46,11 +46,19 @@ class ImportApp
 			|| (bool) $this->app->arg('verbose')
 			|| (bool) $this->app->arg('v');
 
+		// --no-throttle CLI flag přepíše config throttleMs na 0 (pro testing).
+		$throttleMs = (bool) $this->app->arg('no-throttle')
+			? 0
+			: $this->config->throttleMs();
+
 		$this->httpClient = new HttpClient(
-			baseUrl: $this->config->targetBaseUrl(),
-			apiKey:  $this->config->targetApiKey(),
-			timeout: $this->config->timeout(),
-			verbose: $verbose,
+			baseUrl:      $this->config->targetBaseUrl(),
+			apiKey:       $this->config->targetApiKey(),
+			timeout:      $this->config->timeout(),
+			verbose:      $verbose,
+			throttleMs:   $throttleMs,
+			maxRetries:   $this->config->maxRetries(),
+			retryDelayMs: $this->config->retryDelayMs(),
 		);
 
 		$this->idMap = new LocalIdMap(__APP_DIR__ . '/import-newShipard.sqlite');
@@ -124,6 +132,7 @@ class ImportApp
 		echo "  --dry-run            Do not perform writes against the target.\n";
 		echo "  --continue-on-error  Skip failed rows instead of aborting the runner.\n";
 		echo "  --limit=N            Process only the first N source rows (exchange runners only).\n";
+		echo "  --no-throttle        Disable client-side throttling between requests (for testing).\n";
 		echo "\n";
 		return true;
 	}

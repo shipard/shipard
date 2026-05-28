@@ -23,6 +23,12 @@ final class ImportConfig
 				. "        \"apiKey\": \"shpd_ak_...\"\n"
 				. "    }\n"
 				. "}\n\n"
+				. "Optional rate-limiting tuning (defaults shown):\n"
+				. "    \"target\": {\n"
+				. "        \"throttleMs\":   80,    // pauza mezi requesty v ms\n"
+				. "        \"maxRetries\":   3,     // počet retry pokusů\n"
+				. "        \"retryDelayMs\": 1000   // base delay pro exp. backoff v ms\n"
+				. "    }\n\n"
 				. "Make sure to chmod 0600 the file (it contains an API key).";
 			throw new ImportException($msg);
 		}
@@ -59,6 +65,28 @@ final class ImportConfig
 				throw new ImportException("Config '{$path}': 'target.timeout' must be an integer between 1 and 300.");
 		}
 
+		// Rate limiting (Phase 03a).
+		if (array_key_exists('throttleMs', $raw['target']))
+		{
+			$tm = $raw['target']['throttleMs'];
+			if (!is_int($tm) || $tm < 0 || $tm > 10000)
+				throw new ImportException("Config '{$path}': 'target.throttleMs' must be an integer between 0 and 10000.");
+		}
+
+		if (array_key_exists('maxRetries', $raw['target']))
+		{
+			$mr = $raw['target']['maxRetries'];
+			if (!is_int($mr) || $mr < 0 || $mr > 10)
+				throw new ImportException("Config '{$path}': 'target.maxRetries' must be an integer between 0 and 10.");
+		}
+
+		if (array_key_exists('retryDelayMs', $raw['target']))
+		{
+			$rd = $raw['target']['retryDelayMs'];
+			if (!is_int($rd) || $rd < 100 || $rd > 60000)
+				throw new ImportException("Config '{$path}': 'target.retryDelayMs' must be an integer between 100 and 60000.");
+		}
+
 		if (isset($raw['options']))
 		{
 			if (!is_array($raw['options']))
@@ -84,6 +112,9 @@ final class ImportConfig
 	public function targetBaseUrl(): string { return rtrim($this->rawData['target']['baseUrl'], '/'); }
 	public function targetApiKey(): string  { return $this->rawData['target']['apiKey']; }
 	public function timeout(): int          { return $this->rawData['target']['timeout'] ?? 30; }
+	public function throttleMs(): int       { return $this->rawData['target']['throttleMs'] ?? 80; }
+	public function maxRetries(): int       { return $this->rawData['target']['maxRetries'] ?? 3; }
+	public function retryDelayMs(): int     { return $this->rawData['target']['retryDelayMs'] ?? 1000; }
 	public function batchSize(): int        { return $this->rawData['options']['batchSize'] ?? 100; }
 	public function verbose(): bool         { return $this->rawData['options']['verbose'] ?? false; }
 	public function dryRun(): bool          { return $this->rawData['options']['dryRun'] ?? false; }

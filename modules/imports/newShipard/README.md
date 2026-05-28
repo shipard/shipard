@@ -54,6 +54,72 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 - `--dry-run` — neprovádět zápisy do cílového Shipardu.
 - `--continue-on-error` — pokračovat i když jednotlivý řádek selže (default: stop).
 - `--limit=N` — zpracuj jen prvních N řádků (jen exchange runnery, vhodné pro testing).
+- `--no-throttle` — vypne klientské throttling mezi requesty (viz [Rate limiting](#rate-limiting)). Vhodné pro testování chování serveru pod zátěží.
+
+### Rate limiting
+
+Nový Shipard má API rate limit **1000 requestů / 60 s per API klíč**
+(viz `nov_shipard:src/Api/Middleware/RateLimitMiddleware.php`). Importer má
+tři vrstvy obrany, aby se do něj nedostal:
+
+1. **Proaktivní throttling** — minimum interval mezi requesty (default 80 ms
+   = ~12.5 req/s, 25% rezerva pod limit). Měřeno přes `microtime(true)` od
+   posledního requestu — pokud aplikace mezi nimi dělá DB queries / mapování,
+   čekání už probíhalo "samo" a throttle nic nepřidá.
+
+2. **Respect `_retry_after` při 429** — pokud server přesto vrátí 429
+   RATE_LIMITED, klient přečte `error.details[].field='_retry_after'` (sekundy)
+   z body a počká přesně tu dobu. Pokud `_retry_after` chybí, fallback na
+   exp. backoff.
+
+3. **Exponential backoff pro 5xx a network errory** — při 500-599, network
+   timeoutu nebo DNS chybě čekáme `retryDelayMs * 2^(attempt-1)` (1s, 2s, 4s,
+   …, cap 30 s).
+
+Maximum počet retry pokusů je `maxRetries` (default 3). Po jejich vyčerpání
+runner zafailuje per řádek (`--continue-on-error` umožní pokračovat).
+**4xx errory kromě 429** (validation, schema_invalid, 404, ...) **NEretryjeme**
+— jsou fatální, vyžadují opravu zdrojových dat.
+
+Verbose log (`-v`) zobrazí každý retry: `[http] retry 1/3 after 6 s (HTTP 429: RATE_LIMITED)`.
+
+## Konfigurace
+
+Soubor `config/import-newShipard.json` v DS rootu:
+
+```jsonc
+{
+    "target": {
+        "baseUrl": "https://abcd-efgh-ijkl-mnop.shipard.app/api/v1",
+        "apiKey": "shpd_ak_1234567890abcdef1234567890abcdef",
+        "timeout": 30,
+
+        // Rate limiting (volitelné, defaulty stačí pro většinu situací):
+        "throttleMs":   80,    // pauza mezi requesty (ms); 0 = off
+        "maxRetries":   3,     // počet retry pokusů pro 429 / 5xx / network
+        "retryDelayMs": 1000   // base delay pro exp. backoff (ms)
+    },
+    "options": {
+        "verbose": false,
+        "dryRun": false,
+        "batchSize": 100
+    }
+}
+```
+
+Pole `target.baseUrl` a `target.apiKey` jsou povinné. Volitelné:
+
+| Klíč | Typ | Default | Rozsah | Popis |
+|---|---|---|---|---|
+| `target.timeout` | int | 30 | 1–300 | curl timeout v sekundách |
+| `target.throttleMs` | int | 80 | 0–10000 | minimum pauza mezi requesty v ms |
+| `target.maxRetries` | int | 3 | 0–10 | počet retry pokusů |
+| `target.retryDelayMs` | int | 1000 | 100–60000 | base delay pro exp. backoff v ms |
+
+Sekce `options` je volitelná.
+
+**Bezpečnost:** soubor obsahuje API klíč — nastavte `chmod 0600`. Modul
+varuje na stderr, pokud má soubor jiná práva.
 
 ### Idempotence
 
@@ -73,31 +139,6 @@ Nový import pak založí nové záznamy v novém Shipardu paralelně se starým
 Pro tabulky s unique `code` (bank-accounts / cost-centers / warehouses /
 cash-desks) v takovém případě hrozí konflikt — ručně smaž staré nové
 záznamy přes UI nebo si zaveď distinct kódy.
-
-## Konfigurace
-
-Soubor `config/import-newShipard.json` v DS rootu:
-
-```jsonc
-{
-    "target": {
-        "baseUrl": "https://abcd-efgh-ijkl-mnop.shipard.app/api/v1",
-        "apiKey": "shpd_ak_1234567890abcdef1234567890abcdef",
-        "timeout": 30
-    },
-    "options": {
-        "verbose": false,
-        "dryRun": false,
-        "batchSize": 100
-    }
-}
-```
-
-Pole `target.baseUrl` a `target.apiKey` jsou povinné. `target.timeout`
-(1–300 s) je volitelný, default 30. Sekce `options` je volitelná.
-
-**Bezpečnost:** soubor obsahuje API klíč — nastavte `chmod 0600`. Modul
-varuje na stderr, pokud má soubor jiná práva.
 
 ## Stav
 
