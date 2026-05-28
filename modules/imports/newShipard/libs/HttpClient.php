@@ -105,7 +105,7 @@ final class HttpClient
 		}
 
 		if ($errno !== 0)
-			throw new HttpException(0, null, "Network error: {$errMsg}", null);
+			throw (new HttpException(0, null, "Network error: {$errMsg}", null))->withRequest($method, $url);
 
 		$parsed = null;
 		if (is_string($responseBody) && $responseBody !== '')
@@ -131,7 +131,7 @@ final class HttpClient
 				$errorMessage = is_string($responseBody) && $responseBody !== ''
 					? $responseBody
 					: "HTTP {$statusCode}";
-			throw new HttpException($statusCode, $errorCode, $errorMessage, $parsed);
+			throw (new HttpException($statusCode, $errorCode, $errorMessage, $parsed))->withRequest($method, $url);
 		}
 
 		return $parsed ?? [];

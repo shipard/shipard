@@ -31,25 +31,47 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 
 ## Subkomandy
 
-| Subkomanda          | Stav        | Popis                                              |
-| ------------------- | ----------- | -------------------------------------------------- |
-| `status`            | ✅ hotovo   | Sanity check — config, HTTP připojení, lokální mapa. |
-| `bank-accounts`     | ⏳ Fáze 02  | Import bankovních spojení.                         |
-| `cost-centers`      | ⏳ Fáze 02  | Import středisek.                                  |
-| `warehouses`        | ⏳ Fáze 02  | Import skladů.                                     |
-| `cash-desks`        | ⏳ Fáze 02  | Import pokladen.                                   |
-| `number-series`     | ⏳ Fáze 02  | Import číselných řad.                              |
-| `fiscal-years`      | ⏳ Fáze 02  | Import fiskálních období.                          |
-| `vat-registrations` | ⏳ Fáze 02  | Import DPH registrací.                             |
-| `persons`           | ⏳ Fáze 03  | Import osob.                                       |
-| `items`             | ⏳ Fáze 04  | Import položek.                                    |
-| `docs`              | ⏳ Fáze 05  | Import dokladů.                                    |
-| `all`               | ⏳ Fáze 05  | Orchestrace všech fází v pořadí závislostí.        |
+| Subkomanda          | Stav        | Popis                                                |
+| ------------------- | ----------- | ---------------------------------------------------- |
+| `status`            | ✅ Fáze 01  | Sanity check — config, HTTP připojení, lokální mapa. |
+| `vat-registrations` | ✅ Fáze 02  | Registrace k DPH (jen `taxArea='VAT'`).              |
+| `fiscal-years`      | ✅ Fáze 02  | Fiskální roky + fiskální měsíce (sub-import).        |
+| `bank-accounts`     | ✅ Fáze 02  | Vlastní bankovní spojení.                            |
+| `cost-centers`      | ✅ Fáze 02  | Střediska.                                           |
+| `warehouses`        | ✅ Fáze 02  | Sklady.                                              |
+| `cash-desks`        | ✅ Fáze 02  | Pokladny.                                            |
+| `number-series`     | ✅ Fáze 02  | Číselné řady dokladů (jen typy známé v novém DS).    |
+| `item-kinds`        | ✅ Fáze 02  | Druhy položek (s mapováním na seedované system_code).|
+| `all-codebooks`     | ✅ Fáze 02  | Všechny číselníky v pořadí závislostí.               |
+| `persons`           | ⏳ Fáze 03  | Import osob.                                         |
+| `items`             | ⏳ Fáze 04  | Import položek.                                      |
+| `docs`              | ⏳ Fáze 05  | Import dokladů.                                      |
+| `all`               | ⏳ Fáze 06  | Orchestrace všech fází v pořadí závislostí.          |
 
 ### Společné options
 
-- `--verbose`, `-v` — verbose výstup (HTTP requesty na stderr).
+- `--verbose`, `-v` — verbose výstup (HTTP requesty + per-row debug na stderr).
 - `--dry-run` — neprovádět zápisy do cílového Shipardu.
+- `--continue-on-error` — pokračovat i když jednotlivý řádek selže (default: stop).
+
+### Idempotence
+
+Runner respektuje LocalIdMap: pokud `(entity_type, old_ndx)` mapping existuje,
+záznam se přeskočí (status `skipped`, reason `already-imported`). Druhý běh
+nevytváří duplicity ani neaktualizuje existující data — záznamy v novém
+Shipardu jsou po vložení ve stavu `docState=40` (V pořádku), který je
+readOnly. Pro re-import po opravě zdrojových dat:
+
+```php
+// V PHP REPL / debug skriptu:
+$idMap = new LocalIdMap('<DS>/import-newShipard.sqlite');
+$idMap->forgetAll('bankAccount');   // smaže všechen mapping pro daný typ
+```
+
+Nový import pak založí nové záznamy v novém Shipardu paralelně se starými.
+Pro tabulky s unique `code` (bank-accounts / cost-centers / warehouses /
+cash-desks) v takovém případě hrozí konflikt — ručně smaž staré nové
+záznamy přes UI nebo si zaveď distinct kódy.
 
 ## Konfigurace
 
@@ -80,7 +102,7 @@ varuje na stderr, pokud má soubor jiná práva.
 
 - [x] Bootstrap (modul, dispatcher, HTTP klient, lokální mapa).
 - [x] `status` — sanity check.
-- [ ] Číselníky (Fáze 02).
+- [x] Číselníky (Fáze 02).
 - [ ] Osoby (Fáze 03).
 - [ ] Položky (Fáze 04).
 - [ ] Doklady (Fáze 05).

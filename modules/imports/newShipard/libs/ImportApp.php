@@ -62,21 +62,24 @@ class ImportApp
 	{
 		switch ($subcommand)
 		{
-			case 'status':
-				return (new runners\StatusRunner($this->context()))->run();
+			case 'status':            return (new runners\StatusRunner($this->context()))->run();
+
+			// Phase 02 — codebooks
+			case 'vat-registrations': return (new runners\VatRegistrationsRunner($this->context()))->run();
+			case 'fiscal-years':      return (new runners\FiscalYearsRunner($this->context()))->run();
+			case 'bank-accounts':     return (new runners\BankAccountsRunner($this->context()))->run();
+			case 'cost-centers':      return (new runners\CostCentersRunner($this->context()))->run();
+			case 'warehouses':        return (new runners\WarehousesRunner($this->context()))->run();
+			case 'cash-desks':        return (new runners\CashDesksRunner($this->context()))->run();
+			case 'number-series':     return (new runners\NumberSeriesRunner($this->context()))->run();
+			case 'item-kinds':        return (new runners\ItemKindsRunner($this->context()))->run();
+			case 'all-codebooks':     return (new runners\AllCodebooksRunner($this->context()))->run();
 
 			// Following subcommands will be wired in later phases:
-			//   case 'all':            → orchestrate codebooks → persons → items → docs
-			//   case 'bank-accounts':  → Phase 02
-			//   case 'cost-centers':   → Phase 02
-			//   case 'warehouses':     → Phase 02
-			//   case 'cash-desks':     → Phase 02
-			//   case 'number-series':  → Phase 02
-			//   case 'fiscal-years':   → Phase 02
-			//   case 'vat-registrations': → Phase 02
-			//   case 'persons':        → Phase 03
-			//   case 'items':          → Phase 04
-			//   case 'docs':           → Phase 05
+			//   case 'all':           → orchestrate codebooks → persons → items → docs
+			//   case 'persons':       → Phase 03
+			//   case 'items':         → Phase 04
+			//   case 'docs':          → Phase 05
 		}
 
 		echo "Unknown subcommand: '{$subcommand}'\n\n";
@@ -98,11 +101,23 @@ class ImportApp
 		echo "Usage: shpd-app cli-action --action=imports.newShipard/import <subcommand> [options]\n";
 		echo "\n";
 		echo "Subcommands:\n";
-		echo "  status        Sanity check — connection, config, local map.\n";
+		echo "  status              Sanity check — connection, config, local map.\n";
+		echo "\n";
+		echo "  Phase 02 — codebooks:\n";
+		echo "    vat-registrations VAT registrations (taxRegs WHERE taxArea='VAT').\n";
+		echo "    fiscal-years      Fiscal years + embedded fiscal months.\n";
+		echo "    bank-accounts     Own bank accounts.\n";
+		echo "    cost-centers      Cost centers (centres).\n";
+		echo "    warehouses        Warehouses.\n";
+		echo "    cash-desks        Cash desks (cashboxes).\n";
+		echo "    number-series     Document number series (docnumbers).\n";
+		echo "    item-kinds        Item kinds (itemtypes).\n";
+		echo "    all-codebooks     All of the above in dependency order.\n";
 		echo "\n";
 		echo "Common options:\n";
-		echo "  --verbose, -v     More verbose output.\n";
-		echo "  --dry-run         Do not perform writes against the target.\n";
+		echo "  --verbose, -v        More verbose output (HTTP + per-row debug).\n";
+		echo "  --dry-run            Do not perform writes against the target.\n";
+		echo "  --continue-on-error  Skip failed rows instead of aborting the runner.\n";
 		echo "\n";
 		return true;
 	}

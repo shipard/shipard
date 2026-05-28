@@ -13,6 +13,7 @@ final class LocalIdMap
 	public const ENTITY_FISCAL_MONTH     = 'fiscalMonth';
 	public const ENTITY_VAT_REGISTRATION = 'vatRegistration';
 	public const ENTITY_VAT_PERIOD       = 'vatPeriod';
+	public const ENTITY_ITEM_KIND        = 'itemKind';
 	public const ENTITY_PERSON           = 'person';
 	public const ENTITY_ITEM             = 'item';
 	public const ENTITY_DOC              = 'doc';
