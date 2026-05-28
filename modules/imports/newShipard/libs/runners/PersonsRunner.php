@@ -13,6 +13,21 @@ final class PersonsRunner extends BaseExchangeRunner
 	/** ID tabulky pro e10_base_properties lookup. */
 	private const PERSONS_TABLE_ID = 'e10.persons.persons';
 
+	/** Tabulka v novém Shipardu — pro post-apply PATCH na docState. */
+	private const NEW_PERSONS_TABLE = 'base_persons_persons';
+
+	/**
+	 * Mapování starého docState (e10.base.defaultDocStatesArchive) na nový
+	 * (core.system.docStatesArchive). 9800 (Smazáno) je filtrováno ze
+	 * source query a do mapy nepatří.
+	 */
+	private const DOC_STATE_MAP = [
+		1000 => 10,  // Rozpracováno → Koncept
+		4000 => 40,  // Potvrzeno    → V pořádku
+		8000 => 80,  // V opravě     → V opravě
+		9000 => 70,  // V archívu    → V archívu
+	];
+
 	protected function entityType(): string   { return LocalIdMap::ENTITY_PERSON; }
 	protected function exchangeFlow(): string { return 'persons'; }
 	protected function exchangeType(): string { return 'person'; }
@@ -86,7 +101,9 @@ final class PersonsRunner extends BaseExchangeRunner
 				'isClosed'   => (int) ($oldRow['personCanceled'] ?? 0) === 1,
 				'closedDate' => $this->dateToString($oldRow['personCancelDate'] ?? null),
 				'isOwn'      => false,   // uživatel ručně označí v UI po importu
-				'docState'   => 40,
+				// `status.docState` v canonical PersonApplier ignoruje při create —
+				// rozhodující je `applyOptions.targetDocState`. Posíláme jen ostatní
+				// status pole, ať není payload zavádějící.
 			],
 
 			'addresses'    => $addresses,
@@ -95,13 +112,66 @@ final class PersonsRunner extends BaseExchangeRunner
 
 			'applyOptions' => [
 				'mergeStrategy'  => 'fullSync',
-				'targetDocState' => 40,
+				// Schema applieru dovolí jen 10 nebo 40. Pro 70 (Archív) a 80
+				// (V opravě) provedeme post-apply PATCH — viz afterApplied().
+				'targetDocState' => $this->insertDocState($oldRow),
 				'createPersonId' => true,
 				'rejectOnIssues' => ['error'],
 			],
 		];
 
 		return $payload;
+	}
+
+	/**
+	 * Po apply provede generic CRUD PATCH pokud target docState není 10/40.
+	 *
+	 * State transitions v core.system.docStatesArchive:
+	 *   10 (Koncept)   → goto [40, 70, 90]
+	 *   40 (V pořádku) → goto [80, 70, 90]
+	 *   80 (V opravě)  → goto [40, 70, 90]
+	 *
+	 * Insert proběhl s 10 nebo 40 (`insertDocState`). Pokud cíl je 70 nebo
+	 * 80, transition z 40 je vždy povolen — jednofázový PATCH.
+	 */
+	protected function afterApplied(array $oldRow, int $newId, \imports\newShipard\libs\CrudClient $crud): void
+	{
+		$target = $this->mapDocState($oldRow);
+		$insert = $this->insertDocState($oldRow);
+		if ($target === $insert)
+			return;
+
+		if ($this->isDryRun())
+		{
+			$this->debug("DRY-RUN: would PATCH " . self::NEW_PERSONS_TABLE . "/{$newId} docState={$target}");
+			return;
+		}
+
+		$crud->patch(self::NEW_PERSONS_TABLE, $newId, ['docState' => $target]);
+		$this->debug("person {$oldRow['ndx']}: post-apply PATCH docState {$insert} → {$target}");
+	}
+
+	/**
+	 * Cílový docState v novém Shipardu (po případném post-apply PATCH).
+	 * Neznámé staré hodnoty → 40 (V pořádku) + warning.
+	 */
+	private function mapDocState(array $oldRow): int
+	{
+		$old = (int) ($oldRow['docState'] ?? 0);
+		if (isset(self::DOC_STATE_MAP[$old]))
+			return self::DOC_STATE_MAP[$old];
+
+		$this->warn("person {$oldRow['ndx']}: unknown old docState={$old}, defaulting to 40 (V pořádku)");
+		return 40;
+	}
+
+	/**
+	 * Hodnota pro `applyOptions.targetDocState` při apply. Schema dovoluje
+	 * jen 10 / 40 — pro 70/80 nejdřív vložíme 40, pak PATCH (viz afterApplied).
+	 */
+	private function insertDocState(array $oldRow): int
+	{
+		return $this->mapDocState($oldRow) === 10 ? 10 : 40;
 	}
 
 	// ── Helpers (mapping) ──────────────────────────────────────────────────

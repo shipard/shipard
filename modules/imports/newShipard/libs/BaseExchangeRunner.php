@@ -154,6 +154,10 @@ abstract class BaseExchangeRunner extends ImportRunner
 
 		$this->idMap()->record($this->entityType(), $oldNdx, $savedId);
 
+		// Hook pro post-apply operace (např. PATCH na docState přes generic
+		// CRUD pro stavy, které applier neumí v `applyOptions.targetDocState`).
+		$this->afterApplied($oldRow, $savedId, new CrudClient($this->http()));
+
 		$matchedBy = $response['canonical']['_resolve']['header']['matchedBy'] ?? null;
 
 		// Po apply applier anotuje canCreate → matched s matchedBy='created'.
@@ -209,5 +213,20 @@ abstract class BaseExchangeRunner extends ImportRunner
 	protected function isContinueOnError(): bool
 	{
 		return (bool) $this->app()->arg('continue-on-error');
+	}
+
+	/**
+	 * Hook volaný po úspěšném apply (po LocalIdMap::record). Default no-op.
+	 *
+	 * Override v runnerech, které potřebují post-apply operace přes generic
+	 * CRUD — typicky když applier nemá kontrolu nad nějakým polem (např.
+	 * PersonsRunner posune docState na 70/80, které `applyOptions.targetDocState`
+	 * schema neumožňuje).
+	 *
+	 * V dry-run módu se hook nevolá vůbec (apply se taky neprovádí).
+	 */
+	protected function afterApplied(array $oldRow, int $newId, CrudClient $crud): void
+	{
+		// no-op default
 	}
 }
