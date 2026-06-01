@@ -81,6 +81,7 @@ class ImportApp
 			case 'cash-desks':        return (new runners\CashDesksRunner($this->context()))->run();
 			case 'number-series':     return (new runners\NumberSeriesRunner($this->context()))->run();
 			case 'item-kinds':        return (new runners\ItemKindsRunner($this->context()))->run();
+			case 'units':             return (new runners\UnitsRunner($this->context()))->run();
 			case 'all-codebooks':     return (new runners\AllCodebooksRunner($this->context()))->run();
 
 			// Phase 03 — persons
@@ -126,6 +127,7 @@ class ImportApp
 		echo "    cash-desks        Cash desks (cashboxes).\n";
 		echo "    number-series     Document number series (docnumbers).\n";
 		echo "    item-kinds        Item kinds (itemtypes).\n";
+		echo "    units             Units of measure (witems units).\n";
 		echo "    all-codebooks     All of the above in dependency order.\n";
 		echo "\n";
 		echo "  Phase 03 — persons:\n";

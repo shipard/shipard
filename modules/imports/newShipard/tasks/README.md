@@ -9,6 +9,7 @@ starého Shipardu do nového Shipardu přes HTTPS REST API.
 |---|---|---|---|
 | 01 | [01-bootstrap.md](01-bootstrap.md) | ✅ Hotovo | Modul, CLI dispatcher, HTTP klient, LocalIdMap, `status` subcommand. |
 | 02 | [02-codebooks.md](02-codebooks.md) | ✅ Hotovo | Číselníky — vat-registrations, fiscal-years/months, bank-accounts, cost-centers, warehouses, cash-desks, number-series, item-kinds + `all-codebooks` orchestrátor. |
+| 02b | [02b-units.md](02b-units.md) | ✅ Hotovo | Měrné jednotky (`units`) — import uživatelských (`e10_witems_units`, system_code `_<ndx>`) i systémových (`e10.witems.units.json`, system_code = kód) → `core_units`. `system_code = původní token` → UnitResolver trefí items/docs. Řeší prázdné `core_units` při `skipProvisioning`. |
 | 03 | [03-persons.md](03-persons.md) | ✅ Hotovo | Osoby přes `/_exchange/persons/person/apply`. |
 | 03a | [03a-rate-limiting.md](03a-rate-limiting.md) | ✅ Hotovo | Rate limiting v HTTP klientu — respect 429 `_retry_after`, proaktivní throttling, exp. backoff pro 5xx/network. Patch cross-cutting pro všechny fáze. |
 | 04 | [04-items.md](04-items.md) | ✅ Hotovo | Položky přes `/_exchange/items/item/apply`. |
