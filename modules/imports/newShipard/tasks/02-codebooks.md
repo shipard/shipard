@@ -362,8 +362,10 @@ BaseCodebookRunner. Sekce 4.1–4.8 popisují per-runner specifika.
 | (žádné valid_to) | `valid_to` | null |
 | `taxOffice` | — | **IGNORE** (rozhodnuto v PRD diskusi) |
 
-**Filtr query:** `WHERE taxArea = 'VAT' AND docState != 9800`. Ostatní
-taxAreas (income tax, road tax) přeskočit s `info` zprávou.
+**Filtr query:** `WHERE taxType = 'vat' AND docState != 9800` (diskriminátor
+"registrace k DPH" je sloupec `taxType`, cfgItem `e10doc.base.taxRegsTypes`;
+NE `taxArea`, který drží daňovou oblast jako `eu`). Ostatní daně (income tax,
+road tax) přeskočit s `info` zprávou.
 
 **Specifické edge cases:**
 

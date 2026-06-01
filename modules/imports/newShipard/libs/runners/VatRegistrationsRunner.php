@@ -16,11 +16,15 @@ final class VatRegistrationsRunner extends BaseCodebookRunner
 
 	protected function sourceQuery(): array
 	{
+		// Diskriminátor "registrace k DPH" je sloupec [taxType] = 'vat' (cfgItem
+		// e10doc.base.taxRegsTypes). NE [taxArea] — ten drží daňovou oblast
+		// (např. 'eu', cfgItem e10doc.base.taxAreas), takže filtr taxArea='VAT'
+		// nematchne nic.
 		return [
 			'SELECT [ndx], [title], [taxCountry], [payerKind], [taxId],'
 			. ' [periodType], [periodTypeVatCS], [docState]'
 			. ' FROM [e10doc_base_taxRegs]'
-			. ' WHERE [taxArea] = %s', 'VAT',
+			. ' WHERE [taxType] = %s', 'vat',
 			' AND [docState] != %i', 9800,
 			' ORDER BY [ndx]',
 		];
