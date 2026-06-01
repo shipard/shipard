@@ -205,6 +205,14 @@ final class DocsRunner extends BaseExchangeRunner
 			return null;
 		}
 
+		// Účet protistrany na dokladu (e10doc_core_heads.bankAccount, combo nad
+		// personsBA) je per-doklad a autoritativní — preferujeme ho před prvním
+		// účtem z karty osoby (ten je fallback z loadParty). U přijatých faktur
+		// je to účet dodavatele, který applier vyžaduje (partner_bank).
+		$headerBank = $this->parseBankAccountString($oldRow['bankAccount'] ?? null);
+		if ($headerBank !== null)
+			$partnerParty['bankAccount'] = $headerBank;
+
 		// Partner jde do strany, kterou MY nejsme. Vlastní firma → selfParty flag.
 		$supplier = $selfParty === 'supplier' ? null : $partnerParty;
 		$customer = $selfParty === 'customer' ? null : $partnerParty;
@@ -406,13 +414,32 @@ final class DocsRunner extends BaseExchangeRunner
 			return null;
 		$row = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
 
-		$accountNumber = $this->emptyToNull($row['bankAccount'] ?? null);
-		if ($accountNumber === null)
+		return $this->parseBankAccountString($row['bankAccount'] ?? null);
+	}
+
+	/**
+	 * Starý účet je jeden volný řetězec (max 40 znaků) — buď IBAN
+	 * (`CZ6508000000192000145399`), nebo tuzemský `[předčíslí-]číslo/kód`
+	 * (`19-2000145399/0800`). Převede na docs $defs/BankAccount fragment se
+	 * správně vyplněným polem (`iban` vs `accountNumber`), nebo null pokud prázdný.
+	 *
+	 * IBAN detekce: 2 písmena + 2 číslice na začátku (ISO 13616), po odstranění
+	 * mezer. Vše ostatní bereme jako tuzemské číslo účtu.
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	private function parseBankAccountString(mixed $raw): ?array
+	{
+		$value = $this->emptyToNull($raw);
+		if ($value === null)
 			return null;
 
+		$compact = str_replace(' ', '', $value);
+		$isIban = (bool) preg_match('/^[A-Za-z]{2}[0-9]{2}[0-9A-Za-z]{1,30}$/', $compact);
+
 		return [
-			'accountNumber' => $accountNumber,
-			'iban'          => null,
+			'accountNumber' => $isIban ? null : $value,
+			'iban'          => $isIban ? strtoupper($compact) : null,
 			'bic'           => null,
 			'currency'      => 'CZK',
 		];
