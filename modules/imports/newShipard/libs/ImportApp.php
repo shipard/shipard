@@ -86,10 +86,14 @@ class ImportApp
 			// Phase 03 — persons
 			case 'persons':           return (new runners\PersonsRunner($this->context()))->run();
 
+			// Phase 04 — items
+			case 'items':             return (new runners\ItemsRunner($this->context()))->run();
+
+			// Phase 05 — docs
+			case 'docs':              return (new runners\DocsRunner($this->context()))->run();
+
 			// Following subcommands will be wired in later phases:
 			//   case 'all':           → orchestrate codebooks → persons → items → docs
-			//   case 'items':         → Phase 04
-			//   case 'docs':          → Phase 05
 		}
 
 		echo "Unknown subcommand: '{$subcommand}'\n\n";
@@ -114,7 +118,7 @@ class ImportApp
 		echo "  status              Sanity check — connection, config, local map.\n";
 		echo "\n";
 		echo "  Phase 02 — codebooks:\n";
-		echo "    vat-registrations VAT registrations (taxRegs WHERE taxArea='VAT').\n";
+		echo "    vat-registrations VAT registrations (taxRegs WHERE taxType='vat').\n";
 		echo "    fiscal-years      Fiscal years + embedded fiscal months.\n";
 		echo "    bank-accounts     Own bank accounts.\n";
 		echo "    cost-centers      Cost centers (centres).\n";
@@ -127,12 +131,22 @@ class ImportApp
 		echo "  Phase 03 — persons:\n";
 		echo "    persons           Persons (people + companies) via exchange flow.\n";
 		echo "\n";
+		echo "  Phase 04 — items:\n";
+		echo "    items             Items (goods, services) via exchange flow.\n";
+		echo "\n";
+		echo "  Phase 05 — docs:\n";
+		echo "    docs              Documents (invoices invni/invno) via exchange flow.\n";
+		echo "                      Requires a flagged own company (is_own=1) in target.\n";
+		echo "\n";
 		echo "Common options:\n";
 		echo "  --verbose, -v        More verbose output (HTTP + per-row debug).\n";
 		echo "  --dry-run            Do not perform writes against the target.\n";
 		echo "  --continue-on-error  Skip failed rows instead of aborting the runner.\n";
 		echo "  --limit=N            Process only the first N source rows (exchange runners only).\n";
 		echo "  --no-throttle        Disable client-side throttling between requests (for testing).\n";
+		echo "  --from=YYYY-MM-DD    Filter docs by accounting date (>=). 'docs' only.\n";
+		echo "  --to=YYYY-MM-DD      Filter docs by accounting date (<=). 'docs' only.\n";
+		echo "  --target-state=10    Import docs as draft (10) instead of confirmed (20). 'docs' only.\n";
 		echo "\n";
 		return true;
 	}

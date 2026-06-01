@@ -34,7 +34,7 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 | Subkomanda          | Stav        | Popis                                                |
 | ------------------- | ----------- | ---------------------------------------------------- |
 | `status`            | ✅ Fáze 01  | Sanity check — config, HTTP připojení, lokální mapa. |
-| `vat-registrations` | ✅ Fáze 02  | Registrace k DPH (jen `taxArea='VAT'`).              |
+| `vat-registrations` | ✅ Fáze 02  | Registrace k DPH (jen `taxType='vat'`).              |
 | `fiscal-years`      | ✅ Fáze 02  | Fiskální roky + fiskální měsíce (sub-import).        |
 | `bank-accounts`     | ✅ Fáze 02  | Vlastní bankovní spojení.                            |
 | `cost-centers`      | ✅ Fáze 02  | Střediska.                                           |
@@ -44,8 +44,8 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 | `item-kinds`        | ✅ Fáze 02  | Druhy položek (s mapováním na seedované system_code).|
 | `all-codebooks`     | ✅ Fáze 02  | Všechny číselníky v pořadí závislostí.               |
 | `persons`           | ✅ Fáze 03  | Osoby (lidé + firmy) přes exchange applier.          |
-| `items`             | ⏳ Fáze 04  | Import položek.                                      |
-| `docs`              | ⏳ Fáze 05  | Import dokladů.                                      |
+| `items`             | ✅ Fáze 04  | Položky (zboží, služby) přes exchange applier.       |
+| `docs`              | ✅ Fáze 05  | Doklady — faktury (`invni`/`invno`). Viz [Doklady](#doklady). |
 | `all`               | ⏳ Fáze 06  | Orchestrace všech fází v pořadí závislostí.          |
 
 ### Společné options
@@ -55,6 +55,75 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 - `--continue-on-error` — pokračovat i když jednotlivý řádek selže (default: stop).
 - `--limit=N` — zpracuj jen prvních N řádků (jen exchange runnery, vhodné pro testing).
 - `--no-throttle` — vypne klientské throttling mezi requesty (viz [Rate limiting](#rate-limiting)). Vhodné pro testování chování serveru pod zátěží.
+
+### Options jen pro `docs`
+
+- `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — filtr období na `dateAccounting`
+  (datum zaúčtování — zajišťuje kompletní fiskální období, na rozdíl od data
+  vystavení). Nevalidní formát se ignoruje s warningem.
+- `--target-state=10` — importovat doklady jako koncept (docState 10) místo
+  výchozího potvrzeno (20).
+
+### Doklady
+
+MVP scope importu dokladů jsou **faktury přijaté (`invni`) a vydané (`invno`)**.
+Ostatní typy (pokladní, bankovní, objednávky, dodací listy) jsou mimo scope
+prvního pokusu.
+
+**Prerekvizita — označená vlastní firma.** Doklady používají `selfParty`
+resolution, která v cílovém Shipardu hledá firmu označenou `is_own = 1`.
+Po Fázi 03 jsou všechny osoby `is_own = false`, takže před importem dokladů
+je nutné svou firmu ručně označit (UI nebo SQL):
+
+```sql
+-- Zjistit ID vlastní firmy podle IČO:
+SELECT id, full_name, company_id FROM base_persons_persons WHERE company_id = '<vlastní-IČO>';
+-- Označit jako vlastní:
+UPDATE base_persons_persons SET is_own = 1 WHERE id = <id>;
+```
+
+`DocsRunner` na začátku ověří existenci `is_own = 1` firmy a bez ní abortuje
+s instrukcí.
+
+**Pořadí importu:** codebooks → persons → items → **docs**. Doklady spoléhají
+na to, že partneři (osoby) a položky už v cíli jsou; jinak je applier
+zkusí vytvořit (`autoCreateMode: safe`), což vede k neúplným záznamům.
+
+**Známá omezení:**
+
+- **Středisko a sklad se ztrácí** — `docs_core_heads` v novém Shipardu zatím
+  nemá `cost_center` ani `warehouse`. Importované doklady tato data nenesou.
+- **Faktury s partnerem bez IČO se přeskočí** — `autoCreateMode: safe` vytvoří
+  partnera jen pokud má `company_id`. Partner-fyzická osoba bez IČO, který
+  zároveň není předem naimportovaný (persons), způsobí `unresolved_required`
+  → celý doklad je `skipped`. Proto importuj persons před docs.
+- **Vydané faktury (`invno`) — vlastní bankovní účet a dvoukrokový import.**
+  Nový Shipard u vydané faktury vyžaduje při potvrzení (docState 20+) vlastní
+  `bank_account` (kam má zákazník zaplatit; `IssuedInvoiceDocument::validate`).
+  Exchange formát ho ale neumí přenést. Proto se `invno` vkládá nejdřív jako
+  **koncept (10)** a runner ho v `afterApplied` povýší na 20 spolu s účtem,
+  který dohledá ze starého `myBankAccount` přes LocalIdMap (Fáze 02
+  `bank-accounts`). **Bez naimportovaných bank-accounts** (nebo když starý
+  doklad nemá `myBankAccount`) zůstane vydaná faktura konceptem (10) +
+  warning. Přijatých faktur (`invni`) ani `--target-state=10` se to netýká.
+- **Číslo vydané faktury** — applier dává `docNumber` do `partner_doc_number`
+  a vlastní `doc_number` přiděluje number_series až při přechodu 10→20. Runner
+  proto až **po povýšení** přepíše vygenerované číslo na původní (non-fatal při
+  unique konfliktu).
+- **Řádky typu sada** (`rowType`) se importují tak, jak jsou — rozložené sady
+  mohou vytvořit duplicitní řádky. K ověření na reálných datech.
+
+**Konverze polí na řádcích:**
+
+- **Kódy DPH** — starý formát `EUCZ{NNN}` se převádí na nový `cz-{NNN}`
+  (deterministicky, prefix `EUCZ` → `cz-`). Kódy `EUCZ000` (nedaňový řádek)
+  a `EUCZ113` (artefakt zdroje) v novém Shipardu neexistují → mapují se na
+  `null` (řádek bez kódu DPH). Mapování je **CZ-only**; kódy jiných zemí se
+  pošlou beze změny a applier je případně odmítne. `vat.pct` se posílá souběžně
+  jako fallback. Zdroj pravdy: `nov_shipard:modules/world/vat/config/vat-cz.jsonc`.
+- **Jednotka `none`** — systémová jednotka starého Shipardu pro řádky bez
+  jednotky se mapuje na `null` (prázdný sloupec `unit`), aby applier nehlásil
+  `unit_not_found`.
 
 ### Rate limiting
 
@@ -146,8 +215,8 @@ záznamy přes UI nebo si zaveď distinct kódy.
 - [x] `status` — sanity check.
 - [x] Číselníky (Fáze 02).
 - [x] Osoby (Fáze 03).
-- [ ] Položky (Fáze 04).
-- [ ] Doklady (Fáze 05).
+- [x] Položky (Fáze 04).
+- [x] Doklady (Fáze 05).
 
 ## Smoke test
 
