@@ -163,6 +163,18 @@ final class DocsRunner extends BaseExchangeRunner
 		return $raw;
 	}
 
+	/**
+	 * Popisek dokladu pro logy: docType + docNumber (lepší orientace než jen
+	 * ndx, hlavně u failed řádků). Např. "invno 2024/0091".
+	 */
+	protected function rowDescriptor(array $oldRow): string
+	{
+		$docType   = trim((string) ($oldRow['docType'] ?? ''));
+		$docNumber = trim((string) ($oldRow['docNumber'] ?? ''));
+
+		return trim($docType . ' ' . $docNumber);
+	}
+
 	protected function buildCanonical(array $oldRow): ?array
 	{
 		$oldNdx     = (int) $oldRow['ndx'];

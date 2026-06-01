@@ -80,7 +80,9 @@ abstract class BaseExchangeRunner extends ImportRunner
 
 				$stats['failed']++;
 				$oldNdx = (int) ($oldRow['ndx'] ?? 0);
-				$this->err("Failed {$this->entityLabel()} (old ndx={$oldNdx}): " . $e->getMessage());
+				$desc = $this->rowDescriptor($oldRow);
+				$this->err("Failed {$this->entityLabel()} (old ndx={$oldNdx}"
+					. ($desc !== '' ? ", {$desc}" : '') . "): " . $e->getMessage());
 				if (!$this->isContinueOnError())
 				{
 					$this->err("Aborting (use --continue-on-error to skip failed rows).");
@@ -138,15 +140,37 @@ abstract class BaseExchangeRunner extends ImportRunner
 		{
 			$this->debug("DRY-RUN: would POST /_exchange/" . $this->exchangeFlow() . "/" . $this->exchangeType() . "/apply"
 				. " for old ndx={$oldNdx}");
+			if ($this->isDumpPayload())
+				$this->dumpJson("canonical payload (old ndx={$oldNdx}, {$this->rowDescriptor($oldRow)})", $canonical);
 			return ['status' => 'skipped', 'reason' => 'dry-run'];
 		}
 
-		$response = $exchange->apply(
-			$this->exchangeFlow(),
-			$this->exchangeType(),
-			$canonical,
-			$this->savedIdKey(),
-		);
+		if ($this->isDumpPayload())
+			$this->dumpJson("canonical payload (old ndx={$oldNdx}, {$this->rowDescriptor($oldRow)})", $canonical);
+
+		try
+		{
+			$response = $exchange->apply(
+				$this->exchangeFlow(),
+				$this->exchangeType(),
+				$canonical,
+				$this->savedIdKey(),
+			);
+		}
+		catch (HttpException $e)
+		{
+			// Genuine failure (ne očekávaný unresolved_required skip) → vypiš
+			// odeslaný payload + response body, ať jde ověřit, na které straně
+			// je chyba (importér vs. applier). Bez flagu, protože failures jsou
+			// vzácné a payload je přesně to, co se k ladění potřebuje.
+			if ($e->errorCode !== 'unresolved_required')
+			{
+				$this->dumpJson("FAILED request canonical (old ndx={$oldNdx}, {$this->rowDescriptor($oldRow)})", $canonical);
+				if ($e->responseBody !== null)
+					$this->dumpJson("FAILED response body (old ndx={$oldNdx})", $e->responseBody);
+			}
+			throw $e;
+		}
 
 		$savedId = $response['savedId'];
 		if ($savedId === null)
@@ -175,44 +199,69 @@ abstract class BaseExchangeRunner extends ImportRunner
 	{
 		$label = $this->entityLabel();
 		$oldNdx = $oldRow['ndx'] ?? '?';
-		$name = $oldRow['fullName'] ?? $oldRow['name'] ?? '';
+		$desc = $this->rowDescriptor($oldRow);
 
 		switch ($result['status'])
 		{
 			case 'created':
 				$this->ok(sprintf("[%s] %s → %d  %s",
-					$label, $oldNdx, $result['newId'] ?? 0, $name));
+					$label, $oldNdx, $result['newId'] ?? 0, $desc));
 				break;
 
 			case 'updated':
 				$by = $result['matchedBy'] ?? '?';
 				$this->info(sprintf("[%s] %s ↻ %d (matched by %s)  %s",
-					$label, $oldNdx, $result['newId'] ?? 0, $by, $name));
+					$label, $oldNdx, $result['newId'] ?? 0, $by, $desc));
 				break;
 
 			case 'skipped':
 				$reason = $result['reason'] ?? '?';
 				if ($reason === 'dry-run')
-					$this->info(sprintf("[%s] %s (dry-run, would apply)  %s", $label, $oldNdx, $name));
+					$this->info(sprintf("[%s] %s (dry-run, would apply)  %s", $label, $oldNdx, $desc));
 				elseif ($reason === 'incomplete')
-					$this->warn(sprintf("[%s] %s skipped (incomplete data)  %s", $label, $oldNdx, $name));
+					$this->warn(sprintf("[%s] %s skipped (incomplete data)  %s", $label, $oldNdx, $desc));
 				elseif ($reason === 'already-imported')
 					$this->debug(sprintf("[%s] %s skipped (already-imported, new id=%s)  %s",
-						$label, $oldNdx, $result['newId'] ?? '?', $name));
+						$label, $oldNdx, $result['newId'] ?? '?', $desc));
 				else
-					$this->warn(sprintf("[%s] %s skipped (%s)  %s", $label, $oldNdx, $reason, $name));
+					$this->warn(sprintf("[%s] %s skipped (%s)  %s", $label, $oldNdx, $reason, $desc));
 				break;
 
 			case 'failed':
 				$this->err(sprintf("[%s] %s FAILED (%s)  %s",
-					$label, $oldNdx, $result['reason'] ?? '?', $name));
+					$label, $oldNdx, $result['reason'] ?? '?', $desc));
 				break;
 		}
+	}
+
+	/**
+	 * Lidsky čitelný popisek řádku pro logy (za ndx). Default: fullName/name
+	 * ze starého řádku. Override v runnerech, kde dává smysl jiný identifikátor
+	 * (např. DocsRunner → docType + docNumber).
+	 */
+	protected function rowDescriptor(array $oldRow): string
+	{
+		return (string) ($oldRow['fullName'] ?? $oldRow['name'] ?? '');
 	}
 
 	protected function isContinueOnError(): bool
 	{
 		return (bool) $this->app()->arg('continue-on-error');
+	}
+
+	protected function isDumpPayload(): bool
+	{
+		return (bool) $this->app()->arg('dump-payload');
+	}
+
+	/**
+	 * Vypíše data jako pretty-printed JSON (pro ladění odesílaných payloadů /
+	 * error response). Unicode i lomítka nezescapované kvůli čitelnosti.
+	 */
+	protected function dumpJson(string $label, array $data): void
+	{
+		echo "── {$label} ──\n";
+		echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
 	}
 
 	/**

@@ -146,6 +146,9 @@ class ImportApp
 		echo "  --continue-on-error  Skip failed rows instead of aborting the runner.\n";
 		echo "  --limit=N            Process only the first N source rows (exchange runners only).\n";
 		echo "  --no-throttle        Disable client-side throttling between requests (for testing).\n";
+		echo "  --dump-payload       Print the canonical JSON sent to the exchange apply\n";
+		echo "                       (exchange runners: persons/items/docs). Failed rows dump\n";
+		echo "                       payload + response body automatically.\n";
 		echo "  --from=YYYY-MM-DD    Filter docs by accounting date (>=). 'docs' only.\n";
 		echo "  --to=YYYY-MM-DD      Filter docs by accounting date (<=). 'docs' only.\n";
 		echo "  --target-state=10    Import docs as draft (10) instead of confirmed (20). 'docs' only.\n";
