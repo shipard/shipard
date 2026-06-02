@@ -59,12 +59,33 @@ abstract class BaseExchangeRunner extends ImportRunner
 		$exchange = new ExchangeClient($this->http());
 		$stats = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 0];
 
+		if (!$this->processRows($rows, $exchange, $stats))
+			return false;   // abort (failed bez --continue-on-error)
+
+		$this->printDone($stats);
+		return $stats['failed'] === 0;
+	}
+
+	/**
+	 * Zpracuje dávku řádků. Vrátí false jen při abortu (failed bez
+	 * --continue-on-error). Aktualizuje $stats (lokální per-runner counter) i
+	 * sdílený context->stats (pro souhrn orchestrátoru).
+	 *
+	 * Vyčleněno z run(), aby DocsRunner mohl volat opakovaně po časových
+	 * úsecích nad sdíleným $stats (chunkování).
+	 *
+	 * @param array<int, array<string,mixed>> $rows
+	 * @param array{created:int,updated:int,skipped:int,failed:int} $stats
+	 */
+	protected function processRows(array $rows, ExchangeClient $exchange, array &$stats): bool
+	{
 		foreach ($rows as $oldRow)
 		{
 			try
 			{
 				$result = $this->processOneRow($oldRow, $exchange);
 				$stats[$result['status']]++;
+				$this->context->stats->add($this->entityLabel(), $result['status']);
 				$this->logRow($oldRow, $result);
 			}
 			catch (HttpException $e)
@@ -74,11 +95,13 @@ abstract class BaseExchangeRunner extends ImportRunner
 				if ($e->errorCode === 'unresolved_required')
 				{
 					$stats['skipped']++;
+					$this->context->stats->add($this->entityLabel(), 'skipped');
 					$this->logRow($oldRow, ['status' => 'skipped', 'reason' => 'ambiguous-header']);
 					continue;
 				}
 
 				$stats['failed']++;
+				$this->context->stats->add($this->entityLabel(), 'failed');
 				$oldNdx = (int) ($oldRow['ndx'] ?? 0);
 				$desc = $this->rowDescriptor($oldRow);
 				$this->err("Failed {$this->entityLabel()} (old ndx={$oldNdx}"
@@ -90,15 +113,20 @@ abstract class BaseExchangeRunner extends ImportRunner
 				}
 			}
 		}
+		return true;
+	}
 
+	/**
+	 * @param array{created:int,updated:int,skipped:int,failed:int} $stats
+	 */
+	protected function printDone(array $stats): void
+	{
 		$this->info("");
 		$this->info(sprintf(
 			"Done %s: created=%d, updated=%d, skipped=%d, failed=%d",
 			$this->entityLabel(),
 			$stats['created'], $stats['updated'], $stats['skipped'], $stats['failed'],
 		));
-
-		return $stats['failed'] === 0;
 	}
 
 	/**
