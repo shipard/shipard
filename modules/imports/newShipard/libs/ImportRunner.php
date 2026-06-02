@@ -37,13 +37,15 @@ abstract class ImportRunner
 
 	// ── Output helpers ───────────────────────────────────────────
 
-	protected function info(string $msg): void { echo $msg . "\n"; }
-	protected function ok(string $msg): void   { echo "✓ " . $msg . "\n"; }
-	protected function warn(string $msg): void { echo "! " . $msg . "\n"; }
-	protected function err(string $msg): void  { echo "✗ " . $msg . "\n"; }
+	protected function logger(): Logger { return $this->context->logger; }
+
+	protected function info(string $msg): void { $this->logger()->line($msg); }
+	protected function ok(string $msg): void   { $this->logger()->line("✓ " . $msg); }
+	protected function warn(string $msg): void { $this->logger()->line("! " . $msg); }
+	protected function err(string $msg): void  { $this->logger()->line("✗ " . $msg); }
 	protected function debug(string $msg): void
 	{
 		if ($this->isVerbose())
-			echo "[debug] " . $msg . "\n";
+			$this->logger()->line("[debug] " . $msg);
 	}
 }

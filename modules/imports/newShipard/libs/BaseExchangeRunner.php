@@ -260,8 +260,8 @@ abstract class BaseExchangeRunner extends ImportRunner
 	 */
 	protected function dumpJson(string $label, array $data): void
 	{
-		echo "── {$label} ──\n";
-		echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
+		$this->logger()->block("── {$label} ──\n"
+			. json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 	}
 
 	/**

@@ -10,6 +10,7 @@ class ImportApp
 	private ?ImportConfig $config = null;
 	private ?HttpClient $httpClient = null;
 	private ?LocalIdMap $idMap = null;
+	private ?Logger $logger = null;
 
 	public function __construct(\Shipard\CLI\Application $app)
 	{
@@ -62,8 +63,11 @@ class ImportApp
 		);
 
 		$this->idMap = new LocalIdMap(__APP_DIR__ . '/import-newShipard.sqlite');
+		$this->logger = new Logger(__APP_DIR__ . '/log/import-' . date('Ymd-His') . '.log');
 
-		return $this->dispatch($subcommand);
+		$ok = $this->dispatch($subcommand);
+		$this->logger->close();
+		return $ok;
 	}
 
 	private function dispatch(string $subcommand): bool
@@ -108,6 +112,7 @@ class ImportApp
 			$this->config,
 			$this->httpClient,
 			$this->idMap,
+			$this->logger,
 		);
 	}
 
