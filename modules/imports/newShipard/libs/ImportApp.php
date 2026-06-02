@@ -63,7 +63,25 @@ class ImportApp
 			retryDelayMs: $this->config->retryDelayMs(),
 		);
 
-		$this->idMap = new LocalIdMap(__APP_DIR__ . '/import-newShipard.sqlite');
+		$sqlitePath = __APP_DIR__ . '/import-newShipard.sqlite';
+
+		// reset: subkomand 'reset' smaže mapu a skončí; flag --reset smaže a
+		// pokračuje zvoleným subkomandem (čistá mapa pro daný běh).
+		$wantsReset = ($subcommand === 'reset') || (bool) $this->app->arg('reset');
+		if ($wantsReset)
+		{
+			// WAL/SHM je nutné smazat taky (SQLite v WAL módu), jinak zůstanou zbytky.
+			foreach ([$sqlitePath, $sqlitePath . '-wal', $sqlitePath . '-shm'] as $f)
+				if (is_file($f)) @unlink($f);
+			echo "! Local id map reset (deleted {$sqlitePath}).\n";
+			echo "! POZOR: idempotence je pryč — re-import do neprázdného cílového DS\n";
+			echo "!        může vytvořit duplikáty (business-key match nemusí vše zachytit).\n";
+
+			if ($subcommand === 'reset')
+				return true;   // jen reset, nic dál (Logger se nevytváří)
+		}
+
+		$this->idMap = new LocalIdMap($sqlitePath);   // čerstvá mapa
 		$this->logger = new Logger(__APP_DIR__ . '/log/import-' . date('Ymd-His') . '.log');
 		$this->stats = new ImportStats();
 
