@@ -99,8 +99,9 @@ class ImportApp
 			// Phase 05 — docs
 			case 'docs':              return (new runners\DocsRunner($this->context()))->run();
 
-			// Following subcommands will be wired in later phases:
-			//   case 'all':           → orchestrate codebooks → persons → items → docs
+			// Phase 06 — orchestrator ('reset' se odbaví v run() před LocalIdMap,
+			// sem se nedostane).
+			case 'all':               return (new runners\AllRunner($this->context()))->run();
 		}
 
 		echo "Unknown subcommand: '{$subcommand}'\n\n";
