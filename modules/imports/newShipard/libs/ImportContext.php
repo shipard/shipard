@@ -10,5 +10,6 @@ final class ImportContext
 		public readonly HttpClient $httpClient,
 		public readonly LocalIdMap $idMap,
 		public readonly Logger $logger,
+		public readonly ImportStats $stats,
 	) {}
 }

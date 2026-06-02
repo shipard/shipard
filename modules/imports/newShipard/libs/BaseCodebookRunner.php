@@ -66,11 +66,13 @@ abstract class BaseCodebookRunner extends ImportRunner
 			{
 				$result = $this->processRow($oldRow, $crud);
 				$stats[$result['status']]++;
+				$this->context->stats->add($this->entityLabel(), $result['status']);
 				$this->logRow($oldRow, $result);
 			}
 			catch (HttpException $e)
 			{
 				$stats['failed']++;
+				$this->context->stats->add($this->entityLabel(), 'failed');
 				$oldNdx = (int) ($oldRow['ndx'] ?? 0);
 				$this->err("Failed {$this->entityLabel()} (old ndx={$oldNdx}): " . $e->getMessage());
 				if (!$this->isContinueOnError())

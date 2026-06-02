@@ -11,6 +11,7 @@ class ImportApp
 	private ?HttpClient $httpClient = null;
 	private ?LocalIdMap $idMap = null;
 	private ?Logger $logger = null;
+	private ?ImportStats $stats = null;
 
 	public function __construct(\Shipard\CLI\Application $app)
 	{
@@ -64,6 +65,7 @@ class ImportApp
 
 		$this->idMap = new LocalIdMap(__APP_DIR__ . '/import-newShipard.sqlite');
 		$this->logger = new Logger(__APP_DIR__ . '/log/import-' . date('Ymd-His') . '.log');
+		$this->stats = new ImportStats();
 
 		$ok = $this->dispatch($subcommand);
 		$this->logger->close();
@@ -113,6 +115,7 @@ class ImportApp
 			$this->httpClient,
 			$this->idMap,
 			$this->logger,
+			$this->stats,
 		);
 	}
 
