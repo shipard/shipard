@@ -15,7 +15,8 @@ starého Shipardu do nového Shipardu přes HTTPS REST API.
 | 04 | [04-items.md](04-items.md) | ✅ Hotovo | Položky přes `/_exchange/items/item/apply`. |
 | 05 | [05-docs.md](05-docs.md) | ✅ Hotovo | Doklady přes `/_exchange/docs/document/apply`. S filtrem `--from` / `--to` na `dateAccounting`. MVP: faktury (invni/invno). Prerekvizita: označená vlastní firma (`is_own=1`). |
 | 05b | [05b-doc-numbers.md](05b-doc-numbers.md) | ✅ Hotovo | Import-mód čísla dokladu — parser pořadí z `docNumber` (řízený formulí), `applyOptions.importNumber` + `importOwnBankAccount`, sjednocení obou směrů na vložení rovnou na cílový stav, odstranění post-apply PATCHe. Counter naváže pro ostrý provoz. Prerekvizita: import-mód v novém Shipardu. |
-| 06 | (TBD) | Plán | Polish — `all` orchestrátor (codebooks + persons + items + docs), hromadné statistiky, wrapper script pro UX, retry logic, případné UI feedback. |
+| 06a | [06a-orchestrator.md](06a-orchestrator.md) | ✅ Hotovo | Orchestrátor `all` (codebooks → persons → items → docs), logování do souboru (`log/import-<ts>.log`), souhrnné statistiky, `reset` / `--reset` (smazání SQLite mapy) a chunkování dokladů po měsíčních úsecích (`--chunk-months`, řeší paměť u desetitisíců dokladů). `--from`/`--to` přes `all` omezí jen doklady. |
+| 06b | (TBD) | Plán | Re-run — `--force-reimport=<entity>` (smaže mapping jen pro jednu entitu, vynutí re-import bez resetu celé mapy). Navazuje na 06a. |
 
 PRDs pro fáze 03–06 vznikají postupně po dokončení předchozí fáze, aby
 reflektovaly skutečnost po implementaci.
