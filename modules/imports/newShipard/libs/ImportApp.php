@@ -167,6 +167,10 @@ class ImportApp
 		echo "    docs              Documents (invoices invni/invno) via exchange flow.\n";
 		echo "                      Requires a flagged own company (is_own=1) in target.\n";
 		echo "\n";
+		echo "  Phase 06 — orchestrator:\n";
+		echo "    all               Run codebooks → persons → items → docs in order.\n";
+		echo "    reset             Delete the local id map (import-newShipard.sqlite) and exit.\n";
+		echo "\n";
 		echo "Common options:\n";
 		echo "  --verbose, -v        More verbose output (HTTP + per-row debug).\n";
 		echo "  --dry-run            Do not perform writes against the target.\n";
@@ -176,9 +180,11 @@ class ImportApp
 		echo "  --dump-payload       Print the canonical JSON sent to the exchange apply\n";
 		echo "                       (exchange runners: persons/items/docs). Failed rows dump\n";
 		echo "                       payload + response body automatically.\n";
-		echo "  --from=YYYY-MM-DD    Filter docs by accounting date (>=). 'docs' only.\n";
-		echo "  --to=YYYY-MM-DD      Filter docs by accounting date (<=). 'docs' only.\n";
+		echo "  --from=YYYY-MM-DD    Filter docs by accounting date (>=). 'docs'/'all' (limits docs only).\n";
+		echo "  --to=YYYY-MM-DD      Filter docs by accounting date (<=). 'docs'/'all' (limits docs only).\n";
 		echo "  --target-state=10    Import docs as draft (10) instead of confirmed (20). 'docs' only.\n";
+		echo "  --chunk-months=N     Document import chunk size in months (default 1). 'docs'/'all'.\n";
+		echo "  --reset              Delete the local id map before running (clean re-import).\n";
 		echo "\n";
 		return true;
 	}
