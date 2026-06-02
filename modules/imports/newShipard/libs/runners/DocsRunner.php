@@ -4,6 +4,7 @@ namespace imports\newShipard\libs\runners;
 
 use imports\newShipard\libs\BaseExchangeRunner;
 use imports\newShipard\libs\CrudClient;
+use imports\newShipard\libs\ExchangeClient;
 use imports\newShipard\libs\HttpException;
 use imports\newShipard\libs\LocalIdMap;
 
@@ -87,6 +88,15 @@ final class DocsRunner extends BaseExchangeRunner
 	 */
 	private const VAT_CODE_DROP = ['EUCZ000', 'EUCZ113'];
 
+	/**
+	 * Hranice aktuálního časového úseku (chunkování). Když jsou nastaveny,
+	 * sourceQuery() je preferuje před globálními --from/--to argumenty. Mezi
+	 * úseky run() přepisuje a $rows uvolňuje — drží paměť na úrovni jednoho
+	 * měsíce místo celého rozsahu.
+	 */
+	private ?string $chunkFrom = null;
+	private ?string $chunkTo = null;
+
 	protected function entityType(): string   { return LocalIdMap::ENTITY_DOC; }
 	protected function exchangeFlow(): string { return 'docs'; }
 	protected function exchangeType(): string { return 'document'; }
@@ -108,7 +118,111 @@ final class DocsRunner extends BaseExchangeRunner
 			$this->err("  UPDATE base_persons_persons SET is_own = 1 WHERE company_id = '<your-ICO>';");
 			return false;
 		}
-		return parent::run();
+
+		$this->info("Importing documents via exchange flow...");
+
+		[$from, $to] = $this->effectiveDateRange();
+		if ($from === null || $to === null)
+		{
+			$this->info("No documents to import (empty date range).");
+			return true;
+		}
+
+		$chunkMonths = max(1, (int) ($this->app()->arg('chunk-months') ?? 1));
+		$chunks = $this->monthlyChunks($from, $to, $chunkMonths);
+		$this->info("Range {$from} … {$to} in " . count($chunks) . " chunk(s) of {$chunkMonths} month(s).");
+
+		$exchange = new ExchangeClient($this->http());
+		$stats = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 0];
+		$limit = (int) ($this->app()->arg('limit') ?? 0);
+
+		foreach ($chunks as [$cFrom, $cTo])
+		{
+			$this->chunkFrom = $cFrom;
+			$this->chunkTo   = $cTo;
+			$rows = $this->fetchSourceRows();
+
+			if ($limit > 0)
+			{
+				$remaining = $limit - array_sum($stats);
+				if ($remaining <= 0)
+					break;
+				if (count($rows) > $remaining)
+					$rows = array_slice($rows, 0, $remaining);
+			}
+
+			$this->info("— chunk {$cFrom} … {$cTo}: " . count($rows) . " docs");
+			if (!$this->processRows($rows, $exchange, $stats))
+				return false;
+
+			unset($rows);   // uvolnit před dalším úsekem
+		}
+
+		$this->printDone($stats);
+		return $stats['failed'] === 0;
+	}
+
+	/**
+	 * Efektivní rozsah účetních dat k importu. Když uživatel nezadal
+	 * --from/--to, vezme se MIN/MAX(dateAccounting) napříč fakturami; zadané
+	 * argumenty rozsah jen ohraničí (max(from, dataMin) … min(to, dataMax)).
+	 * Vrací [null, null] když nejsou žádné doklady nebo je průnik prázdný.
+	 *
+	 * @return array{0: ?string, 1: ?string}
+	 */
+	private function effectiveDateRange(): array
+	{
+		$r = $this->db()->query(
+			'SELECT MIN(h.[dateAccounting]) AS minD, MAX(h.[dateAccounting]) AS maxD'
+			. ' FROM [e10doc_core_heads] h'
+			. ' WHERE h.[docState] != %i', 9800,
+			' AND h.[docType] IN %in', array_keys(self::DOC_TYPE_MAP),
+		)->fetch();
+
+		$dataMin = $this->dateToString($r['minD'] ?? null);
+		$dataMax = $this->dateToString($r['maxD'] ?? null);
+		if ($dataMin === null || $dataMax === null)
+			return [null, null];
+
+		$argFrom = $this->dateArg('from');
+		$argTo   = $this->dateArg('to');
+
+		$from = ($argFrom !== null && $argFrom > $dataMin) ? $argFrom : $dataMin;
+		$to   = ($argTo   !== null && $argTo   < $dataMax) ? $argTo   : $dataMax;
+
+		// Lexikografické porovnání YYYY-MM-DD = chronologické.
+		if ($from > $to)
+			return [null, null];
+
+		return [$from, $to];
+	}
+
+	/**
+	 * Rozseká rozsah [from, to] na úseky o délce $months. Hranice jsou
+	 * zarovnané na začátky měsíců (po prvním, případně částečném úseku);
+	 * první úsek začíná přesně na $from, poslední končí na $to.
+	 *
+	 * @return array<int, array{0: string, 1: string}>
+	 */
+	private function monthlyChunks(string $from, string $to, int $months): array
+	{
+		$chunks = [];
+		$cursor = new \DateTimeImmutable($from);
+		$end    = new \DateTimeImmutable($to);
+
+		while ($cursor <= $end)
+		{
+			$monthStart   = $cursor->modify('first day of this month');
+			$nextBoundary = $monthStart->modify("+{$months} months");
+			$chunkEnd     = $nextBoundary->modify('-1 day');
+			if ($chunkEnd > $end)
+				$chunkEnd = $end;
+
+			$chunks[] = [$cursor->format('Y-m-d'), $chunkEnd->format('Y-m-d')];
+			$cursor = $chunkEnd->modify('+1 day');
+		}
+
+		return $chunks;
 	}
 
 	private function hasOwnCompany(): bool
@@ -138,9 +252,11 @@ final class DocsRunner extends BaseExchangeRunner
 			' AND h.[docType] IN %in', $docTypes,     // jen faktury (MVP)
 		];
 
-		// Filtr období na dateAccounting (kompletní fiskální období).
-		$from = $this->dateArg('from');
-		$to   = $this->dateArg('to');
+		// Filtr období na dateAccounting. Při chunkování run() nastaví
+		// chunkFrom/chunkTo (úsek), které mají přednost před globálními
+		// --from/--to argumenty.
+		$from = $this->chunkFrom ?? $this->dateArg('from');
+		$to   = $this->chunkTo   ?? $this->dateArg('to');
 		if ($from !== null)
 		{
 			$q[] = ' AND h.[dateAccounting] >= %d';
