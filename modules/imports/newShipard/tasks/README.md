@@ -14,6 +14,7 @@ starého Shipardu do nového Shipardu přes HTTPS REST API.
 | 03a | [03a-rate-limiting.md](03a-rate-limiting.md) | ✅ Hotovo | Rate limiting v HTTP klientu — respect 429 `_retry_after`, proaktivní throttling, exp. backoff pro 5xx/network. Patch cross-cutting pro všechny fáze. |
 | 04 | [04-items.md](04-items.md) | ✅ Hotovo | Položky přes `/_exchange/items/item/apply`. |
 | 05 | [05-docs.md](05-docs.md) | ✅ Hotovo | Doklady přes `/_exchange/docs/document/apply`. S filtrem `--from` / `--to` na `dateAccounting`. MVP: faktury (invni/invno). Prerekvizita: označená vlastní firma (`is_own=1`). |
+| 05b | [05b-doc-numbers.md](05b-doc-numbers.md) | ✅ Hotovo | Import-mód čísla dokladu — parser pořadí z `docNumber` (řízený formulí), `applyOptions.importNumber` + `importOwnBankAccount`, sjednocení obou směrů na vložení rovnou na cílový stav, odstranění post-apply PATCHe. Counter naváže pro ostrý provoz. Prerekvizita: import-mód v novém Shipardu. |
 | 06 | (TBD) | Plán | Polish — `all` orchestrátor (codebooks + persons + items + docs), hromadné statistiky, wrapper script pro UX, retry logic, případné UI feedback. |
 
 PRDs pro fáze 03–06 vznikají postupně po dokončení předchozí fáze, aby
@@ -25,6 +26,7 @@ reflektovaly skutečnost po implementaci.
 |---|---|---|
 | `nov_shipard:tasks/exchange-format-items-phase1.md` | Hotovo | Exchange formát pro Položky — používá Fáze 04. |
 | `nov_shipard:tasks/api-key-cli.md` | Hotovo | Generický CLI pro tvorbu API klíčů — používá importer pro autentizaci. |
+| `nov_shipard:tasks/docs-import-number-mode.md` | Hotovo | Import-mód čísla dokladu (`applyOptions.importNumber` + counter sync) a oprava bank-validace přijatých faktur. Prerekvizita Fáze 05b. |
 
 ## Spuštění
 

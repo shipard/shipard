@@ -23,8 +23,11 @@ use imports\newShipard\libs\LocalIdMap;
  *     pre-flight check v run().
  *   - autoCreateMode='safe' vytvoří partnera jen s company_id; jinak se
  *     doklad přeskočí (unresolved_required → 422). Známé omezení.
- *   - docNumber → partner_doc_number; vlastní doc_number generuje
- *     number_series. Pro vydané faktury PATCHneme původní číslo (afterApplied).
+ *   - Import-mód čísla (Fáze 05b): klient pošle applyOptions.importNumber
+ *     {docNumber, sequenceNumber}, applier zapíše číslo+sekvenci verbatim,
+ *     přeskočí assignDocumentNumber/placeholder a synchronizuje counter přes
+ *     GREATEST. Vlastní bank účet vydaných faktur jde v importOwnBankAccount.
+ *     Obě směry se vkládají rovnou na cílový stav (žádný post-apply PATCH).
  */
 final class DocsRunner extends BaseExchangeRunner
 {
@@ -66,9 +69,6 @@ final class DocsRunner extends BaseExchangeRunner
 		2 => 'card',
 		3 => 'cashOnDelivery',
 	];
-
-	/** Tabulka v novém Shipardu pro post-apply PATCH (číslo vydané faktury). */
-	private const NEW_HEADS_TABLE = 'docs_core_heads';
 
 	/**
 	 * Staré kódy DPH, které nový Shipard nezná (vynechány při migraci
@@ -224,6 +224,48 @@ final class DocsRunner extends BaseExchangeRunner
 			return null;
 		}
 
+		// Import-mód čísla (Fáze 05b): pořadí parsujeme z původního docNumber,
+		// applier zapíše číslo+sekvenci a synchronizuje counter (GREATEST).
+		$sequence  = $this->parseSequenceNumber($oldRow);
+		$docNumber = $this->emptyToNull($oldRow['docNumber'] ?? null);
+
+		// Vydané faktury (invno) potřebují při stavu 20+ vlastní bank účet.
+		// Bez dohledatelného účtu spadnou na koncept (10) + warning.
+		$ownBankId   = null;
+		$targetState = $this->finalDocState();   // 20 (nebo --target-state=10)
+		if ($oldDocType === 'invno' && $targetState >= 20)
+		{
+			$ownBankId = $this->resolveOwnBankAccount($oldRow);
+			if ($ownBankId === null)
+			{
+				$this->warn("doc {$oldNdx}: own bank account unresolved (myBankAccount); "
+					. "importing issued invoice as draft (docState 10)");
+				$targetState = 10;
+			}
+		}
+
+		$applyOptions = [
+			'targetDocState'        => $targetState,
+			'autoCreateMode'        => 'safe',
+			'createMissingEntities' => true,
+			'rejectOnIssues'        => ['error'],
+		];
+
+		// Číslo posíláme jen když máme obojí a cílíme na potvrzený stav.
+		// Koncept (10) číslo nemá — applier ho přidělí standardně při povýšení.
+		if ($docNumber !== null && $sequence !== null && $targetState >= 20)
+			$applyOptions['importNumber'] = [
+				'docNumber'      => $docNumber,
+				'sequenceNumber' => $sequence,
+			];
+		if ($ownBankId !== null)
+			$applyOptions['importOwnBankAccount'] = $ownBankId;
+
+		// partner_doc_number = "číslo od partnera". U vydaných faktur je docNumber
+		// naše číslo (jde do doc_number přes importNumber) → top-level necháme null.
+		// U přijatých faktur staré docNumber zůstává naše evidenční → partner_doc_number.
+		$partnerDocNumber = $oldDocType === 'invno' ? null : $docNumber;
+
 		return [
 			'format'        => 'shpd.docs.document',
 			'formatVersion' => '1.0',
@@ -234,7 +276,7 @@ final class DocsRunner extends BaseExchangeRunner
 			],
 
 			'docType'   => $docType,
-			'docNumber' => $this->emptyToNull($oldRow['docNumber'] ?? null),
+			'docNumber' => $partnerDocNumber,
 			'docText'   => $this->emptyToNull($oldRow['title'] ?? null),
 			'selfParty' => $selfParty,
 
@@ -281,13 +323,117 @@ final class DocsRunner extends BaseExchangeRunner
 				'totalRounding' => $this->moneyOrNull($oldRow['rounding'] ?? null),
 			],
 
-			'applyOptions' => [
-				'targetDocState'        => $this->insertDocState($oldDocType),
-				'autoCreateMode'        => 'safe',
-				'createMissingEntities' => true,
-				'rejectOnIssues'        => ['error'],
-			],
+			'applyOptions' => $applyOptions,
 		];
+	}
+
+	/**
+	 * Pořadové číslo (sequence) z původního docNumber, řízené formulí řady.
+	 * Replikuje prefix/suffix část makeDocNumber: vyhodnotí tokeny formule pro
+	 * tento doklad, ořízne vyhodnocený prefix zleva a suffix zprava — zbytek je
+	 * počítadlo. Fallback: poslední souvislá skupina číslic (s warningem).
+	 * Vrací null, když nelze parsovat (s warningem).
+	 */
+	private function parseSequenceNumber(array $oldRow): ?int
+	{
+		$docNumber = $this->emptyToNull($oldRow['docNumber'] ?? null);
+		if ($docNumber === null)
+			return null;
+
+		$docType = (string) ($oldRow['docType'] ?? '');
+		$formula = (string) ($this->app()->cfgItem('e10.options.docNumbers.' . $docType, '') ?: '');
+		if ($formula === '')
+			$formula = (string) ($this->app()->cfgItem('e10.docs.types.' . $docType . '.docNumber', '') ?: '');
+		if ($formula === '')
+			$formula = '%D%r%C%4';
+
+		// Counter token (%2–%6) rozdělí formuli na prefix | counter | suffix.
+		// Greedy levá část vezme poslední counter token, kdyby jich bylo víc.
+		if (preg_match('/^(.*)(%[2-6])(.*)$/', $formula, $m))
+		{
+			$prefix = $this->evaluateNumberTokens($m[1], $oldRow);
+			$suffix = $this->evaluateNumberTokens($m[3], $oldRow);
+
+			// Prefix/suffix musí být plně vyhodnocené — zbylý %token (např.
+			// %A/%B/%W, které neznáme) signalizuje neshodu → fallback níže.
+			if (strpos($prefix, '%') === false && strpos($suffix, '%') === false)
+			{
+				$core = $docNumber;
+				$matched = true;
+				if ($prefix !== '')
+				{
+					if (str_starts_with($core, $prefix))
+						$core = substr($core, strlen($prefix));
+					else
+						$matched = false;
+				}
+				if ($matched && $suffix !== '')
+				{
+					if (str_ends_with($core, $suffix))
+						$core = substr($core, 0, -strlen($suffix));
+					else
+						$matched = false;
+				}
+				// intval zahodí leading zeros i případné přetečení šířky paddingu.
+				if ($matched && $core !== '' && ctype_digit($core))
+					return (int) $core;
+			}
+		}
+
+		// Fallback: poslední souvislá skupina číslic z docNumber.
+		if (preg_match('/(\d+)(?!.*\d)/', $docNumber, $mm))
+		{
+			$this->warn("doc {$oldRow['ndx']}: sequence parsed via fallback "
+				. "(trailing digits) from docNumber '{$docNumber}' → {$mm[1]}");
+			return (int) $mm[1];
+		}
+
+		$this->warn("doc {$oldRow['ndx']}: cannot parse sequence from docNumber "
+			. "'{$docNumber}', skipping number import");
+		return null;
+	}
+
+	/**
+	 * Vyhodnotí prefix/suffix tokeny formule (%D %r %C %Y %y %M) konkrétními
+	 * hodnotami daného dokladu — replikuje relevantní část makeDocNumber.
+	 * Tokeny %B/%A/%W (cashBox/bankAccount/warehouse id) ponecháváme
+	 * nevyhodnocené; jejich přítomnost shodí parser na fallback (trailing digits).
+	 */
+	private function evaluateNumberTokens(string $pattern, array $oldRow): string
+	{
+		if ($pattern === '')
+			return '';
+
+		$docType = (string) ($oldRow['docType'] ?? '');
+		$dateAcc = $oldRow['dateAccounting'] ?? null;
+		$dt = $dateAcc instanceof \DateTimeInterface
+			? $dateAcc
+			: (is_string($dateAcc) && $dateAcc !== '' && !str_starts_with($dateAcc, '0000')
+				? new \DateTime($dateAcc) : null);
+
+		$docIdCode = (string) $this->app()->cfgItem('e10.docs.types.' . $docType . '.docIdCode', '');
+
+		$dbCounter = (int) ($oldRow['dbCounter'] ?? 0);
+		$dbCntrId  = (string) $this->app()->cfgItem(
+			'e10.docs.dbCounters.' . $docType . '.' . $dbCounter . '.docKeyId', '1');
+
+		$mark = '';
+		$fyNdx = (int) ($oldRow['fiscalYear'] ?? 0);
+		if ($fyNdx > 0)
+		{
+			$r = $this->db()->query('SELECT [mark] FROM [e10doc_base_fiscalyears] WHERE [ndx] = %i', $fyNdx)->fetch();
+			if ($r !== null)
+				$mark = (string) ($r['mark'] ?? '');
+		}
+
+		return strtr($pattern, [
+			'%D' => $docIdCode,
+			'%r' => $mark,
+			'%C' => $dbCntrId,
+			'%Y' => $dt ? $dt->format('Y') : '',
+			'%y' => $dt ? $dt->format('y') : '',
+			'%M' => $dt ? $dt->format('m') : '',
+		]);
 	}
 
 	/**
@@ -514,59 +660,10 @@ final class DocsRunner extends BaseExchangeRunner
 	}
 
 	/**
-	 * docState pro samotný apply (insert). Vydané faktury (invno) vyžadují při
-	 * stavu 20+ vlastní bank_account (IssuedInvoiceDocument::validate), který
-	 * exchange formát neumí přenést → vkládáme je jako koncept (10) a do
-	 * cílového stavu je povýšíme v afterApplied s doplněným účtem.
-	 */
-	private function insertDocState(string $oldDocType): int
-	{
-		if ($oldDocType === 'invno')
-			return 10;
-		return $this->finalDocState();
-	}
-
-	/**
-	 * Post-apply operace pro vydané faktury (invno):
-	 *   1. Povýšit koncept (10) → cílový stav (20). Při stavu 20+ je povinný
-	 *      vlastní bank_account → dohledáme ho ze starého myBankAccount přes
-	 *      LocalIdMap (Fáze 02 bank-accounts) a pošleme spolu s docState.
-	 *      Bez dohledatelného účtu necháme fakturu konceptem (10) + warning.
-	 *   2. Zachovat původní číslo. Applier mapuje canonical.docNumber →
-	 *      partner_doc_number a vlastní doc_number přiděluje number_series až
-	 *      při přechodu 10→20 — proto až PO povýšení přepíšeme na původní.
-	 *
-	 * Přijaté faktury (invni) řeší applier rovnou (vkládá na cílový stav, naše
-	 * docNumber jde správně do partner_doc_number) → žádný post-apply.
-	 */
-	protected function afterApplied(array $oldRow, int $newId, CrudClient $crud): void
-	{
-		if ((string) ($oldRow['docType'] ?? '') !== 'invno')
-			return;
-
-		// 1. Povýšení 10 → cílový stav (přidělí doc_number z number_series).
-		$target = $this->finalDocState();
-		if ($target >= 20)
-		{
-			$bankId = $this->resolveOwnBankAccount($oldRow);
-			if ($bankId !== null)
-				$this->tryPatch($crud, $newId, ['bank_account' => $bankId, 'docState' => $target],
-					$oldRow, "confirm → docState {$target} (bank_account {$bankId})");
-			else
-				$this->warn("doc {$oldRow['ndx']}: own bank account unresolved (myBankAccount); "
-					. "leaving issued invoice as draft (docState 10)");
-		}
-
-		// 2. Přepis vygenerovaného čísla na původní (až po povýšení).
-		$origNumber = $this->emptyToNull($oldRow['docNumber'] ?? null);
-		if ($origNumber !== null)
-			$this->tryPatch($crud, $newId, ['doc_number' => $origNumber],
-				$oldRow, "restore doc_number '{$origNumber}'");
-	}
-
-	/**
 	 * Vlastní bankovní účet z hlavičky (myBankAccount → e10doc.base.bankaccounts)
 	 * namapovaný na nový economy_codebooks_bank_accounts přes LocalIdMap (Fáze 02).
+	 * Vydané faktury ho potřebují při stavu 20+ (IssuedInvoiceDocument::validate);
+	 * importér ho předá v applyOptions.importOwnBankAccount.
 	 */
 	private function resolveOwnBankAccount(array $oldRow): ?int
 	{
@@ -574,33 +671,6 @@ final class DocsRunner extends BaseExchangeRunner
 		if ($myBankNdx <= 0)
 			return null;
 		return $this->idMap()->lookup(LocalIdMap::ENTITY_BANK_ACCOUNT, $myBankNdx);
-	}
-
-	/**
-	 * Generic CRUD PATCH na docs_core_heads — non-fatal. Selhání (např. unique
-	 * konflikt na doc_number per number_series/fiscal_year) jen logujeme; doklad
-	 * zůstává uložený v dosaženém stavu.
-	 *
-	 * @param array<string, mixed> $patch
-	 */
-	private function tryPatch(CrudClient $crud, int $newId, array $patch, array $oldRow, string $what): void
-	{
-		if ($this->isDryRun())
-		{
-			$this->debug("DRY-RUN: would PATCH " . self::NEW_HEADS_TABLE . "/{$newId} ({$what})");
-			return;
-		}
-
-		try
-		{
-			$crud->patch(self::NEW_HEADS_TABLE, $newId, $patch);
-			$this->debug("doc {$oldRow['ndx']}: PATCH {$what}");
-		}
-		catch (HttpException $e)
-		{
-			$this->warn("doc {$oldRow['ndx']}: PATCH {$what} failed "
-				. "(HTTP {$e->statusCode}: {$e->getMessage()})");
-		}
 	}
 
 	// ── Helpers (utility) ──────────────────────────────────────────────────
