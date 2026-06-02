@@ -62,12 +62,22 @@ final class DocsRunner extends BaseExchangeRunner
 		2 => 'thirdCountry',  // zahraničí
 	];
 
-	/** paymentMethod (hlavička) → canonical payment.method. Neznámé → bankTransfer. */
+	/**
+	 * Starý paymentMethod (e10.docs.paymentMethods, viz
+	 * e10pro/install/docs-core/config/e10.docs.paymentMethods.json) → canonical
+	 * payment.method. Pozor: starý 0 = "Převodním příkazem", 1 = "Hotově"
+	 * (NE naopak). PayPal (11) mapujeme na kartu — taky nemá bankovní účet,
+	 * takže bankTransfer by byl zavádějící. Ostatní starší kódy (Fakturou,
+	 * Inkasem, Šekem, …) nemají přímý protějšek v novém formátu (cash/
+	 * bankTransfer/card/cashOnDelivery/setOff) → fallback na bankTransfer.
+	 * Neznámé → bankTransfer.
+	 */
 	private const PAYMENT_METHOD_MAP = [
-		0 => 'cash',
-		1 => 'bankTransfer',
-		2 => 'card',
-		3 => 'cashOnDelivery',
+		0  => 'bankTransfer',    // Převodním příkazem
+		1  => 'cash',            // Hotově
+		2  => 'card',            // Kartou
+		3  => 'cashOnDelivery',  // Dobírka
+		11 => 'card',            // PayPal (bez bankovního účtu → karta)
 	];
 
 	/**
