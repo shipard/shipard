@@ -18,6 +18,8 @@ final class LocalIdMap
 	public const ENTITY_PERSON           = 'person';
 	public const ENTITY_ITEM             = 'item';
 	public const ENTITY_DOC              = 'doc';
+	public const ENTITY_MAILBOX          = 'mailbox';
+	public const ENTITY_MESSAGE          = 'message';
 
 	private \PDO $pdo;
 

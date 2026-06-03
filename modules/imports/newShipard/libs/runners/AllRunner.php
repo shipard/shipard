@@ -6,18 +6,20 @@ use imports\newShipard\libs\ImportRunner;
 
 /**
  * Orchestrátor celého importu — spustí fáze v závislostně správném pořadí
- * (číselníky → osoby → položky → doklady) jedním příkazem a na konci vypíše
- * souhrn z context->stats.
+ * (číselníky → osoby → položky → doklady → pošta) jedním příkazem a na konci
+ * vypíše souhrn z context->stats.
  *
  * Závislosti: doklady potřebují osoby (partneři), položky (řádky) i číselníky
- * (number_series / vat / bank účty), proto jdou jako poslední.
+ * (number_series / vat / bank účty); pošta navazuje na doklady (vazba
+ * zpráva↔doklad přes ENTITY_DOC), proto jde úplně poslední.
  *
  * --continue-on-error: pokračuje i po selhání fáze (s vyšší chybovostí
  * navazujících fází); jinak po prvním selhání abortuje a vypíše souhrn.
  *
- * --from/--to: žádná speciální logika — argumenty jsou globální, čte je jen
- * DocsRunner::sourceQuery(). `all --from=… --to=…` tedy naimportuje všechny
- * číselníky/osoby/položky, ale jen doklady daného období.
+ * --from/--to: žádná speciální logika — argumenty jsou globální. Čte je
+ * DocsRunner::sourceQuery() (dateAccounting) i MailRunner (dateIncoming).
+ * `all --from=… --to=…` tedy naimportuje všechny číselníky/osoby/položky, ale
+ * jen doklady a poštu daného období.
  */
 final class AllRunner extends ImportRunner
 {
@@ -31,6 +33,7 @@ final class AllRunner extends ImportRunner
 			['Persons',       fn() => (new PersonsRunner($this->context))->run()],
 			['Items',         fn() => (new ItemsRunner($this->context))->run()],
 			['Documents',     fn() => (new DocsRunner($this->context))->run()],
+			['Mail',          fn() => (new MailRunner($this->context))->run()],
 		];
 
 		foreach ($phases as [$label, $fn])

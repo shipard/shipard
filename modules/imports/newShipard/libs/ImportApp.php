@@ -117,6 +117,9 @@ class ImportApp
 			// Phase 05 — docs
 			case 'docs':              return (new runners\DocsRunner($this->context()))->run();
 
+			// Phase 07 — mail
+			case 'mail':              return (new runners\MailRunner($this->context()))->run();
+
 			// Phase 06 — orchestrator ('reset' se odbaví v run() před LocalIdMap,
 			// sem se nedostane).
 			case 'all':               return (new runners\AllRunner($this->context()))->run();
@@ -167,8 +170,12 @@ class ImportApp
 		echo "    docs              Documents (invoices invni/invno) via exchange flow.\n";
 		echo "                      Requires a flagged own company (is_own=1) in target.\n";
 		echo "\n";
+		echo "  Phase 07 — mail:\n";
+		echo "    mail              Incoming mail (wkf issues, issueType=1) via /_mail/import.\n";
+		echo "                      Import docs FIRST (doc links). Best-effort linking.\n";
+		echo "\n";
 		echo "  Phase 06 — orchestrator:\n";
-		echo "    all               Run codebooks → persons → items → docs in order.\n";
+		echo "    all               Run codebooks → persons → items → docs → mail in order.\n";
 		echo "    reset             Delete the local id map (import-newShipard.sqlite) and exit.\n";
 		echo "\n";
 		echo "Common options:\n";
@@ -180,10 +187,12 @@ class ImportApp
 		echo "  --dump-payload       Print the canonical JSON sent to the exchange apply\n";
 		echo "                       (exchange runners: persons/items/docs). Failed rows dump\n";
 		echo "                       payload + response body automatically.\n";
-		echo "  --from=YYYY-MM-DD    Filter docs by accounting date (>=). 'docs'/'all' (limits docs only).\n";
-		echo "  --to=YYYY-MM-DD      Filter docs by accounting date (<=). 'docs'/'all' (limits docs only).\n";
+		echo "  --from=YYYY-MM-DD    docs: accounting date (>=); mail: dateIncoming (>=). 'docs'/'mail'/'all'.\n";
+		echo "  --to=YYYY-MM-DD      docs: accounting date (<=); mail: dateIncoming (<=). 'docs'/'mail'/'all'.\n";
 		echo "  --target-state=10    Import docs as draft (10) instead of confirmed (20). 'docs' only.\n";
 		echo "  --chunk-months=N     Document import chunk size in months (default 1). 'docs'/'all'.\n";
+		echo "  --require-linked-doc Import only mail messages with a resolvable linked doc. 'mail' only.\n";
+		echo "  --no-attachments     Skip PDF attachment upload for imported mail. 'mail' only.\n";
 		echo "  --reset              Delete the local id map before running (clean re-import).\n";
 		echo "\n";
 		return true;

@@ -46,6 +46,7 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 | `persons`           | ✅ Fáze 03  | Osoby (lidé + firmy) přes exchange applier.          |
 | `items`             | ✅ Fáze 04  | Položky (zboží, služby) přes exchange applier.       |
 | `docs`              | ✅ Fáze 05  | Doklady — faktury (`invni`/`invno`). Viz [Doklady](#doklady). |
+| `mail`              | ✅ Fáze 07  | Došlá pošta (`wkf` issues, `issueType=1`). Viz [Pošta](#pošta). |
 | `all`               | ⏳ Fáze 06  | Orchestrace všech fází v pořadí závislostí.          |
 
 ### Společné options
@@ -63,6 +64,14 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
   vystavení). Nevalidní formát se ignoruje s warningem.
 - `--target-state=10` — importovat doklady jako koncept (docState 10) místo
   výchozího potvrzeno (20).
+
+### Options jen pro `mail`
+
+- `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — filtr období na `dateIncoming`
+  (datum doručení). Stejný parser jako u `docs`.
+- `--require-linked-doc` — importovat jen zprávy s dohledatelným dokladem;
+  obecnou korespondenci přeskočit. Default vypnuto (best-effort).
+- `--no-attachments` — přeskočit upload PDF příloh zpráv (Fáze 07a).
 
 ### Doklady
 
@@ -124,6 +133,51 @@ zkusí vytvořit (`autoCreateMode: safe`), což vede k neúplným záznamům.
 - **Jednotka `none`** — systémová jednotka starého Shipardu pro řádky bez
   jednotky se mapuje na `null` (prázdný sloupec `unit`), aby applier nehlásil
   `unit_not_found`.
+
+### Pošta
+
+Import došlé pošty ze starého Shipardu (`wkf_core_issues`, `issueType=1` =
+Došlá pošta) do nového (`core_mail_incoming_messages`). Ostatní typy issues
+(úkoly, diskuze, …) se ignorují.
+
+**Prerekvizita — endpoint.** Zprávy nelze založit generickým CRUD (`message_id`
+se generuje v `beforeSave`). Import volá dedikovaný `POST /_mail/import`
+nového Shipardu (viz `nov_shipard:tasks/mail-phase4-import-endpoint.md`).
+
+**Pořadí importu:** pošta je **terminální** fáze řetězce
+codebooks → persons → items → **docs → mail**. Doklady se musí importovat
+**před** poštou — vazba zpráva↔doklad se resolvuje přes `LocalIdMap`
+(`ENTITY_DOC`). Pro ostrý import dělej doklady (celý rozsah) před poštou; zprávy
+naimportované před svým dokladem se zpětně nepřelinkují (skip přes
+`ENTITY_MESSAGE`).
+
+**Schránky.** Pro každou sekci (`wkf_base_sections`), do které padá importovaná
+pošta, vznikne schránka `core_mail_mailboxes` (idempotentně přes
+`ENTITY_MAILBOX`). `mailbox_id` = `section.shipardEmailId`, fallback
+`sec-{ndx}`; `email_address` = `{mailbox_id}@imported.invalid`. Plochá struktura
+(strom sekcí se zahazuje), `is_default=false`, `docState=40` (aktivní). Zprávy
+v sekci 0 / bez sekce jdou do default schránky DS.
+
+**Vazba na doklad** je autoritativně v `e10_base_doclinks`
+(`linkId='e10docs-inbox'`, doklad=`src`, zpráva=`dst`; 1 doklad : N zpráv). Více
+vazeb → první + warning. **Best-effort:** zpráva se importuje vždy, i když se
+doklad nedohledá (`target` NULL, počítadlo `unlinked`). `--require-linked-doc`
+takové zprávy přeskočí.
+
+**Mapovaná pole:**
+
+- `primary_type` — navázaná faktura přijatá (`invni`) → `invoiceReceived`,
+  jinak `other`.
+- `docState` — navázaná zpráva → **40** (Zpracovaná), nenavázaná → **10** (Nová).
+- `source_type` — starý `issues.source` → nový: `0`(Ručně)→1, `1`(E-mail)→2,
+  `2`(API)→3, `3`(Test)→1.
+- `sender_email` — `systemInfo` (`email.from[0]` / `webForm.from`) → e-mail
+  autora (osoby, z `e10_base_properties`) → placeholder `unknown@imported.invalid`
+  (validní, projde validací endpointu).
+- `sender_person` — autor zprávy přes `LocalIdMap` (`ENTITY_PERSON`).
+
+**Přílohy** se nahrají k nové zprávě (table_id 303) přes obecný klient Fáze 07a
+(dedup přes SHA-256 — druhý běh → `duplicate`). Vypínač `--no-attachments`.
 
 ### Rate limiting
 
@@ -217,6 +271,7 @@ záznamy přes UI nebo si zaveď distinct kódy.
 - [x] Osoby (Fáze 03).
 - [x] Položky (Fáze 04).
 - [x] Doklady (Fáze 05).
+- [x] Pošta (Fáze 07) — obecný klient příloh (07a) + došlá pošta (07b).
 
 ## Smoke test
 
