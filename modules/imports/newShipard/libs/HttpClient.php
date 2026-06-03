@@ -79,15 +79,83 @@ final class HttpClient
 		}
 	}
 
+	// ── Upload ───────────────────────────────────────────────────────────
+
+	/**
+	 * Multipart upload jednoho souboru. Integrováno s throttling + retry
+	 * (sdílí runWithRetry() + executeRequest() s request()). $fields jsou textová
+	 * pole (table_id, record_id…), $filePath se přiloží jako pole `file` (resp.
+	 * $fileFieldName) přes CURLFile.
+	 *
+	 * @param array<string,scalar> $fields
+	 * @return array  Dekódovaná JSON odpověď (data + případný warning).
+	 * @throws HttpException při 4xx/5xx (kromě retryovatelných) i při chybějícím souboru.
+	 */
+	public function uploadFile(string $path, array $fields, string $filePath, string $fileFieldName = 'file', ?string $clientFileName = null): array
+	{
+		if (!is_file($filePath))
+			throw new HttpException(0, null, "Upload file not found: {$filePath}", null);
+
+		$url = $this->resolveUrl($path);
+
+		// Multipart pole musí být stringy; curl Content-Type s boundary nastaví sám.
+		$textFields = [];
+		foreach ($fields as $k => $v)
+			$textFields[$k] = (string) $v;
+
+		$curlOpts = [
+			CURLOPT_POST       => true,
+			CURLOPT_POSTFIELDS => $textFields + [
+				$fileFieldName => new \CURLFile($filePath, null, $clientFileName ?? basename($filePath)),
+			],
+		];
+
+		// Velká PDF mohou potřebovat vyšší timeout než default (otevřený bod 1).
+		$timeout = max($this->timeout, 60);
+
+		return $this->runWithRetry('POST', $url, $timeout, $curlOpts, $this->baseHeaders());
+	}
+
 	// ── Request flow ────────────────────────────────────────────────────
 
 	private function request(string $method, string $path, ?array $body): array
 	{
+		$url     = $this->resolveUrl($path);
+		$headers = $this->baseHeaders();
+
+		$curlOpts = [CURLOPT_CUSTOMREQUEST => $method];
+		if ($body !== null)
+		{
+			$curlOpts[CURLOPT_POSTFIELDS] = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+			$headers[] = 'Content-Type: application/json';
+		}
+
+		return $this->runWithRetry($method, $url, $this->timeout, $curlOpts, $headers);
+	}
+
+	private function resolveUrl(string $path): string
+	{
 		if ($path === '' || $path[0] !== '/')
 			throw new \InvalidArgumentException("HttpClient path must start with '/', got '{$path}'.");
+		return $this->baseUrl . $path;
+	}
 
-		$url = $this->baseUrl . $path;
+	/** Společné hlavičky pro JSON i multipart (bez Content-Type — ten řeší volající/curl). */
+	private function baseHeaders(): array
+	{
+		return [
+			'Authorization: Bearer ' . $this->apiKey,
+			'Accept: application/json',
+			'User-Agent: shipard-importer/1.0',
+		];
+	}
 
+	/**
+	 * Throttle + retry smyčka okolo jednoho curl pokusu. Sdílené pro JSON
+	 * requesty i multipart upload — dostane hotové curl opts + headers + timeout.
+	 */
+	private function runWithRetry(string $method, string $url, int $timeout, array $curlOpts, array $headers): array
+	{
 		$attempt = 0;
 		while (true)
 		{
@@ -95,7 +163,7 @@ final class HttpClient
 
 			try
 			{
-				return $this->executeRequest($method, $url, $body);
+				return $this->executeRequest($method, $url, $timeout, $curlOpts, $headers);
 			}
 			catch (HttpException $e)
 			{
@@ -119,41 +187,24 @@ final class HttpClient
 
 	/**
 	 * Jeden curl pokus. Bezstavový — bez retry awareness, retry řeší volající.
+	 * Bere připravené curl opts (CUSTOMREQUEST/POST, POSTFIELDS) + hlavičky.
 	 */
-	private function executeRequest(string $method, string $url, ?array $body): array
+	private function executeRequest(string $method, string $url, int $timeout, array $curlOpts, array $headers): array
 	{
-		$headers = [
-			'Authorization: Bearer ' . $this->apiKey,
-			'Accept: application/json',
-			'User-Agent: shipard-importer/1.0',
-		];
-
-		$payload = null;
-		if ($body !== null)
-		{
-			$payload = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-			$headers[] = 'Content-Type: application/json';
-		}
-
 		$ch = curl_init($url);
 		curl_setopt_array($ch, [
 			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_CUSTOMREQUEST  => $method,
-			CURLOPT_TIMEOUT        => $this->timeout,
-			CURLOPT_CONNECTTIMEOUT => min(10, $this->timeout),
+			CURLOPT_TIMEOUT        => $timeout,
+			CURLOPT_CONNECTTIMEOUT => min(10, $timeout),
 			CURLOPT_FAILONERROR    => false,
 			CURLOPT_HTTPHEADER     => $headers,
-		]);
-		if ($payload !== null)
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+		] + $curlOpts);
 
 		if ($this->verbose)
 		{
-			fwrite(STDERR, sprintf(
-				"[http] %s %s%s\n",
-				$method, $url,
-				$payload !== null ? ' (body ' . strlen($payload) . ' B)' : '',
-			));
+			$pf   = $curlOpts[CURLOPT_POSTFIELDS] ?? null;
+			$info = is_string($pf) ? ' (body ' . strlen($pf) . ' B)' : (is_array($pf) ? ' (multipart)' : '');
+			fwrite(STDERR, sprintf("[http] %s %s%s\n", $method, $url, $info));
 		}
 
 		$responseBody = curl_exec($ch);
