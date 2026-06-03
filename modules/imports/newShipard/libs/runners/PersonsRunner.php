@@ -100,7 +100,7 @@ final class PersonsRunner extends BaseExchangeRunner
 			'status' => [
 				'isClosed'   => (int) ($oldRow['personCanceled'] ?? 0) === 1,
 				'closedDate' => $this->dateToString($oldRow['personCancelDate'] ?? null),
-				'isOwn'      => false,   // uživatel ručně označí v UI po importu
+				'isOwn'      => $this->resolveIsOwn($oldNdx, $personType, $properties),
 				// `status.docState` v canonical PersonApplier ignoruje při create —
 				// rozhodující je `applyOptions.targetDocState`. Posíláme jen ostatní
 				// status pole, ať není payload zavádějící.
@@ -172,6 +172,71 @@ final class PersonsRunner extends BaseExchangeRunner
 	private function insertDocState(array $oldRow): int
 	{
 		return $this->mapDocState($oldRow) === 10 ? 10 : 40;
+	}
+
+	/** Cache výsledku ownerPersonNdx() — resolveIsOwn() ho volá per osoba. */
+	private ?int $ownerNdx = null;
+
+	/**
+	 * Old ndx vlastní osoby ze starého configu (config/appOptions.core.json,
+	 * klíč ownerPerson → cfgItem 'options.core.ownerPerson'). 0 = nenastaveno.
+	 *
+	 * Primárně cfgItem; fallback na přímé čtení JSON souboru, kdyby cfgItem
+	 * nebyl v CLI kontextu naplněn.
+	 */
+	private function ownerPersonNdx(): int
+	{
+		if ($this->ownerNdx !== null)
+			return $this->ownerNdx;
+
+		$ndx = (int) $this->app()->cfgItem('options.core.ownerPerson', 0);
+		if ($ndx <= 0)
+		{
+			$file = __APP_DIR__ . '/config/appOptions.core.json';
+			if (is_file($file))
+			{
+				$json = json_decode((string) @file_get_contents($file), true);
+				if (is_array($json) && isset($json['ownerPerson']))
+					$ndx = (int) $json['ownerPerson'];
+			}
+		}
+		return $this->ownerNdx = $ndx;
+	}
+
+	/**
+	 * Rozhodne, zda osoba má být označena jako vlastní firma (is_own=1 v novém
+	 * Shipardu). True jen pro řádek odpovídající options.core.ownerPerson.
+	 *
+	 * Nový Shipard má na is_own striktní pravidla (PersonDocument):
+	 *   - jen JEDNA osoba smí být vlastní (singleton, jinak is_own_duplicate),
+	 *   - musí být typu Firma (jinak is_own_not_company),
+	 *   - při targetDocState 40 vyžaduje companyId (jinak own_company_id_required).
+	 * Owner z konfigu je vždy jediný, takže singleton držíme automaticky. Typ
+	 * a IČO ověříme tady — při nesplnění příznak nenastavíme (typ) / varujeme
+	 * (IČO), ať neshodíme celý import osob na 422.
+	 *
+	 * @param array<string, string> $properties
+	 */
+	private function resolveIsOwn(int $oldNdx, string $personType, array $properties): bool
+	{
+		$ownerNdx = $this->ownerPersonNdx();
+		if ($ownerNdx <= 0 || $oldNdx !== $ownerNdx)
+			return false;
+
+		if ($personType !== 'company')
+		{
+			$this->warn("person {$oldNdx}: je vlastník (options.core.ownerPerson), ale není typu "
+				. "Firma — nový Shipard vyžaduje pro is_own firmu. Příznak nenastaven; "
+				. "oprav data nebo nastav vlastní firmu ručně.");
+			return false;
+		}
+
+		if (empty($properties['oid']))
+			$this->warn("person {$oldNdx}: vlastní firma bez IČO (companyId) — applier ji "
+				. "při docState 40 odmítne (own_company_id_required). Doplň IČO ve zdroji.");
+
+		$this->info("person {$oldNdx}: označeno jako vlastní firma (is_own=1).");
+		return true;
 	}
 
 	// ── Helpers (mapping) ──────────────────────────────────────────────────
