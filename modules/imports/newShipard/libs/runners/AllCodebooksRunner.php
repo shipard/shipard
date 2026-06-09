@@ -20,6 +20,7 @@ final class AllCodebooksRunner extends ImportRunner
 		NumberSeriesRunner::class,
 		ItemKindsRunner::class,
 		UnitsRunner::class,
+		AccountsRunner::class,
 	];
 
 	public function run(): bool

@@ -42,6 +42,8 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 | `cash-desks`        | ✅ Fáze 02  | Pokladny.                                            |
 | `number-series`     | ✅ Fáze 02  | Číselné řady dokladů (jen typy známé v novém DS).    |
 | `item-kinds`        | ✅ Fáze 02  | Druhy položek (s mapováním na seedované system_code).|
+| `units`             | ✅ Fáze 02  | Měrné jednotky (`witems` units).                     |
+| `accounts`          | ✅ Fáze 08  | Účtový rozvrh (`e10doc_debs_accounts`).              |
 | `all-codebooks`     | ✅ Fáze 02  | Všechny číselníky v pořadí závislostí.               |
 | `persons`           | ✅ Fáze 03  | Osoby (lidé + firmy) přes exchange applier.          |
 | `items`             | ✅ Fáze 04  | Položky (zboží, služby) přes exchange applier.       |
@@ -272,6 +274,7 @@ záznamy přes UI nebo si zaveď distinct kódy.
 - [x] Položky (Fáze 04).
 - [x] Doklady (Fáze 05).
 - [x] Pošta (Fáze 07) — obecný klient příloh (07a) + došlá pošta (07b).
+- [x] Účtový rozvrh (Fáze 08).
 
 ## Smoke test
 

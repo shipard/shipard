@@ -20,6 +20,7 @@ final class LocalIdMap
 	public const ENTITY_DOC              = 'doc';
 	public const ENTITY_MAILBOX          = 'mailbox';
 	public const ENTITY_MESSAGE          = 'message';
+	public const ENTITY_ACCOUNT          = 'accountingAccount';
 
 	private \PDO $pdo;
 
