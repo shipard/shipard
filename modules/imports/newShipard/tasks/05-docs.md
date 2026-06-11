@@ -342,7 +342,7 @@ protected function buildCanonical(array $oldRow): ?array
 
         'payment' => [
             'method'         => self::PAYMENT_METHOD_MAP[(int) ($oldRow['paymentMethod'] ?? 1)] ?? 'bankTransfer',
-            'variableSymbol' => $this->emptyToNull($oldRow['symbol1'] ?? null),
+            'paymentReference' => $this->emptyToNull($oldRow['symbol1'] ?? null),
             'specificSymbol' => $this->emptyToNull($oldRow['symbol2'] ?? null),
             'constantSymbol' => null,
         ],
