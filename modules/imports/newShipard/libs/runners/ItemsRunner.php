@@ -12,6 +12,12 @@ use imports\newShipard\libs\LocalIdMap;
  *
  * Vzor: PersonsRunner. Mimo scope (viz tasks/04-items.md): sady (isSet),
  * EAN/SKU z itemCodes, manufacturerId, successorItem.
+ *
+ * Účet položky (starý `debsAccountId`, extension z e10doc/core) se
+ * importuje post-apply PATCHem na `economy_items.accounting_account`
+ * (extension z economy.accounting v novém Shipardu) — exchange formát
+ * items toto pole nemá. Resolve: číslo účtu → starý ndx
+ * (e10doc_debs_accounts) → LocalIdMap ENTITY_ACCOUNT → nový ndx.
  */
 final class ItemsRunner extends BaseExchangeRunner
 {
@@ -40,6 +46,24 @@ final class ItemsRunner extends BaseExchangeRunner
 		2 => 2,  // Účetní položka
 		3 => 3,  // Ostatní
 	];
+
+	/**
+	 * Lazy cache: číslo účtu → starý ndx z e10doc_debs_accounts.
+	 * Viz accountNdxByNumber().
+	 *
+	 * @var array<string, int>|null
+	 */
+	private ?array $accountNdxByNumber = null;
+
+	/**
+	 * Per-run memo: nový id položky → accounting_account přiřazený v tomto
+	 * běhu. Víc starých položek sloučených do jedné nové může mít rozdílné
+	 * účty — bez memo by se přepisovaly tam a zpět při každém běhu
+	 * (ping-pong). First-wins podle pořadí ndx + warn o konfliktu.
+	 *
+	 * @var array<int, int>
+	 */
+	private array $accountSeenByNewId = [];
 
 	protected function entityType(): string   { return LocalIdMap::ENTITY_ITEM; }
 	protected function exchangeFlow(): string { return 'items'; }
@@ -262,24 +286,213 @@ final class ItemsRunner extends BaseExchangeRunner
 	}
 
 	/**
-	 * Post-apply PATCH pro docState 70/80 — applier umí jen 10/40
-	 * (applyOptions.targetDocState). Stejná logika jako PersonsRunner.
+	 * Post-apply PATCH pro pole, která exchange applier nenastavuje:
+	 *
+	 * - docState 70/80 — applier umí jen 10/40 (applyOptions.targetDocState).
+	 * - accounting_account — účet ze starého `debsAccountId`. Importuje se
+	 *   u všech položek s vyplněným účtem (bez ohledu na druh položky) a
+	 *   nekontroluje se account_level — stará data jsou autoritativní,
+	 *   nesoulad ohlídá měkká kontrola účtovacího enginu.
+	 *
+	 * Hook se volá při create i update, PATCH je tedy idempotentní.
 	 */
 	protected function afterApplied(array $oldRow, int $newId, CrudClient $crud): void
 	{
-		$target = $this->mapDocState($oldRow);
-		$insert = $this->insertDocState($oldRow);
-		if ($target === $insert)
+		$target  = $this->mapDocState($oldRow);
+		$insert  = $this->insertDocState($oldRow);
+		$account = $this->resolveAccountingAccount($oldRow);
+		if ($account !== null)
+			$account = $this->claimAccountForNewId($newId, $account, $oldRow);
+
+		if ($account === null)
+		{
+			// Jen docState — projde i v readOnly stavu (docState je system
+			// pole, z $data se filtruje), dance není potřeba.
+			if ($target === $insert)
+				return;
+
+			if ($this->isDryRun())
+			{
+				$this->debug("DRY-RUN: would PATCH " . self::NEW_ITEMS_TABLE . "/{$newId} docState={$target}");
+				return;
+			}
+
+			$crud->patch(self::NEW_ITEMS_TABLE, $newId, ['docState' => $target]);
+			$this->debug("item {$oldRow['ndx']}: post-apply PATCH docState {$insert} → {$target}");
+			return;
+		}
+
+		if ($this->isDryRun())
+		{
+			$this->debug("DRY-RUN: would PATCH " . self::NEW_ITEMS_TABLE
+				. "/{$newId} accounting_account={$account}, docState {$insert} → {$target}");
+			return;
+		}
+
+		$this->patchFieldsRespectingState($newId, ['accounting_account' => $account], $insert, $target, $crud);
+		$this->debug("item {$oldRow['ndx']}: post-apply PATCH accounting_account={$account}, docState → {$target}");
+	}
+
+	/**
+	 * Backfill účtu do už naimportovaných položek — LocalIdMap hit přeskakuje
+	 * exchange apply, takže afterApplied neběží. Volá se při každém běhu
+	 * `items`; když už účet sedí, nic se neposlá (idempotence bez PATCH storm).
+	 * docState se tu (kromě dočasného mezikroku) nemění.
+	 */
+	protected function afterSkippedExisting(array $oldRow, int $newId, CrudClient $crud): void
+	{
+		$account = $this->resolveAccountingAccount($oldRow);
+		if ($account !== null)
+			$account = $this->claimAccountForNewId($newId, $account, $oldRow);
+		if ($account === null)
 			return;
 
 		if ($this->isDryRun())
 		{
-			$this->debug("DRY-RUN: would PATCH " . self::NEW_ITEMS_TABLE . "/{$newId} docState={$target}");
+			$this->debug("DRY-RUN: would backfill PATCH " . self::NEW_ITEMS_TABLE
+				. "/{$newId} accounting_account={$account} (old item {$oldRow['ndx']})");
 			return;
 		}
 
-		$crud->patch(self::NEW_ITEMS_TABLE, $newId, ['docState' => $target]);
-		$this->debug("item {$oldRow['ndx']}: post-apply PATCH docState {$insert} → {$target}");
+		$row = $crud->show(self::NEW_ITEMS_TABLE, $newId);
+		if ($row === null)
+		{
+			$this->warn("item {$oldRow['ndx']}: nový záznam {$newId} nenalezen (404), backfill skip");
+			return;
+		}
+
+		$currentState = (int) ($row['docState'] ?? 10);
+		if ($currentState === 90)
+		{
+			$this->debug("item {$oldRow['ndx']}: nový záznam {$newId} je ve stavu Smazáno, backfill skip");
+			return;
+		}
+
+		// API vynechává NULL pole z odpovědi → ?? 0 pokrývá nenastavený účet.
+		if ((int) ($row['accounting_account'] ?? 0) === $account)
+			return;
+
+		$this->patchFieldsRespectingState($newId, ['accounting_account' => $account], $currentState, $currentState, $crud);
+		$this->debug("item {$oldRow['ndx']}: backfill PATCH accounting_account={$account} (docState={$currentState})");
+	}
+
+	/**
+	 * PATCH non-system polí s ohledem na readOnly docState (40/70/90):
+	 * CrudController odmítá zápis non-system polí do záznamu v readOnly
+	 * stavu (DOCUMENT_READONLY). Pro readOnly stav se udělá mezikrok přes
+	 * 80 (V opravě) a návrat do $finalState — stavový automat to dovoluje
+	 * (40/70/90 → 80, 80 → 40/70/90). Samotný docState PATCH přes readOnly
+	 * check projde, protože docState je system pole a z $data se filtruje.
+	 */
+	/**
+	 * Claim účtu pro novou položku v rámci běhu (first-wins). Vrací účet,
+	 * pokud je položka volná nebo už má stejný účet; null + warn při
+	 * konfliktu (sloučené duplicity starých položek s různými účty —
+	 * vyžaduje ruční kontrolu dat).
+	 */
+	private function claimAccountForNewId(int $newId, int $account, array $oldRow): ?int
+	{
+		$seen = $this->accountSeenByNewId[$newId] ?? null;
+		if ($seen === null)
+		{
+			$this->accountSeenByNewId[$newId] = $account;
+			return $account;
+		}
+		if ($seen === $account)
+			return $account;
+
+		$this->warn("item {$oldRow['ndx']}: konflikt uctu — nova polozka {$newId} uz ma v tomto behu"
+			. " accounting_account={$seen}, ignoruji {$account} (sloucene duplicity, zkontroluj rucne)");
+		return null;
+	}
+
+	private function patchFieldsRespectingState(int $newId, array $fields, int $currentState, int $finalState, CrudClient $crud): void
+	{
+		if (in_array($currentState, [10, 80], true))
+		{
+			$payload = $fields;
+			if ($finalState !== $currentState)
+				$payload['docState'] = $finalState;
+			$crud->patch(self::NEW_ITEMS_TABLE, $newId, $payload);
+			return;
+		}
+
+		// readOnly → mezikrok V opravě, pak zápis polí + návrat jedním PATCHem
+		$crud->patch(self::NEW_ITEMS_TABLE, $newId, ['docState' => 80]);
+		$payload = $fields;
+		if ($finalState !== 80)
+			$payload['docState'] = $finalState;
+		$crud->patch(self::NEW_ITEMS_TABLE, $newId, $payload);
+	}
+
+	/**
+	 * Nový ndx účtu (economy_accounting_accounts) pro položku, nebo null.
+	 *
+	 * Zdroj: e10_witems_items.debsAccountId (string číslo účtu, extension
+	 * z e10doc/core). Číslo se převede na starý ndx přes lazy mapu z
+	 * e10doc_debs_accounts a dál na nový ndx přes LocalIdMap
+	 * (ENTITY_ACCOUNT, plní AccountsRunner ve fázi codebooks).
+	 * Nenalezený účet → warn + null (accounting_account zůstane NULL).
+	 */
+	private function resolveAccountingAccount(array $oldRow): ?int
+	{
+		$number = trim((string) ($oldRow['debsAccountId'] ?? ''));
+		if ($number === '')
+			return null;
+
+		$oldAccNdx = $this->accountNdxByNumber()[$number] ?? null;
+		if ($oldAccNdx === null)
+		{
+			$this->warn("item {$oldRow['ndx']}: ucet '{$number}' neni v e10doc_debs_accounts (nebo je smazany), accounting_account zustava NULL");
+			return null;
+		}
+
+		$newAccNdx = $this->idMap()->lookup(LocalIdMap::ENTITY_ACCOUNT, $oldAccNdx);
+		if ($newAccNdx === null)
+		{
+			$this->warn("item {$oldRow['ndx']}: ucet '{$number}' (old ndx={$oldAccNdx}) neni v LocalIdMap, probehl AccountsRunner?");
+			return null;
+		}
+
+		return $newAccNdx;
+	}
+
+	/**
+	 * Lazy mapa: číslo účtu → starý ndx z e10doc_debs_accounts (bez
+	 * smazaných). Záměrně bez JOINu v sourceQuery — případná duplicita
+	 * čísla účtu by násobila řádky položek. Duplicity řeší first-wins
+	 * (nižší ndx) + warning.
+	 *
+	 * @return array<string, int>
+	 */
+	private function accountNdxByNumber(): array
+	{
+		if ($this->accountNdxByNumber !== null)
+			return $this->accountNdxByNumber;
+
+		$this->accountNdxByNumber = [];
+
+		$rows = $this->db()->query(
+			'SELECT [ndx], [id] FROM [e10doc_debs_accounts]'
+			. ' WHERE [docState] != %i', 9800,
+			' ORDER BY [ndx]',
+		)->fetchAll();
+
+		foreach ($rows as $r)
+		{
+			$row = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
+			$number = trim((string) ($row['id'] ?? ''));
+			if ($number === '')
+				continue;
+			if (isset($this->accountNdxByNumber[$number]))
+			{
+				$this->warn("duplicate account number '{$number}' in e10doc_debs_accounts (using ndx={$this->accountNdxByNumber[$number]}, ignoring ndx={$row['ndx']})");
+				continue;
+			}
+			$this->accountNdxByNumber[$number] = (int) $row['ndx'];
+		}
+
+		return $this->accountNdxByNumber;
 	}
 
 	private function mapDocState(array $oldRow): int

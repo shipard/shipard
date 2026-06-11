@@ -158,7 +158,12 @@ abstract class BaseExchangeRunner extends ImportRunner
 		// Pro re-import smaž mapping: LocalIdMap::forgetAll('<entity>').
 		$cachedNewId = $this->idMap()->lookup($this->entityType(), $oldNdx);
 		if ($cachedNewId !== null)
+		{
+			// Hook pro backfill operace na už naimportovaných záznamech
+			// (idempotentní PATCH přes generic CRUD). Default no-op.
+			$this->afterSkippedExisting($oldRow, $cachedNewId, new CrudClient($this->http()));
 			return ['status' => 'skipped', 'reason' => 'already-imported', 'newId' => $cachedNewId];
+		}
 
 		$canonical = $this->buildCanonical($oldRow);
 		if ($canonical === null)
@@ -303,6 +308,22 @@ abstract class BaseExchangeRunner extends ImportRunner
 	 * V dry-run módu se hook nevolá vůbec (apply se taky neprovádí).
 	 */
 	protected function afterApplied(array $oldRow, int $newId, CrudClient $crud): void
+	{
+		// no-op default
+	}
+
+	/**
+	 * Hook volaný pro řádky přeskočené kvůli LocalIdMap hitu (already-imported).
+	 * Default no-op.
+	 *
+	 * Override v runnerech, které potřebují doplnit (backfillovat) pole do už
+	 * naimportovaných záznamů bez plného re-importu — typicky idempotentní
+	 * PATCH přes generic CRUD (např. ItemsRunner doplňuje accounting_account).
+	 *
+	 * Pozor: na rozdíl od afterApplied se volá i v dry-run módu (skip větev
+	 * je před dry-run checkem) — implementace musí isDryRun() ošetřit sama.
+	 */
+	protected function afterSkippedExisting(array $oldRow, int $newId, CrudClient $crud): void
 	{
 		// no-op default
 	}
