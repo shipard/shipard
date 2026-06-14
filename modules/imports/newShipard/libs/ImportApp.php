@@ -124,10 +124,43 @@ class ImportApp
 			// Phase 06 — orchestrator ('reset' se odbaví v run() před LocalIdMap,
 			// sem se nedostane).
 			case 'all':               return (new runners\AllRunner($this->context()))->run();
+
+			// Phase 10 — maintenance: zapomenout mapování jedné entity (cílený
+			// re-import bez smazání celé mapy, na rozdíl od 'reset').
+			case 'forget':            return $this->forgetEntity();
 		}
 
 		echo "Unknown subcommand: '{$subcommand}'\n\n";
 		return $this->printUsage();
+	}
+
+	/**
+	 * forget --entity=<doc|person|item|…>: smaže LocalIdMap mapování dané entity,
+	 * ostatní (codebooks/persons/items) zachová. Pro čistý re-import dokladů po
+	 * opravě importu (Fáze 10) bez nukování celé mapy.
+	 */
+	private function forgetEntity(): bool
+	{
+		$raw = strtolower(trim((string) ($this->app->arg('entity') ?? '')));
+		$aliases = [
+			'doc'     => LocalIdMap::ENTITY_DOC,     'docs'     => LocalIdMap::ENTITY_DOC,
+			'person'  => LocalIdMap::ENTITY_PERSON,  'persons'  => LocalIdMap::ENTITY_PERSON,
+			'item'    => LocalIdMap::ENTITY_ITEM,     'items'   => LocalIdMap::ENTITY_ITEM,
+			'mail'    => LocalIdMap::ENTITY_MESSAGE,  'message' => LocalIdMap::ENTITY_MESSAGE,
+		];
+		$entity = $aliases[$raw] ?? null;
+		if ($entity === null)
+		{
+			echo "forget: missing or unknown --entity (use doc|person|item|message).\n";
+			return false;
+		}
+
+		$before = $this->idMap->stats()[$entity] ?? 0;
+		$this->idMap->forgetAll($entity);
+		echo "! Forgot {$before} '{$entity}' mapping(s) from local id map.\n";
+		echo "!        Re-import of this entity will re-create records (business-key\n";
+		echo "!        match may not catch everything → watch for duplicates).\n";
+		return true;
 	}
 
 	private function context(): ImportContext
@@ -180,6 +213,10 @@ class ImportApp
 		echo "    all               Run codebooks → persons → items → docs → mail in order.\n";
 		echo "    reset             Delete the local id map (import-newShipard.sqlite) and exit.\n";
 		echo "\n";
+		echo "  Phase 10 — maintenance:\n";
+		echo "    forget --entity=X Forget local id map for one entity (doc|person|item|message),\n";
+		echo "                      keeping the rest. For targeted clean re-import (e.g. docs).\n";
+		echo "\n";
 		echo "Common options:\n";
 		echo "  --verbose, -v        More verbose output (HTTP + per-row debug).\n";
 		echo "  --dry-run            Do not perform writes against the target.\n";
@@ -191,7 +228,8 @@ class ImportApp
 		echo "                       payload + response body automatically.\n";
 		echo "  --from=YYYY-MM-DD    docs: accounting date (>=); mail: dateIncoming (>=). 'docs'/'mail'/'all'.\n";
 		echo "  --to=YYYY-MM-DD      docs: accounting date (<=); mail: dateIncoming (<=). 'docs'/'mail'/'all'.\n";
-		echo "  --target-state=10    Import docs as draft (10) instead of confirmed (20). 'docs' only.\n";
+		echo "  --target-state=10    Cap all docs to draft (10), overriding the old→new state map\n";
+		echo "                       (1000→10,1200→20,4000/8000→40,4100→30). Test runs. 'docs' only.\n";
 		echo "  --chunk-months=N     Document import chunk size in months (default 1). 'docs'/'all'.\n";
 		echo "  --require-linked-doc Import only mail messages with a resolvable linked doc. 'mail' only.\n";
 		echo "  --no-attachments     Skip PDF attachment upload for imported mail. 'mail' only.\n";
