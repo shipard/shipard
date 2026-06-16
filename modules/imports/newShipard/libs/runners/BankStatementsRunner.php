@@ -182,8 +182,9 @@ final class BankStatementsRunner extends BaseExchangeRunner
 	 * později naimportoval souborem; nová strana dedupne přes external_id/
 	 * fingerprint). Řádky bez pohybu peněz (credit==0 && debit==0, např. info)
 	 * vynechá. dateTransaction = dateDue řádku (v datech vždy vyplněné), fallback
-	 * datum hlavičky. Cizí měna: exchangeRate se neposílá, amount_dom dopočítá
-	 * nová strana dle data kurzu (FX rozdíly jsou mimo scope migrace).
+	 * datum hlavičky. Cizí měna: exchangeRate (za jednotku, z old řádku) se posílá;
+	 * nová strana z něj počítá amount_dom (amount × rate). Domácí řádek → null →
+	 * rate 1 (FX rozdíly jsou mimo scope migrace).
 	 *
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -217,6 +218,7 @@ final class BankStatementsRunner extends BaseExchangeRunner
 				'symbol3'             => $this->emptyToNull($row['symbol3'] ?? null),
 				'message'             => $this->emptyToNull($row['text'] ?? null),
 				'operation'           => null,   // nová strana → default payment.in/out dle směru
+				'exchangeRate'        => $this->positiveOrNull($row['exchangeRate'] ?? null),
 			];
 		}
 		return $out;
@@ -299,5 +301,14 @@ final class BankStatementsRunner extends BaseExchangeRunner
 	{
 		$s = strtoupper(trim((string) ($val ?? '')));
 		return preg_match('/^[A-Z]{3}$/', $s) ? $s : null;
+	}
+
+	/** Kladný kurz za jednotku, nebo null (domácí / nevyplněno → nová strana použije 1). */
+	private function positiveOrNull(mixed $val): ?float
+	{
+		if ($val === null || $val === '')
+			return null;
+		$f = (float) $val;
+		return $f > 0 ? $f : null;
 	}
 }
