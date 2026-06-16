@@ -6,12 +6,13 @@ use imports\newShipard\libs\ImportRunner;
 
 /**
  * Orchestrátor celého importu — spustí fáze v závislostně správném pořadí
- * (číselníky → osoby → položky → doklady → pošta) jedním příkazem a na konci
- * vypíše souhrn z context->stats.
+ * (číselníky → osoby → položky → doklady → bankovní výpisy → pošta) jedním
+ * příkazem a na konci vypíše souhrn z context->stats.
  *
  * Závislosti: doklady potřebují osoby (partneři), položky (řádky) i číselníky
- * (number_series / vat / bank účty); pošta navazuje na doklady (vazba
- * zpráva↔doklad přes ENTITY_DOC), proto jde úplně poslední.
+ * (number_series / vat / bank účty); bankovní výpisy potřebují bank účty
+ * (ENTITY_BANK_ACCOUNT z číselníků) a jdou za doklady; pošta navazuje na doklady
+ * (vazba zpráva↔doklad přes ENTITY_DOC), proto jde úplně poslední.
  *
  * --continue-on-error: pokračuje i po selhání fáze (s vyšší chybovostí
  * navazujících fází); jinak po prvním selhání abortuje a vypíše souhrn.
@@ -29,11 +30,12 @@ final class AllRunner extends ImportRunner
 		$allOk = true;
 
 		$phases = [
-			['All codebooks', fn() => (new AllCodebooksRunner($this->context))->run()],
-			['Persons',       fn() => (new PersonsRunner($this->context))->run()],
-			['Items',         fn() => (new ItemsRunner($this->context))->run()],
-			['Documents',     fn() => (new DocsRunner($this->context))->run()],
-			['Mail',          fn() => (new MailRunner($this->context))->run()],
+			['All codebooks',   fn() => (new AllCodebooksRunner($this->context))->run()],
+			['Persons',         fn() => (new PersonsRunner($this->context))->run()],
+			['Items',           fn() => (new ItemsRunner($this->context))->run()],
+			['Documents',       fn() => (new DocsRunner($this->context))->run()],
+			['Bank statements', fn() => (new BankStatementsRunner($this->context))->run()],
+			['Mail',            fn() => (new MailRunner($this->context))->run()],
 		];
 
 		foreach ($phases as [$label, $fn])

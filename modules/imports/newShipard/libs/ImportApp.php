@@ -118,6 +118,9 @@ class ImportApp
 			// Phase 05 — docs
 			case 'docs':              return (new runners\DocsRunner($this->context()))->run();
 
+			// Phase 11 — bank statements
+			case 'bank-statements':   return (new runners\BankStatementsRunner($this->context()))->run();
+
 			// Phase 07 — mail
 			case 'mail':              return (new runners\MailRunner($this->context()))->run();
 
@@ -143,15 +146,16 @@ class ImportApp
 	{
 		$raw = strtolower(trim((string) ($this->app->arg('entity') ?? '')));
 		$aliases = [
-			'doc'     => LocalIdMap::ENTITY_DOC,     'docs'     => LocalIdMap::ENTITY_DOC,
-			'person'  => LocalIdMap::ENTITY_PERSON,  'persons'  => LocalIdMap::ENTITY_PERSON,
-			'item'    => LocalIdMap::ENTITY_ITEM,     'items'   => LocalIdMap::ENTITY_ITEM,
-			'mail'    => LocalIdMap::ENTITY_MESSAGE,  'message' => LocalIdMap::ENTITY_MESSAGE,
+			'doc'            => LocalIdMap::ENTITY_DOC,            'docs'      => LocalIdMap::ENTITY_DOC,
+			'person'         => LocalIdMap::ENTITY_PERSON,         'persons'   => LocalIdMap::ENTITY_PERSON,
+			'item'           => LocalIdMap::ENTITY_ITEM,           'items'     => LocalIdMap::ENTITY_ITEM,
+			'mail'           => LocalIdMap::ENTITY_MESSAGE,         'message'  => LocalIdMap::ENTITY_MESSAGE,
+			'bank-statement' => LocalIdMap::ENTITY_BANK_STATEMENT, 'statement' => LocalIdMap::ENTITY_BANK_STATEMENT,
 		];
 		$entity = $aliases[$raw] ?? null;
 		if ($entity === null)
 		{
-			echo "forget: missing or unknown --entity (use doc|person|item|message).\n";
+			echo "forget: missing or unknown --entity (use doc|person|item|message|bank-statement).\n";
 			return false;
 		}
 
@@ -205,6 +209,11 @@ class ImportApp
 		echo "    docs              Documents (invoices invni/invno) via exchange flow.\n";
 		echo "                      Requires a flagged own company (is_own=1) in target.\n";
 		echo "\n";
+		echo "  Phase 11 — bank statements:\n";
+		echo "    bank-statements   Bank statements (e10doc 'bank' docs) via exchange flow.\n";
+		echo "                      Import bank-accounts FIRST (own account lookup). Storno\n";
+		echo "                      (4100) skipped; PDF attachments migrated unless --no-attachments.\n";
+		echo "\n";
 		echo "  Phase 07 — mail:\n";
 		echo "    mail              Incoming mail (wkf issues, issueType=1) via /_mail/import.\n";
 		echo "                      Import docs FIRST (doc links). Best-effort linking.\n";
@@ -226,13 +235,15 @@ class ImportApp
 		echo "  --dump-payload       Print the canonical JSON sent to the exchange apply\n";
 		echo "                       (exchange runners: persons/items/docs). Failed rows dump\n";
 		echo "                       payload + response body automatically.\n";
-		echo "  --from=YYYY-MM-DD    docs: accounting date (>=); mail: dateIncoming (>=). 'docs'/'mail'/'all'.\n";
-		echo "  --to=YYYY-MM-DD      docs: accounting date (<=); mail: dateIncoming (<=). 'docs'/'mail'/'all'.\n";
+		echo "  --from=YYYY-MM-DD    docs: accounting date; mail: dateIncoming; bank-statements:\n";
+		echo "                       datePeriodEnd (>=). 'docs'/'mail'/'bank-statements'/'all'.\n";
+		echo "  --to=YYYY-MM-DD      docs: accounting date; mail: dateIncoming; bank-statements:\n";
+		echo "                       datePeriodEnd (<=). 'docs'/'mail'/'bank-statements'/'all'.\n";
 		echo "  --target-state=10    Cap all docs to draft (10), overriding the old→new state map\n";
 		echo "                       (1000→10,1200→20,4000/8000→40,4100→30). Test runs. 'docs' only.\n";
 		echo "  --chunk-months=N     Document import chunk size in months (default 1). 'docs'/'all'.\n";
 		echo "  --require-linked-doc Import only mail messages with a resolvable linked doc. 'mail' only.\n";
-		echo "  --no-attachments     Skip PDF attachment upload for imported mail. 'mail' only.\n";
+		echo "  --no-attachments     Skip PDF attachment upload. 'mail'/'bank-statements'.\n";
 		echo "  --reset              Delete the local id map before running (clean re-import).\n";
 		echo "\n";
 		return true;
