@@ -1,5 +1,8 @@
 # Task: Opravy importu pošty (Fáze 07c)
 
+> **Stav:** ✅ Hotovo (2026-06-17) — implementováno v `MailRunner.php`, otestováno
+> (`ds-reset` + re-import okna), commitnuto (`8172198c`).
+
 ## Kontext
 
 Tři opravy v importu došlé pošty (Fáze 07b) po prvním reálném běhu. **Všechny
