@@ -34,6 +34,25 @@ final class MailRunner extends ImportRunner
 	/** wkf issues docState "Smazáno" (viz wkf.issues.docStates.default.json). */
 	private const ISSUE_STATE_TRASH = 9800;
 
+	/**
+	 * Starý issues.docState (wkf.issues.docStates.default) → nový docState
+	 * (core.mail.docStatesIncoming). Nezávisle na navázání na doklad.
+	 *   1000 Nově rozpracováno → 10 Nová
+	 *   1001 Nová zpráva       → 10 Nová
+	 *   1200 K řešení          → 10 Nová
+	 *   4000 Vyřešeno          → 40 Zpracovaná
+	 *   8000 V opravě          → 10 Nová
+	 *   9000 Ukončeno          → 80 Archiv
+	 *   9800 Smazáno           → (filtrováno ve fetchIssues)
+	 * Neznámý stav → 10 (Nová).
+	 */
+	private const ISSUE_STATE_MAP = [
+		1000 => 10, 1001 => 10, 1200 => 10, 4000 => 40, 8000 => 10, 9000 => 80,
+	];
+
+	/** e10doc.core.heads — ndx tabulky dokladů (statický, viz heads.json). */
+	private const DOCS_HEADS_TABLE_NDX = 1078;
+
 	/** Cílová tabulka zpráv v novém Shipardu — pro upload příloh. */
 	private const MAIL_TABLE_ID = 303;
 
@@ -180,7 +199,7 @@ final class MailRunner extends ImportRunner
 		}
 
 		// vazba na doklad
-		[$targetTableId, $targetRow, $linkedDocOldNdx] = $this->resolveDocLink($oldNdx);
+		[$targetTableId, $targetRow, $linkedDocOldNdx] = $this->resolveDocLink($oldNdx, $issue);
 		if ((bool) $this->app()->arg('require-linked-doc') && $targetRow === null)
 		{
 			$stats['skipped']++;
@@ -196,6 +215,10 @@ final class MailRunner extends ImportRunner
 		if ($authorNdx > 0)
 			$senderPerson = $this->idMap()->lookup(LocalIdMap::ENTITY_PERSON, $authorNdx);
 
+		[$bodyPlain, $bodyHtml] = $this->splitBody(
+			$this->emptyToNull($issue['body'] ?? null) ?? $this->emptyToNull($issue['text'] ?? null)
+		);
+
 		$payload = [
 			'mailbox'         => $this->mailboxCodeForSection((int) ($issue['section'] ?? 0)),
 			'subject'         => $this->emptyToNull($issue['subject'] ?? null) ?? '(bez předmětu)',
@@ -204,13 +227,13 @@ final class MailRunner extends ImportRunner
 			'sender_person'   => $senderPerson,
 			'received_at'     => $this->dateTimeToIso($issue['dateIncoming'] ?? null)
 								   ?? $this->dateTimeToIso($issue['dateCreate'] ?? null),
-			'body_plain'      => $this->emptyToNull($issue['body'] ?? null)
-								   ?? $this->emptyToNull($issue['text'] ?? null),
+			'body_plain'      => $bodyPlain,
+			'body_html'       => $bodyHtml,
 			'source_type'     => self::SOURCE_TYPE_MAP[(int) ($issue['source'] ?? 0)] ?? 1,
 			'primary_type'    => $this->primaryTypeFor($linkedDocOldNdx),
 			'target_table_id' => $targetTableId,
 			'target_row'      => $targetRow,
-			'docState'        => $targetRow === null ? 10 : 40,
+			'docState'        => $this->mapDocState((int) ($issue['docState'] ?? 0)),
 		];
 
 		if ($this->isDryRun())
@@ -251,35 +274,76 @@ final class MailRunner extends ImportRunner
 	}
 
 	/**
-	 * Vazba zpráva → doklad přes e10_base_doclinks (linkId='e10docs-inbox',
-	 * doklad=src, zpráva=dst). 1 doklad : N zpráv; více vazeb → první + warning.
-	 *
-	 * @return array{0: ?string, 1: ?int, 2: ?int}  [target_table_id, target_row, linkedDocOldNdx]
+	 * Starý issues.docState → nový docState (core.mail.docStatesIncoming).
+	 * Nezávisle na navázání na doklad. Neznámý stav → 10 (Nová).
 	 */
-	private function resolveDocLink(int $issueNdx): array
+	private function mapDocState(int $oldState): int
 	{
-		$rows = $this->db()->query(
+		return self::ISSUE_STATE_MAP[$oldState] ?? 10;
+	}
+
+	/**
+	 * Formát těla — mirror ContentRenderer::createCodeText('auto'):
+	 * obsahuje-li <html | <span | <div | <p → HTML, jinak plain.
+	 *
+	 * @return array{0: ?string, 1: ?string}  [body_plain, body_html]
+	 */
+	private function splitBody(?string $body): array
+	{
+		if ($body === null)
+			return [null, null];
+		$isHtml = str_contains($body, '<html')
+			|| str_contains($body, '<span')
+			|| str_contains($body, '<div')
+			|| str_contains($body, '<p');
+		return $isHtml ? [null, $body] : [$body, null];   // HTML → body_plain zůstává NULL
+	}
+
+	/**
+	 * Vazba zpráva → doklad ze dvou zdrojů (sloučeno, dedup):
+	 *   1) e10_base_doclinks (e10docs-inbox; doklad=src, zpráva=dst) — primární
+	 *   2) issues.tableNdx == 1078 && recNdx > 0 — obecný ukazatel na doklad
+	 * Vrací první kandidát, který je naimportovaný (ENTITY_DOC). Doclink má přednost.
+	 *
+	 * @param array<string, mixed> $issue
+	 * @return array{0: ?string, 1: ?int, 2: ?int}  [target_table_id, target_row, pickedOldDocNdx]
+	 */
+	private function resolveDocLink(int $issueNdx, array $issue): array
+	{
+		$candidates = [];
+
+		// 1) doclinks e10docs-inbox
+		foreach ($this->db()->query(
 			'SELECT [srcRecId] FROM [e10_base_doclinks]'
 			. ' WHERE [linkId] = %s', 'e10docs-inbox',
 			' AND [dstTableId] = %s', 'wkf.core.issues',
 			' AND [dstRecId] = %i', $issueNdx,
 			' AND [srcTableId] = %s', 'e10doc.core.heads',
 			' ORDER BY [ndx]',
-		)->fetchAll();
+		)->fetchAll() as $r)
+			$candidates[] = (int) ((array) $r)['srcRecId'];
 
-		if ($rows === [])
+		// 2) tableNdx/recNdx → doklad (heads, ndx 1078)
+		if ((int) ($issue['tableNdx'] ?? 0) === self::DOCS_HEADS_TABLE_NDX
+			&& (int) ($issue['recNdx'] ?? 0) > 0)
+			$candidates[] = (int) $issue['recNdx'];
+
+		$candidates = array_values(array_unique($candidates));
+		if ($candidates === [])
 			return [null, null, null];
-		if (count($rows) > 1)
-			$this->warn("[mail] issue {$issueNdx}: " . count($rows) . " linked docs, using first");
+		if (count($candidates) > 1)
+			$this->warn("[mail] issue {$issueNdx}: " . count($candidates)
+				. " linked doc candidates, picking first resolvable");
 
-		$oldDocNdx = (int) ((array) $rows[0])['srcRecId'];
-		$newDocId = $this->idMap()->lookup(LocalIdMap::ENTITY_DOC, $oldDocNdx);
-		if ($newDocId === null)
+		foreach ($candidates as $oldDocNdx)
 		{
-			$this->debug("[mail] issue {$issueNdx}: linked doc {$oldDocNdx} not imported (out of scope)");
-			return [null, null, $oldDocNdx];   // známe starý doklad, ale není v cíli
+			$newId = $this->idMap()->lookup(LocalIdMap::ENTITY_DOC, $oldDocNdx);
+			if ($newId !== null)
+				return ['docs_core_heads', $newId, $oldDocNdx];
 		}
-		return ['docs_core_heads', $newDocId, $oldDocNdx];
+		// kandidát existuje, ale mimo importovaný rozsah → unlinked (známe starý ndx)
+		$this->debug("[mail] issue {$issueNdx}: linked doc {$candidates[0]} not imported (out of scope)");
+		return [null, null, $candidates[0]];
 	}
 
 	/** Navázaný doklad je faktura přijatá (invni) → invoiceReceived; jinak other. */
