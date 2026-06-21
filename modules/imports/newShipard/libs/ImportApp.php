@@ -124,6 +124,9 @@ class ImportApp
 			// Phase 07 — mail
 			case 'mail':              return (new runners\MailRunner($this->context()))->run();
 
+			// Phase 12 — accbal settings (samostatně, ne v `all`): --dump/--import
+			case 'accbal-settings':   return (new runners\AccbalSettingsRunner($this->context()))->run();
+
 			// Phase 06 — orchestrator ('reset' se odbaví v run() před LocalIdMap,
 			// sem se nedostane).
 			case 'all':               return (new runners\AllRunner($this->context()))->run();
@@ -221,6 +224,12 @@ class ImportApp
 		echo "  Phase 06 — orchestrator:\n";
 		echo "    all               Run codebooks → persons → items → docs → mail in order.\n";
 		echo "    reset             Delete the local id map (import-newShipard.sqlite) and exit.\n";
+		echo "\n";
+		echo "  Phase 12 — accbal settings (samostatně, ne v 'all'):\n";
+		echo "    accbal-settings   Settings saldokont. Vyžaduje --dump nebo --import.\n";
+		echo "                      --dump:   stará DB → JSON (seed tvar, bez dobropisů).\n";
+		echo "                      --import: JSON → economy_accbal_balances/_balance_accounts.\n";
+		echo "                      --file=PATH override (default data/accbalSettings.json).\n";
 		echo "\n";
 		echo "  Phase 10 — maintenance:\n";
 		echo "    forget --entity=X Forget local id map for one entity (doc|person|item|message),\n";

@@ -24,6 +24,7 @@ starého Shipardu do nového Shipardu přes HTTPS REST API.
 | 09 | [09-payment-reference-rename.md](09-payment-reference-rename.md) | ✅ Hotovo | Rename v exchange payloadu `shpd.docs.document.v1`: `payment.variableSymbol` → `payment.paymentReference` (in-place, verze v1). `specificSymbol`/`constantSymbol` beze změny. |
 | 10 | [10-docs-import-revision.md](10-docs-import-revision.md) | ✅ Hotovo | Revize importu dokladů: identita číselné řady (`dbCounter` → `docKeyId`/`doc_number_code`), stavy/operation, parser čísel; CLI `forget --entity` pro cílený re-import. |
 | 11 | [11-bank-statements.md](11-bank-statements.md) | ✅ Hotovo | Migrace bankovních výpisů (`BankStatementsRunner`): čte staré výpisy (`e10doc_core_heads docType='bank'` + rows), posílá přes `shpd.bank.statement.v1` na `POST /_exchange/bank/statement/apply`. Vč. kurzu pro přepočet měny. |
+| 12 | [12-accbal-settings.md](12-accbal-settings.md) | ✅ Hotovo | Import nastavení saldokont (`AccbalSettingsRunner`, samostatný `accbal-settings`, mimo `all`). `--dump`: stará DB (`e10doc_accBal_balances` + `…_balancesAccounts`) → JSON v seed tvaru (bez dobropisů — sedí starému chování). `--import`: JSON → `economy_accbal_balances`/`_balance_accounts` přes generický CRUD (FK přes vnoření, bez `LocalIdMap`; re-import = `ds-reset`). Mezikrok = ruční ladění kódů skupin/účtů v JSONu. |
 
 PRDs pro fáze 03–06 vznikají postupně po dokončení předchozí fáze, aby
 reflektovaly skutečnost po implementaci.
