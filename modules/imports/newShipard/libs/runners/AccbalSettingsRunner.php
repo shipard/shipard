@@ -155,6 +155,12 @@ final class AccbalSettingsRunner extends ImportRunner
 
 		$this->info("Import nastavení saldokont z {$path}…");
 
+		// Pre-flight: kódy skupin musí být unikátní (DB unq_code). Staré globalId
+		// nejsou spolehlivě unikátní (kolize → částečný import + neprůhledné HTTP
+		// 500 z DB). Selž čistě JEŠTĚ PŘED jakýmkoli POSTem.
+		if (!$this->assertUniqueCodes($data['balances']))
+			return false;
+
 		$crud = new CrudClient($this->http());
 		$stats = ['groups' => 0, 'accounts' => 0, 'failed' => 0];
 
@@ -263,6 +269,36 @@ final class AccbalSettingsRunner extends ImportRunner
 	private function isContinueOnError(): bool
 	{
 		return (bool) $this->app()->arg('continue-on-error');
+	}
+
+	/**
+	 * Kódy skupin musí být unikátní (poruší jinak unq_code). Vypíše kolize
+	 * (kód → názvy skupin) a vrátí false. Prázdné kódy řeší per-skupina check
+	 * v doImport().
+	 */
+	private function assertUniqueCodes(array $balances): bool
+	{
+		$byCode = [];
+		foreach ($balances as $i => $g)
+		{
+			if (!is_array($g))
+				continue;
+			$code = (string) ($g['code'] ?? '');
+			if ($code === '')
+				continue;
+			$byCode[$code][] = (string) ($g['name'] ?? "balances[{$i}]");
+		}
+
+		$dups = array_filter($byCode, static fn(array $names): bool => count($names) > 1);
+		if ($dups === [])
+			return true;
+
+		$this->err("Duplicitní kódy skupin (porušily by unq_code) — oprav v JSONu:");
+		foreach ($dups as $code => $names)
+			$this->err(sprintf("  '%s' ×%d: %s", $code, count($names), implode(', ', $names)));
+		$this->err("Staré globalId nejsou unikátní → ruční reconciliation na seed kódy "
+			. "(receivables/payables/credits/…).");
+		return false;
 	}
 
 	/**

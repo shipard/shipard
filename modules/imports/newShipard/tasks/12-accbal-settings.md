@@ -236,6 +236,12 @@ Zapoj mírou existujícího dispatch jednotlivých runnerů (dohledané v
 - **Mapování `code` skupiny** — staré `globalId` vs. nové seed kódy
   (`receivables`/`payables`/…). Dump dává `globalId`; reconciliation je ruční
   krok (hlavní důvod JSON mezivrstvy).
+  - ⚠️ **Zjištění z reálného běhu (2026-06-22):** `globalId` ve staré DB **není
+    unikátní** — v testovacích datech sdílely 3 skupiny (Závazky/Úvěry/Přijaté
+    půjčky) totéž `ebx58k`, takže import padal na `unq_code` (Duplicate entry)
+    až z DB jako HTTP 500. Reconciliation kódů je proto **povinná**, ne
+    volitelná. `--import` teď dělá **pre-flight kontrolu unikátnosti** kódů
+    (`assertUniqueCodes`) a selže čistě s výpisem kolizí ještě před prvním POSTem.
 - **Mapování `account_number`** — stará osnova vs. nová (CZ standardní účty
   311/321/314/324 jsou nejspíš shodné; analytiky 311000 vs 311100 doladit ručně
   v JSONu).
