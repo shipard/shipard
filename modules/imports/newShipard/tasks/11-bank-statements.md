@@ -1,5 +1,12 @@
 # 11 — Migrace bankovních výpisů (BankStatementsRunner)
 
+> **Oprava (2026-06-22):** symbolová pole transakce v kanonickém schématu byla
+> přejmenována — runner posílal `symbol1/symbol2/symbol3`, ale `shpd.bank.statement.v1`
+> má `additionalProperties: false` a zná jen `paymentReference` (VS) /
+> `specificSymbol` (SS) / `constantSymbol` (KS) → každý výpis s transakcí padal
+> na `schema_invalid`. Opraveno v `loadTransactions()` (VS→paymentReference jako
+> Fáze 09). Re-run bez `ds-reset` (failnuté výpisy se do LocalIdMap neuložily).
+
 ## Kontext
 
 Runner na **staré straně**, který přečte bankovní výpisy ze starého Shipardu
@@ -136,7 +143,8 @@ document = ndx ORDER BY rowOrder, ndx`):
   `dateAccounting` hlavičky jako fallback; `dateValue` = `null`
 - `counterpartyAccount` = `bankAccount` (řetězec), `counterpartyName` = `null`
   (starý řádek název protistrany nedrží)
-- `symbol1`/`symbol2`/`symbol3` = `symbol1`/`symbol2`/`symbol3`
+- `symbol1`/`symbol2`/`symbol3` (VS/SS/KS) → `paymentReference`/`specificSymbol`/
+  `constantSymbol` (názvy kanonického schématu; VS→paymentReference jako Fáze 09)
 - `message` = `text`/memo (sloučené)
 - `operation` = `null` (nová strana doplní default `payment.in`/`payment.out`
   dle směru → účtování na clearing)

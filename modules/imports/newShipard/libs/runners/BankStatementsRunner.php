@@ -213,9 +213,11 @@ final class BankStatementsRunner extends BaseExchangeRunner
 				'dateValue'           => null,
 				'counterpartyAccount' => $this->emptyToNull($row['bankAccount'] ?? null),
 				'counterpartyName'    => null,
-				'symbol1'             => $this->emptyToNull($row['symbol1'] ?? null),
-				'symbol2'             => $this->emptyToNull($row['symbol2'] ?? null),
-				'symbol3'             => $this->emptyToNull($row['symbol3'] ?? null),
+				// Staré symbol1/2/3 (VS/SS/KS) → nové názvy kanonického schématu
+				// (variabilní → paymentReference, viz Fáze 09 rename u dokladů).
+				'paymentReference'    => $this->emptyToNull($row['symbol1'] ?? null),
+				'specificSymbol'      => $this->emptyToNull($row['symbol2'] ?? null),
+				'constantSymbol'      => $this->emptyToNull($row['symbol3'] ?? null),
 				'message'             => $this->emptyToNull($row['text'] ?? null),
 				'operation'           => null,   // nová strana → default payment.in/out dle směru
 				'exchangeRate'        => $this->positiveOrNull($row['exchangeRate'] ?? null),
