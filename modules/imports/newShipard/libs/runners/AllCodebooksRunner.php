@@ -7,12 +7,15 @@ use imports\newShipard\libs\ImportRunner;
 final class AllCodebooksRunner extends ImportRunner
 {
 	/**
-	 * Pořadí v praxi nezáleží — žádný runner Fáze 02 nečte LocalIdMap jiné
-	 * Fáze 02 entity. Fixujeme ho jen kvůli stabilním logům a předvídatelnosti.
+	 * Jediná závislost uvnitř Fáze 02: BankAccountsRunner resolvuje účet pro
+	 * účtování (`debsAccountId` → accounting_account) přes LocalIdMap
+	 * ENTITY_ACCOUNT, který plní AccountsRunner — proto účty MUSÍ jít dřív.
+	 * Zbytek pořadí je volný, fixujeme ho kvůli stabilním logům.
 	 */
 	private const SEQUENCE = [
 		VatRegistrationsRunner::class,
 		FiscalYearsRunner::class,
+		AccountsRunner::class,
 		BankAccountsRunner::class,
 		CostCentersRunner::class,
 		WarehousesRunner::class,
@@ -20,7 +23,6 @@ final class AllCodebooksRunner extends ImportRunner
 		NumberSeriesRunner::class,
 		ItemKindsRunner::class,
 		UnitsRunner::class,
-		AccountsRunner::class,
 	];
 
 	public function run(): bool

@@ -5,6 +5,7 @@ namespace imports\newShipard\libs\runners;
 use imports\newShipard\libs\BaseExchangeRunner;
 use imports\newShipard\libs\CrudClient;
 use imports\newShipard\libs\LocalIdMap;
+use imports\newShipard\libs\ResolvesAccountingAccount;
 
 /**
  * Import položek ze starého Shipardu (e10_witems_items + itemtypes +
@@ -21,6 +22,8 @@ use imports\newShipard\libs\LocalIdMap;
  */
 final class ItemsRunner extends BaseExchangeRunner
 {
+	use ResolvesAccountingAccount;
+
 	/**
 	 * Mapování e10.base.defaultDocStatesArchive → core.system.docStatesArchive.
 	 * 9800 (Smazáno) je filtrováno ze source query.
@@ -46,14 +49,6 @@ final class ItemsRunner extends BaseExchangeRunner
 		2 => 2,  // Účetní položka
 		3 => 3,  // Ostatní
 	];
-
-	/**
-	 * Lazy cache: číslo účtu → starý ndx z e10doc_debs_accounts.
-	 * Viz accountNdxByNumber().
-	 *
-	 * @var array<string, int>|null
-	 */
-	private ?array $accountNdxByNumber = null;
 
 	/**
 	 * Per-run memo: nový id položky → accounting_account přiřazený v tomto
@@ -427,72 +422,15 @@ final class ItemsRunner extends BaseExchangeRunner
 
 	/**
 	 * Nový ndx účtu (economy_accounting_accounts) pro položku, nebo null.
-	 *
-	 * Zdroj: e10_witems_items.debsAccountId (string číslo účtu, extension
-	 * z e10doc/core). Číslo se převede na starý ndx přes lazy mapu z
-	 * e10doc_debs_accounts a dál na nový ndx přes LocalIdMap
-	 * (ENTITY_ACCOUNT, plní AccountsRunner ve fázi codebooks).
-	 * Nenalezený účet → warn + null (accounting_account zůstane NULL).
+	 * Zdroj: e10_witems_items.debsAccountId (extension z e10doc/core).
+	 * Resolve řeší ResolvesAccountingAccount.
 	 */
 	private function resolveAccountingAccount(array $oldRow): ?int
 	{
-		$number = trim((string) ($oldRow['debsAccountId'] ?? ''));
-		if ($number === '')
-			return null;
-
-		$oldAccNdx = $this->accountNdxByNumber()[$number] ?? null;
-		if ($oldAccNdx === null)
-		{
-			$this->warn("item {$oldRow['ndx']}: ucet '{$number}' neni v e10doc_debs_accounts (nebo je smazany), accounting_account zustava NULL");
-			return null;
-		}
-
-		$newAccNdx = $this->idMap()->lookup(LocalIdMap::ENTITY_ACCOUNT, $oldAccNdx);
-		if ($newAccNdx === null)
-		{
-			$this->warn("item {$oldRow['ndx']}: ucet '{$number}' (old ndx={$oldAccNdx}) neni v LocalIdMap, probehl AccountsRunner?");
-			return null;
-		}
-
-		return $newAccNdx;
-	}
-
-	/**
-	 * Lazy mapa: číslo účtu → starý ndx z e10doc_debs_accounts (bez
-	 * smazaných). Záměrně bez JOINu v sourceQuery — případná duplicita
-	 * čísla účtu by násobila řádky položek. Duplicity řeší first-wins
-	 * (nižší ndx) + warning.
-	 *
-	 * @return array<string, int>
-	 */
-	private function accountNdxByNumber(): array
-	{
-		if ($this->accountNdxByNumber !== null)
-			return $this->accountNdxByNumber;
-
-		$this->accountNdxByNumber = [];
-
-		$rows = $this->db()->query(
-			'SELECT [ndx], [id] FROM [e10doc_debs_accounts]'
-			. ' WHERE [docState] != %i', 9800,
-			' ORDER BY [ndx]',
-		)->fetchAll();
-
-		foreach ($rows as $r)
-		{
-			$row = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
-			$number = trim((string) ($row['id'] ?? ''));
-			if ($number === '')
-				continue;
-			if (isset($this->accountNdxByNumber[$number]))
-			{
-				$this->warn("duplicate account number '{$number}' in e10doc_debs_accounts (using ndx={$this->accountNdxByNumber[$number]}, ignoring ndx={$row['ndx']})");
-				continue;
-			}
-			$this->accountNdxByNumber[$number] = (int) $row['ndx'];
-		}
-
-		return $this->accountNdxByNumber;
+		return $this->resolveAccountingAccountNumber(
+			(string) ($oldRow['debsAccountId'] ?? ''),
+			"item {$oldRow['ndx']}",
+		);
 	}
 
 	private function mapDocState(array $oldRow): int
