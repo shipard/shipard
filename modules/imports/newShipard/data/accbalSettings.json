@@ -1,0 +1,532 @@
+{
+    "balances": [
+        {
+            "code": "receivables",
+            "name": "Pohledávky",
+            "short_name": "Pohledávky",
+            "sort_order": 11,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": [
+                {
+                    "account_number": "343802",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "343802",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "311",
+                    "acc_side": 0,
+                    "amounts_sign": 1,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "311",
+                    "acc_side": 1,
+                    "amounts_sign": 1,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "321",
+                    "acc_side": 1,
+                    "amounts_sign": 2,
+                    "bal_side": 0,
+                    "modify_sign": true,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "321",
+                    "acc_side": 0,
+                    "amounts_sign": 2,
+                    "bal_side": 1,
+                    "modify_sign": true,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "315",
+                    "acc_side": 0,
+                    "amounts_sign": 1,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "315",
+                    "acc_side": 1,
+                    "amounts_sign": 1,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                }
+            ]
+        },
+        {
+            "code": "loans_given",
+            "name": "Poskytnuté půjčky",
+            "short_name": "Poskytnuté půjčky",
+            "sort_order": 17,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": [
+                {
+                    "account_number": "355100",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "355100",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                }
+            ]
+        },
+        {
+            "code": "payables",
+            "name": "Závazky",
+            "short_name": "Závazky",
+            "sort_order": 21,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": [
+                {
+                    "account_number": "331200",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "325100",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "325100",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "341100",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "341100",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "342200",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "342200",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "343801",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "343801",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "345400",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "345400",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "331200",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "315",
+                    "acc_side": 1,
+                    "amounts_sign": 2,
+                    "bal_side": 1,
+                    "modify_sign": true,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "311",
+                    "acc_side": 0,
+                    "amounts_sign": 2,
+                    "bal_side": 0,
+                    "modify_sign": true,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "321",
+                    "acc_side": 1,
+                    "amounts_sign": 1,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "321",
+                    "acc_side": 0,
+                    "amounts_sign": 1,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "336",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "336",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "379",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "379",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "311",
+                    "acc_side": 1,
+                    "amounts_sign": 2,
+                    "bal_side": 1,
+                    "modify_sign": true,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "315",
+                    "acc_side": 0,
+                    "amounts_sign": 2,
+                    "bal_side": 0,
+                    "modify_sign": true,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                }
+            ]
+        },
+        {
+            "code": "credits",
+            "name": "Úvěry",
+            "short_name": "Úvěry",
+            "sort_order": 26,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": [
+                {
+                    "account_number": "461",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "461",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                }
+            ]
+        },
+        {
+            "code": "loans_received",
+            "name": "Přijaté půjčky",
+            "short_name": "Přijaté půjčky",
+            "sort_order": 27,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": []
+        },
+        {
+            "code": "advances_given",
+            "name": "Poskytnuté zálohy",
+            "short_name": "Poskytnuté zálohy",
+            "sort_order": 31,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": [
+                {
+                    "account_number": "341200",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "341200",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                }
+            ]
+        },
+        {
+            "code": "advances_received",
+            "name": "Přijaté zálohy",
+            "short_name": "Přijaté zálohy",
+            "sort_order": 32,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": []
+        },
+        {
+            "code": "money_in_transit",
+            "name": "Peníze na cestě",
+            "short_name": "Peníze na cestě",
+            "sort_order": 41,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": [
+                {
+                    "account_number": "261100",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "261100",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 47,
+                    "valid_from": null,
+                    "valid_to": null
+                }
+            ]
+        },
+        {
+            "code": "prepaid_expenses",
+            "name": "Náklady příštích období",
+            "short_name": "Náklady příštích období",
+            "sort_order": 42,
+            "valid_from": null,
+            "valid_to": null,
+            "accounts": [
+                {
+                    "account_number": "381200",
+                    "acc_side": 0,
+                    "amounts_sign": 0,
+                    "bal_side": 0,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                },
+                {
+                    "account_number": "381200",
+                    "acc_side": 1,
+                    "amounts_sign": 0,
+                    "bal_side": 1,
+                    "modify_sign": false,
+                    "note": null,
+                    "sort_order": 44,
+                    "valid_from": null,
+                    "valid_to": null
+                }
+            ]
+        }
+    ]
+}
