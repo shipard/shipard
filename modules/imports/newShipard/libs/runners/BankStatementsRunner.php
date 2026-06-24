@@ -186,6 +186,12 @@ final class BankStatementsRunner extends BaseExchangeRunner
 	 * nová strana z něj počítá amount_dom (amount × rate). Domácí řádek → null →
 	 * rate 1 (FX rozdíly jsou mimo scope migrace).
 	 *
+	 * partnerId: starý řádek nese přímý odkaz na osobu (e10doc_core_rows.person);
+	 * předáváme nové id přes LocalIdMap. Spolehlivější (vyplněno u ~99,9 % řádků)
+	 * než párování přes číslo protiúčtu, které nová strana dělá jako fallback a
+	 * u zahraničních / neregistrovaných účtů selhává. Vyžaduje nasazenou podporu
+	 * partnerId na nové straně (jinak schema_invalid).
+	 *
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function loadTransactions(int $docNdx, string $headerDateFallback): array
@@ -211,6 +217,7 @@ final class BankStatementsRunner extends BaseExchangeRunner
 				'amount'              => $credit > 0 ? $credit : -$debit,
 				'dateTransaction'     => $this->dateToString($row['dateDue'] ?? null) ?? $headerDateFallback,
 				'dateValue'           => null,
+				'partnerId'           => $this->resolvePartnerId((int) ($row['person'] ?? 0), (int) $row['ndx']),
 				'counterpartyAccount' => $this->emptyToNull($row['bankAccount'] ?? null),
 				'counterpartyName'    => null,
 				// Staré symbol1/2/3 (VS/SS/KS) → nové názvy kanonického schématu
@@ -224,6 +231,27 @@ final class BankStatementsRunner extends BaseExchangeRunner
 			];
 		}
 		return $out;
+	}
+
+	/**
+	 * Nové id partnera (base_persons_persons) ze starého e10doc_core_rows.person
+	 * přes LocalIdMap ENTITY_PERSON. Prázdná osoba (0) → null. Vyplněná, ale
+	 * nenamapovaná osoba → debug + null (nová strana spadne zpět na párování
+	 * přes číslo protiúčtu). Persons se importují dřív (AllRunner: persons →
+	 * items → docs → bank statements), takže miss je u běhu `all` anomálie.
+	 */
+	private function resolvePartnerId(int $oldPersonNdx, int $rowNdx): ?int
+	{
+		if ($oldPersonNdx <= 0)
+			return null;
+
+		$newId = $this->idMap()->lookup(LocalIdMap::ENTITY_PERSON, $oldPersonNdx);
+		if ($newId === null)
+		{
+			$this->debug("bank row {$rowNdx}: person {$oldPersonNdx} not in LocalIdMap (persons imported?), partnerId=null");
+			return null;
+		}
+		return $newId;
 	}
 
 	/**
