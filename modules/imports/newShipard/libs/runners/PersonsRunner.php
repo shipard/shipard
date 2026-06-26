@@ -112,6 +112,12 @@ final class PersonsRunner extends BaseExchangeRunner
 
 			'applyOptions' => [
 				'mergeStrategy'  => 'fullSync',
+				// Migrace má autoritativní staré ndx — párovat jen přes
+				// identifikátory (IČO/DIČ), NE podle jména. FO bez IČO mají běžně
+				// shodná jména (obsluha je rozlišuje datem narození / č. dokladu);
+				// párování podle jména by různé osoby slučovalo. Idempotenci mezi
+				// běhy drží LocalIdMap; doklady pinnou partnera přes useExisting.
+				'matchStrategy'  => 'identifiersOnly',
 				// Schema applieru dovolí jen 10 nebo 40. Pro 70 (Archív) a 80
 				// (V opravě) provedeme post-apply PATCH — viz afterApplied().
 				'targetDocState' => $this->insertDocState($oldRow),

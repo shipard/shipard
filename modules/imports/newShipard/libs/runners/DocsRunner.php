@@ -67,11 +67,12 @@ final class DocsRunner extends BaseExchangeRunner
 	 * Starý paymentMethod (e10.docs.paymentMethods, viz
 	 * e10pro/install/docs-core/config/e10.docs.paymentMethods.json) → canonical
 	 * payment.method. Pozor: starý 0 = "Převodním příkazem", 1 = "Hotově"
-	 * (NE naopak). PayPal (11) mapujeme na kartu — taky nemá bankovní účet,
-	 * takže bankTransfer by byl zavádějící. Ostatní starší kódy (Fakturou,
-	 * Inkasem, Šekem, …) nemají přímý protějšek v novém formátu (cash/
-	 * bankTransfer/card/cashOnDelivery/setOff) → fallback na bankTransfer.
-	 * Neznámé → bankTransfer.
+	 * (NE naopak). PayPal (11) i Platební brána (12) mapujeme na kartu — nemají
+	 * bankovní účet, takže bankTransfer by byl zavádějící (a u přijatých faktur
+	 * navíc applier u bankTransfer vyžaduje účet dodavatele —
+	 * ReceivedInvoiceDocument). Ostatní starší kódy (Fakturou, Inkasem, Šekem, …)
+	 * nemají přímý protějšek v novém formátu (cash/bankTransfer/card/
+	 * cashOnDelivery/setOff) → fallback na bankTransfer. Neznámé → bankTransfer.
 	 */
 	private const PAYMENT_METHOD_MAP = [
 		0  => 'bankTransfer',    // Převodním příkazem
@@ -79,6 +80,7 @@ final class DocsRunner extends BaseExchangeRunner
 		2  => 'card',            // Kartou
 		3  => 'cashOnDelivery',  // Dobírka
 		11 => 'card',            // PayPal (bez bankovního účtu → karta)
+		12 => 'card',            // Platební brána (bez bankovního účtu → karta)
 	];
 
 	/**
@@ -458,7 +460,8 @@ final class DocsRunner extends BaseExchangeRunner
 		$supplier = $selfParty === 'supplier' ? null : $partnerParty;
 		$customer = $selfParty === 'customer' ? null : $partnerParty;
 
-		$rows = $this->loadRows($oldNdx, $oldDocType);
+		$loaded = $this->loadRows($oldNdx, $oldDocType);
+		$rows = $loaded['rows'];
 		if ($rows === [])
 		{
 			$this->warn("doc {$oldNdx}: no rows, skipping");
@@ -570,7 +573,7 @@ final class DocsRunner extends BaseExchangeRunner
 		// (docNumber===null) → null v obou směrech.
 		$partnerDocNumber = ($oldDocType === 'invno' || $docNumber === null) ? null : $docNumber;
 
-		return [
+		$canonical = [
 			'format'        => 'shpd.docs.document',
 			'formatVersion' => '1.0',
 
@@ -629,6 +632,25 @@ final class DocsRunner extends BaseExchangeRunner
 
 			'applyOptions' => $applyOptions,
 		];
+
+		// Pinning přes LocalIdMap (staré ndx → nové id) → applier použije přesný
+		// migrovaný záznam místo dohledávání podle business klíčů. Nezbytné, když
+		// se stejnojmenné osoby/položky už neslučují (matchStrategy=identifiersOnly):
+		// partner-FO i řádkové položky by jinak byly nejednoznačné.
+		//   - rows: kompletní pozičně zarovnané pole (i placeholdery) — applier
+		//     čte clientResolve.rows[i] podle pozice, výpadek by posunul indexy.
+		//   - partner: strana, kterou MY nejsme (customer u invno, supplier u invni).
+		$resolve = $loaded['resolve'] !== [] ? ['rows' => $loaded['resolve']] : [];
+		$partnerNewId = $this->idMap()->lookup(LocalIdMap::ENTITY_PERSON, $partnerNdx);
+		if ($partnerNewId !== null)
+		{
+			$partnerSide = $selfParty === 'supplier' ? 'customer' : 'supplier';
+			$resolve[$partnerSide] = ['userAction' => 'useExisting:' . $partnerNewId];
+		}
+		if ($resolve !== [])
+			$canonical['_resolve'] = $resolve;
+
+		return $canonical;
 	}
 
 	/**
@@ -637,10 +659,15 @@ final class DocsRunner extends BaseExchangeRunner
 	 * tento doklad (s autoritativním %C = $seriesCode), ořízne vyhodnocený
 	 * prefix zleva a suffix zprava — zbytek je počítadlo.
 	 *
-	 * Fáze 10: žádný fallback. Neshoda formule (chybějící counter token, zbylý
-	 * nevyhodnocený token, neshoda prefixu/suffixu, nečíselné jádro) = null.
-	 * Volající (buildCanonical) z null udělá tvrdou chybu dokladu. $diag nese
-	 * lidsky čitelný důvod do hlášky failu.
+	 * Neshoda formule (chybějící counter token, zbylý nevyhodnocený token,
+	 * neshoda prefixu/suffixu, nečíselné jádro) = null. Volající (buildCanonical)
+	 * z null udělá tvrdou chybu dokladu. $diag nese lidsky čitelný důvod do
+	 * hlášky failu.
+	 *
+	 * Jediný fallback: fiskální značka (%r). Primárně z hlavičkového fiscalYear,
+	 * ale ten může u přelomových dokladů (vystaveno v prosinci, zaúčtováno
+	 * v lednu) ukazovat na rok zaúčtování, zatímco číslo nese rok vystavení →
+	 * při neshodě zkusíme značku fiskálního roku obsahujícího dateIssue.
 	 */
 	private function parseSequenceNumber(array $oldRow, string $seriesCode, string &$diag): ?int
 	{
@@ -666,8 +693,43 @@ final class DocsRunner extends BaseExchangeRunner
 			return null;
 		}
 
-		$prefix = $this->evaluateNumberTokens($m[1], $oldRow, $seriesCode);
-		$suffix = $this->evaluateNumberTokens($m[3], $oldRow, $seriesCode);
+		// Kandidátní fiskální značky (%r): primární (FK / dateAccounting) a při
+		// neshodě fallback na fiskální rok obsahující dateIssue (číslo se otisklo
+		// v čase vystavení). Vrátíme první, která sedí na docNumber.
+		$primaryMark = $this->resolveFiscalYearMark($oldRow);
+		$marks = [$primaryMark];
+		$issueMark = $this->markByDate($this->dateToString($oldRow['dateIssue'] ?? null));
+		if ($issueMark !== null && $issueMark !== $primaryMark)
+			$marks[] = $issueMark;
+
+		foreach ($marks as $i => $mark)
+		{
+			$seq = $this->tryParseSequence($docNumber, $m[1], $m[3], $oldRow, $seriesCode, $mark, $formula, $diag);
+			if ($seq !== null)
+			{
+				if ($i > 0)
+					$this->debug("doc {$oldRow['ndx']}: sequence parsed with issue-date fiscal mark "
+						. "'{$mark}' (header fiscalYear mark '{$primaryMark}' didn't match docNumber)");
+				return $seq;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Jeden pokus o rozparsování sekvence s konkrétní fiskální značkou
+	 * ($fiscalMark → token %r). Replikuje prefix/suffix část makeDocNumber:
+	 * ořízne vyhodnocený prefix zleva a suffix zprava, zbytek je počítadlo.
+	 * Vrací sekvenci, nebo null + důvod do $diag (nevyhodnocený token, neshoda
+	 * prefixu/suffixu, nečíselné jádro).
+	 */
+	private function tryParseSequence(
+		string $docNumber, string $prefixPat, string $suffixPat,
+		array $oldRow, string $seriesCode, string $fiscalMark, string $formula, string &$diag
+	): ?int
+	{
+		$prefix = $this->evaluateNumberTokens($prefixPat, $oldRow, $seriesCode, $fiscalMark);
+		$suffix = $this->evaluateNumberTokens($suffixPat, $oldRow, $seriesCode, $fiscalMark);
 		$diag = "formula='{$formula}', prefix='{$prefix}', suffix='{$suffix}'";
 
 		// Prefix/suffix musí být plně vyhodnocené — zbylý %token (např. %A/%B/%W,
@@ -710,11 +772,12 @@ final class DocsRunner extends BaseExchangeRunner
 	/**
 	 * Vyhodnotí prefix/suffix tokeny formule (%D %r %C %Y %y %M) konkrétními
 	 * hodnotami daného dokladu — replikuje relevantní část makeDocNumber. %C bere
-	 * autoritativní kód řady ($seriesCode = docKeyId z dbCounter). Tokeny
-	 * %B/%A/%W (cashBox/bankAccount/warehouse id) ponecháváme nevyhodnocené;
-	 * jejich přítomnost shodí parser na null (neshoda formule).
+	 * autoritativní kód řady ($seriesCode = docKeyId z dbCounter). %r bere
+	 * předanou fiskální značku ($fiscalMark); když není (null), dohledá se přes
+	 * resolveFiscalYearMark. Tokeny %B/%A/%W (cashBox/bankAccount/warehouse id)
+	 * ponecháváme nevyhodnocené; jejich přítomnost shodí parser na null.
 	 */
-	private function evaluateNumberTokens(string $pattern, array $oldRow, string $seriesCode): string
+	private function evaluateNumberTokens(string $pattern, array $oldRow, string $seriesCode, ?string $fiscalMark = null): string
 	{
 		if ($pattern === '')
 			return '';
@@ -730,7 +793,7 @@ final class DocsRunner extends BaseExchangeRunner
 
 		return strtr($pattern, [
 			'%D' => $docIdCode,
-			'%r' => $this->resolveFiscalYearMark($oldRow),
+			'%r' => $fiscalMark ?? $this->resolveFiscalYearMark($oldRow),
 			'%C' => $seriesCode,
 			'%Y' => $dt ? $dt->format('Y') : '',
 			'%y' => $dt ? $dt->format('y') : '',
@@ -755,20 +818,28 @@ final class DocsRunner extends BaseExchangeRunner
 				return (string) ($r['mark'] ?? '');
 		}
 
-		$dateAcc = $this->dateToString($oldRow['dateAccounting'] ?? null);
-		if ($dateAcc !== null)
-		{
-			$r = $this->db()->query(
-				'SELECT [mark] FROM [e10doc_base_fiscalyears] WHERE [docState] != %i', 9800,
-				' AND [start] <= %d', $dateAcc,
-				' AND [end] >= %d', $dateAcc,
-				' ORDER BY [start] DESC',
-			)->fetch();
-			if ($r !== null)
-				return (string) ($r['mark'] ?? '');
-		}
+		$markByAcc = $this->markByDate($this->dateToString($oldRow['dateAccounting'] ?? null));
+		return $markByAcc ?? '';
+	}
 
-		return '';
+	/**
+	 * Mark fiskálního roku, jehož rozsah start..end obsahuje dané datum (YYYY-MM-DD),
+	 * nebo null když datum chybí / žádný rok nesedí. Sdílí resolveFiscalYearMark
+	 * (fallback hlavičky) i parseSequenceNumber (fallback %r přes dateIssue).
+	 */
+	private function markByDate(?string $date): ?string
+	{
+		if ($date === null)
+			return null;
+
+		$r = $this->db()->query(
+			'SELECT [mark] FROM [e10doc_base_fiscalyears] WHERE [docState] != %i', 9800,
+			' AND [start] <= %d', $date,
+			' AND [end] >= %d', $date,
+			' ORDER BY [start] DESC',
+		)->fetch();
+
+		return $r !== null ? (string) ($r['mark'] ?? '') : null;
 	}
 
 	/**
@@ -931,7 +1002,14 @@ final class DocsRunner extends BaseExchangeRunner
 	 * U item-řádků mapuje starý pohyb (operation) na nový string — stav 40 ho
 	 * vyžaduje (DocDocument::validateRowOperations). Text-řádky pohyb nemají.
 	 *
-	 * @return array<int, array<string, mixed>>
+	 * Vrací zároveň `resolve` — pole zarovnané s `rows` (po pozicích), kde
+	 * item-řádky s LocalIdMap hitem nesou `item.userAction = useExisting:<newId>`.
+	 * Applier díky tomu použije přesnou migrovanou položku místo dohledávání
+	 * podle kódu/jména (po zrušení slučování stejnojmenných položek jinak
+	 * nejednoznačné). Pozice musí sedět s `rows` — proto i řádky bez mapování
+	 * (text-řádky, nenamapované položky) dostanou placeholder `['index' => i]`.
+	 *
+	 * @return array{rows: array<int, array<string, mixed>>, resolve: array<int, array<string, mixed>>}
 	 */
 	private function loadRows(int $docNdx, string $oldDocType): array
 	{
@@ -944,12 +1022,14 @@ final class DocsRunner extends BaseExchangeRunner
 		)->fetchAll();
 
 		$out = [];
+		$resolve = [];
 		$pos = 0;
 		foreach ($rows as $r)
 		{
 			$row = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
 			$pos++;
 
+			$oldItemNdx = (int) ($row['item'] ?? 0);
 			$itemCode = $this->emptyToNull($row['item_code'] ?? null);
 			$itemName = $this->emptyToNull($row['item_name'] ?? null)
 				?? $this->emptyToNull($row['text'] ?? null);
@@ -985,8 +1065,19 @@ final class DocsRunner extends BaseExchangeRunner
 					'pct'  => $this->numberOrNull($row['taxPercents'] ?? null),
 				],
 			];
+
+			// Resolve hint zarovnaný s pozicí v $out. Item-řádek s LocalIdMap
+			// hitem → useExisting na přesnou novou položku.
+			$resolveRow = ['index' => count($out) - 1];
+			if ($rowKind === 'item' && $oldItemNdx > 0)
+			{
+				$newItemId = $this->idMap()->lookup(LocalIdMap::ENTITY_ITEM, $oldItemNdx);
+				if ($newItemId !== null)
+					$resolveRow['item'] = ['userAction' => 'useExisting:' . $newItemId];
+			}
+			$resolve[] = $resolveRow;
 		}
-		return $out;
+		return ['rows' => $out, 'resolve' => $resolve];
 	}
 
 	/**

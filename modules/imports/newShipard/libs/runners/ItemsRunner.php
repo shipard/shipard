@@ -131,6 +131,11 @@ final class ItemsRunner extends BaseExchangeRunner
 
 			'applyOptions' => [
 				'mergeStrategy'  => 'fullSync',
+				// Migrace má autoritativní starý kód (id) — párovat jen přes
+				// identifikátory, NE podle jména. Dvě různé položky stejného
+				// jména (např. "Parkovné" jako služba vs. účetní položka) musí
+				// zůstat oddělené; idempotenci mezi běhy drží LocalIdMap.
+				'matchStrategy'  => 'identifiersOnly',
 				'targetDocState' => $this->insertDocState($oldRow),
 				'rejectOnIssues' => ['error'],
 			],

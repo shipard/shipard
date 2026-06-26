@@ -104,10 +104,13 @@ zkusí vytvořit (`autoCreateMode: safe`), což vede k neúplným záznamům.
 
 - **Středisko a sklad se ztrácí** — `docs_core_heads` v novém Shipardu zatím
   nemá `cost_center` ani `warehouse`. Importované doklady tato data nenesou.
-- **Faktury s partnerem bez IČO se přeskočí** — `autoCreateMode: safe` vytvoří
-  partnera jen pokud má `company_id`. Partner-fyzická osoba bez IČO, který
-  zároveň není předem naimportovaný (persons), způsobí `unresolved_required`
-  → celý doklad je `skipped`. Proto importuj persons před docs.
+- **Partner se páruje přes LocalIdMap, ne podle jména** — doklad ukazuje na
+  přesnou migrovanou osobu přes `_resolve.{customer|supplier}.userAction =
+  useExisting:<id>` (mapování staré ndx → nové id). Partner proto musí být
+  naimportovaný **před** doklady (`persons` před `docs`); jinak ho importér
+  v LocalIdMap nenajde a spadne zpět na párování přes IČO/jméno — u fyzické
+  osoby bez IČO (a se stejnojmenným záznamem) to skončí `unresolved_required`
+  → doklad `skipped`. Viz [Párování záznamů a deduplikace](#párování-záznamů-a-deduplikace).
 - **Vydané faktury (`invno`) — vlastní bankovní účet a dvoukrokový import.**
   Nový Shipard u vydané faktury vyžaduje při potvrzení (docState 20+) vlastní
   `bank_account` (kam má zákazník zaplatit; `IssuedInvoiceDocument::validate`).
@@ -207,6 +210,36 @@ runner zafailuje per řádek (`--continue-on-error` umožní pokračovat).
 — jsou fatální, vyžadují opravu zdrojových dat.
 
 Verbose log (`-v`) zobrazí každý retry: `[http] retry 1/3 after 6 s (HTTP 429: RATE_LIMITED)`.
+
+## Párování záznamů a deduplikace
+
+Resolvery nového Shipardu páruje příchozí záznam přes business klíče a jako
+poslední možnost přes **fuzzy shodu jména** (`name LIKE %…%`). To je správné
+pro obecný výměnný flow (AI extrakce, externí feedy), ale pro **migraci**
+škodlivé: dvě genuinně různé položky/osoby téhož jména (např. „Parkovné" jako
+služba vs. účetní položka; nebo dvě fyzické osoby stejného jména) by se slily
+do jedné. Migrace má přitom autoritativní staré ID, takže párování podle jména
+vypíná:
+
+- **`items` a `persons`** posílají `applyOptions.matchStrategy = "identifiersOnly"`
+  → resolver páruje jen přes identifikátory (kód položky; IČO/DIČ osoby) a při
+  neshodě **vytvoří nový** záznam místo slití podle jména. Idempotenci mezi
+  běhy drží `LocalIdMap` (už naimportované záznamy se přeskočí, viz
+  [Idempotence](#idempotence)), ne fuzzy shoda jména.
+- **`docs`** pinnou partnera i řádkové položky na konkrétní migrovaný záznam
+  přes `_resolve.{customer|supplier}.userAction` a `_resolve.rows[i].item.userAction
+  = "useExisting:<nové-id>"` (id z `LocalIdMap`). Applier pak nehledá podle
+  kódu/jména — což by po zrušení slučování bylo nejednoznačné. Když partner /
+  položka v `LocalIdMap` není (nebyly naimportované), pin se vynechá a applier
+  spadne zpět na standardní párování.
+
+Default `matchStrategy` (`identifiersAndName`, resp. vynecháno) zachovává
+původní chování s fuzzy shodou jména — pro neimportní použití formátu.
+
+> **Důsledek pro pořadí importu:** `persons` a `items` musí proběhnout **před**
+> `docs`, aby byly v `LocalIdMap` k dispozici pro pinning. Při re-importu po
+> opravě zdrojových dat smaž příslušné mapy (`forgetAll`) a importuj znovu
+> v pořadí persons → items → docs.
 
 ## Konfigurace
 
