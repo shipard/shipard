@@ -32,10 +32,15 @@ use imports\newShipard\libs\LocalIdMap;
  */
 final class DocsRunner extends BaseExchangeRunner
 {
-	/** Mapování starého docType → canonical docType. MVP: jen faktury. */
+	/**
+	 * Mapování starého docType → canonical docType. Faktury (invni/invno) +
+	 * účetní doklady (cmnbkp). Přidání klíče sem ho automaticky zařadí do
+	 * sourceQuery() i effectiveDateRange() (oboje řízené array_keys).
+	 */
 	private const DOC_TYPE_MAP = [
-		'invni' => 'invoiceReceived',
-		'invno' => 'invoiceIssued',
+		'invni'  => 'invoiceReceived',
+		'invno'  => 'invoiceIssued',
+		'cmnbkp' => 'accountingDocument',
 	];
 
 	/**
@@ -146,6 +151,18 @@ final class DocsRunner extends BaseExchangeRunner
 	private const ROW_OPERATION_DEFAULT = [
 		'invni' => 'purchase.goods',
 		'invno' => 'sale.services',
+	];
+
+	/**
+	 * Saldokontní cmnbkp operace (e10doc_core_rows.operation), které ve starém
+	 * Shipardu odvozovaly účet z kategorie (acc-default.json), ne z řádku. Na nové
+	 * straně jim odpovídají operace acc.balanceReceivable / acc.balancePayable —
+	 * účet dopočítá AccountingEngine z kategorie (311 / 321), strana + saldo
+	 * identita (partner + symboly) jdou z řádku. Řádky tedy jdou bez účtu i položky.
+	 */
+	private const CMNBKP_BALANCE_OP = [
+		1090001 => 'acc.balanceReceivable',  // Zápočet pohledávky (kategorie 311)
+		1090002 => 'acc.balancePayable',     // Zápočet závazku    (kategorie 321)
 	];
 
 	/**
@@ -430,6 +447,12 @@ final class DocsRunner extends BaseExchangeRunner
 			return null;
 		}
 
+		// Účetní doklad (cmnbkp) je strukturálně jiný — bez obchodního směru,
+		// nepovinný hlavičkový partner, kontační řádky. Vlastní cesta; faktury
+		// (níže) zůstávají beze změny.
+		if ($oldDocType === 'cmnbkp')
+			return $this->buildCmnbkpCanonical($oldRow);
+
 		$selfParty = self::SELF_PARTY_MAP[$oldDocType] ?? null;
 
 		// Faktura má vždy dvě strany. Bez partnera (interní/opravné doklady)
@@ -651,6 +674,358 @@ final class DocsRunner extends BaseExchangeRunner
 			$canonical['_resolve'] = $resolve;
 
 		return $canonical;
+	}
+
+	/**
+	 * Účetní doklad (cmnbkp) → canonical accountingDocument. Liší se od faktur:
+	 *   - žádný obchodní směr (selfParty/supplier/customer = null),
+	 *   - hlavičkový partner je nepovinný (saldo identita žije per řádek) —
+	 *     když je vyplněn, předá se jen jako pin přes LocalIdMap,
+	 *   - řádky jsou kontace (účet + strana MD/DAL + částka + per-řádková
+	 *     saldo identita), ne položky — viz loadCmnbkpRows().
+	 *
+	 * Číselná řada + sekvence + stav jdou stejnou cestou jako faktury
+	 * (resolveNumberSeriesCode přes dbCounter, parseSequenceNumber, targetDocState,
+	 * importNumber). Vlastní bank účet (invno) se cmnbkp netýká.
+	 */
+	private function buildCmnbkpCanonical(array $oldRow): ?array
+	{
+		$oldNdx = (int) $oldRow['ndx'];
+
+		// Hlavičkový partner nepovinný. Když je (person>0), pin přes LocalIdMap;
+		// bez hitu v mapě zůstává null (pin-only — applier neprovádí side-create).
+		$headPartnerNdx = (int) ($oldRow['person'] ?? 0);
+		$headPartnerNewId = $headPartnerNdx > 0
+			? $this->idMap()->lookup(LocalIdMap::ENTITY_PERSON, $headPartnerNdx)
+			: null;
+
+		$loaded = $this->loadCmnbkpRows($oldNdx);
+		$rows = $loaded['rows'];
+		if ($rows === [])
+		{
+			$this->warn("doc {$oldNdx}: no accounting rows, skipping");
+			return null;
+		}
+
+		// Od tohoto bodu doklad „stavíme" — tvrdé chyby níže nastaví rejectReason
+		// a processOneRow je povýší na 'failed' (hlasitě, import pokračuje).
+		$this->lastOldDocType = 'cmnbkp';
+
+		// Cílový stav z mapy (sdílená s fakturami). Neznámý starý stav = tvrdá chyba.
+		$oldState    = (int) ($oldRow['docState'] ?? 0);
+		$targetState = $this->targetDocState($oldState);
+		if ($targetState === null)
+		{
+			$this->rejectReason = "unknown old docState {$oldState} (not in DOC_STATE_MAP_TARGET)";
+			return null;
+		}
+
+		// Neúčtovatelné operace (majetek/kurz/vadné řádky bez účtu) — doklad se
+		// naimportuje kompletní (s číslem i řádky), ale nezaúčtuje: strop stavu na
+		// 20 (Potvrzeno). Žádná tvrdá chyba, žádné tiché rozbití ve stavu 40.
+		// 20 ∈ STATES_WITH_NUMBER, takže číslo + řada se přidělí jako jindy.
+		if (($loaded['hasNonAccountable'] ?? false) && $targetState > 20)
+		{
+			$this->warn("doc {$oldNdx}: contains non-accountable operation(s) (asset/fx), "
+				. "importing as Confirmed (20), not posted");
+			$targetState = 20;
+		}
+
+		// Placeholder „!…" = doklad bez přiděleného čísla. U stavu nesoucího číslo
+		// je to data-integrity chyba → fail (stejně jako u faktur).
+		$rawNumber     = $this->emptyToNull($oldRow['docNumber'] ?? null);
+		$isPlaceholder = $rawNumber !== null && str_starts_with($rawNumber, '!');
+		$docNumber     = $isPlaceholder ? null : $rawNumber;
+
+		$hasNumber = $this->stateHasNumber($targetState);
+		if ($isPlaceholder && $hasNumber)
+		{
+			$this->rejectReason = "placeholder number '{$rawNumber}' but target state "
+				. "{$targetState} requires a real number";
+			return null;
+		}
+
+		// Číselná řada + pořadí — jen pro stavy nesoucí číslo. Nedohledatelná řada
+		// (chybějící docKeyId cfg) i nevyhodnotitelná sekvence = tvrdá chyba.
+		$seriesCode = null;
+		$sequence   = null;
+		if ($hasNumber)
+		{
+			$seriesCode = $this->resolveNumberSeriesCode($oldRow);
+			if ($seriesCode === null)
+			{
+				$dbCounter = (int) ($oldRow['dbCounter'] ?? 0);
+				$this->rejectReason = "number series code (docKeyId) not found in cfg "
+					. "e10.docs.dbCounters.cmnbkp.{$dbCounter}.docKeyId";
+				return null;
+			}
+			if ($docNumber === null)
+			{
+				$this->rejectReason = "target state {$targetState} requires a number but docNumber is empty";
+				return null;
+			}
+			$diag = '';
+			$sequence = $this->parseSequenceNumber($oldRow, $seriesCode, $diag);
+			if ($sequence === null)
+			{
+				$this->rejectReason = "cannot parse sequence from docNumber '{$docNumber}' ({$diag})";
+				return null;
+			}
+		}
+
+		$this->lastSeriesCode = $seriesCode;
+		$this->lastSequence   = $sequence;
+
+		$applyOptions = [
+			'targetDocState'        => $targetState,
+			'autoCreateMode'        => 'safe',
+			'createMissingEntities' => true,
+			'rejectOnIssues'        => ['error'],
+		];
+		if ($hasNumber)
+		{
+			$applyOptions['numberSeriesCode'] = $seriesCode;
+			$applyOptions['importNumber'] = [
+				'docNumber'      => $docNumber,
+				'sequenceNumber' => $sequence,
+			];
+		}
+
+		// Lineage: oldNdx + staré kódy neúčtovatelných operací (majetek/kurz/vadné)
+		// kvůli dohledatelnosti, proč doklad zůstal ve stavu 20. Schema řádku je
+		// uzavřené, takže op kódy nesem na doc-level source.raw, ne per řádek.
+		$rawSource = ['oldNdx' => $oldNdx];
+		if (($loaded['nonAccountableOps'] ?? []) !== [])
+			$rawSource['oldOperations'] = $loaded['nonAccountableOps'];
+
+		$canonical = [
+			'format'        => 'shpd.docs.document',
+			'formatVersion' => '1.0',
+
+			'source' => [
+				'kind' => 'import.oldShipard',
+				'raw'  => $rawSource,
+			],
+
+			'docType'   => 'accountingDocument',
+			// Číslo cmnbkp je naše → jde do importNumber, ne do partner_doc_number.
+			'docNumber' => null,
+			'docText'   => $this->emptyToNull($oldRow['title'] ?? null),
+			'selfParty' => null,
+
+			'supplier' => null,
+			'customer' => null,
+
+			'dates' => [
+				'issueDate'         => $this->dateToString($oldRow['dateIssue'] ?? null),
+				'dueDate'           => $this->dateToString($oldRow['dateDue'] ?? null),
+				'accountingDate'    => $this->dateToString($oldRow['dateAccounting'] ?? null),
+				'taxPointDate'      => $this->dateToString($oldRow['dateTax'] ?? null),
+				'vatObligationDate' => $this->dateToString($oldRow['dateTaxDuty'] ?? null),
+				'periodFrom'        => $this->dateToString($oldRow['datePeriodBegin'] ?? null),
+				'periodTo'          => $this->dateToString($oldRow['datePeriodEnd'] ?? null),
+			],
+
+			'currency'     => $this->currencyUpper($oldRow['currency'] ?? null),
+			'exchangeRate' => $this->positiveOrNull($oldRow['exchangeRate'] ?? null),
+
+			// cmnbkp je bez DPH (useTax:0); applier vat_mode stejně vynutí na 0.
+			'vat' => [
+				'mode'                => 'none',
+				'place'               => 'domestic',
+				'registrationCountry' => null,
+			],
+
+			// Hlavičkové symboly cmnbkp nemá — saldo identita je na řádcích.
+			'payment' => [
+				'method'           => 'bankTransfer',
+				'paymentReference' => null,
+				'specificSymbol'   => null,
+				'constantSymbol'   => null,
+			],
+
+			'notes' => [
+				'internal'   => null,
+				'onDocument' => null,
+			],
+
+			'rows' => $rows,
+
+			// AccountingDocument přepočítá součty z řádků (Σ MD); posíláme hlavičkové
+			// hodnoty pro paritu/diagnostiku.
+			'totals' => [
+				'totalBase'     => $this->moneyOrNull($oldRow['sumBase'] ?? null),
+				'totalVat'      => $this->moneyOrNull($oldRow['sumTax'] ?? null),
+				'totalAmount'   => $this->moneyOrNull($oldRow['sumTotal'] ?? null),
+				'totalRounding' => $this->moneyOrNull($oldRow['rounding'] ?? null),
+			],
+
+			'applyOptions' => $applyOptions,
+		];
+
+		// Pinning přes LocalIdMap: řádky (item + per-řádkový partner) pozičně
+		// zarovnané, hlavičkový partner volitelně.
+		$resolve = $loaded['resolve'] !== [] ? ['rows' => $loaded['resolve']] : [];
+		if ($headPartnerNewId !== null)
+			$resolve['partner'] = ['userAction' => 'useExisting:' . $headPartnerNewId];
+		if ($resolve !== [])
+			$canonical['_resolve'] = $resolve;
+
+		return $canonical;
+	}
+
+	/**
+	 * Kontační řádky účetního dokladu z e10doc_core_rows (+ debsAccountId z debs
+	 * rozšíření, LEFT JOIN items kvůli kódu/jménu/pinu). Každý řádek:
+	 *   - strana + částka: debit (MD) → accSide='debit', credit (DAL) →
+	 *     accSide='credit'; právě jedna je nenulová (obě 0 → řádek přeskočit),
+	 *   - operace + účet: debsAccountId (číselný) → acc.record + account; jinak
+	 *     item>0 → acc.item + item fragment/pin; jinak řádek přeskočit,
+	 *   - per-řádkový partner: person>0 → pin _resolve.rows[i].partner,
+	 *   - identita: paymentReference=symbol1, specificSymbol=symbol2,
+	 *     constantSymbol=symbol3, dueDate=dateDue; description=text.
+	 *
+	 * Vrací rows + pozičně zarovnaný resolve (stejně jako loadRows): přeskočené
+	 * řádky vypadnou z obou polí současně, takže indexy zůstanou v zákrytu.
+	 *
+	 * @return array{rows: array<int, array<string, mixed>>, resolve: array<int, array<string, mixed>>}
+	 */
+	private function loadCmnbkpRows(int $docNdx): array
+	{
+		$rows = $this->db()->query(
+			'SELECT r.*, i.[id] AS item_code, i.[fullName] AS item_name'
+			. ' FROM [e10doc_core_rows] r'
+			. ' LEFT JOIN [e10_witems_items] i ON r.[item] = i.[ndx]'
+			. ' WHERE r.[document] = %i', $docNdx,
+			' ORDER BY r.[rowOrder], r.[ndx]',
+		)->fetchAll();
+
+		$out = [];
+		$resolve = [];
+		$pos = 0;
+		$hasNonAccountable = false;
+		$nonAccountableOps = [];
+		foreach ($rows as $r)
+		{
+			$row    = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
+			$rowNdx = (int) ($row['ndx'] ?? 0);
+
+			// Strana + částka. debit = Má dáti (Vyplaceno), credit = Dal (Přijato).
+			// Právě jedna je nenulová; obě nula → textový/oddělovací řádek bez strany.
+			$debit  = (float) ($row['debit'] ?? 0);
+			$credit = (float) ($row['credit'] ?? 0);
+			if ($debit != 0.0)
+			{
+				$accSide    = 'debit';
+				$totalPrice = $debit;
+			}
+			elseif ($credit != 0.0)
+			{
+				$accSide    = 'credit';
+				$totalPrice = $credit;
+			}
+			else
+			{
+				$this->debug("doc {$docNdx} row {$rowNdx}: zero debit & credit, skipping (no side)");
+				continue;
+			}
+
+			// Operace + zdroj účtu. Pořadí výběru:
+			//   1. debsAccountId (číselný) → acc.record + účet z řádku,
+			//   2. item > 0 → acc.item + položka (pin),
+			//   3. saldokontní operace → acc.balanceReceivable/Payable (účet
+			//      dopočítá nová strana z kategorie 311/321, řádek bez účtu/položky),
+			//   4. jinak neúčtovatelné (majetek/kurz/vadný řádek) → acc.record bez
+			//      účtu: řádek se nezahodí (nese stranu/částku/partnera/symboly/text),
+			//      ale doklad se zastropuje na stav 20 (buildCmnbkpCanonical).
+			$accountRaw = $this->emptyToNull($row['debsAccountId'] ?? null);
+			$oldItemNdx = (int) ($row['item'] ?? 0);
+			$oldOp      = (int) ($row['operation'] ?? 0);
+
+			$operation    = null;
+			$account      = null;
+			$itemFragment = null;
+			$itemPin      = null;
+
+			if ($accountRaw !== null && ctype_digit($accountRaw))
+			{
+				$operation = 'acc.record';
+				$account   = $accountRaw;
+			}
+			elseif ($oldItemNdx > 0)
+			{
+				$operation = 'acc.item';
+				$itemFragment = [
+					'ourCode'      => $this->emptyToNull($row['item_code'] ?? null),
+					'supplierCode' => null,
+					'sku'          => null,
+					'ean'          => null,
+					'name'         => $this->emptyToNull($row['item_name'] ?? null)
+						?? $this->emptyToNull($row['text'] ?? null),
+					'description'  => $this->emptyToNull($row['text'] ?? null),
+				];
+				$newItemId = $this->idMap()->lookup(LocalIdMap::ENTITY_ITEM, $oldItemNdx);
+				if ($newItemId !== null)
+					$itemPin = ['userAction' => 'useExisting:' . $newItemId];
+			}
+			elseif (isset(self::CMNBKP_BALANCE_OP[$oldOp]))
+			{
+				$operation = self::CMNBKP_BALANCE_OP[$oldOp];
+			}
+			else
+			{
+				$operation = 'acc.record';
+				$hasNonAccountable = true;
+				if (!in_array($oldOp, $nonAccountableOps, true))
+					$nonAccountableOps[] = $oldOp;
+				$this->debug("doc {$docNdx} row {$rowNdx}: non-accountable operation {$oldOp} "
+					. "(no account/item), importing row without account");
+			}
+
+			$pos++;
+			$out[] = [
+				'rowKind'        => 'item',
+				'operation'      => $operation,
+				'orderPos'       => $pos,
+				'item'           => $itemFragment,
+				'unit'           => null,
+				'quantity'       => null,
+				'unitPrice'      => null,
+				'totalPrice'     => $totalPrice,
+				// Kontace účtuje částku přímo; accSide stejně vynutí fromTotal v applieru.
+				'priceCalcMode'  => 'fromTotal',
+				'discountPct'    => null,
+				'discountAmount' => null,
+				'vat'            => ['code' => null, 'pct' => null],
+				'description'    => $this->emptyToNull($row['text'] ?? null),
+				'account'        => $account,
+				'accSide'        => $accSide,
+				'paymentReference' => $this->emptyToNull($row['symbol1'] ?? null),
+				'specificSymbol'   => $this->emptyToNull($row['symbol2'] ?? null),
+				'constantSymbol'   => $this->emptyToNull($row['symbol3'] ?? null),
+				'dueDate'          => $this->dateToString($row['dateDue'] ?? null),
+			];
+
+			// Resolve hint zarovnaný s pozicí v $out: item pin (acc.item) +
+			// per-řádkový partner pin.
+			$resolveRow = ['index' => count($out) - 1];
+			if ($itemPin !== null)
+				$resolveRow['item'] = $itemPin;
+			$personNdx = (int) ($row['person'] ?? 0);
+			if ($personNdx > 0)
+			{
+				$partnerNewId = $this->idMap()->lookup(LocalIdMap::ENTITY_PERSON, $personNdx);
+				if ($partnerNewId !== null)
+					$resolveRow['partner'] = ['userAction' => 'useExisting:' . $partnerNewId];
+			}
+			$resolve[] = $resolveRow;
+		}
+		return [
+			'rows'              => $out,
+			'resolve'           => $resolve,
+			'hasNonAccountable' => $hasNonAccountable,
+			'nonAccountableOps' => $nonAccountableOps,
+		];
 	}
 
 	/**

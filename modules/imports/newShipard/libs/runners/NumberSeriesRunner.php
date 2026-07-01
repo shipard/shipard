@@ -13,15 +13,16 @@ final class NumberSeriesRunner extends BaseCodebookRunner
 	 * Klíč = old e10.docs.types hodnota, value = ['newDocType', 'patternDefault'].
 	 * pattern_default odpovídá cfgItem `doc_number_pattern_default` per typ.
 	 *
-	 * V MVP cfgItem v novém zná jen `invno` a `invni`. Identity mapping — old
-	 * hodnoty jsou kompatibilní. Nové docTypes budou doplněny postupně.
+	 * Nový cfgItem zná `invno`, `invni` a `cmnbkp` (účetní doklad). Identity
+	 * mapping — old hodnoty jsou kompatibilní. Nové docTypes budou doplněny postupně.
 	 *
 	 * Pro starý typ, který v novém ještě není (cash/bank/prfmin/...), runner
 	 * řádek skipne s warningem.
 	 */
 	private const DOC_TYPE_MAP = [
-		'invno' => ['invno', '%D%y%C%4'],
-		'invni' => ['invni', '%D%y%C%4'],
+		'invno'  => ['invno', '%D%y%C%4'],
+		'invni'  => ['invni', '%D%y%C%4'],
+		'cmnbkp' => ['cmnbkp', '%D%y%C%4'],
 	];
 
 	protected function entityType(): string  { return LocalIdMap::ENTITY_NUMBER_SERIES; }
