@@ -12,8 +12,9 @@ use imports\newShipard\libs\LocalIdMap;
  * Import dokladů ze starého Shipardu (e10doc_core_heads + e10doc_core_rows)
  * do nového přes exchange formát shpd.docs.document.v1.
  *
- * MVP scope: faktury přijaté (invni) a vydané (invno). Ostatní typy
- * (pokladní, bankovní, objednávky, dodací listy) jsou mimo scope —
+ * Scope: faktury přijaté (invni), vydané (invno) a účetní doklady (cmnbkp).
+ * Bankovní výpisy migruje samostatná fáze `bank-statements` (Fáze 11);
+ * ostatní typy (pokladní, objednávky, dodací listy) jsou mimo scope —
  * viz tasks/05-docs.md.
  *
  * Klíčová zjištění (DocumentApplier):
@@ -336,12 +337,12 @@ final class DocsRunner extends BaseExchangeRunner
 
 	protected function sourceQuery(): array
 	{
-		$docTypes = array_keys(self::DOC_TYPE_MAP);  // ['invni', 'invno']
+		$docTypes = array_keys(self::DOC_TYPE_MAP);  // ['invni', 'invno', 'cmnbkp']
 
 		$q = [
 			'SELECT h.* FROM [e10doc_core_heads] h'
 			. ' WHERE h.[docState] != %i', 9800,     // ne smazané
-			' AND h.[docType] IN %in', $docTypes,     // jen faktury (MVP)
+			' AND h.[docType] IN %in', $docTypes,     // podporované typy (DOC_TYPE_MAP)
 		];
 
 		// Filtr období na dateAccounting. Při chunkování run() nastaví

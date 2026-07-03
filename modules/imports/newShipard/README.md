@@ -2,54 +2,148 @@
 
 Importer dat ze starého Shipardu do nového Shipardu přes HTTPS REST API.
 
-## Předpoklady
+Dokument má dvě části: **Rychlý start** (jak import rozjet) a **Reference**
+(subkomandy, options a implementační poznámky k jednotlivým fázím).
 
-- Nový Shipard reachable přes HTTPS.
-- V novém Shipardu vytvořený API klíč (např. pro uživatele
-  `_legacy_importer`) — viz `shpd-ds api-key-create`.
-- V DS root starého Shipardu:
-  - modul `imports/newShipard` přidaný do `config/modules.json` (jinak
-    cliAction skončí s "Invalid moduleId").
-  - konfigurační soubor `config/import-newShipard.json` s URL a API klíčem.
-- PHP 8.1+ (kvůli `readonly` promoted properties).
-- PHP rozšíření: `curl`, `pdo_sqlite`.
+---
 
-## Spuštění
+## Rychlý start
 
-Z DS adresáře:
+### Předpoklady
+
+- Nový Shipard dostupný přes HTTPS.
+- Starý Shipard: PHP 8.1+ (kvůli `readonly` promoted properties) s rozšířeními
+  `curl` a `pdo_sqlite`:
+
+  ```bash
+  apt install php8.3-sqlite3
+  ```
+
+- Ve starém DS nastavený vlastník v `config/appOptions.core.json`
+  (`options.core.ownerPerson`) — podle něj se při importu osob v novém
+  Shipardu automaticky označí vlastní firma (`is_own=1`), kterou vyžaduje
+  import dokladů. Viz [Doklady](#doklady).
+
+### 1. Nový Shipard — uživatel a API klíč
 
 ```bash
-cd /var/lib/shipard/data-sources/<dsid>
-shpd-app cli-action --action=imports.newShipard/import <subcommand> [options]
+cd /path/to/new/shipard/data-source
+shpd-ds user-create \
+    --login=_legacy_importer \
+    --password="$(openssl rand -hex 32)" \
+    --name="Legacy Importer (system)" \
+    --email=legacy-importer@local
 ```
 
-Doporučený alias:
+Heslo je jen placeholder — importer se přihlašuje API klíčem, ne heslem.
+Náhodný `openssl rand -hex 32` jen zajistí, že účet nepůjde zneužít
+interaktivním loginem.
 
 ```bash
-alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
+shpd-ds api-key-create --user=_legacy_importer --name=legacy-import --ip=<starý-shipard-IP>
 ```
 
-## Subkomandy
+Zachyť plaintext klíče — bude zobrazen jen jednou.
 
-| Subkomanda          | Stav        | Popis                                                |
-| ------------------- | ----------- | ---------------------------------------------------- |
-| `status`            | ✅ Fáze 01  | Sanity check — config, HTTP připojení, lokální mapa. |
-| `vat-registrations` | ✅ Fáze 02  | Registrace k DPH (jen `taxType='vat'`).              |
-| `fiscal-years`      | ✅ Fáze 02  | Fiskální roky + fiskální měsíce (sub-import).        |
-| `bank-accounts`     | ✅ Fáze 02  | Vlastní bankovní spojení.                            |
-| `cost-centers`      | ✅ Fáze 02  | Střediska.                                           |
-| `warehouses`        | ✅ Fáze 02  | Sklady.                                              |
-| `cash-desks`        | ✅ Fáze 02  | Pokladny.                                            |
-| `number-series`     | ✅ Fáze 02  | Číselné řady dokladů (jen typy známé v novém DS).    |
-| `item-kinds`        | ✅ Fáze 02  | Druhy položek (s mapováním na seedované system_code).|
-| `units`             | ✅ Fáze 02  | Měrné jednotky (`witems` units).                     |
-| `accounts`          | ✅ Fáze 08  | Účtový rozvrh (`e10doc_debs_accounts`).              |
-| `all-codebooks`     | ✅ Fáze 02  | Všechny číselníky v pořadí závislostí.               |
-| `persons`           | ✅ Fáze 03  | Osoby (lidé + firmy) přes exchange applier.          |
-| `items`             | ✅ Fáze 04  | Položky (zboží, služby) přes exchange applier.       |
-| `docs`              | ✅ Fáze 05  | Doklady — faktury (`invni`/`invno`). Viz [Doklady](#doklady). |
-| `mail`              | ✅ Fáze 07  | Došlá pošta (`wkf` issues, `issueType=1`). Viz [Pošta](#pošta). |
-| `all`               | ⏳ Fáze 06  | Orchestrace všech fází v pořadí závislostí.          |
+### 2. Starý Shipard — modul a konfigurace
+
+V DS rootu starého Shipardu:
+
+1. Do `config/modules.json` doplň `"imports/newShipard"` do existujícího JSON
+   pole (jinak cliAction skončí s "Invalid moduleId").
+
+2. Vytvoř config s URL a API klíčem:
+
+   ```bash
+   cd /var/lib/shipard/data-sources/<dsid>
+   cat > config/import-newShipard.json <<'JSON'
+   {
+       "target": {
+           "baseUrl": "https://<new-shipard-host>/api/v1",
+           "apiKey": "shpd_ak_..."
+       }
+   }
+   JSON
+   chmod 0600 config/import-newShipard.json
+   ```
+
+   Soubor obsahuje API klíč — `chmod 0600` je nutný (modul varuje na stderr,
+   pokud má soubor jiná práva). Všechny volby viz [Konfigurace](#konfigurace).
+
+3. Doporučený alias (dále v textu se používá):
+
+   ```bash
+   alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
+   ```
+
+   Plná forma: `shpd-app cli-action --action=imports.newShipard/import <subcommand> [options]`,
+   spouští se z DS adresáře.
+
+### 3. Ověření spojení
+
+```bash
+shpd-ds-import status
+```
+
+Zkontroluje config, HTTP připojení a lokální mapu; očekávaný výstup končí
+`✓ Status OK.`
+
+### 4. Import
+
+```bash
+shpd-ds-import all
+```
+
+Orchestrátor spustí fáze v pořadí závislostí:
+**codebooks → persons → items → docs → bank-statements → mail**.
+
+Užitečné volby:
+
+- `--dry-run` — bez zápisů do cílového Shipardu.
+- `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — omezí doklady, výpisy a poštu
+  na období.
+- `--continue-on-error` — pokračovat i po selhání řádku/fáze.
+- `--reset` — před během smazat lokální mapu (čistý re-import).
+
+Nastavení saldokont **není** součástí `all` — importuje se samostatně
+(viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings)):
+
+```bash
+shpd-ds-import accbal-settings --import
+```
+
+Import je idempotentní — druhý běh už naimportované záznamy přeskočí
+(viz [Idempotence a re-import](#idempotence-a-re-import)).
+
+---
+
+## Reference
+
+### Subkomandy
+
+| Subkomanda          | Fáze | Popis                                                 |
+| ------------------- | ---- | ----------------------------------------------------- |
+| `status`            | 01   | Sanity check — config, HTTP připojení, lokální mapa.  |
+| `vat-registrations` | 02   | Registrace k DPH (jen `taxType='vat'`).               |
+| `fiscal-years`      | 02   | Fiskální roky + fiskální měsíce (sub-import).         |
+| `bank-accounts`     | 02   | Vlastní bankovní spojení.                             |
+| `cost-centers`      | 02   | Střediska.                                            |
+| `warehouses`        | 02   | Sklady.                                               |
+| `cash-desks`        | 02   | Pokladny.                                             |
+| `number-series`     | 02   | Číselné řady dokladů (jen typy známé v novém DS).     |
+| `item-kinds`        | 02   | Druhy položek (s mapováním na seedované system_code). |
+| `units`             | 02   | Měrné jednotky (`witems` units).                      |
+| `accounts`          | 08   | Účtový rozvrh (`e10doc_debs_accounts`).               |
+| `all-codebooks`     | 02   | Všechny číselníky v pořadí závislostí.                |
+| `persons`           | 03   | Osoby (lidé + firmy) přes exchange applier.           |
+| `items`             | 04   | Položky (zboží, služby) přes exchange applier.        |
+| `docs`              | 05   | Doklady — faktury (`invni`/`invno`) a účetní doklady (`cmnbkp`). Viz [Doklady](#doklady). |
+| `bank-statements`   | 11   | Bankovní výpisy (`docType='bank'`). Viz [Bankovní výpisy](#bankovní-výpisy). |
+| `mail`              | 07   | Došlá pošta (`wkf` issues, `issueType=1`). Viz [Pošta](#pošta). |
+| `all`               | 06   | Orchestrace fází v pořadí závislostí.                 |
+| `accbal-settings`   | 12   | Nastavení saldokont (`--dump`/`--import`); **mimo `all`**. Viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings). |
+| `forget`            | 10   | Zapomenout LocalIdMap mapování jedné entity. Viz [Idempotence a re-import](#idempotence-a-re-import). |
+| `reset`             | 06   | Smazat celou lokální mapu (`import-newShipard.sqlite`) a skončit. |
 
 ### Společné options
 
@@ -57,191 +151,33 @@ alias shpd-ds-import='shpd-app cli-action --action=imports.newShipard/import'
 - `--dry-run` — neprovádět zápisy do cílového Shipardu.
 - `--continue-on-error` — pokračovat i když jednotlivý řádek selže (default: stop).
 - `--limit=N` — zpracuj jen prvních N řádků (jen exchange runnery, vhodné pro testing).
-- `--no-throttle` — vypne klientské throttling mezi requesty (viz [Rate limiting](#rate-limiting)). Vhodné pro testování chování serveru pod zátěží.
+- `--no-throttle` — vypne klientský throttling mezi requesty (viz
+  [Rate limiting](#rate-limiting)). Vhodné pro testování chování serveru pod zátěží.
+- `--dump-payload` — vypíše canonical JSON posílaný na exchange apply
+  (exchange runnery). Failnuté řádky dumpují payload + response body automaticky.
+- `--reset` — před během smazat lokální mapu (čistý re-import; ekvivalent
+  subkomandy `reset` + běh).
 
-### Options jen pro `docs`
+### Options podle fází
 
-- `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — filtr období na `dateAccounting`
-  (datum zaúčtování — zajišťuje kompletní fiskální období, na rozdíl od data
-  vystavení). Nevalidní formát se ignoruje s warningem.
-- `--target-state=10` — importovat doklady jako koncept (docState 10) místo
-  výchozího potvrzeno (20).
+- `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — filtr období; `docs`/`mail`/`bank-statements`/`all`.
+  - `docs`: `dateAccounting` (datum zaúčtování — zajišťuje kompletní fiskální
+    období, na rozdíl od data vystavení).
+  - `mail`: `dateIncoming` (datum doručení).
+  - `bank-statements`: `datePeriodEnd` (konec období výpisu).
+  - Nevalidní formát se ignoruje s warningem.
+- `--target-state=10` — jen `docs`; přebije celou stavovou mapu (viz
+  [Doklady](#doklady)) a importuje vše jako koncept. Testovací běhy.
+- `--chunk-months=N` — velikost chunků importu dokladů v měsících (default 1);
+  `docs`/`all`.
+- `--require-linked-doc` — jen `mail`; importovat jen zprávy s dohledatelným
+  dokladem, obecnou korespondenci přeskočit. Default vypnuto (best-effort).
+- `--no-attachments` — přeskočit upload PDF příloh; `mail`/`bank-statements`.
+- `--entity=doc|person|item|message` — jen `forget`; která entita se má z mapy zapomenout.
+- `--dump` / `--import` / `--file=PATH` — jen `accbal-settings`; viz
+  [Nastavení saldokont](#nastavení-saldokont-accbal-settings).
 
-### Options jen pro `mail`
-
-- `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — filtr období na `dateIncoming`
-  (datum doručení). Stejný parser jako u `docs`.
-- `--require-linked-doc` — importovat jen zprávy s dohledatelným dokladem;
-  obecnou korespondenci přeskočit. Default vypnuto (best-effort).
-- `--no-attachments` — přeskočit upload PDF příloh zpráv (Fáze 07a).
-
-### Doklady
-
-MVP scope importu dokladů jsou **faktury přijaté (`invni`) a vydané (`invno`)**.
-Ostatní typy (pokladní, bankovní, objednávky, dodací listy) jsou mimo scope
-prvního pokusu.
-
-**Prerekvizita — označená vlastní firma.** Doklady používají `selfParty`
-resolution, která v cílovém Shipardu hledá firmu označenou `is_own = 1`.
-Po Fázi 03 jsou všechny osoby `is_own = false`, takže před importem dokladů
-je nutné svou firmu ručně označit (UI nebo SQL):
-
-```sql
--- Zjistit ID vlastní firmy podle IČO:
-SELECT id, full_name, company_id FROM base_persons_persons WHERE company_id = '<vlastní-IČO>';
--- Označit jako vlastní:
-UPDATE base_persons_persons SET is_own = 1 WHERE id = <id>;
-```
-
-`DocsRunner` na začátku ověří existenci `is_own = 1` firmy a bez ní abortuje
-s instrukcí.
-
-**Pořadí importu:** codebooks → persons → items → **docs**. Doklady spoléhají
-na to, že partneři (osoby) a položky už v cíli jsou; jinak je applier
-zkusí vytvořit (`autoCreateMode: safe`), což vede k neúplným záznamům.
-
-**Známá omezení:**
-
-- **Středisko a sklad se ztrácí** — `docs_core_heads` v novém Shipardu zatím
-  nemá `cost_center` ani `warehouse`. Importované doklady tato data nenesou.
-- **Partner se páruje přes LocalIdMap, ne podle jména** — doklad ukazuje na
-  přesnou migrovanou osobu přes `_resolve.{customer|supplier}.userAction =
-  useExisting:<id>` (mapování staré ndx → nové id). Partner proto musí být
-  naimportovaný **před** doklady (`persons` před `docs`); jinak ho importér
-  v LocalIdMap nenajde a spadne zpět na párování přes IČO/jméno — u fyzické
-  osoby bez IČO (a se stejnojmenným záznamem) to skončí `unresolved_required`
-  → doklad `skipped`. Viz [Párování záznamů a deduplikace](#párování-záznamů-a-deduplikace).
-- **Vydané faktury (`invno`) — vlastní bankovní účet a dvoukrokový import.**
-  Nový Shipard u vydané faktury vyžaduje při potvrzení (docState 20+) vlastní
-  `bank_account` (kam má zákazník zaplatit; `IssuedInvoiceDocument::validate`).
-  Exchange formát ho ale neumí přenést. Proto se `invno` vkládá nejdřív jako
-  **koncept (10)** a runner ho v `afterApplied` povýší na 20 spolu s účtem,
-  který dohledá ze starého `myBankAccount` přes LocalIdMap (Fáze 02
-  `bank-accounts`). **Bez naimportovaných bank-accounts** (nebo když starý
-  doklad nemá `myBankAccount`) zůstane vydaná faktura konceptem (10) +
-  warning. Přijatých faktur (`invni`) ani `--target-state=10` se to netýká.
-- **Číslo vydané faktury** — applier dává `docNumber` do `partner_doc_number`
-  a vlastní `doc_number` přiděluje number_series až při přechodu 10→20. Runner
-  proto až **po povýšení** přepíše vygenerované číslo na původní (non-fatal při
-  unique konfliktu).
-- **Řádky typu sada** (`rowType`) se importují tak, jak jsou — rozložené sady
-  mohou vytvořit duplicitní řádky. K ověření na reálných datech.
-
-**Konverze polí na řádcích:**
-
-- **Kódy DPH** — starý formát `EUCZ{NNN}` se převádí na nový `cz-{NNN}`
-  (deterministicky, prefix `EUCZ` → `cz-`). Kódy `EUCZ000` (nedaňový řádek)
-  a `EUCZ113` (artefakt zdroje) v novém Shipardu neexistují → mapují se na
-  `null` (řádek bez kódu DPH). Mapování je **CZ-only**; kódy jiných zemí se
-  pošlou beze změny a applier je případně odmítne. `vat.pct` se posílá souběžně
-  jako fallback. Zdroj pravdy: `nov_shipard:modules/world/vat/config/vat-cz.jsonc`.
-- **Jednotka `none`** — systémová jednotka starého Shipardu pro řádky bez
-  jednotky se mapuje na `null` (prázdný sloupec `unit`), aby applier nehlásil
-  `unit_not_found`.
-
-### Pošta
-
-Import došlé pošty ze starého Shipardu (`wkf_core_issues`, `issueType=1` =
-Došlá pošta) do nového (`core_mail_incoming_messages`). Ostatní typy issues
-(úkoly, diskuze, …) se ignorují.
-
-**Prerekvizita — endpoint.** Zprávy nelze založit generickým CRUD (`message_id`
-se generuje v `beforeSave`). Import volá dedikovaný `POST /_mail/import`
-nového Shipardu (viz `nov_shipard:tasks/mail-phase4-import-endpoint.md`).
-
-**Pořadí importu:** pošta je **terminální** fáze řetězce
-codebooks → persons → items → **docs → mail**. Doklady se musí importovat
-**před** poštou — vazba zpráva↔doklad se resolvuje přes `LocalIdMap`
-(`ENTITY_DOC`). Pro ostrý import dělej doklady (celý rozsah) před poštou; zprávy
-naimportované před svým dokladem se zpětně nepřelinkují (skip přes
-`ENTITY_MESSAGE`).
-
-**Schránky.** Pro každou sekci (`wkf_base_sections`), do které padá importovaná
-pošta, vznikne schránka `core_mail_mailboxes` (idempotentně přes
-`ENTITY_MAILBOX`). `mailbox_id` = `section.shipardEmailId`, fallback
-`sec-{ndx}`; `email_address` = `{mailbox_id}@imported.invalid`. Plochá struktura
-(strom sekcí se zahazuje), `is_default=false`, `docState=40` (aktivní). Zprávy
-v sekci 0 / bez sekce jdou do default schránky DS.
-
-**Vazba na doklad** je autoritativně v `e10_base_doclinks`
-(`linkId='e10docs-inbox'`, doklad=`src`, zpráva=`dst`; 1 doklad : N zpráv). Více
-vazeb → první + warning. **Best-effort:** zpráva se importuje vždy, i když se
-doklad nedohledá (`target` NULL, počítadlo `unlinked`). `--require-linked-doc`
-takové zprávy přeskočí.
-
-**Mapovaná pole:**
-
-- `primary_type` — navázaná faktura přijatá (`invni`) → `invoiceReceived`,
-  jinak `other`.
-- `docState` — navázaná zpráva → **40** (Zpracovaná), nenavázaná → **10** (Nová).
-- `source_type` — starý `issues.source` → nový: `0`(Ručně)→1, `1`(E-mail)→2,
-  `2`(API)→3, `3`(Test)→1.
-- `sender_email` — `systemInfo` (`email.from[0]` / `webForm.from`) → e-mail
-  autora (osoby, z `e10_base_properties`) → placeholder `unknown@imported.invalid`
-  (validní, projde validací endpointu).
-- `sender_person` — autor zprávy přes `LocalIdMap` (`ENTITY_PERSON`).
-
-**Přílohy** se nahrají k nové zprávě (table_id 303) přes obecný klient Fáze 07a
-(dedup přes SHA-256 — druhý běh → `duplicate`). Vypínač `--no-attachments`.
-
-### Rate limiting
-
-Nový Shipard má API rate limit **1000 requestů / 60 s per API klíč**
-(viz `nov_shipard:src/Api/Middleware/RateLimitMiddleware.php`). Importer má
-tři vrstvy obrany, aby se do něj nedostal:
-
-1. **Proaktivní throttling** — minimum interval mezi requesty (default 80 ms
-   = ~12.5 req/s, 25% rezerva pod limit). Měřeno přes `microtime(true)` od
-   posledního requestu — pokud aplikace mezi nimi dělá DB queries / mapování,
-   čekání už probíhalo "samo" a throttle nic nepřidá.
-
-2. **Respect `_retry_after` při 429** — pokud server přesto vrátí 429
-   RATE_LIMITED, klient přečte `error.details[].field='_retry_after'` (sekundy)
-   z body a počká přesně tu dobu. Pokud `_retry_after` chybí, fallback na
-   exp. backoff.
-
-3. **Exponential backoff pro 5xx a network errory** — při 500-599, network
-   timeoutu nebo DNS chybě čekáme `retryDelayMs * 2^(attempt-1)` (1s, 2s, 4s,
-   …, cap 30 s).
-
-Maximum počet retry pokusů je `maxRetries` (default 3). Po jejich vyčerpání
-runner zafailuje per řádek (`--continue-on-error` umožní pokračovat).
-**4xx errory kromě 429** (validation, schema_invalid, 404, ...) **NEretryjeme**
-— jsou fatální, vyžadují opravu zdrojových dat.
-
-Verbose log (`-v`) zobrazí každý retry: `[http] retry 1/3 after 6 s (HTTP 429: RATE_LIMITED)`.
-
-## Párování záznamů a deduplikace
-
-Resolvery nového Shipardu páruje příchozí záznam přes business klíče a jako
-poslední možnost přes **fuzzy shodu jména** (`name LIKE %…%`). To je správné
-pro obecný výměnný flow (AI extrakce, externí feedy), ale pro **migraci**
-škodlivé: dvě genuinně různé položky/osoby téhož jména (např. „Parkovné" jako
-služba vs. účetní položka; nebo dvě fyzické osoby stejného jména) by se slily
-do jedné. Migrace má přitom autoritativní staré ID, takže párování podle jména
-vypíná:
-
-- **`items` a `persons`** posílají `applyOptions.matchStrategy = "identifiersOnly"`
-  → resolver páruje jen přes identifikátory (kód položky; IČO/DIČ osoby) a při
-  neshodě **vytvoří nový** záznam místo slití podle jména. Idempotenci mezi
-  běhy drží `LocalIdMap` (už naimportované záznamy se přeskočí, viz
-  [Idempotence](#idempotence)), ne fuzzy shoda jména.
-- **`docs`** pinnou partnera i řádkové položky na konkrétní migrovaný záznam
-  přes `_resolve.{customer|supplier}.userAction` a `_resolve.rows[i].item.userAction
-  = "useExisting:<nové-id>"` (id z `LocalIdMap`). Applier pak nehledá podle
-  kódu/jména — což by po zrušení slučování bylo nejednoznačné. Když partner /
-  položka v `LocalIdMap` není (nebyly naimportované), pin se vynechá a applier
-  spadne zpět na standardní párování.
-
-Default `matchStrategy` (`identifiersAndName`, resp. vynecháno) zachovává
-původní chování s fuzzy shodou jména — pro neimportní použití formátu.
-
-> **Důsledek pro pořadí importu:** `persons` a `items` musí proběhnout **před**
-> `docs`, aby byly v `LocalIdMap` k dispozici pro pinning. Při re-importu po
-> opravě zdrojových dat smaž příslušné mapy (`forgetAll`) a importuj znovu
-> v pořadí persons → items → docs.
-
-## Konfigurace
+### Konfigurace
 
 Soubor `config/import-newShipard.json` v DS rootu:
 
@@ -279,115 +215,291 @@ Sekce `options` je volitelná.
 **Bezpečnost:** soubor obsahuje API klíč — nastavte `chmod 0600`. Modul
 varuje na stderr, pokud má soubor jiná práva.
 
-### Idempotence
+### Doklady
+
+Importují se **faktury přijaté (`invni`), vydané (`invno`) a účetní doklady
+(`cmnbkp`)**. Bankovní výpisy migruje samostatná fáze
+[`bank-statements`](#bankovní-výpisy); ostatní typy (pokladní, objednávky,
+dodací listy) jsou mimo scope.
+
+**Stavová mapa.** Starý `docState` se mapuje na cílový stav:
+
+| Starý stav              | Nový stav                              |
+| ----------------------- | -------------------------------------- |
+| 1000 Nově rozpracováno  | 10 Koncept (bez čísla)                 |
+| 1200 Potvrzeno          | 20 Potvrzeno                           |
+| 4000 Hotovo             | 40 V pořádku (+ zaúčtování)            |
+| 4100 Stornováno         | 30 Storno (s číslem, bez deníku)       |
+| 8000 V opravě           | 40 V pořádku (finalizovat + zaúčtovat) |
+
+Neznámý starý stav = tvrdá chyba řádku (žádný tichý default).
+`--target-state=10` celou mapu přebije a importuje vše jako koncept.
+
+**Vlastní firma (selfParty).** Faktury používají `selfParty` resolution, která
+v cílovém Shipardu hledá firmu označenou `is_own = 1`. Označuje se
+**automaticky** při importu osob (Fáze 03): řádek odpovídající
+`options.core.ownerPerson` z `config/appOptions.core.json` starého DS dostane
+`isOwn=true` (jen typ Firma; vlastní firma bez IČO projde s warningem, ale
+applier ji při docState 40 odmítne — `own_company_id_required`). `DocsRunner`
+existenci `is_own=1` ověří pre-flightem a bez ní abortuje. Ruční fallback,
+kdyby automatika neproběhla:
+
+```sql
+UPDATE base_persons_persons SET is_own = 1 WHERE company_id = '<vlastní-IČO>';
+```
+
+**Pořadí importu:** codebooks → persons → items → **docs**. Doklady spoléhají
+na to, že partneři (osoby) a položky už v cíli jsou; jinak je applier
+zkusí vytvořit (`autoCreateMode: safe`), což vede k neúplným záznamům.
+
+**Účetní doklady (`cmnbkp`)** jsou strukturálně jiné než faktury:
+
+- Žádný obchodní směr — `selfParty`/`supplier`/`customer` jsou `null`.
+  Hlavičkový partner je nepovinný; když je vyplněn, předá se jen jako pin
+  přes LocalIdMap (bez side-create).
+- Řádky jsou **kontace** (účet + strana MD/DAL + částka + per-řádková saldo
+  identita), ne položky. Hlavičkové symboly `cmnbkp` nemá — saldo identita
+  žije na řádcích.
+- Bez DPH (`useTax:0`; applier `vat_mode` vynutí na 0).
+- Vlastní číslo dokladu jde do `importNumber` (ne do `partner_doc_number`);
+  číselná řada se dohledává přes cfg `e10.docs.dbCounters.cmnbkp.<dbCounter>.docKeyId`.
+- Doklady s neúčtovatelnými operacemi (majetek, kurzové rozdíly) se
+  naimportují kompletní (číslo i řádky), ale stav se stropne na 20
+  (Potvrzeno, nezaúčtováno) + warning.
+
+**Známá omezení:**
+
+- **Středisko a sklad se ztrácí** — `docs_core_heads` v novém Shipardu zatím
+  nemá `cost_center` ani `warehouse`. Importované doklady tato data nenesou.
+- **Partner se páruje přes LocalIdMap, ne podle jména** — doklad ukazuje na
+  přesnou migrovanou osobu přes `_resolve.{customer|supplier}.userAction =
+  useExisting:<id>` (mapování staré ndx → nové id). Partner proto musí být
+  naimportovaný **před** doklady (`persons` před `docs`); jinak ho importér
+  v LocalIdMap nenajde a spadne zpět na párování přes IČO/jméno — u fyzické
+  osoby bez IČO (a se stejnojmenným záznamem) to skončí `unresolved_required`
+  → doklad `skipped`. Viz [Párování záznamů a deduplikace](#párování-záznamů-a-deduplikace).
+- **Vydané faktury (`invno`) — vlastní bankovní účet a dvoukrokový import.**
+  Nový Shipard u vydané faktury vyžaduje při potvrzení (docState 20+) vlastní
+  `bank_account` (kam má zákazník zaplatit; `IssuedInvoiceDocument::validate`).
+  Exchange formát ho ale neumí přenést. Proto se `invno` vkládá nejdřív jako
+  **koncept (10)** a runner ho v `afterApplied` povýší na cílový stav spolu
+  s účtem, který dohledá ze starého `myBankAccount` přes LocalIdMap (Fáze 02
+  `bank-accounts`). **Bez naimportovaných bank-accounts** (nebo když starý
+  doklad nemá `myBankAccount`) zůstane vydaná faktura konceptem (10) +
+  warning. Přijatých faktur (`invni`), účetních dokladů (`cmnbkp`) ani
+  `--target-state=10` se to netýká.
+- **Číslo vydané faktury** — applier dává `docNumber` do `partner_doc_number`
+  a vlastní `doc_number` přiděluje number_series až při přechodu 10→20. Runner
+  proto až **po povýšení** přepíše vygenerované číslo na původní (non-fatal při
+  unique konfliktu).
+- **Řádky typu sada** (`rowType`) se importují tak, jak jsou — rozložené sady
+  mohou vytvořit duplicitní řádky. K ověření na reálných datech.
+
+**Konverze polí na řádcích:**
+
+- **Kódy DPH** — starý formát `EUCZ{NNN}` se převádí na nový `cz-{NNN}`
+  (deterministicky, prefix `EUCZ` → `cz-`). Kódy `EUCZ000` (nedaňový řádek)
+  a `EUCZ113` (artefakt zdroje) v novém Shipardu neexistují → mapují se na
+  `null` (řádek bez kódu DPH). Mapování je **CZ-only**; kódy jiných zemí se
+  pošlou beze změny a applier je případně odmítne. `vat.pct` se posílá souběžně
+  jako fallback. Zdroj pravdy: `nov_shipard:modules/world/vat/config/vat-cz.jsonc`.
+- **Jednotka `none`** — systémová jednotka starého Shipardu pro řádky bez
+  jednotky se mapuje na `null` (prázdný sloupec `unit`), aby applier nehlásil
+  `unit_not_found`.
+
+### Bankovní výpisy
+
+Migrace bankovních výpisů (`e10doc_core_heads` s `docType='bank'` + řádky)
+přes exchange formát `shpd.bank.statement.v1`
+(`POST /_exchange/bank/statement/apply`).
+
+**Prerekvizita:** naimportované `bank-accounts` (Fáze 02) — vlastní účet
+výpisu se dohledává přes LocalIdMap ze starého `myBankAccount`.
+
+Oproti dokladům je import podstatně jednodušší — bez číselných řad, čísel
+a selfParty. Runner posílá jen fakta transakcí (`operation=null`, znaménková
+částka); zaúčtování i párování partnera dělá nová strana.
+
+- **Stavová mapa:** rozpracované výpisy (1000/1200) → koncept (10; cílový
+  enum zná jen 10 a 40, proto 1200→10), hotové (4000/8000) → 40 (zaúčtovat).
+  **Stornované výpisy (4100) se nemigrují** (soft-skip — jejich transakce by
+  jinak zaúčtovaly zrušené pohyby). Neznámý stav = tvrdá chyba výpisu.
+- **Saldo/párování se nemigruje** — transakce hotových výpisů se zaúčtují
+  novým enginem na clearing účty (261200/261300). Nenulové zůstatky clearingu
+  po migraci jsou očekávané.
+- **Idempotence** přes `ENTITY_BANK_STATEMENT` (klíč = staré ndx hlavičky);
+  transakce navíc deduplikuje nová strana (`external_id`/fingerprint).
+- **PDF přílohy** výpisů se migrují k novému výpisu (table_id 415); vypínač
+  `--no-attachments`.
+- `--from`/`--to` filtrují na `datePeriodEnd` (chunkování netřeba — výpisů
+  je málo).
+
+### Pošta
+
+Import došlé pošty ze starého Shipardu (`wkf_core_issues`, `issueType=1` =
+Došlá pošta) do nového (`core_mail_incoming_messages`). Ostatní typy issues
+(úkoly, diskuze, …) se ignorují.
+
+**Prerekvizita — endpoint.** Zprávy nelze založit generickým CRUD (`message_id`
+se generuje v `beforeSave`). Import volá dedikovaný `POST /_mail/import`
+nového Shipardu (viz `nov_shipard:tasks/mail-phase4-import-endpoint.md`).
+
+**Pořadí importu:** pošta je **terminální** fáze řetězce
+codebooks → persons → items → docs → bank-statements → **mail**. Doklady se
+musí importovat **před** poštou — vazba zpráva↔doklad se resolvuje přes
+`LocalIdMap` (`ENTITY_DOC`). Pro ostrý import dělej doklady (celý rozsah) před
+poštou; zprávy naimportované před svým dokladem se zpětně nepřelinkují (skip
+přes `ENTITY_MESSAGE`).
+
+**Schránky.** Pro každou sekci (`wkf_base_sections`), do které padá importovaná
+pošta, vznikne schránka `core_mail_mailboxes` (idempotentně přes
+`ENTITY_MAILBOX`). `mailbox_id` = `section.shipardEmailId`, fallback
+`sec-{ndx}`; `email_address` = `{mailbox_id}@imported.invalid`. Plochá struktura
+(strom sekcí se zahazuje), `is_default=false`, `docState=40` (aktivní). Zprávy
+v sekci 0 / bez sekce jdou do default schránky DS.
+
+**Vazba na doklad** je autoritativně v `e10_base_doclinks`
+(`linkId='e10docs-inbox'`, doklad=`src`, zpráva=`dst`; 1 doklad : N zpráv). Více
+vazeb → první + warning. **Best-effort:** zpráva se importuje vždy, i když se
+doklad nedohledá (`target` NULL, počítadlo `unlinked`). `--require-linked-doc`
+takové zprávy přeskočí.
+
+**Mapovaná pole:**
+
+- `primary_type` — navázaná faktura přijatá (`invni`) → `invoiceReceived`,
+  jinak `other`.
+- `docState` — navázaná zpráva → **40** (Zpracovaná), nenavázaná → **10** (Nová).
+- `source_type` — starý `issues.source` → nový: `0`(Ručně)→1, `1`(E-mail)→2,
+  `2`(API)→3, `3`(Test)→1.
+- `sender_email` — `systemInfo` (`email.from[0]` / `webForm.from`) → e-mail
+  autora (osoby, z `e10_base_properties`) → placeholder `unknown@imported.invalid`
+  (validní, projde validací endpointu).
+- `sender_person` — autor zprávy přes `LocalIdMap` (`ENTITY_PERSON`).
+
+**Přílohy** se nahrají k nové zprávě (table_id 303) přes obecný klient Fáze 07a
+(dedup přes SHA-256 — druhý běh → `duplicate`). Vypínač `--no-attachments`.
+
+### Nastavení saldokont (accbal-settings)
+
+Samostatný runner **mimo `all`** — je to konfigurace, ne migrovaná data.
+Vyžaduje právě jeden režim:
+
+- `--dump` — stará DB (`e10doc_accBal_balances` + `…balancesAccounts`) → JSON
+  v seed tvaru nového Shipardu (skupiny s vnořenými účty). Mapování je čistý
+  rename; staré nastavení dobropisy nemá, dump je proto přirozeně bez nich.
+- `--import` — JSON → generický CRUD do `economy_accbal_balances` /
+  `economy_accbal_balance_accounts`. FK účtů řeší vnoření v JSONu, žádná
+  LocalIdMap.
+
+Cesta JSONu: default `modules/imports/newShipard/data/accbalSettings.json`
+(verzovaný, ručně laděný); override `--file=PATH`.
+
+Bez LocalIdMap a bez idempotence — cílem má být čistý (čerstvě migrovaný) DS.
+Re-import po ručním doladění JSONu = `ds-reset` cílového DS + celý import znovu.
+
+### Rate limiting
+
+Nový Shipard má API rate limit **1000 requestů / 60 s per API klíč**
+(viz `nov_shipard:src/Api/Middleware/RateLimitMiddleware.php`). Importer má
+tři vrstvy obrany, aby se do něj nedostal:
+
+1. **Proaktivní throttling** — minimum interval mezi requesty (default 80 ms
+   = ~12.5 req/s, 25% rezerva pod limit). Měřeno přes `microtime(true)` od
+   posledního requestu — pokud aplikace mezi nimi dělá DB queries / mapování,
+   čekání už probíhalo "samo" a throttle nic nepřidá.
+
+2. **Respect `_retry_after` při 429** — pokud server přesto vrátí 429
+   RATE_LIMITED, klient přečte `error.details[].field='_retry_after'` (sekundy)
+   z body a počká přesně tu dobu. Pokud `_retry_after` chybí, fallback na
+   exp. backoff.
+
+3. **Exponential backoff pro 5xx a network errory** — při 500-599, network
+   timeoutu nebo DNS chybě čekáme `retryDelayMs * 2^(attempt-1)` (1s, 2s, 4s,
+   …, cap 30 s).
+
+Maximum počet retry pokusů je `maxRetries` (default 3). Po jejich vyčerpání
+runner zafailuje per řádek (`--continue-on-error` umožní pokračovat).
+**4xx errory kromě 429** (validation, schema_invalid, 404, ...) **NEretryjeme**
+— jsou fatální, vyžadují opravu zdrojových dat.
+
+Verbose log (`-v`) zobrazí každý retry: `[http] retry 1/3 after 6 s (HTTP 429: RATE_LIMITED)`.
+
+### Párování záznamů a deduplikace
+
+Resolvery nového Shipardu páruje příchozí záznam přes business klíče a jako
+poslední možnost přes **fuzzy shodu jména** (`name LIKE %…%`). To je správné
+pro obecný výměnný flow (AI extrakce, externí feedy), ale pro **migraci**
+škodlivé: dvě genuinně různé položky/osoby téhož jména (např. „Parkovné" jako
+služba vs. účetní položka; nebo dvě fyzické osoby stejného jména) by se slily
+do jedné. Migrace má přitom autoritativní staré ID, takže párování podle jména
+vypíná:
+
+- **`items` a `persons`** posílají `applyOptions.matchStrategy = "identifiersOnly"`
+  → resolver páruje jen přes identifikátory (kód položky; IČO/DIČ osoby) a při
+  neshodě **vytvoří nový** záznam místo slití podle jména. Idempotenci mezi
+  běhy drží `LocalIdMap` (už naimportované záznamy se přeskočí, viz
+  [Idempotence a re-import](#idempotence-a-re-import)), ne fuzzy shoda jména.
+- **`docs`** pinnou partnera i řádkové položky na konkrétní migrovaný záznam
+  přes `_resolve.{customer|supplier}.userAction` a `_resolve.rows[i].item.userAction
+  = "useExisting:<nové-id>"` (id z `LocalIdMap`). Applier pak nehledá podle
+  kódu/jména — což by po zrušení slučování bylo nejednoznačné. Když partner /
+  položka v `LocalIdMap` není (nebyly naimportované), pin se vynechá a applier
+  spadne zpět na standardní párování. Hlavičkový partner `cmnbkp` je pin-only —
+  bez hitu v mapě zůstane prázdný.
+
+Default `matchStrategy` (`identifiersAndName`, resp. vynecháno) zachovává
+původní chování s fuzzy shodou jména — pro neimportní použití formátu.
+
+> **Důsledek pro pořadí importu:** `persons` a `items` musí proběhnout **před**
+> `docs`, aby byly v `LocalIdMap` k dispozici pro pinning. Při re-importu po
+> opravě zdrojových dat zapomeň příslušné mapování (`forget --entity=…`)
+> a importuj znovu v pořadí persons → items → docs.
+
+### Idempotence a re-import
 
 Runner respektuje LocalIdMap: pokud `(entity_type, old_ndx)` mapping existuje,
 záznam se přeskočí (status `skipped`, reason `already-imported`). Druhý běh
 nevytváří duplicity ani neaktualizuje existující data — záznamy v novém
 Shipardu jsou po vložení ve stavu `docState=40` (V pořádku), který je
-readOnly. Pro re-import po opravě zdrojových dat:
+readOnly.
 
-```php
-// V PHP REPL / debug skriptu:
-$idMap = new LocalIdMap('<DS>/import-newShipard.sqlite');
-$idMap->forgetAll('bankAccount');   // smaže všechen mapping pro daný typ
-```
+Re-import po opravě zdrojových dat:
+
+- **Cílený** — zapomenout mapování jedné entity, ostatní zachovat:
+
+  ```bash
+  shpd-ds-import forget --entity=doc   # doc|person|item|message
+  ```
+
+- **Kompletní** — smazat celou lokální mapu:
+
+  ```bash
+  shpd-ds-import reset          # jen smaže mapu a skončí
+  shpd-ds-import all --reset    # smaže mapu a rovnou importuje
+  ```
 
 Nový import pak založí nové záznamy v novém Shipardu paralelně se starými.
 Pro tabulky s unique `code` (bank-accounts / cost-centers / warehouses /
 cash-desks) v takovém případě hrozí konflikt — ručně smaž staré nové
-záznamy přes UI nebo si zaveď distinct kódy.
+záznamy přes UI nebo si zaveď distinct kódy. Nejčistší cesta pro plný
+re-import je `ds-reset` cílového DS.
 
-## Stav
-
-- [x] Bootstrap (modul, dispatcher, HTTP klient, lokální mapa).
-- [x] `status` — sanity check.
-- [x] Číselníky (Fáze 02).
-- [x] Osoby (Fáze 03).
-- [x] Položky (Fáze 04).
-- [x] Doklady (Fáze 05).
-- [x] Pošta (Fáze 07) — obecný klient příloh (07a) + došlá pošta (07b).
-- [x] Účtový rozvrh (Fáze 08).
-
-## Smoke test
-
-1. Na **novém** Shipardu založ systémového uživatele `_legacy_importer`
-   (pokud ještě neexistuje):
-
-   ```bash
-   cd /path/to/new/shipard/data-source
-   shpd-ds user-create \
-       --login=_legacy_importer \
-       --password="$(openssl rand -hex 32)" \
-       --name="Legacy Importer (system)" \
-       --email=legacy-importer@local
-   ```
-
-   Heslo je jen placeholder — importer se přihlašuje API klíčem, ne
-   heslem. Náhodný `openssl rand -hex 32` jen zajistí, že účet nepůjde
-   zneužít interaktivním loginem.
-
-2. Vytvoř pro něj API klíč:
-
-   ```bash
-   shpd-ds api-key-create --user=_legacy_importer --name=legacy-import \
-       --ip=<starý-shipard-IP>
-   ```
-
-   Zachyť plaintext klíče — bude zobrazen jen jednou.
-
-3. Na **starém** Shipardu zaregistruj modul a vytvoř config soubor:
-
-   ```bash
-   cd /var/lib/shipard/data-sources/<dsid>
-   ```
-
-   Do `config/modules.json` doplň `"imports/newShipard"` (do existujícího
-   JSON pole), poté:
-
-   ```bash
-   cat > config/import-newShipard.json <<'JSON'
-   {
-       "target": {
-           "baseUrl": "https://<new-shipard-host>/api/v1",
-           "apiKey": "shpd_ak_..."
-       }
-   }
-   JSON
-   chmod 0600 config/import-newShipard.json
-   ```
-
-4. Spusť status check:
-
-   ```bash
-   shpd-app cli-action --action=imports.newShipard/import status
-   ```
-
-   Očekávaný výstup:
-
-   ```
-   Import to new Shipard — status check
-
-   Configuration:
-     Config file     : /var/lib/shipard/data-sources/<dsid>/config/import-newShipard.json
-     Target base URL : https://<new-shipard-host>/api/v1
-     Timeout         : 30 s
-     Batch size      : 100
-     Dry-run mode    : no
-     Verbose mode    : no
-
-   API connection:
-   ✓ HTTP 200 — Tables endpoint reachable.
-
-   Local ID map:
-     File: /var/lib/shipard/data-sources/<dsid>/import-newShipard.sqlite
-     (empty — no entities imported yet)
-
-   ✓ Status OK.
-   ```
-
-## Lokální stav
+### Lokální stav
 
 - `<DS>/import-newShipard.sqlite` — SQLite s mapováním `old_ndx → new_id`
   per entitní typ. Vytváří se automaticky při prvním běhu (`chmod 0600`).
 - Žádný stav v MySQL DS DB — modul nemá `tables` v `module.json`.
+
+### Historie fází
+
+- [x] Fáze 01 — bootstrap (modul, dispatcher, HTTP klient, lokální mapa), `status`.
+- [x] Fáze 02 — číselníky.
+- [x] Fáze 03 — osoby.
+- [x] Fáze 04 — položky.
+- [x] Fáze 05 — doklady (faktury; 05b import-mód čísel) + účetní doklady (`cmnbkp`).
+- [x] Fáze 06 — orchestrátor `all`, `reset`.
+- [x] Fáze 07 — pošta (07a obecný klient příloh, 07b došlá pošta).
+- [x] Fáze 08 — účtový rozvrh.
+- [x] Fáze 10 — maintenance `forget`.
+- [x] Fáze 11 — bankovní výpisy.
+- [x] Fáze 12 — nastavení saldokont (`accbal-settings`).

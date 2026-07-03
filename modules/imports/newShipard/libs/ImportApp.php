@@ -209,8 +209,8 @@ class ImportApp
 		echo "    items             Items (goods, services) via exchange flow.\n";
 		echo "\n";
 		echo "  Phase 05 — docs:\n";
-		echo "    docs              Documents (invoices invni/invno) via exchange flow.\n";
-		echo "                      Requires a flagged own company (is_own=1) in target.\n";
+		echo "    docs              Documents (invni/invno/cmnbkp) via exchange flow.\n";
+		echo "                      Own company (is_own=1) required; flagged automatically by 'persons'.\n";
 		echo "\n";
 		echo "  Phase 11 — bank statements:\n";
 		echo "    bank-statements   Bank statements (e10doc 'bank' docs) via exchange flow.\n";
@@ -222,7 +222,7 @@ class ImportApp
 		echo "                      Import docs FIRST (doc links). Best-effort linking.\n";
 		echo "\n";
 		echo "  Phase 06 — orchestrator:\n";
-		echo "    all               Run codebooks → persons → items → docs → mail in order.\n";
+		echo "    all               Run codebooks → persons → items → docs → bank-statements → mail.\n";
 		echo "    reset             Delete the local id map (import-newShipard.sqlite) and exit.\n";
 		echo "\n";
 		echo "  Phase 12 — accbal settings (samostatně, ne v 'all'):\n";
