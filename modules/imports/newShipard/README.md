@@ -94,26 +94,28 @@ Zkontroluje config, HTTP připojení a lokální mapu; očekávaný výstup kon�
 shpd-ds-import all
 ```
 
-Orchestrátor spustí fáze v pořadí závislostí:
-**codebooks → persons → items → docs → bank-statements → mail**.
+Orchestrátor spustí všechny fáze v pořadí závislostí — včetně nastavení
+saldokont (za číselníky) a závěrečného „vzdáleného" spárování úhrad:
+**codebooks → accbal-settings → persons → items → docs → bank-statements →
+mail → match**. Jeden příkaz tak nahradí dřívější tři ruční kroky (nastavení
+saldokont, vlastní import a ruční `accbal-match --all` na cílovém serveru).
 
 Užitečné volby:
 
-- `--dry-run` — bez zápisů do cílového Shipardu.
+- `--dry-run` — bez zápisů do cílového Shipardu; fáze Match vrátí read-only
+  plán párování (nic nemění).
 - `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — omezí doklady, výpisy a poštu
   na období.
 - `--continue-on-error` — pokračovat i po selhání řádku/fáze.
 - `--reset` — před během smazat lokální mapu (čistý re-import).
+- `--skip-accbal-settings` / `--skip-match` — vynechat příslušnou fázi.
 
-Nastavení saldokont **není** součástí `all` — importuje se samostatně
-(viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings)):
+Import je idempotentní — druhý běh už naimportované záznamy přeskočí (vč. saldo
+skupin per kód; viz [Idempotence a re-import](#idempotence-a-re-import)).
 
-```bash
-shpd-ds-import accbal-settings --import
-```
-
-Import je idempotentní — druhý běh už naimportované záznamy přeskočí
-(viz [Idempotence a re-import](#idempotence-a-re-import)).
+Nastavení saldokont je součástí `all`; samostatná subkomanda `accbal-settings`
+zůstává pro `--dump` (stará DB → JSON) a vlastní `--file`
+(viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings)).
 
 ---
 
@@ -140,8 +142,8 @@ Import je idempotentní — druhý běh už naimportované záznamy přeskočí
 | `docs`              | 05   | Doklady — faktury (`invni`/`invno`) a účetní doklady (`cmnbkp`). Viz [Doklady](#doklady). |
 | `bank-statements`   | 11   | Bankovní výpisy (`docType='bank'`). Viz [Bankovní výpisy](#bankovní-výpisy). |
 | `mail`              | 07   | Došlá pošta (`wkf` issues, `issueType=1`). Viz [Pošta](#pošta). |
-| `all`               | 06   | Orchestrace fází v pořadí závislostí.                 |
-| `accbal-settings`   | 12   | Nastavení saldokont (`--dump`/`--import`); **mimo `all`**. Viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings). |
+| `all`               | 06   | Orchestrace fází v pořadí závislostí (vč. accbal-settings a závěrečného párování). |
+| `accbal-settings`   | 12   | Nastavení saldokont (`--dump`/`--import`); **součást `all`**, samostatně pro `--dump` / vlastní `--file`. Viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings). |
 | `forget`            | 10   | Zapomenout LocalIdMap mapování jedné entity. Viz [Idempotence a re-import](#idempotence-a-re-import). |
 | `reset`             | 06   | Smazat celou lokální mapu (`import-newShipard.sqlite`) a skončit. |
 
@@ -170,6 +172,8 @@ Import je idempotentní — druhý běh už naimportované záznamy přeskočí
   [Doklady](#doklady)) a importuje vše jako koncept. Testovací běhy.
 - `--chunk-months=N` — velikost chunků importu dokladů v měsících (default 1);
   `docs`/`all`.
+- `--skip-accbal-settings` / `--skip-match` — jen `all`; vynechat fázi nastavení
+  saldokont, resp. závěrečné vzdálené párování (`POST /_accbal/match`).
 - `--require-linked-doc` — jen `mail`; importovat jen zprávy s dohledatelným
   dokladem, obecnou korespondenci přeskočit. Default vypnuto (best-effort).
 - `--no-attachments` — přeskočit upload PDF příloh; `mail`/`bank-statements`.
@@ -344,9 +348,10 @@ Došlá pošta) do nového (`core_mail_incoming_messages`). Ostatní typy issues
 se generuje v `beforeSave`). Import volá dedikovaný `POST /_mail/import`
 nového Shipardu (viz `nov_shipard:tasks/mail-phase4-import-endpoint.md`).
 
-**Pořadí importu:** pošta je **terminální** fáze řetězce
-codebooks → persons → items → docs → bank-statements → **mail**. Doklady se
-musí importovat **před** poštou — vazba zpráva↔doklad se resolvuje přes
+**Pořadí importu:** pošta je poslední **datová** fáze řetězce
+codebooks → accbal-settings → persons → items → docs → bank-statements →
+**mail** → match. Doklady se musí importovat **před** poštou — vazba
+zpráva↔doklad se resolvuje přes
 `LocalIdMap` (`ENTITY_DOC`). Pro ostrý import dělej doklady (celý rozsah) před
 poštou; zprávy naimportované před svým dokladem se zpětně nepřelinkují (skip
 přes `ENTITY_MESSAGE`).
@@ -381,8 +386,9 @@ takové zprávy přeskočí.
 
 ### Nastavení saldokont (accbal-settings)
 
-Samostatný runner **mimo `all`** — je to konfigurace, ne migrovaná data.
-Vyžaduje právě jeden režim:
+Konfigurace saldokont (skupiny + jejich účty), ne migrovaná data. Běží jako
+**fáze `all`** (za číselníky, přes `runImport()`) i jako samostatná subkomanda
+`accbal-settings` — ta vyžaduje právě jeden režim:
 
 - `--dump` — stará DB (`e10doc_accBal_balances` + `…balancesAccounts`) → JSON
   v seed tvaru nového Shipardu (skupiny s vnořenými účty). Mapování je čistý
@@ -394,8 +400,12 @@ Vyžaduje právě jeden režim:
 Cesta JSONu: default `modules/imports/newShipard/data/accbalSettings.json`
 (verzovaný, ručně laděný); override `--file=PATH`.
 
-Bez LocalIdMap a bez idempotence — cílem má být čistý (čerstvě migrovaný) DS.
-Re-import po ručním doladění JSONu = `ds-reset` cílového DS + celý import znovu.
+**Idempotence per kód skupiny.** Před vytvořením se skupina hledá na cíli přes
+`findOneBy('economy_accbal_balances', 'code', …)`; když existuje, přeskočí se
+včetně účtů (`skipped` v souhrnu). Druhý běh `all` tedy saldo skupiny
+neduplikuje. **Omezení:** změna uvnitř *existující* skupiny (ruční doladění
+JSONu) se nepromítne — přepis znamená `ds-reset` cílového DS a import znovu.
+V `all` je fáze volitelná přes `--skip-accbal-settings`.
 
 ### Rate limiting
 
@@ -503,3 +513,6 @@ re-import je `ds-reset` cílového DS.
 - [x] Fáze 10 — maintenance `forget`.
 - [x] Fáze 11 — bankovní výpisy.
 - [x] Fáze 12 — nastavení saldokont (`accbal-settings`).
+- [x] Fáze 15 — saldokonto v `all`: fáze accbal-settings (za číselníky) +
+  závěrečné vzdálené párování přes `POST /_accbal/match`; idempotence saldo
+  skupin per kód, per-call HTTP timeout, `--skip-accbal-settings`/`--skip-match`.
