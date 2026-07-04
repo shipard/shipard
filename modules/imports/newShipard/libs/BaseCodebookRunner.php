@@ -83,8 +83,8 @@ abstract class BaseCodebookRunner extends ImportRunner
 			}
 		}
 
-		$this->info("");
-		$this->info(sprintf(
+		$this->summary("");
+		$this->summary(sprintf(
 			"Done %s: created=%d, skipped=%d, failed=%d",
 			$this->entityLabel(),
 			$stats['created'], $stats['skipped'], $stats['failed'],

@@ -62,9 +62,9 @@ final class AllRunner extends ImportRunner
 
 		$this->printSummary();
 		if ($allOk)
-			$this->ok("Full import finished.");
+			$this->summary("✓ Full import finished.");
 		else
-			$this->warn("Full import finished with errors — see log above.");
+			$this->summary("! Full import finished with errors — see log above.");
 		return $allOk;
 	}
 
@@ -116,10 +116,10 @@ final class AllRunner extends ImportRunner
 
 	private function printSummary(): void
 	{
-		$this->info("");
-		$this->info("==== Souhrn ====");
+		$this->summary("");
+		$this->summary("==== Souhrn ====");
 		foreach ($this->context->stats->byEntity() as $entity => $s)
-			$this->info(sprintf("  %-16s created=%d updated=%d skipped=%d failed=%d",
+			$this->summary(sprintf("  %-16s created=%d updated=%d skipped=%d failed=%d",
 				$entity, $s['created'], $s['updated'], $s['skipped'], $s['failed']));
 	}
 }

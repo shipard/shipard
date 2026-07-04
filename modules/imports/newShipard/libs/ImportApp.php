@@ -48,6 +48,18 @@ class ImportApp
 			|| (bool) $this->app->arg('verbose')
 			|| (bool) $this->app->arg('v');
 
+		// --quiet filtruje jen konzoli (warn/err/summary + progress ticky);
+		// soubory zůstávají plné. CLI --quiet přebíjí config verbose; konflikt
+		// hlásíme jen mezi CLI flagy.
+		$quiet = (bool) $this->app->arg('quiet');
+		if ($quiet && ((bool) $this->app->arg('verbose') || (bool) $this->app->arg('v')))
+		{
+			echo "ERROR: --quiet and --verbose are mutually exclusive.\n";
+			return false;
+		}
+		if ($quiet)
+			$verbose = false;   // CLI --quiet přebíjí i config verbose (vč. HTTP trace)
+
 		// --no-throttle CLI flag přepíše config throttleMs na 0 (pro testing).
 		$throttleMs = (bool) $this->app->arg('no-throttle')
 			? 0
@@ -82,7 +94,7 @@ class ImportApp
 		}
 
 		$this->idMap = new LocalIdMap($sqlitePath);   // čerstvá mapa
-		$consoleMode = $verbose ? Logger::MODE_VERBOSE : Logger::MODE_NORMAL;
+		$consoleMode = $quiet ? Logger::MODE_QUIET : ($verbose ? Logger::MODE_VERBOSE : Logger::MODE_NORMAL);
 		$this->logger = new Logger(__APP_DIR__ . '/log/import-' . date('Ymd-His') . '.log', $consoleMode);
 		$this->stats = new ImportStats();
 
@@ -239,6 +251,9 @@ class ImportApp
 		echo "\n";
 		echo "Common options:\n";
 		echo "  --verbose, -v        More verbose output (HTTP + per-row debug).\n";
+		echo "  --quiet              Console shows only warnings/errors, 'Done' summaries and a\n";
+		echo "                       progress tick every 500 records; .log stays complete.\n";
+		echo "                       Mutually exclusive with --verbose.\n";
 		echo "  --dry-run            Do not perform writes against the target.\n";
 		echo "  --continue-on-error  Skip failed rows instead of aborting the runner.\n";
 		echo "  --limit=N            Process only the first N source rows (exchange runners only).\n";

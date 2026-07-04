@@ -287,7 +287,7 @@ final class BankStatementsRunner extends BaseExchangeRunner
 		parent::printDone($stats);
 		$a = $this->attStats;
 		if (array_sum($a) > 0)
-			$this->info(sprintf("  attachments: uploaded=%d, duplicate=%d, missing=%d, failed=%d",
+			$this->summary(sprintf("  attachments: uploaded=%d, duplicate=%d, missing=%d, failed=%d",
 				$a['uploaded'], $a['duplicate'], $a['missing'], $a['failed']));
 	}
 

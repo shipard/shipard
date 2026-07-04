@@ -89,10 +89,15 @@ final class MailRunner extends ImportRunner
 			'att_uploaded' => 0, 'att_duplicate' => 0, 'att_missing' => 0, 'att_failed' => 0,
 		];
 
+		$processed = 0;
 		foreach ($rows as $issue)
 		{
 			if (!$this->processIssue($issue, $stats) && !$this->isContinueOnError())
 				return false;
+
+			$this->tick('mail', ++$processed, [
+				'created' => $stats['created'], 'skipped' => $stats['skipped'], 'failed' => $stats['failed'],
+			]);
 		}
 
 		$this->printDone($stats);
@@ -534,13 +539,13 @@ final class MailRunner extends ImportRunner
 	 */
 	private function printDone(array $stats): void
 	{
-		$this->info("");
-		$this->info(sprintf(
+		$this->summary("");
+		$this->summary(sprintf(
 			"Done mail: created=%d, skipped=%d, failed=%d | linked=%d, unlinked=%d",
 			$stats['created'], $stats['skipped'], $stats['failed'],
 			$stats['linked'], $stats['unlinked'],
 		));
-		$this->info(sprintf(
+		$this->summary(sprintf(
 			"  attachments: uploaded=%d, duplicate=%d, missing=%d, failed=%d",
 			$stats['att_uploaded'], $stats['att_duplicate'], $stats['att_missing'], $stats['att_failed'],
 		));

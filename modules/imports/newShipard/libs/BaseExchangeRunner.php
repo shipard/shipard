@@ -112,6 +112,13 @@ abstract class BaseExchangeRunner extends ImportRunner
 					return false;
 				}
 			}
+
+			// U docs je $stats sdílený přes chunky → počítadlo je kumulativní.
+			$this->tick(
+				$this->entityLabel(),
+				$stats['created'] + $stats['updated'] + $stats['skipped'] + $stats['failed'],
+				$stats,
+			);
 		}
 		return true;
 	}
@@ -121,8 +128,8 @@ abstract class BaseExchangeRunner extends ImportRunner
 	 */
 	protected function printDone(array $stats): void
 	{
-		$this->info("");
-		$this->info(sprintf(
+		$this->summary("");
+		$this->summary(sprintf(
 			"Done %s: created=%d, updated=%d, skipped=%d, failed=%d",
 			$this->entityLabel(),
 			$stats['created'], $stats['updated'], $stats['skipped'], $stats['failed'],

@@ -208,8 +208,8 @@ final class AccbalSettingsRunner extends ImportRunner
 			}
 		}
 
-		$this->info("");
-		$this->info(sprintf("Done accbal-settings: skupiny=%d, účty=%d, failed=%d",
+		$this->summary("");
+		$this->summary(sprintf("Done accbal-settings: skupiny=%d, účty=%d, failed=%d",
 			$stats['groups'], $stats['accounts'], $stats['failed']));
 		return $stats['failed'] === 0;
 	}
