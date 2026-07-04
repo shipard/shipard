@@ -8,9 +8,10 @@ use imports\newShipard\libs\HttpException;
 
 /**
  * Import nastavení saldokont (skupiny + jejich účty) ze starého Shipardu do
- * nového. Samostatný runner — NENÍ součástí `all` pipeline, je to konfigurace.
+ * nového. Běží jako fáze `all` (přes runImport(), za číselníky) i samostatně
+ * jako subkomanda `accbal-settings` — je to konfigurace, ne migrovaná data.
  *
- * Dva režimy (právě jeden je povinný):
+ * Dva režimy (samostatně právě jeden povinný; `all` volá runImport() přímo):
  *   --dump    stará DB (e10doc_accBal_balances + …_balancesAccounts) → JSON
  *             v seed tvaru nového Shipardu (balances[] s vnořenými accounts[]).
  *             Mapování je čistý rename (enum hodnoty se starý↔nový kryjí);
@@ -19,18 +20,26 @@ use imports\newShipard\libs\HttpException;
  *             economy_accbal_balance_accounts. FK účtů řeší vnoření v JSONu
  *             (id skupiny z kroku 1), žádná LocalIdMap.
  *
- * Re-import po ručním doladění JSONu = `ds-reset` + znovu (Rozhodnutí v task
- * spec). Bez LocalIdMap, bez idempotence — proto cílem migrovaný (čistý) DS.
+ * Idempotence per kód skupiny: před vytvořením se skupina hledá na cíli přes
+ * findOneBy('economy_accbal_balances', 'code', …); existuje → přeskočí se
+ * vč. účtů (druhý běh `all` tedy neduplikuje). ZMĚNA uvnitř existující skupiny
+ * se nepromítne — ruční doladění JSONu dál znamená `ds-reset` cílového DS.
  *
  * Cesta JSONu: default modules/imports/newShipard/data/accbalSettings.json
  * (verzovaný, ručně laděný); override přes --file=…
  *
- * Viz tasks/12-accbal-settings.md a shpd:docs/accbal.md.
+ * Viz tasks/12-accbal-settings.md, tasks/15-accbal-all-integration.md
+ * a shpd:docs/accbal.md.
  */
 final class AccbalSettingsRunner extends ImportRunner
 {
 	private const DEFAULT_FILE = __DIR__ . '/../../data/accbalSettings.json';
 
+	/**
+	 * Samostatný vstup (subkomanda accbal-settings): validuje --dump XOR
+	 * --import a deleguje na veřejné runDump()/runImport(). Fáze `all` volá
+	 * runImport() přímo — bez simulace flagů.
+	 */
 	public function run(): bool
 	{
 		$dump   = (bool) $this->app()->arg('dump');
@@ -42,7 +51,7 @@ final class AccbalSettingsRunner extends ImportRunner
 			return false;
 		}
 
-		return $dump ? $this->doDump() : $this->doImport();
+		return $dump ? $this->runDump() : $this->runImport();
 	}
 
 	private function filePath(): string
@@ -53,7 +62,8 @@ final class AccbalSettingsRunner extends ImportRunner
 
 	// ── --dump: stará DB → JSON ──────────────────────────────────────────
 
-	private function doDump(): bool
+	/** Veřejný vstup pro dump (subkomanda accbal-settings --dump). */
+	public function runDump(): bool
 	{
 		$this->info("Dump nastavení saldokont ze staré DB…");
 
@@ -137,7 +147,8 @@ final class AccbalSettingsRunner extends ImportRunner
 
 	// ── --import: JSON → nový Shipard ────────────────────────────────────
 
-	private function doImport(): bool
+	/** Veřejný vstup pro import — volá ho i AllRunner jako fázi `all`. */
+	public function runImport(): bool
 	{
 		$path = $this->filePath();
 		if (!is_file($path))
@@ -162,7 +173,7 @@ final class AccbalSettingsRunner extends ImportRunner
 			return false;
 
 		$crud = new CrudClient($this->http());
-		$stats = ['groups' => 0, 'accounts' => 0, 'failed' => 0];
+		$stats = ['groups' => 0, 'accounts' => 0, 'skipped' => 0, 'failed' => 0];
 
 		foreach ($data['balances'] as $i => $g)
 		{
@@ -176,6 +187,26 @@ final class AccbalSettingsRunner extends ImportRunner
 					return false;
 				}
 				continue;
+			}
+
+			// Idempotence per skupina podle `code`: existuje na cíli → přeskoč
+			// (vč. účtů). Read-only GET → běží i v dry-run. HttpException (chybí
+			// filter whitelist na nové straně) je prerekvizita, ne datový řádek
+			// → tvrdý fail po vzoru clearing guardu v AllRunner.
+			try
+			{
+				if ($crud->findOneBy('economy_accbal_balances', 'code', (string) $g['code']) !== null)
+				{
+					$stats['skipped']++;
+					$this->info("skupina '{$g['code']}' už na cíli existuje — přeskakuji (vč. účtů).");
+					continue;
+				}
+			}
+			catch (HttpException $e)
+			{
+				$this->err("accbal-settings: idempotence check vrátil HTTP {$e->statusCode} pro filter[code].");
+				$this->err("List endpoint asi nepodporuje filter[code] — doplň whitelist na nové straně a spusť znovu.");
+				return false;
 			}
 
 			try
@@ -209,8 +240,8 @@ final class AccbalSettingsRunner extends ImportRunner
 		}
 
 		$this->summary("");
-		$this->summary(sprintf("Done accbal-settings: skupiny=%d, účty=%d, failed=%d",
-			$stats['groups'], $stats['accounts'], $stats['failed']));
+		$this->summary(sprintf("Done accbal-settings: skupiny=%d, účty=%d, skipped=%d, failed=%d",
+			$stats['groups'], $stats['accounts'], $stats['skipped'], $stats['failed']));
 		return true;   // chyby řádků → exit code 2 přes Logger::errorCount()
 	}
 
@@ -274,7 +305,7 @@ final class AccbalSettingsRunner extends ImportRunner
 	/**
 	 * Kódy skupin musí být unikátní (poruší jinak unq_code). Vypíše kolize
 	 * (kód → názvy skupin) a vrátí false. Prázdné kódy řeší per-skupina check
-	 * v doImport().
+	 * v runImport().
 	 */
 	private function assertUniqueCodes(array $balances): bool
 	{
