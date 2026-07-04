@@ -162,7 +162,8 @@ class ImportApp
 			// Phase 07 — mail
 			case 'mail':              return (new runners\MailRunner($this->context()))->run();
 
-			// Phase 12 — accbal settings (samostatně, ne v `all`): --dump/--import
+			// Phase 12 — accbal settings: samostatně --dump/--import; jako fáze je
+			// součást `all` (AllRunner volá runImport() přímo, viz Fáze 15).
 			case 'accbal-settings':   return (new runners\AccbalSettingsRunner($this->context()))->run();
 
 			// Phase 06 — orchestrator ('reset' se odbaví v run() před LocalIdMap,
@@ -260,12 +261,14 @@ class ImportApp
 		echo "                      Import docs FIRST (doc links). Best-effort linking.\n";
 		echo "\n";
 		echo "  Phase 06 — orchestrator:\n";
-		echo "    all               Run codebooks → persons → items → docs → bank-statements → mail.\n";
+		echo "    all               Run codebooks → accbal-settings → persons → items → docs →\n";
+		echo "                      bank-statements → mail → match (remote accbal matching).\n";
 		echo "    reset             Delete the local id map (import-newShipard.sqlite) and old\n";
 		echo "                      import logs (log/import-*.log|.err), then exit.\n";
 		echo "\n";
-		echo "  Phase 12 — accbal settings (samostatně, ne v 'all'):\n";
+		echo "  Phase 12 — accbal settings (součást 'all'; samostatně pro --dump / vlastní --file):\n";
 		echo "    accbal-settings   Settings saldokont. Vyžaduje --dump nebo --import.\n";
+		echo "                      Import idempotentní per kód skupiny (v 'all' běží za číselníky).\n";
 		echo "                      --dump:   stará DB → JSON (seed tvar, bez dobropisů).\n";
 		echo "                      --import: JSON → economy_accbal_balances/_balance_accounts.\n";
 		echo "                      --file=PATH override (default data/accbalSettings.json).\n";
@@ -281,6 +284,8 @@ class ImportApp
 		echo "                       Mutually exclusive with --verbose.\n";
 		echo "  --dry-run            Do not perform writes against the target.\n";
 		echo "  --continue-on-error  Skip failed rows instead of aborting the runner.\n";
+		echo "  --skip-accbal-settings  Skip the accbal-settings phase ('all' only).\n";
+		echo "  --skip-match         Skip the final remote matching phase ('all' only).\n";
 		echo "  --limit=N            Process only the first N source rows (exchange runners only).\n";
 		echo "  --no-throttle        Disable client-side throttling between requests (for testing).\n";
 		echo "  --dump-payload       Print the canonical JSON sent to the exchange apply\n";

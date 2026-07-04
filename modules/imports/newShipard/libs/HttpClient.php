@@ -51,7 +51,8 @@ final class HttpClient
 		return $this->request('GET', $url, null);
 	}
 
-	public function post(string $path, array $body): array  { return $this->request('POST',   $path, $body); }
+	/** POST; volitelný per-call $timeout (s) přebije globální target.timeout (null = config). */
+	public function post(string $path, array $body, ?int $timeout = null): array { return $this->request('POST', $path, $body, $timeout); }
 	public function put(string $path, array $body): array   { return $this->request('PUT',    $path, $body); }
 	public function patch(string $path, array $body): array { return $this->request('PATCH',  $path, $body); }
 	public function delete(string $path): array             { return $this->request('DELETE', $path, null);  }
@@ -118,7 +119,7 @@ final class HttpClient
 
 	// ── Request flow ────────────────────────────────────────────────────
 
-	private function request(string $method, string $path, ?array $body): array
+	private function request(string $method, string $path, ?array $body, ?int $timeout = null): array
 	{
 		$url     = $this->resolveUrl($path);
 		$headers = $this->baseHeaders();
@@ -130,7 +131,7 @@ final class HttpClient
 			$headers[] = 'Content-Type: application/json';
 		}
 
-		return $this->runWithRetry($method, $url, $this->timeout, $curlOpts, $headers);
+		return $this->runWithRetry($method, $url, $timeout ?? $this->timeout, $curlOpts, $headers);
 	}
 
 	private function resolveUrl(string $path): string

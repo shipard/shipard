@@ -8,16 +8,24 @@ use imports\newShipard\libs\HttpException;
 
 /**
  * Orchestrátor celého importu — spustí fáze v závislostně správném pořadí
- * (číselníky → osoby → položky → doklady → bankovní výpisy → pošta) jedním
- * příkazem a na konci vypíše souhrn z context->stats.
+ * (číselníky → nastavení saldokont → osoby → položky → doklady → bankovní
+ * výpisy → pošta → párování) jedním příkazem a na konci vypíše souhrn z
+ * context->stats + agregát párování.
  *
- * Závislosti: doklady potřebují osoby (partneři), položky (řádky) i číselníky
- * (number_series / vat / bank účty); bankovní výpisy potřebují bank účty
- * (ENTITY_BANK_ACCOUNT z číselníků) a jdou za doklady; pošta navazuje na doklady
- * (vazba zpráva↔doklad přes ENTITY_DOC), proto jde úplně poslední.
+ * Závislosti: nastavení saldokont jde hned za číselníky (účty už existují —
+ * importuje je AllCodebooksRunner); doklady potřebují osoby (partneři), položky
+ * (řádky) i číselníky (number_series / vat / bank účty); bankovní výpisy
+ * potřebují bank účty (ENTITY_BANK_ACCOUNT z číselníků) a jdou za doklady; pošta
+ * navazuje na doklady (vazba zpráva↔doklad přes ENTITY_DOC), proto jde poslední
+ * z datových fází. Úplně nakonec běží „na dálku" matcher (fáze Match, POST
+ * /_accbal/match) — spáruje naimportované úhrady na cílovém DS.
  *
  * --continue-on-error: pokračuje i po selhání fáze (s vyšší chybovostí
  * navazujících fází); jinak po prvním selhání abortuje a vypíše souhrn.
+ *
+ * --skip-accbal-settings / --skip-match: vynechají příslušnou fázi (info hláška).
+ * Fáze Match navíc nikdy nemění návratovou hodnotu `all` — její selhání je jen
+ * warn s ruční fallback instrukcí (importovaná data jsou v pořádku).
  *
  * --from/--to: žádná speciální logika — argumenty jsou globální. Čte je
  * DocsRunner::sourceQuery() (dateAccounting) i MailRunner (dateIncoming).
@@ -36,6 +44,7 @@ final class AllRunner extends ImportRunner
 
 		$phases = [
 			['All codebooks',   fn() => (new AllCodebooksRunner($this->context))->run()],
+			['Accbal settings', fn() => $this->runAccbalSettingsPhase()],
 			['Persons',         fn() => (new PersonsRunner($this->context))->run()],
 			['Items',           fn() => (new ItemsRunner($this->context))->run()],
 			['Documents',       fn() => (new DocsRunner($this->context))->run()],
@@ -60,6 +69,10 @@ final class AllRunner extends ImportRunner
 			}
 		}
 
+		// Závěrečná fáze párování — běží i po chybových řádcích předchozích fází
+		// (spáruje, co se naimportovalo); po tvrdém abortu už sem tok nedojde.
+		$this->runMatchPhase();
+
 		$this->printSummary();
 		// $allOk = žádná fáze neabortovala; chyby řádků (failed s
 		// --continue-on-error) fáze neshodí — vidí je jen Logger.
@@ -68,6 +81,92 @@ final class AllRunner extends ImportRunner
 		else
 			$this->summary("! Full import finished with errors — see log above.");
 		return $allOk;
+	}
+
+	/**
+	 * Fáze accbal-settings v `all`: nastavení saldokont (skupiny + účty). Vstup
+	 * přes veřejné runImport() (bez simulace --import flagu); idempotenci per kód
+	 * skupiny řeší runner sám. Opt-out --skip-accbal-settings.
+	 */
+	private function runAccbalSettingsPhase(): bool
+	{
+		if ((bool) $this->app()->arg('skip-accbal-settings'))
+		{
+			$this->info("Fáze Accbal settings přeskočena (--skip-accbal-settings).");
+			return true;
+		}
+		return (new AccbalSettingsRunner($this->context))->runImport();
+	}
+
+	/**
+	 * Závěrečná fáze Match — vzdálené spuštění matcheru přes POST /_accbal/match
+	 * (jedno HTTP volání, ne runner). Spáruje naimportované úhrady na cílovém DS.
+	 *
+	 * Dry-run: posílá dryRun:true → endpoint vrátí read-only plán (nácvik odhalí
+	 * problémy, konzistentní s filozofií clearing guardu). Per-call timeout 600 s
+	 * (matcher běží ověřeně v nízkých desítkách sekund → velká rezerva).
+	 *
+	 * Selhání endpointu = warn + fallback instrukce (ruční `shpd-ds accbal-match
+	 * --all` na cíli), NIKDY neshodí `all` — importovaná data jsou v pořádku.
+	 * Přeskočí se jen s --skip-match.
+	 */
+	private function runMatchPhase(): void
+	{
+		$this->info("");
+		$this->info("######## Match ########");
+
+		if ((bool) $this->app()->arg('skip-match'))
+		{
+			$this->info("Fáze Match přeskočena (--skip-match).");
+			return;
+		}
+
+		$dryRun = $this->isDryRun();
+		try
+		{
+			$resp = $this->http()->post('/_accbal/match', ['scope' => 'all', 'dryRun' => $dryRun], 600);
+		}
+		catch (HttpException $e)
+		{
+			$this->warn("Vzdálené párování (POST /_accbal/match) selhalo: {$e->getMessage()}");
+			$this->warn("Importovaná data jsou v pořádku — spusť párování ručně na CÍLOVÉM serveru:");
+			$this->warn("  shpd-ds accbal-match --all");
+			return;   // fáze Match nikdy nemění návratovou hodnotu `all`
+		}
+
+		$this->printMatchSummary($dryRun, is_array($resp['data'] ?? null) ? $resp['data'] : []);
+	}
+
+	/**
+	 * Souhrn párování z agregátu endpointu (žádné per-result řádky). V dry-run
+	 * je plán ve `planned` (allocated=0), v ostrém běhu ve `allocated`.
+	 *
+	 * @param array<string, mixed> $d  data z odpovědi /_accbal/match
+	 */
+	private function printMatchSummary(bool $dryRun, array $d): void
+	{
+		$candidates = (int) ($d['candidates'] ?? 0);
+		$matched    = (int) ($dryRun ? ($d['planned'] ?? 0) : ($d['allocated'] ?? 0));
+		$routed     = (int) ($d['routedUnallocated'] ?? 0);
+		$amount     = (float) ($d['matchedAmount'] ?? 0);
+		$skipped    = is_array($d['skipped'] ?? null) ? $d['skipped'] : [];
+
+		$this->summary("");
+		$this->summary(sprintf(
+			"Match%s: kandidátů=%d, %s=%d, směrováno bez alokace=%d, Σ částka=%.2f",
+			$dryRun ? " (dry-run plán)" : '',
+			$candidates,
+			$dryRun ? 'k spárování' : 'spárováno',
+			$matched, $routed, $amount,
+		));
+
+		if ($skipped !== [])
+		{
+			$parts = [];
+			foreach ($skipped as $reason => $n)
+				$parts[] = "{$reason}={$n}";
+			$this->summary("  skipped: " . implode(', ', $parts));
+		}
 	}
 
 	/**
