@@ -246,7 +246,7 @@ final class HttpClient
 			$errorMessage = is_array($parsed) ? ($parsed['error']['message'] ?? null) : null;
 			if ($errorMessage === null)
 				$errorMessage = is_string($responseBody) && $responseBody !== ''
-					? $responseBody
+					? self::condenseNonJsonBody($responseBody)
 					: "HTTP {$statusCode}";
 			throw (new HttpException($statusCode, $errorCode, $errorMessage, $parsed))->withRequest($method, $url);
 		}
@@ -354,5 +354,27 @@ final class HttpClient
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Non-JSON chybové tělo (typicky nginx HTML stránka — 413, 502, …) zhustí
+	 * na jednořádkové shrnutí, ať se do výstupu importu nevalí celé HTML.
+	 * HTML: obsah <title>, fallback otagovaný text; jiný obsah: první řádek.
+	 */
+	private static function condenseNonJsonBody(string $body): string
+	{
+		$trimmed = ltrim($body);
+		if (str_starts_with($trimmed, '<') && (stripos($trimmed, '<html') !== false || stripos($trimmed, '<!doctype') === 0))
+		{
+			if (preg_match('~<title>\s*(.*?)\s*</title>~is', $body, $m) && $m[1] !== '')
+				return 'server error page: ' . html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5);
+
+			$text = trim(preg_replace('~\s+~', ' ', strip_tags($body)) ?? '');
+			return 'server error page: ' . mb_substr($text, 0, 120);
+		}
+
+		$line = strtok(trim($body), "\n");
+		$line = ($line === false) ? $body : $line;
+		return mb_strlen($line) > 200 ? mb_substr($line, 0, 200) . '…' : $line;
 	}
 }
