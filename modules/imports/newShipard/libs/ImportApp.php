@@ -82,10 +82,12 @@ class ImportApp
 		}
 
 		$this->idMap = new LocalIdMap($sqlitePath);   // čerstvá mapa
-		$this->logger = new Logger(__APP_DIR__ . '/log/import-' . date('Ymd-His') . '.log');
+		$consoleMode = $verbose ? Logger::MODE_VERBOSE : Logger::MODE_NORMAL;
+		$this->logger = new Logger(__APP_DIR__ . '/log/import-' . date('Ymd-His') . '.log', $consoleMode);
 		$this->stats = new ImportStats();
 
 		$ok = $this->dispatch($subcommand);
+		$this->logger->printRecap();
 		$this->logger->close();
 		return $ok;
 	}

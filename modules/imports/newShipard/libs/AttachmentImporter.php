@@ -42,8 +42,8 @@ final class AttachmentImporter
 			catch (HttpException $e)
 			{
 				$stats['failed']++;
-				$this->logger?->line(sprintf(
-					'! attachment upload failed (%s → table %d/rec %d): %s [HTTP %d]',
+				$this->logger?->warn(sprintf(
+					'attachment upload failed (%s → table %d/rec %d): %s [HTTP %d]',
 					$a['fileName'], $newTableIdNumeric, $newRecordId, $e->errorMessage, $e->statusCode,
 				));
 			}
