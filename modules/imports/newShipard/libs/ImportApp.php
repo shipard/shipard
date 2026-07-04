@@ -18,6 +18,12 @@ class ImportApp
 		$this->app = $app;
 	}
 
+	/**
+	 * CLI vrstva (shpd-app cliAction) návratovou hodnotu zahazuje a proces
+	 * končí vždy 0 — exit code proto nastavujeme sami přes exit():
+	 *   0 = čistý běh, 1 = tvrdý fail/abort, 2 = doběhlo, ale padly err úrovně
+	 *   (zdroj pravdy = Logger::errorCount()).
+	 */
 	public function run(): bool
 	{
 		// Verify we're running inside a Shipard data source directory.
@@ -27,7 +33,7 @@ class ImportApp
 			echo "Run this command from the DS root, e.g.:\n";
 			echo "  cd /var/lib/shipard/data-sources/<dsid>\n";
 			echo "  shpd-app cli-action --action=imports.newShipard/import <subcommand>\n";
-			return false;
+			exit(1);
 		}
 
 		$subcommand = $this->app->command(1);
@@ -41,7 +47,7 @@ class ImportApp
 		catch (ImportException $e)
 		{
 			echo "ERROR: " . $e->getMessage() . "\n";
-			return false;
+			exit(1);
 		}
 
 		$verbose = $this->config->verbose()
@@ -55,7 +61,7 @@ class ImportApp
 		if ($quiet && ((bool) $this->app->arg('verbose') || (bool) $this->app->arg('v')))
 		{
 			echo "ERROR: --quiet and --verbose are mutually exclusive.\n";
-			return false;
+			exit(1);
 		}
 		if ($quiet)
 			$verbose = false;   // CLI --quiet přebíjí i config verbose (vč. HTTP trace)
@@ -89,6 +95,19 @@ class ImportApp
 			echo "! POZOR: idempotence je pryč — re-import do neprázdného cílového DS\n";
 			echo "!        může vytvořit duplikáty (business-key match nemusí vše zachytit).\n";
 
+			// Úklid logů minulých běhů — jen soubory tohoto modulu (log/ sdílí
+			// i dibi profiler, nikdy nemazat celý adresář). Běží před konstrukcí
+			// Loggeru, takže log právě spouštěného běhu ještě neexistuje.
+			// Bezpodmínečně i při --dry-run — konzistentně s mazáním mapy výše.
+			$deletedLogs = 0;
+			foreach (array_merge(
+				glob(__APP_DIR__ . '/log/import-*.log') ?: [],
+				glob(__APP_DIR__ . '/log/import-*.err') ?: [],
+			) as $f)
+				if (@unlink($f)) $deletedLogs++;
+			if ($deletedLogs > 0)
+				echo "! Deleted {$deletedLogs} old import log file(s) (log/import-*.log|.err).\n";
+
 			if ($subcommand === 'reset')
 				return true;   // jen reset, nic dál (Logger se nevytváří)
 		}
@@ -101,7 +120,12 @@ class ImportApp
 		$ok = $this->dispatch($subcommand);
 		$this->logger->printRecap();
 		$this->logger->close();
-		return $ok;
+
+		if (!$ok)
+			exit(1);   // tvrdý fail / abort
+		if ($this->logger->errorCount() > 0)
+			exit(2);   // doběhlo, ale padly err úrovně (typicky --continue-on-error)
+		return true;   // exit 0
 	}
 
 	private function dispatch(string $subcommand): bool
@@ -237,7 +261,8 @@ class ImportApp
 		echo "\n";
 		echo "  Phase 06 — orchestrator:\n";
 		echo "    all               Run codebooks → persons → items → docs → bank-statements → mail.\n";
-		echo "    reset             Delete the local id map (import-newShipard.sqlite) and exit.\n";
+		echo "    reset             Delete the local id map (import-newShipard.sqlite) and old\n";
+		echo "                      import logs (log/import-*.log|.err), then exit.\n";
 		echo "\n";
 		echo "  Phase 12 — accbal settings (samostatně, ne v 'all'):\n";
 		echo "    accbal-settings   Settings saldokont. Vyžaduje --dump nebo --import.\n";
@@ -270,7 +295,13 @@ class ImportApp
 		echo "  --chunk-months=N     Document import chunk size in months (default 1). 'docs'/'all'.\n";
 		echo "  --require-linked-doc Import only mail messages with a resolvable linked doc. 'mail' only.\n";
 		echo "  --no-attachments     Skip PDF attachment upload. 'mail'/'bank-statements'.\n";
-		echo "  --reset              Delete the local id map before running (clean re-import).\n";
+		echo "  --reset              Delete the local id map and old import logs before\n";
+		echo "                       running (clean re-import).\n";
+		echo "\n";
+		echo "Exit codes:\n";
+		echo "  0  clean run\n";
+		echo "  1  hard fail / abort\n";
+		echo "  2  finished, but some rows failed (typically with --continue-on-error)\n";
 		echo "\n";
 		return true;
 	}

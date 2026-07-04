@@ -81,12 +81,12 @@ final class FiscalYearsRunner extends BaseCodebookRunner
 	{
 		$ok = parent::run();
 
-		$this->info(sprintf(
+		$this->summary(sprintf(
 			'  fiscal-months: created=%d, skipped=%d, failed=%d',
 			$this->monthStats['created'], $this->monthStats['skipped'], $this->monthStats['failed'],
 		));
 
-		return $ok && $this->monthStats['failed'] === 0;
+		return $ok;   // chyby měsíců → exit code 2 přes Logger::errorCount()
 	}
 
 	/**

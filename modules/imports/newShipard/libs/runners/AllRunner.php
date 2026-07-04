@@ -61,7 +61,9 @@ final class AllRunner extends ImportRunner
 		}
 
 		$this->printSummary();
-		if ($allOk)
+		// $allOk = žádná fáze neabortovala; chyby řádků (failed s
+		// --continue-on-error) fáze neshodí — vidí je jen Logger.
+		if ($allOk && $this->logger()->errorCount() === 0)
 			$this->summary("✓ Full import finished.");
 		else
 			$this->summary("! Full import finished with errors — see log above.");

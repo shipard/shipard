@@ -63,7 +63,9 @@ abstract class BaseExchangeRunner extends ImportRunner
 			return false;   // abort (failed bez --continue-on-error)
 
 		$this->printDone($stats);
-		return $stats['failed'] === 0;
+		// true = doběhl bez abortu; chyby řádků (failed s --continue-on-error)
+		// nese Logger::errorCount() → ImportApp z něj mapuje exit code 2.
+		return true;
 	}
 
 	/**

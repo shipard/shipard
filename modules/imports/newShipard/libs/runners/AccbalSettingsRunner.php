@@ -211,7 +211,7 @@ final class AccbalSettingsRunner extends ImportRunner
 		$this->summary("");
 		$this->summary(sprintf("Done accbal-settings: skupiny=%d, účty=%d, failed=%d",
 			$stats['groups'], $stats['accounts'], $stats['failed']));
-		return $stats['failed'] === 0;
+		return true;   // chyby řádků → exit code 2 přes Logger::errorCount()
 	}
 
 	/**
