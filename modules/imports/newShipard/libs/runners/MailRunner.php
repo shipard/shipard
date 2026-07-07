@@ -34,6 +34,12 @@ final class MailRunner extends ImportRunner
 	/** wkf issues docState "Smazáno" (viz wkf.issues.docStates.default.json). */
 	private const ISSUE_STATE_TRASH = 9800;
 
+	/** wkf.systemSections.types: 20 = Sekretariát (viz systemSectionsTypes.json). */
+	private const SECTION_TYPE_SECRETARIAT = 20;
+
+	/** wkf_base_sections docState "Smazáno". */
+	private const SECTION_STATE_TRASH = 9800;
+
 	/**
 	 * Starý issues.docState (wkf.issues.docStates.default) → nový docState
 	 * (core.mail.docStatesIncoming). Nezávisle na navázání na doklad.
@@ -124,12 +130,26 @@ final class MailRunner extends ImportRunner
 		foreach ($this->db()->query($q)->fetchAll() as $r)
 			$sectionNdxs[] = (int) ((array) $r)['section'];
 
+		// Sekretariát (systemSectionType 20) dostane schránku vždy — i bez
+		// zpráv v okně — a označí se jako výchozí, pokud na nové straně
+		// žádná default schránka ještě neexistuje (invariant "max jedna").
+		$secretariatNdx = $this->secretariatSectionNdx();
+		if ($secretariatNdx !== null && !in_array($secretariatNdx, $sectionNdxs, true))
+			$sectionNdxs[] = $secretariatNdx;
+
 		$crud = new CrudClient($this->http());
+		$defaultTargetNdx = $this->defaultMailboxTargetNdx($crud, $secretariatNdx);
 
 		foreach ($sectionNdxs as $secNdx)
 		{
-			if ($this->idMap()->lookup(LocalIdMap::ENTITY_MAILBOX, $secNdx) !== null)
-				continue;   // už existuje
+			$existingId = $this->idMap()->lookup(LocalIdMap::ENTITY_MAILBOX, $secNdx);
+			if ($existingId !== null)
+			{
+				// Už existuje (re-run) — případně jen doplnit default flag.
+				if ($secNdx === $defaultTargetNdx && !$this->markMailboxDefault($crud, $existingId))
+					return false;
+				continue;
+			}
 
 			$secRow = $this->db()->query('SELECT * FROM [wkf_base_sections] WHERE [ndx] = %i', $secNdx)->fetch();
 			if ($secRow === null)
@@ -137,17 +157,18 @@ final class MailRunner extends ImportRunner
 			$sec = (array) $secRow;
 
 			$mailboxCode = $this->mailboxCode($sec);
+			$isDefault = ($secNdx === $defaultTargetNdx);
 			$payload = [
 				'mailbox_id'    => $mailboxCode,
 				'name'          => $this->emptyToNull($sec['fullName'] ?? null) ?? $mailboxCode,
 				'email_address' => $mailboxCode . '@imported.invalid',
-				'is_default'    => false,
+				'is_default'    => $isDefault,
 				'docState'      => 40,   // aktivní (V pořádku) — jako default schránka z MailRouterProvisioner
 			];
 
 			if ($this->isDryRun())
 			{
-				$this->debug("DRY-RUN: would create mailbox {$mailboxCode} (section {$secNdx})");
+				$this->debug("DRY-RUN: would create mailbox {$mailboxCode} (section {$secNdx})" . ($isDefault ? ' [default]' : ''));
 				continue;
 			}
 
@@ -155,7 +176,7 @@ final class MailRunner extends ImportRunner
 			{
 				$newId = $crud->create('core_mail_mailboxes', $payload);
 				$this->idMap()->record(LocalIdMap::ENTITY_MAILBOX, $secNdx, $newId);
-				$this->ok("[mailbox] section {$secNdx} → {$newId} ({$mailboxCode})");
+				$this->ok("[mailbox] section {$secNdx} → {$newId} ({$mailboxCode})" . ($isDefault ? ' [default]' : ''));
 			}
 			catch (HttpException $e)
 			{
@@ -165,6 +186,78 @@ final class MailRunner extends ImportRunner
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Ndx sekce Sekretariát (systemSectionType 20). Null, pokud v tomto
+	 * shipardu neexistuje (nemělo by nastat — je systémová).
+	 */
+	private function secretariatSectionNdx(): ?int
+	{
+		$row = $this->db()->query(
+			'SELECT [ndx] FROM [wkf_base_sections] WHERE [systemSectionType] = %i', self::SECTION_TYPE_SECRETARIAT,
+			' AND [docState] != %i', self::SECTION_STATE_TRASH,
+			' ORDER BY [ndx] LIMIT 1',
+		)->fetch();
+		return $row !== null ? (int) ((array) $row)['ndx'] : null;
+	}
+
+	/**
+	 * Ndx sekce, jejíž schránka má být výchozí — Sekretariát, ale jen když
+	 * na nové straně žádná default schránka neexistuje (jinak import
+	 * existující konfiguraci nemění). Null = žádnou neoznačovat.
+	 */
+	private function defaultMailboxTargetNdx(CrudClient $crud, ?int $secretariatNdx): ?int
+	{
+		if ($secretariatNdx === null)
+		{
+			$this->warn('Sekce Sekretariát (systemSectionType 20) nenalezena — žádná schránka nebude označena jako výchozí.');
+			return null;
+		}
+
+		try
+		{
+			$existing = $crud->findOneBy('core_mail_mailboxes', 'is_default', 1);
+		}
+		catch (HttpException $e)
+		{
+			$this->warn("Nelze zjistit existující výchozí schránku: {$e->getMessage()} — default se nenastaví.");
+			return null;
+		}
+
+		if ($existing !== null)
+		{
+			$this->info('Výchozí schránka už existuje (' . ($existing['mailbox_id'] ?? '?') . ') — import ji nemění.');
+			return null;
+		}
+
+		return $secretariatNdx;
+	}
+
+	/**
+	 * Označí existující schránku jako výchozí. docState 40 je readOnly —
+	 * nutná transition 40 → 80 (V opravě), zápis is_default a návrat do 40.
+	 */
+	private function markMailboxDefault(CrudClient $crud, int $mailboxId): bool
+	{
+		if ($this->isDryRun())
+		{
+			$this->debug("DRY-RUN: would mark mailbox #{$mailboxId} as default");
+			return true;
+		}
+
+		try
+		{
+			$crud->patch('core_mail_mailboxes', $mailboxId, ['docState' => 80]);
+			$crud->patch('core_mail_mailboxes', $mailboxId, ['is_default' => true, 'docState' => 40]);
+			$this->ok("[mailbox] #{$mailboxId} označena jako výchozí schránka");
+			return true;
+		}
+		catch (HttpException $e)
+		{
+			$this->err("Failed to mark mailbox #{$mailboxId} as default: {$e->getMessage()}");
+			return $this->isContinueOnError();
+		}
 	}
 
 	/** mailbox_id kód deterministicky ze sekce: shipardEmailId, fallback sec-{ndx}. */
