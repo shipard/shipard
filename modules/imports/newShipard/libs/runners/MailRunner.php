@@ -81,13 +81,13 @@ final class MailRunner extends ImportRunner
 		if (!$this->ensureMailboxes())
 			return false;
 
-		// (B) zprávy
-		$rows = $this->fetchIssues();
-		$limit = (int) ($this->app()->arg('limit') ?? 0);
-		if ($limit > 0)
-			$rows = array_slice($rows, 0, $limit);
+		// (B) zprávy — čteno po dávkách (keyset přes ndx), aby paměťová špička
+		// nerostla s počtem zpráv (i.* obsahuje velká těla; fetchAll bez limitu
+		// materializuje celý result set → OOM v mysqli driveru na velkých DS).
+		$this->info("Found " . $this->countIssues() . " inbox messages.");
 
-		$this->info("Found " . count($rows) . " inbox messages.");
+		$limit = max(0, (int) ($this->app()->arg('limit') ?? 0));
+		$batch = max(1, (int) ($this->app()->arg('batch') ?? 500));
 
 		$stats = [
 			'created' => 0, 'skipped' => 0, 'failed' => 0,
@@ -96,14 +96,31 @@ final class MailRunner extends ImportRunner
 		];
 
 		$processed = 0;
-		foreach ($rows as $issue)
+		$afterNdx = 0;
+		while (true)
 		{
-			if (!$this->processIssue($issue, $stats) && !$this->isContinueOnError())
-				return false;
+			$rows = $this->fetchIssuesBatch($afterNdx, $batch);
+			if ($rows === [])
+				break;
 
-			$this->tick('mail', ++$processed, [
-				'created' => $stats['created'], 'skipped' => $stats['skipped'], 'failed' => $stats['failed'],
-			]);
+			foreach ($rows as $issue)
+			{
+				// Kurzor = ndx posledního NAČTENÉHO řádku (i failed/skipped) —
+				// posun i přes chyby, jinak nekonečná smyčka s --continue-on-error.
+				$afterNdx = (int) $issue['ndx'];
+
+				if (!$this->processIssue($issue, $stats) && !$this->isContinueOnError())
+					return false;
+
+				$this->tick('mail', ++$processed, [
+					'created' => $stats['created'], 'skipped' => $stats['skipped'], 'failed' => $stats['failed'],
+				]);
+
+				if ($limit > 0 && $processed >= $limit)
+					break 2;   // --limit napříč dávkami (i přes hranici dávky)
+			}
+
+			unset($rows);   // uvolnit dávku před načtením další
 		}
 
 		$this->printDone($stats);
@@ -549,19 +566,40 @@ final class MailRunner extends ImportRunner
 	// ── Source query + helpers ───────────────────────────────────────────
 
 	/**
-	 * Inbox zprávy (issueType=1), bez smazaných, volitelně okno na dateIncoming.
+	 * Počet inbox zpráv (issueType=1, bez smazaných, volitelně okno na
+	 * dateIncoming) — stejný WHERE jako fetchIssuesBatch(), pro info řádek
+	 * bez materializace řádků.
+	 */
+	private function countIssues(): int
+	{
+		$q = [
+			'SELECT COUNT(*) FROM [wkf_core_issues] i'
+			. ' WHERE i.[issueType] = %i', self::ISSUE_TYPE_INBOX,
+			' AND i.[docState] != %i', self::ISSUE_STATE_TRASH,
+		];
+		$this->appendDateWindow($q, 'i');
+		return (int) $this->db()->query($q)->fetchSingle();
+	}
+
+	/**
+	 * Jedna dávka inbox zpráv (issueType=1), bez smazaných, volitelně okno na
+	 * dateIncoming. Keyset pagination přes ndx (PK): jen řádky s ndx > $afterNdx,
+	 * seřazené, max $batchSize. Paměťová špička je tak omezená velikostí dávky.
 	 *
 	 * @return array<int, array<string, mixed>>
 	 */
-	private function fetchIssues(): array
+	private function fetchIssuesBatch(int $afterNdx, int $batchSize): array
 	{
 		$q = [
 			'SELECT i.* FROM [wkf_core_issues] i'
 			. ' WHERE i.[issueType] = %i', self::ISSUE_TYPE_INBOX,
 			' AND i.[docState] != %i', self::ISSUE_STATE_TRASH,
+			' AND i.[ndx] > %i', $afterNdx,
 		];
 		$this->appendDateWindow($q, 'i');
 		$q[] = ' ORDER BY i.[ndx]';
+		$q[] = ' LIMIT %i';
+		$q[] = $batchSize;
 
 		$out = [];
 		foreach ($this->db()->query($q)->fetchAll() as $r)
