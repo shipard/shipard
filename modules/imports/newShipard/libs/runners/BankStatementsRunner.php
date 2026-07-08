@@ -61,6 +61,8 @@ final class BankStatementsRunner extends BaseExchangeRunner
 	protected function savedIdKey(): string   { return 'savedStatementId'; }
 	protected function entityLabel(): string  { return 'bank statement'; }
 
+	protected function sourceAlias(): string { return 'h'; }
+
 	protected function sourceQuery(): array
 	{
 		$q = [
@@ -75,7 +77,6 @@ final class BankStatementsRunner extends BaseExchangeRunner
 		if ($from !== null) { $q[] = ' AND h.[datePeriodEnd] >= %d'; $q[] = $from; }
 		if ($to   !== null) { $q[] = ' AND h.[datePeriodEnd] <= %d'; $q[] = $to; }
 
-		$q[] = ' ORDER BY h.[ndx]';
 		return $q;
 	}
 

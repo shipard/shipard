@@ -7,8 +7,8 @@ namespace imports\newShipard\libs;
  * (persons / items / docs). Sourozenec `BaseCodebookRunner` pro generic CRUD.
  *
  * Životní cyklus:
- *   1. fetchSourceRows() — Dibi query proti starému DS.
- *   2. Volitelný `--limit=N` ořeže pole na prvních N řádků (testing).
+ *   1. fetchSourceRowsBatch() — Dibi query proti starému DS po dávkách (keyset).
+ *   2. Volitelný `--limit=N` zastaví smyčku po prvních N řádcích (testing).
  *   3. Per row → buildCanonical() vytvoří canonical payload.
  *   4. Pokud LocalIdMap má hit, nastaví `_resolve.header.userAction =
  *      "useExisting:<cachedNewId>"` — applier respektuje a uloží do existující.
@@ -33,7 +33,16 @@ abstract class BaseExchangeRunner extends ImportRunner
 	abstract protected function exchangeFlow(): string;      // "persons" | "items" | "docs"
 	abstract protected function exchangeType(): string;      // "person" | "item" | "document"
 	abstract protected function savedIdKey(): string;        // "savedPersonId" | "savedItemId" | "savedDocId"
-	abstract protected function sourceQuery(): array;        // Dibi array form
+	/**
+	 * Dibi array form zdrojového dotazu — **bez `ORDER BY`** (končí ve WHERE
+	 * klauzuli). Pořadí, keyset kurzor (`AND alias.[ndx] > …`) a `LIMIT` skládá
+	 * výhradně base (fetchSourceRowsBatch); COUNT ho obaluje derived tabulkou.
+	 */
+	abstract protected function sourceQuery(): array;
+
+	/** Alias hlavní tabulky ze sourceQuery() — pro kurzor a ORDER BY na [ndx]. */
+	abstract protected function sourceAlias(): string;
+
 	abstract protected function entityLabel(): string;       // pro logy
 
 	/**
@@ -45,21 +54,16 @@ abstract class BaseExchangeRunner extends ImportRunner
 	public function run(): bool
 	{
 		$this->info("Importing {$this->entityLabel()} via exchange flow...");
-		$rows = $this->fetchSourceRows();
+		$this->info("Found " . $this->countSourceRows() . " source rows.");
 
-		$limit = (int) ($this->app()->arg('limit') ?? 0);
+		$limit = max(0, (int) ($this->app()->arg('limit') ?? 0));
 		if ($limit > 0)
-		{
-			$rows = array_slice($rows, 0, $limit);
 			$this->info("Limit applied: processing first {$limit} rows.");
-		}
-
-		$this->info("Found " . count($rows) . " source rows.");
 
 		$exchange = new ExchangeClient($this->http());
 		$stats = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 0];
 
-		if (!$this->processRows($rows, $exchange, $stats))
+		if (!$this->processAllRows($exchange, $stats, $limit))
 			return false;   // abort (failed bez --continue-on-error)
 
 		$this->printDone($stats);
@@ -139,15 +143,83 @@ abstract class BaseExchangeRunner extends ImportRunner
 	}
 
 	/**
+	 * Sdílená kurzorová smyčka: čte zdrojové řádky po dávkách (keyset přes ndx),
+	 * aby paměťová špička nerostla s počtem řádků (fetchAll bez limitu
+	 * materializuje celý result set → OOM v mysqli driveru na velkých DS).
+	 *
+	 * Volá base run() (celý dataset) i DocsRunner per chunk (kurzor se resetuje
+	 * per volání; chunkFrom/chunkTo tečou přes sourceQuery()). Vrátí false jen
+	 * při abortu z processRows() (failed bez --continue-on-error).
+	 *
+	 * @param array{created:int,updated:int,skipped:int,failed:int} $stats
+	 */
+	protected function processAllRows(ExchangeClient $exchange, array &$stats, int $limit): bool
+	{
+		$batch = max(1, (int) ($this->app()->arg('batch') ?? 500));
+		$afterNdx = 0;
+		while (true)
+		{
+			$rows = $this->fetchSourceRowsBatch($afterNdx, $batch);
+			if ($rows === [])
+				break;
+
+			// Kurzor = ndx posledního NAČTENÉHO řádku (i failed/skipped, před
+			// případným --limit slice) — jinak nekonečná smyčka s
+			// --continue-on-error.
+			$afterNdx = (int) $rows[array_key_last($rows)]['ndx'];
+
+			// --limit napříč dávkami (u docs i napříč chunky — $stats je sdílený
+			// a kumulativní). Vzor z původního DocsRunner::run().
+			if ($limit > 0)
+			{
+				$remaining = $limit - array_sum($stats);
+				if ($remaining <= 0)
+					break;
+				if (count($rows) > $remaining)
+					$rows = array_slice($rows, 0, $remaining);
+			}
+
+			if (!$this->processRows($rows, $exchange, $stats))
+				return false;
+
+			unset($rows);   // uvolnit dávku před načtením další
+		}
+		return true;
+	}
+
+	/**
+	 * Jedna dávka zdrojových řádků. Keyset pagination přes ndx (PK): jen řádky
+	 * s alias.[ndx] > $afterNdx, seřazené, max $batchSize. Paměťová špička je
+	 * tak omezená velikostí dávky. sourceQuery() dodává WHERE (bez ORDER BY);
+	 * ORDER BY + kurzor + LIMIT skládá tady base.
+	 *
 	 * @return array<int, array<string, mixed>>
 	 */
-	protected function fetchSourceRows(): array
+	protected function fetchSourceRowsBatch(int $afterNdx, int $batchSize): array
 	{
-		$rows = $this->db()->query($this->sourceQuery())->fetchAll();
+		$alias = $this->sourceAlias();
+		$q = $this->sourceQuery();
+		$q[] = " AND {$alias}.[ndx] > %i";
+		$q[] = $afterNdx;
+		$q[] = " ORDER BY {$alias}.[ndx]";
+		$q[] = ' LIMIT %i';
+		$q[] = $batchSize;
+
 		$out = [];
-		foreach ($rows as $r)
+		foreach ($this->db()->query($q)->fetchAll() as $r)
 			$out[] = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
 		return $out;
+	}
+
+	/**
+	 * Počet zdrojových řádků — obal sourceQuery() derived tabulkou (garantuje
+	 * identické WHERE bez duplikace; respektuje chunkFrom/chunkTo u docs). Pro
+	 * info řádek "Found N source rows." bez materializace řádků.
+	 */
+	protected function countSourceRows(): int
+	{
+		$q = array_merge(['SELECT COUNT(*) FROM ('], $this->sourceQuery(), [') AS tmp']);
+		return (int) $this->db()->query($q)->fetchSingle();
 	}
 
 	/**

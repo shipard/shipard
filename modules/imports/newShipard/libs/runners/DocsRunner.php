@@ -232,22 +232,17 @@ final class DocsRunner extends BaseExchangeRunner
 		{
 			$this->chunkFrom = $cFrom;
 			$this->chunkTo   = $cTo;
-			$rows = $this->fetchSourceRows();
 
-			if ($limit > 0)
-			{
-				$remaining = $limit - array_sum($stats);
-				if ($remaining <= 0)
-					break;
-				if (count($rows) > $remaining)
-					$rows = array_slice($rows, 0, $remaining);
-			}
+			// --limit vyčerpán → další chunky nezpracovávat (jako dnes). $stats
+			// je kumulativní přes chunky, processAllRows limit hlídá i uvnitř.
+			if ($limit > 0 && array_sum($stats) >= $limit)
+				break;
 
-			$this->info("— chunk {$cFrom} … {$cTo}: " . count($rows) . " docs");
-			if (!$this->processRows($rows, $exchange, $stats))
+			// COUNT respektuje chunkFrom/chunkTo přes sourceQuery(); dávkové
+			// čtení uvnitř chunku řeší sdílená smyčka (kurzor se resetuje per chunk).
+			$this->info("— chunk {$cFrom} … {$cTo}: " . $this->countSourceRows() . " docs");
+			if (!$this->processAllRows($exchange, $stats, $limit))
 				return false;
-
-			unset($rows);   // uvolnit před dalším úsekem
 		}
 
 		$this->printSeriesSummary();
@@ -335,6 +330,8 @@ final class DocsRunner extends BaseExchangeRunner
 		}
 	}
 
+	protected function sourceAlias(): string { return 'h'; }
+
 	protected function sourceQuery(): array
 	{
 		$docTypes = array_keys(self::DOC_TYPE_MAP);  // ['invni', 'invno', 'cmnbkp']
@@ -361,7 +358,6 @@ final class DocsRunner extends BaseExchangeRunner
 			$q[] = $to;
 		}
 
-		$q[] = ' ORDER BY h.[ndx]';
 		return $q;
 	}
 

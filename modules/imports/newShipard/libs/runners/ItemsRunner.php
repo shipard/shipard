@@ -66,6 +66,8 @@ final class ItemsRunner extends BaseExchangeRunner
 	protected function savedIdKey(): string   { return 'savedItemId'; }
 	protected function entityLabel(): string  { return 'item'; }
 
+	protected function sourceAlias(): string { return 'i'; }
+
 	protected function sourceQuery(): array
 	{
 		return [
@@ -73,7 +75,6 @@ final class ItemsRunner extends BaseExchangeRunner
 			. ' FROM [e10_witems_items] i'
 			. ' LEFT JOIN [e10_witems_itemtypes] t ON i.[itemType] = t.[ndx]'
 			. ' WHERE i.[docState] != %i', 9800,
-			' ORDER BY i.[ndx]',
 		];
 	}
 

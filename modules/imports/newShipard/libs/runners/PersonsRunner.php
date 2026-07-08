@@ -34,13 +34,14 @@ final class PersonsRunner extends BaseExchangeRunner
 	protected function savedIdKey(): string   { return 'savedPersonId'; }
 	protected function entityLabel(): string  { return 'person'; }
 
+	protected function sourceAlias(): string { return 'p'; }
+
 	protected function sourceQuery(): array
 	{
 		return [
 			'SELECT p.* FROM [e10_persons_persons] p'
 			. ' WHERE p.[docState] != %i', 9800,           // ne smazané
 			' AND p.[personType] IN %in', [1, 2],          // jen Člověk + Firma
-			' ORDER BY p.[ndx]',
 		];
 	}
 

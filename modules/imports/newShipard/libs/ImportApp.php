@@ -298,7 +298,8 @@ class ImportApp
 		echo "  --target-state=10    Cap all docs to draft (10), overriding the old→new state map\n";
 		echo "                       (1000→10,1200→20,4000/8000→40,4100→30). Test runs. 'docs' only.\n";
 		echo "  --chunk-months=N     Document import chunk size in months (default 1). 'docs'/'all'.\n";
-		echo "  --batch=N            Mail import batch size (keyset). Default 500. 'mail' only.\n";
+		echo "  --batch=N            Source read batch size (keyset). Default 500.\n";
+		echo "                       Exchange runners (persons/items/docs/bank-statements) + 'mail'.\n";
 		echo "  --require-linked-doc Import only mail messages with a resolvable linked doc. 'mail' only.\n";
 		echo "  --no-attachments     Skip PDF attachment upload. 'mail'/'bank-statements'.\n";
 		echo "  --reset              Delete the local id map and old import logs before\n";
