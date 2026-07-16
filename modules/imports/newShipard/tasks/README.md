@@ -25,6 +25,7 @@ starého Shipardu do nového Shipardu přes HTTPS REST API.
 | 10 | [10-docs-import-revision.md](10-docs-import-revision.md) | ✅ Hotovo | Revize importu dokladů: identita číselné řady (`dbCounter` → `docKeyId`/`doc_number_code`), stavy/operation, parser čísel; CLI `forget --entity` pro cílený re-import. |
 | 11 | [11-bank-statements.md](11-bank-statements.md) | ✅ Hotovo | Migrace bankovních výpisů (`BankStatementsRunner`): čte staré výpisy (`e10doc_core_heads docType='bank'` + rows), posílá přes `shpd.bank.statement.v1` na `POST /_exchange/bank/statement/apply`. Vč. kurzu pro přepočet měny. |
 | 12 | [12-accbal-settings.md](12-accbal-settings.md) | ✅ Hotovo | Import nastavení saldokont (`AccbalSettingsRunner`, samostatný `accbal-settings`, mimo `all`). `--dump`: stará DB (`e10doc_accBal_balances` + `…_balancesAccounts`) → JSON v seed tvaru (bez dobropisů — sedí starému chování). `--import`: JSON → `economy_accbal_balances`/`_balance_accounts` přes generický CRUD (FK přes vnoření, bez `LocalIdMap`; re-import = `ds-reset`). Mezikrok = ruční ladění kódů skupin/účtů v JSONu. |
+| 18 | [18-registry-import.md](18-registry-import.md) | ✅ Hotovo | Import Dokumentů (`wkf.docs`) → Spisovna (`base.registry`): `RegistryRunner`. Šanony = živé kořeny stromu složek (generický CRUD, `base_registry_binders`); dokumenty přes `POST /_registry/import` (keyset pagination, dedupe `legacy.ndx`, zachované `created`, docState 1000→10/4000→40/8000→80/9000→70, kind `smlouva`→`contract`/jinak `other`). Přílohy na tableId 428 (07a klient). Zařazeno v `all` (za poštou). Post-import: `shpd-ds registry-extract-texts`. |
 
 PRDs pro fáze 03–06 vznikají postupně po dokončení předchozí fáze, aby
 reflektovaly skutečnost po implementaci.
@@ -54,6 +55,12 @@ shpd-app cli-action --action=imports.newShipard/import fiscal-years -v
 shpd-app cli-action --action=imports.newShipard/import persons
 shpd-app cli-action --action=imports.newShipard/import items
 shpd-app cli-action --action=imports.newShipard/import docs --from=2024-01-01 --to=2024-12-31
+
+# Spisovna (Fáze 18) — Dokumenty → base.registry
+shpd-app cli-action --action=imports.newShipard/import registry
+shpd-app cli-action --action=imports.newShipard/import registry --from=2020-01-01 -v
+# Post-import na CÍLOVÉM DS (doplní fulltexty z nahraných příloh):
+#   shpd-ds registry-extract-texts
 
 # Plné spuštění (Fáze 06)
 shpd-app cli-action --action=imports.newShipard/import all

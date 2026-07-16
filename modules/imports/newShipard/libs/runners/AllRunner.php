@@ -9,15 +9,16 @@ use imports\newShipard\libs\HttpException;
 /**
  * Orchestrátor celého importu — spustí fáze v závislostně správném pořadí
  * (číselníky → nastavení saldokont → osoby → položky → doklady → bankovní
- * výpisy → pošta → párování) jedním příkazem a na konci vypíše souhrn z
- * context->stats + agregát párování.
+ * výpisy → pošta → spisovna → párování) jedním příkazem a na konci vypíše
+ * souhrn z context->stats + agregát párování.
  *
  * Závislosti: nastavení saldokont jde hned za číselníky (účty už existují —
  * importuje je AllCodebooksRunner); doklady potřebují osoby (partneři), položky
  * (řádky) i číselníky (number_series / vat / bank účty); bankovní výpisy
  * potřebují bank účty (ENTITY_BANK_ACCOUNT z číselníků) a jdou za doklady; pošta
- * navazuje na doklady (vazba zpráva↔doklad přes ENTITY_DOC), proto jde poslední
- * z datových fází. Úplně nakonec běží „na dálku" matcher (fáze Match, POST
+ * navazuje na doklady (vazba zpráva↔doklad přes ENTITY_DOC), proto jde za nimi;
+ * spisovna (registry) je nezávislá a jde jako poslední datová fáze. Úplně
+ * nakonec běží „na dálku" matcher (fáze Match, POST
  * /_accbal/match) — spáruje naimportované úhrady na cílovém DS.
  *
  * --continue-on-error: pokračuje i po selhání fáze (s vyšší chybovostí
@@ -50,6 +51,7 @@ final class AllRunner extends ImportRunner
 			['Documents',       fn() => (new DocsRunner($this->context))->run()],
 			['Bank statements', fn() => (new BankStatementsRunner($this->context))->run()],
 			['Mail',            fn() => (new MailRunner($this->context))->run()],
+			['Registry',        fn() => (new RegistryRunner($this->context))->run()],
 		];
 
 		foreach ($phases as [$label, $fn])

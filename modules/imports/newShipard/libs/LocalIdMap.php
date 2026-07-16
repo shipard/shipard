@@ -22,6 +22,8 @@ final class LocalIdMap
 	public const ENTITY_MAILBOX          = 'mailbox';
 	public const ENTITY_MESSAGE          = 'message';
 	public const ENTITY_ACCOUNT          = 'accountingAccount';
+	public const ENTITY_BINDER           = 'binder';        // starý kořen-folder ndx → nový base_registry_binders.id
+	public const ENTITY_REGISTRY_DOC     = 'registryDoc';   // starý wkf_docs_documents.ndx → nový base_registry_documents.id
 
 	private \PDO $pdo;
 

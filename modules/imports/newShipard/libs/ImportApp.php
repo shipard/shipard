@@ -162,6 +162,9 @@ class ImportApp
 			// Phase 07 — mail
 			case 'mail':              return (new runners\MailRunner($this->context()))->run();
 
+			// Phase 18 — registry (Spisovna)
+			case 'registry':          return (new runners\RegistryRunner($this->context()))->run();
+
 			// Phase 12 — accbal settings: samostatně --dump/--import; jako fáze je
 			// součást `all` (AllRunner volá runImport() přímo, viz Fáze 15).
 			case 'accbal-settings':   return (new runners\AccbalSettingsRunner($this->context()))->run();
@@ -193,11 +196,13 @@ class ImportApp
 			'item'           => LocalIdMap::ENTITY_ITEM,           'items'     => LocalIdMap::ENTITY_ITEM,
 			'mail'           => LocalIdMap::ENTITY_MESSAGE,         'message'  => LocalIdMap::ENTITY_MESSAGE,
 			'bank-statement' => LocalIdMap::ENTITY_BANK_STATEMENT, 'statement' => LocalIdMap::ENTITY_BANK_STATEMENT,
+			'registry'       => LocalIdMap::ENTITY_REGISTRY_DOC,   'document' => LocalIdMap::ENTITY_REGISTRY_DOC,
+			'binder'         => LocalIdMap::ENTITY_BINDER,
 		];
 		$entity = $aliases[$raw] ?? null;
 		if ($entity === null)
 		{
-			echo "forget: missing or unknown --entity (use doc|person|item|message|bank-statement).\n";
+			echo "forget: missing or unknown --entity (use doc|person|item|message|bank-statement|registry|binder).\n";
 			return false;
 		}
 
@@ -260,9 +265,15 @@ class ImportApp
 		echo "    mail              Incoming mail (wkf issues, issueType=1) via /_mail/import.\n";
 		echo "                      Import docs FIRST (doc links). Best-effort linking.\n";
 		echo "\n";
+		echo "  Phase 18 — registry (Spisovna):\n";
+		echo "    registry          Documents (wkf.docs) → base.registry via /_registry/import.\n";
+		echo "                      Binders = live folder-tree roots (generic CRUD), docs deduped by\n";
+		echo "                      legacy.ndx. Attachments uploaded to tableId 428 unless\n";
+		echo "                      --no-attachments. Post-import on TARGET: shpd-ds registry-extract-texts.\n";
+		echo "\n";
 		echo "  Phase 06 — orchestrator:\n";
 		echo "    all               Run codebooks → accbal-settings → persons → items → docs →\n";
-		echo "                      bank-statements → mail → match (remote accbal matching).\n";
+		echo "                      bank-statements → mail → registry → match (remote accbal matching).\n";
 		echo "    reset             Delete the local id map (import-newShipard.sqlite) and old\n";
 		echo "                      import logs (log/import-*.log|.err), then exit.\n";
 		echo "\n";
@@ -274,8 +285,9 @@ class ImportApp
 		echo "                      --file=PATH override (default data/accbalSettings.json).\n";
 		echo "\n";
 		echo "  Phase 10 — maintenance:\n";
-		echo "    forget --entity=X Forget local id map for one entity (doc|person|item|message),\n";
-		echo "                      keeping the rest. For targeted clean re-import (e.g. docs).\n";
+		echo "    forget --entity=X Forget local id map for one entity (doc|person|item|message|\n";
+		echo "                      bank-statement|registry|binder), keeping the rest. For targeted\n";
+		echo "                      clean re-import (e.g. docs).\n";
 		echo "\n";
 		echo "Common options:\n";
 		echo "  --verbose, -v        More verbose output (HTTP + per-row debug).\n";
@@ -292,16 +304,18 @@ class ImportApp
 		echo "                       (exchange runners: persons/items/docs). Failed rows dump\n";
 		echo "                       payload + response body automatically.\n";
 		echo "  --from=YYYY-MM-DD    docs: accounting date; mail: dateIncoming; bank-statements:\n";
-		echo "                       datePeriodEnd (>=). 'docs'/'mail'/'bank-statements'/'all'.\n";
+		echo "                       datePeriodEnd; registry: dateCreate (>=). 'docs'/'mail'/\n";
+		echo "                       'bank-statements'/'registry'/'all'.\n";
 		echo "  --to=YYYY-MM-DD      docs: accounting date; mail: dateIncoming; bank-statements:\n";
-		echo "                       datePeriodEnd (<=). 'docs'/'mail'/'bank-statements'/'all'.\n";
+		echo "                       datePeriodEnd; registry: dateCreate (<=). 'docs'/'mail'/\n";
+		echo "                       'bank-statements'/'registry'/'all'.\n";
 		echo "  --target-state=10    Cap all docs to draft (10), overriding the old→new state map\n";
 		echo "                       (1000→10,1200→20,4000/8000→40,4100→30). Test runs. 'docs' only.\n";
 		echo "  --chunk-months=N     Document import chunk size in months (default 1). 'docs'/'all'.\n";
 		echo "  --batch=N            Source read batch size (keyset). Default 500.\n";
 		echo "                       Exchange runners (persons/items/docs/bank-statements) + 'mail'.\n";
 		echo "  --require-linked-doc Import only mail messages with a resolvable linked doc. 'mail' only.\n";
-		echo "  --no-attachments     Skip PDF attachment upload. 'mail'/'bank-statements'.\n";
+		echo "  --no-attachments     Skip PDF attachment upload. 'mail'/'bank-statements'/'registry'.\n";
 		echo "  --reset              Delete the local id map and old import logs before\n";
 		echo "                       running (clean re-import).\n";
 		echo "\n";
