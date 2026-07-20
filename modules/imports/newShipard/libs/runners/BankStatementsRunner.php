@@ -206,8 +206,7 @@ final class BankStatementsRunner extends BaseExchangeRunner
 	 * Skip jen když je výsledná částka nula (řádek bez pohybu peněz — info nebo
 	 * nettovaná nula). externalId = stabilní old:{rowNdx} (idempotence i kdyby se výpis
 	 * později naimportoval souborem; nová strana dedupne přes external_id/
-	 * fingerprint). Řádky bez pohybu peněz (credit==0 && debit==0, např. info)
-	 * vynechá. dateTransaction = dateDue řádku (v datech vždy vyplněné), fallback
+	 * fingerprint). dateTransaction = dateDue řádku (v datech vždy vyplněné), fallback
 	 * datum hlavičky. Cizí měna: exchangeRate (za jednotku, z old řádku) se posílá;
 	 * nová strana z něj počítá amount_dom (amount × rate). Domácí řádek → null →
 	 * rate 1 (FX rozdíly jsou mimo scope migrace).
