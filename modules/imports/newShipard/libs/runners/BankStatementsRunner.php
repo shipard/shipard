@@ -150,6 +150,27 @@ final class BankStatementsRunner extends BaseExchangeRunner
 
 		$orderNo = (int) ($oldRow['docOrderNumber'] ?? 0);
 
+		$transactions = $this->loadTransactions($oldNdx, $periodEnd);
+
+		// Rekonciliace zdroje: initBalance + Σ(znaménkové částky) musí dát balance.
+		// Když nedá, jsou zdrojová data vadná (starý doklad nesedí sám v sobě) —
+		// migrace je přenese věrně, ale rekonciliace na nové straně pak spadne
+		// (alert economy.bank.reconciliation_errors). Warn zviditelní vadu už při
+		// importu místo až v alertech; import pokračuje beze změny (věrný přenos
+		// je správně). Zvláštní hláška pro podtyp „nulové zůstatky + reálný pohyb"
+		// (nejnázornější případ), obecný mismatch pro zbytek (např. haléřové
+		// rozdíly u nenulových zůstatků).
+		$initBalance = (float) ($oldRow['initBalance'] ?? 0);
+		$balance     = (float) ($oldRow['balance'] ?? 0);
+		$turnover    = array_sum(array_column($transactions, 'amount'));
+		if ($initBalance == 0.0 && $balance == 0.0 && $turnover != 0.0)
+			$this->warn("statement {$oldNdx}: zero balances with non-zero turnover "
+				. "({$turnover}) — source data issue, will fail reconciliation");
+		elseif (round($initBalance + $turnover - $balance, 2) != 0.0)
+			$this->warn("statement {$oldNdx}: reconciliation mismatch — "
+				. "initBalance {$initBalance} + turnover {$turnover} != balance {$balance} "
+				. "— source data issue, will fail reconciliation");
+
 		return [
 			'format'        => 'shpd.bank.statement',
 			'formatVersion' => '1.0',
@@ -167,7 +188,7 @@ final class BankStatementsRunner extends BaseExchangeRunner
 				'currency'        => $this->currencyUpper($oldRow['currency'] ?? null),
 			],
 
-			'transactions' => $this->loadTransactions($oldNdx, $periodEnd),
+			'transactions' => $transactions,
 
 			'applyOptions' => [
 				'targetState'          => $targetState,
@@ -177,9 +198,13 @@ final class BankStatementsRunner extends BaseExchangeRunner
 	}
 
 	/**
-	 * Řádky výpisu → transakce. amount znaménková (credit + / debit −); applier
-	 * z toho odvodí směr + kladnou částku (ověřeno: žádný řádek nemá credit i debit
-	 * zároveň). externalId = stabilní old:{rowNdx} (idempotence i kdyby se výpis
+	 * Řádky výpisu → transakce. amount znaménková: credit − debit (credit +,
+	 * debit −); applier z toho odvodí směr + kladnou částku. Vzorec počítá se
+	 * zápornými hodnotami: starý Shipard ukládá vratky jako zápornou hodnotu ve
+	 * sloupci původního směru — vratka přijaté platby je credit < 0 (→ amount < 0,
+	 * odchozí), vratka odchozí platby je debit < 0 (→ amount > 0, příchozí).
+	 * Skip jen když je výsledná částka nula (řádek bez pohybu peněz — info nebo
+	 * nettovaná nula). externalId = stabilní old:{rowNdx} (idempotence i kdyby se výpis
 	 * později naimportoval souborem; nová strana dedupne přes external_id/
 	 * fingerprint). Řádky bez pohybu peněz (credit==0 && debit==0, např. info)
 	 * vynechá. dateTransaction = dateDue řádku (v datech vždy vyplněné), fallback
@@ -210,12 +235,14 @@ final class BankStatementsRunner extends BaseExchangeRunner
 
 			$credit = (float) ($row['credit'] ?? 0);
 			$debit  = (float) ($row['debit'] ?? 0);
-			if ($credit == 0.0 && $debit == 0.0)
-				continue;   // řádek bez pohybu peněz (např. informativní)
+			$amount = $credit - $debit;   // znaménková: credit +, debit −; vratky
+			                              // (záporný credit/debit) se otočí přirozeně
+			if ($amount == 0.0)
+				continue;   // řádek bez pohybu peněz (info, nebo nettovaná nula)
 
 			$out[] = [
 				'externalId'          => 'old:' . (int) $row['ndx'],
-				'amount'              => $credit > 0 ? $credit : -$debit,
+				'amount'              => $amount,
 				'dateTransaction'     => $this->dateToString($row['dateDue'] ?? null) ?? $headerDateFallback,
 				'dateValue'           => null,
 				'partnerId'           => $this->resolvePartnerId((int) ($row['person'] ?? 0), (int) $row['ndx']),
