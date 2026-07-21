@@ -3,12 +3,18 @@
 namespace imports\newShipard\libs\runners;
 
 use imports\newShipard\libs\BaseCodebookRunner;
+use imports\newShipard\libs\ImportException;
 use imports\newShipard\libs\LocalIdMap;
 use imports\newShipard\libs\ResolvesAccountingAccount;
 
 final class BankAccountsRunner extends BaseCodebookRunner
 {
 	use ResolvesAccountingAccount;
+
+	private const CODE_MAX_LEN = 10;
+
+	/** @var array<int, string> old ndx → finální (deduplikovaný) code */
+	private array $codeByNdx = [];
 
 	protected function entityType(): string  { return LocalIdMap::ENTITY_BANK_ACCOUNT; }
 	protected function targetTable(): string { return 'economy_codebooks_bank_accounts'; }
@@ -33,6 +39,46 @@ final class BankAccountsRunner extends BaseCodebookRunner
 		];
 	}
 
+	/**
+	 * Starý sloupec `id` není unikátní (lefreal má duplicity i mezi aktivními
+	 * účty), nová strana má na `code` unique constraint. Prepass nad celou
+	 * zdrojovou sadou: první výskyt kódu (nejnižší ndx, řádky chodí ORDER BY
+	 * ndx) si ho nechá, každý další dostane deterministický suffix
+	 * `{code}-{ndx}`. Odvození závisí jen na zdrojových datech → idempotentní.
+	 */
+	protected function fetchSourceRows(): array
+	{
+		$rows = parent::fetchSourceRows();
+
+		$used = [];
+		foreach ($rows as $row)
+		{
+			$ndx = (int) $row['ndx'];
+			$code = $this->deriveCode($row['id'] ?? null, $ndx, 'BA', self::CODE_MAX_LEN);
+
+			if (!isset($used[$code]))
+			{
+				$used[$code] = $ndx;
+				$this->codeByNdx[$ndx] = $code;
+				continue;
+			}
+
+			$suffix = '-' . $ndx;
+			$candidate = mb_substr($code, 0, self::CODE_MAX_LEN - mb_strlen($suffix)) . $suffix;
+			if (isset($used[$candidate]))
+				throw new ImportException(
+					"bank-account {$ndx}: deduplicated code '{$candidate}' still collides"
+					. " (code '{$code}' first used by ndx=" . $used[$code] . ")");
+
+			$this->warn("bank-account {$ndx}: duplicate code '{$code}'"
+				. " (first used by ndx=" . $used[$code] . ") → renamed to '{$candidate}'");
+			$used[$candidate] = $ndx;
+			$this->codeByNdx[$ndx] = $candidate;
+		}
+
+		return $rows;
+	}
+
 	protected function mapRow(array $oldRow): array
 	{
 		$currency = strtolower(trim((string) ($oldRow['currency'] ?? '')));
@@ -46,7 +92,7 @@ final class BankAccountsRunner extends BaseCodebookRunner
 		$bankName = trim((string) ($oldRow['bankFullName'] ?? ''));
 
 		$payload = [
-			'code'           => $this->deriveCode($oldRow['id'] ?? null, (int) $oldRow['ndx'], 'BA'),
+			'code'           => $this->codeByNdx[(int) $oldRow['ndx']],
 			'name'           => (string) ($oldRow['fullName'] ?? ''),
 			'notice'         => null,
 			'bank_name'      => $bankName !== '' ? $bankName : null,

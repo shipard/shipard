@@ -133,7 +133,9 @@ posílá 2 správně a 19 s nulou.
       logika `credit − debit` ověřena na zdrojových řádcích).
 - [x] Warn na nesedící rekonciliaci zdroje (podtyp nulové zůstatky +
       obecný mismatch). Na msi-zlin ohlásí 1 výpis (ndx 3477, rozdíl 1 Kč).
-- [ ] Po re-importu (až proběhne): rekonciliace na msi-zlin nevyrovnaná
-      jen u 8 výpisů s nulovými zdrojovými zůstatky; `external_id`
-      `old:11280`, `old:29713`, `old:41063` existují v nové DB se
-      zápornou stranou (direction 2).
+- [x] Po re-importu: rekonciliace na msi-zlin nevyrovnaná jen u 1 výpisu
+      (old ndx 3477, 1Kč rozdíl ve zdroji) — po doimportování archivních účtů
+      a výpisu 670 celkem 7 024 výpisů;
+      `external_id` `old:11280`, `old:29713`, `old:41063` existují v nové
+      DB se zápornou stranou (direction 2). Ověřeno read-only 2026-07-20
+      po cíleném re-importu (forget + bank-statements).

@@ -162,7 +162,7 @@ final class BankStatementsRunner extends BaseExchangeRunner
 		// rozdíly u nenulových zůstatků).
 		$initBalance = (float) ($oldRow['initBalance'] ?? 0);
 		$balance     = (float) ($oldRow['balance'] ?? 0);
-		$turnover    = array_sum(array_column($transactions, 'amount'));
+		$turnover    = round(array_sum(array_column($transactions, 'amount')), 2);
 		if ($initBalance == 0.0 && $balance == 0.0 && $turnover != 0.0)
 			$this->warn("statement {$oldNdx}: zero balances with non-zero turnover "
 				. "({$turnover}) — source data issue, will fail reconciliation");
@@ -180,6 +180,7 @@ final class BankStatementsRunner extends BaseExchangeRunner
 			'bankAccountId' => $bankAccountId,
 
 			'statement' => [
+				'externalId'      => 'old:' . $oldNdx,
 				'statementNumber' => $orderNo > 0 ? (string) $orderNo : null,
 				'periodStart'     => $periodStart,
 				'periodEnd'       => $periodEnd,
