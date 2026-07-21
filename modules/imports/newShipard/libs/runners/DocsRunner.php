@@ -124,17 +124,13 @@ final class DocsRunner extends BaseExchangeRunner
 	 * klíče e10.docs.operations) → nový string pohyb (docs.core.rowOperations).
 	 * Per docType — staré klíče jsou docType-scoped. Stav 40 vyžaduje u každého
 	 * item-řádku platný pohyb (DocDocument::validateRowOperations); bez něj
-	 * doklad uvízne. acc.entry vyžaduje vyplněný item (jinak fallback na default).
+	 * doklad uvízne. acc.entry vyžaduje vyplněný item. Zálohové a majetkové
+	 * operace tu nejsou — mají vlastní cestu s účtem (ROW_OPERATION_ACCOUNT_MAP).
 	 */
 	private const ROW_OPERATION_MAP = [
 		'invni' => [
 			1010102 => 'purchase.goods',     // Nákup zásob
 			1010199 => 'purchase.goods',     // Nákup zásob bez evidence
-			1090050 => 'purchase.other',     // Pořízení dlouhodobého majetku
-			1090051 => 'purchase.other',     // Technické zhodnocení majetku
-			1090052 => 'purchase.other',     // Nákup evidovaného majetku
-			1020101 => 'acc.entry',          // Odpočet poskytnuté zálohy
-			1020104 => 'acc.entry',          // Zdanění poskytnuté zálohy
 			1099998 => 'acc.entry',          // Účetní položka
 		],
 		'invno' => [
@@ -142,9 +138,51 @@ final class DocsRunner extends BaseExchangeRunner
 			1010002 => 'sale.goods',         // Prodej zásob
 			1010099 => 'sale.goods',         // Prodej zásob bez evidence
 			1090060 => 'sale.goods',         // Prodej majetku
-			1010101 => 'acc.entry',          // Odpočet přijaté zálohy
-			1010104 => 'acc.entry',          // Zdanění přijaté zálohy
 			1099998 => 'acc.entry',          // Účetní položka
+		],
+	];
+
+	/**
+	 * Zálohové a majetkové operace → operační řádek (task 21, D3 + dodatek
+	 * D8/D9). Řádek jde bez itemu (i kdyby byl vyplněný) a bez accSide —
+	 * stranu určuje krok předpisu per operace. Účty:
+	 *   - zálohy se NEPOSÍLAJÍ (D8/D10) — dohledá je kategorie předpisu
+	 *     advances.given/received per-DS maskou (314/3149, 324/3249);
+	 *     analytiky nejsou univerzální (msi 314001/314901, lefreal 314100/
+	 *     314900), literály sem nepatří;
+	 *   - majetek (assetAccount => true) má analytiku per řádek — dohledává
+	 *     se ze starého deníku přes property (resolveAssetAccount, D9).
+	 * paymentReference => true: párovací symbol zálohy ze symbol1.
+	 */
+	private const ROW_OPERATION_ACCOUNT_MAP = [
+		'invni' => [
+			1020101 => [   // Odpočet poskytnuté zálohy
+				'operation' => 'purchase.advanceDeduction',
+				'paymentReference' => true,
+			],
+			1020104 => [   // Zdanění poskytnuté zálohy
+				'operation' => 'purchase.advanceVat',
+				'paymentReference' => true,
+			],
+			1090050 => [   // Pořízení dlouhodobého majetku
+				'operation' => 'purchase.asset', 'assetAccount' => true,
+			],
+			1090051 => [   // Technické zhodnocení majetku
+				'operation' => 'purchase.asset', 'assetAccount' => true,
+			],
+			1090052 => [   // Nákup evidovaného majetku
+				'operation' => 'purchase.asset', 'assetAccount' => true,
+			],
+		],
+		'invno' => [
+			1010101 => [   // Odpočet přijaté zálohy
+				'operation' => 'sale.advanceDeduction',
+				'paymentReference' => true,
+			],
+			1010104 => [   // Zdanění přijaté zálohy
+				'operation' => 'sale.advanceVat',
+				'paymentReference' => true,
+			],
 		],
 	];
 
@@ -480,7 +518,11 @@ final class DocsRunner extends BaseExchangeRunner
 		$supplier = $selfParty === 'supplier' ? null : $partnerParty;
 		$customer = $selfParty === 'customer' ? null : $partnerParty;
 
+		// loadRows vrací null = řádek s penězi bez mapované operace; rejectReason
+		// už je nastavený → doklad failne (hlasitě), ne soft-skip.
 		$loaded = $this->loadRows($oldNdx, $oldDocType);
+		if ($loaded === null)
+			return null;
 		$rows = $loaded['rows'];
 		if ($rows === [])
 		{
@@ -1371,19 +1413,31 @@ final class DocsRunner extends BaseExchangeRunner
 
 	/**
 	 * Řádky dokladu z e10doc_core_rows + LEFT JOIN items pro ourCode/name.
-	 * U item-řádků mapuje starý pohyb (operation) na nový string — stav 40 ho
-	 * vyžaduje (DocDocument::validateRowOperations). Text-řádky pohyb nemají.
+	 * Klasifikace per řádek, pořadí vyhodnocení (task 21, D3 + dodatek D8/D9):
+	 *   1. operační řádek — stará op v ROW_OPERATION_ACCOUNT_MAP: operation,
+	 *      znaménkové částky, DPH, paymentReference ze symbol1; zálohy bez
+	 *      účtu (dohledá kategorie předpisu, D8/D10), majetek s účtem ze
+	 *      starého deníku (resolveAssetAccount, D9 — neúspěch = chyba
+	 *      dokladu); item se neposílá, i kdyby byl vyplněný,
+	 *   2. item řádek — itemCode/item > 0: payload beze změny (mapRowOperation),
+	 *   3. operační řádek bez účtu — řádek s penězi, bez itemu, kategorie op
+	 *      (purchase.* / sale.*): operation + peníze + DPH; účet dodá kategorie
+	 *      předpisu (504/518/548/6xx),
+	 *   4. textový řádek — jen řádek bez peněz (priceAll i credit/debit nula),
+	 *   5. chyba — řádek s penězi a nemapovanou operací (vč. acc.entry bez
+	 *      itemu): rejectReason + null → doklad failne. Žádný tichý text.
 	 *
 	 * Vrací zároveň `resolve` — pole zarovnané s `rows` (po pozicích), kde
 	 * item-řádky s LocalIdMap hitem nesou `item.userAction = useExisting:<newId>`.
 	 * Applier díky tomu použije přesnou migrovanou položku místo dohledávání
 	 * podle kódu/jména (po zrušení slučování stejnojmenných položek jinak
 	 * nejednoznačné). Pozice musí sedět s `rows` — proto i řádky bez mapování
-	 * (text-řádky, nenamapované položky) dostanou placeholder `['index' => i]`.
+	 * (operační, text-řádky, nenamapované položky) dostanou placeholder
+	 * `['index' => i]`.
 	 *
-	 * @return array{rows: array<int, array<string, mixed>>, resolve: array<int, array<string, mixed>>}
+	 * @return ?array{rows: array<int, array<string, mixed>>, resolve: array<int, array<string, mixed>>}
 	 */
-	private function loadRows(int $docNdx, string $oldDocType): array
+	private function loadRows(int $docNdx, string $oldDocType): ?array
 	{
 		$rows = $this->db()->query(
 			'SELECT r.*, i.[id] AS item_code, i.[fullName] AS item_name'
@@ -1401,53 +1455,144 @@ final class DocsRunner extends BaseExchangeRunner
 			$row = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
 			$pos++;
 
+			$oldOp      = (int) ($row['operation'] ?? 0);
 			$oldItemNdx = (int) ($row['item'] ?? 0);
-			$itemCode = $this->emptyToNull($row['item_code'] ?? null);
-			$itemName = $this->emptyToNull($row['item_name'] ?? null)
-				?? $this->emptyToNull($row['text'] ?? null);
+			$itemCode   = $this->emptyToNull($row['item_code'] ?? null);
+			$hasItem    = $itemCode !== null || $oldItemNdx > 0;
+			$hasMoney   = (float) ($row['priceAll'] ?? 0) != 0.0
+				|| (float) ($row['credit'] ?? 0) != 0.0
+				|| (float) ($row['debit'] ?? 0) != 0.0;
 
-			$rowKind = ($itemCode !== null || (int) ($row['item'] ?? 0) > 0) ? 'item' : 'text';
+			$opAccount  = self::ROW_OPERATION_ACCOUNT_MAP[$oldDocType][$oldOp] ?? null;
+			$categoryOp = self::ROW_OPERATION_MAP[$oldDocType][$oldOp] ?? null;
 
-			// Pohyb jen u item-řádků; text-řádek pohyb mít nesmí (applier ho odmítne).
-			$operation = $rowKind === 'item'
-				? $this->mapRowOperation($oldDocType, (int) ($row['operation'] ?? 0), $itemCode !== null || (int) ($row['item'] ?? 0) > 0)
-				: null;
-
-			$out[] = [
-				'rowKind'   => $rowKind,
-				'operation' => $operation,
-				'orderPos'  => $pos,
-				'item'     => $rowKind === 'item' ? [
-					'ourCode'      => $itemCode,
-					'supplierCode' => null,
-					'sku'          => null,
-					'ean'          => null,
-					'name'         => $itemName,
-					'description'  => $this->emptyToNull($row['text'] ?? null),
-				] : null,
-				'unit'           => $this->unitOrNull($row['unit'] ?? null),
-				'quantity'       => $this->numberOrNull($row['quantity'] ?? null),
-				'unitPrice'      => $this->numberOrNull($row['priceItem'] ?? null),
-				'totalPrice'     => $this->moneyOrNull($row['priceAll'] ?? null),
-				'priceCalcMode'  => ((int) ($row['priceSource'] ?? 0) === 1) ? 'fromTotal' : 'fromUnitPrice',
-				'discountPct'    => null,
-				'discountAmount' => null,
-				'vat' => [
-					'code' => $this->mapVatCode($row['taxCode'] ?? null),
-					'pct'  => $this->numberOrNull($row['taxPercents'] ?? null),
-				],
-			];
-
-			// Resolve hint zarovnaný s pozicí v $out. Item-řádek s LocalIdMap
-			// hitem → useExisting na přesnou novou položku.
-			$resolveRow = ['index' => count($out) - 1];
-			if ($rowKind === 'item' && $oldItemNdx > 0)
+			// 1 + 3: operační řádek — shape dle cmnbkp kontační cesty
+			// (loadCmnbkpRows), ale bez accSide (stranu určuje krok předpisu
+			// per operace) a s DPH poli. Item se neposílá. Účet nese jen
+			// majetek (z deníku, D9); zálohy jdou bez účtu (kategorie, D8/D10).
+			if ($opAccount !== null
+				|| ($hasMoney && !$hasItem && $categoryOp !== null && $categoryOp !== 'acc.entry'))
 			{
-				$newItemId = $this->idMap()->lookup(LocalIdMap::ENTITY_ITEM, $oldItemNdx);
-				if ($newItemId !== null)
-					$resolveRow['item'] = ['userAction' => 'useExisting:' . $newItemId];
+				if ($opAccount !== null)
+				{
+					$operation = $opAccount['operation'];
+					$account   = null;
+					if ($opAccount['assetAccount'] ?? false)
+					{
+						$account = $this->resolveAssetAccount($docNdx, $row);
+						if ($account === null)
+							return null;   // rejectReason nastaven → doklad failne
+					}
+					$paymentReference = ($opAccount['paymentReference'] ?? false)
+						? $this->emptyToNull($row['symbol1'] ?? null) : null;
+				}
+				else
+				{
+					$operation        = $categoryOp;
+					$account          = null;
+					$paymentReference = null;
+				}
+
+				$out[] = [
+					'rowKind'   => 'item',
+					'operation' => $operation,
+					'orderPos'  => $pos,
+					'item'      => null,
+					'unit'      => null,
+					'quantity'  => null,
+					'unitPrice' => null,
+					// Znaménkový passthrough — odpočty záloh jsou ve zdroji záporné.
+					'totalPrice'     => $this->moneyOrNull($row['priceAll'] ?? null),
+					'priceCalcMode'  => 'fromTotal',
+					'discountPct'    => null,
+					'discountAmount' => null,
+					'vat' => [
+						'code' => $this->mapVatCode($row['taxCode'] ?? null),
+						'pct'  => $this->numberOrNull($row['taxPercents'] ?? null),
+					],
+					'description'      => $this->emptyToNull($row['text'] ?? null),
+					'account'          => $account,
+					'paymentReference' => $paymentReference,
+				];
+				$resolve[] = ['index' => count($out) - 1];
+				continue;
 			}
-			$resolve[] = $resolveRow;
+
+			// 2: item řádek — beze změny proti dosavadní cestě.
+			if ($hasItem)
+			{
+				$itemName = $this->emptyToNull($row['item_name'] ?? null)
+					?? $this->emptyToNull($row['text'] ?? null);
+
+				$out[] = [
+					'rowKind'   => 'item',
+					'operation' => $this->mapRowOperation($oldDocType, $oldOp),
+					'orderPos'  => $pos,
+					'item'     => [
+						'ourCode'      => $itemCode,
+						'supplierCode' => null,
+						'sku'          => null,
+						'ean'          => null,
+						'name'         => $itemName,
+						'description'  => $this->emptyToNull($row['text'] ?? null),
+					],
+					'unit'           => $this->unitOrNull($row['unit'] ?? null),
+					'quantity'       => $this->numberOrNull($row['quantity'] ?? null),
+					'unitPrice'      => $this->numberOrNull($row['priceItem'] ?? null),
+					'totalPrice'     => $this->moneyOrNull($row['priceAll'] ?? null),
+					'priceCalcMode'  => ((int) ($row['priceSource'] ?? 0) === 1) ? 'fromTotal' : 'fromUnitPrice',
+					'discountPct'    => null,
+					'discountAmount' => null,
+					'vat' => [
+						'code' => $this->mapVatCode($row['taxCode'] ?? null),
+						'pct'  => $this->numberOrNull($row['taxPercents'] ?? null),
+					],
+				];
+
+				// Resolve hint zarovnaný s pozicí v $out. Item-řádek s LocalIdMap
+				// hitem → useExisting na přesnou novou položku.
+				$resolveRow = ['index' => count($out) - 1];
+				if ($oldItemNdx > 0)
+				{
+					$newItemId = $this->idMap()->lookup(LocalIdMap::ENTITY_ITEM, $oldItemNdx);
+					if ($newItemId !== null)
+						$resolveRow['item'] = ['userAction' => 'useExisting:' . $newItemId];
+				}
+				$resolve[] = $resolveRow;
+				continue;
+			}
+
+			// 4: textový řádek — jen bez peněz (pohyb mít nesmí, applier ho odmítne).
+			if (!$hasMoney)
+			{
+				$out[] = [
+					'rowKind'   => 'text',
+					'operation' => null,
+					'orderPos'  => $pos,
+					'item'      => null,
+					'unit'           => $this->unitOrNull($row['unit'] ?? null),
+					'quantity'       => $this->numberOrNull($row['quantity'] ?? null),
+					'unitPrice'      => $this->numberOrNull($row['priceItem'] ?? null),
+					'totalPrice'     => $this->moneyOrNull($row['priceAll'] ?? null),
+					'priceCalcMode'  => ((int) ($row['priceSource'] ?? 0) === 1) ? 'fromTotal' : 'fromUnitPrice',
+					'discountPct'    => null,
+					'discountAmount' => null,
+					'vat' => [
+						'code' => $this->mapVatCode($row['taxCode'] ?? null),
+						'pct'  => $this->numberOrNull($row['taxPercents'] ?? null),
+					],
+				];
+				$resolve[] = ['index' => count($out) - 1];
+				continue;
+			}
+
+			// 5: peníze bez mapované operace → tvrdá chyba dokladu (hlasitá,
+			// --continue-on-error pokračuje dalším dokladem). Žádný tichý text.
+			$rowNdx = (int) ($row['ndx'] ?? 0);
+			$this->rejectReason = "row ndx={$rowNdx} (pos {$pos}): operation {$oldOp} "
+				. 'with money (priceAll=' . (float) ($row['priceAll'] ?? 0)
+				. ') has no mapping — refusing silent text row';
+			return null;
 		}
 		return ['rows' => $out, 'resolve' => $resolve];
 	}
@@ -1487,12 +1632,85 @@ final class DocsRunner extends BaseExchangeRunner
 	}
 
 	/**
-	 * Starý řádkový pohyb (číselný klíč e10doc_core_rows.operation) → nový string
-	 * (docs.core.rowOperations) přes ROW_OPERATION_MAP. Neznámý/0 → docType
-	 * default. acc.entry bez vyplněného itemu → také default (applier acc.entry
-	 * bez položky odmítne). Vrací null jen pro docType mimo mapu (nemělo by nastat).
+	 * Analytika majetkového řádku ze starého deníku (D9). Nová strana má pro
+	 * purchase.asset accountSrc=row — účet z řádku je povinný; analytiky jsou
+	 * per-DS i per-řádek (msi 042002/042001/501101, lefreal 042100/042500),
+	 * takže jediný spolehlivý zdroj je deník. Silný klíč je property; částka
+	 * v domácí měně (taxBaseHc ↔ moneyDr). Vrstvený lookup:
+	 *   1. přesná shoda (document, property, moneyDr = taxBaseHc),
+	 *   2. součet skupiny — starý deník agreguje řádky téhož (účet, property)
+	 *      do jedné položky, proto SUM(taxBaseHc) přes řádky dokladu se
+	 *      stejnou (property, operation) proti moneyDr,
+	 *   3. jediný distinct MD účet na (document, property) mimo DPH (343*)
+	 *      a zaokrouhlení (548*) — kryje deníkové korekce částek.
+	 * Každý krok bere jen jednoznačný výsledek (právě 1 kandidát); jinak
+	 * rejectReason + null → doklad failne (D3d — žádná tichá volba účtu).
 	 */
-	private function mapRowOperation(string $oldDocType, int $oldOp, bool $hasItem): ?string
+	private function resolveAssetAccount(int $docNdx, array $row): ?string
+	{
+		$rowNdx   = (int) ($row['ndx'] ?? 0);
+		$property = (int) ($row['property'] ?? 0);
+		if ($property <= 0)
+		{
+			$this->rejectReason = "row ndx={$rowNdx}: asset operation without property"
+				. ' — cannot resolve account from journal';
+			return null;
+		}
+
+		// 1. přesná shoda řádek ↔ deníková položka
+		$exact = $this->db()->query(
+			'SELECT [accountDrId] FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND [property] = %i', $property,
+			' AND [moneyDr] = %f', (float) ($row['taxBaseHc'] ?? 0),
+		)->fetchAll();
+		if (count($exact) === 1)
+			return (string) $exact[0]['accountDrId'];
+
+		// 2. deníková agregace: součet skupiny (property, stará operace)
+		$groupSum = $this->db()->query(
+			'SELECT SUM([taxBaseHc]) FROM [e10doc_core_rows]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND [property] = %i', $property,
+			' AND [operation] = %i', (int) ($row['operation'] ?? 0),
+		)->fetchSingle();
+		$bySum = $this->db()->query(
+			'SELECT [accountDrId] FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND [property] = %i', $property,
+			' AND [moneyDr] = %f', (float) $groupSum,
+		)->fetchAll();
+		if (count($bySum) === 1)
+			return (string) $bySum[0]['accountDrId'];
+
+		// 3. korigované částky: jediný MD účet na property mimo DPH/zaokrouhlení
+		$distinct = $this->db()->query(
+			'SELECT DISTINCT [accountDrId] FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND [property] = %i', $property,
+			' AND [moneyDr] > 0',
+			" AND [accountDrId] <> ''",
+			' AND [accountDrId] NOT LIKE %s', '343%',
+			' AND [accountDrId] NOT LIKE %s', '548%',
+		)->fetchAll();
+		if (count($distinct) === 1)
+			return (string) $distinct[0]['accountDrId'];
+
+		$this->rejectReason = "row ndx={$rowNdx}: asset account not resolvable from journal"
+			. " (property={$property}, taxBaseHc=" . (float) ($row['taxBaseHc'] ?? 0)
+			. ', exact=' . count($exact) . ', bySum=' . count($bySum)
+			. ', distinctDr=' . count($distinct) . ')';
+		return null;
+	}
+
+	/**
+	 * Starý řádkový pohyb (číselný klíč e10doc_core_rows.operation) → nový string
+	 * (docs.core.rowOperations) přes ROW_OPERATION_MAP. Jen pro item řádky —
+	 * zálohy/majetek jdou přes ROW_OPERATION_ACCOUNT_MAP (loadRows bod 1) a
+	 * kategorie ops bez itemu přes bod 3. Neznámý/0 → docType default.
+	 * Vrací null jen pro docType mimo mapu (nemělo by nastat).
+	 */
+	private function mapRowOperation(string $oldDocType, int $oldOp): ?string
 	{
 		$op = self::ROW_OPERATION_MAP[$oldDocType][$oldOp] ?? null;
 		if ($op === null)
@@ -1500,12 +1718,6 @@ final class DocsRunner extends BaseExchangeRunner
 			$op = self::ROW_OPERATION_DEFAULT[$oldDocType] ?? null;
 			if ($op !== null)
 				$this->debug("doc row: unmapped operation {$oldOp} for {$oldDocType}, defaulting to '{$op}'");
-		}
-		if ($op === 'acc.entry' && !$hasItem)
-		{
-			$fallback = self::ROW_OPERATION_DEFAULT[$oldDocType] ?? null;
-			$this->debug("doc row: acc.entry without item, falling back to '{$fallback}'");
-			$op = $fallback;
 		}
 		return $op;
 	}
