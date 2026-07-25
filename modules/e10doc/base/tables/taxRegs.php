@@ -76,13 +76,19 @@ class TableTaxRegs extends DbTable
 				'taxType' => $r['taxType'], 'payerKind' => $r['payerKind'],
 				'taxId' => $r ['taxId'], 'title' => $r ['title'], 
 				'periodType' => $r['periodType'],
-				'taxOffice' => $r['taxOffice']
+				'taxOffice' => $r['taxOffice'],
+				'validFrom' => NULL, 'validTo' => NULL, 
 			];
 			if ($r['taxType'] === 'vat' && $r['taxCountry'] === 'cz')
 				$tr['periodTypeVatCS'] = $r['periodTypeVatCS'];
 
 			if ($r['taxArea'] === 'eu' && $r['taxType'] === 'vat' && $r['payerKind'] === 1)
 				$taxFlags['useOSS'] = 1;
+
+			if (!Utils::dateIsBlank($r['validFrom']))
+				$tr['validFrom'] = $r['validFrom']->format('Y-m-d');
+			if (!Utils::dateIsBlank($r['validTo']))
+				$tr['validTo'] = $r['validTo']->format('Y-m-d');
 
 			$taxFlags['moreRegs']++;
 
@@ -216,6 +222,9 @@ class FormTaxReg extends TableForm
 				$this->addColumnInput ('periodTypeVatCS');
 			$this->addColumnInput ('title');
 			$this->addColumnInput ('taxOffice');
+			$this->addSeparator(self::coH4);
+			$this->addColumnInput ('validFrom');
+			$this->addColumnInput ('validTo');
 		$this->closeForm ();
 	}
 }

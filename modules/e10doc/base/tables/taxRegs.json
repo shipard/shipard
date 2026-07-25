@@ -23,6 +23,9 @@
 
 		{"id": "taxOffice", "name": "Finanční úřad", "type": "int", "reference": "e10.persons.persons"},
 
+	    {"id": "validFrom", "name": "Platné od", "type": "date"},
+		{"id": "validTo", "name": "Platné do", "type": "date"},
+
 		{"id": "docState", "name": "Stav", "type": "int"},
 		{"id": "docStateMain", "name": "Hlavní stav", "type": "int"}
 	],
