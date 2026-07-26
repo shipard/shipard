@@ -136,6 +136,7 @@ class ImportApp
 
 			// Phase 02 — codebooks
 			case 'vat-registrations': return (new runners\VatRegistrationsRunner($this->context()))->run();
+			case 'vat-periods':       return (new runners\VatPeriodsRunner($this->context()))->run();
 			case 'fiscal-years':      return (new runners\FiscalYearsRunner($this->context()))->run();
 			case 'bank-accounts':     return (new runners\BankAccountsRunner($this->context()))->run();
 			case 'cost-centers':      return (new runners\CostCentersRunner($this->context()))->run();
@@ -235,6 +236,7 @@ class ImportApp
 		echo "\n";
 		echo "  Phase 02 — codebooks:\n";
 		echo "    vat-registrations VAT registrations (taxRegs WHERE taxType='vat').\n";
+		echo "    vat-periods       VAT periods (taxperiods, periodType=0). Needs vat-registrations FIRST.\n";
 		echo "    fiscal-years      Fiscal years + embedded fiscal months.\n";
 		echo "    bank-accounts     Own bank accounts.\n";
 		echo "    cost-centers      Cost centers (centres).\n";
