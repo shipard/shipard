@@ -50,16 +50,40 @@ final class PersonsRunner extends BaseExchangeRunner
 		$oldNdx = (int) $oldRow['ndx'];
 		$personType = $this->mapPersonType((int) ($oldRow['personType'] ?? 0));
 
-		// Validační gate: fyzická osoba musí mít firstName + lastName,
-		// jinak applier vrátí 422 validation_failed.
+		// Validační gate: fyzická osoba musí mít firstName + lastName, jinak
+		// applier vrátí 422 validation_failed. Chybějící pole se deterministicky
+		// odvodí z fullName (skip by osobu vynechal z LocalIdMap → doklady na ni
+		// pak nemají pin a končí jako ambiguous-header, viz task 22 dodatek v2).
+		// Skip zůstává jen pro prázdný fullName.
 		if ($personType === 'person')
 		{
 			$first = trim((string) ($oldRow['firstName'] ?? ''));
 			$last  = trim((string) ($oldRow['lastName']  ?? ''));
 			if ($first === '' || $last === '')
 			{
-				$this->warn("person {$oldNdx}: missing firstName or lastName for personType=Člověk, skipping");
-				return null;
+				$fullName = trim((string) ($oldRow['fullName'] ?? ''));
+				if ($fullName === '')
+				{
+					$this->warn("person {$oldNdx}: missing firstName/lastName and empty fullName "
+						. 'for personType=Člověk, skipping');
+					return null;
+				}
+				// Vedoucí titulové tokeny (Ing., MUDr., prof., …) se pro odvození
+				// přeskočí; ≥2 zbylé tokeny: první = jméno, zbytek = příjmení;
+				// 1 token: obojí. Když jsou všechny tokeny tituly, bere se vše.
+				$tokens = preg_split('/\s+/', $fullName) ?: [$fullName];
+				$nameTokens = $tokens;
+				while (count($nameTokens) > 1 && preg_match('/^\p{L}+\.$/u', $nameTokens[0]))
+					array_shift($nameTokens);
+				$derivedFirst = $nameTokens[0];
+				$derivedLast  = count($nameTokens) > 1
+					? implode(' ', array_slice($nameTokens, 1)) : $nameTokens[0];
+				if ($first === '')
+					$oldRow['firstName'] = $first = $derivedFirst;
+				if ($last === '')
+					$oldRow['lastName'] = $last = $derivedLast;
+				$this->warn("person {$oldNdx}: missing firstName/lastName, derived from "
+					. "fullName '{$fullName}' → first='{$first}' last='{$last}'");
 			}
 		}
 

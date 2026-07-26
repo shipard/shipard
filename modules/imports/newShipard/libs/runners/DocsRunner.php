@@ -205,6 +205,30 @@ final class DocsRunner extends BaseExchangeRunner
 	];
 
 	/**
+	 * Kurzové rozdíly saldokonta (D12): staré operace 1090011 (pohledávky)
+	 * a 1090012 (závazky) → čtyři nové first-class operace (varianta A).
+	 * Ztráta/zisk není v řádku — určuje se ze starého deníku per řádek
+	 * (resolveFxDirection). saldoCat = maska saldo účtu pro vrstvu 2 lookupu.
+	 * Účty dopočítá nová strana z kategorií (fx.loss 563 / fx.gain 663 +
+	 * saldo 311/321); řádek jde bez účtu, s partnerem a paymentReference.
+	 */
+	private const CMNBKP_FX_OP = [
+		1090011 => ['saldoCat' => '311', 'loss' => 'acc.fxLossReceivable', 'gain' => 'acc.fxGainReceivable'],
+		1090012 => ['saldoCat' => '321', 'loss' => 'acc.fxLossPayable',    'gain' => 'acc.fxGainPayable'],
+	];
+
+	/**
+	 * Majetkové cmnbkp operace (zařazení/oprávky/odpis/vyřazení) účtované ve
+	 * starém Shipardu OBOUSTRANNĚ jedním řádkem (debit == credit, klíč
+	 * property; acc-default: 1090070/73 MD 022 / DAL 042, 1090071 MD 08x /
+	 * DAL 02x, 1090072 MD 551 / DAL 08x). Jednostranný import půlku zápisu
+	 * ztrácel (nevyrovnané doklady, D15.2). Řádek se rozpadá na dva
+	 * acc.record řádky s účty ze starého deníku per (document, property,
+	 * částka) — vzor D9 (resolveAssetPairAccounts).
+	 */
+	private const CMNBKP_ASSET_PAIR_OPS = [1090070, 1090071, 1090072, 1090073];
+
+	/**
 	 * Hranice aktuálního časového úseku (chunkování). Když jsou nastaveny,
 	 * sourceQuery() je preferuje před globálními --from/--to argumenty. Mezi
 	 * úseky run() přepisuje a $rows uvolňuje — drží paměť na úrovni jednoho
@@ -226,6 +250,18 @@ final class DocsRunner extends BaseExchangeRunner
 
 	/** Souhrn per "docType|docKeyId": imported / failed / maxSeq (diagnostika). */
 	private array $seriesSummary = [];
+
+	/**
+	 * Viděné klíče "docType|řada|rok|seq" → ['ndx' => první old ndx, 'count' => n]
+	 * pro sufix pravých duplicit (D14-B): druhý a další výskyt klíče se
+	 * importuje s docNumber sufixem '-2'/'-3'… a BEZ sekvence (sequence_number
+	 * NULL v unq_series_seq nekoliduje; číslo mimo formuli se nesynchronizuje
+	 * do čítače). Rok = kalendářní rok dateAccounting — shodně s odvozením
+	 * fiscal_year na nové straně (oba DS mají kalendářní fiskální roky).
+	 * Pozor: množina žije jen per běh — korektní pro plný re-import z čisté
+	 * mapy; už namapované (přeskočené) doklady klíč neregistrují.
+	 */
+	private array $seenSeriesKeys = [];
 
 	protected function entityType(): string   { return LocalIdMap::ENTITY_DOC; }
 	protected function exchangeFlow(): string { return 'docs'; }
@@ -578,31 +614,19 @@ final class DocsRunner extends BaseExchangeRunner
 		}
 
 		// Číselná řada + pořadí — jen pro stavy nesoucí číslo. Nedohledatelná řada
-		// (chybějící docKeyId cfg) i nevyhodnotitelná sekvence = tvrdá chyba.
+		// (chybějící docKeyId cfg) = tvrdá chyba; neshoda čísla s přilinkovanou
+		// řadou zkouší fallback přes ostatní řady docTypu (D13). Duplicitní klíč
+		// (řada, rok, sekvence) vrátí docNumber se sufixem a sekvenci null (D14-B).
 		$seriesCode = null;
 		$sequence   = null;
 		if ($hasNumber)
 		{
-			$seriesCode = $this->resolveNumberSeriesCode($oldRow);
-			if ($seriesCode === null)
-			{
-				$dbCounter = (int) ($oldRow['dbCounter'] ?? 0);
-				$this->rejectReason = "number series code (docKeyId) not found in cfg "
-					. "e10.docs.dbCounters.{$oldDocType}.{$dbCounter}.docKeyId";
+			$ss = $this->resolveSeriesAndSequence($oldRow, $docNumber, $targetState);
+			if ($ss === null)
 				return null;
-			}
-			if ($docNumber === null)
-			{
-				$this->rejectReason = "target state {$targetState} requires a number but docNumber is empty";
-				return null;
-			}
-			$diag = '';
-			$sequence = $this->parseSequenceNumber($oldRow, $seriesCode, $diag);
-			if ($sequence === null)
-			{
-				$this->rejectReason = "cannot parse sequence from docNumber '{$docNumber}' ({$diag})";
-				return null;
-			}
+			$seriesCode = $ss['code'];
+			$sequence   = $ss['seq'];
+			$docNumber  = $ss['docNumber'];
 		}
 
 		$this->lastSeriesCode = $seriesCode;
@@ -615,9 +639,11 @@ final class DocsRunner extends BaseExchangeRunner
 			'rejectOnIssues'        => ['error'],
 		];
 
-		// Řadu + číslo posíláme jen u stavů nesoucích číslo (importNumber má obě
-		// pole zaručeně neprázdná — jinak doklad výše failnul). Koncept (10) jde
-		// bez čísla; applier ho přidělí standardně při ručním povýšení.
+		// Řadu + číslo posíláme jen u stavů nesoucích číslo (docNumber zaručeně
+		// neprázdný — jinak doklad výše failnul; sequenceNumber je null jen
+		// u D14-B duplicit → nová strana uloží číslo bez sekvence a nebumpne
+		// čítač). Koncept (10) jde bez čísla; applier ho přidělí standardně
+		// při ručním povýšení.
 		if ($hasNumber)
 		{
 			$applyOptions['numberSeriesCode'] = $seriesCode;
@@ -738,17 +764,21 @@ final class DocsRunner extends BaseExchangeRunner
 			? $this->idMap()->lookup(LocalIdMap::ENTITY_PERSON, $headPartnerNdx)
 			: null;
 
+		// Od tohoto bodu doklad „stavíme" — tvrdé chyby níže (včetně loadu řádků)
+		// nastaví rejectReason a processOneRow je povýší na 'failed' (hlasitě,
+		// import pokračuje).
+		$this->lastOldDocType = 'cmnbkp';
+
 		$loaded = $this->loadCmnbkpRows($oldNdx);
+		if ($loaded === null)
+			return null;   // rejectReason nastaven (D12/D3d)
 		$rows = $loaded['rows'];
+		$droppedTotal = (float) ($loaded['droppedTotal'] ?? 0);
 		if ($rows === [])
 		{
 			$this->warn("doc {$oldNdx}: no accounting rows, skipping");
 			return null;
 		}
-
-		// Od tohoto bodu doklad „stavíme" — tvrdé chyby níže nastaví rejectReason
-		// a processOneRow je povýší na 'failed' (hlasitě, import pokračuje).
-		$this->lastOldDocType = 'cmnbkp';
 
 		// Cílový stav z mapy (sdílená s fakturami). Neznámý starý stav = tvrdá chyba.
 		$oldState    = (int) ($oldRow['docState'] ?? 0);
@@ -759,13 +789,16 @@ final class DocsRunner extends BaseExchangeRunner
 			return null;
 		}
 
-		// Neúčtovatelné operace (majetek/kurz/vadné řádky bez účtu) — doklad se
+		// Neúčtovatelné operace (majetek/vadné řádky bez účtu) — doklad se
 		// naimportuje kompletní (s číslem i řádky), ale nezaúčtuje: strop stavu na
 		// 20 (Potvrzeno). Žádná tvrdá chyba, žádné tiché rozbití ve stavu 40.
 		// 20 ∈ STATES_WITH_NUMBER, takže číslo + řada se přidělí jako jindy.
-		if (($loaded['hasNonAccountable'] ?? false) && $targetState > 20)
+		// Storno (30) se necapuje (D15.4): nic neúčtuje a validace účtů/vyrovnanosti
+		// (AccountingDocument::validateBalance) běží až při stavu 40 — řádky bez
+		// účtu projdou beze změn.
+		if (($loaded['hasNonAccountable'] ?? false) && $targetState > 30)
 		{
-			$this->warn("doc {$oldNdx}: contains non-accountable operation(s) (asset/fx), "
+			$this->warn("doc {$oldNdx}: contains non-accountable operation(s) (asset/other), "
 				. "importing as Confirmed (20), not posted");
 			$targetState = 20;
 		}
@@ -785,31 +818,19 @@ final class DocsRunner extends BaseExchangeRunner
 		}
 
 		// Číselná řada + pořadí — jen pro stavy nesoucí číslo. Nedohledatelná řada
-		// (chybějící docKeyId cfg) i nevyhodnotitelná sekvence = tvrdá chyba.
+		// (chybějící docKeyId cfg) = tvrdá chyba; neshoda čísla s přilinkovanou
+		// řadou zkouší fallback přes ostatní řady docTypu (D13). Duplicitní klíč
+		// (řada, rok, sekvence) vrátí docNumber se sufixem a sekvenci null (D14-B).
 		$seriesCode = null;
 		$sequence   = null;
 		if ($hasNumber)
 		{
-			$seriesCode = $this->resolveNumberSeriesCode($oldRow);
-			if ($seriesCode === null)
-			{
-				$dbCounter = (int) ($oldRow['dbCounter'] ?? 0);
-				$this->rejectReason = "number series code (docKeyId) not found in cfg "
-					. "e10.docs.dbCounters.cmnbkp.{$dbCounter}.docKeyId";
+			$ss = $this->resolveSeriesAndSequence($oldRow, $docNumber, $targetState);
+			if ($ss === null)
 				return null;
-			}
-			if ($docNumber === null)
-			{
-				$this->rejectReason = "target state {$targetState} requires a number but docNumber is empty";
-				return null;
-			}
-			$diag = '';
-			$sequence = $this->parseSequenceNumber($oldRow, $seriesCode, $diag);
-			if ($sequence === null)
-			{
-				$this->rejectReason = "cannot parse sequence from docNumber '{$docNumber}' ({$diag})";
-				return null;
-			}
+			$seriesCode = $ss['code'];
+			$sequence   = $ss['seq'];
+			$docNumber  = $ss['docNumber'];
 		}
 
 		$this->lastSeriesCode = $seriesCode;
@@ -891,11 +912,14 @@ final class DocsRunner extends BaseExchangeRunner
 			'rows' => $rows,
 
 			// AccountingDocument přepočítá součty z řádků (Σ MD); posíláme hlavičkové
-			// hodnoty pro paritu/diagnostiku.
+			// hodnoty pro paritu/diagnostiku. Staré cmnbkp totals = Σ obou stran
+			// vč. doprovodných P&L řádků — o vypuštěné řádky (D12, droppedTotal)
+			// se deklarace ponižuje, aby odpovídala Σ odesílaných řádků
+			// (self-balancing FX řádek se do součtu počítá jednou).
 			'totals' => [
-				'totalBase'     => $this->moneyOrNull($oldRow['sumBase'] ?? null),
+				'totalBase'     => $this->totalsLessDropped($oldRow['sumBase'] ?? null, $droppedTotal),
 				'totalVat'      => $this->moneyOrNull($oldRow['sumTax'] ?? null),
-				'totalAmount'   => $this->moneyOrNull($oldRow['sumTotal'] ?? null),
+				'totalAmount'   => $this->totalsLessDropped($oldRow['sumTotal'] ?? null, $droppedTotal),
 				'totalRounding' => $this->moneyOrNull($oldRow['rounding'] ?? null),
 			],
 
@@ -926,10 +950,12 @@ final class DocsRunner extends BaseExchangeRunner
 	 *
 	 * Vrací rows + pozičně zarovnaný resolve (stejně jako loadRows): přeskočené
 	 * řádky vypadnou z obou polí současně, takže indexy zůstanou v zákrytu.
+	 * Null = tvrdá chyba řádku (rejectReason nastaven), např. neurčitelný směr
+	 * kurzového rozdílu (D12/D3d).
 	 *
-	 * @return array{rows: array<int, array<string, mixed>>, resolve: array<int, array<string, mixed>>}
+	 * @return array{rows: array<int, array<string, mixed>>, resolve: array<int, array<string, mixed>>}|null
 	 */
-	private function loadCmnbkpRows(int $docNdx): array
+	private function loadCmnbkpRows(int $docNdx): ?array
 	{
 		$rows = $this->db()->query(
 			'SELECT r.*, i.[id] AS item_code, i.[fullName] AS item_name'
@@ -939,15 +965,119 @@ final class DocsRunner extends BaseExchangeRunner
 			' ORDER BY r.[rowOrder], r.[ndx]',
 		)->fetchAll();
 
+		// D12 prescan: doklad s kurzovými řádky (1090011/1090012, nenulové) nese
+		// i doprovodné P&L řádky (1099998 s itemem „Kurzové ztráty/zisky", příp.
+		// 1099999) — starou stranu 563/663. Nová FX operace účtuje OBĚ strany
+		// sama (MD 563 / DAL 311 apod.), takže doprovodné řádky se vypouštějí.
+		// Řádky s explicitním číselným debsAccountId se NEpočítají ani nevypouští
+		// — jdou bucketem 1 jako úplná ruční kontace (zrcadlí pořadí bucketů níže).
+		// Pojistka proti tichému výpadku cizích řádků: součty doprovodných řádků
+		// musí zrcadlit součty FX řádků per strana (loss FX = credit ↔ P&L debit,
+		// gain FX = debit ↔ P&L credit); nesoulad = tvrdá chyba dokladu (D3d).
+		$fxDebit = 0.0;
+		$fxCredit = 0.0;
+		$compDebit = 0.0;
+		$compCredit = 0.0;
+		$hasFxRows = false;
+		foreach ($rows as $r)
+		{
+			$row    = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
+			$op     = (int) ($row['operation'] ?? 0);
+			$debit  = (float) ($row['debit'] ?? 0);
+			$credit = (float) ($row['credit'] ?? 0);
+			if ($debit == 0.0 && $credit == 0.0)
+				continue;
+			$acc = $this->emptyToNull($row['debsAccountId'] ?? null);
+			if ($acc !== null && ctype_digit($acc))
+				continue;
+			if (isset(self::CMNBKP_FX_OP[$op]) && (int) ($row['item'] ?? 0) <= 0)
+			{
+				$hasFxRows = true;
+				$fxDebit  += $debit;
+				$fxCredit += $credit;
+			}
+			elseif ($op === 1099998 || $op === 1099999)
+			{
+				$compDebit  += $debit;
+				$compCredit += $credit;
+			}
+		}
+		$dropFxCompanions = false;
+		if ($hasFxRows)
+		{
+			if (abs($compDebit - $fxCredit) > 0.005 || abs($compCredit - $fxDebit) > 0.005)
+			{
+				$this->rejectReason = 'FX companion P&L rows do not mirror FX rows'
+					. " (fx dr={$fxDebit}/cr={$fxCredit}, companions dr={$compDebit}/cr={$compCredit})";
+				return null;
+			}
+			$dropFxCompanions = true;
+		}
+
 		$out = [];
 		$resolve = [];
 		$pos = 0;
 		$hasNonAccountable = false;
 		$nonAccountableOps = [];
+		$droppedTotal = 0.0;
 		foreach ($rows as $r)
 		{
 			$row    = is_object($r) && method_exists($r, 'toArray') ? $r->toArray() : (array) $r;
 			$rowNdx = (int) ($row['ndx'] ?? 0);
+
+			// Majetková operace účtovaná oboustranně jedním řádkem (viz
+			// CMNBKP_ASSET_PAIR_OPS) → split na dva acc.record řádky s účty ze
+			// starého deníku. Musí předběhnout derivaci strany (obě jsou nenulové)
+			// i bucket 1 (deník je autorita nad případným debsAccountId, D9).
+			if (in_array((int) ($row['operation'] ?? 0), self::CMNBKP_ASSET_PAIR_OPS, true))
+			{
+				$pairDebit  = (float) ($row['debit'] ?? 0);
+				$pairCredit = (float) ($row['credit'] ?? 0);
+				if ($pairDebit == 0.0 && $pairCredit == 0.0)
+				{
+					$this->debug("doc {$docNdx} row {$rowNdx}: zero debit & credit, skipping (no side)");
+					continue;
+				}
+				$pair = $this->resolveAssetPairAccounts($docNdx, $row);
+				if ($pair === null)
+					return null;   // rejectReason nastaven (D3d)
+
+				foreach ([['debit', $pair['dr'], $pairDebit], ['credit', $pair['cr'], $pairCredit]] as [$pairSide, $pairAccount, $pairAmount])
+				{
+					$pos++;
+					$out[] = [
+						'rowKind'        => 'item',
+						'operation'      => 'acc.record',
+						'orderPos'       => $pos,
+						'item'           => null,
+						'unit'           => null,
+						'quantity'       => null,
+						'unitPrice'      => null,
+						'totalPrice'     => $pairAmount,
+						'priceCalcMode'  => 'fromTotal',
+						'discountPct'    => null,
+						'discountAmount' => null,
+						'vat'            => ['code' => null, 'pct' => null],
+						'description'    => $this->emptyToNull($row['text'] ?? null),
+						'account'        => $pairAccount,
+						'accSide'        => $pairSide,
+						'paymentReference' => $this->emptyToNull($row['symbol1'] ?? null),
+						'specificSymbol'   => $this->emptyToNull($row['symbol2'] ?? null),
+						'constantSymbol'   => $this->emptyToNull($row['symbol3'] ?? null),
+						'dueDate'          => $this->dateToString($row['dateDue'] ?? null),
+					];
+					$pairResolve = ['index' => count($out) - 1];
+					$pairPersonNdx = (int) ($row['person'] ?? 0);
+					if ($pairPersonNdx > 0)
+					{
+						$pairPartnerNewId = $this->idMap()->lookup(LocalIdMap::ENTITY_PERSON, $pairPersonNdx);
+						if ($pairPartnerNewId !== null)
+							$pairResolve['partner'] = ['userAction' => 'useExisting:' . $pairPartnerNewId];
+					}
+					$resolve[] = $pairResolve;
+				}
+				continue;
+			}
 
 			// Strana + částka. debit = Má dáti (Vyplaceno), credit = Dal (Přijato).
 			// Právě jedna je nenulová; obě nula → textový/oddělovací řádek bez strany.
@@ -974,12 +1104,27 @@ final class DocsRunner extends BaseExchangeRunner
 			//   2. item > 0 → acc.item + položka (pin),
 			//   3. saldokontní operace → acc.balanceReceivable/Payable (účet
 			//      dopočítá nová strana z kategorie 311/321, řádek bez účtu/položky),
-			//   4. jinak neúčtovatelné (majetek/kurz/vadný řádek) → acc.record bez
+			//   4. kurzový rozdíl (D12) → acc.fx* dle ztráta/zisk ze starého
+			//      deníku (resolveFxDirection); nejednoznačnost = tvrdá chyba,
+			//   5. jinak neúčtovatelné (majetek/vadný řádek) → acc.record bez
 			//      účtu: řádek se nezahodí (nese stranu/částku/partnera/symboly/text),
 			//      ale doklad se zastropuje na stav 20 (buildCmnbkpCanonical).
 			$accountRaw = $this->emptyToNull($row['debsAccountId'] ?? null);
 			$oldItemNdx = (int) ($row['item'] ?? 0);
 			$oldOp      = (int) ($row['operation'] ?? 0);
+
+			// D12: doprovodný P&L řádek kurzového dokladu — vypustit (musí předběhnout
+			// bucket 2, protože 1099998 nese item; řádky s explicitním účtem zůstávají
+			// bucketu 1). Součtová pojistka viz prescan. Částka se akumuluje do
+			// droppedTotal — buildCmnbkpCanonical o ni poníží deklarované totals.
+			if ($dropFxCompanions && ($oldOp === 1099998 || $oldOp === 1099999)
+				&& !($accountRaw !== null && ctype_digit($accountRaw)))
+			{
+				$this->debug("doc {$docNdx} row {$rowNdx}: FX companion P&L row (op {$oldOp}), "
+					. 'dropping — fx operation posts both sides itself');
+				$droppedTotal += $totalPrice;
+				continue;
+			}
 
 			$operation    = null;
 			$account      = null;
@@ -1010,6 +1155,13 @@ final class DocsRunner extends BaseExchangeRunner
 			elseif (isset(self::CMNBKP_BALANCE_OP[$oldOp]))
 			{
 				$operation = self::CMNBKP_BALANCE_OP[$oldOp];
+			}
+			elseif (isset(self::CMNBKP_FX_OP[$oldOp]))
+			{
+				$dir = $this->resolveFxDirection($docNdx, $row, $totalPrice);
+				if ($dir === null)
+					return null;   // rejectReason nastaven → doklad failne (D3d)
+				$operation = self::CMNBKP_FX_OP[$oldOp][$dir];
 			}
 			else
 			{
@@ -1064,6 +1216,7 @@ final class DocsRunner extends BaseExchangeRunner
 			'resolve'           => $resolve,
 			'hasNonAccountable' => $hasNonAccountable,
 			'nonAccountableOps' => $nonAccountableOps,
+			'droppedTotal'      => $droppedTotal,
 		];
 	}
 
@@ -1078,10 +1231,15 @@ final class DocsRunner extends BaseExchangeRunner
 	 * z null udělá tvrdou chybu dokladu. $diag nese lidsky čitelný důvod do
 	 * hlášky failu.
 	 *
-	 * Jediný fallback: fiskální značka (%r). Primárně z hlavičkového fiscalYear,
-	 * ale ten může u přelomových dokladů (vystaveno v prosinci, zaúčtováno
-	 * v lednu) ukazovat na rok zaúčtování, zatímco číslo nese rok vystavení →
-	 * při neshodě zkusíme značku fiskálního roku obsahujícího dateIssue.
+	 * Fallbacky pro přelomové doklady (číslo se otisklo v jiném období, než
+	 * kam padlo zaúčtování):
+	 *   - fiskální značka (%r): primárně z hlavičkového fiscalYear, při
+	 *     neshodě značka fiskálního roku obsahujícího dateIssue,
+	 *   - datum pro %Y/%y/%M: primárně dateAccounting, při neshodě dateIssue
+	 *     (číslo raženo při vystavení) a začátek fiskálního roku hlavičky
+	 *     (13. období — zaúčtováno v lednu, číslo nese rok fiskálního roku).
+	 * Zkouší se kombinace značka × datum; první shoda vyhrává (debug log,
+	 * když nevyhrála primární kombinace).
 	 */
 	private function parseSequenceNumber(array $oldRow, string $seriesCode, string &$diag): ?int
 	{
@@ -1116,18 +1274,52 @@ final class DocsRunner extends BaseExchangeRunner
 		if ($issueMark !== null && $issueMark !== $primaryMark)
 			$marks[] = $issueMark;
 
+		// Kandidátní data pro %Y/%y/%M (jen když formule datové tokeny má):
+		// primární dateAccounting (null = default), pak dateIssue a začátek
+		// fiskálního roku hlavičky — když nesou jiný rok.
+		$dates = [null];
+		if (preg_match('/%[YyM]/', $formula))
+		{
+			$accYear   = substr((string) $this->dateToString($oldRow['dateAccounting'] ?? null), 0, 4);
+			$issueDate = $this->dateToString($oldRow['dateIssue'] ?? null);
+			$years     = [$accYear];
+			if ($issueDate !== null && !in_array(substr($issueDate, 0, 4), $years, true))
+			{
+				$dates[] = $issueDate;
+				$years[] = substr($issueDate, 0, 4);
+			}
+			$fyStart = $this->fiscalYearStart((int) ($oldRow['fiscalYear'] ?? 0));
+			if ($fyStart !== null && !in_array(substr($fyStart, 0, 4), $years, true))
+				$dates[] = $fyStart;
+		}
+
 		foreach ($marks as $i => $mark)
 		{
-			$seq = $this->tryParseSequence($docNumber, $m[1], $m[3], $oldRow, $seriesCode, $mark, $formula, $diag);
-			if ($seq !== null)
+			foreach ($dates as $j => $date)
 			{
-				if ($i > 0)
-					$this->debug("doc {$oldRow['ndx']}: sequence parsed with issue-date fiscal mark "
-						. "'{$mark}' (header fiscalYear mark '{$primaryMark}' didn't match docNumber)");
-				return $seq;
+				$seq = $this->tryParseSequence($docNumber, $m[1], $m[3], $oldRow, $seriesCode, $mark, $formula, $diag, $date);
+				if ($seq !== null)
+				{
+					if ($i > 0 || $j > 0)
+						$this->debug("doc {$oldRow['ndx']}: sequence parsed with fallback fiscal mark "
+							. "'{$mark}' / date '" . ($date ?? 'dateAccounting') . "'"
+							. " (primary mark '{$primaryMark}' + dateAccounting didn't match docNumber)");
+					return $seq;
+				}
 			}
 		}
 		return null;
+	}
+
+	/** Začátek fiskálního roku (YYYY-MM-DD) podle FK hlavičky, nebo null. */
+	private function fiscalYearStart(int $fyNdx): ?string
+	{
+		if ($fyNdx <= 0)
+			return null;
+		$r = $this->db()->query(
+			'SELECT [start] FROM [e10doc_base_fiscalyears] WHERE [ndx] = %i', $fyNdx,
+		)->fetch();
+		return $r !== null ? $this->dateToString($r['start'] ?? null) : null;
 	}
 
 	/**
@@ -1139,11 +1331,12 @@ final class DocsRunner extends BaseExchangeRunner
 	 */
 	private function tryParseSequence(
 		string $docNumber, string $prefixPat, string $suffixPat,
-		array $oldRow, string $seriesCode, string $fiscalMark, string $formula, string &$diag
+		array $oldRow, string $seriesCode, string $fiscalMark, string $formula, string &$diag,
+		?string $dateOverride = null
 	): ?int
 	{
-		$prefix = $this->evaluateNumberTokens($prefixPat, $oldRow, $seriesCode, $fiscalMark);
-		$suffix = $this->evaluateNumberTokens($suffixPat, $oldRow, $seriesCode, $fiscalMark);
+		$prefix = $this->evaluateNumberTokens($prefixPat, $oldRow, $seriesCode, $fiscalMark, $dateOverride);
+		$suffix = $this->evaluateNumberTokens($suffixPat, $oldRow, $seriesCode, $fiscalMark, $dateOverride);
 		$diag = "formula='{$formula}', prefix='{$prefix}', suffix='{$suffix}'";
 
 		// Prefix/suffix musí být plně vyhodnocené — zbylý %token (např. %A/%B/%W,
@@ -1188,16 +1381,19 @@ final class DocsRunner extends BaseExchangeRunner
 	 * hodnotami daného dokladu — replikuje relevantní část makeDocNumber. %C bere
 	 * autoritativní kód řady ($seriesCode = docKeyId z dbCounter). %r bere
 	 * předanou fiskální značku ($fiscalMark); když není (null), dohledá se přes
-	 * resolveFiscalYearMark. Tokeny %B/%A/%W (cashBox/bankAccount/warehouse id)
-	 * ponecháváme nevyhodnocené; jejich přítomnost shodí parser na null.
+	 * resolveFiscalYearMark. %Y/%y/%M bere $dateOverride (fallback přelomových
+	 * dokladů), jinak dateAccounting. Tokeny %B/%A/%W (cashBox/bankAccount/
+	 * warehouse id) ponecháváme nevyhodnocené; jejich přítomnost shodí parser
+	 * na null.
 	 */
-	private function evaluateNumberTokens(string $pattern, array $oldRow, string $seriesCode, ?string $fiscalMark = null): string
+	private function evaluateNumberTokens(string $pattern, array $oldRow, string $seriesCode,
+		?string $fiscalMark = null, ?string $dateOverride = null): string
 	{
 		if ($pattern === '')
 			return '';
 
 		$docType = (string) ($oldRow['docType'] ?? '');
-		$dateAcc = $oldRow['dateAccounting'] ?? null;
+		$dateAcc = $dateOverride ?? ($oldRow['dateAccounting'] ?? null);
 		$dt = $dateAcc instanceof \DateTimeInterface
 			? $dateAcc
 			: (is_string($dateAcc) && $dateAcc !== '' && !str_starts_with($dateAcc, '0000')
@@ -1632,6 +1828,116 @@ final class DocsRunner extends BaseExchangeRunner
 	}
 
 	/**
+	 * Řada + sekvence pro stav nesoucí číslo. Primárně řada přilinkovaná přes
+	 * dbCounter; když číslo její formulí neprojde, fallback (D13) zkusí formule
+	 * všech ostatních řad téhož docTypu — číslo je ground truth, část dokladů
+	 * má ve zdroji přilinkovanou jinou řadu, než ze které číslo pochází (např.
+	 * saldokonto pod řadou „Otevření"). Kandidáti se čtou přímo ze zdrojové
+	 * tabulky e10doc_base_docnumbers (jako NumberSeriesRunner) — config cache
+	 * _e10doc.docNumbers.json může být po INSERTu řady do zdroje neaktuální.
+	 * Deduplikace podle kódu (víc řad může sdílet docKeyId; formule závisí jen
+	 * na docType+kódu). Právě jedna shoda → použije se s warnem; 0 nebo ≥2
+	 * shod → tvrdá chyba jako dřív.
+	 *
+	 * Výsledek prochází dedupem pravých duplicit (D14-B, applySeriesDedup) —
+	 * docNumber se může vrátit se sufixem a seq jako null. Vrací
+	 * ['code' => %C, 'seq' => ?int, 'docNumber' => string], nebo null
+	 * + rejectReason.
+	 */
+	private function resolveSeriesAndSequence(array $oldRow, ?string $docNumber, int $targetState): ?array
+	{
+		$docType = (string) ($oldRow['docType'] ?? '');
+		$linked  = $this->resolveNumberSeriesCode($oldRow);
+		if ($linked === null)
+		{
+			$dbCounter = (int) ($oldRow['dbCounter'] ?? 0);
+			$this->rejectReason = "number series code (docKeyId) not found in cfg "
+				. "e10.docs.dbCounters.{$docType}.{$dbCounter}.docKeyId";
+			return null;
+		}
+		if ($docNumber === null)
+		{
+			$this->rejectReason = "target state {$targetState} requires a number but docNumber is empty";
+			return null;
+		}
+
+		$diag = '';
+		$seq = $this->parseSequenceNumber($oldRow, $linked, $diag);
+		if ($seq !== null)
+			return $this->applySeriesDedup($oldRow, $docType, $linked, $seq, $docNumber);
+		$linkedDiag = $diag;
+
+		$candidates = [];
+		$series = $this->db()->query(
+			'SELECT [docKeyId] FROM [e10doc_base_docnumbers]'
+			. ' WHERE [docType] = %s', $docType,
+			' AND [docState] != %i', 9800,
+		)->fetchAll();
+		foreach ($series as $entry)
+		{
+			$code = $entry['docKeyId'] ?? '';
+			$code = is_string($code) ? trim($code) : (is_int($code) ? (string) $code : '');
+			if ($code !== '' && $code !== $linked)
+				$candidates[$code] = true;
+		}
+
+		$matches = [];
+		foreach (array_keys($candidates) as $code)
+		{
+			$d = '';
+			$s = $this->parseSequenceNumber($oldRow, (string) $code, $d);
+			if ($s !== null)
+				$matches[(string) $code] = $s;
+		}
+
+		if (count($matches) === 1)
+		{
+			$code = (string) array_key_first($matches);
+			$oldNdx = (int) ($oldRow['ndx'] ?? 0);
+			$this->warn("doc {$oldNdx}: number {$docNumber} matches series {$code}, "
+				. "linked to {$linked} — using {$code}");
+			return $this->applySeriesDedup($oldRow, $docType, $code, $matches[$code], $docNumber);
+		}
+
+		$extra = $matches === []
+			? 'no other series of this docType matched'
+			: 'ambiguous fallback, matches series: ' . implode(', ', array_keys($matches));
+		$this->rejectReason = "cannot parse sequence from docNumber '{$docNumber}' ({$linkedDiag}; {$extra})";
+		return null;
+	}
+
+	/**
+	 * Sufix pravých duplicit (D14-B): n-tý výskyt klíče (docType, řada, rok,
+	 * sekvence) v běhu dostane docNumber sufix '-n' a sekvenci null — na nové
+	 * straně se uloží sequence_number NULL (unq_series_seq s NULL nekoliduje)
+	 * a čítač řady se nebumpne. Vyžaduje shpd podporu explicitního null
+	 * v applyOptions.importNumber.sequenceNumber (task
+	 * docs-import-number-null-sequence). Kaveat per-run množiny viz
+	 * $seenSeriesKeys.
+	 *
+	 * @return array{code: string, seq: ?int, docNumber: string}
+	 */
+	private function applySeriesDedup(array $oldRow, string $docType, string $code, int $seq, string $docNumber): array
+	{
+		$year = substr((string) $this->dateToString($oldRow['dateAccounting'] ?? null), 0, 4);
+		$key  = "{$docType}|{$code}|{$year}|{$seq}";
+
+		if (!isset($this->seenSeriesKeys[$key]))
+		{
+			$this->seenSeriesKeys[$key] = ['ndx' => (int) ($oldRow['ndx'] ?? 0), 'count' => 1];
+			return ['code' => $code, 'seq' => $seq, 'docNumber' => $docNumber];
+		}
+
+		$firstNdx = $this->seenSeriesKeys[$key]['ndx'];
+		$n = ++$this->seenSeriesKeys[$key]['count'];
+		$oldNdx = (int) ($oldRow['ndx'] ?? 0);
+		$suffixed = $docNumber . '-' . $n;
+		$this->warn("doc {$oldNdx}: duplicate series key ({$key}) — first doc {$firstNdx}, "
+			. "importing as '{$suffixed}' without sequence");
+		return ['code' => $code, 'seq' => null, 'docNumber' => $suffixed];
+	}
+
+	/**
 	 * Analytika majetkového řádku ze starého deníku (D9). Nová strana má pro
 	 * purchase.asset accountSrc=row — účet z řádku je povinný; analytiky jsou
 	 * per-DS i per-řádek (msi 042002/042001/501101, lefreal 042100/042500),
@@ -1701,6 +2007,142 @@ final class DocsRunner extends BaseExchangeRunner
 			. ', exact=' . count($exact) . ', bySum=' . count($bySum)
 			. ', distinctDr=' . count($distinct) . ')';
 		return null;
+	}
+
+	/**
+	 * Pár účtů MD × DAL oboustranného majetkového řádku (CMNBKP_ASSET_PAIR_OPS)
+	 * ze starého deníku: per (document, property, částka) má deník právě jednu
+	 * MD a jednu DAL položku (debit == credit == částka řádku). Jiný počet
+	 * kandidátů na kterékoli straně = rejectReason + null (D3d — žádná tichá
+	 * volba účtu). Vrací ['dr' => MD účet, 'cr' => DAL účet].
+	 */
+	private function resolveAssetPairAccounts(int $docNdx, array $row): ?array
+	{
+		$rowNdx   = (int) ($row['ndx'] ?? 0);
+		$property = (int) ($row['property'] ?? 0);
+		$amount   = (float) ($row['debit'] ?? 0);
+		if ($property <= 0)
+		{
+			$this->rejectReason = "row ndx={$rowNdx}: asset pair operation without property"
+				. ' — cannot resolve accounts from journal';
+			return null;
+		}
+
+		// ABS(...) < 0.005 místo přesné rovnosti: %f (double) vs DECIMAL sloupec
+		// se u částek mimo přesnou binární reprezentaci (např. 578428.93) mine.
+		$dr = $this->db()->query(
+			'SELECT DISTINCT [accountDrId] FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND [property] = %i', $property,
+			' AND ABS([moneyDr] - %f) < 0.005', $amount,
+			" AND [accountDrId] <> ''",
+		)->fetchAll();
+		$cr = $this->db()->query(
+			'SELECT DISTINCT [accountCrId] FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND [property] = %i', $property,
+			' AND ABS([moneyCr] - %f) < 0.005', $amount,
+			" AND [accountCrId] <> ''",
+		)->fetchAll();
+		if (count($dr) === 1 && count($cr) === 1)
+			return ['dr' => (string) $dr[0]['accountDrId'], 'cr' => (string) $cr[0]['accountCrId']];
+
+		$this->rejectReason = "row ndx={$rowNdx}: asset pair accounts not resolvable from journal"
+			. " (property={$property}, amount={$amount}, distinctDr=" . count($dr)
+			. ', distinctCr=' . count($cr) . ')';
+		return null;
+	}
+
+	/**
+	 * Směr kurzového rozdílu (loss/gain) ze starého deníku (D12). Starý řádek
+	 * 1090011/1090012 směr nenese — P&L stranu (563/663) účtoval samostatný
+	 * řádek 1099998 a v deníku je agregovaná do jedné položky per směr.
+	 * Vrstvený lookup:
+	 *   1. P&L položka: moneyDr = částka + accountDrId 563* → loss; moneyCr
+	 *      = částka + accountCrId 663* → gain. Shoda částky vyjde jen
+	 *      u dokladu s jediným řádkem daného směru (kvůli agregaci).
+	 *   2. saldo položka (per řádek, groupBy off, nese symbol1/person):
+	 *      účet dle saldoCat (311* / 321*) + částka, zpřesněná symbol1
+	 *      a person z řádku; MD saldo = gain (MD 311/321 / DAL 663),
+	 *      DAL saldo = loss (MD 563 / DAL 311/321).
+	 *   3. doklad bez deníku (storno 4100 → 30, nezaúčtováno): směr ze strany
+	 *      řádku dle acc-default (docDir 1/MD = gain, docDir 2/DAL = loss) —
+	 *      deterministické, deník tu z principu neexistuje.
+	 * Vrstvy 1–2 berou jen jednoznačný výsledek (právě jedna strana má
+	 * kandidáty); jinak rejectReason + null → doklad failne (D3d — žádná
+	 * tichá volba směru).
+	 */
+	private function resolveFxDirection(int $docNdx, array $row, float $amount): ?string
+	{
+		$rowNdx = (int) ($row['ndx'] ?? 0);
+		$oldOp  = (int) ($row['operation'] ?? 0);
+
+		// 1. P&L položka deníku (agregát per směr). ABS(...) < 0.005 místo přesné
+		// rovnosti — %f (double) vs DECIMAL se u některých částek mine.
+		$plLoss = (int) $this->db()->query(
+			'SELECT COUNT(*) FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND ABS([moneyDr] - %f) < 0.005', $amount,
+			' AND [accountDrId] LIKE %s', '563%',
+		)->fetchSingle();
+		$plGain = (int) $this->db()->query(
+			'SELECT COUNT(*) FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND ABS([moneyCr] - %f) < 0.005', $amount,
+			' AND [accountCrId] LIKE %s', '663%',
+		)->fetchSingle();
+		if (($plLoss > 0) xor ($plGain > 0))
+			return $plLoss > 0 ? 'loss' : 'gain';
+
+		// 2. saldo položka deníku (per řádek, se saldo identitou)
+		$catMask  = self::CMNBKP_FX_OP[$oldOp]['saldoCat'] . '%';
+		$symbol1  = $this->emptyToNull($row['symbol1'] ?? null);
+		$person   = (int) ($row['person'] ?? 0);
+		$saldoDr = $this->countFxSaldoRows($docNdx, 'Dr', $catMask, $amount, $symbol1, $person);
+		$saldoCr = $this->countFxSaldoRows($docNdx, 'Cr', $catMask, $amount, $symbol1, $person);
+		if (($saldoDr > 0) xor ($saldoCr > 0))
+			return $saldoDr > 0 ? 'gain' : 'loss';
+
+		// 3. nezaúčtovaný doklad (storno) nemá deník — směr ze strany řádku
+		$journalRows = (int) $this->db()->query(
+			'SELECT COUNT(*) FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+		)->fetchSingle();
+		if ($journalRows === 0)
+		{
+			$dir = (float) ($row['debit'] ?? 0) != 0.0 ? 'gain' : 'loss';
+			$this->debug("doc {$docNdx} row {$rowNdx}: no journal (unposted/storno), "
+				. "FX direction '{$dir}' from row side");
+			return $dir;
+		}
+
+		$this->rejectReason = "row ndx={$rowNdx}: FX direction not resolvable from journal"
+			. " (op={$oldOp}, amount={$amount}, pl loss={$plLoss}/gain={$plGain},"
+			. " saldo dr={$saldoDr}/cr={$saldoCr})";
+		return null;
+	}
+
+	/** Počet saldo položek deníku dané strany pro resolveFxDirection vrstvu 2. */
+	private function countFxSaldoRows(int $docNdx, string $side, string $catMask,
+		float $amount, ?string $symbol1, int $person): int
+	{
+		$q = [
+			'SELECT COUNT(*) FROM [e10doc_debs_journal]'
+			. ' WHERE [document] = %i', $docNdx,
+			' AND ABS([money' . $side . '] - %f) < 0.005', $amount,
+			' AND [account' . $side . 'Id] LIKE %s', $catMask,
+		];
+		if ($symbol1 !== null)
+		{
+			$q[] = ' AND [symbol1] = %s';
+			$q[] = $symbol1;
+		}
+		if ($person > 0)
+		{
+			$q[] = ' AND [person] = %i';
+			$q[] = $person;
+		}
+		return (int) $this->db()->query(...$q)->fetchSingle();
 	}
 
 	/**
@@ -1808,6 +2250,19 @@ final class DocsRunner extends BaseExchangeRunner
 		if ($value === null || $value === '')
 			return null;
 		return (float) $value;
+	}
+
+	/**
+	 * Deklarovaný součet ponížený o vypuštěné doprovodné P&L řádky (D12).
+	 * Null zůstává null (sémantika moneyOrNull); výsledek zaokrouhlen na
+	 * haléře, aby float aritmetika nezanesla artefakty do payloadu.
+	 */
+	private function totalsLessDropped(mixed $value, float $dropped): ?float
+	{
+		$money = $this->moneyOrNull($value);
+		if ($money === null || $dropped == 0.0)
+			return $money;
+		return round($money - $dropped, 2);
 	}
 
 	private function currencyUpper(mixed $val): ?string
