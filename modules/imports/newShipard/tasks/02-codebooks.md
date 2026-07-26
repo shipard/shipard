@@ -37,9 +37,10 @@ Každý subkomand musí být:
 - `all` orchestrátor přes všechny typy (codebooks + persons + items + docs).
   Fáze 02 dělá jen `all-codebooks` — kompletní `all` přijde ve Fázi 06
   jako polish, kdy budou všechny dílčí runnery hotové.
-- VAT periods pro **future roky** — to dělá `VatPeriodsProvisioner` v
-  novém Shipardu automaticky. Fáze 02 importuje **jen historii** (řádná
-  období ze starého `taxperiods`).
+- VAT periods — Fáze 02 neimportuje období vůbec (ani historii, ani future
+  roky) a spoléhá na `VatPeriodsProvisioner` v novém Shipardu. Ten
+  předpoklad se neosvědčil → doplněno ve **Fázi 23**
+  ([23-vat-periods-runner.md](23-vat-periods-runner.md)).
 - Validace, že se "vše uloží" — REST CRUD vrací 4xx pokud payload nevalidní;
   runner respektuje, ale neopravuje. Manuální oprava dat v starém DS je
   out-of-scope.
@@ -833,6 +834,9 @@ provisioner běží automaticky v `ds-upgrade`, vat_periods pro current
 Pokud bys to chtěl jinak (přímý import historie ze `taxperiods` s
 `periodType = 0`), řekni, doplním Runner do Phase 02 explicitně. Pro
 první pokus to ale není potřeba.
+
+**Vyřešeno ve Fázi 23** — `VatPeriodsRunner` importuje reálná historická
+období z `taxperiods` (`periodType = 0`).
 
 ### 8. `findOneBy` filter format pro generic CRUD
 
