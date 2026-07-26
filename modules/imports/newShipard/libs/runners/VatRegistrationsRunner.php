@@ -7,7 +7,7 @@ use imports\newShipard\libs\LocalIdMap;
 
 final class VatRegistrationsRunner extends BaseCodebookRunner
 {
-	/** Bezpečný default — pokrývá všechny historické doklady v MVP. */
+	/** Fallback, když registrace nemá ve starém DS žádná řádná období DPH. */
 	private const DEFAULT_VALID_FROM = '2010-01-01';
 
 	protected function entityType(): string  { return LocalIdMap::ENTITY_VAT_REGISTRATION; }
@@ -59,9 +59,39 @@ final class VatRegistrationsRunner extends BaseCodebookRunner
 			'vat_id'             => $taxId !== '' ? $taxId : null,
 			'tax_period_kind'    => $taxPeriodKind,
 			'report_period_kind' => $reportPeriodKind,
-			'valid_from'         => self::DEFAULT_VALID_FROM,
+			'valid_from'         => $this->deriveValidFrom($oldNdx),
 			'valid_to'           => null,
 		];
+	}
+
+	/**
+	 * `valid_from` registrace = nejstarší reálné řádné období DPH ve starém DS.
+	 * Fallback DEFAULT_VALID_FROM, když registrace žádná období nemá.
+	 *
+	 * Validita registrace se nikde nevaliduje proti dokladům
+	 * (DocumentApplier::resolveVatRegistrationFor() matchuje jen podle země
+	 * a docState), takže doklad starší než derivované `valid_from` o registraci
+	 * nepřijde. Vliv má jen na VatPeriodsProvisioner (co smí dogenerovat)
+	 * a na čitelnost záznamu v UI.
+	 */
+	private function deriveValidFrom(int $oldRegNdx): string
+	{
+		$min = $this->db()->query(
+			'SELECT MIN([start]) FROM [e10doc_base_taxperiods]'
+			. ' WHERE [vatReg] = %i', $oldRegNdx,
+			' AND [docState] != %i', 9800,
+			' AND [periodType] = %i', 0,
+		)->fetchSingle();
+
+		$derived = $this->dateToString($min);
+		if ($derived === null)
+		{
+			$this->debug("vat-registration {$oldRegNdx}: no source tax periods, valid_from = " . self::DEFAULT_VALID_FROM);
+			return self::DEFAULT_VALID_FROM;
+		}
+
+		$this->debug("vat-registration {$oldRegNdx}: valid_from derived from tax periods = {$derived}");
+		return $derived;
 	}
 
 	/**
