@@ -117,7 +117,23 @@ class ImportApp
 		$this->logger = new Logger(__APP_DIR__ . '/log/import-' . date('Ymd-His') . '.log', $consoleMode);
 		$this->stats = new ImportStats();
 
-		$ok = $this->dispatch($subcommand);
+		try
+		{
+			$ok = $this->dispatch($subcommand);
+		}
+		catch (ImportException $e)
+		{
+			// Tvrdý abort z runneru — typicky resolveFk(required: true) na
+			// nenamapované FK (VatPeriodsRunner → vat_registration). Bez tohoto
+			// catche by šlo o uncaught fatal: stack trace místo hlášky,
+			// Logger::close() by neproběhl (nedokončený log soubor) a exit code
+			// by byl 255 místo dokumentované 1.
+			$this->logger->err('ABORT: ' . $e->getMessage());
+			$this->logger->printRecap();
+			$this->logger->close();
+			exit(1);
+		}
+
 		$this->logger->printRecap();
 		$this->logger->close();
 
