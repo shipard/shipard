@@ -8,11 +8,14 @@ use imports\newShipard\libs\HttpException;
 
 /**
  * Orchestrátor celého importu — spustí fáze v závislostně správném pořadí
- * (číselníky → nastavení saldokont → osoby → položky → doklady → bankovní
- * výpisy → pošta → spisovna → párování) jedním příkazem a na konci vypíše
- * souhrn z context->stats + agregát párování.
+ * (parametry vrstvy C → číselníky → nastavení saldokont → osoby → položky →
+ * doklady → bankovní výpisy → pošta → spisovna → párování) jedním příkazem
+ * a na konci vypíše souhrn z context->stats + agregát párování.
  *
- * Závislosti: nastavení saldokont jde hned za číselníky (účty už existují —
+ * Závislosti: parametry vrstvy C (settings) jdou úplně první — mají na cíli
+ * existovat od začátku, aby se runtime čtenáři homeCurrency/vatAgenda chovali
+ * konzistentně už během importu a parametrizace přežila i přerušený běh;
+ * nastavení saldokont jde hned za číselníky (účty už existují —
  * importuje je AllCodebooksRunner); doklady potřebují osoby (partneři), položky
  * (řádky) i číselníky (number_series / vat / bank účty); bankovní výpisy
  * potřebují bank účty (ENTITY_BANK_ACCOUNT z číselníků) a jdou za doklady; pošta
@@ -44,6 +47,7 @@ final class AllRunner extends ImportRunner
 		$allOk = true;
 
 		$phases = [
+			['Layer C settings', fn() => (new SettingsRunner($this->context))->run()],
 			['All codebooks',   fn() => (new AllCodebooksRunner($this->context))->run()],
 			['Accbal settings', fn() => $this->runAccbalSettingsPhase()],
 			['Persons',         fn() => (new PersonsRunner($this->context))->run()],

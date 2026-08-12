@@ -94,11 +94,13 @@ Zkontroluje config, HTTP připojení a lokální mapu; očekávaný výstup kon�
 shpd-ds-import all
 ```
 
-Orchestrátor spustí všechny fáze v pořadí závislostí — včetně nastavení
-saldokont (za číselníky) a závěrečného „vzdáleného" spárování úhrad:
-**codebooks → accbal-settings → persons → items → docs → bank-statements →
-mail → match**. Jeden příkaz tak nahradí dřívější tři ruční kroky (nastavení
-saldokont, vlastní import a ruční `accbal-match --all` na cílovém serveru).
+Orchestrátor spustí všechny fáze v pořadí závislostí — včetně parametrů
+vrstvy C (úplně první), nastavení saldokont (za číselníky) a závěrečného
+„vzdáleného" spárování úhrad:
+**settings → codebooks → accbal-settings → persons → items → docs →
+bank-statements → mail → match**. Jeden příkaz tak nahradí dřívější ruční
+kroky (parametry setup checklistu, nastavení saldokont, vlastní import
+a ruční `accbal-match --all` na cílovém serveru).
 
 Užitečné volby:
 
@@ -142,7 +144,8 @@ zůstává pro `--dump` (stará DB → JSON) a vlastní `--file`
 | `docs`              | 05   | Doklady — faktury (`invni`/`invno`) a účetní doklady (`cmnbkp`). Viz [Doklady](#doklady). |
 | `bank-statements`   | 11   | Bankovní výpisy (`docType='bank'`). Viz [Bankovní výpisy](#bankovní-výpisy). |
 | `mail`              | 07   | Došlá pošta (`wkf` issues, `issueType=1`). Viz [Pošta](#pošta). |
-| `all`               | 06   | Orchestrace fází v pořadí závislostí (vč. accbal-settings a závěrečného párování). |
+| `all`               | 06   | Orchestrace fází v pořadí závislostí (vč. settings, accbal-settings a závěrečného párování). |
+| `settings`          | 25   | Parametry vrstvy C (homeCurrency, fiscalYearStartMonth, vatAgenda, accountChart) odvozené ze staré DB; **první fáze `all`**. Viz [Parametry vrstvy C](#parametry-vrstvy-c-settings). |
 | `accbal-settings`   | 12   | Nastavení saldokont (`--dump`/`--import`); **součást `all`**, samostatně pro `--dump` / vlastní `--file`. Viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings). |
 | `forget`            | 10   | Zapomenout LocalIdMap mapování jedné entity. Viz [Idempotence a re-import](#idempotence-a-re-import). |
 | `reset`             | 06   | Smazat celou lokální mapu (`import-newShipard.sqlite`) a skončit. |
@@ -349,8 +352,8 @@ se generuje v `beforeSave`). Import volá dedikovaný `POST /_mail/import`
 nového Shipardu (viz `nov_shipard:tasks/mail-phase4-import-endpoint.md`).
 
 **Pořadí importu:** pošta je poslední **datová** fáze řetězce
-codebooks → accbal-settings → persons → items → docs → bank-statements →
-**mail** → match. Doklady se musí importovat **před** poštou — vazba
+settings → codebooks → accbal-settings → persons → items → docs →
+bank-statements → **mail** → match. Doklady se musí importovat **před** poštou — vazba
 zpráva↔doklad se resolvuje přes
 `LocalIdMap` (`ENTITY_DOC`). Pro ostrý import dělej doklady (celý rozsah) před
 poštou; zprávy naimportované před svým dokladem se zpětně nepřelinkují (skip
@@ -383,6 +386,30 @@ takové zprávy přeskočí.
 
 **Přílohy** se nahrají k nové zprávě (table_id 303) přes obecný klient Fáze 07a
 (dedup přes SHA-256 — druhý běh → `duplicate`). Vypínač `--no-attachments`.
+
+### Parametry vrstvy C (settings)
+
+Zápis čtyř parametrů setup checklistu (`core_system_settings`) na cílový DS —
+konfigurace, ne migrovaná data. Bez nich by checklist nového Shipardu hlásil
+nerozhodnuté parametry, přestože odpovědi jsou ve starých datech. Běží jako
+**první fáze `all`** i samostatně (`settings`):
+
+| Klíč | Hodnota | Odvození ze staré DB |
+|---|---|---|
+| `economy.accountChart` | `none` (konstanta) | osnovu dodává `accounts`; `none` = „vlastní osnova, neseedovat" |
+| `economy.homeCurrency` | ISO lowercase | měna fiskálního roku pokrývajícího dnešek; fallback poslední rok, fallback `czk` |
+| `economy.fiscalYearStartMonth` | 1–12 | měsíc `start` téhož fiskálního roku; fallback `1` |
+| `economy.vatAgenda` | bool | existuje aspoň jedna registrace k DPH (`taxType='vat'`); jinak **explicitní `false`** |
+
+Zápis přes `POST /_setup/parameters` (all-or-nothing validace). Opakovaný běh
+je neškodný — stejné hodnoty se jen znovu uloží; `--dry-run` hodnoty pouze
+vypíše, nic neposílá. Žádná LocalIdMap.
+
+**Prerekvizita na cílové straně:** guard provisionerů na `skipProvisioning`
+(`shpd:tasks/setup-parameters-skip-provisioning.md`) musí být nasazený, jinak
+zápis klíčů doseeduje fiskální roky/osnovu. Varování „provisioning je na DS
+vypnutý" v logu runneru je proto **očekávané**; runner navíc zaloguje počet
+zbývajících položek checklistu.
 
 ### Nastavení saldokont (accbal-settings)
 
@@ -516,3 +543,6 @@ re-import je `ds-reset` cílového DS.
 - [x] Fáze 15 — saldokonto v `all`: fáze accbal-settings (za číselníky) +
   závěrečné vzdálené párování přes `POST /_accbal/match`; idempotence saldo
   skupin per kód, per-call HTTP timeout, `--skip-accbal-settings`/`--skip-match`.
+- [x] Fáze 25 — parametry vrstvy C (`settings`): zápis `economy.accountChart`/
+  `homeCurrency`/`fiscalYearStartMonth`/`vatAgenda` přes `POST /_setup/parameters`;
+  první fáze `all`.

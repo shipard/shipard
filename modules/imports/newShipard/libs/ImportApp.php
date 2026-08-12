@@ -186,6 +186,10 @@ class ImportApp
 			// součást `all` (AllRunner volá runImport() přímo, viz Fáze 15).
 			case 'accbal-settings':   return (new runners\AccbalSettingsRunner($this->context()))->run();
 
+			// Phase 25 — layer C settings: konfigurace (parametry setup checklistu),
+			// ne migrovaná data. První fáze `all`, samostatně pro re-run/--dry-run.
+			case 'settings':          return (new runners\SettingsRunner($this->context()))->run();
+
 			// Phase 06 — orchestrator ('reset' se odbaví v run() před LocalIdMap,
 			// sem se nedostane).
 			case 'all':               return (new runners\AllRunner($this->context()))->run();
@@ -290,10 +294,17 @@ class ImportApp
 		echo "                      --no-attachments. Post-import on TARGET: shpd-ds registry-extract-texts.\n";
 		echo "\n";
 		echo "  Phase 06 — orchestrator:\n";
-		echo "    all               Run codebooks → accbal-settings → persons → items → docs →\n";
-		echo "                      bank-statements → mail → registry → match (remote accbal matching).\n";
+		echo "    all               Run settings → codebooks → accbal-settings → persons → items →\n";
+		echo "                      docs → bank-statements → mail → registry → match (remote accbal\n";
+		echo "                      matching).\n";
 		echo "    reset             Delete the local id map (import-newShipard.sqlite) and old\n";
 		echo "                      import logs (log/import-*.log|.err), then exit.\n";
+		echo "\n";
+		echo "  Phase 25 — layer C settings (první fáze 'all'; samostatně pro re-run):\n";
+		echo "    settings          Write layer C parameters (economy.accountChart='none',\n";
+		echo "                      homeCurrency, fiscalYearStartMonth, vatAgenda) derived from the\n";
+		echo "                      old DB via POST /_setup/parameters. Idempotent (re-run is\n";
+		echo "                      harmless); --dry-run only prints the derived values.\n";
 		echo "\n";
 		echo "  Phase 12 — accbal settings (součást 'all'; samostatně pro --dump / vlastní --file):\n";
 		echo "    accbal-settings   Settings saldokont. Vyžaduje --dump nebo --import.\n";
