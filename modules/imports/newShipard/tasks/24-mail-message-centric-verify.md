@@ -87,3 +87,14 @@ frontovat **budou** — dle designu záměr; při smoke testu zkontrolovat
 **Zbývá:** smoke test na alfě po nasazení Fáze A+B (bod 4 checklistu) —
 orchestrátor proti lefreal, mail import bez chyb, archivní zprávy
 s `analysis_state=0`.
+
+## Doplněk (2026-08-14, task 26)
+
+Poznámka k `analysis_state` výše už neplatí: `processIssue()` nově
+posílá `analysis_state: 0` explicitně pro všechny zprávy (task
+`26-mail-import-no-analysis.md`, rozhodnutí D1). Při smoke testu tedy
+kontrolovat `analysis_state = 0` na **všech** importovaných zprávách,
+ne jen archivních:
+`SELECT analysis_state, COUNT(*) FROM core_mail_incoming_messages
+GROUP BY analysis_state;` — vše v 0 — a žádné claimy
+v `core_mail_analysis_claims` na importované zprávy.

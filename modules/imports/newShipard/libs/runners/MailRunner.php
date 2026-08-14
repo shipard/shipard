@@ -349,6 +349,7 @@ final class MailRunner extends ImportRunner
 			'target_table_id' => $targetTableId,
 			'target_row'      => $targetRow,
 			'docState'        => $this->mapDocState((int) ($issue['docState'] ?? 0)),
+			'analysis_state'  => 0,   // task 26 (D1) — importované zprávy nikdy do AI fronty
 		];
 
 		if ($this->isDryRun())
