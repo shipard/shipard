@@ -13,8 +13,8 @@ class ReturnListsEngine extends \Shipard\Base\Utility
   var $tableEntries;
 
   var $woDocKind = 0;
-  var $srcPeriod = 2;
-  var $dstPeriod = 3;
+  var $srcPeriod = 3;
+  var $dstPeriod = 4;
 
   public function setWODocKind($woDocKind)
   {
