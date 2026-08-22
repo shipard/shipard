@@ -40,6 +40,13 @@ class ImportApp
 		if ($subcommand === '' || $subcommand === false)
 			return $this->printUsage();
 
+		// Fáze 27 — export účetní historie. Odbočka PŘED ImportConfig::load():
+		// export nic neposílá na cíl (jen čte starou DB a píše lokální soubor),
+		// takže na chybějícím `config/import-newShipard.json` nesmí spadnout.
+		// Zároveň nezakládá LocalIdMap ani import log — žádný stav.
+		if ($subcommand === 'export-booking-history')
+			return $this->runBookingHistoryExport();
+
 		try
 		{
 			$this->config = ImportConfig::load(__APP_DIR__);
@@ -142,6 +149,43 @@ class ImportApp
 		if ($this->logger->errorCount() > 0)
 			exit(2);   // doběhlo, ale padly err úrovně (typicky --continue-on-error)
 		return true;   // exit 0
+	}
+
+	/**
+	 * Fáze 27 — `export-booking-history`: agregovaná účetní historie přijatých
+	 * faktur do souboru `shpd.economy.booking-history.v1` (JSONL).
+	 *
+	 * Vlastní minimální obsluha běhu (bez ImportConfig / HttpClient / LocalIdMap
+	 * / ImportStats) — exportér potřebuje jen DB a Logger. Konvence exit kódů
+	 * zůstává shodná se zbytkem modulu (0 / 1 / 2).
+	 */
+	private function runBookingHistoryExport(): bool
+	{
+		$quiet   = (bool) $this->app->arg('quiet');
+		$verbose = (bool) $this->app->arg('verbose') || (bool) $this->app->arg('v');
+		if ($quiet && $verbose)
+		{
+			echo "ERROR: --quiet and --verbose are mutually exclusive.\n";
+			exit(1);
+		}
+		$consoleMode = $quiet ? Logger::MODE_QUIET : ($verbose ? Logger::MODE_VERBOSE : Logger::MODE_NORMAL);
+
+		$logger = new Logger(
+			__APP_DIR__ . '/log/export-booking-history-' . date('Ymd-His') . '.log',
+			$consoleMode,
+		);
+
+		$ok = (new BookingHistoryExporter($this->app, $logger))->run();
+
+		$logger->printRecap();
+		$errors = $logger->errorCount();
+		$logger->close();
+
+		if (!$ok)
+			exit(1);
+		if ($errors > 0)
+			exit(2);
+		return true;
 	}
 
 	private function dispatch(string $subcommand): bool
@@ -313,6 +357,13 @@ class ImportApp
 		echo "                      --import: JSON → economy_accbal_balances/_balance_accounts.\n";
 		echo "                      --file=PATH override (default data/accbalSettings.json).\n";
 		echo "\n";
+		echo "  Phase 27 — export účetní historie (lokální soubor, žádný cíl):\n";
+		echo "    export-booking-history  Agregovaná účetní historie přijatých faktur (invni ve\n";
+		echo "                      stavu Hotovo, řádky 'Účetní položka') → JSONL formátu\n";
+		echo "                      shpd.economy.booking-history.v1. Read-only, nepotřebuje\n";
+		echo "                      config/import-newShipard.json. Zpracování na cíli:\n";
+		echo "                      shpd-ds booking-history --input=<file>.\n";
+		echo "\n";
 		echo "  Phase 10 — maintenance:\n";
 		echo "    forget --entity=X Forget local id map for one entity (doc|person|item|message|\n";
 		echo "                      bank-statement|registry|binder), keeping the rest. For targeted\n";
@@ -332,17 +383,21 @@ class ImportApp
 		echo "  --dump-payload       Print the canonical JSON sent to the exchange apply\n";
 		echo "                       (exchange runners: persons/items/docs). Failed rows dump\n";
 		echo "                       payload + response body automatically.\n";
+		echo "  --out=PATH           export-booking-history: cílový JSONL soubor (default\n";
+		echo "                       booking-history-<dsid>.jsonl v aktuálním adresáři).\n";
 		echo "  --from=YYYY-MM-DD    docs: accounting date; mail: dateIncoming; bank-statements:\n";
 		echo "                       datePeriodEnd; registry: dateCreate (>=). 'docs'/'mail'/\n";
 		echo "                       'bank-statements'/'registry'/'all'.\n";
 		echo "  --to=YYYY-MM-DD      docs: accounting date; mail: dateIncoming; bank-statements:\n";
 		echo "                       datePeriodEnd; registry: dateCreate (<=). 'docs'/'mail'/\n";
-		echo "                       'bank-statements'/'registry'/'all'.\n";
+		echo "                       'bank-statements'/'registry'/'all'; export-booking-history:\n";
+		echo "                       dateAccounting dokladu.\n";
 		echo "  --target-state=10    Cap all docs to draft (10), overriding the old→new state map\n";
 		echo "                       (1000→10,1200→20,4000/8000→40,4100→30). Test runs. 'docs' only.\n";
 		echo "  --chunk-months=N     Document import chunk size in months (default 1). 'docs'/'all'.\n";
 		echo "  --batch=N            Source read batch size (keyset). Default 500.\n";
-		echo "                       Exchange runners (persons/items/docs/bank-statements) + 'mail'.\n";
+		echo "                       Exchange runners (persons/items/docs/bank-statements), 'mail'\n";
+		echo "                       + 'export-booking-history' (dávka dokladů).\n";
 		echo "  --require-linked-doc Import only mail messages with a resolvable linked doc. 'mail' only.\n";
 		echo "  --no-attachments     Skip PDF attachment upload. 'mail'/'bank-statements'/'registry'.\n";
 		echo "  --reset              Delete the local id map and old import logs before\n";

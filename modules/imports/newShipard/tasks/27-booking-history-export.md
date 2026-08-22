@@ -1,6 +1,6 @@
 # 27 — Export účetní historie (booking history) pro nový Shipard
 
-**Stav:** design potvrzen, k implementaci
+**Stav:** implementováno (ověřeno na pilotních DS)
 
 **Cíl:** Nový subcommand `export-booking-history` v `imports.newShipard`,
 který ze starého DS vyexportuje agregovanou účetní historii přijatých
@@ -26,11 +26,13 @@ příkladů; při rozporu platí nová strana.
 
 ## Výběr dat
 
-- Doklady: `e10doc_core_heads`, `docType = 'invni'` (přijaté faktury);
-  stavový filtr = stejná množina jako bere `DocsRunner` pro import
-  (vyřazené/zrušené doklady ne — převzít existující podmínku, nevymýšlet
-  novou). Volitelné omezení účetním obdobím (`--from`, `--to` dle
-  účetního data dokladu).
+- Doklady: `e10doc_core_heads`, `docType = 'invni'` (přijaté faktury),
+  `docState = 4000` — **jen doklady ve stavu „Hotovo"** (= „V pořádku",
+  zaúčtované). Záměrně jiný filtr než `DocsRunner`, který bere
+  `docState != 9800`: koncepty (1000), potvrzené (1200), rozpracované
+  v opravě (8000) ani storna (4100) účetní historii nereprezentují —
+  zaúčtovaná fakta jsou jen ve 4000. Volitelné omezení účetním obdobím
+  (`--from`, `--to` dle účetního data dokladu).
 - Řádky: `e10doc_core_rows`, `operation = 1099998` (Účetní položka),
   `item IS NOT NULL`. Ostatní operace (zálohy, zaokrouhlení, DPH…) jsou
   balast a do exportu nejdou.
@@ -112,9 +114,60 @@ specifikace, (4) soubor projde validátorem nové strany
 
 ## Hotovo když
 
-- [ ] Subcommand existuje, usage aktualizované.
-- [ ] Export na pilotním DS doběhne, soubor projde validátorem nové
+- [x] Subcommand existuje, usage aktualizované.
+- [x] Export na pilotním DS doběhne, soubor projde validátorem nové
       strany bez chyb.
-- [ ] Kontrolní SQL sedí (počty, sumy, distinct doklady).
-- [ ] Degenerované texty v souboru zůstávají; companyId bez IČO → null.
-- [ ] Export nic nezapisuje do DB starého DS.
+- [x] Kontrolní SQL sedí (počty, sumy, distinct doklady).
+- [x] Degenerované texty v souboru zůstávají; companyId bez IČO → null.
+- [x] Export nic nezapisuje do DB starého DS.
+
+## Implementační poznámky (co se při realizaci rozhodlo)
+
+- **Zdroj částky:** `e10doc_core_rows.taxBaseHc` („Základ daně [MD]") —
+  tentýž sloupec, z něhož domácí částky řádků čte `DocsRunner`
+  (`resolveAssetAccount`). `NULL` do sumy nejde; `totalAmount: null` vznikne
+  jen když v klíči není ani jedna nenullová částka.
+- **`item IS NOT NULL` → `r.[item] > 0`:** v e10 je nevyplněný int FK `0`,
+  ne `NULL`, takže samotné `IS NOT NULL` by balast nevyfiltrovalo.
+- **Datum a dodavatel z HLAVIČKY**, ne z řádku — řádek má vlastní
+  `dateAccounting`/`person`, ale ty nesou analytiku řádku, ne identitu dokladu.
+- **IČO:** `e10_base_properties` (`tableid='e10.persons.persons'`,
+  `property='oid'`, `valueString`, první po `ndx`) — shodně s
+  `PersonsRunner::loadProperties()`. Jeden bulk dotaz do mapy, ne dotaz per
+  osoba. Normalizace na číslice, prázdné → `companyId: null`.
+- **Měna hlavičky se odvozuje z dat** (histogram `heads.homeCurrency` nad
+  vybranými doklady, nejčetnější + warn při víc variantách), ne z nastavení;
+  fallback fiskální rok (jako `SettingsRunner`) → `CZK`.
+- **Souhrn hlásí i doklady mimo výběr** (`invni` v období, které nejsou ve
+  stavu 4000 ani smazané) — ať je vidět, kolik historie chybí, ještě než
+  někdo pustí seed pravidel naostro.
+- **Výkon — keyset přes DOKLADY, ne přes řádky.** První verze měla jeden
+  JOIN s keysetem `ORDER BY r.[ndx] LIMIT`; optimizer ale řídí join od
+  hlavičky a řazení řeší `Using temporary; Using filesort`, takže každá
+  dávka přepočítala celý join znovu (kvadraticky). Na DS s 78 tis. doklady
+  běh za 10 minut nedojel ani k první tisícovce řádků. Řešení: dávka
+  hlaviček keysetem po PK + druhý dotaz `r.[document] IN (…)` (index
+  `s1 (document, text)`). Stejný výstup, tentýž DS 5 s.
+- **Zápis přes `<out>.tmp` + `rename()`** — přerušený běh nezůstane jako
+  zdánlivě platný vstup pro `shpd-ds booking-history`.
+- **Bez configu:** subkomanda se v `ImportApp::run()` odbočuje ještě před
+  `ImportConfig::load()` (vlastní `runBookingHistoryExport()` s Loggerem
+  do `log/export-booking-history-<ts>.log`), takže nezakládá ani
+  `import-newShipard.sqlite`. Ověřeno během s přejmenovaným configem.
+
+### Ověření (2026-08-20)
+
+- DS `2059760940246` (475 faktur): 531 řádků → 134 záznamů. Nezávislá
+  agregace (Python nad raw dumpem) se shoduje ve všech polích všech 134
+  klíčů; `SUM(taxBaseHc)` = 1 909 901,12 a 446 distinct dokladů sedí
+  s kontrolním SQL. `--from=2024-01-01 --to=2024-12-31` → 58 řádků / 48
+  dokladů, taktéž shodné s SQL.
+- DS `68908901448295` (MSI, 78 tis. dokladů): 9 958 řádků z 8 351 dokladů
+  → 3 559 záznamů za 5,2 s; 14 dokladů mimo stav 4000 vykázáno.
+- Oba soubory projdou čtečkou nové strany (`BookingHistoryFile::open()` +
+  `BookingHistoryRecord::fromArray()` nad každým řádkem) bez chyby;
+  `recordCount` v hlavičce odpovídá počtu záznamů. Degenerace textů
+  zůstávají v souboru (dev DS 5, MSI 29 záznamů `itemName`).
+  `shpd-ds booking-history` samotné se v tomto prostředí spustit nedá
+  (nová strana tu nemá nainstalované `vendor/`), proto ověření přes její
+  parsovací třídy.

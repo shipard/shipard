@@ -147,6 +147,7 @@ zůstává pro `--dump` (stará DB → JSON) a vlastní `--file`
 | `all`               | 06   | Orchestrace fází v pořadí závislostí (vč. settings, accbal-settings a závěrečného párování). |
 | `settings`          | 25   | Parametry vrstvy C (homeCurrency, fiscalYearStartMonth, vatAgenda, accountChart) odvozené ze staré DB; **první fáze `all`**. Viz [Parametry vrstvy C](#parametry-vrstvy-c-settings). |
 | `accbal-settings`   | 12   | Nastavení saldokont (`--dump`/`--import`); **součást `all`**, samostatně pro `--dump` / vlastní `--file`. Viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings). |
+| `export-booking-history` | 27 | Export agregované účetní historie přijatých faktur do JSONL (`shpd.economy.booking-history.v1`). Lokální soubor, nic neposílá na cíl. Viz [Export účetní historie](#export-účetní-historie-export-booking-history). |
 | `forget`            | 10   | Zapomenout LocalIdMap mapování jedné entity. Viz [Idempotence a re-import](#idempotence-a-re-import). |
 | `reset`             | 06   | Smazat celou lokální mapu (`import-newShipard.sqlite`) a skončit. |
 
@@ -165,11 +166,12 @@ zůstává pro `--dump` (stará DB → JSON) a vlastní `--file`
 
 ### Options podle fází
 
-- `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — filtr období; `docs`/`mail`/`bank-statements`/`all`.
+- `--from=YYYY-MM-DD` / `--to=YYYY-MM-DD` — filtr období; `docs`/`mail`/`bank-statements`/`all`/`export-booking-history`.
   - `docs`: `dateAccounting` (datum zaúčtování — zajišťuje kompletní fiskální
     období, na rozdíl od data vystavení).
   - `mail`: `dateIncoming` (datum doručení).
   - `bank-statements`: `datePeriodEnd` (konec období výpisu).
+  - `export-booking-history`: `dateAccounting` dokladu.
   - Nevalidní formát se ignoruje s warningem.
 - `--target-state=10` — jen `docs`; přebije celou stavovou mapu (viz
   [Doklady](#doklady)) a importuje vše jako koncept. Testovací běhy.
@@ -183,6 +185,8 @@ zůstává pro `--dump` (stará DB → JSON) a vlastní `--file`
 - `--entity=doc|person|item|message` — jen `forget`; která entita se má z mapy zapomenout.
 - `--dump` / `--import` / `--file=PATH` — jen `accbal-settings`; viz
   [Nastavení saldokont](#nastavení-saldokont-accbal-settings).
+- `--out=PATH` — jen `export-booking-history`; cílový JSONL soubor (default
+  `booking-history-<dsid>.jsonl` v aktuálním adresáři).
 
 ### Konfigurace
 
@@ -434,6 +438,65 @@ neduplikuje. **Omezení:** změna uvnitř *existující* skupiny (ruční dolad�
 JSONu) se nepromítne — přepis znamená `ds-reset` cílového DS a import znovu.
 V `all` je fáze volitelná přes `--skip-accbal-settings`.
 
+### Export účetní historie (export-booking-history)
+
+Jediná subkomanda, která **nic neposílá na cíl** — vyexportuje ze staré DB
+agregovanou účetní historii přijatých faktur do JSONL souboru formátu
+`shpd.economy.booking-history.v1` a tím skončí. Soubor pak zpracuje nový
+Shipard (`shpd-ds booking-history --input=<file>`): report kvality zdroje
+a taxonomie obsahových štítků, seed pravidel `IČO → štítek` a reverzní
+otagování položek.
+
+```bash
+cd /var/lib/shipard/data-sources/<dsid>
+shpd-app cli-action --action=imports.newShipard/import export-booking-history \
+    [--out=cesta.jsonl] [--from=YYYY-MM-DD] [--to=YYYY-MM-DD]
+```
+
+**Nepotřebuje `config/import-newShipard.json`** (žádný HTTP klient, žádná
+LocalIdMap, žádný zápis do staré DB) — proto se odbočuje ještě před načtením
+configu a jde spustit i na DS, který se nikam neimportuje. Log jde do
+`log/export-booking-history-<timestamp>.log`.
+
+**Co se vybírá:**
+
+| Vrstva | Podmínka |
+|---|---|
+| doklady | `e10doc_core_heads`, `docType='invni'`, **`docState=4000`** (Hotovo = zaúčtováno) |
+| řádky | `e10doc_core_rows`, `operation=1099998` (Účetní položka), `item>0` |
+| období | volitelně `--from`/`--to` na `dateAccounting` dokladu |
+
+Filtr stavu je **záměrně jiný než u `docs`** (ten bere vše kromě smazaných):
+koncepty (1000), potvrzené (1200), rozpracované v opravě (8000) ani storna
+(4100) zaúčtovaná fakta nereprezentují. Kolik dokladů takto vypadlo, vypíše
+souhrn na konci běhu.
+
+**Co jde do záznamu:** `companyId` (IČO dodavatele z `e10_base_properties`,
+jen číslice; bez IČO → `null`), `account` (`e10_witems_items.debsAccountId`
+**tak jak je** — žádný resolve na nové ndx, exportují se fakta, ne mapování),
+`itemCode`/`itemName`, `rowText`, `docCount`/`rowCount`,
+`totalAmount` (suma `taxBaseHc`, tj. základ v domácí měně), `firstDate`/`lastDate`.
+Agregační klíč je čtveřice `{companyId, account, itemCode, rowTextNorm}`, kde
+`rowTextNorm` = trim + collapse whitespace + lowercase (do souboru se
+neposílá); `rowText` nese **nejčetnější originální variantu** textu.
+
+**Export neinterpretuje:** žádné štítky, žádná znalost taxonomie nového
+Shipardu (přepočet novou verzí taxonomie proto nevyžaduje nový export)
+a **žádné filtrování degenerovaných textů** (prázdné, shodné s názvem
+položky…) — jejich podíl je na nové straně metrika kvality zdroje.
+`chartVariant` je vždy `unknown`, protože e10 variantu osnovy nezná.
+
+Soubor se píše do `<out>.tmp` a až hotový se přesune na cílovou cestu, takže
+přerušený běh nezůstane jako zdánlivě platný vstup. Čte se po dávkách dokladů
+(`--batch`, default 500) — hlavičky keysetem po PK, řádky dotazem
+`document IN (…)`; agregace pak běží v paměti (řádově tisíce klíčů). Export
+78 tis. dokladů trvá jednotky sekund. Kanonická specifikace
+formátu je na nové straně: `shpd:docs/booking-history-format.md`.
+
+Mimo scope v1 (připraveno konstantami v `BookingHistoryExporter`):
+`--doc-types` pro výdajové pokladní lístky a zavěšení exportu do sekvence
+`all`.
+
 ### Rate limiting
 
 Nový Shipard má API rate limit **1000 requestů / 60 s per API klíč**
@@ -546,3 +609,7 @@ re-import je `ds-reset` cílového DS.
 - [x] Fáze 25 — parametry vrstvy C (`settings`): zápis `economy.accountChart`/
   `homeCurrency`/`fiscalYearStartMonth`/`vatAgenda` přes `POST /_setup/parameters`;
   první fáze `all`.
+- [x] Fáze 27 — export účetní historie (`export-booking-history`): agregovaná
+  historie účtování přijatých faktur do JSONL `shpd.economy.booking-history.v1`
+  pro `shpd-ds booking-history` na nové straně. Viz
+  [Export účetní historie](#export-účetní-historie-export-booking-history).
