@@ -148,6 +148,7 @@ zůstává pro `--dump` (stará DB → JSON) a vlastní `--file`
 | `settings`          | 25   | Parametry vrstvy C (homeCurrency, fiscalYearStartMonth, vatAgenda, accountChart) odvozené ze staré DB; **první fáze `all`**. Viz [Parametry vrstvy C](#parametry-vrstvy-c-settings). |
 | `accbal-settings`   | 12   | Nastavení saldokont (`--dump`/`--import`); **součást `all`**, samostatně pro `--dump` / vlastní `--file`. Viz [Nastavení saldokont](#nastavení-saldokont-accbal-settings). |
 | `export-booking-history` | 27 | Export agregované účetní historie přijatých faktur do JSONL (`shpd.economy.booking-history.v1`). Lokální soubor, nic neposílá na cíl. Viz [Export účetní historie](#export-účetní-historie-export-booking-history). |
+| `export-general-ledger` | 15b | Export agregované hlavní knihy do `ReportResult` JSONu pro `report-diff`. Lokální soubor, nic neposílá na cíl. Viz [Export hlavní knihy](#export-hlavní-knihy-export-general-ledger). |
 | `forget`            | 10   | Zapomenout LocalIdMap mapování jedné entity. Viz [Idempotence a re-import](#idempotence-a-re-import). |
 | `reset`             | 06   | Smazat celou lokální mapu (`import-newShipard.sqlite`) a skončit. |
 
@@ -187,6 +188,9 @@ zůstává pro `--dump` (stará DB → JSON) a vlastní `--file`
   [Nastavení saldokont](#nastavení-saldokont-accbal-settings).
 - `--out=PATH` — jen `export-booking-history`; cílový JSONL soubor (default
   `booking-history-<dsid>.jsonl` v aktuálním adresáři).
+- `--fiscal-year=X` / `--month-from=N` / `--month-to=N` / `--acc-ring=20[,40]` /
+  `--output=PATH` — jen `export-general-ledger`; viz
+  [Export hlavní knihy](#export-hlavní-knihy-export-general-ledger).
 
 ### Konfigurace
 
@@ -497,6 +501,92 @@ Mimo scope v1 (připraveno konstantami v `BookingHistoryExporter`):
 `--doc-types` pro výdajové pokladní lístky a zavěšení exportu do sekvence
 `all`.
 
+### Export hlavní knihy (export-general-ledger)
+
+Druhá subkomanda, která **nic neposílá na cíl**: z účetního deníku staré DB
+udělá agregovanou hlavní knihu v minimálním `ReportResult`-kompatibilním JSONu
+a tím skončí. Slouží ke kontrole importu v M3 — „stejný report za stejné
+období musí sedět". Kanonický kontrakt výstupu: `shpd:docs/reports.md` §7.4.
+
+```bash
+# 1. stará strana
+cd /var/lib/shipard/data-sources/<dsid>
+shpd-app cli-action --action=imports.newShipard/import export-general-ledger \
+    --fiscal-year=2025 --month-from=7 --month-to=7
+#    → log/general-ledger-<dsid>-2025-07-07.json
+
+# 2. nová strana, TOTÉŽ období
+bin/shpd-ds report-run economy.accounting.generalLedger \
+    --fiscal-year=2025 --month-from=7 --month-to=7 > new.json
+
+# 3. porovnání (nepotřebuje DS, čte jen dva soubory)
+bin/shpd-ds report-diff old.json new.json    # exit 0 shoda, 1 rozdíly
+```
+
+Starý reportovací engine se neoživuje: shoda reportů se redukuje na shodu
+agregovaného deníku per účet a období, protože novou stranu počítá vždy tentýž
+builder nad novým deníkem. Diff hlavní knihy proto pokrývá i výsledovku
+a rozvahu — derivují z týchž detail řádků.
+
+**Nepotřebuje `config/import-newShipard.json`** (jako `export-booking-history`
+se odbočuje před načtením configu). Read-only, jen SELECTy. Log jde do
+`log/export-general-ledger-<timestamp>.log`.
+
+| Argument | Význam |
+|---|---|
+| `--fiscal-year=X` | **povinné**; název fiskálního roku ze staré DB (`fullName`), nebo kalendářní rok jeho začátku. Bez shody vypíše nabídku dostupných roků. |
+| `--month-from=N`, `--month-to=N` | **pořadí běžného fiskálního měsíce v roce** (1..N dle data začátku), ne kalendářní měsíc. Default celý rok. |
+| `--acc-ring=20[,40]` | účetní okruhy (20 Výchozí, 40 Zásoby); default `20`. |
+| `--output=PATH` | cílový soubor; default `log/general-ledger-<dsid>-<rok>-<od>-<do>.json`. |
+
+**Parametry musí sedět s novou stranou.** `--fiscal-year` se matchuje primárně
+podle názvu roku, protože právě ten `FiscalYearsRunner` posílá do nového
+`economy_codebooks_fiscal_years.name` a právě ten bere `report-run
+--fiscal-year`. `--month-from/--month-to` jsou pořadová čísla běžných
+fiskálních měsíců — stejná sémantika jako `monthFrom`/`monthTo` na nové straně;
+u kalendářního fiskálního roku vycházejí na kalendářní měsíc, u posunutého ne.
+Vybraný interval se proto vypisuje i kalendářně (`měsíce 7–7 = 2025-07 …
+2025-07`) a log rovnou obsahuje odpovídající příkaz `report-run`.
+
+**Výpočet** zrcadlí `GeneralLedgerBuilder` nové strany: `opening` = všechna
+období roku před intervalem (**včetně otevíracího**, bez uzavíracího — počáteční
+stavy jsou v deníku jako každé jiné účtování a nic se nedopočítává),
+`turnover` = interval, `closing` = opening + turnover. `balance` = **md − d
+syrově**, bez otáčení dle povahy účtu (obě strany stejně, diff porovnává
+md/d/balance zvlášť). Účet s nulovým opening i turnover se neemituje. Řádky
+jsou seřazené podle čísla účtu, takže dva exporty jdou diffovat i mezi sebou.
+
+**Filtr stavu dokladu: `docState IN (4000, 8000)`.** Do nového deníku se účtuje
+výhradně doklad ve stavu 40 a odchod ze 40 jeho řádky maže; na 40 mapuje
+`DocsRunner` staré stavy 4000 (Hotovo) a 8000 (V opravě). Storno 4100 (→ 30)
+ani koncepty deník na nové straně nemají. Řádky deníku bez dohledatelné
+hlavičky se **zahrnují** a hlásí — tiše zahodit část deníku je horší než
+viditelný rozdíl v diffu.
+
+**Souhrn běhu je zároveň prověřením předpokladů** (nejčastější zdroj falešných
+rozdílů):
+
+- histogram řádků deníku roku **per docState dokladu** i **per účetní okruh**,
+  s příznakem zahrnuto/vyloučeno a s částkami,
+- řádky roku mimo jeho fiskální měsíce (`fiscalMonth` = 0 / cizí) — ty by
+  nevzal žádný interval,
+- vyrovnanost `Σmd == Σd` v každém sloupci a agregáty bez čísla účtu.
+
+Na zrcadlených zdrojových DS (2026-08) mají všechny prověřené roky v deníku
+výhradně řádky stavu 4000 a výhradně okruh 20 — default `--acc-ring=20` tam
+nic neztrácí. Až nová strana dostane skladové účtování, přidá se
+`--acc-ring=20,40`.
+
+**Výstup** obsahuje sloupce `opening`/`turnover`/`closing`, detail řádky
+(`kind: detail`, `level: 4`, klíč `account`) a jeden kontrolní součet
+(`kind: total`, label `Celkem`) — `ReportDiff` ho porovná jen tehdy, má-li ho
+i druhá strana, takže neškodí, a jinak slouží jako rychlá kontrola
+vyrovnanosti. Subtotaly se negenerují (diff je ignoruje, derivují z detailů).
+Soubor se píše do `<out>.tmp` a až hotový se přesouvá na cílovou cestu.
+
+Rozdíly proti nové straně jsou **nález pro M3, ne bug exportéru** — pokud
+souhrn hlásí vyrovnaný deník a součty sedí na starou hlavní knihu v UI.
+
 ### Rate limiting
 
 Nový Shipard má API rate limit **1000 requestů / 60 s per API klíč**
@@ -609,6 +699,11 @@ re-import je `ds-reset` cílového DS.
 - [x] Fáze 25 — parametry vrstvy C (`settings`): zápis `economy.accountChart`/
   `homeCurrency`/`fiscalYearStartMonth`/`vatAgenda` přes `POST /_setup/parameters`;
   první fáze `all`.
+- [x] Fáze 15b — export hlavní knihy (`export-general-ledger`): agregovaný deník
+  do minimálního `ReportResult` JSONu pro `shpd-ds report-diff` (kontrola
+  importu v M3). Číslo tasku 15 je v `tasks/` použité dvakrát — tohle je
+  `15-general-ledger-export.md`. Viz
+  [Export hlavní knihy](#export-hlavní-knihy-export-general-ledger).
 - [x] Fáze 27 — export účetní historie (`export-booking-history`): agregovaná
   historie účtování přijatých faktur do JSONL `shpd.economy.booking-history.v1`
   pro `shpd-ds booking-history` na nové straně. Viz
