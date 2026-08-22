@@ -47,6 +47,12 @@ class ImportApp
 		if ($subcommand === 'export-booking-history')
 			return $this->runBookingHistoryExport();
 
+		// Fáze 15 — export hlavní knihy pro kontrolní diff. Táž odbočka a týž
+		// důvod jako u export-booking-history: read-only nad starou DB, výstup
+		// je lokální soubor, cíl se nekontaktuje.
+		if ($subcommand === 'export-general-ledger')
+			return $this->runGeneralLedgerExport();
+
 		try
 		{
 			$this->config = ImportConfig::load(__APP_DIR__);
@@ -176,6 +182,42 @@ class ImportApp
 		);
 
 		$ok = (new BookingHistoryExporter($this->app, $logger))->run();
+
+		$logger->printRecap();
+		$errors = $logger->errorCount();
+		$logger->close();
+
+		if (!$ok)
+			exit(1);
+		if ($errors > 0)
+			exit(2);
+		return true;
+	}
+
+	/**
+	 * Fáze 15 — `export-general-ledger`: agregovaná hlavní kniha do minimálního
+	 * `ReportResult`-kompatibilního JSONu pro `bin/shpd-ds report-diff` (M3).
+	 *
+	 * Stejná minimální obsluha jako runBookingHistoryExport() — exportér
+	 * potřebuje jen DB a Logger; konvence exit kódů (0 / 1 / 2) zůstává.
+	 */
+	private function runGeneralLedgerExport(): bool
+	{
+		$quiet   = (bool) $this->app->arg('quiet');
+		$verbose = (bool) $this->app->arg('verbose') || (bool) $this->app->arg('v');
+		if ($quiet && $verbose)
+		{
+			echo "ERROR: --quiet and --verbose are mutually exclusive.\n";
+			exit(1);
+		}
+		$consoleMode = $quiet ? Logger::MODE_QUIET : ($verbose ? Logger::MODE_VERBOSE : Logger::MODE_NORMAL);
+
+		$logger = new Logger(
+			__APP_DIR__ . '/log/export-general-ledger-' . date('Ymd-His') . '.log',
+			$consoleMode,
+		);
+
+		$ok = (new GeneralLedgerExporter($this->app, $logger))->run();
 
 		$logger->printRecap();
 		$errors = $logger->errorCount();
@@ -364,6 +406,14 @@ class ImportApp
 		echo "                      config/import-newShipard.json. Zpracování na cíli:\n";
 		echo "                      shpd-ds booking-history --input=<file>.\n";
 		echo "\n";
+		echo "  Phase 15 — export hlavní knihy (lokální soubor, žádný cíl):\n";
+		echo "    export-general-ledger   Agregovaná hlavní kniha (deník, okruh 20, doklady ve\n";
+		echo "                      stavech 4000/8000) → minimální ReportResult JSON dle\n";
+		echo "                      shpd:docs/reports.md §7.4. Read-only, nepotřebuje\n";
+		echo "                      config/import-newShipard.json. Porovnání na cíli:\n";
+		echo "                      shpd-ds report-run economy.accounting.generalLedger … > new.json\n";
+		echo "                      shpd-ds report-diff <export> new.json\n";
+		echo "\n";
 		echo "  Phase 10 — maintenance:\n";
 		echo "    forget --entity=X Forget local id map for one entity (doc|person|item|message|\n";
 		echo "                      bank-statement|registry|binder), keeping the rest. For targeted\n";
@@ -385,6 +435,17 @@ class ImportApp
 		echo "                       payload + response body automatically.\n";
 		echo "  --out=PATH           export-booking-history: cílový JSONL soubor (default\n";
 		echo "                       booking-history-<dsid>.jsonl v aktuálním adresáři).\n";
+		echo "  --fiscal-year=X      export-general-ledger (povinné): název fiskálního roku dle\n";
+		echo "                       staré DB (týž, jaký bere report-run na nové straně), nebo\n";
+		echo "                       kalendářní rok jeho začátku. Bez shody vypíše nabídku.\n";
+		echo "  --month-from=N       export-general-ledger: POŘADÍ běžného fiskálního měsíce\n";
+		echo "  --month-to=N         v roce (1..N dle data začátku, NE kalendářní měsíc) —\n";
+		echo "                       shodná sémantika jako monthFrom/monthTo na nové straně.\n";
+		echo "                       Default celý rok.\n";
+		echo "  --acc-ring=20[,40]   export-general-ledger: účetní okruhy (20 Výchozí,\n";
+		echo "                       40 Zásoby). Default 20 — nová strana zásoby zatím nevede.\n";
+		echo "  --output=PATH        export-general-ledger: cílový JSON (default\n";
+		echo "                       log/general-ledger-<dsid>-<rok>-<od>-<do>.json).\n";
 		echo "  --from=YYYY-MM-DD    docs: accounting date; mail: dateIncoming; bank-statements:\n";
 		echo "                       datePeriodEnd; registry: dateCreate (>=). 'docs'/'mail'/\n";
 		echo "                       'bank-statements'/'registry'/'all'.\n";
