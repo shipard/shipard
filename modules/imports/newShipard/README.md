@@ -239,16 +239,41 @@ dodací listy) jsou mimo scope.
 
 **Stavová mapa.** Starý `docState` se mapuje na cílový stav:
 
-| Starý stav              | Nový stav                              |
-| ----------------------- | -------------------------------------- |
-| 1000 Nově rozpracováno  | 10 Koncept (bez čísla)                 |
-| 1200 Potvrzeno          | 20 Potvrzeno                           |
-| 4000 Hotovo             | 40 V pořádku (+ zaúčtování)            |
-| 4100 Stornováno         | 30 Storno (s číslem, bez deníku)       |
-| 8000 V opravě           | 40 V pořádku (finalizovat + zaúčtovat) |
+| Starý stav              | Nový stav                                            |
+| ----------------------- | ---------------------------------------------------- |
+| 1000 Nově rozpracováno  | 10 Koncept (bez čísla)                               |
+| 1200 Potvrzeno          | ✗ nemapuje se — tvrdá chyba dokladu (viz pre-flight) |
+| 4000 Hotovo             | 40 V pořádku (+ zaúčtování)                          |
+| 4100 Stornováno         | 30 Storno (s číslem, bez deníku)                     |
+| 8000 V opravě           | 40 V pořádku (finalizovat + zaúčtovat)               |
 
 Neznámý starý stav = tvrdá chyba řádku (žádný tichý default).
 `--target-state=10` celou mapu přebije a importuje vše jako koncept.
+
+Nový Shipard **stav Potvrzeno (20) zrušil** — stavový model dokladů je
+Koncept (10) → V pořádku (40), plus V opravě (80), Storno (30). Starý stav
+1200 proto v mapě není vůbec: import se spouští nad zdrojem, kde už žádný
+takový doklad není, a jeho výskyt je chyba dat, ne stav k mapování. Roli
+„editovatelný doklad s číslem" přebral stav 80 (V opravě), který import
+používá jako parkovací strop nezaúčtovatelných `cmnbkp` (viz níže);
+exchange ho přijme jen v kombinaci s `applyOptions.importNumber`, mimo
+migraci je tedy nedosažitelný.
+
+**Pre-flight před ostrým importem.** Na každém zdrojovém DS ověřit, že
+žádný doklad ve scope není ve stavu 1200:
+
+```sql
+SELECT docType, COUNT(*) FROM e10doc_core_heads
+ WHERE docState = 1200 AND docType IN ('invni','invno','cmnbkp')
+ GROUP BY docType;
+```
+
+Očekáván prázdný výsledek. Nález → doklady ve zdroji dořešit (potvrdit do
+4000, nebo vrátit do 1000) **před** importem; runner je jinak odmítne tvrdou
+chybou per doklad (s `--continue-on-error` pokračuje dalším). Filtr na
+`docType` je podstatný — ve stejné tabulce žijí i bankovní výpisy a další
+typy dokladů, kterých se zrušení stavu 20 netýká (výpisy mají vlastní enum
+`[10,40]`, jejich 1200 se dál mapuje na koncept).
 
 **Vlastní firma (selfParty).** Faktury používají `selfParty` resolution, která
 v cílovém Shipardu hledá firmu označenou `is_own = 1`. Označuje se
@@ -279,8 +304,9 @@ zkusí vytvořit (`autoCreateMode: safe`), což vede k neúplným záznamům.
 - Vlastní číslo dokladu jde do `importNumber` (ne do `partner_doc_number`);
   číselná řada se dohledává přes cfg `e10.docs.dbCounters.cmnbkp.<dbCounter>.docKeyId`.
 - Doklady s neúčtovatelnými operacemi (majetek, kurzové rozdíly) se
-  naimportují kompletní (číslo i řádky), ale stav se stropne na 20
-  (Potvrzeno, nezaúčtováno) + warning.
+  naimportují kompletní (číslo i řádky), ale stav se stropne na 80
+  (V opravě — s číslem, editovatelný, nezaúčtovaný) + warning. Na nové
+  straně na ně navíc upozorňuje alert `docs.core.stale_in_repair`.
 
 **Známá omezení:**
 
@@ -294,7 +320,7 @@ zkusí vytvořit (`autoCreateMode: safe`), což vede k neúplným záznamům.
   osoby bez IČO (a se stejnojmenným záznamem) to skončí `unresolved_required`
   → doklad `skipped`. Viz [Párování záznamů a deduplikace](#párování-záznamů-a-deduplikace).
 - **Vydané faktury (`invno`) — vlastní bankovní účet a dvoukrokový import.**
-  Nový Shipard u vydané faktury vyžaduje při potvrzení (docState 20+) vlastní
+  Nový Shipard u vydané faktury vyžaduje ve stavech s číslem (40/80) vlastní
   `bank_account` (kam má zákazník zaplatit; `IssuedInvoiceDocument::validate`).
   Exchange formát ho ale neumí přenést. Proto se `invno` vkládá nejdřív jako
   **koncept (10)** a runner ho v `afterApplied` povýší na cílový stav spolu
@@ -708,3 +734,6 @@ re-import je `ds-reset` cílového DS.
   historie účtování přijatých faktur do JSONL `shpd.economy.booking-history.v1`
   pro `shpd-ds booking-history` na nové straně. Viz
   [Export účetní historie](#export-účetní-historie-export-booking-history).
+- [x] Fáze 28 — import bez stavu Potvrzeno (20): nový Shipard stav 20 zrušil,
+  starý `docState` 1200 zmizel z mapy (výskyt = tvrdá chyba dokladu, viz
+  pre-flight) a nezaúčtovatelné `cmnbkp` se parkují na stavu 80 (V opravě).
