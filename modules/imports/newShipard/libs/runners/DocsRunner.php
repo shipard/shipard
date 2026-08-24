@@ -98,15 +98,21 @@ final class DocsRunner extends BaseExchangeRunner
 
 	/**
 	 * Mapování starého docState → nový cílový stav (Fáze 10). Nové stavy:
-	 * 10 Koncept, 20 Potvrzeno, 40 V pořádku, 30 Storno (NE 70 — to je
-	 * „V archívu", pro doklady zrušeno; schema enum je [10,20,40,30]).
+	 * 10 Koncept, 40 V pořádku, 30 Storno (NE 70 — to je „V archívu", pro
+	 * doklady zrušeno; schema enum je [10, 40, 30, 80]).
 	 * 8000 (V opravě) bereme jako finalizovaný doklad → 40 (zaúčtuje se).
 	 * Staré 9800 (smazáno) je odfiltrováno už v sourceQuery. Neznámý stav =
 	 * tvrdá chyba (fail dokladu), ne tichý default.
+	 *
+	 * Staré 1200 (Potvrzeno) v mapě NENÍ — nový Shipard stav Potvrzeno (20)
+	 * zrušil a ostrý import běží nad zdrojem, kde už žádný takový doklad není
+	 * (pre-flight, viz README). Výskyt = chyba dat → tvrdá chyba dokladu.
+	 * Stav 80 (V opravě) v mapě taky není: je to výhradně parkovací strop
+	 * nezaúčtovatelných cmnbkp (buildCmnbkpCanonical) a nová strana ho přes
+	 * exchange přijme jen s applyOptions.importNumber.
 	 */
 	private const DOC_STATE_MAP_TARGET = [
 		1000 => 10,   // Nově rozpracováno → Koncept (bez čísla)
-		1200 => 20,   // Potvrzeno         → Potvrzeno
 		4000 => 40,   // Hotovo            → V pořádku (+ zaúčtování)
 		4100 => 30,   // Stornováno        → Storno (s číslem, bez deníku)
 		8000 => 40,   // V opravě          → V pořádku (finalizovat + zaúčtovat)
@@ -115,9 +121,9 @@ final class DocsRunner extends BaseExchangeRunner
 	/**
 	 * Stavy nesoucí přidělené číslo (řada + sekvence + importNumber). Mimo
 	 * koncept (10), který číslo nemá. Sloučeno do predikátu místo „>= 20",
-	 * ať to nedrhne o číselné uspořádání stavů (30 < 40).
+	 * ať to nedrhne o číselné uspořádání stavů (30 < 40 < 80).
 	 */
-	private const STATES_WITH_NUMBER = [20, 30, 40];
+	private const STATES_WITH_NUMBER = [30, 40, 80];
 
 	/**
 	 * Mapování starého řádkového pohybu (e10doc_core_rows.operation, číselné
@@ -791,16 +797,19 @@ final class DocsRunner extends BaseExchangeRunner
 
 		// Neúčtovatelné operace (majetek/vadné řádky bez účtu) — doklad se
 		// naimportuje kompletní (s číslem i řádky), ale nezaúčtuje: strop stavu na
-		// 20 (Potvrzeno). Žádná tvrdá chyba, žádné tiché rozbití ve stavu 40.
-		// 20 ∈ STATES_WITH_NUMBER, takže číslo + řada se přidělí jako jindy.
+		// 80 (V opravě). Žádná tvrdá chyba, žádné tiché rozbití ve stavu 40.
+		// 80 ∈ STATES_WITH_NUMBER, takže číslo + řada se přidělí jako jindy —
+		// a je to zároveň podmínka přijetí: nová strana povolí targetDocState 80
+		// jen s applyOptions.importNumber (parkovací stav je čistě migrační).
 		// Storno (30) se necapuje (D15.4): nic neúčtuje a validace účtů/vyrovnanosti
 		// (AccountingDocument::validateBalance) běží až při stavu 40 — řádky bez
-		// účtu projdou beze změn.
+		// účtu projdou beze změn. Do podmínky tak vstupuje jen stav 40
+		// (--target-state=10 se vyhodnotí dřív v targetDocState()).
 		if (($loaded['hasNonAccountable'] ?? false) && $targetState > 30)
 		{
 			$this->warn("doc {$oldNdx}: contains non-accountable operation(s) (asset/other), "
-				. "importing as Confirmed (20), not posted");
-			$targetState = 20;
+				. "parking as Being edited (80), not posted");
+			$targetState = 80;
 		}
 
 		// Placeholder „!…" = doklad bez přiděleného čísla. U stavu nesoucího číslo
@@ -852,8 +861,8 @@ final class DocsRunner extends BaseExchangeRunner
 		}
 
 		// Lineage: oldNdx + staré kódy neúčtovatelných operací (majetek/kurz/vadné)
-		// kvůli dohledatelnosti, proč doklad zůstal ve stavu 20. Schema řádku je
-		// uzavřené, takže op kódy nesem na doc-level source.raw, ne per řádek.
+		// kvůli dohledatelnosti, proč doklad zůstal parkovaný na stavu 80. Schema
+		// řádku je uzavřené, takže op kódy nesem na doc-level source.raw, ne per řádek.
 		$rawSource = ['oldNdx' => $oldNdx];
 		if (($loaded['nonAccountableOps'] ?? []) !== [])
 			$rawSource['oldOperations'] = $loaded['nonAccountableOps'];
@@ -1108,7 +1117,7 @@ final class DocsRunner extends BaseExchangeRunner
 			//      deníku (resolveFxDirection); nejednoznačnost = tvrdá chyba,
 			//   5. jinak neúčtovatelné (majetek/vadný řádek) → acc.record bez
 			//      účtu: řádek se nezahodí (nese stranu/částku/partnera/symboly/text),
-			//      ale doklad se zastropuje na stav 20 (buildCmnbkpCanonical).
+			//      ale doklad se zastropuje na stav 80 (buildCmnbkpCanonical).
 			$accountRaw = $this->emptyToNull($row['debsAccountId'] ?? null);
 			$oldItemNdx = (int) ($row['item'] ?? 0);
 			$oldOp      = (int) ($row['operation'] ?? 0);
@@ -2205,7 +2214,7 @@ final class DocsRunner extends BaseExchangeRunner
 	/**
 	 * Vlastní bankovní účet z hlavičky (myBankAccount → e10doc.base.bankaccounts)
 	 * namapovaný na nový economy_codebooks_bank_accounts přes LocalIdMap (Fáze 02).
-	 * Vydané faktury ho potřebují při stavu 20+ (IssuedInvoiceDocument::validate);
+	 * Vydané faktury ho potřebují při stavech 40/80 (IssuedInvoiceDocument::validate);
 	 * importér ho předá v applyOptions.importOwnBankAccount.
 	 */
 	private function resolveOwnBankAccount(array $oldRow): ?int

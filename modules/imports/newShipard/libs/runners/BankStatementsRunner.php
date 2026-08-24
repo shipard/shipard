@@ -37,10 +37,12 @@ final class BankStatementsRunner extends BaseExchangeRunner
 	/**
 	 * Starý docState výpisu → cílový stav (applyOptions.targetState, schema enum
 	 * [10,40]). „Hotové" (4000/8000) se zaúčtují (40); rozpracované (1000/1200) →
-	 * koncept (10). Nový enum nezná 20, proto 1200→10. Storno (4100) NENÍ v mapě —
-	 * řeší se soft-skipem v buildCanonical (zrušený výpis se nemigruje; jeho
-	 * transakce by jinak zaúčtovaly zrušené pohyby na clearing). Jiný neznámý stav
-	 * = tvrdá chyba (fail výpisu, ne tichý default — vzor DocsRunner).
+	 * koncept (10) — výpisy mají vlastní stavový enum [10,40] bez mezistavu, takže
+	 * 1200→10 platí dál (na rozdíl od dokladů, kde 1200 už v mapě není vůbec —
+	 * DocsRunner). Storno (4100) NENÍ v mapě — řeší se soft-skipem v buildCanonical
+	 * (zrušený výpis se nemigruje; jeho transakce by jinak zaúčtovaly zrušené
+	 * pohyby na clearing). Jiný neznámý stav = tvrdá chyba (fail výpisu, ne tichý
+	 * default — vzor DocsRunner).
 	 */
 	private const DOC_STATE_MAP_TARGET = [
 		1000 => 10,   // Nově rozpracováno → koncept
