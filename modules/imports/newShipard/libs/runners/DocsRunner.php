@@ -258,6 +258,14 @@ final class DocsRunner extends BaseExchangeRunner
 	private array $seriesSummary = [];
 
 	/**
+	 * Souhrn původu DIČ partnera per docType: header (dobové personVATIN)
+	 * / directory (fallback z karty osoby) / none (bez DIČ) + kolik z toho jsou
+	 * doklady s nepinnutým partnerem. Odhad legitimních `vatKh.missingVatId`
+	 * před ostrým re-importem (Task 29).
+	 */
+	private array $vatIdStats = [];
+
+	/**
 	 * Viděné klíče "docType|řada|rok|seq" → ['ndx' => první old ndx, 'count' => n]
 	 * pro sufix pravých duplicit (D14-B): druhý a další výskyt klíče se
 	 * importuje s docNumber sufixem '-2'/'-3'… a BEZ sekvence (sequence_number
@@ -326,6 +334,7 @@ final class DocsRunner extends BaseExchangeRunner
 		}
 
 		$this->printSeriesSummary();
+		$this->printVatIdSummary();
 		$this->printDone($stats);
 		return true;   // chyby řádků → exit code 2 přes Logger::errorCount()
 	}
@@ -556,6 +565,24 @@ final class DocsRunner extends BaseExchangeRunner
 		if ($headerBank !== null)
 			$partnerParty['bankAccount'] = $headerBank;
 
+		// Dobové DIČ z hlavičky dokladu (personVATIN) přebíjí adresářové z karty
+		// osoby. Je to táž hodnota, ze které četl starý VatCSEngine (A4/B2), a na
+		// historickém dokladu jediná dobová pravda — nová strana z kanonické strany
+		// partnera staví snapshot, ze kterého KH čte DIČ. Prázdné personVATIN
+		// (osoba tehdy DIČ neměla) ponechává fallback z loadParty().
+		$headerVatId = $this->emptyToNull($oldRow['personVATIN'] ?? null);
+		$vatIdSource = 'none';
+		if ($headerVatId !== null)
+		{
+			if ($partnerParty['vatId'] !== null && $partnerParty['vatId'] !== $headerVatId)
+				$this->debug("doc {$oldNdx}: header VATIN '{$headerVatId}' differs from "
+					. "directory '{$partnerParty['vatId']}', using header");
+			$partnerParty['vatId'] = $headerVatId;
+			$vatIdSource = 'header';
+		}
+		elseif ($partnerParty['vatId'] !== null)
+			$vatIdSource = 'directory';
+
 		// Partner jde do strany, kterou MY nejsme. Vlastní firma → selfParty flag.
 		$supplier = $selfParty === 'supplier' ? null : $partnerParty;
 		$customer = $selfParty === 'customer' ? null : $partnerParty;
@@ -743,6 +770,11 @@ final class DocsRunner extends BaseExchangeRunner
 		}
 		if ($resolve !== [])
 			$canonical['_resolve'] = $resolve;
+
+		// Statistika původu DIČ až tady — doklad je hotový (soft-skipy i tvrdé
+		// chyby výše se do souhrnu nepočítají). Nepinnutý partner se sleduje zvlášť:
+		// tam vatId slouží na nové straně i jako business klíč dohledání osoby.
+		$this->recordVatIdSource($oldDocType, $vatIdSource, $partnerNewId === null);
 
 		return $canonical;
 	}
@@ -2209,6 +2241,44 @@ final class DocsRunner extends BaseExchangeRunner
 		foreach ($this->seriesSummary as $key => $s)
 			$this->info(sprintf("  %-24s  imported=%d failed=%d maxSeq=%d",
 				$key, $s['imported'], $s['failed'], $s['maxSeq']));
+	}
+
+	/**
+	 * Akumuluje původ DIČ partnera pro souhrn běhu (Task 29).
+	 */
+	private function recordVatIdSource(string $oldDocType, string $source, bool $partnerUnpinned): void
+	{
+		if (!isset($this->vatIdStats[$oldDocType]))
+			$this->vatIdStats[$oldDocType] = ['header' => 0, 'directory' => 0, 'none' => 0, 'unpinned' => 0];
+
+		$this->vatIdStats[$oldDocType][$source]++;
+		if ($partnerUnpinned && $source !== 'none')
+			$this->vatIdStats[$oldDocType]['unpinned']++;
+	}
+
+	/**
+	 * Souhrn původu DIČ partnera per docType. `none` = doklady, u kterých bude na
+	 * nové straně legitimně chybět DIČ ve snapshotu (KH `vatKh.missingVatId`).
+	 * `unpinned` = partner není v LocalIdMap, takže vatId slouží na nové straně
+	 * i jako business klíč dohledání osoby — hodnota z hlavičky pak může trefit
+	 * jinou osobu než adresářová.
+	 *
+	 * Pozor: počítají se jen doklady, které tento běh skutečně stavěl. Doklady už
+	 * zapsané v LocalIdMap se přeskakují před buildCanonical(), takže dry-run nad
+	 * naimportovaným DS vypíše prázdno — počty přes celý zdroj dá pre-flight SQL
+	 * v README (sekce Doklady).
+	 */
+	private function printVatIdSummary(): void
+	{
+		if ($this->vatIdStats === [])
+			return;
+
+		ksort($this->vatIdStats);
+		$this->info("");
+		$this->info("Partner VAT id source (docType): header / directory / none");
+		foreach ($this->vatIdStats as $docType => $s)
+			$this->info(sprintf("  %-8s  header=%d directory=%d none=%d (unpinned partner=%d)",
+				$docType, $s['header'], $s['directory'], $s['none'], $s['unpinned']));
 	}
 
 	/**

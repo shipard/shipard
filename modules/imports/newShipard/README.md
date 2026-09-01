@@ -292,6 +292,46 @@ UPDATE base_persons_persons SET is_own = 1 WHERE company_id = '<vlastní-IČO>';
 na to, že partneři (osoby) a položky už v cíli jsou; jinak je applier
 zkusí vytvořit (`autoCreateMode: safe`), což vede k neúplným záznamům.
 
+**DIČ partnera (dobové, pro Kontrolní hlášení).** Do kanonické strany partnera
+jde přednostně `e10doc_core_heads.personVATIN` — DIČ zapsané na hlavičce
+v době vzniku dokladu, táž hodnota, ze které četl starý `VatCSEngine` (sekce
+A4/B2). Je-li prázdné (osoba tehdy DIČ neměla), použije se fallback z karty
+osoby (`e10_base_properties`, `taxid`). Nová strana z této strany staví
+snapshot partnera na dokladu (`customer_snapshot`/`supplier_snapshot`), odkud
+Kontrolní hlášení DIČ čte; jméno a adresa ve snapshotu jsou dnešní adresářová
+data (nejlepší dostupná aproximace, provenienci přiznává
+`source_kind = import.oldShipard`). Účetních dokladů (`cmnbkp`) se to netýká —
+nemají obchodní strany.
+
+Runner na konci běhu vypíše souhrn původu DIČ:
+
+```
+Partner VAT id source (docType): header / directory / none
+  invni     header=112 directory=8 none=3 (unpinned partner=0)
+  invno     header=74  directory=0 none=0 (unpinned partner=0)
+```
+
+`none` = doklady, u kterých bude DIČ ve snapshotu legitimně chybět (na nové
+straně warning `vatKh.missingVatId`). `unpinned partner` = partner není
+v LocalIdMap, takže `vatId` slouží i jako business klíč dohledání osoby —
+dobová hodnota tam může trefit jinou osobu než adresářová; nenulový počet
+znamená, že osoby nejsou naimportované (viz pořadí importu výše).
+
+Souhrn počítá jen doklady, které daný běh skutečně stavěl — už namapované se
+přeskakují dřív. Počty přes celý zdroj nezávisle na stavu mapy:
+
+```sql
+SELECT h.docType, COUNT(*) AS docs,
+  SUM(TRIM(COALESCE(h.personVATIN,'')) <> '')                                     AS header_vatin,
+  SUM(TRIM(COALESCE(h.personVATIN,'')) =  '' AND COALESCE(p.valueString,'') <> '') AS directory_fb,
+  SUM(TRIM(COALESCE(h.personVATIN,'')) =  '' AND COALESCE(p.valueString,'') =  '') AS no_vatid
+ FROM e10doc_core_heads h
+ LEFT JOIN e10_base_properties p
+   ON p.tableid = 'e10.persons.persons' AND p.property = 'taxid' AND p.recid = h.person
+ WHERE h.docState <> 9800 AND h.docType IN ('invni','invno')
+ GROUP BY h.docType;
+```
+
 **Účetní doklady (`cmnbkp`)** jsou strukturálně jiné než faktury:
 
 - Žádný obchodní směr — `selfParty`/`supplier`/`customer` jsou `null`.
