@@ -111,7 +111,7 @@ class WebFormEntry extends \Shipard\Base\WebForm2
       'entryTo' => intval($this->data['event']),
       'entryState' => 1,
       'entryKind' => 1,
-      'entryPeriod' => 3,
+      'entryPeriod' => 4,
 
       'dateIssue' => Utils::today(),
       'webSentDate' => new \DateTime(),
