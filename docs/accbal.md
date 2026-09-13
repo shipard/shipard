@@ -6,11 +6,14 @@ Vychází z myšlenek rozpracovaného „Saldo2" ze starého Shipardu
 (`e10doc/accBal`), ale párování řeší jinak a opírá se o regenerovatelný
 deník a clearing šev nového systému.
 
-> **Stav:** Fáze 0–3 hotové a nasazené. Matcher (§5, rozhodnutí #13–#17)
-> implementován — config matched operací, `BalanceMatcher` (FIFO/VS + brána),
-> CLI `accbal-match`. Migrační infrastruktura clearingu (§4.5, rozhodnutí #18)
-> navržena, čeká na implementaci. Pozdější: UI párování, auto-trigger, partner
-> resolution.
+> **Stav:** Fáze 0–2b hotové a nasazené; clearing infrastruktura (§4.5, #18)
+> hotová. **Revize saldokonta #69 (D1–D8) nahrazuje matcher §5:** T1
+> `bank-payment-routing` (D3/D4/D8, rozhodnutí #19) je hotový — účet úhrady
+> určuje bankovní engine dohledáním otevřeného předpisu (`OpenItemLookup`),
+> clearing přeúčtovává `ClearingRouter` (trigger po zaúčtování předpisu,
+> CLI `accbal-match`, `POST /_accbal/match` v2). `BalanceMatcher` /
+> `AllocationPlanner` / tabulka 419 jsou mrtvý kód do T2 `accbal-symbol-key`
+> (D1, párovací klíč na ledgeru), který přepíše i tento dokument.
 
 ---
 
@@ -384,6 +387,15 @@ chyba).
 
 ---
 
+> **Nahrazeno (#69, 2026-09-13):** §5 a rozhodnutí #13–#17 nahrazují
+> rozhodnutí D1–D8 v issue #69. Platný stav po T1: spárovanost nenese
+> `operation` (matched operace zrušeny), routing clearing ↔ 311/321 dělá
+> `BankTransactionAccountingEngine` přes `OpenItemLookup` (`bank.md` §6.1),
+> „platba dřív než faktura" řeší `ClearingRerouteHandler` +
+> `ClearingRouter` (rozhodnutí #19), allocations se nezapisují. Aktuální je
+> z této sekce jen **§5.7** (kontrakt endpointu). Přepis celého dokumentu na
+> symbolový klíč provede T2 `accbal-symbol-key`.
+
 ## 5. Párování (matcher) — Fáze 3
 
 Matcher je **samostatný explicitně volaný průchod**, ne handler `journalWritten`
@@ -545,13 +557,13 @@ Mimo Fázi 3 (pozdější témata): zálohy (přijaté/poskytnuté, odpočty, zd
 účty 314/324/…900 jsou v osnově), zápočty, kurzové rozdíly (§6), multi-cíl (jedna
 platba na fakturu + odpočet zálohy), explicitní entita případu.
 
-### 5.7 API — dávkové párování
+### 5.7 API — dávkové přeúčtování clearingu (verze kontraktu 2)
 
-`POST /api/v1/_accbal/match` — HTTP obal nad `BalanceMatcher::matchAll()`,
-zrcadlo CLI dávky (`accbal-match --all` / filtry). Auth standardně API klíčem.
-Primární konzument: import ze starého Shipardu (závěrečný krok `all` pipeline
-volá match „na dálku"). Destruktivní cesty matcheru (`unmatch`,
-`rematch-partner`) API **nevystavuje** — zůstávají jen v CLI.
+`POST /api/v1/_accbal/match` — HTTP obal nad `ClearingRouter::rerouteAll()`
+(#69 D4, T1), zrcadlo CLI dávky (`accbal-match --all` / filtry). Auth
+standardně API klíčem. Primární konzument: import ze starého Shipardu
+(závěrečný krok `all` pipeline volá match „na dálku"). Cesta i request jsou
+stejné jako ve verzi 1; změnilo se tělo odpovědi.
 
 Request body (JSON, všechna pole volitelná; vyžaduje `scope: "all"` **nebo**
 aspoň jeden filtr — jinak 400 `VALIDATION`):
@@ -560,7 +572,15 @@ aspoň jeden filtr — jinak 400 `VALIDATION`):
 {"scope": "all", "partner": 42, "fiscalYear": 7, "dryRun": true}
 ```
 
-Response nese **jen agregát** z `MatchSummary` — per-result řádky (mohou být
+Běh: kandidát = úhradový pohyb bankovní transakce (stav 40) ve skupině
+`unmatched_payments`, v pořadí data transakce. Bez partnera → přeskočen;
+`OpenItemLookup` nenajde otevřený předpis pro klíč (partner, VS, SS, měna)
+a směr → přeskočen; jinak `accountTransaction` (engine si účet předpisu
+dohledá sám, `bank.md` §6.1) → `journalWritten` → re-derivace ledgeru.
+Sekvenčně: každé přeúčtování hned sníží reziduum klíče, druhá úhrada už
+uzavřeného předpisu zůstane na clearingu.
+
+Response nese **jen agregát** z `RouteSummary` — per-result řádky (mohou být
 tisíce) se neserializují:
 
 ```json
@@ -569,18 +589,28 @@ tisíce) se neserializují:
   "data": {
     "dryRun": false,
     "candidates": 1234,
-    "allocated": 1100,
+    "routed": 1100,
     "planned": 0,
-    "routedUnallocated": 90,
-    "skipped": {"no_open_items": 30, "not_on_clearing": 14},
-    "matchedAmount": 1234567.89
+    "skipped": {"no_open_item": 120, "no_partner": 14},
+    "routedAmount": 1234567.89
   }
 }
 ```
 
-Sémantika dry-run je stejná jako v CLI: `dryRun: true` vrátí plán bez
-jakéhokoli zápisu — `allocated = 0`, plánované páry v `planned` (přesně jak
-plní `MatchSummary::add()`).
+| pole | význam |
+|---|---|
+| `candidates` | počet clearingových úhrad ve výběru |
+| `routed` | přeúčtováno na účet předpisu (v dry-runu vždy 0) |
+| `planned` | dry-run: kolik by se přeúčtovalo (plán nesimuluje pořadí — obě úhrady téhož předpisu jsou v plánu, ostrý běh druhou nechá na clearingu) |
+| `skipped` | důvod → počet: `no_open_item` (bez otevřeného předpisu, vč. prázdného VS), `no_partner`, `engine_error` (přeúčtování skončilo chybou účtování) |
+| `routedAmount` | Σ `amount_hc` (domácí měna) přeúčtovaných, v dry-runu naplánovaných úhrad |
+
+Změny proti verzi 1 (matcher): `allocated → routed`, `matchedAmount →
+routedAmount` (dřív Σ v měně dokladu napříč měnami), `routedUnallocated`
+zaniklo, důvody `skipped` jsou nové (`no_open_items`/`not_on_clearing`
+zanikly). Runner v `old_shipard` (`printMatchSummary`) čte `planned`/
+`allocated` — upravit v samostatném tasku pod #69; pořadí nasazení: nový
+Shipard první (staré pole runner jen vypíše jako chybějící).
 
 **Timeout:** běh nad migrovanými daty trvá nízké desítky sekund → endpoint je
 synchronní. Controller volá `set_time_limit(0)` (PHP `max_execution_time`) a
@@ -685,6 +715,13 @@ speciálního nepotřebují; `fiscal_year`-scoping ano.
   auto/ruční allocations, přegenerace bucketu vs. úplné rozpárování (§5.4/5.5)
 - CLI `AccbalMatchCommand` (`accbal-match`) s `--dry-run` (§5.6)
 
+**Revize #69 — T1 `bank-payment-routing`** ✓ hotovo (2026-09-13, #19):
+`OpenItemLookup` v core + `LedgerOpenItemLookup`, routing v bankovním enginu,
+`ClearingRerouteHandler` + `ClearingRouter`, `accbal-match` a
+`POST /_accbal/match` v2 (§5.7); matched operace zrušeny. Následuje T2
+`accbal-symbol-key` (D1), T3 `bank-effective-symbols` (D2, D5), T4
+opakované platby (D7), T5 průvodci oprav (D6), T6 dashboard (D8).
+
 Pozdější (mimo Fázi 3): UI párování + bucket pohled (kdo kolik dluží),
 auto-trigger po ingestaci/cronu.
 
@@ -753,6 +790,18 @@ explicitní case entita, partner resolution při ingestaci.
     `AllRunner` ověří infrastrukturu před importem dokladů/transakcí. Zdroj
     pravdy = inline konstanty provisioneru (= enginový kontrakt), hlídané testem
     na drift proti seedům.
+19. **Routing je věc účtování transakce, ne salda** (#69 D3/D4/D8, T1;
+    nahrazuje #13–#17). O účtu úhrady (311/321 vs. clearing) rozhoduje
+    `BankTransactionAccountingEngine` dohledáním otevřeného předpisu přes
+    `OpenItemLookup` (rozhraní v core, implementace `LedgerOpenItemLookup`
+    v accbal, registrace `openItemLookup` v module.jsonc): klíč (partner, VS,
+    SS, měna) + směr → skupina z nastavení saldokont (přirozený řádek předpisu
+    311 / 321), reziduum Σ předpisy − Σ úhrady > 0 (vlastní transakce
+    vyloučena → reaccount idempotentní, bez paměti), prázdný VS = miss,
+    přeplatek se routuje. `operation` spárovanost nenese, matched operace
+    zrušeny. „Platba dřív než faktura": `ClearingRerouteHandler` (za
+    `JournalLedgerHandler`, jen `doc`) → `ClearingRouter::rerouteForKeys`;
+    dávka `rerouteAll` v CLI/endpointu (§5.7). Allocations se nezapisují.
 
 ---
 

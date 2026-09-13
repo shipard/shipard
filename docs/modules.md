@@ -373,6 +373,10 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `documentLockProviders` | object[] | Ne | Ne | Zámek záznamů cizí tabulky — providery důvodů (viz níže) |
 | `documentLockProviders[].table` | string | Ano | Ne | ID cílové tabulky |
 | `documentLockProviders[].class` | string | Ano | Ne | FQCN providera (implements `DocumentLockProvider`) |
+| `journalEventHandlers` | object[] | Ne | Ne | Hooky na (pře)zápis účetního deníku (viz níže) |
+| `journalEventHandlers[].class` | string | Ano | Ne | FQCN handleru (implements `JournalEventHandler`) |
+| `journalEventHandlers[].events` | string[] | Ne | Ne | `journalWritten`; default všechny |
+| `openItemLookup` | string | Ne | Ne | FQCN poskytovatele dohledání otevřeného předpisu (implements `OpenItemLookup`); jeden per DS (viz níže) |
 
 ### Pole `attachmentGuards`
 
@@ -427,6 +431,36 @@ typicky dědí z `AbstractDocumentLockProvider` (settery `db`/`config`/
 `economy.vat` → `VatPeriodLockProvider` (zamčená instance tvrzení),
 `economy.codebooks` → `FiscalMonthLockProvider` (zamčený fiskální měsíc).
 Detaily: `docs/document-system.md` sekce 16.
+
+### Pole `journalEventHandlers` a `openItemLookup`
+
+Hooky účtování pro cizí moduly (saldokonto): účtovací enginy na modulu
+`economy.accbal` nezávisí, ten se registruje sám.
+
+```jsonc
+"journalEventHandlers": [
+    { "class": "Shipard\\Module\\Economy\\Accbal\\JournalLedgerHandler",   "events": ["journalWritten"] },
+    { "class": "Shipard\\Module\\Economy\\Accbal\\ClearingRerouteHandler", "events": ["journalWritten"] }
+],
+"openItemLookup": "Shipard\\Module\\Economy\\Accbal\\LedgerOpenItemLookup"
+```
+
+- `journalEventHandlers` — registrace `{class, events}` **bez `table`**
+  (událost `journalWritten(sourceKind, sourceId)` vysílají oba účtovací
+  enginy po commitu (pře)zápisu i vymazání deníku zdroje). Čte se za běhu
+  (`JournalEventHandlerLoader` → `JournalEventDispatcher`). **Pořadí je
+  významové** — handlery se volají v pořadí resolvovaných modulů × pořadí
+  pole, výjimka se zaloguje a spolkne; handler dědí z
+  `AbstractJournalEventHandler` (settery `db`/`config`/`dsConfig` +
+  `journalEvents` = dispatcher sám, pro handlery, které samy účtují).
+- `openItemLookup` — holý FQCN, **jeden poskytovatel per DS** (dvě
+  registrace = `LogicException` v `OpenItemLookupLoader`; bez registrace
+  `NullOpenItemLookup`). Rozhraní `Shipard\Core\Accounting\OpenItemLookup`,
+  báze `AbstractOpenItemLookup` (settery). Používá ho bankovní účtovací
+  engine (účet úhrady = účet otevřeného předpisu, jinak clearing —
+  `docs/bank.md` §6.1) a `ClearingRouter`; do document handlerů ho vkládá
+  `DocumentEventHandlerLoader` automaticky. Detaily `docs/accounting.md`
+  §7.1, `docs/accbal.md` rozhodnutí #19.
 
 ### Pole `documentEventHandlers`
 

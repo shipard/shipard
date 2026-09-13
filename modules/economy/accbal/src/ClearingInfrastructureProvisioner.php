@@ -15,13 +15,14 @@ use Shipard\Module\Economy\Accounting\AccountDocument;
  * Na rozdíl od AccountChartProvisioner / BalancesProvisioner NEČTE seed file —
  * definice jsou inline konstanty, protože jsou to fakticky enginový kontrakt
  * (maska 261200/261300 v accountingRules, kód `unmatched_payments` natvrdo
- * v BalanceMatcher). Drift proti seedům hlídá unit test.
+ * v ClearingRouter). Drift proti seedům hlídá unit test.
  *
  * Idempotence: účty dle `number`, skupina dle `code` (jakýkoli stav, vč.
  * archivu/koše) — vzor AccountChartProvisioner / BalancesProvisioner. Volá se
  * z DsUpgradeCommand bezpodmínečně (i pod skipProvisioning), protože clearing
  * účty/skupina nemají na migrované staré straně protějšek a bez nich bankovní
- * engine spadne na account_not_found a matcher úhrad najde nula kandidátů.
+ * engine spadne na account_not_found a přeúčtování clearingu (ClearingRouter)
+ * najde nula kandidátů.
  *
  * Konstanty jsou public záměrně — jsou součást kontraktu a čte je drift test.
  */

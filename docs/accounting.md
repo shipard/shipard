@@ -235,15 +235,15 @@ nejsou (ruční opravy pokryje `acc.record` na 261). Saldokontní skupinu
 převody nemají — po zaúčtování obou stran má 261100 z převodů nulový
 zůstatek, což je zároveň kontrola.
 
-`payment.receivable` / `payment.payable` jsou protějšek bankovních
-spárovaných úhrad (kategorie `bank.matched.*`): `rowSide: 0`, `rowPartner`,
-`rowPaymentId`, `identityRequired` — partner řádku = dlužník/věřitel,
-`payment_reference` = VS / číslo hrazené faktury. Deník pak nese identitu
-řádku a `LedgerGenerator` z něj udělá úhradu v saldokontu
-(`receivables`/`payables`, bal_side 1), kterou `BalanceMatcher::rematchBucket`
-alokuje na předpis (viz `docs/accbal.md`; `matchTransaction`/`matchAll` jsou
-bankovní vstupy přes clearing 261200/261300, pokladní úhrada clearingem
-neprochází). Zálohy (`*.advance*`) na pokladní doklady zatím nepatří.
+`payment.receivable` / `payment.payable` jsou protějšek bankovních úhrad
+routovaných na 311/321 (`OpenItemLookup`, #69 D3): `rowSide: 0`,
+`rowPartner`, `rowPaymentId`, `identityRequired` — partner řádku =
+dlužník/věřitel, `payment_reference` = VS / číslo hrazené faktury. Deník pak
+nese identitu řádku a `LedgerGenerator` z něj udělá úhradu v saldokontu
+(`receivables`/`payables`, bal_side 1) se stejným klíčem jako předpis —
+pokladní úhrada clearingem 261200/261300 neprochází, žádné dohledání
+nepotřebuje (viz `docs/accbal.md`). Zálohy (`*.advance*`) na pokladní
+doklady zatím nepatří.
 
 ### Kurzové rozdíly saldokonta (vlna D, D12)
 
@@ -795,6 +795,31 @@ uvnitř transakce, `afterSave` a `stateChanged` po `Document::afterSave`,
 `beforeDelete` po `Document::beforeDelete`. Úplná sémantika: `docs/modules.md`
 → Pole `documentEventHandlers`. Registrace se kompiluje z
 `module.jsonc` do cfg (analogie `documentClasses`).
+
+#### Hooky účtování pro cizí moduly — `journalEventHandlers`, `openItemLookup`
+
+Tentýž princip (deklarace v core, implementace v modulu, registrace v
+`module.jsonc`, účtování na modulu nezávisí) mají dva další body:
+
+- **`journalEventHandlers: [{class, events}]`** — rozhraní
+  `Shipard\Core\Document\JournalEventHandler`, událost `journalWritten
+  (sourceKind, sourceId)`. Vysílají ji **oba enginy** (`AccountingEngine`,
+  `BankTransactionAccountingEngine`) po commitu každého (pře)zápisu i
+  vymazání deníku zdroje; dispatcher `JournalEventDispatcher` volá handlery
+  v pořadí registrace, výjimku zaloguje a spolkne, a injektuje handlerům
+  sám sebe (handler smí sám účtovat, re-entrantní dispatch je bezpečný).
+  Konzument: `economy.accbal` (`JournalLedgerHandler` re-derivuje saldo
+  pohyby, `ClearingRerouteHandler` přeúčtuje clearingové úhrady po vzniku
+  předpisu — `docs/accbal.md` §4.1, rozhodnutí #19).
+- **`openItemLookup: "FQCN"`** (jeden poskytovatel per DS) — rozhraní
+  `Shipard\Core\Accounting\OpenItemLookup::findOpenRequest(partner, VS,
+  SS, měna, směr, [vyloučený zdroj]) → ?OpenItem{balance, accountNumber,
+  residual}`. Bankovní engine podle něj rozhoduje účet úhrady (účet předpisu
+  vs. clearing, `docs/bank.md` §6.1); DS bez poskytovatele má
+  `NullOpenItemLookup`. Loader `OpenItemLookupLoader`; do handlerů ho vkládá
+  `DocumentEventDispatcher` (`AbstractDocumentEventHandler::setOpenItems`),
+  controllerům `public/index.php`. Implementace `LedgerOpenItemLookup`
+  (`economy.accbal`) nad `economy_accbal_ledger`.
 
 ### 7.2 Lifecycle účtování
 

@@ -1,6 +1,6 @@
 # Banka — účtování úhrady podle otevřeného předpisu (routing clearing ↔ 311/321)
 
-**Stav:** naplánováno — T1 revize saldokonta (#69, D3/D4/D8)
+**Stav:** hotovo — 2026-09-13 (#69 T1; odchylky od zadání viz „Poznámky k implementaci"); zbývá alfa + úprava `printMatchSummary` v `old_shipard`
 
 ## Kontext
 
@@ -226,19 +226,66 @@ PHPUnit jen s úzkým `--filter`.
 
 ## Hotovo když
 
-- [ ] transakce s partnerem a klíčem otevřeného předpisu se zaúčtuje na účet
+- [x] transakce s partnerem a klíčem otevřeného předpisu se zaúčtuje na účet
       předpisu bez jakéhokoli matcheru; bez shody na clearing
-- [ ] zaúčtování předpisu přeúčtuje čekající clearingové úhrady se stejným
+      (`BankPaymentRoutingTest`)
+- [x] zaúčtování předpisu přeúčtuje čekající clearingové úhrady se stejným
       klíčem (platba dřív než faktura)
-- [ ] `payment.*.matched` a `bank.matched.*` v configu neexistují; grep
-      `matched` s `--include=*.jsonc,*.php` přes `modules/economy` a `src`
-      najde jen `unmatched_payments`
-- [ ] `accbal-match --all --dry-run` a `POST /_accbal/match` fungují s novou
-      odpovědí; `docs/accbal.md §5.7` má novou verzi kontraktu
-- [ ] žádná smyčka `journalWritten` ↔ reaccount (test 4)
-- [ ] `BalanceMatcher`/`AllocationPlanner` nikdo nevolá (ověřit grep), ale
-      kód i tabulka 419 zůstávají — maže T2
-- [ ] docs a index tasků aktualizované ve stejném commitu jako kód
+- [x] `payment.*.matched` a `bank.matched.*` v configu neexistují; grep
+      `payment\.(in|out)\.matched|bank\.matched` s `--include=*.jsonc,*.php`
+      přes `modules` a `src` najde jen mrtvý `BalanceMatcher.php` (maže T2).
+      Doslovný grep `matched` nesplnitelný — chytá `unmatched`, importní
+      `unmatchedPartner`, `MailController`, reporty.
+- [x] `accbal-match --all --dry-run` a `POST /_accbal/match` fungují s novou
+      odpovědí; `docs/accbal.md §5.7` má verzi kontraktu 2
+- [x] žádná smyčka `journalWritten` ↔ reaccount (testy
+      `testReaccountAfterRoutingIsIdempotent`, `testInvoicePostingDoesNotLoop`)
+- [x] `BalanceMatcher`/`AllocationPlanner` nikdo nevolá (grep: jen definice
+      + vzájemné volání v accbal, `BalanceMatcherTest` skipnut), kód i
+      tabulka 419 zůstávají — maže T2
+- [x] docs a index tasků aktualizované ve stejném commitu jako kód
+
+## Poznámky k implementaci (2026-09-13)
+
+Commity `5102237` (PRD), `c0cac71` (1/n lookup), `8d2e2e7` (2/n engine +
+config), `c8bf444` (3/n router + trigger + CLI + endpoint), docs 4/n.
+
+Odchylky od zadání, všechny ověřené v kódu:
+
+- **Skupina pro směr z nastavení saldokont, ale zúžená** — `BalancesLookup`
+  je jen formulářový typeahead; čte se `economy_accbal_balance_accounts`
+  přímo. Holé „prefix 311 + předpis" je dvojznačné (seed `payables` má
+  dobropisový řádek `311 MD, záporné, modify_sign`), proto pravidlo: řádek
+  s `bal_side = 0`, `modify_sign = 0`, `amounts_sign ∈ {0,1}`, `acc_side`
+  dle směru (příjem MD / výdaj DAL) a prefixem slučitelným s 311 / 321;
+  řádky ledgeru se navíc filtrují prefixem účtu. Nezávisí na editovatelném
+  `code` skupiny.
+- **Rozhraní má navíc `?excludeSourceKind, ?excludeSourceId`** — bez
+  vyloučení vlastní úhrady by reaccount routované transakce spočítal
+  reziduum 0 a vrátil ji na clearing (rozpor s testem 4). Engine předává
+  `('bankTransaction', txId)`, dashboard T6 nic.
+- **Prázdný VS = miss** (pravidlo 1 z D5 vyžaduje klíč; pravidla 2–3 T3);
+  porovnání klíče `TRIM` + `LOWER(měna)`; **přeplatek se routuje** (reziduum
+  > 0 stačí), opak dnešní brány matcheru.
+- **Plumbing bez změny signatur CLI:** `DocumentEventHandlerLoader` sestaví
+  lookup z resolvovaných modulů sám a `DocumentEventDispatcher` ho injektuje
+  do `AbstractDocumentEventHandler::setOpenItems()`; explicitně jen
+  `index.php` → `BankController`, `AccbalController`; `AccbalMatchCommand`.
+- **`JournalEventDispatcher` injektuje sám sebe** do handlerů
+  (`AbstractJournalEventHandler::setJournalEvents`) — `ClearingRerouteHandler`
+  staví engine s ním; re-entrance je čistý cyklus nad memoizovanými
+  instancemi.
+- `routedAmount` = Σ `amount_hc` (starý `matchedAmount` sčítal měny dokladu
+  napříč měnami); dry-run plán nesimuluje pořadí (obě úhrady téhož předpisu
+  v plánu, ostrý běh druhou nechá na clearingu).
+- `BalanceMatcherTest` celý `markTestSkipped` (4/5 testů popírá nové
+  chování), `CashPaymentMatchingTest` projde (jen `rematchBucket`).
+
+Mimo scope T1: úhrada už na 311, jejíž předpis později opustí stav 40,
+zůstane na 311 do dalšího reaccountu transakce (zpětný trigger není; engine
+je bez paměti, reaccount ji vrátí na clearing). Runner `old_shipard`
+(`printMatchSummary` čte `planned`/`allocated`) — samostatný task pod #69,
+pořadí nasazení: nový Shipard první.
 
 ## Rozhodnutí k designu (potvrzená)
 

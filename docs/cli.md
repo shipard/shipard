@@ -611,6 +611,25 @@ s výčtem důvodů; `--force` zámek vědomě obejde a zapíše `warn` do
 derivát dokladu — force slouží k opravě rozvrhu nebo předpisu nad uzavřeným
 obdobím, obsah dokladu se nemění. Viz [accounting.md](accounting.md) §7.6.
 
+#### `accbal-match --all | --partner=<id> | --fiscal-year=<id> [--dry-run]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds accbal-match --all --dry-run       # plán: které clearingové úhrady by šly na 311/321
+shpd-ds accbal-match --all                 # přeúčtuje je (reaccount transakce → re-derivace salda)
+shpd-ds accbal-match --partner=42          # jen úhrady partnera
+```
+
+Dávkové přeúčtování bankovních úhrad z clearingu 261200/261300 na účet
+otevřeného předpisu (#69 D4) — totéž co `POST /_accbal/match`. Pro každou
+úhradu na clearingu dohledá otevřený předpis pro klíč partner + VS + SS +
+měna (`OpenItemLookup`); bez partnera nebo bez zásahu úhradu přeskočí
+(důvody `no_partner` / `no_open_item` / `engine_error` v souhrnu). Běžně
+není třeba: engine routuje už při zaúčtování transakce a po zaúčtování
+předpisu čekající úhrady přeúčtuje trigger; dávka slouží importu a
+dorovnání. Bez `--all` ani filtru příkaz nic neudělá. Viz
+[accbal.md](accbal.md) §5.7, [bank.md](bank.md) §6.1.
+
 #### `vat-filing-account <filingId> [--dry-run]`
 
 ```bash

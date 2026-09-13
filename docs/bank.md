@@ -314,8 +314,18 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
 - **Bankovní strana (vždy):** analytika z `bank_account.accounting_account`
   (221xxx). Příjem → 221 MD; výdaj → 221 DAL.
 - **Protistrana (dle `operation`):**
-  - prázdné / `payment.in` / `payment.out` (default) → **clearing účet
-    nespárovaných plateb** (§6.3),
+  - prázdné / `payment.in` / `payment.out` (default, kategorie
+    `bank.unmatched.*`) → **dohledání otevřeného předpisu** (#69 D3): má-li
+    transakce partnera, engine se zeptá `OpenItemLookup` (rozhraní v core,
+    implementace `LedgerOpenItemLookup` v `economy.accbal`) na otevřený
+    předpis pro klíč (partner, VS, SS, měna) a směr (příjem → pohledávky
+    311*, výdaj → závazky 321*). Zásah → protistrana = **účet předpisu přesně
+    vč. analytiky**; miss / bez partnera / bez VS → **clearing účet
+    nespárovaných plateb** dle masky (§6.3). Přeplatek se routuje také
+    (stačí otevřené reziduum > 0, symbolový model). Vlastní transakce se
+    z rezidua vylučuje → reaccount je idempotentní a **bez paměti**: zmizí-li
+    předpis, reaccount vrátí úhradu na clearing (automatický zpětný trigger
+    není). DS bez modulu saldokonta má `NullOpenItemLookup` → vše na clearing.
   - `fee.out` → 568 (bankovní poplatky), `interest.in` → 662, `interest.out`
     → 562, `tax.*` → … — reálný účet z kategorie předpisu (jako `acc.entry`).
 
@@ -325,8 +335,8 @@ cfgItem `economy.bank.txOperations` (vzor `docs.core.rowOperations`):
 
 ```jsonc
 {
-    "payment.in":   {"name:cs": "Příjem (nespárováno)", "direction": 1, "cat": "bank.unmatched.in"},
-    "payment.out":  {"name:cs": "Výdaj (nespárováno)",  "direction": 2, "cat": "bank.unmatched.out"},
+    "payment.in":   {"name:cs": "Příjem", "direction": 1, "cat": "bank.unmatched.in"},
+    "payment.out":  {"name:cs": "Výdaj",  "direction": 2, "cat": "bank.unmatched.out"},
     "fee.out":      {"name:cs": "Bankovní poplatek",     "direction": 2, "cat": "bank.fee"},
     "interest.in":  {"name:cs": "Připsaný úrok",          "direction": 1, "cat": "bank.interest.in"},
     "interest.out": {"name:cs": "Zaplacený úrok",         "direction": 2, "cat": "bank.interest.out"},
@@ -345,10 +355,10 @@ pokladnou (nebo vlastním jiným účtem) jako protistranou. Obě strany převod
 jdou přes **261100 Peníze na cestě** (kategorie `cash.transit`, sdílená
 s pohyby `transfer.*` pokladního dokladu — `docs/accounting.md` §2, §4):
 příjem `221 MD / 261100 DAL`, výdaj `261100 MD / 221 DAL`; po zaúčtování
-obou stran je 261100 z převodů nulový. Matcher (`accbal`) takovou transakci
-**nevidí** — kandidáty bere z ledgeru clearingu 261200/261300 a 261100
-v žádné saldo skupině není; `operation` proto nikdy nepřepíše na
-`payment.*.matched`. Formulář transakce nabízí všechny pohyby bez filtru;
+obou stran je 261100 z převodů nulový. Routing (`ClearingRouter`, `accbal`)
+takovou transakci **nevidí** — kandidáty bere z ledgeru clearingu
+261200/261300 a 261100 v žádné saldo skupině není; dohledání předpisu
+engine dělá jen u `payment.*`. Formulář transakce nabízí všechny pohyby bez filtru;
 `BankTransactionDocument::validate` odmítne pohyb s jiným `direction`, než
 má transakce (`operation_direction_mismatch`). Automatická detekce převodu
 z výpisu (protiúčet = náš účet) zůstává refinement (§11).
@@ -370,11 +380,14 @@ jako 311/321 dnes.)*
 
 **Kontrola správnosti účtování:** v plně spárovaném stavu je na obou účtech
 **nulový zůstatek i nulový obrat**. Funguje to právě proto, že deník je
-derivát: jakmile saldo transakci spáruje, mikroengine její řádky **přegeneruje**
-(DELETE + INSERT) rovnou na 311/321 a clearing řádek **zmizí** — není to storno
-protizápisem. Proto na clearing účtech v každém okamžiku sedí přesně jen
-**aktuálně nespárované** transakce; nenulový zůstatek/obrat = existují
-nespárované platby (= signál k akci, ne chyba účtování).
+derivát: jakmile engine pro transakci dohledá otevřený předpis (§6.1) — při
+zaúčtování, při reaccountu, nebo když ji po zaúčtování předpisu přeúčtuje
+trigger `ClearingRerouteHandler` / dávka `accbal-match` (`docs/accbal.md`
+§5.7) — její řádky **přegeneruje** (DELETE + INSERT) rovnou na 311/321 a
+clearing řádek **zmizí** — není to storno protizápisem. Proto na clearing
+účtech v každém okamžiku sedí přesně jen **aktuálně nespárované** transakce;
+nenulový zůstatek/obrat = existují nespárované platby (= signál k akci, ne
+chyba účtování).
 
 ### 6.4 Kontrolní příklady
 
