@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Bank;
 
+use Shipard\Core\Accounting\NullOpenItemLookup;
+use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\JournalEventDispatcher;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
@@ -20,6 +22,14 @@ use Shipard\Module\Economy\Accounting\AccountMaskResolver;
  * Protistrana: operation → cat (cfgItem economy.bank.txOperations) → maska
  * (sekce `accounts` téhož účtovacího předpisu jako doklady) → účet rozvrhu
  * (sdílený AccountMaskResolver). Princip „účet se nikde nezadává" zachován.
+ *
+ * Úhrady (`payment.in` / `payment.out`, kategorie `bank.unmatched.*`) mají
+ * před maskou přednostní krok (#69 D3): má-li transakce partnera, engine
+ * dohledá otevřený předpis pro klíč (partner, VS, SS, měna) přes
+ * {@see OpenItemLookup} a položí úhradu přesně na účet předpisu (311xxx /
+ * 321xxx). Miss → clearing dle masky (261200/261300). Spárovanost tedy
+ * nenese `operation` ani žádný stav na transakci; reaccount je idempotentní
+ * a bez paměti (vlastní úhrada se z rezidua vylučuje).
  *
  * Dva řádky stejné částky → deník je z principu vyrovnaný; žádná penny
  * reconciliation. Filozofie chyb stejná jako u dokladů: účtování nikdy
@@ -53,11 +63,17 @@ final class BankTransactionAccountingEngine
     /** @var list<array{code: string, message: string, rowId: int|null}> */
     private array $messages = [];
 
+    private readonly OpenItemLookup $openItems;
+
     public function __construct(
         private readonly \Dibi\Connection $db,
         private readonly ?ConfigRuntime $config,
         private readonly ?JournalEventDispatcher $journalEvents = null,
-    ) {}
+        ?OpenItemLookup $openItems = null,
+    ) {
+        // DS bez saldokonta (nebo engine postavený bez lookupu) → vše na clearing.
+        $this->openItems = $openItems ?? new NullOpenItemLookup();
+    }
 
     /**
      * Přeúčtuje transakci: smaže starý deník, vygeneruje nový, uloží stav.
@@ -186,8 +202,9 @@ final class BankTransactionAccountingEngine
     }
 
     /**
-     * Protistrana: operation → cat (txOperations) → maska (accounts předpisu)
-     * → účet rozvrhu. Nedohledáno → chybový řádek s maskou doplněnou '?'.
+     * Protistrana: operation → cat (txOperations) → [úhrada: otevřený předpis]
+     * → maska (accounts předpisu) → účet rozvrhu. Nedohledáno → chybový řádek
+     * s maskou doplněnou '?'.
      *
      * @param array<string, mixed> $tx
      * @return array{id?: int, number: string, is_error?: bool}
@@ -204,6 +221,15 @@ final class BankTransactionAccountingEngine
             return ['number' => str_repeat('?', self::ACCOUNT_NUMBER_LENGTH), 'is_error' => true];
         }
 
+        // Úhrada: účet otevřeného předpisu má přednost před maskou — clearing
+        // je jen výstup při miss (#69 D3, docs/bank.md §6.1).
+        if (str_starts_with($cat, 'bank.unmatched.')) {
+            $routed = $this->resolveOpenItemAccount($tx, $accountingDate);
+            if ($routed !== null) {
+                return $routed;
+            }
+        }
+
         $mask = $this->maskForCategory($cat);
         if ($mask === '') {
             $this->addMessage('account_not_found', "Předpis nemá masku pro kategorii '{$cat}'");
@@ -216,6 +242,45 @@ final class BankTransactionAccountingEngine
             return ['number' => str_pad($mask, self::ACCOUNT_NUMBER_LENGTH, '?'), 'is_error' => true];
         }
 
+        return $account;
+    }
+
+    /**
+     * Úhrada s partnerem: otevřený předpis pro klíč (partner, VS, SS, měna)
+     * a směr → protistrana = účet předpisu přesně vč. analytiky (ne maska).
+     * Vlastní transakce se z rezidua vylučuje, aby reaccount už routované
+     * úhrady neviděl nulu a nevrátil ji na clearing. Bez partnera / miss →
+     * null (volající spadne na clearing dle masky). Účet předpisu, který
+     * v rozvrhu není (deaktivovaný), je chyba jako u masky.
+     *
+     * @param array<string, mixed> $tx
+     * @return array{id?: int, number: string, is_error?: bool}|null
+     */
+    private function resolveOpenItemAccount(array $tx, string $accountingDate): ?array
+    {
+        $partner = (int) ($tx['partner'] ?? 0);
+        if ($partner <= 0) {
+            return null;
+        }
+
+        $item = $this->openItems->findOpenRequest(
+            $partner,
+            trim((string) ($tx['payment_reference'] ?? '')),
+            trim((string) ($tx['specific_symbol'] ?? '')),
+            strtolower(trim((string) ($tx['currency'] ?? ''))),
+            (int) ($tx['direction'] ?? 0),
+            'bankTransaction',
+            (int) ($tx['id'] ?? 0),
+        );
+        if ($item === null) {
+            return null;
+        }
+
+        $account = $this->maskResolver->resolve($item->accountNumber, $accountingDate);
+        if ($account === null) {
+            $this->addMessage('account_not_found', "Účet předpisu {$item->accountNumber} nenalezen v rozvrhu");
+            return ['number' => str_pad($item->accountNumber, self::ACCOUNT_NUMBER_LENGTH, '?'), 'is_error' => true];
+        }
         return $account;
     }
 

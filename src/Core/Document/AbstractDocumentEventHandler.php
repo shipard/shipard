@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Document;
 
+use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 
@@ -24,6 +25,13 @@ abstract class AbstractDocumentEventHandler implements DocumentEventHandler
      */
     protected ?JournalEventDispatcher $journalEvents = null;
 
+    /**
+     * Dohledání otevřeného předpisu pro handlery konstruující bankovní
+     * účtovací engine (#69 D3) — poskytovatel z `openItemLookup` v module.jsonc,
+     * injektuje DocumentEventDispatcher. Null = engine si vezme Null objekt.
+     */
+    protected ?OpenItemLookup $openItems = null;
+
     public function setDb(\Dibi\Connection $db): void
     {
         $this->db = $db;
@@ -32,6 +40,11 @@ abstract class AbstractDocumentEventHandler implements DocumentEventHandler
     public function setJournalEvents(?JournalEventDispatcher $journalEvents): void
     {
         $this->journalEvents = $journalEvents;
+    }
+
+    public function setOpenItems(?OpenItemLookup $openItems): void
+    {
+        $this->openItems = $openItems;
     }
 
     public function setConfig(ConfigRuntime $config): void

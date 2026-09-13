@@ -44,6 +44,10 @@ class BalanceMatcherTest extends IntegrationTestCase
 
     protected function setUp(): void
     {
+        // #69 D3 (T1 bank-payment-routing): matched operace zrušeny, routing
+        // dělá engine dohledáním předpisu. BalanceMatcher je mrtvý kód —
+        // i s tímto testem ho maže T2 (accbal-symbol-key).
+        $this->markTestSkipped('BalanceMatcher zrušen #69 (routing enginem, T1); maže T2 accbal-symbol-key');
         parent::setUp();
         $this->config = ConfigRuntime::load($this->realDsPath, 'cs');
         $resolver = new ModulePathResolver([dirname(__DIR__, 3) . '/modules']);

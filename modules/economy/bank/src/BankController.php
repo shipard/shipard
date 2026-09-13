@@ -7,6 +7,7 @@ namespace Shipard\Module\Economy\Bank;
 use Shipard\Api\AuthContext;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -41,6 +42,7 @@ final class BankController
         private readonly DocumentRegistry $registry,
         private readonly ?DocumentEventDispatcher $eventDispatcher = null,
         private readonly ?JournalEventDispatcher $journalEvents = null,
+        private readonly ?OpenItemLookup $openItems = null,
     ) {
     }
 
@@ -118,7 +120,12 @@ final class BankController
             );
         }
 
-        $engine = new BankTransactionAccountingEngine($this->db->getDibiConnection(), $this->config, $this->journalEvents);
+        $engine = new BankTransactionAccountingEngine(
+            $this->db->getDibiConnection(),
+            $this->config,
+            $this->journalEvents,
+            $this->openItems,
+        );
         $result = $engine->accountTransaction($txId);
 
         return Response::success([

@@ -9,37 +9,25 @@
     //
     // Default operace dle směru (payment.in / payment.out) doplní ingestion /
     // UI ve Fázi 2/3; tento config jen definuje povolenou sadu.
+    //
+    // Úhrady (payment.*): spárovanost `operation` nenese (#69 D3). Engine
+    // dohledá otevřený předpis pro klíč partner+VS+SS+měna (OpenItemLookup)
+    // a položí úhradu na jeho účet 311/321; kategorie bank.unmatched.* →
+    // clearing 261200/261300 je jen výstup při miss.
 
     "payment.in": {
-        "name": "Incoming payment (unmatched)",
-        "name:cs": "Příjem (nespárováno)",
-        "name:en": "Incoming payment (unmatched)",
+        "name": "Incoming payment",
+        "name:cs": "Příjem",
+        "name:en": "Incoming payment",
         "direction": 1,
         "cat": "bank.unmatched.in"
     },
     "payment.out": {
-        "name": "Outgoing payment (unmatched)",
-        "name:cs": "Výdaj (nespárováno)",
-        "name:en": "Outgoing payment (unmatched)",
+        "name": "Outgoing payment",
+        "name:cs": "Výdaj",
+        "name:en": "Outgoing payment",
         "direction": 2,
         "cat": "bank.unmatched.out"
-    },
-    // Spárované úhrady (matcher, Fáze 3): tatáž maska jako receivables/payables
-    // (311/321) → úhrada dosedne na týž účet jako předpis faktury = stejný
-    // bucket. Spárovanost nenese zvláštní příznak, nese ji `operation`.
-    "payment.in.matched": {
-        "name": "Incoming payment (matched)",
-        "name:cs": "Příjem (spárováno)",
-        "name:en": "Incoming payment (matched)",
-        "direction": 1,
-        "cat": "bank.matched.in"
-    },
-    "payment.out.matched": {
-        "name": "Outgoing payment (matched)",
-        "name:cs": "Výdaj (spárováno)",
-        "name:en": "Outgoing payment (matched)",
-        "direction": 2,
-        "cat": "bank.matched.out"
     },
     "fee.out": {
         "name": "Bank fee",

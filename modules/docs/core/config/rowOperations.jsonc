@@ -103,10 +103,10 @@
     },
 
     // Úhrady saldokonta hotově/kartou na pokladním dokladu (#59 D7) —
-    // protějšek bankovních spárovaných úhrad (kategorie bank.matched.*):
-    // partner řádku = dlužník/věřitel, payment_reference = VS / číslo hrazené
-    // faktury; deník pak vypadá jako bankovní úhrada a accbal matcher ho
-    // spáruje. rowSide: 0 = strana z kroku předpisu, částka kladná, bez DPH
+    // protějšek bankovních úhrad routovaných na 311/321 (OpenItemLookup,
+    // #69 D3): partner řádku = dlužník/věřitel, payment_reference = VS /
+    // číslo hrazené faktury; deník pak vypadá jako bankovní úhrada a v saldu
+    // uzavírá týž klíč. rowSide: 0 = strana z kroku předpisu, částka kladná, bez DPH
     // bloku. identityRequired: bez partnera a VS nemá saldo co párovat.
     // Zálohy (*.advance*) na pokladní doklady zatím nedáváme (saldo záloh je
     // accbal fáze 4+).

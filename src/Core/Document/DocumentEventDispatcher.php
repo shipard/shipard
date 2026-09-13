@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Document;
 
+use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Logging\ErrorLogger;
@@ -38,6 +39,7 @@ final class DocumentEventDispatcher
         private readonly ?ConfigRuntime $config = null,
         private readonly ?DataSourceConfig $dsConfig = null,
         private readonly ?JournalEventDispatcher $journalEvents = null,
+        private readonly ?OpenItemLookup $openItems = null,
     ) {
         foreach ($registrations as $reg) {
             $this->registrations[$reg['table']][] = [
@@ -152,8 +154,10 @@ final class DocumentEventDispatcher
             if ($this->dsConfig !== null) {
                 $handler->setDsConfig($this->dsConfig);
             }
-            // Handlery konstruující engine ho potřebují k vyslání journalWritten.
+            // Handlery konstruující engine ho potřebují k vyslání journalWritten;
+            // bankovní engine navíc k dohledání otevřeného předpisu (#69 D3).
             $handler->setJournalEvents($this->journalEvents);
+            $handler->setOpenItems($this->openItems);
         }
 
         return $this->instances[$className] = $handler;

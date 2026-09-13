@@ -37,8 +37,6 @@
 
         "bank.unmatched.in":  {"name:cs": "Banka — nespárovaný příjem"},
         "bank.unmatched.out": {"name:cs": "Banka — nespárovaný výdaj"},
-        "bank.matched.in":    {"name:cs": "Banka — spárovaný příjem"},
-        "bank.matched.out":   {"name:cs": "Banka — spárovaný výdaj"},
         "bank.fee":           {"name:cs": "Banka — poplatek"},
         "bank.interest.in":   {"name:cs": "Banka — připsaný úrok"},
         "bank.interest.out":  {"name:cs": "Banka — zaplacený úrok"}
@@ -65,14 +63,13 @@
         {"cat": "advances.received", "accountMask": "324",  "query": {"vat_amount": 0}},
         {"cat": "advances.received", "accountMask": ["3249", "324"]},
 
-        // Bankovní kategorie (konzumuje bankovní mikroengine ve Fázi 3; teď
-        // neškodná konfigurace). 261200/261300 = clearing účty nespárovaných
-        // plateb (seed W7.1); poplatky/úroky jdou na finanční náklady/výnosy.
+        // Bankovní kategorie (bankovní mikroengine). 261200/261300 = clearing
+        // účty nespárovaných plateb — úhrada tam padá jen při miss dohledání
+        // otevřeného předpisu (OpenItemLookup, #69 D3, docs/bank.md §6.3);
+        // při zásahu jde přesně na účet předpisu (311xxx/321xxx), bez masky.
+        // Poplatky/úroky jdou na finanční náklady/výnosy.
         {"cat": "bank.unmatched.in",  "accountMask": "261200"},
         {"cat": "bank.unmatched.out", "accountMask": "261300"},
-        // Spárované úhrady (matcher) → 311/321, shodné s receivables/payables.
-        {"cat": "bank.matched.in",    "accountMask": "311"},
-        {"cat": "bank.matched.out",   "accountMask": "321"},
         {"cat": "bank.fee",           "accountMask": "568"},
         {"cat": "bank.interest.in",   "accountMask": "662"},
         {"cat": "bank.interest.out",  "accountMask": "562"},

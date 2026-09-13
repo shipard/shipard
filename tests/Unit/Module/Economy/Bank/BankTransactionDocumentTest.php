@@ -40,8 +40,8 @@ class BankTransactionDocumentTest extends TestCase
             $this->tmpDir . '/config/configuration/compiled.cs.json',
             json_encode(['_meta' => ['language' => 'cs'], 'items' => [
                 'economy.bank.txOperations' => [
-                    'payment.in'   => ['name' => 'Příjem (nespárováno)', 'direction' => 1, 'cat' => 'bank.unmatched.in'],
-                    'payment.out'  => ['name' => 'Výdaj (nespárováno)', 'direction' => 2, 'cat' => 'bank.unmatched.out'],
+                    'payment.in'   => ['name' => 'Příjem', 'direction' => 1, 'cat' => 'bank.unmatched.in'],
+                    'payment.out'  => ['name' => 'Výdaj', 'direction' => 2, 'cat' => 'bank.unmatched.out'],
                     'transfer.in'  => ['name' => 'Příjem z převodu peněz', 'direction' => 1, 'cat' => 'cash.transit'],
                     'transfer.out' => ['name' => 'Výdej pro převod peněz', 'direction' => 2, 'cat' => 'cash.transit'],
                 ],

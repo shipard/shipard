@@ -195,12 +195,21 @@ try {
 		$resolved->connection->getDibiConnection(),
 		$configRuntime,
 	);
+	// Dohledání otevřeného předpisu pro bankovní engine (#69 D3) — jedna
+	// instance pro handlery (přes document dispatcher) i controllery.
+	$openItemLookup = \Shipard\Api\OpenItemLookupLoader::load(
+		$resolved->config,
+		$modulePathResolver,
+		$resolved->connection->getDibiConnection(),
+		$configRuntime,
+	);
 	$documentEventDispatcher = \Shipard\Api\DocumentEventHandlerLoader::load(
 		$resolved->config,
 		$modulePathResolver,
 		$resolved->connection->getDibiConnection(),
 		$configRuntime,
 		$journalEventDispatcher,
+		$openItemLookup,
 	);
 
 	// ── 9. Dispatch to controller ─────────────────────────────────────────────
@@ -211,7 +220,7 @@ try {
 		$host, $resolved, $modulePathResolver,
 		$viewerRegistry, $configRuntime, $formRegistry, $documentRegistry,
 		$lookupRegistry, $alertCheckRegistry, $serverConfig,
-		$documentEventDispatcher, $journalEventDispatcher,
+		$documentEventDispatcher, $journalEventDispatcher, $openItemLookup,
 	);
 
 	// ── 10. Apply headers and send ────────────────────────────────────────────
@@ -317,6 +326,7 @@ function dispatch(
 	?ServerConfig $serverConfig = null,
 	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
 	?\Shipard\Core\Document\JournalEventDispatcher $journalEventDispatcher = null,
+	?\Shipard\Core\Accounting\OpenItemLookup $openItemLookup = null,
 ): Response {
 	$baseUrl = $resolved->isDevMode()
 		? 'http://' . $host . '/' . $resolved->config->getId()
@@ -349,7 +359,7 @@ function dispatch(
 		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $resolved->config),
 		'accounting' => dispatchAccounting($route, $request, $db, $configRuntime, $journalEventDispatcher, $documentRegistry, $resolved->config),
 		'vat' => dispatchVat($route, $request, $db, $configRuntime, $resolved, $auth, $documentRegistry, $tables, $documentEventDispatcher),
-		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher),
+		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher, $openItemLookup),
 		'personsRegistry' => dispatchPersonsRegistry($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $serverConfig),
 		'hostingPortal' => dispatchHostingPortal($route, $request, $auth, $db, $tables, $resolved, $modulePathResolver, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry()),
 		'hostingOidc' => dispatchHostingOidc($route, $request, $auth, $db, $tables, $resolved),
@@ -528,6 +538,7 @@ function dispatchBank(
 	\Shipard\Core\Document\DocumentRegistry $documentRegistry,
 	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
 	?\Shipard\Core\Document\JournalEventDispatcher $journalEventDispatcher = null,
+	?\Shipard\Core\Accounting\OpenItemLookup $openItemLookup = null,
 ): Response {
 	$dsPath = $resolved->config->getDataSourceDir();
 	$ctrl = new \Shipard\Module\Economy\Bank\BankController(
@@ -539,6 +550,7 @@ function dispatchBank(
 		$documentRegistry,
 		$documentEventDispatcher,
 		$journalEventDispatcher,
+		$openItemLookup,
 	);
 	return match ($route->action) {
 		'importStatement' => $ctrl->importStatement($auth),
