@@ -318,8 +318,10 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
     `bank.unmatched.*`) → **dohledání otevřeného předpisu** (#69 D3): má-li
     transakce partnera, engine se zeptá `OpenItemLookup` (rozhraní v core,
     implementace `LedgerOpenItemLookup` v `economy.accbal`) na otevřený
-    předpis pro klíč (partner, VS, SS, měna) a směr (příjem → pohledávky
-    311*, výdaj → závazky 321*). Zásah → protistrana = **účet předpisu přesně
+    předpis pro klíč (partner, VS, SS, měna) a směr (příjem → skupiny
+    s předpisem na MD, typicky Pohledávky 311*; výdaj → skupiny s předpisem
+    na DAL, typicky Závazky 321* vč. 325/331/336/…; cíle plynou z nastavení
+    saldokont, ne z čísel účtů). Zásah → protistrana = **účet předpisu přesně
     vč. analytiky**; miss / bez partnera / bez VS → **clearing účet
     nespárovaných plateb** dle masky (§6.3). Přeplatek se routuje také
     (stačí otevřené reziduum > 0, symbolový model). Vlastní transakce se

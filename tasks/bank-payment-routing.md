@@ -259,7 +259,9 @@ Odchylky od zadání, všechny ověřené v kódu:
   s `bal_side = 0`, `modify_sign = 0`, `amounts_sign ∈ {0,1}`, `acc_side`
   dle směru (příjem MD / výdaj DAL) a prefixem slučitelným s 311 / 321;
   řádky ledgeru se navíc filtrují prefixem účtu. Nezávisí na editovatelném
-  `code` skupiny.
+  `code` skupiny. Zúžení na prefix 311 / 321 bylo chybné (předpisy na
+  336/331/325/315… se nenašly) — opraveno v `bank-payment-routing-accounts.md`:
+  cílem všechny předpisové účty skupiny.
 - **Rozhraní má navíc `?excludeSourceKind, ?excludeSourceId`** — bez
   vyloučení vlastní úhrady by reaccount routované transakce spočítal
   reziduum 0 a vrátil ji na clearing (rozpor s testem 4). Engine předává

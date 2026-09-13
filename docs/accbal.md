@@ -389,7 +389,7 @@ chyba).
 
 > **Nahrazeno (#69, 2026-09-13):** §5 a rozhodnutí #13–#17 nahrazují
 > rozhodnutí D1–D8 v issue #69. Platný stav po T1: spárovanost nenese
-> `operation` (matched operace zrušeny), routing clearing ↔ 311/321 dělá
+> `operation` (matched operace zrušeny), routing clearing ↔ účet předpisu dělá
 > `BankTransactionAccountingEngine` přes `OpenItemLookup` (`bank.md` §6.1),
 > „platba dřív než faktura" řeší `ClearingRerouteHandler` +
 > `ClearingRouter` (rozhodnutí #19), allocations se nezapisují. Aktuální je
@@ -795,8 +795,11 @@ explicitní case entita, partner resolution při ingestaci.
     `BankTransactionAccountingEngine` dohledáním otevřeného předpisu přes
     `OpenItemLookup` (rozhraní v core, implementace `LedgerOpenItemLookup`
     v accbal, registrace `openItemLookup` v module.jsonc): klíč (partner, VS,
-    SS, měna) + směr → skupina z nastavení saldokont (přirozený řádek předpisu
-    311 / 321), reziduum Σ předpisy − Σ úhrady > 0 (vlastní transakce
+    SS, měna) + směr → skupiny z nastavení saldokont (řádek předpisu na
+    přirozené straně směru: příjem MD, výdaj DAL; cílem **všechny** předpisové
+    účty těchto skupin — na seedu 311, resp. 321/325/331/336/341/342/345/379 —
+    ne jen 311/321, upřesnění po ověření 2026-09-13; dobropisové řádky
+    s `modify_sign` mimo hru), reziduum Σ předpisy − Σ úhrady > 0 (vlastní transakce
     vyloučena → reaccount idempotentní, bez paměti), prázdný VS = miss,
     přeplatek se routuje. `operation` spárovanost nenese, matched operace
     zrušeny. „Platba dřív než faktura": `ClearingRerouteHandler` (za

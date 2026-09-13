@@ -236,7 +236,7 @@ převody nemají — po zaúčtování obou stran má 261100 z převodů nulový
 zůstatek, což je zároveň kontrola.
 
 `payment.receivable` / `payment.payable` jsou protějšek bankovních úhrad
-routovaných na 311/321 (`OpenItemLookup`, #69 D3): `rowSide: 0`,
+routovaných na účet předpisu (`OpenItemLookup`, #69 D3): `rowSide: 0`,
 `rowPartner`, `rowPaymentId`, `identityRequired` — partner řádku =
 dlužník/věřitel, `payment_reference` = VS / číslo hrazené faktury. Deník pak
 nese identitu řádku a `LedgerGenerator` z něj udělá úhradu v saldokontu
