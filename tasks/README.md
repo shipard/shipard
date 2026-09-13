@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 278 tasků: **naplánováno** 4 · **částečně** 12 · **hotovo** 262.
+Celkem 279 tasků: **naplánováno** 5 · **částečně** 12 · **hotovo** 262.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,6 +27,7 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
+| `bank-payment-routing.md` | naplánováno | T1 revize saldokonta (#69, D3/D4/D8) |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
@@ -244,6 +245,7 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `accbal-ledger-viewgroup-chips.md` | — | Saldo pohyby: chip bar saldokont místo roletky (viewGroups z dat) |
 | `accbal-nav-items.md` | — | Saldokonta v sidebaru — navigation providery + `show_in_navigation` |
 | `accbal-ledger-grid.md` | — | Saldo pohyby: grid layout se skupinami per partner + footer v HC |
+| `bank-payment-routing.md` | #69 T1 | Účet úhrady dohledáním otevřeného předpisu (D3), přeúčtování clearingu po vzniku předpisu (D4), matched operace pryč |
 
 ## Došlá pošta (core.mail)
 
