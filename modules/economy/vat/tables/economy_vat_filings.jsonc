@@ -64,6 +64,22 @@
             "cfgItem": "economy.vat.filingKinds"
         },
         {
+            // Původ podání (#55 D34): `composed` = sestaveno v Shipardu,
+            // `imported` = importováno ze starého systému (podané hodnoty
+            // z původního XML, soubory = původní přílohy, nic se negeneruje).
+            // Nastavuje jen importní služba, po podání zmrazené.
+            "id": "origin",
+            "name": "Origin",
+            "name:cs": "Původ",
+            "name:en": "Origin",
+            "type": "enumString",
+            "length": 10,
+            "nullable": false,
+            "default": "composed",
+            "cfgItem": "economy.vat.filingOrigins",
+            "system": true
+        },
+        {
             // Pořadí v instanci; 1 = první řádné. Přiděluje FilingDocument
             // jako max + 1 přes všechna podání instance včetně zrušených —
             // číslo se nikdy neopakuje.

@@ -24,6 +24,7 @@ Fáze 2 je jen deklaruje, plní je Fáze 3.
 | `report_period` | int, reference `economy_vat_report_periods` | Instance tvrzení — kotva podání |
 | `report_type` | enumString(10), cfgItem `economy.vat.reportTypes` | Denormalizace typu z instance (viewer, indexy); `FilingDocument` ji plní a hlídá shodu |
 | `filing_kind` | enumString(15), cfgItem `economy.vat.filingKinds` | `regular` / `corrective` / `supplementary` / `subsequent`; povolené druhy per typ říká `reportTypes.{type}.filingKinds` v `vat-reports-cz.jsonc` |
+| `origin` | enumString(10) default `composed`, cfgItem `economy.vat.filingOrigins`, system | `composed` = sestaveno v Shipardu, `imported` = importováno ze starého systému (#55 D34, `FilingImportService`): podané hodnoty přiznání z původního XML, soubory = původní přílohy, přechod do Podáno XML nevaliduje ani negeneruje, přesestavit nejde. Po podání zmrazené |
 | `sequence` | smallint default 1, system | Pořadí v instanci (1 = první řádné); max + 1 přes všechna podání včetně zrušených |
 | `name` | varchar(80), system | `"{název instance} — {druh} {pořadí}"`, skládá `FilingDocument` |
 | `date_issue` | date | Sestaveno |
@@ -79,6 +80,13 @@ Vynucuje [FilingDocument](../src/FilingDocument.php):
   systémových tabulkách (`beforeDelete`); `previous_filing` na mazatelné
   podání nikdy nemíří, takže nezůstane visící odkaz.
 - Přechody stavů běží přes Document (`stateTransitionsRunDocumentHooks`).
+- **Importované podání** (`origin = imported`, #55 D34): dodaný `name` se
+  nepřepisuje, `acc_document` smí dostat už koncept (importní transakce),
+  pravidla pořadí druhů se nevynucují (starý systém mohl podat řádné po
+  ručně podaném — importní služba zapíše `imported_order_irregular`),
+  `draft_exists` platí dál; přechod do Podáno **nevaliduje XML ani
+  negeneruje soubory** — původní přílohy jsou pravda a
+  `FilingFilesService::generate()` je pro import odmítne.
 
 ## Související
 

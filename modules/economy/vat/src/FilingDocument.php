@@ -28,6 +28,12 @@ use Shipard\Core\Logging\ErrorLogger;
  * podání je zmrazené stejně (stav je `readOnly`); zrušený koncept se
  * nevrací, sestaví se nový.
  *
+ * Import ze starého systému (`origin = imported`, #55 D34–D37) zrcadlí
+ * cizí podání: dodaný název se neskládá, účetní doklad smí dostat už
+ * koncept, pořadí druhů se nevynucuje a přechod do Podáno XML nevaliduje
+ * ani negeneruje — původní přílohy jsou pravda. Zakládá ho výhradně
+ * `Import\FilingImportService`.
+ *
  * DB dotazy jsou v protected metodách, aby šly v testech přepsat bez
  * mockování dibi.
  */
@@ -57,6 +63,12 @@ class FilingDocument extends Document
     /** Dodatečné přiznání: rozdíly proti předchozímu podání + ř. 66. */
     public const KIND_SUPPLEMENTARY = 'supplementary';
 
+    /** Původ podání (`origin`, #55 D34): sestaveno v Shipardu. */
+    public const ORIGIN_COMPOSED = 'composed';
+
+    /** Původ podání: importováno ze starého systému — viz docblock třídy. */
+    public const ORIGIN_IMPORTED = 'imported';
+
     /** Typ účetního dokladu přiznání (`acc_document`, #55 D28–D31). */
     public const ACC_DOCUMENT_TYPE = 'cmnbkp';
 
@@ -71,17 +83,17 @@ class FilingDocument extends Document
      * přechodu. Mimo ně zbývá jen `note` — jediné, co smí přibýt k už
      * podanému tvrzení.
      */
+    private const FROZEN_COLUMNS = [
+        'report_period', 'report_type', 'filing_kind', 'origin', 'sequence', 'name',
+        'date_issue', 'date_filed', 'date_found', 'previous_filing',
+        'header', 'result', 'messages',
+    ];
+
     /**
      * Snapshot je potřeba (pře)sestavit — nastaví `beforeSave`, provede
      * `afterPersist` uvnitř save transakce.
      */
     private bool $composeNeeded = false;
-
-    private const FROZEN_COLUMNS = [
-        'report_period', 'report_type', 'filing_kind', 'sequence', 'name',
-        'date_issue', 'date_filed', 'date_found', 'previous_filing',
-        'header', 'result', 'messages',
-    ];
 
     /**
      * Hlavička podání má jinou sadu polí pro přiznání, kontrolní a souhrnné
@@ -171,11 +183,12 @@ class FilingDocument extends Document
             $data['date_filed'] = date('Y-m-d');
         }
 
-        // Název se skládá jen u konceptu (nebo když ještě žádný není —
-        // import zakládá podání rovnou v jiném stavu). Podanému podání by
-        // ho jinak přepsal každý save a při jiném jazyce požadavku
-        // i přeložil, ačkoli je to zmrazený údaj.
-        if ($period !== null && ($state === self::DOC_STATE_COMPOSED || empty($effective['name']))) {
+        // Název se skládá jen u konceptu (nebo když ještě žádný není).
+        // Podanému podání by ho jinak přepsal každý save a při jiném
+        // jazyce požadavku i přeložil, ačkoli je to zmrazený údaj. Import
+        // nese název ze starého systému (#55 D35) — ten se neskládá.
+        $keepName = $this->isImported($effective) && !empty($effective['name']);
+        if ($period !== null && !$keepName && ($state === self::DOC_STATE_COMPOSED || empty($effective['name']))) {
             $data['name'] = $this->composeName((string) ($period['name'] ?? ''), $kind, $sequence);
         }
 
@@ -258,7 +271,8 @@ class FilingDocument extends Document
             return $result;
         }
 
-        $state = (int) ($effective['docState'] ?? self::DOC_STATE_COMPOSED);
+        $state    = (int) ($effective['docState'] ?? self::DOC_STATE_COMPOSED);
+        $imported = $this->isImported($effective);
 
         // Podané (i zrušené) podání je zmrazené — jediná povolená změna je
         // poznámka. Kontrola běží před vším ostatním: u zmrazeného záznamu
@@ -293,13 +307,17 @@ class FilingDocument extends Document
         }
 
         // Koncept účetní doklad nemá — vzniká až akcí nad podaným podáním.
+        // Výjimka je import (#55 D37): starý systém měl doklad k podání,
+        // které se teprve zakládá, takže FK smí do konceptu — ale jen na
+        // živý cmnbkp, stejně jako u podaného.
         if (!empty($data['acc_document'])) {
-            $result->addError(
-                'acc_document',
-                'Účetní doklad lze přiřadit jen k podanému podání.',
-                'invalid_state',
-            );
-            return $result;
+            $error = $imported
+                ? $this->accDocumentError($data['acc_document'], $current['acc_document'] ?? null)
+                : ['Účetní doklad lze přiřadit jen k podanému podání.', 'invalid_state'];
+            if ($error !== null) {
+                $result->addError('acc_document', $error[0], $error[1]);
+                return $result;
+            }
         }
 
         $this->validateFilingKind($result, $effective, $type, $kind);
@@ -308,7 +326,7 @@ class FilingDocument extends Document
         }
 
         if ($state !== self::DOC_STATE_CANCELLED) {
-            $this->validateOrder($result, $periodId, $selfId, $state, $kind);
+            $this->validateOrder($result, $periodId, $selfId, $state, $kind, $imported);
         }
 
         // Podat lze jen sestavené podání — snapshot je to, co se podává.
@@ -322,15 +340,39 @@ class FilingDocument extends Document
                     'Podání ještě nemá sestavený snapshot — nejdřív ho přepočítejte.',
                     'not_composed',
                 );
-            } elseif ($selfId !== null) {
+            } elseif ($selfId !== null && !$imported) {
                 // Soubor pro daňový portál vzniká při podání (#55 X6), takže
                 // se nedovyplněná hlavička musí ukázat **teď** — po přechodu
                 // je podání zmrazené a opravit by ho šlo jen novým podáním.
+                // Import soubory negeneruje (původní XML je pravda), hlavičku
+                // z roku 2016 by dnešní pravidla ani nemusela pustit.
                 $this->validateXml($result, $selfId);
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Původ podání z efektivních hodnot (payload + uložený řádek) — u
+     * částečné aktualizace ho nese jen DB.
+     *
+     * @param array<string, mixed> $effective
+     */
+    private function isImported(array $effective): bool
+    {
+        return (string) ($effective['origin'] ?? '') === self::ORIGIN_IMPORTED;
+    }
+
+    /**
+     * Porušuje druh podání pořadí D18? Řádné je jen jedno (dokud není nic
+     * podané), ostatní druhy navazují na podané. U sestaveného podání je to
+     * chyba, u importu jen zpráva `imported_order_irregular` — proto je
+     * pravidlo veřejné a sdílené s `Import\FilingImportService`.
+     */
+    public static function isOrderIrregular(string $kind, bool $hasFiled): bool
+    {
+        return $kind === self::KIND_REGULAR ? $hasFiled : !$hasFiled;
     }
 
     /**
@@ -371,6 +413,12 @@ class FilingDocument extends Document
             || (int) ($data['docState'] ?? 0) !== self::DOC_STATE_FILED
             || empty($data['id'])
         ) {
+            return;
+        }
+        // Import soubory negeneruje — původní přílohy jsou pravda (#55 D34).
+        // Payload přechodu může být částečný, původ pak nese uložený řádek.
+        $origin = $data['origin'] ?? $this->loadCurrent((int) $data['id'])['origin'] ?? null;
+        if ((string) $origin === self::ORIGIN_IMPORTED) {
             return;
         }
         $this->generateFiles((int) $data['id']);
@@ -451,29 +499,31 @@ class FilingDocument extends Document
         }
     }
 
-    /** Pravidla pořadí druhů a jediný živý koncept v instanci (D18). */
+    /**
+     * Pravidla pořadí druhů a jediný živý koncept v instanci (D18).
+     *
+     * Import pořadí nevynucuje (#55 D35): starý systém mohl podat řádné až
+     * po ručně podaném tvrzení; nesrovnalost zapíše importní služba do
+     * zpráv. Jediný živý koncept platí i pro import — do instance
+     * s rozdělaným podáním se neimportuje.
+     */
     private function validateOrder(
         ValidationResult $result,
         int $periodId,
         ?int $selfId,
         int $state,
         string $kind,
+        bool $imported,
     ): void {
         $hasFiled = $this->lastFiledFiling($periodId, $selfId) !== null;
 
-        if ($kind === self::KIND_REGULAR) {
-            if ($hasFiled) {
-                $result->addError(
-                    'filing_kind',
-                    'Řádné podání je za tvrzení jen jedno — po podaném řádném následuje opravné,'
-                    . ' dodatečné nebo následné.',
-                    'invalid_value',
-                );
-            }
-        } elseif (!$hasFiled) {
+        if (!$imported && self::isOrderIrregular($kind, $hasFiled)) {
             $result->addError(
                 'filing_kind',
-                'Tento druh podání navazuje na už podané tvrzení — nejdřív podejte řádné podání.',
+                $kind === self::KIND_REGULAR
+                    ? 'Řádné podání je za tvrzení jen jedno — po podaném řádném následuje opravné,'
+                        . ' dodatečné nebo následné.'
+                    : 'Tento druh podání navazuje na už podané tvrzení — nejdřív podejte řádné podání.',
                 'invalid_value',
             );
         }

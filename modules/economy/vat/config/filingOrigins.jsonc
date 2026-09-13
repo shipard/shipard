@@ -1,0 +1,21 @@
+{
+    // economy.vat.filingOrigins — původ podání (economy_vat_filings.origin,
+    // #55 D34).
+    //
+    //   composed  sestaveno v Shipardu: snapshot z composeru, XML pro EPO
+    //             vzniká při podání, podané hodnoty jsou zaokrouhlené přesné
+    //   imported  importováno ze starého systému: snapshot je composer nad
+    //             dnešními doklady, podané hodnoty přiznání přepsané z
+    //             původního XML, soubory jsou původní přílohy (nic se
+    //             negeneruje), přesestavit ani načíst hlavičku nejde
+    "composed": {
+        "name": "Composed",
+        "name:cs": "Sestaveno",
+        "name:en": "Composed"
+    },
+    "imported": {
+        "name": "Imported",
+        "name:cs": "Importováno",
+        "name:en": "Imported"
+    }
+}

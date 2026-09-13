@@ -27,6 +27,13 @@ final class FilingFilesService
     public const KIND_PREVIEW = 'epo-preview';
     public const KIND_CONTENT = 'epo-content';
 
+    /**
+     * Původní soubor importovaného podání, který není XML (opis, obsah —
+     * #55 D36). Nese prefix vlastních souborů, aby ho po podání chránil
+     * `FilingAttachmentGuard` stejně jako generované.
+     */
+    public const KIND_IMPORTED = 'epo-imported';
+
     /** Prefix, podle kterého se poznají vlastní soubory podání. */
     public const KIND_PREFIX = 'epo-';
 
@@ -47,6 +54,17 @@ final class FilingFilesService
      */
     public function generate(int $filingId, bool $xmlOnly = false, ?int $userId = null): FilingFilesResult
     {
+        // Importované podání má původní soubory ze starého systému (#55 D34)
+        // — generovat vedle nich nový soubor nedává smysl a u konceptu by
+        // se originály navíc smazaly. `build()` zůstává (diff pro D39).
+        $filing = $this->filingRow($filingId);
+        if ((string) ($filing['origin'] ?? '') === FilingDocument::ORIGIN_IMPORTED) {
+            throw new \DomainException(
+                "Podání #{$filingId} je importované ze starého systému — jeho soubory jsou původní přílohy,"
+                . ' nové se negenerují.',
+            );
+        }
+
         $result = $this->build($filingId, $xmlOnly);
         if ($this->attachments === null) {
             return $result;
@@ -54,7 +72,7 @@ final class FilingFilesService
 
         // Přegenerování konceptu nahrazuje předchozí sadu; podané podání
         // svoje soubory nikdy nepřepisuje (dogenerují se jen chybějící).
-        if ($this->filingState($filingId) === FilingDocument::DOC_STATE_COMPOSED) {
+        if ((int) ($filing['docState'] ?? 0) === FilingDocument::DOC_STATE_COMPOSED) {
             $this->deleteOwnAttachments($filingId);
         }
 
@@ -179,13 +197,18 @@ final class FilingFilesService
         );
     }
 
-    private function filingState(int $filingId): int
+    /** @return array{docState: int, origin: string} */
+    private function filingRow(int $filingId): array
     {
-        return (int) $this->db->fetchSingle(
-            'SELECT [docState] FROM %n WHERE [id] = %i',
+        $row = $this->db->fetch(
+            'SELECT [docState], [origin] FROM %n WHERE [id] = %i',
             FilingDocument::TABLE,
             $filingId,
         );
+        if ($row === null) {
+            throw new \DomainException("Podání #{$filingId} nenalezeno");
+        }
+        return ['docState' => (int) $row['docState'], 'origin' => (string) $row['origin']];
     }
 
     private function deleteOwnAttachments(int $filingId): void

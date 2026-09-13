@@ -123,6 +123,8 @@
         { "id": "economy.vat.xml.cz", "file": "config/vat-xml-cz.jsonc" },
         { "id": "economy.vat.reportTypes", "file": "config/reportTypes.jsonc" },
         { "id": "economy.vat.filingKinds", "file": "config/filingKinds.jsonc" },
+        // Původ podání — sestaveno vs. importováno ze starého systému (#55 D34).
+        { "id": "economy.vat.filingOrigins", "file": "config/filingOrigins.jsonc" },
         { "id": "economy.vat.docStatesFilings", "file": "config/docStatesFilings.jsonc" },
 
         // Profil podatele — schéma strukturovaného pole a jeho číselníky (#74).

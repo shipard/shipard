@@ -1,6 +1,6 @@
 # Task: Import starých podání DPH — `POST /_vat/filing-import`, `origin`, override podaných hodnot z XML (#55 D21, D32–D39)
 
-**Stav:** k implementaci — 2026-09-13. Protějšek: `old_shipard`
+**Stav:** naplánováno — 2026-09-13. Protějšek: `old_shipard`
 `modules/imports/newShipard/tasks/37-vat-filings-import.md` (runner). Nasazení:
 nejdřív tato strana (`ds-upgrade`: sloupec `origin`), pak runner; ověření
 `ds-reset` + reimport `btpg-p` (D39).

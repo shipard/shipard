@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Economy\Vat;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\ValidationError;
+use Shipard\Core\Document\ValidationResult;
 use Shipard\Core\I18n\ConfigLocalizer;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\Vat\FilingDocument;
@@ -29,6 +30,14 @@ final class TestableFilingDocument extends FilingDocument
 
     /** @var array<int, array<string, mixed>> id dokladu → {id, doc_type, docState} */
     public array $heads = [];
+
+    /** @var list<int> id podání, u kterých přechod do Podáno validoval XML */
+    public array $xmlValidated = [];
+
+    protected function validateXml(ValidationResult $result, int $filingId): void
+    {
+        $this->xmlValidated[] = $filingId;
+    }
 
     protected function loadHead(int $headId): ?array
     {
@@ -142,6 +151,7 @@ final class FilingDocumentTest extends TestCase
     {
         return array_merge([
             'id' => 1, 'report_period' => 7, 'report_type' => 'return', 'filing_kind' => 'regular',
+            'origin' => FilingDocument::ORIGIN_COMPOSED,
             'sequence' => 1, 'name' => '04/2026 — Řádné 1', 'date_issue' => '2026-05-02',
             'date_filed' => '2026-05-04', 'date_found' => null, 'previous_filing' => null,
             'header' => null, 'result' => '{"row64":260864}', 'messages' => null, 'note' => null,
@@ -634,5 +644,97 @@ final class FilingDocumentTest extends TestCase
         $doc  = $this->docWithHeads([1 => $this->filedRow(['acc_document' => 5])], [5 => $this->head(5, 'cmnbkp', 40)]);
         $data = $this->filedRow(['acc_document' => 5, 'note' => 'zaúčtováno']);
         $this->assertTrue($doc->validate($data)->isValid());
+    }
+
+    // ── Import ze starého systému (origin = imported, #55 D34–D37) ───────
+
+    public function testImportedFilingSkipsXmlValidationOnTransition(): void
+    {
+        $draft = $this->filedRow(['docState' => FilingDocument::DOC_STATE_COMPOSED, 'origin' => FilingDocument::ORIGIN_IMPORTED]);
+        $doc   = $this->doc('return', [1 => $draft]);
+        $data  = $this->filedRow(['origin' => FilingDocument::ORIGIN_IMPORTED]);
+        $this->assertTrue($doc->validate($data)->isValid());
+        $this->assertSame([], $doc->xmlValidated, 'import XML nevaliduje — původní soubor je pravda');
+
+        // Částečný payload přechodu (bez origin) — původ nese uložený řádek.
+        $data = ['id' => 1, 'docState' => FilingDocument::DOC_STATE_FILED];
+        $this->assertTrue($doc->validate($data)->isValid());
+        $this->assertSame([], $doc->xmlValidated);
+
+        // Sestavené podání validuje dál.
+        $doc  = $this->doc('return', [1 => $this->filedRow(['docState' => FilingDocument::DOC_STATE_COMPOSED])]);
+        $data = $this->filedRow();
+        $this->assertTrue($doc->validate($data)->isValid());
+        $this->assertSame([1], $doc->xmlValidated);
+    }
+
+    public function testImportedFilingIgnoresKindOrderButKeepsDraftGuard(): void
+    {
+        // Řádné po podaném — u importu jen zpráva, ne chyba (starý systém
+        // mohl podat řádné až po ručně podaném tvrzení).
+        $doc  = $this->doc('return', [1 => $this->filedRow()]);
+        $data = $this->newFiling(['origin' => FilingDocument::ORIGIN_IMPORTED]);
+        $this->assertTrue($doc->validate($data)->isValid());
+        $this->assertTrue(FilingDocument::isOrderIrregular('regular', true));
+
+        // Dodatečné bez podaného — totéž.
+        $data = $this->newFiling([
+            'origin' => FilingDocument::ORIGIN_IMPORTED, 'filing_kind' => 'supplementary', 'date_found' => '2019-09-01',
+        ]);
+        $this->assertTrue($this->doc()->validate($data)->isValid());
+        $this->assertTrue(FilingDocument::isOrderIrregular('supplementary', false));
+        $this->assertFalse(FilingDocument::isOrderIrregular('supplementary', true));
+        $this->assertFalse(FilingDocument::isOrderIrregular('regular', false));
+
+        // Živý koncept v instanci import odmítne — přerušený běh se dokončí, ne zdvojí.
+        $doc  = $this->doc('return', [3 => $this->filedRow(['id' => 3, 'docState' => FilingDocument::DOC_STATE_COMPOSED])]);
+        $data = $this->newFiling(['origin' => FilingDocument::ORIGIN_IMPORTED]);
+        $result = $doc->validate($data);
+        $this->assertFalse($result->isValid());
+        $this->assertSame('draft_exists', $result->toArray()[0]['code']);
+    }
+
+    public function testImportedDraftAcceptsLiveAccDocumentOnly(): void
+    {
+        $doc  = $this->docWithHeads([], [5 => $this->head(5), 8 => $this->head(8, 'cmnbkp', 90)]);
+        $data = $this->newFiling(['origin' => FilingDocument::ORIGIN_IMPORTED, 'acc_document' => 5]);
+        $this->assertTrue($doc->validate($data)->isValid(), 'import smí navázat doklad už na koncept (D37)');
+
+        $data   = $this->newFiling(['origin' => FilingDocument::ORIGIN_IMPORTED, 'acc_document' => 8]);
+        $result = $doc->validate($data);
+        $this->assertFalse($result->isValid());
+        $this->assertSame('acc_document', $result->toArray()[0]['column']);
+        $this->assertSame('invalid_value', $result->toArray()[0]['code']);
+
+        // Sestavený koncept doklad pořád nemá.
+        $data   = $this->newFiling(['acc_document' => 5]);
+        $result = $doc->validate($data);
+        $this->assertFalse($result->isValid());
+        $this->assertSame('invalid_state', $result->toArray()[0]['code']);
+    }
+
+    public function testOriginIsFrozenAfterFiling(): void
+    {
+        $doc    = $this->doc('return', [1 => $this->filedRow()]);
+        $data   = $this->filedRow(['origin' => FilingDocument::ORIGIN_IMPORTED]);
+        $result = $doc->validate($data);
+        $this->assertFalse($result->isValid());
+        $this->assertSame('origin', $result->toArray()[0]['column']);
+        $this->assertSame('immutable', $result->toArray()[0]['code']);
+    }
+
+    public function testBeforeSaveKeepsImportedName(): void
+    {
+        $doc  = $this->doc();
+        $data = $this->newFiling(['origin' => FilingDocument::ORIGIN_IMPORTED, 'name' => 'Přiznání DPH 2019/8']);
+        $doc->beforeSave($data, null);
+        $this->assertSame('Přiznání DPH 2019/8', $data['name'], 'název ze starého systému (D35)');
+        $this->assertSame(1, $data['sequence']);
+        $this->assertSame('return', $data['report_type']);
+
+        // Bez dodaného názvu se skládá jako u sestaveného.
+        $data = $this->newFiling(['origin' => FilingDocument::ORIGIN_IMPORTED]);
+        $doc->beforeSave($data, null);
+        $this->assertSame('04/2026 — Řádné 1', $data['name']);
     }
 }
