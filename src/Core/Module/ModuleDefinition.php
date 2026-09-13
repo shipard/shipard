@@ -30,6 +30,7 @@ class ModuleDefinition
         public readonly array $reports = [],
         public readonly array $attachmentGuards = [],
         public readonly array $documentLockProviders = [],
+        public readonly ?string $openItemLookup = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -242,6 +243,21 @@ class ModuleDefinition
             }
         }
 
+        // openItemLookup — poskytovatel dohledání otevřeného předpisu
+        // saldokonta pro bankovní účtovací engine (rozhraní
+        // Shipard\Core\Accounting\OpenItemLookup, #69 D3/D8). Jeden per DS,
+        // proto holý FQCN, ne seznam; instanciaci a unikátnost napříč moduly
+        // hlídá OpenItemLookupLoader.
+        $openItemLookup = null;
+        if (array_key_exists('openItemLookup', $data)) {
+            if (!is_string($data['openItemLookup']) || $data['openItemLookup'] === '') {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': openItemLookup must be a non-empty class name",
+                );
+            }
+            $openItemLookup = $data['openItemLookup'];
+        }
+
         // navigationProviders — třídy dodávající dynamické položky hlavní
         // navigace z dat (NavigationItemsProvider). Registrace je jen {class};
         // instancování a merge dělá NavigationController.
@@ -328,6 +344,7 @@ class ModuleDefinition
             reports: $reports,
             attachmentGuards: $attachmentGuards,
             documentLockProviders: $documentLockProviders,
+            openItemLookup: $openItemLookup,
         );
     }
 

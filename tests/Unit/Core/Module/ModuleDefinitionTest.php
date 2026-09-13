@@ -665,4 +665,46 @@ class ModuleDefinitionTest extends TestCase
             'documentLockProviders' => [['class' => 'Foo\\Bar']],
         ]);
     }
+
+    // ── openItemLookup (#69 D3/D8) ──────────────────────────────────────────
+
+    public function testOpenItemLookupParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.accbal',
+            'name' => 'Open items',
+            'openItemLookup' => 'Shipard\\Module\\Economy\\Accbal\\LedgerOpenItemLookup',
+        ]);
+
+        $this->assertSame('Shipard\\Module\\Economy\\Accbal\\LedgerOpenItemLookup', $def->openItemLookup);
+    }
+
+    public function testOpenItemLookupAbsentDefaultsToNull(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons']);
+
+        $this->assertNull($def->openItemLookup);
+    }
+
+    public function testOpenItemLookupEmptyThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('openItemLookup must be a non-empty class name');
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.accbal',
+            'name' => 'Open items',
+            'openItemLookup' => '',
+        ]);
+    }
+
+    public function testOpenItemLookupNonStringThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('openItemLookup must be a non-empty class name');
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.accbal',
+            'name' => 'Open items',
+            'openItemLookup' => ['class' => 'Foo\\Bar'],
+        ]);
+    }
 }

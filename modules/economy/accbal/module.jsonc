@@ -77,6 +77,10 @@
         }
     ],
 
+    // Dohledání otevřeného předpisu pro bankovní účtovací engine (#69 D3/D8):
+    // účet úhrady = účet předpisu při zásahu klíče, jinak clearing.
+    "openItemLookup": "Shipard\\Module\\Economy\\Accbal\\LedgerOpenItemLookup",
+
     "documentEventHandlers": [
         {
             "table": "docs_core_heads",
