@@ -9,9 +9,10 @@ use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
  * LedgerOpenItemLookup nad reálným DS (seed saldokont: receivables 311,
- * payables 321, unmatched_payments 261200/261300). Pohyby se seedují přímo
- * do ledgeru (izolace od enginů) — ověřuje se SQL sémantika klíče: přesná
- * shoda, SS, měna, směr → skupina, clearing mimo hru, vyloučení zdroje.
+ * payables 321/325/331/336/…, unmatched_payments 261200/261300). Pohyby se
+ * seedují přímo do ledgeru (izolace od enginů) — ověřuje se SQL sémantika
+ * klíče: přesná shoda, SS, měna, směr → skupiny a všechny jejich předpisové
+ * účty, dobropisové řádky mimo hru, clearing mimo hru, vyloučení zdroje.
  */
 class LedgerOpenItemLookupTest extends IntegrationTestCase
 {
@@ -22,6 +23,8 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
     private array $seededDocs = [];
     /** @var list<int> */
     private array $seededTxs = [];
+    /** @var list<int> dočasné řádky nastavení saldokont (balance_accounts) */
+    private array $seededSettings = [];
     private int $seq = 0;
 
     protected function onTearDown(): void
@@ -32,6 +35,9 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         }
         foreach ($this->seededTxs as $id) {
             $dibi->delete('economy_accbal_ledger')->where('bank_transaction = %i', $id)->execute();
+        }
+        foreach ($this->seededSettings as $id) {
+            $dibi->delete('economy_accbal_balance_accounts')->where('id = %i', $id)->execute();
         }
     }
 
@@ -101,6 +107,47 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->assertSame('321100', $item->accountNumber);
     }
 
+    public function testPayableRequestOnAnyGroupAccountIsFound(): void
+    {
+        $pay = $this->balanceId('payables');
+        $this->seedRequest($pay, '336101', 2500.00);
+
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2);
+
+        $this->assertNotNull($item, 'cílem jsou všechny předpisové účty skupiny, ne jen 321');
+        $this->assertSame($pay, $item->balance);
+        $this->assertSame('336101', $item->accountNumber);
+        $this->assertEqualsWithDelta(2500.00, $item->residual, 0.001);
+    }
+
+    public function testReceivableRequestOnSettingsPrefixIsFound(): void
+    {
+        $recv = $this->balanceId('receivables');
+        $this->seedBalanceAccount($recv, '315', 0);
+        $this->seedRequest($recv, '315100', 900.00);
+
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1);
+
+        $this->assertNotNull($item, 'prefix cíle plyne z nastavení skupiny, ne z kódu');
+        $this->assertSame($recv, $item->balance);
+        $this->assertSame('315100', $item->accountNumber);
+    }
+
+    public function testRequestOutsideGroupRequestPrefixesIsIgnored(): void
+    {
+        $recv = $this->balanceId('receivables');
+        $pay  = $this->balanceId('payables');
+        // Dobropisové řádky (modify_sign): dobropis závazku jako předpis 321
+        // v Pohledávkách, dobropis pohledávky jako předpis 311 v Závazcích
+        // (ten seed skutečně má). Pro směr se nesmí vybrat — dnešní chování.
+        $this->seedRequest($recv, '321100', 400.00);
+        $this->seedRequest($pay, '311100', 400.00);
+        $lookup = $this->lookup();
+
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1), 'příjem: 321 není předpisový účet Pohledávek');
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2), 'výdaj: dobropisový řádek 311 v Závazcích mimo hru');
+    }
+
     public function testClearingPaymentDoesNotReduceResidual(): void
     {
         $recv = $this->balanceId('receivables');
@@ -151,6 +198,27 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
             $this->markTestSkipped("DS nemá naseedované saldokonto '{$code}'");
         }
         return (int) $row['id'];
+    }
+
+    /** Dočasný řádek nastavení: předpis skupiny na prefixu, kladné částky bez otočení znaménka. */
+    private function seedBalanceAccount(int $balance, string $prefix, int $accSide): int
+    {
+        $dibi = $this->db->getDibiConnection();
+        $dibi->insert('economy_accbal_balance_accounts', [
+            'balance'        => $balance,
+            'account_number' => $prefix,
+            'acc_side'       => $accSide,
+            'amounts_sign'   => 1,
+            'bal_side'       => 0,
+            'modify_sign'    => 0,
+            'note'           => 'IT lookup ' . $prefix,
+            'sort_order'     => 900,
+            'docState'       => 40,
+            'docStateMain'   => 3,
+        ])->execute();
+        $id = (int) $dibi->getInsertId();
+        $this->seededSettings[] = $id;
+        return $id;
     }
 
     /** @param array<string, mixed> $over */

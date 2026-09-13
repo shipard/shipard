@@ -30,8 +30,9 @@ interface OpenItemLookup
      * Prázdný SS na úhradě sedí jen na prázdný SS předpisu. Porovnání je
      * necitlivé na okrajové mezery a velikost písmen měny.
      *
-     * $direction: 1 = příjem → předpis v pohledávkách (přirozený účet 311*),
-     * 2 = výdaj → závazky (321*). Otevřený = Σ předpisy − Σ úhrady pro klíč
+     * $direction: 1 = příjem → předpis vzniklý na MD (typicky pohledávky,
+     * 311*), 2 = výdaj → předpis na DAL (závazky 321*, ale i 325/331/336/…
+     * podle nastavení saldokont). Otevřený = Σ předpisy − Σ úhrady pro klíč
      * > 0 v měně dokladu.
      *
      * $excludeSourceKind/$excludeSourceId: zdroj, jehož pohyby se do Σ úhrad

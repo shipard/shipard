@@ -125,6 +125,20 @@ class BankPaymentRoutingTest extends IntegrationTestCase
         $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'));
     }
 
+    public function testOutgoingPaymentRoutesToOtherPayableAccount(): void
+    {
+        $otherAccount = $this->ensureAccountByMask('336')['number'];
+        $this->ensureAccountByNumber('261300');
+        $this->seedRequest('payables', $otherAccount, 1500.00);
+
+        [$txId, $result] = $this->accountPayment(1500.00, ['direction' => 2, 'operation' => 'payment.out']);
+
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $this->assertSame($otherAccount, $this->counterpartyAccount($txId), 'předpis na 336 → úhrada na 336, ne na 261300');
+        $this->assertNotNull($this->ledgerMove($txId, 'payables'), 'ledger: úhrada v Závazcích');
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'));
+    }
+
     public function testOverpaymentStillRoutesToRequestAccount(): void
     {
         $this->seedRequest('receivables', $this->receivableAccount, 600.00);

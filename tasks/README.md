@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 279 tasků: **naplánováno** 4 · **částečně** 12 · **hotovo** 263.
+Celkem 281 tasků: **naplánováno** 5 · **částečně** 12 · **hotovo** 264.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,6 +25,7 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
+| `accbal-symbol-key.md` | naplánováno | T2 revize saldokonta (#69, D1); staví na T1 `bank-payment-routing.md` |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
@@ -245,6 +246,8 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `accbal-nav-items.md` | — | Saldokonta v sidebaru — navigation providery + `show_in_navigation` |
 | `accbal-ledger-grid.md` | — | Saldo pohyby: grid layout se skupinami per partner + footer v HC |
 | `bank-payment-routing.md` | #69 T1 | Účet úhrady dohledáním otevřeného předpisu (D3), přeúčtování clearingu po vzniku předpisu (D4), matched operace pryč |
+| `bank-payment-routing-accounts.md` | #69 T1 oprava | Lookup otevřeného předpisu přes všechny předpisové účty skupiny (336, 331, 315…), ne jen 311/321 |
+| `accbal-symbol-key.md` | #69 T2 | Případ = párovací klíč (agregát z ledgeru), odstranění alokační vrstvy a matcheru, viewer po případech, přepis `accbal.md` |
 
 ## Došlá pošta (core.mail)
 

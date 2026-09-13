@@ -20,7 +20,7 @@ use Shipard\Module\Economy\Bank\BankTransactionAccountingEngine;
  * {@see BankTransactionAccountingEngine::accountTransaction} — engine si
  * účet předpisu dohledá sám (týž lookup), deník přepíše a vyšle
  * `journalWritten` → LedgerGenerator clearing pohyb odebere a založí
- * úhradu na 311/321. Router tedy nic nerozhoduje dvakrát; lookup předem
+ * úhradu na účet předpisu. Router tedy nic nerozhoduje dvakrát; lookup předem
  * slouží jen k tomu, aby se nepřeúčtovávalo naprázdno a aby dry-run uměl
  * vypsat plán.
  *

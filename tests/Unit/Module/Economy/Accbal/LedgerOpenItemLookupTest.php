@@ -9,10 +9,11 @@ use Shipard\Core\Accounting\OpenItem;
 use Shipard\Module\Economy\Accbal\LedgerOpenItemLookup;
 
 /**
- * LedgerOpenItemLookup nad mockem Dibi: výběr cílové skupiny z nastavení
- * saldokont (přirozený řádek předpisu + slučitelný prefix), normalizace
- * klíče, reziduum Σ předpisy − Σ úhrady, vyloučení vlastního zdroje.
- * SQL sémantiku (přesná shoda klíče v DB) kryje integrační test.
+ * LedgerOpenItemLookup nad mockem Dibi: výběr cílových skupin z nastavení
+ * saldokont (řádky předpisu na přirozené straně směru, všechny jejich
+ * prefixy), normalizace klíče, reziduum Σ předpisy − Σ úhrady, vyloučení
+ * vlastního zdroje. SQL sémantiku (přesná shoda klíče v DB) kryje
+ * integrační test.
  */
 class LedgerOpenItemLookupTest extends TestCase
 {
@@ -24,8 +25,8 @@ class LedgerOpenItemLookupTest extends TestCase
 
     /**
      * Řádky nastavení, jak by je vrátil SQL filtr (bal_side 0, kladné, bez
-     * modify_sign) pro daný acc_side — vč. skupin s cizím prefixem (314/324),
-     * které musí odfiltrovat PHP.
+     * modify_sign) pro daný acc_side, v pořadí sort_order — skupiny záloh
+     * (314/324) jsou řádné cíle za Pohledávkami / Závazky.
      *
      * @var array<int, list<array{balance: int, account_number: string}>>
      */
@@ -186,7 +187,7 @@ class LedgerOpenItemLookupTest extends TestCase
 
     // ── Výběr cílové skupiny z nastavení ─────────────────────────────────────
 
-    public function testIncomingSearchesReceivablesOnly(): void
+    public function testIncomingSearchesGroupsWithRequestOnDebitSideInOrder(): void
     {
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
         $this->ledger[3] = [self::row(0, '314100', 10.00)];
@@ -194,51 +195,88 @@ class LedgerOpenItemLookupTest extends TestCase
         $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
 
         $this->assertNotNull($item);
-        $this->assertSame(self::RECEIVABLES, $item->balance);
+        $this->assertSame(self::RECEIVABLES, $item->balance, 'první skupina v pořadí nastavení vyhrává');
         $settings = $this->queries[0];
         $this->assertStringContainsString('economy_accbal_balance_accounts', $settings['sql']);
         $this->assertSame(0, $settings['params'][0], 'příjem → předpis vzniká na MD (acc_side 0)');
         $this->assertStringContainsString('a.[bal_side] = 0', $settings['sql']);
         $this->assertStringContainsString('a.[modify_sign] = 0', $settings['sql']);
         $this->assertStringContainsString('a.[amounts_sign] IN (0, 1)', $settings['sql']);
-        // 314 (zálohy) není slučitelné s 311 → jediný ledger dotaz, na Pohledávky.
-        $this->assertCount(2, $this->queries);
+        $this->assertCount(2, $this->queries, 'zásah v Pohledávkách → zálohy se už neprohledávají');
         $this->assertSame([self::RECEIVABLES, '311'], array_slice($this->ledgerQuery()['params'], 0, 2));
     }
 
-    public function testOutgoingSearchesPayablesWithNaturalPrefixOnly(): void
+    public function testIncomingFallsThroughToNextGroupWithRequestOnDebitSide(): void
     {
-        $this->ledger[self::PAYABLES] = [self::row(0, '321100', 10.00)];
+        $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 100.00), self::row(1, '311100', 100.00)];
+        $this->ledger[3] = [self::row(0, '314100', 10.00)];
+
+        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
+
+        $this->assertNotNull($item);
+        $this->assertSame(3, $item->balance, 'uzavřený klíč v Pohledávkách → poskytnuté zálohy (314 MD předpis)');
+        $this->assertSame('314100', $item->accountNumber);
+        $this->assertSame([3, '314'], array_slice($this->ledgerQuery(1)['params'], 0, 2));
+    }
+
+    public function testOutgoingSearchesAllRequestPrefixesOfGroup(): void
+    {
+        $this->ledger[self::PAYABLES] = [self::row(0, '325100', 10.00)];
 
         $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 2);
 
         $this->assertNotNull($item);
         $this->assertSame(self::PAYABLES, $item->balance);
-        $this->assertSame('321100', $item->accountNumber);
+        $this->assertSame('325100', $item->accountNumber, 'účet skutečného předpisu, ne jen 321');
         $this->assertSame(1, $this->queries[0]['params'][0], 'výdaj → předpis vzniká na DAL (acc_side 1)');
-        // 325 (v téže skupině) ani 324 (jiná skupina) nejsou slučitelné s 321.
-        $this->assertCount(2, $this->queries);
-        $this->assertSame([self::PAYABLES, '321'], array_slice($this->ledgerQuery()['params'], 0, 2));
+        $q = $this->ledgerQuery();
+        $this->assertSame([self::PAYABLES, '321', '325', 42, '1', '', 'czk'], $q['params']);
+        $this->assertStringContainsString(
+            '([account_number] LIKE %like~ OR [account_number] LIKE %like~)',
+            $q['sql'],
+            'jeden dotaz per skupina přes všechny její předpisové prefixy',
+        );
     }
 
-    public function testNarrowerSettingsPrefixNarrowsLedgerFilter(): void
+    public function testSettingsPrefixIsUsedVerbatim(): void
     {
-        $this->settings[0] = [['balance' => self::RECEIVABLES, 'account_number' => '3111']];
+        $this->settings[0] = [['balance' => self::RECEIVABLES, 'account_number' => ' 3111 ']];
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
 
         $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
 
-        $this->assertSame('3111', $this->ledgerQuery()['params'][1]);
+        $this->assertSame('3111', $this->ledgerQuery()['params'][1], 'prefix z nastavení (trim), bez rozšiřování na 311');
     }
 
-    public function testBroaderSettingsPrefixWidensToNaturalPrefix(): void
+    public function testBroaderSettingsPrefixIsNotWidened(): void
     {
         $this->settings[0] = [['balance' => self::RECEIVABLES, 'account_number' => '31']];
-        $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
+        $this->ledger[self::RECEIVABLES] = [self::row(0, '315100', 10.00)];
 
-        $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
 
-        $this->assertSame('311', $this->ledgerQuery()['params'][1]);
+        $this->assertSame('31', $this->ledgerQuery()['params'][1]);
+        $this->assertNotNull($item);
+        $this->assertSame('315100', $item->accountNumber);
+    }
+
+    public function testDuplicateAndEmptyPrefixesAreCollapsed(): void
+    {
+        $this->settings[0] = [
+            ['balance' => self::RECEIVABLES, 'account_number' => '311'],
+            ['balance' => self::RECEIVABLES, 'account_number' => '311'],
+            ['balance' => self::RECEIVABLES, 'account_number' => ''],
+            ['balance' => 7, 'account_number' => '   '],
+        ];
+        $this->ledger[self::RECEIVABLES] = [self::row(1, '311100', 10.00)];
+
+        $this->assertNull($this->lookup()->findOpenRequest(42, '1', '', 'czk', 1));
+        $ledgerQueries = array_values(array_filter(
+            $this->queries,
+            static fn(array $q) => str_contains($q['sql'], 'economy_accbal_ledger'),
+        ));
+        $this->assertCount(1, $ledgerQueries, 'skupina jen s prázdným prefixem není cíl');
+        $this->assertSame([self::RECEIVABLES, '311', 42], array_slice($ledgerQueries[0]['params'], 0, 3), 'duplicitní prefix jen jednou');
     }
 
     public function testFirstTargetWithResidualWins(): void

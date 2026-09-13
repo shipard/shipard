@@ -26,8 +26,9 @@ use Shipard\Module\Economy\Accounting\AccountMaskResolver;
  * Úhrady (`payment.in` / `payment.out`, kategorie `bank.unmatched.*`) mají
  * před maskou přednostní krok (#69 D3): má-li transakce partnera, engine
  * dohledá otevřený předpis pro klíč (partner, VS, SS, měna) přes
- * {@see OpenItemLookup} a položí úhradu přesně na účet předpisu (311xxx /
- * 321xxx). Miss → clearing dle masky (261200/261300). Spárovanost tedy
+ * {@see OpenItemLookup} a položí úhradu přesně na účet předpisu (311xxx,
+ * 321xxx, ale i 336xxx… — účty z nastavení saldokont). Miss → clearing dle
+ * masky (261200/261300). Spárovanost tedy
  * nenese `operation` ani žádný stav na transakci; reaccount je idempotentní
  * a bez paměti (vlastní úhrada se z rezidua vylučuje).
  *

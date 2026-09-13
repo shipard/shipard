@@ -11,34 +11,35 @@ use Shipard\Core\Accounting\OpenItem;
  * Dohledání otevřeného předpisu nad saldo deníkem (economy_accbal_ledger) —
  * poskytovatel `openItemLookup` modulu economy.accbal (#69 D3/D8, T1).
  *
- * Cílová skupina pro směr se odvozuje z nastavení saldokont, ne z kódu
- * skupiny (kód je volně editovatelný): řádek nastavení s `bal_side = předpis`,
- * kladnými částkami bez otočení znaménka, stranou odpovídající směru (příjem
- * → předpis vzniká na MD, výdaj → na DAL) a prefixem slučitelným s přirozeným
- * účtem směru (311 / 321). Na seedu to dá přesně (Pohledávky, 311) a
- * (Závazky, 321); dobropisový řádek 311 uvnitř Závazků (záporné částky,
- * modify_sign) se nevybere, a řádky ledgeru se navíc filtrují prefixem účtu,
- * takže dobropisy reziduum ani cílový účet neovlivní. Skupina „Nespárované
- * platby“ nemá řádek předpisu → nikdy se neprohledá.
+ * Cílové skupiny pro směr se odvozují z nastavení saldokont, ne z kódu
+ * skupiny (kód je volně editovatelný) ani z čísel účtů v kódu: směr určuje
+ * přirozenou stranu předpisu (příjem → předpis vzniká na MD, výdaj → na DAL)
+ * a cílem je každá skupina s řádkem nastavení `bal_side = předpis` na té
+ * straně, s kladnými částkami bez otočení znaménka. Prefixy těchto řádků
+ * jsou zároveň účty, na kterých se v ledgeru hledají řádky klíče. Na seedu
+ * tedy příjem prohledá Pohledávky (311), výdaj Závazky (321, 325, 331, 336,
+ * 341, 342, 345, 379); skupiny záloh a úvěrů následují v pořadí nastavení.
+ * Dobropisový řádek 311 uvnitř Závazků (záporné částky, modify_sign) mezi
+ * prefixy není, takže dobropisy reziduum ani cílový účet neovlivní. Skupina
+ * „Nespárované platby“ nemá řádek předpisu → nikdy se neprohledá. Vrácený
+ * účet je účet skutečného předpisu vč. analytiky (311100, 336101…).
  *
  * Reziduum klíče = Σ předpisy − Σ úhrady (v měně dokladu) přes všechny
  * fiskální roky; počítá se v PHP nad řádky klíče (jednotky řádků), SQL drží
- * jen přesnou shodu klíče. Pravidlo 1 z D5; pravidla 2–3 přidá T3.
+ * jen přesnou shodu klíče. Pravidlo 1 z D5; pravidla 2–3 přidá T3. Tutéž
+ * definici případu zobecní T2 (`CaseQuery`) — filtr účtů skupiny přebírá.
  */
 final class LedgerOpenItemLookup extends AbstractOpenItemLookup
 {
     /** Aktivní docState (archivní sada) pro nastavení saldokont. */
     private const ACTIVE_STATES = [10, 40, 80];
 
-    /** Přirozený účet předpisu per směr úhrady (1 = příjem, 2 = výdaj). */
-    private const DIRECTION_PREFIX = [1 => '311', 2 => '321'];
-
-    /** Strana, na které předpis pro daný směr vzniká (acc_side: 0 = MD, 1 = DAL). */
+    /** Strana, na které předpis pro daný směr vzniká (acc_side: 0 = MD, 1 = DAL); směr 1 = příjem, 2 = výdaj. */
     private const DIRECTION_SIDE = [1 => 0, 2 => 1];
 
     private const TOLERANCE = 0.005;
 
-    /** @var array<int, list<array{balance: int, prefix: string}>> směr → cíle (cache) */
+    /** @var array<int, list<array{balance: int, prefixes: list<string>}>> směr → cíle (cache) */
     private array $targets = [];
 
     public function findOpenRequest(
@@ -51,7 +52,7 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
         ?int $excludeSourceId = null,
     ): ?OpenItem {
         $paymentReference = trim($paymentReference);
-        if ($this->db === null || $paymentReference === '' || !isset(self::DIRECTION_PREFIX[$direction])) {
+        if ($this->db === null || $paymentReference === '' || !isset(self::DIRECTION_SIDE[$direction])) {
             return null;
         }
         $specificSymbol = trim($specificSymbol);
@@ -59,7 +60,7 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
 
         foreach ($this->targetsForDirection($direction) as $target) {
             $rows = $this->loadKeyRows(
-                $target['balance'], $target['prefix'],
+                $target['balance'], $target['prefixes'],
                 $partner, $paymentReference, $specificSymbol, $currency,
                 $excludeSourceKind, $excludeSourceId,
             );
@@ -72,19 +73,17 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
     }
 
     /**
-     * Cílové dvojice (skupina, efektivní prefix účtu) pro směr — z nastavení
-     * saldokont, viz třídní komentář. Efektivní prefix = delší z prefixu
-     * nastavení a přirozeného prefixu směru (nastavení „3111“ zúží, „31“ se
-     * rozšíří na 311).
+     * Cílové skupiny pro směr s prefixy jejich předpisových účtů — z nastavení
+     * saldokont, viz třídní komentář. Pořadí skupin dle sort_order nastavení,
+     * první zásah vyhrává.
      *
-     * @return list<array{balance: int, prefix: string}>
+     * @return list<array{balance: int, prefixes: list<string>}>
      */
     private function targetsForDirection(int $direction): array
     {
         if (isset($this->targets[$direction])) {
             return $this->targets[$direction];
         }
-        $natural = self::DIRECTION_PREFIX[$direction];
 
         $rows = $this->db->fetchAll(
             'SELECT a.[balance], a.[account_number]
@@ -99,33 +98,38 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
             self::ACTIVE_STATES,
         );
 
-        $out  = [];
-        $seen = [];
+        /** @var array<int, list<string>> $byBalance */
+        $byBalance = [];
         foreach ($rows as $r) {
             $prefix = trim((string) $r['account_number']);
-            if ($prefix === '' || (!str_starts_with($prefix, $natural) && !str_starts_with($natural, $prefix))) {
+            if ($prefix === '') {
                 continue;
             }
-            $effective = strlen($prefix) >= strlen($natural) ? $prefix : $natural;
-            $key = ((int) $r['balance']) . '|' . $effective;
-            if (isset($seen[$key])) {
-                continue;
+            $balance = (int) $r['balance'];
+            $byBalance[$balance] ??= [];
+            if (!in_array($prefix, $byBalance[$balance], true)) {
+                $byBalance[$balance][] = $prefix;
             }
-            $seen[$key] = true;
-            $out[] = ['balance' => (int) $r['balance'], 'prefix' => $effective];
+        }
+
+        $out = [];
+        foreach ($byBalance as $balance => $prefixes) {
+            $out[] = ['balance' => $balance, 'prefixes' => $prefixes];
         }
 
         return $this->targets[$direction] = $out;
     }
 
     /**
-     * Řádky ledgeru klíče v cílové skupině (jen účty s prefixem cíle).
+     * Řádky ledgeru klíče ve skupině — jen na účtech s prefixem některého
+     * předpisového řádku nastavení (řádky s modify_sign zůstávají mimo hru).
      *
+     * @param non-empty-list<string> $prefixes
      * @return list<array<string, mixed>|\Dibi\Row>
      */
     private function loadKeyRows(
         int $balance,
-        string $prefix,
+        array $prefixes,
         int $partner,
         string $paymentReference,
         string $specificSymbol,
@@ -133,13 +137,14 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
         ?string $excludeSourceKind,
         ?int $excludeSourceId,
     ): array {
+        $accountFilter = implode(' OR ', array_fill(0, count($prefixes), '[account_number] LIKE %like~'));
         $sql = 'SELECT [id], [bal_side], [account_number], [amount]
                 FROM [economy_accbal_ledger]
-                WHERE [balance] = %i AND [account_number] LIKE %like~ AND [partner] = %i
+                WHERE [balance] = %i AND (' . $accountFilter . ') AND [partner] = %i
                   AND TRIM([payment_reference]) = %s
                   AND TRIM(COALESCE([specific_symbol], \'\')) = %s
                   AND LOWER([currency]) = %s';
-        $args = [$balance, $prefix, $partner, $paymentReference, $specificSymbol, $currency];
+        $args = [$balance, ...$prefixes, $partner, $paymentReference, $specificSymbol, $currency];
 
         if ($excludeSourceKind !== null && $excludeSourceId !== null) {
             $sql   .= ' AND NOT ([source_kind] = %s AND [source_id] = %i)';
