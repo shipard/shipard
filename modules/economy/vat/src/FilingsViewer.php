@@ -7,6 +7,7 @@ namespace Shipard\Module\Economy\Vat;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Form\EnumOptionsHelper;
 use Shipard\Core\Viewer\TableViewer;
+use Shipard\Module\Economy\Vat\Import\FilingImportService;
 
 /**
  * Viewer podání DPH (`economy_vat_filings`, #55 D20). Řádek: název ·
@@ -16,6 +17,11 @@ use Shipard\Core\Viewer\TableViewer;
  * bylo neověřitelné číslo.
  *
  * Akce „Přepočítat" (jen u konceptu) volá `POST /_vat/filing-compose`.
+ *
+ * Importované podání (`origin = imported`, #55 D34): čip Import, v přehledu
+ * původ s počtem rozdílů, záložka Rozdíly importu (podané hodnoty ze
+ * starého XML vs. dnešní sestavení); Přepočítat, Načíst hlavičku
+ * a Vytvořit soubory se nenabízejí — původní přílohy jsou pravda.
  */
 class FilingsViewer extends TableViewer
 {
@@ -30,12 +36,26 @@ class FilingsViewer extends TableViewer
     /** Klíč porovnání dokladové úrovně mezi podáními. */
     private const DIFF_KEY_COLUMNS = ['doc_head', 'vat_code', 'vat_pct'];
 
+    /** Popisky slotů řádku přiznání v záložce Rozdíly importu. */
+    private const SLOT_LABELS = [
+        'base'    => ['cs' => 'Základ', 'en' => 'Base'],
+        'full'    => ['cs' => 'V plné výši', 'en' => 'Full'],
+        'reduced' => ['cs' => 'Krácený', 'en' => 'Reduced'],
+    ];
+
+    /** Popisky druhů rozdílu řádků hlášení (`EpoXmlLineComparer`). */
+    private const LINE_KIND_LABELS = [
+        'value'   => ['cs' => 'jiná hodnota', 'en' => 'value'],
+        'missing' => ['cs' => 'jen v podaném', 'en' => 'filed only'],
+        'extra'   => ['cs' => 'jen v sestaveném', 'en' => 'composed only'],
+    ];
+
     /** @var ?array<int, array<string, mixed>> */
     private ?array $periods = null;
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
-        $sql = 'SELECT `id`, `report_period`, `report_type`, `filing_kind`, `sequence`, `name`,'
+        $sql = 'SELECT `id`, `report_period`, `report_type`, `filing_kind`, `origin`, `sequence`, `name`,'
             . ' `date_issue`, `date_filed`, `result`, `docState`, `docStateMain`'
             . ' FROM `' . $this->table . '` ';
 
@@ -112,6 +132,9 @@ class FilingsViewer extends TableViewer
         $t2 = [];
         $t2[] = ['text' => $this->typeLabels()[$type] ?? $type, 'class' => 'muted'];
         $t2[] = ['text' => $this->kindLabels()[(string) $rowData['filing_kind']] ?? (string) $rowData['filing_kind']];
+        if ($this->isImported($rowData)) {
+            $t2[] = ['text' => 'Import', 'badge' => 'neutral'];
+        }
 
         $filed = $this->formatDate($rowData['date_filed'] ?? null);
         $t2[] = ['text' => $filed !== ''
@@ -187,6 +210,16 @@ class FilingsViewer extends TableViewer
         }
 
         $messages = $this->decodeJson($record['messages'] ?? null);
+        $imported = $this->isImported((array) $record);
+        // Importované podání (#55 D34): co Shipard sestavil dnes vs. co
+        // bylo doopravdy podáno — historický záznam, ne stav k řešení.
+        if ($imported) {
+            $tabs[] = [
+                'id'      => 'import',
+                'label'   => $cs ? 'Rozdíly importu' : 'Import differences',
+                'content' => $this->importDiffTable($messages, $cs),
+            ];
+        }
         if ($messages !== []) {
             $tabs[] = [
                 'id'      => 'messages',
@@ -202,8 +235,9 @@ class FilingsViewer extends TableViewer
         // Přepočet je smysluplný jen u konceptu — podané podání je záznam
         // o tom, co odešlo, a composer ho odmítne. Hlavičku přepočet nechává
         // být (ruční úpravy), proto je obnova z profilu zvláštní akce
-        // (#55 F3-5).
-        if ($docState === FilingDocument::DOC_STATE_COMPOSED) {
+        // (#55 F3-5). Importované podání nemá co přepočítat — snapshot
+        // i hlavička zrcadlí to, co bylo podáno.
+        if ($docState === FilingDocument::DOC_STATE_COMPOSED && !$imported) {
             $detail['actions'] = [
                 [
                     'id'      => 'recomposeFiling',
@@ -264,8 +298,9 @@ class FilingsViewer extends TableViewer
         // Soubory pro daňový portál (#55 X6): u konceptu si je lze vyrobit
         // dopředu (a opakovaně), u podaného podání jen doplnit, když
         // automatické vytvoření při podání selhalo. Hotové soubory jsou
-        // v záložce Přílohy, odkud se i stahují.
-        if ($docState !== FilingDocument::DOC_STATE_CANCELLED) {
+        // v záložce Přílohy, odkud se i stahují. Importované podání má
+        // původní soubory — generátor ho odmítne, akce se nenabízí.
+        if ($docState !== FilingDocument::DOC_STATE_CANCELLED && !$imported) {
             $detail['actions'][] = [
                 'id'      => 'generateFilingFiles',
                 'label'   => $cs ? 'Vytvořit soubory' : 'Create files',
@@ -351,6 +386,9 @@ class FilingsViewer extends TableViewer
             ['label' => $cs ? 'Pořadí v tvrzení' : 'Sequence', 'value' => (string) ($record['sequence'] ?? '')],
             ['label' => $cs ? 'Sestaveno' : 'Composed on', 'value' => $this->formatDate($record['date_issue'] ?? null)],
         ];
+        if ($this->isImported((array) $record)) {
+            $items[] = ['label' => $cs ? 'Původ' : 'Origin', 'value' => $this->importSummary((array) $record, $cs)];
+        }
         $filed = $this->formatDate($record['date_filed'] ?? null);
         $items[] = ['label' => $cs ? 'Podáno' : 'Filed on', 'value' => $filed !== '' ? $filed : '—'];
 
@@ -688,6 +726,110 @@ class FilingsViewer extends TableViewer
         }
         $pct = rtrim(rtrim(number_format((float) $item['vat_pct'], 2, ',', ''), '0'), ',');
         return trim($number . ' · ' . $pct . ' %');
+    }
+
+    // ── Import ze starého systému (#55 D34) ─────────────────────────────────
+
+    /** @param array<string, mixed> $row */
+    private function isImported(array $row): bool
+    {
+        return (string) ($row['origin'] ?? '') === FilingDocument::ORIGIN_IMPORTED;
+    }
+
+    /**
+     * Původ pro přehled: odkud + kolik rozdílů proti dnešnímu sestavení.
+     *
+     * @param array<string, mixed> $record
+     */
+    private function importSummary(array $record, bool $cs): string
+    {
+        $rows  = 0;
+        $lines = 0;
+        foreach ($this->decodeJson($record['messages'] ?? null) as $message) {
+            match ($message['code'] ?? '') {
+                FilingImportService::MSG_ROW_MISMATCH  => $rows++,
+                FilingImportService::MSG_LINE_MISMATCH => $lines++,
+                default                                => null,
+            };
+        }
+        $text = $cs ? 'Importováno ze starého Shipardu' : 'Imported from the old Shipard';
+        if ($rows === 0 && $lines === 0) {
+            return $text . ($cs ? ' — podané hodnoty odpovídají dnešnímu sestavení' : ' — filed values match today\'s composition');
+        }
+        $parts = [];
+        if ($rows > 0) {
+            $parts[] = ($cs ? 'rozdílné řádky přiznání: ' : 'return rows filed differently: ') . $rows;
+        }
+        if ($lines > 0) {
+            $parts[] = ($cs ? 'rozdíly v řádcích hlášení: ' : 'statement line differences: ') . $lines;
+        }
+        return $text . ' — ' . implode(', ', $parts);
+    }
+
+    /**
+     * Záložka Rozdíly importu: řádky přiznání s jinou podanou hodnotou
+     * (per slot), atributy XML mimo dnešní formulář a rozdíly řádků
+     * hlášení — všechno z `messages` `imported_*`.
+     *
+     * @param list<array<string, mixed>> $messages
+     * @return array<string, mixed>
+     */
+    private function importDiffTable(array $messages, bool $cs): array
+    {
+        $lang = $cs ? 'cs' : 'en';
+        $rows = [];
+        foreach ($messages as $message) {
+            $code = (string) ($message['code'] ?? '');
+            if ($code === FilingImportService::MSG_ROW_MISMATCH) {
+                foreach ((array) ($message['filed'] ?? []) as $slot => $filed) {
+                    $composed = (float) ($message['composed'][$slot] ?? 0.0);
+                    if (abs((float) $filed - $composed) < 0.005) {
+                        continue;
+                    }
+                    $rows[] = [
+                        'what'     => ($cs ? 'ř. ' : 'row ') . (string) ($message['row'] ?? ''),
+                        'field'    => self::SLOT_LABELS[(string) $slot][$lang] ?? (string) $slot,
+                        'composed' => $this->formatMoney($composed),
+                        'filed'    => $this->formatMoney((float) $filed),
+                        'kind'     => self::LINE_KIND_LABELS['value'][$lang],
+                        '_class'   => 'error',
+                    ];
+                }
+            } elseif ($code === FilingImportService::MSG_ROW_UNMAPPED) {
+                $rows[] = [
+                    'what'     => (string) ($message['veta'] ?? '') . '/@' . (string) ($message['attribute'] ?? ''),
+                    'field'    => $cs ? 'řádek mimo dnešní formulář' : 'row outside the current form',
+                    'composed' => '',
+                    'filed'    => (string) ($message['value'] ?? ''),
+                    'kind'     => $cs ? 'nemapováno' : 'unmapped',
+                ];
+            } elseif ($code === FilingImportService::MSG_LINE_MISMATCH) {
+                $rows[] = [
+                    'what'     => trim((string) ($message['section'] ?? '') . ' ' . (string) ($message['key'] ?? '')),
+                    'field'    => (string) ($message['field'] ?? ''),
+                    'composed' => (string) ($message['composed'] ?? '—'),
+                    'filed'    => (string) ($message['filed'] ?? '—'),
+                    'kind'     => self::LINE_KIND_LABELS[(string) ($message['kind'] ?? '')][$lang] ?? (string) ($message['kind'] ?? ''),
+                    '_class'   => 'error',
+                ];
+            }
+        }
+        if ($rows === []) {
+            $rows[] = [
+                'what'     => $cs ? 'Podané hodnoty odpovídají dnešnímu sestavení.' : 'Filed values match today\'s composition.',
+                'field'    => '',
+                'composed' => '',
+                'filed'    => '',
+                'kind'     => '',
+            ];
+        }
+        return ['type' => 'table', 'columns' => [
+            ['id' => 'what',     'label' => $cs ? 'Řádek' : 'Row'],
+            ['id' => 'field',    'label' => $cs ? 'Sloupec / pole' : 'Column / field'],
+            ['id' => 'composed', 'label' => $cs ? 'Sestaveno' : 'Composed', 'align' => 'right'],
+            ['id' => 'filed',    'label' => $cs ? 'Podáno' : 'Filed', 'align' => 'right'],
+            ['id' => 'kind',     'label' => $cs ? 'Druh rozdílu' : 'Difference'],
+        ], 'rows' => $rows];
     }
 
     // ── Zprávy ──────────────────────────────────────────────────────────────

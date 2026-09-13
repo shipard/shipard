@@ -1,9 +1,10 @@
 # Task: Import starých podání DPH — `POST /_vat/filing-import`, `origin`, override podaných hodnot z XML (#55 D21, D32–D39)
 
-**Stav:** naplánováno — 2026-09-13. Protějšek: `old_shipard`
-`modules/imports/newShipard/tasks/37-vat-filings-import.md` (runner). Nasazení:
-nejdřív tato strana (`ds-upgrade`: sloupec `origin`), pak runner; ověření
-`ds-reset` + reimport `btpg-p` (D39).
+**Stav:** částečně — kód, testy, CLI, UI a docs hotové 2026-09-13 (4 commity);
+zbývá D39 na `btpg-p` po runneru (`old_shipard` task 37) a `ds-upgrade` tam.
+Protějšek: `old_shipard` `modules/imports/newShipard/tasks/37-vat-filings-import.md`
+(runner). Nasazení: nejdřív tato strana (`ds-upgrade`: sloupec `origin`), pak
+runner; ověření `ds-reset` + reimport `btpg-p` (D39).
 **Issue:** #55 — komentář „Import starých podání (D21) — rozhodnutí D32–D39 (2026-09-13)".
 
 ## Kontext
@@ -192,11 +193,15 @@ odkazem (není to exchange formát, je to dedikovaný endpoint).
 
 ## Hotovo když
 
-- [ ] `ds-upgrade` na 4l3j i `btpg-p` projde (`origin`).
-- [ ] Testy §6 zelené (úzké `--filter`).
-- [ ] 4l3j: ruční `vat-filing-import` řádného DP3 s fixture XML → podání 40,
-      `origin = imported`, přílohy nahrané před `finish` zůstaly, žádné nové
-      soubory, detail ukazuje rozdíly.
+- [x] `ds-upgrade` na 4l3j projde (`origin`) — 2026-09-13; `btpg-p` zbývá.
+- [x] Testy §6 zelené (úzké `--filter`) — `FilingDocumentTest`,
+      `Dp3XmlReaderTest`, `EpoXmlLineComparerTest`, integrační
+      `FilingImportServiceTest` + `VatFilingImportCommandTest` na 4l3j.
+- [x] 4l3j: `vat-filing-import` řádného DP3 s fixture XML → podání 40,
+      `origin = imported`, přílohy nahrané před `finish` zůstaly (`epo-xml` /
+      `epo-imported`), žádné nové soubory — automatizováno
+      v `VatFilingImportCommandTest` (izolované úložiště, po testu uklizeno);
+      záložka Rozdíly importu zbývá prokliknout v prohlížeči.
 - [ ] **D39 na `btpg-p` po reimportu (`old_shipard` task 37):** všechna podaná
       stará podání importována (počty per typ = souhrn runneru); podání s
       `imported_row_mismatch` vypsána (očekávány jednotky, 08/2019 mezi nimi);
@@ -209,4 +214,31 @@ odkazem (není to exchange formát, je to dedikovaný endpoint).
 
 ## Odchylky od zadání
 
-(doplní implementace)
+- **„Stáhnout XML" není akce** — soubory podání se stahují ze záložky Přílohy
+  (stejně jako u sestavených), takže §1 „bere přílohu" je splněno bez akce.
+- **Chybové kódy navíc:** `XML_TYPE_MISMATCH` (písemnost jiného typu než
+  instance), `DATE_FOUND_REQUIRED` (dodatečné / následné bez data zjištění
+  v požadavku i v `d_zjist`), `PREVIOUS_FILING_MISSING` (dodatečné přiznání
+  bez podaného základu — composer v diff módu nemá proti čemu a další řetěz
+  by diff bral jako plný stav), `CONFIG_MISSING` 500, `NOT_IMPORTED` a
+  `INVALID_DOC_STATE` u `finish`. Instance jiného typu = `PERIOD_NOT_FOUND`.
+- **Zprávy navíc:** `imported_legacy {filingNdx, reportNdx}` (identifikace ve
+  starém systému; `DRAFT_EXISTS.details` ji vrací, aby runner dokončil
+  přerušený běh), `imported_header_invalid {field, value}` (pole z XML, které
+  dnešní schéma hlavičky nepustí — zůstane hodnota z profilu),
+  `imported_line_compare_failed {reason}` (writer nad snapshotem hlášení
+  vyhodil výjimku — import nepadá).
+- **Přílohy bez druhu dostanou při `finish` `metadata.kind`** (`epo-xml` u
+  XML, jinak nová konstanta `FilingFilesService::KIND_IMPORTED = 'epo-imported'`)
+  — bez toho by je `FilingAttachmentGuard` po podání nezamkl.
+- **`acc_document` smí na importovaný koncept už při `filing-import`**
+  (guard „koncept doklad nemá" má výjimku pro `imported`, FK se validuje
+  stejně jako u podaného) — místo doplnění při `finish`.
+- **`finish` podává částečným payloadem** (bez `header`): plné uložení řádku
+  by hlavičku z roku podání validovalo proti dnešnímu schématu.
+- **`FilingFilesService::generate()` importované podání odmítne** (`build()`
+  zůstává pro `vat-filing-xml-diff`); `POST /_vat/filing-files` i CLI
+  `vat-filing-files` tak nemohou smazat původní přílohy konceptu.
+- **CLI `vat-filing-import`** nahraje `--xml` a `--attach` soubory jako
+  přílohy (kopie — upload zdroj přesouvá) a zavolá `finish` sám; při selhání
+  uploadu nechá koncept a poradí `filing-import-finish`.

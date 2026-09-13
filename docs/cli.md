@@ -631,6 +631,38 @@ storno); chybějící účet v rozvrhu nebo zbytek mimo toleranci zaokrouhlení
 bez něj jen jediná aktivní řada typu. Viz README modulu `economy.vat` →
 Zaúčtování přiznání.
 
+#### `vat-filing-import --period=<id> --type=return|cs|rs [--kind=…] [--xml=<soubor>] [--attach=<soubor>]… [--dry-run]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds vat-filing-import --period=140 --type=return --xml=podano-2019-08.xml --dry-run
+shpd-ds vat-filing-import --period=140 --type=return --xml=podano-2019-08.xml \
+  --name="Přiznání DPH 2019/8" --date-filed=2019-09-22 --acc-document=36950 --attach=opis.pdf
+shpd-ds vat-filing-import --period=141 --type=return --kind=supplementary \
+  --xml=dodatecne.xml --date-found=2019-10-01
+```
+
+Ruční doplnění jednoho **starého podání** (papírové, jiný systém) — totéž
+co `POST /_vat/filing-import` + přílohy + `POST /_vat/filing-import-finish`
+(#55 D21, D32–D39). Založí podání s původem *Importováno* (snapshot sestaví
+composer nad dnešními doklady), u přiznání přepíše **podané hodnoty**
+řádků z XML (rozdíly proti zaokrouhleným přesným vypíše jako tabulku
+Řádek / Sloupec / Sestaveno / Podáno), u hlášení řádky writeru s XML jen
+porovná (Sekce / Klíč / Pole). XML i `--attach` soubory nahraje jako
+původní přílohy a podání převede do stavu Podáno — soubory se
+**negenerují**, původní jsou pravda. `--dry-run` totéž v transakci
+s rollbackem (nic nezůstane) — nástroj pro D39 nad `btpg-p`.
+
+Odmítnutí bez zápisu: `PERIOD_NOT_FOUND` (instance chybí nebo má jiný
+typ), `INVALID_KIND`, `DATE_FOUND_REQUIRED` (dodatečné / následné bez
+`--date-found` a bez `d_zjist` v XML), `PREVIOUS_FILING_MISSING` (dodatečné
+bez podaného základu — nejdřív řádné), `DRAFT_EXISTS` (živý koncept
+v instanci — dokončete přes finish, nebo ho zrušte), `XML_UNREADABLE`,
+`XML_TYPE_MISMATCH`. Chybějící účetní doklad je jen varování (FK zůstane
+prázdné, doplní se akcí Zaúčtovat). Selhání nahrání přílohy nechá podání
+jako koncept — dokončete přes `POST /_vat/filing-import-finish`. Viz README
+modulu `economy.vat` → Import starých podání.
+
 ### Users
 
 #### `user-create`

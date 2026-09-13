@@ -433,6 +433,9 @@ vendor/bin/shpd-ds vat-filing-files --filing=42 --out=/tmp/epo --xml-only
 
 # porovnání s tím, co se doopravdy podalo
 vendor/bin/shpd-ds vat-filing-xml-diff podano.xml /tmp/epo/DPHDP3-…xml
+
+# import starého podání z původního XML (přílohy + Podáno); --dry-run jen porovná
+vendor/bin/shpd-ds vat-filing-import --period=140 --type=return --xml=podano.xml --attach=opis.pdf
 ```
 
 `EpoXmlDiff` porovnává **věty a atributy po normalizaci**: pořadí atributů,
@@ -578,6 +581,67 @@ Zlatý test (dev DS `btpg-p`, zdroj 689089, DP3 01–04/2026 přes
 `vat-filing-account --dry-run` nad koncepty podání): viz
 `tasks/vat-filing-accounting.md` → Hotovo když.
 
+## Import starých podání (D21, D32–D39)
+
+Podaná podání ze starého Shipardu se importují jako **plnohodnotná podání
+s `origin = imported`** (`economy_vat_filings.origin`, cfgItem
+`economy.vat.filingOrigins`): bez nich nemá dodatečné podání za období
+podané ve starém systému proti čemu diffovat, kontrola zůstatků 343 nemá
+`acc_document` a zamčené instance nemají v UI žádné podání.
+
+**Snapshot = composer nad dnešními doklady, podané hodnoty z původního
+XML (D33).** `Import\FilingImportService::import()` v jedné transakci:
+
+1. přečte XML (`Import\EpoXmlDocument` — jediný parser souboru pro EPO na
+   vstupu, bez sítě a bez DTD), typ písemnosti musí sedět s instancí;
+2. založí koncept přes `TransactionlessTableGateway` — Document sestaví
+   snapshot composerem (dodatečné jako diff proti kumulativnímu stavu, který
+   už tvoří dřívější importovaná podání);
+3. u přiznání přepíše `*_filed` sloupce `filing_return_rows` hodnotami
+   z XML (`Import\Dp3XmlReader` = `vat-xml-cz.jsonc` `rows` obráceně,
+   chybějící atribut = nula); rozdíl proti zaokrouhleným přesným (D17) →
+   `imported_row_mismatch {row, composed, filed}`, atributy hodnotových vět
+   mimo mapování → `imported_row_unmapped`; `result.return.row62–66` se
+   obnoví z přepsaných hodnot;
+4. hlavičku předvyplněnou z profilu přepíše větou D/P v mezích dnešního
+   schématu (název státu → ISO kód přes `VatXmlMapping::countryCode()`,
+   A/N → boolean, datum → ISO); pole, které dnešní schéma nepustí,
+   zůstane z profilu a zapíše se `imported_header_invalid` — jinak by
+   formulář odmítl i editaci poznámky; forma vs. druh podání →
+   `imported_kind_mismatch`;
+5. u KH/SH řádky **nepřepisuje** — writer nad čerstvým snapshotem (bez
+   validace a XSD) proti XML porovná `Import\EpoXmlLineComparer` podle klíče
+   z mapování (sekce + ev. číslo + DIČ + kód) → `imported_line_mismatch
+   {section, key, field, composed, filed, kind}`;
+6. připojí zprávy za composerovy (`imported_without_xml`,
+   `imported_order_irregular`, `imported_legacy {filingNdx, reportNdx}`,
+   `imported_acc_document_missing`) a commitne (`--dry-run` = rollback).
+
+Podání zůstane v 10, runner nahraje původní soubory přes
+`POST /_attachments/upload` (`table_id 443`) a zavolá
+**`POST /_vat/filing-import-finish`**: přílohy bez druhu dostanou
+`metadata.kind` (`epo-xml` u XML, jinak `epo-imported`) — od podání je
+chrání `FilingAttachmentGuard` — a podání se převede do 40 částečným
+payloadem s `imported_files`. Idempotentní; přerušený běh runner dokončí
+podle `DRAFT_EXISTS.details` (id konceptu + legacy).
+
+`FilingDocument` pro `imported`: dodaný `name` se neskládá, `acc_document`
+smí už na koncept (jen živý cmnbkp; chybějící = varování, FK prázdné —
+D37), pořadí druhů se nevynucuje (`isOrderIrregular` → zpráva), přechod
+do Podáno **nevaliduje XML ani negeneruje soubory**;
+`FilingFilesService::generate()` importované podání odmítne (`build()`
+zůstává pro `vat-filing-xml-diff`, D39). Viewer: čip **Import**, v přehledu
+„Původ" s počtem rozdílů, záložka **Rozdíly importu**; Přepočítat, Načíst
+hlavičku a Vytvořit soubory se nenabízejí, Zaúčtovat ano.
+
+Odmítnutí bez zápisu: `PERIOD_NOT_FOUND` (i jiný typ instance),
+`INVALID_KIND`, `DATE_FOUND_REQUIRED`, `PREVIOUS_FILING_MISSING`
+(dodatečné bez podaného základu — diff by neměl proti čemu vzniknout
+a další řetěz by ho bral jako plný stav), `DRAFT_EXISTS`, `XML_UNREADABLE`,
+`XML_TYPE_MISMATCH`. CLI `vat-filing-import` (`docs/cli.md`) je obálka pro
+ruční doplnění jednoho podání včetně příloh a finish. Ověření na
+`btpg-p` (D39) po `old_shipard` task 37: `tasks/vat-filings-import.md`.
+
 ## Architektura
 
 ```
@@ -600,12 +664,12 @@ src/
 ├── VatPeriodRecalculator.php              # dávkový přepočet po změně rozsahu
 ├── DocsHeadsVatPeriodHandler.php          # beforeSave handler na docs_core_heads
 ├── VatRegistrationSeedHandler.php         # afterSave handler na registraci
-├── FilingDocument.php                     # podání: druhy, pořadí, lifecycle, immutabilita
+├── FilingDocument.php                     # podání: druhy, pořadí, lifecycle, immutabilita, import mód (origin)
 ├── FilingRounding.php                     # podané hodnoty (čistá třída): řádky na Kč, dopočty, diff
 ├── FilingComposer.php                     # snapshot: items + výstupní řádky + result/messages
 ├── FilingSnapshotLoader.php               # čtení snapshotu + kumulativní podaný stav (composer, zaúčtování)
 ├── FilingsViewer.php / FilingsForm.php    # viewer Podání DPH (vč. rozdílů, akce Zaúčtovat) a formulář
-├── VatFilingController.php                # POST /_vat/filing-compose, -files, -account, report-period-lock, registration-tax-office
+├── VatFilingController.php                # POST /_vat/filing-compose, -files, -account, -import, -import-finish, report-period-lock, registration-tax-office
 ├── ClosedPeriodBalanceService.php         # zůstatky 343 podaných instancí (doklady instance + doklady podání)
 ├── Accounting/                            # zaúčtování přiznání (Fáze 4b)
 │   ├── VatReturnAccountingBuilder.php     #   čistý builder řádků (delta per kód, saldo, krácení, zaokrouhlení)
@@ -613,6 +677,12 @@ src/
 │   └── VatReturnAccountingService.php     #   DB + TableGateway: cmnbkp koncept + acc_document v jedné transakci
 ├── FilingHeaderSchema.php                 # výběr schématu hlavičky per typ + předvyplnění
 ├── FilingAttachmentGuard.php              # soubory podaného tvrzení jsou zamčené
+├── Import/                                # import starých podání (D21, D32–D39)
+│   ├── FilingImportService.php            #   založení + override z XML + finish v jedné transakci
+│   ├── FilingImportRequest.php / …Result.php / …Exception.php
+│   ├── EpoXmlDocument.php                 #   parser souboru pro EPO (věty → mapy atributů)
+│   ├── Dp3XmlReader.php + Dp3XmlData.php  #   mapování rows obráceně → podané hodnoty řádků
+│   └── EpoXmlLineComparer.php             #   řádky KH/SH podle klíče z mapování
 ├── Xml/                                   # XML pro EPO (Fáze 3) — viz výše
 │   ├── VatXmlMapping.php                  #   resolver mapování per písemnost
 │   ├── FilingXmlInput.php / …Loader.php   #   obsah podání jako hodnota (ze snapshotu)
@@ -646,7 +716,7 @@ jsou popsané výše.
 
 ## Mimo scope
 
-Odeslání na portál a do datové schránky (podává člověk), import starých podání (`old_shipard` task 34),
+Odeslání na portál a do datové schránky (podává člověk), import rozpracovaných starých podání (bere se jen podané, D32),
 storno řádky následného souhrnného hlášení (X14), odpověď na výzvu u KH,
 sekce A.3 (investiční zlato), rozdíly mezi
 dvěma libovolnými podáními (jen proti `previous_filing`), oprava dle § 44

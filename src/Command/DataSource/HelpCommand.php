@@ -107,6 +107,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>vat-filing-files</info>        Vyrobí soubory podání DPH pro daňový portál (XML, PDF opis)');
         $output->writeln('  <info>vat-filing-xml-diff</info>     Porovná dva soubory podání DPH po větách a atributech');
         $output->writeln('  <info>vat-filing-account</info>      Zaúčtuje podané přiznání DPH — účetní doklad (koncept) navázaný na podání; --dry-run jen vypíše řádky');
+        $output->writeln('  <info>vat-filing-import</info>       Importuje staré podání DPH z původního XML (snapshot composerem, podané hodnoty z XML, přílohy, Podáno); --dry-run jen porovná');
         $output->writeln('  <info>doc-reaccount</info>           Přegeneruje účetní deník dokladu ve stavu 40; --force obejde zámek období (zaloguje se)');
         $output->writeln('');
         $output->writeln('<comment>Registry (Spisovna):</comment>');

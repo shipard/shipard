@@ -1,7 +1,7 @@
 ---
 title: Podání DPH
 summary: Jak z živého výpočtu udělat podání, vyrobit soubor pro daňový portál a mít trvalý záznam toho, co jsi za období odevzdal.
-keywords: [zaúčtovat přiznání, zaúčtování DPH, účetní doklad přiznání, odvod DPH, nadměrný odpočet, správce daně, závazek vůči finančnímu úřadu, účet 343, vypořádání DPH, podací údaje, profil podatele, finanční úřad, územní pracoviště, kdo podává přiznání, sestavil, podepisující osoba, zástupce, datová schránka, podání DPH, podat přiznání, odevzdat přiznání, řádné podání, opravné podání, dodatečné přiznání, následné hlášení, dodatečné podání, změna daňové povinnosti, řádek 66, zaokrouhlení na koruny, sestavit podání, přepočítat podání, co jsem podal, historie podání, datum podání, datum zjištění důvodů, rozdíly proti předchozímu podání, podané hodnoty, XML pro daňový portál, soubor pro EPO, vytvořit soubory, opis přiznání, obsah podání, hlavička podání, načíst hlavičku z profilu, elektronické podání]
+keywords: [zaúčtovat přiznání, zaúčtování DPH, účetní doklad přiznání, odvod DPH, nadměrný odpočet, správce daně, závazek vůči finančnímu úřadu, účet 343, vypořádání DPH, podací údaje, profil podatele, finanční úřad, územní pracoviště, kdo podává přiznání, sestavil, podepisující osoba, zástupce, datová schránka, podání DPH, podat přiznání, odevzdat přiznání, řádné podání, opravné podání, dodatečné přiznání, následné hlášení, dodatečné podání, změna daňové povinnosti, řádek 66, zaokrouhlení na koruny, sestavit podání, přepočítat podání, co jsem podal, historie podání, datum podání, datum zjištění důvodů, rozdíly proti předchozímu podání, podané hodnoty, XML pro daňový portál, soubor pro EPO, vytvořit soubory, opis přiznání, obsah podání, hlavička podání, načíst hlavičku z profilu, elektronické podání, importované podání, import ze starého Shipardu, podání ze starého systému, čip Import, rozdíly importu, původ podání]
 related: [uctarna/dph-zive-vystupy.md, uctarna/uzamceni-obdobi.md, co-dnes-nejde.md]
 ---
 
@@ -189,6 +189,32 @@ Co když se něco nepovede:
   zamykej měsíc; jinak měsíc dočasně odemkni.
 - **Víc řad účetních dokladů** — Shipard nevybere první; správce systému
   určí, do které řady přiznání patří.
+
+## Importovaná podání
+
+Podání, která jsi odevzdal ještě ze starého Shipardu (nebo z jiného
+systému), se do Shipardu přenášejí importem — v seznamu mají čip
+**Import** a v přehledu řádek **Původ: Importováno ze starého Shipardu**.
+Chovají se jako každé podané podání: dodatečné za stejné období se
+sestaví jako rozdíl proti nim, zůstatky DPH se počítají i s jejich
+účetním dokladem a období jde uzamknout.
+
+Importované podání ale vzniklo jinak než sestavené:
+
+- **Obsah se sestavil z dnešních dokladů, podané hodnoty jsou z původního
+  souboru.** Když se obojí liší (starý systém zaokrouhlil jinak, doklad se
+  od té doby změnil), ukáže to záložka **Rozdíly importu** — řádek, co
+  Shipard sestavil dnes a co bylo skutečně podáno. Je to historický
+  záznam, ne chyba k opravě.
+- **Soubory jsou původní.** V záložce Přílohy je XML a opisy, které
+  odešly na úřad; Shipard k nim nový soubor negeneruje a po podání je
+  chrání stejně jako svoje.
+- **Přepočítat, Načíst hlavičku z profilu ani Vytvořit soubory u něj
+  nenajdeš** — nebylo by co přepočítat proti ničemu. **Zaúčtovat** funguje,
+  když k podání nepřišel účetní doklad ze starého systému.
+
+Import spouští správce z konzole nebo migrační nástroj; ty v aplikaci
+nic nastavovat nemusíš.
 
 ## Na co si dát pozor
 
