@@ -11,8 +11,11 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\AbstractJournalEventHandler;
 use Shipard\Core\Document\JournalEventDispatcher;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Module\Economy\Accbal\ClearingRerouteHandler;
+use Shipard\Module\Economy\Accbal\ClearingRouter;
 use Shipard\Module\Economy\Accbal\JournalLedgerHandler;
 use Shipard\Module\Economy\Accounting\AccountDocument;
+use Shipard\Module\Economy\Accounting\AccountingEngine;
 use Shipard\Module\Economy\Bank\BankTransactionAccountingEngine;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
@@ -43,6 +46,8 @@ class BankPaymentRoutingTest extends IntegrationTestCase
     private array $createdAccounts = [];
     /** @var list<int> seedované předpisové pohyby (doc_head) */
     private array $seededDocs = [];
+    /** @var list<int> reálné faktury (docs_core_heads) */
+    private array $createdHeads = [];
 
     private ?int $bankAccountId = null;
     private string $receivableAccount = '311100';
@@ -70,6 +75,13 @@ class BankPaymentRoutingTest extends IntegrationTestCase
         }
         foreach ($this->seededDocs as $id) {
             $dibi->delete('economy_accbal_ledger')->where('doc_head = %i', $id)->execute();
+        }
+        foreach ($this->createdHeads as $id) {
+            $dibi->delete('economy_accbal_ledger')->where('doc_head = %i', $id)->execute();
+            $dibi->delete('economy_accounting_journal')->where('doc_head = %i', $id)->execute();
+            $dibi->delete('docs_core_vat_recap')->where('doc_head = %i', $id)->execute();
+            $dibi->delete('docs_core_rows')->where('doc_head = %i', $id)->execute();
+            $dibi->delete('docs_core_heads')->where('id = %i', $id)->execute();
         }
         foreach ($this->createdBankAccounts as $id) {
             $dibi->delete('economy_codebooks_bank_accounts')->where('id = %i', $id)->execute();
@@ -195,7 +207,155 @@ class BankPaymentRoutingTest extends IntegrationTestCase
         $this->assertSame($paymentId, (int) $payment['id'], 'stabilní identita pohybu přežije reaccount');
     }
 
+    // ── 3. Platba dřív než faktura (trigger D4) ──────────────────────────────
+
+    public function testPaymentBeforeInvoiceIsReroutedWhenInvoicePosts(): void
+    {
+        [$txId] = $this->accountPayment(1210.00);
+        $this->assertSame('261200', $this->counterpartyAccount($txId), 'bez předpisu na clearingu');
+
+        $headId = $this->insertInvoice(1000.00, 21.0);
+        $result = (new AccountingEngine($this->db->getDibiConnection(), $this->config, $this->journalEvents))
+            ->accountDocument($headId);
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+
+        $request = $this->db->fetchRow(
+            'SELECT account_number FROM economy_accbal_ledger WHERE doc_head = %i AND bal_side = 0',
+            $headId,
+        );
+        $this->assertNotNull($request, 'faktura má předpis v ledgeru');
+        $this->assertSame((string) $request['account_number'], $this->counterpartyAccount($txId), 'trigger přeúčtoval úhradu na účet předpisu');
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'), 'clearing pohyb zmizel');
+        $this->assertNotNull($this->ledgerMove($txId, 'receivables'), 'úhrada v Pohledávkách');
+    }
+
+    public function testInvoicePostingDoesNotLoop(): void
+    {
+        [$txId] = $this->accountPayment(1210.00);
+        $headId = $this->insertInvoice(1000.00, 21.0);
+
+        RoutingJournalSpy::$calls = [];
+        $dispatcher = new JournalEventDispatcher([
+            ['class' => JournalLedgerHandler::class, 'events' => ['journalWritten']],
+            ['class' => ClearingRerouteHandler::class, 'events' => ['journalWritten']],
+            ['class' => RoutingJournalSpy::class, 'events' => ['journalWritten']],
+        ], $this->db->getDibiConnection(), $this->config, $this->dsConfig);
+        $docEngine = new AccountingEngine($this->db->getDibiConnection(), $this->config, $dispatcher);
+
+        $docEngine->accountDocument($headId);
+        $this->assertSame(
+            [['bankTransaction', $txId], ['doc', $headId]],
+            RoutingJournalSpy::$calls,
+            'zaúčtování předpisu → jedno přeúčtování transakce (vnořeně), nic dalšího',
+        );
+
+        RoutingJournalSpy::$calls = [];
+        $docEngine->accountDocument($headId);
+        $this->assertSame([['doc', $headId]], RoutingJournalSpy::$calls, 'transakce už není na clearingu → žádný reroute');
+
+        RoutingJournalSpy::$calls = [];
+        $this->engine($dispatcher)->accountTransaction($txId);
+        $this->assertSame([['bankTransaction', $txId]], RoutingJournalSpy::$calls, 'reaccount transakce trigger nespouští');
+        $this->assertNotNull($this->ledgerMove($txId, 'receivables'));
+    }
+
+    // ── 5. Dávka: dry-run nic nezapíše, ostrý běh přeúčtuje ─────────────────
+
+    public function testBatchDryRunWritesNothingAndRealRunRoutes(): void
+    {
+        [$txId] = $this->accountPayment(500.00);
+        $this->seedRequest('receivables', $this->receivableAccount, 500.00);
+        $router = new ClearingRouter($this->db->getDibiConnection(), $this->config, $this->journalEvents, $this->openItems);
+
+        $plan = $router->rerouteAll(['partner' => self::PARTNER], true);
+        $this->assertSame(1, $plan->planned);
+        $this->assertSame(0, $plan->routed);
+        $this->assertSame($this->receivableAccount, $plan->results[0]->targetAccount);
+        $this->assertEqualsWithDelta(500.00, $plan->routedAmount, 0.001);
+        $this->assertSame('261200', $this->counterpartyAccount($txId), 'dry-run nic nezapsal');
+        $this->assertNotNull($this->ledgerMove($txId, 'unmatched_payments'));
+
+        $run = $router->rerouteAll(['partner' => self::PARTNER], false);
+        $this->assertSame(1, $run->routed);
+        $this->assertSame([], $run->skipped);
+        $this->assertSame($this->receivableAccount, $this->counterpartyAccount($txId));
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'));
+
+        $again = $router->rerouteAll(['partner' => self::PARTNER], false);
+        $this->assertSame(0, $again->candidates(), 'idempotentní: přeúčtovaná úhrada už není kandidát');
+    }
+
+    public function testBatchSkipsPaymentWithoutOpenRequest(): void
+    {
+        [$txId] = $this->accountPayment(500.00);
+        $router = new ClearingRouter($this->db->getDibiConnection(), $this->config, $this->journalEvents, $this->openItems);
+
+        $summary = $router->rerouteAll(['partner' => self::PARTNER], false);
+
+        $this->assertSame(['no_open_item' => 1], $summary->skipped);
+        $this->assertSame(0, $summary->routed);
+        $this->assertSame('261200', $this->counterpartyAccount($txId));
+    }
+
     // ── Helpers ─────────────────────────────────────────────────────────────
+
+    /** Vydaná faktura (invno) ve stavu 40 pro testovacího partnera s VS = self::VS. */
+    private function insertInvoice(float $base, float $vatPct): int
+    {
+        $fy = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_years WHERE date_begin <= %s AND date_end >= %s LIMIT 1',
+            self::ACC_DATE, self::ACC_DATE,
+        );
+        $fm = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_months WHERE date_begin <= %s AND date_end >= %s AND period_type = 1 LIMIT 1',
+            self::ACC_DATE, self::ACC_DATE,
+        );
+        $series = $this->db->fetchRow('SELECT id FROM docs_core_number_series WHERE doc_type = %s LIMIT 1', 'invno');
+        if ($fy === null || $fm === null || $series === null) {
+            $this->markTestSkipped('DS nemá fiskální období / řadu invno pro ' . self::ACC_DATE);
+        }
+        $vat   = round($base * $vatPct / 100.0, 2);
+        $total = round($base + $vat, 2);
+
+        $dibi = $this->db->getDibiConnection();
+        $dibi->insert('docs_core_heads', [
+            'doc_type'          => 'invno',
+            'number_series'     => (int) $series['id'],
+            'doc_number'        => 'IT-ROUTE-' . uniqid(),
+            'issue_date'        => self::ACC_DATE,
+            'accounting_date'   => self::ACC_DATE,
+            'due_date'          => '2026-06-30',
+            'fiscal_year'       => (int) $fy['id'],
+            'fiscal_month'      => (int) $fm['id'],
+            'partner'           => self::PARTNER,
+            'payment_reference' => self::VS,
+            'doc_currency'      => 'czk',
+            'home_currency'     => 'czk',
+            'exchange_rate'     => 1.0,
+            'doc_text'          => 'IT routing faktura',
+            'total_base'        => $base, 'total_vat' => $vat, 'total_amount' => $total,
+            'total_base_dom'    => $base, 'total_vat_dom' => $vat, 'total_amount_dom' => $total,
+            'docState'          => 40,
+            'docStateMain'      => 2,
+        ])->execute();
+        $headId = (int) $dibi->getInsertId();
+        $this->createdHeads[] = $headId;
+
+        $dibi->insert('docs_core_rows', [
+            'doc_head' => $headId, 'row_kind' => 1, 'operation' => 'sale.services',
+            'description' => 'IT služba', 'vat_code' => 'cz-101', 'vat_pct' => $vatPct,
+            'vat_base' => $base, 'vat_amount' => $vat, 'vat_total' => $total,
+            'vat_base_dom' => $base, 'vat_amount_dom' => $vat, 'vat_total_dom' => $total,
+        ])->execute();
+        $dibi->insert('docs_core_vat_recap', [
+            'doc_head' => $headId, 'vat_code' => 'cz-101', 'vat_pct' => $vatPct,
+            'base' => $base, 'tax' => $vat, 'total' => $total,
+            'base_dom' => $base, 'tax_dom' => $vat, 'total_dom' => $total,
+            'sum_base' => 1, 'sum_tax' => 1, 'sum_total' => 1, 'is_reverse_pair' => 0, 'order_pos' => 0,
+        ])->execute();
+
+        return $headId;
+    }
 
     private function engine(?JournalEventDispatcher $dispatcher = null): BankTransactionAccountingEngine
     {

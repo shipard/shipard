@@ -70,9 +70,16 @@
         { "class": "Shipard\\Module\\Economy\\Accbal\\BalancesNavigationProvider" }
     ],
 
+    // Pořadí je významové: dispatcher volá handlery v pořadí registrace —
+    // reroute (přeúčtování clearingu po vzniku předpisu, #69 D4) potřebuje
+    // ledger dokladu už re-derivovaný.
     "journalEventHandlers": [
         {
             "class": "Shipard\\Module\\Economy\\Accbal\\JournalLedgerHandler",
+            "events": ["journalWritten"]
+        },
+        {
+            "class": "Shipard\\Module\\Economy\\Accbal\\ClearingRerouteHandler",
             "events": ["journalWritten"]
         }
     ],

@@ -356,7 +356,7 @@ function dispatch(
 		'reports' => dispatchReports($route, $request, $db, $configRuntime, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config)),
 		'setup' => dispatchSetup($route, $request, $auth, $db, $alertCheckRegistry, $configRuntime, $modulePathResolver, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'dsAbout' => dispatchDsAbout($route, $auth, $db, $configRuntime, $resolved->config, resolveLanguage($request, $resolved->config), $tables),
-		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $resolved->config),
+		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $openItemLookup),
 		'accounting' => dispatchAccounting($route, $request, $db, $configRuntime, $journalEventDispatcher, $documentRegistry, $resolved->config),
 		'vat' => dispatchVat($route, $request, $db, $configRuntime, $resolved, $auth, $documentRegistry, $tables, $documentEventDispatcher),
 		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher, $openItemLookup),
@@ -855,7 +855,7 @@ function dispatchAccbal(
 	\Shipard\Core\Database\DataSourceConnection $db,
 	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
 	?\Shipard\Core\Document\JournalEventDispatcher $journalEventDispatcher,
-	\Shipard\Core\Config\DataSourceConfig $dsConfig,
+	?\Shipard\Core\Accounting\OpenItemLookup $openItemLookup = null,
 ): Response {
 	if ($configRuntime === null) {
 		return Response::error('INTERNAL_ERROR', 'ConfigRuntime is required for /_accbal endpoints', 500);
@@ -865,7 +865,7 @@ function dispatchAccbal(
 		return Response::error('INTERNAL_ERROR', 'JournalEventDispatcher is required for /_accbal endpoints', 500);
 	}
 
-	$ctrl = new \Shipard\Api\Controller\AccbalController($db, $configRuntime, $journalEventDispatcher, $dsConfig);
+	$ctrl = new \Shipard\Api\Controller\AccbalController($db, $configRuntime, $journalEventDispatcher, $openItemLookup);
 	return match ($route->action) {
 		'match' => $ctrl->match($request),
 		default => Response::error('INTERNAL_ERROR', "Unknown accbal action: {$route->action}", 500),

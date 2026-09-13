@@ -10,12 +10,12 @@ use Shipard\Api\Request;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\JournalEventDispatcher;
-use Shipard\Module\Economy\Accbal\MatchSummary;
+use Shipard\Module\Economy\Accbal\RouteSummary;
 
 /**
  * Unit testy AccbalController::match — validace body (zrcadlí CLI accbal-match)
- * a tvar agregátní response. Běh matcheru je stubnutý přes runMatch() seam
- * (BalanceMatcher je final).
+ * a tvar agregátní response (verze kontraktu 2, #69 T1). Běh routeru je
+ * stubnutý přes runMatch() seam (ClearingRouter je final).
  */
 class AccbalControllerTest extends TestCase
 {
@@ -42,14 +42,13 @@ class AccbalControllerTest extends TestCase
         return $this->controller->match($request);
     }
 
-    private static function summary(int $allocated, int $planned, float $amount): MatchSummary
+    private static function summary(int $routed, int $planned, float $amount): RouteSummary
     {
-        $s = new MatchSummary();
-        $s->allocated = $allocated;
+        $s = new RouteSummary();
+        $s->routed = $routed;
         $s->planned = $planned;
-        $s->routedUnallocated = 1;
-        $s->skipped = ['no_open_items' => 3];
-        $s->matchedAmount = $amount;
+        $s->skipped = ['no_open_item' => 3, 'no_partner' => 1];
+        $s->routedAmount = $amount;
         return $s;
     }
 
@@ -60,7 +59,7 @@ class AccbalControllerTest extends TestCase
         $payload = $this->match([])->getPayload();
         $this->assertFalse($payload['success']);
         $this->assertSame('VALIDATION', $payload['error']['code']);
-        $this->assertNull($this->controller->capturedDryRun, 'matcher nesmí běžet');
+        $this->assertNull($this->controller->capturedDryRun, 'router nesmí běžet');
     }
 
     public function testUnsupportedScopeIs400(): void
@@ -88,23 +87,24 @@ class AccbalControllerTest extends TestCase
 
     public function testScopeAllReturnsAggregateWithoutResults(): void
     {
-        $this->controller->summary = self::summary(allocated: 5, planned: 0, amount: 1234.56);
+        $this->controller->summary = self::summary(routed: 5, planned: 0, amount: 1234.56);
 
         $payload = $this->match(['scope' => 'all'])->getPayload();
 
         $this->assertTrue($payload['success']);
         $data = $payload['data'];
         $this->assertSame(
-            ['dryRun', 'candidates', 'allocated', 'planned', 'routedUnallocated', 'skipped', 'matchedAmount'],
+            ['dryRun', 'candidates', 'routed', 'planned', 'skipped', 'routedAmount'],
             array_keys($data),
         );
         $this->assertArrayNotHasKey('results', $data);
+        $this->assertArrayNotHasKey('allocated', $data, 'staré pole kontraktu v1');
+        $this->assertArrayNotHasKey('matchedAmount', $data, 'staré pole kontraktu v1');
         $this->assertFalse($data['dryRun']);
-        $this->assertSame(5, $data['allocated']);
+        $this->assertSame(5, $data['routed']);
         $this->assertSame(0, $data['planned']);
-        $this->assertSame(1, $data['routedUnallocated']);
-        $this->assertSame(['no_open_items' => 3], $data['skipped']);
-        $this->assertSame(1234.56, $data['matchedAmount']);
+        $this->assertSame(['no_open_item' => 3, 'no_partner' => 1], $data['skipped']);
+        $this->assertSame(1234.56, $data['routedAmount']);
 
         $this->assertSame([], $this->controller->capturedFilters);
         $this->assertFalse($this->controller->capturedDryRun);
@@ -118,15 +118,15 @@ class AccbalControllerTest extends TestCase
         $this->assertSame(['partner' => 42, 'fiscalYear' => 7], $this->controller->capturedFilters);
     }
 
-    public function testDryRunPropagatesToMatcherAndResponse(): void
+    public function testDryRunPropagatesToRouterAndResponse(): void
     {
-        $this->controller->summary = self::summary(allocated: 0, planned: 8, amount: 999.99);
+        $this->controller->summary = self::summary(routed: 0, planned: 8, amount: 999.99);
 
         $payload = $this->match(['scope' => 'all', 'dryRun' => true])->getPayload();
 
         $this->assertTrue($payload['success']);
         $this->assertTrue($payload['data']['dryRun']);
-        $this->assertSame(0, $payload['data']['allocated']);
+        $this->assertSame(0, $payload['data']['routed']);
         $this->assertSame(8, $payload['data']['planned']);
         $this->assertTrue($this->controller->capturedDryRun);
     }
@@ -134,18 +134,18 @@ class AccbalControllerTest extends TestCase
 
 /**
  * Overriduje runMatch() seam — zaznamená argumenty a vrátí připravený agregát
- * místo reálného běhu BalanceMatcheru.
+ * místo reálného běhu ClearingRouteru.
  */
 class TestableAccbalController extends AccbalController
 {
-    public MatchSummary $summary;
+    public RouteSummary $summary;
     public ?array $capturedFilters = null;
     public ?bool $capturedDryRun = null;
 
-    protected function runMatch(array $filters, bool $dryRun): MatchSummary
+    protected function runMatch(array $filters, bool $dryRun): RouteSummary
     {
         $this->capturedFilters = $filters;
         $this->capturedDryRun = $dryRun;
-        return $this->summary ?? new MatchSummary();
+        return $this->summary ?? new RouteSummary();
     }
 }

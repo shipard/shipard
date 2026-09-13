@@ -20,6 +20,12 @@ use Shipard\Core\Logging\ErrorLogger;
  * Chybová sémantika (mirror stateChanged): výjimku handleru zaloguj a spolkni —
  * commit deníku už proběhl, účtování nesmí spadnout kvůli saldo handleru;
  * další handlery běží dál.
+ *
+ * Pořadí = pořadí registrace (topologické pořadí modulů × pořadí pole
+ * v module.jsonc) — handler smí spoléhat na to, že předchozí doběhl.
+ * Handler dostane i dispatcher sám (AbstractJournalEventHandler::setJournalEvents),
+ * aby účtování spuštěné z handleru vyslalo journalWritten dál; re-entrantní
+ * dispatch je bezpečný (žádný stav mimo memoizované instance).
  */
 final class JournalEventDispatcher
 {
@@ -103,6 +109,7 @@ final class JournalEventDispatcher
             if ($this->dsConfig !== null) {
                 $handler->setDsConfig($this->dsConfig);
             }
+            $handler->setJournalEvents($this);
         }
 
         return $this->instances[$className] = $handler;

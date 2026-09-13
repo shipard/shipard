@@ -1014,8 +1014,8 @@ class Router
 	}
 
 	/**
-	 * POST /_accbal/match — dávkové párování úhrad saldokonta. Destruktivní
-	 * cesty matcheru (unmatch, rematch-partner) API záměrně nevystavuje.
+	 * POST /_accbal/match — dávkové přeúčtování clearingových úhrad na účet
+	 * otevřeného předpisu (#69 D4; kontrakt s importem, docs/accbal.md §5.7).
 	 */
 	private function resolveAccbalRoute(string $subpath, string $method): Route|Response
 	{

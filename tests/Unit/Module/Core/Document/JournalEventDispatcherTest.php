@@ -69,6 +69,36 @@ class JournalEventDispatcherTest extends TestCase
         $this->assertSame([['doc', 9]], SpyJournalHandler::$calls);
     }
 
+    public function testInjectsItselfIntoAbstractHandlers(): void
+    {
+        // Handler, který sám účtuje (ClearingRerouteHandler), musí engine
+        // postavit s týmž dispatcherem, aby re-derivace ledgeru proběhla.
+        DispatcherAwareJournalHandler::$received = null;
+        $dispatcher = new JournalEventDispatcher([
+            ['class' => DispatcherAwareJournalHandler::class, 'events' => ['journalWritten']],
+        ]);
+
+        $dispatcher->dispatchJournalWritten('doc', 5);
+
+        $this->assertSame($dispatcher, DispatcherAwareJournalHandler::$received);
+    }
+
+    public function testReentrantDispatchFromHandlerIsSafe(): void
+    {
+        SpyJournalHandler::$calls = [];
+        ReentrantJournalHandler::$fired = false;
+        $dispatcher = new JournalEventDispatcher([
+            ['class' => ReentrantJournalHandler::class, 'events' => ['journalWritten']],
+            ['class' => SpyJournalHandler::class, 'events' => ['journalWritten']],
+        ]);
+
+        $dispatcher->dispatchJournalWritten('doc', 5);
+
+        // Vnořená událost proběhne celá (oba handlery) ještě před spy voláním
+        // pro původní událost; vnořený handler na bankTransaction končí hned.
+        $this->assertSame([['bankTransaction', 99], ['doc', 5]], SpyJournalHandler::$calls);
+    }
+
     public function testThrowsWhenClassDoesNotImplementInterface(): void
     {
         $dispatcher = new JournalEventDispatcher([
@@ -99,6 +129,30 @@ class ThrowingJournalHandler extends AbstractJournalEventHandler
     {
         self::$called = true;
         throw new \RuntimeException('saldo handler boom');
+    }
+}
+
+class DispatcherAwareJournalHandler extends AbstractJournalEventHandler
+{
+    public static ?JournalEventDispatcher $received = null;
+
+    public function onJournalWritten(string $sourceKind, int $sourceId): void
+    {
+        self::$received = $this->journalEvents;
+    }
+}
+
+class ReentrantJournalHandler extends AbstractJournalEventHandler
+{
+    public static bool $fired = false;
+
+    public function onJournalWritten(string $sourceKind, int $sourceId): void
+    {
+        if ($sourceKind !== 'doc' || self::$fired) {
+            return;
+        }
+        self::$fired = true;
+        $this->journalEvents?->dispatchJournalWritten('bankTransaction', 99);
     }
 }
 

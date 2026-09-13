@@ -6,23 +6,25 @@ namespace Shipard\Api\Controller;
 
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Core\Accounting\NullOpenItemLookup;
+use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
-use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\JournalEventDispatcher;
-use Shipard\Module\Economy\Accbal\BalanceMatcher;
-use Shipard\Module\Economy\Accbal\MatchSummary;
+use Shipard\Module\Economy\Accbal\ClearingRouter;
+use Shipard\Module\Economy\Accbal\RouteSummary;
 
 /**
  * Endpoints:
- *   POST /_accbal/match — dávkové párování úhrad saldokonta ({@see BalanceMatcher::matchAll})
+ *   POST /_accbal/match — dávkové přeúčtování clearingových úhrad na účet
+ *   otevřeného předpisu ({@see ClearingRouter::rerouteAll}, #69 D4).
  *
  * Body (všechna pole volitelná): {"scope": "all", "partner": <int>,
  * "fiscalYear": <int>, "dryRun": <bool>}. Vyžaduje `scope: "all"` nebo aspoň
  * jeden filtr — validace zrcadlí CLI `accbal-match` (--all / --partner /
- * --fiscal-year). Response nese jen agregát z MatchSummary; per-result řádky
- * (mohou být tisíce) se neserializují. Destruktivní cesty matcheru (unmatch,
- * rematch-partner) zůstávají jen v CLI.
+ * --fiscal-year). Response nese jen agregát z RouteSummary (verze kontraktu 2,
+ * docs/accbal.md §5.7); per-result řádky (mohou být tisíce) se neserializují.
+ * Primární konzument: import ze starého Shipardu (závěrečný krok `all`).
  */
 class AccbalController
 {
@@ -30,7 +32,7 @@ class AccbalController
         private readonly DataSourceConnection $db,
         private readonly ConfigRuntime $config,
         private readonly JournalEventDispatcher $journalEvents,
-        private readonly ?DataSourceConfig $dsConfig = null,
+        private readonly ?OpenItemLookup $openItems = null,
     ) {}
 
     /** POST /_accbal/match */
@@ -73,30 +75,30 @@ class AccbalController
         $summary = $this->runMatch($filters, $dryRun);
 
         return Response::success([
-            'dryRun'            => $dryRun,
-            'candidates'        => $summary->candidates(),
-            'allocated'         => $summary->allocated,
-            'planned'           => $summary->planned,
-            'routedUnallocated' => $summary->routedUnallocated,
-            'skipped'           => $summary->skipped,
-            'matchedAmount'     => $summary->matchedAmount,
+            'dryRun'       => $dryRun,
+            'candidates'   => $summary->candidates(),
+            'routed'       => $summary->routed,
+            'planned'      => $summary->planned,
+            'skipped'      => $summary->skipped,
+            'routedAmount' => $summary->routedAmount,
         ]);
     }
 
     /**
-     * Seam pro testy (subclassing) — BalanceMatcher je final, stubuje se
+     * Seam pro testy (subclassing) — ClearingRouter je final, stubuje se
      * až celý běh dávky.
      *
      * @param array{partner?: int, fiscalYear?: int} $filters
      */
-    protected function runMatch(array $filters, bool $dryRun): MatchSummary
+    protected function runMatch(array $filters, bool $dryRun): RouteSummary
     {
-        $matcher = new BalanceMatcher(
+        $router = new ClearingRouter(
             $this->db->getDibiConnection(),
             $this->config,
             $this->journalEvents,
-            $this->dsConfig,
+            // Bez lookupu (DS bez saldokonta) nemá co routovat → vše no_open_item.
+            $this->openItems ?? new NullOpenItemLookup(),
         );
-        return $matcher->matchAll($filters, $dryRun);
+        return $router->rerouteAll($filters, $dryRun);
     }
 }
