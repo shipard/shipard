@@ -81,6 +81,7 @@ class ReadOnlyPolicyTest extends TestCase
 			['bank', 'importStatement', $d403], ['bank', 'reaccount', $d403],
 			['accounting', 'reaccount', $d403], ['accbal', 'match', $d403],
 			['vat', 'reportPeriodLock', $d403], ['vat', 'filingCompose', $d403], ['vat', 'registrationTaxOffice', $d403], ['vat', 'filingAccount', $d403],
+			['vat', 'filingImport', $d403], ['vat', 'filingImportFinish', $d403],
 			// hosting* — vše (řídí jiné DS)
 			['hostingPortal', 'myDatasources', $allow], ['hostingPortal', 'createDatasource', $allow],
 			['hostingOidc', 'token', $allow], ['hostingServer', 'reconcile', $allow],

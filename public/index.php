@@ -511,6 +511,8 @@ function dispatchVat(
 		'reportPeriodLock'        => $ctrl->lockPeriod($request),
 		'registrationTaxOffice'   => $ctrl->registrationTaxOffice($request),
 		'filingAccount'           => $ctrl->account($request),
+		'filingImport'            => $ctrl->import($request),
+		'filingImportFinish'      => $ctrl->importFinish($request),
 		default                   => Response::error('INTERNAL_ERROR', "Unknown vat action: {$route->action}", 500),
 	};
 }

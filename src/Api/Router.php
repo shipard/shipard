@@ -396,6 +396,22 @@ class Router
 			return new Route('vat', 'filingAccount');
 		}
 
+		// POST /_vat/filing-import — import starého podání DPH (#55 D38)
+		if ($subpath === '/_vat/filing-import') {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('vat', 'filingImport');
+		}
+
+		// POST /_vat/filing-import-finish — přechod importovaného podání do Podáno (#55 D38)
+		if ($subpath === '/_vat/filing-import-finish') {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('vat', 'filingImportFinish');
+		}
+
 		// POST /_bank/import-statement — import bankovního výpisu (multipart)
 		if ($subpath === '/_bank/import-statement') {
 			if ($method !== 'POST') {

@@ -16,6 +16,9 @@ use Shipard\Core\Document\DocumentResult;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Module\Economy\Codebooks\VatRegistrationDocument;
 use Shipard\Module\Economy\Vat\Accounting\VatReturnAccountingService;
+use Shipard\Module\Economy\Vat\Import\FilingImportException;
+use Shipard\Module\Economy\Vat\Import\FilingImportRequest;
+use Shipard\Module\Economy\Vat\Import\FilingImportService;
 use Shipard\Module\Economy\Vat\Xml\FilingFile;
 use Shipard\Module\Economy\Vat\Xml\FilingFilesFactory;
 use Shipard\Module\Economy\Vat\Xml\FilingXmlValidationException;
@@ -45,6 +48,13 @@ use Shipard\Module\Economy\Vat\Xml\FilingXmlValidationException;
  * POST /_vat/filing-account, body {"filingId": N} — zaúčtování podaného
  * přiznání (#55 D28–D31): účetní doklad cmnbkp jako koncept + vazba na
  * podání (akce „Zaúčtovat" v detailu podání).
+ *
+ * POST /_vat/filing-import, body {reportPeriodId, reportType, filingKind,
+ * name, dateIssue, dateFiled, dateFound, accDocumentId, xml, legacy} —
+ * import starého podání (#55 D38): koncept s `origin = imported`,
+ * snapshot composerem, podané hodnoty z XML. Runner pak nahraje původní
+ * přílohy a zavolá POST /_vat/filing-import-finish, body {"filingId": N}
+ * — přechod do Podáno (idempotentní).
  */
 final class VatFilingController
 {
@@ -396,6 +406,67 @@ final class VatFilingController
         }
 
         return Response::success(['filingId' => $filingId]);
+    }
+
+    /**
+     * POST /_vat/filing-import — založí importované podání (#55 D38).
+     * Chyby služby jdou s jejím kódem a stavem (`PERIOD_NOT_FOUND` 404,
+     * `DRAFT_EXISTS` / `INVALID_KIND` / `XML_UNREADABLE` … 422, `details`
+     * u konceptu = id a legacy, u validace = chyby polí).
+     */
+    public function import(Request $request): Response
+    {
+        $body = $request->getBody();
+        if (!is_array($body)) {
+            return Response::error('BAD_REQUEST', 'Body must be a JSON object', 400);
+        }
+        $service = $this->importService();
+        if ($service instanceof Response) {
+            return $service;
+        }
+        try {
+            $result = $service->import(FilingImportRequest::fromArray($body));
+        } catch (FilingImportException $e) {
+            return Response::error($e->errorCode, $e->getMessage(), $e->status, $e->details);
+        }
+        return Response::success($result->toArray());
+    }
+
+    /**
+     * POST /_vat/filing-import-finish, body {"filingId": N} — importované
+     * podání do Podáno po nahrání původních příloh; už podané = no-op.
+     */
+    public function importFinish(Request $request): Response
+    {
+        $filing = $this->resolveFiling($request);
+        if ($filing instanceof Response) {
+            return $filing;
+        }
+        $service = $this->importService();
+        if ($service instanceof Response) {
+            return $service;
+        }
+        try {
+            $result = $service->finish((int) $filing['id']);
+        } catch (FilingImportException $e) {
+            return Response::error($e->errorCode, $e->getMessage(), $e->status, $e->details);
+        }
+        return Response::success($result);
+    }
+
+    private function importService(): FilingImportService|Response
+    {
+        if ($this->documents === null || $this->tables === []) {
+            return Response::error('INTERNAL_ERROR', 'Document registry or table definitions unavailable', 500);
+        }
+        return new FilingImportService(
+            $this->db->getDibiConnection(),
+            $this->config,
+            $this->dsConfig,
+            $this->documents,
+            $this->tables,
+            $this->dispatcher,
+        );
     }
 
     /**
