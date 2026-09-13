@@ -208,4 +208,25 @@ final class VatXmlMapping
         $name = $this->countries[$key]['epoName'] ?? null;
         return is_string($name) && $name !== '' ? $name : null;
     }
+
+    /**
+     * ISO kód státu podle názvu pro EPO — reverz `countryName()` pro import
+     * hlavičky z podaného XML (#55 D34). Porovnává se bez ohledu na
+     * velikost písmen; neznámý název vrátí `null` (volající nechá hodnotu
+     * z profilu).
+     */
+    public function countryCode(mixed $epoName): ?string
+    {
+        $needle = mb_strtoupper(trim((string) ($epoName ?? '')));
+        if ($needle === '') {
+            return null;
+        }
+        foreach ($this->countries as $code => $entry) {
+            $name = is_array($entry) ? ($entry['epoName'] ?? null) : null;
+            if (is_string($name) && mb_strtoupper($name) === $needle) {
+                return strtolower((string) $code);
+            }
+        }
+        return null;
+    }
 }
