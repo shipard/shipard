@@ -9,14 +9,23 @@
     // bez document class a bez formu (jako účetní deník).
     //
     // Identita pohybu (`id`) je stabilní přes reaccount — UPSERT podle klíče
-    // (source_kind, source_id, balance, bal_side, account_number), aby reaccount
-    // pohyb nezdvojil a UI mělo stálý odkaz (detail, row_id případu).
-    // `source_id` je non-null kopie id zdroje
-    // (= doc_head NEBO bank_transaction dle source_kind) — drží unique index
-    // funkční (UNIQUE s NULL sloupcem v MariaDB duplicity nechytá, a jeden z FK
-    // je vždy NULL). doc_head/bank_transaction zůstávají jako typové FK pro
-    // joiny a cascade úklid. `journal_row` je jen denorm (volatilní přes
-    // reaccount), bez FK.
+    // zdroj + platební identita řádku (#69 D13):
+    // (source_kind, source_id, balance, bal_side, account_number,
+    //  partner, payment_reference, specific_symbol, currency)
+    // — řádky téhož zdroje se stejnou identitou se sčítají do jednoho pohybu,
+    // různé identity (otevírací doklad období, zápočet, pokladní doklad s více
+    // řádky) dají různé pohyby. V DB klíč reprezentuje `movement_key` = SHA-1
+    // kanonické podoby (LedgerGenerator::movementKey) — MariaDB v unikátním
+    // indexu nevynucuje shodu přes NULL (VS/SS mohou být NULL po D10), proto
+    // hash a ne n-tice sloupců. `source_id` je non-null kopie id zdroje
+    // (= doc_head NEBO bank_transaction dle source_kind); doc_head/
+    // bank_transaction zůstávají jako typové FK pro joiny a cascade úklid.
+    // `journal_row` je jen denorm (volatilní přes reaccount), bez FK.
+    //
+    // Historický index `unq_stable_key (source_kind, source_id, balance,
+    // bal_side, account_number)` z definice zmizel (ds-upgrade index neumí
+    // změnit ani zrušit) — na DS z doby před D13 zůstává a musí se zrušit
+    // ručně před `accbal-regenerate --all` (docs/accbal.md §4.6).
 
     "displayPattern": "{account_number} {amount}",
 
@@ -31,9 +40,16 @@
         {"id": "source_kind", "name": "Source kind", "name:cs": "Zdroj", "name:en": "Source kind",
             "type": "enumString", "length": 20, "cfgItem": "economy.accounting.journalSources", "nullable": false, "default": "doc"},
         // Non-null id zdroje (= doc_head | bank_transaction dle source_kind);
-        // součást stabilní identity, drží unique index funkční (bez NULL).
+        // součást stabilní identity (movement_key) a klíč idx_source.
         {"id": "source_id", "name": "Source ID", "name:cs": "ID zdroje", "name:en": "Source ID",
             "type": "int", "nullable": false},
+        // SHA-1 kanonické podoby klíče pohybu (D13) — jen identita pohybu pro
+        // UPSERT a unikátnost v DB; klíč případu zůstává n-ticí sloupců bez
+        // hashe (D11). Nullable kvůli ds-upgrade na existujících DS: staré
+        // řádky dostanou NULL (unikátní index nekoliduje), generátor klíč
+        // zapisuje vždy — NULL = pohyb z doby před D13, ještě neregenerovaný.
+        {"id": "movement_key", "name": "Movement key", "name:cs": "Klíč pohybu", "name:en": "Movement key",
+            "type": "varchar", "length": 40, "nullable": true},
         {"id": "doc_head", "name": "Document", "name:cs": "Doklad", "name:en": "Document",
             "type": "int", "nullable": true, "reference": "docs_core_heads"},
         // accbal závisí na economy.bank → přímý FK (ne extension jako u deníku).
@@ -80,9 +96,11 @@
     ],
 
     "indexes": [
-        {"id": "unq_stable_key", "type": "unique", "columns": [
-            {"column": "source_kind"}, {"column": "source_id"},
-            {"column": "balance"}, {"column": "bal_side"}, {"column": "account_number"}]},
+        {"id": "unq_movement_key", "type": "unique", "columns": [{"column": "movement_key"}]},
+        // Pohyby zdroje (UPSERT generátoru, úklid) — dřív je kryl prefix
+        // unq_stable_key.
+        {"id": "idx_source", "type": "index", "columns": [
+            {"column": "source_kind"}, {"column": "source_id"}]},
         {"id": "idx_bucket", "type": "index", "columns": [
             {"column": "balance"}, {"column": "partner"}, {"column": "currency"}, {"column": "fiscal_year"}]},
         // Klíč případu (#69 D11) — složený index nad sloupci rovnosti: bodové

@@ -16,6 +16,10 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  *
  * Vstupem generátoru je účetní deník — testy ho seedují přímo (izolace od
  * účtovacího enginu), generují pohyby a ověřují skupinu/stranu/částky/idempotenci.
+ *
+ * Klíč pohybu = zdroj + platební identita řádku (#69 D13): doklad s více
+ * identitami (otevírací doklad, zápočet) dá pohyb per identitu, řádky téže
+ * identity se sčítají, `id` je stabilní přes přeúčtování per identita.
  */
 class LedgerGeneratorTest extends IntegrationTestCase
 {
@@ -281,5 +285,197 @@ class LedgerGeneratorTest extends IntegrationTestCase
         $handler->onBeforeDelete('docs_core_heads', ['id' => $docId]);
 
         $this->assertSame([], $this->ledgerOf('doc', $docId), 'beforeDelete smaže pohyby zdroje');
+    }
+
+    // ── Klíč pohybu per platební identita (#69 D13) ─────────────────────────
+
+    /** @return array<string, array<string, mixed>> movement_key → pohyb */
+    private function ledgerByKey(string $sourceKind, int $sourceId): array
+    {
+        $byKey = [];
+        foreach ($this->ledgerOf($sourceKind, $sourceId) as $m) {
+            $this->assertNotNull($m['movement_key'], 'generátor klíč zapisuje vždy');
+            $byKey[(string) $m['movement_key']] = $m;
+        }
+        return $byKey;
+    }
+
+    /** Řádek deníku 311 MD pro partnera a VS (otevírací pohledávka). */
+    private function receivableRow(int $partner, string $vs, float $amount, array $over = []): array
+    {
+        return array_merge([
+            'account_number'    => '311100',
+            'money_dr'          => $amount,
+            'money_dr_cur'      => $amount,
+            'partner'           => $partner,
+            'payment_reference' => $vs,
+            'due_date'          => '2026-07-10',
+        ], $over);
+    }
+
+    public function testOpeningDocumentGivesMovementPerIdentity(): void
+    {
+        $recv = $this->balanceId('receivables');
+        $docId = $this->newDocId();
+        // Otevírací doklad období: tři pohledávky tří partnerů v jednom dokladu.
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 100.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(2, 'VS2', 200.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(3, 'VS3', 300.00));
+
+        $stats = $this->generator()->generate('doc', $docId);
+
+        $this->assertSame(['inserted' => 3, 'updated' => 0, 'deleted' => 0], $stats);
+        $ledger = $this->ledgerOf('doc', $docId);
+        $this->assertCount(3, $ledger, 'Tři identity → tři pohyby, ne jeden slitý');
+        $byVs = [];
+        foreach ($ledger as $m) {
+            $this->assertSame($recv, (int) $m['balance']);
+            $this->assertSame(0, (int) $m['bal_side']);
+            $byVs[$m['payment_reference']] = $m;
+        }
+        $this->assertSame(['VS1', 'VS2', 'VS3'], array_keys($byVs));
+        $this->assertSame(1, (int) $byVs['VS1']['partner']);
+        $this->assertEqualsWithDelta(100.00, (float) $byVs['VS1']['amount'], 0.001);
+        $this->assertSame(3, (int) $byVs['VS3']['partner']);
+        $this->assertEqualsWithDelta(300.00, (float) $byVs['VS3']['amount_hc'], 0.001);
+        // Součet pohybů dokladu = obrat dokladu na saldo-účtu.
+        $this->assertEqualsWithDelta(600.00, array_sum(array_map(fn($m) => (float) $m['amount'], $ledger)), 0.001);
+        $this->assertCount(3, array_unique(array_column($ledger, 'movement_key')), 'movement_key per identita unikátní');
+    }
+
+    public function testSameIdentityRowsAggregateIntoOneMovement(): void
+    {
+        $docId = $this->newDocId();
+        // Faktura se dvěma řádky na 311 téže identity (dvě sazby DPH).
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 1210.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 115.00));
+
+        $this->generator()->generate('doc', $docId);
+
+        $ledger = $this->ledgerOf('doc', $docId);
+        $this->assertCount(1, $ledger, 'Stejná identita v jednom zdroji = jeden pohyb (regrese)');
+        $this->assertEqualsWithDelta(1325.00, (float) $ledger[0]['amount'], 0.001);
+        $this->assertEqualsWithDelta(1325.00, (float) $ledger[0]['amount_hc'], 0.001);
+    }
+
+    public function testNullAndEmptySpecificSymbolAreSameIdentity(): void
+    {
+        $docId = $this->newDocId();
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 100.00, ['specific_symbol' => null]));
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 50.00, ['specific_symbol' => '']));
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, ' VS1 ', 25.00, ['specific_symbol' => '  ', 'currency' => 'CZK']));
+
+        $this->generator()->generate('doc', $docId);
+
+        $ledger = $this->ledgerOf('doc', $docId);
+        $this->assertCount(1, $ledger, 'NULL, prázdný a mezerový SS po normalizaci = táž identita');
+        $this->assertEqualsWithDelta(175.00, (float) $ledger[0]['amount'], 0.001);
+        $this->assertNull($ledger[0]['specific_symbol']);
+        $this->assertSame('VS1', $ledger[0]['payment_reference']);
+    }
+
+    public function testReaccountPreservesIdsPerIdentity(): void
+    {
+        $docId = $this->newDocId();
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 100.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(2, 'VS2', 200.00));
+        $this->generator()->generate('doc', $docId);
+        $before = $this->ledgerByKey('doc', $docId);
+        $this->assertCount(2, $before);
+
+        // Reaccount: deník přepsán v jiném pořadí řádků (nové journal_row id).
+        $dibi = $this->db->getDibiConnection();
+        $dibi->delete('economy_accounting_journal')->where('doc_head = %i', $docId)->execute();
+        $this->insertJournal('doc', $docId, $this->receivableRow(2, 'VS2', 200.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 100.00));
+        $stats = $this->generator()->generate('doc', $docId);
+
+        $this->assertSame(['inserted' => 0, 'updated' => 2, 'deleted' => 0], $stats);
+        $after = $this->ledgerByKey('doc', $docId);
+        $this->assertSame(array_keys($before), array_keys($after), 'stejné klíče');
+        foreach ($before as $key => $m) {
+            $this->assertSame((int) $m['id'], (int) $after[$key]['id'], "id pohybu {$m['payment_reference']} přežije reaccount");
+            $this->assertNotSame((int) $m['journal_row'], (int) $after[$key]['journal_row'], 'journal_row je denorm, refreshuje se');
+        }
+    }
+
+    public function testChangedSymbolReplacesOnlyThatMovement(): void
+    {
+        $docId = $this->newDocId();
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 100.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(2, 'VS2', 200.00));
+        $this->generator()->generate('doc', $docId);
+        $before = $this->ledgerByKey('doc', $docId);
+        $keepKey = LedgerGenerator::movementKey($before[array_key_first($before)]);
+
+        // Oprava VS druhé pohledávky → jiná identita.
+        $dibi = $this->db->getDibiConnection();
+        $dibi->delete('economy_accounting_journal')->where('doc_head = %i', $docId)->execute();
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 100.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(2, 'VS2-fixed', 200.00));
+        $stats = $this->generator()->generate('doc', $docId);
+
+        $this->assertSame(['inserted' => 1, 'updated' => 1, 'deleted' => 1], $stats);
+        $after = $this->ledgerByKey('doc', $docId);
+        $this->assertCount(2, $after);
+        $vs1Before = null;
+        $vs2Before = null;
+        foreach ($before as $m) {
+            $m['payment_reference'] === 'VS1' ? $vs1Before = $m : $vs2Before = $m;
+        }
+        $ids = array_map(fn($m) => (int) $m['id'], $after);
+        $this->assertContains((int) $vs1Before['id'], $ids, 'nedotčená identita drží id');
+        $this->assertNotContains((int) $vs2Before['id'], $ids, 'změněná identita = DELETE starého + INSERT nového');
+        $this->assertSame(['VS1', 'VS2-fixed'], array_values(array_map(fn($m) => $m['payment_reference'], $this->ledgerOf('doc', $docId))));
+        $this->assertArrayHasKey($keepKey, $after, 'movement_key se počítá i z uloženého řádku shodně');
+    }
+
+    public function testDryRunCountsWithoutWriting(): void
+    {
+        $docId = $this->newDocId();
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 100.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(2, 'VS2', 200.00));
+
+        $plan = $this->generator()->generate('doc', $docId, true);
+
+        $this->assertSame(['inserted' => 2, 'updated' => 0, 'deleted' => 0], $plan);
+        $this->assertSame([], $this->ledgerOf('doc', $docId), 'dry-run nic nezapíše');
+
+        $this->generator()->generate('doc', $docId);
+        $again = $this->generator()->generate('doc', $docId, true);
+        $this->assertSame(['inserted' => 0, 'updated' => 2, 'deleted' => 0], $again);
+    }
+
+    public function testLegacyMovementWithoutKeyIsReplaced(): void
+    {
+        // Pohyb z doby před D13: po ds-upgrade má movement_key NULL a doklad se
+        // dvěma identitami byl slitý do jednoho řádku. Re-derivace ho nahradí.
+        $recv = $this->balanceId('receivables');
+        $docId = $this->newDocId();
+        $this->insertJournal('doc', $docId, $this->receivableRow(1, 'VS1', 100.00));
+        $this->insertJournal('doc', $docId, $this->receivableRow(2, 'VS2', 200.00));
+        $this->db->getDibiConnection()->insert('economy_accbal_ledger', [
+            'balance'           => $recv,
+            'bal_side'          => 0,
+            'source_kind'       => 'doc',
+            'source_id'         => $docId,
+            'doc_head'          => $docId,
+            'movement_key'      => null,
+            'account_number'    => '311100',
+            'partner'           => 1,
+            'payment_reference' => 'VS1',
+            'currency'          => 'czk',
+            'amount'            => 300.00,
+            'amount_hc'         => 300.00,
+        ])->execute();
+        $legacyId = (int) $this->ledgerOf('doc', $docId)[0]['id'];
+
+        $stats = $this->generator()->generate('doc', $docId);
+
+        $this->assertSame(['inserted' => 2, 'updated' => 0, 'deleted' => 1], $stats);
+        $ledger = $this->ledgerOf('doc', $docId);
+        $this->assertCount(2, $ledger, 'slitý pohyb rozdělen na dva');
+        $this->assertNotContains($legacyId, array_map(fn($m) => (int) $m['id'], $ledger));
+        $this->assertEqualsWithDelta(300.00, array_sum(array_map(fn($m) => (float) $m['amount'], $ledger)), 0.001);
     }
 }
