@@ -14,8 +14,10 @@ předpisu.
 > issue z 2026-09-12 a 2026-09-13): T1 `bank-payment-routing` (routing
 > v enginu, trigger přeúčtování, §5) a T2 `accbal-symbol-key` (případ =
 > agregát klíče, alokační vrstva zrušena, viewer po případech, §3.4) hotové
-> 2026-09-14. Následují T3 efektivní symboly, T4 opakované platby, T5
-> průvodci oprav, T6 dashboard (§9).
+> 2026-09-14; téhož dne oprava klíče pohybu **D13** (pohyb per platební
+> identita řádku, `movement_key`, `accbal-regenerate` — §4.3, §4.6;
+> `tasks/accbal-ledger-identity-key.md`). Následují T3 efektivní symboly,
+> T4 opakované platby, T5 průvodci oprav, T6 dashboard (§9).
 
 ---
 
@@ -203,7 +205,8 @@ a maže ho jen handler (jako účetní deník sám).
 | `balance` | int, FK balances, not null | skupina saldokonta — **klíč** |
 | `bal_side` | enumInt, not null | 0 = Předpis, 1 = Úhrada |
 | `source_kind` | enumString 20 | `doc` \| `bankTransaction` (denorm z deníku) |
-| `source_id` | int, not null | id zdroje (kopie doc_head / bank_transaction) — drží unikátní index bez NULL |
+| `source_id` | int, not null | id zdroje (kopie doc_head / bank_transaction) — součást klíče pohybu, `idx_source` |
+| `movement_key` | varchar 40, nullable | SHA-1 kanonické podoby klíče pohybu (§4.3, D13) — jen identita pohybu pro UPSERT a unikátnost; `NULL` = pohyb z doby před D13, ještě neregenerovaný (§4.6) |
 | `doc_head` | int, FK docs_core_heads, nullable | zdroj (dle source_kind) |
 | `bank_transaction` | int, FK economy_bank_transactions, nullable | zdroj |
 | `journal_row` | int, nullable | **denorm** odkaz na aktuální řádek deníku (pro „otevřít deník"); **není** stabilní identita — viz §4.3 |
@@ -220,17 +223,23 @@ a maže ho jen handler (jako účetní deník sám).
 | `amount_hc` | numeric 15,2 | částka v domácí měně |
 | `text` | varchar 200, nullable | |
 
-Indexy: `unq_stable_key (source_kind, source_id, balance, bal_side,
-account_number)`, **`idx_case (balance, fiscal_year, partner,
-payment_reference, specific_symbol, currency)`** (klíč případu, D11),
-bucket `(balance, partner, currency, fiscal_year)`, `(payment_reference)`,
-`(doc_head)`, `(bank_transaction)`, `(account_number, fiscal_year)`.
+Indexy: `unq_movement_key (movement_key)` unique (klíč pohybu, D13),
+`idx_source (source_kind, source_id)` (pohyby zdroje — UPSERT, úklid),
+**`idx_case (balance, fiscal_year, partner, payment_reference,
+specific_symbol, currency)`** (klíč případu, D11), bucket `(balance,
+partner, currency, fiscal_year)`, `(payment_reference)`, `(doc_head)`,
+`(bank_transaction)`, `(account_number, fiscal_year)`. Historický
+`unq_stable_key (source_kind, source_id, balance, bal_side,
+account_number)` v definici není; na DS z doby před D13 zůstává a ruší se
+ručně (§4.6).
 
 Poznámky:
 
 - **Žádné `request`/`payment`/`residual` na pohybu** (na rozdíl od starého
-  Saldo2) a **žádný uložený hash klíče** — případ je agregát (§3.4), klíč
-  je n-tice sloupců a složený index.
+  Saldo2) a **žádný uložený hash klíče případu** — případ je agregát
+  (§3.4), klíč je n-tice sloupců a složený index. `movement_key` je hash
+  jen **identity pohybu** (unikátnost v DB, §4.3), do dotazů nad případem
+  nevstupuje.
 - **Normalizace klíče při zápisu (D10):** generátor ukládá symboly
   `TRIM`nuté, prázdné jako `NULL`, měnu malými písmeny. Rovnost klíče pak
   jde přes `idx_case` bez `TRIM`/`COALESCE`/`LOWER` ve `WHERE`; prázdný
@@ -408,7 +417,10 @@ přeúčtování".
         amount    = částka řádku (×−1 dle modify_sign), obě měny
         partner, symboly (normalizované, D10), due_date, fiscal_year,
         account_number, journal_row
-4. UPSERT pohybů zdroje podle stabilního klíče (§4.3); chybějící smaž.
+     Kandidáti téhož zdroje se stejným klíčem pohybu (§4.3: zdroj + účet +
+     platební identita řádku) se sčítají do jednoho pohybu; journal_row,
+     due_date a text z prvního řádku skupiny.
+4. UPSERT pohybů zdroje podle klíče pohybu (§4.3); chybějící smaž.
 ```
 
 Chybový řádek deníku (`is_error`, nedohledaný účet) pohyb nevyrobí —
@@ -423,28 +435,50 @@ ve dvou skupinách). Pohyb dědí měny z deníku přímo, žádný přepočet.
 po každém přechodu dokladu 40→80→40 by `id` přeskákalo a odkazy z UI by
 dangly.
 
-**Řešení:** identita pohybu = stabilní klíč odvozený ze **zdroje**, ne z řádku
-deníku:
+**Řešení:** identita pohybu = stabilní klíč odvozený ze **zdroje** a
+z **platební identity řádku** (D13), ne z řádku deníku:
 
 ```
-(source_kind, source_id, balance, bal_side, account_number)
+(source_kind, source_id, balance, bal_side, account_number,
+ partner, payment_reference, specific_symbol, currency)
 ```
 
 Tenhle klíč je stabilní přes přeúčtování (zdroj se nemění, saldo-účet se
-nemění). Generátor pohyby **UPSERTuje** podle něj (vzor starého
-`saveBalanceJournalRequests` + memo `claimAccountForNewId`):
+nemění, identita řádku plyne z dokladu, ne z `journal.id`). Symboly a měna
+v klíči jsou normalizované stejně jako klíč případu (D10,
+`CaseQuery::normalizeSymbol/normalizeCurrency`), takže klíč pohybu a klíč
+případu si odpovídají. Generátor pohyby **UPSERTuje** podle něj (vzor
+starého `saveBalanceJournalRequests` + memo `claimAccountForNewId`):
 
 - existuje pohyb s klíčem → UPDATE částek/symbolů, `id` se zachová
 - nový klíč → INSERT
-- pohyb zdroje, který už v novém deníku není → DELETE
+- pohyb zdroje, který už v novém deníku není → DELETE (jde první, aby se
+  nový pohyb nepotkal se starým řádkem téhož zdroje)
 
 Případ je agregát (§3.4), takže smazaný pohyb z něj zmizí sám — žádná
 cascade. `journal_row` je jen **denorm** odkaz na aktuální řádek (refreshuje
 se při každé re-derivaci), pro akci „otevřít řádek deníku". Není load-bearing.
 
-> Jednoznačnost klíče: grouping deníku slučuje řádky per `(side, account_number,
-> partner, operation)`; partner je konstantní per zdroj, takže na daném
-> saldo-účtu a straně je per zdroj **právě jeden** řádek → klíč je unikátní.
+**Proč identita řádku v klíči (D13):** původní klíč `(source_kind,
+source_id, balance, bal_side, account_number)` stál na předpokladu, že
+partner je konstantní per zdroj, takže na daném saldo-účtu je per zdroj
+právě jeden řádek deníku. Platí pro fakturu a bankovní transakci, ne pro
+**otevírací doklad období** (desítky pohledávek různých partnerů v jednom
+dokladu), **interní doklady** (zápočty, hromadné vyúčtování, opravy salda)
+a **pokladní doklady s více řádky**. Ty se slévaly do jednoho pohybu
+s partnerem a VS prvního řádku a součtem všech — na reimportovaném DS
+tisíce dokladů a většina „úhrad bez předpisu". Řádky téhož zdroje se
+**stejnou** identitou se dál sčítají (faktura se dvěma řádky na 311 =
+jeden předpis); různé identity = různé pohyby, každý s částkou své
+pohledávky, součet pohybů dokladu = obrat dokladu na saldo-účtu.
+
+**V DB klíč nese `movement_key`** = SHA-1 kanonické podoby (hodnoty klíče
+oddělené `|`, `NULL` jako prázdný řetězec, po normalizaci D10;
+`LedgerGenerator::movementKey()` je jediná definice), s unikátním indexem
+`unq_movement_key`. Unikátní index nad n-ticí sloupců by nestačil — MariaDB
+v něm nevynucuje shodu přes `NULL` a VS/SS po D10 `NULL` být mohou. Hash je
+jen identita **pohybu**; případ zůstává n-ticí bez hash sloupce (D11).
+Sloupec je nullable kvůli `ds-upgrade` na existujících DS (§4.6).
 
 ### 4.4 Clearing šev (varianta B)
 
@@ -493,6 +527,54 @@ nesmí (kolize `unq_code`), a stará skupina „Peníze na cestě" na holém pre
 Pojistka: pre-flight v `AllRunner` ověří přítomnost infrastruktury a tvrdě
 spadne dřív, než začne import dokladů/transakcí (tichý no-op → hlasitá
 chyba).
+
+### 4.6 Hromadná re-derivace a nasazení změny klíče na existující DS
+
+Ledger drží událost `journalWritten` per zdroj; pro dávku je
+`shpd-ds accbal-regenerate --all | --doc=<id> | --fiscal-year=<id>
+[--dry-run]` (`docs/cli.md`): projde zdroje deníku ∪ ledgeru (osiřelý
+pohyb bez deníku se smaže), per zdroj `LedgerGenerator::generate` —
+idempotentní UPSERT podle `movement_key`, žádné `journalWritten` (deník se
+nemění; přeúčtování clearingu zůstává věcí `accbal-match`). Vypíše počty
+vložených / aktualizovaných / smazaných pohybů. Použití: po každé změně
+generátoru, po `ds-upgrade` s novým klíčem, při podezření na rozjetý
+ledger. Na importovaném DS běží nízké desítky sekund.
+
+**Nasazení D13 na DS z doby před změnou klíče** (jednorázově, v tomto
+pořadí; na alfě mutace jen po schválení v chatu):
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds ds-upgrade                     # přidá movement_key (NULL), unq_movement_key, idx_source
+# ručně (ds-upgrade index neumí zrušit ani změnit):
+#   ALTER TABLE economy_accbal_ledger DROP INDEX unq_stable_key;
+shpd-ds accbal-regenerate --all --dry-run
+shpd-ds accbal-regenerate --all        # staré pohyby (movement_key NULL) nahradí novými
+```
+
+Bez ručního `DROP INDEX` selže INSERT druhého pohybu téhož dokladu na
+starém unikátním indexu. `ds-upgrade` sloupec přidává jako `NULL` právě
+proto, aby unikátní index vznikl bez kolize na existujících řádcích;
+regenerace klíč dopíše. Při této jednorázové regeneraci se `id` pohybů
+změní (starý řádek bez klíče se smaže, nový vloží) — nikde nejsou
+persistované odkazy (`row_id` případu se počítá živě), takže to nevadí.
+DS, které se resetují a importují znovu, kroky nepotřebují.
+
+Kontrola po regeneraci — doklady, kde je na saldo-účtu víc platebních
+identit než pohybů (musí vrátit 0 řádků):
+
+```sql
+SELECT j.source_kind, j.doc_head AS source_id, j.account_number,
+       COUNT(DISTINCT j.partner, NULLIF(TRIM(j.payment_reference), ''),
+             NULLIF(TRIM(j.specific_symbol), ''), LOWER(j.currency)) AS identities,
+       (SELECT COUNT(*) FROM economy_accbal_ledger l
+         WHERE l.source_kind = j.source_kind AND l.source_id = j.doc_head
+           AND l.account_number = j.account_number) AS movements
+FROM economy_accounting_journal j
+WHERE j.source_kind = 'doc' AND j.is_error = 0
+GROUP BY 1, 2, 3
+HAVING movements > 0 AND movements < identities;
+```
 
 ---
 
@@ -580,6 +662,8 @@ stačí, částka může být vyšší) je záporný zůstatek případu na 311/
 - **CLI `accbal-match`** (`src/Command/DataSource/AccbalMatchCommand.php`):
   `--all` / `--partner=` / `--fiscal-year=` + `--dry-run` — dávka
   `ClearingRouter::rerouteAll()` nad clearingem (import, ladění).
+- **CLI `accbal-regenerate`** (§4.6) — hromadná re-derivace ledgeru
+  z deníku; routing nespouští, po ní případně `accbal-match`.
 - **`POST /_accbal/match`** — §5.7, kontrakt s importem ze starého Shipardu.
 
 ### 5.5 Idempotence a období (D11)
@@ -801,10 +885,12 @@ partner resolution při ingestaci.
 5. ~~**Pohyb vs. párování odděleno**: `ledger` = ryzí pohyby, `allocations` =
    vazby úhrada↔předpis s rozúčtovanou částkou.~~ **Nahrazeno #69 D1 (#20)**
    — párování je agregát klíče, žádná vrstva vazeb.
-6. **Identita pohybu = stabilní klíč zdroje** `(source_kind, source_id, balance,
-   bal_side, account_number)`, ne `journal_row.id` (ten je nestabilní přes
+6. ~~**Identita pohybu = stabilní klíč zdroje** `(source_kind, source_id, balance,
+   bal_side, account_number)`~~, ne `journal_row.id` (ten je nestabilní přes
    DELETE+INSERT deníku). UPSERT podle něj drží `id` pohybu přes přeúčtování
-   (odkazy z UI, `row_id` případu).
+   (odkazy z UI, `row_id` případu). **Klíč rozšířen #69 D13 (#32)** o
+   platební identitu řádku — princip „klíč ze zdroje, ne z řádku deníku"
+   trvá.
 7. **Clearing varianta B**: clearing účty (261200/261300) jsou saldo-skupina
    „Nespárované platby"; router má jediný zdroj kandidátů (ledger), přechod
    clearing → účet předpisu řeší re-derivace po `journalWritten`.
@@ -897,6 +983,16 @@ partner resolution při ingestaci.
     helper sdílený s deníkem). „Pohyby případu" posílají období případu
     (`pendingFilters` > `default`) — mění bod 28: pohyby klíče přes roky
     nejsou výchozí pohled, jsou dostupné uvolněním filtru (§3.4).
+32. **Identita pohybu = zdroj + platební identita řádku** (#69 D13,
+    2026-09-14, `tasks/accbal-ledger-identity-key.md`; upřesňuje #6):
+    klíč `(source_kind, source_id, balance, bal_side, account_number,
+    partner, VS, SS, měna)`, řádky stejné identity v jednom zdroji se
+    sčítají. Původní předpoklad „partner konstantní per zdroj" neplatí pro
+    otevírací, interní a pokladní doklady — slévaly se do jednoho pohybu.
+    V DB `movement_key` (SHA-1, unikátní index; nullable kvůli ds-upgrade)
+    — hash jen pro unikátnost pohybu, klíč případu zůstává n-ticí (D11).
+    `unq_stable_key` z definice pryč, na starých DS ručně; hromadná
+    re-derivace CLI `accbal-regenerate`, ne reimport (§4.3, §4.6).
 
 ---
 
@@ -910,8 +1006,6 @@ partner resolution při ingestaci.
   měřit na importovaném DS po nasazení; případně materializovat zůstatky až
   podle čísel, ne předem. Per-řádkový subdotaz zůstatku (viewer pohybů) je
   bodové dohledání přes `idx_case`.
-- **Výkon hromadné re-derivace** — generátor běží per zdroj; pro tisíce
-  zdrojů zvážit dávkový režim (analogie `bank.md` §11 „account all").
 - **Generátor otevíracích dokladů období** (§7) — do té doby import ze
   starého Shipardu; ověřit, že importovaný otevírací doklad nese partnera
   a VS/SS na řádcích.
