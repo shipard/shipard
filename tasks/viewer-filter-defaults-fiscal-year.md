@@ -1,6 +1,6 @@
 # Viewer — výchozí hodnoty filtrů; období v saldokontu s výchozím aktuálním rokem
 
-**Stav:** naplánováno — doplněk po ověření #69 T2
+**Stav:** hotovo — 2026-09-14 (3 commity; odchylky viz „Poznámky k implementaci"); zbývá ruční proklik UI + alfa
 
 ## Kontext
 
@@ -96,13 +96,42 @@ PHPUnit jen s úzkým `--filter`.
 
 ## Hotovo když
 
-- [ ] viewer saldokonta se otevře s obdobím = aktuální fiskální rok, footer
+- [x] viewer saldokonta se otevře s obdobím = aktuální fiskální rok, footer
       odpovídá jen tomuto období; uvolnění filtru ukáže všechna období
-- [ ] „Pohyby případu" z případu jiného roku otevře pohyby toho roku
-- [ ] deník se otevře s aktuálním rokem
-- [ ] `default` je popsaný v `docs/frontend.md`, precedence pending > default
-      má test nebo smoke
-- [ ] docs a index tasků ve stejném commitu jako kód
+      (unit + integrační `CasesViewerTest`; ruční proklik zbývá)
+- [x] „Pohyby případu" z případu jiného roku otevře pohyby toho roku
+      (integrační test akce; ruční proklik zbývá)
+- [x] deník se otevře s aktuálním rokem (`JournalViewerTest`)
+- [x] `default` je popsaný v `docs/frontend.md`, precedence pending > default
+      má test (`frontend/tests/Unit/viewerFilters.test.mjs`)
+- [x] docs a index tasků ve stejném commitu jako kód
+
+## Poznámky k implementaci (2026-09-14)
+
+- **Fallback „nejnovější rok" nejde přes `regularYears()`** — vrací jen
+  `name` + počet měsíců bez `id` a řadí vzestupně. Provider dostal
+  `years()` (id + name, nesmazané, `date_begin DESC`), které zároveň
+  nahradilo inline dotaz na roky v `JournalViewer::getFilters()`.
+  `FiscalPeriodProvider` má tedy dvě nové metody (`yearForDate`,
+  `years`); tři anonymní fake třídy v testech reportů dostaly stuby,
+  sdílený fake je `tests/Fixtures/Reports/FakeFiscalPeriodProvider.php`.
+- **Podmínka roku v `CasesViewer` je na řádkové úrovni** (`l.fiscal_year`,
+  před `GROUP BY`), ne `c.fiscal_year` — rok je součást klíče, výsledek je
+  totožný, ale využije se `idx_case` a agregát je menší.
+- **Otevírací / uzavírací období jsou měsíce**, tabulka roků typ nemá;
+  `yearForDate` se ptá jen na roky. Integrační test ověřuje, že 1. 1.
+  (datum otevíracího měsíce) vrací rok.
+- **DI vieweru neexistuje** (`ViewerRegistry` dělá `new $class($db,
+  $table)`): trait `Core\Viewer\UsesFiscalPeriods` provider líně vytváří
+  nad `$this->db` (vzor `ReportRunner`) a testy ho podstrčí přes
+  `setFiscalPeriodProvider()`.
+- **Nad rámec zadání:** akce „Otevřít řádek deníku" v `LedgerViewer` posílá
+  `filters: {fiscal_year}` — deník má výchozí rok a cílový řádek ze
+  staršího roku by jinak ze seznamu zmizel (detail by se otevřel, řádek ne).
+- Frontend: sloučení defaultů s pending filtry běží až po `fetchMeta()`
+  (defaulty zná jen meta), čistá funkce `initialFilterValues()` v
+  `utils/viewerFilters.js`. „Reset filtrů" v UI neexistuje; volba „— vše —"
+  default ruší, přepnutí vieweru ho obnoví.
 
 ## Rozhodnutí k designu (potvrzená)
 

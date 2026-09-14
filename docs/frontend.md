@@ -735,7 +735,8 @@ helper pro „aktuální fiskální rok" je `Core\Viewer\FiscalYearFilter`
 i saldokonto.
 
 První uživatel: `JournalViewer` (`economy.accounting.journal`) — fiskální
-rok/měsíc (závislý select), prefix účtu, partner, jen chyby.
+rok (výchozí aktuální rok přes `FiscalYearFilter`) / měsíc (závislý
+select), prefix účtu, partner, jen chyby.
 
 ### Formát řádku (`renderRow()`)
 
@@ -886,7 +887,7 @@ Viz také `docs/doc-states.md` — sekce Viewer systém.
 | `base.persons` | `base.persons` | `PersonsViewer` | Archivační docStates, fulltext search přes full_name/company_id/email/person_id |
 | `core.mail.incoming` | `core.mail` | `IncomingMessagesViewer` | Vlastní docStates (`core.mail.docStatesIncoming`), JOIN na schránku, relativní formátování received_at, 4 detail taby (Obsah / Přílohy / Analýzy / Originál) |
 | `tasks.core` | `tasks.core` | `TasksViewer` | Vlastní docStates (`tasks.core.docStatesTasks`), JOIN na `core_system_users` kvůli zobrazení autora, indikace po termínu v t2 |
-| `economy.accounting.journal` | `economy.accounting` | `JournalViewer` | Read-only (prázdný toolbar, bez docStates, bez formu), custom filtry přes `getFilters()` vč. závislého selectu, detail akce `open_viewer` na zdrojový doklad |
+| `economy.accounting.journal` | `economy.accounting` | `JournalViewer` | Read-only (prázdný toolbar, bez docStates, bez formu), custom filtry přes `getFilters()` vč. závislého selectu a výchozího aktuálního roku (`default`), detail akce `open_viewer` na zdrojový doklad |
 
 Nové viewery přidávají moduly přes `module.jsonc.viewers[]` — jakmile je viewer registrován, automaticky se objeví v navigaci (ikona z `iconMap`, fallback `iconTable`).
 

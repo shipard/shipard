@@ -56,7 +56,7 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 |---|---|---|
 | **Účetní doklady** | Ruční účetní zápis pro to, co není faktura. Řádky zadáváš sám na stranu **MD** nebo **DAL** s účtem, partner je nepovinný, DPH se tu neřeší. Při potvrzení Shipard kontroluje, že je doklad vyrovnaný — součet MD musí odpovídat součtu DAL | — |
 | **Pokladní doklady** | Příjem nebo výdej hotovosti a platby kartou na jedné pokladně — prodej za hotové, nákup za hotové, úhrada faktury hotově. Směr **Příjem** / **Výdej** vybíráš na dokladu, pokladna je daná záložkou seznamu. Pokladnu založíš v **Nastavení → Účetnictví → Pokladny**. **Pokladní kniha zatím není** | [Pokladní doklad](pokladna/pokladni-doklad.md) |
-| **Účetní deník** | Účetní zápisy, které vznikly z dokladů a z bankovních transakcí. Účty nezadáváš, skládají se automaticky | [Když se doklad nezaúčtuje](uctarna/kdyz-se-doklad-nezauctuje.md) |
+| **Účetní deník** | Účetní zápisy, které vznikly z dokladů a z bankovních transakcí. Účty nezadáváš, skládají se automaticky. Otevře se s filtrem **Fiskální rok** nastaveným na aktuální rok, **— vše —** ukáže všechny roky | [Když se doklad nezaúčtuje](uctarna/kdyz-se-doklad-nezauctuje.md) |
 | **Účtový rozvrh** | Účty, na které se účtuje. Zakládá se z předpřipravené šablony — zvlášť pro podnikatele a zvlášť pro neziskové organizace — a můžeš ho doplňovat i účty vyřazovat | — |
 | **Bankovní výpisy** | Naimportuješ výpis z banky. Podporované formáty jsou **CAMT**, **GPC** a **FIO**; jiný formát Shipard zatím nepřečte | — |
 | **Bankovní transakce** | Jednotlivé pohyby z výpisů. Podle nich se páruje úhrada s fakturou; platbu, ke které se faktura nenašla, Shipard odloží na **clearing účet** | — |

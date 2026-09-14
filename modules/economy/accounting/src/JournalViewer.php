@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Accounting;
 
 use Shipard\Core\Viewer\TableViewer;
+use Shipard\Core\Viewer\UsesFiscalPeriods;
 
 /**
  * Viewer účetního deníku (economy_accounting_journal).
@@ -14,10 +15,14 @@ use Shipard\Core\Viewer\TableViewer;
  * Detail řádku odkazuje na zdrojový doklad přes akci `open_viewer`.
  *
  * Filtry (fiskální rok/měsíc, prefix účtu, partner, jen chyby) renderuje
- * generický ViewerFilters.svelte z definic v getFilters().
+ * generický ViewerFilters.svelte z definic v getFilters(); rok má výchozí
+ * hodnotu = aktuální fiskální rok (FiscalYearFilter přes UsesFiscalPeriods,
+ * stejný helper jako saldokonto), měsíc zůstává bez výchozí hodnoty.
  */
 class JournalViewer extends TableViewer
 {
+    use UsesFiscalPeriods;
+
     protected ?string $docStatesCfgItem = null;
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
@@ -352,22 +357,13 @@ class JournalViewer extends TableViewer
     }
 
     /**
-     * Filtry seznamu. Options fiskálních období se čtou z economy_codebooks
-     * číselníků; měsíce jsou závislý select (parentFilter + option.parent),
-     * frontend je nabídne až po volbě roku.
+     * Filtry seznamu. Roky přes FiscalYearFilter (nejnovější první, výchozí
+     * aktuální rok); měsíce z economy_codebooks jako závislý select
+     * (parentFilter + option.parent), frontend je nabídne až po volbě roku.
      */
     public function getFilters(): array
     {
         $cs = $this->language === 'cs';
-
-        $yearOptions = [];
-        $years = $this->db->fetchAll(
-            'SELECT `id`, `name` FROM `economy_codebooks_fiscal_years`'
-            . ' WHERE `docState` != 90 ORDER BY `name` DESC',
-        );
-        foreach ($years as $y) {
-            $yearOptions[] = ['value' => (int) $y['id'], 'label' => (string) $y['name']];
-        }
 
         $monthOptions = [];
         $months = $this->db->fetchAll(
@@ -383,12 +379,7 @@ class JournalViewer extends TableViewer
         }
 
         return [
-            [
-                'id'      => 'fiscal_year',
-                'label'   => $cs ? 'Fiskální rok' : 'Fiscal year',
-                'type'    => 'select',
-                'options' => $yearOptions,
-            ],
+            $this->fiscalYearFilter($cs ? 'Fiskální rok' : 'Fiscal year'),
             [
                 'id'           => 'fiscal_month',
                 'label'        => $cs ? 'Měsíc' : 'Month',

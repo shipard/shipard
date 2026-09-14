@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Accounting\JournalViewer;
+use Shipard\Tests\Fixtures\Reports\FakeFiscalPeriodProvider;
 
 /**
  * Viewer účetního deníku (Fáze 3): read-only seznam s filtry (fiskální
@@ -394,13 +395,17 @@ class JournalViewerTest extends TestCase
 
     // ── getFilters / read-only ──────────────────────────────────────────────
 
-    public function testGetFiltersBuildsPeriodOptionsWithParentLink(): void
+    public function testGetFiltersBuildsPeriodOptionsWithParentLinkAndCurrentYearDefault(): void
     {
-        // makeViewer vrací stejná data pro oba fetchAll dotazy (roky i
-        // měsíce) — pro tvar definic to nevadí, options se mapují per dotaz.
+        // Roky jdou z provideru (fake), měsíce z mockovaného fetchAll.
         $viewer = $this->makeViewer([
-            ['id' => 3, 'name' => '2026', 'fiscal_year' => 3, 'calendar_year' => 2026, 'calendar_month' => 5],
+            ['id' => 15, 'fiscal_year' => 3, 'calendar_year' => 2026, 'calendar_month' => 5],
         ]);
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $viewer->setFiscalPeriodProvider(new FakeFiscalPeriodProvider(
+            [['id' => 4, 'name' => '2027'], ['id' => 3, 'name' => '2026']],
+            [$today => ['id' => 3, 'name' => '2026']],
+        ));
         $filters = $viewer->getFilters();
 
         $this->assertSame(
@@ -409,9 +414,11 @@ class JournalViewerTest extends TestCase
         );
         $this->assertSame(['select', 'select', 'text', 'text', 'text', 'checkbox'], array_column($filters, 'type'));
 
-        $this->assertSame([['value' => 3, 'label' => '2026']], $filters[0]['options']);
+        $this->assertSame([['value' => 4, 'label' => '2027'], ['value' => 3, 'label' => '2026']], $filters[0]['options']);
+        $this->assertSame('3', $filters[0]['default'], 'deník se otevře s aktuálním rokem');
         $this->assertSame('fiscal_year', $filters[1]['parentFilter']);
-        $this->assertSame([['value' => 3, 'label' => '5/2026', 'parent' => 3]], $filters[1]['options']);
+        $this->assertArrayNotHasKey('default', $filters[1], 'měsíc bez výchozí hodnoty');
+        $this->assertSame([['value' => 15, 'label' => '5/2026', 'parent' => 3]], $filters[1]['options']);
     }
 
     public function testViewerIsReadOnly(): void
