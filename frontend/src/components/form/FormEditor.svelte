@@ -272,6 +272,15 @@
 
   // ── Save ────────────────────────────────────────────────────────────────────
 
+  // Payload pro uložení záznamu. Read-only dokument (stav s `readOnly`)
+  // s odemčenými sloupci: server pustí jen je (422 DOCUMENT_READONLY jinak),
+  // takže se posílají samotné. Sdílí Uložit i přechod stavu.
+  function savePayload() {
+    return currentId != null && isReadOnly && readOnlyEditable.length > 0
+      ? pickColumns(sanitizeFormData(formData), readOnlyEditable)
+      : sanitizeFormData(formData);
+  }
+
   // Uloží formulář (POST nový / PUT existující). Vrátí záznam ze serveru,
   // nebo null — validační i ostatní chyby zobrazí sám. Sdílené pro Uložit
   // a Přidat a pokračovat; liší se jen tím, co po uložení následuje.
@@ -279,11 +288,7 @@
     clearValidationErrors();
     loadError = null;
     const isNew = currentId == null;
-    // Read-only dokument s odemčenými sloupci: server pustí jen je
-    // (DOCUMENT_READONLY jinak), takže se posílají samotné.
-    const payload = !isNew && isReadOnly && readOnlyEditable.length > 0
-      ? pickColumns(sanitizeFormData(formData), readOnlyEditable)
-      : sanitizeFormData(formData);
+    const payload = savePayload();
     const res = isNew
       ? await post(`/_ui/form/${table}/save`, payload)
       : await put(`/_ui/form/${table}/save/${currentId}`, payload);
@@ -381,16 +386,21 @@
         loadError = res?.error ? translateError(res.error) : t('form.saveFailed');
       }
     } else {
-      // Existující záznam: nejdřív ulož data, pak přechod stavu
-      const saveRes = await put(`/_ui/form/${table}/save/${currentId}`, sanitizeFormData(formData));
-      if (!saveRes?.success) {
-        if (saveRes?.error?.code === 'VALIDATION_ERROR' && saveRes?.error?.details) {
-          applyValidationErrors(saveRes.error.details);
-        } else {
-          loadError = saveRes?.error ? translateError(saveRes.error) : t('form.saveFailed');
+      // Existující záznam: nejdřív ulož data, pak přechod stavu. V read-only
+      // stavu (typicky Opravit ze stavu V pořádku) by celý formulář server
+      // odmítl 422 DOCUMENT_READONLY — ukládají se jen odemčené sloupce,
+      // a to jen když se změnily; jinak se rovnou přechází.
+      if (!isReadOnly || isDirty) {
+        const saveRes = await put(`/_ui/form/${table}/save/${currentId}`, savePayload());
+        if (!saveRes?.success) {
+          if (saveRes?.error?.code === 'VALIDATION_ERROR' && saveRes?.error?.details) {
+            applyValidationErrors(saveRes.error.details);
+          } else {
+            loadError = saveRes?.error ? translateError(saveRes.error) : t('form.saveFailed');
+          }
+          saving = false;
+          return;
         }
-        saving = false;
-        return;
       }
       // Přechod stavu (DRUHÝ PUT). Dřív tahle větev rozbalování `error.details`
       // přeskakovala — validace naostro (newState !== oldState) tak skončila jen

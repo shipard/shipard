@@ -2306,7 +2306,11 @@ Co se stane:
 - **Klient** (`FormEditor`): inputy vyjmenovaných sloupců zůstávají
   aktivní (`unlockedColumns` propadá `FormTab → FormSection → FormColumn →
   FormElement`), `FormStateBar` ukáže Uložit, dirty stav sleduje jen tyto
-  sloupce a **uložení pošle jen je**. Externí prop `readOnly` (prohlížení
+  sloupce a **uložení pošle jen je**. Přechod stavu existujícího záznamu
+  (Opravit, Zrušit, …) dělá před samotným přechodem ještě uložení dat —
+  v read-only stavu jen odemčených sloupců a jen když jsou dirty, jinak
+  se uložení přeskočí (celý formulář by server odmítl `DOCUMENT_READONLY`
+  a tlačítko Opravit by nefungovalo). Externí prop `readOnly` (prohlížení
   řádku sub-tabulky) whitelist přebíjí — nic se neodemyká.
 - **Server** (`FormController::save()` → `guardReadOnlyUpdate`): payload
   update na read-only záznam smí obsahovat jen whitelistované sloupce
