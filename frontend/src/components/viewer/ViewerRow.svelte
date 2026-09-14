@@ -111,8 +111,10 @@
    * (= confirmed nebo neznámý stav), proužek je průhledný — nic
    * se nezobrazí. Tím dostáváme „confirmed = klid“ chování.
    *
-   * Při výběru se proměnná přepíše na brand accent (oranžová),
-   * takže proužek funguje současně jako indikátor výběru. */
+   * Výběr řádku proměnnou záměrně NEpřepisuje:
+   * stavový proužek zůstává i u vybraného záznamu, výběr nese jen
+   * pozadí --shpd-color-bg-selected. Oranžový accent „kde jsem"
+   * patří výhradně navigaci (sidebar, shelly). */
   .shpd-viewer-row::before {
     content: '';
     position: absolute;
@@ -129,7 +131,6 @@
 
   .shpd-viewer-row--selected {
     background-color: var(--shpd-color-bg-selected);
-    --shpd-row-bar: var(--shpd-color-accent);
   }
 
   .shpd-viewer-row--selected:hover {

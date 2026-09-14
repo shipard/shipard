@@ -17,7 +17,9 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 - **Modrá = primary akce a navigace.** Aktivní položka v sidebaru, primary
   tlačítka, odkazy, focus indikátor.
 - **Oranžová = brand accent, „kde jsem".** Levý proužek u aktivní položky
-  v sidebaru a u vybraného řádku v seznamu, accent badge (VIP).
+  v navigaci (sidebar, shelly), accent badge (VIP). **V seznamech záznamů
+  se oranžová pro výběr nepoužívá** — výběr nese jen modré pozadí, aby
+  se accent nebil se stavovým proužkem.
   **Oranžová není stav** — žádný doc-state ji nesmí používat.
 - **Confirmed/done = klid.** Většina záznamů je v pořádku. UI je nemá
   zdůrazňovat. Žádný proužek, žádné křiklavé pozadí, tichá šedá u badge.
@@ -43,7 +45,7 @@ Když se rozhoduje o nové barvě, vždy nejdřív sáhni do `variables.css`.
 
 | Token | Hodnota | Použití |
 |---|---|---|
-| `--shpd-color-accent` | `#eb6507` | Levý proužek aktivní položky/výběru, avatar VIP, focus přízvuky |
+| `--shpd-color-accent` | `#eb6507` | Levý proužek aktivní položky v navigaci, avatar VIP, focus přízvuky |
 | `--shpd-color-accent-hover` | `#c45405` | Hover na accent prvcích |
 | `--shpd-color-accent-soft` | `#fdebdc` | Pozadí accent badge |
 
@@ -159,12 +161,18 @@ takže změna barvy stavu v jednom místě se projeví všude.
 
 Když uživatel označí řádek v seznamu:
 
-- Pruh se přepíše na **oranžový** (brand accent) — výběr přebije stav.
-  Stav vidíš pak v detailu vedle title (badge).
-- Pozadí řádku zezelená lehce na `--shpd-color-bg-selected`.
+- Pozadí řádku se zbarví na `--shpd-color-bg-selected` (hover
+  `--shpd-color-bg-selected-hover`).
+- **Stavový proužek zůstává** — koncept je dál žlutý, hotový záznam dál
+  bez proužku (průhledný pruh splyne s modrým pozadím). Výběr stav nepřebíjí.
 
-Logika je v `ViewerRow.svelte` přes CSS proměnnou `--shpd-row-bar`, kterou
-nastavují `docState_*` třídy. `--selected` ji přepisuje.
+Dříve výběr přepisoval proužek na oranžový accent; bilo se to se stavy
+(žlutý koncept po kliknutí zoranžověl), proto bylo přepsání odstraněno.
+Oranžový proužek „kde jsem" zůstal jen v navigaci.
+
+Logika je v `ViewerRow.svelte` a `ViewerGrid.svelte` přes CSS proměnnou
+`--shpd-row-bar`, kterou nastavují globální `docState_*` třídy
+(`styles/base.css`). `--selected` ji **nepřepisuje**.
 
 ### Alert severity (samostatná paleta)
 
@@ -314,8 +322,8 @@ v pod-sekci *Dropdown / popover komponenty*.
 
 ### Viewer (seznam + detail)
 
-- Vybraný řádek má oranžový **6px proužek vlevo** + sytější modré pozadí
-  (`var(--shpd-color-bg-selected)`)
+- Vybraný řádek má sytější modré pozadí (`var(--shpd-color-bg-selected)`);
+  stavový **6px proužek vlevo** zůstává podle `docState`, výběr ho nemění
 - Detail má volitelnou hlavičku (title + subtitle + badges) — vykreslí se
   jen pokud backend pošle `detail.title`
 

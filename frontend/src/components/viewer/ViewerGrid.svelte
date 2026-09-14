@@ -277,12 +277,9 @@
     color: var(--shpd-color-state-error-text);
   }
 
-  /* Výběr přepisuje error podbarvení i hover; proužek přechází na accent
-     (stejné chování jako ViewerRow). */
-  .shpd-grid__tr--selected {
-    --shpd-row-bar: var(--shpd-color-accent);
-  }
-
+  /* Výběr přepisuje error podbarvení i hover. Stavový proužek
+     (--shpd-row-bar) výběr nemění — zůstává i u vybraného řádku,
+     stejně jako ve ViewerRow. */
   .shpd-grid__tr--selected > .shpd-grid__td {
     background-color: var(--shpd-color-bg-selected);
   }
