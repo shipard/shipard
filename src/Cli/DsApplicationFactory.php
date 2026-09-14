@@ -52,6 +52,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\AlertsPruneCommand());
         $app->add(new \Shipard\Command\DataSource\BankImportStatementCommand());
         $app->add(new \Shipard\Command\DataSource\AccbalMatchCommand());
+        $app->add(new \Shipard\Command\DataSource\AccbalRegenerateCommand());
         $app->add(new \Shipard\Command\DataSource\BookingHistoryCommand());
         $app->add(new \Shipard\Command\DataSource\ReportRunCommand());
         $app->add(new \Shipard\Command\DataSource\ReportDiffCommand());

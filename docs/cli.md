@@ -630,6 +630,28 @@ předpisu čekající úhrady přeúčtuje trigger; dávka slouží importu a
 dorovnání. Bez `--all` ani filtru příkaz nic neudělá. Viz
 [accbal.md](accbal.md) §5.7, [bank.md](bank.md) §6.1.
 
+#### `accbal-regenerate --all | --doc=<id> | --fiscal-year=<id> [--dry-run]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds accbal-regenerate --all --dry-run     # kolik pohybů by se vložilo / aktualizovalo / smazalo
+shpd-ds accbal-regenerate --all               # přegeneruje saldo pohyby všech zdrojů
+shpd-ds accbal-regenerate --doc=4711 -v       # jeden doklad, -v vypíše zdroje se změnou
+shpd-ds accbal-regenerate --fiscal-year=7     # jen zdroje daného fiskálního roku (id)
+```
+
+Hromadná re-derivace saldo pohybů (`economy_accbal_ledger`) z účetního
+deníku — totéž, co po každém (pře)zápisu deníku dělá handler události
+`journalWritten`, jen dávkově přes všechny zdroje. Zdroje = sjednocení
+zdrojů deníku a ledgeru, takže osiřelý pohyb bez deníku se smaže. Per
+zdroj idempotentní UPSERT podle `movement_key` (#69 D13); `id` pohybů se
+stejným klíčem zůstávají, pohyby z doby před D13 (klíč `NULL`) se nahradí
+novými. Nevysílá `journalWritten` — deník se nemění; přeúčtování clearingu
+je věc `accbal-match`. Použití: po změně generátoru, po `ds-upgrade`
+s novým klíčem pohybu (postup nasazení v [accbal.md](accbal.md) §4.6),
+při podezření na rozjetý ledger. Bez `--all` / `--doc` / `--fiscal-year`
+příkaz nic neudělá. Na importovaném DS běží nízké desítky sekund.
+
 #### `vat-filing-account <filingId> [--dry-run]`
 
 ```bash
