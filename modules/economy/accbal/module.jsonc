@@ -12,14 +12,12 @@
     "tables": [
         "economy_accbal_balances",
         "economy_accbal_balance_accounts",
-        "economy_accbal_ledger",
-        "economy_accbal_allocations"
+        "economy_accbal_ledger"
     ],
 
     "settingsItems": [
         { "viewer": "economy.accbal.balances",        "section": "accounting" },
-        { "viewer": "economy.accbal.balanceAccounts",  "section": "accounting" },
-        { "table": "economy_accbal_allocations", "section": "other", "subsection": "other.system", "order": 40 }
+        { "viewer": "economy.accbal.balanceAccounts",  "section": "accounting" }
     ],
 
     "viewers": [
@@ -104,7 +102,6 @@
     "config": [
         { "id": "economy.accbal.accSides",          "file": "config/accSides.jsonc" },
         { "id": "economy.accbal.amountsSigns",      "file": "config/amountsSigns.jsonc" },
-        { "id": "economy.accbal.balSides",          "file": "config/balSides.jsonc" },
-        { "id": "economy.accbal.allocationOrigins", "file": "config/allocationOrigins.jsonc" }
+        { "id": "economy.accbal.balSides",          "file": "config/balSides.jsonc" }
     ]
 }

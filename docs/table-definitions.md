@@ -206,6 +206,12 @@ Pravidla:
 
 Rozsahy nejsou vynuceny — `ds-upgrade` přijme jakýkoliv unikátní `tableId`. Konvence ale usnadňuje paralelní alokaci. Pro alokaci v konkrétním rozsahu použij `bin/shpd-server next-table-id --range=10000:10099` (vrátí první volné ID v rozsahu).
 
+**Vyřazená ID se nerecyklují.** Když tabulka z definic zmizí, na existujících DS zůstává (`ds-upgrade` nemaže, sekce 10) a globální referenční tabulky mohou její `tableId` dál nést. `next-table-id` bez `--range` vrací max + 1, ale s `--range` by uvolněné číslo nabídl znovu — proto seznam vyřazených ID, která nový modul nesmí použít:
+
+| `tableId` | Původní tabulka | Zrušeno |
+|---|---|---|
+| 419 | `economy_accbal_allocations` (párovací vazby saldokonta) | 2026-09, #69 D1 — případ je agregát z ledgeru |
+
 ### `columnGroups` — logické skupiny sloupců
 
 Nepovinné seskupení sloupců pro přehlednost v UI (formuláře, detailní zobrazení).

@@ -89,7 +89,6 @@ class CashDocumentImportTest extends IntegrationTestCase
     {
         $dibi = $this->db->getDibiConnection();
         foreach ($this->createdDocIds as $id) {
-            $dibi->query('DELETE FROM economy_accbal_allocations WHERE payment_entry IN (SELECT id FROM economy_accbal_ledger WHERE doc_head = %i)', $id);
             $dibi->query('DELETE FROM economy_accbal_ledger WHERE doc_head = %i', $id);
             $dibi->query('DELETE FROM economy_accounting_journal WHERE doc_head = %i', $id);
             $dibi->query('DELETE FROM docs_core_rows WHERE doc_head = %i', $id);

@@ -11,8 +11,9 @@ use Shipard\Module\Economy\Accbal\LedgerViewer;
 /**
  * Viewer saldo pohybů — grid layout se skupinami per partner
  * (docs/viewer-grid.md §7.4): řazení primárně dle partnera (kontrakt D12),
- * viewGroup filtr přes kód saldokonta, footer se součty v domácí měně
- * sdílející WHERE se selectRows vč. replikace filtru „Jen otevřené".
+ * uvnitř po klíči případu, viewGroup filtr přes kód saldokonta, zůstatek
+ * případu z agregátu CaseQuery (#69 D1), footer se součty v domácí měně
+ * sdílející WHERE se selectRows vč. filtru „Jen otevřené" (otevřenost případu).
  */
 class LedgerViewerTest extends TestCase
 {
@@ -52,10 +53,16 @@ class LedgerViewerTest extends TestCase
         $sql = $this->queries[0]['sql'];
         $this->assertStringContainsString('LEFT JOIN `economy_accounting_journal` j ON j.`id` = l.`journal_row`', $sql);
         $this->assertStringContainsString('j.`accounting_date`', $sql);
+        // Zůstatek případu korelovaným subdotazem klíče (CaseQuery), NULL-safe.
+        $this->assertStringContainsString('END) FROM [economy_accbal_ledger] x WHERE x.[balance] = l.[balance]', $sql);
+        $this->assertStringContainsString('x.[specific_symbol] <=> l.[specific_symbol] AND x.[currency] <=> l.[currency]) AS case_residual', $sql);
+        $this->assertStringNotContainsString('LEFT JOIN (SELECT', $sql, 'žádný derived join (MariaDB split_materialized + <=> vrací NULL)');
         // D12: primárně partner (bez partnera na konec), l.partner jistí
-        // shodná jména; uvnitř role + datum.
+        // shodná jména; uvnitř klíč případu, role + datum.
         $this->assertStringContainsString(
             'ORDER BY ISNULL(p.`full_name`) ASC, p.`full_name` ASC, l.`partner` ASC,'
+            . ' l.`fiscal_year` ASC, l.`balance` ASC, l.`currency` ASC,'
+            . ' l.`payment_reference` ASC, l.`specific_symbol` ASC,'
             . ' l.`bal_side` ASC, j.`accounting_date` ASC, l.`id` ASC',
             $sql,
         );
@@ -83,17 +90,30 @@ class LedgerViewerTest extends TestCase
         }
     }
 
-    public function testOnlyOpenFilterUsesHaving(): void
+    public function testOnlyOpenFilterIsCaseOpenness(): void
     {
         $viewer = $this->makeViewer();
         $viewer->selectRows(null, [['id' => 'only_open', 'value' => '1']], 0);
 
-        // HAVING navazuje přímo na JOINy — only_open nepřidává WHERE
-        // (per-row residual nejde filtrovat ve WHERE).
-        $this->assertStringContainsString(
-            'j.`id` = l.`journal_row` HAVING residual <> 0',
-            $this->queries[0]['sql'],
-        );
+        // Pohyb je otevřený, když je otevřený jeho případ — podmínka nad
+        // agregátem z joinu, ne HAVING per řádek.
+        $sql = $this->queries[0]['sql'];
+        $this->assertStringContainsString(' WHERE (SELECT SUM(CASE WHEN x.[bal_side] = 0', $sql);
+        $this->assertStringContainsString('<=> l.[currency]) <> 0 ORDER BY', $sql);
+        $this->assertStringNotContainsString('HAVING', $sql);
+    }
+
+    public function testSymbolFiltersArePrefixMatches(): void
+    {
+        $viewer = $this->makeViewer();
+        $viewer->selectRows(null, [
+            ['id' => 'payment_reference', 'value' => '2026'],
+            ['id' => 'specific_symbol', 'value' => '7'],
+        ], 0);
+
+        ['sql' => $sql, 'params' => $params] = $this->queries[0];
+        $this->assertStringContainsString('l.`payment_reference` LIKE %s AND l.`specific_symbol` LIKE %s', $sql);
+        $this->assertSame(['2026%', '7%'], $params);
     }
 
     // ── Grid: layout, sloupce ────────────────────────────────────────────────
@@ -108,7 +128,7 @@ class LedgerViewerTest extends TestCase
         $columns = $this->makeViewer()->getGridColumns();
 
         $this->assertSame(
-            ['accounting_date', 'role', 'payment_reference', 'due_date', 'amount', 'residual', 'text', 'balance'],
+            ['accounting_date', 'role', 'payment_reference', 'specific_symbol', 'due_date', 'amount', 'case_residual', 'text', 'balance'],
             array_column($columns, 'id'),
         );
         // Sort klikem by rozbil clustering skupin (D12) — žádný sloupec
@@ -129,10 +149,11 @@ class LedgerViewerTest extends TestCase
             'partner_name'       => 'AKIMA, spol. s r.o.',
             'accounting_date'    => '2026-07-01',
             'payment_reference'  => '2026001',
+            'specific_symbol'    => '77',
             'due_date'           => '2026-07-15',
             'currency'           => 'czk',
             'amount'             => 12100.0,
-            'residual'           => 12100.0,
+            'case_residual'      => 12100.0,
             'text'               => 'FV 2026001',
             'balance_name'       => 'Pohledávky z obchodních vztahů',
             'balance_short_name' => 'Pohledávky',
@@ -146,7 +167,8 @@ class LedgerViewerTest extends TestCase
             [['text' => '12 100,00', 'class' => 'amount'], ['text' => 'CZK', 'class' => 'muted']],
             $row['cells']['amount'],
         );
-        $this->assertSame(['text' => '12 100,00', 'class' => 'amount'], $row['cells']['residual']);
+        $this->assertSame('77', $row['cells']['specific_symbol']);
+        $this->assertSame(['text' => '12 100,00', 'class' => 'amount'], $row['cells']['case_residual']);
         $this->assertSame('Pohledávky', $row['cells']['balance'], 'short_name má přednost');
         $this->assertSame('1. 7. 2026', $row['cells']['accounting_date']);
     }
@@ -159,15 +181,15 @@ class LedgerViewerTest extends TestCase
             'partner'      => null,
             'partner_name' => null,
             'currency'     => 'czk',
-            'amount'       => 500.0,
-            'residual'     => 0.0,
-            'balance_name' => 'Nespárované platby',
+            'amount'        => 500.0,
+            'case_residual' => 0.0,
+            'balance_name'  => 'Nespárované platby',
         ]);
 
         $this->assertSame(['key' => 'p0', 'label' => '(Bez partnera)'], $row['group']);
         $this->assertSame('done', $row['stateStyle']);
         $this->assertSame(['text' => 'Úhrada', 'badge' => 'success'], $row['cells']['role']);
-        $this->assertNull($row['cells']['residual'], 'vyrovnaný pohyb má prázdné Zbývá');
+        $this->assertNull($row['cells']['case_residual'], 'uzavřený případ má prázdný zůstatek');
         $this->assertSame('Nespárované platby', $row['cells']['balance'], 'fallback na name');
     }
 
@@ -186,14 +208,14 @@ class LedgerViewerTest extends TestCase
         ['sql' => $sql, 'params' => $params] = $this->queries[0];
         $this->assertStringContainsString('b.`code` = %s', $sql, 'footer sdílí WHERE se selectRows');
         $this->assertSame(['payables'], $params);
-        $this->assertStringContainsString('SUM(CASE WHEN x.`bal_side` = 0 THEN x.`amount_hc` ELSE 0 END)', $sql);
+        $this->assertStringContainsString('SUM(CASE WHEN l.`bal_side` = 0 THEN l.`amount_hc` ELSE 0 END)', $sql);
 
         $this->assertSame(
             [
                 ['text' => 'Zůstatek', 'class' => 'muted'],
                 ['text' => '150 000,00 CZK', 'class' => 'amount'],
             ],
-            $footer['residual'],
+            $footer['case_residual'],
         );
         $this->assertSame(
             [
@@ -206,25 +228,25 @@ class LedgerViewerTest extends TestCase
         );
     }
 
-    public function testRenderGridFooterReplicatesOnlyOpenViaSubselect(): void
+    public function testRenderGridFooterFiltersOnlyOpenByCaseResidual(): void
     {
         $viewer = $this->makeViewer(fetchRowResult: []);
         $viewer->renderGridFooter(null, [['id' => 'only_open', 'value' => '1']]);
 
         $sql = $this->queries[0]['sql'];
-        // HAVING ze selectRows se ve footeru replikuje filtrem nad
-        // subselectem — agregace jen přes otevřené řádky.
-        $this->assertStringContainsString(') x WHERE x.`residual` <> 0', $sql);
-        $this->assertStringContainsString('AS residual', $sql);
+        // Stejná podmínka jako v selectRows — agregace jen přes pohyby
+        // otevřených případů.
+        $this->assertStringContainsString(' WHERE (SELECT SUM(CASE WHEN x.[bal_side] = 0', $sql);
+        $this->assertStringContainsString('<=> l.[currency]) <> 0', $sql);
     }
 
-    public function testRenderGridFooterWithoutOnlyOpenSkipsResidual(): void
+    public function testRenderGridFooterWithoutOnlyOpenSkipsCaseSubquery(): void
     {
         $viewer = $this->makeViewer(fetchRowResult: []);
         $viewer->renderGridFooter(null, []);
 
         $sql = $this->queries[0]['sql'];
-        // Bez only_open se per-row residual subdotazy nepočítají zbytečně.
-        $this->assertStringNotContainsString('residual', $sql);
+        // Bez only_open se zůstatek případu per řádek nepočítá zbytečně.
+        $this->assertStringNotContainsString('(SELECT SUM(', $sql);
     }
 }

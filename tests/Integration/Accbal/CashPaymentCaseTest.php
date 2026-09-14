@@ -9,20 +9,21 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\JournalEventDispatcher;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
-use Shipard\Module\Economy\Accbal\BalanceMatcher;
+use Shipard\Module\Economy\Accbal\CaseQuery;
 use Shipard\Module\Economy\Accounting\AccountingEngine;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
  * Úhrada pohledávky na pokladním dokladu (payment.receivable, #59 D7)
- * spáruje otevřenou FVB: deník nese partnera + VS z řádku, LedgerGenerator
- * z něj udělá úhradu (bal_side 1) v saldokontu receivables a
- * BalanceMatcher::rematchBucket ji alokuje na předpis — zůstatek 0.
+ * uzavře případ otevřené FVB: deník nese partnera + VS z řádku,
+ * LedgerGenerator z něj udělá úhradu (bal_side 1) v saldokontu receivables
+ * a případ (klíč skupina / období / partner / VS, #69 D1) má zůstatek 0 —
+ * žádný matcher ani alokace, jen agregát z ledgeru (CaseQuery).
  *
  * Předpis 311 se seeduje přímo do ledgeru (izolace od generátoru), PD se
  * účtuje reálným enginem s journalWritten handlery.
  */
-class CashPaymentMatchingTest extends IntegrationTestCase
+class CashPaymentCaseTest extends IntegrationTestCase
 {
     private const ACC_DATE = '2026-06-10';
     private const PARTNER  = 990002;
@@ -30,6 +31,7 @@ class CashPaymentMatchingTest extends IntegrationTestCase
 
     private ?JournalEventDispatcher $journalEvents = null;
     private ?ConfigRuntime $config = null;
+    private int $fiscalYear = 0;
 
     /** @var list<int> */
     private array $createdHeads = [];
@@ -51,18 +53,20 @@ class CashPaymentMatchingTest extends IntegrationTestCase
             $this->db->getDibiConnection(),
             $this->config,
         );
+        $fy = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_years WHERE date_begin <= %s AND date_end >= %s LIMIT 1',
+            self::ACC_DATE, self::ACC_DATE,
+        );
+        if ($fy === null) {
+            $this->markTestSkipped('DS nemá fiskální rok pro ' . self::ACC_DATE);
+        }
+        $this->fiscalYear = (int) $fy['id'];
     }
 
     protected function onTearDown(): void
     {
         $dibi = $this->db->getDibiConnection();
         foreach (array_merge($this->createdHeads, $this->seededDocs) as $id) {
-            $dibi->delete('economy_accbal_allocations')
-                ->where('payment_entry IN (SELECT id FROM economy_accbal_ledger WHERE doc_head = %i)', $id)
-                ->execute();
-            $dibi->delete('economy_accbal_allocations')
-                ->where('request_entry IN (SELECT id FROM economy_accbal_ledger WHERE doc_head = %i)', $id)
-                ->execute();
             $dibi->delete('economy_accbal_ledger')->where('doc_head = %i', $id)->execute();
         }
         foreach ($this->createdHeads as $id) {
@@ -79,10 +83,25 @@ class CashPaymentMatchingTest extends IntegrationTestCase
         }
     }
 
-    public function testCashPaymentOfReceivableIsAllocatedToOpenInvoice(): void
+    public function testCashPaymentOfReceivableClosesCase(): void
     {
         $recv = $this->balanceId('receivables');
-        $requestId = $this->seedReceivableRequest(1210.00);
+        $this->seedReceivableRequest(1210.00);
+        $key = [
+            'balance'           => $recv,
+            'fiscal_year'       => $this->fiscalYear,
+            'partner'           => self::PARTNER,
+            'payment_reference' => self::VS,
+            'specific_symbol'   => null,
+            'currency'          => 'czk',
+        ];
+        $query = new CaseQuery($this->db->getDibiConnection());
+
+        $before = $query->caseOf($key);
+        $this->assertNotNull($before);
+        $this->assertSame(CaseQuery::KIND_DEBT, $before['kind'], 'před úhradou dluh');
+        $this->assertEqualsWithDelta(1210.00, $before['residual'], 0.001);
+
         $headId = $this->accountCashPayment(1210.00);
 
         // deník: 311 DAL s identitou řádku
@@ -94,7 +113,7 @@ class CashPaymentMatchingTest extends IntegrationTestCase
         $this->assertSame(self::PARTNER, (int) $line['partner']);
         $this->assertSame(self::VS, (string) $line['payment_reference']);
 
-        // ledger: úhrada (bal_side 1) v receivables, ne clearing
+        // ledger: úhrada (bal_side 1) v receivables se stejným klíčem, ne clearing
         $payment = $this->db->fetchRow(
             'SELECT * FROM economy_accbal_ledger WHERE doc_head = %i AND balance = %i AND bal_side = 1',
             $headId, $recv,
@@ -102,33 +121,19 @@ class CashPaymentMatchingTest extends IntegrationTestCase
         $this->assertNotNull($payment, 'LedgerGenerator udělal z 311 DAL úhradu v receivables');
         $this->assertSame(self::PARTNER, (int) $payment['partner']);
         $this->assertSame(self::VS, (string) $payment['payment_reference']);
+        $this->assertSame($this->fiscalYear, (int) $payment['fiscal_year'], 'období z deníku = období klíče');
         $this->assertEqualsWithDelta(1210.00, (float) $payment['amount'], 0.001);
 
-        // matcher: rematch bucketu partnera → alokace na předpis, zůstatek 0
-        $this->matcher()->rematchBucket(self::PARTNER, $recv, 'czk');
-
-        $allocs = $this->db->fetchAll(
-            'SELECT * FROM economy_accbal_allocations WHERE payment_entry = %i',
-            (int) $payment['id'],
-        );
-        $this->assertCount(1, $allocs);
-        $alloc = is_array($allocs[0]) ? $allocs[0] : $allocs[0]->toArray();
-        $this->assertSame($requestId, (int) $alloc['request_entry']);
-        $this->assertEqualsWithDelta(1210.00, (float) $alloc['amount'], 0.001);
-
-        $allocated = $this->db->fetchRow(
-            'SELECT COALESCE(SUM(amount), 0) AS s FROM economy_accbal_allocations WHERE request_entry = %i',
-            $requestId,
-        );
-        $this->assertEqualsWithDelta(1210.00, (float) $allocated['s'], 0.001, 'předpis je celý uhrazený');
+        // případ: Σ předpisy − Σ úhrady = 0, žádný matcher
+        $after = $query->caseOf($key);
+        $this->assertNotNull($after);
+        $this->assertEqualsWithDelta(0.0, $after['residual'], 0.001, 'případ uzavřen úhradou z PD');
+        $this->assertSame(CaseQuery::KIND_CLOSED, $after['kind']);
+        $this->assertFalse($after['is_open']);
+        $this->assertSame(2, $after['moves']);
     }
 
     // ── Fixtures ────────────────────────────────────────────────────────────
-
-    private function matcher(): BalanceMatcher
-    {
-        return new BalanceMatcher($this->db->getDibiConnection(), $this->config, $this->journalEvents, $this->dsConfig);
-    }
 
     private function balanceId(string $code): int
     {
@@ -152,6 +157,7 @@ class CashPaymentMatchingTest extends IntegrationTestCase
             'source_id'         => $docId,
             'doc_head'          => $docId,
             'account_number'    => '311100',
+            'fiscal_year'       => $this->fiscalYear,
             'partner'           => self::PARTNER,
             'payment_reference' => self::VS,
             'currency'          => 'czk',
@@ -166,16 +172,12 @@ class CashPaymentMatchingTest extends IntegrationTestCase
     /** Příjmový PD kartou s řádkem payment.receivable, zaúčtovaný reálným enginem. */
     private function accountCashPayment(float $amount): int
     {
-        $fy = $this->db->fetchRow(
-            'SELECT id FROM economy_codebooks_fiscal_years WHERE date_begin <= %s AND date_end >= %s LIMIT 1',
-            self::ACC_DATE, self::ACC_DATE,
-        );
         $fm = $this->db->fetchRow(
             'SELECT id FROM economy_codebooks_fiscal_months WHERE date_begin <= %s AND date_end >= %s AND period_type = 1 LIMIT 1',
             self::ACC_DATE, self::ACC_DATE,
         );
-        if ($fy === null || $fm === null) {
-            $this->markTestSkipped('DS nemá fiskální období pro ' . self::ACC_DATE);
+        if ($fm === null) {
+            $this->markTestSkipped('DS nemá fiskální měsíc pro ' . self::ACC_DATE);
         }
         $account211 = $this->db->fetchRow(
             'SELECT id FROM economy_accounting_accounts WHERE number LIKE %like~ AND account_level = 4 AND docState IN (10,40,80) ORDER BY number LIMIT 1',
@@ -206,7 +208,7 @@ class CashPaymentMatchingTest extends IntegrationTestCase
             'cash_dir' => 1, 'payment_method' => 2,
             'doc_number' => 'IT-CASHPAY-' . uniqid(),
             'issue_date' => self::ACC_DATE, 'accounting_date' => self::ACC_DATE, 'due_date' => self::ACC_DATE,
-            'fiscal_year' => (int) $fy['id'], 'fiscal_month' => (int) $fm['id'],
+            'fiscal_year' => $this->fiscalYear, 'fiscal_month' => (int) $fm['id'],
             'partner' => null, 'doc_currency' => 'czk', 'home_currency' => 'czk', 'exchange_rate' => 1.0,
             'doc_text' => 'IT úhrada kartou',
             'total_base' => $amount, 'total_vat' => 0.0, 'total_amount' => $amount,

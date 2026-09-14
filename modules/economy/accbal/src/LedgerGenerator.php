@@ -14,10 +14,10 @@ use Shipard\Core\Config\ConfigRuntime;
  * idempotentně UPSERTuje ledger podle stabilního klíče
  * (source_kind, source_id, balance, bal_side, account_number).
  *
- * Idempotence: `id` pohybu přežije přeúčtování (zdroj se nemění) → ve Fázi 3
- * na něj drží allocations. journal_row je jen denorm (volatilní). Prázdný
- * deník (zdroj opustil stav 40) → desired set prázdný → pohyby zdroje smazány
- * (vč. cascade allocations).
+ * Idempotence: `id` pohybu přežije přeúčtování (zdroj se nemění), journal_row
+ * je jen denorm (volatilní). Prázdný deník (zdroj opustil stav 40) → desired
+ * set prázdný → pohyby zdroje smazány. Případ (#69 D1) je agregát klíče nad
+ * ledgerem (CaseQuery), žádná vedlejší tabulka — smazaný pohyb z něj zmizí sám.
  *
  * Clearing (261200/261300) není speciální case — je to běžná skupina
  * „Nespárované platby" v nastavení (varianta B, docs/accbal.md §4.4).
@@ -209,8 +209,8 @@ final class LedgerGenerator
     }
 
     /**
-     * UPSERT desired setu + smazání pohybů zdroje mimo desired (cascade
-     * allocations). Vše v jedné transakci.
+     * UPSERT desired setu + smazání pohybů zdroje mimo desired. Vše v jedné
+     * transakci.
      *
      * @param array<string, array<string, mixed>> $desired
      */
@@ -248,14 +248,11 @@ final class LedgerGenerator
                 }
             }
 
-            // Pohyby zdroje, které v desired nejsou → smazat (+ jejich allocations).
+            // Pohyby zdroje, které v desired nejsou → smazat.
             foreach ($existingByKey as $key => $id) {
                 if (isset($desired[$key])) {
                     continue;
                 }
-                $this->db->delete('economy_accbal_allocations')
-                    ->where('[payment_entry] = %i OR [request_entry] = %i', $id, $id)
-                    ->execute();
                 $this->db->delete('economy_accbal_ledger')->where('[id] = %i', $id)->execute();
             }
 

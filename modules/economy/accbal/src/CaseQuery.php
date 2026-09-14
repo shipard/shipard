@@ -176,6 +176,30 @@ final class CaseQuery
         return self::prefix($alias) . '[residual] <> 0';
     }
 
+    /**
+     * Zůstatek případu daného řádku ledgeru jako korelovaný skalární
+     * subdotaz (měna dokladu, při $homeCurrency domácí) — viewer pohybů:
+     * sloupec Zůstatek případu a filtr „jen otevřené" (= otevřenost
+     * případu). Rovnost klíče NULL-safe (`<=>`) nad idx_case, per řádek
+     * bodové dohledání.
+     *
+     * Záměrně ne LEFT JOIN na derived table s GROUP BY: MariaDB 10.11
+     * (optimalizace split_materialized) při bodovém dotazu (`WHERE l.id = ?`)
+     * s `<=>` v ON vrací NULL. Volba splitu je cost-based, takže by se
+     * chyba projevila nepředvídatelně i v seznamu s úzkým filtrem.
+     */
+    public static function residualSubquerySql(string $ledgerAlias = 'l', bool $homeCurrency = false): string
+    {
+        $amount = $homeCurrency ? 'amount_hc' : 'amount';
+        $where = [];
+        foreach (self::KEY_COLUMNS as $col) {
+            // balance je NOT NULL → obyčejná rovnost (ref přes idx_case), zbytek NULL-safe.
+            $where[] = 'x.[' . $col . ']' . ($col === 'balance' ? ' = ' : ' <=> ') . $ledgerAlias . '.[' . $col . ']';
+        }
+        return '(SELECT SUM(CASE WHEN x.[bal_side] = 0 THEN x.[' . $amount . '] ELSE -x.[' . $amount . '] END)'
+            . ' FROM [economy_accbal_ledger] x WHERE ' . implode(' AND ', $where) . ')';
+    }
+
     // ── Klasifikace v PHP (detail, testy) ───────────────────────────────────
 
     /** Typ otevřenosti ze Σ předpisů a Σ úhrad (měna dokladu), tolerance půl haléře. */

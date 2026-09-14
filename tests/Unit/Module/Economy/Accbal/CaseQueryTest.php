@@ -137,6 +137,23 @@ class CaseQueryTest extends TestCase
         $this->assertSame('c.[residual] <> 0', CaseQuery::openConditionSql());
     }
 
+    public function testResidualSubquerySqlIsNullSafeOnKey(): void
+    {
+        $this->assertSame(
+            '(SELECT SUM(CASE WHEN x.[bal_side] = 0 THEN x.[amount] ELSE -x.[amount] END) FROM [economy_accbal_ledger] x'
+            . ' WHERE x.[balance] = l.[balance] AND x.[fiscal_year] <=> l.[fiscal_year] AND x.[partner] <=> l.[partner]'
+            . ' AND x.[payment_reference] <=> l.[payment_reference] AND x.[specific_symbol] <=> l.[specific_symbol]'
+            . ' AND x.[currency] <=> l.[currency])',
+            CaseQuery::residualSubquerySql('l'),
+            'NULL-safe rovnost — prázdný SS / partner se páruje přes <=>; balance NOT NULL obyčejně',
+        );
+        $this->assertStringContainsString(
+            'x.[amount_hc] ELSE -x.[amount_hc]',
+            CaseQuery::residualSubquerySql('l', true),
+            'účetní zůstatek v domácí měně',
+        );
+    }
+
     // ── Klasifikace ─────────────────────────────────────────────────────────
 
     public function testKindOf(): void

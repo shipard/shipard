@@ -9,8 +9,9 @@
     // bez document class a bez formu (jako účetní deník).
     //
     // Identita pohybu (`id`) je stabilní přes reaccount — UPSERT podle klíče
-    // (source_kind, source_id, balance, bal_side, account_number), aby na pohyb
-    // šly ve Fázi 3 navázat allocations. `source_id` je non-null kopie id zdroje
+    // (source_kind, source_id, balance, bal_side, account_number), aby reaccount
+    // pohyb nezdvojil a UI mělo stálý odkaz (detail, row_id případu).
+    // `source_id` je non-null kopie id zdroje
     // (= doc_head NEBO bank_transaction dle source_kind) — drží unique index
     // funkční (UNIQUE s NULL sloupcem v MariaDB duplicity nechytá, a jeden z FK
     // je vždy NULL). doc_head/bank_transaction zůstávají jako typové FK pro

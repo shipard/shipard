@@ -114,8 +114,8 @@ HELP;
      * `tableId => path of the .jsonc file declaring it`.
      *
      * Duplicates are silently overwritten by the later occurrence — this
-     * command's job is allocation, not validation. ds-upgrade has its own
-     * collision detection.
+     * command only hands out the next id, it does not validate. ds-upgrade
+     * has its own collision detection.
      *
      * @return array<int, string>
      */
