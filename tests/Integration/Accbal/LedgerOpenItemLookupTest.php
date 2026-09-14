@@ -16,8 +16,12 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  */
 class LedgerOpenItemLookupTest extends IntegrationTestCase
 {
-    private const PARTNER = 990003;
-    private const VS      = 'IT-OIL-2026';
+    private const PARTNER  = 990003;
+    private const VS       = 'IT-OIL-2026';
+    private const ACC_DATE = '2026-06-10';
+
+    /** Období klíče (D11) — fiskální rok účetního data. */
+    private int $fiscalYear = 0;
 
     /** @var list<int> */
     private array $seededDocs = [];
@@ -26,6 +30,19 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
     /** @var list<int> dočasné řádky nastavení saldokont (balance_accounts) */
     private array $seededSettings = [];
     private int $seq = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $fy = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_years WHERE date_begin <= %s AND date_end >= %s LIMIT 1',
+            self::ACC_DATE, self::ACC_DATE,
+        );
+        if ($fy === null) {
+            $this->markTestSkipped('DS nemá fiskální rok pro ' . self::ACC_DATE);
+        }
+        $this->fiscalYear = (int) $fy['id'];
+    }
 
     protected function onTearDown(): void
     {
@@ -46,7 +63,7 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $recv = $this->balanceId('receivables');
         $this->seedRequest($recv, '311100', 1210.00);
 
-        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear);
 
         $this->assertNotNull($item);
         $this->assertSame($recv, $item->balance);
@@ -60,9 +77,9 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->seedRequest($recv, '311100', 1210.00);
         $lookup = $this->lookup();
 
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS . 'X', '', 'czk', 1), 'jiný VS');
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER + 1, self::VS, '', 'czk', 1), 'jiný partner');
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'eur', 1), 'jiná měna');
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS . 'X', '', 'czk', 1, $this->fiscalYear), 'jiný VS');
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER + 1, self::VS, '', 'czk', 1, $this->fiscalYear), 'jiný partner');
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'eur', 1, $this->fiscalYear), 'jiná měna');
     }
 
     public function testEmptySpecificSymbolMatchesOnlyEmpty(): void
@@ -71,9 +88,9 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->seedRequest($recv, '311100', 100.00, ['specific_symbol' => '77']);
         $lookup = $this->lookup();
 
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1), 'prázdný SS nesedí na 77');
-        $this->assertNotNull($lookup->findOpenRequest(self::PARTNER, self::VS, '77', 'czk', 1));
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '78', 'czk', 1));
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear), 'prázdný SS nesedí na 77');
+        $this->assertNotNull($lookup->findOpenRequest(self::PARTNER, self::VS, '77', 'czk', 1, $this->fiscalYear));
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '78', 'czk', 1, $this->fiscalYear));
     }
 
     public function testClosedRequestIsNull(): void
@@ -82,7 +99,7 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->seedRequest($recv, '311100', 500.00);
         $this->seedPayment($recv, '311100', 500.00);
 
-        $this->assertNull($this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1));
+        $this->assertNull($this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear));
     }
 
     public function testDirectionDecidesGroup(): void
@@ -91,8 +108,8 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->seedRequest($recv, '311100', 500.00);
         $lookup = $this->lookup();
 
-        $this->assertNotNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1));
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2), 'výdaj hledá v Závazcích');
+        $this->assertNotNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear));
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2, $this->fiscalYear), 'výdaj hledá v Závazcích');
     }
 
     public function testPayableRequestForOutgoing(): void
@@ -100,7 +117,7 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $pay = $this->balanceId('payables');
         $this->seedRequest($pay, '321100', 800.00);
 
-        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2);
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2, $this->fiscalYear);
 
         $this->assertNotNull($item);
         $this->assertSame($pay, $item->balance);
@@ -112,7 +129,7 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $pay = $this->balanceId('payables');
         $this->seedRequest($pay, '336101', 2500.00);
 
-        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2);
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2, $this->fiscalYear);
 
         $this->assertNotNull($item, 'cílem jsou všechny předpisové účty skupiny, ne jen 321');
         $this->assertSame($pay, $item->balance);
@@ -126,7 +143,7 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->seedBalanceAccount($recv, '315', 0);
         $this->seedRequest($recv, '315100', 900.00);
 
-        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear);
 
         $this->assertNotNull($item, 'prefix cíle plyne z nastavení skupiny, ne z kódu');
         $this->assertSame($recv, $item->balance);
@@ -144,8 +161,8 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->seedRequest($pay, '311100', 400.00);
         $lookup = $this->lookup();
 
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1), 'příjem: 321 není předpisový účet Pohledávek');
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2), 'výdaj: dobropisový řádek 311 v Závazcích mimo hru');
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear), 'příjem: 321 není předpisový účet Pohledávek');
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2, $this->fiscalYear), 'výdaj: dobropisový řádek 311 v Závazcích mimo hru');
     }
 
     public function testClearingPaymentDoesNotReduceResidual(): void
@@ -155,18 +172,33 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->seedRequest($recv, '311100', 500.00);
         $this->seedPayment($clearing, '261200', 500.00);
 
-        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear);
 
         $this->assertNotNull($item, 'úhrada na clearingu klíč neuzavírá');
         $this->assertEqualsWithDelta(500.00, $item->residual, 0.001);
     }
 
-    public function testCurrencyComparisonIsCaseInsensitive(): void
+    public function testInputKeyIsNormalized(): void
     {
+        // Ledger je normalizovaný při zápisu (D10); vstup lookupu se normalizuje stejně.
         $recv = $this->balanceId('receivables');
-        $this->seedRequest($recv, '311100', 100.00, ['currency' => 'CZK']);
+        $this->seedRequest($recv, '311100', 100.00);
 
-        $this->assertNotNull($this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1));
+        $this->assertNotNull($this->lookup()->findOpenRequest(self::PARTNER, ' ' . self::VS . ' ', '  ', 'CZK', 1, $this->fiscalYear));
+    }
+
+    public function testRequestInOtherFiscalYearIsMiss(): void
+    {
+        // D11: případ žije v období — předpis loňského roku dnešní úhradu
+        // neotevře; přenáší ho otevírací doklad nového období.
+        $recv = $this->balanceId('receivables');
+        $otherYear = $this->otherFiscalYear();
+        $this->seedRequest($recv, '311100', 500.00, ['fiscal_year' => $otherYear]);
+        $lookup = $this->lookup();
+
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear), 'jiné období = miss');
+        $this->assertNotNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $otherYear), 've svém období otevřený');
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, null), 'bez období = bez klíče');
     }
 
     public function testExcludingOwnPaymentRestoresResidual(): void
@@ -176,8 +208,8 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $txId = $this->seedPayment($recv, '311100', 500.00);
         $lookup = $this->lookup();
 
-        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1), 'bez vyloučení uzavřeno');
-        $item = $lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, 'bankTransaction', $txId);
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear), 'bez vyloučení uzavřeno');
+        $item = $lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear, 'bankTransaction', $txId);
         $this->assertNotNull($item, 'vlastní úhrada se nepočítá → reaccount je idempotentní');
         $this->assertEqualsWithDelta(500.00, $item->residual, 0.001);
     }
@@ -189,6 +221,16 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $lookup = new LedgerOpenItemLookup();
         $lookup->setDb($this->db->getDibiConnection());
         return $lookup;
+    }
+
+    /** Jiný fiskální rok než testovací; DS s jediným rokem → syntetické id (ledger FK nevynucuje). */
+    private function otherFiscalYear(): int
+    {
+        $row = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_years WHERE id <> %i ORDER BY id LIMIT 1',
+            $this->fiscalYear,
+        );
+        return $row !== null ? (int) $row['id'] : $this->fiscalYear + 100_000;
     }
 
     private function balanceId(string $code): int
@@ -233,6 +275,7 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
             'source_id'         => $docId,
             'doc_head'          => $docId,
             'account_number'    => $account,
+            'fiscal_year'       => $this->fiscalYear,
             'partner'           => self::PARTNER,
             'payment_reference' => self::VS,
             'currency'          => 'czk',
@@ -256,6 +299,7 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
             'source_id'         => $txId,
             'bank_transaction'  => $txId,
             'account_number'    => $account,
+            'fiscal_year'       => $this->fiscalYear,
             'partner'           => self::PARTNER,
             'payment_reference' => self::VS,
             'currency'          => 'czk',

@@ -50,7 +50,11 @@
         {"id": "partner", "name": "Partner", "name:cs": "Partner", "name:en": "Partner",
             "type": "int", "nullable": true, "reference": "base_persons_persons"},
 
-        // --- platební identita (denorm z deníku, signál pro matcher Fáze 3) ---
+        // --- platební identita (denorm z deníku) — součást klíče případu
+        // (#69 D1/D11): (balance, fiscal_year, partner, payment_reference,
+        // specific_symbol, currency). Normalizace při zápisu (D10): symboly
+        // TRIM, prázdné = NULL, měna malými písmeny — rovnost klíče jde přes
+        // idx_case bez funkcí ve WHERE (CaseQuery). ---
         {"id": "payment_reference", "name": "Payment reference", "name:cs": "Variabilní symbol", "name:en": "Payment reference",
             "type": "varchar", "length": 35, "nullable": true},
         {"id": "specific_symbol", "name": "Specific symbol", "name:cs": "Specifický symbol", "name:en": "Specific symbol",
@@ -80,6 +84,12 @@
             {"column": "balance"}, {"column": "bal_side"}, {"column": "account_number"}]},
         {"id": "idx_bucket", "type": "index", "columns": [
             {"column": "balance"}, {"column": "partner"}, {"column": "currency"}, {"column": "fiscal_year"}]},
+        // Klíč případu (#69 D11) — složený index nad sloupci rovnosti: bodové
+        // dohledání (lookup, router) i prefixové dotazy per skupina / období /
+        // partner (viewer případů). Žádný uložený hash klíče.
+        {"id": "idx_case", "type": "index", "columns": [
+            {"column": "balance"}, {"column": "fiscal_year"}, {"column": "partner"},
+            {"column": "payment_reference"}, {"column": "specific_symbol"}, {"column": "currency"}]},
         {"id": "idx_payment_reference", "type": "index", "columns": [{"column": "payment_reference"}]},
         {"id": "idx_doc_head", "type": "index", "columns": [{"column": "doc_head"}]},
         {"id": "idx_bank_transaction", "type": "index", "columns": [{"column": "bank_transaction"}]},

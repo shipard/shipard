@@ -11,14 +11,19 @@ use Shipard\Module\Economy\Accbal\LedgerOpenItemLookup;
 /**
  * LedgerOpenItemLookup nad mockem Dibi: výběr cílových skupin z nastavení
  * saldokont (řádky předpisu na přirozené straně směru, všechny jejich
- * prefixy), normalizace klíče, reziduum Σ předpisy − Σ úhrady, vyloučení
- * vlastního zdroje. SQL sémantiku (přesná shoda klíče v DB) kryje
- * integrační test.
+ * prefixy), normalizace klíče (D10) a období v klíči (D11), reziduum
+ * Σ předpisy − Σ úhrady, vyloučení vlastního zdroje. SQL sémantiku (přesná
+ * shoda klíče v DB) kryje integrační test.
+ *
+ * Tvar ledger dotazu: podmínky klíče v pořadí idx_case (balance,
+ * fiscal_year, partner, VS, SS, měna) → prefixy účtů → vyloučení zdroje;
+ * prázdný SS je `IS NULL` bez parametru.
  */
 class LedgerOpenItemLookupTest extends TestCase
 {
     private const RECEIVABLES = 1;
     private const PAYABLES    = 2;
+    private const FY          = 5;
 
     /** @var list<array{sql: string, params: list<mixed>}> */
     private array $queries = [];
@@ -88,7 +93,7 @@ class LedgerOpenItemLookupTest extends TestCase
             self::row(1, '311100', 400.00),
         ];
 
-        $item = $this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1, self::FY);
 
         $this->assertInstanceOf(OpenItem::class, $item);
         $this->assertSame(self::RECEIVABLES, $item->balance);
@@ -103,7 +108,7 @@ class LedgerOpenItemLookupTest extends TestCase
             self::row(1, '311100', 1000.00),
         ];
 
-        $this->assertNull($this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1));
+        $this->assertNull($this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1, self::FY));
     }
 
     public function testOverpaidRequestReturnsNull(): void
@@ -113,14 +118,14 @@ class LedgerOpenItemLookupTest extends TestCase
             self::row(1, '311100', 1200.00),
         ];
 
-        $this->assertNull($this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1));
+        $this->assertNull($this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1, self::FY));
     }
 
     public function testPaymentsWithoutRequestReturnNull(): void
     {
         $this->ledger[self::RECEIVABLES] = [self::row(1, '311100', 500.00)];
 
-        $this->assertNull($this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1));
+        $this->assertNull($this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1, self::FY));
     }
 
     public function testRequestSplitOverInstallmentsSumsUp(): void
@@ -131,7 +136,7 @@ class LedgerOpenItemLookupTest extends TestCase
             self::row(1, '311100', 500.00),
         ];
 
-        $item = $this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1, self::FY);
 
         $this->assertNotNull($item);
         $this->assertEqualsWithDelta(100.00, $item->residual, 0.001);
@@ -143,44 +148,67 @@ class LedgerOpenItemLookupTest extends TestCase
     {
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 1000.00)];
 
-        $this->assertNull($this->lookup()->findOpenRequest(42, '  ', '', 'czk', 1));
+        $this->assertNull($this->lookup()->findOpenRequest(42, '  ', '', 'czk', 1, self::FY));
         $this->assertSame([], $this->queries, 'bez VS se do DB nesahá');
+    }
+
+    public function testWithoutFiscalYearIsNoKey(): void
+    {
+        $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 1000.00)];
+
+        $this->assertNull($this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1, null));
+        $this->assertSame([], $this->queries, 'období je součást klíče (D11) — bez něj se do DB nesahá');
     }
 
     public function testUnknownDirectionIsNull(): void
     {
-        $this->assertNull($this->lookup()->findOpenRequest(42, '1', '', 'czk', 3));
+        $this->assertNull($this->lookup()->findOpenRequest(42, '1', '', 'czk', 3, self::FY));
         $this->assertSame([], $this->queries);
     }
 
     public function testWithoutDbIsNull(): void
     {
-        $this->assertNull((new LedgerOpenItemLookup())->findOpenRequest(42, '1', '', 'czk', 1));
+        $this->assertNull((new LedgerOpenItemLookup())->findOpenRequest(42, '1', '', 'czk', 1, self::FY));
     }
 
-    public function testKeyIsTrimmedAndCurrencyLowercased(): void
+    public function testKeyIsNormalizedAndComparedByEquality(): void
     {
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
 
-        $this->lookup()->findOpenRequest(42, ' 20260001 ', ' 77 ', 'CZK', 1);
+        $this->lookup()->findOpenRequest(42, ' 20260001 ', ' 77 ', 'CZK', 1, self::FY);
 
         $q = $this->ledgerQuery();
-        $this->assertSame([self::RECEIVABLES, '311', 42, '20260001', '77', 'czk'], $q['params']);
-        $this->assertStringContainsString('TRIM([payment_reference]) = %s', $q['sql']);
-        $this->assertStringContainsString("TRIM(COALESCE([specific_symbol], '')) = %s", $q['sql']);
-        $this->assertStringContainsString('LOWER([currency]) = %s', $q['sql']);
-        $this->assertStringContainsString('[account_number] LIKE %like~', $q['sql']);
+        $this->assertSame([self::RECEIVABLES, self::FY, 42, '20260001', '77', 'czk', '311'], $q['params']);
+        $this->assertStringContainsString('l.[balance] = %i AND l.[fiscal_year] = %i AND l.[partner] = %i', $q['sql']);
+        $this->assertStringContainsString('l.[payment_reference] = %s', $q['sql']);
+        $this->assertStringContainsString('l.[specific_symbol] = %s', $q['sql']);
+        $this->assertStringContainsString('l.[currency] = %s', $q['sql']);
+        $this->assertStringContainsString('l.[account_number] LIKE %like~', $q['sql']);
+        // D10: ledger je normalizovaný při zápisu → rovnost přes idx_case, žádné funkce ve WHERE.
+        $this->assertStringNotContainsString('TRIM(', $q['sql']);
+        $this->assertStringNotContainsString('LOWER(', $q['sql']);
         $this->assertStringNotContainsString('NOT (', $q['sql'], 'bez exclude se podmínka nepřidá');
+    }
+
+    public function testEmptySpecificSymbolIsComparedAsNull(): void
+    {
+        $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
+
+        $this->lookup()->findOpenRequest(42, '20260001', '  ', 'czk', 1, self::FY);
+
+        $q = $this->ledgerQuery();
+        $this->assertStringContainsString('l.[specific_symbol] IS NULL', $q['sql']);
+        $this->assertSame([self::RECEIVABLES, self::FY, 42, '20260001', 'czk', '311'], $q['params'], 'IS NULL bez parametru');
     }
 
     public function testExclusionOfOwnSourceIsAppended(): void
     {
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
 
-        $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1, 'bankTransaction', 555);
+        $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1, self::FY, 'bankTransaction', 555);
 
         $q = $this->ledgerQuery();
-        $this->assertStringContainsString('NOT ([source_kind] = %s AND [source_id] = %i)', $q['sql']);
+        $this->assertStringContainsString('NOT (l.[source_kind] = %s AND l.[source_id] = %i)', $q['sql']);
         $this->assertSame('bankTransaction', $q['params'][6]);
         $this->assertSame(555, $q['params'][7]);
     }
@@ -192,7 +220,7 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
         $this->ledger[3] = [self::row(0, '314100', 10.00)];
 
-        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1, self::FY);
 
         $this->assertNotNull($item);
         $this->assertSame(self::RECEIVABLES, $item->balance, 'první skupina v pořadí nastavení vyhrává');
@@ -203,7 +231,7 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->assertStringContainsString('a.[modify_sign] = 0', $settings['sql']);
         $this->assertStringContainsString('a.[amounts_sign] IN (0, 1)', $settings['sql']);
         $this->assertCount(2, $this->queries, 'zásah v Pohledávkách → zálohy se už neprohledávají');
-        $this->assertSame([self::RECEIVABLES, '311'], array_slice($this->ledgerQuery()['params'], 0, 2));
+        $this->assertSame([self::RECEIVABLES, self::FY, 42, '1', 'czk', '311'], $this->ledgerQuery()['params']);
     }
 
     public function testIncomingFallsThroughToNextGroupWithRequestOnDebitSide(): void
@@ -211,28 +239,28 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 100.00), self::row(1, '311100', 100.00)];
         $this->ledger[3] = [self::row(0, '314100', 10.00)];
 
-        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1, self::FY);
 
         $this->assertNotNull($item);
         $this->assertSame(3, $item->balance, 'uzavřený klíč v Pohledávkách → poskytnuté zálohy (314 MD předpis)');
         $this->assertSame('314100', $item->accountNumber);
-        $this->assertSame([3, '314'], array_slice($this->ledgerQuery(1)['params'], 0, 2));
+        $this->assertSame([3, self::FY, 42, '1', 'czk', '314'], $this->ledgerQuery(1)['params']);
     }
 
     public function testOutgoingSearchesAllRequestPrefixesOfGroup(): void
     {
         $this->ledger[self::PAYABLES] = [self::row(0, '325100', 10.00)];
 
-        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 2);
+        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 2, self::FY);
 
         $this->assertNotNull($item);
         $this->assertSame(self::PAYABLES, $item->balance);
         $this->assertSame('325100', $item->accountNumber, 'účet skutečného předpisu, ne jen 321');
         $this->assertSame(1, $this->queries[0]['params'][0], 'výdaj → předpis vzniká na DAL (acc_side 1)');
         $q = $this->ledgerQuery();
-        $this->assertSame([self::PAYABLES, '321', '325', 42, '1', '', 'czk'], $q['params']);
+        $this->assertSame([self::PAYABLES, self::FY, 42, '1', 'czk', '321', '325'], $q['params']);
         $this->assertStringContainsString(
-            '([account_number] LIKE %like~ OR [account_number] LIKE %like~)',
+            '(l.[account_number] LIKE %like~ OR l.[account_number] LIKE %like~)',
             $q['sql'],
             'jeden dotaz per skupina přes všechny její předpisové prefixy',
         );
@@ -243,9 +271,10 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->settings[0] = [['balance' => self::RECEIVABLES, 'account_number' => ' 3111 ']];
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
 
-        $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
+        $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1, self::FY);
 
-        $this->assertSame('3111', $this->ledgerQuery()['params'][1], 'prefix z nastavení (trim), bez rozšiřování na 311');
+        $params = $this->ledgerQuery()['params'];
+        $this->assertSame('3111', end($params), 'prefix z nastavení (trim), bez rozšiřování na 311');
     }
 
     public function testBroaderSettingsPrefixIsNotWidened(): void
@@ -253,9 +282,10 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->settings[0] = [['balance' => self::RECEIVABLES, 'account_number' => '31']];
         $this->ledger[self::RECEIVABLES] = [self::row(0, '315100', 10.00)];
 
-        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1, self::FY);
 
-        $this->assertSame('31', $this->ledgerQuery()['params'][1]);
+        $params = $this->ledgerQuery()['params'];
+        $this->assertSame('31', end($params));
         $this->assertNotNull($item);
         $this->assertSame('315100', $item->accountNumber);
     }
@@ -270,13 +300,13 @@ class LedgerOpenItemLookupTest extends TestCase
         ];
         $this->ledger[self::RECEIVABLES] = [self::row(1, '311100', 10.00)];
 
-        $this->assertNull($this->lookup()->findOpenRequest(42, '1', '', 'czk', 1));
+        $this->assertNull($this->lookup()->findOpenRequest(42, '1', '', 'czk', 1, self::FY));
         $ledgerQueries = array_values(array_filter(
             $this->queries,
             static fn(array $q) => str_contains($q['sql'], 'economy_accbal_ledger'),
         ));
         $this->assertCount(1, $ledgerQueries, 'skupina jen s prázdným prefixem není cíl');
-        $this->assertSame([self::RECEIVABLES, '311', 42], array_slice($ledgerQueries[0]['params'], 0, 3), 'duplicitní prefix jen jednou');
+        $this->assertSame([self::RECEIVABLES, self::FY, 42, '1', 'czk', '311'], $ledgerQueries[0]['params'], 'duplicitní prefix jen jednou');
     }
 
     public function testFirstTargetWithResidualWins(): void
@@ -288,7 +318,7 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 100.00), self::row(1, '311100', 100.00)];
         $this->ledger[9] = [self::row(0, '311200', 50.00)];
 
-        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1);
+        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 1, self::FY);
 
         $this->assertNotNull($item);
         $this->assertSame(9, $item->balance, 'uzavřený klíč v první skupině → hledá se dál');
@@ -300,8 +330,8 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];
         $lookup = $this->lookup();
 
-        $lookup->findOpenRequest(42, '1', '', 'czk', 1);
-        $lookup->findOpenRequest(42, '2', '', 'czk', 1);
+        $lookup->findOpenRequest(42, '1', '', 'czk', 1, self::FY);
+        $lookup->findOpenRequest(42, '2', '', 'czk', 1, self::FY);
 
         $settingsQueries = array_filter(
             $this->queries,

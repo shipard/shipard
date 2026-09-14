@@ -24,10 +24,13 @@ use Shipard\Core\Accounting\OpenItem;
  * „Nespárované platby“ nemá řádek předpisu → nikdy se neprohledá. Vrácený
  * účet je účet skutečného předpisu vč. analytiky (311100, 336101…).
  *
- * Reziduum klíče = Σ předpisy − Σ úhrady (v měně dokladu) přes všechny
- * fiskální roky; počítá se v PHP nad řádky klíče (jednotky řádků), SQL drží
- * jen přesnou shodu klíče. Pravidlo 1 z D5; pravidla 2–3 přidá T3. Tutéž
- * definici případu zobecní T2 (`CaseQuery`) — filtr účtů skupiny přebírá.
+ * Klíč případu = {@see CaseQuery} (skupina, období, partner, VS, SS, měna;
+ * #69 D1/D11): normalizovaný vstup, rovnost přes idx_case, prázdný SS
+ * `IS NULL`. Reziduum klíče = Σ předpisy − Σ úhrady (v měně dokladu) v
+ * rámci období; počítá se v PHP nad řádky klíče (jednotky řádků). Lookup je
+ * užší než případ — bere jen řádky na předpisových účtech skupiny (viz
+ * výše); CaseQuery agreguje celou skupinu. Pravidlo 1 z D5; pravidla 2–3
+ * přidá T3.
  */
 final class LedgerOpenItemLookup extends AbstractOpenItemLookup
 {
@@ -48,21 +51,31 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
         string $specificSymbol,
         string $currency,
         int $direction,
+        ?int $fiscalYear,
         ?string $excludeSourceKind = null,
         ?int $excludeSourceId = null,
     ): ?OpenItem {
-        $paymentReference = trim($paymentReference);
-        if ($this->db === null || $paymentReference === '' || !isset(self::DIRECTION_SIDE[$direction])) {
+        $paymentReference = CaseQuery::normalizeSymbol($paymentReference);
+        if (
+            $this->db === null || $paymentReference === null || $fiscalYear === null
+            || !isset(self::DIRECTION_SIDE[$direction])
+        ) {
             return null;
         }
-        $specificSymbol = trim($specificSymbol);
-        $currency = strtolower(trim($currency));
+        $key = [
+            'fiscal_year'       => $fiscalYear,
+            'partner'           => $partner,
+            'payment_reference' => $paymentReference,
+            'specific_symbol'   => CaseQuery::normalizeSymbol($specificSymbol),
+            'currency'          => CaseQuery::normalizeCurrency($currency),
+        ];
 
         foreach ($this->targetsForDirection($direction) as $target) {
             $rows = $this->loadKeyRows(
-                $target['balance'], $target['prefixes'],
-                $partner, $paymentReference, $specificSymbol, $currency,
-                $excludeSourceKind, $excludeSourceId,
+                ['balance' => $target['balance']] + $key,
+                $target['prefixes'],
+                $excludeSourceKind,
+                $excludeSourceId,
             );
             $item = $this->residualOf($target['balance'], $rows);
             if ($item !== null) {
@@ -123,37 +136,36 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
     /**
      * Řádky ledgeru klíče ve skupině — jen na účtech s prefixem některého
      * předpisového řádku nastavení (řádky s modify_sign zůstávají mimo hru).
+     * Rovnost klíče přes {@see CaseQuery::keyConditions} (idx_case).
      *
+     * @param array<string, mixed> $key úplný klíč případu vč. balance
      * @param non-empty-list<string> $prefixes
      * @return list<array<string, mixed>|\Dibi\Row>
      */
     private function loadKeyRows(
-        int $balance,
+        array $key,
         array $prefixes,
-        int $partner,
-        string $paymentReference,
-        string $specificSymbol,
-        string $currency,
         ?string $excludeSourceKind,
         ?int $excludeSourceId,
     ): array {
-        $accountFilter = implode(' OR ', array_fill(0, count($prefixes), '[account_number] LIKE %like~'));
-        $sql = 'SELECT [id], [bal_side], [account_number], [amount]
-                FROM [economy_accbal_ledger]
-                WHERE [balance] = %i AND (' . $accountFilter . ') AND [partner] = %i
-                  AND TRIM([payment_reference]) = %s
-                  AND TRIM(COALESCE([specific_symbol], \'\')) = %s
-                  AND LOWER([currency]) = %s';
-        $args = [$balance, ...$prefixes, $partner, $paymentReference, $specificSymbol, $currency];
+        [$conds, $args] = CaseQuery::keyConditions($key, 'l');
+
+        $conds[] = '(' . implode(' OR ', array_fill(0, count($prefixes), 'l.[account_number] LIKE %like~')) . ')';
+        $args = [...$args, ...$prefixes];
 
         if ($excludeSourceKind !== null && $excludeSourceId !== null) {
-            $sql   .= ' AND NOT ([source_kind] = %s AND [source_id] = %i)';
-            $args[] = $excludeSourceKind;
-            $args[] = $excludeSourceId;
+            $conds[] = 'NOT (l.[source_kind] = %s AND l.[source_id] = %i)';
+            $args[]  = $excludeSourceKind;
+            $args[]  = $excludeSourceId;
         }
-        $sql .= ' ORDER BY [id]';
 
-        return $this->db->fetchAll($sql, ...$args);
+        return $this->db->fetchAll(
+            'SELECT l.[id], l.[bal_side], l.[account_number], l.[amount]
+             FROM [economy_accbal_ledger] l
+             WHERE ' . implode(' AND ', $conds) . '
+             ORDER BY l.[id]',
+            ...$args,
+        );
     }
 
     /**

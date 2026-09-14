@@ -51,6 +51,8 @@ class BankPaymentRoutingTest extends IntegrationTestCase
 
     private ?int $bankAccountId = null;
     private string $receivableAccount = '311100';
+    /** Fiskální rok účetního data — období klíče případu (D11). */
+    private int $fiscalYear = 0;
     private int $seq = 0;
 
     protected function setUp(): void
@@ -189,6 +191,28 @@ class BankPaymentRoutingTest extends IntegrationTestCase
 
         $this->assertSame($this->receivableAccount, $this->counterpartyAccount($first));
         $this->assertSame('261200', $this->counterpartyAccount($second), 'klíč uzavřen první úhradou');
+    }
+
+    // ── 2b. Období v klíči (D11) ─────────────────────────────────────────────
+
+    public function testRequestFromOtherFiscalYearStaysOnClearingUntilOpeningDocPosts(): void
+    {
+        // Předpis z jiného období klíč v období úhrady neotevře → clearing.
+        $this->seedRequest('receivables', $this->receivableAccount, 1210.00, ['fiscal_year' => $this->otherFiscalYear()]);
+        [$txId] = $this->accountPayment(1210.00);
+        $this->assertSame('261200', $this->counterpartyAccount($txId), 'předpis z jiného období = miss (D11)');
+        $this->assertNotNull($this->ledgerMove($txId, 'unmatched_payments'));
+
+        // Otevírací doklad období úhrady = běžný `doc` s klíčem — tady ho
+        // zastupuje faktura; projde ClearingRerouteHandlerem bez zvláštní cesty.
+        $headId = $this->insertInvoice(1000.00, 21.0);
+        $result = (new AccountingEngine($this->db->getDibiConnection(), $this->config, $this->journalEvents))
+            ->accountDocument($headId);
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+
+        $this->assertSame($this->receivableAccount, $this->counterpartyAccount($txId), 'po zaúčtování předpisu v období úhrady trigger přeúčtuje');
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'));
+        $this->assertNotNull($this->ledgerMove($txId, 'receivables'));
     }
 
     // ── 4. Reaccount idempotentní, bez smyčky ────────────────────────────────
@@ -413,6 +437,7 @@ class BankPaymentRoutingTest extends IntegrationTestCase
             'source_id'         => $docId,
             'doc_head'          => $docId,
             'account_number'    => $account,
+            'fiscal_year'       => $this->fiscalYear,
             'partner'           => self::PARTNER,
             'payment_reference' => self::VS,
             'currency'          => 'czk',
@@ -469,9 +494,24 @@ class BankPaymentRoutingTest extends IntegrationTestCase
              WHERE date_begin <= %s AND date_end >= %s AND period_type = 1 LIMIT 1',
             self::ACC_DATE, self::ACC_DATE,
         );
-        if ($row === null) {
+        $fy = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_years WHERE date_begin <= %s AND date_end >= %s LIMIT 1',
+            self::ACC_DATE, self::ACC_DATE,
+        );
+        if ($row === null || $fy === null) {
             $this->markTestSkipped('DS nemá fiskální období pro ' . self::ACC_DATE);
         }
+        $this->fiscalYear = (int) $fy['id'];
+    }
+
+    /** Jiný fiskální rok než testovací; DS s jediným rokem → syntetické id (ledger FK nevynucuje). */
+    private function otherFiscalYear(): int
+    {
+        $row = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_years WHERE id <> %i ORDER BY id LIMIT 1',
+            $this->fiscalYear,
+        );
+        return $row !== null ? (int) $row['id'] : $this->fiscalYear + 100_000;
     }
 
     /** @return array{id: int, number: string} */

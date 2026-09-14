@@ -155,11 +155,14 @@ final class LedgerGenerator
                         'journal_row'       => (int) $row['id'],
                         'fiscal_year'       => isset($row['fiscal_year']) ? (int) $row['fiscal_year'] : null,
                         'partner'           => isset($row['partner']) && $row['partner'] !== null ? (int) $row['partner'] : null,
-                        'payment_reference' => $row['payment_reference'] ?? null,
-                        'specific_symbol'   => $row['specific_symbol'] ?? null,
-                        'constant_symbol'   => $row['constant_symbol'] ?? null,
+                        // Klíč případu se normalizuje při zápisu (#69 D10):
+                        // symboly TRIM, prázdné → NULL, měna malými písmeny —
+                        // rovnost klíče pak jde přes idx_case (CaseQuery).
+                        'payment_reference' => CaseQuery::normalizeSymbol($row['payment_reference'] ?? null),
+                        'specific_symbol'   => CaseQuery::normalizeSymbol($row['specific_symbol'] ?? null),
+                        'constant_symbol'   => CaseQuery::normalizeSymbol($row['constant_symbol'] ?? null),
                         'due_date'          => $row['due_date'] ?? null,
-                        'currency'          => $row['currency'] ?? null,
+                        'currency'          => CaseQuery::normalizeCurrency($row['currency'] ?? null),
                         'home_currency'     => $homeCurrency,
                         'amount'            => 0.0,
                         'amount_hc'         => 0.0,

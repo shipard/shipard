@@ -68,9 +68,10 @@ final class ClearingRouter
 
     /**
      * Klíče právě zaúčtovaných předpisů: clearingové úhrady se shodným
-     * klíčem (oba směry — o směru rozhodne lookup vůči směru transakce).
+     * klíčem vč. účetního období (#69 D11; oba směry — o směru rozhodne
+     * lookup vůči směru transakce).
      *
-     * @param list<array{partner: int, payment_reference: string, specific_symbol: string, currency: string}> $keys
+     * @param list<array{fiscal_year: int, partner: int, payment_reference: string, specific_symbol: ?string, currency: string}> $keys
      */
     public function rerouteForKeys(array $keys, bool $dryRun = false): RouteSummary
     {
@@ -104,12 +105,15 @@ final class ClearingRouter
             return RouteResult::skipped($txId, 'no_partner', $amount, $amountHc);
         }
 
+        // Období úhrady = fiscal_year jejího clearingového pohybu (denorm
+        // z deníku transakce); bez období lookup mine (D11).
         $item = $this->openItems->findOpenRequest(
             $partner,
-            trim((string) ($c['payment_reference'] ?? '')),
-            trim((string) ($c['specific_symbol'] ?? '')),
-            strtolower(trim((string) $currency)),
+            (string) ($c['payment_reference'] ?? ''),
+            (string) ($c['specific_symbol'] ?? ''),
+            (string) $currency,
             (int) ($c['direction'] ?? 0),
+            isset($c['fiscal_year']) && $c['fiscal_year'] !== null ? (int) $c['fiscal_year'] : null,
             'bankTransaction',
             $txId,
         );
@@ -142,7 +146,7 @@ final class ClearingRouter
      * Clearingoví kandidáti seřazení dle data transakce (FIFO plateb v dávce).
      *
      * @param array{partner?: int, fiscalYear?: int} $filters
-     * @param array{partner: int, payment_reference: string, specific_symbol: string, currency: string}|null $key
+     * @param array{fiscal_year: int, partner: int, payment_reference: string, specific_symbol: ?string, currency: string}|null $key
      * @return list<\Dibi\Row>
      */
     private function loadCandidates(array $filters, ?array $key): array
@@ -167,18 +171,14 @@ final class ClearingRouter
             $args[]  = (int) $filters['fiscalYear'];
         }
         if ($key !== null) {
-            $conds[] = 'l.[partner] = %i';
-            $args[]  = (int) $key['partner'];
-            $conds[] = 'TRIM(l.[payment_reference]) = %s';
-            $args[]  = trim($key['payment_reference']);
-            $conds[] = 'TRIM(COALESCE(l.[specific_symbol], \'\')) = %s';
-            $args[]  = trim($key['specific_symbol']);
-            $conds[] = 'LOWER(l.[currency]) = %s';
-            $args[]  = strtolower(trim($key['currency']));
+            // Rovnost klíče přes idx_case (CaseQuery, D10) — skupina je clearing.
+            [$keyConds, $keyArgs] = CaseQuery::keyConditions(array_diff_key($key, ['balance' => true]), 'l');
+            $conds = [...$conds, ...$keyConds];
+            $args  = [...$args, ...$keyArgs];
         }
 
         return $this->db->fetchAll(
-            'SELECT l.[id], l.[bank_transaction], l.[partner], l.[payment_reference],
+            'SELECT l.[id], l.[bank_transaction], l.[fiscal_year], l.[partner], l.[payment_reference],
                     l.[specific_symbol], l.[currency], l.[amount], l.[amount_hc],
                     t.[direction]
              FROM [economy_accbal_ledger] l

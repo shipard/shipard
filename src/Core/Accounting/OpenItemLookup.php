@@ -24,16 +24,21 @@ interface OpenItemLookup
     /**
      * Otevřený předpis pro klíč úhrady, nebo null.
      *
-     * Klíč = (partner, payment_reference, specific_symbol, currency) —
-     * pravidlo 1 z D5 (přesná shoda). Prázdný `payment_reference` je „bez
+     * Klíč případu = (partner, payment_reference, specific_symbol, currency)
+     * v účetním období `$fiscalYear` (#69 D1, D11) — pravidlo 1 z D5 (přesná
+     * shoda). Prázdný `payment_reference` nebo chybějící období je „bez
      * klíče“ → vždy null (pravidla 2–3 přijdou s efektivními symboly, T3).
      * Prázdný SS na úhradě sedí jen na prázdný SS předpisu. Porovnání je
-     * necitlivé na okrajové mezery a velikost písmen měny.
+     * necitlivé na okrajové mezery a velikost písmen měny (normalizace
+     * klíče D10 na obou stranách).
      *
      * $direction: 1 = příjem → předpis vzniklý na MD (typicky pohledávky,
      * 311*), 2 = výdaj → předpis na DAL (závazky 321*, ale i 325/331/336/…
      * podle nastavení saldokont). Otevřený = Σ předpisy − Σ úhrady pro klíč
      * > 0 v měně dokladu.
+     *
+     * $fiscalYear: období účetního data úhrady. Předpis z jiného období je
+     * miss — zůstatky mezi obdobími přenáší otevírací doklad (D11).
      *
      * $excludeSourceKind/$excludeSourceId: zdroj, jehož pohyby se do Σ úhrad
      * nepočítají — engine předá právě účtovanou transakci, aby reaccount už
@@ -46,6 +51,7 @@ interface OpenItemLookup
         string $specificSymbol,
         string $currency,
         int $direction,
+        ?int $fiscalYear,
         ?string $excludeSourceKind = null,
         ?int $excludeSourceId = null,
     ): ?OpenItem;

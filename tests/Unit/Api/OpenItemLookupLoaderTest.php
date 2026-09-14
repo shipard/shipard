@@ -26,7 +26,7 @@ class OpenItemLookupLoaderTest extends TestCase
         ]);
 
         $this->assertInstanceOf(NullOpenItemLookup::class, $lookup);
-        $this->assertNull($lookup->findOpenRequest(1, '123', '', 'czk', 1));
+        $this->assertNull($lookup->findOpenRequest(1, '123', '', 'czk', 1, 1));
     }
 
     public function testRegisteredClassIsInstantiatedWithServices(): void
@@ -88,6 +88,7 @@ class FakeOpenItemLookup extends AbstractOpenItemLookup
         string $specificSymbol,
         string $currency,
         int $direction,
+        ?int $fiscalYear,
         ?string $excludeSourceKind = null,
         ?int $excludeSourceId = null,
     ): ?OpenItem {

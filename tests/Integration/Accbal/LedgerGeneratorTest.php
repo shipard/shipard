@@ -131,6 +131,30 @@ class LedgerGeneratorTest extends IntegrationTestCase
         $this->assertSame('12345', $m['payment_reference']);
     }
 
+    public function testCaseKeyIsNormalizedOnWrite(): void
+    {
+        // D10: symboly TRIM, prázdné → NULL, měna malými písmeny — rovnost
+        // klíče případu pak jde přes idx_case bez funkcí ve WHERE.
+        $docId = $this->newDocId();
+        $this->insertJournal('doc', $docId, [
+            'account_number'    => '311100',
+            'money_dr'          => 100.00,
+            'money_dr_cur'      => 100.00,
+            'payment_reference' => ' 123 ',
+            'specific_symbol'   => '',
+            'constant_symbol'   => '  ',
+            'currency'          => 'CZK',
+        ]);
+
+        $this->generator()->generate('doc', $docId);
+
+        $m = $this->ledgerOf('doc', $docId)[0];
+        $this->assertSame('123', $m['payment_reference']);
+        $this->assertNull($m['specific_symbol'], 'prázdný SS = NULL');
+        $this->assertNull($m['constant_symbol']);
+        $this->assertSame('czk', $m['currency']);
+    }
+
     public function testCreditNoteGoesToPayablesWithModifySign(): void
     {
         $pay = $this->balanceId('payables');

@@ -16,6 +16,7 @@ final class NullOpenItemLookup implements OpenItemLookup
         string $specificSymbol,
         string $currency,
         int $direction,
+        ?int $fiscalYear,
         ?string $excludeSourceKind = null,
         ?int $excludeSourceId = null,
     ): ?OpenItem {

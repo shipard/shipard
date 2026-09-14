@@ -44,6 +44,7 @@ class ClearingRouterTest extends TestCase
         return array_merge([
             'id'                => 1000 + $txId,
             'bank_transaction'  => $txId,
+            'fiscal_year'       => 7,
             'partner'           => 42,
             'payment_reference' => '20260001',
             'specific_symbol'   => null,
@@ -91,8 +92,9 @@ class ClearingRouterTest extends TestCase
         $this->assertSame(RouteResult::STATUS_PLANNED, $r->status);
         $this->assertSame('311100', $r->targetAccount);
         $this->assertSame(7, $r->txId);
-        // Lookup dostane normalizovaný klíč, směr a vyloučení vlastní transakce.
-        $this->assertSame([[42, '20260001', '77', 'czk', 1, 'bankTransaction', 7]], $lookup->calls);
+        // Lookup dostane klíč vč. období kandidáta (D11), směr a vyloučení
+        // vlastní transakce; normalizaci symbolů/měny dělá lookup sám (D10).
+        $this->assertSame([[42, '20260001', ' 77 ', 'CZK', 1, 7, 'bankTransaction', 7]], $lookup->calls);
     }
 
     public function testRerouteAllAppliesFilters(): void
@@ -115,16 +117,17 @@ class ClearingRouterTest extends TestCase
         $lookup = new RecordingLookup(new OpenItem(1, '311100', 500.0));
 
         $summary = $this->router($lookup)->rerouteForKeys([
-            ['partner' => 42, 'payment_reference' => ' 20260001 ', 'specific_symbol' => '', 'currency' => 'CZK'],
-            ['partner' => 42, 'payment_reference' => '20260002', 'specific_symbol' => '', 'currency' => 'czk'],
+            ['fiscal_year' => 7, 'partner' => 42, 'payment_reference' => ' 20260001 ', 'specific_symbol' => '', 'currency' => 'CZK'],
+            ['fiscal_year' => 7, 'partner' => 42, 'payment_reference' => '20260002', 'specific_symbol' => null, 'currency' => 'czk'],
         ], true);
 
         $this->assertCount(2, $this->queries, 'dotaz per klíč');
         $q = $this->queries[0];
-        $this->assertStringContainsString('TRIM(l.[payment_reference]) = %s', $q['sql']);
-        $this->assertStringContainsString("TRIM(COALESCE(l.[specific_symbol], '')) = %s", $q['sql']);
-        $this->assertStringContainsString('LOWER(l.[currency]) = %s', $q['sql']);
-        $this->assertSame([50, 'bankTransaction', 40, 42, '20260001', '', 'czk'], $q['params']);
+        // Rovnost klíče vč. období přes idx_case (CaseQuery, D10/D11): prázdný SS = IS NULL, žádné TRIM/LOWER.
+        $this->assertStringContainsString('l.[fiscal_year] = %i AND l.[partner] = %i AND l.[payment_reference] = %s', $q['sql']);
+        $this->assertStringContainsString('l.[specific_symbol] IS NULL AND l.[currency] = %s', $q['sql']);
+        $this->assertStringNotContainsString('TRIM(', $q['sql']);
+        $this->assertSame([50, 'bankTransaction', 40, 7, 42, '20260001', 'czk'], $q['params']);
         $this->assertSame(1, $summary->candidates(), 'táž transakce přes dva klíče jen jednou');
         $this->assertSame(1, $summary->planned);
     }
@@ -156,10 +159,11 @@ class RecordingLookup implements OpenItemLookup
         string $specificSymbol,
         string $currency,
         int $direction,
+        ?int $fiscalYear,
         ?string $excludeSourceKind = null,
         ?int $excludeSourceId = null,
     ): ?OpenItem {
-        $this->calls[] = [$partner, $paymentReference, $specificSymbol, $currency, $direction, $excludeSourceKind, $excludeSourceId];
+        $this->calls[] = [$partner, $paymentReference, $specificSymbol, $currency, $direction, $fiscalYear, $excludeSourceKind, $excludeSourceId];
         return $this->item;
     }
 }

@@ -120,7 +120,7 @@ final class BankTransactionAccountingEngine
         $cur = (float) ($tx['amount'] ?? 0);
 
         $bankAccount = $this->resolveBankAccount($tx);
-        $cpAccount   = $this->resolveCounterpartyAccount($tx, $accountingDate);
+        $cpAccount   = $this->resolveCounterpartyAccount($tx, $accountingDate, $fiscalYear);
 
         $lines = [
             $this->makeLine($tx, $bankSide, $bankAccount, $dom, $cur, null),
@@ -210,7 +210,7 @@ final class BankTransactionAccountingEngine
      * @param array<string, mixed> $tx
      * @return array{id?: int, number: string, is_error?: bool}
      */
-    private function resolveCounterpartyAccount(array $tx, string $accountingDate): array
+    private function resolveCounterpartyAccount(array $tx, string $accountingDate, int $fiscalYear): array
     {
         $operation = $this->operationOf($tx);
         $cat = $this->categoryOf($operation);
@@ -225,7 +225,7 @@ final class BankTransactionAccountingEngine
         // Úhrada: účet otevřeného předpisu má přednost před maskou — clearing
         // je jen výstup při miss (#69 D3, docs/bank.md §6.1).
         if (str_starts_with($cat, 'bank.unmatched.')) {
-            $routed = $this->resolveOpenItemAccount($tx, $accountingDate);
+            $routed = $this->resolveOpenItemAccount($tx, $accountingDate, $fiscalYear);
             if ($routed !== null) {
                 return $routed;
             }
@@ -248,7 +248,10 @@ final class BankTransactionAccountingEngine
 
     /**
      * Úhrada s partnerem: otevřený předpis pro klíč (partner, VS, SS, měna)
-     * a směr → protistrana = účet předpisu přesně vč. analytiky (ne maska).
+     * v účetním období transakce (#69 D11) a směr → protistrana = účet
+     * předpisu přesně vč. analytiky (ne maska). Předpis z jiného období
+     * je miss — zůstatky mezi obdobími přenáší otevírací doklad, po jehož
+     * zaúčtování úhradu přeúčtuje trigger (D4).
      * Vlastní transakce se z rezidua vylučuje, aby reaccount už routované
      * úhrady neviděl nulu a nevrátil ji na clearing. Bez partnera / miss →
      * null (volající spadne na clearing dle masky). Účet předpisu, který
@@ -257,7 +260,7 @@ final class BankTransactionAccountingEngine
      * @param array<string, mixed> $tx
      * @return array{id?: int, number: string, is_error?: bool}|null
      */
-    private function resolveOpenItemAccount(array $tx, string $accountingDate): ?array
+    private function resolveOpenItemAccount(array $tx, string $accountingDate, int $fiscalYear): ?array
     {
         $partner = (int) ($tx['partner'] ?? 0);
         if ($partner <= 0) {
@@ -270,6 +273,7 @@ final class BankTransactionAccountingEngine
             trim((string) ($tx['specific_symbol'] ?? '')),
             strtolower(trim((string) ($tx['currency'] ?? ''))),
             (int) ($tx['direction'] ?? 0),
+            $fiscalYear,
             'bankTransaction',
             (int) ($tx['id'] ?? 0),
         );
