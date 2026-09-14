@@ -22,6 +22,11 @@ let pendingRecordId    = $state(null);
 // Jednorázový hint jako pendingRecordId, ale pro tab (viewGroup) vieweru —
 // digest karta otevírá došlou poštu rovnou na tabu Archiv.
 let pendingViewGroup   = $state(null);
+// Jednorázový hint pro custom filtry vieweru ({filterId: value}) — akce
+// „Pohyby případu" ze saldokonta otevírá pohyby s předvyplněným partnerem,
+// VS a SS. Viewer je převezme do activeFilters (viditelné, uživatel je
+// může uvolnit) a použije pro první fetch.
+let pendingFilters     = $state(null);
 // Jednorázový hint pro ReportsPage — parametry z deep-link URL
 // (?report=…&fy=…). Konzumuje se po resolvu katalogu, manuální navigace
 // ho vyprazdňuje jako ostatní pendingy.
@@ -75,6 +80,7 @@ function navigate(item) {
   // Manuální navigace mimo dashboard widget — pending hinty vyprší.
   pendingRecordId = null;
   pendingViewGroup = null;
+  pendingFilters = null;
   pendingReportParams = null;
   if (mode === 'settings') {
     settingsActiveItem = normalized;
@@ -99,16 +105,20 @@ function navigate(item) {
 
 /**
  * Naviguj na konkrétní viewer a (volitelně) předvyber záznam v něm.
- * Volá se z dashboard widget rows.
+ * Volá se z dashboard widget rows a z akcí `open_viewer` detailu.
  *
  * Pokud viewerId neodpovídá žádné položce sidebar navigation tree,
  * activeItem se přesto nastaví — Viewer si table načte sám podle viewerId.
  * `recordId` se uloží do pendingRecordId, Viewer.svelte ho po mountu
- * vyzvedne a předvybere řádek.
+ * vyzvedne a předvybere řádek; `viewGroup` a `filters` ({filterId: value})
+ * stejně jednorázově nastaví chip a custom filtry cílového vieweru.
  */
-function navigateToViewer(viewerId, recordId = null, viewGroup = null) {
+function navigateToViewer(viewerId, recordId = null, viewGroup = null, filters = null) {
   pendingRecordId = recordId;
   pendingViewGroup = viewGroup;
+  pendingFilters = filters != null && typeof filters === 'object' && Object.keys(filters).length > 0
+    ? { ...filters }
+    : null;
   const item = {
     id: 'viewer:' + viewerId,
     label: viewerId,
@@ -170,6 +180,16 @@ function consumePendingViewGroup() {
   const group = pendingViewGroup;
   pendingViewGroup = null;
   return group;
+}
+
+/**
+ * Viewer.svelte při navigaci vyzvedne pendingFilters (custom filtry, se
+ * kterými se má otevřít) a vynuluje je — stejný jednorázový kontrakt.
+ */
+function consumePendingFilters() {
+  const filters = pendingFilters;
+  pendingFilters = null;
+  return filters;
 }
 
 /** main.js: stash deep-linku reportu před mountem (URL se nečistí). */
@@ -325,6 +345,7 @@ export const navigationStore = {
   get appNavError() { return appNavError; },
   get pendingRecordId() { return pendingRecordId; },
   get pendingViewGroup() { return pendingViewGroup; },
+  get pendingFilters() { return pendingFilters; },
   navigate,
   navigateToViewer,
   navigateToPanel,
@@ -332,6 +353,7 @@ export const navigationStore = {
   loadAppNavTree,
   consumePendingRecordId,
   consumePendingViewGroup,
+  consumePendingFilters,
   setPendingReportDeepLink,
   consumePendingReportParams,
   activateReportDeepLink,

@@ -819,7 +819,14 @@ tlačítek nad taby (vzor `AlertsViewer::buildDetailActions`):
   vestavěných akcí, takže propadá na generickou obsluhu podle `kind`.
 - `kind: "open_viewer"` — cross-viewer navigace: `viewerId` + `recordId` →
   `navigationStore.navigateToViewer()` (cílový viewer záznam předvybere
-  přes `pendingRecordId`). Používá deník pro odkaz na zdrojový doklad.
+  přes `pendingRecordId`). Volitelně `viewGroup` (chip, na kterém se má
+  cílový viewer otevřít — `pendingViewGroup`) a `filters` (`{filterId:
+  value}` custom filtrů cílového vieweru — `pendingFilters`; viewer je
+  převezme do `activeFilters`, takže jsou v panelu filtrů viditelné a
+  uživatel je může uvolnit, a použije je pro první fetch). Všechny tři
+  hinty jsou jednorázové a manuální navigace je maže. Používá deník pro
+  odkaz na zdrojový doklad a saldokonto (viewer případů → „Pohyby
+  případu" otevře pohyby s chipem saldokonta a filtry partner / VS / SS).
 
 ### Registrace vieweru
 

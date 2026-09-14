@@ -9,13 +9,15 @@ use Shipard\Core\Navigation\NavigationItemsProvider;
 
 /**
  * Sidebar položky pro saldokonta se `show_in_navigation = 1` (checkbox
- * v Nastavení saldokont). Klik otevře Saldo pohyby (economy.accbal.ledger)
- * napevno filtrované přes `fixedViewGroup` = code — viewer pak chip lištu
- * saldokont nerenderuje.
+ * v Nastavení saldokont). Klik otevře Saldokonto po případech
+ * (economy.accbal.cases, #69 D1) napevno filtrované přes `fixedViewGroup`
+ * = code — viewer pak chip lištu saldokont nerenderuje; pohyby jsou
+ * detail (akce „Pohyby případu").
  *
- * `_order` 31+ řadí položky hned za Saldo pohyby (navOrder 30); Výpisy mají
- * 40, takže bez kolize se vejde 9 saldokont — víc jich seed nemá a případná
- * remíza jen stabilně zařadí Výpisy před přetékající saldokonta.
+ * `_order` 32+ řadí položky hned za Saldokonto (navOrder 31, za Bankovními
+ * transakcemi 30); Saldo pohyby mají 39 a Výpisy 40, takže bez kolize se
+ * vejde 7 saldokont — víc jich seed nemá a případná remíza jen stabilně
+ * zařadí pohyby před přetékající saldokonta.
  */
 class BalancesNavigationProvider implements NavigationItemsProvider
 {
@@ -52,11 +54,11 @@ class BalancesNavigationProvider implements NavigationItemsProvider
                 'id'             => 'accbal-balance:' . $b['code'],
                 'label'          => $shortName !== '' ? $shortName : (string) $b['name'],
                 'type'           => 'viewer',
-                'viewerId'       => 'economy.accbal.ledger',
+                'viewerId'       => 'economy.accbal.cases',
                 'icon'           => self::balanceIcon($b),
                 'fixedViewGroup' => (string) $b['code'],
                 '_section'       => 'accounting',
-                '_order'         => 31 + $i,
+                '_order'         => 32 + $i,
             ];
         }
         return $items;

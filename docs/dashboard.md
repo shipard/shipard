@@ -249,7 +249,7 @@ Prioritní žebříček (sestupně), uvnitř pásma `timestamp` DESC.
 | `archive_message` | zpráva do Archivu (`docState=80`, docState-only save), refetch | `{messageNdx}` |
 | `confirm_sender_rule` / `reject_sender_rule` | potvrzení/zamítnutí návrhu pravidla odesílatele, refetch | `{ruleId}` |
 | `undo_auto_archive` | „Vrátit vše" z digest karty auto-archivu, toast + refetch | `{date?}` |
-| `open_viewer` | navigace | `{viewerId, recordId?}` |
+| `open_viewer` | navigace | `{viewerId, recordId?, viewGroup?, filters?}` — `viewGroup` chip cílového vieweru, `filters` `{filterId: value}` jeho custom filtrů (jednorázové hinty `pendingViewGroup` / `pendingFilters`, viz `docs/frontend.md`) |
 | `open_form` | otevři form | `{table, recordId?/id?}` |
 | `open_detail` | read-only detail záznamu v modalu (`ViewerDetailModal` → `GET /_ui/viewer/{viewerId}/detail/{id}`; `toolbar` z odpovědi se ignoruje, `tabId` ořeže detail na jediný tab) | `{viewerId, recordId, tabId?}` |
 | `materialize_content_tag` | založení účetní položky pro obsahový štítek — `POST /_exchange/content-tags/materialize`, toast s „Otevřít" (form položky) + refetch; labely akcí posílá server (passthrough — u goods.stock nesou čísla účtů z osnovy) | `{tag, account?}` |

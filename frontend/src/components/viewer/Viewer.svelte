@@ -781,8 +781,12 @@
     if (action.kind === 'open_viewer') {
       const targetViewerId = action.viewerId ?? action.target?.viewerId;
       const targetRecordId = action.recordId ?? action.target?.recordId ?? null;
+      // Volitelný chip a custom filtry cílového vieweru (saldokonto →
+      // „Pohyby případu" otevře pohyby s partnerem / VS / SS).
+      const targetViewGroup = action.viewGroup ?? action.target?.viewGroup ?? null;
+      const targetFilters = action.filters ?? action.target?.filters ?? null;
       if (!targetViewerId) return;
-      navigationStore.navigateToViewer(targetViewerId, targetRecordId);
+      navigationStore.navigateToViewer(targetViewerId, targetRecordId, targetViewGroup, targetFilters);
       return;
     }
 
@@ -867,6 +871,13 @@
       activeViewGroup = pendingViewGroup;
     }
 
+    // Pending custom filtry (akce open_viewer s `filters`) — předvyplní
+    // panel filtrů a jdou do prvního fetche; stejný jednorázový kontrakt.
+    const pendingFilters = untrack(() => navigationStore.consumePendingFilters());
+    if (pendingFilters != null) {
+      activeFilters = { ...pendingFilters };
+    }
+
     // Sequence: meta first (sets activeSeriesId from numberSeries), then rows
     // with that filter, then optional pending-record detail.
     fetchMeta(viewerId).then(() => {
@@ -901,9 +912,10 @@
         ?? 'active';
       activeViewGroup = viewGroup;
 
-      // Filtry se právě resetovaly na {} — předáváme literál, protože tento
-      // $effect nesmí číst jiný $state než tab.viewerId.
-      fetchRowsExplicit(viewerId, '', viewGroup, activeSeriesId, {}, 0, layout).then(() => {
+      // Filtry se právě resetovaly na {} (nebo na pending filtry z akce
+      // open_viewer) — předáváme lokální hodnotu, protože tento $effect
+      // nesmí číst jiný $state než tab.viewerId.
+      fetchRowsExplicit(viewerId, '', viewGroup, activeSeriesId, pendingFilters ?? {}, 0, layout).then(() => {
         if (pendingRecord != null) {
           selectedRowId = pendingRecord;
           fetchDetail(pendingRecord);

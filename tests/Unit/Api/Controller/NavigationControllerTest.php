@@ -194,7 +194,7 @@ class NavigationControllerTest extends TestCase
             array_column($this->node($tree, 'sales')['children'], 'viewerId'),
         );
         $this->assertSame(
-            ['docs.accountingDocs.heads', 'docs.cashDocs.heads', 'economy.accounting.journal', 'economy.accounting.accounts', 'economy.bank.transactions', 'economy.accbal.ledger', 'economy.bank.statements', 'economy.vat.reportPeriods', 'economy.vat.filings'],
+            ['docs.accountingDocs.heads', 'docs.cashDocs.heads', 'economy.accounting.journal', 'economy.accounting.accounts', 'economy.bank.transactions', 'economy.accbal.cases', 'economy.accbal.ledger', 'economy.bank.statements', 'economy.vat.reportPeriods', 'economy.vat.filings'],
             array_column($this->node($tree, 'accounting')['children'], 'viewerId'),
         );
         // System holds ONLY Alerts — users/settings moved to Settings app.
@@ -367,17 +367,19 @@ class NavigationControllerTest extends TestCase
         $children = $this->node($resp->getPayload()['data'], 'accounting')['children'];
         $ids      = array_column($children, 'id');
 
-        // Saldokonta hned za Saldo pohyby (navOrder 30 → _order 31+),
-        // v pořadí ze SELECTU (sort_order).
-        $ledgerPos = array_search('viewer:economy.accbal.ledger', $ids, true);
-        $this->assertIsInt($ledgerPos);
-        $this->assertSame('accbal-balance:receivables', $ids[$ledgerPos + 1] ?? null);
-        $this->assertSame('accbal-balance:payables', $ids[$ledgerPos + 2] ?? null);
+        // Saldokonta hned za Saldokonto po případech (navOrder 31 →
+        // _order 32+), v pořadí ze SELECTU (sort_order); Saldo pohyby (39)
+        // až za nimi (#69 D1: případy jsou vstup, pohyby detail).
+        $casesPos = array_search('viewer:economy.accbal.cases', $ids, true);
+        $this->assertIsInt($casesPos);
+        $this->assertSame('accbal-balance:receivables', $ids[$casesPos + 1] ?? null);
+        $this->assertSame('accbal-balance:payables', $ids[$casesPos + 2] ?? null);
+        $this->assertSame('viewer:economy.accbal.ledger', $ids[$casesPos + 3] ?? null);
 
-        $receivables = $children[$ledgerPos + 1];
+        $receivables = $children[$casesPos + 1];
         $this->assertSame('Pohledávky', $receivables['label']);
         $this->assertSame('viewer', $receivables['type']);
-        $this->assertSame('economy.accbal.ledger', $receivables['viewerId']);
+        $this->assertSame('economy.accbal.cases', $receivables['viewerId']);
         $this->assertSame('receivable', $receivables['icon']);
         $this->assertSame('receivables', $receivables['fixedViewGroup']);
         // Interní klíče nesmí proleakovat do API výstupu.
@@ -385,8 +387,8 @@ class NavigationControllerTest extends TestCase
         $this->assertArrayNotHasKey('_order', $receivables);
 
         // Label fallback: prázdný short_name → plný name; DAL strana → payable.
-        $this->assertSame('Závazky z obchodních vztahů', $children[$ledgerPos + 2]['label']);
-        $this->assertSame('payable', $children[$ledgerPos + 2]['icon']);
+        $this->assertSame('Závazky z obchodních vztahů', $children[$casesPos + 2]['label']);
+        $this->assertSame('payable', $children[$casesPos + 2]['icon']);
     }
 
     public function testProviderSkippedWithoutDb(): void

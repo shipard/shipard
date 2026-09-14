@@ -39,6 +39,22 @@
             "table": "economy_accbal_balance_accounts",
             "class": "Shipard\\Module\\Economy\\Accbal\\BalanceAccountsViewer"
         },
+        // Saldokonto po případech (#69 D1) = výchozí vstup, hned za
+        // Bankovními transakcemi (30); položky saldokont ze sidebaru
+        // (BalancesNavigationProvider, _order 32+) otevírají tentýž viewer
+        // s fixním chipem. Pohyby jsou detail — řadí se až za ně (39),
+        // před Bankovní výpisy (40).
+        {
+            "id": "economy.accbal.cases",
+            "name": "Open items",
+            "name:cs": "Saldokonto",
+            "name:en": "Open items",
+            "icon": "balance",
+            "table": "economy_accbal_ledger",
+            "class": "Shipard\\Module\\Economy\\Accbal\\CasesViewer",
+            "navSection": "accounting",
+            "navOrder": 31
+        },
         {
             "id": "economy.accbal.ledger",
             "name": "Balance ledger",
@@ -48,7 +64,7 @@
             "table": "economy_accbal_ledger",
             "class": "Shipard\\Module\\Economy\\Accbal\\LedgerViewer",
             "navSection": "accounting",
-            "navOrder": 30
+            "navOrder": 39
         }
     ],
 

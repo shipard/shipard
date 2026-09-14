@@ -97,11 +97,11 @@ class BalancesNavigationProviderTest extends TestCase
 
         $this->assertSame('accbal-balance:receivables', $items[0]['id']);
         $this->assertSame('viewer', $items[0]['type']);
-        $this->assertSame('economy.accbal.ledger', $items[0]['viewerId']);
+        $this->assertSame('economy.accbal.cases', $items[0]['viewerId'], 'výchozí vstup do saldokonta = případy (#69 D1)');
         $this->assertSame('receivables', $items[0]['fixedViewGroup']);
         $this->assertSame('accounting', $items[0]['_section']);
-        $this->assertSame(31, $items[0]['_order']);
-        $this->assertSame(32, $items[1]['_order']);
+        $this->assertSame(32, $items[0]['_order'], 'hned za Saldokonto (31)');
+        $this->assertSame(33, $items[1]['_order']);
         // Prázdný short_name → plný name.
         $this->assertSame('Závazky', $items[1]['label']);
     }

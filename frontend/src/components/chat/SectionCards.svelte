@@ -46,7 +46,7 @@
     const target = action.target ?? {};
     switch (action.kind) {
       case 'open_viewer':
-        return navigationStore.navigateToViewer(target.viewerId, target.recordId ?? null, target.viewGroup ?? null);
+        return navigationStore.navigateToViewer(target.viewerId, target.recordId ?? null, target.viewGroup ?? null, target.filters ?? null);
       case 'open_panel':
         return navigationStore.navigateToPanel(target.panelId, action.label ?? null);
       case 'open_form':

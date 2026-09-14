@@ -195,7 +195,7 @@
       case 'materialize_content_tag':
         return materializeTagFlow(target.tag, target.account ?? null, card.id);
       case 'open_viewer':
-        return navigationStore.navigateToViewer(target.viewerId, target.recordId ?? null, target.viewGroup ?? null);
+        return navigationStore.navigateToViewer(target.viewerId, target.recordId ?? null, target.viewGroup ?? null, target.filters ?? null);
       case 'open_detail':
         detailModal = {
           open: true,
