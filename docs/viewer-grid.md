@@ -362,9 +362,11 @@ ve FormDialogu). Grid default, list přes toggle.
 
 ### 7.4 Další výhled (mimo F2)
 
-- **Saldokonto grid** — skupinové řádky per partner (kontrakt D12),
-  footer Předpis/Uhrazeno/Zůstatek; podklad pro párovací UI accbal
-  Fáze 4.
+- ~~**Saldokonto grid**~~ — hotovo: `LedgerViewer` (pohyby, skupiny per
+  partner, footer v HC) a `CasesViewer` (případy, #69 D1 — skupinový
+  řádek nese součet zůstatku partnera přes filtrovaný set spočítaný
+  oknem `SUM() OVER (PARTITION BY partner)` v labelu skupiny; footer
+  Σ předpisy / úhrady / zůstatek). Viz `accbal.md` §3.4.
 - CSV export, cell akce (klikatelný doklad v buňce), inline editace
   buněk — server-driven `cells` formát nic z toho neblokuje.
 

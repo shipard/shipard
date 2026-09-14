@@ -60,7 +60,8 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 | **Účtový rozvrh** | Účty, na které se účtuje. Zakládá se z předpřipravené šablony — zvlášť pro podnikatele a zvlášť pro neziskové organizace — a můžeš ho doplňovat i účty vyřazovat | — |
 | **Bankovní výpisy** | Naimportuješ výpis z banky. Podporované formáty jsou **CAMT**, **GPC** a **FIO**; jiný formát Shipard zatím nepřečte | — |
 | **Bankovní transakce** | Jednotlivé pohyby z výpisů. Podle nich se páruje úhrada s fakturou; platbu, ke které se faktura nenašla, Shipard odloží na **clearing účet** | — |
-| **Saldo pohyby** | Saldokonto — nezaplacené faktury proti přijatým platbám, po partnerech. Odsud vidíš, kdo komu kolik dluží | — |
+| **Saldokonto** | Kdo komu kolik dluží, po partnerech. Každý řádek je jeden případ — faktura a její úhrady se stejným variabilním symbolem — se zůstatkem a splatností; dluhy po splatnosti jsou zvýrazněné. Filtr **Typ** odděluje dluhy, přeplatky a platby bez faktury, **Včetně uzavřených** ukáže i vyrovnané případy. Tlačítko **Pohyby případu** otevře jednotlivé předpisy a úhrady | — |
+| **Saldo pohyby** | Jednotlivé předpisy a úhrady saldokonta, po partnerech, se zůstatkem případu, do kterého patří | — |
 | **Hlavní kniha** | Report ve skupině **Reporty**: účty s počátečním stavem, obraty MD/D a konečným zůstatkem za zvolené období. Období vybíráš v mřížce měsíc / čtvrtletí / pololetí / rok, detail analyticky nebo synteticky | — |
 | **Výsledovka** | Report ve skupině **Reporty**: výnosy a náklady za období a od počátku roku, dole výsledek hospodaření. Umí zobrazení v tisících | — |
 | **Rozvaha** | Report ve skupině **Reporty**: aktiva a pasiva k počátku a konci období. Když aktiva nesedí na pasiva, report to červeně ohlásí pod tabulkou | — |

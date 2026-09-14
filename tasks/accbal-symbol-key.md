@@ -1,6 +1,6 @@
 # Saldokonto — párovací klíč místo alokací (odstranění matcheru, pohled po případech)
 
-**Stav:** naplánováno — T2 revize saldokonta (#69, D1); staví na T1 `bank-payment-routing.md`
+**Stav:** hotovo — 2026-09-14 (#69 T2; odchylky od zadání viz „Poznámky k implementaci"); zbývá alfa (reset + reimport DS, `ds-upgrade`) a ruční proklik UI
 
 ## Kontext
 
@@ -206,16 +206,18 @@ PHPUnit jen s úzkým `--filter`.
 
 ## Hotovo když
 
-- [ ] `grep -rn "allocation" modules/economy/accbal src tests docs --include=*.php,*.jsonc,*.md`
-      najde jen historické tasky v `tasks/` a poznámku „zrušeno" v `accbal.md`
-- [ ] tabulka 419 není v definicích modulu; tableId 419 označen jako
-      nerecyklovatelný
-- [ ] viewer případů ukazuje otevřené případy po skupinách, footer sedí na
-      Σ ledgeru pro stejný filtr (test)
-- [ ] `accbal-match --all --dry-run` a `BankPaymentRoutingTest` beze změny
-- [ ] `docs/accbal.md` popisuje symbolový model; #5, #9, #13–#17 označena
+- [x] `grep -rn "allocation" modules/economy/accbal src tests docs --include=*.php,*.jsonc,*.md`
+      najde jen historické tasky v `tasks/`, poznámku „zrušeno" v `accbal.md`
+      a řádek vyřazeného ID v `table-definitions.md`
+- [x] tabulka 419 není v definicích modulu; tableId 419 označen jako
+      nerecyklovatelný (`table-definitions.md`, sekce `tableId`)
+- [x] viewer případů ukazuje otevřené případy po skupinách, footer sedí na
+      Σ ledgeru pro stejný filtr (`CasesViewerTest::testFooterMatchesLedgerSumsForSameFilter`)
+- [x] `accbal-match --all --dry-run` a `BankPaymentRoutingTest` beze změny
+      chování (seedy dostaly `fiscal_year`, přibyl scénář D11)
+- [x] `docs/accbal.md` popisuje symbolový model; #5, #9, #13–#17 označena
       jako nahrazená; `docs/README.md` řádek aktuální
-- [ ] docs a index tasků ve stejném commitu jako kód
+- [x] docs a index tasků ve stejném commitu jako kód
 
 ## Rozhodnutí k designu (potvrzená)
 
@@ -232,6 +234,72 @@ PHPUnit jen s úzkým `--filter`.
   má klíč kladný zůstatek; přeplatek zůstává na clearingu jako signál dle
   D5/4), ne existenční (vše s klíčem na 311, přeplatek jako záporný zůstatek).
   Potvrzeno 2026-09-13; zapsat do `accbal.md` §11.
+
+## Poznámky k implementaci (2026-09-14)
+
+Commity `f2d134e` (PRD), `1e3b85f` (1/n CaseQuery + normalizace + období
+v lookupu), `ae72cfd` (2/n odstranění alokační vrstvy), `3cbb904` (3/n viewer
+případů + navigace + filtry v `open_viewer`), docs 4/n.
+
+Odchylky od zadání, všechny ověřené v kódu a testech:
+
+- **`OpenItemLookup::findOpenRequest` má nový parametr `?int $fiscalYear`**
+  hned za `$direction` (před vyloučením zdroje); `null` = bez klíče → miss
+  (jako prázdný VS). Dotčené: `NullOpenItemLookup`, `LedgerOpenItemLookup`,
+  test doubly v `OpenItemLookupLoaderTest` a `ClearingRouterTest`, volající
+  engine (`$fiscalYear` z účetního data transakce) a `ClearingRouter`
+  (období clearingového pohybu). `ClearingRerouteHandler` staví klíče přes
+  `CaseQuery::normalizeKey` vč. období.
+- **Lookup zůstává užší než případ:** dál počítá jen řádky na předpisových
+  účtech skupiny (T1 testy, dobropisové řádky mimo hru); s `CaseQuery` sdílí
+  klíč a normalizaci (`keyConditions`), ne filtr účtů. Zapsáno v `accbal.md`
+  §3.4 a §5.6.
+- **Seedy integračních testů potřebují `fiscal_year`** — bez něj by lookup
+  po D11 minul. `BankPaymentRoutingTest`, `LedgerOpenItemLookupTest`,
+  `CashPaymentCaseTest` (přejmenovaný `CashPaymentMatchingTest`) ho
+  odvozují z fiskálního roku účetního data; scénář D11 používá druhý rok
+  z číselníku (4l3j má 2026 i 2027), jinak syntetické id.
+- **`CaseQueryTest` je dvojí:** unit (normalizace, tvar SQL, klasifikace,
+  dny po splatnosti) + integrační (agregát nad 4l3j: SS prázdný ≠ vyplněný,
+  přeplatek, úhrada bez předpisu, `MIN(due_date)` jen z předpisů, období
+  odděluje, `keyOfRow` round-trip).
+- **Zůstatek případu na pohybu korelovaným subdotazem, ne joinem:** LEFT
+  JOIN na derived `GROUP BY` s `<=>` v ON vrací v MariaDB 10.11 při
+  optimalizaci `split_materialized` NULL u bodového dotazu (`WHERE l.id = ?`,
+  detail pohybu); volba splitu je cost-based, takže by se chyba projevila
+  nepředvídatelně i v seznamu. `CaseQuery::residualSubquerySql` = bodové
+  dohledání přes `idx_case` per řádek (`balance` obyčejnou rovností, zbytek
+  `<=>`). Ověřeno přímo v SQL i HTTP smokem.
+- **„Jen otevřené" výchozí přes obrácený checkbox „Včetně uzavřených"** —
+  `ViewerFilters` nemá výchozí hodnoty filtrů. Typ `Uzavřeno` ve filtru Typ
+  uzavřené zahrne sám.
+- **Součet partnera ve skupinovém řádku jde do labelu** (`ViewerGrid` umí ve
+  skupinovém řádku jen text): okno `SUM(residual_hc) OVER (PARTITION BY
+  partner)` po WHERE, tedy přes filtrovaný set a přes hranici stránek.
+  Svelte grid beze změny.
+- **Jediná FE změna:** `open_viewer` nese volitelně `viewGroup` a `filters`,
+  `navigation.svelte.js` má jednorázový `pendingFilters` (vzor
+  `pendingViewGroup`), `Viewer.svelte` je převezme do `activeFilters` a
+  prvního fetche; `Dashboard` a `SectionCards` průchod doplněn. Zapsáno
+  v `docs/frontend.md` a `docs/dashboard.md`.
+- **„Pohyby případu" předává viditelné filtry** (chip saldokonta, partner
+  jménem, VS a SS prefixově) — žádný skrytý exaktní filtr klíče, uživatel
+  vidí a může uvolnit; období se do pohybů nepředává (pohyby klíče přes
+  roky jsou v detailu záměrně pohromadě).
+- **Id řádku případu = `MIN(id)` pohybů klíče** (`row_id`): `ViewerController`
+  před detailem dělá `SELECT * FROM tabulka WHERE id` — pohyb existuje,
+  detail z něj klíč odvodí (`CaseQuery::keyOfRow`). Bez změny controlleru.
+- **Navigace:** Saldokonto (případy) `navOrder` 31 hned za Bankovními
+  transakcemi (30), položky saldokont z provideru 32+, Saldo pohyby 39,
+  Výpisy 40 (původně by Bankovní transakce seděly uprostřed bloku).
+  `NavigationControllerTest` a `BalancesNavigationProviderTest` upraveny.
+- **Sdílený `AccbalViewerBase`** (viewGroups, formátování, popisky typů,
+  `getDefaultLayout` grid, prázdný toolbar) — `LedgerViewer` i `CasesViewer`.
+- **Grep kritérium:** slovo „allocation" bylo i v anglickém komentáři
+  `NextTableIdCommand.php` (nesouvisí) — přeformulováno.
+- **Dev DS 4l3j:** `ds-upgrade` proběhl (index `idx_case`), ledger už byl
+  normalizovaný (import z doby po D10 nebyl potřeba). Alfa: reset + reimport
+  dle #69; na DS z doby před T2 zůstane tabulka 419 osiřelá.
 
 ## Otevřené body
 

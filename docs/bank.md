@@ -318,7 +318,9 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
     `bank.unmatched.*`) → **dohledání otevřeného předpisu** (#69 D3): má-li
     transakce partnera, engine se zeptá `OpenItemLookup` (rozhraní v core,
     implementace `LedgerOpenItemLookup` v `economy.accbal`) na otevřený
-    předpis pro klíč (partner, VS, SS, měna) a směr (příjem → skupiny
+    předpis pro klíč případu (partner, VS, SS, měna) **v účetním období
+    transakce** (#69 D11 — předpis z jiného období je miss, zůstatky
+    přenáší otevírací doklad; `accbal.md` §3.4, §5.5) a směr (příjem → skupiny
     s předpisem na MD, typicky Pohledávky 311*; výdaj → skupiny s předpisem
     na DAL, typicky Závazky 321* vč. 325/331/336/…; cíle plynou z nastavení
     saldokont, ne z čísel účtů). Zásah → protistrana = **účet předpisu přesně

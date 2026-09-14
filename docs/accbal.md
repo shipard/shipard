@@ -1,19 +1,21 @@
 # Shipard — Saldokonto (modul `economy.accbal`)
 
-**Designový dokument.** Saldokonto = párování úhrad proti předpisům
-(pohledávky, závazky, zálohy, …) postavené **čistě nad účetním deníkem**.
-Vychází z myšlenek rozpracovaného „Saldo2" ze starého Shipardu
-(`e10doc/accBal`), ale párování řeší jinak a opírá se o regenerovatelný
-deník a clearing šev nového systému.
+**Designový dokument.** Saldokonto = kdo komu kolik dluží a co je uhrazené,
+postavené **čistě nad účetním deníkem**: předpisy a úhrady jsou vybrané řádky
+deníku, **případ** je jejich agregát podle párovacího klíče (saldokonto,
+období, partner, variabilní symbol, specifický symbol, měna). Přebírá
+datový princip i párovací klíč rozpracovaného „Saldo2" ze starého Shipardu
+(`e10doc/accBal`); od něj se liší regenerovatelným deníkem, clearing švem
+a tím, že o účtu úhrady rozhoduje účtovací engine dohledáním otevřeného
+předpisu.
 
-> **Stav:** Fáze 0–2b hotové a nasazené; clearing infrastruktura (§4.5, #18)
-> hotová. **Revize saldokonta #69 (D1–D8) nahrazuje matcher §5:** T1
-> `bank-payment-routing` (D3/D4/D8, rozhodnutí #19) je hotový — účet úhrady
-> určuje bankovní engine dohledáním otevřeného předpisu (`OpenItemLookup`),
-> clearing přeúčtovává `ClearingRouter` (trigger po zaúčtování předpisu,
-> CLI `accbal-match`, `POST /_accbal/match` v2). `BalanceMatcher` /
-> `AllocationPlanner` / tabulka 419 jsou mrtvý kód do T2 `accbal-symbol-key`
-> (D1, párovací klíč na ledgeru), který přepíše i tento dokument.
+> **Stav:** Fáze 0–2b hotové a nasazené; clearing infrastruktura (§4.5,
+> #18) hotová. **Revize saldokonta #69** (rozhodnutí D1–D11 v komentářích
+> issue z 2026-09-12 a 2026-09-13): T1 `bank-payment-routing` (routing
+> v enginu, trigger přeúčtování, §5) a T2 `accbal-symbol-key` (případ =
+> agregát klíče, alokační vrstva zrušena, viewer po případech, §3.4) hotové
+> 2026-09-14. Následují T3 efektivní symboly, T4 opakované platby, T5
+> průvodci oprav, T6 dashboard (§9).
 
 ---
 
@@ -22,28 +24,44 @@ deník a clearing šev nového systému.
 Saldokonto odpovídá na otázku „kdo komu kolik dluží a je to uhrazené?".
 Technicky: vybrané řádky účetního deníku (na saldokontních účtech —
 311/321/314/324/…) jsou buď **předpisy** (vznik pohledávky/závazku), nebo
-**úhrady**. Saldokontní případ je uzavřený, když se předpisy a úhrady
-v rámci jednoho párovacího kontextu vyrovnají na nulu.
+**úhrady**. Saldokontní **případ** je uzavřený, když se předpisy a úhrady
+se stejným párovacím klíčem vyrovnají na nulu.
+
+**Párovací symbol, ne alokace.** Případ se **nemodeluje** jako entita ani
+jako vazby úhrada↔předpis. Je to agregát: klíč `(saldokonto, období,
+partner, VS, SS, měna)` a stav `Σ předpisy − Σ úhrady` z ledgeru. Důvody
+(#69, D1):
+
+- **Deník je jediný zdroj pravdy.** Alokační vrstva (tabulka vazeb plněná
+  matcherem) byla druhý zdroj pravdy mimo deník — porušovala axiom „saldo je
+  derivát deníku" a při každém přeúčtování ji bylo nutné držet v synchronu.
+- **Vysvětlitelnost.** Rozhodnutí FIFO matcheru („platba 600 šla na faktury
+  1, 2 a kus 3") nebylo vidět v žádném dokladu. Se symbolovým klíčem je stav
+  případu spočitatelný z ledgeru rukou a každá oprava je doklad (§8).
+- **Srovnatelnost se starým systémem.** Starý Shipard páruje symbolem;
+  kontrolní součty saldokonta proti němu (M2) sedí 1:1 jen se stejným
+  modelem.
+
+Problém „víc faktur se stejným VS" (opakované platby služeb) se neřeší při
+párování, ale **tam, kde vzniká** — při vzniku identity dokladu: efektivní
+symboly na transakci (D5, T3) a doplnění specifického symbolu na přijaté
+faktury z detekce opakovaných plateb (D7, T4).
 
 ### 1.1 Co se přebírá ze starého Saldo2 a co ne
 
 Přebírá se **datový princip**: nastavení saldokont = seznam skupin + seznam
-účtů s konfigurací (strana MD/DAL, znaménko, předpis/úhrada), a generování
-saldo pohybu z řádku deníku, pokud řádek vyhoví nastavení (`AccBalanceCreator`).
-Duální měna (měna dokladu + domácí) zůstává — řeší obchodní vs. účetní
-saldokonto (§6).
+účtů s konfigurací (strana MD/DAL, znaménko, předpis/úhrada), generování
+saldo pohybu z řádku deníku, pokud řádek vyhoví nastavení
+(`AccBalanceCreator`), a **párovací klíč** `(balance, person, symbol1,
+symbol2)` — dnes doplněný o období a měnu. Duální měna (měna dokladu +
+domácí) zůstává — řeší obchodní vs. účetní saldokonto (§6).
 
-**Nepřebírá se** párování zašité do journal řádku. Starý `AccBalanceCreator`
-vázal úhradu na předpis přes `fetch()` podle klíče `(balance, person, symbol1,
-symbol2)` a sečetl. Když mělo víc faktur stejný variabilní symbol (typicky
-opakované platby služeb), `fetch()` vzal první předpis a zbytek se rozsypal —
-matematicky to sedělo, ale rozpad „která faktura je uhrazená" byl náhodný.
-Ruční obcházení (`specifický symbol = rok+měsíc`) většina uživatelů nezvládla.
-
-Nový model párování od symbolového klíče odděluje: pohyby jsou ryzí seznam,
-**párování je samostatná vrstva** (allocations) s alokačním algoritmem
-v rámci bucketu `(partner, balance, currency)`. Variabilní symbol je pro
-matcher silný **signál**, ne tvrdý párovací klíč (§5).
+**Nepřebírá se** vazba úhrady na *první* nalezený předpis zašitá do journal
+řádku (`fetch()` podle klíče a součet — při stejném VS náhodný rozpad „která
+faktura je uhrazená"). V novém modelu jsou pohyby ryzí seznam, případ je
+agregát celého klíče (všechny předpisy i úhrady klíče dohromady) a
+rozpad na jednotlivé faktury se zajišťuje identitou dokladu (SS), ne
+párovacím algoritmem.
 
 ### 1.2 Saldo pracuje výhradně s deníkem
 
@@ -51,12 +69,13 @@ Klíčové architektonické rozhodnutí: saldo čte **jen** `economy_accounting_
 Nesahá na doklady ani transakce při generování pohybů. Důsledek: každý budoucí
 zdroj účtování (pokladna, zápočty, otevírací sekvence období, ruční zápis)
 nakrmí saldo **bez jediné změny v saldo kódu** — stačí, aby do deníku zapsal
-řádky se symboly a splatností.
+řádky se symboly a splatností (prerekvizita §3.5, hotová).
 
-Aby to platilo doslova, deník musí symboly a splatnost nést (dnes je nemá —
-viz prerekvizita §3.5). Jediná zbývající vazba saldo↔účtovací engine je
-**přeúčtovací trigger** (matcher řekne bance „přegeneruj clearing → 311"),
-což je vrstva **párování**, ne generování.
+Jediná vazba saldo ↔ účtovací engine je **dohledání otevřeného předpisu**
+(`OpenItemLookup`, §5.1): bankovní engine se salda zeptá, zda pro klíč
+úhrady existuje otevřený předpis, a podle toho účtuje na účet předpisu
+nebo na clearing. Saldo o „párování" nic neví — je to jen jiný pohled na
+deník.
 
 ---
 
@@ -66,23 +85,33 @@ což je vrstva **párování**, ne generování.
 ┌──────────────────────────────────────────────────────────────────┐
 │  Účetní deník (economy_accounting_journal)                        │
 │  - jednostranné řádky, obě měny, partner                          │
-│  - NOVĚ: payment_reference / specific_symbol / constant_symbol /  │
-│          due_date (plní účtovací enginy — prerekvizita §3.5)      │
+│  - payment_reference / specific_symbol / constant_symbol /        │
+│    due_date (plní účtovací enginy — §3.5)                         │
 │  - po (pře)zápisu deníku zdroje vyšle událost journalWritten      │
 ├──────────────────────────────────────────────────────────────────┤
-│  Generátor pohybů (economy.accbal, handler journalWritten)        │
+│  Generátor pohybů (economy.accbal, JournalLedgerHandler)          │
 │  - načte nastavení saldokont (balances + balance_accounts)        │
 │  - řádek deníku na saldo-účtu → saldo pohyb (předpis | úhrada)    │
-│  - idempotentní UPSERT podle stabilního klíče zdroje (§4.3)       │
+│  - normalizuje klíč (D10) a idempotentně UPSERTuje (§4.3)         │
 ├──────────────────────────────────────────────────────────────────┤
 │  economy_accbal_ledger   (pohyby)                                 │
-│  - balance, bal_side, partner, symboly, splatnost, obě měny      │
-│  - source_kind + zdroj (doc_head | bank_transaction)             │
+│  - balance, bal_side, fiscal_year, partner, symboly, splatnost,   │
+│    obě měny; source_kind + zdroj (doc_head | bank_transaction)    │
+│  - idx_case = klíč případu                                        │
 ├──────────────────────────────────────────────────────────────────┤
-│  Matcher (samostatná fáze) → economy_accbal_allocations           │
-│  - vazby úhrada↔předpis s rozúčtovanou částkou (obě měny)        │
-│  - default FIFO dle splatnosti + ruční úprava                    │
-│  - výsledek řekne bance „přegeneruj clearing → 311/321"          │
+│  Případ = agregát klíče (CaseQuery, §3.4) — žádná tabulka         │
+│  - Σ předpisy − Σ úhrady per (balance, fiscal_year, partner,      │
+│    VS, SS, currency); viewer případů, viewer pohybů, lookup       │
+└──────────────────────────────────────────────────────────────────┘
+        ▲                                             │
+        │ journalWritten                              │ OpenItemLookup
+        │                                             ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  BankTransactionAccountingEngine (economy.bank, bank.md §6.1)     │
+│  - úhrada s partnerem: otevřený předpis pro klíč → účet předpisu  │
+│    (vč. analytiky), jinak clearing 261200/261300                  │
+│  ClearingRerouteHandler + ClearingRouter (economy.accbal, §5.2)   │
+│  - po zaúčtování předpisu přeúčtuje čekající clearingové úhrady   │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -90,7 +119,18 @@ Modul `economy.accbal`, závislosti: `core.system`, `economy.accounting`,
 `economy.bank`, `docs.core`, `economy.codebooks`.
 
 Saldo zůstává oddělené od `economy.accounting` (ten je „čistě deník");
-accbal na něj jen závisí a čte jeho tabulku.
+accbal na něj jen závisí a čte jeho tabulku. Rozhraní `OpenItemLookup` je
+deklarované v core (`Shipard\Core\Accounting`), implementace
+`LedgerOpenItemLookup` v accbal, registrace `openItemLookup` v
+`module.jsonc` — bankovní engine na modulu saldokonta nezávisí (DS bez
+accbal má `NullOpenItemLookup`, vše na clearing).
+
+**Pohledy (UI):** viewer **Saldokonto** (`economy.accbal.cases`,
+`CasesViewer`) po případech je výchozí vstup — sidebar položky saldokont
+(Pohledávky, Závazky; `BalancesNavigationProvider`) ho otevírají s fixním
+chipem; viewer **Saldo pohyby** (`economy.accbal.ledger`, `LedgerViewer`) je
+detail — akce „Pohyby případu" ho otevře s chipem saldokonta a filtry
+partner / VS / SS. Společný základ `AccbalViewerBase`. Detaily §3.4.
 
 ---
 
@@ -106,6 +146,7 @@ tableId **416**. docStates: archivní sada (`core.system.docStatesArchive`).
 | `code` | varchar 25 | stabilní identifikátor pro seed/exchange (nahrazuje starý `globalId`) |
 | `name` / `short_name` | varchar 140 / 80 | |
 | `order` | int | pořadí v UI |
+| `show_in_navigation` | bool | vlastní položka v sidebaru (otevře viewer případů s fixním chipem) |
 | `valid_from` / `valid_to` | date, nullable | platnost skupiny |
 | `docState` / `docStateMain` | tinyint, system | |
 
@@ -156,61 +197,115 @@ a maže ho jen handler (jako účetní deník sám).
 
 | sloupec | typ | popis |
 |---|---|---|
-| `id` | int PK | identita pohybu — na něj se vážou allocations (stabilní, §4.3) |
-| `balance` | int, FK balances, not null | skupina saldokonta |
+| `id` | int PK | identita pohybu, stabilní přes reaccount (§4.3); `row_id` případu ve vieweru |
+| `balance` | int, FK balances, not null | skupina saldokonta — **klíč** |
 | `bal_side` | enumInt, not null | 0 = Předpis, 1 = Úhrada |
 | `source_kind` | enumString 20 | `doc` \| `bankTransaction` (denorm z deníku) |
+| `source_id` | int, not null | id zdroje (kopie doc_head / bank_transaction) — drží unikátní index bez NULL |
 | `doc_head` | int, FK docs_core_heads, nullable | zdroj (dle source_kind) |
-| `bank_transaction` | int, FK economy_bank_transactions, nullable | zdroj — FK přidává `economy.bank` jako extension (správný směr závislosti) |
+| `bank_transaction` | int, FK economy_bank_transactions, nullable | zdroj |
 | `journal_row` | int, nullable | **denorm** odkaz na aktuální řádek deníku (pro „otevřít deník"); **není** stabilní identita — viz §4.3 |
 | `account_number` | varchar 12, not null | saldo-účet pohybu (311100…) |
-| `fiscal_year` | int, FK fiscal_years | saldokonto je period-scoped (§7) |
-| `partner` | int, FK base_persons_persons, nullable | |
-| `payment_reference` | varchar 35, nullable | denorm z deníku (signál pro matcher) |
-| `specific_symbol` | varchar 20, nullable | denorm |
+| `fiscal_year` | int, FK fiscal_years | účetní období — **klíč** (§7, D11) |
+| `partner` | int, FK base_persons_persons, nullable | **klíč** |
+| `payment_reference` | varchar 35, nullable | VS — **klíč**; normalizovaný (D10) |
+| `specific_symbol` | varchar 20, nullable | SS — **klíč**; normalizovaný |
 | `constant_symbol` | varchar 10, nullable | denorm (jen informační, ne párovací) |
 | `due_date` | date, nullable | splatnost (předpis); u úhrady typicky NULL |
-| `currency` | enumString 3 | měna dokladu |
+| `currency` | enumString 3 | měna dokladu — **klíč**; malými písmeny |
 | `home_currency` | enumString 3 | domácí měna |
 | `amount` | numeric 15,2 | částka v měně dokladu (po `modify_sign`) |
 | `amount_hc` | numeric 15,2 | částka v domácí měně |
 | `text` | varchar 200, nullable | |
 
-Indexy: bucket `(balance, partner, currency, fiscal_year)`, `(payment_reference)`,
+Indexy: `unq_stable_key (source_kind, source_id, balance, bal_side,
+account_number)`, **`idx_case (balance, fiscal_year, partner,
+payment_reference, specific_symbol, currency)`** (klíč případu, D11),
+bucket `(balance, partner, currency, fiscal_year)`, `(payment_reference)`,
 `(doc_head)`, `(bank_transaction)`, `(account_number, fiscal_year)`.
 
 Poznámky:
 
 - **Žádné `request`/`payment`/`residual` na pohybu** (na rozdíl od starého
-  Saldo2). Reziduum a stav případu se počítají z allocations (§5).
-- Symboly + splatnost se denormalizují z deníku jen kvůli indexovaným
-  bucket-dotazům matcheru a UI; zdroj pravdy je deník.
+  Saldo2) a **žádný uložený hash klíče** — případ je agregát (§3.4), klíč
+  je n-tice sloupců a složený index.
+- **Normalizace klíče při zápisu (D10):** generátor ukládá symboly
+  `TRIM`nuté, prázdné jako `NULL`, měnu malými písmeny. Rovnost klíče pak
+  jde přes `idx_case` bez `TRIM`/`COALESCE`/`LOWER` ve `WHERE`; prázdný
+  symbol se porovnává `IS NULL`. Vstupní klíč každého dotazu prochází
+  stejnou normalizací (`CaseQuery::normalizeKey`).
+- Symboly + splatnost se denormalizují z deníku kvůli indexovaným dotazům
+  klíče a UI; zdroj pravdy je deník.
 
-### 3.4 `economy_accbal_allocations` — párovací vazby
+### 3.4 Případ — agregát klíče (tabulka `economy_accbal_allocations` zrušena, #69 D1)
 
-tableId **419**.
+Tabulka 419 párovacích vazeb, `AllocationPlanner`, `BalanceMatcher` a config
+`allocationOrigins` **neexistují** (T2, 2026-09-14). tableId 419 se
+nerecykluje (`table-definitions.md`, vyřazená ID); na DS z doby před T2
+tabulka osiřele zůstává (`ds-upgrade` nemaže), nový DS ji nedostane.
+Migrace se neřešila — DS na alfě se resetují a importují znovu (#69).
 
-| sloupec | typ | popis |
-|---|---|---|
-| `id` | int PK | |
-| `payment_entry` | int, FK ledger, not null | úhradový pohyb (`bal_side = 1`) |
-| `request_entry` | int, FK ledger, not null | předpisový pohyb (`bal_side = 0`) |
-| `amount` | numeric 15,2 | rozúčtovaná částka v měně dokladu |
-| `amount_hc` | numeric 15,2 | rozúčtovaná částka v domácí měně |
-| `created_by` | enumInt | 0 = auto (matcher), 1 = ruční |
-| `note` | varchar 200, nullable | |
+**Definice případu** — jediné místo je třída `CaseQuery`
+(`modules/economy/accbal/src/CaseQuery.php`), sdílená lookupem, routerem
+i viewery:
 
-Indexy: `(request_entry)`, `(payment_entry)`.
+```
+klíč     = (balance, fiscal_year, partner, payment_reference, specific_symbol, currency)
+předpisy = Σ amount   WHERE bal_side = 0      (+ amount_hc)
+úhrady   = Σ amount   WHERE bal_side = 1      (+ amount_hc)
+zůstatek = předpisy − úhrady                  (obchodní: měna dokladu;
+                                               účetní: domácí, §6)
+otevřený = zůstatek ≠ 0
+typ      = dluh (zůstatek > 0) | přeplatek (předpisy ≠ 0, zůstatek < 0)
+         | úhrada bez předpisu (předpisy = 0, zůstatek ≠ 0) | uzavřeno
+splatnost = MIN(due_date) předpisů klíče; dny po splatnosti k dnešku
+            (jen dluh; počítá se při renderu, nic se neukládá)
+row_id   = MIN(id) pohybů klíče — stabilní id řádku pro viewer, detail
+            z něj klíč odvodí (CaseQuery::keyOfRow)
+```
 
-Many-to-many: jedna úhrada → více předpisů (platba 600 na tři faktury) i jeden
-předpis → více úhrad (faktura placená na splátky). Reziduum předpisu =
-`request.amount − Σ allocations.amount`; předpis je obchodně uzavřený, když je
-to nula (analogicky v domácí měně, §6).
+Stavební kameny `CaseQuery`: `normalizeKey()` / `keyConditions()` (rovnost
+i částečného klíče, `IS NULL`, pořadí `idx_case`), `keyColumnsSql()` +
+`aggregateColumnsSql()` (SELECT nad `GROUP BY` klíče), `kindConditionSql()`
+/ `openConditionSql()` (filtry nad agregátem), `residualSubquerySql()`
+(zůstatek případu daného řádku ledgeru jako korelovaný subdotaz — viz
+poznámka níže), instanční `caseOf(key)` a `keyOfRow(id)`.
 
-**Případ (case)** se v Fázi 1–2 **nemodeluje jako entita** — je odvozený:
-bucket `(partner, balance, currency)`, otevřené předpisy = ty s nenulovým
-reziduem. Explicitní tabulka případů (kvůli ručnímu seskupení faktur
-s různým VS nebo poznámce k případu) je možné rozšíření, ne nutnost (§8).
+> **Proč korelovaný subdotaz, ne JOIN na derived table:** MariaDB 10.11
+> (`split_materialized`) při bodovém dotazu (`WHERE l.id = ?`) s NULL-safe
+> rovností `<=>` v ON derived tabulky s GROUP BY vrací NULL. Volba splitu
+> je cost-based, takže by se chyba projevila nepředvídatelně i v seznamu
+> s úzkým filtrem. Per řádek jde o bodové dohledání přes `idx_case`.
+
+**Lookup je užší než případ.** `LedgerOpenItemLookup` (§5.1) počítá
+reziduum jen z řádků na **předpisových účtech** skupiny (dobropisové řádky
+s `modify_sign` mimo hru — T1), případ agreguje celou skupinu. Sdílí se
+klíč a normalizace, ne filtr účtů; na seedu je rozdíl vidět jen u
+dobropisů.
+
+**Pohledy nad případem:**
+
+- **Viewer případů** `economy.accbal.cases` (`CasesViewer`) — jeden řádek =
+  případ. ViewGroups = saldokonta (chip, identita `code`); grid se
+  skupinami per partner, skupinový řádek nese součet zůstatku partnera
+  v domácí měně přes filtrovaný set (okno `SUM() OVER (PARTITION BY
+  partner)`, sedí i přes hranici stránek); sloupce období, VS, SS, měna,
+  předpisy, úhrady, zůstatek, zůstatek HC, splatnost, dní po splatnosti,
+  počet pohybů, saldokonto; footer Σ předpisy / úhrady / zůstatek v HC.
+  Filtry: partner, VS, **typ** (dluh / přeplatek / úhrada bez předpisu /
+  uzavřeno — úhrady bez předpisu jsou na reimportovaném DS tisíce, musí
+  být samostatně filtrovatelné), po splatnosti, **včetně uzavřených**
+  (výchozí jen otevřené; frontend nemá výchozí hodnoty filtrů, proto je
+  checkbox obrácený). Klíčové filtry jdou před `GROUP BY`, případové nad
+  agregát. Zvýraznění doc-state konvencí (`design-system.md` §4): dluh bez
+  proužku, dluh po splatnosti `cancelled`, přeplatek / úhrada bez předpisu
+  `concept`, uzavřený `archive`. Detail (z `row_id`) + akce **Pohyby
+  případu** (`open_viewer` s `viewGroup` a `filters`, `frontend.md`).
+- **Viewer pohybů** `economy.accbal.ledger` (`LedgerViewer`) — sloupec
+  „Zbývá" per pohyb zanikl; místo něj **Zůstatek případu** (stejná hodnota
+  na všech pohybech klíče, `residualSubquerySql`), filtr „Jen otevřené
+  případy" = otevřenost případu, filtry partner / VS / SS (prefixové),
+  řazení uvnitř partnera po klíči případu, detail se skupinou Případ.
 
 ### 3.5 Prerekvizita: symboly + splatnost do účetního deníku
 
@@ -271,17 +366,16 @@ journalWritten(sourceKind, sourceId)   // deník zdroje se změnil / vymazal
 ```
 
 Generický mechanismus (obdoba `documentEventHandlers` z `accounting.md` §7.1):
-modul `economy.accbal` zaregistruje handler na `journalWritten`. Handler
-**re-derivuje** saldo pohyby daného zdroje z aktuálního deníku.
+modul `economy.accbal` zaregistruje handlery na `journalWritten` —
+`JournalLedgerHandler` **re-derivuje** saldo pohyby daného zdroje z aktuálního
+deníku, za ním `ClearingRerouteHandler` (§5.2; pořadí registrace je
+významové).
 
 Proč událost a ne `stateChanged`: drží §1.2 (saldo zná jen deník) a **samo
-řeší clearing → 311 přechod** — když matcher spustí přeúčtování transakce,
-bankovní engine přepíše deník a vyšle `journalWritten`; saldo re-derivaci
-provede automaticky (clearing pohyb zmizí, 311 úhrada vznikne). Žádná zvláštní
-cesta pro „po spárování".
-
-> Vyžaduje malé doplnění do core (událost, kterou enginy vyšlou) — analogické
-> `documentEventHandlers`. Detail viz prerekvizity v PRD.
+řeší clearing → 311 přechod** — když engine přeúčtuje transakci, přepíše
+deník a vyšle `journalWritten`; saldo re-derivaci provede automaticky
+(clearing pohyb zmizí, 311 úhrada vznikne). Žádná zvláštní cesta pro „po
+přeúčtování".
 
 ### 4.2 Algoritmus generátoru (per zdroj)
 
@@ -298,19 +392,21 @@ cesta pro „po spárování".
         balance   = nastavení.balance
         bal_side  = nastavení.bal_side
         amount    = částka řádku (×−1 dle modify_sign), obě měny
-        partner, symboly, due_date, fiscal_year, account_number, journal_row
+        partner, symboly (normalizované, D10), due_date, fiscal_year,
+        account_number, journal_row
 4. UPSERT pohybů zdroje podle stabilního klíče (§4.3); chybějící smaž.
 ```
 
-Jeden řádek deníku může vyhovět **víc** řádkům nastavení (vznikne víc pohybů) —
-to je validní (např. týž účet ve dvou skupinách). Pohyb dědí měny z deníku
-přímo, žádný přepočet (deník je už vede v obou měnách).
+Chybový řádek deníku (`is_error`, nedohledaný účet) pohyb nevyrobí —
+fantomový pohyb by maskoval účetní chybu. Jeden řádek deníku může vyhovět
+**víc** řádkům nastavení (vznikne víc pohybů) — to je validní (např. týž účet
+ve dvou skupinách). Pohyb dědí měny z deníku přímo, žádný přepočet.
 
 ### 4.3 Idempotence a stabilní identita pohybu
 
 **Problém:** deník je DELETE+INSERT, takže `economy_accounting_journal.id`
 **není stabilní** přes přeúčtování. Kdyby pohyb FK-oval na `journal_row.id`,
-po každém přechodu dokladu 40→80→40 by `id` přeskákalo a allocations by
+po každém přechodu dokladu 40→80→40 by `id` přeskákalo a odkazy z UI by
 dangly.
 
 **Řešení:** identita pohybu = stabilní klíč odvozený ze **zdroje**, ne z řádku
@@ -324,13 +420,13 @@ Tenhle klíč je stabilní přes přeúčtování (zdroj se nemění, saldo-úč
 nemění). Generátor pohyby **UPSERTuje** podle něj (vzor starého
 `saveBalanceJournalRequests` + memo `claimAccountForNewId`):
 
-- existuje pohyb s klíčem → UPDATE částek/symbolů, `id` se zachová → allocations
-  drží
+- existuje pohyb s klíčem → UPDATE částek/symbolů, `id` se zachová
 - nový klíč → INSERT
-- pohyb zdroje, který už v novém deníku není → DELETE (cascade allocations)
+- pohyb zdroje, který už v novém deníku není → DELETE
 
-`journal_row` je jen **denorm** odkaz na aktuální řádek (refreshuje se při
-každé re-derivaci), pro akci „otevřít řádek deníku". Není load-bearing.
+Případ je agregát (§3.4), takže smazaný pohyb z něj zmizí sám — žádná
+cascade. `journal_row` je jen **denorm** odkaz na aktuální řádek (refreshuje
+se při každé re-derivaci), pro akci „otevřít řádek deníku". Není load-bearing.
 
 > Jednoznačnost klíče: grouping deníku slučuje řádky per `(side, account_number,
 > partner, operation)`; partner je konstantní per zdroj, takže na daném
@@ -338,9 +434,9 @@ každé re-derivaci), pro akci „otevřít řádek deníku". Není load-bearing
 
 ### 4.4 Clearing šev (varianta B)
 
-Nespárovaná bankovní úhrada má protistranu na clearingu (261200/261300, viz
-`bank.md` §6.3). Clearing účty se zařazují do nastavení saldokont jako skupina
-**„Nespárované platby"**:
+Úhrada bez otevřeného předpisu má protistranu na clearingu (261200/261300,
+viz `bank.md` §6.3). Clearing účty se zařazují do nastavení saldokont jako
+skupina **„Nespárované platby"**:
 
 ```
 261200 DAL Kladné Úhrada   (nespárovaný příjem)
@@ -349,17 +445,17 @@ Nespárovaná bankovní úhrada má protistranu na clearingu (261200/261300, viz
 
 Důsledky:
 
-- Nespárovaná úhrada je **normální saldo pohyb** na skupině „Nespárované platby"
-  (bal_side = Úhrada, bez allocation). Matcher má tím **jediný zdroj kandidátů**
-  — ledger.
-- Po spárování bankovní engine přeúčtuje transakci clearing → 311/321, vyšle
+- Nespárovaná úhrada je **normální saldo pohyb** na skupině „Nespárované
+  platby" (bal_side = Úhrada); ve vieweru případů je to případ typu „úhrada
+  bez předpisu". `ClearingRouter` má tím **jediný zdroj kandidátů** — ledger.
+- Po přeúčtování bankovní engine položí transakci na účet předpisu, vyšle
   `journalWritten`, saldo re-derivuje: clearing pohyb (na „Nespárovaných")
-  **zmizí**, vznikne 311/321 úhrada na skupině Pohledávky/Závazky, a matcher na
-  ni naváže allocation.
+  **zmizí**, vznikne úhrada na skupině Pohledávky/Závazky a případ klíče se
+  uzavře (nebo sníží).
 - Invariant zůstává čistý: **nenulový obrat skupiny „Nespárované platby" =
   existují nespárované úhrady** (signál k akci, ne chyba).
-- Pravidlo matcheru: skupina „Nespárované platby" se **nepáruje sama proti
-  sobě** (nemá předpisy).
+- Skupina „Nespárované platby" nemá řádek předpisu → lookup ji nikdy
+  neprohledá (§5.1).
 
 ### 4.5 Clearing infrastruktura na migrovaném DS
 
@@ -368,9 +464,8 @@ seedem v `ds-upgrade` (`AccountChartProvisioner` / `BalancesProvisioner`). Na
 **migrovaném DS** je ale provisioning vypnutý (`skipProvisioning`) — osnova i
 saldo nastavení se přebírají ze staré strany, kde tyhle dva nové konstrukty
 **nemají protějšek**. Bez nich `AccountMaskResolver` nedohledá 261200/261300
-(bankovní engine → `accounting_state=2` u každé platby, hlučně) a matcher
-nenajde skupinu `unmatched_payments` (`balanceId('unmatched_payments')` → null
-→ tiše nula kandidátů).
+(bankovní engine → `accounting_state=2` u každé platby, hlučně) a router
+nenajde skupinu `unmatched_payments` (tiše nula kandidátů).
 
 Řešení (rozhodnutí #18): clearing účty + skupina nejsou *migrovaná data*, ale
 **infrastruktura modulů** `bank`/`accbal`. Zajišťuje je
@@ -382,180 +477,111 @@ saldo skupiny; clearing skupinu (`unmatched_payments`) v migračním JSONu mít
 nesmí (kolize `unq_code`), a stará skupina „Peníze na cestě" na holém prefixu
 `261` se zúží na `261100` (jinak prefix-overlap → dvojité pohyby na clearingu).
 Pojistka: pre-flight v `AllRunner` ověří přítomnost infrastruktury a tvrdě
-spadne dřív, než začne import dokladů/transakcí (tichý no-op matcheru → hlasitá
+spadne dřív, než začne import dokladů/transakcí (tichý no-op → hlasitá
 chyba).
 
 ---
 
-> **Nahrazeno (#69, 2026-09-13):** §5 a rozhodnutí #13–#17 nahrazují
-> rozhodnutí D1–D8 v issue #69. Platný stav po T1: spárovanost nenese
-> `operation` (matched operace zrušeny), routing clearing ↔ účet předpisu dělá
-> `BankTransactionAccountingEngine` přes `OpenItemLookup` (`bank.md` §6.1),
-> „platba dřív než faktura" řeší `ClearingRerouteHandler` +
-> `ClearingRouter` (rozhodnutí #19), allocations se nezapisují. Aktuální je
-> z této sekce jen **§5.7** (kontrakt endpointu). Přepis celého dokumentu na
-> symbolový klíč provede T2 `accbal-symbol-key`.
+## 5. Routing úhrad a přeúčtování clearingu (#69 D3, D4, D9, T1)
 
-## 5. Párování (matcher) — Fáze 3
+Účet úhrady (účet předpisu vs. clearing) je věc **účtování transakce**, ne
+salda. Saldo nic nerozhoduje dvakrát a nic si nepamatuje: reaccount
+transakce je idempotentní a bez paměti — přeúčtuj a úhrada spadne, kam má.
+`operation` transakce spárovanost nenese (matched operace `payment.*.matched`
+zrušeny).
 
-Matcher je **samostatný explicitně volaný průchod**, ne handler `journalWritten`
-(ten drží jen re-derivaci ledgeru, §4.1) — tím je rozpojená smyčka
-reaccount → událost → matcher (rozhodnutí #15). Pracuje v odvozeném **bucketu**
-`(partner, balance, currency)` nad otevřenými předpisy (`bal_side=0`, nenulové
-reziduum) a jednotlivými úhradami; reziduum předpisu = `amount − Σ allocations`.
+### 5.1 Kontrakt s enginem — `OpenItemLookup`
 
-### 5.1 Spárovanost = hodnota `operation` (kontrakt s enginem)
+```php
+namespace Shipard\Core\Accounting;
 
-Spárovanost nenese zvláštní příznak — nese ji **`operation`** transakce. Default
-`payment.in` („Příjem (nespárováno)") má `cat` `bank.unmatched.in`, ten přes
-účtovací předpis padá na clearing `261200`. Clearing tedy není zvláštní větev
-enginu, je to výstup řetězce `operation → cat → maska`
-(`accountingRules.cz.jsonc`). Spárování ten řetězec jen dotáhne na 311/321.
-
-Nové v configu (a **nic** jinde — engine, accbal seed ani deník se nemění):
-
-| operation | směr | cat | maska |
-|---|---|---|---|
-| `payment.in.matched`  | příjem | `bank.matched.in`  | 311 |
-| `payment.out.matched` | výdaj  | `bank.matched.out` | 321 |
-
-Kontrakt matcher → engine (vzor `BankController::reaccount`):
-
-```
-1. operation = payment.in.matched, partner = P    (na transakci)
-2. accountTransaction(txId)              ← stávající engine, beze změny
-3. engine: matched op → cat → maska 311 → účet; řádek 311 DAL + partner P;
-   DELETE+INSERT deníku; po commitu synchronně journalWritten(bankTx, txId)
-4. LedgerGenerator re-derivuje: clearing pohyb (jiný stabilní klíč) zmizí,
-   vznikne pohyb 311 DAL = Úhrada v Pohledávkách (nové id, partner P)
-5. matcher najde nový úhradový pohyb a zapíše na něj allocations
+interface OpenItemLookup
+{
+    public function findOpenRequest(
+        int $partner, string $paymentReference, string $specificSymbol,
+        string $currency, int $direction, ?int $fiscalYear,
+        ?string $excludeSourceKind = null, ?int $excludeSourceId = null,
+    ): ?OpenItem;   // OpenItem {balance, accountNumber, residual}
+}
 ```
 
-Re-derivace zařadí 311 DAL jako Úhradu v Pohledávkách (a 321 MD jako Úhradu
-v Závazcích) sama — seed saldokont ty řádky už má (`balancesDefault.cz.jsonc`).
-Rozpárování viz §5.5.
+- Volá `BankTransactionAccountingEngine::resolveCounterpartyAccount()` pro
+  operace kategorie `bank.unmatched.*` (`payment.in` / `payment.out`) **před**
+  řetězcem `cat → maska`: má-li transakce partnera, dohledá otevřený předpis
+  pro klíč `(partner, VS, SS, měna)` v **období účetního data transakce**
+  (D11) a směr. Zásah → protistrana = účet předpisu přesně vč. analytiky;
+  miss / bez partnera / bez VS / bez období → clearing dle masky
+  (`bank.md` §6.1).
+- **Cílové skupiny pro směr z nastavení saldokont**, ne z kódu skupiny ani
+  z čísel účtů: směr určuje přirozenou stranu předpisu (příjem → předpis na
+  MD, výdaj → na DAL) a cílem je každá skupina s řádkem `bal_side = předpis`
+  na té straně, kladné částky, bez `modify_sign`; prefixy těchto řádků jsou
+  účty, na kterých se hledají řádky klíče. Na seedu příjem prohledá
+  Pohledávky (311), výdaj Závazky (321, 325, 331, 336, 341, 342, 345, 379);
+  zálohy a úvěry následují v pořadí nastavení, první zásah vyhrává.
+  Dobropisový řádek 311 v Závazcích mezi prefixy není, „Nespárované platby"
+  nemají řádek předpisu → nikdy se neprohledají.
+- **Reziduum** = Σ předpisy − Σ úhrady klíče v měně dokladu (jen řádky na
+  předpisových účtech skupiny, §3.4 „lookup je užší"); otevřený = > 0.
+  Vlastní transakce (`excludeSource*`) se z Σ úhrad vylučuje — reaccount už
+  routované úhrady neuvidí své reziduum jako nulu.
+- **Pravidla dohledání (D5)** v pořadí: (1) přesná shoda klíče — **platí
+  dnes**; (2) stejný `(partner, VS)` a právě jeden otevřený předpis,
+  (3) opakovaná platba → nejstarší neuhrazené období — **přijdou s T3**
+  (efektivní symboly) a T4; (4) jinak clearing.
 
-### 5.2 Routing — z clearingu do správného saldokonta
+### 5.2 Trigger „platba dřív než faktura" (D4)
 
-Konzervativní strategie (rozhodnutí #14). Než matcher cokoli alokuje, nasměruje
-clearing-platbu:
+`ClearingRerouteHandler` (handler `journalWritten`, registrovaný **za**
+`JournalLedgerHandler`, reaguje jen na `doc`): z čerstvě re-derivovaného
+ledgeru vezme klíče předpisových pohybů dokladu (období, partner, VS, SS,
+měna) a přes `ClearingRouter::rerouteForKeys()` přeúčtuje čekající
+clearingové úhrady se shodným klíčem. Engine si účet předpisu dohledá sám
+(§5.1), vyšle `journalWritten(bankTransaction)` — to tu skončí hned, žádná
+smyčka. Ve starém Shipardu tohle uživatel dělal ručně; tady je to záměr.
+Zpětný přesun na clearing (předpis zmizel) se automaticky nedělá — reaccount
+transakce ji tam vrátí sám.
 
-- **Směr transakce** určuje cíl: příjem → pohledávky/311, výdaj → závazky/321.
-  Opačné páry (vrácení od dodavatele jako snížení závazku ap.) jsou edge-case →
-  MVP nechá na clearingu / ruční.
-- **Partner povinný.** Bez `tx.partner` se routovat nedá → zůstává na clearingu.
-  Dohledání partnera při ingestaci zatím není (§5.6, §11) — tvrdá závislost
-  automatu; na importovaných datech partnera máme.
-- **Jen stejná měna** (bucket nese `currency`). Kříž měn = území kurzových
-  rozdílů (§6) → clearing / ruční.
+`ClearingRouter`: kandidát = úhradový pohyb bankovní transakce (stav 40) ve
+skupině `unmatched_payments`, sekvenčně v pořadí data transakce (každé
+přeúčtování hned sníží reziduum klíče — druhá úhrada už uzavřeného předpisu
+zůstane na clearingu); bez partnera nebo bez zásahu lookupu → přeskočen.
+Idempotentní: přeúčtovaná úhrada už není kandidát. Dry-run vypíše plán bez
+zápisu (pořadí nesimuluje).
 
-### 5.3 Alokační algoritmus
+### 5.3 Reziduální routing (D9)
 
-Pořadí: rozhodni celý plán (předpisy jsou stabilní bez ohledu na to, kde platba
-sedí), pak teprve přesuň a zapiš.
+Platba se přeúčtuje z clearingu jen když má její klíč **kladný zůstatek**
+(otevřený předpis). Přeplatek a úhrada bez předpisu zůstávají na clearingu
+jako signál (D5/4) — ne existenční model (vše s klíčem na 311, přeplatek
+jako záporný zůstatek). Důsledek: u vícenásobných úhrad téhož klíče závisí
+výsledek reaccountu na pořadí — přijatelné, invariant „nenulový clearing =
+podívej se" drží. Přeplatek *vzniklý* routovanou úhradou (reziduum > 0
+stačí, částka může být vyšší) je záporný zůstatek případu na 311/321.
 
-- **FIFO dle splatnosti:** předpisy `due_date ASC`, NULL na konec, tie-break
-  `ledger.id ASC`; úhrada se rozúčtuje na nejstarší otevřené předpisy.
-- **VS jako signál, ne klíč:** `payment_reference` úhrady přebije FIFO **jen**
-  když jednoznačně sedí na *právě jeden* otevřený předpis — ten dostane přednost
-  do výše rezidua, zbytek pokračuje FIFO. Sedí na víc předpisů (starý chaos
-  opakovaných plateb) → VS se ignoruje, jede čisté FIFO; „která faktura" se pak
-  rozhoduje stářím, ne náhodným prvním záznamem. `specific_symbol` se v MVP jako
-  auto-signál nebere (jen se nese/zobrazuje).
-- **Měny:** alokuje se v `amount` (měna dokladu = obchodní saldokonto, §6).
-  `amount_hc` allocation je **proporční z platby**
-  (`alloc.amount × payment.amount_hc / payment.amount`), ne z kurzu faktury →
-  platba je plně spotřebovaná v obou měnách. Domácí reziduum předpisu proti jeho
-  fakturačnímu kurzu zůstane jako kurzový rozdíl (vlastní engine, mimo scope).
-- **Zaokrouhlení:** haléřové dorovnání na poslední alokaci, aby
-  `Σ alloc.amount == payment.amount` i `Σ alloc.amount_hc == payment.amount_hc`
-  přesně (vzor `accounting.md` §8).
-- **Pořadí plateb v dávce:** `date_transaction ASC`, tie `id ASC`; každá platba
-  hned zapíše allocations → další vidí snížená rezidua.
+### 5.4 Vstupní body
 
-**Konzervativní brána (jen pro přechod clearing → 311):** platba opouští clearing
-jen když je **celá alokovatelná** — `payment.amount ≤ Σ rezidua` (+ haléř) a
-existuje ≥1 otevřený předpis. „Celá alokovatelná" = plně spotřebovat platbu, ne
-uzavřít celé faktury (poslední dotčený předpis smí zůstat částečně otevřený).
-Přeplatek / žádný kandidát / dvojznačnost → platba **zůstává na clearingu**
-(signál k ruční akci). Tím jsou zavřené i přeplatky: nikam se „neukládají", jen
-se nehnou z clearingu.
+- **Automaticky:** engine při každém účtování transakce (§5.1), trigger po
+  zaúčtování předpisu (§5.2).
+- **CLI `accbal-match`** (`src/Command/DataSource/AccbalMatchCommand.php`):
+  `--all` / `--partner=` / `--fiscal-year=` + `--dry-run` — dávka
+  `ClearingRouter::rerouteAll()` nad clearingem (import, ladění).
+- **`POST /_accbal/match`** — §5.7, kontrakt s importem ze starého Shipardu.
 
-**Kontrolní příklad — „600 Kč na 3×250":** zákazník má tři vydané faktury po
-250 Kč (tři předpisy na 311, různé VS), dluží 750, pošle 600.
+### 5.5 Idempotence a období (D11)
 
-```
-Předpisy (ledger, bal_side=0, balance=Pohledávky):
-  inv1  250   due 1.3.
-  inv2  250   due 1.4.
-  inv3  250   due 1.5.
+Klíč nese `fiscal_year`: předpis z jiného období je pro lookup miss.
+Platba v novém období za předpis ze starého spadne na clearing a přeúčtuje
+se, jakmile se zaúčtuje **otevírací doklad** nového období — je to `doc`
+s klíčem, projde §5.2 bez zvláštní cesty. Router bere období z
+`fiscal_year` clearingového pohybu (denorm z deníku transakce), engine z
+účetního data transakce.
 
-Úhrada (ledger, bal_side=1): příjem 600 → nejdřív clearing „Nespárované",
-matcher v bucketu (partner, Pohledávky, CZK):
+### 5.6 Rozdíl lookup × případ
 
-  allocation: 600 → inv1 250  (inv1 uzavřen)
-              → inv2 250  (inv2 uzavřen)
-              → inv3 100  (inv3 reziduum 150, otevřen)
-
-Matcher: VS platby nesedí jednoznačně → čisté FIFO. Platba je celá alokovatelná
-(600 ≤ 750) → projde branou. operation = payment.in.matched → reaccount
-clearing → 311 (jeden řádek 600 na partnera) → journalWritten → re-derivace:
-clearing pohyb zmizí, vznikne 311 úhrada 600, allocations (250/250/100) se
-navážou na ni.
-```
-
-Granularita 3-cestného rozúčtování žije **jen v allocations** — deník nese jeden
-311 řádek 600 Kč (bankovní engine nepotřebuje znát rozpad). Tím zůstává deník
-čistý a starý „chaos stejných VS" mizí: párujeme částkou a stářím, ne přesnou
-shodou symbolu.
-
-### 5.4 Auto vs. ruční allocations
-
-`created_by=0` (auto) jsou jednorázové, `created_by=1` (ruční) posvátné. Matcher
-na ruční **nikdy** nesáhne a počítá je jako předem spotřebované — reziduum
-předpisu i zbytek platby se počítají po odečtení ručních allocations; automat
-doplní jen to, co ruční nezabraly. Ruční cesta je neomezená: člověk v UI smí
-spárovat cokoli (záměrný přeplatek, kříž s ručním kurzem, později zálohu) týmž
-mechanismem (matched operace → reaccount → ruční allocation). Automat je opatrný,
-člověk má plnou moc.
-
-### 5.5 Přegenerace případu vs. úplné rozpárování
-
-Dvě různé operace na dvou různých vrstvách (rozhodnutí #17):
-
-- **Přegenerace případu** (levný reset *vrstvy allocations*): smaž `created_by=0`
-  allocations bucketu → spusť matcher pro bucket znovu (přeživší ruční respektuje,
-  zkusí i dosud clearingové platby partnera). Platby **zůstávají na 311** —
-  routing se nehýbe. Konzervativní brána platí jen pro clearing → 311; platba,
-  která už na 311 je, se alokuje best-effort a při neúplném pokrytí nechá
-  nealokované reziduum na 311 (signál), **nevrací se** na clearing.
-- **Úplné rozpárování** (vědomý destruktivní reset *vrstvy routingu*): `operation`
-  zpět na `payment.in/out` + reaccount → 311 pohyb zmizí a cascade smaže **všechny**
-  jeho allocations (auto i ruční). Jediná cesta, která ničí ruční allocations —
-  v UI proto zřetelně oddělená od přegenerace (jiné tlačítko + potvrzení).
-
-### 5.6 Vstupní body a běh
-
-Jádro vystaví metody (`matchTransaction`/`matchBucket`, `rematchBucket`,
-`unmatch`); nad nimi tenké vrstvy jako dnes `BankController::reaccount` nad
-enginem, v pořadí dle reálné potřeby:
-
-- **CLI dávka `AccbalMatchCommand`** (per-DS, `src/Command/DataSource/`) —
-  okamžitá potřeba pro importovaná data. Flagy `--all` / `--partner=` /
-  `--fiscal-year=`, `--rematch-partner=`, `--unmatch=` a hlavně **`--dry-run`**
-  (vypíše plán bez reaccountu a allocations — bezpečné ladění na importu).
-- **Controller akce + UI „Spáruj" / „Rozpárovat"** — později, zrcadlo `reaccount`.
-- **Auto po ingestaci / cronu — odloženo** do partner resolution + důvěry
-  v algoritmus (tiché přesouvání na 311 jde proti konzervativnímu duchu).
-
-Běh je **monotónní** — matcher jen přidává páry, nikdy sám nerozpojuje → dávka je
-bezpečně opakovatelná (spárované platby nejsou na clearingu → nejsou kandidáti).
-Selhání po reaccountu před alokací není ztrátové: 311 úhrada zůstane nealokovaná
-a další běh ji dožene.
-
-Mimo Fázi 3 (pozdější témata): zálohy (přijaté/poskytnuté, odpočty, zdanění —
-účty 314/324/…900 jsou v osnově), zápočty, kurzové rozdíly (§6), multi-cíl (jedna
-platba na fakturu + odpočet zálohy), explicitní entita případu.
+Viz §3.4: lookup filtruje řádky na předpisové účty skupiny (T1 testy),
+případ agreguje celou skupinu. Klíč a normalizace jsou společné
+(`CaseQuery`).
 
 ### 5.7 API — dávkové přeúčtování clearingu (verze kontraktu 2)
 
@@ -575,10 +601,10 @@ aspoň jeden filtr — jinak 400 `VALIDATION`):
 Běh: kandidát = úhradový pohyb bankovní transakce (stav 40) ve skupině
 `unmatched_payments`, v pořadí data transakce. Bez partnera → přeskočen;
 `OpenItemLookup` nenajde otevřený předpis pro klíč (partner, VS, SS, měna)
-a směr → přeskočen; jinak `accountTransaction` (engine si účet předpisu
-dohledá sám, `bank.md` §6.1) → `journalWritten` → re-derivace ledgeru.
-Sekvenčně: každé přeúčtování hned sníží reziduum klíče, druhá úhrada už
-uzavřeného předpisu zůstane na clearingu.
+v období pohybu a směr → přeskočen; jinak `accountTransaction` (engine si
+účet předpisu dohledá sám, `bank.md` §6.1) → `journalWritten` → re-derivace
+ledgeru. Sekvenčně: každé přeúčtování hned sníží reziduum klíče, druhá
+úhrada už uzavřeného předpisu zůstane na clearingu.
 
 Response nese **jen agregát** z `RouteSummary` — per-result řádky (mohou být
 tisíce) se neserializují:
@@ -602,7 +628,7 @@ tisíce) se neserializují:
 | `candidates` | počet clearingových úhrad ve výběru |
 | `routed` | přeúčtováno na účet předpisu (v dry-runu vždy 0) |
 | `planned` | dry-run: kolik by se přeúčtovalo (plán nesimuluje pořadí — obě úhrady téhož předpisu jsou v plánu, ostrý běh druhou nechá na clearingu) |
-| `skipped` | důvod → počet: `no_open_item` (bez otevřeného předpisu, vč. prázdného VS), `no_partner`, `engine_error` (přeúčtování skončilo chybou účtování) |
+| `skipped` | důvod → počet: `no_open_item` (bez otevřeného předpisu, vč. prázdného VS a jiného období), `no_partner`, `engine_error` (přeúčtování skončilo chybou účtování) |
 | `routedAmount` | Σ `amount_hc` (domácí měna) přeúčtovaných, v dry-runu naplánovaných úhrad |
 
 Změny proti verzi 1 (matcher): `allocated → routed`, `matchedAmount →
@@ -625,52 +651,83 @@ Kód: `Router::resolveAccbalRoute()`, `src/Api/Controller/AccbalController.php`,
 ## 6. Měny a uzavření případu
 
 Politika „každá částka v obou měnách" (z `accounting.md` §8) se propisuje do
-salda: pohyb i allocation vedou `amount` (měna dokladu) i `amount_hc` (domácí).
+salda: každý pohyb vede `amount` (měna dokladu) i `amount_hc` (domácí), a
+případ má proto dva zůstatky.
 
-Dvojí uzavření předpisu:
+Dvojí uzavření případu:
 
-- **Obchodní saldokonto:** `Σ allocations.amount == request.amount` (měna
-  dokladu) → faktura je **uhrazená** (zákazník zaplatil dohodnutou částku).
-- **Účetní saldokonto:** `Σ allocations.amount_hc == request.amount_hc`
-  (domácí) → účetně vyrovnáno. U cizoměnové faktury domácí strana dosedne až
-  po zaúčtování **kurzového rozdílu**.
+- **Obchodní saldokonto:** `Σ předpisy.amount − Σ úhrady.amount == 0` (měna
+  dokladu, `residual`) → faktura je **uhrazená** (zákazník zaplatil
+  dohodnutou částku). Tenhle zůstatek řídí otevřenost případu, lookup
+  (§5.1) i filtry viewerů.
+- **Účetní saldokonto:** `Σ předpisy.amount_hc − Σ úhrady.amount_hc == 0`
+  (domácí, `residual_hc`) → účetně vyrovnáno. U cizoměnové faktury domácí
+  strana dosedne až po zaúčtování **kurzového rozdílu**.
 
 Reziduum v domácí měně po obchodním uzavření = kurzový rozdíl. **Generátor
 kurzových rozdílů je mimo scope** (vlastní pozdější engine, vzor starého
-`ExchDiffsEngine`); saldo ho jen vykáže jako otevřené účetní reziduum.
+`ExchDiffsEngine`); saldo ho jen vykáže jako otevřený účetní zůstatek
+(sloupec Zůstatek HC, footer v HC).
 
 ---
 
 ## 7. Účetní období a otevírací sekvence
 
-Saldokonto funguje v rámci **účetního období** (`fiscal_year` na pohybu). Na
-začátku období se neuhrazené případy „otevřou" sekvencí otevíracích účetních
-dokladů — univerzální účetní princip (umožní změnu metodiky apod.).
+Saldokonto funguje v rámci **účetního období** (`fiscal_year` na pohybu je
+součást klíče případu, D11). Na začátku období se neuhrazené případy
+„otevřou" sekvencí otevíracích účetních dokladů — univerzální účetní princip
+(umožní změnu metodiky apod.). Otevírací předpis nese partnera a VS/SS na
+řádcích, jinak nemá klíč a nemá co párovat.
 
-**Generátor otevíracích dokladů je mimo scope tohoto návrhu.** Pro saldo z toho
-plyne jen: otevírací předpisy přijdou jako **normální saldo pohyby** (zdroj =
-otevírací doklad, prochází stejným generátorem z deníku). Tabulky nic
-speciálního nepotřebují; `fiscal_year`-scoping ano.
+**Generátor otevíracích dokladů je mimo scope tohoto návrhu** (samostatný
+task, M3). Pro saldo z toho plyne jen: otevírací předpisy přijdou jako
+**normální saldo pohyby** (zdroj = otevírací doklad, prochází stejným
+generátorem z deníku) a spustí trigger §5.2 — platba nového období za starý
+předpis, která čekala na clearingu, se přeúčtuje sama. Na importovaném DS
+je zdrojem otevíracích předpisů import ze starého Shipardu.
 
 ---
 
-## 8. Mimo scope
+## 8. Opravy salda — jen interními doklady (D6)
 
-- **Matcher (alokační algoritmus)** — §5; samostatná Fáze 3 s vlastním designem.
+Automaty **píší jen do dokladů** (D2): každý automat (dohledání symbolů,
+detekce opakovaných plateb) zapisuje výsledek do zdrojového dokladu nebo
+transakce (efektivní symboly), nikdy do vedlejší tabulky; deník se pak jen
+přegeneruje a případ se přepočítá sám.
+
+Opravy salda dělá uživatel **výhradně doklady**, v tomto pořadí:
+
+1. **symboly na transakci** (efektivní VS/SS, T3) — platba s překlepem
+   v symbolu;
+2. **symboly na předpisu** (faktuře) — doklad měl symbol špatně;
+3. **interní doklad** — přesun mezi klíči, haléřové vyrovnání, odpis,
+   zápočet. Řádky na bankovní transakci se nezavádějí; automat se
+   o vícecílové platby nepokouší.
+
+Průvodci v UI (T5): sem patří jen princip. Každá oprava je vidět v deníku
+a je dohledatelná zpětně — proto žádné ruční „přepárování" mimo doklady.
+
+---
+
+## 9. Mimo scope
+
 - **Zálohy** — přijaté/poskytnuté, odpočet zálohy na fakturu, zdaněné zálohy
   (314900/324900). Účty jsou v osnově, skupiny v seedu; logika odpočtu je
-  součást matcheru/pozdější fáze.
-- **Zápočty** (vzájemné pohledávky/závazky), **kurzové rozdíly** (vlastní engine),
-  **přeplatky / platby bez předpisu**.
+  pozdější fáze.
+- **Zápočty**, **kurzové rozdíly** (vlastní engine, §6).
 - **Generátor otevíracích dokladů období** — §7.
-- **Explicitní entita „případ"** — ruční seskupení faktur s různým VS do jednoho
-  případu, poznámka k případu. Fáze 1–2 jede na odvozeném case (bucket); entita
-  je možné rozšíření.
+- **Opakované platby** (D7, T4): detekce, doplnění SS, pravidlo (3) z D5;
+  generování splátek a období od–do později.
+- **Efektivní symboly na transakci** (D5, T3): originál z výpisu neměnný,
+  efektivní editovatelný, deník razítkuje efektivní; pravidla dohledání 2–3.
+- **Průvodci oprav** (D6, T5), **dashboard signál** (D8, T6: existence
+  úhrady na clearingu s klíčem faktury = silný signál, že faktura je
+  v pořádku).
 - **Příkazy k úhradě / upomínky / penalizace** — navazují na saldo, ale samostatně.
 
 ---
 
-## 9. Fáze implementace
+## 10. Fáze implementace
 
 **Fáze 0 — prerekvizity** (mimo vlastní accbal) ✓ hotovo:
 
@@ -679,58 +736,41 @@ speciálního nepotřebují; `fiscal_year`-scoping ano.
 - přejmenování `symbol1/2/3 → payment_reference/specific_symbol/constant_symbol`
   na `economy_bank_transactions` + parsery + exchange + applier (§3.6)
 
-> Událost `journalWritten` (§4.1) přesunuta z Fáze 0 do **Fáze 2a** — staví se
-> až s prvním konzumentem (generátorem), ne spekulativně bez odběratele.
+**Fáze 1 — nastavení saldokont** ✓ hotovo: modul `economy.accbal`, tabulky
+416/417 + formuláře + viewer, seed skupin + účtů (vč. clearingu jako
+„Nespárované platby") + provisioner, import/export nastavení.
 
-**Fáze 1 — nastavení saldokont** ✓ hotovo:
+**Fáze 2a — událost `journalWritten` (core)** ✓ hotovo: interface +
+dispatcher + loader + registrace `journalEventHandlers`, emise z obou
+účtovacích enginů.
 
-- modul `economy.accbal`, tabulky `economy_accbal_balances` (416),
-  `economy_accbal_balance_accounts` (417) + formuláře + viewer
-- seed skupin + účtů (vč. clearingu jako „Nespárované platby") + provisioner
-- import/export nastavení (vzor starého `AccBalances{Import,Export}Wizard`)
+**Fáze 2b — generování pohybů z deníku** ✓ hotovo: tabulka 418, handler na
+`journalWritten` → generátor (UPSERT dle stabilního klíče, §4.3), beforeDelete
+úklid, viewer ledgeru; UI vylepšení (chip lišta, sidebar položky, grid per
+partner — `accbal-ledger-viewgroup-chips.md`, `accbal-nav-items.md`,
+`accbal-ledger-grid.md`).
 
-**Fáze 2a — událost `journalWritten` (core)** ✓ hotovo:
+**Fáze 3 — matcher** ✓ historicky hotovo, **zrušeno revizí #69**: tabulka
+419, `AllocationPlanner`, `BalanceMatcher`, matched operace (rozhodnutí
+#13–#17). Odstraněno v T2.
 
-- mechanismus `journalWritten` (interface + dispatcher + loader + registrace
-  `journalEventHandlers`), zrcadlo `documentEventHandlers` (§4.1)
-- emise z obou účtovacích enginů (po (pře)zápisu i vymazání deníku),
-  proplumbování dispatcheru do míst konstrukce enginu
+**Revize #69** (D1–D11):
 
-**Fáze 2b — generování pohybů z deníku** ✓ hotovo:
+| # | Task | Rozhodnutí | Stav |
+|---|---|---|---|
+| T1 | `bank-payment-routing.md` | D3, D4, D8 (+ D9) — `OpenItemLookup`, routing v enginu, trigger, `accbal-match` + `/_accbal/match` v2 | ✓ 2026-09-13 |
+| T2 | `accbal-symbol-key.md` | D1, D10, D11 — `CaseQuery`, normalizace klíče, `idx_case`, období v lookupu, odstranění alokační vrstvy, viewer případů, přepis tohoto dokumentu | ✓ 2026-09-14 |
+| T3 | `bank-effective-symbols` | D2, D5 — originál/efektivní symboly, pravidla dohledání 2–3 | — |
+| T4 | `accbal-recurring-payments` | D7 — detekce opakovaných plateb, doplnění SS | — |
+| T5 | `accbal-correction-wizards` | D6 — průvodci oprav interními doklady | — |
+| T6 | dashboard signál (#49) | D8 — karta přijaté faktury s úhradou na clearingu | — |
 
-- tabulky `economy_accbal_ledger` (418), `economy_accbal_allocations` (419)
-- handler na `journalWritten` → generátor pohybů (UPSERT dle stabilního klíče,
-  §4.3) vč. clearing skupiny + beforeDelete úklid ledger/allocations
-- viewer ledgeru (read-only, filtry: skupina, partner, VS, jen otevřené)
-
-**Fáze 3 — matcher** ✓ hotovo (§5):
-
-- config: matched operace `payment.in.matched`/`payment.out.matched` + řádky
-  předpisu `bank.matched.in → 311` / `bank.matched.out → 321` (§5.1)
-- `AllocationPlanner` — čisté jádro: routing (§5.2) + FIFO/VS (§5.3), konzervativní
-  brána (1 haléř), proporční domácí částka + haléřové dorovnání; `enforceGate`
-  přepíná clearing→311 (brána) vs. best-effort rematch
-- `BalanceMatcher` — `matchTransaction`/`matchAll`/`rematchBucket`/`unmatch`,
-  kontrakt přes `operation` + `accountTransaction` (§5.1), monotónní průchod;
-  auto/ruční allocations, přegenerace bucketu vs. úplné rozpárování (§5.4/5.5)
-- CLI `AccbalMatchCommand` (`accbal-match`) s `--dry-run` (§5.6)
-
-**Revize #69 — T1 `bank-payment-routing`** ✓ hotovo (2026-09-13, #19):
-`OpenItemLookup` v core + `LedgerOpenItemLookup`, routing v bankovním enginu,
-`ClearingRerouteHandler` + `ClearingRouter`, `accbal-match` a
-`POST /_accbal/match` v2 (§5.7); matched operace zrušeny. Následuje T2
-`accbal-symbol-key` (D1), T3 `bank-effective-symbols` (D2, D5), T4
-opakované platby (D7), T5 průvodci oprav (D6), T6 dashboard (D8).
-
-Pozdější (mimo Fázi 3): UI párování + bucket pohled (kdo kolik dluží),
-auto-trigger po ingestaci/cronu.
-
-Pozdější: zálohy, zápočty, kurzové rozdíly, otevírací doklady období, multi-cíl,
-explicitní case entita, partner resolution při ingestaci.
+Pozdější: zálohy, zápočty, kurzové rozdíly, otevírací doklady období,
+partner resolution při ingestaci.
 
 ---
 
-## 10. Log rozhodnutí
+## 11. Log rozhodnutí
 
 1. Saldokonto = **vlastní modul `economy.accbal`** (závisí na accounting + bank),
    ne rozšíření accounting — ten zůstává „čistě deník".
@@ -744,44 +784,39 @@ explicitní case entita, partner resolution při ingestaci.
 4. Nastavení saldokont (skupiny + účty s MD/DAL + znaménko + filtr částky)
    přebráno ze starého Saldo2 — nutné kvůli sémantickému přesměrování
    (dobropis 311 záporně → Závazky, §3.2).
-5. **Pohyb vs. párování odděleno**: `ledger` = ryzí pohyby (bez request/payment/
-   residual), `allocations` = vazby úhrada↔předpis s rozúčtovanou částkou.
-   Ruší starý párovací klíč zašitý do journal řádku → řeší „chaos stejných VS".
+5. ~~**Pohyb vs. párování odděleno**: `ledger` = ryzí pohyby, `allocations` =
+   vazby úhrada↔předpis s rozúčtovanou částkou.~~ **Nahrazeno #69 D1 (#20)**
+   — párování je agregát klíče, žádná vrstva vazeb.
 6. **Identita pohybu = stabilní klíč zdroje** `(source_kind, source_id, balance,
    bal_side, account_number)`, ne `journal_row.id` (ten je nestabilní přes
-   DELETE+INSERT deníku). UPSERT podle něj drží allocations přes přeúčtování.
+   DELETE+INSERT deníku). UPSERT podle něj drží `id` pohybu přes přeúčtování
+   (odkazy z UI, `row_id` případu).
 7. **Clearing varianta B**: clearing účty (261200/261300) jsou saldo-skupina
-   „Nespárované platby"; matcher má jediný zdroj kandidátů (ledger), přechod
-   clearing → 311 řeší re-derivace po `journalWritten`.
+   „Nespárované platby"; router má jediný zdroj kandidátů (ledger), přechod
+   clearing → účet předpisu řeší re-derivace po `journalWritten`.
 8. **Trigger = událost `journalWritten`** z účtovacích enginů, ne `stateChanged`.
-   Drží „saldo zná jen deník" a automaticky pokrývá přeúčtování po spárování.
-9. **Case je odvozený** (bucket `partner+balance+currency`), ne entita.
-   Explicitní case entita je možné pozdější rozšíření.
+   Drží „saldo zná jen deník" a automaticky pokrývá přeúčtování.
+9. ~~**Case je odvozený** (bucket `partner+balance+currency`), ne entita.~~
+   **Nahrazeno #69 D1/D11 (#20, #27)** — případ je agregát klíče
+   `(balance, fiscal_year, partner, VS, SS, currency)`; entita ani sloupec
+   se nezavádí.
 10. Duální měna → dvojí uzavření (obchodní / účetní); generátor kurzových
     rozdílů mimo scope.
 11. **Bankovní symboly přejmenovat** na `payment_reference/specific_symbol/
     constant_symbol` (varchar 35) — párovací klíč musí být porovnatelný
     napříč doklad↔transakce.
-12. Matcher (Fáze 3) nadesignován samostatně — rozhodnutí #13–#17.
-13. **Spárovanost = hodnota `operation`** (D1). Matcher nastaví matched operaci
-    (`payment.in.matched` → 311 / `payment.out.matched` → 321) a zavolá stávající
-    `accountTransaction`; clearing → 311/321 je výstup řetězce `operation → cat →
-    maska`. Nula změn v enginu, accbal seedu i deníku; reverzibilní a idempotentní
-    přes re-derivaci (#7).
-14. **Konzervativní routing** (D2). Směr transakce určuje cíl (příjem → 311,
-    výdaj → 321), partner povinný, jen stejná měna. Platba opouští clearing jen
-    když je celá alokovatelná; jinak zůstává (signál) — tím i přeplatky zůstávají
-    na clearingu.
-15. **Matcher = samostatný průchod**, ne handler `journalWritten` (D3) — rozpojuje
-    smyčku reaccount → událost → matcher. Vstup: CLI dávka s `--dry-run`, UI a
-    auto-trigger později. Běh monotónní (jen přidává páry).
-16. **FIFO dle splatnosti, VS jako signál** (D4). VS přebije FIFO jen při
-    jednoznačné shodě na jeden předpis (léčí „chaos stejných VS"); alokace v měně
-    dokladu, domácí proporčně z platby; haléřové dorovnání na poslední alokaci.
-17. **Dvě vrstvy rozpárování** (D5). Auto allocations (`created_by=0`) jednorázové,
-    ruční (`1`) posvátné. Přegenerace bucketu = smaž auto + spusť znovu (platby
-    zůstanou na 311). Úplné rozpárování = `operation` zpět + reaccount (311 →
-    clearing, cascade smaže i ruční) — vědomá destruktivní akce.
+12. Matcher (Fáze 3) nadesignován samostatně — rozhodnutí #13–#17
+    (**všechna nahrazena #69**).
+13. ~~**Spárovanost = hodnota `operation`.**~~ **Nahrazeno #69 D3 (#19)** —
+    matched operace zrušeny, o účtu úhrady rozhoduje engine dohledáním.
+14. ~~**Konzervativní routing** s branou „celá alokovatelná".~~ **Nahrazeno
+    #69 D3/D9 (#19, #25)** — reziduální routing: stačí otevřené reziduum > 0.
+15. ~~**Matcher = samostatný průchod.**~~ **Nahrazeno #69 D4 (#19)** —
+    trigger po zaúčtování předpisu + dávka routeru.
+16. ~~**FIFO dle splatnosti, VS jako signál.**~~ **Nahrazeno #69 D1/D5
+    (#20, #21)** — VS je součást klíče, žádná alokace.
+17. ~~**Dvě vrstvy rozpárování** (auto/ruční allocations).~~ **Nahrazeno #69
+    D1/D6 (#20, #22)** — opravy jen interními doklady.
 18. **Clearing infrastruktura na migrovaném DS** (§4.5). Účty 261200/261300 +
     skupina `unmatched_payments` jsou infrastruktura modulů `bank`/`accbal`, ne
     migrovaná data — `ClearingInfrastructureProvisioner` je zajistí
@@ -791,31 +826,70 @@ explicitní case entita, partner resolution při ingestaci.
     pravdy = inline konstanty provisioneru (= enginový kontrakt), hlídané testem
     na drift proti seedům.
 19. **Routing je věc účtování transakce, ne salda** (#69 D3/D4/D8, T1;
-    nahrazuje #13–#17). O účtu úhrady (311/321 vs. clearing) rozhoduje
+    nahrazuje #13–#15). O účtu úhrady (311/321 vs. clearing) rozhoduje
     `BankTransactionAccountingEngine` dohledáním otevřeného předpisu přes
-    `OpenItemLookup` (rozhraní v core, implementace `LedgerOpenItemLookup`
-    v accbal, registrace `openItemLookup` v module.jsonc): klíč (partner, VS,
-    SS, měna) + směr → skupiny z nastavení saldokont (řádek předpisu na
-    přirozené straně směru: příjem MD, výdaj DAL; cílem **všechny** předpisové
-    účty těchto skupin — na seedu 311, resp. 321/325/331/336/341/342/345/379 —
-    ne jen 311/321, upřesnění po ověření 2026-09-13; dobropisové řádky
-    s `modify_sign` mimo hru), reziduum Σ předpisy − Σ úhrady > 0 (vlastní transakce
-    vyloučena → reaccount idempotentní, bez paměti), prázdný VS = miss,
-    přeplatek se routuje. `operation` spárovanost nenese, matched operace
-    zrušeny. „Platba dřív než faktura": `ClearingRerouteHandler` (za
-    `JournalLedgerHandler`, jen `doc`) → `ClearingRouter::rerouteForKeys`;
-    dávka `rerouteAll` v CLI/endpointu (§5.7). Allocations se nezapisují.
+    `OpenItemLookup` (§5.1): klíč + směr → skupiny z nastavení saldokont
+    (řádek předpisu na přirozené straně směru; cílem **všechny** předpisové
+    účty těchto skupin — na seedu 311, resp. 321/325/331/336/341/342/345/379,
+    upřesnění 2026-09-13; dobropisové řádky s `modify_sign` mimo hru),
+    reziduum > 0 (vlastní transakce vyloučena → reaccount idempotentní, bez
+    paměti), prázdný VS = miss. `operation` spárovanost nenese. „Platba dřív
+    než faktura": `ClearingRerouteHandler` (za `JournalLedgerHandler`, jen
+    `doc`) → `ClearingRouter::rerouteForKeys`; dávka `rerouteAll`
+    v CLI/endpointu (§5.7).
+20. **Symbolový klíč — případ je agregát** (#69 D1, komentář issue
+    2026-09-12; T2, nahrazuje #5, #9, #16, #17). Případ = klíč
+    `(saldokonto, období, partner, VS, SS, měna)`, stav Σ předpisy − Σ úhrady
+    z ledgeru; vrstva allocations (tabulka 419, matcher) zrušena. Důvody:
+    deník jediný zdroj pravdy, vysvětlitelnost, srovnatelnost se starým
+    systémem (§1). Jediná definice v `CaseQuery` (§3.4).
+21. **Automaty píší jen do dokladů; originální a efektivní symboly** (#69
+    D2, D5; T3). Pravidla dohledání (1) přesná shoda klíče — dnes, (2)–(3)
+    s T3/T4, (4) clearing.
+22. **Opravy salda výhradně interními doklady** (#69 D6; T5) — pořadí
+    symboly na transakci → na předpisu → doklad (§8).
+23. **Opakované platby v M2 jen minimálně** (#69 D7; T4): detekce, doplnění
+    SS na přijaté faktury, pravidlo (3).
+24. **Sdílený lookup** (#69 D8; T6): totéž rozhraní použije dashboard
+    přijatých faktur (#49).
+25. **Reziduální routing** (#69 D9, komentář 2026-09-13; potvrzeno
+    2026-09-13): platba se přeúčtuje jen když má klíč kladný zůstatek;
+    přeplatek a úhrada bez předpisu zůstávají na clearingu jako signál
+    (§5.3). Ne existenční model.
+26. **Normalizace klíče při zápisu ledgeru** (#69 D10; T2): symboly `TRIM`,
+    prázdné = `NULL`, měna malými písmeny — rovnost klíče přes složený index
+    `idx_case` bez funkcí ve `WHERE`, žádný uložený hash (§3.3).
+27. **Účetní období v klíči** (#69 D11; T2): případ i lookup jsou scoped na
+    `fiscal_year`; `OpenItemLookup::findOpenRequest` dostává období
+    (`null` = bez klíče → miss); zůstatky přenáší otevírací doklad, po jehož
+    zaúčtování trigger přeúčtuje čekající platbu (§5.5, §7).
+28. **Viewer po případech je výchozí vstup** (T2): sidebar položky saldokont
+    otevírají případy, pohyby jsou detail (akce „Pohyby případu" s chipem
+    a viditelnými filtry partner / VS / SS — prefixové, uživatel je může
+    uvolnit; žádný skrytý exaktní filtr). „Jen otevřené" výchozí přes
+    obrácený checkbox „Včetně uzavřených" (frontend nemá výchozí hodnoty
+    filtrů); typ otevřenosti samostatný filtr; doc-state konvence bez nové
+    barvy (§3.4).
+29. **Zůstatek případu na pohybu korelovaným subdotazem** (T2): LEFT JOIN na
+    derived GROUP BY s `<=>` vrací v MariaDB 10.11 při `split_materialized`
+    NULL (bodový dotaz) — `CaseQuery::residualSubquerySql` (§3.4).
+30. **tableId 419 se nerecykluje** (T2) — vyřazená ID v
+    `table-definitions.md`.
 
 ---
 
-## 11. Otevřené body
+## 12. Otevřené body
 
 - **Partner resolution při ingestaci** — dohledání `partner` u bankovních
-  transakcí z protiúčtu (reverse lookup přes bankovní účty `base_persons`) zatím
-  není. Tvrdá závislost auto-matcheru (§5.2/5.6); na importovaných datech ze
-  starého Shipardu partnera máme, takže neblokuje odladění Fáze 3.
-- **Výkon hromadné re-derivace** — generátor i matcher běží per zdroj/platbu;
-  pro tisíce zdrojů zvážit dávkový režim (analogie `bank.md` §11 „account all").
-  Per-platba zpracování matcheru je ale přirozeně nezávislé.
-- **Ruční párovací UI** — guard „ruční allocation ≤ min(reziduum předpisu, zbytek
-  platby)", výběr předpisů, záměrný přeplatek / kříž měn. Doladit s UI matcheru.
+  transakcí z protiúčtu (reverse lookup přes bankovní účty `base_persons`)
+  zatím není. Bez partnera úhrada zůstává na clearingu; na importovaných
+  datech ze starého Shipardu partnera máme.
+- **Výkon `GROUP BY` nad ledgerem** (viewer případů) pro tisíce partnerů —
+  měřit na importovaném DS po nasazení; případně materializovat zůstatky až
+  podle čísel, ne předem. Per-řádkový subdotaz zůstatku (viewer pohybů) je
+  bodové dohledání přes `idx_case`.
+- **Výkon hromadné re-derivace** — generátor běží per zdroj; pro tisíce
+  zdrojů zvážit dávkový režim (analogie `bank.md` §11 „account all").
+- **Generátor otevíracích dokladů období** (§7) — do té doby import ze
+  starého Shipardu; ověřit, že importovaný otevírací doklad nese partnera
+  a VS/SS na řádcích.

@@ -813,8 +813,9 @@ Tentýž princip (deklarace v core, implementace v modulu, registrace v
   předpisu — `docs/accbal.md` §4.1, rozhodnutí #19).
 - **`openItemLookup: "FQCN"`** (jeden poskytovatel per DS) — rozhraní
   `Shipard\Core\Accounting\OpenItemLookup::findOpenRequest(partner, VS,
-  SS, měna, směr, [vyloučený zdroj]) → ?OpenItem{balance, accountNumber,
-  residual}`. Bankovní engine podle něj rozhoduje účet úhrady (účet předpisu
+  SS, měna, směr, období, [vyloučený zdroj]) → ?OpenItem{balance,
+  accountNumber, residual}` — klíč případu vč. účetního období (#69 D11,
+  `null` = bez klíče → miss). Bankovní engine podle něj rozhoduje účet úhrady (účet předpisu
   vs. clearing, `docs/bank.md` §6.1); DS bez poskytovatele má
   `NullOpenItemLookup`. Loader `OpenItemLookupLoader`; do handlerů ho vkládá
   `DocumentEventDispatcher` (`AbstractDocumentEventHandler::setOpenItems`),
