@@ -325,7 +325,10 @@ protected function buildSortedOrderBy(array $columnMap, string $default, string 
   refetch (výběr a drawer zůstávají — řazení nemění identitu záznamů).
 - Sort **přežívá** změnu viewGroup tabu / filtrů / hledání (je
   ortogonální); resetuje se při přepnutí vieweru a při přepnutí layoutu
-  na list (list má vlastní pevné řazení).
+  na list (list má vlastní pevné řazení). Filtry se při přepnutí vieweru
+  vrací na výchozí hodnoty (`default` v definici filtru, `frontend.md`
+  § Filtry vieweru) — footer (D7) i skupinové součty je počítají nad
+  takto filtrovaným setem.
 
 ### 7.2 Toggle layoutů (D10)
 

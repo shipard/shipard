@@ -53,4 +53,29 @@ final class DbFiscalPeriodProvider implements FiscalPeriodProvider
         }
         return $out;
     }
+
+    public function yearForDate(string $date): ?array
+    {
+        $row = $this->db->fetchRow(
+            'SELECT [id], [name] FROM [economy_codebooks_fiscal_years]'
+            . ' WHERE [docState] != %i AND [date_begin] <= %s AND [date_end] >= %s'
+            . ' ORDER BY [date_begin] DESC LIMIT 1',
+            self::DOC_STATE_DELETED, $date, $date,
+        );
+        return $row !== null ? ['id' => (int) $row['id'], 'name' => (string) $row['name']] : null;
+    }
+
+    public function years(): array
+    {
+        $rows = $this->db->fetchAll(
+            'SELECT [id], [name] FROM [economy_codebooks_fiscal_years]'
+            . ' WHERE [docState] != %i ORDER BY [date_begin] DESC, [id] DESC',
+            self::DOC_STATE_DELETED,
+        );
+        $out = [];
+        foreach ($rows as $row) {
+            $out[] = ['id' => (int) $row['id'], 'name' => (string) $row['name']];
+        }
+        return $out;
+    }
 }

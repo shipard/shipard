@@ -28,6 +28,7 @@
   import { navigationStore } from '../../stores/navigation.svelte.js';
   import { layoutStore } from '../../stores/layout.svelte.js';
   import { getViewerLayout, setViewerLayout } from '../../utils/viewerLayout.js';
+  import { supportedFilters, initialFilterValues } from '../../utils/viewerFilters.js';
   import { iconTable, iconList } from '../../icons.js';
   import { untrack } from 'svelte';
 
@@ -122,12 +123,10 @@
   // Plain objekt id → string hodnota; prázdná hodnota = filtr neaktivní
   // (klíč se maže). Definice renderuje ViewerFilters; typy, které neumí
   // (historický 'enum'), se odfiltrují — bar se ukáže jen když zbude něco
-  // k zobrazení.
+  // k zobrazení. Výchozí hodnoty (`default` v definici) a precedence
+  // pending filtrů z open_viewer řeší utils/viewerFilters.js.
   let activeFilters = $state({});
-  const SUPPORTED_FILTER_TYPES = ['select', 'text', 'checkbox'];
-  let viewerFilters = $derived(
-    (meta?.filters ?? []).filter(f => SUPPORTED_FILTER_TYPES.includes(f.type))
-  );
+  let viewerFilters = $derived(supportedFilters(meta?.filters));
 
   // --- Detail state ---
   let selectedRowId = $state(null);
@@ -873,10 +872,9 @@
 
     // Pending custom filtry (akce open_viewer s `filters`) — předvyplní
     // panel filtrů a jdou do prvního fetche; stejný jednorázový kontrakt.
+    // Slévají se s výchozími hodnotami filtrů až po fetchMeta() níže
+    // (defaulty zná jen meta); pending vítězí.
     const pendingFilters = untrack(() => navigationStore.consumePendingFilters());
-    if (pendingFilters != null) {
-      activeFilters = { ...pendingFilters };
-    }
 
     // Sequence: meta first (sets activeSeriesId from numberSeries), then rows
     // with that filter, then optional pending-record detail.
@@ -912,10 +910,13 @@
         ?? 'active';
       activeViewGroup = viewGroup;
 
-      // Filtry se právě resetovaly na {} (nebo na pending filtry z akce
-      // open_viewer) — předáváme lokální hodnotu, protože tento $effect
-      // nesmí číst jiný $state než tab.viewerId.
-      fetchRowsExplicit(viewerId, '', viewGroup, activeSeriesId, pendingFilters ?? {}, 0, layout).then(() => {
+      // Počáteční filtry = výchozí hodnoty z meta.filters (`default`)
+      // přepsané pending filtry z akce open_viewer (pending > default).
+      // Předáváme lokální hodnotu, protože tento $effect nesmí číst jiný
+      // $state než tab.viewerId.
+      const filters = initialFilterValues(untrack(() => meta)?.filters, pendingFilters);
+      activeFilters = filters;
+      fetchRowsExplicit(viewerId, '', viewGroup, activeSeriesId, filters, 0, layout).then(() => {
         if (pendingRecord != null) {
           selectedRowId = pendingRecord;
           fetchDetail(pendingRecord);

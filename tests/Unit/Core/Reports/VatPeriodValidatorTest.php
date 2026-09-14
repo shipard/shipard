@@ -150,6 +150,16 @@ class VatPeriodValidatorTest extends TestCase
             {
                 return [];
             }
+
+            public function yearForDate(string $date): ?array
+            {
+                return null;
+            }
+
+            public function years(): array
+            {
+                return [];
+            }
         };
     }
 

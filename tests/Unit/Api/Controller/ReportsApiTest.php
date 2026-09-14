@@ -324,6 +324,16 @@ class ReportsApiTest extends TestCase
             {
                 return [['name' => '2026', 'months' => 12]];
             }
+
+            public function yearForDate(string $date): ?array
+            {
+                return null;
+            }
+
+            public function years(): array
+            {
+                return [];
+            }
         };
     }
 

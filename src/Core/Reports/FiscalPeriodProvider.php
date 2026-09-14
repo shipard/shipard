@@ -29,4 +29,23 @@ interface FiscalPeriodProvider
      * @return list<array{name: string, months: int}>
      */
     public function regularYears(): array;
+
+    /**
+     * Fiskální rok obsahující datum (`date_begin <= date <= date_end`,
+     * nesmazaný). Otevírací / uzavírací období jsou měsíce, ne roky —
+     * rok se vrací i pro 1. 1., které je zároveň datem otevíracího měsíce.
+     * Při překryvu vítězí rok s pozdějším začátkem.
+     *
+     * @return array{id: int, name: string}|null
+     */
+    public function yearForDate(string $date): ?array;
+
+    /**
+     * Všechny nesmazané fiskální roky, nejnovější první (`date_begin DESC`)
+     * — options filtru období ve viewerech a fallback „aktuální rok"
+     * ({@see \Shipard\Core\Viewer\FiscalYearFilter}).
+     *
+     * @return list<array{id: int, name: string}>
+     */
+    public function years(): array;
 }

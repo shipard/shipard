@@ -686,7 +686,8 @@ Viewer deklaruje filtry v PHP přes `TableViewer::getFilters()`; meta
 endpoint je vrací jako `filters` a `Viewer.svelte` z nich (pokud je aspoň
 jeden podporovaného typu) vykreslí filtr bar pod searchem. Hodnoty se
 posílají jako `filter[id]=value`; prázdná hodnota filtr ruší. Změna
-filtru resetuje stránkování; přepnutí vieweru filtry vynuluje.
+filtru resetuje stránkování; přepnutí vieweru filtry vrací na výchozí
+hodnoty (viz `default` níže).
 
 Podporované typy:
 
@@ -695,7 +696,8 @@ public function getFilters(): array
 {
     return [
         ['id' => 'fiscal_year', 'label' => 'Fiskální rok', 'type' => 'select',
-         'options' => [['value' => 3, 'label' => '2026']]],
+         'options' => [['value' => 3, 'label' => '2026']],
+         'default' => '3'],                         // výchozí hodnota (string)
         ['id' => 'fiscal_month', 'label' => 'Měsíc', 'type' => 'select',
          'parentFilter' => 'fiscal_year',          // závislý select
          'options' => [['value' => 15, 'label' => '5/2026', 'parent' => 3]]],
@@ -717,6 +719,20 @@ Jiné typy (historický `enum` v `AlertsViewer`) se přeskakují — bar se
 nezobrazí, dokud viewer nedeklaruje aspoň jeden podporovaný typ. Labely
 jdou z backendu (lokalizace přes `$this->language` / cfgItems), frontend
 překládá jen prázdnou option (`viewer.filters.all`).
+
+**Výchozí hodnota — `default`.** Definice může nést `'default' =>
+<hodnota>` (string pro `select` / `text`, `'1'` pro `checkbox`). Backend
+nic dalšího nedělá, hodnota jde klientovi v `meta.filters`;
+`utils/viewerFilters.js` (`initialFilterValues()`) z ní při otevření
+vieweru sestaví `activeFilters` a první fetch jde už s ní. Precedence:
+**`pendingFilters` z akce `open_viewer` > `default`** (`{...defaults,
+...pending}`) — volající, který chce jinou hodnotu, ji posílá explicitně;
+pending s prázdnou hodnotou default ruší. Default závislého selectu platí
+jen když má rodič hodnotu. Uživatel výchozí hodnotu mění a ruší jako
+každou jinou („— vše —" klíč maže); přepnutí vieweru ji obnoví. Jediný
+helper pro „aktuální fiskální rok" je `Core\Viewer\FiscalYearFilter`
+(rok obsahující dnešek, jinak nejnovější) — používá ho deník
+i saldokonto.
 
 První uživatel: `JournalViewer` (`economy.accounting.journal`) — fiskální
 rok/měsíc (závislý select), prefix účtu, partner, jen chyby.
@@ -822,11 +838,15 @@ tlačítek nad taby (vzor `AlertsViewer::buildDetailActions`):
   přes `pendingRecordId`). Volitelně `viewGroup` (chip, na kterém se má
   cílový viewer otevřít — `pendingViewGroup`) a `filters` (`{filterId:
   value}` custom filtrů cílového vieweru — `pendingFilters`; viewer je
-  převezme do `activeFilters`, takže jsou v panelu filtrů viditelné a
-  uživatel je může uvolnit, a použije je pro první fetch). Všechny tři
-  hinty jsou jednorázové a manuální navigace je maže. Používá deník pro
-  odkaz na zdrojový doklad a saldokonto (viewer případů → „Pohyby
-  případu" otevře pohyby s chipem saldokonta a filtry partner / VS / SS).
+  slije s výchozími hodnotami filtrů (`default`, pending vítězí) do
+  `activeFilters`, takže jsou v panelu filtrů viditelné a uživatel je
+  může uvolnit, a použije je pro první fetch). Cílový viewer s výchozím
+  filtrem (období) může `recordId` z jiného období schovat ze seznamu —
+  detail se otevře, řádek ne; volající proto posílá i období
+  (`fiscal_year`). Všechny tři hinty jsou jednorázové a manuální navigace
+  je maže. Používá deník pro odkaz na zdrojový doklad a saldokonto
+  (viewer případů → „Pohyby případu" otevře pohyby s chipem saldokonta,
+  obdobím případu a filtry partner / VS / SS).
 
 ### Registrace vieweru
 
