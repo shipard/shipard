@@ -130,7 +130,9 @@ accbal má `NullOpenItemLookup`, vše na clearing).
 (Pohledávky, Závazky; `BalancesNavigationProvider`) ho otevírají s fixním
 chipem; viewer **Saldo pohyby** (`economy.accbal.ledger`, `LedgerViewer`) je
 detail — akce „Pohyby případu" ho otevře s chipem saldokonta a filtry
-partner / VS / SS. Společný základ `AccbalViewerBase`. Detaily §3.4.
+období případu / partner / VS / SS. Oba pohledy startují s filtrem
+**Období = aktuální fiskální rok** (`default` filtru, `frontend.md`
+§ Filtry vieweru). Společný základ `AccbalViewerBase`. Detaily §3.4.
 
 ---
 
@@ -292,20 +294,32 @@ dobropisů.
   partner)`, sedí i přes hranici stránek); sloupce období, VS, SS, měna,
   předpisy, úhrady, zůstatek, zůstatek HC, splatnost, dní po splatnosti,
   počet pohybů, saldokonto; footer Σ předpisy / úhrady / zůstatek v HC.
-  Filtry: partner, VS, **typ** (dluh / přeplatek / úhrada bez předpisu /
-  uzavřeno — úhrady bez předpisu jsou na reimportovaném DS tisíce, musí
-  být samostatně filtrovatelné), po splatnosti, **včetně uzavřených**
-  (výchozí jen otevřené; frontend nemá výchozí hodnoty filtrů, proto je
-  checkbox obrácený). Klíčové filtry jdou před `GROUP BY`, případové nad
-  agregát. Zvýraznění doc-state konvencí (`design-system.md` §4): dluh bez
-  proužku, dluh po splatnosti `cancelled`, přeplatek / úhrada bez předpisu
-  `concept`, uzavřený `archive`. Detail (z `row_id`) + akce **Pohyby
-  případu** (`open_viewer` s `viewGroup` a `filters`, `frontend.md`).
+  Filtry: **období** (první; select roků nejnovější první, výchozí
+  aktuální fiskální rok = rok obsahující dnešek, jinak nejnovější —
+  `Core\Viewer\FiscalYearFilter` přes `AccbalViewerBase::periodFilter()`;
+  případ je na období vázaný (D11), bez filtru by tentýž klíč stál v deseti
+  letech pod sebou; „— vše —" ukáže všechna období, sloupec Období pak
+  rozlišuje), partner, VS, **typ** (dluh / přeplatek / úhrada bez
+  předpisu / uzavřeno — úhrady bez předpisu jsou na reimportovaném DS
+  tisíce, musí být samostatně filtrovatelné), po splatnosti, **včetně
+  uzavřených** (výchozí jen otevřené přes obrácený checkbox z doby před
+  `default`; zůstává, nové filtry ho nekopírují). Klíčové filtry včetně
+  období jdou před `GROUP BY` (`l.fiscal_year`, `idx_case`), případové
+  nad agregát; footer sdílí obě úrovně. Zvýraznění doc-state konvencí
+  (`design-system.md` §4): dluh bez proužku, dluh po splatnosti
+  `cancelled`, přeplatek / úhrada bez předpisu `concept`, uzavřený
+  `archive`. Detail (z `row_id`) + akce **Pohyby případu** (`open_viewer`
+  s `viewGroup` a `filters` = období případu + partner / VS / SS,
+  `frontend.md`) — období případu přebíjí výchozí rok pohybů, pohyby
+  klíče přes roky jsou dostupné uvolněním filtru.
 - **Viewer pohybů** `economy.accbal.ledger` (`LedgerViewer`) — sloupec
   „Zbývá" per pohyb zanikl; místo něj **Zůstatek případu** (stejná hodnota
-  na všech pohybech klíče, `residualSubquerySql`), filtr „Jen otevřené
-  případy" = otevřenost případu, filtry partner / VS / SS (prefixové),
-  řazení uvnitř partnera po klíči případu, detail se skupinou Případ.
+  na všech pohybech klíče, `residualSubquerySql`), filtr **období**
+  (stejný default jako u případů), „Jen otevřené případy" = otevřenost
+  případu, filtry partner / VS / SS (prefixové), řazení uvnitř partnera
+  po klíči případu, detail se skupinou Případ; akce „Otevřít řádek
+  deníku" posílá období pohybu (deník má týž výchozí rok, cílový řádek ze
+  staršího roku by jinak ze seznamu zmizel).
 
 ### 3.5 Prerekvizita: symboly + splatnost do účetního deníku
 
@@ -867,14 +881,22 @@ partner resolution při ingestaci.
     otevírají případy, pohyby jsou detail (akce „Pohyby případu" s chipem
     a viditelnými filtry partner / VS / SS — prefixové, uživatel je může
     uvolnit; žádný skrytý exaktní filtr). „Jen otevřené" výchozí přes
-    obrácený checkbox „Včetně uzavřených" (frontend nemá výchozí hodnoty
-    filtrů); typ otevřenosti samostatný filtr; doc-state konvence bez nové
-    barvy (§3.4).
+    obrácený checkbox „Včetně uzavřených" (frontend tehdy neměl výchozí
+    hodnoty filtrů — od bodu 31 má, checkbox zůstává); typ otevřenosti
+    samostatný filtr; doc-state konvence bez nové barvy (§3.4).
 29. **Zůstatek případu na pohybu korelovaným subdotazem** (T2): LEFT JOIN na
     derived GROUP BY s `<=>` vrací v MariaDB 10.11 při `split_materialized`
     NULL (bodový dotaz) — `CaseQuery::residualSubquerySql` (§3.4).
 30. **tableId 419 se nerecykluje** (T2) — vyřazená ID v
     `table-definitions.md`.
+31. **Období jako první filtr s výchozím aktuálním rokem** (doplněk po
+    T2, 2026-09-14, `tasks/viewer-filter-defaults-fiscal-year.md`):
+    výchozí hodnoty řeší framework (`default` v definici filtru,
+    `frontend.md`), ne další obrácené checkboxy; aktuální rok = rok
+    obsahující dnešek, jinak nejnovější (`FiscalYearFilter`, jediný
+    helper sdílený s deníkem). „Pohyby případu" posílají období případu
+    (`pendingFilters` > `default`) — mění bod 28: pohyby klíče přes roky
+    nejsou výchozí pohled, jsou dostupné uvolněním filtru (§3.4).
 
 ---
 

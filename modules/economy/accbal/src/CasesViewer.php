@@ -12,11 +12,15 @@ namespace Shipard\Module\Economy\Accbal;
  * `economy_accbal_ledger`, id řádku = `row_id` (MIN(id) pohybů klíče), ze
  * kterého detail klíč odvodí.
  *
- * Filtry ve dvou úrovních: klíčové (saldokonto = chip, partner, VS, SS)
- * jdou do vnitřního dotazu před GROUP BY; případové (otevřenost, typ,
- * po splatnosti) nad agregátem. „Jen otevřené" je výchozí — frontend nemá
- * výchozí hodnoty filtrů, proto je checkbox obrácený: **Včetně
- * uzavřených**. Typ otevřenosti (dluh / přeplatek / úhrada bez předpisu)
+ * Filtry ve dvou úrovních: klíčové (saldokonto = chip, období, partner,
+ * VS, SS) jdou do vnitřního dotazu před GROUP BY; případové (otevřenost,
+ * typ, po splatnosti) nad agregátem. Období je první filtr s výchozím
+ * aktuálním fiskálním rokem (`default`, AccbalViewerBase::periodFilter) —
+ * případ je na období vázaný (D11), bez filtru by tentýž klíč stál v deseti
+ * letech pod sebou; uvolnění „— vše —" ukáže všechna období. „Jen
+ * otevřené" je výchozí přes obrácený checkbox **Včetně uzavřených**
+ * (z doby před `default`; zůstává, nové filtry ho nekopírují). Typ
+ * otevřenosti (dluh / přeplatek / úhrada bez předpisu)
  * je samostatně filtrovatelný — na reimportovaném DS jsou tisíce úhrad bez
  * předpisu z pokladních a interních dokladů a nesmí se schovat mezi
  * přeplatky.
@@ -31,8 +35,10 @@ namespace Shipard\Module\Economy\Accbal;
  * „podívej se"), uzavřený `archive`.
  *
  * Akce detailu „Pohyby případu" otevře {@see LedgerViewer} s chipem
- * saldokonta a předvyplněnými filtry partner / VS / SS (viditelné,
- * uživatel je může uvolnit).
+ * saldokonta a předvyplněnými filtry období případu / partner / VS / SS
+ * (viditelné, uživatel je může uvolnit — pohyby klíče přes roky jsou
+ * dostupné uvolněním období, výchozí je období případu, aby se z případu
+ * 2024 neotevřely pohyby filtrované na aktuální rok).
  */
 class CasesViewer extends AccbalViewerBase
 {
@@ -113,6 +119,11 @@ class CasesViewer extends AccbalViewerBase
                     $rowConds[] = $cond;
                     $rowParams[] = $param;
                 }
+            } elseif ($id === 'fiscal_year') {
+                // Období je součást klíče → řádková úroveň (idx_case), menší
+                // agregát; výsledek totožný s podmínkou nad `c`.
+                $rowConds[] = 'l.`fiscal_year` = %i';
+                $rowParams[] = (int) $value;
             } elseif ($id === 'partner') {
                 $rowConds[] = 'p.`full_name` LIKE %s';
                 $rowParams[] = '%' . $value . '%';
@@ -290,7 +301,8 @@ class CasesViewer extends AccbalViewerBase
     /**
      * Detail případu: id řádku je pohyb klíče (row_id) → klíč → agregát.
      * Akce „Pohyby případu" otevře viewer pohybů s chipem saldokonta a
-     * viditelnými filtry partner / VS / SS.
+     * viditelnými filtry období případu / partner / VS / SS (období
+     * přebíjí výchozí aktuální rok cílového vieweru).
      */
     public function renderDetail(int $recordId): array
     {
@@ -339,6 +351,9 @@ class CasesViewer extends AccbalViewerBase
         $this->addItem($amountItems, $cs ? 'Pohybů' : 'Movements', $case['moves']);
 
         $filters = [];
+        if (($key['fiscal_year'] ?? null) !== null) {
+            $filters['fiscal_year'] = (string) $key['fiscal_year'];
+        }
         if ($partnerName !== '') {
             $filters['partner'] = $partnerName;
         }
@@ -375,6 +390,7 @@ class CasesViewer extends AccbalViewerBase
         $cs = $this->language === 'cs';
 
         return [
+            $this->periodFilter(),
             ['id' => 'partner', 'label' => 'Partner', 'type' => 'text'],
             ['id' => 'payment_reference', 'label' => $cs ? 'Variabilní symbol' : 'Payment reference', 'type' => 'text'],
             [
@@ -410,11 +426,5 @@ class CasesViewer extends AccbalViewerBase
             CaseQuery::KIND_UNREQUESTED => 'concept',
             default                     => 'archive',
         };
-    }
-
-    /** Dnešek pro dny po splatnosti — nic se neukládá, počítá se při renderu. */
-    protected function today(): \DateTimeImmutable
-    {
-        return new \DateTimeImmutable('today');
     }
 }

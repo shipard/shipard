@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Economy\Accbal;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Accbal\LedgerViewer;
+use Shipard\Tests\Fixtures\Reports\FakeFiscalPeriodProvider;
 
 /**
  * Viewer saldo pohybů — grid layout se skupinami per partner
@@ -67,6 +68,41 @@ class LedgerViewerTest extends TestCase
             $sql,
         );
         $this->assertStringContainsString('LIMIT 0, 51', $sql, 'pageSize + 1 kvůli hasMore');
+    }
+
+    public function testPeriodFilterIsFirstWithCurrentYearDefault(): void
+    {
+        $viewer = $this->makeViewer();
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $viewer->setFiscalPeriodProvider(new FakeFiscalPeriodProvider(
+            [['id' => 2, 'name' => '2027'], ['id' => 1, 'name' => '2026']],
+            [$today => ['id' => 1, 'name' => '2026']],
+        ));
+
+        $filters = $viewer->getFilters();
+
+        $this->assertSame(['fiscal_year', 'partner', 'payment_reference', 'specific_symbol', 'only_open'], array_column($filters, 'id'));
+        $this->assertSame('select', $filters[0]['type']);
+        $this->assertSame([2, 1], array_column($filters[0]['options'], 'value'));
+        $this->assertSame('1', $filters[0]['default']);
+    }
+
+    public function testFiscalYearFilterSharedByFooter(): void
+    {
+        $viewer = $this->makeViewer(fetchRowResult: []);
+        $filters = [['id' => 'fiscal_year', 'value' => '1']];
+
+        $viewer->selectRows(null, $filters, 0);
+        $viewer->renderGridFooter(null, $filters);
+
+        $this->assertCount(2, $this->queries);
+        foreach ($this->queries as $q) {
+            $this->assertStringContainsString('WHERE l.`fiscal_year` = %i', $q['sql']);
+            $this->assertSame([1], $q['params']);
+        }
+
+        $this->makeViewer()->selectRows(null, [], 0);
+        $this->assertStringNotContainsString('fiscal_year` =', $this->queries[0]['sql'], 'bez filtru všechna období');
     }
 
     public function testViewGroupFilterMatchesBalanceCode(): void

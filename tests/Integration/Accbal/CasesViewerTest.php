@@ -123,6 +123,40 @@ class CasesViewerTest extends IntegrationTestCase
 
         $partnerB = $viewer->selectRows(null, $this->filters(['payment_reference' => self::VS_PREFIX . 'B']), 0);
         $this->assertCount(1, $partnerB, 'filtr VS je prefixový, jde před GROUP BY');
+
+        $thisYear = $viewer->selectRows(null, $this->filters(['fiscal_year' => (string) $this->fiscalYear]), 0);
+        $this->assertCount(3, $thisYear, 'období fixtury = tytéž otevřené případy');
+        $this->assertSame(
+            $viewer->renderGridFooter(null, $this->filters()),
+            $viewer->renderGridFooter(null, $this->filters(['fiscal_year' => (string) $this->fiscalYear])),
+            'fixtura leží v jednom období → footer s filtrem období = footer bez něj',
+        );
+
+        $otherYear = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_years WHERE id <> %i AND docState != 90 ORDER BY id LIMIT 1',
+            $this->fiscalYear,
+        );
+        if ($otherYear !== null) {
+            $this->assertSame([], $viewer->selectRows(null, $this->filters(['fiscal_year' => (string) $otherYear['id']]), 0));
+        }
+    }
+
+    public function testDefaultPeriodFilterIsYearOfToday(): void
+    {
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $current = $this->db->fetchRow(
+            'SELECT id FROM economy_codebooks_fiscal_years WHERE docState != 90 AND date_begin <= %s AND date_end >= %s',
+            $today, $today,
+        );
+        if ($current === null) {
+            $this->markTestSkipped('DS nemá fiskální rok pro dnešek');
+        }
+
+        $period = $this->viewer()->getFilters()[0];
+
+        $this->assertSame('fiscal_year', $period['id']);
+        $this->assertSame((string) $current['id'], $period['default']);
+        $this->assertContains((int) $current['id'], array_column($period['options'], 'value'));
     }
 
     public function testFooterMatchesLedgerSumsForSameFilter(): void
@@ -167,7 +201,11 @@ class CasesViewerTest extends IntegrationTestCase
         $this->assertSame('open_viewer', $action['kind']);
         $this->assertSame('economy.accbal.ledger', $action['viewerId']);
         $this->assertSame('receivables', $action['viewGroup']);
-        $this->assertSame(['payment_reference' => self::VS_PREFIX . 'A1'], $action['filters'], 'partner bez osoby → jen VS');
+        $this->assertSame(
+            ['fiscal_year' => (string) $this->fiscalYear, 'payment_reference' => self::VS_PREFIX . 'A1'],
+            $action['filters'],
+            'období případu (přebíjí výchozí rok pohybů) + VS; partner bez osoby se neposílá',
+        );
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

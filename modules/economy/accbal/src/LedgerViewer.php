@@ -15,8 +15,9 @@ namespace Shipard\Module\Economy\Accbal;
  * všech pohybech klíče); filtr „Jen otevřené" = otevřenost případu.
  *
  * ViewGroups (chip lišta nahoře) = saldokonta z economy_accbal_balances,
- * identita přes `code`. Filtry: partner, VS, SS, jen otevřené — akce
- * „Pohyby případu" z vieweru případů je předvyplní.
+ * identita přes `code`. Filtry: období (výchozí aktuální fiskální rok,
+ * AccbalViewerBase::periodFilter), partner, VS, SS, jen otevřené — akce
+ * „Pohyby případu" z vieweru případů je předvyplní obdobím případu.
  *
  * Grid layout (výchozí, docs/viewer-grid.md §7.4): skupinové řádky per
  * partner (D6/D12 — řazení primárně dle partnera, sdílené i listem), uvnitř
@@ -88,6 +89,9 @@ class LedgerViewer extends AccbalViewerBase
                     $conditions[] = $cond;
                     $params[] = $param;
                 }
+            } elseif ($id === 'fiscal_year') {
+                $conditions[] = 'l.`fiscal_year` = %i';
+                $params[] = (int) $value;
             } elseif ($id === 'partner') {
                 $conditions[] = 'p.`full_name` LIKE %s';
                 $params[] = '%' . (string) $value . '%';
@@ -362,11 +366,17 @@ class LedgerViewer extends AccbalViewerBase
         }
         $journalRow = (int) ($r['journal_row'] ?? 0);
         if ($journalRow > 0) {
-            $actions[] = [
+            // Deník startuje s výchozím aktuálním rokem — období pohybu
+            // posíláme, aby cílový řádek ze staršího roku nezmizel ze seznamu.
+            $action = [
                 'id' => 'open_journal', 'label' => $cs ? 'Otevřít řádek deníku' : 'Open journal row',
                 'kind' => 'open_viewer', 'viewerId' => 'economy.accounting.journal', 'recordId' => $journalRow,
                 'variant' => 'secondary',
             ];
+            if (($r['fiscal_year'] ?? null) !== null) {
+                $action['filters'] = ['fiscal_year' => (string) (int) $r['fiscal_year']];
+            }
+            $actions[] = $action;
         }
         if ($actions !== []) {
             $detail['actions'] = $actions;
@@ -380,6 +390,7 @@ class LedgerViewer extends AccbalViewerBase
         $cs = $this->language === 'cs';
 
         return [
+            $this->periodFilter(),
             ['id' => 'partner', 'label' => 'Partner', 'type' => 'text'],
             ['id' => 'payment_reference', 'label' => $cs ? 'Variabilní symbol' : 'Payment reference', 'type' => 'text'],
             ['id' => 'specific_symbol', 'label' => $cs ? 'Specifický symbol' : 'Specific symbol', 'type' => 'text'],

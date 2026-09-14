@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Accbal\CaseQuery;
 use Shipard\Module\Economy\Accbal\CasesViewer;
+use Shipard\Tests\Fixtures\Reports\FakeFiscalPeriodProvider;
 
 /**
  * Viewer saldokonta po případech (#69 D1) nad mockem DB: GROUP BY klíče
@@ -196,12 +197,51 @@ class CasesViewerTest extends TestCase
         $this->assertSame([], $viewer->getToolbarActions(null), 'read-only');
     }
 
+    public function testPeriodFilterIsFirstWithCurrentYearDefault(): void
+    {
+        $viewer = $this->makeViewer();
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $viewer->setFiscalPeriodProvider(new FakeFiscalPeriodProvider(
+            [['id' => 2, 'name' => '2027'], ['id' => 1, 'name' => '2026']],
+            [$today => ['id' => 1, 'name' => '2026']],
+        ));
+
+        $period = $viewer->getFilters()[0];
+
+        $this->assertSame('fiscal_year', $period['id'], 'období je první filtr');
+        $this->assertSame('select', $period['type']);
+        $this->assertSame('Období', $period['label']);
+        $this->assertSame([2, 1], array_column($period['options'], 'value'), 'nejnovější první');
+        $this->assertSame('1', $period['default'], 'výchozí = rok obsahující dnešek');
+    }
+
+    public function testFiscalYearFilterIsKeyLevelConditionSharedByFooter(): void
+    {
+        $viewer = $this->makeViewer(fetchRowResult: []);
+        $filters = [['id' => 'fiscal_year', 'value' => '1'], ['id' => 'viewGroup', 'value' => 'receivables']];
+
+        $viewer->selectRows(null, $filters, 0);
+        $viewer->renderGridFooter(null, $filters);
+
+        foreach ($this->queries as $q) {
+            $this->assertStringContainsString(
+                'WHERE l.`fiscal_year` = %i AND b.`code` = %s GROUP BY',
+                $q['sql'],
+                'období před GROUP BY (součást klíče, idx_case)',
+            );
+            $this->assertSame([1, 'receivables'], $q['params']);
+        }
+
+        $this->makeViewer()->selectRows(null, [['id' => 'fiscal_year', 'value' => '']], 0);
+        $this->assertStringNotContainsString('fiscal_year` =', $this->queries[0]['sql'], 'uvolněný filtr = všechna období');
+    }
+
     public function testFiltersOfferKindsSeparately(): void
     {
         $filters = $this->makeViewer()->getFilters();
 
-        $this->assertSame(['partner', 'payment_reference', 'kind', 'overdue', 'include_closed'], array_column($filters, 'id'));
-        $kind = $filters[2];
+        $this->assertSame(['fiscal_year', 'partner', 'payment_reference', 'kind', 'overdue', 'include_closed'], array_column($filters, 'id'));
+        $kind = $filters[3];
         $this->assertSame('select', $kind['type']);
         $this->assertSame(
             [CaseQuery::KIND_DEBT, CaseQuery::KIND_OVERPAYMENT, CaseQuery::KIND_UNREQUESTED, CaseQuery::KIND_CLOSED],

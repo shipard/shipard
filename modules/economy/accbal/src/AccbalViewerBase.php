@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Accbal;
 
 use Shipard\Core\Viewer\TableViewer;
+use Shipard\Core\Viewer\UsesFiscalPeriods;
 
 /**
  * Společný základ read-only viewerů saldokonta ({@see CasesViewer} po
  * případech, {@see LedgerViewer} po pohybech): bez docStates, bez
  * toolbaru, grid jako výchozí layout, chip lišta saldokont jako viewGroups
- * (identita `code`) a sdílené formátování / popisky typů otevřenosti
- * případu — jedna definice pro oba pohledy.
+ * (identita `code`), filtr období s výchozím aktuálním fiskálním rokem
+ * (`UsesFiscalPeriods`, první filtr obou pohledů) a sdílené formátování /
+ * popisky typů otevřenosti případu — jedna definice pro oba pohledy.
  */
 abstract class AccbalViewerBase extends TableViewer
 {
+    use UsesFiscalPeriods;
+
     protected ?string $docStatesCfgItem = null;
 
     /**
@@ -65,6 +69,12 @@ abstract class AccbalViewerBase extends TableViewer
     {
         $groups = $this->getViewGroups();
         return $groups !== [] ? $groups[0]['id'] : 'all';
+    }
+
+    /** Filtr období (první filtr obou pohledů): select roků, výchozí aktuální rok. */
+    protected function periodFilter(): array
+    {
+        return $this->fiscalYearFilter($this->language === 'cs' ? 'Období' : 'Period');
     }
 
     /**
