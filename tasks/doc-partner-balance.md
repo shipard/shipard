@@ -1,6 +1,10 @@
 # Osoba pro saldokonto — platební terminály a brány, způsoby dopravy, 311 místo 261400
 
-**Stav:** naplánováno
+**Stav:** hotovo — implementace, testy a dokumentace 2026-09-15 (4 commity);
+ds-upgrade na dev DS 4l3j (tabulky, sloupce, 315 v Pohledávkách), unit
+i integrační sada zelené. Zbývá ruční proklik UI, nasazení na alfu
+(`ds-upgrade` + `accbal-regenerate --all` na DS s doklady kartou) a
+navazující import v `old_shipard`.
 **Issue:** #72 (rozhodnutí D1–D6 v komentáři 2026-09-15); souvisí s #59 (karty
 přes 261400 — tímto taskem nahrazeno) a #69 (saldokonto — klíč partner + VS).
 **Milník:** M2 (bez toho se DS `btpg-p` neporovná se starým systémem).
@@ -236,15 +240,42 @@ skupiny, ne prefix — #69 oprava).
 
 ## Hotovo když
 
-- [ ] Prodejka / PD / FVB kartou, bránou nebo dobírkou zaúčtuje pohledávku 311
+- [x] Prodejka / PD / FVB kartou, bránou nebo dobírkou zaúčtuje pohledávku 311
       za protistranou terminálu / brány / dopravce s VS = číslo dokladu;
       261400 se neúčtuje.
-- [ ] Ruční plátce na FV/FP funguje a odvození ho nepřepíše.
-- [ ] 315 je součástí saldokonta Pohledávky i na existujících DS.
-- [ ] Testy z §9 zelené (`vendor/bin/phpunit --filter …`), `ds-upgrade` na
+- [x] Ruční plátce na FV/FP funguje a odvození ho nepřepíše.
+- [x] 315 je součástí saldokonta Pohledávky i na existujících DS
+      (`BalancesProvisioner` doplňuje chybějící účty, i pod `skipProvisioning`).
+- [x] Testy z §9 zelené (`vendor/bin/phpunit --filter …`), `ds-upgrade` na
       dev DS projde, `CashAccountingRulesTest` zelený.
-- [ ] Dokumentace a help aktualizované, `tasks/README.md` + `help/` index
+- [x] Dokumentace a help aktualizované, `tasks/README.md` + `help/` index
       přegenerované.
+
+## Stav implementace (2026-09-15)
+
+Odchylky a doplňky proti zadání:
+
+- **Povinný plátce i na příjmovém PD** kartou / dobírkou / bránou
+  (`CashDeskDocumentBase::validate`, `partner_balance_required`), ne jen na
+  prodejce — 311 bez dlužníka by se nedalo spárovat; DS bez terminálů
+  projde, jakmile má doklad partnera (rozhodnuto při implementaci).
+- **`PartnerBalanceResolver`** (`modules/docs/core/src/`) je sdílená autorita
+  odvození: volá ho `validate()` i `beforeSave()` (validate běží dřív) a
+  formulář pro živý náhled plátce v `recalculate`.
+- **Kanonický formát** dostal `balanceParty` (ruční plátce importu,
+  `partner_balance_manual = 1`) a `payment.method` `paymentGateway`; kopie
+  schématu v mail profilu aktualizována. `terminalCode` / `transportCode`
+  až s navazujícím importním taskem.
+- **Checkbox spouští reload** (`FormElement.svelte`) — do té doby
+  `triggers` u checkboxu nefungoval.
+- Pokladní doklad dál povoluje jen hotově / kartou; předpis `cash` má
+  `$in [2, 3, 5]` pro budoucí rozšíření.
+- `BalancesProvisioner` doplňuje chybějící účty do existující skupiny a pod
+  `skipProvisioning` běží v režimu „jen doplnění" (nové skupiny nezakládá).
+- Detail dokladu ve vieweru ukazuje řádek **Plátce**, liší-li se od partnera.
+
+Nasazení na DS s doklady kartou: `ds-upgrade`, pak přeúčtovat doklady
+kartou (`doc-reaccount` / reimport) a `accbal-regenerate --all`.
 
 ## Mimo scope (navazuje)
 

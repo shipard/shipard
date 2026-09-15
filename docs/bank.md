@@ -550,7 +550,8 @@ přegenerace clearing → 311/321.
 12. Převody peněz (#59 Task D): operace `transfer.in/out` na kategorii
     `cash.transit` → 261100, sdílené s pokladním dokladem; bez saldokontní
     skupiny (nula po obou stranách je kontrola), matcher převody nevidí
-    (nejsou na clearingu). Karty pokladny odděleny na 261400. Směr pohybu
+    (nejsou na clearingu). Karty pokladny tranzit nemají (#72 D1: pohledávka
+    311 za protistranou terminálu, 261400 se neúčtuje). Směr pohybu
     vůči směru transakce hlídá validace dokumentu, roletka se nefiltruje.
 
 ---

@@ -2,7 +2,7 @@
 title: Vystavení faktury
 summary: Jak vystavit fakturu odběrateli — od Přidat po V pořádku — a proč ji z Shipardu zatím nedostaneš na papír.
 keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, vytisknout fakturu, tisk faktury, PDF faktury, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku]
-related: [osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
+related: [osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
 # Vystavení faktury
@@ -33,7 +33,10 @@ toho, kdo ti kolik dluží. Nebo zkoušíš, co Shipard u vydané faktury umí a
    - **Adresa partnera** se dá vybrat teprve po zvolení partnera. Bankovní
      účet odběratele se na vydané faktuře nezadává — platí on tobě.
    - **Způsob platby** — když zvolíš *Hotovost*, objeví se pod ním ještě
-     **Pokladna**.
+     **Pokladna**. U *Kartou* a *Platební bránou* se objeví **Platební
+     terminál / brána**, u *Dobírkou* vyber **Způsob dopravy**; pole
+     **Plátce** pak říká, za kým pohledávka vznikne (jinak za odběratelem)
+     — viz [Platba kartou, přes bránu a dobírkou](../pokladna/platba-kartou-branou-dobirkou.md).
    - **Datum vystavení**, **Účetní datum** a **DUZP** jsou předvyplněné
      dnešním dnem. Dokud faktura není uložená, jdou Účetní datum a DUZP
      za Datem vystavení: přepiš ho, opusť pole a obě se přepíšou podle
@@ -160,6 +163,8 @@ zapnout.
 - [Založení osoby](../osoby/zalozeni-osoby.md) — jak dostat odběratele do
   evidence
 - [Založení položky](../polozky/zalozeni-polozky.md) — co se dá dát na řádek
+- [Platba kartou, přes bránu a dobírkou](../pokladna/platba-kartou-branou-dobirkou.md)
+  — kdo je plátcem faktury placené kartou, bránou nebo na dobírku
 - [Oprava dokladu](../faktury-prijate/oprava-dokladu.md) — přechody stavů
   (psáno pro přijaté faktury)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — chybějící výstupy

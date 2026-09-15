@@ -76,8 +76,14 @@ počáteční stav ani inventura pokladny nejsou. Zůstatek dnes zjistíš jen
 z účetního deníku nebo hlavní knihy na účtu pokladny.
 
 **Pokladní doklad ani prodejku nevytiskneš.** Stejně jako u vydaných faktur
-— zákazníkovi účtenku musíš dát z jiného zařízení. Platební terminály se
-neevidují zvlášť; platba kartou jde na jeden účet peněz na cestě.
+— zákazníkovi účtenku musíš dát z jiného zařízení.
+
+**Vyúčtování od platební brány, terminálu nebo dopravce Shipard sám
+nevytvoří.** Prodej kartou, přes bránu nebo na dobírku založí pohledávku
+za plátcem (viz [Platba kartou, přes bránu a dobírkou](pokladna/platba-kartou-branou-dobirkou.md)),
+ale souhrnné vyúčtování s poplatky, které tyhle pohledávky uzavře a
+připraví připsání od brány k párování, zatím zadáváš ručně účetním
+dokladem. Připsání od brány z bankovního výpisu se k dávce nepřiřadí samo.
 
 ---
 

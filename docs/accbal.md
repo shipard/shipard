@@ -184,6 +184,18 @@ záporně** (engine ho nepřesměruje na 321). Záporná pohledávka je ale ekon
 Předpis *−1`, `311 DAL Záporné → Úhrada *−1`. Bez této vrstvy by dobropisy
 v saldu seděly na špatné straně.
 
+**315 v Pohledávkách (#72 D6).** Seed skupiny `receivables` má vedle 311
+i `315` (MD kladné → předpis, DAL kladné → úhrada): vyúčtování úhrad od
+platební brány / terminálu / dopravce účtuje 311 DAL per doklad (uzavře
+pohledávku za prostředníkem — ten je v saldokontu **běžný dlužník**, klíč
+partner + VS = číslo dokladu) proti 315 MD per dávka, kterou pak zaplatí
+banka; obojí se páruje ve stejné skupině. `BalancesProvisioner` do
+existující skupiny **doplní chybějící účty seedu** (klíč `account_number`,
+`acc_side`, `bal_side`, `modify_sign`; existující řádky nemění) — i pod
+`skipProvisioning` (jen doplnění, nové skupiny nezakládá), takže 315
+dostanou i DS se skupinou z doby před #72 bez ručního kroku. Tvorba
+vyúčtování v novém Shipardu je mimo scope (#72 D6).
+
 Příklad seedu pro „Závazky" (zkráceně):
 
 ```
@@ -613,7 +625,8 @@ interface OpenItemLookup
   MD, výdaj → na DAL) a cílem je každá skupina s řádkem `bal_side = předpis`
   na té straně, kladné částky, bez `modify_sign`; prefixy těchto řádků jsou
   účty, na kterých se hledají řádky klíče. Na seedu příjem prohledá
-  Pohledávky (311), výdaj Závazky (321, 325, 331, 336, 341, 342, 345, 379);
+  Pohledávky (311, 315 — dávka vyúčtování brány, #72 D6), výdaj Závazky
+  (321, 325, 331, 336, 341, 342, 345, 379);
   zálohy a úvěry následují v pořadí nastavení, první zásah vyhrává.
   Dobropisový řádek 311 v Závazcích mezi prefixy není, „Nespárované platby"
   nemají řádek předpisu → nikdy se neprohledají.
@@ -993,10 +1006,24 @@ partner resolution při ingestaci.
     — hash jen pro unikátnost pohybu, klíč případu zůstává n-ticí (D11).
     `unq_stable_key` z definice pryč, na starých DS ručně; hromadná
     re-derivace CLI `accbal-regenerate`, ne reimport (§4.3, §4.6).
+33. **Osoba pro saldokonto** (#72 D1–D6, 2026-09-15,
+    `tasks/doc-partner-balance.md`): pohledávka z prodejního dokladu
+    kartou / bránou / dobírkou vzniká na 311 za protistranou terminálu /
+    brány / dopravce (`docs_core_heads.partner_balance`, `partnerSrc:
+    "balance"` v předpisu), ne na tranzitu 261400 — prostředník je běžný
+    dlužník, klíč případu (D1/D11) se nemění. 315 přidáno do Pohledávek,
+    provisioner doplňuje chybějící účty do existující skupiny (§3.2). Po
+    nasazení na DS s doklady kartou `accbal-regenerate --all` (pohyby
+    261400 zaniknou s deníkem, 311 za plátcem vzniknou po přeúčtování).
 
 ---
 
 ## 12. Otevřené body
+
+- **Vyúčtování úhrad od brány / terminálu** (#72 D6) — 311 DAL per doklad
+  / 315 MD per dávka + poplatky se v novém Shipardu zatím netvoří (jen
+  import ze starého); směrování bankovního připsání od brány na 315 podle
+  dávky také ne. Do té doby uživatel účetním dokladem ručně.
 
 - **Partner resolution při ingestaci** — dohledání `partner` u bankovních
   transakcí z protiúčtu (reverse lookup přes bankovní účty `base_persons`)

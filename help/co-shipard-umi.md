@@ -46,7 +46,7 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 |---|---|---|
 | **Faktury přijaté** | Doklad od dodavatele. Vznikne z došlé pošty nebo ho zadáš ručně, projde stavy **Koncept** → **Potvrzeno** → **V pořádku**, zaúčtuje se a objeví se v saldokontu | [Dokončení dokladu](faktury-prijate/dokonceni-dokladu.md) · [Oprava dokladu](faktury-prijate/oprava-dokladu.md) |
 | **Faktury vydané** | Doklad pro odběratele. Vystavíš ho ručně, dostane číslo z číselné řady (řady se zakládají v Nastavení), spočítá se rekapitulace DPH, zaúčtuje se a jde do saldokonta. **Hotovou fakturu z Shipardu nedostaneš** — tisk, PDF ani odeslání odběrateli e-mailem zatím nejsou | [Vystavení faktury](faktury-vydane/vystaveni-faktury.md) |
-| **Prodejky** | Prodej za hotové nebo kartou na pokladně bez faktury. Patří vždy jedné pokladně (záložky dole pod seznamem), partner je nepovinný, vratka je záporný řádek. Zaúčtuje se na pokladnu nebo peníze na cestě a DPH jde do přiznání. **Účtenku nevytiskneš** | [Prodejka](pokladna/prodejka.md) |
+| **Prodejky** | Prodej za hotové, kartou, přes platební bránu nebo na dobírku na pokladně bez faktury. Patří vždy jedné pokladně (záložky dole pod seznamem), partner je nepovinný, vratka je záporný řádek. Hotovost se zaúčtuje na pokladnu, karta, brána a dobírka jako pohledávka za plátcem (terminál, brána, dopravce — nastavují se v **Nastavení → Účetnictví**) a DPH jde do přiznání. **Účtenku nevytiskneš** | [Prodejka](pokladna/prodejka.md) · [Platba kartou, přes bránu a dobírkou](pokladna/platba-kartou-branou-dobirkou.md) |
 
 ---
 
@@ -55,7 +55,7 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 | Agenda | Co s ní uděláš | Návod |
 |---|---|---|
 | **Účetní doklady** | Ruční účetní zápis pro to, co není faktura. Řádky zadáváš sám na stranu **MD** nebo **DAL** s účtem, partner je nepovinný, DPH se tu neřeší. Při potvrzení Shipard kontroluje, že je doklad vyrovnaný — součet MD musí odpovídat součtu DAL | — |
-| **Pokladní doklady** | Příjem nebo výdej hotovosti a platby kartou na jedné pokladně — prodej za hotové, nákup za hotové, úhrada faktury hotově. Směr **Příjem** / **Výdej** vybíráš na dokladu, pokladna je daná záložkou seznamu. Pokladnu založíš v **Nastavení → Účetnictví → Pokladny**. **Pokladní kniha zatím není** | [Pokladní doklad](pokladna/pokladni-doklad.md) |
+| **Pokladní doklady** | Příjem nebo výdej hotovosti a platby kartou na jedné pokladně — prodej za hotové, nákup za hotové, úhrada faktury hotově. Směr **Příjem** / **Výdej** vybíráš na dokladu, pokladna je daná záložkou seznamu. Pokladnu založíš v **Nastavení → Účetnictví → Pokladny**, terminál k ní v **Platební terminály a brány**. **Pokladní kniha zatím není** | [Pokladní doklad](pokladna/pokladni-doklad.md) · [Platba kartou, přes bránu a dobírkou](pokladna/platba-kartou-branou-dobirkou.md) |
 | **Účetní deník** | Účetní zápisy, které vznikly z dokladů a z bankovních transakcí. Účty nezadáváš, skládají se automaticky. Otevře se s filtrem **Fiskální rok** nastaveným na aktuální rok, **— vše —** ukáže všechny roky | [Když se doklad nezaúčtuje](uctarna/kdyz-se-doklad-nezauctuje.md) |
 | **Účtový rozvrh** | Účty, na které se účtuje. Zakládá se z předpřipravené šablony — zvlášť pro podnikatele a zvlášť pro neziskové organizace — a můžeš ho doplňovat i účty vyřazovat | — |
 | **Bankovní výpisy** | Naimportuješ výpis z banky. Podporované formáty jsou **CAMT**, **GPC** a **FIO**; jiný formát Shipard zatím nepřečte | — |

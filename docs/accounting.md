@@ -369,6 +369,7 @@ categories  jen názvy kategorií pro dokumentaci/UI
 | `operation` / `operations` | filtr pohybu řádku (jen `src: rows`) |
 | `side` | 0 = MD (Má dáti), 1 = DAL |
 | `sideSrc` | `"row"` = strana z `acc_side` řádku (kontační operace s `rowSide: 1`); jinak platí fixní `side` kroku |
+| `partnerSrc` | jen `src: head`: `"balance"` = partner řádku je **osoba pro saldokonto** (`head.partner_balance`, fallback `head.partner`); VS/SS/KS/splatnost zůstávají z hlavičky. Používají saldokontní kroky (`receivables`/`payables`) prodejních typů a `invni` (#72 D3, viz „Osoba pro saldokonto"). Jiná hodnota = chyba předpisu (`LogicException`) |
 | `sign` | `"+"` / `"-"` — krok platí jen pro kladnou / zápornou částku |
 | `reverseSign` | 1 = otočit znaménko částky (typicky se `sign: "-"`) |
 | `query` | obecný filtr `{sloupec: hodnota}` nad zdrojovým záznamem (head/row/recap), volné porovnání. Hodnota-pole je operátorový objekt: `{"$ne": v}` (nerovnost), `{"$in": [v, …]}`; neznámý operátor je chyba předpisu (`LogicException`). Totéž platí pro `query` záznamů `accounts` |
@@ -498,21 +499,25 @@ Kontrolní příklad — faktura přijatá, EU pořízení služeb 1 000 Kč
 
 Protistrana hotovostních dokladů se řídí `payment_method` hlavičky:
 **0 Hotovost** → účet pokladny (`accountSrc: "cashDesk"`, 211xxx per
-pokladna), **2 Kartou** → kategorie `card.transit` (platební karty na
-cestě, maska `261400` — jediný terminál, per-terminál analytiky mimo
-scope). Prodejka navíc umí **1 Převodem** → kategorie `receivables`
-(311, partner hlavičky povinný — `CashRegisterDocument`); pokladní doklad
-převodem nemá. Kategorie `cash` neexistuje — `accountSrc: cashDesk`
-`accounts[]` obchází.
+pokladna); **2 Kartou**, **3 Dobírkou**, **5 Platební bránou** (a u
+prodejky i **1 Převodem**) → kategorie `receivables` (311) **za osobou pro
+saldokonto** (`partnerSrc: "balance"`, #72 D1/D3): protistrana terminálu,
+brány nebo dopravce, u převodu partner hlavičky. VS = `payment_reference`
+hlavičky (= číslo dokladu). Výdajový PD kartou = `payables` (321) za
+plátcem. Karty tranzit **nemají**: kategorie `card.transit` a maska
+`261400` z předpisu zmizely, účet v osnově zůstává (nic ho neúčtuje).
+Pokladní doklad převodem nemá; prodejka bez plátce u karty / dobírky /
+brány neprojde (`partner_balance_required`, `CashDeskDocumentBase`).
+Kategorie `cash` neexistuje — `accountSrc: cashDesk` `accounts[]` obchází.
 
-**Tranzitní účty jsou infrastruktura** (#59 Task E): `261` (syntetika),
-`261100` a `261400` zajišťuje `TransitAccountsProvisioner`
+**Tranzitní účty jsou infrastruktura** (#59 Task E): `261` (syntetika)
+a `261100` zajišťuje `TransitAccountsProvisioner`
 (`modules/economy/accounting/src/`) z `ds-upgrade` **bezpodmínečně**, i pod
 `skipProvisioning` — zrcadlo `ClearingInfrastructureProvisioner` pro
-261200/261300. Migrovaný rozvrh (staré `261001/261002`) by jinak dal každé
-platbě kartou a převodu chybový řádek `261???`. Idempotence per `number`,
-existující (i přejmenovaný) účet se nepřepisuje; seedy 261100/261400
-zůstávají pro nové DS, drift proti provisioneru hlídá
+261200/261300. Migrovaný rozvrh (staré `261001/261002`) by jinak dal
+každému převodu chybový řádek `261???`. Idempotence per `number`,
+existující (i přejmenovaný) účet se nepřepisuje; seedy 261100 (i 261400
+pro historii) zůstávají pro nové DS, drift proti provisioneru hlídá
 `CashAccountingRulesTest`.
 
 Zálohy (Task E): hotovostní záloha `advance.received` → DAL `advances.received`
@@ -531,12 +536,14 @@ převodu účtuje bankovní mikroengine z operace `transfer.in/out`
 (kategorie `cash.transit`, tedy tatáž maska) nebo pokladní doklad druhé
 pokladny — viz `docs/bank.md` §6.2.
 
-**Proč dvě analytiky 261.** Převody (`261100`) mají po zaúčtování obou
-stran nulový zůstatek — stejná kontrolní logika jako clearing
-`261200/261300`. Karty (`261400`) nenulový zůstatek mají běžně (tržby
-dosud nepřipsané bankou, stržené poplatky); na jednom účtu by kontrola
-nuly nefungovala. Úplnost seedů vůči maskám `261xxx` hlídá
-`CashAccountingRulesTest::testEvery261MaskOfRulesHasAccountInBothSeedCharts`.
+**Proč už ne 261400.** Převody (`261100`) mají po zaúčtování obou stran
+nulový zůstatek — stejná kontrolní logika jako clearing `261200/261300`.
+Karty tranzit původně měly (`card.transit` 261400, nenulový zůstatek do
+připsání bankou), ale ten model se neuměl spárovat s bankou ani se
+starým systémem: tam je tržba kartou **pohledávka 311 za terminálem**
+s VS = číslo dokladu, kterou uzavře „Vyúčtování úhrad" a banka pak platí
+315 (#72 D1, zrušeno 2026-09-15). Úplnost seedů vůči maskám `261xxx`
+hlídá `CashAccountingRulesTest::testEvery261MaskOfRulesHasAccountInBothSeedCharts`.
 
 Blok `cash` je jeden (engine bere první blok per docType): příjmová část
 (`headQuery: {cash_dir: 1}`, jako vydaná faktura, strany DAL/MD) a výdajová
@@ -557,7 +564,13 @@ Kontrolní příklady (`tests/Integration/Accounting/CashDocsAccountingTest`):
 Příjmový PD, hotově, prodej služby 1 000 + 21 % (cz-120):
     602xxx DAL 1 000   343120 DAL 210   211xxx MD 1 210
 Příjmový PD, kartou, úhrada FVB 1 210 (payment.receivable, VS = číslo FVB):
-    311xxx DAL 1 210 (partner + payment_reference z řádku)   261400 MD 1 210
+    311xxx DAL 1 210 (zákazník + VS FVB z řádku)
+    311xxx MD  1 210 (protistrana terminálu, VS = číslo PD — partnerSrc balance)
+Prodejka kartou 1 000 + 21 % (terminál pokladny s protistranou):
+    604xxx DAL 1 000   343120 DAL 210   311xxx MD 1 210 (protistrana terminálu, VS = číslo prodejky)
+Prodejka na dobírku (doprava s dopravcem):  dtto, 311 MD za dopravcem
+Prodejka bránou (5):                         dtto, 311 MD za protistranou brány
+PD kartou na DS bez terminálů:               311 MD za partnerem hlavičky (fallback)
 Výdajový PD, hotově, nákup materiálu 500 + 21 %:
     504xxx MD 500   343120 MD 105   211xxx DAL 605
 Prodejka hotově, zboží 1 000 + 21 %:
@@ -595,8 +608,51 @@ Dotace pokladny z banky 5 000:
   → 261100: 0
 Převod mezi pokladnami A → B 3 000:
   výdajový PD na A (transfer.out) + příjmový PD na B (transfer.in) → 261100: 0
-Prodejka kartou 1 000 + 21 %:  604/343 DAL   261400 MD 1 210   (261400 ≠ 0, 261100 bez řádku)
+Prodejka kartou 1 000 + 21 %:  604/343 DAL   311 MD 1 210 za terminálem   (261100 i 261400 bez řádku)
 ```
+
+### Osoba pro saldokonto — plátce (#72)
+
+Pohledávka z prodejního dokladu placeného kartou, bránou nebo na dobírku
+vzniká za **plátcem** (`docs_core_heads.partner_balance`, formulář
+„Plátce"), ne za zákazníkem z hlavičky a ne na tranzitu: terminál / brána
+/ dopravce je v saldokontu obyčejný dlužník s VS = číslo dokladu, klíč
+případu z #69 (partner + VS) se nemění. Model starého Shipardu
+(`personBalance`); bez něj se DS `btpg-p` neporovná (M2).
+
+**Odvození** (`modules/docs/core/src/PartnerBalanceResolver.php`, volá
+`DocDocument::validate()` i `beforeSave()` po denormalizaci z řady —
+validate běží dřív a musí vidět odvozenou hodnotu; formulář ho volá pro
+živý náhled v `recalculate`) — jen pro **prodejní směr** (`invno`,
+`cashreg`, `cash` příjem), pořadí:
+
+1. `payment_method` 2 Kartou / 5 Bránou → terminál / brána hlavičky
+   (`payment_terminal`, číselník `economy_codebooks_payment_terminals`);
+   neodpovídá-li (jiný druh, u karty s pokladnou jiná pokladna) nebo
+   chybí, doplní se default (karta: default terminál pokladny hlavičky, na
+   faktuře bez pokladny default mezi všemi; brána: default brána) →
+   `partner_balance = terminal.partner`;
+2. 3 Dobírkou + `transport` (číselník `economy_codebooks_transports`)
+   s protistranou → dopravce;
+3. jinak, není-li `partner_balance_manual` → `= partner`.
+
+Kroky 1–2 přepisují i ruční hodnotu. `invni` a výdej mají jen krok 3
+(ruční plátce). Import (`_importNumber`) s explicitním ručním plátcem
+(`balanceParty` kanonického formátu → `partner_balance_manual = 1`) se
+respektuje — terminály se mapují až v navazujícím importním tasku.
+Validace: brána bez vybrané brány = `payment_terminal_required`; prodejka
+/ příjmový PD kartou, dobírkou, bránou bez plátce = `partner_balance_required`
+(DS bez terminálů projde, jakmile má doklad partnera).
+
+**Účtování**: atribut kroku `partnerSrc: "balance"` (tabulka kroků výše)
+jen na saldokontním hlavičkovém kroku — výnosy, DPH i zaokrouhlení
+zůstávají za partnerem. Engine vezme `partner_balance ?? partner`, ostatní
+identita (VS, SS, KS, splatnost) z hlavičky. U PD kartou s úhradou FVB tak
+vzniknou dva řádky 311 s různou identitou (DAL zákazník + VS FVB, MD
+terminál + VS PD) — grouping key deníku partnera obsahuje, nesloučí se.
+Vyúčtování úhrad od brány / terminálu (311 DAL per doklad → 315 MD per
+dávka) a jeho párování s bankou (315 v Pohledávkách, #72 D6) viz
+`docs/accbal.md`; tvorba vyúčtování v novém Shipardu je mimo scope.
 
 ---
 
@@ -1169,3 +1225,12 @@ Drobnosti zjištěné implementací:
     jako na faktuře (položkový s DPH — upřesnění proti původnímu zadání
     „bez DPH“), nové `advance.received/given` kontační bez DPH s povinným
     partnerem (`partnerRequired`), VS nepovinný, záporná = vrácení (D9).
+20. Osoba pro saldokonto (#72 D1–D6, 2026-09-15, `tasks/doc-partner-balance.md`):
+    karta / brána / dobírka = pohledávka 311 za plátcem (`partner_balance`,
+    `partnerSrc: "balance"`), tranzit `card.transit` 261400 z předpisu pryč
+    (účet v osnově zůstává, provisioner ho už nezakládá — obrací E1 pro
+    261400, 261100 beze změny). Jeden číselník terminálů a bran
+    (`kind`), způsoby dopravy, způsob úhrady 5 Platební bránou; 315 do
+    skupiny Pohledávky. Prodejka a příjmový PD bez plátce u karty / dobírky
+    / brány neprojdou (rozhodnutí nad rámec zadání: 311 bez dlužníka by se
+    nedalo spárovat). Vyúčtování úhrad v novém Shipardu mimo scope.

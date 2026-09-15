@@ -48,7 +48,8 @@ a pokladna se na dokladu nezadává (denormalizuje se z řady do `cash_desk`).
 - Žádné nové tabulky ani cfgItems — typy, směry (`docs.core.cashDirections`)
   a pohyby žijí v `docs.core`, účtovací předpis `cash` v `economy.accounting`
   (`accountingRules.cz.jsonc`: protiúčet = účet pokladny přes
-  `accountSrc: cashDesk`, karta → `card.transit` 261400, převody →
+  `accountSrc: cashDesk`, karta → pohledávka 311 za plátcem — protistranou
+  terminálu pokladny (`partnerSrc: balance`, #72), převody →
   `cash.transit` 261100).
 - Pokladní knihu, otevírací doklady ani inventuru (fáze 2, #59 D10).
 - Zálohy na pokladních dokladech, platební terminály per analytika, tisk.
@@ -66,8 +67,10 @@ Obě strany převodu se účtují přes **261100 Peníze na cestě** — pokladn
 doklad jednu, bankovní transakce s operací `transfer.in/out`
 (`economy.bank.txOperations`) nebo pokladní doklad druhé pokladny druhou.
 Po zaúčtování obou stran je zůstatek 261100 nulový; párování obou stran
-a saldokontní skupina se nezavádí. Karty jdou odděleně na 261400. Detaily
-a kontrolní příklady: `docs/accounting.md` §2, §4.
+a saldokontní skupina se nezavádí. Karty tranzit nemají — příjem kartou je
+pohledávka za protistranou terminálu (`partner_balance`, #72; bez plátce
+příjmový doklad kartou neprojde). Detaily a kontrolní příklady:
+`docs/accounting.md` §2, §4 a „Osoba pro saldokonto".
 
 ## Zálohy
 

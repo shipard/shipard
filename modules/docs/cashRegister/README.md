@@ -40,7 +40,9 @@ záložky vieweru = pokladny, pokladna se na dokladu nezadává. Číslo má tva
 
 - Žádné nové tabulky ani cfgItems — typ a pohyby žijí v `docs.core`,
   účtovací předpis `cashreg` v `economy.accounting` (protiúčet = účet pokladny
-  přes `accountSrc: cashDesk`, karta → `card.transit` 261).
+  přes `accountSrc: cashDesk`; převod, karta, dobírka i brána → pohledávka
+  311 za plátcem `partner_balance` — protistrana terminálu / brány /
+  dopravce, `partnerSrc: balance`, #72; bez plátce prodejka neprojde).
 - Kontrolní hlášení: prodejka s partnerem s CZ DIČ nad limit jde do A4,
   anonymní do A5 — dělá existující `economy.vat`, tady nic.
 - Tisk prodejky, platební terminály per analytika, pokladní knihu (fáze 2).
