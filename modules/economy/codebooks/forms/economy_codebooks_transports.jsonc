@@ -1,0 +1,41 @@
+{
+    "title": "Způsob dopravy",
+    "title:cs": "Způsob dopravy",
+    "title:en": "Transport",
+    "titleNew": "Nový způsob dopravy",
+    "titleNew:cs": "Nový způsob dopravy",
+    "titleNew:en": "New transport",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Způsob dopravy",
+            "label:cs": "Způsob dopravy",
+            "label:en": "Transport",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {"type": "input", "column": "code", "required": true},
+                                {"type": "input", "column": "name", "required": true},
+                                {"type": "input", "column": "notice"},
+
+                                {"type": "separator", "label": "Nastavení", "label:cs": "Nastavení", "label:en": "Settings"},
+                                {
+                                    "type": "lookup",
+                                    "column": "partner",
+                                    "placeholder": "Hledat osobu…",
+                                    "hint": "Dopravce, za kterým vzniká pohledávka z dobírky. Vlastní doprava protistranu nemá.",
+                                    "lookup": {"table": "base_persons_persons", "editForm": true, "createForm": true}
+                                },
+                                {"type": "input", "column": "sort_order"},
+                                {"type": "input", "column": "valid_from"},
+                                {"type": "input", "column": "valid_to"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

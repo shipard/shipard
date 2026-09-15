@@ -1,0 +1,52 @@
+{
+    "title": "Platební terminál / brána",
+    "title:cs": "Platební terminál / brána",
+    "title:en": "Payment terminal / gateway",
+    "titleNew": "Nový platební terminál / brána",
+    "titleNew:cs": "Nový platební terminál / brána",
+    "titleNew:en": "New payment terminal / gateway",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Terminál / brána",
+            "label:cs": "Terminál / brána",
+            "label:en": "Terminal / gateway",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {"type": "input", "column": "code", "required": true},
+                                {"type": "input", "column": "name", "required": true},
+                                {"type": "select", "column": "kind", "required": true},
+                                {"type": "input", "column": "notice"},
+
+                                {"type": "separator", "label": "Nastavení", "label:cs": "Nastavení", "label:en": "Settings"},
+                                // Pokladna jen u terminálu (kind = 0); u brány musí zůstat prázdná —
+                                // vynucuje PaymentTerminalDocument, JSONC form podmíněné skrytí neumí.
+                                {
+                                    "type": "lookup",
+                                    "column": "cash_desk",
+                                    "placeholder": "Hledat pokladnu…",
+                                    "hint": "Jen u terminálu — brána pokladnu nemá.",
+                                    "lookup": {"table": "economy_codebooks_cash_desks"}
+                                },
+                                {
+                                    "type": "lookup",
+                                    "column": "partner",
+                                    "placeholder": "Hledat osobu…",
+                                    "hint": "Protistrana, za kterou vzniká pohledávka z platby kartou / bránou.",
+                                    "lookup": {"table": "base_persons_persons", "editForm": true, "createForm": true}
+                                },
+                                {"type": "input", "column": "is_default"},
+                                {"type": "input", "column": "sort_order"},
+                                {"type": "input", "column": "valid_from"},
+                                {"type": "input", "column": "valid_to"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -101,6 +101,8 @@ import {
   faCircleArrowDown,
   faMoneyBillTransfer,
   faCashRegister,
+  faCreditCard,
+  faTruck,
   faChartPie,
   faPaperPlane,
   faStamp,
@@ -182,6 +184,8 @@ export const iconVat = faPercent;
 export const iconFiling = faStamp; // Podání na úřad (DPH a dál) — má lifecycle, na rozdíl od reportu
 export const iconWallet = faWallet;
 export const iconCashRegister = faCashRegister; // Pokladny
+export const iconCreditCard = faCreditCard; // Platební terminály a brány
+export const iconTruck = faTruck; // Způsoby dopravy
 export const iconBank = faBuildingColumns;
 export const iconMoneyTransfer = faMoneyBillTransfer; // Bankovní pohyby
 export const iconBalance = faScaleBalanced; // Saldokonta + fallback saldokontních nav položek
@@ -272,6 +276,8 @@ export const iconMap = {
   'filing': iconFiling,
   'wallet': iconWallet,
   'cash-register': iconCashRegister,
+  'credit-card': iconCreditCard,
+  'truck': iconTruck,
   'bank': iconBank,
   'money-transfer': iconMoneyTransfer,
   'balance': iconBalance,

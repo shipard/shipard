@@ -1,0 +1,170 @@
+{
+    "tableId": 449,
+    "name": "Transports",
+    "name:cs": "Způsoby dopravy",
+    "name:en": "Transports",
+
+    "displayPattern": "{code} — {name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    // Způsob dopravy (#72 D5): jen název, kód a protistrana. `partner` je
+    // Osoba pro saldokonto — dopravce, za kterým vzniká pohledávka 311
+    // z dokladu na dobírku; vlastní doprava protistranu nemá (NULL).
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Identity",
+            "name:cs": "Identifikace",
+            "name:en": "Identity"
+        },
+        {
+            "id": "settings",
+            "name": "Settings",
+            "name:cs": "Nastavení",
+            "name:en": "Settings"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- identity ---
+
+        {
+            "id": "code",
+            "name": "Code",
+            "name:cs": "Kód",
+            "name:en": "Code",
+            "type": "varchar",
+            "length": 10,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 150,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "notice",
+            "name": "Notice",
+            "name:cs": "Poznámka",
+            "name:en": "Notice",
+            "type": "varchar",
+            "length": 250,
+            "nullable": true,
+            "group": "identity"
+        },
+
+        // --- settings ---
+
+        {
+            "id": "partner",
+            "name": "Balance partner",
+            "name:cs": "Osoba pro saldokonto",
+            "name:en": "Balance partner",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_persons_persons",
+            "group": "settings"
+        },
+        {
+            "id": "valid_from",
+            "name": "Valid from",
+            "name:cs": "Platnost od",
+            "name:en": "Valid from",
+            "type": "date",
+            "nullable": true,
+            "group": "settings"
+        },
+        {
+            "id": "valid_to",
+            "name": "Valid to",
+            "name:cs": "Platnost do",
+            "name:en": "Valid to",
+            "type": "date",
+            "nullable": true,
+            "group": "settings"
+        },
+        {
+            "id": "sort_order",
+            "name": "Order",
+            "name:cs": "Pořadí",
+            "name:en": "Order",
+            "type": "smallint",
+            "default": 0,
+            "nullable": false,
+            "group": "settings"
+        },
+
+        // --- doc state (systémové, bez skupiny) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_code",
+            "type": "unique",
+            "columns": [
+                {"column": "code"}
+            ]
+        },
+        {
+            "id": "idx_partner",
+            "type": "index",
+            "columns": [
+                {"column": "partner"}
+            ]
+        },
+        {
+            "id": "idx_sort_order",
+            "type": "index",
+            "columns": [
+                {"column": "sort_order", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "sort_order", "order": "ASC"}
+            ]
+        }
+    ]
+}

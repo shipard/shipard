@@ -6,7 +6,8 @@ které se mapují účetní data dokladů) a **registrace DPH s obdobími**
 (přiznání DPH, kontrolní hlášení). Modul dále spravuje **pokladny**
 a **vlastní bankovní spojení**, které budou referencovány z hlaviček
 dokladů (pokladní lístky, bankovní výpisy, faktury s předkontací na
-bankovní účet).
+bankovní účet), a **platební prostředníky** — terminály, brány a způsoby
+dopravy s osobou pro saldokonto (#72).
 
 Tabulky `economy_codebooks_warehouses` a `economy_codebooks_cost_centers`
 jsou v této fázi placeholdery (schémata existují, UI a Document logika
@@ -19,6 +20,7 @@ přijde s dokladovým systémem).
   + budoucí currency picker pro fiskální roky
 - `world.trade` — cfgItem obchodních unií (`world.trade.unions`) pro
   pole `region` u registrací DPH
+- `base.persons` — osoba pro saldokonto u terminálů, bran a dopravy
 
 ## Tabulky
 
@@ -31,6 +33,8 @@ přijde s dokladovým systémem).
 | [economy_codebooks_vat_registrations](tables/economy_codebooks_vat_registrations.md) | Registrace k DPH (různé země, OSS, diskontinuity) |
 | [economy_codebooks_cash_desks](tables/economy_codebooks_cash_desks.md) | Pokladny pro hotovostní operace |
 | [economy_codebooks_bank_accounts](tables/economy_codebooks_bank_accounts.md) | Vlastní bankovní účty (firma) |
+| [economy_codebooks_payment_terminals](tables/economy_codebooks_payment_terminals.md) | Platební terminály a brány — protistrana pohledávky z karty / brány |
+| [economy_codebooks_transports](tables/economy_codebooks_transports.md) | Způsoby dopravy — protistrana pohledávky z dobírky |
 
 **Číselník bankovních účtů vs. bankovní spojení Osob.** Vedle
 `economy_codebooks_bank_accounts` existuje `base_persons_bank_accounts`
@@ -58,6 +62,9 @@ při ručním pořízení.
 | [VatRegistrationsViewer.php](src/VatRegistrationsViewer.php) | Viewer registrací |
 | [CashDeskDocument.php](src/CashDeskDocument.php) | Validace pokladny (povinná pole, formát měny) + default-per-currency uniqueness v `afterPersist` |
 | [BankAccountDocument.php](src/BankAccountDocument.php) | Validace bankovního účtu (account_number nebo iban povinný, regex IBAN/BIC) + default-per-currency uniqueness v `afterPersist` |
+| [PaymentTerminalDocument.php](src/PaymentTerminalDocument.php) | Terminál / brána: pokladna jen u terminálu, protistrana povinná ve 40, výlučný default per pokladna / mezi bránami |
+| [PaymentTerminalsLookup.php](src/PaymentTerminalsLookup.php) | Lookup s cascade filtry `kind` a `cash_desk` (hlavička dokladu) |
+| [TransportDocument.php](src/TransportDocument.php) | Validace způsobu dopravy |
 
 ## Konfigurace
 
@@ -67,6 +74,7 @@ při ručním pořízení.
 | `economy.codebooks.fiscalConfig` | [config/fiscalConfig.jsonc](config/fiscalConfig.jsonc) | `yearStartMonth` — výchozí 1 (leden); per-DS override zatím není |
 | `economy.codebooks.vatTaxpayerKinds` | [config/vatTaxpayerKinds.jsonc](config/vatTaxpayerKinds.jsonc) | Druh plátce — Klasický (0) / OSS (1) |
 | `economy.codebooks.vatPeriodKinds` | [config/vatPeriodKinds.jsonc](config/vatPeriodKinds.jsonc) | Frekvence DPH přiznání i kontrolního hlášení — Měsíční (1) / Čtvrtletní (2) |
+| `economy.codebooks.paymentTerminalKinds` | [config/paymentTerminalKinds.jsonc](config/paymentTerminalKinds.jsonc) | Druh prostředníka — Platební terminál (0) / Platební brána (1) |
 
 ## Auto-generování fiskálních období
 
@@ -146,6 +154,18 @@ přítomnost tabulky instancí, codebooks na vat nezávisí.
 
 Roční `economy_codebooks_fiscal_years.locked` se **nevynucuje** — sémantika
 uzavřeného roku přijde s uzávěrkou.
+
+## Platební prostředníci a osoba pro saldokonto (#72)
+
+Terminál (`kind` 0, patří pokladně) a brána (`kind` 1) sdílejí jeden
+číselník; způsob dopravy je samostatný. Všechny tři nesou `partner` —
+**osobu pro saldokonto**: pohledávka z prodejního dokladu placeného
+kartou, bránou nebo dobírkou vzniká na 311 za touto osobou s VS = číslo
+dokladu, ne za zákazníkem z hlavičky. Odvození `partner_balance` dělá
+`docs.core` (`PartnerBalanceResolver`), účtování `economy.accounting`
+(`partnerSrc: "balance"`) — viz `docs/accounting.md` § Osoba pro
+saldokonto. Vyúčtování úhrad od brány / terminálu (311 → 315, poplatky)
+je mimo scope (#72 D6).
 
 ## Registrace DPH a období DPH
 

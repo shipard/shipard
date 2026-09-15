@@ -1,0 +1,15 @@
+{
+    // Hodnoty odpovídají enumInt kind v economy_codebooks_payment_terminals (#72 D4).
+    //   0 = terminál (patří jedné pokladně, karta na PD / prodejce)
+    //   1 = platební brána (samostatná; způsob úhrady 5 Platební bránou)
+    "0": {
+        "name": "Payment terminal",
+        "name:cs": "Platební terminál",
+        "name:en": "Payment terminal"
+    },
+    "1": {
+        "name": "Payment gateway",
+        "name:cs": "Platební brána",
+        "name:en": "Payment gateway"
+    }
+}

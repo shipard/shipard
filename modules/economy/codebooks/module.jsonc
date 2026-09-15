@@ -7,7 +7,7 @@
     "description:cs": "Sklady, střediska, fiskální období, registrace DPH, pokladny, bankovní spojení a další číselníky",
     "description:en": "Warehouses, cost centers, fiscal periods, VAT registrations, cash desks, bank accounts and other codebooks",
 
-    "dependencies": ["core.system", "world.base", "world.trade"],
+    "dependencies": ["core.system", "world.base", "world.trade", "base.persons"],
 
     "tables": [
         "economy_codebooks_warehouses",
@@ -16,7 +16,9 @@
         "economy_codebooks_fiscal_months",
         "economy_codebooks_vat_registrations",
         "economy_codebooks_cash_desks",
-        "economy_codebooks_bank_accounts"
+        "economy_codebooks_bank_accounts",
+        "economy_codebooks_payment_terminals",
+        "economy_codebooks_transports"
     ],
 
     "settingsItems": [
@@ -26,6 +28,8 @@
         { "viewer": "economy.codebooks.vatRegistrations", "section": "accounting",
           "visibilityClass": "Shipard\\Module\\Economy\\Codebooks\\VatAgendaNavGate" },
         { "viewer": "economy.codebooks.cashDesks",        "section": "accounting" },
+        { "viewer": "economy.codebooks.paymentTerminals", "section": "accounting" },
+        { "viewer": "economy.codebooks.transports",       "section": "accounting" },
         { "viewer": "economy.codebooks.bankAccounts",     "section": "accounting" },
         { "viewer": "economy.codebooks.warehouses",       "section": "warehouses" },
         { "viewer": "economy.codebooks.costCenters",      "section": "warehouses" }
@@ -58,6 +62,24 @@
             "icon": "cash-register",
             "table": "economy_codebooks_cash_desks",
             "class": "Shipard\\Module\\Economy\\Codebooks\\CashDesksViewer"
+        },
+        {
+            "id": "economy.codebooks.paymentTerminals",
+            "name": "Payment terminals and gateways",
+            "name:cs": "Platební terminály a brány",
+            "name:en": "Payment terminals and gateways",
+            "icon": "credit-card",
+            "table": "economy_codebooks_payment_terminals",
+            "class": "Shipard\\Module\\Economy\\Codebooks\\PaymentTerminalsViewer"
+        },
+        {
+            "id": "economy.codebooks.transports",
+            "name": "Transports",
+            "name:cs": "Způsoby dopravy",
+            "name:en": "Transports",
+            "icon": "truck",
+            "table": "economy_codebooks_transports",
+            "class": "Shipard\\Module\\Economy\\Codebooks\\TransportsViewer"
         },
         {
             "id": "economy.codebooks.bankAccounts",
@@ -109,6 +131,14 @@
             "table": "economy_codebooks_bank_accounts",
             "id": "economy.codebooks.bank_accounts"
         },
+        {
+            "table": "economy_codebooks_payment_terminals",
+            "id": "economy.codebooks.payment_terminals"
+        },
+        {
+            "table": "economy_codebooks_transports",
+            "id": "economy.codebooks.transports"
+        },
         { "table": "economy_codebooks_warehouses",   "id": "economy.codebooks.warehouses" },
         { "table": "economy_codebooks_cost_centers", "id": "economy.codebooks.cost_centers" }
     ],
@@ -144,6 +174,14 @@
             "table": "economy_codebooks_bank_accounts",
             "class": "Shipard\\Module\\Economy\\Codebooks\\BankAccountDocument"
         },
+        {
+            "table": "economy_codebooks_payment_terminals",
+            "class": "Shipard\\Module\\Economy\\Codebooks\\PaymentTerminalDocument"
+        },
+        {
+            "table": "economy_codebooks_transports",
+            "class": "Shipard\\Module\\Economy\\Codebooks\\TransportDocument"
+        },
         { "table": "economy_codebooks_warehouses",   "class": "Shipard\\Module\\Economy\\Codebooks\\WarehouseDocument" },
         { "table": "economy_codebooks_cost_centers", "class": "Shipard\\Module\\Economy\\Codebooks\\CostCenterDocument" }
     ],
@@ -156,6 +194,14 @@
         {
             "table": "economy_codebooks_cash_desks",
             "class": "Shipard\\Module\\Economy\\Codebooks\\CashDesksLookup"
+        },
+        {
+            "table": "economy_codebooks_payment_terminals",
+            "class": "Shipard\\Module\\Economy\\Codebooks\\PaymentTerminalsLookup"
+        },
+        {
+            "table": "economy_codebooks_transports",
+            "class": "Shipard\\Module\\Economy\\Codebooks\\TransportsLookup"
         },
         {
             "table": "economy_codebooks_warehouses",
@@ -235,6 +281,10 @@
         {
             "id": "economy.codebooks.fiscalPeriodTypes",
             "file": "config/fiscalPeriodTypes.jsonc"
+        },
+        {
+            "id": "economy.codebooks.paymentTerminalKinds",
+            "file": "config/paymentTerminalKinds.jsonc"
         },
         {
             "id": "economy.codebooks.fiscalConfig",

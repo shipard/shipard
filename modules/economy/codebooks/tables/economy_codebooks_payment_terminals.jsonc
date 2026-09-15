@@ -1,0 +1,211 @@
+{
+    "tableId": 448,
+    "name": "Payment terminals and gateways",
+    "name:cs": "Platební terminály a brány",
+    "name:en": "Payment terminals and gateways",
+
+    "displayPattern": "{code} — {name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    // Platební prostředníci (#72 D4): terminál patří jedné pokladně, brána
+    // je samostatná. `partner` je Osoba pro saldokonto — protistrana, za
+    // kterou vzniká pohledávka 311 z dokladu placeného kartou / bránou
+    // (DocDocument odvozuje docs_core_heads.partner_balance).
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Identity",
+            "name:cs": "Identifikace",
+            "name:en": "Identity"
+        },
+        {
+            "id": "settings",
+            "name": "Settings",
+            "name:cs": "Nastavení",
+            "name:en": "Settings"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- identity ---
+
+        {
+            "id": "code",
+            "name": "Code",
+            "name:cs": "Kód",
+            "name:en": "Code",
+            "type": "varchar",
+            "length": 10,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 150,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "notice",
+            "name": "Notice",
+            "name:cs": "Poznámka",
+            "name:en": "Notice",
+            "type": "varchar",
+            "length": 250,
+            "nullable": true,
+            "group": "identity"
+        },
+
+        // --- settings ---
+
+        {
+            "id": "kind",
+            "name": "Kind",
+            "name:cs": "Druh",
+            "name:en": "Kind",
+            "type": "enumInt",
+            "cfgItem": "economy.codebooks.paymentTerminalKinds",
+            "default": 0,
+            "nullable": false,
+            "group": "settings"
+        },
+        {
+            "id": "cash_desk",
+            "name": "Cash desk",
+            "name:cs": "Pokladna",
+            "name:en": "Cash desk",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_cash_desks",
+            "group": "settings"
+        },
+        {
+            "id": "partner",
+            "name": "Balance partner",
+            "name:cs": "Osoba pro saldokonto",
+            "name:en": "Balance partner",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_persons_persons",
+            "group": "settings"
+        },
+        {
+            "id": "is_default",
+            "name": "Default",
+            "name:cs": "Výchozí",
+            "name:en": "Default",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "group": "settings"
+        },
+        {
+            "id": "valid_from",
+            "name": "Valid from",
+            "name:cs": "Platnost od",
+            "name:en": "Valid from",
+            "type": "date",
+            "nullable": true,
+            "group": "settings"
+        },
+        {
+            "id": "valid_to",
+            "name": "Valid to",
+            "name:cs": "Platnost do",
+            "name:en": "Valid to",
+            "type": "date",
+            "nullable": true,
+            "group": "settings"
+        },
+        {
+            "id": "sort_order",
+            "name": "Order",
+            "name:cs": "Pořadí",
+            "name:en": "Order",
+            "type": "smallint",
+            "default": 0,
+            "nullable": false,
+            "group": "settings"
+        },
+
+        // --- doc state (systémové, bez skupiny) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_code",
+            "type": "unique",
+            "columns": [
+                {"column": "code"}
+            ]
+        },
+        // Default terminál pokladny (karta na pokladním dokladu / prodejce)
+        // a default brána (kind = 1) — dotaz `WHERE kind, cash_desk, is_default`.
+        {
+            "id": "idx_cash_desk",
+            "type": "index",
+            "columns": [
+                {"column": "cash_desk"}
+            ]
+        },
+        {
+            "id": "idx_partner",
+            "type": "index",
+            "columns": [
+                {"column": "partner"}
+            ]
+        },
+        {
+            "id": "idx_sort_order",
+            "type": "index",
+            "columns": [
+                {"column": "sort_order", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "sort_order", "order": "ASC"}
+            ]
+        }
+    ]
+}

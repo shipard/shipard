@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 283 tasků: **naplánováno** 4 · **částečně** 12 · **hotovo** 267.
+Celkem 284 tasků: **naplánováno** 5 · **částečně** 12 · **hotovo** 267.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,6 +28,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `doc-partner-balance.md` | naplánováno |  |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
@@ -249,6 +250,7 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `accbal-symbol-key.md` | #69 T2 | Případ = párovací klíč (agregát z ledgeru), odstranění alokační vrstvy a matcheru, viewer po případech, přepis `accbal.md` |
 | `viewer-filter-defaults-fiscal-year.md` | — | Výchozí hodnoty filtrů ve frameworku; období (fiskální rok) v saldokontu a deníku s výchozím aktuálním rokem |
 | `accbal-ledger-identity-key.md` | #69 D13 | Pohyb ledgeru per platební identita řádku (partner, VS, SS, měna), ne per doklad; `movement_key`; CLI `accbal-regenerate` |
+| `doc-partner-balance.md` | #72 D1–D6 | Osoba pro saldokonto na hlavičce (plátce); číselníky platebních terminálů/bran a způsobů dopravy; karta/brána/dobírka → 311 za plátcem místo 261400; 315 v saldokontu |
 
 ## Došlá pošta (core.mail)
 
