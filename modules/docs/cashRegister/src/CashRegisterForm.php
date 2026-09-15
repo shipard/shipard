@@ -79,8 +79,10 @@ class CashRegisterForm extends CashDeskFormBase
                         triggers: 'reload',
                         editForm: true,
                         createForm: true,
-                    )
-
+                    );
+        // Terminál / brána, doprava, Plátce (#72) — karta a brána bez
+        // protistrany prodejku nepustí (partner_balance_required).
+        $this->addPaymentIntermediaryElements($tab, $data)
                     ->date('issue_date', required: true, triggers: 'reload')
                     ->date('accounting_date', required: true)
                     ->date('vat_duzp', hidden: !$hasVat)

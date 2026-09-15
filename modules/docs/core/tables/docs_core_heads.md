@@ -68,8 +68,9 @@ Sumace plněné v `beforeSave` ve Fázi 2. Doc currency: `total_base`,
 ### `payment`
 
 `payment_method`, `bank_account` (náš účet, vazba na
-`economy_codebooks_bank_accounts`), `cash_desk`, `payment_reference`,
-`specific_symbol`, `constant_symbol`.
+`economy_codebooks_bank_accounts`), `cash_desk`, `payment_terminal`,
+`transport`, `partner_balance`, `partner_balance_manual`,
+`payment_reference`, `specific_symbol`, `constant_symbol`.
 
 `cash_desk` (int, nullable → `economy_codebooks_cash_desks`, index
 `idx_cash_desk`) má dvojí režim podle typu dokladu:
@@ -84,6 +85,29 @@ Sumace plněné v `beforeSave` ve Fázi 2. Doc currency: `total_base`,
 
 Sloupec proto nemá `system: true` — systémovost pro vázané typy vynucuje
 `DocDocument`, stejně jako u `doc_type`.
+
+**Prostředník platby a osoba pro saldokonto (#72 D2/D4/D5):**
+
+- `payment_terminal` (int NULL → `economy_codebooks_payment_terminals`,
+  index `idx_payment_terminal`) — terminál / brána použitá k platbě. U karty
+  na prodejním dokladu doplní `PartnerBalanceResolver` default terminál
+  pokladny hlavičky (na faktuře bez pokladny default mezi všemi), u brány
+  (`payment_method` 5) je výběr povinný — chyba `payment_terminal_required`.
+- `transport` (int NULL → `economy_codebooks_transports`) — způsob dopravy;
+  jen prodejní směr.
+- `partner_balance` (int NULL → `base_persons_persons`, formulář „Plátce",
+  index `idx_partner_balance`) — **osoba pro saldokonto**: partner
+  saldokontního řádku (`accountingRules` `partnerSrc: "balance"`). Odvozuje
+  `PartnerBalanceResolver` ve `validate()` i `beforeSave()` pro prodejní směr
+  (`invno`, `cashreg`, `cash` příjem): karta / brána → protistrana terminálu,
+  dobírka → protistrana dopravce, jinak `= partner`. Pro `invni` a výdej jen
+  ruční zadání.
+- `partner_balance_manual` (boolean default 0) — ruční plátce: krok „jinak
+  = partner" ho nepřepíše; terminál / dopravce má přednost i před ním. Import
+  (`_importNumber`) s ručním plátcem se respektuje celý.
+- Prodejní doklad nad pokladnou (prodejka, příjmový PD) placený kartou,
+  dobírkou nebo bránou musí mít plátce — chyba `partner_balance_required`
+  (`CashDeskDocumentBase`).
 
 ### `lineage` — system
 

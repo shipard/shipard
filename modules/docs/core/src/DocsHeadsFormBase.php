@@ -10,6 +10,7 @@ use Shipard\Core\Form\FormHeaderInfo;
 use Shipard\Core\Form\FormTab;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\SubtableCellFormatter;
+use Shipard\Core\Form\TabBuilder;
 use Shipard\Core\Form\TableForm;
 use Shipard\Core\Settings\SettingsStore;
 
@@ -310,11 +311,16 @@ abstract class DocsHeadsFormBase extends TableForm
             return null;
         }
 
-        // Info řádka: typ dokladu (bez labelu) + volitelně číslo dokladu.
+        // Info řádka: typ dokladu (bez labelu) + volitelně číslo dokladu
+        // + Plátce, liší-li se osoba pro saldokonto od partnera (#72).
         $info = [['label' => '', 'value' => $this->getDocTypeLabel()]];
         $docNumber = trim((string) ($data['doc_number'] ?? ''));
         if ($docNumber !== '') {
             $info[] = ['label' => 'Číslo', 'value' => $docNumber];
+        }
+        $payerName = $this->resolvePayerName($data);
+        if ($payerName !== '') {
+            $info[] = ['label' => 'Plátce', 'value' => $payerName];
         }
 
         return new FormHeaderInfo(
@@ -351,6 +357,25 @@ abstract class DocsHeadsFormBase extends TableForm
             return '';
         }
         return trim((string) $row['full_name']);
+    }
+
+    /**
+     * Jméno plátce (osoby pro saldokonto), jen pokud se liší od partnera
+     * hlavičky — jinak prázdný řetězec (pruh ho neukazuje).
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function resolvePayerName(array $data): string
+    {
+        $payerId = (int) ($data['partner_balance'] ?? 0);
+        if ($payerId === 0 || $payerId === (int) ($data['partner'] ?? 0) || $this->db === null) {
+            return '';
+        }
+        $row = $this->db->fetchRow(
+            'SELECT `full_name` FROM `base_persons_persons` WHERE `id` = %i',
+            $payerId,
+        );
+        return is_array($row) && !empty($row['full_name']) ? trim((string) $row['full_name']) : '';
     }
 
     /**
@@ -452,7 +477,7 @@ abstract class DocsHeadsFormBase extends TableForm
         $isCashPayment = $this->isCashPayment($data);
         $cashDeskHint = $this->cashDeskHint($data, $docCurrency);
 
-        return $this->tab('basic', 'Hlavička')
+        $tab = $this->tab('basic', 'Hlavička')
             ->section()
                 ->col()
                     ->separator('Identifikace')
@@ -572,7 +597,9 @@ abstract class DocsHeadsFormBase extends TableForm
                         placeholder: 'Hledat pokladnu…',
                         hidden: !$isCashPayment,
                         hint: $cashDeskHint,
-                    )
+                    );
+        $this->addPaymentIntermediaryElements($tab, $data);
+        return $tab
                     ->select('bank_account',
                         options: $this->resolveBankAccountOptions($docCurrency),
                     )
@@ -1085,11 +1112,125 @@ abstract class DocsHeadsFormBase extends TableForm
             }
         }
 
+        if (in_array($changedColumn, self::PAYER_RECALC_COLUMNS, true)) {
+            $this->applyPartnerBalancePreview($data);
+        }
+
         $isNew = !isset($data['id']) || $data['id'] === null || $data['id'] === '';
         return new RecalculateResult(
             $this->buildFormDefinition($data, $isNew),
             $data,
         );
+    }
+
+    /** Sloupce, jejichž změna přepočítá náhled plátce (PartnerBalanceResolver). */
+    protected const PAYER_RECALC_COLUMNS = [
+        'payment_method', 'payment_terminal', 'transport', 'partner',
+        'partner_balance_manual', 'cash_desk', 'number_series', 'cash_dir',
+    ];
+
+    // ── Prostředník platby a plátce (#72) ───────────────────────────────────
+
+    /**
+     * Terminál / brána (jen prodejní směr s kartou / bránou), způsob dopravy
+     * (prodejní směr) a Plátce (`partner_balance`) s přepínačem ručního
+     * zadání. Sdílené všemi hlavičkovými formuláři — každý per-typ
+     * buildHeaderTab helper volá za pokladnou / způsobem úhrady, aby
+     * viditelnost i filtry byly všude stejné. Odvozený plátce (terminál,
+     * dopravce) je read-only a checkbox se schová: odvození má přednost
+     * (D2); ruční plátce se zapíná checkboxem u převodu / zápočtu / FP.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function addPaymentIntermediaryElements(TabBuilder $tab, array $data): TabBuilder
+    {
+        $data = $this->intermediaryData($data);
+        $sales = PartnerBalanceResolver::isSalesDirection($data, $this->config);
+        $usesTerminal = PartnerBalanceResolver::usesTerminal($data, $this->config);
+        $isGateway = (int) ($data['payment_method'] ?? 1) === PartnerBalanceResolver::METHOD_GATEWAY;
+        $source = $this->partnerBalanceSource($data);
+        $derived = PartnerBalanceResolver::isDerived($source);
+        $manual = !empty($data['partner_balance_manual']);
+
+        $terminalFilter = $isGateway
+            ? ['kind' => PartnerBalanceResolver::KIND_GATEWAY]
+            : ['kind' => PartnerBalanceResolver::KIND_TERMINAL]
+                + (!empty($data['cash_desk']) ? ['cash_desk' => (int) $data['cash_desk']] : []);
+        $terminalHint = null;
+        if ($usesTerminal && empty($data['payment_terminal'])) {
+            $terminalHint = $isGateway
+                ? 'Platba bránou vyžaduje vybranou bránu — založ ji v číselníku Platební terminály a brány'
+                : 'Bez terminálu s protistranou je plátcem partner dokladu';
+        }
+        $payerHint = match ($source) {
+            PartnerBalanceResolver::SOURCE_TERMINAL  => 'Protistrana terminálu / brány — pohledávka vzniká za ní',
+            PartnerBalanceResolver::SOURCE_TRANSPORT => 'Protistrana dopravce — pohledávka z dobírky vzniká za ní',
+            default                                  => null,
+        };
+
+        return $tab
+            ->lookup('payment_terminal',
+                table: 'economy_codebooks_payment_terminals',
+                filter: $terminalFilter,
+                placeholder: $isGateway ? 'Hledat platební bránu…' : 'Hledat terminál…',
+                hidden: !$usesTerminal,
+                triggers: 'reload',
+                hint: $terminalHint,
+            )
+            ->lookup('transport',
+                table: 'economy_codebooks_transports',
+                placeholder: 'Hledat způsob dopravy…',
+                hidden: !$sales,
+                triggers: 'reload',
+            )
+            ->lookup('partner_balance',
+                table: 'base_persons_persons',
+                placeholder: $manual && !$derived ? 'Hledat plátce…' : 'Odvozeno z dokladu',
+                readOnly: $derived || !$manual,
+                hint: $payerHint,
+            )
+            ->checkbox('partner_balance_manual', triggers: 'reload', hidden: $derived);
+    }
+
+    /**
+     * Data pro odvození prostředníka — base vrací vstup; formuláře nad
+     * pokladnou doplní `cash_desk` z řady (na uložení ji denormalizuje
+     * DocDocument, ale náhled a filtr terminálu ji chtějí už teď).
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    protected function intermediaryData(array $data): array
+    {
+        return $data;
+    }
+
+    /** Zdroj plátce (PartnerBalanceResolver::SOURCE_*) nad kopií dat — jen pro renderování. */
+    protected function partnerBalanceSource(array $data): string
+    {
+        $copy = $data;
+        return $this->partnerBalanceResolver()->resolve($copy);
+    }
+
+    /**
+     * Živý náhled plátce po změně pole (recalculate): odvozená hodnota jde
+     * do response `data`, stejnou logikou jako při uložení. Terminál mimo
+     * kartu / bránu na prodejním dokladu se vyprázdní.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function applyPartnerBalancePreview(array &$data): void
+    {
+        $data = $this->intermediaryData($data);
+        if (!PartnerBalanceResolver::usesTerminal($data, $this->config)) {
+            $data['payment_terminal'] = null;
+        }
+        $this->partnerBalanceResolver()->resolve($data);
+    }
+
+    protected function partnerBalanceResolver(): PartnerBalanceResolver
+    {
+        return new PartnerBalanceResolver($this->db?->getDibiConnection(), $this->config);
     }
 
     /** Má typ dokladu řadu vázanou na entitu (`docTypes[].series_binding`)? */

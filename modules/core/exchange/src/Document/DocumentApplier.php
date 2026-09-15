@@ -105,6 +105,7 @@ class DocumentApplier
         'card'           => 2,
         'cashOnDelivery' => 3,
         'setOff'         => 4,
+        'paymentGateway' => 5,
     ];
 
     /** Map canonical row.priceCalcMode → docs_core_rows.price_calc_mode. */
@@ -536,6 +537,15 @@ class DocumentApplier
             }
         }
 
+        // Osoba pro saldokonto (#72): ruční plátce z payloadu — resolvuje se
+        // jako strana (bez selfParty), u každého typu dokladu; chybějící =
+        // plátce odvodí DocDocument při uložení.
+        $balancePartyResult = null;
+        $balanceParty = is_array($canonical['balanceParty'] ?? null) ? $canonical['balanceParty'] : [];
+        if ($balanceParty !== []) {
+            $balancePartyResult = $this->partyResolver->resolve($balanceParty);
+        }
+
         $rowsResolve = [];
         $rows = is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [];
         $vatCountry = strtolower((string) ($canonical['vat']['registrationCountry'] ?? ''));
@@ -607,6 +617,9 @@ class DocumentApplier
         if ($customerResult !== null) {
             $resolved['customer'] = $customerResult->toArray();
         }
+        if ($balancePartyResult !== null) {
+            $resolved['balanceParty'] = $balancePartyResult->toArray();
+        }
         if ($supplierBankResult !== null) {
             $resolved['supplierBank'] = $supplierBankResult->toArray();
         }
@@ -625,7 +638,7 @@ class DocumentApplier
      *   bankCreate: ?array<string, mixed>,
      *   rowItemCreates: array<int, array<string, mixed>>,
      *   rowSkips: list<int>,
-     *   resolvedSupplier: ?int, resolvedCustomer: ?int,
+     *   resolvedSupplier: ?int, resolvedCustomer: ?int, resolvedBalanceParty: ?int,
      *   resolvedSupplierBank: ?int,
      *   resolvedRowItems: array<int, int|null>,
      *   resolvedRowUnits: array<int, int|null>,
@@ -644,6 +657,7 @@ class DocumentApplier
             'rowNoItems'          => [],
             'resolvedSupplier'    => null,
             'resolvedCustomer'    => null,
+            'resolvedBalanceParty' => null,
             'resolvedSupplierBank'=> null,
             'resolvedRowItems'    => [],
             'resolvedRowUnits'    => [],
@@ -661,7 +675,7 @@ class DocumentApplier
             $issues,
         );
 
-        foreach (['supplier', 'customer'] as $partyKey) {
+        foreach (['supplier', 'customer', 'balanceParty'] as $partyKey) {
             $fresh = $resolved[$partyKey] ?? null;
             $client = $clientResolve[$partyKey] ?? null;
             if ($fresh === null) {
@@ -929,13 +943,13 @@ class DocumentApplier
     /**
      * @param array<string, mixed> $plan
      * @param array<string, mixed> $resolved
-     * @return array{supplier: ?int, customer: ?int, supplierBank: ?int, rowItems: array<int, int>}
+     * @return array{supplier: ?int, customer: ?int, balanceParty: ?int, supplierBank: ?int, rowItems: array<int, int>}
      */
     private function runSideCreates(array $plan, array $resolved): array
     {
-        $ids = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
+        $ids = ['supplier' => null, 'customer' => null, 'balanceParty' => null, 'supplierBank' => null, 'rowItems' => []];
 
-        foreach (['supplier', 'customer'] as $partyKey) {
+        foreach (['supplier', 'customer', 'balanceParty'] as $partyKey) {
             $payload = $plan['partyCreates'][$partyKey] ?? null;
             if (!is_array($payload) || $payload === []) {
                 continue;
@@ -1095,6 +1109,9 @@ class DocumentApplier
         };
         // Směr pokladního dokladu (jen cashDocument; validátor hlídá 1/2).
         $cashDir = isset($canonical['cashDirection']) ? (int) $canonical['cashDirection'] : 0;
+        // Ruční plátce (#72): poslaná strana = partner_balance s příznakem
+        // ručního zadání, aby ho odvození (terminál / dopravce) nepřepsalo.
+        $balancePartyId = $sideIds['balanceParty'] ?? $plan['resolvedBalanceParty'] ?? null;
 
         $vatRegistrationId = $this->resolveVatRegistrationFor($canonical);
         // Derivace přebíjí deklarovaný mode (kromě none) — koriguje se jen
@@ -1142,6 +1159,8 @@ class DocumentApplier
             'doc_text'             => $canonical['docText'] ?? null,
             'partner_doc_number'   => $canonical['docNumber'] ?? null,
             'partner'              => $partnerId,
+            'partner_balance'        => $balancePartyId !== null ? (int) $balancePartyId : null,
+            'partner_balance_manual' => $balancePartyId !== null ? 1 : null,
             // Import mode: virtual field consumed + removed by
             // DocDocument::beforeSave. Must NOT reach SQL. Null when not in
             // import mode → dropped by the array_filter below.
@@ -2173,7 +2192,7 @@ class DocumentApplier
         $matched = 0;
         $unresolved = 0;
         $ambiguous = 0;
-        foreach (['supplier', 'customer', 'supplierBank'] as $key) {
+        foreach (['supplier', 'customer', 'balanceParty', 'supplierBank'] as $key) {
             $status = $resolved[$key]['status'] ?? null;
             if ($status === 'matched') $matched++;
             elseif ($status === 'ambiguous') $ambiguous++;
@@ -2245,7 +2264,7 @@ class DocumentApplier
      */
     private function annotateSideCreated(array $resolved, array $sideIds): array
     {
-        foreach (['supplier', 'customer', 'supplierBank'] as $key) {
+        foreach (['supplier', 'customer', 'balanceParty', 'supplierBank'] as $key) {
             if (($resolved[$key]['status'] ?? null) === 'canCreate' && ($sideIds[$key] ?? null) !== null) {
                 $resolved[$key]['status'] = 'matched';
                 $resolved[$key]['matchedId'] = $sideIds[$key];

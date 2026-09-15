@@ -42,7 +42,7 @@ final class DocumentExporter implements RecordExporter
     private const VAT_CALC_SOURCE_NAMES = [0 => 'header', 1 => 'rows'];
     /** docs_core_heads.cs_mode → canonical vat.controlStatementMode (#77). */
     private const CS_MODE_NAMES = [0 => 'auto', 1 => 'detail', 2 => 'aggregate', 3 => 'exclude'];
-    private const PAYMENT_METHOD_NAMES = [0 => 'cash', 1 => 'bankTransfer', 2 => 'card', 3 => 'cashOnDelivery', 4 => 'setOff'];
+    private const PAYMENT_METHOD_NAMES = [0 => 'cash', 1 => 'bankTransfer', 2 => 'card', 3 => 'cashOnDelivery', 4 => 'setOff', 5 => 'paymentGateway'];
     private const PRICE_CALC_MODE_NAMES = [0 => 'fromUnitPrice', 1 => 'fromTotal'];
     private const ROW_KIND_NAMES = [0 => 'text', 1 => 'item', 2 => 'section'];
 
@@ -191,6 +191,11 @@ final class DocumentExporter implements RecordExporter
             'selfParty'     => $selfParty,
             'supplier'      => $partnerSide === 'supplier' ? $partner : null,
             'customer'      => $partnerSide === 'customer' ? $partner : null,
+            // Jen ruční plátce (#72): odvozený (terminál / dopravce / partner)
+            // si cílový DS odvodí sám, export by ho zbytečně zmrazil.
+            'balanceParty'  => !empty($h['partner_balance_manual'])
+                ? $this->party(isset($h['partner_balance']) ? (int) $h['partner_balance'] : null)
+                : null,
             'dates'         => [
                 'issueDate'         => V::date($h['issue_date'] ?? null),
                 'dueDate'           => V::date($h['due_date'] ?? null),

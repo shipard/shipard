@@ -1980,7 +1980,9 @@ Některá rozhodnutí jsou v dokumentu uvedena jako návrh a potřebují
 upřesnit při startu implementace nebo až vznikne potřeba:
 
 1. **cfgItem `docs.core.paymentMethods`** — přesné hodnoty (návrh: 0
-   hotovost, 1 převodem, 2 kartou, 3 dobírkou, 4 zápočtem)
+   hotovost, 1 převodem, 2 kartou, 3 dobírkou, 4 zápočtem). *Vyřešeno:*
+   návrh platí beze změny; #72 D4 přidal **5 Platební bránou** (vyžaduje
+   `payment_terminal` druhu brána, plátce = protistrana brány).
 2. **cfgItem `docs.core.roundingModes`** — přesné hodnoty (návrh: 0 bez
    zaokrouhlení, 1 matematicky na 1, 2 matematicky na 0,01). *Vyřešeno
    (#63):* 0 na haléře, 1 / 3 / 4 matematicky / nahoru / dolů na 1,

@@ -248,6 +248,9 @@
                                         "customer": {
                                             "$ref": "#/$defs/Party"
                                         },
+                                        "balanceParty": {
+                                            "$ref": "#/$defs/Party"
+                                        },
                                         "dates": {
                                             "type": "object",
                                             "additionalProperties": false,

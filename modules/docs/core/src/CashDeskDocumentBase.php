@@ -20,7 +20,10 @@ use Shipard\Core\Document\ValidationResult;
  *     seznam rozšířit přepsáním `PAYMENT_METHODS_ALLOWED` (prodejka přidává
  *     Převodem, viz CashRegisterDocument),
  *   - měna dokladu = měna pokladny (jiná je chyba `currency_mismatch`),
- *   - splatnost = datum vystavení (hotovostní doklad nemá splatnost).
+ *   - splatnost = datum vystavení (hotovostní doklad nemá splatnost),
+ *   - příjem kartou / bránou / dobírkou vyžaduje plátce (`partner_balance`
+ *     po odvození — protistrana terminálu, brány, dopravce, jinak partner;
+ *     #72 D2): pohledávka 311 bez dlužníka by se nedala spárovat.
  *
  * Směr (`cash_dir`), denormalizaci pokladny z řady a snapshoty stran řeší
  * DocDocument obecně přes `resolveTradeDir` — tady se nic neduplikuje.
@@ -32,6 +35,13 @@ abstract class CashDeskDocumentBase extends DocsHeadsDocument
      * Potomek přepíše (late static binding v `validate` i ve formuláři).
      */
     public const PAYMENT_METHODS_ALLOWED = [0, 2];
+
+    /** Způsoby úhrady, u kterých prodejní doklad musí mít plátce (karta, dobírka, brána). */
+    public const PAYMENT_METHODS_NEED_PAYER = [
+        PartnerBalanceResolver::METHOD_CARD,
+        PartnerBalanceResolver::METHOD_COD,
+        PartnerBalanceResolver::METHOD_GATEWAY,
+    ];
 
     /** Lidský popis povolených metod pro chybovou hlášku. */
     protected function paymentMethodsAllowedLabel(): string
@@ -57,6 +67,20 @@ abstract class CashDeskDocumentBase extends DocsHeadsDocument
                 'payment_method',
                 'Doklad lze uhradit jen ' . $this->paymentMethodsAllowedLabel(),
                 'invalid_value',
+            );
+        }
+
+        // Rodič už odvodil partner_balance (PartnerBalanceResolver); prodejní
+        // doklad placený kartou / bránou / dobírkou bez plátce = pohledávka
+        // bez dlužníka. DS bez terminálů projde, jakmile má doklad partnera.
+        if (PartnerBalanceResolver::isSalesDirection($data, $this->config)
+            && in_array((int) $paymentMethod, self::PAYMENT_METHODS_NEED_PAYER, true)
+            && empty($data['partner_balance'])
+        ) {
+            $result->addError(
+                'partner_balance',
+                'Doklad nemá plátce — nastav terminál / bránu / dopravce s protistranou, nebo zadej odběratele',
+                'partner_balance_required',
             );
         }
 

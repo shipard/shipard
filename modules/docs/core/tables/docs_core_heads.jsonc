@@ -518,6 +518,60 @@
             "group": "payment"
         },
         {
+            // Platební terminál / brána (#72 D4). U karty doplní
+            // PartnerBalanceResolver default terminál pokladny hlavičky (na
+            // faktuře bez pokladny default mezi všemi), u brány (payment_method
+            // 5) je výběr povinný (payment_terminal_required).
+            "id": "payment_terminal",
+            "name": "Payment terminal / gateway",
+            "name:cs": "Platební terminál / brána",
+            "name:en": "Payment terminal / gateway",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_payment_terminals",
+            "group": "payment"
+        },
+        {
+            // Způsob dopravy (#72 D5) — prodejní směr; s dobírkou a dopravou
+            // s protistranou z ní vzniká plátce.
+            "id": "transport",
+            "name": "Transport",
+            "name:cs": "Způsob dopravy",
+            "name:en": "Transport",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_transports",
+            "group": "payment"
+        },
+        {
+            // Osoba pro saldokonto (#72 D2): partner saldokontního řádku
+            // (accountingRules partnerSrc: "balance"). Odvozuje
+            // PartnerBalanceResolver ve validate/beforeSave: terminál / brána /
+            // dopravce, jinak = partner; ruční hodnotu drží
+            // partner_balance_manual.
+            "id": "partner_balance",
+            "name": "Balance partner",
+            "name:cs": "Osoba pro saldokonto",
+            "name:en": "Balance partner",
+            "formLabel": "Payer",
+            "formLabel:cs": "Plátce",
+            "formLabel:en": "Payer",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_persons_persons",
+            "group": "payment"
+        },
+        {
+            "id": "partner_balance_manual",
+            "name": "Enter payer manually",
+            "name:cs": "Zadat plátce ručně",
+            "name:en": "Enter payer manually",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "group": "payment"
+        },
+        {
             "id": "payment_reference",
             "name": "Payment reference",
             "name:cs": "Variabilní symbol",
@@ -708,6 +762,18 @@
             "id": "idx_cash_desk",
             "type": "index",
             "columns": [{"column": "cash_desk"}]
+        },
+
+        // osoba pro saldokonto (#72) — doklady plátce; terminál / brána dokladu
+        {
+            "id": "idx_partner_balance",
+            "type": "index",
+            "columns": [{"column": "partner_balance"}]
+        },
+        {
+            "id": "idx_payment_terminal",
+            "type": "index",
+            "columns": [{"column": "payment_terminal"}]
         },
 
         // dates for reports

@@ -24,16 +24,20 @@ class CashDocumentValidateTest extends TestCase
      * Řada 2 = pokladní doklad vázaný na pokladnu 7 (měna dle parametru);
      * ostatní dotazy (vlastní firma) vrací řádek s id 1.
      */
-    private function db(string $deskCurrency = 'czk'): Connection
+    private function db(string $deskCurrency = 'czk', ?Row $terminal = null): Connection
     {
         $db = $this->createMock(Connection::class);
         $db->method('fetch')->willReturnCallback(
-            static function (string $sql, mixed ...$params) use ($deskCurrency): ?Row {
+            static function (string $sql, mixed ...$params) use ($deskCurrency, $terminal): ?Row {
                 if (str_contains($sql, 'docs_core_number_series')) {
                     return new Row(['doc_type' => 'cash', 'cash_desk' => self::CASH_DESK_ID, 'warehouse' => null]);
                 }
                 if (str_contains($sql, 'economy_codebooks_cash_desks')) {
                     return new Row(['code' => 'HP1', 'name' => 'Hlavní pokladna', 'currency' => $deskCurrency]);
+                }
+                // Default terminál pokladny (PartnerBalanceResolver) — jen když ho test dodá.
+                if (str_contains($sql, 'economy_codebooks_payment_terminals')) {
+                    return $terminal;
                 }
                 return new Row(['id' => 1]);
             },
@@ -53,10 +57,10 @@ class CashDocumentValidateTest extends TestCase
         return $config;
     }
 
-    private function doc(string $deskCurrency = 'czk'): TestableCashDocument
+    private function doc(string $deskCurrency = 'czk', ?Row $terminal = null): TestableCashDocument
     {
         $doc = new TestableCashDocument();
-        $doc->setDb($this->db($deskCurrency));
+        $doc->setDb($this->db($deskCurrency, $terminal));
         $doc->setConfig($this->config());
         return $doc;
     }
@@ -88,14 +92,41 @@ class CashDocumentValidateTest extends TestCase
         $errors = $this->errorsFor($doc->validate($data)->toArray(), 'payment_method');
         $this->assertSame('invalid_value', $errors[0]['code']);
 
+        // Karta na příjmu chce plátce (#72) — tady ho dává partner hlavičky.
         foreach ([0, 2] as $allowed) {
-            $data = $this->konceptData(['payment_method' => $allowed]);
+            $data = $this->konceptData(['payment_method' => $allowed, 'partner' => 5]);
             $this->assertTrue($doc->validate($data)->isValid(), "payment_method {$allowed} je povolený");
         }
 
         // bez způsobu úhrady projde — default doplní beforeSave
         $data = $this->konceptData();
         $this->assertTrue($doc->validate($data)->isValid());
+    }
+
+    /**
+     * Příjem kartou = pohledávka 311 za plátcem (#72 D1/D2): bez terminálu
+     * s protistranou i bez partnera hlavičky doklad neprojde; s partnerem je
+     * plátce = partner; default terminál pokladny s protistranou má přednost.
+     * Výdej kartou plátce nevyžaduje (není prodejní směr).
+     */
+    public function testCardReceiptRequiresPayer(): void
+    {
+        $data = $this->konceptData(['payment_method' => 2]);
+        $errors = $this->errorsFor($this->doc()->validate($data)->toArray(), 'partner_balance');
+        $this->assertSame('partner_balance_required', $errors[0]['code']);
+
+        $data = $this->konceptData(['payment_method' => 2, 'partner' => 5]);
+        $this->assertTrue($this->doc()->validate($data)->isValid());
+        $this->assertSame(5, $data['partner_balance'], 'bez terminálu plátce = partner');
+
+        $terminal = new Row(['id' => 9, 'kind' => 0, 'cash_desk' => self::CASH_DESK_ID, 'partner' => 33]);
+        $data = $this->konceptData(['payment_method' => 2, 'partner' => 5]);
+        $this->assertTrue($this->doc('czk', $terminal)->validate($data)->isValid());
+        $this->assertSame(33, $data['partner_balance'], 'protistrana terminálu má přednost před partnerem');
+        $this->assertSame(9, $data['payment_terminal'], 'default terminál pokladny se doplní do hlavičky');
+
+        $data = $this->konceptData(['payment_method' => 2, 'cash_dir' => 2]);
+        $this->assertTrue($this->doc()->validate($data)->isValid(), 'výdej kartou plátce nevyžaduje');
     }
 
     public function testDocCurrencyMustMatchCashDesk(): void

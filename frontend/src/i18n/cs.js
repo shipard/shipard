@@ -258,6 +258,7 @@ export default {
   'viewer.document.meta.exchangeRate': 'Kurz',
   'viewer.document.meta.paymentMethod': 'Způsob platby',
   'viewer.document.meta.cashDesk': 'Pokladna',
+  'viewer.document.meta.payer': 'Plátce',
   'viewer.document.meta.paymentReference': 'Variabilní symbol',
   'viewer.document.meta.specificSymbol': 'Specifický symbol',
   'viewer.document.meta.constantSymbol': 'Konstantní symbol',

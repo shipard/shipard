@@ -90,8 +90,25 @@ abstract class CashDeskFormBase extends DocsHeadsFormBase
                 $data['doc_currency'] = $desk['currency'];
             }
         }
+        $this->applyPartnerBalancePreview($data);
         $isNew = !isset($data['id']) || $data['id'] === null || $data['id'] === '';
         return new RecalculateResult($this->buildFormDefinition($data, $isNew), $data);
+    }
+
+    /**
+     * Pokladna z řady už pro náhled plátce a filtr terminálu (#72): nový
+     * doklad má `cash_desk` až po uložení (denormalizace v DocDocument),
+     * ale default terminál pokladny a filtr lookupu ji potřebují hned.
+     */
+    protected function intermediaryData(array $data): array
+    {
+        if (empty($data['cash_desk'])) {
+            $desk = $this->resolveCashDesk($data);
+            if ($desk !== null) {
+                $data['cash_desk'] = $desk['id'];
+            }
+        }
+        return $data;
     }
 
     /**

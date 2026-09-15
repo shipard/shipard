@@ -31,6 +31,7 @@
         "cashDirection": { "enum": [1, 2, null] },
         "supplier": { "$ref": "#/$defs/Party" },
         "customer": { "$ref": "#/$defs/Party" },
+        "balanceParty": { "$ref": "#/$defs/Party" },
         "dates": {
             "type": "object",
             "additionalProperties": false,

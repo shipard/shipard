@@ -169,6 +169,8 @@ Top-level struktura:
   // ── Parties ──────────────────────────────────────────────────────────────
   "supplier":  { /* Party — viz sekce 6 */ },
   "customer":  { /* Party — viz sekce 6 */ },
+  "balanceParty": null,            // Party — ruční plátce (osoba pro
+                                  //   saldokonto, #72); null = odvodí se
 
   // ── Dates ────────────────────────────────────────────────────────────────
   "dates": {
@@ -232,7 +234,8 @@ Top-level struktura:
 
   // ── Payment ──────────────────────────────────────────────────────────────
   "payment": {
-    "method":          "bankTransfer",  // key z docs.core.paymentMethods
+    "method":          "bankTransfer",  // cash | bankTransfer | card | cashOnDelivery
+                                        //   | setOff | paymentGateway (docs.core.paymentMethods)
     "paymentReference": "2026000123",
     "specificSymbol":  null,
     "constantSymbol":  null
@@ -469,6 +472,17 @@ naše vlastní firma. Resolve pro customer:
    `OwnCompanyResolver::getOwnPersonId()`.
 
 Symetricky pro `selfParty == "supplier"`.
+
+**`balanceParty` — ruční plátce (#72 D2).** Volitelná třetí strana bez
+vazby na `selfParty`: osoba pro saldokonto, za kterou vzniká saldokontní
+řádek dokladu (`docs_core_heads.partner_balance`). Applier ji resolvuje
+stejně jako `supplier`/`customer` (`_resolve.balanceParty`, `userAction`,
+auto-create) a zapíše ji s `partner_balance_manual = 1` — odvození při
+uložení (terminál / dopravce / partner) ji pak nepřepíše, v import módu
+ani terminál. Vynechaná / `null` = plátce se odvodí při uložení. Exportér
+ji vydává jen u dokladu s ručním plátcem; odvozeného si cílový DS odvodí
+sám. Terminál a způsob dopravy kanonický formát zatím nenese (navazující
+importní task).
 
 `selfParty == null` znamená "nevíme / nezáleží" — typicky externí export
 nebo import mezi dvěma cizími subjekty.

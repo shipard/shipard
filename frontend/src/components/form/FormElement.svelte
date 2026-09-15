@@ -65,7 +65,7 @@
 
 {:else if element.type === 'input' && element.input_type === 'checkbox'}
   <div class="shpd-form-checkbox-row" class:shpd-form-checkbox-row--hidden={element.hidden}>
-    <Checkbox label={element.label} bind:checked={formData[element.column]} disabled={elDisabled} />
+    <Checkbox label={element.label} bind:checked={formData[element.column]} disabled={elDisabled} onchange={handleChange} />
   </div>
 
 {:else}

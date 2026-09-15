@@ -67,6 +67,11 @@
         // ── Parties ─────────────────────────────────────────────────────
         "supplier": { "$ref": "#/$defs/Party" },
         "customer": { "$ref": "#/$defs/Party" },
+        // Osoba pro saldokonto (#72 D2) — ruční plátce dokladu: applier ji
+        // resolvuje jako stranu a zapíše partner_balance + partner_balance_manual = 1
+        // (odvození z terminálu / dopravce ji nepřepíše). Null / vynecháno =
+        // plátce se odvodí při uložení. Exportér ji vydává jen u ručního plátce.
+        "balanceParty": { "$ref": "#/$defs/Party" },
 
         // ── Dates ───────────────────────────────────────────────────────
         "dates": {

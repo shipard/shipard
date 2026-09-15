@@ -6,6 +6,7 @@
     //   2 = kartou
     //   3 = dobírkou
     //   4 = zápočtem
+    //   5 = platební bránou (#72 D4 — vyžaduje payment_terminal druhu brána)
 
     "0": {
         "name": "Cash",
@@ -31,5 +32,10 @@
         "name": "Set-off",
         "name:cs": "Zápočtem",
         "name:en": "Set-off"
+    },
+    "5": {
+        "name": "Payment gateway",
+        "name:cs": "Platební bránou",
+        "name:en": "Payment gateway"
     }
 }

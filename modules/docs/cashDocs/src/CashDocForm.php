@@ -151,15 +151,18 @@ class CashDocForm extends CashDeskFormBase
         $vatMode = (int) ($data['vat_mode'] ?? 1);
         $hasVat = $vatMode !== 0;
 
-        return $this->tab('settings', 'Nastavení')
+        $tab = $this->tab('settings', 'Nastavení')
             ->section(title: 'Platba')
                 ->col()
                     ->select(
                         'payment_method',
                         options: $this->paymentMethodOptions(),
                         triggers: 'reload',
-                    )
-
+                    );
+        // Terminál (příjem kartou), Plátce (#72): příjem kartou bez plátce
+        // doklad nepustí (partner_balance_required), výdej má jen ruční plátce.
+        $this->addPaymentIntermediaryElements($tab, $data);
+        return $tab
             ->section(title: 'DPH', hidden: !$hasVat)
                 ->col()
                     ->select(

@@ -249,6 +249,7 @@ export default {
   'viewer.document.meta.exchangeRate': 'Exchange rate',
   'viewer.document.meta.paymentMethod': 'Payment method',
   'viewer.document.meta.cashDesk': 'Cash desk',
+  'viewer.document.meta.payer': 'Payer',
   'viewer.document.meta.paymentReference': 'Payment reference',
   'viewer.document.meta.specificSymbol': 'Specific symbol',
   'viewer.document.meta.constantSymbol': 'Constant symbol',

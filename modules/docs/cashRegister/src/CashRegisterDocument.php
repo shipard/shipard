@@ -20,15 +20,18 @@ use Shipard\Module\Docs\Core\CashDeskDocumentBase;
  * `query: {payment_method: 1}`), a proto vyžaduje partnera hlavičky
  * (anonymní pohledávka nedává smysl). Rozhodnutí #59, reimport 2026-09-08:
  * starý Shipard takové prodejky účtoval na 311, msi jich má tři.
+ *
+ * Dobírka (3) a platební brána (5, #72 D4) jsou také pohledávky — za
+ * dopravcem resp. bránou (`partner_balance`, viz CashDeskDocumentBase).
  */
 class CashRegisterDocument extends CashDeskDocumentBase
 {
-    /** 0 Hotovost, 1 Převodem, 2 Kartou. */
-    public const PAYMENT_METHODS_ALLOWED = [0, 1, 2];
+    /** 0 Hotovost, 1 Převodem, 2 Kartou, 3 Dobírkou, 5 Platební bránou. */
+    public const PAYMENT_METHODS_ALLOWED = [0, 1, 2, 3, 5];
 
     protected function paymentMethodsAllowedLabel(): string
     {
-        return 'hotově, převodem nebo kartou';
+        return 'hotově, převodem, kartou, dobírkou nebo platební bránou';
     }
 
     public function validate(array &$data): ValidationResult

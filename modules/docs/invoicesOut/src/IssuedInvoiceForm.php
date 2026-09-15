@@ -69,7 +69,7 @@ class IssuedInvoiceForm extends DocsHeadsFormBase
             && $docCurrency !== $homeCurrency;
         $partnerId = (int) ($data['partner'] ?? 0);
 
-        return $this->tab('basic', 'Hlavička')
+        $tab = $this->tab('basic', 'Hlavička')
             ->section()
             ->col()
             ->select(
@@ -111,8 +111,10 @@ class IssuedInvoiceForm extends DocsHeadsFormBase
                 placeholder: 'Hledat pokladnu…',
                 hidden: !$this->isCashPayment($data),
                 hint: $this->cashDeskHint($data, $docCurrency),
-            )
-
+            );
+        // Terminál / brána, doprava, Plátce (#72) — sdílený helper base.
+        $this->addPaymentIntermediaryElements($tab, $data);
+        return $tab
             ->date('issue_date', required: true, triggers: 'reload')
             ->date('due_date')
             ->date('accounting_date', required: true)

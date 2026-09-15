@@ -254,10 +254,11 @@ class DocsHeadsViewer extends TableViewer
     public function renderDetail(int $recordId): array
     {
         $record = $this->db->fetchRow(
-            'SELECT h.*, p.`full_name` AS partner_name,'
+            'SELECT h.*, p.`full_name` AS partner_name, pb.`full_name` AS partner_balance_name,'
             . ' cd.`code` AS cash_desk_code, cd.`name` AS cash_desk_name'
             . ' FROM `' . $this->table . '` h'
             . ' LEFT JOIN `base_persons_persons` p ON p.`id` = h.`partner`'
+            . ' LEFT JOIN `base_persons_persons` pb ON pb.`id` = h.`partner_balance`'
             . ' LEFT JOIN `economy_codebooks_cash_desks` cd ON cd.`id` = h.`cash_desk`'
             . ' WHERE h.`id` = %i',
             $recordId,
@@ -687,10 +688,23 @@ class DocsHeadsViewer extends TableViewer
             'exchange_rate'   => $hasRate ? number_format((float) $rate, 3, ',', ' ') : null,
             'payment_method'  => $this->resolvePaymentMethodLabel($record['payment_method'] ?? null),
             'cash_desk'       => $this->formatCashDesk($record),
+            // Plátce (osoba pro saldokonto, #72) jen když se liší od partnera.
+            'payer'           => $this->formatPayer($record),
             'payment_reference' => $this->nullableString($record['payment_reference'] ?? null),
             'specific_symbol' => $this->nullableString($record['specific_symbol'] ?? null),
             'constant_symbol' => $this->nullableString($record['constant_symbol'] ?? null),
         ];
+    }
+
+    /** Jméno plátce (LEFT JOIN v renderDetail), jen liší-li se od partnera hlavičky. */
+    private function formatPayer(array $record): ?string
+    {
+        $payerId = (int) ($record['partner_balance'] ?? 0);
+        if ($payerId <= 0 || $payerId === (int) ($record['partner'] ?? 0)) {
+            return null;
+        }
+        $name = trim((string) ($record['partner_balance_name'] ?? ''));
+        return $name !== '' ? $name : null;
     }
 
     /** „kód — název" pokladny dokladu (LEFT JOIN v renderDetail); null bez pokladny. */

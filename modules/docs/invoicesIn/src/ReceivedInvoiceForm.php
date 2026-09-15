@@ -65,7 +65,7 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase
         // (hodnoty zůstávají, viz DocsHeadsFormBase::isBankTransferPayment).
         $isBankTransfer = $this->isBankTransferPayment($data);
 
-        return $this->tab('basic', 'Hlavička')
+        $tab = $this->tab('basic', 'Hlavička')
             ->section()
             ->col()
             ->select(
@@ -114,7 +114,10 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase
                 readOnly: $partnerId === 0,
                 hidden: !$isBankTransfer,
             )
-            ->input('partner_bank_iban', label: 'IBAN', hidden: !$isBankTransfer)
+            ->input('partner_bank_iban', label: 'IBAN', hidden: !$isBankTransfer);
+        // FP: jen ruční Plátce (terminál / doprava jsou prodejní směr, #72 D2).
+        $this->addPaymentIntermediaryElements($tab, $data);
+        return $tab
             ->input('payment_reference')
             ->input('specific_symbol')
 

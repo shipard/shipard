@@ -22,6 +22,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *
  * The orchestration pipeline runs in `beforeSave`:
  *   1. denormalize doc_type (+ cash_desk for bound types) from number_series
+ *   1b. resolve partner_balance (+ payment_terminal) — osoba pro saldokonto
+ *      (PartnerBalanceResolver, #72; běží i ve validate, idempotentní)
  *   2. apply date defaults (accounting_date, vat_duzp, vat_dppd, due_date)
  *   3. apply home_currency from DS config
  *   4. resolve fiscal_year/fiscal_month (vat_period/cs_period/rs_period plní
@@ -131,6 +133,10 @@ abstract class DocDocument extends Document
         // kontrolují nad denormalizovanými hodnotami (idempotentní, 1 SELECT).
         $this->denormalizeFromSeries($data);
         $this->validateBindingAndDirection($data, $result);
+        // Plátce (osoba pro saldokonto) se odvozuje už tady, aby validace
+        // brány / plátce (CashDeskDocumentBase) běžely nad odvozenou hodnotou.
+        $this->resolvePartnerBalance($data);
+        $this->validatePaymentIntermediary($data, $result);
 
         $newState = (int) ($data['docState'] ?? 10);
 
@@ -455,6 +461,7 @@ abstract class DocDocument extends Document
         $this->trackStateChange($data, $originalData);
 
         $this->denormalizeFromSeries($data);
+        $this->resolvePartnerBalance($data);
         $this->applyDateDefaults($data);
         $this->applyHomeCurrency($data);
         $this->resolveAccountingPeriods($data);
@@ -657,6 +664,40 @@ abstract class DocDocument extends Document
      * je u vázaných typů systémová jako doc_type). Pro nevázané typy se
      * `cash_desk` z payloadu nechává (uživatelský u hotově placené faktury).
      */
+    /**
+     * Osoba pro saldokonto (`partner_balance`, #72 D2) + terminál / brána
+     * (`payment_terminal`): jediná autorita je PartnerBalanceResolver, volaný
+     * z validate() i beforeSave() (idempotentní). V import módu se explicitně
+     * poslaný ruční plátce respektuje — ve validate import poznáme podle
+     * `_importNumber` v payloadu, v beforeSave podle `$importMode`.
+     *
+     * @return string zdroj hodnoty (PartnerBalanceResolver::SOURCE_*)
+     */
+    protected function resolvePartnerBalance(array &$data): string
+    {
+        $import = $this->importMode || $this->isLockExempt($data);
+        return (new PartnerBalanceResolver($this->db, $this->config))->resolve($data, $import);
+    }
+
+    /**
+     * Platba bránou (payment_method 5) na prodejním dokladu vyžaduje vybranou
+     * bránu — bez ní by pohledávka neměla plátce. Ostatní kombinace bez chyby:
+     * DS bez terminálů funguje jako dřív (plátce = partner).
+     */
+    protected function validatePaymentIntermediary(array $data, ValidationResult $result): void
+    {
+        if (PartnerBalanceResolver::isSalesDirection($data, $this->config)
+            && (int) ($data['payment_method'] ?? 1) === PartnerBalanceResolver::METHOD_GATEWAY
+            && empty($data['payment_terminal'])
+        ) {
+            $result->addError(
+                'payment_terminal',
+                'Platba bránou vyžaduje vybranou platební bránu — založ ji v číselníku Platební terminály a brány',
+                'payment_terminal_required',
+            );
+        }
+    }
+
     protected function denormalizeFromSeries(array &$data): void
     {
         if (empty($data['number_series']) || $this->db === null) {

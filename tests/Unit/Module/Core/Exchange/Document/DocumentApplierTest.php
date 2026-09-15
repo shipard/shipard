@@ -832,6 +832,38 @@ class DocumentApplierTest extends TestCase
         );
     }
 
+    /** #72: ruční plátce z `balanceParty` → partner_balance + partner_balance_manual = 1. */
+    public function testTransformWritesBalancePartyAsManualPayer(): void
+    {
+        $applier = $this->buildApplier();
+        $canonical = [
+            'docType'      => 'invoiceIssued',
+            'selfParty'    => 'supplier',
+            'dates'        => ['issueDate' => '2024-06-01'],
+            'balanceParty' => ['name' => 'Platební brána s.r.o.', 'companyId' => '12345678'],
+        ];
+        $plan = [
+            'resolvedSupplier' => null, 'resolvedCustomer' => 5, 'resolvedSupplierBank' => null,
+            'resolvedBalanceParty' => 77,
+            'rowSkips' => [], 'resolvedRowItems' => [], 'resolvedRowUnits' => [], 'resolvedRowVatCodes' => [],
+        ];
+        $sideIds = ['supplier' => null, 'customer' => null, 'balanceParty' => null, 'supplierBank' => null, 'rowItems' => []];
+        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, $sideIds, null);
+
+        $this->assertSame(77, $data['partner_balance']);
+        $this->assertSame(1, $data['partner_balance_manual']);
+
+        // Side-create má přednost před plánem (nově založená osoba).
+        $sideIds['balanceParty'] = 78;
+        $data = (new \ReflectionMethod($applier, 'transform'))->invoke($applier, $canonical, $plan, $sideIds, null);
+        $this->assertSame(78, $data['partner_balance']);
+
+        // Bez plátce klíče vypadnou — odvození je na DocDocument.
+        $data = $this->invokeTransform($applier, ['docType' => 'invoiceIssued', 'selfParty' => 'supplier', 'dates' => ['issueDate' => '2024-06-01']]);
+        $this->assertArrayNotHasKey('partner_balance', $data);
+        $this->assertArrayNotHasKey('partner_balance_manual', $data);
+    }
+
     public function testTransformOmitsImportFieldsWhenNotRequested(): void
     {
         $applier = $this->buildApplier();
