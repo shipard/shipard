@@ -1,6 +1,6 @@
 # Saldokonto — pohyb per platební identita, ne per doklad (oprava generátoru)
 
-**Stav:** částečně — kód, CLI, testy a docs hotové 2026-09-14 (3 commity), nasazeno a ověřeno na 4l3j; zbývá ds-upgrade → DROP INDEX → `accbal-regenerate --all` + kontrolní SELECT na e8w1-i a btpg-p (poslední bod „Hotovo když“)
+**Stav:** hotovo — kód, CLI, testy a docs 2026-09-14 (3 commity); ds-upgrade → DROP INDEX → `accbal-regenerate --all` + kontrolní SELECT provedeny na e8w1-i a btpg-p 2026-09-15 (slité identity 0 a 4 okrajové), viz #69 komentář 2026-09-15
 
 ## Kontext
 
@@ -121,9 +121,9 @@ PHPUnit jen s úzkým `--filter`.
 - [x] otevírací doklad s N pohledávkami dá N pohybů s částkou každé
       pohledávky; součet pohybů dokladu = obrat dokladu na saldo-účtu
       (integrační `LedgerGeneratorTest::testOpeningDocumentGivesMovementPerIdentity`)
-- [ ] `accbal-regenerate --all` na `e8w1-i` rozdělí 98 dokladů, na `btpg-p`
+- [x] `accbal-regenerate --all` na `e8w1-i` rozdělí 98 dokladů, na `btpg-p`
       ~3 300; poté `SELECT` „doklady se slitými identitami" (dotaz
-      v poznámkách k implementaci) vrací 0 — **zbývá** (na 4l3j proběhlo:
+      v poznámkách k implementaci) vrací 0 — hotovo 2026-09-15 (na 4l3j proběhlo:
       10 pohybů, 0 slitých, 11 osiřelých fixtur smazáno)
 - [x] testy výše zelené, `unq_stable_key` mimo definici, `movement_key`
       unique
