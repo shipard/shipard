@@ -1,8 +1,9 @@
 // Seed standardních saldokont (skupin + jejich účtů) pro BalancesProvisioner.
 //
-// Idempotence dle `code` skupiny (provisioner přeskočí celou skupinu, pokud
-// už existuje — uživatel si ji mohl upravit). Prefixy účtů ověřeny proti
-// nasazené osnově (accountChartDefault.jsonc).
+// Idempotence dle `code` skupiny: existující skupinu provisioner nepřepisuje
+// (uživatel si ji mohl upravit), jen do ní doplní účty seedu, které v ní
+// chybí — klíč (account_number, acc_side, bal_side, modify_sign). Prefixy
+// účtů ověřeny proti nasazené osnově (accountChartDefault.jsonc).
 //
 // enum hodnoty:
 //   acc_side:     0 = MD,       1 = DAL
@@ -22,7 +23,12 @@
         "show_in_navigation": 1,
         "accounts": [
             {"account_number": "311", "acc_side": 0, "amounts_sign": 1, "bal_side": 0, "modify_sign": false, "note": "Pohledávka vzniká"},
-            {"account_number": "311", "acc_side": 1, "amounts_sign": 1, "bal_side": 1, "modify_sign": false, "note": "Pohledávka se hradí"}
+            {"account_number": "311", "acc_side": 1, "amounts_sign": 1, "bal_side": 1, "modify_sign": false, "note": "Pohledávka se hradí"},
+            // 315 Ostatní pohledávky (#72 D6): vyúčtování úhrad od brány /
+            // terminálu / dopravce (311 DAL per doklad → 315 MD per dávka) a
+            // bankovní úhrada 315 se párují jako běžný dlužník.
+            {"account_number": "315", "acc_side": 0, "amounts_sign": 1, "bal_side": 0, "modify_sign": false, "note": "Ostatní pohledávka vzniká (vyúčtování brány / terminálu)"},
+            {"account_number": "315", "acc_side": 1, "amounts_sign": 1, "bal_side": 1, "modify_sign": false, "note": "Ostatní pohledávka se hradí"}
         ]
     },
     {

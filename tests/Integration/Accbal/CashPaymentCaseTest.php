@@ -28,6 +28,9 @@ class CashPaymentCaseTest extends IntegrationTestCase
     private const ACC_DATE = '2026-06-10';
     private const PARTNER  = 990002;
     private const VS       = '2026000077';
+    /** Protistrana terminálu — plátce PD kartou (#72): pohledávka 311 s VS = číslo PD. */
+    private const TERMINAL_PARTNER = 990003;
+    private const PD_VS            = '2026100077';
 
     private ?JournalEventDispatcher $journalEvents = null;
     private ?ConfigRuntime $config = null;
@@ -131,6 +134,26 @@ class CashPaymentCaseTest extends IntegrationTestCase
         $this->assertSame(CaseQuery::KIND_CLOSED, $after['kind']);
         $this->assertFalse($after['is_open']);
         $this->assertSame(2, $after['moves']);
+
+        // Karta (#72 D1): hlavičkový řádek 311 MD za protistranou terminálu
+        // s VS = číslo PD otevírá nový případ dlužníka (terminál) — uzavře ho
+        // vyúčtování úhrad / banka, ne tento doklad.
+        $terminalCase = $query->caseOf([
+            'balance'           => $recv,
+            'fiscal_year'       => $this->fiscalYear,
+            'partner'           => self::TERMINAL_PARTNER,
+            'payment_reference' => self::PD_VS,
+            'specific_symbol'   => null,
+            'currency'          => 'czk',
+        ]);
+        $this->assertNotNull($terminalCase, 'PD kartou založil pohledávku za terminálem');
+        $this->assertSame(CaseQuery::KIND_DEBT, $terminalCase['kind']);
+        $this->assertEqualsWithDelta(1210.00, $terminalCase['residual'], 0.001);
+        $this->assertTrue($terminalCase['is_open']);
+        $this->assertSame(0, (int) $this->db->fetchRow(
+            'SELECT COUNT(*) AS c FROM economy_accounting_journal WHERE doc_head = %i AND account_number LIKE %like~',
+            $headId, '261',
+        )['c'], 'tranzit 261400 se neúčtuje');
     }
 
     // ── Fixtures ────────────────────────────────────────────────────────────
@@ -206,6 +229,9 @@ class CashPaymentCaseTest extends IntegrationTestCase
         $dibi->insert('docs_core_heads', [
             'doc_type' => 'cash', 'number_series' => (int) $series['id'], 'cash_desk' => $deskId,
             'cash_dir' => 1, 'payment_method' => 2,
+            // plátce = protistrana terminálu (PartnerBalanceResolver by ji odvodil
+            // z default terminálu pokladny; hlavička jde raw SQL, proto přímo)
+            'partner_balance' => self::TERMINAL_PARTNER, 'payment_reference' => self::PD_VS,
             'doc_number' => 'IT-CASHPAY-' . uniqid(),
             'issue_date' => self::ACC_DATE, 'accounting_date' => self::ACC_DATE, 'due_date' => self::ACC_DATE,
             'fiscal_year' => $this->fiscalYear, 'fiscal_month' => (int) $fm['id'],

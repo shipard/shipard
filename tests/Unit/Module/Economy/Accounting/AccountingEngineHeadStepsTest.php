@@ -67,6 +67,47 @@ class AccountingEngineHeadStepsTest extends TestCase
         return (new \ReflectionProperty(AccountingEngine::class, 'messages'))->getValue($engine);
     }
 
+    // ── partnerSrc: balance (#72 D3) ────────────────────────────────────────
+
+    public function testHeadStepIdentityBalanceUsesBalancePartnerWithHeadFallback(): void
+    {
+        $engine = $this->engine(null, null);
+        $head = array_merge(self::HEAD, ['partner' => 5, 'partner_balance' => 33, 'payment_reference' => '2026000042']);
+
+        $this->assertNull($this->invoke($engine, 'headStepIdentity', ['cat' => 'receivables'], $head), 'bez partnerSrc identita hlavičky');
+
+        $identity = $this->invoke($engine, 'headStepIdentity', ['partnerSrc' => 'balance'], $head);
+        $this->assertSame(33, $identity['partner'], 'plátce místo partnera');
+        $this->assertSame('2026000042', $identity['payment_reference'], 'VS zůstává z hlavičky');
+
+        $head['partner_balance'] = null;
+        $identity = $this->invoke($engine, 'headStepIdentity', ['partnerSrc' => 'balance'], $head);
+        $this->assertSame(5, $identity['partner'], 'bez plátce partner hlavičky (DS bez terminálů)');
+    }
+
+    public function testHeadStepUnknownPartnerSrcThrows(): void
+    {
+        $engine = $this->engine(null, null);
+        $this->expectException(\LogicException::class);
+        $this->invoke($engine, 'headStepIdentity', ['partnerSrc' => 'row'], self::HEAD);
+    }
+
+    public function testBuildHeadLinesCarriesBalancePartnerOnLine(): void
+    {
+        $engine = $this->engine(
+            ['accounting_account' => 11],
+            ['id' => 11, 'number' => '211100'],
+        );
+        $step = ['accountSrc' => 'cashDesk', 'partnerSrc' => 'balance', 'src' => 'head', 'col' => 'total', 'side' => 0];
+        $head = array_merge(self::HEAD, ['partner' => 5, 'partner_balance' => 33]);
+
+        $lines = $this->invoke($engine, 'buildHeadLines', $step, $head);
+
+        $this->assertCount(1, $lines);
+        $this->assertSame(33, $lines[0]['partner']);
+        $this->assertEqualsWithDelta(1210.0, $lines[0]['money_dr'], 0.001);
+    }
+
     // ── matchesQuery ────────────────────────────────────────────────────────
 
     public function testMatchesQueryScalarStaysLoose(): void

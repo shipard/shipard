@@ -54,30 +54,67 @@ class CashAccountingRulesTest extends TestCase
         return $out;
     }
 
-    public function testCardTransitAndCashDeskAccountsExistInBothSeedCharts(): void
+    /**
+     * Karta / brána / dobírka = pohledávka 311 za plátcem (#72 D1/D3): žádný
+     * krok ani kategorie card.transit, saldokontní hlavičkové kroky prodejních
+     * typů nesou partnerSrc balance a pokrývají metody 2/3/5; výdej kartou je
+     * závazek za plátcem; 261400 v seedech osnovy zůstává (nic ho neúčtuje).
+     */
+    public function testCardPaymentsBookReceivableForBalancePartnerNotTransit(): void
     {
-        $masks = [];
-        foreach ($this->rules()['accounts'] as $entry) {
-            if (($entry['cat'] ?? null) === 'card.transit') {
-                $masks[] = (string) $entry['accountMask'];
+        $rules = $this->rules();
+        $this->assertArrayNotHasKey('card.transit', $rules['categories']);
+        foreach ($rules['accounts'] as $entry) {
+            $this->assertNotSame('card.transit', $entry['cat'] ?? null, 'card.transit nemá masku');
+            $this->assertNotContains('261400', (array) ($entry['accountMask'] ?? []), '261400 se v předpisu neúčtuje');
+        }
+        foreach ($rules['documents'] as $doc) {
+            foreach ($doc['accounting'] as $step) {
+                $this->assertNotSame('card.transit', $step['cat'] ?? null, "{$doc['docType']}: krok card.transit");
+                if (isset($step['partnerSrc'])) {
+                    $this->assertSame('balance', $step['partnerSrc']);
+                    $this->assertSame('head', $step['src'], 'partnerSrc jen na hlavičkovém kroku');
+                    $this->assertContains($step['cat'], ['receivables', 'payables'], 'partnerSrc jen na saldokontním kroku');
+                }
             }
         }
-        $this->assertSame(['261400'], $masks, 'card.transit má jedinou pevnou analytiku, oddělenou od převodů 261100');
-        $this->assertArrayHasKey('card.transit', $this->rules()['categories']);
+
+        $balanceSteps = fn(string $docType, string $cat) => array_values(array_filter(
+            $this->stepsOf($docType),
+            fn($s) => ($s['cat'] ?? null) === $cat && ($s['partnerSrc'] ?? null) === 'balance',
+        ));
+
+        $this->assertCount(1, $balanceSteps('invno', 'receivables'));
+        $this->assertCount(1, $balanceSteps('invni', 'payables'));
+
+        $cashreg = $balanceSteps('cashreg', 'receivables');
+        $this->assertCount(1, $cashreg, 'prodejka: jeden saldokontní krok pro převod/kartu/dobírku/bránu');
+        $this->assertSame([1, 2, 3, 5], $cashreg[0]['query']['payment_method']['$in']);
+        $this->assertSame(0, $cashreg[0]['side']);
+
+        $cashIn = $balanceSteps('cash', 'receivables');
+        $this->assertCount(1, $cashIn, 'příjmový PD kartou = pohledávka za plátcem');
+        $this->assertSame(['cash_dir' => 1, 'payment_method' => ['$in' => [2, 3, 5]]], $cashIn[0]['query']);
+        $this->assertSame(0, $cashIn[0]['side']);
+        $cashOut = $balanceSteps('cash', 'payables');
+        $this->assertCount(1, $cashOut, 'výdajový PD kartou = závazek za plátcem');
+        $this->assertSame(['cash_dir' => 2, 'payment_method' => 2], $cashOut[0]['query']);
+        $this->assertSame(1, $cashOut[0]['side']);
 
         foreach (['accountChartDefault', 'accountChartNpo'] as $chart) {
             $numbers = array_flip(array_map(
                 fn($e) => (string) $e['number'],
                 JsoncParser::parseFile(self::MODULES . "/economy/accounting/config/{$chart}.jsonc"),
             ));
-            $this->assertArrayHasKey('261400', $numbers, "{$chart} nemá 261400");
+            $this->assertArrayHasKey('261400', $numbers, "{$chart}: 261400 v osnově zůstává pro historii");
             $this->assertArrayHasKey('211100', $numbers, "{$chart} nemá 211100 (výchozí účet pokladny)");
+            $this->assertArrayHasKey('315', $numbers, "{$chart}: 315 pro saldokonto Pohledávky (#72 D6)");
         }
     }
 
     /**
-     * Převody peněz (Task D): kategorie cash.transit míří na 261100 (odděleně
-     * od karet 261400), pohyby transfer.* mají v rowOperations vlajky
+     * Převody peněz (Task D): kategorie cash.transit míří na 261100 (jediný
+     * tranzit v předpisu — karty od #72 jdou na 311), pohyby transfer.* mají v rowOperations vlajky
      * rowSide 0 + rowPaymentId bez partnera a bez identityRequired, směr per
      * cash_dir; v bloku cash má každý směr právě jeden krok cash.transit
      * na správné straně (příjem DAL, výdej MD — pokladna z head kroku naopak).
@@ -118,7 +155,7 @@ class CashAccountingRulesTest extends TestCase
 
     /**
      * Každá analytika 261xxx, na kterou předpis míří maskou (clearing
-     * 261200/261300, převody 261100, karty 261400), musí být v obou seed
+     * 261200/261300, převody 261100), musí být v obou seed
      * rozvrzích — programově, bez ručního seznamu (vzor
      * VatAnalyticsCompletenessTest). Nová maska 261 bez účtu test shodí.
      */
@@ -283,13 +320,15 @@ class CashAccountingRulesTest extends TestCase
             }
         }
 
-        // protistrana: pro každý směr právě jeden krok pokladny a jeden karty
+        // protistrana: pro každý směr právě jeden krok pokladny a jeden
+        // saldokontní krok za plátcem (příjem pohledávka, výdej závazek — #72)
         foreach ([1, 2] as $dir) {
             $desk = array_filter($this->stepsOf('cash'), fn($s) => ($s['accountSrc'] ?? null) === 'cashDesk' && ($s['query']['cash_dir'] ?? null) === $dir);
-            $card = array_filter($this->stepsOf('cash'), fn($s) => ($s['cat'] ?? null) === 'card.transit' && ($s['query']['cash_dir'] ?? null) === $dir);
+            $payer = array_filter($this->stepsOf('cash'), fn($s) => ($s['partnerSrc'] ?? null) === 'balance' && ($s['query']['cash_dir'] ?? null) === $dir);
             $this->assertCount(1, $desk, "cash_dir {$dir}: krok pokladny");
-            $this->assertCount(1, $card, "cash_dir {$dir}: krok karty");
+            $this->assertCount(1, $payer, "cash_dir {$dir}: saldokontní krok za plátcem");
             $this->assertSame($dir === 1 ? 0 : 1, array_values($desk)[0]['side'], 'příjem MD, výdej DAL');
+            $this->assertSame($dir === 1 ? 'receivables' : 'payables', array_values($payer)[0]['cat']);
         }
     }
 }

@@ -18,8 +18,8 @@ use Shipard\Core\Database\DataSourceConnection;
  * Drift proti seedům hlídá CashAccountingRulesTest. Vzor
  * ClearingInfrastructureProvisioner (accbal): volá se z DsUpgradeCommand
  * bezpodmínečně, i pod skipProvisioning — migrovaný rozvrh (skipProvisioning)
- * tranzitní analytiky zpravidla nemá (staré 261001/261002) a každý pokladní
- * doklad kartou / převod by skončil chybovým řádkem 261???.
+ * tranzitní analytiky zpravidla nemá (staré 261001/261002) a každý převod
+ * peněz by skončil chybovým řádkem 261???.
  *
  * Idempotence dle `number` (jakýkoli stav, vč. archivu/koše) — existující
  * účet, i uživatelsky přejmenovaný, se nepřepisuje.
@@ -30,7 +30,8 @@ class TransitAccountsProvisioner
     public const ACCOUNTS = [
         ['number' => '261',    'name' => 'Peníze na cestě',         'short_name' => 'Peníze na cestě', 'account_kind' => 0],
         ['number' => '261100', 'name' => 'Peníze na cestě',         'short_name' => 'Peníze na cestě', 'account_kind' => 0],
-        ['number' => '261400', 'name' => 'Platební karty na cestě', 'short_name' => 'Karty na cestě',  'account_kind' => 0],
+        // 261400 (karty na cestě) provisioner od #72 D1 nezakládá — karty
+        // jdou na 311 za plátcem; v seedech osnovy účet zůstává.
     ];
 
     public function __construct(

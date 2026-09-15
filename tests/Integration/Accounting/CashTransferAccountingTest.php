@@ -18,8 +18,8 @@ use Shipard\Tests\Integration\IntegrationTestCase;
  * Obě strany převodu jdou přes 261100 Peníze na cestě (cash.transit):
  * pokladní doklad s pohybem transfer.* a bankovní transakce s operací
  * transfer.* (nebo pokladní doklad druhé pokladny). Po zaúčtování obou
- * stran má 261100 nulový zůstatek. Karty jdou na oddělenou analytiku
- * 261400 (card.transit) — tam se nula nečeká.
+ * stran má 261100 nulový zůstatek. Karty tranzit nemají (#72 D1): jsou to
+ * pohledávky 311 za plátcem, 261100 se jich nedotkne.
  *
  * Pokladny, vázané řady a bankovní účet si test zakládá sám a po sobě je
  * maže; doklady i transakce vkládá přímo SQL (engine čte DB).
@@ -207,14 +207,19 @@ class CashTransferAccountingTest extends IntegrationTestCase
         $this->assertEqualsWithDelta(0.0, $this->transitBalance('261100'), 0.001);
     }
 
-    public function testCardRetailSaleBooksOnCardTransitNotOnCashTransit(): void
+    public function testCardRetailSaleBooksReceivableNotOnCashTransit(): void
     {
-        // Prodejka kartou 1 000 + 21 %: 604 DAL · 343120 DAL · 261400 MD 1 210.
-        // 261400 zůstává nenulový (tržba dosud nepřipsaná bankou), 261100 bez
-        // řádku — proto jsou karty a převody oddělené.
-        $this->ensureAccountByNumber('261400');
+        // Prodejka kartou 1 000 + 21 %: 604 DAL · 343120 DAL · 311 MD 1 210 za
+        // plátcem (#72 D1) — peníze na cestě 261100 bez řádku, 261400 už se
+        // neúčtuje vůbec.
         $deskId = $this->createCashDesk($this->accountIdByPrefix('211'));
-        $headId = $this->insertHead('cashreg', $deskId, 1000.0, 210.0, ['payment_method' => 2]);
+        $partner = $this->db->fetchRow('SELECT id FROM base_persons_persons ORDER BY id LIMIT 1');
+        if ($partner === null) {
+            $this->markTestSkipped('Dev DS nemá osobu pro plátce');
+        }
+        $headId = $this->insertHead('cashreg', $deskId, 1000.0, 210.0, [
+            'payment_method' => 2, 'partner_balance' => (int) $partner['id'],
+        ]);
         $this->insertVatRow($headId, 'sale.goods', 1000.0, 21.0);
         $this->insertRecap($headId, 1000.0, 210.0);
 
@@ -223,10 +228,12 @@ class CashTransferAccountingTest extends IntegrationTestCase
         $this->assertSame(1, $result['state'], json_encode($result['messages']));
         $journal = $this->journalOfHead($headId);
         $this->assertBalanced($journal);
-        $this->assertEqualsWithDelta(1210.0, (float) $this->lineByPrefix($journal, '261400')['money_dr'], 0.001, 'karta → 261400');
-        $this->assertNoLine($journal, '261100');
+        $receivable = $this->lineByPrefix($journal, '311');
+        $this->assertEqualsWithDelta(1210.0, (float) $receivable['money_dr'], 0.001, 'karta → 311 za plátcem');
+        $this->assertSame((int) $partner['id'], (int) $receivable['partner']);
+        $this->assertNoLine($journal, '261');
         $this->assertNoLine($journal, '211');
-        $this->assertEqualsWithDelta(1210.0, $this->transitBalance('261400'), 0.001, '261400 po prodejce kartou nenulový');
+        $this->assertEqualsWithDelta(0.0, $this->transitBalance('261100'), 0.001, '261100 se prodejky kartou nedotkne');
     }
 
     // ── Fixtures ────────────────────────────────────────────────────────────
@@ -264,8 +271,8 @@ class CashTransferAccountingTest extends IntegrationTestCase
 
     /**
      * Účet daného čísla — existující, nebo doplněný jen pro test (DS bez
-     * provisioningu nemusí 261100/261400 mít; po ds-upgrade se seedem
-     * Task D je 4l3j má).
+     * provisioningu nemusí 261100 mít; po ds-upgrade se seedem Task D ho
+     * 4l3j má).
      */
     private function ensureAccountByNumber(string $number): int
     {

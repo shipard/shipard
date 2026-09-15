@@ -340,6 +340,10 @@ class DsUpgradeCommand extends Command
             $output->writeln("<comment>       number series, mail router) was generated.</comment>");
             $output->writeln("<comment>       Set skipProvisioning=false in config/main.json and re-run</comment>");
             $output->writeln("<comment>       ds-upgrade once the import is complete.</comment>");
+            // Saldokontní skupiny se pod skipProvisioning nezakládají, ale
+            // existující dostanou chybějící účty seedu (#72 D6: 315 v
+            // Pohledávkách je enginový kontrakt, ne migrovaná data).
+            $this->provisionAccbalBalances($resolvedModules, $dsConnection, $output, createGroups: false);
         } else {
             $this->provisionUnits($resolvedModules, $dsConnection, $output);
             $this->provisionItemKinds($resolvedModules, $dsConnection, $output);
@@ -725,7 +729,7 @@ class DsUpgradeCommand extends Command
         OutputInterface $output,
     ): void {
         $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
-        $output->writeln('Provisioning transit accounts (261100 / 261400)...', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning transit accounts (261100)...', OutputInterface::VERBOSITY_VERBOSE);
 
         if (!$this->isModuleActive($resolvedModules, 'economy.accounting')) {
             $output->writeln(
@@ -747,6 +751,7 @@ class DsUpgradeCommand extends Command
         array $resolvedModules,
         DataSourceConnection $dsConnection,
         OutputInterface $output,
+        bool $createGroups = true,
     ): void {
         $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
         $output->writeln('Provisioning economy.accbal balances...', OutputInterface::VERBOSITY_VERBOSE);
@@ -763,9 +768,17 @@ class DsUpgradeCommand extends Command
         }
 
         $provisioner = new BalancesProvisioner($dsConnection, $seedFile);
-        $result = $provisioner->provision();
+        $result = $provisioner->provision($createGroups);
 
-        $this->logProvisioningResult($output, 'accbal balances', $result['balances']);
+        if ($createGroups) {
+            $this->logProvisioningResult($output, 'accbal balances', $result['balances']);
+        }
+        if (($result['accounts']['added'] ?? 0) > 0) {
+            $output->writeln(sprintf(
+                '  [CREATE] accbal balance accounts — added to existing groups: %d',
+                $result['accounts']['added'],
+            ));
+        }
     }
 
     /**

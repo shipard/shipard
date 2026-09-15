@@ -47,14 +47,15 @@ class TransitAccountsProvisionerTest extends TestCase
         return $store;
     }
 
-    public function testEmptyChartCreatesSyntheticAndBothAnalytics(): void
+    public function testEmptyChartCreatesSyntheticAndTransferAnalytic(): void
     {
         $store = $this->recordingDb();
 
         $result = (new TransitAccountsProvisioner($store->db))->provision();
 
-        $this->assertSame(['created' => 3, 'existing' => 0], $result);
-        $this->assertSame(['261', '261100', '261400'], array_column($store->accounts, 'number'));
+        // 261400 (karty na cestě) od #72 D1 nezakládá — karty jdou na 311 za plátcem.
+        $this->assertSame(['created' => 2, 'existing' => 0], $result);
+        $this->assertSame(['261', '261100'], array_column($store->accounts, 'number'));
 
         $synthetic = $store->accounts[0];
         $this->assertSame(3, $synthetic['account_level'], 'tříznakové číslo = syntetika');
@@ -69,13 +70,11 @@ class TransitAccountsProvisionerTest extends TestCase
         $this->assertSame(1, $transfers['is_system']);
         $this->assertSame(40, $transfers['docState']);
         $this->assertSame(3, $transfers['docStateMain']);
-
-        $this->assertSame('Platební karty na cestě', $store->accounts[2]['name']);
     }
 
-    public function testMigratedChartWithSyntheticOnlyGetsBothAnalytics(): void
+    public function testMigratedChartWithSyntheticOnlyGetsTransferAnalytic(): void
     {
-        // msi: 261 + staré 261001/261002, žádné 261100/261400
+        // msi: 261 + staré 261001/261002, žádné 261100
         $store = $this->recordingDb([
             ['id' => 1, 'number' => '261',    'name' => 'Peníze na cestě'],
             ['id' => 2, 'number' => '261001', 'name' => 'Peníze na cestě 1'],
@@ -84,9 +83,9 @@ class TransitAccountsProvisionerTest extends TestCase
 
         $result = (new TransitAccountsProvisioner($store->db))->provision();
 
-        $this->assertSame(['created' => 2, 'existing' => 1], $result);
+        $this->assertSame(['created' => 1, 'existing' => 1], $result);
         $this->assertSame(
-            ['261', '261001', '261002', '261100', '261400'],
+            ['261', '261001', '261002', '261100'],
             array_column($store->accounts, 'number'),
         );
     }
@@ -100,11 +99,11 @@ class TransitAccountsProvisionerTest extends TestCase
         ]);
 
         $provisioner = new TransitAccountsProvisioner($store->db);
-        $this->assertSame(['created' => 0, 'existing' => 3], $provisioner->provision());
-        $this->assertSame(['created' => 0, 'existing' => 3], $provisioner->provision());
+        $this->assertSame(['created' => 0, 'existing' => 2], $provisioner->provision());
+        $this->assertSame(['created' => 0, 'existing' => 2], $provisioner->provision());
 
         $this->assertCount(3, $store->accounts);
         $this->assertSame('Převody hotovosti (naše)', $store->accounts[1]['name'], 'uživatelský název ani archiv se nepřepisují');
-        $this->assertSame('Terminál', $store->accounts[2]['name']);
+        $this->assertSame('Terminál', $store->accounts[2]['name'], 'stará 261400 zůstává, provisioner ji neřeší');
     }
 }

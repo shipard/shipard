@@ -27,6 +27,10 @@ class CashDocsAccountingTest extends IntegrationTestCase
     private array $createdCashDesks = [];
     /** @var list<int> */
     private array $createdSeries = [];
+    /** @var list<int> */
+    private array $createdTerminals = [];
+    /** @var list<int> */
+    private array $createdTransports = [];
 
     private ?AccountingEngine $engine = null;
     private ?ConfigRuntime $config = null;
@@ -50,6 +54,12 @@ class CashDocsAccountingTest extends IntegrationTestCase
         foreach ($this->createdSeries as $id) {
             $dibi->delete('docs_core_number_counters')->where('number_series = %i', $id)->execute();
             $dibi->delete('docs_core_number_series')->where('id = %i', $id)->execute();
+        }
+        foreach ($this->createdTerminals as $id) {
+            $dibi->delete('economy_codebooks_payment_terminals')->where('id = %i', $id)->execute();
+        }
+        foreach ($this->createdTransports as $id) {
+            $dibi->delete('economy_codebooks_transports')->where('id = %i', $id)->execute();
         }
         foreach ($this->createdCashDesks as $id) {
             $dibi->delete('economy_codebooks_cash_desks')->where('id = %i', $id)->execute();
@@ -82,6 +92,50 @@ class CashDocsAccountingTest extends IntegrationTestCase
             $this->markTestSkipped('Dev DS nemá žádnou osobu');
         }
         return (int) $row['id'];
+    }
+
+    /** Druhá osoba (protistrana terminálu / brány / dopravce) — jiná než anyPartnerId(). */
+    private function intermediaryPartnerId(): int
+    {
+        $row = $this->db->fetchRow('SELECT id FROM base_persons_persons ORDER BY id LIMIT 1 OFFSET 1');
+        if ($row === null) {
+            $this->markTestSkipped('Dev DS nemá druhou osobu pro protistranu terminálu');
+        }
+        return (int) $row['id'];
+    }
+
+    /** Terminál (kind 0, pokladna) nebo brána (kind 1) s osobou pro saldokonto, ve stavu 40. */
+    private function createTerminal(?int $deskId, int $partner, int $kind = 0): int
+    {
+        $dibi = $this->db->getDibiConnection();
+        $dibi->insert('economy_codebooks_payment_terminals', [
+            'code'         => 'IT' . substr(uniqid(), -5),
+            'name'         => $kind === 0 ? 'IT terminál' : 'IT brána',
+            'kind'         => $kind,
+            'cash_desk'    => $kind === 0 ? $deskId : null,
+            'partner'      => $partner,
+            'is_default'   => 1,
+            'docState'     => 40,
+            'docStateMain' => 3,
+        ])->execute();
+        $id = (int) $dibi->getInsertId();
+        $this->createdTerminals[] = $id;
+        return $id;
+    }
+
+    private function createTransport(?int $partner): int
+    {
+        $dibi = $this->db->getDibiConnection();
+        $dibi->insert('economy_codebooks_transports', [
+            'code'         => 'IT' . substr(uniqid(), -5),
+            'name'         => 'IT dopravce',
+            'partner'      => $partner,
+            'docState'     => 40,
+            'docStateMain' => 3,
+        ])->execute();
+        $id = (int) $dibi->getInsertId();
+        $this->createdTransports[] = $id;
+        return $id;
     }
 
     private function accountIdByPrefix(string $prefix): int
@@ -223,6 +277,17 @@ class CashDocsAccountingTest extends IntegrationTestCase
         return $matches[0];
     }
 
+    /** Řádek deníku daného prefixu účtu a partnera (dva řádky 311 s různou identitou). */
+    private function lineByPartner(array $journal, string $prefix, int $partner): array
+    {
+        $matches = array_values(array_filter(
+            $journal,
+            fn($l) => str_starts_with((string) $l['account_number'], $prefix) && (int) ($l['partner'] ?? 0) === $partner,
+        ));
+        $this->assertCount(1, $matches, "Očekáván právě jeden řádek deníku {$prefix}* partnera {$partner}");
+        return $matches[0];
+    }
+
     private function assertNoLine(array $journal, string $prefix): void
     {
         $matches = array_filter($journal, fn($l) => str_starts_with((string) $l['account_number'], $prefix));
@@ -263,11 +328,18 @@ class CashDocsAccountingTest extends IntegrationTestCase
     public function testReceiptCardPaymentOfReceivableCarriesRowIdentity(): void
     {
         // Příjmový PD, kartou, úhrada FVB 1 210 (payment.receivable, VS):
-        // 311 DAL 1 210 (partner + VS z řádku) · 261400 MD 1 210 (karty na
-        // cestě — odděleně od převodů 261100, Task D)
-        $partner = $this->anyPartnerId();
-        $deskId = $this->createCashDesk($this->accountIdByPrefix('211'));
-        $headId = $this->insertHead('cash', $deskId, 1210.0, 0.0, ['cash_dir' => 1, 'payment_method' => 2]);
+        // 311 DAL 1 210 (zákazník + VS FVB z řádku) · 311 MD 1 210 za
+        // protistranou terminálu s VS = číslo PD (#72 D1/D3) — žádný tranzit
+        // 261400, dva řádky 311 se liší identitou (partner, VS).
+        $partner  = $this->anyPartnerId();
+        $terminalPartner = $this->intermediaryPartnerId();
+        $deskId   = $this->createCashDesk($this->accountIdByPrefix('211'));
+        $terminal = $this->createTerminal($deskId, $terminalPartner);
+        $headId = $this->insertHead('cash', $deskId, 1210.0, 0.0, [
+            'cash_dir' => 1, 'payment_method' => 2,
+            'payment_terminal' => $terminal, 'partner_balance' => $terminalPartner,
+            'payment_reference' => '2026100007',
+        ]);
         $this->insertRow($headId, 'payment.receivable', 1210.0, 0.0, [
             'vat_code'          => null,
             'vat_pct'           => 0,
@@ -284,14 +356,119 @@ class CashDocsAccountingTest extends IntegrationTestCase
         $this->assertCount(2, $journal);
         $this->assertBalanced($journal);
 
-        $receivable = $this->lineByPrefix($journal, '311');
-        $this->assertEqualsWithDelta(1210.0, (float) $receivable['money_cr'], 0.001);
-        $this->assertSame($partner, (int) $receivable['partner'], 'partner z řádku úhrady');
-        $this->assertSame('2026000042', (string) $receivable['payment_reference']);
-        $this->assertSame('payment.receivable', $receivable['operation']);
+        $payment = $this->lineByPartner($journal, '311', $partner);
+        $this->assertEqualsWithDelta(1210.0, (float) $payment['money_cr'], 0.001);
+        $this->assertSame('2026000042', (string) $payment['payment_reference'], 'VS faktury z řádku');
+        $this->assertSame('payment.receivable', $payment['operation']);
 
-        $this->assertEqualsWithDelta(1210.0, (float) $this->lineByPrefix($journal, '261400')['money_dr'], 0.001);
-        $this->assertNoLine($journal, '261100');
+        $request = $this->lineByPartner($journal, '311', $terminalPartner);
+        $this->assertEqualsWithDelta(1210.0, (float) $request['money_dr'], 0.001, 'pohledávka za terminálem');
+        $this->assertSame('2026100007', (string) $request['payment_reference'], 'VS = číslo PD');
+        $this->assertNull($request['operation']);
+
+        $this->assertNoLine($journal, '261');
+        $this->assertNoLine($journal, '211');
+    }
+
+    public function testReceiptCardWithoutTerminalBooksReceivableForHeadPartner(): void
+    {
+        // DS bez terminálů: plátce = partner hlavičky (fallback odvození;
+        // engine bere partner_balance ?? partner) — funguje jako dřív, jen na 311.
+        $partner = $this->anyPartnerId();
+        $deskId = $this->createCashDesk($this->accountIdByPrefix('211'));
+        $headId = $this->insertHead('cash', $deskId, 1000.0, 210.0, [
+            'cash_dir' => 1, 'payment_method' => 2, 'partner' => $partner, 'payment_reference' => '2026100008',
+        ]);
+        $this->insertRow($headId, 'sale.services', 1000.0, 21.0);
+        $this->insertRecap($headId, 1000.0, 210.0);
+
+        $result = $this->engine->accountDocument($headId);
+
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $journal = $this->journalOf($headId);
+        $this->assertBalanced($journal);
+        $receivable = $this->lineByPrefix($journal, '311');
+        $this->assertEqualsWithDelta(1210.0, (float) $receivable['money_dr'], 0.001);
+        $this->assertSame($partner, (int) $receivable['partner']);
+        $this->assertSame('2026100008', (string) $receivable['payment_reference']);
+        $this->assertNoLine($journal, '261');
+        $this->assertNoLine($journal, '211');
+    }
+
+    public function testRetailSaleByCardBooksReceivableForTerminalPartner(): void
+    {
+        // Prodejka kartou 1 000 + 21 %: 604 DAL · 343 DAL · 311 MD 1 210 za
+        // protistranou terminálu pokladny s VS = číslo prodejky; 261400 nikde.
+        $terminalPartner = $this->intermediaryPartnerId();
+        $deskId   = $this->createCashDesk($this->accountIdByPrefix('211'));
+        $terminal = $this->createTerminal($deskId, $terminalPartner);
+        $headId = $this->insertHead('cashreg', $deskId, 1000.0, 210.0, [
+            'payment_method' => 2, 'payment_terminal' => $terminal,
+            'partner_balance' => $terminalPartner, 'payment_reference' => '2026200001',
+        ]);
+        $this->insertRow($headId, 'sale.goods', 1000.0, 21.0);
+        $this->insertRecap($headId, 1000.0, 210.0);
+
+        $result = $this->engine->accountDocument($headId);
+
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $journal = $this->journalOf($headId);
+        $this->assertBalanced($journal);
+        $this->assertEqualsWithDelta(1000.0, (float) $this->lineByPrefix($journal, '604')['money_cr'], 0.001);
+        $receivable = $this->lineByPrefix($journal, '311');
+        $this->assertEqualsWithDelta(1210.0, (float) $receivable['money_dr'], 0.001);
+        $this->assertSame($terminalPartner, (int) $receivable['partner'], 'plátce = protistrana terminálu');
+        $this->assertSame('2026200001', (string) $receivable['payment_reference']);
+        $this->assertNoLine($journal, '261');
+        $this->assertNoLine($journal, '211');
+    }
+
+    public function testRetailSaleCashOnDeliveryBooksReceivableForCarrier(): void
+    {
+        // Prodejka na dobírku s dopravcem: 311 MD za dopravcem, VS = číslo prodejky.
+        $carrier   = $this->intermediaryPartnerId();
+        $deskId    = $this->createCashDesk($this->accountIdByPrefix('211'));
+        $transport = $this->createTransport($carrier);
+        $headId = $this->insertHead('cashreg', $deskId, 1000.0, 210.0, [
+            'payment_method' => 3, 'transport' => $transport,
+            'partner' => $this->anyPartnerId(), 'partner_balance' => $carrier, 'payment_reference' => '2026200002',
+        ]);
+        $this->insertRow($headId, 'sale.goods', 1000.0, 21.0);
+        $this->insertRecap($headId, 1000.0, 210.0);
+
+        $result = $this->engine->accountDocument($headId);
+
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $journal = $this->journalOf($headId);
+        $this->assertBalanced($journal);
+        $receivable = $this->lineByPrefix($journal, '311');
+        $this->assertEqualsWithDelta(1210.0, (float) $receivable['money_dr'], 0.001);
+        $this->assertSame($carrier, (int) $receivable['partner'], 'plátce = dopravce, ne odběratel');
+        $this->assertNoLine($journal, '211');
+    }
+
+    public function testRetailSaleByGatewayBooksReceivableForGatewayPartner(): void
+    {
+        // Prodejka bránou (5): 311 MD za protistranou brány.
+        $gatewayPartner = $this->intermediaryPartnerId();
+        $deskId  = $this->createCashDesk($this->accountIdByPrefix('211'));
+        $gateway = $this->createTerminal(null, $gatewayPartner, 1);
+        $headId = $this->insertHead('cashreg', $deskId, 1000.0, 210.0, [
+            'payment_method' => 5, 'payment_terminal' => $gateway,
+            'partner_balance' => $gatewayPartner, 'payment_reference' => '2026200003',
+        ]);
+        $this->insertRow($headId, 'sale.goods', 1000.0, 21.0);
+        $this->insertRecap($headId, 1000.0, 210.0);
+
+        $result = $this->engine->accountDocument($headId);
+
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $journal = $this->journalOf($headId);
+        $this->assertBalanced($journal);
+        $receivable = $this->lineByPrefix($journal, '311');
+        $this->assertEqualsWithDelta(1210.0, (float) $receivable['money_dr'], 0.001);
+        $this->assertSame($gatewayPartner, (int) $receivable['partner']);
+        $this->assertNoLine($journal, '261');
         $this->assertNoLine($journal, '211');
     }
 

@@ -35,6 +35,8 @@ class CashDocumentImportTest extends IntegrationTestCase
     private array $createdCashDesks = [];
     /** @var list<int> */
     private array $createdSeries = [];
+    /** @var list<int> */
+    private array $createdTerminals = [];
     private ?int $ownCompanyPersonId = null;
     private bool $createdOwnCompany = false;
     private int $partnerId = 0;
@@ -98,6 +100,9 @@ class CashDocumentImportTest extends IntegrationTestCase
         foreach ($this->createdSeries as $id) {
             $dibi->query('DELETE FROM docs_core_number_counters WHERE number_series = %i', $id);
             $dibi->query('DELETE FROM docs_core_number_series WHERE id = %i', $id);
+        }
+        foreach ($this->createdTerminals as $id) {
+            $dibi->query('DELETE FROM economy_codebooks_payment_terminals WHERE id = %i', $id);
         }
         foreach ($this->createdCashDesks as $id) {
             $dibi->query('DELETE FROM economy_codebooks_cash_desks WHERE id = %i', $id);
@@ -207,8 +212,16 @@ class CashDocumentImportTest extends IntegrationTestCase
         $this->assertSame(2, (int) $head['payment_method']);
         $this->assertSame($ourNumber, (string) $head['doc_number']);
 
+        // Plátce odvozený z default terminálu pokladny (#72): 311 MD za jeho
+        // protistranou s VS = číslo prodejky, žádný tranzit 261400.
+        $this->assertSame($this->partnerId, (int) $head['partner_balance'], 'plátce = protistrana terminálu pokladny');
+        $this->assertNotNull($head['payment_terminal'], 'default terminál doplněn do hlavičky');
         $journal = $this->db->fetchAll('SELECT * FROM economy_accounting_journal WHERE doc_head = %i', $docId);
-        $this->assertEqualsWithDelta(242.0, (float) $this->lineByPrefix($journal, '261400')['money_dr'], 0.001, 'karta → platební karty na cestě');
+        $receivable = $this->lineByPrefix($journal, '311');
+        $this->assertEqualsWithDelta(242.0, (float) $receivable['money_dr'], 0.001, 'karta → pohledávka za plátcem');
+        $this->assertSame($this->partnerId, (int) $receivable['partner']);
+        $this->assertSame((string) $seq, (string) $receivable['payment_reference'], 'VS = číslo prodejky');
+        $this->assertCount(0, array_filter($journal, fn($l) => str_starts_with((string) $l['account_number'], '261')), '261400 se neúčtuje');
     }
 
     /**
@@ -461,6 +474,15 @@ class CashDocumentImportTest extends IntegrationTestCase
         foreach ($this->db->fetchAll('SELECT id FROM docs_core_number_series WHERE cash_desk = %i', $this->deskId) as $s) {
             $this->createdSeries[] = (int) $s['id'];
         }
+        // Default terminál pokladny s protistranou (#72): prodejka kartou z
+        // importu si z něj odvodí plátce (bez něj by anonymní prodejka kartou
+        // narazila na partner_balance_required).
+        $dibi->insert('economy_codebooks_payment_terminals', [
+            'code' => 'T' . $this->deskCode, 'name' => 'IT import terminál', 'kind' => 0,
+            'cash_desk' => $this->deskId, 'partner' => $this->partnerId, 'is_default' => 1,
+            'docState' => 40, 'docStateMain' => 3,
+        ])->execute();
+        $this->createdTerminals[] = (int) $dibi->getInsertId();
     }
 
     private function ensureOwnCompany(): void

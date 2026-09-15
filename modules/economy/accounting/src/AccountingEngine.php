@@ -347,7 +347,35 @@ final class AccountingEngine
             text: (string) ($step['text'] ?? $head['doc_text'] ?? ''),
             operation: null,
             rowId: null,
+            identity: $this->headStepIdentity($step, $head),
         )];
+    }
+
+    /**
+     * Identita hlavičkového kroku dle `partnerSrc` (#72 D3): `"balance"` =
+     * saldokontní řádek za osobou pro saldokonto (`partner_balance`, fallback
+     * partner hlavičky — DS bez terminálů účtuje jako dřív); bez atributu
+     * identita hlavičky (null → makeLine ji doplní sám). VS/SS/KS/splatnost
+     * zůstávají z hlavičky vždy.
+     *
+     * @return array{partner: int|null, payment_reference: ?string, specific_symbol: ?string, constant_symbol: ?string, due_date: ?string}|null
+     */
+    private function headStepIdentity(array $step, array $head): ?array
+    {
+        $src = $step['partnerSrc'] ?? null;
+        if ($src === null) {
+            return null;
+        }
+        if ($src !== 'balance') {
+            throw new \LogicException("Účtovací předpis: neznámý partnerSrc '{$src}' (podporováno: balance)");
+        }
+        $identity = $this->headIdentity($head);
+        $balance = isset($head['partner_balance']) && $head['partner_balance'] !== null
+            ? (int) $head['partner_balance'] : 0;
+        if ($balance > 0) {
+            $identity['partner'] = $balance;
+        }
+        return $identity;
     }
 
     /**
