@@ -171,6 +171,26 @@ z M0 má vždy přednost.
 
 ---
 
+## Za horizontem — účetnictví pro celou EU
+
+Milníky výše se týkají českého účetnictví a to je záměr: jedna země pořádně,
+než přijde další. Dlouhodobý cíl je ale širší — Shipard má umět vést firmu
+v **kterémkoli členském státě EU**.
+
+Účetnictví je národní: sazby a přiznání k DPH, účtová osnova, formáty
+podání, registr firem, náležitosti dokladu — každá země má své. „Další
+země" proto není překlad rozhraní, ale **modul země** postavený na jádru,
+které národní pravidla nemá zadrátovaná. Části jádra s tím už počítají
+(registrace k DPH a sazby jsou vázané na zemi, ne na ČR), národní
+specifika jsou dnes jen česká.
+
+Co to znamená pro pořadí prací: **nic před M5.** Do té doby sbíráme lidi —
+účetní a vývojáře z jiných zemí EU, kteří znají reálie své země zevnitř
+a jsou ochotní nám je vysvětlit. Kontakt a anglický přehled projektu:
+[shipard.dev](https://shipard.dev/en/).
+
+---
+
 ## Vědomě odložené
 
 Věci, o kterých se rozhodlo, že se **nedělají teď** — ať se k nim nevracíme
@@ -200,6 +220,9 @@ v každé diskuzi.
 
 ### Historie revizí
 
+- **15. 9. 2026:** doplněn oddíl „Za horizontem — účetnictví pro celou EU"
+  (dlouhodobý záměr, bez vlivu na pořadí M1–M6; vazba na vývojový web
+  shipard.dev).
 - **7. 9. 2026 (po M0):** aktualizován stav M1 (výpočet DPH výstupů existuje,
   chybí podání). Do M2 doplněn zdroj platby a ověření saldokonta. Vložen
   nový M4 „Ostrý provoz" — funkce, které starý Shipard má a bez kterých se
