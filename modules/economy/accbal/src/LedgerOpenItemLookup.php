@@ -23,15 +23,19 @@ use Shipard\Core\Accounting\OpenItem;
  *
  * Řádky klíče se berou na účtech s prefixem některého řádku skupiny bez
  * `modify_sign` (předpis i úhrada) — reziduum = celá skupina jako v
- * {@see CaseQuery}. Sign-ruled řádky (dobropis 311 v Závazcích, 321
- * v Pohledávkách, výchozí seed) jsou lookupu neviditelné: bankovní engine
- * účtuje stranu podle směru, takže úhradu takového předpisu by generátor
- * nedokázal zařadit — vratka dobropisu na výchozím seedu jde na clearing
- * (docs/accbal.md §5.1, §13). Na legacy seedu (bez sign-pravidel) je to
- * celá skupina beze zbytku. Skupina „Nespárované platby“ nemá řádek
- * předpisu → nikdy se neprohledá. Vrácený účet je účet prvního předpisu
- * klíče vč. analytiky (311100, 336101…), u platby bez předpisu účet
- * úhrady; reziduum nese znaménko (záporné = vratka, `bank.md` §6.1).
+ * {@see CaseQuery}. Přednost nejdelšího prefixu (#69 D22) je věc
+ * generátoru: skupinu pohybu nese `balance` v klíči dotazu, prefixy
+ * skupiny se jí neúčastní (pohyb z doby před platností přesunutého
+ * podúčtu leží v původní skupině a najde se tam). Sign-ruled řádky
+ * (dobropis 311 v Závazcích, 321 v Pohledávkách, výchozí seed) jsou
+ * lookupu neviditelné: bankovní engine účtuje stranu podle směru, takže
+ * úhradu takového předpisu by generátor nedokázal zařadit — vratka
+ * dobropisu na výchozím seedu jde na clearing (docs/accbal.md §5.1, §13).
+ * Na legacy seedu (bez sign-pravidel) je to celá skupina beze zbytku.
+ * Skupina „Nespárované platby“ nemá řádek předpisu → nikdy se neprohledá.
+ * Vrácený účet je účet prvního předpisu klíče vč. analytiky (311100,
+ * 336101…), u platby bez předpisu účet úhrady; reziduum nese znaménko
+ * (záporné = vratka, `bank.md` §6.1).
  *
  * Klíč případu = {@see CaseQuery} (skupina, období, partner, VS, SS, měna;
  * #69 D1/D11): normalizovaný vstup, rovnost přes idx_case, prázdný SS

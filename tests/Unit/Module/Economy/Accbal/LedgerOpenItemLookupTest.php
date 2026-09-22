@@ -435,6 +435,35 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->assertSame('311200', $item->accountNumber);
     }
 
+    public function testGroupPrefixesAreNotNarrowedByLongerPrefixOfOtherGroup(): void
+    {
+        // #69 D22 je věc generátoru: skupinu pohybu nese `balance` v klíči
+        // dotazu, prefixy skupiny se přednosti neúčastní — pohyb na 325201
+        // z doby před platností řádku Přijatých záloh leží v Závazcích a musí
+        // se tam přes 325 najít.
+        $this->settings = [
+            self::rule(self::PAYABLES, '321', 1, 0),
+            self::rule(self::PAYABLES, '321', 0, 1),
+            self::rule(self::PAYABLES, '325', 1, 0),
+            self::rule(self::PAYABLES, '325', 0, 1),
+            self::rule(self::ADVANCES_RECEIVED, '324', 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '324', 0, 1),
+            self::rule(self::ADVANCES_RECEIVED, '325201', 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '325201', 0, 1),
+        ];
+
+        $this->assertNull($this->lookup()->findOpenRequest(42, '1', '', 'czk', 2, self::FY));
+        $this->assertSame([self::PAYABLES, self::ADVANCES_RECEIVED], $this->queriedBalances());
+        $this->assertSame([self::PAYABLES, self::FY, 42, '1', 'czk', '321', '325'], $this->ledgerQuery(0)['params'], 'Závazky drží 325 i vedle 325201 jiné skupiny');
+        $this->assertSame([self::ADVANCES_RECEIVED, self::FY, 42, '1', 'czk', '324', '325201'], $this->ledgerQuery(1)['params']);
+
+        $this->ledger[self::PAYABLES] = [self::row(0, '325201', 10.00)];
+        $item = $this->lookup()->findOpenRequest(42, '1', '', 'czk', 2, self::FY);
+        $this->assertNotNull($item);
+        $this->assertSame(self::PAYABLES, $item->balance, 'starší pohyb 325201 v Závazcích se najde');
+        $this->assertSame('325201', $item->accountNumber);
+    }
+
     public function testSettingsAreReadOncePerInstance(): void
     {
         $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 10.00)];

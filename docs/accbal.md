@@ -234,6 +234,28 @@ existující skupiny **doplní chybějící účty seedu** (klíč `account_numb
 dostanou i DS se skupinou z doby před #72 bez ručního kroku. Tvorba
 vyúčtování v novém Shipardu je mimo scope (#72 D6).
 
+**Nejdelší shodný prefix vyhrává (#69 D22).** Sedí-li na řádek deníku víc
+řádků nastavení **téže strany účtu** (`acc_side`) platných k účetnímu datu,
+použijí se jen ty s nejdelším prefixem (délka `account_number` po trim);
+kratší prefixy jiných skupin jsou vyloučeny. Řádky téže délky z různých
+skupin zůstávají všechny — týž účet vědomě ve dvou skupinách. Přednost
+platí pro všechna místa výběru v generátoru (§4.2) a účastní se jí i
+sign-pravidla a `modify_sign`: `325201 DAL Kladné` v Přijatých zálohách
+vyřadí i případný `325 DAL Záporné ×−1` v Závazcích, záporný řádek na
+325201 pak nevyhoví ničemu. Přednost je per strana, ne globální: `325201
+DAL` v jedné skupině nevyřadí `325 MD` v jiné — podúčet přesunutý do jiné
+skupiny proto zadej pro **obě** strany (předpis i úhradu), jinak předpis
+a úhrada skončí v různých skupinách. Platnost se vyhodnocuje před
+předností: řádek s `valid_from` od nového roku letošní pohyby nemění.
+
+Příklad: seed má `325` v Závazcích; DS vede přijaté zálohy (kauce) vedle
+324 i na 325201/325202. Účetní přidá do Přijatých záloh `325201 DAL
+Kladné Předpis` + `325201 MD Kladné Úhrada` (a totéž pro 325202) — pohyby
+na 325201 vzniknou jen v Přijatých zálohách, 325101 zůstává v Závazcích.
+Řádek se stejným prefixem jako v jiné skupině zůstává povolen (vědomé
+zdvojení), formulář nic nehlídá. Po změně nastavení
+`shpd-ds accbal-regenerate --all` (§4.6) — pohyby se přesunou.
+
 Příklad seedu pro „Závazky" (zkráceně):
 
 ```
@@ -465,23 +487,24 @@ přeúčtování".
 3. Pro každý řádek deníku:
    a) chybový řádek (is_error) nebo řádek uzávěrkového období
       (period_type 2) → nic (D20; otevírací období 0 = předpis nového roku);
-   b) operace řádku určuje stranu (OperationSides, D17):
-      - acc.*Receivable / acc.*Payable → skupina = první řádek nastavení
+   b) řádky nastavení pro účet řádku: prefix (po trim) sedí
+      (str_starts_with), řádek i skupina platí k účetnímu datu, a per
+      strana účtu jen nejdelší prefix (D22, §3.2); kroky c) a d) vybírají
+      jen z nich, prázdný výběr → nic;
+   c) operace řádku určuje stranu (OperationSides, D17):
+      - acc.*Receivable / acc.*Payable → skupina = první řádek pro účet
         s předpisem (bal_side 0, bez modify_sign) na straně operace
-        (Receivable → MD, Payable → DAL), jehož prefix sedí na účet řádku;
-        bal_side = předpis, je-li strana řádku shodná se stranou předpisu,
-        jinak úhrada; částka se znaménkem řádku (žádné ×−1, amounts_sign
-        se nepoužije);
+        (Receivable → MD, Payable → DAL); bal_side = předpis, je-li strana
+        řádku shodná se stranou předpisu, jinak úhrada; částka se
+        znaménkem řádku (žádné ×−1, amounts_sign se nepoužije);
       - payment.* (payment.receivable/payable z dokladů, payment.in/out
-        z banky) → vždy úhrada ve skupině účtu (první řádek nastavení bez
-        modify_sign s prefixem účtu); + na straně, kterou skupina sleduje
-        jako úhradu, − na opačné (vratka);
+        z banky) → vždy úhrada ve skupině účtu (první řádek pro účet bez
+        modify_sign); + na straně, kterou skupina sleduje jako úhradu,
+        − na opačné (vratka);
       - účet mimo skupiny → nic (operace je autoritativní, do nastavení
         se nepadá);
-   c) ostatní operace (sale.*, purchase.*, advance.*, transfer.*,
-      acc.entry/record/item, NULL) → pro každý řádek nastavení platný
-      k účetnímu datu:
-        - account_number řádku začíná na prefix nastavení? (str_starts_with)
+   d) ostatní operace (sale.*, purchase.*, advance.*, transfer.*,
+      acc.entry/record/item, NULL) → pro každý řádek pro účet:
         - acc_side nastavení == strana řádku (MD ⇔ money_dr, DAL ⇔ money_cr)?
         - amounts_sign vyhovuje znaménku částky?
         → ano: kandidát: balance / bal_side z nastavení, částka ×−1 dle
@@ -494,10 +517,11 @@ přeúčtování".
 ```
 
 Chybový řádek deníku (`is_error`, nedohledaný účet) pohyb nevyrobí —
-fantomový pohyb by maskoval účetní chybu. V kroku c) může jeden řádek
+fantomový pohyb by maskoval účetní chybu. V kroku d) může jeden řádek
 deníku vyhovět **víc** řádkům nastavení (vznikne víc pohybů) — to je
-validní (např. týž účet ve dvou skupinách); krok b) dává nejvýš jeden
-pohyb. Pohyb dědí měny z deníku přímo, žádný přepočet.
+validní (týž účet ve dvou skupinách se stejnou délkou prefixu, D22);
+krok c) dává nejvýš jeden pohyb. Pohyb dědí měny z deníku přímo, žádný
+přepočet.
 
 Mapa operací `OperationSides::MAP` je úplná přes `docs.core.rowOperations`
 i `economy.bank.txOperations` (bankovní engine píše do téhož sloupce
@@ -713,6 +737,13 @@ interface OpenItemLookup
   úhradu takového předpisu by saldo nezařadilo, vratka dobropisu na
   výchozím seedu jde na clearing (§13). „Nespárované platby" nemají řádek
   předpisu → nikdy se neprohledají.
+- **Přednost nejdelšího prefixu (#69 D22) se v lookupu neuplatňuje**:
+  je per řádek deníku a per účetní datum — skupinu pohybu už rozhodl
+  generátor a nese ji `balance` v klíči dotazu; prefixy skupiny (bez
+  `modify_sign`) tu jen skrývají sign-ruled řádky. Pohyb na 325201 z doby
+  před `valid_from` řádku Přijatých záloh leží v Závazcích a lookup ho tam
+  přes `325` najde; pohyb po přesunu vzniká v Přijatých zálohách a najde
+  se přes `325201`.
 - **Reziduum** = Σ předpisy − Σ úhrady klíče v měně dokladu **se
   znaménkem**; otevřený = > 0 v přirozené skupině (dluh se platí), < 0
   v opačné (přeplatek, dobropis nebo platba bez faktury se vrací — D14).
@@ -1131,6 +1162,14 @@ partner resolution při ingestaci.
     (`fiscalPeriodType` v kanonickém formátu, jen import mód) a jde do
     měsíce Otevření / Uzavření roku; řádky uzávěrkového období se
     nederivují, otevírací zůstávají předpisem nového roku (D11).
+38. **Nejdelší shodný prefix vyhrává** (#69 D22, 2026-09-22,
+    `tasks/accbal-prefix-precedence.md`): sedí-li na řádek deníku víc
+    řádků nastavení téže strany účtu platných k datu, použijí se jen ty
+    s nejdelším prefixem; kratší prefixy jiných skupin jsou vyloučeny
+    (vč. sign-pravidel), stejná délka = všechny. Platí pro všechna místa
+    výběru v generátoru (§3.2, §4.2); lookup přednost neuplatňuje —
+    skupinu nese `balance` v klíči (§5.1). Podúčty do jiné skupiny per DS
+    (kauce na 325.2xx v Přijatých zálohách) jsou tím běžný scénář.
 
 ---
 

@@ -1,6 +1,6 @@
 # Saldokonto — nejdelší shodný prefix účtu vyhrává (#69 D22)
 
-**Stav:** naplánováno — D22 zamčeno v #69 (komentář 2026-09-22)
+**Stav:** částečně — generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69
 
 ## Kontext
 
@@ -49,6 +49,13 @@ jsou vyloučeny. Platí pro všechna místa výběru v generátoru i pro lookup.
 pokud po D19 ještě filtruje řádky klíče prefixem, filtr zrušit (řádky
 ledgeru už skupinu mají) nebo uplatnit stejnou přednost. Zdokumentuj,
 která varianta platí.
+
+**Zvoleno (2026-09-22): filtr zůstává, přednost se neuplatňuje.** Filtr
+není redundantní — prefixy skupiny bez `modify_sign` jsou jediné, co
+skrývá sign-ruled řádky (dobropis 311 v Závazcích). Přednost je per řádek
+deníku a per datum: pohyb na 325201 z doby před `valid_from` řádku
+Přijatých záloh leží v Závazcích a lookup ho přes `325` musí najít;
+skupinu nese `balance` v klíči dotazu. Viz `docs/accbal.md` §5.1.
 
 ## 3. Nastavení — validace
 
