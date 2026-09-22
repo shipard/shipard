@@ -38,6 +38,11 @@ use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
  * období (`period_type` 2 měsíce řádku) do ledgeru nejdou (D20);
  * otevírací (0) zůstávají předpisem nového roku (D11).
  *
+ * V obou případech se vybírá jen z řádků nastavení pro účet řádku: prefix
+ * sedí, řádek platí k datu a per strana účtu jen nejdelší prefix
+ * ({@see matchingAccounts}, #69 D22) — podúčet přesunutý do jiné skupiny
+ * (`325201` v Přijatých zálohách) vyřadí kratší `325` v Závazcích.
+ *
  * Clearing (261200/261300) není speciální case — je to běžná skupina
  * „Nespárované platby" v nastavení (varianta B, docs/accbal.md §4.4).
  *
@@ -161,18 +166,21 @@ final class LedgerGenerator
      * funkce nad poli (bez DB) — veřejná kvůli unit testům pravidel;
      * SQL a zápis zůstávají privátní.
      *
-     * Pravidla per řádek deníku (#69 D17/D20, docs/accbal.md §4.2):
+     * Pravidla per řádek deníku (#69 D17/D20/D22, docs/accbal.md §4.2):
      *  1. chybový řádek (`is_error`) a řádek uzávěrkového období
      *     (`fiscal_period_type` = 2) pohyb nedají;
-     *  2. operace určující stranu ({@see OperationSides}): skupina =
-     *     první řádek nastavení s předpisem (bal_side 0, bez modify_sign)
-     *     na straně operace, jehož prefix sedí; strana řádku proti
-     *     předpisu dává předpis/úhradu, znaménko částky se zachová.
-     *     `payment.*` = vždy úhrada ve skupině účtu, + na straně, kterou
-     *     skupina sleduje jako úhradu, − na opačné (vratka). Účet mimo
-     *     skupiny → řádek se přeskočí (operace je autoritativní);
-     *  3. ostatní řádky → všechny řádky nastavení (účet + strana +
-     *     znaménko vč. sign-pravidel a modify_sign) platné k účetnímu datu.
+     *  2. řádky nastavení pro účet řádku = prefix sedí, platné k účetnímu
+     *     datu, per strana účtu jen nejdelší prefix ({@see matchingAccounts});
+     *     kroky 3 a 4 vybírají jen z nich;
+     *  3. operace určující stranu ({@see OperationSides}): skupina =
+     *     první řádek pro účet s předpisem (bal_side 0, bez modify_sign)
+     *     na straně operace; strana řádku proti předpisu dává
+     *     předpis/úhradu, znaménko částky se zachová. `payment.*` = vždy
+     *     úhrada ve skupině účtu, + na straně, kterou skupina sleduje jako
+     *     úhradu, − na opačné (vratka). Účet mimo skupiny → řádek se
+     *     přeskočí (operace je autoritativní);
+     *  4. ostatní řádky → všechny řádky pro účet (strana + znaménko vč.
+     *     sign-pravidel a modify_sign).
      *
      * @param list<array<string, mixed>> $accounts řádky nastavení (balanceAccounts)
      * @param list<array<string, mixed>> $journalRows
@@ -214,8 +222,10 @@ final class LedgerGenerator
 
     /**
      * Kandidáti pohybu jednoho řádku: (skupina, předpis/úhrada, strana
-     * řádku, jejíž částka se bere, znaménko). Operace se stranou dává
-     * nejvýš jednoho kandidáta, nastavení může dát víc (týž účet ve dvou
+     * řádku, jejíž částka se bere, znaménko). Všechna tři místa výběru
+     * pracují jen nad řádky nastavení pro účet řádku k datu
+     * ({@see matchingAccounts}, D22). Operace se stranou dává nejvýš
+     * jednoho kandidáta, nastavení může dát víc (týž účet ve dvou
      * skupinách).
      *
      * @param array<string, mixed> $row
@@ -224,9 +234,14 @@ final class LedgerGenerator
      */
     private function candidatesFor(array $row, string $accountNumber, string $accountingDate, array $accounts): array
     {
+        $matching = $this->matchingAccounts($accountNumber, $accountingDate, $accounts);
+        if ($matching === []) {
+            return [];
+        }
+
         $kind = OperationSides::kindOf(isset($row['operation']) ? (string) $row['operation'] : null);
         if ($kind === null) {
-            return $this->settingsCandidates($row, $accountNumber, $accountingDate, $accounts);
+            return $this->settingsCandidates($row, $matching);
         }
 
         $rowSide = self::rowSide($row);
@@ -235,7 +250,7 @@ final class LedgerGenerator
         }
 
         if ($kind === OperationSides::PAYMENT) {
-            $group = $this->paymentGroup($accountNumber, $accountingDate, $accounts);
+            $group = $this->paymentGroup($matching);
             if ($group === null) {
                 return [];
             }
@@ -247,7 +262,7 @@ final class LedgerGenerator
             ]];
         }
 
-        $group = $this->requestGroup((int) $kind, $accountNumber, $accountingDate, $accounts);
+        $group = $this->requestGroup((int) $kind, $matching);
         if ($group === null) {
             return [];
         }
@@ -260,19 +275,57 @@ final class LedgerGenerator
     }
 
     /**
-     * Krok 3: řádky nastavení (účet + strana + znaménko), platné k datu.
+     * Řádky nastavení pro účet řádku deníku k účetnímu datu (#69 D22):
+     * prefix (`account_number` po trim; '311' chytí '311100') sedí, řádek
+     * i skupina platí k datu, a per strana účtu (`acc_side`) jen řádky
+     * s nejdelším prefixem — kratší prefixy jiných skupin jsou vyloučeny
+     * (`325201` v Přijatých zálohách vyřadí `325` v Závazcích, vč.
+     * sign-pravidel a modify_sign; `325101` dál padá do Závazků). Řádky
+     * téže délky z různých skupin zůstávají všechny (týž účet vědomě ve
+     * dvou skupinách). Přednost je per strana, ne globální: `325201 DAL`
+     * nevyřadí `325 MD`. Platnost se vyhodnotí dřív než přednost — řádek
+     * platný až od příštího roku letošní pohyby nemění. Pořadí nastavení
+     * se zachová.
      *
-     * @param array<string, mixed> $row
      * @param list<array<string, mixed>> $accounts
-     * @return list<array{balance: int, bal_side: int, acc_side: int, sign: float}>
+     * @return list<array<string, mixed>>
      */
-    private function settingsCandidates(array $row, string $accountNumber, string $accountingDate, array $accounts): array
+    private function matchingAccounts(string $accountNumber, string $accountingDate, array $accounts): array
     {
-        $out = [];
+        $matched = [];
+        $longest = [];
         foreach ($accounts as $acc) {
-            if (!$this->matchesPrefix($acc, $accountNumber) || !$this->validAt($acc, $accountingDate)) {
+            $prefix = trim((string) ($acc['account_number'] ?? ''));
+            if ($prefix === '' || !str_starts_with($accountNumber, $prefix) || !$this->validAt($acc, $accountingDate)) {
                 continue;
             }
+            $side   = (int) ($acc['acc_side'] ?? 0);
+            $length = strlen($prefix);
+            $longest[$side] = max($longest[$side] ?? 0, $length);
+            $matched[] = [$acc, $side, $length];
+        }
+
+        $out = [];
+        foreach ($matched as [$acc, $side, $length]) {
+            if ($length === $longest[$side]) {
+                $out[] = $acc;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Krok 4: řádky nastavení pro účet (strana + znaménko vč. sign-pravidel
+     * a modify_sign).
+     *
+     * @param array<string, mixed> $row
+     * @param list<array<string, mixed>> $matching řádky z matchingAccounts()
+     * @return list<array{balance: int, bal_side: int, acc_side: int, sign: float}>
+     */
+    private function settingsCandidates(array $row, array $matching): array
+    {
+        $out = [];
+        foreach ($matching as $acc) {
             $accSide  = (int) ($acc['acc_side'] ?? 0);
             $activeHc = (float) ($accSide === 0 ? ($row['money_dr'] ?? 0) : ($row['money_cr'] ?? 0));
             $activeCur = (float) ($accSide === 0 ? ($row['money_dr_cur'] ?? 0) : ($row['money_cr_cur'] ?? 0));
@@ -295,20 +348,17 @@ final class LedgerGenerator
     }
 
     /**
-     * Skupina pro operaci se stranou: první řádek nastavení s předpisem
-     * (bal_side 0, bez modify_sign) na dané straně, jehož prefix sedí.
+     * Skupina pro operaci se stranou: první řádek nastavení pro účet
+     * s předpisem (bal_side 0, bez modify_sign) na dané straně.
      *
-     * @param list<array<string, mixed>> $accounts
+     * @param list<array<string, mixed>> $matching řádky z matchingAccounts()
      * @return array{balance: int, request_side: int}|null
      */
-    private function requestGroup(int $side, string $accountNumber, string $accountingDate, array $accounts): ?array
+    private function requestGroup(int $side, array $matching): ?array
     {
-        foreach ($accounts as $acc) {
+        foreach ($matching as $acc) {
             if ((int) ($acc['bal_side'] ?? 0) !== 0 || !empty($acc['modify_sign'])
                 || (int) ($acc['acc_side'] ?? 0) !== $side) {
-                continue;
-            }
-            if (!$this->matchesPrefix($acc, $accountNumber) || !$this->validAt($acc, $accountingDate)) {
                 continue;
             }
             return ['balance' => (int) $acc['balance'], 'request_side' => $side];
@@ -317,21 +367,21 @@ final class LedgerGenerator
     }
 
     /**
-     * Skupina pro `payment.*`: první řádek nastavení bez modify_sign, jehož
-     * prefix sedí; strana úhrady skupiny pro ten prefix = acc_side jejího
-     * řádku úhrady (bal_side 1), jinak opačná k jejímu předpisu.
+     * Skupina pro `payment.*`: první řádek nastavení pro účet bez
+     * modify_sign; strana úhrady skupiny pro ten účet = acc_side jejího
+     * řádku úhrady (bal_side 1) mezi řádky pro účet, jinak opačná k jejímu
+     * předpisu.
      *
-     * @param list<array<string, mixed>> $accounts
+     * @param list<array<string, mixed>> $matching řádky z matchingAccounts()
      * @return array{balance: int, payment_side: int}|null
      */
-    private function paymentGroup(string $accountNumber, string $accountingDate, array $accounts): ?array
+    private function paymentGroup(array $matching): ?array
     {
         $balance = null;
         $paymentSide = null;
         $requestSide = null;
-        foreach ($accounts as $acc) {
-            if (!empty($acc['modify_sign'])
-                || !$this->matchesPrefix($acc, $accountNumber) || !$this->validAt($acc, $accountingDate)) {
+        foreach ($matching as $acc) {
+            if (!empty($acc['modify_sign'])) {
                 continue;
             }
             $balance ??= (int) $acc['balance'];
@@ -423,13 +473,6 @@ final class LedgerGenerator
             return 1;
         }
         return null;
-    }
-
-    /** account_number nastavení je prefix účtu ('311' chytí '311100'). */
-    private function matchesPrefix(array $acc, string $accountNumber): bool
-    {
-        $prefix = (string) ($acc['account_number'] ?? '');
-        return $prefix !== '' && str_starts_with($accountNumber, $prefix);
     }
 
     /** amounts_sign: 0 vše, 1 jen kladné, 2 jen záporné (dle domácí částky). */

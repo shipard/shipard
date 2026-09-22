@@ -11,14 +11,16 @@ use Shipard\Module\Economy\Accbal\LedgerGenerator;
  * Kanonický klíč pohybu (#69 D13): SHA-1 n-tice zdroj + platební identita
  * řádku, normalizované jako klíč případu (D10). Pravidla odvození pohybu
  * (#69 D17 operace má přednost, D18 sign-pravidla jen ze seedu, D20
- * uzávěrkové období mimo ledger) přes čistou `buildDesired()` nad poli.
+ * uzávěrkové období mimo ledger, D22 nejdelší shodný prefix vyhrává)
+ * přes čistou `buildDesired()` nad poli.
  * Generování nad reálným deníkem kryje integrační LedgerGeneratorTest.
  */
 class LedgerGeneratorTest extends TestCase
 {
-    private const RECEIVABLES = 1;
-    private const PAYABLES    = 2;
-    private const UNMATCHED   = 5;
+    private const RECEIVABLES       = 1;
+    private const PAYABLES          = 2;
+    private const ADVANCES_RECEIVED = 4;
+    private const UNMATCHED         = 5;
     private const ACC_DATE    = '2026-06-10';
 
     /** Řádek nastavení ve tvaru balanceAccounts() (a_from/a_to = platnost řádku, b_* skupiny). */
@@ -279,6 +281,147 @@ class LedgerGeneratorTest extends TestCase
         ]);
 
         $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 0, 'amount' => 150.0, 'account' => '311100']], $moves);
+    }
+
+    // ── D22: nejdelší shodný prefix vyhrává ─────────────────────────────────
+
+    /**
+     * Seed + Závazky 325 + podúčet 325201 přesunutý do Přijatých záloh
+     * (nastavení per DS, docs/accbal.md §3.2) — obě strany.
+     */
+    private static function depositRules(): array
+    {
+        return [
+            ...self::seedRules(),
+            self::rule(self::PAYABLES, '325', 1, 1, 0),
+            self::rule(self::PAYABLES, '325', 0, 1, 1),
+            self::rule(self::ADVANCES_RECEIVED, '324', 1, 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '324', 0, 1, 1),
+            self::rule(self::ADVANCES_RECEIVED, '325201', 1, 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '325201', 0, 1, 1),
+        ];
+    }
+
+    public function testLongestPrefixWinsForSettingsRows(): void
+    {
+        $rules = self::depositRules();
+
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 0, 'amount' => 1000.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 1, 1000.0, 'acc.item')]),
+            'jediný pohyb v Přijatých zálohách — kratší 325 v Závazcích je vyloučen',
+        );
+        $this->assertSame(
+            [['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => 1000.0, 'account' => '325101']],
+            $this->desired($rules, [self::journal('325101', 1, 1000.0, 'acc.item')]),
+            'jiný podúčet dál padá do Závazků',
+        );
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 1, 'amount' => 1000.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 0, 1000.0, null)]),
+            'vyúčtování zálohy na MD = úhrada v Přijatých zálohách',
+        );
+    }
+
+    public function testLongestPrefixWinsForOperationsWithSide(): void
+    {
+        $rules = self::depositRules();
+
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 1, 'amount' => 1000.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 0, 1000.0, 'payment.payable')]),
+            'payment.* → úhrada ve skupině nejdelšího prefixu, + na její straně úhrady',
+        );
+        $this->assertSame(
+            [['balance' => self::PAYABLES, 'bal_side' => 1, 'amount' => 1000.0, 'account' => '325101']],
+            $this->desired($rules, [self::journal('325101', 0, 1000.0, 'payment.payable')]),
+        );
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 0, 'amount' => 1000.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 1, 1000.0, 'acc.balancePayable')]),
+            'operace se stranou → skupina předpisu nejdelšího prefixu',
+        );
+    }
+
+    public function testSameLengthPrefixesInTwoGroupsBothProduce(): void
+    {
+        $rules = [
+            self::rule(self::PAYABLES, '325', 1, 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '325', 1, 1, 0),
+        ];
+
+        $this->assertSame([
+            ['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => 10.0, 'account' => '325201'],
+            ['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 0, 'amount' => 10.0, 'account' => '325201'],
+        ], $this->desired($rules, [self::journal('325201', 1, 10.0, null)]), 'týž účet vědomě ve dvou skupinách — regrese');
+    }
+
+    public function testPrecedenceIsPerSide(): void
+    {
+        // Přijaté zálohy mají jen předpis 325201 DAL; MD stranu dál drží 325 v Závazcích.
+        $rules = [
+            self::rule(self::PAYABLES, '325', 1, 1, 0),
+            self::rule(self::PAYABLES, '325', 0, 1, 1),
+            self::rule(self::ADVANCES_RECEIVED, '325201', 1, 1, 0),
+        ];
+
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 0, 'amount' => 10.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 1, 10.0, null)]),
+        );
+        $this->assertSame(
+            [['balance' => self::PAYABLES, 'bal_side' => 1, 'amount' => 10.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 0, 10.0, null)]),
+            '325201 DAL v jiné skupině nevyřadí 325 MD',
+        );
+    }
+
+    public function testLongerPrefixExcludesCreditNoteRuleOfShorterPrefix(): void
+    {
+        // Sign-pravidla se účastní přednosti stejně: 325201 Kladné v Přijatých
+        // zálohách vyřadí i 325 Záporné ×−1 v Závazcích → záporný řádek na
+        // 325201 nevyhoví ničemu.
+        $rules = [
+            self::rule(self::PAYABLES, '325', 1, 2, 0, true),
+            self::rule(self::ADVANCES_RECEIVED, '325201', 1, 1, 0),
+        ];
+
+        $this->assertSame([], $this->desired($rules, [self::journal('325201', 1, -10.0, null)]));
+        $this->assertSame(
+            [['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => 10.0, 'account' => '325101']],
+            $this->desired($rules, [self::journal('325101', 1, -10.0, null)]),
+        );
+    }
+
+    public function testFutureLongerPrefixDoesNotExcludeYet(): void
+    {
+        // Platnost před předností: podúčet přesunutý od nového roku letošní pohyby nemění.
+        $rules = [
+            self::rule(self::PAYABLES, '325', 1, 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '325201', 1, 1, 0, false, ['a_from' => '2027-01-01']),
+        ];
+
+        $this->assertSame(
+            [['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => 10.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 1, 10.0, null)]),
+        );
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 0, 'amount' => 10.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 1, 10.0, null, ['accounting_date' => '2027-01-01'])]),
+        );
+    }
+
+    public function testPrefixIsTrimmedForMatchAndLength(): void
+    {
+        $rules = [
+            self::rule(self::PAYABLES, '325', 1, 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, ' 325201 ', 1, 1, 0),
+        ];
+
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 0, 'amount' => 10.0, 'account' => '325201']],
+            $this->desired($rules, [self::journal('325201', 1, 10.0, null)]),
+        );
     }
 
     // ── movementKey ──────────────────────────────────────────────────────────
