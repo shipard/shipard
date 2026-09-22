@@ -178,7 +178,7 @@ class DocumentExporterTest extends TestCase
         $exporter = new DocumentExporter($this->db());
 
         $this->assertSame('closing', $exporter->exportDocument($this->headRow(['fiscal_period_type' => 'closing']))->data['fiscalPeriodType']);
-        $this->assertNull($exporter->exportDocument($this->headRow())->data['fiscalPeriodType']);
+        $this->assertArrayNotHasKey('fiscalPeriodType', $exporter->exportDocument($this->headRow())->data, 'běžný doklad: null se ořeže');
     }
 
     public function testManualControlStatementModeIsExported(): void

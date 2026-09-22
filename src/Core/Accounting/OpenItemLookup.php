@@ -32,10 +32,14 @@ interface OpenItemLookup
      * necitlivé na okrajové mezery a velikost písmen měny (normalizace
      * klíče D10 na obou stranách).
      *
-     * $direction: 1 = příjem → předpis vzniklý na MD (typicky pohledávky,
-     * 311*), 2 = výdaj → předpis na DAL (závazky 321*, ale i 325/331/336/…
-     * podle nastavení saldokont). Otevřený = Σ předpisy − Σ úhrady pro klíč
-     * > 0 v měně dokladu.
+     * $direction: 1 = příjem, 2 = výdaj. Skupina s předpisem na straně
+     * směru (příjem → MD, typicky pohledávky 311*; výdaj → DAL, závazky
+     * 321* i 325/331/336/… podle nastavení) je pro směr přirozená —
+     * otevřený = Σ předpisy − Σ úhrady > 0 (dluh se platí). Skupina
+     * s předpisem na opačné straně je opačná — otevřený = reziduum < 0
+     * (přeplatek, dobropis nebo platba bez faktury se vrací; #69 D19).
+     * Přirozené skupiny se prohledávají první. `OpenItem::residual` nese
+     * znaménko; účet a strana zápisu plynou z účtu předpisu a směru.
      *
      * $fiscalYear: období účetního data úhrady. Předpis z jiného období je
      * miss — zůstatky mezi obdobími přenáší otevírací doklad (D11).

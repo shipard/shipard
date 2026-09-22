@@ -150,6 +150,33 @@ class BankPaymentRoutingTest extends IntegrationTestCase
         $this->assertSame($this->receivableAccount, $this->counterpartyAccount($txId), 'reziduum > 0 stačí (symbolový model)');
     }
 
+    public function testRefundOfOverpaymentRoutesToRequestAccountAndClosesCase(): void
+    {
+        // #69 D19/D14: zákazník přeplatil, vracíme výdajem — lookup najde
+        // záporné reziduum v Pohledávkách, engine účtuje 311 MD (strana ze
+        // směru), saldo z toho udělá zápornou úhradu a případ je na nule.
+        $this->seedRequest('receivables', $this->receivableAccount, 600.00);
+        [$in] = $this->accountPayment(1000.00);
+        $this->assertSame($this->receivableAccount, $this->counterpartyAccount($in));
+
+        [$out, $result] = $this->accountPayment(400.00, ['direction' => 2, 'operation' => 'payment.out']);
+
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $this->assertSame($this->receivableAccount, $this->counterpartyAccount($out), 'vratka na účet předpisu, ne clearing');
+        $this->assertNull($this->ledgerMove($out, 'unmatched_payments'));
+        $refund = $this->ledgerMove($out, 'receivables');
+        $this->assertNotNull($refund, 'ledger: úhrada v Pohledávkách');
+        $this->assertEqualsWithDelta(-400.00, (float) $refund['amount'], 0.001, 'opačná strana = záporná úhrada');
+
+        $residual = $this->db->fetchRow(
+            'SELECT SUM(CASE WHEN bal_side = 0 THEN amount ELSE -amount END) AS residual
+             FROM economy_accbal_ledger
+             WHERE balance = %i AND fiscal_year = %i AND partner = %i AND payment_reference = %s',
+            $this->balanceId('receivables'), $this->fiscalYear, self::PARTNER, self::VS,
+        );
+        $this->assertEqualsWithDelta(0.0, (float) $residual['residual'], 0.001, 'případ uzavřen');
+    }
+
     // ── 2. Miss → clearing ───────────────────────────────────────────────────
 
     public function testNoOpenRequestStaysOnClearing(): void

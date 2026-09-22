@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Shipard\Core\Accounting;
 
 /**
- * Otevřený předpis saldokonta dohledaný pro klíč úhrady ({@see OpenItemLookup}).
+ * Otevřený případ saldokonta dohledaný pro klíč úhrady ({@see OpenItemLookup}).
  * Datová třída bez logiky: skupina saldokonta, účet předpisu (přesně vč.
- * analytiky — na něj engine položí úhradu) a otevřené reziduum v měně dokladu.
+ * analytiky — na něj engine položí úhradu; u platby bez předpisu účet
+ * úhrady) a reziduum v měně dokladu **se znaménkem** (#69 D19): kladné =
+ * dluh, který se platí; záporné = přeplatek / dobropis / platba bez
+ * faktury, která se vrací. Stranu zápisu dává směr transakce, ne reziduum.
  */
 final readonly class OpenItem
 {

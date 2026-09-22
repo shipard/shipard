@@ -320,13 +320,20 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
     implementace `LedgerOpenItemLookup` v `economy.accbal`) na otevřený
     předpis pro klíč případu (partner, VS, SS, měna) **v účetním období
     transakce** (#69 D11 — předpis z jiného období je miss, zůstatky
-    přenáší otevírací doklad; `accbal.md` §3.4, §5.5) a směr (příjem → skupiny
-    s předpisem na MD, typicky Pohledávky 311*; výdaj → skupiny s předpisem
-    na DAL, typicky Závazky 321* vč. 325/331/336/…; cíle plynou z nastavení
-    saldokont, ne z čísel účtů). Zásah → protistrana = **účet předpisu přesně
-    vč. analytiky**; miss / bez partnera / bez VS → **clearing účet
-    nespárovaných plateb** dle masky (§6.3). Přeplatek se routuje také
-    (stačí otevřené reziduum > 0, symbolový model). Vlastní transakce se
+    přenáší otevírací doklad; `accbal.md` §3.4, §5.5) a směr: nejdřív
+    skupiny s předpisem na straně směru (příjem → MD, typicky Pohledávky
+    311*; výdaj → DAL, typicky Závazky 321* vč. 325/331/336/…) s kladným
+    reziduem = dluh, pak skupiny s předpisem na opačné straně se **záporným**
+    reziduem = přeplatek, dobropis nebo platba bez faktury, která se vrací
+    (#69 D19; cíle plynou z nastavení saldokont, ne z čísel účtů). Zásah →
+    protistrana = **účet předpisu přesně vč. analytiky**; miss / bez
+    partnera / bez VS → **clearing účet nespárovaných plateb** dle masky
+    (§6.3). Strana zápisu plyne ze směru transakce i u vratky (výdaj →
+    311 MD), saldo z ní udělá zápornou úhradu a případ uzavře; částečně
+    uhrazený dluh se routuje také (stačí reziduum > 0, symbolový model).
+    Dobropis přesměrovaný sign-pravidlem výchozího seedu (311 záporně →
+    Závazky) lookup nevidí — jeho vratka jde na clearing (`accbal.md` §5.1).
+    Vlastní transakce se
     z rezidua vylučuje → reaccount je idempotentní a **bez paměti**: zmizí-li
     předpis, reaccount vrátí úhradu na clearing (automatický zpětný trigger
     není). DS bez modulu saldokonta má `NullOpenItemLookup` → vše na clearing.

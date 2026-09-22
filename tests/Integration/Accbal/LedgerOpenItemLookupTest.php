@@ -178,6 +178,50 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->assertEqualsWithDelta(500.00, $item->residual, 0.001);
     }
 
+    // ── D19: opačná skupina, reziduum se znaménkem ──────────────────────────
+
+    public function testOutgoingFindsOverpaymentInReceivables(): void
+    {
+        $recv = $this->balanceId('receivables');
+        $this->seedRequest($recv, '311100', 500.00);
+        $this->seedPayment($recv, '311100', 700.00);
+        $lookup = $this->lookup();
+
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear), 'příjem na přeplacený klíč = miss');
+        $item = $lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2, $this->fiscalYear);
+        $this->assertNotNull($item, 'výdaj = vratka přeplatku');
+        $this->assertSame($recv, $item->balance);
+        $this->assertSame('311100', $item->accountNumber);
+        $this->assertEqualsWithDelta(-200.00, $item->residual, 0.001);
+    }
+
+    public function testIncomingFindsOverpaidPayable(): void
+    {
+        $pay = $this->balanceId('payables');
+        $this->seedRequest($pay, '321100', 800.00);
+        $this->seedPayment($pay, '321100', 1000.00);
+        $lookup = $this->lookup();
+
+        $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2, $this->fiscalYear));
+        $item = $lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear);
+        $this->assertNotNull($item, 'dodavatel vrací přeplatek');
+        $this->assertSame($pay, $item->balance);
+        $this->assertSame('321100', $item->accountNumber);
+        $this->assertEqualsWithDelta(-200.00, $item->residual, 0.001);
+    }
+
+    public function testOutgoingFindsPaymentWithoutRequest(): void
+    {
+        $recv = $this->balanceId('receivables');
+        $this->seedPayment($recv, '311100', 300.00);
+
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2, $this->fiscalYear);
+
+        $this->assertNotNull($item, 'platba bez faktury se vrací');
+        $this->assertSame('311100', $item->accountNumber, 'účet úhrady, předpis není');
+        $this->assertEqualsWithDelta(-300.00, $item->residual, 0.001);
+    }
+
     public function testInputKeyIsNormalized(): void
     {
         // Ledger je normalizovaný při zápisu (D10); vstup lookupu se normalizuje stejně.
