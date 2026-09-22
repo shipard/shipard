@@ -23,7 +23,9 @@ namespace Shipard\Module\Economy\Accbal;
  * partner (D6/D12 — řazení primárně dle partnera, sdílené i listem), uvnitř
  * partnera po klíči případu, aby pohyby jednoho případu byly pohromadě;
  * footer se součty Předpisy/Úhrady/Zůstatek v domácí měně (D7). Datum
- * pohybu přes LEFT JOIN na deník (journal_row → accounting_date).
+ * pohybu a operace přes LEFT JOIN na deník (journal_row → accounting_date,
+ * operation). Druh pohybu: Předpis / Úhrada z `bal_side`; pohyb z bankovní
+ * transakce jako platba podle směru (#69 D23, {@see roleOf}).
  */
 class LedgerViewer extends AccbalViewerBase
 {
@@ -34,7 +36,7 @@ class LedgerViewer extends AccbalViewerBase
             . ' l.`payment_reference`, l.`specific_symbol`, l.`due_date`, l.`currency`,'
             . ' l.`amount`, l.`amount_hc`, l.`text`,'
             . ' b.`name` AS balance_name, b.`short_name` AS balance_short_name,'
-            . ' p.`full_name` AS partner_name, j.`accounting_date`,'
+            . ' p.`full_name` AS partner_name, j.`accounting_date`, j.`operation`,'
             . ' ' . CaseQuery::residualSubquerySql('l') . ' AS case_residual'
             . ' FROM `' . $this->table . '` l'
             . ' LEFT JOIN `economy_accbal_balances` b ON b.`id` = l.`balance`'
@@ -109,6 +111,33 @@ class LedgerViewer extends AccbalViewerBase
         return [$conditions, $params];
     }
 
+    /**
+     * Popis druhu pohybu (#69 D23). Pohyb z bankovní transakce je platba a
+     * popisuje se směrem podle operace řádku deníku (Příjem / Výdaj), ne
+     * předpisem/úhradou — bankovní záloha na 324 je datově předpis, vratka
+     * přeplatku na 311 MD také, uživateli to ale říká jen „platba". Ostatní
+     * zdroje Předpis / Úhrada z `bal_side`. Barva badge jde vždy z `bal_side`,
+     * aby bylo vidět, do kterého součtu patky pohyb padá.
+     *
+     * @param array<string, mixed> $r řádek s bal_side, source_kind, operation
+     * @return array{text: string, badge: string}
+     */
+    private function roleOf(array $r): array
+    {
+        $cs = $this->language === 'cs';
+        $balSide = (int) ($r['bal_side'] ?? 0);
+        if (($r['source_kind'] ?? null) === 'bankTransaction') {
+            $text = match ((string) ($r['operation'] ?? '')) {
+                'payment.in'  => $cs ? 'Příjem' : 'Incoming payment',
+                'payment.out' => $cs ? 'Výdaj' : 'Outgoing payment',
+                default       => $cs ? 'Platba' : 'Bank payment',
+            };
+        } else {
+            $text = $balSide === 0 ? ($cs ? 'Předpis' : 'Request') : ($cs ? 'Úhrada' : 'Payment');
+        }
+        return ['text' => $text, 'badge' => $balSide === 0 ? 'primary' : 'success'];
+    }
+
     public function renderRow(array $rowData): array
     {
         $balSide = (int) ($rowData['bal_side'] ?? 0);
@@ -127,11 +156,7 @@ class LedgerViewer extends AccbalViewerBase
         if ($date !== null) {
             $t2[] = ['text' => $date];
         }
-        $t2[] = [
-            'text'  => $balSide === 0 ? ($this->language === 'cs' ? 'Předpis' : 'Request')
-                                      : ($this->language === 'cs' ? 'Úhrada' : 'Payment'),
-            'class' => 'muted',
-        ];
+        $t2[] = ['text' => $this->roleOf($rowData)['text'], 'class' => 'muted'];
         $partnerName = trim((string) ($rowData['partner_name'] ?? ''));
         if ($partnerName !== '') {
             $t2[] = ['text' => $partnerName, 'class' => 'muted'];
@@ -211,9 +236,7 @@ class LedgerViewer extends AccbalViewerBase
             ],
             'cells' => [
                 'accounting_date' => $this->formatDate($rowData['accounting_date'] ?? null),
-                'role' => $balSide === 0
-                    ? ['text' => $cs ? 'Předpis' : 'Request', 'badge' => 'primary']
-                    : ['text' => $cs ? 'Úhrada' : 'Payment', 'badge' => 'success'],
+                'role' => $this->roleOf($rowData),
                 'payment_reference' => (string) ($rowData['payment_reference'] ?? ''),
                 'specific_symbol'   => (string) ($rowData['specific_symbol'] ?? ''),
                 'due_date' => $this->formatDate($rowData['due_date'] ?? null),
@@ -281,10 +304,11 @@ class LedgerViewer extends AccbalViewerBase
     public function renderDetail(int $recordId): array
     {
         $r = $this->db->fetchRow(
-            'SELECT l.*, b.`name` AS balance_name, p.`full_name` AS partner_name'
+            'SELECT l.*, b.`name` AS balance_name, p.`full_name` AS partner_name, j.`operation`'
             . ' FROM `' . $this->table . '` l'
             . ' LEFT JOIN `economy_accbal_balances` b ON b.`id` = l.`balance`'
             . ' LEFT JOIN `base_persons_persons` p ON p.`id` = l.`partner`'
+            . ' LEFT JOIN `economy_accounting_journal` j ON j.`id` = l.`journal_row`'
             . ' WHERE l.`id` = %i',
             $recordId,
         );
@@ -299,11 +323,7 @@ class LedgerViewer extends AccbalViewerBase
 
         $moveItems = [];
         $this->addItem($moveItems, $cs ? 'Saldokonto' : 'Balance', $r['balance_name'] ?? null);
-        $this->addItem(
-            $moveItems,
-            $cs ? 'Role' : 'Role',
-            (int) ($r['bal_side'] ?? 0) === 0 ? ($cs ? 'Předpis' : 'Request') : ($cs ? 'Úhrada' : 'Payment'),
-        );
+        $this->addItem($moveItems, 'Role', $this->roleOf($r)['text']);
         $this->addItem($moveItems, $cs ? 'Účet' : 'Account', $r['account_number'] ?? null);
         $this->addItem($moveItems, 'Partner', $r['partner_name'] ?? null);
         $this->addItem($moveItems, 'Text', $r['text'] ?? null);

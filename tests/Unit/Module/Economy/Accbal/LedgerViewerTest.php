@@ -53,7 +53,7 @@ class LedgerViewerTest extends TestCase
 
         $sql = $this->queries[0]['sql'];
         $this->assertStringContainsString('LEFT JOIN `economy_accounting_journal` j ON j.`id` = l.`journal_row`', $sql);
-        $this->assertStringContainsString('j.`accounting_date`', $sql);
+        $this->assertStringContainsString('j.`accounting_date`, j.`operation`', $sql, 'operace pro popis bankovního pohybu (D23)');
         // Zůstatek případu korelovaným subdotazem klíče (CaseQuery), NULL-safe.
         $this->assertStringContainsString('END) FROM [economy_accbal_ledger] x WHERE x.[balance] = l.[balance]', $sql);
         $this->assertStringContainsString('x.[specific_symbol] <=> l.[specific_symbol] AND x.[currency] <=> l.[currency]) AS case_residual', $sql);
@@ -227,6 +227,47 @@ class LedgerViewerTest extends TestCase
         $this->assertSame(['text' => 'Úhrada', 'badge' => 'success'], $row['cells']['role']);
         $this->assertNull($row['cells']['case_residual'], 'uzavřený případ má prázdný zůstatek');
         $this->assertSame('Nespárované platby', $row['cells']['balance'], 'fallback na name');
+    }
+
+    public function testBankMovementIsLabelledByDirectionNotBalSide(): void
+    {
+        // #69 D23: bankovní záloha na 324 DAL je datově předpis, uživatel vidí
+        // platbu podle směru; badge (a stateStyle) dál z bal_side.
+        $viewer = $this->makeViewer();
+        $base = ['id' => 9, 'source_kind' => 'bankTransaction', 'currency' => 'czk', 'amount' => 1000.0, 'case_residual' => 1000.0];
+
+        $row = $viewer->renderGridRow($base + ['bal_side' => 0, 'operation' => 'payment.in']);
+        $this->assertSame(['text' => 'Příjem', 'badge' => 'primary'], $row['cells']['role']);
+        $this->assertSame('primary', $row['stateStyle']);
+
+        $row = $viewer->renderGridRow($base + ['bal_side' => 1, 'operation' => 'payment.out']);
+        $this->assertSame(['text' => 'Výdaj', 'badge' => 'success'], $row['cells']['role']);
+
+        $row = $viewer->renderGridRow($base + ['bal_side' => 1, 'operation' => 'fee.out']);
+        $this->assertSame(['text' => 'Platba', 'badge' => 'success'], $row['cells']['role'], 'jiná bankovní operace = obecná platba');
+
+        $list = $viewer->renderRow($base + ['bal_side' => 0, 'operation' => 'payment.in', 'account_number' => '324001']);
+        $this->assertContains(['text' => 'Příjem', 'class' => 'muted'], $list['t2']);
+
+        $doc = $viewer->renderGridRow(['id' => 10, 'source_kind' => 'doc', 'bal_side' => 0, 'operation' => 'payment.receivable', 'currency' => 'czk', 'amount' => 100.0]);
+        $this->assertSame(['text' => 'Předpis', 'badge' => 'primary'], $doc['cells']['role'], 'doklad dál podle bal_side');
+    }
+
+    public function testRenderDetailJoinsJournalForOperation(): void
+    {
+        $viewer = $this->makeViewer(fetchRowResult: [
+            'id' => 9, 'balance' => 4, 'bal_side' => 0, 'source_kind' => 'bankTransaction',
+            'operation' => 'payment.in', 'fiscal_year' => 7, 'partner' => 42,
+            'payment_reference' => 'VS1', 'specific_symbol' => null, 'currency' => 'czk',
+            'home_currency' => 'czk', 'amount' => 1000.0, 'amount_hc' => 1000.0,
+            'balance_name' => 'Přijaté zálohy', 'partner_name' => 'Partner',
+        ]);
+        $detail = $viewer->renderDetail(9);
+
+        $this->assertStringContainsString('LEFT JOIN `economy_accounting_journal` j ON j.`id` = l.`journal_row`', $this->queries[0]['sql']);
+        $this->assertStringContainsString('j.`operation`', $this->queries[0]['sql']);
+        $items = $detail['tabs'][0]['content']['groups'][0]['items'] ?? [];
+        $this->assertContains(['label' => 'Role', 'value' => 'Příjem'], $items);
     }
 
     // ── Grid: footer (D7) ────────────────────────────────────────────────────
