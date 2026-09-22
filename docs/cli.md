@@ -473,6 +473,14 @@ provisionery jsou idempotentní, doplní jen chybějící data. Při zapnutém
 flagu `ds-upgrade` při každém běhu hlásí `[SKIP] Provisioning disabled via
 config`.
 
+**Saldokonta pod `skipProvisioning` vznikají ve variantě legacy** (#69
+D18): seed skupin se založí bez sign-pravidel dobropisů a s částkami
+„Všechny“ — chování starého Shipardu, dobropis zůstává záporně ve své
+skupině. Import nastavení saldokont ze starého systému se zrušil
+(`accbal.md` §12). Skupina nese `provisioning_variant = legacy`; pozdější
+`ds-upgrade` s flagem `false` do ní sign-pravidla nedoplní, přepnutí na
+výchozí chování je ruční úkon účetní na přelomu roku (`accbal.md` §3.2).
+
 **AI analyzer provisioning běží vždy**, i pod `skipProvisioning` — user
 `_ai_analyzer`, default backend, default profil i version sync profilu
 nejsou migrovaná data, ale systémový kontrakt modulů `core.mail`/`core.ai`
@@ -1453,7 +1461,8 @@ sudo shpd-ds ds-upgrade             # doplní zbývající referenční data
 
 `skipProvisioning` se propíše i přes interní `ds-upgrade` v `ds-reset`,
 takže při zapnutém flagu reset rekreuje jen schéma a žádné referenční data
-nevytvoří. Po celou dobu opakovaného testování zůstává flag `true`; na
+nevytvoří (výjimky: clearing infrastruktura, tranzitní účty, saldokonta ve
+variantě legacy — enginové kontrakty, které import potřebuje mít před sebou). Po celou dobu opakovaného testování zůstává flag `true`; na
 `false` se přepne, až je import hotový „naostro". AI analyzer žádnou ruční
 akci nevyžaduje: profil, backend i klíče reset přežívají (`keepOnReset`)
 a `ds-upgrade` je zajišťuje i pod `skipProvisioning`.

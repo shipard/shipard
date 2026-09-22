@@ -105,11 +105,11 @@ class BalancesProvisionerTest extends TestCase
         $result = $provisioner->provision();
 
         $this->assertSame(1, $result['balances']['existing']);
-        $this->assertSame(2, $result['accounts']['added'], 'jen 315 MD a 315 DAL');
+        $this->assertSame(4, $result['accounts']['added'], '315 MD/DAL + zrcadlové 321 dobropisy (D18)');
         $added = array_values(array_filter($store->accounts, fn(array $a) => (int) $a['balance'] === 1 && (int) ($a['id'] ?? 0) > 1000));
-        $this->assertSame(['315', '315'], array_column($added, 'account_number'));
-        $this->assertSame([0, 1], array_column($added, 'acc_side'));
-        $this->assertSame([30, 40], array_column($added, 'sort_order'), 'řadí se za existující');
+        $this->assertSame(['315', '315', '321', '321'], array_column($added, 'account_number'));
+        $this->assertSame([0, 1, 1, 0], array_column($added, 'acc_side'));
+        $this->assertSame([30, 40, 50, 60], array_column($added, 'sort_order'), 'řadí se za existující');
         $this->assertSame(40, $added[0]['docState']);
         $this->assertSame('upraveno', $store->accounts[1]['note'], 'existující řádek se nemění');
 
@@ -133,8 +133,95 @@ class BalancesProvisionerTest extends TestCase
         $result = (new BalancesProvisioner($store->db, self::SEED))->provision(createGroups: false);
 
         $this->assertSame(['created' => 0, 'existing' => 1], $result['balances']);
-        $this->assertSame(2, $result['accounts']['added']);
+        $this->assertSame(4, $result['accounts']['added']);
         $this->assertCount(1, $store->balances, 'nová skupina nevznikla');
+    }
+
+    // ── #69 D18: varianta legacy ─────────────────────────────────────────────
+
+    public function testSeedMarksCreditNoteRulesExactlyOnModifySignRows(): void
+    {
+        $marked = [];
+        foreach ($this->seedGroups() as $g) {
+            foreach ($g['accounts'] as $a) {
+                $this->assertSame(!empty($a['modify_sign']), BalancesProvisioner::isCreditNoteRule($a), "{$g['code']} {$a['account_number']}");
+                if (BalancesProvisioner::isCreditNoteRule($a)) {
+                    $marked[] = $g['code'] . ':' . $a['account_number'] . '/' . $a['acc_side'] . '/' . $a['bal_side'];
+                }
+            }
+        }
+        $this->assertSame(
+            ['receivables:321/1/0', 'receivables:321/0/1', 'payables:311/0/0', 'payables:311/1/1'],
+            $marked,
+            'sign-pravidla dobropisů zrcadlově v obou hlavních skupinách',
+        );
+    }
+
+    public function testLegacyCreatesGroupsWithoutCreditNoteRulesAndAllAmounts(): void
+    {
+        $store = $this->recordingDb();
+        $result = (new BalancesProvisioner($store->db, self::SEED))->provision(legacy: true);
+
+        $groups = $this->seedGroups();
+        $this->assertSame(count($groups), $result['balances']['created']);
+        $expected = 0;
+        foreach ($groups as $g) {
+            $expected += count(array_filter($g['accounts'], fn(array $a) => empty($a['creditNoteRule'])));
+        }
+        $this->assertCount($expected, $store->accounts, 'creditNoteRule řádky se nezaložily');
+        $this->assertSame([0], array_values(array_unique(array_column($store->accounts, 'modify_sign'))));
+        $this->assertSame([0], array_values(array_unique(array_column($store->accounts, 'amounts_sign'))), 'legacy = částky Všechny');
+        $this->assertSame(['legacy'], array_values(array_unique(array_column($store->balances, 'provisioning_variant'))));
+    }
+
+    public function testDefaultVariantHasNoMarkerAndKeepsPositiveOnlyRows(): void
+    {
+        $store = $this->recordingDb();
+        (new BalancesProvisioner($store->db, self::SEED))->provision();
+
+        $this->assertSame([null], array_values(array_unique(array_column($store->balances, 'provisioning_variant'))));
+        $receivables = array_filter($store->accounts, fn(array $a) => $a['account_number'] === '311' && $a['acc_side'] === 0 && $a['bal_side'] === 0 && $a['modify_sign'] === 0);
+        $this->assertSame([1], array_values(array_unique(array_column($receivables, 'amounts_sign'))), 'výchozí seed: 311 MD předpis jen kladné');
+    }
+
+    public function testLegacyGroupNeverReceivesCreditNoteRules(): void
+    {
+        // Importovaný DS: Pohledávky založené jako legacy (jen 311), později
+        // ds-upgrade bez skipProvisioning — doplní 315 (Všechny), zrcadlové 321 ne.
+        $store = $this->recordingDb(
+            [['id' => 1, 'code' => 'receivables', 'provisioning_variant' => 'legacy']],
+            [
+                ['id' => 10, 'balance' => 1, 'account_number' => '311', 'acc_side' => 0, 'bal_side' => 0, 'modify_sign' => 0, 'amounts_sign' => 0, 'sort_order' => 10],
+                ['id' => 11, 'balance' => 1, 'account_number' => '311', 'acc_side' => 1, 'bal_side' => 1, 'modify_sign' => 0, 'amounts_sign' => 0, 'sort_order' => 20],
+            ],
+        );
+        $result = (new BalancesProvisioner($store->db, self::SEED))->provision();
+
+        $this->assertSame(2, $result['accounts']['added'], 'jen 315 MD a 315 DAL');
+        $added = array_values(array_filter($store->accounts, fn(array $a) => (int) $a['balance'] === 1 && (int) ($a['id'] ?? 0) > 1000));
+        $this->assertSame(['315', '315'], array_column($added, 'account_number'));
+        $this->assertSame([0, 0], array_column($added, 'amounts_sign'), 'doplněné řádky legacy skupiny berou i záporné částky');
+    }
+
+    public function testDefaultGroupReceivesMirroredCreditNoteRules(): void
+    {
+        // DS s výchozími Pohledávkami z doby před D18 — přibudou zrcadlové 321 řádky.
+        $store = $this->recordingDb(
+            [['id' => 1, 'code' => 'receivables']],
+            [
+                ['id' => 10, 'balance' => 1, 'account_number' => '311', 'acc_side' => 0, 'bal_side' => 0, 'modify_sign' => 0, 'amounts_sign' => 1, 'sort_order' => 10],
+                ['id' => 11, 'balance' => 1, 'account_number' => '311', 'acc_side' => 1, 'bal_side' => 1, 'modify_sign' => 0, 'amounts_sign' => 1, 'sort_order' => 20],
+                ['id' => 12, 'balance' => 1, 'account_number' => '315', 'acc_side' => 0, 'bal_side' => 0, 'modify_sign' => 0, 'amounts_sign' => 1, 'sort_order' => 30],
+                ['id' => 13, 'balance' => 1, 'account_number' => '315', 'acc_side' => 1, 'bal_side' => 1, 'modify_sign' => 0, 'amounts_sign' => 1, 'sort_order' => 40],
+            ],
+        );
+        $result = (new BalancesProvisioner($store->db, self::SEED))->provision();
+
+        $this->assertSame(2, $result['accounts']['added']);
+        $added = array_values(array_filter($store->accounts, fn(array $a) => (int) $a['balance'] === 1 && (int) ($a['id'] ?? 0) > 1000));
+        $this->assertSame(['321', '321'], array_column($added, 'account_number'));
+        $this->assertSame([1, 1], array_column($added, 'modify_sign'));
+        $this->assertSame([2, 2], array_column($added, 'amounts_sign'), 'jen záporné částky');
     }
 
     public function testCreditNoteRowsAreDistinguishedByModifySign(): void

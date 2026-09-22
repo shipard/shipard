@@ -39,6 +39,12 @@
             "type": "date", "nullable": true, "group": "settings"},
         {"id": "valid_to", "name": "Valid to", "name:cs": "Platnost do", "name:en": "Valid to",
             "type": "date", "nullable": true, "group": "settings"},
+        // Varianta seedu, kterou skupinu založil provisioner (#69 D18): NULL =
+        // výchozí (sign-pravidla dobropisů), 'legacy' = importovaný DS bez nich
+        // (částky Všechny). Řídí jen doplňování řádků seedu (creditNoteRule
+        // se do legacy skupiny nedoplní); uživatelské řádky nemění.
+        {"id": "provisioning_variant", "name": "Provisioning variant", "name:cs": "Varianta seedu", "name:en": "Provisioning variant",
+            "type": "varchar", "length": 10, "nullable": true, "system": true},
 
         // --- doc state (systémové, bez skupiny) ---
 

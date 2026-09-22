@@ -340,10 +340,13 @@ class DsUpgradeCommand extends Command
             $output->writeln("<comment>       number series, mail router) was generated.</comment>");
             $output->writeln("<comment>       Set skipProvisioning=false in config/main.json and re-run</comment>");
             $output->writeln("<comment>       ds-upgrade once the import is complete.</comment>");
-            // Saldokontní skupiny se pod skipProvisioning nezakládají, ale
-            // existující dostanou chybějící účty seedu (#72 D6: 315 v
-            // Pohledávkách je enginový kontrakt, ne migrovaná data).
-            $this->provisionAccbalBalances($resolvedModules, $dsConnection, $output, createGroups: false);
+            // Saldokontní skupiny vznikají i pod skipProvisioning, ve variantě
+            // legacy (#69 D18/D20): bez sign-pravidel dobropisů a s částkami
+            // Všechny — chování starého systému, import nastavení se zrušil.
+            // Existující skupiny dostanou jen chybějící účty seedu (#72 D6:
+            // 315 v Pohledávkách je enginový kontrakt), do legacy skupiny
+            // creditNoteRule řádky nikdy.
+            $this->provisionAccbalBalances($resolvedModules, $dsConnection, $output, legacy: true);
         } else {
             $this->provisionUnits($resolvedModules, $dsConnection, $output);
             $this->provisionItemKinds($resolvedModules, $dsConnection, $output);
@@ -751,7 +754,7 @@ class DsUpgradeCommand extends Command
         array $resolvedModules,
         DataSourceConnection $dsConnection,
         OutputInterface $output,
-        bool $createGroups = true,
+        bool $legacy = false,
     ): void {
         $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
         $output->writeln('Provisioning economy.accbal balances...', OutputInterface::VERBOSITY_VERBOSE);
@@ -768,11 +771,9 @@ class DsUpgradeCommand extends Command
         }
 
         $provisioner = new BalancesProvisioner($dsConnection, $seedFile);
-        $result = $provisioner->provision($createGroups);
+        $result = $provisioner->provision(legacy: $legacy);
 
-        if ($createGroups) {
-            $this->logProvisioningResult($output, 'accbal balances', $result['balances']);
-        }
+        $this->logProvisioningResult($output, $legacy ? 'accbal balances (legacy)' : 'accbal balances', $result['balances']);
         if (($result['accounts']['added'] ?? 0) > 0) {
             $output->writeln(sprintf(
                 '  [CREATE] accbal balance accounts — added to existing groups: %d',
