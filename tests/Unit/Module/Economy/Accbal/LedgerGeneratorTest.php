@@ -9,11 +9,280 @@ use Shipard\Module\Economy\Accbal\LedgerGenerator;
 
 /**
  * Kanonický klíč pohybu (#69 D13): SHA-1 n-tice zdroj + platební identita
- * řádku, normalizované jako klíč případu (D10). Generování nad reálným
- * deníkem kryje integrační LedgerGeneratorTest.
+ * řádku, normalizované jako klíč případu (D10). Pravidla odvození pohybu
+ * (#69 D17 operace má přednost, D18 sign-pravidla jen ze seedu, D20
+ * uzávěrkové období mimo ledger) přes čistou `buildDesired()` nad poli.
+ * Generování nad reálným deníkem kryje integrační LedgerGeneratorTest.
  */
 class LedgerGeneratorTest extends TestCase
 {
+    private const RECEIVABLES = 1;
+    private const PAYABLES    = 2;
+    private const UNMATCHED   = 5;
+    private const ACC_DATE    = '2026-06-10';
+
+    /** Řádek nastavení ve tvaru balanceAccounts() (a_from/a_to = platnost řádku, b_* skupiny). */
+    private static function rule(int $balance, string $prefix, int $accSide, int $amountsSign, int $balSide, bool $modifySign = false, array $over = []): array
+    {
+        static $id = 0;
+        return array_merge([
+            'id'             => ++$id,
+            'balance'        => $balance,
+            'account_number' => $prefix,
+            'acc_side'       => $accSide,
+            'amounts_sign'   => $amountsSign,
+            'bal_side'       => $balSide,
+            'modify_sign'    => $modifySign ? 1 : 0,
+            'a_from'         => null,
+            'a_to'           => null,
+            'b_from'         => null,
+            'b_to'           => null,
+        ], $over);
+    }
+
+    /** Výchozí seed (sign-pravidla dobropisů v obou hlavních skupinách) + clearing. */
+    private static function seedRules(): array
+    {
+        return [
+            self::rule(self::RECEIVABLES, '311', 0, 1, 0),
+            self::rule(self::RECEIVABLES, '311', 1, 1, 1),
+            self::rule(self::RECEIVABLES, '321', 1, 2, 0, true),
+            self::rule(self::RECEIVABLES, '321', 0, 2, 1, true),
+            self::rule(self::PAYABLES, '321', 1, 1, 0),
+            self::rule(self::PAYABLES, '321', 0, 1, 1),
+            self::rule(self::PAYABLES, '311', 0, 2, 0, true),
+            self::rule(self::PAYABLES, '311', 1, 2, 1, true),
+            self::rule(self::UNMATCHED, '261200', 1, 1, 1),
+            self::rule(self::UNMATCHED, '261300', 0, 1, 1),
+        ];
+    }
+
+    /**
+     * Legacy seed (importovaný DS): bez sign-pravidel a s částkami „Všechny"
+     * (amounts_sign 0) — dobropis zůstává záporně ve své skupině.
+     */
+    private static function legacyRules(): array
+    {
+        $rules = array_filter(self::seedRules(), static fn(array $r) => $r['modify_sign'] === 0);
+        return array_values(array_map(static fn(array $r) => ['amounts_sign' => 0] + $r, $rules));
+    }
+
+    /** Jednostranný řádek deníku: kladná částka na MD/DAL, záporná = záporná na téže straně. */
+    private static function journal(string $account, int $side, float $amount, ?string $operation, array $over = []): array
+    {
+        static $id = 0;
+        return array_merge([
+            'id'                 => ++$id,
+            'account_number'     => $account,
+            'accounting_date'    => self::ACC_DATE,
+            'money_dr'           => $side === 0 ? $amount : 0.0,
+            'money_cr'           => $side === 1 ? $amount : 0.0,
+            'money_dr_cur'       => $side === 0 ? $amount : 0.0,
+            'money_cr_cur'       => $side === 1 ? $amount : 0.0,
+            'operation'          => $operation,
+            'partner'            => 42,
+            'payment_reference'  => 'VS1',
+            'specific_symbol'    => null,
+            'currency'           => 'czk',
+            'fiscal_year'        => 7,
+            'fiscal_period_type' => 1,
+            'is_error'           => 0,
+        ], $over);
+    }
+
+    /** @return list<array{balance: int, bal_side: int, amount: float, account: string}> */
+    private function desired(array $rules, array $rows): array
+    {
+        $generator = new LedgerGenerator($this->createMock(\Dibi\Connection::class), null, 'czk');
+        $out = [];
+        foreach ($generator->buildDesired('doc', 5, $rules, $rows, 'czk') as $move) {
+            $out[] = [
+                'balance'  => $move['balance'],
+                'bal_side' => $move['bal_side'],
+                'amount'   => $move['amount'],
+                'account'  => $move['account_number'],
+            ];
+        }
+        return $out;
+    }
+
+    // ── D17: operace má přednost ─────────────────────────────────────────────
+
+    public function testReceivableOperationKeepsNegativePaymentInReceivables(): void
+    {
+        // Oprava salda / zápočet ze starého systému: 311 DAL záporně s operací.
+        // Sign-pravidlo (311 záporně → Závazky ×−1) se nepoužije.
+        $moves = $this->desired(self::seedRules(), [self::journal('311100', 1, -100.0, 'acc.balanceReceivable')]);
+
+        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => -100.0, 'account' => '311100']], $moves);
+    }
+
+    public function testPayableOperationKeepsSignInPayables(): void
+    {
+        $moves = $this->desired(self::seedRules(), [self::journal('321100', 1, -300.0, 'acc.balancePayable')]);
+
+        $this->assertSame([['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => -300.0, 'account' => '321100']], $moves, 'předpis závazku záporně, žádné ×−1 do Pohledávek');
+    }
+
+    public function testOperationRowOnRequestSideIsRequest(): void
+    {
+        $moves = $this->desired(self::seedRules(), [self::journal('311100', 0, 250.0, 'acc.balanceReceivable')]);
+
+        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 0, 'amount' => 250.0, 'account' => '311100']], $moves);
+    }
+
+    public function testFxOperationBooksOnlyTheBalanceAccountLine(): void
+    {
+        // Kurzová ztráta pohledávky: 563 MD / 311 DAL, obě linky nesou operaci.
+        $moves = $this->desired(self::seedRules(), [
+            self::journal('563000', 0, 4.0, 'acc.fxLossReceivable'),
+            self::journal('311100', 1, 4.0, 'acc.fxLossReceivable'),
+        ]);
+
+        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => 4.0, 'account' => '311100']], $moves, '563 není v žádné skupině → přeskočen');
+    }
+
+    public function testSideOperationWithoutGroupOnThatSideIsSkipped(): void
+    {
+        // acc.balancePayable na 311: Závazky mají 311 jen jako sign-pravidlo
+        // (modify_sign) → pro operaci žádná skupina, řádek nejde ani přes nastavení.
+        $this->assertSame([], $this->desired(self::seedRules(), [self::journal('311100', 0, -100.0, 'acc.balancePayable')]));
+        $this->assertSame([], $this->desired(self::legacyRules(), [self::journal('311100', 0, -100.0, 'acc.balancePayable')]));
+    }
+
+    // ── payment.* = vždy úhrada, znaménko podle strany ───────────────────────
+
+    public function testPaymentOnOppositeSideIsNegativePayment(): void
+    {
+        // Vratka přeplatku zákazníkovi: payment.receivable / payment.out na 311 MD.
+        $moves = $this->desired(self::seedRules(), [self::journal('311100', 0, 100.0, 'payment.receivable')]);
+        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => -100.0, 'account' => '311100']], $moves);
+
+        $moves = $this->desired(self::seedRules(), [self::journal('321100', 1, 300.0, 'payment.out')]);
+        $this->assertSame([['balance' => self::PAYABLES, 'bal_side' => 1, 'amount' => -300.0, 'account' => '321100']], $moves, 'dodavatel vrací přeplatek: 321 DAL = opačná strana proti úhradě závazku');
+    }
+
+    public function testPaymentOnPaymentSideIsPositivePayment(): void
+    {
+        $moves = $this->desired(self::seedRules(), [
+            self::journal('311100', 1, 100.0, 'payment.in'),
+            self::journal('261200', 1, 50.0, 'payment.in', ['payment_reference' => 'VS2']),
+        ]);
+
+        $this->assertSame([
+            ['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => 100.0, 'account' => '311100'],
+            ['balance' => self::UNMATCHED, 'bal_side' => 1, 'amount' => 50.0, 'account' => '261200'],
+        ], $moves, 'clearing skupina má jen řádky úhrady — strana úhrady z nich');
+    }
+
+    public function testPaymentIgnoresCreditNoteRulesOfOtherGroup(): void
+    {
+        // 311 DAL záporně s payment.*: Závazky mají 311 jen přes modify_sign →
+        // skupina účtu jsou Pohledávky, DAL = strana úhrady → + × (−500) = −500.
+        $moves = $this->desired(self::seedRules(), [self::journal('311100', 1, -500.0, 'payment.in')]);
+
+        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => -500.0, 'account' => '311100']], $moves);
+    }
+
+    // ── D18: bez operace platí nastavení vč. sign-pravidel ──────────────────
+
+    public function testNegativeAmountWithoutOperationFollowsSettings(): void
+    {
+        $creditNote = [self::journal('311100', 0, -100.0, 'sale.services')];
+
+        $this->assertSame(
+            [['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => 100.0, 'account' => '311100']],
+            $this->desired(self::seedRules(), $creditNote),
+            'výchozí seed: dobropis pohledávky = závazek ×−1',
+        );
+        $this->assertSame(
+            [['balance' => self::RECEIVABLES, 'bal_side' => 0, 'amount' => -100.0, 'account' => '311100']],
+            $this->desired(self::legacyRules(), $creditNote),
+            'legacy: dobropis zůstává záporně v Pohledávkách',
+        );
+    }
+
+    public function testMirroredCreditNoteRuleForPayables(): void
+    {
+        $received = [self::journal('321100', 1, -80.0, 'purchase.services')];
+
+        $this->assertSame(
+            [['balance' => self::RECEIVABLES, 'bal_side' => 0, 'amount' => 80.0, 'account' => '321100']],
+            $this->desired(self::seedRules(), $received),
+            'výchozí seed: dobropis závazku = pohledávka ×−1',
+        );
+        $this->assertSame(
+            [['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => -80.0, 'account' => '321100']],
+            $this->desired(self::legacyRules(), $received),
+            'legacy: dobropis závazku zůstává záporně v Závazcích',
+        );
+    }
+
+    // ── platnost k účetnímu datu ─────────────────────────────────────────────
+
+    public function testExpiredRuleIsNotUsedForOperationNorSettings(): void
+    {
+        $rules = [
+            self::rule(self::RECEIVABLES, '311', 0, 1, 0, false, ['a_to' => '2026-05-31']),
+            self::rule(self::RECEIVABLES, '311', 1, 1, 1, false, ['a_to' => '2026-05-31']),
+        ];
+
+        $this->assertSame([], $this->desired($rules, [self::journal('311100', 1, -100.0, 'acc.balanceReceivable')]), 'krok operace respektuje valid_to');
+        $this->assertSame([], $this->desired($rules, [self::journal('311100', 0, 100.0, 'sale.services')]), 'nastavení respektuje valid_to');
+        $this->assertCount(1, $this->desired($rules, [self::journal('311100', 0, 100.0, 'sale.services', ['accounting_date' => '2026-05-31'])]), 'poslední den platnosti ještě platí');
+    }
+
+    public function testRuleValiditySwitchesLegacyToDefaultAtYearBoundary(): void
+    {
+        // Ruční přepnutí legacy DS (docs/accbal.md §3.2): řádky „Všechny" končí
+        // 31. 12., od 1. 1. platí řádky „Kladné" + sign-pravidlo dobropisu.
+        $rules = array_map(static fn(array $r) => ['a_to' => '2026-12-31'] + $r, self::legacyRules());
+        $rules[] = self::rule(self::RECEIVABLES, '311', 0, 1, 0, false, ['a_from' => '2027-01-01']);
+        $rules[] = self::rule(self::PAYABLES, '311', 0, 2, 0, true, ['a_from' => '2027-01-01']);
+        $creditNote = static fn(string $date) => [self::journal('311100', 0, -100.0, 'sale.services', ['accounting_date' => $date])];
+
+        $this->assertSame(
+            [['balance' => self::RECEIVABLES, 'bal_side' => 0, 'amount' => -100.0, 'account' => '311100']],
+            $this->desired($rules, $creditNote('2026-12-31')),
+        );
+        $this->assertSame(
+            [['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => 100.0, 'account' => '311100']],
+            $this->desired($rules, $creditNote('2027-01-01')),
+            'od nového roku právě jeden pohyb — staré řádky „Všechny" už neplatí',
+        );
+    }
+
+    // ── D20: uzávěrkové období mimo ledger ──────────────────────────────────
+
+    public function testClosingPeriodRowsAreSkippedOpeningRowsStay(): void
+    {
+        $closing = [self::journal('311100', 1, 7600000.0, null, ['partner' => null, 'payment_reference' => null, 'fiscal_period_type' => 2])];
+        $this->assertSame([], $this->desired(self::seedRules(), $closing));
+
+        $opening = [self::journal('311100', 0, 1000.0, null, ['fiscal_period_type' => 0])];
+        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 0, 'amount' => 1000.0, 'account' => '311100']], $this->desired(self::seedRules(), $opening));
+
+        $noMonth = [self::journal('311100', 0, 1000.0, null, ['fiscal_period_type' => null])];
+        $this->assertCount(1, $this->desired(self::seedRules(), $noMonth), 'řádek bez měsíce (NULL) se derivuje');
+    }
+
+    public function testErrorRowProducesNothing(): void
+    {
+        $this->assertSame([], $this->desired(self::seedRules(), [self::journal('311100', 0, 100.0, 'acc.balanceReceivable', ['is_error' => 1])]));
+    }
+
+    public function testSameIdentityRowsAggregateAcrossRules(): void
+    {
+        $moves = $this->desired(self::seedRules(), [
+            self::journal('311100', 0, 100.0, 'sale.services'),
+            self::journal('311100', 0, 50.0, 'sale.goods'),
+        ]);
+
+        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 0, 'amount' => 150.0, 'account' => '311100']], $moves);
+    }
+
+    // ── movementKey ──────────────────────────────────────────────────────────
+
     /** @return array<string, mixed> */
     private static function identity(array $over = []): array
     {

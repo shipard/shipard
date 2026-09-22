@@ -478,4 +478,93 @@ class LedgerGeneratorTest extends IntegrationTestCase
         $this->assertNotContains($legacyId, array_map(fn($m) => (int) $m['id'], $ledger));
         $this->assertEqualsWithDelta(300.00, array_sum(array_map(fn($m) => (float) $m['amount'], $ledger)), 0.001);
     }
+
+    // ── #69 D17/D20: operace má přednost, uzávěrkové období mimo ledger ─────
+
+    public function testSideOperationOverridesCreditNoteRule(): void
+    {
+        // Oprava salda / zápočet: 311 DAL záporně s acc.balanceReceivable →
+        // úhrada −100 v Pohledávkách, ne předpis v Závazcích (sign-pravidlo).
+        $recv = $this->balanceId('receivables');
+        $docId = $this->newDocId();
+        $this->insertJournal('doc', $docId, [
+            'account_number'    => '311100',
+            'money_cr'          => -100.00,
+            'money_cr_cur'      => -100.00,
+            'operation'         => 'acc.balanceReceivable',
+            'partner'           => 1,
+            'payment_reference' => 'VS-OP',
+        ]);
+
+        $this->generator()->generate('doc', $docId);
+
+        $ledger = $this->ledgerOf('doc', $docId);
+        $this->assertCount(1, $ledger);
+        $this->assertSame($recv, (int) $ledger[0]['balance']);
+        $this->assertSame(1, (int) $ledger[0]['bal_side'], 'úhrada');
+        $this->assertEqualsWithDelta(-100.00, (float) $ledger[0]['amount'], 0.001, 'znaménko zachováno');
+    }
+
+    public function testPaymentOnOppositeSideIsRefund(): void
+    {
+        // Vratka přeplatku: payment.receivable na 311 MD → úhrada −100 (Pohledávky).
+        $recv = $this->balanceId('receivables');
+        $docId = $this->newDocId();
+        $this->insertJournal('doc', $docId, [
+            'account_number'    => '311100',
+            'money_dr'          => 100.00,
+            'money_dr_cur'      => 100.00,
+            'operation'         => 'payment.receivable',
+            'partner'           => 1,
+            'payment_reference' => 'VS-REF',
+        ]);
+
+        $this->generator()->generate('doc', $docId);
+
+        $ledger = $this->ledgerOf('doc', $docId);
+        $this->assertCount(1, $ledger);
+        $this->assertSame($recv, (int) $ledger[0]['balance']);
+        $this->assertSame(1, (int) $ledger[0]['bal_side']);
+        $this->assertEqualsWithDelta(-100.00, (float) $ledger[0]['amount'], 0.001);
+    }
+
+    public function testClosingPeriodRowIsNotDerivedOpeningRowIs(): void
+    {
+        $months = $this->db->fetchAll(
+            'SELECT id, period_type FROM economy_codebooks_fiscal_months
+             WHERE fiscal_year = (SELECT fiscal_year FROM economy_codebooks_fiscal_months
+                                  WHERE date_begin <= %s AND date_end >= %s AND period_type = 1 LIMIT 1)
+               AND period_type IN (0, 2)',
+            self::ACC_DATE, self::ACC_DATE,
+        );
+        $byType = [];
+        foreach ($months as $m) {
+            $byType[(int) $m['period_type']] = (int) $m['id'];
+        }
+        if (!isset($byType[0], $byType[2])) {
+            $this->markTestSkipped('DS nemá otevírací/uzávěrkový měsíc pro ' . self::ACC_DATE);
+        }
+
+        $closingDoc = $this->newDocId();
+        $this->insertJournal('doc', $closingDoc, [
+            'account_number' => '311100',
+            'money_cr'       => 7600000.00,
+            'money_cr_cur'   => 7600000.00,
+            'fiscal_month'   => $byType[2],
+        ]);
+        $this->generator()->generate('doc', $closingDoc);
+        $this->assertSame([], $this->ledgerOf('doc', $closingDoc), 'uzávěrkový řádek pohyb nedá');
+
+        $openingDoc = $this->newDocId();
+        $this->insertJournal('doc', $openingDoc, [
+            'account_number'    => '311100',
+            'money_dr'          => 1000.00,
+            'money_dr_cur'      => 1000.00,
+            'fiscal_month'      => $byType[0],
+            'partner'           => 1,
+            'payment_reference' => 'VS-OPEN',
+        ]);
+        $this->generator()->generate('doc', $openingDoc);
+        $this->assertCount(1, $this->ledgerOf('doc', $openingDoc), 'otevírací řádek = předpis nového roku');
+    }
 }

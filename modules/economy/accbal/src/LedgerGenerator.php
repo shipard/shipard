@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Accbal;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
 
 /**
  * Generátor saldo pohybů (economy_accbal_ledger) z účetního deníku.
@@ -30,6 +31,12 @@ use Shipard\Core\Config\ConfigRuntime;
  * opustil stav 40) → desired set prázdný → pohyby zdroje smazány. Případ
  * (#69 D1) je agregát klíče nad ledgerem (CaseQuery), žádná vedlejší tabulka
  * — smazaný pohyb z něj zmizí sám.
+ *
+ * Skupinu a druh pohybu určuje (1) operace řádku, pokud určuje stranu
+ * ({@see OperationSides}, #69 D17), (2) jinak účet + strana + znaménko
+ * podle řádku nastavení platného k účetnímu datu. Řádky uzávěrkového
+ * období (`period_type` 2 měsíce řádku) do ledgeru nejdou (D20);
+ * otevírací (0) zůstávají předpisem nového roku (D11).
  *
  * Clearing (261200/261300) není speciální case — je to běžná skupina
  * „Nespárované platby" v nastavení (varianta B, docs/accbal.md §4.4).
@@ -128,15 +135,21 @@ final class LedgerGenerator
     }
 
     /**
+     * Řádky deníku zdroje + typ období jejich měsíce (`fiscal_period_type`
+     * = `period_type` měsíce; NULL = řádek bez měsíce) pro vyloučení
+     * uzávěrky v buildDesired.
+     *
      * @return list<array<string, mixed>>
      */
     private function loadJournalRows(string $sourceKind, int $sourceId): array
     {
         $column = $sourceKind === 'bankTransaction' ? 'bank_transaction' : 'doc_head';
         $rows = $this->db->fetchAll(
-            'SELECT * FROM [economy_accounting_journal]
-             WHERE [source_kind] = %s AND [' . $column . '] = %i
-             ORDER BY [id]',
+            'SELECT j.*, m.[period_type] AS fiscal_period_type
+             FROM [economy_accounting_journal] j
+             LEFT JOIN [economy_codebooks_fiscal_months] m ON m.[id] = j.[fiscal_month]
+             WHERE j.[source_kind] = %s AND j.[' . $column . '] = %i
+             ORDER BY j.[id]',
             $sourceKind,
             $sourceId,
         );
@@ -144,13 +157,28 @@ final class LedgerGenerator
     }
 
     /**
-     * Kandidátní pohyby agregované dle klíče pohybu (movementKey).
+     * Kandidátní pohyby agregované dle klíče pohybu (movementKey). Čistá
+     * funkce nad poli (bez DB) — veřejná kvůli unit testům pravidel;
+     * SQL a zápis zůstávají privátní.
      *
-     * @param list<array<string, mixed>> $accounts
+     * Pravidla per řádek deníku (#69 D17/D20, docs/accbal.md §4.2):
+     *  1. chybový řádek (`is_error`) a řádek uzávěrkového období
+     *     (`fiscal_period_type` = 2) pohyb nedají;
+     *  2. operace určující stranu ({@see OperationSides}): skupina =
+     *     první řádek nastavení s předpisem (bal_side 0, bez modify_sign)
+     *     na straně operace, jehož prefix sedí; strana řádku proti
+     *     předpisu dává předpis/úhradu, znaménko částky se zachová.
+     *     `payment.*` = vždy úhrada ve skupině účtu, + na straně, kterou
+     *     skupina sleduje jako úhradu, − na opačné (vratka). Účet mimo
+     *     skupiny → řádek se přeskočí (operace je autoritativní);
+     *  3. ostatní řádky → všechny řádky nastavení (účet + strana +
+     *     znaménko vč. sign-pravidel a modify_sign) platné k účetnímu datu.
+     *
+     * @param list<array<string, mixed>> $accounts řádky nastavení (balanceAccounts)
      * @param list<array<string, mixed>> $journalRows
      * @return array<string, array<string, mixed>> movement_key → pohyb
      */
-    private function buildDesired(
+    public function buildDesired(
         string $sourceKind,
         int $sourceId,
         array $accounts,
@@ -166,76 +194,242 @@ final class LedgerGenerator
             if (!empty($row['is_error'])) {
                 continue;
             }
+            // Uzávěrkové období: závěrkové zápisy (311/321 DAL jednou částkou
+            // bez partnera) nejsou úhrady — do salda nepatří (D20).
+            if (isset($row['fiscal_period_type'])
+                && (int) $row['fiscal_period_type'] === FiscalMonthLookup::PERIOD_TYPE_CLOSING) {
+                continue;
+            }
 
-            $accountNumber = (string) ($row['account_number'] ?? '');
+            $accountNumber  = (string) ($row['account_number'] ?? '');
             $accountingDate = $this->dateString($row['accounting_date'] ?? null);
 
-            foreach ($accounts as $acc) {
-                $prefix = (string) ($acc['account_number'] ?? '');
-                if ($prefix === '' || !str_starts_with($accountNumber, $prefix)) {
-                    continue;
-                }
-                if (!$this->validAt($acc, $accountingDate)) {
-                    continue;
-                }
-
-                $accSide = (int) ($acc['acc_side'] ?? 0);
-                $activeHc  = (float) ($accSide === 0 ? ($row['money_dr'] ?? 0) : ($row['money_cr'] ?? 0));
-                $activeCur = (float) ($accSide === 0 ? ($row['money_dr_cur'] ?? 0) : ($row['money_cr_cur'] ?? 0));
-
-                // Jednostranný řádek: bere se jen strana, kterou účet sleduje.
-                if ($activeHc === 0.0 && $activeCur === 0.0) {
-                    continue;
-                }
-                if (!$this->passesAmountsSign((int) ($acc['amounts_sign'] ?? 0), $activeHc)) {
-                    continue;
-                }
-
-                $sign = !empty($acc['modify_sign']) ? -1.0 : 1.0;
-                $balance = (int) $acc['balance'];
-                $balSide = (int) ($acc['bal_side'] ?? 0);
-
-                // Klíč pohybu = zdroj + platební identita řádku (D13). Klíč
-                // případu se normalizuje při zápisu (#69 D10): symboly TRIM,
-                // prázdné → NULL, měna malými písmeny — rovnost klíče pak jde
-                // přes idx_case (CaseQuery); tytéž hodnoty vstupují do hashe.
-                $identity = [
-                    'source_kind'       => $sourceKind,
-                    'source_id'         => $sourceId,
-                    'balance'           => $balance,
-                    'bal_side'          => $balSide,
-                    'account_number'    => $accountNumber,
-                    'partner'           => isset($row['partner']) && $row['partner'] !== null ? (int) $row['partner'] : null,
-                    'payment_reference' => CaseQuery::normalizeSymbol($row['payment_reference'] ?? null),
-                    'specific_symbol'   => CaseQuery::normalizeSymbol($row['specific_symbol'] ?? null),
-                    'currency'          => CaseQuery::normalizeCurrency($row['currency'] ?? null),
-                ];
-                $key = self::movementKey($identity);
-
-                if (!isset($desired[$key])) {
-                    // Denorm z prvního řádku skupiny: journal_row, KS, splatnost, text.
-                    $desired[$key] = $identity + [
-                        'movement_key'      => $key,
-                        'doc_head'          => $sourceKind === 'doc' ? $sourceId : null,
-                        'bank_transaction'  => $sourceKind === 'bankTransaction' ? $sourceId : null,
-                        'journal_row'       => (int) $row['id'],
-                        'fiscal_year'       => isset($row['fiscal_year']) ? (int) $row['fiscal_year'] : null,
-                        'constant_symbol'   => CaseQuery::normalizeSymbol($row['constant_symbol'] ?? null),
-                        'due_date'          => $row['due_date'] ?? null,
-                        'home_currency'     => $homeCurrency,
-                        'amount'            => 0.0,
-                        'amount_hc'         => 0.0,
-                        'text'              => $row['text'] ?? null,
-                    ];
-                }
-
-                // Agregace shodného klíče (stejná identita v jednom zdroji) — součet částek.
-                $desired[$key]['amount']    = round($desired[$key]['amount'] + $activeCur * $sign, 2);
-                $desired[$key]['amount_hc'] = round($desired[$key]['amount_hc'] + $activeHc * $sign, 2);
+            foreach ($this->candidatesFor($row, $accountNumber, $accountingDate, $accounts) as $candidate) {
+                $this->addCandidate($desired, $sourceKind, $sourceId, $row, $candidate, $homeCurrency);
             }
         }
 
         return $desired;
+    }
+
+    /**
+     * Kandidáti pohybu jednoho řádku: (skupina, předpis/úhrada, strana
+     * řádku, jejíž částka se bere, znaménko). Operace se stranou dává
+     * nejvýš jednoho kandidáta, nastavení může dát víc (týž účet ve dvou
+     * skupinách).
+     *
+     * @param array<string, mixed> $row
+     * @param list<array<string, mixed>> $accounts
+     * @return list<array{balance: int, bal_side: int, acc_side: int, sign: float}>
+     */
+    private function candidatesFor(array $row, string $accountNumber, string $accountingDate, array $accounts): array
+    {
+        $kind = OperationSides::kindOf(isset($row['operation']) ? (string) $row['operation'] : null);
+        if ($kind === null) {
+            return $this->settingsCandidates($row, $accountNumber, $accountingDate, $accounts);
+        }
+
+        $rowSide = self::rowSide($row);
+        if ($rowSide === null) {
+            return [];
+        }
+
+        if ($kind === OperationSides::PAYMENT) {
+            $group = $this->paymentGroup($accountNumber, $accountingDate, $accounts);
+            if ($group === null) {
+                return [];
+            }
+            return [[
+                'balance'  => $group['balance'],
+                'bal_side' => 1,
+                'acc_side' => $rowSide,
+                'sign'     => $rowSide === $group['payment_side'] ? 1.0 : -1.0,
+            ]];
+        }
+
+        $group = $this->requestGroup((int) $kind, $accountNumber, $accountingDate, $accounts);
+        if ($group === null) {
+            return [];
+        }
+        return [[
+            'balance'  => $group['balance'],
+            'bal_side' => $rowSide === $group['request_side'] ? 0 : 1,
+            'acc_side' => $rowSide,
+            'sign'     => 1.0,
+        ]];
+    }
+
+    /**
+     * Krok 3: řádky nastavení (účet + strana + znaménko), platné k datu.
+     *
+     * @param array<string, mixed> $row
+     * @param list<array<string, mixed>> $accounts
+     * @return list<array{balance: int, bal_side: int, acc_side: int, sign: float}>
+     */
+    private function settingsCandidates(array $row, string $accountNumber, string $accountingDate, array $accounts): array
+    {
+        $out = [];
+        foreach ($accounts as $acc) {
+            if (!$this->matchesPrefix($acc, $accountNumber) || !$this->validAt($acc, $accountingDate)) {
+                continue;
+            }
+            $accSide  = (int) ($acc['acc_side'] ?? 0);
+            $activeHc = (float) ($accSide === 0 ? ($row['money_dr'] ?? 0) : ($row['money_cr'] ?? 0));
+            $activeCur = (float) ($accSide === 0 ? ($row['money_dr_cur'] ?? 0) : ($row['money_cr_cur'] ?? 0));
+
+            // Jednostranný řádek: bere se jen strana, kterou účet sleduje.
+            if ($activeHc === 0.0 && $activeCur === 0.0) {
+                continue;
+            }
+            if (!$this->passesAmountsSign((int) ($acc['amounts_sign'] ?? 0), $activeHc)) {
+                continue;
+            }
+            $out[] = [
+                'balance'  => (int) $acc['balance'],
+                'bal_side' => (int) ($acc['bal_side'] ?? 0),
+                'acc_side' => $accSide,
+                'sign'     => !empty($acc['modify_sign']) ? -1.0 : 1.0,
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Skupina pro operaci se stranou: první řádek nastavení s předpisem
+     * (bal_side 0, bez modify_sign) na dané straně, jehož prefix sedí.
+     *
+     * @param list<array<string, mixed>> $accounts
+     * @return array{balance: int, request_side: int}|null
+     */
+    private function requestGroup(int $side, string $accountNumber, string $accountingDate, array $accounts): ?array
+    {
+        foreach ($accounts as $acc) {
+            if ((int) ($acc['bal_side'] ?? 0) !== 0 || !empty($acc['modify_sign'])
+                || (int) ($acc['acc_side'] ?? 0) !== $side) {
+                continue;
+            }
+            if (!$this->matchesPrefix($acc, $accountNumber) || !$this->validAt($acc, $accountingDate)) {
+                continue;
+            }
+            return ['balance' => (int) $acc['balance'], 'request_side' => $side];
+        }
+        return null;
+    }
+
+    /**
+     * Skupina pro `payment.*`: první řádek nastavení bez modify_sign, jehož
+     * prefix sedí; strana úhrady skupiny pro ten prefix = acc_side jejího
+     * řádku úhrady (bal_side 1), jinak opačná k jejímu předpisu.
+     *
+     * @param list<array<string, mixed>> $accounts
+     * @return array{balance: int, payment_side: int}|null
+     */
+    private function paymentGroup(string $accountNumber, string $accountingDate, array $accounts): ?array
+    {
+        $balance = null;
+        $paymentSide = null;
+        $requestSide = null;
+        foreach ($accounts as $acc) {
+            if (!empty($acc['modify_sign'])
+                || !$this->matchesPrefix($acc, $accountNumber) || !$this->validAt($acc, $accountingDate)) {
+                continue;
+            }
+            $balance ??= (int) $acc['balance'];
+            if ((int) $acc['balance'] !== $balance) {
+                continue;
+            }
+            if ((int) ($acc['bal_side'] ?? 0) === 1) {
+                $paymentSide ??= (int) ($acc['acc_side'] ?? 0);
+            } else {
+                $requestSide ??= (int) ($acc['acc_side'] ?? 0);
+            }
+        }
+        if ($balance === null) {
+            return null;
+        }
+        return ['balance' => $balance, 'payment_side' => $paymentSide ?? 1 - (int) $requestSide];
+    }
+
+    /**
+     * Přičte kandidáta do desired setu: částky ze strany řádku, kterou
+     * kandidát sleduje, znaménko dle kandidáta, agregace shodného klíče.
+     *
+     * @param array<string, array<string, mixed>> $desired
+     * @param array<string, mixed> $row
+     * @param array{balance: int, bal_side: int, acc_side: int, sign: float} $candidate
+     */
+    private function addCandidate(
+        array &$desired,
+        string $sourceKind,
+        int $sourceId,
+        array $row,
+        array $candidate,
+        string $homeCurrency,
+    ): void {
+        $accSide   = $candidate['acc_side'];
+        $activeHc  = (float) ($accSide === 0 ? ($row['money_dr'] ?? 0) : ($row['money_cr'] ?? 0));
+        $activeCur = (float) ($accSide === 0 ? ($row['money_dr_cur'] ?? 0) : ($row['money_cr_cur'] ?? 0));
+        if ($activeHc === 0.0 && $activeCur === 0.0) {
+            return;
+        }
+        $sign = $candidate['sign'];
+
+        // Klíč pohybu = zdroj + platební identita řádku (D13). Klíč
+        // případu se normalizuje při zápisu (#69 D10): symboly TRIM,
+        // prázdné → NULL, měna malými písmeny — rovnost klíče pak jde
+        // přes idx_case (CaseQuery); tytéž hodnoty vstupují do hashe.
+        $identity = [
+            'source_kind'       => $sourceKind,
+            'source_id'         => $sourceId,
+            'balance'           => $candidate['balance'],
+            'bal_side'          => $candidate['bal_side'],
+            'account_number'    => (string) ($row['account_number'] ?? ''),
+            'partner'           => isset($row['partner']) && $row['partner'] !== null ? (int) $row['partner'] : null,
+            'payment_reference' => CaseQuery::normalizeSymbol($row['payment_reference'] ?? null),
+            'specific_symbol'   => CaseQuery::normalizeSymbol($row['specific_symbol'] ?? null),
+            'currency'          => CaseQuery::normalizeCurrency($row['currency'] ?? null),
+        ];
+        $key = self::movementKey($identity);
+
+        if (!isset($desired[$key])) {
+            // Denorm z prvního řádku skupiny: journal_row, KS, splatnost, text.
+            $desired[$key] = $identity + [
+                'movement_key'      => $key,
+                'doc_head'          => $sourceKind === 'doc' ? $sourceId : null,
+                'bank_transaction'  => $sourceKind === 'bankTransaction' ? $sourceId : null,
+                'journal_row'       => (int) $row['id'],
+                'fiscal_year'       => isset($row['fiscal_year']) ? (int) $row['fiscal_year'] : null,
+                'constant_symbol'   => CaseQuery::normalizeSymbol($row['constant_symbol'] ?? null),
+                'due_date'          => $row['due_date'] ?? null,
+                'home_currency'     => $homeCurrency,
+                'amount'            => 0.0,
+                'amount_hc'         => 0.0,
+                'text'              => $row['text'] ?? null,
+            ];
+        }
+
+        // Agregace shodného klíče (stejná identita v jednom zdroji) — součet částek.
+        $desired[$key]['amount']    = round($desired[$key]['amount'] + $activeCur * $sign, 2);
+        $desired[$key]['amount_hc'] = round($desired[$key]['amount_hc'] + $activeHc * $sign, 2);
+    }
+
+    /** Strana jednostranného řádku deníku: 0 = MD, 1 = DAL, null = bez částky. */
+    private static function rowSide(array $row): ?int
+    {
+        if ((float) ($row['money_dr'] ?? 0) !== 0.0 || (float) ($row['money_dr_cur'] ?? 0) !== 0.0) {
+            return 0;
+        }
+        if ((float) ($row['money_cr'] ?? 0) !== 0.0 || (float) ($row['money_cr_cur'] ?? 0) !== 0.0) {
+            return 1;
+        }
+        return null;
+    }
+
+    /** account_number nastavení je prefix účtu ('311' chytí '311100'). */
+    private function matchesPrefix(array $acc, string $accountNumber): bool
+    {
+        $prefix = (string) ($acc['account_number'] ?? '');
+        return $prefix !== '' && str_starts_with($accountNumber, $prefix);
     }
 
     /** amounts_sign: 0 vše, 1 jen kladné, 2 jen záporné (dle domácí částky). */
