@@ -245,6 +245,20 @@ pokladní úhrada clearingem 261200/261300 neprochází, žádné dohledání
 nepotřebuje (viz `docs/accbal.md`). Zálohy (`*.advance*`) na pokladní
 doklady zatím nepatří.
 
+**Operace a strana saldokonta (#69 D17).** Generátor salda
+(`docs/accbal.md` §4.2) dává operaci řádku přednost před pravidly nastavení
+saldokont:
+
+| operace | saldo |
+|---|---|
+| `acc.balanceReceivable`, `acc.fxLossReceivable`, `acc.fxGainReceivable` | skupina s předpisem na MD (Pohledávky); strana řádku proti předpisu = předpis / úhrada, znaménko částky zachováno |
+| `acc.balancePayable`, `acc.fxLossPayable`, `acc.fxGainPayable` | skupina s předpisem na DAL (Závazky); dtto |
+| `payment.receivable`, `payment.payable`, bankovní `payment.in` / `payment.out` | vždy úhrada ve skupině účtu; + na straně úhrady skupiny, − na opačné (vratka) |
+| ostatní (`sale.*`, `purchase.*`, `advance.*`, `transfer.*`, `acc.entry`, `acc.record`, `acc.item`, NULL) | řádky nastavení saldokont vč. sign-pravidel dobropisů |
+
+Mapa je `OperationSides::MAP` (`modules/economy/accbal/src/`); nová
+operace bez zařazení = selhání `OperationSidesTest`.
+
 ### Kurzové rozdíly saldokonta (vlna D, D12)
 
 Čtyři operace na `cmnbkp`, všechny `rowSide: 0`, `rowPartner: 1`,

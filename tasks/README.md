@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 284 tasků: **naplánováno** 4 · **částečně** 12 · **hotovo** 268.
+Celkem 285 tasků: **naplánováno** 4 · **částečně** 13 · **hotovo** 268.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů, ds-upgrade jen 4l3j); zbývá ověření na `btpg-p` po resetu + reimportu (`old_shipard` task 40) a srovnání `e8w1-i` per fiskální rok proti `e10doc_balance_journal` (#69) |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
@@ -250,6 +251,7 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `viewer-filter-defaults-fiscal-year.md` | — | Výchozí hodnoty filtrů ve frameworku; období (fiskální rok) v saldokontu a deníku s výchozím aktuálním rokem |
 | `accbal-ledger-identity-key.md` | #69 D13 | Pohyb ledgeru per platební identita řádku (partner, VS, SS, měna), ne per doklad; `movement_key`; CLI `accbal-regenerate` |
 | `doc-partner-balance.md` | #72 D1–D6 | Osoba pro saldokonto na hlavičce (plátce); číselníky platebních terminálů/bran a způsobů dopravy; karta/brána/dobírka → 311 za plátcem místo 261400; 315 v saldokontu |
+| `accbal-operation-first.md` | #69 D17–D20 | Skupina pohybu z operace řádku, dobropis na druhou stranu jen ze seedu (`legacy` varianta pro import), lookup podle směru platby (vratky), uzávěrkové období mimo ledger; `fiscal_period_type` |
 
 ## Došlá pošta (core.mail)
 

@@ -99,6 +99,12 @@ u těchto případů **porovnej celkovou částku dokladu s originálem faktury*
   sadě faktur.
 - **Reverse charge (samovyměření) v rekapitulaci DPH** — rozpis daně
   u těchto dokladů se opravuje.
+- **Vratka dobropisu z bankovního výpisu** — dobropis vydané faktury vede
+  Shipard v saldokontu jako závazek a přijatý dobropis jako pohledávku.
+  Když ho pak zákazník nebo dodavatel skutečně vrátí z účtu, platba
+  skončí v **Nespárované platby** a případ zůstane otevřený, dokud ji
+  nepřiřadíš ručně. Vratku přeplatku (zaplaceno víc, než bylo
+  fakturováno) spáruje sám.
 
 Když najdeš rozdíl, chceme ho vědět i kdyby byl o korunu. Jak ho nahlásit
 je v [TESTERS.md](../TESTERS.md).

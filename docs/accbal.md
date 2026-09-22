@@ -65,6 +65,13 @@ agregát celého klíče (všechny předpisy i úhrady klíče dohromady) a
 rozpad na jednotlivé faktury se zajišťuje identitou dokladu (SS), ne
 párovacím algoritmem.
 
+Saldo2 se v ostrém provozu nikdy nepoužívalo (#69, 2026-09-21) — jeho
+testovací nastavení bylo omylem předlohou importu (§12). Referencí pro
+srovnání s migrovanými daty je starý modul `balance`
+(`e10doc_balance_journal`): skupinu určuje operace řádku, dobropis zůstává
+záporně ve své skupině. Nový model to přebírá jako **operace má přednost**
+(§4.2, D17) a jako variantu seedu **legacy** (§3.2, D18).
+
 ### 1.2 Saldo pracuje výhradně s deníkem
 
 Klíčové architektonické rozhodnutí: saldo čte **jen** `economy_accounting_journal`.
@@ -149,9 +156,10 @@ tableId **416**. docStates: archivní sada (`core.system.docStatesArchive`).
 | `id` | int PK | |
 | `code` | varchar 25 | stabilní identifikátor pro seed/exchange (nahrazuje starý `globalId`) |
 | `name` / `short_name` | varchar 140 / 80 | |
-| `order` | int | pořadí v UI |
+| `sort_order` | smallint | pořadí v UI, v nastavení i v lookupu (§5.1) |
 | `show_in_navigation` | bool | vlastní položka v sidebaru (otevře viewer případů s fixním chipem) |
 | `valid_from` / `valid_to` | date, nullable | platnost skupiny |
+| `provisioning_variant` | varchar 10, nullable, system | varianta seedu (#69 D18): NULL = výchozí (sign-pravidla dobropisů), `legacy` = importovaný DS bez nich; řídí jen doplňování řádků seedu (§3.2), uživatelské řádky nemění |
 | `docState` / `docStateMain` | tinyint, system | |
 
 Seed (dle screenshotu starého systému): Pohledávky, Poskytnuté půjčky,
@@ -172,17 +180,47 @@ tableId **417**. Řádek per účet ve skupině.
 | `bal_side` | enumInt | 0 = Předpis, 1 = Úhrada |
 | `modify_sign` | bool, default 0 | obrátit znaménko částky (dobropisy) |
 | `note` | varchar 80, nullable | |
-| `system_order` | int | |
+| `sort_order` | smallint | pořadí ve skupině |
 | `valid_from` / `valid_to` | date, nullable | |
 | `docState` / `docStateMain` | tinyint, system | |
 
-**Proč MD/DAL + znaménko + filtr částky:** dělá to sémantické přesměrování,
-které účtovací engine sám nedělá. Dobropis vydané faktury se zaúčtuje na **311
-záporně** (engine ho nepřesměruje na 321). Záporná pohledávka je ale ekonomicky
-**závazek**, takže nastavení „Závazky" obsahuje řádky pro 311 se zápornou
-částkou a `modify_sign` (přesně řádky 13–16 na screenshotu): `311 MD Záporné →
-Předpis *−1`, `311 DAL Záporné → Úhrada *−1`. Bez této vrstvy by dobropisy
-v saldu seděly na špatné straně.
+**Proč MD/DAL + znaménko + filtr částky:** řádek nastavení dělá sémantické
+přesměrování, které účtovací engine sám nedělá. Dobropis vydané faktury se
+zaúčtuje na **311 záporně** (engine ho nepřesměruje na 321); dobropis se
+pozná **jen ze záporné částky**, vlastní operaci nemá (#69 D18). Záporná
+pohledávka je ekonomicky závazek, takže **výchozí seed** má v Závazcích
+řádky pro 311 se zápornou částkou a `modify_sign` (`311 MD Záporné →
+Předpis ×−1`, `311 DAL Záporné → Úhrada ×−1`) a zrcadlově v Pohledávkách
+řádky pro 321 (přijatý dobropis = pohledávka za dodavatelem). Tyto řádky
+nesou v seedu `creditNoteRule: true`; běžné řádky mají částky Kladné, aby
+záporné nechaly sign-pravidlu. To je výchozí chování nového Shipardu.
+
+**Varianta legacy (importovaný DS).** Starý modul `balance` sign-pravidla
+neměl — dobropis zůstával záporně ve své skupině a uzavíral se zápornou
+úhradou (vratkou). `ds-upgrade` pod `skipProvisioning` proto zakládá
+skupiny ve variantě **legacy**: řádky `creditNoteRule` se nezaloží a
+zbylé řádky mají částky **Všechny** (bez sign-pravidel by záporný dobropis
+jinak nevyhověl žádnému řádku a ze salda zmizel). Skupina nese
+`provisioning_variant = legacy`; `BalancesProvisioner` do ní při dalších
+`ds-upgrade` doplňuje jen řádky bez `creditNoteRule`, a to s částkami
+Všechny. Import nastavení ze starého systému se zrušil (§12).
+
+**Ruční přepnutí legacy DS na výchozí chování** je úkon účetní **na
+přelomu fiskálního roku** — případ žije v roce (D11), uprostřed roku by
+dobropis a jeho vratka skončily v různých skupinách. V Nastavení → Účty
+saldokont: řádkům s částkami Všechny ukončit platnost (`valid_to` =
+poslední den roku), založit tytéž řádky s částkami Kladné a řádky
+`creditNoteRule` (311 v Závazcích, 321 v Pohledávkách) s `valid_from` =
+1. den nového roku. Generátor bere řádky platné k účetnímu datu pohybu,
+starý rok tedy zůstane derivovaný postaru. Marker skupiny se nemění —
+provisioner uživatelské řádky nikdy nepřepisuje ani nemaže. Průvodce
+nevzniká.
+
+**Operace řádku má přednost** (#69 D17, §4.2): řádek deníku s operací
+určující stranu (`acc.balanceReceivable`, `acc.balancePayable`, `acc.fx*`,
+`payment.*`) se přes tato pravidla nevyhodnocuje — sign-pravidlo dobropisu
+se týká jen řádků bez takové operace (faktury a dobropisy, `acc.record`,
+`acc.item`, zálohy).
 
 **315 v Pohledávkách (#72 D6).** Seed skupiny `receivables` má vedle 311
 i `315` (MD kladné → předpis, DAL kladné → úhrada): vyúčtování úhrad od
@@ -201,10 +239,13 @@ Příklad seedu pro „Závazky" (zkráceně):
 ```
 321 DAL Kladné  Předpis        (běžný závazek vzniká)
 321 MD  Kladné  Úhrada         (závazek se platí)
-311 MD  Záporné Předpis  *−1   (dobropis pohledávky = závazek)
-311 DAL Záporné Úhrada   *−1
+311 MD  Záporné Předpis  *−1   creditNoteRule (dobropis pohledávky = závazek)
+311 DAL Záporné Úhrada   *−1   creditNoteRule
 325/331/336/341/342/345/379 …  (ostatní závazkové účty)
 ```
+
+Táž skupina ve variantě legacy: jen řádky 321 a ostatních závazkových účtů,
+všechny s částkami Všechny.
 
 ### 3.3 `economy_accbal_ledger` — saldo pohyby
 
@@ -300,11 +341,12 @@ poznámka níže), instanční `caseOf(key)` a `keyOfRow(id)`.
 > je cost-based, takže by se chyba projevila nepředvídatelně i v seznamu
 > s úzkým filtrem. Per řádek jde o bodové dohledání přes `idx_case`.
 
-**Lookup je užší než případ.** `LedgerOpenItemLookup` (§5.1) počítá
-reziduum jen z řádků na **předpisových účtech** skupiny (dobropisové řádky
-s `modify_sign` mimo hru — T1), případ agreguje celou skupinu. Sdílí se
-klíč a normalizace, ne filtr účtů; na seedu je rozdíl vidět jen u
-dobropisů.
+**Lookup × případ.** `LedgerOpenItemLookup` (§5.1) počítá reziduum
+z řádků klíče na účtech s prefixem některého řádku skupiny bez
+`modify_sign` (předpis i úhrada) — na legacy seedu tedy z celé skupiny
+jako případ; na výchozím seedu zůstávají mimo hru jen sign-ruled řádky
+(dobropis 311 v Závazcích, 321 v Pohledávkách). Sdílí se klíč a
+normalizace (#69 D19).
 
 **Pohledy nad případem:**
 
@@ -415,30 +457,60 @@ přeúčtování".
 ### 4.2 Algoritmus generátoru (per zdroj)
 
 ```
-1. Načti nastavení saldokont platné k účetnímu datu (balances +
-   balance_accounts), seřazené.
-2. Načti aktuální řádky deníku zdroje (source_kind + source_id).
+1. Načti nastavení saldokont (balances + balance_accounts) seřazené dle
+   pořadí; platnost (valid_from/to řádku i skupiny) se ověřuje k účetnímu
+   datu každého řádku deníku.
+2. Načti aktuální řádky deníku zdroje (source_kind + source_id) + typ
+   období jejich měsíce (period_type).
 3. Pro každý řádek deníku:
-   pro každý řádek nastavení (balance_account):
-     - account_number řádku začíná na prefix nastavení?  (str_starts_with)
-     - acc_side nastavení == strana řádku (MD ⇔ money_dr, DAL ⇔ money_cr)?
-     - amounts_sign vyhovuje znaménku částky?
-     → ano: vznikne kandidát na saldo pohyb:
-        balance   = nastavení.balance
-        bal_side  = nastavení.bal_side
-        amount    = částka řádku (×−1 dle modify_sign), obě měny
-        partner, symboly (normalizované, D10), due_date, fiscal_year,
-        account_number, journal_row
-     Kandidáti téhož zdroje se stejným klíčem pohybu (§4.3: zdroj + účet +
-     platební identita řádku) se sčítají do jednoho pohybu; journal_row,
-     due_date a text z prvního řádku skupiny.
+   a) chybový řádek (is_error) nebo řádek uzávěrkového období
+      (period_type 2) → nic (D20; otevírací období 0 = předpis nového roku);
+   b) operace řádku určuje stranu (OperationSides, D17):
+      - acc.*Receivable / acc.*Payable → skupina = první řádek nastavení
+        s předpisem (bal_side 0, bez modify_sign) na straně operace
+        (Receivable → MD, Payable → DAL), jehož prefix sedí na účet řádku;
+        bal_side = předpis, je-li strana řádku shodná se stranou předpisu,
+        jinak úhrada; částka se znaménkem řádku (žádné ×−1, amounts_sign
+        se nepoužije);
+      - payment.* (payment.receivable/payable z dokladů, payment.in/out
+        z banky) → vždy úhrada ve skupině účtu (první řádek nastavení bez
+        modify_sign s prefixem účtu); + na straně, kterou skupina sleduje
+        jako úhradu, − na opačné (vratka);
+      - účet mimo skupiny → nic (operace je autoritativní, do nastavení
+        se nepadá);
+   c) ostatní operace (sale.*, purchase.*, advance.*, transfer.*,
+      acc.entry/record/item, NULL) → pro každý řádek nastavení platný
+      k účetnímu datu:
+        - account_number řádku začíná na prefix nastavení? (str_starts_with)
+        - acc_side nastavení == strana řádku (MD ⇔ money_dr, DAL ⇔ money_cr)?
+        - amounts_sign vyhovuje znaménku částky?
+        → ano: kandidát: balance / bal_side z nastavení, částka ×−1 dle
+          modify_sign.
+   Kandidát nese partner, symboly (normalizované, D10), due_date,
+   fiscal_year, account_number, journal_row; kandidáti téhož zdroje se
+   stejným klíčem pohybu (§4.3) se sčítají do jednoho pohybu; journal_row,
+   due_date a text z prvního řádku skupiny.
 4. UPSERT pohybů zdroje podle klíče pohybu (§4.3); chybějící smaž.
 ```
 
 Chybový řádek deníku (`is_error`, nedohledaný účet) pohyb nevyrobí —
-fantomový pohyb by maskoval účetní chybu. Jeden řádek deníku může vyhovět
-**víc** řádkům nastavení (vznikne víc pohybů) — to je validní (např. týž účet
-ve dvou skupinách). Pohyb dědí měny z deníku přímo, žádný přepočet.
+fantomový pohyb by maskoval účetní chybu. V kroku c) může jeden řádek
+deníku vyhovět **víc** řádkům nastavení (vznikne víc pohybů) — to je
+validní (např. týž účet ve dvou skupinách); krok b) dává nejvýš jeden
+pohyb. Pohyb dědí měny z deníku přímo, žádný přepočet.
+
+Mapa operací `OperationSides::MAP` je úplná přes `docs.core.rowOperations`
+i `economy.bank.txOperations` (bankovní engine píše do téhož sloupce
+`operation`); `OperationSidesTest` selže, jakmile přibude operace bez
+zařazení. `LedgerGenerator::buildDesired()` je čistá funkce nad poli —
+pravidla kryjí unit testy bez DB, SQL a zápis integrační test.
+
+Proč operace má přednost (D15/D17): opravy salda a zápočty ze starého
+systému mají 311 DAL **záporně** a padaly sign-pravidlem do Závazků (v
+Pohledávkách zbyl přeplatek, v Závazcích fantom) — přitom nesou
+`acc.balanceReceivable` už z importu. Uzávěrkové doklady (311 DAL jednou
+částkou bez partnera per rok) vstupovaly jako úhrady a tvořily agregát bez
+klíče — proto D20.
 
 ### 4.3 Idempotence a stabilní identita pohybu
 
@@ -552,6 +624,13 @@ vložených / aktualizovaných / smazaných pohybů. Použití: po každé změn
 generátoru, po `ds-upgrade` s novým klíčem, při podezření na rozjetý
 ledger. Na importovaném DS běží nízké desítky sekund.
 
+Po nasazení D17–D20 (operace má přednost, uzávěrkové období mimo ledger,
+zrcadlové 321 v seedu) je na každém DS nutný `ds-upgrade` (sloupce
+`fiscal_period_type`, `provisioning_variant`, doplnění seedu) a pak
+`accbal-regenerate --all` — diff desired × existing smaže pohyby
+uzávěrkových řádků a přesune opravy salda / zápočty do správné skupiny;
+žádný ruční krok v DB. Importované DS se resetují a importují znovu (§12).
+
 **Nasazení D13 na DS z doby před změnou klíče** (jednorázově, v tomto
 pořadí; na alfě mutace jen po schválení v chatu):
 
@@ -620,20 +699,29 @@ interface OpenItemLookup
   (D11) a směr. Zásah → protistrana = účet předpisu přesně vč. analytiky;
   miss / bez partnera / bez VS / bez období → clearing dle masky
   (`bank.md` §6.1).
-- **Cílové skupiny pro směr z nastavení saldokont**, ne z kódu skupiny ani
-  z čísel účtů: směr určuje přirozenou stranu předpisu (příjem → předpis na
-  MD, výdaj → na DAL) a cílem je každá skupina s řádkem `bal_side = předpis`
-  na té straně, kladné částky, bez `modify_sign`; prefixy těchto řádků jsou
-  účty, na kterých se hledají řádky klíče. Na seedu příjem prohledá
-  Pohledávky (311, 315 — dávka vyúčtování brány, #72 D6), výdaj Závazky
-  (321, 325, 331, 336, 341, 342, 345, 379);
-  zálohy a úvěry následují v pořadí nastavení, první zásah vyhrává.
-  Dobropisový řádek 311 v Závazcích mezi prefixy není, „Nespárované platby"
-  nemají řádek předpisu → nikdy se neprohledají.
-- **Reziduum** = Σ předpisy − Σ úhrady klíče v měně dokladu (jen řádky na
-  předpisových účtech skupiny, §3.4 „lookup je užší"); otevřený = > 0.
-  Vlastní transakce (`excludeSource*`) se z Σ úhrad vylučuje — reaccount už
-  routované úhrady neuvidí své reziduum jako nulu.
+- **Cílové skupiny z nastavení saldokont**, ne z kódu skupiny ani z čísel
+  účtů (#69 D19): cílem je každá skupina s řádkem předpisu (`bal_side =
+  předpis`, kladné částky, bez `modify_sign`). Skupina je pro směr
+  **přirozená**, vzniká-li její předpis na straně směru (příjem → MD,
+  výdaj → DAL), jinak **opačná**. Pořadí: přirozené skupiny dle nastavení,
+  pak opačné; první zásah vyhrává. Na seedu příjem prohledá Pohledávky
+  (311, 315 — dávka vyúčtování brány, #72 D6), poskytnuté zálohy, NPO,
+  pak Závazky, přijaté zálohy, úvěry; výdaj zrcadlově. Řádky klíče se
+  berou na účtech s prefixem některého řádku skupiny bez `modify_sign`
+  (předpis i úhrada); sign-ruled řádky výchozího seedu (311 v Závazcích,
+  321 v Pohledávkách) lookup nevidí — engine účtuje stranu ze směru a
+  úhradu takového předpisu by saldo nezařadilo, vratka dobropisu na
+  výchozím seedu jde na clearing (§13). „Nespárované platby" nemají řádek
+  předpisu → nikdy se neprohledají.
+- **Reziduum** = Σ předpisy − Σ úhrady klíče v měně dokladu **se
+  znaménkem**; otevřený = > 0 v přirozené skupině (dluh se platí), < 0
+  v opačné (přeplatek, dobropis nebo platba bez faktury se vrací — D14).
+  Účet = první předpis klíče, u platby bez předpisu účet úhrady. Strana
+  zápisu plyne ze směru transakce i u vratky (výdaj → 311 MD) — proti běžné
+  úhradě skupiny je to opačná strana, generátor z ní udělá zápornou úhradu
+  (§4.2) a případ se uzavře. Vlastní transakce (`excludeSource*`) se
+  z Σ úhrad vylučuje — reaccount už routované úhrady neuvidí své reziduum
+  jako nulu.
 - **Pravidla dohledání (D5)** v pořadí: (1) přesná shoda klíče — **platí
   dnes**; (2) stejný `(partner, VS)` a právě jeden otevřený předpis,
   (3) opakovaná platba → nejstarší neuhrazené období — **přijdou s T3**
@@ -658,15 +746,17 @@ zůstane na clearingu); bez partnera nebo bez zásahu lookupu → přeskočen.
 Idempotentní: přeúčtovaná úhrada už není kandidát. Dry-run vypíše plán bez
 zápisu (pořadí nesimuluje).
 
-### 5.3 Reziduální routing (D9)
+### 5.3 Reziduální routing (D9, D19)
 
-Platba se přeúčtuje z clearingu jen když má její klíč **kladný zůstatek**
-(otevřený předpis). Přeplatek a úhrada bez předpisu zůstávají na clearingu
-jako signál (D5/4) — ne existenční model (vše s klíčem na 311, přeplatek
-jako záporný zůstatek). Důsledek: u vícenásobných úhrad téhož klíče závisí
-výsledek reaccountu na pořadí — přijatelné, invariant „nenulový clearing =
-podívej se" drží. Přeplatek *vzniklý* routovanou úhradou (reziduum > 0
-stačí, částka může být vyšší) je záporný zůstatek případu na 311/321.
+Platba se přeúčtuje z clearingu, když má její klíč **nenulový zůstatek se
+znaménkem odpovídajícím směru** (§5.1): dluh v přirozené skupině, přeplatek
+/ dobropis / platba bez faktury v opačné. Další příjem na už uhrazený klíč
+zůstává na clearingu jako signál (D5/4) — ne existenční model (vše s klíčem
+na 311). Důsledek: u vícenásobných úhrad téhož klíče závisí výsledek
+reaccountu na pořadí — přijatelné, invariant „nenulový clearing = podívej
+se" drží. Přeplatek *vzniklý* routovanou úhradou (reziduum > 0 stačí,
+částka může být vyšší) je záporný zůstatek případu na 311/321 a jeho
+vratka se spáruje sama.
 
 ### 5.4 Vstupní body
 
@@ -690,9 +780,9 @@ s klíčem, projde §5.2 bez zvláštní cesty. Router bere období z
 
 ### 5.6 Rozdíl lookup × případ
 
-Viz §3.4: lookup filtruje řádky na předpisové účty skupiny (T1 testy),
-případ agreguje celou skupinu. Klíč a normalizace jsou společné
-(`CaseQuery`).
+Viz §3.4: lookup bere řádky klíče na účtech skupiny bez `modify_sign` (na
+legacy seedu celá skupina, na výchozím bez sign-ruled řádků), případ
+agreguje celou skupinu. Klíč a normalizace jsou společné (`CaseQuery`).
 
 ### 5.7 API — dávkové přeúčtování clearingu (verze kontraktu 2)
 
@@ -1015,10 +1105,64 @@ partner resolution při ingestaci.
     provisioner doplňuje chybějící účty do existující skupiny (§3.2). Po
     nasazení na DS s doklady kartou `accbal-regenerate --all` (pohyby
     261400 zaniknou s deníkem, 311 za plátcem vzniknou po přeúčtování).
+34. **Operace má přednost, nastavení platí k datu** (#69 D17, 2026-09-22,
+    `tasks/accbal-operation-first.md`; uzavírá D15): skupinu a druh
+    pohybu určuje (1) operace řádku, pokud určuje stranu
+    (`OperationSides`: `acc.*Receivable/Payable`, `payment.*`), (2) jinak
+    účet + strana + znaménko podle řádku nastavení platného k účetnímu
+    datu (§4.2). Opravy salda a zápočty se zápornou částkou tak zůstávají
+    ve své skupině se zachovaným znaménkem.
+35. **Dobropis na druhou stranu je výchozí chování** (#69 D18): dobropis
+    se pozná jen ze záporné částky; výchozí seed má sign-pravidla
+    (`creditNoteRule`) v obou hlavních skupinách (311 → Závazky, zrcadlově
+    321 → Pohledávky), importovaný DS dostane pod `skipProvisioning`
+    variantu **legacy** bez nich a s částkami Všechny
+    (`provisioning_variant`). Přepnutí je ruční na přelomu roku přes
+    platnost řádků (§3.2), průvodce nevzniká.
+36. **Lookup podle směru, ne podle účtu** (#69 D19; ruší část T1, uzavírá
+    D14): cílem jsou všechny skupiny s předpisem — přirozené pro směr
+    s reziduem > 0, opačné s reziduem < 0 (vratka přeplatku, dobropisu,
+    platby bez faktury); reziduum přes účty skupiny bez `modify_sign`,
+    `OpenItem::residual` se znaménkem, strana zápisu ze směru (§5.1).
+    Sign-ruled řádky výchozího seedu zůstávají lookupu neviditelné (§13).
+37. **Nastavení bez importu; uzávěrkové doklady mimo ledger** (#69 D20):
+    import nastavení saldokont se ruší (dump testovacího Saldo2), skupiny
+    zakládá `ds-upgrade` (§12). Doklad nese `fiscal_period_type`
+    (`fiscalPeriodType` v kanonickém formátu, jen import mód) a jde do
+    měsíce Otevření / Uzavření roku; řádky uzávěrkového období se
+    nederivují, otevírací zůstávají předpisem nového roku (D11).
 
 ---
 
-## 12. Otevřené body
+## 12. Import ze starého Shipardu
+
+- **Nastavení saldokont se neimportuje** (#69 D20). Dřívější
+  `accbalSettings.json` byl dump testovacího Saldo2, které se v ostrém
+  provozu nikdy nepoužívalo (dávalo 321 a 343802 do Pohledávek). Skupiny
+  zakládá `ds-upgrade` pod `skipProvisioning` ve variantě legacy (§3.2,
+  `docs/cli.md`), import je má před sebou; fáze `accbal-settings` runneru
+  se ruší (`old_shipard` task 40).
+- **Skupinu pohybu určuje operace řádku** (D17): import posílá
+  `acc.balanceReceivable` / `acc.balancePayable` u oprav salda a zápočtů,
+  `payment.*` u úhrad; dobropis zůstává záporně ve své skupině jako ve
+  starém modulu `balance`.
+- **Otevírací a uzávěrkové doklady** posílá import s `fiscalPeriodType`
+  (`docs/exchange-format.md` §5); uzávěrkové řádky do ledgeru nejdou,
+  otevírací jsou předpisem nového roku (§4.2, D11).
+- **Srovnání se starým systémem** se dělá **per fiskální rok** proti
+  `e10doc_balance_journal` (starý modul `balance`), nikdy proti Saldo2.
+  „938 nespárovaných párů" z #72 bylo číslo SQL nad starým modelem bez
+  roku v klíči — otevírací doklady jsou per partner + VS v každém roce a
+  starý klíč je zdvojil. Haléřové rozdíly zůstávají viditelné, dokud není
+  známa příčina (#69).
+- **DS importované před D20 bez resetu**: řádky nastavení ze zrušeného
+  importu (321 a 343802 v Pohledávkách) kód nemaže — nastavení je
+  uživatele; odstraní je účetní ručně v Nastavení → Účty saldokont. Dev DS
+  se resetují a importují znovu.
+- Po importu i po nasazení změn generátoru: `accbal-regenerate --all`
+  (§4.6), pak `accbal-match --all` (§5.4).
+
+## 13. Otevřené body
 
 - **Vyúčtování úhrad od brány / terminálu** (#72 D6) — 311 DAL per doklad
   / 315 MD per dávka + poplatky se v novém Shipardu zatím netvoří (jen
@@ -1036,3 +1180,12 @@ partner resolution při ingestaci.
 - **Generátor otevíracích dokladů období** (§7) — do té doby import ze
   starého Shipardu; ověřit, že importovaný otevírací doklad nese partnera
   a VS/SS na řádcích.
+- **Vratka dobropisu na výchozím seedu** (#69 D19): dobropis přesměrovaný
+  sign-pravidlem (311 záporně → Závazky, 321 → Pohledávky) lookup nevidí,
+  jeho vratka jde na clearing a páruje se ručně. Řešení by chtělo, aby
+  engine účtoval vratku na straně a se znaménkem podle řádku nastavení
+  skupiny (hint v `OpenItem`), ne podle směru transakce.
+- **Ruční uzávěrkové doklady** (D20): `fiscal_period_type` plní jen
+  import; formulář pole nemá a zámek měsíce (#55 D27) se pro takový doklad
+  dívá na běžný měsíc podle data. Doplnit až s generátorem otevíracích
+  dokladů (§7).
