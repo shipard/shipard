@@ -278,7 +278,7 @@ a maže ho jen handler (jako účetní deník sám).
 |---|---|---|
 | `id` | int PK | identita pohybu, stabilní přes reaccount (§4.3); `row_id` případu ve vieweru |
 | `balance` | int, FK balances, not null | skupina saldokonta — **klíč** |
-| `bal_side` | enumInt, not null | 0 = Předpis, 1 = Úhrada |
+| `bal_side` | enumInt, not null | 0 = Předpis, 1 = Úhrada — i u bankovních pohybů: záloha na 324 DAL / 314 MD je předpis, vratka přeplatku na 311 MD předpis + (§4.2, D23); viewer pohyb z banky popisuje jako platbu podle směru, ne z `bal_side` |
 | `source_kind` | enumString 20 | `doc` \| `bankTransaction` (denorm z deníku) |
 | `source_id` | int, not null | id zdroje (kopie doc_head / bank_transaction) — součást klíče pohybu, `idx_source` |
 | `movement_key` | varchar 40, nullable | SHA-1 kanonické podoby klíče pohybu (§4.3, D13) — jen identita pohybu pro UPSERT a unikátnost; `NULL` = pohyb z doby před D13, ještě neregenerovaný (§4.6) |
@@ -349,6 +349,11 @@ splatnost = MIN(due_date) předpisů klíče; dny po splatnosti k dnešku
 row_id   = MIN(id) pohybů klíče — stabilní id řádku pro viewer, detail
             z něj klíč odvodí (CaseQuery::keyOfRow)
 ```
+
+Typ bere jen Σ předpisů a zůstatek, ne původ pohybů: vratka na
+předpisové straně skupiny je předpis (#69 D23), takže částečně vrácená
+platba bez předpisu má Σ předpisů ≠ 0 a je **přeplatek**, ne úhrada bez
+předpisu; zůstatek je týž.
 
 Stavební kameny `CaseQuery`: `normalizeKey()` / `keyConditions()` (rovnost
 i částečného klíče, `IS NULL`, pořadí `idx_case`), `keyColumnsSql()` +
@@ -491,16 +496,20 @@ přeúčtování".
       (str_starts_with), řádek i skupina platí k účetnímu datu, a per
       strana účtu jen nejdelší prefix (D22, §3.2); kroky c) a d) vybírají
       jen z nich, prázdný výběr → nic;
-   c) operace řádku určuje stranu (OperationSides, D17):
+   c) operace řádku určuje stranu (OperationSides, D17/D23): skupina
+      podle operace, bal_side = předpis, je-li strana řádku shodná
+      s předpisovou stranou skupiny, jinak úhrada; částka se znaménkem
+      řádku (žádné ×−1, amounts_sign se nepoužije):
       - acc.*Receivable / acc.*Payable → skupina = první řádek pro účet
         s předpisem (bal_side 0, bez modify_sign) na straně operace
-        (Receivable → MD, Payable → DAL); bal_side = předpis, je-li strana
-        řádku shodná se stranou předpisu, jinak úhrada; částka se
-        znaménkem řádku (žádné ×−1, amounts_sign se nepoužije);
+        (Receivable → MD, Payable → DAL);
       - payment.* (payment.receivable/payable z dokladů, payment.in/out
-        z banky) → vždy úhrada ve skupině účtu (první řádek pro účet bez
-        modify_sign); + na straně, kterou skupina sleduje jako úhradu,
-        − na opačné (vratka);
+        z banky) → skupina = první řádek pro účet bez modify_sign;
+        předpisová strana = acc_side jejího řádku předpisu pro účet, bez
+        něj (clearing) opačná k řádku úhrady. Bankovní příjem na 324 DAL
+        / výdaj na 314 MD je tím předpis zálohy, vratka přeplatku na
+        311 MD předpis + (D23; do té doby D17 „vždy úhrada, − na opačné
+        straně");
       - účet mimo skupiny → nic (operace je autoritativní, do nastavení
         se nepadá);
    d) ostatní operace (sale.*, purchase.*, advance.*, transfer.*,
@@ -748,11 +757,12 @@ interface OpenItemLookup
   znaménkem**; otevřený = > 0 v přirozené skupině (dluh se platí), < 0
   v opačné (přeplatek, dobropis nebo platba bez faktury se vrací — D14).
   Účet = první předpis klíče, u platby bez předpisu účet úhrady. Strana
-  zápisu plyne ze směru transakce i u vratky (výdaj → 311 MD) — proti běžné
-  úhradě skupiny je to opačná strana, generátor z ní udělá zápornou úhradu
-  (§4.2) a případ se uzavře. Vlastní transakce (`excludeSource*`) se
-  z Σ úhrad vylučuje — reaccount už routované úhrady neuvidí své reziduum
-  jako nulu.
+  zápisu plyne ze směru transakce i u vratky (výdaj → 311 MD) — to je
+  předpisová strana skupiny, generátor z ní udělá předpis + (§4.2, D23)
+  a případ se uzavře; reziduum vyjde stejně jako u dřívější záporné
+  úhrady. Vlastní transakce (`excludeSource*`) se z rezidua vylučuje
+  celá, ať jsou její pohyby předpis nebo úhrada — reaccount už routované
+  úhrady ani vratky neuvidí své reziduum jako nulu.
 - **Pravidla dohledání (D5)** v pořadí: (1) přesná shoda klíče — **platí
   dnes**; (2) stejný `(partner, VS)` a právě jeden otevřený předpis,
   (3) opakovaná platba → nejstarší neuhrazené období — **přijdou s T3**
@@ -1170,6 +1180,17 @@ partner resolution při ingestaci.
     výběru v generátoru (§3.2, §4.2); lookup přednost neuplatňuje —
     skupinu nese `balance` v klíči (§5.1). Podúčty do jiné skupiny per DS
     (kauce na 325.2xx v Přijatých zálohách) jsou tím běžný scénář.
+39. **Předpis/úhradu určuje strana řádku i u `payment.*`** (#69 D23,
+    2026-09-22, `tasks/accbal-payment-side.md`; sjednocuje D17): pro
+    všechny operace určující stranu platí, že řádek na předpisové straně
+    skupiny je předpis, na opačné úhrada, znaménko částky se zachová.
+    Bankovní příjem na 324 DAL / výdaj na 314 MD je předpis zálohy (starý
+    modul `balance`: bank side 0 = request), vratka přeplatku na 311 MD
+    předpis +; reziduum případu a D19 lookup beze změny (§5.1). Viewer
+    popisuje pohyb z banky jako platbu podle směru, ne z `bal_side`.
+    Routing záloh z výpisu (výdaj bez otevřené položky → založit zálohu
+    na 314/324) zůstává ve fázi „zálohy, zápočty, kurzové rozdíly"
+    bankovního enginu (`docs/bank.md`), ne v tomto rozhodnutí.
 
 ---
 
@@ -1185,6 +1206,13 @@ partner resolution při ingestaci.
   `acc.balanceReceivable` / `acc.balancePayable` u oprav salda a zápočtů,
   `payment.*` u úhrad; dobropis zůstává záporně ve své skupině jako ve
   starém modulu `balance`.
+- **Bankovní záloha je předpis** (D23): starý modul `balance` má u
+  bankovních řádků `side 0 = request`; nový generátor dává totéž stranou
+  řádku proti předpisové straně skupiny (příjem na 324 DAL, výdaj na
+  314 MD), vratka přeplatku na 311 MD je předpis + v obou. Srovnání záloh
+  per rok se starým sedí až s SS na zálohových řádcích faktur
+  (`old_shipard` task 41; import je dnes na `*.advanceDeduction` /
+  `*.advanceVat` neposílá).
 - **Otevírací a uzávěrkové doklady** posílá import s `fiscalPeriodType`
   (`docs/exchange-format.md` §5); uzávěrkové řádky do ledgeru nejdou,
   otevírací jsou předpisem nového roku (§4.2, D11).

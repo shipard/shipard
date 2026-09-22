@@ -1,6 +1,6 @@
 # Saldokonto — předpis/úhradu určuje strana řádku i u `payment.*` (#69 D23)
 
-**Stav:** naplánováno — D23 zamčeno v #69 (komentář 2026-09-22); protistrana `old_shipard` task 41 (SS na zálohových řádcích faktur)
+**Stav:** částečně — generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69
 
 ## Kontext
 

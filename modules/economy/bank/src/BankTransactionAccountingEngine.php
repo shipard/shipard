@@ -252,9 +252,9 @@ final class BankTransactionAccountingEngine
      * předpisu přesně vč. analytiky (ne maska). Reziduum případu nese
      * znaménko (D19): kladné = dluh (příjem na 311 DAL / výdaj na 321 MD),
      * záporné = vratka přeplatku či dobropisu — strana zápisu plyne ze
-     * směru transakce stejně jako u dluhu (výdaj → MD), což je proti běžné
-     * úhradě skupiny právě opačná strana; saldo z ní udělá zápornou úhradu
-     * (`accbal.md` §4.2). Engine tedy znaménko rezidua nečte, jen účet.
+     * směru transakce stejně jako u dluhu (výdaj → MD), což je předpisová
+     * strana skupiny; saldo z ní udělá předpis + (`accbal.md` §4.2, D23).
+     * Engine tedy znaménko rezidua nečte, jen účet.
      * Předpis z jiného období
      * je miss — zůstatky mezi obdobími přenáší otevírací doklad, po jehož
      * zaúčtování úhradu přeúčtuje trigger (D4).

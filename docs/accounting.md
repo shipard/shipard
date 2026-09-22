@@ -253,7 +253,7 @@ saldokont:
 |---|---|
 | `acc.balanceReceivable`, `acc.fxLossReceivable`, `acc.fxGainReceivable` | skupina s předpisem na MD (Pohledávky); strana řádku proti předpisu = předpis / úhrada, znaménko částky zachováno |
 | `acc.balancePayable`, `acc.fxLossPayable`, `acc.fxGainPayable` | skupina s předpisem na DAL (Závazky); dtto |
-| `payment.receivable`, `payment.payable`, bankovní `payment.in` / `payment.out` | vždy úhrada ve skupině účtu; + na straně úhrady skupiny, − na opačné (vratka) |
+| `payment.receivable`, `payment.payable`, bankovní `payment.in` / `payment.out` | skupina účtu řádku (první řádek nastavení bez `modify_sign`); strana řádku proti předpisové straně skupiny = předpis / úhrada, znaménko zachováno (D23: bankovní záloha na 324 DAL / 314 MD je předpis, vratka přeplatku na 311 MD předpis +) |
 | ostatní (`sale.*`, `purchase.*`, `advance.*`, `transfer.*`, `acc.entry`, `acc.record`, `acc.item`, NULL) | řádky nastavení saldokont vč. sign-pravidel dobropisů |
 
 Mapa je `OperationSides::MAP` (`modules/economy/accbal/src/`); nová

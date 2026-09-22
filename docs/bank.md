@@ -329,7 +329,8 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
     protistrana = **účet předpisu přesně vč. analytiky**; miss / bez
     partnera / bez VS → **clearing účet nespárovaných plateb** dle masky
     (§6.3). Strana zápisu plyne ze směru transakce i u vratky (výdaj →
-    311 MD), saldo z ní udělá zápornou úhradu a případ uzavře; částečně
+    311 MD), saldo z ní udělá předpis + (`accbal.md` §4.2, D23) a případ
+    uzavře; částečně
     uhrazený dluh se routuje také (stačí reziduum > 0, symbolový model).
     Dobropis přesměrovaný sign-pravidlem výchozího seedu (311 záporně →
     Závazky) lookup nevidí — jeho vratka jde na clearing (`accbal.md` §5.1).
