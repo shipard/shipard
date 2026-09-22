@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 286 tasků: **naplánováno** 4 · **částečně** 14 · **hotovo** 268.
+Celkem 287 tasků: **naplánováno** 5 · **částečně** 14 · **hotovo** 268.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,6 +25,7 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
+| `accbal-payment-side.md` | naplánováno | D23 zamčeno v #69 (komentář 2026-09-22); protistrana `old_shipard` task 41 (SS na zálohových řádcích faktur) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
@@ -254,6 +255,7 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `doc-partner-balance.md` | #72 D1–D6 | Osoba pro saldokonto na hlavičce (plátce); číselníky platebních terminálů/bran a způsobů dopravy; karta/brána/dobírka → 311 za plátcem místo 261400; 315 v saldokontu |
 | `accbal-operation-first.md` | #69 D17–D20 | Skupina pohybu z operace řádku, dobropis na druhou stranu jen ze seedu (`legacy` varianta pro import), lookup podle směru platby (vratky), uzávěrkové období mimo ledger; `fiscal_period_type` |
 | `accbal-prefix-precedence.md` | #69 D22 | Nejdelší shodný prefix účtu vyhrává (per strana účtu) v generátoru i lookupu; podúčty do jiné skupiny per DS (325.2xx = přijaté zálohy) |
+| `accbal-payment-side.md` | #69 D23 | `payment.*` = předpis/úhrada podle strany řádku proti předpisové straně skupiny (bankovní záloha na 314/324 je předpis), viewer popisuje bankovní pohyb jako platbu |
 
 ## Došlá pošta (core.mail)
 
