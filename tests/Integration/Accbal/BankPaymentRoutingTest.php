@@ -154,7 +154,7 @@ class BankPaymentRoutingTest extends IntegrationTestCase
     {
         // #69 D19/D14: zákazník přeplatil, vracíme výdajem — lookup najde
         // záporné reziduum v Pohledávkách, engine účtuje 311 MD (strana ze
-        // směru), saldo z toho udělá zápornou úhradu a případ je na nule.
+        // směru), saldo z toho udělá předpis + (D23) a případ je na nule.
         $this->seedRequest('receivables', $this->receivableAccount, 600.00);
         [$in] = $this->accountPayment(1000.00);
         $this->assertSame($this->receivableAccount, $this->counterpartyAccount($in));
@@ -165,8 +165,9 @@ class BankPaymentRoutingTest extends IntegrationTestCase
         $this->assertSame($this->receivableAccount, $this->counterpartyAccount($out), 'vratka na účet předpisu, ne clearing');
         $this->assertNull($this->ledgerMove($out, 'unmatched_payments'));
         $refund = $this->ledgerMove($out, 'receivables');
-        $this->assertNotNull($refund, 'ledger: úhrada v Pohledávkách');
-        $this->assertEqualsWithDelta(-400.00, (float) $refund['amount'], 0.001, 'opačná strana = záporná úhrada');
+        $this->assertNotNull($refund, 'ledger: pohyb v Pohledávkách');
+        $this->assertSame(0, (int) $refund['bal_side'], 'předpisová strana skupiny = předpis (D23)');
+        $this->assertEqualsWithDelta(400.00, (float) $refund['amount'], 0.001, 'znaménko zachováno');
 
         $residual = $this->db->fetchRow(
             'SELECT SUM(CASE WHEN bal_side = 0 THEN amount ELSE -amount END) AS residual
@@ -492,7 +493,7 @@ class BankPaymentRoutingTest extends IntegrationTestCase
     {
         $row = $this->db->getDibiConnection()->fetch(
             'SELECT * FROM economy_accbal_ledger
-             WHERE source_kind = %s AND source_id = %i AND balance = %i AND bal_side = 1',
+             WHERE source_kind = %s AND source_id = %i AND balance = %i',
             'bankTransaction', $txId, $this->balanceId($balanceCode),
         );
         return $row?->toArray();

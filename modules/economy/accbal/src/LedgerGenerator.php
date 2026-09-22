@@ -33,10 +33,12 @@ use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
  * — smazaný pohyb z něj zmizí sám.
  *
  * Skupinu a druh pohybu určuje (1) operace řádku, pokud určuje stranu
- * ({@see OperationSides}, #69 D17), (2) jinak účet + strana + znaménko
- * podle řádku nastavení platného k účetnímu datu. Řádky uzávěrkového
- * období (`period_type` 2 měsíce řádku) do ledgeru nejdou (D20);
- * otevírací (0) zůstávají předpisem nového roku (D11).
+ * ({@see OperationSides}, #69 D17/D23): skupina z operace, předpis/úhrada
+ * ze strany řádku proti předpisové straně skupiny, znaménko zachováno;
+ * (2) jinak účet + strana + znaménko podle řádku nastavení platného
+ * k účetnímu datu. Řádky uzávěrkového období (`period_type` 2 měsíce
+ * řádku) do ledgeru nejdou (D20); otevírací (0) zůstávají předpisem
+ * nového roku (D11).
  *
  * V obou případech se vybírá jen z řádků nastavení pro účet řádku: prefix
  * sedí, řádek platí k datu a per strana účtu jen nejdelší prefix
@@ -172,13 +174,14 @@ final class LedgerGenerator
      *  2. řádky nastavení pro účet řádku = prefix sedí, platné k účetnímu
      *     datu, per strana účtu jen nejdelší prefix ({@see matchingAccounts});
      *     kroky 3 a 4 vybírají jen z nich;
-     *  3. operace určující stranu ({@see OperationSides}): skupina =
-     *     první řádek pro účet s předpisem (bal_side 0, bez modify_sign)
-     *     na straně operace; strana řádku proti předpisu dává
-     *     předpis/úhradu, znaménko částky se zachová. `payment.*` = vždy
-     *     úhrada ve skupině účtu, + na straně, kterou skupina sleduje jako
-     *     úhradu, − na opačné (vratka). Účet mimo skupiny → řádek se
-     *     přeskočí (operace je autoritativní);
+     *  3. operace určující stranu ({@see OperationSides}, D17/D23): skupina
+     *     = první řádek pro účet s předpisem (bal_side 0, bez modify_sign)
+     *     na straně operace, u `payment.*` první řádek pro účet bez
+     *     modify_sign; řádek na předpisové straně skupiny je předpis, na
+     *     opačné úhrada, znaménko částky se zachová (bankovní záloha na
+     *     324 DAL / 314 MD = předpis, vratka přeplatku na 311 MD = předpis
+     *     +). Účet mimo skupiny → řádek se přeskočí (operace je
+     *     autoritativní);
      *  4. ostatní řádky → všechny řádky pro účet (strana + znaménko vč.
      *     sign-pravidel a modify_sign).
      *
@@ -224,9 +227,9 @@ final class LedgerGenerator
      * Kandidáti pohybu jednoho řádku: (skupina, předpis/úhrada, strana
      * řádku, jejíž částka se bere, znaménko). Všechna tři místa výběru
      * pracují jen nad řádky nastavení pro účet řádku k datu
-     * ({@see matchingAccounts}, D22). Operace se stranou dává nejvýš
-     * jednoho kandidáta, nastavení může dát víc (týž účet ve dvou
-     * skupinách).
+     * ({@see matchingAccounts}, D22). Operace (se stranou i `payment.*`)
+     * dává nejvýš jednoho kandidáta se zachovaným znaménkem, nastavení
+     * může dát víc (týž účet ve dvou skupinách).
      *
      * @param array<string, mixed> $row
      * @param list<array<string, mixed>> $accounts
@@ -249,20 +252,12 @@ final class LedgerGenerator
             return [];
         }
 
-        if ($kind === OperationSides::PAYMENT) {
-            $group = $this->paymentGroup($matching);
-            if ($group === null) {
-                return [];
-            }
-            return [[
-                'balance'  => $group['balance'],
-                'bal_side' => 1,
-                'acc_side' => $rowSide,
-                'sign'     => $rowSide === $group['payment_side'] ? 1.0 : -1.0,
-            ]];
-        }
-
-        $group = $this->requestGroup((int) $kind, $matching);
+        // D23: pro operace se stranou i payment.* platí totéž — řádek na
+        // předpisové straně skupiny je předpis, na opačné úhrada, znaménko
+        // částky se zachová (žádné ×−1). Liší se jen výběr skupiny.
+        $group = $kind === OperationSides::PAYMENT
+            ? $this->paymentGroup($matching)
+            : $this->requestGroup((int) $kind, $matching);
         if ($group === null) {
             return [];
         }
@@ -367,13 +362,13 @@ final class LedgerGenerator
     }
 
     /**
-     * Skupina pro `payment.*`: první řádek nastavení pro účet bez
-     * modify_sign; strana úhrady skupiny pro ten účet = acc_side jejího
-     * řádku úhrady (bal_side 1) mezi řádky pro účet, jinak opačná k jejímu
-     * předpisu.
+     * Skupina pro `payment.*` (D23): první řádek nastavení pro účet bez
+     * modify_sign; předpisová strana skupiny pro ten účet = acc_side jejího
+     * řádku předpisu (bal_side 0) mezi řádky pro účet, jinak opačná k jejímu
+     * řádku úhrady (clearing má jen úhrady — platba na něm zůstává úhradou).
      *
      * @param list<array<string, mixed>> $matching řádky z matchingAccounts()
-     * @return array{balance: int, payment_side: int}|null
+     * @return array{balance: int, request_side: int}|null
      */
     private function paymentGroup(array $matching): ?array
     {
@@ -397,7 +392,7 @@ final class LedgerGenerator
         if ($balance === null) {
             return null;
         }
-        return ['balance' => $balance, 'payment_side' => $paymentSide ?? 1 - (int) $requestSide];
+        return ['balance' => $balance, 'request_side' => $requestSide ?? 1 - (int) $paymentSide];
     }
 
     /**

@@ -10,9 +10,11 @@ namespace Shipard\Module\Economy\Accbal;
  * Generátor ({@see LedgerGenerator::buildDesired}) dává operaci řádku
  * přednost před pravidly nastavení (účet + strana + znaménko): zápočet,
  * oprava salda nebo kurzový rozdíl pohledávky patří do skupiny pohledávek
- * i se zápornou částkou — sign-pravidlo dobropisu na něj nesahá. Úhrada
- * (`payment.*`) je vždy úhrada; znaménko dává strana řádku (opačná strana
- * proti běžné úhradě skupiny = vratka).
+ * i se zápornou částkou — sign-pravidlo dobropisu na něj nesahá. Platba
+ * (`payment.*`) jde do skupiny účtu řádku a předpis/úhradu jí dává strana
+ * řádku proti předpisové straně skupiny (#69 D23): bankovní záloha na
+ * 324 DAL je předpis přijaté zálohy, vratka přeplatku na 311 MD předpis +;
+ * znaménko částky se zachová.
  *
  * Mapa je úplná přes obě konfigurace, které do sloupce
  * `economy_accounting_journal.operation` píší: `docs.core.rowOperations`
@@ -27,7 +29,7 @@ final class OperationSides
     public const SIDE_RECEIVABLE = 0;
     /** Předpis / úhrada závazku — skupina s předpisem na DAL. */
     public const SIDE_PAYABLE = 1;
-    /** Vždy úhrada ve skupině účtu, znaménko podle strany řádku. */
+    /** Skupina účtu řádku; předpis/úhrada podle strany řádku proti předpisu skupiny (D23). */
     public const PAYMENT = 'payment';
 
     /** @var array<string, int|string|null> id operace → SIDE_* | PAYMENT | null */

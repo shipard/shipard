@@ -11,14 +11,16 @@ use Shipard\Module\Economy\Accbal\LedgerGenerator;
  * Kanonický klíč pohybu (#69 D13): SHA-1 n-tice zdroj + platební identita
  * řádku, normalizované jako klíč případu (D10). Pravidla odvození pohybu
  * (#69 D17 operace má přednost, D18 sign-pravidla jen ze seedu, D20
- * uzávěrkové období mimo ledger, D22 nejdelší shodný prefix vyhrává)
- * přes čistou `buildDesired()` nad poli.
+ * uzávěrkové období mimo ledger, D22 nejdelší shodný prefix vyhrává,
+ * D23 předpis/úhradu dává strana řádku i u `payment.*`) přes čistou
+ * `buildDesired()` nad poli.
  * Generování nad reálným deníkem kryje integrační LedgerGeneratorTest.
  */
 class LedgerGeneratorTest extends TestCase
 {
     private const RECEIVABLES       = 1;
     private const PAYABLES          = 2;
+    private const ADVANCES_GIVEN    = 3;
     private const ADVANCES_RECEIVED = 4;
     private const UNMATCHED         = 5;
     private const ACC_DATE    = '2026-06-10';
@@ -152,16 +154,68 @@ class LedgerGeneratorTest extends TestCase
         $this->assertSame([], $this->desired(self::legacyRules(), [self::journal('311100', 0, -100.0, 'acc.balancePayable')]));
     }
 
-    // ── payment.* = vždy úhrada, znaménko podle strany ───────────────────────
+    // ── D23: payment.* — předpis/úhradu dává strana řádku, znaménko zůstává ──
 
-    public function testPaymentOnOppositeSideIsNegativePayment(): void
+    /** Zálohové skupiny: předpis přijaté zálohy na 324 DAL, poskytnuté na 314 MD. */
+    private static function advanceRules(): array
     {
-        // Vratka přeplatku zákazníkovi: payment.receivable / payment.out na 311 MD.
+        return [
+            self::rule(self::ADVANCES_GIVEN, '314', 0, 1, 0),
+            self::rule(self::ADVANCES_GIVEN, '314', 1, 1, 1),
+            self::rule(self::ADVANCES_RECEIVED, '324', 1, 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '324', 0, 1, 1),
+        ];
+    }
+
+    public function testPaymentOnRequestSideIsPositiveRequest(): void
+    {
+        // Vratka přeplatku zákazníkovi: payment.receivable / payment.out na 311 MD
+        // = předpisová strana Pohledávek → předpis + (jako ve starém modulu balance).
         $moves = $this->desired(self::seedRules(), [self::journal('311100', 0, 100.0, 'payment.receivable')]);
-        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => -100.0, 'account' => '311100']], $moves);
+        $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 0, 'amount' => 100.0, 'account' => '311100']], $moves);
 
         $moves = $this->desired(self::seedRules(), [self::journal('321100', 1, 300.0, 'payment.out')]);
-        $this->assertSame([['balance' => self::PAYABLES, 'bal_side' => 1, 'amount' => -300.0, 'account' => '321100']], $moves, 'dodavatel vrací přeplatek: 321 DAL = opačná strana proti úhradě závazku');
+        $this->assertSame([['balance' => self::PAYABLES, 'bal_side' => 0, 'amount' => 300.0, 'account' => '321100']], $moves, 'dodavatel vrací přeplatek: 321 DAL = předpisová strana Závazků');
+    }
+
+    public function testBankAdvanceOnRequestSideIsRequest(): void
+    {
+        // Bankovní příjem na 324 DAL = předpis přijaté zálohy, výdaj na 314 MD
+        // = předpis poskytnuté (starý modul balance: bank side 0 = request).
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 0, 'amount' => 100.0, 'account' => '324001']],
+            $this->desired(self::advanceRules(), [self::journal('324001', 1, 100.0, 'payment.in')]),
+        );
+        $this->assertSame(
+            [['balance' => self::ADVANCES_GIVEN, 'bal_side' => 0, 'amount' => 100.0, 'account' => '314001']],
+            $this->desired(self::advanceRules(), [self::journal('314001', 0, 100.0, 'payment.out')]),
+        );
+        $this->assertSame(
+            [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 1, 'amount' => 100.0, 'account' => '324001']],
+            $this->desired(self::advanceRules(), [self::journal('324001', 0, 100.0, 'payment.out')]),
+            'vrácení přijaté zálohy = úhrada v Přijatých zálohách',
+        );
+    }
+
+    public function testRefundKeepsCaseResidualZero(): void
+    {
+        // Regrese D19: faktura 100, přeplacená úhrada 200, vratka 100 na 311 MD.
+        // Vratka je nově předpis +, Σ předpisů (100 + 100) − Σ úhrad 200 = 0.
+        $generator = new LedgerGenerator($this->createMock(\Dibi\Connection::class), null, 'czk');
+        $moves = [
+            ...$generator->buildDesired('doc', 1, self::seedRules(), [self::journal('311100', 0, 100.0, null)], 'czk'),
+            ...$generator->buildDesired('bankTransaction', 1, self::seedRules(), [self::journal('311100', 1, 200.0, 'payment.in')], 'czk'),
+            ...$generator->buildDesired('bankTransaction', 2, self::seedRules(), [self::journal('311100', 0, 100.0, 'payment.out')], 'czk'),
+        ];
+
+        $this->assertCount(3, $moves);
+        $residual = 0.0;
+        foreach ($moves as $move) {
+            $this->assertSame(self::RECEIVABLES, $move['balance']);
+            $residual += $move['bal_side'] === 0 ? $move['amount'] : -$move['amount'];
+        }
+        $this->assertSame(0.0, $residual);
+        $this->assertSame([0, 1, 0], array_column($moves, 'bal_side'), 'vratka je předpis, ne záporná úhrada');
     }
 
     public function testPaymentOnPaymentSideIsPositivePayment(): void
@@ -174,13 +228,14 @@ class LedgerGeneratorTest extends TestCase
         $this->assertSame([
             ['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => 100.0, 'account' => '311100'],
             ['balance' => self::UNMATCHED, 'bal_side' => 1, 'amount' => 50.0, 'account' => '261200'],
-        ], $moves, 'clearing skupina má jen řádky úhrady — strana úhrady z nich');
+        ], $moves, 'clearing skupina má jen řádky úhrady — předpisová strana je k nim opačná, platba zůstává úhradou');
     }
 
     public function testPaymentIgnoresCreditNoteRulesOfOtherGroup(): void
     {
         // 311 DAL záporně s payment.*: Závazky mají 311 jen přes modify_sign →
-        // skupina účtu jsou Pohledávky, DAL = strana úhrady → + × (−500) = −500.
+        // skupina účtu jsou Pohledávky, DAL ≠ předpisová strana MD → úhrada,
+        // znaménko zachováno = −500.
         $moves = $this->desired(self::seedRules(), [self::journal('311100', 1, -500.0, 'payment.in')]);
 
         $this->assertSame([['balance' => self::RECEIVABLES, 'bal_side' => 1, 'amount' => -500.0, 'account' => '311100']], $moves);
@@ -330,7 +385,7 @@ class LedgerGeneratorTest extends TestCase
         $this->assertSame(
             [['balance' => self::ADVANCES_RECEIVED, 'bal_side' => 1, 'amount' => 1000.0, 'account' => '325201']],
             $this->desired($rules, [self::journal('325201', 0, 1000.0, 'payment.payable')]),
-            'payment.* → úhrada ve skupině nejdelšího prefixu, + na její straně úhrady',
+            'payment.* → skupina nejdelšího prefixu, MD proti předpisu DAL = úhrada',
         );
         $this->assertSame(
             [['balance' => self::PAYABLES, 'bal_side' => 1, 'amount' => 1000.0, 'account' => '325101']],

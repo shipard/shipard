@@ -505,9 +505,10 @@ class LedgerGeneratorTest extends IntegrationTestCase
         $this->assertEqualsWithDelta(-100.00, (float) $ledger[0]['amount'], 0.001, 'znaménko zachováno');
     }
 
-    public function testPaymentOnOppositeSideIsRefund(): void
+    public function testPaymentOnRequestSideIsRequest(): void
     {
-        // Vratka přeplatku: payment.receivable na 311 MD → úhrada −100 (Pohledávky).
+        // Vratka přeplatku: payment.receivable na 311 MD → předpis +100
+        // (Pohledávky, #69 D23 — strana řádku, ne záporná úhrada).
         $recv = $this->balanceId('receivables');
         $docId = $this->newDocId();
         $this->insertJournal('doc', $docId, [
@@ -524,8 +525,8 @@ class LedgerGeneratorTest extends IntegrationTestCase
         $ledger = $this->ledgerOf('doc', $docId);
         $this->assertCount(1, $ledger);
         $this->assertSame($recv, (int) $ledger[0]['balance']);
-        $this->assertSame(1, (int) $ledger[0]['bal_side']);
-        $this->assertEqualsWithDelta(-100.00, (float) $ledger[0]['amount'], 0.001);
+        $this->assertSame(0, (int) $ledger[0]['bal_side'], 'předpisová strana skupiny = předpis');
+        $this->assertEqualsWithDelta(100.00, (float) $ledger[0]['amount'], 0.001, 'znaménko zachováno');
     }
 
     public function testClosingPeriodRowIsNotDerivedOpeningRowIs(): void
