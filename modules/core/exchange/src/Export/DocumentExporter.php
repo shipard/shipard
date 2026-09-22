@@ -205,6 +205,9 @@ final class DocumentExporter implements RecordExporter
                 'periodFrom'        => V::date($h['period_from'] ?? null),
                 'periodTo'          => V::date($h['period_to'] ?? null),
             ],
+            // Otevírací / uzávěrkový doklad (#69 D20) — bez něj by seed
+            // vrátil doklad do běžného měsíce a saldo by ho vzalo jako úhradu.
+            'fiscalPeriodType' => V::str($h['fiscal_period_type'] ?? null),
             'currency'      => V::currencyUpper($h['doc_currency'] ?? null),
             'exchangeRate'  => V::float($h['exchange_rate'] ?? null),
             'vat'           => [

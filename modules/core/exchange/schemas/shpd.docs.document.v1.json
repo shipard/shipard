@@ -29,6 +29,7 @@
         "selfParty": { "enum": ["supplier", "customer", null] },
         "cashDesk": { "type": ["string", "null"], "maxLength": 10 },
         "cashDirection": { "enum": [1, 2, null] },
+        "fiscalPeriodType": { "enum": ["opening", "closing", null] },
         "supplier": { "$ref": "#/$defs/Party" },
         "customer": { "$ref": "#/$defs/Party" },
         "balanceParty": { "$ref": "#/$defs/Party" },

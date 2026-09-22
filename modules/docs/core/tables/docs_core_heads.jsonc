@@ -298,6 +298,22 @@
             "system": true,
             "group": "accounting"
         },
+        // Typ období dokladu (#69 D20): NULL = běžný měsíc podle účetního
+        // data; opening / closing → jednodenní měsíc Otevření / Uzavření
+        // roku (period_type 0 / 2). Saldokonto uzávěrkové řádky nederivuje.
+        // Plní jen import (exchange `fiscalPeriodType`), formulář ho nemá.
+        {
+            "id": "fiscal_period_type",
+            "name": "Fiscal period type",
+            "name:cs": "Typ období",
+            "name:en": "Fiscal period type",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "docs.core.fiscalPeriodTypes",
+            "nullable": true,
+            "system": true,
+            "group": "accounting"
+        },
         {
             "id": "vat_registration",
             "name": "VAT registration",

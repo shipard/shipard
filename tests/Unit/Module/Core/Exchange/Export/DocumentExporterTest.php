@@ -171,6 +171,16 @@ class DocumentExporterTest extends TestCase
     }
 
     /** Ruční zařazení do KH musí přežít dump → seed (#77). */
+    public function testFiscalPeriodTypeRoundTrips(): void
+    {
+        // #69 D20: uzávěrkový doklad musí přežít dump → seed, jinak by ho
+        // cílový DS zařadil do běžného měsíce a saldo vzalo jako úhradu.
+        $exporter = new DocumentExporter($this->db());
+
+        $this->assertSame('closing', $exporter->exportDocument($this->headRow(['fiscal_period_type' => 'closing']))->data['fiscalPeriodType']);
+        $this->assertNull($exporter->exportDocument($this->headRow())->data['fiscalPeriodType']);
+    }
+
     public function testManualControlStatementModeIsExported(): void
     {
         $exporter = new DocumentExporter($this->db(rows: [$this->itemRowRow()]));

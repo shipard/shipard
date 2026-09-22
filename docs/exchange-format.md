@@ -165,6 +165,16 @@ Top-level struktura:
   "docText": "Konzultace 04/2026",
   "selfParty": "customer",       // "supplier" | "customer" | null
                                   //   která strana jsme my
+  "fiscalPeriodType": null,      // "opening" | "closing" | null — doklad
+                                  //   otevíracího / uzávěrkového období
+                                  //   (docs_core_heads.fiscal_period_type,
+                                  //   #69 D20): zařadí se do jednodenního
+                                  //   měsíce Otevření / Uzavření roku podle
+                                  //   účetního data, ne do běžného měsíce;
+                                  //   saldokonto uzávěrkové řádky nebere.
+                                  //   Jen import mód (applyOptions
+                                  //   .importNumber) — jinak applier pole
+                                  //   ignoruje. Exportér ho vypisuje vždy.
 
   // ── Parties ──────────────────────────────────────────────────────────────
   "supplier":  { /* Party — viz sekce 6 */ },

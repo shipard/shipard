@@ -283,6 +283,18 @@ Nové systémové sloupce (plní přepočet v `beforeSave`, viz sekce 8):
 Nový systémový sloupec `total_rounding_dom` (numeric 15,2) — doplňuje řadu
 `total_*_dom` (důsledná politika "každá částka v obou měnách").
 
+**Typ období dokladu** — `fiscal_period_type` (enumString 10, nullable,
+system, cfgItem `docs.core.fiscalPeriodTypes`, #69 D20): NULL = běžný
+doklad, `fiscal_month` = běžný měsíc podle účetního data
+(`FiscalMonthLookup::monthIdForDate`); `opening` / `closing` = doklad
+otevíracího / uzávěrkového období, `fiscal_month` = jednodenní měsíc
+Otevření / Uzavření roku účetního data (`monthIdForYearAndType`, rokem +
+typem — datum by trefilo i běžný měsíc). Plní jen import (exchange
+`fiscalPeriodType` v import módu), formulář pole nemá. Deník typ období
+nenese — saldokonto ho čte z měsíce řádku a uzávěrkové řádky nederivuje
+(`docs/accbal.md` §4.2). Zámek měsíce (#55 D27) se otevíracího ani
+uzávěrkového měsíce netýká (zamknout lze jen běžný).
+
 ### 3.3 Extension `economy.accounting` → `docs_core_heads`
 
 Stav účtování vlastní účetnictví, ne dokladový systém — proto extension

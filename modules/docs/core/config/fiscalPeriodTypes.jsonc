@@ -1,0 +1,21 @@
+{
+    // docs.core.fiscalPeriodTypes
+    //
+    // Typ období dokladu (docs_core_heads.fiscal_period_type, #69 D20):
+    // NULL = běžný doklad → běžný měsíc podle účetního data; "opening" /
+    // "closing" → jednodenní měsíc Otevření / Uzavření fiskálního roku
+    // (economy_codebooks_fiscal_months.period_type 0 / 2). Saldokonto
+    // řádky uzávěrkového období nederivuje. Plní jen import
+    // (exchange `fiscalPeriodType` v import módu).
+
+    "opening": {
+        "name": "Opening",
+        "name:cs": "Otevření",
+        "name:en": "Opening"
+    },
+    "closing": {
+        "name": "Closing",
+        "name:cs": "Uzavření",
+        "name:en": "Closing"
+    }
+}

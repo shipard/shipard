@@ -35,6 +35,17 @@ final class FiscalMonthLookupTest extends TestCase
         $this->assertNull(FiscalMonthLookup::isoDate(null));
     }
 
+    public function testMonthIdForYearAndTypeQueriesByYearNotDate(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->expects($this->once())->method('fetch')
+            ->with($this->stringContains('[fiscal_year] = %i AND [period_type] = %i'), 7, FiscalMonthLookup::PERIOD_TYPE_CLOSING)
+            ->willReturn(new Row(['id' => 914]));
+
+        $this->assertSame(914, FiscalMonthLookup::monthIdForYearAndType($db, 7, FiscalMonthLookup::PERIOD_TYPE_CLOSING));
+        $this->assertSame(['opening' => 0, 'closing' => 2], FiscalMonthLookup::PERIOD_TYPE_BY_CODE);
+    }
+
     public function testNoMonthReturnsNullAndEmptyDateSkipsQuery(): void
     {
         $db = $this->createMock(Connection::class);

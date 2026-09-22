@@ -242,6 +242,13 @@
                                                 null
                                             ]
                                         },
+                                        "fiscalPeriodType": {
+                                            "enum": [
+                                                "opening",
+                                                "closing",
+                                                null
+                                            ]
+                                        },
                                         "supplier": {
                                             "$ref": "#/$defs/Party"
                                         },

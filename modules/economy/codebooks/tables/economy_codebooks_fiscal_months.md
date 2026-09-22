@@ -49,6 +49,12 @@ v `module.jsonc` → `documentLockProviders`). Vynucení dělá `TableGateway`
 (chyba formuláře `locked`), generické CRUD (`DOCUMENT_LOCKED`) a nabídka
 přechodů (žádné). Import mód (`_importNumber`) zámek obchází.
 
+Doklad se do jednodenního měsíce Otevření / Uzavření zařadí jen výslovně
+— `docs_core_heads.fiscal_period_type` = `opening` / `closing` (#69 D20,
+`FiscalMonthLookup::monthIdForYearAndType`, rokem + typem, ne datem);
+běžné doklady tam podle data nikdy nespadnou. Uzávěrkové řádky deníku
+saldokonto nederivuje (`docs/accbal.md` §4.2).
+
 Zamčený měsíc nemění rozsah, typ ani rok — jediná povolená mutace je
 přepnutí `locked` (formulář měsíce v detailu fiskálního roku). Roční
 `economy_codebooks_fiscal_years.locked` se **nevynucuje** — sémantika

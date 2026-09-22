@@ -1201,6 +1201,11 @@ class DocumentApplier
             'vat_dppd'             => $canonical['dates']['vatObligationDate'] ?? null,
             'period_from'          => $canonical['dates']['periodFrom'] ?? null,
             'period_to'            => $canonical['dates']['periodTo'] ?? null,
+            // Otevírací / uzávěrkové období (#69 D20) — jen import mód;
+            // AI extrakce ani ruční apply doklad do uzávěrky nezařadí.
+            'fiscal_period_type'   => is_array($importNumber)
+                                       && in_array($canonical['fiscalPeriodType'] ?? null, ['opening', 'closing'], true)
+                                       ? $canonical['fiscalPeriodType'] : null,
             'vat_mode'             => $vatMode,
             'vat_calc_source'      => $calcSource,
             'vat_recap_source'     => $recapSource['source'],

@@ -787,6 +787,31 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(17, $data['bank_account']);
     }
 
+    public function testTransformMapsFiscalPeriodTypeOnlyInImportMode(): void
+    {
+        // #69 D20: uzávěrkový / otevírací doklad zařadí do period_type 0/2
+        // jen import; AI extrakce ani ruční apply pole nesmí použít.
+        $applier = $this->buildApplier();
+        $base = [
+            'docType'          => 'accountingDocument',
+            'dates'            => ['issueDate' => '2024-12-31'],
+            'fiscalPeriodType' => 'closing',
+        ];
+
+        $imported = $this->invokeTransform($applier, $base + [
+            'applyOptions' => ['importNumber' => ['docNumber' => '2024-9001', 'sequenceNumber' => 9001]],
+        ]);
+        $this->assertSame('closing', $imported['fiscal_period_type']);
+
+        $manual = $this->invokeTransform($applier, $base);
+        $this->assertArrayNotHasKey('fiscal_period_type', $manual, 'mimo import mód se ignoruje');
+
+        $bogus = $this->invokeTransform($applier, ['fiscalPeriodType' => 'monthly'] + $base + [
+            'applyOptions' => ['importNumber' => ['docNumber' => '2024-9002', 'sequenceNumber' => 9002]],
+        ]);
+        $this->assertArrayNotHasKey('fiscal_period_type', $bogus, 'neznámá hodnota se nepropíše');
+    }
+
     public function testTransformPreservesExplicitNullSequenceNumber(): void
     {
         // Migrated duplicate keys: number outside the series formula travels

@@ -776,11 +776,19 @@ abstract class DocDocument extends Document
 
     // ── Accounting period resolvers ─────────────────────────────────────────
 
+    /**
+     * Doklad otevíracího / uzávěrkového období (`fiscal_period_type`, #69
+     * D20) jde do jednodenního měsíce Otevření / Uzavření roku účetního
+     * data, ne do běžného měsíce; ostatní doklady do běžného měsíce.
+     */
     protected function resolveAccountingPeriods(array &$data): void
     {
         if (!empty($data['accounting_date'])) {
             $data['fiscal_year']  = $this->resolveFiscalYearId((string) $data['accounting_date']);
-            $data['fiscal_month'] = $this->resolveFiscalMonthId((string) $data['accounting_date']);
+            $periodType = FiscalMonthLookup::PERIOD_TYPE_BY_CODE[(string) ($data['fiscal_period_type'] ?? '')] ?? null;
+            $data['fiscal_month'] = $periodType !== null && $data['fiscal_year'] !== null && $this->db !== null
+                ? FiscalMonthLookup::monthIdForYearAndType($this->db, (int) $data['fiscal_year'], $periodType)
+                : $this->resolveFiscalMonthId((string) $data['accounting_date']);
         }
         // Zařazení do instancí tvrzení DPH (vat_period/cs_period/rs_period) je
         // věc economy.vat — DocsHeadsVatPeriodHandler (beforeSave event).

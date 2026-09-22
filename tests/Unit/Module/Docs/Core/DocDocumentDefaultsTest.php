@@ -199,4 +199,50 @@ class DocDocumentDefaultsTest extends TestCase
         // vat_period už docs.core neřeší — plní economy.vat handler (beforeSave event)
         $this->assertArrayNotHasKey('vat_period', $data);
     }
+
+    public function testClosingDocumentGoesToClosingMonthOfItsYear(): void
+    {
+        // #69 D20: fiscal_period_type = closing → měsíc Uzavření roku
+        // účetního data (dotaz rokem + typem), ne běžný prosinec.
+        $db = $this->createMock(Connection::class);
+        $queries = [];
+        $db->method('fetch')->willReturnCallback(
+            function (string $sql, mixed ...$params) use (&$queries): ?Row {
+                $queries[] = ['sql' => $sql, 'params' => $params];
+                return count($queries) === 1 ? new Row(['id' => 100]) : new Row(['id' => 214]);
+            }
+        );
+
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($db);
+        $data = ['accounting_date' => '2026-12-31', 'fiscal_period_type' => 'closing'];
+        $doc->resolveAccountingPeriodsPub($data);
+
+        $this->assertSame(100, $data['fiscal_year']);
+        $this->assertSame(214, $data['fiscal_month']);
+        $this->assertCount(2, $queries);
+        $this->assertStringContainsString('[fiscal_year] = %i AND [period_type] = %i', $queries[1]['sql']);
+        $this->assertSame([100, 2], $queries[1]['params']);
+        $this->assertStringNotContainsString('[date_begin]', $queries[1]['sql'], 'jednodenní měsíc se hledá rokem, ne datem');
+    }
+
+    public function testUnknownPeriodTypeFallsBackToRegularMonth(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $queries = [];
+        $db->method('fetch')->willReturnCallback(
+            function (string $sql, mixed ...$params) use (&$queries): ?Row {
+                $queries[] = ['sql' => $sql, 'params' => $params];
+                return new Row(['id' => count($queries) === 1 ? 100 : 200]);
+            }
+        );
+
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setDb($db);
+        $data = ['accounting_date' => '2026-05-06', 'fiscal_period_type' => 'garbage'];
+        $doc->resolveAccountingPeriodsPub($data);
+
+        $this->assertSame(200, $data['fiscal_month']);
+        $this->assertStringContainsString('[date_begin] <= %d', $queries[1]['sql'], 'běžný měsíc podle data');
+    }
 }

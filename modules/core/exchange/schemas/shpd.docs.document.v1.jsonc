@@ -63,6 +63,10 @@
         "cashDesk": { "type": ["string", "null"], "maxLength": 10 },
         // Směr pokladního dokladu: 1 příjem, 2 výdej. Jen cashDocument.
         "cashDirection": { "enum": [1, 2, null] },
+        // Doklad otevíracího / uzávěrkového období (#69 D20): zařadí se do
+        // měsíce Otevření / Uzavření roku účetního data. Jen import mód
+        // (applyOptions.importNumber) — jinak applier pole ignoruje.
+        "fiscalPeriodType": { "enum": ["opening", "closing", null] },
 
         // ── Parties ─────────────────────────────────────────────────────
         "supplier": { "$ref": "#/$defs/Party" },
