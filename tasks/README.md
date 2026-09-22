@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 285 tasků: **naplánováno** 4 · **částečně** 13 · **hotovo** 268.
+Celkem 286 tasků: **naplánováno** 5 · **částečně** 13 · **hotovo** 268.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,11 +25,12 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
+| `accbal-prefix-precedence.md` | naplánováno | D22 zamčeno v #69 (komentář 2026-09-22) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
-| `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů, ds-upgrade jen 4l3j); zbývá ověření na `btpg-p` po resetu + reimportu (`old_shipard` task 40) a srovnání `e8w1-i` per fiskální rok proti `e10doc_balance_journal` (#69) |
+| `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
@@ -252,6 +253,7 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `accbal-ledger-identity-key.md` | #69 D13 | Pohyb ledgeru per platební identita řádku (partner, VS, SS, měna), ne per doklad; `movement_key`; CLI `accbal-regenerate` |
 | `doc-partner-balance.md` | #72 D1–D6 | Osoba pro saldokonto na hlavičce (plátce); číselníky platebních terminálů/bran a způsobů dopravy; karta/brána/dobírka → 311 za plátcem místo 261400; 315 v saldokontu |
 | `accbal-operation-first.md` | #69 D17–D20 | Skupina pohybu z operace řádku, dobropis na druhou stranu jen ze seedu (`legacy` varianta pro import), lookup podle směru platby (vratky), uzávěrkové období mimo ledger; `fiscal_period_type` |
+| `accbal-prefix-precedence.md` | #69 D22 | Nejdelší shodný prefix účtu vyhrává (per strana účtu) v generátoru i lookupu; podúčty do jiné skupiny per DS (325.2xx = přijaté zálohy) |
 
 ## Došlá pošta (core.mail)
 

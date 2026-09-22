@@ -1,6 +1,6 @@
 # Saldokonto — operace má přednost, dobropis na druhou stranu jako výchozí, uzávěrkové období mimo ledger (#69 D17–D20)
 
-**Stav:** částečně — kód, testy a docs hotové 2026-09-22 (5 commitů, ds-upgrade jen 4l3j); zbývá ověření na `btpg-p` po resetu + reimportu (`old_shipard` task 40) a srovnání `e8w1-i` per fiskální rok proti `e10doc_balance_journal` (#69)
+**Stav:** částečně — kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i`
 
 ## Kontext
 
