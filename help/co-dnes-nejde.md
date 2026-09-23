@@ -66,6 +66,15 @@ Vystavit a zaúčtovat ji jde celou — viz
 drží v ruce odběratel, musíš zatím vyrobit jinde. U vydaných faktur je tak
 Shipard dneska evidence, ne fakturační nástroj.
 
+**Zálohovou fakturu (proformu) taky nevytiskneš** — platí pro ni totéž co pro
+fakturu. **Fakturu z proformy nevystavíš jedním klikem**: až zálohu dostaneš,
+vystav vydanou fakturu ručně a zálohu na ní odečti řádkem *Odpočet přijaté
+zálohy* s variabilním symbolem proformy. **Daňový doklad k přijaté záloze**
+Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou.
+**Potvrzená proforma se zatím nezaúčtuje** a její úhradu z banky k ní
+saldokonto nespáruje; v přehledu účtování ji uvidíš s chybou, že chybí
+účtovací předpis. Viz [Zálohová faktura](faktury-vydane/zalohova-faktura.md).
+
 ---
 
 ## Pokladna: bez knihy a bez účtenky

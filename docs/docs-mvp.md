@@ -17,7 +17,10 @@ modelem.
 
 - **Typy dokladů:** Faktura vydaná (`invno`), Faktura přijatá (`invni`);
   po MVP přibyly Účetní doklad (`cmnbkp`), Pokladní doklad (`cash`, směr per
-  doklad z `cash_dir`, řada vázaná na pokladnu) a Prodejka (`cashreg`) — #59
+  doklad z `cash_dir`, řada vázaná na pokladnu) a Prodejka (`cashreg`) — #59;
+  Zálohová faktura vydaná (`invpo`, #79 D1) — první **nedaňový** typ
+  (`docTypes[].tax_document: false`, jediné čtení `DocTypes::isTaxDocument()`):
+  DPH jen informativně, bez DUZP/DPPD a bez zařazení do tvrzení DPH
 - **Hlavička, řádky, rekapitulace DPH** — kompletní třístupňová struktura
 - **DPH model pro Českou republiku** — všechny kódy DPH ze starého Shipardu
   (tuzemsko vstup/výstup ve všech sazbách, EU plnění, dovoz/vývoz, tuzemský

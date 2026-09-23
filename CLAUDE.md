@@ -191,8 +191,21 @@ smí názvy nést — tam jsou potřeba k práci.
   z více modulů per-table (paralela k `DocumentLoader::mergeDocumentClasses()`).
 - Vzor: `docs.core` registruje `DocsHeadsForm` jako defaultClass,
   `docs.invoicesOut` přidává `invno → IssuedInvoiceForm`, `docs.invoicesIn`
-  přidává `invni → ReceivedInvoiceForm`. Hierarchie tříd:
-  `TableForm → DocsHeadsFormBase → {DocsHeadsForm, IssuedInvoiceForm, ReceivedInvoiceForm}`.
+  přidává `invni → ReceivedInvoiceForm`, `docs.proformasOut` přidává
+  `invpo → ProformaOutForm` (#79 D1). Hierarchie tříd:
+  `TableForm → DocsHeadsFormBase → {DocsHeadsForm, ReceivedInvoiceForm,
+  IssuedInvoiceFormBase → {IssuedInvoiceForm, ProformaOutForm}, CashDeskFormBase → …}`;
+  `IssuedInvoiceFormBase` (docs.core) drží sdílený layout hlavičky a tab
+  Nastavení vydaných dokladů — nekopírovat `buildHeaderTab()` per modul.
+- **Nedaňový typ dokladu**: `docTypes[].tax_document: false` (zatím jen
+  `invpo`; chybí = daňový). Jediné čtení `DocTypes::isTaxDocument()` /
+  `nonTaxDocTypes()` (docs.core) — nikdy `=== 'invpo'` v kódu. Řídí:
+  `DocDocument::applyDateDefaults` (DUZP/DPPD null i z payloadu),
+  `DocsHeadsFormBase::isTaxDocument()` (skrytá pole, bez defaultu DUZP),
+  `DocHeadVatContext::vat_rate_date` (sazba k datu vystavení),
+  `DocsHeadsVatPeriodHandler` + `VatPeriodLockProvider` (období DPH null
+  i ruční), `VatDocumentSelection` (NOT IN), `DocumentApplier` (ignoruje
+  taxPointDate/vatObligationDate).
 - Per-typ subclassy jsou tenké — overridují jen, co se má lišit (titulky
   přes `getFormTitle()` / `getNewFormTitle()`, do budoucna jednotlivé
   `buildXxxTab()` metody). Společná logika žije v base.

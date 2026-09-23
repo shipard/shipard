@@ -1660,11 +1660,22 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase  // FPB, doc_type='invni'
     // getPartnerSnapshotKey() — default 'supplier_snapshot' je správný.
 }
 
-class IssuedInvoiceForm extends DocsHeadsFormBase  // FVB, doc_type='invno'
+abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase  // docs.core: FVB + FVZ
 {
-    protected function getDocTypeLabel(): string       { return 'Vydaná faktura'; }
-    protected function getHeaderIcon(): ?string        { return 'invoice'; }
     protected function getPartnerSnapshotKey(): string { return 'customer_snapshot'; }
+    // + sdílený buildHeaderTab() / buildExtraTabs() (tab Nastavení)
+}
+
+class IssuedInvoiceForm extends IssuedInvoiceFormBase  // FVB, doc_type='invno'
+{
+    protected function getDocTypeLabel(): string { return 'Vydaná faktura'; }
+    protected function getHeaderIcon(): ?string  { return 'invoice'; }
+}
+
+class ProformaOutForm extends IssuedInvoiceFormBase  // FVZ, doc_type='invpo'
+{
+    protected function getDocTypeLabel(): string { return 'Zálohová faktura'; }
+    protected function getHeaderIcon(): ?string  { return 'invoice-proforma'; }
 }
 ```
 
@@ -2091,12 +2102,15 @@ Pro nový záznam otevřený z **generického vieweru** (bez hintu `doc_type`) j
 ```
 TableForm (abstract, core)
     └── DocsHeadsFormBase (abstract, docs.core)
-            ├── DocsHeadsForm        (docs.core)        — defaultClass
-            ├── IssuedInvoiceForm    (docs.invoicesOut) — invno
-            └── ReceivedInvoiceForm  (docs.invoicesIn)  — invni
+            ├── DocsHeadsForm            (docs.core)        — defaultClass
+            ├── ReceivedInvoiceForm      (docs.invoicesIn)  — invni
+            ├── IssuedInvoiceFormBase    (abstract, docs.core) — sdílený layout vydaných dokladů
+            │       ├── IssuedInvoiceForm (docs.invoicesOut)  — invno
+            │       └── ProformaOutForm   (docs.proformasOut) — invpo (#79 D1)
+            └── CashDeskFormBase         (abstract, docs.core) — pokladní doklad, prodejka
 ```
 
-Společná logika žije v base třídě (build tabů, recalculate, options resolvery, HTML renderery). Subclassy přepisují jen tam, kde se chování má lišit — v MVP typicky `getFormTitle()` / `getNewFormTitle()`. Do budoucna budou rozšiřovat o per-typ `buildXxxTab()` metody (FVB-specifický splátkový kalendář, FPB schvalovací workflow, …).
+Společná logika žije v base třídě (build tabů, recalculate, options resolvery, HTML renderery). Subclassy přepisují jen tam, kde se chování má lišit — typicky `getFormTitle()` / `getNewFormTitle()` a header-info hooky. Rodina typů se stejným layoutem (FVB + zálohová faktura vydaná) má abstraktní mezistupeň v `docs.core` (`IssuedInvoiceFormBase`, vzor `CashDeskFormBase`), ne kopii `buildHeaderTab()` per modul. Nedaňový typ (`docTypes[].tax_document: false`) řídí base přes `DocsHeadsFormBase::isTaxDocument()` — skrývá DUZP/DPPD, selecty období DPH a `cs_mode`, nepředvyplňuje DUZP; per-typ třída o tom nic neví.
 
 ```php
 abstract class DocsHeadsFormBase extends TableForm
@@ -2107,7 +2121,7 @@ abstract class DocsHeadsFormBase extends TableForm
     // aby je subclassy mohly override-ovat
 }
 
-class IssuedInvoiceForm extends DocsHeadsFormBase
+class IssuedInvoiceForm extends IssuedInvoiceFormBase
 {
     protected function getFormTitle(): string    { return 'Faktura vydaná'; }
     protected function getNewFormTitle(): string { return 'Nová faktura vydaná'; }
@@ -2185,7 +2199,7 @@ Dopořučení:
 - Hlavička FPB (`buildHeaderTab()`) je řazená podle toku práce s došlou fakturou: levý sloupec partner → adresa → způsob platby (+ pokladna při hotovosti) → bankovní účet partnera / IBAN → variabilní a specifický symbol → datumy → číslo dokladu od partnera; pravý sloupec režim DPH, měna a kurz, zaokrouhlení částky, období plnění. Co se mění zřídka (zaokrouhlení DPH, konstantní symbol), patří do tabu Nastavení, ne do hlavičky.
 - Hook má stejnou signaturu jako `buildHeaderTab()` (`array $data, bool $isNew`), použitelnou pro větvení podle stavu formuláře (např. skrýt sekce „DPH“ když `vat_mode === 0`).
 - Pro extra **subtable** nebo **attachments** taby použij stejný hook — vrací se z něj `list<FormTab>`, který může obsahovat i `$this->subtableTab(...)` nebo `$this->attachmentsTab(...)`.
-- `IssuedInvoiceForm` (FVB) hook používá taky: sekce „Měna“ s `home_currency` (readOnly) a sekce „Ostatní“ s `bank_account`, `vat_registration`, `vat_calc_source`, `total_rounding_mode`, `vat_rounding_mode` a `constant_symbol`. Hlavička FVB je užší než u FPB: vlevo odběratel → adresa → způsob platby (+ pokladna při hotovosti) → datumy (vystavení, splatnost, účetní, DUZP); vpravo režim DPH, místo plnění, měna a kurz, variabilní a specifický symbol, období plnění. Bankovní účet odběratele a DPPD se na FVB nezadávají — DPPD odvodí `DocDocument` z DUZP. `bank_account` je přesto při Potvrdit povinný (`IssuedInvoiceDocument::validate()`) a `vat_registration` při `vat_mode != 0`; validační chyba se zobrazí na poli v tabu Nastavení. Strukturu má smysl držet stejnou jako u FPB — další pole (např. připomínkový režim, AI checks) se přidávají jako sekce navrch.
+- `IssuedInvoiceFormBase` (FVB `IssuedInvoiceForm` i FVZ `ProformaOutForm`) hook používá taky: sekce „Měna“ s `home_currency` (readOnly) a sekce „Ostatní“ s `bank_account`, `vat_registration`, `vat_calc_source`, `vat_recap_source`, `total_rounding_mode`, `vat_rounding_mode`, `cs_mode` a `constant_symbol`. Hlavička FVB je užší než u FPB: vlevo odběratel → adresa → způsob platby (+ pokladna při hotovosti) → datumy (vystavení, splatnost, účetní, DUZP); vpravo režim DPH, místo plnění, měna a kurz, variabilní a specifický symbol, období plnění. Bankovní účet odběratele a DPPD se na FVB nezadávají — DPPD odvodí `DocDocument` z DUZP. `bank_account` je přesto při Potvrdit povinný (`IssuedInvoiceDocument::validate()`) a `vat_registration` při `vat_mode != 0`; validační chyba se zobrazí na poli v tabu Nastavení. Strukturu má smysl držet stejnou jako u FPB — další pole (např. připomínkový režim, AI checks) se přidávají jako sekce navrch.
 - Generický `DocsHeadsForm` hook nepřepisuje, nemění default `[]`. Může ho zapnout kdykoli bez úpravy base třídy.
 
 ## 24. Editovatelná sensitive pole (opt-in whitelist)

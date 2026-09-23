@@ -1,6 +1,9 @@
 # Zálohová faktura vydaná — typ dokladu `invpo`
 
-**Stav:** naplánováno — zadání 2026-09-23 (#79 D1)
+**Stav:** částečně — kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade`
+na dev DS založil řadu `invpo`, viewer i formulář ověřené přes API; zbývá
+ruční proklik UI v prohlížeči a nasazení na alfu spolu
+s `tasks/accbal-proformas-out.md`
 **Issue:** #79 (rozhodnutí D1–D7 v komentáři 2026-09-23 „Revize rozhodnutí“);
 souvisí s #69 (saldokonto) a #72.
 **Milník:** M2 — bez proforem se saldokonto importovaného DS neporovná se
@@ -217,15 +220,36 @@ celá sada na konci lokálně.
 4. `docs+help: zálohová faktura vydaná; task (#79 D1, 4/4)` — dokumentace,
    help, `**Stav:**`, `python3 scripts/tasks-index.py`.
 
+## Poznámky z implementace (2026-09-23)
+
+- `docs/vat-report-periods.md` neexistuje — zařazení do instancí je popsané
+  v `modules/economy/vat/docs/README.md`, tam je i odstavec o nedaňových typech.
+- Navíc proti zadání: `VatPeriodLockProvider::newPointers` zrcadlí handler
+  (jinak by ruční `vat_period` v payloadu proformy vyvolal falešný zámek);
+  `DocumentValidator::checkPerDocType` má větev `proformaIssued` (povinný
+  odběratel); `DocumentApplier` u nedaňového typu ignoruje
+  `taxPointDate`/`vatObligationDate` už při transformaci.
+- Sazba kódu DPH na řádku a v rekapitulaci se bez DUZP bere k datu vystavení
+  (`DocHeadVatContext::vat_rate_date`) — bez toho by řádek proformy po výběru
+  kódu nedostal `vat_pct`.
+- Sdílený layout FVB + FVZ: `IssuedInvoiceFormBase` v `docs.core` (vzor
+  `CashDeskFormBase`); `IssuedInvoiceForm` i `ProformaOutForm` jsou tenké.
+- Do nasazení `accbal-proformas-out` končí potvrzená proforma hláškou
+  `rules_not_found` (nefatální, alert `AccountingErrorsCheck`) — uvedeno
+  v README modulu a v `help/co-dnes-nejde.md`.
+
 ## Hotovo když
 
-- [ ] `ds-upgrade` na dev DS založí řadu `invpo`; v sidebaru Prodej je
-      „Zálohové faktury vydané“ s vlastní ikonou.
+- [x] `ds-upgrade` na dev DS založí řadu `invpo`; v sidebaru Prodej je
+      „Zálohové faktury vydané“ s vlastní ikonou (řada i strom navigace
+      ověřené na 4l3j přes API, ne v prohlížeči).
 - [ ] Nová proforma se sazbami DPH: rekapitulace a součet s DPH sedí,
-      DUZP/DPPD ani období DPH ve formuláři nejsou a v DB jsou `NULL`.
-- [ ] Potvrzení bez bankovního účtu hlásí chybu u pole.
-- [ ] Report DPH / podání za období proformy ji neobsahuje.
-- [ ] Faktury vydané (`invno`) se chovají beze změny — DUZP, období, testy.
-- [ ] Dokumentace a help aktualizované, `help-index.py` a
+      DUZP/DPPD ani období DPH ve formuláři nejsou a v DB jsou `NULL`
+      (formulář ověřen přes API a unit testy; zbývá proklik).
+- [ ] Potvrzení bez bankovního účtu hlásí chybu u pole (unit test; zbývá proklik).
+- [ ] Report DPH / podání za období proformy ji neobsahuje (unit test
+      selekce; zbývá ověření na DS s daty).
+- [x] Faktury vydané (`invno`) se chovají beze změny — DUZP, období, testy.
+- [x] Dokumentace a help aktualizované, `help-index.py` a
       `tasks-index.py --check` projdou.
 - [ ] Nasazení na alfu až spolu s `tasks/accbal-proformas-out.md`.
