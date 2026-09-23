@@ -27,7 +27,10 @@ use Shipard\Module\Economy\Accounting\AccountMaskResolver;
  * před maskou přednostní krok (#69 D3): má-li transakce partnera, engine
  * dohledá otevřený předpis pro klíč (partner, VS, SS, měna) přes
  * {@see OpenItemLookup} a položí úhradu přesně na účet předpisu (311xxx,
- * 321xxx, ale i 336xxx… — účty z nastavení saldokont). Miss → clearing dle
+ * 321xxx, ale i 336xxx… — účty z nastavení saldokont). Skupina s kategorií
+ * úhrady (`OpenItem::paymentCategory`, #79 D3a — zálohové faktury vydané)
+ * místo účtu předpisu dá masku kategorie (`advances.received` → 324): peníze
+ * na podrozvahu nepatří. Miss → clearing dle
  * masky (261200/261300). Spárovanost tedy
  * nenese `operation` ani žádný stav na transakci; reaccount je idempotentní
  * a bez paměti (vlastní úhrada se z rezidua vylučuje).
@@ -263,6 +266,13 @@ final class BankTransactionAccountingEngine
      * null (volající spadne na clearing dle masky). Účet předpisu, který
      * v rozvrhu není (deaktivovaný), je chyba jako u masky.
      *
+     * Zásah ve skupině s kategorií úhrady (#79 D3a, `paymentCategory`):
+     * účet = maska kategorie předpisu (`advances.received` → 324) přes
+     * maskResolver, ne účet předpisu (756 je podrozvaha). Strana zápisu
+     * dál plyne ze směru (příjem → 324 DAL), saldo z 324 DAL udělá předpis
+     * přijaté zálohy pod klíčem proformy (D23). Chybějící maska nebo účet
+     * = `account_not_found` jako u masky kategorie.
+     *
      * @param array<string, mixed> $tx
      * @return array{id?: int, number: string, is_error?: bool}|null
      */
@@ -285,6 +295,21 @@ final class BankTransactionAccountingEngine
         );
         if ($item === null) {
             return null;
+        }
+
+        if ($item->paymentCategory !== null) {
+            $cat = $item->paymentCategory;
+            $mask = $this->maskForCategory($cat);
+            if ($mask === '') {
+                $this->addMessage('account_not_found', "Předpis nemá masku pro kategorii '{$cat}' (úhrada předpisu {$item->accountNumber})");
+                return ['number' => str_repeat('?', self::ACCOUNT_NUMBER_LENGTH), 'is_error' => true];
+            }
+            $account = $this->maskResolver->resolve($mask, $accountingDate);
+            if ($account === null) {
+                $this->addMessage('account_not_found', "Účet nenalezen pro masku {$mask} (kategorie '{$cat}', úhrada předpisu {$item->accountNumber})");
+                return ['number' => str_pad($mask, self::ACCOUNT_NUMBER_LENGTH, '?'), 'is_error' => true];
+            }
+            return $account;
         }
 
         $account = $this->maskResolver->resolve($item->accountNumber, $accountingDate);
@@ -315,13 +340,21 @@ final class BankTransactionAccountingEngine
         return (string) ($ops[$operation]['cat'] ?? '');
     }
 
-    /** První maska v sekci `accounts` předpisu se shodnou kategorií. */
+    /**
+     * První maska v sekci `accounts` předpisu se shodnou kategorií. `query`
+     * záznamu se tu nehodnotí (transakce nemá řádek); řetěz masek (pole)
+     * dá první z nich.
+     */
     private function maskForCategory(string $cat): string
     {
         $rules = $this->resolveRules();
         foreach ($rules['accounts'] ?? [] as $entry) {
             if (is_array($entry) && ($entry['cat'] ?? null) === $cat) {
-                return (string) ($entry['accountMask'] ?? '');
+                $mask = $entry['accountMask'] ?? '';
+                if (is_array($mask)) {
+                    $mask = $mask[0] ?? '';
+                }
+                return (string) $mask;
             }
         }
         return '';

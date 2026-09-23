@@ -23,6 +23,7 @@ class LedgerGeneratorTest extends TestCase
     private const ADVANCES_GIVEN    = 3;
     private const ADVANCES_RECEIVED = 4;
     private const UNMATCHED         = 5;
+    private const PROFORMAS         = 6;
     private const ACC_DATE    = '2026-06-10';
 
     /** Řádek nastavení ve tvaru balanceAccounts() (a_from/a_to = platnost řádku, b_* skupiny). */
@@ -195,6 +196,26 @@ class LedgerGeneratorTest extends TestCase
             $this->desired(self::advanceRules(), [self::journal('324001', 0, 100.0, 'payment.out')]),
             'vrácení přijaté zálohy = úhrada v Přijatých zálohách',
         );
+    }
+
+    // ── #79 D2: proforma na podrozvaze → předpis skupiny proformas_out ──────
+
+    public function testProformaHeadLineIsRequestInProformasOutAndContraIsIgnored(): void
+    {
+        // Hlavičkový krok invpo: 756100 MD / 799100 DAL bez operace → krok d)
+        // (nastavení). 756 MD kladné = předpis Zálohových faktur vydaných;
+        // 799 není v žádné skupině → nic.
+        $rules = [
+            ...self::seedRules(),
+            self::rule(self::PROFORMAS, '756', 0, 1, 0),
+            self::rule(self::PROFORMAS, '756', 1, 1, 1),
+        ];
+        $moves = $this->desired($rules, [
+            self::journal('756100', 0, 12100.0, null, ['specific_symbol' => '77']),
+            self::journal('799100', 1, 12100.0, null, ['specific_symbol' => '77']),
+        ]);
+
+        $this->assertSame([['balance' => self::PROFORMAS, 'bal_side' => 0, 'amount' => 12100.0, 'account' => '756100']], $moves);
     }
 
     public function testRefundKeepsCaseResidualZero(): void

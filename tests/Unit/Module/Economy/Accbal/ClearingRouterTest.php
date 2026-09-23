@@ -97,6 +97,26 @@ class ClearingRouterTest extends TestCase
         $this->assertSame([[42, '20260001', ' 77 ', 'CZK', 1, 7, 'bankTransaction', 7]], $lookup->calls);
     }
 
+    public function testPaymentCategoryHitIsReportedAsCategoryNotRequestAccount(): void
+    {
+        // #79 D3a: zásah v Zálohových fakturách vydaných — engine položí úhradu
+        // na 324 (advances.received), ne na 756; plán to říká.
+        $this->candidates = [self::candidate(7, ['amount_hc' => 12100.00])];
+        $lookup = new RecordingLookup(new OpenItem(6, '756100', 12100.0, 'advances.received'));
+
+        $summary = $this->router($lookup)->rerouteAll([], true);
+
+        $this->assertSame(1, $summary->planned);
+        $r = $summary->results[0];
+        $this->assertSame('756100', $r->targetAccount, 'účet předpisu zůstává pro diagnostiku');
+        $this->assertSame('advances.received', $r->targetCategory);
+        $this->assertSame('kategorie advances.received (předpis 756100)', $r->targetLabel());
+
+        $plain = RouteResult::planned(8, '311100', 42, 'czk', 1.0, 1.0);
+        $this->assertNull($plain->targetCategory);
+        $this->assertSame('311100', $plain->targetLabel(), 'bez kategorie výpis ukazuje účet předpisu');
+    }
+
     public function testRerouteAllAppliesFilters(): void
     {
         $this->candidates = [];

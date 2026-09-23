@@ -83,6 +83,10 @@ class BalancesProvisioner
                 'short_name'           => isset($group['short_name']) ? (string) $group['short_name'] : null,
                 'sort_order'           => (int) ($group['sort_order'] ?? 0),
                 'show_in_navigation'   => !empty($group['show_in_navigation']) ? 1 : 0,
+                // Enginový kontrakt skupiny (#79 D3a) — jen při založení,
+                // existující skupina se nepřepisuje.
+                'payment_category'     => self::category($group['payment_category'] ?? null),
+                'closing_category'     => self::category($group['closing_category'] ?? null),
                 'provisioning_variant' => $legacy ? self::VARIANT_LEGACY : null,
                 'docState'             => 40,
                 'docStateMain'         => 3,
@@ -155,6 +159,13 @@ class BalancesProvisioner
             (int) ($acc['bal_side'] ?? 0),
             !empty($acc['modify_sign']) ? 1 : 0,
         ]);
+    }
+
+    /** Kategorie předpisu ze seedu: prázdná → NULL. */
+    private static function category(mixed $value): ?string
+    {
+        $value = trim((string) ($value ?? ''));
+        return $value !== '' ? $value : null;
     }
 
     /** Sign-pravidlo dobropisu v seedu (`creditNoteRule: true`). */

@@ -6,6 +6,7 @@ namespace Shipard\Tests\Integration\Accbal;
 
 use Shipard\Api\JournalEventHandlerLoader;
 use Shipard\Api\OpenItemLookupLoader;
+use Shipard\Core\Accounting\OpenItem;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\AbstractJournalEventHandler;
@@ -243,6 +244,86 @@ class BankPaymentRoutingTest extends IntegrationTestCase
         $this->assertNotNull($this->ledgerMove($txId, 'receivables'));
     }
 
+    // ── 3b. Zálohová faktura vydaná: úhrada na přijatou zálohu (#79 D3a) ────
+
+    public function testOpenProformaRoutesIncomingPaymentToReceivedAdvances(): void
+    {
+        // Proforma 12 100 na podrozvaze (756 MD, skupina proformas_out
+        // s payment_category advances.received) → příjem s jejím VS jde na
+        // 324 DAL, ne na 756; saldo z 324 DAL udělá předpis v Přijatých
+        // zálohách pod klíčem proformy (D23). Případ proformy zůstává
+        // otevřený (uzavírá až navazující task), druhá platba jde znovu na 324.
+        $advanceAccount = $this->ensureAccountByMask('324')['number'];
+        $this->seedRequest('proformas_out', '756100', 12100.00);
+
+        [$txId, $result] = $this->accountPayment(12100.00);
+
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $this->assertSame($advanceAccount, $this->counterpartyAccount($txId), 'úhrada proformy na přijatou zálohu, ne na 756');
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'), 'na clearingu nic');
+        $this->assertNull($this->ledgerMove($txId, 'proformas_out'), 'do skupiny proforem úhrada nejde');
+        $advance = $this->ledgerMove($txId, 'advances_received');
+        $this->assertNotNull($advance, 'ledger: přijatá záloha pod klíčem proformy');
+        $this->assertSame(0, (int) $advance['bal_side'], '324 DAL = předpisová strana Přijatých záloh (D23)');
+        $this->assertEqualsWithDelta(12100.00, (float) $advance['amount'], 0.001);
+        $this->assertSame(self::VS, (string) $advance['payment_reference']);
+
+        [$second] = $this->accountPayment(12100.00);
+        $this->assertSame($advanceAccount, $this->counterpartyAccount($second), 'proforma zůstává otevřená → i druhá platba na 324');
+    }
+
+    public function testPaymentBeforeProformaIsReroutedToReceivedAdvances(): void
+    {
+        $this->ensureAccountByMask('324');
+        $this->ensureAccountByNumber('756100');
+        $this->ensureAccountByNumber('799100');
+        [$txId] = $this->accountPayment(12100.00);
+        $this->assertSame('261200', $this->counterpartyAccount($txId), 'bez předpisu na clearingu');
+
+        $headId = $this->insertInvoice(10000.00, 21.0, 'invpo');
+        $result = (new AccountingEngine($this->db->getDibiConnection(), $this->config, $this->journalEvents))
+            ->accountDocument($headId);
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+
+        $request = $this->db->fetchRow(
+            'SELECT account_number, balance FROM economy_accbal_ledger WHERE doc_head = %i AND bal_side = 0',
+            $headId,
+        );
+        $this->assertNotNull($request, 'proforma má předpis v ledgeru');
+        $this->assertSame('756100', (string) $request['account_number']);
+        $this->assertSame($this->balanceId('proformas_out'), (int) $request['balance']);
+
+        $this->assertStringStartsWith('324', (string) $this->counterpartyAccount($txId), 'trigger přeúčtoval úhradu na přijatou zálohu');
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'), 'clearing pohyb zmizel');
+        $advance = $this->ledgerMove($txId, 'advances_received');
+        $this->assertNotNull($advance, 'předpis v Přijatých zálohách pod klíčem proformy');
+        $this->assertSame(0, (int) $advance['bal_side']);
+    }
+
+    public function testPaymentCategoryWithoutMaskIsAccountingError(): void
+    {
+        // Skupina s kategorií, kterou předpis nezná → chybový řádek jako
+        // u masky kategorie (account_not_found), transakce se neblokuje.
+        $stub = new class implements OpenItemLookup {
+            public function findOpenRequest(int $partner, string $paymentReference, string $specificSymbol, string $currency, int $direction, ?int $fiscalYear, ?string $excludeSourceKind = null, ?int $excludeSourceId = null): ?OpenItem
+            {
+                return new OpenItem(1, '756100', 100.0, 'no.such.category');
+            }
+        };
+        $engine = new BankTransactionAccountingEngine($this->db->getDibiConnection(), $this->config, $this->journalEvents, $stub);
+        $txId = $this->insertTx([
+            'bank_account' => $this->bankAccountId, 'direction' => 1, 'operation' => 'payment.in',
+            'amount' => 100.00, 'amount_dom' => 100.00, 'partner' => self::PARTNER, 'payment_reference' => self::VS,
+        ]);
+
+        $result = $engine->accountTransaction($txId);
+
+        $this->assertSame(2, $result['state']);
+        $this->assertSame('account_not_found', $result['messages'][0]['code']);
+        $this->assertStringContainsString('no.such.category', $result['messages'][0]['message']);
+        $this->assertSame('??????', $this->counterpartyAccount($txId), 'chybový řádek bez masky');
+    }
+
     // ── 4. Reaccount idempotentní, bez smyčky ────────────────────────────────
 
     public function testReaccountAfterRoutingIsIdempotent(): void
@@ -365,8 +446,8 @@ class BankPaymentRoutingTest extends IntegrationTestCase
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
-    /** Vydaná faktura (invno) ve stavu 40 pro testovacího partnera s VS = self::VS. */
-    private function insertInvoice(float $base, float $vatPct): int
+    /** Vydaná faktura (invno) / proforma (invpo) ve stavu 40 pro testovacího partnera s VS = self::VS. */
+    private function insertInvoice(float $base, float $vatPct, string $docType = 'invno'): int
     {
         $fy = $this->db->fetchRow(
             'SELECT id FROM economy_codebooks_fiscal_years WHERE date_begin <= %s AND date_end >= %s LIMIT 1',
@@ -376,16 +457,16 @@ class BankPaymentRoutingTest extends IntegrationTestCase
             'SELECT id FROM economy_codebooks_fiscal_months WHERE date_begin <= %s AND date_end >= %s AND period_type = 1 LIMIT 1',
             self::ACC_DATE, self::ACC_DATE,
         );
-        $series = $this->db->fetchRow('SELECT id FROM docs_core_number_series WHERE doc_type = %s LIMIT 1', 'invno');
+        $series = $this->db->fetchRow('SELECT id FROM docs_core_number_series WHERE doc_type = %s LIMIT 1', $docType);
         if ($fy === null || $fm === null || $series === null) {
-            $this->markTestSkipped('DS nemá fiskální období / řadu invno pro ' . self::ACC_DATE);
+            $this->markTestSkipped("DS nemá fiskální období / řadu {$docType} pro " . self::ACC_DATE);
         }
         $vat   = round($base * $vatPct / 100.0, 2);
         $total = round($base + $vat, 2);
 
         $dibi = $this->db->getDibiConnection();
         $dibi->insert('docs_core_heads', [
-            'doc_type'          => 'invno',
+            'doc_type'          => $docType,
             'number_series'     => (int) $series['id'],
             'doc_number'        => 'IT-ROUTE-' . uniqid(),
             'issue_date'        => self::ACC_DATE,

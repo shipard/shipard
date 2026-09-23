@@ -78,6 +78,63 @@ class BalancesProvisionerTest extends TestCase
         $this->assertContains('315/1/1', $numbers, '315 DAL = úhrada');
     }
 
+    // ── #79 D3a: skupina proformas_out s kategorií úhrady ────────────────────
+
+    public function testSeedHasProformasOutWithPaymentAndClosingCategory(): void
+    {
+        $group = array_values(array_filter($this->seedGroups(), fn(array $g) => $g['code'] === 'proformas_out'))[0] ?? null;
+        $this->assertNotNull($group, 'seed má skupinu Zálohové faktury vydané');
+        $this->assertSame('advances.received', $group['payment_category'], 'úhrada proformy jde na přijatou zálohu (324)');
+        $this->assertSame('offbalance.contra', $group['closing_category'], 'uzavření proti 799 čte až navazující task');
+        $this->assertSame(15, $group['sort_order'], 'hned za Pohledávkami (10) — lookup ji pro příjem projde druhou');
+        $this->assertSame(1, $group['show_in_navigation']);
+        $numbers = array_map(fn(array $a) => $a['account_number'] . '/' . $a['acc_side'] . '/' . $a['bal_side'], $group['accounts']);
+        $this->assertSame(['756/0/0', '756/1/1'], $numbers, '756 MD = předpis, 756 DAL = úhrada');
+        $this->assertSame([false], array_values(array_unique(array_column($group['accounts'], 'modify_sign'))));
+        $this->assertArrayNotHasKey('creditNoteRule', $group['accounts'][0], 'bez sign-pravidel → legacy transformace ji nemění');
+
+        foreach ($this->seedGroups() as $g) {
+            if ($g['code'] !== 'proformas_out') {
+                $this->assertArrayNotHasKey('payment_category', $g, "{$g['code']}: kategorie úhrady má jen skupina proforem");
+                $this->assertArrayNotHasKey('closing_category', $g);
+            }
+        }
+    }
+
+    public function testCreatedGroupCarriesCategoriesInBothVariants(): void
+    {
+        foreach ([false, true] as $legacy) {
+            $store = $this->recordingDb();
+            (new BalancesProvisioner($store->db, self::SEED))->provision(legacy: $legacy);
+
+            $byCode = array_column($store->balances, null, 'code');
+            $this->assertSame('advances.received', $byCode['proformas_out']['payment_category'], 'legacy=' . var_export($legacy, true));
+            $this->assertSame('offbalance.contra', $byCode['proformas_out']['closing_category']);
+            $this->assertNull($byCode['receivables']['payment_category'], 'ostatní skupiny bez kategorie = účet předpisu');
+            $this->assertNull($byCode['receivables']['closing_category']);
+
+            $rows = array_values(array_filter($store->accounts, fn(array $a) => (int) $a['balance'] === (int) $byCode['proformas_out']['id']));
+            $this->assertSame(['756', '756'], array_column($rows, 'account_number'));
+            $this->assertSame([$legacy ? 0 : 1, $legacy ? 0 : 1], array_column($rows, 'amounts_sign'), 'legacy = částky Všechny; záporná proforma v datech není');
+        }
+    }
+
+    public function testExistingGroupKeepsItsCategories(): void
+    {
+        // Skupina založená bez kategorie (nebo s vlastní) se nepřepisuje.
+        $store = $this->recordingDb(
+            [['id' => 1, 'code' => 'proformas_out', 'payment_category' => null, 'closing_category' => null]],
+            [
+                ['id' => 10, 'balance' => 1, 'account_number' => '756', 'acc_side' => 0, 'bal_side' => 0, 'modify_sign' => 0, 'sort_order' => 10],
+                ['id' => 11, 'balance' => 1, 'account_number' => '756', 'acc_side' => 1, 'bal_side' => 1, 'modify_sign' => 0, 'sort_order' => 20],
+            ],
+        );
+        $result = (new BalancesProvisioner($store->db, self::SEED))->provision();
+
+        $this->assertSame(0, $result['accounts']['added']);
+        $this->assertNull($store->balances[0]['payment_category'], 'existující skupina se nepřepisuje ani v kategoriích');
+    }
+
     public function testEmptyDsCreatesAllGroupsWithAccounts(): void
     {
         $store = $this->recordingDb();

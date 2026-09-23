@@ -39,6 +39,21 @@
             "type": "date", "nullable": true, "group": "settings"},
         {"id": "valid_to", "name": "Valid to", "name:cs": "Platnost do", "name:en": "Valid to",
             "type": "date", "nullable": true, "group": "settings"},
+        // Enginový kontrakt skupiny (#79 D3a), plní jen seed (BalancesProvisioner
+        // při založení skupiny), ve formuláři se nezobrazují:
+        //   payment_category — kategorie účtovacího předpisu, na kterou se
+        //     účtuje úhrada nalezená lookupem v této skupině místo účtu
+        //     předpisu (proformas_out → advances.received, 324). NULL = účet
+        //     předpisu (dosavadní chování všech skupin).
+        //   closing_category — kategorie protiúčtu, proti kterému se případ
+        //     skupiny uzavírá, když úhrada odejde na payment_category
+        //     (proformas_out → offbalance.contra). Čte až navazující
+        //     JournalContributor (#79 D3b, tasks/accbal-proforma-closure.md);
+        //     zakládá se už teď, protože provisioner existující skupinu nepřepisuje.
+        {"id": "payment_category", "name": "Payment category", "name:cs": "Kategorie úhrady", "name:en": "Payment category",
+            "type": "varchar", "length": 40, "nullable": true, "system": true, "group": "settings"},
+        {"id": "closing_category", "name": "Closing category", "name:cs": "Kategorie uzavření", "name:en": "Closing category",
+            "type": "varchar", "length": 40, "nullable": true, "system": true, "group": "settings"},
         // Varianta seedu, kterou skupinu založil provisioner (#69 D18): NULL =
         // výchozí (sign-pravidla dobropisů), 'legacy' = importovaný DS bez nich
         // (částky Všechny). Řídí jen doplňování řádků seedu (creditNoteRule

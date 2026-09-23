@@ -135,6 +135,31 @@ class LedgerGeneratorTest extends IntegrationTestCase
         $this->assertSame('12345', $m['payment_reference']);
     }
 
+    public function testProformaRequestGoesToProformasOutAndContraIsIgnored(): void
+    {
+        // #79 D2: deník invpo = 756100 MD / 799100 DAL bez operace → krok d)
+        // nastavení: 756 MD kladné = předpis Zálohových faktur vydaných; 799
+        // není v žádné skupině.
+        $proformas = $this->balanceId('proformas_out');
+        $docId = $this->newDocId();
+        $identity = ['partner' => 990001, 'payment_reference' => 'IT-PRO-1', 'specific_symbol' => '77', 'due_date' => '2026-06-24'];
+        $this->insertJournal('doc', $docId, ['account_number' => '756100', 'money_dr' => 12100.00, 'money_dr_cur' => 12100.00] + $identity);
+        $this->insertJournal('doc', $docId, ['account_number' => '799100', 'money_cr' => 12100.00, 'money_cr_cur' => 12100.00] + $identity);
+
+        $this->generator()->generate('doc', $docId);
+
+        $ledger = $this->ledgerOf('doc', $docId);
+        $this->assertCount(1, $ledger, 'jen předpis z 756, protiúčet 799 pohyb nedá');
+        $m = $ledger[0];
+        $this->assertSame($proformas, (int) $m['balance']);
+        $this->assertSame(0, (int) $m['bal_side'], 'Předpis');
+        $this->assertSame('756100', $m['account_number']);
+        $this->assertEqualsWithDelta(12100.00, (float) $m['amount'], 0.001);
+        $this->assertSame(990001, (int) $m['partner']);
+        $this->assertSame('IT-PRO-1', $m['payment_reference']);
+        $this->assertSame('77', $m['specific_symbol']);
+    }
+
     public function testCaseKeyIsNormalizedOnWrite(): void
     {
         // D10: symboly TRIM, prázdné → NULL, měna malými písmeny — rovnost

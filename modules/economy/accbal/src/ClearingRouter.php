@@ -22,7 +22,9 @@ use Shipard\Module\Economy\Bank\BankTransactionAccountingEngine;
  * `journalWritten` → LedgerGenerator clearing pohyb odebere a založí
  * úhradu na účet předpisu. Router tedy nic nerozhoduje dvakrát; lookup předem
  * slouží jen k tomu, aby se nepřeúčtovávalo naprázdno a aby dry-run uměl
- * vypsat plán.
+ * vypsat plán. Zásah ve skupině s kategorií úhrady (#79 D3a, zálohové
+ * faktury vydané) nese `RouteResult::targetCategory` — engine úhradu
+ * položí na 324, ne na účet předpisu 756, a výpis to říká.
  *
  * Běh je sekvenční (datum transakce, id): každé přeúčtování hned sníží
  * reziduum klíče, takže druhá úhrada už uzavřeného předpisu zůstane na
@@ -121,7 +123,7 @@ final class ClearingRouter
             return RouteResult::skipped($txId, 'no_open_item', $amount, $amountHc);
         }
         if ($dryRun) {
-            return RouteResult::planned($txId, $item->accountNumber, $partner, $currency, $amount, $amountHc);
+            return RouteResult::planned($txId, $item->accountNumber, $partner, $currency, $amount, $amountHc, $item->paymentCategory);
         }
 
         try {
@@ -134,7 +136,7 @@ final class ClearingRouter
             return RouteResult::skipped($txId, 'engine_error', $amount, $amountHc);
         }
 
-        return RouteResult::routed($txId, $item->accountNumber, $partner, $currency, $amount, $amountHc);
+        return RouteResult::routed($txId, $item->accountNumber, $partner, $currency, $amount, $amountHc, $item->paymentCategory);
     }
 
     private function engine(): BankTransactionAccountingEngine

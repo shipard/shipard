@@ -11,6 +11,12 @@ namespace Shipard\Core\Accounting;
  * úhrady) a reziduum v měně dokladu **se znaménkem** (#69 D19): kladné =
  * dluh, který se platí; záporné = přeplatek / dobropis / platba bez
  * faktury, která se vrací. Stranu zápisu dává směr transakce, ne reziduum.
+ *
+ * `paymentCategory` (#79 D3a): je-li vyplněna, konzument účtuje úhradu na
+ * účet této kategorie účtovacího předpisu (maska ze sekce `accounts`), ne
+ * na `accountNumber` — skupina saldokonta s `payment_category` (zálohové
+ * faktury vydané → `advances.received`, 324). `accountNumber` dál nese účet
+ * předpisu (756xxx) pro diagnostiku a výpisy. NULL = účet předpisu.
  */
 final readonly class OpenItem
 {
@@ -18,5 +24,6 @@ final readonly class OpenItem
         public int $balance,
         public string $accountNumber,
         public float $residual,
+        public ?string $paymentCategory = null,
     ) {}
 }

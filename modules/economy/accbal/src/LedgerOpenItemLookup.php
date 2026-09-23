@@ -35,7 +35,10 @@ use Shipard\Core\Accounting\OpenItem;
  * Skupina „Nespárované platby“ nemá řádek předpisu → nikdy se neprohledá.
  * Vrácený účet je účet prvního předpisu klíče vč. analytiky (311100,
  * 336101…), u platby bez předpisu účet úhrady; reziduum nese znaménko
- * (záporné = vratka, `bank.md` §6.1).
+ * (záporné = vratka, `bank.md` §6.1). Skupina s `payment_category`
+ * (Zálohové faktury vydané → `advances.received`, #79 D3a) předá kategorii
+ * v `OpenItem::paymentCategory` — engine úhradu položí na 324, ne na 756;
+ * pořadí cílů ani reziduum se tím nemění.
  *
  * Klíč případu = {@see CaseQuery} (skupina, období, partner, VS, SS, měna;
  * #69 D1/D11): normalizovaný vstup, rovnost přes idx_case, prázdný SS
@@ -53,10 +56,10 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
 
     private const TOLERANCE = 0.005;
 
-    /** @var list<array{balance: int, request_side: int, prefixes: list<string>}>|null skupiny s předpisem (cache) */
+    /** @var list<array{balance: int, request_side: int, prefixes: list<string>, payment_category: ?string}>|null skupiny s předpisem (cache) */
     private ?array $groups = null;
 
-    /** @var array<int, list<array{balance: int, prefixes: list<string>, natural: bool}>> směr → cíle (cache) */
+    /** @var array<int, list<array{balance: int, prefixes: list<string>, natural: bool, payment_category: ?string}>> směr → cíle (cache) */
     private array $targets = [];
 
     public function findOpenRequest(
@@ -91,7 +94,7 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
                 $excludeSourceKind,
                 $excludeSourceId,
             );
-            $item = $this->residualOf($target['balance'], $rows, $target['natural']);
+            $item = $this->residualOf($target['balance'], $rows, $target['natural'], $target['payment_category']);
             if ($item !== null) {
                 return $item;
             }
@@ -103,10 +106,11 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
      * Skupiny s řádkem předpisu, v pořadí nastavení: strana předpisu
      * (acc_side prvního řádku `bal_side = 0`, kladné částky, bez
      * modify_sign) a prefixy všech řádků skupiny bez modify_sign. Skupina
-     * bez předpisu nebo bez prefixu není cíl. Nastavení se čte jednou per
-     * instance.
+     * bez předpisu nebo bez prefixu není cíl. Kategorie úhrady skupiny
+     * (`payment_category`, #79 D3a) jde do cíle beze změny pořadí.
+     * Nastavení se čte jednou per instance.
      *
-     * @return list<array{balance: int, request_side: int, prefixes: list<string>}>
+     * @return list<array{balance: int, request_side: int, prefixes: list<string>, payment_category: ?string}>
      */
     private function groups(): array
     {
@@ -115,7 +119,8 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
         }
 
         $rows = $this->db->fetchAll(
-            'SELECT a.[balance], a.[account_number], a.[acc_side], a.[bal_side], a.[modify_sign], a.[amounts_sign]
+            'SELECT a.[balance], a.[account_number], a.[acc_side], a.[bal_side], a.[modify_sign], a.[amounts_sign],
+                    b.[payment_category]
              FROM [economy_accbal_balance_accounts] a
              JOIN [economy_accbal_balances] b ON b.[id] = a.[balance]
              WHERE a.[docState] IN %in AND b.[docState] IN %in
@@ -124,11 +129,17 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
             self::ACTIVE_STATES,
         );
 
-        /** @var array<int, array{balance: int, request_side: ?int, prefixes: list<string>}> $byBalance */
+        /** @var array<int, array{balance: int, request_side: ?int, prefixes: list<string>, payment_category: ?string}> $byBalance */
         $byBalance = [];
         foreach ($rows as $r) {
             $balance = (int) $r['balance'];
-            $byBalance[$balance] ??= ['balance' => $balance, 'request_side' => null, 'prefixes' => []];
+            $category = trim((string) ($r['payment_category'] ?? ''));
+            $byBalance[$balance] ??= [
+                'balance'          => $balance,
+                'request_side'     => null,
+                'prefixes'         => [],
+                'payment_category' => $category !== '' ? $category : null,
+            ];
             if (!empty($r['modify_sign'])) {
                 continue;
             }
@@ -146,7 +157,12 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
             if ($group['request_side'] === null || $group['prefixes'] === []) {
                 continue;
             }
-            $out[] = ['balance' => $group['balance'], 'request_side' => $group['request_side'], 'prefixes' => $group['prefixes']];
+            $out[] = [
+                'balance'          => $group['balance'],
+                'request_side'     => $group['request_side'],
+                'prefixes'         => $group['prefixes'],
+                'payment_category' => $group['payment_category'],
+            ];
         }
 
         return $this->groups = $out;
@@ -156,7 +172,7 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
      * Cíle pro směr: přirozené skupiny (předpis na straně směru) v pořadí
      * nastavení, pak opačné. První zásah vyhrává.
      *
-     * @return list<array{balance: int, prefixes: list<string>, natural: bool}>
+     * @return list<array{balance: int, prefixes: list<string>, natural: bool, payment_category: ?string}>
      */
     private function targetsForDirection(int $direction): array
     {
@@ -168,7 +184,12 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
         $opposite = [];
         foreach ($this->groups() as $group) {
             $isNatural = $group['request_side'] === self::DIRECTION_SIDE[$direction];
-            $target = ['balance' => $group['balance'], 'prefixes' => $group['prefixes'], 'natural' => $isNatural];
+            $target = [
+                'balance'          => $group['balance'],
+                'prefixes'         => $group['prefixes'],
+                'natural'          => $isNatural,
+                'payment_category' => $group['payment_category'],
+            ];
             if ($isNatural) {
                 $natural[] = $target;
             } else {
@@ -217,11 +238,11 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
     /**
      * Σ předpisy − Σ úhrady se znaménkem; otevřený = > 0 v přirozené
      * skupině, < 0 v opačné (vratka). Účet = první předpis klíče, u platby
-     * bez předpisu první řádek klíče.
+     * bez předpisu první řádek klíče; kategorie úhrady skupiny se předá dál.
      *
      * @param list<array<string, mixed>|\Dibi\Row> $rows
      */
-    private function residualOf(int $balance, array $rows, bool $natural): ?OpenItem
+    private function residualOf(int $balance, array $rows, bool $natural, ?string $paymentCategory = null): ?OpenItem
     {
         if ($rows === []) {
             return null;
@@ -244,6 +265,6 @@ final class LedgerOpenItemLookup extends AbstractOpenItemLookup
         if (!$open) {
             return null;
         }
-        return new OpenItem($balance, $account, $residual);
+        return new OpenItem($balance, $account, $residual, $paymentCategory);
     }
 }

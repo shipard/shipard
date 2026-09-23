@@ -28,6 +28,7 @@ class LedgerOpenItemLookupTest extends TestCase
     private const ADVANCES_GIVEN    = 3;
     private const ADVANCES_RECEIVED = 4;
     private const UNMATCHED         = 5;
+    private const PROFORMAS         = 6;
     private const FY                = 5;
 
     /** @var list<array{sql: string, params: list<mixed>}> */
@@ -67,16 +68,32 @@ class LedgerOpenItemLookupTest extends TestCase
         ];
     }
 
-    /** @return array{balance: int, account_number: string, acc_side: int, bal_side: int, modify_sign: int, amounts_sign: int} */
-    private static function rule(int $balance, string $prefix, int $accSide, int $balSide, int $modifySign = 0, int $amountsSign = 1): array
+    /** @return array{balance: int, account_number: string, acc_side: int, bal_side: int, modify_sign: int, amounts_sign: int, payment_category: ?string} */
+    private static function rule(int $balance, string $prefix, int $accSide, int $balSide, int $modifySign = 0, int $amountsSign = 1, ?string $paymentCategory = null): array
     {
         return [
-            'balance'        => $balance,
-            'account_number' => $prefix,
-            'acc_side'       => $accSide,
-            'bal_side'       => $balSide,
-            'modify_sign'    => $modifySign,
-            'amounts_sign'   => $amountsSign,
+            'balance'          => $balance,
+            'account_number'   => $prefix,
+            'acc_side'         => $accSide,
+            'bal_side'         => $balSide,
+            'modify_sign'      => $modifySign,
+            'amounts_sign'     => $amountsSign,
+            'payment_category' => $paymentCategory,
+        ];
+    }
+
+    /** Seed vč. skupiny Zálohové faktury vydané (756, payment_category) za Pohledávkami (#79 D3a). */
+    private function settingsWithProformas(): array
+    {
+        return [
+            self::rule(self::RECEIVABLES, '311', 0, 0),
+            self::rule(self::RECEIVABLES, '311', 1, 1),
+            self::rule(self::PROFORMAS, '756', 0, 0, 0, 1, 'advances.received'),
+            self::rule(self::PROFORMAS, '756', 1, 1, 0, 1, 'advances.received'),
+            self::rule(self::PAYABLES, '321', 1, 0),
+            self::rule(self::PAYABLES, '321', 0, 1),
+            self::rule(self::ADVANCES_RECEIVED, '324', 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '324', 0, 1),
         ];
     }
 
@@ -462,6 +479,53 @@ class LedgerOpenItemLookupTest extends TestCase
         $this->assertNotNull($item);
         $this->assertSame(self::PAYABLES, $item->balance, 'starší pohyb 325201 v Závazcích se najde');
         $this->assertSame('325201', $item->accountNumber);
+    }
+
+    // ── #79 D3a: kategorie úhrady skupiny ─────────────────────────────────────
+
+    public function testProformaHitCarriesPaymentCategoryAndKeepsRequestAccount(): void
+    {
+        $this->settings = $this->settingsWithProformas();
+        $this->ledger[self::PROFORMAS] = [self::row(0, '756100', 12100.00)];
+
+        $item = $this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1, self::FY);
+
+        $this->assertNotNull($item);
+        $this->assertSame(self::PROFORMAS, $item->balance);
+        $this->assertSame('756100', $item->accountNumber, 'účet předpisu zůstává pro diagnostiku');
+        $this->assertSame('advances.received', $item->paymentCategory, 'úhrada jde na kategorii, ne na 756');
+        $this->assertEqualsWithDelta(12100.00, $item->residual, 0.001);
+        $this->assertSame([self::RECEIVABLES, self::PROFORMAS], $this->queriedBalances(), 'přirozená skupina v pořadí nastavení hned za Pohledávkami');
+        $this->assertStringContainsString('b.[payment_category]', $this->queries[0]['sql'], 'kategorie se čte s nastavením');
+    }
+
+    public function testGroupsWithoutPaymentCategoryReturnNull(): void
+    {
+        $this->settings = $this->settingsWithProformas();
+        $this->ledger[self::RECEIVABLES] = [self::row(0, '311100', 100.00)];
+        $this->ledger[self::PROFORMAS]   = [self::row(0, '756100', 12100.00)];
+
+        $item = $this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 1, self::FY);
+
+        $this->assertNotNull($item);
+        $this->assertSame(self::RECEIVABLES, $item->balance, 'Pohledávky mají přednost');
+        $this->assertNull($item->paymentCategory, 'skupina bez kategorie = účet předpisu');
+    }
+
+    public function testProformaGroupIsOppositeForOutgoingAndCategoryFollows(): void
+    {
+        // Výdaj: proformy (předpis MD) jsou opačná skupina — přeplatek by se
+        // vracel; kategorie jde s položkou i tady (engine pak účtuje 324 MD).
+        $this->settings = $this->settingsWithProformas();
+        $this->ledger[self::PROFORMAS] = [self::row(0, '756100', 100.00), self::row(1, '756100', 150.00)];
+
+        $item = $this->lookup()->findOpenRequest(42, '20260001', '', 'czk', 2, self::FY);
+
+        $this->assertNotNull($item);
+        $this->assertSame(self::PROFORMAS, $item->balance);
+        $this->assertSame('advances.received', $item->paymentCategory);
+        $this->assertEqualsWithDelta(-50.00, $item->residual, 0.001);
+        $this->assertSame([self::PAYABLES, self::ADVANCES_RECEIVED, self::RECEIVABLES, self::PROFORMAS], $this->queriedBalances());
     }
 
     public function testSettingsAreReadOncePerInstance(): void

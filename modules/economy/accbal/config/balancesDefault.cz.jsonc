@@ -5,6 +5,9 @@
 // chybí — klíč (account_number, acc_side, bal_side, modify_sign). Prefixy
 // účtů ověřeny proti nasazené osnově (accountChartDefault.jsonc).
 //
+// payment_category / closing_category (#79 D3a): enginový kontrakt skupiny,
+// zapisuje se jen při založení (viz komentář v tables/economy_accbal_balances.jsonc).
+//
 // enum hodnoty:
 //   acc_side:     0 = MD,       1 = DAL
 //   amounts_sign: 0 = Všechny,  1 = Kladné,  2 = Záporné
@@ -41,6 +44,24 @@
             // Zrcadlo sign-pravidla dobropisu (D18): přijatý dobropis = pohledávka za dodavatelem.
             {"account_number": "321", "acc_side": 1, "amounts_sign": 2, "bal_side": 0, "modify_sign": true, "creditNoteRule": true, "note": "Dobropis závazku = pohledávka"},
             {"account_number": "321", "acc_side": 0, "amounts_sign": 2, "bal_side": 1, "modify_sign": true, "creditNoteRule": true, "note": "Úhrada dobropisu závazku"}
+        ]
+    },
+    // Zálohové faktury vydané (#79 D2, D3a): podrozvahová evidence proforem.
+    // Předpis = proforma (756 MD), úhrada = uzavření (756 DAL, navazující
+    // JournalContributor). Bankovní / pokladní platba nalezená v této skupině
+    // se účtuje na přijatou zálohu (payment_category), ne na 756. Pořadí 15:
+    // příjem s VS proformy ji lookup najde hned za Pohledávkami.
+    {
+        "code": "proformas_out",
+        "name": "Zálohové faktury vydané",
+        "short_name": "Zál. faktury vyd.",
+        "sort_order": 15,
+        "show_in_navigation": 1,
+        "payment_category": "advances.received",
+        "closing_category": "offbalance.contra",
+        "accounts": [
+            {"account_number": "756", "acc_side": 0, "amounts_sign": 1, "bal_side": 0, "modify_sign": false, "note": "Zálohová faktura vystavena"},
+            {"account_number": "756", "acc_side": 1, "amounts_sign": 1, "bal_side": 1, "modify_sign": false, "note": "Zálohová faktura uhrazena / uzavřena"}
         ]
     },
     {

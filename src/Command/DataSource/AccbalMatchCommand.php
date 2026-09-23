@@ -127,7 +127,7 @@ class AccbalMatchCommand extends Command
                 $output->writeln(sprintf(
                     'tx #%d → %s (partner %s, %.2f %s) [%s]',
                     $r->txId,
-                    $r->targetAccount,
+                    $r->targetLabel(),
                     $r->partner ?? '?',
                     $r->amount,
                     strtoupper((string) $r->currency),

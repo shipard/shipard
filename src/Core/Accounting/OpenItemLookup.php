@@ -40,6 +40,9 @@ interface OpenItemLookup
      * (přeplatek, dobropis nebo platba bez faktury se vrací; #69 D19).
      * Přirozené skupiny se prohledávají první. `OpenItem::residual` nese
      * znaménko; účet a strana zápisu plynou z účtu předpisu a směru.
+     * Skupina s kategorií úhrady (`payment_category`, #79 D3a) vrátí
+     * `OpenItem::paymentCategory` — konzument pak účtuje na účet kategorie
+     * předpisu místo účtu předpisu (proforma → přijatá záloha 324).
      *
      * $fiscalYear: období účetního data úhrady. Předpis z jiného období je
      * miss — zůstatky mezi obdobími přenáší otevírací doklad (D11).

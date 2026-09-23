@@ -112,6 +112,33 @@ class LedgerOpenItemLookupTest extends IntegrationTestCase
         $this->assertNull($lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 2, $this->fiscalYear), 'výdaj hledá v Závazcích');
     }
 
+    // ── #79 D3a: skupina s kategorií úhrady ──────────────────────────────────
+
+    public function testProformaHitCarriesPaymentCategoryAndPrecedesOppositeGroups(): void
+    {
+        // Zálohové faktury vydané (756 MD předpis, sort 15) jsou pro příjem
+        // přirozená skupina hned za Pohledávkami; položka nese kategorii
+        // advances.received, účet předpisu 756100 zůstává pro diagnostiku.
+        $proformas = $this->balanceId('proformas_out');
+        $this->seedRequest($proformas, '756100', 12100.00);
+        $lookup = $this->lookup();
+
+        $item = $lookup->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear);
+
+        $this->assertNotNull($item);
+        $this->assertSame($proformas, $item->balance);
+        $this->assertSame('756100', $item->accountNumber);
+        $this->assertSame('advances.received', $item->paymentCategory);
+        $this->assertEqualsWithDelta(12100.00, $item->residual, 0.001);
+
+        // Pohledávka se stejným klíčem má přednost a kategorii nenese.
+        $this->seedRequest($this->balanceId('receivables'), '311100', 500.00);
+        $item = $this->lookup()->findOpenRequest(self::PARTNER, self::VS, '', 'czk', 1, $this->fiscalYear);
+        $this->assertNotNull($item);
+        $this->assertSame($this->balanceId('receivables'), $item->balance);
+        $this->assertNull($item->paymentCategory, 'skupina bez payment_category = účet předpisu');
+    }
+
     public function testPayableRequestForOutgoing(): void
     {
         $pay = $this->balanceId('payables');
