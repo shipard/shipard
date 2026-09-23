@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 287 tasků: **naplánováno** 4 · **částečně** 15 · **hotovo** 268.
+Celkem 290 tasků: **naplánováno** 7 · **částečně** 15 · **hotovo** 268.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,9 +25,12 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
+| `accbal-proforma-closure.md` | naplánováno | zadání 2026-09-23 (#79 D3b, D3c) |
+| `accbal-proformas-out.md` | naplánováno | zadání 2026-09-23 (#79 D2, D3a) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `doc-proforma-out.md` | naplánováno | zadání 2026-09-23 (#79 D1) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -256,6 +259,9 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `accbal-operation-first.md` | #69 D17–D20 | Skupina pohybu z operace řádku, dobropis na druhou stranu jen ze seedu (`legacy` varianta pro import), lookup podle směru platby (vratky), uzávěrkové období mimo ledger; `fiscal_period_type` |
 | `accbal-prefix-precedence.md` | #69 D22 | Nejdelší shodný prefix účtu vyhrává (per strana účtu) v generátoru i lookupu; podúčty do jiné skupiny per DS (325.2xx = přijaté zálohy) |
 | `accbal-payment-side.md` | #69 D23 | `payment.*` = předpis/úhrada podle strany řádku proti předpisové straně skupiny (bankovní záloha na 314/324 je předpis), viewer popisuje bankovní pohyb jako platbu |
+| `doc-proforma-out.md` | #79 D1 | Zálohová faktura vydaná (`invpo`): nový typ dokladu a modul `docs.proformasOut`, atribut `tax_document` — DPH jen informativně, bez DUZP a období DPH, kanonický typ `proformaIssued` |
+| `accbal-proformas-out.md` | #79 D2, D3a | Proforma na podrozvahu `756100/799100` (účty, povaha 75–79, provisioner), předpis `invpo`, skupina saldokonta `proformas_out`, úhrada nalezená v ní se účtuje na přijatou zálohu (`payment_category`) |
+| `accbal-proforma-closure.md` | #79 D3b, D3c | Core rozhraní `JournalContributor` volané oběma enginy před zápisem deníku; `CaseClosureContributor` uzavře případ proformy (`799/756`) úhradou na 324 z banky i pokladny, kurzem proformy, do výše rezidua; reroute pokladní platby dřív než proforma |
 
 ## Došlá pošta (core.mail)
 
