@@ -429,6 +429,16 @@
     {"number":"69","name":"Provozní dotace","short_name":"Provozní dotace","account_kind":3,"results_type":1},
     {"number":"691","name":"Provozní dotace","short_name":"Provozní dotace","account_kind":3,"results_type":1},
     {"number":"691100","name":"Provozní dotace","short_name":"Provozní dotace","account_kind":3,"results_type":1},
+    // Třída 7 = podrozvaha (#79 D2): NPO osnova ji původně neměla, účtovací
+    // předpis ale míří pevnou maskou 756/799 nezávisle na variantě osnovy.
+    // Povaha 6 (Podrozvaha); rozvaha ani výsledovka třídu 7 nečtou.
+    {"number":"7","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"75","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"756","name":"Vydané zálohové faktury","short_name":"Vydané zálohové faktury","account_kind":6},
+    {"number":"756100","name":"Vydané zálohové faktury","short_name":"Vydané zálohové faktury","account_kind":6},
+    {"number":"79","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"799","name":"Evidenční protiúčet podrozvahy","short_name":"Evidenční protiúčet podrozvahy","account_kind":6},
+    {"number":"799100","name":"Evidenční protiúčet podrozvahy","short_name":"Evidenční protiúčet podrozvahy","account_kind":6},
     {"number":"9","name":"Vlastní jmění, fondy, výsledek hospodaření, rezervy, dlouhodobé úvěry a půjčky, závěrkové a podrozvahové účty","short_name":"Vl.jmění,fondy,výsl.hosp.,rezervy,dl.úvěry,záv.a podr.účty","account_kind":4},
     {"number":"90","name":"Základní jmění","short_name":"Základní jmění","account_kind":1},
     {"number":"901","name":"Základní jmění","short_name":"Základní jmění","account_kind":1},
@@ -467,7 +477,7 @@
     {"number":"962100","name":"Konečný účet rozvažný","short_name":"Konečný účet rozvažný","account_kind":9},
     {"number":"963","name":"Účet zisků a ztrát","short_name":"Účet zisků a ztrát","account_kind":9},
     {"number":"963100","name":"Účet zisků a ztrát","short_name":"Účet zisků a ztrát","account_kind":9},
-    {"number":"97","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":0},
-    {"number":"98","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":0},
-    {"number":"99","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":0}
+    {"number":"97","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"98","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"99","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6}
 ]

@@ -32,6 +32,7 @@ use Shipard\Module\Docs\Core\NumberSeriesProvisioner;
 use Shipard\Module\Economy\Accbal\BalancesProvisioner;
 use Shipard\Module\Economy\Accbal\ClearingInfrastructureProvisioner;
 use Shipard\Module\Economy\Accounting\AccountChartProvisioner;
+use Shipard\Module\Economy\Accounting\OffBalanceAccountsProvisioner;
 use Shipard\Module\Economy\Accounting\TransitAccountsProvisioner;
 use Shipard\Module\Economy\Codebooks\FiscalYearsProvisioner;
 use Shipard\Module\Economy\Items\ItemKindsProvisioner;
@@ -309,6 +310,12 @@ class DsUpgradeCommand extends Command
         // míří pevnou maskou, migrovaný rozvrh je nemá (staré 261001/261002)
         // a AccountChartProvisioner pod skipProvisioning neběží. Idempotentní.
         $this->provisionTransitAccounts($resolvedModules, $dsConnection, $output);
+
+        // Podrozvahové účty 756100 / 799100 + syntetiky 75/756/79/799 a oprava
+        // povahy 75–79 (kind 0 → 6) — BEZPODMÍNEČNĚ, i pod skipProvisioning
+        // (#79 D2): předpis zálohové faktury vydané míří pevnou maskou,
+        // migrovaný rozvrh má jen syntetiky 75 a 79 bez analytik. Idempotentní.
+        $this->provisionOffBalanceAccounts($resolvedModules, $dsConnection, $output);
 
         // AI analyzer (user, backend, profil + version sync ze šablony) se
         // zajišťuje BEZPODMÍNEČNĚ — i pod skipProvisioning. Není to migrovaná
@@ -745,6 +752,38 @@ class DsUpgradeCommand extends Command
         $result = (new TransitAccountsProvisioner($dsConnection))->provision();
 
         $this->logProvisioningResult($output, 'transit accounts', $result);
+    }
+
+    /**
+     * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
+     */
+    private function provisionOffBalanceAccounts(
+        array $resolvedModules,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning off-balance accounts (756100/799100)...', OutputInterface::VERBOSITY_VERBOSE);
+
+        if (!$this->isModuleActive($resolvedModules, 'economy.accounting')) {
+            $output->writeln(
+                '  <comment>[SKIP] economy.accounting module not active</comment>',
+                OutputInterface::VERBOSITY_VERBOSE,
+            );
+            return;
+        }
+
+        $result = (new OffBalanceAccountsProvisioner($dsConnection))->provision();
+
+        $this->logProvisioningResult($output, 'off-balance accounts', $result);
+        if ($result['kindFixed'] > 0) {
+            $output->writeln(sprintf(
+                '  [UPDATE] off-balance account kinds — fixed (0 → 6): %d',
+                $result['kindFixed'],
+            ));
+        } else {
+            $output->writeln('  [OK]     off-balance account kinds — nothing to fix', OutputInterface::VERBOSITY_VERBOSE);
+        }
     }
 
     /**

@@ -3,7 +3,7 @@
 // Generováno ze Starého Shipardu:
 //   modules/install/data/countries/cz/debs/debs-accounts-default-{groups,vat,class0,class1,class2,class3,class4,class5,class6,class7}.json
 //   (z vat souboru jen dataset e10doc.debs.accounts).
-// Záznamů: 657. Každý záznam: number, name, short_name a volitelně
+// Záznamů: 675. Každý záznam: number, name, short_name a volitelně
 // account_kind / costs_type / results_type (číselné kódy dle cfgItems v §2 PRD).
 // account_level + g1/g2/g3 + is_system=1 + docState=40/3 doplní provisioner.
 [
@@ -671,11 +671,19 @@
     {"number":"71","name":"Účet zisků a ztrát","short_name":"Účet zisků a ztrát","account_kind":9},
     {"number":"710","name":"Účet zisků a ztrát","short_name":"Účet zisků a ztrát","account_kind":9},
     {"number":"710100","name":"Účet zisků a ztrát","short_name":"Účet zisků a ztrát","account_kind":9},
-    {"number":"75","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":0},
-    {"number":"76","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":0},
-    {"number":"77","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":0},
-    {"number":"78","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":0},
-    {"number":"79","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":0},
+    // Podrozvaha (#79 D2): skupiny 75–79 mají povahu 6 (Podrozvaha), ne 0 —
+    // rozvaha ani výsledovka třídu 7 nečtou. 756100 = vydané zálohové faktury,
+    // 799100 = společný evidenční protiúčet; obojí zajišťuje i
+    // OffBalanceAccountsProvisioner (bezpodmínečně, migrované rozvrhy).
+    {"number":"75","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"756","name":"Vydané zálohové faktury","short_name":"Vydané zálohové faktury","account_kind":6},
+    {"number":"756100","name":"Vydané zálohové faktury","short_name":"Vydané zálohové faktury","account_kind":6},
+    {"number":"76","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"77","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"78","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"79","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
+    {"number":"799","name":"Evidenční protiúčet podrozvahy","short_name":"Evidenční protiúčet podrozvahy","account_kind":6},
+    {"number":"799100","name":"Evidenční protiúčet podrozvahy","short_name":"Evidenční protiúčet podrozvahy","account_kind":6},
     {"number":"8","name":"Vnitropodnikové účetnictví","short_name":"Vnitropodnikové účetnictví","account_kind":0},
     {"number":"9","name":"Vnitropodnikové účetnictví","short_name":"Vnitropodnikové účetnictví","account_kind":0}
 ]
