@@ -8,6 +8,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\AbstractDocumentLockProvider;
 use Shipard\Core\Document\DocumentLockReason;
 use Shipard\Module\Docs\Core\DocDocument;
+use Shipard\Module\Docs\Core\DocTypes;
 
 /**
  * Zámek instance tvrzení DPH nad doklady (`documentLockProviders` pro
@@ -28,6 +29,8 @@ use Shipard\Module\Docs\Core\DocDocument;
  * „Kterýkoli" kvůli měsíčnímu KH čtvrtletního plátce; „podle obsahu DPH"
  * kvůli bezdaňovým pokladním převodům — ty patří pod zámek fiskálního
  * měsíce, ne DPH. Bez registrace, DUZP nebo rekapitulace je doklad volný.
+ * Nedaňový typ (`docTypes[].tax_document: false`, #79 D1) nové ukazatele
+ * nikdy nemá — handler je nuluje; původní (historické) ukazatele platí dál.
  *
  * DB přístup je v protected metodách (přepsatelné v testech).
  */
@@ -121,6 +124,13 @@ class VatPeriodLockProvider extends AbstractDocumentLockProvider
      */
     private function newPointers(array $data, ?array $original, int $headId): array
     {
+        // Nedaňový typ (#79 D1): handler všechna období nuluje → po uložení
+        // žádné ukazatele, ani z ručního přepisu v payloadu.
+        $docType = (string) ($data['doc_type'] ?? $original['doc_type'] ?? '');
+        if (!DocTypes::isTaxDocument($this->config, $docType)) {
+            return [];
+        }
+
         $manual = DocsHeadsVatPeriodHandler::manualOverrides($data, $original);
 
         $regId = (int) ($data['vat_registration'] ?? 0);

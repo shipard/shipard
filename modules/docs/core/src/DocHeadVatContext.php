@@ -20,10 +20,14 @@ use Shipard\Module\World\Vat\VatRateResolver;
 final class DocHeadVatContext
 {
     /**
+     * `vat_rate_date` = datum, ke kterému se hledá sazba kódu DPH: DUZP,
+     * u nedaňového dokladu bez DUZP (zálohová faktura, #79 D1) datum
+     * vystavení — stejné pravidlo jako `DocDocument::validateDeclaredRecap`.
+     *
      * @return array{doc_type: string, cash_dir: int, vat_place: int,
-     *     vat_duzp: mixed, vat_mode: int, doc_currency: string,
-     *     home_currency: string, exchange_rate: float, country: ?string,
-     *     direction: ?string, place: string}|null
+     *     vat_duzp: mixed, vat_rate_date: mixed, vat_mode: int,
+     *     doc_currency: string, home_currency: string, exchange_rate: float,
+     *     country: ?string, direction: ?string, place: string}|null
      */
     public static function load(?DataSourceConnection $db, ?ConfigRuntime $config, mixed $docHeadId): ?array
     {
@@ -31,8 +35,9 @@ final class DocHeadVatContext
             return null;
         }
         $head = $db->fetchRow(
-            'SELECT `vat_registration`, `doc_type`, `cash_dir`, `vat_place`, `vat_duzp`, `vat_mode`,'
-            . ' `doc_currency`, `home_currency`, `exchange_rate` FROM `docs_core_heads` WHERE `id` = %i',
+            'SELECT `vat_registration`, `doc_type`, `cash_dir`, `vat_place`, `vat_duzp`, `issue_date`,'
+            . ' `vat_mode`, `doc_currency`, `home_currency`, `exchange_rate`'
+            . ' FROM `docs_core_heads` WHERE `id` = %i',
             (int) $docHeadId,
         );
         if ($head === null) {
@@ -44,6 +49,7 @@ final class DocHeadVatContext
             'cash_dir'      => (int) ($head['cash_dir'] ?? 0),
             'vat_place'     => (int) ($head['vat_place'] ?? 0),
             'vat_duzp'      => $head['vat_duzp'] ?? null,
+            'vat_rate_date' => $head['vat_duzp'] ?? $head['issue_date'] ?? null,
             'vat_mode'      => (int) ($head['vat_mode'] ?? 1),
             'doc_currency'  => (string) ($head['doc_currency'] ?? ''),
             'home_currency' => (string) ($head['home_currency'] ?? ''),

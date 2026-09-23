@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Economy\Vat;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Module\Economy\Vat\ReportPeriodLookup;
 use Shipard\Module\Economy\Vat\VatOutputsMapping;
 use Shipard\Module\Economy\Vat\VatPeriodLockProvider;
@@ -136,6 +137,31 @@ final class VatPeriodLockProviderTest extends TestCase
     private function vatRow(string $code = 'cz-210'): array
     {
         return ['row_kind' => 1, 'vat_code' => $code, 'total_price' => 100];
+    }
+
+    // ── nedaňový typ (#79 D1) ───────────────────────────────────────────────
+
+    /** Proforma s DPH v zamčeném Q1 a ručním ukazatelem: nové ukazatele žádné. */
+    public function testNonTaxDocumentTypeHasNoNewPointers(): void
+    {
+        $docTypes = [
+            'invno' => ['trade_dir' => 1],
+            'invpo' => ['trade_dir' => 1, 'tax_document' => false],
+        ];
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === 'docs.core.docTypes' ? $docTypes : null,
+        );
+        $p = $this->provider();
+        $p->setConfig($config);
+        $data = [
+            'doc_type' => 'invpo', 'docState' => 10, 'vat_registration' => 5, 'vat_mode' => 1,
+            'vat_duzp' => '2026-01-15', 'vat_period' => 101, 'rows' => [$this->vatRow()],
+        ];
+
+        $this->assertSame([], $p->lockReasons(self::TABLE, $data, null));
+        // Kontrola: tentýž payload jako faktura zamčený je.
+        $this->assertNotEmpty($p->lockReasons(self::TABLE, ['doc_type' => 'invno'] + $data, null));
     }
 
     // ── původní stav ────────────────────────────────────────────────────────

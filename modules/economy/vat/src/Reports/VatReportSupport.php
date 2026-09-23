@@ -50,7 +50,7 @@ final class VatReportSupport
         if ($column === null) {
             throw new \RuntimeException("Report '{$request->reportId}': unknown vatReportType '{$range->reportType}'");
         }
-        return (new VatDocumentSelection($request->db))->load($range->periodId, $column);
+        return (new VatDocumentSelection($request->db, $request->config))->load($range->periodId, $column);
     }
 
     /**

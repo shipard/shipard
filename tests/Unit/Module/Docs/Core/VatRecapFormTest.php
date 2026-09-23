@@ -133,6 +133,26 @@ class VatRecapFormTest extends TestCase
         $this->assertSame(21.0, $data['vat_pct'], 'sazba kódu k DUZP');
     }
 
+    /** Nedaňový doklad DUZP nemá (#79 D1) — sazba se bere k datu vystavení. */
+    public function testWithoutDuzpRateFallsBackToIssueDate(): void
+    {
+        $form = $this->form(['vat_duzp' => null, 'issue_date' => '2026-05-06'] + $this->receivedInvoiceHead());
+        $data = ['doc_head' => 1];
+        $form->applyNewRecordDefaults($data);
+
+        $this->assertSame(21.0, $data['vat_pct'], 'sazba k datu vystavení, když DUZP chybí');
+    }
+
+    /** Bez DUZP i data vystavení (hlavička před uložením) zůstává sazba na uživateli. */
+    public function testWithoutAnyRateDateNoRateIsDerived(): void
+    {
+        $form = $this->form(['vat_duzp' => null, 'issue_date' => null] + $this->receivedInvoiceHead());
+        $data = ['doc_head' => 1];
+        $form->applyNewRecordDefaults($data);
+
+        $this->assertArrayNotHasKey('vat_pct', $data);
+    }
+
     public function testRateFromDocumentIsNotOverwritten(): void
     {
         $form = $this->form($this->receivedInvoiceHead());

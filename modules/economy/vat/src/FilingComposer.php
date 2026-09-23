@@ -97,7 +97,7 @@ final class FilingComposer
         $this->returnCoefficient = null;
 
         $dsConnection = new DataSourceConnection($this->db);
-        $docs         = (new VatDocumentSelection($dsConnection))->load((int) $period['id'], $column);
+        $docs         = (new VatDocumentSelection($dsConnection, $this->config))->load((int) $period['id'], $column);
         $vatCodes     = (new VatRateResolver($this->config))->getVatCodes('cz', null, null, true);
         $csCalculator = new ControlStatementCalculator($mapping, $vatCodes);
 

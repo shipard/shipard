@@ -24,7 +24,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *   1. denormalize doc_type (+ cash_desk for bound types) from number_series
  *   1b. resolve partner_balance (+ payment_terminal) — osoba pro saldokonto
  *      (PartnerBalanceResolver, #72; běží i ve validate, idempotentní)
- *   2. apply date defaults (accounting_date, vat_duzp, vat_dppd, due_date)
+ *   2. apply date defaults (accounting_date, vat_duzp, vat_dppd, due_date;
+ *      nedaňový typ — docTypes[].tax_document: false — DUZP/DPPD nuluje)
  *   3. apply home_currency from DS config
  *   4. resolve fiscal_year/fiscal_month (vat_period/cs_period/rs_period plní
  *      economy.vat přes beforeSave documentEventHandler — docs.core o nich neví)
@@ -725,15 +726,23 @@ abstract class DocDocument extends Document
 
     protected function applyDateDefaults(array &$data): void
     {
+        // Nedaňový doklad (zálohová faktura, #79 D1) DUZP ani DPPD nemá —
+        // nuluje se i hodnota z payloadu / importu. Rozhoduje atribut typu,
+        // ne subclass: DocHeadRecomputer instancuje base a jede tudy taky.
+        $taxDocument = DocTypes::isTaxDocument($this->config, (string) ($data['doc_type'] ?? ''));
+        if (!$taxDocument) {
+            $data['vat_duzp'] = null;
+            $data['vat_dppd'] = null;
+        }
         if (!empty($data['issue_date'])) {
             if (empty($data['accounting_date'])) {
                 $data['accounting_date'] = $data['issue_date'];
             }
-            if (empty($data['vat_duzp'])) {
+            if ($taxDocument && empty($data['vat_duzp'])) {
                 $data['vat_duzp'] = $data['issue_date'];
             }
         }
-        if (!empty($data['vat_duzp']) && empty($data['vat_dppd'])) {
+        if ($taxDocument && !empty($data['vat_duzp']) && empty($data['vat_dppd'])) {
             $data['vat_dppd'] = $data['vat_duzp'];
         }
         if (!empty($data['issue_date']) && empty($data['due_date'])) {

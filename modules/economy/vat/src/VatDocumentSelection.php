@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Vat;
 
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Module\Docs\Core\DocTypes;
 
 /**
  * Společný výběr dokladů pro všechny tři DPH kalkulátory (D8/D11): doklady
@@ -13,13 +15,19 @@ use Shipard\Core\Database\DataSourceConnection;
  * instanci tvrzení — nikdy přes datum přímo; pravidlo clamped DPPD žije
  * v přiřazení při uložení (DocsHeadsVatPeriodHandler). K hlavičkám načte
  * řádky `docs_core_vat_recap` (domácí měna) a rozliší DIČ partnera ze
- * snapshotů (`vat_id`, fallback `tax_id`).
+ * snapshotů (`vat_id`, fallback `tax_id`). Pojistka (#79 D1): nedaňové typy
+ * (`docTypes[].tax_document: false`) vyřadí, i kdyby na nich ukazatel
+ * historicky visel — seznam z configu přes `DocTypes::nonTaxDocTypes()`.
  */
 final class VatDocumentSelection
 {
     private const DOC_STATE_OK = 40;
 
-    public function __construct(private readonly DataSourceConnection $db) {}
+    /** Config jen kvůli pojistce nedaňových typů; bez něj se nic nevyřazuje. */
+    public function __construct(
+        private readonly DataSourceConnection $db,
+        private readonly ?ConfigRuntime $config = null,
+    ) {}
 
     /**
      * @return list<array<string, mixed>> Doklady s klíči: id, doc_type,
@@ -38,15 +46,19 @@ final class VatDocumentSelection
         if (!in_array($periodColumn, ['vat_period', 'cs_period', 'rs_period'], true)) {
             throw new \InvalidArgumentException("Unknown period column '{$periodColumn}'");
         }
-        $heads = $this->db->fetchAll(
-            'SELECT [h].[id], [h].[doc_type], [h].[doc_number], [h].[partner_doc_number],'
+        $sql = 'SELECT [h].[id], [h].[doc_type], [h].[doc_number], [h].[partner_doc_number],'
             . ' [h].[total_amount_dom], [h].[vat_duzp], [h].[vat_dppd], [h].[cs_mode],'
             . ' [h].[customer_snapshot], [h].[supplier_snapshot]'
             . ' FROM [docs_core_heads] [h]'
-            . ' WHERE %n = %i AND [h].[docState] = %i'
-            . ' ORDER BY [h].[doc_number], [h].[id]',
-            'h.' . $periodColumn, $periodId, self::DOC_STATE_OK,
-        );
+            . ' WHERE %n = %i AND [h].[docState] = %i';
+        $args = ['h.' . $periodColumn, $periodId, self::DOC_STATE_OK];
+        $excluded = DocTypes::nonTaxDocTypes($this->config);
+        if ($excluded !== []) {
+            $sql .= ' AND [h].[doc_type] NOT IN %in';
+            $args[] = $excluded;
+        }
+        $sql .= ' ORDER BY [h].[doc_number], [h].[id]';
+        $heads = $this->db->fetchAll($sql, ...$args);
         if ($heads === []) {
             return [];
         }

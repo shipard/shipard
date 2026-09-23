@@ -129,13 +129,14 @@ abstract class DocsHeadsFormBase extends TableForm
         //    stejně jako recalculate('issue_date'). Recalculate běží jen při
         //    změně pole; kdo předvyplněné datum nechá být, by bez tohohle
         //    narazil na povinné Účetní datum ve validate() (#24 B, D6).
+        //    DUZP jen u daňového typu — nedaňový ho nemá (#79 D1).
         if (empty($data['issue_date'])) {
             $data['issue_date'] = date('Y-m-d');
         }
         if (empty($data['accounting_date'])) {
             $data['accounting_date'] = $data['issue_date'];
         }
-        if (empty($data['vat_duzp'])) {
+        if (empty($data['vat_duzp']) && $this->isTaxDocument($data)) {
             $data['vat_duzp'] = $data['issue_date'];
         }
         // 3. Registrace DPH: první podle country, id — totéž pořadí, jaké
@@ -462,6 +463,8 @@ abstract class DocsHeadsFormBase extends TableForm
     {
         $vatMode = (int) ($data['vat_mode'] ?? 1);
         $hasVat = $vatMode !== 0;
+        // Nedaňový typ (#79 D1): DUZP, DPPD a zařazení do tvrzení nemá.
+        $taxDocument = $this->isTaxDocument($data);
         // Sekce „DPH" zmizí jen u neplátce (economy.vatAgenda === false)
         // A ZÁROVEŇ dokladu bez DPH — doklad z doby plátcovství musí svůj
         // režim dál ukazovat (ds-setup.md D10), proto podmínka na $hasVat
@@ -472,7 +475,7 @@ abstract class DocsHeadsFormBase extends TableForm
         $hasForeignCurrency = $docCurrency !== '' && $homeCurrency !== ''
             && $docCurrency !== $homeCurrency;
         $partnerId = (int) ($data['partner'] ?? 0);
-        $reportPeriodOptions = $hasVat && !$isNew
+        $reportPeriodOptions = $hasVat && $taxDocument && !$isNew
             ? $this->resolveReportPeriodOptions((int) ($data['vat_registration'] ?? 0))
             : ['return' => [], 'cs' => [], 'rs' => []];
         $isCashPayment = $this->isCashPayment($data);
@@ -520,8 +523,8 @@ abstract class DocsHeadsFormBase extends TableForm
                     ->date('issue_date', required: true, triggers: 'reload')
                     ->date('due_date')
                     ->date('accounting_date', required: true)
-                    ->date('vat_duzp', hidden: !$hasVat)
-                    ->date('vat_dppd', hidden: !$hasVat)
+                    ->date('vat_duzp', hidden: !$hasVat || !$taxDocument)
+                    ->date('vat_dppd', hidden: !$hasVat || !$taxDocument)
                     ->date('period_from', hint: 'Volitelné, např. pronájem za období')
                     ->date('period_to')
 
@@ -560,15 +563,15 @@ abstract class DocsHeadsFormBase extends TableForm
                     // respektuje (přesun dokladu mezi měsíci KH).
                     ->select('vat_period',
                         options: $reportPeriodOptions['return'],
-                        hidden: !$hasVat || $isNew,
+                        hidden: !$hasVat || !$taxDocument || $isNew,
                     )
                     ->select('cs_period',
                         options: $reportPeriodOptions['cs'],
-                        hidden: !$hasVat || $isNew,
+                        hidden: !$hasVat || !$taxDocument || $isNew,
                     )
                     ->select('rs_period',
                         options: $reportPeriodOptions['rs'],
-                        hidden: !$hasVat || $isNew,
+                        hidden: !$hasVat || !$taxDocument || $isNew,
                     )
 
                     ->separator('Měna')
@@ -1092,7 +1095,7 @@ abstract class DocsHeadsFormBase extends TableForm
             if ($followIssueDate || empty($data['accounting_date'])) {
                 $data['accounting_date'] = $data['issue_date'];
             }
-            if ($followIssueDate || empty($data['vat_duzp'])) {
+            if (($followIssueDate || empty($data['vat_duzp'])) && $this->isTaxDocument($data)) {
                 $data['vat_duzp'] = $data['issue_date'];
             }
         }

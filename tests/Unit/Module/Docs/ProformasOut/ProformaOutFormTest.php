@@ -130,6 +130,33 @@ class ProformaOutFormTest extends TestCase
         $this->assertFalse($this->findElement($def, 'vat_duzp')?->hidden, 'bez configu = daňový (fail-safe)');
     }
 
+    public function testNewRecordDefaultsDoNotFillDuzpOnNonTaxType(): void
+    {
+        $data = ['doc_type' => 'invpo', 'vat_mode' => 1];
+        $this->form(ProformaOutForm::class)->applyNewRecordDefaults($data);
+
+        $this->assertSame(date('Y-m-d'), $data['issue_date']);
+        $this->assertSame($data['issue_date'], $data['accounting_date']);
+        $this->assertArrayNotHasKey('vat_duzp', $data, 'DUZP se u nedaňového dokladu nepředvyplňuje');
+
+        $invoice = ['doc_type' => 'invno', 'vat_mode' => 1];
+        $this->form(IssuedInvoiceForm::class)->applyNewRecordDefaults($invoice);
+        $this->assertSame($invoice['issue_date'], $invoice['vat_duzp'], 'FVB beze změny (regrese)');
+    }
+
+    public function testRecalculateIssueDateDoesNotFollowIntoDuzpOnNonTaxType(): void
+    {
+        $result = $this->form(ProformaOutForm::class)
+            ->recalculate('issue_date', ['doc_type' => 'invpo', 'issue_date' => '2026-03-01']);
+
+        $this->assertSame('2026-03-01', $result->data['accounting_date']);
+        $this->assertArrayNotHasKey('vat_duzp', $result->data);
+
+        $invoice = $this->form(IssuedInvoiceForm::class)
+            ->recalculate('issue_date', ['doc_type' => 'invno', 'issue_date' => '2026-03-01']);
+        $this->assertSame('2026-03-01', $invoice->data['vat_duzp'], 'FVB beze změny (regrese)');
+    }
+
     public function testSettingsTabIsAppendedAfterAttachments(): void
     {
         $def = $this->form(ProformaOutForm::class)->buildFormDefinition(['doc_type' => 'invpo'], true);

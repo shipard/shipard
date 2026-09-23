@@ -8,7 +8,9 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormElement;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Docs\Core\DocRowsForm;
+use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
 
 class DocRowsFormTest extends TestCase
 {
@@ -161,6 +163,43 @@ class DocRowsFormTest extends TestCase
 
         $this->assertNotNull($result->formDefinition);
         $this->assertSame(1, $result->data['row_kind']);
+    }
+
+    // ── Sazba kódu bez DUZP (#79 D1) ──────────────────────────────────────
+
+    /**
+     * Nedaňový doklad (zálohová faktura) DUZP nemá — sazba kódu DPH se
+     * odvodí k datu vystavení (`DocHeadVatContext::vat_rate_date`).
+     */
+    public function testVatCodeRateFallsBackToIssueDateWithoutDuzp(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnCallback(
+            static function (mixed ...$args): ?array {
+                if (str_contains((string) ($args[0] ?? ''), 'vat_registrations')) {
+                    return ['country' => 'cz'];
+                }
+                return [
+                    'doc_type' => 'invpo', 'cash_dir' => 0, 'vat_place' => 0, 'vat_duzp' => null,
+                    'issue_date' => '2026-05-06', 'vat_mode' => 1, 'vat_registration' => 1,
+                    'doc_currency' => 'czk', 'home_currency' => 'czk', 'exchange_rate' => 1.0,
+                ];
+            },
+        );
+        $db->method('fetchAll')->willReturn([]);
+        $form = $this->createForm();
+        $form->setDb($db);
+        $form->setConfig(ConfigRuntimeFactory::fromItems([
+            'world.vat.cz'       => JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/world/vat/config/vat-cz.jsonc'),
+            'docs.core.docTypes' => ['invpo' => ['trade_dir' => 1, 'tax_document' => false]],
+        ]));
+
+        $result = $form->recalculate('vat_code', [
+            'doc_head' => 1, 'row_kind' => 1, 'vat_code' => 'cz-110',
+            'quantity' => '1', 'unit_price' => '100',
+        ]);
+
+        $this->assertSame(21.0, (float) $result->data['vat_pct'], 'sazba k datu vystavení');
     }
 
     // ── Živý přepočet (#71) ───────────────────────────────────────────────

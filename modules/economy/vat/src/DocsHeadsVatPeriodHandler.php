@@ -6,6 +6,7 @@ namespace Shipard\Module\Economy\Vat;
 
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\AbstractDocumentEventHandler;
+use Shipard\Module\Docs\Core\DocTypes;
 
 /**
  * beforeSave handler na `docs_core_heads` (issue #55, D8/D9/D13): materializuje
@@ -23,6 +24,10 @@ use Shipard\Core\Document\AbstractDocumentEventHandler;
  *
  * Chybějící instance → on-demand koncept (10) přes ReportPeriodsProvisioner;
  * alert `economy.vat.draft_report_periods` ho nabídne ke kontrole.
+ *
+ * Nedaňový typ dokladu (`docTypes[].tax_document: false`, zálohová faktura,
+ * #79 D1) do tvrzení nepatří: všechna tři období null, i ruční hodnota
+ * z payloadu — výjimka není. Totéž pravidlo zrcadlí VatPeriodLockProvider.
  */
 final class DocsHeadsVatPeriodHandler extends AbstractDocumentEventHandler
 {
@@ -34,6 +39,17 @@ final class DocsHeadsVatPeriodHandler extends AbstractDocumentEventHandler
 
     public function onBeforeSave(string $tableId, array &$data, ?array $originalData): void
     {
+        // Nedaňový typ (#79 D1): doc_type může u částečného save chybět (bez
+        // number_series ho DocDocument nedenormalizuje) → fallback na původní
+        // řádek. Před DB — pravidlo platí i bez připojení.
+        $docType = (string) ($data['doc_type'] ?? $originalData['doc_type'] ?? '');
+        if (!DocTypes::isTaxDocument($this->config, $docType)) {
+            foreach (array_keys(self::COLUMN_TYPES) as $column) {
+                $data[$column] = null;
+            }
+            return;
+        }
+
         if ($this->db === null) {
             return;
         }

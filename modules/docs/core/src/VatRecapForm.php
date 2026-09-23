@@ -84,7 +84,8 @@ class VatRecapForm extends TableForm
     }
 
     /**
-     * Sazba kódu k DUZP dokladu — jen předvolba, uživatel ji smí přepsat
+     * Sazba kódu k datu sazby dokladu (DUZP; u nedaňového dokladu datum
+     * vystavení, `DocHeadVatContext`) — jen předvolba, uživatel ji smí přepsat
      * (spec `docs/vat-calculation.md` § 5: sazba z dokladu je vstup,
      * neshoda se sazebníkem je warning, ne blok).
      *
@@ -96,7 +97,7 @@ class VatRecapForm extends TableForm
             || empty($data['vat_code'])
             || $headContext === null
             || empty($headContext['country'])
-            || empty($headContext['vat_duzp'])
+            || empty($headContext['vat_rate_date'])
             || $this->config === null
         ) {
             return;
@@ -105,7 +106,7 @@ class VatRecapForm extends TableForm
             $data['vat_pct'] = (new VatRateResolver($this->config))->resolveVatPct(
                 (string) $headContext['country'],
                 (string) $data['vat_code'],
-                (string) $headContext['vat_duzp'],
+                (string) $headContext['vat_rate_date'],
             );
         } catch (\LogicException) {
             // Kód bez sazby k datu — sazbu zadá uživatel z dokladu.

@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Docs\Core;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Tests\Fixtures\Module\Docs\Core\TestableDocsHeadsDocument;
 
@@ -72,6 +73,50 @@ class DocDocumentDefaultsTest extends TestCase
         $doc->applyDateDefaultsPub($data);
 
         $this->assertSame('2026-01-29', $data['due_date']); // +14 days fallback
+    }
+
+    // ── Nedaňový typ (docTypes[].tax_document: false, #79 D1) ───────────────
+
+    private function configWithProforma(): ConfigRuntime
+    {
+        $docTypes = [
+            'invno' => ['trade_dir' => 1],
+            'invpo' => ['trade_dir' => 1, 'tax_document' => false],
+        ];
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === 'docs.core.docTypes' ? $docTypes : null,
+        );
+        return $config;
+    }
+
+    public function testNonTaxDocumentGetsNoDuzpNorDppdEvenFromPayload(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setConfig($this->configWithProforma());
+        $data = [
+            'doc_type'   => 'invpo',
+            'issue_date' => '2026-05-06',
+            'vat_duzp'   => '2026-05-06',
+            'vat_dppd'   => '2026-05-10',
+        ];
+        $doc->applyDateDefaultsPub($data);
+
+        $this->assertNull($data['vat_duzp'], 'DUZP z payloadu se u nedaňového dokladu nuluje');
+        $this->assertNull($data['vat_dppd']);
+        $this->assertSame('2026-05-06', $data['accounting_date']);
+        $this->assertSame('2026-05-20', $data['due_date']);
+    }
+
+    public function testTaxDocumentKeepsDuzpDefaultsWithConfig(): void
+    {
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setConfig($this->configWithProforma());
+        $data = ['doc_type' => 'invno', 'issue_date' => '2026-05-06'];
+        $doc->applyDateDefaultsPub($data);
+
+        $this->assertSame('2026-05-06', $data['vat_duzp']);
+        $this->assertSame('2026-05-06', $data['vat_dppd']);
     }
 
     public function testApplyHomeCurrencyFromSettings(): void
