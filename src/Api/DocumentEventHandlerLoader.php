@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Api;
 
+use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
@@ -18,10 +19,11 @@ use Shipard\Core\Module\ModuleResolver;
  * DocumentEventDispatcher. Stejný vzor jako DocumentLoader / LookupLoader:
  * žádná kompilace do cfg, čte se za běhu z module.jsonc.
  *
- * Do dispatcheru se vkládá i `openItemLookup` (#69 D3) — z týchž
- * resolvovaných modulů, pokud ho volající nepředá. Každé místo konstrukce
- * dispatcheru (web, CLI, seed, import) tak routuje bankovní úhrady shodně,
- * bez nutnosti měnit signatury.
+ * Do dispatcheru se vkládá i `openItemLookup` (#69 D3) a sada
+ * `journalContributors` (#79 D3b) — z týchž resolvovaných modulů, pokud je
+ * volající nepředá. Každé místo konstrukce dispatcheru (web, CLI, seed,
+ * import) tak routuje bankovní úhrady a doplňuje příspěvky do deníku
+ * shodně, bez nutnosti měnit signatury.
  */
 class DocumentEventHandlerLoader
 {
@@ -32,6 +34,7 @@ class DocumentEventHandlerLoader
         ?ConfigRuntime $configRuntime = null,
         ?JournalEventDispatcher $journalEvents = null,
         ?OpenItemLookup $openItems = null,
+        ?JournalContributorSet $journalContributors = null,
     ): DocumentEventDispatcher {
         $allModules      = ModuleLoader::loadAllModules($resolver);
         $errors          = [];
@@ -45,7 +48,10 @@ class DocumentEventHandlerLoader
         }
 
         $openItems ??= OpenItemLookupLoader::fromModules($resolvedModules, $db, $configRuntime, $config);
+        $journalContributors ??= JournalContributorLoader::fromModules($resolvedModules, $db, $configRuntime, $config);
 
-        return new DocumentEventDispatcher($registrations, $db, $configRuntime, $config, $journalEvents, $openItems);
+        return new DocumentEventDispatcher(
+            $registrations, $db, $configRuntime, $config, $journalEvents, $openItems, $journalContributors,
+        );
     }
 }

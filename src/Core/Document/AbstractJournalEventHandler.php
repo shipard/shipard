@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Document;
 
+use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 
@@ -26,6 +27,13 @@ abstract class AbstractJournalEventHandler implements JournalEventHandler
      */
     protected ?JournalEventDispatcher $journalEvents = null;
 
+    /**
+     * Contributoři deníku (#79 D3b) pro handlery, které samy spouštějí
+     * účtování — engine postavený z handleru musí příspěvky doplnit stejně
+     * jako engine z běžné cesty. Injektuje JournalEventDispatcher.
+     */
+    protected ?JournalContributorSet $journalContributors = null;
+
     public function setDb(\Dibi\Connection $db): void
     {
         $this->db = $db;
@@ -44,6 +52,11 @@ abstract class AbstractJournalEventHandler implements JournalEventHandler
     public function setJournalEvents(?JournalEventDispatcher $journalEvents): void
     {
         $this->journalEvents = $journalEvents;
+    }
+
+    public function setJournalContributors(?JournalContributorSet $journalContributors): void
+    {
+        $this->journalContributors = $journalContributors;
     }
 
     public function onJournalWritten(string $sourceKind, int $sourceId): void

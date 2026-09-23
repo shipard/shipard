@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Document;
 
+use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
@@ -32,6 +33,13 @@ abstract class AbstractDocumentEventHandler implements DocumentEventHandler
      */
     protected ?OpenItemLookup $openItems = null;
 
+    /**
+     * Contributoři deníku pro handlery konstruující účtovací engine
+     * (#79 D3b) — sada z `journalContributors` v module.jsonc, injektuje
+     * DocumentEventDispatcher. Null = engine si vezme prázdnou sadu.
+     */
+    protected ?JournalContributorSet $journalContributors = null;
+
     public function setDb(\Dibi\Connection $db): void
     {
         $this->db = $db;
@@ -45,6 +53,11 @@ abstract class AbstractDocumentEventHandler implements DocumentEventHandler
     public function setOpenItems(?OpenItemLookup $openItems): void
     {
         $this->openItems = $openItems;
+    }
+
+    public function setJournalContributors(?JournalContributorSet $journalContributors): void
+    {
+        $this->journalContributors = $journalContributors;
     }
 
     public function setConfig(ConfigRuntime $config): void

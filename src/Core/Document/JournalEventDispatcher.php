@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Document;
 
+use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Logging\ErrorLogger;
@@ -25,7 +26,9 @@ use Shipard\Core\Logging\ErrorLogger;
  * v module.jsonc) — handler smí spoléhat na to, že předchozí doběhl.
  * Handler dostane i dispatcher sám (AbstractJournalEventHandler::setJournalEvents),
  * aby účtování spuštěné z handleru vyslalo journalWritten dál; re-entrantní
- * dispatch je bezpečný (žádný stav mimo memoizované instance).
+ * dispatch je bezpečný (žádný stav mimo memoizované instance). Stejně tak
+ * dostane sadu contributorů deníku (#79 D3b), aby engine postavený
+ * z handleru doplnil příspěvky jako engine z běžné cesty.
  */
 final class JournalEventDispatcher
 {
@@ -43,6 +46,7 @@ final class JournalEventDispatcher
         private readonly ?\Dibi\Connection $db = null,
         private readonly ?ConfigRuntime $config = null,
         private readonly ?DataSourceConfig $dsConfig = null,
+        private readonly ?JournalContributorSet $journalContributors = null,
     ) {
         foreach ($registrations as $reg) {
             $this->registrations[] = [
@@ -110,6 +114,7 @@ final class JournalEventDispatcher
                 $handler->setDsConfig($this->dsConfig);
             }
             $handler->setJournalEvents($this);
+            $handler->setJournalContributors($this->journalContributors);
         }
 
         return $this->instances[$className] = $handler;

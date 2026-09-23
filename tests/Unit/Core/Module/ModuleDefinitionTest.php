@@ -707,4 +707,63 @@ class ModuleDefinitionTest extends TestCase
             'openItemLookup' => ['class' => 'Foo\\Bar'],
         ]);
     }
+
+    // ── journalContributors (#79 D3b) ───────────────────────────────────────
+
+    public function testJournalContributorsParsedInOrder(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.accbal',
+            'name' => 'Open items',
+            'journalContributors' => [
+                'Shipard\\Module\\Economy\\Accbal\\CaseClosureContributor',
+                'Shipard\\Module\\Economy\\Accbal\\OtherContributor',
+            ],
+        ]);
+
+        $this->assertSame([
+            'Shipard\\Module\\Economy\\Accbal\\CaseClosureContributor',
+            'Shipard\\Module\\Economy\\Accbal\\OtherContributor',
+        ], $def->journalContributors);
+    }
+
+    public function testJournalContributorsAbsentDefaultsToEmptyList(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons']);
+
+        $this->assertSame([], $def->journalContributors);
+    }
+
+    public function testJournalContributorsNotAListThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('journalContributors must be a JSON array of class names');
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.accbal',
+            'name' => 'Open items',
+            'journalContributors' => 'Shipard\\Module\\Economy\\Accbal\\CaseClosureContributor',
+        ]);
+    }
+
+    public function testJournalContributorsEmptyClassThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('journalContributors[1] must be a non-empty class name');
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.accbal',
+            'name' => 'Open items',
+            'journalContributors' => ['Shipard\\Module\\Economy\\Accbal\\CaseClosureContributor', ''],
+        ]);
+    }
+
+    public function testJournalContributorsObjectEntryThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('journalContributors[0] must be a non-empty class name');
+        ModuleDefinition::fromArray([
+            'id'   => 'economy.accbal',
+            'name' => 'Open items',
+            'journalContributors' => [['class' => 'Foo\\Bar']],
+        ]);
+    }
 }

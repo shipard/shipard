@@ -187,6 +187,14 @@ try {
 	}
 
 	// ── 8b. Build journal + document event dispatchers ───────────────────────
+	// Contributoři deníku (#79 D3b) — jedna sada pro handlery obou
+	// dispatcherů i controllery, které staví účtovací engine.
+	$journalContributors = \Shipard\Api\JournalContributorLoader::load(
+		$resolved->config,
+		$modulePathResolver,
+		$resolved->connection->getDibiConnection(),
+		$configRuntime,
+	);
 	// Journal dispatcher (journalEventHandlers) se vkládá do document dispatcheru,
 	// aby ho ten injektoval do handlerů konstruujících účtovací engine.
 	$journalEventDispatcher = \Shipard\Api\JournalEventHandlerLoader::load(
@@ -194,6 +202,7 @@ try {
 		$modulePathResolver,
 		$resolved->connection->getDibiConnection(),
 		$configRuntime,
+		$journalContributors,
 	);
 	// Dohledání otevřeného předpisu pro bankovní engine (#69 D3) — jedna
 	// instance pro handlery (přes document dispatcher) i controllery.
@@ -210,6 +219,7 @@ try {
 		$configRuntime,
 		$journalEventDispatcher,
 		$openItemLookup,
+		$journalContributors,
 	);
 
 	// ── 9. Dispatch to controller ─────────────────────────────────────────────

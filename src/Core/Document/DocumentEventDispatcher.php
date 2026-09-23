@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Document;
 
+use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
@@ -40,6 +41,7 @@ final class DocumentEventDispatcher
         private readonly ?DataSourceConfig $dsConfig = null,
         private readonly ?JournalEventDispatcher $journalEvents = null,
         private readonly ?OpenItemLookup $openItems = null,
+        private readonly ?JournalContributorSet $journalContributors = null,
     ) {
         foreach ($registrations as $reg) {
             $this->registrations[$reg['table']][] = [
@@ -155,9 +157,11 @@ final class DocumentEventDispatcher
                 $handler->setDsConfig($this->dsConfig);
             }
             // Handlery konstruující engine ho potřebují k vyslání journalWritten;
-            // bankovní engine navíc k dohledání otevřeného předpisu (#69 D3).
+            // bankovní engine navíc k dohledání otevřeného předpisu (#69 D3),
+            // oba enginy k příspěvkům do deníku (#79 D3b).
             $handler->setJournalEvents($this->journalEvents);
             $handler->setOpenItems($this->openItems);
+            $handler->setJournalContributors($this->journalContributors);
         }
 
         return $this->instances[$className] = $handler;

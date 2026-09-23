@@ -31,6 +31,7 @@ class ModuleDefinition
         public readonly array $attachmentGuards = [],
         public readonly array $documentLockProviders = [],
         public readonly ?string $openItemLookup = null,
+        public readonly array $journalContributors = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -258,6 +259,28 @@ class ModuleDefinition
             $openItemLookup = $data['openItemLookup'];
         }
 
+        // journalContributors — příspěvky modulu do deníku zdroje (rozhraní
+        // Shipard\Core\Accounting\JournalContributor, #79 D3b): oba účtovací
+        // enginy je volají před zápisem deníku. Seznam FQCN — víc modulů smí
+        // přispívat, pořadí = pořadí resolvovaných modulů × pořadí pole;
+        // instanciaci hlídá JournalContributorLoader.
+        $journalContributors = [];
+        if (array_key_exists('journalContributors', $data)) {
+            if (!is_array($data['journalContributors']) || !array_is_list($data['journalContributors'])) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': journalContributors must be a JSON array of class names",
+                );
+            }
+            foreach ($data['journalContributors'] as $idx => $class) {
+                if (!is_string($class) || $class === '') {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': journalContributors[{$idx}] must be a non-empty class name",
+                    );
+                }
+                $journalContributors[] = $class;
+            }
+        }
+
         // navigationProviders — třídy dodávající dynamické položky hlavní
         // navigace z dat (NavigationItemsProvider). Registrace je jen {class};
         // instancování a merge dělá NavigationController.
@@ -345,6 +368,7 @@ class ModuleDefinition
             attachmentGuards: $attachmentGuards,
             documentLockProviders: $documentLockProviders,
             openItemLookup: $openItemLookup,
+            journalContributors: $journalContributors,
         );
     }
 
