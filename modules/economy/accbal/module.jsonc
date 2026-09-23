@@ -86,7 +86,9 @@
 
     // Pořadí je významové: dispatcher volá handlery v pořadí registrace —
     // reroute (přeúčtování clearingu po vzniku předpisu, #69 D4) potřebuje
-    // ledger dokladu už re-derivovaný.
+    // ledger dokladu už re-derivovaný; uzavírání (#79 D3b — pokladní záloha
+    // zaúčtovaná dřív než proforma) běží až po něm, aby bankovní úhrada
+    // přeúčtovaná z clearingu už měla uzavírací řádky.
     "journalEventHandlers": [
         {
             "class": "Shipard\\Module\\Economy\\Accbal\\JournalLedgerHandler",
@@ -94,6 +96,10 @@
         },
         {
             "class": "Shipard\\Module\\Economy\\Accbal\\ClearingRerouteHandler",
+            "events": ["journalWritten"]
+        },
+        {
+            "class": "Shipard\\Module\\Economy\\Accbal\\CaseClosureRerouteHandler",
             "events": ["journalWritten"]
         }
     ],

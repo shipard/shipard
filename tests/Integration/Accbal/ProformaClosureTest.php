@@ -10,9 +10,13 @@ use Shipard\Api\OpenItemLookupLoader;
 use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Document\AbstractJournalEventHandler;
 use Shipard\Core\Document\JournalEventDispatcher;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Module\Economy\Accbal\CaseClosureRerouteHandler;
 use Shipard\Module\Economy\Accbal\CaseQuery;
+use Shipard\Module\Economy\Accbal\ClearingRerouteHandler;
+use Shipard\Module\Economy\Accbal\JournalLedgerHandler;
 use Shipard\Module\Economy\Accounting\AccountDocument;
 use Shipard\Module\Economy\Accounting\AccountingEngine;
 use Shipard\Module\Economy\Bank\BankTransactionAccountingEngine;
@@ -268,6 +272,90 @@ class ProformaClosureTest extends IntegrationTestCase
         $this->assertEqualsWithDelta(0.0, $this->caseOf('proformas_out')['residual'], 0.001, 'proforma uzavřená pokladnou');
         $this->assertEqualsWithDelta(12100.0, $this->caseOf('advances_received')['residual'], 0.001);
         $this->assertOffBalanceNetsToZero($proformaId, [], [$cashId]);
+    }
+
+    // ── Platba dřív než proforma ─────────────────────────────────────────────
+
+    public function testCashAdvanceBeforeProformaIsClosedWhenProformaPosts(): void
+    {
+        // Pokladní záloha s VS proformy zaúčtovaná dřív: 211/324, na clearingu
+        // nikdy není. Po zaúčtování proformy ji CaseClosureRerouteHandler
+        // přeúčtuje a contributor doplní 799/756.
+        $cashId = $this->postCashAdvance(12100.0);
+        $this->assertCount(2, $this->journalOfDoc($cashId), 'bez proformy jen 211/324');
+        $this->assertEqualsWithDelta(12100.0, $this->caseOf('advances_received')['residual'], 0.001);
+
+        $proformaId = $this->postProforma(10000.0, 21.0);
+
+        $journal = $this->journalOfDoc($cashId);
+        $this->assertCount(4, $journal, 'trigger přeúčtoval pokladní doklad s uzavřením');
+        $this->assertBalanced($journal);
+        $this->assertEqualsWithDelta(12100.0, (float) $this->lineByPrefix($journal, '799100')['money_dr'], 0.001);
+        $this->assertEqualsWithDelta(12100.0, (float) $this->lineByPrefix($journal, '756100')['money_cr'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $this->caseOf('proformas_out')['residual'], 0.001, 'proforma uzavřená');
+        $this->assertEqualsWithDelta(12100.0, $this->caseOf('advances_received')['residual'], 0.001, 'záloha dál otevřená');
+        $this->assertOffBalanceNetsToZero($proformaId, [], [$cashId]);
+    }
+
+    public function testBankPaymentBeforeProformaIsClosedViaClearingReroute(): void
+    {
+        [$txId] = $this->payByBank(12100.0);
+        $journal = $this->journalOfTx($txId);
+        $this->assertCount(2, $journal);
+        $this->assertSame('261200', (string) $this->lineByPrefix($journal, '261')['account_number'], 'bez proformy na clearingu');
+
+        $proformaId = $this->postProforma(10000.0, 21.0);
+
+        $journal = $this->journalOfTx($txId);
+        $this->assertCount(4, $journal, 'clearing trigger přeúčtoval úhradu, contributor uzavřel');
+        $this->assertBalanced($journal);
+        $this->assertEqualsWithDelta(12100.0, (float) $this->lineByPrefix($journal, '324')['money_cr'], 0.001);
+        $this->assertEqualsWithDelta(12100.0, (float) $this->lineByPrefix($journal, '756100')['money_cr'], 0.001);
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'), 'clearing pohyb zmizel');
+        $this->assertEqualsWithDelta(0.0, $this->caseOf('proformas_out')['residual'], 0.001);
+        $this->assertOffBalanceNetsToZero($proformaId, [$txId]);
+    }
+
+    public function testProformaRepostReroutesOnceAndDoesNotLoop(): void
+    {
+        // Dvě platby před proformou (pokladna 5 000 + banka 7 100 = 12 100):
+        // clearing trigger přeúčtuje transakci první (uzavře 7 100), uzavírací
+        // trigger pak pokladní doklad (uzavře zbylých 5 000).
+        $cashId = $this->postCashAdvance(5000.0);
+        [$txId] = $this->payByBank(7100.0);
+        $proformaId = $this->insertHead('invpo', 10000.0, 21.0, 1.0, ['doc_text' => 'IT proforma']);
+
+        ClosureJournalSpy::$calls = [];
+        $dispatcher = new JournalEventDispatcher([
+            ['class' => JournalLedgerHandler::class, 'events' => ['journalWritten']],
+            ['class' => ClearingRerouteHandler::class, 'events' => ['journalWritten']],
+            ['class' => CaseClosureRerouteHandler::class, 'events' => ['journalWritten']],
+            ['class' => ClosureJournalSpy::class, 'events' => ['journalWritten']],
+        ], $this->db->getDibiConnection(), $this->config, $this->dsConfig, $this->contributors);
+        $engine = new AccountingEngine($this->db->getDibiConnection(), $this->config, $dispatcher, $this->contributors);
+
+        $result = $engine->accountDocument($proformaId);
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $this->assertSame(
+            [['bankTransaction', $txId], ['doc', $cashId], ['doc', $proformaId]],
+            ClosureJournalSpy::$calls,
+            'proforma → clearing trigger přeúčtuje transakci, uzavírací trigger pokladní doklad, nic dalšího',
+        );
+        $this->assertCount(4, $this->journalOfTx($txId));
+        $this->assertCount(4, $this->journalOfDoc($cashId));
+        $this->assertEqualsWithDelta(7100.0, (float) $this->lineByPrefix($this->journalOfTx($txId), '756100')['money_cr'], 0.001);
+        $this->assertEqualsWithDelta(5000.0, (float) $this->lineByPrefix($this->journalOfDoc($cashId), '756100')['money_cr'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $this->caseOf('proformas_out')['residual'], 0.001);
+        $this->assertOffBalanceNetsToZero($proformaId, [$txId], [$cashId]);
+
+        ClosureJournalSpy::$calls = [];
+        $engine->accountDocument($proformaId);
+        $this->assertSame([['doc', $proformaId]], ClosureJournalSpy::$calls, 'oba zdroje už mají uzavření → žádný reroute');
+
+        ClosureJournalSpy::$calls = [];
+        (new AccountingEngine($this->db->getDibiConnection(), $this->config, $dispatcher, $this->contributors))->accountDocument($cashId);
+        $this->assertSame([['doc', $cashId]], ClosureJournalSpy::$calls, 'reaccount pokladního dokladu trigger nespouští (předpis jen v Přijatých zálohách)');
+        $this->assertCount(4, $this->journalOfDoc($cashId));
     }
 
     // ── Konečná faktura ──────────────────────────────────────────────────────
@@ -688,5 +776,16 @@ class ProformaClosureTest extends IntegrationTestCase
             }
             $this->assertEqualsWithDelta(0.0, $net, 0.001, "{$account} v součtu nula");
         }
+    }
+}
+
+class ClosureJournalSpy extends AbstractJournalEventHandler
+{
+    /** @var list<array{0: string, 1: int}> */
+    public static array $calls = [];
+
+    public function onJournalWritten(string $sourceKind, int $sourceId): void
+    {
+        self::$calls[] = [$sourceKind, $sourceId];
     }
 }
