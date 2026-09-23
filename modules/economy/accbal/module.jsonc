@@ -102,6 +102,14 @@
     // účet úhrady = účet předpisu při zásahu klíče, jinak clearing.
     "openItemLookup": "Shipard\\Module\\Economy\\Accbal\\LedgerOpenItemLookup",
 
+    // Příspěvky do deníku zdroje (#79 D3b): oba účtovací enginy je volají
+    // před zápisem deníku. Uzavření případu úhradou mimo skupinu — skupiny
+    // s payment_category + closing_category (Zálohové faktury vydané:
+    // úhrada na 324 přidá pár 799 MD / 756 DAL).
+    "journalContributors": [
+        "Shipard\\Module\\Economy\\Accbal\\CaseClosureContributor"
+    ],
+
     "documentEventHandlers": [
         {
             "table": "docs_core_heads",

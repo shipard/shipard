@@ -68,17 +68,19 @@ class LedgerOpenItemLookupTest extends TestCase
         ];
     }
 
-    /** @return array{balance: int, account_number: string, acc_side: int, bal_side: int, modify_sign: int, amounts_sign: int, payment_category: ?string} */
-    private static function rule(int $balance, string $prefix, int $accSide, int $balSide, int $modifySign = 0, int $amountsSign = 1, ?string $paymentCategory = null): array
+    /** @return array{balance: int, name: string, account_number: string, acc_side: int, bal_side: int, modify_sign: int, amounts_sign: int, payment_category: ?string, closing_category: ?string} */
+    private static function rule(int $balance, string $prefix, int $accSide, int $balSide, int $modifySign = 0, int $amountsSign = 1, ?string $paymentCategory = null, ?string $closingCategory = null): array
     {
         return [
             'balance'          => $balance,
+            'name'             => 'Skupina ' . $balance,
             'account_number'   => $prefix,
             'acc_side'         => $accSide,
             'bal_side'         => $balSide,
             'modify_sign'      => $modifySign,
             'amounts_sign'     => $amountsSign,
             'payment_category' => $paymentCategory,
+            'closing_category' => $closingCategory,
         ];
     }
 
@@ -138,9 +140,81 @@ class LedgerOpenItemLookupTest extends TestCase
         return array_map(static fn(array $q) => (int) $q['params'][0], $this->ledgerQueries());
     }
 
-    private static function row(int $balSide, string $account, float $amount): array
+    private static function row(int $balSide, string $account, float $amount, ?float $amountHc = null): array
     {
-        return ['id' => random_int(1, 1_000_000), 'bal_side' => $balSide, 'account_number' => $account, 'amount' => $amount];
+        return ['id' => random_int(1, 1_000_000), 'bal_side' => $balSide, 'account_number' => $account, 'amount' => $amount, 'amount_hc' => $amountHc ?? $amount];
+    }
+
+    // ── #79 D3b: skupiny s uzavřením a agregát klíče pro contributory ────────
+
+    public function testClosingGroupsNeedBothCategories(): void
+    {
+        $this->settings = [
+            self::rule(self::RECEIVABLES, '311', 0, 0),
+            self::rule(self::RECEIVABLES, '311', 1, 1),
+            // jen kategorie úhrady, bez uzavření → není cíl uzavírání
+            self::rule(self::ADVANCES_GIVEN, '314', 0, 0, 0, 1, 'advances.given'),
+            self::rule(self::ADVANCES_GIVEN, '314', 1, 1, 0, 1, 'advances.given'),
+            self::rule(self::PROFORMAS, '756', 0, 0, 0, 1, 'advances.received', 'offbalance.contra'),
+            self::rule(self::PROFORMAS, '756', 1, 1, 0, 1, 'advances.received', 'offbalance.contra'),
+        ];
+
+        $groups = $this->lookup()->closingGroups();
+
+        $this->assertCount(1, $groups);
+        $this->assertSame(self::PROFORMAS, $groups[0]['balance']);
+        $this->assertSame('Skupina 6', $groups[0]['name']);
+        $this->assertSame(0, $groups[0]['request_side']);
+        $this->assertSame(['756'], $groups[0]['prefixes']);
+        $this->assertSame('advances.received', $groups[0]['payment_category']);
+        $this->assertSame('offbalance.contra', $groups[0]['closing_category']);
+    }
+
+    public function testCaseResidualAggregatesKeyRowsAndExcludesOwnSource(): void
+    {
+        $this->settings = $this->settingsWithProformas();
+        $this->ledger[self::PROFORMAS] = [
+            self::row(0, '756100', 1000.00, 25123.00),
+            self::row(1, '756100', 333.00, 8365.96),
+        ];
+
+        $case = $this->lookup()->caseResidual(self::PROFORMAS, [
+            'fiscal_year' => self::FY, 'partner' => 42, 'payment_reference' => 'PRO-1',
+            'specific_symbol' => '', 'currency' => 'EUR',
+        ], 'bankTransaction', 77);
+
+        $this->assertNotNull($case);
+        $this->assertEqualsWithDelta(1000.00, $case->requested, 0.001);
+        $this->assertEqualsWithDelta(25123.00, $case->requestedHc, 0.001);
+        $this->assertEqualsWithDelta(333.00, $case->paid, 0.001);
+        $this->assertEqualsWithDelta(8365.96, $case->paidHc, 0.001);
+        $this->assertSame('756100', $case->firstRequestAccount);
+
+        $q = $this->ledgerQuery();
+        $this->assertStringContainsString('l.[amount_hc]', $q['sql'], 'Σ v domácí měně potřebuje amount_hc');
+        $this->assertStringContainsString('l.[balance] = %i', $q['sql']);
+        $this->assertStringContainsString('l.[specific_symbol] IS NULL', $q['sql'], 'prázdný SS normalizovaný na NULL');
+        $this->assertStringContainsString('NOT (l.[source_kind] = %s AND l.[source_id] = %i)', $q['sql']);
+        $this->assertSame([self::PROFORMAS, self::FY, 42, 'PRO-1', 'eur', '756', 'bankTransaction', 77], $q['params']);
+    }
+
+    public function testCaseResidualWithoutRowsOrGroupIsNull(): void
+    {
+        $this->settings = $this->settingsWithProformas();
+        $key = ['fiscal_year' => self::FY, 'partner' => 42, 'payment_reference' => 'PRO-1', 'specific_symbol' => null, 'currency' => 'czk'];
+        $lookup = $this->lookup();
+
+        $this->assertNull($lookup->caseResidual(self::PROFORMAS, $key), 'klíč bez pohybů');
+        $this->assertNull($lookup->caseResidual(self::UNMATCHED, $key), 'skupina bez předpisu není cíl');
+        $this->assertCount(1, $this->ledgerQueries(), 'neznámá skupina se v ledgeru nehledá');
+    }
+
+    public function testCaseResidualRequiresCompleteKey(): void
+    {
+        $this->settings = $this->settingsWithProformas();
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("missing 'currency'");
+        $this->lookup()->caseResidual(self::PROFORMAS, ['fiscal_year' => self::FY, 'partner' => 42, 'payment_reference' => 'PRO-1', 'specific_symbol' => null]);
     }
 
     // ── Reziduum ─────────────────────────────────────────────────────────────
