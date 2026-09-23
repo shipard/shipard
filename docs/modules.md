@@ -377,6 +377,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `journalEventHandlers[].class` | string | Ano | Ne | FQCN handleru (implements `JournalEventHandler`) |
 | `journalEventHandlers[].events` | string[] | Ne | Ne | `journalWritten`; default všechny |
 | `openItemLookup` | string | Ne | Ne | FQCN poskytovatele dohledání otevřeného předpisu (implements `OpenItemLookup`); jeden per DS (viz níže) |
+| `journalContributors` | string[] | Ne | Ne | FQCN contributorů deníku (implements `JournalContributor`) — příspěvky do deníku zdroje před zápisem; víc modulů smí přispívat (viz níže) |
 
 ### Pole `attachmentGuards`
 
@@ -432,17 +433,19 @@ typicky dědí z `AbstractDocumentLockProvider` (settery `db`/`config`/
 `economy.codebooks` → `FiscalMonthLockProvider` (zamčený fiskální měsíc).
 Detaily: `docs/document-system.md` sekce 16.
 
-### Pole `journalEventHandlers` a `openItemLookup`
+### Pole `journalEventHandlers`, `openItemLookup` a `journalContributors`
 
 Hooky účtování pro cizí moduly (saldokonto): účtovací enginy na modulu
 `economy.accbal` nezávisí, ten se registruje sám.
 
 ```jsonc
 "journalEventHandlers": [
-    { "class": "Shipard\\Module\\Economy\\Accbal\\JournalLedgerHandler",   "events": ["journalWritten"] },
-    { "class": "Shipard\\Module\\Economy\\Accbal\\ClearingRerouteHandler", "events": ["journalWritten"] }
+    { "class": "Shipard\\Module\\Economy\\Accbal\\JournalLedgerHandler",       "events": ["journalWritten"] },
+    { "class": "Shipard\\Module\\Economy\\Accbal\\ClearingRerouteHandler",     "events": ["journalWritten"] },
+    { "class": "Shipard\\Module\\Economy\\Accbal\\CaseClosureRerouteHandler", "events": ["journalWritten"] }
 ],
-"openItemLookup": "Shipard\\Module\\Economy\\Accbal\\LedgerOpenItemLookup"
+"openItemLookup": "Shipard\\Module\\Economy\\Accbal\\LedgerOpenItemLookup",
+"journalContributors": ["Shipard\\Module\\Economy\\Accbal\\CaseClosureContributor"]
 ```
 
 - `journalEventHandlers` — registrace `{class, events}` **bez `table`**
@@ -461,6 +464,18 @@ Hooky účtování pro cizí moduly (saldokonto): účtovací enginy na modulu
   `docs/bank.md` §6.1) a `ClearingRouter`; do document handlerů ho vkládá
   `DocumentEventHandlerLoader` automaticky. Detaily `docs/accounting.md`
   §7.1, `docs/accbal.md` rozhodnutí #19.
+- `journalContributors` — seznam FQCN (#79 D3b), **víc modulů smí
+  přispívat**, pořadí = pořadí resolvovaných modulů × pořadí pole;
+  neexistující třída nebo třída bez rozhraní = `LogicException`
+  v `JournalContributorLoader`, bez registrace prázdná
+  `JournalContributorSet`. Rozhraní
+  `Shipard\Core\Accounting\JournalContributor`, báze
+  `AbstractJournalContributor` (settery). Volají ho **oba** účtovací
+  enginy po sestavení řádků a před zápisem deníku — contributor vrátí
+  požadavky na další řádky (kategorie předpisu nebo přesný účet), engine
+  je doplní. Sadu injektují oba dispatchery (`setJournalContributors`)
+  a loadery si ji při nepředání sestaví z modulů. Detaily
+  `docs/accounting.md` §7.1, `docs/accbal.md` §5.8.
 
 ### Pole `documentEventHandlers`
 

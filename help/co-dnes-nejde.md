@@ -70,12 +70,7 @@ Shipard dneska evidence, ne fakturační nástroj.
 fakturu. **Fakturu z proformy nevystavíš jedním klikem**: až zálohu dostaneš,
 vystav vydanou fakturu ručně a zálohu na ní odečti řádkem *Odpočet přijaté
 zálohy* s variabilním symbolem proformy. **Daňový doklad k přijaté záloze**
-Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou.
-**Zaplacená proforma zůstává v saldokontu otevřená.** Platbu s jejím
-variabilním symbolem Shipard zaúčtuje jako přijatou zálohu (skupina
-*Přijaté zálohy*) a uzavře ji až fakturou s odpočtem zálohy; samotnou
-zálohovou fakturu ve skupině *Zálohové faktury vydané* ale úhrada zatím
-neuzavře — uvidíš ji tam jako neuhrazenou i po zaplacení. Viz
+Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou. Viz
 [Zálohová faktura](faktury-vydane/zalohova-faktura.md).
 
 ---

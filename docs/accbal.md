@@ -161,7 +161,7 @@ tableId **416**. docStates: archivní sada (`core.system.docStatesArchive`).
 | `valid_from` / `valid_to` | date, nullable | platnost skupiny |
 | `provisioning_variant` | varchar 10, nullable, system | varianta seedu (#69 D18): NULL = výchozí (sign-pravidla dobropisů), `legacy` = importovaný DS bez nich; řídí jen doplňování řádků seedu (§3.2), uživatelské řádky nemění |
 | `payment_category` | varchar 40, nullable, system | kategorie účtovacího předpisu, na kterou se účtuje **úhrada nalezená lookupem v této skupině** místo účtu předpisu (#79 D3a; `proformas_out` → `advances.received`, 324). NULL = účet předpisu (dosavadní chování). Plní jen seed při založení skupiny, ve formuláři není |
-| `closing_category` | varchar 40, nullable, system | kategorie protiúčtu, proti kterému se případ skupiny uzavírá, když úhrada odešla na `payment_category` (`proformas_out` → `offbalance.contra`, 799). Čte až navazující `JournalContributor` (#79 D3b, `tasks/accbal-proforma-closure.md`); zakládá se už teď, protože provisioner existující skupinu nepřepisuje |
+| `closing_category` | varchar 40, nullable, system | kategorie protiúčtu, proti kterému se případ skupiny uzavírá, když úhrada odešla na `payment_category` (`proformas_out` → `offbalance.contra`, 799). Čte `CaseClosureContributor` (#79 D3b, §5.8) — uzavírací pár `799 MD / 756 DAL` v deníku úhrady. Plní jen seed při založení skupiny, ve formuláři není |
 | `docState` / `docStateMain` | tinyint, system | |
 
 Seed (dle screenshotu starého systému): Pohledávky, Poskytnuté půjčky,
@@ -764,12 +764,12 @@ interface OpenItemLookup
   s VS proformy projde Pohledávky (10), pak Zálohové faktury vydané (15)
   → `221 MD / 324 DAL` pod klíčem proformy → generátor z 324 DAL udělá
   předpis v Přijatých zálohách (D23) → konečná faktura s odpočtem zálohy
-  (VS + SS proformy) ho uzavře. Případ proformy zůstává otevřený, dokud
-  ho neuzavře navazující `JournalContributor` (799 MD / 756 DAL,
-  `tasks/accbal-proforma-closure.md`) — druhá platba se stejným VS proto
-  proformu najde znovu a jde opět na 324 (žádoucí; přeplatek řeší až
-  uzavírání). Pokladní doklad s `advance.received` účtuje 324 přímo
-  z předpisu, lookupu se netýká.
+  (VS + SS proformy) ho uzavře. Případ proformy uzavře v témže deníku
+  `CaseClosureContributor` (799 MD / 756 DAL, §5.8) — další platba se
+  stejným VS proformu najde jen do výše zbytku; po úplném uzavření jde na
+  clearing jako každý příjem na uhrazený klíč (§5.3). Pokladní doklad
+  s `advance.received` účtuje 324 přímo z předpisu, lookupu se netýká;
+  proformu uzavírá tentýž contributor.
 - **Přednost nejdelšího prefixu (#69 D22) se v lookupu neuplatňuje**:
   je per řádek deníku a per účetní datum — skupinu pohybu už rozhodl
   generátor a nese ji `balance` v klíči dotazu; prefixy skupiny (bez
@@ -810,6 +810,26 @@ přeúčtování hned sníží reziduum klíče — druhá úhrada už uzavřen�
 zůstane na clearingu); bez partnera nebo bez zásahu lookupu → přeskočen.
 Idempotentní: přeúčtovaná úhrada už není kandidát. Dry-run vypíše plán bez
 zápisu (pořadí nesimuluje).
+
+`CaseClosureRerouteHandler` (#79 D3b, registrovaný **za**
+`ClearingRerouteHandler`, reaguje jen na `doc`): trigger „platba dřív než
+proforma" pro zdroje, které na clearingu nikdy nebyly. Z ledgeru dokladu
+vezme předpisové klíče ve skupinách s `closing_category` (§5.8) a v deníku
+najde ostatní zdroje **téhož fiskálního roku** (D11) se spouštěcím řádkem
+klíče (operace `payment.*` / `advance.*` na masce `payment_category`,
+strana opačná k předpisu skupiny) a bez uzavíracího řádku (žádný řádek
+na prefixu skupiny s touž identitou) a přeúčtuje je enginem dle druhu
+zdroje (doklad → `AccountingEngine`, transakce → bankovní engine, oba
+s contributory) — contributor doplní uzavírací pár. Typický zdroj je
+pokladní doklad s `advance.received` (účtuje 324 z předpisu) a zdroje
+zaúčtované před nasazením uzavírání; bankovní úhradu z clearingu už
+přeúčtoval předchozí handler, takže tady má uzavírací řádky a přeskočí
+se. Filtr „bez uzavíracího řádku" je jen úspora (reaccount je
+idempotentní). Re-entrance: přeúčtovaný pokladní doklad vyšle
+`journalWritten(doc)`, jeho předpis leží jen v Přijatých zálohách (bez
+`closing_category`) → no-op; transakce tu skončí hned. Zámek období se
+neověřuje (jako u přeúčtování transakcí clearing triggerem); výjimka
+enginu se zaloguje a další zdroje běží dál.
 
 ### 5.3 Reziduální routing (D9, D19)
 
@@ -911,6 +931,91 @@ nginx utne odpověď po defaultních 60 s → 504). Klient má mít timeout ~600
 
 Kód: `Router::resolveAccbalRoute()`, `src/Api/Controller/AccbalController.php`,
 `dispatchAccbal()` v `public/index.php`.
+
+### 5.8 Uzavření případu úhradou mimo skupinu (#79 D3b, D3c)
+
+Úhrada zálohové faktury nejde na účet předpisu (756 je podrozvaha), ale na
+přijatou zálohu 324 (§5.1, `payment_category`). Aby se případ proformy
+přesto uzavřel, přidá modul saldokonta do **téhož deníku** úhrady
+uzavírací pár — přes core rozhraní `JournalContributor`
+(`docs/accounting.md` §7.1), které volají **oba** účtovací enginy před
+kontrolou vyrovnanosti a zápisem. Pravidlo je jedno pro banku, pokladnu i
+import a reaccount zůstává idempotentní (DELETE + INSERT, jako dnes):
+
+```
+bankovní příjem 12 100 s VS proformy
+  221100 MD 12 100 / 324100 DAL 12 100    ← lookup, payment_category (§5.1)
+  799100 MD 12 100 / 756100 DAL 12 100    ← CaseClosureContributor
+```
+
+`CaseClosureContributor` (`modules/economy/accbal/src/`, registrace
+`journalContributors` v module.jsonc) je **generický nad nastavením
+skupin**, ne nad proformami: cílová skupina G je každá aktivní skupina
+s vyplněnou `payment_category` **a** `closing_category`
+(`LedgerOpenItemLookup::closingGroups()`; na seedu jen Zálohové faktury
+vydané, §3.1).
+
+- **Spouštěcí řádek** pro G: operace příjmu/výdeje peněz nebo zálohy
+  (`CaseClosureContributor::TRIGGER_OPERATIONS` = `payment.in`,
+  `payment.out`, `advance.received`, `advance.given` — banka a pokladna;
+  `sale.advanceVat` / `sale.advanceDeduction` na faktuře ani ruční
+  `acc.entry` na 324 nespouští nic), účet začíná první maskou kategorie
+  `payment_category` z předpisu (`324`), strana **opačná** k předpisové
+  straně G (756 MD → spouští 324 DAL; přijaté proformy by zrcadlově
+  spouštěl 314 MD), kladná částka, vyplněný partner a VS, bez chyby.
+- **Klíč případu** = (G, fiskální rok zdroje, partner, VS, SS, měna
+  zdroje) — normalizace jako `CaseQuery` (D10), období v klíči (D11):
+  úhrada v jiném roce proformu nenajde, dokud ji nepřenese otevírací
+  doklad (import D4, později uzávěrka).
+- **Reziduum** z ledgeru **bez pohybů vlastního zdroje**
+  (`LedgerOpenItemLookup::caseResidual()`, týž výběr řádků klíče jako
+  lookup, sdílený agregát `CaseResidual`) — proto je reaccount
+  idempotentní. Reziduum ≤ tolerance → nic. Víc řádků téhož klíče v jednom
+  zdroji (pokladní doklad se dvěma zálohami) spotřebovává reziduum
+  postupně.
+- **Částka** `cur = min(řádek, reziduum − už spotřebované tímto zdrojem)`
+  v měně případu; `dom = cur × (Σ amount_hc / Σ amount)` předpisů případu
+  (kurz proformy, D3c), zaokrouhleno na 2 místa; poslední uzavření, které
+  reziduum vynuluje, dorovná `dom` tak, aby Σ dom úhrad = Σ dom předpisů
+  — podrozvaha 756/799 vychází na nulu i v cizí měně, kurzový rozdíl
+  zůstává na zálohách. V domácí měně je poměr 1.
+- **Pár požadavků**: `closing_category` na předpisovou stranu G (799 MD),
+  přesný účet **prvního předpisu** případu na stranu úhrady (756100 DAL),
+  identita spouštěcího řádku, text „Uzavření zálohové faktury vydané
+  {VS}" (z názvu skupiny), operace NULL → generátor řádek 756 DAL zařadí
+  podle nastavení jako úhradu v G (§4.2 krok 4), 799 žádná skupina nemá.
+- Contributor **nic nezapisuje** a čte jen ledger ostatních zdrojů;
+  výpočet je čistá funkce `closures()` (unit test nad poli), DB jen
+  v agregátu případu. Integrační `ProformaClosureTest`.
+
+**Vlastnosti:**
+
+- *Idempotence*: reaccount zdroje (`doc-reaccount`, přeúčtování transakce,
+  `accbal-match`) dá stejný deník, dokud se nezmění ostatní zdroje případu;
+  `id` pohybu uzavření přežije (D13).
+- *Závislost na pořadí*: dvě úhrady téže proformy nad reziduum — uzavře
+  ta, která se zaúčtuje dřív; druhá už jen založí zálohu (přeplatek zálohy
+  řeší D19 / ručně). Reaccount starší úhrady po novější může pořadí
+  prohodit — součet uzavření se nezmění. Po úplném uzavření další příjem
+  na týž klíč proformu nenajde a jde na clearing (§5.3).
+- *Změna proformy po úhradě* (snížení částky) případ přeplatí (reziduum
+  < 0); nápravu řeší #79 D5 (storno uhrazené proformy zakázané, zbytek
+  interním dokladem) — uzavírání nic nepřepočítává. Zvýšení částky nechá
+  zbytek otevřený, další úhrada ho uzavře.
+- *Platba dřív než proforma*: banka čeká na clearingu a po zaúčtování
+  proformy ji `ClearingRerouteHandler` přeúčtuje (engine → 324,
+  contributor → uzavření); pokladní záloha a zdroje zaúčtované před
+  nasazením uzavírání jdou přes `CaseClosureRerouteHandler` (§5.2). Na DS
+  s proformami uhrazenými před nasazením stačí `doc-reaccount` proformy.
+- *Selhání contributoru* (výjimka) účtování neblokuje: deník se zapíše bez
+  uzavření, zdroj dostane varování `contributor_failed` (stav OK) a saldo
+  ukáže proformu otevřenou — bezpečný stav, reaccount po opravě uzavře.
+- *Zámek období* se při přeúčtování triggerem neověřuje (jako u clearingu).
+
+Mimo scope: storno / snížení uhrazené proformy, uzavření neuhrazeného
+zbytku, přehled proforem k vyřízení (#79 D5); vratka zálohy (výdaj proti
+324) proformu znovu neotevírá; přijaté proformy (`invpi`) — mechanismus
+je obecný, seed je nemá.
 
 ---
 
@@ -1221,8 +1326,20 @@ partner resolution při ingestaci.
     zdroj pohybu. Úhrada nalezená v této skupině jde na kategorii
     `payment_category` (`advances.received`, 324) místo na účet předpisu;
     `closing_category` (`offbalance.contra`) se zakládá už teď a čte ho až
-    uzavírání (#79 D3b/c, samostatný task). Sloupce plní jen seed, formulář
+    uzavírání (#79 D3b/c, #41). Sloupce plní jen seed, formulář
     skupiny je nezobrazuje (enginový kontrakt, ne uživatelské nastavení).
+41. **Uzavírání zálohových faktur při úhradě** (#79 D3b/c, 2026-09-23,
+    `tasks/accbal-proforma-closure.md`): uzavírací pár `799 MD / 756 DAL`
+    přidává `CaseClosureContributor` přes core rozhraní `JournalContributor`
+    do **téhož deníku**, ve kterém vzniká přijatá záloha — volají ho oba
+    enginy (banka i pokladna, jedno pravidlo pro všechny kanály), reaccount
+    zůstává idempotentní (reziduum bez vlastního zdroje). Ne v bankovním
+    enginu (pokladna by potřebovala totéž) a ne z handleru `journalWritten`
+    (psal by do cizího deníku, reaccount by řádky mazal). Částka do výše
+    rezidua, v domácí měně kurzem proformy s dorovnáním haléřů (D3c),
+    klíč vč. fiskálního roku (D11). Generický nad skupinami s
+    `payment_category` + `closing_category`, ne nad proformami. Pokladní
+    záloha před proformou přes `CaseClosureRerouteHandler` (§5.2, §5.8).
 
 ---
 

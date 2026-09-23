@@ -1,6 +1,17 @@
 # Uzavírání zálohových faktur při úhradě — `JournalContributor`
 
-**Stav:** naplánováno — zadání 2026-09-23 (#79 D3b, D3c)
+**Stav:** částečně — kód hotový 2026-09-23 (5 commitů, #79 D3b/D3c):
+core `JournalContributor` + loader + injekce, contributory v obou enginech
+(sdílené `AccountingRules` / `JournalContributions`, varování
+`contributor_failed` s `level`), `CaseClosureContributor`,
+`CaseClosureRerouteHandler`, docs a help; unit i integrační testy na
+dev DS 4l3j zelené (`ProformaClosureTest`: banka, částečné úhrady,
+přeplatek, idempotence, EUR kurzem proformy, jiný rok, pokladna, konečná
+faktura, platba dřív než proforma oběma cestami). Bez změny schématu ani
+cfgItem. Zbývá ruční proklik UI a nasazení na alfu spolu
+s `tasks/doc-proforma-out.md` a `tasks/accbal-proformas-out.md`; na DS
+s proformami uhrazenými před nasazením `doc-reaccount` proforem
+(trigger dohledá bankovní i pokladní zdroje bez uzavření)
 **Issue:** #79 (komentář 2026-09-23 „Revize rozhodnutí“, D3 nahrazuje
 původní D3 z těla issue); souvisí s #69 (saldokonto — D4, D11, D19, D23).
 **Milník:** M2.
@@ -306,18 +317,20 @@ celá sada na konci lokálně.
 
 ## Hotovo když
 
-- [ ] Na dev DS: proforma → bankovní příjem celé částky → v deníku
+- [x] Na dev DS: proforma → bankovní příjem celé částky → v deníku
       transakce 4 řádky (221/324, 799/756), případ v Zálohových fakturách
-      vydaných uzavřený, v Přijatých zálohách otevřený předpis.
-- [ ] Částečná úhrada nechá zbytek proformy otevřený; přeplatek
-      proformu nepřeplatí.
-- [ ] Konečná faktura s odpočtem zálohy uzavře Přijaté zálohy.
-- [ ] Pokladní úhrada zálohy s VS proformy uzavře proformu, i když byla
-      zaúčtovaná dřív než proforma.
+      vydaných uzavřený, v Přijatých zálohách otevřený předpis
+      (`ProformaClosureTest`; ruční proklik UI zbývá).
+- [x] Částečná úhrada nechá zbytek proformy otevřený; přeplatek
+      proformu nepřeplatí (integrační test).
+- [x] Konečná faktura s odpočtem zálohy uzavře Přijaté zálohy (integrační test).
+- [x] Pokladní úhrada zálohy s VS proformy uzavře proformu, i když byla
+      zaúčtovaná dřív než proforma (integrační test).
 - [ ] Reaccount (`doc-reaccount`, přeúčtování transakce, `accbal-match`)
-      nezmění výsledek; `accbal-regenerate --all` také ne.
-- [ ] Účty 756100 a 799100 mají v součtu nulový zůstatek pro uhrazené
-      proformy (i v cizí měně).
-- [ ] Bez modulu saldokonta a na dokladech bez proforem se deník nemění
-      (regresní testy obou enginů).
-- [ ] Dokumentace a help aktualizované, `tasks-index.py --check` projde.
+      nezmění výsledek (integrační test přeúčtování transakce);
+      `accbal-regenerate --all` také ne (ověřit na alfě).
+- [x] Účty 756100 a 799100 mají v součtu nulový zůstatek pro uhrazené
+      proformy (i v cizí měně) (integrační test).
+- [x] Bez modulu saldokonta a na dokladech bez proforem se deník nemění
+      (regresní testy obou enginů + prázdná sada = shodný výstup).
+- [x] Dokumentace a help aktualizované, `tasks-index.py --check` projde.

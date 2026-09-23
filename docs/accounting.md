@@ -711,10 +711,11 @@ report nezmění (`ProformaAccountingTest`).
 
 Úhrada proformy se na 756 **nikdy neúčtuje**: bankovní engine ji přes
 `OpenItem::paymentCategory` položí na přijatou zálohu 324 (§7.1,
-`docs/bank.md` §6.1). Uzavírací pár `799100 MD / 756100 DAL` při úhradě
-dělá navazující `JournalContributor` (#79 D3b,
-`tasks/accbal-proforma-closure.md`) — do té doby případ proformy zůstává
-otevřený.
+`docs/bank.md` §6.1), pokladní doklad s `advance.received` účtuje 324
+z předpisu. Uzavírací pár `799100 MD / 756100 DAL` do téhož deníku
+doplní contributor deníku `CaseClosureContributor` modulu saldokonta
+(#79 D3b/c, `journalContributors` v §7.1, `docs/accbal.md` §5.8) —
+do výše zbytku proformy, v cizí měně kurzem proformy.
 
 ---
 
@@ -942,6 +943,36 @@ Tentýž princip (deklarace v core, implementace v modulu, registrace v
   (#79 D3a): skupina saldokonta s `payment_category` (Zálohové faktury
   vydané → `advances.received`) říká enginu, ať úhradu položí na masku
   kategorie předpisu (324), ne na `accountNumber` (756 je podrozvaha).
+- **`journalContributors: ["FQCN", …]`** (#79 D3b) — rozhraní
+  `Shipard\Core\Accounting\JournalContributor::contribute(JournalSourceContext,
+  list<JournalLineView>) → list<JournalLineRequest>`. **Oba enginy** po
+  sestavení vlastních řádků (dokladový po seskupení, bankovní po dvou
+  řádcích) předají contributorům kontext zdroje (`sourceKind`, `sourceId`,
+  účetní datum, fiskální rok, měna) a pohledy na řádky bez chyby (strana,
+  účet, operace, partner, VS, SS, částky; bankovní engine identitu doplní
+  z transakce) a jejich požadavky doplní jako další řádky: účet buď
+  `category` (první maska kategorie v sekci `accounts`, bez `query`) nebo
+  přesné `accountNumber` (ověřené v rozvrhu k datu), identita
+  z požadavku, `operation` NULL, text z požadavku; pak teprve kontrola
+  vyrovnanosti a zápis v jedné transakci. Nedohledaný účet je chybový
+  řádek jako u masky (`account_not_found`); nevyrovnané požadavky skončí
+  jako `unbalanced`; **výjimka contributoru** se zaloguje a spolkne — deník
+  se zapíše bez příspěvku a přibude zpráva `contributor_failed` úrovně
+  `warning` (stav účtování zůstává 1, viewer ji vypíše v tónu
+  „k pozornosti“). Bankovní engine požadavek s jinou identitou, než má
+  transakce, odmítne `LogicException` (chyba kontraktu, ne dat). Víc
+  modulů smí přispívat, pořadí = pořadí resolvovaných modulů × pořadí
+  pole; prázdná sada = chování beze změny. Sdílená logika obou enginů:
+  `AccountingRules` (předpis + první maska kategorie) a
+  `JournalContributions` (volání sady, převod požadavku na účet)
+  v `economy.accounting`. Loader `JournalContributorLoader` →
+  `JournalContributorSet`; sadu injektují oba dispatchery
+  (`AbstractDocumentEventHandler::setJournalContributors`,
+  `AbstractJournalEventHandler::setJournalContributors`), loadery si ji
+  při nepředání sestaví z modulů, controllery a CLI (`doc-reaccount`,
+  `accbal-match`) ji předávají enginu explicitně. První konzument:
+  `economy.accbal` → `CaseClosureContributor` (uzavření zálohové faktury
+  úhradou, `docs/accbal.md` §5.8).
 
 ### 7.2 Lifecycle účtování
 
@@ -972,13 +1003,18 @@ Storno (30) = doklad účetně neexistuje. Generování je idempotentní
    c. src=head: jedna částka podle col
    d. dohledej účet (sekce 5), sestav řádek deníku
    e. money == 0 → řádek se přeskakuje
-4. Seskupení: klíč (side, account_number, partner, operation) — shodné
-   řádky se sčítají (domácí i cur částky), text z prvního řádku skupiny.
-5. Kontroly:
+4. Seskupení: klíč (side, account_number, partner, operation + platební
+   identita) — shodné řádky se sčítají (domácí i cur částky), text
+   z prvního řádku skupiny. Prázdný výsledek → chyba "empty_journal".
+5. Contributoři deníku (§7.1, #79 D3b): kontext zdroje + pohledy na
+   seskupené řádky bez chyby → požadavky → řádky (účet dle kategorie /
+   přesného čísla, identita z požadavku, operation NULL) → seskupení znovu.
+   Prázdná sada = krok se přeskočí; výjimka contributoru = varování
+   contributor_failed, deník bez příspěvku.
+6. Kontroly:
    - round(Σ money_dr, 2) == round(Σ money_cr, 2), jinak chyba "unbalanced"
-   - prázdný deník → chyba "empty_journal"
    - existují is_error řádky → state 2
-6. Zápis: DELETE + INSERT řádků deníku, update accounting_state (1 ok / 2 chyba)
+7. Zápis: DELETE + INSERT řádků deníku, update accounting_state (1 ok / 2 chyba)
    a accounting_messages na hlavičce. Vše v transakci.
 ```
 
@@ -986,7 +1022,9 @@ Chybové kódy (`accounting_messages[].code`): `rules_not_found`,
 `fiscal_period_missing`, `account_not_found`, `item_account_missing`,
 `row_account_missing`, `cash_desk_account_missing` (hotovostní doklad bez
 pokladny nebo pokladna bez účtu 211xxx — `accountSrc: cashDesk`),
-`unbalanced`, `empty_journal`.
+`unbalanced`, `empty_journal`; jediná zpráva úrovně `warning`
+(`level: "warning"`, stav účtování zůstává 1) je `contributor_failed`
+(selhání contributoru deníku, §7.1).
 
 ### 7.4 Chyby a alerty
 
@@ -1306,4 +1344,16 @@ Drobnosti zjištěné implementací:
     `OffBalanceAccountsProvisioner` bezpodmínečně vč. opravy povahy
     75–79. Úhradu proformy engine přes `OpenItem::paymentCategory`
     účtuje na 324 (§4 „Zálohová faktura vydaná“); uzavření případu
-    proformy (799 MD / 756 DAL) je navazující task.
+    proformy (799 MD / 756 DAL) dělá contributor deníku (#22).
+22. Contributoři deníku (#79 D3b/c, 2026-09-23,
+    `tasks/accbal-proforma-closure.md`): core rozhraní
+    `JournalContributor` volané **oběma** enginy po sestavení řádků a
+    před kontrolou vyrovnanosti, registrace `journalContributors` v
+    module.jsonc (víc modulů), injekce oběma dispatchery i controllery.
+    Proč ne v bankovním enginu: stejnou logiku potřebuje pokladna
+    i budoucí kanály; proč ne z handleru `journalWritten`: reaccount by
+    řádky smazal a handler by je psal do cizího deníku. Výjimka
+    contributoru = varování `contributor_failed` (zprávy dostaly volitelné
+    `level`, stav zůstává 1); jinou identitu než transakce bankovní
+    engine odmítne. Sdílené `AccountingRules` + `JournalContributions`
+    místo třetí kopie dohledání předpisu.

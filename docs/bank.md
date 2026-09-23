@@ -346,6 +346,20 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
     Chybějící maska / účet → `account_not_found` jako u masky kategorie.
   - `fee.out` → 568 (bankovní poplatky), `interest.in` → 662, `interest.out`
     → 562, `tax.*` → … — reálný účet z kategorie předpisu (jako `acc.entry`).
+- **Contributoři deníku (#79 D3b, `journalContributors`):** po sestavení
+  obou řádků engine předá registrovaným contributorům kontext transakce
+  (`bankTransaction`, id, datum, fiskální rok, měna) a pohledy na řádky
+  s identitou **z transakce** (řádky ji samy nenesou) a jejich požadavky
+  doplní jako další řádky — účet dle kategorie (první maska předpisu) nebo
+  přesného čísla, text z požadavku, `operation` NULL, částky z požadavku;
+  identitu všech řádků píše `writeResult` z transakce, takže požadavek
+  s jinou identitou je `LogicException`. Pak teprve kontrola vyrovnanosti.
+  Výjimka contributoru = varování `contributor_failed` (stav 1), deník
+  bez příspěvku. Konzument: úhrada proformy nalezená ve skupině
+  s `payment_category` dostane v témže deníku uzavírací pár
+  `799 MD / 756 DAL` (`CaseClosureContributor`, `accbal.md` §5.8):
+  `221 MD / 324 DAL / 799 MD / 756100 DAL`. Sdílený mechanismus obou
+  enginů: `docs/accounting.md` §7.1.
 
 ### 6.2 Pohyby transakce — `txOperations`
 
@@ -571,8 +585,9 @@ přegenerace clearing → 311/321.
     `proformas_out`, vrátí `paymentCategory = advances.received` a engine
     úhradu položí na 324, ne na podrozvahový účet předpisu 756. Totéž
     platí pro `ClearingRerouteHandler` / `accbal-match` (reaccount dělá
-    engine). Uzavření případu proformy je navazující task
-    (`tasks/accbal-proforma-closure.md`).
+    engine). Uzavření případu proformy (`799 MD / 756 DAL`) doplní do
+    deníku transakce `CaseClosureContributor` přes `journalContributors`
+    (#79 D3b, §6.1, `accbal.md` §5.8) — engine o proformách nic neví.
 
 ---
 
