@@ -380,6 +380,13 @@ proti 69,99). Platí pro AI extrakci i ISDOC
 - **`invoiceIssued`** — strana, kterou my pozici je `supplier`,
   `supplier.bankAccount` (= náš účet) se vyplní z dokladu, customer
   z partnera.
+- **`proformaIssued`** (`invpo`, zálohová faktura vydaná, #79 D1) — strany
+  jako `invoiceIssued` (my `supplier`, partner `customer`, povinný).
+  **Není daňový doklad** (`docTypes[].tax_document: false`):
+  `dates.taxPointDate` / `dates.vatObligationDate` applier ignoruje
+  a doklad nenese období DPH (`vat_period` / `cs_period` / `rs_period`
+  zůstávají NULL, do tvrzení nevstupuje). Rekapitulace DPH a sazby řádků
+  se zpracují jako u faktury. Řádky jen `sale.services` / `sale.goods`.
 - **`accountingDocument`** (`cmnbkp`) — bez stran, kontační řádky
   (`accSide`, `account`), partner per řádek přes pin.
 - **`cashDocument`** (`cash`, pokladní doklad, #59 D12) — povinný **`cashDesk`**
@@ -411,8 +418,8 @@ proti 69,99). Platí pro AI extrakci i ISDOC
   `operation` bankovní transakce (`shpd.bank.statement.v1`).
 - **`cashRegisterDocument`** (`cashreg`, prodejka) — povinný `cashDesk`,
   bez `cashDirection` (pevně výstup); vratka = záporné řádky.
-- **`invoiceIssued` / `invoiceReceived` + `cashDesk`** — volitelný kód
-  pokladny platí jen s `payment.method: "cash"` (faktura placená hotově →
+- **`invoiceIssued` / `proformaIssued` / `invoiceReceived` + `cashDesk`** —
+  volitelný kód pokladny platí jen s `payment.method: "cash"` (faktura placená hotově →
   `cash_desk` hlavičky, účtuje se na pokladnu místo 311/321); s jinou
   platbou se ignoruje s warningem `cash_desk_ignored`.
 - **`creditNote*`** — bude rozšířeno o `relatedDocNumber` (originál).

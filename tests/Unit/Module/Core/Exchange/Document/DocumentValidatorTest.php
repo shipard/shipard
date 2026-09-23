@@ -66,6 +66,27 @@ class DocumentValidatorTest extends TestCase
         $this->assertSame('error', $customerIssue['severity']);
     }
 
+    /** Zálohová faktura vydaná (#79 D1): odběratel povinný jako u vydané faktury. */
+    public function testProformaIssuedRequiresCustomer(): void
+    {
+        $issues = $this->v->validate([
+            'docType' => 'proformaIssued',
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [['rowKind' => 'item']],
+        ]);
+        $customerIssue = $this->findByPath($issues, 'customer');
+        $this->assertNotNull($customerIssue);
+        $this->assertSame('error', $customerIssue['severity']);
+
+        $issues = $this->v->validate([
+            'docType' => 'proformaIssued',
+            'customer' => ['name' => 'Odběratel a.s.'],
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [['rowKind' => 'item']],
+        ]);
+        $this->assertNull($this->findByPath($issues, 'customer'));
+    }
+
     public function testTotalsMismatchProducesWarningWhenNoVariantFits(): void
     {
         // None of the variants lands within 0.01 — neither base-sum nor

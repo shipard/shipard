@@ -53,6 +53,7 @@ class DocumentApplierTest extends TestCase
     {
         $docTypes = [
             'invno'   => ['trade_dir' => 1],
+            'invpo'   => ['trade_dir' => 1, 'tax_document' => false],
             'invni'   => ['trade_dir' => 2],
             'cmnbkp'  => ['trade_dir' => 0],
             'cash'    => ['trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk'],
@@ -997,6 +998,51 @@ class DocumentApplierTest extends TestCase
         $this->assertSame('CZ11122233', $snap['vat_id']);
     }
 
+    /** Zálohová faktura vydaná (#79 D1): import vytvoří invpo bez DUZP/DPPD. */
+    public function testTransformProformaIssuedInImportModeDropsTaxDates(): void
+    {
+        $applier = $this->buildApplier();
+        $canonical = [
+            'docType'   => 'proformaIssued',
+            'selfParty' => 'supplier',
+            'dates'     => [
+                'issueDate'         => '2024-06-01',
+                'dueDate'           => '2024-06-15',
+                'taxPointDate'      => '2024-06-01',
+                'vatObligationDate' => '2024-06-01',
+            ],
+            'supplier'  => ['name' => 'Naše firma s.r.o.'],
+            'customer'  => ['name' => 'Odběratel a.s.', 'vatId' => 'CZ11122233'],
+            'applyOptions' => ['importNumber' => ['docNumber' => '122400001', 'sequenceNumber' => 1]],
+        ];
+
+        $data = $this->invokeTransform($applier, $canonical);
+
+        $this->assertSame('invpo', $data['doc_type']);
+        $this->assertArrayNotHasKey('vat_duzp', $data, 'nedaňový doklad DUZP nenese');
+        $this->assertArrayNotHasKey('vat_dppd', $data);
+        $this->assertSame('2024-06-01', $data['issue_date']);
+        $this->assertSame('2024-06-15', $data['due_date']);
+        $this->assertSame(['docNumber' => '122400001', 'sequenceNumber' => 1], $data['_importNumber']);
+        $this->assertSame('Odběratel a.s.', $data['_importPartnerSnapshot']['name']);
+    }
+
+    /** Regrese: faktura vydaná DUZP/DPPD z kanonického dokladu přebírá. */
+    public function testTransformInvoiceIssuedKeepsTaxDates(): void
+    {
+        $applier = $this->buildApplier();
+        $data = $this->invokeTransform($applier, [
+            'docType'   => 'invoiceIssued',
+            'selfParty' => 'supplier',
+            'dates'     => ['issueDate' => '2024-06-01', 'taxPointDate' => '2024-06-02', 'vatObligationDate' => '2024-06-03'],
+            'supplier'  => ['name' => 'Naše firma s.r.o.'],
+            'customer'  => ['name' => 'Odběratel a.s.'],
+        ]);
+
+        $this->assertSame('2024-06-02', $data['vat_duzp']);
+        $this->assertSame('2024-06-03', $data['vat_dppd']);
+    }
+
     public function testTransformImportSnapshotAbsentWithoutImportNumber(): void
     {
         // Mimo import mód se snapshot payload nestaví vůbec.
@@ -1800,6 +1846,7 @@ class DocumentApplierTest extends TestCase
     {
         $this->assertSame('invni', DocumentApplier::mapDocTypeValue('invoiceReceived'));
         $this->assertSame('invno', DocumentApplier::mapDocTypeValue('invoiceIssued'));
+        $this->assertSame('invpo', DocumentApplier::mapDocTypeValue('proformaIssued'));
         $this->assertSame('cmnbkp', DocumentApplier::mapDocTypeValue('accountingDocument'));
         $this->assertSame('invni', DocumentApplier::mapDocTypeValue('invni'));
         $this->assertSame('xyz', DocumentApplier::mapDocTypeValue('xyz'));

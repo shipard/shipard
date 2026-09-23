@@ -17,6 +17,7 @@ use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
 use Shipard\Module\Docs\Core\DocDocument;
+use Shipard\Module\Docs\Core\DocTypes;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Docs\Core\RoundingModes;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
@@ -130,6 +131,7 @@ class DocumentApplier
     private const DOC_TYPE_MAP = [
         'invoiceReceived'      => 'invni',
         'invoiceIssued'        => 'invno',
+        'proformaIssued'       => 'invpo',
         'accountingDocument'   => 'cmnbkp',
         'cashDocument'         => 'cash',
         'cashRegisterDocument' => 'cashreg',
@@ -1090,6 +1092,10 @@ class DocumentApplier
         $docType = $this->mapDocType($canonical);
         $selfParty = $canonical['selfParty'] ?? null;
         $targetDocState = (int) ($canonical['applyOptions']['targetDocState'] ?? 10);
+        // Nedaňový typ (docTypes[].tax_document: false, #79 D1): DUZP/DPPD
+        // kanonický doklad nenese — ignorují se už tady (DocDocument je
+        // při uložení stejně vynuluje).
+        $taxDocument = DocTypes::isTaxDocument($this->config, $docType);
 
         // Účetní doklad (cmnbkp): hlavičkový partner je nepovinný a žije per
         // řádek; bere se z volitelného pinu (resolvedHeadPartner), bez
@@ -1197,8 +1203,8 @@ class DocumentApplier
             'issue_date'           => $issueDate,
             'due_date'             => $canonical['dates']['dueDate'] ?? null,
             'accounting_date'      => $accountingDate,
-            'vat_duzp'             => $canonical['dates']['taxPointDate'] ?? null,
-            'vat_dppd'             => $canonical['dates']['vatObligationDate'] ?? null,
+            'vat_duzp'             => $taxDocument ? ($canonical['dates']['taxPointDate'] ?? null) : null,
+            'vat_dppd'             => $taxDocument ? ($canonical['dates']['vatObligationDate'] ?? null) : null,
             'period_from'          => $canonical['dates']['periodFrom'] ?? null,
             'period_to'            => $canonical['dates']['periodTo'] ?? null,
             // Otevírací / uzávěrkové období (#69 D20) — jen import mód;

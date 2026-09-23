@@ -33,6 +33,7 @@ final class DocumentExporter implements RecordExporter
     private const DOC_TYPE_NAMES = [
         'invni'  => 'invoiceReceived',
         'invno'  => 'invoiceIssued',
+        'invpo'  => 'proformaIssued',
         'cmnbkp' => 'accountingDocument',
     ];
 
@@ -135,9 +136,10 @@ final class DocumentExporter implements RecordExporter
         $label = $docNumber ?? "#{$id}";
 
         // Strana partnera: přijatá faktura → my jsme odběratel, partner dodavatel;
-        // vydaná → naopak; účetní doklad partnera v hlavičce nemá povinně.
+        // vydaná (i zálohová) → naopak; účetní doklad partnera v hlavičce
+        // nemá povinně.
         [$selfParty, $partnerSide] = match ($docTypeCode) {
-            'invno'  => ['supplier', 'customer'],
+            'invno', 'invpo' => ['supplier', 'customer'],
             'cmnbkp' => [null, null],
             default  => ['customer', 'supplier'],
         };

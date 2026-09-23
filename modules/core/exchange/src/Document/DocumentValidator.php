@@ -99,6 +99,13 @@ final class DocumentValidator
                     $issues[] = $this->required('customer', 'U vydané faktury je odběratel povinný.');
                 }
                 break;
+            // Zálohová faktura vydaná (#79 D1): strany jako u vydané faktury;
+            // DUZP/DPPD a období DPH se ignorují (nedaňový doklad).
+            case 'proformaIssued':
+                if (empty($canonical['customer'])) {
+                    $issues[] = $this->required('customer', 'U zálohové faktury vydané je odběratel povinný.');
+                }
+                break;
             // Pokladní doklad / prodejka (#59 D12): řada je vázaná na pokladnu,
             // proto je kód pokladny povinný; směr PD 1 příjem / 2 výdej.
             // Strany (supplier/customer) jsou nepovinné — anonymní doklady.

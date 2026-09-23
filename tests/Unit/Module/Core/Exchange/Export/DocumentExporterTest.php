@@ -205,6 +205,19 @@ class DocumentExporterTest extends TestCase
         $this->assertArrayNotHasKey('bankAccount', $c['customer'], 'partner bank columns describe the supplier only');
     }
 
+    /** Zálohová faktura vydaná (#79 D1): kanonický typ proformaIssued, partner = odběratel. */
+    public function testIssuedProformaMapsToProformaIssuedOnCustomerSide(): void
+    {
+        $c = (new DocumentExporter($this->db()))->exportDocument($this->headRow([
+            'doc_type' => 'invpo', 'doc_number' => '122600001', 'sequence_number' => 1,
+        ]))->data;
+
+        $this->assertSame('proformaIssued', $c['docType']);
+        $this->assertSame('supplier', $c['selfParty']);
+        $this->assertArrayNotHasKey('supplier', $c);
+        $this->assertSame('Dodavatel a.s.', $c['customer']['name']);
+    }
+
     public function testDraftWithoutNumberHasNoImportNumberAndDraftSlug(): void
     {
         $c = (new DocumentExporter($this->db(partner: false)))->exportDocument($this->headRow([
