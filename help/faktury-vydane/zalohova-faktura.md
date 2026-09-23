@@ -1,7 +1,7 @@
 ---
 title: Zálohová faktura
 summary: Kdy vystavit zálohovou fakturu (proformu) místo faktury, proč není daňovým dokladem a jak ji vystavit — od Přidat po V pořádku.
-keywords: [zálohová faktura, zálohové faktury, zálohovou fakturu, proforma, proforma faktura, proformu, výzva k platbě, záloha, zálohu, platba předem, vystavit zálohovou fakturu, vystavení zálohové faktury, zálohová faktura vydaná, zálohové faktury vydané, DUZP na zálohové faktuře, není daňový doklad, daňový doklad k záloze, odpočet zálohy, odpočet přijaté zálohy, faktura z proformy, variabilní symbol zálohy]
+keywords: [zálohová faktura, zálohové faktury, zálohovou fakturu, proforma, proforma faktura, proformu, výzva k platbě, záloha, zálohu, platba předem, vystavit zálohovou fakturu, vystavení zálohové faktury, zálohová faktura vydaná, zálohové faktury vydané, DUZP na zálohové faktuře, není daňový doklad, daňový doklad k záloze, odpočet zálohy, odpočet přijaté zálohy, faktura z proformy, variabilní symbol zálohy, zaúčtování zálohové faktury, podrozvaha, úhrada zálohové faktury, zaplacená proforma, přijatá záloha v saldokontu, saldokonto zálohové faktury]
 related: [faktury-vydane/vystaveni-faktury.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
@@ -59,15 +59,26 @@ ještě neproběhlo.
    (Shipard ji zakládá sám) a jako **Variabilní symbol** se předplní pořadové
    číslo v řadě. Tenhle symbol pak odběratel uvede na platbě.
 
-6. **Dej V pořádku.** Doklad se uzamkne a formulář se zavře. Zaúčtování
-   proformy a spárování její úhrady v saldokontu Shipard zatím nedělá — viz
-   [Co Shipard dnes neumí](../co-dnes-nejde.md).
+6. **Dej V pořádku.** Doklad se uzamkne, formulář se zavře a proforma se
+   zaúčtuje **na podrozvahu** celkovou částkou — do rozvahy, výsledovky ani
+   DPH nevstupuje. V saldokontu ji od té chvíle vidíš ve skupině
+   **Zálohové faktury vydané** jako otevřenou položku, dokud ji odběratel
+   nezaplatí.
 
 ## Na co narazíš
 
 **DUZP na zálohové faktuře nenajdeš.** Není to chyba: proforma není daňový
 doklad, DUZP ani datum povinnosti přiznat daň nemá a do žádného výkazu DPH
 nespadá. Sazby a rekapitulaci vidíš dál — jsou informativní.
+
+**Úhradu proformy najdeš v saldokontu jako přijatou zálohu.** Když z banky
+přijde platba s variabilním symbolem proformy, Shipard ji sám zaúčtuje jako
+přijatou zálohu a v saldokontu ji uvidíš ve skupině **Přijaté zálohy** pod
+symbolem proformy — i když platba dorazila dřív, než jsi proformu potvrdil.
+Tuhle zálohu pak uzavře faktura s řádkem *Odpočet přijaté zálohy* a stejným
+variabilním (a případně specifickým) symbolem. Samotná proforma zatím
+zůstává ve skupině **Zálohové faktury vydané** otevřená i po zaplacení —
+viz [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 **Fakturu z proformy zatím nevystavíš jedním klikem.** Až zálohu dostaneš
 a budeš fakturovat, vystav vydanou fakturu ručně a zálohu na ní odečti řádkem
@@ -88,4 +99,4 @@ do řady vybrané v liště pod seznamem; s jedinou řadou lišta není vidět.
   evidence
 - [Založení položky](../polozky/zalozeni-polozky.md) — co se dá dát na řádek
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — tisk, faktura z proformy,
-  daňový doklad k záloze
+  daňový doklad k záloze, uzavření zaplacené proformy v saldokontu

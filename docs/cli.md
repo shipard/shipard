@@ -466,7 +466,12 @@ shpd-ds ds-upgrade -v
 **Vypnutí provisioningu (`skipProvisioning`):** volitelný boolean v
 `config/main.json`. Když je `true`, `ds-upgrade` synchronizuje schéma, ale
 přeskočí generování referenčních dat (units, druhy položek, fiskální roky,
-VAT období, číselné řady, mail router). Určeno pro import dat
+VAT období, číselné řady, mail router). Bezpodmínečně (i pod
+`skipProvisioning`) běží jen enginové kontrakty: clearing 261200/261300
+se skupinou Nespárované platby, tranzit 261100, podrozvahové účty
+756100/799100 s opravou povahy 75–79 (`OffBalanceAccountsProvisioner`,
+#79 D2), AI analyzer, pravidla předzpracování pošty a vázané řady.
+Určeno pro import dat
 z jiného systému, kde tyto údaje dodává sám import. Po dokončení importu
 nastav `skipProvisioning` zpět na `false` a spusť `ds-upgrade` znovu —
 provisionery jsou idempotentní, doplní jen chybějící data. Při zapnutém

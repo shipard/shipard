@@ -160,11 +160,19 @@ tableId **416**. docStates: archivní sada (`core.system.docStatesArchive`).
 | `show_in_navigation` | bool | vlastní položka v sidebaru (otevře viewer případů s fixním chipem) |
 | `valid_from` / `valid_to` | date, nullable | platnost skupiny |
 | `provisioning_variant` | varchar 10, nullable, system | varianta seedu (#69 D18): NULL = výchozí (sign-pravidla dobropisů), `legacy` = importovaný DS bez nich; řídí jen doplňování řádků seedu (§3.2), uživatelské řádky nemění |
+| `payment_category` | varchar 40, nullable, system | kategorie účtovacího předpisu, na kterou se účtuje **úhrada nalezená lookupem v této skupině** místo účtu předpisu (#79 D3a; `proformas_out` → `advances.received`, 324). NULL = účet předpisu (dosavadní chování). Plní jen seed při založení skupiny, ve formuláři není |
+| `closing_category` | varchar 40, nullable, system | kategorie protiúčtu, proti kterému se případ skupiny uzavírá, když úhrada odešla na `payment_category` (`proformas_out` → `offbalance.contra`, 799). Čte až navazující `JournalContributor` (#79 D3b, `tasks/accbal-proforma-closure.md`); zakládá se už teď, protože provisioner existující skupinu nepřepisuje |
 | `docState` / `docStateMain` | tinyint, system | |
 
 Seed (dle screenshotu starého systému): Pohledávky, Poskytnuté půjčky,
 Závazky, Úvěry, Přijaté půjčky, Poskytnuté zálohy, Přijaté zálohy,
-**Nespárované platby** (clearing — §4.4), Náklady příštích období.
+**Nespárované platby** (clearing — §4.4), Náklady příštích období,
+od #79 D2 i **Zálohové faktury vydané** (`proformas_out`, sort 15 hned za
+Pohledávkami: `756 MD` = předpis proformy, `756 DAL` = úhrada / uzavření;
+`payment_category = advances.received`, `closing_category =
+offbalance.contra`). Skupina je bez sign-pravidel, takže ji legacy
+varianta (§3.2) nemění kromě částek Všechny; na existujících DS vznikne
+při dalším `ds-upgrade` (provisioner doplňuje chybějící skupiny dle `code`).
 
 ### 3.2 `economy_accbal_balance_accounts` — účty saldokont
 
@@ -746,6 +754,22 @@ interface OpenItemLookup
   úhradu takového předpisu by saldo nezařadilo, vratka dobropisu na
   výchozím seedu jde na clearing (§13). „Nespárované platby" nemají řádek
   předpisu → nikdy se neprohledají.
+- **Kategorie úhrady skupiny (#79 D3a)**: skupina s `payment_category`
+  (§3.1; na seedu jen Zálohové faktury vydané → `advances.received`)
+  vrátí `OpenItem::paymentCategory`. Engine pak úhradu položí na masku
+  této kategorie (324) místo na `accountNumber` (756 je podrozvaha, peníze
+  tam nepatří); `accountNumber` dál nese účet předpisu pro diagnostiku a
+  `RouteResult` / `accbal-match` vypisují kategorii, ať plán neslibuje
+  756. Pořadí cílů, reziduum ani přirozená/opačná skupina se nemění: příjem
+  s VS proformy projde Pohledávky (10), pak Zálohové faktury vydané (15)
+  → `221 MD / 324 DAL` pod klíčem proformy → generátor z 324 DAL udělá
+  předpis v Přijatých zálohách (D23) → konečná faktura s odpočtem zálohy
+  (VS + SS proformy) ho uzavře. Případ proformy zůstává otevřený, dokud
+  ho neuzavře navazující `JournalContributor` (799 MD / 756 DAL,
+  `tasks/accbal-proforma-closure.md`) — druhá platba se stejným VS proto
+  proformu najde znovu a jde opět na 324 (žádoucí; přeplatek řeší až
+  uzavírání). Pokladní doklad s `advance.received` účtuje 324 přímo
+  z předpisu, lookupu se netýká.
 - **Přednost nejdelšího prefixu (#69 D22) se v lookupu neuplatňuje**:
   je per řádek deníku a per účetní datum — skupinu pohybu už rozhodl
   generátor a nese ji `balance` v klíči dotazu; prefixy skupiny (bez
@@ -1191,6 +1215,14 @@ partner resolution při ingestaci.
     Routing záloh z výpisu (výdaj bez otevřené položky → založit zálohu
     na 314/324) zůstává ve fázi „zálohy, zápočty, kurzové rozdíly"
     bankovního enginu (`docs/bank.md`), ne v tomto rozhodnutí.
+40. **Zálohové faktury vydané a přesměrování úhrady** (#79 D2/D3a,
+    2026-09-23, `tasks/accbal-proformas-out.md`): skupina `proformas_out`
+    (756 MD předpis / 756 DAL úhrada) z deníku podrozvahy — žádný neúčetní
+    zdroj pohybu. Úhrada nalezená v této skupině jde na kategorii
+    `payment_category` (`advances.received`, 324) místo na účet předpisu;
+    `closing_category` (`offbalance.contra`) se zakládá už teď a čte ho až
+    uzavírání (#79 D3b/c, samostatný task). Sloupce plní jen seed, formulář
+    skupiny je nezobrazuje (enginový kontrakt, ne uživatelské nastavení).
 
 ---
 

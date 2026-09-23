@@ -1,6 +1,12 @@
 # Zálohové faktury vydané — podrozvaha, účtovací předpis, saldokonto, přesměrování úhrady
 
-**Stav:** naplánováno — zadání 2026-09-23 (#79 D2, D3a)
+**Stav:** částečně — kód hotový 2026-09-23 (4 commity, #79 D2/D3a);
+`ds-upgrade` na dev DS 4l3j založil účty 756100/799100, opravil povahu
+75–79 a založil skupinu Zálohové faktury vydané; unit i integrační testy
+(deník proformy, rozvaha/výsledovka beze změny, routing úhrady na 324,
+platba dřív než proforma) zelené. Zbývá ruční proklik UI (Nastavení,
+navigace, konečná faktura s odpočtem) a nasazení na alfu spolu
+s `tasks/doc-proforma-out.md`
 **Issue:** #79 (rozhodnutí v komentáři 2026-09-23 „Revize rozhodnutí“);
 souvisí s #69 (saldokonto — D11, D17–D23) a #72.
 **Milník:** M2.
@@ -262,19 +268,21 @@ celá sada na konci lokálně.
 
 ## Hotovo když
 
-- [ ] `ds-upgrade` na dev DS: účty 756100/799100 (kind 6), skupiny 75–79
-      kind 6, skupina saldokonta „Zálohové faktury vydané“ v Nastavení
-      i v navigaci.
-- [ ] Potvrzená proforma → deník `756100 / 799100`, případ otevřený
-      v Zálohových fakturách vydaných; rozvaha a výsledovka beze změny.
+- [x] `ds-upgrade` na dev DS: účty 756100/799100 (kind 6), skupiny 75–79
+      kind 6, skupina saldokonta „Zálohové faktury vydané“ (DB ověřeno
+      2026-09-23; zobrazení v Nastavení a navigaci zbývá prokliknout).
+- [x] Potvrzená proforma → deník `756100 / 799100`, případ otevřený
+      v Zálohových fakturách vydaných; rozvaha a výsledovka beze změny
+      (`ProformaAccountingTest`, integrační `LedgerGeneratorTest`).
 - [ ] Bankovní příjem s VS proformy → `221 / 324`, předpis v Přijatých
-      zálohách pod klíčem proformy; konečná faktura s odpočtem zálohy
-      (VS + SS proformy) případ na 324 uzavře.
-- [ ] Platba zaúčtovaná před proformou se po potvrzení proformy sama
-      přeúčtuje z 261200 na 324.
-- [ ] Platby bez proformy se chovají beze změny (regresní testy banky
+      zálohách pod klíčem proformy (`BankPaymentRoutingTest` ✓); konečná
+      faktura s odpočtem zálohy (VS + SS proformy) případ na 324 uzavře
+      (zbývá proklik).
+- [x] Platba zaúčtovaná před proformou se po potvrzení proformy sama
+      přeúčtuje z 261200 na 324 (`BankPaymentRoutingTest`).
+- [x] Platby bez proformy se chovají beze změny (regresní testy banky
       a lookupu zelené).
-- [ ] Dokumentace aktualizovaná, `tasks-index.py --check` projde.
+- [x] Dokumentace aktualizovaná, `tasks-index.py --check` projde.
 - [ ] Nasazení na alfu spolu s `tasks/doc-proforma-out.md`
       (`ds-upgrade`; na importovaných DS se nic nezmění, dokud import
       proformy nepošle — #79 D4).

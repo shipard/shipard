@@ -338,6 +338,12 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
     z rezidua vylučuje → reaccount je idempotentní a **bez paměti**: zmizí-li
     předpis, reaccount vrátí úhradu na clearing (automatický zpětný trigger
     není). DS bez modulu saldokonta má `NullOpenItemLookup` → vše na clearing.
+    **Zásah ve skupině s kategorií úhrady** (`OpenItem::paymentCategory`,
+    #79 D3a — Zálohové faktury vydané, 756 na podrozvaze): protistrana =
+    maska kategorie předpisu (`advances.received` → 324) přes
+    `AccountMaskResolver`, ne účet předpisu; strana dál ze směru (příjem →
+    324 DAL = předpis přijaté zálohy pod klíčem proformy, `accbal.md` §5.1).
+    Chybějící maska / účet → `account_not_found` jako u masky kategorie.
   - `fee.out` → 568 (bankovní poplatky), `interest.in` → 662, `interest.out`
     → 562, `tax.*` → … — reálný účet z kategorie předpisu (jako `acc.entry`).
 
@@ -561,6 +567,12 @@ přegenerace clearing → 311/321.
     (nejsou na clearingu). Karty pokladny tranzit nemají (#72 D1: pohledávka
     311 za protistranou terminálu, 261400 se neúčtuje). Směr pohybu
     vůči směru transakce hlídá validace dokumentu, roletka se nefiltruje.
+13. Úhrada zálohové faktury vydané (#79 D3a): lookup, který trefí skupinu
+    `proformas_out`, vrátí `paymentCategory = advances.received` a engine
+    úhradu položí na 324, ne na podrozvahový účet předpisu 756. Totéž
+    platí pro `ClearingRerouteHandler` / `accbal-match` (reaccount dělá
+    engine). Uzavření případu proformy je navazující task
+    (`tasks/accbal-proforma-closure.md`).
 
 ---
 

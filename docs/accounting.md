@@ -680,6 +680,42 @@ Vyúčtování úhrad od brány / terminálu (311 DAL per doklad → 315 MD per
 dávka) a jeho párování s bankou (315 v Pohledávkách, #72 D6) viz
 `docs/accbal.md`; tvorba vyúčtování v novém Shipardu je mimo scope.
 
+### Zálohová faktura vydaná — podrozvaha (#79 D2)
+
+`invpo` není daňový doklad a nevstupuje do rozvahy ani výsledovky:
+potvrzená proforma se účtuje **jen na podrozvahu celkovou částkou
+hlavičky** — `756100 MD / 799100 DAL` (kategorie `proformas.out` s maskou
+`756`, `offbalance.contra` s maskou `799`). Řádky, rekapitulace DPH,
+zaokrouhlení ani pohledávka 311 se neúčtují; deník je vyrovnaný
+z principu (obě strany tatáž částka). Identita obou řádků je z hlavičky
+(partner, VS, SS, KS, splatnost) — z 756 MD vzniká předpis v saldokontní
+skupině **Zálohové faktury vydané** (`docs/accbal.md` §3.1, §5.1).
+
+```jsonc
+{"docType": "invpo",
+    "accounting": [
+        {"cat": "proformas.out",     "src": "head", "col": "total", "side": 0, "text": "Zálohová faktura vydaná"},
+        {"cat": "offbalance.contra", "src": "head", "col": "total", "side": 1, "text": "Zálohová faktura vydaná"}
+    ]
+}
+```
+
+Účty třídy 7 mají povahu **6 Podrozvaha** (skupiny 75–79, v NPO osnově
+i 97–99); `799100` je společný evidenční protiúčet pro budoucí
+podrozvahové evidence. Oba účty i syntetiky 75/756/79/799 zajišťuje
+`OffBalanceAccountsProvisioner` z `ds-upgrade` **bezpodmínečně** (i pod
+`skipProvisioning` — migrovaný rozvrh má jen syntetiky 75 a 79) a zároveň
+jednorázově opraví povahu 0 → 6 na účtech 75–79 (jiné hodnoty nechá).
+Rozvaha čte třídy 0–4, výsledovka 5–6, takže zaúčtovaná proforma žádný
+report nezmění (`ProformaAccountingTest`).
+
+Úhrada proformy se na 756 **nikdy neúčtuje**: bankovní engine ji přes
+`OpenItem::paymentCategory` položí na přijatou zálohu 324 (§7.1,
+`docs/bank.md` §6.1). Uzavírací pár `799100 MD / 756100 DAL` při úhradě
+dělá navazující `JournalContributor` (#79 D3b,
+`tasks/accbal-proforma-closure.md`) — do té doby případ proformy zůstává
+otevřený.
+
 ---
 
 ## 5. Dohledávání účtů
@@ -902,7 +938,10 @@ Tentýž princip (deklarace v core, implementace v modulu, registrace v
   `NullOpenItemLookup`. Loader `OpenItemLookupLoader`; do handlerů ho vkládá
   `DocumentEventDispatcher` (`AbstractDocumentEventHandler::setOpenItems`),
   controllerům `public/index.php`. Implementace `LedgerOpenItemLookup`
-  (`economy.accbal`) nad `economy_accbal_ledger`.
+  (`economy.accbal`) nad `economy_accbal_ledger`. `OpenItem::paymentCategory`
+  (#79 D3a): skupina saldokonta s `payment_category` (Zálohové faktury
+  vydané → `advances.received`) říká enginu, ať úhradu položí na masku
+  kategorie předpisu (324), ne na `accountNumber` (756 je podrozvaha).
 
 ### 7.2 Lifecycle účtování
 
@@ -1260,3 +1299,11 @@ Drobnosti zjištěné implementací:
     skupiny Pohledávky. Prodejka a příjmový PD bez plátce u karty / dobírky
     / brány neprojdou (rozhodnutí nad rámec zadání: 311 bez dlužníka by se
     nedalo spárovat). Vyúčtování úhrad v novém Shipardu mimo scope.
+21. Zálohová faktura vydaná na podrozvaze (#79 D2/D3a, 2026-09-23,
+    `tasks/accbal-proformas-out.md`): `invpo` účtuje jen `756100 MD /
+    799100 DAL` celkovou částkou hlavičky (kategorie `proformas.out`,
+    `offbalance.contra`); třída 7 má povahu 6 Podrozvaha, účty zajišťuje
+    `OffBalanceAccountsProvisioner` bezpodmínečně vč. opravy povahy
+    75–79. Úhradu proformy engine přes `OpenItem::paymentCategory`
+    účtuje na 324 (§4 „Zálohová faktura vydaná“); uzavření případu
+    proformy (799 MD / 756 DAL) je navazující task.

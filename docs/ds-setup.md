@@ -120,7 +120,8 @@ Bolest vzniká z toho, že se do jednoho pytle míchají tři věci s různým
 
 **Vrstva B je už hotová** — `DsUpgradeCommand` spouští provisionery jednotek,
 druhů položek, účtové osnovy, saldo skupin, fiskálních roků, instancí
-daňových tvrzení a číselných řad; clearing infrastruktura a AI analyzer se zajišťují bezpodmínečně
+daňových tvrzení a číselných řad; clearing infrastruktura, tranzitní a podrozvahové účty
+(261100, 756100/799100) a AI analyzer se zajišťují bezpodmínečně
 (i pod `skipProvisioning`). Vrstva B je dobrý precedent hlavně tím, že je
 **idempotentní a spouští se opakovaně**, ne jednorázově při zakládání.
 

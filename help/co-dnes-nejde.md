@@ -71,9 +71,12 @@ fakturu. **Fakturu z proformy nevystavíš jedním klikem**: až zálohu dostane
 vystav vydanou fakturu ručně a zálohu na ní odečti řádkem *Odpočet přijaté
 zálohy* s variabilním symbolem proformy. **Daňový doklad k přijaté záloze**
 Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou.
-**Potvrzená proforma se zatím nezaúčtuje** a její úhradu z banky k ní
-saldokonto nespáruje; v přehledu účtování ji uvidíš s chybou, že chybí
-účtovací předpis. Viz [Zálohová faktura](faktury-vydane/zalohova-faktura.md).
+**Zaplacená proforma zůstává v saldokontu otevřená.** Platbu s jejím
+variabilním symbolem Shipard zaúčtuje jako přijatou zálohu (skupina
+*Přijaté zálohy*) a uzavře ji až fakturou s odpočtem zálohy; samotnou
+zálohovou fakturu ve skupině *Zálohové faktury vydané* ale úhrada zatím
+neuzavře — uvidíš ji tam jako neuhrazenou i po zaplacení. Viz
+[Zálohová faktura](faktury-vydane/zalohova-faktura.md).
 
 ---
 
