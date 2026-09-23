@@ -390,7 +390,9 @@ class DocsHeadsViewer extends TableViewer
 
     /**
      * Badge stavu účtování; při chybě (state 2) navíc banner s výpisem
-     * accounting_messages. Scoped styly ViewerDetail.svelte se na {@html}
+     * accounting_messages, při stavu OK jen varování (zprávy úrovně
+     * `warning`, např. selhání contributoru deníku — #79 D3b) v tónu
+     * „k pozornosti“. Scoped styly ViewerDetail.svelte se na {@html}
      * obsah nevztahují — vzhled jde přes globální CSS proměnné, které
      * fungují i v dark mode. Všechny hodnoty escapované (frontend vkládá
      * html bez sanitizace).
@@ -415,10 +417,11 @@ class DocsHeadsViewer extends TableViewer
             . 'color:var(--shpd-color-state-' . $tone . '-text)">'
             . htmlspecialchars($stateName, ENT_QUOTES) . '</span>';
 
-        $messages = $state === 2
+        $messages = $state >= 1
             ? $this->decodeAccountingMessages($record['accounting_messages'] ?? null)
             : [];
         if ($messages !== []) {
+            $listTone = $state === 2 ? 'error' : 'edit';
             $rowWord = $this->language === 'cs' ? 'řádek' : 'row';
             $items = '';
             foreach ($messages as $msg) {
@@ -429,10 +432,10 @@ class DocsHeadsViewer extends TableViewer
                 }
                 $items .= '<li>' . $text . '</li>';
             }
-            $html .= '<ul role="alert" style="margin:var(--shpd-space-sm) 0 0;'
+            $html .= '<ul role="' . ($state === 2 ? 'alert' : 'status') . '" style="margin:var(--shpd-space-sm) 0 0;'
                 . 'padding:var(--shpd-space-sm) var(--shpd-space-md) var(--shpd-space-sm) 28px;'
-                . 'background:var(--shpd-color-state-error-bg);'
-                . 'color:var(--shpd-color-state-error-text);'
+                . 'background:var(--shpd-color-state-' . $listTone . '-bg);'
+                . 'color:var(--shpd-color-state-' . $listTone . '-text);'
                 . 'border-radius:var(--shpd-radius-md);'
                 . 'font-size:var(--shpd-font-size-sm)">' . $items . '</ul>';
         }

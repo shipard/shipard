@@ -6,6 +6,7 @@ namespace Shipard\Api\Controller;
 
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Accounting\NullOpenItemLookup;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
@@ -33,6 +34,7 @@ class AccbalController
         private readonly ConfigRuntime $config,
         private readonly JournalEventDispatcher $journalEvents,
         private readonly ?OpenItemLookup $openItems = null,
+        private readonly ?JournalContributorSet $journalContributors = null,
     ) {}
 
     /** POST /_accbal/match */
@@ -98,6 +100,7 @@ class AccbalController
             $this->journalEvents,
             // Bez lookupu (DS bez saldokonta) nemá co routovat → vše no_open_item.
             $this->openItems ?? new NullOpenItemLookup(),
+            $this->journalContributors,
         );
         return $router->rerouteAll($filters, $dryRun);
     }

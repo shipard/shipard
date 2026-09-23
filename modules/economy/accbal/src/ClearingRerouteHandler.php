@@ -55,7 +55,7 @@ final class ClearingRerouteHandler extends AbstractJournalEventHandler
             $lookup->setDsConfig($this->dsConfig);
         }
 
-        (new ClearingRouter($this->db, $this->config, $this->journalEvents, $lookup))
+        (new ClearingRouter($this->db, $this->config, $this->journalEvents, $lookup, $this->journalContributors))
             ->rerouteForKeys($keys, false);
     }
 

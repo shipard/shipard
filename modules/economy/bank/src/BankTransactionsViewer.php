@@ -435,16 +435,19 @@ class BankTransactionsViewer extends TableViewer
             . 'color:var(--shpd-color-state-' . $tone . '-text)">'
             . htmlspecialchars($stateName, ENT_QUOTES) . '</span>';
 
-        $messages = $state === 2 ? $this->decodeAccountingMessages($record['accounting_messages'] ?? null) : [];
+        // Stav OK může nést varování (zprávy úrovně `warning`, selhání
+        // contributoru deníku #79 D3b) — vypíší se v tónu „k pozornosti“.
+        $messages = $state >= 1 ? $this->decodeAccountingMessages($record['accounting_messages'] ?? null) : [];
         if ($messages !== []) {
+            $listTone = $state === 2 ? 'error' : 'edit';
             $items = '';
             foreach ($messages as $msg) {
                 $items .= '<li>' . htmlspecialchars((string) ($msg['message'] ?? ''), ENT_QUOTES) . '</li>';
             }
-            $html .= '<ul role="alert" style="margin:var(--shpd-space-sm) 0 0;'
+            $html .= '<ul role="' . ($state === 2 ? 'alert' : 'status') . '" style="margin:var(--shpd-space-sm) 0 0;'
                 . 'padding:var(--shpd-space-sm) var(--shpd-space-md) var(--shpd-space-sm) 28px;'
-                . 'background:var(--shpd-color-state-error-bg);'
-                . 'color:var(--shpd-color-state-error-text);'
+                . 'background:var(--shpd-color-state-' . $listTone . '-bg);'
+                . 'color:var(--shpd-color-state-' . $listTone . '-text);'
                 . 'border-radius:var(--shpd-radius-md);'
                 . 'font-size:var(--shpd-font-size-sm)">' . $items . '</ul>';
         }

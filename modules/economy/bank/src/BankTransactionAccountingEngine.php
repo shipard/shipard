@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Bank;
 
+use Shipard\Core\Accounting\JournalContributorSet;
+use Shipard\Core\Accounting\JournalLineRequest;
+use Shipard\Core\Accounting\JournalLineView;
+use Shipard\Core\Accounting\JournalSourceContext;
 use Shipard\Core\Accounting\NullOpenItemLookup;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\JournalEventDispatcher;
-use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\Economy\Accounting\AccountingRules;
 use Shipard\Module\Economy\Accounting\AccountMaskResolver;
+use Shipard\Module\Economy\Accounting\JournalContributions;
 
 /**
  * Generátor účetního deníku z bankovní transakce — bankovní obdoba
@@ -39,7 +44,18 @@ use Shipard\Module\Economy\Accounting\AccountMaskResolver;
  * reconciliation. Filozofie chyb stejná jako u dokladů: účtování nikdy
  * neblokuje transakci. Nedohledaný účet → chybový řádek (account NULL,
  * maska s '?', is_error) + message; chybějící fiskální období → prázdný
- * deník. Výsledek vždy accounting_state 1 (OK) / 2 (cokoliv v messages).
+ * deník. Výsledek vždy accounting_state 1 (OK) / 2 (chybová zpráva
+ * v messages; zpráva úrovně `warning` stav nemění).
+ *
+ * Contributoři deníku (#79 D3b, `journalContributors` v module.jsonc):
+ * po sestavení obou řádků engine předá kontext a pohledy na řádky
+ * (identita z transakce) registrovaným contributorům a jejich požadavky
+ * doplní jako další řádky (účet dle kategorie / přesného čísla, text
+ * z požadavku, operace NULL) — pak teprve kontrola vyrovnanosti a zápis.
+ * Identitu řádků píše writeResult z transakce, takže požadavek s jinou
+ * identitou je chyba kontraktu (LogicException), ne datová chyba.
+ * Prázdná sada = chování beze změny; výjimka contributoru = varování
+ * `contributor_failed`, deník bez příspěvku.
  *
  * Smysl §6 docs/bank.md.
  */
@@ -64,25 +80,30 @@ final class BankTransactionAccountingEngine
     /** Per-run dohledávač účtů dle masky. */
     private AccountMaskResolver $maskResolver;
 
-    /** @var list<array{code: string, message: string, rowId: int|null}> */
+    /** @var list<array{code: string, message: string, rowId: int|null, level?: string}> */
     private array $messages = [];
 
     private readonly OpenItemLookup $openItems;
+
+    private readonly JournalContributorSet $contributors;
 
     public function __construct(
         private readonly \Dibi\Connection $db,
         private readonly ?ConfigRuntime $config,
         private readonly ?JournalEventDispatcher $journalEvents = null,
         ?OpenItemLookup $openItems = null,
+        ?JournalContributorSet $contributors = null,
     ) {
         // DS bez saldokonta (nebo engine postavený bez lookupu) → vše na clearing.
         $this->openItems = $openItems ?? new NullOpenItemLookup();
+        // DS bez přispívajícího modulu (nebo engine postavený bez sady) → beze změny.
+        $this->contributors = $contributors ?? JournalContributorSet::empty();
     }
 
     /**
      * Přeúčtuje transakci: smaže starý deník, vygeneruje nový, uloží stav.
      *
-     * @return array{state: int, messages: list<array{code: string, message: string, rowId: int|null}>}
+     * @return array{state: int, messages: list<array{code: string, message: string, rowId: int|null, level?: string}>}
      */
     public function accountTransaction(int $txId): array
     {
@@ -130,7 +151,10 @@ final class BankTransactionAccountingEngine
             $this->makeLine($tx, $cpSide, $cpAccount, $dom, $cur, $this->operationOf($tx)),
         ];
 
-        // Pojistka: obě strany nesou stejnou částku, deník má být vyrovnaný.
+        $lines = $this->applyContributions($txId, $tx, $lines, $accountingDate, $fiscalYear);
+
+        // Pojistka: obě strany nesou stejnou částku, deník má být vyrovnaný
+        // — i s příspěvky contributorů (nevyrovnaný požadavek se tu projeví).
         $sumDr = 0.0;
         $sumCr = 0.0;
         foreach ($lines as $line) {
@@ -341,45 +365,118 @@ final class BankTransactionAccountingEngine
     }
 
     /**
-     * První maska v sekci `accounts` předpisu se shodnou kategorií. `query`
-     * záznamu se tu nehodnotí (transakce nemá řádek); řetěz masek (pole)
-     * dá první z nich.
+     * První maska v sekci `accounts` předpisu se shodnou kategorií
+     * ({@see AccountingRules::firstMaskForCategory}) — transakce nemá
+     * řádek, nad kterým by se hodnotilo `query`.
      */
     private function maskForCategory(string $cat): string
     {
-        $rules = $this->resolveRules();
-        foreach ($rules['accounts'] ?? [] as $entry) {
-            if (is_array($entry) && ($entry['cat'] ?? null) === $cat) {
-                $mask = $entry['accountMask'] ?? '';
-                if (is_array($mask)) {
-                    $mask = $mask[0] ?? '';
-                }
-                return (string) $mask;
-            }
-        }
-        return '';
+        return AccountingRules::firstMaskForCategory($this->resolveRules(), $cat);
     }
 
     /**
      * Účtovací předpis dle země vlastní firmy, fallback cz — stejný zdroj
-     * jako doklady (cfgItem economy.accounting.rules.{country}).
+     * jako doklady ({@see AccountingRules::resolve}).
      *
      * @return array<string, mixed>
      */
     private function resolveRules(): array
     {
-        if ($this->config === null) {
-            return [];
-        }
-        $address = (new OwnCompanyResolver($this->db))->getOwnHeadquartersAddress();
-        $country = is_array($address) ? strtolower(trim((string) ($address['country'] ?? ''))) : '';
-        $country = $country !== '' ? $country : 'cz';
+        return AccountingRules::resolve($this->config, $this->db) ?? [];
+    }
 
-        $rules = $this->config->cfgItem("economy.accounting.rules.{$country}");
-        if (!is_array($rules)) {
-            $rules = $this->config->cfgItem('economy.accounting.rules.cz');
+    // ── Contributoři deníku (#79 D3b) ───────────────────────────────────────
+
+    /**
+     * Krok contributorů: kontext transakce + pohledy na oba řádky (identita
+     * z transakce, chybové řádky vynechány) → požadavky → řádky deníku
+     * (účet dle kategorie / přesného čísla, text z požadavku, operace NULL).
+     * Identitu řádků píše writeResult z transakce — požadavek s jinou
+     * identitou je chyba contributoru, ne dat (LogicException).
+     *
+     * @param array<string, mixed> $tx
+     * @param list<array<string, mixed>> $lines
+     * @return list<array<string, mixed>>
+     */
+    private function applyContributions(int $txId, array $tx, array $lines, string $accountingDate, int $fiscalYear): array
+    {
+        if ($this->contributors->isEmpty()) {
+            return $lines;
         }
-        return is_array($rules) ? $rules : [];
+
+        $partner = isset($tx['partner']) && $tx['partner'] !== null ? (int) $tx['partner'] : null;
+        $paymentReference = self::symbol($tx['payment_reference'] ?? null);
+        $specificSymbol   = self::symbol($tx['specific_symbol'] ?? null);
+
+        $context = new JournalSourceContext(
+            'bankTransaction',
+            $txId,
+            $accountingDate,
+            $fiscalYear,
+            strtolower(trim((string) ($tx['currency'] ?? ''))),
+        );
+
+        $views = [];
+        foreach ($lines as $line) {
+            if ($line['is_error']) {
+                continue;
+            }
+            $side = (int) $line['side'];
+            $views[] = new JournalLineView(
+                $side,
+                (string) $line['account_number'],
+                $line['operation'],
+                $partner,
+                $paymentReference,
+                $specificSymbol,
+                (float) ($side === 0 ? $line['money_dr'] : $line['money_cr']),
+                (float) ($side === 0 ? $line['money_dr_cur'] : $line['money_cr_cur']),
+            );
+        }
+
+        $requests = JournalContributions::collect(
+            $this->contributors,
+            $context,
+            $views,
+            fn(string $code, string $message) => $this->addMessage($code, $message, null, 'warning'),
+        );
+        if ($requests === []) {
+            return $lines;
+        }
+
+        $rules = $this->resolveRules();
+        foreach ($requests as $request) {
+            if ($request->partner !== $partner
+                || self::symbol($request->paymentReference) !== $paymentReference
+                || self::symbol($request->specificSymbol) !== $specificSymbol
+            ) {
+                throw new \LogicException(sprintf(
+                    'JournalLineRequest identity (partner %s, VS %s, SS %s) differs from bank transaction #%d (partner %s, VS %s, SS %s)',
+                    (string) ($request->partner ?? 'null'), (string) ($request->paymentReference ?? 'null'), (string) ($request->specificSymbol ?? 'null'),
+                    $txId,
+                    (string) ($partner ?? 'null'), (string) ($paymentReference ?? 'null'), (string) ($specificSymbol ?? 'null'),
+                ));
+            }
+            $account = JournalContributions::resolveAccount(
+                $request,
+                $rules,
+                $this->maskResolver,
+                $accountingDate,
+                fn(string $code, string $message) => $this->addMessage($code, $message),
+            );
+            $lines[] = $this->makeLine($tx, $request->side, $account, $request->moneyDom, $request->moneyCur, null, $request->text);
+        }
+        return $lines;
+    }
+
+    /** Normalizace symbolu pro porovnání identity: TRIM, prázdné → null. */
+    private static function symbol(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $s = trim((string) $value);
+        return $s === '' ? null : $s;
     }
 
     // ── Skladba řádku ───────────────────────────────────────────────────────
@@ -389,7 +486,7 @@ final class BankTransactionAccountingEngine
      * @param array{id?: int, number: string, is_error?: bool} $account
      * @return array<string, mixed>
      */
-    private function makeLine(array $tx, int $side, array $account, float $dom, float $cur, ?string $operation): array
+    private function makeLine(array $tx, int $side, array $account, float $dom, float $cur, ?string $operation, ?string $text = null): array
     {
         return [
             'side'           => $side,
@@ -398,7 +495,7 @@ final class BankTransactionAccountingEngine
             'is_error'       => !empty($account['is_error']),
             'operation'      => $operation,
             'partner'        => isset($tx['partner']) && $tx['partner'] !== null ? (int) $tx['partner'] : null,
-            'text'           => mb_substr($this->buildText($tx), 0, 200),
+            'text'           => mb_substr($text ?? $this->buildText($tx), 0, 200),
             'money_dr'       => $side === 0 ? round($dom, 2) : 0.0,
             'money_cr'       => $side === 1 ? round($dom, 2) : 0.0,
             'money_dr_cur'   => $side === 0 ? round($cur, 2) : 0.0,
@@ -486,7 +583,7 @@ final class BankTransactionAccountingEngine
         ?int $fiscalYear,
         ?int $fiscalMonth,
     ): array {
-        $state = $this->messages === [] ? 1 : 2;
+        $state = $this->hasErrors() ? 2 : 1;
         $currency = (string) ($tx['currency'] ?? '');
         $statementNumber = $this->statementNumber($tx);
 
@@ -559,8 +656,28 @@ final class BankTransactionAccountingEngine
         return $number !== '' ? $number : null;
     }
 
-    private function addMessage(string $code, string $message, ?int $rowId = null): void
+    /**
+     * Zpráva účtování; `level` 'error' (default, stav 2) nebo 'warning'
+     * (jen informace, stav zůstává 1 — selhání contributoru, #79 D3b).
+     * Pole `level` se zapisuje jen u varování.
+     */
+    private function addMessage(string $code, string $message, ?int $rowId = null, string $level = 'error'): void
     {
-        $this->messages[] = ['code' => $code, 'message' => $message, 'rowId' => $rowId];
+        $entry = ['code' => $code, 'message' => $message, 'rowId' => $rowId];
+        if ($level !== 'error') {
+            $entry['level'] = $level;
+        }
+        $this->messages[] = $entry;
+    }
+
+    /** Aspoň jedna zpráva bez úrovně warning → stav účtování 2. */
+    private function hasErrors(): bool
+    {
+        foreach ($this->messages as $message) {
+            if (($message['level'] ?? 'error') === 'error') {
+                return true;
+            }
+        }
+        return false;
     }
 }

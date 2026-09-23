@@ -61,7 +61,9 @@ final class BankTransactionEventHandler extends AbstractDocumentEventHandler
 
     private function engine(): BankTransactionAccountingEngine
     {
-        return new BankTransactionAccountingEngine($this->db, $this->config, $this->journalEvents, $this->openItems);
+        return new BankTransactionAccountingEngine(
+            $this->db, $this->config, $this->journalEvents, $this->openItems, $this->journalContributors,
+        );
     }
 
     private function markEngineError(int $txId, \Throwable $e): void

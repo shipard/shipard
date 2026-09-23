@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Command\DataSource;
 
+use Shipard\Api\JournalContributorLoader;
 use Shipard\Api\JournalEventHandlerLoader;
 use Shipard\Api\OpenItemLookupLoader;
 use Shipard\Core\Config\ConfigRuntime;
@@ -24,7 +25,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * (#69 D4). Tenká vrstva nad {@see ClearingRouter::rerouteAll}; runtime se
  * nadrátuje jako BankImportStatementCommand (config + DB +
  * JournalEventHandlerLoader — bez něj se po reaccountu nespustí re-derivace
- * ledgeru) + OpenItemLookupLoader (dohledání předpisu).
+ * ledgeru) + OpenItemLookupLoader (dohledání předpisu) + JournalContributorLoader
+ * (příspěvky do deníku, #79 D3b — táž sada pro handlery i router).
  *
  * Bez `--all`/filtru příkaz nic neudělá (vyžádá si rozsah). `--dry-run`
  * vypíše plán bez zápisu. Zrcadlo `POST /_accbal/match` (docs/accbal.md §5.7).
@@ -88,10 +90,11 @@ class AccbalMatchCommand extends Command
         $config = ConfigRuntime::load($dsDir, $lang);
         $dibi   = $dsConnection->getDibiConnection();
         // Bez handler loaderu by se po reaccountu nespustila re-derivace ledgeru.
-        $journalEvents = JournalEventHandlerLoader::load($dsConfig, $resolver, $dibi, $config);
+        $contributors  = JournalContributorLoader::load($dsConfig, $resolver, $dibi, $config);
+        $journalEvents = JournalEventHandlerLoader::load($dsConfig, $resolver, $dibi, $config, $contributors);
         $openItems     = OpenItemLookupLoader::load($dsConfig, $resolver, $dibi, $config);
 
-        $router  = new ClearingRouter($dibi, $config, $journalEvents, $openItems);
+        $router  = new ClearingRouter($dibi, $config, $journalEvents, $openItems, $contributors);
         $summary = $router->rerouteAll($filters, $dryRun);
         $this->printSummary($output, $summary, $dryRun);
         return Command::SUCCESS;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accbal;
 
+use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\JournalEventDispatcher;
@@ -24,7 +25,9 @@ use Shipard\Module\Economy\Bank\BankTransactionAccountingEngine;
  * slouží jen k tomu, aby se nepřeúčtovávalo naprázdno a aby dry-run uměl
  * vypsat plán. Zásah ve skupině s kategorií úhrady (#79 D3a, zálohové
  * faktury vydané) nese `RouteResult::targetCategory` — engine úhradu
- * položí na 324, ne na účet předpisu 756, a výpis to říká.
+ * položí na 324, ne na účet předpisu 756, a výpis to říká. Engine dostává
+ * i contributory deníku (#79 D3b) — přeúčtovaná úhrada proformy nese
+ * uzavírací pár stejně jako úhrada zaúčtovaná napřímo.
  *
  * Běh je sekvenční (datum transakce, id): každé přeúčtování hned sníží
  * reziduum klíče, takže druhá úhrada už uzavřeného předpisu zůstane na
@@ -52,6 +55,7 @@ final class ClearingRouter
         private readonly ?ConfigRuntime $config,
         private readonly ?JournalEventDispatcher $journalEvents,
         private readonly OpenItemLookup $openItems,
+        private readonly ?JournalContributorSet $journalContributors = null,
     ) {}
 
     /**
@@ -141,7 +145,9 @@ final class ClearingRouter
 
     private function engine(): BankTransactionAccountingEngine
     {
-        return new BankTransactionAccountingEngine($this->db, $this->config, $this->journalEvents, $this->openItems);
+        return new BankTransactionAccountingEngine(
+            $this->db, $this->config, $this->journalEvents, $this->openItems, $this->journalContributors,
+        );
     }
 
     /**

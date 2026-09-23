@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Command\DataSource;
 
 use Shipard\Api\DocumentLoader;
+use Shipard\Api\JournalContributorLoader;
 use Shipard\Api\JournalEventHandlerLoader;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
@@ -133,8 +134,9 @@ class DocReaccountCommand extends Command
             $output->writeln('<comment>--force: zámek obejit, použití zalogováno.</comment>');
         }
 
-        $journalEvents = JournalEventHandlerLoader::load($dsConfig, $resolver, $dibi, $config);
-        $result = (new AccountingEngine($dibi, $config, $journalEvents))->accountDocument($docId);
+        $contributors  = JournalContributorLoader::load($dsConfig, $resolver, $dibi, $config);
+        $journalEvents = JournalEventHandlerLoader::load($dsConfig, $resolver, $dibi, $config, $contributors);
+        $result = (new AccountingEngine($dibi, $config, $journalEvents, $contributors))->accountDocument($docId);
 
         $output->writeln(sprintf('Doklad #%d (%s): accounting_state = %d', $docId, (string) ($head['doc_number'] ?? ''), $result['state']));
         foreach ($result['messages'] as $message) {

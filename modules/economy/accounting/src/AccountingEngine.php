@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accounting;
 
+use Shipard\Core\Accounting\JournalContributorSet;
+use Shipard\Core\Accounting\JournalLineRequest;
+use Shipard\Core\Accounting\JournalLineView;
+use Shipard\Core\Accounting\JournalSourceContext;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\JournalEventDispatcher;
-use Shipard\Module\Docs\Core\OwnCompanyResolver;
 
 /**
  * Generátor účetního deníku z dokladu — obecný interpret deklarativního
@@ -21,7 +24,16 @@ use Shipard\Module\Docs\Core\OwnCompanyResolver;
  * Filozofie chyb: účtování nikdy neblokuje doklad. Nedohledaný účet →
  * chybový řádek deníku (account NULL, maska s '?', is_error) + message;
  * fatálnější problémy (chybí předpis, fiskální období) → prázdný deník.
- * Výsledek vždy accounting_state 1 (OK) / 2 (cokoliv v messages).
+ * Výsledek vždy accounting_state 1 (OK) / 2 (chybová zpráva v messages;
+ * zpráva úrovně `warning` stav nemění).
+ *
+ * Contributoři deníku (#79 D3b, `journalContributors` v module.jsonc):
+ * po seskupení vlastních řádků engine předá kontext a pohledy na řádky
+ * registrovaným contributorům, jejich požadavky převede na řádky (účet
+ * dle kategorie nebo přesného čísla, identita z požadavku, operace NULL)
+ * a znovu seskupí — pak teprve kontrola vyrovnanosti a zápis. Prázdná
+ * sada = chování beze změny; výjimka contributoru = varování
+ * `contributor_failed`, deník bez příspěvku.
  *
  * Algoritmus a sémantika kroků předpisu: docs/accounting.md sekce 4, 5, 7.3.
  *
@@ -46,19 +58,25 @@ final class AccountingEngine
     /** Per-run dohledávač účtů dle masky (cache se nuluje s novým během). */
     private AccountMaskResolver $maskResolver;
 
-    /** @var list<array{code: string, message: string, rowId: int|null}> */
+    /** @var list<array{code: string, message: string, rowId: int|null, level?: string}> */
     private array $messages = [];
+
+    private readonly JournalContributorSet $contributors;
 
     public function __construct(
         private readonly \Dibi\Connection $db,
         private readonly ?ConfigRuntime $config,
         private readonly ?JournalEventDispatcher $journalEvents = null,
-    ) {}
+        ?JournalContributorSet $contributors = null,
+    ) {
+        // DS bez přispívajícího modulu (nebo engine postavený bez sady) → beze změny.
+        $this->contributors = $contributors ?? JournalContributorSet::empty();
+    }
 
     /**
      * Přeúčtuje doklad: smaže starý deník, vygeneruje nový, uloží stav.
      *
-     * @return array{state: int, messages: list<array{code: string, message: string, rowId: int|null}>}
+     * @return array{state: int, messages: list<array{code: string, message: string, rowId: int|null, level?: string}>}
      */
     public function accountDocument(int $docHeadId): array
     {
@@ -111,6 +129,8 @@ final class AccountingEngine
             return $this->writeResult($docHeadId, []);
         }
 
+        $grouped = $this->applyContributions($docHeadId, $head, $grouped);
+
         $sumDr = 0.0;
         $sumCr = 0.0;
         foreach ($grouped as $line) {
@@ -151,26 +171,13 @@ final class AccountingEngine
     }
 
     /**
+     * Předpis dle země vlastní firmy, fallback cz ({@see AccountingRules}).
+     *
      * @return array<string, mixed>|null
      */
     private function resolveRules(): ?array
     {
-        if ($this->config === null) {
-            return null;
-        }
-        $country = $this->resolveOwnCompanyCountry();
-        $rules = $this->config->cfgItem("economy.accounting.rules.{$country}");
-        if (!is_array($rules)) {
-            $rules = $this->config->cfgItem('economy.accounting.rules.cz');
-        }
-        return is_array($rules) ? $rules : null;
-    }
-
-    private function resolveOwnCompanyCountry(): string
-    {
-        $address = (new OwnCompanyResolver($this->db))->getOwnHeadquartersAddress();
-        $country = strtolower(trim((string) ($address['country'] ?? '')));
-        return $country !== '' ? $country : 'cz';
+        return AccountingRules::resolve($this->config, $this->db);
     }
 
     // ── Kroky → kandidátní řádky ────────────────────────────────────────────
@@ -761,6 +768,118 @@ final class AccountingEngine
         return $masks;
     }
 
+    // ── Contributoři deníku (#79 D3b) ───────────────────────────────────────
+
+    /**
+     * Krok contributorů: kontext zdroje + pohledy na seskupené řádky bez
+     * chyby → požadavky → řádky deníku (účet dle kategorie / přesného
+     * čísla, identita z požadavku, operace NULL, bez vazby na řádek
+     * dokladu) → nové seskupení se stávajícími řádky. Prázdná sada nebo
+     * žádný požadavek → vstup beze změny.
+     *
+     * @param array<string, mixed> $head
+     * @param list<array<string, mixed>> $grouped
+     * @return list<array<string, mixed>>
+     */
+    private function applyContributions(int $docHeadId, array $head, array $grouped): array
+    {
+        if ($this->contributors->isEmpty()) {
+            return $grouped;
+        }
+
+        $accountingDate = (string) ($this->normalizeDate($head['accounting_date'] ?? null) ?? '');
+        $context = new JournalSourceContext(
+            'doc',
+            $docHeadId,
+            $accountingDate,
+            (int) $head['fiscal_year'],
+            strtolower(trim((string) ($head['doc_currency'] ?? ''))),
+        );
+
+        $views = [];
+        foreach ($grouped as $line) {
+            if ($line['is_error']) {
+                continue;
+            }
+            $views[] = self::lineView($line);
+        }
+
+        $requests = JournalContributions::collect(
+            $this->contributors,
+            $context,
+            $views,
+            fn(string $code, string $message) => $this->addMessage($code, $message, null, 'warning'),
+        );
+        if ($requests === []) {
+            return $grouped;
+        }
+
+        $rules = $this->resolveRules();
+        $lines = $grouped;
+        foreach ($requests as $request) {
+            $account = JournalContributions::resolveAccount(
+                $request,
+                $rules,
+                $this->maskResolver,
+                $accountingDate,
+                fn(string $code, string $message) => $this->addMessage($code, $message),
+            );
+            $lines[] = $this->makeContributedLine($request, $account);
+        }
+        return $this->groupLines($lines);
+    }
+
+    /**
+     * Pohled na seskupený řádek pro contributory — částka strany, kterou
+     * řádek nese, identita z řádku.
+     *
+     * @param array<string, mixed> $line
+     */
+    private static function lineView(array $line): JournalLineView
+    {
+        $side = (int) $line['side'];
+        return new JournalLineView(
+            $side,
+            (string) $line['account_number'],
+            $line['operation'] ?? null,
+            $line['partner'] ?? null,
+            $line['payment_reference'] ?? null,
+            $line['specific_symbol'] ?? null,
+            (float) ($side === 0 ? $line['money_dr'] : $line['money_cr']),
+            (float) ($side === 0 ? $line['money_dr_cur'] : $line['money_cr_cur']),
+        );
+    }
+
+    /**
+     * Řádek deníku z požadavku contributoru — tvar jako makeLine, identita
+     * z požadavku (KS a splatnost nemá), operace NULL, bez řádku dokladu.
+     *
+     * @param array{id?: int, number: string, is_error?: bool} $account
+     * @return array<string, mixed>
+     */
+    private function makeContributedLine(JournalLineRequest $request, array $account): array
+    {
+        $side = $request->side;
+        return [
+            'side'              => $side,
+            'account'           => $account['id'] ?? null,
+            'account_number'    => $account['number'],
+            'is_error'          => !empty($account['is_error']),
+            'operation'         => null,
+            'partner'           => $request->partner,
+            'payment_reference' => $request->paymentReference,
+            'specific_symbol'   => $request->specificSymbol,
+            'constant_symbol'   => null,
+            'due_date'          => null,
+            'text'              => mb_substr($request->text, 0, 200),
+            'money_dr'          => $side === 0 ? round($request->moneyDom, 2) : 0.0,
+            'money_cr'          => $side === 1 ? round($request->moneyDom, 2) : 0.0,
+            'money_dr_cur'      => $side === 0 ? round($request->moneyCur, 2) : 0.0,
+            'money_cr_cur'      => $side === 1 ? round($request->moneyCur, 2) : 0.0,
+            'rowId'             => null,
+        ];
+    }
+
     // ── Seskupení a zápis ───────────────────────────────────────────────────
 
     /**
@@ -810,7 +929,7 @@ final class AccountingEngine
      */
     private function writeResult(int $docHeadId, array $grouped, array $head = []): array
     {
-        $state = $this->messages === [] ? 1 : 2;
+        $state = $this->hasErrors() ? 2 : 1;
 
         $this->db->begin();
         try {
@@ -922,8 +1041,29 @@ final class AccountingEngine
         return array_map(fn($r) => $r->toArray(), $rows);
     }
 
-    private function addMessage(string $code, string $message, ?int $rowId = null): void
+    /**
+     * Zpráva účtování; `level` 'error' (default, stav 2) nebo 'warning'
+     * (jen informace, stav zůstává 1 — selhání contributoru, #79 D3b).
+     * Pole `level` se zapisuje jen u varování, tvar chybové zprávy je
+     * beze změny.
+     */
+    private function addMessage(string $code, string $message, ?int $rowId = null, string $level = 'error'): void
     {
-        $this->messages[] = ['code' => $code, 'message' => $message, 'rowId' => $rowId];
+        $entry = ['code' => $code, 'message' => $message, 'rowId' => $rowId];
+        if ($level !== 'error') {
+            $entry['level'] = $level;
+        }
+        $this->messages[] = $entry;
+    }
+
+    /** Aspoň jedna zpráva bez úrovně warning → stav účtování 2. */
+    private function hasErrors(): bool
+    {
+        foreach ($this->messages as $message) {
+            if (($message['level'] ?? 'error') === 'error') {
+                return true;
+            }
+        }
+        return false;
     }
 }

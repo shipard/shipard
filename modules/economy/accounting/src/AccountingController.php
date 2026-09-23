@@ -6,6 +6,7 @@ namespace Shipard\Module\Economy\Accounting;
 
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Core\Accounting\JournalContributorSet;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -33,6 +34,7 @@ final class AccountingController
         private readonly ?JournalEventDispatcher $journalEvents = null,
         private readonly ?DocumentRegistry $documents = null,
         private readonly ?DataSourceConfig $dsConfig = null,
+        private readonly ?JournalContributorSet $journalContributors = null,
     ) {}
 
     public function reaccount(Request $request): Response
@@ -65,7 +67,9 @@ final class AccountingController
             );
         }
 
-        $engine = new AccountingEngine($this->db->getDibiConnection(), $this->config, $this->journalEvents);
+        $engine = new AccountingEngine(
+            $this->db->getDibiConnection(), $this->config, $this->journalEvents, $this->journalContributors,
+        );
         $result = $engine->accountDocument($docId);
 
         return Response::success([

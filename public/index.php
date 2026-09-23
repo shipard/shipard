@@ -230,7 +230,7 @@ try {
 		$host, $resolved, $modulePathResolver,
 		$viewerRegistry, $configRuntime, $formRegistry, $documentRegistry,
 		$lookupRegistry, $alertCheckRegistry, $serverConfig,
-		$documentEventDispatcher, $journalEventDispatcher, $openItemLookup,
+		$documentEventDispatcher, $journalEventDispatcher, $openItemLookup, $journalContributors,
 	);
 
 	// ── 10. Apply headers and send ────────────────────────────────────────────
@@ -337,6 +337,7 @@ function dispatch(
 	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
 	?\Shipard\Core\Document\JournalEventDispatcher $journalEventDispatcher = null,
 	?\Shipard\Core\Accounting\OpenItemLookup $openItemLookup = null,
+	?\Shipard\Core\Accounting\JournalContributorSet $journalContributors = null,
 ): Response {
 	$baseUrl = $resolved->isDevMode()
 		? 'http://' . $host . '/' . $resolved->config->getId()
@@ -366,10 +367,10 @@ function dispatch(
 		'reports' => dispatchReports($route, $request, $db, $configRuntime, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config)),
 		'setup' => dispatchSetup($route, $request, $auth, $db, $alertCheckRegistry, $configRuntime, $modulePathResolver, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'dsAbout' => dispatchDsAbout($route, $auth, $db, $configRuntime, $resolved->config, resolveLanguage($request, $resolved->config), $tables),
-		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $openItemLookup),
-		'accounting' => dispatchAccounting($route, $request, $db, $configRuntime, $journalEventDispatcher, $documentRegistry, $resolved->config),
+		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $openItemLookup, $journalContributors),
+		'accounting' => dispatchAccounting($route, $request, $db, $configRuntime, $journalEventDispatcher, $documentRegistry, $resolved->config, $journalContributors),
 		'vat' => dispatchVat($route, $request, $db, $configRuntime, $resolved, $auth, $documentRegistry, $tables, $documentEventDispatcher),
-		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher, $openItemLookup),
+		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher, $openItemLookup, $journalContributors),
 		'personsRegistry' => dispatchPersonsRegistry($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $serverConfig),
 		'hostingPortal' => dispatchHostingPortal($route, $request, $auth, $db, $tables, $resolved, $modulePathResolver, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry()),
 		'hostingOidc' => dispatchHostingOidc($route, $request, $auth, $db, $tables, $resolved),
@@ -492,9 +493,10 @@ function dispatchAccounting(
 	?\Shipard\Core\Document\JournalEventDispatcher $journalEventDispatcher = null,
 	?\Shipard\Core\Document\DocumentRegistry $documentRegistry = null,
 	?\Shipard\Core\Config\DataSourceConfig $dsConfig = null,
+	?\Shipard\Core\Accounting\JournalContributorSet $journalContributors = null,
 ): Response {
 	$ctrl = new \Shipard\Module\Economy\Accounting\AccountingController(
-		$db, $configRuntime, $journalEventDispatcher, $documentRegistry, $dsConfig,
+		$db, $configRuntime, $journalEventDispatcher, $documentRegistry, $dsConfig, $journalContributors,
 	);
 	return match ($route->action) {
 		'reaccount' => $ctrl->reaccount($request),
@@ -549,6 +551,7 @@ function dispatchBank(
 	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
 	?\Shipard\Core\Document\JournalEventDispatcher $journalEventDispatcher = null,
 	?\Shipard\Core\Accounting\OpenItemLookup $openItemLookup = null,
+	?\Shipard\Core\Accounting\JournalContributorSet $journalContributors = null,
 ): Response {
 	$dsPath = $resolved->config->getDataSourceDir();
 	$ctrl = new \Shipard\Module\Economy\Bank\BankController(
@@ -561,6 +564,7 @@ function dispatchBank(
 		$documentEventDispatcher,
 		$journalEventDispatcher,
 		$openItemLookup,
+		$journalContributors,
 	);
 	return match ($route->action) {
 		'importStatement' => $ctrl->importStatement($auth),
@@ -866,6 +870,7 @@ function dispatchAccbal(
 	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
 	?\Shipard\Core\Document\JournalEventDispatcher $journalEventDispatcher,
 	?\Shipard\Core\Accounting\OpenItemLookup $openItemLookup = null,
+	?\Shipard\Core\Accounting\JournalContributorSet $journalContributors = null,
 ): Response {
 	if ($configRuntime === null) {
 		return Response::error('INTERNAL_ERROR', 'ConfigRuntime is required for /_accbal endpoints', 500);
@@ -875,7 +880,7 @@ function dispatchAccbal(
 		return Response::error('INTERNAL_ERROR', 'JournalEventDispatcher is required for /_accbal endpoints', 500);
 	}
 
-	$ctrl = new \Shipard\Api\Controller\AccbalController($db, $configRuntime, $journalEventDispatcher, $openItemLookup);
+	$ctrl = new \Shipard\Api\Controller\AccbalController($db, $configRuntime, $journalEventDispatcher, $openItemLookup, $journalContributors);
 	return match ($route->action) {
 		'match' => $ctrl->match($request),
 		default => Response::error('INTERNAL_ERROR', "Unknown accbal action: {$route->action}", 500),
