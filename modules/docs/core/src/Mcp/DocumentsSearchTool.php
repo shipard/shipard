@@ -52,7 +52,7 @@ final class DocumentsSearchTool implements McpTool
 			'type' => 'object',
 			'properties' => [
 				'partner'              => ['type' => 'integer', 'description' => 'ID osoby (partnera) z persons_search'],
-				'doc_type'             => ['type' => 'string', 'description' => "Typ dokladu, např. 'invno' (faktura vydaná) nebo 'invni' (faktura přijatá)"],
+				'doc_type'             => ['type' => 'string', 'description' => "Typ dokladu, např. 'invno' (faktura vydaná), 'invpo' (zálohová faktura vydaná) nebo 'invni' (faktura přijatá)"],
 				'accounting_date_from' => ['type' => 'string', 'description' => 'Účetní datum od (YYYY-MM-DD)'],
 				'accounting_date_to'   => ['type' => 'string', 'description' => 'Účetní datum do (YYYY-MM-DD)'],
 				'overdue'              => ['type' => 'boolean', 'default' => false, 'description' => "Jen doklady po splatnosti (due_date < dnes, nestornované). Po splatnosti NENÍ 'neuhrazené' — stav úhrady tento nástroj nevrací."],

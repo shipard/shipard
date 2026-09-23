@@ -41,6 +41,7 @@ import {
   faFileInvoiceDollar,
   faFileArrowDown,
   faFileArrowUp,
+  faFileContract,
   faFileLines,
   faBoxesStacked,
   faTag,
@@ -158,6 +159,7 @@ export const iconCompany = faBuilding;
 export const iconInvoice = faFileInvoiceDollar;
 export const iconInvoiceIn = faFileArrowDown; // ⬇ — přijaté faktury (směrová metafora)
 export const iconInvoiceOut = faFileArrowUp; // ⬆ — vydané faktury
+export const iconInvoiceProforma = faFileContract; // zálohové faktury vydané — výzva k platbě, ne daňový doklad
 export const iconDocAccounting = faFileInvoiceDollar;
 export const iconDocument = faFileLines;
 export const iconWarehouse = faBoxesStacked;
@@ -250,6 +252,7 @@ export const iconMap = {
   'invoice': iconInvoice,
   'invoice-in': iconInvoiceIn,
   'invoice-out': iconInvoiceOut,
+  'invoice-proforma': iconInvoiceProforma,
   'doc-accounting': iconDocAccounting,
   'document': iconDocument,
   'warehouse': iconWarehouse,

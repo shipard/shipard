@@ -1,0 +1,45 @@
+{
+    "id": "docs.proformasOut",
+    "name": "Issued proforma invoices",
+    "name:cs": "Zálohové faktury vydané",
+    "name:en": "Issued proforma invoices",
+    "description": "Document type subclass for issued proforma invoices (invpo)",
+    "description:cs": "Zálohové faktury vydané (invpo) — nedaňový doklad; specifická Document třída, formulář a viewer (#79)",
+    "description:en": "Document type subclass for issued proforma invoices (invpo)",
+
+    "dependencies": ["docs.core"],
+
+    "viewers": [
+        {
+            "id": "docs.proformasOut.heads",
+            "name": "Issued proforma invoices",
+            "name:cs": "Zálohové faktury vydané",
+            "name:en": "Issued proforma invoices",
+            "icon": "invoice-proforma",
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Docs\\ProformasOut\\ProformasOutViewer",
+            "navSection": "sales",
+            "navOrder": 15
+        }
+    ],
+
+    "documentClasses": [
+        {
+            "table": "docs_core_heads",
+            "typeColumn": "doc_type",
+            "classes": {
+                "invpo": "Shipard\\Module\\Docs\\ProformasOut\\ProformaOutDocument"
+            }
+        }
+    ],
+
+    "forms": [
+        {
+            "table": "docs_core_heads",
+            "typeColumn": "doc_type",
+            "classes": {
+                "invpo": "Shipard\\Module\\Docs\\ProformasOut\\ProformaOutForm"
+            }
+        }
+    ]
+}

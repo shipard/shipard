@@ -28,6 +28,7 @@
         "world.vat",
         "docs.core",
         "docs.invoicesOut",
+        "docs.proformasOut",
         "docs.invoicesIn",
         "docs.accountingDocs",
         "docs.cashDocs",

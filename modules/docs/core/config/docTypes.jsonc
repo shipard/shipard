@@ -1,16 +1,26 @@
 {
     // docs.core.docTypes
     //
-    // Typy dokladů v systému: invno (faktura vydaná), invni (faktura
-    // přijatá), cmnbkp (účetní doklad), cash (pokladní doklad, směr per
-    // doklad z cash_dir), cashreg (prodejka). Postupně přibudou další
-    // (bank, stockin/stockout, purchase, …).
+    // Typy dokladů v systému: invno (faktura vydaná), invpo (zálohová
+    // faktura vydaná — nedaňový doklad), invni (faktura přijatá), cmnbkp
+    // (účetní doklad), cash (pokladní doklad, směr per doklad z cash_dir),
+    // cashreg (prodejka). Postupně přibudou další (bank, stockin/stockout,
+    // purchase, …).
     //
     // Atributy:
     //   doc_id_code: string vkládaný do %D placeholderu vzorce čísla dokladu
     //   trade_dir:   1 = výstup (my=dodavatel), 2 = vstup (my=odběratel),
     //                0 = typ bez pevného směru (cmnbkp; nebo směr per doklad
     //                přes trade_dir_column)
+    //   tax_document: false = doklad není daňový (#79 D1): DPH se počítá jen
+    //                informativně (sazby, rekapitulace, součty s DPH), ale
+    //                doklad nemá DUZP ani DPPD (DocDocument je nuluje) a
+    //                nevstupuje do tvrzení DPH (economy.vat nuluje
+    //                vat_period/cs_period/rs_period i ruční hodnotu, selekce
+    //                dokladů ho vyřadí). Chybí = true (daňový doklad, všechny
+    //                dosavadní typy). Jediná autorita čtení:
+    //                DocTypes::isTaxDocument() — kód nikdy neporovnává
+    //                doc_type === 'invpo'.
     //   trade_dir_column: název sloupce hlavičky, ze kterého se čte směr
     //                obchodu, když je trade_dir 0. Hodnota sloupce se mapuje
     //                1→1, 2→2, jinak „bez stran". Jediná povolená hodnota je
@@ -40,6 +50,23 @@
         "trade_dir": 1,
         "doc_number_pattern_default": "%D%y%C%4",
         "subclass": "Shipard\\Module\\Docs\\InvoicesOut\\IssuedInvoiceDocument"
+    },
+
+    // Zálohová faktura vydaná (#79 D1): pevně výstup, není daňový doklad
+    // (tax_document: false) — DPH jen informativně, bez DUZP a bez zařazení
+    // do tvrzení DPH. Účtuje se na podrozvahu (accountingRules, #79 D2).
+    "invpo": {
+        "name": "Issued proforma invoice",
+        "name:cs": "Zálohová faktura vydaná",
+        "name:en": "Issued proforma invoice",
+        "shortcut": "FVZ",
+        "shortcut:cs": "FVZ",
+        "shortcut:en": "PI",
+        "doc_id_code": "12",
+        "trade_dir": 1,
+        "tax_document": false,
+        "doc_number_pattern_default": "%D%y%C%4",
+        "subclass": "Shipard\\Module\\Docs\\ProformasOut\\ProformaOutDocument"
     },
 
     "invni": {

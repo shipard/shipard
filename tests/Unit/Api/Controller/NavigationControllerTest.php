@@ -190,7 +190,7 @@ class NavigationControllerTest extends TestCase
             array_column($this->node($tree, 'purchase')['children'], 'viewerId'),
         );
         $this->assertSame(
-            ['docs.invoicesOut.heads', 'docs.cashRegister.heads'],
+            ['docs.invoicesOut.heads', 'docs.proformasOut.heads', 'docs.cashRegister.heads'],
             array_column($this->node($tree, 'sales')['children'], 'viewerId'),
         );
         $this->assertSame(

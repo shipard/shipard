@@ -15,11 +15,12 @@ use Shipard\Module\Docs\Core\DocsHeadsForm;
 use Shipard\Module\Docs\Core\DocsHeadsFormBase;
 use Shipard\Module\Docs\InvoicesIn\ReceivedInvoiceForm;
 use Shipard\Module\Docs\InvoicesOut\IssuedInvoiceForm;
+use Shipard\Module\Docs\ProformasOut\ProformaOutForm;
 
 /**
  * Terminál / brána, doprava a Plátce v hlavičce (#72 D2/D4/D5) — sdílený
  * helper `DocsHeadsFormBase::addPaymentIntermediaryElements` volá každý
- * per-typ formulář, proto se viditelnost ověřuje napříč všemi pěti.
+ * per-typ formulář, proto se viditelnost ověřuje napříč všemi šesti.
  */
 class PaymentIntermediaryFormTest extends TestCase
 {
@@ -27,6 +28,7 @@ class PaymentIntermediaryFormTest extends TestCase
     {
         $docTypes = [
             'invno'   => ['trade_dir' => 1],
+            'invpo'   => ['trade_dir' => 1, 'tax_document' => false],
             'invni'   => ['trade_dir' => 2],
             'cash'    => ['trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk'],
             'cashreg' => ['trade_dir' => 1, 'series_binding' => 'cash_desk'],
@@ -66,6 +68,7 @@ class PaymentIntermediaryFormTest extends TestCase
     {
         return [
             'invno'   => [IssuedInvoiceForm::class, ['doc_type' => 'invno']],
+            'invpo'   => [ProformaOutForm::class, ['doc_type' => 'invpo']],
             'cashreg' => [CashRegisterForm::class, ['doc_type' => 'cashreg']],
             'cash+'   => [CashDocForm::class, ['doc_type' => 'cash', 'cash_dir' => 1]],
             'generic' => [DocsHeadsForm::class, ['doc_type' => 'invno']],

@@ -60,6 +60,7 @@
         "name:en": "Sale of services",
         "docTypes": {
             "invno": {"order": 100},
+            "invpo": {"order": 100},
             "cash": {"order": 100, "cashDir": 1},
             "cashreg": {"order": 100}
         }
@@ -70,6 +71,7 @@
         "name:en": "Sale of goods",
         "docTypes": {
             "invno": {"order": 200},
+            "invpo": {"order": 200},
             "cash": {"order": 200, "cashDir": 1},
             "cashreg": {"order": 200}
         }

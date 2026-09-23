@@ -566,6 +566,7 @@ class DocsHeadsViewer extends TableViewer
         return match ($docType) {
             'invni'   => 'invoice-in',
             'invno'   => 'invoice',
+            'invpo'   => 'invoice-proforma',
             'cash'    => 'wallet',
             'cashreg' => 'cash-register',
             default   => 'document',

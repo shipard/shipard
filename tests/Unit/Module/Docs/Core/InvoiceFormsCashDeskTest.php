@@ -12,10 +12,11 @@ use Shipard\Module\Docs\Core\DocsHeadsForm;
 use Shipard\Module\Docs\Core\DocsHeadsFormBase;
 use Shipard\Module\Docs\InvoicesIn\ReceivedInvoiceForm;
 use Shipard\Module\Docs\InvoicesOut\IssuedInvoiceForm;
+use Shipard\Module\Docs\ProformasOut\ProformaOutForm;
 
 /**
  * Pokladna v hlavičce faktur (#59 D4): per-typ formuláře mají vlastní
- * buildHeaderTab, proto se chování ověřuje pro všechny tři třídy.
+ * buildHeaderTab, proto se chování ověřuje pro všechny čtyři třídy.
  */
 class InvoiceFormsCashDeskTest extends TestCase
 {
@@ -25,6 +26,7 @@ class InvoiceFormsCashDeskTest extends TestCase
         return [
             'generic' => [new DocsHeadsForm('docs_core_heads')],
             'invno'   => [new IssuedInvoiceForm('docs_core_heads')],
+            'invpo'   => [new ProformaOutForm('docs_core_heads')],
             'invni'   => [new ReceivedInvoiceForm('docs_core_heads')],
         ];
     }

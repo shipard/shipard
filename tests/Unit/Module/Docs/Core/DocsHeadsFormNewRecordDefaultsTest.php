@@ -13,6 +13,7 @@ use Shipard\Module\Docs\Core\DocsHeadsForm;
 use Shipard\Module\Docs\Core\DocsHeadsFormBase;
 use Shipard\Module\Docs\InvoicesIn\ReceivedInvoiceForm;
 use Shipard\Module\Docs\InvoicesOut\IssuedInvoiceForm;
+use Shipard\Module\Docs\ProformasOut\ProformaOutForm;
 
 /**
  * Defaulty nového dokladu v applyNewRecordDefaults (issue #60, #24 A.1):
@@ -242,6 +243,7 @@ class DocsHeadsFormNewRecordDefaultsTest extends TestCase
         return [
             'generic' => [new DocsHeadsForm('docs_core_heads')],
             'invno'   => [new IssuedInvoiceForm('docs_core_heads')],
+            'invpo'   => [new ProformaOutForm('docs_core_heads')],
             'invni'   => [new ReceivedInvoiceForm('docs_core_heads')],
         ];
     }

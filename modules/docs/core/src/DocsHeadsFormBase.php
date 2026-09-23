@@ -21,10 +21,11 @@ use Shipard\Core\Settings\SettingsStore;
  * cascade (partner → adresa/banka, issue_date → splatnost), resolve options
  * z DB / cfgItem, render rekapitulace DPH a fakturačních snapshotů.
  *
- * Per-typ subclassy (`DocsHeadsForm`, `IssuedInvoiceForm`, `ReceivedInvoiceForm`)
- * dnes přepisují pouze titulky modalu přes virtuální metody
- * `getFormTitle()` / `getNewFormTitle()`; do budoucna budou rozšiřovat o
- * FVB/FPB-specifické sekce (splátkový kalendář, schvalovací workflow, ...).
+ * Per-typ subclassy (`DocsHeadsForm`, `ReceivedInvoiceForm`) přepisují
+ * titulky modalu přes `getFormTitle()` / `getNewFormTitle()` a vlastní
+ * `buildHeaderTab()` / `buildExtraTabs()`. Rodiny typů se společným layoutem
+ * mají mezistupeň: `IssuedInvoiceFormBase` (FVB `IssuedInvoiceForm` + FVZ
+ * `ProformaOutForm`), `CashDeskFormBase` (pokladní doklad + prodejka).
  *
  * Tabbed layout:
  *   - basic       — header v 8 sekcích
@@ -1238,6 +1239,19 @@ abstract class DocsHeadsFormBase extends TableForm
     {
         $cfg = $this->config?->cfgItem('docs.core.docTypes');
         return is_array($cfg) && !empty($cfg[$docType]['series_binding']);
+    }
+
+    /**
+     * Je doklad daňový (`docTypes[].tax_document`, #79 D1)? Nedaňový typ
+     * (zálohová faktura) nemá DUZP/DPPD ani zařazení do tvrzení DPH —
+     * formulář ta pole skrývá a nedoplňuje. Bez configu / neznámý typ =
+     * daňový (dnešní chování). Jediná autorita: `DocTypes::isTaxDocument()`.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function isTaxDocument(array $data): bool
+    {
+        return DocTypes::isTaxDocument($this->config, (string) ($data['doc_type'] ?? ''));
     }
 
     /**

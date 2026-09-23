@@ -77,7 +77,7 @@ final class DocumentsAggregateTool implements McpTool
 					'default' => 'measure_desc',
 					'description' => 'measure_desc = žebříček od největšího (default); dimension_asc = přirozené pořadí dimenze (časová řada)',
 				],
-				'doc_type'             => ['type' => 'string', 'description' => "Typ dokladu: 'invni' (přijaté = dodavatelé) nebo 'invno' (vydané = odběratelé)"],
+				'doc_type'             => ['type' => 'string', 'description' => "Typ dokladu: 'invni' (přijaté = dodavatelé), 'invno' (vydané = odběratelé) nebo 'invpo' (zálohové vydané = odběratelé)"],
 				'partner'              => ['type' => 'integer', 'description' => 'ID osoby (partnera) z persons_search — součet jen za tohoto partnera'],
 				'fiscal_year'          => ['type' => 'string', 'description' => "Označení fiskálního roku, např. '2025'"],
 				'accounting_date_from' => ['type' => 'string', 'description' => 'Účetní datum od (YYYY-MM-DD)'],
