@@ -14,7 +14,11 @@ use Shipard\Module\Economy\Accounting\OffBalanceAccountsProvisioner;
  *   1. oba seed rozvrhy mají skupiny 75–79 (NPO i 97–99) s povahou 6 a
  *      účty 756/756100/799/799100 s povahou 6,
  *   2. OffBalanceAccountsProvisioner nese definice inline — drift proti
- *      seedům (name, short_name, account_kind) hlídá tenhle test.
+ *      seedům (name, short_name, account_kind) hlídá tenhle test,
+ *   3. předpis invpo: kategorie proformas.out / offbalance.contra s maskami
+ *      756 / 799, blok jen se dvěma hlavičkovými kroky celkové částky
+ *      (MD 756, DAL 799), bez řádků, DPH i partnerSrc — a každá maska
+ *      má účet v obou seedech i v provisioneru.
  */
 class OffBalanceAccountingRulesTest extends TestCase
 {
@@ -69,5 +73,56 @@ class OffBalanceAccountingRulesTest extends TestCase
             ['75', '756', '756100', '79', '799', '799100'],
             array_column(OffBalanceAccountsProvisioner::ACCOUNTS, 'number'),
         );
+    }
+
+    /** @return array<string, mixed> */
+    private function rules(): array
+    {
+        return JsoncParser::parseFile(self::MODULES . '/economy/accounting/config/accountingRules.cz.jsonc');
+    }
+
+    public function testProformaRuleBooksTotalOnOffBalanceOnly(): void
+    {
+        $rules = $this->rules();
+        $this->assertArrayHasKey('proformas.out', $rules['categories']);
+        $this->assertArrayHasKey('offbalance.contra', $rules['categories']);
+
+        $masks = [];
+        foreach ($rules['accounts'] as $entry) {
+            if (in_array($entry['cat'] ?? null, ['proformas.out', 'offbalance.contra'], true)) {
+                $this->assertArrayNotHasKey('query', $entry, 'podrozvahové masky jsou bez podmínky');
+                $masks[$entry['cat']][] = (string) $entry['accountMask'];
+            }
+        }
+        $this->assertSame(['proformas.out' => ['756'], 'offbalance.contra' => ['799']], $masks);
+
+        $steps = null;
+        foreach ($rules['documents'] as $doc) {
+            if (($doc['docType'] ?? null) === 'invpo') {
+                $steps = array_values($doc['accounting']);
+            }
+        }
+        $this->assertNotNull($steps, 'předpis nemá blok invpo');
+        $this->assertCount(2, $steps, 'jen dva hlavičkové kroky');
+        $this->assertSame(
+            [['proformas.out', 'head', 'total', 0], ['offbalance.contra', 'head', 'total', 1]],
+            array_map(fn(array $s) => [$s['cat'], $s['src'], $s['col'], $s['side']], $steps),
+            'MD 756 / DAL 799 celkovou částkou hlavičky',
+        );
+        foreach ($steps as $i => $step) {
+            foreach (['partnerSrc', 'accountSrc', 'operation', 'operations', 'query', 'headQuery', 'sign', 'reverseSign'] as $key) {
+                $this->assertArrayNotHasKey($key, $step, "invpo krok #{$i}: {$key} nemá co dělat na podrozvaze");
+            }
+        }
+
+        // Každá podrozvahová maska míří na účet, který je v obou seedech i v provisioneru.
+        $provisioned = array_column(OffBalanceAccountsProvisioner::ACCOUNTS, 'number');
+        foreach (array_merge(...array_values($masks)) as $mask) {
+            $this->assertContains($mask, $provisioned, "maska {$mask} nemá bezpodmínečný provisioner");
+            foreach (self::CHARTS as $chart) {
+                $this->assertArrayHasKey($mask, $this->chart($chart), "{$chart} nemá účet {$mask}");
+                $this->assertArrayHasKey($mask . '100', $this->chart($chart), "{$chart} nemá analytiku {$mask}100");
+            }
+        }
     }
 }

@@ -33,6 +33,8 @@
         "fx.loss":          {"name:cs": "Kurzové ztráty"},
         "fx.gain":          {"name:cs": "Kurzové zisky"},
         "cash.transit":     {"name:cs": "Převod peněz — peníze na cestě"},
+        "proformas.out":     {"name:cs": "Zálohové faktury vydané (podrozvaha)"},
+        "offbalance.contra": {"name:cs": "Evidenční protiúčet podrozvahy"},
 
         "bank.unmatched.in":  {"name:cs": "Banka — nespárovaný příjem"},
         "bank.unmatched.out": {"name:cs": "Banka — nespárovaný výdaj"},
@@ -83,6 +85,14 @@
         // Migrovaný rozvrh bez 261100 dá account_not_found (řádek 261???),
         // řeší se rozvrhem DS.
         {"cat": "cash.transit",       "accountMask": "261100"},
+
+        // Podrozvaha (#79 D2): zálohová faktura vydaná 756 MD / 799 DAL.
+        // 799 je společný evidenční protiúčet pro budoucí podrozvahové
+        // evidence. Účty zajišťuje OffBalanceAccountsProvisioner bezpodmínečně.
+        // Úhradu proformy lookup přesměruje na advances.received (D3a,
+        // payment_category skupiny saldokonta) — 756 se úhradou nikdy neúčtuje.
+        {"cat": "proformas.out",     "accountMask": "756"},
+        {"cat": "offbalance.contra", "accountMask": "799"},
 
         // DPH analytiky per kód — konvence 343{NNN}, NNN = číselná část kódu.
         // Řádek má každý kód, který může vyprodukovat nenulovou daň: nenulová
@@ -198,6 +208,19 @@
                     "query": {"payment_method": {"$ne": 0}}},
                 {"accountSrc": "cashDesk", "src": "head", "col": "total", "side": 0,
                     "query": {"payment_method": 0}}
+            ]
+        },
+        // Zálohová faktura vydaná (#79 D2): jen podrozvaha, celkovou částkou
+        // hlavičky. Žádné DPH, výnosy ani rozvaha — řádky a rekapitulace se
+        // neúčtují. Partner, VS, SS a splatnost z hlavičky → klíč případu
+        // v saldokontní skupině proformas_out. Úhradu uzavírá navazující
+        // JournalContributor (#79 D3b), ne předpis.
+        {"docType": "invpo",
+            "accounting": [
+                {"cat": "proformas.out", "src": "head", "col": "total", "side": 0,
+                    "text": "Zálohová faktura vydaná"},
+                {"cat": "offbalance.contra", "src": "head", "col": "total", "side": 1,
+                    "text": "Zálohová faktura vydaná"}
             ]
         },
         {"docType": "invni",
