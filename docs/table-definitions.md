@@ -655,6 +655,46 @@ Extension je JSONC soubor, který přidává sloupce a indexy do tabulky jiného
 - **Přetížení na úrovni sloupce:** volitelné pole `collation` v definici sloupce
 - **Výjimka — `enumString`:** automaticky `CHARACTER SET ascii` (1 byte na znak, menší indexy)
 
+#### Vyhledávání
+
+`utf8mb4_czech_ci` řadí česky (`ch` za `h`) a ignoruje čárky a kroužky
+(á = a), ale háčky rozlišuje — `č ř š ž` jsou v češtině samostatná písmena.
+Česká collation, která by zároveň řadila česky a hledala bez háčků,
+neexistuje. Proto Shipard používá **dvě collation**: sloupce, indexy
+a `ORDER BY` zůstávají v `utf8mb4_czech_ci`, volné textové hledání
+porovnává v jazykově neutrální `utf8mb4_uca1400_ai_ci`, nastavené
+explicitně **na parametru**:
+
+```sql
+`full_name` LIKE '%cesk%' COLLATE utf8mb4_uca1400_ai_ci
+```
+
+Explicitní collation parametru přebije implicitní collation sloupce (žádné
+„Illegal mix of collations“), funguje i pro `ascii` sloupce (`enumString`)
+a řazení dál jede po indexu. `%term%` index nepoužívá ani bez `COLLATE`.
+
+- **Jediná cesta je helper `Shipard\Core\Database\SearchCondition`**
+  (`contains($columnSql)`, `anyContains($columnSqls, $term)`), který
+  staví `LIKE %~like~ COLLATE …`. Dibi `%~like~` přidá `%` a escapuje
+  `%`, `_` a `\` — volající předává **surový** text, nikdy `'%' . $x . '%'`.
+  `TableViewer::buildSearchCondition()` na helper deleguje.
+- **Volné hledání vždy přes helper** — vyhledávací pole vieweru, `q`
+  lookupu, filtr partnera podle názvu, dotaz MCP nástroje, CRUD operátor
+  `like`.
+- **Strukturální `LIKE` helper nepoužívá** — prefixy čísel účtů (`%like~`),
+  variabilní a specifické symboly, kódy dokladů, párování resolverů
+  výměnného formátu, generátory identifikátorů. Tam je collation sloupce
+  správná a záměrná.
+- **FULLTEXT** (`MATCH … AGAINST`) se řídí collation sloupce, `COLLATE`
+  na něj aplikovat nejde.
+- **Požadavky:** MariaDB ≥ 10.10 (`uca1400` collation) a **utf8mb4
+  spojení** — s klientem v `utf8mb3` dotaz padá na `ERROR 1253 COLLATION …
+  is not valid for CHARACTER SET 'utf8mb3'`. Dibi spojení aplikace
+  (`DataSourceConnection`, `DatabaseManager`) `utf8mb4` nastavují; při
+  ručním ladění v konzoli použij `mariadb --default-character-set=utf8mb4`.
+- Řadicí collation podle jazyka zdroje dat je odložená do prvního
+  ne-českého zdroje dat (#18 D4).
+
 ### NULL a výchozí hodnoty
 
 - Výchozí chování: `NOT NULL` (pole `nullable` je výchozí `false`)

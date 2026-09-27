@@ -1,6 +1,6 @@
 # Hledání bez ohledu na diakritiku (issue #18)
 
-**Stav:** naplánováno — rozhodnutí D1–D4 zamčena v #18, neimplementováno
+**Stav:** hotovo — implementace, testy a docs 2026-09-27 (3 commity, #18); ruční ověření na dev DS prošlo
 
 > **Modul:** jádro (`src/Core/Database`, `TableViewer`) + moduly s vlastním
 > hledáním · **Typ:** oprava chování · **Issue:** #18 · **Schéma:** beze změny
@@ -142,10 +142,31 @@ Seznam vznikl grepem `LIKE`. Před začátkem ho ověř stejným grepem
 
 ## Hotovo když
 
-- [ ] `SearchCondition` existuje a `buildSearchCondition()` na něj deleguje.
-- [ ] Všechna místa ze sekce 3 používají helper, žádné volné hledání nepíše `'%' . $x . '%'` ručně.
-- [ ] Strukturální `LIKE` ze sekce 4 jsou beze změny.
-- [ ] Testy dotčených tříd procházejí, celá sada lokálně zelená.
-- [ ] Ruční ověření ze sekce 5 na dev zdroji dat prošlo.
-- [ ] Dokumentace ze sekce 6 aktualizovaná.
-- [ ] `**Stav:**` aktualizovaný a index přegenerovaný.
+- [x] `SearchCondition` existuje a `buildSearchCondition()` na něj deleguje.
+- [x] Všechna místa ze sekce 3 používají helper, žádné volné hledání nepíše `'%' . $x . '%'` ručně.
+- [x] Strukturální `LIKE` ze sekce 4 jsou beze změny.
+- [x] Testy dotčených tříd procházejí, celá sada lokálně zelená.
+- [x] Ruční ověření ze sekce 5 na dev zdroji dat prošlo.
+- [x] Dokumentace ze sekce 6 aktualizovaná.
+- [x] `**Stav:**` aktualizovaný a index přegenerovaný.
+
+## Výsledek ověření (2026-09-27, dev DS `4l3j`)
+
+Grep `LIKE` před začátkem nenašel žádné nové volné hledání proti tabulce
+v sekci 3. Unit sada zelená (6341 testů), integrační filtr
+`Viewer|Lookup|Mcp|Crud|Search|Registry|Persons` proti `4l3j` zelený.
+
+| Ověření | Před | Po |
+|---|---|---|
+| viewer Osob, hledání `cesk` / `Cesk` | 0 | 2 shody (záznamy s „Česk…“) |
+| viewer Osob, hledání `%`, `_`, `50%` | všech 12 (zástupný znak) | 0 |
+| lookup Osob `q=cesk` | 0 | 2 |
+| viewer účtů, hledání `zbozi` | 0 | 36 |
+| CRUD `filter[full_name]=like:cesk` | 0 | 2 |
+| řazení `hora, chleba, ibis` v `utf8mb4_czech_ci` | `ch` za `h` | beze změny, `ORDER BY` po indexu |
+
+Nález navíc: s klientem v `utf8mb3` (holé `mariadb` CLI) dotaz padá na
+`ERROR 1253 COLLATION … not valid for CHARACTER SET 'utf8mb3'`. Aplikace
+nastavuje `utf8mb4` v obou Dibi spojeních; do docs přidána poznámka pro
+ruční ladění (`--default-character-set=utf8mb4`). Nad rámec sekce 6
+aktualizován popis operátoru `like` v `docs/rest-api.md`.

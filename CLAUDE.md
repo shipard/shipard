@@ -127,6 +127,11 @@ smí názvy nést — tam jsou potřeba k práci.
 ### Databáze
 - MariaDB přes Dibi (`driver: mysqli`)
 - `CHARACTER SET utf8mb4 COLLATE utf8mb4_czech_ci`
+- **Volné textové hledání** (viewer, lookup `q`, MCP, CRUD `like`) **vždy přes
+  `Shipard\Core\Database\SearchCondition`** — `LIKE %~like~ COLLATE
+  utf8mb4_uca1400_ai_ci` na parametru, surový text bez `%`. Strukturální prefixy
+  (čísla účtů, symboly) zůstávají v collation sloupce. Viz `docs/table-definitions.md`
+  → Vyhledávání
 - Žádné FOREIGN KEY — referenční integrita na aplikační úrovni
 - Admin účet jen pro CREATE DATABASE / CREATE USER, runtime přes DS uživatele
 

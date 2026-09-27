@@ -12,6 +12,8 @@ Vítej v projektu Shipard! Tenhle dokument tě provede od nuly k funkčnímu vý
 ## Požadavky
 
 - **Ubuntu LTS** — 22.04 nebo 24.04
+- **MariaDB ≥ 10.10** — hledání bez diakritiky používá collation `uca1400`
+  (Ubuntu 24.04 má 10.11; na 22.04 je nutný repozitář MariaDB)
 - **git** (obvykle předinstalovaný — pokud není, `sudo apt install git`)
 - **root přístup** přes `sudo` pro one-time instalaci
 
