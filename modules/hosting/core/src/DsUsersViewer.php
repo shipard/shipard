@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Hosting\Core;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 
@@ -60,16 +61,14 @@ class DsUsersViewer extends TableViewer
         // Fulltext hledání jde přes labely z vazebních tabulek — nejdřív se
         // najdou odpovídající id, pak se filtruje IN podmínkou.
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
+            [$userSql, $userParams] = SearchCondition::anyContains(['`full_name`', '`login`'], $search);
             $userIds = $this->db->fetchAll(
-                'SELECT `id` FROM `core_system_users`'
-                . ' WHERE `full_name` LIKE %s OR `login` LIKE %s',
-                $term,
-                $term,
+                'SELECT `id` FROM `core_system_users` WHERE ' . $userSql,
+                ...$userParams,
             );
             $dsIds = $this->db->fetchAll(
-                'SELECT `id` FROM `hosting_core_data_sources` WHERE `name` LIKE %s',
-                $term,
+                'SELECT `id` FROM `hosting_core_data_sources` WHERE ' . SearchCondition::contains('`name`'),
+                $search,
             );
             $userIdList = array_map(static fn ($r) => (int) $r['id'], $userIds);
             $dsIdList   = array_map(static fn ($r) => (int) $r['id'], $dsIds);

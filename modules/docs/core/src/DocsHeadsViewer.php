@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 
@@ -99,11 +100,11 @@ class DocsHeadsViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
-            $conditions[] = '(h.`doc_number` LIKE %s OR h.`doc_text` LIKE %s OR p.`full_name` LIKE %s)';
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
+            [$searchSql, $searchParams] = SearchCondition::anyContains([
+                'h.`doc_number`', 'h.`doc_text`', 'p.`full_name`',
+            ], $search);
+            $conditions[] = $searchSql;
+            $params = array_merge($params, $searchParams);
         }
 
         if ($conditions !== []) {

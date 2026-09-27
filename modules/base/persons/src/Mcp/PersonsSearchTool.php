@@ -5,6 +5,7 @@ namespace Shipard\Module\Base\Persons\Mcp;
 
 use Shipard\Api\Mcp\McpInvocationContext;
 use Shipard\Api\Mcp\McpTool;
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Module\Base\Persons\PersonType;
 
 /**
@@ -72,15 +73,17 @@ final class PersonsSearchTool implements McpTool
 				$limit + 1, $offset,
 			);
 		} else {
-			$like = '%' . $q . '%';
+			[$searchSql, $searchParams] = SearchCondition::anyContains(
+				['`full_name`', '`company_id`', '`person_id`', '`tax_id`', '`vat_id`'],
+				$q,
+			);
 			$rows = $ctx->db->fetchAll(
 				"SELECT {$cols} FROM `base_persons_persons`"
 				. ' WHERE `docState` IN (10, 40, 80)'
-				. '   AND (`full_name` LIKE %s OR `company_id` LIKE %s OR `person_id` LIKE %s'
-				. '        OR `tax_id` LIKE %s OR `vat_id` LIKE %s)'
+				. '   AND ' . $searchSql
 				. ' ORDER BY `full_name` ASC'
 				. ' LIMIT %i OFFSET %i',
-				$like, $like, $like, $like, $like, $limit + 1, $offset,
+				...[...$searchParams, $limit + 1, $offset],
 			);
 		}
 

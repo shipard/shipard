@@ -5,6 +5,7 @@ namespace Shipard\Module\Docs\Core\Mcp;
 
 use Shipard\Api\Mcp\McpInvocationContext;
 use Shipard\Api\Mcp\McpTool;
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 
 /**
@@ -100,10 +101,14 @@ final class DocumentsSearchTool implements McpTool
 			$where[] = '`h`.`due_date` < CURDATE() AND `h`.`docState` NOT IN (30, 90)';
 		}
 		if (!empty($arguments['query'])) {
-			$like     = '%' . trim((string) $arguments['query']) . '%';
-			$where[]  = '(`h`.`doc_number` LIKE %s OR `h`.`partner_doc_number` LIKE %s)';
-			$params[] = $like;
-			$params[] = $like;
+			[$searchSql, $searchParams] = SearchCondition::anyContains(
+				['`h`.`doc_number`', '`h`.`partner_doc_number`'],
+				trim((string) $arguments['query']),
+			);
+			if ($searchSql !== '') {
+				$where[] = $searchSql;
+				$params  = array_merge($params, $searchParams);
+			}
 		}
 
 		$whereSql = $where === [] ? '1' : implode(' AND ', $where);

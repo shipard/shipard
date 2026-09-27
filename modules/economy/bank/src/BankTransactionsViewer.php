@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Bank;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 
@@ -65,15 +66,13 @@ class BankTransactionsViewer extends TableViewer
 
         if ($search !== null && $search !== '') {
             // Hledá i v partnerově full_name (joinovaná base_persons_persons).
-            // buildSearchCondition obaluje sloupce backticky a nekvalifikuje,
-            // proto stavíme podmínku ručně s aliasy.
-            $searchCols = ['t.`counterparty_name`', 't.`counterparty_account`', 't.`payment_reference`', 't.`message`', 'p.`full_name`'];
-            $likeParts = [];
-            foreach ($searchCols as $col) {
-                $likeParts[] = $col . ' LIKE %s';
-                $params[] = '%' . $search . '%';
-            }
-            $conditions[] = '(' . implode(' OR ', $likeParts) . ')';
+            // buildSearchCondition nekvalifikuje sloupce, proto helper přímo s aliasy.
+            [$searchSql, $searchParams] = SearchCondition::anyContains(
+                ['t.`counterparty_name`', 't.`counterparty_account`', 't.`payment_reference`', 't.`message`', 'p.`full_name`'],
+                $search,
+            );
+            $conditions[] = $searchSql;
+            $params = array_merge($params, $searchParams);
         }
 
         if ($conditions !== []) {

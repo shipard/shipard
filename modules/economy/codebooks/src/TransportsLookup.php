@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Codebooks;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Form\Lookup\LookupItem;
 use Shipard\Core\Form\Lookup\TableLookup;
 
@@ -29,10 +30,9 @@ class TransportsLookup extends TableLookup
         $args = [];
 
         if ($q !== '') {
-            $like = '%' . $q . '%';
-            $sql .= ' AND (t.`code` LIKE %s OR t.`name` LIKE %s)';
-            $args[] = $like;
-            $args[] = $like;
+            [$searchSql, $searchArgs] = SearchCondition::anyContains(['t.`code`', 't.`name`'], $q);
+            $sql .= ' AND ' . $searchSql;
+            $args = array_merge($args, $searchArgs);
         }
         $sql .= ' ORDER BY t.`sort_order` ASC, t.`name` ASC LIMIT %i';
         $args[] = $limit;

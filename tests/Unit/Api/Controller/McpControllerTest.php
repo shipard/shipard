@@ -423,7 +423,10 @@ class McpControllerTest extends TestCase
 		$db->method('fetchSingle')->willReturn('2026-06-06');
 
 		$result = $this->callTool($db, 'documents_search', ['query' => 'FV']);
-		$this->assertStringContainsString('doc_number` LIKE %s OR `h`.`partner_doc_number` LIKE %s', $capturedSql);
+		$this->assertStringContainsString(
+			'doc_number` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci OR `h`.`partner_doc_number` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci',
+			$capturedSql,
+		);
 		$sc = $result['structuredContent'];
 		$this->assertCount(20, $sc['items']);
 		$this->assertTrue($sc['pagination']['has_more']);

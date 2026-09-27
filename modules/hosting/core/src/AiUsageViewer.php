@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Hosting\Core;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -74,11 +75,11 @@ class AiUsageViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
-            $conditions[] = '(u.`model` LIKE %s OR ds.`name` LIKE %s OR ds.`ds_id` LIKE %s)';
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
+            [$searchSql, $searchParams] = SearchCondition::anyContains([
+                'u.`model`', 'ds.`name`', 'ds.`ds_id`',
+            ], $search);
+            $conditions[] = $searchSql;
+            $params = array_merge($params, $searchParams);
         }
 
         return [$conditions, $params];

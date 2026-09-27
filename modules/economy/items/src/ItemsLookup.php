@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Items;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Form\Lookup\LookupItem;
 use Shipard\Core\Form\Lookup\TableLookup;
 
@@ -47,16 +48,16 @@ class ItemsLookup extends TableLookup
                 ...$typeArgs, ...[$limit],
             );
         } else {
-            $like = '%' . $q . '%';
             // OR přes hlavní hledatelné sloupce — uživatel může hledat podle
             // čehokoliv, co má na položce/dokladu k dispozici.
+            [$searchSql, $searchArgs] = SearchCondition::anyContains(['`name`', '`code`', '`sku`', '`ean`'], $q);
             $rows = $this->db->fetchAll(
                 'SELECT `id`, `code`, `name` FROM `economy_items`'
                 . ' WHERE `docState` IN (10, 40, 80)' . $typeSql
-                . '   AND (`name` LIKE %s OR `code` LIKE %s OR `sku` LIKE %s OR `ean` LIKE %s)'
+                . '   AND ' . $searchSql
                 . ' ORDER BY `name` ASC'
                 . ' LIMIT %i',
-                ...$typeArgs, ...[$like, $like, $like, $like, $limit],
+                ...$typeArgs, ...$searchArgs, ...[$limit],
             );
         }
         return array_map(fn($r) => $this->buildItem($r), $rows);

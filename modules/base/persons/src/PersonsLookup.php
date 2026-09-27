@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Base\Persons;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Form\Lookup\LookupItem;
 use Shipard\Core\Form\Lookup\TableLookup;
 
@@ -31,15 +32,15 @@ class PersonsLookup extends TableLookup
                 $limit,
             );
         } else {
-            $like = '%' . $q . '%';
+            [$searchSql, $searchParams] = SearchCondition::anyContains(['`full_name`', '`company_id`', '`person_id`'], $q);
             $rows = $this->db->fetchAll(
                 'SELECT `id`, `full_name`, `person_type`, `company_id`, `birth_date`, `person_id`'
                 . ' FROM `base_persons_persons`'
                 . ' WHERE `docState` IN (10, 40, 80)'
-                . '   AND (`full_name` LIKE %s OR `company_id` LIKE %s OR `person_id` LIKE %s)'
+                . '   AND ' . $searchSql
                 . ' ORDER BY `full_name` ASC'
                 . ' LIMIT %i',
-                $like, $like, $like, $limit,
+                ...[...$searchParams, $limit],
             );
         }
         return array_map(fn(array $r) => self::buildItem($r), $rows);

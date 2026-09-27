@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accbal;
 
+use Shipard\Core\Database\SearchCondition;
+
 /**
  * Viewer saldokonta **po případech** (#69 D1, T2) — výchozí vstup do
  * saldokonta: kdo kolik dluží, co je otevřené. Jeden řádek = případ, tj.
@@ -125,8 +127,8 @@ class CasesViewer extends AccbalViewerBase
                 $rowConds[] = 'l.`fiscal_year` = %i';
                 $rowParams[] = (int) $value;
             } elseif ($id === 'partner') {
-                $rowConds[] = 'p.`full_name` LIKE %s';
-                $rowParams[] = '%' . $value . '%';
+                $rowConds[] = SearchCondition::contains('p.`full_name`');
+                $rowParams[] = $value;
             } elseif ($id === 'payment_reference') {
                 $rowConds[] = 'l.`payment_reference` LIKE %s';
                 $rowParams[] = $value . '%';

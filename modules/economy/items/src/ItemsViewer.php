@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Items;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 
@@ -53,11 +54,11 @@ class ItemsViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
-            $conditions[] = '(i.`name` LIKE %s OR i.`code` LIKE %s OR i.`description` LIKE %s)';
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
+            [$searchSql, $searchParams] = SearchCondition::anyContains([
+                'i.`name`', 'i.`code`', 'i.`description`',
+            ], $search);
+            $conditions[] = $searchSql;
+            $params = array_merge($params, $searchParams);
         }
 
         if ($conditions !== []) {

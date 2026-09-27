@@ -11,6 +11,7 @@ use Shipard\Api\Validation\InputValidator;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\ColumnDefinition;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Document\DocumentLockReason;
@@ -588,7 +589,7 @@ class CrudController
 			'gte'     => ["{$col} >= %s", [$v]],
 			'lt'      => ["{$col} < %s", [$v]],
 			'lte'     => ["{$col} <= %s", [$v]],
-			'like'    => ["{$col} LIKE %s", ['%' . $v . '%']],
+			'like'    => [SearchCondition::contains($col), [$v]],
 			'in'      => $this->buildInFragment($col, $v),
 			'null'    => $v === 'true' ? ["{$col} IS NULL", []] : ["{$col} IS NOT NULL", []],
 			'notnull' => ["{$col} IS NOT NULL", []],

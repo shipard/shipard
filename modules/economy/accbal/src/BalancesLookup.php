@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accbal;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Form\Lookup\LookupItem;
 use Shipard\Core\Form\Lookup\TableLookup;
 
@@ -30,10 +31,9 @@ class BalancesLookup extends TableLookup
         $args = [];
 
         if ($q !== '') {
-            $like = '%' . $q . '%';
-            $sql .= ' AND (`code` LIKE %s OR `name` LIKE %s)';
-            $args[] = $like;
-            $args[] = $like;
+            [$searchSql, $searchArgs] = SearchCondition::anyContains(['`code`', '`name`'], $q);
+            $sql .= ' AND ' . $searchSql;
+            $args = array_merge($args, $searchArgs);
         }
         $sql .= ' ORDER BY `sort_order` ASC, `name` ASC LIMIT %i';
         $args[] = $limit;

@@ -120,8 +120,11 @@ class CasesViewerTest extends TestCase
 
         ['sql' => $sql, 'params' => $params] = $this->queries[0];
         $inner = substr($sql, 0, (int) strpos($sql, ' GROUP BY '));
-        $this->assertStringContainsString('WHERE b.`code` = %s AND p.`full_name` LIKE %s AND l.`payment_reference` LIKE %s', $inner);
-        $this->assertSame(['receivables', '%AKIMA%', '2026%'], $params);
+        $this->assertStringContainsString(
+            'WHERE b.`code` = %s AND p.`full_name` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci AND l.`payment_reference` LIKE %s',
+            $inner,
+        );
+        $this->assertSame(['receivables', 'AKIMA', '2026%'], $params);
     }
 
     public function testViewGroupAllAndStaleActiveSkipCondition(): void

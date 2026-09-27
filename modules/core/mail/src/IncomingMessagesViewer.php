@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
@@ -96,11 +97,12 @@ class IncomingMessagesViewer extends TableViewer
         // Fulltext search — subject i ai_title (vždy oba, D3), sender_email,
         // sender_name, partner (snapshot z canonicalu i jméno Osoby), body_plain
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
-            $conditions[] = '(m.`subject` LIKE %s OR m.`ai_title` LIKE %s OR m.`sender_email` LIKE %s'
-                . ' OR m.`sender_name` LIKE %s OR m.`partner_name` LIKE %s'
-                . ' OR p.`full_name` LIKE %s OR m.`body_plain` LIKE %s)';
-            $params = array_merge($params, array_fill(0, 7, $term));
+            [$searchSql, $searchParams] = SearchCondition::anyContains([
+                'm.`subject`', 'm.`ai_title`', 'm.`sender_email`', 'm.`sender_name`', 'm.`partner_name`',
+                'p.`full_name`', 'm.`body_plain`',
+            ], $search);
+            $conditions[] = $searchSql;
+            $params = array_merge($params, $searchParams);
         }
 
         if ($conditions !== []) {

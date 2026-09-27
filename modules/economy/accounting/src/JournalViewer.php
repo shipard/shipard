@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accounting;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Core\Viewer\UsesFiscalPeriods;
 
@@ -86,8 +87,8 @@ class JournalViewer extends TableViewer
                 $conditions[] = 'j.`account_number` LIKE %s';
                 $params[] = (string) $value . '%';
             } elseif ($id === 'partner') {
-                $conditions[] = 'p.`full_name` LIKE %s';
-                $params[] = '%' . (string) $value . '%';
+                $conditions[] = SearchCondition::contains('p.`full_name`');
+                $params[] = (string) $value;
             } elseif ($id === 'payment_reference') {
                 // VS se hledá přesně/od začátku (prefix) — ne substring.
                 $conditions[] = 'j.`payment_reference` LIKE %s';
@@ -98,12 +99,11 @@ class JournalViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
-            $conditions[] = '(j.`text` LIKE %s OR j.`doc_number` LIKE %s OR j.`account_number` LIKE %s OR j.`payment_reference` LIKE %s)';
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
+            [$searchSql, $searchParams] = SearchCondition::anyContains([
+                'j.`text`', 'j.`doc_number`', 'j.`account_number`', 'j.`payment_reference`',
+            ], $search);
+            $conditions[] = $searchSql;
+            $params = array_merge($params, $searchParams);
         }
 
         return [$conditions, $params];

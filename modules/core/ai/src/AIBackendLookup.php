@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Ai;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Form\Lookup\LookupItem;
 use Shipard\Core\Form\Lookup\TableLookup;
 
@@ -27,10 +28,9 @@ class AIBackendLookup extends TableLookup
             . ' FROM `core_ai_backends`';
         $params = [];
         if ($q !== '') {
-            $term = '%' . $q . '%';
-            $sql .= ' WHERE (`name` LIKE %s OR `backend_id` LIKE %s)';
-            $params[] = $term;
-            $params[] = $term;
+            [$searchSql, $searchParams] = SearchCondition::anyContains(['`name`', '`backend_id`'], $q);
+            $sql .= ' WHERE ' . $searchSql;
+            $params = array_merge($params, $searchParams);
         }
         $sql .= ' ORDER BY `is_default` DESC, `name` ASC, `id` ASC LIMIT %i';
         $params[] = $limit;

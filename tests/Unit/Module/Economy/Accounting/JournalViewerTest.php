@@ -92,8 +92,9 @@ class JournalViewerTest extends TestCase
 
         ['sql' => $sql, 'params' => $params] = $this->queries[0];
         $this->assertStringContainsString('j.`account_number` LIKE %s', $sql);
-        $this->assertStringContainsString('p.`full_name` LIKE %s', $sql);
-        $this->assertSame(['504%', '%Tech%'], $params);
+        $this->assertStringContainsString('p.`full_name` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci', $sql);
+        // prefix ručně, partner surový (wildcards + escapování přidá Dibi)
+        $this->assertSame(['504%', 'Tech'], $params);
     }
 
     public function testUncheckedErrorFilterAndEmptyValuesAreIgnored(): void
@@ -114,10 +115,13 @@ class JournalViewerTest extends TestCase
 
         ['sql' => $sql, 'params' => $params] = $this->queries[0];
         $this->assertStringContainsString(
-            '(j.`text` LIKE %s OR j.`doc_number` LIKE %s OR j.`account_number` LIKE %s OR j.`payment_reference` LIKE %s)',
+            '(j.`text` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci'
+            . ' OR j.`doc_number` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci'
+            . ' OR j.`account_number` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci'
+            . ' OR j.`payment_reference` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci)',
             $sql,
         );
-        $this->assertSame(['%518%', '%518%', '%518%', '%518%'], $params);
+        $this->assertSame(['518', '518', '518', '518'], $params);
     }
 
     // ── renderRow ───────────────────────────────────────────────────────────

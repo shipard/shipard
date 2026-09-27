@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accbal;
 
+use Shipard\Core\Database\SearchCondition;
+
 /**
  * Viewer saldo pohybů (economy_accbal_ledger).
  *
@@ -95,8 +97,8 @@ class LedgerViewer extends AccbalViewerBase
                 $conditions[] = 'l.`fiscal_year` = %i';
                 $params[] = (int) $value;
             } elseif ($id === 'partner') {
-                $conditions[] = 'p.`full_name` LIKE %s';
-                $params[] = '%' . (string) $value . '%';
+                $conditions[] = SearchCondition::contains('p.`full_name`');
+                $params[] = (string) $value;
             } elseif ($id === 'payment_reference') {
                 $conditions[] = 'l.`payment_reference` LIKE %s';
                 $params[] = (string) $value . '%';

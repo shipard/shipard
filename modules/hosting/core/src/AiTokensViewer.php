@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Hosting\Core;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 
@@ -44,11 +45,11 @@ class AiTokensViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
-            $conditions[] = '(ds.`name` LIKE %s OR ds.`ds_id` LIKE %s OR t.`note` LIKE %s)';
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
+            [$searchSql, $searchParams] = SearchCondition::anyContains([
+                'ds.`name`', 'ds.`ds_id`', 't.`note`',
+            ], $search);
+            $conditions[] = $searchSql;
+            $params = array_merge($params, $searchParams);
         }
 
         if ($conditions !== []) {

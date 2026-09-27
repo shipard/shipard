@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Base\Registry;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Module\Core\Mail\IncomingMessageTitle;
@@ -85,12 +86,15 @@ class RegistryDocumentsViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
-            $conditions[] = '(d.`title` LIKE %s OR d.`ref_number` LIKE %s OR d.`ai_summary` LIKE %s'
+            // Hlavička bez diakritiky (helper), obsah příloh přes FULLTEXT —
+            // tokeny MATCH se řídí collation sloupce, COLLATE na ně nejde.
+            $conditions[] = '(' . SearchCondition::contains('d.`title`')
+                . ' OR ' . SearchCondition::contains('d.`ref_number`')
+                . ' OR ' . SearchCondition::contains('d.`ai_summary`')
                 . ' OR MATCH (d.`extracted_text`) AGAINST (%s))';
-            $params[] = $term;
-            $params[] = $term;
-            $params[] = $term;
+            $params[] = $search;
+            $params[] = $search;
+            $params[] = $search;
             $params[] = $search;
         }
 

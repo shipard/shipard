@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail;
 
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 
@@ -15,8 +16,8 @@ class AIProfilesViewer extends TableViewer
     {
         // JOIN na backend kvůli názvu v seznamu. Sloupce kvalifikujeme aliasem
         // `p.` — `docState`/`name` existují i v joinované tabulce, proto
-        // viewGroup filtr i search skládáme ručně s prefixem (buildViewGroupFilter
-        // / buildSearchCondition vrací nekvalifikované sloupce).
+        // viewGroup filtr skládáme ručně a search voláme přes SearchCondition
+        // s prefixem (buildViewGroupFilter / buildSearchCondition sloupce nekvalifikují).
         $sql = 'SELECT p.`id`, p.`profile_id`, p.`name`, p.`language`, p.`prompt_version`,'
             . ' p.`is_default`, p.`is_active`, p.`docState`, p.`docStateMain`,'
             . ' b.`name` AS `backend_name`'
@@ -46,10 +47,11 @@ class AIProfilesViewer extends TableViewer
         }
 
         if ($search !== null && $search !== '') {
-            $term = '%' . $search . '%';
-            $conditions[] = '(p.`name` LIKE %s OR p.`profile_id` LIKE %s)';
-            $params[] = $term;
-            $params[] = $term;
+            [$searchSql, $searchParams] = SearchCondition::anyContains([
+                'p.`name`', 'p.`profile_id`',
+            ], $search);
+            $conditions[] = $searchSql;
+            $params = array_merge($params, $searchParams);
         }
 
         if ($conditions !== []) {

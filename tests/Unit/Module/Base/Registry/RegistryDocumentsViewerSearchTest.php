@@ -40,13 +40,13 @@ class RegistryDocumentsViewerSearchTest extends TestCase
     {
         [$sql, $params] = $this->selectWithSearch('výpověď');
 
-        $this->assertStringContainsString('d.`title` LIKE %s', $sql);
-        $this->assertStringContainsString('d.`ref_number` LIKE %s', $sql);
-        $this->assertStringContainsString('d.`ai_summary` LIKE %s', $sql);
+        $this->assertStringContainsString('d.`title` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci', $sql);
+        $this->assertStringContainsString('d.`ref_number` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci', $sql);
+        $this->assertStringContainsString('d.`ai_summary` LIKE %~like~ COLLATE utf8mb4_uca1400_ai_ci', $sql);
         $this->assertStringContainsString('MATCH (d.`extracted_text`) AGAINST (%s)', $sql);
 
-        // 3× LIKE term s wildcards + 1× surový term pro MATCH
-        $this->assertSame(['%výpověď%', '%výpověď%', '%výpověď%', 'výpověď'], $params);
+        // 3× surový term pro LIKE (wildcards přidá Dibi) + 1× surový term pro MATCH
+        $this->assertSame(['výpověď', 'výpověď', 'výpověď', 'výpověď'], $params);
     }
 
     public function testNoSearchOmitsFulltextCondition(): void
