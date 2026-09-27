@@ -6,6 +6,7 @@ namespace Shipard\Core\Viewer;
 
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\StructuredFields\StructuredFieldRenderer;
 use Shipard\Core\StructuredFields\StructuredFieldResolver;
@@ -389,29 +390,19 @@ abstract class TableViewer
     }
 
     /**
-     * Build a LIKE search condition for multiple columns.
-     * Helper for subclasses to use in selectRows().
+     * Build an accent-insensitive search condition for multiple columns.
+     * Helper for subclasses to use in selectRows(). Column names are bare
+     * (wrapped in backticks here, not qualified); viewers with aliased
+     * columns call SearchCondition::anyContains() directly.
      *
      * @param string[] $columns Column names to search
-     * @param string $search Search term
+     * @param string $search Raw search term (no wildcards — Dibi adds them)
      * @return array{0: string, 1: array} [sql_fragment, params]
      */
     protected function buildSearchCondition(array $columns, string $search): array
     {
-        if (empty($columns) || $search === '') {
-            return ['', []];
-        }
-
-        $parts = [];
-        $params = [];
-        $term = '%' . $search . '%';
-
-        foreach ($columns as $col) {
-            $parts[] = "`{$col}` LIKE %s";
-            $params[] = $term;
-        }
-
-        return ['(' . implode(' OR ', $parts) . ')', $params];
+        $columnSqls = array_map(static fn (string $col) => "`{$col}`", $columns);
+        return SearchCondition::anyContains($columnSqls, $search);
     }
 
     /**
