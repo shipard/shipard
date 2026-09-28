@@ -16,7 +16,7 @@ Podrobné specifikace jsou v adresáři `docs/`. Přečti příslušný dokument
 |----------|-------|
 | `docs/roadmap.md` | **Roadmapa** — milníky, pravidlo prioritizace. Než začneš nový task: ověř, do kterého milníku patří |
 | `tasks/README.md` | **Konvence pro tasky** — hlavička `**Stav:**`, struktura zadání, anonymizace citlivých údajů, pojmenování souborů |
-| `docs/ai-workflow.md` | **Práce s Claudem** — role chat / Claude Code / člověk, postup issue → D-rozhodnutí → PRD → implementace → ověření, pravidla pro testovací server, návyky (`gh`, PHPUnit filtry, grep, ověření patchů), mapa zdrojů a `CLAUDE.local.md`. Přístupy a adresy jsou v soukromém repu `shipard/dev-env` |
+| `docs/ai-workflow.md` | **Práce s Claudem** — role chat / Claude Code / člověk, postup issue → D-rozhodnutí → PRD → implementace → ověření, pravidla pro testovací server, návyky (`gh`, PHPUnit filtry, grep, ověření patchů), mapa zdrojů, osobní `CLAUDE.local.md` (šablona `CLAUDE.local.example.md`, režimy zdrojů dat na dev serveru), text instrukcí Projektu v claude.ai. Týmové přístupy jsou v soukromém repu `shipard/dev-env` |
 | `docs/help-authoring.md` | **Uživatelská dokumentace** v `help/` — žánrová hranice proti `docs/`, front matter stránky, šablona, generovaný rozcestník. Přečti před psaním čehokoli do `help/` |
 | `docs/services.md` | **Standard samostatných komponent** — pravidla pro repozitáře mimo `shpd` (`ai-analyzer`, `mail-router`, generátor videa, vendorovaná infra). Přečti před prací v kterémkoli z nich a před zavedením nové komponenty |
 | `docs/architecture.md` | Mapa tříd, vrstvy, závislosti, tok dat — přečti pokud potřebuješ pochopit jak komponenty spolupracují |

@@ -24,7 +24,7 @@ Technické specifikace projektu Shipard.
 | [chat.md](chat.md) | Vnitřní AI asistent — orchestrační SSE smyčka, kontrakt událostí, LLM klient, výběr backendu, datový model konverzací, frontend konzumace |
 | [design-system.md](design-system.md) | Design system — paleta barev, doc-state konvence, badge systém, avatary, CSS proměnné |
 | [documentation.md](documentation.md) | Pravidla pro dokumentaci modulů a tabulek — kde leží README.md, co obsahuje .md k tabulce, vzory |
-| [ai-workflow.md](ai-workflow.md) | **Vývoj s Claudem** — role chat / Claude Code / člověk, postup issue → rozhodnutí → PRD → implementace → ověření, pravidla pro testovací server s reálnými daty, ověřené návyky, mapa zdrojů (repo / soukromé `dev-env` / stroj / Projekt), šablona `CLAUDE.local.md` |
+| [ai-workflow.md](ai-workflow.md) | **Vývoj s Claudem** — role chat / Claude Code / člověk, postup issue → rozhodnutí → PRD → implementace → ověření, pravidla pro testovací server s reálnými daty, ověřené návyky, mapa zdrojů (repo / soukromé `dev-env` / stroj / Projekt), osobní `CLAUDE.local.md` s režimy zdrojů dat, text instrukcí Projektu |
 | [help-authoring.md](help-authoring.md) | Pravidla pro **uživatelskou** dokumentaci v [`help/`](../help/README.md) — žánrová hranice, front matter, šablona stránky, generovaný rozcestník |
 | [services.md](services.md) | **Standard samostatných komponent** — pravidla pro repozitáře mimo `shpd` (`ai-analyzer`, `mail-router`, generátor videa, vendorovaná infrastruktura): tři kategorie, struktura repa, povinná sada CLI verbů, cesty na cílovém stroji, kontrakty vůči `shpd`, checklist souladu |
 | [cli.md](cli.md) | CLI nástroje — kompletní reference `shpd-server` a `shpd-ds` příkazů, pomocných skriptů a workflow scénářů |

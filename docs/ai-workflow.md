@@ -6,8 +6,9 @@ Claude sám (odkaz z `CLAUDE.md`). Doplňuje `DEVELOPERS.md` (rozchození prost�
 a `tasks/README.md` (formát zadání).
 
 Co sem **nepatří**: adresy serverů, názvy zdrojů dat, cesty k heslům, konfigurace
-osobních nástrojů. Repozitář je veřejný. Konkrétní přístupy žijí v soukromém repu
-`shipard/dev-env` (soubory `dev-env.md`, `alpha.md`) — viz kapitola 6.
+osobních nástrojů. Repozitář je veřejný. Týmové přístupy žijí v soukromém repu
+`shipard/dev-env`, specifika jednoho stroje v negitovaném `CLAUDE.local.md` —
+viz kapitoly 6 a 7.
 
 ---
 
@@ -33,9 +34,7 @@ a jak udržet přehled o tom, co se změnilo a proč.
    nebo se explicitně označí jako nahrazené — nemění se potichu.
 3. **PRD = task file** v `tasks/` podle `tasks/README.md`: hlavička `**Stav:**`,
    sekce „Před implementací přečti" (relevantní `docs/*`), kroky s commit strategií,
-   checklist „Hotovo když". U protějšku ve starém Shipardu (soukromé repo) žijí
-   tasky v `modules/imports/newShipard/tasks/` a číslují se pořadově — před
-   přidělením čísla zkontrolovat existující soubory i README.
+   checklist „Hotovo když".
 4. **Implementace v Claude Code**: „implementuj `tasks/<název>.md`". Claude Code
    čte `CLAUDE.md`, task a dokumenty ze sekce „Před implementací přečti".
 5. **Ověření**: Claude v chatu projde diff a kód read-only, spustí cílené testy,
@@ -43,9 +42,6 @@ a jak udržet přehled o tom, co se změnilo a proč.
    a pushne.
 6. **Uzavření**: aktualizace `**Stav:**` v tasku ve stejném commitu jako kód,
    `python3 scripts/tasks-index.py`, komentář nebo uzavření issue.
-
-Pořadí nasazení mezi repozitáři: **nový Shipard před starým**, když změna ve
-starém (import runner) závisí na novém applieru nebo poli.
 
 ---
 
@@ -55,11 +51,14 @@ starém (import runner) závisí na novém applieru nebo poli.
   reálné zdroje dat nikdy nepojmenovávají — jen prefixem ID. Částky a počty jen
   agregovaně. Platí i pro Claude při práci s `gh`. Detail: `CLAUDE.md` →
   *Zdroje dat ve veřejných textech*.
-- **Testovací server nese reálná data.** Čtení (soubory, SQL přes read-only
-  uživatele) je volné. **Jakákoli mutace** — zápisové SQL, mutující CLI, zápis
-  souboru, restart služby — jen po explicitním schválení v chatu, **jednotlivě**.
-  Zdrojový kód se tam needituje, slouží k diagnostice. Do odpovědí nepatří výpisy
-  osobních dat — agregovat, ukazovat jen nezbytné řádky.
+- **Reálná data.** Nese je testovací server a na vývojovém stroji zdroje dat
+  s režimem *reálná kopie* v `CLAUDE.local.md` (kapitola 7). Čtení (soubory, SQL
+  přes read-only uživatele) je volné. **Jakákoli mutace** — zápisové SQL, mutující
+  CLI, zápis souboru (i do `/tmp`), restart služby — jen po explicitním schválení
+  v chatu, **jednotlivě**. Na testovacím serveru se zdrojový kód needituje, slouží
+  k diagnostice. Do odpovědí nepatří výpisy osobních dat — agregovat, ukazovat jen
+  nezbytné řádky. Zdroje s režimem *volný* (ukázková a seedovaná data) omezení
+  nemají.
 - **Secrets.** Nikdy nečíst `config/main.json` zdroje dat ani `secrets/`. Heslo
   read-only uživatele se předává přes proměnnou prostředí, nikdy do chatu ani do
   argumentů příkazu.
@@ -98,7 +97,17 @@ prohlížeč může držet starou SPA do hard refresh.
 patří do `CLAUDE.local.md` (kapitola 7).
 
 **Databáze na dev/test** — čtení přes read-only uživatele, názvy databází =
-ID zdroje s podtržítky. Vzor volání je v `dev-env.md`.
+ID zdroje s podtržítky. Heslo se předává přes `MYSQL_PWD` načtené ze souboru;
+cesta k němu je per stroj v `CLAUDE.local.md` (testovací server: `alpha.md`).
+Read-only uživatel smí jen `SELECT` — žádné `CREATE TEMPORARY TABLE`,
+vícekrokovou analýzu psát jako CTE nebo poddotazy v jednom příkazu. Delší SQL
+posílat heredocem na stdin (`mysql … <<'EOF'`), ne přes soubor v `/tmp` — zápis
+souboru je na testovacím serveru mutace. Dotaz `IN (poddotaz)`, který vrací
+`NULL`, tiše vyřadí řádky — raději `LEFT JOIN … IS NOT NULL`.
+
+**Integrační testy** — bez proměnné `SHIPARD_INTEGRATION_DS_PATH` se tiše
+přeskočí (výsledek *Skipped*, 0 asercí). Nastavit ji inline v příkazu na
+dev zdroj dat z `CLAUDE.local.md`; podrobnosti `tests/Integration/README.md`.
 
 ---
 
@@ -112,8 +121,8 @@ všechny, patří do souboru — podle vrstvy:
 |----------|-----|
 | konvence kódu, architektura, „vždy udělej X" | `CLAUDE.md` (stručně) nebo `docs/*.md` (podrobně) |
 | postup práce, návyk, past nástroje | tento dokument |
-| přístup, adresa, cesta k heslu, ID zdroje | `shipard/dev-env` (soukromé) |
-| specifikum jednoho stroje | `CLAUDE.local.md` (negitované) |
+| týmový přístup, adresa, testovací server | `shipard/dev-env` (soukromé) |
+| specifikum stroje: `project_id`, Node, zdroje dat na dev serveru, cesta k heslu, osobní workflow | `CLAUDE.local.md` (negitované, kapitola 7) |
 
 Spouštěč je jednoduchý: druhá stejná oprava v chatu = zápis do souboru. Claude
 změnu **navrhne** a člověk ji commitne; do `CLAUDE.md` se nepíše potichu.
@@ -125,31 +134,90 @@ změnu **navrhne** a člověk ji commitne; do `CLAUDE.md` se nepíše potichu.
 | Vrstva | Soubory | Jak se dostane ke kolegovi |
 |--------|---------|----------------------------|
 | **repo `shipard/shipard`** (veřejné) | `CLAUDE.md`, `docs/`, `tasks/README.md`, tento dokument | `git clone`; Claude Code načte `CLAUDE.md` automaticky |
-| **repo `shipard/dev-env`** (soukromé) | `dev-env.md` (prostředí, nástroje, přístupy), `alpha.md` (testovací server), `claude-project-instructions.md` (text instrukcí Projektu), `README.md` (checklist nového člověka) | `git clone`; v claude.ai přes GitHub sync do knowledge Projektu |
-| **stroj** | `CLAUDE.local.md` v kořeni checkoutu, `~/.claude/*` | nesdílí se; vzor v kapitole 7 |
-| **claude.ai Projekt** | instrukce + knowledge (GitHub sync `dev-env` + z `shipard/shipard` aspoň `CLAUDE.md`, `docs/`, `tasks/README.md`) | Team plán: jeden sdílený Projekt; Pro/Max: každý si založí vlastní podle `claude-project-instructions.md` |
+| **repo `shipard/dev-env`** (soukromé) | `dev-env.md` (prostředí, nástroje, přístupy), `alpha.md` (testovací server), `old-shipard.md` (import ze starého Shipardu), `README.md` (checklist nového člověka) | `git clone`; v claude.ai přes GitHub sync do knowledge Projektu |
+| **stroj** | `CLAUDE.local.md` v kořeni checkoutu, `~/.claude/*` | nesdílí se; vzor `CLAUDE.local.example.md` (kapitola 7) |
+| **claude.ai Projekt** | instrukce + knowledge (GitHub sync `dev-env` + z `shipard/shipard` aspoň `CLAUDE.md`, `docs/`, `tasks/README.md`) | Team plán: jeden sdílený Projekt; Pro/Max: každý si založí vlastní; text instrukcí je v kapitole 8 |
 
 Důležité: **Claude v chatu `CLAUDE.md` sám od sebe nečte.** Musí být v knowledge
 Projektu (GitHub sync) nebo si ho Claude načte z repa přes MCP most na začátku
-práce — instrukce Projektu na to ukazují.
+práce — instrukce Projektu na to ukazují. `CLAUDE.local.md` v knowledge není
+(negituje se), Claude v chatu si ho vždy čte přes most.
 
 ---
 
 ## 7. Nastavení pro nového člověka
 
 Prostředí podle `DEVELOPERS.md`. Zbytek je v `shipard/dev-env/README.md`
-(přístupy, MCP most, `gh auth`, založení Projektu). Veřejná je jen šablona
-osobního souboru pro Claude Code — vytvoř `CLAUDE.local.md` v kořeni checkoutu
-(je v `.gitignore`):
+(přístupy, MCP most, `gh auth`, založení Projektu).
 
-```markdown
-# CLAUDE.local.md — specifika tohoto stroje (negitované)
+### `CLAUDE.local.md` — osobní soubor stroje
 
-- Node: `export PATH=$HOME/.nvm/versions/node/<verze>/bin:$PATH`
-- Dev zdroj dat pro testy: `<ds-id>` (`/opt/shipard/data-sources/<ds-id>`)
-- Prostředí týmu (kopie `dev-env.md` ze soukromého repa):
-  @~/.claude/shipard-dev-env.md
+Volitelný, v `.gitignore`, v kořeni checkoutu. Popisuje to, co je u každého
+jiné: `project_id` v mostu, cestu k Node, **zdroje dat na dev serveru**, cestu
+k heslu read-only uživatele a případně vlastní workflow. Začít ze šablony:
+
+```bash
+cp CLAUDE.local.example.md CLAUDE.local.md
 ```
 
-Import z domovského adresáře Claude Code při prvním spuštění potvrdí dialogem —
-odsouhlasit. Že se soubory načetly, ověří `/context` (sekce *Memory files*).
+Každý zdroj dat v tabulce má **režim**, podle kterého se Claude chová:
+
+| Režim | Co v něm je | Claude smí |
+|-------|-------------|------------|
+| `volný` | ukázková nebo seedovaná data | číst, resetovat, seedovat, zapisovat |
+| `reálná kopie` | kopie ostrých dat (např. import) | číst; mutace jen po schválení, jako na testovacím serveru (kapitola 3) |
+
+Zdroj, který v tabulce chybí, se bere jako `reálná kopie`.
+
+Kdo to načte:
+- **Claude Code** automaticky; `@cesta` importy uvnitř (např. soubor ze
+  soukromého `dev-env`) při prvním spuštění potvrdí dialogem. Co se načetlo,
+  ukáže `/context` (sekce *Memory files*). Načítá se do každé session — držet
+  krátké, delší text dát do importovaného souboru.
+- **Claude v chatu** přes MCP most na začátku práce (instrukce Projektu,
+  kapitola 8).
+
+V `CLAUDE.local.md` smí být názvy zdrojů dat (je mimo repozitář); do
+veřejných textů se z něj přenáší jen prefix ID.
+
+---
+
+## 8. Instrukce Projektu v claude.ai
+
+Text níže se vloží do pole *Instrukce* Projektu (Team: jednou do sdíleného,
+Pro/Max: každý do svého). Držet krátké — detail je v souborech, na které
+odkazuje. Po změně tady instrukce v Projektu ručně přepsat.
+
+```markdown
+Pracuješ jako vývojový partner na **Novém Shipardu** — přepisu ERP systému
+Shipard do PHP 8.5 / MariaDB / Svelte 5 (repo `shipard/shipard`, veřejné).
+Komunikace, dokumentace a UI texty česky; identifikátory v kódu anglicky.
+
+**Tvoje role** (podrobně `docs/ai-workflow.md` v repu): návrh a diskuse,
+zamykání číslovaných rozhodnutí (D1, D2, …) před psaním PRD, psaní tasků do
+`tasks/` podle `tasks/README.md`, práce s issues přes `gh --repo shipard/shipard`,
+ověřování hotové implementace read-only. Kód implementuje Claude Code z task
+filů; commit a push dělá člověk.
+
+**Na začátku práce** si načti `CLAUDE.md` a `docs/ai-workflow.md` z repa
+(z knowledge, nebo přes MCP most s `project_id` `shipard`). Pokud v kořeni
+checkoutu existuje `CLAUDE.local.md`, přečti ho přes most taky — popisuje můj
+stroj a zdroje dat na dev serveru. Týmové přístupy (testovací server apod.)
+jsou v knowledge, pokud je mám.
+
+**Tvrdá pravidla:**
+- Veřejné texty (issues, komentáře, commity, `docs/`, `tasks/`) bez názvů
+  reálných zdrojů dat, firem a osob — jen prefix ID; částky agregovaně.
+- Reálná data (testovací server; na dev serveru zdroje s režimem
+  „reálná kopie“ v `CLAUDE.local.md`): čtení volné, **jakákoli mutace jen
+  po mém explicitním schválení v chatu, jednotlivě**. Na testovacím serveru
+  se zdrojový kód needituje. Do odpovědí žádné výpisy osobních dat.
+- Nikdy nečti `config/main.json` zdrojů dat ani `secrets/`. Hesla nepatří do
+  chatu ani do argumentů příkazů.
+- Po každém `patch_file` ověř `git diff`. PHPUnit jen s úzkým `--filter`.
+  Grep s `--include`, ne široká rekurze přes `modules/`.
+- Nikdy nepushuj.
+
+Když zjistíš něco, co má platit i příště, navrhni zápis do správného souboru
+podle `docs/ai-workflow.md` §5 — paměť Projektu se s kolegy nesdílí.
+```
