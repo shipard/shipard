@@ -443,12 +443,12 @@ odlišit od obecných pojmů. Ty hlídej očima při psaní diagnostiky.
 
 ### Referencování externích repozitářů
 
-Když task v `nov_shipard/tasks/` odkazuje na něco v jiném repu, používej
-prefix `<projekt>:cesta`:
+Když task odkazuje na něco v jiném repu, používej prefix `<projekt>:cesta`,
+kde `<projekt>` je `project_id` z mapy projektů níže:
 
 - `mail_router:tasks/phase1.md`
 - `ai_analyzer:tasks/phase1.md`
-- `shpd:docs/mail/api-contract.md` (zpětný odkaz z jiných repo tasků)
+- `shipard:docs/mail/api-contract.md` (zpětný odkaz z jiných repo tasků)
 
 ### Otevřené otázky
 
@@ -461,15 +461,21 @@ otevřené.
 
 ## Mapa projektů
 
-| Projekt v `remote-dev-bridge` | Repo                      | Role                          |
-|-------------------------------|---------------------------|-------------------------------|
-| `nov_shipard`                 | `shipard/shpd`            | Hlavní aplikace (PHP backend + Svelte frontend) |
-| `mail_router`                 | (samostatný repo)         | Mail-router daemon (Python)   |
-| `ai_analyzer`                 | (samostatný repo)         | AI analyzer daemon (Python)   |
+| `project_id` v `remote-dev-bridge` | Repo | Role |
+|------------------------------------|------|------|
+| `shipard` | `shipard/shipard` | Hlavní aplikace (PHP backend + Svelte frontend) |
+| `old_shipard` | `shipard/shipard-old` (soukromé) | Starý Shipard + migrační pipeline do nového |
+| `dev_env` | `shipard/dev-env` (soukromé) | Přístupy a prostředí týmu (`docs/ai-workflow.md` §6) |
+| `mail_router` | `shipard/mail-router` | Mail-router daemon (Python) |
+| `ai_analyzer` | `shipard/ai-analyzer` | AI analyzer daemon (Python) |
+
+Úplný seznam včetně testovacího serveru je v `dev-env.md` §3. Lokální
+adresář checkoutu se může jmenovat jinak (`shpd`); `project_id` se řídí
+touto tabulkou.
 
 Tasky obvykle žijí v repu, kterého se týkají primárně. Cross-repo
-změny dělej tak, že nejdřív stabilizuješ jeden repo (typicky shpd jako
-„server"), pak proti němu vyvíjíš klienty.
+změny dělej tak, že nejdřív stabilizuješ jeden repo (typicky `shipard`
+jako „server"), pak proti němu vyvíjíš klienty.
 
 ---
 

@@ -70,7 +70,9 @@ starém (import runner) závisí na novém applieru nebo poli.
 ## 4. Nástroje a návyky ověřené v praxi
 
 **GitHub** — přes `gh` CLI, vždy s `--repo shipard/shipard`. Víceřádkové texty přes
-`--body-file /tmp/soubor.md`, ne přes `--body` (uvozovky a diakritika).
+`--body-file /tmp/soubor.md`, ne přes `--body` (uvozovky a diakritika). Přes vzdálený
+most (bez TTY) volat `gh issue view` vždy s `--json number,title,body,comments` —
+bez `--json` vrátí prázdný výstup s exit 0, tedy tiché selhání.
 
 **PHPUnit** — vždy úzký filtr: `vendor/bin/phpunit --filter 'TestA|TestB'`;
 široký filtr nebo celá sada přes vzdálený nástroj vyprší (držet timeout ≈ 120 s).
