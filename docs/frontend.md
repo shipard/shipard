@@ -632,15 +632,16 @@ PersonsViewer          (PHP — konkrétní viewer pro base.persons)
 
 | Endpoint | Popis |
 |----------|-------|
-| `GET /_ui/viewer/{id}/meta` | Metadata: name, table, filters, toolbar, viewGroups, numberSeries |
-| `GET /_ui/viewer/{id}/rows` | Záznamy (stránkované, fulltext, viewGroup + number_series filter) |
+| `GET /_ui/viewer/{id}/meta` | Metadata: name, table, filters, toolbar, viewGroups, bottomTabs, newRecordDefaults |
+| `GET /_ui/viewer/{id}/rows` | Záznamy (stránkované, fulltext, viewGroup + bottomTab filter) |
 | `GET /_ui/viewer/{id}/detail/{recordId}` | Detail vybraného záznamu (tabs) |
 
 Parametry pro `rows`:
 - `page=0` — číslo stránky (0-based), server vrátí pageSize+1 pro detekci `hasMore`
 - `search=text` — fulltext hledání
 - `filter[viewGroup]=active` — filtr skupiny stavů (active / archive / trash; bez = vše)
-- `filter[number_series]=<id>` — filtr na konkrétní číselnou řadu (per-type doc viewery)
+- `filter[bottomTab]=<id>` — aktivní spodní záložka (id z `meta.bottomTabs`;
+  význam zná jen viewer — číselná řada, šanon…, viz níže)
 - `filter[<id>]=<hodnota>` — custom filtry vieweru (definice z `meta.filters`,
   UI z `ViewerFilters.svelte` — viz níže). `ViewerController::rows` parsuje
   `filter[...]` generericky a předává do `selectRows()` jako
@@ -665,20 +666,33 @@ Pokud viewer vrací neprázdné `viewGroups` v meta odpovědi, `Viewer.svelte` z
 
 Přepnutí tabu resetuje stránku a výběr záznamu. Výchozí tab: Aktivní.
 
-### Spodní lišta — číselné řady
+### Spodní lišta — záložky vieweru
 
-`numberSeries` (list, volitelné) — pole `{id, name}` aktivních číselných řad
-pro tento viewer (jen řady ve stavu V pořádku, `docState = 40`). Per-type
-viewery (`ReceivedInvoicesViewer`, `IssuedInvoicesViewer`) ho exponují přes
-`getNumberSeries()` v base třídě `DocsHeadsViewer` — odvozeno z property
-`$scopedDocType`. Cross-type viewery vrací prázdné pole.
+`bottomTabs` (`{tabs: [...], default: id|null}`) — spodní lišta záložek,
+kterou definuje viewer přes `TableViewer::getBottomTabs()` a
+`getDefaultBottomTab()`. Záložka = `{id, label, newRecordDefaults?}`:
 
-`Viewer.svelte` z toho vykreslí spodní lištu záložek na dně list-panelu (ortogonální
-k horním viewGroup tabům — viewGroup filtruje `docState`, tahle `number_series`),
-když je řad víc než jedna. Default je první řada abecedně. Klik na záložku posílá
-`filter[number_series]=<id>`; při vytváření dokladu se id přimerg-uje do
-`formDefaultData` (`number_series`) vedle `doc_type`, takže nová faktura má
-předvyplněnou řadu z aktivní záložky.
+- `id` (string i int) je pro frontend **neprůhledné** — posílá se zpět
+  nezměněné jako `filter[bottomTab]` a interpretuje ho výhradně
+  `selectRows()` daného vieweru. Žádné sdílené sentinely.
+- `label` je lokalizovaný serverem.
+- `newRecordDefaults` (volitelné) — výchozí hodnoty záznamu založeného
+  z aktivní záložky; frontend je slije **přes** `meta.newRecordDefaults`
+  vieweru (záložka vítězí) a pošle formuláři jako `defaultData`.
+
+Konzumenti:
+
+| Viewer | Záložky | `newRecordDefaults` |
+|--------|---------|---------------------|
+| `DocsHeadsViewer` per-type (`ReceivedInvoicesViewer`, `IssuedInvoicesViewer`, …) | číselné řady `$scopedDocType` ve stavu V pořádku (`docState = 40`), abecedně; cross-type viewery bez záložek | `{number_series: id}` |
+| `RegistryDocumentsViewer` (Spisovna) | Vše (`all`) / živé šanony (id) / Nezařazené (`unfiled`) | u šanonu `{binder: id}` |
+
+`Viewer.svelte` lištu vykreslí na dně list-panelu (ortogonální k horním
+viewGroup tabům — viewGroup filtruje `docState`), když je záložek víc než
+jedna; při jedné se filtr aplikuje, ale lišta se neukazuje. Výchozí
+záložka = `default` (musí být v seznamu), jinak první. Přepnutí vieweru
+stav resetuje. Počty záznamů na záložkách a persistence aktivní záložky
+nejsou (`tasks/viewer-bottom-tabs.md`).
 
 ### Filtry vieweru (`ViewerFilters.svelte`)
 
@@ -923,7 +937,7 @@ rovnou nad dashboardem a po close refetchují **jen pokud došlo k save**
 | `GET /_app/manifest` | Veřejný web app manifest pro PWA instalaci — per-DS jméno, `start_url`/`scope` dle režimu (viz sekce 13) |
 | `GET/POST/DELETE /_app/branding/{slot}` | Branding obrázky — GET veřejný s immutable cache, zápis s auth |
 | `GET /_ui/dashboard` | Feed akčních karet pro home obrazovku (viz [`dashboard.md`](dashboard.md)) |
-| `GET /_ui/viewer/{id}/meta` | Metadata vieweru (name, table, filters, toolbar, viewGroups, numberSeries) |
+| `GET /_ui/viewer/{id}/meta` | Metadata vieweru (name, table, filters, toolbar, viewGroups, bottomTabs) |
 | `GET /_ui/viewer/{id}/rows` | Záznamy vieweru (page, search, filter) |
 | `GET /_ui/viewer/{id}/detail/{recordId}` | Detail panel záznamu (tabs) |
 

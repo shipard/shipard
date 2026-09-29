@@ -1,6 +1,6 @@
 # Task: Obecné spodní taby vieweru
 
-**Stav:** naplánováno — rozhodnutí B1–B4 k potvrzení; musí předcházet `tasks/assets-phase1.md`
+**Stav:** hotovo — 2026-09-29 (3 commity), API smoke na ukázkovém DS OK; zbývá ruční proklik v prohlížeči (faktury přijaté, Spisovna se šanonem)
 
 ## Cíl
 
@@ -118,14 +118,16 @@ public function getDefaultBottomTab(): string|int|null { return null; }
 
 ## Hotovo když
 
-- [ ] `getBottomTabs()` / `getDefaultBottomTab()` v `TableViewer`, meta
+- [x] `getBottomTabs()` / `getDefaultBottomTab()` v `TableViewer`, meta
       `bottomTabs`, `getNumberSeries()` a meta `numberSeries` odstraněné
-- [ ] oba konzumenti migrovaní, `grep -rn 'number_series' frontend/src`
+- [x] oba konzumenti migrovaní, `grep -rn 'number_series' frontend/src`
       nenajde viewerovou logiku
-- [ ] testy zelené, frontend build projde, proklik OK
-- [ ] dokumentace a Stav aktualizované
+- [x] testy zelené, frontend build projde, API smoke na ukázkovém DS
+      (meta, rows s `filter[bottomTab]`, `defaults[binder]` koerce)
+- [ ] ruční proklik v prohlížeči (faktury přijaté, Spisovna se šanonem)
+- [x] dokumentace a Stav aktualizované
 
-## Rozhodnutí k designu (k potvrzení)
+## Rozhodnutí k designu (potvrzena 2026-09-29)
 
 - **B1** API `getBottomTabs()` + `getDefaultBottomTab()`, filtr
   `bottomTab`, meta `bottomTabs`; `getNumberSeries()` a `numberSeries`

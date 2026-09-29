@@ -33,7 +33,7 @@ layout-agnostické:
 | Sdílené (beze změny)              | Per-layout                       |
 |-----------------------------------|----------------------------------|
 | `selectRows()` — SQL, filtry, search, stránkování | `renderRow()` → list (t1/i1/t2/i2/t3) |
-| `getFilters()`, `getViewGroups()`, `getNumberSeries()` | `renderGridRow()` → grid (cells) |
+| `getFilters()`, `getViewGroups()`, `getBottomTabs()` | `renderGridRow()` → grid (cells) |
 | `getToolbarActions()`, formuláře, `renderDetail()` | `getGridColumns()` — deklarace sloupců |
 
 Důsledky:

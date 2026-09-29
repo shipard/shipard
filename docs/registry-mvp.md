@@ -398,7 +398,8 @@ odblokovává import ze starého Shipardu (§10).
 - `i2` — badge druhu (`docKinds` label, barva dle mapy)
 - `t3` — `[šanon]` + první řádek `ai_summary`
 
-**Spodní taby = šanony** (vzor viewer-number-series-tabs u dokladů):
+**Spodní taby = šanony** (`TableViewer::getBottomTabs()`, id `all` /
+šanon / `unfiled`; „Přidat“ ze záložky šanonu předvyplní šanon):
 Vše / per šanon / Nezařazené (`binder IS NULL`). Fulltext hledá v `title`,
 `ref_number`, `ai_summary` (fáze 2 přidá `extracted_text`).
 

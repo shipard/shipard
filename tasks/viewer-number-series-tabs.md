@@ -2,6 +2,12 @@
 
 **Stav:** hotovo
 
+> Mechanismus zobecnil `tasks/viewer-bottom-tabs.md` (2026-09-29):
+> `getNumberSeries()` / meta `numberSeries` / `filter[number_series]`
+> nahradily `TableViewer::getBottomTabs()` / meta `bottomTabs` /
+> `filter[bottomTab]`; řadu do nového dokladu nese `newRecordDefaults`
+> záložky. Níže je původní zadání.
+
 ## Status / Cíl
 
 Přidat do per-type doc viewerů (`ReceivedInvoicesViewer`, `IssuedInvoicesViewer`,
