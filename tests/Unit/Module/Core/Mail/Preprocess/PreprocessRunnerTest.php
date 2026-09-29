@@ -258,6 +258,69 @@ class PreprocessRunnerTest extends TestCase
         $this->assertSame(40, $this->finalWrite()['state']);
     }
 
+    public function testIsdocOnlyTriggerWithEmptyPlanEndsInStateThirty(): void
+    {
+        // Zpráva odložená jen kvůli ISDOC (#81 D1): prázdný plán je záměr,
+        // běží jen import — žádný řádek `plan` v results, stav 30.
+        $imported = [];
+        $service = $this->createMock(IsdocImportService::class);
+        $service->method('tryImport')->willReturnCallback(
+            static function (int $messageId) use (&$imported): bool {
+                $imported[] = $messageId;
+                return true;
+            },
+        );
+        $runner = new PreprocessRunner(
+            $this->db($this->message(['preprocess_log' => PreprocessRunner::encodeLog(PreprocessRunner::isdocOnlyLog())])),
+            $this->attachments([['id' => 7, 'name' => 'faktura.isdoc', 'mime_type' => 'application/xml']]),
+            new ActionRegistry(),
+            static fn(): IsdocImportService => $service,
+        );
+
+        $result = $runner->run(42);
+
+        $this->assertSame('done', $result['status']);
+        $this->assertSame('imported', $result['isdoc']);
+        $this->assertSame([42], $imported);
+        $final = $this->finalWrite();
+        $this->assertSame(30, $final['state']);
+        $this->assertSame([], $final['log']['results']);
+        $this->assertSame('isdoc', $final['log']['trigger']);
+        $this->assertSame(1, $final['log']['attempts']);
+    }
+
+    public function testIsdocOnlyTriggerWithFailedImportStillOpensGate(): void
+    {
+        // Import se vzdal (prohraný závod, vadný soubor) → isdoc 'none',
+        // stav 30 — gate AI fronty se otevře, zpráva jde k analyzeru.
+        $service = $this->createMock(IsdocImportService::class);
+        $service->method('tryImport')->willReturn(false);
+        $runner = new PreprocessRunner(
+            $this->db($this->message(['preprocess_log' => PreprocessRunner::encodeLog(PreprocessRunner::isdocOnlyLog())])),
+            $this->attachments([['id' => 7, 'name' => 'faktura.isdoc', 'mime_type' => 'application/xml']]),
+            new ActionRegistry(),
+            static fn(): IsdocImportService => $service,
+        );
+
+        $result = $runner->run(42);
+
+        $this->assertSame('done', $result['status']);
+        $this->assertSame('none', $result['isdoc']);
+        $this->assertSame(30, $this->finalWrite()['state']);
+    }
+
+    public function testIsdocOnlyLogRoundTripsThroughEncodeDecode(): void
+    {
+        $log = PreprocessRunner::isdocOnlyLog();
+
+        $this->assertSame([], $log['plan']);
+        $this->assertSame(PreprocessRunner::TRIGGER_ISDOC, $log['trigger']);
+        $this->assertSame([], $log['results']);
+        $this->assertSame(0, $log['attempts']);
+        $this->assertArrayHasKey('createdAt', $log);
+        $this->assertSame($log, PreprocessRunner::decodeLog(PreprocessRunner::encodeLog($log)));
+    }
+
     public function testLostRaceOnFinalWriteIsReported(): void
     {
         $this->affected = [1 => 0]; // claim ok, final write přepsán sweepem

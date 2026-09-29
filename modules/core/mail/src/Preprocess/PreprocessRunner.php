@@ -17,6 +17,10 @@ use Shipard\Module\Core\Mail\IsdocImportService;
  *                    plánu** z preprocess_log (D12), ISDOC import nad všemi
  *                    obsahovými přílohami (D10 — intake větev byla
  *                    přeskočena), stav 30 / 40 při dílčím selhání.
+ *                    Zpráva odložená jen kvůli ISDOC (#81 D1, log
+ *                    `trigger: 'isdoc'`, {@see isdocOnlyLog()}) má plán
+ *                    prázdný záměrně — není to chyba, běží jen import
+ *                    (s obsahovou eskalací, LLM mimo HTTP request).
  *   --force          re-match dle aktuálních pravidel, smazání dříve
  *                    vygenerovaných příloh dle provenance, přegenerování;
  *                    funguje i na stavech 0/30/40.
@@ -40,6 +44,12 @@ final class PreprocessRunner
     public const STALE_PENDING_SECONDS = 300;
     /** Sweep: stav 20 starší než tolik sekund = proces umřel. */
     public const STALE_RUNNING_SECONDS = 900;
+
+    /**
+     * `preprocess_log.trigger` běhu spuštěného jen kvůli ISDOC importu
+     * (#81 D1). Chybějící trigger = běh podle pravidel (zpětná kompatibilita).
+     */
+    public const TRIGGER_ISDOC = 'isdoc';
 
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
     private const MAIL_TABLE_ID = 303;
@@ -178,7 +188,9 @@ final class PreprocessRunner
             }
         }
 
-        if ($log['results'] === []) {
+        if ($log['results'] === [] && ($log['trigger'] ?? null) !== self::TRIGGER_ISDOC) {
+            // Bez triggeru je prázdný plán vadný stav (D12 — runner vykonává
+            // uložený plán). ISDOC-only běh (#81) plán nemá záměrně.
             $allOk = false;
             $log['results'][] = ['action' => 'plan', 'ok' => false, 'note' => 'stored plan is empty'];
         }
@@ -306,6 +318,26 @@ final class PreprocessRunner
             $metadata = json_decode($metadata, true);
         }
         return is_array($metadata) && (($metadata['generatedBy'] ?? null) === 'preprocess');
+    }
+
+    /**
+     * Log pro běh spuštěný jen kvůli ISDOC importu (#81 D1): MailController
+     * jím po commitu intake / uploadu odloží zprávu s platným ISDOC do
+     * runneru (`preprocess_state` 10 + spawn). Prázdný plán je záměr —
+     * run() ho u tohoto triggeru nebere jako chybu. Serializace přes
+     * encodeLog(), ať kontroler neskládá JSON sám.
+     *
+     * @return array<string, mixed>
+     */
+    public static function isdocOnlyLog(): array
+    {
+        return [
+            'plan' => [],
+            'trigger' => self::TRIGGER_ISDOC,
+            'results' => [],
+            'attempts' => 0,
+            'createdAt' => date('c'),
+        ];
     }
 
     /** @return array<string, mixed> */
