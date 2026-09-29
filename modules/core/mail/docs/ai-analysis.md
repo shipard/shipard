@@ -248,8 +248,10 @@ Vrstva 2 „AI párování položek" (`tasks/content-tag-enrichment.md`,
 D1–D22) — nastupuje, když po Vrstvě 0 zbývají item řádky bez
 `item.ourCode`. Orchestruje `RowEnrichmentPipeline`
 (`modules/core/exchange/src/Enrich/`), který nahrazuje přímé volání
-`RowHistoryEnricher` ve všech cestách kromě ISDOC importu (strukturované
-položky, eskalace tam nepatří).
+`RowHistoryEnricher` ve všech cestách — od #81 i v [deterministickém
+ISDOC importu](#deterministický-isdoc-import) (ISDOC nese strukturované
+položky dodavatele, ne naše; řádek bez historie partnera potřebuje
+zařazení stejně jako u AI extrakce).
 
 **Flow:**
 
@@ -632,13 +634,31 @@ ISDOC je **transientní** — nevytváří se z něj příloha zprávy (nosné P
 zprávě je); do canonicalu jde `attachments[]` odkaz na nosné PDF
 (kind `original`, ne `structured` — strojová forma je uvnitř).
 
-Datový tok: `MailController::receiveIncoming` po commitu intake transakce
-zavolá `IsdocImportService::tryImport` (lazy wiring — bez kandidáta se
-service vůbec nestaví). **Výjimka:** zpráva s plánem technického
-předzpracování (`preprocess_state = 10`, viz [preprocess.md](preprocess.md))
-intake větev přeskočí — ISDOC import nad **všemi** obsahovými přílohami
-(původními i vygenerovanými, stažené PDF může nést embedded ISDOC) spustí
-až runner `mail-preprocess` po dokončení akcí. Service:
+Datový tok (#81, `tasks/mail-isdoc-content-tags.md`): import běží **vždy
+v detached runneru předzpracování** (`mail-preprocess --message`, viz
+[preprocess.md](preprocess.md)), ne v HTTP requestu — obsahová eskalace
+může volat LLM a nesmí zpomalit intake ani ruční nahrání až 20 souborů.
+
+1. `MailController` (intake `receiveIncoming` i upload `uploadMessages`)
+   po commitu transakce zavolá jen `IsdocImportService::detect()` (lazy
+   wiring — bez kandidáta `.isdoc`/`.isdocx`/XML/PDF se service nestaví;
+   detekce = parse, validace schématu, dedup identitou, **bez zápisu**).
+2. `detect() === true` → podmíněný `UPDATE … SET preprocess_state = 10,
+   preprocess_log = {plan: [], trigger: 'isdoc'} WHERE preprocess_state = 0
+   AND analysis_state IN (0, 10)` + spawn runneru. 0 řádků = analyzer si
+   zprávu mezitím claimnul (závod v okně mezi commitem a detekcí, kterou
+   může protáhnout `pdfdetach`) — odložení se vzdá, zpráva zůstává jeho.
+   `detect() === false` (PDF bez ISDOC, vadný ISDOC, více identit) →
+   zpráva jde do AI fronty jako dřív, `preprocess_state` zůstává 0.
+3. Zpráva s plánem technického předzpracování jde do runneru rovnou
+   (D10) — ISDOC import nad **všemi** obsahovými přílohami (původními
+   i vygenerovanými, stažené PDF může nést embedded ISDOC) udělá runner
+   po dokončení akcí.
+4. Runner (`PreprocessRunner::runIsdocImport`) zavolá `tryImport`, který
+   detekci zopakuje — dvojí detekce je záměr (D4), výsledek se přes DB
+   nepředává, runner čte přílohy znovu přes `listAttachments`.
+
+Service (`tryImport`):
 
 1. rozparsuje všechny kandidáty (`IsdocReader`, modul `core.exchange`) na
    canonical `shpd.docs.document.v1` se `source.kind='isdoc'`,
@@ -648,15 +668,23 @@ až runner `mail-preprocess` po dokončení akcí. Service:
    z PDF (deterministické pořadí); přílohy zprávy nedotčeny. Po dedupu
    **≥ 2 odlišné identity** → větev se celá vzdá → AI fronta (zpráva má
    nejvýše jeden návrh, D1 — AI vybere primární + `secondary_findings`),
-3. zvaliduje proti schema a obohatí řádky z historie
-   (`RowHistoryEnricher`, stejné jako `/result`),
+3. zvaliduje proti schema a obohatí řádky přes
+   `RowEnrichmentPipeline::enrichAtResult()` — stejné jako `/result`:
+   Vrstva 0 (historie partnera), a zbývá-li item řádek bez položky,
+   [obsahová eskalace](#obsahová-eskalace-content-tags) (pravidlo IČO →
+   štítek, jinak LLM klasifikace). Běží **před** zápisovou transakcí —
+   LLM latence nikdy nedrží zámky. Selhání obohacení není fatální,
+   import pokračuje neobohaceně,
 4. ve vlastní transakci s `FOR UPDATE` guardem (`analysis_state IN (0, 10)`
    — závod s analyzerem prohrává import) zapíše:
    - záznam do `core_mail_message_analyses` (`status=2`,
      `model_name='isdoc'`, `prompt_version='isdoc'`, `model_version`
      z `@version` XML, cost/tokens NULL, `confidence=1.0`,
      `canonical_json` = canonical návrhu, `proposed_type` dle
-     `DocumentType`: 1 → `invoiceReceived`, 2 → `creditNote`) —
+     `DocumentType`: 1 → `invoiceReceived`, 2 → `creditNote`,
+     `content_tag` = `_resolve.contentTag.tag` přes
+     `RowEnrichmentPipeline::contentTagOf()` — týž helper jako `/result`;
+     z něj staví karta „Nová kategorie" i učení pravidel) —
      žádná jiná entita nevzniká, návrh čeká na verdikt jako u AI,
    - message: `analysis_state=30`, `primary_type='invoiceReceived'`
      + `primary_type_source='isdoc'` (jen pokud source není `user`),
@@ -668,14 +696,26 @@ až runner `mail-preprocess` po dokončení akcí. Service:
    - titulek `ai_title` z canonicalu přes `MessageTitleComposer` (u ISDOC
      primární zdroj — žádná AI), viz [Titulek zprávy](#titulek-zprávy-ai_title).
 
-Vztah k frontě: úspěšně naimportovaná zpráva se v AI frontě **vůbec
-neobjeví** (analysis_state přeskočí 10 → 30); analyzer daemon nevyžaduje
-změny. Vadná **samostatná** ISDOC příloha / nepodporovaný `DocumentType`
-(zálohové faktury apod.) = celá větev se pro zprávu vzdá a zpráva jde
-normálně do AI fronty (warning v logu, příjem pošty nikdy neselže); vadný
-**embedded** ISDOC se naopak jen ignoruje a pokračuje se zbytkem kandidátů.
-Import funguje i v DS bez AI backendu/profilu (thresholds fallback
-`{ready: 0.9, review: 0.6}`).
+Vztah k frontě: odložená zpráva (`preprocess_state` 10/20) je za gate AI
+fronty ([api-contract.md §9.1](../../../../docs/mail/api-contract.md));
+úspěšně naimportovaná zpráva se v ní pak **vůbec neobjeví**
+(analysis_state přeskočí 10 → 30), analyzer daemon nevyžaduje změny. Když
+se import v runneru vzdá (prohraný závod, vadný soubor), runner skončí ve
+stavu 30 s `isdoc: none`, gate se otevře a zpráva jde k analyzeru
+s `analysis_state` 10 — nikdy se nezasekne. Vadná **samostatná** ISDOC
+příloha / nepodporovaný `DocumentType` (zálohové faktury apod.) = celá
+větev se vzdá už při `detect()` a zpráva jde normálně do AI fronty (warning
+v logu, příjem pošty nikdy neselže); vadný **embedded** ISDOC se naopak jen
+ignoruje a pokračuje se zbytkem kandidátů. Selhání spawnu runneru = zprávu
+zvedne sweep po 5 minutách (týká se jen ISDOC zpráv, běžná PDF pošta
+odložení neprochází).
+
+Degradace bez AI: DS bez AI backendu / API klíče importuje stejně —
+classifier v pipeline je null-safe, uplatní se jen Vrstva 0 a pravidlo IČO,
+`content_tag` zůstane NULL a návrh vznikne jako dřív (thresholds fallback
+`{ready: 0.9, review: 0.6}`). Učení pravidel (`ContentTagRuleCaptureHandler`)
+bere i doklady s `source_kind = 'isdoc'` (D2). Bez backfillu — změna platí
+pro poštu přijatou po nasazení (D3).
 
 „Znova analyzovat" (30 → 10) zůstává únikovou cestou k AI, kdyby ISDOC
 výsledek nestačil.

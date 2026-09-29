@@ -136,9 +136,10 @@ je v [TESTERS.md](../TESTERS.md).
   je analyzovaná nebo u které analýza selhala. Zprávu v Archivu nebo
   v koši znovu analyzovat nelze.
 
-Když dodavatel přiloží fakturu ve formátu **ISDOC**, AI se nepoužije vůbec
-a data se převezmou přímo — je to přesnější. Vyplatí se o ISDOC dodavatele
-požádat.
+Když dodavatel přiloží fakturu ve formátu **ISDOC**, data se převezmou
+přímo bez čtení AI — je to přesnější. AI se u něj použije jen na zařazení
+řádků do kategorií, když k nim nemáš položku z historie. Vyplatí se
+o ISDOC dodavatele požádat.
 
 ---
 

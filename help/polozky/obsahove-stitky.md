@@ -1,14 +1,15 @@
 ---
 title: Obsahové štítky a karta Nová kategorie
 summary: Jak AI třídí náklady z faktur do kategorií, co s kartou Nová kategorie na Dashboardu a kde spravovat štítky a pravidla dodavatelů.
-keywords: [obsahové štítky, obsahový štítek, nová kategorie, kategorie nákladů, otagování položek, štítky položek, pravidla dodavatelů, pravidlo dodavatele, pohonné hmoty, předvyplnění účtu, klasifikace dokladu]
+keywords: [obsahové štítky, obsahový štítek, nová kategorie, kategorie nákladů, otagování položek, štítky položek, pravidla dodavatelů, pravidlo dodavatele, pohonné hmoty, předvyplnění účtu, klasifikace dokladu, ISDOC]
 related: [polozky/zalozeni-polozky.md, posta/kontrola-vytezeni.md, slovnicek.md]
 ---
 
 # Obsahové štítky a karta Nová kategorie
 
-Když AI čte fakturu a nenajde k řádkům položku podle tvé historie, zkusí
-doklad zařadit podle obsahu — do kategorie jako *Pohonné hmoty* nebo
+Když Shipard čte fakturu — ať už ji vytěžila AI, nebo přišla ve formátu
+ISDOC — a nenajde k řádkům položku podle tvé historie, zkusí doklad
+zařadit podle obsahu — do kategorie jako *Pohonné hmoty* nebo
 *Software a SaaS*. Kategorii říkáme **obsahový štítek**. Štítek se pak
 překládá na tvou účetní položku: návrh v náhledu dokladu dostane rovnou
 položku i účet.
@@ -76,6 +77,12 @@ návrh řádku nese aspoň účet z nabídky. Takový doklad použiješ volbou
 **Dodavatel s pestrým sortimentem pravidlo nedostane.** Když od stejného
 IČO chodí pokaždé něco jiného (hobbymarket), naučené pravidlo se samo
 smaže — jednou kategorií by škodilo.
+
+**Faktury ISDOC se zařazují taky.** Fakturu ve formátu ISDOC Shipard
+převezme bez čtení AI, ale položky k řádkům hledá stejně — když je nenajde
+v historii, zařadí doklad podle obsahu a karta **Nová kategorie** se objeví
+i pro něj. Potvrzený ISDOC doklad učí pravidlo dodavatele jako každý jiný.
+Zařazení proběhne chvíli po doručení, ne v okamžiku nahrání.
 
 **Hromadné založení výchozích položek** je na jiném místě — v panelu
 **Nastavení zdroje dat**, sekce s nabídkou účetních položek. Stránka

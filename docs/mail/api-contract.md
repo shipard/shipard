@@ -231,9 +231,11 @@ ortogonální, viz `modules/core/mail/docs/ai-analysis.md` „Stavy zprávy").
 
 **Gate předzpracování:** navíc `preprocess_state NOT IN (10, 20)` — zpráva,
 které běží technické předzpracování (stažení dokladu z odkazu, viz
-`modules/core/mail/docs/preprocess.md`), se do fronty ani do
-`total_available` nedostane, dokud runner neskončí (30 hotovo / 40 hotovo
-s chybami). Selhání předzpracování frontu **nikdy neblokuje** — zpráva
+`modules/core/mail/docs/preprocess.md`) **nebo odložený ISDOC import**
+(#81 — zpráva s platným ISDOC se po intake / uploadu odloží do runneru
+s `trigger: 'isdoc'`, import s obsahovou eskalací běží tam), se do fronty
+ani do `total_available` nedostane, dokud runner neskončí (30 hotovo /
+40 hotovo s chybami). Selhání předzpracování frontu **nikdy neblokuje** — zpráva
 doteče se stavem 40. Stejnou podmínku kontroluje i `/claim` (409
 `INVALID_STATE`), kdyby analyzer claimoval ze staršího snapshotu fronty.
 

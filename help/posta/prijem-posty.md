@@ -65,8 +65,9 @@ už analýza nepřepíše; po **Použít** se dodavatel převezme z vytvořenéh
 dokladu.
 
 **Co posílat.** Ověřené je **PDF**. Nejlepší je **ISDOC** — strojově
-čitelnou fakturu Shipard převezme přímo, bez AI, takže nemá co přečíst
-špatně; když ho tvůj dodavatel umí, popros ho o něj. Fotku nebo sken
+čitelnou fakturu Shipard převezme přímo, bez čtení AI, takže nemá co
+přečíst špatně (AI jen zařadí řádky do kategorií, když k nim nemáš
+položku); když ho tvůj dodavatel umí, popros ho o něj. Fotku nebo sken
 zkusit můžeš, ale nespoléhej na výsledek a zkontroluj ho o to pečlivěji.
 
 **Víc dokumentů v jedné zprávě.** Z jednoho e-mailu vznikne **nejvýše

@@ -10,6 +10,10 @@ odkazem v těle — Bolt; faktura přímo HTML tělem — Apple, Google Play).
 Fáze 1 (#33) přinesla pravidla, runner a `fetchLinkedDocument`; Fáze 2
 (`tasks/mail-preprocess-phase2.md`, po render službě #34) akci
 `renderBodyToPdf`, parametr `renderIfHtml` a aktivaci pravidel Apple/Google.
+Od #81 (`tasks/mail-isdoc-content-tags.md`) je runner i **jediné místo
+deterministického ISDOC importu** — zpráva s platným ISDOC se do něj odloží
+i bez pravidla (`trigger: 'isdoc'`), aby obsahová eskalace (LLM) neběžela
+v HTTP requestu.
 
 Odlišení od sousedů:
 
@@ -27,8 +31,8 @@ Třetí ortogonální osa zprávy vedle `docState` (workflow) a
 
 | Stav | Význam | Kdo nastavuje |
 |---|---|---|
-| 0 Netýká se | Žádné pravidlo při intake nematchlo — koncový stav, chování jako dřív | intake |
-| 10 Čeká | Plán uložen v `preprocess_log`, runner ještě neběžel | intake, sweep (reset) |
+| 0 Netýká se | Žádné pravidlo při intake nematchlo a zpráva nenese platný ISDOC — koncový stav, chování jako dřív | intake |
+| 10 Čeká | Plán uložen v `preprocess_log`, runner ještě neběžel; nebo zpráva odložená jen kvůli ISDOC importu (`trigger: 'isdoc'`, plán prázdný) | intake (plán pravidel), ISDOC detekce po commitu intake / uploadu (#81), sweep (reset) |
 | 20 Běží | Runner si zprávu claimnul a vykonává plán | runner |
 | 30 Hotovo | Všechny akce proběhly | runner |
 | 40 Hotovo s chybami | Některá akce selhala, nebo sweep vzdal po 3 pokusech | runner, sweep |
@@ -50,6 +54,12 @@ se stavem 40 a analyzer ji dostane s tím, co k ní je (D9).
   "createdAt": "…", "startedAt": "…", "finishedAt": "…"
 }
 ```
+
+`trigger` (volitelný): `isdoc` = běh spuštěný jen kvůli ISDOC importu
+(#81, `PreprocessRunner::isdocOnlyLog()`) — `plan` je prázdný záměrně
+a runner to nebere jako chybu. Bez triggeru je prázdný plán chyba
+(`stored plan is empty` → stav 40); chybějící `trigger` = běh podle
+pravidel (starší zprávy, zpětná kompatibilita).
 
 ## Pravidla
 
@@ -122,16 +132,30 @@ POST /_mail/incoming
   ├─ PreprocessRuleMatcher (pravidla 40, AND, regexy) → plán | null
   ├─ tx: INSERT zprávy (+ preprocess_state=10, preprocess_log.plan), hit_count++
   ├─ commit
-  ├─ plán null → ISDOC import při intake (dnešní chování)
-  └─ plán → PreprocessSpawner: setsid -f php bin/shpd-ds mail-preprocess --message <id>
+  ├─ plán → PreprocessSpawner: setsid -f php bin/shpd-ds mail-preprocess --message <id>
+  └─ plán null → kandidát .isdoc/.isdocx/XML/PDF? → IsdocImportService::detect()  (bez zápisu)
+        ├─ false → konec, AI fronta (preprocess_state 0, dnešní chování)
+        └─ true  → UPDATE … SET preprocess_state = 10,
+                     preprocess_log = {plan: [], trigger: 'isdoc', …}
+                   WHERE id = ? AND preprocess_state = 0 AND analysis_state IN (0, 10)
+                   ├─ 1 řádek → PreprocessSpawner (jako u plánu)
+                   └─ 0 řádků → analyzer si zprávu claimnul, nic
+
+POST /_mail/messages/upload (ruční nahrání, #81 D4)
+  └─ po commitu dávky totéž per zpráva: detect() → odložení → spawn
+     (až 20 runnerů naráz, každý s jedním malým LLM voláním — neserializuje se)
 
 shpd-ds mail-preprocess --message <id>          (PreprocessRunner)
   ├─ claim: UPDATE … SET preprocess_state=20 WHERE id=? AND preprocess_state=10
   │        (0 řádků = prohraný závod / už hotovo → tichý konec)
-  ├─ vykoná uložený plán (ne re-match, D12) — výsledek per akce do results
+  ├─ vykoná uložený plán (ne re-match, D12) — výsledek per akce do results;
+  │  u trigger 'isdoc' je plán prázdný záměrně (žádný řádek `plan`, ne chyba)
   ├─ IsdocImportService::tryImport nad všemi obsahovými přílohami
-  │  (původní i vygenerované — intake větev byla přeskočena, D10)
-  └─ preprocess_state = 30 | 40, finishedAt
+  │  (původní i vygenerované, D10): detekce znovu → RowEnrichmentPipeline::
+  │  enrichAtResult (Vrstva 0 + pravidlo IČO | LLM štítek, mimo tx) → tx:
+  │  analýza model_name 'isdoc' vč. content_tag, analysis_state → 30
+  └─ preprocess_state = 30 | 40, finishedAt → gate AI fronty otevřena
+     (import se vzdal → analysis_state zůstal 10 → zpráva jde k analyzeru)
 ```
 
 Plán je **snapshot** z intake: změna pravidla po přijetí zprávy plán
@@ -211,18 +235,24 @@ souboru, sanitizace názvu) žijí v `Action/GeneratedAttachments`.
   `mail-analysis-reap`): stav 10 starší než 5 min (spawn selhal) a stav 20
   starší než 15 min (proces umřel) → `attempts++`, zpět na 10, spawn; po
   3 pokusech stav 40 s poznámkou. Sweep je jen záchrana, ne primární
-  spouštěč (D8).
+  spouštěč (D8). Selhaný spawn u zprávy odložené jen kvůli ISDOC znamená,
+  že import proběhne až po sweepu (5 min) — týká se jen ISDOC pošty,
+  běžné PDF odložením neprochází (#81 D4).
 - **`--force`**: re-match dle aktuálních pravidel, smazání generovaných
   příloh, přegenerování. Funguje i na stavech 0/30/40 (ladění nového
   pravidla nad starou zprávou). Odmítne zprávu s aktivním AI claimem
   (`analysis_state = 20`) a zprávu ve stavu 20 (použij `--sweep`).
+  U zprávy odložené jen kvůli ISDOC (`trigger: 'isdoc'`) vrátí `no_match`
+  — matcher hledá pravidla odesílatele, ne ISDOC; ruční re-import ISDOC
+  je mimo rozsah #81, únikovou cestou je „Znova analyzovat".
 - **Render služba**: runner ji bere ze `render` sekce
   `/etc/shipard/server.json` (`RenderClient::fromServerConfig`,
   `PreprocessRunnerFactory`); server config nenačitatelný = klient
   nenakonfigurovaný, render akce selhávají provozně.
 - **Detail zprávy** (viewer Došlá pošta): badge stavu předzpracování
   v hlavičce, blok „Předzpracování" v tabu Obsah (pravidla, pokusy,
-  výsledek per akce, ISDOC, čas), generované přílohy nesou badge
+  výsledek per akce, ISDOC, čas; u ISDOC-only běhu řádek „Spuštěno:
+  ISDOC import" místo pravidel), generované přílohy nesou badge
   „Vygenerováno".
 
 CLI reference: [docs/cli.md](../../../../docs/cli.md) § `mail-preprocess`.

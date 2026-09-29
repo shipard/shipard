@@ -218,8 +218,10 @@ staršímu. Na záložce jsou i tlačítka **Použít** a **Zamítnout**.
 zprávy. Ruční cesta je jen **Znovu analyzovat** u už doručené zprávy.
 
 **Když dodavatel umí ISDOC, popros ho o něj.** Přiloženou fakturu ve
-formátu ISDOC Shipard převezme přímo, bez AI — a je to přesnější než
-cokoli popsané na téhle stránce.
+formátu ISDOC Shipard převezme přímo, bez čtení AI — a je to přesnější než
+cokoli popsané na téhle stránce. Položky k řádkům se hledají stejně jako
+u vytěžené faktury, takže návrh může skončit **Ke kontrole** kvůli nové
+kategorii — viz [Obsahové štítky](../polozky/obsahove-stitky.md).
 
 ## Souvisí
 
