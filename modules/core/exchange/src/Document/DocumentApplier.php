@@ -554,7 +554,13 @@ class DocumentApplier
         $taxPointDate = $canonical['dates']['taxPointDate'] ?? ($canonical['dates']['issueDate'] ?? null);
 
         foreach ($rows as $idx => $row) {
-            $rowResolve = ['index' => $idx];
+            // Text řádku, jak skončí na dokladu (#84 D2): náhled ho zobrazuje
+            // hotový ze serveru, frontend skladbu nezrcadlí. Informativní,
+            // apply ho nečte — skládá si ho znovu tímtéž helperem.
+            $rowResolve = [
+                'index'   => $idx,
+                'rowText' => CanonicalRowText::compose(is_array($row) ? $row : []),
+            ];
             if (is_array($row['item'] ?? null) && $row['item'] !== []) {
                 $rowResolve['item'] = $this->itemResolver->resolve($row['item'], $supplierPersonId)->toArray();
             }

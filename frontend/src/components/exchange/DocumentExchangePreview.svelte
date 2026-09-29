@@ -699,7 +699,10 @@
               <tr>
                 <td>{row.orderPos ?? i + 1}</td>
                 <td>
-                  <span class="shpd-exchange__row-name">{row.item?.name ?? '—'}</span>
+                  <!-- Row text composed server-side (_resolve.rows[i].rowText, #84) — the same
+                       text the applier writes to the document. item.name fallback only for
+                       a canonical without _resolve (previewMessage without applier). -->
+                  <span class="shpd-exchange__row-name">{resolve?.rows?.[i]?.rowText ?? row.item?.name ?? '—'}</span>
                   {#if row.item?.supplierCode}
                     <span class="shpd-exchange__row-code">{row.item.supplierCode}</span>
                   {/if}

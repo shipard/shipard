@@ -199,9 +199,40 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(7, $resolve['supplierBank']['matchedId']);
         $this->assertSame('matched', $resolve['rows'][0]['item']['status']);
         $this->assertSame(18, $resolve['rows'][0]['item']['matchedId']);
+        // Text řádku pro review modal = to, co applier zapíše (#84 D2).
+        $this->assertSame(
+            \Shipard\Module\Core\Exchange\Document\CanonicalRowText::compose($payload['rows'][0]),
+            $resolve['rows'][0]['rowText'],
+        );
+        $this->assertSame('Konzultace — Hodinová sazba senior konzultanta', $resolve['rows'][0]['rowText']);
         $this->assertSame('ok', $resolve['summary']['status']);
         // supplier + supplierBank + row[0].item + row[0].unit + row[0].vatCode = 5
         $this->assertSame(5, $resolve['summary']['matchedCount']);
+    }
+
+    /**
+     * `rowText` je u každého řádku — i u kontačního bez `item` (text
+     * z řádkové úrovně) a u řádku bez jakéhokoli textu (null, ne chybějící
+     * klíč, aby frontend nemusel rozlišovat).
+     */
+    public function testPreviewRowTextForRowsWithoutItem(): void
+    {
+        $applier = $this->buildApplier();
+        $result = $applier->preview([
+            'format'        => 'shpd.docs.document',
+            'formatVersion' => '1.0',
+            'docType'       => 'accountingDocument',
+            'dates'         => ['issueDate' => '2026-06-10'],
+            'rows'          => [
+                ['rowKind' => 'item', 'operation' => 'acc.record', 'accSide' => 'debit', 'account' => '568001', 'totalPrice' => 120.0, 'description' => 'Poplatek za vedení účtu'],
+                ['rowKind' => 'item', 'operation' => 'acc.record', 'accSide' => 'credit', 'account' => '221001', 'totalPrice' => 120.0],
+            ],
+        ]);
+
+        $rows = $result->canonical['_resolve']['rows'];
+        $this->assertSame('Poplatek za vedení účtu', $rows[0]['rowText']);
+        $this->assertArrayHasKey('rowText', $rows[1]);
+        $this->assertNull($rows[1]['rowText']);
     }
 
     public function testPreviewMarksCanCreateAsUnresolved(): void
