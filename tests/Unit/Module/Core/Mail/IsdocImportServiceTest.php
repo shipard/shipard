@@ -6,6 +6,8 @@ namespace Shipard\Tests\Unit\Module\Core\Mail;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Module\Core\Exchange\Enrich\ContentTagResolver;
+use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveResult;
@@ -17,10 +19,12 @@ use Shipard\Module\Core\Mail\MessageTitleComposer;
 
 /**
  * Deterministický ISDOC import (tasks/mail-isdoc-import.md, krok 3;
- * message-centric model z tasks/mail-message-centric.md). Reálný IsdocReader
- * + SchemaValidator nad fixtures, mockovaná DB — ověřuje se orchestrace:
- * co se insertne/updatne a kdy se větev vzdá. Canonical návrhu žije přímo
- * na řádku analýzy (`canonical_json`), žádná extracted tabulka.
+ * message-centric model z tasks/mail-message-centric.md; detect() +
+ * obsahové štítky z tasks/mail-isdoc-content-tags.md #81). Reálný
+ * IsdocReader + SchemaValidator nad fixtures, mockovaná DB — ověřuje se
+ * orchestrace: co se insertne/updatne a kdy se větev vzdá. Canonical
+ * návrhu žije přímo na řádku analýzy (`canonical_json`), žádná extracted
+ * tabulka.
  */
 class IsdocImportServiceTest extends TestCase
 {
@@ -109,7 +113,7 @@ class IsdocImportServiceTest extends TestCase
         return $db;
     }
 
-    private function service(DataSourceConnection $db, ?RowHistoryEnricher $enricher = null): IsdocImportService
+    private function service(DataSourceConnection $db, ?RowEnrichmentPipeline $enricher = null): IsdocImportService
     {
         return new IsdocImportService(
             $db,
@@ -132,6 +136,35 @@ class IsdocImportServiceTest extends TestCase
             $this->tmpDir,
             partnerWriter: $writer,
             titleComposer: $composer,
+        );
+    }
+
+    /**
+     * Reálná pipeline (final třída) nad mockovanou DB — Vrstva 0 s partnerem
+     * vždy matched, pravidlo IČO → štítek dle $rule, bez LLM classifieru
+     * (DS bez AI backendu). Vzor RowEnrichmentPipelineTest::pipeline().
+     *
+     * @param list<array<string, mixed>> $history řádky historie partnera (docs_core_rows)
+     * @param array<string, mixed>|null $rule řádek core_exchange_tag_rules, null = žádné pravidlo
+     */
+    private function pipeline(array $history, ?array $rule = null): RowEnrichmentPipeline
+    {
+        $dibi = $this->createMock(\Dibi\Connection::class);
+        $dibi->method('fetchAll')->willReturnCallback(
+            static function (...$args) use ($history): array {
+                $sql = (string) ($args[0] ?? '');
+                $rows = str_contains($sql, 'docs_core_rows') ? $history : [];
+                return array_map(static fn(array $row) => new \Dibi\Row($row), $rows);
+            },
+        );
+        $dibi->method('fetch')->willReturn($rule !== null ? new \Dibi\Row($rule) : null);
+        $dibi->method('update')->willReturn($this->fluent()); // markRuleHit
+        $party = $this->createMock(PartyResolver::class);
+        $party->method('resolve')->willReturn(ResolveResult::matched(77, 'companyId'));
+
+        return new RowEnrichmentPipeline(
+            new RowHistoryEnricher($dibi, $party),
+            new ContentTagResolver($dibi),
         );
     }
 
@@ -223,6 +256,8 @@ class IsdocImportServiceTest extends TestCase
         $this->assertSame('isdoc', $analysis['prompt_version']);
         $this->assertSame('invoiceReceived', $analysis['proposed_type']);
         $this->assertSame(1.0, $analysis['confidence']);
+        $this->assertArrayHasKey('content_tag', $analysis);
+        $this->assertNull($analysis['content_tag']); // bez pipeline žádný štítek
         $this->assertNull($analysis['profile']);
         $this->assertNull($analysis['backend']);
         $this->assertArrayNotHasKey('cost_usd', $analysis);
@@ -326,7 +361,7 @@ class IsdocImportServiceTest extends TestCase
         $files = [
             $this->storedAttachment(501, 'faktura.isdoc', $this->fixture('invoice_min.isdoc'), 'application/xml'),
         ];
-        $enricher = $this->enricher([[
+        $pipeline = $this->pipeline([[
             'description' => 'Testovací služba',
             'vat_code' => 'cz-110',
             'doc_head' => 1234,
@@ -336,13 +371,55 @@ class IsdocImportServiceTest extends TestCase
         ]]);
 
         $dibi = $this->makeDibi($this->messageRow());
-        $result = $this->service($this->makeDb($dibi), $enricher)->tryImport(self::MESSAGE_NDX, $files);
+        $result = $this->service($this->makeDb($dibi), $pipeline)->tryImport(self::MESSAGE_NDX, $files);
 
         $this->assertTrue($result);
         $canonical = json_decode((string) $this->inserts[0][1]['canonical_json'], true);
         $this->assertSame('SRV-TEST', $canonical['rows'][0]['item']['ourCode']);
         $this->assertSame('cz-110', $canonical['rows'][0]['vat']['code']);
         $this->assertSame('historyExactRaw', $canonical['_resolve']['rows'][0]['enrichment']['matchedBy']);
+        // Vrstva 0 pokryla vše → eskalace neběží, štítek není.
+        $this->assertNull($this->inserts[0][1]['content_tag']);
+    }
+
+    public function testImportPersistsContentTagFromPipelineRule(): void
+    {
+        // Řádek bez historie → obsahová eskalace: pravidlo IČO dodavatele
+        // (12345678 ve fixture) → štítek, denormalizace do content_tag
+        // (#81 D1). Karta „Nová kategorie" z toho staví.
+        $files = [
+            $this->storedAttachment(501, 'faktura.isdoc', $this->fixture('invoice_min.isdoc'), 'application/xml'),
+        ];
+        $pipeline = $this->pipeline([], ['id' => 5, 'tag' => 'vehicle.fuel', 'origin' => 'learned']);
+
+        $dibi = $this->makeDibi($this->messageRow());
+        $this->assertTrue($this->service($this->makeDb($dibi), $pipeline)->tryImport(self::MESSAGE_NDX, $files));
+
+        $analysis = $this->inserts[0][1];
+        $this->assertSame('vehicle.fuel', $analysis['content_tag']);
+        $canonical = json_decode((string) $analysis['canonical_json'], true);
+        $this->assertSame(
+            ['tag' => 'vehicle.fuel', 'tagSource' => 'rule', 'ruleId' => 5],
+            $canonical['_resolve']['contentTag'],
+        );
+        $this->assertSame('contentTag', $canonical['_resolve']['rows'][0]['enrichment']['matchedBy']);
+    }
+
+    public function testImportWithoutTagLeavesContentTagNull(): void
+    {
+        // Pipeline bez pravidla a bez LLM classifieru (DS bez AI backendu)
+        // → štítek není, content_tag NULL, import projde jako dřív.
+        $files = [
+            $this->storedAttachment(501, 'faktura.isdoc', $this->fixture('invoice_min.isdoc'), 'application/xml'),
+        ];
+
+        $dibi = $this->makeDibi($this->messageRow());
+        $this->assertTrue($this->service($this->makeDb($dibi), $this->pipeline([]))->tryImport(self::MESSAGE_NDX, $files));
+
+        $analysis = $this->inserts[0][1];
+        $this->assertNull($analysis['content_tag']);
+        $canonical = json_decode((string) $analysis['canonical_json'], true);
+        $this->assertArrayNotHasKey('contentTag', $canonical['_resolve'] ?? []);
     }
 
     public function testCreditNoteProducesCreditNoteProposal(): void
@@ -546,7 +623,7 @@ class IsdocImportServiceTest extends TestCase
             public function __construct(
                 DataSourceConnection $db,
                 SchemaValidator $schemaValidator,
-                ?RowHistoryEnricher $enricher,
+                ?RowEnrichmentPipeline $enricher,
                 string $dsPath,
                 ?\Shipard\Module\Core\Exchange\Isdoc\IsdocReader $reader,
                 private readonly array $embeddedCanonicals,
@@ -679,6 +756,109 @@ class IsdocImportServiceTest extends TestCase
 
         $this->assertFalse($service->tryImport(self::MESSAGE_NDX, $files));
         $this->assertSame([], $this->inserts);
+    }
+
+    // ── detect() — detekce bez zápisu (#81 D4) ───────────────────────────────
+    //
+    // MailController po commitu volá jen detect(); import běží až v runneru.
+    // Stejná rozhodovací logika jako tryImport (sdílené collectDocument),
+    // ale nikdy nesmí sáhnout do DB ani spustit enrichment.
+
+    public function testDetectTrueForValidStandaloneIsdocWithoutWriting(): void
+    {
+        $files = [
+            $this->storedAttachment(501, 'faktura.isdoc', $this->fixture('invoice_min.isdoc'), 'application/xml'),
+        ];
+
+        $dibi = $this->makeDibi($this->messageRow());
+        $dibi->expects($this->never())->method('begin');
+        $dibi->expects($this->never())->method('fetch');
+
+        $this->assertTrue($this->service($this->makeDb($dibi))->detect(self::MESSAGE_NDX, $files));
+        $this->assertSame([], $this->inserts);
+        $this->assertSame([], $this->updates);
+    }
+
+    public function testDetectTrueForEmbeddedIsdoc(): void
+    {
+        $files = [
+            $this->storedAttachment(500, 'faktura.pdf', '%PDF-fake', 'application/pdf'),
+        ];
+
+        $dibi = $this->makeDibi($this->messageRow());
+        $dibi->expects($this->never())->method('begin');
+        $service = $this->serviceWithEmbedded($this->makeDb($dibi), [$this->parsedCanonical('invoice_min.isdoc')]);
+
+        $this->assertTrue($service->detect(self::MESSAGE_NDX, $files));
+        $this->assertSame([], $this->inserts);
+    }
+
+    public function testDetectFalseForPdfWithoutEmbeddedIsdoc(): void
+    {
+        // Běžné PDF (sken, AI faktura) → false → zpráva jde do AI fronty jako dřív.
+        $files = [
+            $this->storedAttachment(500, 'faktura.pdf', '%PDF-fake', 'application/pdf'),
+        ];
+        $service = $this->serviceWithEmbedded($this->makeDb($this->makeDibi($this->messageRow())), []);
+
+        $this->assertFalse($service->detect(self::MESSAGE_NDX, $files));
+    }
+
+    public function testDetectFalseForMalformedStandaloneIsdoc(): void
+    {
+        $files = [
+            $this->storedAttachment(501, 'ok.isdoc', $this->fixture('invoice_min.isdoc'), 'application/xml'),
+            $this->storedAttachment(502, 'vadna.isdoc', '<Invoice xmlns="http://isdoc.cz/n"><ID>1', 'application/xml'),
+        ];
+
+        $this->assertFalse(
+            $this->service($this->makeDb($this->makeDibi($this->messageRow())))->detect(self::MESSAGE_NDX, $files),
+        );
+    }
+
+    public function testDetectFalseForTwoDistinctIdentities(): void
+    {
+        $files = [
+            $this->storedAttachment(501, 'faktura.isdoc', $this->fixture('invoice_min.isdoc'), 'application/xml'),
+            $this->storedAttachment(502, 'dobropis.isdoc', $this->fixture('credit_note.isdoc'), 'application/xml'),
+        ];
+
+        $this->assertFalse(
+            $this->service($this->makeDb($this->makeDibi($this->messageRow())))->detect(self::MESSAGE_NDX, $files),
+        );
+    }
+
+    public function testDetectFalseWithoutCandidate(): void
+    {
+        $files = [
+            $this->storedAttachment(503, 'scan.jpg', 'JFIF', 'image/jpeg'),
+        ];
+
+        $this->assertFalse(
+            $this->service($this->makeDb($this->makeDibi($this->messageRow())))->detect(self::MESSAGE_NDX, $files),
+        );
+    }
+
+    public function testDetectSwallowsExceptions(): void
+    {
+        // Výbuch extrakce (I/O, nástroj) nesmí propadnout do intake ani
+        // uploadu — stejný kontrakt jako tryImport.
+        $files = [
+            $this->storedAttachment(500, 'faktura.pdf', '%PDF-fake', 'application/pdf'),
+        ];
+        $service = new class(
+            $this->makeDb($this->makeDibi($this->messageRow())),
+            new SchemaValidator(SchemaLoader::default()),
+            null,
+            $this->tmpDir,
+        ) extends IsdocImportService {
+            protected function extractEmbeddedCandidates(int $messageNdx, array $file): array
+            {
+                throw new \RuntimeException('pdfdetach exploded');
+            }
+        };
+
+        $this->assertFalse($service->detect(self::MESSAGE_NDX, $files));
     }
 
     public function testPdfDetectionPositiveAndCandidateUnion(): void

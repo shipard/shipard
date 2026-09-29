@@ -82,8 +82,24 @@ final class RowEnrichmentPipeline
     }
 
     /**
-     * Plný běh při /result — jediné místo, kde smí běžet LLM (D16).
-     * Statistiky pravidla se inkrementují jen tady.
+     * Štítek dokumentu z `_resolve.contentTag.tag` obohaceného canonicalu —
+     * denormalizace do sloupce `core_mail_message_analyses.content_tag`
+     * (karta Nová kategorie, learning handler). Sdílí `/result`
+     * (AnalysisController) a ISDOC import (#81). Null = bez štítku;
+     * validitu dokumentu si hlídá volající.
+     *
+     * @param array<string, mixed> $canonical
+     */
+    public static function contentTagOf(array $canonical): ?string
+    {
+        $tag = $canonical['_resolve']['contentTag']['tag'] ?? null;
+        return is_string($tag) && $tag !== '' ? $tag : null;
+    }
+
+    /**
+     * Plný běh při /result — jediné místo, kde smí běžet LLM (D16)
+     * a kde se inkrementují statistiky pravidla. Volá ho AnalysisController
+     * i IsdocImportService (v runneru předzpracování, #81).
      *
      * @param array<string, mixed> $canonical
      * @return array<string, mixed>

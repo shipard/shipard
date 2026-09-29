@@ -7,22 +7,31 @@ namespace Shipard\Module\Core\Mail;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
-use Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher;
+use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocParseException;
 use Shipard\Module\Core\Exchange\Isdoc\IsdocReader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 
 /**
  * Deterministický import ISDOC příloh došlé zprávy místo AI analýzy
- * (tasks/mail-isdoc-import.md). Volá MailController::receiveIncoming po
- * commitu intake transakce; úspěch = zpráva přeskočí AI frontu
+ * (tasks/mail-isdoc-import.md, tasks/mail-isdoc-content-tags.md #81).
+ *
+ * Datový tok: MailController (intake i ruční upload) po commitu zavolá jen
+ * {@see detect()} — bez zápisu — a zprávu s platným ISDOC odloží do
+ * runneru předzpracování (`preprocess_state` 10, `trigger: 'isdoc'`).
+ * Import sám ({@see tryImport()}) běží výhradně v detached runneru
+ * (PreprocessRunner), kde smí volat LLM obsahové eskalace, aniž by
+ * zpomalil HTTP request. Úspěch = zpráva přeskočí AI frontu
  * (analysis_state → 30), v tabu Analýzy vznikne záznam `model_name='isdoc'`
- * s canonical návrhem a confidence 1.0.
+ * s canonical návrhem, confidence 1.0 a `content_tag` ze štítku.
  *
  * Invarianty:
  *   - nikdy nesmí shodit příjem pošty — tryImport polyká všechny výjimky,
  *     návrat false = zpráva zůstává v AI frontě,
- *   - parse + validace + enrichment běží před otevřením zápisové tx,
+ *   - parse + validace + enrichment (`RowEnrichmentPipeline::enrichAtResult`
+ *     — Vrstva 0 + pravidlo IČO → štítek, jinak LLM) běží před otevřením
+ *     zápisové tx; LLM volání nikdy uvnitř tx. Bez pipeline (DS bez AI,
+ *     selhaný wiring) se importuje neobohaceně,
  *   - FOR UPDATE guard řeší závod s analyzerem (okno mezi commitem intake
  *     a začátkem importu): analysis_state mimo {0, 10} = claim vyhrál,
  *     import se vzdá,
@@ -53,8 +62,12 @@ class IsdocImportService
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
     private const ANALYSES_TABLE = 'core_mail_message_analyses';
 
-    /** analysis_state hodnoty (core.mail.analysisStates). */
-    private const ANALYSIS_IMPORTABLE_STATES = [0, 10];
+    /**
+     * analysis_state hodnoty (core.mail.analysisStates), ve kterých smí
+     * import proběhnout — 0 (DS bez AI) i 10 (ve frontě). Sdílí FOR UPDATE
+     * guard importu a podmíněné odložení v MailController (#81 D4).
+     */
+    public const ANALYSIS_IMPORTABLE_STATES = [0, 10];
     private const ANALYSIS_ANALYZED = 30;
 
     /** docState hodnoty (core.mail.docStatesIncoming). */
@@ -76,7 +89,7 @@ class IsdocImportService
     public function __construct(
         private readonly DataSourceConnection $db,
         private readonly SchemaValidator $schemaValidator,
-        private readonly ?RowHistoryEnricher $enricher,
+        private readonly ?RowEnrichmentPipeline $enricher,
         private readonly string $dsPath,
         ?IsdocReader $reader = null,
         private readonly ?MessagePartnerWriter $partnerWriter = null,
@@ -147,99 +160,46 @@ class IsdocImportService
     }
 
     /**
+     * Detekce bez zápisu (#81 D4): parse, validace schématu a dedup
+     * identitou — přesně to, co import zopakuje v runneru. True = zpráva
+     * nese právě jeden platný ISDOC doklad a má se odložit do runneru
+     * předzpracování; false = žádný / vadný ISDOC, více identit nebo
+     * výjimka (polyká se jako v tryImport) → zpráva jde do AI fronty.
+     *
+     * @param list<array<string, mixed>> $uploadedFiles Jako u tryImport.
+     */
+    public function detect(int $messageNdx, array $uploadedFiles): bool
+    {
+        try {
+            return $this->collectDocument($messageNdx, $uploadedFiles) !== null;
+        } catch (\Throwable $e) {
+            ErrorLogger::logException($e, 'IsdocImportService::detect failed — message goes to AI queue');
+            return false;
+        }
+    }
+
+    /**
      * @param list<array<string, mixed>> $uploadedFiles
      */
     private function doImport(int $messageNdx, array $uploadedFiles): bool
     {
         $startedAt = microtime(true);
 
-        // ── 1. Kandidáti: samostatné ISDOC přílohy + embedded v PDF (mimo tx) ──
-        $candidates = [];
-        foreach ($uploadedFiles as $file) {
-            if (!is_array($file)) {
-                continue;
-            }
-
-            if (self::isPotentialIsdocAttachment($file)) {
-                $canonical = $this->readCandidate($messageNdx, $file);
-                if ($canonical === false) {
-                    return false; // vadný samostatný ISDOC → celá větev končí, AI fronta
-                }
-                if ($canonical !== null) {
-                    $canonical['source']['message'] = $messageNdx;
-                    $canonical['attachments'] = [self::attachmentEntry($file)];
-                    if (!$this->passesSchema($messageNdx, $file, $canonical)) {
-                        return false;
-                    }
-                    $candidates[] = [
-                        'canonical' => $canonical,
-                        'attachmentId' => (int) ($file['id'] ?? 0),
-                        'docType' => (string) $canonical['docType'],
-                        'embedded' => false,
-                    ];
-                    continue;
-                }
-                // XML příloha, která není ISDOC — propadá k PDF checku níže
-                // (teoreticky nemožné, PDF nemá XML mime; jen pro úplnost).
-            }
-
-            if (self::isPdfAttachment($file)) {
-                foreach ($this->extractEmbeddedCandidates($messageNdx, $file) as $canonical) {
-                    $canonical['source']['message'] = $messageNdx;
-                    // Embedded ISDOC je transientní — canonical odkazuje na
-                    // nosné PDF (kind original, strojová forma je uvnitř).
-                    $canonical['attachments'] = [self::carrierPdfEntry($file)];
-                    if (!$this->passesSchema($messageNdx, $file, $canonical)) {
-                        continue; // vadný embedded → ignor, pokračuje se zbytkem
-                    }
-                    $candidates[] = [
-                        'canonical' => $canonical,
-                        'attachmentId' => (int) ($file['id'] ?? 0),
-                        'docType' => (string) $canonical['docType'],
-                        'embedded' => true,
-                    ];
-                }
-            }
-        }
-
-        if ($candidates === []) {
+        // ── 1. Kandidáti + dedup (mimo tx, sdílené s detect()) ──────────────
+        $document = $this->collectDocument($messageNdx, $uploadedFiles);
+        if ($document === null) {
             return false;
         }
-
-        // ── 2. Dedup identitou (D8): UUID, fallback kompozit ────────────────
-        // Shodná identita = jeden doklad; kandidát bez identity nikdy
-        // nesplyne s jiným (klíč per index) — konzervativně do AI fronty.
-        $byIdentity = [];
-        foreach ($candidates as $i => $candidate) {
-            $key = $this->identityKey($candidate['canonical']) ?? ('anon:' . $i);
-            $byIdentity[$key][] = $candidate;
-        }
-
-        // Zpráva → nejvýše jeden návrh (D1). Více odlišných identit se
-        // deterministicky rozhodnout nedá → celá větev do AI fronty (AI
-        // vybere primární dokument + secondary_findings).
-        if (count($byIdentity) > 1) {
-            ErrorLogger::warn('ISDOC import: multiple distinct ISDOC identities in one message — message goes to AI queue', [
-                'message' => $messageNdx,
-                'identities' => count($byIdentity),
-            ]);
-            return false;
-        }
-
-        // Preference zdroje: samostatná .isdoc příloha > embedded z PDF;
-        // v rámci téhož druhu deterministicky nejnižší attachment id.
-        $group = reset($byIdentity);
-        usort($group, static fn(array $a, array $b): int =>
-            [$a['embedded'], $a['attachmentId']] <=> [$b['embedded'], $b['attachmentId']]);
-        $document = $group[0];
 
         if ($this->enricher !== null) {
-            // Obohacení řádků z historie (persist, jako /result) —
-            // selhání enrichmentu není fatální, pokračuje se neobohaceně.
+            // Obohacení řádků: Vrstva 0 (historie partnera) + obsahová
+            // eskalace (pravidlo IČO → štítek, jinak LLM) — persist jako
+            // /result. Běží PŘED zápisovou tx (LLM latence nesmí držet
+            // zámky); selhání není fatální, pokračuje se neobohaceně.
             try {
-                $document['canonical'] = $this->enricher->enrich($document['canonical']);
+                $document['canonical'] = $this->enricher->enrichAtResult($document['canonical']);
             } catch (\Throwable $e) {
-                ErrorLogger::logException($e, 'IsdocImportService row history enrichment failed');
+                ErrorLogger::logException($e, 'IsdocImportService row enrichment failed');
             }
         }
 
@@ -285,6 +245,9 @@ class IsdocImportService
                     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
                 ),
                 'proposed_type' => $document['docType'],
+                // Denormalizace štítku obsahové eskalace (karta Nová
+                // kategorie, learning) — stejný helper jako /result.
+                'content_tag' => RowEnrichmentPipeline::contentTagOf($document['canonical']),
                 'confidence' => 1.0,
                 'duration_ms' => $durationMs,
                 'created' => $now,
@@ -359,6 +322,101 @@ class IsdocImportService
         }
 
         return true;
+    }
+
+    /**
+     * Kroky 1–2 importu bez zápisu: kandidáti (samostatné ISDOC přílohy
+     * + embedded v PDF), validace schématu, dedup identitou (D8) a volba
+     * zdroje (samostatná příloha > embedded, pak nejnižší attachment id).
+     * Vrací vybraný dokument, nebo null = větev se vzdává (žádný kandidát,
+     * vadný samostatný ISDOC, více odlišných identit). Sdílí ho detect()
+     * v requestu a doImport() v runneru — dvojí detekce je záměr (#81 D4),
+     * výsledek se přes DB nepředává, runner čte přílohy znovu.
+     *
+     * @param list<array<string, mixed>> $uploadedFiles
+     * @return array{canonical: array<string, mixed>, attachmentId: int, docType: string, embedded: bool}|null
+     */
+    private function collectDocument(int $messageNdx, array $uploadedFiles): ?array
+    {
+        // ── 1. Kandidáti: samostatné ISDOC přílohy + embedded v PDF ─────────
+        $candidates = [];
+        foreach ($uploadedFiles as $file) {
+            if (!is_array($file)) {
+                continue;
+            }
+
+            if (self::isPotentialIsdocAttachment($file)) {
+                $canonical = $this->readCandidate($messageNdx, $file);
+                if ($canonical === false) {
+                    return null; // vadný samostatný ISDOC → celá větev končí, AI fronta
+                }
+                if ($canonical !== null) {
+                    $canonical['source']['message'] = $messageNdx;
+                    $canonical['attachments'] = [self::attachmentEntry($file)];
+                    if (!$this->passesSchema($messageNdx, $file, $canonical)) {
+                        return null;
+                    }
+                    $candidates[] = [
+                        'canonical' => $canonical,
+                        'attachmentId' => (int) ($file['id'] ?? 0),
+                        'docType' => (string) $canonical['docType'],
+                        'embedded' => false,
+                    ];
+                    continue;
+                }
+                // XML příloha, která není ISDOC — propadá k PDF checku níže
+                // (teoreticky nemožné, PDF nemá XML mime; jen pro úplnost).
+            }
+
+            if (self::isPdfAttachment($file)) {
+                foreach ($this->extractEmbeddedCandidates($messageNdx, $file) as $canonical) {
+                    $canonical['source']['message'] = $messageNdx;
+                    // Embedded ISDOC je transientní — canonical odkazuje na
+                    // nosné PDF (kind original, strojová forma je uvnitř).
+                    $canonical['attachments'] = [self::carrierPdfEntry($file)];
+                    if (!$this->passesSchema($messageNdx, $file, $canonical)) {
+                        continue; // vadný embedded → ignor, pokračuje se zbytkem
+                    }
+                    $candidates[] = [
+                        'canonical' => $canonical,
+                        'attachmentId' => (int) ($file['id'] ?? 0),
+                        'docType' => (string) $canonical['docType'],
+                        'embedded' => true,
+                    ];
+                }
+            }
+        }
+
+        if ($candidates === []) {
+            return null;
+        }
+
+        // ── 2. Dedup identitou (D8): UUID, fallback kompozit ────────────────
+        // Shodná identita = jeden doklad; kandidát bez identity nikdy
+        // nesplyne s jiným (klíč per index) — konzervativně do AI fronty.
+        $byIdentity = [];
+        foreach ($candidates as $i => $candidate) {
+            $key = $this->identityKey($candidate['canonical']) ?? ('anon:' . $i);
+            $byIdentity[$key][] = $candidate;
+        }
+
+        // Zpráva → nejvýše jeden návrh (D1). Více odlišných identit se
+        // deterministicky rozhodnout nedá → celá větev do AI fronty (AI
+        // vybere primární dokument + secondary_findings).
+        if (count($byIdentity) > 1) {
+            ErrorLogger::warn('ISDOC import: multiple distinct ISDOC identities in one message — message goes to AI queue', [
+                'message' => $messageNdx,
+                'identities' => count($byIdentity),
+            ]);
+            return null;
+        }
+
+        // Preference zdroje: samostatná .isdoc příloha > embedded z PDF;
+        // v rámci téhož druhu deterministicky nejnižší attachment id.
+        $group = reset($byIdentity);
+        usort($group, static fn(array $a, array $b): int =>
+            [$a['embedded'], $a['attachmentId']] <=> [$b['embedded'], $b['attachmentId']]);
+        return $group[0];
     }
 
     /**

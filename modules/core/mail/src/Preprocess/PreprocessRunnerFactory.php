@@ -13,7 +13,7 @@ use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Render\RenderClient;
 use Shipard\Module\Core\Attachments\AttachmentService;
-use Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher;
+use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Mail\IsdocImportService;
@@ -25,8 +25,9 @@ use Shipard\Module\Core\Mail\Preprocess\Http\CurlHttpFetcher;
 
 /**
  * Produkční wiring runneru pro CLI `mail-preprocess`: přílohy, registr
- * akcí, rendering klient (#34), ISDOC import (stejná sestava jako intake
- * v public/index.php), spawner pro sweep a matcher pro --force.
+ * akcí, rendering klient (#34), ISDOC import s obohacením řádků (jediné
+ * místo, kde import běží — intake v public/index.php dělá jen detekci,
+ * #81 D1), spawner pro sweep a matcher pro --force.
  */
 final class PreprocessRunnerFactory
 {
@@ -48,15 +49,10 @@ final class PreprocessRunnerFactory
         $render = $serverConfig !== null ? RenderClient::fromServerConfig($serverConfig) : new RenderClient(null);
 
         $isdocImportFactory = static function () use ($db, $dibi, $dsDir, $dsConfig): IsdocImportService {
-            try {
-                $enricher = RowHistoryEnricher::create($dibi);
-            } catch (\Throwable $e) {
-                ErrorLogger::logException($e, 'PreprocessRunnerFactory: RowHistoryEnricher unavailable — ISDOC import runs without enrichment');
-                $enricher = null;
-            }
-            // Compiled config pro partnera ISDOC importu (target typu je
-            // jazykově nezávislý) — bez něj target vždy docs. Titulek si
-            // config načítá sám v jazyce AI profilu DS (forDataSource).
+            // Compiled config: partner target ISDOC importu (jazykově
+            // nezávislý — bez něj target vždy docs) a taxonomie / defaults
+            // obsahové eskalace. Titulek si config načítá sám v jazyce AI
+            // profilu DS (forDataSource).
             try {
                 $configRuntime = ConfigRuntime::load($dsDir, $dsConfig->getDefaultLanguage());
             } catch (\Throwable $e) {
@@ -64,6 +60,16 @@ final class PreprocessRunnerFactory
                     'error' => $e->getMessage(),
                 ]);
                 $configRuntime = null;
+            }
+            // Obohacení řádků vč. obsahové eskalace (#81 D1): Vrstva 0 +
+            // pravidlo IČO → štítek, jinak LLM. Classifier je null-safe —
+            // DS bez backendu/klíče degraduje na deterministickou část.
+            // Selhaný wiring = import bez obohacení, runner nikdy nepadá.
+            try {
+                $enricher = RowEnrichmentPipeline::create($db, $configRuntime, $dsConfig);
+            } catch (\Throwable $e) {
+                ErrorLogger::logException($e, 'PreprocessRunnerFactory: RowEnrichmentPipeline unavailable — ISDOC import runs without enrichment');
+                $enricher = null;
             }
             return new IsdocImportService(
                 $db,

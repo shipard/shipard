@@ -1166,7 +1166,8 @@ class AnalysisController
     /**
      * Obsahový štítek z `_resolve.contentTag.tag` obohaceného canonicalu —
      * denormalizace do sloupce `content_tag` (filtrování analýz, learning
-     * handler). null = bez štítku / nevalidní dokument.
+     * handler). null = bez štítku / nevalidní dokument. Tělo sdílí
+     * s ISDOC importem ({@see RowEnrichmentPipeline::contentTagOf()}).
      */
     private function extractContentTag(?string $canonicalJson, bool $documentValid): ?string
     {
@@ -1174,8 +1175,7 @@ class AnalysisController
             return null;
         }
         $canonical = json_decode($canonicalJson, true);
-        $tag = is_array($canonical) ? ($canonical['_resolve']['contentTag']['tag'] ?? null) : null;
-        return is_string($tag) && $tag !== '' ? $tag : null;
+        return is_array($canonical) ? RowEnrichmentPipeline::contentTagOf($canonical) : null;
     }
 
     /**

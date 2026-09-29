@@ -374,6 +374,27 @@ class RowEnrichmentPipelineTest extends TestCase
     // ── D13: precedence contentTag vs. dominance ────────────────────────────
 
     /** @return list<array<string, mixed>> Historie s dominantní položkou (podíl 1.0). */
+    // ── contentTagOf() — denormalizace štítku do content_tag (#81) ───────────
+
+    public function testContentTagOfReadsDocumentLevelTag(): void
+    {
+        $this->assertSame('vehicle.fuel', RowEnrichmentPipeline::contentTagOf([
+            '_resolve' => ['contentTag' => ['tag' => 'vehicle.fuel', 'tagSource' => 'llm']],
+        ]));
+        $this->assertSame('software.saas', RowEnrichmentPipeline::contentTagOf([
+            '_resolve' => ['contentTag' => ['tag' => 'software.saas', 'tagSource' => 'rule', 'ruleId' => 3]],
+        ]));
+    }
+
+    public function testContentTagOfWithoutBlockOrEmptyTagIsNull(): void
+    {
+        $this->assertNull(RowEnrichmentPipeline::contentTagOf([]));
+        $this->assertNull(RowEnrichmentPipeline::contentTagOf(['_resolve' => ['rows' => []]]));
+        $this->assertNull(RowEnrichmentPipeline::contentTagOf(['_resolve' => ['contentTag' => ['tag' => '']]]));
+        $this->assertNull(RowEnrichmentPipeline::contentTagOf(['_resolve' => ['contentTag' => ['tag' => null]]]));
+        $this->assertNull(RowEnrichmentPipeline::contentTagOf(['_resolve' => ['contentTag' => ['tag' => 42]]]));
+    }
+
     private function dominanceHistory(): array
     {
         $rows = [];

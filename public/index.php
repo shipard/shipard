@@ -1011,7 +1011,8 @@ function dispatchMail(
 
 	// Lazy wiring deterministického ISDOC importu (tasks/mail-isdoc-import.md).
 	// Stejná degradace jako dispatchAnalysis: bez ConfigRuntime běží import
-	// bez RowHistoryEnricheru (jen bez obohacení řádků z historie).
+	// bez obohacení řádků (RowEnrichmentPipeline — historie + obsahová
+	// eskalace, #81 D1).
 	$isdocImportFactory = static fn(): \Shipard\Module\Core\Mail\IsdocImportService =>
 		new \Shipard\Module\Core\Mail\IsdocImportService(
 			$db,
@@ -1019,7 +1020,7 @@ function dispatchMail(
 				\Shipard\Module\Core\Exchange\Schema\SchemaLoader::default(),
 			),
 			$configRuntime !== null
-				? \Shipard\Module\Core\Exchange\Enrich\RowHistoryEnricher::create($db->getDibiConnection())
+				? \Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline::create($db, $configRuntime, $resolved->config)
 				: null,
 			$dsPath,
 			partnerWriter: \Shipard\Module\Core\Mail\MessagePartnerWriter::create($db->getDibiConnection(), $configRuntime),
