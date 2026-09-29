@@ -1,6 +1,6 @@
 # Task: Text řádku dokladu z kanonického formátu — jeden zdroj pravdy
 
-**Stav:** částečně — helper a backend hotové (commit 1/3), náhled a prompt v4.4.0 následují (#84)
+**Stav:** hotovo
 
 **Cíl:** Řádek dokladu vzniklého z AI návrhu nese po vystavení stejný text,
 jaký uživatel viděl v review modalu. Text řádku skládá jeden helper, který
@@ -195,10 +195,10 @@ commitu jako poslední kód (lze sloučit s commitem 3).
       v `RowHistoryEnricher::rowTextCandidates()` (záměrně — složený text
       je první, surové zdroje zůstávají jako další kandidáti). `ItemResolver` /
       `ItemApplier` popis položky používají pro entitu položky, ne text řádku.
-- [ ] Preview vrací `_resolve.rows[i].rowText`; modal zobrazuje tento text.
-- [ ] Profil `czech_general` v4.4.0 s pravidly D3; `ProfileSchemaDriftTest` zelený.
-- [ ] Docs (`exchange-format.md`, `ai-prompts.md`, komentář ve schématu) aktualizované.
-- [ ] Ruční ověření na dev DS: návrh s řádkem `{name, description}` →
+- [x] Preview vrací `_resolve.rows[i].rowText`; modal zobrazuje tento text.
+- [x] Profil `czech_general` v4.4.0 s pravidly D3; `ProfileSchemaDriftTest` zelený.
+- [x] Docs (`exchange-format.md`, `ai-prompts.md`, komentář ve schématu) aktualizované.
+- [x] Ruční ověření na dev DS: návrh s řádkem `{name, description}` →
       modal i vystavený doklad ukazují stejný text; po `ds-upgrade`
       a nové analýze účtenky PHM je `item.description` prázdné.
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`.

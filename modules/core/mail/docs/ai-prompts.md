@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.3.0)
+## Default prompt (v4.4.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -58,7 +58,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.3.0`).
+  shodná s `prompt_version` profilu (`v4.4.0`).
 - VAT kódy v řádcích jsou klíče z `world.vat.{country}.vatCodes`
   cfgItem (`cz-110`, `cz-111`, …) — ne sazby v procentech.
 - `totals.totalRounding` = zaokrouhlení celkové částky se znaménkem
@@ -67,6 +67,13 @@ Klíčové pokyny v promptu:
 - `rows` musí obsahovat **všechny** položkové řádky dokladu (u
   vícestránkových ze všech stran) + self-check součtu řádků proti
   rekapitulaci před vrácením výsledku.
+- `rows[].item.name` = text položky tak, jak je na řádku dokladu;
+  `rows[].item.description` **jen** pro doplňující text z dokladu
+  (fakturované období, číslo služby, přípojky či smlouvy) — nikdy záhlaví
+  sloupců, jednotka, množství, označení pokladny, prodejny nebo skladu;
+  u účtenek se vynechá. Text řádku na dokladu skládá server
+  (`CanonicalRowText`: název, za ` — ` popis, není-li v názvu obsažený),
+  viz [`docs/exchange-format.md`](../../../../docs/exchange-format.md) §7.
 - `vatRecap` a `totals` výhradně **opisem** z rekapitulačního bloku
   dokladu, nikdy dopočtem z cen položek; bez rekapitulace na dokladu
   se pole vynechají.
@@ -165,7 +172,7 @@ Plné schéma viz [`profiles/czech_general.jsonc`](../profiles/czech_general.jso
    přes `shpd.docs.document.v1` (polymorfní dle `docType`, bez per-typ
    branche), registry typy přes `shpd.registry.document.v1` (nový druh =
    nová if/then větev `kindFields` v registry schématu + kopie embedu).
-5. Bumpni `prompt_version` (`v4.3.0` → `v4.4.0`).
+5. Bumpni `prompt_version` (`v4.4.0` → `v4.5.0`).
 
 ### Vlastní profil pro jiný jazyk / účel
 
@@ -225,6 +232,30 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.4.0 (2026-09-29)
+
+Text řádku dokladu
+([tasks/exchange-row-text.md](../../../../tasks/exchange-row-text.md)
+D3, #84) — u účtenky PHM model do `item.description` opsal záhlaví sloupců
+(„DPHM Množství") a vystavený doklad měl v řádku tento šum místo názvu
+položky; prompt rozdíl `name` / `description` nedefinoval a ukázka měla
+`description` u všech řádků:
+
+- PRAVIDLA: `rows[].item.name` = text položky z řádku dokladu;
+  `rows[].item.description` jen pro doplňující text (fakturované období,
+  číslo služby, přípojky či smlouvy), nikdy záhlaví sloupců, jednotka,
+  množství, označení pokladny, prodejny nebo skladu; bez takového textu
+  pole vynechat.
+- PRAVIDLA PRO ÚČTENKY: zpravidla stačí `item.name` (druh paliva),
+  `item.description` vynechat.
+- Ukázka: druhý řádek (Doprava) bez `description`.
+- Server (nezávisle na verzi promptu, D1/D2): text řádku skládá
+  `CanonicalRowText` — top-level `description`, jinak `item.name` +
+  ` — ` + `item.description` (není-li v názvu obsažený); stejný text
+  vrací náhled v `_resolve.rows[i].rowText`, zapisuje applier a čtou guard
+  dodavatelských kódů, klasifikátor štítků i enricher z historie. Staré
+  návrhy s `description` z v4.3.0 tím dostanou název před šumem.
 
 ### v4.3.0 (2026-09-10)
 

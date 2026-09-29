@@ -329,10 +329,11 @@
                 "vat":            { "$ref": "#/$defs/RowVat" },
                 "computed":       { "$ref": "#/$defs/RowComputed" },
 
-                // Text řádku (docs_core_rows.description). Faktury ho nesou přes
-                // item.description; účetní doklad (acc.record) item fragment nemá,
-                // proto je k dispozici i jako řádková úroveň. transformRows bere
-                // top-level první, jinak fallback na item.description / item.name.
+                // Text řádku (docs_core_rows.description) na řádkové úrovni —
+                // účetní doklad (acc.record) item fragment nemá, export ho píše
+                // sem. Skladbu textu řádku dělá výhradně CanonicalRowText (#84 D1):
+                // neprázdný top-level description první, jinak item.name + " — " +
+                // item.description (není-li v názvu obsažený); ořez na 500 znaků.
                 "description":      { "type": ["string", "null"] },
 
                 // Kontace (účetní doklad) — viz komentář výše.

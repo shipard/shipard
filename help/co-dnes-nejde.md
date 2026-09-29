@@ -135,6 +135,11 @@ je v [TESTERS.md](../TESTERS.md).
   doručení zprávy; ručně jde jen **Znovu analyzovat** u zprávy, která už
   je analyzovaná nebo u které analýza selhala. Zprávu v Archivu nebo
   v koši znovu analyzovat nelze.
+- **Text řádku v náhledu návrhu neupravíš.** Řádek dostane text tak, jak
+  ho AI přečetla — název položky a za pomlčkou případný doplňující popis
+  (fakturované období, číslo služby). Přesně tento text vidíš v náhledu
+  a přesně ten skončí na dokladu; opravit ho jde až v Konceptu po
+  **Vystavit koncept**.
 
 Když dodavatel přiloží fakturu ve formátu **ISDOC**, data se převezmou
 přímo bez čtení AI — je to přesnější. AI se u něj použije jen na zařazení

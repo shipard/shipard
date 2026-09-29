@@ -556,6 +556,11 @@ nebo import mezi dvěma cizími subjekty.
     "vatTotal":  12500.00
   },
 
+  // Text řádku na řádkové úrovni (docs_core_rows.description): účetní
+  // doklad bez item fragmentu, export. AI extrakce ho nevyplňuje — text
+  // se skládá z item.name + item.description, viz „Text řádku" níže.
+  "description":      null,
+
   // Kontace / saldo identita (účetní doklad, úhrady payment.* na pokladním
   // dokladu): částka přímo v totalPrice, strana a účet u kontace, VS / SS /
   // KS / splatnost úhrady. Partner řádku se NEPOSÍLÁ jako Party — pinuje
@@ -569,6 +574,28 @@ nebo import mezi dvěma cizími subjekty.
   "dueDate":          null
 }
 ```
+
+### Text řádku
+
+Text, který skončí v `docs_core_rows.description`, skládá **jediný**
+helper `Shipard\Module\Core\Exchange\Document\CanonicalRowText::compose($row)`
+([tasks/exchange-row-text.md](../tasks/exchange-row-text.md) D1/D2, #84):
+
+1. neprázdný top-level `description` má přednost (účetní doklad, export,
+   dataset round-trip);
+2. jinak `item.name`; za oddělovač ` — ` se připojí `item.description`,
+   pokud je po trimu neprázdný a není v názvu obsažený (case-insensitive) —
+   AI extrakce do popisu dává někdy užitečný detail (fakturované období,
+   číslo služby), někdy šum (jednotka, záhlaví sloupců);
+3. chybí-li název, samotný popis; nic → `null`.
+
+Výsledek je oříznutý na 500 znaků. Tentýž helper používá applier
+(`transformRows`), náhled (`_resolve.rows[i].rowText`, §9), poziční guard
+`SupplierCodeCaptureHandler`, `ContentTagClassifier` i
+`RowHistoryEnricher` (první kandidát matchování) — skládat text řádku
+jinde znamená, že si vrstvy přestanou odpovídat (guard tiše přeskakuje,
+historie nenapáruje exact matchem). Frontend skladbu nezrcadlí, jen
+zobrazuje `rowText`.
 
 ## 8. Resolve
 
@@ -718,6 +745,10 @@ klient drží jeden payload mezi step preview a apply.
   "rows": [
     {
       "index": 0,
+      "rowText": "Konzultace — Hodinová sazba senior konzultanta",
+                                          // text řádku, jak ho zapíše applier
+                                          //   (CanonicalRowText, §7); u každého
+                                          //   řádku, bez textu null
       "item": {
         "status": "matched", "itemId": 18, "matchedBy": "ourCode"
       },
@@ -759,6 +790,9 @@ klient drží jeden payload mezi step preview a apply.
 `_resolve` má ve schématu `additionalProperties: true` — audit vrstvy si
 do něj přidávají vlastní bloky bez změny schématu:
 
+- `_resolve.rows[i].rowText` — text řádku složený serverem
+  (`CanonicalRowText`, §7 „Text řádku"); informativní, počítá ho `/preview`
+  i `/apply` znovu, klient ho jen zobrazuje (review modal).
 - `_resolve.rows[i].enrichment` — obohacení řádku z historie partnera
   nebo obsahové eskalace (viz `modules/core/mail/docs/ai-analysis.md`,
   sekce „Obohacení řádků z historie" a „Obsahová eskalace").
