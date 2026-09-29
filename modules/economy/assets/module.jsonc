@@ -18,6 +18,25 @@
         "economy_assets_accounting_groups"
     ],
 
+    "documentClasses": [
+        {
+            "table": "economy_assets_assets",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetDocument"
+        },
+        {
+            "table": "economy_assets_types",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetTypeDocument"
+        },
+        {
+            "table": "economy_assets_type_groups",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetTypeGroupDocument"
+        },
+        {
+            "table": "economy_assets_accounting_groups",
+            "class": "Shipard\\Module\\Economy\\Assets\\AccountingGroupDocument"
+        }
+    ],
+
     "config": [
         {
             "id": "economy.assets.categories",
