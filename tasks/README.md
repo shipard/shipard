@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 293 tasků: **naplánováno** 4 · **částečně** 18 · **hotovo** 271.
+Celkem 295 tasků: **naplánováno** 6 · **částečně** 18 · **hotovo** 271.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -26,9 +26,11 @@ nevypisují — níže je jen to, co není dokončené.
 | Task | Stav | Poznámka |
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
+| `assets-phase1.md` | naplánováno | rozhodnutí D18–D26 potvrzena 2026-09-29, implementace nezačala |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `viewer-bottom-tabs.md` | naplánováno | rozhodnutí B1–B4 k potvrzení; musí předcházet `tasks/assets-phase1.md` |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -95,6 +97,7 @@ v `server.json`, autoloader, alokace `tableId` napříč rooty.
 | `frontend-phase5-viewers.md` | Viewer systém (formátované řádky, fulltext, infinite scroll) |
 | `viewer-row-icons-and-numbers.md` | Ikony a pořadová čísla v řádcích vieweru |
 | `viewer-number-series-tabs.md` | Spodní taby číselných řad v per-type doc viewerech |
+| `viewer-bottom-tabs.md` | Obecné spodní taby vieweru (`getBottomTabs`, `filter[bottomTab]`, výchozí hodnoty nového záznamu per tab) — nahrazuje vazbu na číselné řady |
 | `sidebar-sections.md` | Sémantické sekce sidebaru (Nákup/Prodej/Účtárna) přes `navSection` |
 | `sidebar-collapsed-icons.md` | Ikony položek ve sbaleném sidebaru (48 px) |
 
@@ -263,6 +266,15 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `doc-proforma-out.md` | #79 D1 | Zálohová faktura vydaná (`invpo`): nový typ dokladu a modul `docs.proformasOut`, atribut `tax_document` — DPH jen informativně, bez DUZP a období DPH, kanonický typ `proformaIssued` |
 | `accbal-proformas-out.md` | #79 D2, D3a | Proforma na podrozvahu `756100/799100` (účty, povaha 75–79, provisioner), předpis `invpo`, skupina saldokonta `proformas_out`, úhrada nalezená v ní se účtuje na přijatou zálohu (`payment_category`) |
 | `accbal-proforma-closure.md` | #79 D3b, D3c | Core rozhraní `JournalContributor` volané oběma enginy před zápisem deníku; `CaseClosureContributor` uzavře případ proformy (`799/756`) úhradou na 324 z banky i pokladny, kurzem proformy, do výše rezidua; reroute pokladní platby dřív než proforma |
+
+## Majetek (economy.assets)
+
+Evidence majetku, odpisy a jejich zaúčtování. Designový dokument
+[`docs/assets.md`](../docs/assets.md), issue #83.
+
+| Task | Fáze | Co řeší |
+|------|------|---------|
+| `assets-phase1.md` | 1 | Karta majetku, typy, skupiny typů, účetní skupiny, inventární čísla, sekce Majetek (D18–D26) |
 
 ## Došlá pošta (core.mail)
 
