@@ -1,0 +1,43 @@
+{
+    // economy.assets.categories — druh majetku (D19). Hodnoty = enumString
+    // `category` v economy_assets_assets a `default_category` v typech.
+    //
+    // Kód se NIKDY neptá na klíč druhu, jen na příznaky:
+    //   longTerm     — dlouhodobý majetek: povinná účetní skupina, cena karty
+    //                  prázdná (vzniká z pohybů, D13)
+    //   depreciable  — odepisuje se (Fáze 2)
+    //   numberPrefix — výchozí prefix inventárního čísla (D22); přepíše
+    //                  settings klíč economy.assets.numberPrefix.<klíč>
+    "small": {
+        "name": "Small asset",
+        "name:cs": "Drobný majetek",
+        "name:en": "Small asset",
+        "longTerm": false,
+        "depreciable": false,
+        "numberPrefix": "MA"
+    },
+    "tangible": {
+        "name": "Tangible fixed asset",
+        "name:cs": "Dlouhodobý hmotný",
+        "name:en": "Tangible fixed asset",
+        "longTerm": true,
+        "depreciable": true,
+        "numberPrefix": "MA"
+    },
+    "intangible": {
+        "name": "Intangible fixed asset",
+        "name:cs": "Dlouhodobý nehmotný",
+        "name:en": "Intangible fixed asset",
+        "longTerm": true,
+        "depreciable": true,
+        "numberPrefix": "MA"
+    },
+    "nondepreciable": {
+        "name": "Non-depreciable fixed asset",
+        "name:cs": "Neodepisovaný dlouhodobý",
+        "name:en": "Non-depreciable fixed asset",
+        "longTerm": true,
+        "depreciable": false,
+        "numberPrefix": "MA"
+    }
+}

@@ -1,0 +1,185 @@
+{
+    // Účetní skupina majetku (D5, D24): pět účtů, ze kterých Fáze 3 účtuje
+    // zařazení, odpisy a vyřazení. `code` je přirozený klíč seedu
+    // (AccountingGroupsProvisioner). Účty odkazují na analytické účty osnovy;
+    // úplnost pro zaúčtování se kontroluje až ve Fázi 3.
+    "tableId": 453,
+    "name": "Asset accounting groups",
+    "name:cs": "Účetní skupiny majetku",
+    "name:en": "Asset accounting groups",
+
+    "displayPattern": "{code} — {name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Identity",
+            "name:cs": "Identifikace",
+            "name:en": "Identity"
+        },
+        {
+            "id": "accounts",
+            "name": "Accounts",
+            "name:cs": "Účty",
+            "name:en": "Accounts"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- identity ---
+
+        {
+            "id": "code",
+            "name": "Code",
+            "name:cs": "Kód",
+            "name:en": "Code",
+            "type": "varchar",
+            "length": 10,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "note",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "text",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "sort_order",
+            "name": "Order",
+            "name:cs": "Pořadí",
+            "name:en": "Order",
+            "type": "smallint",
+            "default": 0,
+            "nullable": false,
+            "group": "identity"
+        },
+
+        // --- accounts ---
+
+        {
+            "id": "account_asset",
+            "name": "Asset account",
+            "name:cs": "Účet majetku",
+            "name:en": "Asset account",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_accounting_accounts",
+            "group": "accounts"
+        },
+        {
+            "id": "account_acquisition",
+            "name": "Acquisition account",
+            "name:cs": "Účet pořízení",
+            "name:en": "Acquisition account",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_accounting_accounts",
+            "group": "accounts"
+        },
+        {
+            "id": "account_accumulated",
+            "name": "Accumulated depreciation account",
+            "name:cs": "Účet oprávek",
+            "name:en": "Accumulated depreciation account",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_accounting_accounts",
+            "group": "accounts"
+        },
+        {
+            "id": "account_depreciation",
+            "name": "Depreciation account",
+            "name:cs": "Účet odpisů",
+            "name:en": "Depreciation account",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_accounting_accounts",
+            "group": "accounts"
+        },
+        {
+            "id": "account_disposal",
+            "name": "Disposal account",
+            "name:cs": "Účet zůstatkové ceny při vyřazení",
+            "name:en": "Disposal account",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_accounting_accounts",
+            "group": "accounts"
+        },
+
+        // --- doc state (systémové, bez skupiny) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_code",
+            "type": "unique",
+            "columns": [
+                {"column": "code"}
+            ]
+        },
+        {
+            "id": "idx_sort_order",
+            "type": "index",
+            "columns": [
+                {"column": "sort_order", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "sort_order", "order": "ASC"}
+            ]
+        }
+    ]
+}

@@ -17,6 +17,14 @@
             "order": 10
         },
         {
+            "id": "assets",
+            "name": "Assets",
+            "name:cs": "Majetek",
+            "name:en": "Assets",
+            "icon": "box",
+            "order": 15
+        },
+        {
             "id": "warehouses",
             "name": "Warehouses",
             "name:cs": "Sklady",

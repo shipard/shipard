@@ -1,0 +1,91 @@
+{
+    // Skupina typů majetku (D25) — jen pojmenované seskupení typů.
+    "tableId": 452,
+    "name": "Asset type groups",
+    "name:cs": "Skupiny typů majetku",
+    "name:en": "Asset type groups",
+
+    "displayPattern": "{name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false
+        },
+        {
+            "id": "note",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "text",
+            "nullable": true
+        },
+        {
+            "id": "sort_order",
+            "name": "Order",
+            "name:cs": "Pořadí",
+            "name:en": "Order",
+            "type": "smallint",
+            "default": 0,
+            "nullable": false
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_sort_order",
+            "type": "index",
+            "columns": [
+                {"column": "sort_order", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "sort_order", "order": "ASC"}
+            ]
+        }
+    ]
+}

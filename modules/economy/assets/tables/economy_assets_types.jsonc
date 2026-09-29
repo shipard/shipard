@@ -1,0 +1,157 @@
+{
+    // Typ majetku (D25): nese skupinu typů, výchozí druh a výchozí účetní
+    // skupinu — formulář karty je předvyplní do prázdných polí. Bez seedu.
+    "tableId": 451,
+    "name": "Asset types",
+    "name:cs": "Typy majetku",
+    "name:en": "Asset types",
+
+    "displayPattern": "{name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Identity",
+            "name:cs": "Identifikace",
+            "name:en": "Identity"
+        },
+        {
+            "id": "defaults",
+            "name": "Defaults",
+            "name:cs": "Výchozí hodnoty",
+            "name:en": "Defaults"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- identity ---
+
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "short_name",
+            "name": "Short name",
+            "name:cs": "Zkrácený název",
+            "name:en": "Short name",
+            "type": "varchar",
+            "length": 40,
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "type_group",
+            "name": "Type group",
+            "name:cs": "Skupina typů",
+            "name:en": "Type group",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_assets_type_groups",
+            "group": "identity"
+        },
+        {
+            "id": "note",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "text",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "sort_order",
+            "name": "Order",
+            "name:cs": "Pořadí",
+            "name:en": "Order",
+            "type": "smallint",
+            "default": 0,
+            "nullable": false,
+            "group": "identity"
+        },
+
+        // --- defaults ---
+
+        {
+            "id": "default_category",
+            "name": "Default category",
+            "name:cs": "Výchozí druh",
+            "name:en": "Default category",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "economy.assets.categories",
+            "nullable": true,
+            "group": "defaults"
+        },
+        {
+            "id": "default_accounting_group",
+            "name": "Default accounting group",
+            "name:cs": "Výchozí účetní skupina",
+            "name:en": "Default accounting group",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_assets_accounting_groups",
+            "group": "defaults"
+        },
+
+        // --- doc state (systémové, bez skupiny) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_sort_order",
+            "type": "index",
+            "columns": [
+                {"column": "sort_order", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "sort_order", "order": "ASC"}
+            ]
+        }
+    ]
+}

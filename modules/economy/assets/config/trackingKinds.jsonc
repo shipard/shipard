@@ -1,0 +1,19 @@
+{
+    // economy.assets.trackingKinds — způsob sledování (D21). Ve Fázi 1 jen
+    // sloupec bez chování; soubory a množstevní karty řeší Fáze 8.
+    "single": {
+        "name": "Single item",
+        "name:cs": "Jednotlivá věc",
+        "name:en": "Single item"
+    },
+    "set": {
+        "name": "Set",
+        "name:cs": "Soubor",
+        "name:en": "Set"
+    },
+    "quantity": {
+        "name": "Quantity card",
+        "name:cs": "Množstevní karta",
+        "name:en": "Quantity card"
+    }
+}

@@ -1,0 +1,31 @@
+{
+    // Majetek — evidence karet majetku, typů, skupin typů a účetních skupin
+    // (docs/assets.md, #83). Fáze 1 = evidence bez odpisů a účtování.
+    "id": "economy.assets",
+    "name": "Assets",
+    "name:cs": "Majetek",
+    "name:en": "Assets",
+    "description": "Asset register: asset cards, types, type groups and accounting groups",
+    "description:cs": "Evidence majetku: karty majetku, typy, skupiny typů a účetní skupiny",
+    "description:en": "Asset register: asset cards, types, type groups and accounting groups",
+
+    "dependencies": ["core.system", "core.attachments", "base.persons", "economy.accounting"],
+
+    "tables": [
+        "economy_assets_assets",
+        "economy_assets_types",
+        "economy_assets_type_groups",
+        "economy_assets_accounting_groups"
+    ],
+
+    "config": [
+        {
+            "id": "economy.assets.categories",
+            "file": "config/categories.jsonc"
+        },
+        {
+            "id": "economy.assets.trackingKinds",
+            "file": "config/trackingKinds.jsonc"
+        }
+    ]
+}

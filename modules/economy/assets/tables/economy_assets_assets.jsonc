@@ -1,0 +1,246 @@
+{
+    // Karta majetku (docs/assets.md D18–D23). Stavy archivní sady:
+    // V archívu = vyřazeno (D23). Inventární číslo je prázdné u konceptu
+    // a přiděluje se při potvrzení (D22, AssetDocument), proto přechody
+    // stavu jdou přes Document lifecycle.
+    "tableId": 450,
+    "name": "Assets",
+    "name:cs": "Majetek",
+    "name:en": "Assets",
+
+    "displayPattern": "{asset_number} — {name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "stateTransitionsRunDocumentHooks": true,
+
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Identity",
+            "name:cs": "Identifikace",
+            "name:en": "Identity"
+        },
+        {
+            "id": "classification",
+            "name": "Classification",
+            "name:cs": "Zařazení",
+            "name:en": "Classification"
+        },
+        {
+            "id": "lifecycle",
+            "name": "Acquisition and disposal",
+            "name:cs": "Pořízení a vyřazení",
+            "name:en": "Acquisition and disposal"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- identity ---
+
+        {
+            "id": "asset_number",
+            "name": "Inventory number",
+            "name:cs": "Inventární číslo",
+            "name:en": "Inventory number",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 150,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "short_name",
+            "name": "Short name",
+            "name:cs": "Zkrácený název",
+            "name:en": "Short name",
+            "type": "varchar",
+            "length": 60,
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "note",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "text",
+            "nullable": true,
+            "group": "identity"
+        },
+
+        // --- classification ---
+
+        {
+            "id": "asset_type",
+            "name": "Type",
+            "name:cs": "Typ",
+            "name:en": "Type",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_assets_types",
+            "group": "classification"
+        },
+        {
+            "id": "category",
+            "name": "Category",
+            "name:cs": "Druh",
+            "name:en": "Category",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "economy.assets.categories",
+            "nullable": false,
+            "default": "small",
+            "group": "classification"
+        },
+        {
+            "id": "tracking",
+            "name": "Tracking",
+            "name:cs": "Způsob sledování",
+            "name:en": "Tracking",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "economy.assets.trackingKinds",
+            "nullable": false,
+            "default": "single",
+            "group": "classification"
+        },
+        {
+            "id": "accounting_group",
+            "name": "Accounting group",
+            "name:cs": "Účetní skupina",
+            "name:en": "Accounting group",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_assets_accounting_groups",
+            "group": "classification"
+        },
+
+        // --- lifecycle ---
+
+        {
+            "id": "is_foreign",
+            "name": "Foreign asset",
+            "name:cs": "Cizí majetek",
+            "name:en": "Foreign asset",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false,
+            "group": "lifecycle"
+        },
+        {
+            "id": "owner",
+            "name": "Owner",
+            "name:cs": "Vlastník",
+            "name:en": "Owner",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_persons_persons",
+            "group": "lifecycle"
+        },
+        {
+            "id": "acquired_date",
+            "name": "Acquired",
+            "name:cs": "Datum pořízení",
+            "name:en": "Acquired",
+            "type": "date",
+            "nullable": true,
+            "group": "lifecycle"
+        },
+        {
+            "id": "disposed_date",
+            "name": "Disposed",
+            "name:cs": "Datum vyřazení",
+            "name:en": "Disposed",
+            "type": "date",
+            "nullable": true,
+            "group": "lifecycle"
+        },
+        {
+            "id": "price",
+            "name": "Price",
+            "name:cs": "Cena",
+            "name:en": "Price",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 2,
+            "nullable": true,
+            "group": "lifecycle"
+        },
+
+        // --- doc state (systémové, bez skupiny) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_asset_number",
+            "type": "unique",
+            "columns": [
+                {"column": "asset_number"}
+            ]
+        },
+        {
+            "id": "idx_category",
+            "type": "index",
+            "columns": [
+                {"column": "category", "order": "ASC"},
+                {"column": "docStateMain", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_type",
+            "type": "index",
+            "columns": [
+                {"column": "asset_type", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "asset_number", "order": "ASC"}
+            ]
+        }
+    ]
+}

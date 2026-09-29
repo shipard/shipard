@@ -36,6 +36,14 @@
             "order": 30
         },
         {
+            "id": "assets",
+            "name": "Assets",
+            "name:cs": "Majetek",
+            "name:en": "Assets",
+            "icon": "box",
+            "order": 35
+        },
+        {
             "id": "accounting",
             "name": "Accounting",
             "name:cs": "Účtárna",
