@@ -74,6 +74,13 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [Pokladní doklad](pokladna/pokladni-doklad.md) | Jak zapsat příjem nebo výdej hotovosti či platbu kartou na pokladně — včetně úhrady faktury — a co k tomu musí být nastavené. |
 | [Prodejka](pokladna/prodejka.md) | Jak zapsat prodej za hotové, kartou, přes bránu nebo na dobírku na pokladně bez faktury a jak udělat vratku. |
 
+### Majetek
+
+| Stránka | Co v ní najdeš |
+|---------|----------------|
+| [Evidence majetku](majetek/evidence-majetku.md) | Jak založit kartu majetku, kdy je věc drobný a kdy dlouhodobý majetek, co je cizí majetek, jak karta dostane inventární číslo a jak majetek vyřadit. |
+| [Nastavení majetku](majetek/nastaveni-majetku.md) | Kde nastavíš typy majetku, skupiny typů, účetní skupiny majetku a prefixy inventárních čísel — a co z toho karta majetku přebírá. |
+
 ### Účtárna
 
 | Stránka | Co v ní najdeš |

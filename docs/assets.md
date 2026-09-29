@@ -1,7 +1,8 @@
 # Shipard — Majetek (`economy.assets`)
 
-> **Designový dokument.** **Stav:** D1–D26 rozhodnuto; oblast 1 má PRD
-> (`tasks/assets-phase1.md`), další oblasti se rozpadají postupně (§7).
+> **Designový dokument.** **Stav:** D1–D26 rozhodnuto; oblast 1 (karta,
+> typy, účetní skupiny) **hotová** 2026-09-29 (`tasks/assets-phase1.md`),
+> další oblasti se rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -378,7 +379,9 @@ extensions), pak runner. Kroky:
 
 Probírají se jedna po druhé; každá má vlastní PRD.
 
-1. Karta, typy, účetní skupiny, stavy (základ) — `tasks/assets-phase1.md`
+1. Karta, typy, účetní skupiny, stavy (základ) — **hotovo** 2026-09-29,
+   `tasks/assets-phase1.md` (vč. odchylek od PRD: přidělení čísla
+   v `afterPersist`, unikátnost přes všechny stavy, prefixy lookupu účtů)
 2. Ledger událostí + engine + pravidla CZ (D3, D6, D7, D10)
 3. Zaúčtování (D4) + řádkové operace + extension deníku
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15)

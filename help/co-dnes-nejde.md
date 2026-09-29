@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, přiznání k DPH, kontrolní hlášení, záloha, nefunguje]
+keywords: [neumí, nejde, chybí, omezení, alfa, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování]
 related: [slovnicek.md]
 ---
 
@@ -93,6 +93,26 @@ připraví připsání od brány k párování, zatím zadáváš ručně účet
 dokladem. Připsání od brány z bankovního výpisu se k dávce nepřiřadí samo.
 
 ---
+
+## Majetek: jen evidence
+
+**Majetek se zatím neodepisuje ani neúčtuje.** Karta majetku eviduje, co
+máš, ale daňové ani účetní odpisy Shipard nespočítá a zařazení, odpisy
+ani vyřazení nezaúčtuje — účetní doklady k majetku zadáváš ručně. Účetní
+skupiny majetku už nastavíš, použijí se až s odpisy.
+
+**Karta nevidí doklady ani pohyb věci.** Přijatá faktura, kterou jsi věc
+pořídil, se ke kartě nenaváže. Předání do užívání (kdo věc má), umístění,
+příslušenství, vlastnosti podle typu a inventurní seznamy zatím nejsou;
+stejně tak přehledy majetku a tisk karty.
+
+**Majetek ze starého Shipardu se zatím nepřenáší.** Import karet, historie
+odpisů a vazeb na doklady přijde později; do té doby karty zakládáš ručně,
+viz [Evidence majetku](majetek/evidence-majetku.md).
+
+**Soubor a množstevní karta jsou zatím jen popisky.** **Způsob sledování**
+na kartě vybereš, ale Shipard se podle něj ještě nechová — žádné množství,
+žádné části souboru.
 
 ## Kde ještě nemusí souhlasit čísla
 

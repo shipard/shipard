@@ -45,6 +45,7 @@ SECTIONS: list[tuple[str, str]] = [
     ("faktury-prijate", "Faktury přijaté"),
     ("faktury-vydane", "Faktury vydané"),
     ("pokladna", "Pokladna"),
+    ("majetek", "Majetek"),
     ("uctarna", "Účtárna"),
 ]
 

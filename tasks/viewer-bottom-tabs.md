@@ -1,6 +1,6 @@
 # Task: Obecné spodní taby vieweru
 
-**Stav:** hotovo — 2026-09-29 (3 commity), API smoke na ukázkovém DS OK; zbývá ruční proklik v prohlížeči (faktury přijaté, Spisovna se šanonem)
+**Stav:** hotovo — 2026-09-29 (3 commity), API smoke i ruční proklik (faktury přijaté, Spisovna se šanonem) OK
 
 ## Cíl
 

@@ -1,6 +1,6 @@
 # Majetek Fáze 1 — karta, typy, účetní skupiny
 
-**Stav:** naplánováno — rozhodnutí D18–D26 potvrzena 2026-09-29, implementace nezačala
+**Stav:** hotovo — 2026-09-29 (5 commitů), API smoke celého životního cyklu karty na ukázkovém DS OK; zbývá ruční proklik v prohlížeči a `ds-upgrade` na alfě
 
 > PRD pro jednu Claude Code session (5 commitů). Design: `docs/assets.md`
 > (§4 D1–D26, §5, §7 oblast 1), issue #83.
@@ -278,6 +278,30 @@ Seed v `config/accountingGroups.jsonc` (docState 40):
 5. **Dokumentace** — help stránky, `co-dnes-nejde.md`, `docs/assets.md`
    (oblast 1 → hotovo, odkaz na tento task), `tasks/README.md` (nová
    sekce Majetek), **Stav** tohoto tasku + `python3 scripts/tasks-index.py`.
+
+## Odchylky při implementaci
+
+- **Inventární číslo se přiděluje v `afterPersist()`, ne v `beforeSave()`.**
+  `TableGateway` otevírá transakci až po `beforeSave`, takže zámek
+  `SELECT … FOR UPDATE` z `beforeSave` by nepřežil do zápisu řádku
+  (dokladový systém to obchází tabulkou počítadel, kterou majetek nemá).
+  V `afterPersist` je řádek zapsaný, zámek nad kartami s prefixem drží do
+  commitu. Endpoint přechodu stavu záznam znovu načte, UI číslo vidí;
+  `DocumentResult` z přímého volání gateway číslo nenese.
+- **Unikátnost čísla se kontroluje přes všechny stavy** včetně smazaných —
+  odpovídá unikátnímu indexu, jinak by místo validace přišla SQL chyba.
+- **Lookup účtů umí jediný prefix:** účet majetku a oprávek filtruje
+  třída `0`, pořízení `04`, odpisy `55`, vyřazení `5`; přesné skupiny
+  (01–03 / 04 / 07–08 / 55 / 54–55) vynucuje `AccountingGroupDocument`.
+- **Předvyplnění druhu z typu:** druh nikdy není prázdný (default
+  `small`), proto se z typu přebírá jen u nové karty, dokud drží výchozí
+  hodnotu ze schématu; účetní skupina jen do prázdného pole. Přepnutí na
+  dlouhodobý druh cenu skryje **a vynuluje** (skryté pole se posílá do
+  uložení).
+- **Vyřazení potvrzené karty jde na dva kroky** (Opravit → datum vyřazení
+  → Uložit → Ukončit platnost), stav V pořádku je read-only.
+- Viewery modulu sdílejí `AssetsViewerBase` (viewGroup, badge stavu,
+  formátování) místo kopie `CashDesksViewer` čtyřikrát.
 
 ## Rozhodnutí k designu (potvrzená)
 

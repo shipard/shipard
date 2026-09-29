@@ -381,7 +381,7 @@ podle pole `navSection`, které každý viewer/tabulka deklaruje.
   nevykreslí jako syrový fallback table item — viz `tablesWithViewer`.)
 
 Cílové uspořádání: Dashboard → Chat → Došlá pošta → Úkoly → Základní → Nákup →
-Prodej → Účtárna → Systém.
+Prodej → Majetek → Účtárna → Systém.
 
 ```json
 {

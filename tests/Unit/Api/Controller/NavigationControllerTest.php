@@ -166,7 +166,7 @@ class NavigationControllerTest extends TestCase
         // Root-level order: Dashboard, Chat, Došlá pošta, Úkoly, then sections.
         $rootLabels = array_map(fn($n) => $n['label'], $tree);
         $this->assertSame(
-            ['Dashboard', 'Chat', 'Došlá pošta', 'Spisovna', 'Úkoly', 'Základní', 'Nákup', 'Prodej', 'Účtárna', 'Systém'],
+            ['Dashboard', 'Chat', 'Došlá pošta', 'Spisovna', 'Úkoly', 'Základní', 'Nákup', 'Prodej', 'Majetek', 'Účtárna', 'Systém'],
             $rootLabels,
         );
 
@@ -197,6 +197,11 @@ class NavigationControllerTest extends TestCase
             ['docs.accountingDocs.heads', 'docs.cashDocs.heads', 'economy.accounting.journal', 'economy.accounting.accounts', 'economy.bank.transactions', 'economy.accbal.cases', 'economy.accbal.ledger', 'economy.bank.statements', 'economy.vat.reportPeriods', 'economy.vat.filings'],
             array_column($this->node($tree, 'accounting')['children'], 'viewerId'),
         );
+        // Assets: only the card viewer — codebooks live in Settings (settingsItems).
+        $this->assertSame(
+            ['economy.assets.assets'],
+            array_column($this->node($tree, 'assets')['children'], 'viewerId'),
+        );
         // System holds ONLY Alerts — users/settings moved to Settings app.
         $this->assertSame(
             ['core.alerts.alerts'],
@@ -209,7 +214,7 @@ class NavigationControllerTest extends TestCase
         $tree = $this->tree(['install.base'], 'en');
         $rootLabels = array_map(fn($n) => $n['label'], $tree);
         $this->assertSame(
-            ['Dashboard', 'Chat', 'Incoming messages', 'Registry', 'Tasks', 'Basic', 'Purchase', 'Sales', 'Accounting', 'System'],
+            ['Dashboard', 'Chat', 'Incoming messages', 'Registry', 'Tasks', 'Basic', 'Purchase', 'Sales', 'Assets', 'Accounting', 'System'],
             $rootLabels,
         );
     }

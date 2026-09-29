@@ -1,7 +1,7 @@
 ---
 title: Slovníček
 summary: Co která věc v Shipardu znamená a jak se jmenuje v rozhraní.
-keywords: [slovníček, pojmy, názvy, co to znamená, jak se to jmenuje, terminologie, DUZP, jistota, přeúčtovat, stavy]
+keywords: [slovníček, pojmy, názvy, co to znamená, jak se to jmenuje, terminologie, DUZP, jistota, přeúčtovat, stavy, majetek, inventární číslo, drobný majetek, dlouhodobý majetek]
 related: [co-dnes-nejde.md]
 ---
 
@@ -23,7 +23,7 @@ poštu a přijaté faktury.
 | úvodní stránka, plocha, přehled | **Dashboard** | Domovská obrazovka po přihlášení. Ukazuje, co je právě potřeba udělat — nová pošta, upozornění, rozdělané doklady |
 | seznam, tabulka, výpis | **Prohlížeč** (v rozhraní občas i *viewer*) | Seznamová obrazovka, třeba přehled faktur |
 | moje firma, můj účet, prostor | **Datový zdroj** (DS) | Jedna firma nebo organizace se svými daty. Tvoje data jsou oddělená od ostatních |
-| menu vlevo | **Sekce** *Základní*, *Nákup*, *Prodej*, *Účtárna*, *Systém* | Nad nimi stojí samostatné položky *Dashboard*, *Došlá pošta*, *Úkoly* a *Chat* |
+| menu vlevo | **Sekce** *Základní*, *Nákup*, *Prodej*, *Majetek*, *Účtárna*, *Systém* | Nad nimi stojí samostatné položky *Dashboard*, *Došlá pošta*, *Úkoly* a *Chat* |
 | dokumenty, smlouvy, přílohy k ničemu | **Spisovna** | Evidence dokumentů, které nejsou doklady — smlouvy, výpisy, úřední pošta |
 | asistent, AI, chatbot | **Chat** | Vestavěný AI asistent. Umí se dívat do tvých dat a odpovídat na otázky. Nic za tebe nezaloží ani nezmění |
 | hláška, varování, červená věc | **Upozornění** | Kontrola, která našla nesrovnalost. Objeví se jako karta na Dashboardu |
@@ -107,6 +107,19 @@ a čekají na tebe, zbytek je už vyřízený:
 | zaúčtovat to znovu | **Přeúčtovat** | Tlačítko u dokladu. Vytvoří účetní zápis znovu, aniž by se doklad musel vyjímat ze **V pořádku** — proto se tím nerozpojí párování s platbou |
 
 ---
+
+## Majetek
+
+| Když řekneš | V Shipardu | Co to je |
+|---|---|---|
+| inventář, inventární seznam, majetek firmy | **Majetek** (sekce i seznam) | Karty majetku — drobného i dlouhodobého. Najdeš v **Majetek → Majetek** |
+| inventární číslo, evidenční číslo | **Inventární číslo** | Jedinečné označení karty. Prázdné dostane při potvrzení karty: prefix podle druhu (výchozí *MA*) a pořadové číslo, třeba *MA0001* |
+| drobný majetek, evidovaný majetek, věc do nákladů | **Drobný majetek** (druh) | Věc, kterou jen evidiješ — nákup šel do nákladů, neodepisuje se. Jediný druh, u kterého karta nese **Cenu** |
+| DHM, DNM, odepisovaný majetek | **Dlouhodobý hmotný**, **Dlouhodobý nehmotný** (druhy) | Majetek, který se bude odepisovat. Karta musí mít **Účetní skupinu**; cena vznikne až ze zařazení (odpisy zatím nejsou) |
+| pozemek, umělecké dílo | **Neodepisovaný dlouhodobý** (druh) | Dlouhodobý majetek, který se neodepisuje |
+| pronajaté, na leasing, půjčené, cizí | **Cizí majetek** + **Vlastník** | Věc, kterou používáš, ale nevlastníš. Karta nese, komu patří |
+| vyřazený majetek, prodaný, zlikvidovaný | stav **V archívu** (akce **Ukončit platnost**) | Vyřazená karta s **Datem vyřazení**; v seznamu pod záložkou **Archív** |
+| účty pro majetek, kam se to účtuje | **Účetní skupina majetku** | Sada účtů (majetek, pořízení, oprávky, odpisy, vyřazení). Nastavíš v **Nastavení aplikace → Majetek** |
 
 ## Souvisí
 

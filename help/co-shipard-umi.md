@@ -55,7 +55,7 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 
 | Agenda | Co s ní uděláš | Návod |
 |---|---|---|
-| **Majetek** | Karty majetku — drobný (evidovaný) i dlouhodobý hmotný, nehmotný a neodepisovaný. Karta nese typ, druh, účetní skupinu, cizí majetek s vlastníkem, datum pořízení a vyřazení; inventární číslo dostane při potvrzení. Vyřazení = **Ukončit platnost** s vyplněným datem vyřazení. Odpisy a zaúčtování zatím nejsou | — |
+| **Majetek** | Karty majetku — drobný (evidovaný) i dlouhodobý hmotný, nehmotný a neodepisovaný. Karta nese typ, druh, účetní skupinu, cizí majetek s vlastníkem, datum pořízení a vyřazení; inventární číslo dostane při potvrzení. Vyřazení = **Ukončit platnost** s vyplněným datem vyřazení. Odpisy a zaúčtování zatím nejsou | [Evidence majetku](majetek/evidence-majetku.md) · [Nastavení majetku](majetek/nastaveni-majetku.md) |
 
 ## Účtárna
 
