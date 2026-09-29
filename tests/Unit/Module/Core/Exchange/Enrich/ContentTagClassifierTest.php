@@ -179,4 +179,24 @@ class ContentTagClassifierTest extends TestCase
         $this->assertStringContainsString('Natural 95', $captured);
         $this->assertStringContainsString('1360', $captured);
     }
+
+    public function testPromptRowTextIsComposedNameBeforeDescription(): void
+    {
+        // Text řádku pro klasifikátor = CanonicalRowText (#84): název před
+        // popisem, popis obsažený v názvu se nepřilepí. Dřív vyhrál samotný
+        // item.description („DPHM Množství") a název se do promptu nedostal.
+        $canonical = $this->canonical();
+        $canonical['rows'] = [
+            ['item' => ['name' => 'Natural 95', 'description' => 'DPHM Množství'], 'totalPrice' => 1210.0],
+            ['item' => ['name' => 'Náplň do ostřikovačů', 'description' => 'náplň do ostřikovačů'], 'totalPrice' => 150.0],
+        ];
+
+        $captured = null;
+        $out = json_encode(['primaryTag' => null, 'confidence' => 0, 'rowExceptions' => []]);
+        $this->classifier($out, capturedPrompt: $captured)->classify($canonical);
+
+        $this->assertNotNull($captured);
+        $this->assertStringContainsString('[0] Natural 95 — DPHM Množství (total 1210)', $captured);
+        $this->assertStringContainsString('[1] Náplň do ostřikovačů (total 150)', $captured);
+    }
 }

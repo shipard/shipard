@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Mail;
 
 use Shipard\Core\Document\AbstractDocumentEventHandler;
+use Shipard\Module\Core\Exchange\Document\CanonicalRowText;
 
 /**
  * Uzavření smyčky AI extrakce (D8): při potvrzení dokladu vzniklého z AI
@@ -82,8 +83,10 @@ class SupplierCodeCaptureHandler extends AbstractDocumentEventHandler
             }
 
             // Poziční guard: liší-li se popisy (oba vyplněné), řádky si
-            // po editaci Konceptu už neodpovídají → přeskočit.
-            $canonicalText = trim((string) ($row['description'] ?? $item['description'] ?? $item['name'] ?? ''));
+            // po editaci Konceptu už neodpovídají → přeskočit. Text musí
+            // vzniknout STEJNĚ jako v DocumentApplier::transformRows(), jinak
+            // guard nesedí nikdy a kódy se tiše přestanou učit (#84).
+            $canonicalText = CanonicalRowText::compose($row) ?? '';
             $finalText = trim((string) ($final['description'] ?? ''));
             if ($canonicalText !== '' && $finalText !== '' && $canonicalText !== $finalText) {
                 continue;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Enrich;
 
 use Dibi\Connection;
+use Shipard\Module\Core\Exchange\Document\CanonicalRowText;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
@@ -385,10 +386,12 @@ final class RowHistoryEnricher
     }
 
     /**
-     * Kandidátní texty řádku pro matchování, v pořadí preference — stejné
-     * pořadí jako fallback řetěz v DocumentApplier::transformRows(), ale
-     * zkouší se všechny, ne jen první neprázdný. Neprázdné, trimnuté,
-     * deduplikované.
+     * Kandidátní texty řádku pro matchování, v pořadí preference. První je
+     * složený text řádku (CanonicalRowText — přesně to, co applier zapíše
+     * do docs_core_rows.description; bez něj by historie vzniklá po #84
+     * nenapárovala exact matchem vlastní dřívější řádky), pak jednotlivé
+     * zdroje: top-level description, item.description, item.name — zkouší
+     * se všechny, ne jen první neprázdný. Neprázdné, trimnuté, deduplikované.
      *
      * @param array<string, mixed> $row
      * @return list<string>
@@ -397,7 +400,12 @@ final class RowHistoryEnricher
     {
         $item = is_array($row['item'] ?? null) ? $row['item'] : [];
         $candidates = [];
-        foreach ([$row['description'] ?? null, $item['description'] ?? null, $item['name'] ?? null] as $text) {
+        foreach ([
+            CanonicalRowText::compose($row),
+            $row['description'] ?? null,
+            $item['description'] ?? null,
+            $item['name'] ?? null,
+        ] as $text) {
             if (!is_string($text)) {
                 continue;
             }

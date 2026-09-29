@@ -9,6 +9,7 @@ use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmClient;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Module\Core\Exchange\Document\CanonicalRowText;
 
 /**
  * LLM část obsahové eskalace (tasks/content-tag-enrichment.md, D17/D18):
@@ -150,10 +151,8 @@ class ContentTagClassifier
                 $lines[] = '    … (' . (count($rows) - self::MAX_ROWS) . ' more rows omitted)';
                 break;
             }
-            $item = is_array($row['item'] ?? null) ? $row['item'] : [];
-            $text = trim((string) ($row['description'] ?? ''))
-                ?: trim((string) ($item['description'] ?? ''))
-                ?: trim((string) ($item['name'] ?? ''));
+            // Text řádku stejný, jaký skončí na dokladu (CanonicalRowText, #84).
+            $text = CanonicalRowText::compose($row) ?? '';
             $total = $row['totalPrice'] ?? null;
             $lines[] = "    [{$idx}] {$text}" . (is_numeric($total) ? " (total {$total})" : '');
         }

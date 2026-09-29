@@ -424,6 +424,35 @@ class RowHistoryEnricherTest extends TestCase
         $this->assertSame('Internet 500M', $enrichment['matchedText']);
     }
 
+    public function testComposedRowTextMatchesOwnHistoryExactly(): void
+    {
+        // Historie vzniklá po #84 nese složený text (CanonicalRowText:
+        // name — description). Bez složeného textu jako prvního kandidáta
+        // by exactRaw na vlastní dřívější řádky selhal a spadlo by se
+        // na fuzzy (nebo nic).
+        $enricher = $this->buildEnricher([
+            $this->histRow('Měsíční paušál za Internet — Fakturované období: 01.08.2026 - 31.08.2026', 'NET500', docHead: 5002),
+            $this->histRow('Servisní podpora', 'SUP01', docHead: 5001),
+        ]);
+
+        $result = $enricher->enrich($this->canonical([
+            ['item' => [
+                'name'        => 'Měsíční paušál za Internet',
+                'description' => 'Fakturované období: 01.08.2026 - 31.08.2026',
+            ]],
+        ]));
+
+        $enrichment = $result['_resolve']['rows'][0]['enrichment'];
+        $this->assertSame('NET500', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('historyExactRaw', $enrichment['matchedBy']);
+        $this->assertSame('high', $enrichment['confidence']);
+        $this->assertSame(
+            'Měsíční paušál za Internet — Fakturované období: 01.08.2026 - 31.08.2026',
+            $enrichment['matchedText'],
+        );
+        $this->assertSame(5002, $enrichment['sourceDocId']);
+    }
+
     public function testMatchedTextOriginalFormOnFuzzyAndNullWhenUnmatched(): void
     {
         // Fuzzy vítěz → matchedText nese originální (nenormalizovaný) tvar

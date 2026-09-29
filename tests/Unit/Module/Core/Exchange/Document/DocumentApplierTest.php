@@ -1093,6 +1093,62 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(0, $data['vat_place']); // domestic
     }
 
+    // ── transform(): text řádku (#84 D1/D2) ─────────────────────────────────
+
+    /**
+     * Řádek z AI návrhu s `item.name` i `item.description` nese na dokladu
+     * složený text (CanonicalRowText) — stejný, jaký ukázal review modal.
+     * Dřív vyhrál samotný `item.description` („DPHM Množství" místo
+     * „Natural 95").
+     */
+    public function testTransformWritesComposedRowText(): void
+    {
+        $applier = $this->buildApplier();
+        $canonical = [
+            'docType'   => 'invoiceReceived',
+            'selfParty' => 'customer',
+            'dates'     => ['issueDate' => '2026-09-01'],
+            'rows'      => [
+                ['item' => ['name' => 'Natural 95', 'description' => 'DPHM Množství'], 'quantity' => 40, 'unitPrice' => 38.8],
+                ['item' => ['name' => 'Natural 95', 'description' => 'natural 95'], 'quantity' => 1, 'unitPrice' => 1.0],
+                ['item' => ['name' => 'Doprava'], 'quantity' => 1, 'unitPrice' => 500.0],
+            ],
+        ];
+
+        $data = $this->invokeTransform($applier, $canonical);
+
+        $this->assertSame('Natural 95 — DPHM Množství', $data['rows'][0]['description']);
+        // Popis obsažený v názvu (case-insensitive) se nepřilepí.
+        $this->assertSame('Natural 95', $data['rows'][1]['description']);
+        $this->assertSame('Doprava', $data['rows'][2]['description']);
+    }
+
+    /**
+     * Účetní doklad / export: řádek bez `item` nese text na řádkové úrovni
+     * a zůstává beze změny; top-level description má přednost i vedle
+     * vyplněného item fragmentu (dataset round-trip nesmí řádky obohacovat).
+     */
+    public function testTransformKeepsTopLevelRowDescription(): void
+    {
+        $applier = $this->buildApplier();
+        $canonical = [
+            'docType'   => 'accountingDocument',
+            'dates'     => ['issueDate' => '2026-09-01'],
+            'rows'      => [
+                ['description' => 'Poplatek za vedení účtu', 'operation' => 'acc.record', 'accSide' => 'debit', 'account' => '568001', 'totalPrice' => 120.0],
+                ['description' => 'Konzultace', 'item' => ['name' => 'Konzultace', 'description' => 'Hodinová sazba'], 'quantity' => 1, 'unitPrice' => 1000.0],
+                ['operation' => 'acc.record', 'accSide' => 'credit', 'account' => '221001', 'totalPrice' => 120.0],
+            ],
+        ];
+
+        $data = $this->invokeTransform($applier, $canonical);
+
+        $this->assertSame('Poplatek za vedení účtu', $data['rows'][0]['description']);
+        $this->assertSame('Konzultace', $data['rows'][1]['description']);
+        // Bez textu → klíč chybí (array_filter), ne prázdný řetězec.
+        $this->assertArrayNotHasKey('description', $data['rows'][2]);
+    }
+
     // ── transform(): autorita rekapitulace DPH (#75, R3/I4/I7) ─────────────
 
     /**

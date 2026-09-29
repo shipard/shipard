@@ -1878,13 +1878,12 @@ class DocumentApplier
                 'discount_amount' => $row['discountAmount'] ?? null,
                 'vat_code'        => $vatCode,
                 'vat_pct'         => $vatPct,
-                // Text řádku: faktury ho nesou přes item.description / item.name;
-                // účetní doklad (acc.record) item fragment nemá → bere se z
-                // řádkové úrovně. Top-level description má přednost.
-                'description'     => $row['description']
-                                      ?? (is_array($row['item'] ?? null)
-                                          ? ($row['item']['description'] ?? $row['item']['name'] ?? null)
-                                          : null),
+                // Text řádku skládá výhradně CanonicalRowText (#84 D1/D2):
+                // top-level description první (účetní doklad, export), jinak
+                // item.name + " — " + item.description. Stejný text vidí
+                // náhled (_resolve.rows[i].rowText) i poziční guard
+                // SupplierCodeCaptureHandler — neskládat tady vlastní řetěz.
+                'description'     => CanonicalRowText::compose($row),
                 // Kontace (účetní doklad) — chybí u faktur → array_filter je
                 // vynechá, takže faktury jsou beze změny.
                 'account'           => $plan['resolvedRowAccounts'][$i] ?? null,

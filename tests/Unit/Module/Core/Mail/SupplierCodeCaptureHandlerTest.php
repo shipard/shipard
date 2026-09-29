@@ -68,6 +68,8 @@ class SupplierCodeCaptureHandlerTest extends TestCase
 
     public function testConfirmWithLineageCapturesSupplierCodes(): void
     {
+        // Finální řádek nese text složený applierem (CanonicalRowText, #84):
+        // guard skládá canonical text tímtéž helperem, proto sedí.
         $handler = $this->handler(
             $this->aiHead(),
             ['rows' => [
@@ -75,7 +77,7 @@ class SupplierCodeCaptureHandlerTest extends TestCase
                 ['item' => ['name' => 'Doprava']], // bez supplierCode → no-op
             ]],
             [
-                ['order_pos' => 1, 'item' => 18, 'description' => 'Hodinová sazba'],
+                ['order_pos' => 1, 'item' => 18, 'description' => 'Konzultace — Hodinová sazba'],
                 ['order_pos' => 2, 'item' => 19, 'description' => 'Doprava'],
             ],
         );
@@ -139,6 +141,22 @@ class SupplierCodeCaptureHandlerTest extends TestCase
             $this->aiHead(),
             ['rows' => [['item' => ['supplierCode' => 'KONZ-001', 'name' => 'Konzultace', 'description' => 'Hodinová sazba']]]],
             [['order_pos' => 1, 'item' => 18, 'description' => 'Úplně jiný řádek']],
+        );
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 555], 10, 40);
+        $this->assertSame([], $handler->sqlCalls);
+    }
+
+    public function testSkipsWhenFinalRowCarriesOnlyItemDescription(): void
+    {
+        // Past z tasku #84: kdyby applier text skládal a guard ne (nebo
+        // naopak), texty by si nikdy neodpovídaly a kódy by se tiše
+        // přestaly učit. Finální text = samotný item.description (stará
+        // skladba) → dnes mismatch → přeskočit.
+        $handler = $this->handler(
+            $this->aiHead(),
+            ['rows' => [['item' => ['supplierCode' => 'KONZ-001', 'name' => 'Konzultace', 'description' => 'Hodinová sazba']]]],
+            [['order_pos' => 1, 'item' => 18, 'description' => 'Hodinová sazba']],
         );
 
         $handler->onStateChanged('docs_core_heads', ['id' => 555], 10, 40);
