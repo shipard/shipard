@@ -349,19 +349,31 @@ abstract class TableViewer
     }
 
     /**
-     * Returns the list of number series shown as bottom tabs in the viewer's
-     * row list. Empty array = no series tabs.
+     * Bottom tab bar of the row list. Empty list = no bar.
      *
-     * Subclasses scoped to a single doc_type (e.g. ReceivedInvoicesViewer)
-     * override this to expose the active series for their type. Generic
-     * viewers leave the default empty. The meta endpoint exposes the result
-     * as `numberSeries`.
+     * Each tab: `id` (string|int, opaque to the frontend — sent back
+     * unchanged as `filter[bottomTab]` and interpreted only by selectRows()),
+     * `label` (localized), optional `newRecordDefaults` merged over
+     * getNewRecordDefaults() when a record is created while the tab is
+     * active. The meta endpoint exposes the result as `bottomTabs.tabs`.
      *
-     * @return list<array{id: int, name: string}>
+     * Consumers: DocsHeadsViewer (number series of the scoped doc_type),
+     * RegistryDocumentsViewer (binders).
+     *
+     * @return list<array{id: string|int, label: string, newRecordDefaults?: array<string, mixed>}>
      */
-    public function getNumberSeries(): array
+    public function getBottomTabs(): array
     {
         return [];
+    }
+
+    /**
+     * Tab pre-selected when the viewer opens (`bottomTabs.default` in meta);
+     * null = first tab of getBottomTabs().
+     */
+    public function getDefaultBottomTab(): string|int|null
+    {
+        return null;
     }
 
     /**

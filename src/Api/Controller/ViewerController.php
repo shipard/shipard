@@ -54,7 +54,10 @@ class ViewerController
 			'toolbar'            => $viewer->getToolbarActions(null),
 			'viewGroups'         => $viewer->getViewGroups(),
 			'defaultViewGroup'   => $viewer->getDefaultViewGroup(),
-			'numberSeries'       => $viewer->getNumberSeries(),
+			'bottomTabs'         => [
+				'tabs'    => $viewer->getBottomTabs(),
+				'default' => $viewer->getDefaultBottomTab(),
+			],
 			'newRecordDefaults'  => $viewer->getNewRecordDefaults(),
 			'layouts'            => $layouts,
 			'defaultLayout'      => $defaultLayout,

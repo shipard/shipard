@@ -45,7 +45,7 @@ class DocsHeadsViewer extends TableViewer
     /**
      * When set, this viewer is scoped to a single doc_type (e.g. 'invni' for
      * received invoices). Drives the implicit doc_type filter in selectRows(),
-     * the bottom number-series tab list (getNumberSeries), and the default
+     * the bottom tab list of number series (getBottomTabs), and the default
      * doc_type for newly created records (getNewRecordDefaults).
      *
      * Generic viewers (cross-type "all documents") leave this null.
@@ -76,7 +76,8 @@ class DocsHeadsViewer extends TableViewer
             } elseif ($id === '_doc_type') {
                 // Explicit override (e.g. a cross-type viewer pinning a type manually).
                 $docTypeFilter = (string) $filter['value'];
-            } elseif ($id === 'number_series') {
+            } elseif ($id === 'bottomTab') {
+                // Bottom tab = number series id (getBottomTabs).
                 $numberSeriesFilter = (int) $filter['value'];
             }
         }
@@ -120,7 +121,8 @@ class DocsHeadsViewer extends TableViewer
     }
 
     /**
-     * Bottom-tab number series for this viewer.
+     * Bottom tabs = number series of the scoped doc_type. A record created
+     * from an active tab gets that series pre-filled (newRecordDefaults).
      *
      * Returns only series in "V pořádku" state (docState = 40):
      *  - Koncept (10) — series not yet in use for filing documents.
@@ -136,9 +138,9 @@ class DocsHeadsViewer extends TableViewer
      * new document be filed into", a different question than "which series are
      * worth showing as a tab".
      *
-     * @return list<array{id: int, name: string}>
+     * @return list<array{id: int, label: string, newRecordDefaults: array{number_series: int}}>
      */
-    public function getNumberSeries(): array
+    public function getBottomTabs(): array
     {
         if ($this->scopedDocType === null) {
             return [];
@@ -151,9 +153,11 @@ class DocsHeadsViewer extends TableViewer
         );
         $out = [];
         foreach ($rows as $row) {
+            $id = (int) $row['id'];
             $out[] = [
-                'id'   => (int) $row['id'],
-                'name' => (string) $row['name'],
+                'id'                => $id,
+                'label'             => (string) $row['name'],
+                'newRecordDefaults' => ['number_series' => $id],
             ];
         }
         return $out;

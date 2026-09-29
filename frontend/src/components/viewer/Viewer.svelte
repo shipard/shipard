@@ -44,10 +44,12 @@
   // z meta.defaultViewGroup po fetchMeta() (init $effect níže).
   let activeViewGroup = $state('active');
 
-  // --- Number series tabs (bottom bar) ---
-  // `null` = no series filter (viewer doesn't expose series or list is empty).
-  // Otherwise an int matching one of meta.numberSeries[].id.
-  let activeSeriesId = $state(null);
+  // --- Bottom tabs (spodní lišta) ---
+  // `null` = viewer nemá záložky (prázdné meta.bottomTabs.tabs). Jinak id
+  // jedné z nich — pro frontend neprůhledné (string i int), význam zná jen
+  // viewer na serveru (číselná řada, šanon…). Posílá se zpět nezměněné
+  // jako filter[bottomTab].
+  let activeBottomTab = $state(null);
 
   const VIEW_GROUP_LABEL_KEYS = {
     active:  'viewer.tab.active',
@@ -74,11 +76,11 @@
     (tab.fixedViewGroup ?? null) == null && (meta?.viewGroups ?? []).length > 0
   );
 
-  // --- Number series tabs ---
-  // Lišta se ukáže jen když je víc než 1 řada; při jedné se filter stejně
-  // aplikuje (přes activeSeriesId), ale single-tab by vizuálně nedával smysl.
-  let numberSeries = $derived(meta?.numberSeries ?? []);
-  let hasNumberSeriesTabs = $derived(numberSeries.length > 1);
+  // --- Bottom tabs ---
+  // Lišta se ukáže jen když je víc než 1 záložka; při jedné se filter stejně
+  // aplikuje (přes activeBottomTab), ale single-tab by vizuálně nedával smysl.
+  let bottomTabs = $derived(meta?.bottomTabs?.tabs ?? []);
+  let hasBottomTabs = $derived(bottomTabs.length > 1);
 
   // --- Row list state ---
   let rows = $state([]);
@@ -168,10 +170,14 @@
     const result = await get(`/_ui/viewer/${viewerId}/meta`);
     if (result?.success) {
       meta = result.data;
-      // Default to the first series (alphabetical). Generic viewers expose no
-      // series → stays null and the number_series filter is not applied.
-      const series = meta.numberSeries ?? [];
-      activeSeriesId = series.length > 0 ? series[0].id : null;
+      // Výchozí záložka: meta.bottomTabs.default (musí být v seznamu),
+      // jinak první záložka. Viewer bez záložek → null a filter[bottomTab]
+      // se neposílá.
+      const tabs = meta.bottomTabs?.tabs ?? [];
+      const defaultTab = meta.bottomTabs?.default ?? null;
+      activeBottomTab = defaultTab != null && tabs.some(bt => bt.id === defaultTab)
+        ? defaultTab
+        : (tabs.length > 0 ? tabs[0].id : null);
     }
     loadingMeta = false;
   }
@@ -180,7 +186,7 @@
    * Fetch rows from the API.
    * Takes explicit parameters to avoid reading $state inside $effect.
    */
-  async function fetchRowsExplicit(viewerId, search, viewGroup, seriesId, filterValues, page, layout = 'list', sort = null, append = false) {
+  async function fetchRowsExplicit(viewerId, search, viewGroup, bottomTab, filterValues, page, layout = 'list', sort = null, append = false) {
     if (append) {
       loadingMore = true;
     } else {
@@ -206,9 +212,10 @@
     if (viewGroup) {
       path += `&filter[viewGroup]=${encodeURIComponent(viewGroup)}`;
     }
-    // Number-series bottom-tab filter (per-type doc viewers).
-    if (seriesId != null) {
-      path += `&filter[number_series]=${encodeURIComponent(seriesId)}`;
+    // Spodní záložka — id je pro frontend neprůhledné, interpretuje ho
+    // viewer v selectRows().
+    if (bottomTab != null) {
+      path += `&filter[bottomTab]=${encodeURIComponent(bottomTab)}`;
     }
     // Custom filtry (ViewerFilters) — backend je parsuje generericky
     // jako filter[id]=value (ViewerController::rows).
@@ -236,7 +243,7 @@
 
   /** Convenience wrapper — call from event handlers, NOT from $effect */
   function fetchRows(append = false) {
-    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, pageNumber, effectiveLayout, activeSort, append);
+    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, pageNumber, effectiveLayout, activeSort, append);
   }
 
   async function fetchDetail(id) {
@@ -262,16 +269,16 @@
     selectedRowId = null;
     detail = null;
     pageNumber = 0;
-    fetchRowsExplicit(tab.viewerId, activeSearch, viewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+    fetchRowsExplicit(tab.viewerId, activeSearch, viewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
   }
 
-  function handleSeriesTabClick(seriesId) {
-    if (seriesId === activeSeriesId) return;
-    activeSeriesId = seriesId;
+  function handleBottomTabClick(tabId) {
+    if (tabId === activeBottomTab) return;
+    activeBottomTab = tabId;
     selectedRowId = null;
     detail = null;
     pageNumber = 0;
-    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, seriesId, activeFilters, 0, effectiveLayout, activeSort);
+    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, tabId, activeFilters, 0, effectiveLayout, activeSort);
   }
 
   function handleFilterChange(filterId, value) {
@@ -290,7 +297,7 @@
     }
     activeFilters = next;
     pageNumber = 0;
-    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, next, 0, effectiveLayout, activeSort);
+    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, next, 0, effectiveLayout, activeSort);
   }
 
   function handleSearchInput(e) {
@@ -301,7 +308,7 @@
       selectedRowId = null;
       detail = null;
       pageNumber = 0;
-      fetchRowsExplicit(tab.viewerId, value, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+      fetchRowsExplicit(tab.viewerId, value, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
     }, 300);
   }
 
@@ -314,7 +321,7 @@
     selectedRowId = null;
     detail = null;
     pageNumber = 0;
-    fetchRowsExplicit(tab.viewerId, '', activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+    fetchRowsExplicit(tab.viewerId, '', activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
   }
 
   function handleRowClick(row) {
@@ -350,7 +357,7 @@
       activeSort = { column: colId, dir: 'asc' };
     }
     pageNumber = 0;
-    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
   }
 
   // Toggle list ↔ grid (D10). Jen přepne stav a persistuje volbu — refetch
@@ -374,7 +381,7 @@
     const { scrollTop, scrollHeight, clientHeight } = listEl;
     if (scrollHeight - scrollTop - clientHeight < 100) {
       pageNumber += 1;
-      fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, pageNumber, effectiveLayout, activeSort, true);
+      fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, pageNumber, effectiveLayout, activeSort, true);
     }
   }
 
@@ -398,14 +405,14 @@
   function handleToolbarAction(actionId) {
     if (actionId === 'create') {
       editRecordId = null;
-      // Per-type viewers (e.g. issued/received invoices) expose
-      // newRecordDefaults so the form can pre-fill doc_type. On top of that,
-      // when a specific number series is the active bottom tab, pre-fill it too
-      // so the user doesn't have to pick it again in the form.
-      const base = meta?.newRecordDefaults ?? {};
-      formDefaultData = activeSeriesId != null
-        ? { ...base, number_series: activeSeriesId }
-        : base;
+      // Per-type viewery exponují newRecordDefaults (např. doc_type). Přes ně
+      // se slijí výchozí hodnoty aktivní spodní záložky (číselná řada,
+      // šanon…) — o významu záložky ví jen server, frontend jen slévá.
+      const activeTab = bottomTabs.find(bt => bt.id === activeBottomTab);
+      formDefaultData = {
+        ...(meta?.newRecordDefaults ?? {}),
+        ...(activeTab?.newRecordDefaults ?? {}),
+      };
       formOpen = true;
     } else if (actionId === 'edit' && selectedRowId != null) {
       editRecordId = selectedRowId;
@@ -481,7 +488,7 @@
       }
       // Refresh rows so any newly created alerts appear.
       pageNumber = 0;
-      fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+      fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
       if (selectedRowId != null) {
         fetchDetail(selectedRowId);
       }
@@ -528,7 +535,7 @@
         reanalyzeDialogOpen = false;
         // Refresh detail i list — zpráva mohla změnit stav
         pageNumber = 0;
-        fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+        fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
         fetchDetail(selectedRowId);
       } else {
         alert(t('viewer.reanalyze.failed', { msg: translateError(result?.error) }));
@@ -574,7 +581,7 @@
     // — fetchDetail still highlights it in the detail panel even if it's
     // scrolled out of view.
     pageNumber = 0;
-    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
     if (personId != null) {
       selectedRowId = personId;
       fetchDetail(personId);
@@ -586,13 +593,13 @@
       fetchDetail(selectedRowId);
       // Také refresh list — apply/reject mohlo přepnout stav zprávy 30→40
       pageNumber = 0;
-      fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+      fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
     }
   }
 
   function refreshAfterAction() {
     pageNumber = 0;
-    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
     if (selectedRowId != null) {
       fetchDetail(selectedRowId);
     }
@@ -752,7 +759,7 @@
       if (result?.success) {
         selectedRowId = null;
         pageNumber = 0;
-        fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+        fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
       } else {
         alert(translateError(result?.error));
       }
@@ -802,7 +809,7 @@
 
   function handleFormSaved() {
     pageNumber = 0;
-    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, effectiveLayout, activeSort);
+    fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, effectiveLayout, activeSort);
     if (selectedRowId != null) {
       fetchDetail(selectedRowId);
     }
@@ -835,7 +842,7 @@
     // Pre-meta placeholder — bez meta se tab lišta nerenderuje; skutečný
     // default (meta.defaultViewGroup) se nastaví po fetchMeta() níže.
     activeViewGroup = 'active';
-    activeSeriesId = null;
+    activeBottomTab = null;
     activeFilters = {};
     pageNumber = 0;
     hasMore = false;
@@ -876,7 +883,7 @@
     // (defaulty zná jen meta); pending vítězí.
     const pendingFilters = untrack(() => navigationStore.consumePendingFilters());
 
-    // Sequence: meta first (sets activeSeriesId from numberSeries), then rows
+    // Sequence: meta first (sets activeBottomTab from bottomTabs), then rows
     // with that filter, then optional pending-record detail.
     fetchMeta(viewerId).then(() => {
       // Efektivní layout pro initial fetch. Čtení meta/isMobile tady už
@@ -916,7 +923,7 @@
       // $state než tab.viewerId.
       const filters = initialFilterValues(untrack(() => meta)?.filters, pendingFilters);
       activeFilters = filters;
-      fetchRowsExplicit(viewerId, '', viewGroup, activeSeriesId, filters, 0, layout).then(() => {
+      fetchRowsExplicit(viewerId, '', viewGroup, activeBottomTab, filters, 0, layout).then(() => {
         if (pendingRecord != null) {
           selectedRowId = pendingRecord;
           fetchDetail(pendingRecord);
@@ -944,7 +951,7 @@
       selectedRowId = null;
       detail = null;
       pageNumber = 0;
-      fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeSeriesId, activeFilters, 0, layout, activeSort);
+      fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, 0, layout, activeSort);
     });
   });
 
@@ -1167,17 +1174,17 @@
       </div>
       {/if}
 
-      <!-- Bottom bar: number-series tabs (shown only when >1 series) -->
-      {#if hasNumberSeriesTabs}
-        <div class="shpd-viewer__series-tabs">
-          {#each numberSeries as ns (ns.id)}
+      <!-- Bottom bar: viewer-defined tabs (shown only when >1 tab) -->
+      {#if hasBottomTabs}
+        <div class="shpd-viewer__bottom-tabs">
+          {#each bottomTabs as bt (bt.id)}
             <button
-              class="shpd-viewer__series-tab"
-              class:shpd-viewer__series-tab--active={activeSeriesId === ns.id}
-              onclick={() => handleSeriesTabClick(ns.id)}
+              class="shpd-viewer__bottom-tab"
+              class:shpd-viewer__bottom-tab--active={activeBottomTab === bt.id}
+              onclick={() => handleBottomTabClick(bt.id)}
               type="button"
             >
-              {ns.name}
+              {bt.label}
             </button>
           {/each}
         </div>
@@ -1469,10 +1476,11 @@
     color: var(--shpd-color-text);
   }
 
-  /* Spodní lišta záložek číselných řad. Ortogonální k viewGroup tabům nahoře —
-     viewGroup filtruje docState, series filtruje number_series. V 400px panelu
-     se 4+ řad začne tísnit, proto horizontální scroll; žádné wrapping. */
-  .shpd-viewer__series-tabs {
+  /* Spodní lišta záložek vieweru (číselné řady, šanony…). Ortogonální
+     k viewGroup tabům nahoře — viewGroup filtruje docState, záložka posílá
+     filter[bottomTab]. V 400px panelu se 4+ záložek začne tísnit, proto
+     horizontální scroll; žádné wrapping. */
+  .shpd-viewer__bottom-tabs {
     display: flex;
     flex-shrink: 0;
     border-top: 1px solid var(--shpd-color-border);
@@ -1482,7 +1490,7 @@
     scrollbar-width: thin;
   }
 
-  .shpd-viewer__series-tab {
+  .shpd-viewer__bottom-tab {
     padding: var(--shpd-space-xs) var(--shpd-space-md);
     border: none;
     border-top: 2px solid transparent;
@@ -1496,11 +1504,11 @@
     transition: color 0.12s, border-color 0.12s;
   }
 
-  .shpd-viewer__series-tab:hover {
+  .shpd-viewer__bottom-tab:hover {
     color: var(--shpd-color-text);
   }
 
-  .shpd-viewer__series-tab--active {
+  .shpd-viewer__bottom-tab--active {
     color: var(--shpd-color-primary);
     border-top-color: var(--shpd-color-primary);
     font-weight: 600;
