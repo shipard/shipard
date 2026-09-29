@@ -20,10 +20,11 @@ use Shipard\Module\Core\Mail\IncomingMessageTitle;
  *   i2 — badge druhu (label z docKinds, barva dle mapy)
  *   t3 — [šanon] + první řádek ai_summary
  *
- * Spodní taby = šanony (reuse numberSeries mechanismu tabů číselných řad):
- *   id 0 = Vše (bez filtru), id > 0 = konkrétní šanon, id -1 = Nezařazené
- *   (binder IS NULL). Frontend posílá hodnotu jen zpět do filter[number_series],
- *   sentinel hodnoty interpretuje výhradně tento viewer.
+ * Spodní taby = šanony (TableViewer::getBottomTabs): `all` = Vše (bez
+ *   filtru), číselné id = konkrétní šanon, `unfiled` = Nezařazené (binder
+ *   IS NULL). Frontend posílá id jen zpět do filter[bottomTab], význam zná
+ *   výhradně tento viewer. „Přidat“ ze záložky šanonu předvyplní šanon
+ *   (newRecordDefaults).
  *
  * Detail: taby Obsah (vlastnosti + metadata dle druhu) / Přílohy / Původ.
  */
@@ -33,9 +34,9 @@ class RegistryDocumentsViewer extends TableViewer
 
     private const LABELS_CFG_ITEM = 'base.registry.viewerDetailLabels';
 
-    /** Sentinel hodnoty pro spodní taby šanonů. */
-    private const TAB_ALL = 0;
-    private const TAB_UNFILED = -1;
+    /** Id spodních záložek mimo konkrétní šanon (šanon = jeho číselné id). */
+    private const TAB_ALL = 'all';
+    private const TAB_UNFILED = 'unfiled';
 
     /** Barevné hinty badge druhu — klíč = docKinds key. */
     private const KIND_SPAN_CLASS = [
@@ -65,8 +66,8 @@ class RegistryDocumentsViewer extends TableViewer
             $id = $filter['id'] ?? null;
             if ($id === 'viewGroup') {
                 $viewGroup = (string) $filter['value'];
-            } elseif ($id === 'number_series') {
-                $binderTab = (int) $filter['value'];
+            } elseif ($id === 'bottomTab') {
+                $binderTab = (string) $filter['value'];
             }
         }
 
@@ -80,9 +81,9 @@ class RegistryDocumentsViewer extends TableViewer
 
         if ($binderTab === self::TAB_UNFILED) {
             $conditions[] = 'd.`binder` IS NULL';
-        } elseif ($binderTab > 0) {
+        } elseif (ctype_digit($binderTab) && (int) $binderTab > 0) {
             $conditions[] = 'd.`binder` = %i';
-            $params[] = $binderTab;
+            $params[] = (int) $binderTab;
         }
 
         if ($search !== null && $search !== '') {
@@ -114,14 +115,15 @@ class RegistryDocumentsViewer extends TableViewer
      * Spodní taby: Vše / per živý šanon / Nezařazené. Živý šanon =
      * docState IN (10, 40, 80) — archivované (70) se jako tab nezobrazují
      * (jejich dokumenty zůstávají dostupné přes Vše), smazané (90) nikdy.
+     * Záložka šanonu nese šanon jako výchozí hodnotu nového dokumentu.
      *
-     * @return list<array{id: int, name: string}>
+     * @return list<array{id: string|int, label: string, newRecordDefaults?: array{binder: int}}>
      */
-    public function getNumberSeries(): array
+    public function getBottomTabs(): array
     {
         $tabs = [[
-            'id'   => self::TAB_ALL,
-            'name' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'allDocuments', 'All'),
+            'id'    => self::TAB_ALL,
+            'label' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'allDocuments', 'All'),
         ]];
 
         $binders = $this->db->fetchAll(
@@ -130,12 +132,17 @@ class RegistryDocumentsViewer extends TableViewer
             . ' ORDER BY `order_pos` ASC, `name` ASC',
         );
         foreach ($binders as $b) {
-            $tabs[] = ['id' => (int) $b['id'], 'name' => (string) $b['name']];
+            $id = (int) $b['id'];
+            $tabs[] = [
+                'id'                => $id,
+                'label'             => (string) $b['name'],
+                'newRecordDefaults' => ['binder' => $id],
+            ];
         }
 
         $tabs[] = [
-            'id'   => self::TAB_UNFILED,
-            'name' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'unfiled', 'Unfiled'),
+            'id'    => self::TAB_UNFILED,
+            'label' => $this->detailTabLabel(self::LABELS_CFG_ITEM, 'unfiled', 'Unfiled'),
         ];
 
         return $tabs;
