@@ -1,0 +1,49 @@
+{
+    // Typ majetku (D25): skupina typů, výchozí druh a výchozí účetní skupina,
+    // které formulář karty předvyplní po výběru typu.
+    "title": "Typ majetku",
+    "title:cs": "Typ majetku",
+    "title:en": "Asset type",
+    "titleNew": "Nový typ majetku",
+    "titleNew:cs": "Nový typ majetku",
+    "titleNew:en": "New asset type",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Typ majetku",
+            "label:cs": "Typ majetku",
+            "label:en": "Asset type",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {"type": "input", "column": "name", "required": true},
+                                {"type": "input", "column": "short_name"},
+                                {
+                                    "type": "lookup",
+                                    "column": "type_group",
+                                    "placeholder": "Hledat skupinu typů…",
+                                    "lookup": {"table": "economy_assets_type_groups", "createForm": true}
+                                },
+                                {"type": "input", "column": "sort_order"},
+
+                                {"type": "separator", "label": "Výchozí hodnoty", "label:cs": "Výchozí hodnoty", "label:en": "Defaults"},
+                                {"type": "select", "column": "default_category", "placeholder": "— bez výchozího druhu —"},
+                                {
+                                    "type": "lookup",
+                                    "column": "default_accounting_group",
+                                    "placeholder": "Hledat účetní skupinu…",
+                                    "lookup": {"table": "economy_assets_accounting_groups"}
+                                },
+
+                                {"type": "separator", "label": "Poznámka", "label:cs": "Poznámka", "label:en": "Note"},
+                                {"type": "input", "column": "note"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

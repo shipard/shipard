@@ -1,0 +1,69 @@
+{
+    // Účetní skupina majetku (D5, D24): pět účtů pro zařazení, odpisy
+    // a vyřazení. Lookup umí jediný prefix, proto rozvahové účty filtruje
+    // celá třída 0 a přesné skupiny (01–03, 04, 07–08, 55, 54–55) vynucuje
+    // AccountingGroupDocument.
+    "title": "Účetní skupina majetku",
+    "title:cs": "Účetní skupina majetku",
+    "title:en": "Asset accounting group",
+    "titleNew": "Nová účetní skupina majetku",
+    "titleNew:cs": "Nová účetní skupina majetku",
+    "titleNew:en": "New asset accounting group",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Účetní skupina",
+            "label:cs": "Účetní skupina",
+            "label:en": "Accounting group",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {"type": "input", "column": "code", "required": true},
+                                {"type": "input", "column": "name", "required": true},
+                                {"type": "input", "column": "sort_order"},
+
+                                {"type": "separator", "label": "Účty", "label:cs": "Účty", "label:en": "Accounts"},
+                                {
+                                    "type": "lookup",
+                                    "column": "account_asset",
+                                    "required": true,
+                                    "placeholder": "Hledat účet 01x–03x…",
+                                    "lookup": {"table": "economy_accounting_accounts", "filter": {"account_level": 4, "number_prefix": "0"}}
+                                },
+                                {
+                                    "type": "lookup",
+                                    "column": "account_acquisition",
+                                    "placeholder": "Hledat účet 04x…",
+                                    "lookup": {"table": "economy_accounting_accounts", "filter": {"account_level": 4, "number_prefix": "04"}}
+                                },
+                                {
+                                    "type": "lookup",
+                                    "column": "account_accumulated",
+                                    "placeholder": "Hledat účet 07x–08x…",
+                                    "lookup": {"table": "economy_accounting_accounts", "filter": {"account_level": 4, "number_prefix": "0"}}
+                                },
+                                {
+                                    "type": "lookup",
+                                    "column": "account_depreciation",
+                                    "placeholder": "Hledat účet 551…",
+                                    "lookup": {"table": "economy_accounting_accounts", "filter": {"account_level": 4, "number_prefix": "55"}}
+                                },
+                                {
+                                    "type": "lookup",
+                                    "column": "account_disposal",
+                                    "placeholder": "Hledat účet 541…",
+                                    "lookup": {"table": "economy_accounting_accounts", "filter": {"account_level": 4, "number_prefix": "5"}}
+                                },
+
+                                {"type": "separator", "label": "Poznámka", "label:cs": "Poznámka", "label:en": "Note"},
+                                {"type": "input", "column": "note"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

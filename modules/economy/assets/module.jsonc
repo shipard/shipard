@@ -18,6 +18,138 @@
         "economy_assets_accounting_groups"
     ],
 
+    "settingsItems": [
+        { "viewer": "economy.assets.types",            "section": "assets", "order": 10 },
+        { "viewer": "economy.assets.typeGroups",       "section": "assets", "order": 20 },
+        { "viewer": "economy.assets.accountingGroups", "section": "assets", "order": 30 },
+        { "page":   "assetsNumbering",                 "section": "assets", "order": 40 }
+    ],
+
+    // Prefixy inventárních čísel per druh (D22). Klíče musí sedět na klíče
+    // cfgItem economy.assets.categories; čte je AssetDocument přes
+    // AssetCategories::PREFIX_SETTING, fallback numberPrefix v cfgItem.
+    "settingsPages": [
+        {
+            "id": "assetsNumbering",
+            "name": "Inventory numbers",
+            "name:cs": "Inventární čísla",
+            "name:en": "Inventory numbers",
+            "icon": "hash",
+            "fields": [
+                {
+                    "id": "economy.assets.numberPrefix.small",
+                    "type": "text",
+                    "name": "Prefix — small assets",
+                    "name:cs": "Prefix — drobný majetek",
+                    "name:en": "Prefix — small assets",
+                    "hint": "Empty = MA. The number is the prefix plus a sequence padded to 4 digits (MA0001).",
+                    "hint:cs": "Prázdné = MA. Číslo je prefix a pořadové číslo doplněné na 4 místa (MA0001).",
+                    "hint:en": "Empty = MA. The number is the prefix plus a sequence padded to 4 digits (MA0001).",
+                    "maxLength": 16
+                },
+                {
+                    "id": "economy.assets.numberPrefix.tangible",
+                    "type": "text",
+                    "name": "Prefix — tangible fixed assets",
+                    "name:cs": "Prefix — dlouhodobý hmotný",
+                    "name:en": "Prefix — tangible fixed assets",
+                    "hint": "Empty = MA.",
+                    "hint:cs": "Prázdné = MA.",
+                    "hint:en": "Empty = MA.",
+                    "maxLength": 16
+                },
+                {
+                    "id": "economy.assets.numberPrefix.intangible",
+                    "type": "text",
+                    "name": "Prefix — intangible fixed assets",
+                    "name:cs": "Prefix — dlouhodobý nehmotný",
+                    "name:en": "Prefix — intangible fixed assets",
+                    "hint": "Empty = MA.",
+                    "hint:cs": "Prázdné = MA.",
+                    "hint:en": "Empty = MA.",
+                    "maxLength": 16
+                },
+                {
+                    "id": "economy.assets.numberPrefix.nondepreciable",
+                    "type": "text",
+                    "name": "Prefix — non-depreciable fixed assets",
+                    "name:cs": "Prefix — neodepisovaný dlouhodobý",
+                    "name:en": "Prefix — non-depreciable fixed assets",
+                    "hint": "Empty = MA.",
+                    "hint:cs": "Prázdné = MA.",
+                    "hint:en": "Empty = MA.",
+                    "maxLength": 16
+                }
+            ]
+        }
+    ],
+
+    "viewers": [
+        {
+            "id": "economy.assets.assets",
+            "name": "Assets",
+            "name:cs": "Majetek",
+            "name:en": "Assets",
+            "icon": "box",
+            "table": "economy_assets_assets",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetsViewer",
+            "navSection": "assets",
+            "navOrder": 10
+        },
+        {
+            "id": "economy.assets.types",
+            "name": "Asset types",
+            "name:cs": "Typy majetku",
+            "name:en": "Asset types",
+            "icon": "tags",
+            "table": "economy_assets_types",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetTypesViewer"
+        },
+        {
+            "id": "economy.assets.typeGroups",
+            "name": "Asset type groups",
+            "name:cs": "Skupiny typů majetku",
+            "name:en": "Asset type groups",
+            "icon": "folder",
+            "table": "economy_assets_type_groups",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetTypeGroupsViewer"
+        },
+        {
+            "id": "economy.assets.accountingGroups",
+            "name": "Asset accounting groups",
+            "name:cs": "Účetní skupiny majetku",
+            "name:en": "Asset accounting groups",
+            "icon": "calculator",
+            "table": "economy_assets_accounting_groups",
+            "class": "Shipard\\Module\\Economy\\Assets\\AccountingGroupsViewer"
+        }
+    ],
+
+    "forms": [
+        {
+            "table": "economy_assets_assets",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetsForm"
+        },
+        { "table": "economy_assets_types",             "id": "economy.assets.types" },
+        { "table": "economy_assets_type_groups",       "id": "economy.assets.type_groups" },
+        { "table": "economy_assets_accounting_groups", "id": "economy.assets.accounting_groups" }
+    ],
+
+    "lookups": [
+        {
+            "table": "economy_assets_assets",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetsLookup"
+        },
+        {
+            "table": "economy_assets_types",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetTypesLookup"
+        },
+        {
+            "table": "economy_assets_accounting_groups",
+            "class": "Shipard\\Module\\Economy\\Assets\\AccountingGroupsLookup"
+        }
+    ],
+
     "documentClasses": [
         {
             "table": "economy_assets_assets",

@@ -1,0 +1,30 @@
+{
+    "title": "Skupina typů majetku",
+    "title:cs": "Skupina typů majetku",
+    "title:en": "Asset type group",
+    "titleNew": "Nová skupina typů majetku",
+    "titleNew:cs": "Nová skupina typů majetku",
+    "titleNew:en": "New asset type group",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Skupina typů",
+            "label:cs": "Skupina typů",
+            "label:en": "Type group",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {"type": "input", "column": "name", "required": true},
+                                {"type": "input", "column": "sort_order"},
+                                {"type": "separator", "label": "Poznámka", "label:cs": "Poznámka", "label:en": "Note"},
+                                {"type": "input", "column": "note"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
