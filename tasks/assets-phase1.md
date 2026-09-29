@@ -1,6 +1,6 @@
 # Majetek Fáze 1 — karta, typy, účetní skupiny
 
-**Stav:** hotovo — 2026-09-29 (5 commitů), API smoke celého životního cyklu karty na ukázkovém DS OK; zbývá ruční proklik v prohlížeči a `ds-upgrade` na alfě
+**Stav:** hotovo — 2026-09-29 (5 commitů), API smoke i ruční proklik na ukázkovém DS OK; zbývá `ds-upgrade` na alfě při nasazení
 
 > PRD pro jednu Claude Code session (5 commitů). Design: `docs/assets.md`
 > (§4 D1–D26, §5, §7 oblast 1), issue #83.

@@ -28,7 +28,7 @@ a potřebuješ ji z evidence vyřadit.
    záložku druhu (třeba **Dlouhodobý hmotný**) nebo **Cizí**, nová karta
    ho má rovnou předvyplněný.
 2. Vyplň **Název** (povinný) a v sekci *Zařazení* vyber **Druh**:
-   - **Drobný majetek** — věc, kterou jen evidiješ; nákup šel do nákladů
+   - **Drobný majetek** — věc, kterou jen eviduješ; nákup šel do nákladů
      a nic se neodepisuje. Jediný druh, u kterého karta nese **Cenu**.
    - **Dlouhodobý hmotný** a **Dlouhodobý nehmotný** — majetek, který se
      bude odepisovat. Karta musí mít **Účetní skupinu**; pole **Cena**

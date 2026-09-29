@@ -114,7 +114,7 @@ a čekají na tebe, zbytek je už vyřízený:
 |---|---|---|
 | inventář, inventární seznam, majetek firmy | **Majetek** (sekce i seznam) | Karty majetku — drobného i dlouhodobého. Najdeš v **Majetek → Majetek** |
 | inventární číslo, evidenční číslo | **Inventární číslo** | Jedinečné označení karty. Prázdné dostane při potvrzení karty: prefix podle druhu (výchozí *MA*) a pořadové číslo, třeba *MA0001* |
-| drobný majetek, evidovaný majetek, věc do nákladů | **Drobný majetek** (druh) | Věc, kterou jen evidiješ — nákup šel do nákladů, neodepisuje se. Jediný druh, u kterého karta nese **Cenu** |
+| drobný majetek, evidovaný majetek, věc do nákladů | **Drobný majetek** (druh) | Věc, kterou jen eviduješ — nákup šel do nákladů, neodepisuje se. Jediný druh, u kterého karta nese **Cenu** |
 | DHM, DNM, odepisovaný majetek | **Dlouhodobý hmotný**, **Dlouhodobý nehmotný** (druhy) | Majetek, který se bude odepisovat. Karta musí mít **Účetní skupinu**; cena vznikne až ze zařazení (odpisy zatím nejsou) |
 | pozemek, umělecké dílo | **Neodepisovaný dlouhodobý** (druh) | Dlouhodobý majetek, který se neodepisuje |
 | pronajaté, na leasing, půjčené, cizí | **Cizí majetek** + **Vlastník** | Věc, kterou používáš, ale nevlastníš. Karta nese, komu patří |
