@@ -1,0 +1,14 @@
+[
+    // Seed účetních skupin majetku (docs/assets.md D24, tasks/assets-phase1.md).
+    // Účty = čísla analytických účtů výchozí osnovy
+    // (economy/accounting/config/accountChartDefault.jsonc). Skupina se založí
+    // jen tehdy, když v osnově existují VŠECHNY její vyplněné účty
+    // (AccountingGroupsProvisioner); jinak se přeskočí a vypíše pod -v.
+    {"code": "021", "name": "Stavby",                              "sort_order": 10, "asset": "021100", "acquisition": "042100", "accumulated": "081100", "depreciation": "551100", "disposal": "541100"},
+    {"code": "022", "name": "Samostatné movité věci",              "sort_order": 20, "asset": "022100", "acquisition": "042100", "accumulated": "082100", "depreciation": "551100", "disposal": "541100"},
+    {"code": "013", "name": "Software",                            "sort_order": 30, "asset": "013100", "acquisition": "041100", "accumulated": "073100", "depreciation": "551100", "disposal": "541100"},
+    {"code": "014", "name": "Ocenitelná práva",                    "sort_order": 40, "asset": "014100", "acquisition": "041100", "accumulated": "074100", "depreciation": "551100", "disposal": "541100"},
+    {"code": "019", "name": "Ostatní dlouhodobý nehmotný majetek", "sort_order": 50, "asset": "019100", "acquisition": "041100", "accumulated": "079100", "depreciation": "551100", "disposal": "541100"},
+    {"code": "031", "name": "Pozemky",                             "sort_order": 60, "asset": "031100", "acquisition": "042100", "disposal": "541100"},
+    {"code": "032", "name": "Umělecká díla a sbírky",              "sort_order": 70, "asset": "032100", "acquisition": "042100", "disposal": "541100"}
+]

@@ -34,6 +34,7 @@ use Shipard\Module\Economy\Accbal\ClearingInfrastructureProvisioner;
 use Shipard\Module\Economy\Accounting\AccountChartProvisioner;
 use Shipard\Module\Economy\Accounting\OffBalanceAccountsProvisioner;
 use Shipard\Module\Economy\Accounting\TransitAccountsProvisioner;
+use Shipard\Module\Economy\Assets\AccountingGroupsProvisioner;
 use Shipard\Module\Economy\Codebooks\FiscalYearsProvisioner;
 use Shipard\Module\Economy\Items\ItemKindsProvisioner;
 use Shipard\Module\Economy\Vat\ReportPeriodsProvisioner;
@@ -358,6 +359,7 @@ class DsUpgradeCommand extends Command
             $this->provisionUnits($resolvedModules, $dsConnection, $output);
             $this->provisionItemKinds($resolvedModules, $dsConnection, $output);
             $this->provisionAccountChart($resolvedModules, $settings, $dsConnection, $output);
+            $this->provisionAssetAccountingGroups($resolvedModules, $dsConnection, $output);
             $this->provisionAccbalBalances($resolvedModules, $dsConnection, $output);
             $this->provisionFiscalYears($resolvedModules, $dsDir, $settings, $dsConnection, $output);
             $this->provisionVatPeriods($resolvedModules, $dsDir, $dsConnection, $output);
@@ -700,6 +702,46 @@ class DsUpgradeCommand extends Command
         $result = $provisioner->provision();
 
         $this->logProvisioningResult($output, 'account chart', $result['accountChart']);
+    }
+
+    /**
+     * Účetní skupiny majetku (docs/assets.md D24) — až po osnově, protože
+     * seed odkazuje na účty číslem; skupinu s chybějícím účtem provisioner
+     * přeskočí a vypíše pod -v. Jen ve větvi bez skipProvisioning —
+     * migrované DS dostanou skupiny importem (Fáze 6).
+     *
+     * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
+     */
+    private function provisionAssetAccountingGroups(
+        array $resolvedModules,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning economy.assets accounting groups...', OutputInterface::VERBOSITY_VERBOSE);
+
+        if (!$this->isModuleActive($resolvedModules, 'economy.assets')) {
+            $output->writeln('  <comment>[SKIP] economy.assets module not active</comment>', OutputInterface::VERBOSITY_VERBOSE);
+            return;
+        }
+
+        $seedFile = $this->getModulePathResolver()->getPath('economy.assets') . '/config/accountingGroups.jsonc';
+        if (!is_file($seedFile)) {
+            $output->writeln('  <comment>[SKIP] Asset accounting groups seed file not found</comment>');
+            return;
+        }
+
+        $result = new AccountingGroupsProvisioner($dsConnection, $seedFile)->provision();
+        $stats  = $result['accountingGroups'];
+
+        $this->logProvisioningResult($output, 'asset accounting groups', $stats);
+        foreach ($stats['skipped'] as $skipped) {
+            $output->writeln(sprintf(
+                '  [SKIP]   asset accounting group %s — missing accounts: %s',
+                $skipped['code'],
+                implode(', ', $skipped['missing']),
+            ), OutputInterface::VERBOSITY_VERBOSE);
+        }
     }
 
     /**
