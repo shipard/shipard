@@ -9,10 +9,11 @@ use Shipard\Core\Logging\ErrorLogger;
 
 /**
  * Učení pravidel obsahových štítků (tasks/content-tag-enrichment.md, D22):
- * při potvrzení dokladu vzniklého z AI extrakce (přechod 10 Koncept →
- * 40 V pořádku, lineage `aiExtraction`) s LLM štítkem zapíše pravidlo
- * IČO dodavatele → štítek do `core_exchange_tag_rules` (origin `learned`,
- * platné okamžitě — další doklad téhož IČO jde bez LLM).
+ * při potvrzení dokladu vzniklého z AI extrakce nebo ISDOC importu
+ * (přechod 10 Koncept → 40 V pořádku, lineage `aiExtraction` / `isdoc` —
+ * #81 D2, ISDOC prochází touž obsahovou eskalací) s LLM štítkem zapíše
+ * pravidlo IČO dodavatele → štítek do `core_exchange_tag_rules` (origin
+ * `learned`, platné okamžitě — další doklad téhož IČO jde bez LLM).
  *
  * Upsert logika (jedno pravidlo per IČO):
  *  - žádné pravidlo → INSERT learned,
@@ -35,6 +36,9 @@ class ContentTagRuleCaptureHandler extends AbstractDocumentEventHandler
     private const STATE_DRAFT = 10;
     private const STATE_CONFIRMED = 40;
 
+    /** Lineage dokladů, ze kterých se pravidla učí (`docs_core_heads.source_kind`). */
+    private const LEARNING_SOURCE_KINDS = ['aiExtraction', 'isdoc'];
+
     public function onStateChanged(string $tableId, array $data, int $oldState, int $newState): void
     {
         if ($this->db === null || empty($data['id'])) {
@@ -55,7 +59,7 @@ class ContentTagRuleCaptureHandler extends AbstractDocumentEventHandler
             return;
         }
         $messageNdx = (int) ($head['source_message'] ?? 0);
-        if (($head['source_kind'] ?? null) !== 'aiExtraction' || $messageNdx <= 0) {
+        if (!in_array($head['source_kind'] ?? null, self::LEARNING_SOURCE_KINDS, true) || $messageNdx <= 0) {
             return;
         }
 

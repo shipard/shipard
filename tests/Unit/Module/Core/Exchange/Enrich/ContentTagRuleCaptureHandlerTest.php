@@ -167,6 +167,39 @@ class ContentTagRuleCaptureHandlerTest extends TestCase
         $this->assertSame([], $handler->sqlCalls);
     }
 
+    public function testIsdocLineageWithLlmTagInsertsLearnedRule(): void
+    {
+        // ISDOC import prochází touž obsahovou eskalací (#81 D2) — potvrzený
+        // ISDOC doklad s LLM štítkem učí pravidlo stejně jako AI extrakce.
+        $handler = $this->handler(
+            ['source_kind' => 'isdoc', 'source_message' => 678],
+            $this->llmCanonical(),
+        );
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 555], 10, 40);
+
+        $this->assertCount(1, $handler->sqlCalls);
+        [$sql, $companyId, $tag, $origin] = $handler->sqlCalls[0];
+        $this->assertStringContainsString('INSERT INTO [core_exchange_tag_rules]', $sql);
+        $this->assertSame('12345678', $companyId);
+        $this->assertSame('vehicle.fuel', $tag);
+        $this->assertSame('learned', $origin);
+    }
+
+    public function testIsdocLineageWithRuleSourcedTagIsNoOp(): void
+    {
+        // Podmínka tagSource = 'llm' platí i pro ISDOC (D2) — rule štítek
+        // pravidlo už má.
+        $handler = $this->handler(
+            ['source_kind' => 'isdoc', 'source_message' => 678],
+            $this->llmCanonical(tagSource: 'rule'),
+        );
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 555], 10, 40);
+
+        $this->assertSame([], $handler->sqlCalls);
+    }
+
     public function testOtherTransitionsAreNoOp(): void
     {
         $handler = $this->handler($this->aiHead(), $this->llmCanonical());
