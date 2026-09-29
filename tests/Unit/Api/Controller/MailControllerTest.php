@@ -10,6 +10,7 @@ use Shipard\Api\Controller\MailController;
 use Shipard\Api\Request;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentRegistry;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
 
 /**
  * Unit testy pro auth-gate a validační větve MailControlleru.
@@ -433,75 +434,150 @@ class MailControllerTest extends TestCase
         $this->assertNull($inserted['partner_name']);
     }
 
-    // ── ISDOC import hook (tasks/mail-isdoc-import.md) ──────────────────────
+    // ── ISDOC odložení do runneru (tasks/mail-isdoc-content-tags.md #81) ───
     //
-    // Plný multipart flow pokrývají integrační testy; tady se testuje jen
-    // lazy gate — factory se volá právě tehdy, když je mezi přílohami
-    // kandidát. Orchestrace samotného importu: IsdocImportServiceTest.
+    // Plný multipart flow pokrývají integrační testy; tady se testuje lazy
+    // gate a odložení: factory se volá právě tehdy, když je mezi přílohami
+    // kandidát; platný ISDOC → podmíněný UPDATE (stav 10, log s triggerem)
+    // + spawn; detect false / prohraný závod s analyzerem → nic.
+    // Orchestrace samotného importu: IsdocImportServiceTest.
 
-    private function invokeRunIsdocImport(MailController $ctrl, array $attachments): void
+    /** @var list<array<int, mixed>> Zachycené argumenty $db->execute(). */
+    private array $executes = [];
+
+    private function invokeDeferIsdocImport(MailController $ctrl, array $attachments): void
     {
         $ref = new \ReflectionClass($ctrl);
-        $ref->getMethod('runIsdocImport')->invoke($ctrl, 42, $attachments);
+        $ref->getMethod('deferIsdocImport')->invoke($ctrl, 42, $attachments);
     }
 
-    public function testIsdocImportFactoryInvokedForCandidateAttachment(): void
+    private function deferDb(int $affectedRows): DataSourceConnection
     {
-        $factoryCalls = 0;
-        $service = $this->createMock(\Shipard\Module\Core\Mail\IsdocImportService::class);
-        $service->expects($this->once())->method('tryImport')->with(42);
-
+        $this->executes = [];
         $db = $this->createMock(DataSourceConnection::class);
-        $ctrl = new MailController(
+        $db->method('execute')->willReturnCallback(function (...$args): void {
+            $this->executes[] = $args;
+        });
+        $db->method('getAffectedRows')->willReturn($affectedRows);
+        return $db;
+    }
+
+    private function detectingService(bool $result): \Shipard\Module\Core\Mail\IsdocImportService
+    {
+        $service = $this->createMock(\Shipard\Module\Core\Mail\IsdocImportService::class);
+        $service->expects($this->once())->method('detect')->with(42)->willReturn($result);
+        $service->expects($this->never())->method('tryImport'); // import běží jen v runneru
+        return $service;
+    }
+
+    /** @param list<int> $spawned */
+    private function deferController(DataSourceConnection $db, \Closure $factory, array &$spawned): MailController
+    {
+        return new MailController(
             $db, '/tmp/shpd_mail_test', [], new DocumentRegistry(), null, null,
-            function () use (&$factoryCalls, $service) {
-                $factoryCalls++;
-                return $service;
+            $factory,
+            static function (int $messageId) use (&$spawned): void {
+                $spawned[] = $messageId;
             },
         );
+    }
 
-        $this->invokeRunIsdocImport($ctrl, [
+    public function testValidIsdocIsDeferredToRunnerAndSpawned(): void
+    {
+        $factoryCalls = 0;
+        $spawned = [];
+        $service = $this->detectingService(true);
+        $ctrl = $this->deferController($this->deferDb(1), function () use (&$factoryCalls, $service) {
+            $factoryCalls++;
+            return $service;
+        }, $spawned);
+
+        $this->invokeDeferIsdocImport($ctrl, [
             ['id' => 1, 'name' => 'faktura.pdf', 'mime_type' => 'application/pdf'],
             ['id' => 2, 'name' => 'faktura.isdoc', 'mime_type' => 'application/xml'],
         ]);
 
         $this->assertSame(1, $factoryCalls);
+        $this->assertCount(1, $this->executes);
+        $update = $this->executes[0];
+        $this->assertStringContainsString('UPDATE %n SET preprocess_state = %i', (string) $update[0]);
+        $this->assertStringContainsString('AND preprocess_state = %i AND analysis_state IN %in', (string) $update[0]);
+        $this->assertSame(PreprocessRunner::STATE_PENDING, $update[2]);
+        $log = json_decode((string) $update[3], true);
+        $this->assertSame(PreprocessRunner::TRIGGER_ISDOC, $log['trigger']);
+        $this->assertSame([], $log['plan']);
+        $this->assertSame(42, $update[5]);
+        $this->assertSame(PreprocessRunner::STATE_NONE, $update[6]); // jen dosud neodložená zpráva
+        $this->assertSame([0, 10], $update[7]);                       // DS bez AI (0) i ve frontě (10)
+        $this->assertSame([42], $spawned);
     }
 
-    public function testIsdocImportFactoryNotInvokedWithoutCandidate(): void
+    public function testDetectFalseLeavesMessageInAiQueue(): void
+    {
+        $spawned = [];
+        $service = $this->detectingService(false);
+        $ctrl = $this->deferController($this->deferDb(1), static fn() => $service, $spawned);
+
+        $this->invokeDeferIsdocImport($ctrl, [
+            ['id' => 2, 'name' => 'faktura.isdoc', 'mime_type' => 'application/xml'],
+        ]);
+
+        $this->assertSame([], $this->executes);
+        $this->assertSame([], $spawned);
+    }
+
+    public function testLostRaceWithAnalyzerDoesNotSpawn(): void
+    {
+        // Analyzer si zprávu claimnul mezi commitem a odložením
+        // (analysis_state 20) → podmíněný UPDATE 0 řádků → žádný spawn;
+        // zpráva se nesmí zaseknout za gate AI fronty.
+        $spawned = [];
+        $service = $this->detectingService(true);
+        $ctrl = $this->deferController($this->deferDb(0), static fn() => $service, $spawned);
+
+        $this->invokeDeferIsdocImport($ctrl, [
+            ['id' => 2, 'name' => 'faktura.isdoc', 'mime_type' => 'application/xml'],
+        ]);
+
+        $this->assertCount(1, $this->executes);
+        $this->assertSame([], $spawned);
+    }
+
+    public function testIsdocFactoryNotInvokedWithoutCandidate(): void
     {
         // PDF je kandidát vždy (nosič embedded ISDOC, PDF/A-3) — bez kandidáta
         // znamená jen přílohy mimo ISDOC/XML/PDF (obrázky apod.).
         $factoryCalls = 0;
-        $db = $this->createMock(DataSourceConnection::class);
-        $ctrl = new MailController(
-            $db, '/tmp/shpd_mail_test', [], new DocumentRegistry(), null, null,
-            function () use (&$factoryCalls) {
-                $factoryCalls++;
-                return $this->createMock(\Shipard\Module\Core\Mail\IsdocImportService::class);
-            },
-        );
+        $spawned = [];
+        $ctrl = $this->deferController($this->deferDb(1), function () use (&$factoryCalls) {
+            $factoryCalls++;
+            return $this->createMock(\Shipard\Module\Core\Mail\IsdocImportService::class);
+        }, $spawned);
 
-        $this->invokeRunIsdocImport($ctrl, [
+        $this->invokeDeferIsdocImport($ctrl, [
             ['id' => 1, 'name' => 'scan.jpg', 'mime_type' => 'image/jpeg'],
         ]);
 
         $this->assertSame(0, $factoryCalls);
+        $this->assertSame([], $this->executes);
+        $this->assertSame([], $spawned);
     }
 
-    public function testIsdocImportSwallowsFactoryFailure(): void
+    public function testIsdocDeferralSwallowsFactoryFailure(): void
     {
-        // Import nikdy nesmí shodit příjem pošty — i výbuch wiringu se polkne.
-        $db = $this->createMock(DataSourceConnection::class);
-        $ctrl = new MailController(
-            $db, '/tmp/shpd_mail_test', [], new DocumentRegistry(), null, null,
+        // Odložení nikdy nesmí shodit příjem pošty — i výbuch wiringu se polkne.
+        $spawned = [];
+        $ctrl = $this->deferController(
+            $this->deferDb(1),
             static fn() => throw new \RuntimeException('wiring failed'),
+            $spawned,
         );
 
-        $this->invokeRunIsdocImport($ctrl, [
+        $this->invokeDeferIsdocImport($ctrl, [
             ['id' => 2, 'name' => 'faktura.isdoc', 'mime_type' => 'application/xml'],
         ]);
 
+        $this->assertSame([], $spawned);
         $this->addToAssertionCount(1); // žádná výjimka nepropadla
     }
 

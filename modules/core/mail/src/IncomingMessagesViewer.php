@@ -535,6 +535,12 @@ class IncomingMessagesViewer extends TableViewer
         $badge = $this->buildCfgStateBadge('core.mail.preprocessStates', $state);
         $this->addItem($items, 'Stav', $badge['label'] ?? (string) $state);
 
+        if (($log['trigger'] ?? null) === PreprocessRunner::TRIGGER_ISDOC) {
+            // ISDOC-only běh (#81): žádná pravidla, runner spuštěn jen kvůli
+            // importu — bez tohoto řádku by blok ukazoval jen stav a ISDOC.
+            $this->addItem($items, 'Spuštěno', 'ISDOC import');
+        }
+
         $plan = is_array($log['plan'] ?? null) ? $log['plan'] : [];
         $ruleIds = [];
         foreach ($plan as $entry) {

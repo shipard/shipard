@@ -21,6 +21,7 @@ use Shipard\Module\Core\Mail\IdempotencyStore;
 use Shipard\Module\Core\Mail\IncomingMessageDocument;
 use Shipard\Module\Core\Mail\IsdocImportService;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRuleMatcher;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessSpawner;
 use Shipard\Module\Core\Mail\MailRouterProvisioner;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
@@ -44,8 +45,6 @@ class MailController
     /** docState Archiv (core.mail.docStatesIncoming) — cíl pre-triage. */
     private const DOC_STATE_ARCHIVED = 80;
 
-    /** preprocess_state „čeká" (core.mail.preprocessStates) — plán uložen, runner ještě neběžel. */
-    private const PREPROCESS_PENDING = 10;
     private const PREPROCESS_RULES_TABLE = 'core_mail_preprocess_rules';
 
     /** Strop souborů v jedné dávce ručního uploadu (D6). */
@@ -61,8 +60,10 @@ class MailController
     /**
      * @param array<string, TableDefinition> $tables
      * @param \Closure(): IsdocImportService|null $isdocImportFactory Lazy
-     *        wiring deterministického ISDOC importu — service se staví až
-     *        při prvním kandidátovi (intake bez ISDOC neplatí režii wiringu).
+     *        wiring **detekce** ISDOC — service se staví až při prvním
+     *        kandidátovi (intake bez ISDOC neplatí režii wiringu). Import
+     *        sám běží v runneru předzpracování (#81 D1), tady stačí
+     *        service bez enricheru a writerů.
      * @param \Closure(int): void|null $preprocessSpawner Test seam — náhrada
      *        detached spawnu runneru předzpracování (default PreprocessSpawner).
      */
@@ -241,14 +242,16 @@ class MailController
 
             $dibi->commit();
 
-            // Deterministický ISDOC import (tasks/mail-isdoc-import.md) —
-            // až po commitu intake tx, nikdy nesmí shodit příjem pošty.
+            // Deterministický ISDOC import (tasks/mail-isdoc-import.md, #81)
+            // — až po commitu intake tx, nikdy nesmí shodit příjem pošty.
             // Auto-archivovaná zpráva žádné zpracování nedostává. Zpráva
-            // s plánem předzpracování ISDOC větev přeskočí (D10) — převezme
-            // ji runner nad původními i vygenerovanými přílohami.
+            // s plánem předzpracování jde rovnou do runneru (D10) — ISDOC
+            // import udělá sám nad původními i vygenerovanými přílohami;
+            // bez plánu se inline jen detekuje a platný ISDOC se do runneru
+            // odloží (#81 D4), import s obsahovou eskalací běží tam.
             if ($matchedRule === null) {
                 if ($preprocessPlan === null) {
-                    $this->runIsdocImport($messageId, $contentAttachments);
+                    $this->deferIsdocImport($messageId, $contentAttachments);
                 } else {
                     $this->spawnPreprocess($messageId);
                 }
@@ -264,15 +267,22 @@ class MailController
     }
 
     /**
-     * Deterministický import ISDOC příloh místo AI analýzy — běží po
-     * commitu intake tx ve vlastní transakci (viz IsdocImportService).
-     * Invariant: nikdy nesmí shodit příjem pošty; výsledek se do response
-     * intake nepropaguje (mail-router ho nepotřebuje).
+     * Odložení ISDOC importu do runneru předzpracování (#81 D1/D4) — běží
+     * po commitu intake / upload tx. Inline zůstává jen detekce bez zápisu
+     * (parse, schéma, dedup identitou); import s obsahovou eskalací (LLM)
+     * dělá detached runner, aby nezpomalil HTTP request. Výsledek se do
+     * response nepropaguje (mail-router ani dashboard ho nepotřebují).
+     *
+     * Podmíněný UPDATE řeší závod s analyzerem: mezi commitem a odložením
+     * je zpráva ve frontě (`analysis_state` 10) a detect() může trvat
+     * (pdfdetach). Claimnutá zpráva (20) se nesmí zaseknout za gate →
+     * 0 řádků = analyzer vyhrál, nic se neděje. `analysis_state` 0 musí
+     * projít (DS bez AI). Invariant: nikdy nesmí shodit příjem ani upload.
      *
      * @param list<array<string, mixed>> $contentAttachments Uploady příloh
      *        bez raw .eml souboru.
      */
-    private function runIsdocImport(int $messageId, array $contentAttachments): void
+    private function deferIsdocImport(int $messageId, array $contentAttachments): void
     {
         if ($this->isdocImportFactory === null) {
             return;
@@ -290,9 +300,28 @@ class MailController
                 return;
             }
 
-            ($this->isdocImportFactory)()->tryImport($messageId, $contentAttachments);
+            if (!($this->isdocImportFactory)()->detect($messageId, $contentAttachments)) {
+                return; // žádný / vadný ISDOC, více identit → AI fronta jako dřív
+            }
+
+            $this->db->execute(
+                'UPDATE %n SET preprocess_state = %i, preprocess_log = %s, modified = %s'
+                . ' WHERE id = %i AND preprocess_state = %i AND analysis_state IN %in',
+                self::MAIL_TABLE,
+                PreprocessRunner::STATE_PENDING,
+                PreprocessRunner::encodeLog(PreprocessRunner::isdocOnlyLog()),
+                date('Y-m-d H:i:s'),
+                $messageId,
+                PreprocessRunner::STATE_NONE,
+                IsdocImportService::ANALYSIS_IMPORTABLE_STATES,
+            );
+            if ($this->db->getAffectedRows() === 0) {
+                return; // analyzer si zprávu mezitím claimnul — nechat mu ji
+            }
+
+            $this->spawnPreprocess($messageId);
         } catch (\Throwable $e) {
-            ErrorLogger::logException($e, 'MailController::receiveIncoming ISDOC import failed');
+            ErrorLogger::logException($e, 'MailController ISDOC deferral failed — message stays in AI queue');
         }
     }
 
@@ -320,8 +349,9 @@ class MailController
     }
 
     /**
-     * Detached spawn runneru předzpracování po commitu intake (D8).
-     * Selhání jen zaloguje — zprávu ve stavu 10 zvedne rescue sweep.
+     * Detached spawn runneru předzpracování po commitu intake / uploadu
+     * (D8) — pro plán pravidel i pro ISDOC-only odložení (#81). Selhání
+     * jen zaloguje — zprávu ve stavu 10 zvedne rescue sweep.
      */
     private function spawnPreprocess(int $messageId): void
     {
@@ -332,7 +362,7 @@ class MailController
             }
             new PreprocessSpawner($this->dsPath)->spawn($messageId);
         } catch (\Throwable $e) {
-            ErrorLogger::logException($e, 'MailController::receiveIncoming preprocess spawn failed — sweep will pick the message up');
+            ErrorLogger::logException($e, 'MailController preprocess spawn failed — sweep will pick the message up');
         }
     }
 
@@ -459,10 +489,11 @@ class MailController
 
             $dibi->commit();
 
-            // Deterministický ISDOC import až po commitu dávky (D8) —
-            // nikdy nesmí shodit upload.
+            // ISDOC až po commitu dávky (D8): inline detekce, platný ISDOC
+            // se odloží do runneru per zpráva (#81 D4 — až 20 runnerů naráz
+            // je v pořádku, neserializovat). Nikdy nesmí shodit upload.
             foreach ($isdocBatches as $messageId => $contentAttachments) {
-                $this->runIsdocImport($messageId, $contentAttachments);
+                $this->deferIsdocImport($messageId, $contentAttachments);
             }
 
             return Response::success(['mode' => $mode, 'messages' => $messages], 201);
@@ -931,13 +962,13 @@ class MailController
         }
 
         if ($preprocessPlan !== null) {
-            $data['preprocess_state'] = self::PREPROCESS_PENDING;
-            $data['preprocess_log'] = (string) json_encode([
+            $data['preprocess_state'] = PreprocessRunner::STATE_PENDING;
+            $data['preprocess_log'] = PreprocessRunner::encodeLog([
                 'plan' => $preprocessPlan,
                 'results' => [],
                 'attempts' => 0,
                 'createdAt' => date('c'),
-            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            ]);
         }
 
         $validation = $doc->validate($data);

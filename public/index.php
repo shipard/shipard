@@ -1009,24 +1009,19 @@ function dispatchMail(
 ): Response {
 	$dsPath = $resolved->config->getDataSourceDir();
 
-	// Lazy wiring deterministického ISDOC importu (tasks/mail-isdoc-import.md).
-	// Stejná degradace jako dispatchAnalysis: bez ConfigRuntime běží import
-	// bez obohacení řádků (RowEnrichmentPipeline — historie + obsahová
-	// eskalace, #81 D1).
+	// Lazy wiring **detekce** ISDOC (tasks/mail-isdoc-content-tags.md #81 D4):
+	// MailController po commitu volá jen detect() a zprávu s platným ISDOC
+	// odloží do runneru předzpracování. Import s obohacením (pipeline vč.
+	// LLM eskalace, partner, titulek) staví PreprocessRunnerFactory —
+	// detekce enricher ani writery nepotřebuje.
 	$isdocImportFactory = static fn(): \Shipard\Module\Core\Mail\IsdocImportService =>
 		new \Shipard\Module\Core\Mail\IsdocImportService(
 			$db,
 			new \Shipard\Module\Core\Exchange\Schema\SchemaValidator(
 				\Shipard\Module\Core\Exchange\Schema\SchemaLoader::default(),
 			),
-			$configRuntime !== null
-				? \Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline::create($db, $configRuntime, $resolved->config)
-				: null,
+			null,
 			$dsPath,
-			partnerWriter: \Shipard\Module\Core\Mail\MessagePartnerWriter::create($db->getDibiConnection(), $configRuntime),
-			// Labely typů v jazyce AI profilu DS, ne requestu (mail-router
-			// Accept-Language neposílá).
-			titleComposer: \Shipard\Module\Core\Mail\MessageTitleComposer::forDataSource($db, $resolved->config),
 		);
 
 	$ctrl = new MailController(
