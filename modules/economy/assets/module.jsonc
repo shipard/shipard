@@ -25,13 +25,39 @@
         { "viewer": "economy.assets.types",            "section": "assets", "order": 10 },
         { "viewer": "economy.assets.typeGroups",       "section": "assets", "order": 20 },
         { "viewer": "economy.assets.accountingGroups", "section": "assets", "order": 30 },
-        { "page":   "assetsNumbering",                 "section": "assets", "order": 40 }
+        { "page":   "assetsNumbering",                 "section": "assets", "order": 40 },
+        { "page":   "assetsDepreciation",              "section": "assets", "order": 50 }
     ],
 
     // Prefixy inventárních čísel per druh (D22). Klíče musí sedět na klíče
     // cfgItem economy.assets.categories; čte je AssetDocument přes
     // AssetCategories::PREFIX_SETTING, fallback numberPrefix v cfgItem.
+    // Četnost účetních odpisů (D12): AssetPlanService::SETTING_PERIODICITY,
+    // fallback `year`.
     "settingsPages": [
+        {
+            "id": "assetsDepreciation",
+            "name": "Depreciation",
+            "name:cs": "Odpisy",
+            "name:en": "Depreciation",
+            "icon": "calculator",
+            "fields": [
+                {
+                    "id": "economy.assets.accPeriodicity",
+                    "type": "select",
+                    "name": "Accounting depreciation frequency",
+                    "name:cs": "Četnost účetních odpisů",
+                    "name:en": "Accounting depreciation frequency",
+                    "hint": "Tax depreciation is always yearly. Empty = yearly.",
+                    "hint:cs": "Daňové odpisy jsou vždy roční. Prázdné = ročně.",
+                    "hint:en": "Tax depreciation is always yearly. Empty = yearly.",
+                    "options": [
+                        { "value": "year",  "label": "Yearly",  "label:cs": "Ročně",   "label:en": "Yearly" },
+                        { "value": "month", "label": "Monthly", "label:cs": "Měsíčně", "label:en": "Monthly" }
+                    ]
+                }
+            ]
+        },
         {
             "id": "assetsNumbering",
             "name": "Inventory numbers",

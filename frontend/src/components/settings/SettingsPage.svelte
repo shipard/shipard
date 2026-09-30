@@ -8,6 +8,7 @@
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import Input from '../ui/Input.svelte';
+  import Select from '../ui/Select.svelte';
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
   import ImageSlotField from './ImageSlotField.svelte';
@@ -64,6 +65,7 @@
   // live stores, image/avatar vlastní upload endpoint — mimo Uložit.
   function isSavedViaPage(field, scope) {
     return field.type === 'text'
+      || field.type === 'select'
       || ((field.type === 'theme' || field.type === 'shell') && scope === 'ds');
   }
 
@@ -82,6 +84,9 @@
         images[field.id] = serverValues[field.id] ?? null;
       } else if (field.type === 'text') {
         texts[field.id] = serverValues[field.id] ?? '';
+      } else if (field.type === 'select') {
+        // Nezvolené = null → server klíč smaže, čtenáři použijí výchozí.
+        texts[field.id] = serverValues[field.id] ?? null;
       } else if (isSavedViaPage(field, scope)) {
         // DS default — structured objekt ({mode, custom} / {shell, params})
         // nebo null.
@@ -195,6 +200,14 @@
                 {/if}
               {:else if field.type === 'language'}
                 <LanguageField />
+              {:else if field.type === 'select'}
+                <Select
+                  id={`settings-${field.id}`}
+                  bind:value={values[field.id]}
+                  options={field.options ?? []}
+                  error={fieldErrors[field.id] ?? null}
+                  disabled={saving}
+                />
               {:else}
                 <Input
                   id={`settings-${field.id}`}

@@ -22,6 +22,7 @@ class AssetsViewerTest extends TestCase
     ];
 
     private const LABELS = [
+        'tab.foreign'       => ['name' => 'Cizí'],
         'tab.taxPlan'       => ['name' => 'Daňové odpisy'],
         'action.activate'   => ['name' => 'Zařadit'],
         'action.depreciate' => ['name' => 'Odepsat'],
@@ -41,6 +42,7 @@ class AssetsViewerTest extends TestCase
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([
             ['economy.assets.categories', self::CATEGORIES],
+            ['economy.assets.viewerLabels', self::LABELS],
             ['core.system.docStatesArchive', [
                 '10' => ['stateName' => 'Koncept', 'stateStyle' => 'concept', 'mainState' => 1, 'viewGroup' => 'active', 'goto' => [40]],
                 '40' => ['stateName' => 'V pořádku', 'stateStyle' => 'done', 'mainState' => 3, 'viewGroup' => 'active', 'goto' => [70]],

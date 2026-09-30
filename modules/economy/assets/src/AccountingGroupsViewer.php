@@ -82,28 +82,19 @@ class AccountingGroupsViewer extends AssetsViewerBase
         if ($record === null) {
             return ['tabs' => []];
         }
-        $cs = $this->cs();
 
         $identity = [];
-        $this->addItem($identity, $cs ? 'Kód' : 'Code', $record['code'] ?? null);
-        $this->addItem($identity, $cs ? 'Název' : 'Name', $record['name'] ?? null);
-        $this->addItem($identity, $cs ? 'Poznámka' : 'Note', $record['note'] ?? null);
+        $this->addItem($identity, $this->text('label.code', 'Code'), $record['code'] ?? null);
+        $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
+        $this->addItem($identity, $this->text('label.note', 'Note'), $record['note'] ?? null);
 
-        $labels = $cs
-            ? [
-                'account_asset'        => 'Účet majetku',
-                'account_acquisition'  => 'Účet pořízení',
-                'account_accumulated'  => 'Účet oprávek',
-                'account_depreciation' => 'Účet odpisů',
-                'account_disposal'     => 'Účet zůstatkové ceny při vyřazení',
-            ]
-            : [
-                'account_asset'        => 'Asset account',
-                'account_acquisition'  => 'Acquisition account',
-                'account_accumulated'  => 'Accumulated depreciation account',
-                'account_depreciation' => 'Depreciation account',
-                'account_disposal'     => 'Disposal account',
-            ];
+        $labels = [
+            'account_asset'        => $this->text('label.accountAsset', 'Asset account'),
+            'account_acquisition'  => $this->text('label.accountAcquisition', 'Acquisition account'),
+            'account_accumulated'  => $this->text('label.accountAccumulated', 'Accumulated depreciation account'),
+            'account_depreciation' => $this->text('label.accountDepreciation', 'Depreciation account'),
+            'account_disposal'     => $this->text('label.accountDisposal', 'Disposal account'),
+        ];
         $accounts = [];
         foreach (self::ACCOUNT_ALIASES as $column => $alias) {
             $number = (string) ($record[$column . '_number'] ?? '');
@@ -112,8 +103,8 @@ class AccountingGroupsViewer extends AssetsViewerBase
         }
 
         return $this->overviewDetail([
-            ['title' => $cs ? 'Identifikace' : 'Identity', 'items' => $identity],
-            ['title' => $cs ? 'Účty' : 'Accounts', 'items' => $accounts],
+            ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
+            ['title' => $this->text('group.accounts', 'Accounts'), 'items' => $accounts],
         ]);
     }
 

@@ -282,6 +282,73 @@ class SettingsControllerTest extends TestCase
         $this->assertSame(401, $this->getStatus($resp));
     }
 
+    /** Zdroj dat s modulem majetku — stránka Odpisy má pole typu select. */
+    private function withAssetsModule(): void
+    {
+        $main = json_decode((string) file_get_contents($this->dsDir . '/config/main.json'), true);
+        $main['modules'] = ['core.system', 'economy.assets'];
+        file_put_contents($this->dsDir . '/config/main.json', json_encode($main));
+    }
+
+    public function testPageSelectFieldCarriesLocalizedOptions(): void
+    {
+        $this->withAssetsModule();
+        $db = $this->mockDb([
+            ['key' => 'economy.assets.accPeriodicity', 'value' => json_encode('month')],
+        ]);
+
+        $resp = $this->ctrl->page('assetsDepreciation', $this->config(), $this->resolver, 'cs', $this->auth(), $db);
+        $data = $resp->getPayload()['data'];
+
+        $field = array_column($data['definition']['fields'], null, 'id')['economy.assets.accPeriodicity'];
+        $this->assertSame('select', $field['type']);
+        $this->assertSame('Četnost účetních odpisů', $field['label']);
+        $this->assertSame(
+            [['value' => 'year', 'label' => 'Ročně'], ['value' => 'month', 'label' => 'Měsíčně']],
+            $field['options'],
+        );
+        $this->assertSame('month', $data['values']['economy.assets.accPeriodicity']);
+    }
+
+    public function testSavePageSelectAcceptsOnlyOptionValues(): void
+    {
+        $this->withAssetsModule();
+        $db = $this->mockDb();
+        $db->expects($this->once())->method('execute');
+
+        $resp = $this->ctrl->savePage(
+            'assetsDepreciation',
+            $this->saveRequest(['values' => ['economy.assets.accPeriodicity' => 'month']]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+        $this->assertSame(200, $this->getStatus($resp));
+        $this->assertSame('month', $resp->getPayload()['data']['values']['economy.assets.accPeriodicity']);
+
+        $resp = $this->ctrl->savePage(
+            'assetsDepreciation',
+            $this->saveRequest(['values' => ['economy.assets.accPeriodicity' => 'weekly']]),
+            $this->config(), $this->resolver, $this->auth(), $this->mockDb(),
+        );
+        $this->assertSame(422, $this->getStatus($resp));
+        $this->assertSame('INVALID_VALUE', $resp->getPayload()['error']['details'][0]['code']);
+    }
+
+    public function testSavePageSelectEmptyDeletesKey(): void
+    {
+        $this->withAssetsModule();
+        $db = $this->mockDb();
+        $db->expects($this->never())->method('execute');
+        $db->expects($this->once())->method('deleteWhere');
+
+        $resp = $this->ctrl->savePage(
+            'assetsDepreciation',
+            $this->saveRequest(['values' => ['economy.assets.accPeriodicity' => '']]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+        $this->assertSame(200, $this->getStatus($resp));
+        $this->assertNull($resp->getPayload()['data']['values']['economy.assets.accPeriodicity']);
+    }
+
     public function testPageAccountBasicReturnsThemeAndLanguageFields(): void
     {
         $db = $this->mockDb([

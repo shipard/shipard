@@ -308,9 +308,15 @@ class ModuleDefinitionTest extends TestCase
                     'id'     => 'valid',
                     'fields' => [
                         ['type' => 'text'],                                  // chybí id pole
-                        ['id' => 'a.b', 'type' => 'select'],                  // nepodporovaný typ
+                        ['id' => 'a.b', 'type' => 'toggle'],                  // nepodporovaný typ
                         ['id' => 'a.c'],                                      // type default = text
                         ['id' => 'a.d', 'type' => 'shell'],                   // podporovaný typ (UI shells Fáze 4)
+                        ['id' => 'a.e', 'type' => 'select'],                  // select bez nabídky
+                        ['id' => 'a.f', 'type' => 'select', 'options' => [
+                            'junk',
+                            ['label' => 'no value'],
+                            ['value' => 'year', 'label' => 'Yearly', 'label:cs' => 'Ročně'],
+                        ]],
                     ],
                 ],
             ],
@@ -318,9 +324,12 @@ class ModuleDefinitionTest extends TestCase
 
         $this->assertCount(1, $def->settingsPages);
         $this->assertSame('valid', $def->settingsPages[0]['id']);
-        $this->assertCount(2, $def->settingsPages[0]['fields']);
+        $this->assertCount(3, $def->settingsPages[0]['fields']);
         $this->assertSame('a.c', $def->settingsPages[0]['fields'][0]['id']);
         $this->assertSame('shell', $def->settingsPages[0]['fields'][1]['type']);
+        // select drží jen platné položky nabídky
+        $this->assertSame('a.f', $def->settingsPages[0]['fields'][2]['id']);
+        $this->assertSame([['value' => 'year', 'label' => 'Yearly', 'label:cs' => 'Ročně']], $def->settingsPages[0]['fields'][2]['options']);
     }
 
     public function testSettingsPagesAbsentDefaultsToEmpty(): void

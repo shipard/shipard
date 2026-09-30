@@ -31,11 +31,6 @@ abstract class AssetsViewerBase extends TableViewer
         'cancelled' => 'danger',
     ];
 
-    protected function cs(): bool
-    {
-        return $this->language !== 'en';
-    }
-
     /**
      * Popisek z cfgItem `economy.assets.viewerLabels` (lokalizovaný
      * kompilací); bez konfigurace anglický fallback. `{param}` v textu se
@@ -155,6 +150,6 @@ abstract class AssetsViewerBase extends TableViewer
 
     protected function yesNo(mixed $value): string
     {
-        return !empty($value) ? ($this->cs() ? 'Ano' : 'Yes') : ($this->cs() ? 'Ne' : 'No');
+        return $this->text(!empty($value) ? 'label.yes' : 'label.no', !empty($value) ? 'Yes' : 'No');
     }
 }

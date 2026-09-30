@@ -124,7 +124,13 @@ exempt nejsou.
 3. Textové pole: `type: "text"` (+ `maxLength`, `hint:cs`). Obrázkové pole
    vyžaduje branding slot — slot je potřeba přidat do
    `BrandingStorage::SLOTS` + `SLOT_SETTINGS_KEYS` (whitelist je vědomě
-   v PHP, ne v JSONC).
+   v PHP, ne v JSONC). Výběr z pevné nabídky: `type: "select"` +
+   `options: [{value, label, label:cs, label:en}]` — pole bez nabídky
+   parser zahodí, `savePage` přijme jen hodnotu z nabídky (422
+   `INVALID_VALUE`), prázdná hodnota klíč smaže (čtenář použije svůj
+   default). Definice jde na klienta s lokalizovanými `options` (`value`,
+   `label`), renderuje `ui/Select`. První uživatel:
+   `economy.assets.accPeriodicity` (stránka Odpisy, `year` / `month`).
 4. `vendor/bin/shpd-ds ds-upgrade` v dev DS (kvůli rekompilaci
    settingsSections, pokud přibyla sekce).
 5. Hodnoty čti v PHP přes `new SettingsStore($db)->get('klíč')` s fallbackem
@@ -134,9 +140,12 @@ exempt nejsou.
    `SettingsController` vrací 403 v `page`/`savePage` a položku skrývá
    z navigace. První uživatel: `hostingOidc` (`hosting.oidc.issuer`).
 
-Další typy polí (`select`, `checkbox`, `textarea`) přijdou s první
-stránkou, která je potřebuje — struktura definice je na to připravená
-(parser v `ModuleDefinition::fromArray()` whitelistuje typy).
+Další typy polí (`checkbox`, `textarea`) přijdou s první stránkou, která
+je potřebuje — nový typ znamená čtyři serverová místa (whitelist
+v `ModuleDefinition::fromArray()`, větev v `SettingsController::savePage()`,
+propuštění atributů v `localizePageDefinition()`, případně
+`DsSettingCommand::STRUCTURED_FIELD_TYPES`) a tři v `SettingsPage.svelte`
+(`isSavedViaPage`, `splitValues`, render).
 
 **Parametry vrstvy C (osnova, agenda DPH, fiskální rok, měna) settings
 stránku nemají a mít nebudou** — ovládají se v ručně psaném panelu

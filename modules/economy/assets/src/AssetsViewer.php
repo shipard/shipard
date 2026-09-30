@@ -100,7 +100,7 @@ class AssetsViewer extends AssetsViewerBase
     {
         $tabs = [[
             'id'    => self::TAB_ALL,
-            'label' => $this->cs() ? 'Vše' : 'All',
+            'label' => $this->text('tab.all', 'All'),
         ]];
 
         foreach ($this->categories()->all() as $key => $entry) {
@@ -113,7 +113,7 @@ class AssetsViewer extends AssetsViewerBase
 
         $tabs[] = [
             'id'                => self::TAB_FOREIGN,
-            'label'             => $this->cs() ? 'Cizí' : 'Foreign',
+            'label'             => $this->text('tab.foreign', 'Foreign'),
             'newRecordDefaults' => ['is_foreign' => 1],
         ];
 
@@ -136,13 +136,13 @@ class AssetsViewer extends AssetsViewerBase
         return [
             [
                 'id'      => 'asset_type',
-                'label'   => $this->cs() ? 'Typ' : 'Type',
+                'label'   => $this->text('label.type', 'Type'),
                 'type'    => 'select',
                 'options' => $this->codebookOptions('economy_assets_types', '`name`'),
             ],
             [
                 'id'      => 'accounting_group',
-                'label'   => $this->cs() ? 'Účetní skupina' : 'Accounting group',
+                'label'   => $this->text('label.accountingGroup', 'Accounting group'),
                 'type'    => 'select',
                 'options' => $this->codebookOptions('economy_assets_accounting_groups', "CONCAT(`code`, ' — ', `name`)"),
             ],
@@ -174,7 +174,7 @@ class AssetsViewer extends AssetsViewerBase
         if (!empty($rowData['is_foreign'])) {
             $owner = trim((string) ($rowData['owner_name'] ?? ''));
             $t2[] = [
-                'text'  => ($this->cs() ? 'Cizí' : 'Foreign') . ($owner !== '' ? ' · ' . $owner : ''),
+                'text'  => ($this->text('tab.foreign', 'Foreign')) . ($owner !== '' ? ' · ' . $owner : ''),
                 'class' => 'warning',
             ];
         }
@@ -226,36 +226,35 @@ class AssetsViewer extends AssetsViewerBase
         $category   = (string) ($record['category'] ?? '');
         $longTerm   = $category !== '' && $categories->isLongTerm($category);
         $tracking   = $this->config?->cfgItem('economy.assets.trackingKinds') ?? [];
-        $cs = $this->cs();
 
         $identity = [];
-        $this->addItem($identity, $cs ? 'Inventární číslo' : 'Inventory number', $record['asset_number'] ?? null);
-        $this->addItem($identity, $cs ? 'Název' : 'Name', $record['name'] ?? null);
-        $this->addItem($identity, $cs ? 'Zkrácený název' : 'Short name', $record['short_name'] ?? null);
+        $this->addItem($identity, $this->text('label.assetNumber', 'Inventory number'), $record['asset_number'] ?? null);
+        $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
+        $this->addItem($identity, $this->text('label.shortName', 'Short name'), $record['short_name'] ?? null);
 
         $classification = [];
-        $this->addItem($classification, $cs ? 'Typ' : 'Type', $record['type_name'] ?? null);
-        $this->addItem($classification, $cs ? 'Druh' : 'Category', $category !== '' ? $categories->label($category) : null);
+        $this->addItem($classification, $this->text('label.type', 'Type'), $record['type_name'] ?? null);
+        $this->addItem($classification, $this->text('label.category', 'Category'), $category !== '' ? $categories->label($category) : null);
         $trackingKey = (string) ($record['tracking'] ?? '');
         $this->addItem(
             $classification,
-            $cs ? 'Způsob sledování' : 'Tracking',
+            $this->text('label.tracking', 'Tracking'),
             $trackingKey !== '' ? (string) ($tracking[$trackingKey]['name'] ?? $trackingKey) : null,
         );
         $group = trim(((string) ($record['group_code'] ?? '')) . ' — ' . ((string) ($record['group_name'] ?? '')), ' —');
-        $this->addItem($classification, $cs ? 'Účetní skupina' : 'Accounting group', $group);
+        $this->addItem($classification, $this->text('label.accountingGroup', 'Accounting group'), $group);
 
         $ownership = [];
-        $this->addItem($ownership, $cs ? 'Cizí majetek' : 'Foreign asset', $this->yesNo($record['is_foreign'] ?? 0));
+        $this->addItem($ownership, $this->text('label.foreignAsset', 'Foreign asset'), $this->yesNo($record['is_foreign'] ?? 0));
         if (!empty($record['is_foreign'])) {
-            $this->addItem($ownership, $cs ? 'Vlastník' : 'Owner', $record['owner_name'] ?? null);
+            $this->addItem($ownership, $this->text('label.owner', 'Owner'), $record['owner_name'] ?? null);
         }
 
         $lifecycle = [];
-        $this->addItem($lifecycle, $cs ? 'Datum pořízení' : 'Acquired', $this->formatDate($record['acquired_date'] ?? null));
-        $this->addItem($lifecycle, $cs ? 'Datum vyřazení' : 'Disposed', $this->formatDate($record['disposed_date'] ?? null));
+        $this->addItem($lifecycle, $this->text('label.acquiredDate', 'Acquired'), $this->formatDate($record['acquired_date'] ?? null));
+        $this->addItem($lifecycle, $this->text('label.disposedDate', 'Disposed'), $this->formatDate($record['disposed_date'] ?? null));
         if (!$longTerm) {
-            $this->addItem($lifecycle, $cs ? 'Cena' : 'Price', $this->formatAmount($record['price'] ?? null));
+            $this->addItem($lifecycle, $this->text('label.price', 'Price'), $this->formatAmount($record['price'] ?? null));
         }
 
         $depreciable = $category !== '' && $categories->isDepreciable($category);
@@ -269,15 +268,15 @@ class AssetsViewer extends AssetsViewerBase
         }
 
         $note = [];
-        $this->addItem($note, $cs ? 'Poznámka' : 'Note', $record['note'] ?? null);
+        $this->addItem($note, $this->text('label.note', 'Note'), $record['note'] ?? null);
 
         $detail = $this->overviewDetail([
-            ['title' => $cs ? 'Identifikace' : 'Identity', 'items' => $identity],
-            ['title' => $cs ? 'Zařazení' : 'Classification', 'items' => $classification],
-            ['title' => $cs ? 'Vlastnictví' : 'Ownership', 'items' => $ownership],
-            ['title' => $cs ? 'Pořízení a vyřazení' : 'Acquisition and disposal', 'items' => $lifecycle],
+            ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
+            ['title' => $this->text('group.classification', 'Classification'), 'items' => $classification],
+            ['title' => $this->text('group.ownership', 'Ownership'), 'items' => $ownership],
+            ['title' => $this->text('group.lifecycle', 'Acquisition and disposal'), 'items' => $lifecycle],
             ['title' => $this->text('group.depreciation', 'Depreciation'), 'items' => $depreciation],
-            ['title' => $cs ? 'Poznámka' : 'Note', 'items' => $note],
+            ['title' => $this->text('label.note', 'Note'), 'items' => $note],
         ]);
 
         if (!$longTerm) {

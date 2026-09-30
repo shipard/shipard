@@ -299,6 +299,16 @@ class SettingsController
                     continue;
                 }
                 $toSave[$id] = $raw;
+            } elseif ($type === 'select') {
+                // Hodnota z nabídky definice; prázdná = smazat klíč (čtenáři
+                // padnou na svůj výchozí stav).
+                $allowed = array_map(static fn(array $o): string => (string) $o['value'], $field['options'] ?? []);
+                $value = $raw === null ? '' : (is_scalar($raw) ? (string) $raw : null);
+                if ($value === null || ($value !== '' && !in_array($value, $allowed, true))) {
+                    $errors[] = ['field' => $id, 'code' => 'INVALID_VALUE', 'message' => 'Value is not one of the options'];
+                    continue;
+                }
+                $toSave[$id] = $value === '' ? null : $value;
             }
             // image / avatar — ignorováno (vlastní upload endpoint).
         }
@@ -353,6 +363,15 @@ class SettingsController
             }
             if (isset($field['slot'])) {
                 $localized['slot'] = $field['slot'];
+            }
+            if ($field['type'] === 'select') {
+                $localized['options'] = array_map(
+                    fn(array $o): array => [
+                        'value' => (string) $o['value'],
+                        'label' => (string) ($o['label:' . $language] ?? $o['label:en'] ?? $o['label'] ?? $o['value']),
+                    ],
+                    $field['options'] ?? [],
+                );
             }
             $fields[] = $localized;
         }

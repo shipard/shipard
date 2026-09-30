@@ -84,24 +84,23 @@ class AssetTypesViewer extends AssetsViewerBase
         if ($record === null) {
             return ['tabs' => []];
         }
-        $cs = $this->cs();
         $categories = new AssetCategories($this->config);
 
         $identity = [];
-        $this->addItem($identity, $cs ? 'Název' : 'Name', $record['name'] ?? null);
-        $this->addItem($identity, $cs ? 'Zkrácený název' : 'Short name', $record['short_name'] ?? null);
-        $this->addItem($identity, $cs ? 'Skupina typů' : 'Type group', $record['group_name'] ?? null);
-        $this->addItem($identity, $cs ? 'Poznámka' : 'Note', $record['note'] ?? null);
+        $this->addItem($identity, $this->text('label.name', 'Name'), $record['name'] ?? null);
+        $this->addItem($identity, $this->text('label.shortName', 'Short name'), $record['short_name'] ?? null);
+        $this->addItem($identity, $this->text('label.typeGroup', 'Type group'), $record['group_name'] ?? null);
+        $this->addItem($identity, $this->text('label.note', 'Note'), $record['note'] ?? null);
 
         $defaults = [];
         $category = (string) ($record['default_category'] ?? '');
-        $this->addItem($defaults, $cs ? 'Výchozí druh' : 'Default category', $category !== '' ? $categories->label($category) : null);
+        $this->addItem($defaults, $this->text('label.defaultCategory', 'Default category'), $category !== '' ? $categories->label($category) : null);
         $group = trim(((string) ($record['acc_group_code'] ?? '')) . ' — ' . ((string) ($record['acc_group_name'] ?? '')), ' —');
-        $this->addItem($defaults, $cs ? 'Výchozí účetní skupina' : 'Default accounting group', $group);
+        $this->addItem($defaults, $this->text('label.defaultAccountingGroup', 'Default accounting group'), $group);
 
         return $this->overviewDetail([
-            ['title' => $cs ? 'Identifikace' : 'Identity', 'items' => $identity],
-            ['title' => $cs ? 'Výchozí hodnoty' : 'Defaults', 'items' => $defaults],
+            ['title' => $this->text('group.identity', 'Identity'), 'items' => $identity],
+            ['title' => $this->text('group.defaults', 'Defaults'), 'items' => $defaults],
         ]);
     }
 }

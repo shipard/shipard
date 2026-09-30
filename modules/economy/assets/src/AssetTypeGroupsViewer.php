@@ -43,7 +43,7 @@ class AssetTypeGroupsViewer extends AssetsViewerBase
         $t2 = [];
         $count = (int) ($rowData['types_count'] ?? 0);
         if ($count > 0) {
-            $t2[] = ['text' => $this->cs() ? "Typů: {$count}" : "Types: {$count}", 'class' => 'muted'];
+            $t2[] = ['text' => $this->text('text.typesCount', 'Types: {count}', ['count' => $count]), 'class' => 'muted'];
         }
         $badge = $this->stateBadge($docState);
         if ($badge !== null) {
@@ -65,14 +65,13 @@ class AssetTypeGroupsViewer extends AssetsViewerBase
         if ($record === null) {
             return ['tabs' => []];
         }
-        $cs = $this->cs();
         $items = [];
-        $this->addItem($items, $cs ? 'Název' : 'Name', $record['name'] ?? null);
-        $this->addItem($items, $cs ? 'Pořadí' : 'Order', (string) ($record['sort_order'] ?? 0));
-        $this->addItem($items, $cs ? 'Poznámka' : 'Note', $record['note'] ?? null);
+        $this->addItem($items, $this->text('label.name', 'Name'), $record['name'] ?? null);
+        $this->addItem($items, $this->text('label.order', 'Order'), (string) ($record['sort_order'] ?? 0));
+        $this->addItem($items, $this->text('label.note', 'Note'), $record['note'] ?? null);
 
         return $this->overviewDetail([
-            ['title' => $cs ? 'Identifikace' : 'Identity', 'items' => $items],
+            ['title' => $this->text('group.identity', 'Identity'), 'items' => $items],
         ]);
     }
 }
