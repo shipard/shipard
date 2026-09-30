@@ -38,6 +38,7 @@
                 <Preformatted>C 99999 vedená u Krajského soudu v Testově</Preformatted>
             </RegisterIdentification>
             <Contact>
+                <Name>Jan Novák</Name>
                 <Telephone>+420111222333</Telephone>
                 <ElectronicMail>fakturace@dodavatel.test</ElectronicMail>
             </Contact>

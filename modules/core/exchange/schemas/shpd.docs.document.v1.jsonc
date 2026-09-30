@@ -281,10 +281,18 @@
             }
         },
 
+        // Contact *of the document*: the party's contact person (`name` —
+        // "Vyřizuje" / "Attn" / name printed above the company, ISDOC
+        // Contact/Name) plus their channels. `name` stays in the proposal
+        // (preview only) — it is not written to the Person nor to the
+        // document snapshots. Differs from shpd.persons.person.v1, where
+        // `contact` is the company-level channel and people live in
+        // `contacts[]`. See docs/exchange-format.md §6, tasks/exchange-contact-name.md.
         "Contact": {
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
+                "name":  { "type": ["string", "null"] },
                 "email": { "type": ["string", "null"] },
                 "phone": { "type": ["string", "null"] },
                 "web":   { "type": ["string", "null"] }

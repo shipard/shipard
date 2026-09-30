@@ -458,7 +458,9 @@ strukturu.
     "displayLine":  "Hlavní 1, 110 00 Praha 1"
   },
 
-  "contact": {
+  "contact": {                     // kontakt k dokladu: osoba + její kanály
+    "name":  "Jan Novák",          // kontaktní osoba strany („Vyřizuje“, Attn,
+                                    //   ISDOC Contact/Name) — jen náhled návrhu
     "email": "fakturace@example.cz",
     "phone": "+420 123 456 789",
     "web":   "https://example.cz"
@@ -477,6 +479,20 @@ strukturu.
   "paymentTermDays": 14            // default splatnost pro due date
 }
 ```
+
+**`contact` u dokladu vs. u Osoby.** V dokladu je `contact` *kontakt
+k dokladu*: kontaktní osoba strany (`name` — „Vyřizuje“, „Kontaktní osoba“,
+„Attn“, jméno uvedené nad názvem firmy; ISDOC `Contact/Name`) a její kanály.
+Formát Osob (`shpd.persons.person.v1`) má naproti tomu `contact` jako
+hlavičkový kanál firmy a jména osob vede v `contacts[]`. Hodnota
+`contact.name` zůstává v návrhu (`canonical_json`) a zobrazuje ji náhled
+návrhu (`DocumentExchangePreview`); **nepropisuje se** do Osoby
+(`PartyResolver`, `PersonApplier`) ani do snapshotů dokladu
+(`DocDocument::buildSnapshots()`, import-mód
+`DocumentApplier::buildImportPartnerSnapshot()`) a `DocumentExporter` ji
+nevydává (stranu skládá z Osoby). Jméno fyzické osoby bez názvu firmy
+(účtenka, OSVČ) patří do `name` strany, ne do `contact.name`. Zadání:
+`tasks/exchange-contact-name.md`.
 
 ### Self-party flow
 

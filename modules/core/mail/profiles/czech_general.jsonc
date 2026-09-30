@@ -694,6 +694,12 @@
                                             ],
                                             "additionalProperties": false,
                                             "properties": {
+                                                "name": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
                                                 "email": {
                                                     "type": [
                                                         "string",

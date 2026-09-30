@@ -187,6 +187,7 @@
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
+                "name":  { "type": ["string", "null"] },
                 "email": { "type": ["string", "null"] },
                 "phone": { "type": ["string", "null"] },
                 "web":   { "type": ["string", "null"] }

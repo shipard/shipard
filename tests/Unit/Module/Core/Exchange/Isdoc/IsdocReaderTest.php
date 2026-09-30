@@ -98,6 +98,8 @@ class IsdocReaderTest extends TestCase
         $this->assertSame('Testovací dodavatel s.r.o.', $canonical['supplier']['name']);
         $this->assertSame('12345678', $canonical['supplier']['companyId']);
         $this->assertSame('cz', $canonical['supplier']['country']);
+        // Bez <Contact> je contact.name null a celý (prázdný) objekt prune() vypustí.
+        $this->assertArrayNotHasKey('contact', $canonical['supplier']);
         $this->assertSame('2026-06-30', $canonical['dates']['issueDate']);
 
         $this->assertCount(1, $canonical['rows']);
@@ -154,6 +156,7 @@ class IsdocReaderTest extends TestCase
         $this->assertSame('12', $supplier['address']['houseNumber']);
         $this->assertSame('Testov', $supplier['address']['city']);
         $this->assertSame('10000', $supplier['address']['zip']);
+        $this->assertSame('Jan Novák', $supplier['contact']['name']);
         $this->assertSame('fakturace@dodavatel.test', $supplier['contact']['email']);
         $this->assertSame('+420111222333', $supplier['contact']['phone']);
         $this->assertSame('123456789/0100', $supplier['bankAccount']['accountNumber']);

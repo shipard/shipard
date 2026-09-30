@@ -273,6 +273,7 @@ final class IsdocReader
                 'country'     => $country,
             ],
             'contact' => [
+                'name'  => $this->text($party, 'Contact', 'Name'),
                 'email' => $this->text($party, 'Contact', 'ElectronicMail'),
                 'phone' => $this->text($party, 'Contact', 'Telephone'),
             ],
