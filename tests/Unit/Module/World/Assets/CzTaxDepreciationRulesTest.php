@@ -162,6 +162,9 @@ class CzTaxDepreciationRulesTest extends TestCase
         $this->assertTrue($r->allowsHalfYearOnDisposal('accelerated'));
         $this->assertFalse($r->allowsHalfYearOnDisposal('time'));
 
+        $this->assertSame('Straight-line', $r->methodName('straight'));
+        $this->assertSame('units', $r->methodName('units'));
+
         $this->assertTrue($r->allowsShortPeriodHalfYear('straight'));
         $this->assertTrue($r->allowsShortPeriodHalfYear('accelerated'));
         $this->assertFalse($r->allowsShortPeriodHalfYear('extraordinary'));
@@ -174,6 +177,18 @@ class CzTaxDepreciationRulesTest extends TestCase
     }
 
     // --- zaokrouhlení -------------------------------------------------------
+
+    public function testWithoutAcquisitionDateAllMethodsAndRulesAreOffered(): void
+    {
+        // Karta před zařazením: nabídka bez ohledu na platnost k datu.
+        $r = $this->rules();
+        $this->assertSame(['straight', 'accelerated', 'extraordinary', 'accounting', 'none'], $r->availableMethods(null, false));
+        $this->assertSame(['time', 'accounting', 'none'], $r->availableMethods(null, true));
+
+        $all = array_column($r->rules('extraordinary', null), 'code');
+        $this->assertContains('cz-30a-2', $all);
+        $this->assertSame([], array_diff(array_column($r->rules('extraordinary', '2022-05-01'), 'code'), $all));
+    }
 
     public function testRoundCeilsToWholeCrowns(): void
     {

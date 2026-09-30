@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\ValidationError;
 use Shipard\Core\Settings\SettingsStore;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\Assets\AssetDocument;
 
 /**
@@ -23,12 +24,16 @@ class AssetDocumentTest extends TestCase
         'nondepreciable' => ['name' => 'Neodepisovaný', 'longTerm' => true, 'depreciable' => false, 'numberPrefix' => 'NM'],
     ];
 
+    private static ?array $czRules = null;
+
     private function doc(): TestableAssetDocument
     {
+        self::$czRules ??= JsoncParser::parseFile(__DIR__ . '/../../../../../modules/world/assets/config/assets-cz.jsonc');
         $doc = new TestableAssetDocument();
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([
             ['economy.assets.categories', self::CATEGORIES],
+            ['world.assets.cz', self::$czRules],
         ]);
         $doc->setConfig($config);
         $doc->setDb($this->createMock(\Dibi\Connection::class));
@@ -46,6 +51,32 @@ class AssetDocumentTest extends TestCase
             'price'      => '4990.00',
             'docState'   => 10,
         ];
+    }
+
+    /** @return array<string, mixed> odepisovaná karta s platným nastavením */
+    private function tangibleAsset(): array
+    {
+        return [
+            'name'             => 'Soustruh',
+            'category'         => 'tangible',
+            'tracking'         => 'single',
+            'accounting_group' => 1,
+            'is_foreign'       => 0,
+            'tax_method'       => 'straight',
+            'tax_rule'         => 'cz-2',
+            'acc_method'       => 'as_tax',
+            'acc_months'       => null,
+            'docState'         => 10,
+        ];
+    }
+
+    /** @return list<string> column:code */
+    private function codes(array $data): array
+    {
+        return array_map(
+            static fn(array $e): string => $e['column'] . ':' . $e['code'],
+            $this->doc()->validate($data)->toArray(),
+        );
     }
 
     /** @return list<array{column: string, code: string}> */
@@ -194,6 +225,157 @@ class AssetDocumentTest extends TestCase
         $this->assertSame(12, $data['owner']);
     }
 
+    // --- odpisové nastavení (D30) --------------------------------------------
+
+    public function testDepreciableCardNeedsMethods(): void
+    {
+        $this->assertSame([], $this->codes($this->tangibleAsset()));
+        $this->assertSame(
+            ['tax_method:required', 'acc_method:required'],
+            $this->codes(['tax_method' => null, 'acc_method' => null] + $this->tangibleAsset()),
+        );
+    }
+
+    public function testDepreciationSettingsCombinations(): void
+    {
+        $card = fn(array $o): array => $o + $this->tangibleAsset();
+
+        $this->assertSame(['tax_rule:required'], $this->codes($card(['tax_rule' => null])));
+        $this->assertSame(['tax_rule:ruleNotValid'], $this->codes($card(['tax_rule' => 'cz-nim-software'])));
+        $this->assertSame(['tax_method:invalid'], $this->codes($card(['tax_method' => 'units'])));
+        $this->assertSame(['acc_method:invalid'], $this->codes($card(['acc_method' => 'av'])));
+        $this->assertSame(['acc_months:accMonthsMissing'], $this->codes($card(['acc_method' => 'time'])));
+        $this->assertSame([], $this->codes($card(['acc_method' => 'time', 'acc_months' => 60])));
+        $this->assertSame(
+            ['acc_method:asTaxWithoutFormula'],
+            $this->codes($card(['tax_method' => 'none', 'tax_rule' => null])),
+        );
+        $this->assertSame(
+            ['acc_method:accountingWithoutAccMethod'],
+            $this->codes($card(['tax_method' => 'accounting', 'tax_rule' => null])),
+        );
+        $this->assertSame([], $this->codes($card(['tax_method' => 'accounting', 'tax_rule' => null, 'acc_method' => 'time', 'acc_months' => 36])));
+    }
+
+    public function testRuleValidityFollowsAcquisitionDate(): void
+    {
+        // Mimořádné odpisy sk. 2 (2020–2023): před zařazením se platnost
+        // k datu neřeší, po zařazení v roce 2025 pravidlo neplatí.
+        $card = ['tax_method' => 'extraordinary', 'tax_rule' => 'cz-30a-2'] + $this->tangibleAsset();
+        $this->assertSame([], $this->codes($card));
+
+        $doc = $this->doc();
+        $doc->cardRow = ['id' => 3, 'category' => 'tangible', 'acquired_date' => '2025-03-15'] + $card;
+        $data = ['id' => 3] + $card;
+        $this->assertSame(['tax_rule'], array_column($doc->validate($data)->toArray(), 'column'));
+    }
+
+    public function testTaxMethodLockedAfterFirstTaxDepreciation(): void
+    {
+        $doc = $this->doc();
+        $doc->cardRow = ['id' => 3, 'acquired_date' => '2022-03-15'] + $this->tangibleAsset();
+        $doc->eventKinds = [['event_kind' => 'activation', 'scope' => 'both'], ['event_kind' => 'depreciation', 'scope' => 'tax']];
+
+        $data = ['id' => 3, 'tax_method' => 'accelerated', 'acc_method' => 'time', 'acc_months' => 60] + $this->tangibleAsset();
+        $codes = array_map(static fn(array $e): string => $e['column'] . ':' . $e['code'], $doc->validate($data)->toArray());
+        $this->assertSame(['tax_method:taxMethodLocked'], $codes);
+
+        // Bez daňového odpisu (jen účetní) změna metody projde.
+        $doc->eventKinds = [['event_kind' => 'depreciation', 'scope' => 'acc']];
+        $this->assertTrue($doc->validate($data)->isValid());
+    }
+
+    // --- data z událostí (D38) ------------------------------------------------
+
+    public function testLongTermDatesComeFromStoredCardNotPayload(): void
+    {
+        $doc = $this->doc();
+        $doc->cardRow = ['id' => 3, 'acquired_date' => '2022-03-15', 'disposed_date' => null] + $this->tangibleAsset();
+
+        $data = ['id' => 3, 'acquired_date' => '2020-01-01', 'disposed_date' => '2021-01-01'] + $this->tangibleAsset();
+        $this->assertTrue($doc->validate($data)->isValid());
+        $this->assertSame('2022-03-15', $data['acquired_date']);
+        $this->assertNull($data['disposed_date']);
+
+        $doc->beforeSave($data, $doc->cardRow);
+        $this->assertSame('2022-03-15', $data['acquired_date']);
+        $this->assertNull($data['disposed_date']);
+
+        // Nová dlouhodobá karta: bez událostí bez dat.
+        $new = ['acquired_date' => '2020-01-01'] + $this->tangibleAsset();
+        $this->assertTrue($this->doc()->validate($new)->isValid());
+        $this->assertNull($new['acquired_date']);
+    }
+
+    public function testSmallAssetKeepsManualDates(): void
+    {
+        $data = ['acquired_date' => '2020-01-01'] + $this->smallAsset();
+        $this->assertTrue($this->doc()->validate($data)->isValid());
+        $this->assertSame('2020-01-01', $data['acquired_date']);
+    }
+
+    public function testLongTermArchiveNeedsConfirmedDisposal(): void
+    {
+        $doc = $this->doc();
+        $doc->cardRow = ['id' => 3, 'acquired_date' => '2022-03-15', 'disposed_date' => null] + $this->tangibleAsset();
+        $data = ['id' => 3, 'docState' => 70] + $this->tangibleAsset();
+        $this->assertSame(['_form:disposedDateRequired'], array_map(
+            static fn(array $e): string => $e['column'] . ':' . $e['code'],
+            $doc->validate($data)->toArray(),
+        ));
+
+        $doc->cardRow['disposed_date'] = '2024-05-10';
+        $this->assertTrue($doc->validate($data)->isValid());
+    }
+
+    public function testDisposedLongTermCannotReturnToConfirmed(): void
+    {
+        $doc = $this->doc();
+        $doc->cardRow = ['id' => 3, 'acquired_date' => '2022-03-15', 'disposed_date' => '2024-05-10', 'docState' => 80] + $this->tangibleAsset();
+        $data = ['id' => 3, 'docState' => 40] + $this->tangibleAsset();
+
+        $this->assertSame(['_form'], array_column($doc->validate($data)->toArray(), 'column'));
+        $this->assertSame('disposedAssetActive', $doc->validate($data)->toArray()[0]['code']);
+    }
+
+    public function testConfirmedEventsLockCategoryAndDeletion(): void
+    {
+        $doc = $this->doc();
+        $doc->cardRow = ['id' => 3, 'acquired_date' => '2022-03-15'] + $this->tangibleAsset();
+        $doc->eventKinds = [['event_kind' => 'activation', 'scope' => 'both']];
+
+        $deleted = ['id' => 3, 'docState' => 90] + $this->tangibleAsset();
+        $this->assertSame(['hasConfirmedEvents'], array_column($doc->validate($deleted)->toArray(), 'code'));
+
+        $changed = ['id' => 3, 'category' => 'small', 'accounting_group' => null] + $this->tangibleAsset();
+        $this->assertContains('categoryLockedByEvents', array_column($doc->validate($changed)->toArray(), 'code'));
+    }
+
+    // --- beforeSave: nastavení ------------------------------------------------
+
+    public function testNonDepreciableCategoryClearsDepreciationSettings(): void
+    {
+        $data = ['category' => 'nondepreciable'] + $this->tangibleAsset();
+        $this->doc()->beforeSave($data, null);
+
+        foreach (['tax_method', 'tax_rule', 'acc_method', 'acc_months'] as $col) {
+            $this->assertNull($data[$col], $col);
+        }
+    }
+
+    public function testRuleAndMonthsAreKeptOnlyWhereTheyApply(): void
+    {
+        $data = ['tax_method' => 'accounting', 'tax_rule' => 'cz-2', 'acc_method' => 'time', 'acc_months' => '36'] + $this->tangibleAsset();
+        $this->doc()->beforeSave($data, null);
+        $this->assertNull($data['tax_rule']);
+        $this->assertSame(36, $data['acc_months']);
+
+        $data = ['acc_months' => 36] + $this->tangibleAsset();
+        $this->doc()->beforeSave($data, null);
+        $this->assertSame('cz-2', $data['tax_rule']);
+        $this->assertNull($data['acc_months']);
+    }
+
     // --- přidělení čísla (afterPersist) --------------------------------------
 
     public function testConfirmingConceptAssignsNextNumber(): void
@@ -282,6 +464,21 @@ class TestableAssetDocument extends AssetDocument
     public array $lockedPrefixes = [];
     /** @var array<int, string> id → zapsané číslo */
     public array $written = [];
+
+    /** Uložený řádek karty (validate s id). */
+    public ?array $cardRow = null;
+    /** @var list<array{event_kind: string, scope: string}> */
+    public array $eventKinds = [];
+
+    protected function loadCardRow(int $id): ?array
+    {
+        return $this->cardRow;
+    }
+
+    protected function loadConfirmedEventKinds(int $assetId): array
+    {
+        return $this->eventKinds;
+    }
 
     protected function findAssetNumberOwner(string $number, ?int $excludeId): ?int
     {

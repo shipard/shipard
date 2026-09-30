@@ -169,6 +169,19 @@
         {
             "table": "economy_assets_accounting_groups",
             "class": "Shipard\\Module\\Economy\\Assets\\AccountingGroupDocument"
+        },
+        {
+            "table": "economy_assets_events",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetEventDocument"
+        }
+    ],
+
+    // Potvrzená událost je zamčená, dokud po ní v okruhu existuje potvrzený
+    // odpis, a v zamčeném účetním měsíci (D29).
+    "documentLockProviders": [
+        {
+            "table": "economy_assets_events",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetEventLockProvider"
         }
     ],
 

@@ -41,7 +41,7 @@ final class CzTaxDepreciationRules implements TaxDepreciationRules
         return 'cz';
     }
 
-    public function availableMethods(string $acquiredDate, bool $intangible): array
+    public function availableMethods(?string $acquiredDate, bool $intangible): array
     {
         $intangibleFrom = $this->cfg['intangibleTaxFrom'] ?? null;
         $result = [];
@@ -50,7 +50,8 @@ final class CzTaxDepreciationRules implements TaxDepreciationRules
                 continue;
             }
             $kind = $this->methodKind($method);
-            if ($kind === self::KIND_ANNUAL || $kind === self::KIND_MONTHLY) {
+            // Bez data zařazení (karta před zařazením) se platnost neřeší.
+            if ($acquiredDate !== null && ($kind === self::KIND_ANNUAL || $kind === self::KIND_MONTHLY)) {
                 // Nehmotný majetek od zrušení § 32a vlastní daňový výpočet nemá.
                 if ($intangible && $intangibleFrom !== null && $acquiredDate >= $intangibleFrom) {
                     continue;
@@ -70,11 +71,16 @@ final class CzTaxDepreciationRules implements TaxDepreciationRules
         return self::CFG_KINDS[$kind] ?? null;
     }
 
-    public function rules(string $method, string $acquiredDate): array
+    public function methodName(string $method): string
+    {
+        return (string) ($this->cfg['methods'][$method]['name'] ?? $method);
+    }
+
+    public function rules(string $method, ?string $acquiredDate): array
     {
         $result = [];
         foreach ($this->ruleSet($method) as $code => $def) {
-            if ($this->ruleValid($method, (string) $code, $acquiredDate)) {
+            if ($acquiredDate === null || $this->ruleValid($method, (string) $code, $acquiredDate)) {
                 $result[] = ['code' => (string) $code, 'name' => (string) ($def['name'] ?? $code)];
             }
         }

@@ -24,7 +24,7 @@ final class AccountingOnlyTaxRules implements TaxDepreciationRules
         return $this->country;
     }
 
-    public function availableMethods(string $acquiredDate, bool $intangible): array
+    public function availableMethods(?string $acquiredDate, bool $intangible): array
     {
         return array_keys(self::METHODS);
     }
@@ -34,7 +34,17 @@ final class AccountingOnlyTaxRules implements TaxDepreciationRules
         return self::METHODS[$method] ?? null;
     }
 
-    public function rules(string $method, string $acquiredDate): array
+    /** Bez konfigurace není co lokalizovat — anglický fallback. */
+    public function methodName(string $method): string
+    {
+        return match ($method) {
+            'accounting' => 'Same as accounting depreciation',
+            'none' => 'Not depreciated for tax',
+            default => $method,
+        };
+    }
+
+    public function rules(string $method, ?string $acquiredDate): array
     {
         return [];
     }

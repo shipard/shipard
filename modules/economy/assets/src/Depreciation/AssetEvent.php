@@ -126,4 +126,15 @@ final readonly class AssetEvent
     {
         return self::KIND_ORDER[$this->kind];
     }
+
+    /** Pořadí druhu mezi událostmi téhož dne; neznámý druh až za všemi. */
+    public static function kindOrder(string $kind): int
+    {
+        return self::KIND_ORDER[$kind] ?? PHP_INT_MAX;
+    }
+
+    public static function isKind(string $kind): bool
+    {
+        return isset(self::KIND_ORDER[$kind]);
+    }
 }

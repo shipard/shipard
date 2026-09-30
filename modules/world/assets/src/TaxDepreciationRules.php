@@ -25,21 +25,28 @@ interface TaxDepreciationRules
     public function country(): string;
 
     /**
-     * Metody, které lze zvolit pro majetek zařazený daného dne.
+     * Metody, které lze zvolit pro majetek zařazený daného dne. `null` =
+     * datum zařazení ještě není známé (karta před zařazením) — vrací
+     * všechny metody pro daný druh majetku; platnost k datu se ověří při
+     * zařazení.
      *
      * @return list<string>
      */
-    public function availableMethods(string $acquiredDate, bool $intangible): array;
+    public function availableMethods(?string $acquiredDate, bool $intangible): array;
 
     /** Druh metody (`KIND_*`), `null` = metodu pravidla neznají. */
     public function methodKind(string $method): ?string;
 
+    /** Název metody pro UI (lokalizovaný kompilací konfigurace). */
+    public function methodName(string $method): string;
+
     /**
-     * Skupiny / časová / mimořádná pravidla metody platná pro datum zařazení.
+     * Skupiny / časová / mimořádná pravidla metody platná pro datum
+     * zařazení; `null` = všechna pravidla metody bez ohledu na platnost.
      *
      * @return list<array{code: string, name: string}>
      */
-    public function rules(string $method, string $acquiredDate): array;
+    public function rules(string $method, ?string $acquiredDate): array;
 
     public function isInterruptible(string $method): bool;
 

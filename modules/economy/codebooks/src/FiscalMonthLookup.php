@@ -58,6 +58,35 @@ final class FiscalMonthLookup
         return $row !== null ? (int) $row['id'] : null;
     }
 
+    /**
+     * Zamčený běžný měsíc, do kterého datum patří; `null` = měsíc není
+     * zamčený nebo pro datum neexistuje. Pro záznamy mimo doklady, které
+     * se řídí zámkem měsíce podle vlastního data (události majetku).
+     *
+     * @return array{id: int, calendar_year: int, calendar_month: int}|null
+     */
+    public static function lockedMonthForDate(\Dibi\Connection $db, string $date): ?array
+    {
+        $date = self::isoDate($date);
+        if ($date === null) {
+            return null;
+        }
+        $row = $db->fetch(
+            'SELECT [id], [calendar_year], [calendar_month] FROM [economy_codebooks_fiscal_months]
+             WHERE [date_begin] <= %d AND [date_end] >= %d AND [period_type] = %i AND [locked] = 1
+             LIMIT 1',
+            $date, $date, self::PERIOD_TYPE_REGULAR,
+        );
+        if ($row === null) {
+            return null;
+        }
+        return [
+            'id'             => (int) $row['id'],
+            'calendar_year'  => (int) $row['calendar_year'],
+            'calendar_month' => (int) $row['calendar_month'],
+        ];
+    }
+
     public static function isoDate(mixed $value): ?string
     {
         if ($value instanceof \DateTimeInterface) {

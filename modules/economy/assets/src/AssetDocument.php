@@ -7,13 +7,24 @@ namespace Shipard\Module\Economy\Assets;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationError;
 use Shipard\Core\Document\ValidationResult;
+use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
+use Shipard\Module\World\Assets\TaxRulesRegistry;
 
 /**
- * Karta majetku (economy_assets_assets, docs/assets.md D19–D23).
+ * Karta majetku (economy_assets_assets, docs/assets.md D19–D23, D30, D38).
  *
  * Pravidla:
  *   - dlouhodobý druh (příznak longTerm) → povinná účetní skupina, cena
  *     prázdná (cena dlouhodobého majetku vzniká z pohybů, D13);
+ *   - odepisovaný druh → odpisové nastavení dle pravidel země
+ *     (`DepreciationSettingsValidator`); po prvním potvrzeném daňovém
+ *     odpisu je daňová metoda i pravidlo neměnné (`taxMethodLocked`),
+ *     účetní metodu změnit lze; neodepisovaný druh nastavení vyprázdní;
+ *   - u dlouhodobého druhu jsou datum pořízení a vyřazení jen ke čtení —
+ *     plní je potvrzené události (D38), hodnota z payloadu se ignoruje;
+ *     do archivu jde karta jen s potvrzeným vyřazením a vyřazená karta
+ *     se nevrací do V pořádku; druh karty s potvrzenými událostmi se
+ *     nemění a karta se nesmaže;
  *   - cizí majetek → povinný vlastník; bez příznaku se vlastník vyprázdní;
  *   - datum vyřazení ≥ datum pořízení;
  *   - přechod do 70 (V archívu = vyřazeno) vyžaduje datum vyřazení;
@@ -32,24 +43,39 @@ class AssetDocument extends Document
 {
     public const TABLE = 'economy_assets_assets';
 
+    /** Stavy archivní sady (core.system.docStatesArchive) a jejich mainState. */
     public const STATE_CONFIRMED = 40;
     public const STATE_ARCHIVED = 70;
+    public const STATE_EDIT = 80;
+    public const STATE_DELETED = 90;
+    public const MAIN_EDIT = 2;
+    public const MAIN_ARCHIVED = 4;
 
     public function validate(array &$data): ValidationResult
     {
         $result = new ValidationResult();
         $categories = $this->categories();
+        $id = !empty($data['id']) ? (int) $data['id'] : null;
+        $original = $id !== null ? $this->loadCardRow($id) : null;
+        $events = $id !== null ? $this->loadConfirmedEventKinds($id) : [];
 
         if (trim((string) ($data['name'] ?? '')) === '') {
             $result->addError('name', 'Název je povinný', 'required');
         }
 
         $category = (string) ($data['category'] ?? '');
+        $longTerm = $category !== '' && $categories->isLongTerm($category);
+        if ($longTerm) {
+            // D38: data dlouhodobého majetku plní události, payload se ignoruje.
+            $data['acquired_date'] = $original !== null ? self::isoDate($original['acquired_date'] ?? null) : null;
+            $data['disposed_date'] = $original !== null ? self::isoDate($original['disposed_date'] ?? null) : null;
+        }
+
         if ($category === '') {
             $result->addError('category', 'Druh majetku je povinný', 'required');
         } elseif ($categories->isUnknown($category)) {
             $result->addError('category', 'Neznámý druh majetku', 'invalid');
-        } elseif ($categories->isLongTerm($category)) {
+        } elseif ($longTerm) {
             if (empty($data['accounting_group'])) {
                 $result->addError(
                     'accounting_group',
@@ -63,6 +89,28 @@ class AssetDocument extends Document
                     'Cena dlouhodobého majetku vzniká ze zařazení a technického zhodnocení, na kartě se nezadává.',
                     'not_allowed',
                 );
+            }
+        }
+
+        if ($events !== [] && $original !== null && (string) ($original['category'] ?? '') !== $category) {
+            $result->addError('category', 'Druh karty s potvrzenými událostmi nelze změnit.', 'categoryLockedByEvents');
+        }
+
+        if ($category !== '' && $categories->isDepreciable($category)) {
+            $validator = new DepreciationSettingsValidator($this->rules(), $categories);
+            foreach ($validator->problems($data, self::isoDate($data['acquired_date'] ?? null)) as $problem) {
+                $result->addError($problem['column'], $problem['message'], $problem['code']);
+            }
+            if ($original !== null && $this->hasTaxDepreciation($events)) {
+                foreach (['tax_method', 'tax_rule'] as $col) {
+                    if ((string) ($data[$col] ?? '') !== (string) ($original[$col] ?? '')) {
+                        $result->addError(
+                            $col,
+                            'Po prvním potvrzeném daňovém odpisu nelze daňovou metodu ani skupinu měnit.',
+                            'taxMethodLocked',
+                        );
+                    }
+                }
             }
         }
 
@@ -80,11 +128,28 @@ class AssetDocument extends Document
             );
         }
 
-        if ((int) ($data['docState'] ?? 10) === self::STATE_ARCHIVED && $disposed === '') {
+        $newState = (int) ($data['docState'] ?? 10);
+        if ($newState === self::STATE_ARCHIVED && $disposed === '') {
             $result->addError(
                 ValidationError::FIELD_FORM,
-                'Vyřazení majetku vyžaduje datum vyřazení — vyplň ho v Opravit a teprve pak ukonči platnost.',
+                $longTerm
+                    ? 'Dlouhodobý majetek se vyřazuje akcí Vyřadit na kartě — vyřazení kartu přesune do archivu samo.'
+                    : 'Vyřazení majetku vyžaduje datum vyřazení — vyplň ho v Opravit a teprve pak ukonči platnost.',
                 'disposedDateRequired',
+            );
+        }
+        if ($longTerm && $newState === self::STATE_CONFIRMED && $disposed !== '') {
+            $result->addError(
+                ValidationError::FIELD_FORM,
+                'Majetek je vyřazen — vrať ho do archivu, nebo zruš událost vyřazení.',
+                'disposedAssetActive',
+            );
+        }
+        if ($newState === self::STATE_DELETED && $events !== []) {
+            $result->addError(
+                ValidationError::FIELD_FORM,
+                'Kartu s potvrzenými událostmi nelze smazat — nejdřív zruš události.',
+                'hasConfirmedEvents',
             );
         }
 
@@ -128,6 +193,38 @@ class AssetDocument extends Document
 
         if (array_key_exists('price', $data) && !self::hasValue($data['price'])) {
             $data['price'] = null;
+        }
+
+        $categories = $this->categories();
+        $category = (string) ($data['category'] ?? $originalData['category'] ?? '');
+        if ($category !== '' && $categories->isLongTerm($category)) {
+            // D38: data pořízení a vyřazení drží události; při změně druhu
+            // na dlouhodobý se ruční hodnoty drobného majetku zahodí.
+            $wasLongTerm = $originalData !== null
+                && $categories->isLongTerm((string) ($originalData['category'] ?? ''));
+            $data['acquired_date'] = $wasLongTerm ? self::isoDate($originalData['acquired_date'] ?? null) : null;
+            $data['disposed_date'] = $wasLongTerm ? self::isoDate($originalData['disposed_date'] ?? null) : null;
+        }
+
+        if ($category !== '' && !$categories->isDepreciable($category)) {
+            foreach (['tax_method', 'tax_rule', 'acc_method', 'acc_months'] as $col) {
+                $data[$col] = null;
+            }
+        } elseif ($category !== '') {
+            $validator = new DepreciationSettingsValidator($this->rules(), $categories);
+            foreach (['tax_method', 'tax_rule', 'acc_method'] as $col) {
+                if (array_key_exists($col, $data) && !self::hasValue($data[$col])) {
+                    $data[$col] = null;
+                }
+            }
+            $taxMethod = $data['tax_method'] ?? $originalData['tax_method'] ?? null;
+            if (!$validator->usesRule(is_string($taxMethod) ? $taxMethod : null)) {
+                $data['tax_rule'] = null;
+            }
+            $accMethod = $data['acc_method'] ?? $originalData['acc_method'] ?? null;
+            $data['acc_months'] = $accMethod === 'time' && self::hasValue($data['acc_months'] ?? null)
+                ? (int) $data['acc_months']
+                : null;
         }
     }
 
@@ -190,6 +287,62 @@ class AssetDocument extends Document
     protected function categories(): AssetCategories
     {
         return new AssetCategories($this->config);
+    }
+
+    protected function rules(): \Shipard\Module\World\Assets\TaxDepreciationRules
+    {
+        return TaxRulesRegistry::forCountry($this->config, $this->dsConfig?->getCountry() ?? 'cz');
+    }
+
+    /** @param list<array{event_kind: string, scope: string}> $events */
+    private function hasTaxDepreciation(array $events): bool
+    {
+        foreach ($events as $event) {
+            if ($event['event_kind'] === AssetEvent::KIND_DEPRECIATION && $event['scope'] === AssetEvent::SCOPE_TAX) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static function isoDate(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        $string = trim((string) ($value ?? ''));
+        return $string !== '' ? substr($string, 0, 10) : null;
+    }
+
+    /** Uložený řádek karty (bez události), null = nová karta. */
+    protected function loadCardRow(int $id): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch('SELECT * FROM [' . self::TABLE . '] WHERE [id] = %i', $id);
+        return $row === null || $row === false ? null : iterator_to_array($row);
+    }
+
+    /**
+     * Druh a okruh potvrzených událostí karty.
+     *
+     * @return list<array{event_kind: string, scope: string}>
+     */
+    protected function loadConfirmedEventKinds(int $assetId): array
+    {
+        if ($this->db === null) {
+            return [];
+        }
+        $out = [];
+        foreach ($this->db->fetchAll(
+            'SELECT [event_kind], [scope] FROM [' . AssetEventDocument::TABLE . '] WHERE [asset] = %i AND [docState] = %i',
+            $assetId,
+            AssetEventDocument::STATE_CONFIRMED,
+        ) as $row) {
+            $out[] = ['event_kind' => (string) $row['event_kind'], 'scope' => (string) $row['scope']];
+        }
+        return $out;
     }
 
     /** Id jiné karty s tímto číslem (libovolný stav), null = volné. */
