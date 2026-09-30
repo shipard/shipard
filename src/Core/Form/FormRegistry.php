@@ -5,12 +5,21 @@ declare(strict_types=1);
 namespace Shipard\Core\Form;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 
 class FormRegistry
 {
     /** @var array<string, array<string, mixed>> tableId → merged registration */
     private array $registrations = [];
+
+    /** Předává se každému vytvořenému formuláři (`setDsConfig`). */
+    private ?DataSourceConfig $dsConfig = null;
+
+    public function setDsConfig(DataSourceConfig $dsConfig): void
+    {
+        $this->dsConfig = $dsConfig;
+    }
 
     /** @var array<string, string> tableId → form id (per-table, ne per-type) */
     private array $formIds = [];
@@ -77,6 +86,9 @@ class FormRegistry
         }
         if ($config !== null) {
             $form->setConfig($config);
+        }
+        if ($this->dsConfig !== null) {
+            $form->setDsConfig($this->dsConfig);
         }
         return $form;
     }

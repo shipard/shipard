@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Viewer;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
@@ -21,6 +22,12 @@ abstract class TableViewer
      * Available if the data source has a compiled configuration.
      */
     protected ?ConfigRuntime $config = null;
+
+    /**
+     * Konfigurace zdroje dat (stát, id…) — injektuje ViewerRegistry;
+     * v testech může chybět.
+     */
+    protected ?DataSourceConfig $dsConfig = null;
 
     /**
      * Request language (e.g. 'cs', 'en') — injected via setLanguage().
@@ -65,6 +72,12 @@ abstract class TableViewer
     public function setLanguage(string $language): void
     {
         $this->language = $language;
+    }
+
+    /** Inject data source config — called by ViewerRegistry after construction. */
+    public function setDsConfig(DataSourceConfig $dsConfig): void
+    {
+        $this->dsConfig = $dsConfig;
     }
 
     /**

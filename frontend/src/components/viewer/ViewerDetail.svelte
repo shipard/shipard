@@ -296,12 +296,14 @@
                   </td>
                 </tr>
               {:else}
-                <!-- row._class (error | total) — klasifikace řádku od backendu,
-                     např. chybové a součtové řádky účetního deníku. -->
+                <!-- row._class (error | total | muted) — klasifikace řádku od
+                     backendu: chybové a součtové řádky účetního deníku,
+                     tlumené plánované řádky (odpisy majetku). -->
                 {#each content.rows ?? [] as row}
                   <tr
                     class:shpd-detail__tr--error={row._class === 'error'}
                     class:shpd-detail__tr--total={row._class === 'total'}
+                    class:shpd-detail__tr--muted={row._class === 'muted'}
                   >
                     {#each content.columns ?? [] as col (col.id)}
                       <td class="shpd-detail__td" class:shpd-detail__td--num={col.align === 'right'}>{row[col.id] ?? '—'}</td>
@@ -856,6 +858,10 @@
     font-weight: 600;
     border-top: 2px solid var(--shpd-color-border);
     border-bottom: none;
+  }
+
+  .shpd-detail__tr--muted > .shpd-detail__td {
+    color: var(--shpd-color-text-secondary);
   }
 
   /* Heading blok (composite) - vizualne sjednoceno s group-title */

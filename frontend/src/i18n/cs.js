@@ -22,6 +22,7 @@ export default {
   'common.add': 'Přidat',
   'common.edit': 'Upravit',
   'common.view': 'Zobrazit',
+  'common.open': 'Otevřít',
   'common.delete': 'Smazat',
   'common.confirm': 'Potvrdit',
   'common.ok': 'OK',

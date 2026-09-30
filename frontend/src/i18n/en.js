@@ -13,6 +13,7 @@ export default {
   'common.add': 'Add',
   'common.edit': 'Edit',
   'common.view': 'View',
+  'common.open': 'Open',
   'common.delete': 'Delete',
   'common.confirm': 'Confirm',
   'common.ok': 'OK',

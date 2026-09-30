@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Form;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\ColumnDefinition;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\TableDefinition;
@@ -27,6 +28,8 @@ abstract class TableForm
     protected ?ConfigRuntime $config = null;
     protected ?DataSourceConnection $db = null;
     protected ?TableDefinition $tableDef = null;
+    /** Konfigurace zdroje dat (stát…) — injektuje FormRegistry; v testech může chybět. */
+    protected ?DataSourceConfig $dsConfig = null;
 
     /** @var array<string, TableDefinition> Všechny tabulky DS — default renderer sub-tabulky z nich bere definici dětské tabulky. */
     protected array $tables = [];
@@ -43,6 +46,11 @@ abstract class TableForm
     public function setDb(DataSourceConnection $db): void
     {
         $this->db = $db;
+    }
+
+    public function setDsConfig(DataSourceConfig $dsConfig): void
+    {
+        $this->dsConfig = $dsConfig;
     }
 
     public function setTableDef(TableDefinition $tableDef): void
@@ -228,6 +236,11 @@ abstract class TableForm
      * sub-tabulka ukáže šipky přesunu (`POST …/subtable/{tab}/{id}/move`),
      * řádky se řadí `orderColumn ASC, id ASC` a `$sort` se nesmí zadat.
      * Bez něj (Kontakty, Adresy…) se pořadí neřeší.
+     *
+     * `$independentRows` = řádky se spravují vlastními stavy, ne rodičem:
+     * sub-tabulka nikdy nenabízí Přidat / Smazat / přesun, ale dialog řádku
+     * je plný (stavové přechody, zámek dětské tabulky) i u read-only
+     * rodiče — události majetku nad kartou ve stavu V pořádku.
      */
     protected function subtableTab(
         string $id,
@@ -238,17 +251,19 @@ abstract class TableForm
         ?string $sort = null,
         ?string $icon = null,
         ?string $orderColumn = null,
+        bool $independentRows = false,
     ): FormTab {
         return new FormTab(
             id: $id,
             label: $label,
             type: 'subtable',
             subtable: [
-                'table'       => $table,
-                'foreignKey'  => $foreignKey,
-                'formId'      => $formId,
-                'sort'        => $sort,
-                'orderColumn' => $orderColumn,
+                'table'           => $table,
+                'foreignKey'      => $foreignKey,
+                'formId'          => $formId,
+                'sort'            => $sort,
+                'orderColumn'     => $orderColumn,
+                'independentRows' => $independentRows,
             ],
             icon: $icon,
         );

@@ -751,12 +751,13 @@ abstract class TableForm
         string $table, string $foreignKey,
         ?string $formId = null, ?string $sort = null, ?string $icon = null,
         ?string $orderColumn = null,   // pořadový sloupec → šipky přesunu, řazení orderColumn ASC, id ASC; nekombinovat se $sort
+        bool $independentRows = false, // řádky s vlastními stavy: bez Přidat / Smazat / přesunu, dialog řádku plný i u read-only rodiče
     ): FormTab;
     protected function attachmentsTab(string $id = 'attachments', string $label = 'Přílohy'): FormTab;
 }
 ```
 
-`TableForm` instance vyrábí `FormRegistry::createForm($table, $data, $db, $config)` — pro polymorfní tabulky (`docs_core_heads` přes `doc_type`) `$data` rozhodne o konkrétní subclass. Detaily viz [kapitola 23](#23-polymorfní-dispatch-formulářů-přes-typecolumn). Per-typ rodina formulářů typicky tvoří abstract base (`DocsHeadsFormBase`) se společnou logikou + tenké subclassy, které přepisují virtuální `getFormTitle()` / `getNewFormTitle()` (a do budoucna jednotlivé `buildXxxTab()` metody).
+`TableForm` instance vyrábí `FormRegistry::createForm($table, $data, $db, $config)`; registry navíc každému formuláři předá `DataSourceConfig` (`setDsConfig()`, nastavuje `FormLoader::load()`) — formuláře závislé na státu zdroje dat (`getCountry()`, pravidla odpisů) ho čtou z `$this->dsConfig`, v testech může chybět. Pro polymorfní tabulky (`docs_core_heads` přes `doc_type`) `$data` rozhodne o konkrétní subclass. Detaily viz [kapitola 23](#23-polymorfní-dispatch-formulářů-přes-typecolumn). Per-typ rodina formulářů typicky tvoří abstract base (`DocsHeadsFormBase`) se společnou logikou + tenké subclassy, které přepisují virtuální `getFormTitle()` / `getNewFormTitle()` (a do budoucna jednotlivé `buildXxxTab()` metody).
 
 ### Auto-label z TableDefinition
 
@@ -1155,6 +1156,14 @@ $fallback)` (lokalizovaný label sloupce dětské tabulky), `subtableColumnSpec(
   recalculating || isReadOnly`. `disabled` = akce dočasně vypnuté (rodič se
   ukládá), ikony nepřeskakují; `readOnly` = bez Přidat / Smazat, u řádku jen
   Zobrazit (`iconPreview`), dvojklik = Upravit / Zobrazit.
+- **Nezávislé řádky** (`subtableTab(..., independentRows: true)` →
+  `subtable.independent_rows`): řádky se spravují vlastními stavy, ne
+  rodičem — sub-tabulka nikdy nenabízí Přidat / Smazat / přesun, ale
+  dialog řádku je plný (stavové přechody, zámek dětské tabulky) i u
+  read-only rodiče; ikona řádku Otevřít (`iconEdit`, `common.open`).
+  První uživatel: události majetku nad kartou ve stavu V pořádku
+  (`AssetsForm`) — události vznikají z akcí detailu, opravují a mažou se
+  vlastními přechody.
 - **Read-only dialog řádku:** `FormDialog readOnly` → `FormEditor readOnly`
   (pole vypnutá, `isDirty` vždy false → Esc / křížek bez dotazu) →
   `FormStateBar readOnly` (bez Uložit i přechodů; bez jediné akce se lišta

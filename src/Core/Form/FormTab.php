@@ -10,7 +10,7 @@ final class FormTab
 
     /**
      * @param FormSection[] $sections   Required for type='fields'.
-     * @param array{table: string, foreignKey: string, formId: ?string, sort?: ?string, orderColumn?: ?string}|null $subtable
+     * @param array{table: string, foreignKey: string, formId: ?string, sort?: ?string, orderColumn?: ?string, independentRows?: bool}|null $subtable
      *                                  Required for type='subtable'. `orderColumn` = pořadový
      *                                  sloupec dětské tabulky (šipky přesunu, řazení
      *                                  `orderColumn ASC, id ASC`); nekombinuje se se `sort`.
@@ -151,6 +151,9 @@ final class FormTab
             }
             if (!empty($this->subtable['orderColumn'])) {
                 $sub['order_column'] = $this->subtable['orderColumn'];
+            }
+            if (!empty($this->subtable['independentRows'])) {
+                $sub['independent_rows'] = true;
             }
             $result['subtable'] = $sub;
         }

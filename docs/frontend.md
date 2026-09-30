@@ -779,6 +779,12 @@ při změně tabu / filtru / hledání reset na 1.
 
 ### Formát detail panelu (`renderDetail()`)
 
+Viewer dostává od `ViewerRegistry::createViewer()` DB, zkompilovanou
+konfiguraci, jazyk a `DataSourceConfig` (`setDsConfig()`, nastavuje
+`ViewerLoader::load()`) — viewery závislé na státu zdroje dat
+(`getCountry()`, pravidla odpisů majetku) ho čtou z `$this->dsConfig`;
+v testech může chybět.
+
 Vrací volitelnou hlavičku (`title`, `subtitle`, `badges`) a taby s obsahem:
 
 ```json
@@ -819,7 +825,7 @@ Typy obsahu:
 | Typ | Popis |
 |---|---|
 | `properties` | label/value grid ve skupinách |
-| `table` | tabulka (`columns` + `rows`); `columns[].align: "right"` = číselný sloupec (zarovnání doprava + `tabular-nums`, header i buňky); `rows[]._class` = klasifikace řádku — `error` (červené podbarvení, chybové řádky deníku) nebo `total` (tučný součtový řádek s horní linkou); `_class` není sloupec, do buněk se nerenderuje |
+| `table` | tabulka (`columns` + `rows`); `columns[].align: "right"` = číselný sloupec (zarovnání doprava + `tabular-nums`, header i buňky); `rows[]._class` = klasifikace řádku — `error` (červené podbarvení, chybové řádky deníku), `total` (tučný součtový řádek s horní linkou) nebo `muted` (tlumený text — plánované řádky odpisů); `_class` není sloupec, do buněk se nerenderuje |
 | `html` | surové HTML — **bez sanitizace**, backend musí hodnoty escapovat; **pouze pro trusted, backend-generovaný obsah** — pro cizí HTML použít `untrusted-html`; scoped styly komponenty se na `{@html}` nevztahují, vzhled jde přes globální CSS proměnné (vzor: stavový blok tabu Zaúčtování) |
 | `untrusted-html` | HTML z nedůvěryhodného zdroje (tělo e-mailu); renderuje se v sandboxovaném `<iframe srcdoc>` bez `allow-scripts` (`SandboxedHtml.svelte`): izolace skriptů i CSS oběma směry, odkazy do nového tabu (`<base target="_blank">`, whitelist protokolů — `javascript:` apod. se zahazuje), odstranění `meta refresh`, auto-height dle obsahu. **Nikdy nerozšiřovat sandbox o `allow-scripts`** — s `allow-same-origin` by skript z e-mailu četl Bearer token z localStorage |
 | `heading` | mezititulek sekce (`text`) |

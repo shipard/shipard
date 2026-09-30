@@ -15,7 +15,12 @@
    *     dočasně vypnuté — ikony nepřeskakují na Zobrazit;
    *   - `readOnly` (rodič jen pro čtení): bez Přidat / Smazat, u řádku
    *     Zobrazit — dialog řádku se otevře s vypnutými poli, bez Uložit
-   *     a přechodů (FormDialog `readOnly`).
+   *     a přechodů (FormDialog `readOnly`);
+   *   - `element.independent_rows` (`subtableTab(..., independentRows:)`):
+   *     řádky žijí vlastním životem — bez Přidat / Smazat / přesunu vždy,
+   *     ale dialog řádku se otevře plný i u read-only rodiče a řídí se
+   *     stavy a zámkem vlastní tabulky (události majetku nad kartou
+   *     ve stavu V pořádku).
    *
    * Klientský filtr nad tabulkou od 11 řádků (bez diakritiky, přes texty
    * všech buněk); serverové hledání zatím ne (tasks/TODO.md).
@@ -53,6 +58,12 @@
     /** Po uložení / smazání řádku — rodič si přenačte odvozené hodnoty (součty). */
     onChanged,
   } = $props();
+
+  const independentRows = $derived(!!element?.independent_rows);
+  /** Seznam (Přidat / Smazat / přesun) je jen ke čtení. */
+  const listReadOnly = $derived(readOnly || independentRows);
+  /** Dialog řádku jen ke čtení — nezávislé řádky ho mají plný vždy. */
+  const dialogReadOnly = $derived(readOnly && !independentRows);
 
   /** Filtr se zobrazí až nad tímto počtem řádků. */
   const FILTER_THRESHOLD = 10;
@@ -122,7 +133,7 @@
   // Zadaný text filtru = zúžený seznam; přesun by prohazoval sousedy, které
   // uživatel nevidí vedle sebe. Prázdný filtr (jen zobrazené pole) nevadí.
   const filterActive = $derived(filterVisible && filter.trim() !== '');
-  const canReorder = $derived(orderColumn != null && !readOnly && !filterActive);
+  const canReorder = $derived(orderColumn != null && !listReadOnly && !filterActive);
 
   async function moveRow(id, direction) {
     if (!canReorder || disabled || moving) return;
@@ -158,20 +169,20 @@
   // ── Akce ───────────────────────────────────────────────────────────────────
 
   function handleAdd() {
-    if (disabled || readOnly) return;
+    if (disabled || listReadOnly) return;
     editRecordId = null;
     dialogOpen = true;
   }
 
-  /** Upravit / Zobrazit — dialog rozliší režim přes `readOnly`. */
+  /** Upravit / Zobrazit — dialog rozliší režim přes `dialogReadOnly`. */
   function openRow(id) {
-    if (disabled && !readOnly) return;
+    if (disabled && !dialogReadOnly) return;
     editRecordId = id;
     dialogOpen = true;
   }
 
   function requestDelete(id) {
-    if (disabled || readOnly) return;
+    if (disabled || listReadOnly) return;
     deleteId = id;
   }
 
@@ -263,7 +274,7 @@
   {:else}
     <div class="shpd-form-subtable__toolbar">
       <div class="shpd-form-subtable__toolbar-left">
-        {#if !readOnly}
+        {#if !listReadOnly}
           <Button
             label={t('common.add')}
             icon={iconAdd}
@@ -357,7 +368,7 @@
                     testid="subtable-row-down"
                   />
                 {/if}
-                {#if readOnly}
+                {#if dialogReadOnly}
                   <Button
                     icon={iconPreview}
                     iconOnly
@@ -366,6 +377,17 @@
                     label={t('common.view')}
                     onclick={() => openRow(row.id)}
                     testid="subtable-row-view"
+                  />
+                {:else if independentRows}
+                  <Button
+                    icon={iconEdit}
+                    iconOnly
+                    size="sm"
+                    variant="ghost"
+                    label={t('common.open')}
+                    {disabled}
+                    onclick={() => openRow(row.id)}
+                    testid="subtable-row-edit"
                   />
                 {:else}
                   <Button
@@ -408,8 +430,8 @@
   onSaveAndContinue={handleSaveAndContinue}
   {navigation}
   defaultData={{ [element.foreign_key]: parentId }}
-  {readOnly}
-  notice={readOnly ? t('subtable.readOnlyNotice') : null}
+  readOnly={dialogReadOnly}
+  notice={dialogReadOnly ? t('subtable.readOnlyNotice') : null}
 />
 
 <ConfirmDialog

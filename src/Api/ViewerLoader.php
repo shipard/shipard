@@ -22,6 +22,7 @@ class ViewerLoader
 
 		$registry = new ViewerRegistry();
 		$registry->loadFromModules($resolvedModules, $language);
+		$registry->setDsConfig($config);
 
 		return $registry;
 	}

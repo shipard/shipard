@@ -19,7 +19,10 @@ class FormLoader
         $errors          = [];
         $resolvedModules = ModuleResolver::resolve($allModules, $config->getModules(), $errors);
 
-        return new FormRegistry(self::mergeForms($resolvedModules));
+        $registry = new FormRegistry(self::mergeForms($resolvedModules));
+        $registry->setDsConfig($config);
+
+        return $registry;
     }
 
     /**

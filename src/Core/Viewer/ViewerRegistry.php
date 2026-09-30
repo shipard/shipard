@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Viewer;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModuleDefinition;
 
@@ -12,6 +13,14 @@ class ViewerRegistry
 {
     /** @var ViewerDefinition[] indexed by viewer ID */
     private array $viewers = [];
+
+    /** Předává se každému vytvořenému vieweru (`setDsConfig`). */
+    private ?DataSourceConfig $dsConfig = null;
+
+    public function setDsConfig(DataSourceConfig $dsConfig): void
+    {
+        $this->dsConfig = $dsConfig;
+    }
 
     /**
      * Load viewer definitions from resolved modules.
@@ -93,6 +102,9 @@ class ViewerRegistry
         }
         if ($language !== null) {
             $viewer->setLanguage($language);
+        }
+        if ($this->dsConfig !== null) {
+            $viewer->setDsConfig($this->dsConfig);
         }
         return $viewer;
     }
