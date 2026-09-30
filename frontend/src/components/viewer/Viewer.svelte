@@ -19,6 +19,7 @@
   import ViewerToolbar from './ViewerToolbar.svelte';
   import ViewerFilters from './ViewerFilters.svelte';
   import SetPasswordPrompt from './SetPasswordPrompt.svelte';
+  import AssetsDepreciationRunDialog from './AssetsDepreciationRunDialog.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import Modal from '../ui/Modal.svelte';
@@ -30,6 +31,7 @@
   import { getViewerLayout, setViewerLayout } from '../../utils/viewerLayout.js';
   import { supportedFilters, initialFilterValues } from '../../utils/viewerFilters.js';
   import { iconTable, iconList } from '../../icons.js';
+  import { formatAmount } from '../../utils/formatNumber.js';
   import { untrack } from 'svelte';
 
   let { tab } = $props();
@@ -402,6 +404,21 @@
   let passwordDialogOpen = $state(false);
   let passwordSubmitting = $state(false);
 
+  // Odpisy majetku za období (toolbar i detail akce depreciation_run;
+  // detail posílá target.assetId = jen jedna karta)
+  let depreciationRunOpen = $state(false);
+  let depreciationRunAssetId = $state(null);
+
+  function openDepreciationRun(assetId = null) {
+    depreciationRunAssetId = assetId;
+    depreciationRunOpen = true;
+  }
+
+  function handleDepreciationRunDone(result) {
+    alert(t('assets.depreciationRun.done', { count: result?.count ?? 0, total: formatAmount(result?.total ?? 0) }));
+    refreshAfterAction();
+  }
+
   function handleToolbarAction(actionId) {
     if (actionId === 'create') {
       editRecordId = null;
@@ -429,6 +446,8 @@
       handleFileToRegistry();
     } else if (actionId === 'import_statement') {
       importFileInput?.click();
+    } else if (actionId === 'depreciation_run') {
+      openDepreciationRun(null);
     } else if (actionId === 'runDue') {
       handleRunDue();
     }
@@ -748,6 +767,11 @@
     // jen na dedikovaný endpoint; sloupec je sensitive, CRUD ho nevidí.
     if (actionId === 'setPassword') {
       passwordDialogOpen = true;
+      return;
+    }
+    // Odepsat (AssetsViewer) — dialog Odpisy za období jen pro tuto kartu.
+    if (actionId === 'depreciation_run') {
+      openDepreciationRun(action?.target?.assetId ?? recordId);
       return;
     }
     // Smazat pravidlo štítku (TagRulesViewer) — bezstavová tabulka bez
@@ -1263,6 +1287,14 @@
   submitting={passwordSubmitting}
   onConfirm={submitSetPassword}
   onClose={closePasswordDialog}
+/>
+
+<!-- Odpisy majetku za období (toolbar / detail akce depreciation_run) -->
+<AssetsDepreciationRunDialog
+  open={depreciationRunOpen}
+  assetId={depreciationRunAssetId}
+  onDone={handleDepreciationRunDone}
+  onClose={() => { depreciationRunOpen = false; }}
 />
 
 <style>
