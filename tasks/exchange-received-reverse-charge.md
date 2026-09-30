@@ -1,6 +1,6 @@
 # Task: Přenesení daňové povinnosti u přijatých dokladů — kód DPH odvozený ze signálů
 
-**Stav:** částečně — commit 1/3 (číselník `supplyKind` / `reducedDeduction` + `VatCodeDerivation`); applier, prompt a help následují
+**Stav:** hotovo — implementováno 2026-09-30 (3 commity), ověřeno na dev zdroji 2026-09-30 (dva doklady s `cz-217` a přepočítanou rekapitulací s párem)
 
 **Issue:** #86
 
@@ -421,5 +421,5 @@ Zdroj s režimem *volný* (zdroj a zprávy jsou v chatu, mimo repo).
 - [x] Help: smazaná položka v `co-dnes-nejde.md`, nová položka s limity,
       `kontrola-vytezeni.md` a `kdyz-ai-cte-spatne.md` aktualizované,
       `help-index.py` prošel.
-- [ ] Ověření na dev zdroji: oba doklady projdou s `cz-217`
+- [x] Ověření na dev zdroji: oba doklady projdou s `cz-217`
       a přepočítanou rekapitulací s párem.

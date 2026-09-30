@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.5.0)
+## Default prompt (v4.6.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -58,9 +58,16 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.5.0`).
-- VAT kódy v řádcích jsou klíče z `world.vat.{country}.vatCodes`
-  cfgItem (`cz-110`, `cz-111`, …) — ne sazby v procentech.
+  shodná s `prompt_version` profilu (`v4.6.0`).
+- **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
+  a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
+  Model vrací jen sémantické signály — `vat.place` (`domestic` /
+  `intracom` / `thirdCountry`), `vat.reverseCharge` (bool), řádkové
+  `vat.pct` opisem z dokladu (i 0), `vat.supplyKind` (`goods` /
+  `services`, jen dodavatel mimo ČR), `vat.reverseChargeCode` (jen
+  tuzemské přenesení daňové povinnosti: `4`, `5`, …). Kód z nich odvodí
+  `VatCodeDerivation` v applieru
+  ([`docs/exchange-format.md`](../../../../docs/exchange-format.md) § 8.4).
 - `totals.totalRounding` = zaokrouhlení celkové částky se znaménkem
   (dolů = záporné); zaokrouhlení nikdy nepatří jako položkový řádek
   do `rows`.
@@ -172,7 +179,7 @@ Plné schéma viz [`profiles/czech_general.jsonc`](../profiles/czech_general.jso
    přes `shpd.docs.document.v1` (polymorfní dle `docType`, bez per-typ
    branche), registry typy přes `shpd.registry.document.v1` (nový druh =
    nová if/then větev `kindFields` v registry schématu + kopie embedu).
-5. Bumpni `prompt_version` (`v4.5.0` → `v4.6.0`).
+5. Bumpni `prompt_version` (`v4.6.0` → `v4.7.0`).
 
 ### Vlastní profil pro jiný jazyk / účel
 
@@ -232,6 +239,44 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.6.0 (2026-09-30)
+
+Přenesení daňové povinnosti u přijatých dokladů — kód DPH ze signálů
+([tasks/exchange-received-reverse-charge.md](../../../../tasks/exchange-received-reverse-charge.md),
+#86). Dva návrhy přijatých faktur za služby od dodavatelů z jiných
+členských států EU („reverse charge“, DPH 0) skončily chybou
+`vat_code_unknown`: model neznal klíče číselníku a kód vymyslel
+(`reverse-charge` v4.3.0, `eu-reverse` v4.5.0), `registrationCountry`
+plnil zemí dodavatele a `vat.place` hodnotami mimo číselník
+(`crossBorder`, `eu`). Návrh se nedal použít.
+
+- Schéma `shpd.docs.document.v1`: `vat.place` a `vat.mode` jako `enum`,
+  nové `vat.reverseCharge` (bool | null), `RowVat.supplyKind`
+  (`goods` | `services` | null), `RowVat.reverseChargeCode` (string |
+  null) — kanonický `.jsonc` / `.json` i inline kopie profilu.
+- PRAVIDLA: kód DPH určuje systém — `rows[].vat.code` a
+  `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat,
+  `vatRecap[].isReversePair` vynechat; `vat.place` jen ze tří hodnot
+  (výslovný výčet, model schéma nevidí); `vat.reverseCharge: true` při
+  „reverse charge“ / „přenesení daňové povinnosti“ / „daň odvede
+  zákazník“ / čl. 196 / § 92a i s DPH 0; `supplyKind` u dodavatele
+  mimo ČR; `reverseChargeCode` jen u tuzemského PDP; `pct` opisem (i 0);
+  `vat.mode: "none"` jen u dokladu zcela bez DPH — reverse charge s DPH 0
+  je `fromBase` (při ladění model u takové faktury `none` vrátil, doklad
+  by skončil Bez DPH bez rekapitulace).
+- Ukázka: `vat` s `reverseCharge: false`, řádky s `code: null`,
+  `supplyKind: null`, `reverseChargeCode: null`, rekapitulace
+  s `vatCode: null` a bez `isReversePair`.
+- Server (nezávisle na verzi promptu): `VatCodeDerivation` odvodí kód
+  z číselníku země naší registrace k DUZP (EU služby `cz-217`, EU zboží
+  `cz-215`, třetí země `cz-417`, PDP `cz-115` / `cz-117`, tuzemsko podle
+  sazby); `registrationCountry` u přijatého dokladu vždy z naší
+  registrace (D2); rekapitulace dodavatele se u samovyměření nepřebírá
+  (D3); kód v rozporu se signály (i z historie řádků) nahradí odvozený
+  s warningem `vat_code_derived`; deklarované `none` u řádků se
+  samovyměřením → `fromBase` + warning `vat_mode_derived`. ISDOC
+  `registrationCountry` neplní.
 
 ### v4.5.0 (2026-09-30)
 

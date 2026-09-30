@@ -86,7 +86,7 @@ class ProfileSchemaDriftTest extends TestCase
         [$profile] = $this->loadProfile();
 
         $this->assertSame('czech_general', $profile['profile_id']);
-        $this->assertSame('v4.5.0', $profile['prompt_version']);
+        $this->assertSame('v4.6.0', $profile['prompt_version']);
         $this->assertContains('invoiceReceived', $profile['supported_doc_types']);
         foreach (['contract', 'insurance', 'quotation', 'certificate', 'official'] as $registryType) {
             $this->assertContains($registryType, $profile['supported_doc_types']);
@@ -110,6 +110,7 @@ class ProfileSchemaDriftTest extends TestCase
         $this->assertStringContainsString('120 znaků', $prompt);
         // Verze v promptu (source.promptVersion + ukázka) sleduje prompt_version profilu.
         $this->assertSame(2, substr_count($prompt, $profile['prompt_version']));
+        $this->assertStringNotContainsString('v4.5.0', $prompt);
         $this->assertStringNotContainsString('v4.4.0', $prompt);
         $this->assertStringNotContainsString('v4.2.0', $prompt);
     }
@@ -137,6 +138,7 @@ class ProfileSchemaDriftTest extends TestCase
         }
 
         $this->assertStringContainsString('"' . $profile['prompt_version'] . '"', $prompt, 'prompt must pin its own version');
+        $this->assertStringNotContainsString('v4.5.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.4.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.2.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.0.0', $prompt, 'stale prompt version reference');
@@ -146,5 +148,36 @@ class ProfileSchemaDriftTest extends TestCase
         $this->assertStringNotContainsString('"documents"', $prompt, 'plural documents field is gone in v4');
         $this->assertStringNotContainsString('source_attachment_ndxs', $prompt, 'source_attachment_ndxs is gone in v4');
         $this->assertStringContainsString('"secondary_findings"', $prompt, 'prompt must describe secondary_findings');
+    }
+
+    public function testPromptEnumeratesVatSignalsAndSchemaEnums(): void
+    {
+        // tasks/exchange-received-reverse-charge.md D1/D5: model schéma
+        // nevidí — enum bez výslovného výčtu v textu = schema_error celé
+        // analýzy. Kód DPH určuje systém, prompt ho musí zakázat.
+        [$profile] = $this->loadProfile();
+        $prompt = (string) $profile['prompt_template'];
+        $docs = $this->extractedJsonOneOf($profile)[0];
+
+        $vat = $docs['properties']['vat']['properties'];
+        $this->assertSame(['domestic', 'intracom', 'thirdCountry', null], $vat['place']['enum']);
+        $this->assertSame(['fromBase', 'fromTotal', 'none', null], $vat['mode']['enum']);
+        $this->assertSame(['boolean', 'null'], $vat['reverseCharge']['type']);
+        $rowVat = $docs['$defs']['RowVat']['properties'];
+        $this->assertSame(['goods', 'services', null], $rowVat['supplyKind']['enum']);
+        $this->assertArrayHasKey('reverseChargeCode', $rowVat);
+
+        foreach (['"domestic"', '"intracom"', '"thirdCountry"', '"fromBase"', '"fromTotal"', '"none"',
+                  '"goods"', '"services"', 'reverseCharge', 'reverseChargeCode', 'supplyKind'] as $needle) {
+            $this->assertStringContainsString($needle, $prompt, "prompt must mention {$needle}");
+        }
+        $this->assertStringContainsString('vat.code a "vatRecap"[].vatCode vracej VŽDY null', $prompt);
+        $this->assertStringContainsString('registrationCountry VYNECH', $prompt);
+        // „none“ jen bez DPH — model ho u reverse charge s DPH 0 volil a doklad
+        // by skončil Bez DPH (pojistka je i v applieru).
+        $this->assertStringContainsString('"none" použij JEN', $prompt);
+        // Ukázka: žádný konkrétní kód DPH, jinak ho model opisuje.
+        $this->assertStringNotContainsString('"cz-110"', $prompt);
+        $this->assertStringNotContainsString('isReversePair": false', $prompt);
     }
 }

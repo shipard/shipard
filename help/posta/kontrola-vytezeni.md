@@ -1,7 +1,7 @@
 ---
 title: Kontrola vytěženého dokladu
 summary: Jak porovnat návrh dokladu s originálem faktury, co kontrolovat první a kdy návrh zamítnout.
-keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur]
+keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU]
 related: [slovnicek.md, co-dnes-nejde.md, osoby/zalozeni-osoby.md]
 ---
 
@@ -169,9 +169,15 @@ dvakrát a **Celkem** pak vyjde vyšší než na faktuře. Je to známá chyba �
 viz [Co Shipard dnes neumí](../co-dnes-nejde.md). U takových faktur
 kontroluj celkovou částku vždy.
 
-**Reverse charge.** U dokladů se samovyměřením (typicky zboží nebo služba
-z EU) se rozpad daně v **DPH rekapitulaci** opravuje. Zkontroluj, že
-**Celkem** odpovídá tomu, co máš zaplatit.
+**Reverse charge (samovyměření).** U faktury za zboží nebo služby z EU,
+za služby ze třetí země nebo s tuzemským přenesením daňové povinnosti
+určí kód DPH řádků Shipard sám podle údajů na dokladu; dodavatelovu
+rekapitulaci s nulovou daní nepřebírá. Zkontroluj tři věci: kód DPH
+u řádků (u služeb z EU *Základní - služby EU*), v **DPH rekapitulaci**
+řádek daně a k němu oddaňovací řádek, a že **Celkem** je rovno základu —
+tedy tomu, co máš skutečně zaplatit. Kurz cizí měny návrh nedoplní,
+zadáš ho v dokladu před potvrzením. Co u samovyměření návrh zatím neumí,
+je v [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 **Vytvořit z registru se nenabízí vždy.** Tlačítko se objeví, jen když se
 z faktury vytěžilo IČO, subjekt pod ním v registru existuje a v evidenci

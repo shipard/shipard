@@ -21,8 +21,8 @@ datum, dodavatel nebo položky.
 
    | Co je špatně | Kde to opravíš |
    |---|---|
-   | Dodavatel, položka, jednotka, kód DPH | Přímo v náhledu, ještě před vystavením |
-   | Částky, datumy, sazby, texty, počty řádků | Až v dokladu, po **Vystavit koncept** |
+   | Dodavatel, položka, jednotka | Přímo v náhledu, ještě před vystavením |
+   | Částky, datumy, sazby, kód DPH, texty, počty řádků | Až v dokladu, po **Vystavit koncept** |
    | Typ dokladu, nebo to faktura vůbec není | **Zamítnout** |
    | Nečitelná příloha | **Znovu analyzovat** |
 
@@ -68,10 +68,13 @@ toho, co AI z faktury přečetla — kdyby se přepisoval, ztratili bychom
 možnost porovnat, co model vrátil, s tím, co bylo správně. Proto se opravuje
 až doklad.
 
-**Tyhle tři chyby už známe, hlásit je nemusíš.** Faktury s cenami včetně
-DPH (daň dvakrát), zaokrouhlení celkové částky a rozpad daně u samovyměření
-— podrobnosti v [Co Shipard dnes neumí](../co-dnes-nejde.md). Pokud u nich
-narazíš na něco *jiného*, než co je tam popsané, ozvi se.
+**Tyhle dvě chyby už známe, hlásit je nemusíš.** Faktury s cenami včetně
+DPH (daň dvakrát) a zaokrouhlení celkové částky — podrobnosti
+v [Co Shipard dnes neumí](../co-dnes-nejde.md). Pokud u nich narazíš na
+něco *jiného*, než co je tam popsané, ozvi se. Kód DPH u samovyměření
+(reverse charge) už návrh určuje sám; když přesto skončí chybou kódu DPH,
+jde o jeden z případů, které zatím neumí — jsou vyjmenované tamtéž
+a doklad založíš ručně.
 
 **Čím víc dokladů od dodavatele máš, tím méně chyb.** Shipard doplňuje
 položky, sazby a účty z tvých dřívějších dokladů od téhož partnera. První
