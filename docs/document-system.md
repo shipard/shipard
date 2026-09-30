@@ -843,8 +843,10 @@ Tyto změny je nutné promítnout do:
 Obecný mechanismus „záznam je uzamčený": modul, který o zámku rozhoduje,
 dodá **provider**, jádro ho vynucuje na všech zápisových cestách a posílá
 důvody do UI. `docs.core` o DPH ani fiskálních měsících neví — providery
-dodávají `economy.vat` (`VatPeriodLockProvider`, zamčená instance tvrzení)
-a `economy.codebooks` (`FiscalMonthLockProvider`, zamčený fiskální měsíc).
+dodávají `economy.vat` (`VatPeriodLockProvider`, zamčená instance tvrzení),
+`economy.codebooks` (`FiscalMonthLockProvider`, zamčený fiskální měsíc)
+a `economy.assets` (`AssetEventLockProvider` nad `economy_assets_events`:
+pozdější potvrzený odpis okruhu + zamčený měsíc, `docs/assets.md` §5.3).
 
 ### Rozhraní a registrace
 

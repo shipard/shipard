@@ -845,8 +845,11 @@ tlačítek nad taby (vzor `AlertsViewer::buildDetailActions`):
 
 - `kind: "button"` (default) — obsluhu řeší `Viewer.svelte::handleDetailAction`
   podle `action.id` (sdílený slovník id: `snooze`, `dismiss`, `unsnooze`,
-  `recheck`, `reaccount`); po úspěchu `refreshAfterAction()` (detail
-  i seznam), chyba → `alert(translateError(...))`.
+  `recheck`, `reaccount`, `depreciation_run`); po úspěchu `refreshAfterAction()`
+  (detail i seznam), chyba → `alert(translateError(...))`. `depreciation_run`
+  (viewer Majetek, `target.assetId`; v toolbaru bez karty) otevírá
+  `AssetsDepreciationRunDialog` (options → preview → run přes
+  `api/assets.js`), po úspěchu refresh.
 - `kind: "dropdown"` — `items: [{label, value}]`, výběr položky volá akci
   s hodnotou (bez confirm).
 - `kind: "open_form"` — otevře `FormDialog` dle `target.{table, mode, id, preset}`.

@@ -2,10 +2,10 @@
 
 > **Designový dokument.** **Stav:** D1–D46 rozhodnuto;
 > oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
-> (`tasks/assets-phase1.md`), z oblasti 2 jsou **hotová** pravidla země
-> a odpisový engine (2026-09-30, `tasks/assets-phase2a.md`, §5.1–5.2),
-> události a UI mají PRD (`tasks/assets-phase2b.md`), další oblasti se
-> rozpadají postupně (§7).
+> (`tasks/assets-phase1.md`), oblast 2 **hotová** 2026-09-30 — pravidla
+> země a odpisový engine (`tasks/assets-phase2a.md`, §5.1–5.2), události,
+> odpisové nastavení karty, plán na kartě a odpisy za období
+> (`tasks/assets-phase2b.md`, §5.3); další oblasti se rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -571,9 +571,75 @@ texty drží cfgItem `economy.assets.planMessages` a skládá
 | `ruleNotValid` | chyba | pravidlo neplatí pro datum zařazení — okruh se nepočítá |
 | `settingsInvalid` | chyba | kombinace metod nedává výpočet (`reason`: `asTaxWithoutFormula`, `accountingWithoutAccMethod`, `accMonthsMissing`, `unknownTaxMethod`) |
 
-**Co engine nehlídá** (patří do validace událostí, fáze 2b): snížení
+**Co engine nehlídá** (hlídá validace událostí, §5.3): snížení
 hodnoty větší než zůstatková cena (zůstatek vyjde záporný) a události
 datované po vyřazení.
+
+### 5.3 Události, karta a odpisy za období — hotovo
+
+`tasks/assets-phase2b.md` (D27–D30, D33–D35, D38, D39, D12, D46).
+
+**Tabulka `economy_assets_events` (454)** dle D28; stavy
+`economy.assets.eventStates` (Koncept → Potvrzeno ↔ V opravě → Smazáno,
+bez archivu), přechody přes Document lifecycle. Do plánu vstupují jen
+potvrzené události (`docState` 40). Události se spravují jen z karty
+(`hideFromNavigation`).
+
+| Třída (`Shipard\Module\Economy\Assets\`) | Role |
+|---|---|
+| `AssetEventDocument` | pravidla per druh; tvarová vždy, kontextová při potvrzení; efekty na kartu v `afterPersist()` |
+| `AssetEventLockProvider` | zámek potvrzené události: pozdější potvrzený odpis okruhu (`both` = oba) + zamčený účetní měsíc (`FiscalMonthLookup::lockedMonthForDate()`) |
+| `AssetPlanService` | most k enginu: karta + potvrzené události + účetní roky/měsíce + `TaxRulesRegistry` + četnost (`economy.assets.accPeriodicity`, D12) |
+| `SystemDepreciationWriter` | přímý INSERT systémových odpisů z plánovaných řádků (původ `system`, stav 40), zámek měsíce kontroluje sám |
+| `DepreciationRunService` | „Odpisy za období“: náhled (karty s částkou, vyloučené s důvodem), provedení v transakci se zámkem karet, idempotentní |
+| `DepreciationSettingsValidator` | odpisové nastavení karty — sdílí `AssetDocument` (uložení) a `AssetEventDocument` (zařazení k datu) |
+| `AssetsDepreciationController` | `GET /_assets/depreciation-run/options`, `GET …/preview`, `POST /_assets/depreciation-run` |
+
+**Pravidla nad rámec PRD** (doplněná při implementaci):
+
+- Historie se rozebírá od konce i pro **nové** události: událost nejde
+  potvrdit, když za ní v jejím okruhu je potvrzený odpis (`notAtEnd`);
+  pořadí dává `AssetEventDocument::orderKey()` = (datum, pořadí druhu
+  v rámci dne, id). Provider chrání jen uložené záznamy.
+- Efekty na kartu se řídí vstupem do stavu 40 / jeho opuštěním, ne jen
+  smazáním: i Opravit na vyřazení vrátí kartu do V opravě. Systémové
+  odpisy založené s vyřazením se přitom nemažou — jdou smazat od konce.
+- Vyřazení zakládá **všechny** plánované odpisy plánu s vyřazením (i za
+  dřívější neodepsaná období); plán s chybou nebo zamčený měsíc vyřazení
+  odmítne (`planHasErrors`, `DomainException` → rollback).
+- TZ, snížení a vyřazení vyžadují zařazení, nebo počáteční stav v obou
+  okruzích; TZ u metody bez TZ (§ 30a) je chyba už při potvrzení.
+- Karta: dlouhodobý majetek nejde ručně do archivu bez potvrzeného
+  vyřazení, vyřazená karta se nevrací do V pořádku, karta s potvrzenými
+  událostmi se nesmaže a nemění druh; data pořízení a vyřazení z payloadu
+  se u dlouhodobého majetku ignorují.
+- Bez data zařazení se platnost metody a pravidla k datu **neřeší**
+  (`rules(…, null)` / `availableMethods(null, …)` vrací vše) — jinak by
+  karta před zařazením nemohla nést mimořádné odpisy 2020–2023 ani
+  časové odpisy NIM do 2020; ověří se při potvrzení zařazení /
+  počátečního stavu (`methodNotAvailable`, `ruleNotValid`).
+- Odpisy za období vylučují navíc kartu s neodepsaným dřívějším obdobím
+  (`earlierPeriodMissing`) a zamčený měsíc (`monthLocked`); karta bez
+  plánovaného odpisu v období (odepsáno, přerušeno, zařazeno později) se
+  vynechá tiše. Kandidát je jen odepisovaná karta ve stavu V pořádku.
+- `tax_method` je `varchar`, ne `enumString` — nabídku i názvy řídí
+  pravidla země (`TaxDepreciationRules::methodName()`), ne cfgItem.
+
+**UI.** Detail karty: taby Daňové / Účetní odpisy (`composite`: souhrn,
+tabulka plánu s `_class` `muted` / `error`, hlášení) a akce podle stavu —
+Zařadit / Počáteční stav (daňový, účetní) bez zařazení; jinak Odepsat
+(`depreciation_run` s `target.assetId`), TZ, Snížení, Přerušit
+(přerušitelná metoda), Vyřadit jako `open_form` s presetem. Formulář
+karty: tab Odpisy (nabídka podle data zařazení) a tab Události —
+sub-tabulka s nezávislými řádky (`independentRows`, dialog události
+i nad kartou V pořádku). `AssetEventsForm` skládá pole podle druhu,
+polovina při vyřazení se nabízí jen když smí (D35). Toolbar vieweru
+„Odpisy za období“ → `AssetsDepreciationRunDialog`. Popisky
+z `economy.assets.viewerLabels`. Nastavení → Majetek → Odpisy: četnost
+účetních odpisů (field typ `select`).
+
+**Fáze 3** naváže na potvrzené události: stav „zaúčtováno“, vazba
+událost → doklad, `documentEventHandlers` nad `economy_assets_events`.
 
 ---
 
@@ -600,9 +666,10 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 1. Karta, typy, účetní skupiny, stavy (základ) — **hotovo** 2026-09-29,
    `tasks/assets-phase1.md` (vč. odchylek od PRD: přidělení čísla
    v `afterPersist`, unikátnost přes všechny stavy, prefixy lookupu účtů)
-2. Ledger událostí + engine + pravidla CZ (D3, D6, D7, D10, D27–D45) —
-   pravidla + engine **hotovo** 2026-09-30 (`tasks/assets-phase2a.md`,
-   §5.1–5.2); události, UI a odpisy za období `tasks/assets-phase2b.md`
+2. Ledger událostí + engine + pravidla CZ (D3, D6, D7, D10, D27–D46) —
+   **hotovo** 2026-09-30: pravidla + engine (`tasks/assets-phase2a.md`,
+   §5.1–5.2), události, UI a odpisy za období (`tasks/assets-phase2b.md`,
+   §5.3)
 3. Zaúčtování (D4) + řádkové operace + extension deníku
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15)
 5. Přehledy: karta, odpisy, přírůstky / úbytky, kontrola proti deníku,

@@ -80,6 +80,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 |---------|----------------|
 | [Evidence majetku](majetek/evidence-majetku.md) | Jak založit kartu majetku, kdy je věc drobný a kdy dlouhodobý majetek, co je cizí majetek, jak karta dostane inventární číslo a jak majetek vyřadit. |
 | [Nastavení majetku](majetek/nastaveni-majetku.md) | Kde nastavíš typy majetku, skupiny typů, účetní skupiny majetku a prefixy inventárních čísel — a co z toho karta majetku přebírá. |
+| [Odpisy majetku](majetek/odpisy-majetku.md) | Jak na kartě nastavit daňové a účetní odpisy, zařadit majetek, zadat technické zhodnocení nebo snížení hodnoty, přerušit odpisy, vyřadit majetek a hromadně potvrdit odpisy za období. |
 
 ### Účtárna
 

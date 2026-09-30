@@ -1,9 +1,10 @@
 # Majetek Fáze 2b — události, odpisové nastavení karty, plán a odpisy za období
 
-**Stav:** naplánováno — D27–D46 potvrzena 2026-09-30; prerekvizita `tasks/assets-phase2a.md`
+**Stav:** hotovo — 2026-09-30 (9 commitů; zbývá proklik UI v prohlížeči a alfa)
 
 > PRD pro jednu Claude Code session (8 commitů). Design: `docs/assets.md`
-> §4 (D3, D7, D11, D12, D13, D16, D27–D46), issue #83.
+> §4 (D3, D7, D11, D12, D13, D16, D27–D46), issue #83. Výsledek a odchylky
+> na konci souboru.
 
 ## Kontext
 
@@ -308,6 +309,52 @@ této fáze rovnou tam.
 i účetní odpis → přerušení další rok → vyřazení s polovinou vytvoří
 poslední odpisy a kartu přesune do archivu; počáteční stav na nové kartě
 pokračuje správnou sazbou; mimořádná metoda sk. 2 dá měsíční rozpis.
+
+## Výsledek (2026-09-30)
+
+Popis hotového stavu: `docs/assets.md` §5.3 (tabulka tříd, pravidla
+doplněná nad rámec PRD, UI), `docs/edit-forms.md` kap. 15 (nezávislé
+řádky sub-tabulky), `docs/app-settings.md` §6 (field typ `select`),
+`help/majetek/odpisy-majetku.md`. Scénář „Hotovo celé když“ prošel na
+ukázkovém DS přes gateway a HTTP (skript v scratchpadu session); proklik
+v prohlížeči a nasazení na alfu zbývají. Odchylky od textu výše:
+
+- **Commity:** devět místo osmi — zásahy do jádra (DataSourceConfig
+  pro viewery a formy, `independentRows`, `_class: muted`) šly zvlášť
+  jako 3a; `AssetPlanService` vznikl už v kroku 2, protože validace
+  snížení a vyřazení plán potřebují.
+- **`tax_method` je `varchar(16)`**, ne `enumString` — enumString vyžaduje
+  cfgItem, ale nabídku metod i názvy řídí pravidla země
+  (`TaxDepreciationRules::methodName()`, nová metoda rozhraní).
+- **Platnost metody a pravidla k datu se bez zařazení neřeší:**
+  `availableMethods(null, …)` / `rules(…, null)` vrací vše, karta před
+  zařazením smí nést i pravidla platná jen pro starší zařazení;
+  ověření běží při potvrzení zařazení / počátečního stavu. Bez toho by
+  scénář „mimořádná metoda sk. 2“ na nové kartě nešel zadat.
+- **Tab Odpisy a sub-tabulka Události jsou dva taby** (sub-tabulka nesmí
+  mít sekce); sub-tabulka má nový příznak `independentRows` — bez
+  Přidat / Smazat, ale dialog události plný i nad kartou V pořádku
+  (jinak by událost nešla opravit ani smazat).
+- **Poslední odpisy při vyřazení a hromadné odpisy píše
+  `SystemDepreciationWriter` přímo** (Document nemá gateway, vnořený
+  `begin()` by commitnul transakci); zámek měsíce kontroluje sám přes
+  nový `FiscalMonthLookup::lockedMonthForDate()`. Vyřazení zakládá všechny
+  plánované odpisy plánu s vyřazením (i dřívější neodepsaná období).
+- **Efekty na kartu** se řídí vstupem události do stavu 40 / jeho
+  opuštěním (Opravit i Smazat), ne jen smazáním. Zrušené vyřazení
+  systémové odpisy nechává.
+- **Pravidla navíc:** `notAtEnd` pro nové události před potvrzeným
+  odpisem, `eventsAfterDisposal`, `periodOverlap`, TZ / snížení /
+  vyřazení až po zařazení nebo počátečním stavu obou okruhů; karta
+  s potvrzenými událostmi se nesmaže ani nemění druh, vyřazená se nevrací
+  do V pořádku, dlouhodobá nejde ručně do archivu.
+- **Odpisy za období:** třetí routa `GET …/options` (nabídka období
+  a četnost pro dialog); vyloučení navíc `earlierPeriodMissing`
+  a `monthLocked`; karta bez plánovaného odpisu v období se vynechá tiše.
+- **D46 platí i pro účetní metodu `as_tax`** (sdílený vzorec), aby se od
+  daňového okruhu nerozešla.
+- Popisky viewerů jsou v `economy.assets.viewerLabels` (klíče
+  `tab.*`, `action.*`, `column.*`, `label.*`…), `cs()` v PHP zanikl.
 
 ## Rozhodnutí k designu (potvrzená)
 
