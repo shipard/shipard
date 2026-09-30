@@ -23,6 +23,43 @@ K dispozici je **pouze CZ** (`world.assets.cz`). Stát bez konfigurace
 dostane `AccountingOnlyTaxRules` — nabízí jen metody `accounting`
 a `none`.
 
+## Použití
+
+```php
+use Shipard\Module\World\Assets\TaxRulesRegistry;
+use Shipard\Module\World\Assets\TaxYearInput;
+
+$rules = TaxRulesRegistry::forCountry($config, $dsConfig->getCountry());
+
+// Nabídka pro kartu zařazenou 2022: hmotný / nehmotný majetek
+$rules->availableMethods('2022-03-15', intangible: false);
+// → ['straight', 'accelerated', 'extraordinary', 'accounting', 'none']
+$rules->rules('straight', '2022-03-15');
+// → [['code' => 'cz-1', 'name' => 'Odpisová skupina 1'], …]
+
+// Druhý rok rovnoměrného odpisu ve skupině 2
+$amount = $rules->annualAmount(new TaxYearInput(
+    method: 'straight', ruleCode: 'cz-2', acquiredDate: '2022-03-15',
+    entryPrice: 100000.0, residual: 89000.0, yearsApplied: 1,
+));
+// → amount 22250.0, formula "100 000,00 × 22,25 %"
+```
+
+| Třída | Role |
+|---|---|
+| `TaxDepreciationRules` | rozhraní pravidel jednoho státu — jediné, co engine zná |
+| `CzTaxDepreciationRules` | vzorce ZDP (§ 30a, § 31, § 32, § 32a) nad cfgItem `world.assets.cz`; `validateConfig()` hlídá konzistenci dat |
+| `AccountingOnlyTaxRules` | fallback státu bez pravidel |
+| `TaxRulesRegistry` | výběr pravidel podle státu |
+| `TaxYearInput`, `TaxScheduleInput`, `TaxAmount` | vstup ročních a měsíčních metod, výsledek (`amount`, `formula`, `exact`) |
+
+Rozdělení práce: pravidla znají **sazby a vzorec jednoho období**;
+kalendář, počitadla let a měsíců, pořadí událostí a plán drží engine.
+Roční metody (`annualAmount`) dostanou počet let s uplatněným odpisem
+a příznak zvýšené ceny, měsíční (`scheduleAmount`) polohu v rozpisu.
+Zaokrouhlení `round()` je odolné proti chybě plovoucí čárky
+(50 000 × 5,15 % = 2 575, ne 2 576).
+
 ## Závislosti
 
 - `world.base` — číselník zemí
