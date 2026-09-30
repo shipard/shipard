@@ -1,6 +1,6 @@
 # Task: Kontaktní osoba strany dokladu — `contact.name` ve výměnném formátu
 
-**Stav:** naplánováno — rozhodnutí D1–D6 potvrzená 2026-09-30
+**Stav:** hotovo — 3 commity 2026-09-30; D6 na `lh6x-l`: `ds-upgrade` propsal profil v4.5.0, reanalýza zasažené zprávy prošla (status 2, `customer.contact.name` v `canonical_json`, název firmy zůstal v `name`); náhled ověřen buildem a daty, vizuální proklik modalu zbývá
 
 **Cíl:** AI analýza faktury, na které je u strany dokladu uvedena kontaktní
 osoba, přestane končit `schema_error`. Kanonický formát dokladu dostane pole
@@ -150,6 +150,15 @@ na konci celá sada lokálně.
    je `customer.contact.name`.
 3. Review modal návrhu ukazuje u odběratele „Kontakt: …“.
 
+**Výsledek (2026-09-30, `lh6x-l`):** po `ds-upgrade` profil v4.5.0 (řádek
+v DB nese `Contact.name` i nové pravidlo); zpráva vrácena do fronty
+(`analysis_state` 10, `needs_reanalysis`), analyzer ji vzal do 3 minut,
+nová analýza `status = 2`, `prompt_version = v4.5.0`, jistota 0,95, bez
+`_validationError`. V `canonical_json` je `customer.contact.name` a
+název firmy zůstal v `customer.name`. Dodavatel kontakt nemá, blok se
+u něj nevykreslí. Build obsahuje popisek „Kontakt“; vizuální kontrola
+modalu v prohlížeči neproběhla.
+
 ## Mimo rozsah
 
 - Přenos jména kontaktu do snapshotů dokladu (varianta D2″) — případně
@@ -187,12 +196,12 @@ na konci celá sada lokálně.
 
 ## Hotovo když
 
-- [ ] `contact.name` ve všech třech kopiích schématu; `SchemaDriftTest`
+- [x] `contact.name` ve všech třech kopiích schématu; `SchemaDriftTest`
       i `ProfileSchemaDriftTest` zelené.
-- [ ] `IsdocReader` mapuje `Contact/Name`; test na full i minimal fixture.
-- [ ] Review modal zobrazuje „Kontakt: …“; `check:i18n` a build prošly.
-- [ ] Profil `czech_general` v4.5.0 s ukázkou a pravidlem D5; testy verzí
+- [x] `IsdocReader` mapuje `Contact/Name`; test na full i minimal fixture.
+- [x] Review modal zobrazuje „Kontakt: …“; `check:i18n` a build prošly.
+- [x] Profil `czech_general` v4.5.0 s ukázkou a pravidlem D5; testy verzí
       aktualizované.
-- [ ] Docs (`exchange-format.md` §6, `ai-prompts.md` changelog, komentář
+- [x] Docs (`exchange-format.md` §6, `ai-prompts.md` changelog, komentář
       ve schématu) aktualizované.
-- [ ] D6: zasažená zpráva na dev zdroji po reanalýze projde, jméno je v modalu.
+- [x] D6: zasažená zpráva na dev zdroji po reanalýze projde, jméno je v modalu.

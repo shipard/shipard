@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.4.0)
+## Default prompt (v4.5.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -58,7 +58,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.4.0`).
+  shodná s `prompt_version` profilu (`v4.5.0`).
 - VAT kódy v řádcích jsou klíče z `world.vat.{country}.vatCodes`
   cfgItem (`cz-110`, `cz-111`, …) — ne sazby v procentech.
 - `totals.totalRounding` = zaokrouhlení celkové částky se znaménkem
@@ -172,7 +172,7 @@ Plné schéma viz [`profiles/czech_general.jsonc`](../profiles/czech_general.jso
    přes `shpd.docs.document.v1` (polymorfní dle `docType`, bez per-typ
    branche), registry typy přes `shpd.registry.document.v1` (nový druh =
    nová if/then větev `kindFields` v registry schématu + kopie embedu).
-5. Bumpni `prompt_version` (`v4.4.0` → `v4.5.0`).
+5. Bumpni `prompt_version` (`v4.5.0` → `v4.6.0`).
 
 ### Vlastní profil pro jiný jazyk / účel
 
@@ -232,6 +232,29 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.5.0 (2026-09-30)
+
+Kontaktní osoba strany dokladu
+([tasks/exchange-contact-name.md](../../../../tasks/exchange-contact-name.md)
+D5) — analýza faktury, na které je u odběratele nad názvem firmy jméno
+kontaktní osoby, končila dvakrát po sobě `schema_error` („Additional
+properties are not allowed ('name' was unexpected)“ v `customer.contact`):
+model jméno vrátil jako `contact.name`, kanonický formát pro ně neměl
+místo a `additionalProperties: false` odmítlo celý výstup.
+
+- Schéma `shpd.docs.document.v1` (D1): `Contact.name` (string | null) —
+  v kanonickém `.jsonc` / `.json` i v inline kopii profilu.
+- PRAVIDLA: jméno kontaktní osoby strany („Vyřizuje“, „Kontaktní osoba“,
+  „Attn“, jméno uvedené nad názvem firmy) patří do `contact.name`, nikdy
+  do `name` strany, pokud je na dokladu název firmy; fyzická osoba bez
+  názvu firmy má jméno v `name` (účtenky, OSVČ).
+- Ukázka: `supplier.contact` s `name`.
+- Server (nezávisle na verzi promptu): hodnota zůstává v návrhu a zobrazí
+  ji náhled jako **Kontakt** (D2′); do Osoby ani do snapshotů dokladu se
+  nepropisuje. ISDOC `Contact/Name` mapuje `IsdocReader` (D3).
+  Systémová ochrana proti improvizovaným klíčům (tolerantní validace
+  výstupu) je `ai_analyzer` issue #1.
 
 ### v4.4.0 (2026-09-29)
 

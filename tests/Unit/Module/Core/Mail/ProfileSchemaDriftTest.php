@@ -86,7 +86,7 @@ class ProfileSchemaDriftTest extends TestCase
         [$profile] = $this->loadProfile();
 
         $this->assertSame('czech_general', $profile['profile_id']);
-        $this->assertSame('v4.4.0', $profile['prompt_version']);
+        $this->assertSame('v4.5.0', $profile['prompt_version']);
         $this->assertContains('invoiceReceived', $profile['supported_doc_types']);
         foreach (['contract', 'insurance', 'quotation', 'certificate', 'official'] as $registryType) {
             $this->assertContains($registryType, $profile['supported_doc_types']);
@@ -110,6 +110,7 @@ class ProfileSchemaDriftTest extends TestCase
         $this->assertStringContainsString('120 znaků', $prompt);
         // Verze v promptu (source.promptVersion + ukázka) sleduje prompt_version profilu.
         $this->assertSame(2, substr_count($prompt, $profile['prompt_version']));
+        $this->assertStringNotContainsString('v4.4.0', $prompt);
         $this->assertStringNotContainsString('v4.2.0', $prompt);
     }
 
@@ -136,6 +137,7 @@ class ProfileSchemaDriftTest extends TestCase
         }
 
         $this->assertStringContainsString('"' . $profile['prompt_version'] . '"', $prompt, 'prompt must pin its own version');
+        $this->assertStringNotContainsString('v4.4.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.2.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.0.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v3.2.0', $prompt, 'stale prompt version reference');
