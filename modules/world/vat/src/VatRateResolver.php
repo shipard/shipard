@@ -14,6 +14,9 @@ final class VatRateResolver
     /** @var array<string, array> per-country cache of full cfgItem data */
     private array $cache = [];
 
+    /** Povolené hodnoty `vatCodes[].supplyKind` (zboží / služby). */
+    public const SUPPLY_KINDS = ['goods', 'services'];
+
     public function __construct(
         private readonly ConfigRuntime $config,
     ) {}
@@ -135,6 +138,12 @@ final class VatRateResolver
             if (isset($code['note'])
                 && !in_array($code['note'], $noteKeys, true)) {
                 $errors[] = "vatCodes['{$key}']: unknown note '{$code['note']}'";
+            }
+            // Druh plnění pro odvození kódu z přijatého dokladu
+            // (VatCodeDerivation) — jen goods / services.
+            if (isset($code['supplyKind'])
+                && !in_array($code['supplyKind'], self::SUPPLY_KINDS, true)) {
+                $errors[] = "vatCodes['{$key}']: unknown supplyKind '{$code['supplyKind']}'";
             }
         }
 

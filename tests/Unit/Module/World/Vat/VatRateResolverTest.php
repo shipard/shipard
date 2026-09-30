@@ -305,4 +305,26 @@ class VatRateResolverTest extends TestCase
         $this->assertCount(1, $errors);
         $this->assertStringContainsString("unknown note 'unknown_note'", $errors[0]);
     }
+
+    public function testValidateCountryConfigDetectsUnknownSupplyKind(): void
+    {
+        // tasks/exchange-received-reverse-charge.md: supplyKind řídí derivaci
+        // kódu mimo tuzemsko — překlep by kód tiše vyřadil z kandidátů.
+        $r = $this->resolverFromArray([
+            'vatCategories' => ['standard' => ['name' => 'X']],
+            'vatCodes' => [
+                'cz-217' => [
+                    'category' => 'standard',
+                    'direction' => 'input',
+                    'place' => 'intracom',
+                    'supplyKind' => 'stuff',
+                ],
+            ],
+            'vatPercents' => [],
+            'vatNotes' => [],
+        ]);
+        $errors = $r->validateCountryConfig('cz');
+        $this->assertCount(1, $errors);
+        $this->assertStringContainsString("unknown supplyKind 'stuff'", $errors[0]);
+    }
 }
