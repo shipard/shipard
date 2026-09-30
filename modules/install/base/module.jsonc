@@ -27,6 +27,7 @@
         "economy.accbal",
         "economy.assets",
         "world.vat",
+        "world.assets",
         "docs.core",
         "docs.invoicesOut",
         "docs.proformasOut",

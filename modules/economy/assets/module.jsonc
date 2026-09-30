@@ -9,7 +9,8 @@
     "description:cs": "Evidence majetku: karty majetku, typy, skupiny typů a účetní skupiny",
     "description:en": "Asset register: asset cards, types, type groups and accounting groups",
 
-    "dependencies": ["core.system", "core.attachments", "base.persons", "economy.accounting"],
+    // world.assets = pravidla daňových odpisů per stát (D31).
+    "dependencies": ["core.system", "core.attachments", "base.persons", "economy.accounting", "world.assets"],
 
     "tables": [
         "economy_assets_assets",

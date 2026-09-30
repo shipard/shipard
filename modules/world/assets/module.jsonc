@@ -1,0 +1,16 @@
+{
+    "id": "world.assets",
+    "name": "Asset depreciation rules",
+    "name:cs": "Pravidla odpisů majetku",
+    "name:en": "Asset depreciation rules",
+    "description": "Tax depreciation rules per country",
+    "description:cs": "Pravidla daňových odpisů majetku per stát (CZ, později další státy EU)",
+    "description:en": "Tax depreciation rules per country (CZ, later other EU countries)",
+
+    // Bez vlastních tabulek: čísla jsou v cfgItem, vzorce v PHP (docs/assets.md D31).
+    "dependencies": ["world.base"],
+
+    "config": [
+        {"id": "world.assets.cz", "file": "config/assets-cz.jsonc"},
+    ],
+}

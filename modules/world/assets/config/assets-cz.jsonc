@@ -1,0 +1,308 @@
+{
+    // =========================================================================
+    // world.assets.cz — pravidla daňových odpisů pro Českou republiku
+    // (zákon č. 586/1992 Sb., § 26–§ 32a; docs/assets.md D31, D41–D43).
+    //
+    // Čísla jsou tady, vzorce v CzTaxDepreciationRules. Platnost `from` / `to`
+    // se u všech intervalů vztahuje k DATU PRVNÍHO ZAŘAZENÍ majetku (D43),
+    // `null` = bez omezení.
+    //
+    // Převzato ze starého Shipardu (modules/install/country-modules/debs/cz/
+    // config/property.json → depGroups, amortizationPeriod). Odchylky:
+    //   - kódy: A1…A6 → cz-1…cz-6, A110/A115/A120 → cz-1-b10/-b15/-b20
+    //     (obdobně skupiny 2 a 3), AI1…AI5 → cz-nim-*;
+    //   - skupina X (ruční délka) vynechána — fáze 8;
+    //   - starý engine vybíral sazbu podle data odpisu, tady platí datum
+    //     zařazení (přechodná ustanovení novel);
+    //   - nehmotný majetek měl ve starém cfg platnost „od 2005“ bez konce;
+    //     § 32a byl zrušen k 1. 1. 2021, časová pravidla proto končí
+    //     31. 12. 2020 a nejstarší zařazení se neomezuje;
+    //   - mimořádné odpisy § 30a starý cfg neměl vůbec;
+    //   - zvýšené odpisy 1. roku (+10 / 15 / 20 %) nabízíme jen pro
+    //     rovnoměrnou metodu (starý cfg měl u zrychlené nulové koeficienty);
+    //     § 32 odst. 2 písm. a) je pro zrychlenou metodu dovoluje také —
+    //     v datech se nevyskytují (D42).
+    // =========================================================================
+
+    // § 31 odst. 9, § 32 odst. 5, § 30a: na celé koruny nahoru (D10, D36).
+    "rounding": {"mode": "ceil", "precision": 0},
+
+    // § 26 odst. 7: polovina ročního odpisu v roce vyřazení (D35).
+    "halfYearOnDisposal": ["straight", "accelerated"],
+
+    // § 26 odst. 8: přerušit lze jen roční odpisy; § 30a a § 32a výslovně
+    // „bez přerušení“ (D34).
+    "interruptible": ["straight", "accelerated"],
+
+    // Nehmotný majetek zařazený od tohoto data se daňově odpisuje jen podle
+    // účetnictví (zrušení § 32a) — nabídka metod je `accounting` / `none`.
+    "intangibleTaxFrom": "2021-01-01",
+
+    // kind: annual   — roční odpis za zdaňovací období (annualAmount)
+    //       schedule — měsíční rozpis procent vstupní ceny (scheduleAmount)
+    //       time     — měsíčně rovnoměrně po dobu pravidla (scheduleAmount)
+    //       accounting / none — bez vlastního výpočtu
+    // tangible / intangible — pro jaký majetek se metoda nabízí
+    // improvement: false — technické zhodnocení se odpisuje samostatně
+    //       (§ 30a odst. 3), na kartě je chybou
+    "methods": {
+        "straight": {
+            "name": "Straight-line",
+            "name:cs": "Rovnoměrný",
+            "name:en": "Straight-line",
+            "kind": "annual", "tangible": true, "intangible": false
+        },
+        "accelerated": {
+            "name": "Accelerated",
+            "name:cs": "Zrychlený",
+            "name:en": "Accelerated",
+            "kind": "annual", "tangible": true, "intangible": false
+        },
+        "extraordinary": {
+            "name": "Extraordinary (§30a)",
+            "name:cs": "Mimořádný (§30a)",
+            "name:en": "Extraordinary (§30a)",
+            "kind": "schedule", "tangible": true, "intangible": false,
+            "improvement": false
+        },
+        "time": {
+            "name": "Time-based (intangible until 2020)",
+            "name:cs": "Časový (nehmotný do 2020)",
+            "name:en": "Time-based (intangible until 2020)",
+            "kind": "time", "tangible": false, "intangible": true
+        },
+        "accounting": {
+            "name": "Same as accounting depreciation",
+            "name:cs": "Podle účetních odpisů",
+            "name:en": "Same as accounting depreciation",
+            "kind": "accounting", "tangible": true, "intangible": true
+        },
+        "none": {
+            "name": "Not depreciated for tax",
+            "name:cs": "Neodepisuje se daňově",
+            "name:en": "Not depreciated for tax",
+            "kind": "none", "tangible": true, "intangible": true
+        }
+    },
+
+    // Odpisové skupiny pro straight / accelerated. `years` = dnešní minimální
+    // doba odpisování (§ 30 odst. 1; dřívější doby jsou v komentářích u sazeb).
+    // Varianty se zvýšeným odpisem 1. roku (D42) jsou samostatné kódy
+    // s vlastními sazbami; `group` = základní skupina, `methods` = omezení
+    // metod. `taxReturnGroup` je podklad pro přiznání DPPO (fáze 5), engine
+    // ho nečte.
+    "groups": {
+        "cz-1": {
+            "name": "Depreciation group 1",
+            "name:cs": "Odpisová skupina 1",
+            "name:en": "Depreciation group 1",
+            "years": 3, "taxReturnGroup": 1
+        },
+        "cz-1-b10": {
+            "name": "Group 1 (first year +10 %)",
+            "name:cs": "Odp. sk. 1 (1. rok +10 %)",
+            "name:en": "Group 1 (first year +10 %)",
+            "group": "cz-1", "methods": ["straight"]
+        },
+        "cz-1-b15": {
+            "name": "Group 1 (first year +15 %)",
+            "name:cs": "Odp. sk. 1 (1. rok +15 %)",
+            "name:en": "Group 1 (first year +15 %)",
+            "group": "cz-1", "methods": ["straight"]
+        },
+        "cz-1-b20": {
+            "name": "Group 1 (first year +20 %)",
+            "name:cs": "Odp. sk. 1 (1. rok +20 %)",
+            "name:en": "Group 1 (first year +20 %)",
+            "group": "cz-1", "methods": ["straight"]
+        },
+        "cz-2": {
+            "name": "Depreciation group 2",
+            "name:cs": "Odpisová skupina 2",
+            "name:en": "Depreciation group 2",
+            "years": 5, "taxReturnGroup": 2
+        },
+        "cz-2-b10": {
+            "name": "Group 2 (first year +10 %)",
+            "name:cs": "Odp. sk. 2 (1. rok +10 %)",
+            "name:en": "Group 2 (first year +10 %)",
+            "group": "cz-2", "methods": ["straight"]
+        },
+        "cz-2-b15": {
+            "name": "Group 2 (first year +15 %)",
+            "name:cs": "Odp. sk. 2 (1. rok +15 %)",
+            "name:en": "Group 2 (first year +15 %)",
+            "group": "cz-2", "methods": ["straight"]
+        },
+        "cz-2-b20": {
+            "name": "Group 2 (first year +20 %)",
+            "name:cs": "Odp. sk. 2 (1. rok +20 %)",
+            "name:en": "Group 2 (first year +20 %)",
+            "group": "cz-2", "methods": ["straight"]
+        },
+        "cz-3": {
+            "name": "Depreciation group 3",
+            "name:cs": "Odpisová skupina 3",
+            "name:en": "Depreciation group 3",
+            "years": 10, "taxReturnGroup": 3
+        },
+        "cz-3-b10": {
+            "name": "Group 3 (first year +10 %)",
+            "name:cs": "Odp. sk. 3 (1. rok +10 %)",
+            "name:en": "Group 3 (first year +10 %)",
+            "group": "cz-3", "methods": ["straight"]
+        },
+        "cz-3-b15": {
+            "name": "Group 3 (first year +15 %)",
+            "name:cs": "Odp. sk. 3 (1. rok +15 %)",
+            "name:en": "Group 3 (first year +15 %)",
+            "group": "cz-3", "methods": ["straight"]
+        },
+        "cz-3-b20": {
+            "name": "Group 3 (first year +20 %)",
+            "name:cs": "Odp. sk. 3 (1. rok +20 %)",
+            "name:en": "Group 3 (first year +20 %)",
+            "group": "cz-3", "methods": ["straight"]
+        },
+        "cz-4": {
+            "name": "Depreciation group 4",
+            "name:cs": "Odpisová skupina 4",
+            "name:en": "Depreciation group 4",
+            "years": 20, "taxReturnGroup": 4
+        },
+        "cz-5": {
+            "name": "Depreciation group 5",
+            "name:cs": "Odpisová skupina 5",
+            "name:en": "Depreciation group 5",
+            "years": 30, "taxReturnGroup": 5
+        },
+        "cz-6": {
+            "name": "Depreciation group 6",
+            "name:cs": "Odpisová skupina 6",
+            "name:en": "Depreciation group 6",
+            "years": 50, "taxReturnGroup": 6
+        }
+    },
+
+    // § 31 odst. 1 — roční odpisové sazby v % (ve starém cfg cr1 / crn / cri):
+    // first = 1. rok, next = další roky, increased = zvýšená vstupní cena.
+    "straightRates": [
+        {"code": "cz-1", "from": null,         "to": "2004-12-31", "first": 14.2, "next": 28.6,  "increased": 25.0},  // 4 roky
+        {"code": "cz-1", "from": "2005-01-01", "to": null,         "first": 20.0, "next": 40.0,  "increased": 33.3},
+        {"code": "cz-1-b10", "from": "2005-01-01", "to": null, "first": 30.0, "next": 35.0,  "increased": 33.3},
+        {"code": "cz-1-b15", "from": "2005-01-01", "to": null, "first": 35.0, "next": 32.5,  "increased": 33.3},
+        {"code": "cz-1-b20", "from": "2005-01-01", "to": null, "first": 40.0, "next": 30.0,  "increased": 33.3},
+
+        {"code": "cz-2", "from": null,         "to": "1998-12-31", "first": 6.2,  "next": 13.4,  "increased": 12.5},  // 8 let
+        {"code": "cz-2", "from": "1999-01-01", "to": "2004-12-31", "first": 8.5,  "next": 18.3,  "increased": 16.7},  // 6 let
+        {"code": "cz-2", "from": "2005-01-01", "to": null,         "first": 11.0, "next": 22.25, "increased": 20.0},
+        {"code": "cz-2-b10", "from": "2005-01-01", "to": null, "first": 21.0, "next": 19.75, "increased": 20.0},
+        {"code": "cz-2-b15", "from": "2005-01-01", "to": null, "first": 26.0, "next": 18.5,  "increased": 20.0},
+        {"code": "cz-2-b20", "from": "2005-01-01", "to": null, "first": 31.0, "next": 17.25, "increased": 20.0},
+
+        {"code": "cz-3", "from": null,         "to": "1998-12-31", "first": 3.4,  "next": 6.9,   "increased": 6.7},   // 15 let
+        {"code": "cz-3", "from": "1999-01-01", "to": "2004-12-31", "first": 4.3,  "next": 8.7,   "increased": 8.4},   // 12 let
+        {"code": "cz-3", "from": "2005-01-01", "to": null,         "first": 5.5,  "next": 10.5,  "increased": 10.0},
+        {"code": "cz-3-b10", "from": "2005-01-01", "to": null, "first": 15.4, "next": 9.4,   "increased": 10.0},
+        {"code": "cz-3-b15", "from": "2005-01-01", "to": null, "first": 19.0, "next": 9.0,   "increased": 10.0},
+        {"code": "cz-3-b20", "from": "2005-01-01", "to": null, "first": 24.4, "next": 8.4,   "increased": 10.0},
+
+        {"code": "cz-4", "from": null,         "to": "1998-12-31", "first": 1.4,  "next": 3.4,   "increased": 3.4},   // 30 let
+        {"code": "cz-4", "from": "1999-01-01", "to": null,         "first": 2.15, "next": 5.15,  "increased": 5.0},
+
+        {"code": "cz-5", "from": null,         "to": "1994-12-31", "first": 1.0,  "next": 2.0,   "increased": 2.0},   // 50 let
+        {"code": "cz-5", "from": "1995-01-01", "to": "1998-12-31", "first": 1.0,  "next": 2.25,  "increased": 2.25},  // 45 let
+        {"code": "cz-5", "from": "1999-01-01", "to": null,         "first": 1.4,  "next": 3.4,   "increased": 3.4},
+
+        {"code": "cz-6", "from": "2004-01-01", "to": null,         "first": 1.02, "next": 2.02,  "increased": 2.0}
+    ],
+
+    // § 32 odst. 1 — koeficienty zrychleného odpisování (cz1 / czn / czi).
+    "acceleratedCoefficients": [
+        {"code": "cz-1", "from": null,         "to": "2004-12-31", "first": 4,  "next": 5,  "increased": 4},
+        {"code": "cz-1", "from": "2005-01-01", "to": null,         "first": 3,  "next": 4,  "increased": 3},
+
+        {"code": "cz-2", "from": null,         "to": "1998-12-31", "first": 8,  "next": 9,  "increased": 8},
+        {"code": "cz-2", "from": "1999-01-01", "to": "2004-12-31", "first": 6,  "next": 7,  "increased": 6},
+        {"code": "cz-2", "from": "2005-01-01", "to": null,         "first": 5,  "next": 6,  "increased": 5},
+
+        {"code": "cz-3", "from": null,         "to": "1998-12-31", "first": 15, "next": 16, "increased": 15},
+        {"code": "cz-3", "from": "1999-01-01", "to": "2004-12-31", "first": 12, "next": 13, "increased": 12},
+        {"code": "cz-3", "from": "2005-01-01", "to": null,         "first": 10, "next": 11, "increased": 10},
+
+        {"code": "cz-4", "from": null,         "to": "1998-12-31", "first": 30, "next": 31, "increased": 30},
+        {"code": "cz-4", "from": "1999-01-01", "to": null,         "first": 20, "next": 21, "increased": 20},
+
+        {"code": "cz-5", "from": null,         "to": "1994-12-31", "first": 50, "next": 51, "increased": 50},
+        {"code": "cz-5", "from": "1995-01-01", "to": "1998-12-31", "first": 45, "next": 46, "increased": 45},
+        {"code": "cz-5", "from": "1999-01-01", "to": null,         "first": 30, "next": 31, "increased": 30},
+
+        {"code": "cz-6", "from": "2004-01-01", "to": null,         "first": 50, "next": 51, "increased": 50}
+    ],
+
+    // Časové odpisy nehmotného majetku zařazeného do 31. 12. 2020 (§ 32a ve
+    // znění do 2020; ve starém cfg AI1–AI5). `monthsIncreased` = nejkratší
+    // doba odpisování po technickém zhodnocení (§ 32a odst. 6: „po zbývající
+    // dobu, nejméně však…“); 0 = bez spodní hranice.
+    "timeRules": {
+        "cz-nim-software": {
+            "name": "Intangible — software",
+            "name:cs": "NIM — software",
+            "name:en": "Intangible — software",
+            "months": 36, "monthsIncreased": 18, "from": null, "to": "2020-12-31"
+        },
+        "cz-nim-av": {
+            "name": "Intangible — audiovisual works",
+            "name:cs": "NIM — audiovizuální díla",
+            "name:en": "Intangible — audiovisual works",
+            "months": 18, "monthsIncreased": 9, "from": null, "to": "2020-12-31"
+        },
+        "cz-nim-rd": {
+            "name": "Intangible — research and development results",
+            "name:cs": "NIM — nehmotné výsledky výzkumu a vývoje",
+            "name:en": "Intangible — research and development results",
+            "months": 36, "monthsIncreased": 18, "from": null, "to": "2020-12-31"
+        },
+        "cz-nim-setup": {
+            "name": "Intangible — incorporation expenses",
+            "name:cs": "NIM — zřizovací výdaje",
+            "name:en": "Intangible — incorporation expenses",
+            "months": 60, "monthsIncreased": 0, "from": null, "to": "2020-12-31"
+        },
+        "cz-nim-other": {
+            "name": "Intangible — other",
+            "name:cs": "NIM — ostatní nehmotný majetek",
+            "name:en": "Intangible — other",
+            "months": 72, "monthsIncreased": 36, "from": null, "to": "2020-12-31"
+        }
+    },
+
+    // Mimořádné odpisy § 30a (D41): měsíční rozpis procent vstupní ceny od
+    // měsíce následujícího po zařazení, bez přerušení. `groups` je jen
+    // informace, pro jaký majetek pravidlo platí — engine ji nečte.
+    //   - skupiny 1 a 2 pořízené 1. 1. 2020 – 31. 12. 2023 (znění do 2023),
+    //   - bezemisní vozidla pořízená 1. 1. 2024 – 31. 12. 2028.
+    "extraordinaryRules": {
+        "cz-30a-1": {
+            "name": "Extraordinary — group 1",
+            "name:cs": "Mimořádné — skupina 1",
+            "name:en": "Extraordinary — group 1",
+            "groups": ["cz-1"], "from": "2020-01-01", "to": "2023-12-31",
+            "schedule": [{"months": 12, "pct": 100}]
+        },
+        "cz-30a-2": {
+            "name": "Extraordinary — group 2",
+            "name:cs": "Mimořádné — skupina 2",
+            "name:en": "Extraordinary — group 2",
+            "groups": ["cz-2"], "from": "2020-01-01", "to": "2023-12-31",
+            "schedule": [{"months": 12, "pct": 60}, {"months": 12, "pct": 40}]
+        },
+        "cz-30a-ev": {
+            "name": "Extraordinary — zero-emission vehicle",
+            "name:cs": "Mimořádné — bezemisní vozidlo",
+            "name:en": "Extraordinary — zero-emission vehicle",
+            "from": "2024-01-01", "to": "2028-12-31",
+            "schedule": [{"months": 12, "pct": 60}, {"months": 12, "pct": 40}]
+        }
+    }
+}
