@@ -134,10 +134,12 @@ final class IsdocReader
             'currency'     => $currency !== null ? strtoupper($currency) : null,
             'exchangeRate' => $isForeign ? $this->exchangeRate($root) : null,
 
+            // Zemi registrace DPH ISDOC nenese — dřív se plnila zemí
+            // dodavatele, což u přijatého dokladu ze zahraničí hledalo kód
+            // v cizím číselníku. U přijatých dokladů ji odvozuje applier
+            // z naší registrace (tasks/exchange-received-reverse-charge.md D2).
             'vat' => [
-                'registrationCountry' => is_array($supplier)
-                    ? ($supplier['country'] ?? null)
-                    : null,
+                'registrationCountry' => null,
             ],
 
             'payment' => $paymentDetails !== null ? [

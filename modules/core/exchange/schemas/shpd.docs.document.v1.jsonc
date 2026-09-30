@@ -104,9 +104,23 @@
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
-                "mode":                { "type": ["string", "null"] },
-                "place":               { "type": ["string", "null"] },
+                // Režim výpočtu (docs.core.vatModes). Neznámá hodnota →
+                // warning `vat_mode_unknown`, fallback fromBase.
+                "mode":                { "enum": ["fromBase", "fromTotal", "none", null] },
+                // Místo plnění — canonical názvy (thirdCountry = číselník
+                // world.vat `foreign`). Neznámá hodnota → warning
+                // `vat_place_unknown`, fallback domestic.
+                "place":               { "enum": ["domestic", "intracom", "thirdCountry", null] },
+                // Země naší registrace DPH. U přijatých dokladů (selfParty
+                // customer) ji applier odvodí z první aktivní registrace na
+                // zdroji a hodnotu tu ignoruje (při rozporu info issue
+                // `vat_registration_country_derived`).
                 "registrationCountry": { "type": ["string", "null"], "pattern": "^[A-Za-z]{2}$" },
+                // Daň přiznává příjemce („reverse charge“, přenesení daňové
+                // povinnosti, čl. 196 směrnice, § 92a) — signál pro odvození
+                // kódu DPH řádků (VatCodeDerivation), i když je na dokladu
+                // DPH 0.
+                "reverseCharge":       { "type": ["boolean", "null"] },
 
                 // Autorita rekapitulace (docs.core.vatRecapSources):
                 //   "declared" = vatRecap je fakt z dokladu, applier ho uloží
@@ -371,8 +385,17 @@
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
+                // Klíč z číselníku země registrace (cz-110). U přijatých
+                // dokladů smí být null — kód odvodí applier ze signálů
+                // (VatCodeDerivation, `matchedBy: "derived"`).
                 "code": { "type": ["string", "null"] },
-                "pct":  { "type": ["number", "null"] }
+                "pct":  { "type": ["number", "null"] },
+                // Druh plnění — rozhoduje jen mimo tuzemsko (EU zboží
+                // cz-215 vs. služby cz-217).
+                "supplyKind": { "enum": ["goods", "services", null] },
+                // Kód předmětu plnění u tuzemského přenesení daňové
+                // povinnosti ("4" stavební práce, "5" příloha 5).
+                "reverseChargeCode": { "type": ["string", "null"] }
             }
         },
 

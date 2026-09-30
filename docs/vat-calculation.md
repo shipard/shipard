@@ -85,7 +85,10 @@ Vlastnost **celého dokladu**:
 Výchozí hodnota podle původu: vystavený doklad → přepočítaná; import → převzatá
 (exchange `vat.recapSource: "declared"`, `vatRecap` z dat zdroje); přijatý doklad
 z AI extrakce → převzatá, když `vatRecap` je vnitřně konzistentní (`base + tax =
-total`); jinak přepočítaná.
+total`) a žádný řádek nemá kód se samovyměřením (`reverseVatCode`); jinak
+přepočítaná. Rekapitulace dodavatele s přenesením daňové povinnosti je z jeho
+pohledu (0 %, daň 0) a nepřebírá se — naše nese nárok na odpočet a oddaňovací pár
+(`docs/exchange-format.md` § 5, D3).
 
 Editace: při `převzatá` je rekapitulace editovatelná. Změna částek řádků ji
 **nepřepíše** — uložení vydá warning `rows_recap_mismatch`. Oprava: upravit

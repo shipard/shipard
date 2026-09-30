@@ -24,7 +24,7 @@ class VatCodeResolver
     ) {}
 
     /**
-     * @param string|null $code     VAT code key (e.g. "highEU", "noVat").
+     * @param string|null $code     VAT code key (e.g. "cz-110", "cz-217").
      * @param string|null $country  ISO 3166-1 alpha-2, uppercase or lowercase.
      * @param string|null $date     Tax point date for percentage resolution.
      * @param float|null  $declaredPct Optional explicit pct from canonical;

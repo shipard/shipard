@@ -55,9 +55,10 @@
             "type": ["object", "null"],
             "additionalProperties": false,
             "properties": {
-                "mode":                { "type": ["string", "null"] },
-                "place":               { "type": ["string", "null"] },
+                "mode":                { "enum": ["fromBase", "fromTotal", "none", null] },
+                "place":               { "enum": ["domestic", "intracom", "thirdCountry", null] },
                 "registrationCountry": { "type": ["string", "null"], "pattern": "^[A-Za-z]{2}$" },
+                "reverseCharge":       { "type": ["boolean", "null"] },
                 "recapSource":         { "enum": ["computed", "declared", null] },
                 "calcSource":          { "enum": ["header", "rows", null] },
                 "controlStatementMode": { "enum": ["auto", "detail", "aggregate", "exclude", null] }
@@ -249,7 +250,9 @@
             "additionalProperties": false,
             "properties": {
                 "code": { "type": ["string", "null"] },
-                "pct":  { "type": ["number", "null"] }
+                "pct":  { "type": ["number", "null"] },
+                "supplyKind": { "enum": ["goods", "services", null] },
+                "reverseChargeCode": { "type": ["string", "null"] }
             }
         },
         "RowComputed": {

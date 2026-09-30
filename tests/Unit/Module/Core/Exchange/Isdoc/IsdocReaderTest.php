@@ -166,7 +166,10 @@ class IsdocReaderTest extends TestCase
         $this->assertSame('Testovací odběratel a.s.', $canonical['customer']['name']);
         $this->assertSame('87654321', $canonical['customer']['companyId']);
 
-        $this->assertSame('cz', $canonical['vat']['registrationCountry']);
+        // D2 (exchange-received-reverse-charge): zemi registrace určuje
+        // applier z naší registrace, ISDOC ji neplní (prázdný objekt vat
+        // se z canonicalu ořeže).
+        $this->assertNull($canonical['vat']['registrationCountry'] ?? null);
 
         $payment = $canonical['payment'];
         $this->assertSame('bankTransfer', $payment['method']);

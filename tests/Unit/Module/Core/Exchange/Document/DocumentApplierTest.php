@@ -14,6 +14,7 @@ use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Document\NumberSeriesNotFoundException;
+use Shipard\Module\Core\Exchange\Document\VatCodeDerivation;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
@@ -25,6 +26,7 @@ use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
 use Shipard\Module\Core\Exchange\Resolve\VatCodeResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\World\Vat\VatRateResolver;
 
 /**
  * Testable applier with `executeSql` no-op'd. `Dibi\Connection::query()` is
@@ -78,6 +80,7 @@ class DocumentApplierTest extends TestCase
         ?TransactionlessTableGateway $items = null,
         ?AccountResolver $account = null,
         ?ConfigRuntime $config = null,
+        ?VatCodeDerivation $derivation = null,
     ): DocumentApplier {
         $db ??= $this->createMock(Connection::class);
         $party ??= $this->createMock(PartyResolver::class);
@@ -119,7 +122,125 @@ class DocumentApplierTest extends TestCase
             vatCodeResolver: $vat,
             bankAccountResolver: $bank,
             accountResolver: $account,
+            // Skutečná derivace nad vat-cz.jsonc; uplatní se jen u přijatého
+            // dokladu, když DB mock vrátí registraci DPH (dbWithVatRegistration).
+            vatCodeDerivation: $derivation ?? new VatCodeDerivation($this->vatCzRateResolver()),
         );
+    }
+
+    private static ?array $vatCz = null;
+
+    /**
+     * Skutečný číselník world.vat.cz (vat-cz.jsonc) — derivace kódu a sazba
+     * k datu (D4) běží nad reálnými daty, ne nad kopií v testu.
+     */
+    private function vatCzRateResolver(): VatRateResolver
+    {
+        self::$vatCz ??= JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/world/vat/config/vat-cz.jsonc');
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === 'world.vat.cz' ? self::$vatCz : null,
+        );
+        return new VatRateResolver($config);
+    }
+
+    /** DB mock zdroje s jednou aktivní registrací DPH (cz, id 5); ostatní dotazy null. */
+    private function dbWithVatRegistration(): Connection
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(static function (mixed ...$args): ?Row {
+            $sql = (string) ($args[0] ?? '');
+            return str_contains($sql, 'economy_codebooks_vat_registrations')
+                ? new Row(['id' => 5, 'country' => 'cz'])
+                : null;
+        });
+        return $db;
+    }
+
+    /**
+     * Applier pro testy derivace kódu DPH: skutečný VatCodeResolver nad
+     * vat-cz.jsonc (výchozí mock vrací pct null a reverseVatCode null),
+     * strany / položky / jednotky / banka matched.
+     */
+    private function buildVatDerivingApplier(?Connection $db = null): DocumentApplier
+    {
+        $party = $this->createMock(PartyResolver::class);
+        $party->method('resolve')->willReturn(ResolveResult::matched(42, 'companyId'));
+        $party->method('resolveSelfParty')->willReturn(ResolveResult::matched(1, 'self'));
+        $unit = $this->createMock(UnitResolver::class);
+        $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
+        $item = $this->createMock(ItemResolver::class);
+        $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
+        $bank = $this->createMock(BankAccountResolver::class);
+        $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
+
+        return $this->buildApplier(
+            db: $db ?? $this->dbWithVatRegistration(),
+            party: $party,
+            item: $item,
+            unit: $unit,
+            vat: new VatCodeResolver($this->vatCzRateResolver()),
+            bank: $bank,
+        );
+    }
+
+    /** @return array<string, mixed> */
+    private function happyPayload(): array
+    {
+        return json_decode(
+            (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
+            true,
+        );
+    }
+
+    /**
+     * Přijatá faktura za služby od dodavatele z jiného státu EU, na dokladu
+     * „reverse charge“ a DPH 0, kódy DPH null (tvar promptu v4.6.0).
+     * Fiktivní dodavatel, částky z happy fixture.
+     *
+     * @return array<string, mixed>
+     */
+    private function euServicesPayload(): array
+    {
+        $payload = $this->happyPayload();
+        $payload['supplier']['country'] = 'DE';
+        $payload['supplier']['vatId'] = 'DE123456789';
+        $payload['supplier']['address']['country'] = 'DE';
+        $payload['vat'] = [
+            'mode'                => 'fromBase',
+            'place'               => 'intracom',
+            'reverseCharge'       => true,
+            'registrationCountry' => null,
+        ];
+        $payload['rows'][0]['vat'] = [
+            'code'              => null,
+            'pct'               => 0,
+            'supplyKind'        => 'services',
+            'reverseChargeCode' => null,
+        ];
+        $payload['rows'][0]['computed'] = ['vatBase' => 10330.58, 'vatAmount' => 0, 'vatTotal' => 10330.58];
+        $payload['vatRecap'] = [
+            ['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58],
+        ];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        return $payload;
+    }
+
+    /** @return array<string, mixed>|null */
+    private function issueByCode(ApplyResult $result, string $code): ?array
+    {
+        foreach ($result->canonical['_resolve']['issues'] ?? [] as $issue) {
+            if (($issue['code'] ?? null) === $code) {
+                return $issue;
+            }
+        }
+        return null;
+    }
+
+    /** @return list<string> */
+    private function issueCodes(ApplyResult $result): array
+    {
+        return array_column($result->canonical['_resolve']['issues'] ?? [], 'code');
     }
 
     public function testValidateRejectsSchemaInvalidPayload(): void
@@ -1993,6 +2114,12 @@ class DocumentApplierTest extends TestCase
      * Bez fallbacku by každý řádek skončil vat_code_unknown (reálný případ:
      * účtenka OMV, extracted doc 9 na alfě).
      */
+    /**
+     * Kaskáda země (registrationCountry → prefix kódu → dodavatel) — tři
+     * testy níže jedou nad přijatým dokladem na zdroji BEZ registrace DPH
+     * (DB mock fetch → null), kde D2 ani derivace neplatí. Se známou
+     * registrací je země vždy naše (testReceivedRegistrationCountryOfSupplierIsIgnored).
+     */
     public function testRowVatCountryFallsBackToCodePrefixWhenVatObjectMissing(): void
     {
         $party = $this->createMock(PartyResolver::class);
@@ -2063,7 +2190,7 @@ class DocumentApplierTest extends TestCase
         $applier->preview($payload);
     }
 
-    /** Explicitní vat.registrationCountry má přednost před prefixem kódu. */
+    /** Explicitní vat.registrationCountry má přednost před prefixem kódu (zdroj bez registrace DPH). */
     public function testExplicitVatRegistrationCountryBeatsCodePrefix(): void
     {
         $party = $this->createMock(PartyResolver::class);
@@ -2089,6 +2216,275 @@ class DocumentApplierTest extends TestCase
         );
         $payload['vat']['registrationCountry'] = 'DE';
         $applier->preview($payload);
+    }
+
+    // ── Kód DPH přijatého dokladu ze signálů (VatCodeDerivation, D1–D5) ────
+
+    public function testReceivedEuServicesDerivesReverseChargeCode(): void
+    {
+        $result = $this->buildVatDerivingApplier()->preview($this->euServicesPayload());
+
+        $this->assertTrue($result->success);
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('matched', $vatCode['status']);
+        $this->assertSame('derived', $vatCode['matchedBy']);
+        $this->assertSame('cz-217', $vatCode['createPayload']['code']);
+        // D4: sazba z našeho číselníku k DUZP, ne 0 z dokladu dodavatele.
+        $this->assertSame(21.0, $vatCode['createPayload']['pct']);
+        $this->assertSame('cz-207', $vatCode['createPayload']['reverseVatCode']);
+
+        $codes = $this->issueCodes($result);
+        $this->assertNotContains('vat_code_unknown', $codes);
+        // Prázdný kód → derivace bez issue (jinak šum u každé faktury).
+        $this->assertNotContains('vat_code_derived', $codes);
+        // D3: rekapitulace dodavatele (0 %) se nepřebírá.
+        $recap = $this->issueByCode($result, 'recap_source_computed_fallback');
+        $this->assertNotNull($recap);
+        $this->assertStringContainsString('přenesení daňové povinnosti', $recap['message']);
+    }
+
+    public function testReceivedEuServicesTransformUsesOwnRegistrationAndComputedRecap(): void
+    {
+        $data = $this->invokeTransform($this->buildVatDerivingApplier(), $this->euServicesPayload());
+
+        $this->assertSame(1, $data['vat_place']);
+        $this->assertSame(5, $data['vat_registration']);
+        $this->assertSame(0, $data['vat_recap_source']);
+        $this->assertArrayNotHasKey('vatRecap', $data);
+    }
+
+    public function testReceivedInventedVatCodeIsReplacedByDerived(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['rows'][0]['vat']['code'] = 'eu-reverse';
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('cz-217', $vatCode['createPayload']['code']);
+        $this->assertSame('derived', $vatCode['matchedBy']);
+        $issue = $this->issueByCode($result, 'vat_code_derived');
+        $this->assertNotNull($issue);
+        $this->assertSame('warning', $issue['severity']);
+        $this->assertSame('rows.0.vat.code', $issue['path']);
+        $this->assertStringContainsString('eu-reverse', $issue['message']);
+        $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
+    }
+
+    /** Kód z historie řádků (RowHistoryEnricher) v rozporu se signály dokladu — derivace ho přebije. */
+    public function testReceivedHistoryCodeInConflictWithSignalsIsReplaced(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['rows'][0]['vat']['code'] = 'cz-110';
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $issue = $this->issueByCode($result, 'vat_code_derived');
+        $this->assertNotNull($issue);
+        $this->assertStringContainsString('cz-110', $issue['message']);
+        $this->assertStringContainsString('místo plnění', $issue['message']);
+    }
+
+    /** Platný kód v souladu se signály zůstává — dnešní chování, i pro krácený odpočet z historie. */
+    public function testReceivedConsistentCodeIsKept(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+
+        $result = $applier->preview($this->happyPayload());
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('cz-110', $vatCode['createPayload']['code']);
+        $this->assertSame('cfgItem', $vatCode['matchedBy']);
+        $this->assertSame([], array_intersect(['vat_code_derived', 'vat_code_unknown'], $this->issueCodes($result)));
+
+        $payload = $this->happyPayload();
+        $payload['rows'][0]['vat']['code'] = 'cz-118';
+        $result = $applier->preview($payload);
+        $this->assertSame('cz-118', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_code_derived', $this->issueCodes($result));
+    }
+
+    /** Domácí faktura bez kódů (prompt v4.6.0): kód ze sazby a rekapitulace dál převzatá (#75). */
+    public function testReceivedDomesticWithoutCodeDerivesFromRateAndKeepsDeclaredRecap(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 21];
+        $payload['vatRecap'][0]['vatCode'] = null;
+        $payload['vat']['reverseCharge'] = false;
+        $applier = $this->buildVatDerivingApplier();
+
+        $result = $applier->preview($payload);
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('cz-110', $vatCode['createPayload']['code']);
+        $this->assertSame('derived', $vatCode['matchedBy']);
+        $this->assertNotContains('recap_source_computed_fallback', $this->issueCodes($result));
+
+        $data = $this->invokeTransform($applier, $payload);
+        $this->assertSame(1, $data['vat_recap_source']);
+        $this->assertSame('cz-110', $data['vatRecap'][0]['vat_code']);
+    }
+
+    /** D2: registrationCountry z AI / ISDOC (země dodavatele) se u přijatého dokladu nepoužije. */
+    public function testReceivedRegistrationCountryOfSupplierIsIgnored(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['vat']['registrationCountry'] = 'DE';
+        $applier = $this->buildVatDerivingApplier();
+
+        $result = $applier->preview($payload);
+        // cz-110 se hledá v našem číselníku (cz), ne v DE → matched.
+        $this->assertSame('matched', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
+        $issue = $this->issueByCode($result, 'vat_registration_country_derived');
+        $this->assertNotNull($issue);
+        $this->assertSame('info', $issue['severity']);
+        $this->assertSame('vat.registrationCountry', $issue['path']);
+
+        $data = $this->invokeTransform($applier, $payload);
+        $this->assertSame(5, $data['vat_registration']);
+    }
+
+    public function testReceivedDomesticReverseChargeDerivesPdpCode(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['vat'] = ['mode' => 'fromBase', 'place' => 'domestic', 'reverseCharge' => true, 'registrationCountry' => null];
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0, 'supplyKind' => null, 'reverseChargeCode' => '4'];
+        $payload['vatRecap'] = [['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58]];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('cz-115', $vatCode['createPayload']['code']);
+        $this->assertSame(21.0, $vatCode['createPayload']['pct']);
+        $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
+        $this->assertStringContainsString(
+            'přenesení daňové povinnosti',
+            (string) ($this->issueByCode($result, 'recap_source_computed_fallback')['message'] ?? ''),
+        );
+    }
+
+    public function testReceivedUnsupportedCaseReportsReasonAndBlocksApply(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['rows'][0]['vat']['supplyKind'] = null;
+        $applier = $this->buildVatDerivingApplier();
+
+        $result = $applier->preview($payload);
+        $this->assertTrue($result->success);
+        $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
+        $issue = $this->issueByCode($result, 'vat_code_unknown');
+        $this->assertNotNull($issue);
+        $this->assertSame('error', $issue['severity']);
+        $this->assertStringContainsString('druh plnění', $issue['message']);
+        $this->assertStringContainsString('ručně', $issue['message']);
+
+        $applied = $applier->apply($payload);
+        $this->assertFalse($applied->success);
+        $this->assertSame('validation_failed', $applied->errorCode);
+    }
+
+    /** Model u faktury s DPH 0 vrací vat.mode „none“ — doklad Bez DPH by rekapitulaci nestavěl a samovyměření ztratil. */
+    public function testReceivedReverseChargeWithModeNoneIsForcedToFromBase(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['vat']['mode'] = 'none';
+        $applier = $this->buildVatDerivingApplier();
+
+        $result = $applier->preview($payload);
+        $issue = $this->issueByCode($result, 'vat_mode_derived');
+        $this->assertNotNull($issue);
+        $this->assertSame('warning', $issue['severity']);
+        $this->assertStringContainsString('bez DPH', $issue['message']);
+        $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+
+        $data = $this->invokeTransform($applier, $payload);
+        $this->assertSame(1, $data['vat_mode']);
+        $this->assertSame(0, $data['vat_recap_source']);
+    }
+
+    /** Bez samovyměření zůstává „none“ nedotčené (dodavatel neplátce). */
+    public function testReceivedModeNoneWithoutReverseChargeStaysNone(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['vat'] = ['mode' => 'none', 'place' => 'domestic', 'reverseCharge' => false, 'registrationCountry' => null];
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0];
+        $payload['vatRecap'] = [];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        $applier = $this->buildVatDerivingApplier();
+
+        $result = $applier->preview($payload);
+        $this->assertNotContains('vat_mode_derived', $this->issueCodes($result));
+        $this->assertSame(0, $this->invokeTransform($applier, $payload)['vat_mode']);
+    }
+
+    /** Zahraniční DPH naúčtovaná dodavatelem z EU není samovyměření (D7 otevřené) — bez tichého cz-217. */
+    public function testReceivedForeignVatChargedBySupplierIsNotSelfAssessed(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['vat']['reverseCharge'] = false;
+        $payload['rows'][0]['vat']['pct'] = 19;
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $issue = $this->issueByCode($result, 'vat_code_unknown');
+        $this->assertNotNull($issue);
+        $this->assertStringContainsString('zahraniční DPH', $issue['message']);
+    }
+
+    /** Explicitní declared (import ze starého Shipardu) s oddaňovacím párem zůstává převzatá. */
+    public function testExplicitDeclaredRecapWithReversePairIsKept(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['vat']['recapSource'] = 'declared';
+        $payload['rows'][0]['vat']['code'] = 'cz-217';
+        $payload['vatRecap'] = [
+            ['vatCode' => 'cz-217', 'vatPct' => 21, 'base' => 10330.58, 'tax' => 2169.42, 'total' => 10330.58, 'isReversePair' => false],
+            ['vatCode' => 'cz-207', 'vatPct' => 21, 'base' => 10330.58, 'tax' => -2169.42, 'total' => 0, 'isReversePair' => true],
+        ];
+        $applier = $this->buildVatDerivingApplier();
+
+        $result = $applier->preview($payload);
+        $this->assertNotContains('recap_source_computed_fallback', $this->issueCodes($result));
+        $this->assertNotContains('vat_code_derived', $this->issueCodes($result));
+
+        $data = $this->invokeTransform($applier, $payload);
+        $this->assertSame(1, $data['vat_recap_source']);
+        $this->assertCount(2, $data['vatRecap']);
+        $this->assertSame(1, $data['vatRecap'][1]['is_reverse_pair']);
+    }
+
+    /** Zdroj bez registrace DPH (neplátce): derivace ani D2 se neuplatní, chování jako dřív. */
+    public function testNonVatPayerDataSourceKeepsLegacyBehaviour(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $applier = $this->buildVatDerivingApplier($db);
+
+        $result = $applier->preview($this->euServicesPayload());
+        $this->assertTrue($result->success);
+        $this->assertArrayNotHasKey('vatCode', $result->canonical['_resolve']['rows'][0]);
+        $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
+        $this->assertNotContains('vat_registration_country_derived', $this->issueCodes($result));
+
+        $data = $this->invokeTransform($applier, $this->euServicesPayload());
+        $this->assertArrayNotHasKey('vat_registration', $data);
+    }
+
+    /** D5: neznámé vat.place / vat.mode → warning; schéma (enum) ale takový payload zachytí dřív. */
+    public function testUnknownVatPlaceAndModeGetWarnings(): void
+    {
+        $applier = $this->buildApplier();
+        $issues = [];
+        $ref = new \ReflectionMethod($applier, 'appendVatHeaderIssues');
+        $ref->invokeArgs($applier, [['selfParty' => 'customer', 'vat' => ['place' => 'eu', 'mode' => 'reverseCharge']], &$issues]);
+
+        $byCode = array_column($issues, null, 'code');
+        $this->assertSame('warning', $byCode['vat_place_unknown']['severity']);
+        $this->assertSame('vat.place', $byCode['vat_place_unknown']['path']);
+        $this->assertStringContainsString('eu', $byCode['vat_place_unknown']['message']);
+        $this->assertSame('warning', $byCode['vat_mode_unknown']['severity']);
+
+        $payload = $this->euServicesPayload();
+        $payload['vat']['place'] = 'eu';
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+        $this->assertFalse($result->success);
+        $this->assertSame('schema_invalid', $result->errorCode);
     }
 
     // ── Doplnění pohybu (operation) na item řádcích při apply ───────────────

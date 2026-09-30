@@ -335,15 +335,19 @@
                                             "additionalProperties": false,
                                             "properties": {
                                                 "mode": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
+                                                    "enum": [
+                                                        "fromBase",
+                                                        "fromTotal",
+                                                        "none",
+                                                        null
                                                     ]
                                                 },
                                                 "place": {
-                                                    "type": [
-                                                        "string",
-                                                        "null"
+                                                    "enum": [
+                                                        "domestic",
+                                                        "intracom",
+                                                        "thirdCountry",
+                                                        null
                                                     ]
                                                 },
                                                 "registrationCountry": {
@@ -352,6 +356,12 @@
                                                         "null"
                                                     ],
                                                     "pattern": "^[A-Za-z]{2}$"
+                                                },
+                                                "reverseCharge": {
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "recapSource": {
                                                     "enum": [
@@ -938,6 +948,19 @@
                                                 "pct": {
                                                     "type": [
                                                         "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "supplyKind": {
+                                                    "enum": [
+                                                        "goods",
+                                                        "services",
+                                                        null
+                                                    ]
+                                                },
+                                                "reverseChargeCode": {
+                                                    "type": [
+                                                        "string",
                                                         "null"
                                                     ]
                                                 }

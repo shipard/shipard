@@ -200,8 +200,13 @@ Top-level struktura:
 
   "vat": {                        // celý objekt nullable — nelze-li určit,
                                    //   vynechat nebo null (ne prázdný objekt)
-    "mode":  "fromBase",          // fromBase | fromTotal | none
-                                   //   (key z docs.core.vatModes)
+    "mode":  "fromBase",          // fromBase | fromTotal | none | null
+                                   //   (key z docs.core.vatModes; enum ve
+                                   //   schématu — neznámá hodnota mimo schema
+                                   //   validaci → warning `vat_mode_unknown`).
+                                   //   `none` + řádky se samovyměřením →
+                                   //   applier vynutí fromBase (warning
+                                   //   `vat_mode_derived`).
                                    //   Applier mode deterministicky ověřuje
                                    //   proti číslům (VatModeDerivation): sedí-li
                                    //   Σ rows[].totalPrice právě na Σ vatRecap
@@ -215,9 +220,23 @@ Top-level struktura:
                                    //   počítala dvakrát. Canonical zůstává
                                    //   nedotčený, korekce je v _resolve.issues
                                    //   jako warning `vat_mode_derived`.
-    "place": "domestic",          // klíč z docs.core.vatPlaces
-    "registrationCountry": "CZ",  // ISO země — resolver dohledá
-                                   //   economy_codebooks_vat_registrations
+    "place": "domestic",          // domestic | intracom | thirdCountry | null
+                                   //   Canonical názvy — číselník world.vat má
+                                   //   pro thirdCountry `foreign`. Enum ve
+                                   //   schématu; neznámá hodnota mimo schema
+                                   //   validaci → warning `vat_place_unknown`.
+    "registrationCountry": "CZ",  // ISO země naší registrace DPH. U přijatých
+                                   //   dokladů (selfParty customer) ji applier
+                                   //   IGNORUJE a bere první aktivní registraci
+                                   //   zdroje (D2, info issue
+                                   //   `vat_registration_country_derived` při
+                                   //   rozporu); u ostatních dohledá
+                                   //   economy_codebooks_vat_registrations.
+    "reverseCharge": false,       // bool | null — daň přiznává příjemce
+                                   //   („reverse charge“, přenesení daňové
+                                   //   povinnosti, čl. 196 směrnice, § 92a);
+                                   //   signál pro odvození kódu DPH řádků
+                                   //   (§ 8.4), i když je na dokladu DPH 0.
     "recapSource": "declared",    // computed | declared | null
                                    //   Autorita rekapitulace (viz níže).
                                    //   declared = vatRecap je fakt z dokladu
@@ -265,7 +284,7 @@ Top-level struktura:
   // ── Computed (informative; applier recomputes) ───────────────────────────
   "vatRecap": [
     {
-      "vatCode": "highEU", "vatPct": 21,
+      "vatCode": "cz-110", "vatPct": 21,
       "base": 10330.58, "tax": 2169.42, "total": 12500.00,
       "isReversePair": false
     }
@@ -318,11 +337,19 @@ aritmetickou kontrolou níže a u každého jde dohledat DPH kód. Jinak
 bez něj by uživatel nepoznal, proč je na dokladu jiná rekapitulace než na
 předloze. U vystavených dokladů je odvození vždy `computed`.
 
+**Samovyměření (D3):** má-li kterýkoli položkový řádek — po odvození kódu
+(§ 8.4) — kód s `reverseVatCode`, je rekapitulace přijatého dokladu vždy
+`computed` + info issue s důvodem „přenesení daňové povinnosti“.
+Rekapitulace dodavatele je z jeho pohledu (0 %, daň 0); naše nese nárok na
+odpočet a oddaňovací pár. Explicitní `recapSource: "declared"` (import ze
+starého Shipardu, s páry) zůstává beze změny.
+
 **DPH kód rekapitulace:** ISDOC ho v rekapitulaci nenese (`TaxSubTotal` má
-jen sazbu a částky), takže ho applier dohledá z položkových řádků — mapa
-sazba → kód, použije se jen pro sazbu s jediným kódem. Bez kódu se
-rekapitulace převzít nedá (`vat_code` je NOT NULL a bez kódu nejdou určit
-flagy sčítání) → `computed` + info issue.
+jen sazbu a částky) a AI od promptu v4.6.0 také ne, takže ho applier
+dohledá z položkových řádků — mapa sazba → kód (kód, který na řádku
+skončí: odvozený má přednost před canonicalem), použije se jen pro sazbu
+s jediným kódem. Bez kódu se rekapitulace převzít nedá (`vat_code` je NOT
+NULL a bez kódu nejdou určit flagy sčítání) → `computed` + info issue.
 
 `totals` zůstávají informativní vždy. Důvod, proč jsou obě pole v canonical:
 
@@ -561,8 +588,15 @@ nebo import mezi dvěma cizími subjekty.
 
   // VAT
   "vat": {
-    "code": "highEU",              // klíč z per-country VAT codes
-    "pct":  21                     // optional; resolver doplní z code+date
+    "code": "cz-110",              // klíč z per-country VAT codes; u přijatého
+                                   //   dokladu smí být null — kód odvodí
+                                   //   applier ze signálů (§ 8.4)
+    "pct":  21,                    // optional; resolver doplní z code+date
+    "supplyKind": null,            // goods | services | null — druh plnění,
+                                   //   rozhoduje jen mimo tuzemsko
+    "reverseChargeCode": null      // kód předmětu plnění u tuzemského
+                                   //   přenesení daňové povinnosti ("4"
+                                   //   stavební práce, "5" příloha 5)
   },
 
   // Computed (informative)
@@ -690,7 +724,7 @@ Postup:
 
 ### 8.4 VatCodeResolver
 
-Vstup: `vat.code` string + `vat.registrationCountry` + `dates.taxPointDate`.
+Vstup: `vat.code` string + země registrace + `dates.taxPointDate`.
 
 Postup:
 
@@ -700,7 +734,55 @@ Postup:
    včetně `vat_pct`, `reverseVatCode`, `noPayTax` atd.
 3. Pokud `vat.pct` v payloadu chybí, doplní z resolved code + date přes
    `VatRateResolver::resolveVatPct($country, $code, $date)`.
-4. Žádný match → `notFound` + warning.
+4. Žádný match → `notFound` + error `vat_code_unknown`.
+
+**Země registrace:** u přijatého dokladu (`selfParty: "customer"`) na zdroji
+s aktivní registrací DPH **vždy naše registrace** — první aktivní podle
+země a id, stejná volba jako výchozí hodnota formuláře dokladu (D2).
+`vat.registrationCountry` z AI i ISDOC se ignoruje; při rozporu info issue
+`vat_registration_country_derived`. U ostatních dokladů kaskáda
+`vat.registrationCountry` → prefix kódu (`cz-110` → `cz`) → země dodavatele.
+Zdroj bez registrace DPH (neplátce) jde kaskádou vždy.
+
+#### Odvození kódu DPH u přijatých dokladů (`VatCodeDerivation`)
+
+AI ani ISDOC neznají klíče číselníku (model vracel `reverse-charge`,
+`eu-reverse`); kód proto určuje systém ze sémantických signálů — hlavička
+`vat.place`, `vat.reverseCharge`, řádek `vat.pct`, `vat.supplyKind`,
+`vat.reverseChargeCode` (`tasks/exchange-received-reverse-charge.md`
+D1/D4). Kandidáti = vstupní kódy číselníku naší registrace pro místo
+plnění, bez `hidden` a bez `reducedDeduction` (krácený odpočet se nikdy
+neodvozuje):
+
+- **samovyměření** (`reverseCharge: true`, nebo místo ≠ tuzemsko): kódy
+  s `reverseVatCode` kategorie `standard`; mimo tuzemsko rozhoduje
+  `supplyKind` (EU zboží `cz-215`, služby `cz-217`; třetí země `cz-415` /
+  `cz-417`), v tuzemsku `reverseChargeCode` (`4` → `cz-115`, `5` → `cz-117`);
+- **tuzemsko bez samovyměření:** kód bez `reverseVatCode`, jehož sazba
+  k DUZP = `pct` řádku (`cz-110`, `cz-111`, `cz-112`; historicky `cz-301`).
+
+Kód vznikne jen z **právě jednoho** kandidáta. Odvozený kód dostane sazbu
+z číselníku k DUZP — u samovyměření tedy 21, ne 0 z dokladu dodavatele.
+
+| vstupní `vat.code` | derivace | výsledek v `_resolve.rows[].vatCode` |
+|---|---|---|
+| prázdný | kód | `matched`, `matchedBy: "derived"`, bez issue |
+| platný a v souladu se signály | cokoli | beze změny (`matchedBy: "cfgItem"`) |
+| neznámý, nebo v rozporu se signály | kód | odvozený kód + warning `vat_code_derived` (původní hodnota ve zprávě) |
+| neznámý / prázdný | `null` | `notFound` + error `vat_code_unknown` s důvodem a „doklad založ ručně“ |
+| prázdný, bez signálů | — | bez bloku `vatCode` (jako dřív) |
+
+„V souladu“ = místo kódu odpovídá `vat.place`; má `reverseVatCode` ⇔
+`reverseCharge`; `supplyKind` sedí, když je na obou stranách; u tuzemska
+bez samovyměření sedí sazba k datu. Null signál se nekontroluje. Kontrola
+chrání i před kódem doplněným z historie řádků (`RowHistoryEnricher`),
+který by jinak derivaci přebil.
+
+Mimo rozsah (derivace vrací `null` → `vat_code_unknown`): snížená sazba
+u samovyměření, zahraniční DPH naúčtovaná dodavatelem z EU či třetí země
+(hotel, PHM v cizině — `pct` > 0 bez `reverseCharge: true` není
+samovyměření), PDP kódy mimo číselník, dovoz zboží přes celní doklad,
+smíšené doklady. Vystavené a účetní doklady derivaci nepoužívají.
 
 ### 8.5 BankAccountResolver
 
@@ -769,7 +851,9 @@ klient drží jeden payload mezi step preview a apply.
         "status": "matched", "itemId": 18, "matchedBy": "ourCode"
       },
       "unit":     { "status": "matched", "unitId": 3, "matchedBy": "iso" },
-      "vatCode":  { "status": "matched", "code": "highEU" }
+      "vatCode":  { "status": "matched", "code": "cz-110" }
+                                          // matchedBy "derived", když kód
+                                          //   odvodil applier (§ 8.4)
     },
     {
       "index": 1,
@@ -841,8 +925,12 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `totals_mismatch` | warning | Deklarovaná `totals.totalAmount` neodpovídá žádné vypočtené variantě (Σ řádků, Σ řádků s DPH, Σ recap). |
 | `rows_recap_mismatch` | warning | Součet položkových řádků neodpovídá rekapitulaci/totals dle efektivního režimu DPH — řádky nejspíš neúplné. |
 | `vat_recap_inconsistent` | warning | Řádek rekapitulace vnitřně nesedí (`base + tax ≠ total` nebo `tax ≠ base × pct`) — recap dopočtený místo opsaného. |
-| `vat_mode_derived` | warning | `DocumentApplier` koriguje `vat_mode` podle `VatModeDerivation` (Σ řádků sedí na total, ne na base — nebo zrcadlově). |
-| `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, nebo bez dohledatelného DPH kódu) — spočítá se z řádků. Zpráva nese důvod. |
+| `vat_mode_derived` | warning | `DocumentApplier` koriguje `vat_mode` podle `VatModeDerivation` (Σ řádků sedí na total, ne na base — nebo zrcadlově); nebo deklarované `none` u dokladu, jehož řádky mají kód se samovyměřením → `fromBase` (Bez DPH by rekapitulaci nestavěl). |
+| `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, nebo samovyměření — D3) — spočítá se z řádků. Zpráva nese důvod. |
+| `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). Zpráva nese důvod; blokuje apply. |
+| `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
+| `vat_registration_country_derived` | info | `vat.registrationCountry` přijatého dokladu neodpovídá naší registraci — nepoužije se (D2). |
+| `vat_place_unknown` / `vat_mode_unknown` | warning | Neznámá hodnota `vat.place` / `vat.mode` — fallback tuzemsko / fromBase. Schéma má obě pole jako enum, takže jen mimo schema validaci. |
 | `vat_mode_suspect` | warning | Řádky vypadají jako ceny s DPH při deklarovaném `fromBase`, ale derivace nemá dost dat na korekci. |
 | `partner_doc_number_missing` | warning | Přijatá faktura cílí na stav ≥ 20 bez čísla dokladu dodavatele. |
 | `row_operation_config_invalid` | warning | Pohyb řádku nejde doplnit — chybná konfigurace rowOperations. |
