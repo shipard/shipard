@@ -428,6 +428,23 @@ class Router
 			return new Route('bank', 'reaccount');
 		}
 
+		// Majetek — „Odpisy za období“ (docs/assets.md D33):
+		//   GET  /_assets/depreciation-run/options
+		//   GET  /_assets/depreciation-run/preview?scope=&period=[&asset=]
+		//   POST /_assets/depreciation-run
+		if ($subpath === '/_assets/depreciation-run/options' || $subpath === '/_assets/depreciation-run/preview') {
+			if ($method !== 'GET') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('assets', str_ends_with($subpath, '/options') ? 'depreciationRunOptions' : 'depreciationRunPreview');
+		}
+		if ($subpath === '/_assets/depreciation-run') {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('assets', 'depreciationRun');
+		}
+
 		if ($subpath === '/_mcp') {
 			if ($method !== 'POST') {
 				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);

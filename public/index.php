@@ -370,6 +370,7 @@ function dispatch(
 		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $openItemLookup, $journalContributors),
 		'accounting' => dispatchAccounting($route, $request, $db, $configRuntime, $journalEventDispatcher, $documentRegistry, $resolved->config, $journalContributors),
 		'vat' => dispatchVat($route, $request, $db, $configRuntime, $resolved, $auth, $documentRegistry, $tables, $documentEventDispatcher),
+		'assets' => dispatchAssets($route, $request, $db, $configRuntime, $resolved),
 		'bank'    => dispatchBank($route, $request, $auth, $tables, $db, $resolved, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $journalEventDispatcher, $openItemLookup, $journalContributors),
 		'personsRegistry' => dispatchPersonsRegistry($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $serverConfig),
 		'hostingPortal' => dispatchHostingPortal($route, $request, $auth, $db, $tables, $resolved, $modulePathResolver, $configRuntime, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry()),
@@ -536,6 +537,22 @@ function dispatchVat(
 		'filingImport'            => $ctrl->import($request),
 		'filingImportFinish'      => $ctrl->importFinish($request),
 		default                   => Response::error('INTERNAL_ERROR', "Unknown vat action: {$route->action}", 500),
+	};
+}
+
+function dispatchAssets(
+	Route $route,
+	Request $request,
+	\Shipard\Core\Database\DataSourceConnection $db,
+	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
+	\Shipard\Api\ResolvedDataSource $resolved,
+): Response {
+	$ctrl = new \Shipard\Module\Economy\Assets\AssetsDepreciationController($db, $configRuntime, $resolved->config);
+	return match ($route->action) {
+		'depreciationRunOptions' => $ctrl->options($request),
+		'depreciationRunPreview' => $ctrl->preview($request),
+		'depreciationRun'        => $ctrl->run($request),
+		default                  => Response::error('INTERNAL_ERROR', "Unknown assets action: {$route->action}", 500),
 	};
 }
 

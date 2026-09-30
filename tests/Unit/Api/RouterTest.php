@@ -1289,4 +1289,23 @@ class RouterTest extends TestCase
 		$this->assertInstanceOf(Response::class, $result);
 		$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code']);
 	}
+
+	// Majetek — odpisy za období (docs/assets.md D33)
+	public function testAssetsDepreciationRunRoutes(): void
+	{
+		$options = $this->router->resolve('/api/v1/_assets/depreciation-run/options', 'GET');
+		$this->assertInstanceOf(Route::class, $options);
+		$this->assertRoute($options, 'assets', 'depreciationRunOptions');
+
+		$preview = $this->router->resolve('/api/v1/_assets/depreciation-run/preview', 'GET');
+		$this->assertInstanceOf(Route::class, $preview);
+		$this->assertRoute($preview, 'assets', 'depreciationRunPreview');
+
+		$run = $this->router->resolve('/api/v1/_assets/depreciation-run', 'POST');
+		$this->assertInstanceOf(Route::class, $run);
+		$this->assertRoute($run, 'assets', 'depreciationRun');
+
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_assets/depreciation-run', 'GET'));
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_assets/depreciation-run/preview', 'POST'));
+	}
 }
