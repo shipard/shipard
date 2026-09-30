@@ -29,6 +29,7 @@ use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
 use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
 use Shipard\Module\Core\Exchange\Resolve\VatCodeResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\World\Trade\TradeUnionResolver;
 
 /**
  * Orchestrator of the canonical → DB save pipeline. See
@@ -170,6 +171,7 @@ class DocumentApplier
         private readonly BankAccountResolver $bankAccountResolver,
         private readonly AccountResolver $accountResolver,
         private readonly VatCodeDerivation $vatCodeDerivation,
+        private readonly VatPlaceDerivation $vatPlaceDerivation,
     ) {}
 
     /**
@@ -208,6 +210,7 @@ class DocumentApplier
             bankAccountResolver: new BankAccountResolver($db),
             accountResolver: new AccountResolver($db),
             vatCodeDerivation: new VatCodeDerivation($vatRateResolver),
+            vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($config)),
         );
     }
 
@@ -1149,10 +1152,15 @@ class DocumentApplier
         // Samovyměření v režimu „Bez DPH“ nedává smysl — DocDocument by při
         // vat_mode 0 rekapitulaci nestavěl a nárok i oddanění by se ztratily.
         // Model u faktury s DPH 0 „none“ vrací; režim určuje systém (D1).
-        if ($vatMode === 0 && $this->rowsCarryReverseCharge($this->vatContext($canonical))) {
+        $vatCtx = $this->vatContext($canonical);
+        if ($vatMode === 0 && $this->rowsCarryReverseCharge($vatCtx)) {
             $vatMode = 1;
         }
-        $vatPlace = self::VAT_PLACE_MAP[(string) ($canonical['vat']['place'] ?? 'domestic')] ?? 0;
+        // Místo plnění: u přijatého dokladu efektivní místo z kontextu
+        // (odvozené z prefixu DIČ dodavatele, jinak hodnota z canonicalu) —
+        // tasks/exchange-received-vat-place.md D1. Stejné místo dostala
+        // derivace kódů řádků, jinak by kód a hlavička nesouhlasily.
+        $vatPlace = self::VAT_PLACE_MAP[(string) ($vatCtx['place'] ?? 'domestic')] ?? 0;
         // Autorita rekapitulace + řádky k převzetí (R3/I4/I7). Přepočítanou
         // rekapitulaci si DocDocument spočítá z řádků sám, `vatRecap` se pak
         // do payloadu nedává — prázdný child set by u nového dokladu nic
@@ -1389,12 +1397,19 @@ class DocumentApplier
 
     /**
      * DPH kontext dokladu — naše registrace (D2) a rozhodnutí o kódu DPH
-     * každého položkového řádku (D1), tasks/exchange-received-reverse-charge.md.
+     * každého položkového řádku (D1), tasks/exchange-received-reverse-charge.md;
+     * efektivní místo plnění (tasks/exchange-received-vat-place.md D1).
      * Počítá se líně a cachuje per canonical ({@see $vatContextCache}).
      *
      * `derive` je true jen u přijatého dokladu (`selfParty: customer`) na
      * zdroji s aktivní registrací DPH; jinak jde vše dnešní cestou
      * (vystavené a účetní doklady, zdroj neplátce).
+     *
+     * `place` je místo, které na dokladu skončí: u přijatého dokladu
+     * odvozené z prefixu DIČ dodavatele ({@see VatPlaceDerivation},
+     * `placeSource: "vatId"`, `placePrefix`), jinak `vat.place`
+     * z canonicalu (`placeSource: "ai"`), nebo null. Čtou ho tři místa —
+     * derivace kódu řádků, transform `vat_place` a hlavičkové issues.
      *
      * @param array<string, mixed> $canonical
      * @return array{
@@ -1402,6 +1417,9 @@ class DocumentApplier
      *   ownCountry: ?string,
      *   ownRegistrationId: ?int,
      *   taxPointDate: ?string,
+     *   place: ?string,
+     *   placeSource: ?string,
+     *   placePrefix: ?string,
      *   rows: array<int, array{
      *     input: string, derived: ?string, reason: ?string,
      *     effective: ?string, matchedBy: ?string,
@@ -1412,10 +1430,16 @@ class DocumentApplier
     private function vatContext(array $canonical): array
     {
         $rows = is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [];
+        $supplierVatId = self::partyVatId($canonical['supplier'] ?? null);
+        $customerVatId = self::partyVatId($canonical['customer'] ?? null);
+        // Klíč cache: strany dokladu (DIČ) rozhodují o místě plnění —
+        // bez nich by cache vrátila kontext jiného dokladu.
         $key = md5((string) json_encode([
             $canonical['selfParty'] ?? null,
             $canonical['vat'] ?? null,
             $canonical['dates'] ?? null,
+            $supplierVatId,
+            $customerVatId,
             array_map(
                 static fn (mixed $row): ?array => is_array($row)
                     ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null]
@@ -1428,11 +1452,16 @@ class DocumentApplier
         }
 
         $taxPointDate = $canonical['dates']['taxPointDate'] ?? ($canonical['dates']['issueDate'] ?? null);
+        $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
+        $inputPlace = is_string($vat['place'] ?? null) ? $vat['place'] : null;
         $ctx = [
             'derive'            => false,
             'ownCountry'        => null,
             'ownRegistrationId' => null,
             'taxPointDate'      => is_string($taxPointDate) && $taxPointDate !== '' ? $taxPointDate : null,
+            'place'             => $inputPlace,
+            'placeSource'       => $inputPlace !== null ? 'ai' : null,
+            'placePrefix'       => null,
             'rows'              => [],
         ];
 
@@ -1446,8 +1475,21 @@ class DocumentApplier
         }
 
         if ($ctx['derive']) {
-            $vat = is_array($canonical['vat'] ?? null) ? $canonical['vat'] : [];
-            $place = is_string($vat['place'] ?? null) ? $vat['place'] : null;
+            // Místo plnění před kódem — kód na místu závisí (cz-217 vs cz-417)
+            // a kontrola souladu existujícího kódu musí dostat totéž místo.
+            $derivedPlace = $this->vatPlaceDerivation->derive(
+                (string) $ctx['ownCountry'],
+                $ctx['taxPointDate'],
+                $supplierVatId,
+                $customerVatId,
+                self::rowSupplyKinds($rows),
+            );
+            if ($derivedPlace['place'] !== null) {
+                $ctx['place'] = $derivedPlace['place'];
+                $ctx['placeSource'] = 'vatId';
+                $ctx['placePrefix'] = $derivedPlace['prefix'];
+            }
+            $place = $ctx['place'];
             $reverseCharge = is_bool($vat['reverseCharge'] ?? null) ? $vat['reverseCharge'] : null;
             foreach ($rows as $idx => $row) {
                 if (!is_array($row)
@@ -1468,6 +1510,39 @@ class DocumentApplier
 
         $this->vatContextCache = ['key' => $key, 'ctx' => $ctx];
         return $ctx;
+    }
+
+    /** Canonical `supplier.vatId` / `customer.vatId` jako řetězec; chybí → null. */
+    private static function partyVatId(mixed $party): ?string
+    {
+        if (!is_array($party) || !is_scalar($party['vatId'] ?? null)) {
+            return null;
+        }
+        $vatId = trim((string) $party['vatId']);
+        return $vatId !== '' ? $vatId : null;
+    }
+
+    /**
+     * `rows[].vat.supplyKind` položkových řádků (`rowKind` item, bez kontace)
+     * pro omezení prefixu DIČ na druh plnění ({@see VatPlaceDerivation});
+     * řádek bez druhu = null.
+     *
+     * @param array<int|string, mixed> $rows
+     * @return list<string|null>
+     */
+    private static function rowSupplyKinds(array $rows): array
+    {
+        $out = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)
+                || (string) ($row['rowKind'] ?? 'item') !== 'item'
+                || isset($row['accSide'])) {
+                continue;
+            }
+            $kind = $row['vat']['supplyKind'] ?? null;
+            $out[] = is_string($kind) && trim($kind) !== '' ? trim($kind) : null;
+        }
+        return $out;
     }
 
     /**
@@ -1725,6 +1800,10 @@ class DocumentApplier
      *   fallbacku (transform dál padá na fromBase / tuzemsko). Schéma má
      *   obě pole jako enum, takže sem takový payload dojde jen mimo
      *   schema validaci — pojistka, ne hlavní cesta.
+     * - `vat.place` přijatého dokladu odvozené z DIČ dodavatele
+     *   (tasks/exchange-received-vat-place.md D1) v rozporu s neprázdnou
+     *   hodnotou z AI → warning `vat_place_derived`; neznámou hodnotu
+     *   derivace nahradila, `vat_place_unknown` se pak nehlásí.
      * - D2: `vat.registrationCountry` z AI / ISDOC v rozporu s naší
      *   registrací → info, hodnota se nepoužije.
      *
@@ -1745,8 +1824,24 @@ class DocumentApplier
                 'message'  => "Neznámý režim výpočtu DPH „{$label}“ — použije se výpočet zdola (fromBase).",
             ];
         }
+        $vatCtx = $this->vatContext($canonical);
         $place = $vat['place'] ?? null;
-        if ($place !== null && (!is_string($place) || !isset(self::VAT_PLACE_MAP[$place]))) {
+        if ($vatCtx['placeSource'] === 'vatId') {
+            if ($place !== null && $place !== $vatCtx['place']) {
+                $label = is_scalar($place) ? (string) $place : (string) json_encode($place);
+                $issues[] = [
+                    'severity' => 'warning',
+                    'path'     => 'vat.place',
+                    'code'     => 'vat_place_derived',
+                    'message'  => sprintf(
+                        'Místo plnění „%s“ z návrhu nahrazeno „%s“ podle DIČ dodavatele (prefix %s).',
+                        $this->vatPlaceLabel($label),
+                        $this->vatPlaceLabel((string) $vatCtx['place']),
+                        (string) $vatCtx['placePrefix'],
+                    ),
+                ];
+            }
+        } elseif ($place !== null && (!is_string($place) || !isset(self::VAT_PLACE_MAP[$place]))) {
             $label = is_scalar($place) ? (string) $place : (string) json_encode($place);
             $issues[] = [
                 'severity' => 'warning',
@@ -1756,7 +1851,6 @@ class DocumentApplier
             ];
         }
 
-        $vatCtx = $this->vatContext($canonical);
         $declared = strtolower(trim((string) ($vat['registrationCountry'] ?? '')));
         if ($vatCtx['derive'] && $declared !== '' && $declared !== $vatCtx['ownCountry']) {
             $issues[] = [
@@ -1771,6 +1865,27 @@ class DocumentApplier
                 ),
             ];
         }
+    }
+
+    /**
+     * Název místa plnění pro zprávu issue z cfgItem `docs.core.vatPlaces`
+     * (`name:cs` v surové, `name` v kompilované konfiguraci — zprávy
+     * applieru jsou česky). Neznámý klíč nebo chybějící cfgItem → klíč,
+     * jak přišel.
+     */
+    private function vatPlaceLabel(string $canonicalPlace): string
+    {
+        $idx = self::VAT_PLACE_MAP[$canonicalPlace] ?? null;
+        if ($idx === null) {
+            return $canonicalPlace;
+        }
+        $places = $this->config->cfgItem('docs.core.vatPlaces');
+        $def = is_array($places) ? ($places[(string) $idx] ?? null) : null;
+        if (!is_array($def)) {
+            return $canonicalPlace;
+        }
+        $name = $def['name:cs'] ?? $def['name'] ?? null;
+        return is_string($name) && $name !== '' ? $name : $canonicalPlace;
     }
 
     // ── Autorita rekapitulace DPH (vat.recapSource) ─────────────────────────

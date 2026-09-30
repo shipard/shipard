@@ -15,6 +15,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Document\NumberSeriesNotFoundException;
 use Shipard\Module\Core\Exchange\Document\VatCodeDerivation;
+use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
@@ -26,6 +27,7 @@ use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
 use Shipard\Module\Core\Exchange\Resolve\VatCodeResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\World\Trade\TradeUnionResolver;
 use Shipard\Module\World\Vat\VatRateResolver;
 
 /**
@@ -61,12 +63,21 @@ class DocumentApplierTest extends TestCase
             'cash'    => ['trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk'],
             'cashreg' => ['trade_dir' => 1, 'series_binding' => 'cash_desk'],
         ];
+        // Názvy míst plnění pro zprávu vat_place_derived (skutečný číselník).
+        self::$vatPlaces ??= JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/docs/core/config/vatPlaces.jsonc');
+        $vatPlaces = self::$vatPlaces;
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(
-            static fn (string $id): mixed => $id === 'docs.core.docTypes' ? $docTypes : null,
+            static fn (string $id): mixed => match ($id) {
+                'docs.core.docTypes'  => $docTypes,
+                'docs.core.vatPlaces' => $vatPlaces,
+                default               => null,
+            },
         );
         return $config;
     }
+
+    private static ?array $vatPlaces = null;
 
     private function buildApplier(
         ?Connection $db = null,
@@ -81,6 +92,7 @@ class DocumentApplierTest extends TestCase
         ?AccountResolver $account = null,
         ?ConfigRuntime $config = null,
         ?VatCodeDerivation $derivation = null,
+        ?VatPlaceDerivation $placeDerivation = null,
     ): DocumentApplier {
         $db ??= $this->createMock(Connection::class);
         $party ??= $this->createMock(PartyResolver::class);
@@ -125,7 +137,23 @@ class DocumentApplierTest extends TestCase
             // Skutečná derivace nad vat-cz.jsonc; uplatní se jen u přijatého
             // dokladu, když DB mock vrátí registraci DPH (dbWithVatRegistration).
             vatCodeDerivation: $derivation ?? new VatCodeDerivation($this->vatCzRateResolver()),
+            // Skutečné unie (tradeUnions.jsonc) — místo plnění z prefixu DIČ
+            // dodavatele, tasks/exchange-received-vat-place.md D1/D2.
+            vatPlaceDerivation: $placeDerivation ?? new VatPlaceDerivation($this->tradeUnionResolver()),
         );
+    }
+
+    private static ?array $tradeUnions = null;
+
+    /** Skutečný cfgItem world.trade.unions (tradeUnions.jsonc). */
+    private function tradeUnionResolver(): TradeUnionResolver
+    {
+        self::$tradeUnions ??= JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/world/trade/config/tradeUnions.jsonc');
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === 'world.trade.unions' ? self::$tradeUnions : null,
+        );
+        return new TradeUnionResolver($config);
     }
 
     private static ?array $vatCz = null;
@@ -2485,6 +2513,189 @@ class DocumentApplierTest extends TestCase
         $result = $this->buildVatDerivingApplier()->preview($payload);
         $this->assertFalse($result->success);
         $this->assertSame('schema_invalid', $result->errorCode);
+    }
+
+    // ── Místo plnění z prefixu DIČ dodavatele (VatPlaceDerivation, D1) ─────
+    // tasks/exchange-received-vat-place.md — fiktivní dodavatelé, DIČ IE1234567X.
+
+    /**
+     * Přijatá faktura za služby: dodavatel se sídlem mimo EU fakturuje pod
+     * DIČ jiného členského státu; AI podle adresy řekla thirdCountry.
+     *
+     * @return array<string, mixed>
+     */
+    private function nonEuSupplierWithEuVatIdPayload(): array
+    {
+        $payload = $this->euServicesPayload();
+        $payload['supplier']['country'] = 'us';
+        $payload['supplier']['address']['country'] = 'us';
+        $payload['supplier']['vatId'] = 'IE1234567X';
+        $payload['vat']['place'] = 'thirdCountry';
+        return $payload;
+    }
+
+    /** Scénář z diagnostiky: IE prefix přebije thirdCountry → cz-217 (ř. 5), warning. */
+    public function testReceivedNonEuSupplierWithEuVatIdIsIntracom(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $payload = $this->nonEuSupplierWithEuVatIdPayload();
+
+        $result = $applier->preview($payload);
+        $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? null));
+        $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_code_derived', $this->issueCodes($result));
+        $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
+
+        $issue = $this->issueByCode($result, 'vat_place_derived');
+        $this->assertNotNull($issue);
+        $this->assertSame('warning', $issue['severity']);
+        $this->assertSame('vat.place', $issue['path']);
+        $this->assertStringContainsString('„Zahraničí“', $issue['message']);
+        $this->assertStringContainsString('„Intrakomunitární plnění“', $issue['message']);
+        $this->assertStringContainsString('prefix IE', $issue['message']);
+
+        // Canonical se nemění — korekce jen v _resolve a v uloženém dokladu.
+        $this->assertSame('thirdCountry', $result->canonical['vat']['place']);
+        $this->assertSame('us', $result->canonical['supplier']['country']);
+
+        $data = $this->invokeTransform($applier, $payload);
+        $this->assertSame(1, $data['vat_place']);
+    }
+
+    /** AI místo nedala (null) → odvozené bez issue. */
+    public function testReceivedNonEuSupplierWithEuVatIdAndNullPlaceHasNoIssue(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $payload = $this->nonEuSupplierWithEuVatIdPayload();
+        $payload['vat']['place'] = null;
+
+        $result = $applier->preview($payload);
+        $this->assertTrue($result->success);
+        $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
+        $this->assertSame(1, $this->invokeTransform($applier, $payload)['vat_place']);
+    }
+
+    /** Bez DIČ dodavatele platí hodnota z AI: thirdCountry → cz-417 (ř. 12). */
+    public function testReceivedSupplierWithoutVatIdKeepsAiPlace(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $payload = $this->nonEuSupplierWithEuVatIdPayload();
+        $payload['supplier']['vatId'] = null;
+
+        $result = $applier->preview($payload);
+        $this->assertTrue($result->success);
+        $this->assertSame('cz-417', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
+        $this->assertSame(2, $this->invokeTransform($applier, $payload)['vat_place']);
+    }
+
+    /** Prefix, který unie nezná (US), derivaci vypne — platí AI. */
+    public function testReceivedSupplierWithNonUnionVatIdKeepsAiPlace(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $payload = $this->nonEuSupplierWithEuVatIdPayload();
+        $payload['supplier']['vatId'] = 'US12-3456789';
+
+        $result = $applier->preview($payload);
+        $this->assertTrue($result->success);
+        $this->assertSame('cz-417', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
+    }
+
+    /** ISDOC nedává vat.place: DE prefix → intracom bez issue. */
+    public function testReceivedIsdocWithoutPlaceDerivesIntracomFromVatId(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $payload = $this->euServicesPayload();
+        unset($payload['vat']['place']);
+
+        $result = $applier->preview($payload);
+        $this->assertTrue($result->success);
+        $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
+        $this->assertSame(1, $this->invokeTransform($applier, $payload)['vat_place']);
+    }
+
+    /** Regrese: dodavatel z EU s DIČ své země — jako dřív, bez vat_place_derived. */
+    public function testReceivedEuSupplierWithMatchingVatIdHasNoPlaceIssue(): void
+    {
+        $result = $this->buildVatDerivingApplier()->preview($this->euServicesPayload());
+        $this->assertTrue($result->success);
+        $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
+    }
+
+    /** Neznámá hodnota z AI mimo schema validaci: derivace ji nahradí, vat_place_unknown se nehlásí. */
+    public function testReceivedUnknownPlaceReplacedByDerivedWithoutUnknownWarning(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $issues = [];
+        $ref = new \ReflectionMethod($applier, 'appendVatHeaderIssues');
+        $ref->invokeArgs($applier, [[
+            'selfParty' => 'customer',
+            'vat'       => ['place' => 'eu'],
+            'supplier'  => ['name' => 'Fiktivní dodavatel', 'vatId' => 'IE1234567X'],
+            'dates'     => ['issueDate' => '2026-04-15'],
+            'rows'      => [],
+        ], &$issues]);
+
+        $codes = array_column($issues, 'code');
+        $this->assertContains('vat_place_derived', $codes);
+        $this->assertNotContains('vat_place_unknown', $codes);
+        $byCode = array_column($issues, null, 'code');
+        // Neznámou hodnotu uvést, jak přišla.
+        $this->assertStringContainsString('„eu“', $byCode['vat_place_derived']['message']);
+    }
+
+    /** Vystavený doklad (selfParty supplier): žádná derivace, místo z AI. */
+    public function testIssuedDocumentKeepsAiPlaceUntouched(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $ref = new \ReflectionMethod($applier, 'vatContext');
+        $ctx = $ref->invoke($applier, [
+            'selfParty' => 'supplier',
+            'vat'       => ['place' => 'thirdCountry'],
+            'supplier'  => ['name' => 'My', 'vatId' => 'IE1234567X'],
+            'customer'  => ['name' => 'Odběratel', 'vatId' => 'US12-3456789'],
+            'dates'     => ['issueDate' => '2026-04-15'],
+            'rows'      => [],
+        ]);
+
+        $this->assertFalse($ctx['derive']);
+        $this->assertSame('thirdCountry', $ctx['place']);
+        $this->assertSame('ai', $ctx['placeSource']);
+        $this->assertNull($ctx['placePrefix']);
+    }
+
+    /** Prohozené strany (naše DIČ u dodavatele) → bez derivace, platí AI. */
+    public function testReceivedSwappedVatIdsSkipPlaceDerivation(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $payload = $this->euServicesPayload();
+        $payload['supplier']['vatId'] = 'CZ12345678';
+        $payload['customer'] = ['name' => 'Naše firma s.r.o.', 'country' => 'cz', 'vatId' => 'CZ 12345678'];
+
+        $result = $applier->preview($payload);
+        $this->assertTrue($result->success, json_encode($result->canonical['_resolve']['issues'] ?? null));
+        $this->assertSame('cz-217', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_place_derived', $this->issueCodes($result));
+        $this->assertSame(1, $this->invokeTransform($applier, $payload)['vat_place']);
+    }
+
+    /** Klíč cache vatContext() nese DIČ stran — jinak by druhý doklad dostal místo prvního. */
+    public function testVatContextCacheDistinguishesSupplierVatId(): void
+    {
+        $applier = $this->buildVatDerivingApplier();
+        $withVatId = $this->nonEuSupplierWithEuVatIdPayload();
+        $withoutVatId = $withVatId;
+        $withoutVatId['supplier']['vatId'] = null;
+
+        $first = $applier->preview($withVatId);
+        $this->assertSame('cz-217', $first->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $second = $applier->preview($withoutVatId);
+        $this->assertSame('cz-417', $second->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $this->assertNotContains('vat_place_derived', $this->issueCodes($second));
     }
 
     // ── Doplnění pohybu (operation) na item řádcích při apply ───────────────

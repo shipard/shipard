@@ -225,6 +225,14 @@ Top-level struktura:
                                    //   pro thirdCountry `foreign`. Enum ve
                                    //   schématu; neznámá hodnota mimo schema
                                    //   validaci → warning `vat_place_unknown`.
+                                   //   U přijatého dokladu (selfParty customer,
+                                   //   naše registrace DPH) hodnotu PŘEBÍJÍ
+                                   //   prefix DIČ dodavatele (VatPlaceDerivation,
+                                   //   § 8.4): IE… → intracom i u sídla v USA;
+                                   //   rozpor s neprázdnou hodnotou → warning
+                                   //   `vat_place_derived`. Bez DIČ (nebo
+                                   //   s prefixem, který unie nezná) platí
+                                   //   hodnota odtud.
     "registrationCountry": "CZ",  // ISO země naší registrace DPH. U přijatých
                                    //   dokladů (selfParty customer) ji applier
                                    //   IGNORUJE a bere první aktivní registraci
@@ -744,11 +752,59 @@ země a id, stejná volba jako výchozí hodnota formuláře dokladu (D2).
 `vat.registrationCountry` → prefix kódu (`cz-110` → `cz`) → země dodavatele.
 Zdroj bez registrace DPH (neplátce) jde kaskádou vždy.
 
+#### Místo plnění přijatého dokladu (`VatPlaceDerivation`)
+
+Model čte pravidlo „intracom = dodavatel z jiného státu EU“ podle adresy;
+dodavatel se sídlem mimo EU, který fakturuje pod DIČ jiného členského
+státu (americký SaaS s irskou registrací), pak dostal `thirdCountry`
+a kód `cz-417` (ř. 12 přiznání) místo `cz-217` (ř. 5). Pro ř. 5 rozhoduje
+registrace k dani v jiném členském státě, tedy **prefix DIČ dodavatele**,
+ne sídlo (`tasks/exchange-received-vat-place.md` D1/D2). Proto u přijatého
+dokladu na zdroji s registrací DPH určuje místo plnění systém a teprve
+z něj se odvozuje kód (níže).
+
+Data: cfgItem `world.trade.unions` (`modules/world/trade`) — členství zemí
+v uniích k datu, `taxPrefixes` s `country`, platností (`GB` do 2020-12-31)
+a volitelným `supplyKinds` (`XI` jen zboží). Čtení `TradeUnionResolver`,
+rozhodování `VatPlaceDerivation`:
+
+1. DIČ dodavatele normalizovat (uppercase, jen `[A-Z0-9]`), prefix = první
+   dva znaky, jen když jsou písmena;
+2. DIČ dodavatele = DIČ odběratele → bez derivace (model dal naše DIČ
+   k dodavateli);
+3. unie, jejichž členem je země naší registrace k DUZP (fallback datum
+   vystavení); z nich ta, jejíž `taxPrefixes` prefix zná — žádná / víc →
+   bez derivace;
+4. prefix k datu mimo platnost → `thirdCountry`;
+5. `supplyKinds` na prefixu: kterýkoli položkový řádek mimo seznam →
+   `thirdCountry`, kterýkoli bez `supplyKind` → bez derivace;
+6. země prefixu = naše země → `domestic`, jinak `intracom`.
+
+Efektivní místo drží `DocumentApplier::vatContext()` (`place`,
+`placeSource: "vatId" | "ai" | null`, `placePrefix`) a čtou ho tři místa:
+derivace a kontrola souladu kódu řádků, transform `vat_place` hlavičky
+a hlavičkové issues. Canonical se nemění (vzor `VatModeDerivation`);
+`supplier.country` zůstává, jak přišlo.
+
+| `vat.place` z AI / ISDOC | derivace | výsledek |
+|---|---|---|
+| null (ISDOC) | místo | odvozené, bez issue |
+| stejné | místo | beze změny |
+| jiné (platné) | místo | odvozené + warning `vat_place_derived` |
+| neznámá hodnota (`eu`) | místo | odvozené + `vat_place_derived` (bez `vat_place_unknown`) |
+| cokoli | `null` | dnešní chování (`vat_place_unknown` u neznámé hodnoty) |
+
+Bez derivace (`null`): doklad bez DIČ dodavatele, prefix, který unie nezná
+(`US`, `CHE`, `EU…` z režimu OSS mimo Unii), prohozené strany, zdroj mimo
+unii, chybějící datum. Mimo rozsah: ověření DIČ ve VIES (derivace věří
+prefixu), stálá provozovna v ČR vedle zahraničního DIČ (bere se DIČ, které
+přišlo), vystavené doklady.
+
 #### Odvození kódu DPH u přijatých dokladů (`VatCodeDerivation`)
 
 AI ani ISDOC neznají klíče číselníku (model vracel `reverse-charge`,
 `eu-reverse`); kód proto určuje systém ze sémantických signálů — hlavička
-`vat.place`, `vat.reverseCharge`, řádek `vat.pct`, `vat.supplyKind`,
+`vat.place` (efektivní místo, viz výše), `vat.reverseCharge`, řádek `vat.pct`, `vat.supplyKind`,
 `vat.reverseChargeCode` (`tasks/exchange-received-reverse-charge.md`
 D1/D4). Kandidáti = vstupní kódy číselníku naší registrace pro místo
 plnění, bez `hidden` a bez `reducedDeduction` (krácený odpočet se nikdy
@@ -930,6 +986,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). Zpráva nese důvod; blokuje apply. |
 | `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
 | `vat_registration_country_derived` | info | `vat.registrationCountry` přijatého dokladu neodpovídá naší registraci — nepoužije se (D2). |
+| `vat_place_derived` | warning | Místo plnění přijatého dokladu odvozené z prefixu DIČ dodavatele (`VatPlaceDerivation`) se liší od neprázdné hodnoty `vat.place` z AI — použije se odvozené. Zpráva nese obě hodnoty a prefix. |
 | `vat_place_unknown` / `vat_mode_unknown` | warning | Neznámá hodnota `vat.place` / `vat.mode` — fallback tuzemsko / fromBase. Schéma má obě pole jako enum, takže jen mimo schema validaci. |
 | `vat_mode_suspect` | warning | Řádky vypadají jako ceny s DPH při deklarovaném `fromBase`, ale derivace nemá dost dat na korekci. |
 | `partner_doc_number_missing` | warning | Přijatá faktura cílí na stav ≥ 20 bez čísla dokladu dodavatele. |

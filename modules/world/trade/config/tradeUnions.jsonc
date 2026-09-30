@@ -104,7 +104,9 @@
             "GB": {"country": "gb", "validFrom": null, "validTo": "2020-12-31"},
 
             // Severní Irsko — speciální post-Brexit režim (Windsor Framework)
-            // Firmy ze Severního Irska mohou nadále používat EU VAT systém pro zboží
+            // Firmy ze Severního Irska mohou nadále používat EU VAT systém pro zboží.
+            // supplyKinds = druhy plnění, pro které prefix v unii platí
+            // (VatPlaceDerivation): služby ze Severního Irska jsou služby z UK.
             "XI": {
                 "country": "gb",
                 "region": "Northern Ireland",
@@ -112,6 +114,7 @@
                 "region:en": "Northern Ireland",
                 "validFrom": "2021-01-01",
                 "validTo": null,
+                "supplyKinds": ["goods"],
                 "note": "Northern Ireland Protocol / Windsor Framework — applies to goods only",
             },
         },

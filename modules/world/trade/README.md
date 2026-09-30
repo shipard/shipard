@@ -50,6 +50,11 @@ prefix **velkými písmeny** — přesně tak, jak se reálně používá ve VAT
 - `country` — ISO kód země, ke které prefix patří
 - `validFrom` / `validTo` — platnost prefixu (`null` = od začátku / bez konce)
 - `region` (volitelné) — sub-národní oblast, pokud prefix není celostátní
+- `supplyKinds` (volitelné) — seznam druhů plnění (`goods`, `services`),
+  pro které prefix v unii platí; chybí = platí pro všechna plnění. Dnes
+  jen `XI` (`["goods"]`). Čte ho obecně derivace místa plnění přijatého
+  dokladu (`VatPlaceDerivation` v `core.exchange`) — žádná výjimka pro
+  konkrétní prefix v kódu.
 - `note` (volitelné) — poznámka ke speciálním případům
 
 Většina prefixů odpovídá 1:1 ISO kódu země. Existují dvě výjimky:
@@ -59,29 +64,39 @@ Většina prefixů odpovídá 1:1 ISO kódu země. Existují dvě výjimky:
   kde firmy ze Severního Irska nadále fungují v EU VAT systému pro zboží.
   Mapuje se na zemi `gb` s upřesněním `region: "Northern Ireland"`.
 
-### Příklady použití v aplikaci
+## PHP
 
-**Ověření, zda je země členem EU k danému datu:**
+### `TradeUnionResolver` (`src/TradeUnionResolver.php`)
+
+Čtení cfgItem s cache (vzor `VatRateResolver` v `world.vat`); `ConfigRuntime`
+v konstruktoru. Chybějící cfgItem = žádné unie, ne výjimka.
+
+- `unionsOf(string $country, string $date): list<string>` — klíče unií,
+  jejichž členem je země k datu (`joinedAt` ≤ datum, `leftAt` null nebo
+  ≥ datum);
+- `taxPrefix(string $union, string $prefix): ?array` — záznam prefixu
+  (`country`, `validFrom`, `validTo`, `supplyKinds`, …) bez vyhodnocení
+  data; `null` = unie prefix nezná;
+- `isPrefixValid(array $entry, string $date): bool` — platnost záznamu
+  k datu.
+
+Resolver drží jen čtení dat. Rozhodování (místo plnění dokladu podle
+prefixu DIČ dodavatele) patří do modulu, který ho potřebuje —
+`Shipard\Module\Core\Exchange\Document\VatPlaceDerivation`,
+`tasks/exchange-received-vat-place.md`.
 
 ```php
-$unions = $config->cfgItem('world.trade.unions');
-$eu = $unions['eu'];
-$member = $eu['members']['cz'] ?? null;
-
-if ($member !== null) {
-    $joined = $member['joinedAt'];  // "2004-05-01"
-    $left = $member['leftAt'];      // null
-    // Česko je členem EU od 1. 5. 2004 dodnes
-}
+$unions = new TradeUnionResolver($config);
+$unions->unionsOf('cz', '2026-04-15');          // ['eu']
+$unions->unionsOf('cz', '2003-12-31');          // []
+$entry = $unions->taxPrefix('eu', 'EL');        // ['country' => 'gr', …]
+$gb = $unions->taxPrefix('eu', 'GB');
+$unions->isPrefixValid($gb, '2020-06-30');      // true
+$unions->isPrefixValid($gb, '2021-01-01');      // false (Brexit)
 ```
 
-**Vyhledání země podle VAT prefixu:**
-
-```php
-$prefix = 'EL';  // z parsovaného VAT-ID
-$taxPrefix = $eu['taxPrefixes'][$prefix] ?? null;
-// $taxPrefix['country'] === 'gr' (Řecko)
-```
+Dále cfgItem čtou `VatRegistrationsForm` / `VatRegistrationsViewer`
+(`economy.codebooks`) pro nabídku regionů registrace DPH.
 
 ## Plánovaná rozšíření
 

@@ -13,6 +13,7 @@ use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Document\VatCodeDerivation;
+use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
@@ -23,6 +24,7 @@ use Shipard\Module\Core\Exchange\Resolve\UnitResolver;
 use Shipard\Module\Core\Exchange\Resolve\VatCodeResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\World\Trade\TradeUnionResolver;
 use Shipard\Module\World\Vat\VatRateResolver;
 
 /**
@@ -92,6 +94,7 @@ class DocumentApplierNoItemTest extends TestCase
             accountResolver: $account,
             // DB mock nevrací registraci DPH → derivace kódu se neuplatní.
             vatCodeDerivation: new VatCodeDerivation(new VatRateResolver($this->createMock(ConfigRuntime::class))),
+            vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($this->createMock(ConfigRuntime::class))),
         );
     }
 
