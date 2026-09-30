@@ -76,6 +76,7 @@ Zaokrouhlení `round()` je odolné proti chybě plovoucí čárky
 |---|---|
 | `rounding` | `mode` (`ceil` / `round` / `floor`) a `precision` (počet desetinných míst) |
 | `halfYearOnDisposal` | metody, u nichž lze v roce vyřazení uplatnit polovinu ročního odpisu |
+| `shortPeriodHalfYear` | metody, u nichž zdaňovací období kratší než 12 měsíců dává polovinu ročního odpisu (D46) |
 | `interruptible` | metody, které lze přerušit |
 | `intangibleTaxFrom` | od tohoto data zařazení se nehmotný majetek odpisuje jen podle účetnictví |
 | `methods` | metody: `kind` (`annual`, `schedule`, `time`, `accounting`, `none`), `tangible` / `intangible`, volitelně `improvement: false` |

@@ -27,7 +27,7 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-models-phase0.md` | naplánováno | čeká na potvrzení rozhodnutí F0-D1–F0-D7 (#85) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
-| `assets-phase2b.md` | naplánováno | D27–D45 potvrzena 2026-09-30; prerekvizita `tasks/assets-phase2a.md` |
+| `assets-phase2b.md` | naplánováno | D27–D46 potvrzena 2026-09-30; prerekvizita `tasks/assets-phase2a.md` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -279,7 +279,7 @@ Evidence majetku, odpisy a jejich zaúčtování. Designový dokument
 |------|------|---------|
 | `assets-phase1.md` | 1 | Karta majetku, typy, skupiny typů, účetní skupiny, inventární čísla, sekce Majetek (D18–D26) |
 | `assets-phase2a.md` | 2a | Pravidla daňových odpisů per stát (`world.assets`, CZ vč. §30a) a čistý odpisový engine `DepreciationPlanner` (D27–D45) |
-| `assets-phase2b.md` | 2b | Tabulka událostí, odpisové nastavení karty, plán na kartě, vyřazení s polovinou, Odpisy za období, četnost účetních odpisů (D27–D45) |
+| `assets-phase2b.md` | 2b | Tabulka událostí, odpisové nastavení karty, plán na kartě, vyřazení s polovinou, Odpisy za období, četnost účetních odpisů, krátké zdaňovací období (D27–D46) |
 
 ## Došlá pošta (core.mail)
 

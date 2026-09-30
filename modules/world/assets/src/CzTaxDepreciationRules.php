@@ -91,6 +91,11 @@ final class CzTaxDepreciationRules implements TaxDepreciationRules
         return in_array($method, $this->cfg['halfYearOnDisposal'] ?? [], true);
     }
 
+    public function allowsShortPeriodHalfYear(string $method): bool
+    {
+        return in_array($method, $this->cfg['shortPeriodHalfYear'] ?? [], true);
+    }
+
     public function allowsImprovement(string $method): bool
     {
         return (bool) ($this->cfg['methods'][$method]['improvement'] ?? true);
@@ -131,8 +136,10 @@ final class CzTaxDepreciationRules implements TaxDepreciationRules
             [$exact, $formula] = $this->accelerated($in, $rate, $residual);
         }
 
-        if ($in->halfYear) {
-            // § 26 odst. 7: polovina ročního odpisu.
+        if ($in->halfYear || ($in->shortPeriod && $this->allowsShortPeriodHalfYear($in->method))) {
+            // § 26 odst. 7: polovina ročního odpisu — rok vyřazení nebo
+            // zdaňovací období kratší než 12 měsíců; obojí najednou je
+            // pořád jedna polovina.
             $exact /= 2;
             $formula = "({$formula}) / 2";
         }
@@ -195,7 +202,7 @@ final class CzTaxDepreciationRules implements TaxDepreciationRules
                 $errors[] = "methods['{$method}']: unknown kind '" . ($def['kind'] ?? '') . "'";
             }
         }
-        foreach (['halfYearOnDisposal', 'interruptible'] as $list) {
+        foreach (['halfYearOnDisposal', 'shortPeriodHalfYear', 'interruptible'] as $list) {
             foreach ($this->cfg[$list] ?? [] as $method) {
                 if (!isset($methods[$method])) {
                     $errors[] = "{$list}: unknown method '{$method}'";

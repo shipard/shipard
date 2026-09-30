@@ -110,6 +110,9 @@ final class AsTaxAnnualMethod implements CircuitMethod
             $yearResidual,
             $this->years + $carry,
             $this->yearsSinceIncrease + ($this->increased ? $carry : 0),
+            // Krátký účetní rok (D46) krátí i účetní odpis — jinak by se
+            // `as_tax` od daňového okruhu rozešel.
+            shortPeriod: $year->months() < 12,
         );
 
         // Měsíce v užívání: celý rok, první rok od měsíce po zařazení.

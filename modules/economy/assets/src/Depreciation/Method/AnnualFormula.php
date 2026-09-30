@@ -28,12 +28,17 @@ trait AnnualFormula
     private bool $increased = false;
     private int $yearsSinceIncrease = 0;
 
+    /**
+     * @param bool $shortPeriod účetní rok kratší než 12 měsíců (D46); co
+     *     to s odpisem udělá, rozhodují pravidla země
+     */
     private function annual(
         CircuitState $state,
         float $residual,
         int $years,
         int $yearsSinceIncrease,
         bool $halfYear = false,
+        bool $shortPeriod = false,
     ): TaxAmount {
         return $this->rules->annualAmount(new TaxYearInput(
             $this->method,
@@ -45,6 +50,7 @@ trait AnnualFormula
             $this->increased,
             $yearsSinceIncrease,
             $halfYear,
+            $shortPeriod,
         ));
     }
 
@@ -87,6 +93,8 @@ trait AnnualFormula
     /**
      * Oprávky počátečního stavu musí odpovídat pravidlům a počtu let (D16).
      * Se zvýšenou cenou se nekontroluje — průběh před zhodnocením neznáme.
+     * Stejně tak neznáme délky minulých období: krátké zdaňovací období
+     * v historii (D46) se tu projeví jako varování o nesouladu.
      *
      * @return list<PlanMessage>
      */

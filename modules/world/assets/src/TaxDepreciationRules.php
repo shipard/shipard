@@ -45,6 +45,9 @@ interface TaxDepreciationRules
 
     public function allowsHalfYearOnDisposal(string $method): bool;
 
+    /** Zdaňovací období kratší než 12 měsíců dává u metody polovinu ročního odpisu (D46). */
+    public function allowsShortPeriodHalfYear(string $method): bool;
+
     /** False = technické zhodnocení se u metody odpisuje samostatně. */
     public function allowsImprovement(string $method): bool;
 

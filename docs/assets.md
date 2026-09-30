@@ -1,6 +1,6 @@
 # Shipard — Majetek (`economy.assets`)
 
-> **Designový dokument.** **Stav:** D1–D45 rozhodnuto;
+> **Designový dokument.** **Stav:** D1–D46 rozhodnuto;
 > oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
 > (`tasks/assets-phase1.md`), z oblasti 2 jsou **hotová** pravidla země
 > a odpisový engine (2026-09-30, `tasks/assets-phase2a.md`, §5.1–5.2),
@@ -418,6 +418,18 @@ PRD: `tasks/assets-phase2a.md` (pravidla země + engine, bez DB),
   se rozpustí rovnoměrně do měsíců, kdy je majetek v užívání (nahoru na
   koruny, poslední měsíc dorovná roční částku).
 
+### D46 — Krátké zdaňovací období (ROZHODNUTO)
+
+Je-li zdaňovací období (účetní rok) kratší než 12 měsíců — typicky přechod
+na hospodářský rok —, uplatní se u ročních daňových metod jen **polovina
+ročního odpisu**, i za jediný měsíc (§26 odst. 7 písm. a) bod 3 ZDP);
+období delší než 12 měsíců = plný roční odpis. Pravidlo země
+(`shortPeriodHalfYear`), ne kód enginu. Fáze 2a období nekrátila (starý
+engine krátil poměrem měsíců — obojí chybně); opraveno prvním commitem
+`tasks/assets-phase2b.md`. Stejně se krátí i účetní metoda `as_tax`, aby se
+od daňového okruhu nerozešla. Zda platí i pro první zkrácené období nově
+založené firmy, ověřit u účetní.
+
 ---
 
 ## 5. Doménový model (návrh)
@@ -455,14 +467,15 @@ Rozhraní dělí metody na čtyři druhy (`methodKind()`):
 
 | Druh | Metody CZ | Výpočet |
 |---|---|---|
-| `annual` | `straight`, `accelerated` | `annualAmount(TaxYearInput)` — jeden rok; vstup nese počet let s uplatněným odpisem, příznak zvýšené ceny a roky odpisované ze zvýšené ceny |
+| `annual` | `straight`, `accelerated` | `annualAmount(TaxYearInput)` — jeden rok; vstup nese počet let s uplatněným odpisem, příznak zvýšené ceny, roky odpisované ze zvýšené ceny a příznaky poloviny (rok vyřazení, krátké období) |
 | `monthly` | `extraordinary`, `time` | `scheduleAmount(TaxScheduleInput)` — úsek měsíců rozpisu; `scheduleMonths()` = délka rozpisu |
 | `accounting` | `accounting` | daňový odpis = účetní odpisy téže karty |
 | `none` | `none` | bez odpisu |
 
 Dál `availableMethods(datum zařazení, nehmotný)`, `rules(metoda, datum)`
 (skupiny / pravidla platná pro datum zařazení, D43), `isInterruptible()`,
-`allowsHalfYearOnDisposal()`, `allowsImprovement()` a `round()`.
+`allowsHalfYearOnDisposal()`, `allowsShortPeriodHalfYear()` (D46),
+`allowsImprovement()` a `round()`.
 
 `round()` nejdřív srovná hodnotu na 4 místa: prosté `ceil(50000 × 5,15 / 100)`
 dá kvůli plovoucí čárce 2 576 místo 2 575. Starý engine tuhle korunu
@@ -524,11 +537,11 @@ $plans['tax']; $plans['acc'];   // Plan: rows, souhrn, messages
 
 | Okruh / metoda | Chování |
 |---|---|
-| daňový, roční | odpis za celé zdaňovací období (rok zařazení celý, D37; krátký účetní rok se nekrátí); přerušený rok se nepočítá do let (D34); v roce vyřazení nic, nebo polovina u majetku evidovaného na začátku roku (D35) |
+| daňový, roční | odpis za celé zdaňovací období (rok zařazení celý, D37); účetní rok kratší než 12 měsíců se pravidlům hlásí jako krátké období — CZ polovina ročního odpisu, rok se přitom počítá jako uplatněný; delší než 12 měsíců plný odpis (D46); přerušený rok se nepočítá do let (D34); v roce vyřazení nic, nebo polovina u majetku evidovaného na začátku roku (D35) |
 | daňový, měsíční | rozpis podle kalendáře od měsíce po zařazení, součet měsíců se zaokrouhluje jednou za období; do měsíce vyřazení včetně; TZ uprostřed období ho dělí na úseky |
 | daňový `accounting` | součet účetních odpisů (i plánovaných), jejichž období v roce končí |
 | účetní `time` | měsíčně zůstatek / zbývající měsíce původní doby → TZ se rozpustí do zbytku doby (D44); nahoru na koruny jednou za období (D36); do měsíce vyřazení včetně |
-| účetní `as_tax`, roční daňová metoda | roční vzorec nad účetním zůstatkem na začátku roku a vlastním počitadlem let, bez přerušení; roční částka se rozpouští do měsíců v užívání, každé období bere podíl ze zbytku, takže poslední měsíc dorovná (D45); zařazení v posledním měsíci roku → celý roční odpis do něj; v roce vyřazení poměrná část podle měsíců v užívání |
+| účetní `as_tax`, roční daňová metoda | roční vzorec nad účetním zůstatkem na začátku roku a vlastním počitadlem let, bez přerušení; krátký účetní rok krátí stejně jako daňový okruh (D46); roční částka se rozpouští do měsíců v užívání, každé období bere podíl ze zbytku, takže poslední měsíc dorovná (D45); zařazení v posledním měsíci roku → celý roční odpis do něj; v roce vyřazení poměrná část podle měsíců v užívání |
 | účetní `as_tax`, měsíční daňová metoda | stejný rozpis jako daňový okruh |
 
 Roční součet `as_tax` je tak stejný při měsíční i roční četnosti.

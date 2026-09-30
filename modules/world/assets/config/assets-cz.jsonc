@@ -30,6 +30,11 @@
     // § 26 odst. 7: polovina ročního odpisu v roce vyřazení (D35).
     "halfYearOnDisposal": ["straight", "accelerated"],
 
+    // § 26 odst. 7 písm. a) bod 3: zdaňovací období kratší než 12 měsíců
+    // (typicky přechod na hospodářský rok) → polovina ročního odpisu, i za
+    // jediný měsíc; období delší než 12 měsíců = plný roční odpis (D46).
+    "shortPeriodHalfYear": ["straight", "accelerated"],
+
     // § 26 odst. 8: přerušit lze jen roční odpisy; § 30a a § 32a výslovně
     // „bez přerušení“ (D34).
     "interruptible": ["straight", "accelerated"],

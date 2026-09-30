@@ -60,6 +60,7 @@ class TaxRulesRegistryTest extends TestCase
         $this->assertSame([], $rules->rules('accounting', '2024-01-01'));
         $this->assertFalse($rules->isInterruptible('accounting'));
         $this->assertFalse($rules->allowsHalfYearOnDisposal('accounting'));
+        $this->assertFalse($rules->allowsShortPeriodHalfYear('accounting'));
         $this->assertSame(10.13, $rules->round(10.126));
 
         try {

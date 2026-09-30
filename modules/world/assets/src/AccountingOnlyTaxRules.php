@@ -49,6 +49,11 @@ final class AccountingOnlyTaxRules implements TaxDepreciationRules
         return false;
     }
 
+    public function allowsShortPeriodHalfYear(string $method): bool
+    {
+        return false;
+    }
+
     public function allowsImprovement(string $method): bool
     {
         return true;

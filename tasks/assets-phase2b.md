@@ -1,9 +1,9 @@
 # Majetek Fáze 2b — události, odpisové nastavení karty, plán a odpisy za období
 
-**Stav:** naplánováno — D27–D45 potvrzena 2026-09-30; prerekvizita `tasks/assets-phase2a.md`
+**Stav:** naplánováno — D27–D46 potvrzena 2026-09-30; prerekvizita `tasks/assets-phase2a.md`
 
-> PRD pro jednu Claude Code session (7 commitů). Design: `docs/assets.md`
-> §4 (D3, D7, D11, D12, D13, D16, D27–D45), issue #83.
+> PRD pro jednu Claude Code session (8 commitů). Design: `docs/assets.md`
+> §4 (D3, D7, D11, D12, D13, D16, D27–D46), issue #83.
 
 ## Kontext
 
@@ -16,6 +16,7 @@ potvrzuje odpisy. **Nic se neúčtuje** (D27) — zaúčtování přidá fáze 3
 
 ## Cíl
 
+0. Oprava enginu z fáze 2a: krátké zdaňovací období (D46).
 1. Tabulka `economy_assets_events` (454) + cfgItem druhů, okruhů a původů.
 2. Odpisové nastavení karty (sloupce + validace + tab Odpisy).
 3. `AssetEventDocument` s pravidly per druh, `AssetEventLockProvider`
@@ -59,6 +60,30 @@ potvrzuje odpisy. **Nic se neúčtuje** (D27) — zaúčtování přidá fáze 3
 **Mimo:** zaúčtování a stav „zaúčtováno“ (fáze 3); vazba na pořizovací
 doklad (fáze 4); přehledy a tisk (fáze 5); import událostí (fáze 6);
 odložená daň, AV/AM, skupina X (fáze 8).
+
+## Oprava enginu — krátké zdaňovací období (D46)
+
+Fáze 2a roční daňový odpis v účetním roce kratším než 12 měsíců nekrátí
+(`docs/assets.md` §5.2 — „krátký účetní rok se nekrátí“). Správně
+(§26 odst. 7 písm. a) bod 3 ZDP): zdaňovací období **kratší než
+12 měsíců** → **polovina ročního odpisu** (i za jediný měsíc), delší →
+plný roční odpis.
+
+- `assets-cz.jsonc`: `"shortPeriodHalfYear": ["straight", "accelerated"]`
+  s komentářem a odkazem na ustanovení.
+- `TaxDepreciationRules`: `allowsShortPeriodHalfYear(string $method): bool`
+  (`AccountingOnlyTaxRules` → false); `TaxYearInput` dostane příznak
+  `shortPeriod`, `CzTaxDepreciationRules::annualAmount()` ho zpracuje
+  jako polovinu (vzorec `"(…) / 2"`, jako vyřazení). Krátké období
+  a vyřazení současně = jedna polovina, ne čtvrtina.
+- `DepreciationPlanner` / `PeriodCalendar`: délka období v měsících (i
+  u extrapolovaných); krátké období = méně než 12 celých měsíců.
+- Krátké období se počítá jako uplatněný rok (n + 1) — ověřit v testu
+  a okomentovat.
+- Testy: rovnoměrný sk. 2 s přechodným obdobím 1–9/2024 → polovina;
+  období 15 měsíců → plný odpis; vyřazení v krátkém období → polovina;
+  zrychlený v krátkém období.
+- `docs/assets.md` §5.2 opravit.
 
 ## Datový model
 
@@ -258,6 +283,8 @@ této fáze rovnou tam.
 
 ## Task breakdown
 
+0. **Oprava enginu (D46)** — pravidlo země, `TaxYearInput`, planner,
+   testy, `docs/assets.md` §5.2.
 1. **Schéma** — tabulka událostí, cfgItem (`eventKinds`, `eventScopes`,
    `eventOrigins`, `eventStates`, `accMethods`), sloupce karty, příznak
    `intangible`. *Hotovo když:* `ds-upgrade` na ukázkovém DS, opakovaný
@@ -294,3 +321,4 @@ pokračuje správnou sazbou; mimořádná metoda sk. 2 dá měsíční rozpis.
 - ✓ D38 Data karty z událostí, vyřazení přesouvá kartu do archivu.
 - ✓ D39 UI dle výše; popisky z cfgItem.
 - ✓ D12 Četnost účetních odpisů jako nastavení DS.
+- ✓ D46 Zdaňovací období kratší než 12 měsíců → polovina ročního odpisu.

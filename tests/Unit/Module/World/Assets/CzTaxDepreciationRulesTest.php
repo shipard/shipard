@@ -38,10 +38,11 @@ class CzTaxDepreciationRulesTest extends TestCase
         int $yearsSinceIncrease = 0,
         bool $halfYear = false,
         string $acquired = '2022-03-15',
+        bool $shortPeriod = false,
     ): TaxYearInput {
         return new TaxYearInput(
             $method, $rule, $acquired, $entryPrice, $residual,
-            $yearsApplied, $increased, $yearsSinceIncrease, $halfYear,
+            $yearsApplied, $increased, $yearsSinceIncrease, $halfYear, $shortPeriod,
         );
     }
 
@@ -161,6 +162,10 @@ class CzTaxDepreciationRulesTest extends TestCase
         $this->assertTrue($r->allowsHalfYearOnDisposal('accelerated'));
         $this->assertFalse($r->allowsHalfYearOnDisposal('time'));
 
+        $this->assertTrue($r->allowsShortPeriodHalfYear('straight'));
+        $this->assertTrue($r->allowsShortPeriodHalfYear('accelerated'));
+        $this->assertFalse($r->allowsShortPeriodHalfYear('extraordinary'));
+
         // § 30a odst. 3: TZ mimořádně odpisovaného majetku se odpisuje samostatně.
         $this->assertFalse($r->allowsImprovement('extraordinary'));
         $this->assertTrue($r->allowsImprovement('straight'));
@@ -235,6 +240,46 @@ class CzTaxDepreciationRulesTest extends TestCase
         );
         $this->assertSame(11125.0, $half->amount);
         $this->assertSame('(100 000,00 × 22,25 %) / 2', $half->formula);
+    }
+
+    public function testShortTaxPeriodGivesHalfOfAnnualAmount(): void
+    {
+        // § 26 odst. 7 písm. a) bod 3 (D46).
+        $r = $this->rules();
+
+        $short = $r->annualAmount($this->year('straight', 'cz-2', 100000.0, 66750.0, 2, shortPeriod: true));
+        $this->assertSame(11125.0, $short->amount);
+        $this->assertSame('(100 000,00 × 22,25 %) / 2', $short->formula);
+
+        // První rok odpisování v krátkém období: polovina sazby 1. roku.
+        $first = $r->annualAmount($this->year('straight', 'cz-2', 100000.0, 100000.0, 0, shortPeriod: true));
+        $this->assertSame(5500.0, $first->amount);
+
+        $accelerated = $r->annualAmount($this->year('accelerated', 'cz-2', 100000.0, 48000.0, 2, shortPeriod: true));
+        $this->assertSame(12000.0, $accelerated->amount);
+        $this->assertSame('(2 × 48 000,00 / (6 − 2)) / 2', $accelerated->formula);
+    }
+
+    public function testShortPeriodWithDisposalIsStillOneHalf(): void
+    {
+        $both = $this->rules()->annualAmount(
+            $this->year('straight', 'cz-2', 100000.0, 66750.0, 2, halfYear: true, shortPeriod: true),
+        );
+        $this->assertSame(11125.0, $both->amount);
+        $this->assertSame('(100 000,00 × 22,25 %) / 2', $both->formula);
+    }
+
+    public function testShortPeriodIsARuleOfTheCountryConfig(): void
+    {
+        // Bez `shortPeriodHalfYear` v konfiguraci se krátké období nekrátí.
+        $cfg = self::$cfg;
+        unset($cfg['shortPeriodHalfYear']);
+
+        $full = $this->rules($cfg)->annualAmount(
+            $this->year('straight', 'cz-2', 100000.0, 66750.0, 2, shortPeriod: true),
+        );
+        $this->assertSame(22250.0, $full->amount);
+        $this->assertSame('100 000,00 × 22,25 %', $full->formula);
     }
 
     public function testStraightRatesFollowAcquisitionDate(): void

@@ -50,6 +50,12 @@ final readonly class Period
         return Months::of($this->end);
     }
 
+    /** Délka období v měsících (období jsou zarovnaná na celé měsíce). */
+    public function months(): int
+    {
+        return $this->endMonth() - $this->beginMonth() + 1;
+    }
+
     /** @return array{id: ?int, begin: string, end: string} */
     public function toArray(): array
     {

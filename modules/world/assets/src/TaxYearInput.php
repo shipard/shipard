@@ -27,6 +27,11 @@ final readonly class TaxYearInput
         public int $yearsSinceIncrease = 0,
         /** Polovina ročního odpisu (rok vyřazení, D35). */
         public bool $halfYear = false,
+        /**
+         * Zdaňovací období kratší než 12 měsíců (D46) — také polovina; spolu
+         * s `halfYear` je to pořád jedna polovina, ne čtvrtina.
+         */
+        public bool $shortPeriod = false,
     ) {
         if ($yearsApplied < 0 || $yearsSinceIncrease < 0) {
             throw new \InvalidArgumentException('Počitadla let nesmí být záporná');

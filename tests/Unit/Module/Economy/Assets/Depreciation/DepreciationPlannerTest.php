@@ -387,6 +387,112 @@ class DepreciationPlannerTest extends TestCase
         $this->assertSame([11000.0, 22250.0, 22250.0, 22250.0, 22250.0], $this->amounts($plan));
     }
 
+    // --- daňový okruh: krátké zdaňovací období (D46) -------------------------
+
+    /**
+     * Přechod na hospodářský rok říjen–září: kalendářní roky 2022 a 2023,
+     * přechodné období 1–9/2024, pak hospodářské roky.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function yearsWithShortPeriod(): array
+    {
+        return [
+            ['id' => 21, 'date_begin' => '2022-01-01', 'date_end' => '2022-12-31'],
+            ['id' => 22, 'date_begin' => '2023-01-01', 'date_end' => '2023-12-31'],
+            ['id' => 23, 'date_begin' => '2024-01-01', 'date_end' => '2024-09-30'],
+            ['id' => 24, 'date_begin' => '2024-10-01', 'date_end' => '2025-09-30'],
+        ];
+    }
+
+    public function testShortTaxPeriodGivesHalfOfAnnualDepreciation(): void
+    {
+        // Skupina 2: 11 000, 22 250, přechodné období ½ × 22 250 = 11 125,
+        // pak 22 250, 22 250 a zbytek 11 125.
+        $plan = $this->plan(
+            self::STRAIGHT_2,
+            [$this->activation('2022-03-15', 100000.0)],
+            tax: PeriodCalendar::yearly($this->yearsWithShortPeriod()),
+        )['tax'];
+
+        $this->assertSame([11000.0, 22250.0, 11125.0, 22250.0, 22250.0, 11125.0], $this->amounts($plan));
+        $this->assertSame([], $plan->allMessages());
+
+        $short = $plan->rows[3];
+        $this->assertSame(['id' => 23, 'begin' => '2024-01-01', 'end' => '2024-09-30'], $short->period->toArray());
+        $this->assertSame('(100 000,00 × 22,25 %) / 2', $short->formula);
+        // Polovina z krátkého období není odpis roku vyřazení.
+        $this->assertFalse($short->halfYear);
+    }
+
+    public function testShortTaxPeriodCountsAsDepreciatedYear(): void
+    {
+        // Zrychlený odpis, skupina 2 (koeficienty 5 / 6): 100 000 / 5,
+        // 2 × 80 000 / (6 − 1), přechodné období ½ × 2 × 48 000 / (6 − 2)
+        // = 12 000. Krátké období je rok s uplatněným odpisem (n + 1), takže
+        // další rok dělí (6 − 3): 2 × 36 000 / 3 = 24 000, pak 2 × 12 000 / 2.
+        // Kdyby se nezapočítalo, vyšlo by 2 × 36 000 / 4 = 18 000.
+        $plan = $this->plan(
+            self::ACCELERATED_2,
+            [$this->activation('2022-03-15', 100000.0)],
+            tax: PeriodCalendar::yearly($this->yearsWithShortPeriod()),
+        )['tax'];
+
+        $this->assertSame([20000.0, 32000.0, 12000.0, 24000.0, 12000.0], $this->amounts($plan));
+        $this->assertSame('(2 × 48 000,00 / (6 − 2)) / 2', $plan->rows[3]->formula);
+    }
+
+    public function testTaxPeriodLongerThanTwelveMonthsGivesFullDepreciation(): void
+    {
+        // Účetní rok 1/2023–3/2024 má 15 měsíců — plný roční odpis.
+        $years = [
+            ['id' => 31, 'date_begin' => '2022-01-01', 'date_end' => '2022-12-31'],
+            ['id' => 32, 'date_begin' => '2023-01-01', 'date_end' => '2024-03-31'],
+        ];
+        $plan = $this->plan(
+            self::STRAIGHT_2,
+            [$this->activation('2022-03-15', 100000.0)],
+            tax: PeriodCalendar::yearly($years),
+        )['tax'];
+
+        $this->assertSame([11000.0, 22250.0, 22250.0, 22250.0, 22250.0], $this->amounts($plan));
+        $this->assertSame('100 000,00 × 22,25 %', $plan->rows[2]->formula);
+        $this->assertSame('2024-03-31', $plan->rows[2]->period->end);
+    }
+
+    public function testDisposalInShortTaxPeriodIsOneHalfNotQuarter(): void
+    {
+        // Vyřazení s polovinou v přechodném období: pořád jedna polovina.
+        $plan = $this->plan(
+            self::STRAIGHT_2,
+            [
+                $this->activation('2022-03-15', 100000.0),
+                $this->disposal('2024-05-10', true),
+            ],
+            tax: PeriodCalendar::yearly($this->yearsWithShortPeriod()),
+        )['tax'];
+
+        $this->assertSame([11000.0, 22250.0, 11125.0], $this->amounts($plan));
+        $this->assertSame('(100 000,00 × 22,25 %) / 2', $plan->rows[3]->formula);
+        $this->assertTrue($plan->rows[3]->halfYear);
+        $this->assertSame(55625.0, $plan->rows[4]->amount);
+    }
+
+    public function testAsTaxFollowsShortTaxPeriod(): void
+    {
+        // Účetní `as_tax` krátí krátký rok stejně jako daňový okruh.
+        $calendar = PeriodCalendar::yearly($this->yearsWithShortPeriod());
+        $plans = $this->plan(
+            self::STRAIGHT_2 + ['acc_method' => 'as_tax'],
+            [$this->activation('2022-03-15', 100000.0)],
+            acc: $calendar,
+            tax: $calendar,
+        );
+
+        $this->assertSame($this->amounts($plans['tax']), $this->amounts($plans['acc']));
+        $this->assertSame([], $plans['acc']->allMessages());
+    }
+
     // --- daňový okruh: měsíční metody ----------------------------------------
 
     public function testExtraordinaryGroup2(): void

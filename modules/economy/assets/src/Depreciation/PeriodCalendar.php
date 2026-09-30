@@ -11,6 +11,8 @@ namespace Shipard\Module\Economy\Assets\Depreciation;
  * Mimo založené roky se období dopočítávají po 12 měsících od nejbližšího
  * založeného roku — dopředu pro plán (D32), dozadu pro historii před
  * prvním rokem v DS. Bez jediného založeného roku platí kalendářní roky.
+ * Dopočítané období má vždy 12 měsíců; kratší nebo delší účetní rok
+ * (`Period::months()`, D46) může být jen založený.
  * Období se předpokládají zarovnaná na celé měsíce.
  */
 final class PeriodCalendar

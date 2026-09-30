@@ -12,10 +12,13 @@ use Shipard\Module\World\Assets\TaxDepreciationRules;
 /**
  * Daňový okruh s roční metodou pravidel země (rovnoměrný, zrychlený).
  *
- * Odpis je za celé zdaňovací období bez ohledu na měsíc zařazení (D37)
- * a nekrátí se ani u účetního roku kratšího než 12 měsíců. Přerušený rok
- * se do počtu let nezapočítá (D34). V roce vyřazení se odpis neuplatní,
- * leda polovina u majetku evidovaného na začátku roku (D35).
+ * Odpis je za celé zdaňovací období bez ohledu na měsíc zařazení (D37).
+ * Účetní rok kratší než 12 měsíců se pravidlům země hlásí jako krátké
+ * období (D46; CZ: polovina ročního odpisu) — i takový rok se počítá jako
+ * rok s uplatněným odpisem, další rok pokračuje následující sazbou. Delší
+ * než 12 měsíců = plný roční odpis. Přerušený rok se do počtu let
+ * nezapočítá (D34). V roce vyřazení se odpis neuplatní, leda polovina
+ * u majetku evidovaného na začátku roku (D35).
  *
  * @internal
  */
@@ -88,7 +91,14 @@ final class AnnualTaxMethod implements CircuitMethod
             }
         }
 
-        $amount = $this->annual($state, $state->residual, $this->years, $this->yearsSinceIncrease, $halfYear);
+        $amount = $this->annual(
+            $state,
+            $state->residual,
+            $this->years,
+            $this->yearsSinceIncrease,
+            $halfYear,
+            $year->months() < 12,
+        );
 
         return $amount->amount > 0 ? new Computed($amount->amount, $amount->formula) : null;
     }
