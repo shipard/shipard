@@ -1,8 +1,9 @@
 # Shipard — Majetek (`economy.assets`)
 
-> **Designový dokument.** **Stav:** D1–D26 rozhodnuto; oblast 1 (karta,
-> typy, účetní skupiny) **hotová** 2026-09-29 (`tasks/assets-phase1.md`),
-> další oblasti se rozpadají postupně (§7).
+> **Designový dokument.** **Stav:** D1–D45 rozhodnuto;
+> oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
+> (`tasks/assets-phase1.md`), oblast 2 má PRD (`tasks/assets-phase2a.md`,
+> `tasks/assets-phase2b.md`), další oblasti se rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -333,6 +334,88 @@ PRD: `tasks/assets-phase1.md`.
 - **D26** Sekce navigace a Nastavení **Majetek**, přílohy karty, help
   stránky.
 
+### D27–D45 — Oblast 2: události, engine, pravidla CZ (ROZHODNUTO)
+
+PRD: `tasks/assets-phase2a.md` (pravidla země + engine, bez DB),
+`tasks/assets-phase2b.md` (události, nastavení karty, UI, odpisy za období).
+
+- **D27 Rozsah.** Fáze 2 = odpisové nastavení karty, tabulka událostí,
+  engine + pravidla CZ, plán odpisů na kartě, ruční události a akce
+  „Odpisy za období“. **Nic se neúčtuje** — události zůstanou potvrzené,
+  zaúčtování přidá fáze 3. Fáze 2 a 3 jdou do ostrého provozu společně;
+  mezi nimi jen testování.
+- **D28 Tabulka `economy_assets_events` (454).** Majetek, druh události
+  (`opening`, `activation`, `improvement`, `reduction`, `depreciation`,
+  `interruption`, `disposal`), okruh (`both` / `tax` / `acc`), datum,
+  období od–do, částka, původ (`manual` / `system` / `import`), příznak
+  „uplatněná částka neevidována“ (D11). Počáteční stav (D16) je událost
+  per okruh s oprávkami, počtem let / měsíců odpisování, příznakem
+  zvýšené vstupní ceny a datem původního zařazení. Necelé koruny (D10)
+  jen u původu `import`.
+- **D29 Stavy událostí.** Koncept → Potvrzeno ↔ V opravě → Smazáno.
+  Potvrzenou událost lze opravit či smazat, jen když po ní v témže okruhu
+  není potvrzený odpis (historie se rozebírá od konce). Chrání ji i zámek
+  účetního měsíce, od fáze 3 zaúčtování.
+- **D30 Odpisové nastavení karty.** Daňová metoda (`straight`,
+  `accelerated`, `extraordinary`, `time`, `accounting`, `none`), daňová
+  skupina / pravidlo (kód z konfigurace země), účetní metoda (`as_tax`,
+  `time` + délka v měsících). AV/AM až fáze 8. Nabídku řídí pravidla země.
+- **D31 Pravidla země v modulu `world.assets`** (vzor `world.vat`):
+  `config/assets-cz.jsonc` (skupiny, sazby, koeficienty, časová
+  a mimořádná pravidla s platností, zaokrouhlení, polovina při vyřazení,
+  přerušitelné metody) + rozhraní `TaxDepreciationRules`
+  a `CzTaxDepreciationRules`. Země z `DataSourceConfig::getCountry()`;
+  země bez pravidel nabízí jen `accounting` a `none`.
+- **D32 Engine `DepreciationPlanner`** — čistá funkce (nastavení karty,
+  události okruhu, pravidla, účetní období) → plán po obdobích
+  (potvrzeno / plán, základ, vzorec, částka, oprávky, zůstatek,
+  hlášení). Daňový okruh po účetních letech (za posledním založeným
+  rokem extrapolace), účetní po letech nebo měsících (D12).
+- **D33 „Odpisy za období“** — ve vieweru i na kartě; náhled (karty,
+  součty) → potvrzení; idempotentní; daňové za rok, účetní dle D12.
+- **D34 Přerušení** jen v daňovém okruhu, událost za účetní rok, jen
+  u přerušitelných metod; rok se nezapočítá do pořadí.
+- **D35 Vyřazení.** Dialog nabídne polovinu ročního daňového odpisu
+  (majetek v evidenci na začátku roku, pravidlo země, výchozí zapnuto);
+  účetní odpis do měsíce vyřazení. Poslední odpisy obou okruhů vzniknou
+  s vyřazením v jedné transakci.
+- **D36 Zaokrouhlení.** Daňové dle země (CZ nahoru na celé koruny),
+  účetní nahoru na celé koruny (jako starý systém); poslední odpis
+  omezen zůstatkem.
+- **D37 Začátek odpisů.** Účetní od měsíce následujícího po zařazení;
+  daňový roční za rok zařazení celý (sazba 1. roku); časové a mimořádné
+  daňové od měsíce následujícího po zařazení.
+- **D38 Karta vs. události.** U dlouhodobého majetku datum pořízení
+  (zařazení / počáteční stav) a vyřazení z událostí, jen ke čtení.
+  Potvrzené vyřazení přesune kartu do archivu; smazání vyřazení ji vrátí
+  do V opravě.
+- **D39 UI.** Tab formuláře Odpisy (nastavení + podtabulka událostí),
+  akce detailu Zařadit / TZ / Snížení / Přerušit / Vyřadit / Počáteční
+  stav, taby detailu Daňové a Účetní odpisy (plán se vzorcem a panelem
+  chyb), Nastavení → Majetek: četnost účetních odpisů. Popisky viewerů
+  z konfigurace místo PHP.
+- **D40 Testy.** Jednotkové testy enginu na anonymizovaných případech ze
+  starých dat; plný zlatý test proti starým kartám patří k importu
+  (fáze 6).
+- **D41 Mimořádné odpisy (§30a) hned.** Časová metoda s rozpisem procent
+  od měsíce následujícího po zařazení, nepřerušitelná: skupina 1 —
+  12 měsíců / 100 %, skupina 2 — 24 měsíců / 60 % + 40 %, pro majetek
+  pořízený 2020–2023; bezemisní vozidla 2024–2028 — 24 měsíců / 60 + 40 %.
+  TZ takového majetku se odpisuje samostatně (vlastní karta). V datech
+  `901136` ~10 karet (průběh odpovídá měsíčnímu rozpisu).
+- **D42 Zvýšené odpisy 1. roku (+10 / 15 / 20 %, §31)** jen jako data
+  v konfiguraci CZ (varianty skupin 1–3); v šesti zdrojích se nepoužívají.
+- **D43 Sazby podle data zařazení.** Sazby a koeficienty se volí podle
+  data prvního zařazení (přechodná ustanovení novel); starý engine je
+  volil podle data odpisu. Ověří zlatý test (fáze 6).
+- **D44 TZ v účetní časové metodě.** Po TZ se (zůstatková cena + TZ)
+  rozpustí do zbývajících měsíců původní doby; starý engine počítal
+  (vstupní cena + TZ) / celá doba — plán se u karet s TZ může od starého
+  lišit, potvrzená historie ne.
+- **D45 `as_tax` při měsíčních účetních odpisech.** Roční daňový odpis
+  se rozpustí rovnoměrně do měsíců, kdy je majetek v užívání (nahoru na
+  koruny, poslední měsíc dorovná roční částku).
+
 ---
 
 ## 5. Doménový model (návrh)
@@ -382,7 +465,9 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 1. Karta, typy, účetní skupiny, stavy (základ) — **hotovo** 2026-09-29,
    `tasks/assets-phase1.md` (vč. odchylek od PRD: přidělení čísla
    v `afterPersist`, unikátnost přes všechny stavy, prefixy lookupu účtů)
-2. Ledger událostí + engine + pravidla CZ (D3, D6, D7, D10)
+2. Ledger událostí + engine + pravidla CZ (D3, D6, D7, D10, D27–D45) —
+   `tasks/assets-phase2a.md` (pravidla + engine), `tasks/assets-phase2b.md`
+   (události, UI, odpisy za období)
 3. Zaúčtování (D4) + řádkové operace + extension deníku
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15)
 5. Přehledy: karta, odpisy, přírůstky / úbytky, kontrola proti deníku,
@@ -395,8 +480,6 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 
 ## 8. Otevřené otázky
 
-- Mimořádné odpisy §30a (2020–2021) — podporovat v pravidlech CZ?
-  V datech zatím nenalezeny.
 - Místa: vlastní číselník v modulu, nebo obecný číselník míst (využijí
   ho i jiné moduly)?
 - Čísla karet (inv. č.): číselná řada per druh, nebo volný text s návrhem?
