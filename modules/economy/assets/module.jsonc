@@ -178,6 +178,10 @@
         {
             "id": "economy.assets.trackingKinds",
             "file": "config/trackingKinds.jsonc"
+        },
+        {
+            "id": "economy.assets.planMessages",
+            "file": "config/planMessages.jsonc"
         }
     ]
 }

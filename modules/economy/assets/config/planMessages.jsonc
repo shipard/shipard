@@ -1,0 +1,66 @@
+{
+    // economy.assets.planMessages — texty hlášení plánu odpisů
+    // (DepreciationPlanner → PlanMessage). Klíč = kód hlášení, u
+    // `settingsInvalid` s důvodem `settingsInvalid.<reason>`. Parametry se
+    // vkládají jako {název}; částky a data formátuje PlanMessageTexts.
+    "mismatch": {
+        "text": "The confirmed depreciation {confirmed} differs from the calculated {computed}.",
+        "text:cs": "Potvrzený odpis {confirmed} se liší od vypočteného {computed}.",
+        "text:en": "The confirmed depreciation {confirmed} differs from the calculated {computed}."
+    },
+    "openingMismatch": {
+        "text": "Accumulated depreciation of the opening balance ({accumulated}) does not match the rules — after {units} periods it should be {expected}.",
+        "text:cs": "Oprávky počátečního stavu ({accumulated}) neodpovídají pravidlům — po {units} obdobích odpisování mají být {expected}.",
+        "text:en": "Accumulated depreciation of the opening balance ({accumulated}) does not match the rules — after {units} periods it should be {expected}."
+    },
+    "missingPeriod": {
+        "text": "An earlier period has no confirmed depreciation.",
+        "text:cs": "Před tímto odpisem chybí potvrzený odpis dřívějšího období.",
+        "text:en": "An earlier period has no confirmed depreciation."
+    },
+    "dateOutsidePeriod": {
+        "text": "The depreciation date {date} is outside the fiscal year of its period (ending {periodEnd}).",
+        "text:cs": "Datum odpisu {date} neleží v účetním roce období odpisu (konec {periodEnd}).",
+        "text:en": "The depreciation date {date} is outside the fiscal year of its period (ending {periodEnd})."
+    },
+    "improvementOnSchedule": {
+        "text": "An improvement of an asset with this tax method is depreciated separately — create a card for it.",
+        "text:cs": "Technické zhodnocení majetku s touto daňovou metodou se odpisuje samostatně — založte pro něj vlastní kartu.",
+        "text:en": "An improvement of an asset with this tax method is depreciated separately — create a card for it."
+    },
+    "notWholeUnits": {
+        "text": "The depreciation {amount} is not rounded according to the rules.",
+        "text:cs": "Odpis {amount} není zaokrouhlený podle pravidel.",
+        "text:en": "The depreciation {amount} is not rounded according to the rules."
+    },
+    "ruleNotValid": {
+        "text": "Depreciation rule {rule} is not valid for an asset put into use on {date}.",
+        "text:cs": "Odpisové pravidlo {rule} neplatí pro majetek zařazený {date}.",
+        "text:en": "Depreciation rule {rule} is not valid for an asset put into use on {date}."
+    },
+    "settingsInvalid": {
+        "text": "The depreciation settings of the card cannot be calculated.",
+        "text:cs": "Odpisové nastavení karty nejde spočítat.",
+        "text:en": "The depreciation settings of the card cannot be calculated."
+    },
+    "settingsInvalid.accMonthsMissing": {
+        "text": "The time-based accounting method needs the depreciation period in months.",
+        "text:cs": "Časová účetní metoda potřebuje délku odpisování v měsících.",
+        "text:en": "The time-based accounting method needs the depreciation period in months."
+    },
+    "settingsInvalid.asTaxWithoutFormula": {
+        "text": "Accounting depreciation \"same as tax\" needs a tax method with its own calculation.",
+        "text:cs": "Účetní odpis „stejný jako daňový“ potřebuje daňovou metodu s vlastním výpočtem.",
+        "text:en": "Accounting depreciation \"same as tax\" needs a tax method with its own calculation."
+    },
+    "settingsInvalid.accountingWithoutAccMethod": {
+        "text": "Tax depreciation \"same as accounting\" needs a time-based accounting method.",
+        "text:cs": "Daňový odpis „podle účetních odpisů“ potřebuje časovou účetní metodu.",
+        "text:en": "Tax depreciation \"same as accounting\" needs a time-based accounting method."
+    },
+    "settingsInvalid.unknownTaxMethod": {
+        "text": "The tax depreciation method is not known to the country rules.",
+        "text:cs": "Daňovou metodu odpisu pravidla státu neznají.",
+        "text:en": "The tax depreciation method is not known to the country rules."
+    }
+}
