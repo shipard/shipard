@@ -1,7 +1,7 @@
 ---
 title: Kontrola vytěženého dokladu
 summary: Jak porovnat návrh dokladu s originálem faktury, co kontrolovat první a kdy návrh zamítnout.
-keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU]
+keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU, místo plnění, DIČ dodavatele]
 related: [slovnicek.md, co-dnes-nejde.md, osoby/zalozeni-osoby.md]
 ---
 
@@ -172,7 +172,13 @@ kontroluj celkovou částku vždy.
 **Reverse charge (samovyměření).** U faktury za zboží nebo služby z EU,
 za služby ze třetí země nebo s tuzemským přenesením daňové povinnosti
 určí kód DPH řádků Shipard sám podle údajů na dokladu; dodavatelovu
-rekapitulaci s nulovou daní nepřebírá. Zkontroluj tři věci: kód DPH
+rekapitulaci s nulovou daní nepřebírá. Jestli jde o plnění z EU
+(**Místo plnění** *Intrakomunitární plnění*) nebo ze zahraničí
+(*Zahraničí*), určí podle **DIČ dodavatele**, ne podle jeho adresy —
+firma se sídlem mimo EU, která fakturuje pod DIČ některého státu EU, je
+plnění z EU (u služeb *Základní - služby EU*). Když se tím místo plnění
+proti tomu, co přečetla AI, změnilo, náhled to ukáže jako upozornění
+u místa plnění. Zkontroluj tři věci: kód DPH
 u řádků (u služeb z EU *Základní - služby EU*), v **DPH rekapitulaci**
 řádek daně a k němu oddaňovací řádek, a že **Celkem** je rovno základu —
 tedy tomu, co máš skutečně zaplatit. Kurz cizí měny návrh nedoplní,

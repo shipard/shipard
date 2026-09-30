@@ -1,6 +1,6 @@
 # Task: Místo plnění přijatého dokladu podle DIČ dodavatele
 
-**Stav:** částečně — implementováno 2026-09-30 (2 commity), zbývá ověření na dev zdroji
+**Stav:** hotovo — implementováno 2026-09-30 (2 commity), ověřeno na dev zdroji 2026-09-30 (stará analýza s `thirdCountry` dostala `cz-217` + warning, nová analýza v4.6.1 bez warningu)
 
 **Issue:** #86 (navazuje na `exchange-received-reverse-charge.md`)
 
@@ -310,5 +310,5 @@ Zdroj s režimem *volný*, zpráva je v chatu (mimo repo).
       místa, issue v tabulce.
 - [x] Prompt v4.6.1, testy verzí, changelog.
 - [x] Help `kontrola-vytezeni.md` aktualizovaný, `help-index.py` prošel.
-- [ ] Ověření na dev zdroji: doklad dodavatele mimo EU s DIČ z EU má
+- [x] Ověření na dev zdroji: doklad dodavatele mimo EU s DIČ z EU má
       `cz-217` a ř. 5.

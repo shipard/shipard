@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.6.0)
+## Default prompt (v4.6.1)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -58,7 +58,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.6.0`).
+  shodná s `prompt_version` profilu (`v4.6.1`).
 - **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
   a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
   Model vrací jen sémantické signály — `vat.place` (`domestic` /
@@ -68,6 +68,11 @@ Klíčové pokyny v promptu:
   tuzemské přenesení daňové povinnosti: `4`, `5`, …). Kód z nich odvodí
   `VatCodeDerivation` v applieru
   ([`docs/exchange-format.md`](../../../../docs/exchange-format.md) § 8.4).
+- **`vat.place` podle DIČ dodavatele, ne podle adresy** (od v4.6.1):
+  prefix `CZ` → `domestic`, prefix jiného státu EU (i `EL`) → `intracom`
+  i u sídla mimo EU; bez DIČ podle sídla. Server ho u přijatého dokladu
+  stejně přebije prefixem DIČ (`VatPlaceDerivation`, § 8.4) — pravidlo
+  jen zmenšuje počet návrhů s warningem `vat_place_derived`.
 - `totals.totalRounding` = zaokrouhlení celkové částky se znaménkem
   (dolů = záporné); zaokrouhlení nikdy nepatří jako položkový řádek
   do `rows`.
@@ -179,7 +184,7 @@ Plné schéma viz [`profiles/czech_general.jsonc`](../profiles/czech_general.jso
    přes `shpd.docs.document.v1` (polymorfní dle `docType`, bez per-typ
    branche), registry typy přes `shpd.registry.document.v1` (nový druh =
    nová if/then větev `kindFields` v registry schématu + kopie embedu).
-5. Bumpni `prompt_version` (`v4.6.0` → `v4.7.0`).
+5. Bumpni `prompt_version` (`v4.6.1` → `v4.7.0`).
 
 ### Vlastní profil pro jiný jazyk / účel
 
@@ -239,6 +244,29 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.6.1 (2026-09-30)
+
+Místo plnění přijatého dokladu podle DIČ dodavatele
+([tasks/exchange-received-vat-place.md](../../../../tasks/exchange-received-vat-place.md),
+#86). Přijatá faktura za SaaS službu od dodavatele se sídlem mimo EU,
+který fakturuje pod DIČ jiného členského státu (prefix `IE`): model
+podle pravidla „`thirdCountry` = dodavatel mimo EU“ četl adresu a vrátil
+`thirdCountry`, derivace pak dala `cz-417` (ř. 12 přiznání) místo
+`cz-217` (ř. 5). Pro ř. 5 rozhoduje registrace k dani v jiném členském
+státě, tedy prefix DIČ. U amerických SaaS dodavatelů s irskou,
+nizozemskou nebo lucemburskou registrací se to opakuje.
+
+- PRAVIDLA: `vat.place` urči podle DIČ (VAT ID) dodavatele, ne podle
+  adresy — prefix `CZ` → `domestic`, prefix jiného státu EU (včetně `EL`
+  = Řecko) → `intracom` i u sídla mimo EU; dodavatel bez DIČ z EU podle
+  sídla. Výčet povolených hodnot beze změny. Schéma beze změny (patch).
+- Server (nezávisle na verzi promptu): `VatPlaceDerivation` odvodí místo
+  z prefixu DIČ dodavatele nad `world.trade.unions` (členství k DUZP,
+  `EL` → Řecko, `GB` po Brexitu třetí země, `XI` jen zboží); rozpor
+  s neprázdnou hodnotou z AI → warning `vat_place_derived`, bez DIČ nebo
+  s prefixem mimo unii platí hodnota z AI. Stará analýza (v4.6.0
+  s `thirdCountry`) tak dostane správný kód i bez nové analýzy.
 
 ### v4.6.0 (2026-09-30)
 
