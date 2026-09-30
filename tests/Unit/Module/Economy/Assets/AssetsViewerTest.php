@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Economy\Assets;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Module\Economy\Assets\AssetPlanService;
 use Shipard\Module\Economy\Assets\AssetsViewer;
 
 /**
@@ -17,7 +18,14 @@ class AssetsViewerTest extends TestCase
 {
     private const CATEGORIES = [
         'small'    => ['name' => 'Drobný majetek', 'longTerm' => false],
-        'tangible' => ['name' => 'Dlouhodobý hmotný', 'longTerm' => true],
+        'tangible' => ['name' => 'Dlouhodobý hmotný', 'longTerm' => true, 'depreciable' => true],
+    ];
+
+    private const LABELS = [
+        'tab.taxPlan'       => ['name' => 'Daňové odpisy'],
+        'action.activate'   => ['name' => 'Zařadit'],
+        'action.depreciate' => ['name' => 'Odepsat'],
+        'action.disposal'   => ['name' => 'Vyřadit'],
     ];
 
     /** @param list<mixed>|null $captured */
@@ -43,6 +51,83 @@ class AssetsViewerTest extends TestCase
         $viewer = new AssetsViewer($db, 'economy_assets_assets');
         $viewer->setConfig($config);
         return $viewer;
+    }
+
+    /** Viewer s detailem nad TestAssetPlanService (karta i události v paměti). */
+    private function detailViewer(array $card, array $events): AssetsViewer
+    {
+        $service = new TestAssetPlanService();
+        $service->cards[(int) $card['id']] = $card;
+        $service->events = $events;
+
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn($card);
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnMap([
+            ['economy.assets.categories', self::CATEGORIES],
+            ['economy.assets.viewerLabels', self::LABELS],
+            ['economy.assets.eventKinds', ['activation' => ['name' => 'Zařazení'], 'depreciation' => ['name' => 'Odpis']]],
+            ['world.assets.cz', TestAssetPlanService::config()->cfgItem('world.assets.cz')],
+        ]);
+
+        $viewer = new class($db, 'economy_assets_assets', $service) extends AssetsViewer {
+            public function __construct(DataSourceConnection $db, string $table, private readonly AssetPlanService $service)
+            {
+                parent::__construct($db, $table);
+            }
+
+            protected function planService(): AssetPlanService
+            {
+                return $this->service;
+            }
+        };
+        $viewer->setConfig($config);
+        return $viewer;
+    }
+
+    // --- detail: plán a akce (fáze 2b) ------------------------------------------
+
+    public function testDetailOfActivatedCardHasPlanTabsAndEventActions(): void
+    {
+        $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $events = [['id' => 1, 'asset' => 4, 'event_kind' => 'activation', 'scope' => 'both', 'event_date' => '2022-03-15', 'amount' => 100000, 'docState' => 40]];
+        $detail = $this->detailViewer($card, $events)->renderDetail(4);
+
+        $this->assertSame(['overview', 'taxPlan', 'accPlan'], array_column($detail['tabs'], 'id'));
+        $this->assertSame('Daňové odpisy', $detail['tabs'][1]['label']);
+        $blocks = $detail['tabs'][1]['content']['blocks'];
+        $this->assertSame('composite', $detail['tabs'][1]['content']['type']);
+        $this->assertSame('properties', $blocks[0]['type']);
+        $this->assertSame('table', $blocks[1]['type']);
+        $this->assertSame('Zařazení', $blocks[1]['rows'][0]['kind']);
+        $this->assertSame('muted', $blocks[1]['rows'][1]['_class']);
+        $this->assertSame('11 000,00', $blocks[1]['rows'][1]['amount']);
+
+        $actions = $detail['actions'];
+        $this->assertSame(['depreciation_run', 'improvement', 'reduction', 'interruption', 'disposal'], array_column($actions, 'id'));
+        $this->assertSame(['assetId' => 4], $actions[0]['target']);
+        $this->assertSame('open_form', $actions[4]['kind']);
+        $this->assertSame(['asset' => 4, 'event_kind' => 'disposal', 'scope' => 'both'], $actions[4]['target']['preset']);
+    }
+
+    public function testDetailOfNewCardOffersActivationAndOpeningBalances(): void
+    {
+        $card = ['id' => 5, 'name' => 'Stroj', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $detail = $this->detailViewer($card, [])->renderDetail(5);
+
+        $this->assertSame(['activate', 'openingTax', 'openingAcc'], array_column($detail['actions'], 'id'));
+        $this->assertSame('heading', $detail['tabs'][1]['content']['blocks'][1]['type']);
+
+        // Karta mimo V pořádku ani vyřazená nic nenabízí.
+        $detail = $this->detailViewer(['docState' => 10] + $card, [])->renderDetail(5);
+        $this->assertSame([], $detail['actions']);
+        $detail = $this->detailViewer($card, [
+            ['id' => 1, 'asset' => 5, 'event_kind' => 'activation', 'scope' => 'both', 'event_date' => '2022-03-15', 'amount' => 100000, 'docState' => 40],
+            ['id' => 2, 'asset' => 5, 'event_kind' => 'disposal', 'scope' => 'both', 'event_date' => '2024-05-10', 'amount' => 0, 'docState' => 40],
+        ])->renderDetail(5);
+        $this->assertSame([], $detail['actions']);
     }
 
     public function testBottomTabsComeFromCfgItemPlusForeign(): void

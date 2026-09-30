@@ -21,8 +21,10 @@ class AssetsFormTest extends TestCase
 {
     private const CATEGORIES = [
         'small'    => ['name' => 'Drobný majetek', 'longTerm' => false],
-        'tangible' => ['name' => 'Dlouhodobý hmotný', 'longTerm' => true],
+        'tangible' => ['name' => 'Dlouhodobý hmotný', 'longTerm' => true, 'depreciable' => true],
     ];
+
+    private static ?array $czRules = null;
 
     /** @param array<string, mixed>|null $typeRow řádek typu vrácený z DB */
     private function form(?array $typeRow = null): AssetsForm
@@ -31,10 +33,13 @@ class AssetsFormTest extends TestCase
         $db->method('fetchRow')->willReturnCallback(
             static fn(string $sql, mixed ...$params): ?array => str_contains($sql, 'economy_assets_types') ? $typeRow : null,
         );
+        self::$czRules ??= JsoncParser::parseFile(__DIR__ . '/../../../../../modules/world/assets/config/assets-cz.jsonc');
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([
             ['economy.assets.categories', self::CATEGORIES],
             ['economy.assets.trackingKinds', ['single' => ['name' => 'Jednotlivá věc']]],
+            ['economy.assets.accMethods', ['as_tax' => ['name' => 'Stejně jako daňové'], 'time' => ['name' => 'Časová']]],
+            ['world.assets.cz', self::$czRules],
         ]);
 
         $form = new AssetsForm('economy_assets_assets');
@@ -46,14 +51,63 @@ class AssetsFormTest extends TestCase
         return $form;
     }
 
-    private function element(FormDefinition $def, string $column): FormElement
+    private function element(FormDefinition $def, string $column, int $tab = 0): FormElement
     {
-        foreach ($def->tabs[0]->sections[0]->columns[0]->elements as $el) {
+        foreach ($def->tabs[$tab]->sections[0]->columns[0]->elements as $el) {
             if ($el->column === $column) {
                 return $el;
             }
         }
         $this->fail("Element {$column} not found");
+    }
+
+    // --- tab Odpisy (D30) ------------------------------------------------------
+
+    public function testDepreciableCardHasDepreciationTabWithCountryRules(): void
+    {
+        $def = $this->form()->buildFormDefinition(['category' => 'tangible', 'tax_method' => 'straight'], true);
+
+        $this->assertSame(['card', 'depreciation', 'attachments'], array_map(static fn($t) => $t->id, $def->tabs));
+        $methods = array_column($this->element($def, 'tax_method', 1)->options, 'value');
+        $this->assertSame(['straight', 'accelerated', 'extraordinary', 'accounting', 'none'], $methods);
+        $this->assertContains('cz-2', array_column($this->element($def, 'tax_rule', 1)->options, 'value'));
+        $this->assertFalse($this->element($def, 'tax_rule', 1)->hidden);
+        $this->assertTrue($this->element($def, 'acc_months', 1)->hidden);
+
+        // Bez pravidla (podle účetnictví) a s časovou účetní metodou.
+        $def = $this->form()->buildFormDefinition(['category' => 'tangible', 'tax_method' => 'accounting', 'acc_method' => 'time'], true);
+        $this->assertTrue($this->element($def, 'tax_rule', 1)->hidden);
+        $this->assertFalse($this->element($def, 'acc_months', 1)->hidden);
+        $this->assertTrue($this->element($def, 'acc_months', 1)->required);
+
+        // Drobný majetek tab nemá.
+        $def = $this->form()->buildFormDefinition(['category' => 'small'], true);
+        $this->assertSame(['card', 'attachments'], array_map(static fn($t) => $t->id, $def->tabs));
+    }
+
+    public function testMethodChangeResetsRuleOutsideNewOffer(): void
+    {
+        $form = $this->form();
+        $result = $form->recalculate('tax_method', ['category' => 'tangible', 'tax_method' => 'extraordinary', 'tax_rule' => 'cz-2']);
+        $this->assertNull($result->data['tax_rule']);
+
+        $result = $form->recalculate('tax_method', ['category' => 'tangible', 'tax_method' => 'accelerated', 'tax_rule' => 'cz-2']);
+        $this->assertSame('cz-2', $result->data['tax_rule']);
+
+        $result = $form->recalculate('acc_method', ['category' => 'tangible', 'acc_method' => 'as_tax', 'acc_months' => 60]);
+        $this->assertNull($result->data['acc_months']);
+    }
+
+    public function testStoredLongTermCardHasEventsSubtableWithIndependentRows(): void
+    {
+        $def = $this->form()->buildFormDefinition(['id' => 7, 'category' => 'tangible', 'tax_method' => 'straight'], false);
+        $events = $def->tabs[2];
+
+        $this->assertSame('subtable', $events->type);
+        $this->assertSame('economy_assets_events', $events->subtable['table']);
+        $this->assertTrue($events->toArray()['subtable']['independent_rows']);
+        $this->assertTrue($this->element($def, 'acquired_date')->readOnly);
+        $this->assertTrue($this->element($def, 'disposed_date')->readOnly);
     }
 
     public function testNewSmallAssetShowsPriceAndHidesOwner(): void

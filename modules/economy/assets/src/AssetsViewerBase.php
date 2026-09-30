@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Assets;
 
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -14,7 +15,11 @@ use Shipard\Core\Viewer\TableViewer;
  */
 abstract class AssetsViewerBase extends TableViewer
 {
+    public const LABELS_CFG_ITEM = 'economy.assets.viewerLabels';
+
     protected ?string $docStatesCfgItem = 'core.system.docStatesArchive';
+
+    private ?AssetPlanService $planService = null;
 
     protected const STATE_SPAN_CLASS = [
         'concept'   => 'warning',
@@ -29,6 +34,34 @@ abstract class AssetsViewerBase extends TableViewer
     protected function cs(): bool
     {
         return $this->language !== 'en';
+    }
+
+    /**
+     * Popisek z cfgItem `economy.assets.viewerLabels` (lokalizovaný
+     * kompilací); bez konfigurace anglický fallback. `{param}` v textu se
+     * nahradí z `$params`.
+     *
+     * @param array<string, scalar> $params
+     */
+    protected function text(string $key, string $englishFallback, array $params = []): string
+    {
+        $defs = $this->config?->cfgItem(self::LABELS_CFG_ITEM);
+        $text = is_array($defs) ? (string) ($defs[$key]['name'] ?? $englishFallback) : $englishFallback;
+        foreach ($params as $name => $value) {
+            $text = str_replace('{' . $name . '}', (string) $value, $text);
+        }
+        return $text;
+    }
+
+    /** Most k enginu odpisů — stát z konfigurace zdroje dat, četnost z nastavení. */
+    protected function planService(): AssetPlanService
+    {
+        return $this->planService ??= new AssetPlanService(
+            $this->db->getDibiConnection(),
+            $this->config,
+            $this->dsConfig?->getCountry() ?? 'cz',
+            new SettingsStore($this->db),
+        );
     }
 
     /**

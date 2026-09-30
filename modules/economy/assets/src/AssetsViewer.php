@@ -5,19 +5,37 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Assets;
 
 use Shipard\Core\Database\SearchCondition;
+use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
+use Shipard\Module\Economy\Assets\Depreciation\DepreciationSettings;
+use Shipard\Module\Economy\Assets\Depreciation\Plan;
+use Shipard\Module\Economy\Assets\Depreciation\PlanMessage;
+use Shipard\Module\Economy\Assets\Depreciation\PlanMessageTexts;
+use Shipard\Module\Economy\Assets\Depreciation\PlanRow;
 
 /**
- * Viewer karet majetku (tasks/assets-phase1.md → UI).
+ * Viewer karet majetku (tasks/assets-phase1.md → UI, fáze 2b → plán
+ * odpisů a akce detailu).
  *
  * Spodní taby (TableViewer::getBottomTabs): Vše / per druh z cfgItem
  * (id = klíč druhu, Přidat předvyplní druh) / Cizí (is_foreign). Filtry
  * pravého panelu: Typ, Účetní skupina. Fulltext: inventární číslo, název,
  * zkrácený název. ViewGroups ze stavů — V archívu = vyřazené.
+ *
+ * Detail dlouhodobého majetku: taby Daňové / Účetní odpisy (plán z enginu
+ * přes AssetPlanService — souhrn, tabulka řádků, hlášení) a akce podle
+ * stavu karty a událostí: Zařadit / Počáteční stav (bez zařazení), jinak
+ * Odepsat (`depreciation_run`, vlastní obsluha ve Viewer.svelte), TZ,
+ * Snížení, Přerušit (přerušitelná metoda), Vyřadit — vše `open_form`
+ * s presetem karty, druhu a okruhu události. Toolbar nese „Odpisy za
+ * období“ (`depreciation_run` bez karty).
  */
 class AssetsViewer extends AssetsViewerBase
 {
     public const TAB_ALL = 'all';
     public const TAB_FOREIGN = 'foreign';
+
+    public const ACTION_DEPRECIATION_RUN = 'depreciation_run';
+    public const EVENTS_TABLE = 'economy_assets_events';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
@@ -100,6 +118,17 @@ class AssetsViewer extends AssetsViewerBase
         ];
 
         return $tabs;
+    }
+
+    public function getToolbarActions(?array $selectedRow): array
+    {
+        $actions = parent::getToolbarActions($selectedRow);
+        $actions[] = [
+            'id'      => self::ACTION_DEPRECIATION_RUN,
+            'label'   => $this->text('action.depreciationRun', 'Depreciation for period'),
+            'variant' => 'secondary',
+        ];
+        return $actions;
     }
 
     public function getFilters(): array
@@ -229,16 +258,293 @@ class AssetsViewer extends AssetsViewerBase
             $this->addItem($lifecycle, $cs ? 'Cena' : 'Price', $this->formatAmount($record['price'] ?? null));
         }
 
+        $depreciable = $category !== '' && $categories->isDepreciable($category);
+        $depreciation = [];
+        if ($depreciable) {
+            $rules = $this->planService()->rules();
+            $taxMethod = (string) ($record['tax_method'] ?? '');
+            $this->addItem($depreciation, $this->text('label.taxMethod', 'Tax method'), $taxMethod !== '' ? $rules->methodName($taxMethod) : null);
+            $this->addItem($depreciation, $this->text('summary.rule', 'Group / rule'), $this->ruleName($taxMethod, (string) ($record['tax_rule'] ?? '')));
+            $this->addItem($depreciation, $this->text('label.accMethod', 'Accounting method'), $this->accMethodLabel($record));
+        }
+
         $note = [];
         $this->addItem($note, $cs ? 'Poznámka' : 'Note', $record['note'] ?? null);
 
-        return $this->overviewDetail([
+        $detail = $this->overviewDetail([
             ['title' => $cs ? 'Identifikace' : 'Identity', 'items' => $identity],
             ['title' => $cs ? 'Zařazení' : 'Classification', 'items' => $classification],
             ['title' => $cs ? 'Vlastnictví' : 'Ownership', 'items' => $ownership],
             ['title' => $cs ? 'Pořízení a vyřazení' : 'Acquisition and disposal', 'items' => $lifecycle],
+            ['title' => $this->text('group.depreciation', 'Depreciation'), 'items' => $depreciation],
             ['title' => $cs ? 'Poznámka' : 'Note', 'items' => $note],
         ]);
+
+        if (!$longTerm) {
+            return $detail;
+        }
+
+        $service = $this->planService();
+        $card = AssetPlanService::plain($record);
+        $events = $service->confirmedEvents($recordId);
+        if ($depreciable) {
+            $plans = $service->plan($card, $events);
+            $detail['tabs'][] = [
+                'id'      => 'taxPlan',
+                'label'   => $this->text('tab.taxPlan', 'Tax depreciation'),
+                'content' => $this->planContent($plans['tax'], $card),
+            ];
+            $detail['tabs'][] = [
+                'id'      => 'accPlan',
+                'label'   => $this->text('tab.accPlan', 'Accounting depreciation'),
+                'content' => $this->planContent($plans['acc'], $card),
+            ];
+        }
+        $detail['actions'] = $this->detailActions($card, $events, $depreciable);
+
+        return $detail;
+    }
+
+    // ── Plán odpisů v detailu ──────────────────────────────────────────────
+
+    /**
+     * Tab okruhu: souhrn (metoda, cena, oprávky, zůstatek, letošní odpis),
+     * tabulka řádků plánu (plánované tlumeně, chybové červeně) a hlášení.
+     *
+     * @param array<string, mixed> $card
+     * @return array<string, mixed> content typu composite
+     */
+    private function planContent(Plan $plan, array $card): array
+    {
+        $summary = [];
+        if ($plan->circuit === AssetEvent::SCOPE_TAX) {
+            $taxMethod = (string) ($card['tax_method'] ?? '');
+            $this->addItem($summary, $this->text('summary.method', 'Method'), $taxMethod !== '' ? $this->planService()->rules()->methodName($taxMethod) : null);
+            $this->addItem($summary, $this->text('summary.rule', 'Group / rule'), $this->ruleName($taxMethod, (string) ($card['tax_rule'] ?? '')));
+        } else {
+            $this->addItem($summary, $this->text('summary.method', 'Method'), $this->accMethodLabel($card));
+            if ((string) ($card['acc_method'] ?? '') === DepreciationSettings::ACC_TIME && !empty($card['acc_months'])) {
+                $this->addItem(
+                    $summary,
+                    $this->text('summary.accMonths', 'Depreciation period'),
+                    $this->text('summary.months', '{months} months', ['months' => (int) $card['acc_months']]),
+                );
+            }
+        }
+        $this->addItem($summary, $this->text('summary.entryPrice', 'Entry price'), $this->formatAmount($plan->entryPrice));
+        $this->addItem($summary, $this->text('summary.accumulated', 'Accumulated depreciation'), $this->formatAmount($plan->accumulated));
+        $this->addItem($summary, $this->text('summary.residual', 'Residual value'), $this->formatAmount($plan->residual));
+        $this->addItem($summary, $this->text('summary.currentYear', "This year's depreciation"), $this->formatAmount($plan->currentYearAmount));
+
+        $blocks = [['type' => 'properties', 'groups' => [['title' => '', 'items' => $summary]]]];
+
+        if ($plan->rows === []) {
+            $blocks[] = ['type' => 'heading', 'text' => $this->text('text.notActivated', 'The asset is not activated.')];
+        } else {
+            $blocks[] = $this->planTable($plan);
+        }
+
+        $messages = $this->messageRows($plan);
+        if ($messages !== []) {
+            $blocks[] = ['type' => 'heading', 'text' => $this->text('heading.messages', 'Messages')];
+            $blocks[] = [
+                'type'    => 'table',
+                'columns' => [
+                    ['id' => 'severity', 'label' => $this->text('column.severity', 'Severity')],
+                    ['id' => 'message', 'label' => $this->text('column.message', 'Message')],
+                ],
+                'rows' => $messages,
+            ];
+        }
+
+        return ['type' => 'composite', 'blocks' => $blocks];
+    }
+
+    /** @return array<string, mixed> content typu table */
+    private function planTable(Plan $plan): array
+    {
+        $kinds = $this->config?->cfgItem('economy.assets.eventKinds') ?? [];
+        $rows = [];
+        foreach ($plan->rows as $row) {
+            $kind = (string) ($kinds[$row->kind]['name'] ?? $row->kind);
+            if ($row->halfYear) {
+                $kind .= ' (' . $this->text('halfYear', 'half-year') . ')';
+            }
+            $entry = [
+                'period'      => $row->period !== null
+                    ? $this->formatDate($row->period->begin) . ' – ' . $this->formatDate($row->period->end)
+                    : $this->formatDate($row->date),
+                'kind'        => $kind,
+                'status'      => $row->isPlanned()
+                    ? $this->text('status.planned', 'Planned')
+                    : $this->text('status.confirmed', 'Confirmed'),
+                'formula'     => $row->formula ?? '',
+                'amount'      => $this->formatAmount($row->amount),
+                'accumulated' => $this->formatAmount($row->accumulated),
+                'residual'    => $this->formatAmount($row->residual),
+            ];
+            $hasError = false;
+            foreach ($row->messages as $message) {
+                $hasError = $hasError || $message->isError();
+            }
+            if ($hasError) {
+                $entry['_class'] = 'error';
+            } elseif ($row->isPlanned()) {
+                $entry['_class'] = 'muted';
+            }
+            $rows[] = $entry;
+        }
+
+        return [
+            'type'    => 'table',
+            'columns' => [
+                ['id' => 'period', 'label' => $this->text('column.period', 'Period')],
+                ['id' => 'kind', 'label' => $this->text('column.kind', 'Event')],
+                ['id' => 'status', 'label' => $this->text('column.status', 'Status')],
+                ['id' => 'formula', 'label' => $this->text('column.formula', 'Calculation')],
+                ['id' => 'amount', 'label' => $this->text('column.amount', 'Amount'), 'align' => 'right'],
+                ['id' => 'accumulated', 'label' => $this->text('column.accumulated', 'Accumulated'), 'align' => 'right'],
+                ['id' => 'residual', 'label' => $this->text('column.residual', 'Residual'), 'align' => 'right'],
+            ],
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * Hlášení okruhu i řádků, chyby s třídou `error`.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function messageRows(Plan $plan): array
+    {
+        $texts = new PlanMessageTexts($this->config);
+        $rows = [];
+        $add = function (PlanMessage $message, ?PlanRow $row) use (&$rows, $texts): void {
+            $text = $texts->text($message);
+            if ($row !== null) {
+                $text = $this->formatDate($row->period?->end ?? $row->date) . ': ' . $text;
+            }
+            $entry = [
+                'severity' => $message->isError()
+                    ? $this->text('severity.error', 'Error')
+                    : $this->text('severity.warning', 'Warning'),
+                'message' => $text,
+            ];
+            if ($message->isError()) {
+                $entry['_class'] = 'error';
+            }
+            $rows[] = $entry;
+        };
+        foreach ($plan->messages as $message) {
+            $add($message, null);
+        }
+        foreach ($plan->rows as $row) {
+            foreach ($row->messages as $message) {
+                $add($message, $row);
+            }
+        }
+        return $rows;
+    }
+
+    /**
+     * Akce detailu podle stavu karty a potvrzených událostí; jen karta
+     * ve stavu V pořádku bez vyřazení něco nabízí.
+     *
+     * @param array<string, mixed> $card
+     * @param list<array<string, mixed>> $events
+     * @return list<array<string, mixed>>
+     */
+    private function detailActions(array $card, array $events, bool $depreciable): array
+    {
+        if ((int) ($card['docState'] ?? 0) !== AssetDocument::STATE_CONFIRMED) {
+            return [];
+        }
+        $activation = null;
+        $openings = [];
+        foreach ($events as $event) {
+            switch ($event['event_kind']) {
+                case AssetEvent::KIND_DISPOSAL:
+                    return [];
+                case AssetEvent::KIND_ACTIVATION:
+                    $activation = $event;
+                    break;
+                case AssetEvent::KIND_OPENING:
+                    $openings[(string) $event['scope']] = $event;
+                    break;
+            }
+        }
+        $assetId = (int) $card['id'];
+        $open = fn(string $id, string $labelKey, string $fallback, string $kind, string $scope, string $variant = 'secondary'): array => [
+            'id'      => $id,
+            'label'   => $this->text($labelKey, $fallback),
+            'kind'    => 'open_form',
+            'variant' => $variant,
+            'target'  => [
+                'table'  => self::EVENTS_TABLE,
+                'preset' => ['asset' => $assetId, 'event_kind' => $kind, 'scope' => $scope],
+            ],
+        ];
+
+        $started = $activation !== null
+            || (isset($openings[AssetEvent::SCOPE_TAX]) && isset($openings[AssetEvent::SCOPE_ACC]));
+        if (!$started) {
+            $actions = [];
+            if ($openings === []) {
+                $actions[] = $open('activate', 'action.activate', 'Activate', AssetEvent::KIND_ACTIVATION, AssetEvent::SCOPE_BOTH, 'primary');
+            }
+            if ($depreciable) {
+                foreach ([AssetEvent::SCOPE_TAX => 'Tax', AssetEvent::SCOPE_ACC => 'Acc'] as $scope => $suffix) {
+                    if (!isset($openings[$scope])) {
+                        $actions[] = $open('opening' . $suffix, 'action.opening' . $suffix, "Opening balance — {$scope}", AssetEvent::KIND_OPENING, $scope);
+                    }
+                }
+            }
+            return $actions;
+        }
+
+        $actions = [];
+        if ($depreciable) {
+            $actions[] = [
+                'id'      => self::ACTION_DEPRECIATION_RUN,
+                'label'   => $this->text('action.depreciate', 'Depreciate'),
+                'variant' => 'primary',
+                'target'  => ['assetId' => $assetId],
+            ];
+        }
+        $actions[] = $open('improvement', 'action.improvement', 'Improvement', AssetEvent::KIND_IMPROVEMENT, AssetEvent::SCOPE_BOTH);
+        $actions[] = $open('reduction', 'action.reduction', 'Reduce value', AssetEvent::KIND_REDUCTION, AssetEvent::SCOPE_BOTH);
+        $taxMethod = (string) ($card['tax_method'] ?? '');
+        if ($depreciable && $taxMethod !== '' && $this->planService()->rules()->isInterruptible($taxMethod)) {
+            $actions[] = $open('interruption', 'action.interruption', 'Interrupt depreciation', AssetEvent::KIND_INTERRUPTION, AssetEvent::SCOPE_TAX);
+        }
+        $actions[] = $open('disposal', 'action.disposal', 'Dispose', AssetEvent::KIND_DISPOSAL, AssetEvent::SCOPE_BOTH);
+
+        return $actions;
+    }
+
+    /** Název pravidla (skupiny) daňové metody, null bez pravidla. */
+    private function ruleName(string $taxMethod, string $taxRule): ?string
+    {
+        if ($taxMethod === '' || $taxRule === '') {
+            return null;
+        }
+        foreach ($this->planService()->rules()->rules($taxMethod, null) as $rule) {
+            if ($rule['code'] === $taxRule) {
+                return $rule['name'];
+            }
+        }
+        return $taxRule;
+    }
+
+    /** @param array<string, mixed> $card */
+    private function accMethodLabel(array $card): ?string
+    {
+        $accMethod = (string) ($card['acc_method'] ?? '');
+        if ($accMethod === '') {
+            return null;
+        }
+        $cfg = $this->config?->cfgItem('economy.assets.accMethods') ?? [];
+        return (string) ($cfg[$accMethod]['name'] ?? $accMethod);
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

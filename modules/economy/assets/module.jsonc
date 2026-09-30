@@ -133,6 +133,10 @@
             "table": "economy_assets_assets",
             "class": "Shipard\\Module\\Economy\\Assets\\AssetsForm"
         },
+        {
+            "table": "economy_assets_events",
+            "class": "Shipard\\Module\\Economy\\Assets\\AssetEventsForm"
+        },
         { "table": "economy_assets_types",             "id": "economy.assets.types" },
         { "table": "economy_assets_type_groups",       "id": "economy.assets.type_groups" },
         { "table": "economy_assets_accounting_groups", "id": "economy.assets.accounting_groups" }
@@ -217,6 +221,10 @@
         {
             "id": "economy.assets.accMethods",
             "file": "config/accMethods.jsonc"
+        },
+        {
+            "id": "economy.assets.viewerLabels",
+            "file": "config/viewerLabels.jsonc"
         }
     ]
 }

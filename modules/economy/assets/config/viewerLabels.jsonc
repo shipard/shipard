@@ -1,0 +1,56 @@
+{
+    // economy.assets.viewerLabels — popisky viewerů majetku (D39): taby
+    // detailu, akce, sloupce plánu odpisů a texty. Viewery je čtou přes
+    // AssetsViewerBase::text(klíč, anglický fallback); PHP nenese
+    // `cs() ? … : …`.
+
+    // --- taby detailu ---
+    "tab.taxPlan":  { "name": "Tax depreciation", "name:cs": "Daňové odpisy", "name:en": "Tax depreciation" },
+    "tab.accPlan":  { "name": "Accounting depreciation", "name:cs": "Účetní odpisy", "name:en": "Accounting depreciation" },
+
+    // --- akce detailu a toolbaru ---
+    "action.activate":        { "name": "Activate", "name:cs": "Zařadit", "name:en": "Activate" },
+    "action.openingTax":      { "name": "Opening balance — tax", "name:cs": "Počáteční stav — daňový", "name:en": "Opening balance — tax" },
+    "action.openingAcc":      { "name": "Opening balance — accounting", "name:cs": "Počáteční stav — účetní", "name:en": "Opening balance — accounting" },
+    "action.improvement":     { "name": "Improvement", "name:cs": "Technické zhodnocení", "name:en": "Improvement" },
+    "action.reduction":       { "name": "Reduce value", "name:cs": "Snížení hodnoty", "name:en": "Reduce value" },
+    "action.interruption":    { "name": "Interrupt depreciation", "name:cs": "Přerušit odpisy", "name:en": "Interrupt depreciation" },
+    "action.disposal":        { "name": "Dispose", "name:cs": "Vyřadit", "name:en": "Dispose" },
+    "action.depreciate":      { "name": "Depreciate", "name:cs": "Odepsat", "name:en": "Depreciate" },
+    "action.depreciationRun": { "name": "Depreciation for period", "name:cs": "Odpisy za období", "name:en": "Depreciation for period" },
+
+    // --- souhrn plánu ---
+    "summary.method":      { "name": "Method", "name:cs": "Metoda", "name:en": "Method" },
+    "summary.rule":        { "name": "Group / rule", "name:cs": "Skupina / pravidlo", "name:en": "Group / rule" },
+    "summary.accMonths":   { "name": "Depreciation period", "name:cs": "Doba odpisování", "name:en": "Depreciation period" },
+    "summary.entryPrice":  { "name": "Entry price", "name:cs": "Vstupní cena", "name:en": "Entry price" },
+    "summary.accumulated": { "name": "Accumulated depreciation", "name:cs": "Oprávky", "name:en": "Accumulated depreciation" },
+    "summary.residual":    { "name": "Residual value", "name:cs": "Zůstatková cena", "name:en": "Residual value" },
+    "summary.currentYear": { "name": "This year's depreciation", "name:cs": "Odpis letošního roku", "name:en": "This year's depreciation" },
+    "summary.months":      { "name": "{months} months", "name:cs": "{months} měsíců", "name:en": "{months} months" },
+
+    // --- tabulka plánu ---
+    "column.period":      { "name": "Period", "name:cs": "Období", "name:en": "Period" },
+    "column.kind":        { "name": "Event", "name:cs": "Druh", "name:en": "Event" },
+    "column.status":      { "name": "Status", "name:cs": "Stav", "name:en": "Status" },
+    "column.formula":     { "name": "Calculation", "name:cs": "Výpočet", "name:en": "Calculation" },
+    "column.amount":      { "name": "Amount", "name:cs": "Částka", "name:en": "Amount" },
+    "column.accumulated": { "name": "Accumulated", "name:cs": "Oprávky", "name:en": "Accumulated" },
+    "column.residual":    { "name": "Residual", "name:cs": "Zůstatek", "name:en": "Residual" },
+    "column.severity":    { "name": "Severity", "name:cs": "Závažnost", "name:en": "Severity" },
+    "column.message":     { "name": "Message", "name:cs": "Hlášení", "name:en": "Message" },
+
+    "status.confirmed":   { "name": "Confirmed", "name:cs": "Potvrzeno", "name:en": "Confirmed" },
+    "status.planned":     { "name": "Planned", "name:cs": "Plán", "name:en": "Planned" },
+    "severity.error":     { "name": "Error", "name:cs": "Chyba", "name:en": "Error" },
+    "severity.warning":   { "name": "Warning", "name:cs": "Varování", "name:en": "Warning" },
+    "halfYear":           { "name": "half-year", "name:cs": "polovina", "name:en": "half-year" },
+
+    // --- texty ---
+    "heading.messages":     { "name": "Messages", "name:cs": "Hlášení", "name:en": "Messages" },
+    "text.notActivated":    { "name": "The asset is not activated — the plan starts with an activation or an opening balance.", "name:cs": "Majetek není zařazen — plán odpisů začíná zařazením nebo počátečním stavem.", "name:en": "The asset is not activated — the plan starts with an activation or an opening balance." },
+    "text.noDepreciation":  { "name": "No depreciation in this circuit.", "name:cs": "V tomto okruhu se neodepisuje.", "name:en": "No depreciation in this circuit." },
+    "group.depreciation":   { "name": "Depreciation", "name:cs": "Odpisy", "name:en": "Depreciation" },
+    "label.taxMethod":      { "name": "Tax method", "name:cs": "Daňová metoda", "name:en": "Tax method" },
+    "label.accMethod":      { "name": "Accounting method", "name:cs": "Účetní metoda", "name:en": "Accounting method" }
+}
