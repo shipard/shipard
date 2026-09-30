@@ -1,0 +1,234 @@
+{
+    // Hodnotová historie majetku (docs/assets.md D3, D28, D29): zařazení,
+    // počáteční stav, technické zhodnocení, snížení hodnoty, odpis,
+    // přerušení a vyřazení. Zůstatky se nikde neukládají — plán i souhrn
+    // počítá DepreciationPlanner z potvrzených událostí.
+    //
+    // Pravidla per druh drží AssetEventDocument, proto přechody stavu jdou
+    // přes Document lifecycle. Potvrzenou událost chrání
+    // AssetEventLockProvider (historie se rozebírá od konce + zámek
+    // účetního měsíce).
+    "tableId": 454,
+    "name": "Asset events",
+    "name:cs": "Události majetku",
+    "name:en": "Asset events",
+
+    // Události se spravují jen z karty majetku.
+    "hideFromNavigation": true,
+
+    "displayPattern": "{event_date}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "economy.assets.eventStates"
+    },
+
+    "stateTransitionsRunDocumentHooks": true,
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "asset",
+            "name": "Asset",
+            "name:cs": "Majetek",
+            "name:en": "Asset",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_assets_assets"
+        },
+        {
+            "id": "event_kind",
+            "name": "Event kind",
+            "name:cs": "Druh události",
+            "name:en": "Event kind",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "economy.assets.eventKinds",
+            "nullable": false
+        },
+        {
+            // both = událost společná oběma okruhům (zařazení, TZ, snížení,
+            // vyřazení); odpis a počáteční stav jsou vždy per okruh,
+            // přerušení jen daňové (D34).
+            "id": "scope",
+            "name": "Circuit",
+            "name:cs": "Okruh",
+            "name:en": "Circuit",
+            "type": "enumString",
+            "length": 4,
+            "cfgItem": "economy.assets.eventScopes",
+            "nullable": false,
+            "default": "both"
+        },
+        {
+            // Účetní datum události.
+            "id": "event_date",
+            "name": "Date",
+            "name:cs": "Datum",
+            "name:en": "Date",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            // Období odpisu a přerušení.
+            "id": "period_begin",
+            "name": "Period from",
+            "name:cs": "Období od",
+            "name:en": "Period from",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "id": "period_end",
+            "name": "Period to",
+            "name:cs": "Období do",
+            "name:en": "Period to",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            // Vstupní cena (zařazení, počáteční stav), změna vstupní ceny
+            // (TZ, snížení) nebo odpis.
+            "id": "amount",
+            "name": "Amount",
+            "name:cs": "Částka",
+            "name:en": "Amount",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 2,
+            "nullable": false,
+            "default": 0
+        },
+
+        // --- jen počáteční stav (D16) ---
+
+        {
+            "id": "accumulated",
+            "name": "Accumulated depreciation",
+            "name:cs": "Oprávky",
+            "name:en": "Accumulated depreciation",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 2,
+            "nullable": true
+        },
+        {
+            // Roky u ročních daňových metod, měsíce u časových, mimořádných
+            // a účetních (viz AssetEvent).
+            "id": "units_done",
+            "name": "Periods depreciated",
+            "name:cs": "Odepsaných období",
+            "name:en": "Periods depreciated",
+            "type": "smallint",
+            "nullable": true
+        },
+        {
+            "id": "price_increased",
+            "name": "Increased entry price",
+            "name:cs": "Zvýšená vstupní cena",
+            "name:en": "Increased entry price",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false
+        },
+        {
+            "id": "original_date",
+            "name": "Original activation date",
+            "name:cs": "Datum původního zařazení",
+            "name:en": "Original activation date",
+            "type": "date",
+            "nullable": true
+        },
+
+        {
+            // Vyřazení: uplatnit polovinu ročního daňového odpisu;
+            // odpis: jde o odpis roku vyřazení (D35).
+            "id": "half_year",
+            "name": "Half of annual depreciation",
+            "name:cs": "Polovina ročního odpisu",
+            "name:en": "Half of annual depreciation",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false
+        },
+        {
+            // D11 — jen import: odpis snížil zůstatkovou cenu, uplatněná
+            // částka se ve starém systému neevidovala.
+            "id": "claim_unrecorded",
+            "name": "Claimed amount not recorded",
+            "name:cs": "Uplatněná částka neevidována",
+            "name:en": "Claimed amount not recorded",
+            "type": "boolean",
+            "default": 0,
+            "nullable": false
+        },
+        {
+            "id": "origin",
+            "name": "Origin",
+            "name:cs": "Původ",
+            "name:en": "Origin",
+            "type": "enumString",
+            "length": 8,
+            "cfgItem": "economy.assets.eventOrigins",
+            "nullable": false,
+            "default": "manual"
+        },
+        {
+            "id": "note",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "varchar",
+            "length": 250,
+            "nullable": true
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_asset_scope_date",
+            "type": "index",
+            "columns": [
+                {"column": "asset", "order": "ASC"},
+                {"column": "scope", "order": "ASC"},
+                {"column": "event_date", "order": "ASC"},
+                {"column": "id", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"}
+            ]
+        }
+    ]
+}

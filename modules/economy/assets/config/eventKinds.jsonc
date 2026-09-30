@@ -1,0 +1,40 @@
+{
+    // economy.assets.eventKinds — druh hodnotové události majetku (D28).
+    // Klíče = konstanty AssetEvent::KIND_*; pravidla per druh drží
+    // AssetEventDocument.
+    "opening": {
+        "name": "Opening balance",
+        "name:cs": "Počáteční stav",
+        "name:en": "Opening balance"
+    },
+    "activation": {
+        "name": "Activation",
+        "name:cs": "Zařazení",
+        "name:en": "Activation"
+    },
+    "improvement": {
+        "name": "Improvement",
+        "name:cs": "Technické zhodnocení",
+        "name:en": "Improvement"
+    },
+    "reduction": {
+        "name": "Value reduction",
+        "name:cs": "Snížení hodnoty",
+        "name:en": "Value reduction"
+    },
+    "depreciation": {
+        "name": "Depreciation",
+        "name:cs": "Odpis",
+        "name:en": "Depreciation"
+    },
+    "interruption": {
+        "name": "Interruption",
+        "name:cs": "Přerušení odpisů",
+        "name:en": "Interruption"
+    },
+    "disposal": {
+        "name": "Disposal",
+        "name:cs": "Vyřazení",
+        "name:en": "Disposal"
+    }
+}

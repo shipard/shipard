@@ -1,0 +1,75 @@
+{
+    // economy.assets.eventStates
+    //
+    // Stavy hodnotových událostí majetku (economy_assets_events, D29).
+    // Bez archivu — událost buď platí, nebo ne.
+    //
+    // Stavový automat:
+    //   Koncept   → Potvrzeno | Smazáno
+    //   Potvrzeno → V opravě | Smazáno
+    //   V opravě  → Potvrzeno | Smazáno
+    //   Smazáno   → V opravě
+    //
+    // Do plánu odpisů vstupují jen potvrzené události. Potvrzenou událost
+    // jde opravit či smazat, jen když po ní v témže okruhu není potvrzený
+    // odpis a její měsíc není zamčený (AssetEventLockProvider); od fáze 3
+    // ji chrání i zaúčtování.
+
+    "10": {
+        "stateName": "Draft",
+        "stateName:cs": "Koncept",
+        "stateName:en": "Draft",
+        "actionName": "Save as draft",
+        "actionName:cs": "Uložit jako koncept",
+        "actionName:en": "Save as draft",
+        "stateStyle": "concept",
+        "mainState": 1,
+        "viewGroup": "active",
+        "closeForm": 0,
+        "goto": [40, 90]
+    },
+
+    "80": {
+        "stateName": "Being edited",
+        "stateName:cs": "V opravě",
+        "stateName:en": "Being edited",
+        "actionName": "Edit",
+        "actionName:cs": "Opravit",
+        "actionName:en": "Edit",
+        "stateStyle": "edit",
+        "mainState": 2,
+        "viewGroup": "active",
+        "closeForm": 0,
+        "goto": [40, 90]
+    },
+
+    "40": {
+        "stateName": "Confirmed",
+        "stateName:cs": "Potvrzeno",
+        "stateName:en": "Confirmed",
+        "actionName": "Confirm",
+        "actionName:cs": "Potvrdit",
+        "actionName:en": "Confirm",
+        "stateStyle": "done",
+        "mainState": 3,
+        "viewGroup": "active",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [80, 90]
+    },
+
+    "90": {
+        "stateName": "Deleted",
+        "stateName:cs": "Smazáno",
+        "stateName:en": "Deleted",
+        "actionName": "Delete",
+        "actionName:cs": "Smazat",
+        "actionName:en": "Delete",
+        "stateStyle": "trash",
+        "mainState": 4,
+        "viewGroup": "trash",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [80]
+    }
+}

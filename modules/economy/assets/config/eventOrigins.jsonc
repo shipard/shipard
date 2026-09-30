@@ -1,0 +1,20 @@
+{
+    // economy.assets.eventOrigins — původ události (D28). Klíče = konstanty
+    // AssetEvent::ORIGIN_*. `system` = odpisy z akce „Odpisy za období“
+    // a poslední odpisy při vyřazení; `import` smí nést necelé koruny (D10).
+    "manual": {
+        "name": "Manual",
+        "name:cs": "Ručně",
+        "name:en": "Manual"
+    },
+    "system": {
+        "name": "System",
+        "name:cs": "Systém",
+        "name:en": "System"
+    },
+    "import": {
+        "name": "Import",
+        "name:cs": "Import",
+        "name:en": "Import"
+    }
+}

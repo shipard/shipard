@@ -5,7 +5,9 @@
     // Kód se NIKDY neptá na klíč druhu, jen na příznaky:
     //   longTerm     — dlouhodobý majetek: povinná účetní skupina, cena karty
     //                  prázdná (vzniká z pohybů, D13)
-    //   depreciable  — odepisuje se (Fáze 2)
+    //   depreciable  — odepisuje se: karta nese odpisové nastavení (D30)
+    //   intangible   — nehmotný majetek: pravidla země podle něj omezí
+    //                  nabídku daňových metod (CZ: od 2021 jen podle účetnictví)
     //   numberPrefix — výchozí prefix inventárního čísla (D22); přepíše
     //                  settings klíč economy.assets.numberPrefix.<klíč>
     "small": {
@@ -30,6 +32,7 @@
         "name:en": "Intangible fixed asset",
         "longTerm": true,
         "depreciable": true,
+        "intangible": true,
         "numberPrefix": "MA"
     },
     "nondepreciable": {

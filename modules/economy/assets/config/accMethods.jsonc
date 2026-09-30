@@ -1,0 +1,14 @@
+{
+    // economy.assets.accMethods — účetní metoda odpisu (D30). Klíče =
+    // konstanty DepreciationSettings::ACC_*. AV / AM až fáze 8.
+    "as_tax": {
+        "name": "Same as tax depreciation",
+        "name:cs": "Stejně jako daňové",
+        "name:en": "Same as tax depreciation"
+    },
+    "time": {
+        "name": "Time-based",
+        "name:cs": "Časová (rovnoměrně po měsících)",
+        "name:en": "Time-based"
+    }
+}

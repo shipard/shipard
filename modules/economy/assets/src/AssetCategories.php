@@ -50,6 +50,12 @@ final class AssetCategories
         return (bool) ($this->all()[$key]['depreciable'] ?? false);
     }
 
+    /** Nehmotný majetek — pravidla země podle něj omezí daňové metody. */
+    public function isIntangible(string $key): bool
+    {
+        return (bool) ($this->all()[$key]['intangible'] ?? false);
+    }
+
     public function label(string $key): string
     {
         return (string) ($this->all()[$key]['name'] ?? $key);

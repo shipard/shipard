@@ -1,6 +1,7 @@
 {
     // Majetek — evidence karet majetku, typů, skupin typů a účetních skupin
-    // (docs/assets.md, #83). Fáze 1 = evidence bez odpisů a účtování.
+    // (docs/assets.md, #83). Fáze 1 = evidence, fáze 2 = hodnotové události
+    // a odpisy (bez účtování — to přidá fáze 3).
     "id": "economy.assets",
     "name": "Assets",
     "name:cs": "Majetek",
@@ -16,7 +17,8 @@
         "economy_assets_assets",
         "economy_assets_types",
         "economy_assets_type_groups",
-        "economy_assets_accounting_groups"
+        "economy_assets_accounting_groups",
+        "economy_assets_events"
     ],
 
     "settingsItems": [
@@ -182,6 +184,26 @@
         {
             "id": "economy.assets.planMessages",
             "file": "config/planMessages.jsonc"
+        },
+        {
+            "id": "economy.assets.eventKinds",
+            "file": "config/eventKinds.jsonc"
+        },
+        {
+            "id": "economy.assets.eventScopes",
+            "file": "config/eventScopes.jsonc"
+        },
+        {
+            "id": "economy.assets.eventOrigins",
+            "file": "config/eventOrigins.jsonc"
+        },
+        {
+            "id": "economy.assets.eventStates",
+            "file": "config/eventStates.jsonc"
+        },
+        {
+            "id": "economy.assets.accMethods",
+            "file": "config/accMethods.jsonc"
         }
     ]
 }

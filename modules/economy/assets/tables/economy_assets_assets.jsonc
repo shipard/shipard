@@ -1,5 +1,7 @@
 {
-    // Karta majetku (docs/assets.md D18–D23). Stavy archivní sady:
+    // Karta majetku (docs/assets.md D18–D23, odpisové nastavení D30).
+    // U dlouhodobého majetku plní datum pořízení a vyřazení události
+    // (economy_assets_events, D38). Stavy archivní sady:
     // V archívu = vyřazeno (D23). Inventární číslo je prázdné u konceptu
     // a přiděluje se při potvrzení (D22, AssetDocument), proto přechody
     // stavu jdou přes Document lifecycle.
@@ -36,6 +38,12 @@
             "name": "Acquisition and disposal",
             "name:cs": "Pořízení a vyřazení",
             "name:en": "Acquisition and disposal"
+        },
+        {
+            "id": "depreciation",
+            "name": "Depreciation",
+            "name:cs": "Odpisy",
+            "name:en": "Depreciation"
         }
     ],
 
@@ -187,6 +195,55 @@
             "scale": 2,
             "nullable": true,
             "group": "lifecycle"
+        },
+
+        // --- depreciation (D30) — jen odepisovaný druh, jinak prázdné ---
+
+        {
+            // Kód metody z pravidel země (world.assets): straight,
+            // accelerated, extraordinary, time, accounting, none. Nabídku
+            // i názvy řídí TaxDepreciationRules, proto varchar, ne enum.
+            "id": "tax_method",
+            "name": "Tax depreciation method",
+            "name:cs": "Daňová metoda",
+            "name:en": "Tax depreciation method",
+            "type": "varchar",
+            "length": 16,
+            "nullable": true,
+            "group": "depreciation"
+        },
+        {
+            // Kód skupiny / časového / mimořádného pravidla z konfigurace
+            // země (cz-2, cz-30a-2, cz-nim-software).
+            "id": "tax_rule",
+            "name": "Tax depreciation group",
+            "name:cs": "Odpisová skupina",
+            "name:en": "Tax depreciation group",
+            "type": "varchar",
+            "length": 24,
+            "nullable": true,
+            "group": "depreciation"
+        },
+        {
+            "id": "acc_method",
+            "name": "Accounting depreciation method",
+            "name:cs": "Účetní metoda",
+            "name:en": "Accounting depreciation method",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "economy.assets.accMethods",
+            "nullable": true,
+            "group": "depreciation"
+        },
+        {
+            // Délka účetního odpisování u metody `time`.
+            "id": "acc_months",
+            "name": "Accounting depreciation period (months)",
+            "name:cs": "Doba účetního odpisování (měsíce)",
+            "name:en": "Accounting depreciation period (months)",
+            "type": "smallint",
+            "nullable": true,
+            "group": "depreciation"
         },
 
         // --- doc state (systémové, bez skupiny) ---

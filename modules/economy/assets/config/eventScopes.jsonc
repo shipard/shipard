@@ -1,0 +1,19 @@
+{
+    // economy.assets.eventScopes — okruh události (D28). Klíče = konstanty
+    // AssetEvent::SCOPE_*; `both` patří do daňového i účetního okruhu.
+    "both": {
+        "name": "Both",
+        "name:cs": "Oba okruhy",
+        "name:en": "Both"
+    },
+    "tax": {
+        "name": "Tax",
+        "name:cs": "Daňový",
+        "name:en": "Tax"
+    },
+    "acc": {
+        "name": "Accounting",
+        "name:cs": "Účetní",
+        "name:en": "Accounting"
+    }
+}
