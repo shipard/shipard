@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 302 tasků: **naplánováno** 7 · **částečně** 18 · **hotovo** 277.
+Celkem 302 tasků: **naplánováno** 6 · **částečně** 18 · **hotovo** 278.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,7 +27,6 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-models-phase0.md` | naplánováno | čeká na potvrzení rozhodnutí F0-D1–F0-D7 (#85) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
-| `assets-phase2a.md` | naplánováno | D27–D45 potvrzena 2026-09-30; implementace nezačala |
 | `assets-phase2b.md` | naplánováno | D27–D45 potvrzena 2026-09-30; prerekvizita `tasks/assets-phase2a.md` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
@@ -206,7 +205,6 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `exchange-contact-name.md` | Kontaktní osoba strany dokladu (`contact.name`) — schéma, ISDOC, náhled; prompt v4.5.0 |
 | `exchange-received-reverse-charge.md` | Přenesení daňové povinnosti u přijatých dokladů — kód DPH odvozený ze signálů AI, registrace z naší DPH, přepočítaná rekapitulace; prompt v4.6.0 (#86) |
 | `exchange-received-vat-place.md` | Místo plnění přijatého dokladu podle DIČ dodavatele (`world.trade.unions`), ne podle adresy; prompt v4.6.1 (#86) |
-| `exchange-received-supply-kind.md` | Druh plnění řádku přijatého dokladu ze zahraničí — fallback ze štítku (`crossBorderSupply`), dovoz zboží a zvláštní místo plnění se neodvozují; prompt v4.6.2 (#88) |
 | `exchange-format-persons-phase1.md` | Výměnný formát osob (`shpd.persons.person.v1`) |
 | `exchange-format-items-phase1.md` | Výměnný formát položek (`shpd.items.item.v1`) |
 | `docs-import-number-mode.md` | Import-mód čísla dokladu + fix validace bank. spojení |

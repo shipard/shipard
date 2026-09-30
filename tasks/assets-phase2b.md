@@ -107,7 +107,10 @@ se spravují jen z karty.
   být v `TaxDepreciationRules::availableMethods(datum zařazení, intangible)`
   (bez zařazení: dnešní datum); `tax_rule` povinné u `straight`,
   `accelerated`, `time`, `extraordinary` a musí být v `rules()`;
-  `acc_method = time` → `acc_months` > 0.
+  `acc_method = time` → `acc_months` > 0. Kombinace, které engine
+  neumí spočítat (hlásí `settingsInvalid`): `acc_method = as_tax`
+  s daňovou metodou `accounting` nebo `none`; daňová `accounting` bez
+  `acc_method = time`.
 - Druh bez `depreciable` → všechna čtyři pole se vyprázdní v `beforeSave()`.
 - Po prvním potvrzeném daňovém odpisu nelze změnit `tax_method` ani
   `tax_rule` (chyba na poli, kód `taxMethodLocked`). Účetní metodu změnit
@@ -124,7 +127,7 @@ ve stavu V pořádku; žádná událost po potvrzeném vyřazení.
 |---|---|---|
 | `activation` | `both` | jediné zařazení na kartě, žádný `opening`; `amount` > 0 |
 | `opening` (D16) | `tax` nebo `acc` | max. jeden per okruh, bez `activation`; `event_date` = první den účetního roku; `amount` > 0, 0 ≤ `accumulated` ≤ `amount`, `units_done` ≥ 0, `original_date` povinné |
-| `improvement`, `reduction` | `both` | po zařazení / počátečním stavu, `amount` > 0; TZ na kartě s mimořádnou metodou zakázané (D41, kód `improvementOnSchedule`) |
+| `improvement`, `reduction` | `both` | po zařazení / počátečním stavu, `amount` > 0; TZ na kartě s mimořádnou metodou zakázané (D41, kód `improvementOnSchedule`); snížení nejvýš do zůstatkové ceny obou okruhů (engine to nehlídá) |
 | `depreciation` | `tax` nebo `acc` | jen dlouhodobý odepisovaný druh; `period_begin`/`period_end` povinné, `event_date` ve stejném účetním roce jako `period_end`; `amount` ≥ 0, celé koruny kromě `origin = import` (D10); ne nad zůstatek (engine) |
 | `interruption` | `tax` | účetní rok; metoda karty přerušitelná (D34); ne v roce, kde je potvrzený daňový odpis |
 | `disposal` | `both` | datum ≥ zařazení; `half_year` jen pokud pravidla dovolují a majetek byl v evidenci k začátku roku |

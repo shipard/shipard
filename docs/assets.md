@@ -2,8 +2,10 @@
 
 > **Designový dokument.** **Stav:** D1–D45 rozhodnuto;
 > oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
-> (`tasks/assets-phase1.md`), oblast 2 má PRD (`tasks/assets-phase2a.md`,
-> `tasks/assets-phase2b.md`), další oblasti se rozpadají postupně (§7).
+> (`tasks/assets-phase1.md`), z oblasti 2 jsou **hotová** pravidla země
+> a odpisový engine (2026-09-30, `tasks/assets-phase2a.md`, §5.1–5.2),
+> události a UI mají PRD (`tasks/assets-phase2b.md`), další oblasti se
+> rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -436,9 +438,129 @@ Ilustrativní — konkrétní sloupce se zamknou v PRD jednotlivých oblastí.
 (`structured-fields.md`): sada se mění podle typu, hodnoty jsou opis, ne
 zdroj výpočtu. Ověřit v oblasti §7, zda se podle nich filtruje.
 
-**Engine** (`DepreciationPlanner`): vstup = události majetku + nastavení
-karty + pravidla země; výstup = plán per okruh (období, výpočet,
-částka, zůstatek, zdroj řádku: potvrzeno / plán). Bez DB, bez UI.
+### 5.1 Pravidla země (`world.assets`) — hotovo
+
+Modul bez tabulek, vzor `world.vat` (D31). **Čísla** jsou v cfgItem
+`world.assets.{country}` (`modules/world/assets/config/assets-cz.jsonc`),
+**vzorce** v PHP. Popis struktury konfigurace: `modules/world/assets/README.md`.
+
+| Třída (`Shipard\Module\World\Assets\`) | Role |
+|---|---|
+| `TaxDepreciationRules` | rozhraní — jediné, co engine o státu ví |
+| `CzTaxDepreciationRules` | ZDP § 30a, § 31, § 32, § 32a; `validateConfig()` |
+| `AccountingOnlyTaxRules` | stát bez pravidel: jen `accounting` / `none` |
+| `TaxRulesRegistry::forCountry($config, $country)` | výběr podle `DataSourceConfig::getCountry()` |
+
+Rozhraní dělí metody na čtyři druhy (`methodKind()`):
+
+| Druh | Metody CZ | Výpočet |
+|---|---|---|
+| `annual` | `straight`, `accelerated` | `annualAmount(TaxYearInput)` — jeden rok; vstup nese počet let s uplatněným odpisem, příznak zvýšené ceny a roky odpisované ze zvýšené ceny |
+| `monthly` | `extraordinary`, `time` | `scheduleAmount(TaxScheduleInput)` — úsek měsíců rozpisu; `scheduleMonths()` = délka rozpisu |
+| `accounting` | `accounting` | daňový odpis = účetní odpisy téže karty |
+| `none` | `none` | bez odpisu |
+
+Dál `availableMethods(datum zařazení, nehmotný)`, `rules(metoda, datum)`
+(skupiny / pravidla platná pro datum zařazení, D43), `isInterruptible()`,
+`allowsHalfYearOnDisposal()`, `allowsImprovement()` a `round()`.
+
+`round()` nejdřív srovná hodnotu na 4 místa: prosté `ceil(50000 × 5,15 / 100)`
+dá kvůli plovoucí čárce 2 576 místo 2 575. Starý engine tuhle korunu
+navíc přičítal — zlatý test (fáze 6) může ukázat rozdíly ±1 Kč.
+
+Pravidla CZ, která nejsou vidět z konfigurace:
+
+- **Technické zhodnocení před prvním uplatněným odpisem** (typicky v roce
+  zařazení) je součást pořizovací ceny: sazba 1. roku ze zvýšené ceny,
+  dál běžná sazba / koeficient — ne sazba pro zvýšenou vstupní cenu.
+  Pokyn GFŘ D-59 případ neřeší, vychází se z odborného výkladu.
+- **Zrychlený odpis po TZ** počítá roky odpisované ze zvýšené zůstatkové
+  ceny (§ 32 odst. 3); starý engine počitadlo nenuloval.
+- **Časový odpis NIM po TZ** běží po zbývající dobu, nejméně však
+  `monthsIncreased` (§ 32a odst. 6).
+- **Poslední úsek měsíčního rozpisu** dorovná zůstatek do 100 % ceny.
+
+### 5.2 Engine (`DepreciationPlanner`) — hotovo
+
+`Shipard\Module\Economy\Assets\Depreciation\` — čistá funkce bez DB a UI
+(D32):
+
+```php
+$plans = (new DepreciationPlanner())->plan(
+    DepreciationSettings::fromArray($card),   // tax_method, tax_rule, acc_method, acc_months, intangible
+    array_map(AssetEvent::fromArray(...), $eventRows),
+    TaxRulesRegistry::forCountry($config, $dsConfig->getCountry()),
+    PeriodCalendar::yearly($fiscalYears),                 // daňový okruh
+    PeriodCalendar::monthly($fiscalYears, $fiscalMonths), // účetní: yearly() / monthly() dle D12
+    $today,
+);
+$plans['tax']; $plans['acc'];   // Plan: rows, souhrn, messages
+```
+
+- **Vstup.** `AssetEvent::fromArray()` bere sloupce tabulky událostí
+  (`event_kind`, `scope`, `event_date`, …) + `confirmed`. Nepotvrzené
+  události se ignorují. `PeriodCalendar` dostane založené účetní roky;
+  mimo ně dopočítává období po 12 měsících dopředu i dozadu.
+- **Výstup.** `Plan` = řádky (`PlanRow`: druh, stav `confirmed` /
+  `planned`, období, částka, spočtená hodnota, vzorec, vstupní cena,
+  oprávky, zůstatek, hlášení) + souhrn ze **skutečného** (potvrzeného)
+  stavu + `currentYearAmount` (odpis roku, do kterého patří `$asOf`,
+  včetně plánu). `toArray()` pro API.
+
+**Průchod okruhem** (`CircuitWalker`):
+
+1. Potvrzené události chronologicky; událost `both` patří do obou okruhů.
+2. Potvrzený odpis se **nepřepočítává** — převezme se, vedle něj spočtená
+   hodnota a vzorec; rozdíl = varování `mismatch`.
+3. Před změnou hodnoty (TZ, snížení) a před přerušením se doplní
+   **plánované** odpisy období, která skončila dřív — odpis 2023 se nesmí
+   počítat ze zhodnocení z roku 2024. Potvrzený odpis, před kterým je
+   mezera nebo plánovaný řádek, dostane chybu `missingPeriod`.
+4. Za poslední událostí plán pokračuje do nulového zůstatku, do vyřazení,
+   nebo do vyčerpání metody. Vyřazení je poslední řádek a odepíše
+   zůstatkovou cenu.
+
+**Metody okruhů** (`Depreciation\Method\`):
+
+| Okruh / metoda | Chování |
+|---|---|
+| daňový, roční | odpis za celé zdaňovací období (rok zařazení celý, D37; krátký účetní rok se nekrátí); přerušený rok se nepočítá do let (D34); v roce vyřazení nic, nebo polovina u majetku evidovaného na začátku roku (D35) |
+| daňový, měsíční | rozpis podle kalendáře od měsíce po zařazení, součet měsíců se zaokrouhluje jednou za období; do měsíce vyřazení včetně; TZ uprostřed období ho dělí na úseky |
+| daňový `accounting` | součet účetních odpisů (i plánovaných), jejichž období v roce končí |
+| účetní `time` | měsíčně zůstatek / zbývající měsíce původní doby → TZ se rozpustí do zbytku doby (D44); nahoru na koruny jednou za období (D36); do měsíce vyřazení včetně |
+| účetní `as_tax`, roční daňová metoda | roční vzorec nad účetním zůstatkem na začátku roku a vlastním počitadlem let, bez přerušení; roční částka se rozpouští do měsíců v užívání, každé období bere podíl ze zbytku, takže poslední měsíc dorovná (D45); zařazení v posledním měsíci roku → celý roční odpis do něj; v roce vyřazení poměrná část podle měsíců v užívání |
+| účetní `as_tax`, měsíční daňová metoda | stejný rozpis jako daňový okruh |
+
+Roční součet `as_tax` je tak stejný při měsíční i roční četnosti.
+Výjimka: TZ, které roční částku **sníží** pod to, co už měsíce roku
+odepsaly (rovnoměrný odpis, TZ ke konci roku — sazba klesne na
+„zvýšenou“); odepsané měsíce se nevracejí.
+
+**Počáteční stav** (D16): `units_done` jsou roky u ročních daňových metod
+(u zrychleného odpisu se zvýšenou cenou roky odpisované ze zvýšené
+zůstatkové ceny), měsíce u měsíčních a účetních metod. Oprávky se
+ověřují proti pravidlům (`openingMismatch`); se zvýšenou cenou se
+nekontrolují, protože průběh před zhodnocením není znám. Sazby se volí
+podle `original_date`.
+
+**Hlášení** — engine vrací kód, závažnost a parametry (`PlanMessage`),
+texty drží cfgItem `economy.assets.planMessages` a skládá
+`PlanMessageTexts`. Chyba znamená, že plán okruhu není spolehlivý.
+
+| Kód | Závažnost | Kdy |
+|---|---|---|
+| `mismatch` | varování | potvrzený odpis ≠ spočtený |
+| `openingMismatch` | varování | oprávky počátečního stavu neodpovídají pravidlům a počtu období |
+| `missingPeriod` | chyba | před potvrzeným odpisem chybí odpis dřívějšího období |
+| `dateOutsidePeriod` | chyba | datum odpisu mimo účetní rok konce období, nebo před jeho začátkem |
+| `notWholeUnits` | chyba | odpis není zaokrouhlený dle pravidel (mimo původ `import`, D10) |
+| `improvementOnSchedule` | chyba | TZ u metody, která ho odpisuje samostatně (§ 30a, D41) |
+| `ruleNotValid` | chyba | pravidlo neplatí pro datum zařazení — okruh se nepočítá |
+| `settingsInvalid` | chyba | kombinace metod nedává výpočet (`reason`: `asTaxWithoutFormula`, `accountingWithoutAccMethod`, `accMonthsMissing`, `unknownTaxMethod`) |
+
+**Co engine nehlídá** (patří do validace událostí, fáze 2b): snížení
+hodnoty větší než zůstatková cena (zůstatek vyjde záporný) a události
+datované po vyřazení.
 
 ---
 
@@ -466,8 +588,8 @@ Probírají se jedna po druhé; každá má vlastní PRD.
    `tasks/assets-phase1.md` (vč. odchylek od PRD: přidělení čísla
    v `afterPersist`, unikátnost přes všechny stavy, prefixy lookupu účtů)
 2. Ledger událostí + engine + pravidla CZ (D3, D6, D7, D10, D27–D45) —
-   `tasks/assets-phase2a.md` (pravidla + engine), `tasks/assets-phase2b.md`
-   (události, UI, odpisy za období)
+   pravidla + engine **hotovo** 2026-09-30 (`tasks/assets-phase2a.md`,
+   §5.1–5.2); události, UI a odpisy za období `tasks/assets-phase2b.md`
 3. Zaúčtování (D4) + řádkové operace + extension deníku
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15)
 5. Přehledy: karta, odpisy, přírůstky / úbytky, kontrola proti deníku,

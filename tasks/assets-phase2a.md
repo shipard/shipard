@@ -1,6 +1,6 @@
 # Majetek Fáze 2a — pravidla země a odpisový engine
 
-**Stav:** naplánováno — D27–D45 potvrzena 2026-09-30; implementace nezačala
+**Stav:** hotovo
 
 > PRD pro jednu Claude Code session (4 commity). Design: `docs/assets.md`
 > §4 (D6, D7, D10, D16, D27–D45), issue #83. Navazuje `tasks/assets-phase2b.md`
@@ -286,8 +286,8 @@ Doplnění nad rámec textu výše:
 - **Krátký účetní rok** roční daňový odpis nekrátí (starý engine krátil
   poměrem měsíců); rozdíl do komentáře testu.
 
-Rozhodnutí měnící očekávané hodnoty (znění ZDP u 3–5 ověřit při
-implementaci):
+Rozhodnutí měnící očekávané hodnoty (body 3–5 ověřeny při implementaci,
+výsledek u každého):
 
 1. **`as_tax` měsíčně, zařazení v posledním měsíci roku** (D45 × D37):
    celý roční odpis jde do posledního měsíce roku — roční součet je
@@ -296,11 +296,55 @@ implementaci):
    `unitsDone` = roky odpisované ze zvýšené ZC; kontrola
    `openingMismatch` jen bez příznaku zvýšené ceny.
 3. **Časový odpis NIM po TZ:** ZCzvýš / max(zbývající měsíce,
-   `monthsIncreased`) — §32a odst. 6 „nejméně však“.
-4. **TZ v roce zařazení:** rovnoměrný — 1. rok sazba `first` ze zvýšené
-   VC, dál `increased`; zrychlený — počitadlo let ověřit v pokynu GFŘ.
+   `monthsIncreased`) — §32a odst. 6 „nejméně však“. Paragraf je od 2021
+   zrušen; znění potvrzují jen sekundární zdroje.
+4. **TZ v roce zařazení** — **změněno proti původnímu návrhu.** TZ před
+   prvním uplatněným odpisem je součást pořizovací ceny: 1. rok sazba
+   `first` (koeficient `first`) ze zvýšené ceny a dál **běžná** sazba
+   `next`, ne `increased`. Pokyn GFŘ D-59 případ neřeší; odborné zdroje
+   se shodují, že se na majetek hledí, jako by byl pořízen najednou.
 5. **Vyřazení u časové a mimořádné daňové metody:** odpis do měsíce
-   vyřazení včetně, stejně jako v účetním okruhu.
+   vyřazení včetně, stejně jako v účetním okruhu. Odpovídá §30a odst. 2
+   (odpisy „ve výši připadající na toto zdaňovací období“).
+
+## Výsledek (2026-09-30)
+
+Popis hotového stavu: `docs/assets.md` §5.1–5.2,
+`modules/world/assets/README.md`. Odchylky od textu výše:
+
+- **Rozhraní `TaxDepreciationRules`** má navíc `methodKind()` (druh
+  metody pro engine: `annual` / `monthly` / `accounting` / `none`),
+  `allowsImprovement()` a `scheduleMonths()`. `TaxAmount` nese i `exact`
+  (hodnota před zaokrouhlením) — období rozdělené technickým zhodnocením
+  se zaokrouhluje jednou.
+- **`TaxRulesRegistry::forCountry()`** přijme i `null` místo konfigurace
+  (→ `AccountingOnlyTaxRules`).
+- **`PeriodCalendar`** se staví `yearly($years)` / `monthly($years,
+  $months)`; `Period` je `{id, begin, end}`.
+- **`Plan`** nese souhrn ze skutečného (potvrzeného) stavu
+  a `currentYearAmount`; řádek má `entryPrice` (základ), `computed`,
+  `eventId`.
+- **Plánované odpisy před pozdější událostí.** Před změnou hodnoty a před
+  přerušením se doplní plán období, která skončila dřív; potvrzený odpis
+  za plánovaným řádkem nebo mezerou = `missingPeriod`.
+- **`as_tax` v roce vyřazení** — poměrná část ročního odpisu podle měsíců
+  v užívání (PRD říkal jen „do měsíce vyřazení“).
+- **Řádek plánu měsíčních metod při roční četnosti** je za celý rok, i
+  když rozpis skončí dřív; zkracuje se jen rok vyřazení.
+- **Hlášení:** `mismatch` a `openingMismatch` jsou varování, ostatní
+  chyby; `notWholeUnits` se u původu `import` nehlásí.
+
+Pro 2b: engine nehlídá snížení hodnoty větší než zůstatková cena
+(zůstatek vyjde záporný) ani události po vyřazení — patří do validace
+`AssetEventDocument`. Roční součet `as_tax` při měsíční četnosti se od
+roční liší jen tehdy, když TZ ke konci roku roční částku sníží pod už
+odepsané měsíce.
+
+Ověření: `vendor/bin/phpunit --filter 'World\\Assets|Depreciation'`
+(105 testů), celá sada 6 649 testů; `ds-upgrade` na `4l3j-z0bz-kz39-echj`
+zkompiloval `world.assets.cz` a `economy.assets.planMessages`. Mimo
+testy prošlo 6 000 náhodných karet kontrolou invariantů (součet odpisů =
+vstupní cena, zůstatek ≥ 0, daňový `accounting` = účetní plán).
 
 ## Rozhodnutí k designu (potvrzená)
 
