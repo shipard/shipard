@@ -526,8 +526,11 @@
         {#if party.address}
           <div class="shpd-exchange__party-address">{formatAddress(party.address)}</div>
         {/if}
-        {#if party.contact?.email || party.contact?.phone}
+        {#if party.contact?.name || party.contact?.email || party.contact?.phone}
           <div class="shpd-exchange__party-contact">
+            {#if party.contact?.name}
+              <span>{t('exchange.preview.field.contactName')}: <strong>{party.contact.name}</strong></span>
+            {/if}
             {#if party.contact?.email}<span>{party.contact.email}</span>{/if}
             {#if party.contact?.phone}<span>{party.contact.phone}</span>{/if}
           </div>

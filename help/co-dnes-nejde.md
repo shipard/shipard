@@ -160,6 +160,11 @@ je v [TESTERS.md](../TESTERS.md).
   (fakturované období, číslo služby). Přesně tento text vidíš v náhledu
   a přesně ten skončí na dokladu; opravit ho jde až v Konceptu po
   **Vystavit koncept**.
+- **Kontaktní osoba z faktury zůstává jen v náhledu.** Jméno uvedené
+  u dodavatele nebo odběratele („Vyřizuje“, „Attn“, jméno nad názvem
+  firmy) AI přečte a náhled návrhu ho ukáže jako **Kontakt**. Na doklad
+  ani k dodavateli do **Osob** se nepřenáší; potřebuješ-li ho evidovat,
+  doplň ho u dodavatele ručně.
 
 Když dodavatel přiloží fakturu ve formátu **ISDOC**, data se převezmou
 přímo bez čtení AI — je to přesnější. AI se u něj použije jen na zařazení

@@ -415,6 +415,7 @@ export default {
   'exchange.preview.field.vatId': 'VAT ID',
   'exchange.preview.field.address': 'Adresa',
   'exchange.preview.field.bankAccount': 'Bankovní účet',
+  'exchange.preview.field.contactName': 'Kontakt',
   'exchange.preview.field.email': 'E-mail',
   'exchange.preview.field.phone': 'Telefon',
   'exchange.preview.field.issueDate': 'Vystaveno',

@@ -402,6 +402,7 @@ export default {
   'exchange.preview.field.vatId': 'VAT ID',
   'exchange.preview.field.address': 'Address',
   'exchange.preview.field.bankAccount': 'Bank account',
+  'exchange.preview.field.contactName': 'Contact',
   'exchange.preview.field.email': 'E-mail',
   'exchange.preview.field.phone': 'Phone',
   'exchange.preview.field.issueDate': 'Issued',
