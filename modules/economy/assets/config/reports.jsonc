@@ -74,6 +74,17 @@
         "params": []
     },
     {
+        "id": "economy.assets.journalCheck",
+        "navSection": "assets",
+        "navOrder": 53,
+        "name": "Register × journal check",
+        "name:cs": "Kontrola evidence × deník",
+        "name:en": "Register × journal check",
+        "builder": "Shipard\\Module\\Economy\\Assets\\Reports\\JournalCheckBuilder",
+        "periodGranularities": ["year"],
+        "params": []
+    },
+    {
         "id": "economy.assets.register",
         "navSection": "assets",
         "navOrder": 54,
