@@ -937,7 +937,8 @@ dimenzi nevědí.
   je zapíše. Contributoři dimenze nenastavují (NULL), bankovní engine
   dimenze nezná (NULL). DS bez dimenzí = výsledek beze změny.
 - **Zobrazení**: `JournalViewer` přidá per dimenzi sloupec gridu, řádek
-  detailu a textový filtr `dim_{id}` (hledá ve sloupcích `displayPattern`);
+  detailu a textový filtr `dim_{id}` (hledá ve sloupcích `displayPattern`;
+  hodnota `#123` = přesně záznam dimenze s tímto id);
   tab Zaúčtování dokladu ukáže sloupec dimenze, když ji některý řádek nese.
 
 ---

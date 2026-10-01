@@ -295,6 +295,39 @@
         }
     ],
 
+    // Vazba na doklady (D61, D63): řádek pořízení bez karty a pořízený,
+    // ale nezařazený dlouhodobý majetek.
+    "alertChecks": [
+        {
+            "id": "economy.assets.purchase_without_asset",
+            "name": "Asset acquisition without an asset card",
+            "name:cs": "Pořízení majetku bez karty",
+            "name:en": "Asset acquisition without an asset card",
+            "description": "Confirmed documents with an asset acquisition row that carries no asset card.",
+            "description:cs": "Potvrzené doklady s řádkem pořízení majetku, který nenese kartu majetku.",
+            "description:en": "Confirmed documents with an asset acquisition row that carries no asset card.",
+            "class": "Shipard\\Module\\Economy\\Assets\\Checks\\PurchaseWithoutAssetCheck",
+            "severity": "warning",
+            "interval": "1h",
+            "navSection": "assets",
+            "tags": ["assets", "documents"]
+        },
+        {
+            "id": "economy.assets.awaiting_activation",
+            "name": "Assets waiting for activation",
+            "name:cs": "Majetek čeká na zařazení",
+            "name:en": "Assets waiting for activation",
+            "description": "Fixed asset cards with confirmed acquisition on an acquisition account but no activation.",
+            "description:cs": "Dlouhodobé karty s potvrzeným pořízením na účtu pořízení, které nejsou zařazené.",
+            "description:en": "Fixed asset cards with confirmed acquisition on an acquisition account but no activation.",
+            "class": "Shipard\\Module\\Economy\\Assets\\Checks\\AwaitingActivationCheck",
+            "severity": "info",
+            "interval": "1h",
+            "navSection": "assets",
+            "tags": ["assets"]
+        }
+    ],
+
     "config": [
         {
             "id": "economy.assets.categories",

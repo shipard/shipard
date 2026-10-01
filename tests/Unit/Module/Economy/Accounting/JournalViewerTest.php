@@ -487,6 +487,24 @@ class JournalViewerTest extends TestCase
         $this->assertStringContainsString('LEFT JOIN `economy_assets_assets` d_asset', $footer['sql']);
     }
 
+    public function testDimensionFilterWithHashMatchesExactRecord(): void
+    {
+        // Odkaz z karty majetku: `#68` = přesně tato karta, ne textové
+        // hledání (MA0006 by chytlo i MA00061).
+        $this->withAssetDimension();
+        $viewer = $this->makeViewer();
+
+        $viewer->selectRows(null, [['id' => 'dim_asset', 'value' => ' #68 ']], 0);
+        $query = $this->queries[array_key_last($this->queries)];
+        $this->assertStringContainsString('j.`asset` = %i', $query['sql']);
+        $this->assertStringNotContainsString('d_asset.`name` LIKE', $query['sql']);
+        $this->assertSame([68], $query['params']);
+
+        // `#` s textem zůstává textovým hledáním.
+        $viewer->selectRows(null, [['id' => 'dim_asset', 'value' => '#68a']], 0);
+        $this->assertSame(['#68a', '#68a'], $this->queries[array_key_last($this->queries)]['params']);
+    }
+
     public function testWithoutDimensionsViewerIsUnchanged(): void
     {
         $viewer = $this->makeViewer();

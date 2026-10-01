@@ -39,6 +39,9 @@ class AssetsViewer extends AssetsViewerBase
     public const EVENTS_TABLE = 'economy_assets_events';
     /** Souhrnný viewer dokladů — cíl odkazů na doklad (`open_detail`). */
     public const DOCUMENTS_VIEWER = 'docs.core.heads';
+    public const JOURNAL_VIEWER = 'economy.accounting.journal';
+    /** Filtr deníku podle dimenze `asset` (JournalViewer: `dim_{id dimenze}`). */
+    public const JOURNAL_DIMENSION_FILTER = 'dim_asset';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
@@ -300,7 +303,14 @@ class AssetsViewer extends AssetsViewerBase
             ];
         }
 
+        // Náklady a výnosy z deníku (D64) — tab jen když karta nějaké má.
+        $expensesTab = $this->expensesTab($recordId);
+
         if (!$longTerm) {
+            if ($expensesTab !== null) {
+                $detail['tabs'][] = $expensesTab;
+                $detail['actions'] = [$this->journalAction($recordId)];
+            }
             return $detail;
         }
 
@@ -322,8 +332,129 @@ class AssetsViewer extends AssetsViewerBase
             ];
         }
         $detail['actions'] = $this->detailActions($card, $events, $depreciable, $acquisition['activation']);
+        if ($expensesTab !== null) {
+            $detail['tabs'][] = $expensesTab;
+            $detail['actions'][] = $this->journalAction($recordId);
+        }
 
         return $detail;
+    }
+
+    // ── Náklady a výnosy v detailu ──────────────────────────────────────────
+
+    /**
+     * Tab Náklady a výnosy (D64): souhrn po účetních letech a řádky deníku
+     * s dimenzí karty mimo vlastní zaúčtování majetku, od nejnovějších;
+     * nejvýš `AssetJournalService::ROW_LIMIT` řádků, zbytek je v deníku.
+     * Null = karta žádné takové řádky nemá a tab se neukazuje.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function expensesTab(int $assetId): ?array
+    {
+        $journal = $this->journalService()->overview($assetId);
+        if ($journal['rows'] === []) {
+            return null;
+        }
+
+        $years = [];
+        foreach ($journal['years'] as $year) {
+            $years[] = [
+                'year'     => $year['year'] !== '' ? $year['year'] : '—',
+                'expenses' => $this->formatAmount($year['expenses']),
+                'revenues' => $this->formatAmount($year['revenues']),
+                'otherDr'  => $this->formatAmount($year['otherDr']),
+                'otherCr'  => $this->formatAmount($year['otherCr']),
+            ];
+        }
+        $rows = [];
+        foreach ($journal['rows'] as $row) {
+            $entry = [
+                'date'     => $this->formatDate($row['date']) ?? '',
+                'document' => $row['docNumber'] !== '' ? $row['docNumber'] : '#' . $row['docId'],
+                'account'  => $row['accountNumber'],
+                'text'     => $row['text'],
+                'moneyDr'  => $row['moneyDr'] != 0.0 ? $this->formatAmount($row['moneyDr']) : '',
+                'moneyCr'  => $row['moneyCr'] != 0.0 ? $this->formatAmount($row['moneyCr']) : '',
+            ];
+            if ($row['docId'] > 0) {
+                $entry['_action'] = [
+                    'id'     => 'openDocument',
+                    'kind'   => 'open_detail',
+                    'target' => ['viewerId' => self::DOCUMENTS_VIEWER, 'recordId' => $row['docId']],
+                ];
+            }
+            $rows[] = $entry;
+        }
+
+        $blocks = [
+            [
+                'type'    => 'table',
+                'columns' => [
+                    ['id' => 'year', 'label' => $this->text('column.fiscalYear', 'Fiscal year')],
+                    ['id' => 'expenses', 'label' => $this->text('column.expenses', 'Expenses'), 'align' => 'right'],
+                    ['id' => 'revenues', 'label' => $this->text('column.revenues', 'Revenues'), 'align' => 'right'],
+                    ['id' => 'otherDr', 'label' => $this->text('column.otherDr', 'Other accounts — debit'), 'align' => 'right'],
+                    ['id' => 'otherCr', 'label' => $this->text('column.otherCr', 'Other accounts — credit'), 'align' => 'right'],
+                ],
+                'rows' => $years,
+            ],
+            ['type' => 'heading', 'text' => $this->text('heading.journalRows', 'Journal entries')],
+            [
+                'type'    => 'table',
+                'columns' => [
+                    ['id' => 'date', 'label' => $this->text('column.date', 'Date')],
+                    ['id' => 'document', 'label' => $this->text('column.document', 'Document'), 'link' => true],
+                    ['id' => 'account', 'label' => $this->text('column.account', 'Account')],
+                    ['id' => 'text', 'label' => $this->text('column.text', 'Text')],
+                    ['id' => 'moneyDr', 'label' => $this->text('column.moneyDr', 'Debit'), 'align' => 'right'],
+                    ['id' => 'moneyCr', 'label' => $this->text('column.moneyCr', 'Credit'), 'align' => 'right'],
+                ],
+                'rows' => $rows,
+            ],
+        ];
+        if ($journal['more']) {
+            $blocks[] = [
+                'type' => 'heading',
+                'text' => $this->text(
+                    'text.journalRowsLimit',
+                    'Showing the latest {limit} entries — open the journal for the rest.',
+                    ['limit' => AssetJournalService::ROW_LIMIT],
+                ),
+            ];
+        }
+
+        return [
+            'id'      => 'expenses',
+            'label'   => $this->text('tab.expenses', 'Expenses and revenues'),
+            'content' => ['type' => 'composite', 'blocks' => $blocks],
+        ];
+    }
+
+    /**
+     * Akce „Otevřít v deníku“: deník s filtrem dimenze na tuto kartu
+     * (přesná shoda `#id`) přes všechny účetní roky — prázdný `fiscal_year`
+     * ruší výchozí rok deníku.
+     *
+     * @return array<string, mixed>
+     */
+    private function journalAction(int $assetId): array
+    {
+        return [
+            'id'      => 'openJournal',
+            'label'   => $this->text('action.openJournal', 'Open in journal'),
+            'kind'    => 'open_viewer',
+            'variant' => 'secondary',
+            'target'  => [
+                'viewerId' => self::JOURNAL_VIEWER,
+                'filters'  => ['fiscal_year' => '', self::JOURNAL_DIMENSION_FILTER => '#' . $assetId],
+            ],
+        ];
+    }
+
+    protected function journalService(): AssetJournalService
+    {
+        return new AssetJournalService($this->db->getDibiConnection());
     }
 
     // ── Pořízení v detailu ──────────────────────────────────────────────────

@@ -106,7 +106,12 @@ class JournalViewer extends TableViewer
                 $conditions[] = 'j.`is_error` = 1';
             } elseif (is_string($id) && str_starts_with($id, 'dim_')) {
                 $dimension = $this->dimensions()->get(substr($id, 4));
-                if ($dimension !== null) {
+                // `#123` = přesně záznam dimenze s tímto id (odkaz z karty
+                // majetku); textové hledání by chytlo i podobná čísla.
+                if ($dimension !== null && preg_match('/^#(\d+)$/', trim((string) $value), $m) === 1) {
+                    $conditions[] = 'j.`' . $dimension->journalColumn . '` = %i';
+                    $params[] = (int) $m[1];
+                } elseif ($dimension !== null) {
                     [$dimSql, $dimParams] = SearchCondition::anyContains(
                         array_map(
                             static fn(string $column): string => self::dimensionAlias($dimension) . '.`' . $column . '`',

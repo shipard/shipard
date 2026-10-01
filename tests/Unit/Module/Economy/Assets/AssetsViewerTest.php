@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Assets\AssetAcquisitionService;
+use Shipard\Module\Economy\Assets\AssetJournalService;
 use Shipard\Module\Economy\Assets\AssetPlanService;
 use Shipard\Module\Economy\Assets\AssetsViewer;
 
@@ -61,9 +62,15 @@ class AssetsViewerTest extends TestCase
      *
      * @param array<int, array{docId: int, docNumber: string}> $posting zaúčtované události
      * @param list<array<string, mixed>> $acquisitionRows řádky pořízení z dokladů
+     * @param array{rows: list<array<string, mixed>>, years: list<array<string, mixed>>} $journal řádky a roční obraty deníku
      */
-    private function detailViewer(array $card, array $events, array $posting = [], array $acquisitionRows = []): AssetsViewer
-    {
+    private function detailViewer(
+        array $card,
+        array $events,
+        array $posting = [],
+        array $acquisitionRows = [],
+        array $journal = ['rows' => [], 'years' => []],
+    ): AssetsViewer {
         $service = new TestAssetPlanService();
         $service->cards[(int) $card['id']] = $card;
         $service->events = $events;
@@ -92,14 +99,38 @@ class AssetsViewerTest extends TestCase
             }
         };
 
-        $viewer = new class($db, 'economy_assets_assets', $service, $acquisition) extends AssetsViewer {
+        $journalService = new class($journal) extends AssetJournalService {
+            /** @param array{rows: list<array<string, mixed>>, years: list<array<string, mixed>>} $journal */
+            public function __construct(private readonly array $journal)
+            {
+                parent::__construct(null);
+            }
+
+            protected function loadRows(int $assetId, int $limit): array
+            {
+                return array_slice($this->journal['rows'], 0, $limit);
+            }
+
+            protected function loadYearTotals(int $assetId): array
+            {
+                return $this->journal['years'];
+            }
+        };
+
+        $viewer = new class($db, 'economy_assets_assets', $service, $acquisition, $journalService) extends AssetsViewer {
             public function __construct(
                 DataSourceConnection $db,
                 string $table,
                 private readonly AssetPlanService $service,
                 private readonly AssetAcquisitionService $acquisition,
+                private readonly AssetJournalService $journalService,
             ) {
                 parent::__construct($db, $table);
+            }
+
+            protected function journalService(): AssetJournalService
+            {
+                return $this->journalService;
             }
 
             protected function planService(): AssetPlanService
@@ -219,6 +250,87 @@ class AssetsViewerTest extends TestCase
         $this->assertSame('#12', $table['rows'][0]['document'], 'doklad bez čísla');
         $this->assertSame('4 990,00', $table['rows'][1]['amount']);
         $this->assertArrayNotHasKey('actions', $detail);
+    }
+
+    // --- detail: náklady a výnosy (fáze 4, D64) ---------------------------------
+
+    /** @return array{rows: list<array<string, mixed>>, years: list<array<string, mixed>>} */
+    private function journal(): array
+    {
+        return [
+            'rows' => [
+                ['doc_head' => 21, 'doc_number' => '2260021', 'accounting_date' => '2026-06-10', 'account_number' => '518100',
+                    'text' => 'Servis', 'money_dr' => 4200.0, 'money_cr' => 0.0],
+                ['doc_head' => 0, 'doc_number' => '', 'accounting_date' => '2025-11-02', 'account_number' => '602100',
+                    'text' => 'Pronájem stroje', 'money_dr' => 0.0, 'money_cr' => 9000.0],
+            ],
+            'years' => [
+                ['year_name' => '2026', 'expenses' => 4200.0, 'revenues' => 0.0, 'other_dr' => 882.0, 'other_cr' => 5082.0],
+                ['year_name' => '2025', 'expenses' => 0.0, 'revenues' => 9000.0, 'other_dr' => 0.0, 'other_cr' => 0.0],
+            ],
+        ];
+    }
+
+    public function testExpensesTabShowsYearTotalsRowsAndJournalAction(): void
+    {
+        $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $events = [['id' => 1, 'asset' => 4, 'event_kind' => 'activation', 'scope' => 'both', 'event_date' => '2022-03-15', 'amount' => 100000, 'docState' => 40]];
+        $detail = $this->detailViewer($card, $events, [], [], $this->journal())->renderDetail(4);
+
+        // Tab je až za plány odpisů.
+        $this->assertSame(['overview', 'taxPlan', 'accPlan', 'expenses'], array_column($detail['tabs'], 'id'));
+        $blocks = $detail['tabs'][3]['content']['blocks'];
+        $this->assertSame(['table', 'heading', 'table'], array_column($blocks, 'type'));
+        $this->assertSame(
+            ['year' => '2026', 'expenses' => '4 200,00', 'revenues' => '0,00', 'otherDr' => '882,00', 'otherCr' => '5 082,00'],
+            $blocks[0]['rows'][0],
+        );
+        $this->assertSame('2260021', $blocks[2]['rows'][0]['document']);
+        $this->assertSame('4 200,00', $blocks[2]['rows'][0]['moneyDr']);
+        $this->assertSame('', $blocks[2]['rows'][0]['moneyCr'], 'nulová strana se nevypisuje');
+        $this->assertSame(['viewerId' => 'docs.core.heads', 'recordId' => 21], $blocks[2]['rows'][0]['_action']['target']);
+        // Řádek bez dokladu (počáteční stavy) odkaz nemá.
+        $this->assertArrayNotHasKey('_action', $blocks[2]['rows'][1]);
+        $this->assertTrue($blocks[2]['columns'][1]['link']);
+
+        $action = array_column($detail['actions'], null, 'id')['openJournal'];
+        $this->assertSame('open_viewer', $action['kind']);
+        $this->assertSame(
+            ['viewerId' => 'economy.accounting.journal', 'filters' => ['fiscal_year' => '', 'dim_asset' => '#4']],
+            $action['target'],
+        );
+    }
+
+    public function testCardWithoutJournalRowsHasNoExpensesTab(): void
+    {
+        $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $detail = $this->detailViewer($card, [])->renderDetail(4);
+
+        $this->assertNotContains('expenses', array_column($detail['tabs'], 'id'));
+        $this->assertNotContains('openJournal', array_column($detail['actions'], 'id'));
+    }
+
+    public function testSmallAssetGetsExpensesTabAndJournalAction(): void
+    {
+        $card = ['id' => 2, 'name' => 'Svěrák', 'category' => 'small', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $detail = $this->detailViewer($card, [], [], [], $this->journal())->renderDetail(2);
+
+        $this->assertSame(['overview', 'expenses'], array_column($detail['tabs'], 'id'));
+        $this->assertSame(['openJournal'], array_column($detail['actions'], 'id'));
+    }
+
+    public function testExpensesTabSaysWhenRowsAreCut(): void
+    {
+        $journal = $this->journal();
+        $journal['rows'] = array_fill(0, AssetJournalService::ROW_LIMIT + 1, $journal['rows'][0]);
+        $card = ['id' => 2, 'name' => 'Svěrák', 'category' => 'small', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $blocks = $this->detailViewer($card, [], [], [], $journal)->renderDetail(2)['tabs'][1]['content']['blocks'];
+
+        $this->assertCount(AssetJournalService::ROW_LIMIT, $blocks[2]['rows']);
+        $this->assertSame('heading', $blocks[3]['type']);
+        $this->assertStringContainsString('200', $blocks[3]['text']);
     }
 
     public function testAccountingPlanShowsPostingStateOfConfirmedRows(): void

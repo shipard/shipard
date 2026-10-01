@@ -58,6 +58,19 @@
     "column.account":      { "name": "Account", "name:cs": "Účet", "name:en": "Account" },
     "row.total":           { "name": "Total", "name:cs": "Celkem", "name:en": "Total" },
 
+    // --- náklady a výnosy z deníku (D64) ---
+    "tab.expenses":           { "name": "Expenses and revenues", "name:cs": "Náklady a výnosy", "name:en": "Expenses and revenues" },
+    "action.openJournal":     { "name": "Open in journal", "name:cs": "Otevřít v deníku", "name:en": "Open in journal" },
+    "heading.journalRows":    { "name": "Journal entries", "name:cs": "Řádky deníku", "name:en": "Journal entries" },
+    "column.fiscalYear":      { "name": "Fiscal year", "name:cs": "Účetní rok", "name:en": "Fiscal year" },
+    "column.expenses":        { "name": "Expenses", "name:cs": "Náklady", "name:en": "Expenses" },
+    "column.revenues":        { "name": "Revenues", "name:cs": "Výnosy", "name:en": "Revenues" },
+    "column.otherDr":         { "name": "Other accounts — debit", "name:cs": "Ostatní účty — MD", "name:en": "Other accounts — debit" },
+    "column.otherCr":         { "name": "Other accounts — credit", "name:cs": "Ostatní účty — DAL", "name:en": "Other accounts — credit" },
+    "column.moneyDr":         { "name": "Debit", "name:cs": "MD", "name:en": "Debit" },
+    "column.moneyCr":         { "name": "Credit", "name:cs": "DAL", "name:en": "Credit" },
+    "text.journalRowsLimit":  { "name": "Showing the latest {limit} entries — open the journal for the rest.", "name:cs": "Zobrazeno posledních {limit} řádků — zbytek najdeš v deníku.", "name:en": "Showing the latest {limit} entries — open the journal for the rest." },
+
     // --- texty ---
     "heading.messages":     { "name": "Messages", "name:cs": "Hlášení", "name:en": "Messages" },
     "text.notActivated":    { "name": "The asset is not activated — the plan starts with an activation or an opening balance.", "name:cs": "Majetek není zařazen — plán odpisů začíná zařazením nebo počátečním stavem.", "name:en": "The asset is not activated — the plan starts with an activation or an opening balance." },
