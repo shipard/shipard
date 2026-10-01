@@ -1,6 +1,6 @@
 # Majetek Fáze 2b — události, odpisové nastavení karty, plán a odpisy za období
 
-**Stav:** hotovo — 2026-09-30 (9 commitů; zbývá proklik UI v prohlížeči a alfa)
+**Stav:** hotovo — 2026-09-30 (9 commitů), základní proklik na ukázkovém DS OK; zbývá alfa
 
 > PRD pro jednu Claude Code session (8 commitů). Design: `docs/assets.md`
 > §4 (D3, D7, D11, D12, D13, D16, D27–D46), issue #83. Výsledek a odchylky

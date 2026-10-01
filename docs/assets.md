@@ -1,6 +1,6 @@
 # Shipard — Majetek (`economy.assets`)
 
-> **Designový dokument.** **Stav:** D1–D46 rozhodnuto;
+> **Designový dokument.** **Stav:** D1–D56 rozhodnuto;
 > oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
 > (`tasks/assets-phase1.md`), oblast 2 **hotová** 2026-09-30 — pravidla
 > země a odpisový engine (`tasks/assets-phase2a.md`, §5.1–5.2), události,
@@ -430,6 +430,59 @@ engine krátil poměrem měsíců — obojí chybně); opraveno prvním commitem
 od daňového okruhu nerozešla. Zda platí i pro první zkrácené období nově
 založené firmy, ověřit u účetní.
 
+### D47–D56 — Oblast 3: zaúčtování (ROZHODNUTO)
+
+PRD: `tasks/assets-phase3.md`. Vychází z praxe starého Shipardu (odpisy
+dávkou 1–4 doklady ročně MD 551 / DAL 08x, zařazení a TZ MD 02x / DAL 042,
+vyřazení MD 08x / DAL 02x vstupní cenou, zůstatková cena ručně a zřídka)
+a ze vzoru zaúčtování přiznání DPH (#55 D28–D31: `cmnbkp` přes
+`TransactionlessTableGateway`, řada z nastavení, vazba zpět v jedné
+transakci).
+
+- **D47 Dimenze deníku.** Obecný mechanismus: modul deklaruje
+  v `module.jsonc` `journalDimensions` (sloupec řádku dokladu, volitelně
+  výchozí hodnota z hlavičky, sloupec deníku). Engine hodnotu zkopíruje
+  do řádku deníku a zahrne do klíče seskupení. První dimenze `asset`
+  (extension `economy.assets` na `docs_core_rows`
+  a `economy_accounting_journal`); středisko a zakázka později stejnou
+  cestou. Řeší otevřenou otázku D15; výchozí hodnotu z hlavičky použije
+  fáze 4.
+- **D48 Řádkové operace** `asset.activation`, `asset.improvement`,
+  `asset.reduction`, `asset.depreciation`, `asset.disposal` na `cmnbkp`:
+  účet a strana na řádku (jako `acc.record`), vlajka `rowAsset` (karta
+  povinná), vlajka `system` (formulář je ručně nenabízí, ruční uložení je
+  odmítne).
+- **D49 Účty z účetní skupiny karty:**
+  zařazení a TZ MD majetek / DAL pořízení; snížení hodnoty MD pořízení /
+  DAL majetek (obrácené zařazení); účetní odpis MD odpisy / DAL oprávky;
+  vyřazení **čistým zápisem** — MD oprávky / DAL majetek ve výši oprávek
+  a MD zůstatková cena (541) / DAL majetek ve výši zůstatkové ceny;
+  neodepisovaný majetek celou cenou MD 541 / DAL majetek. Počáteční stav
+  a události jen daňového okruhu se neúčtují.
+- **D50 Dávka za období.** Účetní běh „Odpisy a zaúčtování za období“
+  vytvoří účetní odpisy (jako fáze 2) a zaúčtuje **všechny potvrzené
+  nezaúčtované události** s datem v období do **jednoho** dokladu
+  k poslednímu dni období. Daňový běh se neúčtuje. Okamžité zaúčtování
+  zařazení až na požádání jako nastavení (ne teď).
+- **D51 Stav dokladu.** Doklad vzniká rovnou **V pořádku** (potvrzení
+  náhledu je rozhodnutí uživatele); deník generuje standardní handler.
+- **D52 Vazba a zámek.** Událost nese `doc_head`; „zaúčtováno“ = navázaný
+  nestornovaný doklad. Zaúčtovaná událost je zamčená.
+- **D53 Ochrana dokladu.** Doklad majetku je pro ruční opravu a storno
+  zamčený („spravuje Majetek“). Zaúčtování se ruší z majetku akcí
+  „Zrušit zaúčtování období“ — storno dokladu a odpojení událostí; jen
+  poslední zaúčtované období a jen v nezamčeném měsíci.
+- **D54 Řada dokladů.** Nastavení „Řada účetních dokladů majetku“; nový
+  DS dostane řadu „Majetek“ provisionerem; migrovaný převezme řadu `prp`
+  (fáze 6). Bez řady se zaúčtování odmítne (žádný tichý výběr).
+- **D55 Kontroly.** Náhled vyřadí karty s chybějícím účtem skupiny,
+  chybou plánu nebo nezaúčtovaným dřívějším obdobím; zaúčtovat jde jen po
+  období bez děr. Kontrola invariantu evidence = deník jako report nebo
+  alert ve fázi 5.
+- **D56 Zrušené vyřazení** (nález z 2b) smaže systémové odpisy, které
+  vyřazení založilo; zaúčtované nejdřív vyžadují zrušení zaúčtování
+  období.
+
 ---
 
 ## 5. Doménový model (návrh)
@@ -670,7 +723,8 @@ Probírají se jedna po druhé; každá má vlastní PRD.
    **hotovo** 2026-09-30: pravidla + engine (`tasks/assets-phase2a.md`,
    §5.1–5.2), události, UI a odpisy za období (`tasks/assets-phase2b.md`,
    §5.3)
-3. Zaúčtování (D4) + řádkové operace + extension deníku
+3. Zaúčtování (D4, D47–D56) + řádkové operace + dimenze deníku —
+   `tasks/assets-phase3.md`
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15)
 5. Přehledy: karta, odpisy, přírůstky / úbytky, kontrola proti deníku,
    podklad pro DPPO
@@ -685,6 +739,5 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 - Místa: vlastní číselník v modulu, nebo obecný číselník míst (využijí
   ho i jiné moduly)?
 - Čísla karet (inv. č.): číselná řada per druh, nebo volný text s návrhem?
-- D15: společný mechanismus analytických dimenzí.
 - Podklad pro přiznání DPPO: vazba odpisových skupin na řádky přiznání
   (ve starém `taxDepsTaxCI`) — patří do konfigurace země.
