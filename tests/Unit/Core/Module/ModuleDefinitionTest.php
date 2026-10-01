@@ -851,6 +851,53 @@ class ModuleDefinitionTest extends TestCase
         ]);
     }
 
+    public function testJournalDimensionFormsParsedWithDefaults(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.assets',
+            'name' => 'Assets',
+            'journalDimensions' => [$this->assetDimension([
+                'headColumn' => 'asset',
+                'forms' => [
+                    'docTypes' => ['invni', 'cash', 'invni'],
+                    'head' => true,
+                    'enabledBySetting' => 'economy.assets.trackExpenses',
+                    'ignored' => 1,
+                ],
+            ])],
+        ]);
+
+        $this->assertSame([
+            'docTypes' => ['invni', 'cash'],
+            'head' => true,
+            'rows' => false,
+            'enabledBySetting' => 'economy.assets.trackExpenses',
+        ], $def->journalDimensions[0]['forms']);
+    }
+
+    /** @return iterable<string, array{array<string, mixed>, mixed, string}> */
+    public static function invalidJournalDimensionForms(): iterable
+    {
+        yield 'list'           => [[], ['invni'], 'forms must be an object'];
+        yield 'no docTypes'    => [[], ['rows' => true], 'forms.docTypes must be a non-empty array'];
+        yield 'empty docType'  => [[], ['docTypes' => ['']], 'forms.docTypes must contain non-empty strings'];
+        yield 'rows not bool'  => [[], ['docTypes' => ['invni'], 'rows' => 1], 'forms.rows must be a boolean'];
+        yield 'setting'        => [[], ['docTypes' => ['invni'], 'enabledBySetting' => ''], 'forms.enabledBySetting must be'];
+        // Pole na hlavičce nemá bez headColumn kam uložit hodnotu.
+        yield 'head no column' => [['headColumn' => null], ['docTypes' => ['invni'], 'head' => true], 'forms.head requires headColumn'];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidJournalDimensionForms')]
+    public function testJournalDimensionFormsAreValidated(array $overrides, mixed $forms, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
+        ModuleDefinition::fromArray([
+            'id' => 'economy.assets', 'name' => 'Assets',
+            'journalDimensions' => [$this->assetDimension($overrides + ['headColumn' => 'asset', 'forms' => $forms])],
+        ]);
+    }
+
     // ── settingsPages: select s optionsProvider (assets D54) ────────────────
 
     public function testSelectFieldMayTakeOptionsFromProvider(): void

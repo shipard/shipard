@@ -119,11 +119,12 @@ class CashDocForm extends CashDeskFormBase
 
         $this->addCashDeskSection($tab, $data);
 
-        return $tab
+        $tab
             ->section()
                 ->col()
-                    ->input('doc_text')
-            ->build();
+                    ->input('doc_text');
+        // Dimenze deníku (majetek) — výchozí hodnota pro řádky bez vlastní.
+        return $this->addDimensionElements($tab, $data)->build();
     }
 
     /**

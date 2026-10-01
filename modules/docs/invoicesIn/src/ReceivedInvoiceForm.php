@@ -117,7 +117,7 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase
             ->input('partner_bank_iban', label: 'IBAN', hidden: !$isBankTransfer);
         // FP: jen ruční Plátce (terminál / doprava jsou prodejní směr, #72 D2).
         $this->addPaymentIntermediaryElements($tab, $data);
-        return $tab
+        $tab
             ->input('payment_reference')
             ->input('specific_symbol')
 
@@ -126,7 +126,10 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase
             ->date('accounting_date', required: true)
             ->date('vat_duzp', hidden: !$hasVat)
             ->date('vat_dppd', hidden: !$hasVat)
-            ->input('partner_doc_number')
+            ->input('partner_doc_number');
+        // Dimenze deníku (majetek) — výchozí hodnota pro řádky bez vlastní.
+        $this->addDimensionElements($tab, $data);
+        return $tab
 
             ->col()
             ->select(

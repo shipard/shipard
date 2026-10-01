@@ -10,6 +10,11 @@ namespace Shipard\Core\Accounting;
  * hlavičky, je-li) se kopíruje do sloupce deníku (`journalColumn`)
  * a vstupuje do klíče seskupení. `table` je cílová tabulka reference,
  * `displayPattern` její vzor popisku (doplňuje kompilace konfigurace).
+ *
+ * `forms` říká, na kterých formulářích dokladů se pole dimenze nabízí:
+ * typy dokladů, hlavička / řádky a volitelně klíč nastavení, které pole
+ * zapíná (`enabledBySetting`). Řídí jen zobrazení pole — uložená hodnota
+ * se do deníku propisuje vždy.
  */
 final class JournalDimension
 {
@@ -21,6 +26,11 @@ final class JournalDimension
         public readonly string $table,
         public readonly string $name,
         public readonly ?string $displayPattern = null,
+        /** @var list<string> typy dokladů, jejichž formulář pole nabízí */
+        public readonly array $formDocTypes = [],
+        public readonly bool $formHead = false,
+        public readonly bool $formRows = false,
+        public readonly ?string $enabledBySetting = null,
     ) {
     }
 
@@ -33,18 +43,36 @@ final class JournalDimension
             }
         }
         $headColumn = $data['headColumn'] ?? null;
+        $headColumn = is_string($headColumn) && $headColumn !== '' ? $headColumn : null;
+        $forms = is_array($data['forms'] ?? null) ? $data['forms'] : [];
+        $setting = $forms['enabledBySetting'] ?? null;
 
         return new self(
             id: $data['id'],
             rowColumn: $data['rowColumn'],
-            headColumn: is_string($headColumn) && $headColumn !== '' ? $headColumn : null,
+            headColumn: $headColumn,
             journalColumn: $data['journalColumn'],
             table: $data['table'],
             name: isset($data['name']) && is_string($data['name']) && $data['name'] !== '' ? $data['name'] : $data['id'],
             displayPattern: isset($data['displayPattern']) && is_string($data['displayPattern']) && $data['displayPattern'] !== ''
                 ? $data['displayPattern']
                 : null,
+            formDocTypes: array_values(array_filter(
+                is_array($forms['docTypes'] ?? null) ? $forms['docTypes'] : [],
+                static fn(mixed $docType): bool => is_string($docType) && $docType !== '',
+            )),
+            // Pole na hlavičce nemá bez `headColumn` kam uložit hodnotu.
+            formHead: !empty($forms['head']) && $headColumn !== null,
+            formRows: !empty($forms['rows']),
+            enabledBySetting: is_string($setting) && $setting !== '' ? $setting : null,
         );
+    }
+
+    /** Nabízí formulář dokladu daného typu pole dimenze na hlavičce / řádku? */
+    public function isOnForm(string $docType, bool $head): bool
+    {
+        return ($head ? $this->formHead : $this->formRows)
+            && in_array($docType, $this->formDocTypes, true);
     }
 
     /**

@@ -97,12 +97,16 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
             );
         // Terminál / brána, doprava, Plátce (#72) — sdílený helper base.
         $this->addPaymentIntermediaryElements($tab, $data);
-        return $tab
+        $tab
             ->date('issue_date', required: true, triggers: 'reload')
             ->date('due_date')
             ->date('accounting_date', required: true)
             // Nedaňový doklad DUZP nemá (DocDocument ho nuluje) — pole skryté.
-            ->date('vat_duzp', hidden: !$hasVat || !$taxDocument)
+            ->date('vat_duzp', hidden: !$hasVat || !$taxDocument);
+        // Dimenze deníku (majetek) — jen u typu, který ji deklaruje (FV ano,
+        // proforma ne).
+        $this->addDimensionElements($tab, $data);
+        return $tab
 
             ->col()
             ->select(

@@ -21,24 +21,35 @@
         "economy_assets_events"
     ],
 
-    // Sloupec `asset` na řádcích dokladů a v deníku (D15, D47).
+    // Sloupec `asset` na hlavičkách a řádcích dokladů a v deníku (D15,
+    // D47, D59).
     "extensions": [
+        "docs_core_heads",
         "docs_core_rows",
         "economy_accounting_journal"
     ],
 
-    // Dimenze deníku (D47): karta majetku z řádku dokladu → řádek deníku.
-    // Výchozí hodnotu z hlavičky (headColumn) doplní fáze 4.
+    // Dimenze deníku (D47): karta majetku z řádku dokladu → řádek deníku;
+    // řádek bez karty zdědí kartu hlavičky (D60). `forms` = pole Majetek
+    // na hlavičce a řádcích běžných dokladů, jen se zapnutým nastavením
+    // „Sledovat náklady na majetek“ (D59). Řádek pořízení a systémové
+    // operace majetku mají pole vždy (vlajka `rowAsset` operace).
     "journalDimensions": [
         {
             "id": "asset",
             "rowColumn": "asset",
-            "headColumn": null,
+            "headColumn": "asset",
             "journalColumn": "asset",
             "table": "economy_assets_assets",
             "name": "Asset",
             "name:cs": "Majetek",
-            "name:en": "Asset"
+            "name:en": "Asset",
+            "forms": {
+                "docTypes": ["invni", "invno", "cash", "cmnbkp"],
+                "head": true,
+                "rows": true,
+                "enabledBySetting": "economy.assets.trackExpenses"
+            }
         }
     ],
 
@@ -47,7 +58,8 @@
         { "viewer": "economy.assets.typeGroups",       "section": "assets", "order": 20 },
         { "viewer": "economy.assets.accountingGroups", "section": "assets", "order": 30 },
         { "page":   "assetsNumbering",                 "section": "assets", "order": 40 },
-        { "page":   "assetsDepreciation",              "section": "assets", "order": 50 }
+        { "page":   "assetsDepreciation",              "section": "assets", "order": 50 },
+        { "page":   "assetsDocuments",                 "section": "assets", "order": 60 }
     ],
 
     // Prefixy inventárních čísel per druh (D22). Klíče musí sedět na klíče
@@ -55,8 +67,32 @@
     // AssetCategories::PREFIX_SETTING, fallback numberPrefix v cfgItem.
     // Četnost účetních odpisů (D12): AssetPlanService::SETTING_PERIODICITY,
     // fallback `year`. Řada účetních dokladů majetku (D54):
-    // AssetPostingSeries::SETTING, bez fallbacku.
+    // AssetPostingSeries::SETTING, bez fallbacku. Sledování nákladů (D59):
+    // čte JournalDimensionSet::forForm přes `forms.enabledBySetting` dimenze.
     "settingsPages": [
+        {
+            "id": "assetsDocuments",
+            "name": "Assets on documents",
+            "name:cs": "Majetek na dokladech",
+            "name:en": "Assets on documents",
+            "icon": "document",
+            "fields": [
+                {
+                    "id": "economy.assets.trackExpenses",
+                    "type": "select",
+                    "name": "Track expenses on assets",
+                    "name:cs": "Sledovat náklady na majetek",
+                    "name:en": "Track expenses on assets",
+                    "hint": "Adds the Asset field to the header and rows of received and issued invoices, cash and accounting documents. Empty = no. Asset acquisition rows always have the field.",
+                    "hint:cs": "Přidá pole Majetek na hlavičku a řádky přijatých a vydaných faktur, pokladních a účetních dokladů. Prázdné = ne. Řádek pořízení majetku má pole vždy.",
+                    "hint:en": "Adds the Asset field to the header and rows of received and issued invoices, cash and accounting documents. Empty = no. Asset acquisition rows always have the field.",
+                    "options": [
+                        { "value": "yes", "label": "Yes", "label:cs": "Ano", "label:en": "Yes" },
+                        { "value": "no",  "label": "No",  "label:cs": "Ne",  "label:en": "No" }
+                    ]
+                }
+            ]
+        },
         {
             "id": "assetsDepreciation",
             "name": "Depreciation",

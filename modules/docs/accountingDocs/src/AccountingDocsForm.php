@@ -112,7 +112,7 @@ class AccountingDocsForm extends DocsHeadsFormBase
      */
     protected function buildHeaderTab(array $data, bool $isNew): FormTab
     {
-        return $this->tab('basic', 'Hlavička')
+        $tab = $this->tab('basic', 'Hlavička')
             ->section()
                 ->col()
                     ->separator('Identifikace')
@@ -140,7 +140,8 @@ class AccountingDocsForm extends DocsHeadsFormBase
                     ->date('issue_date', required: true, triggers: 'reload')
                     ->date('due_date')
                     ->date('period_from', hint: 'Volitelné, např. mzdy za období')
-                    ->date('period_to')
-            ->build();
+                    ->date('period_to');
+        // Dimenze deníku (majetek) — výchozí hodnota pro řádky bez vlastní.
+        return $this->addDimensionElements($tab, $data, 'Analytika')->build();
     }
 }

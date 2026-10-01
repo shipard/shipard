@@ -6,6 +6,7 @@ namespace Shipard\Core\Accounting;
 
 use Shipard\Core\Config\ConfigCompiler;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Settings\KeyValueStore;
 
 /**
  * Dimenze deníku aktivních modulů v pořadí resolve ({@see JournalDimension}).
@@ -82,6 +83,36 @@ final class JournalDimensionSet implements \IteratorAggregate, \Countable
             }
         }
         return null;
+    }
+
+    /**
+     * Dimenze, jejichž pole má formulář dokladu daného typu nabídnout —
+     * na hlavičce (`$head`), nebo na řádku. Dimenze s `enabledBySetting`
+     * jen se zapnutým nastavením; bez úložiště nastavení se nenabízí.
+     *
+     * @return list<JournalDimension>
+     */
+    public function forForm(string $docType, bool $head, ?KeyValueStore $settings): array
+    {
+        $out = [];
+        foreach ($this->dimensions as $dimension) {
+            if (!$dimension->isOnForm($docType, $head)) {
+                continue;
+            }
+            if ($dimension->enabledBySetting !== null
+                && !self::isSettingOn($settings?->get($dimension->enabledBySetting))
+            ) {
+                continue;
+            }
+            $out[] = $dimension;
+        }
+        return $out;
+    }
+
+    /** Settings `select` ukládá řetězec (`yes`); bool a 1 pro ruční zápis přes CLI. */
+    public static function isSettingOn(mixed $value): bool
+    {
+        return $value === true || $value === 1 || $value === '1' || $value === 'yes';
     }
 
     /**

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core;
 
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\TabBuilder;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Form\TableForm;
+use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\World\Vat\VatRateResolver;
 
 /**
@@ -25,6 +27,9 @@ use Shipard\Module\World\Vat\VatRateResolver;
  */
 class DocRowsForm extends TableForm
 {
+    /** Sloupec karty majetku na řádku (extension economy.assets, vlajka `rowAsset`). */
+    private const ASSET_COLUMN = 'asset';
+
     public function buildFormDefinition(array $data, bool $isNew): FormDefinition
     {
         $headContext = $this->loadHeadContext($data['doc_head'] ?? null);
@@ -57,6 +62,7 @@ class DocRowsForm extends TableForm
                 $operationOptions,
                 $opAttrs,
                 $rowAccount !== null ? (string) $rowAccount : null,
+                $headContext,
             );
         }
 
@@ -103,8 +109,10 @@ class DocRowsForm extends TableForm
             );
         }
 
-        $col->input('description')
+        $col->input('description');
+        $this->appendDimensionFields($col, $opAttrs, $headContext, hidden: $isText);
 
+        $col
                     ->separator('Množství a cena', hidden: $isText)
                     // triggers: 'reload' na cenových polích = živý přepočet
                     // (applyLiveCalculation v recalculate, #71); NumberInput
@@ -207,11 +215,13 @@ class DocRowsForm extends TableForm
      *
      * @param list<array{value: string, label: string}> $operationOptions
      * @param array<string, mixed> $opAttrs
+     * @param array<string, mixed>|null $headContext
      */
     private function buildContationDefinition(
         array $operationOptions,
         array $opAttrs,
         ?string $rowAccount,
+        ?array $headContext,
     ): FormDefinition {
         // Řádek se systémovou operací (asset.*) sestavila služba — jen k nahlédnutí.
         $system = !empty($opAttrs['system']);
@@ -235,7 +245,7 @@ class DocRowsForm extends TableForm
         // Karta majetku (rowAsset, dimenze deníku) — sloupec z extension
         // economy.assets; operace s vlajkou existují jen jako systémové.
         if (!empty($opAttrs['rowAsset'])) {
-            $section->lookup('asset',
+            $section->lookup(self::ASSET_COLUMN,
                 table: 'economy_assets_assets',
                 label: 'Majetek',
                 required: true,
@@ -274,6 +284,7 @@ class DocRowsForm extends TableForm
             ->input('description', readOnly: $system)
             ->number('price_calc_mode', hidden: true);
 
+        $this->appendDimensionFields($section, $opAttrs, $headContext, readOnly: $system);
         $this->appendRowIdentityFields($section, $opAttrs);
 
         return new FormDefinition(
@@ -397,6 +408,45 @@ class DocRowsForm extends TableForm
     private function hasRowSideLayout(?array $attrs): bool
     {
         return is_array($attrs) && isset($attrs['rowSide']);
+    }
+
+    /**
+     * Pole analytických dimenzí deníku na řádku (`journalDimensions[].forms`
+     * modulu dimenze, assets D59) — lookup do tabulky dimenze nad sloupcem
+     * `rowColumn`. Typ dokladu a nastavení řeší `JournalDimensionSet::forForm`.
+     * Kartu majetku u operace s vlajkou `rowAsset` staví layout sám (povinná
+     * / nepovinná podle operace), tady se nezdvojuje.
+     *
+     * @param array<string, mixed>|null $opAttrs
+     * @param array<string, mixed>|null $headContext
+     */
+    private function appendDimensionFields(
+        TabBuilder $col,
+        ?array $opAttrs,
+        ?array $headContext,
+        bool $hidden = false,
+        bool $readOnly = false,
+    ): void {
+        $docType = (string) ($headContext['doc_type'] ?? '');
+        if ($docType === '') {
+            return;
+        }
+        $dimensions = JournalDimensionSet::fromConfig($this->config)->forForm(
+            $docType,
+            false,
+            $this->db !== null ? new SettingsStore($this->db) : null,
+        );
+        foreach ($dimensions as $dimension) {
+            if ($dimension->rowColumn === self::ASSET_COLUMN && !empty($opAttrs['rowAsset'])) {
+                continue;
+            }
+            $col->lookup($dimension->rowColumn,
+                table: $dimension->table,
+                label: $dimension->name,
+                readOnly: $readOnly,
+                hidden: $hidden,
+            );
+        }
     }
 
     /**

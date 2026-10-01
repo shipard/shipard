@@ -310,6 +310,9 @@ class ModuleDefinition
         // Sloupce zakládá modul dimenze přes extensions; ConfigCompiler
         // dimenze aktivních modulů složí do cfgItem
         // `core.accounting.journalDimensions` (JournalDimensionSet).
+        // Volitelné `forms` = na kterých formulářích dokladů se pole dimenze
+        // nabízí (typy dokladů, hlavička / řádky, případně jen se zapnutým
+        // nastavením `enabledBySetting`).
         $journalDimensions = [];
         if (array_key_exists('journalDimensions', $data)) {
             if (!is_array($data['journalDimensions']) || !array_is_list($data['journalDimensions'])) {
@@ -354,6 +357,9 @@ class ModuleDefinition
                     'journalColumn' => $dim['journalColumn'],
                     'table'         => $dim['table'],
                 ];
+                if (array_key_exists('forms', $dim)) {
+                    $entry['forms'] = self::journalDimensionForms($dim['forms'], $entry, "Module '{$data['id']}': journalDimensions[{$idx}].forms");
+                }
                 // Název vč. jazykových variant — lokalizuje až kompilace.
                 foreach ($dim as $key => $value) {
                     if (($key === 'name' || str_starts_with((string) $key, 'name:')) && is_string($value)) {
@@ -497,5 +503,47 @@ class ModuleDefinition
             }
         }
         return $items;
+    }
+
+    /**
+     * `journalDimensions[].forms` — formuláře dokladů, které pole dimenze
+     * nabízejí. Pole na hlavičce potřebuje `headColumn` (kam by se uložilo).
+     *
+     * @param array<string, mixed> $entry dimenze (kvůli `headColumn`)
+     * @return array{docTypes: list<string>, head: bool, rows: bool, enabledBySetting: ?string}
+     */
+    private static function journalDimensionForms(mixed $forms, array $entry, string $where): array
+    {
+        if (!is_array($forms) || array_is_list($forms)) {
+            throw new \InvalidArgumentException("{$where} must be an object");
+        }
+        $docTypes = $forms['docTypes'] ?? null;
+        if (!is_array($docTypes) || !array_is_list($docTypes) || $docTypes === []) {
+            throw new \InvalidArgumentException("{$where}.docTypes must be a non-empty array");
+        }
+        foreach ($docTypes as $docType) {
+            if (!is_string($docType) || $docType === '') {
+                throw new \InvalidArgumentException("{$where}.docTypes must contain non-empty strings");
+            }
+        }
+        foreach (['head', 'rows'] as $key) {
+            if (isset($forms[$key]) && !is_bool($forms[$key])) {
+                throw new \InvalidArgumentException("{$where}.{$key} must be a boolean");
+            }
+        }
+        $setting = $forms['enabledBySetting'] ?? null;
+        if ($setting !== null && (!is_string($setting) || $setting === '')) {
+            throw new \InvalidArgumentException("{$where}.enabledBySetting must be a non-empty string or null");
+        }
+        $head = $forms['head'] ?? false;
+        if ($head && ($entry['headColumn'] ?? null) === null) {
+            throw new \InvalidArgumentException("{$where}.head requires headColumn");
+        }
+        return [
+            'docTypes'         => array_values(array_unique($docTypes)),
+            'head'             => $head,
+            'rows'             => $forms['rows'] ?? false,
+            'enabledBySetting' => $setting,
+        ];
     }
 }

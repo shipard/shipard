@@ -890,16 +890,31 @@ dimenzi nevědí.
 
   ```jsonc
   "journalDimensions": [{
-      "id": "asset", "rowColumn": "asset", "headColumn": null,
+      "id": "asset", "rowColumn": "asset", "headColumn": "asset",
       "journalColumn": "asset", "table": "economy_assets_assets",
-      "name": "Asset", "name:cs": "Majetek", "name:en": "Asset"
+      "name": "Asset", "name:cs": "Majetek", "name:en": "Asset",
+      "forms": {
+          "docTypes": ["invni", "invno", "cash", "cmnbkp"],
+          "head": true, "rows": true,
+          "enabledBySetting": "economy.assets.trackExpenses"
+      }
   }]
   ```
 
   `rowColumn` = sloupec `docs_core_rows`, `journalColumn` = sloupec
-  deníku, `headColumn` = volitelná výchozí hodnota z hlavičky dokladu,
-  `table` = cílová tabulka. Oba sloupce zakládá modul dimenze přes
-  **extensions** (int, null, reference; na deníku index).
+  deníku, `headColumn` = volitelná výchozí hodnota z hlavičky dokladu
+  (sloupec `docs_core_heads`), `table` = cílová tabulka. Sloupce zakládá
+  modul dimenze přes **extensions** (int, null, reference, index).
+- **Formuláře** (`forms`, volitelné; assets D59): na kterých formulářích
+  dokladů se pole dimenze nabízí — typy dokladů, hlavička (`head`, chce
+  `headColumn`) a řádky (`rows`), případně jen se zapnutým nastavením
+  (`enabledBySetting` = klíč `SettingsStore`; zapnuto = `yes`). Bez
+  `forms` se pole negeneruje. Vyhodnocuje
+  `JournalDimensionSet::forForm($docType, $head, $settings)`; pole staví
+  `DocsHeadsFormBase::addDimensionElements()` (volá ho každý per-typ
+  `buildHeaderTab()`) a `DocRowsForm` v položkovém i kontačním layoutu.
+  Nastavení řídí **jen zobrazení pole** — uložená hodnota se do deníku
+  propisuje dál i po vypnutí.
 - **Transport**: `ConfigCompiler` složí dimenze aktivních modulů do
   cfgItem `core.accounting.journalDimensions` (lokalizovaný název,
   `displayPattern` cílové tabulky; dimenze mířící na neznámou tabulku nebo

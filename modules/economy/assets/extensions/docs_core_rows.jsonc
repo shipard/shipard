@@ -3,8 +3,10 @@
     //
     // asset — karta majetku, které se řádek týká. Zdroj dimenze deníku
     //   `asset` (journalDimensions v module.jsonc): účtovací engine hodnotu
-    //   zkopíruje do řádku deníku. Povinná u operací s vlajkou `rowAsset`
-    //   (asset.*, D48); na fakturách ji začne plnit fáze 4.
+    //   zkopíruje do řádku deníku. Povinná u operací s vlajkou `rowAsset: 1`
+    //   (asset.*, D48), nepovinná u pořízení (`purchase.asset`, D61); na
+    //   ostatních řádcích ji nabízí nastavení „Sledovat náklady na majetek“
+    //   (D59). Index kvůli sekci Pořízení na kartě a alertům (D63).
 
     "table": "docs_core_rows",
     "columns": [
@@ -16,6 +18,13 @@
             "type": "int",
             "nullable": true,
             "reference": "economy_assets_assets"
+        }
+    ],
+    "indexes": [
+        {
+            "id": "idx_asset",
+            "type": "index",
+            "columns": [{"column": "asset"}]
         }
     ]
 }

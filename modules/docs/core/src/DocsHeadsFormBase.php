@@ -604,13 +604,15 @@ abstract class DocsHeadsFormBase extends TableForm
                         hint: $cashDeskHint,
                     );
         $this->addPaymentIntermediaryElements($tab, $data);
-        return $tab
+        $tab
                     ->select('bank_account',
                         options: $this->resolveBankAccountOptions($docCurrency),
                     )
                     ->input('payment_reference')
                     ->input('specific_symbol')
-                    ->input('constant_symbol')
+                    ->input('constant_symbol');
+        $this->addDimensionElements($tab, $data, 'Analytika');
+        return $tab
 
                     ->separator('Součty')
                     ->number('total_base', readOnly: true, label: 'Základ DPH')
@@ -1242,6 +1244,48 @@ abstract class DocsHeadsFormBase extends TableForm
                 hint: $payerHint,
             )
             ->checkbox('partner_balance_manual', triggers: 'reload', hidden: $derived);
+    }
+
+    /**
+     * Pole analytických dimenzí deníku na hlavičce (`journalDimensions[].forms`
+     * modulu dimenze, assets D59): lookup do tabulky dimenze nad sloupcem
+     * `headColumn`. Řádky bez vlastní hodnoty a hlavičkové kroky předpisu
+     * hodnotu zdědí. Každý `buildHeaderTab` helper volá tam, kde má pole být;
+     * typ dokladu a nastavení řeší `JournalDimensionSet::forForm`, takže
+     * sdílený layout (FV / proforma) pole dostane jen u deklarovaného typu.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function addDimensionElements(TabBuilder $tab, array $data, ?string $separator = null): TabBuilder
+    {
+        $dimensions = $this->formDimensions((string) ($data['doc_type'] ?? ''), true);
+        if ($dimensions !== [] && $separator !== null) {
+            $tab->separator($separator);
+        }
+        foreach ($dimensions as $dimension) {
+            $tab->lookup((string) $dimension->headColumn,
+                table: $dimension->table,
+                label: $dimension->name,
+            );
+        }
+        return $tab;
+    }
+
+    /**
+     * Dimenze, jejichž pole má formulář dokladu nabídnout (hlavička / řádek).
+     *
+     * @return list<\Shipard\Core\Accounting\JournalDimension>
+     */
+    protected function formDimensions(string $docType, bool $head): array
+    {
+        if ($docType === '') {
+            return [];
+        }
+        return JournalDimensionSet::fromConfig($this->config)->forForm(
+            $docType,
+            $head,
+            $this->db !== null ? new SettingsStore($this->db) : null,
+        );
     }
 
     /**
