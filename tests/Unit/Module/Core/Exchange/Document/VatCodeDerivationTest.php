@@ -226,4 +226,45 @@ class VatCodeDerivationTest extends TestCase
             $this->derivation()->conflict('cz', $code, self::DATE, $place, $reverseCharge, $pct, $supplyKind),
         );
     }
+
+    // ── Nabídka kódů pro ruční volbu (tasks/exchange-preview-vat-choices.md D13) ──
+
+    public function testOptionsIntracomHaveOnlyCodesWithRateValidAtDate(): void
+    {
+        $options = $this->derivation()->options('cz', self::DATE, 'intracom');
+
+        $this->assertSame(['cz-215', 'cz-216', 'cz-217', 'cz-218'], array_column($options, 'code'));
+        $services = $options[2];
+        $this->assertSame('EU/Vstup/Služby/Základní', $services['label']);
+        $this->assertSame(21.0, $services['pct']);
+        $this->assertTrue($services['reverseCharge']);
+        $this->assertFalse($services['reducedDeduction']);
+        $this->assertSame('services', $services['supplyKind']);
+    }
+
+    public function testOptionsDomesticIncludeReducedDeductionButNotHiddenOrDateless(): void
+    {
+        $codes = array_column($this->derivation()->options('cz', self::DATE, 'domestic'), 'code');
+
+        foreach (['cz-118', 'cz-119'] as $reduced) {
+            $this->assertContains($reduced, $codes, 'krácený odpočet je ručně legitimní');
+        }
+        $this->assertContains('cz-110', $codes);
+        $this->assertNotContains('cz-203', $codes, 'hidden oddaňovací kód');
+        $this->assertNotContains('cz-301', $codes, 'bez sazby k datu');
+        $this->assertNotContains('cz-217', $codes, 'jiné místo plnění');
+    }
+
+    public function testOptionsThirdCountryIncludeImportAndUnknownPlaceIsEmpty(): void
+    {
+        $derivation = $this->derivation();
+
+        $foreign = array_column($derivation->options('cz', self::DATE, 'thirdCountry'), 'code');
+        $this->assertSame(['cz-415', 'cz-416', 'cz-417', 'cz-418'], $foreign, 'dovoz zboží se neodvozuje, ale nabízí');
+
+        $this->assertSame([], $derivation->options('cz', self::DATE, 'eu'), 'neznámé místo');
+        $this->assertSame([], $derivation->options('xx', self::DATE, 'domestic'), 'země bez číselníku');
+        // Nabídka je k datu: první snížená sazba (cz-390) platila 2015–2023.
+        $this->assertContains('cz-390', array_column($derivation->options('cz', '2016-06-01', 'intracom'), 'code'));
+    }
 }

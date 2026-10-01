@@ -260,6 +260,49 @@ final class VatCodeDerivation
     }
 
     /**
+     * Nabídka kódů pro ruční volbu v náhledu (#87 task B, D13): země naší
+     * registrace, směr `input`, efektivní místo plnění, bez `hidden`, jen
+     * kódy se sazbou platnou k datu (`cz-390`–`cz-393` mimo 2015–2023
+     * vypadnou). Na rozdíl od derivace **včetně** kráceného odpočtu
+     * (`reducedDeduction`) a dovozu zboží — ručně jsou legitimní. Táž
+     * množina validuje volbu (`vat_code_pin_invalid`) — dvě implementace by
+     * se rozešly. Štítek je `fullName` číselníku (compiled config jazyka
+     * requestu, tedy už lokalizovaný).
+     *
+     * @return list<array{code: string, label: string, pct: float, reverseCharge: bool, reducedDeduction: bool, supplyKind: ?string}>
+     */
+    public function options(string $country, string $date, ?string $place): array
+    {
+        $country = strtolower(trim($country));
+        $cfgPlace = self::PLACE_MAP[$place ?? 'domestic'] ?? null;
+        if ($cfgPlace === null) {
+            return [];
+        }
+        try {
+            $candidates = $this->vat->getVatCodes($country, 'input', $cfgPlace);
+        } catch (\LogicException) {
+            return [];
+        }
+        $out = [];
+        foreach ($candidates as $key => $def) {
+            try {
+                $pct = $this->vat->resolveVatPct($country, (string) $key, $date);
+            } catch (\LogicException) {
+                continue; // kód bez sazby k datu
+            }
+            $out[] = [
+                'code'             => (string) $key,
+                'label'            => (string) ($def['fullName'] ?? $def['name'] ?? $key),
+                'pct'              => $pct,
+                'reverseCharge'    => !empty($def['reverseVatCode']),
+                'reducedDeduction' => !empty($def['reducedDeduction']),
+                'supplyKind'       => isset($def['supplyKind']) ? (string) $def['supplyKind'] : null,
+            ];
+        }
+        return $out;
+    }
+
+    /**
      * Tuzemsko bez samovyměření: jediný kód bez `reverseVatCode`, jehož
      * sazba k datu odpovídá sazbě řádku (±0,001).
      *

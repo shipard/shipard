@@ -838,6 +838,7 @@ z číselníku k DUZP — u samovyměření tedy 21, ne 0 z dokladu dodavatele.
 | neznámý, nebo v rozporu se signály | kód | odvozený kód + warning `vat_code_derived` (původní hodnota ve zprávě) |
 | neznámý / prázdný | `null` | `notFound` + error `vat_code_unknown` s důvodem a „doklad založ ručně“ |
 | prázdný, bez signálů | — | bez bloku `vatCode` (jako dřív) |
+| libovolný, **volba uživatele** `userAction: "useCode:<kód>"` (#87 task B) | cokoli | zvolený kód, `matchedBy: "user"`, sazba z číselníku k DUZP; kód mimo `_resolve.vatCodeOptions` → `notFound` + error `vat_code_pin_invalid`; v rozporu se signály warning `vat_code_pin_conflict` (volba platí, zpráva nese odvozený kód) |
 
 „V souladu“ = místo kódu odpovídá `vat.place`; má `reverseVatCode` ⇔
 `reverseCharge`; `supplyKind` sedí, když je na obou stranách; u tuzemska
@@ -846,6 +847,25 @@ chrání i před kódem doplněným z historie řádků (`RowHistoryEnricher`),
 který by jinak derivaci přebil. Kontrola dostává jen `supplyKind`
 z canonicalu, ne fallback ze štítku — kód potvrzený člověkem štítek
 nezpochybňuje.
+
+**Volba uživatele** (`tasks/exchange-preview-vat-choices.md`, #87 task B):
+náhled nabízí kódy z `_resolve.vatCodeOptions` — země naší registrace,
+směr `input`, efektivní místo plnění, bez `hidden`, jen se sazbou platnou
+k DUZP, **včetně** kráceného odpočtu a dovozu zboží
+(`VatCodeDerivation::options()`, táž množina validuje volbu). Volba kódu
+(`rows[i].vatCode.userAction = "useCode:<kód>"`), místa plnění
+(`_resolve.vat.place.userAction = "useValue:domestic|intracom|thirdCountry"`)
+a režimu (`_resolve.vat.mode.userAction = "useValue:fromBase|fromTotal|none"`)
+se uplatní ve stejném kontextu jako derivace: místo z volby přebije DIČ
+i AI (`placeSource: "user"`, derivace místa se nespouští), kód z volby
+přebije derivaci, canonical i historii, režim z volby přebije
+`VatModeDerivation` (ochrana „Bez DPH“ + samovyměření → `fromBase` platí
+i proti volbě, tiše). Rekapitulace (D3) i `_resolve.computed` volbu
+následují. Volby platí jen ve větvi derivace (přijatý doklad na zdroji
+s registrací DPH) — jinde se ignorují s info `vat_pin_ignored`; neplatná
+hodnota nebo akce je error `vat_pin_invalid`. U zvolené hodnoty se nehlásí
+`vat_place_derived`, `vat_mode_derived`, `vat_mode_suspect` ani
+`vat_code_derived`.
 
 **Druh plnění ze štítku řádku** (`tasks/exchange-received-supply-kind.md`
 D2): přijatá faktura ze zahraničí, která DPH nezmiňuje (americký SaaS bez
@@ -953,8 +973,10 @@ klient drží jeden payload mezi step preview a apply.
         "status": "matched", "itemId": 18, "matchedBy": "ourCode"
       },
       "unit":     { "status": "matched", "unitId": 3, "matchedBy": "iso" },
-      "vatCode":  { "status": "matched", "code": "cz-110" }
-                                          // matchedBy "derived", když kód
+      "vatCode":  { "status": "matched", "code": "cz-110",
+                    "userAction": null }  // "useCode:<kód>" = volba uživatele
+                                          //   (#87 B) → matchedBy "user";
+                                          //   matchedBy "derived", když kód
                                           //   odvodil applier (§ 8.4);
                                           //   supplyKindSource "tag", když
                                           //   druh plnění doplnil ze štítku
@@ -967,6 +989,27 @@ klient drží jeden payload mezi step preview a apply.
         "userAction": null
       }
     }
+  ],
+
+  // Efektivní hlavička DPH (#87 B, D14) — náhled zobrazuje tohle, ne
+  // canonical. source: ai | vatId | user | derived | default (canonical
+  // hodnotu nenese, platí výchozí applieru). auto = hodnota bez volby
+  // uživatele (select „Automaticky (…)“ ji ukazuje i po volbě). Volba:
+  // userAction "useValue:<hodnota>" na vat.place / vat.mode (vstup; v
+  // odpovědi není).
+  "vat": {
+    "place": { "value": "domestic", "source": "user",    "auto": "intracom" },
+    "mode":  { "value": "fromBase", "source": "derived", "auto": "fromBase" }
+  },
+
+  // Nabídka kódů DPH pro ruční volbu řádků (#87 B, D13) — jen přijatý
+  // doklad na zdroji s registrací DPH; kandidáti k efektivnímu místu
+  // (po volbě) a DUZP. Mimo tuto větev blok chybí.
+  "vatCodeOptions": [
+    { "code": "cz-217", "label": "EU/Vstup/Služby/Základní", "pct": 21,
+      "reverseCharge": true, "reducedDeduction": false, "supplyKind": "services" },
+    { "code": "cz-218", "label": "EU/Vstup/Služby/Snížená",  "pct": 12,
+      "reverseCharge": true, "reducedDeduction": false, "supplyKind": "services" }
   ],
 
   // Rekapitulace a součty, které skončí na dokladu — jen z /preview,
@@ -1021,6 +1064,15 @@ do něj přidávají vlastní bloky bez změny schématu:
   promptVersion?, rowExceptions?}`), persistuje se při `/result`,
   fresh re-check pravidla IČO ho může přepsat
   (`tasks/content-tag-enrichment.md`).
+- `_resolve.vat` — efektivní místo plnění a režim DPH `{value, source,
+  auto}` (#87 task B, D14; `/preview` i `/apply`). Náhled zobrazuje tyto
+  hodnoty a jejich zdroj (z AI, z DIČ, odvozeno, zvoleno, výchozí);
+  `auto` je hodnota bez volby uživatele pro položku „Automaticky (…)“;
+  canonical `vat.*` zůstává vstupem.
+- `_resolve.vatCodeOptions` — nabídka kódů DPH pro ruční volbu řádků
+  (#87 task B, D13), jen přijatý doklad na zdroji s registrací DPH.
+  Kandidáti k efektivnímu místu a DUZP; stejná množina, proti které
+  applier validuje `useCode:` (`vat_code_pin_invalid`).
 - `_resolve.computed` — rekapitulace DPH a součty, **které skončí na
   dokladu** (`{recapSource, recapFallback, vatRecap[], totals}`, tvar
   v příkladu výše). Jen `/preview`: `transform()` s náhledovým plánem (kódy
@@ -1042,6 +1094,8 @@ do něj přidávají vlastní bloky bez změny schématu:
 | `"useExisting:<id>"` | Použít konkrétního kandidáta z `candidates`. |
 | `"create"` | Vytvořit novou entitu z payloadu (jen pro `canCreate`). |
 | `"skip"` | Skipnout položku (jen pro řádky; pro hlavičkové reference je default `null`). |
+| `"useCode:<kód>"` | Jen `rows[i].vatCode` (#87 task B): zvolený kód DPH řádku z `_resolve.vatCodeOptions`. |
+| `"useValue:<hodnota>"` | Jen `_resolve.vat.place` (`domestic` / `intracom` / `thirdCountry`) a `_resolve.vat.mode` (`fromBase` / `fromTotal` / `none`) (#87 task B). |
 
 Klient vyplňuje `userAction` mezi `/preview` a `/apply`. `/apply` aktion
 zvalidnuje a buď uloží, nebo vrátí chybu se seznamem nerozhodnutých referencí.
@@ -1063,6 +1117,10 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, nebo samovyměření — D3) — spočítá se z řádků. Zpráva nese důvod. |
 | `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). Zpráva nese důvod; blokuje apply. |
 | `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
+| `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v `_resolve.vatCodeOptions` k efektivnímu místu a DUZP — blokuje apply; vyber jiný (#87 B). |
+| `vat_code_pin_conflict` | warning | Zvolený kód DPH řádku odporuje signálům dokladu (`VatCodeDerivation::conflict()`); volba platí, zpráva nese důvod a odvozený kód (#87 B). |
+| `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce); path dle volby (#87 B). |
+| `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, zdroj bez registrace DPH) — ignorována; path dle volby (#87 B). |
 | `supply_kind_derived` | warning | Řádek přijatého dokladu mimo tuzemsko bez `vat.supplyKind` — druh plnění doplněn ze štítku řádku (`crossBorderSupply` taxonomie, § 8.4). Zpráva nese název štítku a druh; path `rows.N.vat.supplyKind`. Hlásí se jen, když na doplněném druhu výsledek stojí (odvozený kód nebo `vat_code_unknown`). |
 | `vat_registration_country_derived` | info | `vat.registrationCountry` přijatého dokladu neodpovídá naší registraci — nepoužije se (D2). |
 | `vat_place_derived` | warning | Místo plnění přijatého dokladu odvozené z prefixu DIČ dodavatele (`VatPlaceDerivation`) se liší od neprázdné hodnoty `vat.place` z AI — použije se odvozené. Zpráva nese obě hodnoty a prefix. |
@@ -1252,7 +1310,10 @@ jen validační findings.
 
 Validate + resolve. Bez DB writes.
 
-**Request body:** canonical JSON (libovolné `_resolve` od klienta se zahodí).
+**Request body:** canonical JSON. Z klientského `_resolve` se čtou jen
+`contentTag` a volby DPH (`rows[i].vatCode.userAction`, `vat.place` /
+`vat.mode.userAction`, #87 task B); odpověď nese čerstvý `_resolve`,
+takže `userAction` se v ní neobjeví — mapu rozhodnutí drží klient.
 
 **Response:** enriched canonical s vyplněným `_resolve` na top-level a
 issues uvnitř `_resolve.issues`.
