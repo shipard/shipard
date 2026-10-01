@@ -25,6 +25,9 @@ use Shipard\Module\World\Assets\TaxRulesRegistry;
  *     do archivu jde karta jen s potvrzeným vyřazením a vyřazená karta
  *     se nevrací do V pořádku; druh karty s potvrzenými událostmi se
  *     nemění a karta se nesmaže;
+ *   - odepisovaný druh jde potvrdit jen s úplnou účetní skupinou — účet
+ *     odpisů i oprávek (D57, `accountingGroupIncomplete`); koncept se
+ *     uložit smí;
  *   - cizí majetek → povinný vlastník; bez příznaku se vlastník vyprázdní;
  *   - datum vyřazení ≥ datum pořízení;
  *   - přechod do 70 (V archívu = vyřazeno) vyžaduje datum vyřazení;
@@ -111,6 +114,25 @@ class AssetDocument extends Document
                         );
                     }
                 }
+            }
+        }
+
+        // D57: bez účtu odpisů a oprávek by zaúčtování kartu vyřadilo až
+        // v náhledu období — odmítne se už potvrzení karty.
+        if ($category !== ''
+            && $categories->isDepreciable($category)
+            && !empty($data['accounting_group'])
+            && (int) ($data['docState'] ?? 10) === self::STATE_CONFIRMED
+        ) {
+            $group = $this->loadAccountingGroup((int) $data['accounting_group']);
+            if ($group !== null
+                && (empty($group['account_depreciation']) || empty($group['account_accumulated']))
+            ) {
+                $result->addError(
+                    'accounting_group',
+                    'Účetní skupina nemá účet odpisů a oprávek — pro odepisovaný majetek je doplň, nebo zvol jinou skupinu.',
+                    'accountingGroupIncomplete',
+                );
             }
         }
 
@@ -321,6 +343,23 @@ class AssetDocument extends Document
             return null;
         }
         $row = $this->db->fetch('SELECT * FROM [' . self::TABLE . '] WHERE [id] = %i', $id);
+        return $row === null || $row === false ? null : iterator_to_array($row);
+    }
+
+    /**
+     * Účty odpisů a oprávek účetní skupiny, null = skupina neexistuje.
+     *
+     * @return array{account_depreciation: mixed, account_accumulated: mixed}|null
+     */
+    protected function loadAccountingGroup(int $id): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch(
+            'SELECT [account_depreciation], [account_accumulated] FROM [economy_assets_accounting_groups] WHERE [id] = %i',
+            $id,
+        );
         return $row === null || $row === false ? null : iterator_to_array($row);
     }
 

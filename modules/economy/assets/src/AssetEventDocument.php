@@ -22,6 +22,9 @@ use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
  * pravidla závislá na kartě a ostatních událostech se ověřují při
  * potvrzení (stav 40):
  *   - karta je dlouhodobá a ve stavu V pořádku, bez potvrzeného vyřazení;
+ *   - ruční událost kromě počátečního stavu má datum v založeném účetním
+ *     roce (D58, `outsideFiscalYear`) — starší historie patří do
+ *     počátečního stavu;
  *   - historie se rozebírá od konce (D29): za událostí nesmí v jejím
  *     okruhu být potvrzený odpis (`notAtEnd`);
  *   - zařazení / počáteční stav ověří odpisové nastavení karty k datu
@@ -102,6 +105,8 @@ class AssetEventDocument extends Document
 
         $original = !empty($data['id']) ? $this->loadEvent((int) $data['id']) : null;
         $row = $original !== null ? array_merge($original, $data) : $data;
+        // Původ určuje server (beforeSave) — payload ho nesmí podvrhnout.
+        $row['origin'] = (string) ($original['origin'] ?? AssetEvent::ORIGIN_MANUAL);
 
         $kind = (string) ($row['event_kind'] ?? '');
         if (!AssetEvent::isKind($kind)) {
@@ -286,6 +291,20 @@ class AssetEventDocument extends Document
                 ValidationError::FIELD_FORM,
                 'Událost lze potvrdit jen u karty ve stavu V pořádku.',
                 'cardNotConfirmed',
+            );
+            return;
+        }
+
+        // D58: ruční událost mimo založené účetní roky by nešla zaúčtovat
+        // ani odepsat — majetek ze starší doby se zadává počátečním stavem.
+        if ($kind !== AssetEvent::KIND_OPENING
+            && (string) $row['origin'] === AssetEvent::ORIGIN_MANUAL
+            && !$this->inFiscalYear($date)
+        ) {
+            $result->addError(
+                'event_date',
+                'Datum není v žádném účetním roce. Majetek zařazený před prvním účetním obdobím zadej jako počáteční stav.',
+                'outsideFiscalYear',
             );
             return;
         }
@@ -547,6 +566,17 @@ class AssetEventDocument extends Document
                 $problem['code'],
             );
         }
+    }
+
+    /** Leží datum v některém založeném účetním roce? */
+    private function inFiscalYear(string $date): bool
+    {
+        foreach ($this->planService()->fiscalYears() as $year) {
+            if ($date >= $year['begin'] && $date <= $year['end']) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function isWhole(string $scope, float $amount): bool

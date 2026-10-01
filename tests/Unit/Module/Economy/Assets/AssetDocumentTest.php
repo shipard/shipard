@@ -131,6 +131,47 @@ class AssetDocumentTest extends TestCase
         $this->assertTrue($this->doc()->validate($data)->isValid());
     }
 
+    public function testDepreciableCardNeedsCompleteAccountingGroupToConfirm(): void
+    {
+        // D57: skupina bez účtu odpisů nebo oprávek kartu nepustí do V pořádku.
+        $codes = static fn(TestableAssetDocument $doc, array $data): array => array_map(
+            static fn(array $e): string => $e['column'] . ':' . $e['code'],
+            $doc->validate($data)->toArray(),
+        );
+        $confirmed = ['docState' => 40] + $this->tangibleAsset();
+
+        foreach ([
+            ['account_depreciation' => null, 'account_accumulated' => 82],
+            ['account_depreciation' => 551, 'account_accumulated' => null],
+        ] as $group) {
+            $doc = $this->doc();
+            $doc->accountingGroup = $group;
+            $this->assertSame(['accounting_group:accountingGroupIncomplete'], $codes($doc, $confirmed));
+        }
+
+        // Koncept se uložit smí — skupinu jde doplnit před potvrzením.
+        $doc = $this->doc();
+        $doc->accountingGroup = ['account_depreciation' => null, 'account_accumulated' => null];
+        $this->assertSame([], $codes($doc, $this->tangibleAsset()));
+        $this->assertSame([], $doc->groupQueries);
+
+        // Úplná skupina projde.
+        $doc = $this->doc();
+        $this->assertSame([], $codes($doc, $confirmed));
+        $this->assertSame([1], $doc->groupQueries);
+    }
+
+    public function testNonDepreciableCardDoesNotNeedDepreciationAccounts(): void
+    {
+        // Pozemek: skupina účet odpisů ani oprávek nemá a mít nemusí.
+        $doc = $this->doc();
+        $doc->accountingGroup = ['account_depreciation' => null, 'account_accumulated' => null];
+        $data = ['category' => 'nondepreciable', 'accounting_group' => 3, 'price' => null, 'docState' => 40]
+            + $this->smallAsset();
+        $this->assertTrue($doc->validate($data)->isValid());
+        $this->assertSame([], $doc->groupQueries);
+    }
+
     public function testSmallAssetAccountingGroupIsOptional(): void
     {
         $data = $this->smallAsset();
@@ -467,6 +508,10 @@ class TestableAssetDocument extends AssetDocument
 
     /** Uložený řádek karty (validate s id). */
     public ?array $cardRow = null;
+    /** Účty účetní skupiny karty; null = skupina neexistuje. */
+    public ?array $accountingGroup = ['account_depreciation' => 551, 'account_accumulated' => 82];
+    /** @var list<int> dotazy na účetní skupinu */
+    public array $groupQueries = [];
     /** @var list<array{event_kind: string, scope: string}> */
     public array $eventKinds = [];
 
@@ -478,6 +523,12 @@ class TestableAssetDocument extends AssetDocument
     protected function loadConfirmedEventKinds(int $assetId): array
     {
         return $this->eventKinds;
+    }
+
+    protected function loadAccountingGroup(int $id): ?array
+    {
+        $this->groupQueries[] = $id;
+        return $this->accountingGroup;
     }
 
     protected function findAssetNumberOwner(string $number, ?int $excludeId): ?int

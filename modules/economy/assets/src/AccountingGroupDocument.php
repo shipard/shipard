@@ -13,8 +13,10 @@ use Shipard\Core\Document\ValidationResult;
  * Každý vyplněný účet musí být existující aktivní analytický účet
  * (account_level = 4) ve správné třídě osnovy — klientský filtr lookupu
  * (`number_prefix`) není bezpečnostní hranice, tady je tvrdé vynucení
- * (vzor CashDeskDocument / 211). Úplnost účtů pro zaúčtování se
- * kontroluje až ve Fázi 3, ve Fázi 1 je povinný jen účet majetku.
+ * (vzor CashDeskDocument / 211). Povinný je jen účet majetku — pozemky
+ * účet odpisů ani oprávek nemají. Skupinu bez nich ale nejde použít pro
+ * odepisovaný majetek: hlídá to potvrzení karty (`AssetDocument`, D57),
+ * formulář na to upozorňuje hintem.
  */
 class AccountingGroupDocument extends Document
 {

@@ -2,7 +2,8 @@
     // Účetní skupina majetku (D5, D24): pět účtů pro zařazení, odpisy
     // a vyřazení. Lookup umí jediný prefix, proto rozvahové účty filtruje
     // celá třída 0 a přesné skupiny (01–03, 04, 07–08, 55, 54–55) vynucuje
-    // AccountingGroupDocument.
+    // AccountingGroupDocument. Účet odpisů a oprávek není povinný (pozemky
+    // je nemají), ale odepisovanou kartu bez nich nejde potvrdit (D57).
     "title": "Účetní skupina majetku",
     "title:cs": "Účetní skupina majetku",
     "title:en": "Asset accounting group",
@@ -42,12 +43,18 @@
                                     "type": "lookup",
                                     "column": "account_accumulated",
                                     "placeholder": "Hledat účet 07x–08x…",
+                                    "hint": "Without it the group cannot be used for depreciable assets.",
+                                    "hint:cs": "Bez účtu oprávek nejde skupinu použít pro odepisovaný majetek.",
+                                    "hint:en": "Without it the group cannot be used for depreciable assets.",
                                     "lookup": {"table": "economy_accounting_accounts", "filter": {"account_level": 4, "number_prefix": "0"}}
                                 },
                                 {
                                     "type": "lookup",
                                     "column": "account_depreciation",
                                     "placeholder": "Hledat účet 551…",
+                                    "hint": "Without it the group cannot be used for depreciable assets.",
+                                    "hint:cs": "Bez účtu odpisů nejde skupinu použít pro odepisovaný majetek.",
+                                    "hint:en": "Without it the group cannot be used for depreciable assets.",
                                     "lookup": {"table": "economy_accounting_accounts", "filter": {"account_level": 4, "number_prefix": "55"}}
                                 },
                                 {

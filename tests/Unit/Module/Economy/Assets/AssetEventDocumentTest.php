@@ -193,8 +193,41 @@ class AssetEventDocumentTest extends TestCase
         $this->assertValid($this->event('activation', '2022-03-15', ['amount' => 100000]));
         // 2025: metoda existuje (bezemisní vozidla), skupina 2 už ne.
         $this->assertSame(['_form:ruleNotValid'], $this->codes($this->event('activation', '2025-03-15', ['amount' => 100000])));
-        // 2019: mimořádné odpisy ještě nejsou.
-        $this->assertSame(['_form:methodNotAvailable'], $this->codes($this->event('activation', '2019-03-15', ['amount' => 100000])));
+        // 2019: mimořádné odpisy ještě nejsou — zařazení před prvním účetním
+        // rokem jde jen počátečním stavem, ten ověří původní datum.
+        $this->assertSame(['_form:methodNotAvailable'], $this->codes($this->event('opening', '2024-01-01', [
+            'scope' => 'tax', 'amount' => 100000, 'original_date' => '2019-03-15',
+        ])));
+    }
+
+    public function testManualEventMustLieInFiscalYear(): void
+    {
+        // D58: účetní roky testu jsou 2021–2026.
+        $this->assertSame(
+            ['event_date:outsideFiscalYear'],
+            $this->codes($this->event('activation', '2019-03-15', ['amount' => 100000])),
+        );
+        $this->assertSame(
+            ['event_date:outsideFiscalYear'],
+            $this->codes($this->event('activation', '2027-01-01', ['amount' => 100000])),
+        );
+        // Koncept projde, datum jde opravit před potvrzením.
+        $this->assertValid($this->event('activation', '2019-03-15', ['amount' => 100000, 'docState' => 10]));
+
+        // Původ z payloadu se nebere — nový záznam je vždy ruční.
+        $this->assertSame(
+            ['event_date:outsideFiscalYear'],
+            $this->codes($this->event('activation', '2019-03-15', ['amount' => 100000, 'origin' => 'import'])),
+        );
+    }
+
+    public function testImportedEventMayLieBeforeFirstFiscalYear(): void
+    {
+        $this->card(['tax_method' => 'straight', 'tax_rule' => 'cz-2']);
+        $this->doc->stored[12] = $this->event('activation', '2019-03-15', [
+            'id' => 12, 'amount' => 100000, 'origin' => 'import', 'docState' => 80,
+        ]);
+        $this->assertValid(['id' => 12, 'docState' => 40]);
     }
 
     public function testOpeningBalanceRules(): void
