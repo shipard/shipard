@@ -94,15 +94,14 @@ dokladem. Připsání od brány z bankovního výpisu se k dávce nepřiřadí s
 
 ---
 
-## Majetek: odpisy bez zaúčtování
+## Majetek
 
-**Odpisy se počítají a potvrzují, ale neúčtují.** Karta dlouhodobého
-majetku spočítá plán daňových i účetních odpisů a **Odpisy za období**
-je potvrdí (viz [Odpisy majetku](majetek/odpisy-majetku.md)), ale
-zařazení, odpisy ani vyřazení Shipard nezaúčtuje — účetní doklady
-k majetku zadáváš ručně. Účetní skupiny majetku se použijí až se
-zaúčtováním. Odložená daň a účetní metody výkonové a zrychlené (AV / AM)
-zatím nejsou.
+**Majetek se účtuje jen dávkou za období.** Zařazení, odpisy i vyřazení
+zaúčtuje **Odpisy za období** jedním dokladem (viz
+[Zaúčtování majetku](majetek/zauctovani-majetku.md)); zaúčtovat zařazení
+hned v den zařazení zatím nejde. Kontrola, že evidence majetku sedí na
+účetní deník, jako přehled zatím není — deník jen umí filtr podle karty.
+Odložená daň a účetní metody výkonové a zrychlené (AV / AM) zatím nejsou.
 
 **Karta nevidí doklady ani pohyb věci.** Přijatá faktura, kterou jsi věc
 pořídil, se ke kartě nenaváže. Předání do užívání (kdo věc má), umístění,

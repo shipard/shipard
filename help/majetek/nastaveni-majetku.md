@@ -24,8 +24,10 @@ výchozí prefix inventárních čísel *MA*.
 **Účetní skupina majetku**
 
 Účetní skupina říká, na které účty patří majetek, jeho pořízení,
-oprávky, odpisy a zůstatková cena při vyřazení. Karta na ni odkazuje;
-účtovat podle ní bude Shipard, až umí odpisy.
+oprávky, odpisy a zůstatková cena při vyřazení. Karta na ni odkazuje
+a Shipard podle ní účtuje zařazení, odpisy i vyřazení (viz
+[Zaúčtování majetku](zauctovani-majetku.md)) — kartu bez potřebného účtu
+zaúčtovat nejde.
 
 1. V **Nastavení aplikace → Majetek → Účetní skupiny majetku** dej
    **Přidat**.

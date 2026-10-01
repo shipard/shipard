@@ -846,7 +846,9 @@ důvody do UI. `docs.core` o DPH ani fiskálních měsících neví — provider
 dodávají `economy.vat` (`VatPeriodLockProvider`, zamčená instance tvrzení),
 `economy.codebooks` (`FiscalMonthLockProvider`, zamčený fiskální měsíc)
 a `economy.assets` (`AssetEventLockProvider` nad `economy_assets_events`:
-pozdější potvrzený odpis okruhu + zamčený měsíc, `docs/assets.md` §5.3).
+pozdější potvrzený odpis okruhu + zamčený měsíc + zaúčtování,
+`docs/assets.md` §5.3; `AssetPostingDocLockProvider` nad `docs_core_heads`:
+doklad s řádky `asset.*` spravuje Majetek, §5.4).
 
 ### Rozhraní a registrace
 
@@ -897,6 +899,15 @@ allow-listy `FormController`/`CrudController` neznámé klíče zahazují.
 Gateway ho z dat strhne před SQL. Jediný CLI konzument je
 `shpd-ds doc-reaccount --force` (ten ale přes gateway nejde — guard
 obchází přímo a loguje sám).
+
+**Výjimka jednoho provideru.** `isLockExempt` je vše-nebo-nic. Když má
+služba obejít jen *svůj* zámek a ostatní providery pro ni mají platit dál,
+rozhoduje provider sám podle markeru v `$data` — vzor
+`AssetPostingDocLockProvider`: zápis služby majetku nese
+`_systemOperations` (`DocRowOperationRules::SYSTEM_OPERATIONS_KEY`),
+provider ho pustí, zámek fiskálního měsíce se uplatní normálně.
+`DocDocument::beforeSave` marker před SQL odstraní; z HTTP přijít nemůže
+(není to sloupec tabulky).
 
 ### UI kontrakt
 

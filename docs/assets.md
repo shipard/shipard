@@ -5,7 +5,9 @@
 > (`tasks/assets-phase1.md`), oblast 2 **hotová** 2026-09-30 — pravidla
 > země a odpisový engine (`tasks/assets-phase2a.md`, §5.1–5.2), události,
 > odpisové nastavení karty, plán na kartě a odpisy za období
-> (`tasks/assets-phase2b.md`, §5.3); další oblasti se rozpadají postupně (§7).
+> (`tasks/assets-phase2b.md`, §5.3), oblast 3 **hotová** 2026-10-01 —
+> zaúčtování a dimenze deníku (`tasks/assets-phase3.md`, §5.4); další
+> oblasti se rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -694,8 +696,79 @@ polovina při vyřazení se nabízí jen když smí (D35). Toolbar vieweru
 z `economy.assets.viewerLabels`. Nastavení → Majetek → Odpisy: četnost
 účetních odpisů (field typ `select`).
 
-**Fáze 3** naváže na potvrzené události: stav „zaúčtováno“, vazba
-událost → doklad, `documentEventHandlers` nad `economy_assets_events`.
+### 5.4 Zaúčtování — hotovo
+
+`tasks/assets-phase3.md` (D47–D56). Účetní okruh se účtuje **dávkou za
+období**: jeden `cmnbkp` k poslednímu dni období, rovnou V pořádku.
+
+| Třída (`Shipard\Module\Economy\Assets\Posting\`) | Role |
+|---|---|
+| `AssetPostingBuilder` (+ `AssetPostingInput` / `Row` / `Result`) | čistá třída: události karty + účty účetní skupiny + plán účetního okruhu → řádky `asset.*` (tabulka D49); chybějící účet nebo neúplný plán vyřazení = chyba karty |
+| `AssetPostingService` | `preview` / `post` / `unpost` / `lastPosting`; vyhodnocení karet sdílí náhled i zaúčtování |
+| `AssetPostingDocuments` | doklad přes `TransactionlessTableGateway` (založení ve stavu 40, storno), kontrola `accounting_state` |
+| `AssetPostingDocLockProvider` | zámek dokladu s řádky `asset.*` („spravuje Majetek“, D53) |
+| `AssetPostingSeries`, `AssetPostingSeriesProvisioner` | nastavení `economy.assets.accountingSeries` (D54), nabídka řad pro settings stránku, řada „Majetek“ (kód `MA`) |
+
+Mimo `Posting\`: `AssetEventLockProvider` zamyká zaúčtovanou událost
+(`doc_head` na živý doklad), `AssetPlanService::postingOf()` dává stav
+zaúčtování pro kartu, `AssetsDepreciationController` má routy
+`GET /_assets/posting/preview`, `POST /_assets/posting`,
+`POST /_assets/posting/cancel`.
+
+**Běh `post(period)`** — jedna transakce: zámek karet → účetní odpisy
+období (`SystemDepreciationWriter`, jen karty, které se zaúčtují) →
+znovunačtení nezaúčtovaných událostí → builder → doklad → `doc_head`.
+Chyba kdekoli (i `accounting_state ≠ 1`) = rollback. Událost s `doc_head`
+se neúčtuje znovu; období bez kandidátů doklad nezaloží (`posted: false`).
+
+**Vyloučení v náhledu** (D55): `earlierPeriodUnposted` (nezaúčtovaná
+událost před obdobím — má přednost), důvody běhu odpisů `planError` /
+`earlierPeriodMissing` / `monthLocked`, `accounting_account_missing`,
+`disposalPlanIncomplete`. Překážky celého běhu: `series_missing`,
+`monthLocked` (měsíc účetního data dokladu), `documents_unavailable`.
+
+**Zrušení `unpost(period)`** — jen poslední zaúčtované období: storno
+dokladů období, `doc_head = NULL`; systémové odpisy zůstávají potvrzené.
+
+**Dimenze deníku** `asset` (D47) — obecný mechanismus v
+`docs/accounting.md` §6; `economy.assets` jen deklaruje dimenzi a přidává
+sloupce extensions. Na ní stojí invariant §1: Σ MD účtu odpisů karty
+v deníku = Σ potvrzených účetních odpisů karty.
+
+**Odchylky od PRD** (potvrzené před implementací, N1–N4, a nálezy z ní):
+
+- **Vnořené transakce.** Účtovací enginy a saldo ledger si otevíraly
+  vlastní transakci, což by transakci služby tiše commitlo (MariaDB
+  vnořené transakce nemá). Zapisují přes
+  `Shipard\Core\Database\NestedTransaction` (savepoint uvnitř cizí
+  transakce) — platí i pro importní cesty.
+- **Výjimka ze zámku dokladu je v provideru**, ne v
+  `Document::isLockExempt()`: ten vypíná všechny providery, kdežto zámek
+  fiskálního měsíce má pro službu platit dál. Jediný marker
+  `_systemOperations` (povolí řádky `asset.*` i zápis přes zámek) místo
+  dvojice `_systemOperations` + `_assetsService`.
+- **Dimenze nejdou loaderem**, ale kompilací do cfgItem
+  `core.accounting.journalDimensions` (`JournalDimensionSet::fromConfig`).
+- **`doc_head` vznikl už s D56** (commit 1) — kontrola `disposalPosted`
+  ho potřebuje; sloupec je `system` (formulář ani CRUD ho nepřijmou).
+- **Řada „Majetek“ a přiznání DPH.** Druhá řada `cmnbkp` by zrušila
+  implicitní volbu řady pro zaúčtování přiznání DPH (jediná aktivní řada).
+  `ds-upgrade` proto při založení řady „Majetek“ zafixuje dosavadní
+  jedinou řadu do `economy.vat.filingAccountingSeries`.
+- **Účetní odpis jedné karty** (detail → Odepsat, účetní okruh) zůstal
+  prostým potvrzením — dávka za období je nad všemi kartami; odpis
+  zaúčtuje další běh období.
+- **Storno jde celým dokladem** (`loadDocument` + stav 30), ne částečným
+  payloadem — `DocDocument` částečný payload nevaliduje.
+- **Uživatelská stránka** je samostatná (`help/majetek/zauctovani-majetku.md`),
+  ne dodatek k odpisům — jedna stránka = jedna úloha.
+
+**UI.** Dialog `AssetsDepreciationRunDialog`: účetní okruh nad všemi
+kartami = režim zaúčtování (nové odpisy, události k zaúčtování, souhrn
+účtů, Zaúčtovat, odkaz na doklad přes `ViewerDetailModal`, Zrušit
+zaúčtování období u posledního zaúčtovaného období). Karta: plán účetních
+odpisů ukazuje „Zaúčtováno — doklad …“ / „Čeká na zaúčtování“; seznam:
+badge „Nezaúčtováno“.
 
 ---
 
@@ -727,7 +800,7 @@ Probírají se jedna po druhé; každá má vlastní PRD.
    §5.1–5.2), události, UI a odpisy za období (`tasks/assets-phase2b.md`,
    §5.3)
 3. Zaúčtování (D4, D47–D56) + řádkové operace + dimenze deníku —
-   `tasks/assets-phase3.md`
+   **hotovo** 2026-10-01, `tasks/assets-phase3.md` (§5.4 vč. odchylek)
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15)
 5. Přehledy: karta, odpisy, přírůstky / úbytky, kontrola proti deníku,
    podklad pro DPPO

@@ -2,7 +2,7 @@
 title: Odpisy majetku
 summary: Jak na kartě nastavit daňové a účetní odpisy, zařadit majetek, zadat technické zhodnocení nebo snížení hodnoty, přerušit odpisy, vyřadit majetek a hromadně potvrdit odpisy za období.
 keywords: [odpisy, odpisy majetku, daňové odpisy, účetní odpisy, odpisový plán, plán odpisů, odpisová skupina, rovnoměrné odpisy, zrychlené odpisy, mimořádné odpisy, zařazení majetku, zařadit majetek, datum zařazení, vstupní cena, pořizovací cena, technické zhodnocení, TZ, snížení hodnoty, přerušení odpisů, přerušit odpisy, vyřazení majetku, vyřadit majetek, polovina odpisu, poloviční odpis, zůstatková cena, oprávky, odpisy za období, odepsat, roční odpis, měsíční odpisy, četnost odpisů, počáteční stav, přechod z jiného systému, převod majetku, hospodářský rok, události majetku, historie majetku]
-related: [majetek/evidence-majetku.md, majetek/nastaveni-majetku.md, co-dnes-nejde.md, slovnicek.md]
+related: [majetek/zauctovani-majetku.md, majetek/evidence-majetku.md, majetek/nastaveni-majetku.md, co-dnes-nejde.md, slovnicek.md]
 ---
 
 # Odpisy majetku
@@ -10,8 +10,9 @@ related: [majetek/evidence-majetku.md, majetek/nastaveni-majetku.md, co-dnes-nej
 Dlouhodobý majetek se v Shipardu odepisuje ze **karty majetku**: karta
 nese nastavení odpisů, hodnotová historie je řada **událostí** (zařazení,
 technické zhodnocení, odpis, vyřazení…) a plán odpisů si Shipard z nich
-spočítá sám — nikde se neopisuje ručně. Odpisy zatím jen počítáš
-a potvrzuješ, zaúčtování přijde (viz [Co Shipard dnes neumí](../co-dnes-nejde.md)).
+spočítá sám — nikde se neopisuje ručně. Účetní odpisy, zařazení
+i vyřazení pak Shipard zaúčtuje jedním dokladem za období, viz
+[Zaúčtování majetku](zauctovani-majetku.md).
 
 ## Kdy to potřebuješ
 
@@ -51,12 +52,17 @@ z jiného systému a majetek je už rozepsaný.
 
 1. V seznamu **Majetek → Majetek** dej **Odpisy za období** (pro jednu
    kartu je totéž tlačítko **Odepsat** v jejím detailu).
-2. Vyber **Daňové odpisy** nebo **Účetní odpisy** a **Účetní rok**
-   (u měsíčních účetních odpisů **Účetní měsíc**).
+2. Vyber **Daňové odpisy** a **Účetní rok**.
 3. Zkontroluj náhled — karty s částkou a výpočtem, součet, dole karty,
    které se odepsat nedají, s důvodem.
 4. Dej **Potvrdit odpisy**. Odpisy vzniknou jako potvrzené události;
    opakované spuštění je nezaloží dvakrát.
+
+Účetní odpisy všech karet se potvrzují volbou **Účetní odpisy
+a zaúčtování** — rovnou s účetním dokladem, viz
+[Zaúčtování majetku](zauctovani-majetku.md). **Odepsat** v detailu karty
+nabízí **Účetní odpisy** jen té karty; odpis se potvrdí a zaúčtuje ho až
+dávka za období.
 
 **Technické zhodnocení a snížení hodnoty**
 
@@ -130,11 +136,13 @@ než 12 měsíců plný odpis.
 **Zamčený účetní měsíc** odpisy do něj nepustí — ani hromadné, ani
 poslední při vyřazení.
 
-**Odpisy se zatím neúčtují** — potvrzený odpis je jen v evidenci majetku,
-účetní doklad zadáváš ručně.
+**Zaúčtovaná událost je zamčená** — opravit nebo smazat ji jde až po
+zrušení zaúčtování období, viz [Zaúčtování majetku](zauctovani-majetku.md).
+Zrušit nejde ani vyřazení, jehož odpisy jsou zaúčtované.
 
 ## Souvisí
 
+- [Zaúčtování majetku](zauctovani-majetku.md)
 - [Evidence majetku](evidence-majetku.md)
 - [Nastavení majetku](nastaveni-majetku.md)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md)

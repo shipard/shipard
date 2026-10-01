@@ -1,6 +1,6 @@
 # Majetek Fáze 3 — zaúčtování a dimenze deníku
 
-**Stav:** naplánováno — D47–D56 potvrzena 2026-10-01; implementace nezačala
+**Stav:** hotovo — 2026-10-01 (8 commitů, ověřeno na `4l3j-z0bz-kz39-echj`); odchylky od zadání níže a v `docs/assets.md` §5.4; zbývá proklik UI v prohlížeči a nasazení na alfu
 
 > PRD pro jednu Claude Code session (7 commitů). Design: `docs/assets.md`
 > §4 (D4, D15, D47–D56), §5.3; issue #83. Navazuje na `tasks/assets-phase2b.md`.
@@ -259,6 +259,34 @@ nezaloží; ruční oprava dokladu je zamčená; zrušení zaúčtování doklad
 stornuje a události odpojí; vyřazení zaúčtuje oprávky a zůstatkovou cenu
 čistým zápisem; součet MD odpisů karty v deníku = součet potvrzených
 účetních odpisů.
+
+## Odchylky při implementaci
+
+Potvrzené před implementací (podrobně `docs/assets.md` §5.4):
+
+- **Commit navíc (0/8): vnořené transakce.** `AccountingEngine`,
+  `BankTransactionAccountingEngine` a `LedgerGenerator` zapisují přes
+  `NestedTransaction` — bez toho by transakci `post()` engine tiše commitnul.
+- **Zámek dokladu:** výjimka pro službu je v `AssetPostingDocLockProvider`
+  (marker `_systemOperations`), ne v `isLockExempt()`; marker `_assetsService`
+  nevznikl. Zámek fiskálního měsíce tak platí i pro `post` / `unpost`.
+- **Dimenze deníku:** místo loaderu kompilace do cfgItem
+  `core.accounting.journalDimensions`.
+- **`doc_head`** vznikl už v commitu 1 (D56 ho potřebuje).
+
+Nálezy z implementace:
+
+- **Řada „Majetek“ × přiznání DPH:** `ds-upgrade` při založení řady
+  zafixuje dosavadní jedinou řadu `cmnbkp` do
+  `economy.vat.filingAccountingSeries` — jinak by zaúčtování přiznání DPH
+  začalo vyžadovat ruční volbu řady.
+- **Účetní odpis jedné karty** (detail → Odepsat) se dál jen potvrzuje;
+  dávka zaúčtování je vždy nad všemi kartami.
+- **Uživatelská stránka** `help/majetek/zauctovani-majetku.md` je
+  samostatná (stránka odpisů by přerostla jednu úlohu).
+- `AccountingDocument` vyžaduje účet u každé operace s `rowAccount: direct`
+  (dřív jen `acc.record`); uložený systémový řádek nejde přepsat na jinou
+  operaci.
 
 ## Rozhodnutí k designu (potvrzená)
 
