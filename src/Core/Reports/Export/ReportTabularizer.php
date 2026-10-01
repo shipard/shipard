@@ -95,9 +95,10 @@ final class ReportTabularizer
             }
             $intro[] = [$labels->paramName((string) $id), $labels->paramValue((string) $id, $value)];
         }
+        // S časovou zónou — server běží v UTC, bez ní by čas vypadal o hodiny vedle.
         $intro[] = [
             $labels->get('generatedAt'),
-            $result->generatedAt->format($context->language === 'cs' ? 'j. n. Y H:i' : 'Y-m-d H:i'),
+            $result->generatedAt->format($context->language === 'cs' ? 'j. n. Y H:i e' : 'Y-m-d H:i e'),
         ];
         $intro[] = [$labels->get('dataSource'), $context->dataSourceName];
         if ($hasMoney) {

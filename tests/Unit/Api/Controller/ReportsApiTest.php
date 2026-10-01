@@ -11,6 +11,7 @@ use Shipard\Api\Route;
 use Shipard\Api\Router;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\I18n\ConfigLocalizer;
+use Shipard\Core\Reports\Export\ReportExportContextFactory;
 use Shipard\Core\Reports\FiscalPeriodProvider;
 use Shipard\Core\Reports\ReportBuilder;
 use Shipard\Core\Reports\ReportDefinition;
@@ -232,6 +233,94 @@ class ReportsApiTest extends TestCase
         $this->assertSame(400, $this->statusOf($response));
     }
 
+    // ── Export (format=xlsx|csv) ────────────────────────────────────────────
+
+    public function testRunFormatCsvReturnsFileOutsideJsonEnvelope(): void
+    {
+        $controller = $this->makeControllerWithFakeReport(withExport: true);
+
+        $response = $controller->run('test.fake', [
+            'fiscalYear' => '2026', 'monthFrom' => '1', 'monthTo' => '3', 'format' => 'csv',
+        ]);
+
+        $this->assertSame(200, $this->statusOf($response));
+        $headers = $response->getHeaders();
+        $this->assertSame('text/csv; charset=utf-8', $headers['Content-Type']);
+        // Název souboru = slug názvu reportu + období.
+        $this->assertSame('attachment; filename="fake-report-2026-01-03.csv"', $headers['Content-Disposition']);
+        $this->assertSame('ok', $headers['X-Report-Status']);
+
+        $body = $response->getPayload();
+        $this->assertIsString($body);
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $body);
+        $this->assertSame((string) strlen($body), $headers['Content-Length']);
+    }
+
+    public function testRunFormatXlsxReturnsWorkbook(): void
+    {
+        $controller = $this->makeControllerWithFakeReport(withExport: true);
+
+        $response = $controller->run('test.fake', [
+            'fiscalYear' => '2026', 'monthFrom' => '1', 'monthTo' => '12', 'format' => 'xlsx',
+        ]);
+
+        $this->assertSame(200, $this->statusOf($response));
+        $headers = $response->getHeaders();
+        $this->assertSame(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            $headers['Content-Type'],
+        );
+        // Celý fiskální rok → jen rok v názvu.
+        $this->assertSame('attachment; filename="fake-report-2026.xlsx"', $headers['Content-Disposition']);
+        // XLSX je zip.
+        $this->assertStringStartsWith('PK', $response->getPayload());
+    }
+
+    public function testRunFormatJsonIsDefaultEnvelope(): void
+    {
+        $controller = $this->makeControllerWithFakeReport(withExport: true);
+
+        $response = $controller->run('test.fake', [
+            'fiscalYear' => '2026', 'monthFrom' => '1', 'monthTo' => '3', 'format' => 'json',
+        ]);
+
+        $payload = $response->getPayload();
+        $this->assertTrue($payload['success']);
+        // `format` není parametr reportu — do výsledku se nepropíše.
+        $this->assertArrayNotHasKey('format', $payload['data']['params']);
+    }
+
+    public function testRunInvalidFormatReturns400(): void
+    {
+        $controller = $this->makeControllerWithFakeReport(withExport: true);
+
+        $response = $controller->run('test.fake', [
+            'fiscalYear' => '2026', 'monthFrom' => '1', 'monthTo' => '3', 'format' => 'pdf',
+        ]);
+
+        $this->assertSame(400, $this->statusOf($response));
+        $this->assertSame('BAD_REQUEST', $response->getPayload()['error']['code']);
+    }
+
+    public function testRunExportWithInvalidParamsStaysJson400(): void
+    {
+        $controller = $this->makeControllerWithFakeReport(withExport: true);
+
+        $response = $controller->run('test.fake', [
+            'fiscalYear' => '2026', 'monthFrom' => '3', 'monthTo' => '1', 'format' => 'xlsx',
+        ]);
+
+        $this->assertSame(400, $this->statusOf($response));
+        $payload = $response->getPayload();
+        $this->assertIsArray($payload);
+        $this->assertSame('BAD_REQUEST', $payload['error']['code']);
+
+        $response = $controller->run('no.such.report', [
+            'fiscalYear' => '2026', 'monthFrom' => '1', 'monthTo' => '1', 'format' => 'csv',
+        ]);
+        $this->assertSame(404, $this->statusOf($response));
+    }
+
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     private function makeVatPeriodControllerWithFakeReport(): ReportsController
@@ -289,7 +378,7 @@ class ReportsApiTest extends TestCase
         };
     }
 
-    private function makeControllerWithFakeReport(): ReportsController
+    private function makeControllerWithFakeReport(bool $withExport = false): ReportsController
     {
         $registry = new ReportRegistry();
         $registry->add(new ReportDefinition(
@@ -300,7 +389,13 @@ class ReportsApiTest extends TestCase
             params: [],
             moduleId: 'test.module',
         ));
-        return new ReportsController($registry, $this->makeRunner($registry));
+        return new ReportsController(
+            $registry,
+            $this->makeRunner($registry),
+            exportContextFactory: $withExport
+                ? new ReportExportContextFactory('Test company', null, 'cs', $this->makePeriods())
+                : null,
+        );
     }
 
     private function makePeriods(): FiscalPeriodProvider

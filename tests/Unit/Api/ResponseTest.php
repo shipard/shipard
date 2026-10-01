@@ -95,4 +95,20 @@ class ResponseTest extends TestCase
 		$resp = Response::success(null);
 		$this->assertSame([], $resp->getHeaders());
 	}
+
+	public function testBinaryCarriesBodyAndContentHeaders(): void
+	{
+		$response = Response::binary("\x00\x01abc", 'text/csv; charset=utf-8')
+			->withHeader('Content-Disposition', 'attachment; filename="x.csv"');
+
+		$this->assertSame("\x00\x01abc", $response->getPayload());
+		$this->assertSame(
+			[
+				'Content-Type'        => 'text/csv; charset=utf-8',
+				'Content-Length'      => '5',
+				'Content-Disposition' => 'attachment; filename="x.csv"',
+			],
+			$response->getHeaders(),
+		);
+	}
 }

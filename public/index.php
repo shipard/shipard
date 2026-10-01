@@ -780,13 +780,28 @@ function dispatchReports(
 		$language,
 	);
 
+	$periods = new \Shipard\Core\Reports\DbFiscalPeriodProvider($db);
+
+	// Kontext exportu (format=xlsx|csv) se staví jen pro export — katalog
+	// ani JSON běh dotaz na název firmy neplatí.
+	$exportContextFactory = null;
+	if (($request->getQueryParams()['format'] ?? 'json') !== 'json') {
+		$exportContextFactory = new \Shipard\Core\Reports\Export\ReportExportContextFactory(
+			\Shipard\Core\Reports\Export\ReportExportContextFactory::resolveDataSourceName($db, $resolved->config),
+			$configRuntime,
+			$language,
+			$periods,
+		);
+	}
+
 	$ctrl = new \Shipard\Api\Controller\ReportsController(
 		$registry,
 		$runner,
-		new \Shipard\Core\Reports\DbFiscalPeriodProvider($db),
+		$periods,
 		// Konstrukce bez dotazu — catalog() se na registrace ptá jen když je
 		// registrovaný nějaký vatPeriod report (ten garantuje tabulky).
 		new \Shipard\Core\Reports\DbReportPeriodProvider($db),
+		$exportContextFactory,
 	);
 	return match ($route->action) {
 		'catalog' => $ctrl->catalog(),

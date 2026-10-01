@@ -101,7 +101,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>accbal-match</info>            Přeúčtuje clearingové úhrady s klíčem otevřeného předpisu na 311/321 (--dry-run vypíše plán)');
         $output->writeln('  <info>accbal-regenerate</info>       Přegeneruje saldo pohyby z účetního deníku (--all | --doc <id> | --fiscal-year <id>; --dry-run jen spočítá)');
         $output->writeln('  <info>booking-history</info>         Zpracuje soubor účetní historie (report kvality, seed pravidel IČO→štítek, otagování položek)');
-        $output->writeln('  <info>report-run</info>              Spustí report a vypíše ReportResult jako JSON na stdout');
+        $output->writeln('  <info>report-run</info>              Spustí report a vypíše ReportResult jako JSON na stdout; --format=xlsx|csv [--output=<soubor>] = export');
         $output->writeln('  <info>report-diff</info>             Porovná dva ReportResult JSON soubory (kontrolní diff)');
         $output->writeln('  <info>vat-periods-ensure</info>      Zajistí instance daňových tvrzení (přiznání/KH/SH) pro dnešek a zítřek — denní cron');
         $output->writeln('  <info>vat-filing-compose</info>      Sestaví podání DPH za instanci tvrzení, nebo přepočítá snapshot konceptu');

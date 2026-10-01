@@ -105,6 +105,66 @@ class ReportCliTest extends IntegrationTestCase
         $this->assertSame('analytic', $result['params']['detail']);
     }
 
+    public function testReportRunCsvGoesToStdout(): void
+    {
+        $tester = $this->runCommandTester();
+        $exit = $tester->execute([
+            'reportId'      => 'economy.accounting.generalLedger',
+            '--fiscal-year' => $this->yearName,
+            '--month-from'  => '1',
+            '--month-to'    => '1',
+            '--format'      => 'csv',
+        ], ['capture_stderr_separately' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exit);
+        $csv = $tester->getDisplay();
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $csv);
+        // Hlavička tabulky: sloupce oddělené středníkem (sides → 3 sloupce).
+        $header = explode("\r\n", substr($csv, 3))[0];
+        $this->assertGreaterThanOrEqual(6, count(str_getcsv($header, ';', '"', '')));
+    }
+
+    public function testReportRunXlsxWritesOutputFile(): void
+    {
+        $file = tempnam(sys_get_temp_dir(), 'shpd_reportrun_');
+        $this->tempFiles[] = $file;
+
+        $tester = $this->runCommandTester();
+        $exit = $tester->execute([
+            'reportId'      => 'economy.accounting.generalLedger',
+            '--fiscal-year' => $this->yearName,
+            '--month-from'  => '1',
+            '--month-to'    => '1',
+            '--format'      => 'xlsx',
+            '--output'      => $file,
+        ], ['capture_stderr_separately' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exit);
+        // Soubor je zip (XLSX), stdout zůstává prázdný.
+        $this->assertStringStartsWith('PK', (string) file_get_contents($file));
+        $this->assertSame('', $tester->getDisplay());
+    }
+
+    public function testReportRunXlsxRequiresOutputAndKnownFormat(): void
+    {
+        $base = [
+            'reportId'      => 'economy.accounting.generalLedger',
+            '--fiscal-year' => $this->yearName,
+            '--month-from'  => '1',
+            '--month-to'    => '1',
+        ];
+
+        $tester = $this->runCommandTester();
+        $exit = $tester->execute($base + ['--format' => 'xlsx'], ['capture_stderr_separately' => true]);
+        $this->assertSame(Command::INVALID, $exit);
+        $this->assertStringContainsString('--output', $tester->getErrorOutput());
+
+        $tester = $this->runCommandTester();
+        $exit = $tester->execute($base + ['--format' => 'pdf'], ['capture_stderr_separately' => true]);
+        $this->assertSame(Command::INVALID, $exit);
+        $this->assertStringContainsString('--format', $tester->getErrorOutput());
+    }
+
     public function testReportRunUnknownReportFails(): void
     {
         $tester = $this->runCommandTester();

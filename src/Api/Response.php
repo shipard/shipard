@@ -46,6 +46,19 @@ class Response
 		return $resp;
 	}
 
+	/**
+	 * Binární tělo mimo JSON obálku (soubor ke stažení). Další hlavičky
+	 * (Content-Disposition…) přes `withHeader()`; tělo vrací `getPayload()`.
+	 */
+	public static function binary(string $body, string $contentType, int $status = 200): self
+	{
+		$resp = new self($status, $body);
+		$resp->bodyType = 'binary';
+		$resp->headers['Content-Type'] = $contentType;
+		$resp->headers['Content-Length'] = (string) strlen($body);
+		return $resp;
+	}
+
 	public static function redirect(string $location, int $status = 302): self
 	{
 		$resp = new self($status, '');
@@ -107,6 +120,11 @@ class Response
 			if ($this->streamProducer !== null) {
 				($this->streamProducer)();
 			}
+			return;
+		}
+
+		if ($this->bodyType === 'binary') {
+			echo $this->payload;
 			return;
 		}
 

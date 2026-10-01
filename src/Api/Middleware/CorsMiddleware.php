@@ -12,6 +12,8 @@ class CorsMiddleware
 		'Access-Control-Allow-Origin'  => 'https://*.shipard.cz',
 		'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
 		'Access-Control-Allow-Headers' => 'Authorization, Content-Type, Accept-Language',
+		// Export reportu: název souboru a stav čte frontend z hlaviček odpovědi.
+		'Access-Control-Expose-Headers' => 'Content-Disposition, X-Report-Status',
 		'Access-Control-Max-Age'       => '86400',
 	];
 

@@ -131,7 +131,7 @@ class ReportTabularizerTest extends TestCase
             [
                 ['Období', '2026 / 5'],
                 ['Úroveň detailu', 'Analyticky'],
-                ['Generated', '1. 10. 2026 10:00'],
+                ['Generated', '1. 10. 2026 10:00 +02:00'],
                 // Název firmy, nikdy ID zdroje dat.
                 ['Data source', 'Ukázková firma s.r.o.'],
                 ['Note', 'Amounts are exported in full precision (never in thousands).'],
