@@ -47,6 +47,18 @@
   let summary = $derived(resolve?.summary ?? null);
   let issues = $derived(resolve?.issues ?? []);
   let enrichedCount = $derived(enrichedRowCount(resolve?.rows));
+  // Rekapitulace DPH a součty, které skončí na dokladu (_resolve.computed,
+  // tasks/exchange-preview-vat-recompute.md D5) — jen z /preview. Bez něj
+  // (výpočet selhal, canonical bez _resolve) ukazujeme čísla z canonicalu
+  // s poznámkou, že nejde o přepočet. Údaje z dokladu dodavatele se
+  // zobrazí jen při rozdílu částky k úhradě (computed_total_mismatch).
+  let computed = $derived(resolve?.computed ?? null);
+  let recapRows = $derived(computed ? (computed.vatRecap ?? []) : (canonical?.vatRecap ?? []));
+  let totals = $derived(computed ? computed.totals : (canonical?.totals ?? null));
+  let totalMismatch = $derived(
+    computed !== null && issues.some((issue) => issue?.code === 'computed_total_mismatch'),
+  );
+  let supplierTotal = $derived(canonical?.totals?.totalAmount ?? null);
   // Sloupec Účet se ukazuje, jen když ho aspoň jeden řádek nese —
   // faktury bez kontace/enrichmentu zůstávají beze změny (D23).
   let hasAccountColumn = $derived(
@@ -423,6 +435,16 @@
     return statusLabel(resolveBlock);
   }
 
+  // Efektivní kód a sazba DPH řádku — to, co applier zapíše na doklad
+  // (_resolve.rows[i].vatCode.createPayload); u samovyměření 21 %, i když
+  // dodavatel na faktuře uvádí 0 %. Bez resolve nebo u nenapárovaného kódu
+  // zůstává sazba z canonicalu (fallback v šabloně).
+  function effectiveRowVat(block) {
+    if (block?.status !== 'matched') return null;
+    const payload = block.createPayload ?? {};
+    return { code: payload.code ?? null, pct: payload.pct ?? null };
+  }
+
   function formatMoney(value, currency) {
     if (value === null || value === undefined) return '—';
     try {
@@ -699,6 +721,7 @@
           </thead>
           <tbody>
             {#each canonical.rows as row, i}
+              {@const effVat = effectiveRowVat(resolve?.rows?.[i]?.vatCode)}
               <tr>
                 <td>{row.orderPos ?? i + 1}</td>
                 <td>
@@ -729,7 +752,10 @@
                 </td>
                 <td class="num">{formatMoney(row.unitPrice, canonical.currency)}</td>
                 <td>
-                  {row.vat?.pct ?? '—'}%
+                  {effVat?.pct ?? row.vat?.pct ?? '—'}%
+                  {#if effVat?.code}
+                    <span class="shpd-exchange__row-code">{effVat.code}</span>
+                  {/if}
                   {@render statusBadge(resolve?.rows?.[i]?.vatCode)}
                 </td>
                 <td class="num">{formatMoney(row.totalPrice, canonical.currency)}</td>
@@ -740,48 +766,79 @@
       </section>
     {/if}
 
-    {#if (canonical.vatRecap ?? []).length > 0 || canonical.totals}
+    {#if recapRows.length > 0 || totals}
       <section class="shpd-exchange__section shpd-exchange__totals-section">
-        {#if (canonical.vatRecap ?? []).length > 0}
-          <table class="shpd-exchange__vat-recap">
-            <thead>
-              <tr>
-                <th>{t('exchange.preview.row.vat')}</th>
-                <th class="num">{t('exchange.preview.totals.base')}</th>
-                <th class="num">{t('exchange.preview.totals.vat')}</th>
-                <th class="num">{t('exchange.preview.totals.total')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each canonical.vatRecap as r}
+        <!-- Zdroj čísel: převzatá z dokladu / přepočítaná (s důvodem) / bez
+             přepočtu. Platí pro rekapitulaci i součty, proto nad oběma. -->
+        <div class="shpd-exchange__recap-source">
+          {#if computed}
+            {t(computed.recapSource === 'declared'
+              ? 'exchange.preview.recap.declared'
+              : 'exchange.preview.recap.computed')}
+            {#if computed.recapFallback}
+              <span class="shpd-exchange__recap-reason">— {computed.recapFallback}</span>
+            {/if}
+          {:else}
+            {t('exchange.preview.recap.notComputed')}
+          {/if}
+        </div>
+        {#if recapRows.length > 0}
+          <div class="shpd-exchange__recap">
+            <table class="shpd-exchange__vat-recap">
+              <thead>
                 <tr>
-                  <td>{r.vatPct}%</td>
-                  <td class="num">{formatMoney(r.base, canonical.currency)}</td>
-                  <td class="num">{formatMoney(r.tax, canonical.currency)}</td>
-                  <td class="num">{formatMoney(r.total, canonical.currency)}</td>
+                  <th>{t('exchange.preview.row.vat')}</th>
+                  <th class="num">{t('exchange.preview.totals.base')}</th>
+                  <th class="num">{t('exchange.preview.totals.vat')}</th>
+                  <th class="num">{t('exchange.preview.totals.total')}</th>
                 </tr>
-              {/each}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {#each recapRows as r}
+                  <tr class:shpd-exchange__recap-row--pair={r.isReversePair}>
+                    <td>
+                      {r.vatPct}%
+                      {#if r.vatCode}
+                        <span class="shpd-exchange__row-code">{r.vatCode}</span>
+                      {/if}
+                      {#if r.isReversePair}
+                        <span class="shpd-exchange__recap-pair">{t('exchange.preview.recap.reversePair')}</span>
+                      {/if}
+                    </td>
+                    <td class="num">{formatMoney(r.base, canonical.currency)}</td>
+                    <td class="num">{formatMoney(r.tax, canonical.currency)}</td>
+                    <td class="num">{formatMoney(r.total, canonical.currency)}</td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+          </div>
         {/if}
-        {#if canonical.totals}
+        {#if totals}
           <div class="shpd-exchange__totals-summary">
             <div>
               {t('exchange.preview.totals.base')}:
-              <strong>{formatMoney(canonical.totals.totalBase, canonical.currency)}</strong>
+              <strong>{formatMoney(totals.totalBase, canonical.currency)}</strong>
             </div>
             <div>
               {t('exchange.preview.totals.vat')}:
-              <strong>{formatMoney(canonical.totals.totalVat, canonical.currency)}</strong>
+              <strong>{formatMoney(totals.totalVat, canonical.currency)}</strong>
             </div>
+            <!-- Hodnota, která skončí na dokladu (data-testid zůstává na ní). -->
             <div class="shpd-exchange__total" data-testid="review-total">
               {t('exchange.preview.totals.total')}:
-              <strong>{formatMoney(canonical.totals.totalAmount, canonical.currency)}</strong>
+              <strong>{formatMoney(totals.totalAmount, canonical.currency)}</strong>
             </div>
-            {#if canonical.totals.totalRounding}
+            {#if totalMismatch && supplierTotal !== null}
+              <div class="shpd-exchange__supplier-total">
+                {t('exchange.preview.totals.supplierTotal')}:
+                <span>{formatMoney(supplierTotal, canonical.currency)}</span>
+              </div>
+            {/if}
+            {#if totals.totalRounding}
               <div>
                 {t('exchange.preview.totals.rounding')}:
-                <strong>{formatMoney(canonical.totals.totalRounding, canonical.currency)}</strong>
+                <strong>{formatMoney(totals.totalRounding, canonical.currency)}</strong>
               </div>
             {/if}
           </div>
@@ -1265,6 +1322,41 @@
     text-align: right;
     min-width: 220px;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Zdroj čísel nad rekapitulací i součty — celá šířka sekce. */
+  .shpd-exchange__recap-source {
+    flex-basis: 100%;
+    font-size: 0.8125rem;
+    color: var(--shpd-color-text-muted);
+  }
+
+  .shpd-exchange__recap-reason {
+    font-style: italic;
+  }
+
+  /* Tabulka rekapitulace s kódy se na telefonu scrolluje, nerozbíjí layout. */
+  .shpd-exchange__recap {
+    flex: 1 1 280px;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .shpd-exchange__recap-row--pair td {
+    color: var(--shpd-color-text-muted);
+  }
+
+  .shpd-exchange__recap-pair {
+    margin-left: var(--shpd-space-xs);
+    font-size: 0.6875rem;
+    color: var(--shpd-color-text-muted);
+  }
+
+  /* Částka z dokladu dodavatele — jen při rozdílu proti výpočtu. */
+  .shpd-exchange__supplier-total {
+    font-size: 0.8125rem;
+    color: var(--shpd-color-text-muted);
   }
 
   .shpd-exchange__total {

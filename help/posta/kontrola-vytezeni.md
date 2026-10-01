@@ -36,8 +36,8 @@ na každém řádku.
 
    | Sekce náhledu | Co porovnat s originálem |
    |---|---|
-   | **Součty** | **Celkem** především. Pak **Základ**, **DPH**, **Zaokrouhlení** |
-   | **DPH rekapitulace** | Sedí rozpad po sazbách? Je tam sazba, která na faktuře není? |
+   | **Součty** | **Celkem** především. Pak **Základ**, **DPH**, **Zaokrouhlení**. Náhled ukazuje částky, které skončí na dokladu — Shipard je spočítá z řádků stejně jako při vystavení. Když se **Celkem** liší od částky na faktuře, náhled to hlásí upozorněním a pod **Celkem** uvidíš i částku z faktury (*Na dokladu dodavatele*) |
+   | **DPH rekapitulace** | Sedí rozpad po sazbách? Je tam sazba, která na faktuře není? Nad tabulkou je uvedeno, zda je rekapitulace *převzatá z dokladu dodavatele*, nebo *přepočítaná podle řádků* — a proč (třeba když rekapitulace na faktuře aritmeticky nesedí) |
    | **Dodavatel** | **IČO** a **DIČ**. Podle nich se dohledává partner |
    | **Datumy** | **DUZP** a **Datum splatnosti** — ovlivní přiznání i saldokonto |
    | **Platba** | **Variabilní symbol** a **Bankovní účet** — podle nich se pak páruje platba |
@@ -178,10 +178,12 @@ rekapitulaci s nulovou daní nepřebírá. Jestli jde o plnění z EU
 firma se sídlem mimo EU, která fakturuje pod DIČ některého státu EU, je
 plnění z EU (u služeb *Základní - služby EU*). Když se tím místo plnění
 proti tomu, co přečetla AI, změnilo, náhled to ukáže jako upozornění
-u místa plnění. Zkontroluj tři věci: kód DPH
-u řádků (u služeb z EU *Základní - služby EU*), v **DPH rekapitulaci**
-řádek daně a k němu oddaňovací řádek, a že **Celkem** je rovno základu —
-tedy tomu, co máš skutečně zaplatit. Faktura ze zahraničí, která DPH
+u místa plnění. Zkontroluj tři věci, všechny už v náhledu: kód DPH a
+sazbu u řádků (u služeb z EU *Základní - služby EU*, 21 %, i když faktura
+uvádí 0 %), v **DPH rekapitulaci** řádek daně a k němu oddaňovací řádek
+(označený, ztlumený), a že **Celkem** je rovno základu — tedy tomu, co máš
+skutečně zaplatit. Doklad po **Vystavit koncept** má stejná čísla jako
+náhled. Faktura ze zahraničí, která DPH
 vůbec nezmiňuje (typicky software nebo předplatné z USA), je také
 samovyměření — Shipard ho dovodí sám. Když AI u řádku neurčila, zda jde
 o zboží, nebo službu, doplní to Shipard podle kategorie dokladu a v náhledu
