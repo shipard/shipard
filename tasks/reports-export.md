@@ -1,6 +1,6 @@
 # Reporty — export do XLSX a CSV
 
-**Stav:** hotovo — 2026-10-01 (4 commity, #83 D72); zbývá ruční otevření XLSX / CSV v Excelu a LibreOffice a proklik tlačítka Export; odchylky od zadání v `docs/reports.md` §15 (odsazení formátem buňky, formát `#,##0.00`, nula jako číslo)
+**Stav:** hotovo — 2026-10-01 (4 commity, #83 D72); proklik tlačítka Export a otevření v Numbers OK, Excel a LibreOffice se ověří průběžně; odchylky od zadání v `docs/reports.md` §15 (odsazení formátem buňky, formát `#,##0.00`, nula jako číslo)
 
 > PRD pro jednu Claude Code session (4 commity). Design: `docs/reports.md`
 > (§2 „jeden výpočet, N prezentací“, §3 `ReportResult`, §7, §14);
