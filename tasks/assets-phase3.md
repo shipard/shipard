@@ -1,6 +1,6 @@
 # Majetek Fáze 3 — zaúčtování a dimenze deníku
 
-**Stav:** hotovo — 2026-10-01 (8 commitů, ověřeno na `4l3j-z0bz-kz39-echj`); odchylky od zadání níže a v `docs/assets.md` §5.4; zbývá proklik UI v prohlížeči a nasazení na alfu
+**Stav:** hotovo — 2026-10-01 (8 commitů, ověřeno na `4l3j-z0bz-kz39-echj`); odchylky od zadání níže a v `docs/assets.md` §5.4; základní proklik OK; zbývá nasazení na alfu
 
 > PRD pro jednu Claude Code session (7 commitů). Design: `docs/assets.md`
 > §4 (D4, D15, D47–D56), §5.3; issue #83. Navazuje na `tasks/assets-phase2b.md`.
