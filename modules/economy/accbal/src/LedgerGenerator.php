@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Accbal;
 
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Database\NestedTransaction;
 use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
 
 /**
@@ -539,8 +540,7 @@ final class LedgerGenerator
             return $stats;
         }
 
-        $this->db->begin();
-        try {
+        NestedTransaction::run($this->db, function () use ($orphanIds, $desired, $existingByKey): void {
             foreach ($orphanIds as $id) {
                 $this->db->delete('economy_accbal_ledger')->where('[id] = %i', $id)->execute();
             }
@@ -554,12 +554,7 @@ final class LedgerGenerator
                     $this->db->insert('economy_accbal_ledger', $move)->execute();
                 }
             }
-
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollback();
-            throw $e;
-        }
+        });
 
         return $stats;
     }

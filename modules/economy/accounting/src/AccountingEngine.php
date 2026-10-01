@@ -9,6 +9,7 @@ use Shipard\Core\Accounting\JournalLineRequest;
 use Shipard\Core\Accounting\JournalLineView;
 use Shipard\Core\Accounting\JournalSourceContext;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Database\NestedTransaction;
 use Shipard\Core\Document\JournalEventDispatcher;
 
 /**
@@ -931,8 +932,7 @@ final class AccountingEngine
     {
         $state = $this->hasErrors() ? 2 : 1;
 
-        $this->db->begin();
-        try {
+        NestedTransaction::run($this->db, function () use ($docHeadId, $grouped, $head, $state): void {
             $this->db->delete('economy_accounting_journal')
                 ->where('doc_head = %i', $docHeadId)
                 ->execute();
@@ -973,11 +973,7 @@ final class AccountingEngine
                     : json_encode($this->messages, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             ])->where('id = %i', $docHeadId)->execute();
 
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollback();
-            throw $e;
-        }
+        });
 
         // Po commitu (deník zapsán): saldo si pohyby zdroje (re)derivuje.
         // Výjimku handleru dispatcher spolkne — účtování už je hotové.
@@ -992,8 +988,7 @@ final class AccountingEngine
      */
     public function clearDocument(int $docHeadId): void
     {
-        $this->db->begin();
-        try {
+        NestedTransaction::run($this->db, function () use ($docHeadId): void {
             $this->db->delete('economy_accounting_journal')
                 ->where('doc_head = %i', $docHeadId)
                 ->execute();
@@ -1001,11 +996,7 @@ final class AccountingEngine
                 'accounting_state'    => 0,
                 'accounting_messages' => null,
             ])->where('id = %i', $docHeadId)->execute();
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollback();
-            throw $e;
-        }
+        });
 
         // Deník vymazán → saldo musí pohyby zdroje odebrat.
         $this->journalEvents?->dispatchJournalWritten('doc', $docHeadId);

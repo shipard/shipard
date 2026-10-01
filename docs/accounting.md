@@ -1018,6 +1018,13 @@ Storno (30) = doklad účetně neexistuje. Generování je idempotentní
    a accounting_messages na hlavičce. Vše v transakci.
 ```
 
+**Transakce.** Zápis deníku (oba enginy) i saldo ledgeru jde přes
+`Shipard\Core\Database\NestedTransaction`: mimo transakci otevře vlastní,
+uvnitř cizí (`@@in_transaction`) použije `SAVEPOINT`. Engine tak smí běžet
+z handleru uvnitř transakce služby nad `TransactionlessTableGateway`
+(zaúčtování majetku, import dokladů a výpisů) a vnější transakci
+necommitne — MariaDB vnořené transakce nemá a holý `begin()` by ji ukončil.
+
 Chybové kódy (`accounting_messages[].code`): `rules_not_found`,
 `fiscal_period_missing`, `account_not_found`, `item_account_missing`,
 `row_account_missing`, `cash_desk_account_missing` (hotovostní doklad bez

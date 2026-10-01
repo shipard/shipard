@@ -341,6 +341,37 @@ class AccountingEngineTest extends IntegrationTestCase
         $this->assertCount(3, $this->journalOf($headId));
     }
 
+    /**
+     * Engine volaný uvnitř cizí transakce (zaúčtování majetku, import) ji
+     * nesmí commitnout — zapisuje přes savepoint a rollback volajícího
+     * vrátí i deník.
+     */
+    public function testEngineInsideOuterTransactionLeavesItToTheCaller(): void
+    {
+        $dibi = $this->db->getDibiConnection();
+        $engine = new AccountingEngine($dibi, ConfigRuntime::load($this->realDsPath, 'cs'));
+
+        $headId = $this->insertHead('invno', [
+            'total_base' => 1000.0, 'total_vat' => 210.0, 'total_amount' => 1210.0,
+            'total_base_dom' => 1000.0, 'total_vat_dom' => 210.0, 'total_amount_dom' => 1210.0,
+        ]);
+        $this->insertRow($headId, 'sale.services', 1000.0, 21.0);
+        $this->insertRecap($headId, 1000.0, 210.0);
+
+        $dibi->begin();
+        try {
+            $result = $engine->accountDocument($headId);
+            $this->assertSame(1, $result['state']);
+            $this->assertCount(3, $this->journalOf($headId), 'uvnitř transakce je deník vidět');
+            $this->assertSame(1, (int) $dibi->fetchSingle('SELECT @@in_transaction'), 'vnější transakce stále běží');
+        } finally {
+            $dibi->rollback();
+        }
+
+        $this->assertSame([], $this->journalOf($headId), 'rollback volajícího vrátil i deník');
+        $this->assertSame(0, $this->accountingState($headId));
+    }
+
     public function testInvnoPdpOutputBooksNoVat(): void
     {
         // W4: PDP výstup (cz-150) — daň odvádí zákazník, doklad je jen základ.

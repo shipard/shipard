@@ -11,6 +11,7 @@ use Shipard\Core\Accounting\JournalSourceContext;
 use Shipard\Core\Accounting\NullOpenItemLookup;
 use Shipard\Core\Accounting\OpenItemLookup;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Database\NestedTransaction;
 use Shipard\Core\Document\JournalEventDispatcher;
 use Shipard\Module\Economy\Accounting\AccountingRules;
 use Shipard\Module\Economy\Accounting\AccountMaskResolver;
@@ -177,8 +178,7 @@ final class BankTransactionAccountingEngine
      */
     public function clearTransaction(int $txId): void
     {
-        $this->db->begin();
-        try {
+        NestedTransaction::run($this->db, function () use ($txId): void {
             $this->db->delete('economy_accounting_journal')
                 ->where('bank_transaction = %i', $txId)
                 ->execute();
@@ -186,11 +186,7 @@ final class BankTransactionAccountingEngine
                 'accounting_state'    => 0,
                 'accounting_messages' => null,
             ])->where('id = %i', $txId)->execute();
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollback();
-            throw $e;
-        }
+        });
 
         // Deník vymazán → saldo musí pohyby transakce odebrat.
         $this->journalEvents?->dispatchJournalWritten('bankTransaction', $txId);
@@ -587,8 +583,9 @@ final class BankTransactionAccountingEngine
         $currency = (string) ($tx['currency'] ?? '');
         $statementNumber = $this->statementNumber($tx);
 
-        $this->db->begin();
-        try {
+        NestedTransaction::run($this->db, function () use (
+            $txId, $lines, $tx, $accountingDate, $fiscalYear, $fiscalMonth, $state, $currency, $statementNumber,
+        ): void {
             $this->db->delete('economy_accounting_journal')
                 ->where('bank_transaction = %i', $txId)
                 ->execute();
@@ -629,11 +626,7 @@ final class BankTransactionAccountingEngine
                     : json_encode($this->messages, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             ])->where('id = %i', $txId)->execute();
 
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollback();
-            throw $e;
-        }
+        });
 
         // Po commitu (deník zapsán): saldo si pohyby transakce (re)derivuje.
         $this->journalEvents?->dispatchJournalWritten('bankTransaction', $txId);

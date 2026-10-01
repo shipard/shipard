@@ -27,11 +27,11 @@ use Shipard\Core\Document\AbstractJournalEventHandler;
  * automaticky nedělá (reaccount transakce ji tam vrátí sám — engine je bez
  * paměti).
  *
- * Běží po commitu deníku zdroje. V importních cestách
- * (TransactionlessTableGateway, DocumentApplier / StatementImportService
- * s vlastní transakcí) engine `begin()` vnější transakci implicitně
- * commitne — stejný stav jako dnes u AccountingEngine::writeResult, T1 na
- * něm nic nemění.
+ * Běží po zápisu deníku zdroje. V cestách s vnější transakcí
+ * (TransactionlessTableGateway — DocumentApplier, StatementImportService,
+ * zaúčtování majetku) zapisují enginy i ledger přes `NestedTransaction`
+ * (savepoint), takže vnější transakce zůstává otevřená a přeúčtování se
+ * s ní commitne nebo vrátí.
  */
 final class ClearingRerouteHandler extends AbstractJournalEventHandler
 {
