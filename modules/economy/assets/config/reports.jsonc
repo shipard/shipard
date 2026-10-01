@@ -40,6 +40,29 @@
         ]
     },
     {
+        "id": "economy.assets.movements",
+        "navSection": "assets",
+        "navOrder": 51,
+        "name": "Additions and disposals",
+        "name:cs": "Přírůstky a úbytky",
+        "name:en": "Additions and disposals",
+        "builder": "Shipard\\Module\\Economy\\Assets\\Reports\\MovementsBuilder",
+        "periodGranularities": ["month", "quarter", "halfYear", "year"],
+        "params": [
+            {
+                "id": "kind", "type": "enum",
+                "name": "Movements", "name:cs": "Pohyby", "name:en": "Movements",
+                "options": ["all", "additions", "disposals"],
+                "optionNames": {
+                    "all": "Additions and disposals", "all:cs": "Přírůstky i úbytky", "all:en": "Additions and disposals",
+                    "additions": "Additions only", "additions:cs": "Jen přírůstky", "additions:en": "Additions only",
+                    "disposals": "Disposals only", "disposals:cs": "Jen úbytky", "disposals:en": "Disposals only"
+                },
+                "default": "all"
+            }
+        ]
+    },
+    {
         "id": "economy.assets.taxDepreciationReturn",
         "navSection": "assets",
         "navOrder": 52,
@@ -49,5 +72,39 @@
         "builder": "Shipard\\Module\\Economy\\Assets\\Reports\\TaxDepreciationReturnBuilder",
         "periodGranularities": ["year"],
         "params": []
+    },
+    {
+        "id": "economy.assets.register",
+        "navSection": "assets",
+        "navOrder": 54,
+        "name": "Asset register",
+        "name:cs": "Soupis majetku",
+        "name:en": "Asset register",
+        "builder": "Shipard\\Module\\Economy\\Assets\\Reports\\RegisterBuilder",
+        "periodGranularities": ["month", "year"],
+        "params": [
+            {
+                "id": "groupBy", "type": "enum",
+                "name": "Group by", "name:cs": "Seskupit podle", "name:en": "Group by",
+                "options": ["type", "category", "accountingGroup"],
+                "optionNames": {
+                    "type": "Asset type", "type:cs": "Typ majetku", "type:en": "Asset type",
+                    "category": "Category", "category:cs": "Druh majetku", "category:en": "Category",
+                    "accountingGroup": "Accounting group", "accountingGroup:cs": "Účetní skupina", "accountingGroup:en": "Accounting group"
+                },
+                "default": "type"
+            },
+            {
+                "id": "foreign", "type": "enum",
+                "name": "Foreign assets", "name:cs": "Cizí majetek", "name:en": "Foreign assets",
+                "options": ["include", "exclude", "only"],
+                "optionNames": {
+                    "include": "Including foreign", "include:cs": "Včetně cizího", "include:en": "Including foreign",
+                    "exclude": "Own assets only", "exclude:cs": "Jen vlastní", "exclude:en": "Own assets only",
+                    "only": "Foreign assets only", "only:cs": "Jen cizí", "only:en": "Foreign assets only"
+                },
+                "default": "include"
+            }
+        ]
     }
 ]

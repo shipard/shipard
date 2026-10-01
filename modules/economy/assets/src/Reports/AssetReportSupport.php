@@ -12,6 +12,7 @@ use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Economy\Assets\AssetCategories;
 use Shipard\Module\Economy\Assets\AssetDocument;
 use Shipard\Module\Economy\Assets\AssetPlanService;
+use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
 use Shipard\Module\Economy\Assets\Depreciation\Plan;
 use Shipard\Module\Economy\Assets\Depreciation\PlanMessageTexts;
 
@@ -147,7 +148,28 @@ class AssetReportSupport
         return $out;
     }
 
+    /**
+     * Potvrzené události účetního pohledu (okruh `both` / `acc`) daných
+     * druhů s datem v období, od nejstarší. Daňové události se vynechávají —
+     * pohyb majetku by jinak u karty s oddělenými okruhy vyšel dvakrát.
+     *
+     * @param list<string> $kinds
+     * @return list<array<string, mixed>>
+     */
+    public function eventsInPeriod(ReportRequest $request, string $begin, string $end, array $kinds): array
+    {
+        return $kinds === [] ? [] : $this->loadEvents($request, $begin, $end, $kinds);
+    }
+
     // ── Popisky ─────────────────────────────────────────────────────────────
+
+    /** Název druhu události z cfgItem `economy.assets.eventKinds`; bez konfigurace klíč. */
+    public static function eventKindLabel(ReportRequest $request, string $kind): string
+    {
+        $kinds = $request->config?->cfgItem('economy.assets.eventKinds');
+
+        return is_array($kinds) && is_string($kinds[$kind]['name'] ?? null) ? $kinds[$kind]['name'] : $kind;
+    }
 
     /** @param array<string, mixed> $card */
     public static function number(array $card): string
@@ -312,6 +334,26 @@ class AssetReportSupport
             . ' WHERE [a].[docState] IN %in'
             . ' ORDER BY [a].[asset_number], [a].[id]',
             self::CARD_STATES,
+        );
+        return array_map(static fn(iterable $row): array => AssetPlanService::plain($row), $rows);
+    }
+
+    /**
+     * @param list<string> $kinds
+     * @return list<array<string, mixed>>
+     */
+    protected function loadEvents(ReportRequest $request, string $begin, string $end, array $kinds): array
+    {
+        $rows = $request->db->getDibiConnection()->fetchAll(
+            'SELECT * FROM [' . AssetPlanService::EVENTS_TABLE . ']'
+            . ' WHERE [docState] = %i AND [event_kind] IN %in AND [scope] <> %s'
+            . ' AND [event_date] >= %s AND [event_date] <= %s'
+            . ' ORDER BY [event_date], [id]',
+            AssetPlanService::STATE_CONFIRMED,
+            $kinds,
+            AssetEvent::SCOPE_TAX,
+            $begin,
+            $end,
         );
         return array_map(static fn(iterable $row): array => AssetPlanService::plain($row), $rows);
     }

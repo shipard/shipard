@@ -36,4 +36,19 @@ class TestAssetReportSupport extends AssetReportSupport
 
         return $cards;
     }
+
+    protected function loadEvents(ReportRequest $request, string $begin, string $end, array $kinds): array
+    {
+        $events = array_values(array_filter(
+            $this->plans->events,
+            static fn(array $event): bool => (int) ($event['docState'] ?? 40) === 40
+                && in_array($event['event_kind'], $kinds, true)
+                && $event['scope'] !== 'tax'
+                && $event['event_date'] >= $begin
+                && $event['event_date'] <= $end,
+        ));
+        usort($events, static fn(array $a, array $b): int => [$a['event_date'], $a['id']] <=> [$b['event_date'], $b['id']]);
+
+        return $events;
+    }
 }
