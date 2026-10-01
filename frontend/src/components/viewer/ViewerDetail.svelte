@@ -104,9 +104,10 @@
     previewModalNdx = null;
   }
 
-  // Apply návrhu — safe mode; 422 unresolved_required z přímého apply
-  // (tlačítko Použít na kartě) → fall-through do review modalu, kde
-  // uživatel reference dořeší.
+  // Apply návrhu — safe mode, server doplní rozhodnutí uložená v review
+  // modalu (#87 B D17); 422 unresolved_required nebo validation_failed
+  // (např. kód DPH bez volby) z přímého apply (tlačítko Použít na kartě)
+  // → fall-through do review modalu, kde uživatel reference / volby dořeší.
   async function applyProposal(messageNdx) {
     if (actionInFlightNdx !== null) return;
     actionInFlightNdx = messageNdx;
@@ -122,7 +123,7 @@
             target: { table: 'docs_core_heads', mode: 'edit', id: savedDocId },
           });
         }
-      } else if (result?.error?.code === 'unresolved_required') {
+      } else if (result?.error?.code === 'unresolved_required' || result?.error?.code === 'validation_failed') {
         openPreviewModal(messageNdx);
       } else {
         alert(t('viewer.detail.applyFailed', { msg: translateError(result?.error) }));

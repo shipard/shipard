@@ -219,9 +219,10 @@
     }
   }
 
-  // Jednoklik apply z karty (pásmo ready) — safe mode bez userActions.
-  // 422 unresolved_required → fall-through do review modalu, kde uživatel
-  // reference dořeší; ostatní chyby → alert.
+  // Jednoklik apply z karty (pásmo ready) — safe mode; server doplní
+  // rozhodnutí uložená v review modalu (#87 B D17). 422 unresolved_required
+  // nebo validation_failed (např. kód DPH bez volby) → fall-through do
+  // review modalu, kde uživatel reference / volby dořeší; ostatní → alert.
   async function applyFlow(card, messageNdx) {
     if (busyCardId !== null || !messageNdx) return;
     busyCardId = card.id;
@@ -229,7 +230,7 @@
       const result = await applyMessage(messageNdx, null);
       if (result?.success) {
         finishApply(messageNdx, result.data?.savedDocId ?? 0, card.context?.target ?? 'docs');
-      } else if (result?.error?.code === 'unresolved_required') {
+      } else if (result?.error?.code === 'unresolved_required' || result?.error?.code === 'validation_failed') {
         previewNdx = messageNdx;
       } else {
         alert(t('dashboard.card.actionFailed', { msg: translateError(result?.error) }));

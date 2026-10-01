@@ -183,7 +183,10 @@ sazbu u řádků (u služeb z EU *Základní - služby EU*, 21 %, i když faktur
 uvádí 0 %), v **DPH rekapitulaci** řádek daně a k němu oddaňovací řádek
 (označený, ztlumený), a že **Celkem** je rovno základu — tedy tomu, co máš
 skutečně zaplatit. Doklad po **Vystavit koncept** má stejná čísla jako
-náhled. Faktura ze zahraničí, která DPH
+náhled. Když Shipard určí kód špatně, klikni na odznak u sazby řádku a
+vyber jiný z nabídky; v hlavičce jde stejně přepnout **Místo plnění**
+a **Režim DPH**. Rekapitulace i součty se přepočítají a volba platí
+i pro **Použít** na kartě. Faktura ze zahraničí, která DPH
 vůbec nezmiňuje (typicky software nebo předplatné z USA), je také
 samovyměření — Shipard ho dovodí sám. Když AI u řádku neurčila, zda jde
 o zboží, nebo službu, doplní to Shipard podle kategorie dokladu a v náhledu

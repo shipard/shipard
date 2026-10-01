@@ -18,8 +18,10 @@
   //   - `userActions` state accumulates the resolve-decision choices from
   //     clickable badges in DocumentExchangePreview.
   //   - `canApply` is true only when all non-matched references have a
-  //     decision (or are explicitly skipped). Unit / vatCode badges don't
-  //     gate apply — the applier has fallback defaults.
+  //     decision (or are explicitly skipped). Unit badges don't gate apply
+  //     (applier default). A row whose VAT code is `notFound` needs a
+  //     `rows[i].vatCode` choice from `_resolve.vatCodeOptions` — the applier
+  //     no longer falls back (tasks/exchange-preview-vat-choices.md D17).
   //   - Both apply buttons pass `userActions` and the doc target ('docs' /
   //     'registry') to onApply — parents branch post-apply UX on it.
   //     „Vystavit a uzavřít“ adds applyOptions {targetDocState: 40} as the
@@ -40,6 +42,15 @@
   //     a smazal rozhodnutí na serveru).
   //   - saveSeq (ne-reaktivní čítač) řeší závod odpovědí: starší pomalejší
   //     odpověď nesmí přepsat pendingSave / saveError.
+  //
+  // Volby DPH (tasks/exchange-preview-vat-choices.md D15, #87 B):
+  //   - změna cesty `vat.*` / `rows[i].vatCode` → po ÚSPĚŠNÉM uložení nový
+  //     náhled (refreshPreview): server čte uložená rozhodnutí, refresh
+  //     před dokončením POST /decisions by ukázal stav bez volby; selhání
+  //     uložení = žádný refresh (saveError zůstává).
+  //   - refreshPreview nemění userActions ani loading (modal nebliká,
+  //     rozhodnutí zůstávají); refreshSeq zahodí starší odpověď / jinou zprávu.
+  //   - rozhodnutí o stranách a položkách nový náhled nespouštějí.
   //
   // Mobile (<768px): single column with PDF/Preview tab switcher.
 
@@ -84,6 +95,10 @@
   // Sekvence POST /decisions — poslední odpověď vyhrává, starší se ignorují.
   // Ne-reaktivní: nic se na něj nevykresluje.
   let saveSeq = 0;
+  // Sekvence refreshe náhledu po volbě DPH (D15) — totéž pravidlo.
+  let refreshSeq = 0;
+
+  const VAT_CHOICE_PATH_RE = /^(vat\.(place|mode)|rows\[\d+\]\.vatCode)$/;
 
   $effect(() => {
     if (open && messageNdx !== null && messageNdx !== undefined) {
@@ -105,6 +120,7 @@
     saveError = false;
     pendingAction = null;
     saveSeq++;
+    refreshSeq++;
   }
 
   async function loadPreview(ndx) {
@@ -130,13 +146,24 @@
   }
 
   function handleUserActionsChange(next) {
+    const refresh = vatChoiceChanged(userActions, next);
     userActions = next;
-    void persist(next);
+    void persist(next).then((saved) => {
+      if (saved && refresh) void refreshPreview();
+    });
+  }
+
+  function vatChoiceChanged(prev, next) {
+    for (const key of new Set([...Object.keys(prev), ...Object.keys(next)])) {
+      if (VAT_CHOICE_PATH_RE.test(key) && (prev[key] ?? null) !== (next[key] ?? null)) return true;
+    }
+    return false;
   }
 
   // Autosave celé mapy na pozadí. Klient drží správnou mapu i při selhání —
   // apply ji pošle v `_resolve` nezávisle na persistenci; další změna
-  // uložení zopakuje.
+  // uložení zopakuje. Vrací true jen pro úspěšně uložený poslední stav
+  // (překonané uložení = false, refresh udělá to novější).
   async function persist(map) {
     const seq = ++saveSeq;
     const ndx = messageNdx;
@@ -147,9 +174,26 @@
     } catch {
       result = null;
     }
-    if (seq !== saveSeq) return; // překonáno novějším uložením nebo resetem
+    if (seq !== saveSeq) return false; // překonáno novějším uložením nebo resetem
     pendingSave = false;
     saveError = !result?.success;
+    return !saveError;
+  }
+
+  // Nový náhled po volbě DPH — bez resetu userActions a bez loading.
+  async function refreshPreview() {
+    const seq = ++refreshSeq;
+    const ndx = messageNdx;
+    let result;
+    try {
+      result = await previewMessage(ndx);
+    } catch {
+      result = null;
+    }
+    if (seq !== refreshSeq || ndx !== messageNdx) return;
+    if (result?.success) {
+      data = result.data;
+    }
   }
 
   // Guard zavření / přeskočení — jen když uložení běží nebo selhalo.
@@ -179,9 +223,12 @@
   const handleSkip = () => guardClose(onSkip);
 
   // Walk `_resolve` and verify every non-matched reference has a decision.
-  // unit/vatCode badges are excluded — applier falls back to defaults.
+  // Unit badges are excluded (applier default). A row whose VAT code is
+  // notFound needs a `useCode:` choice from vatCodeOptions (D17) — a stale
+  // choice outside the offer would end in validation_failed on apply.
   function allDecided(resolve, ua) {
     if (!resolve) return true;
+    const vatCodes = new Set((resolve.vatCodeOptions ?? []).map((o) => o.code));
     for (const key of ['supplier', 'customer', 'supplierBank', 'customerBank']) {
       const block = resolve[key];
       if (!block) continue;
@@ -196,6 +243,13 @@
       if (itemBlock.status === 'matched') continue;
       const p = `rows[${i}].item`;
       if (ua[p] !== undefined && ua[p] !== null) continue;
+      return false;
+    }
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i]?.vatCode?.status !== 'notFound') continue;
+      const chosen = ua[`rows[${i}].vatCode`];
+      if (typeof chosen === 'string' && chosen.startsWith('useCode:')
+          && vatCodes.has(chosen.slice('useCode:'.length))) continue;
       return false;
     }
     return true;

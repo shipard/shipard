@@ -134,3 +134,23 @@ rozdíly v chování `null` (viewer vrací `null`, `DocsHeadsFormBase::formatMon
 vrací „0,00").
 
 **Priorita:** nízká — úklid; roste s každým dalším viewerem.
+
+---
+
+## Náhled návrhu: texty „doklad dodavatele“ u vystavených dokladů
+
+**Zjištěno:** 10/2026 při ověření `exchange-preview-vat-recompute.md` (#87, task A).
+
+Náhled počítá `_resolve.computed` pro všechny typy dokladů z
+`DocumentApplier::preview()` (D7), texty ale předpokládají přijatý doklad:
+zpráva warningu `computed_total_mismatch` („Částka k úhradě na dokladu
+dodavatele …“) a i18n klíče `exchange.preview.recap.declared`
+(„převzatá z dokladu dodavatele“) a `exchange.preview.totals.supplierTotal`
+(„Na dokladu dodavatele“). U vystaveného dokladu (`selfParty: supplier`)
+jsme dodavatel my.
+
+**Směr řešení:** neutrální texty („na dokladu“, „deklarovaná částka“),
+nebo varianta podle `selfParty`.
+
+**Priorita:** nízká — z došlé pošty chodí jen přijaté doklady; vystavené
+přes náhled jdou jen z importu / API.

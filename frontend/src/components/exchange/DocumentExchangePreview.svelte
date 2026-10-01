@@ -22,6 +22,7 @@
   import { translateError } from '../../i18n/errors.js';
   import Popover from '../ui/Popover.svelte';
   import ResolveDecisionPanel from './ResolveDecisionPanel.svelte';
+  import VatCodeDecisionPanel from './VatCodeDecisionPanel.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import { enrichedRowCount, matchKindKey, suggestedFieldKeys } from './enrichBadge.js';
   import {
@@ -59,6 +60,25 @@
     computed !== null && issues.some((issue) => issue?.code === 'computed_total_mismatch'),
   );
   let supplierTotal = $derived(canonical?.totals?.totalAmount ?? null);
+
+  // ── Volby DPH (tasks/exchange-preview-vat-choices.md D13–D16) ──────────
+  // Nabídka kódů a efektivní hlavička přicházejí ze serveru. Bez nich
+  // (vystavený doklad, zdroj neplátce, canonical bez _resolve) se nic
+  // nenabízí a hlavička ukazuje canonical jako dřív.
+  let vatCodeOptions = $derived(Array.isArray(resolve?.vatCodeOptions) ? resolve.vatCodeOptions : []);
+  let vatCodeOptionCodes = $derived(new Set(vatCodeOptions.map((o) => o.code)));
+  let effectiveVat = $derived(resolve?.vat ?? null);
+  let vatChoiceEnabled = $derived(onUserActionsChange !== null && vatCodeOptions.length > 0);
+  // Řádky s blokem vatCode — jen ty mají volbu; textové a kontační řádky ne.
+  let vatCodeRowIndices = $derived.by(() => {
+    const rows = resolve?.rows ?? [];
+    const out = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i]?.vatCode) out.push(i);
+    }
+    return out;
+  });
+  let bulkVatCodeVisible = $derived(vatChoiceEnabled && vatCodeRowIndices.length >= 2);
   // Sloupec Účet se ukazuje, jen když ho aspoň jeden řádek nese —
   // faktury bez kontace/enrichmentu zůstávají beze změny (D23).
   let hasAccountColumn = $derived(
@@ -290,6 +310,74 @@
 
   function closeDecision() {
     decisionOpen = null;
+  }
+
+  // ── Volby DPH ───────────────────────────────────────────────────────────
+
+  // Badge kódu DPH je klikací i u napárovaného kódu (D16) — uživatel smí
+  // přebít i správně odvozený kód; vlastní panel, ne ResolveDecisionPanel.
+  function openVatCodeDecision(event, path, block) {
+    if (!vatChoiceEnabled) return;
+    event.preventDefault();
+    event.stopPropagation();
+    decisionOpen = { anchor: event.currentTarget, path, resolveBlock: block, kind: 'vatCode', parentMatchedId: null };
+  }
+
+  function openBulkVatCodeDecision(event) {
+    if (!bulkVatCodeVisible) return;
+    event.preventDefault();
+    event.stopPropagation();
+    decisionOpen = {
+      anchor: event.currentTarget,
+      path: null,
+      resolveBlock: null,
+      kind: 'vatCode',
+      parentMatchedId: null,
+      bulkPaths: vatCodeRowIndices.map((i) => `rows[${i}].vatCode`),
+    };
+  }
+
+  // Volba místa plnění / režimu hlavičky; '' = automaticky (klíč smazat).
+  // Změna místa smaže volby kódů řádků v témže novém objektu — kódy
+  // jiného místa by byly neplatné (D15); jedno uložení, jeden refresh.
+  function chooseVatHeader(kind, value) {
+    const path = `vat.${kind}`;
+    const next = { ...userActions };
+    if (value === '' || value === null || value === undefined) {
+      delete next[path];
+    } else {
+      next[path] = value;
+    }
+    if (kind === 'place') {
+      for (const key of Object.keys(next)) {
+        if (/^rows\[\d+\]\.vatCode$/.test(key)) delete next[key];
+      }
+    }
+    onUserActionsChange?.(next);
+  }
+
+  function chosenVatCode(path) {
+    const ua = onUserActionsChange !== null ? (userActions[path] ?? null) : null;
+    return typeof ua === 'string' && ua.startsWith('useCode:') ? ua.slice('useCode:'.length) : null;
+  }
+
+  // Stav badge kódu DPH: volba platí (server vrátil matchedBy "user", nebo
+  // je platná volba v mapě a nový náhled ještě nedorazil) → „zvoleno“;
+  // jinak původní stav resolve (notFound po neplatné volbě zůstane chybou).
+  function vatCodeStatusKey(path, block) {
+    if (block?.matchedBy === 'user') return 'matchedDecided';
+    const chosen = chosenVatCode(path);
+    if (chosen !== null && vatCodeOptionCodes.has(chosen)) return 'matchedDecided';
+    return statusKey(block?.status);
+  }
+
+  function vatCodeStatusLabel(path, block) {
+    const code = block?.matchedBy === 'user' ? (block.createPayload?.code ?? null) : null;
+    const chosen = code ?? chosenVatCode(path);
+    if (chosen !== null && (code !== null || vatCodeOptionCodes.has(chosen))) {
+      return t('exchange.preview.status.decided.useCode', { code: chosen });
+    }
+    return statusLabel(block);
   }
 
   function decideForPath(path, action) {
@@ -590,6 +678,77 @@
   </div>
 {/snippet}
 
+<!-- Místo plnění / režim DPH: efektivní hodnota z _resolve.vat se zdrojem
+     (D14); s nabídkou kódů i select „Automaticky (…)“ / pevná volba (D16).
+     V závorce je `auto` = co by Shipard určil bez volby, ne aktuální
+     efektivní hodnota — jinak by po volbě ukazovala to, co uživatel vybral.
+     Bez _resolve.vat fallback na canonical jako dřív. -->
+{#snippet vatChoiceField(kind)}
+  {@const keys = kind === 'mode' ? VAT_MODE_KEYS : VAT_PLACE_KEYS}
+  {@const prefix = kind === 'mode' ? 'vatMode' : 'vatPlace'}
+  {@const display = kind === 'mode' ? vatModeDisplay : vatPlaceDisplay}
+  {@const eff = effectiveVat?.[kind] ?? null}
+  {@const path = `vat.${kind}`}
+  {@const chosen = userActions[path] ?? null}
+  {@const effLabel = eff ? enumLabel(prefix, keys, eff.value) : null}
+  {@const autoLabel = eff ? enumLabel(prefix, keys, eff.auto ?? eff.value) : null}
+  <div class="shpd-exchange__field">
+    <span class="shpd-exchange__field-label">{t(`exchange.preview.field.${prefix}`)}</span>
+    {#if vatChoiceEnabled && eff}
+      <span class="shpd-exchange__field-value shpd-exchange__vat-choice">
+        <select
+          class="shpd-exchange__vat-select"
+          value={chosen ?? ''}
+          onchange={(e) => chooseVatHeader(kind, e.currentTarget.value)}
+        >
+          <option value="">{t('exchange.preview.vatChoice.auto', { value: autoLabel })}</option>
+          {#each keys as key (key)}
+            <option value={`useValue:${key}`}>{t(`exchange.preview.${prefix}.${key}`)}</option>
+          {/each}
+        </select>
+        <span class="shpd-exchange__field-hint">
+          {chosen !== null && eff.source !== 'user'
+            ? t('exchange.preview.vatChoice.overridden', { value: effLabel })
+            : t(`exchange.preview.vatChoice.source.${eff.source}`)}
+        </span>
+      </span>
+    {:else}
+      <span class="shpd-exchange__field-value">
+        {eff ? effLabel : display.text}
+        {#if eff}
+          <span class="shpd-exchange__field-hint">{t(`exchange.preview.vatChoice.source.${eff.source}`)}</span>
+        {:else if display.isDefault}
+          <span class="shpd-exchange__field-hint">{t('exchange.preview.defaultHint')}</span>
+        {/if}
+      </span>
+    {/if}
+  </div>
+{/snippet}
+
+<!-- Badge kódu DPH řádku — na rozdíl od statusBadge klikací i u matched
+     (D16) a bez entity: popover s VatCodeDecisionPanel. -->
+{#snippet vatCodeBadge(i, block)}
+  {#if block && statusKey(block.status)}
+    {@const path = `rows[${i}].vatCode`}
+    {@const modifier = vatCodeStatusKey(path, block)}
+    {@const label = vatCodeStatusLabel(path, block)}
+    {#if vatChoiceEnabled}
+      <button
+        type="button"
+        class="shpd-exchange__status shpd-exchange__status--{modifier} shpd-exchange__status--interactive"
+        title={label}
+        onclick={(e) => openVatCodeDecision(e, path, block)}
+      >
+        <span class="shpd-exchange__status-glyph">{statusGlyph(modifier)}</span>
+      </button>
+    {:else}
+      <span class="shpd-exchange__status shpd-exchange__status--{modifier}" title={label}>
+        <span class="shpd-exchange__status-glyph">{statusGlyph(modifier)}</span>
+      </span>
+    {/if}
+  {/if}
+{/snippet}
+
 {#snippet field(label, value, hint = null)}
   <div class="shpd-exchange__field">
     <span class="shpd-exchange__field-label">{label}</span>
@@ -670,16 +829,8 @@
       {@render field(t('exchange.preview.field.currency'), canonical.currency)}
       {@render field(t('exchange.preview.field.paymentMethod'), paymentMethodLabel)}
       {@render field(t('exchange.preview.field.paymentReference'), canonical.payment?.paymentReference)}
-      {@render field(
-        t('exchange.preview.field.vatMode'),
-        vatModeDisplay.text,
-        vatModeDisplay.isDefault ? t('exchange.preview.defaultHint') : null,
-      )}
-      {@render field(
-        t('exchange.preview.field.vatPlace'),
-        vatPlaceDisplay.text,
-        vatPlaceDisplay.isDefault ? t('exchange.preview.defaultHint') : null,
-      )}
+      {@render vatChoiceField('mode')}
+      {@render vatChoiceField('place')}
     </section>
 
     {#if (canonical.rows ?? []).length > 0}
@@ -715,7 +866,19 @@
               <th class="num">{t('exchange.preview.row.quantity')}</th>
               <th>{t('exchange.preview.row.unit')}</th>
               <th class="num">{t('exchange.preview.row.unitPrice')}</th>
-              <th>{t('exchange.preview.row.vat')}</th>
+              <th>
+                {t('exchange.preview.row.vat')}
+                {#if bulkVatCodeVisible}
+                  <button
+                    type="button"
+                    class="shpd-exchange__status shpd-exchange__status--canCreate shpd-exchange__status--interactive"
+                    title={t('exchange.preview.vatCode.bulkTitle', { count: vatCodeRowIndices.length })}
+                    onclick={openBulkVatCodeDecision}
+                  >
+                    <span class="shpd-exchange__status-glyph">%</span>
+                  </button>
+                {/if}
+              </th>
               <th class="num">{t('exchange.preview.row.total')}</th>
             </tr>
           </thead>
@@ -756,7 +919,7 @@
                   {#if effVat?.code}
                     <span class="shpd-exchange__row-code">{effVat.code}</span>
                   {/if}
-                  {@render statusBadge(resolve?.rows?.[i]?.vatCode)}
+                  {@render vatCodeBadge(i, resolve?.rows?.[i]?.vatCode)}
                 </td>
                 <td class="num">{formatMoney(row.totalPrice, canonical.currency)}</td>
               </tr>
@@ -876,34 +1039,46 @@
     width="400px"
     onClose={closeDecision}
   >
-    <ResolveDecisionPanel
-      resolveBlock={decisionOpen.resolveBlock}
-      referenceKind={decisionOpen.kind}
-      entityTable={decisionOpen.table}
-      createPayload={decisionOpen.resolveBlock?.createPayload ?? null}
-      parentMatchedId={decisionOpen.parentMatchedId}
-      currentUserAction={decisionOpen.path !== null ? userActions[decisionOpen.path] ?? null : null}
-      allowNoItem={decisionOpen.allowNoItem ?? false}
-      bulkCount={decisionOpen.bulkPaths?.length ?? 0}
-      bulkDecidedCount={decisionOpen.bulkPaths
-        ? decisionOpen.bulkPaths.filter((p) => (userActions[p] ?? null) !== null).length
-        : 0}
-      onDecide={handleDecide}
-      registryHit={decisionOpen.kind === 'party' ? registryHits[decisionOpen.path] ?? null : null}
-      registryBusy={quickAddBusy[decisionOpen.path] ?? false}
-      registryError={decisionOpen.kind === 'party' ? quickAddError[decisionOpen.path] ?? null : null}
-      onRegistryQuickAdd={decisionOpen.kind === 'party'
-        ? () => {
-            const path = decisionOpen.path;
-            void handleRegistryQuickAdd(path).then((ok) => {
-              if (ok) closeDecision();
-            });
-          }
-        : null}
-      onOpenRegistrySearch={decisionOpen.kind === 'party'
-        ? () => openRegistrySearch(decisionOpen.path)
-        : null}
-    />
+    {#if decisionOpen.kind === 'vatCode'}
+      <VatCodeDecisionPanel
+        options={vatCodeOptions}
+        currentUserAction={decisionOpen.path !== null ? userActions[decisionOpen.path] ?? null : null}
+        bulkCount={decisionOpen.bulkPaths?.length ?? 0}
+        bulkDecidedCount={decisionOpen.bulkPaths
+          ? decisionOpen.bulkPaths.filter((p) => (userActions[p] ?? null) !== null).length
+          : 0}
+        onDecide={handleDecide}
+      />
+    {:else}
+      <ResolveDecisionPanel
+        resolveBlock={decisionOpen.resolveBlock}
+        referenceKind={decisionOpen.kind}
+        entityTable={decisionOpen.table}
+        createPayload={decisionOpen.resolveBlock?.createPayload ?? null}
+        parentMatchedId={decisionOpen.parentMatchedId}
+        currentUserAction={decisionOpen.path !== null ? userActions[decisionOpen.path] ?? null : null}
+        allowNoItem={decisionOpen.allowNoItem ?? false}
+        bulkCount={decisionOpen.bulkPaths?.length ?? 0}
+        bulkDecidedCount={decisionOpen.bulkPaths
+          ? decisionOpen.bulkPaths.filter((p) => (userActions[p] ?? null) !== null).length
+          : 0}
+        onDecide={handleDecide}
+        registryHit={decisionOpen.kind === 'party' ? registryHits[decisionOpen.path] ?? null : null}
+        registryBusy={quickAddBusy[decisionOpen.path] ?? false}
+        registryError={decisionOpen.kind === 'party' ? quickAddError[decisionOpen.path] ?? null : null}
+        onRegistryQuickAdd={decisionOpen.kind === 'party'
+          ? () => {
+              const path = decisionOpen.path;
+              void handleRegistryQuickAdd(path).then((ok) => {
+                if (ok) closeDecision();
+              });
+            }
+          : null}
+        onOpenRegistrySearch={decisionOpen.kind === 'party'
+          ? () => openRegistrySearch(decisionOpen.path)
+          : null}
+      />
+    {/if}
   </Popover>
 {/if}
 
@@ -1109,6 +1284,25 @@
     margin-left: 4px;
     font-size: 0.75rem;
     color: var(--shpd-color-text-muted);
+  }
+
+  /* Volba místa plnění / režimu DPH v hlavičce (D16). */
+  .shpd-exchange__vat-choice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--shpd-space-xs);
+  }
+
+  .shpd-exchange__vat-select {
+    font: inherit;
+    font-size: 0.875rem;
+    padding: 2px 4px;
+    border: 1px solid var(--shpd-color-border);
+    border-radius: 4px;
+    background: var(--shpd-color-surface, #fff);
+    color: inherit;
+    max-width: 100%;
   }
 
   /* ── Status badges ───────────────────────────────────────────────────── */

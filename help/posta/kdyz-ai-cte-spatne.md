@@ -21,15 +21,20 @@ datum, dodavatel nebo položky.
 
    | Co je špatně | Kde to opravíš |
    |---|---|
-   | Dodavatel, položka, jednotka | Přímo v náhledu, ještě před vystavením |
-   | Částky, datumy, sazby, kód DPH, texty, počty řádků | Až v dokladu, po **Vystavit koncept** |
+   | Dodavatel, položka, jednotka, **kód DPH** řádků, **Místo plnění**, **Režim DPH** | Přímo v náhledu, ještě před vystavením |
+   | Částky, datumy, texty, počty řádků | Až v dokladu, po **Vystavit koncept** |
    | Typ dokladu, nebo to faktura vůbec není | **Zamítnout** |
    | Nečitelná příloha | **Znovu analyzovat** |
 
 2. **Reference oprav hned v náhledu.** U dodavatele, položky nebo účtu
    klikni na **Vybrat existujícího…** a najdi správný záznam, nebo zvol
-   **Vytvořit nového**. Tohle je jediná část návrhu, kterou lze měnit před
-   uložením — a vyplatí se, protože podle dodavatele se dohledává i zbytek.
+   **Vytvořit nového**. Kód DPH řádku změníš kliknutím na odznak u sazby
+   ve sloupci **DPH** — nabídka zná jen kódy, které k místu plnění a datu
+   dávají smysl; u více řádků naráz použij tlačítko v hlavičce sloupce.
+   **Místo plnění** a **Režim DPH** přepneš v hlavičce náhledu (volba
+   *Automaticky* vrátí, co určil Shipard). **DPH rekapitulace** a **Součty**
+   se po každé volbě hned přepočítají. Vyplatí se to, protože podle
+   dodavatele se dohledává i zbytek.
 
 3. **Zbytek oprav v dokladu.** Dej **Vystavit koncept** — ne **Vystavit
    a uzavřít**, uzavřený doklad se needituje. Doklad vznikne jako
@@ -72,9 +77,10 @@ až doklad.
 DPH (daň dvakrát) a zaokrouhlení celkové částky — podrobnosti
 v [Co Shipard dnes neumí](../co-dnes-nejde.md). Pokud u nich narazíš na
 něco *jiného*, než co je tam popsané, ozvi se. Kód DPH u samovyměření
-(reverse charge) už návrh určuje sám; když přesto skončí chybou kódu DPH,
-jde o jeden z případů, které zatím neumí — jsou vyjmenované tamtéž
-a doklad založíš ručně.
+(reverse charge) už návrh určuje sám; když skončí chybou kódu DPH, nebo
+zvolí jiný kód, než na fakturu patří, vyber kód přímo v náhledu u řádku.
+Co v nabídce není (zahraniční DPH, přenesení daňové povinnosti mimo
+stavební práce a přílohu 5), je vyjmenované tamtéž a doklad založíš ručně.
 
 **Čím víc dokladů od dodavatele máš, tím méně chyb.** Shipard doplňuje
 položky, sazby a účty z tvých dřívějších dokladů od téhož partnera. První

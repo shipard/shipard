@@ -169,15 +169,15 @@ je v [TESTERS.md](../TESTERS.md).
   služby nebo zboží z EU, služby ze třetí země a tuzemské přenesení
   daňové povinnosti (stavební práce, odpad a šrot) návrh zpracuje sám:
   kód DPH řádků určí podle údajů na dokladu a **DPH rekapitulaci**
-  přepočítá s oddaňovacím řádkem. Co zatím neumí: sníženou sazbu
-  u samovyměření (návrh dá základní sazbu — oprav ji v dokladu), fakturu
-  se zahraniční DPH (hotel nebo tankování v cizině), přenesení daňové
-  povinnosti mimo stavební práce a přílohu 5 (mobilní telefony,
-  povolenky…), **dovoz zboží ze třetí země** (DPH se řeší z celního
-  dokladu, ne z faktury dodavatele) a služby ze zahraničí se zvláštním
-  místem plnění (ubytování, jízdenky a letenky, stravování, nájem
-  a služby k nemovitosti, mýto, parkování). U těch návrh skončí chybou
-  kódu DPH a doklad založíš ručně. Kód DPH se v náhledu změnit nedá.
+  přepočítá s oddaňovacím řádkem. Sníženou sazbu u samovyměření sám
+  nepozná (dá základní) — vyber ji v náhledu kliknutím na odznak u sazby
+  řádku. Co zatím neumí: fakturu se zahraniční DPH (hotel nebo tankování
+  v cizině), přenesení daňové povinnosti mimo stavební práce a přílohu 5
+  (mobilní telefony, povolenky…), **dovoz zboží ze třetí země** (DPH se
+  řeší z celního dokladu, ne z faktury dodavatele) a služby ze zahraničí
+  se zvláštním místem plnění (ubytování, jízdenky a letenky, stravování,
+  nájem a služby k nemovitosti, mýto, parkování). Pro ty v nabídce kódů
+  v náhledu nic není, návrh skončí chybou kódu DPH a doklad založíš ručně.
 
 Když dodavatel přiloží fakturu ve formátu **ISDOC**, data se převezmou
 přímo bez čtení AI — je to přesnější. AI se u něj použije jen na zařazení
