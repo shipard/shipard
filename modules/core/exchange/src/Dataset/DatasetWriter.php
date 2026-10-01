@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Dataset;
 
+use Shipard\Core\Utils\Slug;
+
 /**
  * Zápis datové sady do složky (+ volitelné zabalení do `.zip`).
  *
@@ -20,18 +22,6 @@ final class DatasetWriter
         | JSON_UNESCAPED_SLASHES
         | JSON_PRESERVE_ZERO_FRACTION
         | JSON_THROW_ON_ERROR;
-
-    private const SLUG_MAX = 60;
-
-    private const TRANSLIT = [
-        'á' => 'a', 'č' => 'c', 'ď' => 'd', 'é' => 'e', 'ě' => 'e', 'í' => 'i', 'ň' => 'n',
-        'ó' => 'o', 'ř' => 'r', 'š' => 's', 'ť' => 't', 'ú' => 'u', 'ů' => 'u', 'ý' => 'y',
-        'ž' => 'z', 'ä' => 'a', 'ľ' => 'l', 'ĺ' => 'l', 'ô' => 'o', 'ŕ' => 'r', 'ö' => 'o',
-        'ü' => 'u', 'ß' => 'ss', 'ł' => 'l', 'ą' => 'a', 'ę' => 'e', 'ś' => 's', 'ź' => 'z',
-        'ż' => 'z', 'ć' => 'c', 'ń' => 'n', 'à' => 'a', 'è' => 'e', 'ì' => 'i', 'ò' => 'o',
-        'ù' => 'u', 'â' => 'a', 'ê' => 'e', 'î' => 'i', 'ô' => 'o', 'û' => 'u', 'ç' => 'c',
-        'ñ' => 'n', 'ø' => 'o', 'å' => 'a', 'æ' => 'ae', 'œ' => 'oe',
-    ];
 
     private function __construct(
         private readonly string $rootDir,
@@ -173,14 +163,7 @@ final class DatasetWriter
      */
     public static function slug(string $text): string
     {
-        $lower = mb_strtolower($text, 'UTF-8');
-        $ascii = strtr($lower, self::TRANSLIT);
-        $ascii = (string) preg_replace('/[^a-z0-9]+/', '-', $ascii);
-        $ascii = trim($ascii, '-');
-        if (strlen($ascii) > self::SLUG_MAX) {
-            $ascii = rtrim(substr($ascii, 0, self::SLUG_MAX), '-');
-        }
-        return $ascii === '' ? 'record' : $ascii;
+        return Slug::make($text);
     }
 
     private function targetPath(string $relPath): string

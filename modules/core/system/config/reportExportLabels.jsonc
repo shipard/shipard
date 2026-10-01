@@ -1,0 +1,62 @@
+{
+    // core.system.reportExportLabels
+    //
+    // Popisky exportu reportů do XLSX / CSV (docs/reports.md §15) — názvy
+    // listů, úvodní blok, hlavičky sloupců a list Zprávy. Čte
+    // `ReportExportLabels::fromConfig()`; bez zkompilovaného cfgItem padá
+    // na anglické defaulty v PHP.
+    //
+    // `params` = lidské názvy parametrů reportu a jejich hodnot v úvodním
+    // bloku; parametr bez záznamu se vypíše jako `id: hodnota`.
+
+    "labels": {
+        "sheetReport":     {"name": "Report", "name:cs": "Report", "name:en": "Report"},
+        "sheetMessages":   {"name": "Messages", "name:cs": "Zprávy", "name:en": "Messages"},
+        "period":          {"name": "Period", "name:cs": "Období", "name:en": "Period"},
+        "generatedAt":     {"name": "Generated", "name:cs": "Vygenerováno", "name:en": "Generated"},
+        "dataSource":      {"name": "Data source", "name:cs": "Zdroj dat", "name:en": "Data source"},
+        "note":            {"name": "Note", "name:cs": "Poznámka", "name:en": "Note"},
+        "exactAmounts": {
+            "name": "Amounts are exported in full precision (never in thousands).",
+            "name:cs": "Částky jsou uvedeny přesně (nikdy v tisících).",
+            "name:en": "Amounts are exported in full precision (never in thousands)."
+        },
+        "status":          {"name": "Status", "name:cs": "Stav", "name:en": "Status"},
+        "statusErrors": {
+            "name": "The report contains errors — see the Messages sheet.",
+            "name:cs": "Report obsahuje chyby — viz list Zprávy.",
+            "name:en": "The report contains errors — see the Messages sheet."
+        },
+        "statusWarnings": {
+            "name": "The report contains warnings — see the Messages sheet.",
+            "name:cs": "Report obsahuje varování — viz list Zprávy.",
+            "name:en": "The report contains warnings — see the Messages sheet."
+        },
+        "account":         {"name": "Account", "name:cs": "Účet", "name:en": "Account"},
+        "label":           {"name": "Name", "name:cs": "Název", "name:en": "Name"},
+        "sideMd":          {"name": "Dr", "name:cs": "MD", "name:en": "Dr"},
+        "sideD":           {"name": "Cr", "name:cs": "D", "name:en": "Cr"},
+        "sideBalance":     {"name": "Balance", "name:cs": "Zůstatek", "name:en": "Balance"},
+        "severity":        {"name": "Severity", "name:cs": "Závažnost", "name:en": "Severity"},
+        "code":            {"name": "Code", "name:cs": "Kód", "name:en": "Code"},
+        "text":            {"name": "Text", "name:cs": "Text", "name:en": "Text"},
+        "row":             {"name": "Row", "name:cs": "Řádek", "name:en": "Row"},
+        "severityError":   {"name": "Error", "name:cs": "Chyba", "name:en": "Error"},
+        "severityWarning": {"name": "Warning", "name:cs": "Varování", "name:en": "Warning"},
+        "severityInfo":    {"name": "Info", "name:cs": "Informace", "name:en": "Info"},
+        "yes":             {"name": "Yes", "name:cs": "Ano", "name:en": "Yes"},
+        "no":              {"name": "No", "name:cs": "Ne", "name:en": "No"}
+    },
+
+    "params": {
+        "detail": {
+            "name": "Detail level",
+            "name:cs": "Úroveň detailu",
+            "name:en": "Detail level",
+            "options": {
+                "analytic":  {"name": "Analytic", "name:cs": "Analyticky", "name:en": "Analytic"},
+                "synthetic": {"name": "Synthetic", "name:cs": "Synteticky", "name:en": "Synthetic"}
+            }
+        }
+    }
+}

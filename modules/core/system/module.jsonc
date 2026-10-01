@@ -224,6 +224,10 @@
         {
             "id": "core.system.viewerDetailLabels",
             "file": "config/viewerDetailLabels.jsonc"
+        },
+        {
+            "id": "core.system.reportExportLabels",
+            "file": "config/reportExportLabels.jsonc"
         }
     ]
 }
