@@ -881,8 +881,6 @@ export default {
   'reports.period.noInstances': 'The registration has no period of this report type',
   'reports.vatRegistration.label': 'VAT registration',
   'reports.noVatRegistrations': 'No VAT registration has a period of this report type — create one under VAT report periods',
-  'reports.detail.analytic': 'Analytic',
-  'reports.detail.synthetic': 'Synthetic',
   'reports.format.exact': 'Exact',
   'reports.format.thousands': 'In thousands',
   'reports.thousandsSuffix': '(in thousands)',

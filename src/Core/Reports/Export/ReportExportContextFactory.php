@@ -46,7 +46,7 @@ final class ReportExportContextFactory
         return new ReportExportContext(
             reportName: $definition->name,
             dataSourceName: $this->dataSourceName,
-            labels: ReportExportLabels::fromConfig($this->config),
+            labels: ReportExportLabels::fromConfig($this->config)->withDefinitionParams($definition->params),
             language: $this->language,
             fiscalYearMonths: $this->fiscalYearMonths($result),
         );

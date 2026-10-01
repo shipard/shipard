@@ -717,7 +717,7 @@ prázdné, doplní se akcí Zaúčtovat). Selhání nahrání přílohy nechá p
 jako koncept — dokončete přes `POST /_vat/filing-import-finish`. Viz README
 modulu `economy.vat` → Import starých podání.
 
-#### `report-run <reportId> … [--format=json|xlsx|csv] [--output=<soubor>]`
+#### `report-run <reportId> … [--param id=hodnota]… [--format=json|xlsx|csv] [--output=<soubor>]`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -737,7 +737,10 @@ Spustí report a vypíše výsledek. Období se zadává podle zdroje období
 reportu: fiskální reporty `--fiscal-year` (název roku) + `--month-from` /
 `--month-to` (pořadí běžného měsíce v roce), reporty DPH `--period` (id
 instance daňového tvrzení). `--detail analytic|synthetic` jen u reportů,
-které ho deklarují (default `analytic`).
+které ho deklarují (default `analytic`). Ostatní parametry reportu jdou
+obecně přes opakovatelné `--param id=hodnota` (např.
+`--param groupBy=type --param category=all`); nabídku a výchozí hodnoty
+určuje deklarace reportu, neznámý parametr nebo hodnota končí chybou.
 
 | `--format` | Výstup |
 |---|---|

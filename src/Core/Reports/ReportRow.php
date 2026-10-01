@@ -15,6 +15,9 @@ final class ReportRow
      * @param ?string $account Číslo účtu (u error řádků chybová maska,
      *                         u total/computed null).
      * @param array<string, array{md: float, d: float, balance: float}|string> $values
+     * @param ?string $key Stabilní identita řádku, který není účet (např.
+     *                     `asset:68`, `event:412`) — klíč párování v
+     *                     `ReportDiff`; bez něj se páruje podle `account`.
      */
     public function __construct(
         public readonly ReportRowKind $kind,
@@ -22,17 +25,22 @@ final class ReportRow
         public readonly ?string $account,
         public readonly string $label,
         public readonly array $values,
+        public readonly ?string $key = null,
     ) {}
 
     /** @return array<string, mixed> */
     public function toArray(): array
     {
-        return [
+        $out = [
             'kind'    => $this->kind->value,
             'level'   => $this->level,
             'account' => $this->account,
             'label'   => $this->label,
             'values'  => $this->values,
         ];
+        if ($this->key !== null) {
+            $out['key'] = $this->key;
+        }
+        return $out;
     }
 }

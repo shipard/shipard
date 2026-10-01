@@ -20,7 +20,8 @@ z milníku M1 a validace importu ze starého Shipardu (M3).
 > domény z issue #42 tím je uzavřen (validace importu čeká na exportér
 > v `old_shipard`, kontrakt §7.4). Upřesnění tvaru dle implementace:
 > §10, §11, §12, §13. Export do XLSX a CSV hotov (2026-10-01,
-> `tasks/reports-export.md`, #83 D72) — §15.
+> `tasks/reports-export.md`, #83 D72) — §15. Obecné parametry, seskupení
+> podle klíče a identita řádku (2026-10-01, `tasks/assets-phase5.md`) — §16.
 
 ---
 
@@ -408,6 +409,7 @@ Body, kde implementace zpřesnila návrh (tvar §3.1 platí beze změn):
   `ReportResult`; červené řádky dle `rowRef`, messages pod čarou,
   přepínač „V tisících" dělí 1000 jen při renderu — D6).
 - **Deep-link (D10)**: `?report=<id>&fy=<rok>&mf=<od>&mt=<do>&detail=<d>`
+  (parametry deklarace obecně pod svým id, §16.1)
   — `history.replaceState` při každé změně parametrů, žádný router.
   Při startu aplikace se query parsuje v `main.js` (URL se nečistí,
   na rozdíl od auth větví) a po loadu navigace se aktivuje leaf
@@ -595,3 +597,80 @@ beze změny (čtení); MCP `report_run` export nenabízí.
 - **CLI:** `report-run … --format=json|xlsx|csv [--output=<soubor>]` —
   `xlsx` vyžaduje `--output`, `csv` bez něj na stdout; viz
   [cli.md](cli.md).
+
+---
+
+## 16. Obecné parametry, seskupení a identita řádku
+
+Rozšíření jádra pro reporty, jejichž řádky nejsou účty — první konzument
+jsou přehledy majetku (`economy.assets.*`, `docs/assets.md` §5.6).
+
+### 16.1 Parametry deklarace ve všech prezentacích
+
+Do té doby uměly UI, CLI i MCP jen parametr `detail`. Deklarace je teď
+jediný zdroj i pro popisky (duch D7):
+
+```jsonc
+{
+    "id": "groupBy", "type": "enum",
+    "name": "Group by", "name:cs": "Seskupit podle",
+    "options": ["accountingGroup", "type", "none"],
+    "optionNames": {
+        "accountingGroup": "Accounting group", "accountingGroup:cs": "Účetní skupina",
+        "type": "Type", "type:cs": "Typ",
+        "none": "No grouping", "none:cs": "Neseskupovat"
+    },
+    "default": "accountingGroup"
+}
+```
+
+- `name` a `optionNames` jsou nepovinné a lokalizují se jako zbytek
+  deklarace (`ConfigLocalizer`); katalog `GET /_reports` je posílá v
+  `params[]`. Bez popisku padá prezentace na id.
+- Id parametru nesmí kolidovat s klíči období, exportu a deep-linku
+  (`ReportDefinition::RESERVED_PARAM_IDS`: `fiscalYear`, `monthFrom`,
+  `monthTo`, `period`, `format`, `report`, `fy`, `mf`, `mt`, `p`).
+- **UI:** `ReportsPage` staví toolbar ze všech parametrů deklarace
+  (`enum` = roletka, `bool` = zaškrtávátko); popisek vedle roletky
+  dostávají až dva a víc parametrů. Stav stránky je plochý objekt
+  období + parametry, čisté funkce v `utils/reportParams.js`. Deep-link
+  nese parametry pod jejich id (`…&groupBy=type`), neplatná hodnota padá
+  na default. Výchozí období respektuje granularity — report jen s roční
+  granularitou dostane celý rok, ne poslední měsíc.
+- **CLI:** opakovatelné `--param id=hodnota`; `--detail` zůstává
+  (`--param detail=…` má přednost).
+- **MCP:** `report_run` bere objekt `params` (`{id: hodnota}`), nabídku
+  ukazuje `report_list`; top-level `detail` zůstává kvůli výchozí hodnotě
+  `synthetic`.
+- **Export:** názvy parametrů a hodnot v úvodním bloku bere z deklarace
+  (`ReportExportLabels::withDefinitionParams()`), cfgItem
+  `core.system.reportExportLabels.params` je už jen fallback.
+
+### 16.2 Země zdroje dat
+
+`ReportRequest::$country` (`DataSourceConfig::getCountry()`) — builder,
+který počítá podle pravidel země (daňové odpisy), nemá jinou cestu
+k `DataSourceConfig`. Plní `ReportRunner` (parametr `country`) na všech
+třech místech vzniku: REST (`dispatchReports`), CLI `report-run`, MCP
+`ReportToolSupport`.
+
+### 16.3 Seskupení podle klíče
+
+`SubtotalAggregator::rollup()` seskupuje podle prefixu čísla účtu.
+`SubtotalAggregator::groupBy($rows, $groupOf, $labelResolver,
+$totalLabel, $subtotalFirst = true)` seskupuje podle libovolného klíče
+(účetní skupina, typ, druh události): skupiny v pořadí prvního výskytu,
+řádky uvnitř v pořadí vstupu (řadí builder), řádek skupiny je `subtotal`
+level 1 s `key = group:{klíč}` — ve výchozím stavu **před** svými řádky
+jako nadpis se součty (vzor kontrolního hlášení). `$groupOf = null` dá
+jen total, `$totalLabel = null` jen skupiny.
+
+### 16.4 Identita řádku (`key`)
+
+`ReportRow::$key` — volitelná stabilní identita řádku, který není účet
+(`asset:68`, `event:412`, `group:…`); v JSON jen když je vyplněná.
+`account` zůstává číslem účtu: renderer ho tiskne před názvem a export
+z něj dělá sloupec „Účet“, takže inventární číslo patří do textového
+sloupce, ne do `account`. `ReportDiff` páruje detail řádky podle
+`key ?? account` — reporty mimo deník tak jdou porovnat `report-diff`
+a dva řádky téhož účtu se nepřepíšou.

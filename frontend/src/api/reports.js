@@ -1,8 +1,9 @@
 /**
  * API helpers for the reports endpoints (tasks/reports-phase3.md, docs/reports.md):
  *   GET /_reports              — catalog of declared reports + fiscal periods
- *   GET /_reports/{reportId}   — run a report; query = params
- *                                (fiscalYear, monthFrom, monthTo, detail)
+ *   GET /_reports/{reportId}   — run a report; query = period keys
+ *                                (fiscalYear, monthFrom, monthTo | period)
+ *                                + the report's declared params by id
  *
  *                                + format=xlsx|csv → file download (export)
  *
@@ -12,6 +13,10 @@
 
 import { get, getBlob } from './client.js';
 import { fileNameFromContentDisposition, saveBlob } from '../utils/download.js';
+import { fitPeriodToGranularities, reportQueryEntries } from '../utils/reportParams.js';
+
+// Deep-link parser je čistá funkce v utils — re-export drží import v main.js.
+export { parseReportDeepLink } from '../utils/reportParams.js';
 
 /**
  * @returns {Promise<{success: boolean, data?: {items: Array<{id: string, name: string,
@@ -23,14 +28,14 @@ export async function fetchReportCatalog() {
 }
 
 /**
- * Query se staví jen z definovaných klíčů — report s periodSource
- * 'vatPeriod' posílá `period` (id instance daňového tvrzení), fiskální
- * report fiscalYear+monthFrom/monthTo; `detail` jen když ho report
- * deklaruje (server by neznámý parametr odmítl jako 400).
+ * Query se staví ze stavu stránky — report s periodSource 'vatPeriod'
+ * posílá `period` (id instance daňového tvrzení), fiskální report
+ * fiscalYear+monthFrom/monthTo; ostatní klíče jsou parametry deklarace
+ * reportu (server neznámý parametr odmítne jako 400, stav stránky proto
+ * nese jen deklarované).
  *
  * @param {string} reportId
- * @param {{fiscalYear?: string, monthFrom?: number, monthTo?: number,
- *   period?: number, detail?: string}} params
+ * @param {Record<string, any>} params
  * @returns {Promise<{success: boolean, data?: object, error?: object}>} data = ReportResult
  */
 export async function runReport(reportId, params) {
@@ -58,47 +63,7 @@ export async function downloadReport(reportId, params, format) {
 }
 
 function reportQuery(params) {
-  const entries = params.period != null
-    ? { period: String(params.period) }
-    : {
-        fiscalYear: params.fiscalYear,
-        monthFrom: String(params.monthFrom),
-        monthTo: String(params.monthTo),
-      };
-  if (params.detail !== undefined) entries.detail = params.detail;
-  return new URLSearchParams(entries);
-}
-
-/**
- * Deep-link reportu z query stringu (`?report=<id>&fy=<rok>&mf=<od>&mt=<do>
- * &detail=<d>`, u vatPeriod reportů `&p=<id instance>`) — čistý parser
- * jako parseAuthAction. Bez `report` → null; jednotlivá nevalidní pole se
- * zahodí (doplní je default v ReportsPage). „V tisících" do URL nepatří
- * (čistě vizuální volba).
- *
- * @param {string} search window.location.search
- * @returns {{reportId: string, params: {fiscalYear?: string, monthFrom?: number,
- *   monthTo?: number, period?: number, detail?: string}}|null}
- */
-export function parseReportDeepLink(search) {
-  const query = new URLSearchParams(search);
-  const reportId = query.get('report');
-  if (!reportId) return null;
-
-  const params = {};
-  const fy = query.get('fy');
-  if (fy) params.fiscalYear = fy;
-  for (const [key, name] of [['mf', 'monthFrom'], ['mt', 'monthTo']]) {
-    const raw = query.get(key);
-    const value = Number.parseInt(raw ?? '', 10);
-    if (Number.isInteger(value) && value >= 1 && value <= 12) params[name] = value;
-  }
-  const period = Number.parseInt(query.get('p') ?? '', 10);
-  if (Number.isInteger(period) && period >= 1) params.period = period;
-  const detail = query.get('detail');
-  if (detail === 'analytic' || detail === 'synthetic') params.detail = detail;
-
-  return { reportId, params };
+  return new URLSearchParams(reportQueryEntries(params));
 }
 
 /**
@@ -107,11 +72,15 @@ export function parseReportDeepLink(search) {
  * bez mapy fiskální↔kalendářní měsíc bereme pořadí měsíce v roce jako
  * kalendářní měsíc; u ne-kalendářního roku degraduje na poslední měsíc.
  *
+ * Report bez měsíční granularity dostane nejmenší deklarované období,
+ * do kterého ten měsíc patří (čtvrtletí → pololetí → rok).
+ *
  * @param {Array<{name: string, months: number}>} fiscalYears (řazené dle name)
  * @param {Date} [now]
+ * @param {string[]|null} [granularities] granularity deklarace reportu
  * @returns {{fiscalYear: string, monthFrom: number, monthTo: number}|null} null bez fiskálních roků
  */
-export function defaultPeriod(fiscalYears, now = new Date()) {
+export function defaultPeriod(fiscalYears, now = new Date(), granularities = null) {
   if (!Array.isArray(fiscalYears) || fiscalYears.length === 0) return null;
   const currentYear = now.getFullYear();
   const candidates = fiscalYears.filter((y) => Number(y.name) <= currentYear);
@@ -119,7 +88,11 @@ export function defaultPeriod(fiscalYears, now = new Date()) {
   const month = Number(year.name) === currentYear
     ? Math.min(Math.max(now.getMonth(), 1), year.months) // getMonth() 0-based → minulý měsíc
     : year.months;
-  return { fiscalYear: String(year.name), monthFrom: month, monthTo: month };
+  return fitPeriodToGranularities(
+    { fiscalYear: String(year.name), monthFrom: month, monthTo: month },
+    year.months,
+    granularities,
+  );
 }
 
 /**

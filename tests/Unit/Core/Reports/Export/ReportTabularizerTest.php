@@ -248,4 +248,24 @@ class ReportTabularizerTest extends TestCase
         $this->assertSame('Messages', $labels->get('sheetMessages'));
         $this->assertSame((new ReportExportContext('r', 'd'))->labels->get('label'), $labels->get('label'));
     }
+
+    public function testDefinitionParamNamesOverrideConfigLabels(): void
+    {
+        $labels = (new ReportExportLabels([], [
+            'detail' => ['name' => 'Úroveň detailu', 'options' => ['analytic' => 'Analyticky', 'synthetic' => 'Synteticky']],
+        ]))->withDefinitionParams([
+            ['id' => 'detail', 'name' => null, 'optionNames' => ['analytic' => 'Po analytikách']],
+            ['id' => 'groupBy', 'name' => 'Seskupit podle', 'optionNames' => ['type' => 'Typ']],
+            ['id' => 'bare'],
+        ]);
+
+        // Deklarace bez názvu nechává cfgItem; její názvy voleb mají přednost.
+        $this->assertSame('Úroveň detailu', $labels->paramName('detail'));
+        $this->assertSame('Po analytikách', $labels->paramValue('detail', 'analytic'));
+        $this->assertSame('Synteticky', $labels->paramValue('detail', 'synthetic'));
+        $this->assertSame('Seskupit podle', $labels->paramName('groupBy'));
+        $this->assertSame('Typ', $labels->paramValue('groupBy', 'type'));
+        $this->assertSame('none', $labels->paramValue('groupBy', 'none'));
+        $this->assertSame('bare', $labels->paramName('bare'));
+    }
 }

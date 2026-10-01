@@ -229,4 +229,44 @@ class ReportDiffTest extends TestCase
         $this->assertTrue($diff['identical']);
         $this->assertSame(['evidNumber'], $diff['columnsOnlyInA']);
     }
+
+    // ── Řádky s `key` (nejsou účty) se párují podle klíče ───────────────────
+
+    /** @return array<string, mixed> */
+    private function keyed(string $key, float $balance, ?string $account = null): array
+    {
+        return [
+            'kind'    => 'detail',
+            'level'   => 2,
+            'account' => $account,
+            'key'     => $key,
+            'label'   => "Karta {$key}",
+            'values'  => ['closing' => ['md' => $balance, 'd' => 0.0, 'balance' => $balance]],
+        ];
+    }
+
+    public function testRowsWithKeyArePairedByKey(): void
+    {
+        $a = $this->makeResult([$this->keyed('asset:1', 100.0), $this->keyed('asset:2', 50.0)]);
+        $b = $this->makeResult([$this->keyed('asset:2', 55.0), $this->keyed('asset:3', 10.0)]);
+
+        $diff = (new ReportDiff())->diff($a, $b);
+
+        $this->assertFalse($diff['identical']);
+        $this->assertSame(['asset:1'], $diff['onlyInA']);
+        $this->assertSame(['asset:3'], $diff['onlyInB']);
+        $this->assertSame('asset:2', $diff['differences'][0]['account']);
+        $this->assertSame(5.0, $diff['differences'][0]['delta']);
+    }
+
+    public function testKeyTakesPrecedenceOverAccount(): void
+    {
+        // Stejný účet na dvou řádcích (dvě karty téže skupiny) — bez klíče by se přepsaly.
+        $a = $this->makeResult([$this->keyed('asset:1', 100.0, '022100'), $this->keyed('asset:2', 50.0, '022100')]);
+        $b = $this->makeResult([$this->keyed('asset:1', 100.0, '022100'), $this->keyed('asset:2', 50.0, '022100')]);
+
+        $diff = (new ReportDiff())->diff($a, $b);
+
+        $this->assertTrue($diff['identical']);
+    }
 }

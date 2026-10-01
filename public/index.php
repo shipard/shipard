@@ -778,6 +778,7 @@ function dispatchReports(
 		$configRuntime,
 		$resolved->config->getId(),
 		$language,
+		country: $resolved->config->getCountry(),
 	);
 
 	$periods = new \Shipard\Core\Reports\DbFiscalPeriodProvider($db);

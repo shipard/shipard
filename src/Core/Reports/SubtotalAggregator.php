@@ -16,6 +16,7 @@ namespace Shipard\Core\Reports;
  * řádků určuje builder.
  *
  * Píše se obecně — Fáze 2 (výsledovka, rozvaha) ho použije beze změn.
+ * Reporty, jejichž řádky nejsou účty, seskupuje `groupBy()`.
  */
 final class SubtotalAggregator
 {
@@ -100,6 +101,74 @@ final class SubtotalAggregator
     }
 
     /**
+     * Seskupení detail řádků podle explicitního klíče — pro reporty, jejichž
+     * řádky nejsou účty (karty majetku po účetní skupině, události po
+     * druhu). Skupiny jdou v pořadí prvního výskytu a řádky uvnitř skupiny
+     * drží pořadí vstupu; řazení je věc builderu.
+     *
+     * Řádek skupiny (subtotal, level 1, `key` = `group:{klíč}`) stojí před
+     * svými řádky jako nadpis se součty, nebo za nimi (`$subtotalFirst`
+     * false). Bez `$groupOf` vzniká jen total, bez `$totalLabel` jen skupiny.
+     *
+     * @param list<ReportRow> $detailRows
+     * @param ?callable(ReportRow): string $groupOf fn(řádek) → klíč skupiny.
+     * @param callable(string): string $labelResolver fn(klíč) → label skupiny.
+     * @return list<ReportRow>
+     */
+    public function groupBy(
+        array $detailRows,
+        ?callable $groupOf,
+        callable $labelResolver,
+        ?string $totalLabel,
+        bool $subtotalFirst = true,
+    ): array {
+        if ($detailRows === []) {
+            return [];
+        }
+
+        /** @var array<string, array{rows: list<ReportRow>, sums: array<string, array{md: float, d: float}>}> $groups */
+        $groups = [];
+        $total  = [];
+        foreach ($detailRows as $row) {
+            $key = $groupOf !== null ? $groupOf($row) : '';
+            $groups[$key] ??= ['rows' => [], 'sums' => []];
+            $groups[$key]['rows'][] = $row;
+            $this->accumulate($groups[$key]['sums'], $row->values);
+            $this->accumulate($total, $row->values);
+        }
+
+        $out = [];
+        foreach ($groups as $key => $group) {
+            $key = (string) $key;
+            if ($groupOf === null) {
+                array_push($out, ...$group['rows']);
+                continue;
+            }
+            $subtotal = $this->makeRow(
+                ReportRowKind::Subtotal,
+                1,
+                null,
+                $labelResolver($key),
+                $group['sums'],
+                'group:' . $key,
+            );
+            if ($subtotalFirst) {
+                $out[] = $subtotal;
+            }
+            array_push($out, ...$group['rows']);
+            if (!$subtotalFirst) {
+                $out[] = $subtotal;
+            }
+        }
+
+        if ($totalLabel !== null) {
+            $out[] = $this->makeRow(ReportRowKind::Total, 0, null, $totalLabel, $total);
+        }
+
+        return $out;
+    }
+
+    /**
      * @param array<string, array{md: float, d: float}> $sums
      * @param array<string, array{md: float, d: float, balance: float}> $values
      */
@@ -124,6 +193,7 @@ final class SubtotalAggregator
         ?string $account,
         string $label,
         array $sums,
+        ?string $key = null,
     ): ReportRow {
         $values = [];
         foreach ($sums as $columnId => $sum) {
@@ -131,6 +201,6 @@ final class SubtotalAggregator
             $d  = round($sum['d'], 2);
             $values[$columnId] = ['md' => $md, 'd' => $d, 'balance' => round($md - $d, 2)];
         }
-        return new ReportRow($kind, $level, $account, $label, $values);
+        return new ReportRow($kind, $level, $account, $label, $values, $key);
     }
 }

@@ -56,10 +56,12 @@ final class ReportDiff
             $sharedColumns[$id] = ($typeA === 'money' && $columnsB[$id] === 'money') ? 'money' : 'text';
         }
 
-        $detailsA = $this->rowsByKey($a, 'detail', 'account');
-        $detailsB = $this->rowsByKey($b, 'detail', 'account');
-        $totalsA  = $this->rowsByKey($a, 'total', 'label');
-        $totalsB  = $this->rowsByKey($b, 'total', 'label');
+        // Detail se páruje podle `key` (řádky, které nejsou účty — karty
+        // majetku, události), jinak podle `account`.
+        $detailsA = $this->rowsByKey($a, 'detail', ['key', 'account']);
+        $detailsB = $this->rowsByKey($b, 'detail', ['key', 'account']);
+        $totalsA  = $this->rowsByKey($a, 'total', ['label']);
+        $totalsB  = $this->rowsByKey($b, 'total', ['label']);
 
         // Číselné účty PHP kastuje na int klíče — ven jdou vždy stringy.
         $onlyInA = array_map(strval(...), array_values(array_diff(array_keys($detailsA), array_keys($detailsB))));
@@ -107,20 +109,27 @@ final class ReportDiff
     }
 
     /**
-     * Řádky daného kind klíčované hodnotou $keyField; řádky bez klíče se
-     * přeskočí (nelze je spárovat).
+     * Řádky daného kind klíčované první neprázdnou hodnotou z $keyFields;
+     * řádky bez klíče se přeskočí (nelze je spárovat).
      *
+     * @param list<string> $keyFields
      * @return array<string, array<string, mixed>> klíč => values
      */
-    private function rowsByKey(array $result, string $kind, string $keyField): array
+    private function rowsByKey(array $result, string $kind, array $keyFields): array
     {
         $out = [];
         foreach ($result['rows'] ?? [] as $row) {
             if (!is_array($row) || ($row['kind'] ?? null) !== $kind) {
                 continue;
             }
-            $key = $row[$keyField] ?? null;
-            if (!is_string($key) || $key === '') {
+            $key = null;
+            foreach ($keyFields as $field) {
+                if (is_string($row[$field] ?? null) && $row[$field] !== '') {
+                    $key = $row[$field];
+                    break;
+                }
+            }
+            if ($key === null) {
                 continue;
             }
             $out[$key] = is_array($row['values'] ?? null) ? $row['values'] : [];

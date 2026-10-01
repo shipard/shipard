@@ -894,8 +894,6 @@ export default {
   'reports.period.noInstances': 'Registrace nemá žádnou instanci tohoto tvrzení',
   'reports.vatRegistration.label': 'Registrace DPH',
   'reports.noVatRegistrations': 'Žádná registrace DPH nemá instanci tohoto tvrzení — založte ji v Daňových tvrzeních',
-  'reports.detail.analytic': 'Analyticky',
-  'reports.detail.synthetic': 'Synteticky',
   'reports.format.exact': 'Přesně',
   'reports.format.thousands': 'V tisících',
   'reports.thousandsSuffix': '(v tis.)',

@@ -26,5 +26,7 @@ final class ReportRequest
         public readonly string $dataSource,
         public readonly string $language,
         public readonly ?VatPeriodRange $vatRange = null,
+        /** Země zdroje dat (`DataSourceConfig::getCountry()`) — pravidla per země. */
+        public readonly string $country = 'cz',
     ) {}
 }

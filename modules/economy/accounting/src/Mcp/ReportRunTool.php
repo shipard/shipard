@@ -60,6 +60,11 @@ final class ReportRunTool implements McpTool
 					'default'     => 'synthetic',
 					'description' => 'Úroveň detailu; default synthetic = agregace na syntetické účty (menší výstup, pro LLM přehledy), analytic = plné analytiky.',
 				],
+				'params'     => [
+					'type'                 => 'object',
+					'additionalProperties' => ['type' => ['string', 'boolean']],
+					'description'          => 'Další parametry reportu jako {id: hodnota} — id, povolené hodnoty a výchozí hodnoty viz report_list → params (např. {"groupBy": "type"}). Vynechaný parametr = výchozí hodnota.',
+				],
 			],
 			'required' => ['reportId'],
 		];
@@ -107,6 +112,15 @@ final class ReportRunTool implements McpTool
 				$rawParams['detail'] = (string) ($arguments['detail'] ?? 'synthetic');
 				break;
 			}
+		}
+
+		// Ostatní parametry deklarace — platnost id i hodnoty hlídá validátor.
+		$extra = $arguments['params'] ?? [];
+		if (!is_array($extra)) {
+			throw new \InvalidArgumentException("Parameter 'params' must be an object {id: value}");
+		}
+		foreach ($extra as $id => $value) {
+			$rawParams[(string) $id] = $value;
 		}
 
 		$result = $this->support->runner($ctx)->run($reportId, $rawParams);

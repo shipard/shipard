@@ -19,10 +19,22 @@ final class ReportDefinition
     private const PARAM_TYPES  = ['enum', 'bool'];
 
     /**
+     * Id, která parametr reportu nést nesmí: klíče období na API
+     * a klíče deep-linku / exportu v query stringu.
+     */
+    public const RESERVED_PARAM_IDS = [
+        'fiscalYear', 'monthFrom', 'monthTo', 'period', 'format',
+        'report', 'fy', 'mf', 'mt', 'p',
+    ];
+
+    /**
      * @param list<string> $periodGranularities Podmnožina GRANULARITIES;
      *        u `periodSource: 'vatPeriod'` prázdné (období určuje registrace).
-     * @param list<array{id: string, type: string, options: list<string>, default: mixed}> $params
-     *        Schéma ne-periodových parametrů.
+     * @param list<array{id: string, type: string, name: ?string, options: list<string>,
+     *        optionNames: array<string, string>, default: mixed}> $params
+     *        Schéma ne-periodových parametrů. `name` a `optionNames` (hodnota →
+     *        lidský název) jsou lokalizované popisky pro toolbar v UI a úvodní
+     *        blok exportu; chybí-li, prezentace padá na id.
      * @param ?string $navSection Sekce hlavní navigace; null = report do navigace nevstupuje.
      * @param string $periodSource Zdroj období: 'fiscal' (fiskální měsíce, default)
      *        nebo 'vatPeriod' (instance daňového tvrzení — parametr `period`).
@@ -106,6 +118,11 @@ final class ReportDefinition
             if (!is_array($param) || !isset($param['id']) || !is_string($param['id']) || $param['id'] === '') {
                 throw new \InvalidArgumentException("Report '{$id}': params[{$idx}] missing 'id'");
             }
+            if (in_array($param['id'], self::RESERVED_PARAM_IDS, true)) {
+                throw new \InvalidArgumentException(
+                    "Report '{$id}': params[{$idx}] id '{$param['id']}' is reserved",
+                );
+            }
             $type = $param['type'] ?? null;
             if (!in_array($type, self::PARAM_TYPES, true)) {
                 throw new \InvalidArgumentException(
@@ -129,11 +146,23 @@ final class ReportDefinition
                     );
                 }
             }
+            $paramName = $param['name'] ?? null;
+            if ($paramName !== null && (!is_string($paramName) || $paramName === '')) {
+                throw new \InvalidArgumentException("Report '{$id}': params[{$idx}] 'name' must be a non-empty string");
+            }
+            $optionNames = [];
+            foreach (is_array($param['optionNames'] ?? null) ? $param['optionNames'] : [] as $value => $optionName) {
+                if (in_array((string) $value, $options, true) && is_string($optionName) && $optionName !== '') {
+                    $optionNames[(string) $value] = $optionName;
+                }
+            }
             $params[] = [
-                'id'      => $param['id'],
-                'type'    => $type,
-                'options' => array_values($options),
-                'default' => $type === 'bool' ? (bool) $param['default'] : $param['default'],
+                'id'          => $param['id'],
+                'type'        => $type,
+                'name'        => $paramName,
+                'options'     => array_values($options),
+                'optionNames' => $optionNames,
+                'default'     => $type === 'bool' ? (bool) $param['default'] : $param['default'],
             ];
         }
 

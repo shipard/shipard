@@ -191,6 +191,43 @@ class ReportCliTest extends IntegrationTestCase
         $this->assertStringContainsString('--month-from', $tester->getErrorOutput());
     }
 
+    public function testReportRunParamOptionSetsDeclaredParameter(): void
+    {
+        $tester = $this->runCommandTester();
+        $exit = $tester->execute([
+            'reportId'      => 'economy.accounting.generalLedger',
+            '--fiscal-year' => $this->yearName,
+            '--month-from'  => '1',
+            '--month-to'    => '1',
+            '--param'       => ['detail=synthetic'],
+        ], ['capture_stderr_separately' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exit);
+        $result = json_decode($tester->getDisplay(), true);
+        // `--param detail=…` má přednost před výchozím `--detail`.
+        $this->assertSame('synthetic', $result['params']['detail']);
+    }
+
+    public function testReportRunParamOptionRejectsUnknownAndMalformed(): void
+    {
+        $base = [
+            'reportId'      => 'economy.accounting.generalLedger',
+            '--fiscal-year' => $this->yearName,
+            '--month-from'  => '1',
+            '--month-to'    => '1',
+        ];
+
+        $tester = $this->runCommandTester();
+        $exit = $tester->execute($base + ['--param' => ['groupBy=type']], ['capture_stderr_separately' => true]);
+        $this->assertSame(Command::INVALID, $exit);
+        $this->assertStringContainsString("Unknown parameter 'groupBy'", $tester->getErrorOutput());
+
+        $tester = $this->runCommandTester();
+        $exit = $tester->execute($base + ['--param' => ['detail']], ['capture_stderr_separately' => true]);
+        $this->assertSame(Command::INVALID, $exit);
+        $this->assertStringContainsString('id=value', $tester->getErrorOutput());
+    }
+
     // ── report-diff ─────────────────────────────────────────────────────────
 
     /** @return array<string, mixed> */

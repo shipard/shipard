@@ -1,5 +1,7 @@
 // Deklarace reportů modulu economy.accounting (docs/reports.md, D7 + D16).
 // Registrace: module.jsonc → klíč "reports"; načítá ReportDefinitionLoader.
+// Parametr nese vlastní popisky (`name`, `optionNames`) — z nich je toolbar
+// v UI i úvodní blok exportu.
 [
     {
         "id": "economy.accounting.generalLedger",
@@ -11,7 +13,16 @@
         "builder": "Shipard\\Module\\Economy\\Accounting\\Reports\\GeneralLedgerBuilder",
         "periodGranularities": ["month", "quarter", "halfYear", "year"],
         "params": [
-            {"id": "detail", "type": "enum", "options": ["analytic", "synthetic"], "default": "analytic"}
+            {
+                "id": "detail", "type": "enum",
+                "name": "Detail level", "name:cs": "Úroveň detailu", "name:en": "Detail level",
+                "options": ["analytic", "synthetic"],
+                "optionNames": {
+                    "analytic": "Analytic", "analytic:cs": "Analyticky", "analytic:en": "Analytic",
+                    "synthetic": "Synthetic", "synthetic:cs": "Synteticky", "synthetic:en": "Synthetic"
+                },
+                "default": "analytic"
+            }
         ]
     },
     {
@@ -24,7 +35,16 @@
         "builder": "Shipard\\Module\\Economy\\Accounting\\Reports\\ProfitLossBuilder",
         "periodGranularities": ["month", "quarter", "halfYear", "year"],
         "params": [
-            {"id": "detail", "type": "enum", "options": ["analytic", "synthetic"], "default": "analytic"}
+            {
+                "id": "detail", "type": "enum",
+                "name": "Detail level", "name:cs": "Úroveň detailu", "name:en": "Detail level",
+                "options": ["analytic", "synthetic"],
+                "optionNames": {
+                    "analytic": "Analytic", "analytic:cs": "Analyticky", "analytic:en": "Analytic",
+                    "synthetic": "Synthetic", "synthetic:cs": "Synteticky", "synthetic:en": "Synthetic"
+                },
+                "default": "analytic"
+            }
         ]
     },
     {
@@ -37,7 +57,16 @@
         "builder": "Shipard\\Module\\Economy\\Accounting\\Reports\\BalanceSheetBuilder",
         "periodGranularities": ["month", "quarter", "halfYear", "year"],
         "params": [
-            {"id": "detail", "type": "enum", "options": ["analytic", "synthetic"], "default": "analytic"}
+            {
+                "id": "detail", "type": "enum",
+                "name": "Detail level", "name:cs": "Úroveň detailu", "name:en": "Detail level",
+                "options": ["analytic", "synthetic"],
+                "optionNames": {
+                    "analytic": "Analytic", "analytic:cs": "Analyticky", "analytic:en": "Analytic",
+                    "synthetic": "Synthetic", "synthetic:cs": "Synteticky", "synthetic:en": "Synthetic"
+                },
+                "default": "analytic"
+            }
         ]
     }
 ]

@@ -109,7 +109,14 @@ class ReportsApiTest extends TestCase
         $this->assertSame('Hlavní kniha', $ledger['name']);
         $this->assertSame(['month', 'quarter', 'halfYear', 'year'], $ledger['periodGranularities']);
         $this->assertSame(
-            [['id' => 'detail', 'type' => 'enum', 'options' => ['analytic', 'synthetic'], 'default' => 'analytic']],
+            [[
+                'id'          => 'detail',
+                'type'        => 'enum',
+                'name'        => 'Úroveň detailu',
+                'options'     => ['analytic', 'synthetic'],
+                'optionNames' => ['analytic' => 'Analyticky', 'synthetic' => 'Synteticky'],
+                'default'     => 'analytic',
+            ]],
             $ledger['params'],
         );
     }

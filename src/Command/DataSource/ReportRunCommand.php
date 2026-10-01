@@ -55,6 +55,7 @@ class ReportRunCommand extends Command
              ->addOption('month-to', null, InputOption::VALUE_REQUIRED, 'Poslední fiskální měsíc intervalu (1–N)')
              ->addOption('period', null, InputOption::VALUE_REQUIRED, 'Id instance daňového tvrzení (economy_vat_report_periods) — reporty s obdobím DPH')
              ->addOption('detail', null, InputOption::VALUE_REQUIRED, 'Úroveň detailu: analytic | synthetic', 'analytic')
+             ->addOption('param', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Další parametr reportu jako id=hodnota (opakovatelné; nabídku ukáže deklarace reportu)')
              ->addOption('pretty', null, InputOption::VALUE_NONE, 'Formátovaný JSON (odsazení)')
              ->addOption('format', null, InputOption::VALUE_REQUIRED, 'Výstupní formát: json | xlsx | csv', 'json')
              ->addOption('output', null, InputOption::VALUE_REQUIRED, 'Cílový soubor (u xlsx povinný; json a csv bez něj na stdout)');
@@ -111,7 +112,14 @@ class ReportRunCommand extends Command
         }
 
         $registry = ReportDefinitionLoader::load($dsConfig, $this->getModulePathResolver(), $language);
-        $runner   = new ReportRunner($registry, $dsConnection, $configRuntime, $dsConfig->getId(), $language);
+        $runner   = new ReportRunner(
+            $registry,
+            $dsConnection,
+            $configRuntime,
+            $dsConfig->getId(),
+            $language,
+            country: $dsConfig->getCountry(),
+        );
 
         $reportId   = (string) $input->getArgument('reportId');
         $definition = $registry->get($reportId);
@@ -147,6 +155,18 @@ class ReportRunCommand extends Command
                     break;
                 }
             }
+        }
+
+        // Ostatní parametry deklarace (`--param id=hodnota`); platnost id
+        // i hodnoty hlídá validátor runneru. `--param detail=…` má přednost
+        // před `--detail`.
+        foreach ((array) $input->getOption('param') as $pair) {
+            $parts = explode('=', (string) $pair, 2);
+            if (count($parts) !== 2 || $parts[0] === '') {
+                $err->writeln("<error>Invalid --param '{$pair}' (expected id=value)</error>");
+                return Command::INVALID;
+            }
+            $rawParams[$parts[0]] = $parts[1];
         }
 
         try {

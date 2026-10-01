@@ -52,6 +52,7 @@ final class ReportToolSupport
 			$ctx->config,
 			$this->dsConfig->getId(),
 			$this->language(),
+			country: $this->dsConfig->getCountry(),
 		);
 	}
 

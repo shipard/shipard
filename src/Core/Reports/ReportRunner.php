@@ -26,6 +26,7 @@ final class ReportRunner
         private readonly string $language = 'en',
         ?FiscalPeriodProvider $periods = null,
         ?ReportPeriodProvider $vatPeriods = null,
+        private readonly string $country = 'cz',
     ) {
         $this->periods = $periods ?? new DbFiscalPeriodProvider($db);
         // Konstrukce je bez dotazu — DS bez economy.vat za to nic neplatí,
@@ -70,6 +71,7 @@ final class ReportRunner
             dataSource: $this->dataSourceId,
             language: $this->language,
             vatRange: $validated['vatRange'],
+            country: $this->country,
         ));
     }
 }

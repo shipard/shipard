@@ -8,13 +8,15 @@
 
 <script>
   // Generická stránka reportu (D10) — z item.panelParams.reportId a katalogu
-  // vybere definici, drží stav parametrů (období, detail, v tisících),
+  // vybere definici, drží stav parametrů (období, parametry deklarace,
+  // v tisících),
   // volá GET /_reports/{id} a výsledek předává čistému rendereru ReportView.
   import { untrack } from 'svelte';
   import PeriodPicker from './PeriodPicker.svelte';
   import VatPeriodPicker from './VatPeriodPicker.svelte';
   import ReportView from './ReportView.svelte';
   import Select from '../ui/Select.svelte';
+  import Checkbox from '../ui/Checkbox.svelte';
   import Button from '../ui/Button.svelte';
   import Popover from '../ui/Popover.svelte';
   import { iconDownload } from '../../icons.js';
@@ -25,6 +27,7 @@
   import {
     fetchReportCatalog, runReport, downloadReport, defaultPeriod, defaultVatPeriod, hasVatPeriod,
   } from '../../api/reports.js';
+  import { defaultReportParams, overlayReportParams, deepLinkEntries } from '../../utils/reportParams.js';
 
   let { item } = $props();
 
@@ -32,7 +35,7 @@
 
   let catalog = $state(null); // {items, fiscalYears}
   let catalogError = $state(null);
-  let params = $state(null);  // {fiscalYear, monthFrom, monthTo, detail}
+  let params = $state(null);  // {fiscalYear, monthFrom, monthTo | period, …parametry deklarace}
   let thousands = $state(false);
   let result = $state(null);
   let runError = $state(null);
@@ -41,10 +44,9 @@
 
   const reportDef = $derived(catalog?.items.find((i) => i.id === reportId) ?? null);
   const periodSource = $derived(reportDef?.periodSource ?? 'fiscal');
-  const detailOptions = $derived(
-    (reportDef?.params.find((p) => p.id === 'detail')?.options ?? [])
-      .map((o) => ({ value: o, label: t(`reports.detail.${o}`) })),
-  );
+  // Parametry deklarace (D7) — toolbar se staví z nich, popisky nese
+  // deklarace (`name`, `optionNames`); bez popisku padá na id.
+  const declaredParams = $derived(reportDef?.params ?? []);
   const vatReportType = $derived(reportDef?.vatReportType ?? 'return');
   const noPeriods = $derived(catalog !== null && (periodSource === 'vatPeriod'
     ? !catalog.vatRegistrations.some((r) => (r.periods ?? []).some((p) => p.type === vatReportType))
@@ -94,16 +96,12 @@
         merged.monthTo = to;
       }
     }
-    const detailParam = reportDef?.params.find((p) => p.id === 'detail');
-    if (pending.detail && detailParam?.options.includes(pending.detail)) {
-      merged.detail = pending.detail;
-    }
-    return merged;
+    return { ...merged, ...overlayReportParams(reportDef?.params, pending) };
   }
 
   // Resolve parametrů při změně reportu / načtení katalogu: deep-link
   // (one-shot) overlay nad session/default; jinak session mapa, jinak
-  // default (poslední celý měsíc, default detail deklarace).
+  // default (poslední celé období dle granularit, defaulty deklarace).
   $effect(() => {
     if (!catalog || !reportId) return;
     // untrack: konzumace čte i nuluje tentýž $state — bez něj by se efekt
@@ -117,24 +115,20 @@
     }
     const period = periodSource === 'vatPeriod'
       ? defaultVatPeriod(catalog.vatRegistrations, vatReportType)
-      : defaultPeriod(catalog.fiscalYears);
-    // `detail` jen když ho report deklaruje — server by neznámý parametr odmítl.
-    const detailParam = reportDef?.params.find((p) => p.id === 'detail');
+      : defaultPeriod(catalog.fiscalYears, new Date(), reportDef?.periodGranularities);
+    // Jen parametry deklarace — server by neznámý parametr odmítl.
     const base = saved?.params
-      ?? (period ? (detailParam ? { ...period, detail: detailParam.default } : { ...period }) : null);
+      ?? (period ? { ...period, ...defaultReportParams(reportDef?.params) } : null);
     params = base && pending ? overlayDeepLink(base, pending) : base;
     thousands = saved?.thousands ?? false;
   });
 
-  // Deep-link URL (D10): ?report=&fy=&mf=&mt=&detail= přes replaceState —
-  // bez reloadu, bez zásahu do zbytku shellu. Odchod ze stránky query
-  // uklidí, aby reload neresuscitoval report přes jinou obrazovku.
+  // Deep-link URL (D10): ?report=&fy=&mf=&mt= + parametry deklarace pod
+  // svým id, přes replaceState — bez reloadu, bez zásahu do zbytku shellu.
+  // Odchod ze stránky query uklidí, aby reload neresuscitoval report přes
+  // jinou obrazovku.
   function syncUrl(id, p) {
-    const entries = p.period != null
-      ? { report: id, p: String(p.period) }
-      : { report: id, fy: p.fiscalYear, mf: String(p.monthFrom), mt: String(p.monthTo) };
-    if (p.detail !== undefined) entries.detail = p.detail;
-    const query = new URLSearchParams(entries);
+    const query = new URLSearchParams(deepLinkEntries(id, p));
     history.replaceState(null, '', `${window.location.pathname}?${query}`);
   }
 
@@ -169,17 +163,30 @@
     });
   });
 
-  // Detail select — lokální zrcadlo kvůli bind:value (params je immutable).
-  let detailValue = $state(null);
+  // Hodnoty parametrů deklarace — lokální zrcadlo kvůli bind:value
+  // (params je immutable).
+  let paramValues = $state({});
   $effect(() => {
-    detailValue = params?.detail ?? null;
+    const p = params;
+    const next = {};
+    for (const param of declaredParams) next[param.id] = p?.[param.id] ?? param.default;
+    paramValues = next;
   });
 
-  function commitDetail() {
-    if (detailValue && params && detailValue !== params.detail) {
-      params = { ...params, detail: detailValue };
+  function commitParam(id) {
+    const value = paramValues[id];
+    if (value !== null && value !== undefined && params && value !== params[id]) {
+      params = { ...params, [id]: value };
     }
   }
+
+  function paramOptions(param) {
+    return (param.options ?? []).map((o) => ({ value: o, label: param.optionNames?.[o] ?? o }));
+  }
+
+  // Jediný parametr (úroveň detailu účetních reportů) je srozumitelný
+  // z nabídky; popisek dostávají až dva a víc parametrů vedle sebe.
+  const showParamLabels = $derived(declaredParams.length > 1);
 
   function changePeriod(period) {
     if (params) {
@@ -232,11 +239,30 @@
           onChange={changePeriod}
         />
       {/if}
-      {#if detailOptions.length > 0}
-        <span class="shpd-reports__detail">
-          <Select bind:value={detailValue} options={detailOptions} required onchange={commitDetail} />
+      {#each declaredParams as param (param.id)}
+        <span class="shpd-reports__param" title={param.name ?? param.id} data-testid="report-param-{param.id}">
+          {#if param.type === 'bool'}
+            <Checkbox
+              bind:checked={paramValues[param.id]}
+              label={param.name ?? param.id}
+              onchange={() => commitParam(param.id)}
+            />
+          {:else}
+            {#if showParamLabels}
+              <label class="shpd-reports__param-label" for="report-param-{param.id}">{param.name ?? param.id}</label>
+            {/if}
+            <span class="shpd-reports__param-field">
+              <Select
+                id="report-param-{param.id}"
+                bind:value={paramValues[param.id]}
+                options={paramOptions(param)}
+                required
+                onchange={() => commitParam(param.id)}
+              />
+            </span>
+          {/if}
         </span>
-      {/if}
+      {/each}
       <div class="shpd-reports__format" role="radiogroup">
         <button
           type="button"
@@ -335,7 +361,19 @@
     color: var(--shpd-color-text);
   }
 
-  .shpd-reports__detail {
+  .shpd-reports__param {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--shpd-space-xs);
+  }
+
+  .shpd-reports__param-label {
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-text-secondary);
+    white-space: nowrap;
+  }
+
+  .shpd-reports__param-field {
     width: auto;
     min-width: 10em;
   }

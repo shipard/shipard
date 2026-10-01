@@ -120,6 +120,25 @@ class ReportMcpToolsTest extends IntegrationTestCase
         $this->assertSame('analytic', $result['report']['params']['detail']);
     }
 
+    public function testReportRunGenericParamsObject(): void
+    {
+        $year = $this->listReports()['items'][0]['fiscalYears'][0];
+        $args = [
+            'reportId'   => 'economy.accounting.generalLedger',
+            'fiscalYear' => (int) $year['name'],
+            'monthFrom'  => 1,
+            'monthTo'    => 1,
+        ];
+
+        // `params` má přednost před výchozím detailem MCP (synthetic).
+        $result = (new ReportRunTool($this->support))->call($args + ['params' => ['detail' => 'analytic']], $this->ctx);
+        $this->assertSame('analytic', $result['report']['params']['detail']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Unknown parameter 'groupBy'");
+        (new ReportRunTool($this->support))->call($args + ['params' => ['groupBy' => 'type']], $this->ctx);
+    }
+
     public function testReportRunMissingParameterThrows(): void
     {
         $this->expectException(\InvalidArgumentException::class);

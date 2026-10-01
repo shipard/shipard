@@ -87,6 +87,26 @@ final class ReportExportLabels
         return new self($labels, $params);
     }
 
+    /**
+     * Popisky parametrů z deklarace reportu (`name`, `optionNames`) mají
+     * přednost před cfgItem — deklarace je jediné místo, kde report své
+     * parametry popisuje (docs/reports.md D7).
+     *
+     * @param list<array{id: string, name?: ?string, optionNames?: array<string, string>}> $definitionParams
+     */
+    public function withDefinitionParams(array $definitionParams): self
+    {
+        $params = $this->params;
+        foreach ($definitionParams as $param) {
+            $id = $param['id'];
+            $params[$id] = [
+                'name'    => $param['name'] ?? $params[$id]['name'] ?? $id,
+                'options' => ($param['optionNames'] ?? []) + ($params[$id]['options'] ?? []),
+            ];
+        }
+        return new self($this->labels, $params);
+    }
+
     public function get(string $key): string
     {
         return $this->labels[$key] ?? self::DEFAULTS[$key] ?? $key;

@@ -392,4 +392,133 @@ class ReportCoreTest extends TestCase
         $this->assertSame(['md' => 10.0, 'd' => 0.0, 'balance' => 10.0], $total->values['opening']);
         $this->assertSame(['md' => 5.0, 'd' => 2.0, 'balance' => 3.0], $total->values['turnover']);
     }
+
+    // ── SubtotalAggregator::groupBy — skupiny podle explicitního klíče ──────
+
+    /** @return list<ReportRow> */
+    private function cardRows(): array
+    {
+        $row = static fn (string $key, string $group, float $price): ReportRow => new ReportRow(
+            ReportRowKind::Detail,
+            2,
+            null,
+            "Karta {$key}",
+            ['group' => $group, 'price' => ['md' => $price, 'd' => 0.0, 'balance' => $price]],
+            "asset:{$key}",
+        );
+        return [$row('1', 'stroje', 100.0), $row('2', 'auta', 40.0), $row('3', 'stroje', 60.5)];
+    }
+
+    public function testGroupByEmptyInput(): void
+    {
+        $this->assertSame([], (new SubtotalAggregator())->groupBy([], null, fn (string $k): string => $k, 'Celkem'));
+    }
+
+    public function testGroupByKeepsFirstAppearanceOrderAndPutsSubtotalFirst(): void
+    {
+        $rows = (new SubtotalAggregator())->groupBy(
+            $this->cardRows(),
+            static fn (ReportRow $r): string => (string) $r->values['group'],
+            static fn (string $key): string => ucfirst($key),
+            'Celkem',
+        );
+
+        $this->assertSame(
+            ['group:stroje', 'asset:1', 'asset:3', 'group:auta', 'asset:2', null],
+            array_map(static fn (ReportRow $r): ?string => $r->key, $rows),
+        );
+        $this->assertSame(ReportRowKind::Subtotal, $rows[0]->kind);
+        $this->assertSame(1, $rows[0]->level);
+        $this->assertSame('Stroje', $rows[0]->label);
+        $this->assertSame(['md' => 160.5, 'd' => 0.0, 'balance' => 160.5], $rows[0]->values['price']);
+        $this->assertArrayNotHasKey('group', $rows[0]->values);
+        $this->assertSame(ReportRowKind::Total, $rows[5]->kind);
+        $this->assertSame(0, $rows[5]->level);
+        $this->assertSame(['md' => 200.5, 'd' => 0.0, 'balance' => 200.5], $rows[5]->values['price']);
+    }
+
+    public function testGroupBySubtotalAfterGroup(): void
+    {
+        $rows = (new SubtotalAggregator())->groupBy(
+            $this->cardRows(),
+            static fn (ReportRow $r): string => (string) $r->values['group'],
+            static fn (string $key): string => $key,
+            null,
+            false,
+        );
+
+        $this->assertSame(
+            ['asset:1', 'asset:3', 'group:stroje', 'asset:2', 'group:auta'],
+            array_map(static fn (ReportRow $r): ?string => $r->key, $rows),
+        );
+    }
+
+    public function testGroupByWithoutGroupingEmitsOnlyTotal(): void
+    {
+        $rows = (new SubtotalAggregator())->groupBy($this->cardRows(), null, fn (string $k): string => $k, 'Celkem');
+
+        $this->assertCount(4, $rows);
+        $this->assertSame(['asset:1', 'asset:2', 'asset:3', null], array_map(static fn (ReportRow $r): ?string => $r->key, $rows));
+        $this->assertSame(ReportRowKind::Total, $rows[3]->kind);
+    }
+
+    // ── ReportRow::key + popisky parametrů deklarace ────────────────────────
+
+    public function testRowKeyIsEmittedOnlyWhenSet(): void
+    {
+        $plain = new ReportRow(ReportRowKind::Detail, 4, '501001', 'Spotřeba', []);
+        $keyed = new ReportRow(ReportRowKind::Detail, 2, null, 'Fréza', [], 'asset:68');
+
+        $this->assertArrayNotHasKey('key', $plain->toArray());
+        $this->assertSame('asset:68', $keyed->toArray()['key']);
+    }
+
+    /** @return array<string, mixed> */
+    private function declaration(array $param): array
+    {
+        return [
+            'id'                  => 'test.report',
+            'name'                => 'Test report',
+            'builder'             => 'TestBuilder',
+            'periodGranularities' => ['year'],
+            'params'              => [$param],
+        ];
+    }
+
+    public function testDefinitionKeepsParamNameAndOptionNames(): void
+    {
+        $definition = ReportDefinition::fromArray($this->declaration([
+            'id' => 'groupBy', 'type' => 'enum', 'name' => 'Seskupit podle',
+            'options' => ['type', 'none'], 'default' => 'type',
+            'optionNames' => ['type' => 'Typ', 'none' => 'Neseskupovat', 'stale' => 'Neexistující volba'],
+        ]), 'test.module');
+
+        $this->assertSame([[
+            'id'          => 'groupBy',
+            'type'        => 'enum',
+            'name'        => 'Seskupit podle',
+            'options'     => ['type', 'none'],
+            'optionNames' => ['type' => 'Typ', 'none' => 'Neseskupovat'],
+            'default'     => 'type',
+        ]], $definition->params);
+    }
+
+    public function testDefinitionParamWithoutNamesFallsBackToNulls(): void
+    {
+        $definition = ReportDefinition::fromArray($this->declaration([
+            'id' => 'detail', 'type' => 'enum', 'options' => ['analytic', 'synthetic'], 'default' => 'analytic',
+        ]), 'test.module');
+
+        $this->assertNull($definition->params[0]['name']);
+        $this->assertSame([], $definition->params[0]['optionNames']);
+    }
+
+    public function testDefinitionRejectsReservedParamId(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("id 'format' is reserved");
+        ReportDefinition::fromArray($this->declaration([
+            'id' => 'format', 'type' => 'enum', 'options' => ['a'], 'default' => 'a',
+        ]), 'test.module');
+    }
 }
