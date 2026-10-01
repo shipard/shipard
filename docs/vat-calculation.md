@@ -2,9 +2,9 @@
 
 Autoritativní pravidla DPH na dokladu pro `docs.core` — kde se kód liší, platí
 tento dokument a rozdíl je chyba (#75). Implementace:
-`DocDocument::beforeSave` → `calculateRowPrice` / `calculateRowVat` →
-`buildVatRecapitulation` (nebo `takeOverVatRecapitulation` u převzaté) →
-`sumTotals` / `applyTotalRounding` → `reconcileRowsToRecap` →
+`DocDocument::beforeSave` → `computeAmounts` = `calculateRowPrice` /
+`calculateRowVat` → `buildVatRecapitulation` (nebo `takeOverVatRecapitulation`
+u převzaté) → `sumTotals` / `applyTotalRounding` → `reconcileRowsToRecap` →
 `applyDomesticAmounts`.
 
 ## 1. Tři úrovně, jedna autorita
@@ -132,6 +132,14 @@ dle režimu) — signál neúplných nebo špatně zadaných řádků.
   přepočítá hlavičku `DocHeadRecomputer` — u převzaté aktualizuje řádky
   **na místě** podle `id`, nikdy nemění částky. Účtování jde na přechodu
   stavu, takže po ruční opravě zaúčtovaného dokladu je potřeba Přeúčtovat.
+- **Jeden výpočetní blok pro uložení i náhled**: řádky, rekapitulace,
+  součty, zaokrouhlení, dorovnání a domácí měna žijí v
+  `DocDocument::computeAmounts()` (veřejná, bez zápisu do DB, číslování a
+  přechodů stavů); `beforeSave()` ji volá, náhled návrhu výměnného formátu
+  (`DocumentApplier::preview` → `_resolve.computed`) ji volá přímo nad
+  instancí z `TableGateway::createDocument()`, takže platí i přetížení
+  podtříd (`AccountingDocument`: `vat_mode` 0, součty Σ MD). Co ukáže
+  náhled, to skončí na dokladu — `tasks/exchange-preview-vat-recompute.md`.
 - **Výchozí hodnota z výměnného formátu**: `vat.recapSource` (`computed` /
   `declared`), `vat.calcSource` (`header` / `rows`). Chybějící `recapSource`
   applier odvodí — u dokladu, který přijímáme, `declared` při neprázdné,

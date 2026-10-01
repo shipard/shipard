@@ -16,6 +16,7 @@ use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
 use Shipard\Module\Docs\Core\DocDocument;
 use Shipard\Module\Docs\Core\DocTypes;
@@ -84,6 +85,17 @@ class DocumentApplier
         'computed' => 0,
         'declared' => 1,
     ];
+
+    /**
+     * D4 (tasks/exchange-preview-vat-recompute.md): rozdíl částky k úhradě
+     * mezi dokladem dodavatele a skutečným výpočtem, od kterého náhled
+     * hlásí `computed_total_mismatch`. `computed` už nese zaokrouhlení
+     * podle `deriveTotalRoundingMode()`, takže stačí haléř.
+     */
+    private const COMPUTED_TOTAL_TOLERANCE = 0.01;
+
+    /** Náhled nic nezakládá — `transform()` bez založených entit (D2). */
+    private const NO_SIDE_IDS = ['supplier' => null, 'customer' => null, 'supplierBank' => null, 'rowItems' => []];
 
     /** Canonical `vat.calcSource` → docs_core_heads.vat_calc_source. */
     private const VAT_CALC_SOURCE_MAP = [
@@ -305,11 +317,166 @@ class DocumentApplier
         $this->appendVatHeaderIssues($canonical, $issues);
         $this->appendRecapSourceIssue($canonical, $issues);
         $resolved = $this->resolveAll($canonical, $issues);
+        // 3. Rekapitulace a součty, jak skončí na dokladu — stejným kódem
+        //    jako uložení (tasks/exchange-preview-vat-recompute.md D2–D4, D6).
+        $resolved['computed'] = $this->computePreviewAmounts($canonical, $resolved, $issues);
         $enriched = $this->withResolve($canonical, $resolved, $issues);
 
         // preview always succeeds even with errors — client renders the
         // payload and decides what to do.
         return ApplyResult::ok($enriched);
+    }
+
+    /**
+     * Náhled návrhu: rekapitulace DPH, součty a sazby řádků, **které skončí
+     * na dokladu** — spočítané `DocDocument::computeAmounts()`, tedy stejným
+     * kódem jako `beforeSave()` při apply, ne opsané z toho, co přečetla AI
+     * (tasks/exchange-preview-vat-recompute.md D2–D4, D6; #87 task A).
+     *
+     * Vstup staví tentýž `transform()` jako apply, s náhledovým plánem
+     * ({@see previewPlan}): kódy DPH a jednotky z čerstvého resolve, bez
+     * založených entit a bez řady. Instanci dokumentu dává gateway podle
+     * typu dokladu, takže platí přetížení podtříd (účetní doklad sčítá
+     * z řádků, rekapitulaci nemá).
+     *
+     * D4: částka k úhradě se porovná s dokladem dodavatele → warning
+     * `computed_total_mismatch` (u samovyměření se liší daň, k úhradě
+     * sedí). Heuristický `totals_mismatch` validátoru (odhad z canonicalu)
+     * skutečný výpočet nahrazuje — z issues se vyřadí, dvě hlášky o tomtéž
+     * by mátly. Bez `canonical.totals.totalAmount` se neporovnává.
+     *
+     * D6: výjimka náhled neshodí — `null` + info `computed_unavailable`
+     * (zalogováno), frontend ukáže data z canonicalu s poznámkou.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array{recapSource: string, recapFallback: ?string, vatRecap: list<array<string, mixed>>, totals: array<string, float>}|null
+     *         Blok `_resolve.computed` (D3) v měně dokladu; domácí měna se nevrací.
+     */
+    private function computePreviewAmounts(array $canonical, array $resolved, array &$issues): ?array
+    {
+        $unavailable = static function (array &$issues): void {
+            $issues[] = [
+                'severity' => 'info',
+                'path'     => 'totals',
+                'code'     => 'computed_unavailable',
+                'message'  => 'Rekapitulaci DPH a součty dokladu nešlo spočítat'
+                    . ' — náhled ukazuje údaje přečtené z dokladu, ne výsledek výpočtu.',
+            ];
+        };
+        try {
+            $data = $this->transform($canonical, $this->previewPlan($resolved), self::NO_SIDE_IDS, null);
+            $doc = $this->headsGateway->createDocument($data);
+            if (!$doc instanceof DocDocument) {
+                // Registr bez DocDocument pro typ (holý DefaultDocument) —
+                // není co počítat; stav, ne pád, proto bez logu výjimky.
+                $unavailable($issues);
+                return null;
+            }
+            $computed = $doc->computeAmounts($data);
+        } catch (\Throwable $e) {
+            ErrorLogger::logException($e, 'DocumentApplier::preview: computeAmounts failed');
+            $unavailable($issues);
+            return null;
+        }
+
+        $recapSource = $this->resolveRecapSource($canonical);
+        $result = [
+            // Zdroj podle toho, co dokument skutečně použil (převzatá jen
+            // neprázdná); důvod fallbacku z téhož odvození jako transform().
+            'recapSource'   => $computed['recapDeclared'] ? 'declared' : 'computed',
+            'recapFallback' => $recapSource['fallback'],
+            'vatRecap'      => array_map(
+                static fn (array $r): array => [
+                    'vatCode'       => (string) ($r['vat_code'] ?? ''),
+                    'vatPct'        => (float) ($r['vat_pct'] ?? 0),
+                    'base'          => (float) ($r['base'] ?? 0),
+                    'tax'           => (float) ($r['tax'] ?? 0),
+                    'total'         => (float) ($r['total'] ?? 0),
+                    'isReversePair' => !empty($r['is_reverse_pair']),
+                ],
+                array_values($computed['recap']),
+            ),
+            'totals' => [
+                'totalBase'     => (float) ($data['total_base'] ?? 0),
+                'totalVat'      => (float) ($data['total_vat'] ?? 0),
+                'totalAmount'   => (float) ($data['total_amount'] ?? 0),
+                'totalRounding' => (float) ($data['total_rounding'] ?? 0),
+            ],
+        ];
+
+        // D4: skutečný výpočet nahrazuje heuristiku validátoru.
+        $issues = array_values(array_filter(
+            $issues,
+            static fn (array $issue): bool => ($issue['code'] ?? null) !== 'totals_mismatch',
+        ));
+        $declared = $canonical['totals']['totalAmount'] ?? null;
+        if ($declared !== null && is_numeric($declared)) {
+            $declaredF = round((float) $declared, 2);
+            $computedF = $result['totals']['totalAmount'];
+            if (abs($declaredF - $computedF) > self::COMPUTED_TOTAL_TOLERANCE) {
+                $issues[] = [
+                    'severity' => 'warning',
+                    'path'     => 'totals.totalAmount',
+                    'code'     => 'computed_total_mismatch',
+                    'message'  => "Částka k úhradě na dokladu dodavatele {$declaredF} se liší od částky,"
+                        . " která skončí na dokladu ({$computedF}) — řádky jsou nejspíš neúplné nebo špatně přečtené.",
+                    'declared' => $declaredF,
+                    'computed' => $computedF,
+                ];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Plán pro náhled (D2): tvar {@see reconcile}, ale bez klientských
+     * rozhodnutí a bez založených entit — strany, položky a účty `null`,
+     * jen kódy DPH a jednotky z čerstvého resolve. `reconcile()` se
+     * **nevolá**: u nespárované strany či položky by nastavil
+     * `unresolved_required` a přidal error issue, které náhled nehlásí.
+     * Číselná řada je parametr `transform()` (null), `rowOperationDefaults`
+     * chybí (pohyb řádku výpočet částek neovlivní).
+     *
+     * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
+     * @return array<string, mixed>
+     */
+    private function previewPlan(array $resolved): array
+    {
+        $plan = [
+            'errorCode'            => null,
+            'errorMessage'         => null,
+            'partyCreates'         => [],
+            'bankCreate'           => null,
+            'rowItemCreates'       => [],
+            'rowSkips'             => [],
+            'rowNoItems'           => [],
+            'resolvedSupplier'     => null,
+            'resolvedCustomer'     => null,
+            'resolvedBalanceParty' => null,
+            'resolvedSupplierBank' => null,
+            'resolvedRowItems'     => [],
+            'resolvedRowUnits'     => [],
+            'resolvedRowVatCodes'  => [],
+            'resolvedRowAccounts'  => [],
+            'resolvedRowPartners'  => [],
+            'resolvedHeadPartner'  => null,
+            'cashDeskId'           => null,
+        ];
+        foreach ($resolved['rows'] ?? [] as $rowResolve) {
+            if (!is_array($rowResolve) || !isset($rowResolve['index'])) {
+                continue;
+            }
+            $i = (int) $rowResolve['index'];
+            $unitFresh = $rowResolve['unit'] ?? null;
+            $plan['resolvedRowUnits'][$i] = ($unitFresh['status'] ?? null) === 'matched'
+                ? ($unitFresh['matchedId'] ?? null)
+                : null;
+            $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
+        }
+        return $plan;
     }
 
     /**

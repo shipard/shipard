@@ -367,7 +367,14 @@ NULL a bez kódu nejdou určit flagy sčítání) → `computed` + info issue.
   se liší, vyrobí warning `totals_mismatch` v `_resolve.issues`. Silný
   signál chybné extrakce řádků. Výjimka: deklarovaná **celá** částka
   v pásmu < 1,00 od vypočtené varianty projde bez warningu — jde
-  o zaokrouhlení celkové částky faktury.
+  o zaokrouhlení celkové částky faktury. Tohle je **heuristika** validátoru
+  (odhad z canonicalu, bez DB). `/preview` navíc počítá částky **skutečným
+  výpočtem dokladu** (`DocDocument::computeAmounts()`, blok
+  `_resolve.computed`, §9) a porovná částku k úhradě → warning
+  `computed_total_mismatch` (tolerance 0,01; `computed` už nese
+  zaokrouhlení podle `total_rounding_mode`). Když je výpočet k dispozici,
+  náhled heuristický `totals_mismatch` z issues **vyřadí** — dvě hlášky
+  o tomtéž by mátly. `/validate` a `/apply` heuristiku nechávají.
 - **Integrita řádků vs. rekapitulace** — `totals_mismatch` nechytí
   neúplné řádky, když AI rekapitulaci opsala z dokladu (recap si na
   deklarovanou částku vždy sedne). Proto validátor navíc porovná součet
@@ -962,13 +969,29 @@ klient drží jeden payload mezi step preview a apply.
     }
   ],
 
+  // Rekapitulace a součty, které skončí na dokladu — jen z /preview,
+  // spočítané DocDocument::computeAmounts() nad transform() canonicalu
+  // (stejný kód jako uložení; tasks/exchange-preview-vat-recompute.md).
+  // V měně dokladu, domácí měna se nevrací. null = výpočet selhal
+  // (info issue computed_unavailable), klient ukáže canonical.
+  "computed": {
+    "recapSource":   "declared",        // declared | computed — co doklad skutečně použil
+    "recapFallback": null,              // důvod přepočtu (resolveRecapSource), jinak null
+    "vatRecap": [
+      { "vatCode": "cz-110", "vatPct": 21, "base": 10330.58, "tax": 2169.42,
+        "total": 12500.00, "isReversePair": false }
+    ],
+    "totals": { "totalBase": 10330.58, "totalVat": 2169.42,
+                "totalAmount": 12500.00, "totalRounding": 0.00 }
+  },
+
   // Validation & sanity findings — chyby i warningy
   "issues": [
     {
       "severity": "warning",            // "error" | "warning" | "info"
       "path":     "totals.totalAmount",
-      "code":     "totals_mismatch",
-      "message":  "Deklarovaná částka 12500.00 neodpovídá vypočtené 12499.50.",
+      "code":     "computed_total_mismatch",
+      "message":  "Částka k úhradě na dokladu dodavatele 12500 se liší od částky, která skončí na dokladu (12499.5) — …",
       "declared": 12500.00,
       "computed": 12499.50
     },
@@ -998,6 +1021,18 @@ do něj přidávají vlastní bloky bez změny schématu:
   promptVersion?, rowExceptions?}`), persistuje se při `/result`,
   fresh re-check pravidla IČO ho může přepsat
   (`tasks/content-tag-enrichment.md`).
+- `_resolve.computed` — rekapitulace DPH a součty, **které skončí na
+  dokladu** (`{recapSource, recapFallback, vatRecap[], totals}`, tvar
+  v příkladu výše). Jen `/preview`: `transform()` s náhledovým plánem (kódy
+  DPH a jednotky z čerstvého resolve, bez založených entit a řady) →
+  `TableGateway::createDocument()` → `DocDocument::computeAmounts()`
+  — stejný kód jako `beforeSave()` při apply, včetně přetížení podtříd
+  (účetní doklad sčítá z řádků, `vatRecap` prázdné). Při výjimce `null`
+  + info `computed_unavailable`. Náhled z něj zobrazuje rekapitulaci,
+  součty a sazbu řádků (`_resolve.rows[i].vatCode.createPayload`);
+  canonical `vatRecap` / `totals` jen jako fallback a při
+  `computed_total_mismatch` jako „na dokladu dodavatele“
+  (`tasks/exchange-preview-vat-recompute.md`).
 
 ### `userAction` slovník
 
@@ -1019,7 +1054,9 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `code` | Severity | Význam |
 |--------|----------|--------|
 | `required` | error | Chybí povinné pole per `docType` (issueDate, rows, supplier/customer). |
-| `totals_mismatch` | warning | Deklarovaná `totals.totalAmount` neodpovídá žádné vypočtené variantě (Σ řádků, Σ řádků s DPH, Σ recap). |
+| `totals_mismatch` | warning | Deklarovaná `totals.totalAmount` neodpovídá žádné vypočtené variantě (Σ řádků, Σ řádků s DPH, Σ recap). Heuristika validátoru; v `/preview` ji při dostupném `_resolve.computed` nahrazuje `computed_total_mismatch`. |
+| `computed_total_mismatch` | warning | Jen `/preview`: částka k úhradě podle skutečného výpočtu dokladu (`_resolve.computed.totals.totalAmount`) se od `totals.totalAmount` liší o víc než 0,01. Nese `declared` a `computed`. U samovyměření se liší daň, k úhradě sedí — warning nepadne. |
+| `computed_unavailable` | info | Jen `/preview`: výpočet `_resolve.computed` selhal výjimkou (zalogováno) — blok je `null`, náhled ukazuje údaje z canonicalu. |
 | `rows_recap_mismatch` | warning | Součet položkových řádků neodpovídá rekapitulaci/totals dle efektivního režimu DPH — řádky nejspíš neúplné. |
 | `vat_recap_inconsistent` | warning | Řádek rekapitulace vnitřně nesedí (`base + tax ≠ total` nebo `tax ≠ base × pct`) — recap dopočtený místo opsaného. |
 | `vat_mode_derived` | warning | `DocumentApplier` koriguje `vat_mode` podle `VatModeDerivation` (Σ řádků sedí na total, ne na base — nebo zrcadlově); nebo deklarované `none` u dokladu, jehož řádky mají kód se samovyměřením → `fromBase` (Bez DPH by rekapitulaci nestavěl). |
