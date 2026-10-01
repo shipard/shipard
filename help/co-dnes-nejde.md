@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti]
+keywords: [neumí, nejde, chybí, omezení, alfa, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad]
 related: [slovnicek.md]
 ---
 
@@ -169,10 +169,13 @@ je v [TESTERS.md](../TESTERS.md).
   kód DPH řádků určí podle údajů na dokladu a **DPH rekapitulaci**
   přepočítá s oddaňovacím řádkem. Co zatím neumí: sníženou sazbu
   u samovyměření (návrh dá základní sazbu — oprav ji v dokladu), fakturu
-  se zahraniční DPH (hotel nebo tankování v cizině) a přenesení daňové
+  se zahraniční DPH (hotel nebo tankování v cizině), přenesení daňové
   povinnosti mimo stavební práce a přílohu 5 (mobilní telefony,
-  povolenky…). U těch návrh skončí chybou kódu DPH a doklad založíš
-  ručně. Kód DPH se v náhledu změnit nedá.
+  povolenky…), **dovoz zboží ze třetí země** (DPH se řeší z celního
+  dokladu, ne z faktury dodavatele) a služby ze zahraničí se zvláštním
+  místem plnění (ubytování, jízdenky a letenky, stravování, nájem
+  a služby k nemovitosti, mýto, parkování). U těch návrh skončí chybou
+  kódu DPH a doklad založíš ručně. Kód DPH se v náhledu změnit nedá.
 
 Když dodavatel přiloží fakturu ve formátu **ISDOC**, data se převezmou
 přímo bez čtení AI — je to přesnější. AI se u něj použije jen na zařazení

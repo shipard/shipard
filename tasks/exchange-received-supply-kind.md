@@ -1,6 +1,6 @@
 # Task: Druh plnění řádku přijatého dokladu ze zahraničí
 
-**Stav:** částečně — implementováno 2026-10-01 (commit 1: taxonomie, derivace, applier, docs; commit 2: prompt v4.6.2, help); zbývá ověření na dev zdroji
+**Stav:** hotovo — implementováno a ověřeno na dev zdroji 2026-10-01 (commit 1: taxonomie, derivace, applier, docs; commit 2: prompt v4.6.2, help)
 
 **Issue:** #88 (navazuje na #86, `exchange-received-reverse-charge.md`, `exchange-received-vat-place.md`)
 
@@ -362,5 +362,5 @@ Zdroj s režimem *volný*, zpráva je v chatu (mimo repo).
 - [x] Prompt v4.6.2, testy verzí, changelog.
 - [x] Help `kontrola-vytezeni.md` a `co-dnes-nejde.md` aktualizované,
       `help-index.py` prošel.
-- [ ] Ověření na dev zdroji: faktura ze třetí země bez zmínky o DPH má
+- [x] Ověření na dev zdroji: faktura ze třetí země bez zmínky o DPH má
       bez nové analýzy `cz-417` a ř. 12 + ř. 43.

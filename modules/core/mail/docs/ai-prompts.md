@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.6.1)
+## Default prompt (v4.6.2)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -58,7 +58,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.6.1`).
+  shodná s `prompt_version` profilu (`v4.6.2`).
 - **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
   a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
   Model vrací jen sémantické signály — `vat.place` (`domestic` /
@@ -73,6 +73,13 @@ Klíčové pokyny v promptu:
   i u sídla mimo EU; bez DIČ podle sídla. Server ho u přijatého dokladu
   stejně přebije prefixem DIČ (`VatPlaceDerivation`, § 8.4) — pravidlo
   jen zmenšuje počet návrhů s warningem `vat_place_derived`.
+- **`supplyKind` u každého řádku dodavatele mimo ČR** (od v4.6.2) — i u
+  dokladu, který DPH neřeší (`vat.mode: none`, bez DIČ, bez sazby);
+  software, předplatné a cloud jsou služby. `none` u zahraničního
+  dodavatele neruší `supplyKind` ani `vat.reverseCharge` (bez zmínky
+  `false`, pole se nevynechává). Server chybějící druh plnění stejně
+  doplní ze štítku řádku (`supply_kind_derived`, § 8.4) — pravidlo
+  jen zmenšuje počet návrhů s tímto warningem.
 - `totals.totalRounding` = zaokrouhlení celkové částky se znaménkem
   (dolů = záporné); zaokrouhlení nikdy nepatří jako položkový řádek
   do `rows`.
@@ -184,7 +191,7 @@ Plné schéma viz [`profiles/czech_general.jsonc`](../profiles/czech_general.jso
    přes `shpd.docs.document.v1` (polymorfní dle `docType`, bez per-typ
    branche), registry typy přes `shpd.registry.document.v1` (nový druh =
    nová if/then větev `kindFields` v registry schématu + kopie embedu).
-5. Bumpni `prompt_version` (`v4.6.1` → `v4.7.0`).
+5. Bumpni `prompt_version` (`v4.6.2` → `v4.7.0`).
 
 ### Vlastní profil pro jiný jazyk / účel
 
@@ -244,6 +251,31 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.6.2 (2026-10-01)
+
+Druh plnění řádku přijatého dokladu ze zahraničí
+([tasks/exchange-received-supply-kind.md](../../../../tasks/exchange-received-supply-kind.md),
+#88). Přijatá faktura za předplatné softwaru od dodavatele ze třetí země
+bez DIČ, bez jakékoli zmínky o DPH: model podle pravidla „`none` =
+dodavatel neplátce, žádná zmínka o DPH“ vrátil `vat.mode: none` a s ním
+zahodil DPH signály řádku — bez `supplyKind` derivace nerozliší
+`cz-415` / `cz-417` a návrh skončil `vat_code_unknown`. Doklady, které
+DPH nebo reverse charge zmiňují, `supplyKind` měly.
+
+- PRAVIDLA: `rows[].vat.supplyKind` vyplň u každého položkového řádku
+  dodavatele mimo ČR, i když doklad DPH vůbec neřeší (`none`, bez DIČ,
+  bez sazby); software, předplatné a cloud jsou služby. `vat.mode`
+  `none` u dodavatele mimo ČR neruší `supplyKind` ani `vat.reverseCharge`.
+  `vat.reverseCharge` se nevynechává (bez zmínky `false`). Ukázka beze
+  změny (délka promptu), schéma beze změny (patch).
+- Server (nezávisle na verzi promptu): chybějící druh plnění mimo
+  tuzemsko doplní ze štítku řádku (`crossBorderSupply` taxonomie
+  `core.exchange.contentTags`) s warningem `supply_kind_derived`; dovoz
+  zboží ze třetí země a plnění se zvláštním místem plnění (ubytování,
+  jízdné, stravování, nemovitost, mýto, parkování) se vědomě neodvozují
+  (`vat_code_unknown`). Stará analýza (v4.6.1 bez `supplyKind`) tak
+  dostane `cz-417` i bez nové analýzy.
 
 ### v4.6.1 (2026-09-30)
 

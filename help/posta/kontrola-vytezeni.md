@@ -1,7 +1,7 @@
 ---
 title: Kontrola vytěženého dokladu
 summary: Jak porovnat návrh dokladu s originálem faktury, co kontrolovat první a kdy návrh zamítnout.
-keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU, místo plnění, DIČ dodavatele]
+keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU, faktura z USA, software ze zahraničí, místo plnění, DIČ dodavatele]
 related: [slovnicek.md, co-dnes-nejde.md, osoby/zalozeni-osoby.md]
 ---
 
@@ -181,9 +181,13 @@ proti tomu, co přečetla AI, změnilo, náhled to ukáže jako upozornění
 u místa plnění. Zkontroluj tři věci: kód DPH
 u řádků (u služeb z EU *Základní - služby EU*), v **DPH rekapitulaci**
 řádek daně a k němu oddaňovací řádek, a že **Celkem** je rovno základu —
-tedy tomu, co máš skutečně zaplatit. Kurz cizí měny návrh nedoplní,
-zadáš ho v dokladu před potvrzením. Co u samovyměření návrh zatím neumí,
-je v [Co Shipard dnes neumí](../co-dnes-nejde.md).
+tedy tomu, co máš skutečně zaplatit. Faktura ze zahraničí, která DPH
+vůbec nezmiňuje (typicky software nebo předplatné z USA), je také
+samovyměření — Shipard ho dovodí sám. Když AI u řádku neurčila, zda jde
+o zboží, nebo službu, doplní to Shipard podle kategorie dokladu a v náhledu
+to ukáže upozorněním u řádku; zkontroluj, že kategorie sedí. Kurz cizí
+měny návrh nedoplní, zadáš ho v dokladu před potvrzením. Co u samovyměření
+návrh zatím neumí, je v [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 **Vytvořit z registru se nenabízí vždy.** Tlačítko se objeví, jen když se
 z faktury vytěžilo IČO, subjekt pod ním v registru existuje a v evidenci
