@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Assets\AssetAcquisitionService;
+use Shipard\Module\Economy\Assets\AssetJournalCheck;
 use Shipard\Module\Economy\Assets\AssetJournalService;
 use Shipard\Module\Economy\Assets\AssetPlanService;
 use Shipard\Module\Economy\Assets\AssetsViewer;
@@ -70,6 +71,7 @@ class AssetsViewerTest extends TestCase
         array $posting = [],
         array $acquisitionRows = [],
         array $journal = ['rows' => [], 'years' => []],
+        ?AssetJournalCheck $journalCheck = null,
     ): AssetsViewer {
         $service = new TestAssetPlanService();
         $service->cards[(int) $card['id']] = $card;
@@ -117,15 +119,22 @@ class AssetsViewerTest extends TestCase
             }
         };
 
-        $viewer = new class($db, 'economy_assets_assets', $service, $acquisition, $journalService) extends AssetsViewer {
+        $journalCheck ??= new TestAssetJournalCheck();
+        $viewer = new class($db, 'economy_assets_assets', $service, $acquisition, $journalService, $journalCheck) extends AssetsViewer {
             public function __construct(
                 DataSourceConnection $db,
                 string $table,
                 private readonly AssetPlanService $service,
                 private readonly AssetAcquisitionService $acquisition,
                 private readonly AssetJournalService $journalService,
+                private readonly AssetJournalCheck $journalCheck,
             ) {
                 parent::__construct($db, $table);
+            }
+
+            protected function journalCheck(): AssetJournalCheck
+            {
+                return $this->journalCheck;
             }
 
             protected function journalService(): AssetJournalService
@@ -225,6 +234,70 @@ class AssetsViewerTest extends TestCase
             $actions['activate']['target']['preset'],
         );
         $this->assertSame(['asset' => 4, 'event_kind' => 'opening', 'scope' => 'tax'], $actions['openingTax']['target']['preset']);
+    }
+
+    // --- detail: kontrola proti deníku (D67) ------------------------------------
+
+    public function testOverviewWarnsAboutJournalAndAcquisitionMismatch(): void
+    {
+        $card = ['id' => 4, 'name' => 'Fréza', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $events = [['id' => 1, 'asset' => 4, 'event_kind' => 'activation', 'scope' => 'both', 'event_date' => '2022-03-15', 'amount' => 268500, 'docState' => 40]];
+
+        $check = new TestAssetJournalCheck();
+        $check->card(4);
+        // (b) pořízení 269 500 ≠ zařazení 268 500; (a) zaúčtované zařazení v deníku chybí.
+        $check->journal(4, '042100', 269500, 0, '2022-03-10', 'purchase.asset');
+        $check->event(4, 'activation', '2022-03-15', 268500);
+
+        $content = $this->detailViewer($card, $events, journalCheck: $check)->renderDetail(4)['tabs'][0]['content'];
+
+        $this->assertSame('composite', $content['type']);
+        // Varování stojí před vlastnostmi karty.
+        $this->assertSame(['heading', 'table', 'properties'], array_column($content['blocks'], 'type'));
+        $this->assertSame('Journal check', $content['blocks'][0]['text']);
+        $table = $content['blocks'][1];
+        $this->assertSame([['id' => 'text', 'label' => 'Mismatch'], ['id' => 'report', 'label' => '', 'link' => true]], $table['columns']);
+        $this->assertCount(2, $table['rows']);
+        $this->assertStringContainsString('022100, 042100', $table['rows'][0]['text']);
+        $this->assertStringContainsString('269 500,00', $table['rows'][1]['text']);
+        $this->assertStringContainsString('268 500,00', $table['rows'][1]['text']);
+        $this->assertStringContainsString('1 000,00', $table['rows'][1]['text']);
+        foreach ($table['rows'] as $row) {
+            $this->assertSame('error', $row['_class']);
+            $this->assertSame('Open the check', $row['report']);
+            // Report Kontrola za účetní rok, do kterého patří dnešek (TestAssetPlanService: 30. 6. 2024).
+            $this->assertSame(
+                [
+                    'id'     => 'openJournalCheck',
+                    'kind'   => 'open_report',
+                    'target' => [
+                        'reportId' => 'economy.assets.journalCheck',
+                        'params'   => ['fiscalYear' => '2024', 'monthFrom' => 1, 'monthTo' => 12],
+                    ],
+                ],
+                $row['_action'],
+            );
+        }
+    }
+
+    public function testAcquisitionWithoutActivationWarnsOnlyAfterThirtyDays(): void
+    {
+        $card = ['id' => 4, 'name' => 'Fréza', 'category' => 'tangible', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+
+        $recent = new TestAssetJournalCheck();
+        $recent->card(4);
+        $recent->journal(4, '042100', 50000, 0, '2024-06-20', 'purchase.asset');
+        $content = $this->detailViewer($card, [], journalCheck: $recent)->renderDetail(4)['tabs'][0]['content'];
+        $this->assertSame('properties', $content['type']);
+
+        $old = new TestAssetJournalCheck();
+        $old->card(4);
+        $old->journal(4, '042100', 50000, 0, '2024-05-10', 'purchase.asset');
+        $content = $this->detailViewer($card, [], journalCheck: $old)->renderDetail(4)['tabs'][0]['content'];
+        $this->assertSame('table', $content['blocks'][1]['type']);
+        $this->assertStringContainsString('50 000,00', $content['blocks'][1]['rows'][0]['text']);
+        $this->assertStringContainsString('30', $content['blocks'][1]['rows'][0]['text']);
     }
 
     public function testCardWithoutAcquisitionKeepsPlainOverviewAndPreset(): void

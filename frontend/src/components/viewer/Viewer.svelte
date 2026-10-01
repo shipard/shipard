@@ -833,6 +833,15 @@
       return;
     }
 
+    // Report s parametry (alert nesouladu evidence majetku → Kontrola
+    // evidence × deník za dotčený rok).
+    if (action.kind === 'open_report') {
+      const target = action.target ?? {};
+      if (!target.reportId) return;
+      navigationStore.navigateToReport(target.reportId, target.params ?? null);
+      return;
+    }
+
     console.warn('Unknown detail action', actionId, action);
   }
 

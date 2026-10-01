@@ -414,8 +414,10 @@ class AssetJournalCheck
     // ── DB přístup (přepsatelné v testech) ──────────────────────────────────
 
     /**
-     * Karty mimo koncepty a smazané s čísly účtů účetní skupiny
-     * (`accounts`: role → číslo účtu, nevyplněný účet chybí), podle inv. čísla.
+     * Karty mimo smazané s čísly účtů účetní skupiny (`accounts`: role →
+     * číslo účtu, nevyplněný účet chybí), podle inv. čísla. Koncepty sem
+     * patří — pořízení na dokladu může nést i kartu, která ještě není
+     * potvrzená.
      *
      * @return array<int, array<string, mixed>> id → karta
      */
@@ -435,8 +437,8 @@ class AssetJournalCheck
             . ' FROM [' . AssetDocument::TABLE . '] [a]'
             . ' LEFT JOIN [economy_assets_accounting_groups] [g] ON [g].[id] = [a].[accounting_group]'
             . $joins
-            . ' WHERE [a].[docState] IN %in',
-            [AssetDocument::STATE_CONFIRMED, AssetDocument::STATE_ARCHIVED, AssetDocument::STATE_EDIT],
+            . ' WHERE [a].[docState] <> %i',
+            AssetDocument::STATE_DELETED,
         ];
         if ($assetId !== null) {
             array_push($args, 'AND [a].[id] = %i', $assetId);

@@ -114,8 +114,8 @@ class AssetDocumentChecksTest extends TestCase
         $this->assertStringContainsString('pořízení za 268 500,00', $findings[0]->message);
         $this->assertSame(450, $findings[0]->subjectTableId);
         $this->assertSame('open_viewer', $findings[0]->actions[0]['kind']);
-        $this->assertSame('economy.assets.assets', $findings[0]->actions[0]['viewerId']);
-        $this->assertSame(68, $findings[0]->actions[0]['recordId']);
+        // Cíl v `target` — čte ho karta feedu i detail upozornění.
+        $this->assertSame(['viewerId' => 'economy.assets.assets', 'recordId' => 68], $findings[0]->actions[0]['target']);
         $this->assertSame('Majetek Lis čeká na zařazení', $findings[1]->title);
 
         // Pořízení na 04x potvrzeného dokladu, dlouhodobé druhy z konfigurace,
@@ -123,8 +123,11 @@ class AssetDocumentChecksTest extends TestCase
         $this->assertStringContainsString('NOT EXISTS (SELECT 1 FROM [economy_assets_events]', $captured[0]);
         $this->assertSame(
             ['purchase.asset', 40, '04%', [10, 40, 80], ['tangible', 'nondepreciable'], 40, ['activation', 'opening']],
-            array_slice($captured, 1),
+            array_slice($captured, 1, 7),
         );
+        // Jen pořízení mladší než lhůta — starší přebírá varování nesouladu pořízení (D67).
+        $this->assertStringContainsString('HAVING MAX([h].[accounting_date]) >= %s', $captured[0]);
+        $this->assertSame((new \DateTimeImmutable('today'))->modify('-30 days')->format('Y-m-d'), $captured[8]);
     }
 
     public function testAwaitingActivationWithoutLongTermCategoriesDoesNotQuery(): void

@@ -302,7 +302,7 @@
     ],
 
     // Vazba na doklady (D61, D63): řádek pořízení bez karty a pořízený,
-    // ale nezařazený dlouhodobý majetek.
+    // ale nezařazený dlouhodobý majetek; kontrola proti deníku (D67).
     "alertChecks": [
         {
             "id": "economy.assets.purchase_without_asset",
@@ -331,6 +331,36 @@
             "interval": "1h",
             "navSection": "assets",
             "tags": ["assets"]
+        },
+        // Kontrola evidence × deník (D67) — sdílí AssetJournalCheck s reportem
+        // economy.assets.journalCheck a s varováním na kartě.
+        {
+            "id": "economy.assets.journal_mismatch",
+            "name": "Asset register does not match the journal",
+            "name:cs": "Evidence majetku nesouhlasí s deníkem",
+            "name:en": "Asset register does not match the journal",
+            "description": "Posted asset events that do not match journal rows carrying the asset card.",
+            "description:cs": "Zaúčtované události majetku, které neodpovídají řádkům deníku s kartou majetku.",
+            "description:en": "Posted asset events that do not match journal rows carrying the asset card.",
+            "class": "Shipard\\Module\\Economy\\Assets\\Checks\\JournalMismatchCheck",
+            "severity": "error",
+            "interval": "1d",
+            "navSection": "assets",
+            "tags": ["assets", "accounting"]
+        },
+        {
+            "id": "economy.assets.acquisition_mismatch",
+            "name": "Asset acquisition does not match activation",
+            "name:cs": "Pořízení majetku nesouhlasí se zařazením",
+            "name:en": "Asset acquisition does not match activation",
+            "description": "Acquisition on the acquisition account differs from activation and improvements for more than 30 days.",
+            "description:cs": "Pořízení na účtu pořízení se déle než 30 dní liší od zařazení a technických zhodnocení karty.",
+            "description:en": "Acquisition on the acquisition account differs from activation and improvements for more than 30 days.",
+            "class": "Shipard\\Module\\Economy\\Assets\\Checks\\AcquisitionMismatchCheck",
+            "severity": "warning",
+            "interval": "1d",
+            "navSection": "assets",
+            "tags": ["assets", "accounting"]
         }
     ],
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Assets;
 
 use Shipard\Core\Database\SearchCondition;
+use Shipard\Module\Economy\Assets\Checks\JournalMismatchCheck;
 use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
 use Shipard\Module\Economy\Assets\Depreciation\DepreciationSettings;
 use Shipard\Module\Economy\Assets\Depreciation\Plan;
@@ -292,15 +293,20 @@ class AssetsViewer extends AssetsViewerBase
 
         // Pořízení z dokladů (D63) — i u drobného majetku pořízeného do nákladů.
         $acquisition = $this->acquisitionService()->acquisition($recordId);
-        if ($acquisition['rows'] !== []) {
-            $detail['tabs'][0]['content'] = [
-                'type'   => 'composite',
-                'blocks' => [
-                    $detail['tabs'][0]['content'],
-                    ['type' => 'heading', 'text' => $this->text('heading.acquisition', 'Acquisition')],
-                    $this->acquisitionTable($acquisition),
-                ],
-            ];
+        // Kontrola proti deníku (D67) — varování nahoře, ať se nepřehlédne.
+        $warnings = $this->journalCheckTable($recordId);
+        if ($acquisition['rows'] !== [] || $warnings !== null) {
+            $blocks = [];
+            if ($warnings !== null) {
+                $blocks[] = ['type' => 'heading', 'text' => $this->text('heading.journalCheck', 'Journal check')];
+                $blocks[] = $warnings;
+            }
+            $blocks[] = $detail['tabs'][0]['content'];
+            if ($acquisition['rows'] !== []) {
+                $blocks[] = ['type' => 'heading', 'text' => $this->text('heading.acquisition', 'Acquisition')];
+                $blocks[] = $this->acquisitionTable($acquisition);
+            }
+            $detail['tabs'][0]['content'] = ['type' => 'composite', 'blocks' => $blocks];
         }
 
         // Náklady a výnosy z deníku (D64) — tab jen když karta nějaké má.
@@ -505,6 +511,117 @@ class AssetsViewer extends AssetsViewerBase
     protected function acquisitionService(): AssetAcquisitionService
     {
         return new AssetAcquisitionService($this->db->getDibiConnection());
+    }
+
+    // ── Kontrola proti deníku v detailu ─────────────────────────────────────
+
+    /**
+     * Varování v Přehledu (D67): karta má nesoulad zaúčtování s deníkem
+     * nebo pořízení se zařazením — stejná služba jako report Kontrola
+     * evidence × deník a alerty. Řádek odkazuje na report za aktuální
+     * účetní rok. Null = karta je v pořádku.
+     *
+     * @return array<string, mixed>|null content typu table
+     */
+    private function journalCheckTable(int $assetId): ?array
+    {
+        $findings = $this->journalCheck()->cardFindings(null, $assetId);
+        $service = $this->planService();
+
+        $rows = [];
+        foreach ($findings['posting'] as $finding) {
+            $rows[] = [
+                'text' => $this->text('text.journalMismatch', 'Posted events do not match the journal on accounts {accounts}.', [
+                    'accounts' => implode(', ', array_map(
+                        static fn(array $account): string => $account['account'] !== '' ? $account['account'] : '?',
+                        $finding['accounts'],
+                    )),
+                ]),
+            ];
+        }
+        foreach ($findings['acquisition'] as $finding) {
+            if ($finding['started']) {
+                $rows[] = [
+                    'text' => $this->text(
+                        'text.acquisitionMismatch',
+                        'Acquisition on the acquisition account {acquired} differs from activation and improvements {activated} (difference {difference}).',
+                        [
+                            'acquired'   => $this->formatAmount($finding['acquired']),
+                            'activated'  => $this->formatAmount($finding['activated']),
+                            'difference' => $this->formatAmount($finding['difference']),
+                        ],
+                    ),
+                ];
+            } elseif (AssetJournalCheck::isOverdue($finding['since'], $service->today())) {
+                $rows[] = [
+                    'text' => $this->text(
+                        'text.acquisitionWaiting',
+                        'Acquisition of {acquired} has waited for activation for more than {days} days.',
+                        ['acquired' => $this->formatAmount($finding['acquired']), 'days' => AssetJournalCheck::ACQUISITION_DAYS],
+                    ),
+                ];
+            }
+        }
+        if ($rows === []) {
+            return null;
+        }
+
+        $action = $this->journalCheckAction($service);
+        foreach ($rows as &$row) {
+            $row['_class'] = 'error';
+            if ($action !== null) {
+                $row['report'] = $this->text('action.openJournalCheck', 'Open the check');
+                $row['_action'] = $action;
+            }
+        }
+        unset($row);
+
+        return [
+            'type'    => 'table',
+            'columns' => [
+                ['id' => 'text', 'label' => $this->text('column.mismatch', 'Mismatch')],
+                ['id' => 'report', 'label' => '', 'link' => true],
+            ],
+            'rows' => $rows,
+        ];
+    }
+
+    /**
+     * Akce řádku varování: report Kontrola evidence × deník za účetní rok,
+     * do kterého patří dnešek (jinak poslední založený). Null bez roku.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function journalCheckAction(AssetPlanService $service): ?array
+    {
+        $today = $service->today();
+        $year = null;
+        foreach ($service->fiscalYears() as $candidate) {
+            if ($year === null || $candidate['begin'] <= $today) {
+                $year = $candidate;
+            }
+        }
+        if ($year === null) {
+            return null;
+        }
+        $months = count(array_filter(
+            $service->fiscalMonths(),
+            static fn(array $month): bool => $month['fiscal_year'] === $year['id'],
+        ));
+
+        return [
+            'id'     => 'openJournalCheck',
+            'kind'   => 'open_report',
+            'target' => [
+                'reportId' => JournalMismatchCheck::REPORT_ID,
+                'params'   => ['fiscalYear' => $year['name'], 'monthFrom' => 1, 'monthTo' => max(1, $months)],
+            ],
+        ];
+    }
+
+    protected function journalCheck(): AssetJournalCheck
+    {
+        return new AssetJournalCheck($this->db->getDibiConnection());
     }
 
     // ── Plán odpisů v detailu ──────────────────────────────────────────────

@@ -50,6 +50,14 @@
     "severity.warning":   { "name": "Warning", "name:cs": "Varování", "name:en": "Warning" },
     "halfYear":           { "name": "half-year", "name:cs": "polovina", "name:en": "half-year" },
 
+    // --- kontrola proti deníku (D67) ---
+    "heading.journalCheck":     { "name": "Journal check", "name:cs": "Kontrola proti deníku", "name:en": "Journal check" },
+    "column.mismatch":          { "name": "Mismatch", "name:cs": "Nesoulad", "name:en": "Mismatch" },
+    "action.openJournalCheck":  { "name": "Open the check", "name:cs": "Otevřít kontrolu", "name:en": "Open the check" },
+    "text.journalMismatch":     { "name": "Posted events do not match the journal on accounts {accounts}.", "name:cs": "Zaúčtované události neodpovídají deníku na účtech {accounts}.", "name:en": "Posted events do not match the journal on accounts {accounts}." },
+    "text.acquisitionMismatch": { "name": "Acquisition on the acquisition account {acquired} differs from activation and improvements {activated} (difference {difference}).", "name:cs": "Pořízení na účtu pořízení {acquired} nesouhlasí se zařazením a technickým zhodnocením {activated} (rozdíl {difference}).", "name:en": "Acquisition on the acquisition account {acquired} differs from activation and improvements {activated} (difference {difference})." },
+    "text.acquisitionWaiting":  { "name": "Acquisition of {acquired} has waited for activation for more than {days} days.", "name:cs": "Pořízení {acquired} čeká na zařazení déle než {days} dní.", "name:en": "Acquisition of {acquired} has waited for activation for more than {days} days." },
+
     // --- pořízení z dokladů (D63) ---
     "heading.acquisition": { "name": "Acquisition", "name:cs": "Pořízení", "name:en": "Acquisition" },
     "column.document":     { "name": "Document", "name:cs": "Doklad", "name:en": "Document" },

@@ -9,6 +9,7 @@ use Shipard\Core\Alerts\AlertFinding;
 use Shipard\Module\Economy\Assets\AssetAcquisitionService;
 use Shipard\Module\Economy\Assets\AssetCategories;
 use Shipard\Module\Economy\Assets\AssetEventDocument;
+use Shipard\Module\Economy\Assets\AssetJournalCheck;
 use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
 
 /**
@@ -19,7 +20,9 @@ use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
  *
  * Jeden nález per karta (`finding_key` = id karty); zmizí po potvrzení
  * zařazení. Informační — majetek může být pořízený, ale ještě neuvedený
- * do užívání.
+ * do užívání. Po `AssetJournalCheck::ACQUISITION_DAYS` dnech od posledního
+ * pořízení kartu přebírá varování „Pořízení nesouhlasí se zařazením“
+ * (`AcquisitionMismatchCheck`, D67) — tady už se nehlásí.
  */
 class AwaitingActivationCheck extends AlertCheck
 {
@@ -55,12 +58,12 @@ class AwaitingActivationCheck extends AlertCheck
                 subjectTableId: self::SUBJECT_TABLE_ID,
                 subjectRowId: $id,
                 actions: [[
-                    'id'       => 'open_asset',
-                    'label'    => $isCs ? 'Otevřít kartu' : 'Open asset card',
-                    'kind'     => 'open_viewer',
-                    'viewerId' => 'economy.assets.assets',
-                    'recordId' => $id,
-                    'primary'  => true,
+                    'id'      => 'open_asset',
+                    'label'   => $isCs ? 'Otevřít kartu' : 'Open asset card',
+                    'kind'    => 'open_viewer',
+                    'primary' => true,
+                    // `target` čte karta feedu i detail upozornění.
+                    'target'  => ['viewerId' => 'economy.assets.assets', 'recordId' => $id],
                 ]],
                 context: ['asset_number' => $number, 'amount' => (float) $row['amount']],
             );
@@ -70,7 +73,8 @@ class AwaitingActivationCheck extends AlertCheck
 
     /**
      * Dlouhodobé karty s potvrzeným pořízením na 04x bez potvrzeného
-     * zařazení / počátečního stavu. Seam pro testy.
+     * zařazení / počátečního stavu, jejichž poslední pořízení není starší
+     * než lhůta. Seam pro testy.
      *
      * @return list<array{id: int, asset_number: string, name: string, amount: float}>
      */
@@ -97,6 +101,7 @@ class AwaitingActivationCheck extends AlertCheck
             . '   AND NOT EXISTS (SELECT 1 FROM [economy_assets_events] [e]'
             . '     WHERE [e].[asset] = [a].[id] AND [e].[docState] = %i AND [e].[event_kind] IN %in)'
             . ' GROUP BY [a].[id], [a].[asset_number], [a].[name]'
+            . ' HAVING MAX([h].[accounting_date]) >= %s'
             . ' ORDER BY [a].[id]',
             AssetAcquisitionService::OPERATION,
             AssetAcquisitionService::DOC_STATE_CONFIRMED,
@@ -105,6 +110,8 @@ class AwaitingActivationCheck extends AlertCheck
             $longTerm,
             AssetEventDocument::STATE_CONFIRMED,
             [AssetEvent::KIND_ACTIVATION, AssetEvent::KIND_OPENING],
+            (new \DateTimeImmutable($this->today()))
+                ->modify('-' . AssetJournalCheck::ACQUISITION_DAYS . ' days')->format('Y-m-d'),
         );
         $out = [];
         foreach ($rows as $row) {
@@ -116,5 +123,11 @@ class AwaitingActivationCheck extends AlertCheck
             ];
         }
         return $out;
+    }
+
+    /** Seam pro testy. */
+    protected function today(): string
+    {
+        return (new \DateTimeImmutable('today'))->format('Y-m-d');
     }
 }

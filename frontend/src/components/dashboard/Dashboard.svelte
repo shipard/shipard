@@ -206,6 +206,8 @@
         return;
       case 'open_panel':
         return navigationStore.navigateToPanel(target.panelId, action.label ?? null);
+      case 'open_report':
+        return navigationStore.navigateToReport(target.reportId, target.params ?? null);
       case 'open_form':
         formModal = {
           open: true,

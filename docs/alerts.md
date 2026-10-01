@@ -361,8 +361,9 @@ Podporované `kind` v MVP:
 | kind | target tvar | Význam |
 |---|---|---|
 | `open_form` | `{table, mode: "create"\|"edit", id?, preset?}` | Otevři form pro vytvoření/úpravu záznamu. |
-| `open_viewer` | `{viewerId}` | Naviguj do daného vieweru. |
+| `open_viewer` | `{viewerId, recordId?, viewGroup?, filters?}` | Naviguj do daného vieweru (a předvyber záznam). Cíl patří do `target` — karta feedu čte jen `action.target`, ne klíče na úrovni akce. |
 | `open_panel` | `{panelId}` | Přepni do Nastavení a otevři panel (`navigationStore.navigateToPanel`). Používá agregovaná setup karta feedu (`ds-setup.md` D8). |
+| `open_report` | `{reportId, params?}` | Otevři report z navigace (`navigationStore.navigateToReport`); `params` = období a parametry reportu ve tvaru deep-linku (`{fiscalYear, monthFrom, monthTo, …}`). Obsluhuje karta feedu i detail upozornění; report, který uživatel v navigaci nemá, se neotevře. První uživatel: `economy.assets.journal_mismatch` → Kontrola evidence × deník za dotčený rok. |
 
 `primary: true` označuje hlavní akci — frontend ji vyrenderuje jako primary button.
 Maximálně **jedna** akce s `primary: true` per alert (validuje `AlertFinding` ctor).

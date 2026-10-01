@@ -242,6 +242,37 @@ function activateReportDeepLink(navTree) {
   return true;
 }
 
+/**
+ * Naviguj na report (akce `open_report` z karty feedu a z detailu
+ * upozornění). Leaf `report:<id>` se hledá v app stromu — report, který
+ * uživatel v navigaci nemá, otevřít nejde. `params` (období + parametry
+ * deklarace, tvar deep-linku) vyzvedne ReportsPage jednorázově jako overlay
+ * nad výchozím stavem; neplatné hodnoty spadnou na default.
+ *
+ * @returns {boolean} true když byl report otevřen
+ */
+function navigateToReport(reportId, params = null) {
+  const leaf = findLeafById(appNavTree, 'report:' + reportId);
+  if (!leaf) {
+    return false;
+  }
+  mode = 'app';
+  pendingReportParams = params != null && typeof params === 'object' ? { ...params } : null;
+  appActiveItem = {
+    id: leaf.id,
+    label: leaf.label,
+    type: leaf.type,
+    table: leaf.table ?? null,
+    viewerId: leaf.viewerId ?? null,
+    pageId: leaf.pageId ?? null,
+    panelId: leaf.panelId ?? null,
+    panelParams: leaf.panelParams ?? null,
+    filter: leaf.filter ?? null,
+    fixedViewGroup: leaf.fixedViewGroup ?? null,
+  };
+  return true;
+}
+
 /** Po loadu app navigace — viz komentář u `appNavTree`. */
 function setAppNavTree(tree) {
   appNavTree = tree;
@@ -349,6 +380,7 @@ export const navigationStore = {
   navigate,
   navigateToViewer,
   navigateToPanel,
+  navigateToReport,
   setAppNavTree,
   loadAppNavTree,
   consumePendingRecordId,
