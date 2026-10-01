@@ -55,10 +55,15 @@ class AccountingDocument extends DocsHeadsDocument
         return $result;
     }
 
-    public function beforeSave(array &$data, ?array $originalData = null): void
+    /**
+     * cmnbkp je bez DPH: `vat_mode` 0 platí i pro výpočet bez uložení —
+     * náhled návrhu volá `computeAmounts()` přímo a `beforeSave` obchází
+     * (tasks/exchange-preview-vat-recompute.md D1). Uložení jde tudy taky.
+     */
+    public function computeAmounts(array &$data, ?array $originalData = null): array
     {
         $data['vat_mode'] = 0;
-        parent::beforeSave($data, $originalData);
+        return parent::computeAmounts($data, $originalData);
     }
 
     /**

@@ -60,6 +60,20 @@ class TableGateway
         private ?TableDefinition $tableDef = null,
     ) {}
 
+    /**
+     * Instance dokumentu pro `$data` (třída podle `typeColumn` registrace)
+     * s injektovanými službami — stejná, jakou dostane uložení. Veřejná pro
+     * výpočty bez uložení (`DocDocument::computeAmounts()` v náhledu návrhu,
+     * tasks/exchange-preview-vat-recompute.md D1). Nová instance per volání:
+     * žádné sdílení stavu s uložením.
+     */
+    public function createDocument(array $data): Document
+    {
+        $doc = $this->registry->getDocument($this->tableId, $data);
+        $this->injectDocServices($doc);
+        return $doc;
+    }
+
     private function injectDocServices(Document $doc): void
     {
         $doc->setDb($this->db);
@@ -149,8 +163,7 @@ class TableGateway
             $data[$ct['dataKey']] = $this->fetchChildren($ct['table'], $ct['foreignKey'], $id);
         }
 
-        $doc = $this->registry->getDocument($this->tableId, $data);
-        $this->injectDocServices($doc);
+        $doc = $this->createDocument($data);
         $doc->onLoad($data);
 
         return $data;
@@ -158,8 +171,7 @@ class TableGateway
 
     public function saveDocument(array $inputData): DocumentResult
     {
-        $doc = $this->registry->getDocument($this->tableId, $inputData);
-        $this->injectDocServices($doc);
+        $doc = $this->createDocument($inputData);
         $data = $inputData;
 
         // Force marker ven z dat hned — nikdy nesmí dojít do SQL. Rozhoduje
@@ -334,8 +346,7 @@ class TableGateway
             return DocumentResult::error("Record {$id} not found");
         }
 
-        $doc = $this->registry->getDocument($this->tableId, $data);
-        $this->injectDocServices($doc);
+        $doc = $this->createDocument($data);
 
         // Zamčený záznam nejde smazat — stejné providery jako u uložení,
         // nad uloženým řádkem. Výjimka providera = mazání selže.

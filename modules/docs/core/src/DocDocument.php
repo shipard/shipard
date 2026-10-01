@@ -29,10 +29,10 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *   3. apply home_currency from DS config
  *   4. resolve fiscal_year/fiscal_month (vat_period/cs_period/rs_period plní
  *      economy.vat přes beforeSave documentEventHandler — docs.core o nich neví)
- *   5. calculateRowPrice + calculateRowVat for each row
- *   6. buildVatRecapitulation (with reverse charge pairs)
- *   7. sumTotals + apply rounding + reconcileRowsToRecap (obě měny)
- *      + apply exchange rate to *_dom
+ *   5. calculateRowPrice + calculateRowVat for each row       ┐ computeAmounts()
+ *   6. buildVatRecapitulation (with reverse charge pairs)     │ — veřejný blok
+ *   7. sumTotals + apply rounding + reconcileRowsToRecap      │ bez uložení,
+ *      (obě měny) + apply exchange rate to *_dom              ┘ volá i náhled
  *   8. processStateTransition (assignNumber {0,10}→{40}, releaseNumber 80→10)
  *   9. maintainSnapshots (buildSnapshots when partner changes / first time)
  *  10. applyPaymentReferenceDefault from sequence_number
@@ -471,6 +471,57 @@ abstract class DocDocument extends Document
         $this->applyHomeCurrency($data);
         $this->resolveAccountingPeriods($data);
 
+        $this->computeAmounts($data, $originalData);
+
+        // Number assignment: import mode forces the document's own number;
+        // otherwise normal state-transition assignment from the series counter.
+        if (is_array($importNumber)) {
+            $this->applyImportNumber($data, $importNumber);
+        } else {
+            $this->processStateTransition($data, $originalData);
+        }
+
+        $this->maintainSnapshots($data, $originalData);
+        $this->applyPaymentReferenceDefault($data);
+    }
+
+    /**
+     * Výpočet částek dokladu bez uložení: řádky (`calculateRowPrice` /
+     * `calculateRowVat`), rekapitulace DPH (převzatá nebo přepočítaná), součty
+     * hlavičky, zaokrouhlení, dorovnání řádků a domácí měna. Jediný výpočetní
+     * blok pro uložení (`beforeSave`) i náhled návrhu
+     * (`DocumentApplier::preview`, tasks/exchange-preview-vat-recompute.md D1)
+     * — náhled tak ukazuje přesně to, co skončí na dokladu.
+     *
+     * Bez vedlejších efektů mimo instanci: žádný zápis do DB, číslování,
+     * snapshoty ani přechody stavů. Z DB čte jen zemi registrace DPH a
+     * (u uloženého dokladu bez řádků v payloadu) aktuální řádky či
+     * rekapitulaci. Nastavuje stav instance `$recapDeclared` (čte ho
+     * `headTotalsIncludeRowsOutsideRecap()` během `sumTotals`) a
+     * `$computedRows` (čte `persistRowComputedColumns()`); oba na začátku
+     * resetuje — instance může jít přes víc dokladů.
+     *
+     * Součty skončí v `$data` (`total_base`, `total_vat`, `total_amount`,
+     * `total_rounding`), rekapitulace v `$data['vatRecap']`. Řádky se do
+     * `$data['rows']` propagují jen když klíč existuje — přidáním by
+     * header-only save přes child sync smazal řádky v DB.
+     *
+     * Subclassy přetěžují dílčí kroky (`sumTotals`,
+     * `headTotalsIncludeRowsOutsideRecap`) nebo tuto metodu
+     * (`AccountingDocument` vynucuje `vat_mode` 0) — proto je výpočet metodou
+     * dokumentu, ne statickým kalkulátorem.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $originalData Stav v DB při update —
+     *        rozhoduje přechod zdroje rekapitulace ({@see useDeclaredRecap}).
+     * @return array{rows: array<int, array<string, mixed>>, recap: array<int, array<string, mixed>>, recapDeclared: bool}
+     */
+    public function computeAmounts(array &$data, ?array $originalData = null): array
+    {
+        // Reset per výpočet — viz docblock.
+        $this->recapDeclared = false;
+        $this->computedRows = [];
+
         // Resolve rows for computation. Two scenarios:
         //   1. Client sent rows in payload (e.g. future mass-edit flow) — use them.
         //   2. Header-only save — rows are managed via sub-form, so they're
@@ -514,16 +565,11 @@ abstract class DocDocument extends Document
         }
         $this->computedRows = $rowsForCompute;
 
-        // Number assignment: import mode forces the document's own number;
-        // otherwise normal state-transition assignment from the series counter.
-        if (is_array($importNumber)) {
-            $this->applyImportNumber($data, $importNumber);
-        } else {
-            $this->processStateTransition($data, $originalData);
-        }
-
-        $this->maintainSnapshots($data, $originalData);
-        $this->applyPaymentReferenceDefault($data);
+        return [
+            'rows'          => $rowsForCompute,
+            'recap'         => $recap,
+            'recapDeclared' => $this->recapDeclared,
+        ];
     }
 
     /**
