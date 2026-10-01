@@ -23,6 +23,8 @@ class TestAssetPlanService extends AssetPlanService
     public array $events = [];
     /** @var list<int> zamčené měsíce (yyyymm) */
     public array $lockedMonths = [];
+    /** @var array<int, array{docId: int, docNumber: string}> zaúčtované události: id → doklad */
+    public array $posting = [];
     public string $periodicity = self::PERIODICITY_YEAR;
     public string $asOf = '2024-06-30';
 
@@ -81,6 +83,11 @@ class TestAssetPlanService extends AssetPlanService
                 => [$a['event_date'], $a['id'] ?? 0] <=> [$b['event_date'], $b['id'] ?? 0]);
         }
         return $out;
+    }
+
+    protected function loadPosting(int $assetId): array
+    {
+        return $this->posting;
     }
 
     protected function loadFiscalYears(): array

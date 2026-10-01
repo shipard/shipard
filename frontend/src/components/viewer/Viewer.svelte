@@ -1294,6 +1294,7 @@
   open={depreciationRunOpen}
   assetId={depreciationRunAssetId}
   onDone={handleDepreciationRunDone}
+  onChanged={refreshAfterAction}
   onClose={() => { depreciationRunOpen = false; }}
 />
 

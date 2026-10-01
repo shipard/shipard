@@ -42,6 +42,10 @@
 
     "status.confirmed":   { "name": "Confirmed", "name:cs": "Potvrzeno", "name:en": "Confirmed" },
     "status.planned":     { "name": "Planned", "name:cs": "Plán", "name:en": "Planned" },
+    // Stav zaúčtování potvrzené události účetního okruhu (D52).
+    "status.posted":      { "name": "Posted — document {number}", "name:cs": "Zaúčtováno — doklad {number}", "name:en": "Posted — document {number}" },
+    "status.unposted":    { "name": "Waiting for posting", "name:cs": "Čeká na zaúčtování", "name:en": "Waiting for posting" },
+    "badge.unposted":     { "name": "Not posted", "name:cs": "Nezaúčtováno", "name:en": "Not posted" },
     "severity.error":     { "name": "Error", "name:cs": "Chyba", "name:en": "Error" },
     "severity.warning":   { "name": "Warning", "name:cs": "Varování", "name:en": "Warning" },
     "halfYear":           { "name": "half-year", "name:cs": "polovina", "name:en": "half-year" },

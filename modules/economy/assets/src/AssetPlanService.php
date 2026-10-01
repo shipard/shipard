@@ -216,6 +216,17 @@ class AssetPlanService
         return false;
     }
 
+    /**
+     * Zaúčtování událostí karty (D52): id události → živý účetní doklad
+     * (mimo Storno / Smazáno). Událost, která v mapě není, zaúčtovaná není.
+     *
+     * @return array<int, array{docId: int, docNumber: string}>
+     */
+    public function postingOf(int $assetId): array
+    {
+        return $this->loadPosting($assetId);
+    }
+
     /** @return array{tax: Plan, acc: Plan}|null null = karta neexistuje */
     public function planForAsset(int $assetId): ?array
     {
@@ -254,6 +265,26 @@ class AssetPlanService
             $byAsset[(int) $row['asset']][] = self::plain($row);
         }
         return $byAsset;
+    }
+
+    /** @return array<int, array{docId: int, docNumber: string}> */
+    protected function loadPosting(int $assetId): array
+    {
+        if ($this->db === null) {
+            return [];
+        }
+        $rows = $this->db->fetchAll(
+            'SELECT [e].[id], [h].[id] AS [doc_id], [h].[doc_number] FROM [' . self::EVENTS_TABLE . '] [e]'
+            . ' JOIN [docs_core_heads] [h] ON [h].[id] = [e].[doc_head]'
+            . ' WHERE [e].[asset] = %i AND [h].[docState] NOT IN %in',
+            $assetId,
+            AssetEventDocument::DEAD_DOC_STATES,
+        );
+        $posting = [];
+        foreach ($rows as $row) {
+            $posting[(int) $row['id']] = ['docId' => (int) $row['doc_id'], 'docNumber' => (string) $row['doc_number']];
+        }
+        return $posting;
     }
 
     /** @return list<array{id: int, name: string, begin: string, end: string}> */

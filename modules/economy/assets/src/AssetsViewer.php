@@ -11,6 +11,7 @@ use Shipard\Module\Economy\Assets\Depreciation\Plan;
 use Shipard\Module\Economy\Assets\Depreciation\PlanMessage;
 use Shipard\Module\Economy\Assets\Depreciation\PlanMessageTexts;
 use Shipard\Module\Economy\Assets\Depreciation\PlanRow;
+use Shipard\Module\Economy\Assets\Posting\AssetPostingBuilder;
 
 /**
  * Viewer karet majetku (tasks/assets-phase1.md → UI, fáze 2b → plán
@@ -42,7 +43,8 @@ class AssetsViewer extends AssetsViewerBase
         $sql = 'SELECT a.`id`, a.`asset_number`, a.`name`, a.`short_name`, a.`category`,'
             . ' a.`is_foreign`, a.`acquired_date`, a.`disposed_date`, a.`price`,'
             . ' a.`docState`, a.`docStateMain`,'
-            . ' t.`name` AS `type_name`, g.`code` AS `group_code`, p.`full_name` AS `owner_name`'
+            . ' t.`name` AS `type_name`, g.`code` AS `group_code`, p.`full_name` AS `owner_name`,'
+            . ' ' . $this->unpostedExistsSql() . ' AS `has_unposted`'
             . ' FROM `' . $this->table . '` a'
             . ' LEFT JOIN `economy_assets_types` t ON t.`id` = a.`asset_type`'
             . ' LEFT JOIN `economy_assets_accounting_groups` g ON g.`id` = a.`accounting_group`'
@@ -182,6 +184,10 @@ class AssetsViewer extends AssetsViewerBase
         if ($badge !== null) {
             $t2[] = $badge;
         }
+        // Potvrzené události účetního okruhu bez účetního dokladu (D52).
+        if (!empty($rowData['has_unposted'])) {
+            $t2[] = ['text' => $this->text('badge.unposted', 'Not posted'), 'class' => 'warning'];
+        }
         $row['t2'] = $t2 !== [] ? $t2 : null;
 
         $i2 = [];
@@ -296,7 +302,8 @@ class AssetsViewer extends AssetsViewerBase
             $detail['tabs'][] = [
                 'id'      => 'accPlan',
                 'label'   => $this->text('tab.accPlan', 'Accounting depreciation'),
-                'content' => $this->planContent($plans['acc'], $card),
+                // Účetní okruh se účtuje — potvrzené řádky nesou stav zaúčtování.
+                'content' => $this->planContent($plans['acc'], $card, $service->postingOf($recordId)),
             ];
         }
         $detail['actions'] = $this->detailActions($card, $events, $depreciable);
@@ -311,9 +318,11 @@ class AssetsViewer extends AssetsViewerBase
      * tabulka řádků plánu (plánované tlumeně, chybové červeně) a hlášení.
      *
      * @param array<string, mixed> $card
+     * @param array<int, array{docId: int, docNumber: string}>|null $posting
+     *        zaúčtování událostí (jen účetní okruh), null = okruh se neúčtuje
      * @return array<string, mixed> content typu composite
      */
-    private function planContent(Plan $plan, array $card): array
+    private function planContent(Plan $plan, array $card, ?array $posting = null): array
     {
         $summary = [];
         if ($plan->circuit === AssetEvent::SCOPE_TAX) {
@@ -340,7 +349,7 @@ class AssetsViewer extends AssetsViewerBase
         if ($plan->rows === []) {
             $blocks[] = ['type' => 'heading', 'text' => $this->text('text.notActivated', 'The asset is not activated.')];
         } else {
-            $blocks[] = $this->planTable($plan);
+            $blocks[] = $this->planTable($plan, $posting);
         }
 
         $messages = $this->messageRows($plan);
@@ -359,8 +368,11 @@ class AssetsViewer extends AssetsViewerBase
         return ['type' => 'composite', 'blocks' => $blocks];
     }
 
-    /** @return array<string, mixed> content typu table */
-    private function planTable(Plan $plan): array
+    /**
+     * @param array<int, array{docId: int, docNumber: string}>|null $posting
+     * @return array<string, mixed> content typu table
+     */
+    private function planTable(Plan $plan, ?array $posting = null): array
     {
         $kinds = $this->config?->cfgItem('economy.assets.eventKinds') ?? [];
         $rows = [];
@@ -374,9 +386,7 @@ class AssetsViewer extends AssetsViewerBase
                     ? $this->formatDate($row->period->begin) . ' – ' . $this->formatDate($row->period->end)
                     : $this->formatDate($row->date),
                 'kind'        => $kind,
-                'status'      => $row->isPlanned()
-                    ? $this->text('status.planned', 'Planned')
-                    : $this->text('status.confirmed', 'Confirmed'),
+                'status'      => $this->planRowStatus($row, $posting),
                 'formula'     => $row->formula ?? '',
                 'amount'      => $this->formatAmount($row->amount),
                 'accumulated' => $this->formatAmount($row->accumulated),
@@ -407,6 +417,52 @@ class AssetsViewer extends AssetsViewerBase
             ],
             'rows' => $rows,
         ];
+    }
+
+    /**
+     * Stav řádku plánu. V účetním okruhu (`$posting` není null) potvrzená
+     * účtovaná událost ukazuje doklad, nebo že na zaúčtování čeká (D52);
+     * počáteční stav a přerušení se neúčtují.
+     *
+     * @param array<int, array{docId: int, docNumber: string}>|null $posting
+     */
+    private function planRowStatus(PlanRow $row, ?array $posting): string
+    {
+        if ($row->isPlanned()) {
+            return $this->text('status.planned', 'Planned');
+        }
+        if ($posting === null || $row->eventId === null
+            || !AssetPostingBuilder::isPostable($row->kind, AssetEvent::SCOPE_ACC)
+        ) {
+            return $this->text('status.confirmed', 'Confirmed');
+        }
+        $document = $posting[$row->eventId] ?? null;
+
+        return $document !== null
+            ? $this->text('status.posted', 'Posted — document {number}', ['number' => $document['docNumber']])
+            : $this->text('status.unposted', 'Waiting for posting');
+    }
+
+    /**
+     * Podmínka seznamu: karta má potvrzenou událost účetního okruhu bez
+     * živého účetního dokladu (badge „Nezaúčtováno“).
+     */
+    private function unpostedExistsSql(): string
+    {
+        $kinds = [];
+        foreach ([
+            AssetEvent::KIND_ACTIVATION, AssetEvent::KIND_IMPROVEMENT, AssetEvent::KIND_REDUCTION,
+            AssetEvent::KIND_DEPRECIATION, AssetEvent::KIND_DISPOSAL,
+        ] as $kind) {
+            $kinds[] = "'" . $kind . "'";
+        }
+        return 'EXISTS (SELECT 1 FROM `' . self::EVENTS_TABLE . '` ue'
+            . ' LEFT JOIN `docs_core_heads` uh ON uh.`id` = ue.`doc_head`'
+            . ' WHERE ue.`asset` = a.`id` AND ue.`docState` = ' . AssetEventDocument::STATE_CONFIRMED
+            . " AND ue.`scope` <> '" . AssetEvent::SCOPE_TAX . "'"
+            . ' AND ue.`event_kind` IN (' . implode(', ', $kinds) . ')'
+            . ' AND (ue.`doc_head` IS NULL OR uh.`id` IS NULL OR uh.`docState` IN ('
+            . implode(', ', AssetEventDocument::DEAD_DOC_STATES) . ')))';
     }
 
     /**

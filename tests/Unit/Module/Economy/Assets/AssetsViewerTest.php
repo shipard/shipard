@@ -55,12 +55,17 @@ class AssetsViewerTest extends TestCase
         return $viewer;
     }
 
-    /** Viewer s detailem nad TestAssetPlanService (karta i události v paměti). */
-    private function detailViewer(array $card, array $events): AssetsViewer
+    /**
+     * Viewer s detailem nad TestAssetPlanService (karta i události v paměti).
+     *
+     * @param array<int, array{docId: int, docNumber: string}> $posting zaúčtované události
+     */
+    private function detailViewer(array $card, array $events, array $posting = []): AssetsViewer
     {
         $service = new TestAssetPlanService();
         $service->cards[(int) $card['id']] = $card;
         $service->events = $events;
+        $service->posting = $posting;
 
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturn($card);
@@ -113,6 +118,29 @@ class AssetsViewerTest extends TestCase
         $this->assertSame(['asset' => 4, 'event_kind' => 'disposal', 'scope' => 'both'], $actions[4]['target']['preset']);
     }
 
+    public function testAccountingPlanShowsPostingStateOfConfirmedRows(): void
+    {
+        // D52: zařazení je zaúčtované dokladem, potvrzený účetní odpis
+        // 2022 na zaúčtování čeká; plánované řádky a daňový okruh beze změny.
+        $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $events = [
+            ['id' => 1, 'asset' => 4, 'event_kind' => 'activation', 'scope' => 'both', 'event_date' => '2022-03-15', 'amount' => 100000, 'docState' => 40],
+            ['id' => 2, 'asset' => 4, 'event_kind' => 'depreciation', 'scope' => 'acc', 'event_date' => '2022-12-31', 'amount' => 11000,
+                'period_begin' => '2022-01-01', 'period_end' => '2022-12-31', 'docState' => 40],
+        ];
+        $detail = $this->detailViewer($card, $events, [1 => ['docId' => 950, 'docNumber' => '60MA220001']])->renderDetail(4);
+
+        $tabs = array_column($detail['tabs'], null, 'id');
+        $acc = array_column($tabs['accPlan']['content']['blocks'][1]['rows'], 'status');
+        $this->assertSame('Posted — document 60MA220001', $acc[0]);
+        $this->assertSame('Waiting for posting', $acc[1]);
+        $this->assertSame('Planned', $acc[2]);
+
+        $tax = array_column($tabs['taxPlan']['content']['blocks'][1]['rows'], 'status');
+        $this->assertSame('Confirmed', $tax[0], 'daňový okruh se neúčtuje');
+    }
+
     public function testDetailOfNewCardOffersActivationAndOpeningBalances(): void
     {
         $card = ['id' => 5, 'name' => 'Stroj', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
@@ -161,6 +189,18 @@ class AssetsViewerTest extends TestCase
         $this->assertStringNotContainsString('a.`category` = %s', (string) $captured[0]);
     }
 
+    public function testListSelectsUnpostedFlagForTheBadge(): void
+    {
+        $captured = null;
+        $this->viewer($captured)->selectRows(null, [], 0);
+
+        $sql = (string) $captured[0];
+        $this->assertStringContainsString('AS `has_unposted`', $sql);
+        $this->assertStringContainsString("ue.`scope` <> 'tax'", $sql);
+        $this->assertStringContainsString('uh.`docState` IN (30, 90)', $sql);
+        $this->assertStringNotContainsString("'opening'", $sql, 'počáteční stav se neúčtuje');
+    }
+
     public function testUnknownTabAndAllTabDoNotFilter(): void
     {
         foreach (['all', 'leasing'] as $tab) {
@@ -206,10 +246,14 @@ class AssetsViewerTest extends TestCase
         $this->assertContains(['text' => '4 990,00', 'class' => 'amount'], $small['i2']);
         $this->assertContains(['text' => '01.03.2026', 'class' => 'muted'], $small['i2']);
 
+        $this->assertNotContains(['text' => 'Not posted', 'class' => 'warning'], $small['t2']);
+
         $long = $viewer->renderRow([
             'id' => 2, 'asset_number' => null, 'name' => 'Stavba', 'category' => 'tangible',
-            'is_foreign' => 0, 'price' => '100.00', 'docState' => 10,
+            'is_foreign' => 0, 'price' => '100.00', 'docState' => 10, 'has_unposted' => 1,
         ]);
+        // Karta s potvrzenou nezaúčtovanou událostí účetního okruhu (D52).
+        $this->assertContains(['text' => 'Not posted', 'class' => 'warning'], $long['t2']);
         $this->assertNull($long['i1']);
         $this->assertNull($long['i2']);
         $this->assertContains(['text' => 'Dlouhodobý hmotný', 'class' => 'primary'], $long['t2']);
