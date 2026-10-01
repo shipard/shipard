@@ -49,6 +49,16 @@ final class AccountingOnlyTaxRules implements TaxDepreciationRules
         return [];
     }
 
+    public function taxReturnGroup(string $method, ?string $rule): ?string
+    {
+        return $method === 'accounting' ? 'accounting' : null;
+    }
+
+    public function taxReturnGroups(): array
+    {
+        return ['accounting' => 'Accounting depreciation claimed for tax'];
+    }
+
     public function isInterruptible(string $method): bool
     {
         return false;

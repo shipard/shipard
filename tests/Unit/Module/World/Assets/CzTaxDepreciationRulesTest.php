@@ -144,6 +144,30 @@ class CzTaxDepreciationRulesTest extends TestCase
         $this->assertSame([], $r->rules('none', '2022-01-01'));
     }
 
+    public function testTaxReturnGroups(): void
+    {
+        $rules = $this->rules();
+
+        // Číselné klíče PHP drží jako int — volající je čte přes (string).
+        $this->assertSame(
+            ['1', '2', '3', '4', '5', '6', 'intangible', 'accounting'],
+            array_map(strval(...), array_keys($rules->taxReturnGroups())),
+        );
+        $this->assertSame('Depreciation group 1', $rules->taxReturnGroups()[1]);
+        $this->assertSame('2', $rules->taxReturnGroup('straight', 'cz-2'));
+        $this->assertSame('6', $rules->taxReturnGroup('accelerated', 'cz-6'));
+        // Varianta se zvýšeným odpisem 1. roku dědí zařazení základní skupiny.
+        $this->assertSame('1', $rules->taxReturnGroup('straight', 'cz-1-b10'));
+        // Mimořádné odpisy patří do odpisové skupiny majetku.
+        $this->assertSame('1', $rules->taxReturnGroup('extraordinary', 'cz-30a-1'));
+        $this->assertSame('2', $rules->taxReturnGroup('extraordinary', 'cz-30a-ev'));
+        $this->assertSame('intangible', $rules->taxReturnGroup('time', 'cz-nim-software'));
+        $this->assertSame('accounting', $rules->taxReturnGroup('accounting', null));
+        $this->assertNull($rules->taxReturnGroup('none', null));
+        $this->assertNull($rules->taxReturnGroup('straight', null));
+        $this->assertNull($rules->taxReturnGroup('straight', 'cz-neexistuje'));
+    }
+
     public function testMethodFlags(): void
     {
         $r = $this->rules();

@@ -80,7 +80,8 @@
             "name": "Same as accounting depreciation",
             "name:cs": "Podle účetních odpisů",
             "name:en": "Same as accounting depreciation",
-            "kind": "accounting", "tangible": true, "intangible": true
+            "kind": "accounting", "tangible": true, "intangible": true,
+            "taxReturnGroup": "accounting"
         },
         "none": {
             "name": "Not depreciated for tax",
@@ -90,12 +91,37 @@
         }
     },
 
+    // Členění daňových odpisů pro přiznání k dani z příjmů (D66) — řádky
+    // přehledu „Daňové odpisy pro DPPO“ v tomto pořadí. Klíč nese
+    // `taxReturnGroup` skupiny, pravidla nebo metody. Mimořádné odpisy § 30a
+    // patří do odpisové skupiny majetku (bezemisní vozidla = skupina 2).
+    // Mapování na řádky tiskopisu přijde až s podáním DPPO.
+    "taxReturnGroups": {
+        "1": {"name": "Depreciation group 1", "name:cs": "Odpisová skupina 1", "name:en": "Depreciation group 1"},
+        "2": {"name": "Depreciation group 2", "name:cs": "Odpisová skupina 2", "name:en": "Depreciation group 2"},
+        "3": {"name": "Depreciation group 3", "name:cs": "Odpisová skupina 3", "name:en": "Depreciation group 3"},
+        "4": {"name": "Depreciation group 4", "name:cs": "Odpisová skupina 4", "name:en": "Depreciation group 4"},
+        "5": {"name": "Depreciation group 5", "name:cs": "Odpisová skupina 5", "name:en": "Depreciation group 5"},
+        "6": {"name": "Depreciation group 6", "name:cs": "Odpisová skupina 6", "name:en": "Depreciation group 6"},
+        "intangible": {
+            "name": "Intangible assets (activated until 2020)",
+            "name:cs": "Nehmotný majetek (zařazený do 2020)",
+            "name:en": "Intangible assets (activated until 2020)"
+        },
+        "accounting": {
+            "name": "Accounting depreciation claimed for tax",
+            "name:cs": "Účetní odpisy uplatněné jako daňové",
+            "name:en": "Accounting depreciation claimed for tax"
+        }
+    },
+
     // Odpisové skupiny pro straight / accelerated. `years` = dnešní minimální
     // doba odpisování (§ 30 odst. 1; dřívější doby jsou v komentářích u sazeb).
     // Varianty se zvýšeným odpisem 1. roku (D42) jsou samostatné kódy
     // s vlastními sazbami; `group` = základní skupina, `methods` = omezení
-    // metod. `taxReturnGroup` je podklad pro přiznání DPPO (fáze 5), engine
-    // ho nečte.
+    // metod. `taxReturnGroup` je podklad pro přiznání DPPO (klíč do
+    // `taxReturnGroups` níže), engine ho nečte; varianta ho dědí ze základní
+    // skupiny (`group`).
     "groups": {
         "cz-1": {
             "name": "Depreciation group 1",
@@ -254,31 +280,36 @@
             "name": "Intangible — software",
             "name:cs": "NIM — software",
             "name:en": "Intangible — software",
-            "months": 36, "monthsIncreased": 18, "from": null, "to": "2020-12-31"
+            "months": 36, "monthsIncreased": 18, "from": null, "to": "2020-12-31",
+            "taxReturnGroup": "intangible"
         },
         "cz-nim-av": {
             "name": "Intangible — audiovisual works",
             "name:cs": "NIM — audiovizuální díla",
             "name:en": "Intangible — audiovisual works",
-            "months": 18, "monthsIncreased": 9, "from": null, "to": "2020-12-31"
+            "months": 18, "monthsIncreased": 9, "from": null, "to": "2020-12-31",
+            "taxReturnGroup": "intangible"
         },
         "cz-nim-rd": {
             "name": "Intangible — research and development results",
             "name:cs": "NIM — nehmotné výsledky výzkumu a vývoje",
             "name:en": "Intangible — research and development results",
-            "months": 36, "monthsIncreased": 18, "from": null, "to": "2020-12-31"
+            "months": 36, "monthsIncreased": 18, "from": null, "to": "2020-12-31",
+            "taxReturnGroup": "intangible"
         },
         "cz-nim-setup": {
             "name": "Intangible — incorporation expenses",
             "name:cs": "NIM — zřizovací výdaje",
             "name:en": "Intangible — incorporation expenses",
-            "months": 60, "monthsIncreased": 0, "from": null, "to": "2020-12-31"
+            "months": 60, "monthsIncreased": 0, "from": null, "to": "2020-12-31",
+            "taxReturnGroup": "intangible"
         },
         "cz-nim-other": {
             "name": "Intangible — other",
             "name:cs": "NIM — ostatní nehmotný majetek",
             "name:en": "Intangible — other",
-            "months": 72, "monthsIncreased": 36, "from": null, "to": "2020-12-31"
+            "months": 72, "monthsIncreased": 36, "from": null, "to": "2020-12-31",
+            "taxReturnGroup": "intangible"
         }
     },
 
@@ -292,21 +323,21 @@
             "name": "Extraordinary — group 1",
             "name:cs": "Mimořádné — skupina 1",
             "name:en": "Extraordinary — group 1",
-            "groups": ["cz-1"], "from": "2020-01-01", "to": "2023-12-31",
+            "groups": ["cz-1"], "from": "2020-01-01", "to": "2023-12-31", "taxReturnGroup": 1,
             "schedule": [{"months": 12, "pct": 100}]
         },
         "cz-30a-2": {
             "name": "Extraordinary — group 2",
             "name:cs": "Mimořádné — skupina 2",
             "name:en": "Extraordinary — group 2",
-            "groups": ["cz-2"], "from": "2020-01-01", "to": "2023-12-31",
+            "groups": ["cz-2"], "from": "2020-01-01", "to": "2023-12-31", "taxReturnGroup": 2,
             "schedule": [{"months": 12, "pct": 60}, {"months": 12, "pct": 40}]
         },
         "cz-30a-ev": {
             "name": "Extraordinary — zero-emission vehicle",
             "name:cs": "Mimořádné — bezemisní vozidlo",
             "name:en": "Extraordinary — zero-emission vehicle",
-            "from": "2024-01-01", "to": "2028-12-31",
+            "from": "2024-01-01", "to": "2028-12-31", "taxReturnGroup": 2,
             "schedule": [{"months": 12, "pct": 60}, {"months": 12, "pct": 40}]
         }
     }

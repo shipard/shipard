@@ -187,6 +187,12 @@
         }
     ],
 
+    // Přehledy (D65, D66) — reporty v sekci Majetek; panel `reports`
+    // a jeho stránku dává economy.accounting.
+    "reports": [
+        { "file": "config/reports.jsonc" }
+    ],
+
     "viewers": [
         {
             "id": "economy.assets.assets",

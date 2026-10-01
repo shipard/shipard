@@ -87,6 +87,32 @@ final class CzTaxDepreciationRules implements TaxDepreciationRules
         return $result;
     }
 
+    public function taxReturnGroup(string $method, ?string $rule): ?string
+    {
+        $own = $this->cfg['methods'][$method]['taxReturnGroup'] ?? null;
+        if ($own !== null) {
+            return (string) $own;
+        }
+        $def = $rule !== null ? ($this->ruleSet($method)[$rule] ?? null) : null;
+        if ($def === null) {
+            return null;
+        }
+        // Varianta skupiny (zvýšený odpis 1. roku) dědí zařazení základní skupiny.
+        $group = $def['taxReturnGroup']
+            ?? (isset($def['group']) ? ($this->cfg['groups'][$def['group']]['taxReturnGroup'] ?? null) : null);
+
+        return $group !== null ? (string) $group : null;
+    }
+
+    public function taxReturnGroups(): array
+    {
+        $groups = [];
+        foreach ($this->cfg['taxReturnGroups'] ?? [] as $key => $def) {
+            $groups[(string) $key] = (string) ($def['name'] ?? $key);
+        }
+        return $groups;
+    }
+
     public function isInterruptible(string $method): bool
     {
         return in_array($method, $this->cfg['interruptible'] ?? [], true);
@@ -263,6 +289,16 @@ final class CzTaxDepreciationRules implements TaxDepreciationRules
             foreach ($rule['groups'] ?? [] as $group) {
                 if (!isset($groups[$group])) {
                     $errors[] = "extraordinaryRules['{$code}']: unknown group '{$group}'";
+                }
+            }
+        }
+
+        $returnGroups = $this->cfg['taxReturnGroups'] ?? [];
+        foreach (['methods' => $methods, 'groups' => $groups, 'timeRules' => $this->cfg['timeRules'] ?? [],
+            'extraordinaryRules' => $this->cfg['extraordinaryRules'] ?? []] as $section => $defs) {
+            foreach ($defs as $code => $def) {
+                if (isset($def['taxReturnGroup']) && !isset($returnGroups[(string) $def['taxReturnGroup']])) {
+                    $errors[] = "{$section}['{$code}']: unknown taxReturnGroup '{$def['taxReturnGroup']}'";
                 }
             }
         }

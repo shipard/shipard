@@ -85,6 +85,7 @@ Zaokrouhlení `round()` je odolné proti chybě plovoucí čárky
 | `acceleratedCoefficients` | koeficienty zrychleného odpisu, stejný tvar |
 | `timeRules` | časové odpisy: `months`, `monthsIncreased` (nejkratší doba po technickém zhodnocení), `from`–`to` |
 | `extraordinaryRules` | mimořádné odpisy: `schedule` = úseky `{months, pct}`, `from`–`to` |
+| `taxReturnGroups` | členění daňových odpisů pro přiznání k dani z příjmů (klíč → název, v pořadí výkazu); klíč nese `taxReturnGroup` skupiny, pravidla nebo metody, varianta skupiny ho dědí ze základní (`TaxDepreciationRules::taxReturnGroup()` / `taxReturnGroups()`, přehled „Daňové odpisy pro DPPO“) |
 
 Intervaly `from` / `to` se vždy vztahují k **datu prvního zařazení**
 majetku, ne k roku odpisu; `null` = bez omezení. Názvy jsou vícejazyčné

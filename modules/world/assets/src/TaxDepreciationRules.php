@@ -48,6 +48,21 @@ interface TaxDepreciationRules
      */
     public function rules(string $method, ?string $acquiredDate): array;
 
+    /**
+     * Členění daňových odpisů pro přiznání k dani z příjmů (D66): klíč
+     * skupiny přiznání, do které patří odpisy majetku s touto metodou
+     * a pravidlem. Null = metoda bez daňového odpisu nebo pravidlo bez
+     * zařazení.
+     */
+    public function taxReturnGroup(string $method, ?string $rule): ?string;
+
+    /**
+     * Skupiny přiznání v pořadí výkazu.
+     *
+     * @return array<int|string, string> klíč → název (číselné klíče drží PHP jako int)
+     */
+    public function taxReturnGroups(): array;
+
     public function isInterruptible(string $method): bool;
 
     public function allowsHalfYearOnDisposal(string $method): bool;

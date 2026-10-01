@@ -1,0 +1,53 @@
+// Přehledy majetku (docs/assets.md D65–D67, §5.6; docs/reports.md §16).
+// Zdrojem je evidence — karty, události a plány odpisů —, ne deník; deník
+// slouží jen kontrole (economy.assets.journalCheck). Registrace:
+// module.jsonc → klíč "reports". Stav „k datu“ = poslední den zvoleného
+// období.
+[
+    {
+        "id": "economy.assets.depreciationSchedule",
+        "navSection": "assets",
+        "navOrder": 50,
+        "name": "Depreciation schedule",
+        "name:cs": "Sestava odpisů",
+        "name:en": "Depreciation schedule",
+        "builder": "Shipard\\Module\\Economy\\Assets\\Reports\\DepreciationScheduleBuilder",
+        "periodGranularities": ["year"],
+        "params": [
+            {
+                "id": "groupBy", "type": "enum",
+                "name": "Group by", "name:cs": "Seskupit podle", "name:en": "Group by",
+                "options": ["accountingGroup", "taxRule", "type", "none"],
+                "optionNames": {
+                    "accountingGroup": "Accounting group", "accountingGroup:cs": "Účetní skupina", "accountingGroup:en": "Accounting group",
+                    "taxRule": "Tax group and method", "taxRule:cs": "Daňová skupina a metoda", "taxRule:en": "Tax group and method",
+                    "type": "Asset type", "type:cs": "Typ majetku", "type:en": "Asset type",
+                    "none": "No grouping", "none:cs": "Neseskupovat", "none:en": "No grouping"
+                },
+                "default": "accountingGroup"
+            },
+            {
+                "id": "category", "type": "enum",
+                "name": "Assets", "name:cs": "Majetek", "name:en": "Assets",
+                "options": ["all", "longTerm", "nondepreciable"],
+                "optionNames": {
+                    "all": "All fixed assets", "all:cs": "Všechen dlouhodobý", "all:en": "All fixed assets",
+                    "longTerm": "Depreciated", "longTerm:cs": "Odepisovaný", "longTerm:en": "Depreciated",
+                    "nondepreciable": "Non-depreciable", "nondepreciable:cs": "Neodepisovaný", "nondepreciable:en": "Non-depreciable"
+                },
+                "default": "all"
+            }
+        ]
+    },
+    {
+        "id": "economy.assets.taxDepreciationReturn",
+        "navSection": "assets",
+        "navOrder": 52,
+        "name": "Tax depreciation for the income tax return",
+        "name:cs": "Daňové odpisy pro DPPO",
+        "name:en": "Tax depreciation for the income tax return",
+        "builder": "Shipard\\Module\\Economy\\Assets\\Reports\\TaxDepreciationReturnBuilder",
+        "periodGranularities": ["year"],
+        "params": []
+    }
+]
