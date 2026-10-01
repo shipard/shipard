@@ -103,8 +103,13 @@ hned v den zařazení zatím nejde. Kontrola, že evidence majetku sedí na
 účetní deník, jako přehled zatím není — deník jen umí filtr podle karty.
 Odložená daň a účetní metody výkonové a zrychlené (AV / AM) zatím nejsou.
 
-**Karta nevidí doklady ani pohyb věci.** Přijatá faktura, kterou jsi věc
-pořídil, se ke kartě nenaváže. Předání do užívání (kdo věc má), umístění,
+**Prodej majetku se s vyřazením nepropojí.** Fakturu vydanou za prodaný
+majetek ke kartě přiřadíš (viz
+[Majetek na dokladech](majetek/naklady-na-majetek.md)), ale vyřazení
+z evidence uděláš sám tlačítkem **Vyřadit**. Kartu jde založit jen z řádku
+pořízení na přijaté faktuře — AI při vytěžení faktury kartu nenavrhne.
+
+**Karta nevidí pohyb věci.** Předání do užívání (kdo věc má), umístění,
 příslušenství, vlastnosti podle typu a inventurní seznamy zatím nejsou;
 stejně tak přehledy majetku a tisk karty.
 

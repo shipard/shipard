@@ -1,15 +1,16 @@
 ---
 title: Nastavení majetku
 summary: Kde nastavíš typy majetku, skupiny typů, účetní skupiny majetku a prefixy inventárních čísel — a co z toho karta majetku přebírá.
-keywords: [nastavení majetku, typy majetku, typ majetku, nový typ majetku, skupiny typů, skupina typů majetku, účetní skupiny majetku, účetní skupina majetku, účty majetku, účet majetku, účet oprávek, účet odpisů, účet pořízení, účet vyřazení, zůstatková cena, prefix inventárního čísla, číslování majetku, inventární čísla, MA0001, výchozí druh, výchozí účetní skupina, stavby, samostatné movité věci, software, pozemky]
-related: [majetek/evidence-majetku.md, uctarna/kdyz-se-doklad-nezauctuje.md, co-shipard-umi.md, slovnicek.md]
+keywords: [nastavení majetku, typy majetku, typ majetku, nový typ majetku, skupiny typů, skupina typů majetku, účetní skupiny majetku, účetní skupina majetku, účty majetku, účet majetku, sledovat náklady na majetek, majetek na dokladech, účet oprávek, účet odpisů, účet pořízení, účet vyřazení, zůstatková cena, prefix inventárního čísla, číslování majetku, inventární čísla, MA0001, výchozí druh, výchozí účetní skupina, stavby, samostatné movité věci, software, pozemky]
+related: [majetek/evidence-majetku.md, majetek/naklady-na-majetek.md, uctarna/kdyz-se-doklad-nezauctuje.md, co-shipard-umi.md, slovnicek.md]
 ---
 
 # Nastavení majetku
 
 Číselníky majetku najdeš v **Nastavení aplikace → Majetek**: **Typy
-majetku**, **Skupiny typů majetku**, **Účetní skupiny majetku** a stránku
-**Inventární čísla**. Nic z toho není nutné k založení první karty
+majetku**, **Skupiny typů majetku**, **Účetní skupiny majetku** a stránky
+**Inventární čísla**, **Odpisy** a **Majetek na dokladech**. Nic z toho
+není nutné k založení první karty
 drobného majetku — dlouhodobý majetek ale účetní skupinu potřebuje.
 
 ## Kdy to potřebuješ
@@ -37,6 +38,15 @@ zaúčtovat nejde.
    odpisů** (551) a **Účet zůstatkové ceny při vyřazení** (541). U
    neodepisovaného majetku (pozemky) oprávky ani odpisy nevyplňuj.
 4. Ulož **V pořádku**.
+
+**Majetek na dokladech**
+
+1. Otevři **Nastavení aplikace → Majetek → Majetek na dokladech**.
+2. **Sledovat náklady na majetek** nastav na *Ano*, když chceš pole
+   **Majetek** na hlavičce i řádcích faktur, pokladních a účetních
+   dokladů. Prázdné nebo *Ne* = pole je jen na řádku pořízení majetku.
+3. Dej **Uložit**. Co s polem dál, popisuje
+   [Majetek na dokladech](naklady-na-majetek.md).
 
 **Typ majetku**
 
@@ -70,6 +80,11 @@ uložit účet nákladů ani pořízení; Shipard hlídá skupiny 01–03 pro
 majetek, 04 pro pořízení, 07–08 pro oprávky, 55 pro odpisy a 54–55 pro
 vyřazení. Výběr nabízí analytické účty, syntetický účet nevybereš.
 
+**Odepisovaný majetek chce skupinu s účtem odpisů i oprávek.** Skupinu
+bez nich uložíš (pozemky je nemají), ale kartu dlouhodobého hmotného nebo
+nehmotného majetku s takovou skupinou nepotvrdíš — **V pořádku** ji
+odmítne, dokud účty do skupiny nedoplníš nebo nevybereš jinou.
+
 **Typ kartě nic nevnucuje.** Výchozí druh se z typu převezme jen u nové
 karty, dokud jsi druh sám nezměnil; účetní skupina jen do prázdného
 pole. Změna typu u uložené karty druh nepřepíše.
@@ -80,5 +95,6 @@ neřídí.
 ## Souvisí
 
 - [Evidence majetku](evidence-majetku.md)
+- [Majetek na dokladech](naklady-na-majetek.md)
 - [Když se doklad nezaúčtuje](../uctarna/kdyz-se-doklad-nezauctuje.md)
 - [Slovníček](../slovnicek.md)

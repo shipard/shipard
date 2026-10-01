@@ -1,6 +1,6 @@
 # Majetek Fáze 4 — vazba na doklady
 
-**Stav:** naplánováno — D57–D64 potvrzena 2026-10-01; implementace nezačala
+**Stav:** hotovo — 2026-10-01 (7 commitů, ověřeno na `4l3j-z0bz-kz39-echj`); odchylky od zadání níže a v `docs/assets.md` §5.5; zbývá proklik UI a nasazení na alfu
 
 > PRD pro jednu Claude Code session (7 commitů). Design: `docs/assets.md`
 > §4 (D14, D15, D47, D57–D64), §5.4; issue #83. Navazuje na
@@ -213,6 +213,42 @@ zařazení v deníku; faktura s nákladem na kartu se ukáže v tabu Náklady
 a výnosy; oba alerty se objeví a po nápravě zmizí; karta se smoke
 skupinou bez účtu oprávek nejde potvrdit; ruční zařazení s datem před
 prvním účetním rokem je odmítnuté.
+
+## Odchylky při implementaci
+
+Rozhodnutí při plánování (2026-10-01):
+
+- **Pořízení je věc řádku** — karta z hlavičky se u `purchase.asset`
+  neřeší: sekce Pořízení, předvyplnění zařazení i oba alerty počítají jen
+  kartu na řádku a řádek pořízení kartu hlavičky nedědí ani v deníku
+  (`rowFlag` dimenze). Odchylka od §3 („řádek bez karty → deník nese kartu
+  hlavičky“) platí jen pro řádky pořízení.
+- **Data rodiče pro lookup jdou Svelte contextem** (`formContext.js`).
+- **Formulář účetní skupiny upozorňuje statickým hintem** (JSONC formulář).
+
+Nálezy z implementace:
+
+- **Pořadí commitů 2–4:** `headColumn` přišel už s polem hlavičky
+  (commit 2), vlajka `rowAsset: "optional"` už s děděním (commit 3);
+  commit 4 je lookup `createDefaults`.
+- **Nová karta z řádku na 04x dostane název a druh, ne datum a cenu** —
+  u dlouhodobého majetku je karta nenese (D13, D38), přijdou se zařazením
+  předvyplněným z pořízení. U drobného (5xx) se předvyplní obojí.
+- **`ReadOnlyPolicy`** měla `lookup` povolený celý — přibyl jen případ
+  v testu; routa `create-defaults` je nová.
+- **Tabulka detailu vieweru umí buňku-odkaz** a `Viewer.svelte` akci
+  `open_detail` (odkaz na doklad v sekci Pořízení a v tabu Náklady
+  a výnosy); obecné rozšíření, zadání ho nepředpokládalo.
+- **Filtr deníku podle dimenze bere `#id`** jako přesnou shodu („Otevřít
+  v deníku“).
+- **Nastavení má vlastní stránku** „Majetek na dokladech“.
+- `AssetEventDocument` bere původ události z uloženého záznamu, ne
+  z payloadu (jinak by šlo D58 obejít polem `origin`).
+
+Na ukázkovém DS zůstaly pro proklik: nastavení zapnuté, doklady „Smoke 4 …“
+(přijaté faktury s kartou na hlavičce a s pořízením), karta „Smoke 4
+fréza“ zařazená z pořízení (čeká na zaúčtování období) a účetní skupina
+„Smoke 4 neúplná“ s kartou v konceptu.
 
 ## Rozhodnutí k designu (potvrzená)
 

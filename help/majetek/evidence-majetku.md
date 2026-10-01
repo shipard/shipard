@@ -2,7 +2,7 @@
 title: Evidence majetku
 summary: Jak založit kartu majetku, kdy je věc drobný a kdy dlouhodobý majetek, co je cizí majetek, jak karta dostane inventární číslo a jak majetek vyřadit.
 keywords: [majetek, karta majetku, karty majetku, evidence majetku, inventář, inventární číslo, inventárního čísla, evidenční číslo, drobný majetek, drobného majetku, evidovaný majetek, dlouhodobý majetek, dlouhodobého majetku, DHM, DNM, hmotný majetek, nehmotný majetek, neodepisovaný majetek, pozemek, cizí majetek, pronajatý majetek, půjčený majetek, leasing, vlastník majetku, vyřazení majetku, vyřadit majetek, datum vyřazení, datum pořízení, pořizovací cena, cena majetku, typ majetku, účetní skupina, přílohy k majetku, soubor movitých věcí, množstevní karta, nový majetek, založit majetek, přidat majetek]
-related: [majetek/odpisy-majetku.md, majetek/nastaveni-majetku.md, co-shipard-umi.md, co-dnes-nejde.md, slovnicek.md]
+related: [majetek/odpisy-majetku.md, majetek/naklady-na-majetek.md, majetek/zauctovani-majetku.md, majetek/nastaveni-majetku.md, co-shipard-umi.md, co-dnes-nejde.md, slovnicek.md]
 ---
 
 # Evidence majetku
@@ -10,8 +10,10 @@ related: [majetek/odpisy-majetku.md, majetek/nastaveni-majetku.md, co-shipard-um
 **Majetek** je evidence věcí, které firma vlastní nebo používá — od
 vrtačky po budovu. Každá věc má **kartu majetku**. Najdeš je v
 **Majetek → Majetek**. Dlouhodobý majetek se z karty i odepisuje
-(viz [Odpisy majetku](odpisy-majetku.md)); zaúčtování majetku Shipard
-ještě neumí (viz [Co Shipard dnes neumí](../co-dnes-nejde.md)).
+a účtuje (viz [Odpisy majetku](odpisy-majetku.md)
+a [Zaúčtování majetku](zauctovani-majetku.md)); kartu jde založit i rovnou
+z faktury, kterou jsi věc pořídil (viz
+[Majetek na dokladech](naklady-na-majetek.md)).
 
 ## Kdy to potřebuješ
 
@@ -93,13 +95,22 @@ skupiny**; hledání jde přes inventární číslo, název i zkrácený název.
 **Smazat** kartu jde jen do **Koše**, inventární číslo přitom zůstává
 obsazené — smazaná karta ho drží, aby se číslo nikdy nepoužilo dvakrát.
 
-**Nic se neúčtuje.** Odpisy Shipard spočítá a potvrdí, ale účetní doklady
-k majetku zatím zadáváš ručně; karta nevidí doklady, kterými jsi věc
-pořídil. Kartu s potvrzenými událostmi nejde smazat ani jí změnit druh.
+**Odepisovanou kartu nepotvrdíš se skupinou bez účtu odpisů nebo
+oprávek.** Koncept uložíš, **V pořádku** ji odmítne u pole **Účetní
+skupina** — doplň účty do skupiny, nebo vyber jinou
+(viz [Nastavení majetku](nastaveni-majetku.md)).
+
+**Karta ukazuje doklady, kterými jsi věc pořídil.** Sekce **Pořízení**
+v **Přehledu** se objeví, jakmile kartu nese řádek pořízení na faktuře ve
+stavu **V pořádku**; viz [Majetek na dokladech](naklady-na-majetek.md).
+
+Kartu s potvrzenými událostmi nejde smazat ani jí změnit druh.
 
 ## Souvisí
 
 - [Odpisy majetku](odpisy-majetku.md)
+- [Majetek na dokladech](naklady-na-majetek.md)
+- [Zaúčtování majetku](zauctovani-majetku.md)
 - [Nastavení majetku](nastaveni-majetku.md)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md)
 - [Slovníček](../slovnicek.md)

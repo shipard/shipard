@@ -2,7 +2,7 @@
 title: Odpisy majetku
 summary: Jak na kartě nastavit daňové a účetní odpisy, zařadit majetek, zadat technické zhodnocení nebo snížení hodnoty, přerušit odpisy, vyřadit majetek a hromadně potvrdit odpisy za období.
 keywords: [odpisy, odpisy majetku, daňové odpisy, účetní odpisy, odpisový plán, plán odpisů, odpisová skupina, rovnoměrné odpisy, zrychlené odpisy, mimořádné odpisy, zařazení majetku, zařadit majetek, datum zařazení, vstupní cena, pořizovací cena, technické zhodnocení, TZ, snížení hodnoty, přerušení odpisů, přerušit odpisy, vyřazení majetku, vyřadit majetek, polovina odpisu, poloviční odpis, zůstatková cena, oprávky, odpisy za období, odepsat, roční odpis, měsíční odpisy, četnost odpisů, počáteční stav, přechod z jiného systému, převod majetku, hospodářský rok, události majetku, historie majetku]
-related: [majetek/zauctovani-majetku.md, majetek/evidence-majetku.md, majetek/nastaveni-majetku.md, co-dnes-nejde.md, slovnicek.md]
+related: [majetek/zauctovani-majetku.md, majetek/evidence-majetku.md, majetek/naklady-na-majetek.md, majetek/nastaveni-majetku.md, co-dnes-nejde.md, slovnicek.md]
 ---
 
 # Odpisy majetku
@@ -42,7 +42,10 @@ z jiného systému a majetek je už rozepsaný.
 **Zařazení**
 
 1. V detailu karty dej **Zařadit**.
-2. Vyplň **Datum** zařazení a **Vstupní cenu** a dej **Potvrdit**.
+2. Vyplň **Datum** zařazení a **Vstupní cenu** a dej **Potvrdit**. Když
+   kartu nesou řádky pořízení na fakturách, jsou obě pole předvyplněná
+   součtem a datem poslední faktury — viz
+   [Majetek na dokladech](naklady-na-majetek.md).
 3. Karta dostane **Datum pořízení** a na záložkách **Daňové odpisy**
    a **Účetní odpisy** uvidíš plán: období, výpočet, odpis, oprávky
    a zůstatek. Řádky označené **Plán** jsou spočítané dopředu, **Potvrzeno**
@@ -112,6 +115,11 @@ smazat, jen když za ní ve stejném okruhu není potvrzený odpis; stejně
 nejde přidat zpětně zhodnocení před už potvrzený odpis. Nejdřív zruš
 pozdější odpisy (na kartě záložka **Události**, u řádku **Otevřít** →
 **Opravit** / **Smazat**).
+
+**Datum události musí ležet v založeném účetním roce.** Zařazení,
+zhodnocení, odpis ani vyřazení s datem před prvním (nebo za posledním)
+účetním rokem nepotvrdíš. Majetek zařazený dřív, než v Shipardu účtuješ,
+zadej jako **Počáteční stav**.
 
 **Daňovou metodu po prvním potvrzeném daňovém odpisu nezměníš.** Účetní
 metodu změnit můžeš, plán se přepočítá od posledního potvrzeného odpisu.

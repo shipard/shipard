@@ -6,8 +6,9 @@
 > země a odpisový engine (`tasks/assets-phase2a.md`, §5.1–5.2), události,
 > odpisové nastavení karty, plán na kartě a odpisy za období
 > (`tasks/assets-phase2b.md`, §5.3), oblast 3 **hotová** 2026-10-01 —
-> zaúčtování a dimenze deníku (`tasks/assets-phase3.md`, §5.4); další
-> oblasti se rozpadají postupně (§7).
+> zaúčtování a dimenze deníku (`tasks/assets-phase3.md`, §5.4), oblast 4
+> **hotová** 2026-10-01 — vazba na doklady (`tasks/assets-phase4.md`,
+> §5.5); další oblasti se rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -541,7 +542,7 @@ Ilustrativní — konkrétní sloupce se zamknou v PRD jednotlivých oblastí.
 | `economy_assets_events` | D3: majetek, druh události, okruh, datum, období od–do, částka, stav (návrh / potvrzeno / zaúčtováno), vazba na doklad a řádek |
 | `economy_assets_custody` | pohyby: předání / vrácení / zápůjčka; množstevní příjem / výdej |
 | `economy_assets_accessories` | příslušenství |
-| extensions | sloupec `asset` na `docs_core_rows` a `economy_accounting_journal` (D4, D15) |
+| extensions | sloupec `asset` na `docs_core_rows`, `docs_core_heads` a `economy_accounting_journal` (D4, D15, D59) |
 
 **Vlastnosti per typ** — kandidát na strukturovaná pole
 (`structured-fields.md`): sada se mění podle typu, hodnoty jsou opis, ne
@@ -812,6 +813,75 @@ zaúčtování období u posledního zaúčtovaného období). Karta: plán úč
 odpisů ukazuje „Zaúčtováno — doklad …“ / „Čeká na zaúčtování“; seznam:
 badge „Nezaúčtováno“.
 
+### 5.5 Vazba na doklady — hotovo
+
+`tasks/assets-phase4.md` (D14, D15, D57–D64). Karta majetku na dokladech:
+pořízení na řádku přijaté faktury, náklady a výnosy přes dimenzi deníku.
+
+| Třída (`Shipard\Module\Economy\Assets\`) | Role |
+|---|---|
+| `AssetAcquisitionService` | pořízení karty: řádky `purchase.asset` potvrzených dokladů s kartou **na řádku**, součet `vat_base_dom`, podklad pro zařazení (řádky na 04x, poslední účetní datum) |
+| `AssetJournalService` | náklady a výnosy karty: řádky deníku s dimenzí karty mimo operace `asset.*`, souhrn po účetních letech, strop 200 řádků |
+| `AssetsLookup::createDefaults()` | výchozí hodnoty karty zakládané z řádku dokladu (D62) |
+| `Checks\PurchaseWithoutAssetCheck` | alert per doklad: potvrzený doklad s řádkem pořízení bez karty |
+| `Checks\AwaitingActivationCheck` | alert per karta: dlouhodobá karta s pořízením na 04x bez potvrzeného zařazení / počátečního stavu |
+
+**Dimenze `asset` na dokladech** (D59, D60) — deklarace v `module.jsonc`
+(`headColumn: "asset"`, `rowFlag: "rowAsset"`, `forms` s
+`enabledBySetting: economy.assets.trackExpenses`); obecný mechanismus
+v `docs/accounting.md` § Dimenze deníku. Se zapnutým nastavením
+(Nastavení → Majetek → Majetek na dokladech) má pole Majetek hlavička
+i řádky `invni`, `invno`, `cash`, `cmnbkp`; řádek bez karty dědí kartu
+hlavičky a pole řádku to ukazuje placeholderem. Vypnutí pole jen skryje.
+
+**Pořízení** (D61–D63) — `purchase.asset` má vlajku `rowAsset: "optional"`:
+pole karty je na řádku vždy, nepovinné, s `createForm` / `editForm`
+/ `createDefaults`. Detail karty: sekce Pořízení v Přehledu (odkaz na
+doklad, součet), akce Zařadit s presetem `amount` + `event_date`.
+
+**Náklady a výnosy** (D64) — tab detailu se objeví s prvním řádkem deníku;
+akce „Otevřít v deníku“ vede na deník s filtrem `dim_asset = #id` přes
+všechny roky.
+
+**Validace** (D57, D58) — `AssetDocument` (`accountingGroupIncomplete`
+při potvrzení odepisované karty), `AssetEventDocument`
+(`outsideFiscalYear` při potvrzení ruční události kromě počátečního
+stavu; původ události bere z uloženého záznamu, ne z payloadu).
+
+**Odchylky od PRD** (rozhodnutí při plánování a nálezy z implementace):
+
+- **Pořízení je věc řádku.** Sekce Pořízení, předvyplnění zařazení i oba
+  alerty počítají jen kartu zapsanou na řádku. Řádek `purchase.asset`
+  kartu hlavičky **nedědí ani v deníku** — obecně `rowFlag` dimenze:
+  řádek operace s touto vlajkou nese hodnotu sám. Vlajka
+  `rowAsset: "optional"` proto vznikla už s `headColumn` (commit 3), ne
+  až s lookupem.
+- **`headColumn` přišel s polem hlavičky** (commit 2) — pole hlavičky bez
+  něj nemá kam ukládat; commit 3 zbyl na placeholder a `rowFlag`.
+- **Datum pořízení a cena se nové kartě předvyplní jen u drobného
+  majetku.** U dlouhodobého je karta nenese (D13, D38) — formulář je má
+  jen ke čtení a uložení by je zahodilo; nese je zařazení, které se
+  předvyplní z pořízení (D63). Cena drobného se bere z živého základu
+  řádku (`vat_base` × kurz hlavičky), ne z `vat_base_dom` — ten zapisuje
+  až uložení řádku.
+- **Data rodiče pro `createDefaults` jdou Svelte contextem**
+  (`form/formContext.js`), ne protahováním props; `ReadOnlyPolicy` už
+  měla `lookup` povolený celý.
+- **Detail vieweru umí buňku-odkaz** (`columns[].link` + `rows[]._action`)
+  a `Viewer.svelte` akci `open_detail` — tabulky detailu dosud odkaz
+  neuměly. Přehled karty s pořízením je `composite`.
+- **Filtr deníku `dim_asset` bere `#id`** jako přesnou shodu; textové
+  hledání v čísle a názvu by z karty chytlo i podobná čísla.
+- **Formulář účetní skupiny upozorňuje statickým hintem** u účtu odpisů
+  a oprávek (JSONC formulář; dynamické upozornění by chtělo PHP třídu).
+- **Nastavení má vlastní stránku** „Majetek na dokladech“, ne stránku
+  Odpisy.
+
+**UI.** Formulář řádku dokladu: pole Majetek u pořízení (vždy) a u
+ostatních pohybů se zapnutým nastavením; formulář hlavičky: pole Majetek.
+Detail karty: sekce Pořízení, tab Náklady a výnosy, akce Otevřít v deníku.
+Dashboard: karty alertů v sekci Majetek.
+
 ---
 
 ## 6. Import (kontrakt pro `old_shipard`)
@@ -844,7 +914,7 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 3. Zaúčtování (D4, D47–D56) + řádkové operace + dimenze deníku —
    **hotovo** 2026-10-01, `tasks/assets-phase3.md` (§5.4 vč. odchylek)
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15), D57–D64 —
-   `tasks/assets-phase4.md`
+   **hotovo** 2026-10-01, `tasks/assets-phase4.md` (§5.5 vč. odchylek)
 5. Přehledy: karta, odpisy, přírůstky / úbytky, kontrola proti deníku,
    podklad pro DPPO
 6. Import (D8, D9, D11) + backfill
