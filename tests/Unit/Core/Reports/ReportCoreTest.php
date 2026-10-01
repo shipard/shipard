@@ -473,6 +473,19 @@ class ReportCoreTest extends TestCase
         $this->assertSame('asset:68', $keyed->toArray()['key']);
     }
 
+    public function testRowLinksAreEmittedOnlyWhenSet(): void
+    {
+        $card = ['kind' => 'open_detail', 'target' => ['viewerId' => 'economy.assets.assets', 'recordId' => 68]];
+        $document = ['kind' => 'open_detail', 'target' => ['viewerId' => 'docs.core.heads', 'recordId' => 3745]];
+        $linked = new ReportRow(ReportRowKind::Detail, 2, null, 'Fréza', ['document' => 'UD-1'], 'event:1', $card, ['document' => $document]);
+        $plain = new ReportRow(ReportRowKind::Detail, 2, null, 'Fréza', [], 'asset:68');
+
+        $this->assertSame($card, $linked->toArray()['link']);
+        $this->assertSame(['document' => $document], $linked->toArray()['cellLinks']);
+        $this->assertArrayNotHasKey('link', $plain->toArray());
+        $this->assertArrayNotHasKey('cellLinks', $plain->toArray());
+    }
+
     /** @return array<string, mixed> */
     private function declaration(array $param): array
     {

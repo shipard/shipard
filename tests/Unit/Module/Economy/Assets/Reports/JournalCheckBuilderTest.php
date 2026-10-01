@@ -72,6 +72,15 @@ class JournalCheckBuilderTest extends AssetReportTestCase
         $this->assertSame(100000.0, $asset->values['journal']['balance']);
         $this->assertSame(0.0, $asset->values['difference']['balance']);
         $this->assertSame('obrat', $result->rows[4]->values['measure']);
+        // Drill-down (D70): účet → deník s filtrem účtu a kontrolovaného roku (id roku 2024 = 4).
+        $this->assertSame(
+            ['kind' => 'open_viewer', 'target' => [
+                'viewerId' => 'economy.accounting.journal',
+                'filters'  => ['fiscal_year' => 4, 'account' => '022100'],
+            ]],
+            $asset->link,
+        );
+        $this->assertNull($result->rows[0]->link);
     }
 
     public function testEveryMismatchIsAMessageWithRowRef(): void
@@ -132,6 +141,15 @@ class JournalCheckBuilderTest extends AssetReportTestCase
         $this->assertSame(['md' => 11500.0, 'd' => 0.0, 'balance' => 11500.0], $postingRow->values['evidence']);
         $this->assertSame(11000.0, $postingRow->values['journal']['balance']);
         $this->assertSame(500.0, $postingRow->values['difference']['balance']);
+        // Nesoulad karty: název → karta ve vieweru (je co opravit), druh → deník účtu a karty přes všechny roky.
+        $this->assertSame(
+            ['kind' => 'open_viewer', 'target' => ['viewerId' => 'economy.assets.assets', 'recordId' => 2]],
+            $postingRow->link,
+        );
+        $this->assertSame(
+            ['fiscal_year' => '', 'account' => '551100', 'dim_asset' => '#2'],
+            $postingRow->cellLinks['kind']['target']['filters'],
+        );
 
         $acquisition = $byCode['assets.journalCheck.acquisitionMismatch'][0];
         $this->assertSame(ReportMessageSeverity::Error, $acquisition->severity);
@@ -142,6 +160,11 @@ class JournalCheckBuilderTest extends AssetReportTestCase
         $this->assertSame(268500.0, $acquisitionRow->values['evidence']['balance']);
         $this->assertSame(269500.0, $acquisitionRow->values['journal']['balance']);
         $this->assertSame(-1000.0, $acquisitionRow->values['difference']['balance']);
+        $this->assertSame(3, $acquisitionRow->link['target']['recordId']);
+        $this->assertSame(
+            ['fiscal_year' => '', 'account' => '04', 'dim_asset' => '#3'],
+            $acquisitionRow->cellLinks['kind']['target']['filters'],
+        );
 
         $this->assertSame(ReportMessageSeverity::Warning, $byCode['assets.journalCheck.unposted'][0]->severity);
         $this->assertContains('unposted:' . $unposted, $keys);

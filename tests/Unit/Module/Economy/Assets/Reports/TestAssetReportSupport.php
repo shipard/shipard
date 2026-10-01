@@ -49,6 +49,10 @@ class TestAssetReportSupport extends AssetReportSupport
         ));
         usort($events, static fn(array $a, array $b): int => [$a['event_date'], $a['id']] <=> [$b['event_date'], $b['id']]);
 
-        return $events;
+        // Jako SQL: zaúčtovaná událost nese živý doklad.
+        return array_map(static fn(array $event): array => $event + [
+            'posting_doc'        => $event['doc_head'] ?? null,
+            'posting_doc_number' => ($event['doc_head'] ?? null) !== null ? 'UD' . $event['doc_head'] : null,
+        ], $events);
     }
 }

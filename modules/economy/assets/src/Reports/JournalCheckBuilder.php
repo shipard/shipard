@@ -12,6 +12,7 @@ use Shipard\Core\Reports\ReportRequest;
 use Shipard\Core\Reports\ReportResult;
 use Shipard\Core\Reports\ReportRow;
 use Shipard\Core\Reports\ReportRowKind;
+use Shipard\Module\Economy\Assets\AssetAcquisitionService;
 use Shipard\Module\Economy\Assets\AssetJournalCheck;
 use Shipard\Module\Economy\Assets\Depreciation\Amounts;
 use Shipard\Module\Economy\Assets\Posting\AssetPostingInput;
@@ -29,6 +30,10 @@ use Shipard\Module\Economy\Assets\Posting\AssetPostingInput;
  * zápisy bez karty a (c) varování — `status` reportu tak říká, jestli
  * kontrola prošla. Čistý stav = žádné zprávy. Logika je v
  * `AssetJournalCheck` (sdílí ji alerty a karta).
+ *
+ * Drill-down (D70): účet vede do deníku s filtrem účtu a roku, nesoulad
+ * karty na kartu (ve vieweru — je tam co opravit) a jeho druh do deníku
+ * s filtrem účtu a karty.
  */
 final class JournalCheckBuilder implements ReportBuilder
 {
@@ -79,6 +84,8 @@ final class JournalCheckBuilder implements ReportBuilder
                     'withoutAsset' => AssetReportSupport::money($account['withoutAsset']),
                 ],
                 'account:' . $account['account'],
+                // Deník účtu za kontrolovaný rok.
+                AssetReportSupport::journalLink($account['account'], $period['yearId']),
             );
             if (abs($account['difference']) >= Amounts::EPSILON) {
                 $messages[] = new ReportMessage(
@@ -130,6 +137,11 @@ final class JournalCheckBuilder implements ReportBuilder
                             'difference' => AssetReportSupport::money($expected - $journal),
                         ],
                         'posting:' . $finding['assetId'] . ':' . $account['account'],
+                        AssetReportSupport::cardLink($finding['assetId'], true),
+                        // Řádky deníku účtu s kartou přes všechny roky.
+                        $account['account'] !== ''
+                            ? ['kind' => AssetReportSupport::journalLink($account['account'], null, $finding['assetId'])]
+                            : [],
                     ),
                     new ReportMessage(
                         ReportMessageSeverity::Error,
@@ -169,6 +181,13 @@ final class JournalCheckBuilder implements ReportBuilder
                         'difference' => AssetReportSupport::money($finding['activated'] - $finding['acquired']),
                     ],
                     'acquisition:' . $finding['assetId'],
+                    AssetReportSupport::cardLink($finding['assetId'], true),
+                    // Pořízení karty na účtech pořízení v deníku.
+                    ['kind' => AssetReportSupport::journalLink(
+                        AssetAcquisitionService::ACQUISITION_ACCOUNT_PREFIX,
+                        null,
+                        $finding['assetId'],
+                    )],
                 ),
                 new ReportMessage(
                     ReportMessageSeverity::Error,
@@ -209,6 +228,7 @@ final class JournalCheckBuilder implements ReportBuilder
                         'difference' => AssetReportSupport::money($finding['amount']),
                     ],
                     'unposted:' . $finding['eventId'],
+                    AssetReportSupport::cardLink($finding['assetId'], true),
                 ),
                 new ReportMessage(
                     ReportMessageSeverity::Warning,

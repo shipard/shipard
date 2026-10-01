@@ -90,10 +90,12 @@ final class MovementsBuilder implements ReportBuilder
         foreach ($events as $event) {
             $card = $cards[(int) $event['asset']];
             $eventKind = (string) $event['event_kind'];
+            $postingDoc = (int) ($event['posting_doc'] ?? 0);
             $values = [
                 'date'      => substr((string) $event['event_date'], 0, 10),
                 'number'    => AssetReportSupport::number($card),
                 'eventKind' => AssetReportSupport::eventKindLabel($request, $eventKind),
+                'document'  => $postingDoc > 0 ? (string) ($event['posting_doc_number'] ?? '') : '',
                 'amount'    => AssetReportSupport::money((float) $event['amount']),
             ];
             if ($eventKind === AssetEvent::KIND_DISPOSAL) {
@@ -113,6 +115,9 @@ final class MovementsBuilder implements ReportBuilder
                 AssetReportSupport::name($card),
                 $values,
                 'event:' . (int) $event['id'],
+                AssetReportSupport::cardLink((int) $card['id']),
+                // Zaúčtovaná událost: číslo dokladu vede na doklad zaúčtování.
+                $postingDoc > 0 ? ['document' => AssetReportSupport::documentLink($postingDoc)] : [],
             );
             $groupOf['event:' . (int) $event['id']] = $eventKind;
         }
@@ -137,9 +142,11 @@ final class MovementsBuilder implements ReportBuilder
                         'date'      => $date,
                         'number'    => AssetReportSupport::number($card),
                         'eventKind' => $this->groupLabel($request, $group, $cs),
+                        'document'  => '',
                         'amount'    => AssetReportSupport::money((float) ($card['price'] ?? 0)),
                     ],
                     $key,
+                    AssetReportSupport::cardLink((int) $card['id']),
                 );
                 $groupOf[$key] = $group;
             }
@@ -195,6 +202,7 @@ final class MovementsBuilder implements ReportBuilder
                 new ReportColumn('date', ReportColumn::TYPE_DATE, $cs ? 'Datum' : 'Date'),
                 new ReportColumn('number', ReportColumn::TYPE_TEXT, $cs ? 'Inv. číslo' : 'Asset no.'),
                 new ReportColumn('eventKind', ReportColumn::TYPE_TEXT, $cs ? 'Pohyb' : 'Movement'),
+                new ReportColumn('document', ReportColumn::TYPE_TEXT, $cs ? 'Doklad zaúčtování' : 'Posting document'),
                 new ReportColumn('amount', ReportColumn::TYPE_MONEY, $cs ? 'Částka' : 'Amount'),
                 new ReportColumn('accumulated', ReportColumn::TYPE_MONEY, $cs ? 'Oprávky při vyřazení' : 'Accumulated at disposal'),
                 new ReportColumn('residual', ReportColumn::TYPE_MONEY, $cs ? 'Zůstatková cena při vyřazení' : 'Residual value at disposal'),

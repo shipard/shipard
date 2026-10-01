@@ -92,6 +92,7 @@ final class DepreciationScheduleBuilder implements ReportBuilder
                     'difference'      => AssetReportSupport::money($item->acc->depreciation - $item->tax->depreciation),
                 ],
                 $key,
+                AssetReportSupport::cardLink($item->id()),
             );
         }
         usort($detailRows, static fn(ReportRow $a, ReportRow $b): int => $sortKeys[$a->key] <=> $sortKeys[$b->key]);

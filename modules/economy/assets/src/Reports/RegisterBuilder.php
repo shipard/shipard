@@ -94,7 +94,15 @@ final class RegisterBuilder implements ReportBuilder
             if ($line['residual'] !== null) {
                 $values['residual'] = AssetReportSupport::money($line['residual']);
             }
-            $detailRows[] = new ReportRow(ReportRowKind::Detail, 2, null, AssetReportSupport::name($card), $values, $key);
+            $detailRows[] = new ReportRow(
+                ReportRowKind::Detail,
+                2,
+                null,
+                AssetReportSupport::name($card),
+                $values,
+                $key,
+                AssetReportSupport::cardLink($id),
+            );
         }
         usort($detailRows, static fn(ReportRow $a, ReportRow $b): int => $sortKeys[$a->key] <=> $sortKeys[$b->key]);
 

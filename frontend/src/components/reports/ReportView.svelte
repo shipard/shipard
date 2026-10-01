@@ -3,14 +3,16 @@
   // stav parametrů. Sloupec s display: 'sides' se rozpadá na trojici
   // MD / D / Zůstatek, 'balance' zobrazuje jen balance. Řádky odkázané
   // z messages přes rowRef ('rows.{index}') se podbarvují dle severity;
-  // zprávy samotné jdou „pod čaru" dole (D15).
+  // zprávy samotné jdou „pod čaru" dole (D15). Drill-down (D70): řádek
+  // s `link` má název jako odkaz, `cellLinks[sloupec]` textovou buňku —
+  // akci (tvar akce detailu vieweru) jen předá rodiči přes onAction.
   import Icon from '../ui/Icon.svelte';
   import { iconWarning, iconInfo, iconAlert } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { formatAmount } from '../../utils/formatNumber.js';
   import { language } from '../../stores/language.svelte.js';
 
-  let { result, thousands = false } = $props();
+  let { result, thousands = false, onAction = null } = $props();
 
   const columns = $derived(result?.columns ?? []);
   const rows = $derived(result?.rows ?? []);
@@ -122,12 +124,26 @@
                 style:padding-left="calc(var(--shpd-space-sm) + {row.level * 16}px)"
               >
                 {#if row.account}<span class="shpd-report__account">{row.account}</span>{/if}
-                {row.label}
+                {#if row.link && onAction}
+                  <button type="button" class="shpd-report__link" onclick={() => onAction(row.link)}>{row.label}</button>
+                {:else}
+                  {row.label}
+                {/if}
               </td>
               {#each columns as column (column.id)}
                 {@const cell = row.values?.[column.id]}
                 {#if isTextual(column)}
-                  <td class="shpd-report__td shpd-report__td--text">{fmtText(column, cell)}</td>
+                  <td class="shpd-report__td shpd-report__td--text">
+                    {#if row.cellLinks?.[column.id] && onAction && fmtText(column, cell) !== ''}
+                      <button
+                        type="button"
+                        class="shpd-report__link"
+                        onclick={() => onAction(row.cellLinks[column.id])}
+                      >{fmtText(column, cell)}</button>
+                    {:else}
+                      {fmtText(column, cell)}
+                    {/if}
+                  </td>
                 {:else if (column.display ?? 'balance') === 'sides'}
                   <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.md)}</td>
                   <td class="shpd-report__td shpd-report__td--num">{fmt(cell?.d)}</td>
@@ -242,6 +258,21 @@
     margin-right: var(--shpd-space-xs);
     color: var(--shpd-color-text-secondary);
     font-variant-numeric: tabular-nums;
+  }
+
+  .shpd-report__link {
+    padding: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: var(--shpd-color-primary);
+    cursor: pointer;
+    text-align: inherit;
+  }
+
+  .shpd-report__link:hover {
+    color: var(--shpd-color-primary-hover);
+    text-decoration: underline;
   }
 
   .shpd-report__tr--subtotal > .shpd-report__td {

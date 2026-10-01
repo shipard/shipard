@@ -21,7 +21,8 @@ z milníku M1 a validace importu ze starého Shipardu (M3).
 > v `old_shipard`, kontrakt §7.4). Upřesnění tvaru dle implementace:
 > §10, §11, §12, §13. Export do XLSX a CSV hotov (2026-10-01,
 > `tasks/reports-export.md`, #83 D72) — §15. Obecné parametry, seskupení
-> podle klíče a identita řádku (2026-10-01, `tasks/assets-phase5.md`) — §16.
+> podle klíče, identita řádku a drill-down (2026-10-01,
+> `tasks/assets-phase5.md`) — §16.
 
 ---
 
@@ -227,7 +228,7 @@ Zdroj pravdy: fiskální období (`economy_codebooks_fiscal_years` /
 - **Parametry v URL** — deep-link „výsledovka 2026/5 v tisících" jde poslat
   kolegovi.
 - Drill-down z řádku do deníku (filtr účet + období) — přirozený krok,
-  rozsah určí PRD.
+  rozsah určí PRD. Obecný mechanismus odkazů řádku: §16.5.
 
 ### 7.2 REST API
 
@@ -674,3 +675,28 @@ z něj dělá sloupec „Účet“, takže inventární číslo patří do texto
 sloupce, ne do `account`. `ReportDiff` páruje detail řádky podle
 `key ?? account` — reporty mimo deník tak jdou porovnat `report-diff`
 a dva řádky téhož účtu se nepřepíšou.
+
+### 16.5 Drill-down z řádku (`link`, `cellLinks`)
+
+Naplnění §7.1 („drill-down z řádku“) obecně pro všechny reporty:
+
+- `ReportRow::$link` — akce na **názvu** řádku; `ReportRow::$cellLinks` —
+  akce na **textové buňce** (id sloupce → akce). Tvar je shodný s akcí
+  detailu vieweru: `{kind, target}`. V JSON jen když jsou vyplněné.
+- Podporované `kind`: `open_detail` (`{viewerId, recordId, tabId?}` —
+  read-only náhled v modalu nad reportem), `open_viewer` (`{viewerId,
+  recordId?, viewGroup?, filters?}` — přechod do vieweru s předvybraným
+  záznamem a filtry) a `open_report` (`{reportId, params?}`).
+- **Renderer:** `ReportView` vykreslí název / buňku jako odkaz a akci jen
+  předá rodiči (`onAction`); `ReportsPage` ji obslouží (`ViewerDetailModal`,
+  `navigationStore.navigateToViewer` / `navigateToReport`). Bez `onAction`
+  zůstává report prostý text. Prázdná buňka odkaz nedostane.
+- Export, `ReportDiff` ani MCP odkazy nepotřebují — export je ignoruje,
+  v JSON pro MCP zůstávají jako strojově čitelná vazba (`recordId`).
+- Odchod přes `open_viewer` nic neztrácí: parametry reportu drží session
+  mapa stránky.
+
+První uživatelé jsou reporty majetku: řádek karty → náhled karty, číslo
+dokladu zaúčtování → doklad, účet v kontrole → deník s filtrem účtu a roku,
+nesoulad karty → karta ve vieweru a deník s filtrem účtu a karty.
+

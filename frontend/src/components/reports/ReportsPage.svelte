@@ -15,6 +15,7 @@
   import PeriodPicker from './PeriodPicker.svelte';
   import VatPeriodPicker from './VatPeriodPicker.svelte';
   import ReportView from './ReportView.svelte';
+  import ViewerDetailModal from '../viewer/ViewerDetailModal.svelte';
   import Select from '../ui/Select.svelte';
   import Checkbox from '../ui/Checkbox.svelte';
   import Button from '../ui/Button.svelte';
@@ -200,6 +201,26 @@
     if (saved) saved.thousands = value;
   }
 
+  // Drill-down z řádku reportu (D70) — akce stejného tvaru jako akce
+  // detailu vieweru. `open_detail` = read-only náhled v modalu (uživatel
+  // zůstává v reportu), `open_viewer` / `open_report` navigují pryč; stav
+  // parametrů reportu přežije v session mapě.
+  let detailModal = $state(null); // {viewerId, recordId, tabId}
+
+  function handleRowAction(action) {
+    const target = action?.target ?? {};
+    if (action?.kind === 'open_detail') {
+      if (!target.viewerId || target.recordId == null) return;
+      detailModal = { viewerId: target.viewerId, recordId: target.recordId, tabId: target.tabId ?? null };
+    } else if (action?.kind === 'open_viewer') {
+      if (!target.viewerId) return;
+      navigationStore.navigateToViewer(target.viewerId, target.recordId ?? null, target.viewGroup ?? null, target.filters ?? null);
+    } else if (action?.kind === 'open_report') {
+      if (!target.reportId) return;
+      navigationStore.navigateToReport(target.reportId, target.params ?? null);
+    }
+  }
+
   // Export (XLSX / CSV) — stejné parametry jako zobrazený výsledek; proto
   // jen s načteným výsledkem a ne během načítání nového. „V tisících" se
   // do exportu nepromítá (čísla vždy přesně).
@@ -331,11 +352,19 @@
       <p class="shpd-reports__note">{t('reports.loading')}</p>
     {:else if result}
       <div class="shpd-reports__result" class:shpd-reports__result--loading={loading}>
-        <ReportView {result} {thousands} />
+        <ReportView {result} {thousands} onAction={handleRowAction} />
       </div>
     {/if}
   </div>
 </div>
+
+<ViewerDetailModal
+  open={detailModal !== null}
+  viewerId={detailModal?.viewerId ?? ''}
+  recordId={detailModal?.recordId ?? null}
+  tabId={detailModal?.tabId ?? null}
+  onClose={() => { detailModal = null; }}
+/>
 
 <style>
   .shpd-reports {

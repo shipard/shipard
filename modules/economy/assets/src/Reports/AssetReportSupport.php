@@ -11,6 +11,7 @@ use Shipard\Core\Reports\ReportRow;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Economy\Assets\AssetCategories;
 use Shipard\Module\Economy\Assets\AssetDocument;
+use Shipard\Module\Economy\Assets\AssetEventDocument;
 use Shipard\Module\Economy\Assets\AssetPlanService;
 use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
 use Shipard\Module\Economy\Assets\Depreciation\Plan;
@@ -152,6 +153,7 @@ class AssetReportSupport
      * Potvrzené události účetního pohledu (okruh `both` / `acc`) daných
      * druhů s datem v období, od nejstarší. Daňové události se vynechávají —
      * pohyb majetku by jinak u karty s oddělenými okruhy vyšel dvakrát.
+     * Zaúčtovaná událost nese živý doklad (`posting_doc`, `posting_doc_number`).
      *
      * @param list<string> $kinds
      * @return list<array<string, mixed>>
@@ -226,6 +228,48 @@ class AssetReportSupport
         $label = trim((string) ($card['type_name'] ?? ''));
 
         return $label !== '' ? $label : ($cs ? 'Bez typu' : 'No type');
+    }
+
+    // ── Drill-down (D70) ────────────────────────────────────────────────────
+
+    public const ASSETS_VIEWER = 'economy.assets.assets';
+    public const DOCUMENTS_VIEWER = 'docs.core.heads';
+    public const JOURNAL_VIEWER = 'economy.accounting.journal';
+
+    /**
+     * Odkaz řádku na kartu majetku: náhled v modalu nad reportem
+     * (`open_detail`), nebo přechod na kartu ve vieweru (`open_viewer`) —
+     * tam, kde je potřeba na kartě něco opravit.
+     *
+     * @return array{kind: string, target: array<string, mixed>}
+     */
+    public static function cardLink(int $assetId, bool $navigate = false): array
+    {
+        return [
+            'kind'   => $navigate ? 'open_viewer' : 'open_detail',
+            'target' => ['viewerId' => self::ASSETS_VIEWER, 'recordId' => $assetId],
+        ];
+    }
+
+    /** @return array{kind: string, target: array<string, mixed>} */
+    public static function documentLink(int $docId): array
+    {
+        return ['kind' => 'open_detail', 'target' => ['viewerId' => self::DOCUMENTS_VIEWER, 'recordId' => $docId]];
+    }
+
+    /**
+     * Odkaz do deníku s filtrem účtu (prefix), účetního roku (id; `null` =
+     * všechny roky — prázdná hodnota ruší výchozí filtr vieweru) a karty.
+     *
+     * @return array{kind: string, target: array<string, mixed>}
+     */
+    public static function journalLink(string $account, ?int $fiscalYearId, ?int $assetId = null): array
+    {
+        $filters = ['fiscal_year' => $fiscalYearId ?? '', 'account' => $account];
+        if ($assetId !== null) {
+            $filters['dim_asset'] = '#' . $assetId;
+        }
+        return ['kind' => 'open_viewer', 'target' => ['viewerId' => self::JOURNAL_VIEWER, 'filters' => $filters]];
     }
 
     // ── Buňky a řádky ───────────────────────────────────────────────────────
@@ -345,10 +389,13 @@ class AssetReportSupport
     protected function loadEvents(ReportRequest $request, string $begin, string $end, array $kinds): array
     {
         $rows = $request->db->getDibiConnection()->fetchAll(
-            'SELECT * FROM [' . AssetPlanService::EVENTS_TABLE . ']'
-            . ' WHERE [docState] = %i AND [event_kind] IN %in AND [scope] <> %s'
-            . ' AND [event_date] >= %s AND [event_date] <= %s'
-            . ' ORDER BY [event_date], [id]',
+            'SELECT [e].*, [h].[id] AS [posting_doc], [h].[doc_number] AS [posting_doc_number]'
+            . ' FROM [' . AssetPlanService::EVENTS_TABLE . '] [e]'
+            . ' LEFT JOIN [docs_core_heads] [h] ON [h].[id] = [e].[doc_head] AND [h].[docState] NOT IN %in',
+            AssetEventDocument::DEAD_DOC_STATES,
+            'WHERE [e].[docState] = %i AND [e].[event_kind] IN %in AND [e].[scope] <> %s'
+            . ' AND [e].[event_date] >= %s AND [e].[event_date] <= %s'
+            . ' ORDER BY [e].[event_date], [e].[id]',
             AssetPlanService::STATE_CONFIRMED,
             $kinds,
             AssetEvent::SCOPE_TAX,

@@ -49,6 +49,11 @@ class DepreciationScheduleBuilderTest extends AssetReportTestCase
 
         $this->assertSame('Stroj 1', $row['label']);
         $this->assertNull($row['account']);
+        // Drill-down (D70): název vede na náhled karty.
+        $this->assertSame(
+            ['kind' => 'open_detail', 'target' => ['viewerId' => 'economy.assets.assets', 'recordId' => 1]],
+            $row['link'],
+        );
         $this->assertSame('MA0001', $row['values']['number']);
         $this->assertSame('plán', $row['values']['state']);
         $this->assertSame(100000.0, $this->balance($row, 'taxEntry'));

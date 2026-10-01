@@ -128,9 +128,31 @@ class MovementsAndRegisterBuilderTest extends AssetReportTestCase
         $this->assertSame(78000.0, $disposal->values['residual']['balance']);
         $this->assertSame(78000.0, $rows[8]->values['residual']['balance']);
 
+        // Drill-down (D70): řádek vede na kartu, nezaúčtovaná událost doklad nemá.
+        $this->assertSame('economy.assets.assets', $rows[1]->link['target']['viewerId']);
+        $this->assertSame(3, $rows[1]->link['target']['recordId']);
+        $this->assertSame('', $rows[1]->values['document']);
+        $this->assertSame([], $rows[1]->cellLinks);
+        $this->assertSame(5, $rows[5]->link['target']['recordId']);
+
         $this->assertSame(50000.0 + 30000.0 + 4990.0, $rows[12]->values['amount']['balance']);
         $this->assertSame(5000.0 + 120000.0 + 2500.0, $rows[13]->values['amount']['balance']);
         $this->assertSame(ReportStatus::Ok, $result->status);
+    }
+
+    public function testPostedMovementLinksToThePostingDocument(): void
+    {
+        $this->card(1);
+        $this->event(1, 'activation', '2024-03-15', ['amount' => 100000, 'doc_head' => 3745]);
+
+        $row = $this->movements(2024)->rows[1];
+
+        $this->assertSame('UD3745', $row->values['document']);
+        $this->assertSame(
+            ['document' => ['kind' => 'open_detail', 'target' => ['viewerId' => 'docs.core.heads', 'recordId' => 3745]]],
+            $row->cellLinks,
+        );
+        $this->assertSame('open_detail', $row->link['kind']);
     }
 
     public function testMovementsKindFilterAndPeriod(): void
@@ -184,6 +206,7 @@ class MovementsAndRegisterBuilderTest extends AssetReportTestCase
 
         // Dlouhodobý: cena z událostí (100 000 + 30 000 − 5 000), zůstatková cena z plánu.
         $this->assertSame(125000.0, $this->balance($rows['asset:1'], 'entryPrice'));
+        $this->assertSame(['viewerId' => 'economy.assets.assets', 'recordId' => 1], $rows['asset:1']['link']['target']);
         $this->assertSame('2023-03-15', $rows['asset:1']['values']['acquired']);
         $this->assertLessThan(125000.0, $this->balance($rows['asset:1'], 'residual'));
         // Zařazení v posledním dni roku: v soupisu, zůstatková cena = vstupní cena.
