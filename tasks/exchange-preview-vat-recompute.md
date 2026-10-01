@@ -1,6 +1,6 @@
 # Task: Náhled návrhu počítá rekapitulaci DPH a součty stejně jako doklad
 
-**Stav:** částečně — kód, testy, docs a help hotové 2026-10-01 (3 commity: computeAmounts, _resolve.computed, náhled); zbývá ověření na dev zdroji (body 1–4)
+**Stav:** hotovo — kód, testy, docs a help 2026-10-01 (3 commity: computeAmounts, _resolve.computed, náhled); ověřeno na dev zdroji 2026-10-01 (body 1–4)
 
 **Issue:** #87 (task A; task B — volby DPH v náhledu — navazuje)
 
@@ -299,4 +299,4 @@ Zdroj s režimem *volný* (zdroj a zprávy v chatu, mimo repo):
       se štítkem zdroje a fallbackem na canonical; i18n parita; build.
 - [x] `docs/exchange-format.md`, `docs/vat-calculation.md`, help aktualizované;
       `help-index.py` a `tasks-index.py` prošly.
-- [ ] Ověření na dev zdroji (body 1–4).
+- [x] Ověření na dev zdroji (body 1–4) — 2026-10-01.
