@@ -164,18 +164,16 @@
     });
   });
 
-  // Hodnoty parametrů deklarace — lokální zrcadlo kvůli bind:value
-  // (params je immutable).
-  let paramValues = $state({});
-  $effect(() => {
-    const p = params;
-    const next = {};
-    for (const param of declaredParams) next[param.id] = p?.[param.id] ?? param.default;
-    paramValues = next;
-  });
+  // Hodnota parametru deklarace pro roletku / zaškrtávátko. Vazba jde
+  // přes funkční bind (getter + setter): getter nikdy nevrací undefined —
+  // `bind:` na undefined u propu s výchozí hodnotou Svelte odmítne
+  // (props_invalid_value) a stránka by spadla dřív, než se parametry
+  // načtou.
+  function paramValue(param) {
+    return params?.[param.id] ?? param.default;
+  }
 
-  function commitParam(id) {
-    const value = paramValues[id];
+  function setParam(id, value) {
     if (value !== null && value !== undefined && params && value !== params[id]) {
       params = { ...params, [id]: value };
     }
@@ -264,9 +262,8 @@
         <span class="shpd-reports__param" title={param.name ?? param.id} data-testid="report-param-{param.id}">
           {#if param.type === 'bool'}
             <Checkbox
-              bind:checked={paramValues[param.id]}
+              bind:checked={() => paramValue(param) === true, (v) => setParam(param.id, v)}
               label={param.name ?? param.id}
-              onchange={() => commitParam(param.id)}
             />
           {:else}
             {#if showParamLabels}
@@ -275,10 +272,9 @@
             <span class="shpd-reports__param-field">
               <Select
                 id="report-param-{param.id}"
-                bind:value={paramValues[param.id]}
+                bind:value={() => paramValue(param), (v) => setParam(param.id, v)}
                 options={paramOptions(param)}
                 required
-                onchange={() => commitParam(param.id)}
               />
             </span>
           {/if}
