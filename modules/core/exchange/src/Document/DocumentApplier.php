@@ -13,6 +13,7 @@ use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Module\Base\Persons\PersonType;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
+use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Docs\Core\BoundNumberSeriesProvisioner;
@@ -172,6 +173,15 @@ class DocumentApplier
         private readonly AccountResolver $accountResolver,
         private readonly VatCodeDerivation $vatCodeDerivation,
         private readonly VatPlaceDerivation $vatPlaceDerivation,
+        /**
+         * Taxonomie `core.exchange.contentTags` (compiled, `name` už
+         * lokalizované): `crossBorderSupply` pro fallback druhu plnění
+         * a veto (tasks/exchange-received-supply-kind.md D2/D4), `name`
+         * pro zprávu `supply_kind_derived`. Prázdná = bez fallbacku.
+         *
+         * @var array<string, array<string, mixed>>
+         */
+        private readonly array $contentTags = [],
     ) {}
 
     /**
@@ -191,6 +201,7 @@ class DocumentApplier
     ): self {
         $vatRateResolver = new \Shipard\Module\World\Vat\VatRateResolver($config);
         $own = new OwnCompanyResolver($db);
+        $contentTags = $config->cfgItem('core.exchange.contentTags');
 
         return new self(
             db: $db,
@@ -211,6 +222,7 @@ class DocumentApplier
             accountResolver: new AccountResolver($db),
             vatCodeDerivation: new VatCodeDerivation($vatRateResolver),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($config)),
+            contentTags: is_array($contentTags) ? $contentTags : [],
         );
     }
 
@@ -1411,6 +1423,13 @@ class DocumentApplier
      * z canonicalu (`placeSource: "ai"`), nebo null. Čtou ho tři místa —
      * derivace kódu řádků, transform `vat_place` a hlavičkové issues.
      *
+     * Druh plnění řádku je efektivní ({@see effectiveSupplyKinds()},
+     * tasks/exchange-received-supply-kind.md D2): z canonicalu, jinak mimo
+     * tuzemsko ze štítku řádku (`supplyKindSource: "tag"`, warning
+     * `supply_kind_derived`). Pořadí: místo z DIČ s druhy z canonicalu →
+     * fallback druhů → jediný doplňkový průchod místa, když fallback něco
+     * doplnil a první průchod selhal na prefixu (XI jen zboží).
+     *
      * @param array<string, mixed> $canonical
      * @return array{
      *   derive: bool,
@@ -1423,7 +1442,8 @@ class DocumentApplier
      *   rows: array<int, array{
      *     input: string, derived: ?string, reason: ?string,
      *     effective: ?string, matchedBy: ?string,
-     *     issue: ?array{severity: string, code: string, message: string}
+     *     issue: ?array{severity: string, code: string, message: string},
+     *     supplyKind: ?string, supplyKindSource: ?string, tag: ?string
      *   }>
      * }
      */
@@ -1432,14 +1452,17 @@ class DocumentApplier
         $rows = is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [];
         $supplierVatId = self::partyVatId($canonical['supplier'] ?? null);
         $customerVatId = self::partyVatId($canonical['customer'] ?? null);
-        // Klíč cache: strany dokladu (DIČ) rozhodují o místě plnění —
-        // bez nich by cache vrátila kontext jiného dokladu.
+        // Klíč cache: strany dokladu (DIČ) rozhodují o místě plnění, štítek
+        // dokladu a výjimky řádků o druhu plnění (D2) — bez nich by cache
+        // vrátila kontext jiného dokladu / bez fallbacku.
         $key = md5((string) json_encode([
             $canonical['selfParty'] ?? null,
             $canonical['vat'] ?? null,
             $canonical['dates'] ?? null,
             $supplierVatId,
             $customerVatId,
+            $canonical['_resolve']['contentTag']['tag'] ?? null,
+            $canonical['_resolve']['contentTag']['rowExceptions'] ?? null,
             array_map(
                 static fn (mixed $row): ?array => is_array($row)
                     ? [$row['rowKind'] ?? null, $row['accSide'] ?? null, $row['vat'] ?? null]
@@ -1477,6 +1500,7 @@ class DocumentApplier
         if ($ctx['derive']) {
             // Místo plnění před kódem — kód na místu závisí (cz-217 vs cz-417)
             // a kontrola souladu existujícího kódu musí dostat totéž místo.
+            // První průchod s druhy plnění z canonicalu (XI jen zboží).
             $derivedPlace = $this->vatPlaceDerivation->derive(
                 (string) $ctx['ownCountry'],
                 $ctx['taxPointDate'],
@@ -1488,6 +1512,29 @@ class DocumentApplier
                 $ctx['place'] = $derivedPlace['place'];
                 $ctx['placeSource'] = 'vatId';
                 $ctx['placePrefix'] = $derivedPlace['prefix'];
+            }
+            // D2: chybějící druh plnění ze štítku řádku potřebuje efektivní
+            // místo (jen mimo tuzemsko); místo u XI potřebuje druhy. Jediný
+            // doplňkový průchod derivace místa — když fallback něco doplnil
+            // a první průchod selhal na prefixu (XI bez druhů); žádný cyklus.
+            $kinds = $this->effectiveSupplyKinds($canonical, $rows, $ctx['place']);
+            if ($kinds['changed'] && $derivedPlace['place'] === null && $derivedPlace['prefix'] !== null) {
+                $secondPlace = $this->vatPlaceDerivation->derive(
+                    (string) $ctx['ownCountry'],
+                    $ctx['taxPointDate'],
+                    $supplierVatId,
+                    $customerVatId,
+                    array_values(array_map(static fn (array $k): ?string => $k['supplyKind'], $kinds['rows'])),
+                );
+                if ($secondPlace['place'] !== null) {
+                    $ctx['place'] = $secondPlace['place'];
+                    $ctx['placeSource'] = 'vatId';
+                    $ctx['placePrefix'] = $secondPlace['prefix'];
+                    if ($secondPlace['place'] === 'domestic') {
+                        // Pojistka: v tuzemsku fallback neplatí — zahodit, třetí průchod není.
+                        $kinds = $this->effectiveSupplyKinds($canonical, $rows, 'domestic');
+                    }
+                }
             }
             $place = $ctx['place'];
             $reverseCharge = is_bool($vat['reverseCharge'] ?? null) ? $vat['reverseCharge'] : null;
@@ -1504,6 +1551,7 @@ class DocumentApplier
                     $place,
                     $reverseCharge,
                     $row['vat'],
+                    $kinds['rows'][(int) $idx] ?? self::NO_SUPPLY_KIND,
                 );
             }
         }
@@ -1545,6 +1593,70 @@ class DocumentApplier
         return $out;
     }
 
+    /** Řádek bez informace o druhu plnění ({@see effectiveSupplyKinds()}). */
+    private const NO_SUPPLY_KIND = ['supplyKind' => null, 'source' => null, 'tag' => null, 'tagSupply' => null];
+
+    /**
+     * Efektivní druh plnění položkových řádků (tasks/exchange-received-supply-kind.md
+     * D2): `rows[].vat.supplyKind` z canonicalu (`source: "ai"`), jinak — jen
+     * když efektivní místo ≠ tuzemsko — `crossBorderSupply` štítku řádku
+     * (`source: "tag"`; výjimka řádku před štítkem dokladu,
+     * {@see RowEnrichmentPipeline::rowContentTagOf()}). `tagSupply` nese
+     * hodnotu štítku vždy — veto `special` (D4) kontroluje derivace sama,
+     * i proti druhu z AI. Bez bloku `_resolve.contentTag` (pokrytý doklad,
+     * žádný LLM běh) fallback není. Canonical se nemění; `changed` =
+     * fallback aspoň jeden druh doplnil.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int|string, mixed> $rows
+     * @return array{
+     *   rows: array<int, array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string}>,
+     *   changed: bool
+     * }
+     */
+    private function effectiveSupplyKinds(array $canonical, array $rows, ?string $place): array
+    {
+        $crossBorder = $place !== null && $place !== 'domestic';
+        $out = ['rows' => [], 'changed' => false];
+        foreach ($rows as $idx => $row) {
+            if (!is_array($row)
+                || (string) ($row['rowKind'] ?? 'item') !== 'item'
+                || isset($row['accSide'])) {
+                continue;
+            }
+            $idx = (int) $idx;
+            $ai = $row['vat']['supplyKind'] ?? null;
+            $ai = is_string($ai) && trim($ai) !== '' ? trim($ai) : null;
+            $tag = RowEnrichmentPipeline::rowContentTagOf($canonical, $idx);
+            $tagSupply = $tag !== null ? $this->tagSupplyOf($tag) : null;
+
+            $entry = ['supplyKind' => $ai, 'source' => $ai !== null ? 'ai' : null, 'tag' => $tag, 'tagSupply' => $tagSupply];
+            if ($ai === null && $crossBorder
+                && in_array($tagSupply, [VatCodeDerivation::TAG_SUPPLY_GOODS, VatCodeDerivation::TAG_SUPPLY_SERVICES], true)
+            ) {
+                $entry['supplyKind'] = $tagSupply;
+                $entry['source'] = 'tag';
+                $out['changed'] = true;
+            }
+            $out['rows'][$idx] = $entry;
+        }
+        return $out;
+    }
+
+    /** `crossBorderSupply` štítku z taxonomie; neznámá hodnota nebo štítek = null. */
+    private function tagSupplyOf(string $tag): ?string
+    {
+        $value = $this->contentTags[$tag]['crossBorderSupply'] ?? null;
+        return is_string($value) && in_array($value, VatCodeDerivation::TAG_SUPPLY_VALUES, true) ? $value : null;
+    }
+
+    /** Lokalizovaný `name` štítku z taxonomie (compiled config jazyka requestu), fallback klíč. */
+    private function contentTagLabel(string $tag): string
+    {
+        $name = $this->contentTags[$tag]['name'] ?? null;
+        return is_string($name) && $name !== '' ? $name : $tag;
+    }
+
     /**
      * Naše registrace DPH pro přijatý doklad (D2): první aktivní podle
      * `country`, `id` — stejné pořadí jako výchozí hodnota formuláře
@@ -1582,12 +1694,17 @@ class DocumentApplier
      *
      * Kód z historie řádků (RowHistoryEnricher) sem přijde jako vyplněný —
      * proto kontrola souladu, jinak by stará chybná historie přebila derivaci.
+     * Kontrola souladu dostane jen druh plnění z canonicalu, ne fallback ze
+     * štítku — kód potvrzený člověkem štítek nezpochybňuje.
      *
      * @param array<string, mixed> $rowVat canonical `rows[].vat`
+     * @param array{supplyKind: ?string, source: ?string, tag: ?string, tagSupply: ?string} $kind
+     *        efektivní druh plnění řádku ({@see effectiveSupplyKinds()})
      * @return array{
      *   input: string, derived: ?string, reason: ?string,
      *   effective: ?string, matchedBy: ?string,
-     *   issue: ?array{severity: string, code: string, message: string}
+     *   issue: ?array{severity: string, code: string, message: string},
+     *   supplyKind: ?string, supplyKindSource: ?string, tag: ?string
      * }
      */
     private function decideRowVatCode(
@@ -1596,12 +1713,11 @@ class DocumentApplier
         ?string $place,
         ?bool $reverseCharge,
         array $rowVat,
+        array $kind,
     ): array {
         $input = trim((string) ($rowVat['code'] ?? ''));
         $pct = isset($rowVat['pct']) && is_numeric($rowVat['pct']) ? (float) $rowVat['pct'] : null;
-        $supplyKind = is_string($rowVat['supplyKind'] ?? null) && $rowVat['supplyKind'] !== ''
-            ? $rowVat['supplyKind']
-            : null;
+        $supplyKind = $kind['supplyKind'];
         $reverseChargeCode = isset($rowVat['reverseChargeCode']) && (string) $rowVat['reverseChargeCode'] !== ''
             ? (string) $rowVat['reverseChargeCode']
             : null;
@@ -1609,16 +1725,28 @@ class DocumentApplier
             || $place !== null || $reverseCharge !== null;
 
         $derived = $date !== null
-            ? $this->vatCodeDerivation->derive($country, $date, $place, $reverseCharge, $pct, $supplyKind, $reverseChargeCode)
+            ? $this->vatCodeDerivation->derive(
+                $country,
+                $date,
+                $place,
+                $reverseCharge,
+                $pct,
+                $supplyKind,
+                $reverseChargeCode,
+                $kind['tagSupply'],
+            )
             : ['code' => null, 'reason' => 'doklad nemá DUZP ani datum vystavení'];
 
         $out = [
-            'input'     => $input,
-            'derived'   => $derived['code'],
-            'reason'    => $derived['reason'],
-            'effective' => null,
-            'matchedBy' => null,
-            'issue'     => null,
+            'input'            => $input,
+            'derived'          => $derived['code'],
+            'reason'           => $derived['reason'],
+            'effective'        => null,
+            'matchedBy'        => null,
+            'issue'            => null,
+            'supplyKind'       => $supplyKind,
+            'supplyKindSource' => $kind['source'],
+            'tag'              => $kind['tag'],
         ];
         $useDerived = static function (array $out, string $code, ?array $issue): array {
             $out['effective'] = $code;
@@ -1645,7 +1773,15 @@ class DocumentApplier
         $known = $this->vatCodeResolver->resolve($input, $country, $date, $pct)->status === ResolveStatus::Matched;
         if ($known) {
             $conflict = $date !== null
-                ? $this->vatCodeDerivation->conflict($country, $input, $date, $place, $reverseCharge, $pct, $supplyKind)
+                ? $this->vatCodeDerivation->conflict(
+                    $country,
+                    $input,
+                    $date,
+                    $place,
+                    $reverseCharge,
+                    $pct,
+                    $kind['source'] === 'ai' ? $supplyKind : null,
+                )
                 : null;
             if ($conflict === null || $derived['code'] === $input) {
                 $out['effective'] = $input;
@@ -1725,6 +1861,22 @@ class DocumentApplier
             return $vatR->toArray();
         }
 
+        // D2: druh plnění doplněný ze štítku — hlásí se, jen když na něm
+        // výsledek stojí (odvozený kód, nebo derivace selhala); ponechaný
+        // kód z canonicalu / historie fallback nepotřeboval → bez šumu.
+        $fromTag = $decision['supplyKindSource'] === 'tag' && $decision['matchedBy'] !== 'input';
+        if ($fromTag) {
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => "rows.{$idx}.vat.supplyKind",
+                'code'     => 'supply_kind_derived',
+                'message'  => sprintf(
+                    'Druh plnění řádku doplněn podle štítku „%s“ (%s).',
+                    $this->contentTagLabel((string) $decision['tag']),
+                    $decision['supplyKind'] === VatCodeDerivation::TAG_SUPPLY_GOODS ? 'zboží' : 'služby',
+                ),
+            ];
+        }
         if ($decision['issue'] !== null) {
             $issues[] = [
                 'severity' => $decision['issue']['severity'],
@@ -1734,7 +1886,14 @@ class DocumentApplier
             ];
         }
         if ($decision['effective'] === null) {
-            return $decision['issue'] !== null ? ResolveResult::notFound()->toArray() : null;
+            if ($decision['issue'] === null) {
+                return null;
+            }
+            $notFound = ResolveResult::notFound()->toArray();
+            if ($fromTag) {
+                $notFound['supplyKindSource'] = 'tag';
+            }
+            return $notFound;
         }
         // Odvozený kód dostane sazbu z číselníku k DUZP (D4) — `pct` z dokladu
         // dodavatele (u samovyměření 0) se u něj nepoužije ani jako fallback.
@@ -1744,6 +1903,9 @@ class DocumentApplier
             ->toArray();
         if ($derived) {
             $resolved['matchedBy'] = 'derived';
+            if ($fromTag) {
+                $resolved['supplyKindSource'] = 'tag';
+            }
         }
         return $resolved;
     }

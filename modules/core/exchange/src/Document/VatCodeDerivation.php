@@ -34,6 +34,21 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * DPH naúčtovaná dodavatelem a smíšené doklady jsou mimo rozsah (D7) —
  * derivace u nich vrací `null`, applier hlásí `vat_code_unknown`.
  *
+ * Dvě pojistky proti tichému chybnému samovyměření
+ * (tasks/exchange-received-supply-kind.md D3/D4), obě jen mimo tuzemsko:
+ *
+ *   - **dovoz zboží** (třetí země + `goods`) se vědomě neodvozuje — DPH
+ *     se vyměřuje z celního dokladu (JSD), ne z faktury dodavatele;
+ *     `cz-415` jde zadat jen ručně;
+ *   - **zvláštní místo plnění** — štítek řádku s `crossBorderSupply:
+ *     "special"` (ubytování, doprava osob, stravování, nemovitost, mýto,
+ *     parkování; `core.exchange.contentTags`) veto přes `$tagSupply`,
+ *     i s druhem plnění z AI a i s `reverseCharge: true`. Chyba je lepší
+ *     než samovyměření tam, kde se daň v ČR nepřiznává.
+ *
+ * Fallback chybějícího `supplyKind` ze štítku řádku (D2) dělá applier —
+ * derivace dostane už efektivní druh; taxonomii nečte.
+ *
  * Čistá funkce nad `VatRateResolver`; canonical se nemění, korekce jde do
  * `_resolve` (vzor {@see VatModeDerivation}).
  */
@@ -49,8 +64,18 @@ final class VatCodeDerivation
         'thirdCountry' => 'foreign',
     ];
 
-    /** Samovyměření se odvozuje jen v základní sazbě (D4). */
+    /** Samovyměření se odvozuje jen v základní sazbě (D4 z #86). */
     private const REVERSE_CHARGE_CATEGORY = 'standard';
+
+    /**
+     * Hodnoty `crossBorderSupply` v taxonomii `core.exchange.contentTags`
+     * (tasks/exchange-received-supply-kind.md): druh plnění pro fallback
+     * D2, nebo veto D4. Jediné místo, kde kód hodnoty zná.
+     */
+    public const TAG_SUPPLY_GOODS = 'goods';
+    public const TAG_SUPPLY_SERVICES = 'services';
+    public const TAG_SUPPLY_SPECIAL = 'special';
+    public const TAG_SUPPLY_VALUES = [self::TAG_SUPPLY_GOODS, self::TAG_SUPPLY_SERVICES, self::TAG_SUPPLY_SPECIAL];
 
     public function __construct(
         private readonly VatRateResolver $vat,
@@ -62,8 +87,10 @@ final class VatCodeDerivation
      * @param string|null $place             Canonical `vat.place`; null = tuzemsko.
      * @param bool|null   $reverseCharge     Canonical `vat.reverseCharge`.
      * @param float|null  $pct               Sazba z řádku dokladu (`rows[].vat.pct`).
-     * @param string|null $supplyKind        `rows[].vat.supplyKind` (goods / services).
+     * @param string|null $supplyKind        Efektivní druh plnění řádku (goods / services) —
+     *                                       `rows[].vat.supplyKind`, nebo fallback ze štítku (D2).
      * @param string|null $reverseChargeCode `rows[].vat.reverseChargeCode` (tuzemské PDP).
+     * @param string|null $tagSupply         `crossBorderSupply` štítku řádku (`special` = veto D4).
      * @return array{code: ?string, reason: ?string}
      */
     public function derive(
@@ -74,6 +101,7 @@ final class VatCodeDerivation
         ?float $pct,
         ?string $supplyKind,
         ?string $reverseChargeCode,
+        ?string $tagSupply = null,
     ): array {
         $country = strtolower(trim($country));
         $placeKey = $place ?? 'domestic';
@@ -113,10 +141,25 @@ final class VatCodeDerivation
         );
 
         if ($cfgPlace !== 'domestic') {
+            // D4: veto štítku před druhem plnění — jinak by `services` z AI
+            // veto obešlo. Kontroluje se hodnota štítku, ne druh.
+            if ($tagSupply === self::TAG_SUPPLY_SPECIAL) {
+                return self::fail(
+                    'místo plnění se řídí zvláštním pravidlem (ubytování, doprava osob, stravování,'
+                    . ' nemovitost, mýto, parkování) — samovyměření se neodvozuje',
+                );
+            }
             if ($supplyKind === null || trim($supplyKind) === '') {
                 return self::fail('u plnění mimo tuzemsko chybí druh plnění (zboží / služba)');
             }
             $kind = trim($supplyKind);
+            // D3: dovoz zboží — samovyměření dovozce (cz-415 / cz-405, § 23
+            // odst. 3) běžná firma nedělá, DPH platí celnímu úřadu.
+            if ($cfgPlace === 'foreign' && $kind === 'goods') {
+                return self::fail(
+                    'dovoz zboží — DPH se vyměřuje z celního dokladu, ne z faktury dodavatele',
+                );
+            }
             $candidates = array_filter(
                 $candidates,
                 static fn (array $def): bool => ($def['supplyKind'] ?? null) === $kind,

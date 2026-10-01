@@ -601,7 +601,10 @@ nebo import mezi dvěma cizími subjekty.
                                    //   applier ze signálů (§ 8.4)
     "pct":  21,                    // optional; resolver doplní z code+date
     "supplyKind": null,            // goods | services | null — druh plnění,
-                                   //   rozhoduje jen mimo tuzemsko
+                                   //   rozhoduje jen mimo tuzemsko; u přijatého
+                                   //   dokladu bez hodnoty ho applier doplní
+                                   //   ze štítku řádku (§ 8.4, warning
+                                   //   `supply_kind_derived`)
     "reverseChargeCode": null      // kód předmětu plnění u tuzemského
                                    //   přenesení daňové povinnosti ("4"
                                    //   stavební práce, "5" příloha 5)
@@ -812,8 +815,9 @@ neodvozuje):
 
 - **samovyměření** (`reverseCharge: true`, nebo místo ≠ tuzemsko): kódy
   s `reverseVatCode` kategorie `standard`; mimo tuzemsko rozhoduje
-  `supplyKind` (EU zboží `cz-215`, služby `cz-217`; třetí země `cz-415` /
-  `cz-417`), v tuzemsku `reverseChargeCode` (`4` → `cz-115`, `5` → `cz-117`);
+  `supplyKind` (EU zboží `cz-215`, služby `cz-217`; třetí země služby
+  `cz-417` — dovoz zboží se neodvozuje, viz níže), v tuzemsku
+  `reverseChargeCode` (`4` → `cz-115`, `5` → `cz-117`);
 - **tuzemsko bez samovyměření:** kód bez `reverseVatCode`, jehož sazba
   k DUZP = `pct` řádku (`cz-110`, `cz-111`, `cz-112`; historicky `cz-301`).
 
@@ -832,13 +836,48 @@ z číselníku k DUZP — u samovyměření tedy 21, ne 0 z dokladu dodavatele.
 `reverseCharge`; `supplyKind` sedí, když je na obou stranách; u tuzemska
 bez samovyměření sedí sazba k datu. Null signál se nekontroluje. Kontrola
 chrání i před kódem doplněným z historie řádků (`RowHistoryEnricher`),
-který by jinak derivaci přebil.
+který by jinak derivaci přebil. Kontrola dostává jen `supplyKind`
+z canonicalu, ne fallback ze štítku — kód potvrzený člověkem štítek
+nezpochybňuje.
+
+**Druh plnění ze štítku řádku** (`tasks/exchange-received-supply-kind.md`
+D2): přijatá faktura ze zahraničí, která DPH nezmiňuje (americký SaaS bez
+DIČ, `vat.mode: none`), přijde z AI bez `supplyKind`. Když efektivní místo
+≠ tuzemsko a řádek druh nemá, applier ho vezme ze štítku řádku
+(`_resolve.contentTag`: výjimka `rowExceptions[]` pro index řádku, jinak
+štítek dokumentu) podle atributu `crossBorderSupply` taxonomie
+`core.exchange.contentTags` (`services` / `goods`; komentář v
+`contentTags.jsonc`) a přidá warning `supply_kind_derived` na
+`rows.N.vat.supplyKind`. Canonical se nemění — efektivní druh je jen
+v kontextu a v `_resolve.rows[].vatCode.supplyKindSource: "tag"`. Bez
+bloku `contentTag` (pokrytý doklad bez LLM běhu) nebo u štítku bez
+atributu fallback není. Pořadí ve `vatContext()`: místo z DIČ s druhy
+z canonicalu → fallback druhů → jediný doplňkový průchod derivace místa,
+když fallback něco doplnil a první průchod selhal na prefixu (`XI` jen
+zboží). Funguje i nad starou analýzou — `enrichFresh` blok persistuje.
+
+Dvě pojistky proti tichému chybnému samovyměření, obě jen mimo tuzemsko:
+
+- **dovoz zboží** (D3): třetí země + `goods` → `null` s důvodem „dovoz
+  zboží — DPH se vyměřuje z celního dokladu, ne z faktury dodavatele“.
+  Samovyměření dovozce (`cz-415` / `cz-405`, § 23 odst. 3) běžná firma
+  nedělá, DPH platí celnímu úřadu a odpočet uplatní z JSD; `cz-415` jen
+  ručně. Platí i pro `goods` ze štítku (issue `supply_kind_derived`
+  i `vat_code_unknown`).
+- **zvláštní místo plnění** (D4): štítek řádku s `crossBorderSupply:
+  "special"` (ubytování, jízdné, stravování, nájem a služby k nemovitosti,
+  mýto, parkování) → `null` s důvodem „místo plnění se řídí zvláštním
+  pravidlem … — samovyměření se neodvozuje“. Veto jde před `supplyKind`
+  z AI i před `reverseCharge: true` — chyba je lepší než samovyměření tam,
+  kde se daň v ČR nepřiznává. Kódu z historie řádků (`conflict()`) se
+  veto netýká.
 
 Mimo rozsah (derivace vrací `null` → `vat_code_unknown`): snížená sazba
 u samovyměření, zahraniční DPH naúčtovaná dodavatelem z EU či třetí země
 (hotel, PHM v cizině — `pct` > 0 bez `reverseCharge: true` není
-samovyměření), PDP kódy mimo číselník, dovoz zboží přes celní doklad,
-smíšené doklady. Vystavené a účetní doklady derivaci nepoužívají.
+samovyměření), PDP kódy mimo číselník, smíšené doklady, druh plnění
+z textu řádku bez štítku. Vystavené a účetní doklady derivaci
+nepoužívají.
 
 ### 8.5 BankAccountResolver
 
@@ -909,7 +948,9 @@ klient drží jeden payload mezi step preview a apply.
       "unit":     { "status": "matched", "unitId": 3, "matchedBy": "iso" },
       "vatCode":  { "status": "matched", "code": "cz-110" }
                                           // matchedBy "derived", když kód
-                                          //   odvodil applier (§ 8.4)
+                                          //   odvodil applier (§ 8.4);
+                                          //   supplyKindSource "tag", když
+                                          //   druh plnění doplnil ze štítku
     },
     {
       "index": 1,
@@ -985,6 +1026,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `recap_source_computed_fallback` | info | Rekapitulaci nešlo převzít (prázdná, nekonzistentní, bez dohledatelného DPH kódu, nebo samovyměření — D3) — spočítá se z řádků. Zpráva nese důvod. |
 | `vat_code_unknown` | error | Kód DPH řádku není v číselníku země registrace a nejde odvodit ze signálů (§ 8.4). Zpráva nese důvod; blokuje apply. |
 | `vat_code_derived` | warning | Kód DPH řádku byl neznámý nebo v rozporu se signály dokladu — nahrazen odvozeným (`VatCodeDerivation`). Zpráva nese původní hodnotu. |
+| `supply_kind_derived` | warning | Řádek přijatého dokladu mimo tuzemsko bez `vat.supplyKind` — druh plnění doplněn ze štítku řádku (`crossBorderSupply` taxonomie, § 8.4). Zpráva nese název štítku a druh; path `rows.N.vat.supplyKind`. Hlásí se jen, když na doplněném druhu výsledek stojí (odvozený kód nebo `vat_code_unknown`). |
 | `vat_registration_country_derived` | info | `vat.registrationCountry` přijatého dokladu neodpovídá naší registraci — nepoužije se (D2). |
 | `vat_place_derived` | warning | Místo plnění přijatého dokladu odvozené z prefixu DIČ dodavatele (`VatPlaceDerivation`) se liší od neprázdné hodnoty `vat.place` z AI — použije se odvozené. Zpráva nese obě hodnoty a prefix. |
 | `vat_place_unknown` / `vat_mode_unknown` | warning | Neznámá hodnota `vat.place` / `vat.mode` — fallback tuzemsko / fromBase. Schéma má obě pole jako enum, takže jen mimo schema validaci. |

@@ -16,7 +16,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * VatReverseCodeRatesTest) — testy hlídají i číselník: kdyby někdo přidal
  * další 21 % vstupní kód bez `reducedDeduction` / `reverseVatCode`,
  * tuzemská derivace přestane být jednoznačná a test to ukáže.
- * tasks/exchange-received-reverse-charge.md D1/D4.
+ * tasks/exchange-received-reverse-charge.md D1/D4; dovoz zboží (D3)
+ * a veto štítku `special` (D4) z tasks/exchange-received-supply-kind.md.
  */
 class VatCodeDerivationTest extends TestCase
 {
@@ -37,18 +38,24 @@ class VatCodeDerivationTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0: ?string, 1: ?bool, 2: ?float, 3: ?string, 4: ?string, 5: string, 6: string}>
+     * @return array<string, array{0: ?string, 1: ?bool, 2: ?float, 3: ?string, 4: ?string, 5: string, 6: string, 7?: ?string}>
      */
     public static function derivedCodes(): array
     {
-        // place, reverseCharge, pct, supplyKind, reverseChargeCode, expected, date
+        // place, reverseCharge, pct, supplyKind, reverseChargeCode, expected, date, [tagSupply]
         return [
             'EU služby'                        => ['intracom', true, 0.0, 'services', null, 'cz-217', self::DATE],
             'EU služby bez příznaku'           => ['intracom', null, 0.0, 'services', null, 'cz-217', self::DATE],
             'EU služby bez sazby'              => ['intracom', true, null, 'services', null, 'cz-217', self::DATE],
             'EU zboží'                         => ['intracom', true, 0.0, 'goods', null, 'cz-215', self::DATE],
             'třetí země služby'                => ['thirdCountry', true, 0.0, 'services', null, 'cz-417', self::DATE],
-            'třetí země zboží'                 => ['thirdCountry', true, 0.0, 'goods', null, 'cz-415', self::DATE],
+            'třetí země služby bez příznaku'   => ['thirdCountry', null, 0.0, 'services', null, 'cz-417', self::DATE],
+            // Štítek bez veta derivaci nemění — druh z AI má přednost (D2).
+            'EU zboží se štítkem goods'        => ['intracom', true, 0.0, 'goods', null, 'cz-215', self::DATE, 'goods'],
+            'EU služby se štítkem goods'       => ['intracom', true, 0.0, 'services', null, 'cz-217', self::DATE, 'goods'],
+            // Veto `special` platí jen mimo tuzemsko (D4).
+            'tuzemsko 21 se štítkem special'   => ['domestic', null, 21.0, null, null, 'cz-110', self::DATE, 'special'],
+            'PDP 4 se štítkem special'         => ['domestic', true, 0.0, null, '4', 'cz-115', self::DATE, 'special'],
             'PDP 4 stavební práce'             => ['domestic', true, 0.0, null, '4', 'cz-115', self::DATE],
             'PDP 5 příloha 5'                  => ['domestic', true, 0.0, null, '5', 'cz-117', self::DATE],
             'PDP 4 s vyplněným supplyKind'     => ['domestic', true, 0.0, 'services', '4', 'cz-115', self::DATE],
@@ -71,8 +78,9 @@ class VatCodeDerivationTest extends TestCase
         ?string $reverseChargeCode,
         string $expected,
         string $date,
+        ?string $tagSupply = null,
     ): void {
-        $result = $this->derivation()->derive('cz', $date, $place, $reverseCharge, $pct, $supplyKind, $reverseChargeCode);
+        $result = $this->derivation()->derive('cz', $date, $place, $reverseCharge, $pct, $supplyKind, $reverseChargeCode, $tagSupply);
         $this->assertSame(['code' => $expected, 'reason' => null], $result);
     }
 
@@ -83,14 +91,22 @@ class VatCodeDerivationTest extends TestCase
     }
 
     /**
-     * @return array<string, array{0: ?string, 1: ?bool, 2: ?float, 3: ?string, 4: ?string, 5: string}>
+     * @return array<string, array{0: ?string, 1: ?bool, 2: ?float, 3: ?string, 4: ?string, 5: string, 6?: ?string}>
      */
     public static function underivable(): array
     {
-        // place, reverseCharge, pct, supplyKind, reverseChargeCode, očekávaný fragment důvodu
+        // place, reverseCharge, pct, supplyKind, reverseChargeCode, očekávaný fragment důvodu, [tagSupply]
         return [
             'EU bez druhu plnění'              => ['intracom', true, 0.0, null, null, 'druh plnění'],
             'třetí země bez druhu plnění'      => ['thirdCountry', null, 0.0, null, null, 'druh plnění'],
+            // D3: dovoz zboží — DPH z celního dokladu, cz-415 jen ručně.
+            'třetí země zboží (dovoz)'         => ['thirdCountry', true, 0.0, 'goods', null, 'celního dokladu'],
+            'třetí země zboží bez příznaku'    => ['thirdCountry', null, 0.0, 'goods', null, 'celního dokladu'],
+            // D4: veto štítku před druhem z AI i před reverseCharge.
+            'EU služby, štítek special'        => ['intracom', true, 0.0, 'services', null, 'zvláštním pravidlem', 'special'],
+            'EU bez druhu, štítek special'     => ['intracom', true, 0.0, null, null, 'zvláštním pravidlem', 'special'],
+            'třetí země služby, štítek special' => ['thirdCountry', null, 0.0, 'services', null, 'zvláštním pravidlem', 'special'],
+            'třetí země, special, RC true'     => ['thirdCountry', true, 0.0, 'services', null, 'zvláštním pravidlem', 'special'],
             'PDP bez kódu předmětu plnění'     => ['domestic', true, 0.0, null, null, 'předmět'],
             'PDP s neexistujícím kódem 12'     => ['domestic', true, 0.0, null, '12', 'žádný kód'],
             'neznámé místo plnění'             => ['eu', true, 0.0, 'services', null, 'místo plnění „eu“'],
@@ -110,8 +126,9 @@ class VatCodeDerivationTest extends TestCase
         ?string $supplyKind,
         ?string $reverseChargeCode,
         string $reasonFragment,
+        ?string $tagSupply = null,
     ): void {
-        $result = $this->derivation()->derive('cz', self::DATE, $place, $reverseCharge, $pct, $supplyKind, $reverseChargeCode);
+        $result = $this->derivation()->derive('cz', self::DATE, $place, $reverseCharge, $pct, $supplyKind, $reverseChargeCode, $tagSupply);
         $this->assertNull($result['code']);
         $this->assertIsString($result['reason']);
         $this->assertStringContainsString($reasonFragment, $result['reason']);

@@ -93,6 +93,7 @@ class DocumentApplierTest extends TestCase
         ?ConfigRuntime $config = null,
         ?VatCodeDerivation $derivation = null,
         ?VatPlaceDerivation $placeDerivation = null,
+        ?array $contentTags = null,
     ): DocumentApplier {
         $db ??= $this->createMock(Connection::class);
         $party ??= $this->createMock(PartyResolver::class);
@@ -140,7 +141,30 @@ class DocumentApplierTest extends TestCase
             // Skutečné unie (tradeUnions.jsonc) — místo plnění z prefixu DIČ
             // dodavatele, tasks/exchange-received-vat-place.md D1/D2.
             vatPlaceDerivation: $placeDerivation ?? new VatPlaceDerivation($this->tradeUnionResolver()),
+            // Skutečná taxonomie (contentTags.jsonc) — fallback druhu plnění
+            // ze štítku a veto, tasks/exchange-received-supply-kind.md D2/D4.
+            contentTags: $contentTags ?? $this->contentTaxonomy(),
         );
+    }
+
+    private static ?array $contentTaxonomy = null;
+
+    /**
+     * Skutečný cfgItem core.exchange.contentTags ve tvaru compiled configu
+     * pro češtinu (`name` = `name:cs`, jak ho dostane applier z requestu).
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function contentTaxonomy(): array
+    {
+        if (self::$contentTaxonomy === null) {
+            $raw = JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/core/exchange/config/contentTags.jsonc');
+            self::$contentTaxonomy = array_map(
+                static fn (array $entry): array => ['name' => $entry['name:cs'] ?? $entry['name']] + $entry,
+                $raw,
+            );
+        }
+        return self::$contentTaxonomy;
     }
 
     private static ?array $tradeUnions = null;
@@ -251,6 +275,43 @@ class DocumentApplierTest extends TestCase
             ['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58],
         ];
         $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        return $payload;
+    }
+
+    /**
+     * Přijatá faktura za předplatné softwaru od dodavatele ze třetí země bez
+     * DIČ, na dokladu žádná zmínka o DPH — tvar analýzy v4.6.1: `vat.mode`
+     * none, bez `reverseCharge`, řádek bez `supplyKind`; štítek z pipeline
+     * v `_resolve.contentTag` (tasks/exchange-received-supply-kind.md).
+     * Fiktivní dodavatel, částky z happy fixture.
+     *
+     * @param string|null $tag štítek dokumentu; null = bez bloku contentTag
+     * @param list<array{rowIndex: int, tag: string}> $rowExceptions
+     * @return array<string, mixed>
+     */
+    private function thirdCountrySoftwarePayload(?string $tag = 'it.software', array $rowExceptions = []): array
+    {
+        $payload = $this->happyPayload();
+        $payload['supplier']['name'] = 'Cloud Tools Inc.';
+        $payload['supplier']['country'] = 'us';
+        $payload['supplier']['address']['country'] = 'us';
+        unset($payload['supplier']['companyId'], $payload['supplier']['taxId'], $payload['supplier']['vatId']);
+        $payload['vat'] = ['mode' => 'none', 'place' => 'thirdCountry'];
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 0];
+        $payload['rows'][0]['computed'] = ['vatBase' => 10330.58, 'vatAmount' => 0, 'vatTotal' => 10330.58];
+        $payload['vatRecap'] = [
+            ['vatCode' => null, 'vatPct' => 0, 'base' => 10330.58, 'tax' => 0, 'total' => 10330.58],
+        ];
+        $payload['totals'] = ['totalBase' => 10330.58, 'totalVat' => 0, 'totalAmount' => 10330.58, 'totalRounding' => 0];
+        if ($tag !== null) {
+            $payload['_resolve']['contentTag'] = [
+                'tag'           => $tag,
+                'tagSource'     => 'llm',
+                'tagConfidence' => 0.9,
+                'promptVersion' => 'tag-v1',
+                'rowExceptions' => $rowExceptions,
+            ];
+        }
         return $payload;
     }
 
@@ -2984,5 +3045,181 @@ class DocumentApplierTest extends TestCase
             'applyOptions' => ['importOwnBankAccount' => 'MAIN'],
         ]);
         $this->assertNotSame('schema_invalid', $result->errorCode);
+    }
+
+    // ── Druh plnění ze štítku řádku (tasks/exchange-received-supply-kind.md) ──
+
+    /** Scénář z diagnostiky: třetí země, bez DIČ, bez zmínky o DPH, štítek software → cz-417 (D2). */
+    public function testReceivedThirdCountryWithoutSupplyKindFallsBackToContentTag(): void
+    {
+        $payload = $this->thirdCountrySoftwarePayload();
+        $applier = $this->buildVatDerivingApplier();
+        $result = $applier->preview($payload);
+
+        $this->assertTrue($result->success);
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('matched', $vatCode['status']);
+        $this->assertSame('derived', $vatCode['matchedBy']);
+        $this->assertSame('cz-417', $vatCode['createPayload']['code']);
+        $this->assertSame(21.0, $vatCode['createPayload']['pct']);
+        $this->assertSame('tag', $vatCode['supplyKindSource']);
+
+        $issue = $this->issueByCode($result, 'supply_kind_derived');
+        $this->assertNotNull($issue);
+        $this->assertSame('warning', $issue['severity']);
+        $this->assertSame('rows.0.vat.supplyKind', $issue['path']);
+        $this->assertStringContainsString('Software a SaaS', $issue['message']);
+        $this->assertStringContainsString('služby', $issue['message']);
+
+        $codes = $this->issueCodes($result);
+        $this->assertNotContains('vat_code_unknown', $codes);
+        $this->assertContains('vat_mode_derived', $codes);
+        $this->assertContains('recap_source_computed_fallback', $codes);
+        // Canonical se nemění — efektivní druh je jen v kontextu a v _resolve.
+        $this->assertArrayNotHasKey('supplyKind', $result->canonical['rows'][0]['vat']);
+
+        $data = $this->invokeTransform($applier, $payload);
+        $this->assertSame(1, $data['vat_mode'], 'none → fromBase (samovyměření)');
+        $this->assertSame(2, $data['vat_place'], 'Zahraničí');
+    }
+
+    /** Bez bloku contentTag (pokrytý doklad, žádný LLM běh) žádný fallback — chyba jako dřív. */
+    public function testReceivedThirdCountryWithoutSupplyKindAndWithoutTagStaysUnknown(): void
+    {
+        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: null));
+
+        $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
+        $issue = $this->issueByCode($result, 'vat_code_unknown');
+        $this->assertNotNull($issue);
+        $this->assertStringContainsString('druh plnění', $issue['message']);
+        $this->assertNotContains('supply_kind_derived', $this->issueCodes($result));
+    }
+
+    /** Štítek bez atributu crossBorderSupply fallback nedává. */
+    public function testReceivedTagWithoutCrossBorderSupplyGivesNoFallback(): void
+    {
+        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: 'vehicle.fuel'));
+
+        $this->assertNotNull($this->issueByCode($result, 'vat_code_unknown'));
+        $this->assertNotContains('supply_kind_derived', $this->issueCodes($result));
+    }
+
+    /** Výjimka řádku má přednost před štítkem dokumentu (index v canonical.rows). */
+    public function testReceivedRowExceptionBeatsDocumentTag(): void
+    {
+        $payload = $this->thirdCountrySoftwarePayload(
+            tag: 'it.hardware',
+            rowExceptions: [['rowIndex' => 0, 'tag' => 'it.software']],
+        );
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $this->assertSame('cz-417', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $issue = $this->issueByCode($result, 'supply_kind_derived');
+        $this->assertNotNull($issue);
+        $this->assertStringContainsString('Software a SaaS', $issue['message']);
+        $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
+    }
+
+    /** D3: zboží ze třetí země (štítek hardware) — druh se doplní, ale dovoz se neodvozuje. */
+    public function testReceivedThirdCountryGoodsTagReportsImportAndDerivedKind(): void
+    {
+        $result = $this->buildVatDerivingApplier()->preview($this->thirdCountrySoftwarePayload(tag: 'it.hardware'));
+
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('notFound', $vatCode['status']);
+        $this->assertSame('tag', $vatCode['supplyKindSource']);
+        $unknown = $this->issueByCode($result, 'vat_code_unknown');
+        $this->assertNotNull($unknown);
+        $this->assertStringContainsString('celního dokladu', $unknown['message']);
+        $derived = $this->issueByCode($result, 'supply_kind_derived');
+        $this->assertNotNull($derived);
+        $this->assertStringContainsString('IT hardware', $derived['message']);
+        $this->assertStringContainsString('zboží', $derived['message']);
+    }
+
+    /** EU zboží ze štítku → cz-215 (D2; D3 se týká jen třetí země). */
+    public function testReceivedEuGoodsTagDerivesIntracomGoodsCode(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['rows'][0]['vat']['supplyKind'] = null;
+        $payload['_resolve']['contentTag'] = ['tag' => 'office.supplies', 'tagSource' => 'rule', 'ruleId' => 1];
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $this->assertSame('cz-215', $result->canonical['_resolve']['rows'][0]['vatCode']['createPayload']['code']);
+        $issue = $this->issueByCode($result, 'supply_kind_derived');
+        $this->assertNotNull($issue);
+        $this->assertStringContainsString('Kancelářské potřeby', $issue['message']);
+        $this->assertStringContainsString('zboží', $issue['message']);
+    }
+
+    /** Druh plnění z AI má přednost před štítkem — bez issue. */
+    public function testReceivedAiSupplyKindBeatsContentTag(): void
+    {
+        $payload = $this->euServicesPayload();
+        $payload['_resolve']['contentTag'] = ['tag' => 'it.hardware', 'tagSource' => 'llm', 'rowExceptions' => []];
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('cz-217', $vatCode['createPayload']['code']);
+        $this->assertArrayNotHasKey('supplyKindSource', $vatCode);
+        $this->assertNotContains('supply_kind_derived', $this->issueCodes($result));
+    }
+
+    /** Kód z historie řádků (vyplněný, v souladu) štítek nezpochybňuje a fallback nehlásí. */
+    public function testReceivedKeptInputCodeReportsNoSupplyKindFallback(): void
+    {
+        $payload = $this->thirdCountrySoftwarePayload(tag: 'it.hardware');
+        $payload['rows'][0]['vat']['code'] = 'cz-417';
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('cz-417', $vatCode['createPayload']['code']);
+        $this->assertSame('cfgItem', $vatCode['matchedBy']);
+        $codes = $this->issueCodes($result);
+        $this->assertNotContains('supply_kind_derived', $codes);
+        $this->assertNotContains('vat_code_derived', $codes);
+        $this->assertNotContains('vat_code_unknown', $codes);
+    }
+
+    /** D4: štítek se zvláštním místem plnění vetuje samovyměření i proti druhu z AI. */
+    public function testReceivedSpecialTagVetoesReverseChargeDespiteAiSupplyKind(): void
+    {
+        $payload = $this->thirdCountrySoftwarePayload(tag: 'travel.accommodation');
+        $payload['rows'][0]['vat']['supplyKind'] = 'services';
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $this->assertSame('notFound', $result->canonical['_resolve']['rows'][0]['vatCode']['status']);
+        $issue = $this->issueByCode($result, 'vat_code_unknown');
+        $this->assertNotNull($issue);
+        $this->assertStringContainsString('zvláštním pravidlem', $issue['message']);
+        $this->assertNotContains('supply_kind_derived', $this->issueCodes($result));
+    }
+
+    /** Tuzemský doklad: štítek special ani fallback nic nemění. */
+    public function testReceivedDomesticDocumentIgnoresSpecialTag(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['rows'][0]['vat'] = ['code' => null, 'pct' => 21];
+        $payload['_resolve']['contentTag'] = ['tag' => 'travel.accommodation', 'tagSource' => 'llm', 'rowExceptions' => []];
+        $result = $this->buildVatDerivingApplier()->preview($payload);
+
+        $vatCode = $result->canonical['_resolve']['rows'][0]['vatCode'];
+        $this->assertSame('cz-110', $vatCode['createPayload']['code']);
+        $this->assertSame('derived', $vatCode['matchedBy']);
+        $codes = $this->issueCodes($result);
+        $this->assertNotContains('supply_kind_derived', $codes);
+        $this->assertNotContains('vat_code_unknown', $codes);
+    }
+
+    /** Vystavený doklad derivaci nepoužívá — štítek ani fallback se neuplatní. */
+    public function testIssuedDocumentIgnoresContentTagFallback(): void
+    {
+        $payload = $this->thirdCountrySoftwarePayload();
+        $payload['docType'] = 'invoiceIssued';
+        $payload['selfParty'] = 'supplier';
+        $data = $this->invokeTransform($this->buildVatDerivingApplier(), $payload);
+
+        $this->assertSame(0, $data['vat_mode'], 'none zůstává — žádné samovyměření');
+        $this->assertSame(2, $data['vat_place']);
     }
 }

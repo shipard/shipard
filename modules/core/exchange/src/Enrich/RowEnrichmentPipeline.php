@@ -97,6 +97,33 @@ final class RowEnrichmentPipeline
     }
 
     /**
+     * Štítek konkrétního řádku z bloku `_resolve.contentTag`: výjimka
+     * `rowExceptions[]` pro index řádku (`{rowIndex, tag}`, index
+     * v `canonical.rows` — stejně jako {@see applyTagToRows()}), jinak
+     * štítek dokumentu. Null = bez bloku. Čte ho fallback druhu plnění
+     * v DocumentApplier (tasks/exchange-received-supply-kind.md D2) —
+     * parsování výjimek žije jen tady.
+     *
+     * @param array<string, mixed> $canonical
+     */
+    public static function rowContentTagOf(array $canonical, int $rowIndex): ?string
+    {
+        $block = $canonical['_resolve']['contentTag'] ?? null;
+        if (!is_array($block)) {
+            return null;
+        }
+        foreach ((array) ($block['rowExceptions'] ?? []) as $entry) {
+            if (is_array($entry) && isset($entry['rowIndex'], $entry['tag'])
+                && is_numeric($entry['rowIndex']) && (int) $entry['rowIndex'] === $rowIndex
+                && is_string($entry['tag']) && $entry['tag'] !== ''
+            ) {
+                return $entry['tag'];
+            }
+        }
+        return self::contentTagOf($canonical);
+    }
+
+    /**
      * Plný běh při /result — jediné místo, kde smí běžet LLM (D16)
      * a kde se inkrementují statistiky pravidla. Volá ho AnalysisController
      * i IsdocImportService (v runneru předzpracování, #81).

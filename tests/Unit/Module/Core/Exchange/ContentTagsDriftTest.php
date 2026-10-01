@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Core\Exchange;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Core\Exchange\Document\VatCodeDerivation;
 
 /**
  * Drift guard obsahové taxonomie (tasks/content-tag-enrichment.md):
@@ -17,9 +18,31 @@ use Shipard\Core\Utils\JsoncParser;
  * Repair: přidej štítek do modules/core/exchange/config/contentTags.jsonc
  * (jen pokud se opravdu účtuje jinak — břitva D2), nebo oprav překlep
  * v nabídce / contentTagDefaults.
+ *
+ * Druhý guard: `crossBorderSupply` (tasks/exchange-received-supply-kind.md
+ * D2/D4) musí přesně odpovídat whitelistu — tiché smazání nebo přidání
+ * atributu mění kód DPH návrhu u dokladů ze zahraničí. Repair: změnu
+ * nejdřív rozhodnout v tasku, pak upravit obě místa.
  */
 class ContentTagsDriftTest extends TestCase
 {
+    /** Whitelist z tasku (D2 mapování): hodnota → štítky. Ostatní štítky atribut nemají. */
+    private const CROSS_BORDER_SUPPLY = [
+        'services' => [
+            'it.software', 'it.hosting', 'it.phone', 'it.internet',
+            'services.accounting', 'services.legal', 'services.marketing', 'services.shipping',
+        ],
+        'goods' => [
+            'it.hardware', 'office.supplies', 'office.equipment', 'office.cleaning',
+            'goods.stock', 'vehicle.parts', 'vehicle.consumables', 'people.workwear',
+        ],
+        'special' => [
+            'travel.accommodation', 'travel.fares', 'people.catering',
+            'premises.rent', 'premises.electricity', 'premises.gas', 'premises.water',
+            'premises.maintenance', 'premises.security', 'vehicle.toll', 'vehicle.parking',
+        ],
+    ];
+
     private function modulesDir(): string
     {
         return dirname(__DIR__, 5) . '/modules';
@@ -87,6 +110,36 @@ class ContentTagsDriftTest extends TestCase
                 $tag,
                 $taxonomy,
                 "contentTagDefaults: neznámý štítek {$tag}",
+            );
+        }
+    }
+
+    public function testCrossBorderSupplyMatchesWhitelist(): void
+    {
+        $taxonomy = $this->taxonomy();
+
+        $expected = [];
+        foreach (self::CROSS_BORDER_SUPPLY as $value => $tags) {
+            $this->assertContains($value, VatCodeDerivation::TAG_SUPPLY_VALUES);
+            foreach ($tags as $tag) {
+                $this->assertArrayHasKey($tag, $taxonomy, "whitelist: neznámý štítek {$tag}");
+                $expected[$tag] = $value;
+            }
+        }
+
+        foreach ($taxonomy as $key => $entry) {
+            $actual = $entry['crossBorderSupply'] ?? null;
+            if ($actual !== null) {
+                $this->assertContains(
+                    $actual,
+                    VatCodeDerivation::TAG_SUPPLY_VALUES,
+                    "{$key}: crossBorderSupply mimo výčet goods / services / special",
+                );
+            }
+            $this->assertSame(
+                $expected[$key] ?? null,
+                $actual,
+                "{$key}: crossBorderSupply neodpovídá whitelistu (tasks/exchange-received-supply-kind.md D2)",
             );
         }
     }

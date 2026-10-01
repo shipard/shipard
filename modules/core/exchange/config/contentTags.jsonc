@@ -4,43 +4,61 @@
     // s prefixovou konvencí `group.tag`; mapování štítek → položka smí
     // fallbackovat na prefix (`vehicle.*`). Břitva D2: nový štítek jen
     // tehdy, když se obsah účtuje jinak než existující štítky.
+    //
+    // `crossBorderSupply` (nepovinný, tasks/exchange-received-supply-kind.md
+    // D2/D4) — co štítek říká o plnění od dodavatele mimo tuzemsko:
+    //   "services" | "goods"  druh plnění pro fallback, když AI u řádku
+    //                         přijatého dokladu `vat.supplyKind` nevyplnila
+    //                         (DocumentApplier, warning supply_kind_derived);
+    //                         `goods` u třetí země kód DPH stejně nedá
+    //                         (dovoz zboží se vyměřuje z celního dokladu,
+    //                         D3) — slouží pro zboží z EU (cz-215);
+    //   "special"             veto — místo plnění se řídí zvláštním
+    //                         pravidlem (ubytování, doprava osob, stravování,
+    //                         nemovitost, mýto, parkování), samovyměření
+    //                         se mimo tuzemsko neodvozuje ani s druhem z AI;
+    //   chybí                 žádný fallback ani veto.
+    // Jen štítky, kde obecné pravidlo místa plnění (§ 9 odst. 1) platí
+    // spolehlivě. Sémantika obsahu, ne účetní předvolba — `vatHint`
+    // patří do economy.items.contentTagDefaults. Prompt klasifikátoru
+    // čte jen `name`, atribut se do LLM nedostane.
     "vehicle.fuel":          { "name": "Fuel",                              "name:cs": "Pohonné hmoty",                                "name:en": "Fuel",                              "order": 10 },
-    "vehicle.consumables":   { "name": "Vehicle consumables",              "name:cs": "Provozní kapaliny a drobný materiál k vozidlům", "name:en": "Vehicle consumables",             "order": 20 },
+    "vehicle.consumables":   { "name": "Vehicle consumables",              "name:cs": "Provozní kapaliny a drobný materiál k vozidlům", "name:en": "Vehicle consumables",             "order": 20, "crossBorderSupply": "goods" },
     "vehicle.service":       { "name": "Vehicle service and repairs",      "name:cs": "Servis a opravy vozidel",                      "name:en": "Vehicle service and repairs",       "order": 30 },
-    "vehicle.parts":         { "name": "Spare parts",                      "name:cs": "Náhradní díly",                                "name:en": "Spare parts",                       "order": 40 },
-    "vehicle.toll":          { "name": "Tolls and vignettes",              "name:cs": "Dálniční známky a mýto",                       "name:en": "Tolls and vignettes",               "order": 50 },
-    "vehicle.parking":       { "name": "Parking",                          "name:cs": "Parkovné",                                     "name:en": "Parking",                           "order": 60 },
+    "vehicle.parts":         { "name": "Spare parts",                      "name:cs": "Náhradní díly",                                "name:en": "Spare parts",                       "order": 40, "crossBorderSupply": "goods" },
+    "vehicle.toll":          { "name": "Tolls and vignettes",              "name:cs": "Dálniční známky a mýto",                       "name:en": "Tolls and vignettes",               "order": 50, "crossBorderSupply": "special" },
+    "vehicle.parking":       { "name": "Parking",                          "name:cs": "Parkovné",                                     "name:en": "Parking",                           "order": 60, "crossBorderSupply": "special" },
     "vehicle.washing":       { "name": "Vehicle washing",                  "name:cs": "Mytí vozidel",                                 "name:en": "Vehicle washing",                   "order": 70 },
     "vehicle.insurance":     { "name": "Vehicle insurance",                "name:cs": "Pojištění vozidel",                            "name:en": "Vehicle insurance",                 "order": 80 },
-    "office.supplies":       { "name": "Office supplies",                  "name:cs": "Kancelářské potřeby",                          "name:en": "Office supplies",                   "order": 90 },
-    "office.equipment":      { "name": "Small equipment",                  "name:cs": "Drobné vybavení",                              "name:en": "Small equipment",                   "order": 100 },
-    "office.cleaning":       { "name": "Cleaning and hygiene supplies",    "name:cs": "Úklidové a hygienické potřeby",                "name:en": "Cleaning and hygiene supplies",     "order": 110 },
-    "it.hardware":           { "name": "IT hardware",                      "name:cs": "IT hardware",                                  "name:en": "IT hardware",                       "order": 120 },
-    "it.software":           { "name": "Software and SaaS",                "name:cs": "Software a SaaS",                              "name:en": "Software and SaaS",                 "order": 130 },
-    "it.hosting":            { "name": "Hosting, domains, cloud",          "name:cs": "Hosting, domény, cloud",                       "name:en": "Hosting, domains, cloud",           "order": 140 },
-    "it.phone":              { "name": "Phone services",                   "name:cs": "Telefonní služby",                             "name:en": "Phone services",                    "order": 150 },
-    "it.internet":           { "name": "Internet connectivity",            "name:cs": "Internetové připojení",                        "name:en": "Internet connectivity",             "order": 160 },
-    "premises.rent":         { "name": "Rent",                             "name:cs": "Nájemné",                                      "name:en": "Rent",                              "order": 170 },
-    "premises.electricity":  { "name": "Electricity",                      "name:cs": "Elektřina",                                    "name:en": "Electricity",                       "order": 180 },
-    "premises.gas":          { "name": "Gas",                              "name:cs": "Plyn",                                         "name:en": "Gas",                               "order": 190 },
-    "premises.water":        { "name": "Water and sewage",                 "name:cs": "Vodné a stočné",                               "name:en": "Water and sewage",                  "order": 200 },
-    "premises.maintenance":  { "name": "Premises maintenance",             "name:cs": "Opravy a údržba prostor",                      "name:en": "Premises maintenance",              "order": 210 },
-    "premises.security":     { "name": "Security services",                "name:cs": "Ostraha a zabezpečení",                        "name:en": "Security services",                 "order": 220 },
-    "services.accounting":   { "name": "Accounting and tax services",      "name:cs": "Účetní a daňové služby",                       "name:en": "Accounting and tax services",       "order": 230 },
-    "services.legal":        { "name": "Legal services",                   "name:cs": "Právní služby",                                "name:en": "Legal services",                    "order": 240 },
-    "services.marketing":    { "name": "Advertising and marketing",        "name:cs": "Reklama a marketing",                          "name:en": "Advertising and marketing",         "order": 250 },
+    "office.supplies":       { "name": "Office supplies",                  "name:cs": "Kancelářské potřeby",                          "name:en": "Office supplies",                   "order": 90, "crossBorderSupply": "goods" },
+    "office.equipment":      { "name": "Small equipment",                  "name:cs": "Drobné vybavení",                              "name:en": "Small equipment",                   "order": 100, "crossBorderSupply": "goods" },
+    "office.cleaning":       { "name": "Cleaning and hygiene supplies",    "name:cs": "Úklidové a hygienické potřeby",                "name:en": "Cleaning and hygiene supplies",     "order": 110, "crossBorderSupply": "goods" },
+    "it.hardware":           { "name": "IT hardware",                      "name:cs": "IT hardware",                                  "name:en": "IT hardware",                       "order": 120, "crossBorderSupply": "goods" },
+    "it.software":           { "name": "Software and SaaS",                "name:cs": "Software a SaaS",                              "name:en": "Software and SaaS",                 "order": 130, "crossBorderSupply": "services" },
+    "it.hosting":            { "name": "Hosting, domains, cloud",          "name:cs": "Hosting, domény, cloud",                       "name:en": "Hosting, domains, cloud",           "order": 140, "crossBorderSupply": "services" },
+    "it.phone":              { "name": "Phone services",                   "name:cs": "Telefonní služby",                             "name:en": "Phone services",                    "order": 150, "crossBorderSupply": "services" },
+    "it.internet":           { "name": "Internet connectivity",            "name:cs": "Internetové připojení",                        "name:en": "Internet connectivity",             "order": 160, "crossBorderSupply": "services" },
+    "premises.rent":         { "name": "Rent",                             "name:cs": "Nájemné",                                      "name:en": "Rent",                              "order": 170, "crossBorderSupply": "special" },
+    "premises.electricity":  { "name": "Electricity",                      "name:cs": "Elektřina",                                    "name:en": "Electricity",                       "order": 180, "crossBorderSupply": "special" },
+    "premises.gas":          { "name": "Gas",                              "name:cs": "Plyn",                                         "name:en": "Gas",                               "order": 190, "crossBorderSupply": "special" },
+    "premises.water":        { "name": "Water and sewage",                 "name:cs": "Vodné a stočné",                               "name:en": "Water and sewage",                  "order": 200, "crossBorderSupply": "special" },
+    "premises.maintenance":  { "name": "Premises maintenance",             "name:cs": "Opravy a údržba prostor",                      "name:en": "Premises maintenance",              "order": 210, "crossBorderSupply": "special" },
+    "premises.security":     { "name": "Security services",                "name:cs": "Ostraha a zabezpečení",                        "name:en": "Security services",                 "order": 220, "crossBorderSupply": "special" },
+    "services.accounting":   { "name": "Accounting and tax services",      "name:cs": "Účetní a daňové služby",                       "name:en": "Accounting and tax services",       "order": 230, "crossBorderSupply": "services" },
+    "services.legal":        { "name": "Legal services",                   "name:cs": "Právní služby",                                "name:en": "Legal services",                    "order": 240, "crossBorderSupply": "services" },
+    "services.marketing":    { "name": "Advertising and marketing",        "name:cs": "Reklama a marketing",                          "name:en": "Advertising and marketing",         "order": 250, "crossBorderSupply": "services" },
     "services.training":     { "name": "Training and courses",             "name:cs": "Školení a kurzy",                              "name:en": "Training and courses",              "order": 260 },
-    "services.shipping":     { "name": "Shipping and couriers",            "name:cs": "Přeprava a kurýři",                            "name:en": "Shipping and couriers",             "order": 270 },
+    "services.shipping":     { "name": "Shipping and couriers",            "name:cs": "Přeprava a kurýři",                            "name:en": "Shipping and couriers",             "order": 270, "crossBorderSupply": "services" },
     "services.postage":      { "name": "Postage",                          "name:cs": "Poštovné",                                     "name:en": "Postage",                           "order": 280 },
     "services.banking":      { "name": "Bank fees",                        "name:cs": "Bankovní poplatky",                            "name:en": "Bank fees",                         "order": 290 },
     "services.waste":        { "name": "Waste disposal",                   "name:cs": "Odvoz odpadu",                                 "name:en": "Waste disposal",                    "order": 300 },
-    "goods.stock":           { "name": "Goods and stock materials",        "name:cs": "Zboží / materiál na sklad",                    "name:en": "Goods and stock materials",         "order": 310 },
-    "travel.accommodation":  { "name": "Accommodation",                    "name:cs": "Ubytování",                                    "name:en": "Accommodation",                     "order": 320 },
-    "travel.fares":          { "name": "Fares and flights",                "name:cs": "Jízdné a letenky",                             "name:en": "Fares and flights",                 "order": 330 },
-    "people.catering":       { "name": "Catering and refreshments",        "name:cs": "Občerstvení a pohoštění",                      "name:en": "Catering and refreshments",         "order": 340 },
+    "goods.stock":           { "name": "Goods and stock materials",        "name:cs": "Zboží / materiál na sklad",                    "name:en": "Goods and stock materials",         "order": 310, "crossBorderSupply": "goods" },
+    "travel.accommodation":  { "name": "Accommodation",                    "name:cs": "Ubytování",                                    "name:en": "Accommodation",                     "order": 320, "crossBorderSupply": "special" },
+    "travel.fares":          { "name": "Fares and flights",                "name:cs": "Jízdné a letenky",                             "name:en": "Fares and flights",                 "order": 330, "crossBorderSupply": "special" },
+    "people.catering":       { "name": "Catering and refreshments",        "name:cs": "Občerstvení a pohoštění",                      "name:en": "Catering and refreshments",         "order": 340, "crossBorderSupply": "special" },
     "people.gifts":          { "name": "Gifts",                            "name:cs": "Dary a pozornosti",                            "name:en": "Gifts",                             "order": 350 },
     "people.benefits":       { "name": "Employee benefits",                "name:cs": "Zaměstnanecké benefity",                       "name:en": "Employee benefits",                 "order": 360 },
-    "people.workwear":       { "name": "Workwear and PPE",                 "name:cs": "Pracovní oděvy a OOPP",                        "name:en": "Workwear and PPE",                  "order": 370 },
+    "people.workwear":       { "name": "Workwear and PPE",                 "name:cs": "Pracovní oděvy a OOPP",                        "name:en": "Workwear and PPE",                  "order": 370, "crossBorderSupply": "goods" },
     "admin.insurance":       { "name": "Property and liability insurance", "name:cs": "Pojištění majetku a odpovědnosti",             "name:en": "Property and liability insurance",  "order": 380 },
     "admin.fees":            { "name": "Administrative and licensing fees", "name:cs": "Správní a licenční poplatky",                 "name:en": "Administrative and licensing fees", "order": 390 },
     "admin.memberships":     { "name": "Memberships and subscriptions",    "name:cs": "Členské příspěvky a předplatná",               "name:en": "Memberships and subscriptions",     "order": 400 },
