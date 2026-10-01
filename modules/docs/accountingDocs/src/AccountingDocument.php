@@ -132,7 +132,10 @@ class AccountingDocument extends DocsHeadsDocument
             if ($side === null || $side === '') {
                 $result->addError("rows.{$i}.acc_side", 'Vyberte stranu (Má dáti / Dal)', 'acc_side_required');
             }
-            if ($op === 'acc.record' && empty($row['account'])) {
+            // Přímý účet na řádku (acc.record, asset.*) — vlajka operace.
+            if (($cfgOps[$op]['rowAccount'] ?? ($op === 'acc.record' ? 'direct' : null)) === 'direct'
+                && empty($row['account'])
+            ) {
                 $result->addError("rows.{$i}.account", 'Účetní zápis musí mít vyplněný účet', 'account_required');
             }
             if ($op === 'acc.item' && empty($row['item'])) {

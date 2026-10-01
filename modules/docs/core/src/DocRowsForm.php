@@ -33,7 +33,9 @@ class DocRowsForm extends TableForm
         $isText = $rowKind === 0;
         $headHasVat = $this->headHasVat($headContext);
 
-        $operationOptions = $this->buildOperationOptions($headContext);
+        // Systémovou operaci (asset.*) nabídka nezná; uložený řádek s ní ji
+        // dostane, aby select ukázal název — řádek je pak celý read-only.
+        $operationOptions = $this->buildOperationOptions($headContext, (string) ($data['operation'] ?? ''));
 
         if ($isNew) {
             $data['row_kind'] = $rowKind;
@@ -211,6 +213,9 @@ class DocRowsForm extends TableForm
         array $opAttrs,
         ?string $rowAccount,
     ): FormDefinition {
+        // Řádek se systémovou operací (asset.*) sestavila služba — jen k nahlédnutí.
+        $system = !empty($opAttrs['system']);
+
         $section = $this->tab('basic', 'Řádek kontace')
             ->section()
                 ->col()
@@ -218,12 +223,25 @@ class DocRowsForm extends TableForm
                         options: $this->resolveCfgItemOptions('docs.core.rowKinds'),
                         triggers: 'reload',
                         required: true,
+                        readOnly: $system,
                     )
                     ->select('operation',
                         options: $operationOptions,
                         triggers: 'reload',
                         required: true,
+                        readOnly: $system,
                     );
+
+        // Karta majetku (rowAsset, dimenze deníku) — sloupec z extension
+        // economy.assets; operace s vlajkou existují jen jako systémové.
+        if (!empty($opAttrs['rowAsset'])) {
+            $section->lookup('asset',
+                table: 'economy_assets_assets',
+                label: 'Majetek',
+                required: true,
+                readOnly: $system,
+            );
+        }
 
         if ($rowAccount === 'item') {
             $section->lookup('item',
@@ -239,6 +257,7 @@ class DocRowsForm extends TableForm
                 filter: ['account_level' => 4],
                 placeholder: 'Hledat účet…',
                 required: true,
+                readOnly: $system,
             );
         }
 
@@ -246,12 +265,13 @@ class DocRowsForm extends TableForm
             $section->select('acc_side',
                 options: $this->resolveCfgItemOptions('docs.core.accSides'),
                 required: true,
+                readOnly: $system,
             );
         }
 
         $section
-            ->number('total_price', label: 'Částka', required: true)
-            ->input('description')
+            ->number('total_price', label: 'Částka', required: true, readOnly: $system)
+            ->input('description', readOnly: $system)
             ->number('price_calc_mode', hidden: true);
 
         $this->appendRowIdentityFields($section, $opAttrs);
@@ -619,7 +639,7 @@ class DocRowsForm extends TableForm
      * @param array<string, mixed>|null $headContext
      * @return list<array{value: string, label: string}>
      */
-    private function buildOperationOptions(?array $headContext): array
+    private function buildOperationOptions(?array $headContext, string $currentOperation = ''): array
     {
         $docType = (string) ($headContext['doc_type'] ?? '');
         if ($docType === '' || $this->config === null) {
@@ -641,6 +661,11 @@ class DocRowsForm extends TableForm
                 continue;
             }
             if (isset($docTypeAttrs['cashDir']) && (int) $docTypeAttrs['cashDir'] !== $cashDir) {
+                continue;
+            }
+            // Systémové operace zakládá jen služba (assets D48) — v nabídce
+            // nejsou, leda jako operace právě zobrazeného řádku.
+            if (!empty($entry['system']) && (string) $key !== $currentOperation) {
                 continue;
             }
             $entries[] = [

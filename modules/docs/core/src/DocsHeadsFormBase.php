@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core;
 
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Form\EnumOptionsHelper;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormHeaderInfo;
@@ -820,6 +821,17 @@ abstract class DocsHeadsFormBase extends TableForm
         $operations = is_array($operations) ? $operations : [];
         $accounts = $this->loadAccountLabels($rows);
 
+        // Dimenze deníku (majetek, …) — sloupec za Účet, jen když ji některý
+        // řádek nese (běžný účetní doklad zůstává beze změny).
+        $dimensions = $this->loadRowDimensionLabels($rows);
+        if ($dimensions !== []) {
+            $dimensionColumns = [];
+            foreach ($dimensions as $dimensionId => $info) {
+                $dimensionColumns[] = ['id' => 'dim_' . $dimensionId, 'label' => $info['name']];
+            }
+            array_splice($columns, 3, 0, $dimensionColumns);
+        }
+
         $out = [];
         foreach (array_values($rows) as $i => $row) {
             $cells = ['order_pos' => $this->rowNumber($row, $i)];
@@ -842,6 +854,10 @@ abstract class DocsHeadsFormBase extends TableForm
             $accountId = (int) ($row['account'] ?? 0);
             if ($accountId > 0 && isset($accounts[$accountId])) {
                 $cells['account'] = $accounts[$accountId];
+            }
+            foreach ($dimensions as $dimensionId => $info) {
+                $label = $info['labels'][(int) ($row[$info['column']] ?? 0)] ?? null;
+                $this->putCell($cells, 'dim_' . $dimensionId, $label);
             }
             if ($description !== '') {
                 $cells['description'] = $description;
@@ -921,6 +937,38 @@ abstract class DocsHeadsFormBase extends TableForm
             if ($label !== '') {
                 $out[(int) $a['id']] = $label;
             }
+        }
+        return $out;
+    }
+
+    /**
+     * Popisky dimenzí deníku použitých v řádcích dokladu (`rowColumn`
+     * dimenze, `displayPattern` cílové tabulky) — jeden dotaz per dimenze.
+     *
+     * @param list<array<string, mixed>> $rows
+     * @return array<string, array{name: string, column: string, labels: array<int, string>}>
+     */
+    private function loadRowDimensionLabels(array $rows): array
+    {
+        $out = [];
+        foreach (JournalDimensionSet::fromConfig($this->config) as $dimension) {
+            $ids = $this->collectIds($rows, $dimension->rowColumn);
+            if ($ids === [] || $this->db === null) {
+                continue;
+            }
+            $columns = array_values(array_unique(['id', ...$dimension->labelColumns()]));
+            $labels = [];
+            foreach ($this->db->fetchAll(
+                'SELECT `' . implode('`, `', $columns) . '` FROM `' . $dimension->table . '` WHERE `id` IN %in',
+                $ids,
+            ) as $record) {
+                $values = [];
+                foreach ($columns as $column) {
+                    $values[$column] = $record[$column] ?? null;
+                }
+                $labels[(int) $record['id']] = $dimension->label($values) ?? '#' . (int) $record['id'];
+            }
+            $out[$dimension->id] = ['name' => $dimension->name, 'column' => $dimension->rowColumn, 'labels' => $labels];
         }
         return $out;
     }

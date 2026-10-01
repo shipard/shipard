@@ -221,4 +221,53 @@ class DocRowOperationRulesTest extends TestCase
         $row = ['row_kind' => 1, 'operation' => 'acc.entry', 'item' => 42];
         $this->assertSame([], DocRowOperationRules::validateRow($row, 'invni', $this->cfg()));
     }
+
+    // ── Majetek: rowAsset + system (assets D48) ─────────────────────────────
+
+    /** @return array<string, mixed> */
+    private function assetCfg(): array
+    {
+        return [
+            'asset.depreciation' => [
+                'name' => 'Odpis majetku', 'rowSide' => 1, 'rowAccount' => 'direct', 'rowAsset' => 1, 'system' => 1,
+                'docTypes' => ['cmnbkp' => ['order' => 930]],
+            ],
+            'acc.record' => ['name' => 'Účetní zápis', 'rowSide' => 1, 'rowAccount' => 'direct', 'docTypes' => ['cmnbkp' => ['order' => 100]]],
+        ];
+    }
+
+    public function testSystemOperationIsRejectedWithoutServiceMarker(): void
+    {
+        $row = ['row_kind' => 1, 'operation' => 'asset.depreciation', 'asset' => 5, 'account' => 10, 'total_price' => 100];
+
+        $errors = DocRowOperationRules::validateRow($row, 'cmnbkp', $this->assetCfg());
+
+        $this->assertSame([['operation', 'system_operation']], array_map(
+            static fn(array $e): array => [$e['column'], $e['code']],
+            $errors,
+        ));
+        $this->assertSame([], DocRowOperationRules::validateRow($row, 'cmnbkp', $this->assetCfg(), null, true));
+    }
+
+    public function testRowAssetOperationNeedsAsset(): void
+    {
+        $row = ['row_kind' => 1, 'operation' => 'asset.depreciation', 'account' => 10, 'total_price' => 100];
+
+        $errors = DocRowOperationRules::validateRow($row, 'cmnbkp', $this->assetCfg(), null, true);
+
+        $this->assertSame([['asset', 'asset_required']], array_map(
+            static fn(array $e): array => [$e['column'], $e['code']],
+            $errors,
+        ));
+    }
+
+    public function testOrdinaryOperationIsNotAffectedBySystemFlags(): void
+    {
+        $row = ['row_kind' => 1, 'operation' => 'acc.record', 'account' => 10, 'total_price' => 100];
+
+        $this->assertSame([], DocRowOperationRules::validateRow($row, 'cmnbkp', $this->assetCfg()));
+        $this->assertFalse(DocRowOperationRules::isSystem('acc.record', $this->assetCfg()));
+        $this->assertTrue(DocRowOperationRules::isSystem('asset.depreciation', $this->assetCfg()));
+        $this->assertFalse(DocRowOperationRules::isSystem('unknown', $this->assetCfg()));
+    }
 }

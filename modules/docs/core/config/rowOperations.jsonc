@@ -354,5 +354,62 @@
         "rowPartner": 1,
         "rowPaymentId": 1,
         "docTypes": { "cmnbkp": {"order": 800} }
+    },
+
+    // Majetek (docs/assets.md D48): zápisy účetního dokladu, který sestavuje
+    // zaúčtování majetku z potvrzených událostí karty. Účet i strana jsou na
+    // řádku (jako acc.record). `rowAsset: 1` = řádek musí nést kartu majetku
+    // (sloupec `asset`, dimenze deníku). `system: 1` = operaci formulář
+    // nenabízí a ruční uložení ji odmítne — řádek smí založit jen služba
+    // s markerem `_systemOperations` (DocRowOperationRules).
+    "asset.activation": {
+        "name": "Asset activation",
+        "name:cs": "Zařazení majetku",
+        "name:en": "Asset activation",
+        "rowSide": 1,
+        "rowAccount": "direct",
+        "rowAsset": 1,
+        "system": 1,
+        "docTypes": { "cmnbkp": {"order": 900} }
+    },
+    "asset.improvement": {
+        "name": "Asset improvement",
+        "name:cs": "Technické zhodnocení",
+        "name:en": "Asset improvement",
+        "rowSide": 1,
+        "rowAccount": "direct",
+        "rowAsset": 1,
+        "system": 1,
+        "docTypes": { "cmnbkp": {"order": 910} }
+    },
+    "asset.reduction": {
+        "name": "Asset value reduction",
+        "name:cs": "Snížení hodnoty majetku",
+        "name:en": "Asset value reduction",
+        "rowSide": 1,
+        "rowAccount": "direct",
+        "rowAsset": 1,
+        "system": 1,
+        "docTypes": { "cmnbkp": {"order": 920} }
+    },
+    "asset.depreciation": {
+        "name": "Asset depreciation",
+        "name:cs": "Odpis majetku",
+        "name:en": "Asset depreciation",
+        "rowSide": 1,
+        "rowAccount": "direct",
+        "rowAsset": 1,
+        "system": 1,
+        "docTypes": { "cmnbkp": {"order": 930} }
+    },
+    "asset.disposal": {
+        "name": "Asset disposal",
+        "name:cs": "Vyřazení majetku",
+        "name:en": "Asset disposal",
+        "rowSide": 1,
+        "rowAccount": "direct",
+        "rowAsset": 1,
+        "system": 1,
+        "docTypes": { "cmnbkp": {"order": 940} }
     }
 }

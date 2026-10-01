@@ -71,6 +71,11 @@ class AccountingDocumentTest extends TestCase
                     'rowSide' => 0, 'selfBalancing' => 1,
                     'docTypes' => ['cmnbkp' => ['order' => 500]],
                 ],
+                'asset.depreciation' => [
+                    'name' => 'Odpis majetku', 'rowSide' => 1, 'rowAccount' => 'direct',
+                    'rowAsset' => 1, 'system' => 1,
+                    'docTypes' => ['cmnbkp' => ['order' => 930]],
+                ],
             ],
         ];
         file_put_contents(
@@ -208,6 +213,26 @@ class AccountingDocumentTest extends TestCase
         $result = $this->docWithConfig()->validate($data);
 
         $this->assertContains('amount_required', $this->codes($result));
+    }
+
+    public function testAssetRowsNeedAccountAndServiceMarker(): void
+    {
+        // Operace s přímým účtem (rowAccount: direct) musí mít účet — nejen
+        // acc.record; systémová operace navíc projde jen s markerem služby.
+        $rows = [
+            ['row_kind' => 1, 'operation' => 'asset.depreciation', 'asset' => 5, 'acc_side' => 0, 'total_price' => 500.0],
+            ['row_kind' => 1, 'operation' => 'asset.depreciation', 'asset' => 5, 'acc_side' => 1, 'account' => 20, 'total_price' => 500.0],
+        ];
+
+        $manual = $this->head40($rows);
+        $this->assertContains('system_operation', $this->codes($this->docWithConfig()->validate($manual)));
+
+        $service = $this->head40($rows) + ['_systemOperations' => true];
+        $result = $this->docWithConfig()->validate($service);
+        $this->assertNotContains('system_operation', $this->codes($result));
+        $this->assertContains('account_required', $this->codes($result));
+        $this->assertContains('rows.0.account', $this->columns($result));
+        $this->assertNotContains('unbalanced', $this->codes($result));
     }
 
     public function testOneSidedAccRecordStillFailsWithConfig(): void

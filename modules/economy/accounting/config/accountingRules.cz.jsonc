@@ -346,6 +346,11 @@
             "accounting": [
                 {"src": "rows", "accountSrc": "row",  "sideSrc": "row", "operation": "acc.record"},
                 {"src": "rows", "accountSrc": "item", "sideSrc": "row", "operation": "acc.item"},
+                // Majetek (docs/assets.md D48, D49): účet i stranu nese řádek,
+                // který sestavilo zaúčtování majetku z účetní skupiny karty.
+                {"src": "rows", "accountSrc": "row",  "sideSrc": "row",
+                    "operations": ["asset.activation", "asset.improvement", "asset.reduction",
+                                   "asset.depreciation", "asset.disposal"]},
                 // Saldokontní operace bez accountSrc — účet z kategorie
                 // (receivables → 311, payables → 321), strana z řádku (acc_side),
                 // identita per řádek (vlajky rowPartner/rowPaymentId operace).

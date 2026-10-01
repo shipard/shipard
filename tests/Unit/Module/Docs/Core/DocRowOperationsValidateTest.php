@@ -54,6 +54,13 @@ class DocRowOperationsValidateTest extends TestCase
                 'acc.entry'     => ['name' => 'Účetní položka', 'docTypes' => [
                     'invno' => ['order' => 900], 'invni' => ['order' => 900],
                 ]],
+                // systémová operace majetku (assets D48) — typ dokladu je tu
+                // vedlejší, jde o zapojení markeru a vlajek
+                'asset.depreciation' => [
+                    'name' => 'Odpis majetku', 'rowSide' => 1, 'rowAccount' => 'direct',
+                    'rowAsset' => 1, 'system' => 1,
+                    'docTypes' => ['invno' => ['order' => 950]],
+                ],
             ],
             'docs.core.docTypes' => [
                 'invno' => ['trade_dir' => 1],
@@ -254,5 +261,62 @@ class DocRowOperationsValidateTest extends TestCase
         $data['docState'] = 80;
 
         $this->assertTrue($this->headDoc()->validate($data)->isValid());
+    }
+
+    // ── Systémové operace (asset.*, assets D48) ─────────────────────────────
+
+    private const SYSTEM_ROW = [
+        'row_kind' => 1, 'operation' => 'asset.depreciation', 'asset' => 5, 'account' => 10,
+        'acc_side' => 0, 'total_price' => 100,
+    ];
+
+    public function testState40SystemRowNeedsServiceMarker(): void
+    {
+        $data = $this->state40Data([self::SYSTEM_ROW]);
+        $result = $this->headDoc()->validate($data);
+
+        $this->assertFalse($result->isValid());
+        $this->assertSame('rows.0.operation', $result->getErrors()[0]->column);
+        $this->assertSame('system_operation', $result->getErrors()[0]->code);
+
+        $data = $this->state40Data([self::SYSTEM_ROW]) + ['_systemOperations' => true];
+        $this->assertTrue($this->headDoc()->validate($data)->isValid());
+    }
+
+    public function testState40SystemRowWithoutAssetFailsEvenForService(): void
+    {
+        $row = self::SYSTEM_ROW;
+        unset($row['asset']);
+        $data = $this->state40Data([$row]) + ['_systemOperations' => true];
+        $result = $this->headDoc()->validate($data);
+
+        $this->assertFalse($result->isValid());
+        $this->assertSame('rows.0.asset', $result->getErrors()[0]->column);
+        $this->assertSame('asset_required', $result->getErrors()[0]->code);
+    }
+
+    public function testRowSaveOfSystemOperationIsRejected(): void
+    {
+        // Sub-form řádku marker nemá — systémovou operaci nezaloží.
+        $data = ['doc_head' => 5] + self::SYSTEM_ROW;
+        $result = $this->rowsDoc()->validate($data);
+
+        $this->assertFalse($result->isValid());
+        $this->assertSame('system_operation', $result->getErrors()[0]->code);
+    }
+
+    public function testStoredSystemRowCannotBeRewrittenToAnotherOperation(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new Row(['doc_type' => 'invno', 'cash_dir' => 0, 'operation' => 'asset.depreciation']));
+        $doc = new DocRowsDocument();
+        $doc->setDb($db);
+        $doc->setConfig($this->buildConfig());
+
+        $data = ['id' => 77, 'doc_head' => 5, 'row_kind' => 1, 'operation' => 'sale.services'];
+        $result = $doc->validate($data);
+
+        $this->assertFalse($result->isValid());
+        $this->assertSame('system_operation', $result->getErrors()[0]->code);
     }
 }

@@ -145,4 +145,41 @@ class AccountingDocsFormSubtableTest extends TestCase
         );
         $this->assertNull($sql);
     }
+
+    public function testRowDimensionAddsColumnAfterAccount(): void
+    {
+        // Dimenze deníku `asset` (assets D47): sloupec Majetek jen když ji
+        // některý řádek nese, popisek z displayPattern cílové tabulky.
+        $form = new AccountingDocsForm('docs_core_heads');
+        $form->setConfig(ConfigRuntimeFactory::fromItems([
+            'docs.core.rowOperations' => [
+                'asset.depreciation' => ['name' => 'Odpis majetku', 'rowSide' => 1, 'rowAccount' => 'direct', 'rowAsset' => 1, 'system' => 1],
+            ],
+            'docs.core.accSides' => ['0' => ['name' => 'Má dáti'], '1' => ['name' => 'Dal']],
+            'core.accounting.journalDimensions' => ['asset' => [
+                'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => null, 'journalColumn' => 'asset',
+                'table' => 'economy_assets_assets', 'name' => 'Majetek', 'displayPattern' => '{asset_number} — {name}',
+            ]],
+        ]));
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(
+            static fn(mixed ...$args): array => str_contains((string) $args[0], 'economy_assets_assets')
+                ? [['id' => 5, 'asset_number' => 'MA0005', 'name' => 'Soustruh']]
+                : [['id' => 12, 'number' => '551000', 'name' => 'Odpisy']],
+        );
+        $form->setDb($db);
+
+        $rows = [
+            ['id' => 1, 'row_kind' => 1, 'order_pos' => 1, 'operation' => 'asset.depreciation', 'account' => 12,
+             'asset' => 5, 'description' => 'Odpis', 'acc_side' => 0, 'total_price' => '1000.00'],
+        ];
+        $result = $form->renderSubtable($this->rowsTab(), $rows, ['id' => 1, 'doc_type' => 'cmnbkp', 'vat_mode' => 0]);
+
+        $this->assertSame(
+            ['order_pos', 'operation', 'account', 'dim_asset', 'description', 'acc_side', 'total_price'],
+            array_column($result['columns'], 'id'),
+        );
+        $this->assertSame('Majetek', array_column($result['columns'], 'label', 'id')['dim_asset']);
+        $this->assertSame('MA0005 — Soustruh', $result['rows'][0]['cells']['dim_asset']);
+    }
 }

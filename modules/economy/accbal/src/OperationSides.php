@@ -60,6 +60,12 @@ final class OperationSides
         'acc.fxGainReceivable'      => self::SIDE_RECEIVABLE,
         'acc.fxLossPayable'         => self::SIDE_PAYABLE,
         'acc.fxGainPayable'         => self::SIDE_PAYABLE,
+        // Majetek — zápisy mimo saldokonto.
+        'asset.activation'          => null,
+        'asset.improvement'         => null,
+        'asset.reduction'           => null,
+        'asset.depreciation'        => null,
+        'asset.disposal'            => null,
         // ── economy.bank.txOperations (transfer.* sdílí id s řádky) ─────
         'payment.in'                => self::PAYMENT,
         'payment.out'               => self::PAYMENT,

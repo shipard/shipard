@@ -62,6 +62,12 @@ class DocRowsFormContationTest extends TestCase
                     'rowPartner' => 1, 'rowPaymentId' => 1,
                     'docTypes' => ['cmnbkp' => ['order' => 500]],
                 ],
+                // majetek — systémová operace s kartou (assets D48)
+                'asset.depreciation' => [
+                    'name' => 'Odpis majetku', 'rowSide' => 1, 'rowAccount' => 'direct',
+                    'rowAsset' => 1, 'system' => 1,
+                    'docTypes' => ['cmnbkp' => ['order' => 930]],
+                ],
                 // faktura — bez rowAccount, ať ověříme, že položková větev zůstává
                 'purchase.goods' => ['name' => 'Nákup zboží', 'docTypes' => ['invni' => ['order' => 100]]],
                 // záloha — bez rowAccount (účet dohledá kategorie předpisu,
@@ -334,5 +340,36 @@ class DocRowsFormContationTest extends TestCase
         $el = $this->findElement($result->formDefinition, 'total_price');
         $this->assertNotNull($el);
         $this->assertFalse($el->readOnly);
+    }
+
+    // ── Systémové operace (asset.*, assets D48) ─────────────────────────────
+
+    public function testSystemOperationIsNotOfferedForNewRow(): void
+    {
+        $data = ['row_kind' => 1, 'doc_head' => 5, 'operation' => 'acc.record'];
+        $def = $this->form('cmnbkp')->buildFormDefinition($data, true);
+
+        $this->assertNotContains(
+            'asset.depreciation',
+            array_column($this->findElement($def, 'operation')->options, 'value'),
+        );
+        $this->assertNull($this->findElement($def, 'asset'));
+    }
+
+    public function testStoredSystemRowIsShownReadOnlyWithAsset(): void
+    {
+        $data = ['id' => 9, 'row_kind' => 1, 'doc_head' => 5, 'operation' => 'asset.depreciation', 'asset' => 5];
+        $def = $this->form('cmnbkp')->buildFormDefinition($data, false);
+
+        $operation = $this->findElement($def, 'operation');
+        $this->assertContains('asset.depreciation', array_column($operation->options, 'value'));
+
+        $asset = $this->findElement($def, 'asset');
+        $this->assertNotNull($asset);
+        $this->assertSame('economy_assets_assets', $asset->lookup['table']);
+
+        foreach (['row_kind', 'operation', 'asset', 'account', 'acc_side', 'total_price', 'description'] as $column) {
+            $this->assertTrue($this->findElement($def, $column)->readOnly, "{$column} má být jen ke čtení");
+        }
     }
 }

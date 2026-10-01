@@ -42,10 +42,27 @@ class DocRowsDocument extends Document
             return $result;
         }
 
+        // Uložený řádek se systémovou operací (asset.*) sestavila služba —
+        // ručně ho nejde ani přepsat na jinou operaci.
+        if (!empty($data['id'])
+            && DocRowOperationRules::isSystem((string) $this->loadStoredOperation((int) $data['id']), $cfg)
+        ) {
+            $result->addError('operation', 'Řádek založil systém — ručně ho změnit nelze', 'system_operation');
+            return $result;
+        }
+
         foreach (DocRowOperationRules::validateRow($data, $head['doc_type'], $cfg, $head['cash_dir']) as $err) {
             $result->addError($err['column'], $err['message'], $err['code']);
         }
         return $result;
+    }
+
+    /** Operace uloženého řádku; null = řádek neexistuje nebo dokument nemá DB. */
+    protected function loadStoredOperation(int $rowId): ?string
+    {
+        $row = $this->db?->fetch('SELECT [operation] FROM [docs_core_rows] WHERE [id] = %i', $rowId);
+
+        return $row !== null && $row !== false ? (string) ($row['operation'] ?? '') : null;
     }
 
     /**

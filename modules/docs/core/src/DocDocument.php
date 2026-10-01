@@ -420,8 +420,10 @@ abstract class DocDocument extends Document
         }
 
         $cashDir = (int) ($data['cash_dir'] ?? 0);
+        // Systémové operace (asset.*) smí nést jen doklad ukládaný službou.
+        $systemAllowed = !empty($data[DocRowOperationRules::SYSTEM_OPERATIONS_KEY]);
         foreach ($this->resolveRowsForCompute($data) as $i => $row) {
-            foreach (DocRowOperationRules::validateRow($row, $docType, $cfg, $cashDir) as $err) {
+            foreach (DocRowOperationRules::validateRow($row, $docType, $cfg, $cashDir, $systemAllowed) as $err) {
                 $result->addError("rows.{$i}.{$err['column']}", $err['message'], $err['code']);
             }
         }
@@ -447,6 +449,8 @@ abstract class DocDocument extends Document
         // "unknown column". Pull it out first, branch on it at the end.
         $importNumber = $data['_importNumber'] ?? null;
         unset($data['_importNumber']);
+        // Marker služby se systémovými operacemi (validate ho už přečetl).
+        unset($data[DocRowOperationRules::SYSTEM_OPERATIONS_KEY]);
         // Reset per save — the instance may be reused across documents.
         $this->importMode = is_array($importNumber);
 

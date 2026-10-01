@@ -183,12 +183,22 @@ a razítkování identity v enginu (`resolveRowIdentity`):
 | `rowSide: 0` | kontační layout, ale **bez volby strany**: stranu nesou fixní kroky předpisu, částky řádků kladné — směr = volba operace (kurzové rozdíly, saldokontní úhrady `payment.*`). Řádek je bez DPH bloku: `vat_code` prázdný → mimo rekapitulaci, do součtu dokladu se přičte |
 | `identityRequired: 1` | partner řádku a `payment_reference` jsou **tvrdě** povinné (`DocRowOperationRules`, kódy `partner_required` / `payment_reference_required`) — saldokontní úhrady, bez nich accbal nemá co párovat. Vyžaduje `rowPartner` + `rowPaymentId` |
 | `partnerRequired: 1` | jen partner řádku je tvrdě povinný (`partner_required`), VS ne — zálohy v hotovosti (`advance.*`). `identityRequired` ho implikuje |
+| `rowAsset: 1` | řádek musí nést kartu majetku (`asset`, extension `economy.assets`; dimenze deníku §6) — tvrdě povinné (`asset_required`). Formulář kartu ukáže jako lookup |
+| `system: 1` | **systémová operace** (assets D48): formulář ji nenabízí a ruční uložení ji odmítne (`system_operation`) — sub-form řádku vždy, doklad při přechodu do 40, pokud ho neukládá služba s markerem `_systemOperations` v datech hlavičky (`DocRowOperationRules::SYSTEM_OPERATIONS_KEY`, `DocDocument` ho před zápisem odstraní; formulář ani CRUD ho nepropustí). Uložený systémový řádek je ve formuláři read-only a nejde přepsat na jinou operaci |
 | `docTypes.{typ}.cashDir: 1 \| 2` | jen u typu se směrem per doklad (`cash`): pohyb je povolený jen při daném `cash_dir` hlavičky (1 příjem, 2 výdej). Chybí = oba směry. Filtruje nabídku formuláře i tvrdou validaci; default nového řádku = nejnižší `order` pro daný směr |
 
 Vlajka `rowSide` chybí = položkový layout (faktury) — i s
 `rowAccount`/`rowPartner`/`rowPaymentId` (zálohy, majetek); stranu určuje
 krok předpisu. Saldokontní operace bez `rowAccount` mají účet implicitní
 z kategorie předpisu — formulář vstup účtu/položky nestaví.
+
+**Operace majetku** `asset.activation` / `asset.improvement` /
+`asset.reduction` / `asset.depreciation` / `asset.disposal` (jen `cmnbkp`):
+`rowSide: 1`, `rowAccount: "direct"`, `rowAsset: 1`, `system: 1`. Řádky
+sestavuje zaúčtování majetku z potvrzených událostí karty (účty z účetní
+skupiny, `docs/assets.md` D48–D49); předpis je účtuje jedním krokem
+`accountSrc: "row"` + `sideSrc: "row"` jako `acc.record`. Saldokonta se
+netýkají (`OperationSides` → `null`).
 
 ### Pokladní doklady a prodejky (#59 D7)
 
@@ -388,7 +398,7 @@ categories  jen názvy kategorií pro dokumentaci/UI
 | pole | význam |
 |---|---|
 | `cat` | kategorie → dohledání masky v `accounts`. Nepovinné, pokud je `accountSrc` |
-| `accountSrc` | alternativní zdroj účtu mimo kategorie: `"item"` = účet z položky řádku (`acc.entry`, `acc.item`), `"row"` = přímý účet řádku (`acc.record`, `purchase.asset`), `"cashDesk"` (jen `src: head`) = účet pokladny hlavičky (`head.cash_desk` → `economy_codebooks_cash_desks.accounting_account`, 211xxx) |
+| `accountSrc` | alternativní zdroj účtu mimo kategorie: `"item"` = účet z položky řádku (`acc.entry`, `acc.item`), `"row"` = přímý účet řádku (`acc.record`, `purchase.asset`, `asset.*`), `"cashDesk"` (jen `src: head`) = účet pokladny hlavičky (`head.cash_desk` → `economy_codebooks_cash_desks.accounting_account`, 211xxx) |
 | `headQuery` | filtr `{sloupec: hodnota}` nad **hlavičkou** pro libovolný `src` — `query` se u `rows`/`vat` kroků hodnotí nad řádkem / rekapitulací, takže bez `headQuery` nejde v jednom bloku rozlišit strany podle `cash_dir`. U `src: head` je ekvivalentní `query` |
 | `src` | `"rows"` (řádky dokladu) \| `"vat"` (DPH rekapitulace) \| `"head"` (hlavička) |
 | `col` | pro `head`: `"total"` (default) \| `"rounding"`. Pro `rows`/`vat` se nepoužívá (MVP) |
