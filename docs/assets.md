@@ -1,6 +1,6 @@
 # Shipard — Majetek (`economy.assets`)
 
-> **Designový dokument.** **Stav:** D1–D64 rozhodnuto;
+> **Designový dokument.** **Stav:** D1–D72 rozhodnuto;
 > oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
 > (`tasks/assets-phase1.md`), oblast 2 **hotová** 2026-09-30 — pravidla
 > země a odpisový engine (`tasks/assets-phase2a.md`, §5.1–5.2), události,
@@ -8,7 +8,9 @@
 > (`tasks/assets-phase2b.md`, §5.3), oblast 3 **hotová** 2026-10-01 —
 > zaúčtování a dimenze deníku (`tasks/assets-phase3.md`, §5.4), oblast 4
 > **hotová** 2026-10-01 — vazba na doklady (`tasks/assets-phase4.md`,
-> §5.5); další oblasti se rozpadají postupně (§7).
+> §5.5); oblast 5 (přehledy) naplánována (`tasks/assets-phase5.md`,
+> prerekvizita `tasks/reports-export.md`); další oblasti se rozpadají
+> postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -528,6 +530,46 @@ přes 250 řádků pořízení na 042 i 501).
   doklad, součty po letech. Prodej majetku (operace s nabídkou vyřazení)
   až fáze 7.
 
+### D65–D72 — Oblast 5: přehledy a kontroly (ROZHODNUTO)
+
+PRD: `tasks/assets-phase5.md` (prerekvizita `tasks/reports-export.md`).
+Starý Shipard měl sestavu odpisů, přehled karet a podklad pro DPPO;
+kontrolu proti deníku neměl — nesoulad se hledal ručně (§3.2).
+
+- **D65 Reporty v doméně reportů, zdroj evidence.** Přehledy majetku
+  jsou reporty `economy.assets.*` (`docs/reports.md`) v sekci Majetek —
+  dostanou UI, deep-link, REST, MCP, CLI, `report-diff` a export.
+  Vědomá odchylka od D3 reportů (jen deník): zdrojem je evidence
+  (karty, ledger, plány), protože daňové hodnoty v deníku nejsou;
+  deník slouží ke kontrole (D67).
+- **D66 Pět reportů:** sestava odpisů (rok; daňově i účetně, oprávky
+  a ZC na začátku a konci, rozdíl účetní − daňový odpis), přírůstky
+  a úbytky (období; zařazení, technická zhodnocení, snížení, vyřazení),
+  daňové odpisy pro DPPO (rok; součty po `taxReturnGroup` z pravidel
+  země, účetní odpisy a rozdíl), kontrola evidence × deník (D67),
+  soupis majetku (stav ke konci období). Seskupení enum parametrem
+  `groupBy`, stav k datu = konec zvoleného období.
+- **D67 Kontrola proti deníku.** Report po účtech účetních skupin
+  (evidence × deník s dimenzí × deník celkem) a po kartách: zaúčtované
+  události ≠ deník, pořízení na 04x ≠ zařazení (+ TZ), nezaúčtované
+  starší události. Alerty `economy.assets.journal_mismatch` (denně)
+  a `economy.assets.acquisition_mismatch` (rozdíl starší 30 dnů);
+  varování na kartě.
+- **D68 Tisk až s tiskovou doménou.** Tisk karty a sestav (PDF) se
+  řeší obecně pro celý systém mimo tuto oblast (roadmap M4,
+  `docs/render.md`, `docs/reports.md` §8); majetek ho pak jen použije.
+- **D69 Odložená daň** (rozdíl účetní a daňové ZC × sazba) — fáze 8;
+  sestava odpisů rozdíl ZC ukazuje.
+- **D70 Drill-down** — řádek reportu odkazuje na kartu, kontrolní
+  řádky i na doklad zaúčtování.
+- **D71 Hromadné načítání** — plány mnoha karet jedním dotazem na typ
+  dat (`AssetPlanService::plansFor`), ne po kartách.
+- **D72 Export reportů XLSX / CSV** — obecně pro všechny reporty
+  (`tasks/reports-export.md`, knihovna OpenSpout): REST `format`,
+  tlačítko Export v UI, CLI `report-run --format`; čísla přesně, strany
+  MD / D jako sloupce, mezisoučty tučně, list Zprávy. Spouští se před
+  fází 5.
+
 ---
 
 ## 5. Doménový model (návrh)
@@ -915,8 +957,10 @@ Probírají se jedna po druhé; každá má vlastní PRD.
    **hotovo** 2026-10-01, `tasks/assets-phase3.md` (§5.4 vč. odchylek)
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15), D57–D64 —
    **hotovo** 2026-10-01, `tasks/assets-phase4.md` (§5.5 vč. odchylek)
-5. Přehledy: karta, odpisy, přírůstky / úbytky, kontrola proti deníku,
-   podklad pro DPPO
+5. Přehledy: odpisy, přírůstky / úbytky, kontrola proti deníku,
+   podklad pro DPPO, soupis (D65–D72) — **naplánováno**,
+   `tasks/assets-phase5.md` (prerekvizita `tasks/reports-export.md`;
+   tisk karty až s tiskovou doménou, D68)
 6. Import (D8, D9, D11) + backfill
 7. Pohyby, příslušenství, vlastnosti, místa, inventarizace, prodej majetku
    (vydaná faktura s nabídkou vyřazení)
@@ -929,5 +973,6 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 - Místa: vlastní číselník v modulu, nebo obecný číselník míst (využijí
   ho i jiné moduly)?
 - Čísla karet (inv. č.): číselná řada per druh, nebo volný text s návrhem?
-- Podklad pro přiznání DPPO: vazba odpisových skupin na řádky přiznání
-  (ve starém `taxDepsTaxCI`) — patří do konfigurace země.
+- Podklad pro přiznání DPPO: součty po `taxReturnGroup` řeší D66;
+  mapování na konkrétní řádky tiskopisu (ve starém `taxDepsTaxCI`) až
+  s podáním DPPO — patří do konfigurace země.

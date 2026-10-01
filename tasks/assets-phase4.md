@@ -1,6 +1,6 @@
 # Majetek Fáze 4 — vazba na doklady
 
-**Stav:** hotovo — 2026-10-01 (7 commitů, ověřeno na `4l3j-z0bz-kz39-echj`); odchylky od zadání níže a v `docs/assets.md` §5.5; zbývá proklik UI a nasazení na alfu
+**Stav:** hotovo — 2026-10-01 (7 commitů, ověřeno na `4l3j-z0bz-kz39-echj`); odchylky od zadání níže a v `docs/assets.md` §5.5; proklik UI OK; zbývá nasazení na alfu
 
 > PRD pro jednu Claude Code session (7 commitů). Design: `docs/assets.md`
 > §4 (D14, D15, D47, D57–D64), §5.4; issue #83. Navazuje na
