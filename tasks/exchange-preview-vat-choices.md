@@ -1,6 +1,6 @@
 # Task: Náhled návrhu — ruční volba kódu DPH řádků, místa plnění a režimu DPH
 
-**Stav:** částečně — kód, testy, docs a help hotové 2026-10-01 (3 commity: piny v applieru, mapa rozhodnutí + jednoklik, náhled); zbývá ověření na dev zdroji (body 1–6)
+**Stav:** hotovo — kód, testy, docs a help 2026-10-01 (3 commity: piny v applieru, mapa rozhodnutí + jednoklik, náhled); ověřeno na dev zdroji 2026-10-01 (body 1–6)
 
 **Issue:** #87 (task B; navazuje na task A `exchange-preview-vat-recompute.md`)
 
@@ -399,4 +399,4 @@ Zdroj s režimem *volný* (zdroj a zprávy v chatu, mimo repo):
       gating; jednoklik do modalu při `validation_failed`; i18n parita; build.
 - [x] `docs/exchange-format.md` a help aktualizované; `help-index.py`
       a `tasks-index.py` prošly.
-- [ ] Ověření na dev zdroji (body 1–6).
+- [x] Ověření na dev zdroji (body 1–6) — 2026-10-01.
