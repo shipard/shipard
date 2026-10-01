@@ -16,6 +16,7 @@
   import ViewerGrid from './ViewerGrid.svelte';
   import ViewerDetail from './ViewerDetail.svelte';
   import ViewerDetailDrawer from './ViewerDetailDrawer.svelte';
+  import ViewerDetailModal from './ViewerDetailModal.svelte';
   import ViewerToolbar from './ViewerToolbar.svelte';
   import ViewerFilters from './ViewerFilters.svelte';
   import SetPasswordPrompt from './SetPasswordPrompt.svelte';
@@ -386,6 +387,10 @@
       fetchRowsExplicit(tab.viewerId, activeSearch, activeViewGroup, activeBottomTab, activeFilters, pageNumber, effectiveLayout, activeSort, true);
     }
   }
+
+  // --- Read-only detail jiného záznamu (akce kind `open_detail`) ---
+  // { viewerId, recordId, tabId } nebo null = zavřeno.
+  let detailModal = $state(null);
 
   // --- Registry import wizard state ---
   let registryWizardOpen = $state(false);
@@ -806,6 +811,14 @@
       editRecordId = target.mode === 'edit' ? (target.id ?? null) : null;
       formDefaultData = target.preset ?? {};
       formOpen = true;
+      return;
+    }
+    // Read-only náhled jiného záznamu v modalu (odkaz na doklad z tabulky
+    // detailu) — uživatel zůstává ve vieweru.
+    if (action.kind === 'open_detail') {
+      const target = action.target ?? {};
+      if (!target.viewerId || target.recordId == null) return;
+      detailModal = { viewerId: target.viewerId, recordId: target.recordId, tabId: target.tabId ?? null };
       return;
     }
     if (action.kind === 'open_viewer') {
@@ -1249,6 +1262,15 @@
     onClose={handleDrawerClose}
   />
 {/if}
+
+<!-- Read-only detail jiného záznamu (akce open_detail z detailu). -->
+<ViewerDetailModal
+  open={detailModal !== null}
+  viewerId={detailModal?.viewerId ?? ''}
+  recordId={detailModal?.recordId ?? null}
+  tabId={detailModal?.tabId ?? null}
+  onClose={() => { detailModal = null; }}
+/>
 
 <!-- Reanalyze dialog — sdílená Modal komponenta (../ui/Modal.svelte). -->
 <Modal

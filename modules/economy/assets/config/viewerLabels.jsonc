@@ -50,6 +50,14 @@
     "severity.warning":   { "name": "Warning", "name:cs": "Varování", "name:en": "Warning" },
     "halfYear":           { "name": "half-year", "name:cs": "polovina", "name:en": "half-year" },
 
+    // --- pořízení z dokladů (D63) ---
+    "heading.acquisition": { "name": "Acquisition", "name:cs": "Pořízení", "name:en": "Acquisition" },
+    "column.document":     { "name": "Document", "name:cs": "Doklad", "name:en": "Document" },
+    "column.date":         { "name": "Date", "name:cs": "Datum", "name:en": "Date" },
+    "column.text":         { "name": "Text", "name:cs": "Text", "name:en": "Text" },
+    "column.account":      { "name": "Account", "name:cs": "Účet", "name:en": "Account" },
+    "row.total":           { "name": "Total", "name:cs": "Celkem", "name:en": "Total" },
+
     // --- texty ---
     "heading.messages":     { "name": "Messages", "name:cs": "Hlášení", "name:en": "Messages" },
     "text.notActivated":    { "name": "The asset is not activated — the plan starts with an activation or an opening balance.", "name:cs": "Majetek není zařazen — plán odpisů začíná zařazením nebo počátečním stavem.", "name:en": "The asset is not activated — the plan starts with an activation or an opening balance." },

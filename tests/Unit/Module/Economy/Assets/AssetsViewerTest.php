@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Module\Economy\Assets;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Module\Economy\Assets\AssetAcquisitionService;
 use Shipard\Module\Economy\Assets\AssetPlanService;
 use Shipard\Module\Economy\Assets\AssetsViewer;
 
@@ -59,8 +60,9 @@ class AssetsViewerTest extends TestCase
      * Viewer s detailem nad TestAssetPlanService (karta i události v paměti).
      *
      * @param array<int, array{docId: int, docNumber: string}> $posting zaúčtované události
+     * @param list<array<string, mixed>> $acquisitionRows řádky pořízení z dokladů
      */
-    private function detailViewer(array $card, array $events, array $posting = []): AssetsViewer
+    private function detailViewer(array $card, array $events, array $posting = [], array $acquisitionRows = []): AssetsViewer
     {
         $service = new TestAssetPlanService();
         $service->cards[(int) $card['id']] = $card;
@@ -77,15 +79,37 @@ class AssetsViewerTest extends TestCase
             ['world.assets.cz', TestAssetPlanService::config()->cfgItem('world.assets.cz')],
         ]);
 
-        $viewer = new class($db, 'economy_assets_assets', $service) extends AssetsViewer {
-            public function __construct(DataSourceConnection $db, string $table, private readonly AssetPlanService $service)
+        $acquisition = new class($acquisitionRows) extends AssetAcquisitionService {
+            /** @param list<array<string, mixed>> $rows */
+            public function __construct(private readonly array $rows)
             {
+                parent::__construct(null);
+            }
+
+            protected function loadRows(int $assetId): array
+            {
+                return $this->rows;
+            }
+        };
+
+        $viewer = new class($db, 'economy_assets_assets', $service, $acquisition) extends AssetsViewer {
+            public function __construct(
+                DataSourceConnection $db,
+                string $table,
+                private readonly AssetPlanService $service,
+                private readonly AssetAcquisitionService $acquisition,
+            ) {
                 parent::__construct($db, $table);
             }
 
             protected function planService(): AssetPlanService
             {
                 return $this->service;
+            }
+
+            protected function acquisitionService(): AssetAcquisitionService
+            {
+                return $this->acquisition;
             }
         };
         $viewer->setConfig($config);
@@ -116,6 +140,85 @@ class AssetsViewerTest extends TestCase
         $this->assertSame(['assetId' => 4], $actions[0]['target']);
         $this->assertSame('open_form', $actions[4]['kind']);
         $this->assertSame(['asset' => 4, 'event_kind' => 'disposal', 'scope' => 'both'], $actions[4]['target']['preset']);
+    }
+
+    // --- detail: pořízení z dokladů (fáze 4, D63) -------------------------------
+
+    /** @return list<array<string, mixed>> */
+    private function acquisitionRows(): array
+    {
+        return [
+            ['id' => 1, 'doc_head' => 10, 'doc_number' => '2260010', 'accounting_date' => '2026-03-05',
+                'description' => 'Soustruh', 'account_number' => '042100', 'vat_base_dom' => 80000.0],
+            ['id' => 2, 'doc_head' => 11, 'doc_number' => '2260011', 'accounting_date' => '2026-04-20',
+                'description' => 'Montáž', 'account_number' => '042100', 'vat_base_dom' => 12500.0],
+        ];
+    }
+
+    public function testOverviewShowsAcquisitionWithDocumentLinksAndTotal(): void
+    {
+        $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $detail = $this->detailViewer($card, [], [], $this->acquisitionRows())->renderDetail(4);
+
+        $overview = $detail['tabs'][0]['content'];
+        $this->assertSame('composite', $overview['type']);
+        $this->assertSame(['properties', 'heading', 'table'], array_column($overview['blocks'], 'type'));
+        $table = $overview['blocks'][2];
+        $this->assertTrue($table['columns'][0]['link']);
+        $this->assertSame('2260010', $table['rows'][0]['document']);
+        $this->assertSame('05.03.2026', $table['rows'][0]['date']);
+        $this->assertSame('042100', $table['rows'][0]['account']);
+        $this->assertSame('80 000,00', $table['rows'][0]['amount']);
+        $this->assertSame(
+            ['id' => 'openDocument', 'kind' => 'open_detail', 'target' => ['viewerId' => 'docs.core.heads', 'recordId' => 10]],
+            $table['rows'][0]['_action'],
+        );
+        $this->assertSame(['document' => 'Total', 'amount' => '92 500,00', '_class' => 'total'], $table['rows'][2]);
+    }
+
+    public function testActivateIsPrefilledFromAcquisition(): void
+    {
+        // Nezařazená karta s pořízením na 04x: Zařadit předvyplní součet
+        // základů a datum posledního dokladu; počáteční stavy beze změny.
+        $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $actions = array_column(
+            $this->detailViewer($card, [], [], $this->acquisitionRows())->renderDetail(4)['actions'],
+            null,
+            'id',
+        );
+
+        $this->assertSame(
+            ['asset' => 4, 'event_kind' => 'activation', 'scope' => 'both', 'amount' => 92500.0, 'event_date' => '2026-04-20'],
+            $actions['activate']['target']['preset'],
+        );
+        $this->assertSame(['asset' => 4, 'event_kind' => 'opening', 'scope' => 'tax'], $actions['openingTax']['target']['preset']);
+    }
+
+    public function testCardWithoutAcquisitionKeepsPlainOverviewAndPreset(): void
+    {
+        $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $detail = $this->detailViewer($card, [])->renderDetail(4);
+
+        $this->assertSame('properties', $detail['tabs'][0]['content']['type']);
+        $actions = array_column($detail['actions'], null, 'id');
+        $this->assertSame(['asset' => 4, 'event_kind' => 'activation', 'scope' => 'both'], $actions['activate']['target']['preset']);
+    }
+
+    public function testSmallAssetShowsExpenseAcquisition(): void
+    {
+        // Drobný majetek pořízený do nákladů: sekce Pořízení ano, akce žádné.
+        $card = ['id' => 2, 'name' => 'Svěrák', 'category' => 'small', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $rows = [['id' => 3, 'doc_head' => 12, 'doc_number' => '', 'accounting_date' => '2026-05-02',
+            'description' => 'Svěrák', 'account_number' => '501201', 'vat_base_dom' => 4990.0]];
+        $detail = $this->detailViewer($card, [], [], $rows)->renderDetail(2);
+
+        $table = $detail['tabs'][0]['content']['blocks'][2];
+        $this->assertSame('#12', $table['rows'][0]['document'], 'doklad bez čísla');
+        $this->assertSame('4 990,00', $table['rows'][1]['amount']);
+        $this->assertArrayNotHasKey('actions', $detail);
     }
 
     public function testAccountingPlanShowsPostingStateOfConfirmedRows(): void

@@ -306,8 +306,19 @@
                     class:shpd-detail__tr--total={row._class === 'total'}
                     class:shpd-detail__tr--muted={row._class === 'muted'}
                   >
+                    <!-- col.link + row._action: buňka je odkaz, klik spustí
+                         akci řádku (typicky open_detail dokladu). Bez
+                         onAction (read-only modal) zůstává prostý text. -->
                     {#each content.columns ?? [] as col (col.id)}
-                      <td class="shpd-detail__td" class:shpd-detail__td--num={col.align === 'right'}>{row[col.id] ?? '—'}</td>
+                      <td class="shpd-detail__td" class:shpd-detail__td--num={col.align === 'right'}>
+                        {#if col.link && row._action && onAction}
+                          <button type="button" class="shpd-detail__cell-link" onclick={() => handleAction(row._action)}>
+                            {row[col.id] ?? '—'}
+                          </button>
+                        {:else}
+                          {row[col.id] ?? '—'}
+                        {/if}
+                      </td>
                     {/each}
                   </tr>
                 {/each}
@@ -847,6 +858,23 @@
   .shpd-detail__td--num {
     text-align: right;
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Buňka-odkaz (col.link + row._action) — vypadá jako odkaz, chová se
+     jako tlačítko. Dědí písmo i zarovnání buňky. */
+  .shpd-detail__cell-link {
+    padding: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: var(--shpd-color-primary);
+    cursor: pointer;
+    text-align: inherit;
+  }
+
+  .shpd-detail__cell-link:hover {
+    color: var(--shpd-color-primary-hover);
+    text-decoration: underline;
   }
 
   /* Klasifikace řádků (row._class) — chybové a součtové řádky. */

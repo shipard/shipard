@@ -37,6 +37,8 @@ class AssetsViewer extends AssetsViewerBase
 
     public const ACTION_DEPRECIATION_RUN = 'depreciation_run';
     public const EVENTS_TABLE = 'economy_assets_events';
+    /** Souhrnný viewer dokladů — cíl odkazů na doklad (`open_detail`). */
+    public const DOCUMENTS_VIEWER = 'docs.core.heads';
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
@@ -285,6 +287,19 @@ class AssetsViewer extends AssetsViewerBase
             ['title' => $this->text('label.note', 'Note'), 'items' => $note],
         ]);
 
+        // Pořízení z dokladů (D63) — i u drobného majetku pořízeného do nákladů.
+        $acquisition = $this->acquisitionService()->acquisition($recordId);
+        if ($acquisition['rows'] !== []) {
+            $detail['tabs'][0]['content'] = [
+                'type'   => 'composite',
+                'blocks' => [
+                    $detail['tabs'][0]['content'],
+                    ['type' => 'heading', 'text' => $this->text('heading.acquisition', 'Acquisition')],
+                    $this->acquisitionTable($acquisition),
+                ],
+            ];
+        }
+
         if (!$longTerm) {
             return $detail;
         }
@@ -306,9 +321,59 @@ class AssetsViewer extends AssetsViewerBase
                 'content' => $this->planContent($plans['acc'], $card, $service->postingOf($recordId)),
             ];
         }
-        $detail['actions'] = $this->detailActions($card, $events, $depreciable);
+        $detail['actions'] = $this->detailActions($card, $events, $depreciable, $acquisition['activation']);
 
         return $detail;
+    }
+
+    // ── Pořízení v detailu ──────────────────────────────────────────────────
+
+    /**
+     * Sekce Pořízení v Přehledu (D63): řádky pořízení z potvrzených dokladů
+     * s odkazem na doklad (`_action` řádku, sloupec `link`) a součtem.
+     *
+     * @param array{rows: list<array<string, mixed>>, total: float} $acquisition
+     * @return array<string, mixed> content typu table
+     */
+    private function acquisitionTable(array $acquisition): array
+    {
+        $rows = [];
+        foreach ($acquisition['rows'] as $row) {
+            $rows[] = [
+                'document' => $row['docNumber'] !== '' ? $row['docNumber'] : '#' . $row['docId'],
+                'date'     => $this->formatDate($row['date']) ?? '',
+                'text'     => $row['text'],
+                'account'  => $row['accountNumber'],
+                'amount'   => $this->formatAmount($row['amount']),
+                '_action'  => [
+                    'id'     => 'openDocument',
+                    'kind'   => 'open_detail',
+                    'target' => ['viewerId' => self::DOCUMENTS_VIEWER, 'recordId' => $row['docId']],
+                ],
+            ];
+        }
+        $rows[] = [
+            'document' => $this->text('row.total', 'Total'),
+            'amount'   => $this->formatAmount($acquisition['total']),
+            '_class'   => 'total',
+        ];
+
+        return [
+            'type'    => 'table',
+            'columns' => [
+                ['id' => 'document', 'label' => $this->text('column.document', 'Document'), 'link' => true],
+                ['id' => 'date', 'label' => $this->text('column.date', 'Date')],
+                ['id' => 'text', 'label' => $this->text('column.text', 'Text')],
+                ['id' => 'account', 'label' => $this->text('column.account', 'Account')],
+                ['id' => 'amount', 'label' => $this->text('column.amount', 'Amount'), 'align' => 'right'],
+            ],
+            'rows' => $rows,
+        ];
+    }
+
+    protected function acquisitionService(): AssetAcquisitionService
+    {
+        return new AssetAcquisitionService($this->db->getDibiConnection());
     }
 
     // ── Plán odpisů v detailu ──────────────────────────────────────────────
@@ -505,11 +570,16 @@ class AssetsViewer extends AssetsViewerBase
      * Akce detailu podle stavu karty a potvrzených událostí; jen karta
      * ve stavu V pořádku bez vyřazení něco nabízí.
      *
+     * Zařadit u karty s pořízením na 04x předvyplní součet základů řádků
+     * a datum posledního dokladu (D63) — uživatel je může upravit
+     * (neodpočitatelná DPH, pozdější uvedení do užívání).
+     *
      * @param array<string, mixed> $card
      * @param list<array<string, mixed>> $events
+     * @param array{amount: float, date: ?string} $acquired pořízení k zařazení
      * @return list<array<string, mixed>>
      */
-    private function detailActions(array $card, array $events, bool $depreciable): array
+    private function detailActions(array $card, array $events, bool $depreciable, array $acquired): array
     {
         if ((int) ($card['docState'] ?? 0) !== AssetDocument::STATE_CONFIRMED) {
             return [];
@@ -545,7 +615,14 @@ class AssetsViewer extends AssetsViewerBase
         if (!$started) {
             $actions = [];
             if ($openings === []) {
-                $actions[] = $open('activate', 'action.activate', 'Activate', AssetEvent::KIND_ACTIVATION, AssetEvent::SCOPE_BOTH, 'primary');
+                $activate = $open('activate', 'action.activate', 'Activate', AssetEvent::KIND_ACTIVATION, AssetEvent::SCOPE_BOTH, 'primary');
+                if ($acquired['amount'] > 0) {
+                    $activate['target']['preset']['amount'] = $acquired['amount'];
+                    if ($acquired['date'] !== null) {
+                        $activate['target']['preset']['event_date'] = $acquired['date'];
+                    }
+                }
+                $actions[] = $activate;
             }
             if ($depreciable) {
                 foreach ([AssetEvent::SCOPE_TAX => 'Tax', AssetEvent::SCOPE_ACC => 'Acc'] as $scope => $suffix) {
