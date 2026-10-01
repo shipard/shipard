@@ -1116,6 +1116,20 @@ class RouterTest extends TestCase
 		$this->assertRoute($result, 'lookup', 'resolve', 'base_persons_persons');
 	}
 
+	public function testLookupCreateDefaults(): void
+	{
+		$result = $this->router->resolve('/api/v1/_ui/lookup/economy_assets_assets/create-defaults', 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'lookup', 'createDefaults', 'economy_assets_assets');
+	}
+
+	public function testLookupCreateDefaultsGetNotAllowed(): void
+	{
+		$result = $this->router->resolve('/api/v1/_ui/lookup/economy_assets_assets/create-defaults', 'GET');
+		$this->assertInstanceOf(Response::class, $result);
+		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
+	}
+
 	public function testLookupSearchPostNotAllowed(): void
 	{
 		$result = $this->router->resolve('/api/v1/_ui/lookup/base_persons_persons/search', 'POST');

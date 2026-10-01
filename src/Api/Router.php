@@ -1317,6 +1317,15 @@ class Router
 		}
 		[$table, $action] = $parts;
 
+		// POST /_ui/lookup/{table}/create-defaults — výchozí hodnoty nového
+		// záznamu z rodičovského formuláře (jen čte, nic nezapisuje).
+		if ($action === 'create-defaults') {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('lookup', 'createDefaults', $table);
+		}
+
 		if ($action !== 'search' && $action !== 'resolve') {
 			return Response::error('NOT_FOUND', 'Not found', 404);
 		}

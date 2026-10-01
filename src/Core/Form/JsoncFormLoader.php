@@ -296,6 +296,15 @@ class JsoncFormLoader
                 }
                 $lookup['edit_triggers'] = $rawLookup['editTriggers'];
             }
+            if (array_key_exists('createDefaults', $rawLookup)) {
+                if (!is_bool($rawLookup['createDefaults'])) {
+                    throw new \RuntimeException(sprintf(
+                        'JsoncFormLoader: %s — lookup element "%s" createDefaults must be boolean',
+                        $jsonPath, $column ?? '?',
+                    ));
+                }
+                $lookup['create_defaults'] = $rawLookup['createDefaults'];
+            }
         }
 
         return new FormElement(

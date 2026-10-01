@@ -1994,6 +1994,7 @@ Lookup pole podporuje inline **edit** vybrané hodnoty a **create** úplně nov�
 | `edit_form` / `editForm` | `false` | Zapne ikonu tužky vedle `×` u vyplněného pole. Klik otevře `FormDialog` s `recordId = value`. |
 | `create_form` / `createForm` | `false` | Zapne tlačítko „+ Vytvořit nový záznam“ v patce dropdownu. Klik otevře `FormDialog` bez `recordId`. |
 | `edit_triggers` / `editTriggers` | `false` | Po úspěšném save v **edit** modalu volá `onchange?.()` v rodiči (triggers recalculate). Default vypnuto, viz sémantika níže. |
+| `create_defaults` / `createDefaults` | `false` | Před otevřením **create** modalu si klient vyžádá výchozí hodnoty nového záznamu odvozené z formuláře, ve kterém pole je, a z jeho rodiče. Viz „Výchozí hodnoty nového záznamu z rodiče“ níže. |
 
 **PHP builder API:**
 
@@ -2031,6 +2032,44 @@ Klíčové pro vyhodnocení `edit_triggers`:
 - **S flagem (Item):** edit položky triggerne recalculate v rodiči → `DocRowsForm::recalculate('item')` přepiše `description`, `unit_price`, `unit` z aktualizovaných dat položky. Správně: položka určuje řádek.
 
 **LookupInput NEzavírá modal po `onSaved`.** Modal se zavře až přes `onClose` — to znamená transition s `closeForm: 1` (`FormEditor` zavolá `onClose({force: true})`), `×`, Esc nebo overlay click. Tj. po prostém **Uložit** nebo po **Opravit** (40 → 80 s `closeForm: 0`) zůstává vnořený modal otevřený — stejně jako u primárních formulářů otevřených z vieweru. `onSaved` callback běží na pozadí: re-resolvuje display popis a (pokud `edit_triggers`) triggerne recalculate.
+
+**Výchozí hodnoty nového záznamu z rodiče (`createDefaults`, assets D62).**
+Když má „+ Vytvořit nový“ záznam předvyplnit podle toho, odkud se zakládá
+(karta majetku z řádku faktury: název z textu řádku, druh podle účtu):
+
+- Lookup třída přepíše `TableLookup::createDefaults(array $parentRow,
+  array $parentHead): array` (default `[]`) a vrátí mapu sloupec cílové
+  tabulky → hodnota. `$parentRow` = data formuláře, ve kterém pole je,
+  `$parentHead` = data jeho rodičovského formuláře (řádek dokladu →
+  hlavička; `[]`, když formulář rodiče nemá). Obojí je **neuložený stav
+  z klienta** — slouží jen k odvození návrhu; co má přijít z DB (číslo
+  účtu), dohledá třída podle id sama.
+- Endpoint `POST /_ui/lookup/{table}/create-defaults`, tělo
+  `{row: {...}, head: {...}}` → `{defaults: {...}}`. Controller propustí jen
+  skalární hodnoty zapisovatelných sloupců cílové tabulky (ne PK, ne
+  `system`). Nic nezapisuje — v read-only DS je povolený
+  (`ReadOnlyPolicy`: `lookup` vše).
+- `LookupInput` endpoint zavolá před otevřením modalu (jen s flagem)
+  a výsledek předá jako `defaultData` → `FormEditor` ho pošle jako
+  `defaults[…]` do `GET /meta`, takže projde stejnou cestou jako každý
+  prefill (koerce typů, `applyNewRecordDefaults` cílového formuláře). Je to
+  návrh: uživatel ho může přepsat a validuje se až uložení. Chyba endpointu
+  založení neblokuje — formulář se otevře prázdný.
+- Data rodičů bere `LookupInput` ze Svelte contextu
+  (`form/formContext.js`, klíč `FORM_DATA_CONTEXT`): každý `FormEditor`
+  nastaví `{data: () => formData, parent: <context nadřazeného
+  FormEditoru>}`. Prvky formuláře tak vidí živá data svého formuláře i
+  formuláře, ze kterého byl otevřen, bez protahování props přes
+  `FormSubTable` / `FormDialog`.
+
+```php
+->lookup('asset',
+    table: 'economy_assets_assets',
+    editForm: true,
+    createForm: true,
+    createDefaults: true,  // ← AssetsLookup::createDefaults(řádek, hlavička)
+)
+```
 
 **Vnořený `FormDialog` v `LookupInput`:** přímý import (stejný vzor jako `FormSubTable.svelte`). Cyklická závislost `FormDialog → FormEditor → … → LookupInput → FormDialog` Vite zvládá, protože komponenta se instantuje až runtime. Modal-stack depth shrink v `Modal.svelte` (viz kap. 9) automaticky vykreslí vnořený modal o 30 px užší/nižší na každé straně, takže rodič vykřukuje a uživatel vidí hierarchii.
 

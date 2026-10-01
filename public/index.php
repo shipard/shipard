@@ -1506,6 +1506,7 @@ function dispatchLookup(
 	return match ($route->action) {
 		'search'  => $ctrl->search($table, $request, $auth, $tables, $db, $lookupRegistry, $configRuntime),
 		'resolve' => $ctrl->resolve($table, $request, $auth, $tables, $db, $lookupRegistry, $configRuntime),
+		'createDefaults' => $ctrl->createDefaults($table, $request, $auth, $tables, $db, $lookupRegistry, $configRuntime),
 		default   => Response::error('INTERNAL_ERROR', "Unknown lookup action: {$route->action}", 500),
 	};
 }

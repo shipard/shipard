@@ -513,6 +513,42 @@ class JsoncFormLoaderTest extends TestCase
         $this->assertSame(['table' => 'base_persons_persons', 'filter' => null], $el->lookup);
     }
 
+    public function testLookupCreateDefaultsFlagParsed(): void
+    {
+        $path = $this->writeJsonc(<<<JSON
+        {
+            "tabs": [{"id": "h", "label": "H", "sections": [{"columns": [{"elements": [
+                {
+                    "type": "lookup",
+                    "column": "partner",
+                    "lookup": {"table": "base_persons_persons", "createForm": true, "createDefaults": true}
+                }
+            ]}]}]}]
+        }
+        JSON);
+
+        $def = (new JsoncFormLoader())->load($path, $this->makeTableDef());
+        $el = $def->tabs[0]->sections[0]->columns[0]->elements[0];
+
+        $this->assertTrue($el->lookup['create_form']);
+        $this->assertTrue($el->lookup['create_defaults']);
+    }
+
+    public function testLookupCreateDefaultsMustBeBoolean(): void
+    {
+        $path = $this->writeJsonc(<<<JSON
+        {
+            "tabs": [{"id": "h", "label": "H", "sections": [{"columns": [{"elements": [
+                {"type": "lookup", "column": "partner", "lookup": {"table": "base_persons_persons", "createDefaults": "yes"}}
+            ]}]}]}]
+        }
+        JSON);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('createDefaults must be boolean');
+        (new JsoncFormLoader())->load($path, $this->makeTableDef());
+    }
+
     public function testLookupWithFilterParsed(): void
     {
         $path = $this->writeJsonc(<<<JSON

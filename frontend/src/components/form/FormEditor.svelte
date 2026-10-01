@@ -1,5 +1,5 @@
 <script>
-  import { tick, untrack } from 'svelte';
+  import { tick, untrack, getContext, setContext } from 'svelte';
   import { get, post, put } from '../../api/client.js';
   import FormTab from './FormTab.svelte';
   import AttachmentPanel from './AttachmentPanel.svelte';
@@ -7,6 +7,7 @@
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
+  import { FORM_DATA_CONTEXT } from './formContext.js';
 
   let {
     table,
@@ -29,6 +30,16 @@
 
   let formDef = $state(null);
   let formData = $state({});
+
+  // Data formuláře pro potomky (formContext.js): vlastní živá data a context
+  // formuláře, ze kterého byl tento otevřen (sub-tabulka řádků → hlavička).
+  // getContext musí proběhnout PŘED setContext — jinak by formulář viděl
+  // jako rodiče sám sebe.
+  const parentFormContext = getContext(FORM_DATA_CONTEXT) ?? null;
+  setContext(FORM_DATA_CONTEXT, {
+    data: () => formData,
+    parent: parentFormContext,
+  });
   // Chyby vázané na konkrétní pole formuláře (column → hláška). Zobrazují se
   // vedle inputu, aktivují tabovou tečku a vykreslí se i v banneru s labelem.
   let fieldErrors = $state({});

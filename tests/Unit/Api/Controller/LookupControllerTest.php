@@ -180,6 +180,120 @@ class LookupControllerTest extends TestCase
 
         $this->assertSame(['items' => []], $resp->getPayload()['data']);
     }
+
+    // ── create-defaults (výchozí hodnoty nového záznamu z rodiče) ───────────
+
+    private function defaultsTable(): TableDefinition
+    {
+        return TableDefinition::fromArray([
+            'tableId' => 1,
+            'name'    => 'Test',
+            'columns' => [
+                ['id' => 'id', 'name' => 'ID', 'type' => 'int', 'autoIncrement' => true, 'primaryKey' => true],
+                ['id' => 'name', 'name' => 'Name', 'type' => 'varchar', 'length' => 50],
+                ['id' => 'price', 'name' => 'Price', 'type' => 'numeric', 'precision' => 12, 'scale' => 2, 'nullable' => true],
+                ['id' => 'origin', 'name' => 'Origin', 'type' => 'varchar', 'length' => 10, 'system' => true],
+            ],
+        ]);
+    }
+
+    /** @param array<string, mixed>|null $body */
+    private function defaultsRequest(?array $body): Request
+    {
+        return Request::fromArray(
+            'POST',
+            '/api/v1/_ui/lookup/t/create-defaults',
+            [],
+            $body === null ? '' : (string) json_encode($body),
+            ['Content-Type' => 'application/json'],
+        );
+    }
+
+    public function testCreateDefaultsPassesParentsAndFiltersColumns(): void
+    {
+        $tables = ['t' => $this->defaultsTable()];
+        $registry = $this->registryWith('t', new FakeDefaultsLookup());
+        FakeDefaultsLookup::$defaults = [
+            'name' => 'Soustruh', 'price' => 1200.5,
+            // Neznámý, systémový a PK sloupec ani neskalární hodnota neprojdou.
+            'unknown' => 'x', 'origin' => 'import', 'id' => 5, 'nested' => ['a' => 1],
+        ];
+
+        $resp = $this->ctrl->createDefaults(
+            't',
+            $this->defaultsRequest(['row' => ['description' => 'Soustruh'], 'head' => ['accounting_date' => '2026-05-10']]),
+            $this->auth(), $tables, $this->db, $registry, null,
+        );
+        $payload = $resp->getPayload();
+
+        $this->assertTrue($payload['success']);
+        $this->assertSame(['name' => 'Soustruh', 'price' => 1200.5], $payload['data']['defaults']);
+        $this->assertSame(
+            [['description' => 'Soustruh'], ['accounting_date' => '2026-05-10']],
+            FakeDefaultsLookup::$lastParents,
+        );
+    }
+
+    public function testCreateDefaultsWithoutBodyOrOverrideIsEmptyObject(): void
+    {
+        $tables = ['t' => $this->defaultsTable()];
+
+        // Lookup bez přepsané createDefaults() → prázdný objekt, ne chyba.
+        $resp = $this->ctrl->createDefaults(
+            't', $this->defaultsRequest(null), $this->auth(), $tables, $this->db,
+            $this->registryWith('t', new FakeControllerLookup()), null,
+        );
+
+        $this->assertTrue($resp->getPayload()['success']);
+        $this->assertEquals(new \stdClass(), $resp->getPayload()['data']['defaults']);
+    }
+
+    public function testCreateDefaultsRejectsNonObjectParents(): void
+    {
+        $tables = ['t' => $this->defaultsTable()];
+        $registry = $this->registryWith('t', new FakeDefaultsLookup());
+
+        $resp = $this->ctrl->createDefaults(
+            't', $this->defaultsRequest(['row' => 'x']), $this->auth(), $tables, $this->db, $registry, null,
+        );
+
+        $this->assertSame('BAD_REQUEST', $resp->getPayload()['error']['code']);
+    }
+
+    public function testCreateDefaultsUnknownTableAndLookup(): void
+    {
+        $resp = $this->ctrl->createDefaults('x', $this->defaultsRequest([]), $this->auth(), [], $this->db, new LookupRegistry(), null);
+        $this->assertSame('TABLE_NOT_FOUND', $resp->getPayload()['error']['code']);
+
+        $resp = $this->ctrl->createDefaults(
+            't', $this->defaultsRequest([]), $this->auth(), ['t' => $this->defaultsTable()], $this->db, new LookupRegistry(), null,
+        );
+        $this->assertSame('LOOKUP_NOT_REGISTERED', $resp->getPayload()['error']['code']);
+    }
+}
+
+class FakeDefaultsLookup extends TableLookup
+{
+    /** @var array{0: array<string, mixed>, 1: array<string, mixed>}|null */
+    public static ?array $lastParents = null;
+    /** @var array<string, mixed> */
+    public static array $defaults = [];
+
+    public function search(string $q, array $filter, int $limit): array
+    {
+        return [];
+    }
+
+    public function resolve(array $ids): array
+    {
+        return [];
+    }
+
+    public function createDefaults(array $parentRow, array $parentHead): array
+    {
+        self::$lastParents = [$parentRow, $parentHead];
+        return self::$defaults;
+    }
 }
 
 class FakeControllerLookup extends TableLookup

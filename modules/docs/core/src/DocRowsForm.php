@@ -99,13 +99,18 @@ class DocRowsForm extends TableForm
                 placeholder: 'Hledat účet…',
                 required: true,
             );
-            // Karta majetku na řádku pořízení (rowAsset "optional", D61).
+            // Karta majetku na řádku pořízení (rowAsset "optional", D61) —
+            // jde ji z řádku rovnou založit.
             if (!empty($opAttrs['rowAsset'])) {
                 $col->lookup(self::ASSET_COLUMN,
                     table: 'economy_assets_assets',
                     label: 'Majetek',
                     placeholder: 'Hledat kartu majetku…',
                     required: DocRowOperationRules::isAssetRequired($opAttrs),
+                    editForm: true,
+                    createForm: true,
+                    // Nová karta se předvyplní z řádku a hlavičky (D62).
+                    createDefaults: true,
                 );
             }
         } else {

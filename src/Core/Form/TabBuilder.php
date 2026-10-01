@@ -323,6 +323,7 @@ final class TabBuilder
         bool $editForm = false,
         bool $createForm = false,
         bool $editTriggers = false,
+        bool $createDefaults = false,
     ): static {
         $lookupCfg = ['table' => $table, 'filter' => $filter];
         if ($editForm) {
@@ -333,6 +334,9 @@ final class TabBuilder
         }
         if ($editTriggers) {
             $lookupCfg['edit_triggers'] = true;
+        }
+        if ($createDefaults) {
+            $lookupCfg['create_defaults'] = true;
         }
         $this->pushElement(new FormElement(
             type: 'lookup',

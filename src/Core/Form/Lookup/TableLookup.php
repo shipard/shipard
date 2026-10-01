@@ -61,6 +61,27 @@ abstract class TableLookup
     abstract public function resolve(array $ids): array;
 
     /**
+     * Výchozí hodnoty nového záznamu zakládaného z lookup pole („+ Vytvořit
+     * nový“) podle formuláře, ze kterého se zakládá. Volá se jen u pole
+     * s flagem `createDefaults`; klient výsledek předá vnořenému formuláři
+     * jako prefill (`defaults[…]`), takže platí totéž co pro každý prefill —
+     * je to návrh, uživatel ho může přepsat a validuje se až uložení.
+     *
+     * Vstup je neuložený stav formulářů z klienta: nedůvěryhodný, jen
+     * k odvození návrhu. Cokoli z DB (číslo účtu, název položky) se dohledá
+     * podle id z těchto dat tady.
+     *
+     * @param array<string, mixed> $parentRow  data formuláře, ve kterém pole je
+     * @param array<string, mixed> $parentHead data jeho rodičovského formuláře
+     *        (řádek dokladu → hlavička); prázdné, když formulář rodiče nemá
+     * @return array<string, scalar|null> sloupec cílové tabulky → hodnota
+     */
+    public function createDefaults(array $parentRow, array $parentHead): array
+    {
+        return [];
+    }
+
+    /**
      * Whitelist filter klíčů, které smí klient v `?filter[…]` poslat.
      * Default: žádné. Subclassy s cascade overridují.
      *

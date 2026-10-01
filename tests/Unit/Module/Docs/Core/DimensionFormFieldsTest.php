@@ -211,6 +211,10 @@ class DimensionFormFieldsTest extends TestCase
             $this->assertSame('economy_assets_assets', $fields[0]->lookup['table']);
             $this->assertFalse($fields[0]->required);
             $this->assertStringNotContainsString('Z hlavičky', (string) $fields[0]->placeholder);
+            // D62: kartu jde z řádku založit s předvyplněním a upravit.
+            $this->assertTrue($fields[0]->lookup['create_form']);
+            $this->assertTrue($fields[0]->lookup['edit_form']);
+            $this->assertTrue($fields[0]->lookup['create_defaults']);
         }
     }
 

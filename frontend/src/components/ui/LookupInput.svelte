@@ -1,5 +1,7 @@
 <script>
-  import { get } from '../../api/client.js';
+  import { getContext } from 'svelte';
+  import { get, post } from '../../api/client.js';
+  import { FORM_DATA_CONTEXT } from '../form/formContext.js';
   import { t } from '../../i18n/index.js';
   import Icon from './Icon.svelte';
   import { iconEdit, iconAdd } from '../../icons.js';
@@ -14,7 +16,7 @@
     value = $bindable(null),
     /** Iniciální display popis z dataResolved — `{id, primary, secondary}`. */
     resolved = $bindable(null),
-    /** Lookup konfigurace — `{table, filter, edit_form?, create_form?}`. */
+    /** Lookup konfigurace — `{table, filter, edit_form?, create_form?, create_defaults?}`. */
     lookup,
     required = false,
     disabled = false,
@@ -45,6 +47,11 @@
   let subDialogOpen = $state(false);
   let subDialogMode = $state(null); // 'edit' | 'create' | null
   let subDialogRecordId = $state(null);
+  // Prefill nového záznamu z rodičovského formuláře (lookup.create_defaults).
+  let subDialogDefaults = $state({});
+  // Data formuláře, ve kterém pole je, a jeho rodiče (formContext.js);
+  // mimo FormEditor null — pak se výchozí hodnoty neposílají.
+  const formContext = getContext(FORM_DATA_CONTEXT) ?? null;
 
   const displayLabel = $derived(resolved?.primary ?? '');
   const hasValue = $derived(value !== null && value !== '' && value !== undefined);
@@ -241,18 +248,37 @@
     subDialogOpen = true;
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     if (!canCreate) return;
     closeDropdown();
+    // Výchozí hodnoty se načtou PŘED otevřením — FormEditor čte defaultData
+    // jen při prvním loadu nového záznamu.
+    subDialogDefaults = await fetchCreateDefaults();
     subDialogMode = 'create';
     subDialogRecordId = null;
     subDialogOpen = true;
+  }
+
+  /**
+   * Výchozí hodnoty nového záznamu podle formuláře, ze kterého se zakládá
+   * (server: TableLookup::createDefaults). Chyba ani chybějící context
+   * založení neblokují — formulář se otevře prázdný.
+   */
+  async function fetchCreateDefaults() {
+    if (!lookup?.create_defaults || !lookup?.table || formContext === null) return {};
+    const res = await post(`/_ui/lookup/${lookup.table}/create-defaults`, {
+      row: formContext.data?.() ?? {},
+      head: formContext.parent?.data?.() ?? {},
+    });
+    const defaults = res?.success ? res.data?.defaults : null;
+    return defaults && typeof defaults === 'object' && !Array.isArray(defaults) ? defaults : {};
   }
 
   function handleSubDialogClose() {
     subDialogOpen = false;
     subDialogMode = null;
     subDialogRecordId = null;
+    subDialogDefaults = {};
   }
 
   async function handleSubDialogSaved(record) {
@@ -420,6 +446,7 @@
   table={lookup?.table ?? ''}
   recordId={subDialogRecordId}
   open={subDialogOpen}
+  defaultData={subDialogDefaults}
   onClose={handleSubDialogClose}
   onSaved={handleSubDialogSaved}
 />

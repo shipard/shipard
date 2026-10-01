@@ -382,6 +382,23 @@ class TabBuilderTest extends TestCase
         $this->assertSame(['person' => 42], $el->lookup['filter']);
     }
 
+    public function testLookupCreateFlagsGoToWireFormat(): void
+    {
+        $tab = (new TabBuilder('t', 'T'))
+            ->section()->col()
+                ->lookup('asset', table: 'economy_assets_assets', editForm: true, createForm: true, createDefaults: true)
+                ->lookup('partner', table: 'base_persons_persons', createForm: true)
+            ->build();
+        [$asset, $partner] = $tab->sections[0]->columns[0]->elements;
+
+        $this->assertSame(
+            ['table' => 'economy_assets_assets', 'filter' => null, 'edit_form' => true, 'create_form' => true, 'create_defaults' => true],
+            $asset->toArray()['lookup'],
+        );
+        // Bez flagu se klíč na drát neposílá.
+        $this->assertArrayNotHasKey('create_defaults', $partner->toArray()['lookup']);
+    }
+
     public function testLookupInsideInlineRejected(): void
     {
         $this->expectException(\LogicException::class);

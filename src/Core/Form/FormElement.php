@@ -130,6 +130,9 @@ final class FormElement
             if (array_key_exists('edit_triggers', $lookup) && !is_bool($lookup['edit_triggers'])) {
                 throw new \InvalidArgumentException('lookup.edit_triggers must be bool');
             }
+            if (array_key_exists('create_defaults', $lookup) && !is_bool($lookup['create_defaults'])) {
+                throw new \InvalidArgumentException('lookup.create_defaults must be bool');
+            }
         }
     }
 
@@ -196,6 +199,9 @@ final class FormElement
             }
             if (!empty($this->lookup['edit_triggers'])) {
                 $lookupOut['edit_triggers'] = true;
+            }
+            if (!empty($this->lookup['create_defaults'])) {
+                $lookupOut['create_defaults'] = true;
             }
             $result['lookup'] = $lookupOut;
         }
