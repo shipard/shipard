@@ -1,6 +1,6 @@
 # Majetek Fáze 5 — přehledy a kontroly
 
-**Stav:** naplánováno — D65–D72 potvrzena 2026-10-01; prerekvizita `tasks/reports-export.md`
+**Stav:** naplánováno — D65–D72 potvrzena 2026-10-01; prerekvizita `tasks/reports-export.md` hotová 2026-10-01
 
 > PRD pro jednu Claude Code session (7 commitů). Design: `docs/assets.md`
 > §1 (invarianty), §4 D65–D72, §5; `docs/reports.md`; issue #83.

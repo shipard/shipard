@@ -9,7 +9,7 @@
 > zaúčtování a dimenze deníku (`tasks/assets-phase3.md`, §5.4), oblast 4
 > **hotová** 2026-10-01 — vazba na doklady (`tasks/assets-phase4.md`,
 > §5.5); oblast 5 (přehledy) naplánována (`tasks/assets-phase5.md`,
-> prerekvizita `tasks/reports-export.md`); další oblasti se rozpadají
+> prerekvizita `tasks/reports-export.md` hotová 2026-10-01); další oblasti se rozpadají
 > postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83

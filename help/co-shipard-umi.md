@@ -1,7 +1,7 @@
 ---
 title: Co Shipard umí
 summary: Úplný přehled agend, které v aplikaci jsou — a u kterých z nich už je napsaný návod.
-keywords: [umí, neumí to, jde, zvládne, dokáže, podporuje, existuje, má, obsahuje, co všechno, seznam funkcí, přehled funkcí, agendy, moduly, sekce, menu, kde najdu, co tam je, spisovna, smlouvy, úkoly, účetní deník, účtový rozvrh, bankovní výpis, saldokonto, reporty, hlavní kniha, výsledovka, rozvaha, v tisících]
+keywords: [umí, neumí to, jde, zvládne, dokáže, podporuje, existuje, má, obsahuje, co všechno, seznam funkcí, přehled funkcí, agendy, moduly, sekce, menu, kde najdu, co tam je, spisovna, smlouvy, úkoly, účetní deník, účtový rozvrh, bankovní výpis, saldokonto, reporty, hlavní kniha, výsledovka, rozvaha, v tisících, export do Excelu, xlsx, csv]
 related: [co-dnes-nejde.md, slovnicek.md]
 ---
 
@@ -69,9 +69,9 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 | **Bankovní transakce** | Jednotlivé pohyby z výpisů. Podle nich se páruje úhrada s fakturou; platbu, ke které se faktura nenašla, Shipard odloží na **clearing účet** | — |
 | **Saldokonto** | Kdo komu kolik dluží, po partnerech. Každý řádek je jeden případ — faktura a její úhrady se stejným variabilním symbolem v jednom účetním období — se zůstatkem a splatností; dluhy po splatnosti jsou zvýrazněné. Seznam se otevře s filtrem **Období** nastaveným na aktuální rok; volba **— vše —** ukáže všechna období. Filtr **Typ** odděluje dluhy, přeplatky a platby bez faktury, **Včetně uzavřených** ukáže i vyrovnané případy. Tlačítko **Pohyby případu** otevře jednotlivé předpisy a úhrady případu v jeho období. Vratku přeplatku nebo platby bez faktury z bankovního výpisu Shipard spáruje sám a případ uzavře | — |
 | **Saldo pohyby** | Jednotlivé předpisy a úhrady saldokonta, po partnerech, se zůstatkem případu, do kterého patří. Pohyb z bankovního výpisu je označený jako **Příjem** nebo **Výdaj**; záloha přijatá nebo zaplacená z výpisu je v saldokontu záloh předpis. Stejný filtr **Období** s výchozím aktuálním rokem | — |
-| **Hlavní kniha** | Report ve skupině **Reporty**: účty s počátečním stavem, obraty MD/D a konečným zůstatkem za zvolené období. Období vybíráš v mřížce měsíc / čtvrtletí / pololetí / rok, detail analyticky nebo synteticky | — |
-| **Výsledovka** | Report ve skupině **Reporty**: výnosy a náklady za období a od počátku roku, dole výsledek hospodaření. Umí zobrazení v tisících | — |
-| **Rozvaha** | Report ve skupině **Reporty**: aktiva a pasiva k počátku a konci období. Když aktiva nesedí na pasiva, report to červeně ohlásí pod tabulkou | — |
+| **Hlavní kniha** | Report ve skupině **Reporty**: účty s počátečním stavem, obraty MD/D a konečným zůstatkem za zvolené období. Období vybíráš v mřížce měsíc / čtvrtletí / pololetí / rok, detail analyticky nebo synteticky. Tlačítkem **Export** ho stáhneš jako Excel nebo CSV | [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md) |
+| **Výsledovka** | Report ve skupině **Reporty**: výnosy a náklady za období a od počátku roku, dole výsledek hospodaření. Umí zobrazení v tisících. Tlačítkem **Export** ho stáhneš jako Excel nebo CSV | [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md) |
+| **Rozvaha** | Report ve skupině **Reporty**: aktiva a pasiva k počátku a konci období. Když aktiva nesedí na pasiva, report to červeně ohlásí pod tabulkou. Tlačítkem **Export** ho stáhneš jako Excel nebo CSV | [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md) |
 | **Přiznání k DPH — živě** | Report ve skupině **Reporty**: řádky přiznání spočítané z dokladů za zvolené období DPH, dole vlastní daň nebo nadměrný odpočet. Krácený odpočet násobí koeficientem roku (zadává se v **Nastavení → Účetnictví → Koeficienty odpočtu DPH**). Kontroluje se proti účetnímu deníku | [Živé výstupy DPH](uctarna/dph-zive-vystupy.md) |
 | **Kontrolní hlášení — živě** | Report ve skupině **Reporty**: sekce A1–B3 s doklady nad 10 000 Kč jednotlivě a menšími v souhrnu. Chybějící DIČ nebo číslo dokladu dodavatele ohlásí pod tabulkou | [Živé výstupy DPH](uctarna/dph-zive-vystupy.md) |
 | **Souhrnné hlášení — živě** | Report ve skupině **Reporty**: dodání zboží a služeb do EU sečtená po odběratelích s počtem plnění a hodnotou | [Živé výstupy DPH](uctarna/dph-zive-vystupy.md) |

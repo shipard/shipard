@@ -19,7 +19,8 @@ z milníku M1 a validace importu ze starého Shipardu (M3).
 > + `report_run`, `ReportDiff` + CLI `report-run`/`report-diff`; plán
 > domény z issue #42 tím je uzavřen (validace importu čeká na exportér
 > v `old_shipard`, kontrakt §7.4). Upřesnění tvaru dle implementace:
-> §10, §11, §12, §13.
+> §10, §11, §12, §13. Export do XLSX a CSV hotov (2026-10-01,
+> `tasks/reports-export.md`, #83 D72) — §15.
 
 ---
 
@@ -64,6 +65,7 @@ ReportBuilder ──► ReportResult (JSON)
                      ├── REST endpoint (vrátí JSON tak jak je)
                      ├── MCP tool (AI asistent)
                      ├── diff dvou výsledků (kontrola importu, M3)
+                     ├── export do XLSX / CSV (§15)
                      └── (budoucí) tisk: HTML šablona → PDF služba #34
 ```
 
@@ -495,3 +497,101 @@ Rozšíření jádra pro živé DPH výstupy modulu `economy.vat`
   DPPD).
 - **Zámek období (`locked`)** se v reportech nevynucuje — živé výstupy
   jsou čtení; vynucení v lifecyclu dokladu je Fáze 4 dle #55.
+
+---
+
+## 15. Export do XLSX a CSV (#83 D72)
+
+Export je další renderer nad `ReportResult` (§2) — obecný pro všechny
+reporty, žádný builder o něm neví. PDF a tisk sem nepatří (tisková doména,
+§8); export mimo reporty (viewery) také ne.
+
+### 15.1 Stavba (`src/Core/Reports/Export/`)
+
+```
+ReportResult ──► ReportTabularizer ──► ReportTable ──┬─► ReportXlsxWriter (OpenSpout)
+                 (+ ReportExportContext)             └─► ReportCsvWriter (fputcsv)
+```
+
+- **`ReportTabularizer`** je jediné místo s pravidly převodu — čistá
+  funkce bez DB. `ReportTable` nese název, úvodní blok, hlavičky, řádky
+  s typovanými buňkami (`string` text, `float` číslo, `DateTimeImmutable`
+  datum, `null` prázdná) + `kind` a `level`, a zprávy s indexem řádku.
+  Writery jen zapisují, pravidla se mezi formáty neliší.
+- **`ReportExportContext`** dodává, co výsledek o sobě neví: lidský název
+  reportu (z deklarace), **název firmy** (`app.name` → `name` z main.json;
+  do exportu nikdy ID zdroje), jazyk, popisky a počet měsíců fiskálního
+  roku. Staví ho `ReportExportContextFactory` — sdílená REST i CLI.
+- **`ReportExporter`** je jediný vstupní bod: `export(result, format,
+  context)` → `ReportExportFile {body, contentType, fileName}`.
+- **Popisky** (názvy listů, úvod, hlavičky Účet / Název / MD / D /
+  Zůstatek, list Zprávy, názvy parametrů) jdou z cfgItem
+  `core.system.reportExportLabels` (`ReportExportLabels::fromConfig()`),
+  bez zkompilovaného cfgItem anglický fallback. Parametr reportu bez
+  záznamu v `params` se v úvodu vypíše jako `id: hodnota` — nový
+  parametr s lidským názvem = doplnit ho do cfgItem.
+
+### 15.2 Pravidla převodu
+
+- **Sloupce:** [`Účet`, je-li u některého řádku `account`] + `Název` +
+  sloupce reportu. Money `display: balance` = jedna číselná buňka
+  (zůstatek); `display: sides` = tři sloupce „{label} — MD“, „— D“,
+  „— Zůstatek“. `text` = text, `date` = datum (nevalidní ISO zůstává
+  textem).
+- **Řádky:** všechny řádky výsledku v pořadí.
+- **Čísla vždy přesně.** Přepínač „V tisících“ je věc zobrazení v UI
+  a do exportu se nepromítá (úvod XLSX to poznamenává). **Nula je číslo**
+  (`0`), ne prázdná buňka jako v UI — sloupec zůstává číselný; prázdná
+  buňka jen tam, kde hodnota v řádku chybí.
+- **Název souboru:** `{slug názvu reportu}-{období}.{přípona}` —
+  `hlavni-kniha-2026-05.xlsx` (měsíc), `…-2026-04-06` (interval měsíců),
+  `…-2026` (celý fiskální rok), u reportů DPH slug názvu instance
+  tvrzení (`kontrolni-hlaseni-zive-06-2026.csv`).
+
+**XLSX** (list „Report“, při `status != ok` druhý list „Zprávy“):
+
+- Úvod: název reportu, období (stejný tvar jako picker — `2026 / 5`,
+  `2026 / 2Q`, `2026`; u DPH název instance + rozsah dat), parametry,
+  datum vygenerování **s časovou zónou** (server běží v UTC), zdroj dat,
+  poznámka o přesných částkách, při chybách / varováních stavový řádek.
+  Prázdný řádek, pak tabulka.
+- Čísla jako čísla, uložený formát **`#,##0.00`** — tabulkový procesor ho
+  zobrazí dle svého locale (česky `1 234,50`). Literál `# ##0.00`
+  z původního zadání by u milionů vložil jedinou mezeru. Datum jako
+  datum.
+- **Odsazení dle `level`:** OpenSpout neumí indent stylu buňky, proto
+  textový formát `"  "@` (2 mezery × `level`) na buňce popisku. Mezery
+  jsou jen zobrazení — hodnota buňky zůstává čistá pro filtry a hledání.
+- `subtotal` / `total` / `computed` tučně, stejně hlavička tabulky.
+- List „Zprávy“: závažnost, kód, text a **číslo řádku na listu Report**
+  (z `rowRef`), ne index do výsledku.
+
+**CSV:** UTF-8 s BOM, oddělovač `;`, desetinná čárka bez oddělovače
+tisíců, datum `YYYY-MM-DD`, konce řádků CRLF, první řádek hlavička; jen
+tabulka — bez úvodu, odsazení a zpráv. Text začínající znakem vzorce
+(`=`, `+`, `-`, `@`) dostává apostrof: názvy účtů a čísla dokladů jsou
+uživatelská data a tabulkový procesor by je při otevření CSV vyhodnotil
+(v XLSX jsou buňky typované, tam to netřeba).
+
+### 15.3 REST
+
+`GET /_reports/{reportId}?…&format=json|xlsx|csv` — `json` (default) je
+beze změny. `xlsx` / `csv` vrací soubor **mimo JSON obálku**
+(`Response::binary`) s hlavičkami `Content-Type`, `Content-Disposition:
+attachment; filename="…"` a **`X-Report-Status`** (`ok | warnings |
+errors`, u obou formátů — CSV zprávy jinak nenese). Neplatný `format`
+→ 400 `BAD_REQUEST`; chyby validace parametrů a neznámý report zůstávají
+JSON (400 / 404). `format` není parametr reportu — controller ho odebírá
+před `ReportRunner` (validátor neznámé parametry odmítá). `ReadOnlyPolicy`
+beze změny (čtení); MCP `report_run` export nenabízí.
+
+### 15.4 UI a CLI
+
+- **UI:** tlačítko **Export** (nabídka Excel (XLSX) / CSV) v liště
+  parametrů `ReportsPage`, aktivní jen s načteným výsledkem; stahuje se
+  stejnými parametry jako zobrazený report. Auth jde Bearer hlavičkou,
+  proto fetch → Blob → object URL (`api/client.js` `getBlob()`,
+  `utils/download.js`), název souboru z `Content-Disposition`.
+- **CLI:** `report-run … --format=json|xlsx|csv [--output=<soubor>]` —
+  `xlsx` vyžaduje `--output`, `csv` bez něj na stdout; viz
+  [cli.md](cli.md).

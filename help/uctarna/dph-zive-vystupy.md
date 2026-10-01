@@ -2,7 +2,7 @@
 title: Živé výstupy DPH
 summary: Jak si přečíst živé přiznání k DPH, kontrolní hlášení a souhrnné hlášení za zvolené období a co znamenají upozornění pod tabulkou.
 keywords: [DPH, přiznání k DPH, kontrolní hlášení, souhrnné hlášení, DPHDP3, DPHKH1, DPHSHV, daňová povinnost, vlastní daň, nadměrný odpočet, období DPH, daňové tvrzení, daňová tvrzení, registrace DPH, kolik zaplatím DPH, sekce A4, sekce B2, kód plnění, souhlasí s deníkem, přesunout doklad do jiného měsíce, koncept tvrzení, koeficient, koeficient odpočtu, krácený odpočet, krácený nárok, zálohový koeficient, vypořádací koeficient, řádek 52, osvobozená plnění, koeficient 1,00, do kontrolního hlášení, ručně do kontrolního hlášení, vždy jednotlivě, vždy souhrnně, nevykazovat v kontrolním hlášení, opakovaná plnění, dílčí plnění, limit 10 000]
-related: [uctarna/dph-podani.md, uctarna/kdyz-se-doklad-nezauctuje.md, faktury-prijate/dokonceni-dokladu.md, co-dnes-nejde.md]
+related: [uctarna/dph-podani.md, uctarna/export-reportu.md, uctarna/kdyz-se-doklad-nezauctuje.md, faktury-prijate/dokonceni-dokladu.md, co-dnes-nejde.md]
 ---
 
 # Živé výstupy DPH
@@ -137,6 +137,8 @@ s sebou.
   [Podání DPH](dph-podani.md). Hlavička reportu ti připomene poslední
   podání a jeho podanou daňovou povinnost; ta se od živého výpočtu může
   lišit o jednotky korun (zaokrouhlení po řádcích).
+- **Výstup si můžeš stáhnout** tlačítkem **Export** jako sešit pro Excel
+  nebo CSV — viz [Export reportu do Excelu nebo CSV](export-reportu.md).
 - **Uzamčení období z Shipardu zatím neuděláš** — viz
   [Co Shipard dnes neumí](../co-dnes-nejde.md). Soubor pro daňový portál
   vyrobíš z podání, viz [Podání DPH](dph-podani.md).
@@ -144,6 +146,7 @@ s sebou.
 ## Souvisí
 
 - [Podání DPH](dph-podani.md)
+- [Export reportu do Excelu nebo CSV](export-reportu.md)
 - [Když se doklad nezaúčtuje](kdyz-se-doklad-nezauctuje.md)
 - [Dokončení dokladu](../faktury-prijate/dokonceni-dokladu.md)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md)

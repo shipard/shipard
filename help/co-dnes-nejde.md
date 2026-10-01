@@ -218,6 +218,10 @@ o ISDOC dodavatele požádat.
   nainstaluješ do počítače přímo z prohlížeče — viz
   [Instalace aplikace](instalace-aplikace.md). Nainstalovaná aplikace ale
   **nefunguje bez připojení** a **neposílá notifikace do telefonu**.
+- **Report nevytiskneš ani neuložíš do PDF přímo ze Shipardu.** Stáhneš ho
+  jako sešit pro Excel nebo jako CSV a vytiskneš z tabulkového procesoru —
+  viz [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md).
+  **Seznamy** (faktury, osoby, účetní deník…) do souboru stáhnout nejde.
 - **Anglické rozhraní není úplné.** Čeština je hlavní jazyk; v angličtině
   můžeš narazit na nepřeložené popisky.
 - **Narazíš na nedodělané obrazovky.** Nic tím nerozbiješ tak, abychom to

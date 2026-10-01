@@ -717,6 +717,53 @@ prázdné, doplní se akcí Zaúčtovat). Selhání nahrání přílohy nechá p
 jako koncept — dokončete přes `POST /_vat/filing-import-finish`. Viz README
 modulu `economy.vat` → Import starých podání.
 
+#### `report-run <reportId> … [--format=json|xlsx|csv] [--output=<soubor>]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds report-run economy.accounting.generalLedger \
+    --fiscal-year 2026 --month-from 5 --month-to 5 > hk.json          # ReportResult jako JSON
+shpd-ds report-run economy.accounting.profitLoss \
+    --fiscal-year 2026 --month-from 1 --month-to 12 --detail synthetic --pretty
+shpd-ds report-run economy.vat.controlStatementLive --period 141       # report s obdobím DPH
+shpd-ds report-run economy.accounting.balanceSheet \
+    --fiscal-year 2026 --month-from 1 --month-to 12 \
+    --format=xlsx --output=rozvaha-2026.xlsx                           # export do sešitu
+shpd-ds report-run economy.accounting.generalLedger \
+    --fiscal-year 2026 --month-from 5 --month-to 5 --format=csv > hk.csv
+```
+
+Spustí report a vypíše výsledek. Období se zadává podle zdroje období
+reportu: fiskální reporty `--fiscal-year` (název roku) + `--month-from` /
+`--month-to` (pořadí běžného měsíce v roce), reporty DPH `--period` (id
+instance daňového tvrzení). `--detail analytic|synthetic` jen u reportů,
+které ho deklarují (default `analytic`).
+
+| `--format` | Výstup |
+|---|---|
+| `json` (default) | `ReportResult` jako čistý JSON na stdout (`--pretty` = odsazený) — vstup pro `report-diff` a skripty |
+| `csv` | tabulka reportu: UTF-8 s BOM, `;`, desetinná čárka; bez `--output` na stdout |
+| `xlsx` | sešit s úvodním blokem, tabulkou a listem zpráv; **vyžaduje `--output`** |
+
+`--output=<soubor>` zapíše výstup do souboru (jde i s `json` a `csv`).
+Výsledek se `status: errors|warnings` je legitimní výstup — poznámka jde na
+stderr, exit 0. Exit `INVALID` (2): neznámý report (vypíše dostupné),
+chybějící / nevalidní období, neznámý `--format`, `xlsx` bez `--output`.
+Pravidla převodu: [reports.md](reports.md) §15.
+
+#### `report-diff <fileA> <fileB> [--strict] [--json]`
+
+```bash
+shpd-ds report-diff old.json new.json            # lidský výpis rozdílů
+shpd-ds report-run … | shpd-ds report-diff - old.json --json
+```
+
+Porovná dva `ReportResult` JSON soubory (`-` = stdin pro jednu stranu) —
+kontrola importu ze starého Shipardu. Porovnává detailní řádky podle účtu
+a součty podle popisku, sloupce v průniku dle `id`, tolerance 0,005.
+Exit 0 shoda, 1 rozdíly, 2 chyba vstupu; `--strict` odmítne stranu se
+`status: errors`. Viz [reports.md](reports.md) §7.4 a §13.
+
 ### Users
 
 #### `user-create`
