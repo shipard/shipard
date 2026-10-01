@@ -8,8 +8,8 @@
 > (`tasks/assets-phase2b.md`, §5.3), oblast 3 **hotová** 2026-10-01 —
 > zaúčtování a dimenze deníku (`tasks/assets-phase3.md`, §5.4), oblast 4
 > **hotová** 2026-10-01 — vazba na doklady (`tasks/assets-phase4.md`,
-> §5.5); oblast 5 (přehledy) naplánována (`tasks/assets-phase5.md`,
-> prerekvizita `tasks/reports-export.md` hotová 2026-10-01); další oblasti se rozpadají
+> §5.5), oblast 5 **hotová** 2026-10-01 — přehledy a kontrola evidence
+> proti deníku (`tasks/assets-phase5.md`, §5.6); další oblasti se rozpadají
 > postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
@@ -532,7 +532,8 @@ přes 250 řádků pořízení na 042 i 501).
 
 ### D65–D72 — Oblast 5: přehledy a kontroly (ROZHODNUTO)
 
-PRD: `tasks/assets-phase5.md` (prerekvizita `tasks/reports-export.md`).
+PRD: `tasks/assets-phase5.md` (prerekvizita `tasks/reports-export.md`);
+implementace a odchylky §5.6.
 Starý Shipard měl sestavu odpisů, přehled karet a podklad pro DPPO;
 kontrolu proti deníku neměl — nesoulad se hledal ručně (§3.2).
 
@@ -924,6 +925,108 @@ ostatních pohybů se zapnutým nastavením; formulář hlavičky: pole Majetek.
 Detail karty: sekce Pořízení, tab Náklady a výnosy, akce Otevřít v deníku.
 Dashboard: karty alertů v sekci Majetek.
 
+### 5.6 Přehledy a kontrola proti deníku — hotovo
+
+`tasks/assets-phase5.md` (D65–D72). Pět reportů v doméně reportů
+(`docs/reports.md`) v sekci Majetek; zdrojem je **evidence** (karty,
+události, plány), deník slouží kontrole (D65). Stav „k datu“ = poslední
+den zvoleného období.
+
+| Report (`economy.assets.*`) | Období | Parametry | Obsah |
+|---|---|---|---|
+| `depreciationSchedule` — Sestava odpisů | rok | `groupBy` (účetní skupina / daňová skupina a metoda / typ / nic), `category` (vše / odepisovaný / neodepisovaný) | dlouhodobé karty v evidenci v roce: vstupní cena, oprávky na začátku, odpis roku, oprávky a ZC na konci — daňově i účetně —, rozdíl účetní − daňový odpis |
+| `movements` — Přírůstky a úbytky | měsíc–rok | `kind` (vše / přírůstky / úbytky) | potvrzené události období po druhu pohybu, drobný majetek podle dat na kartě; u vyřazení oprávky a ZC; přírůstky a úbytky celkem |
+| `taxDepreciationReturn` — Daňové odpisy pro DPPO | rok | — | uplatněné daňové odpisy po skupinách přiznání, účetní odpisy celkem, rozdíl |
+| `journalCheck` — Kontrola evidence × deník | rok | — | účty účetních skupin (evidence × deník, obrat s kartou a bez) a nesoulady po kartách |
+| `register` — Soupis majetku | měsíc, rok | `groupBy` (typ / druh / účetní skupina), `foreign` (včetně / jen vlastní / jen cizí) | karty v evidenci ke konci období vč. drobného a cizího: datum pořízení, vstupní cena, účetní ZC |
+
+| Třída | Role |
+|---|---|
+| `AssetPlanService::plansFor()` / `plansOf()` | hromadné plány (D71): karty a potvrzené události jedním dotazem na typ dat, kalendáře období jednou za instanci |
+| `Reports\AssetReportSupport` | sdílená vrstva reportů: `AssetPlanService` na běh, data období z `FiscalRange`, karty s názvy skupiny / typu / vlastníka, karty v evidenci v období, události v období, odkazy drill-downu |
+| `Reports\CircuitYear`, `Reports\AssetYear` | pohled na plán okruhu za období: oprávky na začátku, uplatněný odpis, stav na konci, příznak plánu |
+| `Reports\*Builder` | pět builderů (`ReportBuilder`), bez dědičnosti |
+| `AssetJournalCheck` | kontrola evidence × deník — sdílí ji report, alerty a karta |
+| `Checks\JournalMismatchCheck`, `Checks\AcquisitionMismatchCheck` | alerty D67 |
+
+**Kdy je karta v přehledu.** Dlouhodobá karta se řídí událostmi: v evidenci
+od zařazení nebo počátečního stavu do vyřazení; karta bez zařazení
+v přehledech není (pořízení je ještě na účtu pořízení). Drobný
+a nezařazený cizí majetek se řídí daty a cenou na kartě. Koncepty
+a smazané karty do přehledů nevstupují. V sestavě za rok je karta zařazená
+do konce roku a nevyřazená před jeho začátkem; v soupisu k datu karta
+vyřazená v ten den už není.
+
+**Hodnoty roku** jsou z plánu — potvrzené události i plán do konce roku.
+Neodepsaný rok se pozná ve sloupci Stav („plán“) a souhrnnou zprávou;
+chyba plánu karty je zpráva `assets.planError` (`status: errors`). Daňový
+odpis je **uplatněný**: odpisy s neevidovanou uplatněnou částkou (D11)
+v něm nejsou, oprávky ale snižují.
+
+**Členění pro přiznání** (`taxReturnGroup`) je v konfiguraci pravidel země
+(`taxReturnGroups` + `TaxDepreciationRules::taxReturnGroup()`): odpisové
+skupiny 1–6, nehmotný majetek do 2020, odpisy podle účetnictví. Mimořádné
+odpisy § 30a patří do odpisové skupiny majetku (bezemisní vozidla = 2).
+
+**Kontrola evidence × deník** (`AssetJournalCheck`, invariant §1). Co má
+být v deníku, se počítá **z událostí samotných** podle tabulky D49 —
+nezávisle na `AssetPostingBuilder` i na plánovači (oprávky při vyřazení =
+počáteční oprávky + účetní odpisy, ZC = vstupní cena − oprávky). Kontrola
+tak neopakuje kód, který účtuje, a nepotřebuje pravidla země.
+
+| Nesoulad | Co se porovnává | Závažnost |
+|---|---|---|
+| účet účetní skupiny | evidence (počáteční stavy + **zaúčtované** události) × deník; účty majetku, pořízení a oprávek konečným zůstatkem roku (otevírací období + běžné měsíce), účty odpisů a ZC obratem roku | chyba |
+| zápisy bez karty | řádky běžných měsíců roku na účtech skupin bez dimenze `asset` | varování |
+| (a) zaúčtování ≠ deník | zaúčtované události karty × řádky deníku `asset.*` s dimenzí karty, po účtech a stranách | chyba |
+| (b) pořízení ≠ zařazení | pořízení na 04x s dimenzí karty (mimo `asset.*`) × potvrzená zařazení + TZ − snížení | chyba |
+| (c) nezaúčtovaná událost | potvrzená účtovatelná událost bez dokladu s datem do konce předchozího období účetních odpisů | varování |
+
+U účtu pořízení je evidence = pořízení s kartou z deníku − zaúčtovaná
+zařazení a TZ; rozdíl proti deníku jsou pak zápisy bez karty.
+
+**Alerty** (denně): `economy.assets.journal_mismatch` (chyba) — nesoulad
+(a) ke konci předchozího a aktuálního účetního roku, akce `open_report`
+otevře kontrolu za dotčený rok; `economy.assets.acquisition_mismatch`
+(varování) — nesoulad (b) trvající déle než 30 dní
+(`AssetJournalCheck::ACQUISITION_DAYS`). Karta ukazuje (a) a (b) nahoře
+v Přehledu s odkazem na report.
+
+**Drill-down** (D70): název karty → náhled karty (`open_detail`), číslo
+dokladu zaúčtování → doklad, účet v kontrole → deník s filtrem účtu
+a roku, nesoulad karty → karta ve vieweru (`open_viewer`) a deník
+s filtrem účtu a karty.
+
+**Odchylky od PRD** (rozhodnutí při plánování R1–R4 a nálezy
+z implementace):
+
+- **Commit navíc v jádru reportů** (`docs/reports.md` §16). UI, CLI ani
+  MCP neuměly jiný parametr reportu než `detail`: popisky parametru nese
+  deklarace (R4), toolbar, deep-link, `--param` a `params` jsou obecné.
+  `ReportRequest` nese zemi, `SubtotalAggregator::groupBy()` seskupuje
+  podle klíče, `ReportRow` má `key` (párování v `report-diff`), `link`
+  a `cellLinks`.
+- **(b) se počítá z potvrzených událostí, ne ze zůstatku 04x** (R1) —
+  nezaúčtované zařazení by jinak bylo nesouladem až do ročního běhu.
+  Posuzují se jen karty, které pořízení na dokladech mají; zařazení bez
+  navázaného pořízení (import, pořízení bez karty) nesoulad (b) není.
+- **(a) nejde přes `AssetPostingBuilder`** (R2) — viz výše.
+- **Stavové účty zůstatkem, výsledkové obratem** (R3); evidence
+  nezahrnuje nezaúčtované události, ty hlásí (c).
+- **Plán v sestavě je sloupec Stav + jedna souhrnná zpráva**, ne zpráva
+  per karta — v běžném roce by jich bylo tolik co karet.
+- **Počáteční stav není přírůstek** — v Přírůstcích a úbytcích není.
+- **Pořízení bez zařazení eskaluje**: do 30 dnů informační „Majetek čeká
+  na zařazení“, potom varování nesouladu pořízení; `AwaitingActivationCheck`
+  proto starší pořízení už nehlásí. V reportu je nezařazená karta
+  nesouladem (b) také až po lhůtě.
+- **Odkaz řádku na doklad je buňka** (`cellLinks`), ne název řádku —
+  název vede vždy na kartu.
+- **Akce `open_report`** je nová (`navigationStore.navigateToReport`);
+  akce alertu „Majetek čeká na zařazení“ dostala cíl do `target` — karta
+  feedu ho na úrovni akce nečetla.
+- **Práh 30 dní je konstanta**, ne nastavení.
+
 ---
 
 ## 6. Import (kontrakt pro `old_shipard`)
@@ -958,9 +1061,9 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 4. Vazba na doklady: pořízení (D14), analytická dimenze (D15), D57–D64 —
    **hotovo** 2026-10-01, `tasks/assets-phase4.md` (§5.5 vč. odchylek)
 5. Přehledy: odpisy, přírůstky / úbytky, kontrola proti deníku,
-   podklad pro DPPO, soupis (D65–D72) — **naplánováno**,
-   `tasks/assets-phase5.md` (prerekvizita `tasks/reports-export.md`;
-   tisk karty až s tiskovou doménou, D68)
+   podklad pro DPPO, soupis (D65–D72) — **hotovo** 2026-10-01,
+   `tasks/assets-phase5.md` (§5.6 vč. odchylek; tisk karty až s tiskovou
+   doménou, D68)
 6. Import (D8, D9, D11) + backfill
 7. Pohyby, příslušenství, vlastnosti, místa, inventarizace, prodej majetku
    (vydaná faktura s nabídkou vyřazení)

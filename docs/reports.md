@@ -211,6 +211,13 @@ Zdroj pravdy: fiskální období (`economy_codebooks_fiscal_years` /
 - Jediný zdroj: `economy_accounting_journal` (D3). Reporty nesahají na
   doklady ani transakce — stejný princip jako saldokonto (`accbal.md` §1.2):
   každý budoucí zdroj účtování nakrmí reporty bez změny jejich kódu.
+- **Výjimka: reporty nad vlastní evidencí** (#83 D65). Přehledy majetku
+  (`economy.assets.*`) čtou karty, události a plány odpisů, ne deník —
+  daňové hodnoty v deníku nejsou a plán odpisů v něm být nemůže. Deník
+  u nich slouží **kontrole** (report `economy.assets.journalCheck`
+  porovnává evidenci s deníkem). Pravidlo D3 dál platí pro účetní reporty;
+  report nad jinou evidencí musí tuto odchylku uvést v deklaraci
+  a v dokumentaci modulu (`docs/assets.md` §5.6).
 - **v1 počítá vždy živě** (D12) — agregační dotaz nad deníkem s indexem
   (`fiscal_year`, `fiscal_month`) je levný a odpadá invalidace.
 - Řádky s `is_error = 1` (nedohledaný účet): report je nesmí tiše

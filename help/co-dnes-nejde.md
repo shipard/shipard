@@ -99,9 +99,8 @@ dokladem. Připsání od brány z bankovního výpisu se k dávce nepřiřadí s
 **Majetek se účtuje jen dávkou za období.** Zařazení, odpisy i vyřazení
 zaúčtuje **Odpisy za období** jedním dokladem (viz
 [Zaúčtování majetku](majetek/zauctovani-majetku.md)); zaúčtovat zařazení
-hned v den zařazení zatím nejde. Kontrola, že evidence majetku sedí na
-účetní deník, jako přehled zatím není — deník jen umí filtr podle karty.
-Odložená daň a účetní metody výkonové a zrychlené (AV / AM) zatím nejsou.
+hned v den zařazení zatím nejde. Odložená daň a účetní metody výkonové
+a zrychlené (AV / AM) zatím nejsou.
 
 **Prodej majetku se s vyřazením nepropojí.** Fakturu vydanou za prodaný
 majetek ke kartě přiřadíš (viz
@@ -110,8 +109,14 @@ z evidence uděláš sám tlačítkem **Vyřadit**. Kartu jde založit jen z ř�
 pořízení na přijaté faktuře — AI při vytěžení faktury kartu nenavrhne.
 
 **Karta nevidí pohyb věci.** Předání do užívání (kdo věc má), umístění,
-příslušenství, vlastnosti podle typu a inventurní seznamy zatím nejsou;
-stejně tak přehledy majetku a tisk karty.
+příslušenství, vlastnosti podle typu a inventurní seznamy zatím nejsou —
+soupis majetku proto neukazuje osobu ani místo.
+
+**Kartu majetku ani přehledy nevytiskneš.** Tisk karty a přehledů do PDF
+zatím není; přehledy stáhneš jako Excel nebo CSV a vytiskneš z tabulkového
+procesoru (viz [Přehledy majetku](majetek/prehledy-majetku.md)).
+Daňové odpisy pro DPPO jsou podklad po odpisových skupinách — do řádků
+tiskopisu přiznání je Shipard nepřenáší.
 
 **Majetek ze starého Shipardu se zatím nepřenáší.** Import karet, historie
 odpisů a vazeb na doklady přijde později; do té doby karty zakládáš ručně,

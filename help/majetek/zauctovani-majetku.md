@@ -2,7 +2,7 @@
 title: Zaúčtování majetku
 summary: Jak účetní odpisy, zařazení, technické zhodnocení a vyřazení majetku zaúčtovat jedním účetním dokladem za období, co se kam účtuje a jak zaúčtování období zrušit.
 keywords: [zaúčtování majetku, zaúčtovat majetek, zaúčtování odpisů, zaúčtovat odpisy, účtování odpisů, účetní doklad majetku, odpisy a zaúčtování za období, zaúčtování zařazení, zaúčtování vyřazení, zůstatková cena, oprávky, 551, 082, 022, 042, 541, zrušit zaúčtování, zrušení zaúčtování období, storno dokladu majetku, řada účetních dokladů majetku, řada dokladů majetku, nezaúčtováno, čeká na zaúčtování, doklad spravuje majetek, majetek v deníku, účetní deník podle majetku]
-related: [majetek/odpisy-majetku.md, majetek/nastaveni-majetku.md, majetek/evidence-majetku.md, co-dnes-nejde.md]
+related: [majetek/odpisy-majetku.md, majetek/nastaveni-majetku.md, majetek/evidence-majetku.md, co-dnes-nejde.md, majetek/prehledy-majetku.md]
 ---
 
 # Zaúčtování majetku
@@ -100,4 +100,5 @@ potvrdí; zaúčtuje ho až dávka za období.
 - [Odpisy majetku](odpisy-majetku.md)
 - [Nastavení majetku](nastaveni-majetku.md)
 - [Evidence majetku](evidence-majetku.md)
+- [Přehledy majetku](prehledy-majetku.md)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md)

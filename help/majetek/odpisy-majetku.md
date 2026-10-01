@@ -2,7 +2,7 @@
 title: Odpisy majetku
 summary: Jak na kartě nastavit daňové a účetní odpisy, zařadit majetek, zadat technické zhodnocení nebo snížení hodnoty, přerušit odpisy, vyřadit majetek a hromadně potvrdit odpisy za období.
 keywords: [odpisy, odpisy majetku, daňové odpisy, účetní odpisy, odpisový plán, plán odpisů, odpisová skupina, rovnoměrné odpisy, zrychlené odpisy, mimořádné odpisy, zařazení majetku, zařadit majetek, datum zařazení, vstupní cena, pořizovací cena, technické zhodnocení, TZ, snížení hodnoty, přerušení odpisů, přerušit odpisy, vyřazení majetku, vyřadit majetek, polovina odpisu, poloviční odpis, zůstatková cena, oprávky, odpisy za období, odepsat, roční odpis, měsíční odpisy, četnost odpisů, počáteční stav, přechod z jiného systému, převod majetku, hospodářský rok, události majetku, historie majetku]
-related: [majetek/zauctovani-majetku.md, majetek/evidence-majetku.md, majetek/naklady-na-majetek.md, majetek/nastaveni-majetku.md, co-dnes-nejde.md, slovnicek.md]
+related: [majetek/zauctovani-majetku.md, majetek/evidence-majetku.md, majetek/naklady-na-majetek.md, majetek/nastaveni-majetku.md, co-dnes-nejde.md, slovnicek.md, majetek/prehledy-majetku.md]
 ---
 
 # Odpisy majetku
@@ -153,5 +153,6 @@ Zrušit nejde ani vyřazení, jehož odpisy jsou zaúčtované.
 - [Zaúčtování majetku](zauctovani-majetku.md)
 - [Evidence majetku](evidence-majetku.md)
 - [Nastavení majetku](nastaveni-majetku.md)
+- [Přehledy majetku](prehledy-majetku.md)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md)
 - [Slovníček](../slovnicek.md)

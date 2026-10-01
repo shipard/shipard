@@ -2,7 +2,7 @@
 title: Export reportu do Excelu nebo CSV
 summary: Jak stáhnout hlavní knihu, výsledovku, rozvahu nebo výstup DPH jako sešit pro Excel nebo jako CSV a co ve staženém souboru najdeš.
 keywords: [export, exportovat, stáhnout report, stažení reportu, do Excelu, excel, xlsx, csv, tabulka, tabulkový procesor, LibreOffice, uložit report, vytisknout report, tisk reportu, PDF reportu, hlavní kniha do Excelu, výsledovka do Excelu, rozvaha do Excelu, v tisících, desetinná čárka, středník]
-related: [uctarna/dph-zive-vystupy.md, co-shipard-umi.md, co-dnes-nejde.md]
+related: [uctarna/dph-zive-vystupy.md, co-shipard-umi.md, co-dnes-nejde.md, majetek/prehledy-majetku.md]
 ---
 
 # Export reportu do Excelu nebo CSV

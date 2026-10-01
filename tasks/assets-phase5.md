@@ -1,6 +1,6 @@
 # Majetek Fáze 5 — přehledy a kontroly
 
-**Stav:** naplánováno — D65–D72 potvrzena 2026-10-01; prerekvizita `tasks/reports-export.md` hotová 2026-10-01
+**Stav:** hotovo — 2026-10-01 (8 commitů; odchylky od zadání v `docs/assets.md` §5.6)
 
 > PRD pro jednu Claude Code session (7 commitů). Design: `docs/assets.md`
 > §1 (invarianty), §4 D65–D72, §5; `docs/reports.md`; issue #83.
@@ -189,6 +189,34 @@ přes `report-run`; kontrola ukáže nesoulad karty „Smoke 4 fréza“
 (pořízení 04x ≠ zařazení) a po opravě (TZ nebo oprava zařazení
 a zaúčtování) projde bez chyb; alert nesouladu pořízení se objeví
 a zmizí; součet daňových odpisů pro DPPO sedí se Sestavou odpisů.
+
+## Výsledek implementace
+
+Osm commitů místo sedmi — mezi hromadné načítání a první reporty přibyl
+commit v jádru reportů (obecné parametry v UI / CLI / MCP, země
+v požadavku, seskupení podle klíče, identita řádku; `docs/reports.md`
+§16). Rozhodnutí z plánování (potvrzená 2026-10-01):
+
+- **R1** nesoulad (b) se počítá z potvrzených událostí (zařazení + TZ −
+  snížení) proti pořízení na 04x s dimenzí karty, jen u karet s pořízením
+  na dokladech — ne ze zůstatku 04x;
+- **R2** nesoulad (a) počítá `AssetJournalCheck` aritmetikou nad
+  událostmi, bez plánovače a bez `AssetPostingBuilder`;
+- **R3** účty majetku, pořízení a oprávek se porovnávají konečným
+  zůstatkem roku, účty odpisů a zůstatkové ceny obratem; evidence =
+  počáteční stavy + zaúčtované události;
+- **R4** popisky parametrů reportu nese deklarace (`name`, `optionNames`).
+
+Ostatní odchylky (plán jako sloupec Stav, eskalace pořízení bez zařazení
+po 30 dnech, odkaz na doklad jako buňka, akce `open_report`) jsou
+v `docs/assets.md` §5.6.
+
+Ukázkový DS: kontrola ukazuje u karty „Smoke 4 fréza“ pořízení 269 500 ≠
+zařazení 268 500 a alert nesouladu pořízení se objevil. Vedle ní hlásí
+i další zkušební karty z fází 2–4 (počáteční stav bez počátečního zůstatku
+účtu, pořízení bez karty, nezaúčtované zařazení mimo založené roky) —
+kritérium „po opravě frézy projde bez chyb“ proto platí pro frézu, ne pro
+celý ukázkový DS.
 
 ## Rozhodnutí k designu (potvrzená)
 
