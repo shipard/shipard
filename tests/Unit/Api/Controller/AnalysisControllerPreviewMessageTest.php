@@ -458,4 +458,55 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         $this->assertSame('application/pdf', $atts[0]['mime_type']);
         $this->assertSame(67890, $atts[1]['size_bytes']);
     }
+
+    /**
+     * Uložená rozhodnutí (#76) jdou do `_resolve` canonicalu před preview
+     * (tasks/exchange-preview-vat-choices.md D15) — applier tak počítá
+     * s volbou kódu DPH, místa i režimu. Chování applieru nad pinem kryje
+     * DocumentApplierVatPinsTest; tady jen přenos. `userActions` v odpovědi
+     * zůstává plochá mapa.
+     */
+    public function testPreviewMessageMergesSavedDecisionsIntoResolveBeforePreview(): void
+    {
+        $canonical = $this->happyCanonical();
+        $saved = ['rows[0].vatCode' => 'useCode:cz-218', 'vat.place' => 'useValue:domestic', 'supplier' => 'useExisting:42'];
+        $db = $this->db(
+            $this->message(100),
+            $this->analysis((string) json_encode($canonical), extra: ['user_actions_json' => json_encode($saved)]),
+        );
+
+        $captured = null;
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->expects($this->once())
+            ->method('preview')
+            ->willReturnCallback(function (array $c) use (&$captured) {
+                $captured = $c;
+                return ApplyResult::ok($c);
+            });
+
+        $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100);
+        $this->assertSame(200, $this->statusOf($resp));
+
+        $this->assertSame('useCode:cz-218', $captured['_resolve']['rows'][0]['vatCode']['userAction']);
+        $this->assertSame('useValue:domestic', $captured['_resolve']['vat']['place']['userAction']);
+        $this->assertSame('useExisting:42', $captured['_resolve']['supplier']['userAction']);
+        $this->assertSame($saved, $resp->getPayload()['data']['userActions']);
+    }
+
+    public function testPreviewMessageWithoutSavedDecisionsSendsNoResolve(): void
+    {
+        $canonical = $this->happyCanonical();
+        $db = $this->db($this->message(100), $this->analysis((string) json_encode($canonical)));
+
+        $captured = null;
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('preview')->willReturnCallback(function (array $c) use (&$captured) {
+            $captured = $c;
+            return ApplyResult::ok($c);
+        });
+
+        $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100);
+
+        $this->assertArrayNotHasKey('_resolve', $captured);
+    }
 }

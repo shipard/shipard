@@ -1801,6 +1801,18 @@ class AnalysisController
             }
         }
 
+        // Uložená rozhodnutí z review (#76) do `_resolve` — až po
+        // enrichmentu, aby piny přežily. Náhled tak počítá s volbou kódu
+        // DPH, místa a režimu (tasks/exchange-preview-vat-choices.md D15);
+        // strany a položky resolve nečte, pro ně je to neutrální.
+        $savedActions = MessageProposalApplier::decodeUserActions($analysis['user_actions_json'] ?? null);
+        if ($savedActions !== []) {
+            $canonical['_resolve'] = MessageProposalApplier::mergeUserActions(
+                is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [],
+                MessageProposalApplier::expandUserActions($savedActions),
+            );
+        }
+
         $result = $this->applier->preview($canonical);
         if (!$result->success) {
             // preview() should always succeed (resolve issues live in

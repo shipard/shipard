@@ -62,6 +62,12 @@ final class MessageProposalApplier
      */
     private const USER_ACTION_TOP_PATHS = ['supplier', 'customer', 'supplierBank', 'customerBank'];
     private const USER_ACTION_ROW_PATH_RE = '/^rows\[(\d+)\]\.(item|unit|vatCode)$/';
+    /**
+     * Volby DPH hlavičky (tasks/exchange-preview-vat-choices.md D8, #87 B):
+     * `vat.place` / `vat.mode` → `_resolve.vat.{place|mode}.userAction`
+     * (`useValue:<hodnota>`); applier je čte ve `vatContext()`.
+     */
+    private const USER_ACTION_VAT_PATHS = ['vat.place', 'vat.mode'];
 
     /**
      * `$applier` je nullable kvůli konstrukci pro unapply-only / registry-only
@@ -101,7 +107,9 @@ final class MessageProposalApplier
      * (resolution IS NULL), validní canonical. `message.target_row`
      * obsazený → idempotent/recovery cesta.
      *
-     * @param array<string, mixed>|null $clientResolveFlat  flat {path: userAction}, nebo null
+     * @param array<string, mixed>|null $clientResolveFlat  flat {path: userAction}; null =
+     *        jednoklik (karta, MCP) — platí rozhodnutí uložená k analýze (#76),
+     *        režim zůstává safe (tasks/exchange-preview-vat-choices.md D17)
      * @param array<string, mixed>      $applyOptionsOverride  autoCreateMode / targetDocState
      */
     public function apply(
@@ -209,17 +217,22 @@ final class MessageProposalApplier
             }
         }
 
-        // Merge client userActions into canonical _resolve.
-        if ($clientResolveFlat !== null) {
-            $expanded = self::expandUserActions($clientResolveFlat);
+        // Merge userActions into canonical _resolve. Klientská mapa má
+        // přednost; bez ní (jednoklik z karty, MCP mail_draft_document)
+        // platí rozhodnutí uložená k analýze v review modalu (#76) — volba
+        // kódu DPH i strany (tasks/exchange-preview-vat-choices.md D17).
+        $effectiveFlat = $clientResolveFlat
+            ?? self::decodeUserActions($analysis['user_actions_json'] ?? null);
+        if ($effectiveFlat !== []) {
             $canonical['_resolve'] = self::mergeUserActions(
                 is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [],
-                $expanded,
+                self::expandUserActions($effectiveFlat),
             );
         }
 
         // autoCreateMode: explicit override wins; else strict when client sent
-        // a _resolve map, safe otherwise.
+        // a _resolve map, safe otherwise. Doplněná uložená rozhodnutí režim
+        // NEPŘEPÍNAJÍ — jednoklik dál zakládá dodavatele s IČO sám (D17).
         $autoCreateMode = $applyOptionsOverride['autoCreateMode']
             ?? ($clientResolveFlat !== null ? 'strict' : 'safe');
         $targetDocState = isset($applyOptionsOverride['targetDocState'])
@@ -766,6 +779,8 @@ final class MessageProposalApplier
      *   → {"supplier": {"userAction": "useExisting:42"},
      *      "rows": [{"item": {"userAction": "create"}}]}
      *
+     * Volby DPH hlavičky: `vat.place` → `vat.place.userAction` (#87 B).
+     *
      * Unknown paths are silently ignored — applier handles unresolved refs
      * via its normal reconcile flow.
      *
@@ -783,6 +798,10 @@ final class MessageProposalApplier
                 $idx = (int) $m[1];
                 $field = $m[2];
                 $expanded['rows'][$idx][$field]['userAction'] = $action;
+                continue;
+            }
+            if (in_array($path, self::USER_ACTION_VAT_PATHS, true)) {
+                $expanded['vat'][substr((string) $path, strlen('vat.'))]['userAction'] = $action;
                 continue;
             }
             if (in_array($path, self::USER_ACTION_TOP_PATHS, true)) {
@@ -810,6 +829,7 @@ final class MessageProposalApplier
             }
             $path = (string) $path;
             if (!in_array($path, self::USER_ACTION_TOP_PATHS, true)
+                && !in_array($path, self::USER_ACTION_VAT_PATHS, true)
                 && preg_match(self::USER_ACTION_ROW_PATH_RE, $path) !== 1) {
                 continue;
             }
@@ -837,6 +857,9 @@ final class MessageProposalApplier
      * Deep-merge userAction overrides into existing canonical `_resolve`.
      * Only `userAction` keys are touched; status/candidates/createPayload
      * stay as-is (the applier re-resolves and overwrites them anyway).
+     * Vnořené `vat` (`place` / `mode`, #87 B) jde stejnou cestou jako
+     * pole řádku — jen `userAction`, `value` / `source` z předchozího
+     * náhledu zůstávají.
      *
      * @param array<string, mixed> $existing
      * @param array<string, mixed> $overrides
@@ -845,6 +868,19 @@ final class MessageProposalApplier
     public static function mergeUserActions(array $existing, array $overrides): array
     {
         foreach ($overrides as $key => $value) {
+            if ($key === 'vat' && is_array($value)) {
+                $existing['vat'] = is_array($existing['vat'] ?? null) ? $existing['vat'] : [];
+                foreach ($value as $field => $fieldOverride) {
+                    if (!is_array($fieldOverride) || !isset($fieldOverride['userAction'])) {
+                        continue;
+                    }
+                    $existing['vat'][$field] = is_array($existing['vat'][$field] ?? null)
+                        ? $existing['vat'][$field]
+                        : [];
+                    $existing['vat'][$field]['userAction'] = $fieldOverride['userAction'];
+                }
+                continue;
+            }
             if ($key === 'rows' && is_array($value)) {
                 $existing['rows'] = is_array($existing['rows'] ?? null) ? $existing['rows'] : [];
                 foreach ($value as $idx => $rowOverride) {

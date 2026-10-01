@@ -250,4 +250,26 @@ class AnalysisControllerSaveDecisionsTest extends TestCase
         $this->assertSame('NOT_FOUND', $resp->getPayload()['error']['code']);
         $this->assertSame([], $this->updates);
     }
+
+    /** Volby DPH (tasks/exchange-preview-vat-choices.md D8): hlavičkové cesty `vat.*` projdou, neznámé ne. */
+    public function testSaveDecisionsKeepsVatPathsAndDropsUnknownOnes(): void
+    {
+        $db = $this->db($this->message(), $this->analysis());
+        $resp = $this->controller($db)->saveDecisions(
+            $this->authed(),
+            $this->requestWithBody(['_resolve' => [
+                'vat.place'       => 'useValue:intracom',
+                'vat.mode'        => 'useValue:none',
+                'vat.bogus'       => 'useValue:x',
+                'rows[0].vatCode' => 'useCode:cz-218',
+            ]]),
+            100,
+        );
+
+        $this->assertSame(200, $this->statusOf($resp));
+        $expected = ['vat.place' => 'useValue:intracom', 'vat.mode' => 'useValue:none', 'rows[0].vatCode' => 'useCode:cz-218'];
+        $this->assertSame($expected, $resp->getPayload()['data']['userActions']);
+        $this->assertCount(1, $this->updates);
+        $this->assertSame(['user_actions_json' => json_encode($expected)], $this->updates[0][1]);
+    }
 }

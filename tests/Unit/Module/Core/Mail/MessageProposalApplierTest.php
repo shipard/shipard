@@ -1145,4 +1145,114 @@ class MessageProposalApplierTest extends TestCase
         $this->assertSame('useExisting:18', $result['rows'][1]['item']['userAction']);
         $this->assertSame(18, $result['rows'][1]['item']['matchedId']);
     }
+
+    // ── Volby DPH v mapě rozhodnutí (tasks/exchange-preview-vat-choices.md D8, D17) ──
+
+    public function testExpandUserActionsVatHeaderPaths(): void
+    {
+        $expanded = MessageProposalApplier::expandUserActions([
+            'vat.place'       => 'useValue:intracom',
+            'vat.mode'        => 'useValue:fromTotal',
+            'rows[0].vatCode' => 'useCode:cz-218',
+            'vat.bogus'       => 'useValue:x',
+        ]);
+
+        $this->assertSame([
+            'vat'  => [
+                'place' => ['userAction' => 'useValue:intracom'],
+                'mode'  => ['userAction' => 'useValue:fromTotal'],
+            ],
+            'rows' => [0 => ['vatCode' => ['userAction' => 'useCode:cz-218']]],
+        ], $expanded);
+    }
+
+    public function testSanitizeUserActionsKeepsVatHeaderPaths(): void
+    {
+        $clean = MessageProposalApplier::sanitizeUserActions([
+            'vat.place'  => 'useValue:domestic',
+            'vat.mode'   => 'useValue:none',
+            'vat.bogus'  => 'useValue:x',
+            'vat'        => 'useValue:x',
+            'vat.place.' => 'useValue:x',
+        ]);
+
+        $this->assertSame(['vat.place' => 'useValue:domestic', 'vat.mode' => 'useValue:none'], $clean);
+    }
+
+    public function testMergeUserActionsNestedVatKeepsEffectiveValues(): void
+    {
+        // `_resolve.vat` z předchozího náhledu nese value/source — merge sahá
+        // jen na userAction (vzor větve rows).
+        $result = MessageProposalApplier::mergeUserActions(
+            ['vat' => ['place' => ['value' => 'intracom', 'source' => 'vatId']]],
+            ['vat' => [
+                'place' => ['userAction' => 'useValue:domestic'],
+                'mode'  => ['userAction' => 'useValue:fromTotal'],
+                'junk'  => 'useValue:x',
+            ]],
+        );
+
+        $this->assertSame(
+            ['value' => 'intracom', 'source' => 'vatId', 'userAction' => 'useValue:domestic'],
+            $result['vat']['place'],
+        );
+        $this->assertSame(['userAction' => 'useValue:fromTotal'], $result['vat']['mode']);
+        $this->assertArrayNotHasKey('junk', $result['vat']);
+    }
+
+    public function testApplyWithoutClientResolveUsesSavedDecisionsAndStaysSafe(): void
+    {
+        // Jednoklik z karty / MCP: klient mapu neposílá, platí rozhodnutí
+        // uložená v review modalu (#76) — volba kódu DPH i dodavatele.
+        $saved = ['rows[0].vatCode' => 'useCode:cz-218', 'supplier' => 'useExisting:42'];
+        $db = $this->db($this->messageRow(), $this->analysisRow(['user_actions_json' => json_encode($saved)]));
+        $captured = null;
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
+            $captured = $passed;
+            return ApplyResult::error('unresolved_required', 'X', [], 422);
+        });
+
+        $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
+
+        $this->assertSame('useCode:cz-218', $captured['_resolve']['rows'][0]['vatCode']['userAction']);
+        $this->assertSame('useExisting:42', $captured['_resolve']['supplier']['userAction']);
+        // Doplněná rozhodnutí režim nepřepínají — dodavatele s IČO dál zakládá sám.
+        $this->assertSame('safe', $captured['applyOptions']['autoCreateMode']);
+    }
+
+    public function testApplyClientResolveTakesPrecedenceOverSavedDecisions(): void
+    {
+        $saved = ['supplier' => 'useExisting:42', 'rows[0].vatCode' => 'useCode:cz-218'];
+        $db = $this->db($this->messageRow(), $this->analysisRow(['user_actions_json' => json_encode($saved)]));
+        $captured = null;
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
+            $captured = $passed;
+            return ApplyResult::error('unresolved_required', 'X', [], 422);
+        });
+
+        $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, ['rows[0].item' => 'skip']);
+
+        $this->assertSame('skip', $captured['_resolve']['rows'][0]['item']['userAction']);
+        $this->assertArrayNotHasKey('supplier', $captured['_resolve'], 'uložená mapa se k explicitní nedoplňuje');
+        $this->assertArrayNotHasKey('vatCode', $captured['_resolve']['rows'][0]);
+        $this->assertSame('strict', $captured['applyOptions']['autoCreateMode']);
+    }
+
+    public function testApplyWithoutSavedDecisionsLeavesResolveUntouched(): void
+    {
+        $db = $this->db($this->messageRow(), $this->analysisRow(['user_actions_json' => null]));
+        $captured = null;
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('apply')->willReturnCallback(function (array $passed) use (&$captured) {
+            $captured = $passed;
+            return ApplyResult::error('unresolved_required', 'X', [], 422);
+        });
+
+        $this->service($db, $applier)->apply(self::MESSAGE_NDX, 7, null);
+
+        $this->assertArrayNotHasKey('_resolve', $captured);
+        $this->assertSame('safe', $captured['applyOptions']['autoCreateMode']);
+    }
 }
