@@ -65,16 +65,22 @@ class TestAssetPlanService extends AssetPlanService
         return $this->asOf;
     }
 
-    protected function loadCard(int $assetId): ?array
+    /** @var array<string, int> seam → počet volání (hromadné načítání, D71) */
+    public array $loads = ['cards' => 0, 'events' => 0, 'years' => 0, 'months' => 0];
+
+    protected function loadCards(array $assetIds): array
     {
-        return $this->cards[$assetId] ?? null;
+        $this->loads['cards']++;
+        return array_intersect_key($this->cards, array_flip($assetIds));
     }
 
     protected function loadConfirmedEvents(array $assetIds): array
     {
+        $this->loads['events']++;
+        $assetIds = array_flip($assetIds);
         $out = [];
         foreach ($this->events as $event) {
-            if (in_array((int) $event['asset'], $assetIds, true) && (int) ($event['docState'] ?? 40) === 40) {
+            if (isset($assetIds[(int) $event['asset']]) && (int) ($event['docState'] ?? 40) === 40) {
                 $out[(int) $event['asset']][] = $event;
             }
         }
@@ -92,6 +98,7 @@ class TestAssetPlanService extends AssetPlanService
 
     protected function loadFiscalYears(): array
     {
+        $this->loads['years']++;
         $years = [];
         foreach (range(2021, 2026) as $i => $year) {
             $years[] = ['id' => $i + 1, 'name' => (string) $year, 'begin' => "{$year}-01-01", 'end' => "{$year}-12-31"];
@@ -101,6 +108,7 @@ class TestAssetPlanService extends AssetPlanService
 
     protected function loadFiscalMonths(): array
     {
+        $this->loads['months']++;
         $months = [];
         foreach (range(2021, 2026) as $i => $year) {
             for ($m = 1; $m <= 12; $m++) {

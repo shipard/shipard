@@ -42,6 +42,11 @@ class AssetPlanService
     /** @var list<array<string, mixed>>|null */
     private ?array $months = null;
 
+    private ?PeriodCalendar $taxCalendar = null;
+    /** @var array<string, PeriodCalendar> četnost → kalendář účetního okruhu */
+    private array $accCalendars = [];
+    private ?AssetCategories $categories = null;
+
     public function __construct(
         protected readonly ?\Dibi\Connection $db,
         protected readonly ?ConfigRuntime $config,
@@ -59,7 +64,7 @@ class AssetPlanService
 
     public function categories(): AssetCategories
     {
-        return new AssetCategories($this->config);
+        return $this->categories ??= new AssetCategories($this->config);
     }
 
     /** Četnost účetních odpisů (D12): `year` (výchozí) nebo `month`. */
@@ -102,12 +107,12 @@ class AssetPlanService
     /** Zdaňovací období = účetní roky. */
     public function taxCalendar(): PeriodCalendar
     {
-        return PeriodCalendar::yearly($this->fiscalYears());
+        return $this->taxCalendar ??= PeriodCalendar::yearly($this->fiscalYears());
     }
 
     public function accCalendar(): PeriodCalendar
     {
-        return $this->isMonthly()
+        return $this->accCalendars[$this->accPeriodicity()] ??= $this->isMonthly()
             ? PeriodCalendar::monthly($this->fiscalYears(), $this->fiscalMonths())
             : PeriodCalendar::yearly($this->fiscalYears());
     }
@@ -122,7 +127,7 @@ class AssetPlanService
     /** @return array<string, mixed>|null */
     public function card(int $assetId): ?array
     {
-        return $this->loadCard($assetId);
+        return $this->loadCards([$assetId])[$assetId] ?? null;
     }
 
     /**
@@ -235,14 +240,63 @@ class AssetPlanService
         return $card === null ? null : $this->plan($card, $this->confirmedEvents($assetId));
     }
 
+    /**
+     * Plány mnoha karet najednou (D71): karty a potvrzené události jedním
+     * dotazem na typ dat, účetní období a pravidla země jednou za instanci —
+     * ne po kartách. Neexistující id se vynechá.
+     *
+     * @param list<int> $assetIds
+     * @return array<int, array{card: array<string, mixed>, tax: Plan, acc: Plan}> id karty → karta a plány
+     */
+    public function plansFor(array $assetIds, ?string $asOf = null): array
+    {
+        $ids = array_values(array_unique(array_map(intval(...), $assetIds)));
+
+        return $ids === [] ? [] : $this->plansOf($this->loadCards($ids), $asOf);
+    }
+
+    /**
+     * Plány už načtených karet (řádky `economy_assets_assets`, klidně
+     * s připojenými sloupci navíc) — události všech karet jedním dotazem.
+     *
+     * @param iterable<array<string, mixed>> $cards
+     * @return array<int, array{card: array<string, mixed>, tax: Plan, acc: Plan}> id karty → karta a plány
+     */
+    public function plansOf(iterable $cards, ?string $asOf = null): array
+    {
+        $byId = [];
+        foreach ($cards as $card) {
+            $byId[(int) $card['id']] = $card;
+        }
+        $events = $this->confirmedEventsOf(array_keys($byId));
+        $asOf ??= $this->today();
+
+        $out = [];
+        foreach ($byId as $id => $card) {
+            $out[$id] = ['card' => $card] + $this->plan($card, $events[$id] ?? [], $asOf);
+        }
+        return $out;
+    }
+
     // ── DB přístup (přepsatelné v testech) ──────────────────────────────────
 
-    /** @return array<string, mixed>|null */
-    protected function loadCard(int $assetId): ?array
+    /**
+     * @param list<int> $assetIds
+     * @return array<int, array<string, mixed>> id → řádek karty
+     */
+    protected function loadCards(array $assetIds): array
     {
-        $row = $this->db?->fetch('SELECT * FROM [' . AssetDocument::TABLE . '] WHERE [id] = %i', $assetId);
-
-        return $row === null || $row === false ? null : self::plain($row);
+        if ($this->db === null || $assetIds === []) {
+            return [];
+        }
+        $cards = [];
+        foreach ($this->db->fetchAll(
+            'SELECT * FROM [' . AssetDocument::TABLE . '] WHERE [id] IN %in ORDER BY [id]',
+            $assetIds,
+        ) as $row) {
+            $cards[(int) $row['id']] = self::plain($row);
+        }
+        return $cards;
     }
 
     /**
