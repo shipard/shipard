@@ -1,6 +1,6 @@
 # Shipard — Majetek (`economy.assets`)
 
-> **Designový dokument.** **Stav:** D1–D56 rozhodnuto;
+> **Designový dokument.** **Stav:** D1–D64 rozhodnuto;
 > oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
 > (`tasks/assets-phase1.md`), oblast 2 **hotová** 2026-09-30 — pravidla
 > země a odpisový engine (`tasks/assets-phase2a.md`, §5.1–5.2), události,
@@ -485,6 +485,48 @@ transakci).
   vyřazení založilo; zaúčtované nejdřív vyžadují zrušení zaúčtování
   období.
 
+### D57–D64 — Oblast 4: vazba na doklady (ROZHODNUTO)
+
+PRD: `tasks/assets-phase4.md`. Ve starém Shipardu volba „Sledovat náklady
+na majetek“ (`usePropertyExpenses`) — majetek na hlavičce i řádcích
+přijatých faktur, pokladních a účetních dokladů (`332718`: 146 faktur
+s majetkem na hlavičce, 224 řádků s majetkem; `689089`: 59 faktur,
+přes 250 řádků pořízení na 042 i 501).
+
+- **D57 Úplná účetní skupina** (nález fáze 3). Odepisovaný druh smí mít
+  jen skupinu s účtem odpisů a oprávek — jinak karta nejde potvrdit;
+  formulář skupiny upozorní na chybějící účty.
+- **D58 Ruční událost v existujícím účetním roce** (nález fáze 3). Kromě
+  počátečního stavu a importu musí datum události ležet v založeném
+  účetním roce; hláška odkáže na počáteční stav.
+- **D59 Nastavení „Sledovat náklady na majetek“**
+  (`economy.assets.trackExpenses`, výchozí vypnuto). Zapnuté = pole
+  Majetek na hlavičce (nový sloupec `asset` přes extension) a na řádcích
+  přijatých a vydaných faktur, pokladních a účetních dokladů. Vypnuté =
+  pole jen u pořízení majetku a systémových operací. Import převezme
+  starou volbu (fáze 6).
+- **D60 Výchozí hodnota z hlavičky** — `journalDimensions.asset.headColumn
+  = "asset"`; řádek bez karty zdědí kartu hlavičky (engine to umí),
+  formulář řádku ji ukáže jako placeholder.
+- **D61 Řádek pořízení nese kartu** (D14) — `purchase.asset` má pole
+  Majetek, **nepovinné** (AI analýza a import kartu neznají); alert
+  „Pořízení majetku bez karty“. Účet řádku určuje význam: 04x =
+  dlouhodobý k zařazení, 5xx = drobný do nákladů.
+- **D62 Založení karty z řádku** — obecné rozšíření lookupu o výchozí
+  hodnoty nového záznamu z rodiče (třída lookupu dostane řádek
+  a hlavičku); u majetku název z textu řádku, datum pořízení z účetního
+  data, druh podle účtu (04x dlouhodobý hmotný, 5xx drobný), drobnému
+  cena ze základu řádku.
+- **D63 Zařazení z pořízení** — sekce Pořízení na kartě (navázané řádky
+  a součet); u nezařazené dlouhodobé karty s pořízením na 04x akce
+  Zařadit předvyplní součet základů v domácí měně a datum posledního
+  dokladu (upravitelné; neodpočitatelnou DPH doplní uživatel). Alert
+  „Majetek čeká na zařazení“.
+- **D64 Tab Náklady a výnosy na kartě** (D15) — řádky deníku s dimenzí
+  karty bez operací `asset.*`, po účetních letech a účtech, odkaz na
+  doklad, součty po letech. Prodej majetku (operace s nabídkou vyřazení)
+  až fáze 7.
+
 ---
 
 ## 5. Doménový model (návrh)
@@ -801,11 +843,13 @@ Probírají se jedna po druhé; každá má vlastní PRD.
    §5.3)
 3. Zaúčtování (D4, D47–D56) + řádkové operace + dimenze deníku —
    **hotovo** 2026-10-01, `tasks/assets-phase3.md` (§5.4 vč. odchylek)
-4. Vazba na doklady: pořízení (D14), analytická dimenze (D15)
+4. Vazba na doklady: pořízení (D14), analytická dimenze (D15), D57–D64 —
+   `tasks/assets-phase4.md`
 5. Přehledy: karta, odpisy, přírůstky / úbytky, kontrola proti deníku,
    podklad pro DPPO
 6. Import (D8, D9, D11) + backfill
-7. Pohyby, příslušenství, vlastnosti, místa, inventarizace
+7. Pohyby, příslušenství, vlastnosti, místa, inventarizace, prodej majetku
+   (vydaná faktura s nabídkou vyřazení)
 8. Soubory a množstevní karty, odložená daň, zbytek (AV/AM, X)
 
 ---

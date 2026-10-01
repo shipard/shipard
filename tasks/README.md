@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 305 tasků: **naplánováno** 5 · **částečně** 18 · **hotovo** 282.
+Celkem 306 tasků: **naplánováno** 6 · **částečně** 18 · **hotovo** 282.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,6 +27,7 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-models-phase0.md` | naplánováno | čeká na potvrzení rozhodnutí F0-D1–F0-D7 (#85) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
+| `assets-phase4.md` | naplánováno | D57–D64 potvrzena 2026-10-01; implementace nezačala |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -204,8 +205,6 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `exchange-contact-name.md` | Kontaktní osoba strany dokladu (`contact.name`) — schéma, ISDOC, náhled; prompt v4.5.0 |
 | `exchange-received-reverse-charge.md` | Přenesení daňové povinnosti u přijatých dokladů — kód DPH odvozený ze signálů AI, registrace z naší DPH, přepočítaná rekapitulace; prompt v4.6.0 (#86) |
 | `exchange-received-vat-place.md` | Místo plnění přijatého dokladu podle DIČ dodavatele (`world.trade.unions`), ne podle adresy; prompt v4.6.1 (#86) |
-| `exchange-preview-vat-recompute.md` | Náhled návrhu počítá rekapitulaci DPH a součty stejným kódem jako doklad — `DocDocument::computeAmounts`, `_resolve.computed` (#87, task A) |
-| `exchange-preview-vat-choices.md` | Náhled návrhu — ruční volba kódu DPH řádků, místa plnění a režimu DPH; piny v mapě rozhodnutí, jednoklik je posílá (#87, task B) |
 | `exchange-format-persons-phase1.md` | Výměnný formát osob (`shpd.persons.person.v1`) |
 | `exchange-format-items-phase1.md` | Výměnný formát položek (`shpd.items.item.v1`) |
 | `docs-import-number-mode.md` | Import-mód čísla dokladu + fix validace bank. spojení |
@@ -282,6 +281,7 @@ Evidence majetku, odpisy a jejich zaúčtování. Designový dokument
 | `assets-phase2a.md` | 2a | Pravidla daňových odpisů per stát (`world.assets`, CZ vč. §30a) a čistý odpisový engine `DepreciationPlanner` (D27–D45) |
 | `assets-phase2b.md` | 2b | Tabulka událostí, odpisové nastavení karty, plán na kartě, vyřazení s polovinou, Odpisy za období, četnost účetních odpisů, krátké zdaňovací období (D27–D46) |
 | `assets-phase3.md` | 3 | Zaúčtování majetku: obecné dimenze deníku (`asset`), operace `asset.*`, jeden doklad za období, zrušení zaúčtování, řada dokladů, zrušené vyřazení (D47–D56) |
+| `assets-phase4.md` | 4 | Vazba na doklady: nastavení Sledovat náklady na majetek, dimenze na hlavičce a řádcích dokladů, karta na řádku pořízení a její založení z řádku, zařazení z pořízení, tab Náklady a výnosy, alerty, validace účetní skupiny a data událostí (D57–D64) |
 
 ## Došlá pošta (core.mail)
 
