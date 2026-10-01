@@ -120,13 +120,16 @@ final class JournalDimensionSet implements \IteratorAggregate, \Countable
      *
      * @param array<string, mixed> $row
      * @param array<string, mixed> $head
+     * @param array<string, mixed>|null $operationAttrs atributy operace řádku
+     *        (`docs.core.rowOperations`) — řádek s vlajkou `rowFlag` dimenze
+     *        výchozí hodnotu z hlavičky nedědí
      * @return array<string, int|null>
      */
-    public function valuesOf(array $row, array $head): array
+    public function valuesOf(array $row, array $head, ?array $operationAttrs = null): array
     {
         $values = [];
         foreach ($this->dimensions as $dimension) {
-            $values[$dimension->journalColumn] = $dimension->valueOf($row, $head);
+            $values[$dimension->journalColumn] = $dimension->valueOf($row, $head, $operationAttrs);
         }
         return $values;
     }

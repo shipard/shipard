@@ -310,6 +310,8 @@ class ModuleDefinition
         // Sloupce zakládá modul dimenze přes extensions; ConfigCompiler
         // dimenze aktivních modulů složí do cfgItem
         // `core.accounting.journalDimensions` (JournalDimensionSet).
+        // Volitelné `rowFlag` = vlajka řádkové operace, jejíž řádek nese
+        // hodnotu sám a z hlavičky ji nedědí.
         // Volitelné `forms` = na kterých formulářích dokladů se pole dimenze
         // nabízí (typy dokladů, hlavička / řádky, případně jen se zapnutým
         // nastavením `enabledBySetting`).
@@ -333,7 +335,7 @@ class ModuleDefinition
                         );
                     }
                 }
-                foreach (['id', 'rowColumn', 'journalColumn', 'headColumn', 'table'] as $key) {
+                foreach (['id', 'rowColumn', 'journalColumn', 'headColumn', 'table', 'rowFlag'] as $key) {
                     if (isset($dim[$key]) && !preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', (string) $dim[$key])) {
                         throw new \InvalidArgumentException(
                             "Module '{$data['id']}': journalDimensions[{$idx}].{$key} must be an identifier",
@@ -357,6 +359,9 @@ class ModuleDefinition
                     'journalColumn' => $dim['journalColumn'],
                     'table'         => $dim['table'],
                 ];
+                if (isset($dim['rowFlag'])) {
+                    $entry['rowFlag'] = (string) $dim['rowFlag'];
+                }
                 if (array_key_exists('forms', $dim)) {
                     $entry['forms'] = self::journalDimensionForms($dim['forms'], $entry, "Module '{$data['id']}': journalDimensions[{$idx}].forms");
                 }

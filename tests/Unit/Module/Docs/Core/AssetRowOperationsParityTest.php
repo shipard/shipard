@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Docs\Core;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Docs\Core\DocRowOperationRules;
 
 /**
  * Operace majetku `asset.*` (docs/assets.md D48) nad skutečnou konfigurací:
@@ -30,8 +31,9 @@ class AssetRowOperationsParityTest extends TestCase
     {
         $cfg = $this->operations();
 
-        $flagged = array_keys(array_filter($cfg, static fn(mixed $op): bool => is_array($op) && !empty($op['rowAsset'])));
-        $this->assertSame(self::OPERATIONS, $flagged, 'operace s kartou majetku');
+        $flagged = array_keys(array_filter($cfg, static fn(mixed $op): bool
+            => is_array($op) && DocRowOperationRules::isAssetRequired($op)));
+        $this->assertSame(self::OPERATIONS, $flagged, 'operace s povinnou kartou majetku');
 
         foreach (self::OPERATIONS as $operation) {
             $entry = $cfg[$operation];
@@ -42,6 +44,19 @@ class AssetRowOperationsParityTest extends TestCase
             $this->assertArrayHasKey('name:cs', $entry);
             $this->assertArrayHasKey('name:en', $entry);
         }
+    }
+
+    public function testAcquisitionRowCarriesOptionalAsset(): void
+    {
+        // D61: pořízení kartu nese nepovinně a není systémové — zadává se
+        // ručně na přijaté faktuře.
+        $entry = $this->operations()['purchase.asset'];
+
+        $this->assertSame('optional', $entry['rowAsset']);
+        $this->assertFalse(DocRowOperationRules::isAssetRequired($entry));
+        $this->assertArrayNotHasKey('system', $entry);
+        $this->assertSame('direct', $entry['rowAccount']);
+        $this->assertSame(['invni'], array_keys($entry['docTypes']));
     }
 
     public function testCzRulesBookEveryAssetOperationFromRow(): void

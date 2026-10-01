@@ -261,6 +261,23 @@ class DocRowOperationRulesTest extends TestCase
         ));
     }
 
+    public function testOptionalRowAssetDoesNotRequireCard(): void
+    {
+        // D61: řádek pořízení kartu nese, ale nepovinně.
+        $cfg = ['purchase.asset' => [
+            'name' => 'Pořízení majetku', 'rowAccount' => 'direct', 'rowAsset' => 'optional',
+            'docTypes' => ['invni' => ['order' => 600]],
+        ]];
+        $row = ['row_kind' => 1, 'operation' => 'purchase.asset', 'account' => 10, 'total_price' => 100];
+
+        $this->assertSame([], DocRowOperationRules::validateRow($row, 'invni', $cfg));
+        $this->assertSame([], DocRowOperationRules::validateRow(['asset' => 5] + $row, 'invni', $cfg));
+        $this->assertFalse(DocRowOperationRules::isAssetRequired($cfg['purchase.asset']));
+        $this->assertTrue(DocRowOperationRules::isAssetRequired($this->assetCfg()['asset.depreciation']));
+        $this->assertFalse(DocRowOperationRules::isAssetRequired($this->assetCfg()['acc.record']));
+        $this->assertFalse(DocRowOperationRules::isAssetRequired(null));
+    }
+
     public function testOrdinaryOperationIsNotAffectedBySystemFlags(): void
     {
         $row = ['row_kind' => 1, 'operation' => 'acc.record', 'account' => 10, 'total_price' => 100];

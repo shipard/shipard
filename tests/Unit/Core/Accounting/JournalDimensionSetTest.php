@@ -67,6 +67,21 @@ class JournalDimensionSetTest extends TestCase
         $this->assertSame(['asset' => null, 'centre' => null], $set->valuesOf([], []));
     }
 
+    public function testRowFlagOperationDoesNotInheritHeadValue(): void
+    {
+        $set = JournalDimensionSet::fromConfig($this->config([
+            'asset' => ['headColumn' => 'asset', 'rowFlag' => 'rowAsset'] + self::ASSET,
+        ]));
+        $head = ['asset' => 8];
+
+        $this->assertSame(['asset' => 8], $set->valuesOf([], $head));
+        $this->assertSame(['asset' => 8], $set->valuesOf([], $head, ['rowAccount' => 'direct']));
+        // Řádek nese hodnotu sám — povinně (1) i nepovinně ("optional").
+        $this->assertSame(['asset' => null], $set->valuesOf([], $head, ['rowAsset' => 1]));
+        $this->assertSame(['asset' => null], $set->valuesOf([], $head, ['rowAsset' => 'optional']));
+        $this->assertSame(['asset' => 5], $set->valuesOf(['asset' => 5], $head, ['rowAsset' => 'optional']));
+    }
+
     /** @param array<string, mixed> $values */
     private function settings(array $values): KeyValueStore
     {

@@ -197,11 +197,15 @@
             "invni": {"order": 500}
         }
     },
+    // `rowAsset: "optional"` (assets D61): řádek pořízení nese kartu majetku,
+    // ale nepovinně — AI analýza a import kartu neznají; chybějící hlídá
+    // alert „Pořízení majetku bez karty“. Kartu z hlavičky řádek nedědí.
     "purchase.asset": {
         "name": "Asset acquisition",
         "name:cs": "Pořízení majetku",
         "name:en": "Asset acquisition",
         "rowAccount": "direct",
+        "rowAsset": "optional",
         "docTypes": {
             "invni": {"order": 600}
         }
@@ -359,7 +363,7 @@
     // Majetek (docs/assets.md D48): zápisy účetního dokladu, který sestavuje
     // zaúčtování majetku z potvrzených událostí karty. Účet i strana jsou na
     // řádku (jako acc.record). `rowAsset: 1` = řádek musí nést kartu majetku
-    // (sloupec `asset`, dimenze deníku). `system: 1` = operaci formulář
+    // (sloupec `asset`, dimenze deníku; `"optional"` u pořízení = nepovinně). `system: 1` = operaci formulář
     // nenabízí a ruční uložení ji odmítne — řádek smí založit jen služba
     // s markerem `_systemOperations` (DocRowOperationRules).
     "asset.activation": {

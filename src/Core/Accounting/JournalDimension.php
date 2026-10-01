@@ -11,6 +11,11 @@ namespace Shipard\Core\Accounting;
  * a vstupuje do klíče seskupení. `table` je cílová tabulka reference,
  * `displayPattern` její vzor popisku (doplňuje kompilace konfigurace).
  *
+ * `rowFlag` je vlajka řádkové operace (`docs.core.rowOperations`), která
+ * říká „tenhle řádek nese hodnotu sám“ (majetek: `rowAsset` u pořízení
+ * a systémových operací): takový řádek výchozí hodnotu z hlavičky nedědí
+ * a formulář mu pole staví podle operace, ne podle `forms`.
+ *
  * `forms` říká, na kterých formulářích dokladů se pole dimenze nabízí:
  * typy dokladů, hlavička / řádky a volitelně klíč nastavení, které pole
  * zapíná (`enabledBySetting`). Řídí jen zobrazení pole — uložená hodnota
@@ -31,6 +36,7 @@ final class JournalDimension
         public readonly bool $formHead = false,
         public readonly bool $formRows = false,
         public readonly ?string $enabledBySetting = null,
+        public readonly ?string $rowFlag = null,
     ) {
     }
 
@@ -65,7 +71,20 @@ final class JournalDimension
             formHead: !empty($forms['head']) && $headColumn !== null,
             formRows: !empty($forms['rows']),
             enabledBySetting: is_string($setting) && $setting !== '' ? $setting : null,
+            rowFlag: isset($data['rowFlag']) && is_string($data['rowFlag']) && $data['rowFlag'] !== ''
+                ? $data['rowFlag']
+                : null,
         );
+    }
+
+    /**
+     * Nese řádek s touto operací hodnotu dimenze sám (vlajka `rowFlag`)?
+     *
+     * @param array<string, mixed>|null $operationAttrs atributy operace řádku
+     */
+    public function isOwnedByRow(?array $operationAttrs): bool
+    {
+        return $this->rowFlag !== null && !empty($operationAttrs[$this->rowFlag]);
     }
 
     /** Nabízí formulář dokladu daného typu pole dimenze na hlavičce / řádku? */
@@ -118,15 +137,17 @@ final class JournalDimension
     }
 
     /**
-     * Hodnota dimenze pro řádek deníku: z řádku dokladu, prázdná z hlavičky.
+     * Hodnota dimenze pro řádek deníku: z řádku dokladu, prázdná z hlavičky
+     * — ne u řádku, který hodnotu nese sám (`rowFlag` operace).
      *
      * @param array<string, mixed> $row
      * @param array<string, mixed> $head
+     * @param array<string, mixed>|null $operationAttrs atributy operace řádku
      */
-    public function valueOf(array $row, array $head): ?int
+    public function valueOf(array $row, array $head, ?array $operationAttrs = null): ?int
     {
         $value = (int) ($row[$this->rowColumn] ?? 0);
-        if ($value <= 0 && $this->headColumn !== null) {
+        if ($value <= 0 && $this->headColumn !== null && !$this->isOwnedByRow($operationAttrs)) {
             $value = (int) ($head[$this->headColumn] ?? 0);
         }
         return $value > 0 ? $value : null;

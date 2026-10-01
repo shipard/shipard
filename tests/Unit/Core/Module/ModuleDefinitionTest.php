@@ -793,12 +793,13 @@ class ModuleDefinitionTest extends TestCase
         $def = ModuleDefinition::fromArray([
             'id'   => 'economy.assets',
             'name' => 'Assets',
-            'journalDimensions' => [$this->assetDimension(['headColumn' => 'asset', 'ignored' => 'x'])],
+            'journalDimensions' => [$this->assetDimension(['headColumn' => 'asset', 'rowFlag' => 'rowAsset', 'ignored' => 'x'])],
         ]);
 
         $this->assertSame([[
             'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => 'asset',
             'journalColumn' => 'asset', 'table' => 'economy_assets_assets',
+            'rowFlag' => 'rowAsset',
             'name' => 'Asset', 'name:cs' => 'Majetek',
         ]], $def->journalDimensions);
     }

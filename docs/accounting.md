@@ -184,6 +184,7 @@ a razítkování identity v enginu (`resolveRowIdentity`):
 | `identityRequired: 1` | partner řádku a `payment_reference` jsou **tvrdě** povinné (`DocRowOperationRules`, kódy `partner_required` / `payment_reference_required`) — saldokontní úhrady, bez nich accbal nemá co párovat. Vyžaduje `rowPartner` + `rowPaymentId` |
 | `partnerRequired: 1` | jen partner řádku je tvrdě povinný (`partner_required`), VS ne — zálohy v hotovosti (`advance.*`). `identityRequired` ho implikuje |
 | `rowAsset: 1` | řádek musí nést kartu majetku (`asset`, extension `economy.assets`; dimenze deníku §6) — tvrdě povinné (`asset_required`). Formulář kartu ukáže jako lookup |
+| `rowAsset: "optional"` | řádek kartu majetku nese, ale **nepovinně** (pořízení `purchase.asset`, assets D61): formulář pole ukáže vždy (bez ohledu na nastavení „Sledovat náklady na majetek“), validace ho nevyžaduje — chybějící kartu hlídá alert. Obě hodnoty vlajky znamenají „řádek nese kartu sám“: kartu z hlavičky nedědí (`rowFlag` dimenze, §6). Rozlišuje `DocRowOperationRules::isAssetRequired()` |
 | `system: 1` | **systémová operace** (assets D48): formulář ji nenabízí a ruční uložení ji odmítne (`system_operation`) — sub-form řádku vždy, doklad při přechodu do 40, pokud ho neukládá služba s markerem `_systemOperations` v datech hlavičky (`DocRowOperationRules::SYSTEM_OPERATIONS_KEY`, `DocDocument` ho před zápisem odstraní; formulář ani CRUD ho nepropustí). Uložený systémový řádek je ve formuláři read-only a nejde přepsat na jinou operaci |
 | `docTypes.{typ}.cashDir: 1 \| 2` | jen u typu se směrem per doklad (`cash`): pohyb je povolený jen při daném `cash_dir` hlavičky (1 příjem, 2 výdej). Chybí = oba směry. Filtruje nabídku formuláře i tvrdou validaci; default nového řádku = nejnižší `order` pro daný směr |
 
@@ -892,6 +893,7 @@ dimenzi nevědí.
   "journalDimensions": [{
       "id": "asset", "rowColumn": "asset", "headColumn": "asset",
       "journalColumn": "asset", "table": "economy_assets_assets",
+      "rowFlag": "rowAsset",
       "name": "Asset", "name:cs": "Majetek", "name:en": "Asset",
       "forms": {
           "docTypes": ["invni", "invno", "cash", "cmnbkp"],
@@ -905,6 +907,10 @@ dimenzi nevědí.
   deníku, `headColumn` = volitelná výchozí hodnota z hlavičky dokladu
   (sloupec `docs_core_heads`), `table` = cílová tabulka. Sloupce zakládá
   modul dimenze přes **extensions** (int, null, reference, index).
+  `rowFlag` (volitelné) = vlajka řádkové operace z `docs.core.rowOperations`,
+  jejíž řádek **nese hodnotu sám**: výchozí hodnotu z hlavičky nedědí
+  a pole mu staví layout operace, ne `forms` (majetek: `rowAsset` —
+  pořízení je věc řádku, karta z hlavičky se u něj neřeší).
 - **Formuláře** (`forms`, volitelné; assets D59): na kterých formulářích
   dokladů se pole dimenze nabízí — typy dokladů, hlavička (`head`, chce
   `headColumn`) a řádky (`rows`), případně jen se zapnutým nastavením
@@ -914,7 +920,8 @@ dimenzi nevědí.
   `DocsHeadsFormBase::addDimensionElements()` (volá ho každý per-typ
   `buildHeaderTab()`) a `DocRowsForm` v položkovém i kontačním layoutu.
   Nastavení řídí **jen zobrazení pole** — uložená hodnota se do deníku
-  propisuje dál i po vypnutí.
+  propisuje dál i po vypnutí. Pole řádku ukazuje výchozí hodnotu hlavičky
+  jako placeholder („Z hlavičky: …“).
 - **Transport**: `ConfigCompiler` složí dimenze aktivních modulů do
   cfgItem `core.accounting.journalDimensions` (lokalizovaný název,
   `displayPattern` cílové tabulky; dimenze mířící na neznámou tabulku nebo
@@ -923,8 +930,9 @@ dimenzi nevědí.
   loader ani injektáž; sada odpovídá aktivním modulům, takže sloupce
   vždy existují.
 - **Engine**: `makeLine` vezme hodnotu z řádku dokladu, prázdnou
-  z `headColumn` hlavičky (má-li ho dimenze); kroky `vat` / `head` nemají
-  řádek, dostanou jen výchozí hodnotu z hlavičky. Hodnoty jsou součást
+  z `headColumn` hlavičky (má-li ho dimenze a nejde-li o řádek s vlajkou
+  `rowFlag`); kroky `vat` / `head` nemají řádek, dostanou jen výchozí
+  hodnotu z hlavičky. Hodnoty jsou součást
   klíče `groupLines` — dvě karty na tomtéž účtu se neslijí — a `writeResult`
   je zapíše. Contributoři dimenze nenastavují (NULL), bankovní engine
   dimenze nezná (NULL). DS bez dimenzí = výsledek beze změny.

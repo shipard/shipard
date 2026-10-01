@@ -513,6 +513,7 @@ final class AccountingEngine
      *        Per-řádková identita; null → odvodí se z hlavičky (vat/head zdroje).
      * @param array<string, mixed>|null $row Řádek dokladu — zdroj dimenzí deníku;
      *        null (vat/head zdroje) → jen výchozí hodnota z hlavičky, má-li ji dimenze.
+     *        Řádek s vlajkou `rowFlag` dimenze (pořízení majetku) hlavičku nedědí.
      */
     private function makeLine(
         array $step,
@@ -545,8 +546,25 @@ final class AccountingEngine
             'money_dr_cur'   => $side === 0 ? round($cur, 2) : 0.0,
             'money_cr_cur'   => $side === 1 ? round($cur, 2) : 0.0,
             'rowId'          => $rowId,
-            'dimensions'     => $this->dimensions->valuesOf($row ?? [], $head),
+            'dimensions'     => $this->dimensions->valuesOf(
+                $row ?? [],
+                $head,
+                $row !== null ? $this->operationAttrs((string) ($row['operation'] ?? '')) : null,
+            ),
         ];
+    }
+
+    /**
+     * Atributy řádkové operace (docs.core.rowOperations) — dimenze podle
+     * nich pozná řádek, který hodnotu nese sám a z hlavičky ji nedědí.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function operationAttrs(string $operation): ?array
+    {
+        $ops = $this->config?->cfgItem('docs.core.rowOperations');
+        $opCfg = is_array($ops) ? ($ops[$operation] ?? null) : null;
+        return is_array($opCfg) ? $opCfg : null;
     }
 
     /**

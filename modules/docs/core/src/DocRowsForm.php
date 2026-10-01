@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core;
 
+use Shipard\Core\Accounting\JournalDimension;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\TabBuilder;
@@ -63,6 +64,7 @@ class DocRowsForm extends TableForm
                 $opAttrs,
                 $rowAccount !== null ? (string) $rowAccount : null,
                 $headContext,
+                (int) ($data['doc_head'] ?? 0),
             );
         }
 
@@ -97,6 +99,15 @@ class DocRowsForm extends TableForm
                 placeholder: 'Hledat účet…',
                 required: true,
             );
+            // Karta majetku na řádku pořízení (rowAsset "optional", D61).
+            if (!empty($opAttrs['rowAsset'])) {
+                $col->lookup(self::ASSET_COLUMN,
+                    table: 'economy_assets_assets',
+                    label: 'Majetek',
+                    placeholder: 'Hledat kartu majetku…',
+                    required: DocRowOperationRules::isAssetRequired($opAttrs),
+                );
+            }
         } else {
             $col->lookup('item',
                 table: 'economy_items',
@@ -110,7 +121,7 @@ class DocRowsForm extends TableForm
         }
 
         $col->input('description');
-        $this->appendDimensionFields($col, $opAttrs, $headContext, hidden: $isText);
+        $this->appendDimensionFields($col, $opAttrs, $headContext, (int) ($data['doc_head'] ?? 0), hidden: $isText);
 
         $col
                     ->separator('Množství a cena', hidden: $isText)
@@ -222,6 +233,7 @@ class DocRowsForm extends TableForm
         array $opAttrs,
         ?string $rowAccount,
         ?array $headContext,
+        int $headId,
     ): FormDefinition {
         // Řádek se systémovou operací (asset.*) sestavila služba — jen k nahlédnutí.
         $system = !empty($opAttrs['system']);
@@ -243,12 +255,12 @@ class DocRowsForm extends TableForm
                     );
 
         // Karta majetku (rowAsset, dimenze deníku) — sloupec z extension
-        // economy.assets; operace s vlajkou existují jen jako systémové.
+        // economy.assets; v kontačním layoutu jen systémové operace asset.*.
         if (!empty($opAttrs['rowAsset'])) {
             $section->lookup(self::ASSET_COLUMN,
                 table: 'economy_assets_assets',
                 label: 'Majetek',
-                required: true,
+                required: DocRowOperationRules::isAssetRequired($opAttrs),
                 readOnly: $system,
             );
         }
@@ -284,7 +296,7 @@ class DocRowsForm extends TableForm
             ->input('description', readOnly: $system)
             ->number('price_calc_mode', hidden: true);
 
-        $this->appendDimensionFields($section, $opAttrs, $headContext, readOnly: $system);
+        $this->appendDimensionFields($section, $opAttrs, $headContext, $headId, readOnly: $system);
         $this->appendRowIdentityFields($section, $opAttrs);
 
         return new FormDefinition(
@@ -414,8 +426,9 @@ class DocRowsForm extends TableForm
      * Pole analytických dimenzí deníku na řádku (`journalDimensions[].forms`
      * modulu dimenze, assets D59) — lookup do tabulky dimenze nad sloupcem
      * `rowColumn`. Typ dokladu a nastavení řeší `JournalDimensionSet::forForm`.
-     * Kartu majetku u operace s vlajkou `rowAsset` staví layout sám (povinná
-     * / nepovinná podle operace), tady se nezdvojuje.
+     * Řádek, který hodnotu nese sám (`rowFlag` dimenze — karta majetku
+     * u operace s vlajkou `rowAsset`), má pole z layoutu operace (povinné /
+     * nepovinné) a tady se nezdvojuje.
      *
      * @param array<string, mixed>|null $opAttrs
      * @param array<string, mixed>|null $headContext
@@ -424,6 +437,7 @@ class DocRowsForm extends TableForm
         TabBuilder $col,
         ?array $opAttrs,
         ?array $headContext,
+        int $headId,
         bool $hidden = false,
         bool $readOnly = false,
     ): void {
@@ -437,16 +451,40 @@ class DocRowsForm extends TableForm
             $this->db !== null ? new SettingsStore($this->db) : null,
         );
         foreach ($dimensions as $dimension) {
-            if ($dimension->rowColumn === self::ASSET_COLUMN && !empty($opAttrs['rowAsset'])) {
+            if ($dimension->isOwnedByRow($opAttrs)) {
                 continue;
             }
             $col->lookup($dimension->rowColumn,
                 table: $dimension->table,
                 label: $dimension->name,
+                placeholder: $this->headDimensionPlaceholder($dimension, $headId),
                 readOnly: $readOnly,
                 hidden: $hidden,
             );
         }
+    }
+
+    /**
+     * Placeholder pole dimenze: „Z hlavičky: MA0007 — Soustruh“, má-li
+     * hlavička výchozí hodnotu (`headColumn`) — řádek bez vlastní ji zdědí
+     * (assets D60). Hlavička bez hodnoty nebo dimenze bez `headColumn` = null.
+     */
+    private function headDimensionPlaceholder(JournalDimension $dimension, int $headId): ?string
+    {
+        if ($dimension->headColumn === null || $headId <= 0 || $this->db === null) {
+            return null;
+        }
+        $columns = array_values(array_unique(['id', ...$dimension->labelColumns()]));
+        $record = $this->db->fetchRow(
+            'SELECT d.`' . implode('`, d.`', $columns) . '` FROM `' . $dimension->table . '` d'
+            . ' JOIN `docs_core_heads` h ON h.`' . $dimension->headColumn . '` = d.`id`'
+            . ' WHERE h.`id` = %i',
+            $headId,
+        );
+        if ($record === null) {
+            return null;
+        }
+        return 'Z hlavičky: ' . ($dimension->label($record) ?? '#' . (int) $record['id']);
     }
 
     /**

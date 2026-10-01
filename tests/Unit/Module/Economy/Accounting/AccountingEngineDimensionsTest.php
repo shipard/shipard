@@ -141,6 +141,32 @@ class AccountingEngineDimensionsTest extends TestCase
         $this->assertSame(['asset' => null, 'centre' => 3], $line['dimensions']);
     }
 
+    public function testRowOwningTheDimensionDoesNotInheritHead(): void
+    {
+        // Pořízení majetku je věc řádku (assets fáze 4): řádek s vlajkou
+        // `rowFlag` dimenze kartu z hlavičky nedědí, běžný řádek ano.
+        $engine = $this->engine(['asset' => ['headColumn' => 'asset', 'rowFlag' => 'rowAsset'] + self::ASSET]);
+        $head = ['asset' => 8] + self::HEAD;
+        $line = fn(array $row): array => (new \ReflectionMethod(AccountingEngine::class, 'makeLine'))->invoke(
+            $engine,
+            ['side' => 0],
+            $head,
+            ['id' => 1, 'number' => '042000'],
+            100.0,
+            100.0,
+            'Řádek',
+            $row['operation'],
+            1,
+            null,
+            $row,
+        );
+
+        $this->assertSame(['asset' => null], $line(['operation' => 'asset.depreciation'])['dimensions']);
+        $this->assertSame(['asset' => 5], $line(['operation' => 'asset.depreciation', 'asset' => 5])['dimensions']);
+        $this->assertSame(['asset' => 8], $line(['operation' => 'purchase.goods'])['dimensions']);
+        $this->assertSame(['asset' => 6], $line(['operation' => 'purchase.goods', 'asset' => 6])['dimensions']);
+    }
+
     public function testWithoutDimensionsResultIsUnchanged(): void
     {
         // DS bez modulu s dimenzí: žádný klíč navíc, řádky se sloučí jako dřív

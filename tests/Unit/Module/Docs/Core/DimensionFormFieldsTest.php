@@ -35,7 +35,8 @@ class DimensionFormFieldsTest extends TestCase
             JournalDimensionSet::CFG_ITEM => [
                 'asset' => [
                     'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => 'asset', 'journalColumn' => 'asset',
-                    'table' => 'economy_assets_assets', 'name' => 'Majetek',
+                    'table' => 'economy_assets_assets', 'name' => 'Majetek', 'rowFlag' => 'rowAsset',
+                    'displayPattern' => '{asset_number} — {name}',
                     'forms' => [
                         'docTypes' => ['invni', 'invno', 'cash', 'cmnbkp'], 'head' => true, 'rows' => true,
                         'enabledBySetting' => self::SETTING,
@@ -50,6 +51,10 @@ class DimensionFormFieldsTest extends TestCase
             ],
             'docs.core.rowOperations' => [
                 'purchase.goods' => ['name' => 'Nákup zboží', 'docTypes' => ['invni' => ['order' => 100]]],
+                'purchase.asset' => [
+                    'name' => 'Pořízení majetku', 'rowAccount' => 'direct', 'rowAsset' => 'optional',
+                    'docTypes' => ['invni' => ['order' => 600]],
+                ],
                 'acc.record' => [
                     'name' => 'Účetní zápis', 'rowSide' => 1, 'rowAccount' => 'direct',
                     'docTypes' => ['cmnbkp' => ['order' => 100]],
@@ -66,15 +71,20 @@ class DimensionFormFieldsTest extends TestCase
         return $config;
     }
 
-    /** @param array<string, mixed>|null $head hlavička, kterou řádkový formulář načte */
-    private function db(?string $setting, ?array $head = null): DataSourceConnection
+    /**
+     * @param array<string, mixed>|null $head hlavička, kterou řádkový formulář načte
+     * @param array<string, mixed>|null $headAsset karta na hlavičce (placeholder řádku)
+     */
+    private function db(?string $setting, ?array $head = null, ?array $headAsset = null): DataSourceConnection
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchSingle')->willReturnCallback(
             static fn(string $sql, mixed ...$args): mixed
                 => ($args[0] ?? null) === self::SETTING && $setting !== null ? json_encode($setting) : null,
         );
-        $db->method('fetchRow')->willReturn($head);
+        $db->method('fetchRow')->willReturnCallback(
+            static fn(string $sql): ?array => str_contains($sql, 'economy_assets_assets') ? $headAsset : $head,
+        );
         $db->method('fetchAll')->willReturn([]);
         return $db;
     }
@@ -137,14 +147,17 @@ class DimensionFormFieldsTest extends TestCase
         ));
     }
 
-    /** @param array<string, mixed> $data */
-    private function rowDefinition(string $docType, array $data, ?string $setting): FormDefinition
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed>|null $headAsset
+     */
+    private function rowDefinition(string $docType, array $data, ?string $setting, ?array $headAsset = null): FormDefinition
     {
         $form = new DocRowsForm('docs_core_rows');
         $form->setConfig($this->config());
         $form->setDb($this->db($setting, [
             'doc_type' => $docType, 'vat_place' => 0, 'vat_duzp' => null, 'vat_mode' => 0, 'vat_registration' => null,
-        ]));
+        ], $headAsset));
         return $form->buildFormDefinition($data + ['row_kind' => 1, 'doc_head' => 5], true);
     }
 
@@ -162,6 +175,43 @@ class DimensionFormFieldsTest extends TestCase
         // Textový řádek se neúčtuje — pole skryté.
         $text = $this->findElement($this->rowDefinition('invni', ['row_kind' => 0], 'yes'), 'asset');
         $this->assertTrue($text?->hidden);
+    }
+
+    public function testRowPlaceholderShowsHeadDefault(): void
+    {
+        // D60: řádek bez vlastní karty zdědí kartu hlavičky — pole to říká.
+        $headAsset = ['id' => 7, 'asset_number' => 'MA0007', 'name' => 'Soustruh'];
+        $data = ['operation' => 'purchase.goods'];
+
+        $this->assertSame(
+            'Z hlavičky: MA0007 — Soustruh',
+            $this->findElement($this->rowDefinition('invni', $data, 'yes', $headAsset), 'asset')?->placeholder,
+        );
+        $this->assertNull($this->findElement($this->rowDefinition('invni', $data, 'yes'), 'asset')?->placeholder);
+    }
+
+    public function testAcquisitionRowAlwaysHasOptionalCardWithoutHeadDefault(): void
+    {
+        // D61 + rozhodnutí fáze 4: pořízení je věc řádku — pole je vždy,
+        // nepovinné, a kartu z hlavičky nenabízí ani jako placeholder.
+        $headAsset = ['id' => 7, 'asset_number' => 'MA0007', 'name' => 'Soustruh'];
+        foreach (['yes', 'no', null] as $setting) {
+            $def = $this->rowDefinition('invni', ['operation' => 'purchase.asset'], $setting, $headAsset);
+            $fields = [];
+            foreach ($def->tabs[0]->sections as $section) {
+                foreach ($section->columns as $col) {
+                    foreach ($col->elements as $el) {
+                        if ($el->column === 'asset') {
+                            $fields[] = $el;
+                        }
+                    }
+                }
+            }
+            $this->assertCount(1, $fields);
+            $this->assertSame('economy_assets_assets', $fields[0]->lookup['table']);
+            $this->assertFalse($fields[0]->required);
+            $this->assertStringNotContainsString('Z hlavičky', (string) $fields[0]->placeholder);
+        }
     }
 
     public function testContationRowOffersDimensionWithSettingOn(): void

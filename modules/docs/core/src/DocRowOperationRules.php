@@ -40,6 +40,19 @@ final class DocRowOperationRules
     }
 
     /**
+     * Musí řádek operace nést kartu majetku? Vlajka `rowAsset`: `1` = povinná
+     * (systémové operace `asset.*`, D48), `"optional"` = řádek kartu nese,
+     * ale nepovinně (pořízení `purchase.asset`, D61).
+     *
+     * @param array<string, mixed>|null $entry atributy operace
+     */
+    public static function isAssetRequired(?array $entry): bool
+    {
+        $flag = $entry['rowAsset'] ?? null;
+        return !empty($flag) && $flag !== 'optional';
+    }
+
+    /**
      * Samovyvažující pohyb (`selfBalancing: 1`, FX čtveřice): kroky předpisu
      * pokrývají obě strany, řádek stranu nenese. Kontrola vyrovnanosti ho
      * počítá do MD i DAL a `acc_side` ignoruje (migrace ho může poslat).
@@ -147,7 +160,7 @@ final class DocRowOperationRules
         $errors = [];
         // Zápis majetku musí nést kartu (dimenze deníku `asset`) — bez ní
         // by obrat nešel přiřadit kartě a invariant evidence = deník padá.
-        if (!empty($entry['rowAsset']) && empty($row['asset'])) {
+        if (self::isAssetRequired($entry) && empty($row['asset'])) {
             $errors[] = [
                 'column'  => 'asset',
                 'message' => 'Řádek musí mít kartu majetku',

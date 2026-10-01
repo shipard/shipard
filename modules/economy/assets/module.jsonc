@@ -33,7 +33,8 @@
     // řádek bez karty zdědí kartu hlavičky (D60). `forms` = pole Majetek
     // na hlavičce a řádcích běžných dokladů, jen se zapnutým nastavením
     // „Sledovat náklady na majetek“ (D59). Řádek pořízení a systémové
-    // operace majetku mají pole vždy (vlajka `rowAsset` operace).
+    // operace majetku mají pole vždy (vlajka `rowAsset` operace) a kartu
+    // z hlavičky nedědí (`rowFlag`) — pořízení je věc řádku.
     "journalDimensions": [
         {
             "id": "asset",
@@ -41,6 +42,7 @@
             "headColumn": "asset",
             "journalColumn": "asset",
             "table": "economy_assets_assets",
+            "rowFlag": "rowAsset",
             "name": "Asset",
             "name:cs": "Majetek",
             "name:en": "Asset",
