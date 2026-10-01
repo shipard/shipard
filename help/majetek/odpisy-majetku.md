@@ -114,8 +114,9 @@ metodu změnit můžeš, plán se přepočítá od posledního potvrzeného odpi
 plní je zařazení a vyřazení. Kartu dlouhodobého majetku proto nejde
 poslat do archívu bez potvrzeného vyřazení.
 
-**Zrušené vyřazení vrátí kartu do stavu V opravě**, ale odpisy založené
-s vyřazením zůstanou — když je nechceš, smaž je od konce.
+**Zrušené vyřazení vrátí kartu do stavu V opravě** a smaže odpisy, které
+vyřazení založilo k datu vyřazení. Odpisy za dřívější období, které
+vyřazení doplnilo, zůstanou — když je nechceš, smaž je od konce.
 
 **Nabídka metod záleží na datu zařazení.** Mimořádné odpisy platí jen pro
 majetek pořízený v zákonem daných letech, časový odpis nehmotného majetku

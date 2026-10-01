@@ -11,7 +11,7 @@ use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
 /**
  * Zápis systémových odpisů (původ `system`, rovnou potvrzené) z plánovaných
  * řádků enginu — jediná cesta pro „Odpisy za období“ (D33) i poslední
- * odpisy při vyřazení (D35).
+ * odpisy při vyřazení (D35); zrušené vyřazení je stejnou cestou maže (D56).
  *
  * Píše přímo do tabulky, ne přes `AssetEventDocument`: vyřazení zakládá
  * odpisy z `afterPersist()` uvnitř transakce uložení, kde dokument nemá
@@ -66,6 +66,32 @@ class SystemDepreciationWriter
             $total += $row->amount;
         }
         return $total;
+    }
+
+    /**
+     * Zrušené vyřazení (D56): smaže (stav 90) potvrzené systémové odpisy
+     * karty k datu vyřazení — ty, které vyřazení založilo. Zámek měsíce
+     * a zaúčtování hlídá přechod samotného vyřazení (stejné datum).
+     *
+     * @return int počet smazaných odpisů
+     */
+    public function removeForDisposal(int $assetId, string $disposalDate): int
+    {
+        if ($this->db === null) {
+            return 0;
+        }
+        $this->db->query(
+            'UPDATE [' . AssetPlanService::EVENTS_TABLE . '] SET %a'
+            . ' WHERE [asset] = %i AND [event_kind] = %s AND [origin] = %s AND [event_date] = %d AND [docState] = %i',
+            ['docState' => AssetEventDocument::STATE_DELETED, 'docStateMain' => AssetEventDocument::MAIN_DELETED],
+            $assetId,
+            AssetEvent::KIND_DEPRECIATION,
+            AssetEvent::ORIGIN_SYSTEM,
+            $disposalDate,
+            AssetEventDocument::STATE_CONFIRMED,
+        );
+
+        return $this->db->getAffectedRows();
     }
 
     // ── DB přístup (přepsatelné v testech) ──────────────────────────────────

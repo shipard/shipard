@@ -655,8 +655,11 @@ potvrzené události (`docState` 40). Události se spravují jen z karty
   pořadí dává `AssetEventDocument::orderKey()` = (datum, pořadí druhu
   v rámci dne, id). Provider chrání jen uložené záznamy.
 - Efekty na kartu se řídí vstupem do stavu 40 / jeho opuštěním, ne jen
-  smazáním: i Opravit na vyřazení vrátí kartu do V opravě. Systémové
-  odpisy založené s vyřazením se přitom nemažou — jdou smazat od konce.
+  smazáním: i Opravit na vyřazení vrátí kartu do V opravě. Zrušené
+  vyřazení přitom smaže systémové odpisy k datu vyřazení (D56,
+  `SystemDepreciationWriter::removeForDisposal()`); zaúčtované přechod
+  odmítnou (`disposalPosted`). Odpisy dřívějších období, které vyřazení
+  doplnilo, zůstávají — jdou smazat od konce.
 - Vyřazení zakládá **všechny** plánované odpisy plánu s vyřazením (i za
   dřívější neodepsaná období); plán s chybou nebo zamčený měsíc vyřazení
   odmítne (`planHasErrors`, `DomainException` → rollback).

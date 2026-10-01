@@ -455,6 +455,67 @@ class AssetEventDocumentTest extends TestCase
         ], $this->doc->cardUpdates);
     }
 
+    public function testCancelledDisposalRemovesItsSystemDepreciations(): void
+    {
+        // D56: odpisy k datu vyřazení, které vyřazení založilo, se smažou
+        // s ním — k původnímu datu, i kdyby payload datum měnil.
+        $this->activated();
+        $this->card(['docState' => 70, 'disposed_date' => '2024-05-10']);
+
+        $original = $this->event('disposal', '2024-05-10', ['id' => 55]);
+        $data = ['docState' => 80, 'event_date' => '2024-06-01'] + $original;
+        $this->doc->beforeSave($data, $original);
+        $this->doc->afterPersist($data);
+
+        $this->assertSame([[self::ASSET, '2024-05-10']], $this->doc->writer->removed);
+    }
+
+    public function testConfirmedDisposalRemovesNothing(): void
+    {
+        $this->activated();
+        $data = $this->event('disposal', '2024-05-10', ['id' => 56]);
+        $this->doc->beforeSave($data, ['docState' => 10] + $data);
+        $this->confirmed('disposal', '2024-05-10', ['id' => 56]);
+        $this->doc->afterPersist($data);
+
+        $this->assertSame([], $this->doc->writer->removed);
+    }
+
+    public function testCancelledNonDisposalEventRemovesNothing(): void
+    {
+        $original = $this->event('activation', '2022-03-15', ['id' => 57, 'amount' => 100000]);
+        $data = ['docState' => 80] + $original;
+        $this->doc->beforeSave($data, $original);
+        $this->doc->afterPersist($data);
+
+        $this->assertSame([], $this->doc->writer->removed);
+    }
+
+    public function testDisposalWithPostedDepreciationsCannotBeCancelled(): void
+    {
+        $this->activated();
+        $this->doc->stored[58] = $this->event('disposal', '2024-05-10', ['id' => 58, 'scope' => 'both']);
+        $this->doc->postedDocs = ['MAJ240001'];
+
+        foreach ([80, 90] as $state) {
+            $codes = $this->codes(['id' => 58, 'docState' => $state] + $this->doc->stored[58]);
+            $this->assertSame(['_form:disposalPosted'], $codes);
+        }
+        $this->assertSame([[self::ASSET, '2024-05-10'], [self::ASSET, '2024-05-10']], $this->doc->postedQueries);
+
+        // Bez zaúčtovaných odpisů přechod projde; uložení beze změny stavu se neptá.
+        $this->doc->postedDocs = [];
+        $this->assertValid(['id' => 58, 'docState' => 80] + $this->doc->stored[58]);
+    }
+
+    public function testDocumentNeverWritesAccountingDocumentLink(): void
+    {
+        $data = $this->event('activation', '2022-03-15', ['amount' => 100000, 'doc_head' => 77]);
+        $this->doc->beforeSave($data, null);
+
+        $this->assertArrayNotHasKey('doc_head', $data);
+    }
+
     // --- efekty na kartu -----------------------------------------------------
 
     public function testConfirmedActivationSetsAcquiredDate(): void
@@ -536,6 +597,10 @@ class TestableAssetEventDocument extends AssetEventDocument
     /** @var list<array{int, array<string, mixed>}> */
     public array $cardUpdates = [];
     public SpyDepreciationWriter $writer;
+    /** @var list<string> čísla dokladů, kterými jsou odpisy vyřazení zaúčtované */
+    public array $postedDocs = [];
+    /** @var list<array{int, string}> dotazy na zaúčtované odpisy vyřazení */
+    public array $postedQueries = [];
 
     public function __construct(private readonly TestAssetPlanService $service)
     {
@@ -561,16 +626,30 @@ class TestableAssetEventDocument extends AssetEventDocument
     {
         $this->cardUpdates[] = [$assetId, $values];
     }
+
+    protected function postedDisposalDepreciations(int $assetId, string $date): array
+    {
+        $this->postedQueries[] = [$assetId, $date];
+        return $this->postedDocs;
+    }
 }
 
 class SpyDepreciationWriter extends SystemDepreciationWriter
 {
     /** @var array<string, list<array{amount: float, date: string, halfYear: bool, period: array}>> okruh → řádky */
     public array $written = [];
+    /** @var list<array{int, string}> [karta, datum vyřazení] */
+    public array $removed = [];
 
     public function __construct()
     {
         parent::__construct(null);
+    }
+
+    public function removeForDisposal(int $assetId, string $disposalDate): int
+    {
+        $this->removed[] = [$assetId, $disposalDate];
+        return 0;
     }
 
     public function write(int $assetId, string $scope, array $rows): float

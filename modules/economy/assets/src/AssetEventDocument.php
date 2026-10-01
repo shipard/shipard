@@ -36,8 +36,10 @@ use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
  * datum pořízení z potvrzeného zařazení / počátečního stavu, datum
  * vyřazení z vyřazení; potvrzené vyřazení nejdřív založí chybějící odpisy
  * obou okruhů (D35, `SystemDepreciationWriter`) a pak přesune kartu do
- * archivu, zrušené vyřazení ji vrátí do V opravě. Systémové odpisy
- * zrušené vyřazení nechává — jdou smazat od konce.
+ * archivu, zrušené vyřazení ji vrátí do V opravě a smaže systémové odpisy
+ * k datu vyřazení, které vyřazení založilo (D56); jsou-li zaúčtované,
+ * přechod se odmítne (`disposalPosted`). Odpisy dřívějších období, které
+ * vyřazení doplnilo, zůstávají — jdou smazat od konce.
  *
  * DB přístup je v protected metodách (přepsatelné v testech).
  */
@@ -48,6 +50,13 @@ class AssetEventDocument extends Document
     public const STATE_CONFIRMED = 40;
     /** mainState stavu 40 v cfgItem economy.assets.eventStates. */
     public const MAIN_CONFIRMED = 3;
+
+    public const STATE_DELETED = 90;
+    /** mainState stavu 90 v cfgItem economy.assets.eventStates. */
+    public const MAIN_DELETED = 4;
+
+    /** Stavy účetního dokladu, ve kterých vazba `doc_head` neznamená zaúčtování. */
+    public const DEAD_DOC_STATES = [30, 90];
 
     /** Povolené okruhy per druh; jediná hodnota se doplní sama. */
     private const SCOPES_BY_KIND = [
@@ -79,6 +88,9 @@ class AssetEventDocument extends Document
 
     /** Sloučený řádek z beforeSave — afterPersist ho potřebuje i u částečného payloadu. */
     private array $row = [];
+
+    /** Datum události před uložením — zrušené vyřazení maže odpisy k původnímu datu. */
+    private ?string $originalDate = null;
 
     private ?AssetPlanService $planService = null;
 
@@ -113,6 +125,26 @@ class AssetEventDocument extends Document
         if ($card === null) {
             $result->addError('asset', 'Událost musí patřit kartě majetku.', 'required');
             return $result;
+        }
+
+        // Zrušené vyřazení maže systémové odpisy, které založilo (D56) —
+        // zaúčtované se smazat nedají, nejdřív se ruší zaúčtování období.
+        if ($original !== null
+            && $kind === AssetEvent::KIND_DISPOSAL
+            && (int) ($original['docState'] ?? 0) === self::STATE_CONFIRMED
+            && (int) ($row['docState'] ?? 10) !== self::STATE_CONFIRMED
+        ) {
+            $originalDate = self::date($original['event_date'] ?? null);
+            $posted = $originalDate !== null ? $this->postedDisposalDepreciations($assetId, $originalDate) : [];
+            if ($posted !== []) {
+                $result->addError(
+                    ValidationError::FIELD_FORM,
+                    'Odpisy založené vyřazením jsou zaúčtované (doklad ' . implode(', ', $posted)
+                    . '). Nejdřív zruš zaúčtování období.',
+                    'disposalPosted',
+                );
+                return $result;
+            }
         }
 
         $categories = $this->categories();
@@ -531,6 +563,9 @@ class AssetEventDocument extends Document
     {
         $this->trackStateChange($data, $originalData);
 
+        // Vazbu na účetní doklad píše jen zaúčtování majetku (D52).
+        unset($data['doc_head']);
+
         $row = array_merge($originalData ?? [], $data);
         $kind = (string) ($row['event_kind'] ?? '');
         $allowedScopes = self::SCOPES_BY_KIND[$kind] ?? [];
@@ -574,6 +609,7 @@ class AssetEventDocument extends Document
         }
 
         $this->row = array_merge($row, $data);
+        $this->originalDate = self::date($originalData['event_date'] ?? null);
     }
 
     public function afterPersist(array $data): void
@@ -597,6 +633,9 @@ class AssetEventDocument extends Document
 
         if ($kind === AssetEvent::KIND_DISPOSAL && $is) {
             $this->writeFinalDepreciations($assetId);
+        }
+        if ($kind === AssetEvent::KIND_DISPOSAL && $was && $this->originalDate !== null) {
+            $this->writer()->removeForDisposal($assetId, $this->originalDate);
         }
         $this->syncCard($assetId, $kind === AssetEvent::KIND_DISPOSAL ? $is : null);
     }
@@ -787,6 +826,37 @@ class AssetEventDocument extends Document
             $events,
             static fn(array $e): bool => (int) ($e['id'] ?? 0) !== $excludeId,
         ));
+    }
+
+    /**
+     * Čísla živých účetních dokladů, kterými jsou zaúčtované systémové
+     * odpisy karty k datu vyřazení.
+     *
+     * @return list<string>
+     */
+    protected function postedDisposalDepreciations(int $assetId, string $date): array
+    {
+        if ($this->db === null) {
+            return [];
+        }
+        $rows = $this->db->fetchAll(
+            'SELECT DISTINCT [h].[id], [h].[doc_number] FROM [' . self::TABLE . '] [e]'
+            . ' JOIN [docs_core_heads] [h] ON [h].[id] = [e].[doc_head]'
+            . ' WHERE [e].[asset] = %i AND [e].[event_kind] = %s AND [e].[origin] = %s'
+            . ' AND [e].[event_date] = %d AND [e].[docState] = %i AND [h].[docState] NOT IN %in'
+            . ' ORDER BY [h].[id]',
+            $assetId,
+            AssetEvent::KIND_DEPRECIATION,
+            AssetEvent::ORIGIN_SYSTEM,
+            $date,
+            self::STATE_CONFIRMED,
+            self::DEAD_DOC_STATES,
+        );
+        $numbers = [];
+        foreach ($rows as $row) {
+            $numbers[] = (string) ($row['doc_number'] ?? '') !== '' ? (string) $row['doc_number'] : '#' . (int) $row['id'];
+        }
+        return $numbers;
     }
 
     /** @param array<string, mixed> $values */

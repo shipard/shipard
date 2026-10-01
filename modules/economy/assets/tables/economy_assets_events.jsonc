@@ -181,6 +181,20 @@
             "default": "manual"
         },
         {
+            // Účetní doklad, kterým je událost zaúčtovaná (D52). „Zaúčtováno“
+            // = navázaný doklad mimo Storno / Smazáno; zrušení zaúčtování
+            // vazbu nuluje. Systémový — píše ho jen zaúčtování majetku,
+            // formulář ani CRUD ho nepřijmou.
+            "id": "doc_head",
+            "name": "Accounting document",
+            "name:cs": "Účetní doklad",
+            "name:en": "Accounting document",
+            "type": "int",
+            "nullable": true,
+            "reference": "docs_core_heads",
+            "system": true
+        },
+        {
             "id": "note",
             "name": "Note",
             "name:cs": "Poznámka",
@@ -221,6 +235,13 @@
                 {"column": "scope", "order": "ASC"},
                 {"column": "event_date", "order": "ASC"},
                 {"column": "id", "order": "ASC"}
+            ]
+        },
+        {
+            "id": "idx_doc_head",
+            "type": "index",
+            "columns": [
+                {"column": "doc_head", "order": "ASC"}
             ]
         },
         {
