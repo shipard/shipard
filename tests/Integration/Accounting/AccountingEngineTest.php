@@ -1194,6 +1194,41 @@ class AccountingEngineTest extends IntegrationTestCase
         $this->assertSame('VS12345', (string) $dal['payment_reference']);
     }
 
+    /**
+     * Dimenze deníku `asset` (assets D47): karta z řádku dokladu se propíše
+     * do řádku deníku a dvě karty na tomtéž účtu se neslijí.
+     */
+    public function testCmnbkpRowAssetReachesJournalAsDimension(): void
+    {
+        $columns = $this->db->fetchAll('SHOW COLUMNS FROM economy_accounting_journal LIKE %s', 'asset');
+        if ($columns === []) {
+            $this->markTestSkipped('Dev DS nemá modul economy.assets (dimenze asset)');
+        }
+
+        $headId = $this->insertHead('cmnbkp', [
+            'partner'        => null,
+            'total_base'     => 1500.0, 'total_vat' => 0.0, 'total_amount' => 1500.0,
+            'total_base_dom' => 1500.0, 'total_vat_dom' => 0.0, 'total_amount_dom' => 1500.0,
+        ]);
+        $cost = $this->accountId('518100');
+        $liability = $this->accountId('321100');
+        // Dimenze nemá FK — smyšlená id karet stačí.
+        $this->insertAccRow($headId, 'acc.record', 1000.0, 0, ['account' => $cost, 'asset' => 990001]);
+        $this->insertAccRow($headId, 'acc.record', 500.0, 0, ['account' => $cost, 'asset' => 990002]);
+        $this->insertAccRow($headId, 'acc.record', 1500.0, 1, ['account' => $liability]);
+
+        $result = $this->engine->accountDocument($headId);
+
+        $this->assertSame(1, $result['state']);
+        $journal = $this->journalOf($headId);
+        $this->assertCount(3, $journal);
+        $byAsset = [];
+        foreach ($journal as $line) {
+            $byAsset[(string) ($line['asset'] ?? '')] = (float) $line['money_dr'] + (float) $line['money_cr'];
+        }
+        $this->assertSame(['990001' => 1000.0, '990002' => 500.0, '' => 1500.0], $byAsset);
+    }
+
     public function testCmnbkpSameAccountDifferentVsNotMerged(): void
     {
         // Dva závazky na 321100, různý VS → dva řádky deníku (D7), ne sloučený.

@@ -188,9 +188,16 @@ class DsUpgradeCommand extends Command
             }
         }
 
+        // Vzory popisků tabulek pro dimenze deníku (journalDimensions).
+        $tableDisplayPatterns = [];
+        foreach ($tableDefs as $tableName => $tableDef) {
+            $tableDisplayPatterns[$tableName] = $tableDef->displayPattern;
+        }
+
         try {
             ConfigCompiler::compile(
                 $resolvedModules, $modulePathResolver, $languages, $outputPath, $structuredSchemas,
+                $tableDisplayPatterns,
             );
         } catch (\RuntimeException $e) {
             // Nevalidní schéma = upgrade se zastaví s cestou k chybě; bez

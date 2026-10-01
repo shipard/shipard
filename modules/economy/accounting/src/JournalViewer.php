@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Economy\Accounting;
 
+use Shipard\Core\Accounting\JournalDimension;
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Core\Viewer\UsesFiscalPeriods;
@@ -19,12 +21,19 @@ use Shipard\Core\Viewer\UsesFiscalPeriods;
  * generický ViewerFilters.svelte z definic v getFilters(); rok má výchozí
  * hodnotu = aktuální fiskální rok (FiscalYearFilter přes UsesFiscalPeriods,
  * stejný helper jako saldokonto), měsíc zůstává bez výchozí hodnoty.
+ *
+ * Dimenze deníku (`JournalDimensionSet`, docs/accounting.md „Dimenze
+ * deníku“): každá aktivní dimenze přidá sloupec gridu, řádek detailu
+ * a textový filtr `dim_{id}`; popisek hodnoty se skládá z `displayPattern`
+ * cílové tabulky (LEFT JOIN s aliasem `d_{id}`).
  */
 class JournalViewer extends TableViewer
 {
     use UsesFiscalPeriods;
 
     protected ?string $docStatesCfgItem = null;
+
+    private ?JournalDimensionSet $dimensions = null;
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
@@ -33,8 +42,8 @@ class JournalViewer extends TableViewer
             . ' j.`currency`, j.`money_dr_cur`, j.`money_cr_cur`, j.`is_error`,'
             . ' j.`payment_reference`,'
             . ' p.`full_name` AS partner_name'
-            . ' FROM `' . $this->table . '` j'
-            . ' LEFT JOIN `base_persons_persons` p ON p.`id` = j.`partner`';
+            . $this->dimensionSelect()
+            . $this->fromSql();
 
         [$conditions, $params] = $this->buildConditions($search, $filters);
 
@@ -95,6 +104,19 @@ class JournalViewer extends TableViewer
                 $params[] = (string) $value . '%';
             } elseif ($id === 'only_errors' && (string) $value === '1') {
                 $conditions[] = 'j.`is_error` = 1';
+            } elseif (is_string($id) && str_starts_with($id, 'dim_')) {
+                $dimension = $this->dimensions()->get(substr($id, 4));
+                if ($dimension !== null) {
+                    [$dimSql, $dimParams] = SearchCondition::anyContains(
+                        array_map(
+                            static fn(string $column): string => self::dimensionAlias($dimension) . '.`' . $column . '`',
+                            $dimension->labelColumns(),
+                        ),
+                        (string) $value,
+                    );
+                    $conditions[] = $dimSql;
+                    $params = array_merge($params, $dimParams);
+                }
             }
         }
 
@@ -174,7 +196,7 @@ class JournalViewer extends TableViewer
     {
         $cs = $this->language === 'cs';
 
-        return [
+        $columns = [
             ['id' => 'accounting_date', 'label' => $cs ? 'Datum' : 'Date', 'width' => 96, 'sortable' => true],
             ['id' => 'doc_number', 'label' => $cs ? 'Doklad' : 'Document'],
             ['id' => 'account_number', 'label' => $cs ? 'Účet' : 'Account', 'width' => 80, 'sortable' => true],
@@ -182,13 +204,32 @@ class JournalViewer extends TableViewer
             ['id' => 'money_cr', 'label' => 'DAL', 'width' => 110, 'align' => 'right', 'sortable' => true],
             ['id' => 'payment_reference', 'label' => $cs ? 'VS' : 'Reference', 'width' => 130],
             ['id' => 'partner_name', 'label' => $cs ? 'Osoba' : 'Person'],
-            ['id' => 'text', 'label' => 'Text', 'grow' => true],
         ];
+        foreach ($this->dimensions() as $dimension) {
+            $columns[] = ['id' => 'dim_' . $dimension->id, 'label' => $dimension->name];
+        }
+        $columns[] = ['id' => 'text', 'label' => 'Text', 'grow' => true];
+
+        return $columns;
     }
 
     public function renderGridRow(array $rowData): array
     {
         $curCode = strtoupper((string) ($rowData['currency'] ?? ''));
+
+        $cells = [
+            'accounting_date'   => $this->formatDate($rowData['accounting_date'] ?? null),
+            'doc_number'        => ['text' => (string) ($rowData['doc_number'] ?? ''), 'class' => 'primary'],
+            'account_number'    => (string) ($rowData['account_number'] ?? ''),
+            'money_dr'          => $this->gridAmountCell($rowData['money_dr'] ?? 0, $rowData['money_dr_cur'] ?? 0, $curCode),
+            'money_cr'          => $this->gridAmountCell($rowData['money_cr'] ?? 0, $rowData['money_cr_cur'] ?? 0, $curCode),
+            'payment_reference' => (string) ($rowData['payment_reference'] ?? ''),
+            'partner_name'      => (string) ($rowData['partner_name'] ?? ''),
+            'text'              => (string) ($rowData['text'] ?? ''),
+        ];
+        foreach ($this->dimensions() as $dimension) {
+            $cells['dim_' . $dimension->id] = $this->dimensionLabel($dimension, $rowData) ?? '';
+        }
 
         return [
             'id'    => (int) $rowData['id'],
@@ -196,16 +237,7 @@ class JournalViewer extends TableViewer
             // informaci nepřidal.
             'stateStyle' => null,
             'rowClass'   => (int) ($rowData['is_error'] ?? 0) === 1 ? 'error' : null,
-            'cells' => [
-                'accounting_date'   => $this->formatDate($rowData['accounting_date'] ?? null),
-                'doc_number'        => ['text' => (string) ($rowData['doc_number'] ?? ''), 'class' => 'primary'],
-                'account_number'    => (string) ($rowData['account_number'] ?? ''),
-                'money_dr'          => $this->gridAmountCell($rowData['money_dr'] ?? 0, $rowData['money_dr_cur'] ?? 0, $curCode),
-                'money_cr'          => $this->gridAmountCell($rowData['money_cr'] ?? 0, $rowData['money_cr_cur'] ?? 0, $curCode),
-                'payment_reference' => (string) ($rowData['payment_reference'] ?? ''),
-                'partner_name'      => (string) ($rowData['partner_name'] ?? ''),
-                'text'              => (string) ($rowData['text'] ?? ''),
-            ],
+            'cells'      => $cells,
         ];
     }
 
@@ -217,8 +249,7 @@ class JournalViewer extends TableViewer
     public function renderGridFooter(?string $search, array $filters): ?array
     {
         $sql = 'SELECT SUM(j.`money_dr`) AS sum_dr, SUM(j.`money_cr`) AS sum_cr'
-            . ' FROM `' . $this->table . '` j'
-            . ' LEFT JOIN `base_persons_persons` p ON p.`id` = j.`partner`';
+            . $this->fromSql();
 
         [$conditions, $params] = $this->buildConditions($search, $filters);
 
@@ -258,8 +289,8 @@ class JournalViewer extends TableViewer
         $r = $this->db->fetchRow(
             'SELECT j.*, p.`full_name` AS partner_name, a.`name` AS account_name,'
             . ' fy.`name` AS fiscal_year_name, fm.`calendar_year`, fm.`calendar_month`'
-            . ' FROM `' . $this->table . '` j'
-            . ' LEFT JOIN `base_persons_persons` p ON p.`id` = j.`partner`'
+            . $this->dimensionSelect()
+            . $this->fromSql()
             . ' LEFT JOIN `economy_accounting_accounts` a ON a.`id` = j.`account`'
             . ' LEFT JOIN `economy_codebooks_fiscal_years` fy ON fy.`id` = j.`fiscal_year`'
             . ' LEFT JOIN `economy_codebooks_fiscal_months` fm ON fm.`id` = j.`fiscal_month`'
@@ -287,6 +318,9 @@ class JournalViewer extends TableViewer
             $this->cfgItemName('docs.core.rowOperations', $r['operation'] ?? null),
         );
         $this->addItem($entryItems, 'Partner', $r['partner_name'] ?? null);
+        foreach ($this->dimensions() as $dimension) {
+            $this->addItem($entryItems, $dimension->name, $this->dimensionLabel($dimension, $r));
+        }
         $this->addItem($entryItems, $cs ? 'Fiskální rok' : 'Fiscal year', $r['fiscal_year_name'] ?? null);
         if (($r['calendar_month'] ?? null) !== null && ($r['calendar_year'] ?? null) !== null) {
             $this->addItem(
@@ -402,12 +436,72 @@ class JournalViewer extends TableViewer
                 'label' => $cs ? 'Variabilní symbol' : 'Payment reference',
                 'type'  => 'text',
             ],
+            ...$this->dimensionFilters(),
             [
                 'id'    => 'only_errors',
                 'label' => $cs ? 'Jen chyby' : 'Errors only',
                 'type'  => 'checkbox',
             ],
         ];
+    }
+
+    // ── Dimenze deníku ──────────────────────────────────────────────────────
+
+    private function dimensions(): JournalDimensionSet
+    {
+        return $this->dimensions ??= JournalDimensionSet::fromConfig($this->config);
+    }
+
+    private static function dimensionAlias(JournalDimension $dimension): string
+    {
+        return 'd_' . $dimension->id;
+    }
+
+    /** FROM + JOINy seznamu — partner a cílové tabulky dimenzí (sdílí seznam, součty i detail). */
+    private function fromSql(): string
+    {
+        $sql = ' FROM `' . $this->table . '` j'
+            . ' LEFT JOIN `base_persons_persons` p ON p.`id` = j.`partner`';
+        foreach ($this->dimensions() as $dimension) {
+            $alias = self::dimensionAlias($dimension);
+            $sql .= ' LEFT JOIN `' . $dimension->table . '` ' . $alias
+                . ' ON ' . $alias . '.`id` = j.`' . $dimension->journalColumn . '`';
+        }
+        return $sql;
+    }
+
+    /** Sloupce popisků dimenzí pro SELECT (`d_asset__asset_number`, …). */
+    private function dimensionSelect(): string
+    {
+        $sql = '';
+        foreach ($this->dimensions() as $dimension) {
+            $alias = self::dimensionAlias($dimension);
+            foreach ($dimension->labelColumns() as $column) {
+                $sql .= ', ' . $alias . '.`' . $column . '` AS `' . $alias . '__' . $column . '`';
+            }
+        }
+        return $sql;
+    }
+
+    /** @param array<string, mixed>|\ArrayAccess<string, mixed> $rowData */
+    private function dimensionLabel(JournalDimension $dimension, mixed $rowData): ?string
+    {
+        $prefix = self::dimensionAlias($dimension) . '__';
+        $record = [];
+        foreach ($dimension->labelColumns() as $column) {
+            $record[$prefix . $column] = $rowData[$prefix . $column] ?? null;
+        }
+        return $dimension->label($record, $prefix);
+    }
+
+    /** @return list<array<string, mixed>> textový filtr per dimenze */
+    private function dimensionFilters(): array
+    {
+        $filters = [];
+        foreach ($this->dimensions() as $dimension) {
+            $filters[] = ['id' => 'dim_' . $dimension->id, 'label' => $dimension->name, 'type' => 'text'];
+        }
+        return $filters;
     }
 
     /** Deník je read-only — žádné Add/Open toolbar akce. */

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\Accounting;
 
 use Shipard\Core\Accounting\JournalContributorSet;
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Accounting\JournalLineRequest;
 use Shipard\Core\Accounting\JournalLineView;
 use Shipard\Core\Accounting\JournalSourceContext;
@@ -64,6 +65,9 @@ final class AccountingEngine
 
     private readonly JournalContributorSet $contributors;
 
+    /** Dimenze deníku aktivních modulů (cfgItem, docs/accounting.md „Dimenze deníku“). */
+    private readonly JournalDimensionSet $dimensions;
+
     public function __construct(
         private readonly \Dibi\Connection $db,
         private readonly ?ConfigRuntime $config,
@@ -72,6 +76,7 @@ final class AccountingEngine
     ) {
         // DS bez přispívajícího modulu (nebo engine postavený bez sady) → beze změny.
         $this->contributors = $contributors ?? JournalContributorSet::empty();
+        $this->dimensions = JournalDimensionSet::fromConfig($config);
     }
 
     /**
@@ -262,6 +267,7 @@ final class AccountingEngine
                 operation: $operation !== '' ? $operation : null,
                 rowId: $rowId,
                 identity: $this->resolveRowIdentity($row, $head, $operation),
+                row: $row,
             );
         }
         return $lines;
@@ -505,6 +511,8 @@ final class AccountingEngine
      * @param array{id: int, number: string, is_error?: bool}|array{number: string, is_error: bool} $account
      * @param array{partner: int|null, payment_reference: ?string, specific_symbol: ?string, constant_symbol: ?string, due_date: ?string}|null $identity
      *        Per-řádková identita; null → odvodí se z hlavičky (vat/head zdroje).
+     * @param array<string, mixed>|null $row Řádek dokladu — zdroj dimenzí deníku;
+     *        null (vat/head zdroje) → jen výchozí hodnota z hlavičky, má-li ji dimenze.
      */
     private function makeLine(
         array $step,
@@ -516,6 +524,7 @@ final class AccountingEngine
         ?string $operation,
         ?int $rowId,
         ?array $identity = null,
+        ?array $row = null,
     ): array {
         $side = (int) ($step['side'] ?? 0);
         $identity ??= $this->headIdentity($head);
@@ -536,6 +545,7 @@ final class AccountingEngine
             'money_dr_cur'   => $side === 0 ? round($cur, 2) : 0.0,
             'money_cr_cur'   => $side === 1 ? round($cur, 2) : 0.0,
             'rowId'          => $rowId,
+            'dimensions'     => $this->dimensions->valuesOf($row ?? [], $head),
         ];
     }
 
@@ -878,6 +888,8 @@ final class AccountingEngine
             'money_dr_cur'      => $side === 0 ? round($request->moneyCur, 2) : 0.0,
             'money_cr_cur'      => $side === 1 ? round($request->moneyCur, 2) : 0.0,
             'rowId'             => null,
+            // Contributoři dimenze nenastavují.
+            'dimensions'        => $this->dimensions->valuesOf([], []),
         ];
     }
 
@@ -885,10 +897,11 @@ final class AccountingEngine
 
     /**
      * Seskupení klíčem (side, account_number, partner, operation + platební
-     * identita) — shodné řádky se sčítají (dom i cur), text z prvního řádku
-     * skupiny. Platební identita v klíči (D7) brání slévání saldokontních
-     * řádků na stejný účet s různým VS/SS/KS/splatností (zápočet, mzdy);
-     * u faktur je identita napříč řádky konstantní → klíč beze změny.
+     * identita + dimenze deníku) — shodné řádky se sčítají (dom i cur), text
+     * z prvního řádku skupiny. Platební identita v klíči (D7) brání slévání
+     * saldokontních řádků na stejný účet s různým VS/SS/KS/splatností
+     * (zápočet, mzdy); u faktur je identita napříč řádky konstantní → klíč
+     * beze změny. Dimenze (majetek, …) drží zvlášť řádky různých hodnot.
      *
      * @param list<array<string, mixed>> $lines
      * @return list<array<string, mixed>>
@@ -906,6 +919,7 @@ final class AccountingEngine
                 $line['specific_symbol'] ?? '',
                 $line['constant_symbol'] ?? '',
                 $line['due_date'] ?? '',
+                ...array_map(static fn(?int $v): string => (string) ($v ?? ''), array_values($line['dimensions'] ?? [])),
             ]);
             if (!isset($grouped[$key])) {
                 $grouped[$key] = $line;
@@ -963,6 +977,8 @@ final class AccountingEngine
                     'specific_symbol'   => $line['specific_symbol'] ?? null,
                     'constant_symbol'   => $line['constant_symbol'] ?? null,
                     'due_date'          => $line['due_date'] ?? null,
+                    // Dimenze deníku — sloupce z extensions aktivních modulů.
+                    ...($line['dimensions'] ?? []),
                 ])->execute();
             }
 

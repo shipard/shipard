@@ -32,6 +32,7 @@ class ModuleDefinition
         public readonly array $documentLockProviders = [],
         public readonly ?string $openItemLookup = null,
         public readonly array $journalContributors = [],
+        public readonly array $journalDimensions = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -293,6 +294,67 @@ class ModuleDefinition
             }
         }
 
+        // journalDimensions — analytické dimenze deníku (docs/accounting.md
+        // „Dimenze deníku“, assets D47): sloupec řádku dokladu, volitelně
+        // výchozí hodnota z hlavičky, sloupec deníku a cílová tabulka.
+        // Sloupce zakládá modul dimenze přes extensions; ConfigCompiler
+        // dimenze aktivních modulů složí do cfgItem
+        // `core.accounting.journalDimensions` (JournalDimensionSet).
+        $journalDimensions = [];
+        if (array_key_exists('journalDimensions', $data)) {
+            if (!is_array($data['journalDimensions']) || !array_is_list($data['journalDimensions'])) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': journalDimensions must be a JSON array",
+                );
+            }
+            foreach ($data['journalDimensions'] as $idx => $dim) {
+                if (!is_array($dim)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': journalDimensions[{$idx}] must be an object",
+                    );
+                }
+                foreach (['id', 'rowColumn', 'journalColumn', 'table', 'name'] as $key) {
+                    if (!isset($dim[$key]) || !is_string($dim[$key]) || $dim[$key] === '') {
+                        throw new \InvalidArgumentException(
+                            "Module '{$data['id']}': journalDimensions[{$idx}] requires '{$key}'",
+                        );
+                    }
+                }
+                foreach (['id', 'rowColumn', 'journalColumn', 'headColumn', 'table'] as $key) {
+                    if (isset($dim[$key]) && !preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', (string) $dim[$key])) {
+                        throw new \InvalidArgumentException(
+                            "Module '{$data['id']}': journalDimensions[{$idx}].{$key} must be an identifier",
+                        );
+                    }
+                }
+                if (isset($dim['headColumn']) && !is_string($dim['headColumn'])) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': journalDimensions[{$idx}].headColumn must be a string or null",
+                    );
+                }
+                if (isset($journalDimensions[$dim['id']])) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': journalDimensions has duplicate id '{$dim['id']}'",
+                    );
+                }
+                $entry = [
+                    'id'            => $dim['id'],
+                    'rowColumn'     => $dim['rowColumn'],
+                    'headColumn'    => $dim['headColumn'] ?? null,
+                    'journalColumn' => $dim['journalColumn'],
+                    'table'         => $dim['table'],
+                ];
+                // Název vč. jazykových variant — lokalizuje až kompilace.
+                foreach ($dim as $key => $value) {
+                    if (($key === 'name' || str_starts_with((string) $key, 'name:')) && is_string($value)) {
+                        $entry[$key] = $value;
+                    }
+                }
+                $journalDimensions[$dim['id']] = $entry;
+            }
+            $journalDimensions = array_values($journalDimensions);
+        }
+
         // navigationProviders — třídy dodávající dynamické položky hlavní
         // navigace z dat (NavigationItemsProvider). Registrace je jen {class};
         // instancování a merge dělá NavigationController.
@@ -381,6 +443,7 @@ class ModuleDefinition
             documentLockProviders: $documentLockProviders,
             openItemLookup: $openItemLookup,
             journalContributors: $journalContributors,
+            journalDimensions: $journalDimensions,
         );
     }
 

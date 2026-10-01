@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core;
 
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
@@ -364,9 +365,13 @@ class DocsHeadsViewer extends TableViewer
         }
 
         $state = (int) ($record['accounting_state'] ?? 0);
+        $dimensionColumns = '';
+        foreach (JournalDimensionSet::fromConfig($this->config) as $dimension) {
+            $dimensionColumns .= ', `' . $dimension->journalColumn . '`';
+        }
         $journalRows = $this->db->fetchAll(
             'SELECT `account_number`, `text`, `money_dr`, `money_cr`,'
-            . ' `money_dr_cur`, `money_cr_cur`, `is_error`'
+            . ' `money_dr_cur`, `money_cr_cur`, `is_error`' . $dimensionColumns
             . ' FROM `economy_accounting_journal`'
             . ' WHERE `doc_head` = %i'
             . ' ORDER BY `id` ASC',
@@ -465,9 +470,14 @@ class DocsHeadsViewer extends TableViewer
         $columns = [
             ['id' => 'account', 'label' => $cs ? 'Účet' : 'Account'],
             ['id' => 'text',    'label' => 'Text'],
-            ['id' => 'md',      'label' => $mdLabel,  'align' => 'right'],
-            ['id' => 'dal',     'label' => $dalLabel, 'align' => 'right'],
         ];
+        // Dimenze deníku (majetek, …) — sloupec jen když ji některý řádek nese.
+        $dimensionLabels = $this->journalDimensionLabels($journalRows);
+        foreach ($dimensionLabels as $dimensionId => $info) {
+            $columns[] = ['id' => 'dim_' . $dimensionId, 'label' => $info['name']];
+        }
+        $columns[] = ['id' => 'md',  'label' => $mdLabel,  'align' => 'right'];
+        $columns[] = ['id' => 'dal', 'label' => $dalLabel, 'align' => 'right'];
         if ($foreign) {
             $columns[] = ['id' => 'md_cur',  'label' => $mdLabel . ' ' . $curCode,  'align' => 'right'];
             $columns[] = ['id' => 'dal_cur', 'label' => $dalLabel . ' ' . $curCode, 'align' => 'right'];
@@ -482,6 +492,9 @@ class DocsHeadsViewer extends TableViewer
                 'md'      => $this->formatNonZeroMoney($jr['money_dr'] ?? null),
                 'dal'     => $this->formatNonZeroMoney($jr['money_cr'] ?? null),
             ];
+            foreach ($dimensionLabels as $dimensionId => $info) {
+                $row['dim_' . $dimensionId] = $info['labels'][(int) ($jr[$info['column']] ?? 0)] ?? '';
+            }
             if ($foreign) {
                 $row['md_cur']  = $this->formatNonZeroMoney($jr['money_dr_cur'] ?? null);
                 $row['dal_cur'] = $this->formatNonZeroMoney($jr['money_cr_cur'] ?? null);
@@ -510,6 +523,46 @@ class DocsHeadsViewer extends TableViewer
         $rows[] = $total;
 
         return ['type' => 'table', 'columns' => $columns, 'rows' => $rows];
+    }
+
+    /**
+     * Popisky dimenzí deníku použitých v řádcích: jen dimenze, kterou
+     * některý řádek nese; hodnoty se dohledají jedním dotazem per dimenze
+     * (`displayPattern` cílové tabulky).
+     *
+     * @param iterable<mixed> $journalRows
+     * @return array<string, array{name: string, column: string, labels: array<int, string>}>
+     */
+    private function journalDimensionLabels(iterable $journalRows): array
+    {
+        $out = [];
+        foreach (JournalDimensionSet::fromConfig($this->config) as $dimension) {
+            $ids = [];
+            foreach ($journalRows as $jr) {
+                $value = (int) ($jr[$dimension->journalColumn] ?? 0);
+                if ($value > 0) {
+                    $ids[$value] = true;
+                }
+            }
+            if ($ids === []) {
+                continue;
+            }
+            $columns = array_unique(['id', ...$dimension->labelColumns()]);
+            $rows = $this->db->fetchAll(
+                'SELECT `' . implode('`, `', $columns) . '` FROM `' . $dimension->table . '` WHERE `id` IN %in',
+                array_keys($ids),
+            );
+            $labels = [];
+            foreach ($rows as $row) {
+                $record = [];
+                foreach ($columns as $column) {
+                    $record[$column] = $row[$column] ?? null;
+                }
+                $labels[(int) $row['id']] = $dimension->label($record) ?? '#' . (int) $row['id'];
+            }
+            $out[$dimension->id] = ['name' => $dimension->name, 'column' => $dimension->journalColumn, 'labels' => $labels];
+        }
+        return $out;
     }
 
     /** @return list<array<string, mixed>> dekódované accounting_messages (JSON) */

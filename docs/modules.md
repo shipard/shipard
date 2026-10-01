@@ -378,6 +378,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `journalEventHandlers[].events` | string[] | Ne | Ne | `journalWritten`; default všechny |
 | `openItemLookup` | string | Ne | Ne | FQCN poskytovatele dohledání otevřeného předpisu (implements `OpenItemLookup`); jeden per DS (viz níže) |
 | `journalContributors` | string[] | Ne | Ne | FQCN contributorů deníku (implements `JournalContributor`) — příspěvky do deníku zdroje před zápisem; víc modulů smí přispívat (viz níže) |
+| `journalDimensions` | object[] | Ne | Ano (`name`) | Analytické dimenze deníku: `id`, `rowColumn`, `journalColumn`, `table`, `name` povinné, `headColumn` volitelný. Sloupce zakládá modul přes `extensions`; `ConfigCompiler` je skládá do cfgItem `core.accounting.journalDimensions` (`docs/accounting.md` §6 Dimenze deníku) |
 
 ### Pole `attachmentGuards`
 

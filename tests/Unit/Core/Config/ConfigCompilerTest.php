@@ -274,4 +274,96 @@ class ConfigCompilerTest extends TestCase
             ['economy.vat.filingProfileCz' => 'economy_codebooks_vat_registrations.filing_profile'],
         );
     }
+
+    // ── journalDimensions (assets D47) ──────────────────────────────────────
+
+    /** Prázdný adresář modulu, ať ho ModulePathResolver najde. */
+    private function stubModuleDir(string $moduleId): void
+    {
+        $path = $this->tmpDir . '/modules/' . str_replace('.', '/', $moduleId);
+        if (!is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+        file_put_contents($path . '/module.jsonc', '');
+    }
+
+    private function dimensionModule(string $moduleId, string $dimensionId = 'asset'): ModuleDefinition
+    {
+        $this->stubModuleDir($moduleId);
+
+        return ModuleDefinition::fromArray([
+            'id'   => $moduleId,
+            'name' => $moduleId,
+            'journalDimensions' => [[
+                'id' => $dimensionId, 'rowColumn' => 'asset', 'journalColumn' => 'asset',
+                'table' => 'economy_assets_assets', 'name' => 'Asset', 'name:cs' => 'Majetek',
+            ]],
+        ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function compiledItems(string $language): array
+    {
+        return json_decode(file_get_contents($this->tmpDir . '/output/compiled.' . $language . '.json'), true)['items'];
+    }
+
+    public function testJournalDimensionsCompileIntoLocalizedCfgItem(): void
+    {
+        ConfigCompiler::compile(
+            [$this->dimensionModule('economy.assets')],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['cs', 'en'],
+            $this->tmpDir . '/output',
+            [],
+            ['economy_assets_assets' => '{asset_number} — {name}'],
+        );
+
+        $this->assertSame(['asset' => [
+            'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => null, 'journalColumn' => 'asset',
+            'table' => 'economy_assets_assets', 'name' => 'Majetek', 'displayPattern' => '{asset_number} — {name}',
+        ]], $this->compiledItems('cs')[ConfigCompiler::JOURNAL_DIMENSIONS_ITEM]);
+        $this->assertSame('Asset', $this->compiledItems('en')[ConfigCompiler::JOURNAL_DIMENSIONS_ITEM]['asset']['name']);
+    }
+
+    public function testNoJournalDimensionsCompileToEmptyItem(): void
+    {
+        $this->stubModuleDir('core.system');
+
+        ConfigCompiler::compile(
+            [$this->makeModule('core.system', [])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::JOURNAL_DIMENSIONS_ITEM]);
+    }
+
+    public function testJournalDimensionOfUnknownTableStopsCompilation(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches("/dimension 'asset'.*unknown table 'economy_assets_assets'/");
+
+        ConfigCompiler::compile(
+            [$this->dimensionModule('economy.assets')],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+            [],
+            ['docs_core_rows' => null],
+        );
+    }
+
+    public function testSameJournalDimensionInTwoModulesStopsCompilation(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches("/dimension 'asset' is declared by more than one module/");
+
+        ConfigCompiler::compile(
+            [$this->dimensionModule('economy.assets'), $this->dimensionModule('economy.other')],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
 }

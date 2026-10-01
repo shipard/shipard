@@ -775,4 +775,79 @@ class ModuleDefinitionTest extends TestCase
             'journalContributors' => [['class' => 'Foo\\Bar']],
         ]);
     }
+
+    // ── journalDimensions (assets D47) ──────────────────────────────────────
+
+    /** @return array<string, mixed> */
+    private function assetDimension(array $overrides = []): array
+    {
+        return $overrides + [
+            'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => null,
+            'journalColumn' => 'asset', 'table' => 'economy_assets_assets',
+            'name' => 'Asset', 'name:cs' => 'Majetek',
+        ];
+    }
+
+    public function testJournalDimensionsParsedWithLocalizedNames(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.assets',
+            'name' => 'Assets',
+            'journalDimensions' => [$this->assetDimension(['headColumn' => 'asset', 'ignored' => 'x'])],
+        ]);
+
+        $this->assertSame([[
+            'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => 'asset',
+            'journalColumn' => 'asset', 'table' => 'economy_assets_assets',
+            'name' => 'Asset', 'name:cs' => 'Majetek',
+        ]], $def->journalDimensions);
+    }
+
+    public function testJournalDimensionsAbsentDefaultsToEmptyList(): void
+    {
+        $def = ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons']);
+
+        $this->assertSame([], $def->journalDimensions);
+    }
+
+    public function testJournalDimensionMissingRequiredKeyThrows(): void
+    {
+        $dimension = $this->assetDimension();
+        unset($dimension['journalColumn']);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("journalDimensions[0] requires 'journalColumn'");
+        ModuleDefinition::fromArray(['id' => 'economy.assets', 'name' => 'Assets', 'journalDimensions' => [$dimension]]);
+    }
+
+    public function testJournalDimensionColumnMustBeIdentifier(): void
+    {
+        // Sloupce a tabulka jdou do SQL — nic než identifikátor.
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('journalDimensions[0].rowColumn must be an identifier');
+        ModuleDefinition::fromArray([
+            'id' => 'economy.assets', 'name' => 'Assets',
+            'journalDimensions' => [$this->assetDimension(['rowColumn' => 'asset`; DROP'])],
+        ]);
+    }
+
+    public function testJournalDimensionDuplicateIdThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("duplicate id 'asset'");
+        ModuleDefinition::fromArray([
+            'id' => 'economy.assets', 'name' => 'Assets',
+            'journalDimensions' => [$this->assetDimension(), $this->assetDimension()],
+        ]);
+    }
+
+    public function testJournalDimensionsNotAListThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('journalDimensions must be a JSON array');
+        ModuleDefinition::fromArray([
+            'id' => 'economy.assets', 'name' => 'Assets',
+            'journalDimensions' => $this->assetDimension(),
+        ]);
+    }
 }

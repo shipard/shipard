@@ -1,0 +1,21 @@
+{
+    // Extension z economy.assets na řádky dokladů (docs/assets.md D15, D47).
+    //
+    // asset — karta majetku, které se řádek týká. Zdroj dimenze deníku
+    //   `asset` (journalDimensions v module.jsonc): účtovací engine hodnotu
+    //   zkopíruje do řádku deníku. Povinná u operací s vlajkou `rowAsset`
+    //   (asset.*, D48); na fakturách ji začne plnit fáze 4.
+
+    "table": "docs_core_rows",
+    "columns": [
+        {
+            "id": "asset",
+            "name": "Asset",
+            "name:cs": "Majetek",
+            "name:en": "Asset",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_assets_assets"
+        }
+    ]
+}

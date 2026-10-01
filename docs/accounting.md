@@ -868,6 +868,45 @@ Poznámky:
   zdroj a šel filtr deníku za VS. Symboly v konvenci dokladů (varchar 35 pro
   RF/EndToEndId). Tím se **částečně obrací rozhodnutí #10** (viz Log rozhodnutí).
 
+### Dimenze deníku (assets D47)
+
+Analytická dimenze = sloupec deníku, do kterého engine kopíruje hodnotu
+z řádku dokladu, aby šel obrat účtu rozpadnout podle entity jiného modulu
+(první: karta majetku; středisko a zakázka půjdou stejnou cestou).
+Mechanismus je obecný — `economy.accounting` ani `docs.core` o konkrétní
+dimenzi nevědí.
+
+- **Deklarace** v `module.jsonc` modulu dimenze:
+
+  ```jsonc
+  "journalDimensions": [{
+      "id": "asset", "rowColumn": "asset", "headColumn": null,
+      "journalColumn": "asset", "table": "economy_assets_assets",
+      "name": "Asset", "name:cs": "Majetek", "name:en": "Asset"
+  }]
+  ```
+
+  `rowColumn` = sloupec `docs_core_rows`, `journalColumn` = sloupec
+  deníku, `headColumn` = volitelná výchozí hodnota z hlavičky dokladu,
+  `table` = cílová tabulka. Oba sloupce zakládá modul dimenze přes
+  **extensions** (int, null, reference; na deníku index).
+- **Transport**: `ConfigCompiler` složí dimenze aktivních modulů do
+  cfgItem `core.accounting.journalDimensions` (lokalizovaný název,
+  `displayPattern` cílové tabulky; dimenze mířící na neznámou tabulku nebo
+  deklarovaná dvakrát zastaví `ds-upgrade`). Čte se výhradně přes
+  `Shipard\Core\Accounting\JournalDimensionSet::fromConfig()` — žádný
+  loader ani injektáž; sada odpovídá aktivním modulům, takže sloupce
+  vždy existují.
+- **Engine**: `makeLine` vezme hodnotu z řádku dokladu, prázdnou
+  z `headColumn` hlavičky (má-li ho dimenze); kroky `vat` / `head` nemají
+  řádek, dostanou jen výchozí hodnotu z hlavičky. Hodnoty jsou součást
+  klíče `groupLines` — dvě karty na tomtéž účtu se neslijí — a `writeResult`
+  je zapíše. Contributoři dimenze nenastavují (NULL), bankovní engine
+  dimenze nezná (NULL). DS bez dimenzí = výsledek beze změny.
+- **Zobrazení**: `JournalViewer` přidá per dimenzi sloupec gridu, řádek
+  detailu a textový filtr `dim_{id}` (hledá ve sloupcích `displayPattern`);
+  tab Zaúčtování dokladu ukáže sloupec dimenze, když ji některý řádek nese.
+
 ---
 
 ## 7. Engine a lifecycle
@@ -1004,8 +1043,9 @@ Storno (30) = doklad účetně neexistuje. Generování je idempotentní
    d. dohledej účet (sekce 5), sestav řádek deníku
    e. money == 0 → řádek se přeskakuje
 4. Seskupení: klíč (side, account_number, partner, operation + platební
-   identita) — shodné řádky se sčítají (domácí i cur částky), text
-   z prvního řádku skupiny. Prázdný výsledek → chyba "empty_journal".
+   identita + dimenze deníku, §6) — shodné řádky se sčítají (domácí i cur
+   částky), text z prvního řádku skupiny. Prázdný výsledek → chyba
+   "empty_journal".
 5. Contributoři deníku (§7.1, #79 D3b): kontext zdroje + pohledy na
    seskupené řádky bez chyby → požadavky → řádky (účet dle kategorie /
    přesného čísla, identita z požadavku, operation NULL) → seskupení znovu.
@@ -1163,7 +1203,8 @@ new/edit/delete (`getToolbarActions()` prázdné), bez docState tabů
 - **Filtry** (generický filtr bar `ViewerFilters.svelte`, viz
   `docs/frontend.md` §7): fiskální rok, fiskální měsíc (závislý select
   přes `parentFilter`), účet (prefix match), partner (contains na
-  jméno), Jen chyby. **Fulltext**: text, doc_number, account_number.
+  jméno), dimenze deníku (§6, contains na popisek), Jen chyby.
+  **Fulltext**: text, doc_number, account_number.
 - **Detail**: properties (Zápis / Částky vč. obou měn / Doklad) + akce
   Otevřít doklad (`kind: open_viewer` → `docs.core.heads`, existující
   cross-viewer navigace).

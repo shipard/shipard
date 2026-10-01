@@ -18,6 +18,9 @@ class ConfigCompiler
      */
     private const VERSION = '0.1.0';
 
+    /** cfgItem složený z `journalDimensions` aktivních modulů (JournalDimensionSet). */
+    public const JOURNAL_DIMENSIONS_ITEM = 'core.accounting.journalDimensions';
+
     /**
      * @param ModuleDefinition[]     $modules  Resolved modules in dependency order
      * @param array<string, string>  $structuredSchemas cfgItem => původ
@@ -25,7 +28,13 @@ class ConfigCompiler
      *        `schema` sloupce typu `json` (#74). Kompilátor u nich vynutí
      *        existenci i formát — obojí je chyba `ds-upgrade`, ne warning:
      *        sloupec bez validovatelného schématu by se ukládal bez validace.
-     * @throws \RuntimeException když schéma chybí nebo neprojde validací
+     * @param array<string, ?string>|null $tableDisplayPatterns tabulka =>
+     *        `displayPattern` všech tabulek DS. Dimenze deníku si z něj
+     *        převezme vzor popisku cílové tabulky; dimenze mířící na
+     *        neznámou tabulku je chyba. Null = volající tabulky nezná
+     *        (testy) — dimenze zůstanou bez vzoru a bez kontroly.
+     * @throws \RuntimeException když schéma chybí nebo neprojde validací,
+     *         nebo dimenze deníku míří na neznámou tabulku
      */
     public static function compile(
         array $modules,
@@ -33,6 +42,7 @@ class ConfigCompiler
         array $languages,
         string $outputPath,
         array $structuredSchemas = [],
+        ?array $tableDisplayPatterns = null,
     ): void {
         $rawItems = [];
         $moduleIds = [];
@@ -48,6 +58,39 @@ class ConfigCompiler
                 $rawItems[$cfgId] = JsoncParser::parseFile($filePath);
             }
         }
+
+        // Dimenze deníku (`journalDimensions` v module.jsonc) aktivních
+        // modulů → jeden cfgItem. Čte ho JournalDimensionSet::fromConfig —
+        // engine, viewery i formuláře mají konfiguraci, žádná injektáž.
+        $dimensions = [];
+        foreach ($modules as $module) {
+            foreach ($module->journalDimensions as $dimension) {
+                $dimensionId = (string) $dimension['id'];
+                if (isset($dimensions[$dimensionId])) {
+                    throw new \RuntimeException(
+                        "Journal dimension '{$dimensionId}' is declared by more than one module"
+                        . " (again in '{$module->id}')",
+                    );
+                }
+                if ($tableDisplayPatterns !== null) {
+                    $table = (string) $dimension['table'];
+                    if (!array_key_exists($table, $tableDisplayPatterns)) {
+                        throw new \RuntimeException(
+                            "Journal dimension '{$dimensionId}' (module '{$module->id}') references unknown table"
+                            . " '{$table}' — is the module that declares it active?",
+                        );
+                    }
+                    $dimension['displayPattern'] = $tableDisplayPatterns[$table];
+                }
+                $dimensions[$dimensionId] = $dimension;
+            }
+        }
+        if (isset($rawItems[self::JOURNAL_DIMENSIONS_ITEM])) {
+            throw new \RuntimeException(
+                "cfgItem '" . self::JOURNAL_DIMENSIONS_ITEM . "' is reserved for journalDimensions",
+            );
+        }
+        $rawItems[self::JOURNAL_DIMENSIONS_ITEM] = $dimensions;
 
         // Strukturovaná schémata — validace nad SUROVÝMI daty, tedy před
         // lokalizací: `name:cs` je vícejazyčná varianta, ne neznámý klíč.

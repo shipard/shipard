@@ -11,7 +11,7 @@
     "description:en": "Asset register: asset cards, types, type groups and accounting groups",
 
     // world.assets = pravidla daňových odpisů per stát (D31).
-    "dependencies": ["core.system", "core.attachments", "base.persons", "economy.accounting", "world.assets"],
+    "dependencies": ["core.system", "core.attachments", "base.persons", "docs.core", "economy.accounting", "world.assets"],
 
     "tables": [
         "economy_assets_assets",
@@ -19,6 +19,27 @@
         "economy_assets_type_groups",
         "economy_assets_accounting_groups",
         "economy_assets_events"
+    ],
+
+    // Sloupec `asset` na řádcích dokladů a v deníku (D15, D47).
+    "extensions": [
+        "docs_core_rows",
+        "economy_accounting_journal"
+    ],
+
+    // Dimenze deníku (D47): karta majetku z řádku dokladu → řádek deníku.
+    // Výchozí hodnotu z hlavičky (headColumn) doplní fáze 4.
+    "journalDimensions": [
+        {
+            "id": "asset",
+            "rowColumn": "asset",
+            "headColumn": null,
+            "journalColumn": "asset",
+            "table": "economy_assets_assets",
+            "name": "Asset",
+            "name:cs": "Majetek",
+            "name:en": "Asset"
+        }
     ],
 
     "settingsItems": [

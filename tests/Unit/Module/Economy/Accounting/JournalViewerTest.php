@@ -20,6 +20,9 @@ class JournalViewerTest extends TestCase
     /** @var list<array{sql: string, params: array}> */
     private array $queries = [];
 
+    /** @var array<string, mixed>|null cfgItem dimenzí deníku (null = DS bez dimenzí) */
+    private ?array $dimensions = null;
+
     private function makeViewer(array $fetchAllRows = [], ?array $detailRow = null): JournalViewer
     {
         $this->queries = [];
@@ -40,9 +43,10 @@ class JournalViewerTest extends TestCase
 
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(
-            static fn (string $id): mixed => match ($id) {
+            fn (string $id): mixed => match ($id) {
                 'docs.core.docTypes'      => ['invni' => ['name' => 'Faktura přijatá']],
                 'docs.core.rowOperations' => ['purchase.goods' => ['name' => 'Nákup zboží']],
+                'core.accounting.journalDimensions' => $this->dimensions,
                 default                   => null,
             },
         );
@@ -431,5 +435,64 @@ class JournalViewerTest extends TestCase
         $this->assertSame([], $viewer->getToolbarActions(null), 'Žádné Add v seznamu');
         $this->assertSame([], $viewer->getToolbarActions(['id' => 1]), 'Žádné Open na řádku');
         $this->assertSame([], $viewer->getViewGroups(), 'Bez docState tabů');
+    }
+
+    // ── Dimenze deníku (assets D47) ─────────────────────────────────────────
+
+    private function withAssetDimension(): void
+    {
+        $this->dimensions = ['asset' => [
+            'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => null, 'journalColumn' => 'asset',
+            'table' => 'economy_assets_assets', 'name' => 'Majetek', 'displayPattern' => '{asset_number} — {name}',
+        ]];
+    }
+
+    public function testDimensionAddsGridColumnJoinAndLabel(): void
+    {
+        $this->withAssetDimension();
+        $viewer = $this->makeViewer();
+
+        $this->assertContains('dim_asset', array_column($viewer->getGridColumns(), 'id'));
+
+        $viewer->selectRows(null, [], 0);
+        $sql = $this->queries[0]['sql'];
+        $this->assertStringContainsString('LEFT JOIN `economy_assets_assets` d_asset ON d_asset.`id` = j.`asset`', $sql);
+        $this->assertStringContainsString('d_asset.`asset_number` AS `d_asset__asset_number`', $sql);
+
+        $row = $viewer->renderGridRow([
+            'id' => 1, 'd_asset__asset_number' => 'MA0007', 'd_asset__name' => 'Soustruh',
+        ]);
+        $this->assertSame('MA0007 — Soustruh', $row['cells']['dim_asset']);
+
+        $empty = $viewer->renderGridRow(['id' => 2, 'd_asset__asset_number' => null, 'd_asset__name' => null]);
+        $this->assertSame('', $empty['cells']['dim_asset']);
+    }
+
+    public function testDimensionFilterSearchesLabelColumns(): void
+    {
+        $this->withAssetDimension();
+        $viewer = $this->makeViewer();
+
+        $this->assertContains('dim_asset', array_column($viewer->getFilters(), 'id'));
+
+        $viewer->selectRows(null, [['id' => 'dim_asset', 'value' => 'soustruh']], 0);
+        $query = $this->queries[array_key_last($this->queries)];
+        $this->assertStringContainsString('d_asset.`asset_number` LIKE', $query['sql']);
+        $this->assertStringContainsString('d_asset.`name` LIKE', $query['sql']);
+        $this->assertSame(['soustruh', 'soustruh'], $query['params']);
+
+        // Součty jedou nad stejnými JOINy, jinak by filtr dimenze spadl.
+        $viewer->renderGridFooter(null, [['id' => 'dim_asset', 'value' => 'soustruh']]);
+        $footer = $this->queries[array_key_last($this->queries)];
+        $this->assertStringContainsString('LEFT JOIN `economy_assets_assets` d_asset', $footer['sql']);
+    }
+
+    public function testWithoutDimensionsViewerIsUnchanged(): void
+    {
+        $viewer = $this->makeViewer();
+
+        $this->assertNotContains('dim_asset', array_column($viewer->getGridColumns(), 'id'));
+        $viewer->selectRows(null, [['id' => 'dim_asset', 'value' => 'x']], 0);
+        $this->assertStringNotContainsString('d_asset', $this->queries[array_key_last($this->queries)]['sql']);
     }
 }
