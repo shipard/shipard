@@ -54,7 +54,8 @@
     // cfgItem economy.assets.categories; čte je AssetDocument přes
     // AssetCategories::PREFIX_SETTING, fallback numberPrefix v cfgItem.
     // Četnost účetních odpisů (D12): AssetPlanService::SETTING_PERIODICITY,
-    // fallback `year`.
+    // fallback `year`. Řada účetních dokladů majetku (D54):
+    // AssetPostingSeries::SETTING, bez fallbacku.
     "settingsPages": [
         {
             "id": "assetsDepreciation",
@@ -76,6 +77,20 @@
                         { "value": "year",  "label": "Yearly",  "label:cs": "Ročně",   "label:en": "Yearly" },
                         { "value": "month", "label": "Monthly", "label:cs": "Měsíčně", "label:en": "Monthly" }
                     ]
+                },
+                {
+                    // D54: řada účetních dokladů, kterými se majetek účtuje.
+                    // Nabídka = aktivní řady cmnbkp (AssetPostingSeries);
+                    // prázdné = zaúčtování se odmítne (žádný tichý výběr).
+                    "id": "economy.assets.accountingSeries",
+                    "type": "select",
+                    "name": "Number series of asset accounting documents",
+                    "name:cs": "Řada účetních dokladů majetku",
+                    "name:en": "Number series of asset accounting documents",
+                    "hint": "Accounting documents created by “Depreciation and posting for a period”. Without a series nothing can be posted.",
+                    "hint:cs": "Účetní doklady, které zakládá „Odpisy a zaúčtování za období“. Bez řady nejde zaúčtovat.",
+                    "hint:en": "Accounting documents created by “Depreciation and posting for a period”. Without a series nothing can be posted.",
+                    "optionsProvider": "Shipard\\Module\\Economy\\Assets\\Posting\\AssetPostingSeries"
                 }
             ]
         },
@@ -228,11 +243,17 @@
     ],
 
     // Potvrzená událost je zamčená, dokud po ní v okruhu existuje potvrzený
-    // odpis, a v zamčeném účetním měsíci (D29).
+    // odpis, v zamčeném účetním měsíci (D29) a po zaúčtování (D52).
+    // Účetní doklad s řádky asset.* spravuje Majetek (D53) — ruční oprava
+    // ani storno nejdou, zaúčtování se ruší z majetku.
     "documentLockProviders": [
         {
             "table": "economy_assets_events",
             "class": "Shipard\\Module\\Economy\\Assets\\AssetEventLockProvider"
+        },
+        {
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Economy\\Assets\\Posting\\AssetPostingDocLockProvider"
         }
     ],
 

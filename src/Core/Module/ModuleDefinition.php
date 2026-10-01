@@ -75,8 +75,11 @@ class ModuleDefinition
                     if (!isset($field['id']) || !is_string($field['id']) || $field['id'] === '') continue;
                     $type = $field['type'] ?? 'text';
                     if (!in_array($type, ['text', 'image', 'theme', 'language', 'avatar', 'shell', 'select'], true)) continue;
-                    // select — pevná nabídka {value, label(:lang)}; bez options
-                    // by pole nešlo uložit (hodnota mimo nabídku = chyba).
+                    // select — pevná nabídka {value, label(:lang)}, nebo
+                    // dynamická z `optionsProvider` (FQCN třídy implementující
+                    // SettingsOptionsProvider — číselník z dat zdroje). Bez
+                    // jedné z nich by pole nešlo uložit (hodnota mimo
+                    // nabídku = chyba).
                     if ($type === 'select') {
                         $options = [];
                         foreach ($field['options'] ?? [] as $option) {
@@ -84,8 +87,15 @@ class ModuleDefinition
                                 $options[] = $option;
                             }
                         }
-                        if ($options === []) continue;
+                        $provider = $field['optionsProvider'] ?? null;
+                        $hasProvider = is_string($provider) && $provider !== '';
+                        if ($options === [] && !$hasProvider) continue;
                         $field['options'] = $options;
+                        if ($hasProvider) {
+                            $field['optionsProvider'] = $provider;
+                        } else {
+                            unset($field['optionsProvider']);
+                        }
                     }
                     $field['type'] = $type;
                     $fields[]      = $field;

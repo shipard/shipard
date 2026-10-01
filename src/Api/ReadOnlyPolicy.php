@@ -136,10 +136,12 @@ final class ReadOnlyPolicy
 		],
 
 		// Majetek — náhled a nabídka odpisů za období jen čtou, provedení
-		// zapisuje události (depreciationRun → 403).
+		// zapisuje události (depreciationRun → 403). Zaúčtování stejně:
+		// náhled čte, posting / postingCancel zapisují doklad → 403.
 		'assets' => [
 			'depreciationRunOptions' => ReadOnlyVerdict::Allow,
 			'depreciationRunPreview' => ReadOnlyVerdict::Allow,
+			'postingPreview'         => ReadOnlyVerdict::Allow,
 		],
 
 		// senderRules, registry, bank, accounting, accbal → vše 403 (default)

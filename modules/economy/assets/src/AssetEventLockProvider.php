@@ -18,7 +18,10 @@ use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
  *      odpis; pořadí dává `AssetEventDocument::orderKey()`;
  *   b) zámek účetního měsíce — potvrzená událost s datem v zamčeném
  *      měsíci, a stejně tak událost, která se do zamčeného měsíce
- *      potvrzuje (koncept v zamčeném měsíci zamčený není).
+ *      potvrzuje (koncept v zamčeném měsíci zamčený není);
+ *   c) zaúčtování (D52) — událost s navázaným živým účetním dokladem
+ *      (`doc_head`, doklad mimo Storno / Smazáno). Odemkne ji jen
+ *      „Zrušit zaúčtování období“.
  *
  * Nové události před potvrzeným odpisem hlídá validace dokumentu
  * (`notAtEnd`), provider chrání jen uložené záznamy.
@@ -29,6 +32,10 @@ class AssetEventLockProvider extends AbstractDocumentLockProvider
 {
     public const SOURCE_HISTORY = 'asset_event_history';
     public const SOURCE_MONTH = 'fiscal_month';
+    public const SOURCE_POSTED = 'asset_event_posted';
+
+    /** tableId `docs_core_heads` */
+    public const HEADS_TABLE_ID = 401;
 
     /** tableId `economy_assets_events` */
     public const SUBJECT_TABLE_ID = 454;
@@ -56,6 +63,23 @@ class AssetEventLockProvider extends AbstractDocumentLockProvider
                     subjectTableId: self::SUBJECT_TABLE_ID,
                     subjectRowId: (int) $later['id'],
                     params: ['periodEnd' => (string) $later['period_end'], 'scope' => (string) $later['scope']],
+                );
+            }
+        }
+
+        $docHead = $original !== null ? (int) ($original['doc_head'] ?? 0) : 0;
+        if ($docHead > 0) {
+            $document = $this->postingDocument($docHead);
+            if ($document !== null) {
+                $number = $document['doc_number'] !== '' ? $document['doc_number'] : '#' . $docHead;
+                $reasons[] = new DocumentLockReason(
+                    source: self::SOURCE_POSTED,
+                    title: "Zaúčtováno dokladem {$number}",
+                    message: 'Zaúčtovanou událost nejde opravit ani smazat — nejdřív zruš zaúčtování období'
+                        . ' (Majetek → Odpisy za období).',
+                    subjectTableId: self::HEADS_TABLE_ID,
+                    subjectRowId: $docHead,
+                    params: ['docNumber' => $number],
                 );
             }
         }
@@ -142,6 +166,22 @@ class AssetEventLockProvider extends AbstractDocumentLockProvider
             $out[] = AssetPlanService::plain($row);
         }
         return $out;
+    }
+
+    /**
+     * Živý účetní doklad (mimo Storno / Smazáno), kterým je událost zaúčtovaná.
+     *
+     * @return array{doc_number: string}|null
+     */
+    protected function postingDocument(int $docHeadId): ?array
+    {
+        $row = $this->db?->fetch(
+            'SELECT [doc_number] FROM [docs_core_heads] WHERE [id] = %i AND [docState] NOT IN %in',
+            $docHeadId,
+            AssetEventDocument::DEAD_DOC_STATES,
+        );
+
+        return $row === null || $row === false ? null : ['doc_number' => (string) ($row['doc_number'] ?? '')];
     }
 
     /** @return array{id: int, calendar_year: int, calendar_month: int}|null */

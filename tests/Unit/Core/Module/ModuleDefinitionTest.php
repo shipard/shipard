@@ -850,4 +850,30 @@ class ModuleDefinitionTest extends TestCase
             'journalDimensions' => $this->assetDimension(),
         ]);
     }
+
+    // ── settingsPages: select s optionsProvider (assets D54) ────────────────
+
+    public function testSelectFieldMayTakeOptionsFromProvider(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.assets',
+            'name' => 'Assets',
+            'settingsPages' => [[
+                'id' => 'p', 'name' => 'P',
+                'fields' => [
+                    ['id' => 'a.series', 'type' => 'select', 'name' => 'Series', 'optionsProvider' => 'Foo\\SeriesOptions'],
+                    ['id' => 'a.static', 'type' => 'select', 'name' => 'Static', 'options' => [['value' => 'x', 'label' => 'X']]],
+                    // Bez nabídky i bez provideru pole nejde uložit → zahodí se.
+                    ['id' => 'a.none', 'type' => 'select', 'name' => 'None'],
+                    ['id' => 'a.empty', 'type' => 'select', 'name' => 'Empty', 'optionsProvider' => ''],
+                ],
+            ]],
+        ]);
+
+        $fields = array_column($def->settingsPages[0]['fields'], null, 'id');
+        $this->assertSame(['a.series', 'a.static'], array_keys($fields));
+        $this->assertSame('Foo\\SeriesOptions', $fields['a.series']['optionsProvider']);
+        $this->assertSame([], $fields['a.series']['options']);
+        $this->assertArrayNotHasKey('optionsProvider', $fields['a.static']);
+    }
 }

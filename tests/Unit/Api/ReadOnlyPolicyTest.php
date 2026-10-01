@@ -84,6 +84,7 @@ class ReadOnlyPolicyTest extends TestCase
 			['vat', 'filingImport', $d403], ['vat', 'filingImportFinish', $d403],
 			// majetek — odpisy za období
 			['assets', 'depreciationRunOptions', $allow], ['assets', 'depreciationRunPreview', $allow], ['assets', 'depreciationRun', $d403],
+			['assets', 'postingPreview', $allow], ['assets', 'posting', $d403], ['assets', 'postingCancel', $d403],
 			// hosting* — vše (řídí jiné DS)
 			['hostingPortal', 'myDatasources', $allow], ['hostingPortal', 'createDatasource', $allow],
 			['hostingOidc', 'token', $allow], ['hostingServer', 'reconcile', $allow],

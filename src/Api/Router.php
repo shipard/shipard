@@ -445,6 +445,23 @@ class Router
 			return new Route('assets', 'depreciationRun');
 		}
 
+		// Majetek — „Odpisy a zaúčtování za období“ (docs/assets.md D50–D55):
+		//   GET  /_assets/posting/preview?period=
+		//   POST /_assets/posting          {period}
+		//   POST /_assets/posting/cancel   {period}
+		if ($subpath === '/_assets/posting/preview') {
+			if ($method !== 'GET') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('assets', 'postingPreview');
+		}
+		if ($subpath === '/_assets/posting' || $subpath === '/_assets/posting/cancel') {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('assets', $subpath === '/_assets/posting' ? 'posting' : 'postingCancel');
+		}
+
 		if ($subpath === '/_mcp') {
 			if ($method !== 'POST') {
 				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);

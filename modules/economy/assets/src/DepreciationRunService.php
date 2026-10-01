@@ -256,9 +256,13 @@ class DepreciationRunService
     }
 
     /**
+     * Období okruhu: účetní rok, u účetního okruhu při měsíční četnosti
+     * účetní měsíc.
+     *
      * @return array{id: int, kind: string, begin: string, end: string, name: string}
+     * @throws \InvalidArgumentException neznámý okruh nebo období
      */
-    private function resolvePeriod(string $scope, int $periodId): array
+    public function resolvePeriod(string $scope, int $periodId): array
     {
         if (!in_array($scope, [AssetEvent::SCOPE_TAX, AssetEvent::SCOPE_ACC], true)) {
             throw new \InvalidArgumentException("Neznámý okruh '{$scope}'");

@@ -35,8 +35,11 @@ use Shipard\Module\Economy\Accounting\AccountChartProvisioner;
 use Shipard\Module\Economy\Accounting\OffBalanceAccountsProvisioner;
 use Shipard\Module\Economy\Accounting\TransitAccountsProvisioner;
 use Shipard\Module\Economy\Assets\AccountingGroupsProvisioner;
+use Shipard\Module\Economy\Assets\Posting\AssetPostingSeries;
+use Shipard\Module\Economy\Assets\Posting\AssetPostingSeriesProvisioner;
 use Shipard\Module\Economy\Codebooks\FiscalYearsProvisioner;
 use Shipard\Module\Economy\Items\ItemKindsProvisioner;
+use Shipard\Module\Economy\Vat\Accounting\VatReturnAccountingService;
 use Shipard\Module\Economy\Vat\ReportPeriodsProvisioner;
 use Shipard\Module\Economy\Vat\VatOutputsMapping;
 use Symfony\Component\Console\Command\Command;
@@ -371,6 +374,10 @@ class DsUpgradeCommand extends Command
             $this->provisionFiscalYears($resolvedModules, $dsDir, $settings, $dsConnection, $output);
             $this->provisionVatPeriods($resolvedModules, $dsDir, $dsConnection, $output);
             $this->provisionDocCoreNumberSeries($resolvedModules, $dsDir, $dsConnection, $output);
+            // Až po výchozích řadách: NumberSeriesProvisioner zakládá řadu
+            // typu jen když žádná neexistuje — řada „Majetek“ před ním by
+            // novému zdroji sebrala výchozí řadu účetních dokladů.
+            $this->provisionAssetPostingSeries($resolvedModules, $dsConnection, $output);
             $this->provisionMailRouter($resolvedModules, $dsConfig, $dsConnection, $output);
         }
 
@@ -709,6 +716,59 @@ class DsUpgradeCommand extends Command
         $result = $provisioner->provision();
 
         $this->logProvisioningResult($output, 'account chart', $result['accountChart']);
+    }
+
+    /**
+     * Řada účetních dokladů „Majetek“ + nastavení na ni (docs/assets.md
+     * D54). Jen ve větvi bez skipProvisioning — migrovaný DS převezme řadu
+     * importem (Fáze 6); vyplněné nastavení se nepřepisuje.
+     *
+     * @param list<\Shipard\Core\Module\ModuleDefinition> $resolvedModules
+     */
+    private function provisionAssetPostingSeries(
+        array $resolvedModules,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning economy.assets accounting series...', OutputInterface::VERBOSITY_VERBOSE);
+
+        if (!$this->isModuleActive($resolvedModules, 'economy.assets')
+            || !$this->isModuleActive($resolvedModules, 'docs.core')
+        ) {
+            $output->writeln('  <comment>[SKIP] economy.assets module not active</comment>', OutputInterface::VERBOSITY_VERBOSE);
+            return;
+        }
+
+        $settings = new SettingsStore($dsConnection);
+        $result = (new AssetPostingSeriesProvisioner($dsConnection, $settings))->provision();
+
+        $this->logProvisioningResult($output, 'asset accounting series', $result);
+
+        // Zaúčtování přiznání DPH si bez nastavení bere jedinou aktivní řadu
+        // cmnbkp. Nová řada „Majetek“ by z jediné udělala dvě a přiznání by
+        // přestalo jít zaúčtovat — proto tu dosavadní jedinou řadu rovnou
+        // zafixujeme do nastavení DPH. Jen ve chvíli, kdy řadu zakládá
+        // systém; vyplněné nastavení ani víc řad se nepřepisují.
+        if ($result['created'] === 1
+            && $this->isModuleActive($resolvedModules, 'economy.vat')
+            && $settings->get(VatReturnAccountingService::SETTING_SERIES) === null
+        ) {
+            $others = $dsConnection->fetchAll(
+                'SELECT `id` FROM `docs_core_number_series` WHERE `doc_type` = %s AND `docState` IN %in AND `id` <> %i',
+                AssetPostingSeries::DOC_TYPE,
+                AssetPostingSeries::ACTIVE_STATES,
+                (int) $result['seriesId'],
+            );
+            if (count($others) === 1) {
+                $settings->set(VatReturnAccountingService::SETTING_SERIES, (string) (int) $others[0]['id']);
+                $output->writeln(sprintf(
+                    '  [SET]    %s = %d (dosavadní jediná řada účetních dokladů)',
+                    VatReturnAccountingService::SETTING_SERIES,
+                    (int) $others[0]['id'],
+                ));
+            }
+        }
     }
 
     /**

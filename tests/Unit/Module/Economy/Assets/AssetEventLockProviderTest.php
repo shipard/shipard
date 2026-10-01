@@ -124,6 +124,32 @@ class AssetEventLockProviderTest extends TestCase
         );
     }
 
+    public function testPostedEventIsLockedByItsLiveDocument(): void
+    {
+        // D52: zaúčtováno = navázaný doklad mimo Storno / Smazáno.
+        $activation = $this->event('activation', 'both', '2023-05-10', ['doc_head' => 950]);
+        $this->provider->documents = [950 => '60MA230001'];
+
+        $reasons = $this->provider->lockReasons('economy_assets_events', ['docState' => 80] + $activation, $activation);
+
+        $this->assertCount(1, $reasons);
+        $this->assertSame(AssetEventLockProvider::SOURCE_POSTED, $reasons[0]->source);
+        $this->assertSame('Zaúčtováno dokladem 60MA230001', $reasons[0]->title);
+        $this->assertSame(401, $reasons[0]->subjectTableId);
+        $this->assertSame(950, $reasons[0]->subjectRowId);
+    }
+
+    public function testEventOfCancelledDocumentOrWithoutDocumentIsNotLockedByPosting(): void
+    {
+        // Stornovaný doklad provider nedohledá; událost bez vazby se neptá.
+        $cancelled = $this->event('activation', 'both', '2023-05-10', ['doc_head' => 951]);
+        $this->assertSame([], $this->sources($cancelled, $cancelled));
+
+        $unposted = $this->event('activation', 'both', '2023-05-10', ['doc_head' => null]);
+        $this->assertSame([], $this->sources($unposted, $unposted));
+        $this->assertSame([951], $this->provider->documentQueries);
+    }
+
     public function testWithoutDbNothingIsLocked(): void
     {
         $provider = new TestableAssetEventLockProvider();
@@ -141,6 +167,16 @@ class TestableAssetEventLockProvider extends AssetEventLockProvider
     public array $lockedMonths = [];
     /** @var array{int, string, int}|null */
     public ?array $lastQuery = null;
+    /** @var array<int, string> živé účetní doklady: id → číslo */
+    public array $documents = [];
+    /** @var list<int> */
+    public array $documentQueries = [];
+
+    protected function postingDocument(int $docHeadId): ?array
+    {
+        $this->documentQueries[] = $docHeadId;
+        return isset($this->documents[$docHeadId]) ? ['doc_number' => $this->documents[$docHeadId]] : null;
+    }
 
     protected function confirmedDepreciationsFrom(int $assetId, string $fromDate, int $excludeId): array
     {

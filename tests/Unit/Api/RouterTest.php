@@ -1308,4 +1308,24 @@ class RouterTest extends TestCase
 		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_assets/depreciation-run', 'GET'));
 		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_assets/depreciation-run/preview', 'POST'));
 	}
+
+	// Majetek — odpisy a zaúčtování za období (docs/assets.md D50–D55)
+	public function testAssetsPostingRoutes(): void
+	{
+		$preview = $this->router->resolve('/api/v1/_assets/posting/preview', 'GET');
+		$this->assertInstanceOf(Route::class, $preview);
+		$this->assertRoute($preview, 'assets', 'postingPreview');
+
+		$post = $this->router->resolve('/api/v1/_assets/posting', 'POST');
+		$this->assertInstanceOf(Route::class, $post);
+		$this->assertRoute($post, 'assets', 'posting');
+
+		$cancel = $this->router->resolve('/api/v1/_assets/posting/cancel', 'POST');
+		$this->assertInstanceOf(Route::class, $cancel);
+		$this->assertRoute($cancel, 'assets', 'postingCancel');
+
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_assets/posting', 'GET'));
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_assets/posting/cancel', 'GET'));
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_assets/posting/preview', 'POST'));
+	}
 }

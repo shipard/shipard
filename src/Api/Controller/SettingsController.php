@@ -19,6 +19,7 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleResolver;
 use Shipard\Core\Navigation\NavItemVisibilityGate;
 use Shipard\Core\Settings\KeyValueStore;
+use Shipard\Core\Settings\SettingsOptionsProvider;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Settings\UserSettingsStore;
 use Shipard\Core\Utils\JsoncParser;
@@ -154,7 +155,7 @@ class SettingsController
         $store = $this->storeForPage($pageDef, $db, $auth);
 
         return Response::success([
-            'definition' => $this->localizePageDefinition($pageDef, $language),
+            'definition' => $this->localizePageDefinition($pageDef, $language, $db),
             'values'     => $this->buildPageValues($pageDef, $store),
         ]);
     }
@@ -302,7 +303,7 @@ class SettingsController
             } elseif ($type === 'select') {
                 // Hodnota z nabídky definice; prázdná = smazat klíč (čtenáři
                 // padnou na svůj výchozí stav).
-                $allowed = array_map(static fn(array $o): string => (string) $o['value'], $field['options'] ?? []);
+                $allowed = array_column($this->selectOptions($field, 'en', $db), 'value');
                 $value = $raw === null ? '' : (is_scalar($raw) ? (string) $raw : null);
                 if ($value === null || ($value !== '' && !in_array($value, $allowed, true))) {
                     $errors[] = ['field' => $id, 'code' => 'INVALID_VALUE', 'message' => 'Value is not one of the options'];
@@ -345,7 +346,47 @@ class SettingsController
         return null;
     }
 
-    private function localizePageDefinition(array $page, string $language): array
+    /**
+     * Nabídka pole `select`: dynamická z `optionsProvider`, jinak pevná
+     * z definice (lokalizovaná). Nedostupný provider (třída chybí, není
+     * provider, výjimka) = prázdná nabídka + log — pole pak nejde uložit,
+     * což je bezpečnější než přijmout cokoli.
+     *
+     * @param array<string, mixed> $field
+     * @return list<array{value: string, label: string}>
+     */
+    private function selectOptions(array $field, string $language, ?DataSourceConnection $db): array
+    {
+        $provider = $field['optionsProvider'] ?? null;
+        if (is_string($provider) && $provider !== '') {
+            if ($db === null) {
+                return [];
+            }
+            try {
+                if (!class_exists($provider) || !is_a($provider, SettingsOptionsProvider::class, true)) {
+                    throw new \LogicException("Settings optionsProvider '{$provider}' is not a SettingsOptionsProvider");
+                }
+                $options = [];
+                foreach ((new $provider())->options($db, $language) as $option) {
+                    $options[] = ['value' => (string) $option['value'], 'label' => (string) $option['label']];
+                }
+                return $options;
+            } catch (\Throwable $e) {
+                ErrorLogger::logException($e, "Settings field '{$field['id']}': optionsProvider failed");
+                return [];
+            }
+        }
+
+        return array_map(
+            static fn(array $o): array => [
+                'value' => (string) $o['value'],
+                'label' => (string) ($o['label:' . $language] ?? $o['label:en'] ?? $o['label'] ?? $o['value']),
+            ],
+            $field['options'] ?? [],
+        );
+    }
+
+    private function localizePageDefinition(array $page, string $language, ?DataSourceConnection $db = null): array
     {
         $fields = [];
         foreach ($page['fields'] as $field) {
@@ -365,13 +406,7 @@ class SettingsController
                 $localized['slot'] = $field['slot'];
             }
             if ($field['type'] === 'select') {
-                $localized['options'] = array_map(
-                    fn(array $o): array => [
-                        'value' => (string) $o['value'],
-                        'label' => (string) ($o['label:' . $language] ?? $o['label:en'] ?? $o['label'] ?? $o['value']),
-                    ],
-                    $field['options'] ?? [],
-                );
+                $localized['options'] = $this->selectOptions($field, $language, $db);
             }
             $fields[] = $localized;
         }

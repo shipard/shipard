@@ -131,6 +131,16 @@ exempt nejsou.
    default). Definice jde na klienta s lokalizovanými `options` (`value`,
    `label`), renderuje `ui/Select`. První uživatel:
    `economy.assets.accPeriodicity` (stránka Odpisy, `year` / `month`).
+   **Dynamická nabídka** (číselník z dat zdroje, který nejde vypsat do
+   JSONC): místo `options` atribut `optionsProvider` = FQCN třídy
+   implementující `Shipard\Core\Settings\SettingsOptionsProvider`
+   (`options(DataSourceConnection $db, string $language)` →
+   `[{value, label}]`, instanciuje se bez argumentů). `SettingsController`
+   nabídku dosadí do definice pro klienta (název třídy neposílá) a při
+   uložení přijme jen hodnotu z ní; nedostupný provider = prázdná nabídka
+   + log. Frontend se nemění. První uživatel:
+   `economy.assets.accountingSeries` (řady účetních dokladů,
+   `AssetPostingSeries`).
 4. `vendor/bin/shpd-ds ds-upgrade` v dev DS (kvůli rekompilaci
    settingsSections, pokud přibyla sekce).
 5. Hodnoty čti v PHP přes `new SettingsStore($db)->get('klíč')` s fallbackem

@@ -290,10 +290,30 @@ class SettingsControllerTest extends TestCase
         file_put_contents($this->dsDir . '/config/main.json', json_encode($main));
     }
 
+    /**
+     * DB pro stránku Odpisy: nastavení + řady účetních dokladů pro
+     * dynamickou nabídku pole (optionsProvider).
+     *
+     * @param list<array<string, mixed>> $settings
+     */
+    private function assetsDb(array $settings = []): DataSourceConnection
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(
+            static fn(mixed ...$args): array => str_contains((string) $args[0], 'docs_core_number_series')
+                ? [
+                    ['id' => 3, 'name' => 'Účetní doklad', 'doc_number_code' => null],
+                    ['id' => 77, 'name' => 'Majetek', 'doc_number_code' => 'MA'],
+                ]
+                : $settings,
+        );
+        return $db;
+    }
+
     public function testPageSelectFieldCarriesLocalizedOptions(): void
     {
         $this->withAssetsModule();
-        $db = $this->mockDb([
+        $db = $this->assetsDb([
             ['key' => 'economy.assets.accPeriodicity', 'value' => json_encode('month')],
         ]);
 
@@ -310,10 +330,55 @@ class SettingsControllerTest extends TestCase
         $this->assertSame('month', $data['values']['economy.assets.accPeriodicity']);
     }
 
+    public function testPageSelectOptionsComeFromProvider(): void
+    {
+        // Řada účetních dokladů majetku (assets D54): nabídka z dat zdroje.
+        $this->withAssetsModule();
+        $db = $this->assetsDb([
+            ['key' => 'economy.assets.accountingSeries', 'value' => json_encode('77')],
+        ]);
+
+        $resp = $this->ctrl->page('assetsDepreciation', $this->config(), $this->resolver, 'cs', $this->auth(), $db);
+        $data = $resp->getPayload()['data'];
+
+        $field = array_column($data['definition']['fields'], null, 'id')['economy.assets.accountingSeries'];
+        $this->assertSame('select', $field['type']);
+        $this->assertSame('Řada účetních dokladů majetku', $field['label']);
+        $this->assertSame(
+            [['value' => '3', 'label' => 'Účetní doklad'], ['value' => '77', 'label' => 'Majetek (MA)']],
+            $field['options'],
+        );
+        $this->assertArrayNotHasKey('optionsProvider', $field, 'třída provideru na klienta nejde');
+        $this->assertSame('77', $data['values']['economy.assets.accountingSeries']);
+    }
+
+    public function testSavePageProviderSelectAcceptsOnlyOfferedValues(): void
+    {
+        $this->withAssetsModule();
+        $db = $this->assetsDb();
+        $db->expects($this->once())->method('execute');
+
+        $resp = $this->ctrl->savePage(
+            'assetsDepreciation',
+            $this->saveRequest(['values' => ['economy.assets.accountingSeries' => '77']]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+        $this->assertSame(200, $this->getStatus($resp));
+
+        // Řada jiného typu / neexistující id v nabídce není.
+        $resp = $this->ctrl->savePage(
+            'assetsDepreciation',
+            $this->saveRequest(['values' => ['economy.assets.accountingSeries' => '1']]),
+            $this->config(), $this->resolver, $this->auth(), $this->assetsDb(),
+        );
+        $this->assertSame(422, $this->getStatus($resp));
+        $this->assertSame('INVALID_VALUE', $resp->getPayload()['error']['details'][0]['code']);
+    }
+
     public function testSavePageSelectAcceptsOnlyOptionValues(): void
     {
         $this->withAssetsModule();
-        $db = $this->mockDb();
+        $db = $this->assetsDb();
         $db->expects($this->once())->method('execute');
 
         $resp = $this->ctrl->savePage(
@@ -327,7 +392,7 @@ class SettingsControllerTest extends TestCase
         $resp = $this->ctrl->savePage(
             'assetsDepreciation',
             $this->saveRequest(['values' => ['economy.assets.accPeriodicity' => 'weekly']]),
-            $this->config(), $this->resolver, $this->auth(), $this->mockDb(),
+            $this->config(), $this->resolver, $this->auth(), $this->assetsDb(),
         );
         $this->assertSame(422, $this->getStatus($resp));
         $this->assertSame('INVALID_VALUE', $resp->getPayload()['error']['details'][0]['code']);
@@ -336,7 +401,7 @@ class SettingsControllerTest extends TestCase
     public function testSavePageSelectEmptyDeletesKey(): void
     {
         $this->withAssetsModule();
-        $db = $this->mockDb();
+        $db = $this->assetsDb();
         $db->expects($this->never())->method('execute');
         $db->expects($this->once())->method('deleteWhere');
 
