@@ -104,6 +104,50 @@ async function apiRequest(method, path, body = null, isRetry = false) {
   return payload;
 }
 
+/**
+ * GET binárního souboru (např. export reportu) — stejná auth a retry po
+ * refreshi tokenu jako apiRequest. Úspěch vrací tělo jako Blob + hlavičky
+ * odpovědi; chybová odpověď serveru je dál JSON obálka.
+ *
+ * @param {string} path - relative to /api/v1
+ * @param {boolean} isRetry
+ * @returns {Promise<{success: true, blob: Blob, headers: Headers}
+ *   |{success: false, error: {code: string, message: string}}|null>} null = 401
+ */
+export async function getBlob(path, isRetry = false) {
+  const headers = { 'Accept-Language': language.current };
+  const token = getToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, { method: 'GET', headers });
+  } catch {
+    return { success: false, error: { code: 'NETWORK_ERROR', message: 'Network error' } };
+  }
+
+  if (response.status === 401 && !isRetry) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      return getBlob(path, true);
+    }
+    clearToken();
+    return null;
+  }
+
+  if (!response.ok) {
+    try {
+      return await response.json();
+    } catch {
+      return { success: false, error: { code: 'HTTP_ERROR', message: `HTTP ${response.status}` } };
+    }
+  }
+
+  return { success: true, blob: await response.blob(), headers: response.headers };
+}
+
 export function get(path) {
   return apiRequest('GET', path);
 }

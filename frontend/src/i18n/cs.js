@@ -911,6 +911,10 @@ export default {
   'reports.retry': 'Zkusit znovu',
   'reports.noPeriods': 'Nejsou definována žádná fiskální období',
   'reports.unknownReport': 'Neznámý report',
+  'reports.export.label': 'Export',
+  'reports.export.xlsx': 'Excel (XLSX)',
+  'reports.export.csv': 'CSV',
+  'reports.export.failed': 'Export se nepodařil',
 
   // ── Majetek — Odpisy za období ──────────────────────────────────────────
   'assets.depreciationRun.title': 'Odpisy za období',

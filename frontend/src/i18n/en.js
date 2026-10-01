@@ -898,6 +898,10 @@ export default {
   'reports.retry': 'Retry',
   'reports.noPeriods': 'No fiscal periods are defined',
   'reports.unknownReport': 'Unknown report',
+  'reports.export.label': 'Export',
+  'reports.export.xlsx': 'Excel (XLSX)',
+  'reports.export.csv': 'CSV',
+  'reports.export.failed': 'Export failed',
 
   // ── Assets — depreciation for period ────────────────────────────────────
   'assets.depreciationRun.title': 'Depreciation for period',

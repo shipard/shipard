@@ -15,10 +15,16 @@
   import VatPeriodPicker from './VatPeriodPicker.svelte';
   import ReportView from './ReportView.svelte';
   import Select from '../ui/Select.svelte';
+  import Button from '../ui/Button.svelte';
+  import Popover from '../ui/Popover.svelte';
+  import { iconDownload } from '../../icons.js';
+  import { noticeStore } from '../../stores/notice.svelte.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
   import { navigationStore } from '../../stores/navigation.svelte.js';
-  import { fetchReportCatalog, runReport, defaultPeriod, defaultVatPeriod, hasVatPeriod } from '../../api/reports.js';
+  import {
+    fetchReportCatalog, runReport, downloadReport, defaultPeriod, defaultVatPeriod, hasVatPeriod,
+  } from '../../api/reports.js';
 
   let { item } = $props();
 
@@ -186,6 +192,25 @@
     const saved = reportId ? sessionState.get(reportId) : null;
     if (saved) saved.thousands = value;
   }
+
+  // Export (XLSX / CSV) — stejné parametry jako zobrazený výsledek; proto
+  // jen s načteným výsledkem a ne během načítání nového. „V tisících" se
+  // do exportu nepromítá (čísla vždy přesně).
+  const exportFormats = ['xlsx', 'csv'];
+  let exportOpen = $state(false);
+  let exportAnchor = $state(null);
+  let exporting = $state(false);
+
+  async function exportReport(format) {
+    exportOpen = false;
+    if (!reportId || !params || exporting) return;
+    exporting = true;
+    const res = await downloadReport(reportId, params, format);
+    exporting = false;
+    if (res !== null && !res.success) {
+      noticeStore.show(`${t('reports.export.failed')}: ${translateError(res.error)}`);
+    }
+  }
 </script>
 
 <div class="shpd-reports">
@@ -230,8 +255,35 @@
           onclick={() => setThousands(true)}
         >{t('reports.format.thousands')}</button>
       </div>
+      <span class="shpd-reports__export" bind:this={exportAnchor}>
+        <Button
+          label={t('reports.export.label')}
+          icon={iconDownload}
+          variant="secondary"
+          size="sm"
+          disabled={!result || loading}
+          loading={exporting}
+          onclick={() => { exportOpen = !exportOpen; }}
+          testid="report-export"
+        />
+      </span>
     {/if}
   </div>
+
+  {#if exportOpen}
+    <Popover open={true} anchor={exportAnchor} placement="bottom" onClose={() => { exportOpen = false; }}>
+      <div class="shpd-reports__export-menu">
+        {#each exportFormats as format (format)}
+          <button
+            type="button"
+            class="shpd-reports__export-item"
+            data-testid="report-export-{format}"
+            onclick={() => exportReport(format)}
+          >{t(`reports.export.${format}`)}</button>
+        {/each}
+      </div>
+    </Popover>
+  {/if}
 
   <div class="shpd-reports__body">
     {#if catalogError}
@@ -311,6 +363,28 @@
     border-color: var(--shpd-color-accent);
     background-color: var(--shpd-color-bg-secondary);
     font-weight: 500;
+  }
+
+  .shpd-reports__export-menu {
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+    padding: 4px 0;
+  }
+
+  .shpd-reports__export-item {
+    text-align: left;
+    padding: 10px 14px;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-text);
+    cursor: pointer;
+  }
+
+  .shpd-reports__export-item:hover {
+    background-color: var(--shpd-color-bg-hover);
   }
 
   .shpd-reports__body {

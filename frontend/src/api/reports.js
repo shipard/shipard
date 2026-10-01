@@ -4,11 +4,14 @@
  *   GET /_reports/{reportId}   — run a report; query = params
  *                                (fiscalYear, monthFrom, monthTo, detail)
  *
+ *                                + format=xlsx|csv → file download (export)
+ *
  * Result with `status: errors` is HTTP 200 — a data error is not a request
  * error; the renderer shows it (badge + red rows), it is not a fetch failure.
  */
 
-import { get } from './client.js';
+import { get, getBlob } from './client.js';
+import { fileNameFromContentDisposition, saveBlob } from '../utils/download.js';
 
 /**
  * @returns {Promise<{success: boolean, data?: {items: Array<{id: string, name: string,
@@ -31,6 +34,30 @@ export async function fetchReportCatalog() {
  * @returns {Promise<{success: boolean, data?: object, error?: object}>} data = ReportResult
  */
 export async function runReport(reportId, params) {
+  return await get(`/_reports/${encodeURIComponent(reportId)}?${reportQuery(params)}`);
+}
+
+/**
+ * Stáhne export reportu (docs/reports.md §15) se stejnými parametry jako
+ * zobrazený výsledek. Název souboru určuje server (Content-Disposition).
+ *
+ * @param {string} reportId
+ * @param {object} params stejné jako u runReport
+ * @param {'xlsx'|'csv'} format
+ * @returns {Promise<{success: boolean, error?: object}|null>} null = 401
+ */
+export async function downloadReport(reportId, params, format) {
+  const query = reportQuery(params);
+  query.set('format', format);
+  const res = await getBlob(`/_reports/${encodeURIComponent(reportId)}?${query}`);
+  if (res === null || !res.success) return res;
+  const fileName = fileNameFromContentDisposition(res.headers.get('Content-Disposition'))
+    ?? `report.${format}`;
+  saveBlob(res.blob, fileName);
+  return { success: true };
+}
+
+function reportQuery(params) {
   const entries = params.period != null
     ? { period: String(params.period) }
     : {
@@ -39,8 +66,7 @@ export async function runReport(reportId, params) {
         monthTo: String(params.monthTo),
       };
   if (params.detail !== undefined) entries.detail = params.detail;
-  const query = new URLSearchParams(entries);
-  return await get(`/_reports/${encodeURIComponent(reportId)}?${query}`);
+  return new URLSearchParams(entries);
 }
 
 /**
