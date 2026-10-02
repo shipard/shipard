@@ -12,7 +12,8 @@ use Shipard\Core\Database\DataSourceConnection;
  * záznam už je načtený a ověřený proti deklaraci (tabulka, filtr, stav).
  *
  * `config` je konfigurace **v jazyce tisku**, ne v jazyce requestu: popisky
- * číselníků řeší builder v jazyce tisku (#90 D13).
+ * číselníků řeší builder v jazyce tisku (#90 D13). `translator` nese
+ * sloučený katalog tisku ve stejném jazyce.
  */
 final class PrintRequest
 {
@@ -24,5 +25,6 @@ final class PrintRequest
         public readonly string $language,
         public readonly DataSourceConnection $db,
         public readonly ?ConfigRuntime $config,
+        public readonly PrintTranslator $translator,
     ) {}
 }

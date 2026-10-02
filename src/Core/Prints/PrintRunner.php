@@ -36,6 +36,7 @@ final class PrintRunner
         \Closure $configFactory,
         private readonly PrintLanguageResolver $languages,
         private readonly ?BrandingStorage $branding = null,
+        private readonly ?PrintCatalogLoader $catalogs = null,
         ?\Closure $clock = null,
     ) {
         $this->configFactory = $configFactory;
@@ -87,6 +88,8 @@ final class PrintRunner
             language: $language,
             db: $this->db,
             config: ($this->configFactory)($language),
+            translator: $this->catalogs?->translator($definition, $language)
+                ?? new PrintTranslator([], $language),
         ));
 
         $printData = new PrintData(

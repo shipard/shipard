@@ -79,7 +79,7 @@ class PrintRunnerTest extends TestCase
             },
             new PrintLanguageResolver($defaultLanguage),
             $branding,
-            static fn (): \DateTimeImmutable => new \DateTimeImmutable('2026-10-02T10:30:00+02:00'),
+            clock: static fn (): \DateTimeImmutable => new \DateTimeImmutable('2026-10-02T10:30:00+02:00'),
         );
     }
 

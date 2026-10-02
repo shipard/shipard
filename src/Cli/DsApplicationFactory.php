@@ -56,6 +56,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\BookingHistoryCommand());
         $app->add(new \Shipard\Command\DataSource\ReportRunCommand());
         $app->add(new \Shipard\Command\DataSource\ReportDiffCommand());
+        $app->add(new \Shipard\Command\DataSource\PrintRunCommand());
         $app->add(new \Shipard\Command\DataSource\VatPeriodsEnsureCommand());
         $app->add(new \Shipard\Command\DataSource\VatFilingComposeCommand());
         $app->add(new \Shipard\Command\DataSource\VatFilingFilesCommand());

@@ -1,0 +1,19 @@
+// Tisky faktury vydané (#90). Builder, layout a dílčí bloky šablony jsou
+// sdílené v docs.core; tady je deklarace a tenká stránková šablona.
+[
+    {
+        "id": "docs.invoicesOut.invoice",
+        "name": "Invoice",
+        "name:cs": "Faktura",
+        "name:en": "Invoice",
+        "table": "docs_core_heads",
+        "filter": { "doc_type": ["invno"] },
+        "docStates": [40],
+        "audience": "external",
+        "builder": "Shipard\\Module\\Docs\\Core\\Prints\\DocPrintBuilder",
+        "template": "@docs.invoicesOut/invoice",
+        "catalogs": ["@docs.core/_layout"],
+        "paper": { "format": "A4", "orientation": "portrait" },
+        "order": 10
+    }
+]

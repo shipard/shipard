@@ -103,6 +103,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>booking-history</info>         Zpracuje soubor účetní historie (report kvality, seed pravidel IČO→štítek, otagování položek)');
         $output->writeln('  <info>report-run</info>              Spustí report a vypíše ReportResult jako JSON na stdout; --param id=hodnota = parametr reportu; --format=xlsx|csv [--output=<soubor>] = export');
         $output->writeln('  <info>report-diff</info>             Porovná dva ReportResult JSON soubory (kontrolní diff)');
+        $output->writeln('  <info>print-run</info>               Spustí tisk nad záznamem: PrintData jako JSON na stdout; --format=pdf --output=<soubor> = PDF; --language=cs|en');
         $output->writeln('  <info>vat-periods-ensure</info>      Zajistí instance daňových tvrzení (přiznání/KH/SH) pro dnešek a zítřek — denní cron');
         $output->writeln('  <info>vat-filing-compose</info>      Sestaví podání DPH za instanci tvrzení, nebo přepočítá snapshot konceptu');
         $output->writeln('  <info>vat-filing-files</info>        Vyrobí soubory podání DPH pro daňový portál (XML, PDF opis)');

@@ -1,0 +1,6 @@
+// Katalog tisku zálohové faktury vydané — titulek a název souboru.
+// Společné klíče dokladů jsou v @docs.core/_layout.
+{
+    "title.proforma":    { "cs": "Zálohová faktura", "en": "Proforma invoice" },
+    "fileName.proforma": { "cs": "zalohova-faktura", "en": "proforma-invoice" }
+}

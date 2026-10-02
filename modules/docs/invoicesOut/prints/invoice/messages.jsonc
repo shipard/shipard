@@ -1,0 +1,8 @@
+// Katalog tisku faktury vydané — titulky podle varianty (#90 D16) a název
+// souboru. Společné klíče dokladů jsou v @docs.core/_layout.
+{
+    "title.invoiceVatPayer":       { "cs": "Faktura – daňový doklad", "en": "Invoice – tax document" },
+    "title.invoiceNonVatPayer":    { "cs": "Faktura", "en": "Invoice" },
+    "fileName.invoiceVatPayer":    { "cs": "faktura", "en": "invoice" },
+    "fileName.invoiceNonVatPayer": { "cs": "faktura", "en": "invoice" }
+}

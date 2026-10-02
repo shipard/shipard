@@ -41,5 +41,9 @@
                 "invno": "Shipard\\Module\\Docs\\InvoicesOut\\IssuedInvoiceForm"
             }
         }
+    ],
+
+    "prints": [
+        { "file": "config/prints.jsonc" }
     ]
 }

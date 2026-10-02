@@ -1,0 +1,21 @@
+// Společný katalog tisků dokladů (#90 D8) — klíče sdílené layoutem, dílčími
+// bloky šablon a builderem. Titulky a název souboru má katalog typu dokladu.
+{
+    // Měkká hlášení builderu (PrintData.messages)
+    "message.qrNoAccount": {
+        "cs": "QR platba na dokladu chybí — doklad nemá bankovní účet s IBAN.",
+        "en": "The payment QR code is missing — the document has no bank account with an IBAN."
+    },
+    "message.qrSkipped.paymentReference": {
+        "cs": "QR platba neobsahuje variabilní symbol — smí mít jen číslice, nejvýš 10.",
+        "en": "The payment QR code carries no variable symbol — only digits are allowed, 10 at most."
+    },
+    "message.qrSkipped.specificSymbol": {
+        "cs": "QR platba neobsahuje specifický symbol — smí mít jen číslice, nejvýš 10.",
+        "en": "The payment QR code carries no specific symbol — only digits are allowed, 10 at most."
+    },
+    "message.qrSkipped.constantSymbol": {
+        "cs": "QR platba neobsahuje konstantní symbol — smí mít jen číslice, nejvýš 10.",
+        "en": "The payment QR code carries no constant symbol — only digits are allowed, 10 at most."
+    }
+}

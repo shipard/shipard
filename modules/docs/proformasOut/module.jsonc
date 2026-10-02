@@ -41,5 +41,9 @@
                 "invpo": "Shipard\\Module\\Docs\\ProformasOut\\ProformaOutForm"
             }
         }
+    ],
+
+    "prints": [
+        { "file": "config/prints.jsonc" }
     ]
 }
