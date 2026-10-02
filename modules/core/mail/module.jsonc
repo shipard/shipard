@@ -215,6 +215,10 @@
             "file": "config/analysisStates.jsonc"
         },
         {
+            "id": "core.mail.analysisErrorKinds",
+            "file": "config/analysisErrorKinds.jsonc"
+        },
+        {
             "id": "core.mail.primaryTypeSources",
             "file": "config/primaryTypeSources.jsonc"
         },

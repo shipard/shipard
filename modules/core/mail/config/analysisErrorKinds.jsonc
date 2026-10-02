@@ -1,0 +1,146 @@
+{
+    // core.mail.analysisErrorKinds
+    //
+    // Katalog lidských hlášek pro selhanou AI analýzu došlé zprávy
+    // (tasks/mail-analysis-error-messages.md, D1–D2). Klíč = kategorie,
+    // kterou AnalysisErrorPresenter odvozuje z textu
+    // `core_mail_message_analyses.error_message` — prefix `[typ]`
+    // a u `schema_error` tvar hlášky z analyzeru (žádný sloupec typu
+    // chyby, D1). Neznámý nebo vícenásobný tvar padá do `schemaOther`
+    // / `unknown`. Kategorie `invalidOutput` nemá error_message — patří
+    // k forenznímu wrapperu `_validationError` v canonical_json
+    // úspěšného běhu (D5).
+    //
+    // Pole kategorie: `name` = titulek, `description` = vysvětlení (čí
+    // je to chyba), `detail` = volitelná věta se zástupnými `{key}`
+    // (nepovolený klíč) a `{path}` (cesta v návrhu, tečkovaná). Chybí-li
+    // hodnota zástupného symbolu, presenter větu vynechá.
+    //
+    // Rezervovaný klíč `_common` nese společné texty: popisky řádků
+    // detailu karty na Dashboardu a dvě varianty hintu „co dělat" (D4) —
+    // podle toho, zda má výchozí aktivní profil novější prompt než
+    // selhaný běh.
+    //
+    // Texty čte uživatel na Dashboardu a v detailu zprávy: bez názvů
+    // tříd, bez hodnot z dokladu (ty nese jen technická hláška, sbalená).
+
+    "schemaAdditionalProperty": {
+        "name": "AI returned data in an unexpected shape",
+        "name:cs": "AI vrátila data v nečekaném tvaru",
+        "name:en": "AI returned data in an unexpected shape",
+        "description": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "description:cs": "Není to chyba ve zprávě ani v příloze, ale v nastavení analýzy Shipardu.",
+        "description:en": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "detail": "AI added a field \"{key}\" ({path}) that the document format does not know.",
+        "detail:cs": "AI přidala pole „{key}“ ({path}), které formát dokladu nezná.",
+        "detail:en": "AI added a field \"{key}\" ({path}) that the document format does not know."
+    },
+    "schemaTooLong": {
+        "name": "AI returned data in an unexpected shape",
+        "name:cs": "AI vrátila data v nečekaném tvaru",
+        "name:en": "AI returned data in an unexpected shape",
+        "description": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "description:cs": "Není to chyba ve zprávě ani v příloze, ale v nastavení analýzy Shipardu.",
+        "description:en": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "detail": "The value in field {path} is longer than the format allows.",
+        "detail:cs": "Hodnota v poli {path} je delší, než formát dovoluje.",
+        "detail:en": "The value in field {path} is longer than the format allows."
+    },
+    "schemaEnum": {
+        "name": "AI returned data in an unexpected shape",
+        "name:cs": "AI vrátila data v nečekaném tvaru",
+        "name:en": "AI returned data in an unexpected shape",
+        "description": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "description:cs": "Není to chyba ve zprávě ani v příloze, ale v nastavení analýzy Shipardu.",
+        "description:en": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "detail": "The value in field {path} is not one of the allowed options.",
+        "detail:cs": "Hodnota v poli {path} není z povolených možností.",
+        "detail:en": "The value in field {path} is not one of the allowed options."
+    },
+    "schemaInvalidJson": {
+        "name": "AI returned data in an unexpected shape",
+        "name:cs": "AI vrátila data v nečekaném tvaru",
+        "name:en": "AI returned data in an unexpected shape",
+        "description": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "description:cs": "Není to chyba ve zprávě ani v příloze, ale v nastavení analýzy Shipardu.",
+        "description:en": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "detail": "The AI response is not valid JSON.",
+        "detail:cs": "Odpověď AI není platný JSON.",
+        "detail:en": "The AI response is not valid JSON."
+    },
+    "schemaOther": {
+        "name": "AI returned data in an unexpected shape",
+        "name:cs": "AI vrátila data v nečekaném tvaru",
+        "name:en": "AI returned data in an unexpected shape",
+        "description": "This is not a problem with the message or its attachment, but with Shipard's analysis setup.",
+        "description:cs": "Není to chyba ve zprávě ani v příloze, ale v nastavení analýzy Shipardu.",
+        "description:en": "This is not a problem with the message or its attachment, but with Shipard's analysis setup."
+    },
+    "aiTruncated": {
+        "name": "The AI response did not fit within the limit",
+        "name:cs": "Odpověď AI se nevešla do limitu",
+        "name:en": "The AI response did not fit within the limit",
+        "description": "The document is too large for a single analysis, typically because it has many lines.",
+        "description:cs": "Doklad je na jednu analýzu příliš rozsáhlý, typicky má hodně řádků.",
+        "description:en": "The document is too large for a single analysis, typically because it has many lines."
+    },
+    "aiError": {
+        "name": "The AI service could not process the message",
+        "name:cs": "Službě AI se nepodařilo zprávu zpracovat",
+        "name:en": "The AI service could not process the message",
+        "description": "For example because of an unsupported or damaged attachment.",
+        "description:cs": "Například kvůli nepodporované nebo poškozené příloze.",
+        "description:en": "For example because of an unsupported or damaged attachment."
+    },
+    "configError": {
+        "name": "Error in the link between the analyzer and Shipard",
+        "name:cs": "Chyba propojení analyzátoru se Shipardem",
+        "name:en": "Error in the link between the analyzer and Shipard",
+        "description": "The problem is in Shipard's operation, not in the message.",
+        "description:cs": "Problém je v provozu Shipardu, ne ve zprávě.",
+        "description:en": "The problem is in Shipard's operation, not in the message."
+    },
+    "invalidOutput": {
+        "name": "AI returned an unusable proposal",
+        "name:cs": "AI vrátila nepoužitelný návrh",
+        "name:en": "AI returned an unusable proposal",
+        "description": "The proposal did not pass the document format check and cannot be used.",
+        "description:cs": "Návrh neprošel kontrolou formátu dokladu a nedá se použít.",
+        "description:en": "The proposal did not pass the document format check and cannot be used."
+    },
+    "unknown": {
+        "name": "Analysis failed",
+        "name:cs": "Analýza selhala",
+        "name:en": "Analysis failed",
+        "description": "Unknown kind of error.",
+        "description:cs": "Neznámý druh chyby.",
+        "description:en": "Unknown kind of error."
+    },
+
+    "_common": {
+        // Popisky řádků rozbalovacího detailu karty na Dashboardu (D3c).
+        "whatHappened": {
+            "name": "What happened",
+            "name:cs": "Co se stalo",
+            "name:en": "What happened"
+        },
+        "whatToDo": {
+            "name": "What to do",
+            "name:cs": "Co dělat",
+            "name:en": "What to do"
+        },
+        // Hint „co dělat" (D4): výchozí aktivní profil má novější prompt
+        // než selhaný běh → reanalýza je doporučená.
+        "hintReanalyze": {
+            "name": "The analysis has been updated since — try Reanalyze.",
+            "name:cs": "Analýza se mezitím aktualizovala — zkus Znova analyzovat.",
+            "name:en": "The analysis has been updated since — try Reanalyze."
+        },
+        // Stejná nebo neznámá verze → opakování dopadne stejně.
+        "hintManual": {
+            "name": "Repeating with the same analysis version will end the same way. Enter the document manually and let us know which message it was.",
+            "name:cs": "Opakování se stejnou verzí analýzy skončí stejně. Doklad zadej ručně a dej nám vědět, o jakou zprávu šlo.",
+            "name:en": "Repeating with the same analysis version will end the same way. Enter the document manually and let us know which message it was."
+        }
+    }
+}
