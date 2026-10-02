@@ -1,6 +1,6 @@
 # Tisky — Fáze 0 + 1: kontrakt `PrintData`, infrastruktura, faktura vydaná a zálohová
 
-**Stav:** částečně — kód, testy, nápověda a docs hotové 2026-10-02 (5 commitů, ověřeno na `4l3j-z0bz-kz39-echj` a čtením na `btpg-p`); odchylky od zadání na konci; zbývá ruční proklik náhledu PDF v prohlížeči a nasazení na alfu (`ds-upgrade` kvůli popiskům `world.vat` a akce Tisk)
+**Stav:** hotovo — 2026-10-02 (5 commitů; ověřeno na `4l3j-` a čtením na `btpg-p`, náhled a stažení PDF prokliknuté v prohlížeči); odchylky od zadání na konci
 
 > PRD pro Claude Code (5 commitů). Design: issue #90 (D1–D11 v těle,
 > D12–D21 v komentáři „Rozhodnutí: kontrakt `PrintData`, UI, endpoint,

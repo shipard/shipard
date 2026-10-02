@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 311 tasků: **naplánováno** 5 · **částečně** 19 · **hotovo** 287.
+Celkem 311 tasků: **naplánováno** 5 · **částečně** 18 · **hotovo** 288.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -42,7 +42,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
-| `prints-phase1.md` | částečně | kód, testy, nápověda a docs hotové 2026-10-02 (5 commitů, ověřeno na `4l3j-z0bz-kz39-echj` a čtením na `btpg-p`); odchylky od zadání na konci; zbývá ruční proklik náhledu PDF v prohlížeči a nasazení na alfu (`ds-upgrade` kvůli popiskům `world.vat` a akce Tisk) |
 | `taxes-phase01.md` | částečně | implementace kompletní (mapping, jádro reportů s periodSource vatPeriod + text/date sloupci, kalkulátory, buildery, UI, testy); zbývá ds-upgrade + proklik na dev DS a read-only ověření na alfě dle „Hotovo když" |
 | `vat-cs-mode.md` | částečně | shpd hotové 2026-09-11 (4 commity: sloupec + kalkulátor, formuláře |
 | `vat-filing-xml.md` | částečně | implementace hotová 2026-09-10 (commity 1–7), nálezy prvního běhu |
