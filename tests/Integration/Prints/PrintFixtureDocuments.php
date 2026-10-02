@@ -23,6 +23,7 @@ trait PrintFixtureDocuments
     private const PROFORMA_NUMBER = 'IT-PRINT-PRO';
     private const CASH_NUMBER     = 'IT-PRINT-CASH';
     private const RECEIPT_NUMBER  = 'IT-PRINT-REC';
+    private const GENERAL_NUMBER  = 'IT-PRINT-GEN';
 
     /** @var list<int> */
     private array $createdHeads = [];
@@ -58,6 +59,7 @@ trait PrintFixtureDocuments
     private function deleteHead(int $id): void
     {
         $dibi = $this->db->getDibiConnection();
+        $dibi->delete('economy_accounting_journal')->where('doc_head = %i', $id)->execute();
         $dibi->delete('docs_core_vat_recap')->where('doc_head = %i', $id)->execute();
         $dibi->delete('docs_core_rows')->where('doc_head = %i', $id)->execute();
         $dibi->delete('docs_core_heads')->where('id = %i', $id)->execute();
@@ -358,6 +360,64 @@ trait PrintFixtureDocuments
         ]]);
 
         return $headId;
+    }
+
+    /**
+     * Účetní doklad (`cmnbkp`) — typ bez směru obchodu a bez snapshotů stran.
+     */
+    private function insertGeneralDocument(): int
+    {
+        return $this->insertHead(['supplier' => null, 'customer' => null], [
+            'doc_type'         => 'cmnbkp',
+            'doc_number'       => self::GENERAL_NUMBER,
+            'doc_text'         => 'Zaúčtování mezd',
+            'vat_registration' => null,
+            'vat_mode'         => 0,
+            'doc_currency'     => 'czk',
+            'exchange_rate'    => 1.0,
+            'total_amount'     => 5000.0,
+        ]);
+    }
+
+    /**
+     * Řádky deníku fixture dokladu — vkládají se přímo, účtovací engine
+     * neběží. Každý řádek nese aspoň `account`, `account_number` a částky.
+     *
+     * @param list<array<string, mixed>> $rows
+     */
+    private function insertJournal(int $headId, array $rows): void
+    {
+        $dibi = $this->db->getDibiConnection();
+        foreach ($rows as $row) {
+            $dibi->insert('economy_accounting_journal', $row + [
+                'source_kind'     => 'doc',
+                'doc_head'        => $headId,
+                'accounting_date' => '2026-09-30',
+            ])->execute();
+        }
+        $dibi->update('docs_core_heads', ['accounting_state' => 1])->where('id = %i', $headId)->execute();
+    }
+
+    /**
+     * Účty rozvrhu DS pro řádky deníku fixture — názvy se v tisku berou
+     * aktuální, test je proto čte z DS.
+     *
+     * @return list<array{id: int, number: string, name: string}>
+     */
+    private function anyAccounts(int $count): array
+    {
+        $accounts = $this->db->fetchAll(
+            'SELECT [id], [number], [name] FROM [economy_accounting_accounts]'
+            . ' WHERE [docState] IN (10, 40, 80) AND CHAR_LENGTH([number]) = 6 ORDER BY [number] LIMIT %i',
+            $count,
+        );
+        if (count($accounts) < $count) {
+            $this->markTestSkipped('DS nemá dost účtů v rozvrhu.');
+        }
+        return array_map(
+            static fn (array $a): array => ['id' => (int) $a['id'], 'number' => (string) $a['number'], 'name' => (string) $a['name']],
+            $accounts,
+        );
     }
 
     /**

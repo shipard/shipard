@@ -442,6 +442,108 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('<tr class="row-item">', $document->html);
     }
 
+    // ── Kontace ─────────────────────────────────────────────────────────────
+
+    public function testJournalOfInvoiceInForeignCurrency(): void
+    {
+        $definition = self::definition('economy.accounting', 'economy.accounting.docJournal');
+        $document   = $this->render($definition, self::printData('docJournalInvoice', $definition->id));
+        $html       = $document->html;
+
+        // Záhlaví dokladů s titulkem Kontace a číslem dokladu, vlastní styly a zápatí.
+        $this->assertStringContainsString('Kontace', (string) $document->header);
+        $this->assertStringContainsString('IT-PRINT-INV', (string) $document->header);
+        $this->assertStringContainsString('<link rel="stylesheet" href="doc-journal.css">', $html);
+        $this->assertArrayHasKey('doc-journal.css', $document->assets);
+        $this->assertArrayHasKey('doc-base.css', $document->assets);
+        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', (string) $document->footer);
+
+        // Hlavička: strany, typ dokladu, data, stav účtování, měna a kurz.
+        $this->assertStringContainsString('Účetní jednotka', $html);
+        $this->assertStringContainsString('<h2>Partner</h2>', $html);
+        $this->assertStringContainsString('Odběratel Zkušební a.s.', $html);
+        $this->assertStringContainsString('Faktura vydaná', $html);
+        $this->assertStringContainsString('Účetní datum', $html);
+        $this->assertStringContainsString('Datum zdanitelného plnění', $html);
+        $this->assertStringContainsString('Zaúčtováno', $html);
+        $this->assertStringContainsString('1 EUR = 24,5 CZK', $html);
+
+        // Tabulka zápisů se sloupci v cizí měně a součtem.
+        $this->assertStringContainsString('Název účtu', $html);
+        $this->assertStringContainsString('<th class="col-num">MD EUR</th>', $html);
+        $this->assertStringContainsString('<th class="col-num">Dal EUR</th>', $html);
+        $this->assertSame(3, substr_count($html, '<tr class="row-item">'));
+        $this->assertStringContainsString('311000', $html);
+        $this->assertStringContainsString('Odběratelé', $html);
+        $this->assertStringContainsString('19' . self::NBSP . '864,60', $html);
+        $this->assertStringContainsString('810,80', $html);
+        $this->assertStringContainsString('<tr class="row-total">', $html);
+        $this->assertStringNotContainsString('row-error', $html);
+
+        // Bloky dokladu, které Kontace netiskne.
+        $this->assertStringNotContainsString('Způsob úhrady', $html);
+        $this->assertStringNotContainsString('Rekapitulace DPH', $html);
+        $this->assertStringNotContainsString('K úhradě', $html);
+        $this->assertStringNotContainsString('Děkujeme za včasnou úhradu.', $html, 'poznámka na doklad');
+
+        $this->assertStringContainsString('<div class="doc-signature">Zaúčtoval</div>', $html);
+    }
+
+    public function testJournalWithDimensionsErrorRowAndNoParties(): void
+    {
+        $definition = self::definition('economy.accounting', 'economy.accounting.docJournal');
+        $data = self::printData('docJournalInvoice', $definition->id, modify: static function (array $data): array {
+            // Účetní doklad v domácí měně, bez stran, s dimenzí a chybovým řádkem.
+            $data['document'] = ['type' => 'cmnbkp', 'tradeDir' => null, 'typeName' => 'Účetní doklad',
+                'currency' => 'CZK', 'exchangeRate' => null, 'foreignCurrency' => false] + $data['document'];
+            $data['dates']['duzp'] = null;
+            $data['accountingUnit'] = null;
+            $data['partner'] = null;
+            $data['accounting'] = ['state' => 2, 'stateLabel' => 'Chyba účtování'];
+            $data['dimensions'] = [['id' => 'asset', 'label' => 'Majetek']];
+            $data['journal'] = [
+                ['accountNumber' => '022000', 'accountName' => 'Stroje', 'text' => 'Zařazení', 'debit' => 5000, 'credit' => null,
+                 'debitCur' => null, 'creditCur' => null, 'dimensions' => ['asset' => 'M-0001 Tiskový stroj'], 'isError' => false],
+                ['accountNumber' => '???', 'accountName' => null, 'text' => null, 'debit' => null, 'credit' => 5000,
+                 'debitCur' => null, 'creditCur' => null, 'dimensions' => ['asset' => null], 'isError' => true],
+            ];
+            $data['totals'] = ['debit' => 5000, 'credit' => 5000, 'debitCur' => null, 'creditCur' => null];
+            return $data;
+        });
+
+        $document = $this->render($definition, $data);
+        $html     = $document->html;
+
+        $this->assertStringNotContainsString('Účetní jednotka', $html);
+        $this->assertStringNotContainsString('<h2>Partner</h2>', $html);
+        $this->assertStringNotContainsString('party--customer', $html);
+        $this->assertStringNotContainsString('Datum zdanitelného plnění', $html);
+        $this->assertStringContainsString('Chyba účtování', $html);
+
+        $this->assertStringContainsString('<th>Majetek</th>', $html);
+        $this->assertStringContainsString('M-0001 Tiskový stroj', $html);
+        $this->assertSame(1, substr_count($html, '<tr class="row-error">'));
+        $this->assertStringNotContainsString('MD CZK', $html, 'domácí měna bez sloupců měny');
+        $this->assertStringContainsString('.row-error', $document->assets['doc-journal.css']);
+    }
+
+    public function testJournalWithoutEntriesSaysSo(): void
+    {
+        $definition = self::definition('economy.accounting', 'economy.accounting.docJournal');
+        $data = self::printData('docJournalInvoice', $definition->id, 'en', static function (array $data): array {
+            $data['journal'] = [];
+            $data['totals']  = ['debit' => 0, 'credit' => 0, 'debitCur' => 0, 'creditCur' => 0];
+            return $data;
+        });
+
+        $html = $this->render($definition, $data)->html;
+
+        $this->assertStringContainsString('The document has no accounting entries.', $html);
+        $this->assertStringNotContainsString('row-total', $html);
+        $this->assertStringContainsString('Accounting unit', $html);
+        $this->assertStringContainsString('Accounted by', $html);
+    }
+
     public function testLogoGoesToHeaderAsDataUriAndToAssets(): void
     {
         $this->dsPath = sys_get_temp_dir() . '/shpd_printtpl_' . uniqid('', true);

@@ -2,7 +2,7 @@
 title: Když se doklad nezaúčtuje
 summary: Co znamenají hlášky u chyby účtování, kde se která spravuje a proč doklad nemusíš rozebírat.
 keywords: [chyba účtování, nezaúčtovalo se, nezaúčtovaný doklad, neúčtováno, účtování selhalo, přeúčtovat, účet nenalezen pro masku, deník není vyrovnaný, fiskální rok, fiskální období, chybí analytika, účet 343, nemá vyplněný účet, upozornění chyba účtování]
-related: [faktury-prijate/dokonceni-dokladu.md, faktury-prijate/oprava-dokladu.md, slovnicek.md]
+related: [faktury-prijate/dokonceni-dokladu.md, faktury-prijate/oprava-dokladu.md, uctarna/tisk-kontace.md, slovnicek.md]
 ---
 
 # Když se doklad nezaúčtuje
@@ -74,4 +74,5 @@ jsou to jiné hlášky a jiná místa opravy; tahle stránka o nich není.
   doklad dostane do stavu, ve kterém se účtuje
 - [Oprava dokladu](../faktury-prijate/oprava-dokladu.md) — kdy doklad
   naopak do opravy převést musíš
+- [Tisk kontace](tisk-kontace.md) — účetní zápisy dokladu jako PDF
 - [Slovníček](../slovnicek.md) — co znamenají odznaky stavu účtování

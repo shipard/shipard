@@ -1,0 +1,143 @@
+{
+    "printId": "economy.accounting.docJournal",
+    "version": 1,
+    "language": "cs",
+    "record": {
+        "table": "docs_core_heads",
+        "id": 123,
+        "docState": 40
+    },
+    "generatedAt": "2026-10-02T10:30:00+02:00",
+    "meta": {
+        "title": "Kontace Faktura vydaná IT-PRINT-INV",
+        "fileName": "kontace-it-print-inv.pdf",
+        "watermark": null
+    },
+    "branding": {
+        "logo": null
+    },
+    "texts": {},
+    "messages": [],
+    "data": {
+        "document": {
+            "type": "invno",
+            "tradeDir": 1,
+            "typeName": "Faktura vydaná",
+            "title": "Kontace",
+            "number": "IT-PRINT-INV",
+            "text": "Konzultace a tiskoviny za září",
+            "notice": "Děkujeme za včasnou úhradu.",
+            "isTaxDocument": true,
+            "vatPayer": true,
+            "vatMode": 1,
+            "currency": "EUR",
+            "homeCurrency": "CZK",
+            "exchangeRate": 24.5,
+            "foreignCurrency": true
+        },
+        "dates": {
+            "issue": "2026-09-30",
+            "accounting": "2026-09-30",
+            "duzp": "2026-09-30"
+        },
+        "accountingUnit": {
+            "name": "Tiskárna Vzorová s.r.o.",
+            "company_id": "00000019",
+            "tax_id": "CZ00000019",
+            "vat_id": "CZ00000019",
+            "court_registration": "C 12345 vedená u Krajského soudu v Brně",
+            "contact": {
+                "email": "fakturace@tiskarna.example",
+                "phone": "+420 577 000 001"
+            },
+            "address": {
+                "street": "Dlouhá 1",
+                "house_number": null,
+                "city": "Zlín",
+                "city_part": null,
+                "zip": "760 01",
+                "country": "cz",
+                "display_block": "Dlouhá 1\n760 01 Zlín",
+                "display_line": "Dlouhá 1, 760 01 Zlín"
+            },
+            "bank_account": {
+                "name": "EUR účet",
+                "account_number": "19-2000145399/0800",
+                "iban": "CZ6508000000192000145399",
+                "bic": "GIBACZPX",
+                "currency": "eur"
+            },
+            "vat_registration": {
+                "country": "cz",
+                "vat_id": "CZ00000019"
+            }
+        },
+        "partner": {
+            "name": "Odběratel Zkušební a.s.",
+            "company_id": "00000027",
+            "tax_id": null,
+            "vat_id": "SK2020000027",
+            "court_registration": null,
+            "contact": {
+                "email": null,
+                "phone": null
+            },
+            "address": {
+                "street": "Krátká 2",
+                "house_number": null,
+                "city": "Bratislava",
+                "city_part": null,
+                "zip": "811 01",
+                "country": "sk",
+                "display_block": "Krátká 2\n811 01 Bratislava",
+                "display_line": "Krátká 2, 811 01 Bratislava"
+            }
+        },
+        "accounting": {
+            "state": 1,
+            "stateLabel": "Zaúčtováno"
+        },
+        "dimensions": [],
+        "journal": [
+            {
+                "accountNumber": "311000",
+                "accountName": "Odběratelé",
+                "text": "Faktura IT-PRINT-INV",
+                "debit": 19864.6,
+                "credit": null,
+                "debitCur": 810.8,
+                "creditCur": null,
+                "dimensions": [],
+                "isError": false
+            },
+            {
+                "accountNumber": "602000",
+                "accountName": "Tržby z prodeje služeb",
+                "text": "Konzultace",
+                "debit": null,
+                "credit": 14455,
+                "debitCur": null,
+                "creditCur": 590,
+                "dimensions": [],
+                "isError": false
+            },
+            {
+                "accountNumber": "343021",
+                "accountName": "DPH na výstupu 21 %",
+                "text": "DPH",
+                "debit": null,
+                "credit": 5409.6,
+                "debitCur": null,
+                "creditCur": 220.8,
+                "dimensions": [],
+                "isError": false
+            }
+        ],
+        "totals": {
+            "debit": 19864.6,
+            "credit": 19864.6,
+            "debitCur": 810.8,
+            "creditCur": 810.8
+        }
+    }
+}

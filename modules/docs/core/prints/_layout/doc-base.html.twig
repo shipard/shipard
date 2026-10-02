@@ -13,6 +13,8 @@
     <meta charset="utf-8">
     <title>{{ meta.title }}</title>
     <link rel="stylesheet" href="doc-base.css">
+    {# Vlastní styly šablony — soubor CSS leží v jejím adresáři. #}
+    {% block styles %}{% endblock %}
 </head>
 <body>
 {% include '@docs.core/_partials/watermark.html.twig' %}

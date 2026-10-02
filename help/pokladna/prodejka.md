@@ -50,7 +50,9 @@ s pohybem *Úhrada pohledávky*, nebo na faktuře zvol platbu *Hotovost* rovnou.
 ## Tisk prodejky
 
 Prodejku ve stavu **V pořádku** vytiskneš tlačítkem **Tisk** nahoře v jejím
-detailu: otevře se náhled PDF a **Stáhnout** ho uloží. Postup, náhled
+detailu — vyber **Prodejka** (druhá položka, **Kontace**, je interní tisk
+účetních zápisů, viz [Tisk kontace](../uctarna/tisk-kontace.md)). Otevře se
+náhled PDF a **Stáhnout** ho uloží. Postup, náhled
 i hlášení jsou stejné jako u faktury — viz
 [Tisk faktury](../faktury-vydane/tisk-faktury.md). Vyjde doklad na celou
 stránku A4, ne úzká účtenka.

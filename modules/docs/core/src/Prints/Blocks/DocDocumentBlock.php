@@ -12,15 +12,31 @@ final class DocDocumentBlock implements DocPrintBlock
 {
     public function build(DocPrintContext $context): array
     {
-        $head    = $context->head;
         $variant = TitleVariantResolver::resolve($context->titleContext());
+
+        return ['document' => self::describe($context, [
+            'titleVariant' => $variant,
+            'title'        => $context->translator->t('title.' . $variant),
+        ])];
+    }
+
+    /**
+     * Popis dokladu bez titulku — titulek (`$title`, klíče za `tradeDir`)
+     * dodá volající: tisk dokladu ho volí podle varianty, tisk nad
+     * dokladem (Kontace) má vlastní.
+     *
+     * @param array<string, mixed> $title
+     * @return array<string, mixed>
+     */
+    public static function describe(DocPrintContext $context, array $title): array
+    {
+        $head    = $context->head;
         $foreign = $context->foreignCurrency();
 
-        return ['document' => [
+        return [
             'type'            => $context->docType(),
             'tradeDir'        => $context->tradeDir(),
-            'titleVariant'    => $variant,
-            'title'           => $context->translator->t('title.' . $variant),
+            ...$title,
             'number'          => (string) ($head['doc_number'] ?? ''),
             'text'            => DocPrintContext::text($head['doc_text'] ?? null),
             'notice'          => DocPrintContext::text($head['doc_notice'] ?? null),
@@ -31,6 +47,6 @@ final class DocDocumentBlock implements DocPrintBlock
             'homeCurrency'    => $context->homeCurrency(),
             'exchangeRate'    => $foreign ? DocPrintContext::number($head['exchange_rate'] ?? null) : null,
             'foreignCurrency' => $foreign,
-        ]];
+        ];
     }
 }

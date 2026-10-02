@@ -1,0 +1,31 @@
+{#
+    Zápatí Kontace — samostatný HTML dokument pro render službu. Vlevo
+    účetní jednotka (doklad bez směru nemá dodavatele ani odběratele, proto
+    ne společné zápatí dokladů); čísla stran doplňuje render služba.
+#}
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="utf-8">
+    <style>
+        html, body { margin: 0; padding: 0; }
+        .foot {
+            -webkit-print-color-adjust: exact;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 0 1.6cm;
+            font-family: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
+            font-size: 7.5pt;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+<div class="foot">
+    <div>{{ data.accountingUnit.name|default('') }}</div>
+    <div>{{ t('footer.page') }} <span class="pageNumber"></span> / <span class="totalPages"></span></div>
+</div>
+</body>
+</html>

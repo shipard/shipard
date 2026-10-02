@@ -1,0 +1,37 @@
+// Katalog tisku Kontace (#90 D27) — titulek, název souboru, popisky hlavičky
+// a tabulky zápisů, hlášení builderu. Společné klíče dokladů jsou
+// v @docs.core/_layout.
+{
+    "title.docJournal":    { "cs": "Kontace", "en": "Accounting entries" },
+    "fileName.docJournal": { "cs": "kontace", "en": "accounting-entries" },
+
+    // Hlavička
+    "label.accountingUnit":  { "cs": "Účetní jednotka", "en": "Accounting unit" },
+    "label.partner":         { "cs": "Partner", "en": "Partner" },
+    "label.docType":         { "cs": "Typ dokladu", "en": "Document type" },
+    "label.accountingDate":  { "cs": "Účetní datum", "en": "Accounting date" },
+    "label.accountingState": { "cs": "Stav účtování", "en": "Accounting state" },
+    "label.currency":        { "cs": "Měna", "en": "Currency" },
+
+    // Tabulka zápisů
+    "journal.account":     { "cs": "Účet", "en": "Account" },
+    "journal.accountName": { "cs": "Název účtu", "en": "Account name" },
+    "journal.text":        { "cs": "Text", "en": "Text" },
+    "journal.debit":       { "cs": "MD", "en": "Debit" },
+    "journal.credit":      { "cs": "Dal", "en": "Credit" },
+    "journal.total":       { "cs": "Celkem", "en": "Total" },
+    "journal.empty":       { "cs": "Doklad nemá žádné účetní zápisy.", "en": "The document has no accounting entries." },
+
+    // Podpis — prázdná linka, bez jména (#93).
+    "signature.accountedBy": { "cs": "Zaúčtoval", "en": "Accounted by" },
+
+    // Měkká hlášení builderu (PrintData.messages)
+    "message.noJournal": {
+        "cs": "Doklad nemá žádné účetní zápisy — Kontace je prázdná.",
+        "en": "The document has no accounting entries — the printout is empty."
+    },
+    "message.accountingError": {
+        "cs": "Doklad je ve stavu „{state}“ — zápisy nemusí být úplné ani správné.",
+        "en": "The document is in the state “{state}” — the entries may be incomplete or incorrect."
+    }
+}

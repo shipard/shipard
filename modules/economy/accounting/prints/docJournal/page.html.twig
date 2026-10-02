@@ -1,0 +1,129 @@
+{#
+    Kontace (#90 D27) — účetní zápisy jednoho dokladu, interní tisk. Dědí
+    layout dokladů (záhlaví s titulkem a číslem, vodorovné členění), bloky
+    dokladu nahrazuje: strany = účetní jednotka a partner, místo řádků
+    tabulka zápisů se součty MD / Dal, na konci pole „Zaúčtoval“ (bez
+    jména, #93). Platba, rekapitulace DPH a poznámky se netisknou.
+
+    Kontrakt `data` popisuje docs/prints.md.
+#}
+{% extends '@docs.core/_layout/doc-base.html.twig' %}
+
+{% block styles %}
+    <link rel="stylesheet" href="doc-journal.css">
+{% endblock %}
+
+{% block parties %}
+    <section class="doc-parties">
+        <div class="party">
+            {% if data.accountingUnit %}
+                <h2>{{ t('label.accountingUnit') }}</h2>
+                {% include '@docs.core/_partials/party.html.twig' with { party: data.accountingUnit, showContact: false } only %}
+            {% endif %}
+        </div>
+        <div class="party{% if data.partner %} party--customer{% endif %}">
+            {% if data.partner %}
+                <h2>{{ t('label.partner') }}</h2>
+                {% include '@docs.core/_partials/party.html.twig' with { party: data.partner, showContact: false } only %}
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
+
+{% block dates %}
+    <dl class="doc-dates">
+        <dt>{{ t('label.docType') }}</dt>
+        <dd>{{ doc.typeName }}</dd>
+        <dt>{{ t('label.issueDate') }}</dt>
+        <dd>{{ data.dates.issue|date }}</dd>
+        <dt>{{ t('label.accountingDate') }}</dt>
+        <dd>{{ data.dates.accounting|date }}</dd>
+        {% if data.dates.duzp %}
+            <dt>{{ t('label.taxPointDate') }}</dt>
+            <dd>{{ data.dates.duzp|date }}</dd>
+        {% endif %}
+    </dl>
+{% endblock %}
+
+{% block payment %}
+    <dl class="doc-dates">
+        <dt>{{ t('label.accountingState') }}</dt>
+        <dd>{{ data.accounting.stateLabel }}</dd>
+        <dt>{{ t('label.currency') }}</dt>
+        <dd>{{ doc.currency }}</dd>
+        {% if doc.foreignCurrency and doc.exchangeRate %}
+            <dt>{{ t('totals.exchangeRate') }}</dt>
+            <dd>1 {{ doc.currency }} = {{ doc.exchangeRate|qty }} {{ doc.homeCurrency }}</dd>
+        {% endif %}
+    </dl>
+{% endblock %}
+
+{% block rows %}
+    {% set foreign = doc.foreignCurrency %}
+    {% set leadColumns = 3 + data.dimensions|length %}
+    <table class="doc-journal">
+        <thead>
+            <tr>
+                <th>{{ t('journal.account') }}</th>
+                <th>{{ t('journal.accountName') }}</th>
+                <th class="col-text">{{ t('journal.text') }}</th>
+                {% for dimension in data.dimensions %}
+                    <th>{{ dimension.label }}</th>
+                {% endfor %}
+                <th class="col-num">{{ t('journal.debit') }}</th>
+                <th class="col-num">{{ t('journal.credit') }}</th>
+                {% if foreign %}
+                    <th class="col-num">{{ t('journal.debit') }} {{ doc.currency }}</th>
+                    <th class="col-num">{{ t('journal.credit') }} {{ doc.currency }}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in data.journal %}
+                <tr class="{{ row.isError ? 'row-error' : 'row-item' }}">
+                    <td class="col-account">{{ row.accountNumber }}</td>
+                    <td>{{ row.accountName|default('') }}</td>
+                    <td class="col-text">{{ row.text|default('') }}</td>
+                    {% for dimension in data.dimensions %}
+                        <td>{{ row.dimensions[dimension.id]|default('') }}</td>
+                    {% endfor %}
+                    <td class="col-num">{{ row.debit is null ? '' : row.debit|money }}</td>
+                    <td class="col-num">{{ row.credit is null ? '' : row.credit|money }}</td>
+                    {% if foreign %}
+                        <td class="col-num">{{ row.debitCur is null ? '' : row.debitCur|money }}</td>
+                        <td class="col-num">{{ row.creditCur is null ? '' : row.creditCur|money }}</td>
+                    {% endif %}
+                </tr>
+            {% else %}
+                <tr class="row-text">
+                    <td colspan="{{ leadColumns + (foreign ? 4 : 2) }}">{{ t('journal.empty') }}</td>
+                </tr>
+            {% endfor %}
+            {# Součet je poslední řádek těla — patička tabulky by se opakovala na každé straně. #}
+            {% if data.journal is not empty %}
+                <tr class="row-total">
+                    <td colspan="{{ leadColumns }}">{{ t('journal.total') }}</td>
+                    <td class="col-num">{{ data.totals.debit|money }}</td>
+                    <td class="col-num">{{ data.totals.credit|money }}</td>
+                    {% if foreign %}
+                        <td class="col-num">{{ data.totals.debitCur|money }}</td>
+                        <td class="col-num">{{ data.totals.creditCur|money }}</td>
+                    {% endif %}
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block vatRecap %}{% endblock %}
+
+{% block totals %}{% endblock %}
+
+{% block notes %}{% endblock %}
+
+{% block signatures %}
+    <section class="doc-signatures">
+        <div></div>
+        <div class="doc-signature">{{ t('signature.accountedBy') }}</div>
+    </section>
+{% endblock %}

@@ -1,0 +1,25 @@
+// Tisky účetnictví (#90). Kontace je interní tisk účetních zápisů jednoho
+// dokladu — bez filtru, tedy pro všechny typy dokladů nad docs_core_heads.
+[
+    {
+        "id": "economy.accounting.docJournal",
+        "name": "Accounting entries",
+        "name:cs": "Kontace",
+        "name:en": "Accounting entries",
+        "table": "docs_core_heads",
+        // Zápisy v deníku má jen doklad ve stavu V pořádku.
+        "docStates": [40],
+        "audience": "internal",
+        "builder": "Shipard\\Module\\Economy\\Accounting\\Prints\\DocJournalPrintBuilder",
+        "template": "@economy.accounting/docJournal",
+        "catalogs": ["@docs.core/_layout"],
+        // Horní a dolní okraj nechávají místo záhlaví (logo, titulek) a zápatí.
+        "paper": {
+            "format": "A4",
+            "orientation": "portrait",
+            "margins": { "top": "3.2cm", "bottom": "2cm" }
+        },
+        // Za tisky dokladu ven — v nabídce Tisk je Kontace poslední.
+        "order": 900
+    }
+]

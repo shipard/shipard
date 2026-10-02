@@ -2,7 +2,7 @@
 title: Tisk faktury
 summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne.
 keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
-related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, co-dnes-nejde.md]
+related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, uctarna/tisk-kontace.md, co-dnes-nejde.md]
 ---
 
 # Tisk faktury
@@ -21,9 +21,11 @@ a potřebuješ doklad, který dostane odběratel.
 1. **Otevři Prodej → Faktury vydané** (nebo **Zálohové faktury vydané**)
    a v seznamu klikni na doklad. Vpravo se ukáže jeho detail.
 
-2. **Dej Tisk.** Tlačítko je nahoře v detailu dokladu, vedle **Přeúčtovat**.
-   Otevře se okno **Tisk** s náhledem PDF — chvíli to trvá, doklad se
-   teprve vyrábí.
+2. **Dej Tisk** a vyber **Faktura** (u zálohové faktury **Zálohová
+   faktura**). Tlačítko je nahoře v detailu dokladu, vedle **Přeúčtovat**;
+   druhá položka nabídky, **Kontace**, je interní tisk účetních zápisů — viz
+   [Tisk kontace](../uctarna/tisk-kontace.md). Otevře se okno **Tisk**
+   s náhledem PDF — chvíli to trvá, doklad se teprve vyrábí.
 
 3. **Zkontroluj náhled** a dej **Stáhnout**. Soubor se uloží pod názvem
    s číslem dokladu. Okno zavřeš tlačítkem **Zavřít**.
@@ -33,7 +35,8 @@ stáhnout, kolikrát chceš.
 
 ## Stornovaný doklad
 
-Vytisknout jde i doklad ve stavu **Storno**. PDF je stejné jako před
+Vytisknout jde i doklad ve stavu **Storno** (v nabídce **Tisk** je pak jen
+faktura, Kontace ne). PDF je stejné jako před
 stornem, jen má přes každou stranu šedý nápis **STORNO** — hodí se, když
 odběrateli potřebuješ doložit, že doklad neplatí. Název souboru zůstává
 stejný.
@@ -101,5 +104,6 @@ a [prodejku](../pokladna/prodejka.md).
 - [Pokladní doklad](../pokladna/pokladni-doklad.md) — tisk příjmového
   a výdajového dokladu
 - [Prodejka](../pokladna/prodejka.md) — tisk prodejky a vratky
+- [Tisk kontace](../uctarna/tisk-kontace.md) — účetní zápisy dokladu na papír
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — odeslání e-mailem, vzhled
   dokladu

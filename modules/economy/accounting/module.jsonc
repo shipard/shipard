@@ -145,6 +145,10 @@
         }
     ],
 
+    "prints": [
+        { "file": "config/prints.jsonc" }
+    ],
+
     // Panel ReportViewer — bez navSection: do navigace vstupují per-report
     // children (NavigationController, skupina Reporty), panel sám ne.
     "panels": [

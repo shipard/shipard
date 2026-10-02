@@ -129,9 +129,51 @@ final class DocPrintContext
         );
     }
 
+    /**
+     * Jen hlavička a snapshoty stran — bez řádků, rekapitulace a bez
+     * kontroly povinných stran. Pro interní tisky nad dokladem (Kontace),
+     * které strany jen uvádějí a tisknou se i u dokladu bez snapshotů.
+     */
+    public static function forHead(PrintRequest $request): self
+    {
+        $head = $request->record;
+
+        return new self(
+            head: $head,
+            rows: [],
+            recap: [],
+            supplier: self::decodeSnapshot($head['supplier_snapshot'] ?? null),
+            customer: self::decodeSnapshot($head['customer_snapshot'] ?? null),
+            units: [],
+            vatCodes: DocVatCodes::fromConfig($request->config, null),
+            translator: $request->translator,
+            config: $request->config,
+        );
+    }
+
     public function docType(): string
     {
         return (string) ($this->head['doc_type'] ?? '');
+    }
+
+    /** Snapshot vlastní firmy: dodavatel na výstupu, odběratel na vstupu; bez směru null. */
+    public function own(): ?array
+    {
+        return match ($this->tradeDir()) {
+            1       => $this->supplier,
+            2       => $this->customer,
+            default => null,
+        };
+    }
+
+    /** Snapshot partnera: odběratel na výstupu, dodavatel na vstupu; bez směru null. */
+    public function partner(): ?array
+    {
+        return match ($this->tradeDir()) {
+            1       => $this->customer,
+            2       => $this->supplier,
+            default => null,
+        };
     }
 
     /** Směr obchodu: 1 výstup (my dodavatel), 2 vstup (my odběratel), null bez směru. */

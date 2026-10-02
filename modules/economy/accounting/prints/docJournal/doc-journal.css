@@ -1,0 +1,28 @@
+/*
+ * Tabulka účetních zápisů tisku Kontace (#90 D27) — navazuje na styl
+ * dokladů (doc-base.css): střídmá, černobílá. Chybový zápis je zvýrazněný
+ * i bez barvy, ať je vidět na černobílém výtisku.
+ */
+.doc-journal thead {
+    display: table-header-group;
+}
+
+.doc-journal tbody tr {
+    border-bottom: 0.25pt solid #ccc;
+    break-inside: avoid;
+}
+
+.doc-journal .col-account {
+    white-space: nowrap;
+}
+
+.doc-journal .row-error td {
+    font-weight: 700;
+    background: #ececec;
+}
+
+.doc-journal .row-total td {
+    padding-top: 0.15cm;
+    border-top: 0.5pt solid #000;
+    font-weight: 700;
+}
