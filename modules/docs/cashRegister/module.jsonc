@@ -41,5 +41,9 @@
                 "cashreg": "Shipard\\Module\\Docs\\CashRegister\\CashRegisterForm"
             }
         }
+    ],
+
+    "prints": [
+        { "file": "config/prints.jsonc" }
     ]
 }

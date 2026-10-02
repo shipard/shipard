@@ -78,6 +78,7 @@
         },
         "payment": {
             "method": { "id": 1, "label": "Převodem" },
+            "bankTransfer": true,
             "reference": "2026000045",
             "specificSymbol": null,
             "constantSymbol": null,

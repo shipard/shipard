@@ -1,5 +1,5 @@
 {
-    "printId": "docs.cashDocs.cash",
+    "printId": "docs.cashRegister.receipt",
     "version": 1,
     "language": "cs",
     "record": {
@@ -9,8 +9,8 @@
     },
     "generatedAt": "2026-10-02T10:30:00+02:00",
     "meta": {
-        "title": "Výdajový pokladní doklad IT-PRINT-CASH",
-        "fileName": "vydajovy-pokladni-doklad-it-print-cash.pdf",
+        "title": "Prodejka – daňový doklad IT-PRINT-REC",
+        "fileName": "prodejka-it-print-rec.pdf",
         "watermark": null
     },
     "branding": {
@@ -20,16 +20,16 @@
     "messages": [],
     "data": {
         "document": {
-            "type": "cash",
-            "tradeDir": 2,
-            "titleVariant": "cashOut",
-            "title": "Výdajový pokladní doklad",
-            "number": "IT-PRINT-CASH",
-            "text": "Nákup kancelářských potřeb",
+            "type": "cashreg",
+            "tradeDir": 1,
+            "titleVariant": "cashRegisterVatPayer",
+            "title": "Prodejka – daňový doklad",
+            "number": "IT-PRINT-REC",
+            "text": null,
             "notice": null,
             "isTaxDocument": true,
-            "vatPayer": false,
-            "vatMode": 0,
+            "vatPayer": true,
+            "vatMode": 1,
             "currency": "CZK",
             "homeCurrency": "CZK",
             "exchangeRate": null,
@@ -40,11 +40,9 @@
             "due": "2026-09-30",
             "duzp": "2026-09-30",
             "periodFrom": null,
-            "periodTo": null,
-            "paymentReceived": null
+            "periodTo": null
         },
-        "supplier": null,
-        "customer": {
+        "supplier": {
             "name": "Tiskárna Vzorová s.r.o.",
             "company_id": "00000019",
             "tax_id": "CZ00000019",
@@ -69,6 +67,7 @@
                 "vat_id": "CZ00000019"
             }
         },
+        "customer": null,
         "payment": {
             "method": {
                 "id": 0,
@@ -79,35 +78,52 @@
             "specificSymbol": null,
             "constantSymbol": null,
             "bankAccount": null,
-            "amountToPay": 110,
+            "amountToPay": 1210,
             "currency": "CZK",
             "qr": null
         },
         "rows": [
             {
                 "kind": "item",
-                "description": "Kancelářské potřeby",
-                "quantity": 10,
+                "description": "Tonery do tiskárny",
+                "quantity": 2,
                 "unit": null,
-                "unitPrice": 11,
+                "unitPrice": 500,
                 "unitPriceIncludesVat": false,
                 "discountPct": null,
-                "vat": null,
-                "base": 110,
-                "vatAmount": 0,
-                "total": 110,
+                "vat": {
+                    "code": "cz-120",
+                    "pct": 21,
+                    "label": "Základní",
+                    "noteMark": null
+                },
+                "base": 1000,
+                "vatAmount": 210,
+                "total": 1210,
                 "advanceDeduction": false
             }
         ],
-        "vatRecap": [],
+        "vatRecap": [
+            {
+                "label": "Základní",
+                "pct": 21,
+                "base": 1000,
+                "tax": 210,
+                "total": 1210,
+                "baseDom": null,
+                "taxDom": null,
+                "totalDom": null,
+                "noteMark": null
+            }
+        ],
         "vatNotes": [],
         "advances": null,
         "totals": {
-            "base": 110,
-            "vat": 0,
+            "base": 1000,
+            "vat": 210,
             "rounding": 0,
-            "total": 110,
-            "totalBeforeAdvances": 110,
+            "total": 1210,
+            "totalBeforeAdvances": 1210,
             "baseDom": null,
             "vatDom": null,
             "totalDom": null

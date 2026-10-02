@@ -162,6 +162,12 @@ class DocPrintBlocksTest extends TestCase
             'příjem, neplátce'                 => ['cashIn', new DocTitleContext('cash', false, 1, false, 1210.0)],
             'výdej, plátce s rekapitulací'     => ['cashOut', new DocTitleContext('cash', true, 2, true, 121.0)],
             'výdej, neplátce'                  => ['cashOut', new DocTitleContext('cash', false, 2)],
+            // Prodejka (D26) — vratka má přednost před plátcovstvím.
+            'prodejka plátce'         => ['cashRegisterVatPayer', new DocTitleContext('cashreg', true, 1, true, 1210.0)],
+            'prodejka neplátce'       => ['cashRegisterNonVatPayer', new DocTitleContext('cashreg', false, 1, false, 500.0)],
+            'vratka plátce'           => ['cashRegisterRefund', new DocTitleContext('cashreg', true, 1, true, -605.0)],
+            'vratka neplátce'         => ['cashRegisterRefund', new DocTitleContext('cashreg', false, 1, false, -500.0)],
+            'prodejka s nulou'        => ['cashRegisterVatPayer', new DocTitleContext('cashreg', true, 1, true, 0.0)],
         ];
     }
 
@@ -343,6 +349,7 @@ class DocPrintBlocksTest extends TestCase
 
         $this->assertSame([
             'method'         => ['id' => 1, 'label' => 'Převodem'],
+            'bankTransfer'   => true,
             'reference'      => '2026000123',
             'specificSymbol' => null,
             'constantSymbol' => '0308',
@@ -385,7 +392,10 @@ class DocPrintBlocksTest extends TestCase
         $this->assertSame(self::SUPPLIER['bank_account'], $transfer['bankAccount']);
 
         // Hotově / kartou: jen způsob úhrady (symboly zůstávají podle hlavičky).
+        $this->assertTrue($transfer['bankTransfer']);
+
         $cash = (new DocPaymentBlock())->build($this->context(['payment_method' => 0]))['payment'];
+        $this->assertFalse($cash['bankTransfer']);
         $this->assertNull($cash['bankAccount']);
         $this->assertNull($cash['qr']);
         $this->assertSame(0, $cash['method']['id']);

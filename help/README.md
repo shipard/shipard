@@ -73,7 +73,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 |---------|----------------|
 | [Platba kartou, přes bránu a dobírkou](pokladna/platba-kartou-branou-dobirkou.md) | Jak nastavit platební terminál, platební bránu a způsob dopravy s protistranou, aby prodej kartou, přes bránu nebo na dobírku vytvořil pohledávku za tím, kdo ti peníze skutečně pošle. |
 | [Pokladní doklad](pokladna/pokladni-doklad.md) | Jak zapsat příjem nebo výdej hotovosti či platbu kartou na pokladně — včetně úhrady faktury —, jak doklad vytisknout a co k tomu musí být nastavené. |
-| [Prodejka](pokladna/prodejka.md) | Jak zapsat prodej za hotové, kartou, přes bránu nebo na dobírku na pokladně bez faktury a jak udělat vratku. |
+| [Prodejka](pokladna/prodejka.md) | Jak zapsat prodej za hotové, kartou, přes bránu nebo na dobírku na pokladně bez faktury, jak udělat vratku a jak prodejku vytisknout. |
 
 ### Majetek
 

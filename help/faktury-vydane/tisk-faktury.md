@@ -2,7 +2,7 @@
 title: Tisk faktury
 summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne.
 keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
-related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, pokladna/pokladni-doklad.md, co-dnes-nejde.md]
+related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, co-dnes-nejde.md]
 ---
 
 # Tisk faktury
@@ -89,7 +89,8 @@ v prohlížeči PDF.
 **Co zatím nejde:** odeslat fakturu odběrateli e-mailem přímo z Shipardu
 a změnit vzhled dokladu nebo na něj přidat vlastní text — viz
 [Co Shipard dnes neumí](../co-dnes-nejde.md). Stejným tlačítkem **Tisk**
-vytiskneš i [pokladní doklad](../pokladna/pokladni-doklad.md).
+vytiskneš i [pokladní doklad](../pokladna/pokladni-doklad.md)
+a [prodejku](../pokladna/prodejka.md).
 
 ## Souvisí
 
@@ -99,5 +100,6 @@ vytiskneš i [pokladní doklad](../pokladna/pokladni-doklad.md).
   není daňovým dokladem
 - [Pokladní doklad](../pokladna/pokladni-doklad.md) — tisk příjmového
   a výdajového dokladu
+- [Prodejka](../pokladna/prodejka.md) — tisk prodejky a vratky
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — odeslání e-mailem, vzhled
   dokladu

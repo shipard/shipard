@@ -1,6 +1,8 @@
 {#
     Součty, odpočet záloh a částka k úhradě. `totals.total` je částka dokladu
     už po odpočtu záloh; s odpočtem se proto tiskne i částka před ním.
+    Volitelná proměnná `dueLabel` přepíše popisek výsledné částky (doklad
+    zaplacený na místě nemá nic „k úhradě“).
 #}
 {% set totals = data.totals %}
 <table class="doc-totals">
@@ -31,7 +33,7 @@
             </tr>
         {% endif %}
         <tr class="doc-totals-due">
-            <th>{{ t('totals.toPay') }}</th>
+            <th>{{ dueLabel|default(t('totals.toPay')) }}</th>
             <td>{{ totals.total|money(doc.currency) }}</td>
         </tr>
         {% if doc.foreignCurrency and totals.totalDom is not null %}

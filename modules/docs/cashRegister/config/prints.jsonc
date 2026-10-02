@@ -1,0 +1,27 @@
+// Tisk prodejky (#90 D26) — A4, tisk ven. Builder, layout a dílčí bloky
+// šablony jsou sdílené v docs.core; tady je deklarace a stránková šablona.
+// Účtenka na POS tiskárnu je mimo: jiný renderer nad stejnými daty (D3).
+[
+    {
+        "id": "docs.cashRegister.receipt",
+        "name": "Sales receipt",
+        "name:cs": "Prodejka",
+        "name:en": "Sales receipt",
+        "table": "docs_core_heads",
+        "filter": { "doc_type": ["cashreg"] },
+        // Stornovaný doklad se tiskne s vodoznakem přes každou stranu.
+        "docStates": [40, 30],
+        "watermarks": { "30": "watermark.cancelled" },
+        "audience": "external",
+        "builder": "Shipard\\Module\\Docs\\Core\\Prints\\CashRegisterPrintBuilder",
+        "template": "@docs.cashRegister/receipt",
+        "catalogs": ["@docs.core/_layout"],
+        // Horní a dolní okraj nechávají místo záhlaví (logo, titulek) a zápatí.
+        "paper": {
+            "format": "A4",
+            "orientation": "portrait",
+            "margins": { "top": "3.2cm", "bottom": "2cm" }
+        },
+        "order": 10
+    }
+]

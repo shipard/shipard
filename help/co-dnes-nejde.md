@@ -92,16 +92,17 @@ Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou. 
 
 ---
 
-## Pokladna: bez knihy a bez účtenky
+## Pokladna: bez knihy a bez účtenky z pokladní tiskárny
 
 **Pokladní knihu Shipard zatím nevede.** Pokladní doklady a prodejky se
 zaúčtují na účet pokladny, ale přehled zůstatku a pohybů pokladny za období,
 počáteční stav ani inventura pokladny nejsou. Zůstatek dnes zjistíš jen
 z účetního deníku nebo hlavní knihy na účtu pokladny.
 
-**Prodejku nevytiskneš.** Tisk umí faktura vydaná, zálohová faktura
-a [pokladní doklad](pokladna/pokladni-doklad.md) — zákazníkovi účtenku
-k prodejce musíš dát z jiného zařízení.
+**Účtenku na pokladní tiskárně nevytiskneš.**
+[Prodejka](pokladna/prodejka.md) i [pokladní doklad](pokladna/pokladni-doklad.md)
+se tisknou jen jako PDF na stránku A4. Úzkou účtenku pro zákazníka u pultu
+musíš dát z jiného zařízení.
 
 **Vyúčtování od platební brány, terminálu nebo dopravce Shipard sám
 nevytvoří.** Prodej kartou, přes bránu nebo na dobírku založí pohledávku

@@ -1,0 +1,33 @@
+{#
+    Prodejka (#90 D26). Proti společnému layoutu: data s pokladnou; splatnost
+    a částka „k úhradě“ jen u prodejky převodem — hotově a kartou je
+    zaplaceno hned, částka je „celkem“. Platební blok je společný (účet
+    a QR dává builder jen u převodu). Vratka nemá zvláštní vzhled, záporné
+    částky jsou v datech.
+#}
+{% extends '@docs.core/_layout/doc-base.html.twig' %}
+
+{% block dates %}
+    <dl class="doc-dates">
+        <dt>{{ t('label.issueDate') }}</dt>
+        <dd>{{ data.dates.issue|date }}</dd>
+        {% if data.payment.bankTransfer %}
+            <dt>{{ t('label.dueDate') }}</dt>
+            <dd>{{ data.dates.due|date }}</dd>
+        {% endif %}
+        {% if data.dates.duzp and showVat %}
+            <dt>{{ t('label.taxPointDate') }}</dt>
+            <dd>{{ data.dates.duzp|date }}</dd>
+        {% endif %}
+        {% if data.cashDesk %}
+            <dt>{{ t('label.cashDesk') }}</dt>
+            <dd>{{ data.cashDesk.name }}</dd>
+        {% endif %}
+    </dl>
+{% endblock %}
+
+{% block totals %}
+    {% include '@docs.core/_partials/totals.html.twig' with {
+        dueLabel: data.payment.bankTransfer ? t('totals.toPay') : t('totals.total')
+    } %}
+{% endblock %}

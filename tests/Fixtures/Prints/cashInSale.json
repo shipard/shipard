@@ -94,6 +94,7 @@
                 "id": 0,
                 "label": "Hotovost"
             },
+            "bankTransfer": false,
             "reference": null,
             "specificSymbol": null,
             "constantSymbol": null,

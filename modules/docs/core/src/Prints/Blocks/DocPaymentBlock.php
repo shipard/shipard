@@ -13,7 +13,8 @@ use Shipard\Module\Docs\Core\Prints\PaymentQr\PaymentQrResolver;
  * Blok `payment` — způsob úhrady, symboly, náš účet ze snapshotu dodavatele,
  * částka k úhradě a QR platba (#90 D17).
  *
- * Účet jen u platby převodem (hotově ani kartou se na něj neplatí), QR
+ * `bankTransfer` říká šabloně, že se platí převodem — jen tehdy má smysl
+ * splatnost a částka „k úhradě“. Účet jen u platby převodem (hotově ani kartou se na něj neplatí), QR
  * navíc jen pro kladnou částku. Když QR nevznikne kvůli
  * chybějícímu účtu, nebo se do něj nevejde některý symbol, přidá měkké
  * hlášení — tisk vznikne i tak.
@@ -37,6 +38,7 @@ final class DocPaymentBlock implements DocPrintBlock
 
         $payment = [
             'method'         => ['id' => $methodId, 'label' => $this->methodLabel($context, $methodId)],
+            'bankTransfer'   => $transfer,
             'reference'      => DocPrintContext::text($head['payment_reference'] ?? null),
             'specificSymbol' => DocPrintContext::text($head['specific_symbol'] ?? null),
             'constantSymbol' => DocPrintContext::text($head['constant_symbol'] ?? null),

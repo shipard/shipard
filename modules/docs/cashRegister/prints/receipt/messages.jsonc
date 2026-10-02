@@ -1,0 +1,11 @@
+// Katalog tisku prodejky — titulky podle varianty (#90 D26) a název souboru.
+// Společné klíče dokladů jsou v @docs.core/_layout.
+{
+    "title.cashRegisterVatPayer":    { "cs": "Prodejka – daňový doklad", "en": "Sales receipt – tax document" },
+    "title.cashRegisterNonVatPayer": { "cs": "Prodejka", "en": "Sales receipt" },
+    "title.cashRegisterRefund":      { "cs": "Prodejka – vratka", "en": "Sales receipt – refund" },
+
+    "fileName.cashRegisterVatPayer":    { "cs": "prodejka", "en": "sales-receipt" },
+    "fileName.cashRegisterNonVatPayer": { "cs": "prodejka", "en": "sales-receipt" },
+    "fileName.cashRegisterRefund":      { "cs": "prodejka", "en": "sales-receipt" }
+}

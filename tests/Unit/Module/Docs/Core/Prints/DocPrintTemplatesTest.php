@@ -394,6 +394,54 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString("Recipient's signature", html_entity_decode($document->html, ENT_QUOTES));
     }
 
+    // ── prodejka ────────────────────────────────────────────────────────────
+
+    public function testCashReceiptWithoutPartnerIsPaidOnTheSpot(): void
+    {
+        $definition = self::definition('docs.cashRegister', 'docs.cashRegister.receipt');
+        $document   = $this->render($definition, self::printData('receiptCash', $definition->id));
+        $html       = $document->html;
+
+        $this->assertStringContainsString('Prodejka – daňový doklad', (string) $document->header);
+
+        // Bez partnera: místo odběratele zůstává prázdné.
+        $this->assertStringContainsString('Dodavatel', $html);
+        $this->assertStringNotContainsString('Odběratel', $html);
+
+        // Hotově: žádná splatnost, účet ani QR; částka je „Celkem“.
+        $this->assertStringNotContainsString('Datum splatnosti', $html);
+        $this->assertStringNotContainsString('Bankovní účet', $html);
+        $this->assertStringNotContainsString('<svg', $html);
+        $this->assertStringNotContainsString('K úhradě', $html);
+        $this->assertStringContainsString('<dt>Pokladna</dt>', $html);
+        $this->assertStringContainsString('Datum zdanitelného plnění', $html);
+        $this->assertStringContainsString('Rekapitulace DPH', $html);
+        $this->assertStringNotContainsString('doc-signature', $html, 'prodejka podpisy nemá');
+    }
+
+    public function testReceiptPaidByBankTransferLooksLikeInvoice(): void
+    {
+        $definition = self::definition('docs.cashRegister', 'docs.cashRegister.receipt');
+        $html = $this->render($definition, self::printData('receiptTransfer', $definition->id))->html;
+
+        $this->assertStringContainsString('Papírnictví U Brány s.r.o.', $html);
+        $this->assertStringContainsString('Datum splatnosti', $html);
+        $this->assertStringContainsString('14.' . self::NBSP . '10.' . self::NBSP . '2026', $html);
+        $this->assertStringContainsString('CZ6508000000192000145399', $html);
+        $this->assertStringContainsString('<svg', $html);
+        $this->assertStringContainsString('K úhradě', $html);
+    }
+
+    public function testRefundHasOnlyDifferentTitleAndNegativeAmounts(): void
+    {
+        $definition = self::definition('docs.cashRegister', 'docs.cashRegister.receipt');
+        $document   = $this->render($definition, self::printData('receiptRefund', $definition->id));
+
+        $this->assertStringContainsString('Prodejka – vratka', (string) $document->header);
+        $this->assertStringContainsString('-605,00' . self::NBSP . 'CZK', $document->html);
+        $this->assertStringContainsString('<tr class="row-item">', $document->html);
+    }
+
     public function testLogoGoesToHeaderAsDataUriAndToAssets(): void
     {
         $this->dsPath = sys_get_temp_dir() . '/shpd_printtpl_' . uniqid('', true);

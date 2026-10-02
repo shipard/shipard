@@ -7,7 +7,8 @@ namespace Shipard\Tests\Integration\Prints;
 /**
  * Fixture doklady pro testy tisků: faktura (plátce, dvě sazby, textový
  * řádek, odpočet zálohy, cizí měna), zálohová faktura a pokladní doklady
- * (příjem s prodejem, příjem úhrady faktury, výdej bez partnera). Vkládají se přímo
+ * (příjem s prodejem, příjem úhrady faktury, výdej bez partnera) a prodejky
+ * (hotově bez partnera, převodem, vratka). Vkládají se přímo
  * ve stavu 40 se snapshoty stran z `tests/Fixtures/Prints/*.json`,
  * takže výstup builderu nezávisí na adresáři zdroje dat.
  *
@@ -21,6 +22,7 @@ trait PrintFixtureDocuments
     private const INVOICE_NUMBER  = 'IT-PRINT-INV';
     private const PROFORMA_NUMBER = 'IT-PRINT-PRO';
     private const CASH_NUMBER     = 'IT-PRINT-CASH';
+    private const RECEIPT_NUMBER  = 'IT-PRINT-REC';
 
     /** @var list<int> */
     private array $createdHeads = [];
@@ -315,6 +317,44 @@ trait PrintFixtureDocuments
             'row_kind' => 1, 'operation' => 'purchase.goods', 'description' => 'Kancelářské potřeby',
             'quantity' => 10, 'unit_price' => 11, 'total_price' => 110,
             'vat_base' => 110, 'vat_amount' => 0, 'vat_total' => 110,
+        ]]);
+
+        return $headId;
+    }
+
+    /**
+     * Prodejka plátce: jeden řádek zboží se základní sazbou. Záporné
+     * `$quantity` = vratka. Bez `$headOverrides` hotově a bez partnera.
+     *
+     * @param array<string, mixed> $expected
+     * @param array<string, mixed> $headOverrides
+     */
+    private function insertReceipt(array $expected, int $cashDeskId, float $quantity = 2.0, array $headOverrides = []): int
+    {
+        $base = 500.0 * $quantity;
+        $vat  = round($base * 0.21, 2);
+
+        $headId = $this->insertHead($expected, $headOverrides + [
+            'doc_type'         => 'cashreg',
+            'doc_number'       => self::RECEIPT_NUMBER,
+            'cash_desk'        => $cashDeskId,
+            'payment_method'   => 0,
+            'due_date'         => '2026-09-30',
+            'vat_duzp'         => '2026-09-30',
+            'doc_currency'     => 'czk',
+            'exchange_rate'    => 1.0,
+            'total_base'       => $base, 'total_vat' => $vat, 'total_amount' => $base + $vat,
+            'total_base_dom'   => $base, 'total_vat_dom' => $vat, 'total_amount_dom' => $base + $vat,
+        ]);
+        $this->insertRows($headId, [[
+            'row_kind' => 1, 'operation' => 'sale.goods', 'description' => 'Tonery do tiskárny',
+            'quantity' => $quantity, 'unit_price' => 500, 'total_price' => $base,
+            'vat_code' => 'cz-120', 'vat_pct' => 21,
+            'vat_base' => $base, 'vat_amount' => $vat, 'vat_total' => $base + $vat,
+        ]]);
+        $this->insertRecap($headId, [[
+            'vat_code' => 'cz-120', 'vat_pct' => 21, 'base' => $base, 'tax' => $vat, 'total' => $base + $vat,
+            'base_dom' => $base, 'tax_dom' => $vat, 'total_dom' => $base + $vat,
         ]]);
 
         return $headId;

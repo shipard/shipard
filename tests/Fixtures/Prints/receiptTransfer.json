@@ -1,5 +1,5 @@
 {
-    "printId": "docs.cashDocs.cash",
+    "printId": "docs.cashRegister.receipt",
     "version": 1,
     "language": "cs",
     "record": {
@@ -9,8 +9,8 @@
     },
     "generatedAt": "2026-10-02T10:30:00+02:00",
     "meta": {
-        "title": "Příjmový pokladní doklad IT-PRINT-CASH",
-        "fileName": "prijmovy-pokladni-doklad-it-print-cash.pdf",
+        "title": "Prodejka – daňový doklad IT-PRINT-REC",
+        "fileName": "prodejka-it-print-rec.pdf",
         "watermark": null
     },
     "branding": {
@@ -20,12 +20,12 @@
     "messages": [],
     "data": {
         "document": {
-            "type": "cash",
+            "type": "cashreg",
             "tradeDir": 1,
-            "titleVariant": "cashIn",
-            "title": "Příjmový pokladní doklad",
-            "number": "IT-PRINT-CASH",
-            "text": "Úhrada faktury v hotovosti",
+            "titleVariant": "cashRegisterVatPayer",
+            "title": "Prodejka – daňový doklad",
+            "number": "IT-PRINT-REC",
+            "text": null,
             "notice": null,
             "isTaxDocument": true,
             "vatPayer": true,
@@ -37,11 +37,10 @@
         },
         "dates": {
             "issue": "2026-09-30",
-            "due": "2026-09-30",
+            "due": "2026-10-14",
             "duzp": "2026-09-30",
             "periodFrom": null,
-            "periodTo": null,
-            "paymentReceived": "2026-09-30"
+            "periodTo": null
         },
         "supplier": {
             "name": "Tiskárna Vzorová s.r.o.",
@@ -62,6 +61,13 @@
                 "country": "cz",
                 "display_block": "Dlouhá 1\n760 01 Zlín",
                 "display_line": "Dlouhá 1, 760 01 Zlín"
+            },
+            "bank_account": {
+                "name": "Hlavní účet",
+                "account_number": "19-2000145399/0800",
+                "iban": "CZ6508000000192000145399",
+                "bic": "GIBACZPX",
+                "currency": "czk"
             },
             "vat_registration": {
                 "country": "cz",
@@ -91,40 +97,66 @@
         },
         "payment": {
             "method": {
-                "id": 0,
-                "label": "Hotovost"
+                "id": 1,
+                "label": "Převodem"
             },
-            "bankTransfer": false,
-            "reference": null,
+            "bankTransfer": true,
+            "reference": "1426000001",
             "specificSymbol": null,
             "constantSymbol": null,
-            "bankAccount": null,
+            "bankAccount": {
+                "name": "Hlavní účet",
+                "account_number": "19-2000145399/0800",
+                "iban": "CZ6508000000192000145399",
+                "bic": "GIBACZPX",
+                "currency": "czk"
+            },
             "amountToPay": 1210,
             "currency": "CZK",
-            "qr": null
+            "qr": {
+                "standard": "spayd",
+                "payload": "SPD*1.0*ACC:CZ6508000000192000145399+GIBACZPX*AM:1210.00*CC:CZK*X-VS:1426000001*DT:20261014*MSG:IT-PRINT-REC"
+            }
         },
         "rows": [
             {
                 "kind": "item",
-                "description": "Úhrada faktury 2026000123",
-                "quantity": null,
+                "description": "Tonery do tiskárny",
+                "quantity": 2,
                 "unit": null,
-                "unitPrice": 0,
+                "unitPrice": 500,
                 "unitPriceIncludesVat": false,
                 "discountPct": null,
-                "vat": null,
-                "base": 1210,
-                "vatAmount": 0,
+                "vat": {
+                    "code": "cz-120",
+                    "pct": 21,
+                    "label": "Základní",
+                    "noteMark": null
+                },
+                "base": 1000,
+                "vatAmount": 210,
                 "total": 1210,
                 "advanceDeduction": false
             }
         ],
-        "vatRecap": [],
+        "vatRecap": [
+            {
+                "label": "Základní",
+                "pct": 21,
+                "base": 1000,
+                "tax": 210,
+                "total": 1210,
+                "baseDom": null,
+                "taxDom": null,
+                "totalDom": null,
+                "noteMark": null
+            }
+        ],
         "vatNotes": [],
         "advances": null,
         "totals": {
-            "base": 1210,
-            "vat": 0,
+            "base": 1000,
+            "vat": 210,
             "rounding": 0,
             "total": 1210,
             "totalBeforeAdvances": 1210,

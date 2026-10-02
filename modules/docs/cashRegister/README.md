@@ -45,7 +45,20 @@ záložky vieweru = pokladny, pokladna se na dokladu nezadává. Číslo má tva
   dopravce, `partnerSrc: balance`, #72; bez plátce prodejka neprojde).
 - Kontrolní hlášení: prodejka s partnerem s CZ DIČ nad limit jde do A4,
   anonymní do A5 — dělá existující `economy.vat`, tady nic.
-- Tisk prodejky, platební terminály per analytika, pokladní knihu (fáze 2).
+- Platební terminály per analytika, pokladní knihu (fáze 2).
+- Účtenku na POS tiskárnu — tisk níže je A4.
+
+## Tisk
+
+Tisk `docs.cashRegister.receipt` (#90 D26, `config/prints.jsonc`): prodejka
+ve stavu V pořádku, stornovaná s vodoznakem. Builder
+`CashRegisterPrintBuilder` žije v `docs.core` (bloky dokladu + pokladna),
+šablona `prints/receipt/` dědí společný layout dokladů. Titulek: plátce
+„Prodejka – daňový doklad“, neplátce „Prodejka“, záporná celková částka
+„Prodejka – vratka“ (přednost před plátcovstvím; opravný daňový doklad
+řeší #92). Bez partnera je odběratel prázdný. Splatnost, účet, QR a „K
+úhradě“ jen u prodejky převodem (`payment.bankTransfer`). Viz
+`docs/prints.md`.
 
 ## Vztah k `docs.cashDocs`
 

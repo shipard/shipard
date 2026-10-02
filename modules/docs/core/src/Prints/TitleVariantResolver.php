@@ -16,6 +16,10 @@ use Shipard\Core\Prints\PrintBuildException;
  * Pokladní doklad (D25): příjem je daňovým dokladem jen u plátce s tištěnou
  * rekapitulací DPH (prodej za hotové); výdej nikdy — daňový doklad k němu
  * vystavuje druhá strana.
+ *
+ * Prodejka (D26): titulek podle plátcovství jako u faktury; vratka (záporná
+ * celková částka) má přednost — její správný titulek (opravný daňový
+ * doklad) doladí #92.
  */
 final class TitleVariantResolver
 {
@@ -25,6 +29,9 @@ final class TitleVariantResolver
     public const CASH_IN_TAX_DOCUMENT  = 'cashInTaxDocument';
     public const CASH_IN               = 'cashIn';
     public const CASH_OUT              = 'cashOut';
+    public const CASH_REGISTER_REFUND        = 'cashRegisterRefund';
+    public const CASH_REGISTER_VAT_PAYER     = 'cashRegisterVatPayer';
+    public const CASH_REGISTER_NON_VAT_PAYER = 'cashRegisterNonVatPayer';
 
     /** @throws PrintBuildException Typ dokladu, pro který titulek neznáme. */
     public static function resolve(DocTitleContext $context): string
@@ -33,6 +40,11 @@ final class TitleVariantResolver
             'invno' => $context->vatPayer ? self::INVOICE_VAT_PAYER : self::INVOICE_NON_VAT_PAYER,
             'invpo' => self::PROFORMA,
             'cash'  => self::cash($context),
+            'cashreg' => match (true) {
+                $context->totalAmount < 0.0 => self::CASH_REGISTER_REFUND,
+                $context->vatPayer          => self::CASH_REGISTER_VAT_PAYER,
+                default                     => self::CASH_REGISTER_NON_VAT_PAYER,
+            },
             default => throw new PrintBuildException(
                 "Document type '{$context->docType}' has no print title variant",
             ),

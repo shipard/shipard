@@ -1,8 +1,8 @@
 ---
 title: Prodejka
-summary: Jak zapsat prodej za hotové, kartou, přes bránu nebo na dobírku na pokladně bez faktury a jak udělat vratku.
-keywords: [prodejka, prodej za hotové, prodej na pokladně, paragon, účtenka, platba kartou, prodej kartou, prodej na dobírku, dobírka, platební brána, tržba, vratka, vrácení zboží, storno prodeje, prodejky, plátce]
-related: [pokladna/pokladni-doklad.md, pokladna/platba-kartou-branou-dobirkou.md, polozky/zalozeni-polozky.md, uctarna/dph-zive-vystupy.md, co-dnes-nejde.md]
+summary: Jak zapsat prodej za hotové, kartou, přes bránu nebo na dobírku na pokladně bez faktury, jak udělat vratku a jak prodejku vytisknout.
+keywords: [prodejka, prodej za hotové, prodej na pokladně, paragon, účtenka, platba kartou, prodej kartou, prodej na dobírku, dobírka, platební brána, tržba, vratka, vrácení zboží, storno prodeje, prodejky, plátce, tisk prodejky, vytisknout prodejku, PDF prodejky, prodejka daňový doklad, prodejka vratka]
+related: [pokladna/pokladni-doklad.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/tisk-faktury.md, polozky/zalozeni-polozky.md, uctarna/dph-zive-vystupy.md, co-dnes-nejde.md]
 ---
 
 # Prodejka
@@ -47,6 +47,27 @@ s pohybem *Úhrada pohledávky*, nebo na faktuře zvol platbu *Hotovost* rovnou.
    a dobírka jako pohledávka za plátcem s variabilním symbolem rovným
    číslu prodejky — a DPH z ní jde do přiznání za období podle DUZP.
 
+## Tisk prodejky
+
+Prodejku ve stavu **V pořádku** vytiskneš tlačítkem **Tisk** nahoře v jejím
+detailu: otevře se náhled PDF a **Stáhnout** ho uloží. Postup, náhled
+i hlášení jsou stejné jako u faktury — viz
+[Tisk faktury](../faktury-vydane/tisk-faktury.md). Vyjde doklad na celou
+stránku A4, ne úzká účtenka.
+
+- **Titulek**: u plátce DPH *Prodejka – daňový doklad*, u neplátce
+  *Prodejka*. Vratka (prodejka se zápornou celkovou částkou) se jmenuje
+  *Prodejka – vratka*; jinak vypadá stejně, jen má záporné částky.
+- **Odběratel** je na dokladu jen tehdy, když má prodejka partnera. Bez
+  něj zůstane jeho místo prázdné.
+- **Pokladna**, **Datum vystavení** a u plátce datum zdanitelného plnění,
+  řádky, rekapitulace DPH a částka **Celkem**.
+- Prodejka placená **Převodem** má navíc **Datum splatnosti**, **Náš
+  bankovní účet**, QR platbu a částku **K úhradě** — jako faktura.
+
+Prodejka ve stavu **Storno** se vytiskne s šedým nápisem **STORNO** přes
+každou stranu.
+
 ## Na co narazíš
 
 **Vratka je záporný řádek.** Vrací-li zákazník zboží, založ novou prodejku
@@ -62,8 +83,8 @@ partnera — pohledávka pak vznikne za ním.
 A4 (nad 10 000 Kč jednotlivě) se dostane jen prodej, u kterého je vyplněný
 partner s českým DIČ — viz [Živé výstupy DPH](../uctarna/dph-zive-vystupy.md).
 
-**Účtenku pro zákazníka z Shipardu nedostaneš.** Tisk prodejky zatím
-neexistuje, stejně jako u vydaných faktur — viz
+**Účtenku z pokladní tiskárny z Shipardu nedostaneš.** Prodejka se tiskne
+jen jako PDF na stránku A4 — viz
 [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 ## Souvisí
@@ -74,4 +95,7 @@ neexistuje, stejně jako u vydaných faktur — viz
 - [Založení položky](../polozky/zalozeni-polozky.md) — co se dá dát na řádek
 - [Živé výstupy DPH](../uctarna/dph-zive-vystupy.md) — kam prodejka spadne
   v přiznání a kontrolním hlášení
-- [Co Shipard dnes neumí](../co-dnes-nejde.md) — tisk účtenky, pokladní kniha
+- [Tisk faktury](../faktury-vydane/tisk-faktury.md) — náhled, stažení
+  a hlášení při tisku fungují stejně
+- [Co Shipard dnes neumí](../co-dnes-nejde.md) — účtenka z pokladní
+  tiskárny, pokladní kniha
