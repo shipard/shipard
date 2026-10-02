@@ -133,7 +133,7 @@
         // než selhaný běh → reanalýza je doporučená.
         "hintReanalyze": {
             "name": "The analysis has been updated since — try Reanalyze.",
-            "name:cs": "Analýza se mezitím aktualizovala — zkus Znova analyzovat.",
+            "name:cs": "Analýza se mezitím aktualizovala — zkus Znovu analyzovat.",
             "name:en": "The analysis has been updated since — try Reanalyze."
         },
         // Stejná nebo neznámá verze → opakování dopadne stejně.

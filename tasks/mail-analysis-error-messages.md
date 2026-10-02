@@ -38,7 +38,7 @@ Kde uživatel selhání vidí:
 - tab **Analýzy** (`buildAnalysesTab`, ~ř. 627) — `error_message`
   načítá, ale nezobrazí
 - **Dashboard** (`MailSuggestionsSource::buildErrorCard`, ~ř. 375) —
-  titulek „Chyba analýzy e-mailu“, primární akce „Znova analyzovat“
+  titulek „Chyba analýzy e-mailu“, primární akce „Znovu analyzovat“
 - **Nastavení → Analýzy zpráv** — surová hláška (jediné místo)
 
 Druhá cesta téhož problému — výstup prošel analyzerem, ale ne serverovou
@@ -89,7 +89,7 @@ Tvary hlášek z analyzeru (`ai_analyzer/schema.py`, `providers/anthropic_provid
   dostane **titulek z katalogu** místo obecného „Chyba analýzy e-mailu“
   a vysvětlení + co dělat do existujícího rozbalovacího `details`
   (bez změny kontraktu karty).
-- ✓ **D4 — chytřejší „Znova analyzovat“:** reanalýza je doporučená, jen
+- ✓ **D4 — chytřejší „Znovu analyzovat“:** reanalýza je doporučená, jen
   když má výchozí aktivní profil novější `prompt_version` než selhaná
   analýza; jinak hint, že opakování se stejnou verzí skončí stejně.
   Na Dashboardu je při doporučení primární akce reanalýza (jako dnes),
@@ -132,7 +132,7 @@ Hint „co dělat“ (D4) je společný, ne per kategorie — dvě varianty
 v katalogu pod rezervovanými klíči (nebo v helperu přes stejný
 cfg mechanismus):
 
-- doporučeno: „Analýza se mezitím aktualizovala — zkus Znova analyzovat.“
+- doporučeno: „Analýza se mezitím aktualizovala — zkus Znovu analyzovat.“
 - nedoporučeno: „Opakování se stejnou verzí analýzy skončí stejně. Doklad
   zadej ručně a dej nám vědět, o jakou zprávu šlo.“
 
@@ -210,8 +210,8 @@ Ověření: `vendor/bin/phpunit --filter 'IncomingMessagesViewerTest|MailSuggest
 - Nápověda `help/posta/prijem-posty.md` — přepsat odstavec „Analýza
   selhala“: co uživatel uvidí (karta v tabu Návrh, titulek karty na
   Dashboardu), že jde typicky o chybu na straně Shipardu, kdy má smysl
-  Znova analyzovat; pryč „typicky nečitelné PDF“. Popisek akce ověřit
-  v `viewerDefaults.jsonc` („Znova analyzovat“). Případně řádek ve
+  Znovu analyzovat; pryč „typicky nečitelné PDF“. Popisek akce ověřit
+  v `viewerDefaults.jsonc` („Znovu analyzovat“). Případně řádek ve
   `help/slovnicek.md`.
 - `**Stav:**` → `hotovo` (nebo `částečně — zbývá ověření na dev zdroji`)
   + `python3 scripts/tasks-index.py`.

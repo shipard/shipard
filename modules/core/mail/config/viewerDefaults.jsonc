@@ -15,7 +15,7 @@
         },
         "reanalyze": {
             "name": "Reanalyze",
-            "name:cs": "Znova analyzovat",
+            "name:cs": "Znovu analyzovat",
             "name:en": "Reanalyze",
             "variant": "secondary"
         },

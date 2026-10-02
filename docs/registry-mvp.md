@@ -434,7 +434,7 @@ Endpoint `POST /api/v1/_registry/from-message/{messageNdx}`:
    uživatel doplní druh/šanon a uloží do 40 (Zařazeno).
 
 UI vstupní bod: toolbar akce **„Zařadit do Spisovny"** v detailu zprávy
-(vedle „Znova analyzovat"), viditelná mimo Koš.
+(vedle „Znovu analyzovat"), viditelná mimo Koš.
 
 ### 6.5 Hotovo když (rámcově, detail v PRD)
 

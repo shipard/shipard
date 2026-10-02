@@ -411,7 +411,7 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame('reanalyze', $actions[0]['kind']);
         $this->assertTrue($actions[0]['primary']);
         $this->assertSame('open_detail', $actions[1]['kind']);
-        $this->assertSame('Analýza se mezitím aktualizovala — zkus Znova analyzovat.', $cards[0]['details'][1]['value']);
+        $this->assertSame('Analýza se mezitím aktualizovala — zkus Znovu analyzovat.', $cards[0]['details'][1]['value']);
     }
 
     public function testMessageAiErrorProducesUrgentCard(): void
@@ -476,7 +476,7 @@ final class MailSuggestionsSourceTest extends TestCase
             'Není to chyba ve zprávě ani v příloze, ale v nastavení analýzy Shipardu. AI přidala pole „foo“ (customer), které formát dokladu nezná.',
             $card['details'][0]['value'],
         );
-        $this->assertSame('Analýza se mezitím aktualizovala — zkus Znova analyzovat.', $card['details'][1]['value']);
+        $this->assertSame('Analýza se mezitím aktualizovala — zkus Znovu analyzovat.', $card['details'][1]['value']);
         $this->assertSame('reanalyze', $card['actions'][0]['id']);
         $this->assertTrue($card['actions'][0]['primary']);
         $this->assertSame('openMail', $card['actions'][1]['id']);

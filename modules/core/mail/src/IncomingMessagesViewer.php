@@ -269,7 +269,7 @@ class IncomingMessagesViewer extends TableViewer
             ];
         }
 
-        // "Znova analyzovat" je viditelné jen když analysis_state ∈ {30, 70}
+        // "Znovu analyzovat" je viditelné jen když analysis_state ∈ {30, 70}
         // (Analyzováno / Analýza selhala) a zpráva není v Archivu/Koši —
         // zrcadlí validaci AnalysisController::reanalyze.
         $analysisState = (int) ($selectedRow['analysis_state'] ?? 0);

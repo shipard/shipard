@@ -717,7 +717,7 @@ classifier v pipeline je null-safe, uplatní se jen Vrstva 0 a pravidlo IČO,
 bere i doklady s `source_kind = 'isdoc'` (D2). Bez backfillu — změna platí
 pro poštu přijatou po nasazení (D3).
 
-„Znova analyzovat" (30 → 10) zůstává únikovou cestou k AI, kdyby ISDOC
+„Znovu analyzovat" (30 → 10) zůstává únikovou cestou k AI, kdyby ISDOC
 výsledek nestačil.
 
 ## Reanalýza
@@ -828,7 +828,7 @@ Chyby předzpracování (`preprocess_state=40`) řeší samostatný task (D6).
 
 Řádek vieweru i hlavička detailu zobrazují badge stavu analýzy (label +
 stateStyle z `core.mail.analysisStates`; hodnota 0 se nezobrazuje). Toolbar
-v detailu obsahuje "Otevřít" (form edit) a "Znova analyzovat" (podmíněně dle
+v detailu obsahuje "Otevřít" (form edit) a "Znovu analyzovat" (podmíněně dle
 `analysis_state`, viz Reanalýza).
 
 ## Auto-provisioning

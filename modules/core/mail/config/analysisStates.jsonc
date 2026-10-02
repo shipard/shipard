@@ -62,7 +62,7 @@
         "name:en": "Analysis failed",
         "stateStyle": "error",
         "icon": "warning",
-        "description:cs": "Permanentní chyba — čeká na zásah (Znova analyzovat)",
+        "description:cs": "Permanentní chyba — čeká na zásah (Znovu analyzovat)",
         "description:en": "Permanent failure — waiting for intervention (Reanalyze)",
         "order": 70
     }

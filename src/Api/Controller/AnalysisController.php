@@ -1301,7 +1301,7 @@ class AnalysisController
     // -------------------------------------------------------------------
 
     /**
-     * UI akce "Znova analyzovat". Spec §4.
+     * UI akce "Znovu analyzovat". Spec §4.
      *
      * Auth: běžný přihlášený uživatel (UI), ne _ai_analyzer.
      *

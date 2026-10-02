@@ -238,7 +238,7 @@ final class AnalysisErrorPresenterTest extends TestCase
         $this->assertTrue($presenter->isReanalysisRecommended('v4.3.0'));
         $info = $presenter->fromErrorMessage('[ai_error] x', 'v4.3.0');
         $this->assertTrue($info->reanalysisRecommended);
-        $this->assertSame('Analýza se mezitím aktualizovala — zkus Znova analyzovat.', $info->hint);
+        $this->assertSame('Analýza se mezitím aktualizovala — zkus Znovu analyzovat.', $info->hint);
     }
 
     public function testSameOrOlderProfileDoesNotRecommend(): void

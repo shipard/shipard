@@ -471,7 +471,7 @@ export default {
   'exchange.preview.status.summary.ok': 'Vše napárováno',
   'exchange.preview.status.summary.needsAttention': 'Vyžaduje pozornost',
   'exchange.preview.aiFailed.title': 'AI vrátila nepoužitelný návrh',
-  'exchange.preview.aiFailed.message': 'Návrh neprošel kontrolou formátu dokladu a nedá se použít. Pokud se analýza mezitím aktualizovala, zkus „Znova analyzovat" v hlavičce zprávy.',
+  'exchange.preview.aiFailed.message': 'Návrh neprošel kontrolou formátu dokladu a nedá se použít. Pokud se analýza mezitím aktualizovala, zkus „Znovu analyzovat" v hlavičce zprávy.',
   'exchange.preview.aiFailed.rawOutput': 'Co AI vrátila',
   'exchange.preview.aiFailed.issues': 'Problémy',
   'exchange.preview.pdf.empty': 'K dispozici není PDF náhled',

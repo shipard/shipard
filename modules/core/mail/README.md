@@ -91,7 +91,7 @@ další providers (Ollama, ...), odeslaná pošta.
 | `GET /api/v1/_mail/analysis/{ndx}/attachments/{att_ndx}/content` | Streamuje obsah přílohy. |
 | `POST /api/v1/_mail/analysis/{ndx}/result` | Uloží výsledek + extracted documents. |
 | `POST /api/v1/_mail/analysis/{ndx}/failed` | Failed analysis. retryable=true → 10, false → 70. |
-| `POST /api/v1/_mail/messages/{ndx}/reanalyze` | UI akce "Znova analyzovat". Auth: běžný uživatel. |
+| `POST /api/v1/_mail/messages/{ndx}/reanalyze` | UI akce "Znovu analyzovat". Auth: běžný uživatel. |
 | `POST /api/v1/_mail/extracted-documents/{ndx}/apply` | UI akce "Použít" — prochází přes `ExtractedDocumentDocument` hooky (auto-transition zprávy 30→40). |
 | `POST /api/v1/_mail/extracted-documents/{ndx}/reject` | UI akce "Zamítnout" — povinný `reason` v body. |
 | `POST /api/v1/_mail/sender-rules/{id}/confirm` | Potvrzení návrhu pravidla (Koncept 10 → 40). Auth: běžný uživatel. |

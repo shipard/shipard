@@ -163,7 +163,7 @@ class AiProfileReloadCommand extends Command
         $output->writeln(
             "<info>Updated profile '{$profileCode}' (id={$profileId}): {$currentVersion} → {$newVersion}</info>",
         );
-        $output->writeln('Re-queue messages via UI ("Znova analyzovat") or SQL to apply the new prompt.');
+        $output->writeln('Re-queue messages via UI ("Znovu analyzovat") or SQL to apply the new prompt.');
 
         return Command::SUCCESS;
     }

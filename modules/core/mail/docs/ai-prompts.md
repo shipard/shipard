@@ -234,7 +234,7 @@ default profil):
 
    Sync ani reload **nepřepisují** `name`, `is_default`, `is_active`,
    `backend` — admin si je může lokálně upravit.
-5. V UI klikni "Znova analyzovat" na vybraných zprávách — vznikne nový
+5. V UI klikni "Znovu analyzovat" na vybraných zprávách — vznikne nový
    běh a stane se automaticky aktuálním návrhem (historie se nemění,
    žádný supersede krok). Zprávu s aplikovaným návrhem a živým targetem
    reanalyzovat nejde — nejdřív unapply. Případně re-queue přes SQL.

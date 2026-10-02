@@ -244,7 +244,7 @@ souboru, sanitizace názvu) žijí v `Action/GeneratedAttachments`.
   (`analysis_state = 20`) a zprávu ve stavu 20 (použij `--sweep`).
   U zprávy odložené jen kvůli ISDOC (`trigger: 'isdoc'`) vrátí `no_match`
   — matcher hledá pravidla odesílatele, ne ISDOC; ruční re-import ISDOC
-  je mimo rozsah #81, únikovou cestou je „Znova analyzovat".
+  je mimo rozsah #81, únikovou cestou je „Znovu analyzovat".
 - **Render služba**: runner ji bere ze `render` sekce
   `/etc/shipard/server.json` (`RenderClient::fromServerConfig`,
   `PreprocessRunnerFactory`); server config nenačitatelný = klient
