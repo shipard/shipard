@@ -24,7 +24,9 @@ class PrintDataTest extends TestCase
             'language'    => 'cs',
             'record'      => ['table' => 'docs_core_heads', 'id' => 123, 'docState' => 40],
             'generatedAt' => '2026-10-02T10:30:00+02:00',
-            'meta'        => ['title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf'],
+            'meta'        => [
+                'title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf', 'watermark' => null,
+            ],
             'branding'    => ['logo' => 'logo.png'],
             'texts'       => [],
             'messages'    => [['severity' => 'warning', 'code' => 'payment.qrNoAccount', 'text' => 'QR nevznikl']],
@@ -61,6 +63,25 @@ class PrintDataTest extends TestCase
 
         $this->assertNull($data->logo);
         $this->assertSame([], $data->messages);
+    }
+
+    public function testWatermarkIsOptionalPartOfMeta(): void
+    {
+        $envelope = self::envelope();
+        $envelope['meta']['watermark'] = 'STORNO';
+        $data = PrintData::fromArray($envelope);
+        $this->assertSame('STORNO', $data->watermark);
+        $this->assertSame('STORNO', $data->toArray()['meta']['watermark']);
+        $this->assertSame('STORNO', $data->withLanguage('en')->watermark);
+
+        // JSON z doby před vodoznakem klíč nemá.
+        unset($envelope['meta']['watermark']);
+        $this->assertNull(PrintData::fromArray($envelope)->watermark);
+
+        $envelope['meta']['watermark'] = ['STORNO'];
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("'meta.watermark'");
+        PrintData::fromArray($envelope);
     }
 
     /** @return array<string, array{string}> */

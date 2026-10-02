@@ -1,7 +1,7 @@
 ---
 title: Tisk faktury
-summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je a proč se koncept netiskne.
-keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout]
+summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne.
+keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
 related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, co-dnes-nejde.md]
 ---
 
@@ -31,6 +31,13 @@ a potřebuješ doklad, který dostane odběratel.
 Tisk nic neukládá — PDF vzniká pokaždé znovu z dokladu, takže ho můžeš
 stáhnout, kolikrát chceš.
 
+## Stornovaný doklad
+
+Vytisknout jde i doklad ve stavu **Storno**. PDF je stejné jako před
+stornem, jen má přes každou stranu šedý nápis **STORNO** — hodí se, když
+odběrateli potřebuješ doložit, že doklad neplatí. Název souboru zůstává
+stejný.
+
 ## Co na dokladu je
 
 - **Titulek** podle toho, co doklad je: u plátce DPH *Faktura – daňový
@@ -39,8 +46,9 @@ stáhnout, kolikrát chceš.
 - **Dodavatel a odběratel** z **Fakturačních údajů** zmrazených při
   **Potvrdit** — tedy tak, jak platily při vystavení. Když odběrateli
   později změníš adresu v **Osobách**, vystavená faktura se nezmění.
-- **Platební údaje**: způsob úhrady, **Náš bankovní účet**, variabilní,
-  specifický a konstantní symbol.
+- **Platební údaje**: způsob úhrady, variabilní, specifický a konstantní
+  symbol. **Náš bankovní účet** se tiskne jen u dokladu placeného
+  **Převodem** — hotově ani kartou se na něj neplatí.
 - **QR platba** — kód, který odběratel načte v bankovní aplikaci. Je jen
   u dokladu placeného **Převodem** s kladnou částkou k úhradě.
 - **Řádky** včetně textových; u plátce se sazbou, základem a daní. **Odpočet
@@ -56,8 +64,8 @@ stáhnout, kolikrát chceš.
 ## Na co narazíš
 
 **Tlačítko Tisk u dokladu není.** Tiskne se jen doklad ve stavu
-**V pořádku**. Koncept ani potvrzený doklad, který ještě není V pořádku,
-vytisknout nejde — odběratel by dostal doklad, který se ještě může změnit.
+**V pořádku** nebo **Storno**. Koncept ani doklad **V opravě** vytisknout
+nejde — odběratel by dostal doklad, který se ještě může změnit.
 
 **Nad náhledem je žluté upozornění, že chybí QR platba.** Doklad nemá
 bankovní účet, ze kterého by šel kód sestavit — **Náš bankovní účet** na

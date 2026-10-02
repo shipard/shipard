@@ -103,19 +103,23 @@ final class PrintRunner
             translator: $translator,
         ));
 
+        $docState     = (int) $record['docState'];
+        $watermarkKey = $definition->watermarks[$docState] ?? null;
+
         $printData = new PrintData(
             printId: $definition->id,
             version: $builder->version(),
             language: $language,
             table: $definition->table,
             recordId: $recordId,
-            docState: (int) $record['docState'],
+            docState: $docState,
             generatedAt: ($this->clock)(),
             title: $result->title,
             fileName: $result->fileName,
             logo: $this->logoAssetName(),
             messages: $result->messages,
             data: $result->data,
+            watermark: $watermarkKey === null ? null : $translator->t($watermarkKey),
         );
 
         return $this->output($definition, $printData, $translator, $format);

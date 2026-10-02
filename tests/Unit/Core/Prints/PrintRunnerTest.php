@@ -70,6 +70,7 @@ class PrintRunnerTest extends TestCase
      * @param array<string, mixed>|null $record
      * @param array<string, mixed> $declaration
      * @param list<string> $configLanguages Sem runner zapíše jazyky, pro které chtěl konfiguraci.
+     * @param array<string, array<string, string>>|null $catalog Katalog překladů tisku (klíč → jazyk → text).
      */
     private function runner(
         ?array $record = self::RECORD,
@@ -77,6 +78,7 @@ class PrintRunnerTest extends TestCase
         string $defaultLanguage = 'cs',
         ?BrandingStorage $branding = null,
         array &$configLanguages = [],
+        ?array $catalog = null,
     ): PrintRunner {
         $registry = new PrintRegistry();
         $registry->add(PrintDefinition::fromArray(
@@ -96,8 +98,27 @@ class PrintRunnerTest extends TestCase
             },
             new PrintLanguageResolver($defaultLanguage),
             $branding,
+            $catalog === null ? null : $this->catalogLoader($catalog),
             clock: static fn (): \DateTimeImmutable => new \DateTimeImmutable('2026-10-02T10:30:00+02:00'),
         );
+    }
+
+    /**
+     * Katalog tisku jako `messages.jsonc` v adresáři šablony dočasného
+     * modulu — deklarace testu míří na `@docs.invoicesOut/invoice`.
+     *
+     * @param array<string, array<string, string>> $catalog
+     */
+    private function catalogLoader(array $catalog): PrintCatalogLoader
+    {
+        $this->dsPath = sys_get_temp_dir() . '/shpd_prints_' . uniqid('', true);
+        $modules  = $this->dsPath . '/modules';
+        $template = $modules . '/docs/invoicesOut/prints/invoice';
+        mkdir($template, 0755, true);
+        file_put_contents($modules . '/docs/invoicesOut/module.jsonc', '{"id": "docs.invoicesOut", "name": "Invoices"}');
+        file_put_contents($template . '/messages.jsonc', (string) json_encode($catalog));
+
+        return new PrintCatalogLoader(new PrintTemplatePaths(new ModulePathResolver([$modules])));
     }
 
     public function testJsonRunWrapsBuilderResultInEnvelope(): void
@@ -113,7 +134,9 @@ class PrintRunnerTest extends TestCase
                 'language'    => 'cs',
                 'record'      => ['table' => 'docs_core_heads', 'id' => 123, 'docState' => 40],
                 'generatedAt' => '2026-10-02T10:30:00+02:00',
-                'meta'        => ['title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf'],
+                'meta'        => [
+                    'title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf', 'watermark' => null,
+                ],
                 'branding'    => ['logo' => null],
                 'texts'       => [],
                 'messages'    => [['severity' => 'warning', 'code' => 'qr.noAccount', 'text' => 'QR nevznikl']],
@@ -190,6 +213,30 @@ class PrintRunnerTest extends TestCase
         $this->expectExceptionMessage('kind of record');
         $this->runner(record: ['doc_type' => 'invni'] + self::RECORD)
             ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+    }
+
+    // ── vodoznak (D23) ──────────────────────────────────────────────────────
+
+    public function testWatermarkOfRecordStateIsTranslatedIntoMeta(): void
+    {
+        $declaration = ['docStates' => [40, 30], 'watermarks' => ['30' => 'watermark.cancelled'], 'catalogs' => []];
+        $catalog = ['watermark.cancelled' => ['cs' => 'STORNO', 'en' => 'CANCELLED']];
+
+        $cancelled = ['docState' => 30] + self::RECORD;
+        $output = $this->runner(record: $cancelled, declaration: $declaration, catalog: $catalog)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        $this->assertSame('STORNO', $output->printData->watermark);
+        $this->assertSame('STORNO', $output->printData->toArray()['meta']['watermark']);
+        $this->assertSame('faktura-2026000123.pdf', $output->printData->fileName, 'název souboru se stornem nemění');
+
+        $output = $this->runner(record: $cancelled, declaration: $declaration, catalog: $catalog)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json, 'en');
+        $this->assertSame('CANCELLED', $output->printData->watermark);
+
+        // Stav bez klíče ve `watermarks` vodoznak nemá.
+        $output = $this->runner(declaration: $declaration, catalog: $catalog)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        $this->assertNull($output->printData->watermark);
     }
 
     public function testBuilderClassMustImplementInterface(): void

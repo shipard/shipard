@@ -86,7 +86,30 @@ class PrintPdfTest extends IntegrationTestCase
         $this->assertStringContainsString('Nejedná se o daňový doklad.', $text);
     }
 
-    private function pdfText(string $pdf): string
+    public function testCancelledInvoiceHasWatermarkOnEveryPage(): void
+    {
+        $headId = $this->insertInvoice(
+            $this->expected('invoice'),
+            $this->anyUnit()[0],
+            ['docState' => 30, 'docStateMain' => 4],
+            extraTextRows: 120,
+        );
+
+        $output = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Pdf, 'cs');
+
+        // pdftotext odděluje strany znakem form feed. Otočený text (vodoznak)
+        // režim -layout vynechává, -raw ho vrací.
+        $pages = array_values(array_filter(
+            explode("\f", $this->pdfText((string) $output->pdfContent, '-raw')),
+            static fn (string $page): bool => trim($page) !== '',
+        ));
+        $this->assertGreaterThan(1, count($pages), 'doklad má být vícestránkový');
+        foreach ($pages as $index => $page) {
+            $this->assertStringContainsString('STORNO', $page, 'strana ' . ($index + 1));
+        }
+    }
+
+    private function pdfText(string $pdf, string $mode = '-layout'): string
     {
         if (trim((string) shell_exec('command -v pdftotext')) === '') {
             $this->markTestSkipped('pdftotext (poppler-utils) is not installed.');
@@ -95,7 +118,7 @@ class PrintPdfTest extends IntegrationTestCase
         file_put_contents($file, $pdf);
         try {
             // Nezlomitelné mezery z filtrů → obyčejné, ať se text dá hledat.
-            return str_replace("\u{00A0}", ' ', (string) shell_exec('pdftotext -layout ' . escapeshellarg($file) . ' -'));
+            return str_replace("\u{00A0}", ' ', (string) shell_exec('pdftotext ' . $mode . ' ' . escapeshellarg($file) . ' -'));
         } finally {
             @unlink($file);
         }

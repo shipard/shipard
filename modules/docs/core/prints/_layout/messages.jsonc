@@ -56,6 +56,9 @@
     // Zápatí
     "footer.page": { "cs": "Strana", "en": "Page" },
 
+    // Vodoznak (deklarace tisku `watermarks`)
+    "watermark.cancelled": { "cs": "STORNO", "en": "CANCELLED" },
+
     // Měkká hlášení builderu (PrintData.messages)
     "message.qrNoAccount": {
         "cs": "QR platba na dokladu chybí — doklad nemá bankovní účet s IBAN.",

@@ -19,6 +19,8 @@ final class PrintData implements \JsonSerializable
      *        v brandingu žádné není.
      * @param list<PrintMessage> $messages
      * @param array<string, mixed> $data
+     * @param ?string $watermark Text přes každou stranu (D23, „STORNO“);
+     *        null = bez vodoznaku.
      */
     public function __construct(
         public readonly string $printId,
@@ -33,6 +35,7 @@ final class PrintData implements \JsonSerializable
         public readonly ?string $logo,
         public readonly array $messages,
         public readonly array $data,
+        public readonly ?string $watermark = null,
     ) {}
 
     /**
@@ -78,6 +81,10 @@ final class PrintData implements \JsonSerializable
         if (!is_string($meta['title'] ?? null) || !is_string($meta['fileName'] ?? null)) {
             throw new \InvalidArgumentException("Print data: 'meta' must carry 'title' and 'fileName'");
         }
+        $watermark = $meta['watermark'] ?? null;
+        if ($watermark !== null && !is_string($watermark)) {
+            throw new \InvalidArgumentException("Print data: 'meta.watermark' must be a string or null");
+        }
 
         $generatedAt = $envelope['generatedAt'] ?? null;
         try {
@@ -108,6 +115,7 @@ final class PrintData implements \JsonSerializable
                 $messages,
             )),
             data: $data,
+            watermark: $watermark === '' ? null : $watermark,
         );
     }
 
@@ -127,6 +135,7 @@ final class PrintData implements \JsonSerializable
             logo: $this->logo,
             messages: $this->messages,
             data: $this->data,
+            watermark: $this->watermark,
         );
     }
 
@@ -144,8 +153,9 @@ final class PrintData implements \JsonSerializable
             ],
             'generatedAt' => $this->generatedAt->format(\DateTimeInterface::ATOM),
             'meta'        => [
-                'title'    => $this->title,
-                'fileName' => $this->fileName,
+                'title'     => $this->title,
+                'fileName'  => $this->fileName,
+                'watermark' => $this->watermark,
             ],
             'branding'    => ['logo' => $this->logo],
             // Sloty textů na tiscích (#90 D9) plní až fáze 3.

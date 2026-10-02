@@ -10,7 +10,8 @@ use Shipard\Core\Render\PdfOptions;
  * Deklarace tisku z JSONC (#90 D2, D4) — tisk nad jedním záznamem tabulky.
  * Určuje, pro které záznamy je tisk dostupný (`table`, volitelný `filter`,
  * povinné `docStates`), kdo skládá data (`builder`) a čím se kreslí
- * (`template`, `catalogs`, `paper`).
+ * (`template`, `catalogs`, `paper`). Volitelné `watermarks` určí vodoznak
+ * podle stavu záznamu (D23) — stornovaný doklad jde vytisknout se „STORNO“.
  *
  * Vstupní pole je už lokalizované (`ConfigLocalizer` vyřešil `name:cs`
  * varianty před voláním `fromArray()` — vzor `ReportDefinition`).
@@ -35,6 +36,9 @@ final class PrintDefinition
      *        šablony; renderer z nich bere i assety a výchozí záhlaví a zápatí.
      * @param array<string, string> $margins Okraje stránky (CSS délky) podle
      *        strany; chybějící strana = výchozí okraj render profilu.
+     * @param array<int, string> $watermarks Stav záznamu → klíč katalogu
+     *        s textem vodoznaku. Layout tisku ho musí vykreslit
+     *        (`meta.watermark`).
      */
     public function __construct(
         public readonly string $id,
@@ -51,6 +55,7 @@ final class PrintDefinition
         public readonly int $order,
         public readonly string $moduleId,
         public readonly array $margins = [],
+        public readonly array $watermarks = [],
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -107,6 +112,26 @@ final class PrintDefinition
                     "Print '{$id}': 'docStates' must be a non-empty array of integers",
                 );
             }
+        }
+
+        $watermarks = [];
+        $rawWatermarks = $data['watermarks'] ?? [];
+        if (!is_array($rawWatermarks)) {
+            throw new \InvalidArgumentException("Print '{$id}': 'watermarks' must be an object");
+        }
+        foreach ($rawWatermarks as $state => $key) {
+            // Klíče JSON objektu jsou řetězce; PHP z číselných dělá int.
+            if ((!is_int($state) && !ctype_digit((string) $state)) || !in_array((int) $state, $docStates, true)) {
+                throw new \InvalidArgumentException(
+                    "Print '{$id}': 'watermarks' keys must be states listed in 'docStates'",
+                );
+            }
+            if (!is_string($key) || trim($key) === '') {
+                throw new \InvalidArgumentException(
+                    "Print '{$id}': 'watermarks' values must be non-empty catalog keys",
+                );
+            }
+            $watermarks[(int) $state] = $key;
         }
 
         $audience = $data['audience'] ?? 'external';
@@ -195,6 +220,7 @@ final class PrintDefinition
             order: $order,
             moduleId: $moduleId,
             margins: $margins,
+            watermarks: $watermarks,
         );
     }
 

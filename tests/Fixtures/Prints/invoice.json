@@ -4,13 +4,14 @@
     "language": "cs",
     "record": { "table": "docs_core_heads", "id": 123, "docState": 40 },
     "generatedAt": "2026-10-02T10:30:00+02:00",
-    "meta": { "title": "Faktura – daňový doklad IT-PRINT-INV", "fileName": "faktura-it-print-inv.pdf" },
+    "meta": { "title": "Faktura – daňový doklad IT-PRINT-INV", "fileName": "faktura-it-print-inv.pdf", "watermark": null },
     "branding": { "logo": null },
     "texts": {},
     "messages": [],
     "data": {
         "document": {
             "type": "invno",
+            "tradeDir": 1,
             "titleVariant": "invoiceVatPayer",
             "title": "Faktura – daňový doklad",
             "number": "IT-PRINT-INV",

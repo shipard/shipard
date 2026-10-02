@@ -20,13 +20,13 @@ final class TitleVariantResolver
     public const PROFORMA              = 'proforma';
 
     /** @throws PrintBuildException Typ dokladu, pro který titulek neznáme. */
-    public static function resolve(string $docType, bool $vatPayer): string
+    public static function resolve(DocTitleContext $context): string
     {
-        return match ($docType) {
-            'invno' => $vatPayer ? self::INVOICE_VAT_PAYER : self::INVOICE_NON_VAT_PAYER,
+        return match ($context->docType) {
+            'invno' => $context->vatPayer ? self::INVOICE_VAT_PAYER : self::INVOICE_NON_VAT_PAYER,
             'invpo' => self::PROFORMA,
             default => throw new PrintBuildException(
-                "Document type '{$docType}' has no print title variant",
+                "Document type '{$context->docType}' has no print title variant",
             ),
         };
     }

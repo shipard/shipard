@@ -1,7 +1,9 @@
 {#
     Zápatí dokladu — samostatný HTML dokument pro render službu. Čísla stran
     doplňuje render služba do prvků s třídami `pageNumber` a `totalPages`.
+    Vlevo je vlastní firma: dodavatel na výstupu, odběratel na vstupu.
 #}
+{% set own = data.document.tradeDir|default(1) == 2 ? data.customer : data.supplier %}
 <!DOCTYPE html>
 <html lang="{{ language }}">
 <head>
@@ -23,7 +25,7 @@
 </head>
 <body>
 <div class="foot">
-    <div>{{ data.supplier.name|default('') }}</div>
+    <div>{{ own.name|default('') }}</div>
     <div>{{ t('footer.page') }} <span class="pageNumber"></span> / <span class="totalPages"></span></div>
 </div>
 </body>

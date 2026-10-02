@@ -49,6 +49,23 @@ dd {
     margin: 0;
 }
 
+/* ── vodoznak ───────────────────────────────────────────────────────────── */
+
+/* `position: fixed` tisk opakuje na každé straně; střed plochy stránky. */
+.doc-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: -1;
+    transform: translate(-50%, -50%) rotate(-35deg);
+    font-size: 110pt;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    color: #dcdcdc;
+    pointer-events: none;
+}
+
 .doc-subject {
     margin-bottom: 0.5cm;
     font-size: 10pt;

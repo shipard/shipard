@@ -1,11 +1,19 @@
-{# Dodavatel a odběratel vedle sebe. #}
+{#
+    Dodavatel a odběratel vedle sebe. Strana, kterou doklad nemá (pokladní
+    doklad nebo prodejka bez partnera), se vynechá — její místo zůstane
+    prázdné.
+#}
 <section class="doc-parties">
     <div class="party">
-        <h2>{{ t('label.supplier') }}</h2>
-        {% include '@docs.core/_partials/party.html.twig' with { party: data.supplier, showContact: true } only %}
+        {% if data.supplier %}
+            <h2>{{ t('label.supplier') }}</h2>
+            {% include '@docs.core/_partials/party.html.twig' with { party: data.supplier, showContact: true } only %}
+        {% endif %}
     </div>
-    <div class="party party--customer">
-        <h2>{{ t('label.customer') }}</h2>
-        {% include '@docs.core/_partials/party.html.twig' with { party: data.customer, showContact: false } only %}
+    <div class="party{% if data.customer %} party--customer{% endif %}">
+        {% if data.customer %}
+            <h2>{{ t('label.customer') }}</h2>
+            {% include '@docs.core/_partials/party.html.twig' with { party: data.customer, showContact: false } only %}
+        {% endif %}
     </div>
 </section>

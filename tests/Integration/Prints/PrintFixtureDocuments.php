@@ -92,6 +92,15 @@ trait PrintFixtureDocuments
         return [(int) $unit['id'], (string) $unit['shortcut']];
     }
 
+    private function anyPersonId(): int
+    {
+        $person = $this->db->fetchSingle('SELECT [id] FROM [base_persons_persons] ORDER BY [id] LIMIT 1');
+        if ($person === null) {
+            $this->markTestSkipped('DS nemá žádnou osobu.');
+        }
+        return (int) $person;
+    }
+
     private function seriesFor(string $docType): int
     {
         $series = $this->db->fetchSingle(
@@ -150,10 +159,14 @@ trait PrintFixtureDocuments
         }
     }
 
-    /** @param array<string, mixed> $expected */
-    private function insertInvoice(array $expected, int $unitId): int
+    /**
+     * @param array<string, mixed> $expected
+     * @param array<string, mixed> $headOverrides
+     * @param int $extraTextRows Textové řádky navíc — doklad přes víc stran.
+     */
+    private function insertInvoice(array $expected, int $unitId, array $headOverrides = [], int $extraTextRows = 0): int
     {
-        $headId = $this->insertHead($expected, [
+        $headId = $this->insertHead($expected, $headOverrides + [
             'doc_type'          => 'invno',
             'doc_number'        => self::INVOICE_NUMBER,
             'doc_text'          => 'Konzultace a tiskoviny za září',
@@ -192,6 +205,10 @@ trait PrintFixtureDocuments
                 'vat_code' => 'cz-122', 'vat_pct' => 0,
                 'vat_base' => -500, 'vat_amount' => 0, 'vat_total' => -500,
             ],
+            ...array_map(
+                static fn (int $n): array => ['row_kind' => 0, 'description' => "Doplňkový text {$n}"],
+                $extraTextRows > 0 ? range(1, $extraTextRows) : [],
+            ),
         ]);
 
         $this->insertRecap($headId, [

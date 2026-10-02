@@ -18,6 +18,7 @@ use Shipard\Module\Docs\Core\Prints\Blocks\DocRowsBlock;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocTotalsBlock;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocVatRecapBlock;
 use Shipard\Module\Docs\Core\Prints\DocPrintContext;
+use Shipard\Module\Docs\Core\Prints\DocTitleContext;
 use Shipard\Module\Docs\Core\Prints\DocVatCodes;
 use Shipard\Module\Docs\Core\Prints\TitleVariantResolver;
 
@@ -74,14 +75,16 @@ class DocPrintBlocksTest extends TestCase
      * @param array<string, mixed> $head
      * @param list<array<string, mixed>> $rows
      * @param list<array<string, mixed>> $recap
-     * @param array<string, mixed> $supplier
+     * @param array<string, mixed>|null $supplier
+     * @param array<string, mixed>|null $customer
      */
     private function context(
         array $head = [],
         array $rows = [],
         array $recap = [],
-        array $supplier = self::SUPPLIER,
+        ?array $supplier = self::SUPPLIER,
         ?ConfigRuntime $config = null,
+        ?array $customer = self::CUSTOMER,
     ): DocPrintContext {
         return new DocPrintContext(
             head: $head + [
@@ -98,7 +101,7 @@ class DocPrintBlocksTest extends TestCase
             rows: $rows,
             recap: $recap,
             supplier: $supplier,
-            customer: self::CUSTOMER,
+            customer: $customer,
             units: [3 => 'ks'],
             vatCodes: new DocVatCodes(
                 [
@@ -140,19 +143,43 @@ class DocPrintBlocksTest extends TestCase
 
     // ── TitleVariantResolver ────────────────────────────────────────────────
 
-    public function testTitleVariants(): void
+    /** @return array<string, array{string, DocTitleContext}> */
+    public static function titleVariants(): array
     {
-        $this->assertSame('invoiceVatPayer', TitleVariantResolver::resolve('invno', true));
-        $this->assertSame('invoiceNonVatPayer', TitleVariantResolver::resolve('invno', false));
-        $this->assertSame('proforma', TitleVariantResolver::resolve('invpo', true));
-        $this->assertSame('proforma', TitleVariantResolver::resolve('invpo', false));
+        return [
+            'faktura plátce'    => ['invoiceVatPayer', new DocTitleContext('invno', true, 1, true, 1210.0)],
+            'faktura neplátce'  => ['invoiceNonVatPayer', new DocTitleContext('invno', false, 1)],
+            'proforma plátce'   => ['proforma', new DocTitleContext('invpo', true, 1, true, 1210.0)],
+            'proforma neplátce' => ['proforma', new DocTitleContext('invpo', false, 1)],
+        ];
+    }
+
+    #[DataProvider('titleVariants')]
+    public function testTitleVariants(string $expected, DocTitleContext $context): void
+    {
+        $this->assertSame($expected, TitleVariantResolver::resolve($context));
     }
 
     public function testUnknownDocumentTypeHasNoTitleVariant(): void
     {
         $this->expectException(PrintBuildException::class);
         $this->expectExceptionMessage("Document type 'invni' has no print title variant");
-        TitleVariantResolver::resolve('invni', true);
+        TitleVariantResolver::resolve(new DocTitleContext('invni', true, 2));
+    }
+
+    public function testTitleContextComesFromHeadAndRecap(): void
+    {
+        $context = $this->context(
+            ['total_amount' => -50.0],
+            recap: [['vat_code' => 'cz-120', 'is_reverse_pair' => 1], ['vat_code' => 'cz-120']],
+            config: $this->config(),
+        )->titleContext();
+        $this->assertEquals(new DocTitleContext('invno', true, 1, true, -50.0), $context);
+
+        // Jen druhá strana reverse charge páru = rekapitulace se netiskne.
+        $this->assertFalse($this->context(recap: [['is_reverse_pair' => 1]])->hasVatRecap());
+        // Neplátce rekapitulaci nemá, i kdyby v datech byla.
+        $this->assertFalse($this->context(['vat_registration' => null], recap: [['vat_code' => 'cz-120']])->hasVatRecap());
     }
 
     // ── document ────────────────────────────────────────────────────────────
@@ -163,6 +190,7 @@ class DocPrintBlocksTest extends TestCase
 
         $this->assertSame([
             'type'            => 'invno',
+            'tradeDir'        => 1,
             'titleVariant'    => 'invoiceVatPayer',
             'title'           => 'Faktura – daňový doklad',
             'number'          => '2026000123',
@@ -204,6 +232,17 @@ class DocPrintBlocksTest extends TestCase
         $this->assertFalse($proforma['isTaxDocument']);
     }
 
+    public function testDocumentBlockCarriesTradeDirection(): void
+    {
+        $config = $this->config();
+        $tradeDir = fn (array $head): ?int => (new DocDocumentBlock())
+            ->build($this->context($head, config: $config))['document']['tradeDir'];
+
+        $this->assertSame(1, $tradeDir(['doc_type' => 'invpo']));
+        // Bez konfigurace typů dokladů směr neznáme.
+        $this->assertNull((new DocDocumentBlock())->build($this->context())['document']['tradeDir']);
+    }
+
     // ── dates ───────────────────────────────────────────────────────────────
 
     public function testDatesBlock(): void
@@ -232,6 +271,18 @@ class DocPrintBlocksTest extends TestCase
         $this->assertSame(
             ['supplier' => self::SUPPLIER, 'customer' => self::CUSTOMER],
             (new DocPartiesBlock())->build($this->context()),
+        );
+    }
+
+    public function testMissingPartyIsNull(): void
+    {
+        $this->assertSame(
+            ['supplier' => self::SUPPLIER, 'customer' => null],
+            (new DocPartiesBlock())->build($this->context(customer: null)),
+        );
+        $this->assertSame(
+            ['supplier' => null, 'customer' => self::CUSTOMER],
+            (new DocPartiesBlock())->build($this->context(supplier: null)),
         );
     }
 
@@ -278,6 +329,31 @@ class DocPrintBlocksTest extends TestCase
 
         $this->assertNull($payment['qr']);
         $this->assertSame([], $context->messages(), 'QR se nečekal — žádné varování');
+    }
+
+    public function testBankAccountIsPrintedForBankTransferOnly(): void
+    {
+        $transfer = (new DocPaymentBlock())->build($this->context(['total_amount' => 0.0]))['payment'];
+        $this->assertSame(self::SUPPLIER['bank_account'], $transfer['bankAccount']);
+
+        // Hotově / kartou: jen způsob úhrady (symboly zůstávají podle hlavičky).
+        $cash = (new DocPaymentBlock())->build($this->context(['payment_method' => 0]))['payment'];
+        $this->assertNull($cash['bankAccount']);
+        $this->assertNull($cash['qr']);
+        $this->assertSame(0, $cash['method']['id']);
+        $this->assertSame('2026000123', $cash['reference']);
+    }
+
+    public function testPaymentWithoutPartiesStillBuilds(): void
+    {
+        // Prodejka převodem bez snapshotu odběratele: QR vznikne, země se nezná.
+        $context = $this->context(customer: null);
+        $this->assertNotNull((new DocPaymentBlock())->build($context)['payment']['qr']);
+
+        // Výdajový doklad bez partnera nemá dodavatele vůbec.
+        $context = $this->context(['payment_method' => 0], supplier: null);
+        $this->assertNull((new DocPaymentBlock())->build($context)['payment']['bankAccount']);
+        $this->assertSame([], $context->messages());
     }
 
     public function testMissingAccountGivesWarningInsteadOfQr(): void

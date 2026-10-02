@@ -4,13 +4,14 @@
     "language": "cs",
     "record": { "table": "docs_core_heads", "id": 123, "docState": 40 },
     "generatedAt": "2026-10-02T10:30:00+02:00",
-    "meta": { "title": "Zálohová faktura IT-PRINT-PRO", "fileName": "zalohova-faktura-it-print-pro.pdf" },
+    "meta": { "title": "Zálohová faktura IT-PRINT-PRO", "fileName": "zalohova-faktura-it-print-pro.pdf", "watermark": null },
     "branding": { "logo": null },
     "texts": {},
     "messages": [],
     "data": {
         "document": {
             "type": "invpo",
+            "tradeDir": 1,
             "titleVariant": "proforma",
             "title": "Zálohová faktura",
             "number": "IT-PRINT-PRO",

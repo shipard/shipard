@@ -7,17 +7,18 @@ namespace Shipard\Module\Docs\Core\Prints\Blocks;
 use Shipard\Module\Docs\Core\Prints\DocPrintContext;
 use Shipard\Module\Docs\Core\Prints\TitleVariantResolver;
 
-/** Blok `document` — typ, titulek, číslo, režim DPH a měna dokladu. */
+/** Blok `document` — typ, směr, titulek, číslo, režim DPH a měna dokladu. */
 final class DocDocumentBlock implements DocPrintBlock
 {
     public function build(DocPrintContext $context): array
     {
         $head    = $context->head;
-        $variant = TitleVariantResolver::resolve($context->docType(), $context->vatPayer());
+        $variant = TitleVariantResolver::resolve($context->titleContext());
         $foreign = $context->foreignCurrency();
 
         return ['document' => [
             'type'            => $context->docType(),
+            'tradeDir'        => $context->tradeDir(),
             'titleVariant'    => $variant,
             'title'           => $context->translator->t('title.' . $variant),
             'number'          => (string) ($head['doc_number'] ?? ''),

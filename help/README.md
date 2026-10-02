@@ -63,7 +63,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
-| [Tisk faktury](faktury-vydane/tisk-faktury.md) | Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je a proč se koncept netiskne. |
+| [Tisk faktury](faktury-vydane/tisk-faktury.md) | Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne. |
 | [Vystavení faktury](faktury-vydane/vystaveni-faktury.md) | Jak vystavit fakturu odběrateli — od Přidat po V pořádku. |
 | [Zálohová faktura](faktury-vydane/zalohova-faktura.md) | Kdy vystavit zálohovou fakturu (proformu) místo faktury, proč není daňovým dokladem a jak ji vystavit — od Přidat po V pořádku. |
 

@@ -108,6 +108,20 @@ class PrintDefinitionTest extends TestCase
             'margins neznámá strana' => [['paper' => ['margins' => ['middle' => '1cm']]], "paper 'margins' must map"],
             'margins bez jednotky'  => [['paper' => ['margins' => ['top' => '3']]], "paper 'margins' must map"],
             'margins není objekt'   => [['paper' => ['margins' => '1cm']], "paper 'margins' must be an object"],
+            'watermarks není objekt' => [['watermarks' => 'watermark.cancelled'], "'watermarks' must be an object"],
+            'watermarks stav mimo docStates' => [
+                ['watermarks' => ['30' => 'watermark.cancelled']], "'watermarks' keys must be states listed in 'docStates'",
+            ],
+            'watermarks nečíselný stav' => [
+                ['docStates' => [40, 30], 'watermarks' => ['storno' => 'watermark.cancelled']],
+                "'watermarks' keys must be states listed in 'docStates'",
+            ],
+            'watermarks prázdná hodnota' => [
+                ['docStates' => [40, 30], 'watermarks' => ['30' => ' ']], "'watermarks' values must be non-empty catalog keys",
+            ],
+            'watermarks hodnota není text' => [
+                ['docStates' => [40, 30], 'watermarks' => ['30' => true]], "'watermarks' values must be non-empty catalog keys",
+            ],
         ];
     }
 
@@ -118,6 +132,18 @@ class PrintDefinitionTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage($message);
         PrintDefinition::fromArray(self::declaration($overrides), 'docs.invoicesOut');
+    }
+
+    public function testWatermarksMapDocStatesToCatalogKeys(): void
+    {
+        $this->assertSame([], PrintDefinition::fromArray(self::declaration(), 'docs.invoicesOut')->watermarks);
+
+        // Klíče JSON objektu jsou řetězce — deklarace je drží jako čísla stavů.
+        $raw = json_decode('{"docStates": [40, 30], "watermarks": {"30": "watermark.cancelled"}}', true);
+        $def = PrintDefinition::fromArray(self::declaration($raw), 'docs.invoicesOut');
+
+        $this->assertSame([30 => 'watermark.cancelled'], $def->watermarks);
+        $this->assertTrue($def->matches(['doc_type' => 'invno', 'docState' => 30]), 'storno se tiskne');
     }
 
     // ── dostupnost pro záznam ───────────────────────────────────────────────

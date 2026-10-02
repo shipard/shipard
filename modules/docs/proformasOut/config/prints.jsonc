@@ -8,7 +8,9 @@
         "name:en": "Proforma invoice",
         "table": "docs_core_heads",
         "filter": { "doc_type": ["invpo"] },
-        "docStates": [40],
+        // Stornovaný doklad se tiskne s vodoznakem přes každou stranu.
+        "docStates": [40, 30],
+        "watermarks": { "30": "watermark.cancelled" },
         "audience": "external",
         "builder": "Shipard\\Module\\Docs\\Core\\Prints\\DocPrintBuilder",
         "template": "@docs.proformasOut/proforma",

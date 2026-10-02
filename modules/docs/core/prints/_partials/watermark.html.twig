@@ -1,0 +1,8 @@
+{#
+    Vodoznak přes každou stranu (#90 D23) — text z `meta.watermark`, typicky
+    „STORNO“ u stornovaného dokladu. Prvek je `position: fixed`, takže ho
+    tisk opakuje na každé straně; leží pod obsahem.
+#}
+{% if meta.watermark %}
+    <div class="doc-watermark">{{ meta.watermark }}</div>
+{% endif %}

@@ -90,9 +90,10 @@ class DocPrintBuilderTest extends IntegrationTestCase
         $this->assertSame('cs', $envelope['language']);
         $this->assertSame(['table' => 'docs_core_heads', 'id' => $headId, 'docState' => 40], $envelope['record']);
         $this->assertSame(
-            ['title' => 'Faktura – daňový doklad IT-PRINT-INV', 'fileName' => 'faktura-it-print-inv.pdf'],
+            ['title' => 'Faktura – daňový doklad IT-PRINT-INV', 'fileName' => 'faktura-it-print-inv.pdf', 'watermark' => null],
             $envelope['meta'],
         );
+        $this->assertSame($this->expectedEnvelope('invoice')['meta'], $envelope['meta']);
         $this->assertSame([], $envelope['messages']);
     }
 
@@ -105,9 +106,53 @@ class DocPrintBuilderTest extends IntegrationTestCase
 
         $this->assertSame(self::normalize($expected), self::normalize($output->printData->data));
         $this->assertSame(
-            ['title' => 'Zálohová faktura IT-PRINT-PRO', 'fileName' => 'zalohova-faktura-it-print-pro.pdf'],
+            $this->expectedEnvelope('proforma')['meta'],
             $output->printData->toArray()['meta'],
         );
+    }
+
+    // ── storno (D23) ────────────────────────────────────────────────────────
+
+    public function testCancelledInvoiceIsPrintedWithWatermark(): void
+    {
+        $expected = $this->expected('invoice');
+        $headId   = $this->insertInvoice($expected, $this->anyUnit()[0], ['docState' => 30, 'docStateMain' => 4]);
+
+        $output = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'cs');
+        $this->assertSame(
+            ['title' => 'Faktura – daňový doklad IT-PRINT-INV', 'fileName' => 'faktura-it-print-inv.pdf', 'watermark' => 'STORNO'],
+            $output->printData->toArray()['meta'],
+        );
+        $this->assertSame(30, $output->printData->docState);
+
+        $output = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'en');
+        $this->assertSame('CANCELLED', $output->printData->watermark);
+    }
+
+    // ── strany (D24) ────────────────────────────────────────────────────────
+
+    public function testDocumentWithoutPartnerHasNoCustomer(): void
+    {
+        // Fixture hlavička nemá `partner` — bez snapshotu odběratele je strana null.
+        $headId = $this->insertProforma($this->expected('proforma'), ['customer_snapshot' => null]);
+
+        $data = $this->runner->run('docs.proformasOut.proforma', $headId, PrintFormat::Json, 'cs')->printData->data;
+
+        $this->assertNull($data['customer']);
+        $this->assertSame('Tiskárna Vzorová s.r.o.', $data['supplier']['name']);
+        $this->assertSame(1, $data['document']['tradeDir']);
+    }
+
+    public function testDocumentWithPartnerNeedsPartnerSnapshot(): void
+    {
+        $headId = $this->insertProforma(
+            $this->expected('proforma'),
+            ['customer_snapshot' => null, 'partner' => $this->anyPersonId()],
+        );
+
+        $this->expectException(PrintBuildException::class);
+        $this->expectExceptionMessage('has no party snapshot');
+        $this->runner->run('docs.proformasOut.proforma', $headId, PrintFormat::Json, 'cs');
     }
 
     public function testEnglishPrintTranslatesTitleAndCodebookLabels(): void
@@ -147,9 +192,9 @@ class DocPrintBuilderTest extends IntegrationTestCase
         $this->runner->run('docs.proformasOut.proforma', $headId, PrintFormat::Json, 'cs');
     }
 
-    public function testConfirmedDocumentWithoutSnapshotFails(): void
+    public function testIssuedDocumentWithoutOwnSnapshotFails(): void
     {
-        $headId = $this->insertProforma($this->expected('proforma'), ['customer_snapshot' => null]);
+        $headId = $this->insertProforma($this->expected('proforma'), ['supplier_snapshot' => null]);
 
         $this->expectException(PrintBuildException::class);
         $this->expectExceptionMessage('has no party snapshot');

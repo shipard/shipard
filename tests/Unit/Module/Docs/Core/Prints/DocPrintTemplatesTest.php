@@ -70,8 +70,14 @@ class DocPrintTemplatesTest extends TestCase
     /**
      * @param callable(array<string, mixed>): array<string, mixed>|null $modify
      */
-    private static function printData(string $fixture, string $printId, string $language = 'cs', ?callable $modify = null, ?string $logo = null): PrintData
-    {
+    private static function printData(
+        string $fixture,
+        string $printId,
+        string $language = 'cs',
+        ?callable $modify = null,
+        ?string $logo = null,
+        ?string $watermark = null,
+    ): PrintData {
         $envelope = json_decode(
             (string) file_get_contents(dirname(__DIR__, 5) . '/Fixtures/Prints/' . $fixture . '.json'),
             true,
@@ -84,6 +90,7 @@ class DocPrintTemplatesTest extends TestCase
         $envelope['printId']  = $printId;
         $envelope['language'] = $language;
         $envelope['branding'] = ['logo' => $logo];
+        $envelope['meta']['watermark'] = $watermark;
         $envelope['meta']['title'] = $envelope['data']['document']['title'] . ' ' . $envelope['data']['document']['number'];
 
         return PrintData::fromArray($envelope);
@@ -177,6 +184,44 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertNotNull($document->footer);
         $this->assertStringContainsString('Strana <span class="pageNumber"></span> / <span class="totalPages"></span>', $document->footer);
         $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', $document->footer);
+    }
+
+    public function testCancelledDocumentHasWatermarkAndOthersDoNot(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+
+        $cancelled = $this->render($definition, self::printData('invoice', $definition->id, watermark: 'STORNO'));
+        $this->assertStringContainsString('<div class="doc-watermark">STORNO</div>', $cancelled->html);
+        $this->assertStringContainsString('.doc-watermark', $cancelled->assets['doc-base.css']);
+        // Vodoznak je věc stránky — záhlaví a zápatí ho nenesou.
+        $this->assertStringNotContainsString('STORNO', (string) $cancelled->header);
+
+        $regular = $this->render($definition, self::printData('invoice', $definition->id));
+        $this->assertStringNotContainsString('doc-watermark', $regular->html);
+    }
+
+    public function testMissingPartyIsLeftOutAndItsPlaceStaysEmpty(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+
+        $noCustomer = $this->render($definition, self::printData('invoice', $definition->id, modify: static function (array $data): array {
+            $data['customer'] = null;
+            return $data;
+        }));
+        $this->assertStringContainsString('Dodavatel', $noCustomer->html);
+        $this->assertStringNotContainsString('Odběratel', $noCustomer->html);
+        $this->assertStringNotContainsString('party--customer', $noCustomer->html, 'prázdné místo bez rámečku');
+        $this->assertSame(2, substr_count($noCustomer->html, '<div class="party'), 'sloupec strany zůstává');
+
+        // Vstup bez partnera: dodavatel chybí, vlastní firma je odběratel — i v zápatí.
+        $noSupplier = $this->render($definition, self::printData('invoice', $definition->id, modify: static function (array $data): array {
+            $data['document']['tradeDir'] = 2;
+            $data['supplier'] = null;
+            return $data;
+        }));
+        $this->assertStringNotContainsString('Dodavatel', $noSupplier->html);
+        $this->assertStringContainsString('Odběratel Zkušební a.s.', $noSupplier->html);
+        $this->assertStringContainsString('Odběratel Zkušební a.s.', (string) $noSupplier->footer);
     }
 
     public function testInvoiceOfNonPayerHasNoVatColumnsOrRecap(): void
