@@ -23,5 +23,16 @@
             "name:en": "Open",
             "variant": "secondary"
         }
+    },
+
+    // Akce detailu záznamu, které připojuje ViewerController genericky
+    // (ne konkrétní viewer). `print` = Tisk podle deklarací `prints`.
+    "detailActions": {
+        "print": {
+            "name": "Print",
+            "name:cs": "Tisk",
+            "name:en": "Print",
+            "variant": "secondary"
+        }
     }
 }

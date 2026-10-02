@@ -21,6 +21,7 @@
   import ViewerFilters from './ViewerFilters.svelte';
   import SetPasswordPrompt from './SetPasswordPrompt.svelte';
   import AssetsDepreciationRunDialog from './AssetsDepreciationRunDialog.svelte';
+  import PrintPreviewDialog from './PrintPreviewDialog.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import Modal from '../ui/Modal.svelte';
@@ -391,6 +392,8 @@
   // --- Read-only detail jiného záznamu (akce kind `open_detail`) ---
   // { viewerId, recordId, tabId } nebo null = zavřeno.
   let detailModal = $state(null);
+  // Náhled tisku záznamu (detail akce print) — { printId, recordId } | null.
+  let printPreview = $state(null);
 
   // --- Registry import wizard state ---
   let registryWizardOpen = $state(false);
@@ -662,6 +665,14 @@
       const result = await runAlertCheck(checkId);
       if (result?.success) refreshAfterAction();
       else alert(translateError(result?.error));
+      return;
+    }
+    // Tisk záznamu (generická akce z registru tisků, docs/prints.md):
+    // jeden tisk = tlačítko s target.printId, víc tisků = dropdown, kde
+    // hodnota položky je id tisku. Otevře náhled PDF.
+    if (actionId === 'print') {
+      const printId = value ?? action.target?.printId;
+      if (printId) printPreview = { printId, recordId };
       return;
     }
     // Přeúčtovat doklad (DocsHeadsViewer, doklad ve stavu 40). Success
@@ -1279,6 +1290,14 @@
   recordId={detailModal?.recordId ?? null}
   tabId={detailModal?.tabId ?? null}
   onClose={() => { detailModal = null; }}
+/>
+
+<!-- Náhled tisku záznamu (detail akce print). -->
+<PrintPreviewDialog
+  open={printPreview !== null}
+  printId={printPreview?.printId ?? ''}
+  recordId={printPreview?.recordId ?? null}
+  onClose={() => { printPreview = null; }}
 />
 
 <!-- Reanalyze dialog — sdílená Modal komponenta (../ui/Modal.svelte). -->

@@ -356,7 +356,7 @@ function dispatch(
 		'app'     => dispatchApp($route, $auth, $db, $resolved->config, $tables, $resolved->isDevMode(), $resolved->state->getEffectiveState()),
 		'form'    => dispatchForm($route, $request, $auth, $tables, $db, $formRegistry ?? new FormRegistry(), $configRuntime, $modulePathResolver, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), resolveLanguage($request, $resolved->config), $resolved->config, $lookupRegistry ?? new LookupRegistry(), $documentEventDispatcher),
 		'lookup'  => dispatchLookup($route, $request, $auth, $tables, $db, $lookupRegistry ?? new LookupRegistry(), $configRuntime),
-		'viewer'  => dispatchViewer($route, $request, $auth, $viewerRegistry, $tables, $db, $configRuntime, resolveLanguage($request, $resolved->config), $documentRegistry, $resolved->config),
+		'viewer'  => dispatchViewer($route, $request, $auth, $viewerRegistry, $tables, $db, $configRuntime, resolveLanguage($request, $resolved->config), $documentRegistry, $resolved->config, $modulePathResolver),
 		'mail'    => dispatchMail($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime),
 		'senderRules' => dispatchSenderRules($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime, $documentEventDispatcher),
 		'registry' => dispatchRegistry($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime),
@@ -365,6 +365,7 @@ function dispatch(
 		'contentTags' => dispatchContentTags($route, $request, $auth, $db, $configRuntime, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'alerts' => dispatchAlerts($route, $request, $db, $alertCheckRegistry, $configRuntime, resolveLanguage($request, $resolved->config)),
 		'reports' => dispatchReports($route, $request, $db, $configRuntime, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config)),
+		'prints' => dispatchPrints($route, $request, $auth, $tables, $db, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config), $serverConfig),
 		'setup' => dispatchSetup($route, $request, $auth, $db, $alertCheckRegistry, $configRuntime, $modulePathResolver, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'dsAbout' => dispatchDsAbout($route, $auth, $db, $configRuntime, $resolved->config, resolveLanguage($request, $resolved->config), $tables),
 		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $openItemLookup, $journalContributors),
@@ -808,6 +809,35 @@ function dispatchReports(
 		'catalog' => $ctrl->catalog(),
 		'run'     => $ctrl->run($route->table ?? '', $request->getQueryParams()),
 		default   => Response::error('INTERNAL_ERROR', "Unknown reports action: {$route->action}", 500),
+	};
+}
+
+function dispatchPrints(
+	Route $route,
+	Request $request,
+	AuthContext $auth,
+	array $tables,
+	\Shipard\Core\Database\DataSourceConnection $db,
+	ModulePathResolver $modulePathResolver,
+	\Shipard\Api\ResolvedDataSource $resolved,
+	string $language,
+	?ServerConfig $serverConfig,
+): Response {
+	// Registry se staví lazily až tady — jazyk requestu je jen jazyk názvů
+	// tisků, jazyk tisku samotného určuje runner.
+	$registry = \Shipard\Api\PrintDefinitionLoader::load($resolved->config, $modulePathResolver, $language);
+	$runner   = \Shipard\Core\Prints\PrintRunnerFactory::create(
+		$registry,
+		$resolved->config,
+		$db,
+		$modulePathResolver,
+		$serverConfig !== null ? \Shipard\Core\Render\RenderClient::fromServerConfig($serverConfig) : null,
+	);
+
+	$ctrl = new \Shipard\Api\Controller\PrintsController($registry, $runner);
+	return match ($route->action) {
+		'run'   => $ctrl->run($route->table ?? '', (int) $route->id, $request->getQueryParams(), $auth, $tables),
+		default => Response::error('INTERNAL_ERROR', "Unknown prints action: {$route->action}", 500),
 	};
 }
 
@@ -1453,13 +1483,22 @@ function dispatchViewer(
 	string $language = 'en',
 	?\Shipard\Core\Document\DocumentRegistry $documentRegistry = null,
 	?\Shipard\Core\Config\DataSourceConfig $dsConfig = null,
+	?ModulePathResolver $modulePathResolver = null,
 ): Response {
 	$ctrl     = new ViewerController();
 	$viewerId = $route->table ?? '';
+
+	// Registr tisků jen pro detail — akce Tisk se nabízí podle deklarací;
+	// meta a rows modul scan navíc neplatí.
+	$prints = null;
+	if ($route->action === 'detail' && $dsConfig !== null && $modulePathResolver !== null) {
+		$prints = \Shipard\Api\PrintDefinitionLoader::load($dsConfig, $modulePathResolver, $language);
+	}
+
 	return match ($route->action) {
 		'meta'   => $ctrl->meta($viewerId, $auth, $registry, $tables, $db, $config, $language),
 		'rows'   => $ctrl->rows($viewerId, $request, $auth, $registry, $tables, $db, $config, $language),
-		'detail' => $ctrl->detail($viewerId, (int) $route->id, $auth, $registry, $tables, $db, $config, $language, $documentRegistry, $dsConfig),
+		'detail' => $ctrl->detail($viewerId, (int) $route->id, $auth, $registry, $tables, $db, $config, $language, $documentRegistry, $dsConfig, $prints),
 		default  => Response::error('INTERNAL_ERROR', "Unknown viewer action: {$route->action}", 500),
 	};
 }

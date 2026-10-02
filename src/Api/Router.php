@@ -332,6 +332,19 @@ class Router
 			return new Route('reports', 'run', $reportId);
 		}
 
+		// GET /_prints/{printId}/{recordId} — tisk nad jedním záznamem
+		// (format a jazyk v query). Id tisku je tečkované a jede ve slotu
+		// `table`, stejně jako id reportu.
+		if (str_starts_with($subpath, '/_prints/')) {
+			if (!preg_match('#^/_prints/([a-z][a-zA-Z0-9.]*)/(\d+)$#', $subpath, $m)) {
+				return Response::error('NOT_FOUND', 'Not found', 404);
+			}
+			if ($method !== 'GET') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('prints', 'run', $m[1], (int) $m[2]);
+		}
+
 		if (str_starts_with($subpath, '/_setup')) {
 			return $this->resolveSetupRoute($subpath, $method);
 		}

@@ -51,8 +51,10 @@
     if (token !== fetchToken) return;
 
     if (result?.success) {
-      const d = result.data?.detail ?? null;
-      detail = d && tId
+      // Akce detailu (Tisk, Přeúčtovat…) do čtecího modalu nepatří — bez
+      // `onAction` by to byla mrtvá tlačítka.
+      const { actions: _actions, ...d } = result.data?.detail ?? {};
+      detail = tId
         ? { ...d, tabs: (d.tabs ?? []).filter(tab => tab.id === tId) }
         : d;
     } else {

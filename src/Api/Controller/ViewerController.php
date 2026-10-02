@@ -12,6 +12,8 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentLockRegistry;
 use Shipard\Core\Document\DocumentRegistry;
+use Shipard\Core\Prints\PrintDefinition;
+use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Viewer\ViewerRegistry;
 
 class ViewerController
@@ -178,6 +180,7 @@ class ViewerController
 		?string $language = null,
 		?DocumentRegistry $documents = null,
 		?DataSourceConfig $dsConfig = null,
+		?PrintRegistry $prints = null,
 	): Response {
 		$def = $registry->get($viewerId);
 		if ($def === null) {
@@ -216,9 +219,50 @@ class ViewerController
 			}
 		}
 
+		// Tisk (#90 D19): generický háček nad registrem tisků — viewer o něm
+		// neví, takže tisky dalších tabulek fungují bez zásahu do něj.
+		$printAction = self::printAction($prints?->forRecord($def->table, $record) ?? [], $config);
+		if ($printAction !== null) {
+			$detail['actions'] = [...($detail['actions'] ?? []), $printAction];
+		}
+
 		return Response::success([
 			'toolbar' => $toolbar,
 			'detail'  => $detail,
 		]);
+	}
+
+	/**
+	 * Akce Tisk pro `detail.actions`: jeden dostupný tisk = tlačítko
+	 * s `target.printId`, víc tisků = dropdown (`value` položky = id tisku).
+	 * Popisek z `core.system.viewerDefaults.detailActions.print`.
+	 *
+	 * @param PrintDefinition[] $definitions Tisky dostupné pro záznam, už seřazené.
+	 * @return array<string, mixed>|null
+	 */
+	private static function printAction(array $definitions, ?ConfigRuntime $config): ?array
+	{
+		if ($definitions === []) {
+			return null;
+		}
+
+		$def    = ($config?->cfgItem('core.system.viewerDefaults') ?? [])['detailActions']['print'] ?? [];
+		$action = [
+			'id'      => 'print',
+			'label'   => $def['name'] ?? 'Print',
+			'variant' => $def['variant'] ?? 'secondary',
+		];
+
+		if (count($definitions) === 1) {
+			return $action + ['kind' => 'button', 'target' => ['printId' => $definitions[0]->id]];
+		}
+
+		return $action + [
+			'kind'  => 'dropdown',
+			'items' => array_map(
+				static fn (PrintDefinition $d): array => ['label' => $d->name, 'value' => $d->id],
+				$definitions,
+			),
+		];
 	}
 }

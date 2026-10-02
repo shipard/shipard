@@ -2,7 +2,7 @@
 title: Zálohová faktura
 summary: Kdy vystavit zálohovou fakturu (proformu) místo faktury, proč není daňovým dokladem a jak ji vystavit — od Přidat po V pořádku.
 keywords: [zálohová faktura, zálohové faktury, zálohovou fakturu, proforma, proforma faktura, proformu, výzva k platbě, záloha, zálohu, platba předem, vystavit zálohovou fakturu, vystavení zálohové faktury, zálohová faktura vydaná, zálohové faktury vydané, DUZP na zálohové faktuře, není daňový doklad, daňový doklad k záloze, odpočet zálohy, odpočet přijaté zálohy, faktura z proformy, variabilní symbol zálohy, zaúčtování zálohové faktury, podrozvaha, úhrada zálohové faktury, zaplacená proforma, přijatá záloha v saldokontu, saldokonto zálohové faktury, částečná úhrada zálohové faktury, uzavření zálohové faktury, záloha v hotovosti]
-related: [faktury-vydane/vystaveni-faktury.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
+related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/tisk-faktury.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
 # Zálohová faktura
@@ -16,8 +16,8 @@ v **Prodej → Zálohové faktury vydané**.
 doklad nemá DUZP a nevstupuje do přiznání DPH ani do kontrolního a souhrnného
 hlášení. Daň přiznáš až z faktury.
 
-**Vytisknout ji zatím nejde** — stejně jako fakturu, viz
-[Co Shipard dnes neumí](../co-dnes-nejde.md).
+Hotovou zálohovou fakturu dostaneš jako PDF stejně jako fakturu — viz
+[Tisk faktury](tisk-faktury.md).
 
 ## Kdy to potřebuješ
 
@@ -106,5 +106,6 @@ do řady vybrané v liště pod seznamem; s jedinou řadou lišta není vidět.
 - [Založení osoby](../osoby/zalozeni-osoby.md) — jak dostat odběratele do
   evidence
 - [Založení položky](../polozky/zalozeni-polozky.md) — co se dá dát na řádek
-- [Co Shipard dnes neumí](../co-dnes-nejde.md) — tisk, faktura z proformy,
+- [Tisk faktury](tisk-faktury.md) — PDF zálohové faktury pro odběratele
+- [Co Shipard dnes neumí](../co-dnes-nejde.md) — faktura z proformy,
   daňový doklad k záloze

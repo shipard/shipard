@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad]
+keywords: [neumí, nejde, chybí, omezení, alfa, odeslat fakturu e-mailem, poslat fakturu odběrateli, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad]
 related: [slovnicek.md]
 ---
 
@@ -58,16 +58,33 @@ a vypořádacího koeficientu nepromítne.
 
 ---
 
-## Vydané faktury: nic pro odběratele
+## Vydané faktury: PDF ano, odeslání ne
 
-**Vydanou fakturu nevytiskneš, neuložíš do PDF ani neodešleš e-mailem.**
-Vystavit a zaúčtovat ji jde celou — viz
-[Vystavení faktury](faktury-vydane/vystaveni-faktury.md) — ale doklad, který
-drží v ruce odběratel, musíš zatím vyrobit jinde. U vydaných faktur je tak
-Shipard dneska evidence, ne fakturační nástroj.
+**Vydanou fakturu ani zálohovou fakturu z Shipardu neodešleš e-mailem.**
+PDF dokladu ve stavu **V pořádku** si stáhneš tlačítkem **Tisk** — viz
+[Tisk faktury](faktury-vydane/tisk-faktury.md) — a odběrateli ho pošleš
+vlastním e-mailem. Shipard si zatím nepamatuje ani to, že a komu jsi doklad
+poslal.
 
-**Zálohovou fakturu (proformu) taky nevytiskneš** — platí pro ni totéž co pro
-fakturu. **Fakturu z proformy nevystavíš jedním klikem**: až zálohu dostaneš,
+**Vzhled tištěného dokladu nezměníš.** Je jeden, černobílý, s logem firmy
+v záhlaví. Barvy, umístění loga, vlastní texty (třeba poděkování nebo
+obchodní podmínky), jméno toho, kdo doklad vystavil, ani podpis a razítko
+zatím nejsou.
+
+**Jazyk dokladu podle odběratele nezvolíš.** Tiskne se v jazyce zdroje dat
+— česky, nebo anglicky.
+
+**QR platba je jen česká.** Kód na dokladu čtou bankovní aplikace českých
+bank; pro odběratele v zahraničí jiný standard zatím není.
+
+**Fakturu pro strojové zpracování (ISDOC) Shipard nevystaví.** PDF je jen
+obrázek dokladu pro člověka.
+
+**Opravný daňový doklad nemá vlastní tisk.** Dobropis je v Shipardu faktura
+se zápornou částkou a vytiskne se s titulkem faktury — bez odkazu na
+opravovaný doklad a bez důvodu opravy.
+
+**Fakturu z proformy nevystavíš jedním klikem**: až zálohu dostaneš,
 vystav vydanou fakturu ručně a zálohu na ní odečti řádkem *Odpočet přijaté
 zálohy* s variabilním symbolem proformy. **Daňový doklad k přijaté záloze**
 Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou. Viz
@@ -82,8 +99,8 @@ zaúčtují na účet pokladny, ale přehled zůstatku a pohybů pokladny za obd
 počáteční stav ani inventura pokladny nejsou. Zůstatek dnes zjistíš jen
 z účetního deníku nebo hlavní knihy na účtu pokladny.
 
-**Pokladní doklad ani prodejku nevytiskneš.** Stejně jako u vydaných faktur
-— zákazníkovi účtenku musíš dát z jiného zařízení.
+**Pokladní doklad ani prodejku nevytiskneš.** Tisk zatím umí jen faktura
+vydaná a zálohová faktura — zákazníkovi účtenku musíš dát z jiného zařízení.
 
 **Vyúčtování od platební brány, terminálu nebo dopravce Shipard sám
 nevytvoří.** Prodej kartou, přes bránu nebo na dobírku založí pohledávku

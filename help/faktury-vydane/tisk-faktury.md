@@ -1,0 +1,93 @@
+---
+title: Tisk faktury
+summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je a proč se koncept netiskne.
+keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout]
+related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, co-dnes-nejde.md]
+---
+
+# Tisk faktury
+
+Hotovou fakturu vydanou i zálohovou fakturu dostaneš z Shipardu jako PDF:
+prohlédneš si ji v náhledu a stáhneš do počítače. Odtud ji vytiskneš nebo
+pošleš odběrateli vlastním e-mailem.
+
+## Kdy to potřebuješ
+
+Vystavil jsi fakturu nebo zálohovou fakturu, je ve stavu **V pořádku**
+a potřebuješ doklad, který dostane odběratel.
+
+## Postup
+
+1. **Otevři Prodej → Faktury vydané** (nebo **Zálohové faktury vydané**)
+   a v seznamu klikni na doklad. Vpravo se ukáže jeho detail.
+
+2. **Dej Tisk.** Tlačítko je nahoře v detailu dokladu, vedle **Přeúčtovat**.
+   Otevře se okno **Tisk** s náhledem PDF — chvíli to trvá, doklad se
+   teprve vyrábí.
+
+3. **Zkontroluj náhled** a dej **Stáhnout**. Soubor se uloží pod názvem
+   s číslem dokladu. Okno zavřeš tlačítkem **Zavřít**.
+
+Tisk nic neukládá — PDF vzniká pokaždé znovu z dokladu, takže ho můžeš
+stáhnout, kolikrát chceš.
+
+## Co na dokladu je
+
+- **Titulek** podle toho, co doklad je: u plátce DPH *Faktura – daňový
+  doklad*, u neplátce *Faktura*, u zálohové faktury *Zálohová faktura*
+  s větou *Nejedná se o daňový doklad.*
+- **Dodavatel a odběratel** z **Fakturačních údajů** zmrazených při
+  **Potvrdit** — tedy tak, jak platily při vystavení. Když odběrateli
+  později změníš adresu v **Osobách**, vystavená faktura se nezmění.
+- **Platební údaje**: způsob úhrady, **Náš bankovní účet**, variabilní,
+  specifický a konstantní symbol.
+- **QR platba** — kód, který odběratel načte v bankovní aplikaci. Je jen
+  u dokladu placeného **Převodem** s kladnou částkou k úhradě.
+- **Řádky** včetně textových; u plátce se sazbou, základem a daní. **Odpočet
+  přijaté zálohy** je vytištěný kurzívou a pod řádky je zvlášť částka před
+  odpočtem, zálohy a **K úhradě**.
+- **Rekapitulace DPH**; u dokladu v cizí měně i základ a daň v domácí měně
+  a kurz.
+- **Poznámka na doklad**. **Interní poznámka** se netiskne.
+- **Logo** v záhlaví, pokud ho máš nahrané v **Nastavení → Aplikace** jako
+  **Logo firmy**. Záhlaví s titulkem a číslem dokladu a zápatí s číslem
+  strany jsou na každé straně.
+
+## Na co narazíš
+
+**Tlačítko Tisk u dokladu není.** Tiskne se jen doklad ve stavu
+**V pořádku**. Koncept ani potvrzený doklad, který ještě není V pořádku,
+vytisknout nejde — odběratel by dostal doklad, který se ještě může změnit.
+
+**Nad náhledem je žluté upozornění, že chybí QR platba.** Doklad nemá
+bankovní účet, ze kterého by šel kód sestavit — **Náš bankovní účet** na
+záložce **Nastavení** dokladu potřebuje IBAN, nebo české číslo účtu s kódem
+banky. Druhé upozornění říká, že v kódu chybí variabilní symbol: QR platba
+unese jen číslice, nejvýš deset. Symbol s písmeny nebo lomítkem se na
+doklad vytiskne, ale do kódu se nedostane. PDF je v obou případech hotové
+a použitelné.
+
+**Okno hlásí, že tisková služba není dostupná.** Výroba PDF běží na serveru
+jako samostatná služba. Zkus to za chvíli znovu; když to trvá, napiš na
+**podpora@shipard.cz**.
+
+**Náhled se neukáže, jen tlačítko Stáhnout.** Některé prohlížeče, hlavně
+v telefonu, neumějí PDF zobrazit uvnitř stránky. Soubor stáhni a otevři
+v prohlížeči PDF.
+
+**Doklad je v jiném jazyce, než čekáš.** Tiskne se v jazyce zdroje dat —
+česky, nebo anglicky. Jazyk podle odběratele zatím zvolit nejde.
+
+**Co zatím nejde:** odeslat fakturu odběrateli e-mailem přímo z Shipardu,
+změnit vzhled dokladu nebo na něj přidat vlastní text a vytisknout jiný
+doklad než fakturu vydanou a zálohovou — viz
+[Co Shipard dnes neumí](../co-dnes-nejde.md).
+
+## Souvisí
+
+- [Vystavení faktury](vystaveni-faktury.md) — jak fakturu dostat do stavu
+  V pořádku
+- [Zálohová faktura](zalohova-faktura.md) — kdy vystavit proformu a proč
+  není daňovým dokladem
+- [Co Shipard dnes neumí](../co-dnes-nejde.md) — odeslání e-mailem, vzhled
+  dokladu, tisk dalších dokladů
