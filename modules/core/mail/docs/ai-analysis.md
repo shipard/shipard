@@ -742,6 +742,63 @@ Historie analýz se nemění — „aktuální návrh" je implicitně poslední
 Reanalýza po rejectu je možná — vznikne nový běh s `resolution=NULL`.
 Analyzer při dalším GET /queue zprávu uvidí včetně override profilu.
 
+## Chybové hlášky pro uživatele
+
+Selhání analýzy vidí uživatel jako lidskou hlášku — co se stalo, čí je
+to chyba a co dělat — místo odznaku „Analýza selhala" a technického
+textu (tasks/mail-analysis-error-messages.md, D1–D6). Jeden katalog,
+jeden helper, stejná hláška na Dashboardu i v detailu zprávy.
+
+**Katalog** `core.mail.analysisErrorKinds`
+(`modules/core/mail/config/analysisErrorKinds.jsonc`): klíč = kategorie,
+pole `name` (titulek), `description` (vysvětlení), volitelně `detail`
+se zástupnými `{key}` / `{path}`. Rezervovaný klíč `_common` nese popisky
+„Co se stalo" / „Co dělat" a dvě varianty hintu. Compiled config je per
+jazyk, texty přijdou lokalizované; bez configu anglický fallback v PHP.
+
+| Kategorie | Kdy |
+|---|---|
+| `schemaAdditionalProperty` | `[schema_error] … Additional properties are not allowed ('<klíč>' was/were unexpected) at [<cesta>]` |
+| `schemaTooLong` | `[schema_error] … '<hodnota>' is too long at [<cesta>]` |
+| `schemaEnum` | `[schema_error] … '<hodnota>' is not one of […] at [<cesta>]` |
+| `schemaInvalidJson` | `[schema_error] fenced JSON is invalid: …` / `output is not valid JSON` / `output JSON must be an object at the top level` |
+| `schemaOther` | jiný, neznámý nebo vícenásobný tvar `schema_error` |
+| `aiTruncated` | `[ai_error] anthropic: output truncated at max_tokens=<n>` |
+| `aiError` | ostatní `[ai_error] …` |
+| `configError` | `[config_error] …` |
+| `invalidOutput` | úspěšný běh s wrapperem `_validationError` v `canonical_json` (bez error_message) |
+| `unknown` | bez prefixu `[typ]`, prázdná hláška, neznámý typ |
+
+**Helper** `AnalysisErrorPresenter` (`modules/core/mail/src/`):
+
+- `fromErrorMessage(?string $errorMessage, ?string $failedPromptVersion)`
+  rozebere prefix `[typ]` a u `schema_error` tvar textu z
+  `ai_analyzer/schema.py`; `{path}` z Python listu bez obalu
+  `document` / `extracted_json`, tečkovaně (`rows.0.vat.code`), `{key}`
+  z `('<klíč>' was unexpected)`. Rozbor je záměrně tolerantní — neznámý
+  tvar padá do `schemaOther` / `unknown`, nikdy výjimkou (ai_analyzer#1
+  plánuje hlásit všechny chyby najednou).
+- `forInvalidOutput(?string $failedPromptVersion)` — kategorie
+  `invalidOutput`.
+- `isReanalysisRecommended(?string $failedPromptVersion)` (**D4**):
+  `true`, jen když výchozí aktivní profil (`is_active=1 ORDER BY
+  is_default DESC`) nese novější `prompt_version` než selhaný běh
+  (`version_compare` po `ltrim('v')`; neparsovatelné `unknown`, `isdoc`,
+  null → `false`). Selhané běhy mají `profile` NULL, proto výchozí profil,
+  ne profil běhu. Verze profilu se čte jednou per instance.
+- Výstup `AnalysisErrorInfo` (readonly): `kind`, `title`, `description`,
+  `detail`, `hint` (podle D4), `reanalysisRecommended`, `technical`
+  (původní `error_message` — může nést hodnoty z dokladu, zobrazuje se
+  jen sbalené v detailu zprávy, na Dashboard nejde).
+- `cardDetails(AnalysisErrorInfo)` — řádky „Co se stalo" / „Co dělat"
+  pro `details` karty Dashboardu.
+
+**Kde se používá:** tab **Návrh** (`failure` obsahu při
+`analysis_state=70`, `proposal.failure` u wrapperu — viz níže), tab
+**Analýzy** (sloupec **Chyba**), Dashboard (`MailSuggestionsSource`,
+`docs/dashboard.md` §5.1). Nastavení → Analýzy zpráv zůstává technické.
+Chyby předzpracování (`preprocess_state=40`) řeší samostatný task (D6).
+
 ## UI detail panelu
 
 `IncomingMessagesViewer` generuje 4 taby (labely z cfgItem
@@ -750,7 +807,9 @@ Analyzer při dalším GET /queue zprávu uvidí včetně override profilu.
 1. **Obsah** — subject, sender, body + sekce obsahových příloh (bez raw .eml)
 2. **Analýzy** — historie běhů z `core_mail_message_analyses` (čas, model,
    prompt, confidence, sloupec **Návrh** ano/ne z `canonical_json IS NOT
-   NULL`, sloupec **Verdikt** z `resolution`, cost, duration)
+   NULL`, sloupec **Verdikt** z `resolution`, cost, duration). Sloupec
+   **Chyba** nese u selhaných běhů a běhů s wrapperem `_validationError`
+   titulek (+ detail) z katalogu hlášek, jinak „—".
 3. **Návrh** — dokumentový návrh poslední úspěšné analýzy (nejvýše jeden,
    D1): jedna karta s typem, confidence pásmem z runtime resolveru (resp.
    resolution badge u rozhodnutých), summary z canonicalu, hintem
@@ -758,7 +817,13 @@ Analyzer při dalším GET /queue zprávu uvidí včetně override profilu.
    `/_mail/messages/{ndx}/apply`), **Zamítnout** (modal s povinným
    důvodem, POST `/_mail/messages/{ndx}/reject`) a **Zobrazit detail**
    (review modal nad `GET /_mail/messages/{ndx}/preview`). Bez návrhu
-   prázdný stav s klasifikací zprávy.
+   prázdný stav s klasifikací zprávy. Při `analysis_state=70` nese obsah
+   `failure` (hláška posledního selhaného běhu + `analyzedAt`,
+   `promptVersion`) — frontend kreslí kartu selhání
+   (`AnalysisFailureCard`) místo prázdného stavu, klasifikace se
+   neposílá; starší úspěšný návrh pod ní zůstává (akce jen ve stavu 30).
+   Návrh s wrapperem `_validationError` nese `proposal.failure`
+   kategorie `invalidOutput`, stejná komponenta.
 4. **Originál** — raw `.eml` pokud existuje
 
 Řádek vieweru i hlavička detailu zobrazují badge stavu analýzy (label +
@@ -792,6 +857,8 @@ default *se nepřepíše*; admin zachová svůj override.
   — oddělení `analysis_state` od `docState` + klasifikace `primary_type`
 - [tasks/mail-isdoc-import.md](../../../../tasks/mail-isdoc-import.md)
   — deterministický ISDOC import (mapovací tabulka ISDOC → canonical)
+- [tasks/mail-analysis-error-messages.md](../../../../tasks/mail-analysis-error-messages.md)
+  — lidské hlášky selhané analýzy (katalog, presenter, pravidlo D4)
 - [docs/operations/secrets.md](../../../../docs/operations/secrets.md) — DsSecretCipher
 - [docs/mail/api-contract.md](../../../../docs/mail/api-contract.md) — API kontrakty
 - [ai-prompts.md](ai-prompts.md) — default prompt + customization guidelines

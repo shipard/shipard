@@ -404,7 +404,7 @@ Response 201: `{ analysis_ndx }`.
 Headers: `X-Claim-Token`. Request body:
 ```json
 {
-  "error_type": "ai_error | mime_error | timeout | config_error",
+  "error_type": "schema_error | ai_error | config_error",
   "error_message": "…",
   "tokens_used": 123,
   "retryable": true,
@@ -413,8 +413,12 @@ Headers: `X-Claim-Token`. Request body:
 }
 ```
 
-Server: INSERT failed `message_analyses` (status=3), uvolni claim
-(`release_reason='failed'`), přepni stav analýzy (`docState` se nemění):
+Server: INSERT failed `message_analyses` (status=3; `error_message` se
+ukládá jako `"[error_type] error_message"` — z tohoto tvaru odvozuje
+`AnalysisErrorPresenter` lidskou hlášku pro UI, viz
+`modules/core/mail/docs/ai-analysis.md` → „Chybové hlášky pro uživatele"),
+uvolni claim (`release_reason='failed'`), přepni stav analýzy (`docState`
+se nemění):
 
 - `retryable=true` → `analysis_state=10` (vrátí se do fronty)
 - `retryable=false` → `analysis_state=70` (Analýza selhala, manuální zásah)

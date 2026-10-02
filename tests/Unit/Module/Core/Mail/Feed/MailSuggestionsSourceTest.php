@@ -8,6 +8,9 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Feed\FeedContext;
+use Shipard\Core\I18n\ConfigLocalizer;
+use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
 use Shipard\Module\Core\Mail\Feed\MailSuggestionsSource;
 
 /**
@@ -18,9 +21,10 @@ use Shipard\Module\Core\Mail\Feed\MailSuggestionsSource;
  *     akcí: ready → apply (primary) + review + reject; review/low → review
  *     (primary) + reject; strop D7 podle pokrytí řádků
  *   - zpráva analysis_state=70 → urgent karta + reanalyze/open_detail
- *     (degradace na review při primary_type=other)
+ *     (degradace na review při primary_type=other); titulek a `details`
+ *     z katalogu hlášek, primární akce podle doporučení reanalýzy (D4)
  *   - otevřený návrh s ai_failed wrapperem (_validationError) → chybová
- *     karta mail_invalid s reanalyze
+ *     karta mail_invalid kategorie invalidOutput
  *   - karta „Není faktura" (kind info, akce trash/archive/open_detail)
  *   - strukturovaná hlavička `headline` (partner/typ/částka) + `confidencePct`
  *     + `emailSubject` + `details` + `secondaryFindings`; fallback na
@@ -35,14 +39,18 @@ final class MailSuggestionsSourceTest extends TestCase
      * Sestaví FeedContext s DB mockem, který routuje SELECTy zdroje podle
      * tvaru SQL: batch příloh (core_attachments_files), suggestion (JOIN na
      * poslední úspěšnou analýzu), notInvoice (COALESCE(( subquery), error
-     * (zbytek — messages tabulka). fetchRow (thresholds resolveru) vrací
-     * default null → DEFAULT_THRESHOLDS, nebo řádky z $profileRows.
+     * (zbytek — messages tabulka). fetchRow routuje podle SQL: dotaz na
+     * `prompt_version` (verze výchozího profilu pro AnalysisErrorPresenter)
+     * vrací $profileVersionRow (default null → reanalýza nedoporučená);
+     * thresholds resolveru vrací default null → DEFAULT_THRESHOLDS, nebo
+     * po sobě jdoucí řádky z $profileRows.
      *
      * @param list<array<string,mixed>> $suggestionRows
      * @param list<array<string,mixed>> $errorRows
      * @param list<array<string,mixed>> $notInvoiceRows
      * @param list<array<string,mixed>> $attachmentRows
-     * @param list<array<string,mixed>|null> $profileRows po sobě jdoucí návraty fetchRow
+     * @param list<array<string,mixed>|null> $profileRows po sobě jdoucí návraty fetchRow (thresholds)
+     * @param array<string,mixed>|null $profileVersionRow řádek s `prompt_version` výchozího profilu
      */
     private function context(
         array $suggestionRows,
@@ -52,6 +60,7 @@ final class MailSuggestionsSourceTest extends TestCase
         array $notInvoiceRows = [],
         array $attachmentRows = [],
         array $profileRows = [],
+        ?array $profileVersionRow = null,
     ): FeedContext {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchAll')->willReturnCallback(
@@ -66,11 +75,16 @@ final class MailSuggestionsSourceTest extends TestCase
                 return str_contains($sql, 'COALESCE((') ? $notInvoiceRows : $errorRows;
             },
         );
-        if ($profileRows !== []) {
-            $db->method('fetchRow')->willReturnOnConsecutiveCalls(...$profileRows);
-        } else {
-            $db->method('fetchRow')->willReturn(null); // žádný AI profil → default thresholds
-        }
+        $thresholdCall = 0;
+        $db->method('fetchRow')->willReturnCallback(
+            static function (mixed ...$args) use ($profileRows, $profileVersionRow, &$thresholdCall): ?array {
+                if (str_contains((string) $args[0], 'prompt_version')) {
+                    return $profileVersionRow;
+                }
+                // žádný AI profil → default thresholds
+                return $profileRows[$thresholdCall++] ?? null;
+            },
+        );
         return new FeedContext($db, $config, $lang, 30);
     }
 
@@ -99,6 +113,26 @@ final class MailSuggestionsSourceTest extends TestCase
             static fn(string $id): mixed => $id === 'core.mail.primaryTypes'
                 ? ['invoiceReceived' => ['name' => 'Přijatá faktura', 'target' => 'docs']]
                 : null,
+        );
+        return $config;
+    }
+
+    /** primaryTypes + dodávaný katalog hlášek `analysisErrorKinds` lokalizovaný do cs. */
+    private function catalogConfig(): ConfigRuntime
+    {
+        $raw = JsoncParser::parseFile(
+            dirname(__DIR__, 6) . '/modules/core/mail/config/analysisErrorKinds.jsonc',
+        );
+        $this->assertIsArray($raw);
+        $catalog = ConfigLocalizer::localize($raw, 'cs');
+
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn(string $id): mixed => match ($id) {
+                'core.mail.primaryTypes'         => ['invoiceReceived' => ['name' => 'Přijatá faktura', 'target' => 'docs']],
+                AnalysisErrorPresenter::CFG_ITEM => $catalog,
+                default                          => null,
+            },
         );
         return $config;
     }
@@ -332,38 +366,63 @@ final class MailSuggestionsSourceTest extends TestCase
 
     // ── Chybové karty ────────────────────────────────────────────────────
 
-    public function testInvalidAiOutputProducesUrgentReanalyzeCard(): void
+    public function testInvalidAiOutputProducesUrgentCardFromCatalog(): void
     {
-        // Otevřený návrh s forenzním wrapperem z /result → karta mail_invalid.
+        // Otevřený návrh s forenzním wrapperem z /result → karta mail_invalid
+        // kategorie invalidOutput; bez novějšího profilu je primární otevření.
         $row = $this->suggestionRow();
         $row['canonical_json'] = json_encode(['_validationError' => ['issues' => ['x']]]);
+        $row['prompt_version'] = 'v4.3.0';
 
         $src = new MailSuggestionsSource();
-        $cards = $src->collectCards($this->context([$row], [], $this->primaryTypesConfig()));
+        $cards = $src->collectCards($this->context([$row], [], $this->catalogConfig()));
 
         $this->assertCount(1, $cards);
         $card = $cards[0];
         $this->assertSame('mail_invalid:101', $card['id']);
         $this->assertSame('urgent', $card['kind']);
         $this->assertSame('error', $card['stateStyle']);
-        $this->assertSame('Chyba analýzy e-mailu', $card['title']);
+        $this->assertSame('AI vrátila nepoužitelný návrh', $card['title']);
         $this->assertSame('ČEZ a.s.', $card['subtitle']);
         $this->assertSame(['messageNdx' => 101], $card['context']);
+        $this->assertSame(['Co se stalo', 'Co dělat'], array_column($card['details'], 'label'));
+        $this->assertSame('Návrh neprošel kontrolou formátu dokladu a nedá se použít.', $card['details'][0]['value']);
+        $this->assertStringStartsWith('Opakování se stejnou verzí analýzy skončí stejně.', $card['details'][1]['value']);
 
         $actions = $card['actions'];
+        $this->assertSame('open_detail', $actions[0]['kind']);
+        $this->assertTrue($actions[0]['primary']);
+        $this->assertSame('reanalyze', $actions[1]['kind']);
+        $this->assertArrayNotHasKey('primary', $actions[1]);
+        $this->assertSame(['messageNdx' => 101], $actions[1]['target']);
+    }
+
+    public function testInvalidAiOutputRecommendsReanalysisWithNewerProfile(): void
+    {
+        $row = $this->suggestionRow();
+        $row['canonical_json'] = json_encode(['_validationError' => ['issues' => ['x']]]);
+        $row['prompt_version'] = 'v4.3.0';
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context(
+            [$row], [], $this->catalogConfig(), profileVersionRow: ['prompt_version' => 'v4.4.0'],
+        ));
+
+        $actions = $cards[0]['actions'];
         $this->assertSame('reanalyze', $actions[0]['kind']);
         $this->assertTrue($actions[0]['primary']);
-        $this->assertSame(['messageNdx' => 101], $actions[0]['target']);
         $this->assertSame('open_detail', $actions[1]['kind']);
+        $this->assertSame('Analýza se mezitím aktualizovala — zkus Znova analyzovat.', $cards[0]['details'][1]['value']);
     }
 
     public function testMessageAiErrorProducesUrgentCard(): void
     {
         $errorRow = [
-            'message_ndx' => 555,
-            'subject'     => 'Nečitelná faktura',
-            'sender_name' => 'Dodavatel s.r.o.',
-            'received_at' => '2026-06-27 09:00:00',
+            'message_ndx'           => 555,
+            'subject'               => 'Nečitelná faktura',
+            'sender_name'           => 'Dodavatel s.r.o.',
+            'received_at'           => '2026-06-27 09:00:00',
+            'error_message'         => '[ai_error] anthropic: output truncated at max_tokens=8192',
+            'failed_prompt_version' => 'v4.3.0',
         ];
         $src = new MailSuggestionsSource();
         $cards = $src->collectCards($this->context([], [$errorRow]));
@@ -374,20 +433,87 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame('urgent', $card['kind']);
         $this->assertSame('error', $card['stateStyle']);
         $this->assertSame('other', $card['category']);
+        // Bez compiled configu anglický fallback katalogu.
+        $this->assertSame('The AI response did not fit within the limit', $card['title']);
         // Předmět jde strukturovaně; subtitle nese odesílatele (bez duplikace).
         $this->assertSame('Dodavatel s.r.o.', $card['subtitle']);
         $this->assertSame('Nečitelná faktura', $card['emailSubject']);
         $this->assertSame('27. 6. 2026', $card['receivedDateText']);
         $this->assertArrayNotHasKey('headline', $card);
+        $this->assertSame(['What happened', 'What to do'], array_column($card['details'], 'label'));
 
+        // Žádný profil → reanalýza nedoporučená → primární je otevření zprávy.
         $actions = $card['actions'];
-        $this->assertSame('reanalyze', $actions[0]['id']);
-        $this->assertSame('reanalyze', $actions[0]['kind']);
-        $this->assertSame(['messageNdx' => 555], $actions[0]['target']);
-        $this->assertSame('open_detail', $actions[1]['kind']);
-        $this->assertSame('core.mail.incoming', $actions[1]['target']['viewerId']);
-        $this->assertSame(555, $actions[1]['target']['recordId']);
-        $this->assertSame('content', $actions[1]['target']['tabId']);
+        $this->assertSame('openMail', $actions[0]['id']);
+        $this->assertSame('open_detail', $actions[0]['kind']);
+        $this->assertTrue($actions[0]['primary']);
+        $this->assertSame('core.mail.incoming', $actions[0]['target']['viewerId']);
+        $this->assertSame(555, $actions[0]['target']['recordId']);
+        $this->assertSame('content', $actions[0]['target']['tabId']);
+        $this->assertSame('reanalyze', $actions[1]['id']);
+        $this->assertSame('reanalyze', $actions[1]['kind']);
+        $this->assertSame(['messageNdx' => 555], $actions[1]['target']);
+        $this->assertArrayNotHasKey('primary', $actions[1]);
+    }
+
+    public function testErrorCardRecommendsReanalysisWhenDefaultProfileIsNewer(): void
+    {
+        $errorRow = [
+            'message_ndx'           => 556,
+            'subject'               => 'Faktura',
+            'sender_name'           => 'Dodavatel s.r.o.',
+            'received_at'           => '2026-06-27 09:00:00',
+            'error_message'         => "[schema_error] output does not match schema: Additional properties are not allowed ('foo' was unexpected) at ['document', 'extracted_json', 'customer']",
+            'failed_prompt_version' => 'v4.3.0',
+        ];
+        $cards = (new MailSuggestionsSource())->collectCards($this->context(
+            [], [$errorRow], $this->catalogConfig(), profileVersionRow: ['prompt_version' => 'v4.4.0'],
+        ));
+
+        $card = $cards[0];
+        $this->assertSame('AI vrátila data v nečekaném tvaru', $card['title']);
+        $this->assertSame(
+            'Není to chyba ve zprávě ani v příloze, ale v nastavení analýzy Shipardu. AI přidala pole „foo“ (customer), které formát dokladu nezná.',
+            $card['details'][0]['value'],
+        );
+        $this->assertSame('Analýza se mezitím aktualizovala — zkus Znova analyzovat.', $card['details'][1]['value']);
+        $this->assertSame('reanalyze', $card['actions'][0]['id']);
+        $this->assertTrue($card['actions'][0]['primary']);
+        $this->assertSame('openMail', $card['actions'][1]['id']);
+        $this->assertArrayNotHasKey('primary', $card['actions'][1]);
+    }
+
+    public function testErrorCardNeverCarriesTechnicalMessage(): void
+    {
+        // Technická hláška může nést hodnoty z dokladu — na kartu nepatří.
+        $errorRow = [
+            'message_ndx'           => 557,
+            'subject'               => 'Faktura',
+            'sender_name'           => 'Dodavatel s.r.o.',
+            'received_at'           => '2026-06-27 09:00:00',
+            'error_message'         => "[schema_error] output does not match schema: 'Lorem ipsum dolor' is too long at ['document', 'title']",
+            'failed_prompt_version' => 'v4.3.0',
+        ];
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([], [$errorRow], $this->catalogConfig()));
+
+        $json = json_encode($cards[0], JSON_UNESCAPED_UNICODE) ?: '';
+        $this->assertStringNotContainsString('Lorem', $json);
+        $this->assertStringNotContainsString('schema_error', $json);
+        $this->assertStringContainsString('Hodnota v poli title je delší, než formát dovoluje.', $cards[0]['details'][0]['value']);
+    }
+
+    public function testErrorCardWithoutStoredMessageIsUnknownKind(): void
+    {
+        $errorRow = [
+            'message_ndx' => 558,
+            'subject'     => 'Faktura',
+            'sender_name' => 'Dodavatel s.r.o.',
+            'received_at' => '2026-06-27 09:00:00',
+        ];
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([], [$errorRow], $this->catalogConfig()));
+
+        $this->assertSame('Analýza selhala', $cards[0]['title']);
+        $this->assertSame('urgent', $cards[0]['kind']);
     }
 
     public function testErrorCardDegradesToReviewForOtherPrimaryType(): void

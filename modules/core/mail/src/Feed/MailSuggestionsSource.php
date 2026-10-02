@@ -7,6 +7,8 @@ namespace Shipard\Module\Core\Mail\Feed;
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Core\Feed\FeedSource;
 use Shipard\Module\Core\Mail\AnalysisConfidenceResolver;
+use Shipard\Module\Core\Mail\AnalysisErrorInfo;
+use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
 use Shipard\Module\Core\Mail\IncomingMessageDocument;
 use Shipard\Module\Core\Mail\IncomingMessageTitle;
 use Shipard\Module\Core\Mail\PrimaryTypes;
@@ -29,6 +31,9 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  * → kind=urgent, akce reanalyze + open_detail; degradace na review, když
  * klasifikace určila `primary_type='other'`. Otevřený návrh s ai_failed
  * wrapperem (`_validationError` v canonical_json) emituje chybovou kartu
+ * (obě chybové karty: titulek, „Co se stalo" / „Co dělat" v `details`
+ * a primární akce podle doporučení reanalýzy z AnalysisErrorPresenter —
+ * tasks/mail-analysis-error-messages.md D3c, D4, D5)
  * také — akce reanalyze.
  * Karty „Není faktura": zpráva `analysis_state=30`, `docState=10` (Nová),
  * `primary_type='other'` bez otevřeného návrhu → kind=info s akcemi
@@ -104,6 +109,8 @@ final class MailSuggestionsSource implements FeedSource
 
         $resolver = new AnalysisConfidenceResolver($ctx->db);
         $thresholdsByProfile = [];
+        // Jeden presenter per sběr — verzi výchozího profilu čte jednou.
+        $presenter = new AnalysisErrorPresenter($ctx->db, $ctx->config);
 
         $cards = [];
         foreach ($suggestionRows as $row) {
@@ -114,7 +121,7 @@ final class MailSuggestionsSource implements FeedSource
             // Nevalidní výstup běhu (forenzní wrapper z /result) → chybová
             // karta s reanalyze, návrh nelze použít.
             if (isset($canonical['_validationError'])) {
-                $cards[] = $this->withAttachments($this->buildInvalidOutputCard($ctx, $row), $attachments);
+                $cards[] = $this->withAttachments($this->buildInvalidOutputCard($ctx, $row, $presenter), $attachments);
                 continue;
             }
 
@@ -136,7 +143,7 @@ final class MailSuggestionsSource implements FeedSource
         }
         foreach ($errorRows as $row) {
             $cards[] = $this->withAttachments(
-                $this->buildErrorCard($ctx, $row),
+                $this->buildErrorCard($ctx, $row, $presenter),
                 $attachmentsByMessage[(int) $row['message_ndx']] ?? [],
             );
         }
@@ -161,7 +168,7 @@ final class MailSuggestionsSource implements FeedSource
             . ' `m`.`sender_name`, `m`.`partner_name`,' . self::PARTNER_FULL_NAME_SQL . ','
             . ' `m`.`received_at`, `m`.`raw_source_attachment`,'
             . ' `a`.`id` AS `analysis_ndx`, `a`.`proposed_type`, `a`.`canonical_json`,'
-            . ' `a`.`analysis_json`, `a`.`confidence`, `a`.`profile`'
+            . ' `a`.`analysis_json`, `a`.`confidence`, `a`.`profile`, `a`.`prompt_version`'
             . ' FROM `' . self::MESSAGES_TABLE . '` `m`'
             . ' JOIN `' . self::ANALYSES_TABLE . '` `a` ON `a`.`id` = ('
             . '     SELECT `a2`.`id` FROM `' . self::ANALYSES_TABLE . '` `a2`'
@@ -311,10 +318,13 @@ final class MailSuggestionsSource implements FeedSource
      * @param array<string,mixed> $row
      * @return array<string,mixed>
      */
-    private function buildInvalidOutputCard(FeedContext $ctx, array $row): array
+    private function buildInvalidOutputCard(FeedContext $ctx, array $row, AnalysisErrorPresenter $presenter): array
     {
         $messageNdx = (int) $row['message_ndx'];
         $subject    = $this->messageTitle($ctx, $row);
+        $info       = $presenter->forInvalidOutput(
+            isset($row['prompt_version']) ? (string) $row['prompt_version'] : null,
+        );
         $card = [
             'id'         => 'mail_invalid:' . $messageNdx,
             'source'     => 'mail',
@@ -323,14 +333,12 @@ final class MailSuggestionsSource implements FeedSource
             'stateStyle' => 'error',
             'category'   => FeedSource::CATEGORY_OTHER,
             'navSection' => FeedSource::NAV_SECTION_TOP,
-            'title'      => $ctx->language === 'cs' ? 'Chyba analýzy e-mailu' : 'E-mail analysis failed',
+            'title'      => $info->title,
             'subtitle'   => $this->senderSubtitle($ctx, $row, trim((string) ($row['sender_name'] ?? ''))),
             'timestamp'  => $this->toAtom($row['received_at'] ?? null),
             'context'    => ['messageNdx' => $messageNdx],
-            'actions'    => [
-                ['id' => 'reanalyze', 'kind' => 'reanalyze', 'target' => ['messageNdx' => $messageNdx], 'primary' => true],
-                ['id' => 'openMail',  'kind' => 'open_detail', 'target' => ['viewerId' => self::INCOMING_VIEWER_ID, 'recordId' => $messageNdx, 'tabId' => 'content']],
-            ],
+            'details'    => $presenter->cardDetails($info),
+            'actions'    => $this->failureActions($messageNdx, $info),
         ];
         if ($subject !== '') {
             $card['emailSubject'] = $subject;
@@ -350,10 +358,19 @@ final class MailSuggestionsSource implements FeedSource
      */
     private function fetchErrorRows(FeedContext $ctx): array
     {
+        // Hláška a verze promptu posledního selhaného běhu jako korelované
+        // subselecty (ne JOIN — viz PARTNER_FULL_NAME_SQL); feed je
+        // stropovaný, žádné N+1.
+        $lastFailed = ' FROM `' . self::ANALYSES_TABLE . '` `fa`'
+            . ' WHERE `fa`.`message` = `m`.`id` AND `fa`.`status` = 3'
+            . ' ORDER BY `fa`.`analyzed_at` DESC, `fa`.`id` DESC LIMIT 1';
+
         return $ctx->db->fetchAll(
             'SELECT `m`.`id` AS `message_ndx`, `m`.`subject`, `m`.`ai_title`, `m`.`source_type`,'
             . ' `m`.`sender_name`, `m`.`partner_name`,' . self::PARTNER_FULL_NAME_SQL . ','
-            . ' `m`.`received_at`, `m`.`primary_type`, `m`.`raw_source_attachment`'
+            . ' `m`.`received_at`, `m`.`primary_type`, `m`.`raw_source_attachment`,'
+            . ' (SELECT `fa`.`error_message`' . $lastFailed . ') AS `error_message`,'
+            . ' (SELECT `fa`.`prompt_version`' . $lastFailed . ') AS `failed_prompt_version`'
             . ' FROM `' . self::MESSAGES_TABLE . '` `m`'
             . ' WHERE `m`.`analysis_state` = %i AND `m`.`docState` NOT IN %in'
             . ' ORDER BY `m`.`received_at` DESC, `m`.`id` DESC'
@@ -366,16 +383,22 @@ final class MailSuggestionsSource implements FeedSource
 
     /**
      * Chybová karta — AI selhala; kind=urgent, degradace na review, když
-     * dřívější klasifikace už určila `primary_type='other'`.
+     * dřívější klasifikace už určila `primary_type='other'`. Titulek
+     * a `details` z katalogu hlášek podle `error_message` posledního
+     * selhaného běhu; subtitle zůstává odesílatel (D3c).
      *
      * @param array<string,mixed> $row
      * @return array<string,mixed>
      */
-    private function buildErrorCard(FeedContext $ctx, array $row): array
+    private function buildErrorCard(FeedContext $ctx, array $row, AnalysisErrorPresenter $presenter): array
     {
         $messageNdx = (int) $row['message_ndx'];
         $subject    = $this->messageTitle($ctx, $row);
         $isOther    = (string) ($row['primary_type'] ?? '') === 'other';
+        $info       = $presenter->fromErrorMessage(
+            isset($row['error_message']) ? (string) $row['error_message'] : null,
+            isset($row['failed_prompt_version']) ? (string) $row['failed_prompt_version'] : null,
+        );
         $card = [
             'id'         => 'mail_message:' . $messageNdx,
             'source'     => 'mail',
@@ -384,14 +407,12 @@ final class MailSuggestionsSource implements FeedSource
             'stateStyle' => 'error',
             'category'   => FeedSource::CATEGORY_OTHER,
             'navSection' => FeedSource::NAV_SECTION_TOP,
-            'title'      => $ctx->language === 'cs' ? 'Chyba analýzy e-mailu' : 'E-mail analysis failed',
+            'title'      => $info->title,
             'subtitle'   => $this->senderSubtitle($ctx, $row, trim((string) ($row['sender_name'] ?? ''))),
             'timestamp'  => $this->toAtom($row['received_at'] ?? null),
             'context'    => ['messageNdx' => $messageNdx],
-            'actions'    => [
-                ['id' => 'reanalyze', 'kind' => 'reanalyze', 'target' => ['messageNdx' => $messageNdx], 'primary' => true],
-                ['id' => 'openMail',  'kind' => 'open_detail', 'target' => ['viewerId' => self::INCOMING_VIEWER_ID, 'recordId' => $messageNdx, 'tabId' => 'content']],
-            ],
+            'details'    => $presenter->cardDetails($info),
+            'actions'    => $this->failureActions($messageNdx, $info),
         ];
         if ($subject !== '') {
             $card['emailSubject'] = $subject;
@@ -401,6 +422,25 @@ final class MailSuggestionsSource implements FeedSource
             $card['receivedDateText'] = $receivedDateText;
         }
         return $card;
+    }
+
+    /**
+     * Akce chybové karty (D4): reanalýza primární, jen když ji katalog
+     * doporučuje (výchozí profil má novější prompt); jinak je primární
+     * otevření zprávy a reanalýza zůstává sekundární. Primární akce vždy
+     * první v poli.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function failureActions(int $messageNdx, AnalysisErrorInfo $info): array
+    {
+        $reanalyze = ['id' => 'reanalyze', 'kind' => 'reanalyze', 'target' => ['messageNdx' => $messageNdx]];
+        $openMail  = ['id' => 'openMail',  'kind' => 'open_detail', 'target' => ['viewerId' => self::INCOMING_VIEWER_ID, 'recordId' => $messageNdx, 'tabId' => 'content']];
+
+        if ($info->reanalysisRecommended) {
+            return [$reanalyze + ['primary' => true], $openMail];
+        }
+        return [$openMail + ['primary' => true], $reanalyze];
     }
 
     /**

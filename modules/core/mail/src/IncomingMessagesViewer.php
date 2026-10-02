@@ -626,13 +626,19 @@ class IncomingMessagesViewer extends TableViewer
 
     private function buildAnalysesTab(int $messageId): array
     {
+        // Nevalidní výstup úspěšného běhu poznáme podle forenzního wrapperu
+        // (`AnalysisController` ho skládá s `_validationError` jako prvním
+        // klíčem) — bez tahání celého canonical_json per běh.
+        $invalidMarker = '{"_validationError"';
         $analyses = $this->db->fetchAll(
             'SELECT `id`, `analyzed_at`, `status`, `model_name`, `model_version`, `prompt_version`,'
             . ' `confidence`, `cost_usd`, `duration_ms`, `canonical_json` IS NOT NULL AS `has_proposal`,'
+            . ' LEFT(`canonical_json`, ' . strlen($invalidMarker) . ') = %s AS `invalid_output`,'
             . ' `resolution`, `error_message`'
             . ' FROM `core_mail_message_analyses`'
             . ' WHERE `message` = %i'
             . ' ORDER BY `analyzed_at` DESC',
+            $invalidMarker,
             $messageId,
         );
 
@@ -642,6 +648,7 @@ class IncomingMessagesViewer extends TableViewer
 
         $statusLabels = [1 => 'Probíhá', 2 => 'Úspěch', 3 => 'Selhala'];
         $resolutionMap = $this->loadAnalysisResolutions();
+        $presenter = new AnalysisErrorPresenter($this->db, $this->config);
         $rows = [];
         foreach ($analyses as $a) {
             $confidence = $a['confidence'] !== null ? number_format((float) $a['confidence'], 3) : '—';
@@ -651,9 +658,24 @@ class IncomingMessagesViewer extends TableViewer
                 : '—';
             $resolution = $a['resolution'] !== null ? (int) $a['resolution'] : null;
 
+            // Sloupec Chyba: lidský titulek (+ detail) z katalogu u selhaných
+            // běhů a u běhů s nevalidním výstupem; technická hláška sem nejde.
+            $error = '—';
+            if ((int) ($a['status'] ?? 1) === 3) {
+                $error = $this->failureCell($presenter->fromErrorMessage(
+                    isset($a['error_message']) ? (string) $a['error_message'] : null,
+                    isset($a['prompt_version']) ? (string) $a['prompt_version'] : null,
+                ));
+            } elseif (!empty($a['invalid_output'])) {
+                $error = $this->failureCell($presenter->forInvalidOutput(
+                    isset($a['prompt_version']) ? (string) $a['prompt_version'] : null,
+                ));
+            }
+
             $rows[] = [
                 'analyzed_at' => $this->formatDateTime($a['analyzed_at'] ?? null),
                 'status'      => $statusLabels[(int) ($a['status'] ?? 1)] ?? '—',
+                'error'       => $error,
                 'model'       => trim(($a['model_name'] ?? '') . ' ' . ($a['model_version'] ?? '')),
                 'prompt'      => $a['prompt_version'] ?? '',
                 'confidence'  => $confidence,
@@ -671,6 +693,7 @@ class IncomingMessagesViewer extends TableViewer
             'columns' => [
                 ['id' => 'analyzed_at', 'label' => 'Čas'],
                 ['id' => 'status',      'label' => 'Stav'],
+                ['id' => 'error',       'label' => 'Chyba'],
                 ['id' => 'model',       'label' => 'Model'],
                 ['id' => 'prompt',      'label' => 'Prompt'],
                 ['id' => 'confidence',  'label' => 'Jistota'],
@@ -690,10 +713,23 @@ class IncomingMessagesViewer extends TableViewer
      * (resolution badge), hint dalších nálezů (`secondary_findings`)
      * a akce Použít / Zamítnout / Detail. Bez návrhu prázdný stav
      * s klasifikací zprávy.
+     *
+     * Selhání (tasks/mail-analysis-error-messages.md D3a, D5): při
+     * `analysis_state = 70` nese obsah `failure` z poslední selhané
+     * analýzy — frontend kreslí kartu selhání místo prázdného stavu
+     * (klasifikace se pak neposílá; `primary_type` je ve stavu 70 jen
+     * výchozí hodnota) nebo nad starším návrhem, pokud existuje. Návrh
+     * s nevalidním výstupem (`_validationError`) nese vlastní
+     * `proposal.failure` kategorie `invalidOutput`.
      */
     private function buildProposalTab(array $record): array
     {
         $messageId = (int) $record['id'];
+        $presenter = new AnalysisErrorPresenter($this->db, $this->config);
+        $failure = (int) ($record['analysis_state'] ?? 0) === IncomingMessageDocument::ANALYSIS_FAILED
+            ? $this->buildFailure($messageId, $presenter)
+            : null;
+
         $analysis = $this->db->fetchRow(
             'SELECT * FROM `core_mail_message_analyses`'
             . ' WHERE `message` = %i AND `status` = %i'
@@ -702,19 +738,29 @@ class IncomingMessagesViewer extends TableViewer
         );
 
         if ($analysis === null || $analysis['canonical_json'] === null || $analysis['canonical_json'] === '') {
-            return [
+            $content = [
                 'type' => 'proposal',
                 'proposal' => null,
-                'classification' => [
+                'failure' => $failure,
+            ];
+            if ($failure === null) {
+                $content['classification'] = [
                     'primary_type' => (string) ($record['primary_type'] ?? 'other'),
                     'primary_type_label' => $this->primaryTypeLabelFor((string) ($record['primary_type'] ?? 'other')),
-                ],
-            ];
+                ];
+            }
+            return $content;
         }
 
         $canonical = json_decode((string) $analysis['canonical_json'], true);
         $canonical = is_array($canonical) ? $canonical : [];
         $aiFailed = isset($canonical['_validationError']);
+        $proposalFailure = $aiFailed
+            ? $this->failurePayload(
+                $presenter->forInvalidOutput(isset($analysis['prompt_version']) ? (string) $analysis['prompt_version'] : null),
+                $analysis,
+            )
+            : null;
 
         $proposedType = (string) ($analysis['proposed_type'] ?? 'other');
         $confidence = $analysis['confidence'] !== null ? (float) $analysis['confidence'] : null;
@@ -736,10 +782,12 @@ class IncomingMessagesViewer extends TableViewer
 
         return [
             'type' => 'proposal',
+            'failure' => $failure,
             'proposal' => [
                 'analysisNdx'        => (int) $analysis['id'],
                 'messageNdx'         => $messageId,
                 'ai_failed'          => $aiFailed,
+                'failure'            => $proposalFailure,
                 'proposed_type'      => $proposedType,
                 'proposed_type_label' => $this->primaryTypeLabelFor($proposedType),
                 'confidence'         => $confidence !== null ? round($confidence, 3) : null,
@@ -763,6 +811,50 @@ class IncomingMessagesViewer extends TableViewer
                 'primary_type_label' => $this->primaryTypeLabelFor((string) ($record['primary_type'] ?? 'other')),
             ],
         ];
+    }
+
+    /**
+     * `failure` pro stav 70: poslední selhaný běh (`status = 3`) přes
+     * katalog hlášek. Bez řádku (nekonzistentní data) kategorie `unknown`.
+     *
+     * @return array<string, mixed>
+     */
+    private function buildFailure(int $messageId, AnalysisErrorPresenter $presenter): array
+    {
+        $failed = $this->db->fetchRow(
+            'SELECT `id`, `analyzed_at`, `prompt_version`, `error_message` FROM `core_mail_message_analyses`'
+            . ' WHERE `message` = %i AND `status` = %i'
+            . ' ORDER BY `analyzed_at` DESC, `id` DESC LIMIT 1',
+            $messageId, 3,
+        );
+        $info = $presenter->fromErrorMessage(
+            isset($failed['error_message']) ? (string) $failed['error_message'] : null,
+            isset($failed['prompt_version']) ? (string) $failed['prompt_version'] : null,
+        );
+        return $this->failurePayload($info, $failed ?? []);
+    }
+
+    /**
+     * Tvar `failure` pro frontend: hláška z katalogu + čas a verze promptu
+     * běhu (technické podrobnosti, sbalené).
+     *
+     * @param array<string, mixed> $analysis
+     * @return array<string, mixed>
+     */
+    private function failurePayload(AnalysisErrorInfo $info, array $analysis): array
+    {
+        return $info->toArray() + [
+            'analyzedAt'    => $this->formatDateTime($analysis['analyzed_at'] ?? null),
+            'promptVersion' => isset($analysis['prompt_version']) ? (string) $analysis['prompt_version'] : null,
+        ];
+    }
+
+    /** Buňka sloupce Chyba v tabu Analýzy: titulek, za pomlčkou případný detail. */
+    private function failureCell(AnalysisErrorInfo $info): string
+    {
+        return $info->detail !== null && $info->detail !== ''
+            ? $info->title . ' — ' . $info->detail
+            : $info->title;
     }
 
     /**

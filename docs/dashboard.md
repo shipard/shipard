@@ -20,8 +20,8 @@ feedem (SSE, cache dle hashe feedu, tichá degradace na statické county — §1
 ├──────────────────────────────────────────────────────────────┤
 │  🔴 Vyžaduje pozornost (1)                                    │
 │  ┌──────────────────────────────────────────────────────────┐│
-│  │ Chyba analýzy e-mailu              ← plná karta, full-width│
-│  │ e-mail „Nečitelná faktura"    [Znovu analyzovat][Otevřít] ││
+│  │ AI vrátila data v nečekaném tvaru  ← plná karta, full-width│
+│  │ e-mail „Faktura 2026-0042"    [Otevřít e-mail][Znovu anal.]││
 │  └──────────────────────────────────────────────────────────┘│
 │  🟡 Ke kontrole (4)                                           │
 │  [plná karta]  [plná karta]        ← grid, 2 sloupce          │
@@ -276,15 +276,35 @@ Karta má `id = "mail_suggestion:{messageNdx}"`, akční targety
 `{messageNdx}`.
 
 **Chybové karty** — dva zdroje, obě `kind=urgent`, `stateStyle=error`,
-akce `reanalyze` (primary, `{messageNdx}`) + `open_detail`
-(read-only náhled zprávy, viewer `core.mail.incoming`, tab `content`):
+akce `reanalyze` (`{messageNdx}`) + `open_detail` (read-only náhled
+zprávy, viewer `core.mail.incoming`, tab `content`):
 
 - zprávy `analysis_state=70` (analýza selhala) mimo Archiv/Koš
   (`id = "mail_message:{ndx}"`); když už dřívější klasifikace určila
   `primary_type='other'`, karta degraduje na `kind=review`;
 - otevřený návrh s nevalidním výstupem AI — forenzní wrapper
   `_validationError` v `canonical_json` (`id = "mail_invalid:{ndx}"`);
-  návrh nelze použít, jediná smysluplná akce je reanalyze.
+  návrh nelze použít.
+
+Texty a primární akci obou karet dává katalog hlášek
+`core.mail.analysisErrorKinds` přes `AnalysisErrorPresenter`
+(`modules/core/mail/docs/ai-analysis.md` → „Chybové hlášky pro
+uživatele", tasks/mail-analysis-error-messages.md D3c–D5):
+
+- `title` = titulek kategorie (např. „AI vrátila data v nečekaném
+  tvaru", „Odpověď AI se nevešla do limitu", u wrapperu „AI vrátila
+  nepoužitelný návrh"); `subtitle` zůstává odesílatel, `emailSubject`
+  předmět;
+- `details` = dva řádky „Co se stalo" (vysvětlení + případný detail
+  s cestou v návrhu) a „Co dělat" (hint). Technická hláška
+  `error_message` na kartu nejde — může nést hodnoty z dokladu;
+- **primární akce (D4)**: `reanalyze` je primární, jen když má výchozí
+  aktivní profil novější `prompt_version` než selhaný běh (hint „Analýza
+  se mezitím aktualizovala…"); jinak je primární `open_detail` a
+  reanalyze zůstává sekundární (hint „Opakování se stejnou verzí…").
+  Primární akce je vždy první v `actions`. Verzi selhaného běhu nese
+  u stavu 70 poslední běh se `status=3` (korelovaný subselect
+  v `fetchErrorRows`), u wrapperu samotný řádek návrhu.
 
 **Karty „Není faktura"** — zprávy `analysis_state=30`, `docState=10` (Nová),
 `primary_type='other'` bez otevřeného návrhu → `kind=info`,
@@ -313,8 +333,9 @@ registry `party.name`). Feed je stropovaný, takže N `json_decode` je
 - **Registry karta**: `partnerName` = `party.name`, `typeLabel` =
   `docKindLabel()`, bez `amountText`; `details` = jediný řádek „Platí do"
   z `registryValidTo()` (bez něj se `details` neposílá).
-- **Chybová karta / „Není faktura"**: bez `headline`/`details`/
-  `confidencePct`; `emailSubject` ano. Subtitle nedupluje předmět —
+- **Chybová karta / „Není faktura"**: bez `headline`/`confidencePct`;
+  `emailSubject` ano; `details` jen chybová karta (dva řádky z katalogu
+  hlášek, viz výše). Subtitle nedupluje předmět —
   nese odesílatele (`sender_name`, „Není faktura" s fallbackem na
   `sender_email`); má-li zpráva partnera (Osoba nebo `partner_name`),
   subtitle je „partner · od: odesílatel" (D7).

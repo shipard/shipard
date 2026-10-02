@@ -146,4 +146,218 @@ final class IncomingMessagesViewerTest extends TestCase
         $this->assertNull($rendered['t2']);
         $this->assertSame(['[Faktury]'], $this->t3Texts($rendered));
     }
+
+    // ── Detail: karta selhání v tabu Návrh, sloupec Chyba v Analýzách ─────
+    // (tasks/mail-analysis-error-messages.md D3a, D3b, D5). Bez configu
+    // → anglický fallback katalogu analysisErrorKinds.
+
+    /**
+     * Viewer s mockem pro renderDetail: fetchRow routuje záznam zprávy
+     * (JOIN na schránky), poslední úspěšný (status param 2) a poslední
+     * selhaný (status param 3) běh; fetchAll vrací historii běhů pro tab
+     * Analýzy, přílohy prázdné.
+     *
+     * @param array<string, mixed> $record
+     * @param list<array<string, mixed>> $analyses
+     * @param array<string, mixed>|null $lastSuccess
+     * @param array<string, mixed>|null $lastFailed
+     */
+    private function detailViewer(array $record, array $analyses = [], ?array $lastSuccess = null, ?array $lastFailed = null): IncomingMessagesViewer
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnCallback(
+            static function (mixed ...$args) use ($record, $lastSuccess, $lastFailed): ?array {
+                $sql = (string) $args[0];
+                if (str_contains($sql, 'core_mail_mailboxes')) {
+                    return $record;
+                }
+                if (str_contains($sql, 'core_mail_message_analyses')) {
+                    return match ((int) ($args[2] ?? 0)) {
+                        2       => $lastSuccess,
+                        3       => $lastFailed,
+                        default => null,
+                    };
+                }
+                return null;
+            },
+        );
+        $db->method('fetchAll')->willReturnCallback(
+            static fn(mixed ...$args): array => str_contains((string) $args[0], 'core_mail_message_analyses') ? $analyses : [],
+        );
+        return new IncomingMessagesViewer($db, 'core_mail_incoming_messages');
+    }
+
+    /** @return array<string, mixed> content tabu podle id */
+    private function tabContent(IncomingMessagesViewer $viewer, string $tabId): array
+    {
+        foreach ($viewer->renderDetail(1)['tabs'] as $tab) {
+            if ($tab['id'] === $tabId) {
+                return $tab['content'];
+            }
+        }
+        $this->fail("Tab {$tabId} chybí");
+    }
+
+    /** @return array<string, mixed> */
+    private function failedRun(string $errorMessage, string $promptVersion = 'v4.3.0'): array
+    {
+        return [
+            'id'             => 9,
+            'analyzed_at'    => '2026-09-30 08:15:00',
+            'status'         => 3,
+            'model_name'     => 'claude-x',
+            'model_version'  => null,
+            'prompt_version' => $promptVersion,
+            'confidence'     => null,
+            'cost_usd'       => null,
+            'duration_ms'    => null,
+            'has_proposal'   => 0,
+            'invalid_output' => 0,
+            'resolution'     => null,
+            'error_message'  => $errorMessage,
+        ];
+    }
+
+    public function testFailedStateCarriesFailureInsteadOfClassification(): void
+    {
+        $failed = $this->failedRun("[schema_error] output does not match schema: 'Lorem ipsum' is too long at ['document', 'title']");
+        $content = $this->tabContent(
+            $this->detailViewer($this->row(['analysis_state' => 70, 'primary_type' => 'other']), [$failed], null, $failed),
+            'proposal',
+        );
+
+        $this->assertSame('proposal', $content['type']);
+        $this->assertNull($content['proposal']);
+        $this->assertArrayNotHasKey('classification', $content, 'primary_type je ve stavu 70 jen výchozí hodnota');
+
+        $failure = $content['failure'];
+        $this->assertSame('schemaTooLong', $failure['kind']);
+        $this->assertSame('AI returned data in an unexpected shape', $failure['title']);
+        $this->assertSame('The value in field title is longer than the format allows.', $failure['detail']);
+        $this->assertFalse($failure['reanalysisRecommended']);
+        $this->assertStringStartsWith('[schema_error]', $failure['technical']);
+        $this->assertSame('v4.3.0', $failure['promptVersion']);
+        $this->assertNotNull($failure['analyzedAt']);
+    }
+
+    public function testAnalyzedStateWithoutProposalKeepsClassification(): void
+    {
+        $content = $this->tabContent(
+            $this->detailViewer($this->row(['analysis_state' => 30, 'primary_type' => 'other'])),
+            'proposal',
+        );
+
+        $this->assertNull($content['proposal']);
+        $this->assertNull($content['failure']);
+        $this->assertSame('other', $content['classification']['primary_type']);
+    }
+
+    public function testInvalidOutputProposalCarriesOwnFailure(): void
+    {
+        $success = [
+            'id'             => 12,
+            'message'        => 1,
+            'profile'        => null,
+            'analyzed_at'    => '2026-09-30 09:00:00',
+            'status'         => 2,
+            'prompt_version' => 'v4.3.0',
+            'proposed_type'  => 'invoiceReceived',
+            'confidence'     => 0.5,
+            'resolution'     => null,
+            'resolved_at'    => null,
+            'rejected_reason' => null,
+            'analysis_json'  => null,
+            'canonical_json' => json_encode(['_validationError' => 'Canonical schema validation failed', '_validationIssues' => [], '_rawOutput' => []]),
+        ];
+        $content = $this->tabContent(
+            $this->detailViewer($this->row(['analysis_state' => 30]), [], $success),
+            'proposal',
+        );
+
+        $this->assertNull($content['failure']);
+        $doc = $content['proposal'];
+        $this->assertTrue($doc['ai_failed']);
+        $this->assertSame('invalidOutput', $doc['failure']['kind']);
+        $this->assertSame('AI returned an unusable proposal', $doc['failure']['title']);
+        $this->assertNull($doc['failure']['technical']);
+        $this->assertSame('v4.3.0', $doc['failure']['promptVersion']);
+        $this->assertFalse($doc['can_apply']);
+    }
+
+    public function testFailedStateKeepsOlderProposalAndAddsFailure(): void
+    {
+        $success = [
+            'id'             => 12,
+            'message'        => 1,
+            'profile'        => null,
+            'analyzed_at'    => '2026-09-29 09:00:00',
+            'status'         => 2,
+            'model_name'     => 'claude-x',
+            'model_version'  => null,
+            'prompt_version' => 'v4.2.0',
+            'proposed_type'  => 'invoiceReceived',
+            'confidence'     => 0.9,
+            'cost_usd'       => null,
+            'duration_ms'    => null,
+            'has_proposal'   => 1,
+            'invalid_output' => 0,
+            'resolution'     => null,
+            'resolved_at'    => null,
+            'rejected_reason' => null,
+            'analysis_json'  => null,
+            'canonical_json' => json_encode(['docNumber' => 'F-1', 'supplier' => ['name' => 'X'], 'totals' => ['totalAmount' => 10.0]]),
+        ];
+        $failed = $this->failedRun('[ai_error] anthropic: output truncated at max_tokens=8192');
+        $content = $this->tabContent(
+            $this->detailViewer($this->row(['analysis_state' => 70]), [$failed, $success], $success, $failed),
+            'proposal',
+        );
+
+        $this->assertSame('aiTruncated', $content['failure']['kind']);
+        $this->assertNotNull($content['proposal'], 'starší návrh zůstává vykreslený');
+        $this->assertFalse($content['proposal']['ai_failed']);
+        $this->assertNull($content['proposal']['failure']);
+        $this->assertFalse($content['proposal']['can_apply'], 'akce jen ve stavu 30');
+    }
+
+    public function testAnalysesTabHasErrorColumnFromCatalog(): void
+    {
+        $failed = $this->failedRun('[ai_error] anthropic: output truncated at max_tokens=8192');
+        $invalid = $this->failedRun('') + [];
+        $invalid['id'] = 10;
+        $invalid['status'] = 2;
+        $invalid['has_proposal'] = 1;
+        $invalid['invalid_output'] = 1;
+        $invalid['error_message'] = null;
+        $ok = $invalid;
+        $ok['id'] = 11;
+        $ok['invalid_output'] = 0;
+
+        $content = $this->tabContent(
+            $this->detailViewer($this->row(['analysis_state' => 70]), [$failed, $invalid, $ok], null, $failed),
+            'analyses',
+        );
+
+        $this->assertSame('table', $content['type']);
+        $ids = array_column($content['columns'], 'id');
+        $this->assertSame(['analyzed_at', 'status', 'error'], array_slice($ids, 0, 3));
+        $this->assertSame('Chyba', $content['columns'][2]['label']);
+        $this->assertSame('The AI response did not fit within the limit', $content['rows'][0]['error']);
+        $this->assertSame('AI returned an unusable proposal', $content['rows'][1]['error']);
+        $this->assertSame('—', $content['rows'][2]['error']);
+    }
+
+    public function testAnalysesErrorCellAppendsDetail(): void
+    {
+        $failed = $this->failedRun("[schema_error] output does not match schema: 'x' is not one of ['a'] at ['document', 'extracted_json', 'rows', 0, 'vat', 'code']");
+        $content = $this->tabContent(
+            $this->detailViewer($this->row(['analysis_state' => 70]), [$failed], null, $failed),
+            'analyses',
+        );
+
+        $this->assertSame(
+            'AI returned data in an unexpected shape — The value in field rows.0.vat.code is not one of the allowed options.',
+            $content['rows'][0]['error'],
+        );
+    }
 }
