@@ -1,6 +1,6 @@
 # Tisky — Fáze 2: nástroje pro šablony, pokladní doklad, prodejka, Kontace, storno
 
-**Stav:** hotovo — 2026-10-02 (6 commitů + oprava záhlaví; unit a integrační testy na `4l3j-` včetně PDF přes render službu, tisky ověřené nad skutečnými doklady `4l3j-`); zbývá ruční proklik nabídky Tisk v prohlížeči; odchylky od zadání na konci
+**Stav:** hotovo — 2026-10-02 (6 commitů + oprava záhlaví; unit a integrační testy na `4l3j-` včetně PDF přes render službu, tisky ověřené nad skutečnými doklady `4l3j-`, nabídka Tisk prokliknutá v prohlížeči); odchylky od zadání na konci
 
 > PRD pro Claude Code (6 commitů). Design: issue #90, komentář
 > „Rozhodnutí: fáze 2 (D22–D28)“; základ D1–D21 a fáze 0 + 1 v
