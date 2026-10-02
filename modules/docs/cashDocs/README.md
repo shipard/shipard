@@ -52,7 +52,17 @@ a pokladna se na dokladu nezadává (denormalizuje se z řady do `cash_desk`).
   terminálu pokladny (`partnerSrc: balance`, #72), převody →
   `cash.transit` 261100).
 - Pokladní knihu, otevírací doklady ani inventuru (fáze 2, #59 D10).
-- Zálohy na pokladních dokladech, platební terminály per analytika, tisk.
+- Platební terminály per analytika.
+
+## Tisk
+
+Tisk `docs.cashDocs.cash` (#90 D25, `config/prints.jsonc`): příjmový
+i výdajový doklad ve stavu V pořádku, stornovaný s vodoznakem. Builder
+`CashDocPrintBuilder` žije v `docs.core` (bloky dokladu + pokladna + den
+přijetí platby), šablona `prints/cash/` dědí společný layout dokladů —
+popisky stran „Dodavatel / přijal“ a „Odběratel / vydal“, podpisy podle
+směru, bez účtu a QR. Titulek volí `TitleVariantResolver`: příjem plátce
+s rekapitulací DPH je daňový doklad. Viz `docs/prints.md`.
 
 ## Převody peněz
 

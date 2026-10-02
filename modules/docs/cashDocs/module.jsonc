@@ -41,5 +41,9 @@
                 "cash": "Shipard\\Module\\Docs\\CashDocs\\CashDocForm"
             }
         }
+    ],
+
+    "prints": [
+        { "file": "config/prints.jsonc" }
     ]
 }

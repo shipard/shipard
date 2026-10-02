@@ -53,6 +53,7 @@ class PrintDeclarationsTest extends TestCase
 
         $this->assertContains('docs.invoicesOut.invoice', $ids);
         $this->assertContains('docs.proformasOut.proforma', $ids);
+        $this->assertContains('docs.cashDocs.cash', $ids);
     }
 
     public function testBuildersExistAndTemplatesLiveInDeclaringModule(): void

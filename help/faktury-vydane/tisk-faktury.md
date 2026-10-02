@@ -2,7 +2,7 @@
 title: Tisk faktury
 summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne.
 keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
-related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, co-dnes-nejde.md]
+related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, pokladna/pokladni-doklad.md, co-dnes-nejde.md]
 ---
 
 # Tisk faktury
@@ -86,10 +86,10 @@ v prohlížeči PDF.
 **Doklad je v jiném jazyce, než čekáš.** Tiskne se v jazyce zdroje dat —
 česky, nebo anglicky. Jazyk podle odběratele zatím zvolit nejde.
 
-**Co zatím nejde:** odeslat fakturu odběrateli e-mailem přímo z Shipardu,
-změnit vzhled dokladu nebo na něj přidat vlastní text a vytisknout jiný
-doklad než fakturu vydanou a zálohovou — viz
-[Co Shipard dnes neumí](../co-dnes-nejde.md).
+**Co zatím nejde:** odeslat fakturu odběrateli e-mailem přímo z Shipardu
+a změnit vzhled dokladu nebo na něj přidat vlastní text — viz
+[Co Shipard dnes neumí](../co-dnes-nejde.md). Stejným tlačítkem **Tisk**
+vytiskneš i [pokladní doklad](../pokladna/pokladni-doklad.md).
 
 ## Souvisí
 
@@ -97,5 +97,7 @@ doklad než fakturu vydanou a zálohovou — viz
   V pořádku
 - [Zálohová faktura](zalohova-faktura.md) — kdy vystavit proformu a proč
   není daňovým dokladem
+- [Pokladní doklad](../pokladna/pokladni-doklad.md) — tisk příjmového
+  a výdajového dokladu
 - [Co Shipard dnes neumí](../co-dnes-nejde.md) — odeslání e-mailem, vzhled
-  dokladu, tisk dalších dokladů
+  dokladu

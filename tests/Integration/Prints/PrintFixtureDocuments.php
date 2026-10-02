@@ -6,7 +6,8 @@ namespace Shipard\Tests\Integration\Prints;
 
 /**
  * Fixture doklady pro testy tisků: faktura (plátce, dvě sazby, textový
- * řádek, odpočet zálohy, cizí měna) a zálohová faktura. Vkládají se přímo
+ * řádek, odpočet zálohy, cizí měna), zálohová faktura a pokladní doklady
+ * (příjem s prodejem, příjem úhrady faktury, výdej bez partnera). Vkládají se přímo
  * ve stavu 40 se snapshoty stran z `tests/Fixtures/Prints/*.json`,
  * takže výstup builderu nezávisí na adresáři zdroje dat.
  *
@@ -15,8 +16,11 @@ namespace Shipard\Tests\Integration\Prints;
  */
 trait PrintFixtureDocuments
 {
+    /** Společný prefix čísel fixture dokladů — podle něj se uklízí. */
+    private const NUMBER_PREFIX   = 'IT-PRINT-';
     private const INVOICE_NUMBER  = 'IT-PRINT-INV';
     private const PROFORMA_NUMBER = 'IT-PRINT-PRO';
+    private const CASH_NUMBER     = 'IT-PRINT-CASH';
 
     /** @var list<int> */
     private array $createdHeads = [];
@@ -35,8 +39,8 @@ trait PrintFixtureDocuments
         $this->vatRegistration = (int) $registration;
 
         foreach ($this->db->fetchAll(
-            'SELECT [id] FROM [docs_core_heads] WHERE [doc_number] IN %in',
-            [self::INVOICE_NUMBER, self::PROFORMA_NUMBER],
+            'SELECT [id] FROM [docs_core_heads] WHERE [doc_number] LIKE %s',
+            self::NUMBER_PREFIX . '%',
         ) as $leftover) {
             $this->deleteHead((int) $leftover['id']);
         }
@@ -101,6 +105,16 @@ trait PrintFixtureDocuments
         return (int) $person;
     }
 
+    /** @return array{id: int, code: string, name: string} */
+    private function anyCashDesk(): array
+    {
+        $desk = $this->db->fetchRow('SELECT [id], [code], [name] FROM [economy_codebooks_cash_desks] ORDER BY [id] LIMIT 1');
+        if ($desk === null) {
+            $this->markTestSkipped('DS nemá žádnou pokladnu.');
+        }
+        return ['id' => (int) $desk['id'], 'code' => (string) $desk['code'], 'name' => (string) $desk['name']];
+    }
+
     private function seriesFor(string $docType): int
     {
         $series = $this->db->fetchSingle(
@@ -119,7 +133,9 @@ trait PrintFixtureDocuments
      */
     private function insertHead(array $expected, array $head): int
     {
-        $json = static fn (array $snapshot): string => (string) json_encode($snapshot, JSON_UNESCAPED_UNICODE);
+        $json = static fn (?array $snapshot): ?string => $snapshot === null
+            ? null
+            : (string) json_encode($snapshot, JSON_UNESCAPED_UNICODE);
 
         $dibi = $this->db->getDibiConnection();
         $dibi->insert('docs_core_heads', $head + [
@@ -224,6 +240,104 @@ trait PrintFixtureDocuments
         ]);
 
         return $headId;
+    }
+
+    /**
+     * Příjmový pokladní doklad plátce s prodejem zboží — daňový doklad.
+     *
+     * @param array<string, mixed> $expected
+     * @param array<string, mixed> $headOverrides
+     */
+    private function insertCashSale(array $expected, int $cashDeskId, array $headOverrides = []): int
+    {
+        $headId = $this->insertHead($expected, $headOverrides + self::cashHead($cashDeskId) + [
+            'cash_dir'       => 1,
+            'doc_text'       => 'Prodej zboží za hotové',
+            'vat_dppd'       => '2026-09-29',
+            'total_base'     => 1000.0, 'total_vat' => 210.0, 'total_amount' => 1210.0,
+            'total_base_dom' => 1000.0, 'total_vat_dom' => 210.0, 'total_amount_dom' => 1210.0,
+        ]);
+        $this->insertRows($headId, [[
+            'row_kind' => 1, 'operation' => 'sale.goods', 'description' => 'Tonery do tiskárny',
+            'quantity' => 2, 'unit_price' => 500, 'total_price' => 1000,
+            'vat_code' => 'cz-120', 'vat_pct' => 21,
+            'vat_base' => 1000, 'vat_amount' => 210, 'vat_total' => 1210,
+        ]]);
+        $this->insertRecap($headId, [[
+            'vat_code' => 'cz-120', 'vat_pct' => 21, 'base' => 1000, 'tax' => 210, 'total' => 1210,
+            'base_dom' => 1000, 'tax_dom' => 210, 'total_dom' => 1210,
+        ]]);
+
+        return $headId;
+    }
+
+    /**
+     * Příjmový pokladní doklad plátce, kterým odběratel hradí fakturu —
+     * kontační řádek bez DPH, rekapitulace prázdná.
+     *
+     * @param array<string, mixed> $expected
+     */
+    private function insertCashInvoicePayment(array $expected, int $cashDeskId): int
+    {
+        $headId = $this->insertHead($expected, self::cashHead($cashDeskId) + [
+            'cash_dir'       => 1,
+            'doc_text'       => 'Úhrada faktury v hotovosti',
+            'vat_dppd'       => '2026-09-30',
+            'total_base'     => 1210.0, 'total_vat' => 0.0, 'total_amount' => 1210.0,
+            'total_base_dom' => 1210.0, 'total_vat_dom' => 0.0, 'total_amount_dom' => 1210.0,
+        ]);
+        $this->insertRows($headId, [[
+            'row_kind' => 1, 'operation' => 'payment.receivable', 'description' => 'Úhrada faktury 2026000123',
+            'unit_price' => 0, 'total_price' => 1210, 'payment_reference' => '2026000123',
+            'vat_base' => 1210, 'vat_amount' => 0, 'vat_total' => 1210,
+        ]]);
+
+        return $headId;
+    }
+
+    /**
+     * Výdajový pokladní doklad neplátce bez partnera — dodavatel chybí,
+     * vlastní firma je odběratel.
+     *
+     * @param array<string, mixed> $expected
+     */
+    private function insertCashDisbursement(array $expected, int $cashDeskId): int
+    {
+        $headId = $this->insertHead($expected, self::cashHead($cashDeskId) + [
+            'cash_dir'         => 2,
+            'doc_text'         => 'Nákup kancelářských potřeb',
+            'vat_registration' => null,
+            'vat_mode'         => 0,
+            'total_base'       => 110.0, 'total_vat' => 0.0, 'total_amount' => 110.0,
+            'total_base_dom'   => 110.0, 'total_vat_dom' => 0.0, 'total_amount_dom' => 110.0,
+        ]);
+        $this->insertRows($headId, [[
+            'row_kind' => 1, 'operation' => 'purchase.goods', 'description' => 'Kancelářské potřeby',
+            'quantity' => 10, 'unit_price' => 11, 'total_price' => 110,
+            'vat_base' => 110, 'vat_amount' => 0, 'vat_total' => 110,
+        ]]);
+
+        return $headId;
+    }
+
+    /**
+     * Společné hodnoty hlavičky pokladního dokladu: hotově, v domácí měně,
+     * splatnost = vystavení.
+     *
+     * @return array<string, mixed>
+     */
+    private static function cashHead(int $cashDeskId): array
+    {
+        return [
+            'doc_type'       => 'cash',
+            'doc_number'     => self::CASH_NUMBER,
+            'cash_desk'      => $cashDeskId,
+            'payment_method' => 0,
+            'due_date'       => '2026-09-30',
+            'vat_duzp'       => '2026-09-30',
+            'doc_currency'   => 'czk',
+            'exchange_rate'  => 1.0,
+        ];
     }
 
     /**

@@ -12,6 +12,7 @@
     "label.dueDate":      { "cs": "Datum splatnosti", "en": "Due date" },
     "label.taxPointDate": { "cs": "Datum zdanitelného plnění", "en": "Tax point date" },
     "label.period":       { "cs": "Období", "en": "Period" },
+    "label.cashDesk":     { "cs": "Pokladna", "en": "Cash desk" },
 
     // Platba
     "label.paymentMethod":    { "cs": "Způsob úhrady", "en": "Payment method" },

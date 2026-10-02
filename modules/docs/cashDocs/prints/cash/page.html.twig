@@ -1,0 +1,33 @@
+{#
+    Pokladní doklad (#90 D25) — příjmový i výdajový. Proti společnému
+    layoutu: data bez splatnosti, s dnem přijetí platby a pokladnou; popisky
+    stran říkají, kdo peníze přijal a kdo vydal (katalog); na konci podpisy
+    podle směru. Účet ani QR se netisknou — platí se hotově nebo kartou.
+#}
+{% extends '@docs.core/_layout/doc-base.html.twig' %}
+
+{% block dates %}
+    <dl class="doc-dates">
+        <dt>{{ t('label.issueDate') }}</dt>
+        <dd>{{ data.dates.issue|date }}</dd>
+        {% if data.dates.duzp and showVat %}
+            <dt>{{ t('label.taxPointDate') }}</dt>
+            <dd>{{ data.dates.duzp|date }}</dd>
+        {% endif %}
+        {% if data.dates.paymentReceived %}
+            <dt>{{ t('label.paymentReceivedDate') }}</dt>
+            <dd>{{ data.dates.paymentReceived|date }}</dd>
+        {% endif %}
+        {% if data.cashDesk %}
+            <dt>{{ t('label.cashDesk') }}</dt>
+            <dd>{{ data.cashDesk.name }}</dd>
+        {% endif %}
+    </dl>
+{% endblock %}
+
+{% block signatures %}
+    <section class="doc-signatures">
+        <div class="doc-signature">{{ doc.tradeDir == 2 ? t('signature.recipient') : t('signature.payer') }}</div>
+        <div class="doc-signature">{{ t('signature.cashier') }}</div>
+    </section>
+{% endblock %}

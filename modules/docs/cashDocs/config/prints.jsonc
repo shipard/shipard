@@ -1,0 +1,27 @@
+// Tisk pokladního dokladu (#90 D25) — příjmový i výdajový, tisk ven. Builder,
+// layout a dílčí bloky šablony jsou sdílené v docs.core; tady je deklarace
+// a stránková šablona.
+[
+    {
+        "id": "docs.cashDocs.cash",
+        "name": "Cash document",
+        "name:cs": "Pokladní doklad",
+        "name:en": "Cash document",
+        "table": "docs_core_heads",
+        "filter": { "doc_type": ["cash"] },
+        // Stornovaný doklad se tiskne s vodoznakem přes každou stranu.
+        "docStates": [40, 30],
+        "watermarks": { "30": "watermark.cancelled" },
+        "audience": "external",
+        "builder": "Shipard\\Module\\Docs\\Core\\Prints\\CashDocPrintBuilder",
+        "template": "@docs.cashDocs/cash",
+        "catalogs": ["@docs.core/_layout"],
+        // Horní a dolní okraj nechávají místo záhlaví (logo, titulek) a zápatí.
+        "paper": {
+            "format": "A4",
+            "orientation": "portrait",
+            "margins": { "top": "3.2cm", "bottom": "2cm" }
+        },
+        "order": 10
+    }
+]

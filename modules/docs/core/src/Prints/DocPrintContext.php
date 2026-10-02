@@ -14,7 +14,7 @@ use Shipard\Module\Docs\Core\DocTypes;
 
 /**
  * Všechno, co bloky tisku dokladu potřebují, načtené jednou: hlavička,
- * řádky, rekapitulace DPH, snapshoty stran, jednotky a popisky DPH. Bloky
+ * řádky, rekapitulace DPH, snapshoty stran, jednotky, popisky DPH a pokladna. Bloky
  * nad ním jsou čisté funkce bez databáze — `load()` je jediné místo se SQL.
  */
 final class DocPrintContext
@@ -30,6 +30,9 @@ final class DocPrintContext
      *        když doklad stranu nemá (D24).
      * @param array<string, mixed>|null $customer Snapshot odběratele.
      * @param array<int, string> $units id jednotky → zkratka.
+     * @param array<string, mixed>|null $cashDesk Pokladna dokladu (`id`,
+     *        `code`, `name`) — aktuální data číselníku (#90 D14); null
+     *        u dokladu bez pokladny.
      */
     public function __construct(
         public readonly array $head,
@@ -41,6 +44,7 @@ final class DocPrintContext
         public readonly DocVatCodes $vatCodes,
         public readonly PrintTranslator $translator,
         public readonly ?ConfigRuntime $config,
+        public readonly ?array $cashDesk = null,
     ) {}
 
     /**
@@ -106,6 +110,11 @@ final class DocPrintContext
             );
         }
 
+        $cashDesk = empty($head['cash_desk']) ? null : $request->db->fetchRow(
+            'SELECT [id], [code], [name] FROM [economy_codebooks_cash_desks] WHERE [id] = %i',
+            (int) $head['cash_desk'],
+        );
+
         return new self(
             head: $head,
             rows: $rows,
@@ -116,6 +125,7 @@ final class DocPrintContext
             vatCodes: DocVatCodes::fromConfig($request->config, is_string($vatCountry) ? $vatCountry : null),
             translator: $request->translator,
             config: $request->config,
+            cashDesk: $cashDesk,
         );
     }
 

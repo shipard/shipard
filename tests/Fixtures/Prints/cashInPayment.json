@@ -1,0 +1,140 @@
+{
+    "printId": "docs.cashDocs.cash",
+    "version": 1,
+    "language": "cs",
+    "record": {
+        "table": "docs_core_heads",
+        "id": 123,
+        "docState": 40
+    },
+    "generatedAt": "2026-10-02T10:30:00+02:00",
+    "meta": {
+        "title": "Příjmový pokladní doklad IT-PRINT-CASH",
+        "fileName": "prijmovy-pokladni-doklad-it-print-cash.pdf",
+        "watermark": null
+    },
+    "branding": {
+        "logo": null
+    },
+    "texts": {},
+    "messages": [],
+    "data": {
+        "document": {
+            "type": "cash",
+            "tradeDir": 1,
+            "titleVariant": "cashIn",
+            "title": "Příjmový pokladní doklad",
+            "number": "IT-PRINT-CASH",
+            "text": "Úhrada faktury v hotovosti",
+            "notice": null,
+            "isTaxDocument": true,
+            "vatPayer": true,
+            "vatMode": 1,
+            "currency": "CZK",
+            "homeCurrency": "CZK",
+            "exchangeRate": null,
+            "foreignCurrency": false
+        },
+        "dates": {
+            "issue": "2026-09-30",
+            "due": "2026-09-30",
+            "duzp": "2026-09-30",
+            "periodFrom": null,
+            "periodTo": null,
+            "paymentReceived": "2026-09-30"
+        },
+        "supplier": {
+            "name": "Tiskárna Vzorová s.r.o.",
+            "company_id": "00000019",
+            "tax_id": "CZ00000019",
+            "vat_id": "CZ00000019",
+            "court_registration": "C 12345 vedená u Krajského soudu v Brně",
+            "contact": {
+                "email": "fakturace@tiskarna.example",
+                "phone": "+420 577 000 001"
+            },
+            "address": {
+                "street": "Dlouhá 1",
+                "house_number": null,
+                "city": "Zlín",
+                "city_part": null,
+                "zip": "760 01",
+                "country": "cz",
+                "display_block": "Dlouhá 1\n760 01 Zlín",
+                "display_line": "Dlouhá 1, 760 01 Zlín"
+            },
+            "vat_registration": {
+                "country": "cz",
+                "vat_id": "CZ00000019"
+            }
+        },
+        "customer": {
+            "name": "Papírnictví U Brány s.r.o.",
+            "company_id": "00000035",
+            "tax_id": "CZ00000035",
+            "vat_id": "CZ00000035",
+            "court_registration": null,
+            "contact": {
+                "email": null,
+                "phone": null
+            },
+            "address": {
+                "street": "Náměstí 5",
+                "house_number": null,
+                "city": "Otrokovice",
+                "city_part": null,
+                "zip": "765 02",
+                "country": "cz",
+                "display_block": "Náměstí 5\n765 02 Otrokovice",
+                "display_line": "Náměstí 5, 765 02 Otrokovice"
+            }
+        },
+        "payment": {
+            "method": {
+                "id": 0,
+                "label": "Hotovost"
+            },
+            "reference": null,
+            "specificSymbol": null,
+            "constantSymbol": null,
+            "bankAccount": null,
+            "amountToPay": 1210,
+            "currency": "CZK",
+            "qr": null
+        },
+        "rows": [
+            {
+                "kind": "item",
+                "description": "Úhrada faktury 2026000123",
+                "quantity": null,
+                "unit": null,
+                "unitPrice": 0,
+                "unitPriceIncludesVat": false,
+                "discountPct": null,
+                "vat": null,
+                "base": 1210,
+                "vatAmount": 0,
+                "total": 1210,
+                "advanceDeduction": false
+            }
+        ],
+        "vatRecap": [],
+        "vatNotes": [],
+        "advances": null,
+        "totals": {
+            "base": 1210,
+            "vat": 0,
+            "rounding": 0,
+            "total": 1210,
+            "totalBeforeAdvances": 1210,
+            "baseDom": null,
+            "vatDom": null,
+            "totalDom": null
+        },
+        "cashDesk": {
+            "id": 1,
+            "code": "HP",
+            "name": "Hlavní pokladna"
+        }
+    }
+}

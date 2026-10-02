@@ -10,6 +10,8 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Prints\PrintBuildException;
 use Shipard\Core\Prints\PrintTranslator;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocAdvancesBlock;
+use Shipard\Module\Docs\Core\Prints\Blocks\DocCashDatesBlock;
+use Shipard\Module\Docs\Core\Prints\Blocks\DocCashDeskBlock;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocDatesBlock;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocDocumentBlock;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocPartiesBlock;
@@ -61,6 +63,7 @@ class DocPrintBlocksTest extends TestCase
                 'docs.core.docTypes' => [
                     'invno' => ['name' => 'Faktura vydaná', 'trade_dir' => 1],
                     'invpo' => ['name' => 'Zálohová faktura vydaná', 'trade_dir' => 1, 'tax_document' => false],
+                    'cash'  => ['name' => 'Pokladní doklad', 'trade_dir' => 0, 'trade_dir_column' => 'cash_dir'],
                 ],
                 'docs.core.paymentMethods' => [
                     ['name' => 'Hotovost'],
@@ -85,6 +88,7 @@ class DocPrintBlocksTest extends TestCase
         ?array $supplier = self::SUPPLIER,
         ?ConfigRuntime $config = null,
         ?array $customer = self::CUSTOMER,
+        ?array $cashDesk = null,
     ): DocPrintContext {
         return new DocPrintContext(
             head: $head + [
@@ -124,6 +128,7 @@ class DocPrintBlocksTest extends TestCase
                 'message.qrSkipped.paymentReference' => ['cs' => 'QR bez VS'],
             ], 'cs'),
             config: $config,
+            cashDesk: $cashDesk,
         );
     }
 
@@ -151,6 +156,12 @@ class DocPrintBlocksTest extends TestCase
             'faktura neplátce'  => ['invoiceNonVatPayer', new DocTitleContext('invno', false, 1)],
             'proforma plátce'   => ['proforma', new DocTitleContext('invpo', true, 1, true, 1210.0)],
             'proforma neplátce' => ['proforma', new DocTitleContext('invpo', false, 1)],
+            // Pokladní doklad (D25)
+            'příjem, plátce, rekapitulace'     => ['cashInTaxDocument', new DocTitleContext('cash', true, 1, true, 1210.0)],
+            'příjem, plátce, bez rekapitulace' => ['cashIn', new DocTitleContext('cash', true, 1, false, 1210.0)],
+            'příjem, neplátce'                 => ['cashIn', new DocTitleContext('cash', false, 1, false, 1210.0)],
+            'výdej, plátce s rekapitulací'     => ['cashOut', new DocTitleContext('cash', true, 2, true, 121.0)],
+            'výdej, neplátce'                  => ['cashOut', new DocTitleContext('cash', false, 2)],
         ];
     }
 
@@ -165,6 +176,13 @@ class DocPrintBlocksTest extends TestCase
         $this->expectException(PrintBuildException::class);
         $this->expectExceptionMessage("Document type 'invni' has no print title variant");
         TitleVariantResolver::resolve(new DocTitleContext('invni', true, 2));
+    }
+
+    public function testCashDocumentWithoutDirectionHasNoTitleVariant(): void
+    {
+        $this->expectException(PrintBuildException::class);
+        $this->expectExceptionMessage('Cash document has no direction');
+        TitleVariantResolver::resolve(new DocTitleContext('cash', true, null));
     }
 
     public function testTitleContextComesFromHeadAndRecap(): void
@@ -284,6 +302,36 @@ class DocPrintBlocksTest extends TestCase
             ['supplier' => null, 'customer' => self::CUSTOMER],
             (new DocPartiesBlock())->build($this->context(supplier: null)),
         );
+    }
+
+    // ── cashDesk, data pokladního dokladu ───────────────────────────────────
+
+    public function testCashDeskBlock(): void
+    {
+        $this->assertSame(['cashDesk' => null], (new DocCashDeskBlock())->build($this->context()));
+
+        $context = $this->context(cashDesk: ['id' => '35', 'code' => 'HP', 'name' => 'Hlavní pokladna', 'currency' => 'czk']);
+        $this->assertSame(
+            ['cashDesk' => ['id' => 35, 'code' => 'HP', 'name' => 'Hlavní pokladna']],
+            (new DocCashDeskBlock())->build($context),
+        );
+    }
+
+    public function testCashDatesCarryPaymentReceivedOnReceiptWithVatOnly(): void
+    {
+        $config = $this->config();
+        $dates  = fn (array $head): array => (new DocCashDatesBlock())->build(
+            $this->context(['doc_type' => 'cash', 'vat_dppd' => '2026-09-29'] + $head, config: $config),
+        )['dates'];
+
+        $receipt = $dates(['cash_dir' => 1]);
+        $this->assertSame('2026-09-29', $receipt['paymentReceived']);
+        $this->assertSame('2026-09-30', $receipt['issue'], 'ostatní data jako u každého dokladu');
+        $this->assertSame('2026-09-30', $receipt['duzp']);
+
+        $this->assertNull($dates(['cash_dir' => 2])['paymentReceived'], 'výdej');
+        $this->assertNull($dates(['cash_dir' => 1, 'vat_registration' => null])['paymentReceived'], 'neplátce');
+        $this->assertNull($dates(['cash_dir' => 1, 'vat_mode' => 0])['paymentReceived'], 'doklad bez DPH');
     }
 
     // ── payment ─────────────────────────────────────────────────────────────

@@ -99,8 +99,9 @@ zaúčtují na účet pokladny, ale přehled zůstatku a pohybů pokladny za obd
 počáteční stav ani inventura pokladny nejsou. Zůstatek dnes zjistíš jen
 z účetního deníku nebo hlavní knihy na účtu pokladny.
 
-**Pokladní doklad ani prodejku nevytiskneš.** Tisk zatím umí jen faktura
-vydaná a zálohová faktura — zákazníkovi účtenku musíš dát z jiného zařízení.
+**Prodejku nevytiskneš.** Tisk umí faktura vydaná, zálohová faktura
+a [pokladní doklad](pokladna/pokladni-doklad.md) — zákazníkovi účtenku
+k prodejce musíš dát z jiného zařízení.
 
 **Vyúčtování od platební brány, terminálu nebo dopravce Shipard sám
 nevytvoří.** Prodej kartou, přes bránu nebo na dobírku založí pohledávku

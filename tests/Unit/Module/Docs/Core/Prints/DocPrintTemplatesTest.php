@@ -309,6 +309,91 @@ class DocPrintTemplatesTest extends TestCase
 
     // ── logo ────────────────────────────────────────────────────────────────
 
+    // ── pokladní doklad ─────────────────────────────────────────────────────
+
+    public function testCashReceiptWithSale(): void
+    {
+        $definition = self::definition('docs.cashDocs', 'docs.cashDocs.cash');
+        $document   = $this->render($definition, self::printData('cashInSale', $definition->id));
+        $html       = $document->html;
+
+        $this->assertStringContainsString('Příjmový pokladní doklad – daňový doklad', (string) $document->header);
+
+        // Strany: kdo peníze přijal a kdo vydal.
+        $this->assertStringContainsString('Dodavatel / přijal', $html);
+        $this->assertStringContainsString('Odběratel / vydal', $html);
+        $this->assertStringContainsString('Papírnictví U Brány s.r.o.', $html);
+
+        // Data bez splatnosti, s DUZP, dnem přijetí platby a pokladnou.
+        $this->assertStringNotContainsString('Datum splatnosti', $html);
+        $this->assertStringContainsString('Datum zdanitelného plnění', $html);
+        $this->assertStringContainsString('Datum přijetí platby', $html);
+        $this->assertStringContainsString('29.' . self::NBSP . '9.' . self::NBSP . '2026', $html);
+        $this->assertStringContainsString('<dt>Pokladna</dt>', $html);
+        $this->assertStringContainsString('Hlavní pokladna', $html);
+
+        // Platba: jen způsob úhrady — žádný účet ani QR.
+        $this->assertStringContainsString('Hotovost', $html);
+        $this->assertStringNotContainsString('Bankovní účet', $html);
+        $this->assertStringNotContainsString('<svg', $html);
+
+        // Řádky a součty s DPH; částka už je zaplacená — „Celkem“, ne „K úhradě“.
+        $this->assertStringContainsString('Tonery do tiskárny', $html);
+        $this->assertStringContainsString('Rekapitulace DPH', $html);
+        $this->assertStringNotContainsString('K úhradě', $html);
+        $this->assertStringContainsString('1' . self::NBSP . '210,00' . self::NBSP . 'CZK', $html);
+
+        // Podpisy příjmového dokladu.
+        $this->assertStringContainsString('<div class="doc-signature">Podpis</div>', $html);
+        $this->assertStringContainsString('<div class="doc-signature">Podpis pokladníka</div>', $html);
+        $this->assertStringNotContainsString('Podpis příjemce', $html);
+
+        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', (string) $document->footer);
+    }
+
+    public function testCashReceiptPayingInvoiceHasNoVat(): void
+    {
+        $definition = self::definition('docs.cashDocs', 'docs.cashDocs.cash');
+        $document   = $this->render($definition, self::printData('cashInPayment', $definition->id));
+
+        $this->assertStringContainsString('Příjmový pokladní doklad', (string) $document->header);
+        $this->assertStringNotContainsString('daňový doklad', (string) $document->header);
+        $this->assertStringContainsString('Úhrada faktury 2026000123', $document->html);
+        $this->assertStringNotContainsString('Rekapitulace DPH', $document->html);
+    }
+
+    public function testCashDisbursementWithoutPartner(): void
+    {
+        $definition = self::definition('docs.cashDocs', 'docs.cashDocs.cash');
+        $document   = $this->render($definition, self::printData('cashOut', $definition->id));
+        $html       = $document->html;
+
+        $this->assertStringContainsString('Výdajový pokladní doklad', (string) $document->header);
+
+        // Bez partnera: dodavatel chybí, vlastní firma je odběratel — i v zápatí.
+        $this->assertStringNotContainsString('Dodavatel / přijal', $html);
+        $this->assertStringContainsString('Odběratel / vydal', $html);
+        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', $html);
+        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', (string) $document->footer);
+
+        $this->assertStringNotContainsString('Datum přijetí platby', $html);
+        $this->assertStringNotContainsString('Datum zdanitelného plnění', $html, 'neplátce');
+
+        // Podpisy výdajového dokladu.
+        $this->assertStringContainsString('<div class="doc-signature">Podpis příjemce</div>', $html);
+        $this->assertStringContainsString('<div class="doc-signature">Podpis pokladníka</div>', $html);
+    }
+
+    public function testEnglishCashDocument(): void
+    {
+        $definition = self::definition('docs.cashDocs', 'docs.cashDocs.cash');
+        $document   = $this->render($definition, self::printData('cashOut', $definition->id, 'en'));
+
+        $this->assertStringContainsString('Customer / paid by', $document->html);
+        $this->assertStringContainsString('Cash desk', $document->html);
+        $this->assertStringContainsString("Recipient's signature", html_entity_decode($document->html, ENT_QUOTES));
+    }
+
     public function testLogoGoesToHeaderAsDataUriAndToAssets(): void
     {
         $this->dsPath = sys_get_temp_dir() . '/shpd_printtpl_' . uniqid('', true);

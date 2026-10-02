@@ -258,3 +258,22 @@ thead th {
 .doc-notice {
     margin-top: 0.2cm;
 }
+
+/* ── podpisy ────────────────────────────────────────────────────────────── */
+
+/* Prázdné linky s popiskem pod nimi; místo nad linkou je na podpis. */
+.doc-signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 2cm;
+    margin-top: 2.2cm;
+    break-inside: avoid;
+}
+
+.doc-signature {
+    padding-top: 0.1cm;
+    border-top: 0.5pt solid #000;
+    font-size: 7.5pt;
+    color: #666;
+    text-align: center;
+}

@@ -1,8 +1,8 @@
 ---
 title: Pokladní doklad
-summary: Jak zapsat příjem nebo výdej hotovosti či platbu kartou na pokladně — včetně úhrady faktury — a co k tomu musí být nastavené.
-keywords: [pokladní doklad, příjmový pokladní doklad, výdajový pokladní doklad, příjmový doklad, výdajový doklad, pokladna, hotovost, platba hotově, platba kartou, úhrada faktury hotově, zaplaceno hotově, pokladní lístek, paragon, směr pokladního dokladu, příjem, výdej, převod peněz, odvod hotovosti do banky, dotace pokladny, převod mezi pokladnami, peníze na cestě, záloha v hotovosti, přijatá záloha, poskytnutá záloha, odpočet zálohy, vrácení zálohy, archivovaná pokladna]
-related: [pokladna/prodejka.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/vystaveni-faktury.md, faktury-prijate/oprava-dokladu.md, uctarna/kdyz-se-doklad-nezauctuje.md, co-dnes-nejde.md]
+summary: Jak zapsat příjem nebo výdej hotovosti či platbu kartou na pokladně — včetně úhrady faktury —, jak doklad vytisknout a co k tomu musí být nastavené.
+keywords: [pokladní doklad, příjmový pokladní doklad, výdajový pokladní doklad, příjmový doklad, výdajový doklad, pokladna, hotovost, platba hotově, platba kartou, úhrada faktury hotově, zaplaceno hotově, pokladní lístek, paragon, směr pokladního dokladu, příjem, výdej, převod peněz, odvod hotovosti do banky, dotace pokladny, převod mezi pokladnami, peníze na cestě, záloha v hotovosti, přijatá záloha, poskytnutá záloha, odpočet zálohy, vrácení zálohy, archivovaná pokladna, tisk pokladního dokladu, vytisknout pokladní doklad, PDF pokladního dokladu, podpis pokladníka, podpis příjemce]
+related: [pokladna/prodejka.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystaveni-faktury.md, faktury-prijate/oprava-dokladu.md, uctarna/kdyz-se-doklad-nezauctuje.md, co-dnes-nejde.md]
 ---
 
 # Pokladní doklad
@@ -90,6 +90,32 @@ Pro rychlý prodej zboží bez partnera se víc hodí [Prodejka](prodejka.md).
    (například `31HP12600001`: typ, kód pokladny, rok, pořadí), zaúčtuje se
    a úhrada faktury se v saldokontu spáruje s fakturou.
 
+## Tisk dokladu
+
+Doklad ve stavu **V pořádku** vytiskneš tlačítkem **Tisk** nahoře v jeho
+detailu: otevře se náhled PDF a **Stáhnout** ho uloží. Postup, náhled
+i hlášení jsou stejné jako u faktury — viz
+[Tisk faktury](../faktury-vydane/tisk-faktury.md).
+
+Na pokladním dokladu je:
+
+- **Titulek** podle směru: *Příjmový pokladní doklad* nebo *Výdajový
+  pokladní doklad*. Příjmový doklad plátce DPH, na kterém je prodej
+  s daní, se jmenuje *Příjmový pokladní doklad – daňový doklad*.
+- **Strany** s popisky *Dodavatel / přijal* a *Odběratel / vydal* — tedy
+  kdo peníze dostal a kdo je dal. U příjmu jsi dodavatel ty, u výdeje
+  odběratel. Doklad bez partnera má druhou stranu prázdnou.
+- **Datum vystavení**, u dokladu s DPH i datum zdanitelného plnění a na
+  příjmu **datum přijetí platby**, **Pokladna** a **Způsob úhrady**.
+- **Řádky**, u plátce se sazbou a daní a s rekapitulací DPH, a částka
+  **Celkem**.
+- Dole dvě prázdné linky na podpis: u příjmu *Podpis* a *Podpis
+  pokladníka*, u výdeje *Podpis příjemce* a *Podpis pokladníka*. Jména
+  Shipard nedoplňuje.
+
+Bankovní účet ani QR platba na pokladním dokladu nejsou. Doklad ve stavu
+**Storno** se vytiskne s šedým nápisem **STORNO** přes každou stranu.
+
 ## Na co narazíš
 
 **Bez pokladny se doklad založit nedá.** Seznam Pokladní doklady je prázdný
@@ -136,7 +162,7 @@ pokladní doklad: na faktuře zvol **Způsob platby** *Hotovost* a vyber
 **Pokladnu**. Faktura se pak rovnou zaúčtuje proti pokladně a v saldokontu
 se jako nezaplacená neobjeví.
 
-**Pokladní knihu ani tisk dokladu tu nenajdeš** — viz
+**Pokladní knihu tu nenajdeš** — viz
 [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 ## Souvisí
@@ -147,4 +173,6 @@ se jako nezaplacená neobjeví.
 - [Oprava dokladu](../faktury-prijate/oprava-dokladu.md) — přechody stavů
   platí i pro pokladní doklady
 - [Když se doklad nezaúčtuje](../uctarna/kdyz-se-doklad-nezauctuje.md)
-- [Co Shipard dnes neumí](../co-dnes-nejde.md) — pokladní kniha, tisk
+- [Tisk faktury](../faktury-vydane/tisk-faktury.md) — náhled, stažení
+  a hlášení při tisku fungují stejně
+- [Co Shipard dnes neumí](../co-dnes-nejde.md) — pokladní kniha

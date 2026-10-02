@@ -1,0 +1,29 @@
+// Katalog tisku pokladního dokladu — titulky podle směru (#90 D25), název
+// souboru, popisky stran a podpisy. Společné klíče dokladů jsou
+// v @docs.core/_layout.
+{
+    "title.cashInTaxDocument": {
+        "cs": "Příjmový pokladní doklad – daňový doklad",
+        "en": "Cash receipt – tax document"
+    },
+    "title.cashIn":  { "cs": "Příjmový pokladní doklad", "en": "Cash receipt" },
+    "title.cashOut": { "cs": "Výdajový pokladní doklad", "en": "Cash disbursement" },
+
+    "fileName.cashInTaxDocument": { "cs": "prijmovy-pokladni-doklad", "en": "cash-receipt" },
+    "fileName.cashIn":            { "cs": "prijmovy-pokladni-doklad", "en": "cash-receipt" },
+    "fileName.cashOut":           { "cs": "vydajovy-pokladni-doklad", "en": "cash-disbursement" },
+
+    // Strany: v obou směrech platí totéž — kdo je kdo, určují snapshoty.
+    "label.supplier": { "cs": "Dodavatel / přijal", "en": "Supplier / received by" },
+    "label.customer": { "cs": "Odběratel / vydal", "en": "Customer / paid by" },
+
+    "label.paymentReceivedDate": { "cs": "Datum přijetí platby", "en": "Payment received" },
+
+    // Hotovostní doklad nemá co „k úhradě“ — částka už byla zaplacena.
+    "totals.toPay": { "cs": "Celkem", "en": "Total" },
+
+    // Podpisy — prázdné linky, bez jmen (#93).
+    "signature.payer":     { "cs": "Podpis", "en": "Signature" },
+    "signature.recipient": { "cs": "Podpis příjemce", "en": "Recipient's signature" },
+    "signature.cashier":   { "cs": "Podpis pokladníka", "en": "Cashier's signature" }
+}
