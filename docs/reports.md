@@ -36,6 +36,8 @@ Nový Shipard rozlišuje tři domény výstupů (D1, D2):
 | `report` | report | datový výstup (hlavní kniha, výsledovka, …) | data → strukturovaný výsledek → obrazovka/API |
 | `filing` | podání / výkaz | úřední výstup (přiznání DPH, výkazy dle vyhlášky) | data → formát úřadu, má lifecycle (sestavit → podat → zamknout) |
 
+Doménu `print` popisuje [prints.md](prints.md).
+
 Slovo **„sestava" se nepoužívá** — bylo zdrojem chaosu starého Shipardu.
 
 **Print a report jsou oddělené subsystémy.** Žádná sdílená hierarchie tříd,

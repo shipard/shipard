@@ -1,6 +1,6 @@
 # Tisky — Fáze 0 + 1: kontrakt `PrintData`, infrastruktura, faktura vydaná a zálohová
 
-**Stav:** naplánováno — design zamčený v #90 (D1–D21 + upřesnění z PRD), čeká na implementaci
+**Stav:** částečně — kód, testy, nápověda a docs hotové 2026-10-02 (5 commitů, ověřeno na `4l3j-z0bz-kz39-echj` a čtením na `btpg-p`); odchylky od zadání na konci; zbývá ruční proklik náhledu PDF v prohlížeči a nasazení na alfu (`ds-upgrade` kvůli popiskům `world.vat` a akce Tisk)
 
 > PRD pro Claude Code (5 commitů). Design: issue #90 (D1–D11 v těle,
 > D12–D21 v komentáři „Rozhodnutí: kontrakt `PrintData`, UI, endpoint,
@@ -529,3 +529,36 @@ Zamčeno v #90: D1–D21. Upřesnění vzniklá při psaní PRD, potvrzená
   (`docs.invoicesOut/invoice`, `docs.proformasOut/proforma`). Builder
   je společný.
 - ✓ **QR knihovna `chillerlan/php-qrcode`** (čisté SVG bez GD/Imagick).
+
+## Odchylky od zadání (implementace 2026-10-02)
+
+- **`PrintTranslator` a katalogy už v commitu 2** (jádro, ne `Twig/`) —
+  builder z katalogu bere titulek, název souboru a texty hlášení.
+- **`ConfigRuntime` v jazyce tisku.** Runner dostává továrnu konfigurace per
+  jazyk; jazyk requestu se pro popisky číselníků nepoužívá.
+- **Záhlaví a zápatí se jmenují `header.html.twig` / `footer.html.twig` i ve
+  sdíleném layoutu** (ne `doc-header` / `doc-footer`). Adresáře z `catalogs`
+  jsou „sdílené adresáře tisku“: dávají katalog, assety i výchozí záhlaví
+  a zápatí — jádro tak nemusí znát názvy layoutu dokladů.
+- **Titulek, číslo dokladu a logo jsou v záhlaví** (na každé straně), ne
+  v těle stránky; blok `title` v těle nese text dokladu.
+- **`paper.margins`** v deklaraci — horní okraj musí pokrýt výšku záhlaví.
+- **Blok `advances` není samostatný blok šablony** — odpočet záloh kreslí
+  `totals.html.twig`.
+- **Sandbox ve striktním režimu:** povolené jsou i funkce `parent`
+  a výčet testů (`defined`, `null`, `empty`, …) — mimo striktní režim je
+  Twig propouští mlčky, i když v politice nejsou.
+- **QR platba:** symbol mimo 1–10 číslic se z kódu vynechá a builder přidá
+  varování (schváleno před implementací).
+- **`X-Print-Messages`:** měkká hlášení builderu nese PDF odpověď
+  v hlavičce — binární tělo pro ně jiné místo nemá.
+- **Chybový kód `PRINT_DATA_MISSING` (409)** pro doklad bez snapshotu —
+  zadání ho mezi kódy nemělo.
+- **`world.vat`:** kódy DPH dostaly `print:en`, poznámky `text:en`
+  (schváleno před implementací).
+- **`ViewerDetailModal` akce detailu nezobrazuje** — v čtecím modalu byly
+  bez obsluhy mrtvé.
+- **Nápověda** (`help/faktury-vydane/tisk-faktury.md` a opravy stránek,
+  které tvrdily, že tisk nejde) šla s UI v commitu 4.
+- **Fixture doklady** vkládá integrační test přímo se snapshoty z fixture
+  souboru — ukázkový zdroj nemá žádnou fakturu ve stavu V pořádku.

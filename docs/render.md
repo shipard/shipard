@@ -6,7 +6,8 @@ Sdílená schopnost renderovat HTML → PDF a konvertovat Office dokumenty
 Konzumenti: preprocess došlé pošty (#33 — akce `renderBodyToPdf` a
 `fetchLinkedDocument` s `renderIfHtml`, profil Untrusted bez assetů;
 `modules/core/mail/docs/preprocess.md`), HTML renditions příloh
-(follow-up #34), tiskové výstupy a reporty (samostatný budoucí design —
+(follow-up #34), tisky (`PrintRenderer`, profil Report se záhlavím
+a zápatím — [prints.md](prints.md)) a reporty (samostatný budoucí design —
 tady je jen kontrakt, který budou potřebovat).
 
 ## Architektura

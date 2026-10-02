@@ -130,7 +130,7 @@ zatím nemá, a bez nich se firma za pár týdnů vrátí. Všechno níže je
 | Bankovní API — automatické stahování transakcí (FIO token, plánovač, šifrované credentials); šev připravený v `docs/bank.md` §8 | — |
 | Platební příkazy — nad stejným konektorem | — |
 | Prodejní smlouvy — podklad pro opakovanou fakturaci | — |
-| Tisk / PDF vydaného dokladu | — |
+| Tisk / PDF vydaného dokladu — faktura vydaná a zálohová hotové (`docs/prints.md`); zbývá vzhled a texty na tiscích (#90 fáze 3) a další doklady | `prints-phase1.md` |
 | Odeslání dokladu odběrateli e-mailem — nad existující odchozí poštou (`docs/mail/outbound.md`), chybí napojení z dokladu s přílohou | — |
 | Majetek — evidence a odpisy | — |
 | Saldokonto — přehlednost: chip bar saldokont, položky v sidebaru, grid po partnerech | `accbal-ledger-viewgroup-chips.md`, `accbal-nav-items.md`, `accbal-ledger-grid.md` |

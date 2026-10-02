@@ -754,6 +754,32 @@ stderr, exit 0. Exit `INVALID` (2): neznámý report (vypíše dostupné),
 chybějící / nevalidní období, neznámý `--format`, `xlsx` bez `--output`.
 Pravidla převodu: [reports.md](reports.md) §15.
 
+#### `print-run <printId> <recordId> [--format=json|pdf] [--language=cs|en] [--output=<soubor>]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds print-run docs.invoicesOut.invoice 123                       # PrintData jako JSON
+shpd-ds print-run docs.invoicesOut.invoice 123 --language=en > faktura.json
+shpd-ds print-run docs.proformasOut.proforma 456 \
+    --format=pdf --output=zalohova-faktura.pdf                        # PDF přes render službu
+```
+
+Spustí tisk nad jedním záznamem ([prints.md](prints.md)). `recordId` je id
+záznamu v tabulce, kterou určuje deklarace tisku.
+
+| `--format` | Výstup |
+|---|---|
+| `json` (default) | `PrintData` jako odsazený JSON na stdout — ladění builderu a kontraktu bez renderu |
+| `pdf` | hotové PDF; **vyžaduje `--output`** a nakonfigurovanou render službu (`render` v `server.json`) |
+
+`--language` určí jazyk tisku; bez něj platí výchozí jazyk zdroje dat.
+Měkká hlášení builderu (QR platba nevznikla) jdou na stderr, exit 0.
+Exit `INVALID` (2): neznámý tisk (vypíše dostupné), neznámý `--format` /
+`--language`, `pdf` bez `--output`, nečíselné `recordId`. Exit `FAILURE`
+(1): záznam neexistuje, tisk pro něj není dostupný (koncept, jiný typ
+záznamu), záznamu chybí data pro tisk, nebo PDF nevzniklo (druh selhání
+render služby je ve výpisu).
+
 #### `report-diff <fileA> <fileB> [--strict] [--json]`
 
 ```bash
