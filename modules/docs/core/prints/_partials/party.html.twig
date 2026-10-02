@@ -1,0 +1,37 @@
+{#
+    Jedna strana dokladu ze snapshotu hlavičky. Proměnné: `party` (snapshot),
+    `showContact` (kontakt a zápis v rejstříku — jen u dodavatele).
+    Snapshot nemusí nést všechny klíče (starší doklady, import), proto
+    `default` u každého čtení.
+#}
+{% set address = party.address|default({}) %}
+{% set vatRegistration = party.vat_registration|default({}) %}
+{% set taxId = vatRegistration.vat_id|default('') ?: (party.tax_id|default('') ?: party.vat_id|default('')) %}
+<p class="party-name">{{ party.name|default('') }}</p>
+<p class="party-address">
+    {% if address.display_block|default('') %}
+        {{ address.display_block|nl2br }}
+    {% else %}
+        {{ address.street|default('') }}{% if address.house_number|default('') %} {{ address.house_number }}{% endif %}<br>
+        {{ address.zip|default('') }} {{ address.city|default('') }}
+    {% endif %}
+</p>
+<p class="party-ids">
+    {% if party.company_id|default('') %}
+        <span class="party-id">{{ t('label.companyId') }}: {{ party.company_id }}</span>
+    {% endif %}
+    {% if taxId %}
+        <span class="party-id">{{ t('label.taxId') }}: {{ taxId }}</span>
+    {% endif %}
+</p>
+{% if showContact %}
+    {% set contact = party.contact|default({}) %}
+    {% if party.court_registration|default('') %}
+        <p class="party-detail">{{ party.court_registration }}</p>
+    {% endif %}
+    {% if contact.email|default('') or contact.phone|default('') %}
+        <p class="party-detail">
+            {{ [contact.phone|default(''), contact.email|default('')]|join(' · ') }}
+        </p>
+    {% endif %}
+{% endif %}

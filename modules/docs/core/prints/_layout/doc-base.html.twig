@@ -1,0 +1,80 @@
+{#
+    Kostra stránky tištěného dokladu (#90). Stránková šablona typu dokladu
+    z ní dědí a přepisuje jen bloky, kterými se liší. Titulek, číslo dokladu
+    a logo jsou v záhlaví (header.html.twig) — opakují se na každé straně.
+
+    Dostává PrintData jako pole; kontrakt `data` popisuje docs/prints.md.
+#}
+{% set doc = data.document %}
+{% set showVat = doc.vatPayer and doc.vatMode != 0 %}
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+    <meta charset="utf-8">
+    <title>{{ meta.title }}</title>
+    <link rel="stylesheet" href="doc-base.css">
+</head>
+<body>
+<main class="doc">
+    {% block title %}
+        {% if doc.text %}
+            <p class="doc-subject">{{ doc.text }}</p>
+        {% endif %}
+    {% endblock %}
+
+    {% block parties %}
+        {% include '@docs.core/_partials/parties.html.twig' %}
+    {% endblock %}
+
+    <section class="doc-info">
+        {% block dates %}
+            <dl class="doc-dates">
+                <dt>{{ t('label.issueDate') }}</dt>
+                <dd>{{ data.dates.issue|date }}</dd>
+                <dt>{{ t('label.dueDate') }}</dt>
+                <dd>{{ data.dates.due|date }}</dd>
+                {% if data.dates.duzp and showVat %}
+                    <dt>{{ t('label.taxPointDate') }}</dt>
+                    <dd>{{ data.dates.duzp|date }}</dd>
+                {% endif %}
+                {% if data.dates.periodFrom and data.dates.periodTo %}
+                    <dt>{{ t('label.period') }}</dt>
+                    <dd>{{ data.dates.periodFrom|date }} – {{ data.dates.periodTo|date }}</dd>
+                {% endif %}
+            </dl>
+        {% endblock %}
+
+        {% block payment %}
+            {% include '@docs.core/_partials/payment.html.twig' %}
+        {% endblock %}
+    </section>
+
+    {% block rows %}
+        {% include '@docs.core/_partials/rows.html.twig' %}
+    {% endblock %}
+
+    <section class="doc-summary">
+        {% block vatRecap %}
+            {% include '@docs.core/_partials/vat-recap.html.twig' %}
+        {% endblock %}
+
+        {% block totals %}
+            {% include '@docs.core/_partials/totals.html.twig' %}
+        {% endblock %}
+    </section>
+
+    {% block notes %}
+        {% if data.vatNotes is not empty or doc.notice %}
+            <section class="doc-notes">
+                {% for note in data.vatNotes %}
+                    <p class="doc-vat-note"><sup>{{ note.mark }}</sup> {{ note.text }}</p>
+                {% endfor %}
+                {% if doc.notice %}
+                    <p class="doc-notice">{{ doc.notice|nl2br }}</p>
+                {% endif %}
+            </section>
+        {% endif %}
+    {% endblock %}
+</main>
+</body>
+</html>

@@ -13,6 +13,7 @@ use Shipard\Core\Prints\PrintCatalogLoader;
 use Shipard\Core\Prints\PrintDefinition;
 use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintRegistry;
+use Shipard\Core\Prints\PrintRenderer;
 use Shipard\Core\Prints\PrintTemplatePaths;
 use Shipard\Core\Utils\JsoncParser;
 
@@ -69,7 +70,10 @@ class PrintDeclarationsTest extends TestCase
                 PrintTemplatePaths::parse($definition->template)['module'],
                 "{$definition->id}: template belongs to the declaring module",
             );
-            $this->assertDirectoryExists((string) $paths->directory($definition->template), $definition->id);
+            $this->assertFileExists(
+                $paths->directory($definition->template) . '/' . PrintRenderer::PAGE_TEMPLATE,
+                "{$definition->id}: page template",
+            );
         }
     }
 

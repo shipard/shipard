@@ -20,6 +20,9 @@ final class PrintDefinition
     /** Tisk ven z firmy (lze odeslat, musí být neměnný) vs. interní. */
     public const AUDIENCES = ['external', 'internal'];
 
+    /** Strany okraje stránky v `paper.margins`. */
+    public const MARGIN_SIDES = ['top', 'right', 'bottom', 'left'];
+
     /** Cesta šablony / katalogu: `@<modul>/<adresář>[/<adresář>…]`. */
     private const TEMPLATE_PATH = '#^@[a-z][a-z0-9]*\.[a-z][a-zA-Z0-9]*(/[A-Za-z0-9_-]+)+$#';
 
@@ -27,8 +30,11 @@ final class PrintDefinition
      * @param array<string, list<int|string>> $filter Sloupec → povolené hodnoty;
      *        prázdné = tisk platí pro všechny záznamy tabulky.
      * @param list<int> $docStates Stavy záznamu, ve kterých je tisk dostupný.
-     * @param list<string> $catalogs Další katalogy překladů (`@<modul>/<adresář>`),
-     *        slévají se před katalogem šablony.
+     * @param list<string> $catalogs Sdílené adresáře tisku (`@<modul>/<adresář>`)
+     *        — typicky layout. Jejich katalog překladů se slévá před katalogem
+     *        šablony; renderer z nich bere i assety a výchozí záhlaví a zápatí.
+     * @param array<string, string> $margins Okraje stránky (CSS délky) podle
+     *        strany; chybějící strana = výchozí okraj render profilu.
      */
     public function __construct(
         public readonly string $id,
@@ -44,6 +50,7 @@ final class PrintDefinition
         public readonly string $orientation,
         public readonly int $order,
         public readonly string $moduleId,
+        public readonly array $margins = [],
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -150,6 +157,24 @@ final class PrintDefinition
             );
         }
 
+        $margins = [];
+        $rawMargins = $paper['margins'] ?? [];
+        if (!is_array($rawMargins)) {
+            throw new \InvalidArgumentException("Print '{$id}': paper 'margins' must be an object");
+        }
+        foreach ($rawMargins as $side => $length) {
+            if (!in_array($side, self::MARGIN_SIDES, true)
+                || !is_string($length)
+                || !preg_match('/^\d+(\.\d+)?(mm|cm|in|pt|px)$/', $length)
+            ) {
+                throw new \InvalidArgumentException(
+                    "Print '{$id}': paper 'margins' must map " . implode('|', self::MARGIN_SIDES)
+                    . " to CSS lengths like '2.5cm'",
+                );
+            }
+            $margins[$side] = $length;
+        }
+
         $order = $data['order'] ?? 1000;
         if (!is_int($order)) {
             throw new \InvalidArgumentException("Print '{$id}': 'order' must be an integer");
@@ -169,6 +194,7 @@ final class PrintDefinition
             orientation: $orientation,
             order: $order,
             moduleId: $moduleId,
+            margins: $margins,
         );
     }
 

@@ -1,0 +1,41 @@
+{# Platební údaje a QR platba. #}
+{% set payment = data.payment %}
+{% set account = payment.bankAccount %}
+<div class="doc-payment">
+    <dl class="doc-payment-details">
+        <dt>{{ t('label.paymentMethod') }}</dt>
+        <dd>{{ payment.method.label }}</dd>
+        {% if account %}
+            {% if account.account_number|default('') %}
+                <dt>{{ t('label.bankAccount') }}</dt>
+                <dd>{{ account.account_number }}</dd>
+            {% endif %}
+            {% if account.iban|default('') %}
+                <dt>{{ t('label.iban') }}</dt>
+                <dd>{{ account.iban }}</dd>
+            {% endif %}
+            {% if account.bic|default('') %}
+                <dt>{{ t('label.bic') }}</dt>
+                <dd>{{ account.bic }}</dd>
+            {% endif %}
+        {% endif %}
+        {% if payment.reference %}
+            <dt>{{ t('label.paymentReference') }}</dt>
+            <dd>{{ payment.reference }}</dd>
+        {% endif %}
+        {% if payment.specificSymbol %}
+            <dt>{{ t('label.specificSymbol') }}</dt>
+            <dd>{{ payment.specificSymbol }}</dd>
+        {% endif %}
+        {% if payment.constantSymbol %}
+            <dt>{{ t('label.constantSymbol') }}</dt>
+            <dd>{{ payment.constantSymbol }}</dd>
+        {% endif %}
+    </dl>
+    {% if payment.qr %}
+        <div class="doc-qr">
+            {{ qr_svg(payment.qr) }}
+            <p>{{ t('label.qrPayment') }}</p>
+        </div>
+    {% endif %}
+</div>

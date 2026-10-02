@@ -2,5 +2,7 @@
 // Společné klíče dokladů jsou v @docs.core/_layout.
 {
     "title.proforma":    { "cs": "Zálohová faktura", "en": "Proforma invoice" },
-    "fileName.proforma": { "cs": "zalohova-faktura", "en": "proforma-invoice" }
+    "fileName.proforma": { "cs": "zalohova-faktura", "en": "proforma-invoice" },
+
+    "note.nonTaxDocument": { "cs": "Nejedná se o daňový doklad.", "en": "This is not a tax document." }
 }

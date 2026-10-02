@@ -1,0 +1,43 @@
+{#
+    Rekapitulace DPH. U dokladu v cizí měně navíc základ a daň v domácí měně
+    a kurz. Neplátce rekapitulaci nemá (`vatRecap` je prázdný).
+#}
+<div class="doc-recap">
+    {% if data.vatRecap is not empty %}
+        <table class="doc-recap-table">
+            <thead>
+                <tr>
+                    <th class="col-text">{{ t('recap.title') }}</th>
+                    <th class="col-num">{{ t('recap.base') }}</th>
+                    <th class="col-num">{{ t('recap.tax') }}</th>
+                    <th class="col-num">{{ t('recap.total') }}</th>
+                    {% if doc.foreignCurrency %}
+                        <th class="col-num">{{ t('recap.baseIn', { currency: doc.homeCurrency }) }}</th>
+                        <th class="col-num">{{ t('recap.taxIn', { currency: doc.homeCurrency }) }}</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for line in data.vatRecap %}
+                    <tr>
+                        <td class="col-text">
+                            {{ line.label }} {{ line.pct|pct }}{% if line.noteMark %}<sup>{{ line.noteMark }}</sup>{% endif %}
+                        </td>
+                        <td class="col-num">{{ line.base|money }}</td>
+                        <td class="col-num">{{ line.tax|money }}</td>
+                        <td class="col-num">{{ line.total|money }}</td>
+                        {% if doc.foreignCurrency %}
+                            <td class="col-num">{{ line.baseDom|money }}</td>
+                            <td class="col-num">{{ line.taxDom|money }}</td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+    {% if doc.foreignCurrency and doc.exchangeRate %}
+        <p class="doc-rate">
+            {{ t('totals.exchangeRate') }}: 1 {{ doc.currency }} = {{ doc.exchangeRate|qty }} {{ doc.homeCurrency }}
+        </p>
+    {% endif %}
+</div>

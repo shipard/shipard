@@ -1,6 +1,61 @@
 // Společný katalog tisků dokladů (#90 D8) — klíče sdílené layoutem, dílčími
 // bloky šablon a builderem. Titulky a název souboru má katalog typu dokladu.
 {
+    // Strany
+    "label.supplier":  { "cs": "Dodavatel", "en": "Supplier" },
+    "label.customer":  { "cs": "Odběratel", "en": "Customer" },
+    "label.companyId": { "cs": "IČ", "en": "Company ID" },
+    "label.taxId":     { "cs": "DIČ", "en": "VAT ID" },
+
+    // Data
+    "label.issueDate":    { "cs": "Datum vystavení", "en": "Issue date" },
+    "label.dueDate":      { "cs": "Datum splatnosti", "en": "Due date" },
+    "label.taxPointDate": { "cs": "Datum zdanitelného plnění", "en": "Tax point date" },
+    "label.period":       { "cs": "Období", "en": "Period" },
+
+    // Platba
+    "label.paymentMethod":    { "cs": "Způsob úhrady", "en": "Payment method" },
+    "label.bankAccount":      { "cs": "Bankovní účet", "en": "Bank account" },
+    "label.iban":             { "cs": "IBAN", "en": "IBAN" },
+    "label.bic":              { "cs": "BIC / SWIFT", "en": "BIC / SWIFT" },
+    "label.paymentReference": { "cs": "Variabilní symbol", "en": "Variable symbol" },
+    "label.specificSymbol":   { "cs": "Specifický symbol", "en": "Specific symbol" },
+    "label.constantSymbol":   { "cs": "Konstantní symbol", "en": "Constant symbol" },
+    "label.qrPayment":        { "cs": "QR platba", "en": "QR payment" },
+
+    // Řádky
+    "rows.description":      { "cs": "Popis", "en": "Description" },
+    "rows.quantity":         { "cs": "Množství", "en": "Quantity" },
+    "rows.unit":             { "cs": "MJ", "en": "Unit" },
+    "rows.unitPrice":        { "cs": "Cena za MJ", "en": "Unit price" },
+    "rows.unitPriceWithVat": { "cs": "Cena za MJ s DPH", "en": "Unit price incl. VAT" },
+    "rows.vatRate":          { "cs": "Sazba DPH", "en": "VAT rate" },
+    "rows.base":             { "cs": "Základ", "en": "Net" },
+    "rows.vatAmount":        { "cs": "DPH", "en": "VAT" },
+    "rows.total":            { "cs": "Celkem", "en": "Total" },
+    "rows.discount":         { "cs": "sleva {pct}", "en": "discount {pct}" },
+
+    // Rekapitulace DPH
+    "recap.title":  { "cs": "Rekapitulace DPH", "en": "VAT summary" },
+    "recap.base":   { "cs": "Základ", "en": "Net" },
+    "recap.tax":    { "cs": "DPH", "en": "VAT" },
+    "recap.total":  { "cs": "Celkem", "en": "Total" },
+    "recap.baseIn": { "cs": "Základ v {currency}", "en": "Net in {currency}" },
+    "recap.taxIn":  { "cs": "DPH v {currency}", "en": "VAT in {currency}" },
+
+    // Součty
+    "totals.base":         { "cs": "Základ", "en": "Net amount" },
+    "totals.vat":          { "cs": "DPH", "en": "VAT" },
+    "totals.total":        { "cs": "Celkem", "en": "Total" },
+    "totals.advances":     { "cs": "Uhrazeno zálohami", "en": "Advances paid" },
+    "totals.rounding":     { "cs": "Zaokrouhlení", "en": "Rounding" },
+    "totals.toPay":        { "cs": "K úhradě", "en": "Amount due" },
+    "totals.totalIn":      { "cs": "K úhradě v {currency}", "en": "Amount due in {currency}" },
+    "totals.exchangeRate": { "cs": "Kurz", "en": "Exchange rate" },
+
+    // Zápatí
+    "footer.page": { "cs": "Strana", "en": "Page" },
+
     // Měkká hlášení builderu (PrintData.messages)
     "message.qrNoAccount": {
         "cs": "QR platba na dokladu chybí — doklad nemá bankovní účet s IBAN.",

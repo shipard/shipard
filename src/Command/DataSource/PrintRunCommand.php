@@ -16,6 +16,7 @@ use Shipard\Core\Prints\PrintNotFoundException;
 use Shipard\Core\Prints\PrintRecordNotFoundException;
 use Shipard\Core\Prints\PrintRenderException;
 use Shipard\Core\Prints\PrintRunnerFactory;
+use Shipard\Core\Render\RenderClient;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -109,7 +110,14 @@ class PrintRunCommand extends Command
         $modules      = $this->getModulePathResolver();
 
         $registry = PrintDefinitionLoader::load($dsConfig, $modules, $dsConfig->getDefaultLanguage());
-        $runner   = PrintRunnerFactory::create($registry, $dsConfig, $dsConnection, $modules);
+        // Render klient jen pro PDF — JSON nepotřebuje server.json ani službu.
+        $runner   = PrintRunnerFactory::create(
+            $registry,
+            $dsConfig,
+            $dsConnection,
+            $modules,
+            $format === PrintFormat::Pdf ? RenderClient::fromServerConfig($this->getServerConfig()) : null,
+        );
 
         $printId = (string) $input->getArgument('printId');
         try {

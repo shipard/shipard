@@ -13,7 +13,12 @@
         "builder": "Shipard\\Module\\Docs\\Core\\Prints\\DocPrintBuilder",
         "template": "@docs.proformasOut/proforma",
         "catalogs": ["@docs.core/_layout"],
-        "paper": { "format": "A4", "orientation": "portrait" },
+        // Horní a dolní okraj nechávají místo záhlaví (logo, titulek) a zápatí.
+        "paper": {
+            "format": "A4",
+            "orientation": "portrait",
+            "margins": { "top": "3.2cm", "bottom": "2cm" }
+        },
         "order": 10
     }
 ]

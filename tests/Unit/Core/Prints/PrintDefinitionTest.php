@@ -66,6 +66,18 @@ class PrintDefinitionTest extends TestCase
         $this->assertSame('A4', $def->paperFormat);
         $this->assertSame('portrait', $def->orientation);
         $this->assertSame(1000, $def->order);
+        $this->assertSame([], $def->margins);
+    }
+
+    public function testPaperMargins(): void
+    {
+        $def = PrintDefinition::fromArray(
+            self::declaration(['paper' => ['margins' => ['top' => '3.2cm', 'bottom' => '18mm']]]),
+            'docs.invoicesOut',
+        );
+
+        $this->assertSame(['top' => '3.2cm', 'bottom' => '18mm'], $def->margins);
+        $this->assertSame('A4', $def->paperFormat);
     }
 
     /** @return array<string, array{array<string, mixed>, string}> */
@@ -93,6 +105,9 @@ class PrintDefinitionTest extends TestCase
             'paper formát'          => [['paper' => ['format' => 'B5']], "paper 'format' must be one of"],
             'paper orientace'       => [['paper' => ['orientation' => 'sideways']], "paper 'orientation' must be one of"],
             'order text'            => [['order' => '10'], "'order' must be an integer"],
+            'margins neznámá strana' => [['paper' => ['margins' => ['middle' => '1cm']]], "paper 'margins' must map"],
+            'margins bez jednotky'  => [['paper' => ['margins' => ['top' => '3']]], "paper 'margins' must map"],
+            'margins není objekt'   => [['paper' => ['margins' => '1cm']], "paper 'margins' must be an object"],
         ];
     }
 

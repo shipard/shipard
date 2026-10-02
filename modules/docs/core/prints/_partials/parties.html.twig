@@ -1,0 +1,11 @@
+{# Dodavatel a odběratel vedle sebe. #}
+<section class="doc-parties">
+    <div class="party">
+        <h2>{{ t('label.supplier') }}</h2>
+        {% include '@docs.core/_partials/party.html.twig' with { party: data.supplier, showContact: true } only %}
+    </div>
+    <div class="party party--customer">
+        <h2>{{ t('label.customer') }}</h2>
+        {% include '@docs.core/_partials/party.html.twig' with { party: data.customer, showContact: false } only %}
+    </div>
+</section>

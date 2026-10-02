@@ -1,0 +1,10 @@
+{#
+    Zálohová faktura vydaná — nedaňový doklad: pod předmět přidává větu
+    o nedaňovém dokladu. DUZP v datech chybí, společný layout ho netiskne.
+#}
+{% extends '@docs.core/_layout/doc-base.html.twig' %}
+
+{% block title %}
+    {{ parent() }}
+    <p class="doc-note-nontax">{{ t('note.nonTaxDocument') }}</p>
+{% endblock %}

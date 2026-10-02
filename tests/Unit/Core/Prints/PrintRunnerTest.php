@@ -19,7 +19,15 @@ use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderException;
 use Shipard\Core\Prints\PrintRequest;
 use Shipard\Core\Prints\PrintRunner;
+use Shipard\Core\Config\RenderConfig;
+use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Prints\PrintRenderer;
+use Shipard\Core\Prints\PrintTemplatePaths;
+use Shipard\Core\Prints\Twig\PrintTwigFactory;
+use Shipard\Core\Render\Engine\RenderEngineInterface;
+use Shipard\Core\Render\RenderClient;
 use Shipard\Core\Render\RenderErrorKind;
+use Shipard\Core\Render\RenderResult;
 use Shipard\Core\Settings\BrandingStorage;
 
 /**
@@ -41,12 +49,20 @@ class PrintRunnerTest extends TestCase
     protected function tearDown(): void
     {
         if ($this->dsPath !== null) {
-            foreach (glob($this->dsPath . '/branding/*') ?: [] as $file) {
-                @unlink($file);
-            }
-            @rmdir($this->dsPath . '/branding');
-            @rmdir($this->dsPath);
+            $this->rmTree($this->dsPath);
         }
+    }
+
+    private function rmTree(string $dir): void
+    {
+        foreach (scandir($dir) ?: [] as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $path = $dir . '/' . $entry;
+            is_dir($path) ? $this->rmTree($path) : @unlink($path);
+        }
+        @rmdir($dir);
     }
 
     /**
@@ -193,6 +209,53 @@ class PrintRunnerTest extends TestCase
             ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
 
         $this->assertSame(['logo' => 'logo.svg'], $output->printData->toArray()['branding']);
+    }
+
+    public function testPdfRunRendersTemplateThroughRenderClient(): void
+    {
+        $this->dsPath = sys_get_temp_dir() . '/shpd_prints_' . uniqid('', true);
+        $modules = $this->dsPath . '/modules';
+        mkdir($modules . '/test/prints/prints/sample', 0755, true);
+        file_put_contents($modules . '/test/prints/module.jsonc', '{"id": "test.prints", "name": "Prints"}');
+        file_put_contents(
+            $modules . '/test/prints/prints/sample/page.html.twig',
+            '<h1>{{ meta.title }}</h1><p>{{ data.document.number }}</p>',
+        );
+
+        $registry = new PrintRegistry();
+        $registry->add(PrintDefinition::fromArray(
+            PrintDefinitionTest::declaration([
+                'builder' => FakePrintBuilder::class, 'template' => '@test.prints/sample', 'catalogs' => [],
+            ]),
+            'test.prints',
+        ));
+        $db = $this->createStub(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(self::RECORD);
+
+        $engine = $this->createMock(RenderEngineInterface::class);
+        $engine->expects($this->once())
+            ->method('renderHtml')
+            ->with('<h1>Faktura 2026000123</h1><p>2026000123</p>', [], $this->anything(), $this->anything())
+            ->willReturn(RenderResult::success('%PDF-1.7 fake'));
+
+        $paths  = new PrintTemplatePaths(new ModulePathResolver([$modules]));
+        $runner = new PrintRunner(
+            $registry,
+            $db,
+            static fn (string $language) => null,
+            new PrintLanguageResolver('cs'),
+            renderer: new PrintRenderer(
+                $paths,
+                new PrintTwigFactory($paths),
+                new RenderClient(new RenderConfig('http://127.0.0.1:3000'), $engine),
+            ),
+        );
+
+        $output = $runner->run('docs.invoicesOut.invoice', 123, PrintFormat::Pdf);
+
+        $this->assertSame(PrintFormat::Pdf, $output->format);
+        $this->assertSame('%PDF-1.7 fake', $output->pdfContent);
+        $this->assertSame('faktura-2026000123.pdf', $output->printData->fileName);
     }
 
     public function testPdfWithoutRendererFailsAsUnconfigured(): void

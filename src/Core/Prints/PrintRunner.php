@@ -37,6 +37,7 @@ final class PrintRunner
         private readonly PrintLanguageResolver $languages,
         private readonly ?BrandingStorage $branding = null,
         private readonly ?PrintCatalogLoader $catalogs = null,
+        private readonly ?PrintRenderer $renderer = null,
         ?\Closure $clock = null,
     ) {
         $this->configFactory = $configFactory;
@@ -81,6 +82,9 @@ final class PrintRunner
 
         $language = $this->languages->resolve($language, $definition, $record);
 
+        $translator = $this->catalogs?->translator($definition, $language)
+            ?? new PrintTranslator([], $language);
+
         $result = $this->createBuilder($definition)->build(new PrintRequest(
             definition: $definition,
             recordId: $recordId,
@@ -88,8 +92,7 @@ final class PrintRunner
             language: $language,
             db: $this->db,
             config: ($this->configFactory)($language),
-            translator: $this->catalogs?->translator($definition, $language)
-                ?? new PrintTranslator([], $language),
+            translator: $translator,
         ));
 
         $printData = new PrintData(
@@ -111,7 +114,14 @@ final class PrintRunner
             return new PrintOutput($format, $printData);
         }
 
-        throw new PrintRenderException(RenderErrorKind::Unconfigured, 'Print renderer is not available');
+        if ($this->renderer === null) {
+            throw new PrintRenderException(RenderErrorKind::Unconfigured, 'Print renderer is not available');
+        }
+        return new PrintOutput(
+            $format,
+            $printData,
+            $this->renderer->renderPdf($definition, $printData, $translator),
+        );
     }
 
     private function createBuilder(PrintDefinition $definition): PrintBuilder

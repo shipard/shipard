@@ -1,0 +1,243 @@
+/*
+ * Styl tištěného dokladu (#90) — střídmý, černobílý s jednou šedou.
+ * Akcentová barva a varianty vzhledu přijdou s nastavením vzhledu (fáze 3).
+ * Okraje stránky a záhlaví / zápatí řeší render služba, ne @page.
+ */
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
+    font-size: 9pt;
+    line-height: 1.35;
+    color: #000;
+}
+
+h2 {
+    margin: 0 0 0.15cm;
+    font-size: 7.5pt;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #666;
+}
+
+p {
+    margin: 0;
+}
+
+sup {
+    font-size: 6.5pt;
+    line-height: 0;
+}
+
+dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: 0.5cm;
+    row-gap: 0.05cm;
+}
+
+dt {
+    color: #666;
+}
+
+dd {
+    margin: 0;
+}
+
+.doc-subject {
+    margin-bottom: 0.5cm;
+    font-size: 10pt;
+}
+
+.doc-note-nontax {
+    margin-bottom: 0.5cm;
+    font-weight: 700;
+}
+
+/* ── strany ─────────────────────────────────────────────────────────────── */
+
+.doc-parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1cm;
+    margin-bottom: 0.6cm;
+}
+
+.party--customer {
+    padding: 0.3cm 0.4cm;
+    border: 0.5pt solid #666;
+}
+
+.party-name {
+    font-size: 10.5pt;
+    font-weight: 700;
+}
+
+.party-address {
+    margin-bottom: 0.15cm;
+}
+
+.party-id {
+    margin-right: 0.5cm;
+    white-space: nowrap;
+}
+
+.party-detail {
+    color: #666;
+    font-size: 8pt;
+}
+
+/* ── data a platba ──────────────────────────────────────────────────────── */
+
+.doc-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1cm;
+    align-items: start;
+    margin-bottom: 0.6cm;
+    padding: 0.3cm 0;
+    border-top: 0.5pt solid #666;
+    border-bottom: 0.5pt solid #666;
+}
+
+.doc-payment {
+    display: flex;
+    justify-content: space-between;
+    column-gap: 0.4cm;
+}
+
+.doc-qr {
+    width: 2.9cm;
+    flex: none;
+    text-align: center;
+    font-size: 7pt;
+    color: #666;
+}
+
+.doc-qr svg {
+    display: block;
+    width: 2.9cm;
+    height: 2.9cm;
+}
+
+/* ── tabulky ────────────────────────────────────────────────────────────── */
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    padding: 0.1cm 0.15cm;
+    vertical-align: top;
+    text-align: left;
+    font-weight: 400;
+}
+
+thead th {
+    font-size: 7.5pt;
+    color: #666;
+    border-bottom: 0.5pt solid #000;
+    white-space: nowrap;
+}
+
+.col-num {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.col-unit {
+    white-space: nowrap;
+}
+
+.doc-rows {
+    margin-bottom: 0.6cm;
+}
+
+.doc-rows thead {
+    display: table-header-group;
+}
+
+.doc-rows tbody tr {
+    border-bottom: 0.25pt solid #ccc;
+    break-inside: avoid;
+}
+
+.row-text td {
+    color: #666;
+}
+
+.row-advance td {
+    font-style: italic;
+}
+
+.row-discount {
+    display: block;
+    font-size: 7.5pt;
+    color: #666;
+}
+
+/* ── rekapitulace a součty ──────────────────────────────────────────────── */
+
+.doc-summary {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    column-gap: 1cm;
+    align-items: start;
+    break-inside: avoid;
+}
+
+.doc-recap-table {
+    font-size: 8pt;
+}
+
+.doc-rate {
+    margin-top: 0.15cm;
+    font-size: 8pt;
+    color: #666;
+}
+
+.doc-totals th {
+    color: #666;
+}
+
+.doc-totals td {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.doc-totals-due th,
+.doc-totals-due td {
+    padding-top: 0.2cm;
+    padding-bottom: 0.2cm;
+    border-top: 0.5pt solid #000;
+    border-bottom: 0.5pt solid #000;
+    font-size: 11.5pt;
+    font-weight: 700;
+    color: #000;
+}
+
+.doc-totals-home th,
+.doc-totals-home td {
+    font-size: 8pt;
+}
+
+/* ── poznámky ───────────────────────────────────────────────────────────── */
+
+.doc-notes {
+    margin-top: 0.6cm;
+    break-inside: avoid;
+}
+
+.doc-vat-note {
+    font-size: 8pt;
+}
+
+.doc-notice {
+    margin-top: 0.2cm;
+}

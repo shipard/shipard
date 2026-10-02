@@ -1,0 +1,44 @@
+{#
+    Součty, odpočet záloh a částka k úhradě. `totals.total` je částka dokladu
+    už po odpočtu záloh; s odpočtem se proto tiskne i částka před ním.
+#}
+{% set totals = data.totals %}
+<table class="doc-totals">
+    <tbody>
+        {% if data.advances %}
+            <tr>
+                <th>{{ t('totals.total') }}</th>
+                <td>{{ totals.totalBeforeAdvances|money(doc.currency) }}</td>
+            </tr>
+            <tr>
+                <th>{{ t('totals.advances') }}</th>
+                <td>{{ (0 - data.advances.total)|money(doc.currency) }}</td>
+            </tr>
+        {% elseif showVat %}
+            <tr>
+                <th>{{ t('totals.base') }}</th>
+                <td>{{ totals.base|money(doc.currency) }}</td>
+            </tr>
+            <tr>
+                <th>{{ t('totals.vat') }}</th>
+                <td>{{ totals.vat|money(doc.currency) }}</td>
+            </tr>
+        {% endif %}
+        {% if totals.rounding != 0 %}
+            <tr>
+                <th>{{ t('totals.rounding') }}</th>
+                <td>{{ totals.rounding|money(doc.currency) }}</td>
+            </tr>
+        {% endif %}
+        <tr class="doc-totals-due">
+            <th>{{ t('totals.toPay') }}</th>
+            <td>{{ totals.total|money(doc.currency) }}</td>
+        </tr>
+        {% if doc.foreignCurrency and totals.totalDom is not null %}
+            <tr class="doc-totals-home">
+                <th>{{ t('totals.totalIn', { currency: doc.homeCurrency }) }}</th>
+                <td>{{ totals.totalDom|money(doc.homeCurrency) }}</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>

@@ -1,0 +1,52 @@
+{#
+    Řádky dokladu. Sloupce DPH jen u plátce; textový řádek jde přes celou
+    šířku; odpočet zálohy je vizuálně odlišený.
+#}
+{% set columns = showVat ? 8 : 5 %}
+<table class="doc-rows">
+    <thead>
+        <tr>
+            <th class="col-text">{{ t('rows.description') }}</th>
+            <th class="col-num">{{ t('rows.quantity') }}</th>
+            <th class="col-unit">{{ t('rows.unit') }}</th>
+            <th class="col-num">{{ doc.vatMode == 2 and showVat ? t('rows.unitPriceWithVat') : t('rows.unitPrice') }}</th>
+            {% if showVat %}
+                <th class="col-num">{{ t('rows.vatRate') }}</th>
+                <th class="col-num">{{ t('rows.base') }}</th>
+                <th class="col-num">{{ t('rows.vatAmount') }}</th>
+            {% endif %}
+            <th class="col-num">{{ t('rows.total') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data.rows %}
+            {% if row.kind == 'text' %}
+                <tr class="row-text">
+                    <td colspan="{{ columns }}">{{ row.description|nl2br }}</td>
+                </tr>
+            {% else %}
+                <tr class="{{ row.advanceDeduction ? 'row-advance' : 'row-item' }}">
+                    <td class="col-text">
+                        {{ row.description|nl2br }}
+                        {% if row.discountPct is not null %}
+                            <span class="row-discount">{{ t('rows.discount', { pct: row.discountPct|pct }) }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="col-num">{{ row.quantity|qty }}</td>
+                    <td class="col-unit">{{ row.unit ? row.unit.label : '' }}</td>
+                    <td class="col-num">{{ row.quantity is null ? '' : row.unitPrice|money }}</td>
+                    {% if showVat %}
+                        <td class="col-num">
+                            {% if row.vat %}
+                                {{ row.vat.pct|pct }}{% if row.vat.noteMark %}<sup>{{ row.vat.noteMark }}</sup>{% endif %}
+                            {% endif %}
+                        </td>
+                        <td class="col-num">{{ row.base|money }}</td>
+                        <td class="col-num">{{ row.vatAmount|money }}</td>
+                    {% endif %}
+                    <td class="col-num">{{ row.total|money }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+    </tbody>
+</table>
