@@ -722,7 +722,8 @@ frontend/src/components/dashboard/
 │                           (review_message); info = tlumený řádek
 │                           title/subtitle, akce z card.actions (heterogenní
 │                           — jen deleguje onAction, žádná vlastní logika);
-│                           busy disabluje všechna tlačítka
+│                           busy disabluje všechna tlačítka; card.warning
+│                           jen jako ikona varování s tooltipem (oba módy)
 ├── FeedFilter.svelte     — chip bar filtru kategorií (Vše/Faktury/Spisovna/
 │                           Ostatní), počet uvnitř chipu bez závorek; čistě
 │                           prezentační, counts/urgent/filtered počítá
@@ -734,6 +735,7 @@ frontend/src/components/dashboard/
 │                           jistoty (confidencePct, barva dle kind), předmět
 │                           e-mailu (emailSubject + iconMail), chipy příloh,
 │                           hint řádek dalších nálezů (secondaryFindings),
+│                           řádek upozornění (card.warning, varovná barva),
 │                           expander „Zobrazit detail" (details, lokální
 │                           $state), akce; bez headline fallback title/subtitle
 ├── FeedCardAttachment.svelte — chip přílohy s ikonou typu (PDF/obrázek/soubor,

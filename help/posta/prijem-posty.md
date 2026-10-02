@@ -1,7 +1,7 @@
 ---
 title: Příjem pošty
 summary: Jak dostat fakturu do Shipardu, co se s ní pak děje a jak si poradit s poštou, která faktura není.
-keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, pravidlo odesílatele, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat]
+keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, pravidlo odesílatele, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
 related: [posta/kontrola-vytezeni.md, slovnicek.md, co-dnes-nejde.md]
 ---
 
@@ -120,6 +120,24 @@ doklad zadej ručně a dej nám vědět, o jakou zprávu šlo. Když AI
 odpověděla, ale návrh neprošel kontrolou formátu, uvidíš na záložce
 **Návrh** odznak **Chyba extrakce** a pod ním stejnou kartu s vysvětlením
 (**AI vrátila nepoužitelný návrh**).
+
+**Předzpracování skončilo s chybami.** U některých odesílatelů faktura
+nepřijde jako příloha, ale jen jako odkaz ke stažení nebo přímo jako text
+e-mailu. Shipard ji podle pravidla stáhne nebo převede do PDF ještě před
+analýzou — tomu říká předzpracování. Když se to nepovede, u zprávy svítí
+badge **Hotovo s chybami** a AI pracovala jen s tím, co ve zprávě zůstalo,
+takže návrh nebo zařazení nemusí sedět. Poznáš to na třech místech: karta
+zprávy na Dashboardu má řádek **Předzpracování: …** (v kompaktních řádcích
+jen ikonu varování, text uvidíš po najetí), záložka **Návrh** má nahoře
+upozornění **Návrh vznikl bez výsledku předzpracování** a záložka
+**Obsah** kartu s vysvětlením — co přesně se nepovedlo a co udělat.
+Nejčastěji stačí dokument z e-mailu stáhnout ručně a nahrát ho na
+Dashboard; když hláška ukazuje na pravidlo, zkontroluj ho v **Nastavení →
+Pošta → Pravidla předzpracování**. Znovu spustit předzpracování
+z aplikace zatím nejde (viz [Co dnes nejde](../co-dnes-nejde.md)). Když se
+nepodařilo načíst přílohu ISDOC, uvidíš v **Obsahu** jen informační
+kartu — doklad pak AI vyčte z ostatních příloh a návrh zkontroluješ
+obvyklým způsobem.
 
 **Nic nedorazilo.** Zkontroluj v tomhle pořadí: sedí adresa, na kterou jsi
 posílal? Byla faktura opravdu jako příloha, ne jen odkaz ke stažení? Neuvízl

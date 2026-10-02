@@ -797,7 +797,10 @@ jazyk, texty přijdou lokalizované; bez configu anglický fallback v PHP.
 `analysis_state=70`, `proposal.failure` u wrapperu — viz níže), tab
 **Analýzy** (sloupec **Chyba**), Dashboard (`MailSuggestionsSource`,
 `docs/dashboard.md` §5.1). Nastavení → Analýzy zpráv zůstává technické.
-Chyby předzpracování (`preprocess_state=40`) řeší samostatný task (D6).
+Chyby předzpracování (`preprocess_state=40`) mají vlastní katalog
+`core.mail.preprocessErrorKinds` a `PreprocessErrorPresenter`, karta je
+sdílená (`FailureCard`) — viz [preprocess.md](preprocess.md) → „Hlášky
+pro uživatele" (D6).
 
 ## UI detail panelu
 
@@ -820,10 +823,12 @@ Chyby předzpracování (`preprocess_state=40`) řeší samostatný task (D6).
    prázdný stav s klasifikací zprávy. Při `analysis_state=70` nese obsah
    `failure` (hláška posledního selhaného běhu + `analyzedAt`,
    `promptVersion`) — frontend kreslí kartu selhání
-   (`AnalysisFailureCard`) místo prázdného stavu, klasifikace se
+   (`FailureCard`, varianta `error`; komponenta sdílená s hláškami
+   předzpracování) místo prázdného stavu, klasifikace se
    neposílá; starší úspěšný návrh pod ní zůstává (akce jen ve stavu 30).
    Návrh s wrapperem `_validationError` nese `proposal.failure`
-   kategorie `invalidOutput`, stejná komponenta.
+   kategorie `invalidOutput`, stejná komponenta. Předzpracování ve stavu
+   40 přidává nad to `preprocessWarning` (viz preprocess.md).
 4. **Originál** — raw `.eml` pokud existuje
 
 Řádek vieweru i hlavička detailu zobrazují badge stavu analýzy (label +

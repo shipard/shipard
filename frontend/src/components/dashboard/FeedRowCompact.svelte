@@ -10,8 +10,9 @@
    * i mimo plnou kartu).
    */
   import { t } from '../../i18n/index.js';
-  import { iconPreview } from '../../icons.js';
+  import { iconPreview, iconWarning } from '../../icons.js';
   import Button from '../ui/Button.svelte';
+  import Icon from '../ui/Icon.svelte';
 
   let { card, mode = 'info', busy = false, onAction = () => {} } = $props();
 
@@ -59,6 +60,14 @@
   {/if}
   <div class="shpd-feed-row__main">
     <span class="shpd-feed-row__title">{card.headline ? card.headline.partnerName : card.title}</span>
+    {#if card.warning}
+      <!-- Kompaktní řádek nemá hint řádky — upozornění předzpracování
+           (tasks/mail-preprocess-error-messages.md D3c, U2) jen jako ikona
+           varování s tooltipem; plný řádek má FeedCard. -->
+      <span class="shpd-feed-row__warning" title={card.warning} role="img" aria-label={card.warning}>
+        <Icon icon={iconWarning} size="sm" />
+      </span>
+    {/if}
     {#if metaLine}
       <span class="shpd-feed-row__meta">{metaLine}</span>
     {/if}
@@ -171,6 +180,16 @@
 
   .shpd-feed-row__title {
     font-weight: 600;
+  }
+
+  /* Ikona upozornění (card.warning) — varovná barva, text jen v tooltipu. */
+  .shpd-feed-row__warning {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    flex-shrink: 0;
+    color: var(--shpd-color-warning);
+    cursor: help;
   }
 
   .shpd-feed-row__meta {

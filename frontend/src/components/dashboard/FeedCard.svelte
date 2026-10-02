@@ -7,7 +7,7 @@
    * (alerty, chybové, „…a další") renderují dnešní title/subtitle fallback.
    * Chování akcí drží rodič (Dashboard) — FeedCard jen emituje onAction(action).
    */
-  import { resolveIcon, iconMail, iconChevronDown, iconChevronUp } from '../../icons.js';
+  import { resolveIcon, iconMail, iconWarning, iconChevronDown, iconChevronUp } from '../../icons.js';
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
   import FeedCardAttachment from './FeedCardAttachment.svelte';
@@ -115,6 +115,16 @@
             + {finding.type_label}{finding.note ? ` — ${finding.note}` : ''}
           </div>
         {/each}
+      </div>
+    {/if}
+    {#if card.warning}
+      <!-- Upozornění předzpracování (tasks/mail-preprocess-error-messages.md
+           D3c): návrh / klasifikace vznikly bez dokumentu, který mělo
+           předzpracování vytvořit. Text už lokalizovaný ze serveru, žádné
+           akce; druh karty se nemění. -->
+      <div class="shpd-feed-card__warning" role="note">
+        <Icon icon={iconWarning} size="sm" />
+        <span class="shpd-feed-card__warning-text" title={card.warning}>{card.warning}</span>
       </div>
     {/if}
     {#if card.attachments?.length}
@@ -301,6 +311,24 @@
   }
 
   .shpd-feed-card__subject-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Řádek upozornění (card.warning) — jako hint řádek, ale ve varovné
+     barvě; jeden řádek s ellipsis, plný text v title. */
+  .shpd-feed-card__warning {
+    display: flex;
+    align-items: center;
+    gap: var(--shpd-space-xs);
+    margin-top: var(--shpd-space-xs);
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-warning);
+    min-width: 0;
+  }
+
+  .shpd-feed-card__warning-text {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

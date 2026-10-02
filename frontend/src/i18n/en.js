@@ -215,6 +215,7 @@ export default {
   'viewer.failure.analyzedAt': 'Analyzed at',
   'viewer.failure.prompt': 'Prompt',
   'viewer.failure.message': 'Message',
+  'viewer.failure.finishedAt': 'Finished',
   'viewer.detail.apply': 'Apply',
   'viewer.detail.reject': 'Reject',
   'viewer.detail.rejectTitle': 'Reject proposal',

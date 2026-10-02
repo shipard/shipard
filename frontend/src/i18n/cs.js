@@ -224,6 +224,7 @@ export default {
   'viewer.failure.analyzedAt': 'Čas analýzy',
   'viewer.failure.prompt': 'Prompt',
   'viewer.failure.message': 'Hláška',
+  'viewer.failure.finishedAt': 'Dokončeno',
   'viewer.detail.apply': 'Použít',
   'viewer.detail.reject': 'Zamítnout',
   'viewer.detail.rejectTitle': 'Zamítnout návrh',

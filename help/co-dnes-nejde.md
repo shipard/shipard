@@ -165,6 +165,11 @@ je v [TESTERS.md](../TESTERS.md).
   doručení zprávy; ručně jde jen **Znovu analyzovat** u zprávy, která už
   je analyzovaná nebo u které analýza selhala. Zprávu v Archivu nebo
   v koši znovu analyzovat nelze.
+- **Předzpracování znovu nespustíš.** Když se nepovedlo stáhnout fakturu
+  z odkazu nebo převést text e-mailu do PDF (badge **Hotovo s chybami**),
+  v aplikaci není tlačítko, které by to zkusilo znovu. Dokument stáhni
+  ručně a nahraj ho na Dashboard; **Znovu analyzovat** předzpracování
+  neopakuje.
 - **Text řádku v náhledu návrhu neupravíš.** Řádek dostane text tak, jak
   ho AI přečetla — název položky a za pomlčkou případný doplňující popis
   (fakturované období, číslo služby). Přesně tento text vidíš v náhledu

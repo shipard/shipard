@@ -6,7 +6,7 @@
   import DocumentExchangePreviewModal from '../exchange/DocumentExchangePreviewModal.svelte';
   import RejectReasonPrompt from '../dashboard/RejectReasonPrompt.svelte';
   import AttachmentGrid from './AttachmentGrid.svelte';
-  import AnalysisFailureCard from './AnalysisFailureCard.svelte';
+  import FailureCard from './FailureCard.svelte';
   import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
   import DocumentDetail from './DocumentDetail.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -336,15 +336,34 @@
       {:else if content?.type === 'untrusted-html'}
         <SandboxedHtml html={content.html} title={t('viewer.detail.mailBody')} />
 
+      {:else if content?.type === 'failure'}
+        <!-- Lidská hláška selhání mimo tab Návrh — předzpracování v tabu Obsah
+             (tasks/mail-preprocess-error-messages.md D3a): varianta ze serveru
+             (warning = stav „Hotovo s chybami", info = selhaný import ISDOC). -->
+        <FailureCard failure={content.failure} variant={content.failure?.variant ?? 'error'} />
+
       {:else if content?.type === 'proposal'}
         <!-- Dokumentový návrh poslední analýzy (message-centric) — jedna
              karta, nebo prázdný stav s klasifikací zprávy. Při stavu
              „Analýza selhala" posílá server content.failure — karta
              selhání nahrazuje prázdný stav a stojí nad případným starším
-             návrhem; návrh s nevalidním výstupem nese vlastní doc.failure. -->
+             návrhem; návrh s nevalidním výstupem nese vlastní doc.failure.
+             content.preprocessWarning (předzpracování ve stavu „Hotovo
+             s chybami", D3b) stojí úplně nahoře — návrh i klasifikace vznikly
+             bez dokumentu, který mělo předzpracování vytvořit. -->
         <div class="shpd-extracted">
+          {#if content.preprocessWarning}
+            <FailureCard
+              failure={{
+                kind: content.preprocessWarning.kind,
+                title: content.preprocessWarning.title,
+                description: content.preprocessWarning.text,
+              }}
+              variant="warning"
+            />
+          {/if}
           {#if content.failure}
-            <AnalysisFailureCard failure={content.failure} />
+            <FailureCard failure={content.failure} />
           {/if}
           {#if !content.proposal}
             {#if !content.failure}
@@ -378,7 +397,7 @@
               </div>
 
               {#if doc.ai_failed && doc.failure}
-                <AnalysisFailureCard failure={doc.failure} />
+                <FailureCard failure={doc.failure} />
               {/if}
 
               {#if doc.summary}
