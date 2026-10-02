@@ -18,4 +18,11 @@ interface PrintBuilder
      *         tisk nesmí nahradit jiným zdrojem — typicky snapshot stran).
      */
     public function build(PrintRequest $request): PrintBuildResult;
+
+    /**
+     * Verze kontraktu `data` (#90 D15) — builder ji zvyšuje při
+     * nekompatibilní změně. Jde do obálky `PrintData`; render z hotového
+     * JSON (`print-run --data`) odmítne data novější, než builder zná.
+     */
+    public function version(): int;
 }

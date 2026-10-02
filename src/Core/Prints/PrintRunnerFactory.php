@@ -14,7 +14,8 @@ use Shipard\Core\Settings\BrandingStorage;
 
 /**
  * Wiring `PrintRunner` pro konkrétní DS — sdílí ho REST dispatch a CLI
- * `print-run`, ať se tisk neliší podle cesty, kterou vznikl.
+ * `print-run`, ať se tisk neliší podle cesty, kterou vznikl. Bez spojení
+ * do databáze (`$db` null) umí runner jen render z hotového `PrintData`.
  */
 final class PrintRunnerFactory
 {
@@ -24,7 +25,7 @@ final class PrintRunnerFactory
     public static function create(
         PrintRegistry $registry,
         DataSourceConfig $dsConfig,
-        DataSourceConnection $db,
+        ?DataSourceConnection $db,
         ModulePathResolver $modules,
         ?RenderClient $renderClient = null,
     ): PrintRunner {
@@ -32,16 +33,14 @@ final class PrintRunnerFactory
         $paths    = new PrintTemplatePaths($modules);
         $branding = new BrandingStorage($dsDir);
 
-        // Bez render klienta runner umí jen JSON — PDF skončí jako
+        // Bez render klienta runner umí JSON a HTML — PDF skončí jako
         // nenakonfigurovaná služba.
-        $renderer = $renderClient === null
-            ? null
-            : new PrintRenderer(
-                $paths,
-                new PrintTwigFactory($paths, $dsDir . '/' . self::TWIG_CACHE_DIR),
-                $renderClient,
-                $branding,
-            );
+        $renderer = new PrintRenderer(
+            $paths,
+            new PrintTwigFactory($paths, $dsDir . '/' . self::TWIG_CACHE_DIR),
+            $renderClient ?? new RenderClient(null),
+            $branding,
+        );
 
         return new PrintRunner(
             $registry,

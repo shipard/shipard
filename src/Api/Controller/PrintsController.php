@@ -59,7 +59,8 @@ class PrintsController
 
         $formatRaw = $rawParams['format'] ?? PrintFormat::Pdf->value;
         $format    = is_string($formatRaw) ? PrintFormat::tryFrom($formatRaw) : null;
-        if ($format === null) {
+        // `html` je nástroj pro vývoj šablon v CLI — REST ho nenabízí (#90 D28).
+        if ($format === null || $format === PrintFormat::Html) {
             return Response::error('BAD_REQUEST', "Parameter 'format' must be one of pdf|json", 400);
         }
         if ($format === PrintFormat::Json && !$auth->isAdmin) {

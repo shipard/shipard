@@ -14,7 +14,10 @@ use Shipard\Core\Settings\BrandingStorage;
  * `run()`, nikdy builder přímo.
  *
  * registr → záznam → dostupnost (filtr, stav) → jazyk → builder → obálka
- * `PrintData` → (PDF) renderer.
+ * `PrintData` → (PDF / HTML) renderer.
+ *
+ * `renderData()` vstupuje až do posledního kroku s hotovým `PrintData`
+ * — vývoj šablon bez záznamu v databázi (#90 D28).
  */
 final class PrintRunner
 {
@@ -29,10 +32,11 @@ final class PrintRunner
      *        v daném jazyce — jazyk tisku se může lišit od jazyka requestu,
      *        proto runner nedostává hotový `ConfigRuntime`.
      * @param ?\Closure(): \DateTimeImmutable $clock Čas vzniku (testy).
+     * @param ?DataSourceConnection $db Null = runner umí jen `renderData()`.
      */
     public function __construct(
         private readonly PrintRegistry $registry,
-        private readonly DataSourceConnection $db,
+        private readonly ?DataSourceConnection $db,
         \Closure $configFactory,
         private readonly PrintLanguageResolver $languages,
         private readonly ?BrandingStorage $branding = null,
@@ -62,6 +66,9 @@ final class PrintRunner
         if ($definition === null) {
             throw new PrintNotFoundException("Unknown print '{$printId}'");
         }
+        if ($this->db === null) {
+            throw new \LogicException('PrintRunner without a database connection can only render ready print data');
+        }
 
         $record = $this->db->fetchRow('SELECT * FROM %n WHERE [id] = %i', $definition->table, $recordId);
         if ($record === null) {
@@ -85,7 +92,8 @@ final class PrintRunner
         $translator = $this->catalogs?->translator($definition, $language)
             ?? new PrintTranslator([], $language);
 
-        $result = $this->createBuilder($definition)->build(new PrintRequest(
+        $builder = $this->createBuilder($definition);
+        $result  = $builder->build(new PrintRequest(
             definition: $definition,
             recordId: $recordId,
             record: $record,
@@ -97,7 +105,7 @@ final class PrintRunner
 
         $printData = new PrintData(
             printId: $definition->id,
-            version: $result->version,
+            version: $builder->version(),
             language: $language,
             table: $definition->table,
             recordId: $recordId,
@@ -110,12 +118,76 @@ final class PrintRunner
             data: $result->data,
         );
 
+        return $this->output($definition, $printData, $translator, $format);
+    }
+
+    /**
+     * Render z hotového `PrintData` (výstup `format=json` nebo fixture) —
+     * bez záznamu, kontroly dostupnosti i builderu.
+     *
+     * @param array<string, mixed> $envelope `PrintData` jako pole.
+     * @param ?string $language Přebije jazyk z obálky (překlady šablony;
+     *        popisky v `data` zůstávají, jak jsou).
+     * @throws PrintNotFoundException Neznámé id tisku.
+     * @throws \InvalidArgumentException Obálka nemá očekávaný tvar, patří
+     *         jinému tisku, je novější než builder, jazyk není podporovaný,
+     *         nebo je vyžádaný formát `json`.
+     * @throws PrintRenderException PDF nevzniklo.
+     */
+    public function renderData(
+        string $printId,
+        array $envelope,
+        PrintFormat $format,
+        ?string $language = null,
+    ): PrintOutput {
+        if ($format === PrintFormat::Json) {
+            throw new \InvalidArgumentException('Ready print data can be rendered to html or pdf only');
+        }
+        $definition = $this->registry->get($printId);
+        if ($definition === null) {
+            throw new PrintNotFoundException("Unknown print '{$printId}'");
+        }
+        // Data jiného tisku by cizí šablona vykreslila špatně, nebo vůbec.
+        $dataPrintId = $envelope['printId'] ?? null;
+        if ($dataPrintId !== $printId) {
+            throw new \InvalidArgumentException(sprintf(
+                "Print data belong to print '%s', not to '%s'",
+                is_string($dataPrintId) ? $dataPrintId : '?',
+                $printId,
+            ));
+        }
+
+        $printData = PrintData::fromArray($envelope, $this->createBuilder($definition)->version());
+        $language  = $this->languages->resolve($language ?? $printData->language, $definition, []);
+        if ($language !== $printData->language) {
+            $printData = $printData->withLanguage($language);
+        }
+
+        $translator = $this->catalogs?->translator($definition, $language)
+            ?? new PrintTranslator([], $language);
+
+        return $this->output($definition, $printData, $translator, $format);
+    }
+
+    private function output(
+        PrintDefinition $definition,
+        PrintData $printData,
+        PrintTranslator $translator,
+        PrintFormat $format,
+    ): PrintOutput {
         if ($format === PrintFormat::Json) {
             return new PrintOutput($format, $printData);
         }
 
         if ($this->renderer === null) {
             throw new PrintRenderException(RenderErrorKind::Unconfigured, 'Print renderer is not available');
+        }
+        if ($format === PrintFormat::Html) {
+            return new PrintOutput(
+                $format,
+                $printData,
+                document: $this->renderer->renderDocument($definition, $printData, $translator),
+            );
         }
         return new PrintOutput(
             $format,

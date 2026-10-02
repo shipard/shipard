@@ -22,6 +22,21 @@ final class PrintMessage
         return new self(PrintMessageSeverity::Warning, $code, $text);
     }
 
+    /**
+     * @param array<string, mixed> $data Tvar `toArray()`.
+     * @throws \InvalidArgumentException
+     */
+    public static function fromArray(array $data): self
+    {
+        $severity = is_string($data['severity'] ?? null)
+            ? PrintMessageSeverity::tryFrom($data['severity'])
+            : null;
+        if ($severity === null || !is_string($data['code'] ?? null) || !is_string($data['text'] ?? null)) {
+            throw new \InvalidArgumentException("Print message must carry 'severity', 'code' and 'text'");
+        }
+        return new self($severity, $data['code'], $data['text']);
+    }
+
     /** @return array{severity: string, code: string, text: string} */
     public function toArray(): array
     {

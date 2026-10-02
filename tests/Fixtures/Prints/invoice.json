@@ -1,0 +1,163 @@
+{
+    "printId": "docs.invoicesOut.invoice",
+    "version": 1,
+    "language": "cs",
+    "record": { "table": "docs_core_heads", "id": 123, "docState": 40 },
+    "generatedAt": "2026-10-02T10:30:00+02:00",
+    "meta": { "title": "Faktura – daňový doklad IT-PRINT-INV", "fileName": "faktura-it-print-inv.pdf" },
+    "branding": { "logo": null },
+    "texts": {},
+    "messages": [],
+    "data": {
+        "document": {
+            "type": "invno",
+            "titleVariant": "invoiceVatPayer",
+            "title": "Faktura – daňový doklad",
+            "number": "IT-PRINT-INV",
+            "text": "Konzultace a tiskoviny za září",
+            "notice": "Děkujeme za včasnou úhradu.",
+            "isTaxDocument": true,
+            "vatPayer": true,
+            "vatMode": 1,
+            "currency": "EUR",
+            "homeCurrency": "CZK",
+            "exchangeRate": 24.5,
+            "foreignCurrency": true
+        },
+        "dates": {
+            "issue": "2026-09-30",
+            "due": "2026-10-14",
+            "duzp": "2026-09-30",
+            "periodFrom": "2026-09-01",
+            "periodTo": "2026-09-30"
+        },
+        "supplier": {
+            "name": "Tiskárna Vzorová s.r.o.",
+            "company_id": "00000019",
+            "tax_id": "CZ00000019",
+            "vat_id": "CZ00000019",
+            "court_registration": "C 12345 vedená u Krajského soudu v Brně",
+            "contact": { "email": "fakturace@tiskarna.example", "phone": "+420 577 000 001" },
+            "address": {
+                "street": "Dlouhá 1",
+                "house_number": null,
+                "city": "Zlín",
+                "city_part": null,
+                "zip": "760 01",
+                "country": "cz",
+                "display_block": "Dlouhá 1\n760 01 Zlín",
+                "display_line": "Dlouhá 1, 760 01 Zlín"
+            },
+            "bank_account": {
+                "name": "EUR účet",
+                "account_number": "19-2000145399/0800",
+                "iban": "CZ6508000000192000145399",
+                "bic": "GIBACZPX",
+                "currency": "eur"
+            },
+            "vat_registration": { "country": "cz", "vat_id": "CZ00000019" }
+        },
+        "customer": {
+            "name": "Odběratel Zkušební a.s.",
+            "company_id": "00000027",
+            "tax_id": null,
+            "vat_id": "SK2020000027",
+            "court_registration": null,
+            "contact": { "email": null, "phone": null },
+            "address": {
+                "street": "Krátká 2",
+                "house_number": null,
+                "city": "Bratislava",
+                "city_part": null,
+                "zip": "811 01",
+                "country": "sk",
+                "display_block": "Krátká 2\n811 01 Bratislava",
+                "display_line": "Krátká 2, 811 01 Bratislava"
+            }
+        },
+        "payment": {
+            "method": { "id": 1, "label": "Převodem" },
+            "reference": "2026000123",
+            "specificSymbol": null,
+            "constantSymbol": "0308",
+            "bankAccount": {
+                "name": "EUR účet",
+                "account_number": "19-2000145399/0800",
+                "iban": "CZ6508000000192000145399",
+                "bic": "GIBACZPX",
+                "currency": "eur"
+            },
+            "amountToPay": 810.8,
+            "currency": "EUR",
+            "qr": {
+                "standard": "spayd",
+                "payload": "SPD*1.0*ACC:CZ6508000000192000145399+GIBACZPX*AM:810.80*CC:EUR*X-VS:2026000123*X-KS:0308*DT:20261014*MSG:IT-PRINT-INV"
+            }
+        },
+        "rows": [
+            {
+                "kind": "item",
+                "description": "Konzultace",
+                "quantity": 10,
+                "unit": { "id": 0, "label": "%unit%" },
+                "unitPrice": 100,
+                "unitPriceIncludesVat": false,
+                "discountPct": null,
+                "vat": { "code": "cz-120", "pct": 21, "label": "Základní", "noteMark": null },
+                "base": 1000,
+                "vatAmount": 210,
+                "total": 1210,
+                "advanceDeduction": false
+            },
+            {
+                "kind": "item",
+                "description": "Tištěná příručka",
+                "quantity": 2,
+                "unit": null,
+                "unitPrice": 50,
+                "unitPriceIncludesVat": false,
+                "discountPct": 10,
+                "vat": { "code": "cz-121", "pct": 12, "label": "Snížená", "noteMark": null },
+                "base": 90,
+                "vatAmount": 10.8,
+                "total": 100.8,
+                "advanceDeduction": false
+            },
+            { "kind": "text", "description": "Děkujeme za spolupráci." },
+            {
+                "kind": "item",
+                "description": "Odpočet zálohy dle zálohové faktury",
+                "quantity": null,
+                "unit": null,
+                "unitPrice": 0,
+                "unitPriceIncludesVat": false,
+                "discountPct": null,
+                "vat": { "code": "cz-122", "pct": 0, "label": "Bez daně", "noteMark": null },
+                "base": -500,
+                "vatAmount": 0,
+                "total": -500,
+                "advanceDeduction": true
+            }
+        ],
+        "vatRecap": [
+            { "label": "Základní", "pct": 21, "base": 1000, "tax": 210, "total": 1210,
+              "baseDom": 24500, "taxDom": 5145, "totalDom": 29645, "noteMark": null },
+            { "label": "Snížená", "pct": 12, "base": 90, "tax": 10.8, "total": 100.8,
+              "baseDom": 2205, "taxDom": 264.6, "totalDom": 2469.6, "noteMark": null },
+            { "label": "Bez daně", "pct": 0, "base": -500, "tax": 0, "total": -500,
+              "baseDom": -12250, "taxDom": 0, "totalDom": -12250, "noteMark": null }
+        ],
+        "vatNotes": [],
+        "advances": { "base": 500, "vat": 0, "total": 500 },
+        "totals": {
+            "base": 590,
+            "vat": 220.8,
+            "rounding": 0,
+            "total": 810.8,
+            "totalBeforeAdvances": 1310.8,
+            "baseDom": 14455,
+            "vatDom": 5409.6,
+            "totalDom": 19864.6
+        }
+    }
+}

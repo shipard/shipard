@@ -49,8 +49,12 @@ class DocPrintBuilder implements PrintBuilder
                 . ($number !== '' ? '-' . Slug::make($number, fallback: 'x') : '')
                 . '.pdf',
             messages: $context->messages(),
-            version: static::VERSION,
         );
+    }
+
+    public function version(): int
+    {
+        return static::VERSION;
     }
 
     /**

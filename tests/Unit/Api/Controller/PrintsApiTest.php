@@ -292,6 +292,8 @@ class PrintsApiTest extends TestCase
         $controller = $this->controller();
 
         self::assertError($controller->run('test.prints.card', 5, ['format' => 'xml'], self::user(), []), 400, 'BAD_REQUEST');
+        // HTML je nástroj CLI, REST ho nenabízí — ani administrátorovi.
+        self::assertError($controller->run('test.prints.card', 5, ['format' => 'html'], self::admin(), []), 400, 'BAD_REQUEST');
         self::assertError($controller->run('test.prints.card', 5, ['format' => ['pdf']], self::user(), []), 400, 'BAD_REQUEST');
         self::assertError($controller->run('test.prints.card', 5, ['language' => 'de'], self::user(), []), 400, 'BAD_REQUEST');
         self::assertError($controller->run('test.prints.card', 5, ['language' => ['cs']], self::user(), []), 400, 'BAD_REQUEST');
@@ -450,6 +452,11 @@ class PrintsApiFakeBuilder implements PrintBuilder
             fileName: 'karta-' . $request->recordId . '.pdf',
             messages: self::$messages ? [PrintMessage::warning('builder.note', 'Poznámka builderu')] : [],
         );
+    }
+
+    public function version(): int
+    {
+        return 1;
     }
 }
 

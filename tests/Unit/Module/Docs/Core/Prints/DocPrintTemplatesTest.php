@@ -72,30 +72,21 @@ class DocPrintTemplatesTest extends TestCase
      */
     private static function printData(string $fixture, string $printId, string $language = 'cs', ?callable $modify = null, ?string $logo = null): PrintData
     {
-        $data = json_decode(
-            (string) file_get_contents(dirname(__DIR__, 5) . '/Fixtures/Prints/' . $fixture . '.data.json'),
+        $envelope = json_decode(
+            (string) file_get_contents(dirname(__DIR__, 5) . '/Fixtures/Prints/' . $fixture . '.json'),
             true,
             512,
             JSON_THROW_ON_ERROR,
         );
         if ($modify !== null) {
-            $data = $modify($data);
+            $envelope['data'] = $modify($envelope['data']);
         }
+        $envelope['printId']  = $printId;
+        $envelope['language'] = $language;
+        $envelope['branding'] = ['logo' => $logo];
+        $envelope['meta']['title'] = $envelope['data']['document']['title'] . ' ' . $envelope['data']['document']['number'];
 
-        return new PrintData(
-            printId: $printId,
-            version: 1,
-            language: $language,
-            table: 'docs_core_heads',
-            recordId: 123,
-            docState: 40,
-            generatedAt: new \DateTimeImmutable('2026-10-02T10:30:00+02:00'),
-            title: $data['document']['title'] . ' ' . $data['document']['number'],
-            fileName: 'faktura.pdf',
-            logo: $logo,
-            messages: [],
-            data: $data,
-        );
+        return PrintData::fromArray($envelope);
     }
 
     private function renderer(?RenderEngineInterface $engine = null, ?BrandingStorage $branding = null): PrintRenderer

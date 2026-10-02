@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Prints\PrintBuilder;
 use Shipard\Core\Prints\PrintBuildResult;
+use Shipard\Core\Prints\PrintCatalogLoader;
 use Shipard\Core\Prints\PrintDefinition;
 use Shipard\Core\Prints\PrintFormat;
 use Shipard\Core\Prints\PrintLanguageResolver;
@@ -211,15 +212,26 @@ class PrintRunnerTest extends TestCase
         $this->assertSame(['logo' => 'logo.svg'], $output->printData->toArray()['branding']);
     }
 
-    public function testPdfRunRendersTemplateThroughRenderClient(): void
+    /**
+     * Runner s rendererem nad šablonou v dočasném modulu `test.prints`
+     * (stránka + CSS asset + katalog). Bez enginu = render služba
+     * nenakonfigurovaná; bez `$withDb` runner nemá spojení do databáze.
+     */
+    private function templateRunner(?RenderEngineInterface $engine = null, bool $withDb = true): PrintRunner
     {
         $this->dsPath = sys_get_temp_dir() . '/shpd_prints_' . uniqid('', true);
         $modules = $this->dsPath . '/modules';
-        mkdir($modules . '/test/prints/prints/sample', 0755, true);
+        $template = $modules . '/test/prints/prints/sample';
+        mkdir($template, 0755, true);
         file_put_contents($modules . '/test/prints/module.jsonc', '{"id": "test.prints", "name": "Prints"}');
         file_put_contents(
-            $modules . '/test/prints/prints/sample/page.html.twig',
-            '<h1>{{ meta.title }}</h1><p>{{ data.document.number }}</p>',
+            $template . '/page.html.twig',
+            '<h1>{{ meta.title }}</h1><p>{{ t(\'label.number\') }} {{ data.document.number }}</p>',
+        );
+        file_put_contents($template . '/style.css', 'h1 { color: #000; }');
+        file_put_contents(
+            $template . '/messages.jsonc',
+            '{ "label.number": { "cs": "Číslo", "en": "Number" } }',
         );
 
         $registry = new PrintRegistry();
@@ -229,33 +241,153 @@ class PrintRunnerTest extends TestCase
             ]),
             'test.prints',
         ));
-        $db = $this->createStub(DataSourceConnection::class);
-        $db->method('fetchRow')->willReturn(self::RECORD);
 
-        $engine = $this->createMock(RenderEngineInterface::class);
-        $engine->expects($this->once())
-            ->method('renderHtml')
-            ->with('<h1>Faktura 2026000123</h1><p>2026000123</p>', [], $this->anything(), $this->anything())
-            ->willReturn(RenderResult::success('%PDF-1.7 fake'));
+        $db = null;
+        if ($withDb) {
+            $db = $this->createStub(DataSourceConnection::class);
+            $db->method('fetchRow')->willReturn(self::RECORD);
+        }
 
-        $paths  = new PrintTemplatePaths(new ModulePathResolver([$modules]));
-        $runner = new PrintRunner(
+        $paths = new PrintTemplatePaths(new ModulePathResolver([$modules]));
+        return new PrintRunner(
             $registry,
             $db,
             static fn (string $language) => null,
             new PrintLanguageResolver('cs'),
+            catalogs: new PrintCatalogLoader($paths),
             renderer: new PrintRenderer(
                 $paths,
                 new PrintTwigFactory($paths),
-                new RenderClient(new RenderConfig('http://127.0.0.1:3000'), $engine),
+                $engine === null
+                    ? new RenderClient(null)
+                    : new RenderClient(new RenderConfig('http://127.0.0.1:3000'), $engine),
             ),
         );
+    }
 
-        $output = $runner->run('docs.invoicesOut.invoice', 123, PrintFormat::Pdf);
+    /** @return array<string, mixed> Obálka, jakou vrací `format=json`. */
+    private static function envelope(): array
+    {
+        return [
+            'printId'  => 'docs.invoicesOut.invoice',
+            'version'  => 3,
+            'language' => 'cs',
+            'record'   => ['table' => 'docs_core_heads', 'id' => 123, 'docState' => 40],
+            'meta'     => ['title' => 'Faktura 77', 'fileName' => 'faktura-77.pdf'],
+            'data'     => ['document' => ['number' => '77']],
+        ];
+    }
+
+    public function testPdfRunRendersTemplateThroughRenderClient(): void
+    {
+        $engine = $this->createMock(RenderEngineInterface::class);
+        $engine->expects($this->once())
+            ->method('renderHtml')
+            ->with(
+                '<h1>Faktura 2026000123</h1><p>Číslo 2026000123</p>',
+                ['style.css' => 'h1 { color: #000; }'],
+                $this->anything(),
+                $this->anything(),
+            )
+            ->willReturn(RenderResult::success('%PDF-1.7 fake'));
+
+        $output = $this->templateRunner($engine)->run('docs.invoicesOut.invoice', 123, PrintFormat::Pdf);
 
         $this->assertSame(PrintFormat::Pdf, $output->format);
         $this->assertSame('%PDF-1.7 fake', $output->pdfContent);
         $this->assertSame('faktura-2026000123.pdf', $output->printData->fileName);
+    }
+
+    // ── HTML a render z hotových dat (D28) ──────────────────────────────────
+
+    public function testHtmlRunReturnsDocumentWithoutRenderService(): void
+    {
+        $output = $this->templateRunner()->run('docs.invoicesOut.invoice', 123, PrintFormat::Html);
+
+        $this->assertSame(PrintFormat::Html, $output->format);
+        $this->assertNull($output->pdfContent);
+        $this->assertSame('<h1>Faktura 2026000123</h1><p>Číslo 2026000123</p>', $output->document?->html);
+        $this->assertSame(['style.css' => 'h1 { color: #000; }'], $output->document?->assets);
+    }
+
+    public function testRenderDataRendersReadyEnvelopeWithoutDatabaseAndBuilder(): void
+    {
+        $output = $this->templateRunner(withDb: false)
+            ->renderData('docs.invoicesOut.invoice', self::envelope(), PrintFormat::Html);
+
+        $this->assertNull(FakePrintBuilder::$lastRequest, 'builder se nevolá');
+        $this->assertSame('<h1>Faktura 77</h1><p>Číslo 77</p>', $output->document?->html);
+        $this->assertSame('faktura-77.pdf', $output->printData->fileName);
+    }
+
+    public function testRenderDataToPdfGoesThroughRenderClient(): void
+    {
+        $engine = $this->createMock(RenderEngineInterface::class);
+        $engine->expects($this->once())
+            ->method('renderHtml')
+            ->with('<h1>Faktura 77</h1><p>Číslo 77</p>', $this->anything(), $this->anything(), $this->anything())
+            ->willReturn(RenderResult::success('%PDF-1.7 fake'));
+
+        $output = $this->templateRunner($engine, withDb: false)
+            ->renderData('docs.invoicesOut.invoice', self::envelope(), PrintFormat::Pdf);
+
+        $this->assertSame('%PDF-1.7 fake', $output->pdfContent);
+    }
+
+    public function testRenderDataLanguageOverridesEnvelope(): void
+    {
+        $runner = $this->templateRunner(withDb: false);
+
+        $output = $runner->renderData('docs.invoicesOut.invoice', self::envelope(), PrintFormat::Html, 'en');
+        $this->assertSame('en', $output->printData->language);
+        $this->assertSame('<h1>Faktura 77</h1><p>Number 77</p>', $output->document?->html);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("'language' must be one of");
+        $runner->renderData('docs.invoicesOut.invoice', ['language' => 'de'] + self::envelope(), PrintFormat::Html);
+    }
+
+    public function testRenderDataRejectsDataOfAnotherPrint(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("belong to print 'docs.proformasOut.proforma'");
+        $this->templateRunner(withDb: false)->renderData(
+            'docs.invoicesOut.invoice',
+            ['printId' => 'docs.proformasOut.proforma'] + self::envelope(),
+            PrintFormat::Html,
+        );
+    }
+
+    public function testRenderDataRejectsVersionNewerThanBuilder(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('version 4 is newer than version 3');
+        $this->templateRunner(withDb: false)->renderData(
+            'docs.invoicesOut.invoice',
+            ['version' => 4] + self::envelope(),
+            PrintFormat::Html,
+        );
+    }
+
+    public function testRenderDataRejectsJsonFormatAndUnknownPrint(): void
+    {
+        $runner = $this->templateRunner(withDb: false);
+
+        try {
+            $runner->renderData('docs.invoicesOut.invoice', self::envelope(), PrintFormat::Json);
+            $this->fail('InvalidArgumentException expected');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('html or pdf', $e->getMessage());
+        }
+
+        $this->expectException(PrintNotFoundException::class);
+        $runner->renderData('docs.invoicesOut.missing', self::envelope(), PrintFormat::Html);
+    }
+
+    public function testRunWithoutDatabaseIsAProgrammingError(): void
+    {
+        $this->expectException(\LogicException::class);
+        $this->templateRunner(withDb: false)->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
     }
 
     public function testPdfWithoutRendererFailsAsUnconfigured(): void
@@ -284,7 +416,11 @@ class FakePrintBuilder implements PrintBuilder
             title: 'Faktura ' . $number,
             fileName: 'faktura-' . $number . '.pdf',
             messages: [PrintMessage::warning('qr.noAccount', 'QR nevznikl')],
-            version: 3,
         );
+    }
+
+    public function version(): int
+    {
+        return 3;
     }
 }

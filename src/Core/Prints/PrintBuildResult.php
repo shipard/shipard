@@ -6,8 +6,8 @@ namespace Shipard\Core\Prints;
 
 /**
  * Výstup builderu: sekce `data` specifická pro tisk, titulek a název
- * souboru pro `meta` a měkká hlášení. `version` je verze kontraktu `data`
- * (#90 D15) — builder ji zvyšuje při nekompatibilní změně.
+ * souboru pro `meta` a měkká hlášení. Verzi kontraktu `data` nese builder
+ * (`PrintBuilder::version()`).
  */
 final class PrintBuildResult
 {
@@ -20,6 +20,5 @@ final class PrintBuildResult
         public readonly string $title,
         public readonly string $fileName,
         public readonly array $messages = [],
-        public readonly int $version = 1,
     ) {}
 }

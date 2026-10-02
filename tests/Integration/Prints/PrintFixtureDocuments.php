@@ -7,7 +7,7 @@ namespace Shipard\Tests\Integration\Prints;
 /**
  * Fixture doklady pro testy tisků: faktura (plátce, dvě sazby, textový
  * řádek, odpočet zálohy, cizí měna) a zálohová faktura. Vkládají se přímo
- * ve stavu 40 se snapshoty stran z `tests/Fixtures/Prints/*.data.json`,
+ * ve stavu 40 se snapshoty stran z `tests/Fixtures/Prints/*.json`,
  * takže výstup builderu nezávisí na adresáři zdroje dat.
  *
  * Vyžaduje řady invno a invpo a registraci k DPH pro cz. Čísla dokladů
@@ -57,10 +57,16 @@ trait PrintFixtureDocuments
         $dibi->delete('docs_core_heads')->where('id = %i', $id)->execute();
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<string, mixed> Sekce `data` fixture. */
     private function expected(string $name): array
     {
-        $file = dirname(__DIR__, 2) . '/Fixtures/Prints/' . $name . '.data.json';
+        return $this->expectedEnvelope($name)['data'];
+    }
+
+    /** @return array<string, mixed> Celá obálka `PrintData` fixture. */
+    private function expectedEnvelope(string $name): array
+    {
+        $file = dirname(__DIR__, 2) . '/Fixtures/Prints/' . $name . '.json';
         return json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
     }
 

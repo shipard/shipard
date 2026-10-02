@@ -754,7 +754,7 @@ stderr, exit 0. Exit `INVALID` (2): neznámý report (vypíše dostupné),
 chybějící / nevalidní období, neznámý `--format`, `xlsx` bez `--output`.
 Pravidla převodu: [reports.md](reports.md) §15.
 
-#### `print-run <printId> <recordId> [--format=json|pdf] [--language=cs|en] [--output=<soubor>]`
+#### `print-run <printId> [<recordId>] [--format=json|pdf|html] [--language=cs|en] [--output=<cíl>] [--data=<PrintData.json>]`
 
 ```bash
 cd /opt/shipard/data-sources/<id>
@@ -762,6 +762,10 @@ shpd-ds print-run docs.invoicesOut.invoice 123                       # PrintData
 shpd-ds print-run docs.invoicesOut.invoice 123 --language=en > faktura.json
 shpd-ds print-run docs.proformasOut.proforma 456 \
     --format=pdf --output=zalohova-faktura.pdf                        # PDF přes render službu
+shpd-ds print-run docs.invoicesOut.invoice 123 \
+    --format=html --output=/tmp/faktura                               # HTML do adresáře
+shpd-ds print-run docs.invoicesOut.invoice --data=faktura.json \
+    --format=html --output=/tmp/faktura                               # render hotových dat bez databáze
 ```
 
 Spustí tisk nad jedním záznamem ([prints.md](prints.md)). `recordId` je id
@@ -771,14 +775,30 @@ záznamu v tabulce, kterou určuje deklarace tisku.
 |---|---|
 | `json` (default) | `PrintData` jako odsazený JSON na stdout — ladění builderu a kontraktu bez renderu |
 | `pdf` | hotové PDF; **vyžaduje `--output`** a nakonfigurovanou render službu (`render` v `server.json`) |
+| `html` | přesně to, co jde do render služby; **vyžaduje `--output=<adresář>`**: `index.html` (stránka), `header.html`, `footer.html` a assety (CSS, logo) pod svými jmény. Adresář se vytvoří, soubory stejného jména se přepíší, jiné zůstanou. Render službu nepotřebuje |
+
+`index.html` jde otevřít přímo v prohlížeči (assety odkazuje relativně).
+Záhlaví a zápatí jsou samostatné dokumenty — do okrajů stránky je skládá až
+render služba, v prohlížeči se u stránky nezobrazí.
+
+**`--data=<soubor>`** vezme hotový `PrintData` (výstup `--format=json` nebo
+fixture z `tests/Fixtures/Prints/`) a přeskočí databázi, kontrolu
+dostupnosti i builder — rovnou renderuje `html` nebo `pdf`. `recordId` se
+nezadává. `printId` musí souhlasit s `printId` v souboru a verze dat nesmí
+být vyšší, než builder tisku zná. Jazyk se bere ze souboru, `--language` ho
+přebije (překlady šablony; popisky v `data` zůstávají, jak jsou). Slouží
+vývoji šablon: jednou `--format=json > data.json`, pak už jen upravovat
+šablonu a pouštět `--data=data.json --format=html`.
 
 `--language` určí jazyk tisku; bez něj platí výchozí jazyk zdroje dat.
 Měkká hlášení builderu (QR platba nevznikla) jdou na stderr, exit 0.
 Exit `INVALID` (2): neznámý tisk (vypíše dostupné), neznámý `--format` /
-`--language`, `pdf` bez `--output`, nečíselné `recordId`. Exit `FAILURE`
+`--language`, `pdf` nebo `html` bez `--output`, chybějící či nečíselné
+`recordId`, `--data` s `recordId` nebo s `--format=json`, nečitelný soubor
+`--data`, data jiného tisku nebo s neplatnou obálkou. Exit `FAILURE`
 (1): záznam neexistuje, tisk pro něj není dostupný (koncept, jiný typ
-záznamu), záznamu chybí data pro tisk, nebo PDF nevzniklo (druh selhání
-render služby je ve výpisu).
+záznamu), záznamu chybí data pro tisk, výstup nejde zapsat, nebo PDF
+nevzniklo (druh selhání render služby je ve výpisu).
 
 #### `report-diff <fileA> <fileB> [--strict] [--json]`
 
