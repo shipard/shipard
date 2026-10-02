@@ -1,6 +1,6 @@
 # Tisky — Fáze 2: nástroje pro šablony, pokladní doklad, prodejka, Kontace, storno
 
-**Stav:** naplánováno — design zamčený v #90 (D22–D28), čeká na implementaci
+**Stav:** hotovo — 2026-10-02 (6 commitů + oprava záhlaví; unit a integrační testy na `4l3j-` včetně PDF přes render službu, tisky ověřené nad skutečnými doklady `4l3j-`); zbývá ruční proklik nabídky Tisk v prohlížeči; odchylky od zadání na konci
 
 > PRD pro Claude Code (6 commitů). Design: issue #90, komentář
 > „Rozhodnutí: fáze 2 (D22–D28)“; základ D1–D21 a fáze 0 + 1 v
@@ -372,3 +372,47 @@ z PRD:
   snapshoty.
 - Kontace u dokladu bez směru (`cmnbkp`) bere účetní jednotku z aktuálních
   dat (interní tisk, D2).
+
+## Odchylky od zadání (implementace 2026-10-02)
+
+- **Fixture jsou celé obálky `PrintData`** (`tests/Fixtures/Prints/<název>.json`
+  místo `*.data.json` jen se sekcí `data`) — jinak by nešly použít
+  v `print-run --data`, jak zadání předpokládá. Testy kontraktu porovnávají
+  `data` a `meta`; test pravidla vodoznaku si fixture najde podle `printId`.
+- **Verze kontraktu je metoda `PrintBuilder::version()`**, ne pole
+  `PrintBuildResult::version` — render z JSON ji potřebuje znát bez běhu
+  builderu.
+- **Kontrolu `printId` a verze dělá `PrintRunner::renderData()`**, ne příkaz
+  — platí pro každého volajícího. `--data` s `recordId` je chyba.
+- **`PrintRunner` a `PrintRunnerFactory` mají spojení do databáze
+  nepovinné**; renderer vzniká vždy (HTML render službu nepotřebuje), PDF bez
+  služby končí jako `unconfigured` stejně jako dřív.
+- **Bankovní účet jen u platby převodem** (`payment.bankAccount` jinak
+  `null`, schváleno před implementací) — mění i fakturu placenou hotově.
+  Nový příznak **`payment.bankTransfer`** řídí v šablonách splatnost, účet,
+  QR a popisek „K úhradě“ / „Celkem“.
+- **Zápatí a země DPH z vlastní strany podle `tradeDir`** — na výdajovém
+  dokladu je dodavatel partner (nebo chybí), zadání to neřešilo.
+- **Den přijetí platby** je `dates.paymentReceived` (jen pokladní doklad,
+  příjem s DPH — tam ho nabízí i formulář).
+- **Pokladnu načítá `DocPrintContext::load()`** (jediné místo se SQL
+  tisků dokladů), bloky `DocCashDeskBlock` / `DocCashDatesBlock`.
+- **Layout dokladů má dva nové prázdné bloky:** `signatures` (podpisy
+  pokladního dokladu, „Zaúčtoval“ na Kontaci) a `styles` (vlastní CSS
+  šablony — Kontace).
+- **Kontace:** šablona přepisuje i bloky `dates` a `notes` (layout je čte
+  pod `strict_variables`) a má vlastní zápatí s účetní jednotkou. Strany
+  nejsou nikdy povinné (`DocPrintContext::forHead()`) — interní tisk nesmí
+  spadnout na dokladu z importu bez partnerského snapshotu. Součet MD / Dal
+  je poslední řádek tabulky, ne zvláštní blok. Popisky dimenzí jsou
+  vytažené z `DocsHeadsViewer` do `Core\Accounting\JournalDimensionLabels`
+  a sdílené s tabem Zaúčtování.
+- **Oprava z fáze 1 (samostatný commit):** prvek s třídou `title` v záhlaví
+  Chromium přepisuje `<title>` stránky — záhlaví netisklo obsah šablony
+  (číslo dokladu vycházelo tučně). Třídy přejmenovány na `head-title` /
+  `head-number`.
+- **Vodoznak v PDF testu** se hledá přes `pdftotext -raw` — režim `-layout`
+  otočený text vynechává.
+- **Nápověda šla s každým tiskem** (commity 2–5), ne až v commitu 6 —
+  pravidlo z `CLAUDE.md`. Kontace má vlastní stránku
+  `help/uctarna/tisk-kontace.md`.

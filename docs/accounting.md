@@ -939,7 +939,9 @@ dimenzi nevědí.
 - **Zobrazení**: `JournalViewer` přidá per dimenzi sloupec gridu, řádek
   detailu a textový filtr `dim_{id}` (hledá ve sloupcích `displayPattern`;
   hodnota `#123` = přesně záznam dimenze s tímto id);
-  tab Zaúčtování dokladu ukáže sloupec dimenze, když ji některý řádek nese.
+  tab Zaúčtování dokladu ukáže sloupec dimenze, když ji některý řádek nese
+  — stejně jako tisk Kontace (`docs/prints.md` §4.2); popisky hodnot oběma
+  dává `Shipard\Core\Accounting\JournalDimensionLabels::forRows()`.
 
 ---
 
