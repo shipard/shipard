@@ -2,6 +2,10 @@
     Záhlaví dokladu — samostatný HTML dokument pro render službu, tiskne se
     na každé straně. Nemá přístup k assetům stránky: styly inline, logo jako
     data URI. Vodorovné odsazení musí odpovídat okrajům stránky.
+
+    Pozor na názvy tříd: prvky s třídami `title`, `date`, `url`, `pageNumber`
+    a `totalPages` Chromium v záhlaví a zápatí přepisuje vlastním obsahem
+    (`title` = <title> stránky) — proto `head-title`, ne `title`.
 #}
 <!DOCTYPE html>
 <html lang="{{ language }}">
@@ -21,8 +25,8 @@
             justify-content: space-between;
         }
         .logo { height: 1.3cm; max-width: 6cm; }
-        .title { font-size: 13pt; font-weight: 700; text-align: right; }
-        .number { font-size: 13pt; font-weight: 400; margin-left: 0.3cm; }
+        .head-title { font-size: 13pt; font-weight: 700; text-align: right; }
+        .head-number { font-size: 13pt; font-weight: 400; margin-left: 0.3cm; }
     </style>
 </head>
 <body>
@@ -32,7 +36,7 @@
             <img class="logo" src="{{ branding.logoDataUri }}" alt="">
         {% endif %}
     </div>
-    <div class="title">{{ data.document.title }}<span class="number">{{ data.document.number }}</span></div>
+    <div class="head-title">{{ data.document.title }}<span class="head-number">{{ data.document.number }}</span></div>
 </div>
 </body>
 </html>
