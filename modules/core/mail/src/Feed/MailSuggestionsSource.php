@@ -11,6 +11,8 @@ use Shipard\Module\Core\Mail\AnalysisErrorInfo;
 use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
 use Shipard\Module\Core\Mail\IncomingMessageDocument;
 use Shipard\Module\Core\Mail\IncomingMessageTitle;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessErrorPresenter;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
 use Shipard\Module\Core\Mail\PrimaryTypes;
 
 /**
@@ -53,6 +55,10 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  * Subtitle chybové a „Není faktura" karty: partner zprávy · od: odesílatel,
  * bez partnera jen odesílatel (D7). Neprázdné `secondary_findings` běhu →
  * pole `secondaryFindings` ({type, type_label, note}) — hint na kartě (D7).
+ * Zpráva s předzpracováním ve stavu 40 „Hotovo s chybami" nese na všech
+ * třech druzích karet `warning` — lokalizovaný řádek „Předzpracování:
+ * {titulek kategorie}" z PreprocessErrorPresenter (tasks/mail-preprocess-
+ * error-messages.md D3c); `preprocess_log` se čte jen ve stavu 40.
  * Data jdou z `canonical_json` (kanonický doklad) — feed je stropovaný
  * (maxCards), takže N `json_decode` je únosné.
  *
@@ -96,6 +102,14 @@ final class MailSuggestionsSource implements FeedSource
 
     private const DOC_KINDS_CFG_ITEM = 'base.registry.docKinds';
 
+    /**
+     * Sloupce předzpracování pro `warning` karty: stav vždy, log jen ve
+     * stavu 40 (JSON může být dlouhý, jinde ho karta nepotřebuje).
+     */
+    private const PREPROCESS_SQL = ', `m`.`preprocess_state`,'
+        . ' IF(`m`.`preprocess_state` = ' . PreprocessRunner::STATE_DONE_WITH_ERRORS
+        . ', `m`.`preprocess_log`, NULL) AS `preprocess_log`';
+
     public function collectCards(FeedContext $ctx): array
     {
         $suggestionRows = $this->fetchSuggestionRows($ctx);
@@ -111,6 +125,7 @@ final class MailSuggestionsSource implements FeedSource
         $thresholdsByProfile = [];
         // Jeden presenter per sběr — verzi výchozího profilu čte jednou.
         $presenter = new AnalysisErrorPresenter($ctx->db, $ctx->config);
+        $preprocess = new PreprocessErrorPresenter($ctx->config);
 
         $cards = [];
         foreach ($suggestionRows as $row) {
@@ -121,7 +136,11 @@ final class MailSuggestionsSource implements FeedSource
             // Nevalidní výstup běhu (forenzní wrapper z /result) → chybová
             // karta s reanalyze, návrh nelze použít.
             if (isset($canonical['_validationError'])) {
-                $cards[] = $this->withAttachments($this->buildInvalidOutputCard($ctx, $row, $presenter), $attachments);
+                $cards[] = $this->withPreprocessWarning(
+                    $this->withAttachments($this->buildInvalidOutputCard($ctx, $row, $presenter), $attachments),
+                    $row,
+                    $preprocess,
+                );
                 continue;
             }
 
@@ -136,21 +155,24 @@ final class MailSuggestionsSource implements FeedSource
                 $canonical,
             );
 
-            $cards[] = $this->withAttachments(
-                $this->buildSuggestionCard($ctx, $row, $canonical, $band),
-                $attachments,
+            $cards[] = $this->withPreprocessWarning(
+                $this->withAttachments($this->buildSuggestionCard($ctx, $row, $canonical, $band), $attachments),
+                $row,
+                $preprocess,
             );
         }
         foreach ($errorRows as $row) {
-            $cards[] = $this->withAttachments(
-                $this->buildErrorCard($ctx, $row, $presenter),
-                $attachmentsByMessage[(int) $row['message_ndx']] ?? [],
+            $cards[] = $this->withPreprocessWarning(
+                $this->withAttachments($this->buildErrorCard($ctx, $row, $presenter), $attachmentsByMessage[(int) $row['message_ndx']] ?? []),
+                $row,
+                $preprocess,
             );
         }
         foreach ($notInvoiceRows as $row) {
-            $cards[] = $this->withAttachments(
-                $this->buildNotInvoiceCard($ctx, $row),
-                $attachmentsByMessage[(int) $row['message_ndx']] ?? [],
+            $cards[] = $this->withPreprocessWarning(
+                $this->withAttachments($this->buildNotInvoiceCard($ctx, $row), $attachmentsByMessage[(int) $row['message_ndx']] ?? []),
+                $row,
+                $preprocess,
             );
         }
         return $cards;
@@ -166,7 +188,7 @@ final class MailSuggestionsSource implements FeedSource
         return $ctx->db->fetchAll(
             'SELECT `m`.`id` AS `message_ndx`, `m`.`subject`, `m`.`ai_title`, `m`.`source_type`,'
             . ' `m`.`sender_name`, `m`.`partner_name`,' . self::PARTNER_FULL_NAME_SQL . ','
-            . ' `m`.`received_at`, `m`.`raw_source_attachment`,'
+            . ' `m`.`received_at`, `m`.`raw_source_attachment`' . self::PREPROCESS_SQL . ','
             . ' `a`.`id` AS `analysis_ndx`, `a`.`proposed_type`, `a`.`canonical_json`,'
             . ' `a`.`analysis_json`, `a`.`confidence`, `a`.`profile`, `a`.`prompt_version`'
             . ' FROM `' . self::MESSAGES_TABLE . '` `m`'
@@ -368,7 +390,7 @@ final class MailSuggestionsSource implements FeedSource
         return $ctx->db->fetchAll(
             'SELECT `m`.`id` AS `message_ndx`, `m`.`subject`, `m`.`ai_title`, `m`.`source_type`,'
             . ' `m`.`sender_name`, `m`.`partner_name`,' . self::PARTNER_FULL_NAME_SQL . ','
-            . ' `m`.`received_at`, `m`.`primary_type`, `m`.`raw_source_attachment`,'
+            . ' `m`.`received_at`, `m`.`primary_type`, `m`.`raw_source_attachment`' . self::PREPROCESS_SQL . ','
             . ' (SELECT `fa`.`error_message`' . $lastFailed . ') AS `error_message`,'
             . ' (SELECT `fa`.`prompt_version`' . $lastFailed . ') AS `failed_prompt_version`'
             . ' FROM `' . self::MESSAGES_TABLE . '` `m`'
@@ -454,7 +476,7 @@ final class MailSuggestionsSource implements FeedSource
         return $ctx->db->fetchAll(
             'SELECT `m`.`id` AS `message_ndx`, `m`.`subject`, `m`.`ai_title`, `m`.`source_type`,'
             . ' `m`.`sender_name`, `m`.`partner_name`,' . self::PARTNER_FULL_NAME_SQL . ','
-            . ' `m`.`sender_email`, `m`.`received_at`, `m`.`primary_type`, `m`.`raw_source_attachment`'
+            . ' `m`.`sender_email`, `m`.`received_at`, `m`.`primary_type`, `m`.`raw_source_attachment`' . self::PREPROCESS_SQL
             . ' FROM `' . self::MESSAGES_TABLE . '` `m`'
             . ' WHERE `m`.`analysis_state` = %i'
             . ' AND `m`.`docState` = %i'
@@ -515,6 +537,30 @@ final class MailSuggestionsSource implements FeedSource
         $receivedDateText = $this->formatDate($ctx, (string) ($row['received_at'] ?? ''));
         if ($receivedDateText !== null) {
             $card['receivedDateText'] = $receivedDateText;
+        }
+        return $card;
+    }
+
+    /**
+     * `warning` karty (tasks/mail-preprocess-error-messages.md D3c): zpráva
+     * s předzpracováním ve stavu 40 „Hotovo s chybami" dostane řádek
+     * „Předzpracování: {titulek kategorie}" — jen titulek z katalogu,
+     * poznámky akcí (nesou URL) na kartu nejdou. Mimo stav 40 beze změny;
+     * druh karty (`kind`) se nemění.
+     *
+     * @param array<string,mixed> $card
+     * @param array<string,mixed> $row řádek s `preprocess_state` + `preprocess_log`
+     * @return array<string,mixed>
+     */
+    private function withPreprocessWarning(array $card, array $row, PreprocessErrorPresenter $presenter): array
+    {
+        $state = (int) ($row['preprocess_state'] ?? 0);
+        if ($state !== PreprocessRunner::STATE_DONE_WITH_ERRORS) {
+            return $card;
+        }
+        $info = $presenter->fromLog($state, $row['preprocess_log'] ?? null);
+        if ($info !== null) {
+            $card['warning'] = $presenter->cardWarning($info);
         }
         return $card;
     }

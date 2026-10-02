@@ -360,4 +360,207 @@ final class IncomingMessagesViewerTest extends TestCase
             $content['rows'][0]['error'],
         );
     }
+
+    // ── Předzpracování: karta v Obsahu, upozornění v Návrhu ──────────────
+    // (tasks/mail-preprocess-error-messages.md D3a, D3b). Bez configu
+    // → anglický fallback katalogu preprocessErrorKinds. Fixtury jen
+    // s fiktivními doménami — poznámky nesou URL.
+
+    private const FAILED_FETCH = [
+        'ruleId' => 'bolt-invoice-link',
+        'action' => 'fetchLinkedDocument',
+        'ok'     => false,
+        'note'   => 'HTTP 404 at https://files.example.net/dl/abc?token=secret',
+        'code'   => 'linkExpired',
+    ];
+
+    /**
+     * @param list<array<string, mixed>> $results
+     * @param array<string, mixed> $extra
+     */
+    private function preprocessLog(array $results, array $extra = []): string
+    {
+        return (string) json_encode($extra + [
+            'plan'       => [['ruleId' => 'bolt-invoice-link', 'ruleNdx' => 1, 'actions' => [['action' => 'fetchLinkedDocument']]]],
+            'results'    => $results,
+            'attempts'   => 1,
+            'isdoc'      => 'none',
+            'finishedAt' => '2026-10-02T10:00:00+02:00',
+        ]);
+    }
+
+    /**
+     * Indexy bloku `failure` a technického bloku „Předzpracování" v obsahu
+     * tabu Obsah (composite, nebo jediný blok).
+     *
+     * @param array<string, mixed> $content
+     * @return array{failure: ?int, properties: ?int, blocks: list<array<string, mixed>>}
+     */
+    private function contentBlocks(array $content): array
+    {
+        $blocks = $content['type'] === 'composite' ? $content['blocks'] : [$content];
+        $failure = null;
+        $properties = null;
+        foreach ($blocks as $i => $block) {
+            if ($block['type'] === 'failure') {
+                $failure = $i;
+            }
+            if ($block['type'] === 'properties' && ($block['groups'][0]['title'] ?? '') === 'Předzpracování') {
+                $properties = $i;
+            }
+        }
+        return ['failure' => $failure, 'properties' => $properties, 'blocks' => $blocks];
+    }
+
+    /** @return array<string, mixed> */
+    private function successRun(): array
+    {
+        return [
+            'id'              => 12,
+            'message'         => 1,
+            'profile'         => null,
+            'analyzed_at'     => '2026-09-29 09:00:00',
+            'status'          => 2,
+            'model_name'      => 'claude-x',
+            'model_version'   => null,
+            'prompt_version'  => 'v4.2.0',
+            'proposed_type'   => 'invoiceReceived',
+            'confidence'      => 0.9,
+            'cost_usd'        => null,
+            'duration_ms'     => null,
+            'has_proposal'    => 1,
+            'invalid_output'  => 0,
+            'resolution'      => null,
+            'resolved_at'     => null,
+            'rejected_reason' => null,
+            'error_message'   => null,
+            'analysis_json'   => null,
+            'canonical_json'  => json_encode([
+                'selfParty' => 'customer',
+                'supplier'  => ['name' => 'Dodavatel s.r.o.'],
+                'currency'  => 'CZK',
+                'totals'    => ['totalAmount' => 1200.0],
+            ]),
+        ];
+    }
+
+    public function testPreprocessFailureCardPrecedesTechnicalBlockInContent(): void
+    {
+        $content = $this->tabContent(
+            $this->detailViewer($this->row([
+                'preprocess_state' => 40,
+                'preprocess_log'   => $this->preprocessLog([self::FAILED_FETCH]),
+            ])),
+            'content',
+        );
+
+        $idx = $this->contentBlocks($content);
+        $this->assertNotNull($idx['failure'], 'blok failure chybí');
+        $this->assertNotNull($idx['properties'], 'technický blok chybí');
+        $this->assertLessThan($idx['properties'], $idx['failure'], 'karta stojí nad technickým blokem');
+
+        $failure = $idx['blocks'][$idx['failure']]['failure'];
+        $this->assertSame('linkExpired', $failure['kind']);
+        $this->assertSame('warning', $failure['variant']);
+        $this->assertSame('The document link does not work', $failure['title']);
+        $this->assertSame(1, $failure['failedCount']);
+        $this->assertNull($failure['detail']);
+        $this->assertStringContainsString('files.example.net', $failure['technical']);
+        $this->assertNotNull($failure['finishedAt']);
+        // URL s tokenem jen v technických podrobnostech.
+        $this->assertStringNotContainsString('example.net', $failure['title'] . $failure['description'] . $failure['hint']);
+    }
+
+    public function testIsdocFailedGivesInfoCardInContent(): void
+    {
+        $content = $this->tabContent(
+            $this->detailViewer($this->row([
+                'preprocess_state' => 30,
+                'preprocess_log'   => $this->preprocessLog([], ['isdoc' => 'failed']),
+            ])),
+            'content',
+        );
+
+        $idx = $this->contentBlocks($content);
+        $this->assertNotNull($idx['failure']);
+        $failure = $idx['blocks'][$idx['failure']]['failure'];
+        $this->assertSame('isdocFailed', $failure['kind']);
+        $this->assertSame('info', $failure['variant']);
+        $this->assertSame('The ISDOC attachment could not be read', $failure['title']);
+        $this->assertNull($failure['technical']);
+    }
+
+    public function testNoFailureCardWhenPreprocessSucceeded(): void
+    {
+        $ok = ['ruleId' => 'bolt-invoice-link', 'action' => 'fetchLinkedDocument', 'ok' => true, 'note' => 'fetched → attachment 5', 'attachmentId' => 5];
+        $content = $this->tabContent(
+            $this->detailViewer($this->row(['preprocess_state' => 30, 'preprocess_log' => $this->preprocessLog([$ok])])),
+            'content',
+        );
+
+        $idx = $this->contentBlocks($content);
+        $this->assertNull($idx['failure']);
+        $this->assertNotNull($idx['properties'], 'technický blok zůstává');
+    }
+
+    public function testProposalCarriesPreprocessWarningWithoutProposal(): void
+    {
+        $content = $this->tabContent(
+            $this->detailViewer($this->row([
+                'analysis_state'   => 30,
+                'primary_type'     => 'other',
+                'preprocess_state' => 40,
+                'preprocess_log'   => $this->preprocessLog([self::FAILED_FETCH]),
+            ])),
+            'proposal',
+        );
+
+        $this->assertNull($content['proposal']);
+        $this->assertNull($content['failure']);
+        $warning = $content['preprocessWarning'];
+        $this->assertSame('linkExpired', $warning['kind']);
+        $this->assertSame('The proposal was created without the preprocessing result', $warning['title']);
+        $this->assertStringContainsString('Content tab', $warning['text']);
+        $this->assertStringNotContainsString('example.net', (string) json_encode($warning));
+        $this->assertSame('other', $content['classification']['primary_type'], 'klasifikace zůstává, upozornění ji jen zpochybňuje');
+    }
+
+    public function testProposalCarriesPreprocessWarningNextToProposalAndAnalysisFailure(): void
+    {
+        // Stav 40 + selhaná analýza nad starším návrhem: všechny tři kusy
+        // najednou — upozornění předzpracování, karta selhání, návrh.
+        $success = $this->successRun();
+        $failed = $this->failedRun('[ai_error] anthropic: output truncated at max_tokens=8192');
+        $content = $this->tabContent(
+            $this->detailViewer(
+                $this->row([
+                    'analysis_state'   => 70,
+                    'preprocess_state' => 40,
+                    'preprocess_log'   => $this->preprocessLog([self::FAILED_FETCH]),
+                ]),
+                [$failed, $success],
+                $success,
+                $failed,
+            ),
+            'proposal',
+        );
+
+        $this->assertSame('aiTruncated', $content['failure']['kind']);
+        $this->assertNotNull($content['proposal']);
+        $this->assertSame('linkExpired', $content['preprocessWarning']['kind']);
+    }
+
+    public function testProposalWarningAbsentOutsideStateForty(): void
+    {
+        $content = $this->tabContent(
+            $this->detailViewer($this->row([
+                'preprocess_state' => 30,
+                'preprocess_log'   => $this->preprocessLog([], ['isdoc' => 'failed']),
+            ])),
+            'proposal',
+        );
+
+        $this->assertArrayHasKey('preprocessWarning', $content);
+        $this->assertNull($content['preprocessWarning'], 'selhaný ISDOC je jen v Obsahu');
+    }
 }

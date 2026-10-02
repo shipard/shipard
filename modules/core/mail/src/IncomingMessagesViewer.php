@@ -7,6 +7,7 @@ namespace Shipard\Module\Core\Mail;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessErrorPresenter;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
 
 /**
@@ -492,6 +493,12 @@ class IncomingMessagesViewer extends TableViewer
             ];
             $blocks[] = ['type' => 'attachment-grid', 'attachments' => $attachments];
         }
+        // Selhané předzpracování nejdřív lidsky (karta, tasks/mail-preprocess-
+        // error-messages.md D3a), technický blok „Předzpracování" zůstává pod ní.
+        $preprocessFailure = $this->buildPreprocessFailure($record);
+        if ($preprocessFailure !== null) {
+            $blocks[] = ['type' => 'failure', 'failure' => $preprocessFailure];
+        }
         $preprocessItems = $this->buildPreprocessItems($record);
         if ($preprocessItems !== []) {
             $blocks[] = [
@@ -577,6 +584,42 @@ class IncomingMessagesViewer extends TableViewer
         $this->addItem($items, 'Dokončeno', $this->formatDateTime($log['finishedAt'] ?? null));
 
         return $items;
+    }
+
+    /**
+     * Lidská hláška selhaného předzpracování pro blok `failure` tabu Obsah
+     * (tasks/mail-preprocess-error-messages.md D3a): stav 40 → varianta
+     * `warning` podle kódů neúspěšných akcí, selhaný import ISDOC mimo
+     * stav 40 → `info`. Null, když nic neselhalo. Tvar = PreprocessFailureInfo
+     * + `finishedAt` (technické podrobnosti, sbalené).
+     *
+     * @return array<string, mixed>|null
+     */
+    private function buildPreprocessFailure(array $record): ?array
+    {
+        $info = new PreprocessErrorPresenter($this->config)
+            ->fromLog((int) ($record['preprocess_state'] ?? 0), $record['preprocess_log'] ?? null);
+        if ($info === null) {
+            return null;
+        }
+        $log = PreprocessRunner::decodeLog($record['preprocess_log'] ?? null);
+        return $info->toArray() + ['finishedAt' => $this->formatDateTime($log['finishedAt'] ?? null)];
+    }
+
+    /**
+     * Upozornění pro tab Návrh (D3b) — jen ve stavu 40 „Hotovo s chybami";
+     * selhaný ISDOC (stav 40 nenastavuje) sem nepatří, ten je jen v Obsahu.
+     *
+     * @return array{kind: string, title: string, text: string}|null
+     */
+    private function buildPreprocessWarning(array $record): ?array
+    {
+        if ((int) ($record['preprocess_state'] ?? 0) !== PreprocessRunner::STATE_DONE_WITH_ERRORS) {
+            return null;
+        }
+        $presenter = new PreprocessErrorPresenter($this->config);
+        $info = $presenter->fromLog(PreprocessRunner::STATE_DONE_WITH_ERRORS, $record['preprocess_log'] ?? null);
+        return $info === null ? null : $presenter->proposalWarning($info);
     }
 
     /**
@@ -721,6 +764,11 @@ class IncomingMessagesViewer extends TableViewer
      * výchozí hodnota) nebo nad starším návrhem, pokud existuje. Návrh
      * s nevalidním výstupem (`_validationError`) nese vlastní
      * `proposal.failure` kategorie `invalidOutput`.
+     *
+     * Předzpracování ve stavu 40 (tasks/mail-preprocess-error-messages.md
+     * D3b): `preprocessWarning` {kind, title, text} ve všech větvích —
+     * návrh i klasifikace vznikly bez dokumentu, který mělo předzpracování
+     * vytvořit; frontend ho kreslí nad kartou selhání i nad návrhem.
      */
     private function buildProposalTab(array $record): array
     {
@@ -729,6 +777,7 @@ class IncomingMessagesViewer extends TableViewer
         $failure = (int) ($record['analysis_state'] ?? 0) === IncomingMessageDocument::ANALYSIS_FAILED
             ? $this->buildFailure($messageId, $presenter)
             : null;
+        $preprocessWarning = $this->buildPreprocessWarning($record);
 
         $analysis = $this->db->fetchRow(
             'SELECT * FROM `core_mail_message_analyses`'
@@ -742,6 +791,7 @@ class IncomingMessagesViewer extends TableViewer
                 'type' => 'proposal',
                 'proposal' => null,
                 'failure' => $failure,
+                'preprocessWarning' => $preprocessWarning,
             ];
             if ($failure === null) {
                 $content['classification'] = [
@@ -783,6 +833,7 @@ class IncomingMessagesViewer extends TableViewer
         return [
             'type' => 'proposal',
             'failure' => $failure,
+            'preprocessWarning' => $preprocessWarning,
             'proposal' => [
                 'analysisNdx'        => (int) $analysis['id'],
                 'messageNdx'         => $messageId,

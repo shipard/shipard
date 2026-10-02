@@ -12,6 +12,7 @@ use Shipard\Core\I18n\ConfigLocalizer;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
 use Shipard\Module\Core\Mail\Feed\MailSuggestionsSource;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessErrorPresenter;
 
 /**
  * Unit testy pro MailSuggestionsSource (message-centric, D10).
@@ -932,5 +933,155 @@ final class MailSuggestionsSourceTest extends TestCase
         );
         $src = new MailSuggestionsSource();
         $this->assertSame([], $src->collectCards(new FeedContext($db, null, 'cs', 30)));
+    }
+
+    // ── Předzpracování: `warning` karty (tasks/mail-preprocess-error-messages.md D3c) ──
+
+    private const PREPROCESS_LOG = '{"plan":[{"ruleId":"bolt-invoice-link","ruleNdx":1,"actions":[{"action":"fetchLinkedDocument"}]}],'
+        . '"results":[{"ruleId":"bolt-invoice-link","action":"fetchLinkedDocument","ok":false,'
+        . '"note":"HTTP 404 at https://files.example.net/dl/abc?token=secret","code":"linkExpired"}],'
+        . '"attempts":1,"isdoc":"none","finishedAt":"2026-10-02T10:00:00+02:00"}';
+
+    /**
+     * @param array<string,mixed> $row
+     * @return array<string,mixed>
+     */
+    private function withPreprocessFailure(array $row): array
+    {
+        return $row + ['preprocess_state' => 40, 'preprocess_log' => self::PREPROCESS_LOG];
+    }
+
+    /** primaryTypes + dodávaný katalog `preprocessErrorKinds` lokalizovaný do cs. */
+    private function preprocessCatalogConfig(): ConfigRuntime
+    {
+        $raw = JsoncParser::parseFile(
+            dirname(__DIR__, 6) . '/modules/core/mail/config/preprocessErrorKinds.jsonc',
+        );
+        $this->assertIsArray($raw);
+        $catalog = ConfigLocalizer::localize($raw, 'cs');
+
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn(string $id): mixed => match ($id) {
+                'core.mail.primaryTypes'           => [
+                    'invoiceReceived' => ['name' => 'Přijatá faktura', 'target' => 'docs'],
+                    'other'           => ['name' => 'Ostatní'],
+                ],
+                PreprocessErrorPresenter::CFG_ITEM => $catalog,
+                default                            => null,
+            },
+        );
+        return $config;
+    }
+
+    public function testPreprocessWarningOnAllThreeCardKinds(): void
+    {
+        $errorRow = $this->withPreprocessFailure([
+            'message_ndx'           => 555,
+            'subject'               => 'Nečitelná faktura',
+            'sender_name'           => 'Dodavatel s.r.o.',
+            'received_at'           => '2026-06-27 09:00:00',
+            'error_message'         => '[ai_error] anthropic: output truncated at max_tokens=8192',
+            'failed_prompt_version' => 'v4.3.0',
+        ]);
+        $notInvoiceRow = $this->withPreprocessFailure([
+            'message_ndx'  => 777,
+            'subject'      => 'Nabídka spolupráce',
+            'sender_name'  => 'Obchodník a.s.',
+            'sender_email' => 'obchod@example.com',
+            'received_at'  => '2026-06-29 08:00:00',
+            'primary_type' => 'other',
+        ]);
+        $src = new MailSuggestionsSource();
+        $cards = $src->collectCards($this->context(
+            [$this->withPreprocessFailure($this->suggestionRow())],
+            [$errorRow],
+            $this->preprocessCatalogConfig(),
+            'cs',
+            [$notInvoiceRow],
+        ));
+
+        $this->assertCount(3, $cards);
+        $byId = array_column($cards, null, 'id');
+        foreach (['mail_suggestion:101', 'mail_message:555', 'mail_notinvoice:777'] as $id) {
+            $this->assertArrayHasKey($id, $byId);
+            $this->assertSame('Předzpracování: Odkaz na dokument nefunguje', $byId[$id]['warning'], $id);
+            // Poznámka akce s URL a tokenem na kartu nikdy.
+            $this->assertStringNotContainsString('example.net', (string) json_encode($byId[$id], JSON_UNESCAPED_UNICODE), $id);
+        }
+        // Druh karty se nemění — jen řádek navíc.
+        $this->assertSame('ready', $byId['mail_suggestion:101']['kind']);
+        $this->assertSame('urgent', $byId['mail_message:555']['kind']);
+        $this->assertSame('info', $byId['mail_notinvoice:777']['kind']);
+    }
+
+    public function testInvalidOutputCardCarriesPreprocessWarning(): void
+    {
+        $row = $this->withPreprocessFailure($this->suggestionRow());
+        $row['canonical_json'] = json_encode(['_validationError' => 'Canonical schema validation failed', '_validationIssues' => [], '_rawOutput' => []]);
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([$row]));
+
+        $this->assertCount(1, $cards);
+        $this->assertSame('mail_invalid:101', $cards[0]['id']);
+        // Bez katalogu anglický fallback.
+        $this->assertSame('Preprocessing: The document link does not work', $cards[0]['warning']);
+    }
+
+    public function testNoPreprocessWarningOutsideStateForty(): void
+    {
+        $rows = [
+            $this->suggestionRow() + ['preprocess_state' => 30, 'preprocess_log' => null],
+            $this->suggestionRow(0.94, 102), // bez sloupců (starší fixtury) — ani klíč
+        ];
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context($rows));
+
+        $this->assertCount(2, $cards);
+        foreach ($cards as $card) {
+            $this->assertArrayNotHasKey('warning', $card, $card['id']);
+        }
+    }
+
+    public function testPreprocessWarningWithLegacyLogWithoutCodeIsUnknown(): void
+    {
+        $row = $this->suggestionRow() + [
+            'preprocess_state' => 40,
+            'preprocess_log'   => json_encode(['plan' => [], 'results' => [
+                ['ruleId' => 'r', 'action' => 'fetchLinkedDocument', 'ok' => false, 'note' => 'legacy note'],
+            ]]),
+        ];
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([$row]));
+
+        $this->assertSame('Preprocessing: Preprocessing ended with an error', $cards[0]['warning']);
+    }
+
+    public function testQueriesReadPreprocessLogOnlyInStateForty(): void
+    {
+        // Pojistka: všechny tři dotazy nad zprávami nesou preprocess_state
+        // a log jen ve stavu 40 — žádný další dotaz, žádný zbytečný JSON.
+        $captured = [];
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(
+            static function (mixed ...$args) use (&$captured): array {
+                $captured[] = (string) $args[0];
+                return [];
+            },
+        );
+        (new MailSuggestionsSource())->collectCards(new FeedContext($db, null, 'cs', 30));
+
+        $messageQueries = array_values(array_filter(
+            $captured,
+            static fn(string $sql): bool => str_contains($sql, 'core_mail_incoming_messages'),
+        ));
+        $this->assertCount(3, $messageQueries);
+        foreach ($messageQueries as $sql) {
+            $this->assertStringContainsString('`m`.`preprocess_state`', $sql);
+            $this->assertStringContainsString(
+                'IF(`m`.`preprocess_state` = 40, `m`.`preprocess_log`, NULL) AS `preprocess_log`',
+                $sql,
+            );
+        }
     }
 }

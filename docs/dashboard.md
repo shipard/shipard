@@ -156,6 +156,7 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   "secondaryFindings": [
     { "type": "contract", "type_label": "Smlouva", "note": "Rámcová smlouva v příloze smlouva.pdf" }
   ],
+  "warning": "Předzpracování: Odkaz na dokument nefunguje",
   "timestamp": "2026-06-28T10:00:00+00:00",
   "context": { "messageNdx": 123, "analysisNdx": 456, "confidence": 0.94, "target": "docs" },
   "attachments": [
@@ -200,6 +201,15 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   z `analysis_json.secondary_findings` běhu (D7) — informativní hint
   dalších nálezů ve zprávě („+ smlouva v příloze"), žádné entity, žádné
   akce. Frontend kreslí hint řádek na kartě.
+- `warning` — **volitelné**, lokalizovaný řádek upozornění (string).
+  Dnes jen mail karty: zpráva s předzpracováním ve stavu 40 „Hotovo
+  s chybami" nese „Předzpracování: {titulek kategorie}" z katalogu
+  `core.mail.preprocessErrorKinds` (`PreprocessErrorPresenter::cardWarning`,
+  tasks/mail-preprocess-error-messages.md D3c) — návrh i klasifikace
+  vznikly bez dokumentu, který mělo předzpracování vytvořit. Žádné
+  technické poznámky (nesou URL s tokeny). Frontend: plná karta
+  (`FeedCard`) řádek ve stylu varování, kompaktní řádek (`FeedRowCompact`)
+  ikona varování s tooltipem. Druh karty (`kind`) se nemění.
 - `category` — **volitelné**, výčet `invoices` | `registry` | `other`
   (konstanty `FeedSource::CATEGORY_*`) — řídí klientský filtr feedu
   (`FeedFilter.svelte`). Karta **bez pole** se zobrazuje jen v záložce Vše
@@ -341,6 +351,12 @@ registry `party.name`). Feed je stropovaný, takže N `json_decode` je
   subtitle je „partner · od: odesílatel" (D7).
 - **Návrhová karta s neprázdnými `secondary_findings`** běhu navíc nese
   `secondaryFindings` (viz §4) — hint dalších nálezů, D7.
+- **Všechny tři druhy** (návrh vč. nevalidního výstupu, chybová, „Není
+  faktura") při `preprocess_state = 40` navíc nesou `warning` (viz §4) —
+  „Předzpracování: {titulek}" z `PreprocessErrorPresenter`
+  (`modules/core/mail/docs/preprocess.md` → „Hlášky pro uživatele").
+  Dotazy čtou `preprocess_state` vždy a `preprocess_log` jen ve stavu 40
+  (`IF(…)` přímo v SELECTu), žádný další dotaz.
 
 **Interní pole `amount`/`currency`** (Issue #32/2, D8): návrhové karty
 (docs target) s částkou i měnou v canonical nesou navíc numerické

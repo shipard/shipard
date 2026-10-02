@@ -48,7 +48,10 @@ se stavem 40 a analyzer ji dostane s tím, co k ní je (D9).
 ```json
 {
   "plan": [{"ruleId": "bolt-invoice-link", "ruleNdx": 3, "actions": [{"action": "fetchLinkedDocument", "...": "..."}]}],
-  "results": [{"ruleId": "bolt-invoice-link", "action": "fetchLinkedDocument", "ok": true, "note": "fetched https://… → attachment 812", "attachmentId": 812}],
+  "results": [
+    {"ruleId": "bolt-invoice-link", "action": "fetchLinkedDocument", "ok": true, "note": "fetched https://… → attachment 812", "attachmentId": 812},
+    {"ruleId": "other-rule", "action": "fetchLinkedDocument", "ok": false, "note": "https://…: HTTP 404 at https://…", "code": "linkExpired"}
+  ],
   "attempts": 1,
   "isdoc": "none",
   "createdAt": "…", "startedAt": "…", "finishedAt": "…"
@@ -60,6 +63,11 @@ se stavem 40 a analyzer ji dostane s tím, co k ní je (D9).
 a runner to nebere jako chybu. Bez triggeru je prázdný plán chyba
 (`stored plan is empty` → stav 40); chybějící `trigger` = běh podle
 pravidel (starší zprávy, zpětná kompatibilita).
+
+`results[].code` (jen u `ok: false`): strukturovaný kód selhání
+`PreprocessFailureCode` — z něj se skládá hláška pro uživatele, viz
+[Hlášky pro uživatele](#hlášky-pro-uživatele). Záznam bez kódu (log
+z doby před zavedením) se zobrazí jako neznámý druh chyby.
 
 ## Pravidla
 
@@ -253,10 +261,80 @@ souboru, sanitizace názvu) žijí v `Action/GeneratedAttachments`.
   v hlavičce, blok „Předzpracování" v tabu Obsah (pravidla, pokusy,
   výsledek per akce, ISDOC, čas; u ISDOC-only běhu řádek „Spuštěno:
   ISDOC import" místo pravidel), generované přílohy nesou badge
-  „Vygenerováno".
+  „Vygenerováno". Selhání má nad technickým blokem lidskou kartu a tab
+  Návrh upozornění — viz [Hlášky pro uživatele](#hlášky-pro-uživatele).
 
 CLI reference: [docs/cli.md](../../../../docs/cli.md) § `mail-preprocess`.
 API gate: [docs/mail/api-contract.md](../../../../docs/mail/api-contract.md) § 9.1.
+
+## Hlášky pro uživatele
+
+Selhané předzpracování vidí uživatel jako lidskou hlášku — co se
+nepovedlo, proč návrh nebo klasifikace nemusí sedět a co udělat — místo
+odznaku „Hotovo s chybami" a anglické poznámky v technickém bloku
+(tasks/mail-preprocess-error-messages.md, D1–D3, D6). Stejný princip jako
+u selhané analýzy ([ai-analysis.md](ai-analysis.md) → „Chybové hlášky pro
+uživatele"): katalog → helper → sdílená karta.
+
+**Kódy selhání** (`Preprocess/PreprocessFailureCode`, D1): každé
+`ActionResult::failure()` nese povinný kód, runner ho ukládá do
+`results[].code`; záznamy mimo akce (prázdný plán, vzdaný sweep, neznámá
+akce, výjimka akce) ho dostávají v runneru. Žádný rozbor textu poznámek.
+
+| Kód | Kdy |
+|---|---|
+| `linkNotFound` | v těle zprávy žádný odkaz odpovídající `linkHrefRegex` |
+| `linkExpired` | finální server vrátil 4xx mimo 408/429 (vypršelý odkaz, přihlášení, 404) |
+| `remoteUnavailable` | transportní chyba vč. timeoutu, 408, 429, 5xx |
+| `unexpectedContent` | nepoužitelný obsah: content-type mimo PDF, prázdné tělo, size cap, vadné přesměrování (bez Location, příliš mnoho hopů, cizí schéma, neveřejná adresa) |
+| `bodyRender` | `renderBodyToPdf`: chybí HTML tělo, size cap, render selhal (vč. nenakonfigurované služby) |
+| `ruleConfig` | chyba pravidla: chybí / nevalidní `linkHrefRegex`, chybí `allowedDomains`, finální host mimo allowlist, finální URL mimo regex, HTML bez `renderIfHtml`, neznámá akce v plánu |
+| `internal` | chyba Shipardu: uložení přílohy, chybějící render klient u `renderIfHtml`, render selhal u stažené HTML, výjimka akce, prázdný uložený plán, sweep vzdal po `MAX_ATTEMPTS` |
+
+Sejde-li se víc kódů — kandidátní odkazy jedné akce
+(`FetchLinkedDocumentAction`, až `MAX_CANDIDATES`) i víc selhaných akcí
+jedné zprávy — vyhrává nejkonkrétnější podle
+`PreprocessFailureCode::PRIORITY`: `linkExpired` > `ruleConfig` >
+`unexpectedContent` > `bodyRender` > `remoteUnavailable` > `internal` >
+`linkNotFound`. Poznámka zůstává spojená ze všech pokusů.
+
+**Katalog** `core.mail.preprocessErrorKinds`
+(`config/preprocessErrorKinds.jsonc`, D2): klíč = kód, pole `name`
+(titulek), `description` (vysvětlení), `hint` (co dělat; `{ruleId}` =
+pravidlo vybraného záznamu, bez pravidla token zmizí). Navíc `isdocFailed`
+(selhaný import ISDOC, jen informace — stav 40 nenastavuje) a `unknown`
+(záznam bez kódu). `_common`: titulek a text upozornění pro tab Návrh,
+prefix řádku na kartě Dashboardu. Compiled config je per jazyk; bez
+configu anglický fallback v PHP. Hinty nesmí slibovat opakování z UI —
+akce „Znovu předzpracovat" zatím není (D4 odloženo, jen CLI
+`mail-preprocess --message --force`).
+
+**Helper** `Preprocess/PreprocessErrorPresenter`:
+`fromLog(state, log): ?PreprocessFailureInfo` — ve stavu 40 kategorie
+podle priority z kódů neúspěšných záznamů (varianta `warning`), mimo
+stav 40 jen `log.isdoc = failed` → `isdocFailed` (varianta `info`), jinak
+null. `PreprocessFailureInfo` nese `kind`, `variant`, `title`,
+`description`, `hint`, `failedCount`, `technical` (spojené poznámky
+neúspěšných akcí — **nesou URL s tokeny**, patří jen do sbaleného detailu
+zprávy) a `ruleId`; `toArray()` je tvarově kompatibilní
+s `AnalysisErrorInfo` (sdílená komponenta `FailureCard`).
+`proposalWarning()` a `cardWarning()` dávají texty pro tab Návrh a kartu.
+
+**Kde se zobrazuje** (D3):
+
+- tab **Obsah** — blok `{type: 'failure', failure}` nad technickým blokem
+  „Předzpracování" (`IncomingMessagesViewer::buildPreprocessFailure`;
+  `failure` = `toArray()` + `finishedAt`); stav 40 i selhaný ISDOC;
+- tab **Návrh** — pole `preprocessWarning {kind, title, text}` v obsahu
+  `proposal` při stavu 40, ve všech větvích (s návrhem, bez návrhu, vedle
+  karty selhání analýzy — ta stojí pod ním);
+- **Dashboard** — žádná nová karta; všechny tři druhy mail karet při stavu
+  40 nesou `warning` „Předzpracování: {titulek}"
+  (`MailSuggestionsSource::withPreprocessWarning`,
+  [docs/dashboard.md](../../../../docs/dashboard.md) §4, §5.1).
+
+Mimo rozsah: akce „Znovu předzpracovat" v UI (D4), automatické opakování
+dočasných chyb (D5), statistiky selhání per pravidlo.
 
 ## Mimo scope
 
