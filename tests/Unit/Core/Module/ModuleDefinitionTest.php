@@ -924,4 +924,29 @@ class ModuleDefinitionTest extends TestCase
         $this->assertSame([], $fields['a.series']['options']);
         $this->assertArrayNotHasKey('optionsProvider', $fields['a.static']);
     }
+
+    // ── prints: deklarace tisků v JSONC souborech (#90 D4) ──────────────────
+
+    public function testPrintsDefaultToEmptyAndParseFileEntries(): void
+    {
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'docs.core', 'name' => 'Docs'])->prints);
+
+        $def = ModuleDefinition::fromArray([
+            'id'     => 'docs.invoicesOut',
+            'name'   => 'Issued invoices',
+            'prints' => [['file' => 'config/prints.jsonc', 'ignored' => true]],
+        ]);
+        $this->assertSame([['file' => 'config/prints.jsonc']], $def->prints);
+    }
+
+    public function testPrintsEntryWithoutFileThrows(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("prints[0] requires 'file'");
+        ModuleDefinition::fromArray([
+            'id'     => 'docs.invoicesOut',
+            'name'   => 'Issued invoices',
+            'prints' => [['path' => 'config/prints.jsonc']],
+        ]);
+    }
 }

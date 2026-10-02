@@ -136,6 +136,19 @@ class BrandingStorage
         return $storedAs;
     }
 
+    /**
+     * Jméno uloženého souboru slotu (`{slot}.{ext}`), null když slot nic
+     * nedrží. Čte přímo adresář — pro konzumenty bez SettingsStore (tisky).
+     */
+    public function findSlotFile(string $slot): ?string
+    {
+        if (!self::isValidSlot($slot)) {
+            return null;
+        }
+        $files = glob($this->getDir() . '/' . $slot . '.*') ?: [];
+        return $files === [] ? null : basename($files[0]);
+    }
+
     /** Smaže všechny soubory slotu (`{slot}.*`). */
     public function deleteSlotFiles(string $slot): void
     {

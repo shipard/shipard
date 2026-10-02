@@ -152,4 +152,14 @@ class BrandingStorageTest extends TestCase
         $this->storage->deleteSlotFiles('companyLogo');
         $this->assertFileDoesNotExist($this->dsPath . '/branding/companyLogo.png');
     }
+
+    public function testFindSlotFile(): void
+    {
+        $this->assertNull($this->storage->findSlotFile('companyLogo'), 'bez adresáře branding');
+
+        $this->storage->store('companyLogo', $this->tmpFile($this->pngContent()), 'png');
+        $this->assertSame('companyLogo.png', $this->storage->findSlotFile('companyLogo'));
+        $this->assertNull($this->storage->findSlotFile('icon'), 'jiný slot je prázdný');
+        $this->assertNull($this->storage->findSlotFile('../companyLogo'), 'neznámý slot');
+    }
 }

@@ -33,6 +33,7 @@ class ModuleDefinition
         public readonly ?string $openItemLookup = null,
         public readonly array $journalContributors = [],
         public readonly array $journalDimensions = [],
+        public readonly array $prints = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -411,6 +412,23 @@ class ModuleDefinition
             }
         }
 
+        // prints — deklarace tisků (PDF nad jedním záznamem) v samostatných
+        // JSONC souborech, stejný tvar jako `reports`. Parsování a duplicit
+        // detection napříč moduly dělá PrintDefinitionLoader/PrintRegistry.
+        $prints = [];
+        if (isset($data['prints']) && is_array($data['prints'])) {
+            foreach ($data['prints'] as $idx => $reg) {
+                if (!is_array($reg)
+                    || !isset($reg['file']) || !is_string($reg['file']) || $reg['file'] === ''
+                ) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': prints[{$idx}] requires 'file'",
+                    );
+                }
+                $prints[] = ['file' => $reg['file']];
+            }
+        }
+
         // keepOnReset — names of this module's OWN tables that `ds-reset`
         // must not drop (system/config tables vs. data). Items must be
         // strings and must be tables owned by this module (catches typos
@@ -465,6 +483,7 @@ class ModuleDefinition
             openItemLookup: $openItemLookup,
             journalContributors: $journalContributors,
             journalDimensions: $journalDimensions,
+            prints: $prints,
         );
     }
 
