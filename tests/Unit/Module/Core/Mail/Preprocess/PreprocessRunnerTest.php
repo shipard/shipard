@@ -12,6 +12,7 @@ use Shipard\Module\Core\Mail\IsdocImportService;
 use Shipard\Module\Core\Mail\Preprocess\ActionRegistry;
 use Shipard\Module\Core\Mail\Preprocess\ActionResult;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessAction;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessFailureCode;
 use Shipard\Core\Render\RenderClient;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRuleMatcher;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
@@ -183,7 +184,7 @@ class PreprocessRunnerTest extends TestCase
     {
         $registry = new ActionRegistry()->register(
             'fetchLinkedDocument',
-            new RecordingAction(ActionResult::failure('link expired (HTTP 404)')),
+            new RecordingAction(ActionResult::failure('link expired (HTTP 404)', PreprocessFailureCode::LINK_EXPIRED)),
         );
         $runner = new PreprocessRunner($this->db($this->message()), $this->attachments(), $registry);
 
@@ -194,6 +195,7 @@ class PreprocessRunnerTest extends TestCase
         $this->assertSame(40, $final['state']);
         $this->assertFalse($final['log']['results'][0]['ok']);
         $this->assertSame('link expired (HTTP 404)', $final['log']['results'][0]['note']);
+        $this->assertSame(PreprocessFailureCode::LINK_EXPIRED, $final['log']['results'][0]['code']);
     }
 
     public function testRenderBodyToPdfPlanRunsThroughDefaultRegistryAndUnconfiguredRenderEndsInForty(): void
@@ -219,6 +221,7 @@ class PreprocessRunnerTest extends TestCase
         $this->assertSame('apple-invoice-body', $final['log']['results'][0]['ruleId']);
         $this->assertFalse($final['log']['results'][0]['ok']);
         $this->assertStringContainsString('unconfigured', $final['log']['results'][0]['note']);
+        $this->assertSame(PreprocessFailureCode::BODY_RENDER, $final['log']['results'][0]['code']);
     }
 
     public function testUnknownActionAndThrowingActionAreRecordedAsFailures(): void
@@ -242,6 +245,8 @@ class PreprocessRunnerTest extends TestCase
         $this->assertSame(3, $final['log']['attempts']);
         $this->assertStringContainsString("unknown action 'renderBodyToPdf'", $final['log']['results'][0]['note']);
         $this->assertStringContainsString('kaboom', $final['log']['results'][1]['note']);
+        $this->assertSame(PreprocessFailureCode::RULE_CONFIG, $final['log']['results'][0]['code']);
+        $this->assertSame(PreprocessFailureCode::INTERNAL, $final['log']['results'][1]['code']);
     }
 
     public function testEmptyPlanEndsInStateForty(): void
@@ -256,6 +261,8 @@ class PreprocessRunnerTest extends TestCase
 
         $this->assertSame('done_with_errors', $result['status']);
         $this->assertSame(40, $this->finalWrite()['state']);
+        $this->assertSame('plan', $this->finalWrite()['log']['results'][0]['action']);
+        $this->assertSame(PreprocessFailureCode::INTERNAL, $this->finalWrite()['log']['results'][0]['code']);
     }
 
     public function testIsdocOnlyTriggerWithEmptyPlanEndsInStateThirty(): void
@@ -589,6 +596,7 @@ class PreprocessRunnerTest extends TestCase
         $log = json_decode((string) $this->executes[0][3], true);
         $this->assertSame('sweep', $log['results'][1]['action']);
         $this->assertFalse($log['results'][1]['ok']);
+        $this->assertSame(PreprocessFailureCode::INTERNAL, $log['results'][1]['code']);
     }
 
     public function testSweepSkipsRowsThatMovedMeanwhile(): void
@@ -620,5 +628,17 @@ class PreprocessRunnerTest extends TestCase
         $this->assertTrue(PreprocessRunner::isGeneratedAttachment(['metadata' => ['generatedBy' => 'preprocess']]));
         $this->assertFalse(PreprocessRunner::isGeneratedAttachment(['metadata' => '{"pages":3}']));
         $this->assertFalse(PreprocessRunner::isGeneratedAttachment(['metadata' => null]));
+    }
+
+    public function testSuccessfulActionRecordHasNoCode(): void
+    {
+        $registry = new ActionRegistry()->register('fetchLinkedDocument', new RecordingAction(ActionResult::success('fetched', [7])));
+        $runner = new PreprocessRunner($this->db($this->message()), $this->attachments(), $registry);
+
+        $runner->run(42);
+
+        $record = $this->finalWrite()['log']['results'][0];
+        $this->assertTrue($record['ok']);
+        $this->assertArrayNotHasKey('code', $record);
     }
 }

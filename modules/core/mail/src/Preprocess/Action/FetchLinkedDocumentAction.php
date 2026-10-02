@@ -10,6 +10,7 @@ use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Mail\Preprocess\ActionResult;
 use Shipard\Module\Core\Mail\Preprocess\Http\HttpFetcher;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessAction;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessFailureCode;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRuleMatcher;
 
 /**
@@ -36,7 +37,9 @@ use Shipard\Module\Core\Mail\Preprocess\PreprocessRuleMatcher;
  * Idempotence (D5): existuje-li nesmazaná příloha se shodným
  * `(ruleId, action, sourceUrl)`, akce se přeskočí jako úspěšná.
  * Selhání (expirovaný odkaz, timeout, cizí doména) = provozní stav,
- * zapisuje se do results, žádná výjimka ven.
+ * zapisuje se do results, žádná výjimka ven. Každé selhání nese kód
+ * {@see PreprocessFailureCode}; u více kandidátů vyhrává nejkonkrétnější
+ * podle PreprocessFailureCode::PRIORITY (tasks/mail-preprocess-error-messages.md D1–D2).
  */
 final class FetchLinkedDocumentAction implements PreprocessAction
 {
@@ -69,15 +72,15 @@ final class FetchLinkedDocumentAction implements PreprocessAction
     {
         $regex = trim((string) ($params['linkHrefRegex'] ?? ''));
         if ($regex === '') {
-            return ActionResult::failure('linkHrefRegex is required');
+            return ActionResult::failure('linkHrefRegex is required', PreprocessFailureCode::RULE_CONFIG);
         }
         $regexError = PreprocessRuleMatcher::compileError($regex);
         if ($regexError !== null) {
-            return ActionResult::failure("linkHrefRegex is not a valid regex: {$regexError}");
+            return ActionResult::failure("linkHrefRegex is not a valid regex: {$regexError}", PreprocessFailureCode::RULE_CONFIG);
         }
         $domains = self::normalizeDomains($params['allowedDomains'] ?? null);
         if ($domains === []) {
-            return ActionResult::failure('allowedDomains is required');
+            return ActionResult::failure('allowedDomains is required', PreprocessFailureCode::RULE_CONFIG);
         }
         $renderIfHtml = ($params['renderIfHtml'] ?? false) === true;
 
@@ -87,11 +90,12 @@ final class FetchLinkedDocumentAction implements PreprocessAction
             $regex,
         );
         if ($candidates === []) {
-            return ActionResult::failure('no link matching linkHrefRegex found in the message body');
+            return ActionResult::failure('no link matching linkHrefRegex found in the message body', PreprocessFailureCode::LINK_NOT_FOUND);
         }
 
         $messageId = (int) ($message['id'] ?? 0);
         $notes = [];
+        $codes = [];
 
         foreach (array_slice($candidates, 0, self::MAX_CANDIDATES) as $sourceUrl) {
             $existing = $this->generated->findExisting($messageId, $ruleId, self::KEY, $sourceUrl);
@@ -102,6 +106,7 @@ final class FetchLinkedDocumentAction implements PreprocessAction
             $fetched = $this->fetch($sourceUrl, $regex, $domains, $renderIfHtml);
             if (!$fetched['ok']) {
                 $notes[] = $sourceUrl . ': ' . $fetched['note'];
+                $codes[] = $fetched['code'] ?? '';
                 continue;
             }
 
@@ -113,9 +118,13 @@ final class FetchLinkedDocumentAction implements PreprocessAction
                 );
             }
             $notes[] = $sourceUrl . ': ' . $stored['note'];
+            $codes[] = $stored['code'] ?? '';
         }
 
-        return ActionResult::failure(implode('; ', $notes));
+        return ActionResult::failure(
+            implode('; ', $notes),
+            PreprocessFailureCode::mostSpecific($codes) ?? PreprocessFailureCode::INTERNAL,
+        );
     }
 
     /**
@@ -188,10 +197,13 @@ final class FetchLinkedDocumentAction implements PreprocessAction
     }
 
     /**
-     * Průchod redirect řetězcem s kontrolou per hop.
+     * Průchod redirect řetězcem s kontrolou per hop. Selhání nese `code`
+     * (PreprocessFailureCode): HTTP 4xx = vypršelý odkaz, 408/429/5xx
+     * a transport = dočasná nedostupnost, allowlist / regex finální URL =
+     * chyba pravidla, zbytek = nepoužitelný obsah (vč. vadné URL hopu, U1).
      *
      * @param list<string> $domains
-     * @return array{ok: bool, note: string, body?: string, finalUrl?: string, fileName?: string, rendered?: bool}
+     * @return array{ok: bool, note: string, code?: string, body?: string, finalUrl?: string, fileName?: string, rendered?: bool}
      */
     private function fetch(string $startUrl, string $regex, array $domains, bool $renderIfHtml = false): array
     {
@@ -202,40 +214,40 @@ final class FetchLinkedDocumentAction implements PreprocessAction
             $scheme = strtolower((string) ($parts['scheme'] ?? ''));
             $host = strtolower((string) ($parts['host'] ?? ''));
             if ($parts === false || $host === '' || !in_array($scheme, ['http', 'https'], true)) {
-                return ['ok' => false, 'note' => "invalid or non-http URL: {$url}"];
+                return ['ok' => false, 'note' => "invalid or non-http URL: {$url}", 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
             }
 
             $ip = $this->resolvePublicIp($host);
             if ($ip === null) {
-                return ['ok' => false, 'note' => "host {$host} does not resolve to a public address (blocked)"];
+                return ['ok' => false, 'note' => "host {$host} does not resolve to a public address (blocked)", 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
             }
 
             $response = $this->http->get($url, $ip, self::TIMEOUT_SECONDS, self::MAX_BYTES);
 
             if ($response->status === 0) {
-                return ['ok' => false, 'note' => 'transport error: ' . ($response->error ?? 'unknown')];
+                return ['ok' => false, 'note' => 'transport error: ' . ($response->error ?? 'unknown'), 'code' => PreprocessFailureCode::REMOTE_UNAVAILABLE];
             }
             if ($response->status >= 300 && $response->status < 400) {
                 $location = trim((string) $response->header('location'));
                 if ($location === '') {
-                    return ['ok' => false, 'note' => "redirect without Location (HTTP {$response->status}) at {$url}"];
+                    return ['ok' => false, 'note' => "redirect without Location (HTTP {$response->status}) at {$url}", 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
                 }
                 $url = self::resolveRelative($url, $location);
                 continue;
             }
             if ($response->status < 200 || $response->status >= 300) {
-                return ['ok' => false, 'note' => "HTTP {$response->status} at {$url}"];
+                return ['ok' => false, 'note' => "HTTP {$response->status} at {$url}", 'code' => self::codeForHttpStatus($response->status)];
             }
 
             // Finální URL: allowlist + regex + obsah.
             if (!self::hostAllowed($host, $domains)) {
-                return ['ok' => false, 'note' => "final host {$host} is not in allowedDomains"];
+                return ['ok' => false, 'note' => "final host {$host} is not in allowedDomains", 'code' => PreprocessFailureCode::RULE_CONFIG];
             }
             if (PreprocessRuleMatcher::regexMatches($regex, $url) !== true) {
-                return ['ok' => false, 'note' => "final URL does not match linkHrefRegex: {$url}"];
+                return ['ok' => false, 'note' => "final URL does not match linkHrefRegex: {$url}", 'code' => PreprocessFailureCode::RULE_CONFIG];
             }
             if ($response->truncated) {
-                return ['ok' => false, 'note' => 'response exceeds the size cap (' . self::MAX_BYTES . ' B)'];
+                return ['ok' => false, 'note' => 'response exceeds the size cap (' . self::MAX_BYTES . ' B)', 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
             }
 
             $contentType = strtolower(trim(explode(';', (string) $response->header('content-type'))[0]));
@@ -245,10 +257,10 @@ final class FetchLinkedDocumentAction implements PreprocessAction
                 if (str_starts_with($contentType, 'text/html')) {
                     return $this->renderHtmlDocument($response->body, $url, (string) $response->header('content-disposition'), $renderIfHtml);
                 }
-                return ['ok' => false, 'note' => "unsupported content-type '{$contentType}' at {$url}"];
+                return ['ok' => false, 'note' => "unsupported content-type '{$contentType}' at {$url}", 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
             }
             if ($response->body === '') {
-                return ['ok' => false, 'note' => "empty body at {$url}"];
+                return ['ok' => false, 'note' => "empty body at {$url}", 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
             }
 
             return [
@@ -260,7 +272,20 @@ final class FetchLinkedDocumentAction implements PreprocessAction
             ];
         }
 
-        return ['ok' => false, 'note' => 'too many redirects (> ' . self::MAX_REDIRECTS . ')'];
+        return ['ok' => false, 'note' => 'too many redirects (> ' . self::MAX_REDIRECTS . ')', 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
+    }
+
+    /**
+     * Kód selhání pro ne-2xx/3xx stav: 408 (timeout), 429 (rate limit)
+     * a 5xx jsou dočasná nedostupnost serveru, ostatní 4xx = server
+     * dokument nevydal (vypršelý odkaz, přihlášení, 404).
+     */
+    public static function codeForHttpStatus(int $status): string
+    {
+        if ($status === 408 || $status === 429 || $status >= 500) {
+            return PreprocessFailureCode::REMOTE_UNAVAILABLE;
+        }
+        return PreprocessFailureCode::LINK_EXPIRED;
     }
 
     /**
@@ -268,27 +293,27 @@ final class FetchLinkedDocumentAction implements PreprocessAction
      * profilem Untrusted, jinak selhání s poznámkou. Allowlist, regex
      * a size cap už prošly — render je až za nimi.
      *
-     * @return array{ok: bool, note: string, body?: string, finalUrl?: string, fileName?: string, rendered?: bool}
+     * @return array{ok: bool, note: string, code?: string, body?: string, finalUrl?: string, fileName?: string, rendered?: bool}
      */
     private function renderHtmlDocument(string $html, string $url, string $contentDisposition, bool $renderIfHtml): array
     {
         if (!$renderIfHtml) {
-            return ['ok' => false, 'note' => "final document is HTML at {$url} — set renderIfHtml: true to render it to PDF"];
+            return ['ok' => false, 'note' => "final document is HTML at {$url} — set renderIfHtml: true to render it to PDF", 'code' => PreprocessFailureCode::RULE_CONFIG];
         }
         if ($this->render === null) {
-            return ['ok' => false, 'note' => "final document is HTML at {$url} but no render client is available"];
+            return ['ok' => false, 'note' => "final document is HTML at {$url} but no render client is available", 'code' => PreprocessFailureCode::INTERNAL];
         }
         if (trim($html) === '') {
-            return ['ok' => false, 'note' => "empty HTML body at {$url}"];
+            return ['ok' => false, 'note' => "empty HTML body at {$url}", 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
         }
         if (strlen($html) > RenderBodyToPdfAction::HTML_MAX_BYTES) {
-            return ['ok' => false, 'note' => 'HTML document exceeds the render size cap (' . RenderBodyToPdfAction::HTML_MAX_BYTES . " B) at {$url}"];
+            return ['ok' => false, 'note' => 'HTML document exceeds the render size cap (' . RenderBodyToPdfAction::HTML_MAX_BYTES . " B) at {$url}", 'code' => PreprocessFailureCode::UNEXPECTED_CONTENT];
         }
 
         $rendered = $this->render->renderHtml(RenderBodyToPdfAction::ensureUtf8Document($html), [], RenderProfile::Untrusted);
         if (!$rendered->ok || $rendered->pdfContent === null) {
             $kind = $rendered->errorKind?->value ?? 'unknown';
-            return ['ok' => false, 'note' => "render failed: {$kind}" . ($rendered->note !== null ? ": {$rendered->note}" : '') . " at {$url}"];
+            return ['ok' => false, 'note' => "render failed: {$kind}" . ($rendered->note !== null ? ": {$rendered->note}" : '') . " at {$url}", 'code' => PreprocessFailureCode::INTERNAL];
         }
 
         return [

@@ -28,7 +28,11 @@ use Shipard\Module\Core\Mail\IsdocImportService;
  *                    umřel) → zpět na 10 + spawn; nad MAX_ATTEMPTS → 40.
  *
  * Selhání akce **nikdy neblokuje** — zpráva vždy doteče do stavu 30/40
- * a tím projde gate AI fronty.
+ * a tím projde gate AI fronty. Neúspěšný záznam v `results` nese vedle
+ * `note` i `code` ({@see PreprocessFailureCode}) — z něj
+ * PreprocessErrorPresenter skládá hlášku pro uživatele; záznamy mimo
+ * akce (prázdný plán, vzdaný sweep, neznámá akce, výjimka) ho dostávají
+ * tady (tasks/mail-preprocess-error-messages.md D1).
  */
 final class PreprocessRunner
 {
@@ -175,6 +179,9 @@ final class PreprocessRunner
                 $result = $this->executeAction($message, $ruleId, $key, $params);
 
                 $entryLog = ['ruleId' => $ruleId, 'action' => $key, 'ok' => $result->ok, 'note' => $result->note];
+                if (!$result->ok) {
+                    $entryLog['code'] = $result->code;
+                }
                 if ($result->attachmentIds !== []) {
                     $entryLog['attachmentId'] = $result->attachmentIds[0];
                     if (count($result->attachmentIds) > 1) {
@@ -192,7 +199,7 @@ final class PreprocessRunner
             // Bez triggeru je prázdný plán vadný stav (D12 — runner vykonává
             // uložený plán). ISDOC-only běh (#81) plán nemá záměrně.
             $allOk = false;
-            $log['results'][] = ['action' => 'plan', 'ok' => false, 'note' => 'stored plan is empty'];
+            $log['results'][] = ['action' => 'plan', 'ok' => false, 'note' => 'stored plan is empty', 'code' => PreprocessFailureCode::INTERNAL];
         }
 
         // ISDOC nad všemi obsahovými přílohami — původními (intake větev
@@ -264,6 +271,7 @@ final class PreprocessRunner
                     'action' => 'sweep',
                     'ok' => false,
                     'note' => "gave up after {$attempts} attempts (stuck in state {$state})",
+                    'code' => PreprocessFailureCode::INTERNAL,
                 ];
                 $log['finishedAt'] = date('c', $now);
                 $this->db->execute(
@@ -361,14 +369,14 @@ final class PreprocessRunner
     {
         $action = $this->actions->get($key);
         if ($action === null) {
-            return ActionResult::failure($key === '' ? 'missing action key' : "unknown action '{$key}'");
+            return ActionResult::failure($key === '' ? 'missing action key' : "unknown action '{$key}'", PreprocessFailureCode::RULE_CONFIG);
         }
 
         try {
             return $action->execute($message, $ruleId, $params);
         } catch (\Throwable $e) {
             ErrorLogger::logException($e, "Preprocess action '{$key}' threw — recorded as failed");
-            return ActionResult::failure(get_class($e) . ': ' . $e->getMessage());
+            return ActionResult::failure(get_class($e) . ': ' . $e->getMessage(), PreprocessFailureCode::INTERNAL);
         }
     }
 

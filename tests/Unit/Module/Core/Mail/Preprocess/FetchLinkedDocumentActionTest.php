@@ -14,6 +14,7 @@ use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Mail\Preprocess\Action\FetchLinkedDocumentAction;
 use Shipard\Module\Core\Mail\Preprocess\Http\HttpFetcher;
 use Shipard\Module\Core\Mail\Preprocess\Http\HttpResponse;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessFailureCode;
 
 /** Mapa URL → odpověď; zaznamenává requesty (URL + pinovaná IP). */
 final class FakeHttpFetcher implements HttpFetcher
@@ -239,6 +240,7 @@ class FetchLinkedDocumentActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('not in allowedDomains', $result->note);
+        $this->assertSame(PreprocessFailureCode::RULE_CONFIG, $result->code);
         $this->assertSame([], $this->uploads);
     }
 
@@ -253,6 +255,7 @@ class FetchLinkedDocumentActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('does not match linkHrefRegex', $result->note);
+        $this->assertSame(PreprocessFailureCode::RULE_CONFIG, $result->code);
     }
 
     public function testPrivateAddressIsBlockedBeforeAnyRequest(): void
@@ -265,6 +268,7 @@ class FetchLinkedDocumentActionTest extends TestCase
 
             $this->assertFalse($result->ok, $host);
             $this->assertStringContainsString('public address', $result->note, $host);
+            $this->assertSame(PreprocessFailureCode::UNEXPECTED_CONTENT, $result->code, $host);
             $this->assertSame([], $http->requests, $host);
         }
     }
@@ -282,6 +286,7 @@ class FetchLinkedDocumentActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('internal.bolt.eu', $result->note);
+        $this->assertSame(PreprocessFailureCode::UNEXPECTED_CONTENT, $result->code);
         $this->assertCount(1, $http->requests);
     }
 
@@ -292,6 +297,7 @@ class FetchLinkedDocumentActionTest extends TestCase
         $result = $action->execute($this->message(), 'r', $this->params());
 
         $this->assertFalse($result->ok);
+        $this->assertSame(PreprocessFailureCode::UNEXPECTED_CONTENT, $result->code);
         $this->assertSame([], $http->requests);
     }
 
@@ -305,6 +311,7 @@ class FetchLinkedDocumentActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('non-http', $result->note);
+        $this->assertSame(PreprocessFailureCode::UNEXPECTED_CONTENT, $result->code); // U1: odkaz existoval, hop vede jinam
         $this->assertCount(1, $http->requests);
     }
 
@@ -320,6 +327,7 @@ class FetchLinkedDocumentActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('too many redirects', $result->note);
+        $this->assertSame(PreprocessFailureCode::UNEXPECTED_CONTENT, $result->code);
         $this->assertCount(FetchLinkedDocumentAction::MAX_REDIRECTS + 1, $http->requests);
     }
 
@@ -335,6 +343,7 @@ class FetchLinkedDocumentActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('size cap', $result->note);
+        $this->assertSame(PreprocessFailureCode::UNEXPECTED_CONTENT, $result->code);
         $this->assertSame([], $this->uploads);
     }
 
@@ -353,6 +362,7 @@ class FetchLinkedDocumentActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('renderIfHtml', $result->note);
+        $this->assertSame(PreprocessFailureCode::RULE_CONFIG, $result->code);
         $this->assertSame([], $engine->renders, 'bez flagu se render nevolá');
         $this->assertSame([], $this->uploads);
     }
@@ -582,5 +592,127 @@ class FetchLinkedDocumentActionTest extends TestCase
         $this->assertSame('document.pdf', FetchLinkedDocumentAction::fileNameFor('', 'https://x/'));
         $this->assertSame('document.pdf', FetchLinkedDocumentAction::fileNameFor('', 'https://x/' . str_repeat('a', 80)));
         $this->assertSame('a_b.pdf', FetchLinkedDocumentAction::fileNameFor('attachment; filename="a/b"', 'https://x/y'));
+    }
+
+    // --- kódy selhání (tasks/mail-preprocess-error-messages.md D1) ----------
+
+    public function testMissingOrInvalidParametersAreRuleConfig(): void
+    {
+        [$action, $http] = $this->action([]);
+
+        foreach ([['linkHrefRegex' => ''], ['linkHrefRegex' => '('], ['allowedDomains' => []]] as $override) {
+            $result = $action->execute($this->message(), 'r', $this->params($override));
+            $this->assertFalse($result->ok);
+            $this->assertSame(PreprocessFailureCode::RULE_CONFIG, $result->code, json_encode($override));
+        }
+        $this->assertSame([], $http->requests);
+    }
+
+    public function testNoMatchingLinkIsLinkNotFound(): void
+    {
+        [$action, $http] = $this->action([]);
+
+        $result = $action->execute($this->message('<p>no links here</p>'), 'r', $this->params());
+
+        $this->assertFalse($result->ok);
+        $this->assertSame(PreprocessFailureCode::LINK_NOT_FOUND, $result->code);
+        $this->assertSame([], $http->requests);
+    }
+
+    public function testHttpStatusMapsToLinkExpiredOrRemoteUnavailable(): void
+    {
+        $expected = [
+            403 => PreprocessFailureCode::LINK_EXPIRED,
+            404 => PreprocessFailureCode::LINK_EXPIRED,
+            410 => PreprocessFailureCode::LINK_EXPIRED,
+            408 => PreprocessFailureCode::REMOTE_UNAVAILABLE,
+            429 => PreprocessFailureCode::REMOTE_UNAVAILABLE,
+            500 => PreprocessFailureCode::REMOTE_UNAVAILABLE,
+            503 => PreprocessFailureCode::REMOTE_UNAVAILABLE,
+        ];
+        foreach ($expected as $status => $code) {
+            [$action] = $this->action([self::FINAL => new HttpResponse($status)]);
+
+            $result = $action->execute($this->message('<a href="' . self::FINAL . '">x</a>'), 'r', $this->params());
+
+            $this->assertFalse($result->ok, (string) $status);
+            $this->assertSame($code, $result->code, (string) $status);
+            $this->assertStringContainsString("HTTP {$status}", $result->note);
+        }
+    }
+
+    public function testTransportErrorIsRemoteUnavailable(): void
+    {
+        [$action] = $this->action([self::FINAL => new HttpResponse(0, [], '', 'timeout after 20 s')]);
+
+        $result = $action->execute($this->message('<a href="' . self::FINAL . '">x</a>'), 'r', $this->params());
+
+        $this->assertFalse($result->ok);
+        $this->assertSame(PreprocessFailureCode::REMOTE_UNAVAILABLE, $result->code);
+        $this->assertStringContainsString('timeout after 20 s', $result->note);
+    }
+
+    public function testUnsupportedContentTypeIsUnexpectedContent(): void
+    {
+        [$action] = $this->action([self::FINAL => new HttpResponse(200, ['content-type' => 'image/png'], 'PNG')]);
+
+        $result = $action->execute($this->message('<a href="' . self::FINAL . '">x</a>'), 'r', $this->params());
+
+        $this->assertFalse($result->ok);
+        $this->assertSame(PreprocessFailureCode::UNEXPECTED_CONTENT, $result->code);
+    }
+
+    public function testHtmlWithoutRenderClientIsInternal(): void
+    {
+        [$action] = $this->action([self::FINAL => new HttpResponse(200, self::HTML_RESPONSE_HEADERS, '<html>x</html>')]);
+
+        $result = $action->execute($this->message('<a href="' . self::FINAL . '">x</a>'), 'r', $this->params(['renderIfHtml' => true]));
+
+        $this->assertFalse($result->ok);
+        $this->assertSame(PreprocessFailureCode::INTERNAL, $result->code);
+    }
+
+    public function testUploadFailureIsInternal(): void
+    {
+        [$action] = $this->action(
+            [self::FINAL => new HttpResponse(200, ['content-type' => 'application/pdf'], self::PDF)],
+            $this->attachments([], false),
+        );
+
+        $result = $action->execute($this->message('<a href="' . self::FINAL . '">x</a>'), 'r', $this->params());
+
+        $this->assertFalse($result->ok);
+        $this->assertSame(PreprocessFailureCode::INTERNAL, $result->code);
+        $this->assertStringContainsString('disk full', $result->note);
+    }
+
+    public function testMostSpecificCodeWinsAcrossCandidates(): void
+    {
+        // Kandidát 1 transportní chyba (remoteUnavailable), kandidát 2
+        // HTTP 404 (linkExpired) → vyhrává konkrétnější linkExpired,
+        // poznámka nese oba pokusy.
+        $html = '<a href="https://invoice.bolt.eu/a">a</a> <a href="https://invoice.bolt.eu/b">b</a>';
+        [$action, $http] = $this->action([
+            'https://invoice.bolt.eu/a' => new HttpResponse(0, [], '', 'connection reset'),
+            'https://invoice.bolt.eu/b' => new HttpResponse(404),
+        ]);
+
+        $result = $action->execute($this->message($html), 'r', $this->params());
+
+        $this->assertFalse($result->ok);
+        $this->assertSame(PreprocessFailureCode::LINK_EXPIRED, $result->code);
+        $this->assertStringContainsString('connection reset', $result->note);
+        $this->assertStringContainsString('HTTP 404', $result->note);
+        $this->assertCount(2, $http->requests);
+    }
+
+    public function testCodeForHttpStatusBoundaries(): void
+    {
+        $this->assertSame(PreprocessFailureCode::LINK_EXPIRED, FetchLinkedDocumentAction::codeForHttpStatus(400));
+        $this->assertSame(PreprocessFailureCode::LINK_EXPIRED, FetchLinkedDocumentAction::codeForHttpStatus(499));
+        $this->assertSame(PreprocessFailureCode::REMOTE_UNAVAILABLE, FetchLinkedDocumentAction::codeForHttpStatus(408));
+        $this->assertSame(PreprocessFailureCode::REMOTE_UNAVAILABLE, FetchLinkedDocumentAction::codeForHttpStatus(429));
+        $this->assertSame(PreprocessFailureCode::REMOTE_UNAVAILABLE, FetchLinkedDocumentAction::codeForHttpStatus(500));
+        $this->assertSame(PreprocessFailureCode::REMOTE_UNAVAILABLE, FetchLinkedDocumentAction::codeForHttpStatus(599));
     }
 }

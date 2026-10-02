@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Mail\Preprocess\Action;
 
 use Shipard\Module\Core\Attachments\AttachmentService;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessFailureCode;
 
 /**
  * Společný kus akcí předzpracování: příloha zprávy vygenerovaná akcí
@@ -54,17 +55,18 @@ final class GeneratedAttachments
 
     /**
      * Uloží obsah jako obsahovou přílohu zprávy a zapíše provenance.
-     * Selhání (disk, upload) = provozní stav v poznámce, žádná výjimka.
+     * Selhání (disk, upload) = provozní stav v poznámce, žádná výjimka;
+     * kód vždy `internal` — chyba na straně Shipardu, ne zprávy.
      *
      * @param array<string, mixed> $extra Metadata specifická pro akci
      *        (sourceUrl, finalUrl, bodySha256, …).
-     * @return array{ok: bool, note: string, id?: int}
+     * @return array{ok: bool, note: string, code?: string, id?: int}
      */
     public function store(int $messageId, string $fileName, string $content, string $ruleId, string $action, array $extra = []): array
     {
         $tmp = tempnam(sys_get_temp_dir(), 'shpd_pp_');
         if ($tmp === false || file_put_contents($tmp, $content) === false) {
-            return ['ok' => false, 'note' => 'cannot write temporary file'];
+            return ['ok' => false, 'note' => 'cannot write temporary file', 'code' => PreprocessFailureCode::INTERNAL];
         }
 
         // FileStorage soubor přesouvá (rename); při selhání uklidit sami.
@@ -73,7 +75,7 @@ final class GeneratedAttachments
             @unlink($tmp);
         }
         if (!($result['success'] ?? false)) {
-            return ['ok' => false, 'note' => 'attachment upload failed: ' . (string) ($result['error'] ?? 'unknown')];
+            return ['ok' => false, 'note' => 'attachment upload failed: ' . (string) ($result['error'] ?? 'unknown'), 'code' => PreprocessFailureCode::INTERNAL];
         }
 
         $id = (int) ($result['data']['id'] ?? 0);

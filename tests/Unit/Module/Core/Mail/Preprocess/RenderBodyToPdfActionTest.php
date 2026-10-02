@@ -13,6 +13,7 @@ use Shipard\Core\Render\RenderResult;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Mail\Preprocess\Action\GeneratedAttachments;
 use Shipard\Module\Core\Mail\Preprocess\Action\RenderBodyToPdfAction;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessFailureCode;
 
 /**
  * renderBodyToPdf: prázdné tělo, size cap, selhání renderu (vč.
@@ -198,6 +199,7 @@ class RenderBodyToPdfActionTest extends TestCase
             $result = $action->execute($this->message(['body_html' => $body]), 'r', []);
             $this->assertFalse($result->ok);
             $this->assertStringContainsString('no HTML body', $result->note);
+            $this->assertSame(PreprocessFailureCode::BODY_RENDER, $result->code);
         }
         $this->assertSame([], $engine->renders);
     }
@@ -211,6 +213,7 @@ class RenderBodyToPdfActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('size cap', $result->note);
+        $this->assertSame(PreprocessFailureCode::BODY_RENDER, $result->code);
         $this->assertSame([], $engine->renders);
     }
 
@@ -222,6 +225,7 @@ class RenderBodyToPdfActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertSame('render failed: timeout: exceeded 30 s', $result->note);
+        $this->assertSame(PreprocessFailureCode::BODY_RENDER, $result->code);
         $this->assertSame([], $this->uploads);
     }
 
@@ -233,6 +237,7 @@ class RenderBodyToPdfActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('unconfigured', $result->note);
+        $this->assertSame(PreprocessFailureCode::BODY_RENDER, $result->code);
         $this->assertSame([], $this->uploads);
     }
 
@@ -244,6 +249,7 @@ class RenderBodyToPdfActionTest extends TestCase
 
         $this->assertFalse($result->ok);
         $this->assertStringContainsString('disk full', $result->note);
+        $this->assertSame(PreprocessFailureCode::INTERNAL, $result->code);
         $this->assertFileDoesNotExist($this->uploads[0]['tmp']);
         $this->assertSame([], $this->merged);
     }

@@ -1,0 +1,146 @@
+{
+    // core.mail.preprocessErrorKinds
+    //
+    // Katalog lidských hlášek pro selhané technické předzpracování došlé
+    // zprávy (tasks/mail-preprocess-error-messages.md, D1–D2). Klíč =
+    // kategorie; u akcí odpovídá kódu `preprocess_log.results[].code`
+    // (PreprocessFailureCode), který akce vrací v ActionResult — žádný
+    // rozbor textu poznámky. Starší záznamy bez kódu padají do `unknown`.
+    // `isdocFailed` není kód akce: patří k `preprocess_log.isdoc = failed`
+    // (import ISDOC stav 40 nenastavuje, zobrazuje se jen jako informace).
+    //
+    // Pole kategorie: `name` = titulek, `description` = vysvětlení (čí je
+    // to chyba), `hint` = co dělat; `{ruleId}` v hintu nahradí presenter
+    // id pravidla, bez něj token vynechá. Hinty nesmí slibovat opakování
+    // z UI — akce „Znovu předzpracovat" zatím není (D4 odloženo).
+    //
+    // Rezervovaný klíč `_common`: upozornění v tabu Návrh (D3b) a prefix
+    // řádku na kartě Dashboardu (D3c, `{title}` = titulek kategorie).
+    //
+    // Texty čte uživatel na Dashboardu a v detailu zprávy: bez názvů
+    // tříd, bez URL (ty nese jen technická poznámka, sbalená).
+
+    "linkNotFound": {
+        "name": "The e-mail has no link to the document",
+        "name:cs": "V e-mailu chybí odkaz na dokument",
+        "name:en": "The e-mail has no link to the document",
+        "description": "The preprocessing rule expected a link to the document in the e-mail but found none that matched. The sender has probably changed the layout of the e-mail.",
+        "description:cs": "Pravidlo předzpracování čekalo v e-mailu odkaz na doklad, ale žádný odpovídající nenašlo. Odesílatel nejspíš změnil podobu e-mailu.",
+        "description:en": "The preprocessing rule expected a link to the document in the e-mail but found none that matched. The sender has probably changed the layout of the e-mail.",
+        "hint": "Download the document from the e-mail manually and upload it on the Dashboard. Check rule {ruleId} in Settings → Mail → Preprocess rules, or let us know.",
+        "hint:cs": "Dokument stáhni z e-mailu ručně a nahraj ho na Dashboard. Zkontroluj pravidlo {ruleId} v Nastavení → Pošta → Pravidla předzpracování, nebo nám dej vědět.",
+        "hint:en": "Download the document from the e-mail manually and upload it on the Dashboard. Check rule {ruleId} in Settings → Mail → Preprocess rules, or let us know."
+    },
+    "linkExpired": {
+        "name": "The document link does not work",
+        "name:cs": "Odkaz na dokument nefunguje",
+        "name:en": "The document link does not work",
+        "description": "The sender's server did not provide the document — the link may have expired or requires signing in.",
+        "description:cs": "Server odesílatele dokument nevydal — odkaz mohl vypršet nebo vyžaduje přihlášení.",
+        "description:en": "The sender's server did not provide the document — the link may have expired or requires signing in.",
+        "hint": "Open the link in the e-mail, download the document and upload it on the Dashboard.",
+        "hint:cs": "Otevři odkaz v e-mailu, dokument stáhni a nahraj ho na Dashboard.",
+        "hint:en": "Open the link in the e-mail, download the document and upload it on the Dashboard."
+    },
+    "remoteUnavailable": {
+        "name": "The server with the document was unavailable",
+        "name:cs": "Server s dokumentem nebyl dostupný",
+        "name:en": "The server with the document was unavailable",
+        "description": "The download failed because of an outage or a slow response on the sender's side.",
+        "description:cs": "Stažení se nepovedlo kvůli výpadku nebo pomalé odpovědi na straně odesílatele.",
+        "description:en": "The download failed because of an outage or a slow response on the sender's side.",
+        "hint": "Download the document from the link in the e-mail manually and upload it on the Dashboard.",
+        "hint:cs": "Dokument stáhni z odkazu v e-mailu ručně a nahraj ho na Dashboard.",
+        "hint:en": "Download the document from the link in the e-mail manually and upload it on the Dashboard."
+    },
+    "unexpectedContent": {
+        "name": "The link does not lead to a usable document",
+        "name:cs": "Na odkazu není použitelný dokument",
+        "name:en": "The link does not lead to a usable document",
+        "description": "The link led to a page or file that cannot be used as a document (different format, empty or too large a file).",
+        "description:cs": "Odkaz vedl na stránku nebo soubor, který nejde použít jako doklad (jiný formát, prázdný nebo příliš velký soubor).",
+        "description:en": "The link led to a page or file that cannot be used as a document (different format, empty or too large a file).",
+        "hint": "Open the link in the e-mail manually; if the document is there, download it and upload it on the Dashboard.",
+        "hint:cs": "Otevři odkaz v e-mailu ručně; pokud tam doklad je, stáhni ho a nahraj na Dashboard.",
+        "hint:en": "Open the link in the e-mail manually; if the document is there, download it and upload it on the Dashboard."
+    },
+    "bodyRender": {
+        "name": "The e-mail text could not be converted to PDF",
+        "name:cs": "Text e-mailu se nepodařilo převést do PDF",
+        "name:en": "The e-mail text could not be converted to PDF",
+        "description": "The rule was supposed to create a PDF document from the e-mail body, but the conversion did not happen.",
+        "description:cs": "Pravidlo mělo z těla e-mailu vytvořit PDF dokladu, ale převod neproběhl.",
+        "description:en": "The rule was supposed to create a PDF document from the e-mail body, but the conversion did not happen.",
+        "hint": "Enter the document manually and let us know which message it was.",
+        "hint:cs": "Doklad zadej ručně a dej nám vědět, o jakou zprávu šlo.",
+        "hint:en": "Enter the document manually and let us know which message it was."
+    },
+    "ruleConfig": {
+        "name": "The preprocessing rule is set up incorrectly",
+        "name:cs": "Pravidlo předzpracování je nastavené chybně",
+        "name:en": "The preprocessing rule is set up incorrectly",
+        "description": "The error is in the rule's settings, not in the message.",
+        "description:cs": "Chyba je v nastavení pravidla, ne ve zprávě.",
+        "description:en": "The error is in the rule's settings, not in the message.",
+        "hint": "Check rule {ruleId} in Settings → Mail → Preprocess rules, or let us know.",
+        "hint:cs": "Zkontroluj pravidlo {ruleId} v Nastavení → Pošta → Pravidla předzpracování, nebo nám dej vědět.",
+        "hint:en": "Check rule {ruleId} in Settings → Mail → Preprocess rules, or let us know."
+    },
+    "internal": {
+        "name": "Preprocessing failed on Shipard's side",
+        "name:cs": "Předzpracování selhalo na straně Shipardu",
+        "name:en": "Preprocessing failed on Shipard's side",
+        "description": "An internal processing error, not an error in the message.",
+        "description:cs": "Interní chyba při zpracování, ne chyba ve zprávě.",
+        "description:en": "An internal processing error, not an error in the message.",
+        "hint": "Let us know which message it was.",
+        "hint:cs": "Dej nám vědět, o jakou zprávu šlo.",
+        "hint:en": "Let us know which message it was."
+    },
+    // Jen informace (varianta info): import ISDOC stav 40 nenastavuje,
+    // zpráva jde k AI s ostatními přílohami.
+    "isdocFailed": {
+        "name": "The ISDOC attachment could not be read",
+        "name:cs": "Přílohu ISDOC se nepodařilo načíst",
+        "name:en": "The ISDOC attachment could not be read",
+        "description": "The AI will therefore extract the document from the other attachments.",
+        "description:cs": "Doklad proto vyčte AI z ostatních příloh.",
+        "description:en": "The AI will therefore extract the document from the other attachments.",
+        "hint": "Check the proposal the usual way.",
+        "hint:cs": "Návrh zkontroluj obvyklým způsobem.",
+        "hint:en": "Check the proposal the usual way."
+    },
+    // Záznam bez kódu (starší logy) nebo neznámý kód.
+    "unknown": {
+        "name": "Preprocessing ended with an error",
+        "name:cs": "Předzpracování skončilo s chybou",
+        "name:en": "Preprocessing ended with an error",
+        "description": "Unknown kind of error.",
+        "description:cs": "Neznámý druh chyby.",
+        "description:en": "Unknown kind of error.",
+        "hint": "Let us know which message it was.",
+        "hint:cs": "Dej nám vědět, o jakou zprávu šlo.",
+        "hint:en": "Let us know which message it was."
+    },
+
+    "_common": {
+        // Upozornění v tabu Návrh (D3b) — návrh / klasifikace vznikly bez
+        // výsledku předzpracování (stav 40).
+        "proposalWarningTitle": {
+            "name": "The proposal was created without the preprocessing result",
+            "name:cs": "Návrh vznikl bez výsledku předzpracování",
+            "name:en": "The proposal was created without the preprocessing result"
+        },
+        "proposalWarningText": {
+            "name": "The AI worked without the document that preprocessing was supposed to create, so the proposal or classification may be off. Details are in the Content tab.",
+            "name:cs": "AI pracovala bez dokumentu, který mělo předzpracování vytvořit, takže návrh nebo klasifikace nemusí sedět. Podrobnosti jsou v záložce Obsah.",
+            "name:en": "The AI worked without the document that preprocessing was supposed to create, so the proposal or classification may be off. Details are in the Content tab."
+        },
+        // Řádek `warning` na kartě Dashboardu (D3c); {title} = titulek kategorie.
+        "cardWarning": {
+            "name": "Preprocessing: {title}",
+            "name:cs": "Předzpracování: {title}",
+            "name:en": "Preprocessing: {title}"
+        }
+    }
+}

@@ -259,6 +259,10 @@
             "file": "config/preprocessRuleOrigins.jsonc"
         },
         {
+            "id": "core.mail.preprocessErrorKinds",
+            "file": "config/preprocessErrorKinds.jsonc"
+        },
+        {
             "id": "core.mail.genericSubjectPatterns",
             "file": "config/genericSubjectPatterns.jsonc"
         }

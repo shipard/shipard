@@ -9,6 +9,7 @@ use Shipard\Core\Render\RenderProfile;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Mail\Preprocess\ActionResult;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessAction;
+use Shipard\Module\Core\Mail\Preprocess\PreprocessFailureCode;
 
 /**
  * Akce `renderBodyToPdf` (tasks/mail-preprocess-phase2.md §3, D16): HTML
@@ -24,7 +25,8 @@ use Shipard\Module\Core\Mail\Preprocess\PreprocessAction;
  *
  * Idempotence dle `(ruleId, action)` — tělo je po intake neměnné. Selhání
  * renderu (nenakonfigurovaná služba, timeout, chyba enginu) = provozní
- * stav v poznámce, žádná výjimka (D6).
+ * stav v poznámce, žádná výjimka (D6); kód `bodyRender`, u uložení
+ * přílohy `internal` (tasks/mail-preprocess-error-messages.md D1).
  */
 final class RenderBodyToPdfAction implements PreprocessAction
 {
@@ -53,10 +55,10 @@ final class RenderBodyToPdfAction implements PreprocessAction
 
         $html = (string) ($message['body_html'] ?? '');
         if (trim($html) === '') {
-            return ActionResult::failure('message has no HTML body');
+            return ActionResult::failure('message has no HTML body', PreprocessFailureCode::BODY_RENDER);
         }
         if (strlen($html) > self::HTML_MAX_BYTES) {
-            return ActionResult::failure('HTML body exceeds the size cap (' . self::HTML_MAX_BYTES . ' B)');
+            return ActionResult::failure('HTML body exceeds the size cap (' . self::HTML_MAX_BYTES . ' B)', PreprocessFailureCode::BODY_RENDER);
         }
 
         $rendered = $this->render->renderHtml(self::ensureUtf8Document($html), [], RenderProfile::Untrusted);
@@ -64,6 +66,7 @@ final class RenderBodyToPdfAction implements PreprocessAction
             $kind = $rendered->errorKind?->value ?? 'unknown';
             return ActionResult::failure(
                 "render failed: {$kind}" . ($rendered->note !== null ? ": {$rendered->note}" : ''),
+                PreprocessFailureCode::BODY_RENDER,
             );
         }
 
@@ -76,7 +79,7 @@ final class RenderBodyToPdfAction implements PreprocessAction
             ['bodySha256' => hash('sha256', $html), 'renderedAt' => date('c')],
         );
         if (!$stored['ok']) {
-            return ActionResult::failure($stored['note']);
+            return ActionResult::failure($stored['note'], $stored['code'] ?? PreprocessFailureCode::INTERNAL);
         }
 
         return ActionResult::success("rendered HTML body → attachment {$stored['id']}", [$stored['id']]);
