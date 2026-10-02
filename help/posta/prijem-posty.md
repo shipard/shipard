@@ -1,7 +1,7 @@
 ---
 title: Příjem pošty
 summary: Jak dostat fakturu do Shipardu, co se s ní pak děje a jak si poradit s poštou, která faktura není.
-keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, pravidlo odesílatele, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy]
+keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, pravidlo odesílatele, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat]
 related: [posta/kontrola-vytezeni.md, slovnicek.md, co-dnes-nejde.md]
 ---
 
@@ -108,10 +108,18 @@ dál se pošta od té adresy archivuje sama, bez analýzy.
   *„N zpráv automaticky archivováno"* s tlačítky **Zobrazit** a **Vrátit
   vše**. Vrácení platí pro celý den z té karty.
 
-**Analýza selhala.** Badge **Analýza selhala** a na Dashboardu naléhavá
-karta. Typicky nečitelné PDF (obrázek bez textové vrstvy, poškozený soubor).
-Zkus **Znovu analyzovat**; když to selže znovu, doklad zadej ručně a pošli
-nám vědět, co to bylo za fakturu.
+**Analýza selhala.** U zprávy svítí badge **Analýza selhala** a na
+Dashboardu je naléhavá karta. Její titulek říká, co se stalo — nejčastěji
+**AI vrátila data v nečekaném tvaru**: to není chyba ve tvé zprávě ani
+v příloze, ale v nastavení analýzy na naší straně. Pod **Zobrazit detail**
+na kartě najdeš, co se stalo a co dělat; totéž ukazuje záložka **Návrh**
+u zprávy (technické podrobnosti jsou sbalené). **Znovu analyzovat** má
+smysl, jen když se analýza od té doby aktualizovala — v tom případě ti to
+karta řekne a tlačítko je hlavní akcí. Jinak opakování dopadne stejně:
+doklad zadej ručně a dej nám vědět, o jakou zprávu šlo. Když AI
+odpověděla, ale návrh neprošel kontrolou formátu, uvidíš na záložce
+**Návrh** odznak **Chyba extrakce** a pod ním stejnou kartu s vysvětlením
+(**AI vrátila nepoužitelný návrh**).
 
 **Nic nedorazilo.** Zkontroluj v tomhle pořadí: sedí adresa, na kterou jsi
 posílal? Byla faktura opravdu jako příloha, ne jen odkaz ke stažení? Neuvízl

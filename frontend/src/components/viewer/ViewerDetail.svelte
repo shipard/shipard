@@ -6,6 +6,7 @@
   import DocumentExchangePreviewModal from '../exchange/DocumentExchangePreviewModal.svelte';
   import RejectReasonPrompt from '../dashboard/RejectReasonPrompt.svelte';
   import AttachmentGrid from './AttachmentGrid.svelte';
+  import AnalysisFailureCard from './AnalysisFailureCard.svelte';
   import { attachmentViewStore } from '../../stores/attachmentView.svelte.js';
   import DocumentDetail from './DocumentDetail.svelte';
   import Icon from '../ui/Icon.svelte';
@@ -337,14 +338,22 @@
 
       {:else if content?.type === 'proposal'}
         <!-- Dokumentový návrh poslední analýzy (message-centric) — jedna
-             karta, nebo prázdný stav s klasifikací zprávy. -->
+             karta, nebo prázdný stav s klasifikací zprávy. Při stavu
+             „Analýza selhala" posílá server content.failure — karta
+             selhání nahrazuje prázdný stav a stojí nad případným starším
+             návrhem; návrh s nevalidním výstupem nese vlastní doc.failure. -->
         <div class="shpd-extracted">
+          {#if content.failure}
+            <AnalysisFailureCard failure={content.failure} />
+          {/if}
           {#if !content.proposal}
-            <div class="shpd-extracted__empty">
-              {t('viewer.detail.noProposal', {
-                type: content.classification?.primary_type_label ?? '',
-              })}
-            </div>
+            {#if !content.failure}
+              <div class="shpd-extracted__empty">
+                {t('viewer.detail.noProposal', {
+                  type: content.classification?.primary_type_label ?? '',
+                })}
+              </div>
+            {/if}
           {:else}
             {@const doc = content.proposal}
             <div class="shpd-extracted__card">
@@ -367,6 +376,10 @@
                   <span class="shpd-extracted__confidence">{(doc.confidence * 100).toFixed(0)}%</span>
                 {/if}
               </div>
+
+              {#if doc.ai_failed && doc.failure}
+                <AnalysisFailureCard failure={doc.failure} />
+              {/if}
 
               {#if doc.summary}
                 <div class="shpd-extracted__summary">{doc.summary}</div>

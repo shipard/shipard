@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 308 tasků: **naplánováno** 5 · **částečně** 18 · **hotovo** 285.
+Celkem 309 tasků: **naplánováno** 5 · **částečně** 18 · **hotovo** 286.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -302,6 +302,7 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `mail-analysis-schema-fixes.md` | Opravy AI analýzy: schema_error (kind/vat/courtRegistration), prompt v2.3.0, frontování dle docState + data fix |
 | `mail-config-viewers.md` | Viewery a formuláře pro mailové konfigurační tabulky |
 | `mail-invoice-rounding.md` | Zaokrouhlení celkové částky faktur: derivace `total_rounding_mode` v applieru, rounding-aware validace součtů, módy nahoru/dolů, prompt v3.1.0 |
+| `mail-analysis-error-messages.md` | Srozumitelné hlášky selhané AI analýzy — katalog + helper, tab Návrh / Analýzy, Dashboard, chytřejší „Znova analyzovat“ |
 | `ai-profile-reload.md` | CLI `ai-profile-reload` — reload promptu/schématu profilu z JSONC |
 | `ai-profile-sync-in-ds-upgrade.md` | Automatický sync AI profilu ze šablony v rámci `ds-upgrade` (upgrade-only) |
 | `enrichment-row-text-candidates.md` | Enrichment řádků z historie: matchování přes více kandidátních textů (description → item.description → item.name, tier-major) |

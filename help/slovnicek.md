@@ -63,7 +63,7 @@ a čekají na tebe, zbytek je už vyřízený:
 | **Nízká jistota** | Pod 60 %. Čti řádek po řádku, nebo zamítni a zadej ručně |
 | **Použito** | Z návrhu už vznikl doklad |
 | **Zamítnuto** | Zamítl jsi ho s důvodem; důvod zůstává u zprávy |
-| **Chyba extrakce** | Extrakce se nepovedla — typicky nečitelné PDF. Zkus **Znovu analyzovat** |
+| **Chyba extrakce** | AI sice odpověděla, ale návrh neprošel kontrolou formátu dokladu a nedá se použít. Není to chyba ve tvé příloze. Karta pod odznakem vysvětlí, co se stalo, a řekne, jestli má smysl **Znovu analyzovat** |
 
 ---
 
