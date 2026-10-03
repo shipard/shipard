@@ -32,6 +32,16 @@ class PersonDocument extends Document
             }
         }
 
+        // Jazyk dokumentů (#94 D1): prázdná volba = automaticky podle země.
+        if (array_key_exists('language', $data)) {
+            if ($data['language'] === '') {
+                $data['language'] = null;
+            }
+            if ($data['language'] !== null && !$this->isDocumentLanguage($data['language'])) {
+                $result->addError('language', 'Neznámý jazyk dokumentů', 'invalid_language');
+            }
+        }
+
         if (!empty($data['is_own'])) {
             if ($personType !== PersonType::Company) {
                 $result->addError(
@@ -84,6 +94,19 @@ class PersonDocument extends Document
                 ($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? '')
             );
         }
+    }
+
+    /**
+     * Je hodnota mezi jazyky dokumentů (cfgItem `world.base.documentLanguages`)?
+     * Bez konfigurace se nekontroluje — není proti čemu.
+     */
+    private function isDocumentLanguage(mixed $language): bool
+    {
+        $languages = $this->config?->cfgItem('world.base.documentLanguages');
+        if (!is_array($languages)) {
+            return true;
+        }
+        return is_string($language) && array_key_exists($language, $languages);
     }
 
     private function generatePersonId(?PersonType $personType): string

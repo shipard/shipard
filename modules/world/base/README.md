@@ -19,6 +19,7 @@ Modul nemá vlastní tabulky.
 | `world.base.countries` | [config/countries.jsonc](config/countries.jsonc) | Země světa — ISO 3166-1 |
 | `world.base.currencies` | [config/currencies.jsonc](config/currencies.jsonc) | Měny — ISO 4217 |
 | `world.base.languages` | [config/languages.jsonc](config/languages.jsonc) | Jazyky — ISO 639-1 |
+| `world.base.documentLanguages` | [config/documentLanguages.jsonc](config/documentLanguages.jsonc) | Jazyky dokumentů — ve kterých lze partnerovi vystavit a poslat doklad (`cs`, `en`, `sk`, `de`); zdroj pro `base_persons_persons.language` a `DocumentLanguageResolver`. Není to seznam jazyků tisku |
 
 ## Struktura konfiguračních souborů
 

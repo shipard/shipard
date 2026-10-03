@@ -1,10 +1,16 @@
 {
-    // Extension from docs.core: payment_term_days
+    // Extension from docs.core: payment_term_days, send_attachments_merged
     //
     // Splatnost (počet dní), kterou se default `due_date` na faktuře dopočítá
     // jako `issue_date + payment_term_days`. Pole žije technicky na osobě,
     // ale je to ekonomická informace vlastněná dokladovým systémem — proto
     // extension z docs.core, ne přímý sloupec base.persons.
+    //
+    // `send_attachments_merged` (#94 D5): volba osoby, zda se přílohy dokladu
+    // připojí do PDF dokladu. Konzument je odeslání dokladu (#90 fáze 4) —
+    // čte ji živě z osoby partnera. Posílají se jen přílohy s příznakem
+    // `core_attachments_files.send_with_record` (D6); spojují se jen PDF,
+    // ostatní soubory jdou do e-mailu samostatně (D11).
 
     "table": "base_persons_persons",
     "columns": [
@@ -17,6 +23,15 @@
             "default": 14,
             "nullable": true,
             "group": "status"
+        },
+        {
+            "id": "send_attachments_merged",
+            "name": "Merge document attachments into the document PDF",
+            "name:cs": "Přílohy dokladu připojit do PDF dokladu",
+            "name:en": "Merge document attachments into the document PDF",
+            "type": "boolean",
+            "default": 0,
+            "group": "documents"
         }
     ]
 }

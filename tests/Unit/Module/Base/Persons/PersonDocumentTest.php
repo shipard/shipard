@@ -6,6 +6,7 @@ namespace Shipard\Tests\Unit\Module\Base\Persons;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Module\Base\Persons\PersonDocument;
+use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
 
 class PersonDocumentTest extends TestCase
 {
@@ -190,6 +191,64 @@ class PersonDocumentTest extends TestCase
         $result = $doc->validate($data);
 
         $this->assertTrue($result->isValid());
+    }
+
+    // --- language (#94 D1) --------------------------------------------------
+
+    private function docWithLanguages(): PersonDocument
+    {
+        $doc = $this->doc();
+        $doc->setConfig(ConfigRuntimeFactory::fromItems([
+            'world.base.documentLanguages' => [
+                'cs' => ['name' => 'čeština'],
+                'en' => ['name' => 'angličtina'],
+                'sk' => ['name' => 'slovenština'],
+                'de' => ['name' => 'němčina'],
+            ],
+        ]));
+        return $doc;
+    }
+
+    public function testValidateAcceptsDocumentLanguage(): void
+    {
+        $data = ['person_type' => 2, 'full_name' => 'Acme s.r.o.', 'language' => 'de'];
+
+        $result = $this->docWithLanguages()->validate($data);
+
+        $this->assertTrue($result->isValid());
+        $this->assertSame('de', $data['language']);
+    }
+
+    public function testValidateTurnsEmptyLanguageIntoNull(): void
+    {
+        $data = ['person_type' => 2, 'full_name' => 'Acme s.r.o.', 'language' => ''];
+
+        $result = $this->docWithLanguages()->validate($data);
+
+        $this->assertTrue($result->isValid());
+        $this->assertNull($data['language']);
+    }
+
+    public function testValidateRejectsLanguageOutsideDocumentLanguages(): void
+    {
+        $data = ['person_type' => 2, 'full_name' => 'Acme s.r.o.', 'language' => 'fr'];
+
+        $result = $this->docWithLanguages()->validate($data);
+
+        $this->assertFalse($result->isValid());
+        $errors = $result->toArray();
+        $this->assertSame(['language'], array_column($errors, 'column'));
+        $this->assertSame(['invalid_language'], array_column($errors, 'code'));
+    }
+
+    public function testValidateWithoutLanguageKeyLeavesPayloadAlone(): void
+    {
+        $data = ['person_type' => 2, 'full_name' => 'Acme s.r.o.'];
+
+        $result = $this->docWithLanguages()->validate($data);
+
+        $this->assertTrue($result->isValid());
+        $this->assertArrayNotHasKey('language', $data);
     }
 
     // --- beforeSave ---------------------------------------------------------

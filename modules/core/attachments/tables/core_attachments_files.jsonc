@@ -148,6 +148,17 @@
             "default": 0,
             "group": "status"
         },
+        // Příloha se posílá spolu se záznamem (#94 D6). Název je obecný —
+        // příloha patří libovolnému záznamu; v UI dokladů „Odeslat s dokladem“.
+        {
+            "id": "send_with_record",
+            "name": "Send with record",
+            "name:cs": "Odeslat se záznamem",
+            "name:en": "Send with record",
+            "type": "boolean",
+            "default": 0,
+            "group": "status"
+        },
         {
             "id": "created",
             "name": "Created",

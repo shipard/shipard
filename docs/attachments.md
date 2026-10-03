@@ -32,9 +32,16 @@ Klíčové vlastnosti:
 | `metadata` | json | Metadata souboru (volitelné — rozměry, počet stran) |
 | `att_order` | smallint | Pořadí přílohy (manuální řazení, výchozí 0) |
 | `is_deleted` | boolean | Příznak soft-delete |
+| `send_with_record` | boolean | Příloha se posílá spolu se záznamem (#94 D6, výchozí `0`) |
 | `created` | datetime | Datum a čas nahrání |
 | `created_by` | int | FK na `core_system_users` |
 | `modified` | datetime | Datum a čas poslední změny |
+
+**Odeslání se záznamem.** `send_with_record` určuje, které přílohy se posílají
+spolu se záznamem (u dokladu „Odeslat s dokladem“). Název je obecný — příloha
+patří libovolnému záznamu. Nová příloha (upload, `copyTo`, příloha z pošty
+nebo spisovny) má `0`, pokud volající výslovně neřekne jinak. Smazaná
+příloha (`is_deleted = 1`) se neposílá bez ohledu na příznak.
 
 Podrobná dokumentace tabulky: `modules/core/attachments/tables/core_attachments_files.md`
 

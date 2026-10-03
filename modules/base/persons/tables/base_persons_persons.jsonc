@@ -38,6 +38,12 @@
             "name:en": "Contact details"
         },
         {
+            "id": "documents",
+            "name": "Documents",
+            "name:cs": "Dokumenty",
+            "name:en": "Documents"
+        },
+        {
             "id": "status",
             "name": "Status",
             "name:cs": "Stav",
@@ -268,6 +274,23 @@
             "length": 200,
             "nullable": true,
             "group": "contact"
+        },
+
+        // --- documents ---
+
+        // Výslovné přepsání jazyka dokumentů (#94 D1). NULL = automaticky
+        // podle země (DocumentLanguageResolver). Čte se živě při tisku
+        // i odeslání — do snapshotu strany nepatří.
+        {
+            "id": "language",
+            "name": "Document language",
+            "name:cs": "Jazyk dokumentů",
+            "name:en": "Document language",
+            "type": "enumString",
+            "length": 2,
+            "cfgItem": "world.base.documentLanguages",
+            "nullable": true,
+            "group": "documents"
         },
 
         // --- status ---

@@ -48,6 +48,13 @@ Sloupce jsou organizovány do skupin:
 | `phone` | varchar(30) | Telefon |
 | `web` | varchar(200) | Webová stránka |
 
+### Dokumenty (documents)
+
+| Sloupec | Typ | Popis |
+|---|---|---|
+| `language` | enumString(2), nullable | Jazyk dokumentů — klíč z `world.base.documentLanguages` (`cs`, `en`, `sk`, `de`). Výslovné přepsání; `NULL` = automaticky podle země (`DocumentLanguageResolver`). Čte se živě při tisku, do snapshotu strany na dokladu nepatří |
+| `send_attachments_merged` | boolean | Extension z `docs.core` — přílohy dokladu připojit do PDF dokladu při odeslání (konzument: odeslání dokladu, #90 fáze 4) |
+
 ### Stav (status)
 
 | Sloupec | Typ | Popis |
@@ -110,6 +117,10 @@ hooky `validate` a `beforeSave`, které řídí chování podle typu osoby.
   krátký alfanumerický hash (písmena + číslice, cca 5 znaků). Slouží
   k jednoznačné identifikaci na tištěných sestavách (faktury, dodací listy),
   kde může dojít k záměně u duplicitních jmen.
+
+- Sloupec `language`: prázdný řetězec se ukládá jako `NULL` (automaticky
+  podle země); hodnota mimo `world.base.documentLanguages` neprojde validací
+  (chyba na poli `language`, kód `invalid_language`).
 
 ### Vlastní firma (is_own)
 

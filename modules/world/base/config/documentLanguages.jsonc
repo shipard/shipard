@@ -1,0 +1,19 @@
+{
+    // =========================================================================
+    // Jazyky dokumentů (#94 D3) — jazyky, ve kterých lze partnerovi vystavit
+    // a poslat doklad. Klíč = ISO 639-1; pořadí = pořadí v nabídce.
+    //
+    // Jediný zdroj pravdy pro sloupec `base_persons_persons.language`,
+    // formulář osoby, validaci a `DocumentLanguageResolver`. `en` tu musí být
+    // vždy — je záložním jazykem pro země s jazykem mimo tento seznam.
+    //
+    // Není to seznam jazyků tisku: tisk umí jen jazyky, pro které má katalogy
+    // (`PrintLanguageResolver::LANGUAGES`); jazyk bez katalogu se tiskne
+    // anglicky.
+    // =========================================================================
+
+    "cs": { "name": "Czech",   "name:cs": "čeština",     "name:en": "Czech" },
+    "en": { "name": "English", "name:cs": "angličtina",  "name:en": "English" },
+    "sk": { "name": "Slovak",  "name:cs": "slovenština", "name:en": "Slovak" },
+    "de": { "name": "German",  "name:cs": "němčina",     "name:en": "German" },
+}

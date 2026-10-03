@@ -88,6 +88,14 @@ Sloupec `is_deleted` (boolean). Při "smazání" přílohy se nastaví na `1`:
 
 Přílohy se řadí podle `att_order ASC, name ASC`. Sloupec `att_order` umožňuje ruční řazení (drag-and-drop v UI), `name` slouží jako sekundární řazení pro přílohy se stejným pořadím.
 
+## Odeslání se záznamem
+
+Sloupec `send_with_record` (boolean, výchozí `0`) říká, že se příloha posílá
+spolu se záznamem — u dokladu „Odeslat s dokladem“. Nová příloha (upload,
+kopie, příloha z pošty nebo spisovny) má `0`, pokud volající výslovně
+neřekne jinak. Smazaná příloha (`is_deleted = 1`) se neposílá bez ohledu
+na příznak.
+
 ## Sloupce
 
 | Sloupec | Typ | Popis |
@@ -104,6 +112,7 @@ Přílohy se řadí podle `att_order ASC, name ASC`. Sloupec `att_order` umožň
 | `metadata` | json | Metadata souboru (rozměry, počet stran apod.) |
 | `att_order` | smallint | Pořadí přílohy (pro ruční řazení) |
 | `is_deleted` | boolean | Příznak soft-delete |
+| `send_with_record` | boolean | Příloha se posílá spolu se záznamem (výchozí `0`) |
 | `created` | datetime | Datum a čas nahrání |
 | `created_by` | int | Uživatel, který přílohu nahrál |
 | `modified` | datetime | Datum a čas poslední změny |
