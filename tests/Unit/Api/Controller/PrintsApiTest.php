@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Api\AuthContext;
 use Shipard\Api\Controller\PrintsController;
 use Shipard\Api\Controller\ViewerController;
+use Shipard\Api\Middleware\CorsMiddleware;
 use Shipard\Api\ReadOnlyPolicy;
 use Shipard\Api\ReadOnlyVerdict;
 use Shipard\Api\Response;
@@ -50,6 +51,14 @@ use Shipard\Tests\Unit\Core\Prints\PrintRunnerTest;
 class PrintsApiTest extends TestCase
 {
     private const RECORD = ['id' => 5, 'kind' => 'a', 'docState' => 40, 'name' => 'Záznam'];
+
+    /** `target.languages` akce Tisk bez konfigurace — popiskem je kód jazyka. */
+    private const LANGUAGE_CODES = [
+        ['id' => 'cs', 'label' => 'cs'],
+        ['id' => 'en', 'label' => 'en'],
+        ['id' => 'sk', 'label' => 'sk'],
+        ['id' => 'de', 'label' => 'de'],
+    ];
 
     private string $root;
 
@@ -214,6 +223,7 @@ class PrintsApiTest extends TestCase
         $this->assertSame('inline; filename="karta-5.pdf"', $headers['Content-Disposition']);
         $this->assertSame('no-store', $headers['Cache-Control']);
         $this->assertSame((string) strlen('%PDF-1.7 fake'), $headers['Content-Length']);
+        $this->assertSame('cs', $headers['Content-Language'], 'jazyk tisku, i když ho klient nevyžádal');
 
         // Hlášení builderu jdou hlavičkou — ASCII, po dekódování JSON.
         $this->assertMatchesRegularExpression('/^[\x21-\x7E]+$/', $headers['X-Print-Messages']);
@@ -221,6 +231,25 @@ class PrintsApiTest extends TestCase
             [['severity' => 'warning', 'code' => 'builder.note', 'text' => 'Poznámka builderu']],
             json_decode(rawurldecode($headers['X-Print-Messages']), true),
         );
+    }
+
+    public function testPdfContentLanguageIsTheRequestedPrintLanguage(): void
+    {
+        foreach (['en', 'sk', 'de'] as $language) {
+            $response = $this->controller(render: RenderResult::success('%PDF-1.7 fake'))
+                ->run('test.prints.card', 5, ['language' => $language], self::user(), []);
+
+            $this->assertSame(200, self::statusOf($response));
+            $this->assertSame($language, $response->getHeaders()['Content-Language']);
+        }
+    }
+
+    public function testContentLanguageIsExposedToTheBrowser(): void
+    {
+        $exposed = (new CorsMiddleware())->applyTo(Response::success(null))->getHeaders()['Access-Control-Expose-Headers'];
+
+        $this->assertStringContainsString('Content-Language', $exposed);
+        $this->assertStringContainsString(PrintsController::MESSAGES_HEADER, $exposed);
     }
 
     public function testPdfWithoutBuilderMessagesHasNoMessagesHeader(): void
@@ -403,7 +432,7 @@ class PrintsApiTest extends TestCase
                 'label'   => 'Print',
                 'variant' => 'secondary',
                 'kind'    => 'button',
-                'target'  => ['printId' => 'test.prints.card'],
+                'target'  => ['printId' => 'test.prints.card', 'languages' => self::LANGUAGE_CODES],
             ]],
             $detail['actions'],
         );
@@ -423,7 +452,8 @@ class PrintsApiTest extends TestCase
             [['label' => 'Karta', 'value' => 'test.prints.card'], ['label' => 'Štítek', 'value' => 'test.prints.label']],
             $detail['actions'][0]['items'],
         );
-        $this->assertArrayNotHasKey('target', $detail['actions'][0]);
+        // Dropdown nemá `printId` (nese ho položka), jazyky ano.
+        $this->assertSame(['languages' => self::LANGUAGE_CODES], $detail['actions'][0]['target']);
     }
 
     public function testDetailHasNoPrintActionForDraftOtherKindOrWithoutRegistry(): void
@@ -442,6 +472,12 @@ class PrintsApiTest extends TestCase
         mkdir($configDir . '/config/configuration', 0755, true);
         file_put_contents($configDir . '/config/configuration/compiled.cs.json', json_encode(['items' => [
             'core.system.viewerDefaults' => ['detailActions' => ['print' => ['name' => 'Tisk', 'variant' => 'secondary']]],
+            // Popisek jazyka dokumentů bez záznamu (de) spadne na kód.
+            'world.base.documentLanguages' => [
+                'cs' => ['name' => 'čeština'],
+                'en' => ['name' => 'angličtina'],
+                'sk' => ['name' => 'slovenština'],
+            ],
         ]]));
 
         $detail = $this->detail(
@@ -453,6 +489,16 @@ class PrintsApiTest extends TestCase
 
         $this->assertSame(['reaccount', 'print'], array_column($detail['actions'], 'id'));
         $this->assertSame('Tisk', $detail['actions'][1]['label']);
+        $this->assertSame(
+            [
+                ['id' => 'cs', 'label' => 'čeština'],
+                ['id' => 'en', 'label' => 'angličtina'],
+                ['id' => 'sk', 'label' => 'slovenština'],
+                ['id' => 'de', 'label' => 'de'],
+            ],
+            $detail['actions'][1]['target']['languages'],
+            'jazyky tisku s popisky jazyků dokumentů v jazyce rozhraní',
+        );
     }
 }
 

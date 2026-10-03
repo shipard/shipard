@@ -392,7 +392,7 @@
   // --- Read-only detail jiného záznamu (akce kind `open_detail`) ---
   // { viewerId, recordId, tabId } nebo null = zavřeno.
   let detailModal = $state(null);
-  // Náhled tisku záznamu (detail akce print) — { printId, recordId } | null.
+  // Náhled tisku záznamu (detail akce print) — { printId, recordId, languages } | null.
   let printPreview = $state(null);
 
   // --- Registry import wizard state ---
@@ -669,10 +669,11 @@
     }
     // Tisk záznamu (generická akce z registru tisků, docs/prints.md):
     // jeden tisk = tlačítko s target.printId, víc tisků = dropdown, kde
-    // hodnota položky je id tisku. Otevře náhled PDF.
+    // hodnota položky je id tisku. Otevře náhled PDF; target.languages
+    // jsou jazyky tisku pro přepínač v náhledu.
     if (actionId === 'print') {
       const printId = value ?? action.target?.printId;
-      if (printId) printPreview = { printId, recordId };
+      if (printId) printPreview = { printId, recordId, languages: action.target?.languages ?? [] };
       return;
     }
     // Přeúčtovat doklad (DocsHeadsViewer, doklad ve stavu 40). Success
@@ -1297,6 +1298,7 @@
   open={printPreview !== null}
   printId={printPreview?.printId ?? ''}
   recordId={printPreview?.recordId ?? null}
+  languages={printPreview?.languages ?? []}
   onClose={() => { printPreview = null; }}
 />
 

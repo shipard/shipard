@@ -27,7 +27,9 @@ use Shipard\Core\Prints\PrintRunner;
  *
  * `pdf` (default) vrací soubor mimo JSON obálku s `Content-Disposition:
  * inline` — náhled v dialogu i uložení pod názvem z `meta.fileName`.
- * Měkká hlášení builderu (QR nevznikl) nese hlavička `X-Print-Messages`.
+ * `Content-Language` nese jazyk, ve kterém tisk vznikl — i když ho klient
+ * nevyžádal a zvolil ho partner dokladu (#90 D33). Měkká hlášení builderu
+ * (QR nevznikl) nese hlavička `X-Print-Messages`.
  * Chyby jdou jako JSON: 404 neznámý tisk / záznam, 409 tisk pro záznam
  * není dostupný (stav, typ), záznamu chybí data nebo zdroj dat nemá
  * konfiguraci v jazyce tisku, 400 špatný parametr, 503 / 500 render služba
@@ -102,6 +104,7 @@ class PrintsController
         // Název souboru je ASCII slug — stačí prostý `filename`.
         $response = Response::binary((string) $output->pdfContent, 'application/pdf')
             ->withHeader('Content-Disposition', 'inline; filename="' . $output->printData->fileName . '"')
+            ->withHeader('Content-Language', $output->printData->language)
             ->withHeader('Cache-Control', 'no-store');
 
         // Měkká hlášení builderu nemají v binární odpovědi jiné místo než

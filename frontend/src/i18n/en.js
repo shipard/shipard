@@ -233,6 +233,8 @@ export default {
   'print.preview.title': 'Print',
   'print.preview.loading': 'Preparing the print…',
   'print.preview.unsupported': 'This browser cannot preview PDF files. Use Download to save the file.',
+  'print.preview.language': 'Language',
+  'print.preview.languageAuto': 'Automatic',
   'print.download': 'Download',
   'viewer.detail.filingAccounted': 'The VAT return accounting document was created as a draft — review it and confirm it.',
   'viewer.detail.inviteFailed': 'Failed to send invitation: {msg}',

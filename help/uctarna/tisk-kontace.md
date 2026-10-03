@@ -31,6 +31,10 @@ i účetnímu dokladu.
 3. **Zkontroluj náhled** a dej **Stáhnout**. Soubor se jmenuje
    `kontace-` a číslo dokladu.
 
+Kontace je interní tisk, proto vychází v jazyce země tvé firmy bez ohledu
+na partnera dokladu. Jiný jazyk zvolíš výběrem **Jazyk** v okně **Tisk** —
+viz [Tisk faktury](../faktury-vydane/tisk-faktury.md).
+
 ## Co na kontaci je
 
 - **Titulek** *Kontace* s číslem dokladu, pod ním text dokladu.

@@ -5,11 +5,16 @@
    * v <iframe> z object URL; Stáhnout ho uloží pod názvem, který určil
    * server. Měkká hlášení builderu (QR platba nevznikla) jsou nad náhledem.
    *
+   * Jazyk (#90 D33): první načtení jde bez jazyka — volí ho server podle
+   * partnera dokladu a vrátí v `Content-Language`; přepínač v patičce pak
+   * načte PDF znovu ve zvoleném jazyce. Výběr se nikam neukládá.
+   *
    * Prohlížeč bez vestavěného prohlížeče PDF (typicky mobilní) náhled
    * nedostane — jen Stáhnout. Object URL se uvolní při zavření.
    */
   import Modal from '../ui/Modal.svelte';
   import Button from '../ui/Button.svelte';
+  import Select from '../ui/Select.svelte';
   import { fetchPrintPdf } from '../../api/prints.js';
   import { saveBlob } from '../../utils/download.js';
   import { iconDownload } from '../../icons.js';
@@ -20,6 +25,8 @@
     open = false,
     printId = '',
     recordId = null,
+    /** Jazyky tisku z akce Tisk (`target.languages`): [{id, label}]. */
+    languages = [],
     onClose = () => {},
   } = $props();
 
@@ -28,6 +35,10 @@
   let pdfUrl = $state(null);
   let fileName = $state('');
   let messages = $state([]);
+  // Jazyk zobrazeného (nebo právě načítaného) tisku; null = ještě ho neznáme.
+  let language = $state(null);
+
+  const languageOptions = $derived(languages.map((l) => ({ value: l.id, label: l.label })));
 
   // Blob a jeho object URL mimo reaktivitu — effect je jen zapisuje a uvolňuje.
   let blob = null;
@@ -40,15 +51,15 @@
 
   $effect(() => {
     if (open && printId && recordId !== null && recordId !== undefined) {
-      void load(printId, recordId);
+      void load(printId, recordId, null);
     } else {
       reset();
     }
     return reset;
   });
 
-  function reset() {
-    fetchToken++;
+  /** Zahodí zobrazené PDF — Stáhnout nesmí nabízet soubor v jiném jazyce, než je vybraný. */
+  function clearPdf() {
     if (objectUrl !== null) {
       URL.revokeObjectURL(objectUrl);
       objectUrl = null;
@@ -57,16 +68,24 @@
     pdfUrl = null;
     fileName = '';
     messages = [];
+  }
+
+  function reset() {
+    fetchToken++;
+    clearPdf();
+    language = null;
     error = null;
     loading = false;
   }
 
-  async function load(id, record) {
+  /** @param {?string} requested Vyžádaný jazyk; null = podle partnera dokladu. */
+  async function load(id, record, requested) {
     const token = ++fetchToken;
+    clearPdf();
     loading = true;
     error = null;
 
-    const result = await fetchPrintPdf(id, record);
+    const result = await fetchPrintPdf(id, record, requested);
     if (token !== fetchToken) return;
 
     loading = false;
@@ -81,6 +100,15 @@
     pdfUrl = objectUrl;
     fileName = result.fileName;
     messages = result.messages;
+    language = result.language ?? requested;
+  }
+
+  function changeLanguage(event) {
+    const value = event.currentTarget.value;
+    if (!value || value === language) return;
+    // Výběr drží i po chybě — uživatel vidí, který jazyk selhal, a zvolí jiný.
+    language = value;
+    void load(printId, recordId, value);
   }
 
   function download() {
@@ -114,15 +142,34 @@
   </div>
 
   {#snippet footer()}
-    <Button label={t('common.close')} variant="secondary" size="sm" onclick={onClose} />
-    <Button
-      label={t('print.download')}
-      icon={iconDownload}
-      variant="primary"
-      size="sm"
-      disabled={pdfUrl === null}
-      onclick={download}
-    />
+    <!-- Jeden obal: patička modalu na mobilu roztahuje své děti do jedné
+         řady, výběr jazyka by se v ní neuvešel — tady se láme nad tlačítka. -->
+    <div class="shpd-print__footer">
+      {#if languageOptions.length > 1}
+        <div class="shpd-print__language" data-testid="print-language">
+          <label for="shpd-print-language">{t('print.preview.language')}</label>
+          <!-- Než server vrátí jazyk tisku, výběr ukazuje „Automaticky". -->
+          <Select
+            id="shpd-print-language"
+            value={language}
+            options={languageOptions}
+            required
+            placeholder={language === null ? t('print.preview.languageAuto') : undefined}
+            disabled={loading}
+            onchange={changeLanguage}
+          />
+        </div>
+      {/if}
+      <Button label={t('common.close')} variant="secondary" size="sm" onclick={onClose} />
+      <Button
+        label={t('print.download')}
+        icon={iconDownload}
+        variant="primary"
+        size="sm"
+        disabled={pdfUrl === null}
+        onclick={download}
+      />
+    </div>
   {/snippet}
 </Modal>
 
@@ -142,6 +189,50 @@
     border: 1px solid var(--shpd-color-border);
     border-radius: var(--shpd-radius-sm);
     background: var(--shpd-color-bg-secondary);
+  }
+
+  .shpd-print__footer {
+    flex: 1;
+    display: flex;
+    /* Výchozí stretch — tlačítka dorostou na výšku výběru jazyka. */
+    justify-content: flex-end;
+    gap: var(--shpd-space-sm);
+  }
+
+  .shpd-print__language {
+    display: flex;
+    align-items: center;
+    gap: var(--shpd-space-sm);
+    /* Výběr vlevo, tlačítka vpravo. */
+    margin-right: auto;
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-text-secondary);
+  }
+
+  .shpd-print__language :global(.shpd-select__wrapper) {
+    width: 11rem;
+  }
+
+  /* Stejný zlom jako Modal: výběr jazyka na vlastní řádek, tlačítka pod ním
+     přes celou šířku. */
+  @media (max-width: 768px) {
+    .shpd-print__footer {
+      flex-wrap: wrap;
+    }
+
+    .shpd-print__language {
+      flex: 1 0 100%;
+      margin-right: 0;
+    }
+
+    .shpd-print__language :global(.shpd-select__wrapper) {
+      width: auto;
+      flex: 1;
+    }
+
+    .shpd-print__footer > :global(.shpd-btn) {
+      flex: 1;
+    }
   }
 
   .shpd-print__state {

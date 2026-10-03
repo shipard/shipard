@@ -13,6 +13,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentLockRegistry;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Prints\PrintDefinition;
+use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Viewer\ViewerRegistry;
 
@@ -236,6 +237,8 @@ class ViewerController
 	 * Akce Tisk pro `detail.actions`: jeden dostupný tisk = tlačítko
 	 * s `target.printId`, víc tisků = dropdown (`value` položky = id tisku).
 	 * Popisek z `core.system.viewerDefaults.detailActions.print`.
+	 * `target.languages` nese jazyky tisku pro přepínač v náhledu (#90 D33)
+	 * — jeden seznam pro všechny tisky.
 	 *
 	 * @param PrintDefinition[] $definitions Tisky dostupné pro záznam, už seřazené.
 	 * @return array<string, mixed>|null
@@ -253,16 +256,41 @@ class ViewerController
 			'variant' => $def['variant'] ?? 'secondary',
 		];
 
+		$languages = self::printLanguages($config);
+
 		if (count($definitions) === 1) {
-			return $action + ['kind' => 'button', 'target' => ['printId' => $definitions[0]->id]];
+			return $action + [
+				'kind'   => 'button',
+				'target' => ['printId' => $definitions[0]->id, 'languages' => $languages],
+			];
 		}
 
 		return $action + [
-			'kind'  => 'dropdown',
-			'items' => array_map(
+			'kind'   => 'dropdown',
+			'items'  => array_map(
 				static fn (PrintDefinition $d): array => ['label' => $d->name, 'value' => $d->id],
 				$definitions,
 			),
+			'target' => ['languages' => $languages],
 		];
+	}
+
+	/**
+	 * Jazyky tisku s popiskem z `world.base.documentLanguages` v jazyce
+	 * rozhraní; bez cfgItemu (zdroj dat před `ds-upgrade`) je popiskem kód.
+	 *
+	 * @return list<array{id: string, label: string}>
+	 */
+	private static function printLanguages(?ConfigRuntime $config): array
+	{
+		$names = $config?->cfgItem('world.base.documentLanguages');
+
+		return array_map(
+			static function (string $language) use ($names): array {
+				$label = is_array($names) ? ($names[$language]['name'] ?? null) : null;
+				return ['id' => $language, 'label' => is_string($label) && $label !== '' ? $label : $language];
+			},
+			PrintLanguageResolver::LANGUAGES,
+		);
 	}
 }

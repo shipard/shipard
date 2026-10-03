@@ -1,7 +1,7 @@
 ---
 title: Tisk faktury
 summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne.
-keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, faktura v angličtině, jazyk podle odběratele, faktura slovensky, faktura německy, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
+keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, faktura v angličtině, jazyk podle odběratele, faktura slovensky, faktura německy, přepnout jazyk tisku, změnit jazyk faktury, výběr jazyka, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
 related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, osoby/zalozeni-osoby.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, uctarna/tisk-kontace.md, co-dnes-nejde.md]
 ---
 
@@ -29,6 +29,11 @@ a potřebuješ doklad, který dostane odběratel.
 
 3. **Zkontroluj náhled** a dej **Stáhnout**. Soubor se uloží pod názvem
    s číslem dokladu. Okno zavřeš tlačítkem **Zavřít**.
+
+Doklad potřebuješ v jiném jazyce? Vlevo dole v okně **Tisk** je výběr
+**Jazyk** — čeština, angličtina, slovenština, němčina. Náhled se po změně
+načte znovu a **Stáhnout** uloží doklad ve zvoleném jazyce. Volba platí jen
+pro tento tisk; příště se okno otevře zase v jazyce podle odběratele.
 
 Tisk nic neukládá — PDF vzniká pokaždé znovu z dokladu, takže ho můžeš
 stáhnout, kolikrát chceš.
@@ -90,10 +95,11 @@ v prohlížeči PDF.
 z **Fakturačních údajů** dokladu: odběrateli z Česka se tiskne česky, ze
 Slovenska slovensky, z Německa a Rakouska německy a odběratelům z ostatních
 zemí anglicky. Doklad bez odběratele se tiskne v jazyce země tvé firmy. Když
-to u některého odběratele nesedí, nastav mu **Jazyk dokumentů** na tabu
-**Nastavení** v **Osobách** — viz
+to u některého odběratele nesedí trvale, nastav mu **Jazyk dokumentů** na
+tabu **Nastavení** v **Osobách** — viz
 [Založení osoby](../osoby/zalozeni-osoby.md); doklad není potřeba měnit,
-příští tisk už je v novém jazyce.
+příští tisk už je v novém jazyce. Pro jeden tisk stačí přepnout **Jazyk**
+přímo v okně **Tisk**.
 
 **Co se s jazykem mění a co ne.** V jazyce dokladu jsou titulek, popisky,
 názvy sazeb DPH, způsob úhrady, podoba čísel a dat a zkratky běžných

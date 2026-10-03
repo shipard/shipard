@@ -242,6 +242,8 @@ export default {
   'print.preview.title': 'Tisk',
   'print.preview.loading': 'Připravuji tisk…',
   'print.preview.unsupported': 'Tento prohlížeč náhled PDF neumí zobrazit. Soubor si stáhni tlačítkem Stáhnout.',
+  'print.preview.language': 'Jazyk',
+  'print.preview.languageAuto': 'Automaticky',
   'print.download': 'Stáhnout',
   'viewer.detail.filingAccounted': 'Účetní doklad přiznání byl založen jako koncept — zkontrolujte ho a uzavřete.',
   'viewer.detail.inviteFailed': 'Nepodařilo se poslat pozvánku: {msg}',
