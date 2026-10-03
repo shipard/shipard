@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Settings;
 
+use Shipard\Core\Server\PermissionSpec;
+
 /**
  * Per-uživatelský avatar se single-slot sémantikou — soubory v
  * `{dsPath}/branding/avatars/` uložené jako `{userId}.{ext}`. Metadata
@@ -103,7 +105,7 @@ class AvatarStorage
     public function store(int $userId, string $tmpPath): array
     {
         $dir = $this->getDir();
-        if (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
+        if (!PermissionSpec::ensureDsDir($dir)) {
             throw new \RuntimeException("Cannot create avatars directory: {$dir}");
         }
 

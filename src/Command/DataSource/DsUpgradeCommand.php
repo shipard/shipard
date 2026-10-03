@@ -19,6 +19,7 @@ use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleResolver;
 use Shipard\Core\Security\DsSecretCipher;
+use Shipard\Core\Server\PermissionSpec;
 use Shipard\Core\Settings\LayerCParameters;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Utils\JsoncParser;
@@ -90,14 +91,12 @@ class DsUpgradeCommand extends Command
         $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
 
         // Ensure writable directories exist (att, branding, cache) with the
-        // PermissionSpec mode — mkdir alone is subject to umask, so chmod
-        // explicitly (also converges dirs created by older versions).
+        // PermissionSpec mode; the chmod converges dirs created by older
+        // versions.
         foreach (['att', 'branding', 'cache', 'cache/thumbnails', 'cache/oidc'] as $subdir) {
             $dirPath = $dsDir . '/' . $subdir;
-            if (!is_dir($dirPath)) {
-                @mkdir($dirPath, 0755, true);
-            }
-            @chmod($dirPath, 0750);
+            PermissionSpec::ensureDsDir($dirPath);
+            @chmod($dirPath, PermissionSpec::DS_DIR_MODE);
         }
 
         // Step 1.5: Ensure per-DS secrets key exists (generated for legacy DS

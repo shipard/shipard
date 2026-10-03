@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Attachments;
 
+use Shipard\Core\Server\PermissionSpec;
+
 /**
  * Low-level file operations for attachment storage.
  *
@@ -113,14 +115,12 @@ class FileStorage
 
         // Full directory on disk
         $fullDir = $dsPath . '/att/' . $relativeDir;
-        if (!is_dir($fullDir)) {
-            if (!@mkdir($fullDir, 0755, true)) {
-                throw new \RuntimeException(
-                    "Cannot create attachment directory: {$fullDir}. "
-                    . "Check that the 'att/' directory exists in the data source and is writable by the web server. "
-                    . "Run 'shpd-ds ds-upgrade' to create it."
-                );
-            }
+        if (!PermissionSpec::ensureDsDir($fullDir)) {
+            throw new \RuntimeException(
+                "Cannot create attachment directory: {$fullDir}. "
+                . "Check that the 'att/' directory exists in the data source and is writable by the web server. "
+                . "Run 'shpd-ds ds-upgrade' to create it."
+            );
         }
 
         return [$relativeDir, $fullDir];

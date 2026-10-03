@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Settings;
 
+use Shipard\Core\Server\PermissionSpec;
+
 /**
  * Branding obrázky se single-slot sémantikou — soubory v `{dsPath}/branding/`
  * uložené jako `{slot}.{ext}`. Metadata (původní jméno, mime, hash, …) drží
@@ -115,7 +117,7 @@ class BrandingStorage
     public function store(string $slot, string $tmpPath, string $ext): string
     {
         $dir = $this->getDir();
-        if (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
+        if (!PermissionSpec::ensureDsDir($dir)) {
             throw new \RuntimeException("Cannot create branding directory: {$dir}");
         }
 

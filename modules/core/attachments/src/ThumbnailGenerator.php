@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Attachments;
 
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\Server\PermissionSpec;
 
 /**
  * Generates thumbnail images for attachments using CLI tools.
@@ -48,9 +49,7 @@ class ThumbnailGenerator
     ): ?string {
         // Ensure cache directory exists
         $cacheDir = $dsPath . '/cache/thumbnails';
-        if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0755, true);
-        }
+        PermissionSpec::ensureDsDir($cacheDir);
 
         // Build cache key
         $cacheKey = hash('sha256', "{$attachmentId}:{$width}:{$quality}:{$page}:{$checksum}");

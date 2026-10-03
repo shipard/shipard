@@ -111,6 +111,22 @@ class FileStorageTest extends TestCase
         $this->assertDirectoryExists($expectedDir);
     }
 
+    public function testStoreCreatesDirectoriesWithSpecMode(): void
+    {
+        $tmpFile = $this->tempDir . '/upload.pdf';
+        file_put_contents($tmpFile, 'PDF content');
+
+        $this->storage->store($this->tempDir, 'base_persons_persons', 'test.pdf', $tmpFile);
+
+        $now = new \DateTimeImmutable();
+        $dir = $this->tempDir;
+        clearstatcache();
+        foreach (['att', $now->format('Y'), $now->format('m'), $now->format('d'), 'base_persons_persons'] as $level) {
+            $dir .= '/' . $level;
+            $this->assertSame(0750, fileperms($dir) & 0777, "mode of '{$dir}'");
+        }
+    }
+
     public function testStoreMovesFile(): void
     {
         $tmpFile = $this->tempDir . '/upload.pdf';

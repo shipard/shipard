@@ -81,6 +81,36 @@ class ConfigCompilerTest extends TestCase
         $this->assertSame('App', $data['items']['core.app']['name']);
     }
 
+    public function testOutputDirectoryCreatedWithSpecMode(): void
+    {
+        $modulePath = $this->tmpDir . '/modules/core/system';
+        $this->writeConfigFile($modulePath, 'config/app.jsonc', ['name' => 'App']);
+
+        $module = $this->makeModule('core.system', [['id' => 'core.app', 'file' => 'config/app.jsonc']]);
+        $outputPath = $this->tmpDir . '/config/configuration';
+
+        ConfigCompiler::compile([$module], new ModulePathResolver([$this->tmpDir . '/modules']), ['en'], $outputPath);
+
+        clearstatcache();
+        $this->assertSame(0750, fileperms($outputPath) & 0777);
+    }
+
+    public function testUncreatableOutputDirectoryThrows(): void
+    {
+        mkdir($this->tmpDir . '/modules');
+        file_put_contents($this->tmpDir . '/config', '');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Cannot create configuration directory');
+
+        ConfigCompiler::compile(
+            [],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/config/configuration',
+        );
+    }
+
     public function testMultipleModulesMultipleLanguages(): void
     {
         $mod1Path = $this->tmpDir . '/modules/core/system';

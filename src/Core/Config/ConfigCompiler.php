@@ -7,6 +7,7 @@ namespace Shipard\Core\Config;
 use Shipard\Core\I18n\ConfigLocalizer;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Server\PermissionSpec;
 use Shipard\Core\StructuredFields\StructuredSchemaValidator;
 use Shipard\Core\Utils\JsoncParser;
 
@@ -70,7 +71,8 @@ class ConfigCompiler
      *        neznámou tabulku je chyba. Null = volající tabulky nezná
      *        (testy) — dimenze zůstanou bez vzoru a bez kontroly.
      * @throws \RuntimeException když schéma chybí nebo neprojde validací,
-     *         nebo dimenze deníku míří na neznámou tabulku
+     *         dimenze deníku míří na neznámou tabulku, nebo nejde založit
+     *         výstupní adresář
      */
     public static function compile(
         array $modules,
@@ -140,8 +142,8 @@ class ConfigCompiler
             StructuredSchemaValidator::validate((string) $cfgId, $rawItems[$cfgId]);
         }
 
-        if (!is_dir($outputPath)) {
-            mkdir($outputPath, 0755, true);
+        if (!PermissionSpec::ensureDsDir($outputPath)) {
+            throw new \RuntimeException("Cannot create configuration directory '{$outputPath}'");
         }
 
         foreach ($languages as $language) {

@@ -143,6 +143,14 @@ class BrandingStorageTest extends TestCase
         $this->assertFileDoesNotExist($this->dsPath . '/branding/icon.png');
     }
 
+    public function testStoreCreatesBrandingDirWithSpecMode(): void
+    {
+        $this->storage->store('icon', $this->tmpFile($this->pngContent()), 'png');
+
+        clearstatcache();
+        $this->assertSame(0750, fileperms($this->dsPath . '/branding') & 0777);
+    }
+
     public function testDeleteSlotFiles(): void
     {
         $tmp = $this->tmpFile($this->pngContent());

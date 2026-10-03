@@ -19,6 +19,12 @@ namespace Shipard\Core\Server;
  */
 final class PermissionSpec
 {
+    /**
+     * Mode of the directories the application creates inside a data source
+     * (secrets/ is stricter and has its own writer).
+     */
+    public const int DS_DIR_MODE = 0750;
+
     public function __construct(
         private readonly string $shipardUser,
         private readonly string $dataSourcesDir = '/opt/shipard/data-sources',
@@ -54,18 +60,47 @@ final class PermissionSpec
      */
     public function getDataSourceEntries(string $dsDir): array
     {
+        $dirMode = self::DS_DIR_MODE;
+
         return [
-            ['path' => $dsDir,                                'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0750],
-            ['path' => $dsDir . '/config',                    'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0750],
+            ['path' => $dsDir,                                'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode],
+            ['path' => $dsDir . '/config',                    'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode],
             ['path' => $dsDir . '/config/main.json',          'type' => 'file', 'owner' => 'user', 'group' => 'user', 'mode' => 0600],
-            ['path' => $dsDir . '/config/configuration',      'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0750, 'optional' => true, 'recurse' => true],
+            ['path' => $dsDir . '/config/configuration',      'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true, 'recurse' => true],
             ['path' => $dsDir . '/secrets',                   'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0700, 'optional' => true, 'recurse' => true, 'contentsMaxMode' => 0600],
             ['path' => $dsDir . '/secrets/secrets.key',       'type' => 'file', 'owner' => 'user', 'group' => 'user', 'mode' => 0600, 'optional' => true],
-            ['path' => $dsDir . '/att',                       'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0750, 'optional' => true, 'recurse' => true],
-            ['path' => $dsDir . '/branding',                  'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0750, 'optional' => true, 'recurse' => true],
-            ['path' => $dsDir . '/cache',                     'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0750, 'optional' => true, 'recurse' => true],
-            ['path' => $dsDir . '/cache/thumbnails',          'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0750, 'optional' => true],
+            ['path' => $dsDir . '/att',                       'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true, 'recurse' => true],
+            ['path' => $dsDir . '/branding',                  'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true, 'recurse' => true],
+            ['path' => $dsDir . '/cache',                     'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true, 'recurse' => true],
+            ['path' => $dsDir . '/cache/thumbnails',          'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => $dirMode, 'optional' => true],
         ];
+    }
+
+    /**
+     * Creates a directory inside a data source, missing parents included,
+     * with DS_DIR_MODE. mkdir alone is subject to umask, so every level
+     * created here is chmod-ed explicitly. Directories that already exist
+     * are left as they are — converging those is the job of fix-permissions.
+     */
+    public static function ensureDsDir(string $path): bool
+    {
+        if (is_dir($path)) {
+            return true;
+        }
+
+        $created = [];
+        for ($dir = $path; !file_exists($dir) && $dir !== dirname($dir); $dir = dirname($dir)) {
+            $created[] = $dir;
+        }
+
+        if (!@mkdir($path, self::DS_DIR_MODE, true) && !is_dir($path)) {
+            return false;
+        }
+        foreach ($created as $dir) {
+            @chmod($dir, self::DS_DIR_MODE);
+        }
+
+        return true;
     }
 
     public function getShipardUser(): string

@@ -166,7 +166,7 @@ class DsCreateCommand extends Command
         $dataSourceDir = $dataSourcesDir . '/' . $id;
         $configDir = $dataSourceDir . '/config';
 
-        if (!mkdir($configDir, 0755, true)) {
+        if (!PermissionSpec::ensureDsDir($configDir)) {
             $output->writeln('<error>Failed to create data source directory</error>');
             return Command::FAILURE;
         }
@@ -174,16 +174,11 @@ class DsCreateCommand extends Command
         // Create database and user
         $dbManager = $this->databaseManager ?? new DatabaseManager($config);
 
-        // Create writable directories for attachments, branding and cache
-        @mkdir($dataSourceDir . '/att', 0755);
-        @mkdir($dataSourceDir . '/branding', 0755);
-        @mkdir($dataSourceDir . '/cache/thumbnails', 0755, true);
-        @mkdir($dataSourceDir . '/cache/oidc', 0755, true);
-
-        // mkdir mode is subject to umask — enforce the PermissionSpec contract
-        // (0750) explicitly, without relying on a later fix-permissions run.
-        foreach (['', 'config', 'att', 'branding', 'cache', 'cache/thumbnails', 'cache/oidc'] as $subdir) {
-            @chmod(rtrim($dataSourceDir . '/' . $subdir, '/'), 0750);
+        // Create writable directories for attachments, branding and cache —
+        // with the PermissionSpec mode, without relying on a later
+        // fix-permissions run.
+        foreach (['att', 'branding', 'cache/thumbnails', 'cache/oidc'] as $subdir) {
+            PermissionSpec::ensureDsDir($dataSourceDir . '/' . $subdir);
         }
 
         $password = $dbManager->generatePassword();
