@@ -1,0 +1,47 @@
+#cloud-config
+# Shipard — vývojové prostředí v Multipass VM (cloud-init).
+#
+# Použití na hostiteli (macOS, Linux, Windows):
+#
+#   multipass launch 26.04 --name shipard --cpus 2 --memory 4G --disk 20G \
+#       --timeout 1800 --cloud-init shipard-dev.yaml
+#
+# --timeout je potřeba: instalace trvá déle než výchozích 5 minut, po kterých
+# by launch ohlásil chybu, přestože VM dál pracuje.
+#
+#   Průběh:  multipass exec shipard -- tail -f shipard-bootstrap.log
+#   Hotovo:  multipass exec shipard -- cloud-init status --wait
+#   Adresa:  multipass info shipard      →  http://<IPv4>/_dev/
+#
+# Jen výchozí síť Multipassu — nepřidávej --network ani --bridged. Vývojářský
+# dashboard nemá přihlášení a v místní síti by byl dostupný komukoli.
+#
+# Návod krok za krokem: docs/local-dev.md
+
+users:
+  - default
+
+# ↓↓↓ SEM VLOŽ SVŮJ VEŘEJNÝ SSH KLÍČ ↓↓↓
+# Nahraď řádek pod `ssh_authorized_keys:` obsahem souboru
+# ~/.ssh/id_ed25519.pub z hostitele (jeden řádek; soubor bez přípony .pub je
+# soukromý klíč — ten sem nepatří). Klíčem se do VM přihlašuje
+# remote-dev-bridge (Claude v chatu) nebo tvoje vlastní ssh.
+# Bez klíče se do VM dostaneš jen přes `multipass shell shipard`; přidat ho
+# jde i později do ~/.ssh/authorized_keys ve VM.
+ssh_authorized_keys:
+  - ssh-ed25519 AAAA_NAHRAD_TENTO_RADEK_SVYM_VEREJNYM_KLICEM
+
+# Bootstrap běží pod uživatelem ubuntu (sudo si volá sám), výstup jde do
+# ~/shipard-bootstrap.log. pipefail: výpadek sítě při stahování skriptu nesmí
+# skončit jako úspěch.
+runcmd:
+  - - sudo
+    - -u
+    - ubuntu
+    - -H
+    - bash
+    - -c
+    - >-
+      cd ~ && set -o pipefail &&
+      curl -fsSL https://raw.githubusercontent.com/shipard/shipard/stable/scripts/dev-bootstrap.sh
+      | bash > ~/shipard-bootstrap.log 2>&1
