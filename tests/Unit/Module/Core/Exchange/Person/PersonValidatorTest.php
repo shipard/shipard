@@ -270,4 +270,43 @@ class PersonValidatorTest extends TestCase
         }
         return null;
     }
+
+    // ── documents.language (#94) ───────────────────────────────────────────
+
+    /** @param array<string, mixed> $documents */
+    private function companyWithDocuments(?array $documents): array
+    {
+        return [
+            'personType' => 'company',
+            'companyId'  => '12345678',
+            'name'       => ['fullName' => 'Acme s.r.o.'],
+            'documents'  => $documents,
+        ];
+    }
+
+    public function testDocumentLanguageAmongDocumentLanguagesPasses(): void
+    {
+        $v = new PersonValidator(['cs', 'en', 'sk', 'de']);
+
+        $this->assertSame([], $v->validate($this->companyWithDocuments(['language' => 'de'])));
+        $this->assertSame([], $v->validate($this->companyWithDocuments(['language' => null])));
+        $this->assertSame([], $v->validate($this->companyWithDocuments(null)));
+    }
+
+    public function testDocumentLanguageOutsideDocumentLanguagesIsError(): void
+    {
+        $issues = (new PersonValidator(['cs', 'en', 'sk', 'de']))
+            ->validate($this->companyWithDocuments(['language' => 'fr']));
+
+        $this->assertCount(1, $issues);
+        $this->assertSame('error', $issues[0]['severity']);
+        $this->assertSame('documents.language', $issues[0]['path']);
+        $this->assertSame('invalid_document_language', $issues[0]['code']);
+    }
+
+    public function testDocumentLanguageIsNotCheckedWithoutLanguageList(): void
+    {
+        // Preflight datové sady konfiguraci nemá — jazyk ověří až applier.
+        $this->assertSame([], $this->v->validate($this->companyWithDocuments(['language' => 'fr'])));
+    }
 }

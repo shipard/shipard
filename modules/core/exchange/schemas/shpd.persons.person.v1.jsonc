@@ -113,6 +113,19 @@
             }
         },
 
+        // ── Documents (formatVersion 1.1, #94) ──────────────────────────
+        // Volby osoby pro dokumenty. Blok CHYBÍ → applier sloupce nemění;
+        // blok JE → zapíše obě hodnoty (`language: null` = automaticky
+        // podle země). `language` proti jazykům dokumentů validuje PHP.
+        "documents": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "properties": {
+                "language":              { "type": ["string", "null"], "pattern": "^[a-z]{2}$" },
+                "sendAttachmentsMerged": { "type": ["boolean", "null"] }
+            }
+        },
+
         // ── Sub-collections ─────────────────────────────────────────────
         "addresses": {
             "type": "array",

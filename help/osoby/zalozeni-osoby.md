@@ -1,8 +1,8 @@
 ---
 title: Založení osoby
 summary: Jak přidat dodavatele nebo odběratele — natažením české firmy z registru podle IČO, nebo ručně.
-keywords: [osoby, osoba, nová osoba, založit osobu, přidat osobu, dodavatele, dodavatel, odběratele, odběratel, partner, protistrana, firma, fyzická osoba, IČO, DIČ, z registru, natáhnout firmu, přidat firmu z registru, zahraniční dodavatel, slovenská firma, německá firma, firma z EU, vlastní firma, chybí vlastní osoba, splatnost, kontakty, adresy, bankovní účet osoby, kód osoby]
-related: [posta/kontrola-vytezeni.md, co-shipard-umi.md, slovnicek.md]
+keywords: [osoby, osoba, nová osoba, založit osobu, přidat osobu, dodavatele, dodavatel, odběratele, odběratel, partner, protistrana, firma, fyzická osoba, IČO, DIČ, z registru, natáhnout firmu, přidat firmu z registru, zahraniční dodavatel, slovenská firma, německá firma, firma z EU, vlastní firma, chybí vlastní osoba, splatnost, kontakty, adresy, bankovní účet osoby, kód osoby, jazyk dokumentů, jazyk faktury pro odběratele, faktura anglicky, doklad v angličtině, přílohy do PDF dokladu]
+related: [posta/kontrola-vytezeni.md, faktury-vydane/tisk-faktury.md, co-shipard-umi.md, slovnicek.md]
 ---
 
 # Založení osoby
@@ -83,6 +83,19 @@ faktuře dopočítá **Datum splatnosti** jako datum vystavení plus tolik dní,
 takže se vyplatí ji u partnerů, se kterými máš dohodnuto něco jiného,
 opravit.
 
+**Jazyk dokumentů nastavuj, jen když automatika nevyhovuje.** Na tabu
+**Nastavení** v sekci *Dokumenty* je **Jazyk dokumentů** s výchozí volbou
+**Automaticky (podle země)**: doklad se tiskne v jazyce země z adresy
+odběratele na dokladu. Jinou volbu — *čeština*, *angličtina*, *slovenština*,
+*němčina* — dej tam, kde to nesedí, třeba u české firmy, která chce doklady
+anglicky. Platí hned i pro už vystavené doklady: příští tisk je v novém
+jazyce. Slovensky a německy se zatím netiskne, takový doklad vyjde
+anglicky — viz [Tisk faktury](../faktury-vydane/tisk-faktury.md).
+
+**Přílohy dokladu připojit do PDF dokladu** ve stejné sekci se zatím jen
+ukládá. Uplatní se, až půjde doklady odesílat e-mailem přímo z Shipardu —
+viz [Co Shipard dnes neumí](../co-dnes-nejde.md).
+
 **Vlastní firma se zakládá z panelu Nastavení zdroje dat.** U čerstvého
 datového zdroje ti Dashboard ukáže kartu **Dokončit nastavení**, která
 panel otevře. U položky **Chybí vlastní Osoba** dej **Načíst z registru**
@@ -98,5 +111,7 @@ datovém zdroji udělej.
 
 - [Kontrola vytěženého dokladu](../posta/kontrola-vytezeni.md) — kde se
   dodavatel potvrzuje nebo zakládá z vytěžené faktury
+- [Tisk faktury](../faktury-vydane/tisk-faktury.md) — v jakém jazyce se
+  doklad odběrateli vytiskne
 - [Co Shipard umí](../co-shipard-umi.md) — přehled ostatních agend
 - [Slovníček](../slovnicek.md) — co znamenají stavy a názvy v rozhraní

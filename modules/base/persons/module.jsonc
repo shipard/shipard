@@ -113,6 +113,10 @@
             "id": "base.persons.viewerDefaults",
             "file": "config/viewerDefaults.jsonc"
         },
+        {
+            "id": "base.persons.formLabels",
+            "file": "config/formLabels.jsonc"
+        },
     ],
 
     "alertChecks": [

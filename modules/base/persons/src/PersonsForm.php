@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Base\Persons;
 
+use Shipard\Core\Form\EnumOptionsHelper;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormHeaderInfo;
 use Shipard\Core\Form\FormTab;
@@ -77,7 +78,7 @@ class PersonsForm extends TableForm
         $bankAccounts = $this->subtableTab('bank_accounts', 'Bankovní účty', 'base_persons_bank_accounts', 'person', 'base.persons.bank_accounts');
 
         // ── Tab: Nastavení (úplně na konci, za Přílohami) ───────────────────
-        $settings = $this->tab('settings', 'Nastavení')
+        $settingsTab = $this->tab('settings', 'Nastavení')
             ->section(title: 'Identifikace')
                 ->col()
                     ->input('person_id', required: true)
@@ -91,7 +92,22 @@ class PersonsForm extends TableForm
             ->section(title: 'Obchodní podmínky')
                 ->col()
                     ->number('payment_term_days')
-            ->build();
+
+            // Jazyk je výjimka, ne povinný údaj (#94 D1): prázdná volba =
+            // automaticky podle země adresy na dokladu.
+            ->section(title: 'Dokumenty')
+                ->col()
+                    ->select(
+                        'language',
+                        options: $this->resolveDocumentLanguageOptions(),
+                        placeholder: $this->languageAutoLabel(),
+                    );
+
+        // Spojování příloh je extension z docs.core — bez modulu sloupec není.
+        if ($this->hasColumn('send_attachments_merged')) {
+            $settingsTab->checkbox('send_attachments_merged');
+        }
+        $settings = $settingsTab->build();
 
         return new FormDefinition(
             table: $this->table,
@@ -290,6 +306,33 @@ class PersonsForm extends TableForm
 
         $formDefinition = $this->buildFormDefinition($data, empty($data['id']));
         return new RecalculateResult($formDefinition, $data);
+    }
+
+    /** @return list<array{value: int|string, label: string}> */
+    private function resolveDocumentLanguageOptions(): array
+    {
+        $cfgData = $this->config?->cfgItem('world.base.documentLanguages');
+        if (!is_array($cfgData)) {
+            return [];
+        }
+        return EnumOptionsHelper::fromCfgData($cfgData, 'enumString', 'world.base.documentLanguages');
+    }
+
+    /** Text prázdné volby jazyka dokumentů (cfgItem `base.persons.formLabels`). */
+    private function languageAutoLabel(): string
+    {
+        $labels = $this->config?->cfgItem('base.persons.formLabels');
+        return $labels['languageAuto']['name'] ?? 'Automatic (by country)';
+    }
+
+    private function hasColumn(string $column): bool
+    {
+        foreach ($this->tableDef?->columns ?? [] as $col) {
+            if ($col->id === $column) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function resolvePersonTypeOptions(): array

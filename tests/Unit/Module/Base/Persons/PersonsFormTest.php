@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Base\Persons;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\FormElement;
 use Shipard\Core\Form\FormSection;
+use Shipard\Core\I18n\ConfigLocalizer;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Base\Persons\PersonsForm;
+use Shipard\Tests\Fixtures\Core\Config\ConfigRuntimeFactory;
 
 class PersonsFormTest extends TestCase
 {
+    private const MODULES = __DIR__ . '/../../../../../modules';
+
     private function createForm(): PersonsForm
     {
         return new PersonsForm('base_persons_persons');
@@ -112,7 +118,7 @@ class PersonsFormTest extends TestCase
         );
     }
 
-    public function testSettingsTabHasThreeSections(): void
+    public function testSettingsTabHasFourSections(): void
     {
         $form = $this->createForm();
         $def  = $form->buildFormDefinition(['person_type' => 2], false);
@@ -126,11 +132,11 @@ class PersonsFormTest extends TestCase
         }
 
         $this->assertNotNull($settingsTab);
-        $this->assertCount(3, $settingsTab->sections);
+        $this->assertCount(4, $settingsTab->sections);
 
         $titles = array_map(fn($s) => $s->title, $settingsTab->sections);
         $this->assertSame(
-            ['Identifikace', 'Identifikace firmy - doplňující', 'Obchodní podmínky'],
+            ['Identifikace', 'Identifikace firmy - doplňující', 'Obchodní podmínky', 'Dokumenty'],
             $titles,
         );
     }
@@ -490,6 +496,84 @@ class PersonsFormTest extends TestCase
         $section = $this->findSection($def, 'settings', 'Obchodní podmínky');
         $this->assertNotNull($section);
         $this->assertFalse($section->hidden);
+    }
+
+    // ── Dokumenty (#94 D8) ───────────────────────────────────────────────────
+
+    /** Formulář s konfigurací a s definicí tabulky včetně extension docs.core. */
+    private function createFormWithDocuments(bool $withMergeColumn = true): PersonsForm
+    {
+        $raw = JsoncParser::parseFile(self::MODULES . '/base/persons/tables/base_persons_persons.jsonc');
+        if ($withMergeColumn) {
+            $extension = JsoncParser::parseFile(self::MODULES . '/docs/core/extensions/base_persons_persons.jsonc');
+            $raw['columns'] = array_merge($raw['columns'], $extension['columns']);
+        }
+
+        $form = $this->createForm();
+        $form->setTableDef(TableDefinition::fromArray(ConfigLocalizer::localize($raw, 'cs')));
+        $form->setConfig(ConfigRuntimeFactory::fromItems([
+            'world.base.documentLanguages' => [
+                'cs' => ['name' => 'čeština'],
+                'en' => ['name' => 'angličtina'],
+                'sk' => ['name' => 'slovenština'],
+                'de' => ['name' => 'němčina'],
+            ],
+            'base.persons.formLabels' => ['languageAuto' => ['name' => 'Automaticky (podle země)']],
+        ]));
+        return $form;
+    }
+
+    public function testLanguageSelectOffersDocumentLanguagesAndAutomaticOption(): void
+    {
+        $def = $this->createFormWithDocuments()->buildFormDefinition(['person_type' => 2], false);
+
+        $el = $this->findElement($def, 'settings', 'language');
+        $this->assertNotNull($el);
+        $this->assertSame('select', $el->type);
+        $this->assertSame('Jazyk dokumentů', $el->label);
+        $this->assertFalse($el->required, 'jazyk je výjimka — prázdná volba = automaticky');
+        $this->assertSame('Automaticky (podle země)', $el->placeholder);
+        $this->assertSame(
+            [
+                ['value' => 'cs', 'label' => 'čeština'],
+                ['value' => 'en', 'label' => 'angličtina'],
+                ['value' => 'sk', 'label' => 'slovenština'],
+                ['value' => 'de', 'label' => 'němčina'],
+            ],
+            $el->options,
+        );
+    }
+
+    public function testDokumentySectionIsVisibleForPersonToo(): void
+    {
+        $def = $this->createFormWithDocuments()->buildFormDefinition(['person_type' => 1], false);
+
+        $section = $this->findSection($def, 'settings', 'Dokumenty');
+        $this->assertNotNull($section);
+        $this->assertFalse($section->hidden);
+    }
+
+    public function testMergeAttachmentsCheckboxFollowsTheExtensionColumn(): void
+    {
+        $with = $this->createFormWithDocuments()->buildFormDefinition(['person_type' => 2], false);
+        $el   = $this->findElement($with, 'settings', 'send_attachments_merged');
+        $this->assertNotNull($el);
+        $this->assertSame('checkbox', $el->inputType);
+        $this->assertSame('Přílohy dokladu připojit do PDF dokladu', $el->label);
+
+        // Bez modulu docs.core sloupec není — pole ve formuláři také ne.
+        $without = $this->createFormWithDocuments(withMergeColumn: false)->buildFormDefinition(['person_type' => 2], false);
+        $this->assertNull($this->findElement($without, 'settings', 'send_attachments_merged'));
+        $this->assertNotNull($this->findElement($without, 'settings', 'language'));
+    }
+
+    public function testLanguageAutoLabelFallsBackToEnglishWithoutConfig(): void
+    {
+        $def = $this->createForm()->buildFormDefinition(['person_type' => 2], false);
+
+        $el = $this->findElement($def, 'settings', 'language');
+        $this->assertSame('Automatic (by country)', $el?->placeholder);
+        $this->assertSame([], $el?->options);
     }
 
     // ── Recalculate ──────────────────────────────────────────────────────────

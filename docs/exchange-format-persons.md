@@ -62,7 +62,7 @@ Zbytek pojmosloví (Canonical, Schema, Resolve, Apply, Lineage) viz
 {
   // ── Format meta ──────────────────────────────────────────────────────────
   "format": "shpd.persons.person",
-  "formatVersion": "1.0",
+  "formatVersion": "1.1",
 
   // ── Source (audit / lineage) ─────────────────────────────────────────────
   "source": {
@@ -126,6 +126,12 @@ Zbytek pojmosloví (Canonical, Schema, Resolve, Apply, Lineage) viz
                                        //   povolené: 10, 40, 70, 80, 90
   },
 
+  // ── Dokumenty (od 1.1, volitelný blok — viz níže) ────────────────────────
+  "documents": {
+    "language":              "de",     // jazyk dokumentů; null = automaticky
+    "sendAttachmentsMerged": false     // přílohy dokladu připojit do PDF dokladu
+  },
+
   // ── Sub-kolekce ──────────────────────────────────────────────────────────
   "addresses":    [ { /* Address — viz sekce 5 */ } ],
   "bankAccounts": [ { /* BankAccount — viz sekce 6 */ } ],
@@ -164,6 +170,31 @@ na sloupce `base_persons_persons`:
 
 Validace polymorfismu probíhá v PHP (`PersonExchangeFormat::validate()`),
 JSON Schema definuje pouze společnou strukturu.
+
+### `documents` — volby osoby pro dokumenty (od 1.1)
+
+Volitelný blok (#94): `language` → `base_persons_persons.language`,
+`sendAttachmentsMerged` → `send_attachments_merged` (extension `docs.core`).
+
+- **`language`** musí být jeden z jazyků dokumentů (cfgItem
+  `world.base.documentLanguages`: `cs`, `en`, `sk`, `de`) — jiná hodnota je
+  chyba `invalid_document_language` (`PersonValidator`). `null` = jazyk se
+  odvodí automaticky podle země (`docs/prints.md` §3).
+- **Blok chybí → sloupce se nemění.** Obnova z registru ani starší payload
+  (`1.0`) tak nevynuluje ruční nastavení. `"documents": null` je totéž co
+  chybějící blok.
+- **Blok je → platí pro obě hodnoty**, i když v něm klíč chybí: chybějící
+  `language` = `null` (smazat jazyk), chybějící `sendAttachmentsMerged` =
+  `false`. Jak se zapíšou, řídí merge strategie (sekce 9): při založení
+  a u `updateHeader` / `fullSync` se zapíšou obě; `mergeAdd` doplní jen
+  to, co v databázi nastavené není (jazyk do prázdného sloupce, spojování
+  jen zapne); `createOnly` existující osobu nemění.
+- Zdroj dat bez modulu `docs.core` sloupec pro spojování nemá:
+  `sendAttachmentsMerged: true` se ignoruje a výsledek nese varování
+  `column_unavailable` na `documents.sendAttachmentsMerged`.
+- **Export** (`PersonExporter`) blok píše vždy; spojování jako výslovné
+  `true` / `false`, prázdný jazyk se prořezává. Bez sloupce pro spojování
+  a bez jazyka blok z exportu vypadne (není co přenášet).
 
 ### `complex_name` — schované za applierem
 
@@ -421,6 +452,10 @@ payload matchnul? Strategie je řízena polem `applyOptions.mergeStrategy`.
 | `mergeAdd` *(default)* | Aktualizovat jen prázdná pole v DB | Matched → nechat; missing v DB → přidat; existující nepřítomné v payloadu → nechat |
 | `fullSync` | Přepsat hlavičku celou | Matched → aktualizovat (overwrite); missing v DB → přidat; existující nepřítomné v payloadu → uzavřít (`valid_to = today`) |
 
+Blok `documents` se řídí strategií hlavičky s jedním rozdílem: `null`
+jazyk při přepisu hodnotu **maže** (ostatní pole hlavičky `null` přeskakují).
+Podrobně sekce 3 → `documents`.
+
 ### Authoritative refresh — výjimka pro Provozovna/Zařízení
 
 Když AddressResolver vrátí match s příznakem `authoritativeRefresh = true`
@@ -639,8 +674,10 @@ Reverse lookup z osoby → původ. Manuálně pořízené osoby mají `source_ki
 
 ## 14. Verzování
 
-Klíč `formatVersion` v top-level (`"1.0"`). Strategie shodná s
+Klíč `formatVersion` v top-level (aktuálně `"1.1"`). Strategie shodná s
 `shpd.docs.document.v1` (sekce 13 [exchange-format.md](exchange-format.md#13-verzování)):
+
+- `1.1` — volitelný blok `documents` (#94). Payload `1.0` zůstává platný.
 
 - Drobná rozšíření (nová optional pole, nové enum value) — zachová major.
 - Breaking changes — bump na novou major; per-verze applier.

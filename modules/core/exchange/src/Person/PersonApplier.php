@@ -58,6 +58,8 @@ class PersonApplier
         private readonly PersonValidator $personValidator,
         private readonly PersonResolver $personResolver,
         private readonly AddressResolver $addressResolver,
+        /** Má tabulka osob sloupec `send_attachments_merged` (extension docs.core)? */
+        private readonly bool $hasSendAttachmentsMerged = true,
     ) {}
 
     /**
@@ -86,12 +88,33 @@ class PersonApplier
             config: $config,
             personsGateway: $personsGateway,
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
-            personValidator: new PersonValidator(),
+            personValidator: new PersonValidator(self::documentLanguages($config)),
             personResolver: new PersonResolver(
                 $db, $partyResolver, $addressResolver, $bankResolver, $contactResolver,
             ),
             addressResolver: $addressResolver,
+            hasSendAttachmentsMerged: self::hasColumn(
+                $tables['base_persons_persons'] ?? null,
+                'send_attachments_merged',
+            ),
         );
+    }
+
+    /** @return list<string>|null Null = cfgItem chybí (zdroj dat před ds-upgrade). */
+    private static function documentLanguages(ConfigRuntime $config): ?array
+    {
+        $languages = $config->cfgItem('world.base.documentLanguages');
+        return is_array($languages) ? array_map('strval', array_keys($languages)) : null;
+    }
+
+    private static function hasColumn(?TableDefinition $table, string $column): bool
+    {
+        foreach ($table?->columns ?? [] as $col) {
+            if ($col->id === $column) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -129,7 +152,7 @@ class PersonApplier
             );
         }
 
-        $validatorIssues = $this->personValidator->validate($canonical);
+        $validatorIssues = $this->validatorIssues($canonical);
         $enriched = $this->withResolveIssues($canonical, $validatorIssues);
 
         if ($this->hasErrors($validatorIssues)) {
@@ -158,7 +181,7 @@ class PersonApplier
             );
         }
 
-        $issues = $this->personValidator->validate($canonical);
+        $issues = $this->validatorIssues($canonical);
         $strategy = MergeStrategy::fromCanonical($canonical['applyOptions']['mergeStrategy'] ?? null);
         $resolve = $this->personResolver->resolve($canonical, $strategy);
         $enriched = $this->withResolve($canonical, $resolve, $issues);
@@ -184,7 +207,7 @@ class PersonApplier
         }
 
         // 2. PersonValidator
-        $validatorIssues = $this->personValidator->validate($canonical);
+        $validatorIssues = $this->validatorIssues($canonical);
 
         // 3. Resolve (fresh — client's _resolve may be stale)
         $strategy = MergeStrategy::fromCanonical($canonical['applyOptions']['mergeStrategy'] ?? null);
@@ -239,6 +262,31 @@ class PersonApplier
         $finalCanonical['savedPersonId'] = $savedPersonId;
 
         return ApplyResult::ok($finalCanonical, $savedPersonId);
+    }
+
+    /**
+     * Issues validátoru + to, co ví jen applier: zdroj dat bez extension
+     * `docs.core` nemá kam uložit spojování příloh — hodnota se ignoruje
+     * a výsledek to řekne varováním (#94 D9).
+     *
+     * @param array<string, mixed> $canonical
+     * @return array<int, array{severity: string, path: string, code: string, message: string}>
+     */
+    private function validatorIssues(array $canonical): array
+    {
+        $issues = $this->personValidator->validate($canonical);
+
+        if (!$this->hasSendAttachmentsMerged
+            && ($canonical['documents']['sendAttachmentsMerged'] ?? null) === true) {
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => 'documents.sendAttachmentsMerged',
+                'code'     => 'column_unavailable',
+                'message'  => 'Spojování příloh do PDF dokladu tento zdroj dat neukládá — hodnota se ignoruje.',
+            ];
+        }
+
+        return $issues;
     }
 
     // ── Header reconcile + decision ─────────────────────────────────────────
@@ -429,6 +477,40 @@ class PersonApplier
             $payload['id_card_number'] = $this->normalize($personal['idCardNumber'] ?? null) ?? '';
         }
 
+        return array_merge($payload, $this->documentsPayload($canonical, existing: null, overwrite: true));
+    }
+
+    /**
+     * Blok `documents` (#94 D9): jazyk dokumentů a spojování příloh.
+     *
+     * Blok chybí → sloupce se nemění — obnova z registru ani starší payload
+     * nesmí vynulovat ruční nastavení. Blok je → při založení a přepisu
+     * (`updateHeader` / `fullSync`) se zapíšou obě hodnoty, `language: null`
+     * jazyk smaže; `mergeAdd` doplní jen to, co v databázi nastavené není.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed>|null $existing Null = zakládá se nová osoba.
+     * @return array<string, mixed>
+     */
+    private function documentsPayload(array $canonical, ?array $existing, bool $overwrite): array
+    {
+        $documents = $canonical['documents'] ?? null;
+        if (!is_array($documents)) {
+            return [];
+        }
+
+        $language = $this->normalize($documents['language'] ?? null);
+        $merged   = ($documents['sendAttachmentsMerged'] ?? null) === true;
+
+        $payload = [];
+        if ($overwrite || ($language !== null && $this->isDbEmpty($existing['language'] ?? null))) {
+            $payload['language'] = $language;
+        }
+        if ($this->hasSendAttachmentsMerged
+            && ($overwrite || ($merged && (int) ($existing['send_attachments_merged'] ?? 0) === 0))) {
+            $payload['send_attachments_merged'] = $merged ? 1 : 0;
+        }
+
         return $payload;
     }
 
@@ -484,7 +566,7 @@ class PersonApplier
             $payload['complex_name'] = $complex;
         }
 
-        return $payload;
+        return array_merge($payload, $this->documentsPayload($canonical, $existing, $overwrite));
     }
 
     /**

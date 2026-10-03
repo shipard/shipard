@@ -47,7 +47,9 @@ class TableLoader
 			foreach ($module->extensions as $extFile) {
 				$filePath = $modulePath . '/extensions/' . $extFile . '.jsonc';
 				$extData  = JsoncParser::parseFile($filePath);
-				$ext      = ExtensionDefinition::fromArray($extData);
+				// Sloupce z extension nesou popisky stejně jako sloupce tabulky —
+				// bez lokalizace by zůstaly v holém (anglickém) `name`.
+				$ext      = ExtensionDefinition::fromArray(ConfigLocalizer::localize($extData, $language));
 
 				if (isset($tableDefs[$ext->table])) {
 					$tableDefs[$ext->table] = TableMerger::merge($tableDefs[$ext->table], $ext);

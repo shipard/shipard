@@ -83,7 +83,7 @@ class PersonExporterTest extends TestCase
         $this->assertSame(7, $record->id);
         $this->assertSame('Žlutý kůň s.r.o.', $record->slug);
         $this->assertSame('shpd.persons.person', $c['format']);
-        $this->assertSame('1.0', $c['formatVersion']);
+        $this->assertSame('1.1', $c['formatVersion']);
         $this->assertSame('company', $c['personType']);
         $this->assertSame('cz', $c['country'], 'country comes from the first address');
         $this->assertSame('P-0007', $c['personId']);
@@ -125,6 +125,35 @@ class PersonExporterTest extends TestCase
 
         $issues = (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.persons.person', '1');
         $this->assertSame([], $issues, 'exported canonical must validate against the persons schema');
+    }
+
+    public function testDocumentsBlockCarriesLanguageAndMergeFlag(): void
+    {
+        $db = $this->dbWithChildren([], [], []);
+        $exporter = new PersonExporter($db);
+
+        $c = $exporter->exportPerson(['language' => 'de', 'send_attachments_merged' => 1] + $this->companyRow())->data;
+        $this->assertSame(['language' => 'de', 'sendAttachmentsMerged' => true], $c['documents']);
+
+        // Bez jazyka blok zůstává — spojování je výslovné false, ne null.
+        $c = $exporter->exportPerson(['language' => null, 'send_attachments_merged' => 0] + $this->companyRow())->data;
+        $this->assertSame(['sendAttachmentsMerged' => false], $c['documents']);
+
+        $issues = (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.persons.person', '1');
+        $this->assertSame([], $issues);
+    }
+
+    public function testDocumentsBlockWithoutMergeColumnKeepsOnlyLanguage(): void
+    {
+        // Zdroj dat bez extension docs.core sloupec nemá.
+        $db = $this->dbWithChildren([], [], []);
+        $exporter = new PersonExporter($db);
+
+        $c = $exporter->exportPerson(['language' => 'sk'] + $this->companyRow())->data;
+        $this->assertSame(['language' => 'sk'], $c['documents']);
+
+        $c = $exporter->exportPerson($this->companyRow())->data;
+        $this->assertArrayNotHasKey('documents', $c);
     }
 
     public function testNaturalPersonUsesDefaultCountryAndPersonalBlock(): void

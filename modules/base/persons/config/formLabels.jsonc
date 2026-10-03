@@ -1,0 +1,15 @@
+{
+    // base.persons.formLabels
+    //
+    // Lokalizované texty formuláře osoby, které nejsou popiskem sloupce ani
+    // položkou číselníku. Čte je PersonsForm; bez zkompilované konfigurace
+    // má v PHP anglický fallback.
+
+    // Prázdná volba selectu „Jazyk dokumentů“ (#94 D1) — jazyk se odvodí
+    // ze země adresy na dokladu.
+    "languageAuto": {
+        "name": "Automatic (by country)",
+        "name:cs": "Automaticky (podle země)",
+        "name:en": "Automatic (by country)"
+    }
+}

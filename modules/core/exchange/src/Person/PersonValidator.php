@@ -6,7 +6,7 @@ namespace Shipard\Module\Core\Exchange\Person;
 
 /**
  * Semantic validator for a canonical person — runs **after** schema
- * validation and **before** resolve. Three kinds of checks:
+ * validation and **before** resolve. Four kinds of checks:
  *
  *   - Polymorphism per `personType` (the JSON schema intentionally
  *     accepts the union of company/person fields; this is where
@@ -16,6 +16,8 @@ namespace Shipard\Module\Core\Exchange\Person;
  *     for Sídlo/Doručovací (`addressType in [1,2]`).
  *   - Bank account sub-record sanity — at least one of `iban` /
  *     `accountNumber` must be present.
+ *   - `documents.language` must be one of the document languages
+ *     (cfgItem `world.base.documentLanguages`, #94).
  *
  * Returns the same `{severity, path, code, message}` shape as
  * {@see \Shipard\Module\Core\Exchange\Schema\SchemaValidator}. Issues
@@ -24,6 +26,15 @@ namespace Shipard\Module\Core\Exchange\Person;
  */
 final class PersonValidator
 {
+    /**
+     * @param list<string>|null $documentLanguages Jazyky dokumentů (klíče
+     *        cfgItemu `world.base.documentLanguages`). Null = volající
+     *        konfiguraci nemá (preflight datové sady) a jazyk se nekontroluje.
+     */
+    public function __construct(
+        private readonly ?array $documentLanguages = null,
+    ) {}
+
     /**
      * @param array<string, mixed> $canonical
      * @return array<int, array{severity: string, path: string, code: string, message: string}>
@@ -36,6 +47,7 @@ final class PersonValidator
         $this->checkAddresses($canonical, $issues);
         $this->checkBankAccounts($canonical, $issues);
         $this->checkOwnCompanyTransition($canonical, $issues);
+        $this->checkDocuments($canonical, $issues);
 
         return $issues;
     }
@@ -197,6 +209,26 @@ final class PersonValidator
                 'companyId',
                 'own_company_id_required',
                 'Vlastní firma musí mít IČO; uložení do stavu „V pořádku" by jinak selhalo.',
+            );
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkDocuments(array $canonical, array &$issues): void
+    {
+        $language = $canonical['documents']['language'] ?? null;
+        if ($this->documentLanguages === null || !is_string($language) || $language === '') {
+            return;
+        }
+        if (!in_array($language, $this->documentLanguages, true)) {
+            $issues[] = $this->error(
+                'documents.language',
+                'invalid_document_language',
+                "Jazyk dokumentů '{$language}' není mezi podporovanými ("
+                    . implode(', ', $this->documentLanguages) . ').',
             );
         }
     }

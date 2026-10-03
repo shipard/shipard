@@ -236,6 +236,28 @@
                 }
             }
         },
+        "documents": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "language": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "pattern": "^[a-z]{2}$"
+                },
+                "sendAttachmentsMerged": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                }
+            }
+        },
         "addresses": {
             "type": "array",
             "items": {

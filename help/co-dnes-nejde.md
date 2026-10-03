@@ -64,7 +64,8 @@ a vypořádacího koeficientu nepromítne.
 PDF dokladu ve stavu **V pořádku** si stáhneš tlačítkem **Tisk** — viz
 [Tisk faktury](faktury-vydane/tisk-faktury.md) — a odběrateli ho pošleš
 vlastním e-mailem. Shipard si zatím nepamatuje ani to, že a komu jsi doklad
-poslal.
+poslal. Volba **Přílohy dokladu připojit do PDF dokladu** u osoby se proto
+zatím jen ukládá.
 
 **Vzhled tištěného dokladu nezměníš.** Je jeden, černobílý, s logem firmy
 v záhlaví. Barvy, umístění loga, vlastní texty (třeba poděkování nebo
@@ -72,8 +73,9 @@ obchodní podmínky), jméno toho, kdo doklad vystavil, ani podpis a razítko
 zatím nejsou.
 
 **Slovensky ani německy doklad nevytiskneš.** Jazyk dokladu se řídí zemí
-odběratele, ale hotová je jen čeština a angličtina — odběratelům ze
-Slovenska, Německa a Rakouska se zatím tiskne anglicky.
+odběratele nebo **Jazykem dokumentů** nastaveným u osoby, ale hotová je jen
+čeština a angličtina — kde vychází slovenština nebo němčina, tiskne se
+zatím anglicky.
 
 **QR platba je jen česká.** Kód na dokladu čtou bankovní aplikace českých
 bank; pro odběratele v zahraničí jiný standard zatím není.

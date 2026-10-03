@@ -104,7 +104,7 @@ final class PersonExporter implements RecordExporter
 
         $canonical = [
             'format'        => 'shpd.persons.person',
-            'formatVersion' => '1.0',
+            'formatVersion' => '1.1',
             'source'        => $this->source($p),
             'personType'    => $personType,
             'country'       => $country ?? strtolower($this->defaultCountry),
@@ -142,6 +142,15 @@ final class PersonExporter implements RecordExporter
                 'closedDate' => V::date($p['closed_date'] ?? null),
                 'isOwn'      => ((int) ($p['is_own'] ?? 0)) === 1 ? true : null,
                 'docState'   => $docState,
+            ],
+            // Blok vždy (#94): spojování jako výslovné true/false, aby blok
+            // přežil prune i u osoby bez jazyka — applier pak chybějící
+            // `language` čte jako null. Bez extension docs.core sloupec není.
+            'documents'     => [
+                'language'              => V::str($p['language'] ?? null),
+                'sendAttachmentsMerged' => array_key_exists('send_attachments_merged', $p)
+                    ? ((int) $p['send_attachments_merged']) === 1
+                    : null,
             ],
             'addresses'     => array_map(fn(array $a) => $this->address($a), $addresses),
             'bankAccounts'  => array_map(fn(array $b) => $this->bankAccount($b), $banks),

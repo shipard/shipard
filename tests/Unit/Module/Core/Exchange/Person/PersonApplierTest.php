@@ -393,6 +393,168 @@ class PersonApplierTest extends TestCase
 
     // ── Helpers ───────────────────────────────────────────────────────────
 
+    // ── blok documents (#94 D9) ────────────────────────────────────────────
+
+    /**
+     * Applier nad jednou hlavičkou: `$existing` null = zakládá se nová,
+     * jinak se aktualizuje nalezená osoba 50. Vrací payload, který došel
+     * do gateway (null = hlavička se neukládala).
+     *
+     * @param array<string, mixed>|null $existing
+     * @param array<string, mixed> $payload
+     * @return array{0: \Shipard\Module\Core\Exchange\Common\ApplyResult, 1: ?array}
+     */
+    private function applyDocuments(
+        ?array $existing,
+        array $payload,
+        ?PersonValidator $validator = null,
+        bool $hasSendAttachmentsMerged = true,
+    ): array {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn($existing === null ? null : new Row($existing + [
+            'id' => 50, 'person_type' => 2, 'full_name' => 'Acme s.r.o.', 'company_id' => '12345678',
+        ]));
+        $resolver = $this->stubResolver(
+            header: $existing === null
+                ? ResolveResult::canCreate(['person_type' => 2, 'full_name' => 'Acme s.r.o.'])
+                : ResolveResult::matched(50, 'companyId'),
+        );
+
+        $saved = null;
+        $gateway = $this->createMock(TransactionlessTableGateway::class);
+        $gateway->method('saveDocument')->willReturnCallback(function (array $data) use (&$saved, $existing) {
+            $saved = $data;
+            return DocumentResult::ok(['id' => $existing === null ? 42 : 50]);
+        });
+
+        $applier = $this->buildApplier(
+            db: $db, resolver: $resolver, gateway: $gateway,
+            validator: $validator, hasSendAttachmentsMerged: $hasSendAttachmentsMerged,
+        );
+
+        return [$applier->apply($this->validCompanyPayload($payload)), $saved];
+    }
+
+    public function testCreateWritesDocumentsBlock(): void
+    {
+        [$result, $saved] = $this->applyDocuments(null, [
+            'documents' => ['language' => 'de', 'sendAttachmentsMerged' => true],
+        ]);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame('de', $saved['language']);
+        $this->assertSame(1, $saved['send_attachments_merged']);
+    }
+
+    public function testCreateWithoutDocumentsBlockLeavesColumnsToDefaults(): void
+    {
+        [$result, $saved] = $this->applyDocuments(null, []);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertArrayNotHasKey('language', $saved);
+        $this->assertArrayNotHasKey('send_attachments_merged', $saved);
+    }
+
+    public function testUpdateWithoutDocumentsBlockKeepsManualSettings(): void
+    {
+        // Obnova z registru / starší payload: blok chybí → nic se nemění.
+        [$result, $saved] = $this->applyDocuments(
+            ['language' => 'en', 'send_attachments_merged' => 1],
+            ['applyOptions' => ['mergeStrategy' => 'updateHeader']],
+        );
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame('en', $saved['language']);
+        $this->assertSame(1, $saved['send_attachments_merged']);
+    }
+
+    public function testUpdateHeaderWithNullValuesClearsDocumentsSettings(): void
+    {
+        [$result, $saved] = $this->applyDocuments(
+            ['language' => 'en', 'send_attachments_merged' => 1],
+            [
+                'applyOptions' => ['mergeStrategy' => 'updateHeader'],
+                'documents'    => ['language' => null, 'sendAttachmentsMerged' => null],
+            ],
+        );
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertNull($saved['language']);
+        $this->assertSame(0, $saved['send_attachments_merged']);
+    }
+
+    public function testFullSyncTreatsMissingLanguageKeyAsNull(): void
+    {
+        // Exportér prázdný jazyk prořezává — v bloku pak klíč chybí.
+        [$result, $saved] = $this->applyDocuments(
+            ['language' => 'sk', 'send_attachments_merged' => 0],
+            [
+                'applyOptions' => ['mergeStrategy' => 'fullSync'],
+                'documents'    => ['sendAttachmentsMerged' => true],
+            ],
+        );
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertNull($saved['language']);
+        $this->assertSame(1, $saved['send_attachments_merged']);
+    }
+
+    public function testMergeAddFillsOnlyUnsetDocumentsSettings(): void
+    {
+        $block = [
+            'applyOptions' => ['mergeStrategy' => 'mergeAdd'],
+            'documents'    => ['language' => 'de', 'sendAttachmentsMerged' => true],
+        ];
+
+        // Jazyk v databázi je → zůstává; spojování vypnuté → zapne se.
+        [$result, $saved] = $this->applyDocuments(['language' => 'en', 'send_attachments_merged' => 0], $block);
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame('en', $saved['language']);
+        $this->assertSame(1, $saved['send_attachments_merged']);
+
+        // Jazyk v databázi není → doplní se.
+        [, $saved] = $this->applyDocuments(['language' => null, 'send_attachments_merged' => 1], $block);
+        $this->assertSame('de', $saved['language']);
+        $this->assertSame(1, $saved['send_attachments_merged']);
+
+        // mergeAdd nic nemaže ani nevypíná.
+        [, $saved] = $this->applyDocuments(
+            ['language' => 'en', 'send_attachments_merged' => 1],
+            ['applyOptions' => ['mergeStrategy' => 'mergeAdd'], 'documents' => ['language' => null, 'sendAttachmentsMerged' => false]],
+        );
+        $this->assertSame('en', $saved['language']);
+        $this->assertSame(1, $saved['send_attachments_merged']);
+    }
+
+    public function testLanguageOutsideDocumentLanguagesBlocksApply(): void
+    {
+        [$result, $saved] = $this->applyDocuments(
+            null,
+            ['documents' => ['language' => 'fr']],
+            validator: new PersonValidator(['cs', 'en', 'sk', 'de']),
+        );
+
+        $this->assertFalse($result->success);
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertNull($saved);
+        $this->assertStringContainsString('invalid_document_language', (string) json_encode($result->canonical));
+    }
+
+    public function testMissingMergeColumnIsIgnoredWithWarning(): void
+    {
+        // Zdroj dat bez extension docs.core: jazyk se uloží, spojování ne.
+        [$result, $saved] = $this->applyDocuments(
+            null,
+            ['documents' => ['language' => 'sk', 'sendAttachmentsMerged' => true]],
+            hasSendAttachmentsMerged: false,
+        );
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame('sk', $saved['language']);
+        $this->assertArrayNotHasKey('send_attachments_merged', $saved);
+        $this->assertStringContainsString('column_unavailable', (string) json_encode($result->canonical));
+    }
+
     /**
      * @param array<string, mixed> $overrides
      * @return array<string, mixed>
@@ -440,6 +602,8 @@ class PersonApplierTest extends TestCase
         ?PersonResolver $resolver = null,
         ?TransactionlessTableGateway $gateway = null,
         ?AddressResolver $addressResolver = null,
+        ?PersonValidator $validator = null,
+        bool $hasSendAttachmentsMerged = true,
     ): PersonApplier {
         $db ??= $this->createMock(Connection::class);
         $resolver ??= $this->stubResolver(ResolveResult::canCreate(['person_type' => 2, 'full_name' => 'Acme']));
@@ -451,9 +615,10 @@ class PersonApplierTest extends TestCase
             config: $this->createMock(ConfigRuntime::class),
             personsGateway: $gateway,
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
-            personValidator: new PersonValidator(),
+            personValidator: $validator ?? new PersonValidator(),
             personResolver: $resolver,
             addressResolver: $addressResolver,
+            hasSendAttachmentsMerged: $hasSendAttachmentsMerged,
         );
     }
 }
