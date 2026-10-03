@@ -14,13 +14,18 @@ use Shipard\Core\Security\Exception\SecretsKeyMissingException;
  * Per-DS AES-256-GCM cipher for encrypted_text columns.
  *
  * Reads {ds_path}/secrets/secrets.key on first use and caches the instance
- * per ds_path. Uses libsodium AEAD (sodium_crypto_aead_aes256gcm_*).
+ * per ds_path. Uses OpenSSL (openssl_encrypt / openssl_decrypt), which is
+ * available and hardware accelerated on x86 and ARM alike. Ciphertexts are
+ * byte-compatible with those written by the earlier libsodium implementation.
  *
  * See tasks/ds-encrypted-secrets.md for full design.
  */
 final class DsSecretCipher
 {
     public const KEY_BYTES = 32;
+    private const CIPHER = 'aes-256-gcm';
+    private const NONCE_BYTES = 12;
+    private const TAG_BYTES = 16;
     private const FORMAT_PREFIX = 'v1';
     private const SECRETS_DIRNAME = 'secrets';
     private const KEY_FILENAME = 'secrets.key';
@@ -47,7 +52,7 @@ final class DsSecretCipher
             return self::$cache[$dsPath];
         }
 
-        self::assertSodiumAesAvailable();
+        self::assertAesGcmAvailable();
 
         $keyFile = self::keyFilePath($dsPath);
 
@@ -99,7 +104,7 @@ final class DsSecretCipher
                 self::KEY_BYTES, strlen($key),
             ));
         }
-        self::assertSodiumAesAvailable();
+        self::assertAesGcmAvailable();
         return new self($key);
     }
 
@@ -109,17 +114,31 @@ final class DsSecretCipher
      */
     public function encrypt(#[SensitiveParameter] string $plaintext): string
     {
-        $nonce = random_bytes(SODIUM_CRYPTO_AEAD_AES256GCM_NPUBBYTES);
-        $ciphertextWithTag = sodium_crypto_aead_aes256gcm_encrypt(
+        return $this->encryptWithNonce($plaintext, random_bytes(self::NONCE_BYTES));
+    }
+
+    private function encryptWithNonce(#[SensitiveParameter] string $plaintext, string $nonce): string
+    {
+        $tag = '';
+        $ciphertext = openssl_encrypt(
             $plaintext,
-            '',
-            $nonce,
+            self::CIPHER,
             $this->key,
+            OPENSSL_RAW_DATA,
+            $nonce,
+            $tag,
+            '',
+            self::TAG_BYTES,
         );
 
-        $tagLen = SODIUM_CRYPTO_AEAD_AES256GCM_ABYTES;
-        $ciphertext = substr($ciphertextWithTag, 0, -$tagLen);
-        $tag = substr($ciphertextWithTag, -$tagLen);
+        // Empty plaintext encrypts to '', so only a strict false is a failure.
+        if ($ciphertext === false) {
+            $error = 'unknown OpenSSL error';
+            while (($line = openssl_error_string()) !== false) {
+                $error = $line;
+            }
+            throw new \RuntimeException('Encryption failed: ' . $error);
+        }
 
         return self::FORMAT_PREFIX
             . ':' . base64_encode($nonce)
@@ -152,31 +171,27 @@ final class DsSecretCipher
             );
         }
 
-        if (strlen($nonce) !== SODIUM_CRYPTO_AEAD_AES256GCM_NPUBBYTES) {
+        if (strlen($nonce) !== self::NONCE_BYTES) {
             throw new InvalidCiphertextException(
                 'Malformed ciphertext: invalid nonce length'
             );
         }
-        if (strlen($tag) !== SODIUM_CRYPTO_AEAD_AES256GCM_ABYTES) {
+        // OpenSSL itself accepts a truncated GCM tag — this check is what rejects it.
+        if (strlen($tag) !== self::TAG_BYTES) {
             throw new InvalidCiphertextException(
                 'Malformed ciphertext: invalid tag length'
             );
         }
 
-        try {
-            $plaintext = sodium_crypto_aead_aes256gcm_decrypt(
-                $ct . $tag,
-                '',
-                $nonce,
-                $this->key,
-            );
-        } catch (\SodiumException $e) {
-            throw new InvalidCiphertextException(
-                'Decryption failed: ' . $e->getMessage(),
-                0,
-                $e,
-            );
-        }
+        $plaintext = openssl_decrypt(
+            $ct,
+            self::CIPHER,
+            $this->key,
+            OPENSSL_RAW_DATA,
+            $nonce,
+            $tag,
+            '',
+        );
 
         if ($plaintext === false) {
             throw new InvalidCiphertextException(
@@ -260,7 +275,7 @@ final class DsSecretCipher
      */
     public static function generateKey(string $dsPath): array
     {
-        self::assertSodiumAesAvailable();
+        self::assertAesGcmAvailable();
 
         $keyFile = self::keyFilePath($dsPath);
 
@@ -283,14 +298,14 @@ final class DsSecretCipher
         self::$cache = [];
     }
 
-    private static function assertSodiumAesAvailable(): void
+    private static function assertAesGcmAvailable(): void
     {
-        if (!function_exists('sodium_crypto_aead_aes256gcm_is_available')
-            || !sodium_crypto_aead_aes256gcm_is_available()
+        if (!extension_loaded('openssl')
+            || !in_array(self::CIPHER, openssl_get_cipher_methods(), true)
         ) {
             throw new \RuntimeException(
-                'libsodium AES-256-GCM is not available on this CPU/build. '
-                . 'Hardware AES support is required.'
+                'AES-256-GCM is not available: the PHP OpenSSL extension is missing '
+                . 'or does not provide the aes-256-gcm cipher.'
             );
         }
     }

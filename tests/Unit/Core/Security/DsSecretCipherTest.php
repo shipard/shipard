@@ -13,6 +13,13 @@ use Shipard\Core\Security\Exception\SecretsKeyMissingException;
 
 class DsSecretCipherTest extends TestCase
 {
+    /**
+     * Vektor vygenerovaný původní implementací přes libsodium
+     * (klíč 32× 0x01, nonce 12× 0x02) — hlídá kompatibilitu uložených dat.
+     */
+    private const VECTOR_PLAINTEXT = 'shipard-test-vector-ěščř';
+    private const VECTOR_CIPHERTEXT = 'v1:AgICAgICAgICAgIC:5p4KFImYykTbVLyMGqemWA==:dL6gOSslpdCnqc+8cdGn0dbao8IvKkjQGQolYg==';
+
     private string $tmpDir;
 
     protected function setUp(): void
@@ -203,6 +210,33 @@ class DsSecretCipherTest extends TestCase
         $cipher->decrypt('v1:!!!:!!!:!!!');
     }
 
+    public function testMalformedCiphertextTruncatedTag(): void
+    {
+        $cipher = DsSecretCipher::forConfig($this->makeConfig());
+        $ct = $cipher->encrypt('hello world');
+
+        // OpenSSL would accept a shortened tag on its own; the length check must not.
+        $parts = explode(':', $ct, 4);
+        $parts[2] = base64_encode(substr(base64_decode($parts[2], true), 0, 4));
+
+        $this->expectException(InvalidCiphertextException::class);
+        $this->expectExceptionMessage('invalid tag length');
+        $cipher->decrypt(implode(':', $parts));
+    }
+
+    public function testMalformedCiphertextWrongNonceLength(): void
+    {
+        $cipher = DsSecretCipher::forConfig($this->makeConfig());
+        $ct = $cipher->encrypt('hello world');
+
+        $parts = explode(':', $ct, 4);
+        $parts[1] = base64_encode(substr(base64_decode($parts[1], true), 0, 8));
+
+        $this->expectException(InvalidCiphertextException::class);
+        $this->expectExceptionMessage('invalid nonce length');
+        $cipher->decrypt(implode(':', $parts));
+    }
+
     public function testEmptyPlaintext(): void
     {
         $cipher = DsSecretCipher::forConfig($this->makeConfig());
@@ -291,5 +325,23 @@ class DsSecretCipherTest extends TestCase
         $ct = $a->encrypt('payload');
         $this->expectException(InvalidCiphertextException::class);
         $b->decrypt($ct);
+    }
+
+    public function testDecryptsCiphertextWrittenByLibsodiumImplementation(): void
+    {
+        $cipher = DsSecretCipher::fromKey(str_repeat("\x01", DsSecretCipher::KEY_BYTES));
+
+        $this->assertSame(self::VECTOR_PLAINTEXT, $cipher->decrypt(self::VECTOR_CIPHERTEXT));
+    }
+
+    public function testEncryptReproducesLibsodiumVector(): void
+    {
+        $cipher = DsSecretCipher::fromKey(str_repeat("\x01", DsSecretCipher::KEY_BYTES));
+        $encryptWithNonce = new \ReflectionMethod(DsSecretCipher::class, 'encryptWithNonce');
+
+        $this->assertSame(
+            self::VECTOR_CIPHERTEXT,
+            $encryptWithNonce->invoke($cipher, self::VECTOR_PLAINTEXT, str_repeat("\x02", 12)),
+        );
     }
 }
