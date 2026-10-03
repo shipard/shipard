@@ -1,6 +1,6 @@
 # Drobnosti z ověření lokální instalace — admin v dev dashboardu, práva adresářů DS, composer.lock
 
-**Stav:** částečně — D13 a D14 hotové 2026-10-03 (2 commity + docs, #96), ověřeno na dev serveru: nový DS z dev dashboardu má administrátora a `doctor` u něj nic nehlásí; zbývá `composer.lock` — je v `.gitignore`, přepočet hashe jde jen lokálně, rozhodnout, zda lock verzovat
+**Stav:** hotovo — #96 D13, D14; 2026-10-03 ověřeno na dev serveru (nový DS z dev dashboardu: administrátor po přihlášení dostane navigaci Nastavení, `doctor` bez ✗); `composer.lock` je nově verzovaný
 
 ## Cíl
 
@@ -71,14 +71,19 @@ dalšího se nemění.
 `composer update --lock` (jen přepočet `content-hash`, žádná změna
 závislostí). Ověřit, že `git diff composer.lock` mění jen hash.
 
-**Zjištění při implementaci (2026-10-03):** `composer.lock` je
-v `.gitignore`, v repozitáři tedy není co opravit. Varování vzniká na každém
-checkoutu, který má lokální lock z doby před změnou `composer.json`; odstraní
-ho lokální `composer update --lock` (přepočte `content-hash` a doplní
-`ext-openssl` do bloku `platform`, balíky nemění). Čistý klon lock nemá
-a varování nevypíše. Otevřené: verzovat lock, nebo nechat ignorovaný a stav
-řešit v `scripts/dev-update.sh` — zastaralý lock navíc zastaví
-`composer install`, jakmile do `composer.json` přibude nový balík.
+**Zjištění při implementaci (2026-10-03):** `composer.lock` byl
+v `.gitignore`, v repozitáři tedy nebylo co opravit. Varování vznikalo na
+každém checkoutu s lokálním lockem z doby před změnou `composer.json`.
+Závažnější důsledek: jakmile do `composer.json` přibude nový balík,
+`composer install` nad zastaralým lockem skončí chybou („Required package …
+is not present in the lock file“, exit 4) — a s ním i `shpd-server upgrade`.
+
+**Rozhodnutí:** `composer.lock` se verzuje (po `composer update --lock`:
+nový `content-hash`, `ext-openssl` v bloku `platform`, balíky beze změny).
+Zrušení pravidla v `.gitignore` a přidání locku musí být v **jednom
+commitu** — git pak při pullu lokální, dosud ignorovaný lock tiše přepíše.
+Kdyby pravidlo zmizelo dřív než soubor přibyl, pull by skončil na „untracked
+working tree files would be overwritten by merge“.
 
 ### 4. `docs/ai-workflow.md` §4 — past nástroje
 
@@ -114,8 +119,8 @@ do timeoutu.
 - [x] uživatel z dev dashboardu má administrátorská práva
 - [x] nově založený DS (dashboard i CLI `ds-create` + `ds-upgrade`) projde
       `doctor` bez ✗ ve vlastních adresářích
-- [ ] `composer install` bez varování o lock souboru — jen lokálně po
-      `composer update --lock`, viz zjištění u kroku 3
+- [x] `composer install` bez varování o lock souboru — lock je verzovaný,
+      viz rozhodnutí u kroku 3
 - [x] `ai-workflow.md` §4 zmiňuje `--force` u `fix-permissions`
 - [x] hlavička tasku a `tasks/README.md` aktualizované
 

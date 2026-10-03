@@ -70,6 +70,12 @@ výzvu k `ds-upgrade-all` můžeš při prvním setupu ignorovat — žádný da
 zdroj ještě neexistuje. Stejný skript budeš pouštět po každém `git pull`
 (kapitola 7).
 
+`composer.lock` je verzovaný, `composer install` tak všude nainstaluje stejné
+verze balíků. Závislost přidávej přes `composer require <balík>`, verzi měň
+přes `composer update <balík>`; po ruční úpravě `composer.json` (např.
+`ext-*`) přepočti lock příkazem `composer update --lock`. `composer.json`
+a `composer.lock` patří vždy do stejného commitu.
+
 ---
 
 ## 4. Inicializace server configu

@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 319 tasků: **naplánováno** 6 · **částečně** 22 · **hotovo** 291.
+Celkem 319 tasků: **naplánováno** 6 · **částečně** 21 · **hotovo** 292.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -38,7 +38,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
 | `dev-install-fixes.md` | částečně | skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); zbývá ověření čisté instalace na Multipass VM 24.04 a 26.04 a opakované spuštění na dev serveru |
 | `dev-install-home-traverse.md` | částečně | skript, kontrakt (`doctor`, `fix-permissions`), testy a dokumentace hotové 2026-10-03 (2 commity, #96 D11); zbývá ověření na Multipass VM 24.04 a 26.04: čistá instalace → `/app/index.html` 200 a scénář domov `0750` → `doctor` ✗ → `fix-permissions` → `doctor` zelený |
-| `dev-small-fixes.md` | částečně | D13 a D14 hotové 2026-10-03 (2 commity + docs, #96), ověřeno na dev serveru: nový DS z dev dashboardu má administrátora a `doctor` u něj nic nehlásí; zbývá `composer.lock` — je v `.gitignore`, přepočet hashe jde jen lokálně, rozhodnout, zda lock verzovat |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |

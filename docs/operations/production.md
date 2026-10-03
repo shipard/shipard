@@ -63,7 +63,7 @@ root, takže repozitář patří `root:root`. Instalační skript samotný clone
 **nepřevlastňuje** (počítá s tím, že už patří shipard uživateli) — a když
 `/opt/shipard/shpd` existuje jako skutečný adresář, nechá ho být. Sjednoť
 vlastnictví ručně, jinak `composer install` ani pozdější `git pull` pod
-uživatelem `shipard` nezapíšou (`Permission denied` na `composer.lock`):
+uživatelem `shipard` nezapíšou (`Permission denied` při zápisu do `vendor/`):
 
 ```bash
 sudo chown -R shipard:shipard /opt/shipard/shpd
@@ -353,6 +353,17 @@ Příkaz provede (kroky přes `sudo -u shipard -H`, doctor přímo jako root):
 Bez příchozích commitů skončí `Already up to date.`. Selhání kroku běh
 zastaví (žádný automatický rollback) — dokonči ruční kroky níže. Selhání
 doctoru vrátí FAILURE, ale kód už je nasazený.
+
+`composer.lock` je verzovaný — server instaluje přesně verze z repozitáře.
+Na serveru proto nikdy nespouštěj `composer update`: změnil by lock,
+worktree by přestal být čistý a další `upgrade` by skončil v pre-flightu.
+Když se to stane, vrať lock a nainstaluj z něj:
+
+```bash
+cd /opt/shipard/shpd
+sudo -u shipard git checkout composer.lock
+sudo -u shipard composer install --no-dev --optimize-autoloader
+```
 
 **Ruční fallback** (co příkaz dělá pod kapotou):
 
