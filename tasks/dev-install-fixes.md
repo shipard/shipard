@@ -1,6 +1,6 @@
 # Instalace na čistém Ubuntu — opravy `install-packages.sh` a `DEVELOPERS.md`
 
-**Stav:** částečně — skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); 26.04 ověřeno na čisté VM; dev server ověřen; zbývá 24.04 znovu na čisté VM (první `server-init` jednou selhal, nereprodukováno) a přeskočení Node ≥ 22
+**Stav:** částečně — skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); 26.04 ověřeno na čisté VM; dev server ověřen; zbývá 24.04 znovu na čisté VM (první `server-init` jednou selhal, nereprodukováno) 
 
 ## Cíl
 
@@ -166,9 +166,9 @@ a otevření aplikace.
       nezmění (PPA, Node, nginx site, FPM pool) — 2026-10-03 `exit=0`;
       první běh doinstaloval systémový Node 24 vedle nvm (pod `sudo` nvm
       není vidět, očekávané chování)
-- [ ] Bez předinstalovaného Node se nainstaluje Node 24; s Node ≥ 22 se
+- [x] Bez předinstalovaného Node se nainstaluje Node 24; s Node ≥ 22 se
       instalace přeskočí — instalace Node 24 ověřena na obou VM;
-      přeskočení zbývá
+      přeskočení na dev serveru (`sudo env "PATH=$PATH"`, Node z nvm)
 - [x] Po prvním setupu existuje `public/app/index.html` a dashboard otevře
       aplikaci nového DS — 2026-10-03 na obou VM (DS z dev dashboardu,
       přihlášení jako admin)
