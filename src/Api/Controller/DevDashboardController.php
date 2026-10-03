@@ -349,7 +349,7 @@ class DevDashboardController
 		// ── 3. user-create ──────────────────────────────────────────────
 		$this->emitStep('Creating admin user "' . $login . '"...');
 		$cmd = sprintf(
-			'cd %s && %s user-create --login=%s --password=%s --name=%s --no-ansi 2>&1',
+			'cd %s && %s user-create --login=%s --password=%s --name=%s --admin --no-ansi 2>&1',
 			escapeshellarg($dsDir),
 			escapeshellarg($shpdDs),
 			escapeshellarg($login),

@@ -684,6 +684,28 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertCount(3, $ctrl->commandsRun);
 	}
 
+	public function testDsCreatePipelineCreatesAdministrator(): void
+	{
+		$ctrl = $this->makeTestableCtrl();
+		$ctrl->commandResults = [
+			[0, "  Directory:     /tmp/test/abc123\n"],
+			[0, ""],
+			[0, ""],
+		];
+
+		$resp = $ctrl->dispatch($this->makeJsonRequest('POST', '/_dev/api/ds-create', [
+			'name'     => 'Test',
+			'login'    => 'admin',
+			'password' => 'admin',
+			'language' => 'cs',
+			'country'  => 'cz',
+		]));
+
+		$this->streamToString($resp);
+		$this->assertStringContainsString(' user-create ', $ctrl->commandsRun[2]);
+		$this->assertStringContainsString(' --admin ', $ctrl->commandsRun[2]);
+	}
+
 	public function testDsCreatePipelineCreateFails(): void
 	{
 		$ctrl = $this->makeTestableCtrl();
