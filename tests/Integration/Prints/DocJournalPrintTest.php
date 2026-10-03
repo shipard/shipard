@@ -86,6 +86,26 @@ class DocJournalPrintTest extends IntegrationTestCase
         $this->assertSame(1, $output->printData->version);
     }
 
+    public function testSlovakAndGermanJournalTranslatesCodebookLabels(): void
+    {
+        // Interní tisk se řídí vlastní zemí; jiný jazyk jen na vyžádání
+        // (slovenský zdroj dat tiskne Kontaci slovensky, #90 D29).
+        $headId = $this->insertInvoice($this->expected('invoice'), $this->anyUnit()[0]);
+        $this->insertJournal($headId, self::invoiceJournal($this->anyAccounts(3)));
+
+        $sk = $this->runner->run(self::PRINT_ID, $headId, PrintFormat::Json, 'sk')->printData;
+        $this->assertSame('Kontácia', $sk->data['document']['title']);
+        $this->assertSame('Faktúra vydaná', $sk->data['document']['typeName']);
+        $this->assertSame('Zaúčtované', $sk->data['accounting']['stateLabel']);
+        $this->assertSame('kontacia-it-print-inv.pdf', $sk->fileName);
+
+        $de = $this->runner->run(self::PRINT_ID, $headId, PrintFormat::Json, 'de')->printData;
+        $this->assertSame('Kontierung', $de->data['document']['title']);
+        $this->assertSame('Ausgangsrechnung', $de->data['document']['typeName']);
+        $this->assertSame('Gebucht', $de->data['accounting']['stateLabel']);
+        $this->assertSame('kontierung-it-print-inv.pdf', $de->fileName);
+    }
+
     public function testInvoiceOffersInvoiceAndJournalPrints(): void
     {
         $headId = $this->insertInvoice($this->expected('invoice'), $this->anyUnit()[0]);

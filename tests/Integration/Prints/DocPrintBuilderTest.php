@@ -175,6 +175,50 @@ class DocPrintBuilderTest extends IntegrationTestCase
         );
     }
 
+    public function testSlovakAndGermanPrintsTranslateTitleAndCodebookLabels(): void
+    {
+        $headId = $this->insertInvoice($this->expected('invoice'), $this->systemUnitId('pcs'));
+
+        $sk = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'sk')->printData;
+        $this->assertSame('sk', $sk->language);
+        $this->assertSame('Faktúra – daňový doklad', $sk->data['document']['title']);
+        $this->assertSame('faktura-it-print-inv.pdf', $sk->fileName);
+        $this->assertSame('Prevodom', $sk->data['payment']['method']['label']);
+        $this->assertSame('ks', $sk->data['rows'][0]['unit']['label']);
+        $this->assertSame(['Základná', 'Znížená', 'Bez dane'], array_column($sk->data['vatRecap'], 'label'));
+        $this->assertSame([], $sk->messages);
+
+        $de = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'de')->printData;
+        $this->assertSame('de', $de->language);
+        $this->assertSame('Rechnung', $de->data['document']['title']);
+        $this->assertSame('rechnung-it-print-inv.pdf', $de->fileName);
+        $this->assertSame('Überweisung', $de->data['payment']['method']['label']);
+        $this->assertSame('Stk', $de->data['rows'][0]['unit']['label']);
+        $this->assertSame(['Normalsatz', 'Ermäßigter Satz', 'Nullsatz'], array_column($de->data['vatRecap'], 'label'));
+        $this->assertSame([], $de->messages);
+    }
+
+    public function testCustomerFromSlovakiaIsPrintedInSlovakWithoutLanguageParameter(): void
+    {
+        // Odběratel fixture má slovenskou adresu; jazyk osoby by ji přebil
+        // (#94 D2), proto partner bez nastaveného jazyka.
+        $partnerId = $this->db->fetchSingle(
+            "SELECT [id] FROM [base_persons_persons] WHERE [language] IS NULL OR [language] = '' ORDER BY [id] LIMIT 1",
+        );
+        if ($partnerId === null) {
+            $this->markTestSkipped('DS nemá osobu bez nastaveného jazyka dokumentů.');
+        }
+        $expected = $this->expected('invoice');
+        $this->assertSame('sk', $expected['customer']['address']['country']);
+        $headId = $this->insertInvoice($expected, $this->anyUnit()[0], ['partner' => (int) $partnerId]);
+
+        $output = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json);
+
+        $this->assertSame('sk', $output->printData->language);
+        $this->assertSame('Faktúra – daňový doklad', $output->printData->data['document']['title']);
+        $this->assertSame([], $output->printData->messages);
+    }
+
     // ── dostupnost a tvrdé chyby ────────────────────────────────────────────
 
     public function testInvoicePrintIsNotDeclaredForProforma(): void
@@ -251,7 +295,7 @@ class DocPrintBuilderTest extends IntegrationTestCase
         $this->assertSame(Command::FAILURE, $exit);
         $this->assertStringContainsString('not declared for this kind of record', $err);
 
-        [$exit, $err] = $run(['printId' => 'docs.proformasOut.proforma', 'recordId' => (string) $headId, '--language' => 'de']);
+        [$exit, $err] = $run(['printId' => 'docs.proformasOut.proforma', 'recordId' => (string) $headId, '--language' => 'fr']);
         $this->assertSame(Command::INVALID, $exit);
         $this->assertStringContainsString("'language' must be one of", $err);
     }

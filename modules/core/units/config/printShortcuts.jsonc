@@ -10,28 +10,28 @@
     // `shortcut:cs` tu proto jen kopíruje seed. Jednotky bez `system_code`
     // se tisknou vždy tak, jak jsou v datech.
 
-    "pcs":  {"shortcut": "pcs",    "shortcut:cs": "ks",    "shortcut:en": "pcs"},
+    "pcs":  {"shortcut": "pcs",    "shortcut:cs": "ks",    "shortcut:en": "pcs",    "shortcut:sk": "ks",     "shortcut:de": "Stk"},
 
-    "hr":   {"shortcut": "hr",     "shortcut:cs": "hod",   "shortcut:en": "hr"},
-    "hr_2": {"shortcut": "30 min", "shortcut:cs": "30min", "shortcut:en": "30 min"},
-    "hr_4": {"shortcut": "15 min", "shortcut:cs": "15min", "shortcut:en": "15 min"},
-    "day":  {"shortcut": "day",    "shortcut:cs": "den",   "shortcut:en": "day"},
-    "mnth": {"shortcut": "mth",    "shortcut:cs": "měs",   "shortcut:en": "mth"},
-    "year": {"shortcut": "yr",     "shortcut:cs": "rok",   "shortcut:en": "yr"},
+    "hr":   {"shortcut": "hr",     "shortcut:cs": "hod",   "shortcut:en": "hr",     "shortcut:sk": "hod",    "shortcut:de": "Std"},
+    "hr_2": {"shortcut": "30 min", "shortcut:cs": "30min", "shortcut:en": "30 min", "shortcut:sk": "30 min", "shortcut:de": "30 Min"},
+    "hr_4": {"shortcut": "15 min", "shortcut:cs": "15min", "shortcut:en": "15 min", "shortcut:sk": "15 min", "shortcut:de": "15 Min"},
+    "day":  {"shortcut": "day",    "shortcut:cs": "den",   "shortcut:en": "day",    "shortcut:sk": "deň",    "shortcut:de": "Tag"},
+    "mnth": {"shortcut": "mth",    "shortcut:cs": "měs",   "shortcut:en": "mth",    "shortcut:sk": "mes",    "shortcut:de": "Mon"},
+    "year": {"shortcut": "yr",     "shortcut:cs": "rok",   "shortcut:en": "yr",     "shortcut:sk": "rok",    "shortcut:de": "Jahr"},
 
-    "m":    {"shortcut": "m",      "shortcut:cs": "m",     "shortcut:en": "m"},
-    "km":   {"shortcut": "km",     "shortcut:cs": "km",    "shortcut:en": "km"},
+    "m":    {"shortcut": "m",      "shortcut:cs": "m",     "shortcut:en": "m",      "shortcut:sk": "m",      "shortcut:de": "m"},
+    "km":   {"shortcut": "km",     "shortcut:cs": "km",    "shortcut:en": "km",     "shortcut:sk": "km",     "shortcut:de": "km"},
 
-    "m2":   {"shortcut": "m²",     "shortcut:cs": "m²",    "shortcut:en": "m²"},
+    "m2":   {"shortcut": "m²",     "shortcut:cs": "m²",    "shortcut:en": "m²",     "shortcut:sk": "m²",     "shortcut:de": "m²"},
 
-    "m3":   {"shortcut": "m³",     "shortcut:cs": "m³",    "shortcut:en": "m³"},
-    "l":    {"shortcut": "l",      "shortcut:cs": "l",     "shortcut:en": "l"},
+    "m3":   {"shortcut": "m³",     "shortcut:cs": "m³",    "shortcut:en": "m³",     "shortcut:sk": "m³",     "shortcut:de": "m³"},
+    "l":    {"shortcut": "l",      "shortcut:cs": "l",     "shortcut:en": "l",      "shortcut:sk": "l",      "shortcut:de": "l"},
 
-    "kg":   {"shortcut": "kg",     "shortcut:cs": "kg",    "shortcut:en": "kg"},
-    "g":    {"shortcut": "g",      "shortcut:cs": "g",     "shortcut:en": "g"},
-    "t":    {"shortcut": "t",      "shortcut:cs": "t",     "shortcut:en": "t"},
+    "kg":   {"shortcut": "kg",     "shortcut:cs": "kg",    "shortcut:en": "kg",     "shortcut:sk": "kg",     "shortcut:de": "kg"},
+    "g":    {"shortcut": "g",      "shortcut:cs": "g",     "shortcut:en": "g",      "shortcut:sk": "g",      "shortcut:de": "g"},
+    "t":    {"shortcut": "t",      "shortcut:cs": "t",     "shortcut:en": "t",      "shortcut:sk": "t",      "shortcut:de": "t"},
 
-    "kwh":  {"shortcut": "kWh",    "shortcut:cs": "kWh",   "shortcut:en": "kWh"},
-    "mwh":  {"shortcut": "MWh",    "shortcut:cs": "MWh",   "shortcut:en": "MWh"},
-    "gj":   {"shortcut": "GJ",     "shortcut:cs": "GJ",    "shortcut:en": "GJ"}
+    "kwh":  {"shortcut": "kWh",    "shortcut:cs": "kWh",   "shortcut:en": "kWh",    "shortcut:sk": "kWh",    "shortcut:de": "kWh"},
+    "mwh":  {"shortcut": "MWh",    "shortcut:cs": "MWh",   "shortcut:en": "MWh",    "shortcut:sk": "MWh",    "shortcut:de": "MWh"},
+    "gj":   {"shortcut": "GJ",     "shortcut:cs": "GJ",    "shortcut:en": "GJ",     "shortcut:sk": "GJ",     "shortcut:de": "GJ"}
 }

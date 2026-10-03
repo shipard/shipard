@@ -1,6 +1,6 @@
 # Tisky — jazyky `sk` a `de`, formátování přes intl, zkratky jednotek, přepínač jazyka
 
-**Stav:** částečně — commit 1/4 hotový (kompilace pro jazyky dokumentů, formátování přes intl, zkratky jednotek); zbývají překlady `sk` / `de`, přepínač jazyka, dokumentace a revize formulací
+**Stav:** částečně — commity 1–2/4 hotové (kompilace pro jazyky dokumentů, formátování přes intl, zkratky jednotek, překlady `sk` / `de`); zbývá přepínač jazyka, dokumentace a revize formulací (sekce na konci)
 
 > PRD pro Claude Code (4 commity). Design: issue #90, komentář
 > „Rozhodnutí: jazyky tisku (D29–D33)“. Navazuje na #94 (jazyk osoby,
@@ -245,3 +245,98 @@ Zamčeno v #90: D29–D33. Upřesnění z PRD:
 - Formátování s explicitními vzory, ne výchozí data ICU.
 - `money` tiskne kód měny, ne symbol, ve všech jazycích.
 - Task se uzavře až po revizi formulací kolegy (D32).
+
+## Formulace k revizi
+
+Překlady `sk` a `de` s právní vahou (D32) — navrhla je implementace
+(commit 2/4), před uzavřením tasku je reviduje člověk. Zdroj pravdy jsou
+katalogy `messages.jsonc` a `modules/world/vat/config/vat-cz.jsonc`;
+tabulky jsou jejich výpis ke dni commitu. Opravy přijdou samostatným
+commitem.
+
+### Titulky
+
+| Klíč | cs | sk | de |
+|---|---|---|---|
+| `title.invoiceVatPayer` | Faktura – daňový doklad | Faktúra – daňový doklad | Rechnung |
+| `title.invoiceNonVatPayer` | Faktura | Faktúra | Rechnung |
+| `title.proforma` | Zálohová faktura | Zálohová faktúra | Proformarechnung |
+| `title.cashInTaxDocument` | Příjmový pokladní doklad – daňový doklad | Príjmový pokladničný doklad – daňový doklad | Kasseneinnahmebeleg – Steuerbeleg |
+| `title.cashIn` | Příjmový pokladní doklad | Príjmový pokladničný doklad | Kasseneinnahmebeleg |
+| `title.cashOut` | Výdajový pokladní doklad | Výdavkový pokladničný doklad | Kassenausgabebeleg |
+| `title.cashRegisterVatPayer` | Prodejka – daňový doklad | Predajka – daňový doklad | Verkaufsbeleg – Steuerbeleg |
+| `title.cashRegisterNonVatPayer` | Prodejka | Predajka | Verkaufsbeleg |
+| `title.cashRegisterRefund` | Prodejka – vratka | Predajka – vratka | Verkaufsbeleg – Erstattung |
+| `title.docJournal` | Kontace | Kontácia | Kontierung |
+
+### Věta o nedaňovém dokladu, vodoznak, částka k úhradě
+
+| Klíč | cs | sk | de |
+|---|---|---|---|
+| `note.nonTaxDocument` | Nejedná se o daňový doklad. | Nie je daňovým dokladom. | Dieses Dokument ist keine Rechnung im umsatzsteuerlichen Sinne. |
+| `watermark.cancelled` | STORNO | STORNO | STORNIERT |
+| `totals.toPay` | K úhradě | K úhrade | Zahlbetrag |
+| `totals.totalIn` | K úhradě v {currency} | K úhrade v {currency} | Zahlbetrag in {currency} |
+
+### Popisky dat
+
+| Klíč | cs | sk | de |
+|---|---|---|---|
+| `label.issueDate` | Datum vystavení | Dátum vyhotovenia | Ausstellungsdatum |
+| `label.taxPointDate` | Datum zdanitelného plnění | Dátum dodania | Leistungsdatum |
+| `label.dueDate` | Datum splatnosti | Dátum splatnosti | Fälligkeitsdatum |
+| `label.paymentReceivedDate` | Datum přijetí platby | Dátum prijatia platby | Zahlungseingang |
+
+### Strany a podpisy pokladního dokladu
+
+| Klíč | cs | sk | de |
+|---|---|---|---|
+| `label.supplier` | Dodavatel / přijal | Dodávateľ / prijal | Lieferant / empfangen von |
+| `label.customer` | Odběratel / vydal | Odberateľ / vydal | Kunde / gezahlt von |
+| `signature.payer` | Podpis | Podpis | Unterschrift |
+| `signature.recipient` | Podpis příjemce | Podpis príjemcu | Unterschrift des Empfängers |
+| `signature.cashier` | Podpis pokladníka | Podpis pokladníka | Unterschrift des Kassierers |
+
+### Poznámky DPH (`world.vat.cz`)
+
+| Klíč | cs | sk | de |
+|---|---|---|---|
+| `vatNotes.pdp4` | Daň odvede zákazník | Prenesenie daňovej povinnosti | Steuerschuldnerschaft des Leistungsempfängers |
+| `vatNotes.pdp5` | Daň odvede zákazník | Prenesenie daňovej povinnosti | Steuerschuldnerschaft des Leistungsempfängers |
+| `vatNotes.eu` | Daň odvede zákazník | Prenesenie daňovej povinnosti | Steuerschuldnerschaft des Leistungsempfängers |
+
+Kódy, které poznámku nesou (`vatCodes[].note`), a jejich tiskový popisek:
+
+| Klíč | cs | sk | de |
+|---|---|---|---|
+| `cz-150` → `pdp4` | Základní - přenesení daňové povinnosti 4 | Základná - prenesenie daňovej povinnosti 4 | Normalsatz - Steuerschuldnerschaft des Leistungsempfängers 4 |
+| `cz-151` → `pdp4` | Snížená - přenesení daňové povinnosti 4 | Znížená - prenesenie daňovej povinnosti 4 | Ermäßigter Satz - Steuerschuldnerschaft des Leistungsempfängers 4 |
+| `cz-350` → `pdp4` | První snížená - přenesení daňové povinnosti 4 | Prvá znížená - prenesenie daňovej povinnosti 4 | Erster ermäßigter Satz - Steuerschuldnerschaft des Leistungsempfängers 4 |
+| `cz-152` → `pdp5` | Základní - přenesení daňové povinnosti 5 | Základná - prenesenie daňovej povinnosti 5 | Normalsatz - Steuerschuldnerschaft des Leistungsempfängers 5 |
+| `cz-201` → `eu` | EU/Zboží | EÚ/Tovar | EU/Waren |
+| `cz-202` → `eu` | EU/Služby | EÚ/Služby | EU/Dienstleistungen |
+
+### Navíc: identifikátory stran
+
+| Klíč | cs | sk | de |
+|---|---|---|---|
+| `label.companyId` | IČ | IČO | Ident.-Nr. |
+| `label.taxId` | DIČ | IČ DPH | USt-IdNr. |
+
+### Na co se při revizi zaměřit
+
+- **Název prodejky:** zvoleno `sk` „Predajka“ a `de` „Verkaufsbeleg“;
+  druhé možnosti z PRD jsou „Pokladničný blok“ a „Kassenbon“.
+- **„Daňový doklad“ německy:** faktura je jen „Rechnung“ (plátce
+  i neplátce), pokladní doklad a prodejka mají dovětek „– Steuerbeleg“.
+  Rozhodnout, zda to sjednotit.
+- **DPH německy:** popisky používají „MwSt.“ (běžné na dokladech), zákonný
+  termín je „USt.“; identifikátor je „USt-IdNr.“.
+- **`label.taxId` slovensky a německy** („IČ DPH“, „USt-IdNr.“): pod tím
+  popiskem se tiskne české DIČ i u neplátce — stejně jako anglické
+  „VAT ID“.
+- **`vatNotes.eu`:** stejný text jako u přenesení daňové povinnosti nese
+  i dodání zboží do EU (`cz-201`), kde jde o osvobozené plnění. Platí už
+  pro češtinu — věcná otázka k čl. 226 směrnice, ne k překladu.
+- **Názvy sazeb německy:** „Normalsatz“, „Ermäßigter Satz“, „Nullsatz“,
+  „Steuerfrei“ (všech 61 popisků je v `vat-cz.jsonc`, pole `print:de`).

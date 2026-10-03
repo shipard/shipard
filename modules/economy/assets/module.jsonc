@@ -46,6 +46,8 @@
             "name": "Asset",
             "name:cs": "Majetek",
             "name:en": "Asset",
+            "name:sk": "Majetok",
+            "name:de": "Anlagegut",
             "forms": {
                 "docTypes": ["invni", "invno", "cash", "cmnbkp"],
                 "head": true,

@@ -1,80 +1,89 @@
 // Společný katalog tisků dokladů (#90 D8) — klíče sdílené layoutem, dílčími
 // bloky šablon a builderem. Titulky a název souboru má katalog typu dokladu.
+// Každý klíč musí mít všechny jazyky tisku (`PrintLanguageResolver::LANGUAGES`).
 {
     // Strany
-    "label.supplier":  { "cs": "Dodavatel", "en": "Supplier" },
-    "label.customer":  { "cs": "Odběratel", "en": "Customer" },
-    "label.companyId": { "cs": "IČ", "en": "Company ID" },
-    "label.taxId":     { "cs": "DIČ", "en": "VAT ID" },
+    "label.supplier":  { "cs": "Dodavatel", "en": "Supplier", "sk": "Dodávateľ", "de": "Lieferant" },
+    "label.customer":  { "cs": "Odběratel", "en": "Customer", "sk": "Odberateľ", "de": "Kunde" },
+    "label.companyId": { "cs": "IČ", "en": "Company ID", "sk": "IČO", "de": "Ident.-Nr." },
+    "label.taxId":     { "cs": "DIČ", "en": "VAT ID", "sk": "IČ DPH", "de": "USt-IdNr." },
 
     // Data
-    "label.issueDate":    { "cs": "Datum vystavení", "en": "Issue date" },
-    "label.dueDate":      { "cs": "Datum splatnosti", "en": "Due date" },
-    "label.taxPointDate": { "cs": "Datum zdanitelného plnění", "en": "Tax point date" },
-    "label.period":       { "cs": "Období", "en": "Period" },
-    "label.cashDesk":     { "cs": "Pokladna", "en": "Cash desk" },
+    "label.issueDate":    { "cs": "Datum vystavení", "en": "Issue date", "sk": "Dátum vyhotovenia", "de": "Ausstellungsdatum" },
+    "label.dueDate":      { "cs": "Datum splatnosti", "en": "Due date", "sk": "Dátum splatnosti", "de": "Fälligkeitsdatum" },
+    "label.taxPointDate": { "cs": "Datum zdanitelného plnění", "en": "Tax point date", "sk": "Dátum dodania", "de": "Leistungsdatum" },
+    "label.period":       { "cs": "Období", "en": "Period", "sk": "Obdobie", "de": "Leistungszeitraum" },
+    "label.cashDesk":     { "cs": "Pokladna", "en": "Cash desk", "sk": "Pokladňa", "de": "Kasse" },
 
     // Platba
-    "label.paymentMethod":    { "cs": "Způsob úhrady", "en": "Payment method" },
-    "label.bankAccount":      { "cs": "Bankovní účet", "en": "Bank account" },
-    "label.iban":             { "cs": "IBAN", "en": "IBAN" },
-    "label.bic":              { "cs": "BIC / SWIFT", "en": "BIC / SWIFT" },
-    "label.paymentReference": { "cs": "Variabilní symbol", "en": "Variable symbol" },
-    "label.specificSymbol":   { "cs": "Specifický symbol", "en": "Specific symbol" },
-    "label.constantSymbol":   { "cs": "Konstantní symbol", "en": "Constant symbol" },
-    "label.qrPayment":        { "cs": "QR platba", "en": "QR payment" },
+    "label.paymentMethod":    { "cs": "Způsob úhrady", "en": "Payment method", "sk": "Spôsob úhrady", "de": "Zahlungsart" },
+    "label.bankAccount":      { "cs": "Bankovní účet", "en": "Bank account", "sk": "Bankový účet", "de": "Bankverbindung" },
+    "label.iban":             { "cs": "IBAN", "en": "IBAN", "sk": "IBAN", "de": "IBAN" },
+    "label.bic":              { "cs": "BIC / SWIFT", "en": "BIC / SWIFT", "sk": "BIC / SWIFT", "de": "BIC / SWIFT" },
+    "label.paymentReference": { "cs": "Variabilní symbol", "en": "Variable symbol", "sk": "Variabilný symbol", "de": "Variables Symbol" },
+    "label.specificSymbol":   { "cs": "Specifický symbol", "en": "Specific symbol", "sk": "Špecifický symbol", "de": "Spezifisches Symbol" },
+    "label.constantSymbol":   { "cs": "Konstantní symbol", "en": "Constant symbol", "sk": "Konštantný symbol", "de": "Konstantes Symbol" },
+    "label.qrPayment":        { "cs": "QR platba", "en": "QR payment", "sk": "QR platba", "de": "QR-Zahlung" },
 
     // Řádky
-    "rows.description":      { "cs": "Popis", "en": "Description" },
-    "rows.quantity":         { "cs": "Množství", "en": "Quantity" },
-    "rows.unit":             { "cs": "MJ", "en": "Unit" },
-    "rows.unitPrice":        { "cs": "Cena za MJ", "en": "Unit price" },
-    "rows.unitPriceWithVat": { "cs": "Cena za MJ s DPH", "en": "Unit price incl. VAT" },
-    "rows.vatRate":          { "cs": "Sazba DPH", "en": "VAT rate" },
-    "rows.base":             { "cs": "Základ", "en": "Net" },
-    "rows.vatAmount":        { "cs": "DPH", "en": "VAT" },
-    "rows.total":            { "cs": "Celkem", "en": "Total" },
-    "rows.discount":         { "cs": "sleva {pct}", "en": "discount {pct}" },
+    "rows.description":      { "cs": "Popis", "en": "Description", "sk": "Popis", "de": "Bezeichnung" },
+    "rows.quantity":         { "cs": "Množství", "en": "Quantity", "sk": "Množstvo", "de": "Menge" },
+    "rows.unit":             { "cs": "MJ", "en": "Unit", "sk": "MJ", "de": "Einheit" },
+    "rows.unitPrice":        { "cs": "Cena za MJ", "en": "Unit price", "sk": "Cena za MJ", "de": "Einzelpreis" },
+    "rows.unitPriceWithVat": { "cs": "Cena za MJ s DPH", "en": "Unit price incl. VAT", "sk": "Cena za MJ s DPH", "de": "Einzelpreis inkl. MwSt." },
+    "rows.vatRate":          { "cs": "Sazba DPH", "en": "VAT rate", "sk": "Sadzba DPH", "de": "MwSt.-Satz" },
+    "rows.base":             { "cs": "Základ", "en": "Net", "sk": "Základ", "de": "Netto" },
+    "rows.vatAmount":        { "cs": "DPH", "en": "VAT", "sk": "DPH", "de": "MwSt." },
+    "rows.total":            { "cs": "Celkem", "en": "Total", "sk": "Spolu", "de": "Gesamt" },
+    "rows.discount":         { "cs": "sleva {pct}", "en": "discount {pct}", "sk": "zľava {pct}", "de": "Rabatt {pct}" },
 
     // Rekapitulace DPH
-    "recap.title":  { "cs": "Rekapitulace DPH", "en": "VAT summary" },
-    "recap.base":   { "cs": "Základ", "en": "Net" },
-    "recap.tax":    { "cs": "DPH", "en": "VAT" },
-    "recap.total":  { "cs": "Celkem", "en": "Total" },
-    "recap.baseIn": { "cs": "Základ v {currency}", "en": "Net in {currency}" },
-    "recap.taxIn":  { "cs": "DPH v {currency}", "en": "VAT in {currency}" },
+    "recap.title":  { "cs": "Rekapitulace DPH", "en": "VAT summary", "sk": "Rekapitulácia DPH", "de": "MwSt.-Übersicht" },
+    "recap.base":   { "cs": "Základ", "en": "Net", "sk": "Základ", "de": "Netto" },
+    "recap.tax":    { "cs": "DPH", "en": "VAT", "sk": "DPH", "de": "MwSt." },
+    "recap.total":  { "cs": "Celkem", "en": "Total", "sk": "Spolu", "de": "Gesamt" },
+    "recap.baseIn": { "cs": "Základ v {currency}", "en": "Net in {currency}", "sk": "Základ v {currency}", "de": "Netto in {currency}" },
+    "recap.taxIn":  { "cs": "DPH v {currency}", "en": "VAT in {currency}", "sk": "DPH v {currency}", "de": "MwSt. in {currency}" },
 
     // Součty
-    "totals.base":         { "cs": "Základ", "en": "Net amount" },
-    "totals.vat":          { "cs": "DPH", "en": "VAT" },
-    "totals.total":        { "cs": "Celkem", "en": "Total" },
-    "totals.advances":     { "cs": "Uhrazeno zálohami", "en": "Advances paid" },
-    "totals.rounding":     { "cs": "Zaokrouhlení", "en": "Rounding" },
-    "totals.toPay":        { "cs": "K úhradě", "en": "Amount due" },
-    "totals.totalIn":      { "cs": "K úhradě v {currency}", "en": "Amount due in {currency}" },
-    "totals.exchangeRate": { "cs": "Kurz", "en": "Exchange rate" },
+    "totals.base":         { "cs": "Základ", "en": "Net amount", "sk": "Základ", "de": "Nettobetrag" },
+    "totals.vat":          { "cs": "DPH", "en": "VAT", "sk": "DPH", "de": "MwSt." },
+    "totals.total":        { "cs": "Celkem", "en": "Total", "sk": "Spolu", "de": "Gesamtbetrag" },
+    "totals.advances":     { "cs": "Uhrazeno zálohami", "en": "Advances paid", "sk": "Uhradené zálohami", "de": "Geleistete Anzahlungen" },
+    "totals.rounding":     { "cs": "Zaokrouhlení", "en": "Rounding", "sk": "Zaokrúhlenie", "de": "Rundung" },
+    "totals.toPay":        { "cs": "K úhradě", "en": "Amount due", "sk": "K úhrade", "de": "Zahlbetrag" },
+    "totals.totalIn":      { "cs": "K úhradě v {currency}", "en": "Amount due in {currency}", "sk": "K úhrade v {currency}", "de": "Zahlbetrag in {currency}" },
+    "totals.exchangeRate": { "cs": "Kurz", "en": "Exchange rate", "sk": "Kurz", "de": "Wechselkurs" },
 
     // Zápatí
-    "footer.page": { "cs": "Strana", "en": "Page" },
+    "footer.page": { "cs": "Strana", "en": "Page", "sk": "Strana", "de": "Seite" },
 
     // Vodoznak (deklarace tisku `watermarks`)
-    "watermark.cancelled": { "cs": "STORNO", "en": "CANCELLED" },
+    "watermark.cancelled": { "cs": "STORNO", "en": "CANCELLED", "sk": "STORNO", "de": "STORNIERT" },
 
     // Měkká hlášení builderu (PrintData.messages)
     "message.qrNoAccount": {
         "cs": "QR platba na dokladu chybí — doklad nemá bankovní účet s IBAN.",
-        "en": "The payment QR code is missing — the document has no bank account with an IBAN."
+        "en": "The payment QR code is missing — the document has no bank account with an IBAN.",
+        "sk": "QR platba na doklade chýba — doklad nemá bankový účet s IBAN.",
+        "de": "Der Zahlungs-QR-Code fehlt — der Beleg hat keine Bankverbindung mit IBAN."
     },
     "message.qrSkipped.paymentReference": {
         "cs": "QR platba neobsahuje variabilní symbol — smí mít jen číslice, nejvýš 10.",
-        "en": "The payment QR code carries no variable symbol — only digits are allowed, 10 at most."
+        "en": "The payment QR code carries no variable symbol — only digits are allowed, 10 at most.",
+        "sk": "QR platba neobsahuje variabilný symbol — smie mať len číslice, najviac 10.",
+        "de": "Der Zahlungs-QR-Code enthält kein variables Symbol — erlaubt sind nur Ziffern, höchstens 10."
     },
     "message.qrSkipped.specificSymbol": {
         "cs": "QR platba neobsahuje specifický symbol — smí mít jen číslice, nejvýš 10.",
-        "en": "The payment QR code carries no specific symbol — only digits are allowed, 10 at most."
+        "en": "The payment QR code carries no specific symbol — only digits are allowed, 10 at most.",
+        "sk": "QR platba neobsahuje špecifický symbol — smie mať len číslice, najviac 10.",
+        "de": "Der Zahlungs-QR-Code enthält kein spezifisches Symbol — erlaubt sind nur Ziffern, höchstens 10."
     },
     "message.qrSkipped.constantSymbol": {
         "cs": "QR platba neobsahuje konstantní symbol — smí mít jen číslice, nejvýš 10.",
-        "en": "The payment QR code carries no constant symbol — only digits are allowed, 10 at most."
+        "en": "The payment QR code carries no constant symbol — only digits are allowed, 10 at most.",
+        "sk": "QR platba neobsahuje konštantný symbol — smie mať len číslice, najviac 10.",
+        "de": "Der Zahlungs-QR-Code enthält kein konstantes Symbol — erlaubt sind nur Ziffern, höchstens 10."
     }
 }

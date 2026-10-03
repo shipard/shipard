@@ -118,13 +118,15 @@ class PrintRunnerTest extends TestCase
     {
         return new PrintLanguageResolver(
             static fn (): DocumentLanguageResolver => new DocumentLanguageResolver(
-                ['cs' => [], 'en' => [], 'sk' => [], 'de' => []],
+                // `pl` = jazyk dokumentů, pro který tisk překlady nemá.
+                ['cs' => [], 'en' => [], 'sk' => [], 'de' => [], 'pl' => []],
                 [
                     'cz' => ['languages' => ['cs']],
                     'sk' => ['languages' => ['sk']],
                     'at' => ['languages' => ['de']],
                     'gb' => ['languages' => ['en']],
                     'fr' => ['languages' => ['fr']],
+                    'pl' => ['languages' => ['pl']],
                 ],
                 $ownCountry,
             ),
@@ -262,13 +264,34 @@ class PrintRunnerTest extends TestCase
         $this->assertSame(0, FakePartyPrintBuilder::$partyCalls);
     }
 
-    public function testDocumentLanguageWithoutCatalogPrintsInEnglishWithMessage(): void
+    public function testSlovakAndGermanPartyIsPrintedInItsLanguage(): void
     {
         $parties = [
             'sk' => new PrintParty(personLanguage: 'sk', country: 'cz'),
             'de' => new PrintParty(personLanguage: null, country: 'AT'),
         ];
-        foreach ($parties as $documentLanguage => $party) {
+        foreach ($parties as $language => $party) {
+            FakePartyPrintBuilder::$party = $party;
+            $configLanguages = [];
+
+            $output = $this->runner(configLanguages: $configLanguages, builder: FakePartyPrintBuilder::class)
+                ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+            $this->assertSame($language, $output->printData->language);
+            $this->assertSame($language, FakePrintBuilder::$lastRequest?->language);
+            $this->assertSame(['en', $language], $configLanguages, 'strana nad záložní konfigurací, build v jazyce tisku');
+            $this->assertSame(['qr.noAccount'], self::messageCodes($output->printData->messages));
+        }
+    }
+
+    public function testDocumentLanguageWithoutCatalogPrintsInEnglishWithMessage(): void
+    {
+        // Jazyk dokumentů přidaný dřív než překlady tisku.
+        $parties = [
+            new PrintParty(personLanguage: 'pl', country: 'cz'),
+            new PrintParty(personLanguage: null, country: 'PL'),
+        ];
+        foreach ($parties as $party) {
             FakePartyPrintBuilder::$party = $party;
 
             $output = $this->runner(builder: FakePartyPrintBuilder::class)
@@ -277,7 +300,7 @@ class PrintRunnerTest extends TestCase
             $this->assertSame('en', $output->printData->language);
             $messages = $output->printData->messages;
             $this->assertSame(['qr.noAccount', 'language.unavailable'], self::messageCodes($messages));
-            $this->assertStringContainsString("'{$documentLanguage}'", $messages[1]->text);
+            $this->assertStringContainsString("'pl'", $messages[1]->text);
         }
     }
 
@@ -310,8 +333,8 @@ class PrintRunnerTest extends TestCase
     public function testUnsupportedRequestedLanguageThrows(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage("Parameter 'language' must be one of cs|en");
-        $this->runner()->run('docs.invoicesOut.invoice', 123, PrintFormat::Json, 'de');
+        $this->expectExceptionMessage("Parameter 'language' must be one of cs|en|sk|de");
+        $this->runner()->run('docs.invoicesOut.invoice', 123, PrintFormat::Json, 'fr');
     }
 
     public function testUnknownPrintThrows(): void
@@ -518,7 +541,7 @@ class PrintRunnerTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("'language' must be one of");
-        $runner->renderData('docs.invoicesOut.invoice', ['language' => 'de'] + self::envelope(), PrintFormat::Html);
+        $runner->renderData('docs.invoicesOut.invoice', ['language' => 'fr'] + self::envelope(), PrintFormat::Html);
     }
 
     public function testRenderDataRejectsDataOfAnotherPrint(): void

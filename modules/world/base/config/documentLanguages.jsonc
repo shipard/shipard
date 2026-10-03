@@ -7,9 +7,12 @@
     // formulář osoby, validaci a `DocumentLanguageResolver`. `en` tu musí být
     // vždy — je záložním jazykem pro země s jazykem mimo tento seznam.
     //
+    // `ds-upgrade` pro každý jazyk odtud kompiluje konfiguraci (#90 D29) —
+    // tisk ji čte v jazyce dokladu.
+    //
     // Není to seznam jazyků tisku: tisk umí jen jazyky, pro které má katalogy
-    // (`PrintLanguageResolver::LANGUAGES`); jazyk bez katalogu se tiskne
-    // anglicky.
+    // a popisky konfigurace (`PrintLanguageResolver::LANGUAGES`, dnes všechny
+    // čtyři); jazyk přidaný jen sem se tiskne anglicky.
     // =========================================================================
 
     "cs": { "name": "Czech",   "name:cs": "čeština",     "name:en": "Czech" },

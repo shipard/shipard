@@ -111,6 +111,22 @@ class CashDocPrintTest extends IntegrationTestCase
         $this->assertSame('CANCELLED', $output->printData->watermark);
     }
 
+    public function testSlovakAndGermanTitlesAndCancelledWatermark(): void
+    {
+        $expected = $this->expectedFor('cashInSale');
+        $headId   = $this->insertCashSale($expected['data'], $this->cashDesk['id'], ['docState' => 30, 'docStateMain' => 4]);
+
+        $sk = $this->runner->run(self::PRINT_ID, $headId, PrintFormat::Json, 'sk')->printData;
+        $this->assertSame('Príjmový pokladničný doklad – daňový doklad', $sk->data['document']['title']);
+        $this->assertSame('prijmovy-pokladnicny-doklad-it-print-cash.pdf', $sk->fileName);
+        $this->assertSame('STORNO', $sk->watermark);
+
+        $de = $this->runner->run(self::PRINT_ID, $headId, PrintFormat::Json, 'de')->printData;
+        $this->assertSame('Kasseneinnahmebeleg – Steuerbeleg', $de->data['document']['title']);
+        $this->assertSame('kasseneinnahmebeleg-it-print-cash.pdf', $de->fileName);
+        $this->assertSame('STORNIERT', $de->watermark);
+    }
+
     public function testDisbursementWithoutOwnSnapshotFails(): void
     {
         $expected = $this->expectedFor('cashOut');

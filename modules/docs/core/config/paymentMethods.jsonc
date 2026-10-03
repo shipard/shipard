@@ -11,31 +11,43 @@
     "0": {
         "name": "Cash",
         "name:cs": "Hotovost",
-        "name:en": "Cash"
+        "name:en": "Cash",
+        "name:sk": "Hotovosť",
+        "name:de": "Barzahlung"
     },
     "1": {
         "name": "Bank transfer",
         "name:cs": "Převodem",
-        "name:en": "Bank transfer"
+        "name:en": "Bank transfer",
+        "name:sk": "Prevodom",
+        "name:de": "Überweisung"
     },
     "2": {
         "name": "Card",
         "name:cs": "Kartou",
-        "name:en": "Card"
+        "name:en": "Card",
+        "name:sk": "Kartou",
+        "name:de": "Kartenzahlung"
     },
     "3": {
         "name": "Cash on delivery",
         "name:cs": "Dobírkou",
-        "name:en": "Cash on delivery"
+        "name:en": "Cash on delivery",
+        "name:sk": "Dobierkou",
+        "name:de": "Nachnahme"
     },
     "4": {
         "name": "Set-off",
         "name:cs": "Zápočtem",
-        "name:en": "Set-off"
+        "name:en": "Set-off",
+        "name:sk": "Zápočtom",
+        "name:de": "Aufrechnung"
     },
     "5": {
         "name": "Payment gateway",
         "name:cs": "Platební bránou",
-        "name:en": "Payment gateway"
+        "name:en": "Payment gateway",
+        "name:sk": "Platobnou bránou",
+        "name:de": "Zahlungsgateway"
     }
 }

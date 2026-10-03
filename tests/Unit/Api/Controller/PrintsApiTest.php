@@ -315,7 +315,7 @@ class PrintsApiTest extends TestCase
         // HTML je nástroj CLI, REST ho nenabízí — ani administrátorovi.
         self::assertError($controller->run('test.prints.card', 5, ['format' => 'html'], self::admin(), []), 400, 'BAD_REQUEST');
         self::assertError($controller->run('test.prints.card', 5, ['format' => ['pdf']], self::user(), []), 400, 'BAD_REQUEST');
-        self::assertError($controller->run('test.prints.card', 5, ['language' => 'de'], self::user(), []), 400, 'BAD_REQUEST');
+        self::assertError($controller->run('test.prints.card', 5, ['language' => 'fr'], self::user(), []), 400, 'BAD_REQUEST');
         self::assertError($controller->run('test.prints.card', 5, ['language' => ['cs']], self::user(), []), 400, 'BAD_REQUEST');
     }
 

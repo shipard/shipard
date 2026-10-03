@@ -1,8 +1,13 @@
 // Katalog tisku zálohové faktury vydané — titulek a název souboru.
 // Společné klíče dokladů jsou v @docs.core/_layout.
 {
-    "title.proforma":    { "cs": "Zálohová faktura", "en": "Proforma invoice" },
-    "fileName.proforma": { "cs": "zalohova-faktura", "en": "proforma-invoice" },
+    "title.proforma":    { "cs": "Zálohová faktura", "en": "Proforma invoice", "sk": "Zálohová faktúra", "de": "Proformarechnung" },
+    "fileName.proforma": { "cs": "zalohova-faktura", "en": "proforma-invoice", "sk": "zalohova-faktura", "de": "proformarechnung" },
 
-    "note.nonTaxDocument": { "cs": "Nejedná se o daňový doklad.", "en": "This is not a tax document." }
+    "note.nonTaxDocument": {
+        "cs": "Nejedná se o daňový doklad.",
+        "en": "This is not a tax document.",
+        "sk": "Nie je daňovým dokladom.",
+        "de": "Dieses Dokument ist keine Rechnung im umsatzsteuerlichen Sinne."
+    }
 }

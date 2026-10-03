@@ -123,4 +123,20 @@ class CashRegisterPrintTest extends IntegrationTestCase
         $this->assertSame('sales-receipt-it-print-rec.pdf', $output->printData->fileName);
         $this->assertSame([], $output->printData->data['vatRecap']);
     }
+
+    public function testSlovakAndGermanReceipt(): void
+    {
+        $expected = $this->expectedFor('receiptCash');
+        $headId   = $this->insertReceipt($expected['data'], $this->cashDesk['id']);
+
+        $sk = $this->runner->run(self::PRINT_ID, $headId, PrintFormat::Json, 'sk')->printData;
+        $this->assertSame('Predajka – daňový doklad', $sk->data['document']['title']);
+        $this->assertSame('predajka-it-print-rec.pdf', $sk->fileName);
+        $this->assertSame('Hotovosť', $sk->data['payment']['method']['label']);
+
+        $de = $this->runner->run(self::PRINT_ID, $headId, PrintFormat::Json, 'de')->printData;
+        $this->assertSame('Verkaufsbeleg – Steuerbeleg', $de->data['document']['title']);
+        $this->assertSame('verkaufsbeleg-it-print-rec.pdf', $de->fileName);
+        $this->assertSame('Barzahlung', $de->data['payment']['method']['label']);
+    }
 }

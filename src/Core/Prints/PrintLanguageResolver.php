@@ -14,13 +14,19 @@ use Shipard\Core\I18n\DocumentLanguageResolver;
  * 2. Jinak jazyk dokumentu z `DocumentLanguageResolver`: jazyk osoby →
  *    hlavní jazyk země strany → hlavní jazyk vlastní země. Interní tisk
  *    (`audience: internal`) stranu nehledá — tiskne se pro nás.
- * 3. Jazyk dokumentu, pro který tisk nemá katalogy (`sk`, `de`), se tiskne
+ * 3. Jazyk dokumentu, pro který tisk nemá katalogy (jazyk přidaný do
+ *    `world.base.documentLanguages` dřív než překlady), se tiskne
  *    v záložním jazyce.
  */
 final class PrintLanguageResolver
 {
-    /** Jazyky, pro které existuje kompilovaná konfigurace i katalogy šablon. */
-    public const LANGUAGES = ['cs', 'en'];
+    /**
+     * Jazyky tisku (#90 D29) — každý má katalogy všech šablon, popisky
+     * konfigurace, kterou tisk čte, a formát čísel a dat
+     * (`PrintTwigExtension`). Úplnost hlídají testy; musí být mezi jazyky
+     * dokumentů, jinak se pro něj konfigurace nekompiluje.
+     */
+    public const LANGUAGES = ['cs', 'en', 'sk', 'de'];
 
     public const FALLBACK = 'en';
 

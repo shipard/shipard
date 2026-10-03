@@ -2,36 +2,45 @@
 // a tabulky zápisů, hlášení builderu. Společné klíče dokladů jsou
 // v @docs.core/_layout.
 {
-    "title.docJournal":    { "cs": "Kontace", "en": "Accounting entries" },
-    "fileName.docJournal": { "cs": "kontace", "en": "accounting-entries" },
+    "title.docJournal":    { "cs": "Kontace", "en": "Accounting entries", "sk": "Kontácia", "de": "Kontierung" },
+    "fileName.docJournal": { "cs": "kontace", "en": "accounting-entries", "sk": "kontacia", "de": "kontierung" },
 
     // Hlavička
-    "label.accountingUnit":  { "cs": "Účetní jednotka", "en": "Accounting unit" },
-    "label.partner":         { "cs": "Partner", "en": "Partner" },
-    "label.docType":         { "cs": "Typ dokladu", "en": "Document type" },
-    "label.accountingDate":  { "cs": "Účetní datum", "en": "Accounting date" },
-    "label.accountingState": { "cs": "Stav účtování", "en": "Accounting state" },
-    "label.currency":        { "cs": "Měna", "en": "Currency" },
+    "label.accountingUnit":  { "cs": "Účetní jednotka", "en": "Accounting unit", "sk": "Účtovná jednotka", "de": "Buchungseinheit" },
+    "label.partner":         { "cs": "Partner", "en": "Partner", "sk": "Partner", "de": "Geschäftspartner" },
+    "label.docType":         { "cs": "Typ dokladu", "en": "Document type", "sk": "Typ dokladu", "de": "Belegart" },
+    "label.accountingDate":  { "cs": "Účetní datum", "en": "Accounting date", "sk": "Účtovný dátum", "de": "Buchungsdatum" },
+    "label.accountingState": { "cs": "Stav účtování", "en": "Accounting state", "sk": "Stav účtovania", "de": "Buchungsstatus" },
+    "label.currency":        { "cs": "Měna", "en": "Currency", "sk": "Mena", "de": "Währung" },
 
     // Tabulka zápisů
-    "journal.account":     { "cs": "Účet", "en": "Account" },
-    "journal.accountName": { "cs": "Název účtu", "en": "Account name" },
-    "journal.text":        { "cs": "Text", "en": "Text" },
-    "journal.debit":       { "cs": "MD", "en": "Debit" },
-    "journal.credit":      { "cs": "Dal", "en": "Credit" },
-    "journal.total":       { "cs": "Celkem", "en": "Total" },
-    "journal.empty":       { "cs": "Doklad nemá žádné účetní zápisy.", "en": "The document has no accounting entries." },
+    "journal.account":     { "cs": "Účet", "en": "Account", "sk": "Účet", "de": "Konto" },
+    "journal.accountName": { "cs": "Název účtu", "en": "Account name", "sk": "Názov účtu", "de": "Kontobezeichnung" },
+    "journal.text":        { "cs": "Text", "en": "Text", "sk": "Text", "de": "Buchungstext" },
+    "journal.debit":       { "cs": "MD", "en": "Debit", "sk": "MD", "de": "Soll" },
+    "journal.credit":      { "cs": "Dal", "en": "Credit", "sk": "Dal", "de": "Haben" },
+    "journal.total":       { "cs": "Celkem", "en": "Total", "sk": "Spolu", "de": "Summe" },
+    "journal.empty": {
+        "cs": "Doklad nemá žádné účetní zápisy.",
+        "en": "The document has no accounting entries.",
+        "sk": "Doklad nemá žiadne účtovné zápisy.",
+        "de": "Der Beleg hat keine Buchungen."
+    },
 
     // Podpis — prázdná linka, bez jména (#93).
-    "signature.accountedBy": { "cs": "Zaúčtoval", "en": "Accounted by" },
+    "signature.accountedBy": { "cs": "Zaúčtoval", "en": "Accounted by", "sk": "Zaúčtoval", "de": "Gebucht von" },
 
     // Měkká hlášení builderu (PrintData.messages)
     "message.noJournal": {
         "cs": "Doklad nemá žádné účetní zápisy — Kontace je prázdná.",
-        "en": "The document has no accounting entries — the printout is empty."
+        "en": "The document has no accounting entries — the printout is empty.",
+        "sk": "Doklad nemá žiadne účtovné zápisy — Kontácia je prázdna.",
+        "de": "Der Beleg hat keine Buchungen — die Kontierung ist leer."
     },
     "message.accountingError": {
         "cs": "Doklad je ve stavu „{state}“ — zápisy nemusí být úplné ani správné.",
-        "en": "The document is in the state “{state}” — the entries may be incomplete or incorrect."
+        "en": "The document is in the state “{state}” — the entries may be incomplete or incorrect.",
+        "sk": "Doklad je v stave „{state}“ — zápisy nemusia byť úplné ani správne.",
+        "de": "Der Beleg hat den Status „{state}“ — die Buchungen sind möglicherweise unvollständig oder fehlerhaft."
     }
 }

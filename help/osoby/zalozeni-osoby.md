@@ -89,8 +89,7 @@ opravit.
 odběratele na dokladu. Jinou volbu — *čeština*, *angličtina*, *slovenština*,
 *němčina* — dej tam, kde to nesedí, třeba u české firmy, která chce doklady
 anglicky. Platí hned i pro už vystavené doklady: příští tisk je v novém
-jazyce. Slovensky a německy se zatím netiskne, takový doklad vyjde
-anglicky — viz [Tisk faktury](../faktury-vydane/tisk-faktury.md).
+jazyce — viz [Tisk faktury](../faktury-vydane/tisk-faktury.md).
 
 **Přílohy dokladu připojit do PDF dokladu** ve stejné sekci se zatím jen
 ukládá. Uplatní se, až půjde doklady odesílat e-mailem přímo z Shipardu —

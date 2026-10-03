@@ -4,26 +4,38 @@
 {
     "title.cashInTaxDocument": {
         "cs": "Příjmový pokladní doklad – daňový doklad",
-        "en": "Cash receipt – tax document"
+        "en": "Cash receipt – tax document",
+        "sk": "Príjmový pokladničný doklad – daňový doklad",
+        "de": "Kasseneinnahmebeleg – Steuerbeleg"
     },
-    "title.cashIn":  { "cs": "Příjmový pokladní doklad", "en": "Cash receipt" },
-    "title.cashOut": { "cs": "Výdajový pokladní doklad", "en": "Cash disbursement" },
+    "title.cashIn": {
+        "cs": "Příjmový pokladní doklad",
+        "en": "Cash receipt",
+        "sk": "Príjmový pokladničný doklad",
+        "de": "Kasseneinnahmebeleg"
+    },
+    "title.cashOut": {
+        "cs": "Výdajový pokladní doklad",
+        "en": "Cash disbursement",
+        "sk": "Výdavkový pokladničný doklad",
+        "de": "Kassenausgabebeleg"
+    },
 
-    "fileName.cashInTaxDocument": { "cs": "prijmovy-pokladni-doklad", "en": "cash-receipt" },
-    "fileName.cashIn":            { "cs": "prijmovy-pokladni-doklad", "en": "cash-receipt" },
-    "fileName.cashOut":           { "cs": "vydajovy-pokladni-doklad", "en": "cash-disbursement" },
+    "fileName.cashInTaxDocument": { "cs": "prijmovy-pokladni-doklad", "en": "cash-receipt", "sk": "prijmovy-pokladnicny-doklad", "de": "kasseneinnahmebeleg" },
+    "fileName.cashIn":            { "cs": "prijmovy-pokladni-doklad", "en": "cash-receipt", "sk": "prijmovy-pokladnicny-doklad", "de": "kasseneinnahmebeleg" },
+    "fileName.cashOut":           { "cs": "vydajovy-pokladni-doklad", "en": "cash-disbursement", "sk": "vydavkovy-pokladnicny-doklad", "de": "kassenausgabebeleg" },
 
     // Strany: v obou směrech platí totéž — kdo je kdo, určují snapshoty.
-    "label.supplier": { "cs": "Dodavatel / přijal", "en": "Supplier / received by" },
-    "label.customer": { "cs": "Odběratel / vydal", "en": "Customer / paid by" },
+    "label.supplier": { "cs": "Dodavatel / přijal", "en": "Supplier / received by", "sk": "Dodávateľ / prijal", "de": "Lieferant / empfangen von" },
+    "label.customer": { "cs": "Odběratel / vydal", "en": "Customer / paid by", "sk": "Odberateľ / vydal", "de": "Kunde / gezahlt von" },
 
-    "label.paymentReceivedDate": { "cs": "Datum přijetí platby", "en": "Payment received" },
+    "label.paymentReceivedDate": { "cs": "Datum přijetí platby", "en": "Payment received", "sk": "Dátum prijatia platby", "de": "Zahlungseingang" },
 
     // Hotovostní doklad nemá co „k úhradě“ — částka už byla zaplacena.
-    "totals.toPay": { "cs": "Celkem", "en": "Total" },
+    "totals.toPay": { "cs": "Celkem", "en": "Total", "sk": "Spolu", "de": "Gesamtbetrag" },
 
     // Podpisy — prázdné linky, bez jmen (#93).
-    "signature.payer":     { "cs": "Podpis", "en": "Signature" },
-    "signature.recipient": { "cs": "Podpis příjemce", "en": "Recipient's signature" },
-    "signature.cashier":   { "cs": "Podpis pokladníka", "en": "Cashier's signature" }
+    "signature.payer":     { "cs": "Podpis", "en": "Signature", "sk": "Podpis", "de": "Unterschrift" },
+    "signature.recipient": { "cs": "Podpis příjemce", "en": "Recipient's signature", "sk": "Podpis príjemcu", "de": "Unterschrift des Empfängers" },
+    "signature.cashier":   { "cs": "Podpis pokladníka", "en": "Cashier's signature", "sk": "Podpis pokladníka", "de": "Unterschrift des Kassierers" }
 }

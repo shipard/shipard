@@ -87,15 +87,19 @@ v telefonu, neumějí PDF zobrazit uvnitř stránky. Soubor stáhni a otevři
 v prohlížeči PDF.
 
 **Doklad je v jiném jazyce, než čekáš.** Jazyk se řídí zemí odběratele
-z **Fakturačních údajů** dokladu: odběrateli z Česka se tiskne česky,
-odběratelům z ostatních zemí anglicky. Doklad bez odběratele se tiskne
-v jazyce země tvé firmy. Když to u některého odběratele nesedí, nastav mu
-**Jazyk dokumentů** na tabu **Nastavení** v **Osobách** — viz
+z **Fakturačních údajů** dokladu: odběrateli z Česka se tiskne česky, ze
+Slovenska slovensky, z Německa a Rakouska německy a odběratelům z ostatních
+zemí anglicky. Doklad bez odběratele se tiskne v jazyce země tvé firmy. Když
+to u některého odběratele nesedí, nastav mu **Jazyk dokumentů** na tabu
+**Nastavení** v **Osobách** — viz
 [Založení osoby](../osoby/zalozeni-osoby.md); doklad není potřeba měnit,
-příští tisk už je v novém jazyce. Slovenština a němčina zatím hotové nejsou —
-odběrateli ze Slovenska, Německa nebo Rakouska (i tomu, kdo má jeden z těch
-jazyků nastavený) se doklad vytiskne anglicky a žluté upozornění nad
-náhledem ti to připomene.
+příští tisk už je v novém jazyce.
+
+**Co se s jazykem mění a co ne.** V jazyce dokladu jsou titulek, popisky,
+názvy sazeb DPH, způsob úhrady, podoba čísel a dat a zkratky běžných
+jednotek (*ks* se anglicky tiskne jako *pcs*, německy *Stk*). Nepřekládá se
+to, co jsi napsal sám: popis řádků, poznámka na doklad, název pokladny
+a jednotky, které sis do **Měrných jednotek** přidal.
 
 **Co zatím nejde:** odeslat fakturu odběrateli e-mailem přímo z Shipardu
 a změnit vzhled dokladu nebo na něj přidat vlastní text — viz

@@ -73,10 +73,10 @@ v záhlaví. Barvy, umístění loga, vlastní texty (třeba poděkování nebo
 obchodní podmínky), jméno toho, kdo doklad vystavil, ani podpis a razítko
 zatím nejsou.
 
-**Slovensky ani německy doklad nevytiskneš.** Jazyk dokladu se řídí zemí
-odběratele nebo **Jazykem dokumentů** nastaveným u osoby, ale hotová je jen
-čeština a angličtina — kde vychází slovenština nebo němčina, tiskne se
-zatím anglicky.
+**Jazyk pro jeden tisk nezvolíš.** Doklad se tiskne česky, anglicky,
+slovensky nebo německy podle země odběratele nebo **Jazyka dokumentů**
+nastaveného u osoby; přepnout jazyk jen pro jeden tisk zatím nejde. Jiné
+jazyky nejsou.
 
 **QR platba je jen česká.** Kód na dokladu čtou bankovní aplikace českých
 bank; pro odběratele v zahraničí jiný standard zatím není.

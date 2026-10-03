@@ -8,16 +8,22 @@
     "0": {
         "name": "Not accounted",
         "name:cs": "Neúčtováno",
-        "name:en": "Not accounted"
+        "name:en": "Not accounted",
+        "name:sk": "Neúčtované",
+        "name:de": "Nicht gebucht"
     },
     "1": {
         "name": "Accounted",
         "name:cs": "Zaúčtováno",
-        "name:en": "Accounted"
+        "name:en": "Accounted",
+        "name:sk": "Zaúčtované",
+        "name:de": "Gebucht"
     },
     "2": {
         "name": "Error",
         "name:cs": "Chyba účtování",
-        "name:en": "Accounting error"
+        "name:en": "Accounting error",
+        "name:sk": "Chyba účtovania",
+        "name:de": "Buchungsfehler"
     }
 }
