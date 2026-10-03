@@ -8,7 +8,9 @@ Plný design: [`tasks/ds-encrypted-secrets.md`](../../tasks/ds-encrypted-secrets
 
 ## 1. Co se šifruje a čím
 
-- **Algoritmus:** AES-256-GCM přes `sodium_crypto_aead_aes256gcm_*`
+- **Algoritmus:** AES-256-GCM přes OpenSSL (`openssl_encrypt` /
+  `openssl_decrypt`) — funguje na x86 i ARM; formát je kompatibilní
+  s ciphertexty z dřívější implementace přes libsodium
 - **Klíč:** 32 bytes, jeden per DS, soubor `{ds_path}/secrets/secrets.key`
 - **Permissions:** soubor `0600 shipard:shipard`, adresář `0700 shipard:shipard`
 - **Formát ciphertextu v DB:** `v1:{nonce_b64}:{tag_b64}:{ciphertext_b64}`,
@@ -151,7 +153,7 @@ zadat všechny secrets.
 | `SecretsKeyInsecureException` perms 0640    | tým-přístup omylem              | `chmod 0600 secrets.key`            |
 | `InvalidCiphertextException` v `health`     | klíč nesedí na ciphertext       | restore správného `secrets.key`     |
 | `ds-secrets-rotate` vrací CRITICAL          | disk full / perms při rename    | viz output, manuální mv             |
-| AES-256-GCM not available na startu         | starý CPU bez AES-NI            | upgrade hardware nebo build sodium  |
+| `AES-256-GCM is not available`              | PHP bez rozšíření OpenSSL       | doinstalovat / povolit `openssl`    |
 
 ## 6. Implementační reference
 
