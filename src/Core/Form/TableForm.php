@@ -490,11 +490,15 @@ abstract class TableForm
     /**
      * Create an attachments tab for the current table. The tableId is taken
      * from the loaded table definition.
+     *
+     * `$sendFlag` zapne u příloh přepínač „Odeslat s dokladem“ — jen pro
+     * záznamy, které se odesílají (vydané doklady).
      */
     protected function attachmentsTab(
         string $id = 'attachments',
         string $label = 'Přílohy',
         ?string $changeEndpoint = null,
+        bool $sendFlag = false,
     ): FormTab {
         $tableId = $this->tableDef?->tableId ?? 0;
         return new FormTab(
@@ -503,6 +507,7 @@ abstract class TableForm
             type: 'attachments',
             tableId: $tableId,
             changeEndpoint: $changeEndpoint,
+            sendFlag: $sendFlag,
         );
     }
 }

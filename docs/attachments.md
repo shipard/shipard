@@ -113,7 +113,12 @@ Fields:
   table_id: 201          # smallint — numerické tableId cílové tabulky
   record_id: 42           # int — ID záznamu
   file: (binary)          # soubor
+  send_with_record: 1     # volitelné, "1" | "0" — příloha se posílá se záznamem
 ```
+
+Bez pole `send_with_record` má nová příloha příznak `0`. Pole je cesta pro
+import (přílohy označené k odeslání ve starém systému, #94 D9); z UI se
+příznak nastavuje až u nahrané přílohy přes PATCH.
 
 Odpověď — úspěch (201 Created):
 ```json
@@ -134,6 +139,7 @@ Odpověď — úspěch (201 Created):
         },
         "att_order": 0,
         "is_deleted": false,
+        "send_with_record": false,
         "created": "2026-04-15T14:30:00+02:00",
         "created_by": 1
     }
@@ -281,6 +287,7 @@ Odpověď:
             "mime_type": "application/pdf",
             "metadata": {"pages": 3},
             "att_order": 0,
+            "send_with_record": true,
             "created": "2026-04-15T14:30:00+02:00",
             "thumbnail_url": "/api/v1/_attachments/1/thumbnail?w=300"
         },
@@ -324,6 +331,34 @@ Content-Type: application/json
     "att_order": 5
 }
 ```
+
+### Odeslat se záznamem
+
+```
+PATCH /api/v1/_attachments/{id}
+Content-Type: application/json
+
+{
+    "send_with_record": true
+}
+```
+
+Zapne / vypne odeslání přílohy spolu se záznamem (#94 D6). Hodnota musí být
+`true` nebo `false` (jinak 422, nic se nezmění). Pole jde poslat samostatně
+i spolu s `name` / `att_order`; tělo se nejdřív celé zvaliduje, pak se změny
+provedou.
+
+**Zámek záznamu příznak neblokuje** (`documentLockProviders`, read-only stav
+dokladu) — není to obsah dokladu a typicky se nastavuje u dokladu ve stavu
+V pořádku těsně před odesláním. Přes guard cílové tabulky ale jde
+(`AttachmentGuard::OPERATION_SEND_FLAG`), stejně jako přejmenování a pořadí;
+odmítnutí guardem je u celého PATCH **409 `ATTACHMENT_LOCKED`**.
+
+**Kontrakt pro odeslání záznamu** (konzument: odeslání dokladu, #90 fáze 4):
+posílají se přílohy záznamu s `send_with_record = 1` a `is_deleted = 0`
+v pořadí `att_order ASC, name ASC`. Co se s nimi při odeslání stane (spojení
+PDF do dokladu × samostatné soubory), určuje volba osoby — `docs/prints.md`
+→ Volby osoby pro odeslání.
 
 ### Smazání (soft-delete)
 
@@ -451,6 +486,18 @@ Formuláře pro záznamy, které podporují přílohy, zobrazí tab „Přílohy
 - Tlačítko „Přidat přílohu" (klasický file input)
 - Drag-and-drop zona pro přetažení souborů
 - Kontextové menu na příloze: přejmenovat, smazat, stáhnout
+- Přepínač **„Odeslat s dokladem"** u každé přílohy — jen u formulářů, které
+  o něj požádají: `TableForm::attachmentsTab(sendFlag: true)` → `FormTab`
+  JSON `send_flag: true` → prop `sendFlag` komponenty `AttachmentPanel`.
+  Zatím faktura vydaná a zálohová faktura (`IssuedInvoiceFormBase` přes hook
+  `DocsHeadsFormBase::attachmentsSendable()`). Přepínač má vlastní vypínač
+  `sendFlagDisabled` — zůstává aktivní i u dokladu jen pro čtení (V pořádku,
+  zámek), kde je zbytek panelu `disabled`; neaktivní je jen v režimu
+  prohlížení (`readOnly` prop formuláře, pak se ukazuje jen značka)
+  a během ukládání.
+
+Read-only grid (`AttachmentGrid` — detail dokladu, náhledy vedle formuláře)
+ukazuje u příloh s příznakem značku „Odeslat s dokladem", bez přepínání.
 
 ### Detail prohlížeče
 
@@ -539,6 +586,13 @@ Hlavní business logika. Metody:
 
 - `thumbnail(int $attachmentId, int $width, int $quality, int $page): StreamedResponse`
   - Zkontroluje cache, pokud miss → zavolá ThumbnailGenerator, uloží do cache
+
+- `setSendWithRecord(int $attachmentId, bool $value): bool`
+  - Zapne / vypne `send_with_record` (#94 D6); ptá se guardů s operací
+    `AttachmentGuard::OPERATION_SEND_FLAG`, odmítnutí = `DomainException`
+  - `upload()` má k tomu volitelný parametr `$sendWithRecord` (výchozí
+    `false`); `copyTo()` příznak **nepřenáší** — kopie u jiného záznamu se
+    neposílá, dokud to tam někdo výslovně nezapne
 
 - `softDelete(int $attachmentId): DocumentResult`
   - Nastaví `is_deleted = 1`

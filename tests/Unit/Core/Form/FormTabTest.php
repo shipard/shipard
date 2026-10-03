@@ -58,4 +58,29 @@ class FormTabTest extends TestCase
             subtable: ['table' => 'child', 'foreignKey' => 'parent', 'orderColumn' => ''],
         );
     }
+
+    // ── sendFlag (#94 D6) ────────────────────────────────────────────────────
+
+    public function testAttachmentsTabCarriesSendFlagOnlyWhenEnabled(): void
+    {
+        $plain = new FormTab(id: 'attachments', label: 'Přílohy', type: 'attachments', tableId: 501);
+        $this->assertArrayNotHasKey('send_flag', $plain->toArray());
+
+        $sendable = new FormTab(id: 'attachments', label: 'Přílohy', type: 'attachments', tableId: 501, sendFlag: true);
+        $this->assertTrue($sendable->toArray()['send_flag']);
+    }
+
+    public function testSendFlagIsAllowedOnlyOnAttachmentsTab(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('sendFlag is only allowed for type "attachments"');
+
+        new FormTab(
+            id: 'rows',
+            label: 'Řádky',
+            type: 'subtable',
+            subtable: ['table' => 'docs_core_rows', 'foreignKey' => 'doc_head', 'formId' => null],
+            sendFlag: true,
+        );
+    }
 }

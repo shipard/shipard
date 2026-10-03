@@ -36,7 +36,13 @@
       onChanged={onSubtableChanged}
     />
   {:else if tab.type === 'attachments'}
-    <AttachmentPanel tableId={tab.table_id} recordId={parentId} {disabled} changeEndpoint={tab.change_endpoint} />
+    <AttachmentPanel
+      tableId={tab.table_id}
+      recordId={parentId}
+      {disabled}
+      changeEndpoint={tab.change_endpoint}
+      sendFlag={tab.send_flag ?? false}
+    />
   {:else}
     {#each tab.sections as section, i (section.title ?? `section-${i}`)}
       <FormSection

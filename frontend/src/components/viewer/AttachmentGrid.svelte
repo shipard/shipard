@@ -76,6 +76,10 @@
           <!-- Příloha vygenerovaná předzpracováním zprávy (provenance metadata). -->
           <span class="shpd-attgrid__badge">{t('attachments.generated')}</span>
         {/if}
+        {#if att.send_with_record}
+          <!-- Příloha se posílá spolu s dokladem (#94). -->
+          <span class="shpd-attgrid__badge">{t('attachments.sendWith')}</span>
+        {/if}
       </span>
     </div>
   </a>
@@ -96,6 +100,9 @@
             <span class="shpd-attgrid__size">{formatFileSize(att.file_size)}</span>
             {#if att.generated}
               <span class="shpd-attgrid__badge">{t('attachments.generated')}</span>
+            {/if}
+            {#if att.send_with_record}
+              <span class="shpd-attgrid__badge">{t('attachments.sendWith')}</span>
             {/if}
           </figcaption>
           {#if isPdf(att.mime_type)}

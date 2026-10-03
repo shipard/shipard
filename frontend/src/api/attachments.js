@@ -74,6 +74,21 @@ export async function renameAttachment(id, newName) {
 }
 
 /**
+ * Zapne / vypne odeslání přílohy se záznamem („Odeslat s dokladem").
+ * @param {number} id
+ * @param {boolean} value
+ * @returns {Promise<object>}
+ */
+export async function setAttachmentSendFlag(id, value) {
+  const res = await fetch(`${API_BASE_URL}/_attachments/${id}`, {
+    method: 'PATCH',
+    headers: buildHeaders(true),
+    body: JSON.stringify({ send_with_record: value }),
+  });
+  return res.json();
+}
+
+/**
  * Soft-delete an attachment.
  * @param {number} id
  * @returns {Promise<boolean>}

@@ -1,6 +1,6 @@
 # Osoba: jazyk dokumentů, spojování příloh, příloha „odeslat s dokladem“
 
-**Stav:** naplánováno — rozhodnutí #94 D1–D11 zamčená 2026-10-03
+**Stav:** hotovo — 2026-10-03 (4 commity; unit testy, integrační testy tisků a osob na `4l3j-`, jazyk tisku a živé čtení jazyka osoby ověřené přes `print-run`, příznak přílohy přes REST a v headless prohlížeči; `ds-upgrade` jen `4l3j-`); odchylky od zadání na konci
 
 > PRD pro Claude Code (4 commity). Design: issue #94, komentář
 > „Rozhodnutí (zamčeno)“ (D1–D11). Navazuje na tisky #90 (D5, D8, D10, D11)
@@ -417,3 +417,42 @@ Upřesnění tohoto zadání (nad rámec issue, k potvrzení při review):
   vydaná a zálohová faktura (`IssuedInvoiceFormBase`).
 - Zámek dokladu příznak přílohy neblokuje.
 - `PersonApplier`: chybějící blok `documents` = beze změny.
+
+## Odchylky od zadání (implementace 2026-10-03)
+
+- **Blok `documents` se řídí merge strategií hlavičky** (potvrzeno před
+  implementací): při založení a u `updateHeader` / `fullSync` se zapíšou obě
+  hodnoty včetně `null`; `mergeAdd` jen doplní, co v databázi nastavené není;
+  `createOnly` existující osobu nemění. Zadání říkalo „blok je → zapíše obě
+  hodnoty“ bez ohledu na strategii.
+- **`PersonExporter` nepíše blok úplně vždy** — výstup prořezává `null`
+  a prázdná pole. Spojování se proto exportuje jako výslovné `true` /
+  `false`; blok vypadne jen u osoby bez jazyka na zdroji dat bez `docs.core`.
+  Applier chybějící klíč v přítomném bloku čte jako `null` / `false`.
+- **Varování `column_unavailable`** (zdroj dat bez `docs.core`) vzniká jen
+  pro `sendAttachmentsMerged: true` — `false` je výchozí hodnota a nic se
+  neztrácí.
+- **`PrintLanguageResolver` vrací `PrintLanguageChoice`** (jazyk tisku +
+  jazyk dokumentu bez katalogu), ne řetězec; rozhodnutí, zda hledat stranu,
+  je `needsParty()`. Dokumentové číselníky dostává líně (closure) —
+  `print-run --data` a tisk s výslovným jazykem je nečtou.
+  `PrintPartyProvider::printParty()` bere `?ConfigRuntime` jako zbytek tisků.
+- **Hlášení `language.unavailable` je vždy anglicky** — vzniká jen při tisku
+  v záložním jazyce a text hlášení je v jazyce tisku; runner vlastní katalog
+  překladů nemá.
+- **Přepínač přílohy** je aktivní u Konceptu, V pořádku i zamčeného dokladu;
+  neaktivní jen v režimu prohlížení (`readOnly` prop) a během ukládání
+  (potvrzeno před implementací). `copyTo()` příznak nepřenáší.
+- **`PATCH /_attachments/{id}` převádí odmítnutí guardem na 409** i pro
+  přejmenování a pořadí (dřív neošetřená výjimka) a tělo validuje celé před
+  první změnou.
+- **Popisek „Automaticky (podle země)“** je v novém cfgItemu
+  `base.persons.formLabels` (potvrzeno před implementací).
+- **Nad rámec zadání:** `TableLoader` lokalizuje i sloupce z extensions —
+  popisky `payment_term_days` a nového `send_attachments_merged` byly
+  ve formuláři vždy anglicky.
+- **Neověřeno na reálné faktuře V pořádku:** `4l3j-` žádnou vydanou fakturu
+  v tom stavu nemá. Jazyk tisku je ověřený na pokladním dokladu (stejný
+  builder), přepínač u dokladu jen pro čtení simulací stavu formuláře
+  v prohlížeči. Odvození SK / AT / BE kryjí unit testy nad skutečnými
+  číselníky.

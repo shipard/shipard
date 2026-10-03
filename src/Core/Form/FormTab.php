@@ -18,6 +18,9 @@ final class FormTab
      * @param string|null   $changeEndpoint Only for type='attachments': API path
      *                                  POSTed (fire-and-forget) after upload/delete;
      *                                  `{id}` placeholder = record id.
+     * @param bool          $sendFlag   Only for type='attachments': panel nabízí
+     *                                  u přílohy přepínač „Odeslat s dokladem“
+     *                                  (`send_with_record`, #94 D6).
      */
     public function __construct(
         public readonly string $id,
@@ -28,6 +31,7 @@ final class FormTab
         public readonly ?int $tableId = null,
         public readonly ?string $icon = null,
         public readonly ?string $changeEndpoint = null,
+        public readonly bool $sendFlag = false,
     ) {
         if (!in_array($type, self::ALLOWED_TYPES, true)) {
             throw new \InvalidArgumentException(sprintf(
@@ -40,6 +44,12 @@ final class FormTab
         if ($changeEndpoint !== null && $type !== 'attachments') {
             throw new \InvalidArgumentException(
                 sprintf('FormTab "%s": changeEndpoint is only allowed for type "attachments"', $id),
+            );
+        }
+
+        if ($sendFlag && $type !== 'attachments') {
+            throw new \InvalidArgumentException(
+                sprintf('FormTab "%s": sendFlag is only allowed for type "attachments"', $id),
             );
         }
 
@@ -162,6 +172,9 @@ final class FormTab
             $result['table_id'] = $this->tableId;
             if ($this->changeEndpoint !== null) {
                 $result['change_endpoint'] = $this->changeEndpoint;
+            }
+            if ($this->sendFlag) {
+                $result['send_flag'] = true;
             }
         }
 

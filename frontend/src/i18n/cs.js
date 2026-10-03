@@ -333,6 +333,10 @@ export default {
   'attachments.view.empty': 'Žádné přílohy',
   'attachments.view.newRecord': 'Náhledy příloh budou dostupné po uložení záznamu.',
   'attachments.confirmDelete': 'Opravdu smazat přílohu „{name}"?',
+  'attachments.sendWith': 'Odeslat s dokladem',
+  'attachments.sendWith.turnOn': 'Příloha se s dokladem neposílá — kliknutím ji k odeslání přidáš',
+  'attachments.sendWith.turnOff': 'Příloha se posílá s dokladem — kliknutím ji z odeslání vyřadíš',
+  'attachments.sendWith.failed': 'Změnu se nepodařilo uložit.',
 
   // ── Server error codes (mapped via i18n/errors.js translateError()) ─────
   // Top-level error.code values from Response::error() in PHP. Unknown

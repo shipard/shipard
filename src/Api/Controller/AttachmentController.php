@@ -19,7 +19,7 @@ use Shipard\Module\Core\Attachments\AttachmentService;
  *   GET    /_attachments/{id}/download    Download the original file
  *   GET    /_attachments/{id}/thumbnail   Get/generate a thumbnail
  *   GET    /_attachments                  List attachments for a record
- *   PATCH  /_attachments/{id}             Rename or reorder an attachment
+ *   PATCH  /_attachments/{id}             Rename, reorder or flag an attachment for sending
  *   DELETE /_attachments/{id}             Soft-delete an attachment
  *   POST   /_attachments/{id}/restore     Restore a soft-deleted attachment
  */
@@ -48,7 +48,9 @@ class AttachmentController
      * POST /_attachments/upload
      * Content-Type: multipart/form-data
      *
-     * Fields: table_id (int), record_id (int), file (binary)
+     * Fields: table_id (int), record_id (int), file (binary),
+     * send_with_record ("1" | "0", volitelné — příloha se posílá se
+     * záznamem; cesta pro import, #94 D9)
      */
     public function upload(AuthContext $auth): Response
     {
@@ -81,7 +83,9 @@ class AttachmentController
 
         $userId = $auth->isAuthenticated ? $auth->userId : null;
 
-        $result = $this->service->upload($tableId, $recordId, $originalName, $tmpPath, $userId);
+        $sendWithRecord = (string) ($_POST['send_with_record'] ?? '0') === '1';
+
+        $result = $this->service->upload($tableId, $recordId, $originalName, $tmpPath, $userId, $sendWithRecord);
 
         if (!$result['success']) {
             return Response::error('VALIDATION_ERROR', $result['error'] ?? 'Upload failed', 422);
@@ -199,7 +203,8 @@ class AttachmentController
     /**
      * PATCH /_attachments/{id}
      *
-     * Body: {"name": "new name"} and/or {"att_order": 5}
+     * Body: {"name": "new name"}, {"att_order": 5} and/or
+     * {"send_with_record": true} — samostatně i dohromady.
      */
     public function patch(int $id, Request $request): Response
     {
@@ -213,16 +218,32 @@ class AttachmentController
             return Response::error('NOT_FOUND', 'Příloha nenalezena', 404);
         }
 
+        // Nejdřív celé tělo zvalidovat — neplatné pole nesmí nechat změnu napůl.
+        $name = null;
         if (isset($body['name'])) {
             $name = trim((string) $body['name']);
             if ($name === '') {
                 return Response::error('VALIDATION_ERROR', 'Název přílohy nesmí být prázdný', 422);
             }
-            $this->service->rename($id, $name);
+        }
+        $sendWithRecord = $body['send_with_record'] ?? null;
+        if ($sendWithRecord !== null && !is_bool($sendWithRecord)) {
+            return Response::error('VALIDATION_ERROR', 'Pole send_with_record musí být true nebo false', 422);
         }
 
-        if (isset($body['att_order'])) {
-            $this->service->updateOrder($id, (int) $body['att_order']);
+        try {
+            if ($name !== null) {
+                $this->service->rename($id, $name);
+            }
+            if (isset($body['att_order'])) {
+                $this->service->updateOrder($id, (int) $body['att_order']);
+            }
+            if ($sendWithRecord !== null) {
+                $this->service->setSendWithRecord($id, $sendWithRecord);
+            }
+        } catch (\DomainException $e) {
+            // Guard cílové tabulky (#55 X16) — stejně jako u smazání.
+            return Response::error('ATTACHMENT_LOCKED', $e->getMessage(), 409);
         }
 
         // Return updated record
@@ -278,6 +299,7 @@ class AttachmentController
         $att['file_size'] = (int) ($att['file_size'] ?? 0);
         $att['att_order'] = (int) ($att['att_order'] ?? 0);
         $att['is_deleted'] = (bool) ($att['is_deleted'] ?? false);
+        $att['send_with_record'] = (bool) ($att['send_with_record'] ?? false);
         $att['created_by'] = $att['created_by'] !== null ? (int) $att['created_by'] : null;
 
         // Decode metadata if it's a JSON string

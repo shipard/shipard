@@ -852,7 +852,7 @@ class DocsHeadsViewer extends TableViewer
         $groups = $this->sourceAttachmentGroups($recordId);
 
         $files = $this->db->fetchAll(
-            'SELECT `id`, `name`, `file_name`, `file_size`, `mime_type`'
+            'SELECT `id`, `name`, `file_name`, `file_size`, `mime_type`, `send_with_record`'
             . ' FROM `core_attachments_files`'
             . ' WHERE `table_id` = %i AND `record_id` = %i AND `is_deleted` = 0'
             . ' ORDER BY `att_order` ASC, `name` ASC',
@@ -862,12 +862,17 @@ class DocsHeadsViewer extends TableViewer
         if ($files !== []) {
             $attachments = [];
             foreach ($files as $f) {
-                $attachments[] = [
+                $attachment = [
                     'id'        => (int) $f['id'],
                     'name'      => (string) ($f['name'] ?? $f['file_name']),
                     'mime_type' => (string) ($f['mime_type'] ?? ''),
                     'file_size' => (int) ($f['file_size'] ?? 0),
                 ];
+                // Značka „Odeslat s dokladem“ v gridu příloh (#94 D6).
+                if (!empty($f['send_with_record'])) {
+                    $attachment['send_with_record'] = true;
+                }
+                $attachments[] = $attachment;
             }
             $groups[] = [
                 'kind'        => 'doc',

@@ -753,7 +753,11 @@ abstract class TableForm
         ?string $orderColumn = null,   // pořadový sloupec → šipky přesunu, řazení orderColumn ASC, id ASC; nekombinovat se $sort
         bool $independentRows = false, // řádky s vlastními stavy: bez Přidat / Smazat / přesunu, dialog řádku plný i u read-only rodiče
     ): FormTab;
-    protected function attachmentsTab(string $id = 'attachments', string $label = 'Přílohy'): FormTab;
+    protected function attachmentsTab(
+        string $id = 'attachments', string $label = 'Přílohy',
+        ?string $changeEndpoint = null, // POST po uploadu / smazání ({id} = id záznamu)
+        bool $sendFlag = false,         // přepínač „Odeslat s dokladem" u příloh (#94)
+    ): FormTab;
 }
 ```
 
@@ -877,6 +881,13 @@ $contacts = $this->subtableTab('contacts', 'Kontakty',
 
 $attachments = $this->attachmentsTab();   // bere tableId z aktuální TableDefinition
 ```
+
+`attachmentsTab(sendFlag: true)` přidá u každé přílohy přepínač „Odeslat
+s dokladem" (`core_attachments_files.send_with_record`, tab JSON
+`send_flag: true`). Zapínají ho jen formuláře záznamů, které se odesílají —
+u dokladů přes hook `DocsHeadsFormBase::attachmentsSendable()` (default
+`false`, `IssuedInvoiceFormBase` vrací `true`). Přepínač funguje i u dokladu
+jen pro čtení; podrobnosti `docs/attachments.md` §7.
 
 ### Auto-hide separátorů (per-column)
 

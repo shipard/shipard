@@ -711,6 +711,8 @@
               recordId={currentId}
               disabled={isDisabled}
               changeEndpoint={tab.change_endpoint}
+              sendFlag={tab.send_flag ?? false}
+              sendFlagDisabled={readOnly || saving}
             />
           {:else}
             <FormTab

@@ -40,6 +40,12 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
         return 'customer_snapshot';
     }
 
+    /** Vydané doklady se odesílají odběrateli — přílohy lze označit k odeslání. */
+    protected function attachmentsSendable(): bool
+    {
+        return true;
+    }
+
     /** @param array<string, mixed> $data */
     protected function buildHeaderTab(array $data, bool $isNew): FormTab
     {

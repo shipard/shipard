@@ -174,6 +174,7 @@ export const iconTableList = faTableList; // Účtový rozvrh
 export const iconList = faList;
 export const iconMail = faEnvelope;
 export const iconMailOut = faPaperPlane; // Odeslaná pošta
+export const iconSendWith = faPaperPlane; // Příloha se posílá se záznamem
 export const iconInbox = faInbox; // Schránky
 export const iconAddressBook = faAddressBook; // Odesílatelé
 export const iconMagic = faWandMagicSparkles; // Preprocess pravidla
@@ -267,6 +268,7 @@ export const iconMap = {
   'list': iconList,
   'mail': iconMail,
   'mail-out': iconMailOut,
+  'send-with': iconSendWith,
   'inbox': iconInbox,
   'address-book': iconAddressBook,
   'magic': iconMagic,

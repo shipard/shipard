@@ -160,6 +160,14 @@ faktur platí metodicky jinak, popsané zatím není.
 **Tisk** a pošleš ho vlastním e-mailem — odeslání přímo z dokladu je známé
 omezení alfy, ne něco, co by se dalo někde zapnout.
 
+**Přílohy, které mají jít odběrateli s fakturou, si můžeš označit už teď.**
+Na záložce **Přílohy** má každý soubor přepínač **Odeslat s dokladem** —
+typicky výkaz práce nebo dodací list. Přepnout ho jde i u faktury ve stavu
+**V pořádku**, bez **Opravit**. V detailu faktury pak u takové přílohy vidíš
+značku **Odeslat s dokladem**. Zatím se označení jen ukládá: až půjde faktury
+odesílat přímo z Shipardu, půjdou s nimi právě označené přílohy; do té doby
+je k e-mailu přikládáš ručně. Stejný přepínač má i zálohová faktura.
+
 ## Souvisí
 
 - [Tisk faktury](tisk-faktury.md) — PDF pro odběratele

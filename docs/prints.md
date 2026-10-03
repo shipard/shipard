@@ -178,6 +178,24 @@ Konfigurace pro dotaz na stranu (`printParty()` z ní čte jen klíče
 cfgItemů, např. směr typu dokladu) se bere v záložním jazyce `en`;
 je-li to zároveň jazyk tisku, podruhé se nenačítá.
 
+### Volby osoby pro odeslání (kontrakt pro fázi 4, #94 D5 / D6 / D11)
+
+Samotné odeslání dokladu e-mailem je fáze 4; data, ze kterých bude číst,
+už existují:
+
+- **Které přílohy se posílají:** přílohy záznamu s
+  `core_attachments_files.send_with_record = 1` a `is_deleted = 0`, v pořadí
+  `att_order` (přepínač „Odeslat s dokladem“ v tabu Přílohy, viz
+  [attachments.md](attachments.md) §4). Žádný výběr při odeslání —
+  automatické odesílání (D11) čte jen příznak.
+- **Jak se posílají:** `base_persons_persons.send_attachments_merged` osoby
+  partnera, čtené **živě** jako jazyk. `1` = PDF přílohy se připojí za PDF
+  dokladu (`RenderClient` `appendPdfs`), ostatní soubory jdou do e-mailu
+  samostatně, bez konverze. `0` = všechny přílohy samostatně.
+- **Jazyk e-mailu** = jazyk dokumentu z `DocumentLanguageResolver` (stejná
+  strana jako tisk; texty e-mailu per jazyk dokumentů, D9) — na rozdíl od
+  tisku tedy i `sk` / `de`, jakmile pro ně texty budou.
+
 Builder hlásí dvojí druh problému: **tvrdý** výjimkou `PrintBuildException`
 (doklad bez snapshotu vlastní strany — tisk ven nesmí číst z dnešního
 adresáře) a **měkký** jako `PrintMessage` v `messages` (QR platba

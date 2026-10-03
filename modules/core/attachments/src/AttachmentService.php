@@ -48,10 +48,18 @@ class AttachmentService
      * @param string $originalName  Original filename
      * @param string $tmpPath     Path to the temporary uploaded file
      * @param int|null $userId    Uploading user ID
+     * @param bool   $sendWithRecord  Příloha se posílá se záznamem (#94 D6);
+     *                                výchozí ne — volající to musí říct výslovně
      * @return array{success: bool, data?: array, warning?: array, error?: string}
      */
-    public function upload(int $tableId, int $recordId, string $originalName, string $tmpPath, ?int $userId = null): array
-    {
+    public function upload(
+        int $tableId,
+        int $recordId,
+        string $originalName,
+        string $tmpPath,
+        ?int $userId = null,
+        bool $sendWithRecord = false,
+    ): array {
         // Validate that the table exists
         $tableName = $this->resolveTableName($tableId);
         if ($tableName === null) {
@@ -109,9 +117,15 @@ class AttachmentService
             'created_by' => $userId,
             'modified'   => $now,
         ];
+        // Výchozí hodnotu nechává na databázi — sloupec se zapisuje jen
+        // s výslovným příznakem.
+        if ($sendWithRecord) {
+            $data['send_with_record'] = 1;
+        }
 
         $id = $this->db->insertRow(self::TABLE, $data);
         $data['id'] = $id;
+        $data['send_with_record'] = $sendWithRecord ? 1 : 0;
 
         // Decode metadata back to array for response
         if ($data['metadata'] !== null) {
@@ -134,6 +148,8 @@ class AttachmentService
      *
      * Kept from the source row: display name, att_order, metadata, mime_type,
      * checksum (content is identical). `created_by` is the acting user.
+     * `send_with_record` se nekopíruje — kopie u jiného záznamu se neposílá,
+     * dokud to tam někdo výslovně nezapne.
      *
      * If the DB insert fails, the copied file is unlinked before the
      * exception propagates (no orphans). Callers wrapping this in an outer
@@ -325,6 +341,31 @@ class AttachmentService
         $this->db->updateWhere(
             self::TABLE,
             ['att_order' => $newOrder, 'modified' => date('Y-m-d H:i:s')],
+            'id = %i',
+            $id,
+        );
+
+        return true;
+    }
+
+    /**
+     * Zapne / vypne odeslání přílohy se záznamem (`send_with_record`,
+     * #94 D6). Zámek záznamu to neblokuje — příznak není obsah dokladu
+     * a typicky se nastavuje u hotového dokladu těsně před odesláním.
+     *
+     * @throws \DomainException když změnu odmítne guard cílové tabulky
+     */
+    public function setSendWithRecord(int $id, bool $value): bool
+    {
+        $attachment = $this->getAttachment($id);
+        if ($attachment === null) {
+            return false;
+        }
+        $this->assertChangeAllowed($attachment, AttachmentGuard::OPERATION_SEND_FLAG);
+
+        $this->db->updateWhere(
+            self::TABLE,
+            ['send_with_record' => $value ? 1 : 0, 'modified' => date('Y-m-d H:i:s')],
             'id = %i',
             $id,
         );

@@ -4,14 +4,16 @@
     uploadAttachment,
     deleteAttachment,
     renameAttachment,
+    setAttachmentSendFlag,
     thumbnailUrl,
     downloadUrl,
     formatFileSize,
   } from '../../api/attachments.js';
   import Button from '../ui/Button.svelte';
   import Icon from '../ui/Icon.svelte';
-  import { iconUpload, iconDownload, iconDelete, iconEdit, iconFile, iconFilePdf, iconFileImage, iconSpinner } from '../../icons.js';
+  import { iconUpload, iconDownload, iconDelete, iconEdit, iconFile, iconFilePdf, iconFileImage, iconSpinner, iconSendWith } from '../../icons.js';
   import { t } from '../../i18n/index.js';
+  import { translateError } from '../../i18n/errors.js';
   import { post } from '../../api/client.js';
 
   let {
@@ -21,6 +23,12 @@
     // API path POSTed fire-and-forget after upload/delete; '{id}' = recordId
     // (server-driven via FormTab.changeEndpoint)
     changeEndpoint = null,
+    // Přepínač „Odeslat s dokladem" u každé přílohy (server-driven via
+    // FormTab.sendFlag). Příznak není obsah dokladu — přepínat jde
+    // i u dokladu jen pro čtení (V pořádku, zámek), kde je zbytek panelu
+    // `disabled`; proto má vlastní vypínač.
+    sendFlag = false,
+    sendFlagDisabled = false,
   } = $props();
 
   function notifyContentChange() {
@@ -34,6 +42,8 @@
   let dragOver = $state(false);
   let renamingId = $state(null);
   let renameValue = $state('');
+  let sendFlagBusyId = $state(null);
+  let sendFlagError = $state(null);
 
   // ── Load attachments ────────────────────────────────────────────────────────
 
@@ -99,6 +109,20 @@
     await deleteAttachment(att.id);
     await fetchAttachments(tableId, recordId);
     notifyContentChange();
+  }
+
+  async function toggleSendFlag(att) {
+    if (sendFlagBusyId != null) return;
+    sendFlagBusyId = att.id;
+    sendFlagError = null;
+    const res = await setAttachmentSendFlag(att.id, !att.send_with_record);
+    if (res?.success) {
+      const value = res.data?.send_with_record === true;
+      attachments = attachments.map((a) => (a.id === att.id ? { ...a, send_with_record: value } : a));
+    } else {
+      sendFlagError = res?.error ? translateError(res.error) : t('attachments.sendWith.failed');
+    }
+    sendFlagBusyId = null;
   }
 
   function startRename(att) {
@@ -179,6 +203,10 @@
       </span>
     </div>
 
+    {#if sendFlagError}
+      <div class="shpd-attachments__error" role="alert">{sendFlagError}</div>
+    {/if}
+
     <!-- Content -->
     {#if loading}
       <div class="shpd-attachments__loading">
@@ -229,6 +257,30 @@
                 {formatFileSize(att.file_size)}
               </span>
             </div>
+
+            <!-- Odeslat s dokladem: přepínač, v režimu prohlížení jen značka -->
+            {#if sendFlag}
+              {#if !sendFlagDisabled}
+                <button
+                  type="button"
+                  class="shpd-attachments__send"
+                  class:shpd-attachments__send--on={att.send_with_record}
+                  aria-pressed={att.send_with_record === true}
+                  title={t(att.send_with_record ? 'attachments.sendWith.turnOff' : 'attachments.sendWith.turnOn')}
+                  disabled={sendFlagBusyId === att.id}
+                  data-testid="attachment-send-toggle"
+                  onclick={() => toggleSendFlag(att)}
+                >
+                  <Icon icon={iconSendWith} size="sm" />
+                  <span>{t('attachments.sendWith')}</span>
+                </button>
+              {:else if att.send_with_record}
+                <div class="shpd-attachments__send shpd-attachments__send--on shpd-attachments__send--static">
+                  <Icon icon={iconSendWith} size="sm" />
+                  <span>{t('attachments.sendWith')}</span>
+                </div>
+              {/if}
+            {/if}
 
             <!-- Actions -->
             {#if !disabled}
@@ -400,6 +452,55 @@
     outline: none;
     width: 100%;
     box-sizing: border-box;
+  }
+
+  .shpd-attachments__error {
+    margin-bottom: var(--shpd-space-md);
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-danger);
+  }
+
+  /* Odeslat s dokladem */
+  .shpd-attachments__send {
+    display: flex;
+    align-items: center;
+    gap: var(--shpd-space-xs);
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--shpd-space-xs) var(--shpd-space-sm);
+    border: none;
+    border-top: 1px solid var(--shpd-color-border);
+    background: none;
+    font: inherit;
+    font-size: 0.75rem;
+    color: var(--shpd-color-text-secondary);
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.12s, color 0.12s;
+  }
+
+  .shpd-attachments__send:hover:not(:disabled):not(.shpd-attachments__send--static):not(.shpd-attachments__send--on) {
+    background: var(--shpd-color-bg-hover);
+    color: var(--shpd-color-text);
+  }
+
+  .shpd-attachments__send:disabled {
+    cursor: progress;
+    opacity: 0.6;
+  }
+
+  .shpd-attachments__send--on {
+    background: var(--shpd-color-primary-soft);
+    color: var(--shpd-color-primary);
+    font-weight: 500;
+  }
+
+  .shpd-attachments__send--on:hover:not(:disabled):not(.shpd-attachments__send--static) {
+    background: var(--shpd-color-primary-soft-2);
+  }
+
+  .shpd-attachments__send--static {
+    cursor: default;
   }
 
   /* Actions */

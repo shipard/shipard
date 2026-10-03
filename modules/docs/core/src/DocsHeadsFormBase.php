@@ -203,7 +203,7 @@ abstract class DocsHeadsFormBase extends TableForm
         }
 
         $tabs[] = $this->buildNotesTab();
-        $tabs[] = $this->attachmentsTab();
+        $tabs[] = $this->attachmentsTab(sendFlag: $this->attachmentsSendable());
 
         // Per-type extra taby na konci formuláře (např. FPB „Nastavení“).
         // Default v base třídě je prázdné pole — subclassy přepisují
@@ -236,6 +236,16 @@ abstract class DocsHeadsFormBase extends TableForm
     protected function getNewFormTitle(): string
     {
         return 'Nový doklad';
+    }
+
+    /**
+     * Posílá se doklad partnerovi i s přílohami? Pak tab Přílohy nabízí
+     * u každé přílohy přepínač „Odeslat s dokladem“ (#94 D6). Default ne —
+     * zapínají ho jen typy dokladů, které se odesílají.
+     */
+    protected function attachmentsSendable(): bool
+    {
+        return false;
     }
 
     /**

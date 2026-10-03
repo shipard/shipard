@@ -324,6 +324,10 @@ export default {
   'attachments.view.empty': 'No attachments',
   'attachments.view.newRecord': 'Attachment previews will be available after saving the record.',
   'attachments.confirmDelete': 'Really delete attachment "{name}"?',
+  'attachments.sendWith': 'Send with document',
+  'attachments.sendWith.turnOn': 'Not sent with the document — click to include it',
+  'attachments.sendWith.turnOff': 'Sent with the document — click to leave it out',
+  'attachments.sendWith.failed': 'The change could not be saved.',
 
   // ── Server error codes (mapped via i18n/errors.js translateError()) ─────
   'error.DS_READ_ONLY': 'Data source is read-only, changes cannot be saved',

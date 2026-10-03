@@ -64,8 +64,9 @@ a vypořádacího koeficientu nepromítne.
 PDF dokladu ve stavu **V pořádku** si stáhneš tlačítkem **Tisk** — viz
 [Tisk faktury](faktury-vydane/tisk-faktury.md) — a odběrateli ho pošleš
 vlastním e-mailem. Shipard si zatím nepamatuje ani to, že a komu jsi doklad
-poslal. Volba **Přílohy dokladu připojit do PDF dokladu** u osoby se proto
-zatím jen ukládá.
+poslal. Volba **Přílohy dokladu připojit do PDF dokladu** u osoby a přepínač
+**Odeslat s dokladem** u příloh faktury se proto zatím jen ukládají —
+přílohy k e-mailu přikládáš ručně.
 
 **Vzhled tištěného dokladu nezměníš.** Je jeden, černobílý, s logem firmy
 v záhlaví. Barvy, umístění loga, vlastní texty (třeba poděkování nebo
