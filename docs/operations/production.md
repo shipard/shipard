@@ -17,7 +17,8 @@ tenhle dokument popisuje produkční mód, který se od dev liší ve třech vě
 
 ## Předpoklady
 
-- **Ubuntu LTS** — 24.04 nebo 26.04
+- **Ubuntu LTS** — nové servery **26.04**; 24.04 zůstává podporovaná pro
+  stávající servery, které se postupně upgradují
 - **root přístup** přes `sudo`
 - **doména** směřující na server a **TLS certifikát** (řešíš ručně — viz
   kapitola 6)
@@ -83,6 +84,11 @@ sudo -u shipard composer install --no-dev --optimize-autoloader
 
 `--no-dev` vynechá vývojové závislosti, `--optimize-autoloader` sestaví
 classmap. Instalační skript composer **nespouští** — je to samostatný krok.
+
+Na Ubuntu 24.04 vypíše composer při každém spuštění stovky řádků
+`Deprecation Notice: Constant E_STRICT is deprecated…` — composer z apt
+(2.7.1) je starší než PHP 8.5. Výpisy jsou neškodné, instalace proběhne
+v pořádku; na 26.04 se neobjevují.
 
 ---
 

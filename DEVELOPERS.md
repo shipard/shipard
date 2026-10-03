@@ -11,7 +11,8 @@ Vítej v projektu Shipard! Tenhle dokument tě provede od nuly k funkčnímu vý
 
 ## Požadavky
 
-- **Ubuntu LTS** — 24.04 nebo 26.04
+- **Ubuntu LTS** — pro novou instalaci **26.04**; 24.04 zůstává podporovaná
+  pro stávající instalace
 - **MariaDB ≥ 10.10** — hledání bez diakritiky používá collation `uca1400`
   (obě podporované verze Ubuntu požadavek splňují)
 - **git** (obvykle předinstalovaný — pokud není, `sudo apt install git`)
@@ -69,6 +70,11 @@ co servírovat. Spouštěj ho pod svým uživatelem, ne přes `sudo`. Závěreč
 výzvu k `ds-upgrade-all` můžeš při prvním setupu ignorovat — žádný datový
 zdroj ještě neexistuje. Stejný skript budeš pouštět po každém `git pull`
 (kapitola 7).
+
+Na Ubuntu 24.04 vypíše composer při každém spuštění stovky řádků
+`Deprecation Notice: Constant E_STRICT is deprecated…` — composer z apt
+(2.7.1) je starší než PHP 8.5. Výpisy jsou neškodné, instalace proběhne
+v pořádku; na 26.04 se neobjevují.
 
 `composer.lock` je verzovaný, `composer install` tak všude nainstaluje stejné
 verze balíků. Závislost přidávej přes `composer require <balík>`, verzi měň

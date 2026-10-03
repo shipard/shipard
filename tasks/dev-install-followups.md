@@ -1,6 +1,6 @@
 # Instalace — práva logu a doporučená verze Ubuntu
 
-**Stav:** naplánováno — #96 D15, D16
+**Stav:** částečně — kód, testy a dokumentace hotové 2026-10-03 (2 commity, #96 D15, D16); zbývá ověření na čisté VM (první zápis do logu → `shipard.log` `0640`, `doctor` bez ✗)
 
 ## Cíl
 
@@ -75,8 +75,24 @@ Poslední dvě drobnosti z ověření čisté instalace na Multipass VM (#96):
 
 ## Hotovo když
 
-- [ ] nově vzniklý `shipard.log` má `0640`, nově vzniklý adresář logu `0750`
-- [ ] souběžné založení logu nehází chybu
-- [ ] `DEVELOPERS.md` a `production.md` doporučují pro nové instalace 26.04
+- [x] nově vzniklý `shipard.log` má `0640`, nově vzniklý adresář logu `0750`
+      — `ErrorLoggerTest` pod umaskem `022`, `077` i `000`; na VM zbývá
+- [x] souběžné založení logu nehází chybu — test s osmi souběžnými procesy
+- [x] `DEVELOPERS.md` a `production.md` doporučují pro nové instalace 26.04
       a zmiňují deprecation výpisy composeru na 24.04
-- [ ] hlavička tasku a `tasks/README.md` aktualizované
+- [x] hlavička tasku a `tasks/README.md` aktualizované
+
+## Poznámky k implementaci
+
+- Adresář logu se zakládá lokálně v `ErrorLogger`, ne přes
+  `PermissionSpec::ensureDsDir()` — metoda je pojmenovaná a konfigurovaná
+  pro zdroj dat a logger zůstává bez závislostí.
+- Soubor se zakládá výlučně (`fopen` v módu `x`) před každým zápisem: `chmod`
+  udělá jen proces, který soubor skutečně vytvořil, a `0640` dostane i soubor
+  znovu vzniklý po rotaci. Existující soubor ani adresář se nemění.
+- Rotace v repu není, kód pro ni nepřibyl. `docs/logging.md` ale radil
+  `create 0664 www-data www-data` a adresář `0775` — srovnáno na kontrakt
+  (`0640` / `0750`, shipard-user), jinak by `doctor` po první rotaci znovu
+  hlásil chybu.
+- Poznámka o deprecation výpisech composeru je v `DEVELOPERS.md` v kapitole 3
+  (první `composer install`), ne v kapitole 2 — tam se composer nespouští.
