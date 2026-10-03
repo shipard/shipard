@@ -305,7 +305,8 @@ record_id, created)`.
 
 ## 10. Bezpečnost testování
 
-Dev servery nemají zachytávání pošty a relay posílá ven. Proto:
+Dev servery nemají zachytávání pošty a relay posílá ven (technickou
+pojistku řeší #95). Do té doby:
 
 - Integrační testy jen `enqueue` / `prepare`, **nikdy** `attemptSend` ani
   zpracování fronty; transport v testech fake.
