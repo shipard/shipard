@@ -2,12 +2,14 @@
 
 Doména `print` ([reports.md](reports.md) §1): výstup nad **jedním záznamem**
 — faktura vydaná, zálohová faktura, pokladní doklad, prodejka, Kontace,
-později karta majetku. Rozhodnutí D1–D28 jsou v issue #90, zadání
-v `tasks/prints-phase1.md` a `tasks/prints-phase2.md`.
+později karta majetku. Rozhodnutí D1–D33 jsou v issue #90, zadání
+v `tasks/prints-phase1.md`, `tasks/prints-phase2.md`
+a `tasks/prints-languages.md`.
 
 Hotovo: kontrakt `PrintData`, infrastruktura (deklarace, registr, runner,
 Twig, PDF), REST, CLI včetně nástrojů pro vývoj šablon, akce Tisk
-v detailu, vodoznak storna a tisky:
+v detailu, vodoznak storna, jazyky tisku `cs` / `en` / `sk` / `de`
+s přepínačem v náhledu (§3) a tisky:
 
 | Tisk | Modul | Co |
 |---|---|---|
@@ -18,9 +20,10 @@ v detailu, vodoznak storna a tisky:
 | `economy.accounting.docJournal` | `economy.accounting` | Kontace — interní tisk účetních zápisů dokladu (§4.2) |
 
 Nehotovo: nastavení vzhledu a texty na tiscích (fáze 3), e-mail
-a zmrazená odeslaná kopie (fáze 4), katalogy tisku `sk`, `de` (#94 D10),
-QR pro další země (#91), opravný daňový doklad (#92), „Vystavil“
-a jména u podpisů (#93), účtenka na POS tiskárnu, EET.
+a zmrazená odeslaná kopie (fáze 4), revize slovenských a německých
+formulací s právní vahou (D32, `tasks/prints-languages.md`), QR pro další
+země (#91), opravný daňový doklad (#92), „Vystavil“ a jména u podpisů
+(#93), účtenka na POS tiskárnu, EET.
 
 ## 1. Princip
 
@@ -120,6 +123,8 @@ je jediný vstupní bod — REST i CLI ho staví přes `PrintRunnerFactory`.
 4. Builder dostane `PrintRequest`: definici, záznam, jazyk, spojení,
    **`ConfigRuntime` v jazyce tisku** (ne v jazyce requestu — popisky
    číselníků jdou na doklad) a `PrintTranslator` nad katalogy tisku.
+   Zdroj dat bez kompilované konfigurace v jazyce tisku →
+   `PrintLanguageNotCompiledException` (viz Jazyky tisku a kompilace).
 5. Obálka `PrintData`: verze kontraktu z `PrintBuilder::version()`,
    `meta.watermark` = přeložený text klíče z `watermarks` pro stav
    záznamu, jinak `null`. `json` tím končí; `pdf` a `html` pokračují
@@ -138,10 +143,10 @@ i `meta.watermark` zůstávají, jak jsou.
 
 ### Jazyk tisku (#94 D2–D4)
 
-Rozlišují se **jazyky dokumentů** (cfgItem `world.base.documentLanguages`:
-`cs`, `en`, `sk`, `de` — to, co lze nastavit na osobě) a **jazyky tisku**
-(`PrintLanguageResolver::LANGUAGES`: `cs`, `en` — jazyky, pro které
-existují katalogy šablon a kompilovaná konfigurace).
+Rozlišují se **jazyky dokumentů** (cfgItem `world.base.documentLanguages`
+— to, co lze nastavit na osobě) a **jazyky tisku**
+(`PrintLanguageResolver::LANGUAGES` — jazyky, pro které má tisk překlady
+a formáty). Dnes jsou oba seznamy stejné: `cs`, `en`, `sk`, `de`.
 
 1. **Výslovný parametr** (REST `language`, CLI `--language`) — validuje se
    proti jazykům tisku, jiná hodnota je chyba (400). Stranu tisku nehledá.
@@ -155,8 +160,10 @@ existují katalogy šablon a kompilovaná konfigurace).
    3. země chybí nebo je neznámá (i doklad bez partnera) → hlavní jazyk
       **vlastní země** zdroje dat (`DataSourceConfig::getCountry()`),
       stejným pravidlem.
-3. Jazyk dokumentu bez katalogu tisku (`sk`, `de`) se tiskne **anglicky**
-   a tisk nese měkké hlášení `language.unavailable` (bez názvu partnera).
+3. Jazyk dokumentu, který mezi jazyky tisku není (jazyk přidaný do
+   `world.base.documentLanguages` dřív než překlady), se tiskne
+   **anglicky** a tisk nese měkké hlášení `language.unavailable` (bez
+   názvu partnera).
 
 Stranu tisku dodává builder přes volitelné rozhraní `PrintPartyProvider`
 → `PrintParty {personLanguage, country}`. `DocPrintBuilder` (a s ním
@@ -177,6 +184,51 @@ Kontaci i doklady tuzemským partnerům česky.
 Konfigurace pro dotaz na stranu (`printParty()` z ní čte jen klíče
 cfgItemů, např. směr typu dokladu) se bere v záložním jazyce `en`;
 je-li to zároveň jazyk tisku, podruhé se nenačítá.
+
+### Jazyky tisku a kompilace konfigurace (D29)
+
+Jazyk tisku potřebuje čtyři věci; úplnost hlídají testy (§10):
+
+| Co | Kde | Hlídá |
+|---|---|---|
+| kompilovaná konfigurace `compiled.<jazyk>.json` | `ds-upgrade` | `PrintConfigLanguagesTest` |
+| popisky konfigurace, kterou tisk čte | varianty `:<jazyk>` v JSONC modulů | `PrintConfigLanguagesTest` |
+| katalogy všech šablon | `messages.jsonc` | `PrintDeclarationsTest` |
+| formát čísel a dat | `PrintTwigExtension::FORMATS` | `PrintTwigExtensionTest` |
+
+**Kompilace.** `ds-upgrade` kompiluje konfiguraci pro jazyky rozhraní
+(`cs`, `en`) a pro každý jazyk dokumentů — `ConfigCompiler::languages()`
+je čte ze surového `world.base.documentLanguages`, kompilát ještě
+neexistuje. Zdroj dat, který po přidání jazyka neprošel `ds-upgrade`,
+kompilát nemá: tisk v tom jazyce skončí
+`PrintLanguageNotCompiledException` (409 `PRINT_LANGUAGE_NOT_COMPILED`),
+ne tiskem bez popisků. Platí i pro jazyk odvozený z partnera — po nasazení
+nového jazyka proto `ds-upgrade` na všech zdrojích dat.
+
+**Popisky konfigurace.** Kompilát chybějící variantu tiše nahradí
+angličtinou (`LocalizedFieldResolver`: `:<jazyk>` → `:en` → holé pole),
+proto test čte surová JSONC a vyžaduje **vlastní** variantu v každém
+jazyce tisku (čeština smí být holé pole). Tisk čte:
+
+| cfgItem | Pole | Čte |
+|---|---|---|
+| `world.vat.<země>` | `vatCodes[].print` (bez něj `name`), `vatNotes[].text` | `DocVatCodes` |
+| `docs.core.paymentMethods` | `name` | `DocPaymentBlock` |
+| `docs.core.docTypes` | `name` | `DocJournalPrintBuilder` |
+| `economy.accounting.accountingStates` | `name` | `DocJournalPrintBuilder` |
+| `core.units.printShortcuts` | `shortcut` | `DocRowsBlock` |
+| `journalDimensions[]` v `module.jsonc` | `name` | Kontace (záhlaví sloupců dimenzí) |
+
+Data zdroje se nepřekládají: texty řádků, poznámky, názvy pokladen, účtů
+a hodnot dimenzí se tisknou, jak jsou.
+
+**Zkratky jednotek (D31).** `core_units.shortcut` je český („ks“, „hod“).
+`DocRowsBlock` proto v jiném jazyce než českém bere zkratku systémové
+jednotky z `core.units.printShortcuts` (klíč = `system_code`; `pcs` je
+anglicky „pcs“, slovensky „ks“, německy „Stk“); česky zkratku z dat, aby
+platila úprava zkratky ve zdroji dat. Jednotka bez `system_code` (založená ve zdroji dat) se tiskne
+vždy tak, jak je. `PrintShortcutsTest` hlídá, že každá jednotka seedu má
+zkratku ve všech jazycích tisku a česká odpovídá seedu.
 
 ### Volby osoby pro odeslání (kontrakt pro fázi 4, #94 D5 / D6 / D11)
 
@@ -283,7 +335,8 @@ Pravidla:
   `PrintBuildException`. `correctiveVatPayer` / `correctiveNonVatPayer`
   jsou rezervované (#92).
 - **Strany a náš účet ze snapshotů (D5, D14)**; jednotky, tiskové popisky
-  DPH, pokladna a logo jsou aktuální v okamžiku tisku.
+  DPH, pokladna a logo jsou aktuální v okamžiku tisku. `rows[].unit.label`
+  je zkratka v jazyce tisku (§3, Zkratky jednotek).
 - **Povinné strany (D24):** snapshot **vlastní strany** (výstup →
   `supplier`, vstup → `customer`) je povinný, **partnerský** jen když
   hlavička má `partner` — pokladní doklad a prodejka ho mít nemusí. Chybí-li
@@ -442,23 +495,36 @@ globálně se striktní politikou `PrintSecurityPolicy::templates()`:
 
 ### Filtry a funkce (`PrintTwigExtension`)
 
-Formát podle jazyka tisku; mezery uvnitř hodnot jsou nezlomitelné.
+Formát podle jazyka tisku (D30); mezery uvnitř hodnot jsou nezlomitelné.
 
-| | `cs` | `en` |
-|---|---|---|
-| `1210.5\|money` | `1 210,50` | `1,210.50` |
-| `1210.5\|money('EUR')` | `1 210,50 EUR` | `1,210.50 EUR` |
-| `1.5\|qty` (bez zbytečných nul, nejvýš 4 místa) | `1,5` | `1.5` |
-| `21\|pct` | `21 %` | `21%` |
-| `'2026-10-02'\|date` | `2. 10. 2026` | `10/2/2026` |
+| | `cs`, `sk` | `de` | `en` |
+|---|---|---|---|
+| `1210.5\|money` | `1 210,50` | `1.210,50` | `1,210.50` |
+| `1210.5\|money('EUR')` | `1 210,50 EUR` | `1.210,50 EUR` | `1,210.50 EUR` |
+| `1.5\|qty` (bez zbytečných nul, nejvýš 4 místa) | `1,5` | `1,5` | `1.5` |
+| `21\|pct` (nejvýš 2 místa) | `21 %` | `21 %` | `21%` |
+| `'2026-10-02'\|date` | `2. 10. 2026` | `02.10.2026` | `2 Oct 2026` |
 
-Filtr `date` **přepisuje vestavěný Twig filtr** stejného jména — bere jen
-ISO datum, nic jiného. `t('klíč', {param: hodnota})` čte katalog tisku,
-`qr_svg(data.payment.qr)` vrací inline SVG (pro null prázdný řetězec).
+- Formátuje `ext-intl` (`NumberFormatter`, `IntlDateFormatter`), ale
+  **vzory i symboly jsou zapsané v `PrintTwigExtension::FORMATS`** —
+  výchozí data ICU se mezi verzemi mění a doklad se s nimi měnit nesmí.
+- `money` tiskne **kód měny** za číslem ve všech jazycích, ne symbol.
+- Zaokrouhluje PHP (`round()`), ne ICU: to má výchozí bankéřské
+  zaokrouhlení (`10.005` → `10,00`) a zápornou nulu tiskne jako `-0,00`.
+- Anglický měsíc je třípísmenná zkratka z vlastního seznamu — `MMM`
+  v `en_GB` dává „Sept“.
+- Datum mimo kalendář (`2026-02-31`) a cokoli jiného než ISO datum vrací
+  prázdný řetězec. Filtr `date` **přepisuje vestavěný Twig filtr** stejného
+  jména.
+- Jazyk bez záznamu ve `FORMATS` je programátorská chyba
+  (`LogicException`).
+
+`t('klíč', {param: hodnota})` čte katalog tisku, `qr_svg(data.payment.qr)`
+vrací inline SVG (pro null prázdný řetězec).
 
 ### Překlady (D8)
 
-`messages.jsonc` = `{ "klíč": { "cs": "…", "en": "…" } }`.
+`messages.jsonc` = `{ "klíč": { "cs": "…", "en": "…", "sk": "…", "de": "…" } }`.
 `PrintCatalogLoader` slévá katalogy z `catalogs` a nakonec katalog šablony
 (pozdější klíč vyhrává). `PrintTranslator`: chybějící jazyk → `cs`,
 chybějící klíč → vrátí klíč a zaloguje warning. Úplnost katalogů ve všech
@@ -466,7 +532,7 @@ jazycích tisku hlídá `PrintDeclarationsTest`.
 
 ## 6. REST
 
-`GET /_prints/{printId}/{recordId}?format=pdf|json[&language=cs|en]`
+`GET /_prints/{printId}/{recordId}?format=pdf|json[&language=cs|en|sk|de]`
 
 Tabulku určuje deklarace tisku. Práva (D21): tisk = čtení záznamu —
 `TableAccessGuard::guardTable()` na tabulku deklarace. `format=json` jen
@@ -474,9 +540,11 @@ pro administrátora. Na read-only zdroji dat povoleno. `format=html` REST
 nenabízí (400) — je to nástroj CLI.
 
 - `pdf` (default): `application/pdf`, `Content-Disposition: inline;
-  filename="…"` (z `meta.fileName`). Měkká hlášení builderu i runneru
-  (jazyk bez katalogu, §3) nese hlavička **`X-Print-Messages`** —
-  procentově kódované JSON pole `messages`.
+  filename="…"` (z `meta.fileName`). **`Content-Language`** nese jazyk,
+  ve kterém tisk vznikl — i když ho klient nevyžádal a zvolil ho partner
+  dokladu (D33). Měkká hlášení builderu i runneru (jazyk bez katalogu, §3)
+  nese hlavička **`X-Print-Messages`** — procentově kódované JSON pole
+  `messages`. Obě hlavičky jsou vystavené v CORS.
 - `json`: `{success, data}`, `data` = `PrintData`.
 
 | Kód | HTTP | Kdy |
@@ -485,6 +553,7 @@ nenabízí (400) — je to nástroj CLI.
 | `RECORD_NOT_FOUND` | 404 | záznam neexistuje |
 | `PRINT_NOT_AVAILABLE` | 409 | stav nebo typ záznamu tisk nedovoluje |
 | `PRINT_DATA_MISSING` | 409 | záznamu chybí data pro tisk (snapshot vlastní strany, nebo partnera u dokladu s partnerem) |
+| `PRINT_LANGUAGE_NOT_COMPILED` | 409 | zdroj dat nemá kompilovanou konfiguraci v jazyce tisku — čeká na `ds-upgrade` (§3) |
 | `BAD_REQUEST` | 400 | neplatný `format` / `language` |
 | `FORBIDDEN_ADMIN_ONLY` | 403 | `format=json` bez práv administrátora |
 | `RENDER_UNAVAILABLE` | 503 | render služba `unconfigured` / `unreachable` / `timeout` |
@@ -499,13 +568,16 @@ U obou render chyb je `errorKind` v `details[0].code`.
 Je to generický háček — viewer o tisku neví, takže tisk další tabulky
 nevyžaduje zásah do jejího vieweru.
 
-- jeden tisk: `{id: "print", kind: "button", target: {printId}}`
-- víc tisků: `{id: "print", kind: "dropdown", items: [{label, value}]}`,
-  `value` = id tisku — doklad s vlastním tiskem ve stavu V pořádku nabízí
-  tisk dokladu a Kontaci; stornovaný jen tisk dokladu, ostatní doklady jen
-  Kontaci
+- jeden tisk: `{id: "print", kind: "button", target: {printId, languages}}`
+- víc tisků: `{id: "print", kind: "dropdown", items: [{label, value}],
+  target: {languages}}`, `value` = id tisku — doklad s vlastním tiskem ve
+  stavu V pořádku nabízí tisk dokladu a Kontaci; stornovaný jen tisk
+  dokladu, ostatní doklady jen Kontaci
 
 Popisek je v `core.system.viewerDefaults.detailActions.print`.
+`target.languages` = `[{id, label}]` jsou jazyky tisku pro přepínač
+v náhledu — jeden seznam pro všechny tisky, popisek z
+`world.base.documentLanguages` v jazyce rozhraní (bez cfgItemu kód jazyka).
 
 Frontend: `Viewer.svelte::handleDetailAction` otevře
 `PrintPreviewDialog.svelte` — PDF stáhne jako Blob (`api/prints.js`, Bearer
@@ -515,11 +587,20 @@ prohlížeče PDF (`navigator.pdfViewerEnabled === false`) dostane jen
 Stáhnout. Čtecí `ViewerDetailModal` akce detailu nezobrazuje. Ve formuláři
 tisk není (D19).
 
+**Přepínač jazyka (D33).** V patičce dialogu je výběr **Jazyk**. První
+načtení jde bez parametru `language` — jazyk volí server (§3) a výběr se
+nastaví podle `Content-Language`; do té doby ukazuje „Automaticky“. Změna
+načte PDF znovu s `language`; předchozí PDF se zahodí hned (object URL se
+uvolní), aby Stáhnout nenabízelo jiný jazyk, než je vybraný. Po chybě
+výběr zůstane na jazyce, který selhal, a jde zvolit jiný. Volba se nikam
+neukládá — jazyk partnera se mění na osobě (#94 D1). Na úzké obrazovce je
+výběr na vlastním řádku nad tlačítky, dostupný i v režimu jen Stáhnout.
+
 ## 8. CLI
 
 ```bash
 shpd-ds print-run <printId> [<recordId>] [--format=json|pdf|html]
-                  [--language=cs|en] [--output=<cíl>] [--data=<PrintData.json>]
+                  [--language=cs|en|sk|de] [--output=<cíl>] [--data=<PrintData.json>]
 ```
 
 `json` (default) vypíše `PrintData` na stdout, `pdf` vyžaduje
@@ -543,13 +624,15 @@ Příklad: karta majetku (`economy.assets`).
    implementuje `PrintBuilder`: z `PrintRequest` načte kartu a události
    a vrátí `PrintBuildResult` (`data`, titulek, název souboru, hlášení);
    `version()` vrací verzi kontraktu `data`. Popisky číselníků čte
-   z `$request->config` — je v jazyce tisku. Kontrakt `data` popiš
+   z `$request->config` — je v jazyce tisku; nový cfgItem, který builder
+   čte, doplň do `PrintConfigLanguagesTest` a do tabulky v §3, jinak jeho
+   překlady nikdo nehlídá. Kontrakt `data` popiš
    v dokumentaci modulu. Vzor tisku mimo doklady ven:
    `DocJournalPrintBuilder` (Kontace). Tisk určený partnerovi
    (`audience: external`) nad jinou tabulkou než doklady implementuje
    i `PrintPartyProvider` — jinak se tiskne v jazyce vlastní země (§3).
 2. **Šablona** `modules/economy/assets/prints/card/page.html.twig`
-   a `messages.jsonc` (`cs` i `en`). Vlastní `header.html.twig` /
+   a `messages.jsonc` (všechny jazyky tisku). Vlastní `header.html.twig` /
    `footer.html.twig` a CSS polož vedle, nebo do sdíleného adresáře
    a uveď ho v `catalogs`.
 3. **Deklarace** v `config/prints.jsonc` + `"prints": [{"file": …}]`
@@ -577,20 +660,53 @@ Místo vlastního `data.json` poslouží i fixture z `tests/Fixtures/Prints/`;
 úpravou JSON (víc řádků, `meta.watermark`, `customer: null`) vyzkoušíš
 stavy, pro které v databázi doklad není.
 
+### Jak přidat jazyk tisku
+
+Příklad: polština (`pl`).
+
+1. **Jazyk dokumentů:** záznam v
+   `modules/world/base/config/documentLanguages.jsonc` — tím se dá nastavit
+   na osobě a `ds-upgrade` pro něj začne kompilovat konfiguraci. Do té
+   doby, než bude i jazykem tisku, se tiskne anglicky s hlášením
+   `language.unavailable`.
+2. **Formát:** řádek v `PrintTwigExtension::FORMATS` (locale, oddělovače,
+   procenta, vzor data) a případ v `PrintTwigExtensionTest`.
+3. **Katalogy:** `pl` ke každému klíči všech `messages.jsonc`
+   (`modules/*/*/prints/`).
+4. **Konfigurace:** varianty `:pl` u všeho z tabulky v §3 (Popisky
+   konfigurace), včetně `core.units.printShortcuts`.
+5. **`PrintLanguageResolver::LANGUAGES`** — až teď; testy úplnosti
+   (`PrintDeclarationsTest`, `PrintConfigLanguagesTest`,
+   `PrintShortcutsTest`) vyjmenují, co chybí.
+6. **Formulace s právní vahou** (titulky, věta o nedaňovém dokladu, datum
+   plnění, poznámky DPH) vypiš k revizi — vzor je sekce „Formulace
+   k revizi“ v `tasks/prints-languages.md` (D32).
+7. Popisek jazyka pro CLI (`PrintRunCommand`, `HelpCommand`), nápověda
+   v `help/`, a po nasazení **`ds-upgrade` na všech zdrojích dat**.
+
 ## 10. Testy
 
 - Unit `tests/Unit/Core/I18n/DocumentLanguageResolverTest.php` — tabulka
   odvození jazyka nad skutečnými číselníky `world.base`;
   `tests/Unit/Core/Prints/` — deklarace, registr, runner (včetně
-  `renderData()` a volby jazyka), obálka `PrintData`, katalogy, pravidlo vodoznaku, Twig
-  filtry a sandbox; `tests/Unit/Module/Docs/Core/Prints/` — bloky, titulky,
+  `renderData()` a volby jazyka), továrna runneru (jazyk bez kompilátu),
+  obálka `PrintData`, katalogy, pravidlo vodoznaku, Twig filtry (formáty
+  všech jazyků tisku) a sandbox; `PrintConfigLanguagesTest` — popisky
+  konfigurace čtené tiskem ve všech jazycích tisku, jazyky tisku ⊆ jazyky
+  dokumentů a jejich kompilace; `tests/Unit/Module/Core/Units/PrintShortcutsTest.php`
+  — tiskové zkratky jednotek proti seedu;
+  `tests/Unit/Module/Docs/Core/Prints/` — bloky, titulky,
   strana tisku (`DocPrintPartyTest`), QR platba, šablony dokladů a Kontace do HTML;
   `tests/Unit/Command/DataSource/PrintRunCommandTest.php` — `--format=html`
   a `--data` bez databáze; `tests/Unit/Api/Controller/PrintsApiTest.php`
-  — routa, controller, akce v detailu.
+  — routa, controller (`Content-Language`, chybové kódy), akce v detailu
+  včetně `target.languages`.
 - Integrační `tests/Integration/Prints/` — kontrakt nad fixture doklady
   v dev DS (`PrintFixtureDocuments`; pokladní doklady a prodejky potřebují
-  pokladnu a její řady), CLI. `PrintPdfTest` jde přes celou cestu do PDF
+  pokladnu a její řady), tisky v `en`, `sk` a `de` (titulky, popisky
+  číselníků, zkratka jednotky), odběratel ze Slovenska bez parametru
+  jazyka, CLI. Zdroj dat musí mít po `ds-upgrade` kompilát pro všechny
+  jazyky tisku. `PrintPdfTest` jde přes celou cestu do PDF
   (včetně vodoznaku na každé straně vícestránkového storna) a vedle
   `SHIPARD_INTEGRATION_DS_PATH` potřebuje
   `SHIPARD_INTEGRATION_GOTENBERG_URL`.

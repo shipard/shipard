@@ -193,7 +193,7 @@ CSS třídy jsou definovány v `ViewerRow.svelte` jako `:global` pravidla (aby s
 
 ### `mobileKebab` — volitelný příznak stavu
 
-Někdy `stateStyle` na rozlišení nestačí, protože stejný styl má napříč typy dokladů různou důležitost: `edit` je u faktur „Opravit" (hlavní akce, viditelná), ale u úkolů „Pozastavit" (vedlejší, patří do kebabu). Stav v docStates JSONC proto může mít volitelný `"mobileKebab": 1` — přechod na takový stav se na mobilu vždy zařadí do kebabu (neutrálně, pokud není zároveň destruktivní), bez ohledu na `stateStyle`. Na desktopu nemá příznak žádný efekt. `DocStateConfig::getAvailableTransitions()` ho propaguje do payloadu přechodu (`mobileKebab: bool`). Po přidání/změně je nutný `vendor/bin/shpd-ds ds-upgrade` (docStates je cfgItem kompilovaná do `compiled.{cs,en}.json`).
+Někdy `stateStyle` na rozlišení nestačí, protože stejný styl má napříč typy dokladů různou důležitost: `edit` je u faktur „Opravit" (hlavní akce, viditelná), ale u úkolů „Pozastavit" (vedlejší, patří do kebabu). Stav v docStates JSONC proto může mít volitelný `"mobileKebab": 1` — přechod na takový stav se na mobilu vždy zařadí do kebabu (neutrálně, pokud není zároveň destruktivní), bez ohledu na `stateStyle`. Na desktopu nemá příznak žádný efekt. `DocStateConfig::getAvailableTransitions()` ho propaguje do payloadu přechodu (`mobileKebab: bool`). Po přidání/změně je nutný `vendor/bin/shpd-ds ds-upgrade` (docStates je cfgItem kompilovaná do `compiled.<jazyk>.json`).
 
 ---
 

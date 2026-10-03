@@ -439,7 +439,10 @@ opakované spuštění bez efektu, pokud se nic nezměnilo):
 
 1. **Modules resolve** — spočítá závislosti modulů, ověří absenci cyklů
 2. **Table definitions + extensions** — sloučí tabulky modulu s extension sloupci
-3. **Config compile** — vygeneruje `compiled.{cs,en}.json` z JSONC zdrojů
+3. **Config compile** — vygeneruje `compiled.<jazyk>.json` z JSONC zdrojů
+   pro jazyky rozhraní (`cs`, `en`) a jazyky dokumentů
+   (`world.base.documentLanguages`, dnes navíc `sk`, `de`) — tisk čte
+   konfiguraci v jazyce dokladu ([prints.md](prints.md) §3)
 4. **Schema sync** — `CREATE TABLE` / `ADD COLUMN` / bezpečný `MODIFY`
    (nikdy nesmaže — viz [docs/table-definitions.md](table-definitions.md))
 5. **Provisioning** — výchozí číselníky a referenční data. Součástí je i
@@ -754,7 +757,7 @@ stderr, exit 0. Exit `INVALID` (2): neznámý report (vypíše dostupné),
 chybějící / nevalidní období, neznámý `--format`, `xlsx` bez `--output`.
 Pravidla převodu: [reports.md](reports.md) §15.
 
-#### `print-run <printId> [<recordId>] [--format=json|pdf|html] [--language=cs|en] [--output=<cíl>] [--data=<PrintData.json>]`
+#### `print-run <printId> [<recordId>] [--format=json|pdf|html] [--language=cs|en|sk|de] [--output=<cíl>] [--data=<PrintData.json>]`
 
 ```bash
 cd /opt/shipard/data-sources/<id>

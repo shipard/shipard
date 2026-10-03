@@ -1585,7 +1585,7 @@ a posílá v API odpovědi v aktuálním jazyce (`Accept-Language` header):
 - názvy modulů, tabulek, sloupců — `ConfigLocalizer` /
   `LocalizedFieldResolver` z jsonc.
 
-Tyto cfgItems žijí ve `compiled.{cs,en}.json` v adresáři DS (`config/configuration/`)
+Tyto cfgItems žijí ve `compiled.<jazyk>.json` v adresáři DS (`config/configuration/`)
 — generuje je `vendor/bin/shpd-ds ds-upgrade`. Pokud config není
 zkompilovaný (čerstvá DS, chybí soubor), `TableViewer` / `AutoFormBuilder`
 fallback na anglický řetězec.

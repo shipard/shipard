@@ -1,6 +1,6 @@
 # Tisky — jazyky `sk` a `de`, formátování přes intl, zkratky jednotek, přepínač jazyka
 
-**Stav:** částečně — commity 1–3/4 hotové (kompilace pro jazyky dokumentů, formátování přes intl, zkratky jednotek, překlady `sk` / `de`, přepínač jazyka v náhledu); zbývá dokumentace a revize formulací (sekce na konci)
+**Stav:** částečně — implementace hotová (4 commity); čeká na revizi formulací `sk` / `de` kolegy (sekce „Formulace k revizi“ na konci) a `ds-upgrade` zdrojů dat při nasazení
 
 > PRD pro Claude Code (4 commity). Design: issue #90, komentář
 > „Rozhodnutí: jazyky tisku (D29–D33)“. Navazuje na #94 (jazyk osoby,

@@ -166,7 +166,15 @@ Kompilátor konfigurace generuje **jeden soubor na jazyk**:
 ```
 config/configuration/compiled.cs.json    — česká varianta
 config/configuration/compiled.en.json    — anglická varianta
+config/configuration/compiled.sk.json    — jazyky dokumentů (sk, de)
+config/configuration/compiled.de.json
 ```
+
+Jazyky kompilace = jazyky rozhraní (`cs`, `en`) ∪ klíče cfgItemu
+`world.base.documentLanguages` (`ConfigCompiler::languages()`). Rozhraní
+zůstává `cs` / `en`; kompilát v jazyce dokumentů čte tisk dokladu
+([prints.md](prints.md) §3). Bez modulu `world.base` se kompilují jen
+jazyky rozhraní.
 
 Při kompilaci se pro každý jazyk:
 
@@ -600,7 +608,7 @@ sekcí**, ne podle prefixu module ID. Mechanismus je paralelní k Nastavení:
   `global.settingsSections` (ploché sekce, bez podsekcí). Registruje se přes
   `config[]` v `module.jsonc` úplně stejně jako settingsSections; po přidání
   je nutný `vendor/bin/shpd-ds ds-upgrade`, aby se dostal do
-  `compiled.{cs,en}.json`.
+  `compiled.<jazyk>.json`.
 - **`navSection` + `navOrder` na vieweru** (`viewers[]`) — id sekce z
   navSections a pořadí v sekci (int). Tabulky bez vieweru (generický fallback
   item) je mohou nést v `tables/*.jsonc`.
@@ -1090,8 +1098,11 @@ Resolving modules...
 
 Compiling configuration...
   Config items: 8
-  Languages: cs, en
-  Written to: config/configuration/compiled.{cs,en}.json
+  Languages: cs, en, sk, de
+  Written to: config/configuration/compiled.cs.json
+  Written to: config/configuration/compiled.en.json
+  Written to: config/configuration/compiled.sk.json
+  Written to: config/configuration/compiled.de.json
 
 Checking database...
   [CREATE] core_system_users

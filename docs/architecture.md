@@ -158,7 +158,7 @@ JSONC soubor s "name", "name:cs", "name:en"
 ```
 module.jsonc → config[].file → JSONC soubory
   → JsoncParser → ConfigLocalizer (per jazyk)
-  → compiled.cs.json, compiled.en.json
+  → compiled.<jazyk>.json (cs, en + jazyky dokumentů sk, de)
 ```
 
 **Tok dat za běhu:**
