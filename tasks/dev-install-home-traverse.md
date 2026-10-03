@@ -1,6 +1,6 @@
 # Průchod nginx ke checkoutu v domovském adresáři
 
-**Stav:** částečně — skript, kontrakt (`doctor`, `fix-permissions`), testy a dokumentace hotové 2026-10-03 (2 commity, #96 D11); zbývá ověření na Multipass VM 24.04 a 26.04: čistá instalace → `/app/index.html` 200 a scénář domov `0750` → `doctor` ✗ → `fix-permissions` → `doctor` zelený
+**Stav:** částečně — kód, testy a dokumentace hotové a ověřené na Multipass VM 24.04 i 26.04 (2026-10-03, #96 D11); zbývá opakované spuštění skriptu pod rootem na průchozím dev serveru
 
 ## Cíl
 
@@ -104,11 +104,12 @@ kontraktu pro „nadřazené adresáře checkoutu (dev)“.
 
 ## Hotovo když
 
-- [ ] čistá instalace na 24.04 i 26.04: `/app/index.html` → 200 bez ruční
-      úpravy práv
-- [ ] `doctor` neprůchozí cestu odhalí (✗) a `fix-permissions` ji opraví —
-      pokryto unit testy nad dočasným stromem; na VM s domovem `0750`
-      neověřeno
+- [x] čistá instalace na 24.04 i 26.04: `/app/index.html` → 200 bez ruční
+      úpravy práv — 2026-10-03 na čerstvých Multipass VM (aarch64), skript
+      vypsal „Granted traverse (o+x): /home/ubuntu“
+- [x] `doctor` neprůchozí cestu odhalí (✗) a `fix-permissions` ji opraví —
+      pokryto unit testy; 2026-10-03 ověřeno na VM 24.04 s domovem `0750`
+      (`doctor` ✗ → `fix-permissions --force` → zelený)
 - [x] skript nemění adresáře cizích vlastníků (blok skriptu vyzkoušen nad
       dočasným stromem s namockovaným `chmod`)
 - [ ] opakované spuštění skriptu i `doctor` na průchozím stroji beze změny —

@@ -1,6 +1,6 @@
 # Instalace na čistém Ubuntu — opravy `install-packages.sh` a `DEVELOPERS.md`
 
-**Stav:** částečně — skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); zbývá ověření čisté instalace na Multipass VM 24.04 a 26.04 a opakované spuštění na dev serveru
+**Stav:** částečně — skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); 26.04 ověřeno na čisté VM; zbývá 24.04 znovu na čisté VM (první `server-init` jednou selhal, nereprodukováno), přeskočení Node ≥ 22 a opakované spuštění na dev serveru
 
 ## Cíl
 
@@ -156,7 +156,8 @@ a otevření aplikace.
       k dispozici) bez nových varování — na dev serveru `shellcheck` není
 - [ ] Na čerstvém Ubuntu **24.04** projde postup z `DEVELOPERS.md` až po
       zelený `shpd-server doctor`
-- [ ] Na čerstvém Ubuntu **26.04** totéž, bez přidání PPA `ondrej/php`
+- [x] Na čerstvém Ubuntu **26.04** totéž, bez přidání PPA `ondrej/php` —
+      2026-10-03, Multipass VM (aarch64), včetně nového DS
 - [x] Na nepodporované verzi skript skončí jasnou chybou před instalací —
       ověřeno během skriptu bez roota (podvržený `os-release`, privilegované
       příkazy nahrazené atrapami): 22.04, Debian i chybějící soubor končí
@@ -164,9 +165,11 @@ a otevření aplikace.
 - [ ] Opakované spuštění na stávajícím dev serveru (24.04) projde a nic
       nezmění (PPA, Node, nginx site, FPM pool)
 - [ ] Bez předinstalovaného Node se nainstaluje Node 24; s Node ≥ 22 se
-      instalace přeskočí
-- [ ] Po prvním setupu existuje `public/app/index.html` a dashboard otevře
-      aplikaci nového DS
+      instalace přeskočí — instalace Node 24 ověřena na obou VM;
+      přeskočení zbývá
+- [x] Po prvním setupu existuje `public/app/index.html` a dashboard otevře
+      aplikaci nového DS — 2026-10-03 na obou VM (DS z dev dashboardu,
+      přihlášení jako admin)
 - [x] `DEVELOPERS.md`, `production.md`, `cli.md` bez zmínky o 22.04 jako
       podporované verzi
 - [x] Hlavička tohoto tasku a `tasks/README.md` aktualizované
