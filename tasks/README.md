@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 319 tasků: **naplánováno** 7 · **částečně** 21 · **hotovo** 291.
+Celkem 319 tasků: **naplánováno** 6 · **částečně** 22 · **hotovo** 291.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `dev-small-fixes.md` | naplánováno | #96 D13, D14 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `prints-phase4.md` | naplánováno | design zamčený v #90 (D34–D39), čeká na implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -39,6 +38,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
 | `dev-install-fixes.md` | částečně | skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); zbývá ověření čisté instalace na Multipass VM 24.04 a 26.04 a opakované spuštění na dev serveru |
 | `dev-install-home-traverse.md` | částečně | skript, kontrakt (`doctor`, `fix-permissions`), testy a dokumentace hotové 2026-10-03 (2 commity, #96 D11); zbývá ověření na Multipass VM 24.04 a 26.04: čistá instalace → `/app/index.html` 200 a scénář domov `0750` → `doctor` ✗ → `fix-permissions` → `doctor` zelený |
+| `dev-small-fixes.md` | částečně | D13 a D14 hotové 2026-10-03 (2 commity + docs, #96), ověřeno na dev serveru: nový DS z dev dashboardu má administrátora a `doctor` u něj nic nehlásí; zbývá `composer.lock` — je v `.gitignore`, přepočet hashe jde jen lokálně, rozhodnout, zda lock verzovat |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
@@ -68,6 +68,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `install-for-developers.md` | `DEVELOPERS.md` + `scripts/install-packages.sh` |
 | `dev-install-fixes.md` | Instalace na čistém Ubuntu 24.04 / 26.04 — opravy `install-packages.sh` a `DEVELOPERS.md` (#96 D5, D9) |
 | `dev-install-home-traverse.md` | Průchod nginx ke checkoutu v domovském adresáři (`HOME_MODE 0750`) — install skript, `doctor`, `fix-permissions` (#96 D11) |
+| `dev-small-fixes.md` | Drobnosti z ověření lokální instalace — administrátor z dev dashboardu, adresáře DS s právy podle kontraktu (`PermissionSpec::ensureDsDir`), `composer.lock` (#96 D13, D14) |
 | `dev-update-script.md` | `scripts/dev-update.sh` + git hooks (post-pull workflow) |
 | `ds-upgrade-all.md` | `shpd-server ds-upgrade-all` + kompletní `docs/cli.md` |
 | `ds-upgrade-quiet-default.md` | Tichý default `ds-upgrade`, plný výpis jen s `-v` |

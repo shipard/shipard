@@ -109,6 +109,11 @@ souboru je na testovacím serveru mutace. Dotaz `IN (poddotaz)`, který vrací
 přeskočí (výsledek *Skipped*, 0 asercí). Nastavit ji inline v příkazu na
 dev zdroj dat z `CLAUDE.local.md`; podrobnosti `tests/Integration/README.md`.
 
+**`fix-permissions` v neinteraktivním shellu** — `shpd-server fix-permissions`
+bez `--dry-run` čeká na potvrzení „Proceed? [y/N]“. Z Claude (vzdálený most,
+Claude Code) a ze skriptů volat jen s `--dry-run`, nebo po schválení v chatu
+s `--force` — jinak příkaz visí do timeoutu.
+
 ---
 
 ## 5. Když Claude zjistí něco, co má platit příště

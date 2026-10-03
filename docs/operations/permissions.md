@@ -36,6 +36,7 @@ V dalším textu **shipard-user** = ten správný uživatel pro aktuální mód.
 | `/opt/shipard/data-sources/<id>/secrets/` | shipard-user | shipard-user | `0700` | striktní |
 | `/opt/shipard/data-sources/<id>/secrets/secrets.key` | shipard-user | shipard-user | `0600` | encryption key pro `encrypted_text` |
 | `/opt/shipard/data-sources/<id>/att/` | shipard-user | shipard-user | `0750` | uploady |
+| `/opt/shipard/data-sources/<id>/branding/` | shipard-user | shipard-user | `0750` | loga, avatary |
 | `/opt/shipard/data-sources/<id>/cache/` | shipard-user | shipard-user | `0750` | |
 | `/opt/shipard/data-sources/<id>/cache/thumbnails/` | shipard-user | shipard-user | `0750` | |
 | `/opt/shipard/log/` | shipard-user | shipard-user | `0750` | |
@@ -89,9 +90,22 @@ ručně (`chmod o+x <cesta>`), nebo přesuň checkout.
   `install-packages.sh` ho vytvoří jako symlink na `$PROJECT_DIR`.
 - `php-fpm` a `nginx` system config (kromě shipard pool / site) — řízeno OS.
 
+### Adresáře zakládané aplikací
+
+Adresáře uvnitř zdroje dat zakládá aplikace přes
+`PermissionSpec::ensureDsDir()`: každá nově založená úroveň dostane `0750`
+(`PermissionSpec::DS_DIR_MODE`) bez ohledu na umask. Platí to i pro
+podadresáře, které matice nevyjmenovává (`att/RRRR/MM/DD/…`,
+`branding/avatars/`, `cache/oidc/`). Existující adresáře metoda nemění —
+zdroj dat založený starší verzí srovná `fix-permissions`.
+
+Výjimkou je `cache/twig/`, kterou si zakládá knihovna Twig sama s módem
+podle umask; leží pod `cache/` (`0750`), takže se do ní nikdo další
+nedostane.
+
 ### Recursive ownership
 
-Adresáře `log/`, `config/configuration/`, `att/`, `cache/` a `secrets/` mají
+Adresáře `log/`, `config/configuration/`, `att/`, `branding/`, `cache/` a `secrets/` mají
 **rekurzivní kontrolu vlastnictví** — `doctor` projde jejich obsah a hlásí
 ownership mismatches u všech souborů (i v nested adresářích). `fix-permissions`
 je rekurzivně chownuje.
@@ -129,6 +143,10 @@ sudo shpd-server fix-permissions --dry-run   # preview, bez sudo lze
 sudo shpd-server fix-permissions             # apply (interactive confirm)
 sudo shpd-server fix-permissions --force     # apply bez konfirmace
 ```
+
+Bez `--dry-run` a `--force` příkaz čeká na potvrzení „Proceed? [y/N]“.
+V neinteraktivním shellu (skript, vzdálený nástroj) proto visí do timeoutu —
+tam jen `--dry-run`, nebo `--force`.
 
 Cesty které neexistují (chybějící povinné, např. `/opt/shipard/`) jsou
 označené jako `fixable: false` — `fix-permissions` je nevytvoří. Použij
