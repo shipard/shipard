@@ -1,6 +1,6 @@
 # CLI nástroje — kompletní reference
 
-Shipard má dvě hlavní CLI utility a dva podpůrné shell skripty. Dohromady
+Shipard má dvě hlavní CLI utility a tři podpůrné shell skripty. Dohromady
 pokrývají instalaci serveru, vytváření a správu datových zdrojů (DS),
 údržbu (secrets, mail-router, AI analyzer) a vývojový workflow.
 
@@ -10,6 +10,7 @@ pokrývají instalaci serveru, vytváření a správu datových zdrojů (DS),
 | `shpd-ds` | Správa konkrétního datového zdroje (schéma, uživatelé, secrets, mail, AI, seedy) | adresář DS (musí obsahovat `config/main.json`) |
 | `scripts/dev-update.sh` | Po `git pull` — sync composer/npm/build | repo root (skript si dohledá sám) |
 | `scripts/install-packages.sh` | Jednorázová instalace systémových balíčků (PHP, MariaDB, nginx, …) | repo root, jako root |
+| `scripts/dev-bootstrap.sh` | Celé vývojové prostředí jedním příkazem (Multipass, WSL, čisté Ubuntu) | odkudkoli, pod běžným uživatelem |
 
 `scripts/install-packages.sh` vytvoří symlinky `/usr/bin/shpd-server`
 a `/usr/bin/shpd-ds`, takže oba nástroje jsou poté volatelné odkudkoliv.
@@ -1476,6 +1477,40 @@ Po instalaci spusť `shpd-server doctor` pro ověření kontraktu.
 | Opce | Význam |
 |------|--------|
 | `--mode <development\|production>` | Operační režim. Default: interaktivní volba. |
+
+Skript běží s neinteraktivním apt (`DEBIAN_FRONTEND=noninteractive`,
+`NEEDRESTART_MODE=a`) — nezastaví se na dialogu.
+
+### `scripts/dev-bootstrap.sh`
+
+```bash
+bash scripts/dev-bootstrap.sh [volby]
+curl -fsSL https://raw.githubusercontent.com/shipard/shipard/stable/scripts/dev-bootstrap.sh | bash
+curl -fsSL … | bash -s -- --with-ssh --ssh-pubkey-file <cesta>
+```
+
+Vývojové prostředí jedním příkazem — skládá za sebe kroky z `DEVELOPERS.md`:
+checkout → `install-packages.sh --mode=development` → `dev-update.sh` →
+`server-init` → `git config core.hooksPath .githooks` → volitelné části →
+`shpd-server doctor` → souhrn s adresou dashboardu. Návod pro macOS
+(Multipass, cloud-init `scripts/multipass/shipard-dev.yaml`) a Windows (WSL):
+[`local-dev.md`](local-dev.md).
+
+- Běží **pod běžným uživatelem**, `sudo` volá sám (jako root skončí chybou —
+  vývojář se určuje ze `$SUDO_USER`). Heslo chce jednou na začátku.
+- **Idempotentní.** Existující checkout nechá být (žádný `git pull`),
+  `server-init` na hotovém serveru nic nemění.
+- Každé selhání končí nenulovým kódem a pojmenuje krok, ve kterém nastalo.
+- Podporované systémy jako u `install-packages.sh`; navíc vyžaduje běžící
+  systemd (WSL 2).
+
+| Opce | Význam |
+|------|--------|
+| `--with-render` | Render služba dle [`operations/render-service.md`](operations/render-service.md): unit `shpd-render`, čekání na `/health`, klíč `render` do `/etc/shipard/server.json` (ostatní klíče beze změny, existující `render` se nepřepisuje). |
+| `--with-ssh` | `openssh-server` pro `remote-dev-bridge`: drop-in `/etc/ssh/sshd_config.d/shipard-dev.conf`, port 2222, přihlášení jen klíčem. Mimo WSL zůstávají vedle 2222 i porty, na kterých sshd naslouchal dosud. Když se nastavení neuplatní (jiný soubor zapíná hesla dřív), drop-in se odstraní a skript skončí chybou. |
+| `--ssh-pubkey-file <cesta>` | Veřejný klíč, který se připojí do `~/.ssh/authorized_keys` (bez duplicit). Povinný s `--with-ssh`, pokud je `authorized_keys` prázdný. |
+| `--branch <větev>` | Větev pro nový checkout. Default `stable`. |
+| `--dir <cesta>` | Adresář checkoutu. Default `~/sw/shpd`; při spuštění z checkoutu ten checkout. |
 
 ---
 

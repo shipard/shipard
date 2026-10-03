@@ -7,6 +7,11 @@ Vítej v projektu Shipard! Tenhle dokument tě provede od nuly k funkčnímu vý
 > Když na něco narazíš, dej nám vědět — viz poslední kapitola
 > [Něco nefunguje?](#9-něco-nefunguje).
 
+> **Mac nebo Windows?** → [`docs/local-dev.md`](docs/local-dev.md): Ubuntu
+> v Multipassu nebo ve WSL a instalace jedním příkazem. Kroky 1–5 níže
+> spouští za sebou `scripts/dev-bootstrap.sh`; tento dokument zůstává
+> referencí pro Linux server.
+
 ---
 
 ## Požadavky

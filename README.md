@@ -82,5 +82,6 @@ a frontend ve **Svelte 5**. Podporuje provoz více firem na jednom serveru
 s oddělenými daty.
 
 - [Průvodce vývojáře](DEVELOPERS.md) — zprovoznění vývojového prostředí na Ubuntu LTS.
+- [Lokální vývoj na macOS a Windows](docs/local-dev.md) — Ubuntu v Multipassu nebo ve WSL, instalace jedním příkazem.
 - [Technická dokumentace](docs/README.md) — architektura, moduly, API a provoz.
 - [Přehled funkcí a plánů](docs/features.md) — hotové, rozpracované a plánované možnosti.

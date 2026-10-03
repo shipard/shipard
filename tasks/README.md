@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 321 tasků: **naplánováno** 7 · **částečně** 19 · **hotovo** 295.
+Celkem 321 tasků: **naplánováno** 6 · **částečně** 20 · **hotovo** 295.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `local-dev-bootstrap.md` | naplánováno | #96 D17–D25 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `prints-phase4.md` | naplánováno | design zamčený v #90 (D34–D39), čeká na implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -41,6 +40,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
+| `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25), na dev serveru ověřeno jen nasucho (bez sudo); zbývá běh na čistých strojích: Multipass 26.04 z `shipard-dev.yaml`, opakovaný běh, `--with-render`, WSL s `--with-ssh` |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
@@ -68,6 +68,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `dev-install-home-traverse.md` | Průchod nginx ke checkoutu v domovském adresáři (`HOME_MODE 0750`) — install skript, `doctor`, `fix-permissions` (#96 D11) |
 | `dev-small-fixes.md` | Drobnosti z ověření lokální instalace — administrátor z dev dashboardu, adresáře DS s právy podle kontraktu (`PermissionSpec::ensureDsDir`), `composer.lock` (#96 D13, D14) |
 | `dev-install-followups.md` | Práva logu podle kontraktu (`ErrorLogger`: adresář `0750`, `shipard.log` `0640`) a Ubuntu 26.04 jako doporučená verze pro nové instalace (#96 D15, D16) |
+| `local-dev-bootstrap.md` | Lokální vývoj na macOS a Windows — `scripts/dev-bootstrap.sh`, cloud-init pro Multipass, WSL, `docs/local-dev.md` (#96 D17–D25) |
 | `dev-update-script.md` | `scripts/dev-update.sh` + git hooks (post-pull workflow) |
 | `ds-upgrade-all.md` | `shpd-server ds-upgrade-all` + kompletní `docs/cli.md` |
 | `ds-upgrade-quiet-default.md` | Tichý default `ds-upgrade`, plný výpis jen s `-v` |

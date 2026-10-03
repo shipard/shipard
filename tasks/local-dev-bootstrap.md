@@ -1,6 +1,6 @@
 # Lokální vývoj na macOS a Windows — bootstrap, Multipass, WSL
 
-**Stav:** naplánováno — #96 D17–D25
+**Stav:** částečně — skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25), na dev serveru ověřeno jen nasucho (bez sudo); zbývá běh na čistých strojích: Multipass 26.04 z `shipard-dev.yaml`, opakovaný běh, `--with-render`, WSL s `--with-ssh`
 
 ## Cíl
 
@@ -204,16 +204,61 @@ případně Claude v chatu přes bridge:
 
 ## Hotovo když
 
-- [ ] `install-packages.sh` nastavuje neinteraktivní apt
+- [x] `install-packages.sh` nastavuje neinteraktivní apt
 - [ ] bootstrap z čistého Ubuntu 26.04 skončí zeleným `doctor`
       a souhrnem s adresou dashboardu
 - [ ] opakovaný běh je bezpečný
 - [ ] Multipass z `shipard-dev.yaml` bez ručního zásahu (kromě vložení klíče)
 - [ ] `--with-render` a `--with-ssh` fungují dle popisu
 - [ ] WSL ověřené na Windows (nebo v tasku poznamenáno, co zbývá)
-- [ ] `docs/local-dev.md` s odkazy z `DEVELOPERS.md`, `README.md`,
+- [x] `docs/local-dev.md` s odkazy z `DEVELOPERS.md`, `README.md`,
       `docs/README.md`
-- [ ] hlavička tasku a `tasks/README.md` aktualizované
+- [x] hlavička tasku a `tasks/README.md` aktualizované
+
+## Stav implementace (2026-10-03)
+
+Hotové jsou všechny čtyři commity. Na dev serveru není `sudo`, Multipass
+ani WSL, takže skript běžel jen **nasucho**: `bash -n`, `--help`, chybné
+volby, běh jako root, a celý průchod proti maketám `sudo` / `systemctl` /
+`sshd` / `curl` (první běh, opakovaný běh, větve selhání, klon přes
+`curl | bash`). Úprava `server.json` je ověřená na kopii (ostatní klíče,
+`{}` i `30.0` zůstávají, existující `render` se nepřepisuje, vlastník
+a mód se přenášejí).
+
+### Odchylky od textu zadání
+
+- **`sudo -v`** se volá až po neúspěšném `sudo -n true` a jen s terminálem.
+  Uživatel `ubuntu` na cloud image je i ve skupině `sudo` (řádek bez
+  `NOPASSWD`), `sudo -v` by proto pod cloud-initem chtělo heslo. Platnost
+  sudo během běhu drží keep-alive na pozadí.
+- **`--with-ssh` mimo WSL** nechává vedle 2222 i porty, na kterých sshd
+  naslouchal dosud (samotné `Port 2222` ruší výchozí 22 → na Multipass VM
+  by přestal fungovat `multipass shell`). Ve WSL jen 2222.
+- **Efektivní konfigurace sshd** se po zápisu drop-inu ověřuje přes
+  `sshd -T`; když přihlášení heslem zapíná jiný soubor dřív, drop-in se
+  odstraní a skript skončí chybou.
+- **`multipass launch --timeout 1800`** v návodu — bez něj launch po
+  5 minutách ohlásí chybu, i když instalace pokračuje. V `runcmd` je
+  `set -o pipefail`.
+- **Výchozí `--dir`** při spuštění z checkoutu je ten checkout; kontrola
+  běžícího systemd (WSL 1 / WSL bez systemd) hned v kroku 1.
+- Skript je navíc popsaný v `docs/cli.md` (Pomocné skripty).
+
+### Zbývá ověřit na čistých strojích
+
+Podle sekce Ověření; u každého bodu na co se dívat:
+
+- **Multipass 26.04 z yaml** — projde krok 1 bez terminálu (`sudo -n`);
+  `multipass shell` funguje i s vlastním klíčem v `ssh_authorized_keys`;
+  `cloud-init status --wait` → `done`; bridge se připojí na port 22.
+- **Opakovaný běh** na hotovém stroji.
+- **`--with-render`** — `/health`, klíč `render`, `doctor` sekce Render ✓.
+- **`--with-ssh` na VM** — drop-in obsahuje `Port 22` i `Port 2222`,
+  restart `ssh.socket` na 26.04 proběhne, `multipass shell` dál funguje.
+- **WSL 26.04** — jednořádkový bootstrap s `--with-ssh`, dashboard na
+  `localhost`, bridge přes `localhost:2222`; zda je v image `curl`; zda
+  WSL po zavření terminálu instanci zastaví (`docs/local-dev.md` zatím
+  jen doporučuje nechat okno otevřené — podle výsledku upřesnit).
 
 ## Mimo rozsah
 
