@@ -29,7 +29,9 @@ final class DocPrintContext
      * @param array<string, mixed>|null $supplier Snapshot dodavatele; null,
      *        když doklad stranu nemá (D24).
      * @param array<string, mixed>|null $customer Snapshot odběratele.
-     * @param array<int, string> $units id jednotky → zkratka.
+     * @param array<int, array{shortcut: string, systemCode: ?string}> $units
+     *        id jednotky → zkratka z dat a kód systémové jednotky (null
+     *        u jednotky založené ve zdroji dat).
      * @param array<string, mixed>|null $cashDesk Pokladna dokladu (`id`,
      *        `code`, `name`) — aktuální data číselníku (#90 D14); null
      *        u dokladu bez pokladny.
@@ -92,10 +94,13 @@ final class DocPrintContext
         ))));
         if ($unitIds !== []) {
             foreach ($request->db->fetchAll(
-                'SELECT [id], [shortcut] FROM [core_units] WHERE [id] IN %in',
+                'SELECT [id], [shortcut], [system_code] FROM [core_units] WHERE [id] IN %in',
                 $unitIds,
             ) as $unit) {
-                $units[(int) $unit['id']] = (string) $unit['shortcut'];
+                $units[(int) $unit['id']] = [
+                    'shortcut'   => (string) $unit['shortcut'],
+                    'systemCode' => self::text($unit['system_code'] ?? null),
+                ];
             }
         }
 

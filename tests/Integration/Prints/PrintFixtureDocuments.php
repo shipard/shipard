@@ -100,6 +100,16 @@ trait PrintFixtureDocuments
         return [(int) $unit['id'], (string) $unit['shortcut']];
     }
 
+    /** Systémová jednotka podle `system_code` — tisk jí v cizím jazyce dává zkratku z konfigurace. */
+    private function systemUnitId(string $systemCode): int
+    {
+        $id = $this->db->fetchSingle('SELECT [id] FROM [core_units] WHERE [system_code] = %s', $systemCode);
+        if ($id === null) {
+            $this->markTestSkipped("DS nemá systémovou jednotku '{$systemCode}'.");
+        }
+        return (int) $id;
+    }
+
     private function anyPersonId(): int
     {
         $person = $this->db->fetchSingle('SELECT [id] FROM [base_persons_persons] ORDER BY [id] LIMIT 1');

@@ -69,6 +69,10 @@ class DocPrintBlocksTest extends TestCase
                     ['name' => 'Hotovost'],
                     ['name' => 'Převodem'],
                 ],
+                // Kompilát je v jazyce tisku — test zkratek ho čte jako anglický.
+                'core.units.printShortcuts' => [
+                    'pcs' => ['shortcut' => 'pcs'],
+                ],
             ]]),
         );
         return ConfigRuntime::load($this->configDir, 'cs');
@@ -89,6 +93,7 @@ class DocPrintBlocksTest extends TestCase
         ?ConfigRuntime $config = null,
         ?array $customer = self::CUSTOMER,
         ?array $cashDesk = null,
+        string $language = 'cs',
     ): DocPrintContext {
         return new DocPrintContext(
             head: $head + [
@@ -106,7 +111,11 @@ class DocPrintBlocksTest extends TestCase
             recap: $recap,
             supplier: $supplier,
             customer: $customer,
-            units: [3 => 'ks'],
+            units: [
+                3 => ['shortcut' => 'ks', 'systemCode' => 'pcs'],
+                4 => ['shortcut' => 'bal', 'systemCode' => null],
+                5 => ['shortcut' => 'pal', 'systemCode' => 'pallet'],
+            ],
             vatCodes: new DocVatCodes(
                 [
                     'cz-120' => ['name' => 'Základní', 'print' => 'Základní'],
@@ -126,7 +135,7 @@ class DocPrintBlocksTest extends TestCase
                 'title.proforma'           => ['cs' => 'Zálohová faktura'],
                 'message.qrNoAccount'      => ['cs' => 'QR chybí'],
                 'message.qrSkipped.paymentReference' => ['cs' => 'QR bez VS'],
-            ], 'cs'),
+            ], $language),
             config: $config,
             cashDesk: $cashDesk,
         );
@@ -473,6 +482,27 @@ class DocPrintBlocksTest extends TestCase
                 'advanceDeduction' => true,
             ],
         ], $rows);
+    }
+
+    public function testRowsBlockPrintsUnitShortcutInPrintLanguage(): void
+    {
+        $rows = [
+            self::itemRow(),
+            self::itemRow(['unit' => 4]),
+            self::itemRow(['unit' => 5]),
+        ];
+        $config = $this->config();
+        $labels = fn (string $language, ?ConfigRuntime $config): array => array_map(
+            static fn (array $row): string => $row['unit']['label'],
+            (new DocRowsBlock())->build($this->context(rows: $rows, config: $config, language: $language))['rows'],
+        );
+
+        // Česky zkratka z dat — respektuje úpravu ve zdroji dat.
+        $this->assertSame(['ks', 'bal', 'pal'], $labels('cs', $config));
+        // Jinak systémová jednotka z konfigurace; jednotka zdroje dat (bez
+        // kódu) a systémová bez záznamu v konfiguraci zůstanou, jak jsou.
+        $this->assertSame(['pcs', 'bal', 'pal'], $labels('en', $config));
+        $this->assertSame(['ks', 'bal', 'pal'], $labels('en', null), 'bez konfigurace zkratka z dat');
     }
 
     public function testRowsOfNonPayerHaveNoVatAndPriceModeFollowsHead(): void

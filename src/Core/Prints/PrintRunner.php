@@ -53,6 +53,8 @@ final class PrintRunner
      * @throws PrintRecordNotFoundException Záznam neexistuje (→ 404).
      * @throws PrintNotAvailableException Záznam nesplní filtr / stav (→ 409).
      * @throws \InvalidArgumentException Nepodporovaný jazyk (→ 400).
+     * @throws PrintLanguageNotCompiledException Zdroj dat nemá konfiguraci
+     *         v jazyce tisku (→ 409).
      * @throws PrintBuildException Záznamu chybí data pro tisk (→ 409).
      * @throws PrintRenderException PDF nevzniklo (→ 503 / 500).
      */

@@ -22,6 +22,7 @@ use Shipard\Core\Prints\PrintBuilder;
 use Shipard\Core\Prints\PrintBuildException;
 use Shipard\Core\Prints\PrintBuildResult;
 use Shipard\Core\Prints\PrintDefinition;
+use Shipard\Core\Prints\PrintLanguageNotCompiledException;
 use Shipard\Core\Prints\PrintMessage;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderer;
@@ -108,9 +109,14 @@ class PrintsApiTest extends TestCase
     /**
      * @param array<string, mixed>|null $record
      * @param ?RenderResult $render null = render služba není nakonfigurovaná.
+     * @param ?\Closure(string): ?ConfigRuntime $config Konfigurace v jazyce tisku; null = žádná.
      */
-    private function controller(?array $record = self::RECORD, ?RenderResult $render = null, ?PrintDefinition $definition = null): PrintsController
-    {
+    private function controller(
+        ?array $record = self::RECORD,
+        ?RenderResult $render = null,
+        ?PrintDefinition $definition = null,
+        ?\Closure $config = null,
+    ): PrintsController {
         $registry = self::registry($definition ?? self::definition());
 
         $db = $this->createStub(DataSourceConnection::class);
@@ -128,7 +134,7 @@ class PrintsApiTest extends TestCase
         $runner = new PrintRunner(
             $registry,
             $db,
-            static fn (string $language) => null,
+            $config ?? static fn (string $language) => null,
             PrintRunnerTest::languages(),
             renderer: new PrintRenderer($paths, new PrintTwigFactory($paths), $client),
         );
@@ -285,6 +291,20 @@ class PrintsApiTest extends TestCase
             409,
             'PRINT_DATA_MISSING',
         );
+    }
+
+    public function testPrintLanguageWithoutCompiledConfigIsConflict(): void
+    {
+        // Zdroj dat před `ds-upgrade` — konfigurace v jazyce tisku chybí.
+        $controller = $this->controller(config: static fn (string $language) => $language === 'en'
+            ? throw new PrintLanguageNotCompiledException($language)
+            : null);
+
+        $response = $controller->run('test.prints.card', 5, ['language' => 'en'], self::user(), []);
+
+        self::assertError($response, 409, 'PRINT_LANGUAGE_NOT_COMPILED');
+        $this->assertStringContainsString("'en'", $response->getPayload()['error']['message']);
+        $this->assertStringContainsString('ds-upgrade', $response->getPayload()['error']['message']);
     }
 
     public function testInvalidFormatAndLanguage(): void

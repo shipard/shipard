@@ -21,6 +21,42 @@ class ConfigCompiler
     /** cfgItem složený z `journalDimensions` aktivních modulů (JournalDimensionSet). */
     public const JOURNAL_DIMENSIONS_ITEM = 'core.accounting.journalDimensions';
 
+    /** Jazyky rozhraní — kompilují se vždy. */
+    public const UI_LANGUAGES = ['cs', 'en'];
+
+    /** cfgItem s jazyky dokumentů (#94 D3); klíč = jazyk. */
+    public const DOCUMENT_LANGUAGES_ITEM = 'world.base.documentLanguages';
+
+    /**
+     * Jazyky kompilace (#90 D29): jazyky rozhraní a jazyky dokumentů — tisk
+     * čte konfiguraci v jazyce dokumentu. Jazyky dokumentů se berou ze
+     * surových dat cfgItemu, kompilát ještě neexistuje; bez něj (modul není
+     * aktivní) zůstanou jen jazyky rozhraní.
+     *
+     * @param ModuleDefinition[] $modules
+     * @return list<string>
+     */
+    public static function languages(array $modules, ModulePathResolver $resolver): array
+    {
+        $languages = self::UI_LANGUAGES;
+
+        foreach ($modules as $module) {
+            $modulePath = $resolver->getPath($module->id);
+            if ($modulePath === null) continue;
+
+            foreach ($module->config as $entry) {
+                if ($entry['id'] !== self::DOCUMENT_LANGUAGES_ITEM) continue;
+
+                $raw = JsoncParser::parseFile($modulePath . '/' . $entry['file']);
+                foreach (array_keys(is_array($raw) ? $raw : []) as $language) {
+                    $languages[] = (string) $language;
+                }
+            }
+        }
+
+        return array_values(array_unique($languages));
+    }
+
     /**
      * @param ModuleDefinition[]     $modules  Resolved modules in dependency order
      * @param array<string, string>  $structuredSchemas cfgItem => původ

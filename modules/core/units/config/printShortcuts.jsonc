@@ -1,0 +1,37 @@
+{
+    // core.units.printShortcuts
+    //
+    // Tiskové zkratky systémových jednotek (#90 D31). Klíč = `system_code`
+    // z `unitsSeed.jsonc`; každá jednotka seedu tu musí být ve všech
+    // jazycích tisku (hlídá test).
+    //
+    // Tisk je použije v jiném jazyce než českém. Česky tiskne
+    // `core_units.shortcut` z dat — zkratku lze ve zdroji dat upravit;
+    // `shortcut:cs` tu proto jen kopíruje seed. Jednotky bez `system_code`
+    // se tisknou vždy tak, jak jsou v datech.
+
+    "pcs":  {"shortcut": "pcs",    "shortcut:cs": "ks",    "shortcut:en": "pcs"},
+
+    "hr":   {"shortcut": "hr",     "shortcut:cs": "hod",   "shortcut:en": "hr"},
+    "hr_2": {"shortcut": "30 min", "shortcut:cs": "30min", "shortcut:en": "30 min"},
+    "hr_4": {"shortcut": "15 min", "shortcut:cs": "15min", "shortcut:en": "15 min"},
+    "day":  {"shortcut": "day",    "shortcut:cs": "den",   "shortcut:en": "day"},
+    "mnth": {"shortcut": "mth",    "shortcut:cs": "měs",   "shortcut:en": "mth"},
+    "year": {"shortcut": "yr",     "shortcut:cs": "rok",   "shortcut:en": "yr"},
+
+    "m":    {"shortcut": "m",      "shortcut:cs": "m",     "shortcut:en": "m"},
+    "km":   {"shortcut": "km",     "shortcut:cs": "km",    "shortcut:en": "km"},
+
+    "m2":   {"shortcut": "m²",     "shortcut:cs": "m²",    "shortcut:en": "m²"},
+
+    "m3":   {"shortcut": "m³",     "shortcut:cs": "m³",    "shortcut:en": "m³"},
+    "l":    {"shortcut": "l",      "shortcut:cs": "l",     "shortcut:en": "l"},
+
+    "kg":   {"shortcut": "kg",     "shortcut:cs": "kg",    "shortcut:en": "kg"},
+    "g":    {"shortcut": "g",      "shortcut:cs": "g",     "shortcut:en": "g"},
+    "t":    {"shortcut": "t",      "shortcut:cs": "t",     "shortcut:en": "t"},
+
+    "kwh":  {"shortcut": "kWh",    "shortcut:cs": "kWh",   "shortcut:en": "kWh"},
+    "mwh":  {"shortcut": "MWh",    "shortcut:cs": "MWh",   "shortcut:en": "MWh"},
+    "gj":   {"shortcut": "GJ",     "shortcut:cs": "GJ",    "shortcut:en": "GJ"}
+}

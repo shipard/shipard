@@ -340,6 +340,7 @@ export default {
   'error.PRINT_NOT_FOUND': 'Print not found',
   'error.PRINT_NOT_AVAILABLE': 'This record cannot be printed right now — the print is available only in certain record states',
   'error.PRINT_DATA_MISSING': 'The record cannot be printed — it lacks the data needed for the print',
+  'error.PRINT_LANGUAGE_NOT_COMPILED': 'The document cannot be printed in this language right now — the data source is waiting for an upgrade. Contact your administrator',
   'error.RENDER_UNAVAILABLE': 'The print service is not available. Please try again in a moment',
   'error.RENDER_FAILED': 'The print could not be produced',
   'error.UNAUTHORIZED': 'You must be signed in to perform this action',

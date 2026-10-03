@@ -12,6 +12,7 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\PrintBuildException;
 use Shipard\Core\Prints\PrintDocument;
 use Shipard\Core\Prints\PrintFormat;
+use Shipard\Core\Prints\PrintLanguageNotCompiledException;
 use Shipard\Core\Prints\PrintNotAvailableException;
 use Shipard\Core\Prints\PrintNotFoundException;
 use Shipard\Core\Prints\PrintRecordNotFoundException;
@@ -178,7 +179,7 @@ class PrintRunCommand extends Command
         } catch (\InvalidArgumentException $e) {
             $err->writeln('<error>' . $e->getMessage() . '</error>');
             return Command::INVALID;
-        } catch (PrintRecordNotFoundException | PrintNotAvailableException | PrintBuildException $e) {
+        } catch (PrintRecordNotFoundException | PrintNotAvailableException | PrintBuildException | PrintLanguageNotCompiledException $e) {
             $err->writeln('<error>' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         } catch (PrintRenderException $e) {

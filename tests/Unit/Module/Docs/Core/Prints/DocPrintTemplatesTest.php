@@ -258,7 +258,7 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('<html lang="en">', $document->html);
         $this->assertStringContainsString('Supplier', $document->html);
         $this->assertStringContainsString('Tax point date', $document->html);
-        $this->assertStringContainsString('9/30/2026', $document->html);
+        $this->assertStringContainsString('30' . self::NBSP . 'Sep' . self::NBSP . '2026', $document->html);
         $this->assertStringContainsString('Amount due', $document->html);
         $this->assertStringContainsString('810.80' . self::NBSP . 'EUR', $document->html);
         $this->assertStringContainsString('discount 10%', $document->html);

@@ -47,7 +47,11 @@ final class PrintRunnerFactory
         // i odvození jazyka dokumentu.
         $configs = [];
         $config  = static function (string $language) use ($dsDir, &$configs): ConfigRuntime {
-            return $configs[$language] ??= ConfigRuntime::load($dsDir, $language);
+            try {
+                return $configs[$language] ??= ConfigRuntime::load($dsDir, $language);
+            } catch (\RuntimeException $e) {
+                throw new PrintLanguageNotCompiledException($language, $e);
+            }
         };
         $country = $dsConfig->getCountry();
 

@@ -15,26 +15,59 @@ use Twig\TwigFunction;
 
 /**
  * Filtry a funkce tiskových šablon. Formátování čísel a dat se řídí
- * jazykem tisku (#90 D13) — `PrintData` nese čísla v plné přesnosti a data
- * v ISO, podobu jim dává až šablona.
+ * jazykem tisku (#90 D13, D30) — `PrintData` nese čísla v plné přesnosti
+ * a data v ISO, podobu jim dává až šablona.
  *
  *  - `money` — 2 desetinná místa, oddělovač tisíců; volitelně kód měny
+ *              (za číslem, ve všech jazycích kód, ne symbol)
  *  - `qty`   — množství bez zbytečných nul (nejvýš 4 desetinná místa)
- *  - `pct`   — procenta bez zbytečných nul
- *  - `date`  — ISO datum → `2. 10. 2026` (cs) / `10/2/2026` (en);
- *              přepisuje vestavěný Twig filtr stejného jména
+ *  - `pct`   — procenta bez zbytečných nul (nejvýš 2 desetinná místa)
+ *  - `date`  — ISO datum → `2. 10. 2026` (cs, sk) / `02.10.2026` (de) /
+ *              `2 Oct 2026` (en); přepisuje vestavěný Twig filtr stejného
+ *              jména
  *  - `t(klíč, {parametry})` — překlad z katalogu tisku
  *  - `qr_svg(payment.qr)` — inline SVG QR kódu, pro null prázdný řetězec
  *
+ * Formátuje `ext-intl`, ale vzory i symboly jsou zapsané tady — výchozí
+ * data ICU se mezi verzemi mění a tisk dokladu se s nimi měnit nesmí.
  * Mezery uvnitř čísel a dat jsou nezlomitelné — hodnota se nesmí zalomit.
  */
 final class PrintTwigExtension extends AbstractExtension
 {
     private const NBSP = "\u{00A0}";
 
+    /**
+     * Podoba čísel a dat podle jazyka tisku. `date` je vzor ICU; angličtina
+     * ho nemá — měsíc tiskne zkratkou z `EN_MONTHS`.
+     */
+    private const FORMATS = [
+        'cs' => ['locale' => 'cs_CZ', 'decimal' => ',', 'grouping' => self::NBSP, 'pct' => self::NBSP . '%', 'date' => 'd.' . self::NBSP . 'M.' . self::NBSP . 'y'],
+        'sk' => ['locale' => 'sk_SK', 'decimal' => ',', 'grouping' => self::NBSP, 'pct' => self::NBSP . '%', 'date' => 'd.' . self::NBSP . 'M.' . self::NBSP . 'y'],
+        'de' => ['locale' => 'de_DE', 'decimal' => ',', 'grouping' => '.',        'pct' => self::NBSP . '%', 'date' => 'dd.MM.y'],
+        'en' => ['locale' => 'en_GB', 'decimal' => '.', 'grouping' => ',',        'pct' => '%',              'date' => null],
+    ];
+
+    /** Třípísmenné zkratky — `MMM` v `en_GB` dává „Sept“. */
+    private const EN_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    /** @var array{locale: string, decimal: string, grouping: string, pct: string, date: ?string} */
+    private readonly array $format;
+
+    /** @var array<string, \NumberFormatter> vzor → formatter */
+    private array $numberFormatters = [];
+
+    private ?\IntlDateFormatter $dateFormatter = null;
+
+    /**
+     * @throws \LogicException Jazyk bez formátu — jazyk tisku je vždy
+     *         z `PrintLanguageResolver::LANGUAGES`.
+     */
     public function __construct(
         private readonly PrintTranslator $translator,
-    ) {}
+    ) {
+        $this->format = self::FORMATS[$translator->language]
+            ?? throw new \LogicException("Print language '{$translator->language}' has no number and date format");
+    }
 
     public function getFilters(): array
     {
@@ -73,8 +106,7 @@ final class PrintTwigExtension extends AbstractExtension
         if (!is_numeric($value)) {
             return '';
         }
-        $text = $this->number((float) $value, 0, 2);
-        return $this->isCzech() ? $text . self::NBSP . '%' : $text . '%';
+        return $this->number((float) $value, 0, 2) . $this->format['pct'];
     }
 
     public function date(mixed $value): string
@@ -83,10 +115,26 @@ final class PrintTwigExtension extends AbstractExtension
             return '';
         }
         [$year, $month, $day] = [(int) $m[1], (int) $m[2], (int) $m[3]];
+        if (!checkdate($month, $day, $year)) {
+            return '';
+        }
 
-        return $this->isCzech()
-            ? $day . '.' . self::NBSP . $month . '.' . self::NBSP . $year
-            : $month . '/' . $day . '/' . $year;
+        $pattern = $this->format['date'];
+        if ($pattern === null) {
+            return $day . self::NBSP . self::EN_MONTHS[$month - 1] . self::NBSP . $year;
+        }
+
+        $this->dateFormatter ??= new \IntlDateFormatter(
+            $this->format['locale'],
+            \IntlDateFormatter::NONE,
+            \IntlDateFormatter::NONE,
+            'UTC',
+            \IntlDateFormatter::GREGORIAN,
+            $pattern,
+        );
+        return (string) $this->dateFormatter->format(
+            new \DateTimeImmutable(sprintf('%04d-%02d-%02dT12:00:00', $year, $month, $day), new \DateTimeZone('UTC')),
+        );
     }
 
     /**
@@ -117,30 +165,30 @@ final class PrintTwigExtension extends AbstractExtension
     /** Číslo s `$minDecimals`–`$maxDecimals` desetinnými místy v podobě jazyka tisku. */
     private function number(float $value, int $minDecimals, int $maxDecimals): string
     {
+        // Zaokrouhluje PHP, ne ICU — to má výchozí bankéřské zaokrouhlení
+        // (10,005 → 10,00) a zápornou nulu tiskne jako „-0,00".
         $rounded = round($value, $maxDecimals);
         if ($rounded == 0.0) {
-            $rounded = 0.0; // žádné „-0,00"
+            $rounded = 0.0;
         }
 
-        [$decimalPoint, $thousands] = $this->isCzech() ? [',', self::NBSP] : ['.', ','];
-        $text = number_format($rounded, $maxDecimals, $decimalPoint, $thousands);
-
-        if ($maxDecimals > $minDecimals) {
-            $text = rtrim($text, '0');
-            $text = str_pad(
-                $text,
-                strrpos($text, $decimalPoint) + 1 + $minDecimals,
-                '0',
-            );
-            if ($minDecimals === 0) {
-                $text = rtrim($text, $decimalPoint);
-            }
+        $pattern = '#,##0';
+        if ($maxDecimals > 0) {
+            $pattern .= '.' . str_repeat('0', $minDecimals) . str_repeat('#', $maxDecimals - $minDecimals);
         }
-        return $text;
+
+        return (string) $this->numberFormatter($pattern)->format($rounded);
     }
 
-    private function isCzech(): bool
+    private function numberFormatter(string $pattern): \NumberFormatter
     {
-        return $this->translator->language === 'cs';
+        if (!isset($this->numberFormatters[$pattern])) {
+            $formatter = new \NumberFormatter($this->format['locale'], \NumberFormatter::PATTERN_DECIMAL, $pattern);
+            $formatter->setSymbol(\NumberFormatter::DECIMAL_SEPARATOR_SYMBOL, $this->format['decimal']);
+            $formatter->setSymbol(\NumberFormatter::GROUPING_SEPARATOR_SYMBOL, $this->format['grouping']);
+            $formatter->setSymbol(\NumberFormatter::MINUS_SIGN_SYMBOL, '-');
+            $this->numberFormatters[$pattern] = $formatter;
+        }
+        return $this->numberFormatters[$pattern];
     }
 }

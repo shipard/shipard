@@ -34,6 +34,7 @@ nemají, protože převod mezi hodinou, dnem a měsícem není exaktní.
 | Klíč | Soubor | Popis |
 |---|---|---|
 | `core.units.quantities` | [config/quantities.jsonc](config/quantities.jsonc) | Veličiny pro `enumString` sloupec `quantity` |
+| `core.units.printShortcuts` | [config/printShortcuts.jsonc](config/printShortcuts.jsonc) | Tiskové zkratky systémových jednotek podle `system_code` — tisk je použije v jiném jazyce než českém |
 
 ## Seedovaná data
 

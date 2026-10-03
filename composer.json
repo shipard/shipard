@@ -2,6 +2,7 @@
     "name": "shipard/shipard",
     "require": {
         "php": ">=8.5",
+        "ext-intl": "*",
         "ext-zip": "*",
         "dibi/dibi": "^5.0",
         "symfony/console": "^7.0",

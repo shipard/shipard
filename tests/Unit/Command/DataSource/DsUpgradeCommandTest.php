@@ -456,6 +456,43 @@ class DsUpgradeCommandTest extends TestCase
 
         $this->assertFileExists($this->dsDir . '/config/configuration/compiled.cs.json');
         $this->assertFileExists($this->dsDir . '/config/configuration/compiled.en.json');
+        $this->assertFileDoesNotExist($this->dsDir . '/config/configuration/compiled.sk.json');
+    }
+
+    public function testUpgradeCompilesConfigForDocumentLanguages(): void
+    {
+        // Jazyky dokumentů (#90 D29) — tisk čte konfiguraci v jazyce dokladu.
+        $moduleDir = $this->modulesPath . '/world/base';
+        mkdir($moduleDir . '/config', 0755, true);
+        file_put_contents($moduleDir . '/module.jsonc', json_encode([
+            'id'           => 'world.base',
+            'name'         => 'world.base',
+            'dependencies' => [],
+            'tables'       => [],
+            'extensions'   => [],
+            'config'       => [['id' => 'world.base.documentLanguages', 'file' => 'config/documentLanguages.jsonc']],
+        ]));
+        file_put_contents($moduleDir . '/config/documentLanguages.jsonc', json_encode([
+            'cs' => ['name' => 'Czech', 'name:cs' => 'čeština', 'name:sk' => 'čeština (sk)'],
+            'en' => ['name' => 'English'],
+            'sk' => ['name' => 'Slovak'],
+        ]));
+        $this->dsConfig = $this->createProvisioningConfig(['test.unit', 'world.base']);
+
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+
+        $tester = $this->createCommandTester();
+        $tester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+
+        $this->assertStringContainsString('Languages: cs, en, sk', $tester->getDisplay());
+        $compiled = json_decode(
+            (string) file_get_contents($this->dsDir . '/config/configuration/compiled.sk.json'),
+            true,
+        );
+        $this->assertSame('sk', $compiled['_meta']['language']);
+        $this->assertSame('čeština (sk)', $compiled['items']['world.base.documentLanguages']['cs']['name']);
     }
 
     public function testUpgradeRunsProvisioningByDefault(): void

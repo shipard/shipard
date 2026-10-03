@@ -352,6 +352,7 @@ export default {
   'error.PRINT_NOT_FOUND': 'Tisk neexistuje',
   'error.PRINT_NOT_AVAILABLE': 'Tento záznam teď vytisknout nejde — tisk je dostupný jen v určitém stavu záznamu',
   'error.PRINT_DATA_MISSING': 'Záznam nejde vytisknout — chybí mu údaje potřebné pro tisk',
+  'error.PRINT_LANGUAGE_NOT_COMPILED': 'V tomto jazyce teď doklad vytisknout nejde — zdroj dat čeká na aktualizaci. Obrať se na správce',
   'error.RENDER_UNAVAILABLE': 'Tisková služba není dostupná. Zkus to prosím za chvíli znovu',
   'error.RENDER_FAILED': 'Tisk se nepodařilo vyrobit',
   'error.UNAUTHORIZED': 'Pro tuto akci musíte být přihlášen',

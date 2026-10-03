@@ -179,7 +179,7 @@ class DsUpgradeCommand extends Command
 
         // Step 5: Compile configuration
         $output->writeln('Compiling configuration...', OutputInterface::VERBOSITY_VERBOSE);
-        $languages = ['cs', 'en'];
+        $languages = ConfigCompiler::languages($resolvedModules, $modulePathResolver);
         $outputPath = $dsDir . '/config/configuration';
 
         // Schémata strukturovaných polí (#74) sbíráme z UŽ MERGNUTÝCH definic —

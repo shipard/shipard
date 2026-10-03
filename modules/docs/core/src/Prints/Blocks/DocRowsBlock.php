@@ -15,6 +15,9 @@ final class DocRowsBlock implements DocPrintBlock
 {
     private const ROW_KIND_TEXT = 0;
 
+    /** Jazyk zkratek jednotek v `core_units` (seed je český). */
+    private const DATA_LANGUAGE = 'cs';
+
     public function build(DocPrintContext $context): array
     {
         $rows = [];
@@ -34,7 +37,7 @@ final class DocRowsBlock implements DocPrintBlock
                 'description'          => $description,
                 'quantity'             => DocPrintContext::number($row['quantity'] ?? null),
                 'unit'                 => isset($context->units[$unitId])
-                    ? ['id' => $unitId, 'label' => $context->units[$unitId]]
+                    ? ['id' => $unitId, 'label' => $this->unitLabel($context, $context->units[$unitId])]
                     : null,
                 'unitPrice'            => DocPrintContext::number($row['unit_price'] ?? null),
                 'unitPriceIncludesVat' => $context->vatMode() === 2,
@@ -48,6 +51,26 @@ final class DocRowsBlock implements DocPrintBlock
         }
 
         return ['rows' => $rows];
+    }
+
+    /**
+     * Zkratka jednotky (#90 D31). Česky ta z dat — zkratku lze ve zdroji dat
+     * upravit. V ostatních jazycích má systémová jednotka zkratku
+     * v `core.units.printShortcuts`; jednotka založená ve zdroji dat se
+     * tiskne, jak je.
+     *
+     * @param array{shortcut: string, systemCode: ?string} $unit
+     */
+    private function unitLabel(DocPrintContext $context, array $unit): string
+    {
+        if ($unit['systemCode'] !== null && $context->translator->language !== self::DATA_LANGUAGE) {
+            $shortcuts = $context->config?->cfgItem('core.units.printShortcuts');
+            $label     = is_array($shortcuts) ? ($shortcuts[$unit['systemCode']]['shortcut'] ?? null) : null;
+            if (is_string($label) && $label !== '') {
+                return $label;
+            }
+        }
+        return $unit['shortcut'];
     }
 
     /**

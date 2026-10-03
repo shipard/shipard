@@ -9,6 +9,7 @@ use Shipard\Api\Response;
 use Shipard\Api\TableAccessGuard;
 use Shipard\Core\Prints\PrintBuildException;
 use Shipard\Core\Prints\PrintFormat;
+use Shipard\Core\Prints\PrintLanguageNotCompiledException;
 use Shipard\Core\Prints\PrintNotAvailableException;
 use Shipard\Core\Prints\PrintNotFoundException;
 use Shipard\Core\Prints\PrintRecordNotFoundException;
@@ -28,8 +29,9 @@ use Shipard\Core\Prints\PrintRunner;
  * inline` — náhled v dialogu i uložení pod názvem z `meta.fileName`.
  * Měkká hlášení builderu (QR nevznikl) nese hlavička `X-Print-Messages`.
  * Chyby jdou jako JSON: 404 neznámý tisk / záznam, 409 tisk pro záznam
- * není dostupný (stav, typ) nebo záznamu chybí data, 400 špatný parametr,
- * 503 / 500 render služba (druh selhání v `details`).
+ * není dostupný (stav, typ), záznamu chybí data nebo zdroj dat nemá
+ * konfiguraci v jazyce tisku, 400 špatný parametr, 503 / 500 render služba
+ * (druh selhání v `details`).
  */
 class PrintsController
 {
@@ -82,6 +84,8 @@ class PrintsController
             return Response::error('PRINT_NOT_AVAILABLE', $e->getMessage(), 409);
         } catch (PrintBuildException $e) {
             return Response::error('PRINT_DATA_MISSING', $e->getMessage(), 409);
+        } catch (PrintLanguageNotCompiledException $e) {
+            return Response::error('PRINT_LANGUAGE_NOT_COMPILED', $e->getMessage(), 409);
         } catch (\InvalidArgumentException $e) {
             return Response::error('BAD_REQUEST', $e->getMessage(), 400);
         } catch (PrintRenderException $e) {

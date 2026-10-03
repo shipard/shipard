@@ -49,6 +49,10 @@
         {
             "id": "core.units.quantities",
             "file": "config/quantities.jsonc"
+        },
+        {
+            "id": "core.units.printShortcuts",
+            "file": "config/printShortcuts.jsonc"
         }
     ]
 }

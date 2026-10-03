@@ -366,4 +366,37 @@ class ConfigCompilerTest extends TestCase
             $this->tmpDir . '/output',
         );
     }
+
+    // ── jazyky kompilace (#90 D29) ──────────────────────────────────────────
+
+    public function testLanguagesAreUiLanguagesWithoutDocumentLanguages(): void
+    {
+        $modulePath = $this->tmpDir . '/modules/core/system';
+        $this->writeConfigFile($modulePath, 'config/app.jsonc', ['name' => 'App']);
+        $module = $this->makeModule('core.system', [['id' => 'core.app', 'file' => 'config/app.jsonc']]);
+
+        $this->assertSame(
+            ['cs', 'en'],
+            ConfigCompiler::languages([$module], new ModulePathResolver([$this->tmpDir . '/modules'])),
+        );
+    }
+
+    public function testLanguagesIncludeDocumentLanguagesFromRawConfig(): void
+    {
+        $modulePath = $this->tmpDir . '/modules/world/base';
+        $this->writeConfigFile($modulePath, 'config/documentLanguages.jsonc', [
+            'cs' => ['name' => 'Czech'],
+            'en' => ['name' => 'English'],
+            'sk' => ['name' => 'Slovak'],
+            'de' => ['name' => 'German'],
+        ]);
+        $module = $this->makeModule('world.base', [
+            ['id' => ConfigCompiler::DOCUMENT_LANGUAGES_ITEM, 'file' => 'config/documentLanguages.jsonc'],
+        ]);
+
+        $this->assertSame(
+            ['cs', 'en', 'sk', 'de'],
+            ConfigCompiler::languages([$module], new ModulePathResolver([$this->tmpDir . '/modules'])),
+        );
+    }
 }

@@ -158,7 +158,7 @@ class DocPrintBuilderTest extends IntegrationTestCase
     public function testEnglishPrintTranslatesTitleAndCodebookLabels(): void
     {
         $expected = $this->expected('invoice');
-        $headId = $this->insertInvoice($expected, $this->anyUnit()[0]);
+        $headId = $this->insertInvoice($expected, $this->systemUnitId('pcs'));
 
         $output = $this->runner->run('docs.invoicesOut.invoice', $headId, PrintFormat::Json, 'en');
         $data   = $output->printData->data;
@@ -168,6 +168,7 @@ class DocPrintBuilderTest extends IntegrationTestCase
         $this->assertSame('invoice-it-print-inv.pdf', $output->printData->fileName);
         $this->assertSame('Bank transfer', $data['payment']['method']['label']);
         $this->assertSame('Standard rate', $data['rows'][0]['vat']['label']);
+        $this->assertSame('pcs', $data['rows'][0]['unit']['label'], 'zkratka systémové jednotky v jazyce tisku');
         $this->assertSame(
             ['Standard rate', 'Reduced rate', 'Zero rate'],
             array_column($data['vatRecap'], 'label'),
