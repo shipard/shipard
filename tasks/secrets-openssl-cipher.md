@@ -1,6 +1,6 @@
 # Šifrování secrets přes OpenSSL — podpora ARM (Apple silicon, Graviton)
 
-**Stav:** naplánováno — #96 D12
+**Stav:** hotovo — #96 D12; 2026-10-03 ověřeno na ARM VM (Ubuntu 24.04 i 26.04: `ds-create` + `ds-upgrade`) a na x86 dev serveru (`ds-secrets-health` — data zapsaná přes sodium se dešifrují)
 
 ## Cíl
 
@@ -115,12 +115,12 @@ Do `require` přidat `"ext-openssl": "*"`.
 
 ## Hotovo když
 
-- [ ] `grep -rn --include=*.php "sodium_" src` nic nenajde
-- [ ] testovací vektor se dešifruje a test šifrování ho reprodukuje
-- [ ] `DsSecretCipherTest` zelený
-- [ ] `ds-secrets-health` na existujícím DS dev serveru OK
-- [ ] na ARM VM projde `ds-create` + `ds-upgrade`
-- [ ] `secrets.md` aktualizovaný, hlavička tasku a index
+- [x] `grep -rn --include=*.php "sodium_" src` nic nenajde
+- [x] testovací vektor se dešifruje a test šifrování ho reprodukuje
+- [x] `DsSecretCipherTest` zelený
+- [x] `ds-secrets-health` na existujícím DS dev serveru OK
+- [x] na ARM VM projde `ds-create` + `ds-upgrade`
+- [x] `secrets.md` aktualizovaný, hlavička tasku a index
 
 ## Mimo rozsah
 
