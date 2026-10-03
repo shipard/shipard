@@ -1,6 +1,6 @@
 # Instalace na čistém Ubuntu — opravy `install-packages.sh` a `DEVELOPERS.md`
 
-**Stav:** částečně — skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); 26.04 ověřeno na čisté VM; dev server ověřen; zbývá 24.04 znovu na čisté VM (první `server-init` jednou selhal, nereprodukováno) 
+**Stav:** hotovo — #96 D5 a D9; 2026-10-03 ověřeno na čerstvých Multipass VM 24.04 i 26.04 (aarch64) a opakovaným spuštěním na dev serveru
 
 ## Cíl
 
@@ -154,8 +154,11 @@ a otevření aplikace.
 
 - [x] `bash -n scripts/install-packages.sh` projde; `shellcheck` (pokud je
       k dispozici) bez nových varování — na dev serveru `shellcheck` není
-- [ ] Na čerstvém Ubuntu **24.04** projde postup z `DEVELOPERS.md` až po
-      zelený `shpd-server doctor`
+- [x] Na čerstvém Ubuntu **24.04** projde postup z `DEVELOPERS.md` až po
+      zelený `shpd-server doctor` — 2026-10-03, včetně nového DS; na jedné
+      z předchozích VM první `server-init` jednou nevytvořil `server.json`,
+      napodruhé prošel a na nové VM se to nezopakovalo (příčinu se
+      nepodařilo dohledat)
 - [x] Na čerstvém Ubuntu **26.04** totéž, bez přidání PPA `ondrej/php` —
       2026-10-03, Multipass VM (aarch64), včetně nového DS
 - [x] Na nepodporované verzi skript skončí jasnou chybou před instalací —

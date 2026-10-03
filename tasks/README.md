@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 320 tasků: **naplánováno** 6 · **částečně** 21 · **hotovo** 293.
+Celkem 320 tasků: **naplánováno** 6 · **částečně** 20 · **hotovo** 294.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -36,7 +36,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
 | `accbal-proforma-closure.md` | částečně | kód hotový 2026-09-23 (5 commitů, #79 D3b/D3c): |
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
-| `dev-install-fixes.md` | částečně | skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); 26.04 ověřeno na čisté VM; dev server ověřen; zbývá 24.04 znovu na čisté VM (první `server-init` jednou selhal, nereprodukováno) a přeskočení Node ≥ 22 |
 | `dev-install-followups.md` | částečně | kód, testy a dokumentace hotové 2026-10-03 (2 commity, #96 D15, D16); zbývá ověření na čisté VM (první zápis do logu → `shipard.log` `0640`, `doctor` bez ✗) |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
