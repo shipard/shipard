@@ -441,6 +441,10 @@ php bin/shpd-server help
 php bin/shpd-ds version         # vyžaduje CWD s config/main.json
 ```
 
+`composer.lock` je verzovaný — změna `composer.json` vždy s přepočtem locku
+(`composer require` / `composer update <balík>` / `composer update --lock`)
+ve stejném commitu.
+
 ## Testování
 
 - Testy v `tests/Unit/`, zrcadlí strukturu `src/`
