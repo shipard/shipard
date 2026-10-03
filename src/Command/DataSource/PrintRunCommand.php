@@ -60,7 +60,7 @@ class PrintRunCommand extends Command
              ->addArgument('printId', InputArgument::REQUIRED, 'Id tisku (např. docs.invoicesOut.invoice)')
              ->addArgument('recordId', InputArgument::OPTIONAL, 'Id záznamu v tabulce tisku (s --data se nezadává)')
              ->addOption('format', null, InputOption::VALUE_REQUIRED, 'Výstupní formát: json | pdf | html', 'json')
-             ->addOption('language', null, InputOption::VALUE_REQUIRED, 'Jazyk tisku (cs | en); výchozí je jazyk zdroje dat, s --data jazyk z dat')
+             ->addOption('language', null, InputOption::VALUE_REQUIRED, 'Jazyk tisku (cs | en); výchozí podle partnera dokladu a jeho země, s --data jazyk z dat')
              ->addOption('output', null, InputOption::VALUE_REQUIRED, 'Cílový soubor (u pdf povinný; json bez něj na stdout), u html cílový adresář (povinný)')
              ->addOption('data', null, InputOption::VALUE_REQUIRED, 'Soubor s hotovým PrintData (JSON) — render bez databáze a builderu; jen html | pdf');
     }

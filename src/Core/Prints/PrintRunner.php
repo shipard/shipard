@@ -13,8 +13,8 @@ use Shipard\Core\Settings\BrandingStorage;
  * Jediný vstupní bod pro běh tisku — REST controller i CLI volají výhradně
  * `run()`, nikdy builder přímo.
  *
- * registr → záznam → dostupnost (filtr, stav) → jazyk → builder → obálka
- * `PrintData` → (PDF / HTML) renderer.
+ * registr → záznam → dostupnost (filtr, stav) → strana a jazyk → builder →
+ * obálka `PrintData` → (PDF / HTML) renderer.
  *
  * `renderData()` vstupuje až do posledního kroku s hotovým `PrintData`
  * — vývoj šablon bez záznamu v databázi (#90 D28).
@@ -87,19 +87,35 @@ final class PrintRunner
             );
         }
 
-        $language = $this->languages->resolve($language, $definition, $record);
+        $builder = $this->createBuilder($definition);
+
+        // Jazyk podle partnera (#94 D2): strana se hledá před buildem —
+        // překladač i konfigurace builderu jsou per jazyk. Konfigurace pro
+        // tento krok stačí v libovolném jazyce, vezme se záložní.
+        $party       = null;
+        $partyConfig = null;
+        $partyLookup = $builder instanceof PrintPartyProvider
+            && $this->languages->needsParty($language, $definition);
+        if ($partyLookup) {
+            $partyConfig = ($this->configFactory)(PrintLanguageResolver::FALLBACK);
+            $party       = $builder->printParty($record, $this->db, $partyConfig);
+        }
+
+        $choice   = $this->languages->resolve($language, $definition, $party);
+        $language = $choice->language;
 
         $translator = $this->catalogs?->translator($definition, $language)
             ?? new PrintTranslator([], $language);
 
-        $builder = $this->createBuilder($definition);
-        $result  = $builder->build(new PrintRequest(
+        $result = $builder->build(new PrintRequest(
             definition: $definition,
             recordId: $recordId,
             record: $record,
             language: $language,
             db: $this->db,
-            config: ($this->configFactory)($language),
+            config: $partyLookup && $language === PrintLanguageResolver::FALLBACK
+                ? $partyConfig
+                : ($this->configFactory)($language),
             translator: $translator,
         ));
 
@@ -117,7 +133,7 @@ final class PrintRunner
             title: $result->title,
             fileName: $result->fileName,
             logo: $this->logoAssetName(),
-            messages: $result->messages,
+            messages: [...$result->messages, ...$choice->messages()],
             data: $result->data,
             watermark: $watermarkKey === null ? null : $translator->t($watermarkKey),
         );
@@ -162,7 +178,7 @@ final class PrintRunner
         }
 
         $printData = PrintData::fromArray($envelope, $this->createBuilder($definition)->version());
-        $language  = $this->languages->resolve($language ?? $printData->language, $definition, []);
+        $language  = $this->languages->resolve($language ?? $printData->language, $definition)->language;
         if ($language !== $printData->language) {
             $printData = $printData->withLanguage($language);
         }

@@ -71,8 +71,9 @@ v záhlaví. Barvy, umístění loga, vlastní texty (třeba poděkování nebo
 obchodní podmínky), jméno toho, kdo doklad vystavil, ani podpis a razítko
 zatím nejsou.
 
-**Jazyk dokladu podle odběratele nezvolíš.** Tiskne se v jazyce zdroje dat
-— česky, nebo anglicky.
+**Slovensky ani německy doklad nevytiskneš.** Jazyk dokladu se řídí zemí
+odběratele, ale hotová je jen čeština a angličtina — odběratelům ze
+Slovenska, Německa a Rakouska se zatím tiskne anglicky.
 
 **QR platba je jen česká.** Kód na dokladu čtou bankovní aplikace českých
 bank; pro odběratele v zahraničí jiný standard zatím není.

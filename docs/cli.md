@@ -790,7 +790,9 @@ přebije (překlady šablony; popisky v `data` zůstávají, jak jsou). Slouží
 vývoji šablon: jednou `--format=json > data.json`, pak už jen upravovat
 šablonu a pouštět `--data=data.json --format=html`.
 
-`--language` určí jazyk tisku; bez něj platí výchozí jazyk zdroje dat.
+`--language` určí jazyk tisku; bez něj se volí podle partnera dokladu
+(jazyk osoby, jinak země z adresy na dokladu, jinak vlastní země zdroje
+dat — `docs/prints.md` §3). Interní tisky partnera neřeší.
 Měkká hlášení builderu (QR platba nevznikla) jdou na stderr, exit 0.
 Exit `INVALID` (2): neznámý tisk (vypíše dostupné), neznámý `--format` /
 `--language`, `pdf` nebo `html` bez `--output`, chybějící či nečíselné

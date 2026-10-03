@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core\Prints;
 
+use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Prints\PrintBuilder;
 use Shipard\Core\Prints\PrintBuildResult;
+use Shipard\Core\Prints\PrintParty;
+use Shipard\Core\Prints\PrintPartyProvider;
 use Shipard\Core\Prints\PrintRequest;
 use Shipard\Core\Utils\Slug;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocAdvancesBlock;
@@ -24,9 +28,10 @@ use Shipard\Module\Docs\Core\Prints\Blocks\DocVatRecapBlock;
  * doklad, dobropis) dědí a v `blocks()` blok přidá nebo vynechá.
  *
  * Kontrakt `data` popisuje `docs/prints.md`; při nekompatibilní změně
- * zvýšit `VERSION` (#90 D15).
+ * zvýšit `VERSION` (#90 D15). Jako `PrintPartyProvider` říká runneru,
+ * komu je doklad určený — z toho se volí jazyk tisku.
  */
-class DocPrintBuilder implements PrintBuilder
+class DocPrintBuilder implements PrintBuilder, PrintPartyProvider
 {
     public const VERSION = 1;
 
@@ -55,6 +60,28 @@ class DocPrintBuilder implements PrintBuilder
     public function version(): int
     {
         return static::VERSION;
+    }
+
+    /**
+     * Partner dokladu pro volbu jazyka tisku (#94 D4): jazyk **živě**
+     * z osoby, země z adresy v partnerském snapshotu dokladu. Doklad bez
+     * partnera nebo bez jeho snapshotu stranu nemá.
+     */
+    public function printParty(array $record, DataSourceConnection $db, ?ConfigRuntime $config): ?PrintParty
+    {
+        $partnerId = (int) ($record['partner'] ?? 0);
+        $snapshot  = DocPrintContext::partnerSnapshot($record, $config);
+        if ($partnerId === 0 || $snapshot === null) {
+            return null;
+        }
+
+        return new PrintParty(
+            personLanguage: DocPrintContext::text($db->fetchSingle(
+                'SELECT [language] FROM [base_persons_persons] WHERE [id] = %i',
+                $partnerId,
+            )),
+            country: DocPrintContext::text($snapshot['address']['country'] ?? null),
+        );
     }
 
     /**

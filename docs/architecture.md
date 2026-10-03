@@ -134,6 +134,7 @@ Vícejazyčnost — rozbalení polí se suffixem `:lang`.
 |-------|------|
 | `LocalizedFieldResolver` | Resolví jedno vícejazyčné pole. Fallback: `field:XX` → `field:en` → `field` (holé). |
 | `ConfigLocalizer` | Rekurzivně projde celou datovou strukturu a aplikuje `LocalizedFieldResolver` na všechna vícejazyčná pole. Odstraní `:lang` suffixy z výstupu. |
+| `DocumentLanguageResolver` | Jazyk dokumentu pro partnera (#94): jazyk osoby → hlavní jazyk země strany → hlavní jazyk vlastní země; mimo jazyky dokumentů `en`. Čistá služba nad cfgItemy `world.base.documentLanguages` / `countries`, používá ji tisk (`docs/prints.md` §3). |
 
 **Tok dat:**
 ```

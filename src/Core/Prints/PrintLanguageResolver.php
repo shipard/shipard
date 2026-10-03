@@ -4,27 +4,51 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Prints;
 
+use Shipard\Core\I18n\DocumentLanguageResolver;
+
 /**
- * Jazyk tisku (#90 D8). Ve v1 = výslovně vyžádaný jazyk, jinak výchozí
- * jazyk zdroje dat; osoby jazyk nemají. Jediné místo, kam později přibude
- * jazyk partnera (#94) — proto dostává i záznam a deklaraci.
+ * Jazyk tisku (#90 D8, #94 D2–D3) — jediné místo, kde se volí.
+ *
+ * 1. Výslovně vyžádaný jazyk (REST `language`, CLI `--language`); musí být
+ *    mezi jazyky tisku.
+ * 2. Jinak jazyk dokumentu z `DocumentLanguageResolver`: jazyk osoby →
+ *    hlavní jazyk země strany → hlavní jazyk vlastní země. Interní tisk
+ *    (`audience: internal`) stranu nehledá — tiskne se pro nás.
+ * 3. Jazyk dokumentu, pro který tisk nemá katalogy (`sk`, `de`), se tiskne
+ *    v záložním jazyce.
  */
 final class PrintLanguageResolver
 {
     /** Jazyky, pro které existuje kompilovaná konfigurace i katalogy šablon. */
     public const LANGUAGES = ['cs', 'en'];
 
-    private const FALLBACK = 'en';
+    public const FALLBACK = 'en';
 
-    public function __construct(
-        private readonly string $defaultLanguage,
-    ) {}
+    /** @var \Closure(): DocumentLanguageResolver */
+    private readonly \Closure $documentLanguages;
 
     /**
-     * @param array<string, mixed> $record
+     * @param \Closure(): DocumentLanguageResolver $documentLanguages Líně —
+     *        čte konfiguraci zdroje dat, a tisk s výslovným jazykem nebo
+     *        render hotových dat ji nepotřebuje.
+     */
+    public function __construct(\Closure $documentLanguages)
+    {
+        $this->documentLanguages = $documentLanguages;
+    }
+
+    /** Má smysl ptát se builderu na stranu tisku? */
+    public function needsParty(?string $requested, PrintDefinition $definition): bool
+    {
+        return ($requested === null || $requested === '')
+            && $definition->audience !== 'internal';
+    }
+
+    /**
+     * @param ?PrintParty $party Strana tisku, je-li známá (viz `needsParty()`).
      * @throws \InvalidArgumentException Vyžádaný jazyk není podporovaný (→ 400).
      */
-    public function resolve(?string $requested, PrintDefinition $definition, array $record): string
+    public function resolve(?string $requested, PrintDefinition $definition, ?PrintParty $party = null): PrintLanguageChoice
     {
         if ($requested !== null && $requested !== '') {
             if (!in_array($requested, self::LANGUAGES, true)) {
@@ -32,11 +56,16 @@ final class PrintLanguageResolver
                     "Parameter 'language' must be one of " . implode('|', self::LANGUAGES),
                 );
             }
-            return $requested;
+            return new PrintLanguageChoice($requested);
         }
 
-        return in_array($this->defaultLanguage, self::LANGUAGES, true)
-            ? $this->defaultLanguage
-            : self::FALLBACK;
+        if (!$this->needsParty($requested, $definition)) {
+            $party = null;
+        }
+        $language = ($this->documentLanguages)()->resolve($party?->personLanguage, $party?->country);
+
+        return in_array($language, self::LANGUAGES, true)
+            ? new PrintLanguageChoice($language)
+            : new PrintLanguageChoice(self::FALLBACK, unavailable: $language);
     }
 }

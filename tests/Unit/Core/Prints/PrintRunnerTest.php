@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Core\Prints;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\I18n\DocumentLanguageResolver;
 use Shipard\Core\Prints\PrintBuilder;
 use Shipard\Core\Prints\PrintBuildResult;
 use Shipard\Core\Prints\PrintCatalogLoader;
@@ -15,6 +17,8 @@ use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintMessage;
 use Shipard\Core\Prints\PrintNotAvailableException;
 use Shipard\Core\Prints\PrintNotFoundException;
+use Shipard\Core\Prints\PrintParty;
+use Shipard\Core\Prints\PrintPartyProvider;
 use Shipard\Core\Prints\PrintRecordNotFoundException;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderException;
@@ -45,6 +49,8 @@ class PrintRunnerTest extends TestCase
     protected function setUp(): void
     {
         FakePrintBuilder::$lastRequest = null;
+        FakePartyPrintBuilder::$party = null;
+        FakePartyPrintBuilder::$partyCalls = 0;
     }
 
     protected function tearDown(): void
@@ -75,14 +81,15 @@ class PrintRunnerTest extends TestCase
     private function runner(
         ?array $record = self::RECORD,
         array $declaration = [],
-        string $defaultLanguage = 'cs',
+        string $ownCountry = 'cz',
         ?BrandingStorage $branding = null,
         array &$configLanguages = [],
         ?array $catalog = null,
+        string $builder = FakePrintBuilder::class,
     ): PrintRunner {
         $registry = new PrintRegistry();
         $registry->add(PrintDefinition::fromArray(
-            PrintDefinitionTest::declaration($declaration + ['builder' => FakePrintBuilder::class]),
+            PrintDefinitionTest::declaration($declaration + ['builder' => $builder]),
             'docs.invoicesOut',
         ));
 
@@ -96,10 +103,31 @@ class PrintRunnerTest extends TestCase
                 $configLanguages[] = $language;
                 return null;
             },
-            new PrintLanguageResolver($defaultLanguage),
+            self::languages($ownCountry),
             $branding,
             $catalog === null ? null : $this->catalogLoader($catalog),
             clock: static fn (): \DateTimeImmutable => new \DateTimeImmutable('2026-10-02T10:30:00+02:00'),
+        );
+    }
+
+    /**
+     * Volba jazyka nad pevným výřezem číselníků (jazyky dokumentů a země) —
+     * sdílí ji i `PrintsApiTest`.
+     */
+    public static function languages(string $ownCountry = 'cz'): PrintLanguageResolver
+    {
+        return new PrintLanguageResolver(
+            static fn (): DocumentLanguageResolver => new DocumentLanguageResolver(
+                ['cs' => [], 'en' => [], 'sk' => [], 'de' => []],
+                [
+                    'cz' => ['languages' => ['cs']],
+                    'sk' => ['languages' => ['sk']],
+                    'at' => ['languages' => ['de']],
+                    'gb' => ['languages' => ['en']],
+                    'fr' => ['languages' => ['fr']],
+                ],
+                $ownCountry,
+            ),
         );
     }
 
@@ -158,7 +186,7 @@ class PrintRunnerTest extends TestCase
     public function testBuilderGetsLoadedRecordAndConfigInPrintLanguage(): void
     {
         $configLanguages = [];
-        $this->runner(defaultLanguage: 'cs', configLanguages: $configLanguages)
+        $this->runner(configLanguages: $configLanguages)
             ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json, 'en');
 
         $request = FakePrintBuilder::$lastRequest;
@@ -170,14 +198,113 @@ class PrintRunnerTest extends TestCase
         $this->assertSame(['en'], $configLanguages, 'konfigurace v jazyce tisku, ne v jazyce requestu');
     }
 
-    public function testLanguageDefaultsToDataSourceLanguage(): void
+    // ── jazyk tisku (#94 D2–D4) ─────────────────────────────────────────────
+
+    public function testBuilderWithoutPartyPrintsInMainLanguageOfOwnCountry(): void
     {
-        $output = $this->runner(defaultLanguage: 'en')->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        $output = $this->runner()->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        $this->assertSame('cs', $output->printData->language);
+
+        $output = $this->runner(ownCountry: 'gb')->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
         $this->assertSame('en', $output->printData->language);
 
-        // Výchozí jazyk DS mimo podporované → en, tisk nespadne.
-        $output = $this->runner(defaultLanguage: 'de')->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        // Hlavní jazyk vlastní země mimo jazyky dokumentů → en, bez hlášení.
+        $output = $this->runner(ownCountry: 'fr')->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
         $this->assertSame('en', $output->printData->language);
+        $this->assertSame(['qr.noAccount'], self::messageCodes($output->printData->messages));
+    }
+
+    public function testPersonLanguageWinsOverPartyCountry(): void
+    {
+        FakePartyPrintBuilder::$party = new PrintParty(personLanguage: 'en', country: 'cz');
+
+        $output = $this->runner(builder: FakePartyPrintBuilder::class)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        $this->assertSame('en', $output->printData->language);
+        $this->assertSame('en', FakePrintBuilder::$lastRequest?->language);
+    }
+
+    public function testPartyCountryDecidesWithoutPersonLanguage(): void
+    {
+        FakePartyPrintBuilder::$party = new PrintParty(personLanguage: null, country: 'gb');
+        $output = $this->runner(builder: FakePartyPrintBuilder::class)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        $this->assertSame('en', $output->printData->language);
+
+        // Záznam bez partnera → hlavní jazyk vlastní země.
+        FakePartyPrintBuilder::$party = null;
+        $output = $this->runner(builder: FakePartyPrintBuilder::class)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        $this->assertSame('cs', $output->printData->language);
+        $this->assertSame(2, FakePartyPrintBuilder::$partyCalls);
+    }
+
+    public function testRequestedLanguageWinsAndSkipsPartyLookup(): void
+    {
+        FakePartyPrintBuilder::$party = new PrintParty(personLanguage: 'en', country: 'gb');
+
+        $output = $this->runner(builder: FakePartyPrintBuilder::class)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json, 'cs');
+
+        $this->assertSame('cs', $output->printData->language);
+        $this->assertSame(0, FakePartyPrintBuilder::$partyCalls);
+    }
+
+    public function testInternalPrintIgnoresParty(): void
+    {
+        FakePartyPrintBuilder::$party = new PrintParty(personLanguage: 'en', country: 'gb');
+
+        $output = $this->runner(declaration: ['audience' => 'internal'], builder: FakePartyPrintBuilder::class)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        $this->assertSame('cs', $output->printData->language);
+        $this->assertSame(0, FakePartyPrintBuilder::$partyCalls);
+    }
+
+    public function testDocumentLanguageWithoutCatalogPrintsInEnglishWithMessage(): void
+    {
+        $parties = [
+            'sk' => new PrintParty(personLanguage: 'sk', country: 'cz'),
+            'de' => new PrintParty(personLanguage: null, country: 'AT'),
+        ];
+        foreach ($parties as $documentLanguage => $party) {
+            FakePartyPrintBuilder::$party = $party;
+
+            $output = $this->runner(builder: FakePartyPrintBuilder::class)
+                ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+            $this->assertSame('en', $output->printData->language);
+            $messages = $output->printData->messages;
+            $this->assertSame(['qr.noAccount', 'language.unavailable'], self::messageCodes($messages));
+            $this->assertStringContainsString("'{$documentLanguage}'", $messages[1]->text);
+        }
+    }
+
+    public function testPartyLookupReusesFallbackConfigForEnglishPrint(): void
+    {
+        // Strana se hledá nad konfigurací v záložním jazyce; je-li to
+        // i jazyk tisku, podruhé se nenačítá.
+        FakePartyPrintBuilder::$party = new PrintParty(personLanguage: null, country: 'gb');
+        $configLanguages = [];
+        $this->runner(configLanguages: $configLanguages, builder: FakePartyPrintBuilder::class)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        $this->assertSame(['en'], $configLanguages);
+
+        FakePartyPrintBuilder::$party = new PrintParty(personLanguage: null, country: 'cz');
+        $configLanguages = [];
+        $this->runner(configLanguages: $configLanguages, builder: FakePartyPrintBuilder::class)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+        $this->assertSame(['en', 'cs'], $configLanguages);
+    }
+
+    /**
+     * @param list<PrintMessage> $messages
+     * @return list<string>
+     */
+    private static function messageCodes(array $messages): array
+    {
+        return array_map(static fn (PrintMessage $m): string => $m->code, $messages);
     }
 
     public function testUnsupportedRequestedLanguageThrows(): void
@@ -300,7 +427,7 @@ class PrintRunnerTest extends TestCase
             $registry,
             $db,
             static fn (string $language) => null,
-            new PrintLanguageResolver('cs'),
+            self::languages(),
             catalogs: new PrintCatalogLoader($paths),
             renderer: new PrintRenderer(
                 $paths,
@@ -469,5 +596,18 @@ class FakePrintBuilder implements PrintBuilder
     public function version(): int
     {
         return 3;
+    }
+}
+
+/** Fake builder, který zná stranu tisku — runner se ho ptá před `build()`. */
+class FakePartyPrintBuilder extends FakePrintBuilder implements PrintPartyProvider
+{
+    public static ?PrintParty $party = null;
+    public static int $partyCalls = 0;
+
+    public function printParty(array $record, DataSourceConnection $db, ?ConfigRuntime $config): ?PrintParty
+    {
+        self::$partyCalls++;
+        return self::$party;
     }
 }

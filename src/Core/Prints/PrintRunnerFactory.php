@@ -7,6 +7,7 @@ namespace Shipard\Core\Prints;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\I18n\DocumentLanguageResolver;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\Twig\PrintTwigFactory;
 use Shipard\Core\Render\RenderClient;
@@ -42,11 +43,24 @@ final class PrintRunnerFactory
             $branding,
         );
 
+        // Jedna kompilovaná konfigurace na jazyk a běh — sdílí ji builder
+        // i odvození jazyka dokumentu.
+        $configs = [];
+        $config  = static function (string $language) use ($dsDir, &$configs): ConfigRuntime {
+            return $configs[$language] ??= ConfigRuntime::load($dsDir, $language);
+        };
+        $country = $dsConfig->getCountry();
+
         return new PrintRunner(
             $registry,
             $db,
-            static fn (string $language): ConfigRuntime => ConfigRuntime::load($dsDir, $language),
-            new PrintLanguageResolver($dsConfig->getDefaultLanguage()),
+            $config,
+            new PrintLanguageResolver(
+                static fn (): DocumentLanguageResolver => DocumentLanguageResolver::fromConfig(
+                    $config(PrintLanguageResolver::FALLBACK),
+                    $country,
+                ),
+            ),
             $branding,
             new PrintCatalogLoader($paths),
             $renderer,

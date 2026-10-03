@@ -22,7 +22,6 @@ use Shipard\Core\Prints\PrintBuilder;
 use Shipard\Core\Prints\PrintBuildException;
 use Shipard\Core\Prints\PrintBuildResult;
 use Shipard\Core\Prints\PrintDefinition;
-use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintMessage;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderer;
@@ -37,6 +36,7 @@ use Shipard\Core\Render\RenderResult;
 use Shipard\Core\Viewer\TableViewer;
 use Shipard\Core\Viewer\ViewerDefinition;
 use Shipard\Core\Viewer\ViewerRegistry;
+use Shipard\Tests\Unit\Core\Prints\PrintRunnerTest;
 
 /**
  * REST tisků (#90 D20, D21) a generická akce Tisk v detailu vieweru (D19):
@@ -129,7 +129,7 @@ class PrintsApiTest extends TestCase
             $registry,
             $db,
             static fn (string $language) => null,
-            new PrintLanguageResolver('cs'),
+            PrintRunnerTest::languages(),
             renderer: new PrintRenderer($paths, new PrintTwigFactory($paths), $client),
         );
 

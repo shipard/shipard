@@ -18,8 +18,8 @@ v detailu, vodoznak storna a tisky:
 | `economy.accounting.docJournal` | `economy.accounting` | Kontace — interní tisk účetních zápisů dokladu (§4.2) |
 
 Nehotovo: nastavení vzhledu a texty na tiscích (fáze 3), e-mail
-a zmrazená odeslaná kopie (fáze 4), jazyk partnera a jazyky `sk`, `de`
-(#94), QR pro další země (#91), opravný daňový doklad (#92), „Vystavil“
+a zmrazená odeslaná kopie (fáze 4), katalogy tisku `sk`, `de` (#94 D10),
+QR pro další země (#91), opravný daňový doklad (#92), „Vystavil“
 a jména u podpisů (#93), účtenka na POS tiskárnu, EET.
 
 ## 1. Princip
@@ -113,9 +113,10 @@ je jediný vstupní bod — REST i CLI ho staví přes `PrintRunnerFactory`.
 1. Definice z registru → `PrintNotFoundException`.
 2. Záznam `SELECT *` z tabulky deklarace → `PrintRecordNotFoundException`;
    nesplní `filter` / `docStates` → `PrintNotAvailableException`.
-3. Jazyk tisku: výslovný parametr, jinak výchozí jazyk zdroje dat
-   (`PrintLanguageResolver` — jediné místo, kam přibude jazyk partnera).
-   Podporované jazyky: `cs`, `en`.
+3. Jazyk tisku (`PrintLanguageResolver`, viz níže): výslovný parametr,
+   jinak jazyk dokumentu podle partnera. Builder se vytvoří už tady —
+   umí-li to (`PrintPartyProvider`), runner se ho před buildem zeptá na
+   stranu tisku.
 4. Builder dostane `PrintRequest`: definici, záznam, jazyk, spojení,
    **`ConfigRuntime` v jazyce tisku** (ne v jazyce requestu — popisky
    číselníků jdou na doklad) a `PrintTranslator` nad katalogy tisku.
@@ -134,6 +135,48 @@ s neplatným tvarem (`PrintData::fromArray()`), data jiného tisku, verzi
 vyšší než `version()` builderu a formát `json`. Jazyk je z obálky,
 parametr ho přebije: mění překlady šablony, popisky v `data`
 i `meta.watermark` zůstávají, jak jsou.
+
+### Jazyk tisku (#94 D2–D4)
+
+Rozlišují se **jazyky dokumentů** (cfgItem `world.base.documentLanguages`:
+`cs`, `en`, `sk`, `de` — to, co lze nastavit na osobě) a **jazyky tisku**
+(`PrintLanguageResolver::LANGUAGES`: `cs`, `en` — jazyky, pro které
+existují katalogy šablon a kompilovaná konfigurace).
+
+1. **Výslovný parametr** (REST `language`, CLI `--language`) — validuje se
+   proti jazykům tisku, jiná hodnota je chyba (400). Stranu tisku nehledá.
+2. Jinak **jazyk dokumentu** z `Shipard\Core\I18n\DocumentLanguageResolver`
+   (čistá služba, použije ji i odeslání e-mailem ve fázi 4):
+   1. jazyk osoby partnera (`base_persons_persons.language`), je-li mezi
+      jazyky dokumentů;
+   2. **hlavní** jazyk země strany — první položka `languages` v
+      `world.base.countries`; není-li mezi jazyky dokumentů → `en`
+      (CH → `de`, BE / LU / IE / FR → `en`);
+   3. země chybí nebo je neznámá (i doklad bez partnera) → hlavní jazyk
+      **vlastní země** zdroje dat (`DataSourceConfig::getCountry()`),
+      stejným pravidlem.
+3. Jazyk dokumentu bez katalogu tisku (`sk`, `de`) se tiskne **anglicky**
+   a tisk nese měkké hlášení `language.unavailable` (bez názvu partnera).
+
+Stranu tisku dodává builder přes volitelné rozhraní `PrintPartyProvider`
+→ `PrintParty {personLanguage, country}`. `DocPrintBuilder` (a s ním
+pokladní doklad a prodejka): partner = `head.partner`; jazyk osoby se čte
+**živě** z osoby — partner si řekne o jiný jazyk, na osobě se změní
+a doklad se vytiskne znovu bez zásahu do dokladu (vědomá výjimka z D5);
+země je `address.country` z **partnerského snapshotu** dokladu podle směru
+obchodu (`DocPrintContext::partnerSnapshot()`, stejné pravidlo jako
+`partner()`). Doklad bez partnera nebo bez jeho snapshotu stranu nemá.
+Builder bez rozhraní a tisk s `audience: internal` (Kontace) stranu
+nehledají — tisknou v hlavním jazyce vlastní země.
+
+`defaultLanguage` zdroje dat se pro jazyk tisku **nepoužívá**: je to jazyk
+rozhraní a jeho fallback `en` by tuzemcům tiskl anglicky. Oproti fázi 1 je
+to změna chování — zdroj dat s `defaultLanguage: en` a českou zemí tiskne
+Kontaci i doklady tuzemským partnerům česky.
+
+Konfigurace pro dotaz na stranu (`printParty()` z ní čte jen klíče
+cfgItemů, např. směr typu dokladu) se bere v záložním jazyce `en`;
+je-li to zároveň jazyk tisku, podruhé se nenačítá.
 
 Builder hlásí dvojí druh problému: **tvrdý** výjimkou `PrintBuildException`
 (doklad bez snapshotu vlastní strany — tisk ven nesmí číst z dnešního
@@ -413,8 +456,9 @@ pro administrátora. Na read-only zdroji dat povoleno. `format=html` REST
 nenabízí (400) — je to nástroj CLI.
 
 - `pdf` (default): `application/pdf`, `Content-Disposition: inline;
-  filename="…"` (z `meta.fileName`). Měkká hlášení builderu nese hlavička
-  **`X-Print-Messages`** — procentově kódované JSON pole `messages`.
+  filename="…"` (z `meta.fileName`). Měkká hlášení builderu i runneru
+  (jazyk bez katalogu, §3) nese hlavička **`X-Print-Messages`** —
+  procentově kódované JSON pole `messages`.
 - `json`: `{success, data}`, `data` = `PrintData`.
 
 | Kód | HTTP | Kdy |
@@ -483,7 +527,9 @@ Příklad: karta majetku (`economy.assets`).
    `version()` vrací verzi kontraktu `data`. Popisky číselníků čte
    z `$request->config` — je v jazyce tisku. Kontrakt `data` popiš
    v dokumentaci modulu. Vzor tisku mimo doklady ven:
-   `DocJournalPrintBuilder` (Kontace).
+   `DocJournalPrintBuilder` (Kontace). Tisk určený partnerovi
+   (`audience: external`) nad jinou tabulkou než doklady implementuje
+   i `PrintPartyProvider` — jinak se tiskne v jazyce vlastní země (§3).
 2. **Šablona** `modules/economy/assets/prints/card/page.html.twig`
    a `messages.jsonc` (`cs` i `en`). Vlastní `header.html.twig` /
    `footer.html.twig` a CSS polož vedle, nebo do sdíleného adresáře
@@ -515,10 +561,12 @@ stavy, pro které v databázi doklad není.
 
 ## 10. Testy
 
-- Unit `tests/Unit/Core/Prints/` — deklarace, registr, runner (včetně
-  `renderData()`), obálka `PrintData`, katalogy, pravidlo vodoznaku, Twig
+- Unit `tests/Unit/Core/I18n/DocumentLanguageResolverTest.php` — tabulka
+  odvození jazyka nad skutečnými číselníky `world.base`;
+  `tests/Unit/Core/Prints/` — deklarace, registr, runner (včetně
+  `renderData()` a volby jazyka), obálka `PrintData`, katalogy, pravidlo vodoznaku, Twig
   filtry a sandbox; `tests/Unit/Module/Docs/Core/Prints/` — bloky, titulky,
-  QR platba, šablony dokladů a Kontace do HTML;
+  strana tisku (`DocPrintPartyTest`), QR platba, šablony dokladů a Kontace do HTML;
   `tests/Unit/Command/DataSource/PrintRunCommandTest.php` — `--format=html`
   a `--data` bez databáze; `tests/Unit/Api/Controller/PrintsApiTest.php`
   — routa, controller, akce v detailu.

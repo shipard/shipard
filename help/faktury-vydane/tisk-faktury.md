@@ -1,7 +1,7 @@
 ---
 title: Tisk faktury
 summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne.
-keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
+keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, faktura v angličtině, jazyk podle odběratele, faktura slovensky, faktura německy, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
 related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, uctarna/tisk-kontace.md, co-dnes-nejde.md]
 ---
 
@@ -86,8 +86,12 @@ jako samostatná služba. Zkus to za chvíli znovu; když to trvá, napiš na
 v telefonu, neumějí PDF zobrazit uvnitř stránky. Soubor stáhni a otevři
 v prohlížeči PDF.
 
-**Doklad je v jiném jazyce, než čekáš.** Tiskne se v jazyce zdroje dat —
-česky, nebo anglicky. Jazyk podle odběratele zatím zvolit nejde.
+**Doklad je v jiném jazyce, než čekáš.** Jazyk se řídí zemí odběratele
+z **Fakturačních údajů** dokladu: odběrateli z Česka se tiskne česky,
+odběratelům z ostatních zemí anglicky. Doklad bez odběratele se tiskne
+v jazyce země tvé firmy. Slovenština a němčina zatím hotové nejsou —
+odběrateli ze Slovenska, Německa nebo Rakouska se doklad vytiskne anglicky
+a žluté upozornění nad náhledem ti to připomene.
 
 **Co zatím nejde:** odeslat fakturu odběrateli e-mailem přímo z Shipardu
 a změnit vzhled dokladu nebo na něj přidat vlastní text — viz

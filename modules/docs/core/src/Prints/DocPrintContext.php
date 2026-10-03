@@ -169,9 +169,32 @@ final class DocPrintContext
     /** Snapshot partnera: odběratel na výstupu, dodavatel na vstupu; bez směru null. */
     public function partner(): ?array
     {
-        return match ($this->tradeDir()) {
-            1       => $this->customer,
-            2       => $this->supplier,
+        return match (self::partnerSide($this->tradeDir())) {
+            'customer' => $this->customer,
+            'supplier' => $this->supplier,
+            default    => null,
+        };
+    }
+
+    /**
+     * Snapshot partnera přímo z hlavičky — pro volbu jazyka tisku, která
+     * běží dřív než `load()` (#94 D4). Stejné pravidlo jako `partner()`.
+     *
+     * @param array<string, mixed> $head Řádek `docs_core_heads`.
+     * @return array<string, mixed>|null
+     */
+    public static function partnerSnapshot(array $head, ?ConfigRuntime $config): ?array
+    {
+        $side = self::partnerSide(DocDocument::resolveTradeDir($head, $config));
+        return $side === null ? null : self::decodeSnapshot($head[$side . '_snapshot'] ?? null);
+    }
+
+    /** Strana, na které stojí partner: odběratel na výstupu, dodavatel na vstupu. */
+    private static function partnerSide(?int $tradeDir): ?string
+    {
+        return match ($tradeDir) {
+            1       => 'customer',
+            2       => 'supplier',
             default => null,
         };
     }
