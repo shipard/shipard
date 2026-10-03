@@ -1171,4 +1171,28 @@ class DoctorCommandTest extends TestCase
         $this->assertStringContainsString('Hosting domains file', $display);
         $this->assertStringContainsString('not hosting-managed — skipped', $display);
     }
+
+    public function testBlockedCheckoutAncestorIsReportedAsError(): void
+    {
+        // #96 D11: /opt/shipard/shpd → checkout under a home created 0750
+        // (Ubuntu HOME_MODE) — nginx cannot reach public/.
+        $this->writeServerJson('development');
+        $spec = $this->makeSpec();
+        $this->buildHealthyTree($spec);
+        $home = realpath($this->tempRoot) . '/home/dev';
+        mkdir($home . '/sw/shpd/public', 0755, true);
+        chmod($home, 0750);
+        symlink($home . '/sw/shpd', $spec->getShipardRoot() . '/shpd');
+
+        $command = $this->makeTester($spec);
+        $command->stubPoolUser = $this->testUser;
+        $tester = new CommandTester($command);
+        $exitCode = $tester->execute([]);
+
+        $display = $tester->getDisplay();
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString("✗ {$home}: mode 0750 blocks nginx", $display);
+        $this->assertStringContainsString("chmod o+x {$home}", $display);
+        $this->assertStringContainsString('sudo shpd-server fix-permissions', $display);
+    }
 }

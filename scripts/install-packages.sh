@@ -178,6 +178,7 @@ mkdir -p /opt/shipard/data-sources /opt/shipard/log /etc/shipard
 chown "$SHIPARD_USER:$SHIPARD_USER" /opt/shipard /opt/shipard/data-sources /opt/shipard/log
 # /opt/shipard is 0751 so nginx (www-data) can traverse into /opt/shipard/shpd
 # for SPA static asset serving. Contents (data-sources, log) stay 0750.
+# The path to the checkout behind the symlink is handled below.
 chmod 0751 /opt/shipard
 chmod 0750 /opt/shipard/data-sources /opt/shipard/log
 
@@ -203,6 +204,32 @@ else
     ln -s "$PROJECT_DIR" "$SHPD_LINK"
     chown -h "$SHIPARD_USER:$SHIPARD_USER" "$SHPD_LINK"
     echo "    Created $SHPD_LINK -> $PROJECT_DIR"
+fi
+
+# In development the checkout lives under /home/<user>, which Ubuntu >= 21.04
+# creates as 0750 (HOME_MODE) — nginx (www-data) cannot follow the symlink
+# above. Grant traverse (o+x: pass through, no listing) on the parent
+# directories of the checkout, same as 0751 on /opt/shipard. Only directories
+# owned by the shipard user are changed; the checkout itself stays as git
+# made it. In production the checkout is a real directory in /opt/shipard.
+if [ "$MODE" = "development" ]; then
+    dir="$(dirname "$(realpath "$PROJECT_DIR")")"
+    while [ "$dir" != "/" ]; do
+        dir_mode="$(stat -c '%a' "$dir")"
+        if (( (8#$dir_mode & 1) == 0 )); then
+            dir_owner="$(stat -c '%U' "$dir")"
+            if [ "$dir_owner" != "$SHIPARD_USER" ]; then
+                echo "Error: nginx (www-data) cannot reach the checkout in $PROJECT_DIR:" >&2
+                echo "       $dir (owner $dir_owner, mode $dir_mode) has no 'x' for others." >&2
+                echo "       This script does not change directories of other owners. Move the" >&2
+                echo "       checkout, or fix it by hand (chmod o+x $dir), and run the script again." >&2
+                exit 1
+            fi
+            chmod o+x "$dir"
+            echo "    Granted traverse (o+x): $dir"
+        fi
+        dir="$(dirname "$dir")"
+    done
 fi
 
 # ─── 8. PHP-FPM pool (shipard) ───────────────────────────────────────────────

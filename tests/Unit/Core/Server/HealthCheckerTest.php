@@ -430,4 +430,140 @@ class HealthCheckerTest extends TestCase
         );
         $this->assertCount(2, $deep, 'recursive walk did not reach nested file');
     }
+
+    // ─── Traverse to the checkout (#96 D11) ────────────────────────────────
+
+    /**
+     * Dev layout: <shipardRoot>/shpd is a symlink to a checkout under a
+     * home-like directory. Returns the (resolved) home directory.
+     */
+    private function createCheckout(PermissionSpec $spec, int $homeMode): string
+    {
+        $home = realpath($this->tempRoot) . '/home/dev';
+        mkdir($home . '/sw/shpd/public', 0755, true);
+        // mkdir mode is subject to umask
+        foreach ([dirname($home), $home . '/sw', $home . '/sw/shpd', $home . '/sw/shpd/public'] as $dir) {
+            chmod($dir, 0755);
+        }
+        chmod($home, $homeMode);
+        symlink($home . '/sw/shpd', $spec->getShipardRoot() . '/shpd');
+        return $home;
+    }
+
+    /**
+     * The temp root (0750) and whatever lies above it depend on the machine —
+     * the tests only look at the checkout's own part of the path.
+     *
+     * @param list<array{path: string, mode: int, owner: string, fixable: bool}> $blocked
+     * @return list<array{path: string, mode: int, owner: string, fixable: bool}>
+     */
+    private function blockedBelow(array $blocked, string $prefix): array
+    {
+        return array_values(array_filter(
+            $blocked,
+            static fn($b) => str_starts_with($b['path'], $prefix . '/'),
+        ));
+    }
+
+    public function testDiscoverCheckoutAncestorsFollowsSymlinkUpToRoot(): void
+    {
+        $spec = $this->makeSpec();
+        $this->buildContractTree($spec);
+        $home = $this->createCheckout($spec, 0750);
+
+        $ancestors = $spec->discoverCheckoutAncestors();
+
+        $this->assertSame(
+            [$home . '/sw/shpd', $home . '/sw', $home, dirname($home)],
+            array_slice($ancestors, 0, 4),
+        );
+        $this->assertNotContains('/', $ancestors);
+        $this->assertSame('/', dirname($ancestors[count($ancestors) - 1]));
+    }
+
+    public function testBlockedCheckoutAncestorIsReportedAsFixable(): void
+    {
+        $spec = $this->makeSpec();
+        $this->buildContractTree($spec);
+        $home = $this->createCheckout($spec, 0750);
+
+        $checker = new HealthChecker($spec);
+        $blocked = $this->blockedBelow($checker->findBlockedCheckoutAncestors(), realpath($this->tempRoot));
+
+        $this->assertSame(
+            [['path' => $home, 'mode' => 0750, 'owner' => $this->testUser, 'fixable' => true]],
+            $blocked,
+        );
+    }
+
+    public function testTraversableCheckoutPathReportsNothing(): void
+    {
+        $spec = $this->makeSpec();
+        $this->buildContractTree($spec);
+        $this->createCheckout($spec, 0751);
+
+        $checker = new HealthChecker($spec);
+        $blocked = $this->blockedBelow($checker->findBlockedCheckoutAncestors(), realpath($this->tempRoot));
+
+        $this->assertSame([], $blocked);
+    }
+
+    public function testBlockedCheckoutAncestorOfForeignOwnerIsNotFixable(): void
+    {
+        // Shipard user differs from the owner of the tree → the directory is
+        // "someone else's" and must not be offered for a fix.
+        $fake = 'shipard-nonexistent-' . uniqid();
+        $spec = new PermissionSpec(
+            shipardUser: $fake,
+            dataSourcesDir: $this->tempRoot . '/opt/shipard/data-sources',
+            logDir: $this->tempRoot . '/opt/shipard/log',
+            configDir: $this->tempRoot . '/etc/shipard',
+            shipardRoot: $this->tempRoot . '/opt/shipard',
+        );
+        $this->buildContractTree($spec);
+        $home = $this->createCheckout($spec, 0750);
+
+        $checker = new HealthChecker($spec);
+        $blocked = $this->blockedBelow($checker->findBlockedCheckoutAncestors(), realpath($this->tempRoot));
+
+        $this->assertCount(1, $blocked);
+        $this->assertSame($home, $blocked[0]['path']);
+        $this->assertFalse($blocked[0]['fixable']);
+
+        $issues = array_values(array_filter(
+            $checker->checkAll(),
+            static fn($i) => $i['path'] === $home,
+        ));
+        $this->assertCount(1, $issues);
+        $this->assertFalse($issues[0]['fixable']);
+        $this->assertStringContainsString("owner {$this->testUser}", $issues[0]['message']);
+    }
+
+    public function testMissingCheckoutSkipsTraverseCheck(): void
+    {
+        $spec = $this->makeSpec();
+        $this->buildContractTree($spec);
+
+        $this->assertSame([], $spec->discoverCheckoutAncestors());
+        $this->assertSame([], (new HealthChecker($spec))->findBlockedCheckoutAncestors());
+    }
+
+    public function testCheckAllReportsBlockedCheckoutAncestor(): void
+    {
+        $spec = $this->makeSpec();
+        $this->buildContractTree($spec);
+        $home = $this->createCheckout($spec, 0750);
+
+        $checker = new HealthChecker($spec);
+        $issues = array_values(array_filter(
+            $checker->checkAll(),
+            static fn($i) => $i['path'] === $home,
+        ));
+
+        $this->assertCount(1, $issues);
+        $this->assertSame('error', $issues[0]['severity']);
+        $this->assertTrue($issues[0]['fixable']);
+        $this->assertStringContainsString('mode 0750 blocks nginx', $issues[0]['message']);
+        $this->assertStringContainsString("chmod o+x {$home}", $issues[0]['message']);
+    }
 }

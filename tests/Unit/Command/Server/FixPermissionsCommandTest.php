@@ -285,6 +285,107 @@ class FixPermissionsCommandTest extends TestCase
         );
     }
 
+    // ─── Traverse to the checkout (#96 D11) ────────────────────────────────
+
+    /**
+     * Dev layout: <shipardRoot>/shpd is a symlink to a checkout under a
+     * home-like directory created 0750 (Ubuntu HOME_MODE). Returns the home.
+     */
+    private function createCheckoutBehindClosedHome(PermissionSpec $spec): string
+    {
+        $home = realpath($this->tempRoot) . '/home/dev';
+        mkdir($home . '/sw/shpd/public', 0755, true);
+        // mkdir mode is subject to umask
+        foreach ([dirname($home), $home . '/sw', $home . '/sw/shpd', $home . '/sw/shpd/public'] as $dir) {
+            chmod($dir, 0755);
+        }
+        chmod($home, 0750);
+        symlink($home . '/sw/shpd', $spec->getShipardRoot() . '/shpd');
+        return $home;
+    }
+
+    /**
+     * The fix walks up to the filesystem root. When the temp dir itself sits
+     * below a closed directory of the test user, applying the fix would
+     * change that directory — outside of the test tree.
+     */
+    private function skipUnlessTempDirIsReachable(): void
+    {
+        for ($dir = dirname(realpath($this->tempRoot)); $dir !== '/'; $dir = dirname($dir)) {
+            if ((fileperms($dir) & 0001) === 0) {
+                $this->markTestSkipped("temp dir lies below a non-traversable directory: {$dir}");
+            }
+        }
+    }
+
+    public function testDryRunListsCheckoutTraverseWithoutChanging(): void
+    {
+        $this->writeServerJson();
+        $spec = $this->makeSpec();
+        $this->buildTreeWithBrokenMode($spec);
+        $home = $this->createCheckoutBehindClosedHome($spec);
+
+        $command = new TestableFixPermissionsCommand($this->tempConfigPath, $spec);
+        $command->rootResult = false;
+
+        $tester = new CommandTester($command);
+        $exitCode = $tester->execute(['--dry-run' => true]);
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringContainsString("{$home}: mode 0750 blocks nginx", $tester->getDisplay());
+        $this->assertSame(0750, fileperms($home) & 0777);
+    }
+
+    public function testGrantsTraverseOnCheckoutAncestor(): void
+    {
+        $this->skipUnlessTempDirIsReachable();
+        $this->writeServerJson();
+        $spec = $this->makeSpec();
+        $this->buildTreeWithBrokenMode($spec);
+        $home = $this->createCheckoutBehindClosedHome($spec);
+
+        $command = new TestableFixPermissionsCommand($this->tempConfigPath, $spec);
+        $command->rootResult = true;
+
+        $tester = new CommandTester($command);
+        $exitCode = $tester->execute(['--force' => true]);
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringContainsString("chmod o+x {$home}", $tester->getDisplay());
+        $this->assertSame(0751, fileperms($home) & 0777);
+        // Only the missing bit is added — the rest of the path stays as it was.
+        $this->assertSame(0755, fileperms($home . '/sw') & 0777);
+    }
+
+    public function testLeavesCheckoutAncestorOfForeignOwnerAlone(): void
+    {
+        // Shipard user differs from the owner of the tree → the closed
+        // directory is "someone else's": reported, never changed.
+        $this->writeServerJson();
+        $spec = new PermissionSpec(
+            shipardUser: 'shipard-nonexistent-' . uniqid(),
+            dataSourcesDir: $this->tempRoot . '/opt/shipard/data-sources',
+            logDir: $this->tempRoot . '/opt/shipard/log',
+            configDir: $this->tempRoot . '/etc/shipard',
+            shipardRoot: $this->tempRoot . '/opt/shipard',
+        );
+        $this->buildTreeWithBrokenMode($spec);
+        $home = $this->createCheckoutBehindClosedHome($spec);
+
+        $command = new TestableFixPermissionsCommand($this->tempConfigPath, $spec);
+        $command->rootResult = true;
+
+        $tester = new CommandTester($command);
+        $tester->execute(['--force' => true]);
+
+        $display = $tester->getDisplay();
+        $unfixable = substr($display, 0, (int) strpos($display, 'Will apply'));
+        $this->assertStringContainsString('Unfixable issues', $unfixable);
+        $this->assertStringContainsString("{$home}: mode 0750 blocks nginx", $unfixable);
+        $this->assertStringNotContainsString("chmod o+x {$home}\n", $display);
+        $this->assertSame(0750, fileperms($home) & 0777);
+    }
+
     private function findSecondaryGroup(string $user): ?string
     {
         $out = [];

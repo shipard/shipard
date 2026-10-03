@@ -37,7 +37,53 @@ final class HealthChecker
             }
         }
 
+        foreach ($this->findBlockedCheckoutAncestors() as $dir) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => $dir['path'],
+                'message'  => $dir['fixable']
+                    ? sprintf(
+                        'mode %04o blocks nginx on the way to the checkout (no x for others). Fix: chmod o+x %s',
+                        $dir['mode'], $dir['path'],
+                    )
+                    : sprintf(
+                        'mode %04o blocks nginx on the way to the checkout (no x for others), owner %s. '
+                        . 'Fix by hand (chmod o+x %s) or move the checkout',
+                        $dir['mode'], $dir['owner'], $dir['path'],
+                    ),
+                'fixable'  => $dir['fixable'],
+            ];
+        }
+
         return $issues;
+    }
+
+    /**
+     * Ancestors of the checkout that nginx (www-data) cannot traverse — the
+     * `x` bit for others is missing. Fixable only when the directory belongs
+     * to the shipard user; foreign directories are never touched.
+     *
+     * @return list<array{path: string, mode: int, owner: string, fixable: bool}>
+     */
+    public function findBlockedCheckoutAncestors(): array
+    {
+        $blocked = [];
+        foreach ($this->spec->discoverCheckoutAncestors() as $dir) {
+            $stat = @stat($dir);
+            if ($stat === false || ($stat['mode'] & 0001) !== 0) {
+                continue;
+            }
+            $ownerInfo = posix_getpwuid($stat['uid']);
+            $owner = $ownerInfo['name'] ?? (string) $stat['uid'];
+            $blocked[] = [
+                'path'    => $dir,
+                // 07777: setgid/sticky survive the chmod in FixPermissions.
+                'mode'    => $stat['mode'] & 07777,
+                'owner'   => $owner,
+                'fixable' => $owner === $this->spec->getShipardUser(),
+            ];
+        }
+        return $blocked;
     }
 
     /**

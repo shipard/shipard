@@ -115,6 +115,7 @@ class FixPermissionsCommand extends Command
                 $applied += $this->fixEntry($entry, $spec, $output);
             }
         }
+        $applied += $this->fixCheckoutTraverse($checker, $output);
 
         $output->writeln('');
         $output->writeln("<info>Applied {$applied} fixes.</info>");
@@ -196,6 +197,28 @@ class FixPermissionsCommand extends Command
             $count += $this->fixContents($path, $expectedOwner, $expectedGroup, $output);
         }
 
+        return $count;
+    }
+
+    /**
+     * Grants `x` for others on the checkout's ancestors, so nginx can reach
+     * /opt/shipard/shpd/public. Only directories owned by the shipard user —
+     * foreign ones stay as they are (listed among the unfixable issues).
+     */
+    protected function fixCheckoutTraverse(HealthChecker $checker, OutputInterface $output): int
+    {
+        $count = 0;
+        foreach ($checker->findBlockedCheckoutAncestors() as $dir) {
+            if (!$dir['fixable']) {
+                continue;
+            }
+            if (@chmod($dir['path'], $dir['mode'] | 0001)) {
+                $output->writeln("  chmod o+x {$dir['path']}");
+                $count++;
+            } else {
+                $output->writeln("  <error>FAIL chmod o+x {$dir['path']}</error>");
+            }
+        }
         return $count;
     }
 

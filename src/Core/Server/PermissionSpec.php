@@ -142,4 +142,26 @@ final class PermissionSpec
         sort($found);
         return $found;
     }
+
+    /**
+     * Directories nginx (www-data) has to traverse to reach the SPA assets:
+     * every ancestor of the resolved <shipardRoot>/shpd/public, nearest first,
+     * without the filesystem root. In development shpd is a symlink to
+     * a checkout under /home/<user>, which Ubuntu >= 21.04 creates as 0750.
+     * Empty when the checkout does not resolve.
+     *
+     * @return list<string>
+     */
+    public function discoverCheckoutAncestors(): array
+    {
+        $public = realpath($this->shipardRoot . '/shpd/public');
+        if ($public === false) {
+            return [];
+        }
+        $dirs = [];
+        for ($dir = dirname($public); $dir !== '/'; $dir = dirname($dir)) {
+            $dirs[] = $dir;
+        }
+        return $dirs;
+    }
 }
