@@ -1,6 +1,6 @@
 # Instalace na čistém Ubuntu — opravy `install-packages.sh` a `DEVELOPERS.md`
 
-**Stav:** částečně — skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); 26.04 ověřeno na čisté VM; zbývá 24.04 znovu na čisté VM (první `server-init` jednou selhal, nereprodukováno), přeskočení Node ≥ 22 a opakované spuštění na dev serveru
+**Stav:** částečně — skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); 26.04 ověřeno na čisté VM; dev server ověřen; zbývá 24.04 znovu na čisté VM (první `server-init` jednou selhal, nereprodukováno) a přeskočení Node ≥ 22
 
 ## Cíl
 
@@ -162,8 +162,10 @@ a otevření aplikace.
       ověřeno během skriptu bez roota (podvržený `os-release`, privilegované
       příkazy nahrazené atrapami): 22.04, Debian i chybějící soubor končí
       `exit 1` bez jediného volání `apt-get` / `useradd`
-- [ ] Opakované spuštění na stávajícím dev serveru (24.04) projde a nic
-      nezmění (PPA, Node, nginx site, FPM pool)
+- [x] Opakované spuštění na stávajícím dev serveru (24.04) projde a nic
+      nezmění (PPA, Node, nginx site, FPM pool) — 2026-10-03 `exit=0`;
+      první běh doinstaloval systémový Node 24 vedle nvm (pod `sudo` nvm
+      není vidět, očekávané chování)
 - [ ] Bez předinstalovaného Node se nainstaluje Node 24; s Node ≥ 22 se
       instalace přeskočí — instalace Node 24 ověřena na obou VM;
       přeskočení zbývá

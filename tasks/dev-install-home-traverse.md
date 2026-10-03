@@ -1,6 +1,6 @@
 # Průchod nginx ke checkoutu v domovském adresáři
 
-**Stav:** částečně — kód, testy a dokumentace hotové a ověřené na Multipass VM 24.04 i 26.04 (2026-10-03, #96 D11); zbývá opakované spuštění skriptu pod rootem na průchozím dev serveru
+**Stav:** hotovo — #96 D11; 2026-10-03 ověřeno na čerstvých Multipass VM 24.04 i 26.04 (aarch64) a opakovaným spuštěním na dev serveru
 
 ## Cíl
 
@@ -112,9 +112,9 @@ kontraktu pro „nadřazené adresáře checkoutu (dev)“.
       (`doctor` ✗ → `fix-permissions --force` → zelený)
 - [x] skript nemění adresáře cizích vlastníků (blok skriptu vyzkoušen nad
       dočasným stromem s namockovaným `chmod`)
-- [ ] opakované spuštění skriptu i `doctor` na průchozím stroji beze změny —
-      `doctor` a `fix-permissions --dry-run` na dev serveru bez nového
-      nálezu; skript sám pod rootem nespuštěn
+- [x] opakované spuštění skriptu i `doctor` na průchozím stroji beze změny —
+      2026-10-03 na dev serveru: skript pod rootem `exit=0`, domov beze změny,
+      `doctor` zelený
 - [x] `permissions.md`, hlavička tasku a index aktualizované
 
 ## Poznámky k implementaci
