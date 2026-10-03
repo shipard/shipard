@@ -1449,11 +1449,15 @@ sudo bash scripts/install-packages.sh --mode=development
 sudo bash scripts/install-packages.sh --mode=production
 ```
 
-Jednorázová idempotentní instalace systémových balíčků (musí běžet jako root):
+Jednorázová idempotentní instalace systémových balíčků (musí běžet jako root).
+Podporované systémy jsou **Ubuntu 24.04 a 26.04 LTS** — na jiné verzi skript
+skončí chybou dřív, než cokoli nainstaluje.
 
-- PHP 8.5 (cli, fpm, mysql, xml, mbstring, curl, zip, intl)
+- PHP 8.5 (cli, fpm, mysql, xml, mbstring, curl, zip, intl) — na 24.04 z PPA
+  `ondrej/php`, na 26.04 ze systémových repozitářů
 - MariaDB, nginx
 - composer, git, unzip
+- Node.js 24 (LTS, z NodeSource) — už nainstalovaný Node ≥ 22 se ponechá
 
 Dále zařídí:
 

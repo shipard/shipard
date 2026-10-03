@@ -17,7 +17,7 @@ tenhle dokument popisuje produkční mód, který se od dev liší ve třech vě
 
 ## Předpoklady
 
-- **Ubuntu LTS** — 22.04 nebo 24.04
+- **Ubuntu LTS** — 24.04 nebo 26.04
 - **root přístup** přes `sudo`
 - **doména** směřující na server a **TLS certifikát** (řešíš ručně — viz
   kapitola 6)
@@ -46,9 +46,13 @@ sudo bash scripts/install-packages.sh --mode=production
 
 Oproti dev módu skript navíc **vytvoří systémového uživatele `shipard`**
 (`useradd --system --shell /usr/sbin/nologin --home-dir /opt/shipard`),
-pod kterým poběží PHP-FPM pool. Dále nainstaluje PHP 8.5, MariaDB, nginx,
-composer, Node.js 22 (LTS, z NodeSource — pro build frontendu), vytvoří `/opt/shipard/` a `/etc/shipard/` a aktivuje nginx site
-ze šablony `docs/nginx/production.conf`.
+pod kterým poběží PHP-FPM pool. Dále nainstaluje PHP 8.5 (na 24.04 z PPA
+`ondrej/php`, na 26.04 ze systémových repozitářů), MariaDB, nginx,
+composer, Node.js 24 (LTS, z NodeSource — pro build frontendu; už
+nainstalovaný Node ≥ 22 se ponechá), vytvoří `/opt/shipard/`
+a `/etc/shipard/` a aktivuje nginx site ze šablony
+`docs/nginx/production.conf`. Na jiné verzi systému skript skončí chybou
+dřív, než cokoli nainstaluje.
 
 Permission kontrakt je stejný single-user model jako v dev, jen je OS
 uživatel `shipard` — detaily v

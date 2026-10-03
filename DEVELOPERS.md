@@ -11,9 +11,9 @@ Vítej v projektu Shipard! Tenhle dokument tě provede od nuly k funkčnímu vý
 
 ## Požadavky
 
-- **Ubuntu LTS** — 22.04 nebo 24.04
+- **Ubuntu LTS** — 24.04 nebo 26.04
 - **MariaDB ≥ 10.10** — hledání bez diakritiky používá collation `uca1400`
-  (Ubuntu 24.04 má 10.11; na 22.04 je nutný repozitář MariaDB)
+  (obě podporované verze Ubuntu požadavek splňují)
 - **git** (obvykle předinstalovaný — pokud není, `sudo apt install git`)
 - **root přístup** přes `sudo` pro one-time instalaci
 
@@ -22,9 +22,13 @@ Vítej v projektu Shipard! Tenhle dokument tě provede od nuly k funkčnímu vý
 ## 1. Stažení repozitáře
 
 ```bash
-git clone git@github.com:shipard/shipard.git ~/sw/shpd
+git clone https://github.com/shipard/shipard.git ~/sw/shpd
 cd ~/sw/shpd
 ```
+
+Klon přes HTTPS funguje i bez SSH klíče na GitHubu; kdo bude pushovat, může
+klonovat rovnou přes SSH (`git@github.com:shipard/shipard.git`) nebo si
+`remote` přepnout později (`git remote set-url origin …`).
 
 ---
 
@@ -36,7 +40,10 @@ sudo bash scripts/install-packages.sh --mode=development
 
 Skript je idempotentní a zařídí:
 
-- Instalaci PHP 8.5, MariaDB, nginx, composer, Node.js 22 (LTS) a rozšíření
+- Instalaci PHP 8.5 s rozšířeními, MariaDB, nginx, composeru a Node.js 24
+  (LTS), pokud už není nainstalovaný Node ≥ 22. Na Ubuntu 24.04 se PHP bere
+  z PPA `ondrej/php`, na 26.04 ze systémových repozitářů. Na jiné verzi
+  systému skript skončí chybou dřív, než cokoli nainstaluje
 - Vytvoření `/opt/shipard/` (datový root) a `/etc/shipard/` (config root)
   s ownership vlastněným tvým uživatelem (detekce přes `$SUDO_USER`)
 - Konfiguraci samostatného **PHP-FPM poolu `shipard`** běžícího pod tvým
@@ -50,11 +57,18 @@ Permission kontrakt je popsán v
 
 ---
 
-## 3. Instalace PHP závislostí
+## 3. Závislosti a build frontendu
 
 ```bash
-composer install
+bash scripts/dev-update.sh
 ```
+
+Skript spustí `composer install`, `npm install` (ve `frontend/`)
+a `npm run build`. Bez buildu frontendu by aplikace `/{ds-id}/app/` neměla
+co servírovat. Spouštěj ho pod svým uživatelem, ne přes `sudo`. Závěrečnou
+výzvu k `ds-upgrade-all` můžeš při prvním setupu ignorovat — žádný datový
+zdroj ještě neexistuje. Stejný skript budeš pouštět po každém `git pull`
+(kapitola 7).
 
 ---
 

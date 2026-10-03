@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 315 tasků: **naplánováno** 6 · **částečně** 19 · **hotovo** 290.
+Celkem 316 tasků: **naplánováno** 6 · **částečně** 20 · **hotovo** 290.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -36,6 +36,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
 | `accbal-proforma-closure.md` | částečně | kód hotový 2026-09-23 (5 commitů, #79 D3b/D3c): |
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
+| `dev-install-fixes.md` | částečně | skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); zbývá ověření čisté instalace na Multipass VM 24.04 a 26.04 a opakované spuštění na dev serveru |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
@@ -63,6 +64,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `server-setup-permissions.md` | Server setup, módy (development/production), model oprávnění a uživatelů |
 | `server-setup-doctor-improvements.md` | `doctor`: nginx/FPM kontroly + fix install skriptu |
 | `install-for-developers.md` | `DEVELOPERS.md` + `scripts/install-packages.sh` |
+| `dev-install-fixes.md` | Instalace na čistém Ubuntu 24.04 / 26.04 — opravy `install-packages.sh` a `DEVELOPERS.md` (#96 D5, D9) |
 | `dev-update-script.md` | `scripts/dev-update.sh` + git hooks (post-pull workflow) |
 | `ds-upgrade-all.md` | `shpd-server ds-upgrade-all` + kompletní `docs/cli.md` |
 | `ds-upgrade-quiet-default.md` | Tichý default `ds-upgrade`, plný výpis jen s `-v` |
