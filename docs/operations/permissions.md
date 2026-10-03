@@ -40,6 +40,7 @@ V dalším textu **shipard-user** = ten správný uživatel pro aktuální mód.
 | `/opt/shipard/data-sources/<id>/cache/thumbnails/` | shipard-user | shipard-user | `0750` | |
 | `/opt/shipard/log/` | shipard-user | shipard-user | `0750` | |
 | `/opt/shipard/log/shipard.log` | shipard-user | shipard-user | `0640` | (volitelné — vzniká za běhu) |
+| nadřazené adresáře checkoutu (dev: `/home/<user>` a další) | beze změny | beze změny | alespoň `o+x` | průchod nginx k `/opt/shipard/shpd/public`; typicky `/home/<user>` → `0751` — viz [Průchozí cesta ke checkoutu](#průchozí-cesta-ke-checkoutu) |
 | `/etc/php/8.5/fpm/pool.d/shipard.conf` | `root` | `root` | `0644` | systémový — install-packages.sh |
 | `/etc/nginx/sites-available/shipard.conf` | `root` | `root` | `0644` | systémový — install-packages.sh |
 
@@ -50,9 +51,37 @@ V dev módu nginx (`www-data`) přímo servíruje SPA assety z
 přes `/opt/shipard/`, potřebuje `x` bit pro `others`.
 
 Obsahy (`data-sources/`, `log/`) mají `0750` — `www-data` se do nich
-nedostane. `shpd/` je symlink na project clone, ale jeho cíl je
-v `/home/<user>/sw/shpd/public/` (`0755` na `public/`), takže přístup
-funguje.
+nedostane.
+
+### Průchozí cesta ke checkoutu
+
+`/opt/shipard/shpd` je v dev módu symlink na checkout v
+`/home/<user>/…`. nginx proto musí projít i **každým nadřazeným adresářem
+checkoutu**. Ubuntu od verze 21.04 zakládá domovské adresáře
+s `HOME_MODE 0750` (`/etc/login.defs`) a přes ten `www-data` neprojde:
+ostatní kontroly jsou v pořádku, ale `/app/…` vrací 500 a nginx loguje
+
+```
+stat() "/opt/shipard/shpd/public/app/index.html" failed (13: Permission denied)
+```
+
+Kontrakt proto vyžaduje bit `x` pro `others` na všech nadřazených
+adresářích skutečné cesty k `public/` (po rozbalení symlinků, bez kořene
+`/`) — typicky `/home/<user>` → `0751`, stejně jako `/opt/shipard/`. Samotné
+`x` bez `r` dovolí adresářem jen projít, ne vypsat jeho obsah. Vlastník ani
+zbytek módu se nemění a `www-data` se do skupiny uživatele nepřidává.
+
+- `install-packages.sh` v dev módu bit doplní a vypíše
+  `Granted traverse (o+x): <cesta>`. V produkci je checkout reálný adresář
+  v `/opt/shipard/` a krok se přeskočí.
+- `doctor` cestu kontroluje v obou módech a neprůchozí adresář hlásí jako
+  chybu s příkazem k opravě.
+- `fix-permissions` bit doplní (i v `--dry-run` náhledu).
+
+Skript i `fix-permissions` mění **jen adresáře, které vlastní
+shipard-user**. Na neprůchozím adresáři jiného vlastníka skript skončí
+chybou a `fix-permissions` ho vypíše mezi „Unfixable issues“ — oprav ho
+ručně (`chmod o+x <cesta>`), nebo přesuň checkout.
 
 ### Co netvoří součást kontraktu
 
@@ -81,6 +110,8 @@ Read-only kontrola. Vypíše:
 - shipard-user (detekce z owner `/opt/shipard/`)
 - PHP-FPM pool user (z `/etc/php/*/fpm/pool.d/shipard.conf`)
 - Per-cesta: existence + type + owner + group + mode
+- Průchod nginx ke checkoutu: `o+x` na nadřazených adresářích
+  `/opt/shipard/shpd/public`
 - Per-DS: pokus o DB connection (`SELECT 1`)
 
 Exit kódy:
@@ -90,7 +121,8 @@ Exit kódy:
 ### `sudo shpd-server fix-permissions`
 
 Aplikuje fixable issues. `chown`/`chgrp`/`chmod`, žádné mazání ani
-vytváření.
+vytváření. Mimo `/opt/shipard` a `/etc/shipard` sahá jen na nadřazené
+adresáře checkoutu, a to jen přidáním `o+x`.
 
 ```bash
 sudo shpd-server fix-permissions --dry-run   # preview, bez sudo lze

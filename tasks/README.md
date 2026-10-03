@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 318 tasků: **naplánováno** 8 · **částečně** 20 · **hotovo** 290.
+Celkem 318 tasků: **naplánováno** 7 · **částečně** 21 · **hotovo** 290.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `dev-install-home-traverse.md` | naplánováno | #96 D11 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `prints-phase4.md` | naplánováno | design zamčený v #90 (D34–D39), čeká na implementaci |
 | `secrets-openssl-cipher.md` | naplánováno | #96 D12 |
@@ -39,6 +38,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-proforma-closure.md` | částečně | kód hotový 2026-09-23 (5 commitů, #79 D3b/D3c): |
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
 | `dev-install-fixes.md` | částečně | skript a dokumentace hotové 2026-10-03 (2 commity, #96 D5 a D9); zbývá ověření čisté instalace na Multipass VM 24.04 a 26.04 a opakované spuštění na dev serveru |
+| `dev-install-home-traverse.md` | částečně | skript, kontrakt (`doctor`, `fix-permissions`), testy a dokumentace hotové 2026-10-03 (2 commity, #96 D11); zbývá ověření na Multipass VM 24.04 a 26.04: čistá instalace → `/app/index.html` 200 a scénář domov `0750` → `doctor` ✗ → `fix-permissions` → `doctor` zelený |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
@@ -67,6 +67,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `server-setup-doctor-improvements.md` | `doctor`: nginx/FPM kontroly + fix install skriptu |
 | `install-for-developers.md` | `DEVELOPERS.md` + `scripts/install-packages.sh` |
 | `dev-install-fixes.md` | Instalace na čistém Ubuntu 24.04 / 26.04 — opravy `install-packages.sh` a `DEVELOPERS.md` (#96 D5, D9) |
+| `dev-install-home-traverse.md` | Průchod nginx ke checkoutu v domovském adresáři (`HOME_MODE 0750`) — install skript, `doctor`, `fix-permissions` (#96 D11) |
 | `dev-update-script.md` | `scripts/dev-update.sh` + git hooks (post-pull workflow) |
 | `ds-upgrade-all.md` | `shpd-server ds-upgrade-all` + kompletní `docs/cli.md` |
 | `ds-upgrade-quiet-default.md` | Tichý default `ds-upgrade`, plný výpis jen s `-v` |

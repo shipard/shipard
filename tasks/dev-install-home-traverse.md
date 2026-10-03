@@ -1,6 +1,6 @@
 # Průchod nginx ke checkoutu v domovském adresáři
 
-**Stav:** naplánováno — #96 D11
+**Stav:** částečně — skript, kontrakt (`doctor`, `fix-permissions`), testy a dokumentace hotové 2026-10-03 (2 commity, #96 D11); zbývá ověření na Multipass VM 24.04 a 26.04: čistá instalace → `/app/index.html` 200 a scénář domov `0750` → `doctor` ✗ → `fix-permissions` → `doctor` zelený
 
 ## Cíl
 
@@ -106,10 +106,27 @@ kontraktu pro „nadřazené adresáře checkoutu (dev)“.
 
 - [ ] čistá instalace na 24.04 i 26.04: `/app/index.html` → 200 bez ruční
       úpravy práv
-- [ ] `doctor` neprůchozí cestu odhalí (✗) a `fix-permissions` ji opraví
-- [ ] skript nemění adresáře cizích vlastníků
-- [ ] opakované spuštění skriptu i `doctor` na průchozím stroji beze změny
-- [ ] `permissions.md`, hlavička tasku a index aktualizované
+- [ ] `doctor` neprůchozí cestu odhalí (✗) a `fix-permissions` ji opraví —
+      pokryto unit testy nad dočasným stromem; na VM s domovem `0750`
+      neověřeno
+- [x] skript nemění adresáře cizích vlastníků (blok skriptu vyzkoušen nad
+      dočasným stromem s namockovaným `chmod`)
+- [ ] opakované spuštění skriptu i `doctor` na průchozím stroji beze změny —
+      `doctor` a `fix-permissions --dry-run` na dev serveru bez nového
+      nálezu; skript sám pod rootem nespuštěn
+- [x] `permissions.md`, hlavička tasku a index aktualizované
+
+## Poznámky k implementaci
+
+- Logika je v `PermissionSpec::discoverCheckoutAncestors()` (cesta) a
+  `HealthChecker::findBlockedCheckoutAncestors()` (co je neprůchozí a zda
+  to smíme opravit). Nález jde přes `checkAll()`, takže `doctor` nepotřeboval
+  změnu a `fix-permissions` jen aplikační krok.
+- Skript prochází předky checkoutu, PHP předky `public/` — tedy navíc i sám
+  checkout. Skript musí být v bashi, při první instalaci ještě není
+  `vendor/`.
+- Když `/opt/shipard/shpd/public` nejde resolvovat, kontrola se přeskočí —
+  existence checkoutu není součást kontraktu.
 
 ## Mimo rozsah
 
