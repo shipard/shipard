@@ -1,6 +1,6 @@
 # Instalace — práva logu a doporučená verze Ubuntu
 
-**Stav:** částečně — kód, testy a dokumentace hotové 2026-10-03 (2 commity, #96 D15, D16); zbývá ověření na čisté VM (první zápis do logu → `shipard.log` `0640`, `doctor` bez ✗)
+**Stav:** hotovo — #96 D15, D16; 2026-10-03 ověřeno na Multipass VM 24.04 (první zápis do logu založil adresář `0750` a `shipard.log` `0640`, `doctor` zelený)
 
 ## Cíl
 
