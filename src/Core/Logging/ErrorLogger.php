@@ -45,6 +45,13 @@ final class ErrorLogger
     /** Default destination if nothing else is configured. */
     private const DEFAULT_LOG_PATH = '/opt/shipard/log/shipard.log';
 
+    /**
+     * Modes of the log directory and file the logger creates — the same
+     * values PermissionSpec declares for log/ and shipard.log.
+     */
+    private const LOG_DIR_MODE = 0750;
+    private const LOG_FILE_MODE = 0640;
+
     /** Maximum stack frames recorded in JSON exception entry. */
     private const TRACE_FRAME_LIMIT = 20;
 
@@ -186,9 +193,12 @@ final class ErrorLogger
         $path = self::$logPath ?? self::DEFAULT_LOG_PATH;
         $dir = dirname($path);
 
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0775, true);
+        // mkdir is subject to umask, hence the explicit chmod — only when the
+        // directory was created here (false = another process was faster).
+        if (!is_dir($dir) && @mkdir($dir, self::LOG_DIR_MODE, true)) {
+            @chmod($dir, self::LOG_DIR_MODE);
         }
+        self::createLogFile($path);
 
         $written = @file_put_contents($path, $line, FILE_APPEND | LOCK_EX);
         if ($written === false) {
@@ -197,6 +207,24 @@ final class ErrorLogger
         }
 
         error_log(rtrim($line, "\n"));
+    }
+
+    /**
+     * Creates the log file with LOG_FILE_MODE when it does not exist yet.
+     * Mode 'x' is an exclusive create: among concurrent FPM workers and CLI
+     * processes exactly one succeeds and only that one sets the mode. An
+     * existing file is left as it is — converging that is the job of
+     * fix-permissions. Runs on every write so that a file recreated after
+     * a rotation gets the mode too.
+     */
+    private static function createLogFile(string $path): void
+    {
+        $handle = @fopen($path, 'x');
+        if ($handle === false) {
+            return;
+        }
+        fclose($handle);
+        @chmod($path, self::LOG_FILE_MODE);
     }
 
     // ── Test helpers ────────────────────────────────────────────────────────

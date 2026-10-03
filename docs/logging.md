@@ -133,25 +133,25 @@ grep '"level":"error"' /opt/shipard/log/shipard.log \
 
 ## Deploy
 
-Při instalaci serveru:
+Adresář `/opt/shipard/log` zakládá `scripts/install-packages.sh`: patří
+shipard-userovi (v produkci `shipard`, ve vývoji tvůj uživatel), pod kterým
+běží PHP-FPM pool i CLI, a má práva `0750`.
 
-```bash
-sudo mkdir -p /opt/shipard/log
-sudo chown www-data:www-data /opt/shipard/log
-sudo chmod 0775 /opt/shipard/log
-```
+Soubor `shipard.log` vzniká při prvním zápisu s právy `0640`; chybějící
+adresář si `ErrorLogger` založí sám s `0750`. Obojí bez ohledu na umask.
+Existující adresář ani soubor logger nemění — odchylky od kontraktu hlásí
+`shpd-server doctor` a srovná `shpd-server fix-permissions`, viz
+[`operations/permissions.md`](operations/permissions.md).
 
-(Uživatel/skupina podle toho, pod čím běží PHP-FPM. Na Debianu
-typicky `www-data:www-data`, na Alpine `nginx:nginx`.)
+### Bez instalačního skriptu
 
-### Lokální dev setup
-
-V dev prostředí default cesta `/opt/shipard/log/` typicky není
+Kde instalační skript neběžel, default cesta `/opt/shipard/log/` není
 zapisovatelná. Buď:
 
 ```bash
 sudo mkdir -p /opt/shipard/log
-sudo chown $USER /opt/shipard/log
+sudo chown $USER:$USER /opt/shipard/log
+sudo chmod 0750 /opt/shipard/log
 ```
 
 nebo přepiš `logFile` v `/etc/shipard/server.json` na cestu, kterou
@@ -171,10 +171,14 @@ Doporučená konfigurace `/etc/logrotate.d/shipard`:
     delaycompress
     missingok
     notifempty
-    create 0664 www-data www-data
+    create 0640 shipard shipard
     sharedscripts
 }
 ```
+
+Řádek `create` drží kontrakt práv — vlastník je shipard-user (ve vývoji
+tvůj uživatel místo `shipard`) a mód `0640`; s volnějším módem by `doctor`
+po první rotaci hlásil chybu.
 
 30 dnů historie, gzip kompresí starších log souborů. Žádný `postrotate`
 hook potřeba — `ErrorLogger` otevírá soubor při každém zápisu (append +
@@ -188,7 +192,7 @@ Pokud máš systemd-spravovaný host:
 
 ```
 # /etc/tmpfiles.d/shipard.conf
-d /opt/shipard/log 0775 www-data www-data 30d
+d /opt/shipard/log 0750 shipard shipard 30d
 ```
 
 ## Vztah k PHP error_log

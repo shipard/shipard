@@ -99,6 +99,12 @@ podadresáře, které matice nevyjmenovává (`att/RRRR/MM/DD/…`,
 `branding/avatars/`, `cache/oidc/`). Existující adresáře metoda nemění —
 zdroj dat založený starší verzí srovná `fix-permissions`.
 
+Stejně se chová log: `ErrorLogger` při zápisu založí chybějící adresář logu
+s `0750` a chybějící `shipard.log` s `0640`, obojí bez ohledu na umask.
+Soubor zakládá výlučně (uspěje právě jeden ze souběžných procesů), takže
+existující adresář ani soubor nemění — log vzniklý starší verzí s `0644`
+srovná `fix-permissions`.
+
 Výjimkou je `cache/twig/`, kterou si zakládá knihovna Twig sama s módem
 podle umask; leží pod `cache/` (`0750`), takže se do ní nikdo další
 nedostane.
