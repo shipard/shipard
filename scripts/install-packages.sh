@@ -58,6 +58,12 @@ if [ "$MODE" != "development" ] && [ "$MODE" != "production" ]; then
     exit 1
 fi
 
+# Non-interactive apt: no debconf dialogs, and needrestart restarts services
+# on its own — in an interactive terminal it would otherwise stop the script
+# on its dialog.
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
+
 # ─── 2. Require root ─────────────────────────────────────────────────────────
 if [ "$(id -u)" -ne 0 ]; then
     echo "Error: this script must be run as root (use sudo bash scripts/install-packages.sh --mode=$MODE)" >&2
