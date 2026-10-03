@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install-packages.sh — installs system dependencies for Shipard on Ubuntu LTS (22.04 / 24.04)
+# install-packages.sh — installs system dependencies for Shipard on Ubuntu LTS (24.04 / 26.04)
 #
 # Idempotent. Sets up /opt/shipard and /etc/shipard with correct ownership,
 # generates a dedicated shipard PHP-FPM pool, and activates the nginx site.
@@ -64,7 +64,30 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-# ─── 3. Determine shipard user ───────────────────────────────────────────────
+# ─── 3. Detect Ubuntu version ────────────────────────────────────────────────
+# Supported: Ubuntu 24.04 LTS (PHP 8.5 from the ondrej/php PPA) and 26.04 LTS
+# (PHP 8.5 from the standard repositories). Checked before anything is changed.
+SUPPORTED_OS="Ubuntu 24.04 LTS and 26.04 LTS"
+if [ ! -r /etc/os-release ]; then
+    echo "Error: cannot detect the OS version (/etc/os-release is not readable)." >&2
+    echo "       Supported: $SUPPORTED_OS." >&2
+    exit 1
+fi
+# Read in a subshell so the os-release variables do not leak into this script.
+OS_ID="$(. /etc/os-release && echo "${ID:-}")"
+OS_VERSION_ID="$(. /etc/os-release && echo "${VERSION_ID:-}")"
+
+case "$OS_ID:$OS_VERSION_ID" in
+    ubuntu:24.04) USE_PHP_PPA=1 ;;
+    ubuntu:26.04) USE_PHP_PPA=0 ;;
+    *)
+        echo "Error: unsupported OS '${OS_ID:-unknown} ${OS_VERSION_ID:-unknown}'." >&2
+        echo "       Supported: $SUPPORTED_OS." >&2
+        exit 1
+        ;;
+esac
+
+# ─── 4. Determine shipard user ───────────────────────────────────────────────
 if [ "$MODE" = "production" ]; then
     SHIPARD_USER="shipard"
     if ! id "$SHIPARD_USER" >/dev/null 2>&1; then
@@ -85,16 +108,27 @@ else
 fi
 
 echo "==> Mode:         $MODE"
+echo "==> OS:           $OS_ID $OS_VERSION_ID"
 echo "==> Shipard user: $SHIPARD_USER"
 echo ""
 
-# ─── 4. apt packages ─────────────────────────────────────────────────────────
-echo "==> Installing prerequisites..."
-apt-get install -y ca-certificates curl apt-transport-https software-properties-common
-
-echo "==> Adding PHP PPA (ondrej/php)..."
-add-apt-repository --yes ppa:ondrej/php
+# ─── 5. apt packages ─────────────────────────────────────────────────────────
+# Fresh images (cloud, WSL) ship stale package lists — refresh them before the
+# first install, otherwise it fails on 404.
+echo "==> Updating package lists..."
 apt-get update
+
+echo "==> Installing prerequisites..."
+apt-get install -y ca-certificates curl
+
+if [ "$USE_PHP_PPA" = "1" ]; then
+    echo "==> Adding PHP PPA (ondrej/php)..."
+    apt-get install -y software-properties-common
+    add-apt-repository --yes ppa:ondrej/php
+    apt-get update
+else
+    echo "==> PHP 8.5 comes from the standard Ubuntu repositories, no PPA needed."
+fi
 
 echo "==> Installing PHP 8.5, MariaDB, nginx, composer and tools..."
 apt-get install -y \
@@ -104,16 +138,24 @@ apt-get install -y \
     podman \
     mariadb-server nginx composer git unzip
 
-echo "==> Installing Node.js 22 LTS (NodeSource)..."
-NODE_MAJOR="$(node -v 2>/dev/null | tr -d 'v' | cut -d. -f1)"
-if [ -n "$NODE_MAJOR" ] && [ "$NODE_MAJOR" -ge 20 ]; then
-    echo "    Node $(node -v) already present (>=20), skipping."
+# No pipeline in the substitution: with `set -euo pipefail` a missing `node`
+# would abort the script silently with exit 127.
+NODE_VERSION=""
+NODE_MAJOR=""
+if command -v node >/dev/null 2>&1; then
+    NODE_VERSION="$(node -v 2>/dev/null || true)"
+    NODE_MAJOR="${NODE_VERSION#v}"
+    NODE_MAJOR="${NODE_MAJOR%%.*}"
+fi
+if [[ "$NODE_MAJOR" =~ ^[0-9]+$ ]] && [ "$NODE_MAJOR" -ge 22 ]; then
+    echo "==> Node $NODE_VERSION already present (>=22), skipping."
 else
-    curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+    echo "==> Installing Node.js 24 LTS (NodeSource)..."
+    curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
     apt-get install -y nodejs
 fi
 
-# ─── 5. CLI utility symlinks ─────────────────────────────────────────────────
+# ─── 6. CLI utility symlinks ─────────────────────────────────────────────────
 echo "==> Creating symlinks for CLI utilities..."
 for util in shpd-server shpd-ds; do
     target="/usr/bin/$util"
@@ -129,7 +171,7 @@ for util in shpd-server shpd-ds; do
     fi
 done
 
-# ─── 6. Filesystem layout ────────────────────────────────────────────────────
+# ─── 7. Filesystem layout ────────────────────────────────────────────────────
 echo "==> Creating /opt/shipard and /etc/shipard..."
 mkdir -p /opt/shipard/data-sources /opt/shipard/log /etc/shipard
 
@@ -163,7 +205,7 @@ else
     echo "    Created $SHPD_LINK -> $PROJECT_DIR"
 fi
 
-# ─── 7. PHP-FPM pool (shipard) ───────────────────────────────────────────────
+# ─── 8. PHP-FPM pool (shipard) ───────────────────────────────────────────────
 PHP_VERSION="$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')"
 POOL_FILE="/etc/php/${PHP_VERSION}/fpm/pool.d/shipard.conf"
 POOL_SOCKET="/run/php/php${PHP_VERSION}-fpm-shipard.sock"
@@ -201,7 +243,7 @@ chmod 0644 "$POOL_FILE"
 echo "==> Restarting php${PHP_VERSION}-fpm..."
 systemctl restart "php${PHP_VERSION}-fpm"
 
-# ─── 8. nginx site ───────────────────────────────────────────────────────────
+# ─── 9. nginx site ───────────────────────────────────────────────────────────
 TEMPLATE="$PROJECT_DIR/docs/nginx/${MODE}.conf"
 SITE_FILE="/etc/nginx/sites-available/shipard.conf"
 SITE_LINK="/etc/nginx/sites-enabled/shipard.conf"
@@ -254,7 +296,7 @@ echo "==> Validating nginx config..."
 nginx -t
 systemctl reload nginx
 
-# ─── 9. Verify with doctor ───────────────────────────────────────────────────
+# ─── 10. Verify with doctor ──────────────────────────────────────────────────
 echo ""
 php --version | head -1
 mariadb --version
@@ -275,20 +317,32 @@ if [ -f /etc/shipard/server.json ]; then
 else
     echo ""
     echo "==> Installation complete (doctor skipped — server-init not yet run)."
+    echo ""
+    echo "Next steps:"
+    step=1
+    if [ "$MODE" = "development" ]; then
+        # shpd-server needs vendor/, so dependencies come before server-init.
+        cat <<EOF
+
+  $step. Install dependencies and build the frontend — as '$SHIPARD_USER',
+     not as root:
+
+       bash scripts/dev-update.sh
+EOF
+        step=$((step + 1))
+    fi
     cat <<EOF
 
-Next steps:
-
-  1. Initialize the server config (creates /etc/shipard/server.json
+  $step. Initialize the server config (creates /etc/shipard/server.json
      with admin DB credentials):
 
        sudo shpd-server server-init --mode=$MODE --user=$SHIPARD_USER
 
-  2. Verify the setup:
+  $((step + 1)). Verify the setup:
 
        shpd-server doctor
 
-  3. If 'doctor' reports fixable issues (e.g. after migrating from an
+  $((step + 2)). If 'doctor' reports fixable issues (e.g. after migrating from an
      older layout), apply the contract:
 
        sudo shpd-server fix-permissions --dry-run
