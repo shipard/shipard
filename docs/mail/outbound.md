@@ -32,6 +32,23 @@ relay konfigurace (DS override ?? server default).
   senderu, label v logu `sender:{id}`. Miss → relay, label `host:port`.
   Žádný relay → pokus selže s jasnou hláškou (zpráva zůstává ve frontě).
 
+### Příjemci, kopie, jméno odesílatele
+
+`OutboundMessage` nese vedle adresy odesílatele i jeho jméno a víc příjemců:
+
+| Pole | Sloupec outboxu | Význam |
+|------|-----------------|--------|
+| `to` (`string` \| seznam) | `email_to` | „Komu“ — jedna adresa nebo seznam |
+| `cc` (seznam) | `email_cc` | kopie; prázdné = NULL |
+| `fromName` | `email_from_name` | jméno v hlavičce From; o transportu dál rozhoduje jen adresa |
+
+Seznamy se ukládají jako text s adresami oddělenými čárkou — skládá a rozebírá
+ho výhradně `Shipard\Core\Mail\AddressList` (duplicitní adresy bez ohledu
+na velikost písmen jen jednou). `enqueue` validuje každou adresu zvlášť
+a zprávu s neplatnou adresou odmítne celou (`MailValidationException`);
+ze jména odesílatele odstraní konce řádků. Volající s jednou adresou
+v `to` fungují beze změny.
+
 ## Konfigurace
 
 ### Relay (server default + DS override)

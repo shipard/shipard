@@ -68,7 +68,10 @@ class MailSendTestCommandTest extends TestCase
         );
 
         $tester = $this->makeTester($service, $conn);
-        $exitCode = $tester->execute(['--to' => 'test@example.com']);
+        $exitCode = $tester->execute([
+            '--to' => ['test@example.com', 'druhy@example.com'],
+            '--cc' => ['kopie@example.com'],
+        ]);
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $display = $tester->getDisplay();
@@ -76,7 +79,8 @@ class MailSendTestCommandTest extends TestCase
         $this->assertStringContainsString('relay.example.com:587', $display);
         $this->assertStringContainsString('250 OK', $display);
 
-        $this->assertSame('test@example.com', $captured->to);
+        $this->assertSame(['test@example.com', 'druhy@example.com'], $captured->to);
+        $this->assertSame(['kopie@example.com'], $captured->cc);
         $this->assertSame('core.mail', $captured->sourceModule);
         $this->assertSame('send-test', $captured->sourceRef);
     }
@@ -96,7 +100,7 @@ class MailSendTestCommandTest extends TestCase
 
         $tester = $this->makeTester($service, $conn);
 
-        $this->assertSame(Command::FAILURE, $tester->execute(['--to' => 'test@example.com']));
+        $this->assertSame(Command::FAILURE, $tester->execute(['--to' => ['test@example.com']]));
         $this->assertStringContainsString('no relay configured', $tester->getDisplay());
     }
 

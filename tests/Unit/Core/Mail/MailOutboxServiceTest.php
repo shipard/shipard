@@ -50,6 +50,19 @@ class MailOutboxServiceTest extends TestCase
             from: array_key_exists('from', $overrides) ? $overrides['from'] : 'noreply@firma.cz',
             bodyText: array_key_exists('bodyText', $overrides) ? $overrides['bodyText'] : 'Ahoj.',
             priority: $overrides['priority'] ?? 0,
+            cc: $overrides['cc'] ?? [],
+            fromName: $overrides['fromName'] ?? null,
+        );
+    }
+
+    /** Data řádku, který `enqueue` vložil do outboxu. */
+    private function captureInsert(?array &$captured, int $id = 11): void
+    {
+        $this->db->method('insertRow')->willReturnCallback(
+            function (string $table, array $data) use (&$captured, $id) {
+                $captured = $data;
+                return $id;
+            },
         );
     }
 
@@ -111,6 +124,60 @@ class MailOutboxServiceTest extends TestCase
         $this->expectExceptionMessageMatches('/Invalid to address/');
 
         $this->service->enqueue($this->message(['to' => 'not-an-email']), $this->now());
+    }
+
+    public function testEnqueueStoresRecipientListCopiesAndFromName(): void
+    {
+        $captured = null;
+        $this->captureInsert($captured);
+
+        $this->service->enqueue($this->message([
+            'to'       => ['ucetni@odberatel.cz', 'Ucetni@Odberatel.cz', ' fakturace@odberatel.cz '],
+            'cc'       => ['obchod@firma.cz'],
+            'fromName' => "Firma s.r.o.\r\nBcc: nekdo@jinde.cz",
+        ]), $this->now());
+
+        // Duplicitní adresa (bez ohledu na velikost písmen) jen jednou.
+        $this->assertSame('ucetni@odberatel.cz, fakturace@odberatel.cz', $captured['email_to']);
+        $this->assertSame('obchod@firma.cz', $captured['email_cc']);
+        // Konec řádku ve jméně by rozdělil hlavičku From.
+        $this->assertSame('Firma s.r.o. Bcc: nekdo@jinde.cz', $captured['email_from_name']);
+    }
+
+    public function testEnqueueSingleRecipientKeepsCopiesAndNameEmpty(): void
+    {
+        $captured = null;
+        $this->captureInsert($captured);
+
+        $this->service->enqueue($this->message(), $this->now());
+
+        $this->assertSame('user@example.com', $captured['email_to']);
+        $this->assertNull($captured['email_cc']);
+        $this->assertNull($captured['email_from_name']);
+    }
+
+    public function testEnqueueInvalidAddressInListThrows(): void
+    {
+        $this->expectException(MailValidationException::class);
+        $this->expectExceptionMessageMatches("/Invalid to address: 'spatne'/");
+
+        $this->service->enqueue($this->message(['to' => ['ok@example.com', 'spatne']]), $this->now());
+    }
+
+    public function testEnqueueWithoutRecipientThrows(): void
+    {
+        $this->expectException(MailValidationException::class);
+        $this->expectExceptionMessageMatches('/no to address/');
+
+        $this->service->enqueue($this->message(['to' => []]), $this->now());
+    }
+
+    public function testEnqueueInvalidCcThrows(): void
+    {
+        $this->expectException(MailValidationException::class);
+        $this->expectExceptionMessageMatches('/Invalid cc address/');
+
+        $this->service->enqueue($this->message(['cc' => ['spatne']]), $this->now());
     }
 
     public function testEnqueueWithoutBodyThrows(): void
@@ -392,10 +459,16 @@ class MailOutboxServiceTest extends TestCase
             },
         );
 
-        $id = $service->enqueueAndSend($this->message(['priority' => 0]), $this->now());
+        $id = $service->enqueueAndSend(
+            $this->message(['priority' => 0, 'cc' => ['kopie@firma.cz'], 'fromName' => 'Firma s.r.o.']),
+            $this->now(),
+        );
 
         $this->assertSame(33, $id);
         $this->assertSame(MailOutboxService::PRIORITY_HIGH, $captured['priority']);
+        // Zvýšení priority nesmí zahodit ostatní pole zprávy.
+        $this->assertSame('kopie@firma.cz', $captured['email_cc']);
+        $this->assertSame('Firma s.r.o.', $captured['email_from_name']);
     }
 
     public function testEnqueueAndSendPropagatesValidationErrors(): void

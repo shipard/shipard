@@ -12,9 +12,15 @@ namespace Shipard\Core\Mail;
  */
 final readonly class OutboundMessage
 {
-    /** @param int[] $attachments id příloh z core_attachments_files */
+    /**
+     * @param string|list<string> $to Jedna adresa, nebo seznam adres „Komu“.
+     * @param int[] $attachments id příloh z core_attachments_files
+     * @param list<string> $cc Kopie.
+     * @param ?string $fromName Jméno odesílatele vedle adresy; o transportu
+     *        dál rozhoduje jen adresa.
+     */
     public function __construct(
-        public string $to,
+        public string|array $to,
         public string $subject,
         public string $sourceModule,
         public ?string $from = null,
@@ -25,6 +31,14 @@ final readonly class OutboundMessage
         public ?string $sourceRef = null,
         public int $priority = 0,
         public ?int $createdBy = null,
+        public array $cc = [],
+        public ?string $fromName = null,
     ) {
+    }
+
+    /** Stejná zpráva s jinou prioritou — ostatní pole beze změny. */
+    public function withPriority(int $priority): self
+    {
+        return clone($this, ['priority' => $priority]);
     }
 }

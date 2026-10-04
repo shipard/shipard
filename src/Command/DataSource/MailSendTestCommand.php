@@ -6,6 +6,7 @@ namespace Shipard\Command\DataSource;
 
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Mail\AddressList;
 use Shipard\Core\Mail\MailOutboxService;
 use Shipard\Core\Mail\MailServiceFactory;
 use Shipard\Core\Mail\OutboundMessage;
@@ -33,7 +34,8 @@ class MailSendTestCommand extends Command
     {
         $this->setName('mail-send-test')
             ->setDescription('Send a test message through the outbound mail transport')
-            ->addOption('to', null, InputOption::VALUE_REQUIRED, 'Recipient address')
+            ->addOption('to', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Recipient address (repeatable)')
+            ->addOption('cc', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Copy address (repeatable)')
             ->addOption('from', null, InputOption::VALUE_REQUIRED, 'From address (default: mail.defaultFrom setting)')
             ->addOption('subject', null, InputOption::VALUE_REQUIRED, 'Subject', 'Shipard mail-send-test');
     }
@@ -52,8 +54,8 @@ class MailSendTestCommand extends Command
             return Command::FAILURE;
         }
 
-        $to = (string) $input->getOption('to');
-        if ($to === '') {
+        $to = AddressList::parse((array) $input->getOption('to'));
+        if ($to === []) {
             $output->writeln('<error>Error: --to is required</error>');
             return Command::FAILURE;
         }
@@ -75,6 +77,7 @@ class MailSendTestCommand extends Command
                     date('Y-m-d H:i:s'),
                 ),
                 sourceRef: 'send-test',
+                cc: AddressList::parse((array) $input->getOption('cc')),
             );
 
             $id = $service->enqueue($message);

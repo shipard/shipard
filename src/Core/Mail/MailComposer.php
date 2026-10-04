@@ -6,11 +6,14 @@ namespace Shipard\Core\Mail;
 
 use Shipard\Core\Mail\Exception\MailComposeException;
 use Shipard\Module\Core\Attachments\AttachmentService;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 
 /**
- * Sestaví Symfony MIME Email z řádku core_mail_outbox. Text + HTML tělo
- * (obě → multipart/alternative), přílohy resolve přes core.attachments.
+ * Sestaví Symfony MIME Email z řádku core_mail_outbox. Odesílatel se jménem
+ * (`email_from_name`), „Komu“ a kopie jako seznamy adres (`AddressList`).
+ * Text + HTML tělo (obě → multipart/alternative), přílohy resolve přes
+ * core.attachments.
  * Chybějící příloha = výjimka (fail pokusu), nikdy tiché vynechání.
  */
 class MailComposer
@@ -25,10 +28,20 @@ class MailComposer
     {
         $id = (int) ($row['id'] ?? 0);
 
+        $to = AddressList::parse($row['email_to'] ?? null);
+        if ($to === []) {
+            throw new MailComposeException("Outbox #{$id}: message has no recipient");
+        }
+
         $email = new Email()
-            ->from((string) $row['email_from'])
-            ->to((string) $row['email_to'])
+            ->from(new Address((string) $row['email_from'], (string) ($row['email_from_name'] ?? '')))
+            ->to(...$to)
             ->subject((string) $row['subject']);
+
+        $cc = AddressList::parse($row['email_cc'] ?? null);
+        if ($cc !== []) {
+            $email->cc(...$cc);
+        }
 
         $bodyText = (string) ($row['body_text'] ?? '');
         $bodyHtml = (string) ($row['body_html'] ?? '');

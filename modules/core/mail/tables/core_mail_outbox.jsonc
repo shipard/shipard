@@ -91,13 +91,34 @@
             "group": "message"
         },
         {
-            "id": "email_to",
-            "name": "To",
-            "name:cs": "Příjemce",
-            "name:en": "To",
+            "id": "email_from_name",
+            "name": "From name",
+            "name:cs": "Jméno odesílatele",
+            "name:en": "From name",
             "type": "varchar",
             "length": 200,
+            "nullable": true,
+            "group": "message"
+        },
+        // Seznam adres oddělených čárkou (Shipard\Core\Mail\AddressList).
+        {
+            "id": "email_to",
+            "name": "To",
+            "name:cs": "Komu",
+            "name:en": "To",
+            "type": "varchar",
+            "length": 2000,
             "nullable": false,
+            "group": "message"
+        },
+        {
+            "id": "email_cc",
+            "name": "Cc",
+            "name:cs": "Kopie",
+            "name:en": "Cc",
+            "type": "varchar",
+            "length": 2000,
+            "nullable": true,
             "group": "message"
         },
         {

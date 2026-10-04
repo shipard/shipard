@@ -33,6 +33,10 @@ class MailOutboxService
 
     private const ERROR_MAX_LEN = 500;
 
+    /** Délka sloupců `email_to` / `email_cc` a `email_from_name`. */
+    private const ADDRESS_LIST_MAX_LEN = 2000;
+    private const FROM_NAME_MAX_LEN = 200;
+
     public function __construct(
         private readonly DataSourceConnection $db,
         private readonly TransportResolver $resolver,
@@ -64,10 +68,29 @@ class MailOutboxService
             throw new MailValidationException("Invalid from address: '{$from}'");
         }
 
-        $to = trim($message->to);
-        if (filter_var($to, FILTER_VALIDATE_EMAIL) === false) {
-            throw new MailValidationException("Invalid to address: '{$to}'");
+        $to = AddressList::parse($message->to);
+        if ($to === []) {
+            throw new MailValidationException('Outbound message has no to address');
         }
+        $invalid = AddressList::invalid($to);
+        if ($invalid !== null) {
+            throw new MailValidationException("Invalid to address: '{$invalid}'");
+        }
+
+        $cc      = AddressList::parse($message->cc);
+        $invalid = AddressList::invalid($cc);
+        if ($invalid !== null) {
+            throw new MailValidationException("Invalid cc address: '{$invalid}'");
+        }
+
+        $toList = AddressList::format($to);
+        $ccList = AddressList::format($cc);
+        if (strlen($toList) > self::ADDRESS_LIST_MAX_LEN || strlen($ccList) > self::ADDRESS_LIST_MAX_LEN) {
+            throw new MailValidationException('Outbound message has too many recipients');
+        }
+
+        // Jméno jde do hlavičky From — konce řádků by ji rozdělily.
+        $fromName = trim((string) preg_replace('/[\r\n]+/', ' ', (string) ($message->fromName ?? '')));
 
         if (trim($message->subject) === '') {
             throw new MailValidationException('Outbound message subject must not be empty');
@@ -95,7 +118,9 @@ class MailOutboxService
             'source_module'       => $message->sourceModule,
             'source_ref'          => $message->sourceRef,
             'email_from'          => $from,
-            'email_to'            => $to,
+            'email_from_name'     => $fromName === '' ? null : mb_substr($fromName, 0, self::FROM_NAME_MAX_LEN),
+            'email_to'            => $toList,
+            'email_cc'            => $ccList === '' ? null : $ccList,
             'recipient_person_id' => $message->recipientPersonId,
             'subject'             => $message->subject,
             'body_text'           => $message->bodyText,
@@ -118,19 +143,7 @@ class MailOutboxService
      */
     public function enqueueAndSend(OutboundMessage $message, ?\DateTimeImmutable $now = null): int
     {
-        $prioritized = new OutboundMessage(
-            to: $message->to,
-            subject: $message->subject,
-            sourceModule: $message->sourceModule,
-            from: $message->from,
-            bodyText: $message->bodyText,
-            bodyHtml: $message->bodyHtml,
-            attachments: $message->attachments,
-            recipientPersonId: $message->recipientPersonId,
-            sourceRef: $message->sourceRef,
-            priority: max($message->priority, self::PRIORITY_HIGH),
-            createdBy: $message->createdBy,
-        );
+        $prioritized = $message->withPriority(max($message->priority, self::PRIORITY_HIGH));
 
         $id = $this->enqueue($prioritized, $now);
 

@@ -1031,6 +1031,7 @@ počítadlem pokusů. Použij po opravě transportu — viz runbook
 ```bash
 shpd-ds mail-send-test --to admin@example.com
 shpd-ds mail-send-test --to admin@example.com --from ucet@firma.cz
+shpd-ds mail-send-test --to admin@example.com --to druhy@example.com --cc kopie@example.com
 ```
 
 Smoke test transportu: synchronně odešle testovací zprávu (zapíše se do
@@ -1039,7 +1040,8 @@ podle výsledku. Bez `--from` se použije settings klíč `mail.defaultFrom`.
 
 | Opce | Význam |
 |------|--------|
-| `--to <addr>` | Příjemce (povinné) |
+| `--to <addr>` | Příjemce (povinné); lze opakovat — všechny adresy jdou do „Komu“ jedné zprávy |
+| `--cc <addr>` | Kopie; lze opakovat |
 | `--from <addr>` | From adresa — rozhoduje o transportu (sender vs. relay) |
 | `--subject <s>` | Předmět (default `Shipard mail-send-test`) |
 

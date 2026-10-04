@@ -48,6 +48,46 @@ class MailComposerTest extends TestCase
         $this->assertSame('<p>Ahoj.</p>', $email->getHtmlBody());
     }
 
+    public function testRecipientListCopiesAndFromName(): void
+    {
+        $composer = new MailComposer($this->createMock(AttachmentService::class));
+
+        $email = $composer->compose($this->baseRow([
+            'email_from_name' => 'Firma s.r.o.',
+            'email_to'        => 'ucetni@odberatel.cz, fakturace@odberatel.cz',
+            'email_cc'        => 'obchod@firma.cz',
+        ]));
+
+        $this->assertSame('Firma s.r.o.', $email->getFrom()[0]->getName());
+        $this->assertSame(
+            ['ucetni@odberatel.cz', 'fakturace@odberatel.cz'],
+            array_map(static fn ($a) => $a->getAddress(), $email->getTo()),
+        );
+        $this->assertSame('obchod@firma.cz', $email->getCc()[0]->getAddress());
+    }
+
+    public function testRowWithoutNameAndCopiesComposesAsBefore(): void
+    {
+        $composer = new MailComposer($this->createMock(AttachmentService::class));
+
+        // Řádek zařazený před rozšířením fronty sloupce jména a kopií nemá.
+        $email = $composer->compose($this->baseRow());
+
+        $this->assertSame('', $email->getFrom()[0]->getName());
+        $this->assertCount(1, $email->getTo());
+        $this->assertSame([], $email->getCc());
+    }
+
+    public function testRowWithoutRecipientThrows(): void
+    {
+        $composer = new MailComposer($this->createMock(AttachmentService::class));
+
+        $this->expectException(MailComposeException::class);
+        $this->expectExceptionMessageMatches('/no recipient/');
+
+        $composer->compose($this->baseRow(['email_to' => '']));
+    }
+
     public function testEmptyBodyThrows(): void
     {
         $composer = new MailComposer($this->createMock(AttachmentService::class));
