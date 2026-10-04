@@ -365,7 +365,7 @@ function dispatch(
 		'contentTags' => dispatchContentTags($route, $request, $auth, $db, $configRuntime, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'alerts' => dispatchAlerts($route, $request, $db, $alertCheckRegistry, $configRuntime, resolveLanguage($request, $resolved->config)),
 		'reports' => dispatchReports($route, $request, $db, $configRuntime, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config)),
-		'prints' => dispatchPrints($route, $request, $auth, $tables, $db, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config), $serverConfig),
+		'prints' => dispatchPrints($route, $request, $auth, $tables, $db, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config), $serverConfig, $configRuntime),
 		'sentMessages' => dispatchSentMessages($route, $auth, $tables, $db, $resolved, $configRuntime, $serverConfig),
 		'setup' => dispatchSetup($route, $request, $auth, $db, $alertCheckRegistry, $configRuntime, $modulePathResolver, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'dsAbout' => dispatchDsAbout($route, $auth, $db, $configRuntime, $resolved->config, resolveLanguage($request, $resolved->config), $tables),
@@ -823,6 +823,7 @@ function dispatchPrints(
 	\Shipard\Api\ResolvedDataSource $resolved,
 	string $language,
 	?ServerConfig $serverConfig,
+	?\Shipard\Core\Config\ConfigRuntime $configRuntime = null,
 ): Response {
 	// Registry se staví lazily až tady — jazyk requestu je jen jazyk názvů
 	// tisků, jazyk tisku samotného určuje runner.
@@ -835,10 +836,26 @@ function dispatchPrints(
 		$serverConfig !== null ? \Shipard\Core\Render\RenderClient::fromServerConfig($serverConfig) : null,
 	);
 
-	$ctrl = new \Shipard\Api\Controller\PrintsController($registry, $runner);
+	// Odeslání e-mailem (#90 D38) jen na zdroji dat s Odeslanou poštou;
+	// služba se staví až při návrhu / odeslání, tisk ji nepotřebuje.
+	$sendService = isset($tables[\Shipard\Module\Core\Mail\Sent\SentMessageStore::TABLE])
+		? static fn(): \Shipard\Module\Core\Mail\Sent\RecordSendService
+			=> \Shipard\Module\Core\Mail\Sent\RecordSendServiceFactory::create(
+				$resolved->config, $db, $modulePathResolver, $language, $serverConfig, $tables, $registry,
+			)
+		: null;
+
+	$ctrl = new \Shipard\Api\Controller\PrintsController(
+		$registry,
+		$runner,
+		$sendService,
+		\Shipard\Api\Controller\ViewerController::printLanguages($configRuntime),
+	);
 	return match ($route->action) {
-		'run'   => $ctrl->run($route->table ?? '', (int) $route->id, $request->getQueryParams(), $auth, $tables),
-		default => Response::error('INTERNAL_ERROR', "Unknown prints action: {$route->action}", 500),
+		'run'       => $ctrl->run($route->table ?? '', (int) $route->id, $request->getQueryParams(), $auth, $tables),
+		'sendDraft' => $ctrl->sendDraft($route->table ?? '', (int) $route->id, $request->getQueryParams(), $auth, $tables),
+		'send'      => $ctrl->send($route->table ?? '', (int) $route->id, $request->getBody(), $auth, $tables),
+		default     => Response::error('INTERNAL_ERROR', "Unknown prints action: {$route->action}", 500),
 	};
 }
 

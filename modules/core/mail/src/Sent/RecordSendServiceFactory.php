@@ -16,6 +16,7 @@ use Shipard\Core\Mail\SenderResolver;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\PrintCatalogLoader;
 use Shipard\Core\Prints\PrintEmailRenderer;
+use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRunnerFactory;
 use Shipard\Core\Prints\PrintTemplatePaths;
 use Shipard\Core\Prints\Twig\PrintTwigFactory;
@@ -32,6 +33,7 @@ final class RecordSendServiceFactory
     /**
      * @param string $language Jazyk rozhraní — důvody u příjemců a hlášky.
      *        Jazyk zprávy samotné určuje tisk (jazyk dokumentu).
+     * @param ?array<string, \Shipard\Core\Database\TableDefinition> $tables
      */
     public static function create(
         DataSourceConfig $dsConfig,
@@ -39,12 +41,15 @@ final class RecordSendServiceFactory
         ModulePathResolver $modules,
         string $language,
         ?ServerConfig $serverConfig = null,
+        ?array $tables = null,
+        ?PrintRegistry $registry = null,
     ): RecordSendService {
         $dsDir  = $dsConfig->getDataSourceDir();
         $config = self::config($dsDir, $language);
-        $tables = TableLoader::load($dsConfig, $modules, $language);
+        // REST má definice tabulek i registr tisků už načtené.
+        $tables ??= TableLoader::load($dsConfig, $modules, $language);
 
-        $registry     = PrintDefinitionLoader::load($dsConfig, $modules, $language);
+        $registry   ??= PrintDefinitionLoader::load($dsConfig, $modules, $language);
         $renderClient = $serverConfig !== null ? RenderClient::fromServerConfig($serverConfig) : new RenderClient(null);
         $paths        = new PrintTemplatePaths($modules);
         $store        = new SentMessageStore($db);

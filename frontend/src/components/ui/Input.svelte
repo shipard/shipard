@@ -9,6 +9,8 @@
     disabled?: boolean;
     error?: string | null;
     oninput?: (event: Event) => void;
+    /** Klávesy v poli — např. Enter potvrdí hodnotu bez tlačítka. */
+    onkeydown?: (event: KeyboardEvent) => void;
     /** Volitelný `data-testid` na inputu (video-runner, smoke E2E). */
     testid?: string;
   }
@@ -23,6 +25,7 @@
     disabled = false,
     error = null,
     oninput,
+    onkeydown,
     testid,
   }: Props = $props();
 </script>
@@ -38,6 +41,7 @@
   {maxlength}
   {disabled}
   {oninput}
+  {onkeydown}
   data-testid={testid}
 />
 {#if error}

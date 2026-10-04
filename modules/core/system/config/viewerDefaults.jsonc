@@ -33,6 +33,14 @@
             "name:cs": "Tisk",
             "name:en": "Print",
             "variant": "secondary"
+        },
+        // Odeslat záznam e-mailem (#90 D38) — jen u záznamu s tiskem,
+        // který má deklarovaný účel odesílání.
+        "send": {
+            "name": "Send",
+            "name:cs": "Odeslat",
+            "name:en": "Send",
+            "variant": "secondary"
         }
     }
 }

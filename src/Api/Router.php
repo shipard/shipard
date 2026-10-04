@@ -355,13 +355,19 @@ class Router
 		// (format a jazyk v query). Id tisku je tečkované a jede ve slotu
 		// `table`, stejně jako id reportu.
 		if (str_starts_with($subpath, '/_prints/')) {
-			if (!preg_match('#^/_prints/([a-z][a-zA-Z0-9.]*)/(\d+)$#', $subpath, $m)) {
+			if (!preg_match('#^/_prints/([a-z][a-zA-Z0-9.]*)/(\d+)(/send-draft|/send)?$#', $subpath, $m)) {
 				return Response::error('NOT_FOUND', 'Not found', 404);
 			}
-			if ($method !== 'GET') {
+			// Odeslání záznamu e-mailem (#90 D38): návrh je čtení, odeslání zápis.
+			[$action, $allowed] = match ($m[3] ?? '') {
+				'/send-draft' => ['sendDraft', 'GET'],
+				'/send'       => ['send', 'POST'],
+				default       => ['run', 'GET'],
+			};
+			if ($method !== $allowed) {
 				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
 			}
-			return new Route('prints', 'run', $m[1], (int) $m[2]);
+			return new Route('prints', $action, $m[1], (int) $m[2]);
 		}
 
 		if (str_starts_with($subpath, '/_setup')) {

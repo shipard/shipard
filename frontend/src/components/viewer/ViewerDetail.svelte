@@ -12,6 +12,7 @@
   import Icon from '../ui/Icon.svelte';
   import SandboxedHtml from '../ui/SandboxedHtml.svelte';
   import DocumentLockBanner from '../ui/DocumentLockBanner.svelte';
+  import SpanBadge from './SpanBadge.svelte';
   import { resolveIcon } from '../../icons.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -44,6 +45,16 @@
   function handleDropdownPick(action, item) {
     closeDropdown();
     handleAction(action, item.value);
+  }
+
+  // Zpráva ze sekce Odeslaná pošta → formulář zprávy (Odeslat znovu,
+  // Archivovat, Smazat) přes generickou akci `open_form` hostitele.
+  function openSentMessage(messageId) {
+    onAction?.('openSentMessage', {
+      id: 'openSentMessage',
+      kind: 'open_form',
+      target: { table: 'core_mail_sent_messages', mode: 'edit', id: messageId },
+    });
   }
 
   let activeTabId = $state(null);
@@ -511,6 +522,32 @@
     <!-- Tab content -->
     <div class="shpd-detail__content">
       {@render renderContent(activeContent)}
+
+      <!-- Odeslaná pošta u záznamu (#90 D45) — zprávy, které na záznam
+           ukazují, pod obsahem každého tabu (roluje s ním). Server je
+           posílá u libovolné tabulky. -->
+      {#if (detail.sentMessages ?? []).length > 0}
+        <section class="shpd-detail__sent" data-testid="detail-sent-messages">
+          <h4 class="shpd-detail__group-title">{t('sentMessage.sectionTitle')}</h4>
+          {#each detail.sentMessages as message (message.id)}
+            <div class="shpd-detail__sent-message">
+              <button
+                type="button"
+                class="shpd-detail__sent-head"
+                title={t('sentMessage.open')}
+                onclick={() => openSentMessage(message.id)}
+              >
+                <span class="shpd-detail__sent-date">{message.createdAt}</span>
+                <span class="shpd-detail__sent-to">{(message.to ?? []).join(', ')}</span>
+                <SpanBadge style={message.transport?.stateStyle ?? 'neutral'} text={message.transport?.stateLabel ?? ''} />
+              </button>
+              {#if (message.attachments ?? []).length > 0}
+                <AttachmentGrid attachments={message.attachments} />
+              {/if}
+            </div>
+          {/each}
+        </section>
+      {/if}
     </div>
 
     <!-- Dropdown menu pro detail.actions kind=dropdown — Popover anchorovaný
@@ -688,6 +725,48 @@
   /* Actions bar — řádek per-record akcí nad taby (snooze/dismiss/recheck +
      custom akce alertů). Stejná vizuální logika jako header: padding sm/md,
      border-bottom, wrap při velkém počtu tlačítek. */
+  /* Sekce Odeslaná pošta pod obsahem detailu — uvnitř rolovací plochy. */
+  .shpd-detail__sent {
+    margin-top: var(--shpd-space-lg);
+    padding-top: var(--shpd-space-md);
+    border-top: 1px solid var(--shpd-color-border);
+  }
+
+  .shpd-detail__sent-message + .shpd-detail__sent-message {
+    margin-top: var(--shpd-space-md);
+  }
+
+  .shpd-detail__sent-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--shpd-space-sm);
+    width: 100%;
+    margin-bottom: var(--shpd-space-xs);
+    padding: var(--shpd-space-xs) 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-text);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .shpd-detail__sent-head:hover .shpd-detail__sent-to {
+    text-decoration: underline;
+  }
+
+  .shpd-detail__sent-date {
+    color: var(--shpd-color-text-secondary);
+  }
+
+  .shpd-detail__sent-to {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
   .shpd-detail__actions {
     display: flex;
     flex-wrap: wrap;

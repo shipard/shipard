@@ -22,6 +22,7 @@
   import SetPasswordPrompt from './SetPasswordPrompt.svelte';
   import AssetsDepreciationRunDialog from './AssetsDepreciationRunDialog.svelte';
   import PrintPreviewDialog from './PrintPreviewDialog.svelte';
+  import SendDialog from './SendDialog.svelte';
   import FormDialog from '../form/FormDialog.svelte';
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import Modal from '../ui/Modal.svelte';
@@ -394,6 +395,8 @@
   let detailModal = $state(null);
   // Náhled tisku záznamu (detail akce print) — { printId, recordId, languages } | null.
   let printPreview = $state(null);
+  // Dialog odeslání záznamu e-mailem (akce `send`): { printId, recordId }.
+  let sendDialog = $state(null);
 
   // --- Registry import wizard state ---
   let registryWizardOpen = $state(false);
@@ -676,6 +679,14 @@
       if (printId) printPreview = { printId, recordId, languages: action.target?.languages ?? [] };
       return;
     }
+    // Odeslat (docs/prints.md → Odesílání): stejný tvar akce jako Tisk —
+    // jeden odesílatelný tisk = tlačítko, víc = dropdown. Otevře dialog
+    // s návrhem odeslání.
+    if (actionId === 'send') {
+      const printId = value ?? action.target?.printId;
+      if (printId) sendDialog = { printId, recordId };
+      return;
+    }
     // Přeúčtovat doklad (DocsHeadsViewer, doklad ve stavu 40). Success
     // zahrnuje i výsledek „zaúčtováno s chybami" — refresh detailu ukáže
     // banner v tabu Zaúčtování.
@@ -858,6 +869,12 @@
   }
 
   function handleFormClose() {
+    // Formulář odeslané zprávy (otevřený ze sekce Odeslaná pošta u záznamu)
+    // mění stav transportu i mimo Uložit (Odeslat znovu) — detail záznamu
+    // se po zavření načte znovu.
+    if (formTable === 'core_mail_sent_messages' && selectedRowId != null) {
+      fetchDetail(selectedRowId);
+    }
     formOpen = false;
     editRecordId = null;
     formTable = null;
@@ -1300,6 +1317,16 @@
   recordId={printPreview?.recordId ?? null}
   languages={printPreview?.languages ?? []}
   onClose={() => { printPreview = null; }}
+/>
+
+<!-- Odeslání záznamu e-mailem; po odeslání se obnoví detail — sekce
+     Odeslaná pošta u záznamu ukáže novou zprávu. -->
+<SendDialog
+  open={sendDialog !== null}
+  printId={sendDialog?.printId ?? ''}
+  recordId={sendDialog?.recordId ?? null}
+  onClose={() => { sendDialog = null; }}
+  onSent={refreshAfterAction}
 />
 
 <!-- Reanalyze dialog — sdílená Modal komponenta (../ui/Modal.svelte). -->

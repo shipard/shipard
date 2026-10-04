@@ -16,10 +16,15 @@ use Shipard\Core\Prints\PrintRecordNotFoundException;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderException;
 use Shipard\Core\Prints\PrintRunner;
+use Shipard\Module\Core\Mail\Sent\RecordSendException;
+use Shipard\Module\Core\Mail\Sent\RecordSendService;
+use Shipard\Module\Core\Mail\Sent\SendRequest;
 
 /**
- * Endpoint:
- *   GET /_prints/{printId}/{recordId}?format=pdf|json[&language=cs]
+ * Endpointy:
+ *   GET  /_prints/{printId}/{recordId}?format=pdf|json[&language=cs]
+ *   GET  /_prints/{printId}/{recordId}/send-draft[?language=cs]
+ *   POST /_prints/{printId}/{recordId}/send
  *
  * Tisk nad jedním záznamem (#90 D20). Tabulku určuje deklarace tisku.
  * Práva (D21): tisk = čtení záznamu — kdo smí detail tabulky, smí tisk.
@@ -40,10 +45,24 @@ class PrintsController
     /** Hlavička PDF odpovědi s `PrintData.messages` (viz `run()`). */
     public const MESSAGES_HEADER = 'X-Print-Messages';
 
+    /** @var ?\Closure(): RecordSendService */
+    private readonly ?\Closure $sendService;
+
+    /**
+     * @param ?\Closure(): RecordSendService $sendService Služba odeslání —
+     *        líně, tisk samotný ji nepotřebuje. Null = zdroj dat odesílat
+     *        neumí (bez modulu pošty).
+     * @param list<array{id: string, label: string}> $languages Jazyky tisku
+     *        pro přepínač v dialogu odeslání.
+     */
     public function __construct(
         private readonly PrintRegistry $registry,
         private readonly PrintRunner $runner,
-    ) {}
+        ?\Closure $sendService = null,
+        private readonly array $languages = [],
+    ) {
+        $this->sendService = $sendService;
+    }
 
     /**
      * @param array<string, mixed> $rawParams Query parametry requestu.
@@ -117,5 +136,150 @@ class PrintsController
         }
 
         return $response;
+    }
+
+    /**
+     * GET /_prints/{printId}/{recordId}/send-draft[?language=cs] — návrh
+     * odeslání (#90 D38): příjemci s důvody, povolení odesílatelé a výchozí,
+     * předmět, tělo, jazyk, přílohy a hlášení. Nic nevytváří; chybějící
+     * příjemce nebo odesílatel je chyba v `messages` (`canSend: false`), ne
+     * chybová odpověď — dialog ji ukáže a uživatel adresu doplní.
+     *
+     * @param array<string, mixed> $rawParams
+     * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
+     */
+    public function sendDraft(string $printId, int $recordId, array $rawParams, AuthContext $auth, array $tables): Response
+    {
+        $service = $this->sendServiceFor($printId, $auth, $tables);
+        if ($service instanceof Response) {
+            return $service;
+        }
+
+        $language = $rawParams['language'] ?? null;
+        if ($language !== null && !is_string($language)) {
+            return Response::error('BAD_REQUEST', "Parameter 'language' must be a string", 400);
+        }
+
+        try {
+            $draft = $service->prepare(new SendRequest(
+                printId: $printId,
+                recordId: $recordId,
+                language: $language === '' ? null : $language,
+                userId: $auth->isAuthenticated ? $auth->userId : null,
+            ));
+        } catch (\Throwable $e) {
+            return $this->sendError($e);
+        }
+
+        return Response::success($draft->toArray() + ['languages' => $this->languages]);
+    }
+
+    /**
+     * POST /_prints/{printId}/{recordId}/send — odešle záznam (#90 D42):
+     * vždy nová zpráva v Odeslané poště. Tělo `{from, to[], cc[], subject,
+     * body, language, attachmentIds[]}`; co chybí, platí z návrhu. Odpověď
+     * `{sentMessageId, transportState, messages}` — `queued` znamená, že
+     * okamžitý pokus neprošel a zprávu převzala fronta.
+     *
+     * Práva (D38): `guardTable` tabulky tisku a zápis přes `ReadOnlyPolicy`.
+     *
+     * @param ?array<string, mixed> $body
+     * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
+     */
+    public function send(string $printId, int $recordId, ?array $body, AuthContext $auth, array $tables): Response
+    {
+        $service = $this->sendServiceFor($printId, $auth, $tables);
+        if ($service instanceof Response) {
+            return $service;
+        }
+
+        $body ??= [];
+        foreach (['from', 'subject', 'body', 'language'] as $key) {
+            if (isset($body[$key]) && !is_string($body[$key])) {
+                return Response::error('BAD_REQUEST', "Field '{$key}' must be a string", 400);
+            }
+        }
+        foreach (['to', 'cc'] as $key) {
+            if (isset($body[$key]) && (!is_array($body[$key]) || $body[$key] !== array_filter($body[$key], 'is_string'))) {
+                return Response::error('BAD_REQUEST', "Field '{$key}' must be a list of e-mail addresses", 400);
+            }
+        }
+        $attachmentIds = $body['attachmentIds'] ?? null;
+        if ($attachmentIds !== null
+            && (!is_array($attachmentIds) || $attachmentIds !== array_filter($attachmentIds, 'is_int'))
+        ) {
+            return Response::error('BAD_REQUEST', "Field 'attachmentIds' must be a list of attachment ids", 400);
+        }
+
+        try {
+            $result = $service->send(new SendRequest(
+                printId: $printId,
+                recordId: $recordId,
+                language: ($body['language'] ?? '') === '' ? null : $body['language'],
+                from: ($body['from'] ?? '') === '' ? null : $body['from'],
+                to: isset($body['to']) ? array_values($body['to']) : null,
+                cc: isset($body['cc']) ? array_values($body['cc']) : null,
+                subject: $body['subject'] ?? null,
+                body: $body['body'] ?? null,
+                attachmentIds: $attachmentIds === null ? null : array_values($attachmentIds),
+                userId: $auth->isAuthenticated ? $auth->userId : null,
+                trigger: SendRequest::TRIGGER_MANUAL,
+            ));
+        } catch (\Throwable $e) {
+            return $this->sendError($e);
+        }
+
+        return Response::success($result->toArray());
+    }
+
+    /**
+     * Společný vstup obou endpointů odeslání: tisk existuje, uživatel smí
+     * jeho tabulku a zdroj dat odesílat umí.
+     *
+     * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
+     */
+    private function sendServiceFor(string $printId, AuthContext $auth, array $tables): RecordSendService|Response
+    {
+        $definition = $this->registry->get($printId);
+        if ($definition === null) {
+            return Response::error('PRINT_NOT_FOUND', "Unknown print '{$printId}'", 404);
+        }
+
+        $guardErr = TableAccessGuard::guardTable($definition->table, $auth, $tables[$definition->table] ?? null);
+        if ($guardErr !== null) {
+            return $guardErr;
+        }
+
+        if ($this->sendService === null) {
+            return Response::error('PRINT_NOT_SENDABLE', 'This data source cannot send records by e-mail', 409);
+        }
+        return ($this->sendService)();
+    }
+
+    /** Chyby návrhu a odeslání → kód a HTTP stav (tisk samotný viz `run()`). */
+    private function sendError(\Throwable $e): Response
+    {
+        return match (true) {
+            $e instanceof RecordSendException => Response::error(
+                $e->errorCode,
+                $e->getMessage(),
+                $e->errorCode === RecordSendException::PRINT_NOT_SENDABLE ? 409 : 422,
+            ),
+            $e instanceof PrintNotFoundException       => Response::error('PRINT_NOT_FOUND', $e->getMessage(), 404),
+            $e instanceof PrintRecordNotFoundException => Response::error('RECORD_NOT_FOUND', $e->getMessage(), 404),
+            $e instanceof PrintNotAvailableException   => Response::error('PRINT_NOT_AVAILABLE', $e->getMessage(), 409),
+            $e instanceof PrintBuildException          => Response::error('PRINT_DATA_MISSING', $e->getMessage(), 409),
+            $e instanceof PrintLanguageNotCompiledException
+                => Response::error('PRINT_LANGUAGE_NOT_COMPILED', $e->getMessage(), 409),
+            $e instanceof PrintRenderException => $e->isServiceUnavailable()
+                ? Response::error('RENDER_UNAVAILABLE', 'Print service is not available', 503, [
+                    ['field' => '_render', 'code' => $e->errorKind->value, 'message' => $e->getMessage()],
+                ])
+                : Response::error('RENDER_FAILED', 'Print rendering failed', 500, [
+                    ['field' => '_render', 'code' => $e->errorKind->value, 'message' => $e->getMessage()],
+                ]),
+            $e instanceof \InvalidArgumentException => Response::error('BAD_REQUEST', $e->getMessage(), 400),
+            default => throw $e,
+        };
     }
 }

@@ -12,10 +12,14 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocumentLockRegistry;
 use Shipard\Core\Document\DocumentRegistry;
+use Shipard\Core\Form\SubtableCellFormatter;
+use Shipard\Core\Mail\AddressList;
 use Shipard\Core\Prints\PrintDefinition;
 use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Viewer\ViewerRegistry;
+use Shipard\Module\Core\Mail\Sent\SentMessageStore;
+use Shipard\Module\Core\Mail\Sent\SentMessageTransportInfo;
 
 class ViewerController
 {
@@ -222,9 +226,28 @@ class ViewerController
 
 		// Tisk (#90 D19): generický háček nad registrem tisků — viewer o něm
 		// neví, takže tisky dalších tabulek fungují bez zásahu do něj.
-		$printAction = self::printAction($prints?->forRecord($def->table, $record) ?? [], $config);
+		$recordPrints = $prints?->forRecord($def->table, $record) ?? [];
+		$printAction  = self::recordPrintAction('print', $recordPrints, $config);
 		if ($printAction !== null) {
 			$detail['actions'] = [...($detail['actions'] ?? []), $printAction];
+		}
+
+		// Odeslání e-mailem a Odeslaná pošta u záznamu (#90 D38, D45) —
+		// stejně generické jako tisk, jen na zdroji dat s Odeslanou poštou.
+		if (isset($tables[SentMessageStore::TABLE])) {
+			$sendAction = self::recordPrintAction(
+				'send',
+				array_values(array_filter($recordPrints, static fn (PrintDefinition $d): bool => $d->isSendable())),
+				$config,
+			);
+			if ($sendAction !== null) {
+				$detail['actions'] = [...($detail['actions'] ?? []), $sendAction];
+			}
+
+			$sentMessages = self::sentMessages($def->table, $recordId, $db, $config);
+			if ($sentMessages !== []) {
+				$detail['sentMessages'] = $sentMessages;
+			}
 		}
 
 		return Response::success([
@@ -234,25 +257,27 @@ class ViewerController
 	}
 
 	/**
-	 * Akce Tisk pro `detail.actions`: jeden dostupný tisk = tlačítko
-	 * s `target.printId`, víc tisků = dropdown (`value` položky = id tisku).
-	 * Popisek z `core.system.viewerDefaults.detailActions.print`.
-	 * `target.languages` nese jazyky tisku pro přepínač v náhledu (#90 D33)
-	 * — jeden seznam pro všechny tisky.
+	 * Akce Tisk (`print`) nebo Odeslat (`send`) pro `detail.actions`: jeden
+	 * dostupný tisk = tlačítko s `target.printId`, víc tisků = dropdown
+	 * (`value` položky = id tisku). Popisek z
+	 * `core.system.viewerDefaults.detailActions.<id>`.
+	 * `target.languages` nese jazyky tisku pro přepínač v náhledu a v dialogu
+	 * odeslání (#90 D33) — jeden seznam pro všechny tisky.
 	 *
+	 * @param 'print'|'send' $actionId
 	 * @param PrintDefinition[] $definitions Tisky dostupné pro záznam, už seřazené.
 	 * @return array<string, mixed>|null
 	 */
-	private static function printAction(array $definitions, ?ConfigRuntime $config): ?array
+	private static function recordPrintAction(string $actionId, array $definitions, ?ConfigRuntime $config): ?array
 	{
 		if ($definitions === []) {
 			return null;
 		}
 
-		$def    = ($config?->cfgItem('core.system.viewerDefaults') ?? [])['detailActions']['print'] ?? [];
+		$def    = ($config?->cfgItem('core.system.viewerDefaults') ?? [])['detailActions'][$actionId] ?? [];
 		$action = [
-			'id'      => 'print',
-			'label'   => $def['name'] ?? 'Print',
+			'id'      => $actionId,
+			'label'   => $def['name'] ?? ucfirst($actionId),
 			'variant' => $def['variant'] ?? 'secondary',
 		];
 
@@ -276,12 +301,51 @@ class ViewerController
 	}
 
 	/**
+	 * Zprávy ve stavu Odeslaná, které ukazují na záznam (#90 D45) — hlavička
+	 * (kdy, komu, stav transportu) a přílohy pro náhled. Archivované
+	 * a smazané se u záznamu neukazují. Klik na hlavičku otevírá formulář
+	 * zprávy (Odeslat znovu, Archivovat, Smazat).
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	private static function sentMessages(string $table, int $recordId, DataSourceConnection $db, ?ConfigRuntime $config): array
+	{
+		$store = new SentMessageStore($db);
+		$info  = new SentMessageTransportInfo($db, $config);
+
+		$out = [];
+		foreach ($store->forTarget($table, $recordId) as $message) {
+			$attachments = $db->fetchAll(
+				'SELECT [id], [name], [file_name], [file_size], [mime_type] FROM [core_attachments_files]'
+				. ' WHERE [table_id] = %i AND [record_id] = %i AND [is_deleted] = 0 ORDER BY [id]',
+				SentMessageStore::TABLE_ID,
+				(int) $message['id'],
+			);
+
+			$out[] = [
+				'id'          => (int) $message['id'],
+				'createdAt'   => SubtableCellFormatter::dateTime($message['created'] ?? null),
+				'to'          => AddressList::parse($message['email_to'] ?? null),
+				'subject'     => (string) ($message['subject'] ?? ''),
+				'transport'   => $info->state($message),
+				'attachments' => array_map(static fn (array $a): array => [
+					'id'        => (int) $a['id'],
+					'name'      => (string) ($a['name'] ?? $a['file_name']),
+					'mime_type' => (string) ($a['mime_type'] ?? ''),
+					'file_size' => (int) ($a['file_size'] ?? 0),
+				], $attachments),
+			];
+		}
+		return $out;
+	}
+
+	/**
 	 * Jazyky tisku s popiskem z `world.base.documentLanguages` v jazyce
 	 * rozhraní; bez cfgItemu (zdroj dat před `ds-upgrade`) je popiskem kód.
 	 *
 	 * @return list<array{id: string, label: string}>
 	 */
-	private static function printLanguages(?ConfigRuntime $config): array
+	public static function printLanguages(?ConfigRuntime $config): array
 	{
 		$names = $config?->cfgItem('world.base.documentLanguages');
 

@@ -82,8 +82,12 @@ final class ReadOnlyPolicy
 		],
 		// Reporty v read-only fungují (D7).
 		'reports' => [self::ANY => ReadOnlyVerdict::Allow],
-		// Tisk = čtení záznamu (#90 D21).
-		'prints' => [self::ANY => ReadOnlyVerdict::Allow],
+		// Tisk = čtení záznamu (#90 D21); návrh odeslání nic nemění.
+		'prints' => [
+			'run'       => ReadOnlyVerdict::Allow,
+			'sendDraft' => ReadOnlyVerdict::Allow,
+			// send → 403: odeslání vytváří zprávu a řádek fronty (D38)
+		],
 		'alerts' => [
 			'registry' => ReadOnlyVerdict::Allow,
 			// runDue, runCheck → 403
