@@ -171,7 +171,8 @@ práce — instrukce Projektu na to ukazují. `CLAUDE.local.md` v knowledge nen�
 1. **Prostředí** — na Macu nebo ve Windows podle
    [`local-dev.md`](local-dev.md), na vlastním Linux serveru podle
    `DEVELOPERS.md`.
-2. **Claude Code** v checkoutu (`~/sw/shpd`) — `CLAUDE.md` se načte sám.
+2. **Claude Code** v checkoutu (`~/sw/shpd`) — `CLAUDE.md` se načte sám;
+   první kroky a režimy oprávnění v [`claude-code-intro.md`](claude-code-intro.md).
 3. **`CLAUDE.local.md`** ze šablony (níže) — hlavně zdroje dat a jejich režimy.
 4. **GitHub CLI** — `gh auth login`, když budeš pracovat s issues (kapitola 4).
 5. Volitelně **Claude v chatu**: MCP most `remote-dev-bridge` (níže) a Projekt

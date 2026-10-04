@@ -196,8 +196,8 @@ V projektu se pracuje s AI asistentem ve dvou rolích — popisuje je
 [`ai-workflow.md`](ai-workflow.md).
 
 **Claude Code** běží přímo uvnitř Ubuntu, v adresáři `~/sw/shpd`. Na běžnou
-práci (implementace, testy) stačí on. Bootstrap ho neinstaluje — návod je na
-[claude.com/claude-code](https://claude.com/claude-code).
+práci (implementace, testy) stačí on. Bootstrap ho neinstaluje — instalace,
+přihlášení a první kroky jsou v [`claude-code-intro.md`](claude-code-intro.md).
 
 **Claude v chatu** (návrh, zadání, ověřování) se k Ubuntu připojuje přes SSH
 aplikací [`remote-dev-bridge`](https://github.com/shipard/remote-dev-bridge)

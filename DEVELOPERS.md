@@ -11,6 +11,8 @@ Vítej v projektu Shipard! Tenhle dokument tě provede od nuly k funkčnímu vý
 > v Multipassu nebo ve WSL a instalace jedním příkazem. Kroky 1–5 níže
 > spouští za sebou `scripts/dev-bootstrap.sh`; tento dokument zůstává
 > referencí pro Linux server.
+>
+> **S Claude Code začínáš?** → [`docs/claude-code-intro.md`](docs/claude-code-intro.md).
 
 ---
 
