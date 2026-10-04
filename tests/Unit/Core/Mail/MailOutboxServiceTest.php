@@ -153,8 +153,10 @@ class MailOutboxServiceTest extends TestCase
         $this->service->enqueue($this->message(), $this->now());
 
         $this->assertSame('user@example.com', $captured['email_to']);
-        $this->assertNull($captured['email_cc']);
-        $this->assertNull($captured['email_from_name']);
+        // Bez kopií a jména řádek nové sloupce nenese — projde i na zdroji
+        // dat před `ds-upgrade`.
+        $this->assertArrayNotHasKey('email_cc', $captured);
+        $this->assertArrayNotHasKey('email_from_name', $captured);
     }
 
     public function testEnqueueInvalidAddressInListThrows(): void

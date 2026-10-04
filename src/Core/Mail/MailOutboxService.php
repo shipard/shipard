@@ -125,15 +125,24 @@ class MailOutboxService
 
         $nowStr = $now->format('Y-m-d H:i:s');
 
-        return $this->db->insertRow(self::TABLE, [
+        // Jméno odesílatele a kopie jdou do řádku jen když jsou — zpráva bez
+        // nich (pozvánka, reset hesla) tak projde i na zdroji dat, který
+        // ještě neprošel `ds-upgrade` a sloupce nemá.
+        $optional = [];
+        if ($fromName !== '') {
+            $optional['email_from_name'] = mb_substr($fromName, 0, self::FROM_NAME_MAX_LEN);
+        }
+        if ($ccList !== '') {
+            $optional['email_cc'] = $ccList;
+        }
+
+        return $this->db->insertRow(self::TABLE, $optional + [
             'created'             => $nowStr,
             'created_by'          => $message->createdBy,
             'source_module'       => $message->sourceModule,
             'source_ref'          => $message->sourceRef,
             'email_from'          => $from,
-            'email_from_name'     => $fromName === '' ? null : mb_substr($fromName, 0, self::FROM_NAME_MAX_LEN),
             'email_to'            => $toList,
-            'email_cc'            => $ccList === '' ? null : $ccList,
             'recipient_person_id' => $message->recipientPersonId,
             'subject'             => $message->subject,
             'body_text'           => $message->bodyText,

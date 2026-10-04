@@ -425,6 +425,39 @@ class PrintSendApiTest extends TestCase
         $this->assertSame(['core_mail_sent_messages', 'test_prints_records', 5, 40], $args);
     }
 
+    public function testDetailSurvivesDataSourceWithoutSentMailTable(): void
+    {
+        // Kód je nasazený, zdroj dat ještě neprošel `ds-upgrade`: tabulka
+        // v definicích je, v databázi ne.
+        $viewers = new ViewerRegistry();
+        $viewers->register(new ViewerDefinition(
+            id: 'test.prints.records',
+            name: 'Records',
+            table: 'test_prints_records',
+            class: PrintsApiPlainViewer::class,
+            moduleId: 'test.prints',
+            icon: null,
+        ));
+        $db = $this->createStub(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(self::RECORD);
+        $db->method('fetchAll')->willThrowException(
+            new \Dibi\DriverException("Table 'core_mail_sent_messages' doesn't exist"),
+        );
+        $tables = ['core_mail_sent_messages' => TableDefinition::fromArray([
+            'tableId' => 455,
+            'name'    => 'Sent messages',
+            'columns' => [['id' => 'id', 'name' => 'ID', 'type' => 'int', 'autoIncrement' => true, 'primaryKey' => true]],
+        ])];
+
+        $response = (new ViewerController())->detail(
+            'test.prints.records', 5, self::user(), $viewers, $tables, $db, null, 'cs',
+            prints: self::registry(self::definition()),
+        );
+
+        $this->assertSame(200, self::statusOf($response));
+        $this->assertArrayNotHasKey('sentMessages', $response->getPayload()['data']['detail']);
+    }
+
     public function testDetailWithoutMessagesHasNoSection(): void
     {
         $detail = $this->detail(self::registry(self::definition()), messages: []);

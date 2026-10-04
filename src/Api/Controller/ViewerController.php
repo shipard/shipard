@@ -313,8 +313,16 @@ class ViewerController
 		$store = new SentMessageStore($db);
 		$info  = new SentMessageTransportInfo($db, $config);
 
+		try {
+			$messages = $store->forTarget($table, $recordId);
+		} catch (\Dibi\Exception) {
+			// Zdroj dat před `ds-upgrade` tabulku Odeslané pošty ještě nemá —
+			// detail záznamu kvůli tomu nesmí spadnout.
+			return [];
+		}
+
 		$out = [];
-		foreach ($store->forTarget($table, $recordId) as $message) {
+		foreach ($messages as $message) {
 			$attachments = $db->fetchAll(
 				'SELECT [id], [name], [file_name], [file_size], [mime_type] FROM [core_attachments_files]'
 				. ' WHERE [table_id] = %i AND [record_id] = %i AND [is_deleted] = 0 ORDER BY [id]',
