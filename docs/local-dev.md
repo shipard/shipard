@@ -47,15 +47,27 @@ klíč s heslem neumí:
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/shipard_dev
-cat ~/.ssh/shipard_dev.pub
-open -e shipard-dev.yaml
 ```
 
-V souboru je místo označené `SEM VLOŽ SVŮJ VEŘEJNÝ SSH KLÍČ`. Na řádku
-`- ssh-ed25519 AAAA_NAHRAD_TENTO_RADEK_SVYM_VEREJNYM_KLICEM` pod ním nahraď
-všechno za pomlčkou tím, co vypsal příkaz `cat`; pomlčku a odsazení nech.
-Vkládá se obsah souboru **`.pub`** — soubor bez přípony je soukromý klíč
-a nikam se nekopíruje.
+Pokud klíč `~/.ssh/shipard_dev` už máš, `ssh-keygen` se zeptá na přepsání —
+odpověz `n`, stávající klíč stačí.
+
+Pak klíč vlož do `shipard-dev.yaml` — tenhle příkaz nahradí zástupný řádek
+obsahem veřejného klíče a druhý výsledek vypíše:
+
+```bash
+sed -i '' "s|ssh-ed25519 AAAA_NAHRAD_TENTO_RADEK_SVYM_VEREJNYM_KLICEM|$(cat ~/.ssh/shipard_dev.pub)|" shipard-dev.yaml
+grep -A1 'ssh_authorized_keys:' shipard-dev.yaml
+```
+
+Pod `ssh_authorized_keys:` má být `- ssh-ed25519 AAAA…` s tvým klíčem, ne
+zástupný text `AAAA_NAHRAD_…`.
+
+Když chceš soubor upravit ručně: `open -e shipard-dev.yaml` (TextEdit).
+Na řádku `- ssh-ed25519 AAAA_NAHRAD_TENTO_RADEK_SVYM_VEREJNYM_KLICEM` nahraď
+všechno za pomlčkou obsahem souboru `~/.ssh/shipard_dev.pub`; pomlčku
+a odsazení nech. Vkládá se vždy soubor **`.pub`** — soubor bez přípony je
+soukromý klíč a nikam se nekopíruje.
 
 **4. Spusť virtuální stroj:**
 

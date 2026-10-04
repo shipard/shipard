@@ -1,6 +1,6 @@
 # Lokální vývoj na macOS a Windows — bootstrap, Multipass, WSL
 
-**Stav:** částečně — skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25), na dev serveru ověřeno jen nasucho (bez sudo); zbývá běh na čistých strojích: Multipass 26.04 z `shipard-dev.yaml`, opakovaný běh, `--with-render`, WSL s `--with-ssh`
+**Stav:** částečně — skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`)
 
 ## Cíl
 
@@ -205,11 +205,15 @@ případně Claude v chatu přes bridge:
 ## Hotovo když
 
 - [x] `install-packages.sh` nastavuje neinteraktivní apt
-- [ ] bootstrap z čistého Ubuntu 26.04 skončí zeleným `doctor`
+- [x] bootstrap z čistého Ubuntu 26.04 skončí zeleným `doctor`
       a souhrnem s adresou dashboardu
-- [ ] opakovaný běh je bezpečný
-- [ ] Multipass z `shipard-dev.yaml` bez ručního zásahu (kromě vložení klíče)
-- [ ] `--with-render` a `--with-ssh` fungují dle popisu
+- [x] opakovaný běh je bezpečný — `server-init` „already initialized“, nic
+      nerozbito
+- [x] Multipass z `shipard-dev.yaml` bez ručního zásahu (kromě vložení klíče)
+      — bridge se připojil klíčem z yaml
+- [x] `--with-render` a `--with-ssh` fungují dle popisu — `/health` ok,
+      `server.json` `root:ubuntu 0640` se zachovanými klíči, sshd na 22 i 2222,
+      souhrn s IP VM i po vzniku `podman0`
 - [ ] WSL ověřené na Windows (nebo v tasku poznamenáno, co zbývá)
 - [x] `docs/local-dev.md` s odkazy z `DEVELOPERS.md`, `README.md`,
       `docs/README.md`
