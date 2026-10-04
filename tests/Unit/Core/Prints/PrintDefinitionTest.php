@@ -53,6 +53,57 @@ class PrintDefinitionTest extends TestCase
         $this->assertSame('docs.invoicesOut', $def->moduleId);
     }
 
+    // ── odeslání e-mailem (#90 D34) ─────────────────────────────────────────
+
+    public function testSendPurposeMakesPrintSendable(): void
+    {
+        $def = PrintDefinition::fromArray(
+            self::declaration(['sendPurpose' => 'invoices', 'recipientPerson' => 'partner']),
+            'docs.invoicesOut',
+        );
+
+        $this->assertTrue($def->isSendable());
+        $this->assertSame('invoices', $def->sendPurpose);
+        $this->assertSame('partner', $def->recipientPerson);
+        $this->assertFalse(PrintDefinition::fromArray(self::declaration(), 'docs.invoicesOut')->isSendable());
+    }
+
+    #[DataProvider('invalidSendDeclarations')]
+    public function testInvalidSendDeclarationIsRejected(array $overrides, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches($message);
+
+        PrintDefinition::fromArray(self::declaration($overrides), 'docs.invoicesOut');
+    }
+
+    /** @return array<string, array{array<string, mixed>, string}> */
+    public static function invalidSendDeclarations(): array
+    {
+        return [
+            'internal print cannot be sent' => [
+                ['audience' => 'internal', 'sendPurpose' => 'invoices', 'recipientPerson' => 'partner'],
+                "/'sendPurpose' is allowed only for prints with audience 'external'/",
+            ],
+            'purpose without recipient column' => [
+                ['sendPurpose' => 'invoices'],
+                "/'sendPurpose' and 'recipientPerson' must be declared together/",
+            ],
+            'recipient column without purpose' => [
+                ['recipientPerson' => 'partner'],
+                "/'sendPurpose' and 'recipientPerson' must be declared together/",
+            ],
+            'purpose is not an id' => [
+                ['sendPurpose' => 'Faktury a doklady', 'recipientPerson' => 'partner'],
+                "/'sendPurpose' must be a send purpose id/",
+            ],
+            'recipient is not a column' => [
+                ['sendPurpose' => 'invoices', 'recipientPerson' => 'partner; DROP'],
+                "/'recipientPerson' must be a column name/",
+            ],
+        ];
+    }
+
     public function testFromArrayDefaults(): void
     {
         $raw = self::declaration();

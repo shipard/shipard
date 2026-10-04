@@ -13,8 +13,9 @@ use Twig\Loader\FilesystemLoader;
 /**
  * Staví Twig prostředí tisků: šablony z adresářů `prints/` modulů (Twig
  * namespace = id modulu, `@docs.core/_layout/doc-base.html.twig`), sandbox
- * zapnutý globálně, autoescape HTML a striktní proměnné — překlep v šabloně
- * je chyba, ne prázdné místo na faktuře.
+ * zapnutý globálně, autoescape podle typu šablony (HTML stránky, prostý text
+ * e-mailu) a striktní proměnné — překlep v šabloně je chyba, ne prázdné
+ * místo na faktuře.
  *
  * Prostředí je per běh tisku: filtry a `t()` jsou vázané na jazyk tisku.
  */
@@ -41,7 +42,10 @@ final class PrintTwigFactory
             // Šablony se mění s nasazením — bez kontroly mtime by cache
             // po upgradu servírovala starou verzi.
             'auto_reload'      => true,
-            'autoescape'       => 'html',
+            // Strategie podle názvu souboru: `*.html.twig` escapuje HTML,
+            // `*.txt.twig` (předmět a tělo e-mailu) neescapuje — výstup je
+            // prostý text.
+            'autoescape'       => 'name',
             'strict_variables' => true,
         ]);
         $twig->addExtension(new SandboxExtension(PrintSecurityPolicy::templates(), true));

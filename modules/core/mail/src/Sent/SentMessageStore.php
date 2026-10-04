@@ -85,7 +85,8 @@ class SentMessageStore
     }
 
     /**
-     * Id příloh zprávy v pořadí, ve kterém jdou do e-mailu.
+     * Id příloh zprávy v pořadí, ve kterém jdou do e-mailu — tak, jak je
+     * služba odeslání založila: PDF tisku první, pak přílohy záznamu.
      *
      * @return list<int>
      */
@@ -94,7 +95,7 @@ class SentMessageStore
         $rows = $this->db->fetchAll(
             'SELECT [id] FROM [core_attachments_files]'
             . ' WHERE [table_id] = %i AND [record_id] = %i AND [is_deleted] = 0'
-            . ' ORDER BY [att_order], [id]',
+            . ' ORDER BY [id]',
             self::TABLE_ID,
             $id,
         );

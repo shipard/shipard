@@ -11,6 +11,8 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\PrintBuilder;
 use Shipard\Core\Prints\PrintCatalogLoader;
 use Shipard\Core\Prints\PrintDefinition;
+use Shipard\Core\Prints\PrintEmailRenderer;
+use Shipard\Core\Prints\Twig\PrintTwigFactory;
 use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderer;
@@ -77,6 +79,47 @@ class PrintDeclarationsTest extends TestCase
                 $paths->directory($definition->template) . '/' . PrintRenderer::PAGE_TEMPLATE,
                 "{$definition->id}: page template",
             );
+        }
+    }
+
+    public function testDocumentPrintsAreSendableAndInternalOnesAreNot(): void
+    {
+        $sendable = [];
+        foreach (self::definitions() as $definition) {
+            if ($definition->isSendable()) {
+                $sendable[$definition->id] = [$definition->sendPurpose, $definition->recipientPerson];
+            }
+        }
+        ksort($sendable);
+
+        $this->assertSame([
+            'docs.cashDocs.cash'         => ['invoices', 'partner'],
+            'docs.cashRegister.receipt'  => ['invoices', 'partner'],
+            'docs.invoicesOut.invoice'   => ['invoices', 'partner'],
+            'docs.proformasOut.proforma' => ['invoices', 'partner'],
+        ], $sendable);
+    }
+
+    public function testSendablePrintsHaveKnownPurposeAndEmailTemplates(): void
+    {
+        $resolver = self::modules();
+        $purposes = [];
+        foreach (ModuleLoader::loadAllModules($resolver) as $module) {
+            foreach ($module->sendPurposes as $purpose) {
+                $purposes[] = $purpose['id'];
+            }
+        }
+
+        $paths  = new PrintTemplatePaths($resolver);
+        $emails = new PrintEmailRenderer($paths, new PrintTwigFactory($paths));
+
+        foreach (self::definitions() as $definition) {
+            if (!$definition->isSendable()) {
+                continue;
+            }
+            $this->assertContains($definition->sendPurpose, $purposes, "{$definition->id}: sendPurpose");
+            // Bez šablon předmětu a těla by odeslání spadlo až u uživatele.
+            $this->assertTrue($emails->hasTemplates($definition), "{$definition->id}: e-mail templates");
         }
     }
 

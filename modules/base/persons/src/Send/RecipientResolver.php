@@ -20,7 +20,7 @@ use Shipard\Core\Mail\AddressList;
  * Kontakt bez účelu se nepoužije nikdy — ani jako záloha místo e-mailu
  * osoby. Syntakticky neplatná adresa se přeskočí s varováním.
  */
-final class RecipientResolver
+class RecipientResolver
 {
     private const LABELS_ITEM = 'base.persons.formLabels';
 

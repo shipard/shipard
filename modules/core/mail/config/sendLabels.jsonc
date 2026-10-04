@@ -20,5 +20,22 @@
         "name": "Sender address '{email}' set for this record is no longer allowed — the mail sender was deactivated or removed.",
         "name:cs": "Adresa odesílatele „{email}“ nastavená pro tento záznam už není povolená — odesílatel pošty byl deaktivován nebo zrušen.",
         "name:en": "Sender address '{email}' set for this record is no longer allowed — the mail sender was deactivated or removed."
+    },
+
+    // RecordSendService (D42)
+    "noRecipient": {
+        "name": "The message has no recipient.",
+        "name:cs": "Zpráva nemá žádného příjemce.",
+        "name:en": "The message has no recipient."
+    },
+    "invalidEmail": {
+        "name": "'{email}' is not a valid e-mail address.",
+        "name:cs": "„{email}“ není platná e-mailová adresa.",
+        "name:en": "'{email}' is not a valid e-mail address."
+    },
+    "emptyMessage": {
+        "name": "The message needs both a subject and a body.",
+        "name:cs": "Zpráva potřebuje předmět i text.",
+        "name:en": "The message needs both a subject and a body."
     }
 }

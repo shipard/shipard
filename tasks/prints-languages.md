@@ -323,6 +323,22 @@ Kódy, které poznámku nesou (`vatCodes[].note`), a jejich tiskový popisek:
 | `label.companyId` | IČ | IČO | Ident.-Nr. |
 | `label.taxId` | DIČ | IČ DPH | USt-IdNr. |
 
+### Texty e-mailu s dokladem (fáze 4, `tasks/prints-phase4.md` §5)
+
+Předmět a tělo e-mailu, kterým se doklad odesílá — navrhla je implementace
+fáze 4 (klíče `email.*` v `@docs.core/_layout/messages.jsonc`). Tělo je
+prostý text: oslovení, co je v příloze, částka k úhradě a splatnost (jen
+u platby převodem), pozdrav a název vlastní firmy.
+
+| Klíč | cs | sk | de |
+|---|---|---|---|
+| `email.subject.document` | {title} — {sender} | {title} — {sender} | {title} — {sender} |
+| `email.body.greeting` | Dobrý den, | Dobrý deň, | Guten Tag, |
+| `email.body.attached` | v příloze najdete doklad: {title}. | v prílohe nájdete doklad: {title}. | im Anhang finden Sie: {title}. |
+| `email.body.amountToPay` | Částka k úhradě: {amount} | Suma na úhradu: {amount} | Zu zahlender Betrag: {amount} |
+| `email.body.dueDate` | Datum splatnosti: {date} | Dátum splatnosti: {date} | Fälligkeitsdatum: {date} |
+| `email.body.regards` | S pozdravem | S pozdravom | Mit freundlichen Grüßen |
+
 ### Na co se při revizi zaměřit
 
 - **Název prodejky:** zvoleno `sk` „Predajka“ a `de` „Verkaufsbeleg“;
@@ -338,5 +354,9 @@ Kódy, které poznámku nesou (`vatCodes[].note`), a jejich tiskový popisek:
 - **`vatNotes.eu`:** stejný text jako u přenesení daňové povinnosti nese
   i dodání zboží do EU (`cz-201`), kde jde o osvobozené plnění. Platí už
   pro češtinu — věcná otázka k čl. 226 směrnice, ne k překladu.
+- **Texty e-mailu:** `{title}` je titulek dokladu s číslem v 1. pádě
+  („Faktura – daňový doklad 2260011“), proto věta s dvojtečkou místo
+  skloňování („posíláme fakturu“). Německy zkontrolovat oslovení a obrat
+  „im Anhang finden Sie“.
 - **Názvy sazeb německy:** „Normalsatz“, „Ermäßigter Satz“, „Nullsatz“,
   „Steuerfrei“ (všech 61 popisků je v `vat-cz.jsonc`, pole `print:de`).

@@ -230,7 +230,7 @@ class SentMessagesViewer extends TableViewer
         $files = $this->db->fetchAll(
             'SELECT `id`, `name`, `file_name`, `file_size`, `mime_type` FROM `core_attachments_files`'
             . ' WHERE `table_id` = %i AND `record_id` = %i AND `is_deleted` = 0'
-            . ' ORDER BY `att_order` ASC, `id` ASC',
+            . ' ORDER BY `id` ASC',
             SentMessageStore::TABLE_ID,
             $messageId,
         );

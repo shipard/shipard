@@ -20,7 +20,7 @@ use Shipard\Core\Settings\SettingsStore;
  *
  * Jméno odesílatele: podle záznamu, jinak název vlastní firmy, jinak žádné.
  */
-final class SenderResolver
+class SenderResolver
 {
     private const LABELS_ITEM = 'core.mail.sendLabels';
 

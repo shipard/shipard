@@ -12,6 +12,8 @@ use Shipard\Core\Render\PdfOptions;
  * povinné `docStates`), kdo skládá data (`builder`) a čím se kreslí
  * (`template`, `catalogs`, `paper`). Volitelné `watermarks` určí vodoznak
  * podle stavu záznamu (D23) — stornovaný doklad jde vytisknout se „STORNO“.
+ * Volitelné `sendPurpose` + `recipientPerson` dělají tisk odesílatelným
+ * e-mailem (D34).
  *
  * Vstupní pole je už lokalizované (`ConfigLocalizer` vyřešil `name:cs`
  * varianty před voláním `fromArray()` — vzor `ReportDefinition`).
@@ -39,6 +41,10 @@ final class PrintDefinition
      * @param array<int, string> $watermarks Stav záznamu → klíč katalogu
      *        s textem vodoznaku. Layout tisku ho musí vykreslit
      *        (`meta.watermark`).
+     * @param ?string $sendPurpose Účel odesílání (id z `base.persons.sendPurposes`,
+     *        #90 D34) — tisk bez něj nejde odeslat. Jen u `audience: external`.
+     * @param ?string $recipientPerson Sloupec záznamu s osobou příjemce
+     *        (doklady `partner`); povinný se `sendPurpose`.
      */
     public function __construct(
         public readonly string $id,
@@ -56,7 +62,15 @@ final class PrintDefinition
         public readonly string $moduleId,
         public readonly array $margins = [],
         public readonly array $watermarks = [],
+        public readonly ?string $sendPurpose = null,
+        public readonly ?string $recipientPerson = null,
     ) {}
+
+    /** Jde tisk odeslat e-mailem? Jen tisk ven s deklarovaným účelem (#90 D34). */
+    public function isSendable(): bool
+    {
+        return $this->sendPurpose !== null;
+    }
 
     /** @param array<string, mixed> $data */
     public static function fromArray(array $data, string $moduleId): self
@@ -205,6 +219,29 @@ final class PrintDefinition
             throw new \InvalidArgumentException("Print '{$id}': 'order' must be an integer");
         }
 
+        $sendPurpose = $data['sendPurpose'] ?? null;
+        if ($sendPurpose !== null) {
+            if (!is_string($sendPurpose) || !preg_match('/^[a-z][a-zA-Z0-9]*$/', $sendPurpose)) {
+                throw new \InvalidArgumentException("Print '{$id}': 'sendPurpose' must be a send purpose id");
+            }
+            if ($audience !== 'external') {
+                throw new \InvalidArgumentException(
+                    "Print '{$id}': 'sendPurpose' is allowed only for prints with audience 'external'",
+                );
+            }
+        }
+        $recipientPerson = $data['recipientPerson'] ?? null;
+        if ($recipientPerson !== null
+            && (!is_string($recipientPerson) || !preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $recipientPerson))
+        ) {
+            throw new \InvalidArgumentException("Print '{$id}': 'recipientPerson' must be a column name");
+        }
+        if (($sendPurpose === null) !== ($recipientPerson === null)) {
+            throw new \InvalidArgumentException(
+                "Print '{$id}': 'sendPurpose' and 'recipientPerson' must be declared together",
+            );
+        }
+
         return new self(
             id: $id,
             name: $name,
@@ -221,6 +258,8 @@ final class PrintDefinition
             moduleId: $moduleId,
             margins: $margins,
             watermarks: $watermarks,
+            sendPurpose: $sendPurpose,
+            recipientPerson: $recipientPerson,
         );
     }
 

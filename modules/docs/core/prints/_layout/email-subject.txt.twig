@@ -1,0 +1,12 @@
+{#-
+    Předmět e-mailu s dokladem (#90 D37): „<titulek> <číslo> — <vlastní firma>“.
+    Vlastní firma je dodavatel na výstupu, odběratel na vstupu (jako zápatí).
+    Tisk si šablonu může přebít vlastním souborem ve svém adresáři.
+-#}
+{%- set own = data.document.tradeDir|default(1) == 2 ? data.customer : data.supplier -%}
+{%- set ownName = own.name|default('') -%}
+{%- if ownName -%}
+    {{- t('email.subject.document', {title: meta.title, sender: ownName}) -}}
+{%- else -%}
+    {{- meta.title -}}
+{%- endif -%}

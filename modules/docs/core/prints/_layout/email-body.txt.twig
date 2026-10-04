@@ -1,0 +1,20 @@
+{#-
+    Tělo e-mailu s dokladem (#90 D37) — prostý text: oslovení, co je
+    v příloze, částka k úhradě a splatnost (jen u platby převodem), podpis
+    názvem vlastní firmy. Tisk si šablonu může přebít vlastním souborem.
+-#}
+{%- set own = data.document.tradeDir|default(1) == 2 ? data.customer : data.supplier -%}
+{%- set payment = data.payment -%}
+{{ t('email.body.greeting') }}
+
+{{ t('email.body.attached', {title: meta.title}) }}
+{% if payment.bankTransfer and payment.amountToPay > 0 %}
+
+{{ t('email.body.amountToPay', {amount: payment.amountToPay|money(payment.currency)}) }}
+{% if data.dates.due %}
+{{ t('email.body.dueDate', {date: data.dates.due|date}) }}
+{% endif %}
+{% endif %}
+
+{{ t('email.body.regards') }}
+{{ own.name|default('') }}

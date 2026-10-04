@@ -12,6 +12,10 @@
         "docStates": [40, 30],
         "watermarks": { "30": "watermark.cancelled" },
         "audience": "external",
+        // Odeslání e-mailem (#90 D34): komu (kontakty partnera s tímto
+        // účelem, jinak e-mail osoby) určuje účel a sloupec s osobou.
+        "sendPurpose": "invoices",
+        "recipientPerson": "partner",
         "builder": "Shipard\\Module\\Docs\\Core\\Prints\\DocPrintBuilder",
         "template": "@docs.invoicesOut/invoice",
         "catalogs": ["@docs.core/_layout"],

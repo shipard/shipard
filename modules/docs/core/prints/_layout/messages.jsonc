@@ -85,5 +85,15 @@
         "en": "The payment QR code carries no constant symbol — only digits are allowed, 10 at most.",
         "sk": "QR platba neobsahuje konštantný symbol — smie mať len číslice, najviac 10.",
         "de": "Der Zahlungs-QR-Code enthält kein konstantes Symbol — erlaubt sind nur Ziffern, höchstens 10."
-    }
+    },
+
+    // E-mail, kterým se doklad odesílá (#90 D37) — prostý text, šablony
+    // email-subject.txt.twig a email-body.txt.twig. `{title}` = titulek
+    // s číslem dokladu, `{sender}` = název vlastní firmy.
+    "email.subject.document": { "cs": "{title} — {sender}", "en": "{title} — {sender}", "sk": "{title} — {sender}", "de": "{title} — {sender}" },
+    "email.body.greeting":    { "cs": "Dobrý den,", "en": "Hello,", "sk": "Dobrý deň,", "de": "Guten Tag," },
+    "email.body.attached":    { "cs": "v příloze najdete doklad: {title}.", "en": "please find attached: {title}.", "sk": "v prílohe nájdete doklad: {title}.", "de": "im Anhang finden Sie: {title}." },
+    "email.body.amountToPay": { "cs": "Částka k úhradě: {amount}", "en": "Amount due: {amount}", "sk": "Suma na úhradu: {amount}", "de": "Zu zahlender Betrag: {amount}" },
+    "email.body.dueDate":     { "cs": "Datum splatnosti: {date}", "en": "Due date: {date}", "sk": "Dátum splatnosti: {date}", "de": "Fälligkeitsdatum: {date}" },
+    "email.body.regards":     { "cs": "S pozdravem", "en": "Kind regards", "sk": "S pozdravom", "de": "Mit freundlichen Grüßen" }
 }
