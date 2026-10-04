@@ -201,7 +201,9 @@ práci (implementace, testy) stačí on. Bootstrap ho neinstaluje — návod je 
 
 **Claude v chatu** (návrh, zadání, ověřování) se k Ubuntu připojuje přes SSH
 aplikací [`remote-dev-bridge`](https://github.com/shipard/remote-dev-bridge)
-na tvém počítači. V jejím nastavení přidej server a projekt:
+na tvém počítači — instalace a napojení do desktopové aplikace Claude
+v [`ai-workflow.md` §7](ai-workflow.md#7-nastavení-pro-nového-člověka).
+V nastavení mostu přidej server a projekt s ID **`shipard`**:
 
 | | Multipass | WSL |
 |--|-----------|-----|
@@ -212,6 +214,8 @@ na tvém počítači. V jejím nastavení přidej server a projekt:
 | root projektu | `/home/ubuntu/sw/shpd` | `/home/<uživatel>/sw/shpd` |
 
 Na konci bootstrapu s `--with-ssh` jsou tyhle údaje vypsané v souhrnu.
+Po uložení se zeptej Clauda v chatu na `hostname` stroje — ověříš tím, že
+projekt míří na správný stroj.
 
 Na macOS použij **podepsané vydání** ze stránky
 [Releases](https://github.com/shipard/remote-dev-bridge/releases). Vlastní

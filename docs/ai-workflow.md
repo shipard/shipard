@@ -6,9 +6,10 @@ Claude sám (odkaz z `CLAUDE.md`). Doplňuje `DEVELOPERS.md` (rozchození prost�
 a `tasks/README.md` (formát zadání).
 
 Co sem **nepatří**: adresy serverů, názvy zdrojů dat, cesty k heslům, konfigurace
-osobních nástrojů. Repozitář je veřejný. Týmové přístupy žijí v soukromém repu
-`shipard/dev-env`, specifika jednoho stroje v negitovaném `CLAUDE.local.md` —
-viz kapitoly 6 a 7.
+osobních nástrojů. Repozitář je veřejný. Specifika jednoho stroje patří do
+negitovaného `CLAUDE.local.md`; týmové přístupy (testovací server apod.) žijí
+v soukromém repu `shipard/dev-env` — **k práci na Shipardu ho nepotřebuješ**,
+všechno nutné je tady. Viz kapitoly 6 a 7.
 
 ---
 
@@ -22,6 +23,21 @@ viz kapitoly 6 a 7.
 
 Rozdělení není dogma — je to způsob, jak mít návrh a implementaci ve dvou hlavách
 a jak udržet přehled o tom, co se změnilo a proč.
+
+**Který nástroj kdy.** Na běžnou práci — implementace, testy, drobné opravy —
+**stačí Claude Code** v checkoutu. Claude v chatu s MCP mostem
+`remote-dev-bridge` (kapitola 7) se vyplatí hlavně na:
+
+- **návrhovou práci** — diskuse, zamykání rozhodnutí, psaní tasků, review
+  hotové implementace; chat drží delší kontext rozhovoru a nemíchá návrh
+  s psaním kódu;
+- **práci přes víc strojů najednou** — každý cíl mostu je samostatný
+  `project_id`, takže Claude v jednom rozhovoru čte kód na vývojovém stroji,
+  diagnostikuje testovací server nebo porovnává data mezi dvěma servery
+  (ladění importu, ověření instalace na čistém stroji).
+
+Oba nástroje jdou kombinovat: chat píše task a ověřuje, Claude Code
+implementuje.
 
 ---
 
@@ -139,9 +155,9 @@ změnu **navrhne** a člověk ji commitne; do `CLAUDE.md` se nepíše potichu.
 | Vrstva | Soubory | Jak se dostane ke kolegovi |
 |--------|---------|----------------------------|
 | **repo `shipard/shipard`** (veřejné) | `CLAUDE.md`, `docs/`, `tasks/README.md`, tento dokument | `git clone`; Claude Code načte `CLAUDE.md` automaticky |
-| **repo `shipard/dev-env`** (soukromé) | `dev-env.md` (prostředí, nástroje, přístupy), `alpha.md` (testovací server), `old-shipard.md` (import ze starého Shipardu), `README.md` (checklist nového člověka) | `git clone`; v claude.ai přes GitHub sync do knowledge Projektu |
+| **repo `shipard/dev-env`** (soukromé, jen tým) | `dev-env.md` (týmové cíle mostu, přístupy), `alpha.md` (testovací server), `old-shipard.md` (import ze starého Shipardu), `README.md` (checklist člena týmu) | `git clone`; v claude.ai přes GitHub sync do knowledge Projektu — kdo není v týmu, tuhle vrstvu nemá a nepotřebuje |
 | **stroj** | `CLAUDE.local.md` v kořeni checkoutu, `~/.claude/*` | nesdílí se; vzor `CLAUDE.local.example.md` (kapitola 7) |
-| **claude.ai Projekt** | instrukce + knowledge (GitHub sync `dev-env` + z `shipard/shipard` aspoň `CLAUDE.md`, `docs/`, `tasks/README.md`) | Team plán: jeden sdílený Projekt; Pro/Max: každý si založí vlastní; text instrukcí je v kapitole 8 |
+| **claude.ai Projekt** | instrukce + knowledge (GitHub sync z `shipard/shipard` aspoň `CLAUDE.md`, `docs/`, `tasks/README.md`; členové týmu navíc `dev-env`) | Team plán: jeden sdílený Projekt; Pro/Max: každý si založí vlastní; text instrukcí je v kapitole 8 |
 
 Důležité: **Claude v chatu `CLAUDE.md` sám od sebe nečte.** Musí být v knowledge
 Projektu (GitHub sync) nebo si ho Claude načte z repa přes MCP most na začátku
@@ -152,8 +168,57 @@ práce — instrukce Projektu na to ukazují. `CLAUDE.local.md` v knowledge nen�
 
 ## 7. Nastavení pro nového člověka
 
-Prostředí podle `DEVELOPERS.md`. Zbytek je v `shipard/dev-env/README.md`
-(přístupy, MCP most, `gh auth`, založení Projektu).
+1. **Prostředí** — na Macu nebo ve Windows podle
+   [`local-dev.md`](local-dev.md), na vlastním Linux serveru podle
+   `DEVELOPERS.md`.
+2. **Claude Code** v checkoutu (`~/sw/shpd`) — `CLAUDE.md` se načte sám.
+3. **`CLAUDE.local.md`** ze šablony (níže) — hlavně zdroje dat a jejich režimy.
+4. **GitHub CLI** — `gh auth login`, když budeš pracovat s issues (kapitola 4).
+5. Volitelně **Claude v chatu**: MCP most `remote-dev-bridge` (níže) a Projekt
+   v claude.ai s instrukcemi z kapitoly 8 a knowledge z `shipard/shipard`.
+
+Členové týmu navíc procházejí checklist v soukromém
+`shipard/dev-env/README.md` (testovací server, týmové cíle mostu).
+
+### MCP most `remote-dev-bridge`
+
+[`remote-dev-bridge`](https://github.com/shipard/remote-dev-bridge) je aplikace
+na tvém počítači (macOS, Windows, Linux), přes kterou má Claude v **desktopové
+aplikaci Claude** přístup k souborům a shellu na vývojovém stroji přes SSH.
+Instalace, napojení do Claude Desktop a konfigurace jsou v README mostu;
+v kostce:
+
+1. Nainstaluj vydání ze stránky *Releases*. Na macOS vždy **podepsané
+   vydání** — nepodepsaný vlastní build nedostane oprávnění Místní síť
+   a spojení na stroje v lokální síti (Multipass VM) končí chybou
+   „No route to host“.
+2. V menu mostu *Copy Claude Desktop Config*, vložit do konfigurace Claude
+   Desktop a **jednou** restartovat Claude Desktop. Další změny serverů
+   a projektů se načtou samy.
+3. **Server** = host, port, uživatel a SSH klíč **bez passphrase** (most
+   jinou zatím neumí). **Projekt** = server + root (checkout) + povolené
+   příkazy; jeho ID je `project_id`, který Claude uvádí v každém volání.
+   Pro lokální VM jsou konkrétní údaje v `local-dev.md`.
+
+**Konvence `project_id`** — dodržet, ať instrukce Projektu a tento dokument
+platí pro všechny. Root = **tvůj** checkout, cesty se liší per člověk.
+
+| `project_id` | Root |
+|--------------|------|
+| `shipard` | checkout `shipard/shipard` — **ne** `shpd`, to je jen název adresáře |
+| `ai_analyzer`, `mail_router` | checkouty samostatných komponent (`docs/services.md`) |
+| jiné (testovací stroj, čerstvá VM) | libovolné, popsat v `CLAUDE.local.md` |
+
+**Provozní poznámky:**
+
+- `run_command` má strop 120 s → dlouhé běhy (instalace, build) pouštět na
+  pozadí (`nohup … > log &`) a průběh číst z logu; PHPUnit a grep viz
+  kapitola 4.
+- Selhání `patch_file` může být tiché → po každém patchi `git diff`.
+- **Projekt musí mířit na správný stroj.** Když root neexistuje, příkaz
+  poběží v `$HOME` serveru; když projekt odkazuje na špatný server, poběží
+  na špatném stroji — bez chyby. U nového cíle proto prvním příkazem
+  `hostname` a `pwd`; při pochybnosti `list_projects`.
 
 ### `CLAUDE.local.md` — osobní soubor stroje
 
