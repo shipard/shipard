@@ -11,5 +11,33 @@
         "name": "Automatic (by country)",
         "name:cs": "Automaticky (podle země)",
         "name:en": "Automatic (by country)"
+    },
+
+    // Důvod u adresy příjemce při odesílání (#90 D35) — RecipientResolver.
+    // `{name}` = název kontaktu, `{purpose}` = název účelu.
+    "recipientContact": {
+        "name": "Contact {name} — {purpose}",
+        "name:cs": "Kontakt {name} — {purpose}",
+        "name:en": "Contact {name} — {purpose}"
+    },
+    "recipientPerson": {
+        "name": "Person's e-mail",
+        "name:cs": "E-mail osoby",
+        "name:en": "Person's e-mail"
+    },
+    "recipientInvalidAddress": {
+        "name": "Address '{email}' ({source}) is not a valid e-mail address and was skipped.",
+        "name:cs": "Adresa „{email}“ ({source}) není platná e-mailová adresa a byla vynechána.",
+        "name:en": "Address '{email}' ({source}) is not a valid e-mail address and was skipped."
+    },
+    "recipientNone": {
+        "name": "No recipient: the person has no contact with this purpose and no e-mail of its own.",
+        "name:cs": "Žádný příjemce: osoba nemá kontakt s tímto účelem ani vlastní e-mail.",
+        "name:en": "No recipient: the person has no contact with this purpose and no e-mail of its own."
+    },
+    "recipientNoPerson": {
+        "name": "No recipient: the record has no person to send to.",
+        "name:cs": "Žádný příjemce: záznam nemá osobu, které by se odesílalo.",
+        "name:en": "No recipient: the record has no person to send to."
     }
 }

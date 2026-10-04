@@ -25,6 +25,9 @@ class ConfigCompiler
     /** Jazyky rozhraní — kompilují se vždy. */
     public const UI_LANGUAGES = ['cs', 'en'];
 
+    /** cfgItem složený ze `sendPurposes` aktivních modulů — účely odesílání (#90 D34). */
+    public const SEND_PURPOSES_ITEM = 'base.persons.sendPurposes';
+
     /** cfgItem s jazyky dokumentů (#94 D3); klíč = jazyk. */
     public const DOCUMENT_LANGUAGES_ITEM = 'world.base.documentLanguages';
 
@@ -129,6 +132,32 @@ class ConfigCompiler
             );
         }
         $rawItems[self::JOURNAL_DIMENSIONS_ITEM] = $dimensions;
+
+        // Účely odesílání (`sendPurposes` v module.jsonc) aktivních modulů
+        // → jeden cfgItem, klíč = id účelu, pořadí podle `order`. Čte ho
+        // kontakt osoby, resolver příjemců i deklarace tisků.
+        $purposes = [];
+        foreach ($modules as $module) {
+            foreach ($module->sendPurposes as $purpose) {
+                $purposeId = (string) $purpose['id'];
+                if (isset($purposes[$purposeId])) {
+                    throw new \RuntimeException(
+                        "Send purpose '{$purposeId}' is declared by more than one module"
+                        . " (again in '{$module->id}')",
+                    );
+                }
+                unset($purpose['id']);
+                $purposes[$purposeId] = $purpose;
+            }
+        }
+        uksort($purposes, static fn (string $a, string $b): int
+            => [$purposes[$a]['order'], $a] <=> [$purposes[$b]['order'], $b]);
+        if (isset($rawItems[self::SEND_PURPOSES_ITEM])) {
+            throw new \RuntimeException(
+                "cfgItem '" . self::SEND_PURPOSES_ITEM . "' is reserved for sendPurposes",
+            );
+        }
+        $rawItems[self::SEND_PURPOSES_ITEM] = $purposes;
 
         // Strukturovaná schémata — validace nad SUROVÝMI daty, tedy před
         // lokalizací: `name:cs` je vícejazyčná varianta, ne neznámý klíč.

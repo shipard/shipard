@@ -73,6 +73,11 @@ class PersonExporterTest extends TestCase
             contacts: [[
                 'id' => 3, 'person' => 7, 'name' => 'Jan Novák', 'role' => 'účtárna', 'email' => 'jan@zluty.example',
                 'phone' => null, 'note' => null, 'order_pos' => 1, 'valid_from' => null, 'valid_to' => null, 'docState' => 40,
+                'send_purposes' => '["invoices","reminders"]',
+            ], [
+                'id' => 4, 'person' => 7, 'name' => 'Recepce', 'role' => null, 'email' => null,
+                'phone' => null, 'note' => null, 'order_pos' => 2, 'valid_from' => null, 'valid_to' => null, 'docState' => 40,
+                'send_purposes' => null,
             ]],
             divisionCode: 'CZ010',
         );
@@ -83,7 +88,7 @@ class PersonExporterTest extends TestCase
         $this->assertSame(7, $record->id);
         $this->assertSame('Žlutý kůň s.r.o.', $record->slug);
         $this->assertSame('shpd.persons.person', $c['format']);
-        $this->assertSame('1.1', $c['formatVersion']);
+        $this->assertSame('1.2', $c['formatVersion']);
         $this->assertSame('company', $c['personType']);
         $this->assertSame('cz', $c['country'], 'country comes from the first address');
         $this->assertSame('P-0007', $c['personId']);
@@ -115,8 +120,14 @@ class PersonExporterTest extends TestCase
             $c['bankAccounts'][0],
         );
         $this->assertSame(
-            ['name' => 'Jan Novák', 'role' => 'účtárna', 'email' => 'jan@zluty.example', 'orderPos' => 1],
+            ['name' => 'Jan Novák', 'role' => 'účtárna', 'email' => 'jan@zluty.example', 'orderPos' => 1,
+             'sendPurposes' => ['invoices', 'reminders']],
             $c['contacts'][0],
+        );
+        $this->assertSame(
+            ['name' => 'Recepce', 'orderPos' => 2],
+            $c['contacts'][1],
+            'kontakt bez účelu klíč sendPurposes nenese',
         );
         $this->assertSame(
             ['mergeStrategy' => 'createOnly', 'matchStrategy' => 'identifiersOnly', 'targetDocState' => 40],

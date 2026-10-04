@@ -10,6 +10,7 @@ use Shipard\Core\Form\FormHeaderInfo;
 use Shipard\Core\Form\FormTab;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
+use Shipard\Module\Base\Persons\Send\SendPurposes;
 
 class PersonsForm extends TableForm
 {
@@ -147,6 +148,7 @@ class PersonsForm extends TableForm
                 'name'  => ['Název', true],
                 'role'  => ['Funkce', false],
                 'email' => ['E-mail', false],
+                'send_purposes' => ['Účely odesílání', false],
                 'phone' => ['Telefon', false],
                 'note'  => ['Poznámka', false],
             ]),
@@ -174,7 +176,8 @@ class PersonsForm extends TableForm
      * Společný renderer tří sub-tabulek osoby: sloupce ve zvoleném pořadí,
      * buňky přes typ sloupce z definice dětské tabulky (cfgItem → label,
      * datum → d.m.Y…), plus per-sloupec výjimky: `street` skládá ulici
-     * s číslem popisným/orientačním, `currency` velkými písmeny.
+     * s číslem popisným/orientačním, `currency` velkými písmeny,
+     * `send_purposes` kontaktu jako štítky s názvy účelů.
      *
      * @param list<array<string, mixed>> $rows
      * @param array<string, array{string, bool}> $spec column id → [fallback label, grow]
@@ -205,6 +208,7 @@ class PersonsForm extends TableForm
             $cells = [];
             foreach ($spec as $id => $_) {
                 $text = match ($id) {
+                    'send_purposes' => $this->purposeBadges($row['send_purposes'] ?? null),
                     'street'   => $this->formatStreet($row),
                     'currency' => isset($row['currency']) && $row['currency'] !== ''
                         ? strtoupper((string) $row['currency'])
@@ -226,6 +230,20 @@ class PersonsForm extends TableForm
         }
 
         return ['columns' => $columns, 'rows' => $out, 'order_column' => null];
+    }
+
+    /**
+     * Účely odesílání kontaktu (#90 D34) jako štítky; bez účelu prázdná buňka.
+     *
+     * @return list<array{text: string, badge: string}>|null
+     */
+    private function purposeBadges(mixed $value): ?array
+    {
+        $labels = SendPurposes::labels(SendPurposes::decode($value) ?? [], $this->config);
+        if ($labels === []) {
+            return null;
+        }
+        return array_map(static fn (string $label): array => ['text' => $label, 'badge' => 'neutral'], $labels);
     }
 
     /**

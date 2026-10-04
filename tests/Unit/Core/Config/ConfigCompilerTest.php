@@ -369,6 +369,72 @@ class ConfigCompilerTest extends TestCase
         $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::JOURNAL_DIMENSIONS_ITEM]);
     }
 
+    // ── sendPurposes (#90 D34) ──────────────────────────────────────────────
+
+    /** @param list<array<string, mixed>> $purposes */
+    private function purposeModule(string $moduleId, array $purposes): ModuleDefinition
+    {
+        $this->stubModuleDir($moduleId);
+
+        return ModuleDefinition::fromArray(['id' => $moduleId, 'name' => $moduleId, 'sendPurposes' => $purposes]);
+    }
+
+    public function testSendPurposesOfAllModulesCompileIntoOneOrderedCfgItem(): void
+    {
+        ConfigCompiler::compile(
+            [
+                $this->purposeModule('base.persons', [
+                    ['id' => 'reminders', 'name' => 'Payment reminders', 'name:cs' => 'Upomínky', 'order' => 20],
+                    ['id' => 'invoices', 'name' => 'Invoices', 'name:cs' => 'Faktury', 'order' => 10],
+                ]),
+                // Modul přidá vlastní účel bez zásahu do base.persons.
+                $this->purposeModule('economy.contracts', [
+                    ['id' => 'contracts', 'name' => 'Contracts', 'name:cs' => 'Smlouvy', 'order' => 15],
+                ]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['cs', 'en'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([
+            'invoices'  => ['order' => 10, 'name' => 'Faktury'],
+            'contracts' => ['order' => 15, 'name' => 'Smlouvy'],
+            'reminders' => ['order' => 20, 'name' => 'Upomínky'],
+        ], $this->compiledItems('cs')[ConfigCompiler::SEND_PURPOSES_ITEM]);
+        $this->assertSame('Contracts', $this->compiledItems('en')[ConfigCompiler::SEND_PURPOSES_ITEM]['contracts']['name']);
+    }
+
+    public function testNoSendPurposesCompileToEmptyItem(): void
+    {
+        $this->stubModuleDir('core.system');
+
+        ConfigCompiler::compile(
+            [$this->makeModule('core.system', [])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::SEND_PURPOSES_ITEM]);
+    }
+
+    public function testSendPurposeDeclaredByTwoModulesStopsCompilation(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches("/Send purpose 'invoices' is declared by more than one module/");
+
+        ConfigCompiler::compile(
+            [
+                $this->purposeModule('base.persons', [['id' => 'invoices', 'name' => 'Invoices']]),
+                $this->purposeModule('economy.contracts', [['id' => 'invoices', 'name' => 'Invoices again']]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
     public function testJournalDimensionOfUnknownTableStopsCompilation(): void
     {
         $this->expectException(\RuntimeException::class);

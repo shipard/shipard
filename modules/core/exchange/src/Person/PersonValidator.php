@@ -6,7 +6,7 @@ namespace Shipard\Module\Core\Exchange\Person;
 
 /**
  * Semantic validator for a canonical person — runs **after** schema
- * validation and **before** resolve. Four kinds of checks:
+ * validation and **before** resolve. Five kinds of checks:
  *
  *   - Polymorphism per `personType` (the JSON schema intentionally
  *     accepts the union of company/person fields; this is where
@@ -18,6 +18,8 @@ namespace Shipard\Module\Core\Exchange\Person;
  *     `accountNumber` must be present.
  *   - `documents.language` must be one of the document languages
  *     (cfgItem `world.base.documentLanguages`, #94).
+ *   - `contacts[].sendPurposes` must be known send purposes
+ *     (cfgItem `base.persons.sendPurposes`, #90 D34).
  *
  * Returns the same `{severity, path, code, message}` shape as
  * {@see \Shipard\Module\Core\Exchange\Schema\SchemaValidator}. Issues
@@ -30,9 +32,12 @@ final class PersonValidator
      * @param list<string>|null $documentLanguages Jazyky dokumentů (klíče
      *        cfgItemu `world.base.documentLanguages`). Null = volající
      *        konfiguraci nemá (preflight datové sady) a jazyk se nekontroluje.
+     * @param list<string>|null $sendPurposes Účely odesílání (klíče cfgItemu
+     *        `base.persons.sendPurposes`). Null = účely se nekontrolují.
      */
     public function __construct(
         private readonly ?array $documentLanguages = null,
+        private readonly ?array $sendPurposes = null,
     ) {}
 
     /**
@@ -48,6 +53,7 @@ final class PersonValidator
         $this->checkBankAccounts($canonical, $issues);
         $this->checkOwnCompanyTransition($canonical, $issues);
         $this->checkDocuments($canonical, $issues);
+        $this->checkContacts($canonical, $issues);
 
         return $issues;
     }
@@ -230,6 +236,33 @@ final class PersonValidator
                 "Jazyk dokumentů '{$language}' není mezi podporovanými ("
                     . implode(', ', $this->documentLanguages) . ').',
             );
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkContacts(array $canonical, array &$issues): void
+    {
+        if ($this->sendPurposes === null || !is_array($canonical['contacts'] ?? null)) {
+            return;
+        }
+        foreach ($canonical['contacts'] as $i => $contact) {
+            $purposes = is_array($contact) ? ($contact['sendPurposes'] ?? null) : null;
+            if (!is_array($purposes)) {
+                continue;
+            }
+            foreach ($purposes as $purpose) {
+                if (!is_string($purpose) || !in_array($purpose, $this->sendPurposes, true)) {
+                    $issues[] = $this->error(
+                        "contacts.{$i}.sendPurposes",
+                        'invalid_send_purpose',
+                        'Účel odesílání ' . json_encode($purpose, JSON_UNESCAPED_UNICODE)
+                            . ' není mezi podporovanými (' . implode(', ', $this->sendPurposes) . ').',
+                    );
+                }
+            }
         }
     }
 

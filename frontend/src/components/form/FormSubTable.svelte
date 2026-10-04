@@ -41,6 +41,7 @@
   import FormDialog from './FormDialog.svelte';
   import { iconAdd, iconEdit, iconDelete, iconPreview, iconMoveUp, iconMoveDown } from '../../icons.js';
   import { normalizeSpans } from '../viewer/viewerSpans.js';
+  import SpanBadge from '../viewer/SpanBadge.svelte';
   import { foldDiacritics } from '../../utils/paletteMatch.js';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
@@ -341,7 +342,11 @@
                   class:shpd-form-subtable__td--num={col.align === 'right'}
                 >
                   {#each normalizeSpans(row.cells?.[col.id]) ?? [] as span}
-                    <span class={span.class ? `shpd-form-subtable__span--${span.class}` : ''}>{span.text}</span>
+                    {#if span.badge}
+                      <span class="shpd-form-subtable__badge"><SpanBadge style={span.badge} text={span.text} /></span>
+                    {:else}
+                      <span class={span.class ? `shpd-form-subtable__span--${span.class}` : ''}>{span.text}</span>
+                    {/if}
                   {/each}
                 </td>
               {/each}
@@ -554,6 +559,8 @@
 
   /* Styled span variants — stejný slovník jako ViewerGrid; `muted` navíc
      kurzívou (textový řádek dokladu). */
+  /* Štítky v buňce (účely kontaktu) — mezera mezi pilulkami. */
+  .shpd-form-subtable__badge { display: inline-block; margin: 1px var(--shpd-space-xs) 1px 0; }
   .shpd-form-subtable__span--amount  { font-variant-numeric: tabular-nums; font-weight: 600; }
   .shpd-form-subtable__span--muted   { opacity: 0.7; font-style: italic; }
   .shpd-form-subtable__span--bold    { font-weight: 600; }

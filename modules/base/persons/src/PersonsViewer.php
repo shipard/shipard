@@ -5,6 +5,7 @@ namespace Shipard\Module\Base\Persons;
 
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
+use Shipard\Module\Base\Persons\Send\SendPurposes;
 
 class PersonsViewer extends TableViewer
 {
@@ -351,14 +352,15 @@ class PersonsViewer extends TableViewer
 
 	/**
 	 * Kontakty osoby jako properties položky. Label je jméno kontaktu,
-	 * value spojuje funkci, e-mail a telefon přes „·“; bez detailů „—“.
+	 * value spojuje funkci, e-mail, telefon a účely odesílání přes „·“;
+	 * bez detailů „—“.
 	 *
 	 * @return array<int, array{label: string, value: string}>
 	 */
 	private function buildContactItems(int $personId): array
 	{
 		$contacts = $this->db->fetchAll(
-			'SELECT `name`, `role`, `email`, `phone` FROM `base_persons_contacts` WHERE `person` = %i ORDER BY `order_pos`',
+			'SELECT * FROM `base_persons_contacts` WHERE `person` = %i ORDER BY `order_pos`',
 			$personId,
 		);
 
@@ -375,6 +377,12 @@ class PersonsViewer extends TableViewer
 				if ($v !== '') {
 					$parts[] = $v;
 				}
+			}
+
+			// Účely odesílání (#90 D34) — na co se kontakt při odesílání použije.
+			$purposes = SendPurposes::labels(SendPurposes::decode($c['send_purposes'] ?? null) ?? [], $this->config);
+			if ($purposes !== []) {
+				$parts[] = implode(', ', $purposes);
 			}
 
 			$items[] = ['label' => $label, 'value' => $parts !== [] ? implode(' · ', $parts) : '—'];

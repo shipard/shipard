@@ -355,9 +355,25 @@ zapisuje `40`).
   "note":     null,
   "orderPos": 0,
   "validFrom": null,
-  "validTo":   null
+  "validTo":   null,
+  "sendPurposes": ["invoices", "reminders"]   // od 1.2, optional
 }
 ```
+
+### `sendPurposes` — účely odesílání (od 1.2)
+
+Seznam id účelů z cfgItemu `base.persons.sendPurposes` (#90 D34) →
+`base_persons_contacts.send_purposes`. Říká, co se na e-mail kontaktu
+posílá; kontakt bez účelu se při odesílání nepoužije.
+
+- Neznámé id je chyba `invalid_send_purpose` na `contacts.N.sendPurposes`
+  (`PersonValidator`; bez zkompilované konfigurace se nekontroluje).
+- **Klíč chybí (nebo je `null`) → sloupec se nezapisuje.** Starší payload
+  (`1.0`, `1.1`) ani obnova z registru tak účely nesmaže. U nového
+  kontaktu zůstane sloupec prázdný.
+- **Klíč je → platí**, prázdný seznam znamená „žádný účel“. U existujícího
+  kontaktu se zapíše jen při `fullSync` — jako ostatní pole kontaktu.
+- **Export** píše klíč jen u kontaktu s aspoň jedním účelem.
 
 ## 8. Resolve
 
@@ -674,10 +690,12 @@ Reverse lookup z osoby → původ. Manuálně pořízené osoby mají `source_ki
 
 ## 14. Verzování
 
-Klíč `formatVersion` v top-level (aktuálně `"1.1"`). Strategie shodná s
+Klíč `formatVersion` v top-level (aktuálně `"1.2"`). Strategie shodná s
 `shpd.docs.document.v1` (sekce 13 [exchange-format.md](exchange-format.md#13-verzování)):
 
 - `1.1` — volitelný blok `documents` (#94). Payload `1.0` zůstává platný.
+- `1.2` — volitelné `sendPurposes` u kontaktu (#90 D34). Payloady `1.0`
+  a `1.1` zůstávají platné.
 
 - Drobná rozšíření (nová optional pole, nové enum value) — zachová major.
 - Breaking changes — bump na novou major; per-verze applier.

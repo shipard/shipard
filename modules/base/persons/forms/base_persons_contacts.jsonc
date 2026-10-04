@@ -19,6 +19,13 @@
                                 {"type": "input", "column": "name", "required": true},
                                 {"type": "input", "column": "role"},
                                 {"type": "input", "column": "email", "inputType": "email"},
+                                {
+                                    "type": "multiselect",
+                                    "column": "send_purposes",
+                                    "hint": "What is sent to this contact's e-mail. A contact without a purpose is not used when sending.",
+                                    "hint:cs": "Co se na e-mail kontaktu posílá. Kontakt bez účelu se při odesílání nepoužije.",
+                                    "hint:en": "What is sent to this contact's e-mail. A contact without a purpose is not used when sending."
+                                },
                                 {"type": "input", "column": "phone", "inputType": "tel"},
                                 {"type": "input", "column": "note", "inputType": "textarea"},
                                 {"type": "separator"},

@@ -34,6 +34,7 @@ class ModuleDefinition
         public readonly array $journalContributors = [],
         public readonly array $journalDimensions = [],
         public readonly array $prints = [],
+        public readonly array $sendPurposes = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -377,6 +378,57 @@ class ModuleDefinition
             $journalDimensions = array_values($journalDimensions);
         }
 
+        // sendPurposes — účely odesílání (#90 D34): k čemu slouží kontakt
+        // osoby a co posílá tisk (`prints[].sendPurpose`). ConfigCompiler
+        // účely aktivních modulů složí do cfgItem `base.persons.sendPurposes`,
+        // takže modul přidá vlastní účel bez zásahu do base.persons.
+        $sendPurposes = [];
+        if (array_key_exists('sendPurposes', $data)) {
+            if (!is_array($data['sendPurposes']) || !array_is_list($data['sendPurposes'])) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': sendPurposes must be a JSON array",
+                );
+            }
+            foreach ($data['sendPurposes'] as $idx => $purpose) {
+                if (!is_array($purpose)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': sendPurposes[{$idx}] must be an object",
+                    );
+                }
+                $purposeId = $purpose['id'] ?? null;
+                if (!is_string($purposeId) || !preg_match('/^[a-z][a-zA-Z0-9]*$/', $purposeId)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': sendPurposes[{$idx}].id must be an identifier",
+                    );
+                }
+                if (!isset($purpose['name']) || !is_string($purpose['name']) || $purpose['name'] === '') {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': sendPurposes[{$idx}] requires 'name'",
+                    );
+                }
+                $order = $purpose['order'] ?? 1000;
+                if (!is_int($order)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': sendPurposes[{$idx}].order must be an integer",
+                    );
+                }
+                if (isset($sendPurposes[$purposeId])) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': sendPurposes has duplicate id '{$purposeId}'",
+                    );
+                }
+                $entry = ['id' => $purposeId, 'order' => $order];
+                // Název vč. jazykových variant — lokalizuje až kompilace.
+                foreach ($purpose as $key => $value) {
+                    if (($key === 'name' || str_starts_with((string) $key, 'name:')) && is_string($value)) {
+                        $entry[$key] = $value;
+                    }
+                }
+                $sendPurposes[$purposeId] = $entry;
+            }
+            $sendPurposes = array_values($sendPurposes);
+        }
+
         // navigationProviders — třídy dodávající dynamické položky hlavní
         // navigace z dat (NavigationItemsProvider). Registrace je jen {class};
         // instancování a merge dělá NavigationController.
@@ -484,6 +536,7 @@ class ModuleDefinition
             journalContributors: $journalContributors,
             journalDimensions: $journalDimensions,
             prints: $prints,
+            sendPurposes: $sendPurposes,
         );
     }
 

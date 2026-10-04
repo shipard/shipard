@@ -66,6 +66,53 @@
         {
             "table": "base_persons_persons",
             "class": "Shipard\\Module\\Base\\Persons\\PersonDocument"
+        },
+        {
+            "table": "base_persons_contacts",
+            "class": "Shipard\\Module\\Base\\Persons\\ContactDocument"
+        }
+    ],
+
+    // Účely odesílání (#90 D34) — k čemu se kontakt osoby používá a co
+    // posílá tisk (`prints[].sendPurpose`). Kompilace je složí s účely
+    // ostatních aktivních modulů do cfgItem `base.persons.sendPurposes`;
+    // další modul přidá vlastní účel stejným klíčem ve svém module.jsonc.
+    "sendPurposes": [
+        {
+            "id": "invoices",
+            "name": "Invoices and tax documents",
+            "name:cs": "Faktury a daňové doklady",
+            "name:en": "Invoices and tax documents",
+            "name:sk": "Faktúry a daňové doklady",
+            "name:de": "Rechnungen und Steuerbelege",
+            "order": 10
+        },
+        {
+            "id": "reminders",
+            "name": "Payment reminders",
+            "name:cs": "Upomínky",
+            "name:en": "Payment reminders",
+            "name:sk": "Upomienky",
+            "name:de": "Mahnungen",
+            "order": 20
+        },
+        {
+            "id": "offersOrders",
+            "name": "Offers and orders",
+            "name:cs": "Nabídky a objednávky",
+            "name:en": "Offers and orders",
+            "name:sk": "Ponuky a objednávky",
+            "name:de": "Angebote und Bestellungen",
+            "order": 30
+        },
+        {
+            "id": "reports",
+            "name": "Statements and reports",
+            "name:cs": "Přehledy a výpisy",
+            "name:en": "Statements and reports",
+            "name:sk": "Prehľady a výpisy",
+            "name:de": "Übersichten und Auszüge",
+            "order": 40
         }
     ],
 

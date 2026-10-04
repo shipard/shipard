@@ -98,6 +98,19 @@ class ContactResolverTest extends TestCase
         $this->assertSame('Účetní', $p['role']);
         $this->assertSame('+420 123 456 789', $p['phone']);
         $this->assertSame(0, $p['order_pos']);
+        $this->assertArrayNotHasKey('send_purposes', $p, 'payload bez sendPurposes sloupec nezapisuje');
+    }
+
+    public function testSendPurposesPayloadWritesOnlyWhenKeyIsPresent(): void
+    {
+        $this->assertSame([], ContactResolver::sendPurposesPayload(['name' => 'Eva Nová']));
+        $this->assertSame([], ContactResolver::sendPurposesPayload(['name' => 'Eva Nová', 'sendPurposes' => null]));
+        $this->assertSame(
+            ['send_purposes' => '["invoices","reminders"]'],
+            ContactResolver::sendPurposesPayload(['sendPurposes' => ['invoices', 'reminders']]),
+        );
+        // Prázdný seznam je výslovné „žádný účel“.
+        $this->assertSame(['send_purposes' => null], ContactResolver::sendPurposesPayload(['sendPurposes' => []]));
     }
 
     public function testNullPersonIdShortCircuitsToCanCreate(): void

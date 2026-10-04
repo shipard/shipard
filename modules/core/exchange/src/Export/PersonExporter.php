@@ -8,6 +8,7 @@ use Dibi\Connection;
 use Shipard\Module\Core\Exchange\Dataset\ExportedRecord;
 use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
 use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
+use Shipard\Module\Base\Persons\Send\SendPurposes;
 
 /**
  * `base_persons_persons` (+ adresy, bankovní účty, kontakty) →
@@ -104,7 +105,7 @@ final class PersonExporter implements RecordExporter
 
         $canonical = [
             'format'        => 'shpd.persons.person',
-            'formatVersion' => '1.1',
+            'formatVersion' => '1.2',
             'source'        => $this->source($p),
             'personType'    => $personType,
             'country'       => $country ?? strtolower($this->defaultCountry),
@@ -277,6 +278,9 @@ final class PersonExporter implements RecordExporter
             'orderPos'  => V::int($c['order_pos'] ?? null),
             'validFrom' => V::date($c['valid_from'] ?? null),
             'validTo'   => V::date($c['valid_to'] ?? null),
+            // Účely odesílání (1.2, #90 D34); u kontaktu bez účelu klíč
+            // prořeže `prune`.
+            'sendPurposes' => SendPurposes::decode($c['send_purposes'] ?? null) ?? [],
         ];
     }
 

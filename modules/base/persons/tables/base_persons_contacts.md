@@ -22,6 +22,7 @@ struktuře.
 | `name` | varchar(200) | ne | Název kontaktu — jméno osoby („Jan Novák") nebo funkční označení („Účtárna", „Reklamační oddělení") |
 | `role` | varchar(100) | ano | Funkce nebo role — volný text: „Obchodní ředitel", „IT správce", „Fakturantka" |
 | `email` | varchar(200) | ano | E-mailová adresa |
+| `send_purposes` | json | ano | Účely odesílání — pole id z cfgItemu `base.persons.sendPurposes` (`["invoices","reminders"]`); NULL = žádný účel |
 | `phone` | varchar(30) | ano | Telefonní číslo |
 | `note` | text | ano | Volná poznámka |
 | `order_pos` | smallint | ne (default 0) | Pořadí zobrazení — nižší hodnota = vyšší priorita. Kontakt s `order_pos = 0` se považuje za primární |
@@ -57,6 +58,22 @@ osob. Kontakt s vyplněným `valid_to` v minulosti:
 Sloupec `order_pos` určuje pořadí kontaktů v UI. Kontakt s nejnižší
 hodnotou se zobrazí jako první a může sloužit jako výchozí volba
 při vystavování dokladů.
+
+### Účely odesílání
+
+Sloupec `send_purposes` říká, co se na e-mail kontaktu posílá (#90 D34):
+faktury a daňové doklady, upomínky, nabídky a objednávky, přehledy
+a výpisy. Účely deklarují moduly klíčem `sendPurposes` v `module.jsonc`
+a kompilace je skládá do cfgItemu `base.persons.sendPurposes`
+(`docs/modules.md`).
+
+- Při odeslání záznamu jdou do „Komu“ **všechny** platné kontakty osoby
+  s e-mailem a s účelem tisku (`RecipientResolver`, `docs/prints.md`).
+- Kontakt **bez účelu se při odesílání nepoužije** — ani jako záloha;
+  tou je e-mail osoby.
+- Validaci (jen známá id, bez duplicit) a serializaci dělá
+  `ContactDocument`; prázdný výběr se ukládá jako NULL. Tvar sloupce zná
+  jen `Shipard\Module\Base\Persons\Send\SendPurposes`.
 
 ### Vztah name vs role
 

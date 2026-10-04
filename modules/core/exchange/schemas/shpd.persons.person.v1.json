@@ -543,6 +543,17 @@
                             "null"
                         ],
                         "format": "date"
+                    },
+                    "sendPurposes": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
                     }
                 }
             }

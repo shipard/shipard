@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Resolve;
 
 use Dibi\Connection;
+use Shipard\Module\Base\Persons\Send\SendPurposes;
 
 /**
  * Resolves a canonical Contact object to a `base_persons_contacts.id`.
@@ -99,7 +100,7 @@ class ContactResolver
      */
     private function buildCreatePayload(array $contact, ?int $personId): array
     {
-        return [
+        $payload = [
             'person'     => $personId,
             'name'       => $this->normalize($contact['name'] ?? null) ?? '',
             'role'       => $this->normalize($contact['role'] ?? null),
@@ -110,6 +111,24 @@ class ContactResolver
             'valid_from' => $this->normalize($contact['validFrom'] ?? null),
             'valid_to'   => $this->normalize($contact['validTo'] ?? null),
         ];
+
+        return $payload + self::sendPurposesPayload($contact);
+    }
+
+    /**
+     * Účely odesílání kontaktu (formát 1.2, #90 D34). Klíč `sendPurposes`
+     * v payloadu chybí → sloupec se nezapisuje (starší payload účely
+     * nesmaže); klíč je → platí, prázdný seznam = kontakt bez účelu.
+     *
+     * @param array<string, mixed> $contact
+     * @return array{send_purposes?: ?string}
+     */
+    public static function sendPurposesPayload(array $contact): array
+    {
+        if (!is_array($contact['sendPurposes'] ?? null)) {
+            return [];
+        }
+        return ['send_purposes' => SendPurposes::encode(SendPurposes::decode($contact['sendPurposes']) ?? [])];
     }
 
     private function normalize(mixed $value): ?string

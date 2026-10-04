@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Person;
 
 use Dibi\Connection;
+use Shipard\Core\Config\ConfigCompiler;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\TableDefinition;
@@ -88,7 +89,7 @@ class PersonApplier
             config: $config,
             personsGateway: $personsGateway,
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
-            personValidator: new PersonValidator(self::documentLanguages($config)),
+            personValidator: new PersonValidator(self::documentLanguages($config), self::sendPurposes($config)),
             personResolver: new PersonResolver(
                 $db, $partyResolver, $addressResolver, $bankResolver, $contactResolver,
             ),
@@ -105,6 +106,13 @@ class PersonApplier
     {
         $languages = $config->cfgItem('world.base.documentLanguages');
         return is_array($languages) ? array_map('strval', array_keys($languages)) : null;
+    }
+
+    /** @return list<string>|null Null = cfgItem chybí (zdroj dat před ds-upgrade). */
+    private static function sendPurposes(ConfigRuntime $config): ?array
+    {
+        $purposes = $config->cfgItem(ConfigCompiler::SEND_PURPOSES_ITEM);
+        return is_array($purposes) ? array_map('strval', array_keys($purposes)) : null;
     }
 
     private static function hasColumn(?TableDefinition $table, string $column): bool
@@ -843,7 +851,7 @@ class PersonApplier
             'note'       => $this->normalize($contact['note'] ?? null),
             'valid_from' => $this->normalize($contact['validFrom'] ?? null),
             'valid_to'   => $this->normalize($contact['validTo'] ?? null),
-        ];
+        ] + ContactResolver::sendPurposesPayload($contact);
         $this->updateSubRecord('base_persons_contacts', $id, $payload);
     }
 

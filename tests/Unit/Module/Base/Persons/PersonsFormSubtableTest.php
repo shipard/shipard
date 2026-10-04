@@ -39,6 +39,10 @@ class PersonsFormSubtableTest extends TestCase
             'base.persons.addressTypes'       => ['1' => ['name' => 'Sídlo'], '2' => ['name' => 'Doručovací adresa']],
             'base.persons.bankAccountSources' => ['0' => ['name' => 'Ruční pořízení'], '2' => ['name' => 'Registr DPH (API)']],
             'world.base.countries'            => ['cz' => ['name' => 'Česko'], 'sk' => ['name' => 'Slovensko']],
+            'base.persons.sendPurposes'       => [
+                'invoices'  => ['name' => 'Faktury a daňové doklady'],
+                'reminders' => ['name' => 'Upomínky'],
+            ],
             'core.system.docStatesArchive'    => [
                 '10' => ['stateStyle' => 'concept'],
                 '40' => ['stateStyle' => 'done'],
@@ -62,8 +66,11 @@ class PersonsFormSubtableTest extends TestCase
         ];
         $result = $this->form()->renderSubtable($this->tab('contacts', 'base_persons_contacts'), $rows, ['id' => 9]);
 
-        $this->assertSame(['name', 'role', 'email', 'phone', 'note'], array_column($result['columns'], 'id'));
-        $this->assertSame(['Název', 'Funkce', 'E-mail', 'Telefon', 'Poznámka'], array_column($result['columns'], 'label'));
+        $this->assertSame(['name', 'role', 'email', 'send_purposes', 'phone', 'note'], array_column($result['columns'], 'id'));
+        $this->assertSame(
+            ['Název', 'Funkce', 'E-mail', 'Účely odesílání', 'Telefon', 'Poznámka'],
+            array_column($result['columns'], 'label'),
+        );
         $this->assertTrue($result['columns'][0]['grow']);
         $this->assertSame([
             'name'  => 'Jana Ukázková',
@@ -73,6 +80,23 @@ class PersonsFormSubtableTest extends TestCase
         ], $result['rows'][0]['cells']);
         $this->assertSame('done', $result['rows'][0]['stateStyle']);
         $this->assertNull($result['order_column']);
+    }
+
+    public function testContactSendPurposesRenderAsBadgesInConfigOrder(): void
+    {
+        $rows = [
+            ['id' => 1, 'person' => 9, 'name' => 'Účtárna', 'email' => 'ucetni@example.test',
+             'send_purposes' => '["reminders","invoices"]', 'docState' => 40],
+            ['id' => 2, 'person' => 9, 'name' => 'Recepce', 'email' => 'recepce@example.test',
+             'send_purposes' => null, 'docState' => 40],
+        ];
+        $result = $this->form()->renderSubtable($this->tab('contacts', 'base_persons_contacts'), $rows, ['id' => 9]);
+
+        $this->assertSame([
+            ['text' => 'Faktury a daňové doklady', 'badge' => 'neutral'],
+            ['text' => 'Upomínky', 'badge' => 'neutral'],
+        ], $result['rows'][0]['cells']['send_purposes']);
+        $this->assertArrayNotHasKey('send_purposes', $result['rows'][1]['cells'], 'kontakt bez účelu má buňku prázdnou');
     }
 
     public function testAddressesComposeStreetAndResolveEnums(): void

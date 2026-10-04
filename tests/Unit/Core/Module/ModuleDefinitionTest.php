@@ -776,6 +776,55 @@ class ModuleDefinitionTest extends TestCase
         ]);
     }
 
+    // ── sendPurposes (#90 D34) ──────────────────────────────────────────────
+
+    public function testSendPurposesParsedWithLocalizedNamesAndDefaultOrder(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'base.persons',
+            'name' => 'Persons',
+            'sendPurposes' => [
+                ['id' => 'invoices', 'name' => 'Invoices', 'name:cs' => 'Faktury', 'order' => 10, 'ignored' => 'x'],
+                ['id' => 'offersOrders', 'name' => 'Offers and orders'],
+            ],
+        ]);
+
+        $this->assertSame([
+            ['id' => 'invoices', 'order' => 10, 'name' => 'Invoices', 'name:cs' => 'Faktury'],
+            ['id' => 'offersOrders', 'order' => 1000, 'name' => 'Offers and orders'],
+        ], $def->sendPurposes);
+    }
+
+    public function testSendPurposesAbsentDefaultsToEmptyList(): void
+    {
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->sendPurposes);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidSendPurposes')]
+    public function testInvalidSendPurposesAreRejected(mixed $purposes, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches($message);
+
+        ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons', 'sendPurposes' => $purposes]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidSendPurposes(): array
+    {
+        return [
+            'not a list'    => [['invoices' => ['name' => 'Invoices']], '/must be a JSON array/'],
+            'not an object' => [['invoices'], '/sendPurposes\[0\] must be an object/'],
+            'bad id'        => [[['id' => 'Faktury a doklady', 'name' => 'X']], '/id must be an identifier/'],
+            'missing name'  => [[['id' => 'invoices']], "/requires 'name'/"],
+            'bad order'     => [[['id' => 'invoices', 'name' => 'X', 'order' => 'first']], '/order must be an integer/'],
+            'duplicate id'  => [
+                [['id' => 'invoices', 'name' => 'X'], ['id' => 'invoices', 'name' => 'Y']],
+                "/duplicate id 'invoices'/",
+            ],
+        ];
+    }
+
     // ── journalDimensions (assets D47) ──────────────────────────────────────
 
     /** @return array<string, mixed> */

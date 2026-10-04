@@ -309,4 +309,39 @@ class PersonValidatorTest extends TestCase
         // Preflight datové sady konfiguraci nemá — jazyk ověří až applier.
         $this->assertSame([], $this->v->validate($this->companyWithDocuments(['language' => 'fr'])));
     }
+
+    // ── contacts[].sendPurposes (#90 D34) ───────────────────────────────
+
+    /** @return array<string, mixed> */
+    private function companyWithContactPurposes(mixed $purposes): array
+    {
+        return $this->companyWithDocuments(null) + [
+            'contacts' => [['name' => 'Účtárna', 'email' => 'ucetni@example.test', 'sendPurposes' => $purposes]],
+        ];
+    }
+
+    public function testKnownSendPurposesPass(): void
+    {
+        $v = new PersonValidator(null, ['invoices', 'reminders']);
+
+        $this->assertSame([], $v->validate($this->companyWithContactPurposes(['invoices', 'reminders'])));
+        $this->assertSame([], $v->validate($this->companyWithContactPurposes([])));
+        $this->assertSame([], $v->validate($this->companyWithContactPurposes(null)));
+    }
+
+    public function testUnknownSendPurposeIsError(): void
+    {
+        $issues = (new PersonValidator(null, ['invoices', 'reminders']))
+            ->validate($this->companyWithContactPurposes(['invoices', 'newsletter']));
+
+        $this->assertCount(1, $issues);
+        $this->assertSame('error', $issues[0]['severity']);
+        $this->assertSame('contacts.0.sendPurposes', $issues[0]['path']);
+        $this->assertSame('invalid_send_purpose', $issues[0]['code']);
+    }
+
+    public function testSendPurposesAreNotCheckedWithoutConfiguration(): void
+    {
+        $this->assertSame([], (new PersonValidator())->validate($this->companyWithContactPurposes(['newsletter'])));
+    }
 }

@@ -200,7 +200,15 @@
                     "note":      { "type": ["string", "null"] },
                     "orderPos":  { "type": ["integer", "null"] },
                     "validFrom": { "type": ["string", "null"], "format": "date" },
-                    "validTo":   { "type": ["string", "null"], "format": "date" }
+                    "validTo":   { "type": ["string", "null"], "format": "date" },
+                    // formatVersion 1.2 (#90 D34): účely odesílání — id
+                    // z cfgItemu `base.persons.sendPurposes` (validuje PHP).
+                    // Klíč CHYBÍ → applier účely nemění.
+                    "sendPurposes": {
+                        "type": ["array", "null"],
+                        "uniqueItems": true,
+                        "items": { "type": "string", "minLength": 1 }
+                    }
                 }
             }
         },

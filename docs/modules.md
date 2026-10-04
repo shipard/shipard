@@ -387,6 +387,28 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `openItemLookup` | string | Ne | Ne | FQCN poskytovatele dohledání otevřeného předpisu (implements `OpenItemLookup`); jeden per DS (viz níže) |
 | `journalContributors` | string[] | Ne | Ne | FQCN contributorů deníku (implements `JournalContributor`) — příspěvky do deníku zdroje před zápisem; víc modulů smí přispívat (viz níže) |
 | `journalDimensions` | object[] | Ne | Ano (`name`) | Analytické dimenze deníku: `id`, `rowColumn`, `journalColumn`, `table`, `name` povinné, `headColumn` volitelný. Sloupce zakládá modul přes `extensions`; `ConfigCompiler` je skládá do cfgItem `core.accounting.journalDimensions` (`docs/accounting.md` §6 Dimenze deníku) |
+| `sendPurposes` | object[] | Ne | Ano (`name`) | Účely odesílání: `id`, `name` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `base.persons.sendPurposes` (viz níže) |
+
+### Pole `sendPurposes`
+
+Účely odesílání (#90 D34) — k čemu slouží kontakt osoby
+(`base_persons_contacts.send_purposes`) a co posílá tisk
+(`prints[].sendPurpose`). Cfg položky se mezi moduly **neslučují** (cfgItem
+se stejným id z pozdějšího modulu ten dřívější přepíše celý), proto má
+rozšiřitelný seznam vlastní klíč — stejný vzor jako `journalDimensions`:
+
+```jsonc
+"sendPurposes": [
+    { "id": "contracts", "name": "Contracts", "name:cs": "Smlouvy", "name:en": "Contracts", "order": 50 }
+]
+```
+
+`ConfigCompiler` účely všech aktivních modulů složí do cfgItemu
+**`base.persons.sendPurposes`** (klíč = `id`, pořadí podle `order`, pak
+`id`). Základní čtyři účely deklaruje `base.persons`; další modul přidá
+vlastní bez zásahu do něj. Stejné `id` ve dvou modulech zastaví kompilaci,
+cfgItem `base.persons.sendPurposes` nejde deklarovat v `config`.
+Po přidání účelu je potřeba `ds-upgrade`.
 
 ### Pole `attachmentGuards`
 

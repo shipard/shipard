@@ -56,6 +56,18 @@
             "length": 200,
             "nullable": true
         },
+        // Účely odesílání (#90 D34): seznam id z cfgItemu
+        // `base.persons.sendPurposes`; NULL = kontakt se při odesílání
+        // nepoužije. Validaci a serializaci řeší ContactDocument.
+        {
+            "id": "send_purposes",
+            "name": "Send purposes",
+            "name:cs": "Účely odesílání",
+            "name:en": "Send purposes",
+            "type": "json",
+            "nullable": true,
+            "cfgItem": "base.persons.sendPurposes"
+        },
         {
             "id": "phone",
             "name": "Phone",
