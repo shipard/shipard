@@ -86,9 +86,10 @@ implementuje.
   iniciativy. `git push`, `gh pr create` a `gh pr merge` si v každém režimu
   včetně auto vyžádají potvrzení (`.claude/settings.json`, `permissions.ask`).
   Pravidlo zachytí běžný tvar příkazu, ne každou obměnu (`git -C … push`) —
-  hranicí je ochrana větve `stable` na GitHubu: přímo do ní zapisuje jen
-  několik lidí, ostatní posílají pull requesty. Claude v chatu (MCP most)
-  potvrzovací dotaz nemá, proto nepushuje nikdy.
+  hranicí jsou práva na GitHubu: právo zápisu do repozitáře mají jen
+  správci, ostatní posílají pull requesty z forku. Větev `stable` navíc
+  chrání ruleset proti force-push a smazání (platí i pro správce). Claude
+  v chatu (MCP most) potvrzovací dotaz nemá, proto nepushuje nikdy.
 
 ---
 

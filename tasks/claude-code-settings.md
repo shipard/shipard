@@ -1,6 +1,6 @@
 # Sdílené nastavení Claude Code — co platí v každém režimu
 
-**Stav:** částečně — implementováno; zbývá ruční ověření v nové session (dotaz u pushe v auto, `/permissions`, režim Manual) — #96 D27, D30
+**Stav:** hotovo — #96 D27, D30, D31; 2026-10-04 ověřeno v nové session Claude Code v režimech auto i Manual (`/permissions`: 4× ask, 2× deny; push se ptá, čtení `config/main.json` odmítnuto)
 
 ## Cíl
 
@@ -39,9 +39,13 @@ Repo dostane verzované `.claude/settings.json` s pravidly, která platí ve
   **jen na výslovný pokyn** a člověk každé odeslání potvrzuje — v každém
   režimu včetně auto. Důvod: `deny` by zakázal push i na výslovnou žádost
   (řešení konfliktů s commity na remote, rebase); přímý zápis do `stable`
-  omezuje ochrana větve na GitHubu, ostatní posílají pull requesty.
+  omezují práva na GitHubu (zápis mají jen správci), ostatní posílají
+  pull requesty z forku.
   Claude v chatu (MCP most) potvrzovací dotaz nemá — tam dál platí
   „nikdy nepushuj“.
+- ✓ **D31** — větev `stable` chrání ruleset na GitHubu: zákaz force-push
+  a smazání, bez výjimek (platí i pro správce); přímý push správců
+  neomezuje. Založeno 2026-10-04.
 
 ## Co je potřeba udělat
 
@@ -105,7 +109,8 @@ a *Auto mode config*:
 - Bash pravidla zachytí příkaz v běžném tvaru; `git -C . push` nebo
   `git -c x=y push` ne. Širší vzor (`Bash(git * push *)`) by zachytil
   i `git stash push` a commit se slovem „push“ ve zprávě — záměrně není.
-  Hranicí je ochrana větve `stable` na GitHubu.
+  Hranicí jsou práva na GitHubu (zápis jen správci) a ruleset na `stable`
+  (zákaz force-push a smazání, #96 D31).
 - `Read` pravidla platí pro nástroje Read / Grep / Glob, pro příkazy,
   které soubor jmenují (`cat`, `head`, `tail`, `sed`, …), a pro
   přesměrování; relativní cesta se vyhodnotí vůči aktuálnímu adresáři.
@@ -144,7 +149,7 @@ ověření.
 ## Hotovo když
 
 - [x] `.claude/settings.json` ve verzi, ostatní obsah `.claude/` ignorovaný
-- [ ] push i `gh pr create` / `gh pr merge` si vyžádají potvrzení v auto
+- [x] push i `gh pr create` / `gh pr merge` si vyžádají potvrzení v auto
       i Manual (ruční ověření v nové session)
 - [x] čtení `config/main.json` a `secrets/` zablokované (v rozsahu, který
       Claude Code umožňuje — mezery popsané výše)
