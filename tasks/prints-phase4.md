@@ -1,10 +1,10 @@
-# Tisky — Fáze 4: odesílání e-mailem (účely kontaktů, příjemci, odesílatel, služba odeslání)
+# Tisky — Fáze 4: odesílání e-mailem (účely kontaktů, příjemci, odesílatel, Odeslaná pošta)
 
-**Stav:** naplánováno — design zamčený v #90 (D34–D39), čeká na implementaci
+**Stav:** naplánováno — design zamčený v #90 (D34–D45), čeká na implementaci
 
-> PRD pro Claude Code (6 commitů). Design: issue #90, komentář
-> „Rozhodnutí: fáze 4 — odesílání e-mailem (D34–D39)“; základ D10, D11
-> (tělo #90). Navazuje na #94 (jazyk osoby, spojování příloh do PDF,
+> PRD pro Claude Code (7 commitů). Design: issue #90, komentáře
+> „Rozhodnutí: fáze 4 — odesílání e-mailem (D34–D39)“ a „Rozhodnutí:
+> Odeslaná pošta (D40–D45)“ (nahrazuje D10 a D36); základ D11 (tělo #90). Navazuje na #94 (jazyk osoby, spojování příloh do PDF,
 > příznak „Odeslat se záznamem“) a na `tasks/prints-languages.md`.
 
 ## Kontext
@@ -13,6 +13,12 @@ Tisky umí vyrobit PDF libovolného deklarovaného tisku (`docs/prints.md`),
 odchozí pošta umí frontu, transporty a přílohy (`docs/mail/outbound.md`).
 Chybí to mezi nimi: komu poslat, odkud, s jakým textem, co poslat s tím
 a kde je vidět, že se poslalo. Roadmapa M4 to vede jako blokátor migrace.
+
+Jádrem je **Odeslaná pošta** (D40–D45): evidence odeslaných zpráv nad
+libovolnou tabulkou, oddělená od transportu. Odeslání faktury vytvoří
+zprávu (obsah — předmět, tělo, příjemci, přílohy — je pevný) a zpráva se
+předá outboxu. Faktura ví, co odešlo, přes zprávy, které na ni ukazují;
+zprávu jde kdykoliv odeslat znovu se stejnými přílohami.
 
 Primární cesta budoucnosti je automatické a hromadné odesílání (D11) —
 tahle fáze ho **nestaví**, ale staví službu, kterou dávka i plánovač
@@ -24,7 +30,7 @@ nad libovolnou tabulkou — ne jen doklady.
 
 ## Před implementací přečti
 
-- Issue #90 — D2, D4, D10, D11, D21, D34–D39; issue #94 — D1–D11
+- Issue #90 — D2, D4, D11, D21, D34–D45 (D40–D45 nahrazují D10 a D36); issue #94 — D1–D11
 - `docs/prints.md` celé; `docs/mail/outbound.md` celé
 - `src/Core/Prints/` — `PrintDefinition`, `PrintRegistry`, `PrintRunner`,
   `PrintLanguageResolver`; `src/Core/I18n/DocumentLanguageResolver.php`
@@ -33,7 +39,7 @@ nad libovolnou tabulkou — ne jen doklady.
   `modules/core/mail/tables/core_mail_outbox.jsonc`,
   `core_mail_senders.jsonc`
 - `modules/core/attachments/src/AttachmentService.php` (`upload`,
-  `listAttachments`, `setSendWithRecord`, `mergeMetadata`),
+  `copyTo`, `listAttachments`, `setSendWithRecord`),
   `core_attachments_files.jsonc` (`send_with_record`)
 - `modules/base/persons/tables/base_persons_persons.jsonc` (`email`,
   `language`, volba spojování příloh z #94 D5),
@@ -45,6 +51,10 @@ nad libovolnou tabulkou — ne jen doklady.
   (háček akce Tisk), `src/Api/TableAccessGuard.php`, `ReadOnlyPolicy`
 - `frontend/src/components/viewer/PrintPreviewDialog.svelte`,
   `frontend/src/api/prints.js`
+- `modules/core/mail/tables/core_mail_incoming_messages.jsonc` — **vzor
+  konvence sloupců** (odesílatel, partner, vazba `target_table_id` /
+  `target_row`), jeho formulář a viewer (agenda v sekci Pošta)
+- `modules/core/system/config/docStatesArchive.jsonc` — vzor sady stavů
 - `docs/auth.md` — model oprávnění (D16: jen `is_admin`)
 
 ## Scope
@@ -56,14 +66,20 @@ nad libovolnou tabulkou — ne jen doklady.
 - Rozšíření odchozí pošty: víc adres v „Komu“, kopie, jméno odesílatele.
 - Odesílatel: resolver, volba „Odesílat z“ na číselné řadě (D39).
 - `sendPurpose` v deklaraci tisku, šablony předmětu a těla e-mailu (D37).
-- Služba odeslání, tabulka záznamů o odeslání, zmrazená kopie (D10, D36).
-- REST, CLI `print-send`, UI dialog Odeslat a tab Odesláno (D38).
+- Odeslaná pošta: tabulka, stavy, formulář, agenda (D40, D41, D45).
+- Služba odeslání záznamu, transport zprávy, Odeslat znovu (D42–D44).
+- REST, CLI `print-send`, dialog Odeslat, sekce Odeslaná pošta v detailu
+  záznamu (D38, D45).
 - Testy, `docs/prints.md`, `docs/mail/outbound.md`, nápověda.
 
 **Mimo:**
 
-- Hromadné a automatické odesílání (dávka, plánovač, idempotence nad
-  stavem „odesláno“) — samostatná diskuse; tabulka odeslání ji umožní.
+- Hromadné a automatické odesílání (dávka, plánovač, idempotence) —
+  samostatná diskuse; Odeslaná pošta a služba ji umožní.
+- Ruční zpráva bez tisku (e-mail osobě s vlastními přílohami) — model
+  ji umožní, UI později.
+- Kanál datová schránka (sloupec `channel` jen připravený).
+- Společný pohled došlá + odeslaná pošta, vlákna.
 - Import vazeb kontaktů ze starého Shipardu — samostatný task.
 - ISDOC (generátor i vložení do PDF) — samostatný task.
 - Uživatelské texty e-mailů (fáze 3, D9).
@@ -186,7 +202,49 @@ a odesílatel nemá jméno. Rozšířit zpětně kompatibilně:
   šablon (slovenské a německé texty přidej k „Formulacím k revizi“
   v `tasks/prints-languages.md`).
 
-## 6. Služba odeslání (D10, D36)
+## 6. Odeslaná pošta (D40, D41)
+
+Nová tabulka **`core_mail_sent_messages`** v modulu `core.mail` —
+dokument nad libovolnou tabulkou. Názvy sloupců drž v konvenci došlé
+pošty (`core_mail_incoming_messages`), kde to dává smysl.
+
+| Sloupec | Popis |
+|---|---|
+| `id`, `doc_state` | PK, stav dokumentu (níže) |
+| `channel` | `email` (rezerva `databox`) |
+| `subject`, `body_text` | předmět, tělo (prostý text) |
+| `email_from`, `email_from_name` | odesílatel |
+| `email_to`, `email_cc` | příjemci (seznam), kopie (nullable) |
+| `recipient_person` | osoba příjemce (nullable) |
+| `target_table_id`, `target_row` | záznam, ke kterému zpráva patří (nullable) |
+| `purpose`, `language`, `print_id` | účel, jazyk, tisk (nullable — zpráva nemusí být z tisku) |
+| `transport_state` | `queued` / `sent` / `failed` — výsledek posledního průchodu transportem |
+| `sent_at`, `send_count`, `last_error` | poslední úspěšné odeslání, počet úspěšných odeslání, poslední chyba |
+| `last_outbox_id` | poslední řádek outboxu (nullable po úklidu) |
+| `trigger` | `manual` / `cli` (rezerva `batch`) |
+| `created`, `created_by`, `modified` | |
+
+- Indexy: `(target_table_id, target_row, created)`, `recipient_person`,
+  `doc_state`.
+- **Přílohy zprávy** = přílohy v `core_attachments_files` s tabulkou
+  `core_mail_sent_messages` a řádkem zprávy.
+- **Stavy** — vlastní sada (ne `docStatesArchive`, ta má Koncept
+  a V opravě): `40` Odeslaná, `70` V archivu, `90` Smazaná;
+  `40 → 70, 90`, `70 → 40`, `90 → 40`. Zpráva vzniká rovnou ve stavu
+  40, žádný Koncept (D41).
+- **Obsah je pevný** (D41): po vytvoření nejde měnit předmět, tělo,
+  odesílatele, příjemce, vazbu ani přílohy — formulář je jen pro čtení
+  kromě stavu; API zápisu tyto sloupce i přílohy odmítne. Fyzicky se
+  zpráva nemaže nikdy (ani ze stavu 90).
+- **Formulář** zprávy: hlavička (kdy, kdo, odesílatel, příjemci, osoba,
+  odkaz na záznam), předmět, tělo, přílohy (náhled), stav transportu
+  a historie pokusů (z `core_mail_outbox_log`, dokud existuje), akce
+  **Odeslat znovu** (§8), Archivovat, Smazat, Obnovit.
+- **Agenda Odeslaná pošta** v sekci Pošta (vedle došlé): datum, osoba
+  a adresy příjemce, předmět, záznam (popisek), stav transportu.
+  Archivované a smazané podle běžných filtrů stavu.
+
+## 7. Služba odeslání záznamu (D42, D44)
 
 `RecordSendService::prepare(SendRequest): SendDraft` a
 `RecordSendService::send(SendRequest): SendResult`
@@ -199,82 +257,85 @@ a odesílatel nemá jméno. Rozšířit zpětně kompatibilně:
 1. Definice + dostupnost (D2, stav záznamu) jako u tisku; bez
    `sendPurpose` → `PRINT_NOT_SENDABLE`.
 2. Osoba příjemce (`recipientPerson`), jazyk dokumentu (#94 D2 /
-   parametr), příjemci (§2), odesílatel (§4) a nabídka povolených adres.
+   parametr), příjemci (§2 — **živě z osoby a kontaktů, ne ze snapshotu
+   dokladu**, D44), odesílatel (§4) a nabídka povolených adres.
 3. Předmět a tělo (§5) v jazyce dokumentu.
-4. Přílohy: přílohy záznamu s `send_with_record = 1` (bez zmrazených
-   kopií z dřívějších odeslání), u každé příznak, zda se připojí do PDF
-   (PDF + volba osoby #94 D5 / D11), nebo půjde zvlášť.
+4. Přílohy: přílohy záznamu s `send_with_record = 1`, u každé příznak,
+   zda se připojí do PDF (PDF + volba osoby #94 D5 / D11), nebo půjde
+   zvlášť.
 5. Vrátí návrh + `messages` (`NO_RECIPIENT`, `NO_SENDER`, varování
    builderu tisku).
 
-**`send`**:
+**`send`** — vždy vytvoří **novou** zprávu (D44):
 1. `prepare` s hodnotami z požadavku (přepsané pole má přednost).
    Prázdné „Komu“ nebo chybějící odesílatel → chyba, nic se nevytvoří.
-2. PDF tisku (`PrintRunner`, `pdf`, zvolený jazyk); připojované PDF
-   přílohy přes `appendPdfs` render služby.
-3. **Zmrazená kopie** (D10): výsledné PDF jako příloha záznamu
-   (`AttachmentService::upload`, název `meta.fileName`,
-   `send_with_record = 0`, `metadata.recordSend = {sendId, printId,
-   language}`). Stejný obsah (checksum) jako poslední kopie téhož
-   tisku → použít existující přílohu.
-4. Záznam o odeslání (§7) + `MailOutboxService::enqueue` jedné zprávy
-   (všichni v „Komu“, kopie, odesílatel se jménem, text, přílohy =
-   zmrazená kopie + přílohy posílané zvlášť, `recipientPersonId`,
-   `sourceModule: "core.mail"`, `sourceRef: "recordSend:<id>"`) —
-   **v jedné transakci** s bodem 3 (při chybě nic nezůstane; soubor
-   přílohy na disku uklidit).
-5. Ruční odeslání (`manual`) zkusí odeslat hned (`enqueueAndSend`),
-   výsledek vrátí; selhání transportu = zpráva zůstane ve frontě
-   (stávající retry), dialog to řekne.
+2. PDF tisku (`PrintRunner`, `pdf`, zvolený jazyk), znovu vyrobené;
+   připojované PDF přílohy přes `appendPdfs` render služby.
+3. Zpráva v Odeslané poště (§6, stav 40, `transport_state = queued`,
+   vazba na záznam, osoba, účel, jazyk, tisk).
+4. Přílohy zprávy: PDF tisku (`AttachmentService::upload`, název
+   `meta.fileName`) + přílohy posílané zvlášť zkopírované ze záznamu
+   (`AttachmentService::copyTo`). Na záznamu se **nic nevytváří** —
+   zmrazená kopie na záznamu není (D42 nahrazuje D10).
+5. Předání transportu (§8).
+
+Body 3–5 v jedné transakci; při chybě nic nezůstane (soubory příloh
+na disku uklidit). Ruční odeslání (`manual`) se pokusí odeslat hned
+a výsledek vrátí; selhání transportu = zpráva zůstane ve frontě
+(stávající retry), dialog to řekne.
 
 Služba nečte HTTP ani UI — volá ji REST, CLI a později dávka.
 
-## 7. Záznam o odeslání
+## 8. Transport zprávy (D43, D44)
 
-Nová tabulka **`core_mail_record_sends`** v modulu `core.mail` (outbox
-se uklízí, historie odeslání záznamu musí zůstat):
+`SentMessageTransport::dispatch(int $sentMessageId, bool $sendNow): int`
+(vrací id outboxu)
 
-| Sloupec | Popis |
-|---|---|
-| `id` | PK |
-| `table_id`, `record_id` | odeslaný záznam |
-| `print_id` | deklarace tisku |
-| `purpose`, `language` | účel a jazyk |
-| `email_from`, `email_from_name`, `email_to`, `email_cc` | jak odešlo |
-| `subject` | předmět |
-| `outbox_id` | vazba na frontu (nullable po úklidu) |
-| `frozen_attachment_id` | zmrazená kopie |
-| `trigger` | `manual` / `cli` (rezervováno `batch`) |
-| `created`, `created_by` | kdy a kdo |
+- Sestaví `OutboundMessage` ze zprávy: odesílatel se jménem, všichni
+  v „Komu“, kopie, `bodyText`, přílohy = **přílohy zprávy**,
+  `recipientPersonId`, `sourceModule: "core.mail"`,
+  `sourceRef: "sentMessage:<id>"`; `enqueue` nebo `enqueueAndSend`.
+- Zpráva: `transport_state = queued`, `last_outbox_id`.
+- **Zpětné propsání výsledku:** `MailOutboxService` při přechodu řádku
+  do konečného stavu (odesláno / trvalá chyba) zavolá posluchače
+  registrovaného pro `sourceRef` s prefixem `sentMessage:` (malé
+  rozhraní `OutboxSourceListener`, registrace podle prefixu). Ten
+  nastaví `transport_state`, `sent_at`, `send_count + 1` nebo
+  `last_error`. Úklid outboxu tak historii nevezme (D43). Mezistavy
+  (retry) zpráva nevidí jinak než `queued`.
+- **Odeslat znovu** (D44): `dispatch` téže zprávy — stejní příjemci,
+  stejné přílohy, nic nového se nevytváří. Jen pro zprávu ve stavu 40
+  (archivovanou nejdřív obnovit). Zpráva právě ve frontě (`queued`) →
+  `409 ALREADY_QUEUED`.
+- Kanál `databox` jen jako hodnota sloupce; `dispatch` pro jiný kanál
+  než `email` = `LogicException`.
 
-Stav pro UI: ze `core_mail_outbox.state`, existuje-li řádek; chybějící
-řádek (uklizený) = odesláno (úklid maže jen odeslané — **ověř**
-v `docs/mail/outbound.md` a kódu úklidu; když maže i jiné, stav ukládat
-do tabulky odeslání při změně stavu outboxu). Index `(table_id,
-record_id, created)`.
-
-## 8. REST a CLI
+## 9. REST a CLI
 
 - `GET /_prints/{printId}/{recordId}/send-draft[?language=]` → návrh
   z `prepare` (příjemci s důvody, povolení odesílatelé + výchozí,
   předmět, tělo, jazyk, jazyky tisku, přílohy, `messages`).
 - `POST /_prints/{printId}/{recordId}/send` → `send`; tělo
   `{from, to[], cc[], subject, body, language, attachmentIds[]}`;
-  odpověď `{sendId, outboxState, messages}`.
-- `GET /_record-sends?table=<tabulka>&recordId=<id>` → historie
-  odeslání záznamu (pro tab Odesláno).
+  odpověď `{sentMessageId, transportState, messages}`.
+- `POST /_sent-messages/{id}/resend` → Odeslat znovu; odpověď
+  `{transportState}`.
+- Agenda, formulář a změny stavu Odeslané pošty běžnými CRUD /
+  viewer endpointy (zápis obsahu odmítnutý, §6).
 - Chyby: `PRINT_NOT_SENDABLE` 409, `PRINT_NOT_AVAILABLE` 409,
   `NO_RECIPIENT` 422, `NO_SENDER` 422, `SENDER_NOT_ALLOWED` 422,
-  `INVALID_EMAIL` 422, chyby renderu jako u tisku.
+  `INVALID_EMAIL` 422, `ALREADY_QUEUED` 409, `INVALID_STATE` 409
+  (Odeslat znovu u archivované / smazané), chyby renderu jako u tisku.
 - **Práva (D38):** model oprávnění zná jen administrátora (`docs/auth.md`
   D16), takže „smí záznam upravovat“ = projde `guardTable()` na tabulku
-  deklarace **a** `ReadOnlyPolicy` jako zápis (POST). Zapsat do
+  deklarace **a** `ReadOnlyPolicy` jako zápis (POST). Totéž pro
+  Odeslat znovu (na `core_mail_sent_messages`). Zapsat do
   `docs/prints.md`, že s jemnějšími právy se tohle zpřísní.
 - CLI `shpd-ds print-send <printId> <recordId> [--to=…] [--cc=…]
   [--from=…] [--language=…] [--dry-run]` — `--dry-run` vypíše návrh
   (JSON) a nic nevytvoří. Zápis do `docs/cli.md`.
 
-## 9. UI (D38)
+## 10. UI (D38, D45)
 
 - **Akce Odeslat** v detailu — háček ve `ViewerController::detail()`
   vedle akce Tisk: jen pro tisky se `sendPurpose` dostupné ve stavu
@@ -286,24 +347,26 @@ record_id, created)`.
   - Jazyk: výběr (jazyky tisku); změna znovu načte návrh (předmět,
     tělo — ručně upravený text se před přepsáním potvrdí).
   - Předmět, tělo (textarea).
-  - Přílohy: zmrazená kopie (PDF tisku, nelze odebrat; odkaz na
-    náhled), přílohy záznamu se zaškrtnutím podle `send_with_record`
-    a označením „připojí se do PDF“.
+  - Přílohy: PDF tisku (nelze odebrat; náhled), přílohy záznamu se
+    zaškrtnutím podle `send_with_record` a označením „připojí se do PDF“.
   - `messages` nahoře (žádný příjemce, žádný odesílatel, varování tisku).
   - Odeslat / Zrušit; po odeslání výsledek (odesláno / ve frontě /
-    chyba) a obnovení tabu Odesláno.
+    chyba) a obnovení sekce Odeslaná pošta.
   - Mobil: fullscreen.
-- **Tab Odesláno** v detailu záznamu — generický háček (tabulky, které
-  mají aspoň jeden odesílatelný tisk), jen když existuje aspoň jedno
-  odeslání. Řádky: kdy, kdo, tisk, komu (+ kopie), jazyk, stav. Akce:
-  náhled zmrazeného PDF (stávající náhled přílohy), **Odeslat znovu**
-  (otevře dialog předvyplněný stejnými příjemci a jazykem — ne aktuálním
-  návrhem resolveru).
+- **Sekce Odeslaná pošta v detailu záznamu** — generický háček pro
+  **libovolnou** tabulku: když na záznam ukazuje aspoň jedna zpráva ve
+  stavu 40. Každá zpráva: hlavička (datum a čas, komu, stav transportu)
+  a náhledy jejích PDF příloh (stávající náhled příloh). Klik na
+  hlavičku otevře formulář zprávy (§6) — tam Odeslat znovu,
+  Archivovat, Smazat.
+- **Opravená adresa:** uživatel upraví e-mail na osobě / kontaktu
+  a v detailu záznamu dá znovu **Odeslat** → nová zpráva s novou
+  adresou; předchozí zpráva zůstává v historii (D44).
 - **Číselná řada**: sekce „Odesílání e-mailem“ (§4).
 - **Kontakt osoby**: účely (§1).
 - i18n frontendu `cs` / `en`.
 
-## 10. Bezpečnost testování
+## 11. Bezpečnost testování
 
 Dev servery nemají zachytávání pošty a relay posílá ven (technickou
 pojistku řeší #95). Do té doby:
@@ -321,22 +384,29 @@ pojistku řeší #95). Do té doby:
 
 - **Unit:** účely (validace sloupce, cfgItem), `RecipientResolver`
   (účel, platnost, stav, pořadí, duplicity, fallback na osobu, kontakt
-  bez účelu ignorován, nevalidní adresa), `SenderResolver` (pořadí,
+  bez účelu ignorován, nevalidní adresa, adresa vždy živá — ne ze
+  snapshotu), `SenderResolver` (pořadí,
   povolené adresy, deaktivovaný odesílatel na řadě), `PrintDefinition`
   (`sendPurpose` jen u external, `recipientPerson` povinný), render
   e-mailových šablon (všechny jazyky, předmět bez konců řádků, žádné
   HTML escapování v textu), `OutboundMessage` / `MailComposer` (víc
   „Komu“, kopie, jméno), `RecordSendService` s fake závislostmi
-  (`prepare` bez vedlejších účinků, `send` vytvoří přílohu + záznam +
-  outbox v transakci, chyba renderu nic nezanechá, opakované odeslání
-  stejného obsahu použije stejnou zmrazenou kopii).
+  (`prepare` bez vedlejších účinků; `send` vytvoří zprávu + přílohy
+  zprávy + outbox v transakci a na záznamu nic; chyba renderu nic
+  nezanechá; dvě odeslání = dvě zprávy), `SentMessageTransport`
+  (Odeslat znovu = nový řádek outboxu se stejnými přílohami, žádná nová
+  zpráva; `ALREADY_QUEUED`; posluchač outboxu propíše `sent` / `failed`,
+  `send_count`), pevný obsah zprávy (zápis obsahu i příloh odmítnut,
+  změna stavu povolena), přechody stavů.
 - **Integrační (volný DS):** faktura s kontaktem s účelem → oba
   příjemci z kontaktů; bez kontaktu → e-mail osoby; bez e-mailu →
   `NO_RECIPIENT`; přílohy se `send_with_record` — spojené do PDF při
-  volbě osoby, jinak zvlášť; `core_mail_record_sends` + outbox ve stavu
-  `queued` (bez odeslání); slovenský partner → slovenský předmět a PDF.
-- **Controller:** draft, send, historie, chybové kódy, read-only session
-  → 403.
+  volbě osoby, jinak zvlášť (kopie v přílohách zprávy, záznam beze
+  změny); zpráva + outbox ve stavu `queued` (bez odeslání); slovenský
+  partner → slovenský předmět a PDF; změna e-mailu osoby → další
+  odeslání jde na novou adresu, stará zpráva beze změny.
+- **Controller:** draft, send, resend, chybové kódy, read-only session
+  → 403; háček detailu (sekce Odeslaná pošta jen se zprávami ve stavu 40).
 
 ## Task breakdown
 
@@ -358,45 +428,61 @@ s důvody podle pravidel.
 
 §4 (resolver, povolené adresy, číselná řada — sloupce a formulář), testy.
 
-### Commit 4 — Služba odeslání
+### Commit 4 — Odeslaná pošta
 
-§5 (deklarace, e-mailové šablony a katalogy), §6, §7 (tabulka),
-CLI `print-send`, testy.
+§6 (tabulka, stavy, pevný obsah, formulář, agenda), §8 (transport,
+posluchač outboxu, Odeslat znovu), testy.
+
+**Hotovo když:** zprávu vytvořenou testem / CLI jde v agendě otevřít,
+odeslat znovu, archivovat a smazat; výsledek transportu se propíše
+do zprávy.
+
+### Commit 5 — Služba odeslání záznamu
+
+§5 (deklarace, e-mailové šablony a katalogy), §7, CLI `print-send`,
+testy.
 
 **Hotovo když:** `print-send … --dry-run` vrátí úplný návrh;
-`print-send … --to=<vlastní adresa>` na volném DS vytvoří zmrazenou
-kopii, záznam o odeslání a zprávu ve frontě.
+`print-send … --to=<vlastní adresa>` na volném DS vytvoří zprávu
+v Odeslané poště s PDF v přílohách a řádek ve frontě.
 
-### Commit 5 — REST a UI
+### Commit 6 — REST a UI
 
-§8 REST, §9 UI, testy controlleru.
+§9 REST, §10 UI, testy controlleru.
 
 **Hotovo když:** z detailu faktury jde otevřít dialog, poslat na vlastní
-adresu (volný DS), v tabu Odesláno je záznam s náhledem PDF a Odeslat
-znovu funguje.
+adresu (volný DS); v detailu faktury je sekce Odeslaná pošta s náhledem
+PDF, klik otevře zprávu a Odeslat znovu funguje.
 
-### Commit 6 — Dokumentace a nápověda
+### Commit 7 — Dokumentace a nápověda
 
 - `docs/prints.md`: kapitola Odesílání (účely, příjemci, odesílatel,
-  služba, zmrazená kopie, šablony e-mailu, REST, CLI, práva, rozšíření
-  účelů modulem, jak udělat tisk odesílatelný).
-- `docs/cli.md`, `docs/mail/outbound.md`.
-- Nápověda: odeslání faktury, kontakty a účely (osoby), číselná řada
-  (Odesílat z) — podle pravidel nápovědy.
+  služba, šablony e-mailu, REST, CLI, práva, rozšíření účelů modulem,
+  jak udělat tisk odesílatelný).
+- `docs/mail/outbound.md` (nebo nový `docs/mail/sent.md`): Odeslaná
+  pošta — model, pevný obsah, stavy, transport a posluchač outboxu,
+  Odeslat znovu; odkaz z `docs/README.md`.
+- `docs/cli.md`.
+- Nápověda: odeslání faktury (včetně „partner hlásí novou adresu“),
+  Odeslaná pošta, kontakty a účely (osoby), číselná řada (Odesílat z) —
+  podle pravidel nápovědy.
 - Roadmapa M4 — řádek „Odeslání dokladu odběrateli e-mailem“.
 - Hlavička tohoto tasku + `python3 scripts/tasks-index.py`.
 
 ## Rozhodnutí k designu
 
-Zamčeno v #90: D34–D39. Upřesnění z PRD:
+Zamčeno v #90: D34–D45 (D40–D45 nahrazují D10 a D36). Upřesnění z PRD:
 
-- Tabulka odeslání `core_mail_record_sends` (outbox se uklízí, historie
-  musí zůstat) — v modulu `core.mail`.
+- Odeslaná pošta má vlastní sadu stavů (40 Odeslaná, 70 V archivu,
+  90 Smazaná), ne `docStatesArchive` — pevný obsah nesnese Koncept ani
+  V opravě.
+- Výsledek transportu si zpráva propisuje sama přes posluchače outboxu
+  podle `sourceRef` — outbox zůstává čistě transportní frontou.
+- Odeslat znovu jen u zprávy ve stavu 40, ne když už je ve frontě.
 - Deklarace tisku dostane `recipientPerson` (sloupec s osobou příjemce),
   aby služba fungovala nad libovolnou tabulkou.
 - Předmět a tělo jako Twig šablony tisku (`email-*.txt.twig`) nad
   `PrintData`, texty v katalozích — žádný nový mechanismus vedle D6/D8.
-- „Odeslat znovu“ předvyplní příjemce a jazyk z původního odeslání.
 - Právo odesílat = `guardTable` + zápis přes `ReadOnlyPolicy`, dokud
   model oprávnění nezná víc než administrátora.
 - Ruční odeslání posílá hned, selhání transportu nechá zprávu ve frontě.
