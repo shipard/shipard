@@ -727,10 +727,12 @@ class DevDashboardController
 				var td = document.createElement('td');
 				td.colSpan = 5;
 				td.className = 'empty';
-				td.appendChild(document.createTextNode('No data sources found. Run '));
-				var code = document.createElement('code');
-				code.textContent = 'sudo shpd-server ds-create --name <n> --language cs --country cz';
-				td.appendChild(code);
+				td.appendChild(document.createTextNode('No data sources yet. Create one with '));
+				var link = document.createElement('a');
+				link.href = '/_dev/ds-create/';
+				link.textContent = '+ New DS';
+				td.appendChild(link);
+				td.appendChild(document.createTextNode(' — tick "Seed test data" to get sample records.'));
 				tr.appendChild(td);
 				bodyEl.replaceChildren(tr);
 			}

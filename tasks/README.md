@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 322 tasků: **naplánováno** 7 · **částečně** 20 · **hotovo** 295.
+Celkem 322 tasků: **naplánováno** 6 · **částečně** 20 · **hotovo** 296.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,7 +29,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
-| `dev-dashboard-empty-state.md` | naplánováno | #96 D26 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `prints-phase4.md` | naplánováno | design zamčený v #90 (D34–D39), čeká na implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -390,6 +389,7 @@ Vývojářský nástroj v development módu (`/_dev/`).
 | `dev-dashboard-log-viewer.md` | Log viewer `/_dev/logs/` |
 | `dev-dashboard-create-ds.md` | Vytvoření DS přes UI |
 | `dev-dashboard-actions.md` | Server akce + per-DS upgrade |
+| `dev-dashboard-empty-state.md` | Prázdný seznam DS odkazuje na + New DS |
 
 ## Drobné
 

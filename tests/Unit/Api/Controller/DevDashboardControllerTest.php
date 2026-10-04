@@ -140,6 +140,14 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertStringContainsString('Shipard Dev Dashboard', $body);
 	}
 
+	public function testDashboardPageEmptyStatePointsToNewDsForm(): void
+	{
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/'));
+		$body = (string) $this->getPayloadRaw($resp);
+		$this->assertStringContainsString('No data sources yet', $body);
+		$this->assertStringNotContainsString('sudo shpd-server ds-create', $body);
+	}
+
 	public function testListDataSourcesReturnsSorted(): void
 	{
 		$this->createDs('cccc-cccc-cccc-cccc', 'Charlie');

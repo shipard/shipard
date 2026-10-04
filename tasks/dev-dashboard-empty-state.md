@@ -1,6 +1,6 @@
 # Dev dashboard — prázdný seznam zdrojů dat odkazuje na + New DS
 
-**Stav:** naplánováno — #96 D26
+**Stav:** hotovo
 
 ## Cíl
 
@@ -49,6 +49,6 @@ Pokud existuje test, který na text prázdného stavu kontroluje, upravit ho.
 
 ## Hotovo když
 
-- [ ] prázdný dashboard ukazuje odkaz na + New DS, žádný CLI příkaz
-- [ ] odkaz vede na formulář vytvoření DS
-- [ ] hlavička tasku a `tasks/README.md` aktualizované
+- [x] prázdný dashboard ukazuje odkaz na + New DS, žádný CLI příkaz
+- [x] odkaz vede na formulář vytvoření DS
+- [x] hlavička tasku a `tasks/README.md` aktualizované
