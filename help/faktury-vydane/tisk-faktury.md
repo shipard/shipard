@@ -2,14 +2,15 @@
 title: Tisk faktury
 summary: Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne.
 keywords: [tisk faktury, vytisknout fakturu, tisknout fakturu, PDF faktury, fakturu do PDF, uložit fakturu jako PDF, stáhnout fakturu, stažení faktury, náhled faktury, tisk zálohové faktury, vytisknout zálohovou fakturu, vytisknout proformu, PDF zálohové faktury, tlačítko Tisk, tisk dokladu, QR platba, QR kód na faktuře, chybí QR kód, logo na faktuře, logo firmy na dokladu, faktura anglicky, jazyk faktury, faktura v angličtině, jazyk podle odběratele, faktura slovensky, faktura německy, přepnout jazyk tisku, změnit jazyk faktury, výběr jazyka, daňový doklad, tisková služba není dostupná, koncept nejde vytisknout, tisk stornované faktury, storno na faktuře, nápis STORNO, vodoznak storno]
-related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/zalohova-faktura.md, osoby/zalozeni-osoby.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, uctarna/tisk-kontace.md, co-dnes-nejde.md]
+related: [faktury-vydane/vystaveni-faktury.md, faktury-vydane/odeslani-faktury.md, faktury-vydane/zalohova-faktura.md, osoby/zalozeni-osoby.md, pokladna/pokladni-doklad.md, pokladna/prodejka.md, uctarna/tisk-kontace.md, co-dnes-nejde.md]
 ---
 
 # Tisk faktury
 
 Hotovou fakturu vydanou i zálohovou fakturu dostaneš z Shipardu jako PDF:
-prohlédneš si ji v náhledu a stáhneš do počítače. Odtud ji vytiskneš nebo
-pošleš odběrateli vlastním e-mailem.
+prohlédneš si ji v náhledu a stáhneš do počítače. Když ji chceš odběrateli
+rovnou poslat, použij **Odeslat** — viz
+[Odeslání faktury e-mailem](odeslani-faktury.md).
 
 ## Kdy to potřebuješ
 
@@ -107,9 +108,8 @@ jednotek (*ks* se anglicky tiskne jako *pcs*, německy *Stk*). Nepřekládá se
 to, co jsi napsal sám: popis řádků, poznámka na doklad, název pokladny
 a jednotky, které sis do **Měrných jednotek** přidal.
 
-**Co zatím nejde:** odeslat fakturu odběrateli e-mailem přímo z Shipardu
-a změnit vzhled dokladu nebo na něj přidat vlastní text — viz
-[Co Shipard dnes neumí](../co-dnes-nejde.md). Stejným tlačítkem **Tisk**
+**Co zatím nejde:** změnit vzhled dokladu nebo na něj přidat vlastní text
+— viz [Co Shipard dnes neumí](../co-dnes-nejde.md). Stejným tlačítkem **Tisk**
 vytiskneš i [pokladní doklad](../pokladna/pokladni-doklad.md)
 a [prodejku](../pokladna/prodejka.md).
 
@@ -123,5 +123,6 @@ a [prodejku](../pokladna/prodejka.md).
   a výdajového dokladu
 - [Prodejka](../pokladna/prodejka.md) — tisk prodejky a vratky
 - [Tisk kontace](../uctarna/tisk-kontace.md) — účetní zápisy dokladu na papír
-- [Co Shipard dnes neumí](../co-dnes-nejde.md) — odeslání e-mailem, vzhled
-  dokladu
+- [Odeslání faktury e-mailem](odeslani-faktury.md) — doklad odběrateli
+  přímo z Shipardu
+- [Co Shipard dnes neumí](../co-dnes-nejde.md) — vzhled dokladu

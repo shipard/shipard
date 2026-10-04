@@ -353,7 +353,8 @@ class RecordSendService
             'SELECT [id], [name], [file_name], [mime_type], [file_size], [send_with_record]'
             . ' FROM [core_attachments_files]'
             . ' WHERE [table_id] = %i AND [record_id] = %i AND [is_deleted] = 0'
-            . ' ORDER BY [att_order], [id]',
+            // Pořadí podle kontraktu odeslání záznamu (docs/attachments.md).
+            . ' ORDER BY [att_order], [name], [id]',
             $tableId,
             $request->recordId,
         );

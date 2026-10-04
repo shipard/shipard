@@ -35,6 +35,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
+| [Kontakty a účely odesílání](osoby/kontakty-a-ucely.md) | Jak u odběratele nastavit, na které e-maily chodí faktury — kontakty osoby a jejich účely odesílání. |
 | [Založení osoby](osoby/zalozeni-osoby.md) | Jak přidat dodavatele nebo odběratele — natažením české firmy z registru podle IČO, nebo ručně. |
 
 ### Položky
@@ -44,12 +45,13 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [Obsahové štítky a karta Nová kategorie](polozky/obsahove-stitky.md) | Jak AI třídí náklady z faktur do kategorií, co s kartou Nová kategorie na Dashboardu a kde spravovat štítky a pravidla dodavatelů. |
 | [Založení položky](polozky/zalozeni-polozky.md) | Jak přidat položku do katalogu, co je povinné, co Shipard doplní sám a co na položce vědomě není. |
 
-### Došlá pošta
+### Pošta
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
 | [Když AI přečte fakturu špatně](posta/kdyz-ai-cte-spatne.md) | Kde se která chyba opravuje, kdy návrh spíš zamítnout a co z chyby nahlásit. |
 | [Kontrola vytěženého dokladu](posta/kontrola-vytezeni.md) | Jak porovnat návrh dokladu s originálem faktury, co kontrolovat první a kdy návrh zamítnout. |
+| [Odeslaná pošta](posta/odeslana-posta.md) | Kde najdeš všechno, co z Shipardu odešlo e-mailem — komu, kdy, s jakými přílohami a jak odeslání dopadlo; jak zprávu odeslat znovu, archivovat nebo smazat. |
 | [Příjem pošty](posta/prijem-posty.md) | Jak dostat fakturu do Shipardu, co se s ní pak děje a jak si poradit s poštou, která faktura není. |
 
 ### Faktury přijaté
@@ -63,6 +65,8 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
+| [Z jaké adresy faktury odcházejí](faktury-vydane/odesilatel-faktur.md) | Jak nastavit adresu a jméno odesílatele e-mailů s doklady — výchozí adresu zdroje dat a jinou adresu pro doklady jedné číselné řady. |
+| [Odeslání faktury e-mailem](faktury-vydane/odeslani-faktury.md) | Jak fakturu, zálohovou fakturu, pokladní doklad nebo prodejku poslat odběrateli e-mailem přímo z Shipardu — komu odejde, co je v příloze a co dělat, když odběratel nahlásí jinou adresu. |
 | [Tisk faktury](faktury-vydane/tisk-faktury.md) | Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne. |
 | [Vystavení faktury](faktury-vydane/vystaveni-faktury.md) | Jak vystavit fakturu odběrateli — od Přidat po V pořádku. |
 | [Zálohová faktura](faktury-vydane/zalohova-faktura.md) | Kdy vystavit zálohovou fakturu (proformu) místo faktury, proč není daňovým dokladem a jak ji vystavit — od Přidat po V pořádku. |

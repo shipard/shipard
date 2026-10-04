@@ -55,7 +55,9 @@ detailu — vyber **Prodejka** (druhá položka, **Kontace**, je interní tisk
 náhled PDF a **Stáhnout** ho uloží. Postup, náhled, volba jazyka
 i hlášení jsou stejné jako u faktury — viz
 [Tisk faktury](../faktury-vydane/tisk-faktury.md). Vyjde doklad na celou
-stránku A4, ne úzká účtenka.
+stránku A4, ne úzká účtenka. Prodejku s partnerem pošleš e-mailem tlačítkem
+**Odeslat** vedle **Tisk** — viz
+[Odeslání faktury e-mailem](../faktury-vydane/odeslani-faktury.md).
 
 - **Titulek**: u plátce DPH *Prodejka – daňový doklad*, u neplátce
   *Prodejka*. Vratka (prodejka se zápornou celkovou částkou) se jmenuje

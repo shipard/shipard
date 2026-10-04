@@ -806,6 +806,40 @@ Exit `INVALID` (2): neznámý tisk (vypíše dostupné), neznámý `--format` /
 záznamu), záznamu chybí data pro tisk, výstup nejde zapsat, nebo PDF
 nevzniklo (druh selhání render služby je ve výpisu).
 
+#### `print-send <printId> <recordId> [--to=<adresa>]… [--cc=<adresa>]… [--from=<adresa>] [--language=cs|en|sk|de] [--dry-run]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds print-send docs.invoicesOut.invoice 123 --dry-run             # návrh jako JSON, nic nevznikne
+shpd-ds print-send docs.invoicesOut.invoice 123 --to=ja@firma.example # zpráva + řádek fronty
+shpd-ds print-send docs.invoicesOut.invoice 123 \
+    --to=ucetni@odberatel.example --cc=obchod@firma.example --language=en
+```
+
+Odešle záznam e-mailem ([prints.md](prints.md) §9): vytvoří zprávu
+v Odeslané poště s PDF tisku v přílohách a zařadí ji do fronty odchozí
+pošty — odešle ji worker `mail-outbox-run`. Odeslat jde jen tisk
+s deklarovaným účelem (`sendPurpose`).
+
+| Opce | Význam |
+|------|--------|
+| `--dry-run` | Vypíše návrh odeslání (JSON na stdout): příjemce s důvody, odesílatele, předmět, text, přílohy a hlášení. Nic nevytvoří |
+| `--to <addr>` | Příjemce; lze opakovat. **Bez `--dry-run` povinné** |
+| `--cc <addr>` | Kopie; lze opakovat |
+| `--from <addr>` | Adresa odesílatele — jedna z povolených; výchozí podle číselné řady, jinak `mail.defaultFrom` |
+| `--language <kód>` | Jazyk zprávy i PDF; výchozí podle partnera |
+
+**Proč je `--to` povinné:** zdroj dat neví, jestli nese ostrá data, nebo
+jejich kopii na vývojovém serveru — příkaz proto nikdy sám neposílá na
+adresy partnerů dohledané z kontaktů. Koho by oslovil, ukáže `--dry-run`.
+Technickou pojistku na úrovni serveru řeší #95.
+
+Výstup: `Sent message #<id>: outbox #<id>, transport '<stav>'`; měkká
+hlášení tisku na stderr. Exit `INVALID` (2): neznámý tisk, nečíselné
+`recordId`, neplatný jazyk, chybějící `--to`. Exit `FAILURE` (1): tisk
+nejde odeslat nebo není pro záznam dostupný, chybí odesílatel, neplatná
+adresa (`<KÓD>: hláška`), PDF nevzniklo.
+
 #### `report-diff <fileA> <fileB> [--strict] [--json]`
 
 ```bash

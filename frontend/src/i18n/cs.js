@@ -1033,7 +1033,7 @@ export default {
   'sentMessage.open': 'Otevřít zprávu',
   'error.PRINT_NOT_SENDABLE': 'Tento tisk nejde odeslat e-mailem',
   'error.NO_RECIPIENT': 'Zpráva nemá žádného příjemce',
-  'error.NO_SENDER': 'Chybí adresa odesílatele — nastavte výchozí adresu v Nastavení → Pošta → Odchozí pošta',
+  'error.NO_SENDER': 'Chybí adresa odesílatele — nastavte výchozí adresu v Nastavení → Ostatní → Pošta → Odchozí pošta',
   'error.SENDER_NOT_ALLOWED': 'Z této adresy zdroj dat odesílat nesmí',
   'error.INVALID_EMAIL': 'Některá z adres není platná e-mailová adresa',
   'error.INVALID_ATTACHMENT': 'Příloha nepatří k odesílanému záznamu',

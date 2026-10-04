@@ -97,7 +97,9 @@ detailu — vyber **Pokladní doklad** (druhá položka, **Kontace**, je intern�
 tisk účetních zápisů, viz [Tisk kontace](../uctarna/tisk-kontace.md)).
 Otevře se náhled PDF a **Stáhnout** ho uloží. Postup, náhled, volba jazyka
 i hlášení jsou stejné jako u faktury — viz
-[Tisk faktury](../faktury-vydane/tisk-faktury.md).
+[Tisk faktury](../faktury-vydane/tisk-faktury.md). Doklad s partnerem
+pošleš e-mailem tlačítkem **Odeslat** vedle **Tisk** — viz
+[Odeslání faktury e-mailem](../faktury-vydane/odeslani-faktury.md).
 
 Na pokladním dokladu je:
 

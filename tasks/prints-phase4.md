@@ -1,6 +1,6 @@
 # Tisky — Fáze 4: odesílání e-mailem (účely kontaktů, příjemci, odesílatel, Odeslaná pošta)
 
-**Stav:** naplánováno — design zamčený v #90 (D34–D45), čeká na implementaci
+**Stav:** částečně — implementace hotová (7 commitů); zbývá ověření skutečného odeslání přes SMTP (dev server nemá relay), ruční proklik dialogu a náhledů PDF, `ds-upgrade` zdrojů dat při nasazení a revize `sk` / `de` textů e-mailu (`tasks/prints-languages.md`)
 
 > PRD pro Claude Code (7 commitů). Design: issue #90, komentáře
 > „Rozhodnutí: fáze 4 — odesílání e-mailem (D34–D39)“ a „Rozhodnutí:
@@ -486,3 +486,42 @@ Zamčeno v #90: D34–D45 (D40–D45 nahrazují D10 a D36). Upřesnění z PRD:
 - Právo odesílat = `guardTable` + zápis přes `ReadOnlyPolicy`, dokud
   model oprávnění nezná víc než administrátora.
 - Ruční odeslání posílá hned, selhání transportu nechá zprávu ve frontě.
+
+## Implementace
+
+Hotovo v sedmi commitech podle task breakdownu. Odchylky a upřesnění proti
+zadání:
+
+- **Účely jsou klíč `sendPurposes` v `module.jsonc`**, ne soubor
+  `config/sendPurposes.jsonc`: cfgItemy se mezi moduly neslučují (pozdější
+  modul by dřívější přepsal), proto je skládá `ConfigCompiler` do cfgItemu
+  `base.persons.sendPurposes` — vzor `journalDimensions`.
+- **Agenda je root-level položka** hned za Došlou poštou (`_top`,
+  `navOrder: 35`) — sekce „Pošta“ v navigaci není.
+- **Odeslat znovu ve formuláři** je form komponenta
+  `sentMessageTransport` (formuláře nemají vlastní akce); Archivovat /
+  Smazat / Obnovit jsou běžné přechody stavu.
+- **Okamžitý pokus o odeslání běží až po commitu** transakce se zprávou,
+  přílohami a řádkem fronty — rollback nesmí přijít po odeslání.
+- **`print-send` vyžaduje `--to` vždy** (bez `--dry-run`): zdroj dat žádný
+  „režim“ nemá, takže platí záložní větev §11.
+- **`SenderResolver::resolve()` bere název tabulky**, ne `PrintDefinition`
+  — odesílatele má i zpráva, která z tisku nevzniká.
+- **Sloupec se jmenuje `send_trigger`** (`trigger` je v MariaDB vyhrazené
+  slovo) a přibyl **`target_label`** — popisek záznamu v době odeslání pro
+  agendu.
+- **Pevný obsah** hlídají read-only stavy, nový příznak tabulky
+  `systemManaged` (generické CRUD jinak zakládá a maže mimo dokumentový
+  lifecycle), `SentMessageDocument` a `SentMessageAttachmentGuard`; strážce
+  příloh k tomu dostal operaci `upload`.
+- **`ReadOnlyPolicy` má pro `prints` výčet akcí** místo `ANY` — jinak by
+  `POST …/send` prošel i na read-only zdroji.
+- **Posluchač fronty slyší i `requeued`** (`mail-outbox-retry`), aby se
+  selhaná zpráva vrátila na „ve frontě“.
+- `TableMerger` přenáší `adminOnly` (a nový `systemManaged`) i přes
+  rozšíření tabulky — dřív se `adminOnly` rozšířením ztrácel.
+
+Ověřeno na volném zdroji dat bez relay: návrh, odeslání z dialogu i z CLI,
+zpráva s přílohami (zvlášť i spojené do PDF), řádek fronty, propsání
+trvalého selhání, Odeslat znovu, archivace, zámky obsahu a příloh. Skutečné
+doručení přes SMTP ověřené není.

@@ -2,7 +2,7 @@
 title: Vystavení faktury
 summary: Jak vystavit fakturu odběrateli — od Přidat po V pořádku.
 keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku]
-related: [faktury-vydane/tisk-faktury.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
+related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
 # Vystavení faktury
@@ -12,8 +12,8 @@ na rozdíl od přijatých faktur, nevzniká. Najdeš ji v **Prodej → Faktury
 vydané**.
 
 Hotovou fakturu dostaneš z Shipardu jako PDF — viz
-[Tisk faktury](tisk-faktury.md). Odeslat ji odběrateli e-mailem přímo
-z Shipardu zatím nejde.
+[Tisk faktury](tisk-faktury.md) — nebo ji odběrateli rovnou pošleš e-mailem,
+viz [Odeslání faktury e-mailem](odeslani-faktury.md).
 
 ## Kdy to potřebuješ
 
@@ -115,8 +115,10 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
    prohlédnout: na tabu **Řádky** je u každého tlačítko **Zobrazit** (oko),
    měnit je ale nejde.
 
-8. **Dej Tisk** v detailu dokladu. Otevře se náhled PDF, které stáhneš
-   a pošleš odběrateli — viz [Tisk faktury](tisk-faktury.md).
+8. **Dej Odeslat** v detailu dokladu a faktura odejde odběrateli e-mailem
+   — viz [Odeslání faktury e-mailem](odeslani-faktury.md). PDF bez odeslání
+   si prohlédneš a stáhneš tlačítkem **Tisk** — viz
+   [Tisk faktury](tisk-faktury.md).
 
 ## Na co narazíš
 
@@ -156,21 +158,20 @@ a jejich pravidla popisuje [Oprava dokladu](../faktury-prijate/oprava-dokladu.md
 — je psaná pro přijaté faktury, ale přechody platí i tady. Co u vydaných
 faktur platí metodicky jinak, popsané zatím není.
 
-**Odeslat fakturu e-mailem z Shipardu nejde.** PDF stáhneš tlačítkem
-**Tisk** a pošleš ho vlastním e-mailem — odeslání přímo z dokladu je známé
-omezení alfy, ne něco, co by se dalo někde zapnout.
-
-**Přílohy, které mají jít odběrateli s fakturou, si můžeš označit už teď.**
+**Přílohy, které mají jít odběrateli s fakturou, si označ předem.**
 Na záložce **Přílohy** má každý soubor přepínač **Odeslat s dokladem** —
 typicky výkaz práce nebo dodací list. Přepnout ho jde i u faktury ve stavu
 **V pořádku**, bez **Opravit**. V detailu faktury pak u takové přílohy vidíš
-značku **Odeslat s dokladem**. Zatím se označení jen ukládá: až půjde faktury
-odesílat přímo z Shipardu, půjdou s nimi právě označené přílohy; do té doby
-je k e-mailu přikládáš ručně. Stejný přepínač má i zálohová faktura.
+značku **Odeslat s dokladem**. Při **Odeslat** jsou označené přílohy
+předvybrané a jdou odběrateli s fakturou — viz
+[Odeslání faktury e-mailem](odeslani-faktury.md). Stejný přepínač má
+i zálohová faktura.
 
 ## Souvisí
 
 - [Tisk faktury](tisk-faktury.md) — PDF pro odběratele
+- [Odeslání faktury e-mailem](odeslani-faktury.md) — faktura odběrateli
+  přímo z Shipardu
 - [Založení osoby](../osoby/zalozeni-osoby.md) — jak dostat odběratele do
   evidence
 - [Založení položky](../polozky/zalozeni-polozky.md) — co se dá dát na řádek
@@ -178,5 +179,5 @@ je k e-mailu přikládáš ručně. Stejný přepínač má i zálohová faktura
   — kdo je plátcem faktury placené kartou, bránou nebo na dobírku
 - [Oprava dokladu](../faktury-prijate/oprava-dokladu.md) — přechody stavů
   (psáno pro přijaté faktury)
-- [Co Shipard dnes neumí](../co-dnes-nejde.md) — odeslání e-mailem a další chybějící výstupy
+- [Co Shipard dnes neumí](../co-dnes-nejde.md) — hromadné odesílání a další chybějící výstupy
 - [Slovníček](../slovnicek.md) — co znamenají stavy a názvy v rozhraní

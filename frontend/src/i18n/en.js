@@ -1020,7 +1020,7 @@ export default {
   'sentMessage.open': 'Open the message',
   'error.PRINT_NOT_SENDABLE': 'This print cannot be sent by e-mail',
   'error.NO_RECIPIENT': 'The message has no recipient',
-  'error.NO_SENDER': 'No sender address — set the default from address in Settings → Mail → Outbound mail',
+  'error.NO_SENDER': 'No sender address — set the default from address in Settings → Other → Mail → Outbound mail',
   'error.SENDER_NOT_ALLOWED': 'The data source is not allowed to send from this address',
   'error.INVALID_EMAIL': 'One of the addresses is not a valid e-mail address',
   'error.INVALID_ATTACHMENT': 'The attachment does not belong to the record being sent',

@@ -17,7 +17,8 @@ doklad nemá DUZP a nevstupuje do přiznání DPH ani do kontrolního a souhrnn�
 hlášení. Daň přiznáš až z faktury.
 
 Hotovou zálohovou fakturu dostaneš jako PDF stejně jako fakturu — viz
-[Tisk faktury](tisk-faktury.md).
+[Tisk faktury](tisk-faktury.md) — a stejně ji pošleš odběrateli e-mailem,
+viz [Odeslání faktury e-mailem](odeslani-faktury.md).
 
 ## Kdy to potřebuješ
 

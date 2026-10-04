@@ -2,7 +2,7 @@
 title: Založení osoby
 summary: Jak přidat dodavatele nebo odběratele — natažením české firmy z registru podle IČO, nebo ručně.
 keywords: [osoby, osoba, nová osoba, založit osobu, přidat osobu, dodavatele, dodavatel, odběratele, odběratel, partner, protistrana, firma, fyzická osoba, IČO, DIČ, z registru, natáhnout firmu, přidat firmu z registru, zahraniční dodavatel, slovenská firma, německá firma, firma z EU, vlastní firma, chybí vlastní osoba, splatnost, kontakty, adresy, bankovní účet osoby, kód osoby, jazyk dokumentů, jazyk faktury pro odběratele, faktura anglicky, doklad v angličtině, přílohy do PDF dokladu]
-related: [posta/kontrola-vytezeni.md, faktury-vydane/tisk-faktury.md, co-shipard-umi.md, slovnicek.md]
+related: [osoby/kontakty-a-ucely.md, posta/kontrola-vytezeni.md, faktury-vydane/tisk-faktury.md, co-shipard-umi.md, slovnicek.md]
 ---
 
 # Založení osoby
@@ -91,9 +91,14 @@ odběratele na dokladu. Jinou volbu — *čeština*, *angličtina*, *slovenštin
 anglicky. Platí hned i pro už vystavené doklady: příští tisk je v novém
 jazyce — viz [Tisk faktury](../faktury-vydane/tisk-faktury.md).
 
-**Přílohy dokladu připojit do PDF dokladu** ve stejné sekci se zatím jen
-ukládá. Uplatní se, až půjde doklady odesílat e-mailem přímo z Shipardu —
-viz [Co Shipard dnes neumí](../co-dnes-nejde.md).
+**Přílohy dokladu připojit do PDF dokladu** ve stejné sekci platí pro
+odesílání e-mailem: PDF přílohy dokladu se přidají za doklad do jednoho
+souboru, ostatní přílohy jdou dál zvlášť — viz
+[Odeslání faktury e-mailem](../faktury-vydane/odeslani-faktury.md).
+
+**Na které e-maily faktury chodí,** určují kontakty osoby a jejich účely —
+viz [Kontakty a účely odesílání](kontakty-a-ucely.md). Bez kontaktu
+s účelem jdou na **E-mail** osoby.
 
 **Vlastní firma se zakládá z panelu Nastavení zdroje dat.** U čerstvého
 datového zdroje ti Dashboard ukáže kartu **Dokončit nastavení**, která

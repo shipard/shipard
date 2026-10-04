@@ -131,7 +131,7 @@ zatím nemá, a bez nich se firma za pár týdnů vrátí. Všechno níže je
 | Platební příkazy — nad stejným konektorem | — |
 | Prodejní smlouvy — podklad pro opakovanou fakturaci | — |
 | Tisk / PDF dokladu — faktura vydaná, zálohová faktura, pokladní doklad, prodejka, Kontace, vodoznak storna a jazyky tisku `cs` / `en` / `sk` / `de` hotové (`docs/prints.md`); zbývá revize slovenských a německých formulací, vzhled a texty na tiscích (#90 fáze 3) | `prints-phase1.md`, `prints-phase2.md`, `prints-languages.md` |
-| Odeslání dokladu odběrateli e-mailem — nad existující odchozí poštou (`docs/mail/outbound.md`), chybí napojení z dokladu s přílohou | — |
+| Odeslání dokladu odběrateli e-mailem — ruční odeslání z detailu hotové: účely kontaktů, příjemci, odesílatel podle číselné řady, Odeslaná pošta s Odeslat znovu (`docs/prints.md` §9, `docs/mail/sent.md`); zbývá ověření proti skutečnému SMTP a nasazení, hromadné a automatické odesílání (D11), pojistka přesměrování pošty na testovacích serverech (#95) | `prints-phase4.md` |
 | Majetek — evidence a odpisy | — |
 | Saldokonto — přehlednost: chip bar saldokont, položky v sidebaru, grid po partnerech | `accbal-ledger-viewgroup-chips.md`, `accbal-nav-items.md`, `accbal-ledger-grid.md` |
 

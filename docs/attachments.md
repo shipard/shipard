@@ -159,6 +159,11 @@ Odpověď — úspěch s upozorněním na duplicitu:
 }
 ```
 
+Guard cílové tabulky může nahrání odmítnout (`AttachmentGuard::
+OPERATION_UPLOAD`) — **409 `ATTACHMENT_LOCKED`** s hláškou guardu. Většina
+guardů nahrání pouští; odmítá ho záznam s pevným obsahem, třeba odeslaná
+zpráva (`docs/mail/sent.md`).
+
 ### Upload — zpracování na serveru
 
 ```
@@ -354,11 +359,13 @@ V pořádku těsně před odesláním. Přes guard cílové tabulky ale jde
 (`AttachmentGuard::OPERATION_SEND_FLAG`), stejně jako přejmenování a pořadí;
 odmítnutí guardem je u celého PATCH **409 `ATTACHMENT_LOCKED`**.
 
-**Kontrakt pro odeslání záznamu** (konzument: odeslání dokladu, #90 fáze 4):
-posílají se přílohy záznamu s `send_with_record = 1` a `is_deleted = 0`
-v pořadí `att_order ASC, name ASC`. Co se s nimi při odeslání stane (spojení
-PDF do dokladu × samostatné soubory), určuje volba osoby — `docs/prints.md`
-→ Volby osoby pro odeslání.
+**Kontrakt pro odeslání záznamu** (konzument: `RecordSendService`,
+`docs/prints.md` §9): posílají se přílohy záznamu s `send_with_record = 1`
+a `is_deleted = 0` v pořadí `att_order ASC, name ASC`; dialog odeslání je
+podle příznaku předvybere a výběr jde pro jednu zprávu změnit. Co se s nimi
+při odeslání stane (spojení PDF do dokladu × samostatné soubory), určuje
+volba osoby — `docs/prints.md` → Volby osoby pro odeslání. Do zprávy
+v Odeslané poště se **kopírují** (`copyTo`); příloha záznamu zůstává, kde je.
 
 ### Smazání (soft-delete)
 

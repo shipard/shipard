@@ -2,8 +2,9 @@
 
 Obecná služba odchozí pošty modulu `core.mail`: fronta v DB s logem
 doručení, per-sender SMTP transporty a relay fallback. Používá ji auth
-flow (pozvánky, reset hesla — Fáze 0b), později alerty a odesílání
-dokladů. Spec: `tasks/mail-outbound.md` (rozhodnutí D22–D27).
+flow (pozvánky, reset hesla — Fáze 0b) a odesílání dokladů (Odeslaná
+pošta, [sent.md](sent.md)), později alerty. Spec: `tasks/mail-outbound.md`
+(rozhodnutí D22–D27).
 
 ## Architektura
 
@@ -205,7 +206,15 @@ Zpráva se zapíše do outboxu; při selhání ji dál zkouší cron.
 mažou celé — `keepOnReset` chrání jen senders). Úklid starých `sent`
 záznamů je na provozovateli.
 
+## Posluchač výsledku transportu
+
+Kdo do fronty zprávu zařadil a chce znát výsledek, zaregistruje se podle
+prefixu `source_ref`: `MailOutboxService::addSourceListener($prefix,
+OutboxSourceListener)`. Posluchač dostane `sent`, `failed` (vyčerpané
+pokusy) a `requeued` (`mail-outbox-retry`); mezistavy ne. Chyba posluchače
+stav fronty nemění. Používá to Odeslaná pošta — viz [sent.md](sent.md).
+
 ## Non-goals (zatím)
 
-Bounce/VERP handling, plnohodnotné UI „Odeslaná pošta", šablony business
-dokumentů (šablony auth mailů řeší Fáze 0b), rate limiting.
+Bounce/VERP handling, rate limiting. Evidence odeslaných zpráv
+a odesílání dokladů: [sent.md](sent.md) a [`../prints.md`](../prints.md) §9.

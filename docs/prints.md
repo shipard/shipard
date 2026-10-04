@@ -2,14 +2,14 @@
 
 Doména `print` ([reports.md](reports.md) §1): výstup nad **jedním záznamem**
 — faktura vydaná, zálohová faktura, pokladní doklad, prodejka, Kontace,
-později karta majetku. Rozhodnutí D1–D33 jsou v issue #90, zadání
-v `tasks/prints-phase1.md`, `tasks/prints-phase2.md`
-a `tasks/prints-languages.md`.
+později karta majetku. Rozhodnutí D1–D45 jsou v issue #90, zadání
+v `tasks/prints-phase1.md`, `tasks/prints-phase2.md`,
+`tasks/prints-languages.md` a `tasks/prints-phase4.md`.
 
 Hotovo: kontrakt `PrintData`, infrastruktura (deklarace, registr, runner,
 Twig, PDF), REST, CLI včetně nástrojů pro vývoj šablon, akce Tisk
 v detailu, vodoznak storna, jazyky tisku `cs` / `en` / `sk` / `de`
-s přepínačem v náhledu (§3) a tisky:
+s přepínačem v náhledu (§3), odesílání e-mailem (§9) a tisky:
 
 | Tisk | Modul | Co |
 |---|---|---|
@@ -19,9 +19,9 @@ s přepínačem v náhledu (§3) a tisky:
 | `docs.cashRegister.receipt` | `docs.cashRegister` | prodejka (A4) |
 | `economy.accounting.docJournal` | `economy.accounting` | Kontace — interní tisk účetních zápisů dokladu (§4.2) |
 
-Nehotovo: nastavení vzhledu a texty na tiscích (fáze 3), e-mail
-a zmrazená odeslaná kopie (fáze 4), revize slovenských a německých
-formulací s právní vahou (D32, `tasks/prints-languages.md`), QR pro další
+Nehotovo: nastavení vzhledu a texty na tiscích včetně uživatelských textů
+e-mailu (fáze 3), hromadné a automatické odesílání (D11), revize
+slovenských a německých formulací (D32, `tasks/prints-languages.md`), QR pro další
 země (#91), opravný daňový doklad (#92), „Vystavil“ a jména u podpisů
 (#93), účtenka na POS tiskárnu, EET.
 
@@ -98,6 +98,8 @@ v `modules/economy/accounting/src/Prints/`.
 | `catalogs` | ne | **Sdílené adresáře tisku** (typicky layout): jejich katalog překladů, assety a výchozí záhlaví a zápatí (§5) |
 | `paper` | ne | `format` (A3/A4/A5/Letter/Legal), `orientation`, `margins` (`top`/`right`/`bottom`/`left` jako CSS délky; chybějící strana = okraj profilu Report, 1.6 cm) |
 | `order` | ne | Pořadí v nabídce (default 1000) |
+| `sendPurpose` | ne | Účel odesílání — id z cfgItemu `base.persons.sendPurposes` (D34). Tisk s ním jde **odeslat e-mailem** (§9); jen u `audience: external`, jinak chyba loaderu |
+| `recipientPerson` | se `sendPurpose` | Sloupec záznamu s osobou příjemce (doklady `partner`) — podle ní se hledají adresy |
 
 `PrintDefinitionLoader` (`src/Api/`) staví `PrintRegistry` z modulů zdroje
 dat. `PrintRegistry::forRecord($table, $record)` vrací tisky dostupné pro
@@ -187,7 +189,7 @@ je-li to zároveň jazyk tisku, podruhé se nenačítá.
 
 ### Jazyky tisku a kompilace konfigurace (D29)
 
-Jazyk tisku potřebuje čtyři věci; úplnost hlídají testy (§10):
+Jazyk tisku potřebuje čtyři věci; úplnost hlídají testy (§11):
 
 | Co | Kde | Hlídá |
 |---|---|---|
@@ -230,23 +232,22 @@ platila úprava zkratky ve zdroji dat. Jednotka bez `system_code` (založená ve
 vždy tak, jak je. `PrintShortcutsTest` hlídá, že každá jednotka seedu má
 zkratku ve všech jazycích tisku a česká odpovídá seedu.
 
-### Volby osoby pro odeslání (kontrakt pro fázi 4, #94 D5 / D6 / D11)
+### Volby osoby pro odeslání (#94 D5 / D6 / D11)
 
-Samotné odeslání dokladu e-mailem je fáze 4; data, ze kterých bude číst,
-už existují:
+Odeslání dokladu e-mailem (§9) čte:
 
 - **Které přílohy se posílají:** přílohy záznamu s
   `core_attachments_files.send_with_record = 1` a `is_deleted = 0`, v pořadí
   `att_order` (přepínač „Odeslat s dokladem“ v tabu Přílohy, viz
-  [attachments.md](attachments.md) §4). Žádný výběr při odeslání —
-  automatické odesílání (D11) čte jen příznak.
+  [attachments.md](attachments.md) §4). Dialog odeslání je podle příznaku
+  předvybere a uživatel může výběr pro jednu zprávu změnit; automatické
+  odesílání (D11) bude číst jen příznak.
 - **Jak se posílají:** `base_persons_persons.send_attachments_merged` osoby
   partnera, čtené **živě** jako jazyk. `1` = PDF přílohy se připojí za PDF
   dokladu (`RenderClient` `appendPdfs`), ostatní soubory jdou do e-mailu
   samostatně, bez konverze. `0` = všechny přílohy samostatně.
-- **Jazyk e-mailu** = jazyk dokumentu z `DocumentLanguageResolver` (stejná
-  strana jako tisk; texty e-mailu per jazyk dokumentů, D9) — na rozdíl od
-  tisku tedy i `sk` / `de`, jakmile pro ně texty budou.
+- **Jazyk e-mailu** = jazyk tisku: předmět, tělo i PDF v příloze jsou
+  v jednom jazyce (D37), podle pravidla výše nebo podle volby v dialogu.
 
 Builder hlásí dvojí druh problému: **tvrdý** výjimkou `PrintBuildException`
 (doklad bez snapshotu vlastní strany — tisk ven nesmí číst z dnešního
@@ -461,6 +462,36 @@ modules/economy/accounting/prints/docJournal/
 Šablona dostává `PrintData::toArray()`: proměnné `printId`, `language`,
 `record`, `meta`, `branding`, `texts`, `messages`, `data`.
 
+### Šablony e-mailu (D37)
+
+Tisk se `sendPurpose` má vedle stránky dvě textové šablony — předmět
+a tělo e-mailu, kterým se odesílá:
+
+| Soubor | Co |
+|---|---|
+| `email-subject.txt.twig` | předmět — jeden řádek |
+| `email-body.txt.twig` | tělo — prostý text |
+
+Renderuje je `PrintEmailRenderer` ve **stejném sandboxu** a nad **stejným
+`PrintData`** jako stránku, texty přes `t()` z katalogů tisku (klíče
+`email.subject.*`, `email.body.*`, všechny jazyky tisku — hlídá
+`PrintDeclarationsTest`). Hledají se jako záhlaví a zápatí: v adresáři
+šablony tisku, jinak ve sdílených adresářích (`catalogs`). Doklady mají
+společné šablony v `@docs.core/_layout/`; tisk je přebije vlastním souborem
+ve svém adresáři.
+
+Autoescape Twigu se řídí typem šablony (`autoescape: name`): `*.html.twig`
+escapuje HTML, `*.txt.twig` ne — e-mail je prostý text a `&` nebo `<`
+v názvu firmy mají dojít tak, jak jsou. **Předmět** jde do hlavičky zprávy,
+proto z něj renderer odstraní konce řádků (název ze snapshotu s `\r\n` by
+jinak podstrčil další hlavičku); tělo má sjednocené konce řádků a nejvýš
+jeden prázdný řádek za sebou.
+
+Obsah v1 (doklady): předmět „<titulek> <číslo> — <vlastní firma>“; tělo
+oslovení, co je v příloze, částka k úhradě a splatnost (jen u platby
+převodem), pozdrav a název vlastní firmy. Uživatelské texty přinese fáze 3
+(D9).
+
 ### Vodoznak (D23)
 
 `doc-base` zahrnuje `_partials/watermark.html.twig`: je-li `meta.watermark`
@@ -561,6 +592,47 @@ nenabízí (400) — je to nástroj CLI.
 
 U obou render chyb je `errorKind` v `details[0].code`.
 
+### Odeslání e-mailem (D38)
+
+`GET /_prints/{printId}/{recordId}/send-draft[?language=…]` — návrh
+odeslání z `RecordSendService::prepare()` (§9): `to[]` (příjemci s důvodem
+`{email, name, source, label, contactId?}`), `cc[]`, `from {email, name,
+source}` nebo `null`, `allowedSenders[]`, `subject`, `body`, `language`,
+`languages[]` (jazyky tisku s popiskem), `attachments[]` (`kind: print |
+record`, `selected`, `merged`), `mergeAttachments`, `recipientPerson`,
+`targetLabel`, `canSend` a `messages[]`. Nic nevytváří. Chybějící příjemce
+nebo odesílatel **není chybová odpověď** — je to chyba v `messages`
+a `canSend: false`; dialog ji ukáže a uživatel adresu doplní.
+
+`POST /_prints/{printId}/{recordId}/send` — tělo `{from, to[], cc[],
+subject, body, language, attachmentIds[]}`; co chybí, platí z návrhu.
+Odpověď `{sentMessageId, transportState, messages}`; `transportState:
+queued` znamená, že okamžitý pokus neprošel a zprávu převzala fronta.
+
+`POST /_sent-messages/{id}/resend` — Odeslat znovu, viz
+[mail/sent.md](mail/sent.md).
+
+**Práva (D38):** model oprávnění zná jen administrátora (`docs/auth.md`
+D16), takže „smí záznam upravovat“ = projde `guardTable()` na tabulku
+deklarace **a** zdroj dat není jen pro čtení — `ReadOnlyPolicy` má pro
+`prints` výčet akcí: `run` a `sendDraft` povolené, `send` 403
+`DS_READ_ONLY`. S jemnějšími právy se tohle zpřísní na právo záznam
+upravovat. Zdroj dat bez modulu `core.mail` odesílat neumí (409
+`PRINT_NOT_SENDABLE`).
+
+| Kód | HTTP | Kdy |
+|---|---|---|
+| `PRINT_NOT_SENDABLE` | 409 | tisk nemá `sendPurpose`, nebo zdroj dat nemá Odeslanou poštu |
+| `PRINT_NOT_AVAILABLE` | 409 | stav nebo typ záznamu tisk nedovoluje |
+| `NO_RECIPIENT` | 422 | prázdné „Komu“ |
+| `NO_SENDER` | 422 | není adresa odesílatele (ani `mail.defaultFrom`) |
+| `SENDER_NOT_ALLOWED` | 422 | zvolená nebo na řadě uložená adresa není mezi povolenými |
+| `INVALID_EMAIL` | 422 | syntakticky neplatná adresa v „Komu“ / „Kopie“ |
+| `INVALID_ATTACHMENT` | 422 | příloha nepatří k odesílanému záznamu |
+| `EMPTY_MESSAGE` | 422 | prázdný předmět nebo text |
+| `BAD_REQUEST` | 400 | špatný tvar těla, neplatný jazyk |
+| `PRINT_NOT_FOUND`, `RECORD_NOT_FOUND`, `PRINT_DATA_MISSING`, `PRINT_LANGUAGE_NOT_COMPILED`, `RENDER_UNAVAILABLE`, `RENDER_FAILED` | jako u tisku | PDF se vyrábí při každém odeslání |
+
 ## 7. UI
 
 `ViewerController::detail()` po `renderDetail()` připojí na konec
@@ -596,6 +668,35 @@ výběr zůstane na jazyce, který selhal, a jde zvolit jiný. Volba se nikam
 neukládá — jazyk partnera se mění na osobě (#94 D1). Na úzké obrazovce je
 výběr na vlastním řádku nad tlačítky, dostupný i v režimu jen Stáhnout.
 
+**Akce Odeslat (D38).** Hned za akci tisku háček přidá akci `send` — stejný
+tvar (`button` s `target.printId`, nebo `dropdown`), jen z tisků se
+`sendPurpose`, a jen když zdroj dat má tabulku Odeslané pošty. Popisek
+v `core.system.viewerDefaults.detailActions.send`. `Viewer.svelte` otevře
+`SendDialog.svelte`:
+
+- načte návrh (`fetchSendDraft`) a nechá ho upravit: **Od** (výběr
+  z povolených adres), **Komu** a **Kopie** (štítky s důvodem, odebrat,
+  přidat s kontrolou syntaxe), **Jazyk**, **Předmět**, **Text**, **Přílohy**
+  (PDF tisku nejde odebrat a má Náhled; přílohy záznamu zaškrtnuté podle
+  `send_with_record`, se štítkem „připojí se do PDF“);
+- změna jazyka načte návrh znovu — přepíše předmět, text a název PDF
+  (ručně upravený text až po potvrzení), příjemci, odesílatel a výběr
+  příloh zůstávají;
+- hlášení návrhu jsou nahoře; chyba, kterou uživatel v dialogu vyřešil
+  (doplněný příjemce, zvolený odesílatel), zmizí;
+- po odeslání ukáže výsledek (Odesláno / Ve frontě) a hostitel obnoví
+  detail. Na úzké obrazovce je dialog přes celou plochu (`Modal`).
+
+**Sekce Odeslaná pošta (D45).** Tentýž háček přidá `detail.sentMessages` —
+zprávy ve stavu Odeslaná, které na záznam ukazují (`target_table_id` +
+`target_row`), nejnovější první: `{id, createdAt, to[], subject, transport
+{state, stateLabel, stateStyle}, attachments[]}`. `ViewerDetail.svelte` je
+vykreslí pod obsahem každého tabu (uvnitř rolovací plochy) s náhledy příloh
+(`AttachmentGrid`); klik na hlavičku zprávy otevře její formulář přes
+generickou akci `open_form` — tam je Odeslat znovu, Archivovat a Smazat.
+Funguje pro libovolnou tabulku; archivovaná a smazaná zpráva se u záznamu
+neukazuje.
+
 ## 8. CLI
 
 ```bash
@@ -614,9 +715,91 @@ shpd-ds print-run <printId> [<recordId>] [--format=json|pdf|html]
   bez databáze, kontroly dostupnosti a builderu — `PrintRunner::renderData()`
   (§3). `recordId` se nezadává.
 
+```bash
+shpd-ds print-send <printId> <recordId> [--to=<adresa>]… [--cc=<adresa>]…
+                   [--from=<adresa>] [--language=cs|en|sk|de] [--dry-run]
+```
+
+Odešle záznam e-mailem (§9): vytvoří zprávu v Odeslané poště a zařadí ji do
+fronty (odešle ji worker `mail-outbox-run`). `--dry-run` vypíše návrh jako
+JSON a nic nevytvoří. **Bez `--dry-run` je `--to` povinné** — zdroj dat
+neví, jestli nese ostrá data nebo jejich kopii, takže příkaz nikdy sám
+neposílá na adresy partnerů dohledané z kontaktů (pojistka na úrovni
+serveru: #95).
+
 Viz [cli.md](cli.md).
 
-## 9. Jak přidat tisk
+## 9. Odesílání e-mailem
+
+Odeslat jde **cokoliv, co je deklarované jako tisk ven s účelem** — ne jen
+doklady. Rozhodnutí D34–D45; evidence toho, co odešlo, je v
+[mail/sent.md](mail/sent.md), fronta a transporty
+v [mail/outbound.md](mail/outbound.md).
+
+```
+REST / CLI (později dávka)
+        │ SendRequest
+        ▼
+RecordSendService ── prepare() ──▶ SendDraft          (nic nevzniká)
+        │ send()
+        ├─ RecipientResolver      komu   — kontakty s účelem → e-mail osoby
+        ├─ SenderResolver         odkud  — volba → číselná řada → výchozí
+        ├─ PrintRunner (pdf)      co     — PDF v jazyce dokumentu
+        ├─ PrintEmailRenderer     text   — předmět a tělo ze šablon tisku
+        ▼
+core_mail_sent_messages + přílohy zprávy ──▶ SentMessageTransport ──▶ fronta
+```
+
+**Účely (D34).** cfgItem `base.persons.sendPurposes` — *Faktury a daňové
+doklady* (`invoices`), *Upomínky*, *Nabídky a objednávky*, *Přehledy
+a výpisy*. Kontakt osoby nese sadu účelů (`send_purposes`), tisk deklaruje
+jeden (`sendPurpose`). **Modul přidá vlastní účel** klíčem `sendPurposes`
+ve svém `module.jsonc` — cfgItemy se mezi moduly neslučují, účely skládá
+`ConfigCompiler` (vzor `journalDimensions`, viz
+[modules.md](modules.md) → Pole `sendPurposes`).
+
+**Příjemci (D35).** `RecipientResolver::resolve($personId, $purpose)`:
+(1) platné kontakty osoby (stav 10 / 40 / 80, v platnosti) s e-mailem
+a s účelem — všechny do „Komu“ v pořadí `order_pos`, stejná adresa jednou;
+(2) jinak `base_persons_persons.email`; (3) jinak `NO_RECIPIENT`. Kontakt
+bez účelu se nepoužije nikdy. Každá adresa nese důvod (`label`: „Kontakt
+Účtárna — Faktury a daňové doklady“, „E-mail osoby“) v jazyce rozhraní;
+syntakticky neplatná adresa se přeskočí s varováním. Osobu záznamu určuje
+`recipientPerson` deklarace. Adresy se čtou **živě** z osoby a kontaktů, ne
+ze snapshotu dokladu (D44) — oprava adresy platí pro další odeslání.
+
+**Odesílatel (D39).** `SenderResolver` — adresa zvolená při odeslání →
+odesílatel podle záznamu (doklady: volba „Odesílat z“ na číselné řadě) →
+`mail.defaultFrom` → `NO_SENDER`; jen z povolených adres. Podrobně
+[mail/outbound.md](mail/outbound.md) → Odesílatel záznamu.
+
+**Služba (D42, D44).** `RecordSendService` (`modules/core/mail/src/Sent/`,
+wiring `RecordSendServiceFactory`):
+
+- `prepare(SendRequest): SendDraft` — návrh bez vedlejších účinků: tisk
+  běží do `json` (bez render služby), texty ze šablon (§5), přílohy záznamu
+  s příznakem `selected` (podle `send_with_record`, nebo podle
+  `attachmentIds`) a `merged` (PDF + volba osoby, §3).
+- `send(SendRequest): SendResult` — **vždy nová zpráva**: PDF vyrobí znovu
+  (`pdf`, zvolený jazyk; připojované PDF přes `appendPdfs`), založí zprávu
+  v Odeslané poště, uloží její přílohy (PDF tisku pod `meta.fileName`
+  a kopie příloh posílaných zvlášť) a zařadí ji do fronty. **Na záznamu nic
+  nevzniká** — zmrazená kopie není (D42); záznam ví, co odešlo, přes
+  zprávy, které na něj ukazují.
+- Zpráva, její přílohy a řádek fronty jsou **jedna transakce**
+  (`NestedTransaction`); při chybě se vrátí a služba uklidí i soubory
+  příloh na disku. Okamžitý pokus o odeslání (`trigger: manual`) běží **až
+  po commitu** — rollback nesmí přijít po odeslání. `cli` a `batch` jen
+  řadí do fronty.
+- Prázdné „Komu“, chybějící odesílatel, neplatná adresa nebo cizí příloha
+  = `RecordSendException` a nic nevznikne.
+
+Služba nečte HTTP ani UI. Hromadné a automatické odesílání (D11) ji zavolá
+beze změny — s `trigger: batch`.
+
+**Jak udělat tisk odesílatelný:** §10, krok 6.
+
+## 10. Jak přidat tisk
 
 Příklad: karta majetku (`economy.assets`).
 
@@ -645,6 +828,15 @@ Příklad: karta majetku (`economy.assets`).
    úplnost katalogů), `PrintWatermarkRuleTest` vodoznak.
 5. `ds-upgrade` není potřeba — deklarace se čtou z modulů při requestu.
    Akce Tisk se v detailu objeví sama.
+6. **Odesílatelný tisk** (jen `audience: external`): do deklarace
+   `sendPurpose` (existující účel, nebo vlastní přes `sendPurposes`
+   v `module.jsonc` + `ds-upgrade`) a `recipientPerson` (sloupec s osobou).
+   E-mailové šablony `email-subject.txt.twig` a `email-body.txt.twig`
+   s klíči `email.*` v katalogu — vlastní, nebo sdílené přes `catalogs`
+   (§5). Tabulka mimo doklady, která má odesílat z jiné adresy než
+   výchozí, registruje `RecordSenderProvider` (`recordSenderProviders`
+   v `module.jsonc`). Akce Odeslat i sekce Odeslaná pošta se v detailu
+   objeví samy; `PrintDeclarationsTest` ohlídá účel i šablony.
 
 Vývoj šablony bez opakovaného sahání do databáze:
 
@@ -684,7 +876,7 @@ Příklad: polština (`pl`).
 7. Popisek jazyka pro CLI (`PrintRunCommand`, `HelpCommand`), nápověda
    v `help/`, a po nasazení **`ds-upgrade` na všech zdrojích dat**.
 
-## 10. Testy
+## 11. Testy
 
 - Unit `tests/Unit/Core/I18n/DocumentLanguageResolverTest.php` — tabulka
   odvození jazyka nad skutečnými číselníky `world.base`;
@@ -701,12 +893,24 @@ Příklad: polština (`pl`).
   a `--data` bez databáze; `tests/Unit/Api/Controller/PrintsApiTest.php`
   — routa, controller (`Content-Language`, chybové kódy), akce v detailu
   včetně `target.languages`.
+- Odesílání: `tests/Unit/Module/Base/Persons/Send/` (účely, resolver
+  příjemců), `tests/Unit/Core/Mail/` (`SenderResolverTest`,
+  `AllowedSendersTest`), `PrintEmailRendererTest` (všechny jazyky, předmět
+  bez konců řádků, žádné HTML escapování),
+  `tests/Unit/Module/Core/Mail/Sent/` (`RecordSendServiceTest` s falešnými
+  závislostmi — návrh bez vedlejších účinků, transakce, úklid po chybě;
+  transport, posluchač fronty, pevný obsah zprávy),
+  `PrintSendApiTest` (routy, read-only, návrh, odeslání, háček detailu),
+  `PrintSendCommandTest`.
 - Integrační `tests/Integration/Prints/` — kontrakt nad fixture doklady
   v dev DS (`PrintFixtureDocuments`; pokladní doklady a prodejky potřebují
   pokladnu a její řady), tisky v `en`, `sk` a `de` (titulky, popisky
   číselníků, zkratka jednotky), odběratel ze Slovenska bez parametru
   jazyka, CLI. Zdroj dat musí mít po `ds-upgrade` kompilát pro všechny
-  jazyky tisku. `PrintPdfTest` jde přes celou cestu do PDF
+  jazyky tisku. `RecordSendTest` odesílá fixture fakturu — příjemci
+  z kontaktů a osoby, přílohy zvlášť / spojené, zpráva a řádek fronty;
+  běží celý v transakci s rollbackem a s `trigger: cli`, takže nic
+  neodchází. `PrintPdfTest` jde přes celou cestu do PDF
   (včetně vodoznaku na každé straně vícestránkového storna) a vedle
   `SHIPARD_INTEGRATION_DS_PATH` potřebuje
   `SHIPARD_INTEGRATION_GOTENBERG_URL`.

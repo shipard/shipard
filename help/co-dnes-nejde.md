@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, odeslat fakturu e-mailem, poslat fakturu odběrateli, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad]
+keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad]
 related: [slovnicek.md]
 ---
 
@@ -58,15 +58,26 @@ a vypořádacího koeficientu nepromítne.
 
 ---
 
-## Vydané faktury: PDF ano, odeslání ne
+## Vydané faktury: odeslání po jedné, vzhled pevný
 
-**Vydanou fakturu ani zálohovou fakturu z Shipardu neodešleš e-mailem.**
-PDF dokladu ve stavu **V pořádku** si stáhneš tlačítkem **Tisk** — viz
-[Tisk faktury](faktury-vydane/tisk-faktury.md) — a odběrateli ho pošleš
-vlastním e-mailem. Shipard si zatím nepamatuje ani to, že a komu jsi doklad
-poslal. Volba **Přílohy dokladu připojit do PDF dokladu** u osoby a přepínač
-**Odeslat s dokladem** u příloh faktury se proto zatím jen ukládají —
-přílohy k e-mailu přikládáš ručně.
+**Doklady odesíláš po jednom, ručně.** Fakturu, zálohovou fakturu, pokladní
+doklad i prodejku pošleš odběrateli tlačítkem **Odeslat** — viz
+[Odeslání faktury e-mailem](faktury-vydane/odeslani-faktury.md). Hromadné
+odeslání víc dokladů najednou ani automatické odeslání po vystavení zatím
+není.
+
+**Posílají se jen doklady.** Upomínky, nabídky, objednávky ani přehledy
+z Shipardu e-mailem neodejdou — účely kontaktů pro ně jsou připravené, ale
+nic je zatím nepoužívá. Napsat samostatný e-mail bez dokladu nejde.
+
+**Text e-mailu je předepsaný.** Předmět a text si pro jednu zprávu přepíšeš
+v okně **Odeslat e-mailem**, vlastní výchozí znění ale nastavit nejde.
+Zpráva je prostý text, bez formátování a bez podpisu s logem.
+
+**Shipard neví, jestli zpráva došla.** Stav **Odesláno** znamená, že ji
+převzal poštovní server. Nedoručitelnost ani přečtení se nesledují.
+
+**Elektronická faktura (ISDOC) se k e-mailu nepřikládá.**
 
 **Vzhled tištěného dokladu nezměníš.** Je jeden, černobílý, s logem firmy
 v záhlaví. Barvy, umístění loga, vlastní texty (třeba poděkování nebo
