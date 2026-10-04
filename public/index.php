@@ -366,6 +366,7 @@ function dispatch(
 		'alerts' => dispatchAlerts($route, $request, $db, $alertCheckRegistry, $configRuntime, resolveLanguage($request, $resolved->config)),
 		'reports' => dispatchReports($route, $request, $db, $configRuntime, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config)),
 		'prints' => dispatchPrints($route, $request, $auth, $tables, $db, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config), $serverConfig),
+		'sentMessages' => dispatchSentMessages($route, $auth, $tables, $db, $resolved, $configRuntime, $serverConfig),
 		'setup' => dispatchSetup($route, $request, $auth, $db, $alertCheckRegistry, $configRuntime, $modulePathResolver, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'dsAbout' => dispatchDsAbout($route, $auth, $db, $configRuntime, $resolved->config, resolveLanguage($request, $resolved->config), $tables),
 		'accbal'  => dispatchAccbal($route, $request, $db, $configRuntime, $journalEventDispatcher, $openItemLookup, $journalContributors),
@@ -838,6 +839,30 @@ function dispatchPrints(
 	return match ($route->action) {
 		'run'   => $ctrl->run($route->table ?? '', (int) $route->id, $request->getQueryParams(), $auth, $tables),
 		default => Response::error('INTERNAL_ERROR', "Unknown prints action: {$route->action}", 500),
+	};
+}
+
+function dispatchSentMessages(
+	Route $route,
+	AuthContext $auth,
+	array $tables,
+	\Shipard\Core\Database\DataSourceConnection $db,
+	\Shipard\Api\ResolvedDataSource $resolved,
+	?\Shipard\Core\Config\ConfigRuntime $configRuntime,
+	?ServerConfig $serverConfig,
+): Response {
+	$store = new \Shipard\Module\Core\Mail\Sent\SentMessageStore($db);
+	$ctrl  = new \Shipard\Api\Controller\SentMessagesController(
+		$store,
+		new \Shipard\Module\Core\Mail\Sent\SentMessageTransport(
+			$store,
+			\Shipard\Core\Mail\MailServiceFactory::create($resolved->config, $db, $serverConfig),
+		),
+		new \Shipard\Module\Core\Mail\Sent\SentMessageTransportInfo($db, $configRuntime),
+	);
+	return match ($route->action) {
+		'resend' => $ctrl->resend((int) $route->id, $auth, $tables),
+		default  => Response::error('INTERNAL_ERROR', "Unknown sent messages action: {$route->action}", 500),
 	};
 }
 

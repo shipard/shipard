@@ -19,8 +19,9 @@ namespace Shipard\Module\Core\Attachments;
  *
  * Guard je **doplněk oprávnění, ne jejich náhrada**: běží v `AttachmentService`
  * u operací, které mění existující přílohu (smazání, přejmenování,
- * pořadí, příznak odeslání). Nahrání nové přílohy neblokuje — k podanému tvrzení může být
- * potřeba doložit potvrzení o přijetí.
+ * pořadí, příznak odeslání), a u nahrání nové. Nahrání většina guardů
+ * pouští — k podanému tvrzení může být potřeba doložit potvrzení o přijetí;
+ * odmítá ho jen záznam s pevným obsahem (odeslaná zpráva).
  *
  * Implementace dostane připojení ke zdroji dat a musí být levná: volá se
  * při každé změně přílohy.
@@ -33,6 +34,11 @@ interface AttachmentGuard
     public const OPERATION_REORDER = 'reorder';
     /** Změna příznaku „odeslat se záznamem“ (`send_with_record`, #94 D6). */
     public const OPERATION_SEND_FLAG = 'sendFlag';
+    /**
+     * Nahrání (nebo zkopírování) nové přílohy k záznamu. `$attachment` je
+     * v tu chvíli jen `table_id`, `record_id` a `name` — řádek ještě není.
+     */
+    public const OPERATION_UPLOAD = 'upload';
 
     /**
      * Důvod odmítnutí (hláška pro uživatele), nebo `null` když je operace

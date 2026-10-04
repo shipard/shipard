@@ -37,12 +37,25 @@ class MailOutboxService
     private const ADDRESS_LIST_MAX_LEN = 2000;
     private const FROM_NAME_MAX_LEN = 200;
 
+    /** @var array<string, OutboxSourceListener> prefix `source_ref` → posluchač */
+    private array $sourceListeners = [];
+
     public function __construct(
         private readonly DataSourceConnection $db,
         private readonly TransportResolver $resolver,
         private readonly MailComposer $composer,
         private readonly SettingsStore $settings,
     ) {
+    }
+
+    /**
+     * Posluchač výsledku transportu pro zprávy, jejichž `source_ref` začíná
+     * daným prefixem (#90 D43) — původce zprávy si výsledek propíše k sobě
+     * a úklid fronty mu historii nevezme.
+     */
+    public function addSourceListener(string $sourceRefPrefix, OutboxSourceListener $listener): void
+    {
+        $this->sourceListeners[$sourceRefPrefix] = $listener;
     }
 
     /**
@@ -202,6 +215,7 @@ class MailOutboxService
                 'claimed_at'    => null,
                 'last_error'    => null,
             ], 'id = %i', $id);
+            $this->notifySource($row['source_ref'] ?? null, $id, OutboxSourceListener::STATE_SENT, $now);
 
             return true;
         } catch (\Throwable $e) {
@@ -215,6 +229,7 @@ class MailOutboxService
                     'claimed_at'    => null,
                     'last_error'    => $error,
                 ], 'id = %i', $id);
+                $this->notifySource($row['source_ref'] ?? null, $id, OutboxSourceListener::STATE_FAILED, $now, $error);
             } else {
                 $delay = self::BACKOFF[$attempt - 1];
                 $this->db->updateWhere(self::TABLE, [
@@ -293,7 +308,43 @@ class MailOutboxService
             $id,
         );
 
-        return $this->db->getAffectedRows() === 1;
+        if ($this->db->getAffectedRows() !== 1) {
+            return false;
+        }
+
+        if ($this->sourceListeners !== []) {
+            $sourceRef = $this->db->fetchSingle('SELECT source_ref FROM core_mail_outbox WHERE id = %i', $id);
+            $this->notifySource($sourceRef, $id, OutboxSourceListener::STATE_REQUEUED, $now);
+        }
+
+        return true;
+    }
+
+    /**
+     * Řekne posluchači registrovanému pro `source_ref` zprávy, jak transport
+     * dopadl. Stav fronty je v tu chvíli už zapsaný — chyba posluchače ho
+     * nesmí změnit ani shodit worker, jen se zaloguje.
+     */
+    private function notifySource(
+        mixed $sourceRef,
+        int $outboxId,
+        string $state,
+        \DateTimeImmutable $at,
+        ?string $error = null,
+    ): void {
+        if (!is_string($sourceRef) || $sourceRef === '') {
+            return;
+        }
+        foreach ($this->sourceListeners as $prefix => $listener) {
+            if (!str_starts_with($sourceRef, $prefix)) {
+                continue;
+            }
+            try {
+                $listener->outboxStateChanged($sourceRef, $outboxId, $state, $at, $error);
+            } catch (\Throwable $e) {
+                error_log("MailOutboxService: source listener '{$prefix}' failed for outbox #{$outboxId}: {$e->getMessage()}");
+            }
+        }
     }
 
     private function insertLogRow(

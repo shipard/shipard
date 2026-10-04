@@ -991,4 +991,17 @@ export default {
   'assets.posting.cancelTitle': 'Zrušit zaúčtování období {period}?',
   'assets.posting.cancelMessage': 'Doklad {numbers} se stornuje a události majetku se od něj odpojí. Odpisy zůstanou potvrzené.',
   'assets.posting.cancelled': 'Zaúčtování období je zrušené (doklad {numbers}).',
+
+  // Odeslaná pošta — stav transportu ve formuláři zprávy (#90 D43–D45)
+  'sentMessage.resend': 'Odeslat znovu',
+  'sentMessage.resending': 'Odesílám…',
+  'sentMessage.sentAt': 'Odesláno {at}',
+  'sentMessage.sendCount': 'celkem {count}×',
+  'sentMessage.queuedNote': 'Zpráva čeká ve frontě odchozí pošty — odeslání se zkouší opakovaně.',
+  'sentMessage.attempts': 'Pokusy o odeslání ({count})',
+  'sentMessage.attemptOk': 'odesláno',
+  'sentMessage.attemptFail': 'chyba',
+  'error.ALREADY_QUEUED': 'Zpráva už čeká ve frontě odchozí pošty',
+  'error.INVALID_STATE': 'Odeslat znovu jde jen zprávu ve stavu Odeslaná — archivovanou nebo smazanou nejdřív obnovte',
+  'error.TABLE_SYSTEM_MANAGED': 'Záznamy této tabulky zakládá a ruší jen aplikace',
 };

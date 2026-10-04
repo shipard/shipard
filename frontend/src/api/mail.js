@@ -68,3 +68,15 @@ export async function uploadMailMessages(files, mode) {
   });
   return res.json();
 }
+
+/**
+ * Odeslat znovu odeslanou zprávu (#90 D44) — další průchod téže zprávy
+ * transportem. Odpověď nese nový stav transportu ve tvaru, který zobrazuje
+ * formulář zprávy.
+ *
+ * @param {number} sentMessageId
+ * @returns {Promise<{success: boolean, data?: {transportState: string, transport: object}, error?: object}>}
+ */
+export async function resendSentMessage(sentMessageId) {
+  return await post(`/_sent-messages/${sentMessageId}/resend`, {});
+}

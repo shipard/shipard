@@ -1,0 +1,27 @@
+{
+    // core.mail.transportStates
+    //
+    // Výsledek posledního průchodu odeslané zprávy transportem
+    // (core_mail_sent_messages.transport_state, #90 D43). Mezistavy fronty
+    // (další pokus po chybě) zpráva nevidí jinak než „Ve frontě“.
+    // `style` = varianta štítku (design-system §5).
+
+    "queued": {
+        "name": "Queued",
+        "name:cs": "Ve frontě",
+        "name:en": "Queued",
+        "style": "warning"
+    },
+    "sent": {
+        "name": "Sent",
+        "name:cs": "Odesláno",
+        "name:en": "Sent",
+        "style": "success"
+    },
+    "failed": {
+        "name": "Failed",
+        "name:cs": "Neodesláno",
+        "name:en": "Failed",
+        "style": "danger"
+    }
+}

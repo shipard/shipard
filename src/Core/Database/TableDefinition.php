@@ -19,6 +19,12 @@ class TableDefinition
         public readonly ?DocStatesDefinition $docStates,
         public readonly bool $stateTransitionsRunDocumentHooks = false,
         public readonly bool $adminOnly = false,
+        /**
+         * Záznamy zakládá a ruší jen aplikace (služba, import) — generické
+         * CRUD odmítne POST i DELETE. Úpravy existujícího záznamu dál řídí
+         * stavy dokumentu.
+         */
+        public readonly bool $systemManaged = false,
     ) {}
 
     /** @return string[] Column ids flagged "sensitive": true */
@@ -98,6 +104,7 @@ class TableDefinition
                 : null,
             stateTransitionsRunDocumentHooks: (bool) ($data['stateTransitionsRunDocumentHooks'] ?? false),
             adminOnly: (bool) ($data['adminOnly'] ?? false),
+            systemManaged: (bool) ($data['systemManaged'] ?? false),
         );
     }
 }

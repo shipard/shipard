@@ -978,4 +978,17 @@ export default {
   'assets.posting.cancelTitle': 'Cancel posting of period {period}?',
   'assets.posting.cancelMessage': 'Document {numbers} will be cancelled and asset events unlinked from it. Depreciation stays confirmed.',
   'assets.posting.cancelled': 'Posting of the period is cancelled (document {numbers}).',
+
+  // Sent messages — transport state in the message form (#90 D43–D45)
+  'sentMessage.resend': 'Send again',
+  'sentMessage.resending': 'Sending…',
+  'sentMessage.sentAt': 'Sent {at}',
+  'sentMessage.sendCount': '{count}× in total',
+  'sentMessage.queuedNote': 'The message is waiting in the outbound queue — sending is retried automatically.',
+  'sentMessage.attempts': 'Send attempts ({count})',
+  'sentMessage.attemptOk': 'sent',
+  'sentMessage.attemptFail': 'error',
+  'error.ALREADY_QUEUED': 'The message is already waiting in the outbound queue',
+  'error.INVALID_STATE': 'Only a message in the Sent state can be sent again — restore an archived or deleted one first',
+  'error.TABLE_SYSTEM_MANAGED': 'Records of this table are created and removed by the application only',
 };

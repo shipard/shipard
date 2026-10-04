@@ -18,9 +18,17 @@
   const fillOnly = $derived(
     column.elements.length > 0 && column.elements.every((e) => e.type === 'component'),
   );
+
+  // Víc komponent pod sebou (stav transportu nad náhledy příloh): výšku
+  // sousedního sloupce vyplní jen poslední, ostatní mají výšku podle obsahu.
+  const fillRows = $derived(
+    fillOnly && column.elements.length > 1
+      ? `repeat(${column.elements.length - 1}, auto) 1fr`
+      : null,
+  );
 </script>
 
-<div class="shpd-form-column" class:shpd-form-column--fill={fillOnly}>
+<div class="shpd-form-column" class:shpd-form-column--fill={fillOnly} style:grid-template-rows={fillRows}>
   {#each column.elements as element, i (element.column ?? `${element.type}-${i}`)}
     <FormElement
       {element}

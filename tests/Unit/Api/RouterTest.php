@@ -570,6 +570,23 @@ class RouterTest extends TestCase
 
 	// Mail routes
 
+	public function testSentMessageResend(): void
+	{
+		$result = $this->router->resolve('/api/v1/_sent-messages/42/resend', 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'sentMessages', 'resend', null, 42);
+
+		foreach ([
+			['/api/v1/_sent-messages/42/resend', 'GET', 'METHOD_NOT_ALLOWED'],
+			['/api/v1/_sent-messages/0/resend', 'POST', 'NOT_FOUND'],
+			['/api/v1/_sent-messages/42', 'POST', 'NOT_FOUND'],
+		] as [$path, $method, $code]) {
+			$result = $this->router->resolve($path, $method);
+			$this->assertInstanceOf(Response::class, $result);
+			$this->assertSame($code, $result->getPayload()['error']['code']);
+		}
+	}
+
 	public function testMailSenderAddresses(): void
 	{
 		$result = $this->router->resolve('/api/v1/_mail/sender-addresses', 'GET');

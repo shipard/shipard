@@ -351,6 +351,14 @@ class TableDefinitionTest extends TestCase
         $this->assertTrue(TableDefinition::fromArray($data)->adminOnly);
     }
 
+    public function testSystemManagedFlagParsedAndDefaultsFalse(): void
+    {
+        $data = $this->coreSystemUsersData();
+
+        $this->assertFalse(TableDefinition::fromArray($data)->systemManaged);
+        $this->assertTrue(TableDefinition::fromArray(['systemManaged' => true] + $data)->systemManaged);
+    }
+
     public function testAdminOnlyFlagDefaultsFalse(): void
     {
         $table = TableDefinition::fromArray($this->coreSystemUsersData());

@@ -252,6 +252,14 @@
             "columns": [
                 {"column": "next_attempt"}
             ]
+        },
+        // Dohledání průchodů jedné odeslané zprávy (historie pokusů).
+        {
+            "id": "idx_source_ref",
+            "type": "index",
+            "columns": [
+                {"column": "source_ref"}
+            ]
         }
     ]
 }

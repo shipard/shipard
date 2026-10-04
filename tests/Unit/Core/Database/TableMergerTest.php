@@ -51,6 +51,29 @@ class TableMergerTest extends TestCase
         $this->assertSame('idx_note', $merged->indexes[1]->id);
     }
 
+    public function testTableFlagsSurviveExtension(): void
+    {
+        $base = TableDefinition::fromArray([
+            'tableId'       => 1,
+            'name'          => 'core_test_items',
+            'adminOnly'     => true,
+            'systemManaged' => true,
+            'columns'       => [
+                ['id' => 'id', 'name' => 'ID', 'type' => 'int', 'primaryKey' => true, 'autoIncrement' => true],
+            ],
+        ]);
+        $ext = ExtensionDefinition::fromArray([
+            'table'   => 'core_test_items',
+            'columns' => [['id' => 'note', 'name' => 'Note', 'type' => 'text']],
+        ]);
+
+        $merged = TableMerger::merge($base, $ext);
+
+        // Rozšíření cizím modulem nesmí tabulku odemknout.
+        $this->assertTrue($merged->adminOnly);
+        $this->assertTrue($merged->systemManaged);
+    }
+
     public function testAddNewColumnGroup(): void
     {
         $ext = ExtensionDefinition::fromArray([

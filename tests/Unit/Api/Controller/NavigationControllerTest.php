@@ -166,7 +166,7 @@ class NavigationControllerTest extends TestCase
         // Root-level order: Dashboard, Chat, Došlá pošta, Úkoly, then sections.
         $rootLabels = array_map(fn($n) => $n['label'], $tree);
         $this->assertSame(
-            ['Dashboard', 'Chat', 'Došlá pošta', 'Spisovna', 'Úkoly', 'Základní', 'Nákup', 'Prodej', 'Majetek', 'Účtárna', 'Systém'],
+            ['Dashboard', 'Chat', 'Došlá pošta', 'Odeslaná pošta', 'Spisovna', 'Úkoly', 'Základní', 'Nákup', 'Prodej', 'Majetek', 'Účtárna', 'Systém'],
             $rootLabels,
         );
 
@@ -177,8 +177,10 @@ class NavigationControllerTest extends TestCase
         // _top viewers are root leaves carrying viewerId, ordered by navOrder.
         $this->assertSame('core.mail.incoming', $tree[2]['viewerId']);
         $this->assertSame('viewer', $tree[2]['type']);
-        $this->assertSame('base.registry.documents', $tree[3]['viewerId']);
-        $this->assertSame('tasks.core', $tree[4]['viewerId']);
+        // Odeslaná pošta hned za došlou (#90 D45).
+        $this->assertSame('core.mail.sent', $tree[3]['viewerId']);
+        $this->assertSame('base.registry.documents', $tree[4]['viewerId']);
+        $this->assertSame('tasks.core', $tree[5]['viewerId']);
 
         // Sections in navSections.order with the right children/order.
         $this->assertSame(
@@ -214,7 +216,7 @@ class NavigationControllerTest extends TestCase
         $tree = $this->tree(['install.base'], 'en');
         $rootLabels = array_map(fn($n) => $n['label'], $tree);
         $this->assertSame(
-            ['Dashboard', 'Chat', 'Incoming messages', 'Registry', 'Tasks', 'Basic', 'Purchase', 'Sales', 'Assets', 'Accounting', 'System'],
+            ['Dashboard', 'Chat', 'Incoming messages', 'Sent messages', 'Registry', 'Tasks', 'Basic', 'Purchase', 'Sales', 'Assets', 'Accounting', 'System'],
             $rootLabels,
         );
     }
@@ -309,7 +311,7 @@ class NavigationControllerTest extends TestCase
         $ids  = array_map(fn($n) => $n['id'], $tree);
 
         $this->assertSame(
-            ['dashboard', 'chat', 'viewer:core.mail.incoming', 'viewer:base.registry.documents', 'viewer:tasks.core', 'basic', 'purchase', 'sales', 'accounting', 'system'],
+            ['dashboard', 'chat', 'viewer:core.mail.incoming', 'viewer:core.mail.sent', 'viewer:base.registry.documents', 'viewer:tasks.core', 'basic', 'purchase', 'sales', 'accounting', 'system'],
             $ids,
         );
         // Fallback labels come from the PHP const, localized by $language.

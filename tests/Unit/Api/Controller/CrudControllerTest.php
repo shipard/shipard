@@ -465,6 +465,51 @@ class CrudControllerTest extends TestCase
 		$this->assertSame(404, $this->getStatus($resp2));
 	}
 
+	// -------------------------------------------------------------------------
+	// systemManaged — záznamy zakládá a ruší jen aplikace
+	// -------------------------------------------------------------------------
+
+	private function systemManagedTable(): TableDefinition
+	{
+		return TableDefinition::fromArray([
+			'tableId'       => 455,
+			'name'          => 'Sent messages',
+			'systemManaged' => true,
+			'columns'       => [
+				['id' => 'id', 'name' => 'ID', 'type' => 'int', 'autoIncrement' => true, 'primaryKey' => true],
+				['id' => 'subject', 'name' => 'Subject', 'type' => 'varchar', 'length' => 100],
+			],
+		]);
+	}
+
+	public function testSystemManagedTableRefusesCreate(): void
+	{
+		$ctrl = $this->ctrl(['sent' => $this->systemManagedTable()]);
+
+		$resp = $ctrl->create('sent', $this->req('POST', '/api/v1/sent', [], json_encode(['subject' => 'Ručně'])));
+
+		$this->assertSame(405, $this->getStatus($resp));
+		$this->assertSame('TABLE_SYSTEM_MANAGED', $resp->getPayload()['error']['code']);
+	}
+
+	public function testSystemManagedTableRefusesDeleteAndKeepsRecord(): void
+	{
+		$ctrl = $this->ctrl(['sent' => $this->systemManagedTable()], ['sent' => [['id' => 1, 'subject' => 'Faktura']]]);
+
+		$resp = $ctrl->delete('sent', 1);
+
+		$this->assertSame(405, $this->getStatus($resp));
+		$this->assertSame('TABLE_SYSTEM_MANAGED', $resp->getPayload()['error']['code']);
+		$this->assertSame(200, $this->getStatus($ctrl->show('sent', 1, $this->req())));
+	}
+
+	public function testSystemManagedTableStillListsAndShows(): void
+	{
+		$ctrl = $this->ctrl(['sent' => $this->systemManagedTable()], ['sent' => [['id' => 1, 'subject' => 'Faktura']]]);
+
+		$this->assertCount(1, $ctrl->list('sent', $this->req())->getPayload()['data']);
+	}
+
 	public function testDeleteNonExistingReturns404(): void
 	{
 		$def  = $this->makeTable('items');

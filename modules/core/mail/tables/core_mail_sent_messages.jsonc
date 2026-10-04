@@ -1,0 +1,359 @@
+{
+    // Odeslaná pošta (#90 D40–D45) — evidence odeslaných zpráv nad libovolnou
+    // tabulkou, oddělená od transportu (fronta `core_mail_outbox`). Zpráva
+    // vzniká až odesláním a její obsah je pevný: předmět, tělo, odesílatel,
+    // příjemci, vazba ani přílohy se po vytvoření nemění. Uživatel mění jen
+    // stav (Odeslaná → V archivu / Smazaná); fyzicky se zpráva nemaže.
+    //
+    // Přílohy zprávy = `core_attachments_files` s touto tabulkou.
+    // Názvy sloupců drží konvenci došlé pošty (`core_mail_incoming_messages`).
+    "tableId": 455,
+    "name": "Sent messages",
+    "name:cs": "Odeslaná pošta",
+    "name:en": "Sent messages",
+
+    "displayPattern": "{subject}",
+
+    // Zprávy zakládá jen služba odeslání a nemažou se — generické CRUD
+    // odmítne POST i DELETE.
+    "systemManaged": true,
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.mail.docStatesSent"
+    },
+
+    "columnGroups": [
+        {
+            "id": "message",
+            "name": "Message",
+            "name:cs": "Zpráva",
+            "name:en": "Message"
+        },
+        {
+            "id": "target",
+            "name": "Record",
+            "name:cs": "Záznam",
+            "name:en": "Record"
+        },
+        {
+            "id": "transport",
+            "name": "Transport",
+            "name:cs": "Transport",
+            "name:en": "Transport"
+        },
+        {
+            "id": "status",
+            "name": "Status",
+            "name:cs": "Stav",
+            "name:en": "Status"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- message (pevný obsah) ---
+
+        // Kanál: zatím jen e-mail; datová schránka je rezerva.
+        {
+            "id": "channel",
+            "name": "Channel",
+            "name:cs": "Kanál",
+            "name:en": "Channel",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "core.mail.sentChannels",
+            "default": "email",
+            "nullable": false,
+            "group": "message"
+        },
+        {
+            "id": "subject",
+            "name": "Subject",
+            "name:cs": "Předmět",
+            "name:en": "Subject",
+            "type": "varchar",
+            "length": 500,
+            "nullable": false,
+            "group": "message"
+        },
+        {
+            "id": "body_text",
+            "name": "Body",
+            "name:cs": "Tělo",
+            "name:en": "Body",
+            "type": "text",
+            "nullable": true,
+            "group": "message"
+        },
+        {
+            "id": "email_from",
+            "name": "From",
+            "name:cs": "Odesílatel",
+            "name:en": "From",
+            "type": "varchar",
+            "length": 200,
+            "nullable": false,
+            "group": "message"
+        },
+        {
+            "id": "email_from_name",
+            "name": "From name",
+            "name:cs": "Jméno odesílatele",
+            "name:en": "From name",
+            "type": "varchar",
+            "length": 200,
+            "nullable": true,
+            "group": "message"
+        },
+        // Seznamy adres oddělených čárkou (Shipard\Core\Mail\AddressList).
+        {
+            "id": "email_to",
+            "name": "To",
+            "name:cs": "Komu",
+            "name:en": "To",
+            "type": "varchar",
+            "length": 2000,
+            "nullable": false,
+            "group": "message"
+        },
+        {
+            "id": "email_cc",
+            "name": "Cc",
+            "name:cs": "Kopie",
+            "name:en": "Cc",
+            "type": "varchar",
+            "length": 2000,
+            "nullable": true,
+            "group": "message"
+        },
+        {
+            "id": "recipient_person",
+            "name": "Recipient person",
+            "name:cs": "Osoba příjemce",
+            "name:en": "Recipient person",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_persons_persons",
+            "group": "message"
+        },
+
+        // --- target (záznam, ke kterému zpráva patří) ---
+
+        // Název tabulky záznamu — stejně jako u došlé pošty.
+        {
+            "id": "target_table_id",
+            "name": "Target table",
+            "name:cs": "Cílová tabulka",
+            "name:en": "Target table",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "group": "target"
+        },
+        {
+            "id": "target_row",
+            "name": "Target record",
+            "name:cs": "Cílový záznam",
+            "name:en": "Target record",
+            "type": "int",
+            "nullable": true,
+            "group": "target"
+        },
+        // Popisek záznamu v době odeslání („Faktura – daňový doklad 2260011“)
+        // — agenda ho ukáže bez dotazu do cílové tabulky a zůstane čitelný,
+        // i když se záznam později změní.
+        {
+            "id": "target_label",
+            "name": "Record label",
+            "name:cs": "Popisek záznamu",
+            "name:en": "Record label",
+            "type": "varchar",
+            "length": 250,
+            "nullable": true,
+            "group": "target"
+        },
+        // Účel odesílání (id z cfgItemu base.persons.sendPurposes), jazyk
+        // zprávy a tisk, ze kterého vznikla — zpráva nemusí být z tisku.
+        {
+            "id": "purpose",
+            "name": "Purpose",
+            "name:cs": "Účel",
+            "name:en": "Purpose",
+            "type": "varchar",
+            "length": 50,
+            "nullable": true,
+            "group": "target"
+        },
+        {
+            "id": "language",
+            "name": "Language",
+            "name:cs": "Jazyk",
+            "name:en": "Language",
+            "type": "varchar",
+            "length": 5,
+            "nullable": true,
+            "group": "target"
+        },
+        {
+            "id": "print_id",
+            "name": "Print",
+            "name:cs": "Tisk",
+            "name:en": "Print",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "group": "target"
+        },
+
+        // --- transport (výsledek posledního průchodu frontou) ---
+
+        {
+            "id": "transport_state",
+            "name": "Transport state",
+            "name:cs": "Stav odeslání",
+            "name:en": "Transport state",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "core.mail.transportStates",
+            "default": "queued",
+            "nullable": false,
+            "group": "transport"
+        },
+        {
+            "id": "sent_at",
+            "name": "Sent at",
+            "name:cs": "Odesláno",
+            "name:en": "Sent at",
+            "type": "datetime",
+            "nullable": true,
+            "group": "transport"
+        },
+        {
+            "id": "send_count",
+            "name": "Send count",
+            "name:cs": "Počet odeslání",
+            "name:en": "Send count",
+            "type": "int",
+            "default": 0,
+            "group": "transport"
+        },
+        {
+            "id": "last_error",
+            "name": "Last error",
+            "name:cs": "Poslední chyba",
+            "name:en": "Last error",
+            "type": "varchar",
+            "length": 500,
+            "nullable": true,
+            "group": "transport"
+        },
+        // Poslední řádek fronty; po úklidu outboxu může ukazovat do prázdna.
+        {
+            "id": "last_outbox_id",
+            "name": "Last outbox row",
+            "name:cs": "Poslední řádek fronty",
+            "name:en": "Last outbox row",
+            "type": "int",
+            "nullable": true,
+            "group": "transport"
+        },
+
+        // --- status ---
+
+        // Kdo odeslání spustil: dialog, CLI, později dávka.
+        {
+            "id": "send_trigger",
+            "name": "Trigger",
+            "name:cs": "Spuštěno",
+            "name:en": "Trigger",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "core.mail.sendTriggers",
+            "default": "manual",
+            "nullable": false,
+            "group": "status"
+        },
+        {
+            "id": "created",
+            "name": "Created",
+            "name:cs": "Vytvořeno",
+            "name:en": "Created",
+            "type": "datetime",
+            "nullable": false,
+            "group": "status"
+        },
+        {
+            "id": "created_by",
+            "name": "Created by",
+            "name:cs": "Vytvořil",
+            "name:en": "Created by",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_system_users",
+            "group": "status"
+        },
+        {
+            "id": "modified",
+            "name": "Modified",
+            "name:cs": "Změněno",
+            "name:en": "Modified",
+            "type": "datetime",
+            "nullable": true,
+            "group": "status"
+        },
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 40,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_target",
+            "type": "index",
+            "columns": [
+                {"column": "target_table_id"},
+                {"column": "target_row"},
+                {"column": "created", "order": "DESC"}
+            ]
+        },
+        {
+            "id": "idx_recipient_person",
+            "type": "index",
+            "columns": [
+                {"column": "recipient_person"}
+            ]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "created", "order": "DESC"}
+            ]
+        }
+    ]
+}

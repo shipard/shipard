@@ -25,7 +25,8 @@
         "core_mail_outbox",
         "core_mail_outbox_log",
         "core_mail_sender_rules",
-        "core_mail_preprocess_rules"
+        "core_mail_preprocess_rules",
+        "core_mail_sent_messages"
     ],
 
     // ds-reset chrání AI profily — je to konfigurace (vč. admin úprav
@@ -93,6 +94,19 @@
             "navSection": "_top",
             "navOrder": 30
         },
+        // Odeslaná pošta (#90 D45) — hned za došlou; sekce „Pošta“ v hlavní
+        // navigaci není, obě agendy jsou root-level položky.
+        {
+            "id": "core.mail.sent",
+            "name": "Sent messages",
+            "name:cs": "Odeslaná pošta",
+            "name:en": "Sent messages",
+            "icon": "mail-out",
+            "table": "core_mail_sent_messages",
+            "class": "Shipard\\Module\\Core\\Mail\\Sent\\SentMessagesViewer",
+            "navSection": "_top",
+            "navOrder": 35
+        },
         {
             "id": "core.mail.mailboxes",
             "name": "Mailboxes",
@@ -144,6 +158,10 @@
         {
             "table": "core_mail_incoming_messages",
             "class": "Shipard\\Module\\Core\\Mail\\IncomingMessagesForm"
+        },
+        {
+            "table": "core_mail_sent_messages",
+            "class": "Shipard\\Module\\Core\\Mail\\Sent\\SentMessagesForm"
         }
     ],
     // core_mail_preprocess_rules: JSONC form forms/core_mail_preprocess_rules.jsonc
@@ -168,6 +186,18 @@
         {
             "table": "core_mail_preprocess_rules",
             "class": "Shipard\\Module\\Core\\Mail\\Preprocess\\PreprocessRuleDocument"
+        },
+        {
+            "table": "core_mail_sent_messages",
+            "class": "Shipard\\Module\\Core\\Mail\\Sent\\SentMessageDocument"
+        }
+    ],
+
+    // Přílohy odeslané zprávy jsou součást jejího pevného obsahu (#90 D41).
+    "attachmentGuards": [
+        {
+            "table": "core_mail_sent_messages",
+            "class": "Shipard\\Module\\Core\\Mail\\Sent\\SentMessageAttachmentGuard"
         }
     ],
 
@@ -269,6 +299,22 @@
         {
             "id": "core.mail.sendLabels",
             "file": "config/sendLabels.jsonc"
+        },
+        {
+            "id": "core.mail.docStatesSent",
+            "file": "config/docStatesSent.jsonc"
+        },
+        {
+            "id": "core.mail.transportStates",
+            "file": "config/transportStates.jsonc"
+        },
+        {
+            "id": "core.mail.sendTriggers",
+            "file": "config/sendTriggers.jsonc"
+        },
+        {
+            "id": "core.mail.sentChannels",
+            "file": "config/sentChannels.jsonc"
         }
     ]
 }

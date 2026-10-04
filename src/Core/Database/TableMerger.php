@@ -56,6 +56,8 @@ class TableMerger
             childTables: $base->childTables,
             docStates: $base->docStates,
             stateTransitionsRunDocumentHooks: $base->stateTransitionsRunDocumentHooks,
+            adminOnly: $base->adminOnly,
+            systemManaged: $base->systemManaged,
         );
     }
 }

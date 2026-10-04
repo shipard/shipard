@@ -51,6 +51,37 @@ class AttachmentSendFlagTest extends TestCase
         $this->assertSame(1, $result['data']['send_with_record']);
     }
 
+    public function testGuardCanRefuseUploadToRecordWithFrozenContent(): void
+    {
+        $tmp = tempnam(sys_get_temp_dir(), 'shpd_up_');
+        file_put_contents($tmp, 'bytes');
+
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(['id' => 5]);
+        $db->expects($this->never())->method('insertRow');
+
+        $service = new AttachmentService(
+            $db,
+            $this->dsPath,
+            $this->tableDefinitions(),
+            ['core_mail_incoming_messages' => [TestableRefusingGuard::class]],
+        );
+
+        try {
+            // Guard dostane jen cíl a název — řádek přílohy ještě není.
+            $service->upload(303, 5, 'podano-dalsi.xml', $tmp, 3);
+            $this->fail('guard měl nahrání odmítnout');
+        } catch (\DomainException $e) {
+            $this->assertSame('Tenhle soubor je zamčený.', $e->getMessage());
+        }
+        $this->assertSame([AttachmentGuard::OPERATION_UPLOAD], TestableRefusingGuard::$asked);
+        unlink($tmp);
+
+        // Soubor, který guard nehlídá, nahrát jde — a guard se ptá i u něj.
+        [$result] = $this->upload(sendWithRecord: null, guards: ['core_mail_incoming_messages' => [TestableRefusingGuard::class]]);
+        $this->assertTrue($result['success']);
+    }
+
     // ── copyTo ──────────────────────────────────────────────────────────────
 
     public function testCopyDoesNotCarryTheFlagToAnotherRecord(): void
@@ -124,9 +155,10 @@ class AttachmentSendFlagTest extends TestCase
     // ── helpers ─────────────────────────────────────────────────────────────
 
     /**
+     * @param array<string, list<class-string>> $guards
      * @return array{0: array<string, mixed>, 1: ?array<string, mixed>} výsledek uploadu a vložený řádek
      */
-    private function upload(?bool $sendWithRecord): array
+    private function upload(?bool $sendWithRecord, array $guards = []): array
     {
         $tmp = tempnam(sys_get_temp_dir(), 'shpd_up_');
         file_put_contents($tmp, 'attachment bytes ' . uniqid());
@@ -142,7 +174,7 @@ class AttachmentSendFlagTest extends TestCase
             return 555;
         });
 
-        $service = new AttachmentService($db, $this->dsPath, $this->tableDefinitions());
+        $service = new AttachmentService($db, $this->dsPath, $this->tableDefinitions(), $guards);
         $result  = $sendWithRecord === null
             ? $service->upload(303, 5, 'priloha.pdf', $tmp, 3)
             : $service->upload(303, 5, 'priloha.pdf', $tmp, 3, $sendWithRecord);

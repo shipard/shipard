@@ -51,6 +51,7 @@ class AttachmentService
      * @param bool   $sendWithRecord  Příloha se posílá se záznamem (#94 D6);
      *                                výchozí ne — volající to musí říct výslovně
      * @return array{success: bool, data?: array, warning?: array, error?: string}
+     * @throws \DomainException když nahrání odmítne guard cílové tabulky
      */
     public function upload(
         int $tableId,
@@ -70,6 +71,13 @@ class AttachmentService
         if (!$this->recordExists($tableName, $recordId)) {
             return ['success' => false, 'error' => "Záznam {$recordId} v tabulce {$tableName} neexistuje"];
         }
+
+        // Guard cílové tabulky (#55 X16) — záznam s pevným obsahem další
+        // přílohy nepřijímá.
+        $this->assertChangeAllowed(
+            ['table_id' => $tableId, 'record_id' => $recordId, 'name' => $originalName],
+            AttachmentGuard::OPERATION_UPLOAD,
+        );
 
         // Store file on disk
         $fileInfo = $this->fileStorage->store($this->dsPath, $tableName, $originalName, $tmpPath);
@@ -173,6 +181,11 @@ class AttachmentService
         if (!$this->recordExists($tableName, $targetRecordId)) {
             return ['success' => false, 'error' => "Záznam {$targetRecordId} v tabulce {$tableName} neexistuje"];
         }
+
+        $this->assertChangeAllowed(
+            ['table_id' => $targetTableId, 'record_id' => $targetRecordId, 'name' => (string) $source['name']],
+            AttachmentGuard::OPERATION_UPLOAD,
+        );
 
         $sourcePath = $this->getFilePath($source);
         $fileInfo = $this->fileStorage->copy(

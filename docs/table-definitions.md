@@ -183,6 +183,7 @@ Název souboru (bez přípony) odpovídá názvu tabulky v databázi.
 | `indexes` | object[] | Ne | — | Definice indexů |
 | `hideFromNavigation` | bool | Ne | Ne | Skrýt tabulku ze sidebaru (hlavního i Nastavení). Používá se pro sub-tabulky spravované jen přes parent záznam (např. fiskální měsíce). Výchozí: `false` |
 | `adminOnly` | bool | Ne | Ne | Tabulka jen pro administrátory — ne-admin dostane 403 na CRUD/viewer/form/lookup a položka se mu nezobrazí v navigaci Nastavení. Výchozí: `false` |
+| `systemManaged` | bool | Ne | Ne | Záznamy zakládá a ruší jen aplikace — generické CRUD odmítne POST i DELETE (405 `TABLE_SYSTEM_MANAGED`). Výchozí: `false` |
 
 ### `tableId` — unikátní numerické ID
 
@@ -290,6 +291,30 @@ mimo tento prefix. Jde o nejhrubší stupeň budoucího RBAC — jediná hranice
 
 Zdroj pravdy je server; UI jen nezobrazuje mrtvé odkazy. Viz `docs/hosting.md`
 rozhodnutí D9 a `docs/auth.md` §Admin model.
+
+### `systemManaged` — záznamy zakládá a ruší jen aplikace
+
+Nepovinný boolean flag. Generické CRUD píše mimo dokumentový lifecycle
+(přímý INSERT / DELETE bez `Document` hooků), takže tabulku, jejíž záznamy
+smí vzniknout jen službou, musí zastavit samo: s `systemManaged: true`
+vrací `POST /{table}` i `DELETE /{table}/{id}` chybu 405
+`TABLE_SYSTEM_MANAGED`. Čtení a `PUT` / `PATCH` zůstávají — co jde na
+existujícím záznamu změnit, řídí stavy dokumentu (`readOnly`).
+
+```jsonc
+{
+    "tableId": 455,
+    "name": "Sent messages",
+    "systemManaged": true
+    // ...
+}
+```
+
+Kdy použít: záznam je stopa po akci, ne data k pořízení — odeslaná zpráva
+(`core_mail_sent_messages`) vzniká odesláním a fyzicky se nemaže; ručně
+založený řádek by byl „odeslaná“ zpráva, která nikdy neodešla. Formulářová
+cesta (`TableGateway`) flag nečte — tam založení a smazání odmítá `Document`
+třída tabulky (`validate()` / `beforeDelete()`).
 
 ---
 

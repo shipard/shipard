@@ -1,0 +1,22 @@
+{
+    // core.mail.sendTriggers
+    //
+    // Kdo odeslání zprávy spustil (core_mail_sent_messages.send_trigger).
+    // `batch` je rezerva pro hromadné a automatické odesílání (#90 D11).
+
+    "manual": {
+        "name": "Manually",
+        "name:cs": "Ručně",
+        "name:en": "Manually"
+    },
+    "cli": {
+        "name": "Command line",
+        "name:cs": "Příkazová řádka",
+        "name:en": "Command line"
+    },
+    "batch": {
+        "name": "Batch",
+        "name:cs": "Dávka",
+        "name:en": "Batch"
+    }
+}

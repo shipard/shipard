@@ -11,6 +11,7 @@ use Shipard\Core\Mail\Exception\MailValidationException;
 use Shipard\Core\Mail\MailComposer;
 use Shipard\Core\Mail\MailOutboxService;
 use Shipard\Core\Mail\OutboundMessage;
+use Shipard\Core\Mail\OutboxSourceListener;
 use Shipard\Core\Mail\ResolvedTransport;
 use Shipard\Core\Mail\TransportResolver;
 use Shipard\Core\Settings\SettingsStore;
@@ -247,6 +248,124 @@ class MailOutboxServiceTest extends TestCase
         $this->assertSame('sent', $updates[0]['state']);
         $this->assertSame(self::NOW, $updates[0]['sent_at']);
         $this->assertSame(1, $updates[0]['attempt_count']);
+    }
+
+    // ── posluchač výsledku transportu (#90 D43) ─────────────────────
+
+    /** Zaregistruje posluchače a vrátí zachycená volání `[sourceRef, outboxId, state, error]`. */
+    private function listen(string $prefix = 'sentMessage:', ?\Throwable $fails = null): \ArrayObject
+    {
+        $calls    = new \ArrayObject();
+        $listener = new class ($calls, $fails) implements OutboxSourceListener {
+            public function __construct(private readonly \ArrayObject $calls, private readonly ?\Throwable $fails) {}
+
+            public function outboxStateChanged(
+                string $sourceRef,
+                int $outboxId,
+                string $state,
+                \DateTimeImmutable $at,
+                ?string $error = null,
+            ): void {
+                $this->calls[] = [$sourceRef, $outboxId, $state, $error];
+                if ($this->fails !== null) {
+                    throw $this->fails;
+                }
+            }
+        };
+        $this->service->addSourceListener($prefix, $listener);
+        return $calls;
+    }
+
+    private function primeTransport(?\Throwable $sendFails = null): void
+    {
+        $transport = $this->createMock(TransportInterface::class);
+        if ($sendFails !== null) {
+            $transport->method('send')->willThrowException($sendFails);
+        }
+        $this->resolver->method('resolve')->willReturn(new ResolvedTransport($transport, 'relay:587'));
+        $this->composer->method('compose')->willReturn(new Email());
+        $this->db->method('insertRow')->willReturn(1);
+    }
+
+    public function testListenerHearsSentMessage(): void
+    {
+        $this->primeClaim($this->outboxRow(['source_ref' => 'sentMessage:12']));
+        $this->primeTransport();
+        $calls = $this->listen();
+
+        $this->assertTrue($this->service->attemptSend(5, $this->now()));
+
+        $this->assertSame([['sentMessage:12', 5, OutboxSourceListener::STATE_SENT, null]], $calls->getArrayCopy());
+    }
+
+    public function testListenerDoesNotHearRetriedFailure(): void
+    {
+        // Mezistav (další pokus po chybě) původce zprávy nezajímá.
+        $this->primeClaim($this->outboxRow(['source_ref' => 'sentMessage:12', 'attempt_count' => 0]));
+        $this->primeTransport(new \RuntimeException('Connection refused'));
+        $calls = $this->listen();
+
+        $this->assertFalse($this->service->attemptSend(5, $this->now()));
+
+        $this->assertCount(0, $calls);
+    }
+
+    public function testListenerHearsTerminalFailureWithError(): void
+    {
+        $this->primeClaim($this->outboxRow([
+            'source_ref'    => 'sentMessage:12',
+            'attempt_count' => MailOutboxService::MAX_ATTEMPTS - 1,
+        ]));
+        $this->primeTransport(new \RuntimeException('Mailbox unavailable'));
+        $calls = $this->listen();
+
+        $this->assertFalse($this->service->attemptSend(5, $this->now()));
+
+        $this->assertSame(
+            [['sentMessage:12', 5, OutboxSourceListener::STATE_FAILED, 'Mailbox unavailable']],
+            $calls->getArrayCopy(),
+        );
+    }
+
+    public function testListenerHearsOnlyItsOwnSourceRefPrefix(): void
+    {
+        $this->primeClaim($this->outboxRow(['source_ref' => 'invite:7']));
+        $this->primeTransport();
+        $calls = $this->listen('sentMessage:');
+
+        $this->assertTrue($this->service->attemptSend(5, $this->now()));
+
+        $this->assertCount(0, $calls);
+    }
+
+    public function testFailingListenerDoesNotBreakSentState(): void
+    {
+        $this->primeClaim($this->outboxRow(['source_ref' => 'sentMessage:12']));
+        $this->primeTransport();
+        $this->listen(fails: new \RuntimeException('listener down'));
+
+        $updates = [];
+        $this->db->method('updateWhere')->willReturnCallback(
+            function (string $table, array $data) use (&$updates) {
+                $updates[] = $data;
+            },
+        );
+
+        // Fronta má stav zapsaný dřív, než se posluchač ozve.
+        $this->assertTrue($this->service->attemptSend(5, $this->now()));
+        $this->assertCount(1, $updates);
+        $this->assertSame('sent', $updates[0]['state']);
+    }
+
+    public function testListenerHearsRequeuedMessageOnRetry(): void
+    {
+        $this->db->method('getAffectedRows')->willReturn(1);
+        $this->db->method('fetchSingle')->willReturn('sentMessage:12');
+        $calls = $this->listen();
+
+        $this->assertTrue($this->service->retry(9, $this->now()));
+
+        $this->assertSame([['sentMessage:12', 9, OutboxSourceListener::STATE_REQUEUED, null]], $calls->getArrayCopy());
     }
 
     public function testSecondClaimOfSameMessageFails(): void

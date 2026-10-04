@@ -413,16 +413,18 @@ Po přidání účelu je potřeba `ds-upgrade`.
 
 ### Pole `attachmentGuards`
 
-Ochrana příloh záznamu před smazáním, přejmenováním a přeřazením — pro
+Ochrana příloh záznamu před smazáním, přejmenováním, přeřazením a přidáním další — pro
 záznamy, jejichž přílohy jsou vázané na nevratný stav. Registrace se čtou
 za běhu (`AttachmentGuardLoader`, vzor `documentEventHandlers`), ptá se jich
 `AttachmentService` a odmítnutí vrátí API jako 409 `ATTACHMENT_LOCKED`.
 
-Guard **neblokuje nahrání** nové přílohy: k podanému tvrzení DPH je potřeba
-doložit potvrzení o přijetí, k uzavřenému dokladu korespondenci. Blokuje se
-jen změna toho, co už tam je — a typicky ne všeho, ale jen souborů, které
-si záznam vygeneroval sám (`FilingAttachmentGuard` pozná svoje podle
-`metadata.kind`).
+Guard se ptá i u **nahrání** nové přílohy (operace `upload`; `$attachment`
+je v tu chvíli jen `table_id`, `record_id` a `name`). Většina guardů ho
+pouští: k podanému tvrzení DPH je potřeba doložit potvrzení o přijetí,
+k uzavřenému dokladu korespondenci. Blokuje se typicky jen změna toho, co
+už tam je — a ne všeho, ale jen souborů, které si záznam vygeneroval sám
+(`FilingAttachmentGuard` pozná svoje podle `metadata.kind`). Nahrání odmítá
+jen záznam s pevným obsahem — odeslaná zpráva (`SentMessageAttachmentGuard`).
 
 Guardy se načítají **jen v API**; CLI a seedery s přílohami pracují záměrně
 bez omezení (migrace, úklid).

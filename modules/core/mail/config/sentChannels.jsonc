@@ -1,0 +1,17 @@
+{
+    // core.mail.sentChannels
+    //
+    // Kanál odeslané zprávy (core_mail_sent_messages.channel). Posílat umí
+    // jen e-mail; datová schránka je zatím jen hodnota sloupce.
+
+    "email": {
+        "name": "E-mail",
+        "name:cs": "E-mail",
+        "name:en": "E-mail"
+    },
+    "databox": {
+        "name": "Data box",
+        "name:cs": "Datová schránka",
+        "name:en": "Data box"
+    }
+}

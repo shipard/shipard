@@ -1,0 +1,60 @@
+{
+    // core.mail.docStatesSent
+    //
+    // Stavy odeslané zprávy (core_mail_sent_messages, #90 D41). Vlastní sada,
+    // ne `core.system.docStatesArchive`: zpráva vzniká až odesláním rovnou
+    // jako Odeslaná a její obsah je pevný — Koncept ani V opravě nedávají
+    // smysl. Všechny stavy jsou jen pro čtení; mění se jen stav sám.
+    //
+    //   Odeslaná   → V archivu | Smazaná
+    //   V archivu  → Odeslaná
+    //   Smazaná    → Odeslaná
+    //
+    // Archivovaná zpráva se neukazuje u záznamu, v agendě zůstává. Výsledek
+    // transportu žije v ortogonálním sloupci `transport_state`.
+
+    "40": {
+        "stateName": "Sent",
+        "stateName:cs": "Odeslaná",
+        "stateName:en": "Sent",
+        "actionName": "Restore",
+        "actionName:cs": "Obnovit",
+        "actionName:en": "Restore",
+        "stateStyle": "done",
+        "mainState": 1,
+        "viewGroup": "active",
+        "readOnly": 1,
+        "closeForm": 0,
+        "goto": [70, 90]
+    },
+
+    "70": {
+        "stateName": "Archived",
+        "stateName:cs": "V archivu",
+        "stateName:en": "Archived",
+        "actionName": "Archive",
+        "actionName:cs": "Archivovat",
+        "actionName:en": "Archive",
+        "stateStyle": "archive",
+        "mainState": 4,
+        "viewGroup": "archive",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [40]
+    },
+
+    "90": {
+        "stateName": "Deleted",
+        "stateName:cs": "Smazaná",
+        "stateName:en": "Deleted",
+        "actionName": "Delete",
+        "actionName:cs": "Smazat",
+        "actionName:en": "Delete",
+        "stateStyle": "trash",
+        "mainState": 5,
+        "viewGroup": "trash",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [40]
+    }
+}

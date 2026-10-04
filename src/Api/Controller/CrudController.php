@@ -123,6 +123,10 @@ class CrudController
 			return $def;
 		}
 
+		if ($def->systemManaged) {
+			return self::systemManaged($table);
+		}
+
 		$body = $request->getBody();
 		if ($body === null) {
 			return Response::error('BAD_REQUEST', 'Request body must be a JSON object', 400);
@@ -296,6 +300,10 @@ class CrudController
 			return Response::error('NOT_FOUND', 'Record not found', 404);
 		}
 
+		if ($def->systemManaged) {
+			return self::systemManaged($table);
+		}
+
 		$lockErr = $this->guardLock($table, $def, $id, null);
 		if ($lockErr !== null) {
 			return $lockErr;
@@ -304,6 +312,20 @@ class CrudController
 		$this->deleteRecord($table, $id);
 
 		return Response::success(null, 204);
+	}
+
+	/**
+	 * Tabulka se `systemManaged`: záznamy zakládá a ruší jen aplikace —
+	 * generické CRUD by obešlo službu, která za záznamem stojí (odeslaná
+	 * zpráva bez odeslání).
+	 */
+	private static function systemManaged(string $table): Response
+	{
+		return Response::error(
+			'TABLE_SYSTEM_MANAGED',
+			"Records of table '{$table}' are created and removed by the application only",
+			405,
+		);
 	}
 
 	/**

@@ -191,6 +191,17 @@ class Router
 			return new Route('mail', 'importMessage');
 		}
 
+		// Odeslat znovu odeslanou zprávu (#90 D44).
+		if (str_starts_with($subpath, '/_sent-messages/')) {
+			if (!preg_match('#^/_sent-messages/(\d+)/resend$#', $subpath, $m) || (int) $m[1] <= 0) {
+				return Response::error('NOT_FOUND', 'Not found', 404);
+			}
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('sentMessages', 'resend', null, (int) $m[1]);
+		}
+
 		// Adresy, ze kterých zdroj dat smí odesílat (#90 D39).
 		if ($subpath === '/_mail/sender-addresses') {
 			if ($method !== 'GET') {

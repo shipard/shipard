@@ -117,6 +117,8 @@ final class ReadOnlyPolicy
 			'senderAddresses' => ReadOnlyVerdict::Allow,
 			// importMessage, uploadMessages, setSenderPassword → 403
 		],
+		// Odeslaná pošta: Odeslat znovu je zápis (nový průchod frontou) → 403.
+		'sentMessages' => [],
 		// Callbacky AI analyzeru — stroj, retryuje; uživatelské akce nad
 		// návrhem dokumentu 403, preview je GET bez zápisu.
 		'analysis' => [

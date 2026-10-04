@@ -85,7 +85,12 @@ class AttachmentController
 
         $sendWithRecord = (string) ($_POST['send_with_record'] ?? '0') === '1';
 
-        $result = $this->service->upload($tableId, $recordId, $originalName, $tmpPath, $userId, $sendWithRecord);
+        try {
+            $result = $this->service->upload($tableId, $recordId, $originalName, $tmpPath, $userId, $sendWithRecord);
+        } catch (\DomainException $e) {
+            // Guard cílové tabulky (#55 X16) — záznam další přílohy nepřijímá.
+            return Response::error('ATTACHMENT_LOCKED', $e->getMessage(), 409);
+        }
 
         if (!$result['success']) {
             return Response::error('VALIDATION_ERROR', $result['error'] ?? 'Upload failed', 422);

@@ -9,6 +9,8 @@ use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Core\Attachments\AttachmentService;
+use Shipard\Module\Core\Mail\Sent\SentMessageOutboxListener;
+use Shipard\Module\Core\Mail\Sent\SentMessageStore;
 
 /**
  * Jediný wiring point služby odchozí pošty — používají CLI příkazy
@@ -25,12 +27,20 @@ final class MailServiceFactory
     ): MailOutboxService {
         $relay = $dsConfig->getMailRelay() ?? self::serverRelay($serverConfig);
 
-        return new MailOutboxService(
+        $service = new MailOutboxService(
             $db,
             new TransportResolver($db, $dsConfig, $relay),
             new MailComposer(new AttachmentService($db, $dsConfig->getDataSourceDir())),
             new SettingsStore($db),
         );
+
+        // Odeslaná pošta si výsledek transportu propisuje k sobě (#90 D43).
+        $service->addSourceListener(
+            SentMessageStore::SOURCE_REF_PREFIX,
+            new SentMessageOutboxListener(new SentMessageStore($db)),
+        );
+
+        return $service;
     }
 
     private static function serverRelay(?ServerConfig $serverConfig): ?MailRelayConfig
