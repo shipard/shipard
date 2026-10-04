@@ -8,6 +8,7 @@ use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Mail\AllowedSenders;
 use Shipard\Module\Docs\Core\NumberSeriesDocument;
 
 class NumberSeriesDocumentTest extends TestCase
@@ -321,5 +322,58 @@ class NumberSeriesDocumentTest extends TestCase
         $data['cash_desk'] = 7;
 
         $this->assertTrue($this->doc()->validate($data)->isValid());
+    }
+
+    // ── Odesílatel dokladů řady (#90 D39) ───────────────────────────────
+
+    /** @param list<string> $allowed Adresy, ze kterých zdroj dat smí odesílat. */
+    private function docWithAllowedSenders(array $allowed): NumberSeriesDocument
+    {
+        $senders = $this->createMock(AllowedSenders::class);
+        $senders->method('isAllowed')->willReturnCallback(
+            static fn (string $email): bool => in_array($email, $allowed, true),
+        );
+
+        $doc = new class ($senders) extends NumberSeriesDocument {
+            public function __construct(private readonly AllowedSenders $senders) {}
+
+            protected function allowedSenders(): AllowedSenders
+            {
+                return $this->senders;
+            }
+        };
+        $doc->setDb($this->createMock(Connection::class));
+        return $doc;
+    }
+
+    public function testAllowedSenderAddressPasses(): void
+    {
+        $data = $this->validData() + ['email_from' => ' fakturace@firma.example ', 'email_from_name' => " Fakturace\r\n"];
+        $result = $this->docWithAllowedSenders(['fakturace@firma.example'])->validate($data);
+
+        $this->assertTrue($result->isValid());
+        $this->assertSame('fakturace@firma.example', $data['email_from']);
+        $this->assertSame('Fakturace', $data['email_from_name']);
+    }
+
+    public function testEmptySenderMeansAutomatic(): void
+    {
+        $data = $this->validData() + ['email_from' => '', 'email_from_name' => '  '];
+        $result = $this->docWithAllowedSenders([])->validate($data);
+
+        $this->assertTrue($result->isValid());
+        $this->assertNull($data['email_from']);
+        $this->assertNull($data['email_from_name']);
+    }
+
+    public function testSenderAddressOutsideAllowedListFails(): void
+    {
+        $doc = $this->docWithAllowedSenders(['fakturace@firma.example']);
+
+        $errors = $this->errorsFor($doc, $this->validData() + ['email_from' => 'nekdo@jinde.example'], 'email_from');
+        $this->assertSame('sender_not_allowed', $errors[0]['code']);
+
+        $errors = $this->errorsFor($doc, $this->validData() + ['email_from' => 'neni-adresa'], 'email_from');
+        $this->assertSame('invalid_email', $errors[0]['code']);
     }
 }

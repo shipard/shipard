@@ -265,6 +265,10 @@
         {
             "id": "core.mail.genericSubjectPatterns",
             "file": "config/genericSubjectPatterns.jsonc"
+        },
+        {
+            "id": "core.mail.sendLabels",
+            "file": "config/sendLabels.jsonc"
         }
     ]
 }

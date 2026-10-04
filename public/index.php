@@ -1109,6 +1109,7 @@ function dispatchMail(
 		'importMessage'     => $ctrl->importMessage($auth, $request),
 		'uploadMessages'    => $ctrl->uploadMessages($auth, $request),
 		'setSenderPassword' => $ctrl->setSenderPassword($auth, $request, (int) $route->id),
+		'senderAddresses'   => $ctrl->senderAddresses($auth),
 		default             => Response::error('INTERNAL_ERROR', "Unknown mail action: {$route->action}", 500),
 	};
 }

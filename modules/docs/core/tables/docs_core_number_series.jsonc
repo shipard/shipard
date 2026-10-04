@@ -30,6 +30,12 @@
             "name": "Validity",
             "name:cs": "Platnost",
             "name:en": "Validity"
+        },
+        {
+            "id": "sending",
+            "name": "Sending by e-mail",
+            "name:cs": "Odesílání e-mailem",
+            "name:en": "Sending by e-mail"
         }
     ],
 
@@ -153,6 +159,33 @@
             "type": "date",
             "nullable": true,
             "group": "validity"
+        },
+
+        // --- sending (#90 D39) ---
+
+        // Odesílatel dokladů řady. NULL = automaticky (výchozí adresa
+        // zdroje dat `mail.defaultFrom`); jinak jedna z povolených adres
+        // (`mail.defaultFrom` + aktivní `core_mail_senders`).
+        {
+            "id": "email_from",
+            "name": "Send from",
+            "name:cs": "Odesílat z",
+            "name:en": "Send from",
+            "type": "varchar",
+            "length": 200,
+            "nullable": true,
+            "group": "sending"
+        },
+        // Jméno v hlavičce From; NULL = název vlastní firmy.
+        {
+            "id": "email_from_name",
+            "name": "Sender name",
+            "name:cs": "Jméno odesílatele",
+            "name:en": "Sender name",
+            "type": "varchar",
+            "length": 200,
+            "nullable": true,
+            "group": "sending"
         },
 
         // --- doc state (system) ---

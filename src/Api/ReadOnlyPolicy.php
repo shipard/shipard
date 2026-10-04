@@ -113,6 +113,8 @@ final class ReadOnlyPolicy
 		// Příchozí pošta (D4): read_only poštu nepřijímá, router frontuje.
 		'mail' => [
 			'receiveIncoming' => ReadOnlyVerdict::Deny503,
+			// Nabídka adres odesílatele — čtení.
+			'senderAddresses' => ReadOnlyVerdict::Allow,
 			// importMessage, uploadMessages, setSenderPassword → 403
 		],
 		// Callbacky AI analyzeru — stroj, retryuje; uživatelské akce nad

@@ -776,6 +776,32 @@ class ModuleDefinitionTest extends TestCase
         ]);
     }
 
+    // ── recordSenderProviders (#90 D39) ─────────────────────────────────────
+
+    public function testRecordSenderProvidersParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'docs.core',
+            'name' => 'Docs',
+            'recordSenderProviders' => [['table' => 'docs_core_heads', 'class' => 'Foo\\Provider', 'ignored' => 1]],
+        ]);
+
+        $this->assertSame([['table' => 'docs_core_heads', 'class' => 'Foo\\Provider']], $def->recordSenderProviders);
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'docs.core', 'name' => 'Docs'])->recordSenderProviders);
+    }
+
+    public function testRecordSenderProviderWithoutClassIsRejected(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches("/recordSenderProviders\\[0\\] requires 'table' and 'class'/");
+
+        ModuleDefinition::fromArray([
+            'id'   => 'docs.core',
+            'name' => 'Docs',
+            'recordSenderProviders' => [['table' => 'docs_core_heads']],
+        ]);
+    }
+
     // ── sendPurposes (#90 D34) ──────────────────────────────────────────────
 
     public function testSendPurposesParsedWithLocalizedNamesAndDefaultOrder(): void

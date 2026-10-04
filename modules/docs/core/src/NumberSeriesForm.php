@@ -7,6 +7,8 @@ namespace Shipard\Module\Docs\Core;
 use Shipard\Core\Form\FormDefinition;
 use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
+use Shipard\Core\Mail\AllowedSenders;
+use Shipard\Core\Settings\SettingsStore;
 
 class NumberSeriesForm extends TableForm
 {
@@ -57,6 +59,20 @@ class NumberSeriesForm extends TableForm
                     ->date('valid_to')
                     ->separator('Poznámka')
                     ->textarea('notice')
+            // Odesílatel dokladů řady (#90 D39): nabídka povolených adres,
+            // prázdná volba = výchozí adresa zdroje dat.
+            ->section(title: 'Odesílání e-mailem')
+                ->col()
+                    ->select(
+                        'email_from',
+                        options: $this->senderOptions($data['email_from'] ?? null),
+                        placeholder: 'Automaticky',
+                        hint: 'Adresa, ze které odcházejí doklady této řady. Automaticky = výchozí adresa odesílatele z nastavení odchozí pošty.',
+                    )
+                    ->input(
+                        'email_from_name',
+                        hint: 'Jméno zobrazené u adresy odesílatele. Prázdné = název vlastní firmy.',
+                    )
             ->build();
 
         return new FormDefinition(
@@ -112,6 +128,33 @@ class NumberSeriesForm extends TableForm
 
         $isNew = empty($data['id']);
         return new RecalculateResult($this->buildFormDefinition($data, $isNew), $data);
+    }
+
+    /**
+     * Adresy, ze kterých zdroj dat smí odesílat (`AllowedSenders`). Uložená
+     * adresa, která mezi nimi už není (odesílatel deaktivován), v nabídce
+     * zůstává s poznámkou — jinak by ji select tiše vyprázdnil; odeslání
+     * z ní skončí chybou `SENDER_NOT_ALLOWED`.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    private function senderOptions(mixed $current): array
+    {
+        $options = [];
+        $current = trim((string) ($current ?? ''));
+        $found   = $current === '';
+
+        if ($this->db !== null) {
+            $allowed = new AllowedSenders($this->db, new SettingsStore($this->db));
+            foreach ($allowed->addresses() as $address) {
+                $options[] = ['value' => $address['email'], 'label' => $address['email']];
+                $found = $found || mb_strtolower($address['email']) === mb_strtolower($current);
+            }
+        }
+        if (!$found) {
+            $options[] = ['value' => $current, 'label' => $current . ' (nepovolená adresa)'];
+        }
+        return $options;
     }
 
     /** `series_binding` typu dokladu z cfg; null = nevázaný / neznámý typ. */

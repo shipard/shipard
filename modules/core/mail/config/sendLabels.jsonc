@@ -1,0 +1,24 @@
+{
+    // core.mail.sendLabels
+    //
+    // Hlášky odesílání záznamu e-mailem (#90 fáze 4), které uživatel vidí
+    // v dialogu odeslání a ve výstupu CLI. Bez zkompilované konfigurace má
+    // PHP anglický fallback. `{email}` = adresa, které se hláška týká.
+
+    // SenderResolver (D39)
+    "noSender": {
+        "name": "No sender address: set the default from address in the outbound mail settings.",
+        "name:cs": "Chybí adresa odesílatele: nastavte výchozí adresu v Nastavení → Pošta → Odchozí pošta.",
+        "name:en": "No sender address: set the default from address in the outbound mail settings."
+    },
+    "senderNotAllowed": {
+        "name": "Address '{email}' is not among the allowed sender addresses.",
+        "name:cs": "Adresa „{email}“ není mezi povolenými adresami odesílatele.",
+        "name:en": "Address '{email}' is not among the allowed sender addresses."
+    },
+    "recordSenderNotAllowed": {
+        "name": "Sender address '{email}' set for this record is no longer allowed — the mail sender was deactivated or removed.",
+        "name:cs": "Adresa odesílatele „{email}“ nastavená pro tento záznam už není povolená — odesílatel pošty byl deaktivován nebo zrušen.",
+        "name:en": "Sender address '{email}' set for this record is no longer allowed — the mail sender was deactivated or removed."
+    }
+}

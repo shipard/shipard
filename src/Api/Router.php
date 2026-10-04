@@ -191,6 +191,14 @@ class Router
 			return new Route('mail', 'importMessage');
 		}
 
+		// Adresy, ze kterých zdroj dat smí odesílat (#90 D39).
+		if ($subpath === '/_mail/sender-addresses') {
+			if ($method !== 'GET') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('mail', 'senderAddresses');
+		}
+
 		if (str_starts_with($subpath, '/_mail/analysis')) {
 			return $this->resolveAnalysisRoute($subpath, $method);
 		}

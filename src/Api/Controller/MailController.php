@@ -7,6 +7,7 @@ namespace Shipard\Api\Controller;
 use Shipard\Api\AuthContext;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Api\TableAccessGuard;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -15,6 +16,8 @@ use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\Mail\AllowedSenders;
+use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Mail\BulkHeadersDetector;
 use Shipard\Module\Core\Mail\IdempotencyStore;
@@ -116,6 +119,31 @@ class MailController
         $this->db->updateWhere('core_mail_senders', ['password_enc' => $encrypted], 'id = %i', $id);
 
         return Response::success(['id' => $id, 'passwordSet' => true]);
+    }
+
+    /**
+     * GET /_mail/sender-addresses — adresy, ze kterých zdroj dat smí
+     * odesílat (#90 D39): výchozí `mail.defaultFrom` a aktivní odesílatelé.
+     * Nabídka pro volbu odesílatele; SMTP údaje odesílatelů nenese.
+     */
+    public function senderAddresses(AuthContext $auth): Response
+    {
+        // Stejná práva jako čtení tabulky odesílatelů.
+        $guardErr = TableAccessGuard::guardTable(
+            'core_mail_senders',
+            $auth,
+            $this->tables['core_mail_senders'] ?? null,
+        );
+        if ($guardErr !== null) {
+            return $guardErr;
+        }
+
+        $allowed = new AllowedSenders($this->db, new SettingsStore($this->db));
+
+        return Response::success([
+            'addresses' => $allowed->addresses(),
+            'default'   => $allowed->defaultFrom(),
+        ]);
     }
 
     public function receiveIncoming(AuthContext $auth, Request $request): Response

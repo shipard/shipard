@@ -388,6 +388,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `journalContributors` | string[] | Ne | Ne | FQCN contributorů deníku (implements `JournalContributor`) — příspěvky do deníku zdroje před zápisem; víc modulů smí přispívat (viz níže) |
 | `journalDimensions` | object[] | Ne | Ano (`name`) | Analytické dimenze deníku: `id`, `rowColumn`, `journalColumn`, `table`, `name` povinné, `headColumn` volitelný. Sloupce zakládá modul přes `extensions`; `ConfigCompiler` je skládá do cfgItem `core.accounting.journalDimensions` (`docs/accounting.md` §6 Dimenze deníku) |
 | `sendPurposes` | object[] | Ne | Ano (`name`) | Účely odesílání: `id`, `name` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `base.persons.sendPurposes` (viz níže) |
+| `recordSenderProviders` | object[] | Ne | Ne | Odesílatel podle záznamu (#90 D39): `{table, class}`, třída implementuje `RecordSenderProvider`. Jeden poskytovatel na tabulku — druhá registrace téže tabulky je chyba. Čte `RecordSenderProviderLoader`, ptá se `SenderResolver` (`docs/mail/outbound.md`) |
 
 ### Pole `sendPurposes`
 

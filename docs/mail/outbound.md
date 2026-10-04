@@ -49,6 +49,34 @@ a zprávu s neplatnou adresou odmítne celou (`MailValidationException`);
 ze jména odesílatele odstraní konce řádků. Volající s jednou adresou
 v `to` fungují beze změny.
 
+### Odesílatel záznamu (`SenderResolver`)
+
+Odeslání záznamu (doklad, #90 D39) nevolí adresu volným textem — smí jen
+z **povolených adres**: `mail.defaultFrom` a `email_from` aktivních
+záznamů `core_mail_senders` (`AllowedSenders`). Z jiné adresy by pošta
+neprošla SPF / DKIM domény.
+
+`SenderResolver::resolve($table, $record, $chosen)`:
+
+1. adresa zvolená při odeslání (dialog, CLI) — mimo povolené adresy
+   `SENDER_NOT_ALLOWED`;
+2. odesílatel podle záznamu — `RecordSenderProvider` registrovaný pro
+   tabulku (`recordSenderProviders` v `module.jsonc`, jeden na tabulku).
+   Doklady: `NumberSeriesSenderProvider` čte volbu „Odesílat z“ na číselné
+   řadě (`docs_core_number_series.email_from`, NULL = automaticky). Uložená
+   adresa, která už není povolená, je `SENDER_NOT_ALLOWED` — žádný tichý
+   přechod na výchozí;
+3. `mail.defaultFrom`;
+4. jinak `NO_SENDER`.
+
+Jméno odesílatele: podle záznamu (číselná řada `email_from_name`), jinak
+název vlastní firmy (osoba s `is_own`), jinak žádné. Neúspěch není výjimka
+— `SenderResolution` nese `errorCode` a text z cfgItemu
+`core.mail.sendLabels`, návrh odeslání ho ukáže uživateli.
+
+`GET /_mail/sender-addresses` → `{addresses: [{email, source: default|sender}],
+default}` — nabídka povolených adres; práva jako čtení `core_mail_senders`.
+
 ## Konfigurace
 
 ### Relay (server default + DS override)

@@ -41,6 +41,21 @@ ji po založení řady nabízí jen ke čtení.
 
 `valid_from`, `valid_to` — volitelné období platnosti řady.
 
+### `sending`
+
+Odesílatel dokladů řady při odeslání e-mailem (#90 D39) — viz
+`docs/mail/outbound.md` → Odesílatel záznamu.
+
+| Sloupec | Typ | Popis |
+|---|---|---|
+| `email_from` | varchar(200), nullable | „Odesílat z“ — NULL = automaticky (výchozí adresa `mail.defaultFrom`), jinak jedna z povolených adres |
+| `email_from_name` | varchar(200), nullable | Jméno v hlavičce From; NULL = název vlastní firmy |
+
+Uložit jde jen adresa, ze které zdroj dat smí odesílat (výchozí adresa
+nebo aktivní odesílatel pošty). Když odesílatel později přestane být
+aktivní, řada si adresu nechá a odeslání dokladu skončí chybou
+`SENDER_NOT_ALLOWED` — ne tichým přechodem na výchozí adresu.
+
 ### Systémové
 
 `docState`, `docStateMain` (default 10/1).

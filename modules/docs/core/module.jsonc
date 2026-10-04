@@ -119,6 +119,14 @@
         }
     ],
 
+    // Odesílatel dokladu podle číselné řady (#90 D39) — volba „Odesílat z“.
+    "recordSenderProviders": [
+        {
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Docs\\Core\\NumberSeriesSenderProvider"
+        }
+    ],
+
     "documentEventHandlers": [
         {
             // Pokladna uložená do stavu 40 → řady typů se series_binding

@@ -570,6 +570,15 @@ class RouterTest extends TestCase
 
 	// Mail routes
 
+	public function testMailSenderAddresses(): void
+	{
+		$result = $this->router->resolve('/api/v1/_mail/sender-addresses', 'GET');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'mail', 'senderAddresses');
+
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_mail/sender-addresses', 'POST'));
+	}
+
 	public function testMailIncomingPost(): void
 	{
 		$result = $this->router->resolve('/api/v1/_mail/incoming', 'POST');

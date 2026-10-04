@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Docs\Core;
 
+use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
+use Shipard\Core\Mail\AddressList;
+use Shipard\Core\Mail\AllowedSenders;
+use Shipard\Core\Settings\SettingsStore;
 
 class NumberSeriesDocument extends Document
 {
@@ -91,7 +95,52 @@ class NumberSeriesDocument extends Document
             );
         }
 
+        $this->validateSender($data, $result);
+
         return $result;
+    }
+
+    /**
+     * Odesílatel dokladů řady (#90 D39): prázdná volba = automaticky (NULL),
+     * jinak jen adresa, ze které zdroj dat smí odesílat. Jméno odesílatele
+     * jde do hlavičky From — bez konců řádků.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function validateSender(array &$data, ValidationResult $result): void
+    {
+        if (array_key_exists('email_from_name', $data)) {
+            $name = trim((string) preg_replace('/[\r\n]+/', ' ', (string) ($data['email_from_name'] ?? '')));
+            $data['email_from_name'] = $name === '' ? null : $name;
+        }
+
+        if (!array_key_exists('email_from', $data)) {
+            return;
+        }
+        $email = trim((string) ($data['email_from'] ?? ''));
+        $data['email_from'] = $email === '' ? null : $email;
+        if ($email === '') {
+            return;
+        }
+
+        if (!AddressList::isValid($email)) {
+            $result->addError('email_from', 'Adresa odesílatele není platná e-mailová adresa', 'invalid_email');
+            return;
+        }
+        if ($this->db !== null && !$this->allowedSenders()->isAllowed($email)) {
+            $result->addError(
+                'email_from',
+                'Z této adresy zdroj dat odesílat nesmí — vyberte výchozí adresu nebo aktivního odesílatele pošty',
+                'sender_not_allowed',
+            );
+        }
+    }
+
+    /** Testovací šev — adresy, ze kterých zdroj dat smí odesílat. */
+    protected function allowedSenders(): AllowedSenders
+    {
+        $connection = new DataSourceConnection($this->db);
+        return new AllowedSenders($connection, new SettingsStore($connection));
     }
 
     /**

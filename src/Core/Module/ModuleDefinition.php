@@ -35,6 +35,7 @@ class ModuleDefinition
         public readonly array $journalDimensions = [],
         public readonly array $prints = [],
         public readonly array $sendPurposes = [],
+        public readonly array $recordSenderProviders = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -216,6 +217,24 @@ class ModuleDefinition
                     );
                 }
                 $attachmentGuards[] = ['table' => $reg['table'], 'class' => $reg['class']];
+            }
+        }
+
+        // recordSenderProviders — odesílatel podle záznamu (#90 D39).
+        // Tvar {table, class}; třída implementuje RecordSenderProvider
+        // a ptá se jí SenderResolver (doklady: číselná řada).
+        $recordSenderProviders = [];
+        if (isset($data['recordSenderProviders']) && is_array($data['recordSenderProviders'])) {
+            foreach ($data['recordSenderProviders'] as $idx => $reg) {
+                if (!is_array($reg)
+                    || !isset($reg['table']) || !is_string($reg['table']) || $reg['table'] === ''
+                    || !isset($reg['class']) || !is_string($reg['class']) || $reg['class'] === ''
+                ) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': recordSenderProviders[{$idx}] requires 'table' and 'class'",
+                    );
+                }
+                $recordSenderProviders[] = ['table' => $reg['table'], 'class' => $reg['class']];
             }
         }
 
@@ -537,6 +556,7 @@ class ModuleDefinition
             journalDimensions: $journalDimensions,
             prints: $prints,
             sendPurposes: $sendPurposes,
+            recordSenderProviders: $recordSenderProviders,
         );
     }
 

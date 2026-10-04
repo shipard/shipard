@@ -66,6 +66,7 @@ class ReadOnlyPolicyTest extends TestCase
 			// mail (D4)
 			['mail', 'receiveIncoming', $d503],
 			['mail', 'importMessage', $d403], ['mail', 'uploadMessages', $d403], ['mail', 'setSenderPassword', $d403],
+			['mail', 'senderAddresses', $allow],
 			// analysis — analyzer callbacky 503, uživatelské akce 403, preview GET allow
 			['analysis', 'queue', $d503], ['analysis', 'claim', $d503], ['analysis', 'payload', $d503],
 			['analysis', 'attachmentContent', $d503], ['analysis', 'result', $d503], ['analysis', 'failed', $d503],
