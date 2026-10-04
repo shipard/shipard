@@ -18,8 +18,8 @@ všechno nutné je tady. Viz kapitoly 6 a 7.
 | Kdo | Co dělá | Co nedělá |
 |-----|---------|-----------|
 | **Claude v chatu** (claude.ai, Projekt) | návrh a diskuse, zamykání rozhodnutí, psaní PRD/tasků a `docs/`, zakládání a aktualizace issues, **ověřování** hotové implementace (čtení kódu, diffů, cílené testy), diagnostika na testovacím serveru | neimplementuje kód aplikace; na testovacím serveru nic nemění bez schválení |
-| **Claude Code** (v checkoutu repa) | implementace podle task filu, testy, build, commity po logických krocích dle task filu | nepushuje; nevymýšlí zadání mimo task |
-| **Člověk** | rozhoduje, čte diffy, pushuje, nasazuje | — |
+| **Claude Code** (v checkoutu repa) | implementace podle task filu, testy, build, commity po logických krocích dle task filu | neodesílá práci z vlastní iniciativy — push a PR jen na výslovný pokyn (§3); nevymýšlí zadání mimo task |
+| **Člověk** | rozhoduje, čte diffy, rozhoduje o odeslání (pushuje sám, nebo push zadá a potvrdí), nasazuje | — |
 
 Rozdělení není dogma — je to způsob, jak mít návrh a implementaci ve dvou hlavách
 a jak udržet přehled o tom, co se změnilo a proč.
@@ -55,7 +55,7 @@ implementuje.
    čte `CLAUDE.md`, task a dokumenty ze sekce „Před implementací přečti".
 5. **Ověření**: Claude v chatu projde diff a kód read-only, spustí cílené testy,
    po nasazení zkontroluje chování na testovacím serveru. Člověk projde `git diff`
-   a pushne.
+   a pushne — sám, nebo pokynem Claude Code (§3).
 6. **Uzavření**: aktualizace `**Stav:**` v tasku ve stejném commitu jako kód,
    `python3 scripts/tasks-index.py`, komentář nebo uzavření issue.
 
@@ -77,8 +77,18 @@ implementuje.
   nemají.
 - **Secrets.** Nikdy nečíst `config/main.json` zdroje dat ani `secrets/`. Heslo
   read-only uživatele se předává přes proměnnou prostředí, nikdy do chatu ani do
-  argumentů příkazu.
-- **Push je vždy lidský.**
+  argumentů příkazu. V Claude Code přímé čtení blokuje `.claude/settings.json`
+  (`permissions.deny`) v každém režimu — je to pojistka, ne úplná ochrana:
+  zachytí nástroje pro čtení a příkazy, které soubor jmenují (`cat`, `head`, …),
+  ne skript nebo aplikaci, která si soubor otevře sama.
+- **O odeslání rozhoduje vždy člověk.** Push, pull request a merge spouští
+  Claude Code **jen na výslovný pokyn** v dané konverzaci — nikdy z vlastní
+  iniciativy. `git push`, `gh pr create` a `gh pr merge` si v každém režimu
+  včetně auto vyžádají potvrzení (`.claude/settings.json`, `permissions.ask`).
+  Pravidlo zachytí běžný tvar příkazu, ne každou obměnu (`git -C … push`) —
+  hranicí je ochrana větve `stable` na GitHubu: přímo do ní zapisuje jen
+  několik lidí, ostatní posílají pull requesty. Claude v chatu (MCP most)
+  potvrzovací dotaz nemá, proto nepushuje nikdy.
 
 ---
 

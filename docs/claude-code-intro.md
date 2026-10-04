@@ -108,15 +108,19 @@ přeskakuje všechny kontroly (`bypassPermissions`,
 Když se Claude ptá na povolení, přečti si, **co** chce spustit. Odpověď
 „ano a už se neptej“ dávej jen příkazům, kterým rozumíš (např. testy).
 
-**Co repo blokuje vždy.** Sdílené nastavení `.claude/settings.json` v repu
-zakazuje v každém režimu:
+**Co repo hlídá vždy.** Sdílené nastavení `.claude/settings.json` v repu
+platí v každém režimu, i v auto:
 
-- `git push`, `gh pr create`, `gh pr merge` — odeslání práce dělá vždy
-  člověk (kapitola 8);
-- čtení konfigurace a secrets zdrojů dat (`config/main.json`, `secrets/`).
+- **`git push`, `gh pr create`, `gh pr merge` — Claude se vždy zeptá.**
+  Odeslání práce spouští jen na tvůj výslovný pokyn a ty ho potvrzuješ
+  (kapitola 8). Když se na odeslání zeptá, aniž jsi o něj požádal,
+  odmítni.
+- **Čtení konfigurace a secrets zdrojů dat** (`config/main.json`,
+  `secrets/`) **je zakázané.** Zákaz zachytí přímé čtení souboru;
+  aplikace a její příkazy si konfiguraci čtou dál.
 
-Když Claude narazí na blokaci, není to chyba — udělej ten krok sám, nebo
-ho vynech.
+Když Claude narazí na zákaz, není to chyba — ten krok vynech, nebo ho
+udělej sám.
 
 ---
 
@@ -205,23 +209,31 @@ Pak požádej Clauda:
 2. **Práce a kontrola** — kapitoly 6 a 7.
 3. **Commit** — „commitni to“. U tasku Claude commituje podle jeho
    commit strategie. Commit je zatím jen u tebe, nikam neodešel.
-4. **Odeslání — dělá člověk.** Požádej Clauda, ať připraví popis PR do
-   souboru („napiš popis PR do /tmp/pr.md“), přečti si ho a v terminálu
-   spusť sám:
+4. **Odeslání — jen na tvůj pokyn.** Požádej Clauda, ať připraví popis
+   PR do souboru („napiš popis PR do /tmp/pr.md“), a přečti si ho. Pak:
+
+   > Pushni větev do mého forku a založ pull request do shipard/shipard
+   > s popisem z /tmp/pr.md.
+
+   Claude se před pushem i před založením PR **zeptá** — přečti si, co
+   a kam odesílá, a potvrď. Odkaz na PR pak vypíše. Stejný krok můžeš
+   udělat i sám v terminálu:
 
    ```bash
    gh pr create --repo shipard/shipard --body-file /tmp/pr.md
    ```
 
    `gh` se zeptá, kam větev pushnout (do tvého forku) a jaký má mít PR
-   název. Odkaz na PR pak vypíše.
+   název.
 5. **Aktuální stav** — před další prací „stáhni změny z upstreamu do
    stable a založ novou větev“. Po stažení se závislosti a frontend
    aktualizují samy (git hooky z bootstrapu).
 
-**Proč odesílá člověk:** repozitář je veřejný. Co jednou odejde, vidí
-všichni — proto poslední kontrolu a odeslání dělá vždy člověk. Repo to
-vynucuje i technicky (kapitola 5).
+**Proč o odeslání rozhoduješ ty:** repozitář je veřejný. Co jednou
+odejde, vidí všichni — proto Claude nic neodešle sám od sebe a každé
+odeslání potvrzuješ ty. Repo to vynucuje i technicky (kapitola 5).
+Přímo do hlavní větve `stable` navíc smí zapisovat jen několik lidí;
+ostatní posílají pull requesty.
 
 ---
 

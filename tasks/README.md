@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 323 tasků: **naplánováno** 7 · **částečně** 20 · **hotovo** 296.
+Celkem 323 tasků: **naplánováno** 6 · **částečně** 21 · **hotovo** 296.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -28,7 +28,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-models-phase0.md` | naplánováno | čeká na potvrzení rozhodnutí F0-D1–F0-D7 (#85) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
-| `claude-code-settings.md` | naplánováno | #96 D27 |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `prints-phase4.md` | naplánováno | design zamčený v #90 (D34–D39), čeká na implementaci |
@@ -37,6 +36,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
 | `accbal-proforma-closure.md` | částečně | kód hotový 2026-09-23 (5 commitů, #79 D3b/D3c): |
 | `accbal-proformas-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D2/D3a); |
+| `claude-code-settings.md` | částečně | implementováno; zbývá ruční ověření v nové session (dotaz u pushe v auto, `/permissions`, režim Manual) — #96 D27, D30 |
 | `doc-number-release-on-data-save.md` | částečně | kód + testy hotové 2026-08-13; zbývá D2 (reset test DS), ruční proklik a read-only verifikace na alfě |
 | `doc-proforma-out.md` | částečně | kód hotový 2026-09-23 (4 commity, #79 D1), `ds-upgrade` |
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
@@ -70,6 +70,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `dev-small-fixes.md` | Drobnosti z ověření lokální instalace — administrátor z dev dashboardu, adresáře DS s právy podle kontraktu (`PermissionSpec::ensureDsDir`), `composer.lock` (#96 D13, D14) |
 | `dev-install-followups.md` | Práva logu podle kontraktu (`ErrorLogger`: adresář `0750`, `shipard.log` `0640`) a Ubuntu 26.04 jako doporučená verze pro nové instalace (#96 D15, D16) |
 | `local-dev-bootstrap.md` | Lokální vývoj na macOS a Windows — `scripts/dev-bootstrap.sh`, cloud-init pro Multipass, WSL, `docs/local-dev.md` (#96 D17–D25) |
+| `claude-code-settings.md` | Sdílené `.claude/settings.json` — potvrzení odeslání (`git push`, `gh pr create`, `gh pr merge`) a zákaz čtení konfigurace a secrets zdrojů dat v každém režimu Claude Code (#96 D27, D30) |
 | `dev-update-script.md` | `scripts/dev-update.sh` + git hooks (post-pull workflow) |
 | `ds-upgrade-all.md` | `shpd-server ds-upgrade-all` + kompletní `docs/cli.md` |
 | `ds-upgrade-quiet-default.md` | Tichý default `ds-upgrade`, plný výpis jen s `-v` |
