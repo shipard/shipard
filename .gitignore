@@ -11,6 +11,9 @@
 # Referenční podaná XML zlatého testu — reálná data zdroje, jen lokálně (viz README)
 tests/Fixtures/vat-xml/689089/*.xml
 
-# Osobní instrukce a nastavení pro Claude Code (docs/ai-workflow.md §7)
+# Osobní instrukce a nastavení pro Claude Code (docs/ai-workflow.md §7).
+# Z .claude/ se verzuje jen sdílené settings.json; zbytek je lokální stav
+# nástroje (settings.local.json, zámky). Další sdílený soubor = další výjimka.
 /CLAUDE.local.md
-/.claude/settings.local.json
+/.claude/*
+!/.claude/settings.json

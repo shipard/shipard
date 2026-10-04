@@ -86,6 +86,16 @@ položka z M0 (věcná správnost) má přednost před vším ostatním.
 
 Podrobnosti: `tasks/README.md` → Hlavička se stavem.
 
+### Odeslání práce (push, pull request, merge)
+
+O odeslání práce **vždy rozhoduje člověk**. `git push`, `gh pr create`
+a `gh pr merge` spouštěj **jen na výslovný pokyn v dané konverzaci** — nikdy
+z vlastní iniciativy ani „na závěr tasku“; pokyn platí pro ten jeden případ.
+Bez pokynu připrav commity a popis PR do souboru. V Claude Code si tyto
+příkazy vyžádají potvrzení v každém režimu (`.claude/settings.json`,
+`permissions.ask`) — piš je v běžném tvaru, dotaz neobcházej. Viz
+`docs/ai-workflow.md` §3 a `docs/claude-code-intro.md` kapitola 8.
+
 ### Uživatelská dokumentace (`help/`)
 
 `help/` odpovídá na otázku **„jak to udělám“**, `docs/` na **„jak je to
