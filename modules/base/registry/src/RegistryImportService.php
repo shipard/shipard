@@ -30,6 +30,9 @@ use Shipard\Core\Document\TableGateway;
  *   vzor {@see RegistryApplier::suggestBinder}); nenalezený → NULL +
  *   warning `BINDER_NOT_FOUND`. Šanony endpoint nezakládá — to je práce
  *   runneru před dokumenty.
+ * - **Autor** (`createdBy`, #93 D9): volitelné id existujícího uživatele →
+ *   `created_by`; neznámé id = 422 `user_not_found`. Bez něj NULL — ne
+ *   uživatel API klíče importu.
  *
  * Návratový tvar sleduje {@see FileFromMessageService}: `['ok' => bool, …]`,
  * u chyb `errorCode`/`errorMessage`/`statusCode` (+ `details` pro 422),
@@ -39,6 +42,8 @@ class RegistryImportService
 {
     private const REGISTRY_TABLE = 'base_registry_documents';
     private const BINDERS_TABLE = 'base_registry_binders';
+
+    private const USERS_TABLE = 'core_system_users';
 
     private const SCHEMA_ID = 'shpd.registry.document.v1';
 
@@ -118,6 +123,15 @@ class RegistryImportService
             return self::validationError('validTo', 'invalid_date', 'validTo must be an ISO 8601 date');
         }
 
+        // Autor záznamu (#93 D9): volitelné `createdBy` = id existujícího
+        // uživatele (aktivního i neaktivního — import ho zakládá předem přes
+        // `/_exchange/users/user/apply`). Chybí / null = bez autora; jméno ze
+        // starého systému dál nese `legacy.author` v metadatech.
+        $createdBy = $body['createdBy'] ?? null;
+        if ($createdBy !== null && (!is_int($createdBy) || $createdBy <= 0 || !$this->userExists($createdBy))) {
+            return self::validationError('createdBy', 'user_not_found', 'createdBy must be the id of an existing user');
+        }
+
         // Idempotence: opakovaný běh runneru se stejnou legacy identitou
         $existing = $this->db->fetchRow(
             'SELECT `id` FROM %n'
@@ -159,7 +173,9 @@ class RegistryImportService
             'source_kind'    => 'import',
             'source_message' => null,
             'created'        => date('Y-m-d H:i:s', $createdTs),
-            'created_by'     => null,
+            // Klíč vždy přítomný — gateway by jinak doplnila uživatele
+            // API klíče importu (CurrentUser).
+            'created_by'     => $createdBy,
             'docState'       => $docState,
             'docStateMain'   => self::MAIN_STATE_FALLBACK[$docState],
         ];
@@ -199,7 +215,16 @@ class RegistryImportService
         return $row !== null ? (int) $row['id'] : null;
     }
 
-    private function buildGateway(): TableGateway
+    private function userExists(int $userId): bool
+    {
+        return $this->db->fetchRow(
+            'SELECT `id` FROM %n WHERE `id` = %i',
+            self::USERS_TABLE, $userId,
+        ) !== null;
+    }
+
+    /** Protected kvůli testům (gateway bez databáze). */
+    protected function buildGateway(): TableGateway
     {
         return new TableGateway(
             self::REGISTRY_TABLE,

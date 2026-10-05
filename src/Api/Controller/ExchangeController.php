@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Api\Controller;
 
+use Shipard\Api\AuthContext;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Module\Core\Exchange\Bank\BankStatementApplier;
@@ -11,14 +12,21 @@ use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
+use Shipard\Module\Core\Exchange\User\UserApplier;
 
 /**
- * REST endpoints for the canonical exchange formats. Three parallel
- * flavours sharing the same response shape:
+ * REST endpoints for the canonical exchange formats. Parallel flavours
+ * sharing the same response shape:
  *
  *   POST /api/v1/_exchange/docs/document/{validate|preview|apply}
  *   POST /api/v1/_exchange/persons/person/{validate|preview|apply}
  *   POST /api/v1/_exchange/items/item/{validate|preview|apply}
+ *   POST /api/v1/_exchange/bank/statement/{validate|preview|apply}
+ *
+ * plus the user import (#93 D7, D13), which answers `{userId, created}`
+ * and is limited to an admin or an API key:
+ *
+ *   POST /api/v1/_exchange/users/user/{validate|apply}
  *
  * The controller is intentionally thin — body validation + delegate to
  * the relevant Applier + map ApplyResult to Response. Error shape
@@ -38,6 +46,7 @@ final class ExchangeController
         private readonly ?PersonApplier $personApplier = null,
         private readonly ?ItemApplier $itemApplier = null,
         private readonly ?BankStatementApplier $bankApplier = null,
+        private readonly ?UserApplier $userApplier = null,
     ) {}
 
     // ── Document flow ──────────────────────────────────────────────────
@@ -181,6 +190,49 @@ final class ExchangeController
             return $payload;
         }
         return $this->respond($this->bankApplier->apply($payload), 'savedStatementId');
+    }
+
+    // ── User import flow (#93 D7, D13) ─────────────────────────────────
+
+    public function validateUser(Request $request, AuthContext $auth): Response
+    {
+        return $this->userFlow($request, $auth, false);
+    }
+
+    public function applyUser(Request $request, AuthContext $auth): Response
+    {
+        return $this->userFlow($request, $auth, true);
+    }
+
+    /**
+     * Smí admin nebo API klíč (D13). API klíč tím přihlášení nezíská:
+     * applier zakládá jen neaktivní účty bez hesla a bez práv admina
+     * a existující uživatele nemění (kromě vazby na Osobu).
+     */
+    private function userFlow(Request $request, AuthContext $auth, bool $apply): Response
+    {
+        if (!$auth->isAuthenticated) {
+            return Response::error('UNAUTHORIZED', 'Authentication required', 401);
+        }
+        if (!$auth->isAdmin && $auth->tokenType !== 'api_key') {
+            return Response::error('FORBIDDEN', 'User import requires an administrator or an API key', 403);
+        }
+        if ($this->userApplier === null) {
+            return Response::error('INTERNAL_ERROR', 'User exchange flow is not wired in this dispatcher.', 500);
+        }
+        $payload = $this->extractPayload($request);
+        if ($payload instanceof Response) {
+            return $payload;
+        }
+
+        $result = $apply ? $this->userApplier->apply($payload) : $this->userApplier->validate($payload);
+        if (!$result->success) {
+            return $this->respond($result, 'userId');
+        }
+        return Response::success(
+            ['userId' => $result->savedId, 'created' => $result->statusCode === 201],
+            $result->statusCode,
+        );
     }
 
     // ── Shared plumbing ────────────────────────────────────────────────

@@ -283,6 +283,7 @@ class DocumentApplier
         }
 
         $validatorIssues = $this->documentValidator->validate($canonical);
+        $this->appendAuthorIssue($canonical, $validatorIssues);
         $enriched = $this->withResolveIssues($canonical, $validatorIssues);
 
         if ($this->hasErrors($validatorIssues)) {
@@ -315,6 +316,7 @@ class DocumentApplier
 
         // 2. Semantic checks + resolve. Both contribute to _resolve.issues.
         $issues = $this->documentValidator->validate($canonical);
+        $this->appendAuthorIssue($canonical, $issues);
         $this->appendVatModeIssue($canonical, $issues);
         $this->appendVatHeaderIssues($canonical, $issues);
         $this->appendRecapSourceIssue($canonical, $issues);
@@ -532,6 +534,7 @@ class DocumentApplier
             );
         }
         $validatorIssues = $this->documentValidator->validate($canonical);
+        $this->appendAuthorIssue($canonical, $validatorIssues);
         $this->appendVatModeIssue($canonical, $validatorIssues);
         $this->appendVatHeaderIssues($canonical, $validatorIssues);
         $this->appendRecapSourceIssue($canonical, $validatorIssues);
@@ -1480,11 +1483,22 @@ class DocumentApplier
             'vatRecap'             => $recapSource['recap'] !== [] ? $recapSource['recap'] : null,
         ];
 
-        return array_filter(
+        $head = array_filter(
             $data,
             static fn($v, $k) => $v !== null || in_array($k, ['rows'], true),
             ARRAY_FILTER_USE_BOTH,
         ) + ['rows' => $data['rows']];
+
+        // Autor dokladu (#93 D9): přítomný klíč jde do hlavičky i jako null —
+        // mimo filtr nullů, protože „bez autora“ je rozhodnutí, ne chybějící
+        // hodnota (DocAuthorResolver přítomný klíč nepřepisuje). Chybějící
+        // klíč do dat nepatří: autora pak určí resolver.
+        $applyOptions = is_array($canonical['applyOptions'] ?? null) ? $canonical['applyOptions'] : [];
+        if (array_key_exists('author', $applyOptions)) {
+            $head['author'] = $applyOptions['author'] !== null ? (int) $applyOptions['author'] : null;
+        }
+
+        return $head;
     }
 
     /**
@@ -2687,6 +2701,36 @@ class DocumentApplier
             'message'  => 'Rekapitulaci DPH nešlo převzít z dokladu ('
                 . $resolved['fallback'] . ') — spočítá se z řádků.',
         ];
+    }
+
+    /**
+     * `applyOptions.author` (#93 D9): přítomný klíč určuje autora dokladu
+     * („Vystavil“), `null` = bez autora. Hodnota musí být id existujícího
+     * uživatele — aktivního i neaktivního (import historie nese autory,
+     * kteří se už nepřihlašují). Chybějící klíč se nekontroluje: autora
+     * doplní `DocAuthorResolver` při uložení.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function appendAuthorIssue(array $canonical, array &$issues): void
+    {
+        $options = $canonical['applyOptions'] ?? null;
+        if (!is_array($options) || ($options['author'] ?? null) === null) {
+            return;
+        }
+        $author = $options['author'];
+        $row = is_int($author) && $author > 0
+            ? $this->db->fetch('SELECT [id] FROM [core_system_users] WHERE [id] = %i', $author)
+            : null;
+        if ($row === null || $row === false) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => 'applyOptions.author',
+                'code'     => 'author_not_found',
+                'message'  => 'Autor dokladu (applyOptions.author) není id existujícího uživatele.',
+            ];
+        }
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Api\Controller;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Api\AuthContext;
 use Shipard\Api\Controller\ExchangeController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
@@ -12,6 +13,7 @@ use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
+use Shipard\Module\Core\Exchange\User\UserApplier;
 
 class ExchangeControllerTest extends TestCase
 {
@@ -365,5 +367,91 @@ class ExchangeControllerTest extends TestCase
 
         $this->assertSame(400, $this->getStatus($response));
         $this->assertSame('schema_invalid', $response->getPayload()['error']['code']);
+    }
+
+    // ── Import uživatelů (#93 D13) ──────────────────────────────────────
+
+    private const USER_PAYLOAD = ['format' => 'shpd.system.user.v1', 'login' => 'jana@example.test', 'fullName' => 'Jana Příkladová'];
+
+    private function userController(?UserApplier $applier): ExchangeController
+    {
+        return new ExchangeController($this->createMock(DocumentApplier::class), userApplier: $applier);
+    }
+
+    private function userRequest(?array $body = self::USER_PAYLOAD): Request
+    {
+        return $this->buildRequest('POST', '/api/v1/_exchange/users/user/apply', $body);
+    }
+
+    public function testUserImportRequiresAdminOrApiKey(): void
+    {
+        $applier = $this->createMock(UserApplier::class);
+        $applier->expects($this->never())->method('apply');
+        $applier->expects($this->never())->method('validate');
+        $controller = $this->userController($applier);
+
+        $anonymous = $controller->applyUser($this->userRequest(), AuthContext::anonymous());
+        $this->assertSame(401, $this->getStatus($anonymous));
+
+        $plainUser = new AuthContext(true, 5, 'session', 'shpd_st_x', isAdmin: false);
+        $this->assertSame(403, $this->getStatus($controller->applyUser($this->userRequest(), $plainUser)));
+        $this->assertSame(403, $this->getStatus($controller->validateUser($this->userRequest(), $plainUser)));
+    }
+
+    public function testUserImportAnswersUserIdAndCreatedFlag(): void
+    {
+        $applier = $this->createMock(UserApplier::class);
+        $applier->method('apply')->willReturnOnConsecutiveCalls(
+            ApplyResult::ok(self::USER_PAYLOAD, 7, 201),
+            ApplyResult::ok(self::USER_PAYLOAD, 7, 200),
+        );
+        $controller = $this->userController($applier);
+
+        // API klíč (není admin) i admin v session smí.
+        $created = $controller->applyUser($this->userRequest(), new AuthContext(true, 2, 'api_key', 'shpd_ak_x'));
+        $this->assertSame(201, $this->getStatus($created));
+        $this->assertSame(['userId' => 7, 'created' => true], $created->getPayload()['data']);
+
+        $existing = $controller->applyUser($this->userRequest(), new AuthContext(true, 1, 'session', 'shpd_st_x', isAdmin: true));
+        $this->assertSame(200, $this->getStatus($existing));
+        $this->assertSame(['userId' => 7, 'created' => false], $existing->getPayload()['data']);
+    }
+
+    public function testUserValidateReportsMatchWithoutCreating(): void
+    {
+        $applier = $this->createMock(UserApplier::class);
+        $applier->expects($this->never())->method('apply');
+        $applier->method('validate')->willReturn(ApplyResult::ok(self::USER_PAYLOAD, null));
+
+        $response = $this->userController($applier)
+            ->validateUser($this->userRequest(), new AuthContext(true, 2, 'api_key', 'shpd_ak_x'));
+
+        $this->assertSame(200, $this->getStatus($response));
+        $this->assertSame(['userId' => null, 'created' => false], $response->getPayload()['data']);
+    }
+
+    public function testUserImportErrorKeepsSharedErrorShape(): void
+    {
+        $applier = $this->createMock(UserApplier::class);
+        $applier->method('apply')->willReturn(ApplyResult::error(
+            'validation_failed', 'Validace uživatele selhala.', ['_resolve' => ['issues' => []]], statusCode: 422,
+        ));
+
+        $response = $this->userController($applier)
+            ->applyUser($this->userRequest(), new AuthContext(true, 2, 'api_key', 'shpd_ak_x'));
+
+        $this->assertSame(422, $this->getStatus($response));
+        $this->assertSame('validation_failed', $response->getPayload()['error']['code']);
+    }
+
+    public function testUserImportRejectsMissingBodyAndUnwiredFlow(): void
+    {
+        $apiKey = new AuthContext(true, 2, 'api_key', 'shpd_ak_x');
+
+        $noBody = $this->userController($this->createMock(UserApplier::class))->applyUser($this->userRequest(null), $apiKey);
+        $this->assertSame(400, $this->getStatus($noBody));
+
+        $unwired = $this->userController(null)->applyUser($this->userRequest(), $apiKey);
+        $this->assertSame(500, $this->getStatus($unwired));
     }
 }

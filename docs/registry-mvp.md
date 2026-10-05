@@ -616,7 +616,7 @@ po dokončení fáze 1 (nezávislý na fázi 2).
 | `documents.validFrom/validTo` | `valid_from`/`valid_to` | přímo — starý model promoted platnosti už měl |
 | `documents.text` | `notice` | přímo |
 | `documents.documentId` | `metadata.legacyId` | starý string identifikátor |
-| `documents.author` (persons ref) | `metadata.legacyAuthor` | `created_by` je user, ne osoba |
+| `documents.author` (persons ref) | `created_by` + `metadata.legacyAuthor` | `created_by` je user, ne osoba: runner pro autora založí uživatele (`/_exchange/users/user/apply`, #93 D7) a pošle jeho id jako `createdBy`; jméno zůstává v metadatech |
 | `documents.dateCreate` | `created` | přímo |
 | `documents.docState` | `docState` | stejná archivační topologie |
 | přílohy dokumentu | kopie souborů + `core_attachments_files` (`table_id=428`) | vzor mail importu |

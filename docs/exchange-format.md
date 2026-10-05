@@ -1202,6 +1202,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `code` | Severity | Význam |
 |--------|----------|--------|
 | `required` | error | Chybí povinné pole per `docType` (issueDate, rows, supplier/customer). |
+| `author_not_found` | error | `applyOptions.author` není id existujícího uživatele (#93 D9). `null` a chybějící klíč se nekontrolují. |
 | `totals_mismatch` | warning | Deklarovaná `totals.totalAmount` neodpovídá žádné vypočtené variantě (Σ řádků, Σ řádků s DPH, Σ recap). Heuristika validátoru; v `/preview` ji při dostupném `_resolve.computed` nahrazuje `computed_total_mismatch`. |
 | `computed_total_mismatch` | warning | Jen `/preview`: částka k úhradě podle skutečného výpočtu dokladu (`_resolve.computed.totals.totalAmount`) se od `totals.totalAmount` liší o víc než 0,01. Nese `declared` a `computed`; zpráva příčinu nehádá, jen vyzve ke kontrole řádků a režimu DPH. U samovyměření se liší daň, k úhradě sedí — warning nepadne. |
 | `computed_unavailable` | info | Jen `/preview`: výpočet `_resolve.computed` selhal výjimkou (zalogováno) — blok je `null`, náhled ukazuje údaje z canonicalu. |
@@ -1367,6 +1368,25 @@ z číselníku `economy_codebooks_bank_accounts`** — přenosná varianta pro
 datové sady (#40). Kód resolvuje `DocumentApplier` před transakcí; neznámý
 kód = `own_bank_account_not_found` (422).
 
+`applyOptions.author` (#93 D9) určuje **autora dokladu** — `docs_core_heads.author`,
+na tisku „Vystavil“. Rozhoduje **přítomnost klíče**, ne hodnota:
+
+| V payloadu | Autor dokladu |
+|---|---|
+| `"author": 7` | uživatel 7 — musí existovat (aktivní i neaktivní), jinak error `author_not_found` na `applyOptions.author` |
+| `"author": null` | doklad **bez autora** — applier klíč propíše do hlavičky mimo filtr nullů |
+| klíč chybí | výchozí podle `DocAuthorResolver`: přihlášený člověk, jinak autor automaticky vystavených dokladů (řada → nastavení), jinak nikdo — `docs/document-system.md` → Autor dokladu |
+
+Platí i mimo import mód (API klient smí autora určit); AI extrakce klíč
+neposílá — `MessageProposalApplier` si `applyOptions` skládá sám, autorem je
+uživatel, který návrh potvrdil. **Pozor u API klíče:** bez klíče `author`
+rozhoduje uživatel klíče — člověk se stane autorem, systémový uživatel
+(`is_system`) se bere jako strojový kontext. Migrace proto posílá klíč vždy
+(i `null` u dokladů, které autora ve starém systému neměly) a uživatele
+zakládá předem přes `/_exchange/users/user/apply` (§14 → Uživatelé).
+Exportér (`DocumentExporter`) autora nevydává: datová sada uživatele
+nepřenáší.
+
 Opačný směr (DB → canonical) dělají exportery v
 `modules/core/exchange/src/Export/` (`DocumentExporter`, `PersonExporter`,
 `ItemExporter`) a `RegistryExporter` v `modules/base/registry/src/` —
@@ -1391,7 +1411,10 @@ funguje stejně ve všech režimech.
 ## 11. REST API endpointy
 
 Všechny pod `/api/v1/_exchange/docs/document/`. Auth: standardní (API key
-nebo session token). Rate limit: standardní.
+nebo session token). Rate limit: standardní. Sesterské flow sdílejí
+dispatcher: `/_exchange/persons/person/`, `/_exchange/items/item/`,
+`/_exchange/bank/statement/` a import uživatelů `/_exchange/users/user/`
+(jen `validate` + `apply`, admin nebo API klíč — §14 → Uživatelé).
 
 ### POST `/validate`
 
@@ -1504,6 +1527,66 @@ Použití: import katalogů od partnerů, B2B item mapping.
 
 Použití: import bankovních výpisů (XML/CSV od banky → kanonický → pokladní
 doklad nebo párování plateb).
+
+### Uživatelé — `shpd.system.user.v1`
+
+Hotový malý formát pro migraci (#93 D7, D13), `UserApplier`
+(`modules/core/exchange/src/User/`). Starý systém měl uživatele jako Osobu
+s loginem; nový je má oddělené. Importér proto pro každou Osobu, která ve
+starém systému „něco udělala“ (autor dokladu, autor záznamu spisovny),
+založí uživatele a jeho id pak posílá jako `applyOptions.author` u dokladů
+a `createdBy` u spisovny (`POST /_registry/import`). Login ve starém systému
+kritérium není — autorů je jednotky, osob s loginem řádově víc.
+
+```
+POST /api/v1/_exchange/users/user/validate
+POST /api/v1/_exchange/users/user/apply
+```
+
+```jsonc
+{
+  "format": "shpd.system.user.v1",   // verze je součást `format`, bez `formatVersion`
+  "login": "jana@example.test",      // povinné — určuje importér
+  "email": "jana@example.test",      // nullable
+  "fullName": "Jana Příkladová",     // povinné
+  "person": 123                      // nullable — id Osoby v tomto zdroji dat
+}
+```
+
+Odpověď: `{ "userId": 7, "created": true }` — `apply` 201 při založení, 200
+při nalezení existujícího; `validate` vrací uživatele, kterého by `apply`
+vrátil (`userId: null` = založil by nového), a nic nezapisuje. Chyby mají
+společný tvar exchange (`schema_invalid` 400, `validation_failed` 422
+s `details.canonical._resolve.issues`; neexistující Osoba = `person_not_found`).
+`preview` flow nemá — není co rozhodovat.
+
+**Párování** (idempotentní — `ds-reset` uživatele nemaže, opakovaný import
+je běžný stav):
+
+1. uživatel se stejným `login` → ten (i neaktivní);
+2. jinak **právě jeden** aktivní ne-systémový uživatel se stejným `email`
+   bez ohledu na velikost písmen → ten (skutečný účet, který mezitím založil
+   admin); víc shod = nejednoznačné, nepáruje se;
+3. jinak se založí nový.
+
+Login je e-mail; při chybějícím nebo duplicitním e-mailu syntetický
+(`import-<ref>`). Rozhoduje **importér**, který zná všechny Osoby — applier
+jen páruje a unikátnost loginu (`unq_login`) řeší tím, že kolizi vrátí jako
+nalezeného uživatele.
+
+**Hranice** (D13 — endpoint smí volat admin **nebo API klíč**):
+
+- nový uživatel je vždy `is_active = 0`, bez hesla, `is_admin = 0`,
+  `is_system = 0`; formát žádné takové pole nemá (`additionalProperties: false`);
+- u nalezeného uživatele se **nemění nic kromě `person`** — a ta jen když je
+  prázdná nebo ukazuje na neexistující Osobu (po `ds-reset` mají Osoby nová
+  id, uživatelé zůstali);
+- sloupec `person` přidává rozšíření z `base.persons`; na zdroji dat bez Osob
+  se `person` v payloadu ignoruje.
+
+API klíč tedy voláním nezíská přihlášení. Aktivace importovaného uživatele
+je ruční akce admina (`docs/auth.md`). V read-only stavu zdroje dat projde
+`validate`, `apply` končí 403 (`ReadOnlyPolicy`, přípona akce).
 
 ---
 

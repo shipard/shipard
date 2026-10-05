@@ -321,6 +321,10 @@ class Router
 			return $this->resolveBankExchangeRoute($subpath, $method);
 		}
 
+		if (str_starts_with($subpath, '/_exchange/users/user/')) {
+			return $this->resolveUsersExchangeRoute($subpath, $method);
+		}
+
 		if (str_starts_with($subpath, '/_exchange/content-tags/')) {
 			return $this->resolveContentTagsRoute($subpath, $method);
 		}
@@ -949,6 +953,22 @@ class Router
 			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
 		}
 		return new Route('exchange', "item:{$rest}");
+	}
+
+	/**
+	 * Import uživatelů (#93 D7) sdílí `exchange` dispatcher; akce s prefixem
+	 * `user:`. Bez `preview` — není co rozhodovat, párování je jednoznačné.
+	 */
+	private function resolveUsersExchangeRoute(string $subpath, string $method): Route|Response
+	{
+		$rest = substr($subpath, strlen('/_exchange/users/user/'));
+		if (!in_array($rest, ['validate', 'apply'], true)) {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+		if ($method !== 'POST') {
+			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+		}
+		return new Route('exchange', "user:{$rest}");
 	}
 
 	/**

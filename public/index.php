@@ -362,7 +362,7 @@ function dispatch(
 		'senderRules' => dispatchSenderRules($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime, $documentEventDispatcher),
 		'registry' => dispatchRegistry($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime),
 		'analysis' => dispatchAnalysis($route, $request, $auth, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
-		'exchange' => dispatchExchange($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
+		'exchange' => dispatchExchange($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $auth),
 		'contentTags' => dispatchContentTags($route, $request, $auth, $db, $configRuntime, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'alerts' => dispatchAlerts($route, $request, $db, $alertCheckRegistry, $configRuntime, resolveLanguage($request, $resolved->config)),
 		'reports' => dispatchReports($route, $request, $db, $configRuntime, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config)),
@@ -1023,6 +1023,7 @@ function dispatchExchange(
 	\Shipard\Api\ResolvedDataSource $resolved,
 	\Shipard\Core\Document\DocumentRegistry $documentRegistry,
 	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
+	?AuthContext $auth = null,
 ): Response {
 	if ($configRuntime === null) {
 		return Response::error('INTERNAL_ERROR', 'ConfigRuntime is required for /_exchange endpoints', 500);
@@ -1059,7 +1060,9 @@ function dispatchExchange(
 		$tables,
 		$documentEventDispatcher,
 	);
-	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier);
+	$userApplier = \Shipard\Module\Core\Exchange\User\UserApplier::create($db->getDibiConnection(), $tables);
+	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier);
+	$auth ??= AuthContext::anonymous();
 
 	return match ($route->action) {
 		'validate'        => $ctrl->validate($request),
@@ -1074,6 +1077,8 @@ function dispatchExchange(
 		'bank:validate'   => $ctrl->validateBankStatement($request),
 		'bank:preview'    => $ctrl->previewBankStatement($request),
 		'bank:apply'      => $ctrl->applyBankStatement($request),
+		'user:validate'   => $ctrl->validateUser($request, $auth),
+		'user:apply'      => $ctrl->applyUser($request, $auth),
 		default           => Response::error('INTERNAL_ERROR', "Unknown exchange action: {$route->action}", 500),
 	};
 }

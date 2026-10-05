@@ -62,6 +62,7 @@ class ReadOnlyPolicyTest extends TestCase
 			['exchange', 'person:validate', $allow], ['exchange', 'person:apply', $d403],
 			['exchange', 'item:preview', $allow], ['exchange', 'item:apply', $d403],
 			['exchange', 'bank:validate', $allow], ['exchange', 'bank:apply', $d403],
+			['exchange', 'user:validate', $allow], ['exchange', 'user:apply', $d403],
 			// personsRegistry
 			['personsRegistry', 'search', $allow], ['personsRegistry', 'fetchPerson', $allow], ['personsRegistry', 'import', $d403],
 			// mail (D4)

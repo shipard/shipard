@@ -147,6 +147,11 @@
                     "minimum": 1,
                     "minLength": 1,
                     "description": "Import mode: our own bank account (economy_codebooks_bank_accounts) to set on the document — integer id, or string = codebook `code` (datasets; resolved by the applier, unknown code = own_bank_account_not_found). For issued invoices confirmed at state 40+, bank_account is required and cannot be carried by the standard self-party flow; the importer resolves it and passes it here."
+                },
+                "author": {
+                    "type": ["integer", "null"],
+                    "minimum": 1,
+                    "description": "Explicit author of the document (docs_core_heads.author → core_system_users.id, printed as “Issued by”). A present key is an explicit choice — null = document without an author; a missing key = default (the signed-in user, otherwise the author of automatically issued documents). Must be the id of an existing user (active or not), unknown id = author_not_found. Not limited to import mode."
                 }
             }
         },

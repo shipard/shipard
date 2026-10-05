@@ -1091,6 +1091,22 @@ class RouterTest extends TestCase
 		$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code']);
 	}
 
+	public function testUsersExchangeRoutesShareExchangeDispatcher(): void
+	{
+		foreach (['validate', 'apply'] as $action) {
+			$result = $this->router->resolve("/api/v1/_exchange/users/user/{$action}", 'POST');
+			$this->assertInstanceOf(Route::class, $result);
+			$this->assertSame('exchange', $result->controller);
+			$this->assertSame("user:{$action}", $result->action);
+		}
+	}
+
+	public function testUsersExchangeHasNoPreviewAndIsPostOnly(): void
+	{
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/users/user/preview', 'POST'));
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/users/user/apply', 'GET'));
+	}
+
 	public function testItemExchangeValidate(): void
 	{
 		$result = $this->router->resolve('/api/v1/_exchange/items/item/validate', 'POST');

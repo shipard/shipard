@@ -838,6 +838,103 @@ class DocumentApplierTest extends TestCase
         }
     }
 
+    /**
+     * Apply s `applyOptions.author` (#93 D9); uživatel 7 existuje, jiný ne.
+     *
+     * @param array<string, mixed> $applyOptions
+     * @return array{0: ApplyResult, 1: array<string, mixed>|null}
+     */
+    private function applyWithAuthorOptions(array $applyOptions): array
+    {
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $persons   = $this->createMock(TransactionlessTableGateway::class);
+        $persons->method('saveDocument')->willReturn(\Shipard\Core\Document\DocumentResult::ok(['id' => 99]));
+
+        $saved = null;
+        $heads = $this->createMock(TransactionlessTableGateway::class);
+        $heads->method('saveDocument')->willReturnCallback(static function (array $data) use (&$saved) {
+            $saved = $data;
+            return \Shipard\Core\Document\DocumentResult::ok(['id' => 1234]);
+        });
+
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(static function (mixed ...$args): ?Row {
+            return str_contains((string) ($args[0] ?? ''), 'core_system_users') && ($args[1] ?? null) === 7
+                ? new Row(['id' => 7])
+                : null;
+        });
+        $db->method('getInsertId')->willReturn(0);
+
+        $applier = $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'],
+            heads: $heads, persons: $persons,
+        );
+
+        $payload = $this->payloadWithCanCreateSupplier(
+            [],
+            applyOptions: ['autoCreateMode' => 'safe'] + $applyOptions,
+        );
+        return [$applier->apply($payload), $saved];
+    }
+
+    public function testExplicitAuthorIsWrittenToHead(): void
+    {
+        [$result, $saved] = $this->applyWithAuthorOptions(['author' => 7]);
+
+        $this->assertTrue($result->success, "{$result->errorCode} {$result->errorMessage}");
+        $this->assertSame(7, $saved['author']);
+    }
+
+    /** Null není „chybí“: klíč musí dojít do dat, jinak by autora doplnil resolver. */
+    public function testExplicitNullAuthorSurvivesNullFilter(): void
+    {
+        [$result, $saved] = $this->applyWithAuthorOptions(['author' => null]);
+
+        $this->assertTrue($result->success, "{$result->errorCode} {$result->errorMessage}");
+        $this->assertIsArray($saved);
+        $this->assertArrayHasKey('author', $saved);
+        $this->assertNull($saved['author']);
+    }
+
+    public function testMissingAuthorOptionLeavesDefaultToDocument(): void
+    {
+        [$result, $saved] = $this->applyWithAuthorOptions([]);
+
+        $this->assertTrue($result->success, "{$result->errorCode} {$result->errorMessage}");
+        $this->assertArrayNotHasKey('author', $saved);
+    }
+
+    public function testUnknownAuthorFailsValidationWithoutSaving(): void
+    {
+        [$result, $saved] = $this->applyWithAuthorOptions(['author' => 555]);
+
+        $this->assertFalse($result->success);
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertNull($saved);
+        $issues = array_values(array_filter(
+            $result->canonical['_resolve']['issues'] ?? [],
+            static fn (array $issue): bool => $issue['code'] === 'author_not_found',
+        ));
+        $this->assertCount(1, $issues);
+        $this->assertSame('applyOptions.author', $issues[0]['path']);
+        $this->assertSame('error', $issues[0]['severity']);
+    }
+
+    public function testValidateReportsUnknownAuthorAndSchemaRejectsNonInteger(): void
+    {
+        $applier = $this->buildApplier();
+
+        $payload = $this->happyPayload();
+        $payload['applyOptions'] = ['author' => 555];
+        $result = $applier->validate($payload);
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertContains('author_not_found', array_column($result->canonical['_resolve']['issues'], 'code'));
+
+        $payload['applyOptions'] = ['author' => 'jana'];
+        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+    }
+
     public function testSafeModeRejectsPartyWithoutCompanyId(): void
     {
         $resolvers = $this->buildAutoCreateResolvers([

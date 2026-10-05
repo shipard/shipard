@@ -1,0 +1,43 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://shipard.cz/schemas/shpd.system.user.v1.json",
+    "title": "Shipard user import v1",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "format",
+        "login",
+        "fullName"
+    ],
+    "properties": {
+        "format": {
+            "const": "shpd.system.user.v1"
+        },
+        "login": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "\\S"
+        },
+        "email": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "maxLength": 200
+        },
+        "fullName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "\\S"
+        },
+        "person": {
+            "type": [
+                "integer",
+                "null"
+            ],
+            "minimum": 1
+        }
+    }
+}
