@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 323 tasků: **naplánováno** 5 · **částečně** 21 · **hotovo** 297.
+Celkem 324 tasků: **naplánováno** 6 · **částečně** 21 · **hotovo** 297.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `mail-safety.md` | naplánováno | design zamčený v #95 (D1–D9), čeká na implementaci |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -331,6 +332,7 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `ai-profile-sync-in-ds-upgrade.md` | Automatický sync AI profilu ze šablony v rámci `ds-upgrade` (upgrade-only) |
 | `enrichment-row-text-candidates.md` | Enrichment řádků z historie: matchování přes více kandidátních textů (description → item.description → item.name, tier-major) |
 | `enrichment-dominant-item.md` | Enrichment řádků z historie: úroveň „dominantní položka dodavatele“ (statistika bez textu, confidence low, guard přes částku) |
+| `mail-safety.md` | Pojistka odchozí pošty na dev a testovacích serverech: `mail.safety` v `server.json` (redirect / allowlist / drop), stopa ve frontě a v Odeslané poště, `doctor` (#95) |
 
 Daemony volající endpoint žijí v jiných repech: `mail_router:tasks/phase1.md`
 (mail-router, Python) a `ai_analyzer:tasks/phase1.md` (AI analyzer, Python).
