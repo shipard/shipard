@@ -1,6 +1,6 @@
 # Task: Přijatý doklad u neplátce DPH — daň dodavatele do ceny v řádcích
 
-**Stav:** hotovo — implementováno 2026-10-05 (3 commity) a ověřeno na dev zdroji (náhled obou typů návrhu, uložení, deník, regrese plátce); ruční proklik náhledu nad zprávou z pošty zbývá
+**Stav:** hotovo — implementováno 2026-10-05 (3 commity) a ověřeno na dev zdroji (náhled obou typů návrhu, uložení, deník, regrese plátce, ruční proklik zprávy z pošty)
 
 **Issue:** #97
 
@@ -377,7 +377,7 @@ Schváleno před implementací, případně vyplynulo z kódu:
 **Vedlejší nález (neřešeno):** `DocRowCalculator` u řádku z celkové ceny
 se záporným množstvím (dobropis) dopočítá jednotkovou cenu 0 — podmínka
 `množství > 0`. Částky ani účtování to neovlivní; u dobropisu neplátce
-z ISDOC to bude vidět na řádku.
+z ISDOC to bude vidět na řádku. → #98
 
 **Ověřeno na dev zdroji** (ukázkový zdroj bez registrace DPH):
 
@@ -393,8 +393,10 @@ z ISDOC to bude vidět na řádku.
    změny (Ze základu, rekapitulace převzatá, řádky bez daně).
 
 Náhled v prohlížeči ověřen headless nad odpovědí spočítanou applierem
-(endpoint náhledu chce přihlášení); průchod zprávy z pošty přes
-**Vystavit koncept** naostro zbývá na ruční proklik.
+(endpoint náhledu chce přihlášení). Ruční proklik 2026-10-05: zpráva
+s ISDOC přes **Vystavit koncept** a potvrzení → doklad Bez DPH bez
+registrace a rekapitulace, řádky s daní, součet = částka k úhradě;
+deník nákladový účet / 321 na částku s daní, bez chyb.
 
 ## Hotovo když
 
