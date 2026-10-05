@@ -98,15 +98,15 @@ pojmenovanou úzkou politiku `userTexts()`.
   `#c8c8c8` — zvol a zdokumentuj). Plní `PrintRunner` ze `SettingsStore`.
   `PrintData::fromArray()` přijme starší JSON bez nových klíčů (fixture,
   `--data`) a doplní výchozí hodnoty. `VERSION` builderů se nemění.
-- **Layout dokladů** (`header.html.twig`, `doc-base.html.twig`, CSS):
+- **Layout dokladů** — jen záhlaví (`header.html.twig`); tělo stránky
+  (`doc-base.html.twig`, `doc-base.css`) se nebarví:
   - akcent barví jen akcentové prvky hlavičky — svislý pruh u titulku,
     linku pod hlavičkou, podklad za logem (je-li logo průhledné);
     text zůstává černý / šedý,
   - logo vlevo = dnešní rozvržení; vpravo = titulek a číslo vlevo,
     logo vpravo,
-  - barva do záhlaví inline (záhlaví nemá přístup k assetům), do stránky
-    přes CSS proměnnou (`--accent`) v inline `<style>`; žádné skládání
-    CSS z uživatelského řetězce mimo validovaný hex,
+  - barva do záhlaví inline (záhlaví nemá přístup k assetům); žádné
+    skládání CSS z uživatelského řetězce mimo validovaný hex,
   - `-webkit-print-color-adjust: exact` na akcentových prvcích.
 - Kontace (interní) dědí layout dokladů — akcent i logo platí i tam.
 
@@ -245,8 +245,8 @@ Tabulka **`core_prints_texts`** („Texty na tiscích“):
   - chyba v textu → `textError`, tisk projde,
   - e-mailový přepis předmětu a těla, předmět bez konců řádků,
   - validace formuláře (kompilace v sandboxu → 422).
-- **Render HTML nad fixture:** akcent v záhlaví i stránce, logo vlevo
-  / vpravo, sloty na správných místech, text s proměnnou.
+- **Render HTML nad fixture:** akcent v záhlaví (stránka ho nenese), logo
+  vlevo / vpravo, sloty na správných místech, text s proměnnou.
 - **Integrační (volný DS):** text platný jen pro fakturu a řadu se
   objeví na faktuře té řady a ne na pokladním dokladu; text mimo platnost
   se nevytiskne; e-mailový text přepíše návrh v `print-send --dry-run`.
@@ -267,13 +267,13 @@ neutrálním akcentem).
 ### Commit 2 — Texty: tabulka, sloty, agenda
 
 §3 (tabulka, cfgItem slotů, `textSlots` v deklaracích, agenda,
-formulář bez panelu proměnných, validace), testy.
+formulář bez panelu proměnných, validace) a z §4 politika `userTexts()`
+s kompilací textu — potřebuje ji validace formuláře; testy.
 
 ### Commit 3 — Texty: výběr a zpracování
 
-§4 (`PrintTextResolver`, politika `userTexts()`, Markdown escaper,
-`league/commonmark`, `texts` v obálce, sloty v layoutu, e-mailový
-přepis), testy.
+§4 (`PrintTextResolver`, Markdown escaper, `league/commonmark`, `texts`
+v obálce, sloty v layoutu, e-mailový přepis), testy.
 
 **Hotovo když:** text „příští týden máme dovolenou“ s platností na týden
 se objeví na faktuře pod řádky; vlastní tělo e-mailu s
@@ -308,3 +308,36 @@ Zamčeno v #90: D46–D52. Upřesnění z PRD:
 - Chyba v uživatelském textu tisk nerozbije — text se vynechá s varováním.
 - `--data` render bere `texts` z JSON, resolver nevolá.
 - Markdown bez obrázků a tabulek.
+
+Upřesnění z plánování implementace (2026-10-05):
+
+- **Akcent je jen v záhlaví.** Stránka nedostává `--accent` a tělo dokladu
+  se nebarví.
+- **Poloha slotů:** `header` je první prvek těla před blokem `title`,
+  `footer` za poznámkami před podpisy. Všechny čtyři sloty leží mimo bloky
+  layoutu, aby je stránkové šablony nepřepsaly.
+- **`core_prints_texts` je v `keepOnReset`** — texty jsou konfigurace.
+- **`core.prints` je v závislostech `install.base`**; `install.hosting`
+  tisky nemá.
+- **Sloty:** id a druh (HTML / text) drží enum v `src/Core/Prints` —
+  deklarace tisku se validuje bez konfigurace. cfgItem
+  `core.prints.textSlots` nese názvy a popisy, shodu hlídá test.
+- **Jádro × modul:** `PrintRunner` zná jen rozhraní `PrintTextProvider`
+  (`src/Core/Prints`); resolver v modulu ho implementuje
+  a `PrintRunnerFactory` ho zapojí jen na zdroji, kde tabulka textů
+  existuje. Twig → Markdown → HTML dělá jádro (potřebuje ho i validace).
+- **Politika `userTexts()`** povolí i testy `defined`, `empty`, `null`,
+  pokud je filtr `default` ve striktním sandboxu potřebuje — ověřit prvním
+  testem.
+- **Markdown escaper** escapuje zpětným lomítkem veškerou ASCII
+  interpunkci (CommonMark to dovoluje u každého znaku), bez výjimky pro
+  tečku.
+- **Obrázky** vypíná vlastní renderer (jen alt text) —
+  `allow_unsafe_links` je nezastaví.
+- **`|raw`** přibude jen do politiky `templates()`; test hlídá, že ho
+  šablony používají výhradně na `texts.*`.
+- **Barva se validuje i při čtení** (`PrintRunner`,
+  `PrintData::fromArray()`) — `ds-setting set` hodnotu nekontroluje.
+- **`textVariables`** = seznam `{path, filter?}`, nebo odkaz na sdílenou
+  sadu `@docs.core/_layout` (`text-variables.jsonc`). Endpoint bez `prints`
+  vrací průnik přes všechny tisky se slotem.
