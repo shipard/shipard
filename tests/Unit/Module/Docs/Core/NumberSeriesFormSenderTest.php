@@ -17,10 +17,13 @@ class NumberSeriesFormSenderTest extends TestCase
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchSingle')->willReturn($defaultFrom === null ? null : json_encode($defaultFrom));
-        $db->method('fetchAll')->willReturn(array_map(
-            static fn (string $email): array => ['email_from' => $email],
-            $senders,
-        ));
+        // Odesílatelé pošty; nabídka uživatelů (auto_author) je v jiném testu.
+        $db->method('fetchAll')->willReturnCallback(
+            static fn (string $sql): array => str_contains($sql, 'core_system_users') ? [] : array_map(
+                static fn (string $email): array => ['email_from' => $email],
+                $senders,
+            ),
+        );
 
         $form = new NumberSeriesForm('docs_core_number_series');
         $form->setDb($db);

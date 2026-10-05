@@ -70,6 +70,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [Texty na tiscích](faktury-vydane/texty-na-tiscich.md) | Jak na faktury a další doklady přidat vlastní text — oznámení na pár dní nebo trvalý text na konci dokladu — a jak si přepsat předmět a text e-mailu, kterým doklad odchází. |
 | [Tisk faktury](faktury-vydane/tisk-faktury.md) | Jak z hotové faktury nebo zálohové faktury dostat PDF — náhled, stažení, co na dokladu je, tisk stornovaného dokladu a proč se koncept netiskne. |
 | [Vystavení faktury](faktury-vydane/vystaveni-faktury.md) | Jak vystavit fakturu odběrateli — od Přidat po V pořádku. |
+| [Kdo doklad vystavil](faktury-vydane/vystavil-na-dokladu.md) | Kde se bere jméno u „Vystavil“ v zápatí dokladu, jak ho na dokladu změnit nebo vynechat a čí jméno ponesou doklady vystavené bez přihlášeného uživatele. |
 | [Vzhled tištěných dokladů](faktury-vydane/vzhled-tisku.md) | Jak dát fakturám a dalším tištěným dokladům firemní barvu v hlavičce a přesunout logo vlevo nebo vpravo — jedno nastavení pro všechny tisky. |
 | [Zálohová faktura](faktury-vydane/zalohova-faktura.md) | Kdy vystavit zálohovou fakturu (proformu) místo faktury, proč není daňovým dokladem a jak ji vystavit — od Přidat po V pořádku. |
 

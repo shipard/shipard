@@ -48,6 +48,9 @@ viz [Tisk faktury](../faktury-vydane/tisk-faktury.md).
   stran. U dokladu v cizí měně přibudou sloupce MD a Dal v měně dokladu.
   Když zápisy nesou další údaj — třeba **Majetek** —, má vlastní sloupec.
 - Dole prázdná linka **Zaúčtoval** na podpis. Jméno Shipard nedoplňuje.
+- V zápatí vpravo **Vystavil** se jménem toho, kdo doklad vystavil — viz
+  [Kdo doklad vystavil](../faktury-vydane/vystavil-na-dokladu.md). Doklad
+  bez autora řádek nemá.
 
 Názvy účtů jsou z dnešního účtového rozvrhu: když účet později
 přejmenuješ, Kontace starého dokladu ukáže nový název.

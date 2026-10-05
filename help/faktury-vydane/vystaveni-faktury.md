@@ -2,7 +2,7 @@
 title: Vystavení faktury
 summary: Jak vystavit fakturu odběrateli — od Přidat po V pořádku.
 keywords: [vystavit fakturu, vystavení faktury, vystavuji fakturu, vydaná faktura, vydané faktury, faktura odběrateli, faktura zákazníkovi, fakturovat, nová vydaná faktura, prodej služeb, prodej zboží, poslat fakturu odběrateli, odeslat fakturu e-mailem, náš bankovní účet, variabilní symbol na faktuře, způsob výpočtu, z ceny celkem, sleva na řádku, DPH na řádku, základ daně řádku]
-related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
+related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/tisk-faktury.md, faktury-vydane/vystavil-na-dokladu.md, osoby/zalozeni-osoby.md, polozky/zalozeni-polozky.md, pokladna/platba-kartou-branou-dobirkou.md, faktury-prijate/oprava-dokladu.md, co-dnes-nejde.md]
 ---
 
 # Vystavení faktury
@@ -56,6 +56,10 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
    - **Náš bankovní účet** je u vydané faktury povinný — je to účet, na který
      má odběratel zaplatit. Předvybraný je účet označený v Nastavení jako
      **Výchozí**; bez výchozího účtu ho vyber ručně, jinak doklad nepotvrdíš.
+
+   Na stejné záložce je pole **Vystavil** — jméno, které se vytiskne
+   v zápatí faktury. Předvybraný jsi ty; viz
+   [Kdo doklad vystavil](vystavil-na-dokladu.md).
 
 3. **Dej Uložit.** Řádky se dají zadávat až u uloženého dokladu; do té doby
    na tabu **Řádky** stojí, že je potřeba záznam nejprve uložit.

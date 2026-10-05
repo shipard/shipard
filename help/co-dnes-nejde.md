@@ -81,8 +81,18 @@ převzal poštovní server. Nedoručitelnost ani přečtení se nesledují.
 
 **Vzhled tištěného dokladu změníš jen v hlavičce.** Nastavíš barvu
 hlavičky a stranu s logem; rozvržení dokladu je jedno. Jiné písmo, barvy
-v těle dokladu, vlastní šablona, jméno toho, kdo doklad vystavil, ani
-podpis a razítko zatím nejsou.
+v těle dokladu ani vlastní šablona zatím nejsou.
+
+**Podpis a razítko na doklad nedostaneš.** V zápatí je jméno toho, kdo
+doklad vystavil — viz
+[Kdo doklad vystavil](faktury-vydane/vystavil-na-dokladu.md) —, obrázek
+podpisu ani razítka ale vložit nejde. Pokladní doklad a Kontace mají jen
+prázdné linky na ruční podpis.
+
+**Kontakty tvé firmy v zápatí dokladu nejsou.** Zápatí nese název firmy,
+**Vystavil** a číslo strany; telefon, e-mail ani web se do něj zatím
+netisknou. Na doklad je dostaneš vlastním textem s umístěním **Konec
+dokumentu** — viz [Texty na tiscích](faktury-vydane/texty-na-tiscich.md).
 
 **Vlastní text na doklad nejde omezit na jednoho odběratele ani na jednu
 pokladnu.** Cílit jde na tisk, typ dokladu, číselnou řadu a jazyk. Text

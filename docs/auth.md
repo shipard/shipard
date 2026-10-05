@@ -324,6 +324,35 @@ přizná). V UI: detail uživatele v Nastavení (UsersViewer, akce „Poslat
 pozvánku“). Doporučený onboarding: `user-create` **bez** `--password`
 (NULL hash = bez lokálního loginu) → pozvánka.
 
+### Uživatel ↔ Osoba a importovaní uživatelé (#93 D6–D8)
+
+Uživatel (`core_system_users`) a Osoba (`base_persons_persons`) jsou
+oddělené entity. Vazbu nese nepovinný sloupec **`person`** u uživatele —
+přidává ho rozšíření z `base.persons` (`core.system` na Osobách záviset
+nemůže), takže zdroj dat bez Osob (portál hostingu) ho nemá a kód jeho
+přítomnost ověřuje přes `TableDefinition`. Ve formuláři uživatele je to
+lookup **Osoba** (JSONC `core.system/forms/core_system_users.jsonc`,
+element `optional`), detail uživatele ukazuje jméno Osoby. Na přihlašování
+vazba vliv nemá.
+
+Migrace ze starého systému zakládá uživatele přes
+`POST /_exchange/users/user/apply` (`docs/exchange-format.md` → Uživatelé)
+— pro Osoby, které jsou autorem dokladu nebo záznamu spisovny. Takový
+uživatel je **neaktivní, bez hesla a bez práv admina** a přihlásit se
+nemůže žádnou cestou:
+
+- lokální login: `is_active = 0` a `password_hash NULL`;
+- OIDC auto-link hledá jen aktivní účty, takže ho nepropojí; s `jitProvision`
+  skončí přihlášení stejným e-mailem na `oidc_login_conflict` (login = e-mail
+  už existuje) — do aktivace je to žádoucí stav, ne chyba;
+- pozvánku neaktivnímu účtu poslat nejde.
+
+**Aktivace je ruční akce admina** (D8): Nastavení → Ostatní → Systém →
+Uživatelé, zaškrtnout **Aktivní**. Potom funguje pozvánka (`Poslat
+pozvánku` v detailu) i auto-link OIDC podle e-mailu. Neaktivní uživatel
+dál smí být autorem dokladu (`docs_core_heads.author`) — v nabídce pole
+Vystavil se ukáže jen jako aktuální hodnota s poznámkou „neaktivní“.
+
 ### Politika hesel (D21)
 
 `Shipard\Core\Auth\PasswordPolicy`: min. **12 znaků** a heslo ≠ login

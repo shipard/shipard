@@ -1,6 +1,6 @@
 # Autor dokladu („Vystavil“), uživatel ↔ Osoba a import uživatelů
 
-**Stav:** naplánováno — rozhodnutí D1–D13 zamčená v #93, k implementaci
+**Stav:** hotovo — 2026-10-05 (6 commitů), ověřeno na ukázkovém zdroji; zbývá ruční proklik UI, `ds-upgrade` ostatních zdrojů a runner ve starém systému
 
 > PRD pro Claude Code (6 commitů). Design: issue #93, komentář
 > „Rozhodnutí (zamčeno 2026-10-05)“ (D1–D11) a „Rozhodnutí D12–D13“.
@@ -300,18 +300,18 @@ Blok, patička, katalogy, testy, `docs/prints.md`.
 
 ## Hotovo když
 
-- [ ] Nový doklad z formuláře, z návrhu došlé pošty i přes API má
+- [x] Nový doklad z formuláře, z návrhu došlé pošty i přes API má
       autora = přihlášený uživatel; ve strojovém kontextu autora z řady,
       jinak z nastavení, jinak NULL.
-- [ ] Explicitní `applyOptions.author: null` uloží doklad bez autora.
-- [ ] `created_by` vyplňuje gateway na všech cestách s uživatelem;
+- [x] Explicitní `applyOptions.author: null` uloží doklad bez autora.
+- [x] `created_by` vyplňuje gateway na všech cestách s uživatelem;
       `FormController` ho už nenastavuje.
-- [ ] Uživatel má pole Osoba (jen na zdrojích s Osobami).
-- [ ] `/_exchange/users/user/apply` je idempotentní a nikdy nezaloží
+- [x] Uživatel má pole Osoba (jen na zdrojích s Osobami).
+- [x] `/_exchange/users/user/apply` je idempotentní a nikdy nezaloží
       aktivní účet.
-- [ ] Tisk faktury ukazuje „Vystavil: jméno“ v patičce; doklad bez autora
+- [x] Tisk faktury ukazuje „Vystavil: jméno“ v patičce; doklad bez autora
       řádek nemá.
-- [ ] Testy prošly, frontend se nemění (`npm run build` jen pokud se
+- [x] Testy prošly, frontend se nemění (`npm run build` jen pokud se
       ukáže potřeba), dokumentace a nápověda aktualizované.
 
 ## Rozhodnutí k designu (potvrzená)
@@ -330,4 +330,84 @@ D12–D13: komentář „Rozhodnutí D12–D13“. Potvrzené:
 
 ## Implementace
 
-⟨doplní Claude Code⟩
+Hotovo 2026-10-05, šest commitů podle task breakdownu. Odchylky a upřesnění
+proti zadání:
+
+**Dvě rozhodnutí doplněná před implementací** (potvrzená v konverzaci):
+
+- **Systémový uživatel je strojový kontext.** API klíč má `user_id`, takže
+  `CurrentUser` je u něj vyplněný. `DocAuthorResolver` proto uživatele
+  s `is_system = 1` nebere jako autora a pokračuje na řadu / nastavení —
+  jinak by faktura z integrace nesla „Vystavil: <název integrace>“.
+  Totéž platí pro předvyplnění ve formuláři (`interactiveUser()`).
+  `created_by` se to netýká (audit — plní se uživatelem klíče).
+- **„Vystavil“ i na Kontaci.** Kontace má vlastní `footer.html.twig`, řádek
+  je v obou zápatích.
+
+**§1 `created_by`:**
+
+- Definici tabulky nově předávají všechny továrny gatewaye kromě
+  `VatFilingComposeCommand` — tabulka podání `created_by` nemá a definice
+  by zapnula zpracování strukturovaných polí, které příkaz dnes obchází.
+- Ve strojovém kontextu se klíč do dat nepřidává vůbec (ne `null`).
+- Generické CRUD (`CrudController::create`) zapisuje mimo gateway —
+  `created_by` ani `author` neplní. „Přes API“ v kritériích = exchange apply.
+
+**§2 Uživatel ↔ Osoba:**
+
+- Formulář uživatele je JSONC u tabulky
+  (`modules/core/system/forms/core_system_users.jsonc`), ne `UsersForm`
+  v `base.persons`: `AutoFormBuilder` referenci vykreslí jako číslo
+  a JSONC formuláře se hledají ve všech modulech bez ohledu na aktivaci,
+  takže formulář v `base.persons` by platil i tam, kde modul není. Pole
+  Osoba je `optional` — stejný vzor jako rozšiřující sloupce bankovních
+  účtů.
+- Viewery nově dostávají definice tabulek (`ViewerRegistry::setTables` →
+  `TableViewer::hasColumn()`), aby detail uživatele poznal sloupec `person`.
+
+**§3 Autor dokladu:**
+
+- `auto_author` má na řadě vlastní skupinu sloupců i sekci formuláře
+  „Automaticky vystavené doklady“.
+- Neaktivní `auto_author` na řadě se přeskočí stejně jako neaktivní
+  uživatel v nastavení a pokračuje se na globální hodnotu.
+- Když resolver autora nenajde, klíč `author` do dat nepřidává.
+- `buildExtraTabs()` v `DocsHeadsFormBase` nově vrací tab Nastavení s polem
+  Vystavil (výchozí formulář); `AccountingDocsForm` hook volá ze svého
+  `buildFormDefinition()`.
+- `SetupExporter`: `auto_author` je v `SILENT_FK_COLUMNS` — datová sada
+  uživatele nepřenáší a varování by šumělo v každém dumpu.
+
+**§4 Exchange:**
+
+- Neexistující autor = issue `author_not_found` (error, `applyOptions.author`).
+- Schéma dokladu má tři kopie (`.jsonc`, `.json`, profil
+  `core.mail/profiles/czech_general.jsonc`); AI flow si `applyOptions`
+  skládá sám, takže klíč z modelu neprojde. `prompt_version` se nemění.
+- Import uživatelů páruje e-mailem jen **ne-systémové** aktivní účty.
+  `validate` vrací uživatele, kterého by `apply` vrátil (`userId: null` =
+  založil by nového). `format` nese verzi (`shpd.system.user.v1`) podle
+  zadání — na rozdíl od ostatních formátů bez `formatVersion`.
+- `dispatchExchange` nově dostává `AuthContext` (kontrola D13).
+
+**§5 Tisk:** jméno se čte živě z uživatele (`DocPrintContext::loadAuthor`),
+snapshot nemá.
+
+**Ověření:** unit sada (8 110 testů), `ds-upgrade` a smoke na ukázkovém
+zdroji `4l3j-z` — strojová cesta přes nastavení, explicitní `author: null`,
+import uživatele proti databázi v odvolané transakci, PDF faktury se
+zápatím ze skutečné render služby. Integrační sada na témže zdroji má
+10 selhání (pokladní import bez registrace DPH, zbytky dat z dřívějších
+běhů) — shodných s výchozím commitem před touto prací, tedy stav dat
+zdroje, ne regrese.
+
+**Zbývá:**
+
+- ruční proklik v prohlížeči (pole Vystavil ve formulářích, stránka
+  Nastavení → Účetnictví → Doklady, formulář uživatele s Osobou);
+- `ds-upgrade` na ostatních zdrojích dat (nové sloupce `author`,
+  `auto_author`, `person`, stránka nastavení, profil pošty);
+- runner ve starém systému: založit uživatele pro autory a posílat
+  `applyOptions.author` (vždy, i `null`) a `createdBy`;
+- revize slovenského a německého `footer.issuedBy` spolu s ostatními texty
+  (`tasks/prints-languages.md`).
