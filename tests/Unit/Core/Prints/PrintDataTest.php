@@ -27,7 +27,7 @@ class PrintDataTest extends TestCase
             'meta'        => [
                 'title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf', 'watermark' => null,
             ],
-            'branding'    => ['logo' => 'logo.png'],
+            'branding'    => ['logo' => 'logo.png', 'logoPlacement' => 'right', 'accentColor' => '#0a5c8f'],
             'texts'       => [],
             'messages'    => [['severity' => 'warning', 'code' => 'payment.qrNoAccount', 'text' => 'QR nevznikl']],
             'data'        => ['document' => ['number' => '2026000123'], 'rows' => []],
@@ -63,6 +63,52 @@ class PrintDataTest extends TestCase
 
         $this->assertNull($data->logo);
         $this->assertSame([], $data->messages);
+        $this->assertSame('left', $data->logoPlacement);
+        $this->assertSame(PrintData::DEFAULT_ACCENT_COLOR, $data->accentColor);
+    }
+
+    public function testBrandingFromBeforeAppearanceSettingsGetsDefaults(): void
+    {
+        $envelope = self::envelope();
+        $envelope['branding'] = ['logo' => 'logo.png'];
+
+        $this->assertSame(
+            ['logo' => 'logo.png', 'logoPlacement' => 'left', 'accentColor' => '#c8c8c8'],
+            PrintData::fromArray($envelope)->toArray()['branding'],
+        );
+    }
+
+    public function testAccentColorIsNormalizedToLowercase(): void
+    {
+        $envelope = self::envelope();
+        $envelope['branding']['accentColor'] = '#0A5C8F';
+
+        $this->assertSame('#0a5c8f', PrintData::fromArray($envelope)->accentColor);
+    }
+
+    /** @return array<string, array{string, mixed}> */
+    public static function invalidBranding(): array
+    {
+        return [
+            // Barva jde do stylů záhlaví — nic než `#rrggbb` obálka nepřijme.
+            'název barvy'        => ['accentColor', 'red'],
+            'zkrácený zápis'     => ['accentColor', '#abc'],
+            'CSS za barvou'      => ['accentColor', '#c8c8c8; background: url(x)'],
+            'barva není řetězec' => ['accentColor', 13158600],
+            'neznámé umístění'   => ['logoPlacement', 'center'],
+            'umístění je pole'   => ['logoPlacement', ['left']],
+        ];
+    }
+
+    #[DataProvider('invalidBranding')]
+    public function testInvalidBrandingThrows(string $key, mixed $value): void
+    {
+        $envelope = self::envelope();
+        $envelope['branding'][$key] = $value;
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("'branding.");
+        PrintData::fromArray($envelope);
     }
 
     public function testWatermarkIsOptionalPartOfMeta(): void

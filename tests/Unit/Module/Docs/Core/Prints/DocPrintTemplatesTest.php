@@ -69,6 +69,7 @@ class DocPrintTemplatesTest extends TestCase
 
     /**
      * @param callable(array<string, mixed>): array<string, mixed>|null $modify
+     * @param array<string, string> $branding Vzhled z nastavení (`logoPlacement`, `accentColor`).
      */
     private static function printData(
         string $fixture,
@@ -77,6 +78,7 @@ class DocPrintTemplatesTest extends TestCase
         ?callable $modify = null,
         ?string $logo = null,
         ?string $watermark = null,
+        array $branding = [],
     ): PrintData {
         $envelope = json_decode(
             (string) file_get_contents(dirname(__DIR__, 5) . '/Fixtures/Prints/' . $fixture . '.json'),
@@ -89,7 +91,7 @@ class DocPrintTemplatesTest extends TestCase
         }
         $envelope['printId']  = $printId;
         $envelope['language'] = $language;
-        $envelope['branding'] = ['logo' => $logo];
+        $envelope['branding'] = ['logo' => $logo] + $branding;
         $envelope['meta']['watermark'] = $watermark;
         $envelope['meta']['title'] = $envelope['data']['document']['title'] . ' ' . $envelope['data']['document']['number'];
 
@@ -562,6 +564,72 @@ class DocPrintTemplatesTest extends TestCase
             (string) $document->header,
         );
         $this->assertSame('PNGDATA', $document->assets['logo.png']);
+    }
+
+    // ── vzhled z nastavení (#90 D46) ────────────────────────────────────────
+
+    public function testDefaultAppearanceIsNeutralAccentWithLogoOnTheLeft(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $header     = (string) $this->render($definition, self::printData('invoice', $definition->id))->header;
+
+        $this->assertStringContainsString('<div class="head-inner" style="border-bottom-color: #c8c8c8">', $header);
+        $this->assertStringContainsString('<div class="head-title" style="border-color: #c8c8c8">', $header);
+    }
+
+    public function testAccentColorsHeaderOnlyAndPageStaysUncoloured(): void
+    {
+        $this->dsPath = sys_get_temp_dir() . '/shpd_printtpl_' . uniqid('', true);
+        mkdir($this->dsPath . '/branding', 0755, true);
+        file_put_contents($this->dsPath . '/branding/companyLogo.png', 'PNGDATA');
+
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $document   = $this->render(
+            $definition,
+            self::printData('invoice', $definition->id, logo: 'logo.png', branding: ['accentColor' => '#0a5c8f']),
+            new BrandingStorage($this->dsPath),
+        );
+        $header = (string) $document->header;
+
+        // Pruh u titulku, linka pod záhlavím a podklad loga.
+        $this->assertStringContainsString('<div class="head-title" style="border-color: #0a5c8f">', $header);
+        $this->assertStringContainsString('style="border-bottom-color: #0a5c8f"', $header);
+        $this->assertMatchesRegularExpression('#<img class="logo" [^>]*style="background-color: \#0a5c8f">#', $header);
+        // Barvy je potřeba tisknout i bez volby „tisk pozadí“.
+        $this->assertStringContainsString('-webkit-print-color-adjust: exact', $header);
+
+        // Akcent patří jen záhlaví — stránka ani zápatí ho nenesou.
+        $this->assertStringNotContainsString('#0a5c8f', $document->html);
+        $this->assertStringNotContainsString('#0a5c8f', (string) $document->footer);
+        $this->assertStringNotContainsString('#0a5c8f', $document->assets['doc-base.css']);
+    }
+
+    public function testLogoPlacementSwapsLogoAndTitle(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+
+        $left = (string) $this->render($definition, self::printData('invoice', $definition->id))->header;
+        $this->assertStringNotContainsString('class="head-inner head-inner--logo-right"', $left);
+
+        $right = (string) $this->render(
+            $definition,
+            self::printData('invoice', $definition->id, branding: ['logoPlacement' => 'right']),
+        )->header;
+        $this->assertStringContainsString('class="head-inner head-inner--logo-right"', $right);
+        $this->assertStringContainsString('Faktura – daňový doklad', $right);
+    }
+
+    public function testInternalJournalPrintSharesHeaderAppearance(): void
+    {
+        $definition = self::definition('economy.accounting', 'economy.accounting.docJournal');
+        $header     = (string) $this->render($definition, self::printData(
+            'docJournalInvoice',
+            $definition->id,
+            branding: ['accentColor' => '#0a5c8f', 'logoPlacement' => 'right'],
+        ))->header;
+
+        $this->assertStringContainsString('head-inner--logo-right', $header);
+        $this->assertStringContainsString('border-color: #0a5c8f', $header);
     }
 
     // ── PDF přes render klienta ─────────────────────────────────────────────

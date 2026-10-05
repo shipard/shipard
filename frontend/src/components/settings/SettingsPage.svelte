@@ -18,6 +18,7 @@
   import ShellField from './ShellField.svelte';
   import DsShellField from './DsShellField.svelte';
   import LanguageField from './LanguageField.svelte';
+  import ColorField from './ColorField.svelte';
   import { iconSave, iconSpinner, resolveIcon } from '../../icons.js';
 
   // onOpenThemePanel probublává z AppShellu (přes ContentArea) — ThemeField
@@ -60,12 +61,13 @@
     })();
   });
 
-  // Pole ukládaná přes Uložit stránky: texty + DS-scope theme/shell
+  // Pole ukládaná přes Uložit stránky: texty, select, color + DS-scope theme/shell
   // (structured hodnoty v `values`). User-scope theme/shell/language jedou
   // live stores, image/avatar vlastní upload endpoint — mimo Uložit.
   function isSavedViaPage(field, scope) {
     return field.type === 'text'
       || field.type === 'select'
+      || field.type === 'color'
       || ((field.type === 'theme' || field.type === 'shell') && scope === 'ds');
   }
 
@@ -84,7 +86,7 @@
         images[field.id] = serverValues[field.id] ?? null;
       } else if (field.type === 'text') {
         texts[field.id] = serverValues[field.id] ?? '';
-      } else if (field.type === 'select') {
+      } else if (field.type === 'select' || field.type === 'color') {
         // Nezvolené = null → server klíč smaže, čtenáři použijí výchozí.
         texts[field.id] = serverValues[field.id] ?? null;
       } else if (isSavedViaPage(field, scope)) {
@@ -200,6 +202,15 @@
                 {/if}
               {:else if field.type === 'language'}
                 <LanguageField />
+              {:else if field.type === 'color'}
+                <ColorField
+                  id={`settings-${field.id}`}
+                  value={values[field.id]}
+                  defaultColor={field.default}
+                  error={fieldErrors[field.id] ?? null}
+                  disabled={saving}
+                  onchange={(v) => { values[field.id] = v; }}
+                />
               {:else if field.type === 'select'}
                 <Select
                   id={`settings-${field.id}`}

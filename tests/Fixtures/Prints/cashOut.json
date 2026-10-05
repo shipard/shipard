@@ -14,7 +14,9 @@
         "watermark": null
     },
     "branding": {
-        "logo": null
+        "logo": null,
+        "logoPlacement": "left",
+        "accentColor": "#c8c8c8"
     },
     "texts": {},
     "messages": [],

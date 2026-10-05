@@ -3,10 +3,18 @@
     na každé straně. Nemá přístup k assetům stránky: styly inline, logo jako
     data URI. Vodorovné odsazení musí odpovídat okrajům stránky.
 
+    Vzhled z nastavení (#90 D46): `branding.accentColor` barví pruh u titulku,
+    linku pod záhlavím a podklad loga (je vidět jen pod průhledným logem);
+    text zůstává černý. `branding.logoPlacement` určí stranu loga, titulek
+    s číslem je na opačné. Barva jde do stylů jen jako ověřené `#rrggbb`
+    z obálky — jiný řetězec z nastavení se do CSS skládat nesmí.
+
     Pozor na názvy tříd: prvky s třídami `title`, `date`, `url`, `pageNumber`
     a `totalPages` Chromium v záhlaví a zápatí přepisuje vlastním obsahem
     (`title` = <title> stránky) — proto `head-title`, ne `title`.
 #}
+{% set accent = branding.accentColor %}
+{% set logoRight = branding.logoPlacement == 'right' %}
 <!DOCTYPE html>
 <html lang="{{ language }}">
 <head>
@@ -20,23 +28,43 @@
             padding: 0 1.6cm;
             font-family: 'Noto Sans', 'DejaVu Sans', Arial, sans-serif;
             color: #000;
+        }
+        .head-inner {
             display: flex;
             align-items: flex-end;
             justify-content: space-between;
+            padding-bottom: 0.15cm;
+            border-bottom: 1pt solid;
         }
-        .logo { height: 1.3cm; max-width: 6cm; }
-        .head-title { font-size: 13pt; font-weight: 700; text-align: right; }
+        .head-inner--logo-right { flex-direction: row-reverse; }
+        .logo { display: block; height: 1.3cm; max-width: 6cm; }
+        .head-title {
+            padding-right: 0.25cm;
+            border-right: 4pt solid;
+            font-size: 13pt;
+            font-weight: 700;
+            text-align: right;
+        }
+        .head-inner--logo-right .head-title {
+            padding-right: 0;
+            padding-left: 0.25cm;
+            border-right: 0;
+            border-left: 4pt solid;
+            text-align: left;
+        }
         .head-number { font-size: 13pt; font-weight: 400; margin-left: 0.3cm; }
     </style>
 </head>
 <body>
 <div class="head">
-    <div>
-        {% if branding.logoDataUri %}
-            <img class="logo" src="{{ branding.logoDataUri }}" alt="">
-        {% endif %}
+    <div class="head-inner{{ logoRight ? ' head-inner--logo-right' }}" style="border-bottom-color: {{ accent }}">
+        <div>
+            {% if branding.logoDataUri %}
+                <img class="logo" src="{{ branding.logoDataUri }}" alt="" style="background-color: {{ accent }}">
+            {% endif %}
+        </div>
+        <div class="head-title" style="border-color: {{ accent }}">{{ data.document.title }}<span class="head-number">{{ data.document.number }}</span></div>
     </div>
-    <div class="head-title">{{ data.document.title }}<span class="head-number">{{ data.document.number }}</span></div>
 </div>
 </body>
 </html>

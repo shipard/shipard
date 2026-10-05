@@ -1,6 +1,6 @@
 # Tisky — Fáze 3: vzhled a texty na tiscích
 
-**Stav:** naplánováno — design zamčený v #90 (D46–D52), čeká na implementaci
+**Stav:** částečně — commit 1 hotový 2026-10-05 (modul `core.prints`, typ pole `color`, vzhled v záhlaví; `ds-upgrade` jen na ukázkovém zdroji); zbývají texty na tiscích, proměnné a dokumentace (commity 2–5)
 
 > PRD pro Claude Code (5 commitů). Design: issue #90, komentář
 > „Rozhodnutí: fáze 3 — vzhled a texty na tiscích (D46–D52)“; základ D9

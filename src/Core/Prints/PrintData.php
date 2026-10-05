@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Prints;
 
+use Shipard\Core\Utils\HexColor;
+
 /**
  * Společná obálka dat tisku (#90 D3, D12) — z jednoho `PrintData` vzniká
  * PDF, název souboru a později předmět a tělo e-mailu; JSON slouží k ladění
@@ -14,6 +16,15 @@ namespace Shipard\Core\Prints;
  */
 final class PrintData implements \JsonSerializable
 {
+    /** Umístění loga v záhlaví (#90 D46); první je výchozí. */
+    public const LOGO_PLACEMENTS = ['left', 'right'];
+
+    /**
+     * Výchozí akcent záhlaví — neutrální světle šedá. Tisk bez nastavené
+     * barvy tak nenese žádnou firemní barvu.
+     */
+    public const DEFAULT_ACCENT_COLOR = '#c8c8c8';
+
     /**
      * @param ?string $logo Název assetu s logem (`logo.png`), null když
      *        v brandingu žádné není.
@@ -21,6 +32,11 @@ final class PrintData implements \JsonSerializable
      * @param array<string, mixed> $data
      * @param ?string $watermark Text přes každou stranu (D23, „STORNO“);
      *        null = bez vodoznaku.
+     * @param string $logoPlacement Jedna z `LOGO_PLACEMENTS`.
+     * @param string $accentColor Akcentová barva záhlaví jako `#rrggbb`.
+     *        Šablona ji vkládá do stylů, proto obálka jiný tvar nepřijme.
+     * @throws \InvalidArgumentException Umístění loga nebo barva nemají
+     *         očekávaný tvar.
      */
     public function __construct(
         public readonly string $printId,
@@ -36,7 +52,18 @@ final class PrintData implements \JsonSerializable
         public readonly array $messages,
         public readonly array $data,
         public readonly ?string $watermark = null,
-    ) {}
+        public readonly string $logoPlacement = self::LOGO_PLACEMENTS[0],
+        public readonly string $accentColor = self::DEFAULT_ACCENT_COLOR,
+    ) {
+        if (!in_array($logoPlacement, self::LOGO_PLACEMENTS, true)) {
+            throw new \InvalidArgumentException(
+                "Print data: 'branding.logoPlacement' must be one of " . implode('|', self::LOGO_PLACEMENTS),
+            );
+        }
+        if (HexColor::normalize($accentColor) !== $accentColor) {
+            throw new \InvalidArgumentException("Print data: 'branding.accentColor' must be a colour like '#rrggbb'");
+        }
+    }
 
     /**
      * Obálka z JSON (`print-run --data`, #90 D28) — tvar `toArray()`.
@@ -93,7 +120,19 @@ final class PrintData implements \JsonSerializable
             throw new \InvalidArgumentException("Print data: 'generatedAt' is not a date");
         }
 
-        $logo = $envelope['branding']['logo'] ?? null;
+        $branding = $envelope['branding'] ?? [];
+        if (!is_array($branding)) {
+            throw new \InvalidArgumentException("Print data: 'branding' must be an object");
+        }
+        $logo = $branding['logo'] ?? null;
+        // JSON z doby před nastavením vzhledu (#90 D46) klíče nemá.
+        $logoPlacement = $branding['logoPlacement'] ?? self::LOGO_PLACEMENTS[0];
+        $accentColor   = $branding['accentColor'] ?? self::DEFAULT_ACCENT_COLOR;
+        if (!is_string($logoPlacement) || !is_string($accentColor)) {
+            throw new \InvalidArgumentException(
+                "Print data: 'branding.logoPlacement' and 'branding.accentColor' must be strings",
+            );
+        }
         $messages = $envelope['messages'] ?? [];
         if (!is_array($messages)) {
             throw new \InvalidArgumentException("Print data: 'messages' must be an array");
@@ -116,6 +155,8 @@ final class PrintData implements \JsonSerializable
             )),
             data: $data,
             watermark: $watermark === '' ? null : $watermark,
+            logoPlacement: $logoPlacement,
+            accentColor: strtolower($accentColor),
         );
     }
 
@@ -136,6 +177,8 @@ final class PrintData implements \JsonSerializable
             messages: $this->messages,
             data: $this->data,
             watermark: $this->watermark,
+            logoPlacement: $this->logoPlacement,
+            accentColor: $this->accentColor,
         );
     }
 
@@ -157,7 +200,11 @@ final class PrintData implements \JsonSerializable
                 'fileName'  => $this->fileName,
                 'watermark' => $this->watermark,
             ],
-            'branding'    => ['logo' => $this->logo],
+            'branding'    => [
+                'logo'          => $this->logo,
+                'logoPlacement' => $this->logoPlacement,
+                'accentColor'   => $this->accentColor,
+            ],
             // Sloty textů na tiscích (#90 D9) plní až fáze 3.
             'texts'       => [],
             'messages'    => array_map(

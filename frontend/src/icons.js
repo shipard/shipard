@@ -110,6 +110,7 @@ import {
   faInbox,
   faAddressBook,
   faWandMagicSparkles,
+  faPrint,
   faMicrochip,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -232,6 +233,7 @@ export const iconImage = faImage; // obrázkový placeholder (branding sloty)
 export const iconFileWord = faFileWord;
 export const iconFileExcel = faFileExcel;
 export const iconFileZip = faFileZipper;
+export const iconPrint = faPrint; // nastavení tisků
 
 /**
  * Mapování názvů ikon z API (string) → ikonový objekt.
@@ -306,6 +308,7 @@ export const iconMap = {
   'chat': iconChat,
   'cloud-download': iconCloudDownload,
   'dots': iconDots,
+  'print': iconPrint,
   // Feed karty (kind → stavová ikona)
   'check': iconSuccess,
   'question': iconQuestion,

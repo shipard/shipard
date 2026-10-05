@@ -1,0 +1,61 @@
+{
+    "id": "core.prints",
+    "name": "Prints",
+    "name:cs": "Tisky",
+    "name:en": "Prints",
+    "description": "Settings shared by all prints — appearance of printed documents",
+    "description:cs": "Nastavení společné všem tiskům — vzhled tištěných dokladů",
+    "description:en": "Settings shared by all prints — appearance of printed documents",
+
+    "dependencies": [
+        "core.system"
+    ],
+
+    // Vzhled je branding — stránka Tisky stojí hned za stránkou Aplikace.
+    "settingsItems": [
+        { "page": "printsAppearance", "section": "app", "order": 20 }
+    ],
+
+    // Vzhled tisků (#90 D46). Klíče čte PrintRunner
+    // (SETTING_ACCENT_COLOR, SETTING_LOGO_PLACEMENT) a plní jimi `branding`
+    // v obálce tisku; chybějící klíč = výchozí vzhled (logo vlevo,
+    // neutrální šedý akcent).
+    "settingsPages": [
+        {
+            "id": "printsAppearance",
+            "name": "Prints",
+            "name:cs": "Tisky",
+            "name:en": "Prints",
+            "icon": "print",
+            "fields": [
+                {
+                    "id": "prints.accentColor",
+                    "type": "color",
+                    // Shodné s PrintData::DEFAULT_ACCENT_COLOR — výběr barvy
+                    // ji ukazuje u prázdného pole.
+                    "default": "#c8c8c8",
+                    "name": "Header accent colour",
+                    "name:cs": "Akcentová barva hlavičky",
+                    "name:en": "Header accent colour",
+                    "hint": "Colours the bar next to the document title, the line under the header and the background behind the logo. The text stays black. Empty = neutral grey.",
+                    "hint:cs": "Barví pruh u titulku dokladu, linku pod hlavičkou a podklad za logem. Text zůstává černý. Prázdné = neutrální šedá.",
+                    "hint:en": "Colours the bar next to the document title, the line under the header and the background behind the logo. The text stays black. Empty = neutral grey."
+                },
+                {
+                    "id": "prints.logoPlacement",
+                    "type": "select",
+                    "name": "Logo placement",
+                    "name:cs": "Umístění loga",
+                    "name:en": "Logo placement",
+                    "hint": "Side of the header with the company logo; the document title and number are on the other side. Empty = left.",
+                    "hint:cs": "Strana hlavičky s logem firmy; titulek a číslo dokladu jsou na druhé straně. Prázdné = vlevo.",
+                    "hint:en": "Side of the header with the company logo; the document title and number are on the other side. Empty = left.",
+                    "options": [
+                        { "value": "left",  "label": "Left",  "label:cs": "Vlevo",  "label:en": "Left" },
+                        { "value": "right", "label": "Right", "label:cs": "Vpravo", "label:en": "Right" }
+                    ]
+                }
+            ]
+        }
+    ]
+}

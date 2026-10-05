@@ -12,6 +12,7 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\Twig\PrintTwigFactory;
 use Shipard\Core\Render\RenderClient;
 use Shipard\Core\Settings\BrandingStorage;
+use Shipard\Core\Settings\SettingsStore;
 
 /**
  * Wiring `PrintRunner` pro konkrétní DS — sdílí ho REST dispatch a CLI
@@ -68,6 +69,7 @@ final class PrintRunnerFactory
             $branding,
             new PrintCatalogLoader($paths),
             $renderer,
+            settings: $db === null ? null : new SettingsStore($db),
         );
     }
 }

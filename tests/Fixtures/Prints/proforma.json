@@ -5,7 +5,7 @@
     "record": { "table": "docs_core_heads", "id": 123, "docState": 40 },
     "generatedAt": "2026-10-02T10:30:00+02:00",
     "meta": { "title": "Zálohová faktura IT-PRINT-PRO", "fileName": "zalohova-faktura-it-print-pro.pdf", "watermark": null },
-    "branding": { "logo": null },
+    "branding": { "logo": null, "logoPlacement": "left", "accentColor": "#c8c8c8" },
     "texts": {},
     "messages": [],
     "data": {

@@ -77,7 +77,7 @@ class ModuleDefinition
                     if (!is_array($field)) continue;
                     if (!isset($field['id']) || !is_string($field['id']) || $field['id'] === '') continue;
                     $type = $field['type'] ?? 'text';
-                    if (!in_array($type, ['text', 'image', 'theme', 'language', 'avatar', 'shell', 'select'], true)) continue;
+                    if (!in_array($type, ['text', 'image', 'theme', 'language', 'avatar', 'shell', 'select', 'color'], true)) continue;
                     // select — pevná nabídka {value, label(:lang)}, nebo
                     // dynamická z `optionsProvider` (FQCN třídy implementující
                     // SettingsOptionsProvider — číselník z dat zdroje). Bez

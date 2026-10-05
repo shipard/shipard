@@ -11,6 +11,7 @@ use Shipard\Core\I18n\DocumentLanguageResolver;
 use Shipard\Core\Prints\PrintBuilder;
 use Shipard\Core\Prints\PrintBuildResult;
 use Shipard\Core\Prints\PrintCatalogLoader;
+use Shipard\Core\Prints\PrintData;
 use Shipard\Core\Prints\PrintDefinition;
 use Shipard\Core\Prints\PrintFormat;
 use Shipard\Core\Prints\PrintLanguageResolver;
@@ -34,6 +35,7 @@ use Shipard\Core\Render\RenderClient;
 use Shipard\Core\Render\RenderErrorKind;
 use Shipard\Core\Render\RenderResult;
 use Shipard\Core\Settings\BrandingStorage;
+use Shipard\Core\Settings\KeyValueStore;
 
 /**
  * PrintRunner s fake builderem: obálka `PrintData`, dostupnost tisku pro
@@ -86,6 +88,7 @@ class PrintRunnerTest extends TestCase
         array &$configLanguages = [],
         ?array $catalog = null,
         string $builder = FakePrintBuilder::class,
+        ?KeyValueStore $settings = null,
     ): PrintRunner {
         $registry = new PrintRegistry();
         $registry->add(PrintDefinition::fromArray(
@@ -107,6 +110,7 @@ class PrintRunnerTest extends TestCase
             $branding,
             $catalog === null ? null : $this->catalogLoader($catalog),
             clock: static fn (): \DateTimeImmutable => new \DateTimeImmutable('2026-10-02T10:30:00+02:00'),
+            settings: $settings,
         );
     }
 
@@ -167,7 +171,7 @@ class PrintRunnerTest extends TestCase
                 'meta'        => [
                     'title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf', 'watermark' => null,
                 ],
-                'branding'    => ['logo' => null],
+                'branding'    => ['logo' => null, 'logoPlacement' => 'left', 'accentColor' => '#c8c8c8'],
                 'texts'       => [],
                 'messages'    => [['severity' => 'warning', 'code' => 'qr.noAccount', 'text' => 'QR nevznikl']],
                 'data'        => ['document' => ['number' => '2026000123']],
@@ -406,7 +410,63 @@ class PrintRunnerTest extends TestCase
         $output = $this->runner(branding: new BrandingStorage($this->dsPath))
             ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
 
-        $this->assertSame(['logo' => 'logo.svg'], $output->printData->toArray()['branding']);
+        $this->assertSame('logo.svg', $output->printData->toArray()['branding']['logo']);
+    }
+
+    /** @param array<string, mixed> $values */
+    private static function settings(array $values): KeyValueStore
+    {
+        return new class ($values) implements KeyValueStore {
+            /** @param array<string, mixed> $values */
+            public function __construct(private array $values) {}
+
+            public function get(string $key): mixed
+            {
+                return $this->values[$key] ?? null;
+            }
+
+            public function getMany(array $keys): array
+            {
+                return array_map($this->get(...), array_combine($keys, $keys));
+            }
+
+            public function set(string $key, mixed $value): void
+            {
+                $this->values[$key] = $value;
+            }
+
+            public function delete(string $key): void
+            {
+                unset($this->values[$key]);
+            }
+        };
+    }
+
+    public function testAppearanceSettingsGoToBranding(): void
+    {
+        $output = $this->runner(settings: self::settings([
+            PrintRunner::SETTING_ACCENT_COLOR   => '#0A5C8F',
+            PrintRunner::SETTING_LOGO_PLACEMENT => 'right',
+        ]))->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        $this->assertSame(
+            ['logo' => null, 'logoPlacement' => 'right', 'accentColor' => '#0a5c8f'],
+            $output->printData->toArray()['branding'],
+        );
+    }
+
+    public function testInvalidAppearanceSettingsFallBackToDefaults(): void
+    {
+        // `ds-setting set` hodnoty nekontroluje — tisk je ověřuje při čtení.
+        $output = $this->runner(settings: self::settings([
+            PrintRunner::SETTING_ACCENT_COLOR   => 'red; background: url(x)',
+            PrintRunner::SETTING_LOGO_PLACEMENT => ['right'],
+        ]))->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        $this->assertSame(
+            ['logo' => null, 'logoPlacement' => 'left', 'accentColor' => PrintData::DEFAULT_ACCENT_COLOR],
+            $output->printData->toArray()['branding'],
+        );
     }
 
     /**

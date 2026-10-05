@@ -8,6 +8,8 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Render\RenderErrorKind;
 use Shipard\Core\Settings\BrandingStorage;
+use Shipard\Core\Settings\KeyValueStore;
+use Shipard\Core\Utils\HexColor;
 
 /**
  * Jediný vstupní bod pro běh tisku — REST controller i CLI volají výhradně
@@ -21,6 +23,10 @@ use Shipard\Core\Settings\BrandingStorage;
  */
 final class PrintRunner
 {
+    /** Nastavení vzhledu tisků (#90 D46) — stránka Tisky modulu `core.prints`. */
+    public const SETTING_ACCENT_COLOR   = 'prints.accentColor';
+    public const SETTING_LOGO_PLACEMENT = 'prints.logoPlacement';
+
     /** @var \Closure(string): ?ConfigRuntime */
     private readonly \Closure $configFactory;
 
@@ -33,6 +39,8 @@ final class PrintRunner
      *        proto runner nedostává hotový `ConfigRuntime`.
      * @param ?\Closure(): \DateTimeImmutable $clock Čas vzniku (testy).
      * @param ?DataSourceConnection $db Null = runner umí jen `renderData()`.
+     * @param ?KeyValueStore $settings Nastavení zdroje dat se vzhledem tisků;
+     *        null = výchozí vzhled.
      */
     public function __construct(
         private readonly PrintRegistry $registry,
@@ -43,6 +51,7 @@ final class PrintRunner
         private readonly ?PrintCatalogLoader $catalogs = null,
         private readonly ?PrintRenderer $renderer = null,
         ?\Closure $clock = null,
+        private readonly ?KeyValueStore $settings = null,
     ) {
         $this->configFactory = $configFactory;
         $this->clock = $clock ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
@@ -138,6 +147,8 @@ final class PrintRunner
             messages: [...$result->messages, ...$choice->messages()],
             data: $result->data,
             watermark: $watermarkKey === null ? null : $translator->t($watermarkKey),
+            logoPlacement: $this->logoPlacement(),
+            accentColor: $this->accentColor(),
         );
 
         return $this->output($definition, $printData, $translator, $format);
@@ -246,5 +257,23 @@ final class PrintRunner
             return null;
         }
         return 'logo.' . pathinfo($stored, PATHINFO_EXTENSION);
+    }
+
+    /**
+     * Hodnoty se ověřují i při čtení: do nastavení se dá zapsat mimo stránku
+     * Tisky (`ds-setting set`), kde je nikdo nekontroluje.
+     */
+    private function logoPlacement(): string
+    {
+        $placement = $this->settings?->get(self::SETTING_LOGO_PLACEMENT);
+        return in_array($placement, PrintData::LOGO_PLACEMENTS, true)
+            ? $placement
+            : PrintData::LOGO_PLACEMENTS[0];
+    }
+
+    private function accentColor(): string
+    {
+        return HexColor::normalize($this->settings?->get(self::SETTING_ACCENT_COLOR))
+            ?? PrintData::DEFAULT_ACCENT_COLOR;
     }
 }

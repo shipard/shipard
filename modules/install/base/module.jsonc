@@ -17,6 +17,7 @@
         "core.mail",
         "core.units",
         "core.exchange",
+        "core.prints",
         "base.persons",
         "base.registry",
         "economy.codebooks",

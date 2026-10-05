@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Unit\Api\Controller;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Api\AuthContext;
 use Shipard\Api\Controller\SettingsController;
@@ -12,6 +13,7 @@ use Shipard\Api\Response;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Prints\PrintData;
 
 /**
  * Testy settings pages (page/savePage) nad reálnou definicí appSettings
@@ -412,6 +414,106 @@ class SettingsControllerTest extends TestCase
         );
         $this->assertSame(200, $this->getStatus($resp));
         $this->assertNull($resp->getPayload()['data']['values']['economy.assets.accPeriodicity']);
+    }
+
+    // --- pole typu color (stránka Tisky, #90 D46) ---
+
+    /** Zdroj dat s modulem tisků — stránka Tisky má pole typu color. */
+    private function withPrintsModule(): void
+    {
+        $main = json_decode((string) file_get_contents($this->dsDir . '/config/main.json'), true);
+        $main['modules'] = ['core.system', 'core.prints'];
+        file_put_contents($this->dsDir . '/config/main.json', json_encode($main));
+    }
+
+    public function testPagePrintsAppearanceHasColorAndPlacementFields(): void
+    {
+        $this->withPrintsModule();
+        $db = $this->mockDb([
+            ['key' => 'prints.accentColor', 'value' => json_encode('#0a5c8f')],
+        ]);
+
+        $resp = $this->ctrl->page('printsAppearance', $this->config(), $this->resolver, 'cs', $this->auth(), $db);
+        $data = $resp->getPayload()['data'];
+
+        $this->assertSame('Tisky', $data['definition']['label']);
+        $byId = array_column($data['definition']['fields'], null, 'id');
+        $this->assertSame('color', $byId['prints.accentColor']['type']);
+        $this->assertSame('Akcentová barva hlavičky', $byId['prints.accentColor']['label']);
+        // Výběr barvy ukazuje u prázdného pole barvu, kterou tisk opravdu použije.
+        $this->assertSame(PrintData::DEFAULT_ACCENT_COLOR, $byId['prints.accentColor']['default']);
+        $this->assertSame(
+            [['value' => 'left', 'label' => 'Vlevo'], ['value' => 'right', 'label' => 'Vpravo']],
+            $byId['prints.logoPlacement']['options'],
+        );
+        $this->assertSame('#0a5c8f', $data['values']['prints.accentColor']);
+        $this->assertNull($data['values']['prints.logoPlacement']);
+    }
+
+    public function testSavePageColorIsStoredInLowercase(): void
+    {
+        $this->withPrintsModule();
+        $db = $this->mockDb();
+        $db->expects($this->once())->method('execute');
+
+        $resp = $this->ctrl->savePage(
+            'printsAppearance',
+            $this->saveRequest(['values' => ['prints.accentColor' => ' #0A5C8F ']]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+
+        $this->assertSame(200, $this->getStatus($resp));
+        $this->assertSame('#0a5c8f', $resp->getPayload()['data']['values']['prints.accentColor']);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidColors(): array
+    {
+        return [
+            'název barvy'    => ['red'],
+            'zkrácený zápis' => ['#abc'],
+            'bez mřížky'     => ['0a5c8f'],
+            'CSS za barvou'  => ['#0a5c8f; background: url(x)'],
+            'rgb()'          => ['rgb(10, 92, 143)'],
+            'číslo'          => [678031],
+            'pole'           => [['#0a5c8f']],
+        ];
+    }
+
+    #[DataProvider('invalidColors')]
+    public function testSavePageInvalidColorReturns422(mixed $value): void
+    {
+        $this->withPrintsModule();
+        $db = $this->mockDb();
+        $db->expects($this->never())->method('execute');
+
+        $resp = $this->ctrl->savePage(
+            'printsAppearance',
+            $this->saveRequest(['values' => ['prints.accentColor' => $value]]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+
+        $this->assertSame(422, $this->getStatus($resp));
+        $detail = $resp->getPayload()['error']['details'][0];
+        $this->assertSame('prints.accentColor', $detail['field']);
+        $this->assertSame('INVALID_VALUE', $detail['code']);
+    }
+
+    public function testSavePageEmptyColorDeletesKey(): void
+    {
+        $this->withPrintsModule();
+        $db = $this->mockDb();
+        $db->expects($this->never())->method('execute');
+        $db->expects($this->once())->method('deleteWhere');
+
+        $resp = $this->ctrl->savePage(
+            'printsAppearance',
+            $this->saveRequest(['values' => ['prints.accentColor' => '']]),
+            $this->config(), $this->resolver, $this->auth(), $db,
+        );
+
+        $this->assertSame(200, $this->getStatus($resp));
+        $this->assertNull($resp->getPayload()['data']['values']['prints.accentColor']);
     }
 
     public function testPageAccountBasicReturnsThemeAndLanguageFields(): void

@@ -1,6 +1,7 @@
 /*
  * Styl tištěného dokladu (#90) — střídmý, černobílý s jednou šedou.
- * Akcentová barva a varianty vzhledu přijdou s nastavením vzhledu (fáze 3).
+ * Akcentová barva z nastavení (D46) patří jen záhlaví (header.html.twig);
+ * tělo dokladu se nebarví.
  * Okraje stránky a záhlaví / zápatí řeší render služba, ne @page.
  */
 html, body {

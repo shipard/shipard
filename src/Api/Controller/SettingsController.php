@@ -22,6 +22,7 @@ use Shipard\Core\Settings\KeyValueStore;
 use Shipard\Core\Settings\SettingsOptionsProvider;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Settings\UserSettingsStore;
+use Shipard\Core\Utils\HexColor;
 use Shipard\Core\Utils\JsoncParser;
 
 class SettingsController
@@ -213,8 +214,8 @@ class SettingsController
         }
 
         // Whitelist: jen pole z definice, která chodí přes Uložit (text,
-        // theme, language). `image` má vlastní upload endpoint a tiše se
-        // ignoruje. Klíče mimo definici taky.
+        // select, color, theme, shell, language). `image` má vlastní upload
+        // endpoint a tiše se ignoruje. Klíče mimo definici taky.
         $toSave = [];
         $errors = [];
         foreach ($pageDef['fields'] as $field) {
@@ -310,6 +311,16 @@ class SettingsController
                     continue;
                 }
                 $toSave[$id] = $value === '' ? null : $value;
+            } elseif ($type === 'color') {
+                // Barva `#rrggbb`, ukládá se malými písmeny; prázdná = smazat
+                // klíč (čtenáři použijí svou výchozí barvu).
+                $value = $raw === null ? '' : (is_string($raw) ? trim($raw) : null);
+                $color = $value === null || $value === '' ? null : HexColor::normalize($value);
+                if ($value === null || ($value !== '' && $color === null)) {
+                    $errors[] = ['field' => $id, 'code' => 'INVALID_VALUE', 'message' => 'Value must be a colour like #rrggbb'];
+                    continue;
+                }
+                $toSave[$id] = $color;
             }
             // image / avatar — ignorováno (vlastní upload endpoint).
         }
@@ -407,6 +418,14 @@ class SettingsController
             }
             if ($field['type'] === 'select') {
                 $localized['options'] = $this->selectOptions($field, $language, $db);
+            }
+            // color — barva, kterou čtenář použije bez nastavené hodnoty;
+            // výběr barvy ji ukáže u prázdného pole.
+            if ($field['type'] === 'color') {
+                $default = HexColor::normalize($field['default'] ?? null);
+                if ($default !== null) {
+                    $localized['default'] = $default;
+                }
             }
             $fields[] = $localized;
         }

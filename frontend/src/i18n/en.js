@@ -830,6 +830,8 @@ export default {
   'settingsPage.image.remove': 'Remove',
   'settingsPage.image.uploadFailed': 'Image upload failed.',
   'settingsPage.image.removeFailed': 'Failed to remove the image.',
+  'settingsPage.color.pick': 'Pick a colour',
+  'settingsPage.color.reset': 'Default',
 
   // Account settings — appearance widget
   'account.theme.editColor': 'Edit color',
