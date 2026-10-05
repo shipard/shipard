@@ -301,6 +301,7 @@ class AccountingItemMaterializer
             $this->dsConfig,
             $this->eventDispatcher,
             $def->docStates,
+            $def,
         );
         return $gateway->saveDocument($payload);
     }

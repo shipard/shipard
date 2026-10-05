@@ -237,17 +237,9 @@ class FormController
             $inputData['modified'] = $now;
         }
 
-        // Auto-manage created_by — only on insert, only when we know the user.
-        // `created_by` is system:true, so it never arrives through
-        // filterWritableFields and the client can't forge it.
-        if ($id === null
-            && $this->hasColumn($def, 'created_by')
-            && $auth !== null
-            && $auth->isAuthenticated
-            && $auth->userId !== null
-        ) {
-            $inputData['created_by'] = $auth->userId;
-        }
+        // `created_by` doplňuje TableGateway (CurrentUser, #93 D10) — sloupec
+        // je system:true, přes filterWritableFields nepřijde a klient ho
+        // nepodvrhne.
 
         // Read-only stav dokumentu (`readOnly` v docStates cfgItem): uložení
         // existujícího záznamu projde jen s payloadem složeným ze sloupců,

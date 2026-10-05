@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Document;
 
+use Shipard\Core\Auth\CurrentUser;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -30,6 +31,9 @@ class TableGateway
 
     /** Lazy — providery zámku z DocumentRegistry s DB/konfigurací gatewaye. */
     private ?DocumentLockRegistry $lockRegistry = null;
+
+    /** Lazy — viz hasCreatedByColumn(). */
+    private ?bool $hasCreatedBy = null;
 
     /**
      * Schémata strukturovaných sloupců rozhodnutá v tomto save (sloupec =>
@@ -88,6 +92,24 @@ class TableGateway
         $doc->setSettings(
             $this->settings ??= new SettingsStore(new DataSourceConnection($this->db)),
         );
+    }
+
+    /**
+     * Má tabulka auditní sloupec `created_by`? Bez definice tabulky se
+     * vyplnění tiše přeskočí — továrny gatewaye ji proto předávají.
+     */
+    private function hasCreatedByColumn(): bool
+    {
+        if ($this->hasCreatedBy === null) {
+            $this->hasCreatedBy = false;
+            foreach ($this->tableDef?->columns ?? [] as $col) {
+                if ($col->id === 'created_by') {
+                    $this->hasCreatedBy = true;
+                    break;
+                }
+            }
+        }
+        return $this->hasCreatedBy;
     }
 
     private function lockRegistry(): DocumentLockRegistry
@@ -184,6 +206,19 @@ class TableGateway
         $originalData = null;
         if (isset($data['id']) && (int) $data['id'] > 0) {
             $originalData = $this->loadDocument((int) $data['id']);
+        }
+
+        // `created_by` (#93 D10) — kdo záznam založil. Jen insert, jen tabulka
+        // se sloupcem, jen když volající klíč neposlal: přítomný klíč (i null)
+        // je rozhodnutí applieru / importu / služby. Strojový kontext
+        // (CurrentUser null) nechává NULL. Před validate, ať hooky vidí
+        // efektivní hodnotu.
+        $isInsert = !isset($data['id']) || (int) $data['id'] <= 0;
+        if ($isInsert && !array_key_exists('created_by', $data) && $this->hasCreatedByColumn()) {
+            $userId = CurrentUser::id();
+            if ($userId !== null) {
+                $data['created_by'] = $userId;
+            }
         }
 
         // Chybějící docState v update payloadu = stav se nemění. Injektáž před

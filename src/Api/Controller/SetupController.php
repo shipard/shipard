@@ -806,6 +806,7 @@ class SetupController
             $this->dsConfig,
             $this->eventDispatcher,
             $def->docStates,
+            $def,
         );
     }
 

@@ -1630,6 +1630,7 @@ class AnalysisController
             $this->config,
             $this->eventDispatcher,
             $def->docStates,
+            $def,
         );
     }
 

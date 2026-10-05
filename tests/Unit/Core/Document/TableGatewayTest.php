@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Core\Document;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Auth\CurrentUser;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DefaultDocument;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\DocStatesDefinition;
@@ -154,6 +156,11 @@ class SingletonRegistry extends DocumentRegistry
 
 class TableGatewayTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        CurrentUser::reset();
+    }
+
     private function makeDb(): \Dibi\Connection
     {
         return $this->createMock(\Dibi\Connection::class);
@@ -644,6 +651,90 @@ class TableGatewayTest extends TestCase
 
         $this->assertTrue($result->isSuccess());
         $this->assertCount(1, $gw->deleteRowCalls);
+    }
+
+    // --- created_by (#93 D10) -----------------------------------------------
+
+    private function makeAuditGateway(bool $withCreatedBy = true): TestableTableGateway
+    {
+        $columns = [
+            ['id' => 'id', 'name' => 'ID', 'type' => 'int', 'primaryKey' => true, 'autoIncrement' => true],
+            ['id' => 'title', 'name' => 'Title', 'type' => 'varchar', 'length' => 50],
+        ];
+        if ($withCreatedBy) {
+            $columns[] = ['id' => 'created_by', 'name' => 'Created by', 'type' => 'int', 'nullable' => true];
+        }
+
+        return new TestableTableGateway(
+            'notes',
+            $this->makeDb(),
+            new SingletonRegistry(new DefaultDocument()),
+            tableDef: TableDefinition::fromArray(['tableId' => 9201, 'name' => 'notes', 'columns' => $columns]),
+        );
+    }
+
+    public function testInsertFillsCreatedByFromCurrentUser(): void
+    {
+        CurrentUser::set(7);
+        $gw = $this->makeAuditGateway();
+
+        $gw->saveDocument(['title' => 'A']);
+
+        $this->assertSame(7, $gw->insertCalls[0]['data']['created_by']);
+    }
+
+    public function testInsertKeepsExplicitCreatedByEvenWhenNull(): void
+    {
+        CurrentUser::set(7);
+        $gw = $this->makeAuditGateway();
+
+        $gw->saveDocument(['title' => 'A', 'created_by' => null]);
+        $gw->saveDocument(['title' => 'B', 'created_by' => 3]);
+
+        $this->assertArrayHasKey('created_by', $gw->insertCalls[0]['data']);
+        $this->assertNull($gw->insertCalls[0]['data']['created_by']);
+        $this->assertSame(3, $gw->insertCalls[1]['data']['created_by']);
+    }
+
+    public function testUpdateNeverTouchesCreatedBy(): void
+    {
+        CurrentUser::set(7);
+        $gw = $this->makeAuditGateway();
+        $gw->storedRows[5] = ['id' => 5, 'title' => 'A', 'created_by' => 3];
+
+        $gw->saveDocument(['id' => 5, 'title' => 'B']);
+
+        $this->assertArrayNotHasKey('created_by', $gw->updateCalls[0]['data']);
+    }
+
+    public function testInsertWithoutCreatedByColumnStaysUntouched(): void
+    {
+        CurrentUser::set(7);
+        $gw = $this->makeAuditGateway(withCreatedBy: false);
+
+        $gw->saveDocument(['title' => 'A']);
+
+        $this->assertArrayNotHasKey('created_by', $gw->insertCalls[0]['data']);
+    }
+
+    public function testInsertWithoutTableDefinitionStaysUntouched(): void
+    {
+        CurrentUser::set(7);
+        $gw = $this->makeGateway('notes', new DefaultDocument());
+
+        $gw->saveDocument(['title' => 'A']);
+
+        $this->assertArrayNotHasKey('created_by', $gw->insertCalls[0]['data']);
+    }
+
+    public function testInsertInMachineContextLeavesCreatedByNull(): void
+    {
+        CurrentUser::reset();
+        $gw = $this->makeAuditGateway();
+
+        $gw->saveDocument(['title' => 'A']);
+
+        $this->assertArrayNotHasKey('created_by', $gw->insertCalls[0]['data']);
     }
 }
 

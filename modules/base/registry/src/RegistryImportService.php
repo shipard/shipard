@@ -210,6 +210,7 @@ class RegistryImportService
             null,
             null,
             $this->tableDef?->docStates,
+            $this->tableDef,
         );
     }
 

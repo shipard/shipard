@@ -140,6 +140,7 @@ class PersonApplier
         return new TransactionlessTableGateway(
             $tableName, $db, $registry, $childTables, $config, $dsConfig,
             docStates: $tables[$tableName]?->docStates,
+            tableDef: $tables[$tableName] ?? null,
         );
     }
 

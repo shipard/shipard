@@ -711,6 +711,8 @@ API volání: saveDocument({customer_id: 42, rows: [...]})
 ├─ 1. DocumentRegistry.getDocument('economy_docs_heads', data)
 │     → IssuedInvoiceDocument (podle doc_type)
 │
+├─ 1b. `created_by` (jen insert, viz níže „Kdo plní `created_by`“)
+│
 ├─ 2. document.validate(data)
 │     → ValidationResult
 │
@@ -746,6 +748,24 @@ API volání: saveDocument({customer_id: 42, rows: [...]})
 │
 └─ 9. return DocumentResult::ok(data)
 ```
+
+### Kdo plní `created_by`
+
+Auditní sloupec `created_by` (→ `core_system_users`, `system: true`) plní
+`TableGateway::saveDocument` — ne controller (#93 D10):
+
+- jen při **insertu** a jen u tabulky, která sloupec má;
+- zdroj je `CurrentUser::id()` — přihlášený uživatel, u API klíče uživatel
+  klíče; ve strojovém kontextu (CLI, cron) zůstává NULL;
+- **přítomný klíč se nepřepisuje**, ani když je `null` — applier, import
+  nebo služba tím rozhodla sama (`RegistryImportService`, provisionery);
+- update `created_by` nikdy nemění.
+
+Gateway k tomu potřebuje definici tabulky (`tableDef` v konstruktoru) — bez
+ní se vyplnění tiše přeskočí, továrny ji proto předávají. Zápisy mimo
+gateway (`AttachmentService`, fronta odchozí pošty, generické CRUD) si
+`created_by` řeší samy. Doklady `created_by` nemají — nesou `author`
+(„Vystavil“, #93 D2).
 
 ---
 

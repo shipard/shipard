@@ -174,6 +174,7 @@ class SenderRulesController
             $this->dsConfig,
             $this->eventDispatcher,
             $def->docStates,
+            $def,
         );
     }
 

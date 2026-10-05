@@ -261,6 +261,7 @@ class DocumentApplier
             $dsConfig,
             $eventDispatcher,
             $tables[$tableName]?->docStates,
+            $tables[$tableName] ?? null,
         );
     }
 

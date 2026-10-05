@@ -317,6 +317,7 @@ class HostingPortalController
             $dsConfig,
             null,
             $def->docStates,
+            $def,
         );
     }
 
