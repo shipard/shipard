@@ -60,11 +60,22 @@
     computed !== null && issues.some((issue) => issue?.code === 'computed_total_mismatch'),
   );
   let supplierTotal = $derived(canonical?.totals?.totalAmount ?? null);
+  // Ceny řádků spočítané dokladem (_resolve.computed.rows, #97) podle indexu
+  // canonicalu. U neplátce DPH jsou včetně daně dodavatele — canonical by
+  // ukázal ceny bez daně vedle součtů s daní. Bez nich ceny z canonicalu.
+  let computedRowPrices = $derived.by(() => {
+    const map = new Map();
+    for (const r of computed?.rows ?? []) {
+      if (Number.isInteger(r?.index)) map.set(r.index, r);
+    }
+    return map;
+  });
 
   // ── Volby DPH (tasks/exchange-preview-vat-choices.md D13–D16) ──────────
-  // Nabídka kódů a efektivní hlavička přicházejí ze serveru. Bez nich
-  // (vystavený doklad, zdroj neplátce, canonical bez _resolve) se nic
-  // nenabízí a hlavička ukazuje canonical jako dřív.
+  // Nabídka kódů a efektivní hlavička přicházejí ze serveru. Bez nabídky
+  // (vystavený doklad, přijatý doklad neplátce DPH, canonical bez _resolve)
+  // se nic nevolí; hlavička ukazuje efektivní hodnotu se zdrojem
+  // (u neplátce „Bez DPH“ / nonPayer), bez _resolve canonical jako dřív.
   let vatCodeOptions = $derived(Array.isArray(resolve?.vatCodeOptions) ? resolve.vatCodeOptions : []);
   let vatCodeOptionCodes = $derived(new Set(vatCodeOptions.map((o) => o.code)));
   let effectiveVat = $derived(resolve?.vat ?? null);
@@ -885,6 +896,7 @@
           <tbody>
             {#each canonical.rows as row, i}
               {@const effVat = effectiveRowVat(resolve?.rows?.[i]?.vatCode)}
+              {@const rowPrices = computedRowPrices.get(i)}
               <tr>
                 <td>{row.orderPos ?? i + 1}</td>
                 <td>
@@ -913,7 +925,7 @@
                   {row.unit ?? '—'}
                   {@render statusBadge(resolve?.rows?.[i]?.unit)}
                 </td>
-                <td class="num">{formatMoney(row.unitPrice, canonical.currency)}</td>
+                <td class="num">{formatMoney(rowPrices?.unitPrice ?? row.unitPrice, canonical.currency)}</td>
                 <td>
                   {effVat?.pct ?? row.vat?.pct ?? '—'}%
                   {#if effVat?.code}
@@ -921,7 +933,7 @@
                   {/if}
                   {@render vatCodeBadge(i, resolve?.rows?.[i]?.vatCode)}
                 </td>
-                <td class="num">{formatMoney(row.totalPrice, canonical.currency)}</td>
+                <td class="num">{formatMoney(rowPrices?.totalPrice ?? row.totalPrice, canonical.currency)}</td>
               </tr>
             {/each}
           </tbody>

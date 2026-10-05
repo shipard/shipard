@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad]
+keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH]
 related: [slovnicek.md]
 ---
 
@@ -233,6 +233,11 @@ je v [TESTERS.md](../TESTERS.md).
   se zvláštním místem plnění (ubytování, jízdenky a letenky, stravování,
   nájem a služby k nemovitosti, mýto, parkování). Pro ty v nabídce kódů
   v náhledu nic není, návrh skončí chybou kódu DPH a doklad založíš ručně.
+- **Samovyměření u neplátce — identifikované osoby.** Když k datu faktury
+  nemáš platnou **Registraci DPH**, návrh vznikne *Bez DPH* a daň se na
+  něm nevyměří, ani když jde o fakturu s přenesením daňové povinnosti
+  (služba z EU, zboží z EU). Náhled na to upozorní. Jsi-li identifikovaná
+  osoba, daň z takové faktury musíš přiznat mimo tento doklad.
 
 Když dodavatel přiloží fakturu ve formátu **ISDOC**, data se převezmou
 přímo bez čtení AI — je to přesnější. AI se u něj použije jen na zařazení

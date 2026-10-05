@@ -1,7 +1,7 @@
 ---
 title: Kontrola vytěženého dokladu
 summary: Jak porovnat návrh dokladu s originálem faktury, co kontrolovat první a kdy návrh zamítnout.
-keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU, faktura z USA, software ze zahraničí, místo plnění, DIČ dodavatele]
+keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU, faktura z USA, software ze zahraničí, místo plnění, DIČ dodavatele, neplátce DPH, faktura od plátce, daň v ceně, bez DPH]
 related: [slovnicek.md, co-dnes-nejde.md, osoby/zalozeni-osoby.md]
 ---
 
@@ -197,6 +197,21 @@ o zboží, nebo službu, doplní to Shipard podle kategorie dokladu a v náhledu
 to ukáže upozorněním u řádku; zkontroluj, že kategorie sedí. Kurz cizí
 měny návrh nedoplní, zadáš ho v dokladu před potvrzením. Co u samovyměření
 návrh zatím neumí, je v [Co Shipard dnes neumí](../co-dnes-nejde.md).
+
+**Neplátce DPH.** Když k datu faktury nejsi plátcem DPH, daň dodavatele
+si odečíst nemůžeš — je součástí ceny. Návrh faktury od plátce proto
+vznikne s **Režimem DPH** *Bez DPH* (náhled u něj píše *neplátce DPH —
+daň v ceně*): řádky ukazují ceny **včetně daně dodavatele**, **DPH
+rekapitulace** chybí a **Celkem** se rovná částce k úhradě na faktuře.
+Do nákladů i do závazku vůči dodavateli tak jde celá zaplacená částka.
+Jestli jsi plátce, pozná Shipard podle **Registrace DPH** platné k datu
+zdanitelného plnění (pole **Platí od** a **Platí do**; když datum plnění
+na faktuře není, rozhoduje datum vystavení). Když jsi byl plátcem jen
+část období, zpracují se proto starší a novější faktury různě. Dostaneš-li
+jako plátce návrh *Bez DPH*, zkontroluj u registrace **Platí od** —
+faktura má datum plnění před ním. U faktury s přenesením daňové
+povinnosti náhled upozorní, že se daň nevyměří; víc v
+[Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 **Vytvořit z registru se nenabízí vždy.** Tlačítko se objeví, jen když se
 z faktury vytěžilo IČO, subjekt pod ním v registru existuje a v evidenci

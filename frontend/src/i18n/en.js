@@ -538,6 +538,7 @@ export default {
   'exchange.preview.vatChoice.source.user': 'chosen',
   'exchange.preview.vatChoice.source.derived': 'derived from rows',
   'exchange.preview.vatChoice.source.default': 'default',
+  'exchange.preview.vatChoice.source.nonPayer': 'not a VAT payer — tax included in prices',
   'exchange.preview.apply.disabled': 'Some references need a decision',
   'exchange.preview.apply.error.unresolved': 'Apply found additional unresolved references. Reopen and decide them.',
 

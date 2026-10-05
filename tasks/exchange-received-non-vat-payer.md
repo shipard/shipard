@@ -1,6 +1,6 @@
 # Task: Přijatý doklad u neplátce DPH — daň dodavatele do ceny v řádcích
 
-**Stav:** naplánováno — rozhodnutí D1–D9 zamčena 2026-10-05 (#97)
+**Stav:** hotovo — implementováno 2026-10-05 (3 commity) a ověřeno na dev zdroji (náhled obou typů návrhu, uložení, deník, regrese plátce); ruční proklik náhledu nad zprávou z pošty zbývá
 
 **Issue:** #97
 
@@ -337,17 +337,76 @@ fakturami od plátce; konkrétní zprávy jsou v chatu, ne v repu.
 - **Fixture a docs:** jen fiktivní dodavatelé a částky, žádná data
   z diagnostiky (`scripts/check-sensitive.py`).
 
+## Implementace — upřesnění proti zadání (2026-10-05)
+
+Schváleno před implementací, případně vyplynulo z kódu:
+
+- **Import mód je mimo.** `applyOptions.importNumber` (starý Shipard,
+  datové sady) platnost registrace nezkoumá a větve neplátce se netýká —
+  importovaný doklad je fakt. Na kopiích reálných zdrojů existují
+  jednotky přijatých dokladů s DPH a datem před `valid_from` registrace;
+  reimport by z nich jinak udělal doklady Bez DPH bez rekapitulace.
+- **`valid_from` není nullable**, jen `valid_to` (zadání v Pastech tvrdí
+  obojí). Dotaz null toleruje u obou.
+- **Převádí se jen doklad, který daň dodavatele nese** (řádek se sazbou
+  > 0 nebo s daní, případně rekapitulace s daní) — týž predikát řídí info
+  `vat_non_payer`. Doklad od neplátce zůstane, jak přišel (tabulka
+  chování: „beze změny, bez issue“); Algoritmus psal o všech řádcích.
+- **Sleva:** bez slevy je základem `totalPrice` (chybí-li, množství ×
+  jednotková cena — zadání fallback nemělo). Se slevou z ceny za jednotku
+  se odečítá od množství × jednotkové ceny: `totalPrice` z dokladu
+  dodavatele slevu zpravidla už obsahuje a odečetla by se podruhé.
+- **Místa mimo seznam v zadání:** `resolveVatRegistrationFor()` vrací
+  u neplátce null (hledání podle země platnost nezkoumá — bývalý plátce
+  by dostal prošlou registraci); `resolveRowVatCode()` u neplátce kód
+  neresolvuje (neznámý kód z historie by zablokoval apply);
+  `deriveTotalRoundingMode()` bere u neplátce součet převedených řádků
+  (odhad z canonicalu u řádků v cenách s daní přičítal sazbu podruhé).
+- **`_resolve.computed.rows`** je seznam `{index, unitPrice, totalPrice}`
+  pro všechny doklady, ne jen neplátce — náhled u plátce ukazuje cenu
+  řádku spočítanou dokladem (množství × cena po slevě).
+- **Sloupec DPH v řádcích náhledu** u neplátce dál ukazuje sazbu
+  dodavatele; frontend se kvůli tomu neměnil.
+- **Testy:** 18 starších testů běželo nad přijatým dokladem na zdroji bez
+  registrace — dnes větev neplátce. Jedou nad zdrojem s registrací,
+  testy kaskády země v import módu. Testy `_resolve.computed` neplátce
+  jsou v `DocumentApplierPreviewComputedTest` (skutečný `DocDocument`).
+- **Nápověda:** samovyměření u neplátce – identifikované osoby (D9) je
+  i v `help/co-dnes-nejde.md`.
+
+**Vedlejší nález (neřešeno):** `DocRowCalculator` u řádku z celkové ceny
+se záporným množstvím (dobropis) dopočítá jednotkovou cenu 0 — podmínka
+`množství > 0`. Částky ani účtování to neovlivní; u dobropisu neplátce
+z ISDOC to bude vidět na řádku.
+
+**Ověřeno na dev zdroji** (ukázkový zdroj bez registrace DPH):
+
+1. Náhled ISDOC návrhu i návrhu z AI (desítky řádků): Režim DPH *Bez
+   DPH* se zdrojem neplátce, ceny řádků s daní, **Celkem** = částka
+   k úhradě, bez `computed_total_mismatch`. ISDOC z přílohy čtený novým
+   `IsdocReader` dá totéž z `computed.vatTotal`.
+2. Uložení syntetické faktury (fixture testů, dvě sazby) rovnou do stavu
+   V pořádku: `vat_mode` 0, bez registrace a rekapitulace, součet =
+   částka k úhradě; potvrzení bez registrace DPH prošlo.
+3. Deník: nákladový účet a 321 nesou částku s daní, 343 nic.
+4. Regrese: na zdroji s platnou registrací náhled téže faktury beze
+   změny (Ze základu, rekapitulace převzatá, řádky bez daně).
+
+Náhled v prohlížeči ověřen headless nad odpovědí spočítanou applierem
+(endpoint náhledu chce přihlášení); průchod zprávy z pošty přes
+**Vystavit koncept** naostro zbývá na ruční proklik.
+
 ## Hotovo když
 
-- [ ] `IsdocReader` plní `rows[].computed`, testy a mapovací tabulka.
-- [ ] `ownVatRegistration()` respektuje platnost k datu.
-- [ ] Applier: neplátce → `vat_mode` 0, ceny s daní dle D4, dorovnání D5,
+- [x] `IsdocReader` plní `rows[].computed`, testy a mapovací tabulka.
+- [x] `ownVatRegistration()` respektuje platnost k datu.
+- [x] Applier: neplátce → `vat_mode` 0, ceny s daní dle D4, dorovnání D5,
       bez rekapitulace a registrace; issues podle tabulky; legacy test
       nahrazený, nové i regresní testy zelené.
-- [ ] Náhled: zdroj `nonPayer`, `computed.rows` v tabulce řádků,
+- [x] Náhled: zdroj `nonPayer`, `computed.rows` v tabulce řádků,
       neutrální text `computed_total_mismatch`.
-- [ ] `docs/exchange-format.md` a `docs/ds-setup.md` §6 aktualizované.
-- [ ] Help `kontrola-vytezeni.md` s odstavcem Neplátce DPH,
+- [x] `docs/exchange-format.md` a `docs/ds-setup.md` §6 aktualizované.
+- [x] Help `kontrola-vytezeni.md` s odstavcem Neplátce DPH,
       `help-index.py` prošel.
-- [ ] Ověření na dev zdroji: faktura od plátce na zdroji neplátce dá
+- [x] Ověření na dev zdroji: faktura od plátce na zdroji neplátce dá
       doklad Bez DPH s částkou k úhradě a deník s daní v nákladech.

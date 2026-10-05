@@ -551,6 +551,7 @@ export default {
   'exchange.preview.vatChoice.source.user': 'zvoleno',
   'exchange.preview.vatChoice.source.derived': 'odvozeno z řádků',
   'exchange.preview.vatChoice.source.default': 'výchozí',
+  'exchange.preview.vatChoice.source.nonPayer': 'neplátce DPH — daň v ceně',
   'exchange.preview.apply.disabled': 'Některé reference vyžadují rozhodnutí',
   'exchange.preview.apply.error.unresolved': 'Při ukládání se objevily další nerozhodnuté reference. Zobraz znovu a rozhodni je.',
 
