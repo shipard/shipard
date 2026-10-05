@@ -46,8 +46,9 @@ a u parametrů vrstvy C validuje hodnoty při zápisu.
 
 ### Pravidla ukládání (`savePage`)
 
-- Ukládají se **jen textová pole definovaná ve stránce** (whitelist);
-  klíče mimo definici a `image` pole se tiše ignorují.
+- Ukládají se **jen pole definovaná ve stránce** (whitelist) typů `text`,
+  `select`, `color`, a u stránek zdroje dat `theme` / `shell`; klíče mimo
+  definici a `image` pole se tiše ignorují.
 - Hodnoty se trimují; validuje se `maxLength` (422 s details per pole).
 - **Prázdný string = smazání klíče** → čtenáři padnou na fallback
   (např. `app.name` → `main.json` `name`).
@@ -140,7 +141,16 @@ exempt nejsou.
    uložení přijme jen hodnotu z ní; nedostupný provider = prázdná nabídka
    + log. Frontend se nemění. První uživatel:
    `economy.assets.accountingSeries` (řady účetních dokladů,
-   `AssetPostingSeries`).
+   `AssetPostingSeries`). Barva: `type: "color"` — hodnota `#rrggbb`
+   (`Shipard\Core\Utils\HexColor`; nic jiného `savePage` nepřijme, 422
+   `INVALID_VALUE`), ukládá se malými písmeny, prázdná klíč smaže.
+   Volitelný atribut `default` (`#rrggbb`) je barva, kterou čtenář použije
+   bez nastavené hodnoty — výběr barvy ji ukazuje u prázdného pole; jde
+   na klienta v definici. Renderuje `ColorField.svelte` (nativní výběr
+   barvy + zápis hex + **Výchozí**). **Čtenář si barvu ověří znovu**
+   (`HexColor::normalize()`), než ji vloží do stylu: `ds-setting set`
+   hodnotu nekontroluje. První uživatel: `prints.accentColor` (stránka
+   Tisky modulu `core.prints`, [docs/prints.md](prints.md) §12.1).
 4. `vendor/bin/shpd-ds ds-upgrade` v dev DS (kvůli rekompilaci
    settingsSections, pokud přibyla sekce).
 5. Hodnoty čti v PHP přes `new SettingsStore($db)->get('klíč')` s fallbackem
@@ -155,7 +165,9 @@ je potřebuje — nový typ znamená čtyři serverová místa (whitelist
 v `ModuleDefinition::fromArray()`, větev v `SettingsController::savePage()`,
 propuštění atributů v `localizePageDefinition()`, případně
 `DsSettingCommand::STRUCTURED_FIELD_TYPES`) a tři v `SettingsPage.svelte`
-(`isSavedViaPage`, `splitValues`, render).
+(`isSavedViaPage`, `splitValues`, render). Vzor posledního přidaného typu
+je `color`: hodnota je prostý řetězec, takže do
+`STRUCTURED_FIELD_TYPES` nepatří a jde nastavit i přes `ds-setting`.
 
 **Parametry vrstvy C (osnova, agenda DPH, fiskální rok, měna) settings
 stránku nemají a mít nebudou** — ovládají se v ručně psaném panelu
@@ -168,7 +180,9 @@ potřebují vysvětlující UI a `vatAgenda` je tříhodnotová
 - `tests/Integration/Settings/SettingsStoreTest.php` — get/set/delete,
   JSON round-trip, upsert, cache (vyžaduje `SHIPARD_INTEGRATION_DS_PATH`).
 - `tests/Unit/Api/Controller/SettingsControllerTest.php` — page/savePage
-  nad reálnou definicí appSettings, mockovaná DB.
+  nad reálnou definicí appSettings, mockovaná DB; pole `select` a `color`
+  nad stránkami modulů majetku a tisků.
+- `tests/Unit/Core/Utils/HexColorTest.php` — co je a není barva.
 - `tests/Unit/Api/Controller/AppControllerTest.php` — info fallbacky,
   upload validace, hlavičky, delete.
 - `tests/Unit/Core/Settings/BrandingStorageTest.php` — mime detekce

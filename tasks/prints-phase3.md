@@ -1,6 +1,6 @@
 # Tisky — Fáze 3: vzhled a texty na tiscích
 
-**Stav:** částečně — commity 1–4 hotové 2026-10-05 (modul `core.prints`, typ pole `color`, vzhled v záhlaví; tabulka a agenda Texty na tiscích; výběr textů, Twig → Markdown → HTML do slotů, přepis předmětu a těla e-mailu; proměnné — `textVariables`, `GET /_prints/text-variables`, panel ve formuláři; `ds-upgrade` jen na ukázkovém zdroji); zbývá dokumentace a nápověda (commit 5)
+**Stav:** částečně — kód, dokumentace a nápověda hotové 2026-10-05 (5 commitů + upřesnění PRD, #90 D46–D52); ověřeno na ukázkovém zdroji (tisk do PDF, e-mailový návrh, agenda a formulář v headless prohlížeči), `ds-upgrade` jen tam; zbývá ruční proklik v prohlížeči, nasazení na alfu (`ds-upgrade` všech zdrojů — bez něj se tiskne bez textů a s výchozím vzhledem) a komentář do #90
 
 > PRD pro Claude Code (5 commitů). Design: issue #90, komentář
 > „Rozhodnutí: fáze 3 — vzhled a texty na tiscích (D46–D52)“; základ D9

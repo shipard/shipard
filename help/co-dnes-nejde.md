@@ -79,10 +79,18 @@ převzal poštovní server. Nedoručitelnost ani přečtení se nesledují.
 
 **Elektronická faktura (ISDOC) se k e-mailu nepřikládá.**
 
-**Vzhled tištěného dokladu nezměníš.** Je jeden, černobílý, s logem firmy
-v záhlaví. Barvy, umístění loga, vlastní texty (třeba poděkování nebo
-obchodní podmínky), jméno toho, kdo doklad vystavil, ani podpis a razítko
-zatím nejsou.
+**Vzhled tištěného dokladu změníš jen v hlavičce.** Nastavíš barvu
+hlavičky a stranu s logem; rozvržení dokladu je jedno. Jiné písmo, barvy
+v těle dokladu, vlastní šablona, jméno toho, kdo doklad vystavil, ani
+podpis a razítko zatím nejsou.
+
+**Vlastní text na doklad nejde omezit na jednoho odběratele ani na jednu
+pokladnu.** Cílit jde na tisk, typ dokladu, číselnou řadu a jazyk. Text
+si před uložením nevyzkoušíš na konkrétním dokladu — uvidíš ho až v náhledu
+tisku. Obrázky a tabulky do textu vložit nejdou.
+
+**E-mail s dokladem je jen prostý text.** Vlastní předmět a text si
+nastavíš, formátování ani obrázky v e-mailu ne.
 
 **Doklad vytiskneš jen česky, anglicky, slovensky a německy.** Jiné jazyky
 nejsou — odběrateli z jiné země se tiskne anglicky.

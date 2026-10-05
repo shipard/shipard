@@ -2,7 +2,7 @@
 title: Odeslání faktury e-mailem
 summary: Jak fakturu, zálohovou fakturu, pokladní doklad nebo prodejku poslat odběrateli e-mailem přímo z Shipardu — komu odejde, co je v příloze a co dělat, když odběratel nahlásí jinou adresu.
 keywords: [odeslat fakturu e-mailem, odeslání faktury, poslat fakturu odběrateli, poslat fakturu mailem, fakturu e-mailem, tlačítko Odeslat, odeslat doklad, odeslat zálohovou fakturu, odeslat proformu, odeslat pokladní doklad, odeslat prodejku, komu faktura odejde, příjemci faktury, kopie e-mailu, předmět e-mailu, text e-mailu, přílohy e-mailu, odeslat s dokladem, připojí se do PDF, faktura nepřišla, faktura nedorazila, poslat fakturu znovu, nová adresa odběratele, změna e-mailu odběratele, špatná adresa, žádný příjemce, chybí adresa odesílatele, ve frontě, neodesláno, jazyk e-mailu]
-related: [faktury-vydane/tisk-faktury.md, faktury-vydane/odesilatel-faktur.md, osoby/kontakty-a-ucely.md, posta/odeslana-posta.md, faktury-vydane/vystaveni-faktury.md, co-dnes-nejde.md]
+related: [faktury-vydane/tisk-faktury.md, faktury-vydane/texty-na-tiscich.md, faktury-vydane/odesilatel-faktur.md, osoby/kontakty-a-ucely.md, posta/odeslana-posta.md, faktury-vydane/vystaveni-faktury.md, co-dnes-nejde.md]
 ---
 
 # Odeslání faktury e-mailem
@@ -32,7 +32,9 @@ odběratel napsal, že mu faktura nepřišla, a chceš mu ji poslat znovu.
 
 4. **Zkontroluj text.** **Předmět** a **Text** jsou předvyplněné v jazyce
    dokladu a můžeš je přepsat. Jiný jazyk zvolíš ve výběru **Jazyk** —
-   změní se předmět, text i PDF v příloze.
+   změní se předmět, text i PDF v příloze. Když ti výchozí znění
+   nevyhovuje trvale, nastav si vlastní — viz
+   [Texty na tiscích](texty-na-tiscich.md).
 
 5. **Zkontroluj přílohy.** První je vždy PDF dokladu — tlačítkem **Náhled**
    si ho prohlédneš. Pod ním jsou přílohy dokladu; zaškrtnuté jsou ty, které

@@ -2,14 +2,16 @@
 
 Doména `print` ([reports.md](reports.md) §1): výstup nad **jedním záznamem**
 — faktura vydaná, zálohová faktura, pokladní doklad, prodejka, Kontace,
-později karta majetku. Rozhodnutí D1–D45 jsou v issue #90, zadání
+později karta majetku. Rozhodnutí D1–D52 jsou v issue #90, zadání
 v `tasks/prints-phase1.md`, `tasks/prints-phase2.md`,
-`tasks/prints-languages.md` a `tasks/prints-phase4.md`.
+`tasks/prints-languages.md`, `tasks/prints-phase4.md`
+a `tasks/prints-phase3.md`.
 
 Hotovo: kontrakt `PrintData`, infrastruktura (deklarace, registr, runner,
 Twig, PDF), REST, CLI včetně nástrojů pro vývoj šablon, akce Tisk
 v detailu, vodoznak storna, jazyky tisku `cs` / `en` / `sk` / `de`
-s přepínačem v náhledu (§3), odesílání e-mailem (§9) a tisky:
+s přepínačem v náhledu (§3), odesílání e-mailem (§9), vzhled a vlastní
+texty na tiscích včetně textů e-mailu (§12) a tisky:
 
 | Tisk | Modul | Co |
 |---|---|---|
@@ -19,11 +21,10 @@ s přepínačem v náhledu (§3), odesílání e-mailem (§9) a tisky:
 | `docs.cashRegister.receipt` | `docs.cashRegister` | prodejka (A4) |
 | `economy.accounting.docJournal` | `economy.accounting` | Kontace — interní tisk účetních zápisů dokladu (§4.2) |
 
-Nehotovo: nastavení vzhledu a texty na tiscích včetně uživatelských textů
-e-mailu (fáze 3), hromadné a automatické odesílání (D11), revize
-slovenských a německých formulací (D32, `tasks/prints-languages.md`), QR pro další
+Nehotovo: hromadné a automatické odesílání (D11), revize slovenských
+a německých formulací (D32, `tasks/prints-languages.md`), QR pro další
 země (#91), opravný daňový doklad (#92), „Vystavil“ a jména u podpisů
-(#93), účtenka na POS tiskárnu, EET.
+(#93), vlastní šablony per zdroj dat (D7), účtenka na POS tiskárnu, EET.
 
 ## 1. Princip
 
@@ -47,9 +48,10 @@ PrintBuilder ──► PrintData (JSON) ──► PrintRenderer ──► Render
 - Se `report` sdílí doména jen `RenderClient` ([render.md](render.md)) —
   žádná společná hierarchie tříd (D1).
 
-Třídy jádra žijí v `src/Core/Prints/`, tisky dokladů
-v `modules/docs/core/src/Prints/`, Kontace
-v `modules/economy/accounting/src/Prints/`.
+Třídy jádra žijí v `src/Core/Prints/` (uživatelské texty
+v `src/Core/Prints/Texts/`), tisky dokladů v `modules/docs/core/src/Prints/`,
+Kontace v `modules/economy/accounting/src/Prints/`. Nastavení vzhledu
+a agendu textů drží modul `core.prints` (§12).
 
 ## 2. Deklarace
 
@@ -100,6 +102,8 @@ v `modules/economy/accounting/src/Prints/`.
 | `order` | ne | Pořadí v nabídce (default 1000) |
 | `sendPurpose` | ne | Účel odesílání — id z cfgItemu `base.persons.sendPurposes` (D34). Tisk s ním jde **odeslat e-mailem** (§9); jen u `audience: external`, jinak chyba loaderu |
 | `recipientPerson` | se `sendPurpose` | Sloupec záznamu s osobou příjemce (doklady `partner`) — podle ní se hledají adresy |
+| `textSlots` | ne | Sloty uživatelských textů, které šablona tisku vykreslí (§12.2) — hodnoty `PrintTextSlot`. E-mailové sloty jen se `sendPurpose`, jinak chyba loaderu. Chybí = tisk texty nenese (Kontace) |
+| `textVariables` | ne | Proměnné, které formulář textu nabídne (§12.5): položka s `@` je sdílená sada (`@docs.core/_layout`), jinak proměnná — cesta, nebo `{path, filter?}`. Jen u tisku s `textSlots` |
 
 `PrintDefinitionLoader` (`src/Api/`) staví `PrintRegistry` z modulů zdroje
 dat. `PrintRegistry::forRecord($table, $record)` vrací tisky dostupné pro
@@ -129,9 +133,14 @@ je jediný vstupní bod — REST i CLI ho staví přes `PrintRunnerFactory`.
    `PrintLanguageNotCompiledException` (viz Jazyky tisku a kompilace).
 5. Obálka `PrintData`: verze kontraktu z `PrintBuilder::version()`,
    `meta.watermark` = přeložený text klíče z `watermarks` pro stav
-   záznamu, jinak `null`. `json` tím končí; `pdf` a `html` pokračují
-   rendererem (`html` = `PrintDocument` bez render služby, jen CLI).
-6. Render služba PDF nevyrobí → `PrintRenderException` s `errorKind`
+   záznamu, jinak `null`; `branding` = logo + vzhled z nastavení zdroje
+   dat (§12.1).
+6. Uživatelské texty (§12): má-li tisk `textSlots` a zdroj dat modul
+   `core.prints`, runner vybere texty platné **ke dni tisku** a vykreslí
+   je do `texts`. Chybný text se vynechá a přidá hlášení `textError` —
+   tisk vznikne. `json` tím končí; `pdf` a `html` pokračují rendererem
+   (`html` = `PrintDocument` bez render služby, jen CLI).
+7. Render služba PDF nevyrobí → `PrintRenderException` s `errorKind`
    (provozní stav, ne programátorská chyba).
 
 `PrintRunner::renderData($printId, $envelope, PrintFormat, ?$language)`
@@ -141,7 +150,8 @@ spojení do databáze (D28). Odmítne (`InvalidArgumentException`) obálku
 s neplatným tvarem (`PrintData::fromArray()`), data jiného tisku, verzi
 vyšší než `version()` builderu a formát `json`. Jazyk je z obálky,
 parametr ho přebije: mění překlady šablony, popisky v `data`
-i `meta.watermark` zůstávají, jak jsou.
+i `meta.watermark` zůstávají, jak jsou. `branding` a `texts` se berou
+z obálky — texty se znovu nevybírají ani nevykreslují.
 
 ### Jazyk tisku (#94 D2–D4)
 
@@ -268,8 +278,11 @@ Obálka je stejná pro všechny tisky, `data` patří tisku:
     "meta": { "title": "Faktura – daňový doklad 2026000123",
               "fileName": "faktura-2026000123.pdf",
               "watermark": null },          // text přes každou stranu („STORNO“)
-    "branding": { "logo": "logo.png" },     // null bez loga
-    "texts": {},                            // sloty textů na tiscích — fáze 3
+    "branding": { "logo": "logo.png",       // null bez loga
+                  "logoPlacement": "left",  // left | right (§12.1)
+                  "accentColor": "#c8c8c8" },  // vždy `#rrggbb`
+    "texts": { "afterRows": "<div class=\"print-text\">…</div>",
+               "emailSubject": "…" },       // slot → HTML / prostý text (§12)
     "messages": [ { "severity": "warning", "code": "payment.qrNoAccount", "text": "…" } ],
     "data": { … }
 }
@@ -281,7 +294,10 @@ Obálka je stejná pro všechny tisky, `data` patří tisku:
 
 `PrintData::fromArray()` staví obálku zpět z JSON: povinné jsou `printId`,
 `version`, `language`, `record`, `meta` a `data`, zbytek má výchozí
-hodnoty.
+hodnoty — JSON z doby před nastavením vzhledu dostane logo vlevo
+a neutrální akcent. `branding.accentColor` jiného tvaru než `#rrggbb`,
+neznámé `logoPlacement` a `texts` s neznámým slotem obálka odmítne: barva
+jde do stylů záhlaví a texty do stránky bez escapování.
 
 ### 4.1 `data` tisků dokladů nad `docs_core_heads`
 
@@ -407,6 +423,7 @@ modules/docs/core/prints/
         footer.html.twig      # zápatí: vlastní firma, stránkování
         doc-base.css
         messages.jsonc        # společný katalog
+        text-variables.jsonc  # proměnné nabízené pro texty na tiscích (§12.5)
     _partials/
         parties.html.twig, party.html.twig, payment.html.twig,
         rows.html.twig, vat-recap.html.twig, totals.html.twig,
@@ -489,8 +506,14 @@ jeden prázdný řádek za sebou.
 
 Obsah v1 (doklady): předmět „<titulek> <číslo> — <vlastní firma>“; tělo
 oslovení, co je v příloze, částka k úhradě a splatnost (jen u platby
-převodem), pozdrav a název vlastní firmy. Uživatelské texty přinese fáze 3
-(D9).
+převodem), pozdrav a název vlastní firmy.
+
+**Uživatelský text přepisuje šablonu (D49):** je-li v obálce neprázdné
+`texts.emailSubject`, použije se místo `email-subject.txt.twig`; totéž
+`texts.emailBody` pro tělo. Každá část zvlášť — vlastní předmět nechá
+výchozí tělo. Text projde stejnou úpravou jako šablona (předmět bez konců
+řádků). Platí pro návrh v dialogu Odeslat i pro odeslání, obojí jde přes
+`PrintEmailRenderer` (§12.4).
 
 ### Vodoznak (D23)
 
@@ -517,12 +540,18 @@ globálně se striktní politikou `PrintSecurityPolicy::templates()`:
 | | Povoleno |
 |---|---|
 | Tagy | `if`, `for`, `set`, `block`, `extends`, `include`, `apply` |
-| Filtry | `escape`, `e`, `default`, `length`, `join`, `upper`, `lower`, `nl2br`, `first`, `last`, `keys`, `merge`, `money`, `qty`, `pct`, `date` |
+| Filtry | `escape`, `e`, `raw`, `default`, `length`, `join`, `upper`, `lower`, `nl2br`, `first`, `last`, `keys`, `merge`, `money`, `qty`, `pct`, `date` |
 | Funkce | `t`, `qr_svg`, `block`, `parent`, `include` |
 | Testy | `defined`, `null`, `none`, `empty`, `same as`, `even`, `odd`, `iterable` |
 | Metody a vlastnosti objektů | žádné |
 
-Úzkou politiku pro uživatelské texty (D9) zavede fáze 3.
+**`raw` jen pro sloty uživatelských textů:** jediný povolený zápis je
+`{{ texts.<slot>|default('')|raw }}`. HTML v `texts.*` vyrobil Markdown
+z escapovaného vstupu (§12.4); cokoli jiného vypsané přes `raw` by do
+tisku pustilo neescapovaná data dokladu. Hlídá `PrintTemplateRawRuleTest`.
+
+Texty, které píše uživatel, tuhle politiku nedostanou — mají vlastní
+prostředí s úzkou politikou `PrintSecurityPolicy::userTexts()` (§12.4).
 
 ### Filtry a funkce (`PrintTwigExtension`)
 
@@ -591,6 +620,16 @@ nenabízí (400) — je to nástroj CLI.
 | `RENDER_FAILED` | 500 | `engineError` / `invalidInput` |
 
 U obou render chyb je `errorKind` v `details[0].code`.
+
+### Proměnné pro texty (D51)
+
+`GET /_prints/text-variables[?prints=<id,…>][&slot=<slot>]` →
+`[{path, label, example}]` — nabídka pro formulář textu na tiscích (§12.5).
+S `prints` průnik proměnných těchto tisků, bez nich průnik přes všechny
+tisky, které slot podporují (bez `slot` aspoň jeden slot). Neznámý tisk se
+přeskočí. `label` je v jazyce requestu, `example` je zápis s doporučeným
+filtrem. Práva: `TableAccessGuard::guardTable()` na `core_prints_texts`;
+na read-only zdroji dat povoleno. Neplatný `slot` nebo `prints` → 400.
 
 ### Odeslání e-mailem (D38)
 
@@ -841,6 +880,8 @@ Příklad: karta majetku (`economy.assets`).
    výchozí, registruje `RecordSenderProvider` (`recordSenderProviders`
    v `module.jsonc`). Akce Odeslat i sekce Odeslaná pošta se v detailu
    objeví samy; `PrintDeclarationsTest` ohlídá účel i šablony.
+7. **Uživatelské texty** (§12.6): `textSlots` v deklaraci a sloty
+   v šabloně; `textVariables` s popisky `var.<cesta>` v katalogu.
 
 Vývoj šablony bez opakovaného sahání do databáze:
 
@@ -853,8 +894,9 @@ shpd-ds print-run <id> --data=data.json \
 ```
 
 Místo vlastního `data.json` poslouží i fixture z `tests/Fixtures/Prints/`;
-úpravou JSON (víc řádků, `meta.watermark`, `customer: null`) vyzkoušíš
-stavy, pro které v databázi doklad není.
+úpravou JSON (víc řádků, `meta.watermark`, `customer: null`,
+`branding.accentColor`, hotové HTML v `texts.footer`) vyzkoušíš stavy,
+pro které v databázi doklad ani text není.
 
 ### Jak přidat jazyk tisku
 
@@ -896,7 +938,21 @@ Příklad: polština (`pl`).
   `tests/Unit/Command/DataSource/PrintRunCommandTest.php` — `--format=html`
   a `--data` bez databáze; `tests/Unit/Api/Controller/PrintsApiTest.php`
   — routa, controller (`Content-Language`, chybové kódy), akce v detailu
-  včetně `target.languages`.
+  včetně `target.languages`, `GET /_prints/text-variables`.
+- Vzhled a texty (§12): `PrintDataTest` (`branding`, `texts`, starší JSON),
+  `PrintRunnerTest` (nastavení → `branding`, zdroj textů, `textError`),
+  `tests/Unit/Core/Prints/Texts/` — sloty proti cfgItemu, sandbox
+  uživatelských textů (povolené / zakázané prvky, kontrola už při
+  kompilaci), `MarkdownEscaperTest` (hodnoty s `*`, `_`, `#`, čísla a data
+  beze změny), `PrintTextMarkdownTest` (HTML, obrázek, nebezpečný odkaz),
+  `PrintTextRendererTest`, `PrintTextVariablesTest`;
+  `PrintTemplateRawRuleTest` (`|raw` jen na `texts.*`);
+  `DocPrintTemplatesTest` (akcent a logo v záhlaví, sloty na svých
+  místech); `PrintDeclarationsTest` (sloty tisků, popisky proměnných,
+  každá nabízená ukázka projde nad fixture doklady);
+  `tests/Unit/Module/Core/Prints/` — validace textu, nabídky formuláře,
+  agenda, výběr textů; `HexColorTest` a `SettingsControllerTest` (typ pole
+  `color`).
 - Odesílání: `tests/Unit/Module/Base/Persons/Send/` (účely, resolver
   příjemců), `tests/Unit/Core/Mail/` (`SenderResolverTest`,
   `AllowedSendersTest`), `PrintEmailRendererTest` (všechny jazyky, předmět
@@ -914,7 +970,209 @@ Příklad: polština (`pl`).
   jazyky tisku. `RecordSendTest` odesílá fixture fakturu — příjemci
   z kontaktů a osoby, přílohy zvlášť / spojené, zpráva a řádek fronty;
   běží celý v transakci s rollbackem a s `trigger: cli`, takže nic
-  neodchází. `PrintPdfTest` jde přes celou cestu do PDF
+  neodchází; vlastní předmět a tělo z textů na tiscích přepíšou návrh.
+  `PrintTextsTest` — výběr textů nad skutečnou databází (tisk, typ, řada,
+  jazyk, stav, platnost ke dni tisku) a text ve slotu stránky; běží
+  v transakci a texty, které na zdroji dat jsou, v ní na dobu testu
+  vypne. Ostatní testy tisků transakci nemají: rozbitý text ve stavu
+  V pořádku na testovacím zdroji jim do `messages` přidá `textError`.
+  `PrintPdfTest` jde přes celou cestu do PDF
   (včetně vodoznaku na každé straně vícestránkového storna) a vedle
   `SHIPARD_INTEGRATION_DS_PATH` potřebuje
   `SHIPARD_INTEGRATION_GOTENBERG_URL`.
+
+## 12. Vzhled a texty na tiscích
+
+Fáze 3 (#90 D46–D52, `tasks/prints-phase3.md`). Nastavení vzhledu i agendu
+textů drží modul **`core.prints`** (`modules/core/prints/`, v `install.base`)
+— obecný, bez závislosti na dokladech. Výběr a vykreslení textů při tisku
+je v jádru (`src/Core/Prints/Texts/`).
+
+### 12.1 Vzhled (D46)
+
+Stránka nastavení **Tisky** (`printsAppearance`, sekce Aplikace):
+
+| Klíč | Pole | Význam | Bez hodnoty |
+|---|---|---|---|
+| `prints.accentColor` | `color` | akcentová barva hlavičky `#rrggbb` | `#c8c8c8` (`PrintData::DEFAULT_ACCENT_COLOR`) |
+| `prints.logoPlacement` | `select` | strana hlavičky s logem `left` / `right` | `left` |
+
+`PrintRunner` hodnoty čte ze `SettingsStore` a plní jimi `branding` obálky;
+platí pro všechny tisky. **Ověřuje je i při čtení** — `ds-setting set`
+hodnotu nekontroluje, neplatná = výchozí vzhled.
+
+Vykresluje je **jen záhlaví** (`_layout/header.html.twig`): akcent barví
+svislý pruh u titulku, linku pod záhlavím a podklad loga (je vidět pod
+průhledným logem); text zůstává černý. Logo vpravo prohodí strany — titulek
+s číslem je vždy na opačné straně než logo. Tělo dokladu se nebarví
+a `--accent` do stránky nejde. Barva se do stylů vkládá jen jako ověřené
+`#rrggbb` z obálky. Kontace sdílí záhlaví dokladů, takže vzhled platí
+i pro ni.
+
+Mimo: styly standardní / moderní, kulaté rohy, podpis (#93), kódy položek,
+identifikátory osob.
+
+### 12.2 Texty: data, sloty, deklarace (D47, D48)
+
+Tabulka `core_prints_texts`
+([popis](../modules/core/prints/tables/core_prints_texts.md)): text, slot,
+cílení (tisky, typy dokladů, číselné řady, jazyk), platnost od–do, pořadí,
+stav. Agenda **Texty na tiscích** je v Nastavení → Aplikace; tabulka je
+v `keepOnReset`.
+
+Sloty jsou pevná sada — výčet `PrintTextSlot`, názvy a popisy v cfgItemu
+`core.prints.textSlots`:
+
+| Slot | Kde | Druh |
+|---|---|---|
+| `header` | začátek těla dokumentu — první prvek stránky, před titulkem a stranami | HTML |
+| `beforeRows` | před tabulkou řádků | HTML |
+| `afterRows` | za tabulkou řádků, před rekapitulací a součty | HTML |
+| `footer` | konec dokumentu — za poznámkami, před podpisy | HTML |
+| `emailSubject` | předmět e-mailu — **přepisuje** výchozí šablonu (D49) | text |
+| `emailBody` | tělo e-mailu — **přepisuje** výchozí šablonu (D49) | text |
+
+Tisk v deklaraci (`textSlots`) uvede, které sloty jeho šablona vykreslí.
+Tisky dokladů mají všech šest, Kontace žádný.
+
+Formulář a Document textu nemají cesty modulů, registr tisků si
+nepostaví. `ConfigCompiler` proto z deklarací `prints` aktivních modulů
+skládá cfgItem **`core.prints.declarations`** (název, tabulka, filtr,
+`textSlots`) — odtud je nabídka tisků ve formuláři a validace při uložení.
+Nový tisk se slotem se v nabídce objeví po `ds-upgrade`.
+
+`PrintTextDocument` při uložení ověří: povinná pole, `valid_from ≤
+valid_to`, tisky existují a slot podporují, typ dokladu a řada jsou
+u vybraných tisků možné — a **text zkompiluje v sandboxu** (§12.4).
+Zakázaný prvek nebo syntaktická chyba = 422 s hláškou u pole textu.
+
+### 12.3 Výběr textů (D47, D52)
+
+`PrintTextResolver` (modul) implementuje `PrintTextProvider` (jádro) —
+jádro zná jen rozhraní a `PrintRunnerFactory` resolver zapojí jménem
+třídy; zdroj dat bez tabulky textů tiskne bez nich. Text platí, když:
+
+1. je ve stavu **V pořádku** a jeho slot je v `textSlots` tisku;
+2. `prints` je prázdné, nebo obsahuje id tisku;
+3. `doc_types` / `number_series` — jsou-li vyplněné — odpovídají záznamu.
+   Co je u záznamu typ a řada, ví jen mapa `PrintTextTargeting` (tabulka
+   tisku → sloupce; dnes `docs_core_heads`). U tisku nad jinou tabulkou
+   text s tímto omezením **neplatí** (ne „platí vždy“);
+4. `language` je prázdný, nebo jazyk tisku;
+5. den tisku je uvnitř platnosti, oba kraje včetně. **Rozhoduje den tisku
+   nebo odeslání, ne datum dokladu** — „příští týden máme dovolenou“ se
+   tiskne ten týden na všechny doklady.
+
+Do slotu jdou **všechny** platné texty v pořadí `order_pos`, `id`.
+
+### 12.4 Zpracování textu (D49, D50)
+
+`PrintTextRenderer` vykreslí každý text zvlášť a výsledek uloží do `texts`
+obálky:
+
+```
+slot stránky:  text ─► Twig (sandbox userTexts, hodnoty escapované pro Markdown)
+                    ─► Markdown ─► HTML ─► <div class="print-text">…</div>
+e-mailový slot: text ─► Twig (stejný sandbox, bez escapování) ─► prostý text
+```
+
+**Sandbox** — `PrintTextCompiler` má vlastní Twig prostředí: žádný loader
+souborů (k šablonám modulů se text nedostane), bez cache, striktní
+proměnné a politika `PrintSecurityPolicy::userTexts()`:
+
+| | Povoleno |
+|---|---|
+| Tagy | `if` |
+| Filtry | `money`, `qty`, `pct`, `date`, `default`, `upper`, `lower` (+ `escape`, který vkládá autoescape) |
+| Funkce | žádné — ani `t()`, `include()`; operátor rozsahu `..` je funkce `range`, tedy také ne |
+| Testy | `defined`, `empty`, `null`, `none` |
+| Metody a vlastnosti objektů | žádné |
+
+Text vidí `data`, `meta` a `language` z `PrintData` — ne `branding`,
+`record` ani `messages`. Twig kontroluje politiku až při vykreslení;
+`compile()` si kontrolu vynucuje, aby zakázaný prvek odmítla už validace
+formuláře. Název šablony nese režim (Markdown / prostý text): Twig sdílí
+třídu šablony v rámci procesu podle názvu.
+
+**Escapování pro Markdown** (`MarkdownEscaper`): text píše uživatel
+a Markdown v něm je záměr; hodnota z dokladu Markdown být nesmí. Escapuje
+se zpětným lomítkem veškerá ASCII interpunkce — CommonMark to dovoluje
+u každého znaku a vypíše ho beze změny, takže `1.210,50` i `2. 10. 2026`
+vyjdou stejně a nemůžou začít seznam. Konce řádků hodnoty jsou tvrdé
+zalomení.
+
+**Markdown** (`PrintTextMarkdown`, `league/commonmark`): CommonMark,
+přeškrtnutí a automatické odkazy; tabulky ani seznamy úkolů ne.
+
+- HTML ve vstupu se escapuje (`html_input: escape`).
+- Odkaz se tiskne jako text s adresou v závorce, bez `<a>`; nebezpečná
+  adresa (`javascript:`, `data:`) se nevypíše.
+- Obrázek se nahradí popiskem — render služba nesmí na síť a `data:`
+  adresu by volba `allow_unsafe_links` propustila.
+
+Proto smí layout vypsat `texts.<slot>` přes `|raw` (§5 Sandbox) — a jen ten.
+
+**Chyba v textu tisk nerozbije.** Neznámá proměnná nebo prvek mimo
+politiku: text se vynechá, do `messages` jde varování `textError`
+(text z katalogu, klíč `message.textError`) a událost do logu. Náhled
+tisku varování ukáže nad dokladem.
+
+**E-mail:** `emailSubject` a `emailBody` jsou prostý text, Markdownem
+neprocházejí a nic se v nich neescapuje. Víc textů ve slotu se spojí —
+předmět mezerou, tělo prázdným řádkem. `PrintEmailRenderer` je použije
+místo výchozích šablon (§5 Šablony e-mailu).
+
+Layout dokladů (`doc-base.html.twig`) kreslí čtyři sloty stránky **mimo
+bloky** — stránková šablona, která blok přepíše, o ně nepřijde. Styl
+`.print-text`: běžná velikost textu, odstavce, seznamy, tučné a kurzíva;
+nadpisy Markdownu jsou jen tučný řádek; žádná barva.
+
+### 12.5 Proměnné (D51)
+
+Kurátorský seznam, který formulář textu nabídne — text jinak vidí celé
+`data` a `meta`. `PrintTextVariables` ho skládá z deklarace:
+
+```jsonc
+"textVariables": [
+    "@docs.core/_layout",                                  // sdílená sada
+    { "path": "data.cashDesk.name" },                      // vlastní proměnná
+    { "path": "data.dates.due", "filter": "date" }
+]
+```
+
+Sdílená sada je soubor `text-variables.jsonc` v adresáři tisku. `filter`
+je doporučený zápis do ukázky: formát podle jazyka (`date`,
+`money(data.payment.currency)`), nebo `default('')` u údaje, jehož rodič
+na dokladu být nemusí (`data.customer.name` na pokladním dokladu bez
+partnera — bez něj by text skončil chybou). Popisky jsou v katalozích
+tisku pod klíčem `var.<cesta>` ve všech jazycích tisku.
+
+`GET /_prints/text-variables` (§6) vrací průnik proměnných dotčených
+tisků. Formulář má panel **Proměnné** (`PrintTextVariables.svelte`) —
+klik vloží ukázku na místo kurzoru.
+
+`PrintDeclarationsTest` hlídá, že každá proměnná má popisek a že **každá
+ukázka projde sandboxem nad každým fixture dokladem svého tisku**.
+
+### 12.6 Jak přidat slot nebo podporu textů do tisku
+
+**Nový tisk s texty:**
+
+1. V deklaraci `textSlots` — jen sloty, které šablona opravdu vykreslí;
+   e-mailové jen u tisku se `sendPurpose`.
+2. Šablona dědící `doc-base` nedělá nic. Vlastní layout vypíše
+   `{{ texts.<slot>|default('')|raw }}` na místě slotu (mimo přepisované
+   bloky) a přidá styl `.print-text`.
+3. `textVariables`: odkaz na sdílenou sadu, nebo vlastní proměnné
+   s popisky `var.<cesta>` v `messages.jsonc`. Fixture tisku
+   v `tests/Fixtures/Prints/` — test nad ní ověří ukázky.
+4. Tisk nad tabulkou s typem a řadou, na které má jít text cílit: řádek
+   v `PrintTextTargeting::TABLES`.
+5. `ds-upgrade` — nabídka tisků ve formuláři textu je z kompilované
+   konfigurace.
+
+**Nový slot:** případ ve výčtu `PrintTextSlot` (+ `isEmail()`), záznam
+v `core.prints.textSlots` (názvy, popisy, `kind`), vykreslení v layoutu
+a zápis do `textSlots` tisků, které ho podporují. E-mailový slot navíc
+potřebuje místo v `PrintEmailRenderer`. `PrintTextSlotTest` ohlídá shodu
+výčtu s cfgItemem, `PrintTemplateRawRuleTest` počet slotů v layoutu.
