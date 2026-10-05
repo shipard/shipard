@@ -83,7 +83,7 @@ class DocsHeadsFormTest extends TestCase
         $def = $form->buildFormDefinition([], true);
 
         $this->assertSame(
-            ['basic', 'rows', 'recap', 'notes', 'attachments'],
+            ['basic', 'rows', 'recap', 'notes', 'attachments', 'settings'],
             $this->tabIds($def),
         );
     }

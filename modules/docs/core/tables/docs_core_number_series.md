@@ -56,6 +56,16 @@ nebo aktivní odesílatel pošty). Když odesílatel později přestane být
 aktivní, řada si adresu nechá a odeslání dokladu skončí chybou
 `SENDER_NOT_ALLOWED` — ne tichým přechodem na výchozí adresu.
 
+### `automation`
+
+| Sloupec | Typ | Popis |
+|---|---|---|
+| `auto_author` | int, nullable, ref → `core_system_users` | Autor dokladů řady vystavených bez přihlášeného uživatele (#93 D11); NULL = globální nastavení `docs.autoAuthor` |
+
+Pořadí řada → nastavení → bez autora drží `DocAuthorResolver`
+(`docs/document-system.md` → Autor dokladu). Neaktivní uživatel se
+nepoužije.
+
 ### Systémové
 
 `docState`, `docStateMain` (default 10/1).

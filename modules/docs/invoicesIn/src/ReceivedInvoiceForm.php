@@ -197,7 +197,7 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase
         $hasVat = $vatMode !== 0;
         $docCurrency = strtolower((string) ($data['doc_currency'] ?? 'czk'));
 
-        return $this->tab('settings', 'Nastavení')
+        $tab = $this->tab('settings', 'Nastavení')
             ->section(title: 'DPH', hidden: !$hasVat)
             ->col()
             ->select(
@@ -232,8 +232,8 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase
 
             ->section(title: 'Ostatní')
             ->col()
-            ->input('constant_symbol')
+            ->input('constant_symbol');
 
-            ->build();
+        return $this->addAuthorElement($tab, $data)->build();
     }
 }

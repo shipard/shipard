@@ -648,6 +648,23 @@
             "group": "lineage"
         },
 
+        // Autor dokladu — „Vystavil“ na tisku (#93 D1/D2). Uživatel, který
+        // doklad založil; výchozí hodnotu při vzniku dokladu určuje
+        // DocAuthorResolver (přihlášený uživatel → autor automaticky
+        // vystavených dokladů z řady → z nastavení → NULL), ve formuláři jde
+        // změnit i vymazat. Doklady nemají `created_by` — tohle je jeho
+        // protějšek, jen editovatelný.
+        {
+            "id": "author",
+            "name": "Issued by",
+            "name:cs": "Vystavil",
+            "name:en": "Issued by",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_system_users",
+            "group": "lineage"
+        },
+
         // --- snapshots ---
 
         {

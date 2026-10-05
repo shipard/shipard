@@ -9,6 +9,7 @@ use Shipard\Core\Form\RecalculateResult;
 use Shipard\Core\Form\TableForm;
 use Shipard\Core\Mail\AllowedSenders;
 use Shipard\Core\Settings\SettingsStore;
+use Shipard\Module\Core\System\ActiveUsersOptions;
 
 class NumberSeriesForm extends TableForm
 {
@@ -72,6 +73,18 @@ class NumberSeriesForm extends TableForm
                     ->input(
                         'email_from_name',
                         hint: 'Jméno zobrazené u adresy odesílatele. Prázdné = název vlastní firmy.',
+                    )
+            // Autor dokladů řady vystavených bez uživatele (#93 D11); prázdná
+            // volba = globální nastavení Doklady. Pořadí drží DocAuthorResolver.
+            ->section(title: 'Automaticky vystavené doklady')
+                ->col()
+                    ->select(
+                        'auto_author',
+                        options: $this->db !== null
+                            ? ActiveUsersOptions::forForm($this->db, $data['auto_author'] ?? null)
+                            : [],
+                        placeholder: 'Podle nastavení',
+                        hint: 'Použije se u dokladů vystavených bez přihlášeného uživatele (např. automaticky). Prázdné = autor z nastavení Doklady.',
                     )
             ->build();
 

@@ -14,6 +14,7 @@ use Shipard\Core\Form\SubtableCellFormatter;
 use Shipard\Core\Form\TabBuilder;
 use Shipard\Core\Form\TableForm;
 use Shipard\Core\Settings\SettingsStore;
+use Shipard\Module\Core\System\ActiveUsersOptions;
 
 /**
  * Abstraktní base formulář nad `docs_core_heads`.
@@ -158,6 +159,15 @@ abstract class DocsHeadsFormBase extends TableForm
                 $data['bank_account'] = $account;
             }
         }
+        // 5. Vystavil = přihlášený uživatel (#93 D1), ať pole v tabu Nastavení
+        //    ukáže výchozího autora. Kdo ho vymaže, uloží doklad bez autora —
+        //    přítomný klíč DocAuthorResolver při uložení nepřepisuje.
+        if (empty($data['author']) && $this->db !== null) {
+            $author = (new DocAuthorResolver($this->db->getDibiConnection()))->interactiveUser();
+            if ($author !== null) {
+                $data['author'] = $author;
+            }
+        }
     }
 
     /**
@@ -250,18 +260,54 @@ abstract class DocsHeadsFormBase extends TableForm
 
     /**
      * Hook pro per-typ subclassy — vrací pole tabů, které se přidají
-     * na konec formuláře (za Přílohy). Default: žádné extra taby.
+     * na konec formuláře (za Přílohy). Default: tab „Nastavení“ jen s polem
+     * Vystavil (výchozí formulář, účetní doklad).
      *
      * Vzor: `ReceivedInvoiceForm` přepisuje a vrací `[buildSettingsTab($data)]`
      * (FPB má vlastní tab „Nastavení“ s registrací DPH, naším bankovním účtem
-     * a readOnly domácí měnou).
+     * a readOnly domácí měnou). Vlastní tab Nastavení pole Vystavil přidává
+     * přes `addAuthorElement()` — má ho každý typ dokladu (#93 D3).
      *
      * @param array<string, mixed> $data
      * @return list<FormTab>
      */
     protected function buildExtraTabs(array $data, bool $isNew): array
     {
-        return [];
+        return [$this->buildAuthorSettingsTab($data)];
+    }
+
+    /**
+     * Tab „Nastavení“ jen s polem Vystavil — pro typy dokladů, které vlastní
+     * tab Nastavení nemají.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function buildAuthorSettingsTab(array $data): FormTab
+    {
+        return $this->addAuthorElement(
+            $this->tab('settings', 'Nastavení')->section()->col(),
+            $data,
+        )->build();
+    }
+
+    /**
+     * Pole Vystavil (`author`, #93 D3/D12) do otevřeného sloupce tabu
+     * Nastavení. Select, ne lookup: `core_system_users` hlídá
+     * `TableAccessGuard` a účetní by autora nevybral — nabídku skládá server
+     * (`ActiveUsersOptions`: aktivní uživatelé + aktuální hodnota, i když už
+     * aktivní není). Prázdná volba = doklad bez autora.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function addAuthorElement(TabBuilder $tab, array $data): TabBuilder
+    {
+        return $tab->select(
+            'author',
+            options: $this->db !== null
+                ? ActiveUsersOptions::forForm($this->db, $data['author'] ?? null)
+                : [],
+            placeholder: 'Bez autora',
+        );
     }
 
     // ── Header info hooks ───────────────────────────────────────────────

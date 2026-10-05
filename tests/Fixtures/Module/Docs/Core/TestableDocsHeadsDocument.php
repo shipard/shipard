@@ -24,6 +24,11 @@ class TestableDocsHeadsDocument extends DocsHeadsDocument
         ];
     }
 
+    public function applyAuthorDefaultPub(array &$data, ?array $originalData): void
+    {
+        $this->applyAuthorDefault($data, $originalData);
+    }
+
     public function applyDateDefaultsPub(array &$data): void
     {
         $this->applyDateDefaults($data);

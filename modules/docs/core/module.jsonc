@@ -32,7 +32,35 @@
     ],
 
     "settingsItems": [
-        { "viewer": "docs.core.numberSeries", "section": "accounting" }
+        { "viewer": "docs.core.numberSeries", "section": "accounting" },
+        { "page":   "docsDocuments",          "section": "accounting" }
+    ],
+
+    "settingsPages": [
+        {
+            "id": "docsDocuments",
+            "name": "Documents",
+            "name:cs": "Doklady",
+            "name:en": "Documents",
+            "icon": "document",
+            "fields": [
+                {
+                    // #93 D11: autor dokladů vzniklých bez přihlášeného
+                    // uživatele. Řada dokladu (`auto_author`) má přednost;
+                    // pořadí drží DocAuthorResolver. Nabídka = aktivní
+                    // ne-systémoví uživatelé (ActiveUsersOptions).
+                    "id": "docs.autoAuthor",
+                    "type": "select",
+                    "name": "Author of automatically issued documents",
+                    "name:cs": "Autor automaticky vystavených dokladů",
+                    "name:en": "Author of automatically issued documents",
+                    "hint": "Printed as “Issued by” on documents created without a signed-in user (e.g. automatically). A number series can have its own author. Empty = no author.",
+                    "hint:cs": "Tiskne se jako „Vystavil“ na dokladech vystavených bez přihlášeného uživatele (např. automaticky). Číselná řada může mít vlastního autora. Prázdné = bez autora.",
+                    "hint:en": "Printed as “Issued by” on documents created without a signed-in user (e.g. automatically). A number series can have its own author. Empty = no author.",
+                    "optionsProvider": "Shipard\\Module\\Core\\System\\ActiveUsersOptions"
+                }
+            ]
+        }
     ],
 
     "viewers": [

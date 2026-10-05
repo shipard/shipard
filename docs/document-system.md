@@ -765,7 +765,31 @@ Gateway k tomu potřebuje definici tabulky (`tableDef` v konstruktoru) — bez
 ní se vyplnění tiše přeskočí, továrny ji proto předávají. Zápisy mimo
 gateway (`AttachmentService`, fronta odchozí pošty, generické CRUD) si
 `created_by` řeší samy. Doklady `created_by` nemají — nesou `author`
-(„Vystavil“, #93 D2).
+(„Vystavil“, #93 D2), viz níže.
+
+### Autor dokladu (`docs_core_heads.author`)
+
+Uživatel, který doklad založil — tiskne se jako „Vystavil“ (`docs/prints.md`).
+Na rozdíl od `created_by` není `system`: edituje se ve formuláři (tab
+Nastavení, `docs/edit-forms.md` kap. 23). Výchozí hodnotu při **vzniku**
+dokladu určuje `Shipard\Module\Docs\Core\DocAuthorResolver`, volaný
+z `DocDocument::beforeSave` (#93 D1, D11):
+
+1. klíč `author` v datech **je** (i `null`) → beze změny — rozhodl formulář,
+   applier (`applyOptions.author`) nebo import;
+2. doklad zakládá člověk — přihlášený **ne-systémový** uživatel → on;
+3. strojový kontext → autor automaticky vystavených dokladů z číselné řady
+   (`docs_core_number_series.auto_author`) → z nastavení `docs.autoAuthor`
+   (Nastavení → Účetnictví → Doklady) → NULL.
+
+Strojový kontext je „nikdo přihlášený“ (CLI, cron) **i systémový uživatel**
+(`is_system`, typicky API klíč integrace) — jméno integrace jako „Vystavil“
+na faktuře nikdo nechce. Neaktivní uživatel z řady ani z nastavení se
+nepoužije (warning v logu) a pokračuje se dál v pořadí. Při updatu se autor
+nemění, pokud ho nepošle formulář.
+
+Formulář nového dokladu autora předvyplní (`applyNewRecordDefaults`), aby
+pole ukázalo výchozí hodnotu; kdo ji vymaže, uloží doklad bez autora (bod 1).
 
 ---
 

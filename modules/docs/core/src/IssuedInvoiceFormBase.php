@@ -170,7 +170,7 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
         $vatMode = (int) ($data['vat_mode'] ?? 1);
         $hasVat = $vatMode !== 0;
         $taxDocument = $this->isTaxDocument($data);
-        return $this->tab('settings', 'Nastavení')
+        $tab = $this->tab('settings', 'Nastavení')
             ->section(title: 'Měna')
             ->col()
             ->input('home_currency', readOnly: true)
@@ -219,7 +219,7 @@ abstract class IssuedInvoiceFormBase extends DocsHeadsFormBase
                 hidden: !$hasVat || !$taxDocument,
                 hint: self::CS_MODE_HINT,
             )
-            ->input('constant_symbol')
-            ->build();
+            ->input('constant_symbol');
+        return $this->addAuthorElement($tab, $data)->build();
     }
 }

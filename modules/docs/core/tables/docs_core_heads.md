@@ -123,6 +123,7 @@ canonical dokumentu; pro doklady ručně pořízené přes UI zůstává NULL
 | `source_kind` | enumString(40), nullable, cfgItem `docs.core.sourceKinds` | `aiExtraction` / `isdoc` / `peppolUbl` / `manual` / `import.flexibee` / `import.pohoda` |
 | `source_message` | int, nullable, ref → `core_mail_incoming_messages`, index `idx_source_message` | Zdrojová zpráva došlé pošty (reverse lookup z dokladu → původ). Plní applier ze server-injektovaného `source.message` při apply návrhu. |
 | `source_extracted_at` | datetime, nullable | Časový bod extrakce / importu |
+| `author` | int, nullable, ref → `core_system_users` | Autor dokladu — „Vystavil“ na tisku (#93). Není `system`: edituje se v tabu Nastavení. Výchozí hodnotu při vzniku určuje `DocAuthorResolver` (`docs/document-system.md` → Autor dokladu). Doklady nemají `created_by`. |
 
 Vazba je obousměrná (D6 z `tasks/mail-message-centric.md`): forward lookup
 (zpráva → výsledný doklad) je v `core_mail_incoming_messages.target_table_id`

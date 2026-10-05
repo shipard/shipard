@@ -18,7 +18,7 @@ use Shipard\Module\Docs\Core\DocsHeadsFormBase;
  *
  * Přepisuje `buildFormDefinition()`, aby vynechal tab „Rekapitulace DPH"
  * (na bezDPH dokladu nemá smysl) — sada tabů: Hlavička, Řádky, Poznámky,
- * Přílohy.
+ * Přílohy, Nastavení (jen pole Vystavil).
  */
 class AccountingDocsForm extends DocsHeadsFormBase
 {
@@ -32,6 +32,10 @@ class AccountingDocsForm extends DocsHeadsFormBase
             $this->buildNotesTab(),
             $this->attachmentsTab(),
         ];
+        // Tab „Nastavení“ s polem Vystavil (default base, #93 D3).
+        foreach ($this->buildExtraTabs($data, $isNew) as $extraTab) {
+            $tabs[] = $extraTab;
+        }
 
         return new FormDefinition(
             table: $this->table,

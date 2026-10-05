@@ -124,7 +124,7 @@ class CashRegisterForm extends CashDeskFormBase
         $vatMode = (int) ($data['vat_mode'] ?? 1);
         $hasVat = $vatMode !== 0;
 
-        return $this->tab('settings', 'Nastavení')
+        $tab = $this->tab('settings', 'Nastavení')
             ->section(title: 'DPH')
                 ->col()
                     ->select(
@@ -157,6 +157,9 @@ class CashRegisterForm extends CashDeskFormBase
                         options: $this->resolveCfgItemOptions('docs.core.vatRoundingModes'),
                         hidden: !$hasVat,
                     )
-            ->build();
+
+            ->section(title: 'Ostatní')
+                ->col();
+        return $this->addAuthorElement($tab, $data)->build();
     }
 }

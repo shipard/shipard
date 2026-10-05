@@ -163,7 +163,7 @@ class CashDocForm extends CashDeskFormBase
         // Terminál (příjem kartou), Plátce (#72): příjem kartou bez plátce
         // doklad nepustí (partner_balance_required), výdej má jen ruční plátce.
         $this->addPaymentIntermediaryElements($tab, $data);
-        return $tab
+        $tab
             ->section(title: 'DPH', hidden: !$hasVat)
                 ->col()
                     ->select(
@@ -185,7 +185,10 @@ class CashDocForm extends CashDeskFormBase
                         options: $this->resolveCfgItemOptions('docs.core.vatRoundingModes'),
                         hidden: !$hasVat,
                     )
-            ->build();
+
+            ->section(title: 'Ostatní')
+                ->col();
+        return $this->addAuthorElement($tab, $data)->build();
     }
 
     /**

@@ -67,7 +67,7 @@ class AccountingDocsFormNewRecordDefaultsTest extends TestCase
                 }
             }
         }
-        $this->assertCount(4, $def->tabs, 'Hlavička, Řádky, Poznámky, Přílohy');
+        $this->assertCount(5, $def->tabs, 'Hlavička, Řádky, Poznámky, Přílohy, Nastavení');
         $this->assertContains('issue_date', $columns);
         $this->assertNotContains('vat_mode', $columns);
         $this->assertNotContains('vat_registration', $columns);

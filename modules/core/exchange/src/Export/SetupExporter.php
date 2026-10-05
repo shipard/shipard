@@ -50,10 +50,11 @@ final class SetupExporter
 
     /**
      * FK sloupce, jejichž vynechání se nehlásí: nesou vazbu na záznam, který
-     * sada z principu nepřenáší (osoba FÚ na registraci DPH), takže warning
-     * by jen šuměl v každém dumpu.
+     * sada z principu nepřenáší (osoba FÚ na registraci DPH, uživatel jako
+     * autor automaticky vystavených dokladů řady), takže warning by jen
+     * šuměl v každém dumpu.
      */
-    private const SILENT_FK_COLUMNS = ['tax_office_person'];
+    private const SILENT_FK_COLUMNS = ['tax_office_person', 'auto_author'];
 
     /** @var list<string> */
     private array $warnings = [];

@@ -2207,7 +2207,9 @@ Všechny existující registrace `{table, class}` (`PersonsForm`, `NumberSeriesF
 
 ### Hook `buildExtraTabs()` — per-typ rozšíření tabů
 
-`DocsHeadsFormBase::buildFormDefinition()` nabízí rozšiřující hook `buildExtraTabs(array $data, bool $isNew): array`, který subclassy mohou přepisovat a vracet extra taby — ty se přidají **na konec** formuláře, za Přílohy. Default v base třídě vrací prázdné pole.
+`DocsHeadsFormBase::buildFormDefinition()` nabízí rozšiřující hook `buildExtraTabs(array $data, bool $isNew): array`, který subclassy mohou přepisovat a vracet extra taby — ty se přidají **na konec** formuláře, za Přílohy. Default v base třídě vrací tab „Nastavení“ s jediným polem **Vystavil** (`buildAuthorSettingsTab()` — výchozí formulář a účetní doklad, který hook volá i ze svého `buildFormDefinition()`).
+
+**Pole Vystavil má každý typ dokladu** (#93 D3): vlastní tab Nastavení ho přidává přes `addAuthorElement($tab, $data)` do otevřeného sloupce — jedna implementace v `DocsHeadsFormBase`. Je to `select`, ne `lookup`: `core_system_users` hlídá `TableAccessGuard` a účetní by autora nevybral. Nabídku skládá `Shipard\Module\Core\System\ActiveUsersOptions::forForm()` — aktivní ne-systémoví uživatelé + aktuální hodnota, i když už aktivní není (jinak by ji select tiše vyprázdnil). Stejnou nabídku má `auto_author` na číselné řadě a nastavení `docs.autoAuthor`. Výchozí hodnota a pořadí viz `docs/document-system.md` → Autor dokladu.
 
 Vzor použití — `ReceivedInvoiceForm` (FPB) přidává tab „Nastavení“ s poli, která se u přijatých faktur nastavují zřídka (registrace DPH, zaokrouhlení DPH, náš bankovní účet, domácí měna readOnly, konstantní symbol):
 
@@ -2225,7 +2227,7 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase
         $hasVat = $vatMode !== 0;
         $docCurrency = strtolower((string) ($data['doc_currency'] ?? 'czk'));
 
-        return $this->tab('settings', 'Nastavení')
+        $tab = $this->tab('settings', 'Nastavení')
             ->section(title: 'DPH', hidden: !$hasVat)
                 ->col()
                     ->select('vat_registration',
@@ -2246,8 +2248,9 @@ class ReceivedInvoiceForm extends DocsHeadsFormBase
                     ->input('home_currency', readOnly: true)
             ->section(title: 'Ostatní')
                 ->col()
-                    ->input('constant_symbol')
-            ->build();
+                    ->input('constant_symbol');
+
+        return $this->addAuthorElement($tab, $data)->build();
     }
 }
 ```

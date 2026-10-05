@@ -465,6 +465,9 @@ abstract class DocDocument extends Document
 
         $this->trackStateChange($data, $originalData);
 
+        // Před denormalizeFromSeries — resolver čte řadu z dat tak, jak přišla.
+        $this->applyAuthorDefault($data, $originalData);
+
         $this->denormalizeFromSeries($data);
         $this->resolvePartnerBalance($data);
         $this->applyDateDefaults($data);
@@ -747,6 +750,19 @@ abstract class DocDocument extends Document
                 'payment_terminal_required',
             );
         }
+    }
+
+    /**
+     * Autor dokladu („Vystavil“, #93 D1) — jen při vzniku a jen když ho
+     * volající neurčil (pořadí drží DocAuthorResolver). Update autora nemění,
+     * pokud ho nepošle formulář.
+     */
+    protected function applyAuthorDefault(array &$data, ?array $originalData): void
+    {
+        if ($originalData !== null || $this->db === null) {
+            return;
+        }
+        (new DocAuthorResolver($this->db, $this->settings))->apply($data);
     }
 
     protected function denormalizeFromSeries(array &$data): void

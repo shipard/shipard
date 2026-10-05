@@ -36,6 +36,12 @@
             "name": "Sending by e-mail",
             "name:cs": "Odesílání e-mailem",
             "name:en": "Sending by e-mail"
+        },
+        {
+            "id": "automation",
+            "name": "Automatically issued documents",
+            "name:cs": "Automaticky vystavené doklady",
+            "name:en": "Automatically issued documents"
         }
     ],
 
@@ -186,6 +192,22 @@
             "length": 200,
             "nullable": true,
             "group": "sending"
+        },
+
+        // --- automation (#93 D11) ---
+
+        // Autor dokladů řady vystavených bez přihlášeného uživatele (cron,
+        // CLI, API klíč systémového uživatele). NULL = platí globální
+        // nastavení `docs.autoAuthor`; viz DocAuthorResolver.
+        {
+            "id": "auto_author",
+            "name": "Author of automatically issued documents",
+            "name:cs": "Autor automaticky vystavených dokladů",
+            "name:en": "Author of automatically issued documents",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_system_users",
+            "group": "automation"
         },
 
         // --- doc state (system) ---
