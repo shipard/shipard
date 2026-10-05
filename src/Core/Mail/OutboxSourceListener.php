@@ -27,6 +27,9 @@ interface OutboxSourceListener
      * @param string $sourceRef Celý `source_ref` řádku fronty.
      * @param string $state Jedna z `STATE_*`.
      * @param ?string $error Poslední chyba transportu (jen u `STATE_FAILED`).
+     * @param ?MailSafetyResult $safety Co se zprávou udělala pojistka odchozí
+     *        pošty (jen u `STATE_SENT`, #95 D6) — „odesláno“ může znamenat
+     *        i přesměrováno nebo zachyceno.
      */
     public function outboxStateChanged(
         string $sourceRef,
@@ -34,5 +37,6 @@ interface OutboxSourceListener
         string $state,
         \DateTimeImmutable $at,
         ?string $error = null,
+        ?MailSafetyResult $safety = null,
     ): void;
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail\Sent;
 
+use Shipard\Core\Mail\MailSafetyResult;
 use Shipard\Core\Mail\OutboxSourceListener;
 
 /**
@@ -23,6 +24,7 @@ final class SentMessageOutboxListener implements OutboxSourceListener
         string $state,
         \DateTimeImmutable $at,
         ?string $error = null,
+        ?MailSafetyResult $safety = null,
     ): void {
         $id = SentMessageStore::idFromSourceRef($sourceRef);
         if ($id === null) {

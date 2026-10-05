@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Config;
 
 use Shipard\Core\Mail\MailRelayConfig;
+use Shipard\Core\Mail\MailSafetyConfig;
 use Shipard\Core\Server\HostingConfig;
 
 class ServerConfig
@@ -154,6 +155,16 @@ class ServerConfig
             throw new \RuntimeException("Server config 'mail.relay' must be an object");
         }
         return MailRelayConfig::fromArray($relay);
+    }
+
+    /**
+     * Pojistka odchozí pošty (#95) — nested klíč `mail.safety`. Nikdy
+     * nevyhazuje: chybějící sekce se řídí režimem serveru (`production` =
+     * vypnuto, jinak nic neodejde), chybná znamená `drop`.
+     */
+    public function getMailSafety(): MailSafetyConfig
+    {
+        return MailSafetyConfig::fromServerData($this->data);
     }
 
     /**

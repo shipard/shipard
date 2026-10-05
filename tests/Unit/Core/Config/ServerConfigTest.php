@@ -425,6 +425,61 @@ class ServerConfigTest extends TestCase
         $config->getMailRelay();
     }
 
+    public function testGetMailSafetyFollowsServerModeWhenMissing(): void
+    {
+        $base = ['host' => '127.0.0.1', 'port' => 3306, 'admin_user' => 'root', 'admin_password' => 'secret'];
+
+        $production = new ServerConfig($this->createConfig($base + ['mode' => 'production']));
+        $production->load();
+        $this->assertSame('off', $production->getMailSafety()->mode);
+
+        $development = new ServerConfig($this->createConfig($base + ['mode' => 'development']));
+        $development->load();
+        $this->assertSame('drop', $development->getMailSafety()->mode);
+    }
+
+    public function testGetMailSafetyConfiguredNextToRelay(): void
+    {
+        $path = $this->createConfig([
+            'host'           => '127.0.0.1',
+            'port'           => 3306,
+            'admin_user'     => 'root',
+            'admin_password' => 'secret',
+            'mode'           => 'production',
+            'mail'           => [
+                'relay'  => ['host' => 'relay.example.com'],
+                'safety' => ['mode' => 'redirect', 'redirectTo' => 'testy@example.com'],
+            ],
+        ]);
+
+        $config = new ServerConfig($path);
+        $config->load();
+
+        $this->assertSame('redirect', $config->getMailSafety()->mode);
+        $this->assertSame('testy@example.com', $config->getMailSafety()->redirectTo);
+        $this->assertSame('relay.example.com', $config->getMailRelay()->host);
+    }
+
+    public function testGetMailSafetyInvalidDropsInsteadOfThrowing(): void
+    {
+        $path = $this->createConfig([
+            'host'           => '127.0.0.1',
+            'port'           => 3306,
+            'admin_user'     => 'root',
+            'admin_password' => 'secret',
+            'mode'           => 'production',
+            'mail'           => ['safety' => ['mode' => 'redirect']],
+        ]);
+
+        $config = new ServerConfig($path);
+        $config->load();
+        $safety = $config->getMailSafety();
+
+        $this->assertSame('drop', $safety->mode);
+        $this->assertSame('invalid', $safety->source);
+        $this->assertNotNull($safety->problem);
+    }
+
     public function testGetRenderMissingReturnsNull(): void
     {
         $path = $this->createConfig([

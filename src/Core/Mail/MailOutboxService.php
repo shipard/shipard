@@ -14,6 +14,10 @@ use Shipard\Core\Settings\SettingsStore;
  * pending → sending → sent | failed (terminal, vrací mail-outbox-retry);
  * cancelled je rezervován pro budoucí UI.
  *
+ * Každý pokus projde pojistkou odchozí pošty (`MailSafetyGuard`, #95):
+ * mezi sestavením e-mailu a výběrem transportu, takže platí pro relay
+ * i pro odesílatele s vlastním SMTP.
+ *
  * Čas se všude předává parametrem (žádné NOW() v SQL) kvůli
  * testovatelnosti — vzor AlertReconciler.
  */
@@ -45,6 +49,7 @@ class MailOutboxService
         private readonly TransportResolver $resolver,
         private readonly MailComposer $composer,
         private readonly SettingsStore $settings,
+        private readonly MailSafetyConfig $safety,
     ) {
     }
 
@@ -185,6 +190,10 @@ class MailOutboxService
      * stavem `pending`) — souběžný druhý claim téže zprávy vrátí false.
      * Úspěch → `sent`; chyba → backoff, po MAX_ATTEMPTS terminální
      * `failed`. Každý pokus zapíše řádek do logu.
+     *
+     * Zprávu zachycenou pojistkou transport nedostane a pokus končí jako
+     * úspěch (#95 D6) — aplikace se chová jako v produkci, jen řádek nese
+     * `safety_action`.
      */
     public function attemptSend(int $id, ?\DateTimeImmutable $now = null): bool
     {
@@ -210,13 +219,27 @@ class MailOutboxService
         $startNs = hrtime(true);
 
         try {
-            $resolved = $this->resolver->resolve((string) $row['email_from']);
-            $transportLabel = $resolved->label;
+            // Pojistka před výběrem transportu: řádek fronty si nechává
+            // původní adresy, mění se jen obálka (#95 D3).
+            $safety = MailSafetyGuard::apply($this->composer->compose($row), $this->safety);
 
-            $email = $this->composer->compose($row);
-            $sentMessage = $resolved->transport->send($email);
+            if ($safety->isDropped()) {
+                $transportLabel = 'safety:' . $this->safety->mode;
+                $response       = 'mail safety: not sent';
+            } else {
+                $resolved = $this->resolver->resolve((string) $row['email_from']);
+                $transportLabel = $resolved->label;
 
-            $this->insertLogRow($id, $attempt, $nowStr, $transportLabel, 'ok', $sentMessage?->getDebug(), $startNs);
+                $response = $resolved->transport->send($safety->email)?->getDebug();
+                if ($safety->intervened()) {
+                    $note = $safety->target !== null
+                        ? "mail safety: redirected to {$safety->target}"
+                        : 'mail safety: recipients restricted';
+                    $response = trim($note . "\n" . $response);
+                }
+            }
+
+            $this->insertLogRow($id, $attempt, $nowStr, $transportLabel, 'ok', $response, $startNs);
             $this->db->updateWhere(self::TABLE, [
                 'state'         => 'sent',
                 'sent_at'       => $nowStr,
@@ -224,7 +247,8 @@ class MailOutboxService
                 'claimed_at'    => null,
                 'last_error'    => null,
             ], 'id = %i', $id);
-            $this->notifySource($row['source_ref'] ?? null, $id, OutboxSourceListener::STATE_SENT, $now);
+            $this->recordSafety($id, $safety);
+            $this->notifySource($row['source_ref'] ?? null, $id, OutboxSourceListener::STATE_SENT, $now, null, $safety);
 
             return true;
         } catch (\Throwable $e) {
@@ -330,6 +354,26 @@ class MailOutboxService
     }
 
     /**
+     * Zapíše na řádek fronty zásah pojistky. Zvlášť a až po stavu `sent`:
+     * zdroj dat před `ds-upgrade` sloupce nemá a chyba zápisu stopy nesmí
+     * z odeslané zprávy udělat selhanou — další pokus by ji poslal znovu.
+     */
+    private function recordSafety(int $id, MailSafetyResult $safety): void
+    {
+        if (!$safety->intervened()) {
+            return;
+        }
+        try {
+            $this->db->updateWhere(self::TABLE, [
+                'safety_action' => $safety->action,
+                'safety_target' => $safety->target,
+            ], 'id = %i', $id);
+        } catch (\Throwable $e) {
+            error_log("MailOutboxService: safety trace of outbox #{$id} not stored: {$e->getMessage()}");
+        }
+    }
+
+    /**
      * Řekne posluchači registrovanému pro `source_ref` zprávy, jak transport
      * dopadl. Stav fronty je v tu chvíli už zapsaný — chyba posluchače ho
      * nesmí změnit ani shodit worker, jen se zaloguje.
@@ -340,6 +384,7 @@ class MailOutboxService
         string $state,
         \DateTimeImmutable $at,
         ?string $error = null,
+        ?MailSafetyResult $safety = null,
     ): void {
         if (!is_string($sourceRef) || $sourceRef === '') {
             return;
@@ -349,7 +394,7 @@ class MailOutboxService
                 continue;
             }
             try {
-                $listener->outboxStateChanged($sourceRef, $outboxId, $state, $at, $error);
+                $listener->outboxStateChanged($sourceRef, $outboxId, $state, $at, $error, $safety);
             } catch (\Throwable $e) {
                 error_log("MailOutboxService: source listener '{$prefix}' failed for outbox #{$outboxId}: {$e->getMessage()}");
             }

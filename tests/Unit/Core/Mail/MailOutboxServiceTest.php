@@ -10,6 +10,8 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Mail\Exception\MailValidationException;
 use Shipard\Core\Mail\MailComposer;
 use Shipard\Core\Mail\MailOutboxService;
+use Shipard\Core\Mail\MailSafetyConfig;
+use Shipard\Core\Mail\MailSafetyResult;
 use Shipard\Core\Mail\OutboundMessage;
 use Shipard\Core\Mail\OutboxSourceListener;
 use Shipard\Core\Mail\ResolvedTransport;
@@ -34,7 +36,18 @@ class MailOutboxServiceTest extends TestCase
         $this->resolver = $this->createMock(TransportResolver::class);
         $this->composer = $this->createMock(MailComposer::class);
         $this->settings = $this->createMock(SettingsStore::class);
-        $this->service  = new MailOutboxService($this->db, $this->resolver, $this->composer, $this->settings);
+        $this->service  = $this->serviceWith(MailSafetyConfig::off());
+    }
+
+    private function serviceWith(MailSafetyConfig $safety): MailOutboxService
+    {
+        return new MailOutboxService($this->db, $this->resolver, $this->composer, $this->settings, $safety);
+    }
+
+    /** @param array<string, mixed> $section Sekce `mail.safety` produkčního serveru. */
+    private function safety(array $section): MailSafetyConfig
+    {
+        return MailSafetyConfig::fromServerData(['mode' => 'production', 'mail' => ['safety' => $section]]);
     }
 
     private function now(): \DateTimeImmutable
@@ -254,12 +267,24 @@ class MailOutboxServiceTest extends TestCase
 
     // ── posluchač výsledku transportu (#90 D43) ─────────────────────
 
-    /** Zaregistruje posluchače a vrátí zachycená volání `[sourceRef, outboxId, state, error]`. */
-    private function listen(string $prefix = 'sentMessage:', ?\Throwable $fails = null): \ArrayObject
-    {
+    /**
+     * Zaregistruje posluchače a vrátí zachycená volání `[sourceRef, outboxId, state, error]`;
+     * výsledky pojistky sbírá zvlášť do `$safety`.
+     */
+    private function listen(
+        string $prefix = 'sentMessage:',
+        ?\Throwable $fails = null,
+        ?\ArrayObject $safety = null,
+        ?MailOutboxService $service = null,
+    ): \ArrayObject {
         $calls    = new \ArrayObject();
-        $listener = new class ($calls, $fails) implements OutboxSourceListener {
-            public function __construct(private readonly \ArrayObject $calls, private readonly ?\Throwable $fails) {}
+        $safety ??= new \ArrayObject();
+        $listener = new class ($calls, $safety, $fails) implements OutboxSourceListener {
+            public function __construct(
+                private readonly \ArrayObject $calls,
+                private readonly \ArrayObject $safety,
+                private readonly ?\Throwable $fails,
+            ) {}
 
             public function outboxStateChanged(
                 string $sourceRef,
@@ -267,14 +292,16 @@ class MailOutboxServiceTest extends TestCase
                 string $state,
                 \DateTimeImmutable $at,
                 ?string $error = null,
+                ?MailSafetyResult $safety = null,
             ): void {
-                $this->calls[] = [$sourceRef, $outboxId, $state, $error];
+                $this->calls[]  = [$sourceRef, $outboxId, $state, $error];
+                $this->safety[] = $safety;
                 if ($this->fails !== null) {
                     throw $this->fails;
                 }
             }
         };
-        $this->service->addSourceListener($prefix, $listener);
+        ($service ?? $this->service)->addSourceListener($prefix, $listener);
         return $calls;
     }
 
@@ -370,6 +397,200 @@ class MailOutboxServiceTest extends TestCase
         $this->assertSame([['sentMessage:12', 9, OutboxSourceListener::STATE_REQUEUED, null]], $calls->getArrayCopy());
     }
 
+    // ── pojistka odchozí pošty (#95) ────────────────────────────────
+
+    private function composedEmail(): Email
+    {
+        return (new Email())
+            ->from('noreply@firma.cz')
+            ->to('ucetni@odberatel.cz')
+            ->cc('obchod@odberatel.cz')
+            ->subject('Faktura 2260011')
+            ->text('Dobrý den.');
+    }
+
+    /**
+     * Připraví claim, composer a zachytávání zápisů.
+     *
+     * @return array{log: \ArrayObject, updates: \ArrayObject}
+     */
+    private function primeSafetyAttempt(array $row = []): array
+    {
+        $this->primeClaim($this->outboxRow($row + [
+            'email_to' => 'ucetni@odberatel.cz',
+            'email_cc' => 'obchod@odberatel.cz',
+            'subject'  => 'Faktura 2260011',
+        ]));
+        $this->composer->method('compose')->willReturn($this->composedEmail());
+
+        $log     = new \ArrayObject();
+        $updates = new \ArrayObject();
+        $this->db->method('insertRow')->willReturnCallback(
+            function (string $table, array $data) use ($log) {
+                $log[] = $data;
+                return 1;
+            },
+        );
+        $this->db->method('updateWhere')->willReturnCallback(
+            function (string $table, array $data) use ($updates) {
+                $updates[] = $data;
+            },
+        );
+        return ['log' => $log, 'updates' => $updates];
+    }
+
+    public function testDropNeverCallsTransportAndEndsAsSent(): void
+    {
+        $captured = $this->primeSafetyAttempt();
+        // Zachycená zpráva transport nepotřebuje — projde i bez relay.
+        $this->resolver->expects($this->never())->method('resolve');
+
+        $service = $this->serviceWith($this->safety(['mode' => 'drop']));
+
+        $this->assertTrue($service->attemptSend(5, $this->now()));
+
+        $this->assertSame('safety:drop', $captured['log'][0]['transport']);
+        $this->assertSame('ok', $captured['log'][0]['result']);
+
+        $this->assertCount(2, $captured['updates']);
+        $this->assertSame('sent', $captured['updates'][0]['state']);
+        $this->assertSame(self::NOW, $captured['updates'][0]['sent_at']);
+        $this->assertSame(
+            ['safety_action' => 'dropped', 'safety_target' => null],
+            $captured['updates'][1],
+        );
+    }
+
+    public function testAllowlistWithNobodyLeftIsLoggedUnderItsOwnMode(): void
+    {
+        $captured = $this->primeSafetyAttempt();
+        $this->resolver->expects($this->never())->method('resolve');
+
+        $service = $this->serviceWith($this->safety(['mode' => 'allowlist', 'allow' => ['@firma.cz']]));
+
+        $this->assertTrue($service->attemptSend(5, $this->now()));
+
+        $this->assertSame('safety:allowlist', $captured['log'][0]['transport']);
+        $this->assertSame('dropped', $captured['updates'][1]['safety_action']);
+    }
+
+    public function testRedirectSendsChangedEnvelopeAndKeepsRowAddresses(): void
+    {
+        $captured = $this->primeSafetyAttempt();
+
+        $sent      = null;
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects($this->once())->method('send')->willReturnCallback(
+            function (Email $email) use (&$sent) {
+                $sent = $email;
+                return null;
+            },
+        );
+        $this->resolver->method('resolve')->willReturn(new ResolvedTransport($transport, 'relay:587'));
+
+        $service = $this->serviceWith($this->safety(['mode' => 'redirect', 'redirectTo' => 'testy@firma.cz']));
+
+        $this->assertTrue($service->attemptSend(5, $this->now()));
+
+        $this->assertSame(['testy@firma.cz'], array_map(static fn ($a) => $a->getAddress(), $sent->getTo()));
+        $this->assertSame([], $sent->getCc());
+        $this->assertSame('[TEST] Faktura 2260011', $sent->getSubject());
+
+        // Skutečný transport, zásah pojistky v detailu pokusu.
+        $this->assertSame('relay:587', $captured['log'][0]['transport']);
+        $this->assertSame('mail safety: redirected to testy@firma.cz', $captured['log'][0]['smtp_response']);
+
+        // Řádek fronty si nechává původní adresy — zapisuje se jen stav a stopa.
+        $this->assertCount(2, $captured['updates']);
+        $this->assertSame('sent', $captured['updates'][0]['state']);
+        $this->assertArrayNotHasKey('email_to', $captured['updates'][0]);
+        $this->assertArrayNotHasKey('email_cc', $captured['updates'][0]);
+        $this->assertSame(
+            ['safety_action' => 'redirected', 'safety_target' => 'testy@firma.cz'],
+            $captured['updates'][1],
+        );
+    }
+
+    public function testUntouchedMessageCarriesNoSafetyTrace(): void
+    {
+        $captured = $this->primeSafetyAttempt();
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects($this->once())->method('send')->willReturn(null);
+        $this->resolver->method('resolve')->willReturn(new ResolvedTransport($transport, 'relay:587'));
+
+        $service = $this->serviceWith($this->safety(['mode' => 'allowlist', 'allow' => ['@odberatel.cz']]));
+
+        $this->assertTrue($service->attemptSend(5, $this->now()));
+
+        $this->assertCount(1, $captured['updates']);
+        $this->assertNull($captured['log'][0]['smtp_response']);
+    }
+
+    public function testListenerHearsSafetyResult(): void
+    {
+        $this->primeSafetyAttempt(['source_ref' => 'sentMessage:12']);
+        $this->resolver->method('resolve')->willReturn(
+            new ResolvedTransport($this->createMock(TransportInterface::class), 'relay:587'),
+        );
+
+        $service = $this->serviceWith($this->safety(['mode' => 'redirect', 'redirectTo' => 'testy@firma.cz']));
+        $safety  = new \ArrayObject();
+        $calls   = $this->listen(safety: $safety, service: $service);
+
+        $this->assertTrue($service->attemptSend(5, $this->now()));
+
+        $this->assertSame(OutboxSourceListener::STATE_SENT, $calls[0][2]);
+        $this->assertSame(MailSafetyResult::ACTION_REDIRECTED, $safety[0]->action);
+        $this->assertSame('testy@firma.cz', $safety[0]->target);
+    }
+
+    public function testListenerOfDroppedMessageHearsSentWithSafety(): void
+    {
+        $this->primeSafetyAttempt(['source_ref' => 'sentMessage:12']);
+
+        $service = $this->serviceWith($this->safety(['mode' => 'drop']));
+        $safety  = new \ArrayObject();
+        $calls   = $this->listen(safety: $safety, service: $service);
+
+        $this->assertTrue($service->attemptSend(5, $this->now()));
+
+        // Zachycená zpráva se tváří jako odeslaná — aplikace se chová jako v produkci.
+        $this->assertSame(OutboxSourceListener::STATE_SENT, $calls[0][2]);
+        $this->assertSame(MailSafetyResult::ACTION_DROPPED, $safety[0]->action);
+    }
+
+    public function testFailedSafetyTraceDoesNotResendMessage(): void
+    {
+        // Zdroj dat před `ds-upgrade` sloupce pojistky nemá.
+        $this->primeClaim($this->outboxRow(['source_ref' => 'sentMessage:12']));
+        $this->composer->method('compose')->willReturn($this->composedEmail());
+        $this->db->method('insertRow')->willReturn(1);
+
+        $updates = [];
+        $this->db->method('updateWhere')->willReturnCallback(
+            function (string $table, array $data) use (&$updates) {
+                $updates[] = $data;
+                if (isset($data['safety_action'])) {
+                    throw new \RuntimeException("Unknown column 'safety_action'");
+                }
+            },
+        );
+
+        $transport = $this->createMock(TransportInterface::class);
+        $transport->expects($this->once())->method('send')->willReturn(null);
+        $this->resolver->method('resolve')->willReturn(new ResolvedTransport($transport, 'relay:587'));
+
+        $service = $this->serviceWith($this->safety(['mode' => 'redirect', 'redirectTo' => 'testy@firma.cz']));
+        $calls   = $this->listen(service: $service);
+
+        $this->assertTrue($service->attemptSend(5, $this->now()));
+
+        // Stav `sent` zůstal, žádný návrat do fronty; posluchač výsledek slyšel.
+        $this->assertSame(['sent'], array_values(array_filter(array_column($updates, 'state'))));
+        $this->assertCount(1, $calls);
+    }
+
     public function testSecondClaimOfSameMessageFails(): void
     {
         // claim UPDATE nezasáhl žádný řádek → zpráva už není pending
@@ -430,7 +651,7 @@ class MailOutboxServiceTest extends TestCase
             $db       = $this->createMock(DataSourceConnection::class);
             $resolver = $this->createMock(TransportResolver::class);
             $composer = $this->createMock(MailComposer::class);
-            $service  = new MailOutboxService($db, $resolver, $composer, $this->createMock(SettingsStore::class));
+            $service  = new MailOutboxService($db, $resolver, $composer, $this->createMock(SettingsStore::class), MailSafetyConfig::off());
 
             $db->method('getAffectedRows')->willReturn(1);
             $db->method('fetchRow')->willReturn($this->outboxRow(['attempt_count' => $attemptCount]));
@@ -495,7 +716,7 @@ class MailOutboxServiceTest extends TestCase
     {
         /** @var MailOutboxService&MockObject $service */
         $service = $this->getMockBuilder(MailOutboxService::class)
-            ->setConstructorArgs([$this->db, $this->resolver, $this->composer, $this->settings])
+            ->setConstructorArgs([$this->db, $this->resolver, $this->composer, $this->settings, MailSafetyConfig::off()])
             ->onlyMethods(['attemptSend'])
             ->getMock();
 
@@ -567,7 +788,7 @@ class MailOutboxServiceTest extends TestCase
     {
         /** @var MailOutboxService&MockObject $service */
         $service = $this->getMockBuilder(MailOutboxService::class)
-            ->setConstructorArgs([$this->db, $this->resolver, $this->composer, $this->settings])
+            ->setConstructorArgs([$this->db, $this->resolver, $this->composer, $this->settings, MailSafetyConfig::off()])
             ->onlyMethods(['attemptSend'])
             ->getMock();
         $service->method('attemptSend')->willThrowException(new \RuntimeException('infra down'));

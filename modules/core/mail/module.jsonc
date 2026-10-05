@@ -315,6 +315,10 @@
         {
             "id": "core.mail.sentChannels",
             "file": "config/sentChannels.jsonc"
+        },
+        {
+            "id": "core.mail.safetyActions",
+            "file": "config/safetyActions.jsonc"
         }
     ]
 }

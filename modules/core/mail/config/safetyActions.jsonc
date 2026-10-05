@@ -1,0 +1,20 @@
+{
+    // core.mail.safetyActions
+    //
+    // Zásah pojistky odchozí pošty (#95 D6) — `safety_action` na řádku
+    // fronty a na odeslané zprávě. Zpráva, do které pojistka nezasáhla,
+    // hodnotu nemá. `style` = varianta štítku (design-system §5).
+
+    "redirected": {
+        "name": "Redirected",
+        "name:cs": "Přesměrováno",
+        "name:en": "Redirected",
+        "style": "warning"
+    },
+    "dropped": {
+        "name": "Held — not sent",
+        "name:cs": "Zachyceno — neodesláno",
+        "name:en": "Held — not sent",
+        "style": "warning"
+    }
+}
