@@ -109,6 +109,14 @@ class PrintTextsForm extends TableForm
                             ? 'Prostý text bez formátování. Údaj z tisku vložíš proměnnou, například {{ data.document.number }}.'
                             : 'Formátuje se Markdownem (**tučně**, *kurzíva*, seznamy). Údaj z tisku vložíš proměnnou, například {{ data.document.number }}.',
                     )
+                    // Nabídka proměnných zvoleného umístění a tisků (#90 D51) —
+                    // komponenta si je načte z GET /_prints/text-variables
+                    // a klikem vkládá do pole `text`.
+                    ->component('printTextVariables', params: [
+                        'column' => 'text',
+                        'slot'   => $slotId,
+                        'prints' => $printIds,
+                    ])
                     ->input('note')
             ->build();
 

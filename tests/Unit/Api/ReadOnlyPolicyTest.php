@@ -52,6 +52,7 @@ class ReadOnlyPolicyTest extends TestCase
 			// reports (D7) / alerts / setup / contentTags
 			['reports', 'catalog', $allow], ['reports', 'run', $allow],
 			['prints', 'run', $allow], ['prints', 'sendDraft', $allow], ['prints', 'send', $d403],
+			['prints', 'textVariables', $allow],
 			['alerts', 'registry', $allow], ['alerts', 'runDue', $d403], ['alerts', 'runCheck', $d403],
 			['setup', 'checklist', $allow], ['setup', 'parameters', $d403],
 			['setup', 'generateAccountingItems', $d403], ['setup', 'bridgeBankAccounts', $d403],

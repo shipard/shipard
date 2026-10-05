@@ -17,7 +17,10 @@ use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderer;
 use Shipard\Core\Prints\PrintTemplatePaths;
+use Shipard\Core\Prints\PrintTranslator;
+use Shipard\Core\Prints\Texts\PrintTextCompiler;
 use Shipard\Core\Prints\Texts\PrintTextSlot;
+use Shipard\Core\Prints\Texts\PrintTextVariables;
 use Shipard\Core\Utils\JsoncParser;
 
 /**
@@ -141,6 +144,86 @@ class PrintDeclarationsTest extends TestCase
             // Bez šablon předmětu a těla by odeslání spadlo až u uživatele.
             $this->assertTrue($emails->hasTemplates($definition), "{$definition->id}: e-mail templates");
         }
+    }
+
+    // ── proměnné pro texty na tiscích (#90 D51) ─────────────────────────────
+
+    public function testDocumentPrintsOfferSharedTextVariablesAndJournalNone(): void
+    {
+        $variables = new PrintTextVariables(new PrintTemplatePaths(self::modules()));
+
+        $offered = [];
+        foreach (self::definitions() as $definition) {
+            $offered[$definition->id] = array_column($variables->forPrint($definition), 'path');
+        }
+
+        $shared = $offered['docs.invoicesOut.invoice'];
+        $this->assertContains('data.document.number', $shared);
+        $this->assertContains('data.dates.due', $shared);
+        $this->assertContains('data.payment.amountToPay', $shared);
+        $this->assertContains('data.payment.reference', $shared);
+        $this->assertContains('data.document.title', $shared);
+        $this->assertContains('data.customer.name', $shared);
+        $this->assertContains('meta.title', $shared);
+
+        // Jedna sada pro všechny tisky dokladů — žádné kopie po deklaracích.
+        foreach (['docs.proformasOut.proforma', 'docs.cashDocs.cash', 'docs.cashRegister.receipt'] as $printId) {
+            $this->assertSame($shared, $offered[$printId], $printId);
+        }
+        $this->assertSame([], $offered['economy.accounting.docJournal']);
+    }
+
+    public function testEveryTextVariableHasLabelInPrintCatalogs(): void
+    {
+        $paths     = new PrintTemplatePaths(self::modules());
+        $variables = new PrintTextVariables($paths);
+        $loader    = new PrintCatalogLoader($paths);
+
+        foreach (self::definitions() as $definition) {
+            $messages = $loader->messages($definition);
+            foreach ($variables->forPrint($definition) as $variable) {
+                // Jazyky klíče hlídá testCatalogsAreCompleteInEveryPrintLanguage.
+                $this->assertArrayHasKey(
+                    PrintTextVariables::LABEL_PREFIX . $variable['path'],
+                    $messages,
+                    "{$definition->id}: proměnná '{$variable['path']}' nemá popisek v katalogu",
+                );
+            }
+        }
+    }
+
+    public function testEveryTextVariableExampleRendersOverEveryFixtureOfItsPrint(): void
+    {
+        $variables   = new PrintTextVariables(new PrintTemplatePaths(self::modules()));
+        $definitions = [];
+        foreach (self::definitions() as $definition) {
+            $definitions[$definition->id] = $definition;
+        }
+
+        $checked = 0;
+        foreach (glob(dirname(__DIR__, 3) . '/Fixtures/Prints/*.json') ?: [] as $file) {
+            $envelope   = json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+            $definition = $definitions[$envelope['printId']] ?? null;
+            $this->assertNotNull($definition, basename($file) . ': neznámý tisk');
+
+            $context  = ['data' => $envelope['data'], 'meta' => $envelope['meta'], 'language' => $envelope['language']];
+            $compiler = new PrintTextCompiler(new PrintTranslator([], $envelope['language']));
+            foreach ($variables->forPrint($definition) as $variable) {
+                $example = PrintTextVariables::example($variable['path'], $variable['filter']);
+                // Ukázka musí projít sandboxem a najít hodnotu v datech každého
+                // dokladu — i pokladního bez partnera (proto `default('')`).
+                foreach ([true, false] as $markdown) {
+                    try {
+                        $compiler->compile($example, $markdown)->render($context);
+                    } catch (\Throwable $e) {
+                        $this->fail(basename($file) . ": {$example} — " . $e->getMessage());
+                    }
+                }
+                $checked++;
+            }
+        }
+        // Osm fixture dokladů × sada dokladů; Kontace proměnné nemá.
+        $this->assertGreaterThan(50, $checked);
     }
 
     public function testCatalogsAreCompleteInEveryPrintLanguage(): void

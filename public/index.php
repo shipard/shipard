@@ -855,6 +855,14 @@ function dispatchPrints(
 		'run'       => $ctrl->run($route->table ?? '', (int) $route->id, $request->getQueryParams(), $auth, $tables),
 		'sendDraft' => $ctrl->sendDraft($route->table ?? '', (int) $route->id, $request->getQueryParams(), $auth, $tables),
 		'send'      => $ctrl->send($route->table ?? '', (int) $route->id, $request->getBody(), $auth, $tables),
+		'textVariables' => $ctrl->textVariables(
+			$request->getQueryParams(),
+			$auth,
+			$tables,
+			new \Shipard\Core\Prints\Texts\PrintTextVariables(new \Shipard\Core\Prints\PrintTemplatePaths($modulePathResolver)),
+			new \Shipard\Core\Prints\PrintCatalogLoader(new \Shipard\Core\Prints\PrintTemplatePaths($modulePathResolver)),
+			$language,
+		),
 		default     => Response::error('INTERNAL_ERROR', "Unknown prints action: {$route->action}", 500),
 	};
 }

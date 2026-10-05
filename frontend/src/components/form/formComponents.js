@@ -3,8 +3,10 @@
 // Neznámé jméno → FormElement vykreslí placeholder `[name]`.
 import FormAttachmentsView from './FormAttachmentsView.svelte';
 import SentMessageTransport from './SentMessageTransport.svelte';
+import PrintTextVariables from './PrintTextVariables.svelte';
 
 export const formComponents = {
   attachmentsView: FormAttachmentsView,
   sentMessageTransport: SentMessageTransport,
+  printTextVariables: PrintTextVariables,
 };

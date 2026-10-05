@@ -167,6 +167,69 @@ class PrintDefinitionTest extends TestCase
         PrintDefinition::fromArray(self::declaration($overrides), 'docs.invoicesOut');
     }
 
+    // ── proměnné pro texty (#90 D51) ────────────────────────────────────────
+
+    public function testTextVariablesSplitIntoSharedSetsAndOwnVariables(): void
+    {
+        $def = PrintDefinition::fromArray(self::declaration([
+            'textSlots'     => ['footer'],
+            'textVariables' => [
+                '@docs.core/_layout',
+                'meta.title',
+                ['path' => 'data.cashDesk.name'],
+                ['path' => 'data.dates.due', 'filter' => 'date'],
+            ],
+        ]), 'docs.invoicesOut');
+
+        $this->assertSame(['@docs.core/_layout'], $def->textVariableSets);
+        $this->assertSame([
+            ['path' => 'meta.title', 'filter' => null],
+            ['path' => 'data.cashDesk.name', 'filter' => null],
+            ['path' => 'data.dates.due', 'filter' => 'date'],
+        ], $def->textVariables);
+
+        $plain = PrintDefinition::fromArray(self::declaration(), 'docs.invoicesOut');
+        $this->assertSame([], $plain->textVariableSets);
+        $this->assertSame([], $plain->textVariables);
+    }
+
+    /** @return array<string, array{array<string, mixed>, string}> */
+    public static function invalidTextVariables(): array
+    {
+        return [
+            'not an array' => [
+                ['textSlots' => ['footer'], 'textVariables' => '@docs.core/_layout'],
+                "/'textVariables' must be an array/",
+            ],
+            'set is not a print directory' => [
+                ['textSlots' => ['footer'], 'textVariables' => ['@docs.core']],
+                "/text variable set must be a path like '@<module>\\/<dir>'/",
+            ],
+            'variable is not a path' => [
+                ['textSlots' => ['footer'], 'textVariables' => ['document.number']],
+                "/text variable must be a path like/",
+            ],
+            'filter outside user text policy' => [
+                ['textSlots' => ['footer'], 'textVariables' => [['path' => 'data.x', 'filter' => 'raw']]],
+                "/'filter' must be one of money\\|qty\\|pct\\|date\\|default\\|upper\\|lower/",
+            ],
+            // Tisk bez slotů žádné texty nenese — proměnné by nikdo nenabídl.
+            'variables without text slots' => [
+                ['textVariables' => ['meta.title']],
+                "/'textVariables' make sense only for prints with 'textSlots'/",
+            ],
+        ];
+    }
+
+    #[DataProvider('invalidTextVariables')]
+    public function testInvalidTextVariablesAreRejected(array $overrides, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches($message);
+
+        PrintDefinition::fromArray(self::declaration($overrides), 'docs.invoicesOut');
+    }
+
     public function testFromArrayDefaults(): void
     {
         $raw = self::declaration();

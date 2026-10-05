@@ -89,9 +89,13 @@ final class PrintTextCompiler
             ]);
             $twig->addExtension(new SandboxExtension(PrintSecurityPolicy::userTexts(), true));
             $twig->addExtension(new PrintTwigExtension($this->translator));
+            // Twig předává escaperu hodnotu tak, jak je v datech — i null
+            // (nevyplněný údaj) nebo číslo. Pole a objekt text nejsou.
             $twig->getRuntime(EscaperRuntime::class)->setEscaper(
                 MarkdownEscaper::STRATEGY,
-                static fn (string $value): string => MarkdownEscaper::escape($value),
+                static fn (mixed $value): string => $value === null || is_scalar($value) || $value instanceof \Stringable
+                    ? MarkdownEscaper::escape((string) $value)
+                    : throw new \InvalidArgumentException('Value of type ' . get_debug_type($value) . ' cannot be printed as text'),
             );
             $this->environments[(int) $markdown] = $twig;
         }

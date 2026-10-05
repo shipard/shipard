@@ -86,6 +86,22 @@ class PrintTextCompilerTest extends TestCase
         );
     }
 
+    public function testMarkdownModePrintsEmptyAndNumericValues(): void
+    {
+        $compiler = new PrintTextCompiler(new PrintTranslator([], 'cs'));
+        $context  = ['data' => ['reference' => null, 'count' => 3, 'rate' => 24.5, 'paid' => true, 'rows' => [1]]] + self::CONTEXT;
+
+        // Nevyplněný údaj (variabilní symbol pokladního dokladu) je prázdné místo, ne chyba.
+        $this->assertSame('VS:  / 3 / 24\\.5 / 1', $compiler->compile(
+            'VS: {{ data.reference }} / {{ data.count }} / {{ data.rate }} / {{ data.paid }}',
+            markdown: true,
+        )->render($context));
+
+        // Pole text není — text s ním skončí chybou a tisk ho vynechá.
+        $this->expectException(RuntimeError::class);
+        $compiler->compile('{{ data.rows }}', markdown: true)->render($context);
+    }
+
     public function testMarkdownModeKeepsTheSamePolicy(): void
     {
         $compiler = new PrintTextCompiler(new PrintTranslator([], 'cs'));

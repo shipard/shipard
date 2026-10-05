@@ -845,6 +845,9 @@ export default {
   'settingsPage.image.removeFailed': 'Odebrání obrázku selhalo.',
   'settingsPage.color.pick': 'Vybrat barvu',
   'settingsPage.color.reset': 'Výchozí',
+  'printTexts.variables.title': 'Proměnné',
+  'printTexts.variables.hint': 'Klikem vložíš údaj z tisku do textu na místo kurzoru.',
+  'printTexts.variables.loadFailed': 'Nabídku proměnných se nepodařilo načíst.',
 
   // Nastavení účtu — widget vzhledu
   'account.theme.editColor': 'Upravit barvu',

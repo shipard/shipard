@@ -60,6 +60,28 @@ class PrintTextsFormTest extends TestCase
         return $elements;
     }
 
+    /**
+     * @param array<string, mixed> $definition
+     * @return array<string, mixed>
+     */
+    private static function component(array $definition, string $name): array
+    {
+        $found = null;
+        $walk = static function (array $node) use (&$walk, &$found, $name): void {
+            if (($node['type'] ?? null) === 'component' && ($node['component_name'] ?? null) === $name) {
+                $found = $node;
+            }
+            foreach ($node as $child) {
+                if (is_array($child)) {
+                    $walk($child);
+                }
+            }
+        };
+        $walk($definition);
+        self::assertNotNull($found, "komponenta {$name} ve formuláři chybí");
+        return $found;
+    }
+
     /** @return list<int|string> */
     private static function values(array $element): array
     {
@@ -136,6 +158,32 @@ class PrintTextsFormTest extends TestCase
         $this->assertTrue($elements['doc_types']['hidden']);
         $this->assertTrue($elements['number_series']['hidden']);
         $this->assertSame([], self::values($elements['doc_types']));
+    }
+
+    public function testVariablesPanelFollowsSlotAndSelectedPrints(): void
+    {
+        $definition = $this->form()->buildFormDefinition(
+            ['slot' => 'footer', 'prints' => ['docs.invoicesOut.invoice']],
+            false,
+        )->toArray();
+
+        $components = [];
+        array_walk_recursive($definition, static function (mixed $value, string|int $key) use (&$components): void {
+            if ($key === 'component_name') {
+                $components[] = $value;
+            }
+        });
+        $this->assertSame(['printTextVariables'], $components);
+
+        $panel = self::component($definition, 'printTextVariables');
+        $this->assertSame(
+            ['column' => 'text', 'slot' => 'footer', 'prints' => ['docs.invoicesOut.invoice']],
+            $panel['params'],
+        );
+
+        // Nový text bez umístění: panel nabídne proměnné všech tisků se slotem.
+        $empty = self::component($this->form()->buildFormDefinition([], true)->toArray(), 'printTextVariables');
+        $this->assertSame(['column' => 'text', 'slot' => null, 'prints' => []], $empty['params']);
     }
 
     public function testChangingSlotDropsPrintsThatDoNotSupportIt(): void

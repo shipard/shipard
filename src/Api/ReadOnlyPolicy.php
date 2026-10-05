@@ -84,8 +84,9 @@ final class ReadOnlyPolicy
 		'reports' => [self::ANY => ReadOnlyVerdict::Allow],
 		// Tisk = čtení záznamu (#90 D21); návrh odeslání nic nemění.
 		'prints' => [
-			'run'       => ReadOnlyVerdict::Allow,
-			'sendDraft' => ReadOnlyVerdict::Allow,
+			'run'           => ReadOnlyVerdict::Allow,
+			'sendDraft'     => ReadOnlyVerdict::Allow,
+			'textVariables' => ReadOnlyVerdict::Allow,
 			// send → 403: odeslání vytváří zprávu a řádek fronty (D38)
 		],
 		'alerts' => [

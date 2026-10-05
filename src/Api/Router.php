@@ -355,6 +355,14 @@ class Router
 		// (format a jazyk v query). Id tisku je tečkované a jede ve slotu
 		// `table`, stejně jako id reportu.
 		if (str_starts_with($subpath, '/_prints/')) {
+			// GET /_prints/text-variables — proměnné pro formulář textu na
+			// tiscích (#90 D51); není to tisk záznamu, jede před vzorem níže.
+			if ($subpath === '/_prints/text-variables') {
+				if ($method !== 'GET') {
+					return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+				}
+				return new Route('prints', 'textVariables');
+			}
 			if (!preg_match('#^/_prints/([a-z][a-zA-Z0-9.]*)/(\d+)(/send-draft|/send)?$#', $subpath, $m)) {
 				return Response::error('NOT_FOUND', 'Not found', 404);
 			}

@@ -20,6 +20,8 @@
         // Sloty textů na tiscích (#90 D48), které layout dokladu vykreslí;
         // e-mailové přepisují výchozí předmět a tělo.
         "textSlots": ["header", "beforeRows", "afterRows", "footer", "emailSubject", "emailBody"],
+        // Proměnné, které formulář textu nabídne (D51) — sdílená sada dokladů.
+        "textVariables": ["@docs.core/_layout"],
         "builder": "Shipard\\Module\\Docs\\Core\\Prints\\CashRegisterPrintBuilder",
         "template": "@docs.cashRegister/receipt",
         "catalogs": ["@docs.core/_layout"],

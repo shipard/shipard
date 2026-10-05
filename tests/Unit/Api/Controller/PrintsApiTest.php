@@ -395,6 +395,117 @@ class PrintsApiTest extends TestCase
         );
     }
 
+    // ── proměnné pro texty na tiscích (#90 D51) ─────────────────────────────
+
+    public function testRouterResolvesTextVariablesBeforePrintRun(): void
+    {
+        $route = (new Router())->resolve('/api/v1/_prints/text-variables', 'GET');
+
+        $this->assertInstanceOf(Route::class, $route);
+        $this->assertSame(['prints', 'textVariables'], [$route->controller, $route->action]);
+        $this->assertNull($route->table);
+
+        $response = (new Router())->resolve('/api/v1/_prints/text-variables', 'POST');
+        $this->assertInstanceOf(Response::class, $response);
+        $this->assertSame(405, self::statusOf($response));
+
+        // Nabídka proměnných nic nemění — v read-only zdroji dat funguje.
+        $this->assertSame(ReadOnlyVerdict::Allow, (new ReadOnlyPolicy())->verdict(new Route('prints', 'textVariables')));
+    }
+
+    /**
+     * Controller nad deklaracemi z repozitáře.
+     *
+     * @param array<string, mixed> $query
+     */
+    private function textVariables(array $query, ?AuthContext $auth = null, string $language = 'cs'): Response
+    {
+        $modules  = new ModulePathResolver([dirname(__DIR__, 4) . '/modules']);
+        $registry = \Shipard\Api\PrintDefinitionLoader::load(
+            $this->repoConfig(['install.base']),
+            $modules,
+            $language,
+        );
+        $paths = new PrintTemplatePaths($modules);
+
+        // Nabídka proměnných runner nepotřebuje — bez databáze stačí.
+        $runner = new PrintRunner($registry, null, static fn (string $language) => null, PrintRunnerTest::languages());
+
+        return (new PrintsController($registry, $runner))->textVariables(
+            $query,
+            $auth ?? self::user(),
+            [],
+            new \Shipard\Core\Prints\Texts\PrintTextVariables($paths),
+            new \Shipard\Core\Prints\PrintCatalogLoader($paths),
+            $language,
+        );
+    }
+
+    /** @param list<string> $moduleIds */
+    private function repoConfig(array $moduleIds): \Shipard\Core\Config\DataSourceConfig
+    {
+        if (!is_dir($this->root . '/ds/config')) {
+            mkdir($this->root . '/ds/config', 0755, true);
+        }
+        file_put_contents($this->root . '/ds/config/main.json', (string) json_encode([
+            'id' => 'test-test-test-test', 'name' => 'Test', 'database_name' => 'x', 'database_user' => 'x',
+            'database_password' => 'x', 'created' => '2026-01-01T00:00:00+00:00', 'modules' => $moduleIds,
+        ]));
+        return new \Shipard\Core\Config\DataSourceConfig($this->root . '/ds');
+    }
+
+    public function testTextVariablesOfSelectedPrintWithLabelsAndExamples(): void
+    {
+        $response = $this->textVariables(['prints' => 'docs.invoicesOut.invoice', 'slot' => 'footer']);
+
+        $this->assertSame(200, self::statusOf($response));
+        $byPath = array_column($response->getPayload()['data'], null, 'path');
+        $this->assertSame(
+            ['path' => 'data.document.number', 'label' => 'Číslo dokladu', 'example' => '{{ data.document.number }}'],
+            $byPath['data.document.number'],
+        );
+        $this->assertSame('{{ data.dates.due|date }}', $byPath['data.dates.due']['example']);
+        $this->assertSame(
+            '{{ data.payment.amountToPay|money(data.payment.currency) }}',
+            $byPath['data.payment.amountToPay']['example'],
+        );
+    }
+
+    public function testTextVariablesLabelsFollowRequestLanguage(): void
+    {
+        $byPath = array_column(
+            $this->textVariables(['prints' => 'docs.invoicesOut.invoice'], language: 'en')->getPayload()['data'],
+            'label',
+            'path',
+        );
+
+        $this->assertSame('Document number', $byPath['data.document.number']);
+        $this->assertSame('Due date', $byPath['data.dates.due']);
+    }
+
+    public function testTextVariablesWithoutPrintsCoverEveryPrintOfTheSlot(): void
+    {
+        $all    = $this->textVariables(['slot' => 'emailBody'])->getPayload()['data'];
+        $single = $this->textVariables(['prints' => 'docs.invoicesOut.invoice,docs.cashDocs.cash'])->getPayload()['data'];
+
+        // Tisky dokladů sdílejí jednu sadu — průnik je celá sada.
+        $this->assertNotSame([], $all);
+        $this->assertSame($all, $single);
+        $this->assertSame($all, $this->textVariables([])->getPayload()['data']);
+    }
+
+    public function testTextVariablesOfPrintWithoutSlotsOrUnknownPrintAreEmpty(): void
+    {
+        $this->assertSame([], $this->textVariables(['prints' => 'economy.accounting.docJournal'])->getPayload()['data']);
+        $this->assertSame([], $this->textVariables(['prints' => 'docs.none.print'])->getPayload()['data']);
+    }
+
+    public function testTextVariablesRejectBadParameters(): void
+    {
+        self::assertError($this->textVariables(['slot' => 'sidebar']), 400, 'BAD_REQUEST');
+        self::assertError($this->textVariables(['prints' => ['docs.invoicesOut.invoice']]), 400, 'BAD_REQUEST');
+    }
+
     // ── akce Tisk v detailu vieweru ─────────────────────────────────────────
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Prints;
 
 use Shipard\Core\Prints\Texts\PrintTextSlot;
+use Shipard\Core\Prints\Texts\PrintTextVariables;
 use Shipard\Core\Render\PdfOptions;
 
 /**
@@ -15,7 +16,8 @@ use Shipard\Core\Render\PdfOptions;
  * podle stavu záznamu (D23) — stornovaný doklad jde vytisknout se „STORNO“.
  * Volitelné `sendPurpose` + `recipientPerson` dělají tisk odesílatelným
  * e-mailem (D34). Volitelné `textSlots` vyjmenují sloty textů na tiscích,
- * které šablona tisku vykreslí (D48).
+ * které šablona tisku vykreslí (D48), a `textVariables` proměnné, které
+ * formulář textu nabídne (D51).
  *
  * Vstupní pole je už lokalizované (`ConfigLocalizer` vyřešil `name:cs`
  * varianty před voláním `fromArray()` — vzor `ReportDefinition`).
@@ -50,6 +52,11 @@ final class PrintDefinition
      * @param list<string> $textSlots Podporované sloty textů na tiscích
      *        (hodnoty `PrintTextSlot`); prázdné = tisk uživatelské texty
      *        nenese. E-mailové sloty jen u tisku se `sendPurpose`.
+     * @param list<string> $textVariableSets Sdílené sady proměnných pro
+     *        texty (`@<modul>/<adresář>` se souborem `text-variables.jsonc`).
+     * @param list<array{path: string, filter: ?string}> $textVariables
+     *        Vlastní proměnné tisku nad rámec sad. Obojí čte
+     *        `PrintTextVariables::forPrint()`.
      */
     public function __construct(
         public readonly string $id,
@@ -70,6 +77,8 @@ final class PrintDefinition
         public readonly ?string $sendPurpose = null,
         public readonly ?string $recipientPerson = null,
         public readonly array $textSlots = [],
+        public readonly array $textVariableSets = [],
+        public readonly array $textVariables = [],
     ) {}
 
     /** Jde tisk odeslat e-mailem? Jen tisk ven s deklarovaným účelem (#90 D34). */
@@ -275,6 +284,36 @@ final class PrintDefinition
             }
         }
 
+        // Proměnné pro texty: položka začínající `@` je sdílená sada, jinak
+        // proměnná (cesta, nebo `{path, filter?}`).
+        $textVariableSets = [];
+        $textVariables    = [];
+        $rawTextVariables = $data['textVariables'] ?? [];
+        if (!is_array($rawTextVariables)) {
+            throw new \InvalidArgumentException("Print '{$id}': 'textVariables' must be an array");
+        }
+        foreach ($rawTextVariables as $entry) {
+            if (is_string($entry) && str_starts_with($entry, '@')) {
+                if (!preg_match(self::TEMPLATE_PATH, $entry)) {
+                    throw new \InvalidArgumentException(
+                        "Print '{$id}': text variable set must be a path like '@<module>/<dir>'",
+                    );
+                }
+                $textVariableSets[] = $entry;
+                continue;
+            }
+            try {
+                $textVariables[] = PrintTextVariables::parse($entry);
+            } catch (\InvalidArgumentException $e) {
+                throw new \InvalidArgumentException("Print '{$id}': " . $e->getMessage(), 0, $e);
+            }
+        }
+        if (($textVariableSets !== [] || $textVariables !== []) && $textSlots === []) {
+            throw new \InvalidArgumentException(
+                "Print '{$id}': 'textVariables' make sense only for prints with 'textSlots'",
+            );
+        }
+
         return new self(
             id: $id,
             name: $name,
@@ -294,6 +333,8 @@ final class PrintDefinition
             sendPurpose: $sendPurpose,
             recipientPerson: $recipientPerson,
             textSlots: $textSlots,
+            textVariableSets: $textVariableSets,
+            textVariables: $textVariables,
         );
     }
 

@@ -832,6 +832,9 @@ export default {
   'settingsPage.image.removeFailed': 'Failed to remove the image.',
   'settingsPage.color.pick': 'Pick a colour',
   'settingsPage.color.reset': 'Default',
+  'printTexts.variables.title': 'Variables',
+  'printTexts.variables.hint': 'Click to insert a value from the print into the text at the cursor.',
+  'printTexts.variables.loadFailed': 'Failed to load the variables.',
 
   // Account settings — appearance widget
   'account.theme.editColor': 'Edit color',

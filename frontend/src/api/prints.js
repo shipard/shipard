@@ -3,6 +3,7 @@
  *   GET  /_prints/{printId}/{recordId}[?language=cs]            — PDF of one record (inline)
  *   GET  /_prints/{printId}/{recordId}/send-draft[?language=cs] — proposal for sending by e-mail
  *   POST /_prints/{printId}/{recordId}/send                     — send the record by e-mail
+ *   GET  /_prints/text-variables[?prints=a,b&slot=footer]       — variables offered for texts on prints
  *
  * Auth goes through the Bearer header, so the PDF is fetched as a Blob and
  * shown / saved from an object URL — a plain <iframe src> would not carry it.
@@ -63,4 +64,21 @@ export async function fetchSendDraft(printId, recordId, language = null) {
  */
 export async function sendPrint(printId, recordId, payload) {
   return await post(`/_prints/${encodeURIComponent(printId)}/${encodeURIComponent(recordId)}/send`, payload);
+}
+
+/**
+ * Variables offered in the form of a text on prints (#90 D51).
+ *
+ * @param {string[]} prints Print ids the text targets; empty = every print
+ *   that supports the slot.
+ * @param {?string} slot Text slot id.
+ * @returns {Promise<{success: true, data: Array<{path: string, label: string, example: string}>}
+ *   |{success: false, error: {code: string, message: string}}|null>} null = 401
+ */
+export function fetchPrintTextVariables(prints = [], slot = null) {
+  const query = new URLSearchParams();
+  if (prints.length > 0) query.set('prints', prints.join(','));
+  if (slot) query.set('slot', slot);
+  const qs = query.toString();
+  return get(`/_prints/text-variables${qs ? `?${qs}` : ''}`);
 }

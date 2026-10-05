@@ -1,6 +1,6 @@
 # Tisky — Fáze 3: vzhled a texty na tiscích
 
-**Stav:** částečně — commity 1–3 hotové 2026-10-05 (modul `core.prints`, typ pole `color`, vzhled v záhlaví; tabulka a agenda Texty na tiscích; výběr textů, Twig → Markdown → HTML do slotů, přepis předmětu a těla e-mailu; `ds-upgrade` jen na ukázkovém zdroji); zbývají proměnné ve formuláři a dokumentace s nápovědou (commity 4–5)
+**Stav:** částečně — commity 1–4 hotové 2026-10-05 (modul `core.prints`, typ pole `color`, vzhled v záhlaví; tabulka a agenda Texty na tiscích; výběr textů, Twig → Markdown → HTML do slotů, přepis předmětu a těla e-mailu; proměnné — `textVariables`, `GET /_prints/text-variables`, panel ve formuláři; `ds-upgrade` jen na ukázkovém zdroji); zbývá dokumentace a nápověda (commit 5)
 
 > PRD pro Claude Code (5 commitů). Design: issue #90, komentář
 > „Rozhodnutí: fáze 3 — vzhled a texty na tiscích (D46–D52)“; základ D9
@@ -352,6 +352,13 @@ Upřesnění z plánování implementace (2026-10-05):
 - **Testy v politice:** `userTexts()` vyjmenovává `defined`, `empty`,
   `null`, `none`; Twig je v sandboxu propouští i sám (zjištěno pokusem při
   implementaci, test na to není).
-- **`textVariables`** = seznam `{path, filter?}`, nebo odkaz na sdílenou
-  sadu `@docs.core/_layout` (`text-variables.jsonc`). Endpoint bez `prints`
-  vrací průnik přes všechny tisky se slotem.
+- **`textVariables`** = pole: položka začínající `@` je sdílená sada
+  (`@docs.core/_layout` → `text-variables.jsonc`), jinak proměnná (cesta,
+  nebo `{path, filter?}`). Endpoint bez `prints` vrací průnik přes všechny
+  tisky se slotem.
+- **Ukázka zápisu u údajů stran** nese `default('')`: pokladní doklad
+  partnera mít nemusí a text s `data.customer.name` by na něm skončil
+  chybou. Že každá ukázka projde nad daty každého tisku, hlídá test nad
+  fixture doklady.
+- **Panel proměnných** zapisuje do pole textu přes DOM (`setRangeText`
+  + událost `input`) — komponenta formuláře data formuláře nedostává.

@@ -58,6 +58,22 @@
     // Zápatí
     "footer.page": { "cs": "Strana", "en": "Page", "sk": "Strana", "de": "Seite" },
 
+    // Proměnné pro texty na tiscích (text-variables.jsonc) — popisky
+    // v nabídce formuláře textu; klíč = `var.` + cesta proměnné.
+    "var.meta.title":                { "cs": "Titulek s číslem dokladu", "en": "Title with document number", "sk": "Titulok s číslom dokladu", "de": "Titel mit Belegnummer" },
+    "var.data.document.title":       { "cs": "Titulek dokladu", "en": "Document title", "sk": "Titulok dokladu", "de": "Belegtitel" },
+    "var.data.document.number":      { "cs": "Číslo dokladu", "en": "Document number", "sk": "Číslo dokladu", "de": "Belegnummer" },
+    "var.data.document.text":        { "cs": "Text dokladu", "en": "Document text", "sk": "Text dokladu", "de": "Belegtext" },
+    "var.data.dates.issue":          { "cs": "Datum vystavení", "en": "Issue date", "sk": "Dátum vyhotovenia", "de": "Ausstellungsdatum" },
+    "var.data.dates.due":            { "cs": "Datum splatnosti", "en": "Due date", "sk": "Dátum splatnosti", "de": "Fälligkeitsdatum" },
+    "var.data.dates.duzp":           { "cs": "Datum zdanitelného plnění", "en": "Tax point date", "sk": "Dátum dodania", "de": "Leistungsdatum" },
+    "var.data.payment.amountToPay":  { "cs": "Částka k úhradě", "en": "Amount due", "sk": "Suma na úhradu", "de": "Zahlbetrag" },
+    "var.data.payment.method.label": { "cs": "Způsob úhrady", "en": "Payment method", "sk": "Spôsob úhrady", "de": "Zahlungsart" },
+    "var.data.payment.reference":    { "cs": "Variabilní symbol", "en": "Variable symbol", "sk": "Variabilný symbol", "de": "Variables Symbol" },
+    "var.data.totals.total":         { "cs": "Celková částka dokladu", "en": "Document total", "sk": "Celková suma dokladu", "de": "Gesamtbetrag des Belegs" },
+    "var.data.supplier.name":        { "cs": "Název dodavatele", "en": "Supplier name", "sk": "Názov dodávateľa", "de": "Name des Lieferanten" },
+    "var.data.customer.name":        { "cs": "Název odběratele", "en": "Customer name", "sk": "Názov odberateľa", "de": "Name des Kunden" },
+
     // Vodoznak (deklarace tisku `watermarks`)
     "watermark.cancelled": { "cs": "STORNO", "en": "CANCELLED", "sk": "STORNO", "de": "STORNIERT" },
 

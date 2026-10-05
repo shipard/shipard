@@ -7,7 +7,9 @@ namespace Shipard\Api\Controller;
 use Shipard\Api\AuthContext;
 use Shipard\Api\Response;
 use Shipard\Api\TableAccessGuard;
+use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Prints\PrintBuildException;
+use Shipard\Core\Prints\PrintCatalogLoader;
 use Shipard\Core\Prints\PrintFormat;
 use Shipard\Core\Prints\PrintLanguageNotCompiledException;
 use Shipard\Core\Prints\PrintNotAvailableException;
@@ -16,6 +18,8 @@ use Shipard\Core\Prints\PrintRecordNotFoundException;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderException;
 use Shipard\Core\Prints\PrintRunner;
+use Shipard\Core\Prints\Texts\PrintTextSlot;
+use Shipard\Core\Prints\Texts\PrintTextVariables;
 use Shipard\Module\Core\Mail\Sent\RecordSendException;
 use Shipard\Module\Core\Mail\Sent\RecordSendService;
 use Shipard\Module\Core\Mail\Sent\SendRequest;
@@ -44,6 +48,9 @@ class PrintsController
 {
     /** Hlavička PDF odpovědi s `PrintData.messages` (viz `run()`). */
     public const MESSAGES_HEADER = 'X-Print-Messages';
+
+    /** Agenda textů na tiscích — podle ní se řídí právo na nabídku proměnných. */
+    private const TEXTS_TABLE = 'core_prints_texts';
 
     /** @var ?\Closure(): RecordSendService */
     private readonly ?\Closure $sendService;
@@ -136,6 +143,72 @@ class PrintsController
         }
 
         return $response;
+    }
+
+    /**
+     * GET /_prints/text-variables?prints=<id,…>&slot=<slot> — proměnné pro
+     * formulář textu na tiscích (#90 D51): `[{path, label, example}]`.
+     *
+     * S `prints` průnik proměnných těchto tisků, bez nich průnik přes
+     * všechny tisky, které slot podporují (bez `slot` aspoň jeden slot).
+     * Neznámý tisk se přeskočí — formulář ho mezitím mohl z výběru vyřadit.
+     * Popisky jsou v jazyce requestu.
+     *
+     * Práva: kdo smí agendu textů, smí i nabídku proměnných — nenese žádná
+     * data záznamů.
+     *
+     * @param array<string, mixed> $rawParams
+     * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
+     */
+    public function textVariables(
+        array $rawParams,
+        AuthContext $auth,
+        array $tables,
+        PrintTextVariables $variables,
+        PrintCatalogLoader $catalogs,
+        string $language,
+    ): Response {
+        $guardErr = TableAccessGuard::guardTable(self::TEXTS_TABLE, $auth, $tables[self::TEXTS_TABLE] ?? null);
+        if ($guardErr !== null) {
+            return $guardErr;
+        }
+
+        $slotRaw = $rawParams['slot'] ?? null;
+        $slot    = null;
+        if ($slotRaw !== null && $slotRaw !== '') {
+            $slot = is_string($slotRaw) ? PrintTextSlot::tryFrom($slotRaw) : null;
+            if ($slot === null) {
+                return Response::error(
+                    'BAD_REQUEST',
+                    "Parameter 'slot' must be one of " . implode('|', PrintTextSlot::ids()),
+                    400,
+                );
+            }
+        }
+
+        $printsRaw = $rawParams['prints'] ?? '';
+        if (!is_string($printsRaw)) {
+            return Response::error('BAD_REQUEST', "Parameter 'prints' must be a comma-separated list of print ids", 400);
+        }
+        $printIds = array_values(array_filter(array_map('trim', explode(',', $printsRaw)), 'strlen'));
+
+        $definitions = [];
+        foreach ($this->registry->getAll() as $definition) {
+            if ($printIds !== [] ? !in_array($definition->id, $printIds, true) : $definition->textSlots === []) {
+                continue;
+            }
+            if ($slot !== null && !$definition->supportsTextSlot($slot)) {
+                continue;
+            }
+            $definitions[] = $definition;
+        }
+
+        try {
+            return Response::success($variables->describe($definitions, $catalogs, $language));
+        } catch (\RuntimeException $e) {
+            ErrorLogger::error('prints: text variables failed', [], $e);
+            return Response::error('INTERNAL_ERROR', 'Text variables are not available', 500);
+        }
     }
 
     /**

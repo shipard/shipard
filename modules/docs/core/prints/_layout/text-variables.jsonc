@@ -1,0 +1,26 @@
+// Proměnné, které formulář textu na tiscích nabídne u tisků dokladů
+// (#90 D51) — kurátorský výběr z kontraktu `data` (docs/prints.md §4.1).
+// Tisk se na sadu odkazuje v deklaraci: "textVariables": ["@docs.core/_layout"].
+//
+// `filter` = doporučený zápis: formát podle jazyka tisku (`date`, `money`),
+// nebo `default('')` u údaje strany, která na dokladu být nemusí (pokladní
+// doklad bez partnera) — bez něj by text na takovém dokladu skončil chybou.
+//
+// Každá cesta musí existovat v datech všech tisků dokladů a mít popisek
+// `var.<cesta>` v messages.jsonc ve všech jazycích tisku; hlídá
+// PrintDeclarationsTest.
+[
+    { "path": "meta.title" },
+    { "path": "data.document.title" },
+    { "path": "data.document.number" },
+    { "path": "data.document.text" },
+    { "path": "data.dates.issue", "filter": "date" },
+    { "path": "data.dates.due", "filter": "date" },
+    { "path": "data.dates.duzp", "filter": "date" },
+    { "path": "data.payment.amountToPay", "filter": "money(data.payment.currency)" },
+    { "path": "data.payment.method.label" },
+    { "path": "data.payment.reference" },
+    { "path": "data.totals.total", "filter": "money(data.document.currency)" },
+    { "path": "data.supplier.name", "filter": "default('')" },
+    { "path": "data.customer.name", "filter": "default('')" }
+]
