@@ -7,7 +7,7 @@ namespace Shipard\Module\Docs\Core\Prints\Blocks;
 use Shipard\Module\Docs\Core\Prints\DocPrintContext;
 use Shipard\Module\Docs\Core\Prints\TitleVariantResolver;
 
-/** Blok `document` — typ, směr, titulek, číslo, režim DPH a měna dokladu. */
+/** Blok `document` — typ, směr, titulek, číslo, režim DPH, měna a autor dokladu. */
 final class DocDocumentBlock implements DocPrintBlock
 {
     public function build(DocPrintContext $context): array
@@ -47,6 +47,8 @@ final class DocDocumentBlock implements DocPrintBlock
             'homeCurrency'    => $context->homeCurrency(),
             'exchangeRate'    => $foreign ? DocPrintContext::number($head['exchange_rate'] ?? null) : null,
             'foreignCurrency' => $foreign,
+            // „Vystavil“ v zápatí (#93 D4): `{name}` nebo null.
+            'author'          => $context->author,
         ];
     }
 }

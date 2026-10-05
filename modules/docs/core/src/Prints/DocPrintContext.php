@@ -35,6 +35,9 @@ final class DocPrintContext
      * @param array<string, mixed>|null $cashDesk Pokladna dokladu (`id`,
      *        `code`, `name`) — aktuální data číselníku (#90 D14); null
      *        u dokladu bez pokladny.
+     * @param array{name: string}|null $author Autor dokladu — „Vystavil“
+     *        v zápatí (#93 D4); null bez autora i u autora, který už
+     *        mezi uživateli není.
      */
     public function __construct(
         public readonly array $head,
@@ -47,6 +50,7 @@ final class DocPrintContext
         public readonly PrintTranslator $translator,
         public readonly ?ConfigRuntime $config,
         public readonly ?array $cashDesk = null,
+        public readonly ?array $author = null,
     ) {}
 
     /**
@@ -131,6 +135,7 @@ final class DocPrintContext
             translator: $request->translator,
             config: $request->config,
             cashDesk: $cashDesk,
+            author: self::loadAuthor($request),
         );
     }
 
@@ -153,7 +158,27 @@ final class DocPrintContext
             vatCodes: DocVatCodes::fromConfig($request->config, null),
             translator: $request->translator,
             config: $request->config,
+            author: self::loadAuthor($request),
         );
+    }
+
+    /**
+     * Jméno autora dokladu (`docs_core_heads.author` → uživatel). Čte se
+     * živě — uživatel není strana dokladu a snapshot nemá.
+     *
+     * @return array{name: string}|null
+     */
+    private static function loadAuthor(PrintRequest $request): ?array
+    {
+        $authorId = (int) ($request->record['author'] ?? 0);
+        if ($authorId <= 0) {
+            return null;
+        }
+        $name = self::text($request->db->fetchSingle(
+            'SELECT [full_name] FROM [core_system_users] WHERE [id] = %i',
+            $authorId,
+        ));
+        return $name !== null ? ['name' => $name] : null;
     }
 
     public function docType(): string

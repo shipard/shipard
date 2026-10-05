@@ -191,6 +191,76 @@ class DocPrintTemplatesTest extends TestCase
         $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', $document->footer);
     }
 
+    // ── zápatí: Vystavil (#93 D4) ───────────────────────────────────────────
+
+    /** @return callable(array<string, mixed>): array<string, mixed> */
+    private static function withAuthor(?array $author): callable
+    {
+        return static function (array $data) use ($author): array {
+            $data['document']['author'] = $author;
+            return $data;
+        };
+    }
+
+    public function testFooterShowsIssuedByAbovePageNumber(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = (string) $this->render($definition, self::printData(
+            'invoice', $definition->id, modify: self::withAuthor(['name' => 'Jana Příkladová']),
+        ))->footer;
+
+        $this->assertStringContainsString('Vystavil: Jana Příkladová', $footer);
+        $this->assertLessThan(
+            strpos($footer, 'class="pageNumber"'),
+            strpos($footer, 'Vystavil: Jana Příkladová'),
+            '„Vystavil“ patří nad číslo strany',
+        );
+        // Vlastní firma vlevo zůstává.
+        $this->assertStringContainsString('Tiskárna Vzorová s.r.o.', $footer);
+    }
+
+    public function testFooterWithoutAuthorHasNoIssuedByLine(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+
+        // Doklad bez autora i starší data, která klíč `author` vůbec nemají.
+        $withNull = (string) $this->render($definition, self::printData('invoice', $definition->id, modify: self::withAuthor(null)))->footer;
+        $withoutKey = (string) $this->render($definition, self::printData('invoice', $definition->id))->footer;
+
+        foreach ([$withNull, $withoutKey] as $footer) {
+            $this->assertStringNotContainsString('Vystavil', $footer);
+            $this->assertStringContainsString('Strana <span class="pageNumber"></span> / <span class="totalPages"></span>', $footer);
+        }
+    }
+
+    public function testIssuedByIsTranslatedAndEscaped(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $footer = fn (string $language, string $name): string => (string) $this->render(
+            $definition,
+            self::printData('invoice', $definition->id, $language, self::withAuthor(['name' => $name])),
+        )->footer;
+
+        $this->assertStringContainsString('Issued by: Jana', $footer('en', 'Jana'));
+        $this->assertStringContainsString('Vystavil: Jana', $footer('sk', 'Jana'));
+        $this->assertStringContainsString('Ausgestellt von: Jana', $footer('de', 'Jana'));
+        $this->assertStringContainsString('Vystavil: &lt;b&gt;Jana&lt;/b&gt;', $footer('cs', '<b>Jana</b>'));
+    }
+
+    public function testJournalPrintFooterShowsIssuedByToo(): void
+    {
+        $definition = self::definition('economy.accounting', 'economy.accounting.docJournal');
+
+        $with = (string) $this->render($definition, self::printData(
+            'docJournalInvoice', $definition->id, modify: self::withAuthor(['name' => 'Jana Příkladová']),
+        ))->footer;
+        $without = (string) $this->render($definition, self::printData('docJournalInvoice', $definition->id))->footer;
+
+        $this->assertStringContainsString('Vystavil: Jana Příkladová', $with);
+        $this->assertStringNotContainsString('Vystavil', $without);
+        $this->assertStringContainsString('class="pageNumber"', $without);
+    }
+
     public function testCancelledDocumentHasWatermarkAndOthersDoNot(): void
     {
         $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');

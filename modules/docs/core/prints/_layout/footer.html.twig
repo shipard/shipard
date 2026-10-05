@@ -2,8 +2,11 @@
     Zápatí dokladu — samostatný HTML dokument pro render službu. Čísla stran
     doplňuje render služba do prvků s třídami `pageNumber` a `totalPages`.
     Vlevo je vlastní firma: dodavatel na výstupu, odběratel na vstupu.
+    Vpravo nad číslem strany „Vystavil“ — jen u dokladu s autorem; tisk bez
+    bloku `document` (nebo se staršími daty bez `author`) řádek nemá.
 #}
 {% set own = data.document.tradeDir|default(1) == 2 ? data.customer : data.supplier %}
+{% set author = data.document.author.name|default('') %}
 <!DOCTYPE html>
 <html lang="{{ language }}">
 <head>
@@ -20,13 +23,18 @@
             color: #666;
             display: flex;
             justify-content: space-between;
+            align-items: flex-end;
         }
+        .foot .right { text-align: right; }
     </style>
 </head>
 <body>
 <div class="foot">
     <div>{{ own.name|default('') }}</div>
-    <div>{{ t('footer.page') }} <span class="pageNumber"></span> / <span class="totalPages"></span></div>
+    <div class="right">
+        {% if author != '' %}<div>{{ t('footer.issuedBy') }}: {{ author }}</div>{% endif %}
+        <div>{{ t('footer.page') }} <span class="pageNumber"></span> / <span class="totalPages"></span></div>
+    </div>
 </div>
 </body>
 </html>

@@ -314,7 +314,7 @@ nahradí nebo vynechá:
 
 | Klíč | Blok | Obsah |
 |---|---|---|
-| `document` | `DocDocumentBlock` | `type`, `tradeDir` (1 výstup, 2 vstup, null bez směru — `DocDocument::resolveTradeDir()`), `titleVariant`, `title`, `number`, `text`, `notice`, `isTaxDocument`, `vatPayer`, `vatMode` (0 bez DPH / 1 ze základu / 2 z ceny celkem), `currency`, `homeCurrency`, `exchangeRate` (null v domácí měně), `foreignCurrency` |
+| `document` | `DocDocumentBlock` | `type`, `tradeDir` (1 výstup, 2 vstup, null bez směru — `DocDocument::resolveTradeDir()`), `titleVariant`, `title`, `number`, `text`, `notice`, `isTaxDocument`, `vatPayer`, `vatMode` (0 bez DPH / 1 ze základu / 2 z ceny celkem), `currency`, `homeCurrency`, `exchangeRate` (null v domácí měně), `foreignCurrency`, `author` (`{name}` — autor dokladu, „Vystavil“ v zápatí; `null` bez autora i u autora, který už mezi uživateli není, #93 D4) |
 | `dates` | `DocDatesBlock` | `issue`, `due`, `duzp` (null u nedaňového dokladu), `periodFrom`, `periodTo`; pokladní doklad (`DocCashDatesBlock`) navíc `paymentReceived` — den přijetí platby, jen na příjmu s DPH |
 | `supplier`, `customer` | `DocPartiesBlock` | snapshoty hlavičky **beze změny tvaru** (`PersonSnapshotBuilder`); **`null`**, když doklad stranu nemá (D24) |
 | `payment` | `DocPaymentBlock` | `method {id, label}`, `bankTransfer` (platí se převodem), `reference`, `specificSymbol`, `constantSymbol`, `bankAccount` (ze snapshotu dodavatele, **jen u převodu**, jinak null), `amountToPay`, `currency`, `qr {standard, payload}` nebo null |
@@ -361,6 +361,15 @@ Pravidla:
   nemá, je `null` a šablona ji vynechá: místo zůstane prázdné, bez
   zástupného textu. Zápatí a země DPH se berou z vlastní strany podle
   `tradeDir`.
+- **Vystavil** (#93 D4): `document.author.name` je jméno uživatele
+  z `docs_core_heads.author`. Čte se **živě** (`DocPrintContext::loadAuthor`)
+  — uživatel není strana dokladu a snapshot nemá, přejmenování se proto
+  projeví i na starších dokladech. Zápatí ho tiskne vpravo nad číslem
+  strany jako „Vystavil: jméno“ (`footer.issuedBy`); doklad bez autora řádek
+  nemá. Platí pro tisky dokladů (`_layout/footer.html.twig`) i pro Kontaci
+  (vlastní zápatí, stejný `DocDocumentBlock::describe`). Kdo je autorem,
+  určuje `DocAuthorResolver` (`docs/document-system.md` → Autor dokladu).
+  Podpis a razítko jsou samostatné téma (#99).
 - **Platba převodem:** `payment.bankTransfer` řídí v šablonách splatnost,
   účet, QR a popisek „K úhradě“ — doklad zaplacený hotově nebo kartou má
   jen způsob úhrady a částku „Celkem“.
@@ -420,7 +429,7 @@ modules/docs/core/prints/
     _layout/
         doc-base.html.twig    # kostra stránky dokladu s bloky
         header.html.twig      # záhlaví: logo, titulek, číslo dokladu
-        footer.html.twig      # zápatí: vlastní firma, stránkování
+        footer.html.twig      # zápatí: vlastní firma, Vystavil, stránkování
         doc-base.css
         messages.jsonc        # společný katalog
         text-variables.jsonc  # proměnné nabízené pro texty na tiscích (§12.5)
@@ -447,7 +456,7 @@ modules/docs/cashRegister/prints/receipt/
 
 modules/economy/accounting/prints/docJournal/
     page.html.twig            # tabulka zápisů místo řádků dokladu
-    footer.html.twig          # zápatí s účetní jednotkou
+    footer.html.twig          # zápatí s účetní jednotkou a Vystavil
     doc-journal.css
     messages.jsonc
 ```

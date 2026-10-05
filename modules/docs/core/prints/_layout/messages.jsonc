@@ -57,6 +57,7 @@
 
     // Zápatí
     "footer.page": { "cs": "Strana", "en": "Page", "sk": "Strana", "de": "Seite" },
+    "footer.issuedBy": { "cs": "Vystavil", "en": "Issued by", "sk": "Vystavil", "de": "Ausgestellt von" },
 
     // Proměnné pro texty na tiscích (text-variables.jsonc) — popisky
     // v nabídce formuláře textu; klíč = `var.` + cesta proměnné.

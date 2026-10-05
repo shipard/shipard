@@ -1,8 +1,10 @@
 {#
     Zápatí Kontace — samostatný HTML dokument pro render službu. Vlevo
     účetní jednotka (doklad bez směru nemá dodavatele ani odběratele, proto
-    ne společné zápatí dokladů); čísla stran doplňuje render služba.
+    ne společné zápatí dokladů); čísla stran doplňuje render služba. Vpravo
+    nad číslem strany „Vystavil“ — autor dokladu, jen když ho doklad má.
 #}
+{% set author = data.document.author.name|default('') %}
 <!DOCTYPE html>
 <html lang="{{ language }}">
 <head>
@@ -19,13 +21,18 @@
             color: #666;
             display: flex;
             justify-content: space-between;
+            align-items: flex-end;
         }
+        .foot .right { text-align: right; }
     </style>
 </head>
 <body>
 <div class="foot">
     <div>{{ data.accountingUnit.name|default('') }}</div>
-    <div>{{ t('footer.page') }} <span class="pageNumber"></span> / <span class="totalPages"></span></div>
+    <div class="right">
+        {% if author != '' %}<div>{{ t('footer.issuedBy') }}: {{ author }}</div>{% endif %}
+        <div>{{ t('footer.page') }} <span class="pageNumber"></span> / <span class="totalPages"></span></div>
+    </div>
 </div>
 </body>
 </html>

@@ -7,8 +7,12 @@ namespace Shipard\Tests\Unit\Module\Docs\Core\Prints;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
+use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Prints\PrintBuildException;
+use Shipard\Core\Prints\PrintDefinition;
+use Shipard\Core\Prints\PrintRequest;
 use Shipard\Core\Prints\PrintTranslator;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocAdvancesBlock;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocCashDatesBlock;
 use Shipard\Module\Docs\Core\Prints\Blocks\DocCashDeskBlock;
@@ -94,6 +98,7 @@ class DocPrintBlocksTest extends TestCase
         ?array $customer = self::CUSTOMER,
         ?array $cashDesk = null,
         string $language = 'cs',
+        ?array $author = null,
     ): DocPrintContext {
         return new DocPrintContext(
             head: $head + [
@@ -138,6 +143,7 @@ class DocPrintBlocksTest extends TestCase
             ], $language),
             config: $config,
             cashDesk: $cashDesk,
+            author: $author,
         );
     }
 
@@ -236,7 +242,61 @@ class DocPrintBlocksTest extends TestCase
             'homeCurrency'    => 'CZK',
             'exchangeRate'    => null,
             'foreignCurrency' => false,
+            'author'          => null,
         ], $document);
+    }
+
+    public function testDocumentBlockCarriesAuthorName(): void
+    {
+        $document = (new DocDocumentBlock())->build(
+            $this->context(config: $this->config(), author: ['name' => 'Jana Příkladová']),
+        )['document'];
+
+        $this->assertSame(['name' => 'Jana Příkladová'], $document['author']);
+    }
+
+    /** Autor se čte živě z uživatelů — pro tisk dokladu i pro Kontaci (`forHead`). */
+    public function testContextLoadsAuthorNameFromUsers(): void
+    {
+        $request = function (array $head, mixed $fullName, ?array &$queries = null): PrintRequest {
+            $db = $this->createStub(DataSourceConnection::class);
+            $db->method('fetchSingle')->willReturnCallback(
+                static function (string $sql, mixed ...$params) use ($fullName, &$queries): mixed {
+                    $queries[] = [$sql, $params];
+                    return str_contains($sql, 'core_system_users') ? $fullName : null;
+                },
+            );
+            $db->method('fetchAll')->willReturn([]);
+            return new PrintRequest(
+                definition: PrintDefinition::fromArray(
+                    JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/docs/invoicesOut/config/prints.jsonc')[0],
+                    'docs.invoicesOut',
+                ),
+                recordId: 5,
+                record: $head + ['id' => 5, 'doc_type' => 'cmnbkp'],
+                language: 'cs',
+                db: $db,
+                config: null,
+                translator: new PrintTranslator([], 'cs'),
+            );
+        };
+
+        $queries = [];
+        $this->assertSame(
+            ['name' => 'Jana Příkladová'],
+            DocPrintContext::forHead($request(['author' => 7], ' Jana Příkladová ', $queries))->author,
+        );
+        $this->assertSame([7], $queries[0][1]);
+        $this->assertSame(
+            ['name' => 'Jana Příkladová'],
+            DocPrintContext::load($request(['author' => 7], 'Jana Příkladová'))->author,
+        );
+
+        // Bez autora se na uživatele ani neptá; smazaný uživatel = bez autora.
+        $queries = [];
+        $this->assertNull(DocPrintContext::forHead($request(['author' => null], 'kdokoli', $queries))->author);
+        $this->assertSame([], $queries);
+        $this->assertNull(DocPrintContext::forHead($request(['author' => 7], null))->author);
     }
 
     public function testDocumentBlockForeignCurrencyNonPayerAndProforma(): void
