@@ -123,7 +123,9 @@ e-fakturace): `Shipard\Module\Core\Exchange\Isdoc\IsdocReader` konvertuje
 ISDOC 6.x XML (i `.isdocx` ZIP obal) na canonical se `source.kind='isdoc'`
 a confidence 1.0. Mapuje se jen to, co v ISDOC opravdu je (chybějící pole
 se vynechávají); podporované `DocumentType`: 1 → `invoiceReceived`,
-2 → `creditNote`. Kompletní mapovací tabulka ISDOC → canonical:
+2 → `creditNote`. Řádky nesou i `computed` (základ, daň a cenu s daní, jak
+je spočítal dodavatel) — cenu s daní z nich bere applier u přijatého
+dokladu neplátce DPH (§ 8.4). Kompletní mapovací tabulka ISDOC → canonical:
 [tasks/mail-isdoc-import.md](../tasks/mail-isdoc-import.md). Použití
 v příjmu pošty (deterministický import místo AI analýzy):
 `modules/core/mail/docs/ai-analysis.md`, sekce „Deterministický ISDOC

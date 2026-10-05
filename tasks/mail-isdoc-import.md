@@ -177,6 +177,11 @@ opravdu je; chybějící pole vynechat (canonical je má nullable).
   (u cizí měny `*Curr` varianty), `priceCalcMode = 'fromUnitPrice'`
 - `vat.pct` = `ClassifiedTaxCategory/Percent`; `vat.code` **nemapovat**
   (doplní RowHistoryEnricher z historie, případně uživatel při review)
+- `computed.vatBase` = `LineExtensionAmount`, `computed.vatAmount` =
+  `LineExtensionTaxAmount`, `computed.vatTotal` =
+  `LineExtensionAmountTaxInclusive` (u cizí měny `*Curr` varianty);
+  chybějící element se vynechá. Cenu s daní z nich bere applier u zdroje
+  dat, který není plátcem DPH (#97)
 - `item.name` = `Item/Description`,
   `item.supplierCode` = `Item/SellersItemIdentification/ID`
 

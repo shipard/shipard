@@ -228,6 +228,74 @@ class IsdocReaderTest extends TestCase
         $this->assertValidCanonical($canonical);
     }
 
+    // ── Částky řádků od dodavatele (#97 D6) ─────────────────────────────────
+
+    public function testRowsCarrySupplierComputedAmounts(): void
+    {
+        $canonical = $this->readFixture('invoice_full.isdoc');
+
+        $this->assertSame(
+            ['vatBase' => 2000.0, 'vatAmount' => 420.0, 'vatTotal' => 2420.0],
+            $canonical['rows'][0]['computed'],
+        );
+        $this->assertSame(
+            ['vatBase' => 1000.0, 'vatAmount' => 120.0, 'vatTotal' => 1120.0],
+            $canonical['rows'][1]['computed'],
+        );
+        // Součet cen s daní sedí na rekapitulaci dodavatele.
+        $this->assertSame(
+            array_sum(array_column($canonical['vatRecap'], 'total')),
+            array_sum(array_map(static fn (array $r): float => $r['computed']['vatTotal'], $canonical['rows'])),
+        );
+    }
+
+    public function testForeignCurrencyRowsCarryCurrComputedAmounts(): void
+    {
+        $canonical = $this->readFixture('invoice_eur.isdoc');
+
+        // Částky v měně dokladu (`*Curr`), ne přepočet do lokální měny.
+        $this->assertSame(
+            ['vatBase' => 100.0, 'vatAmount' => 21.0, 'vatTotal' => 121.0],
+            $canonical['rows'][0]['computed'],
+        );
+    }
+
+    public function testCreditNoteComputedAmountsKeepSign(): void
+    {
+        $row = $this->readFixture('credit_note.isdoc')['rows'][0];
+
+        $this->assertSame(-200.0, $row['totalPrice']);
+        $this->assertSame(
+            ['vatBase' => -200.0, 'vatAmount' => -24.0, 'vatTotal' => -224.0],
+            $row['computed'],
+        );
+    }
+
+    public function testMissingTaxInclusiveAmountLeavesVatTotalOut(): void
+    {
+        $xml = (string) preg_replace(
+            '~\s*<LineExtensionAmountTaxInclusive>[^<]*</LineExtensionAmountTaxInclusive>~',
+            '',
+            $this->fixture('invoice_min.isdoc'),
+        );
+        $canonical = $this->reader->fromXmlString($xml);
+
+        $this->assertSame(['vatBase' => 100.0, 'vatAmount' => 21.0], $canonical['rows'][0]['computed']);
+        $this->assertValidCanonical($canonical);
+    }
+
+    public function testRowWithoutAnyAmountHasNoComputedBlock(): void
+    {
+        $xml = (string) preg_replace(
+            '~\s*<LineExtension(Amount|AmountTaxInclusive|TaxAmount)>[^<]*</LineExtension\1>~',
+            '',
+            $this->fixture('invoice_min.isdoc'),
+        );
+        $canonical = $this->reader->fromXmlString($xml);
+
+        $this->assertArrayNotHasKey('computed', $canonical['rows'][0]);
+    }
+
     // ── .isdocx (ZIP obal) ──────────────────────────────────────────────────
 
     public function testIsdocxZipArchive(): void

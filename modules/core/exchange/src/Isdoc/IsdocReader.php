@@ -20,7 +20,11 @@ namespace Shipard\Module\Core\Exchange\Isdoc;
  *   - cizí měna: existuje-li ForeignCurrencyCode, doklad je v cizí měně —
  *     částky se berou z `*Curr` elementů. ISDOC nemá UnitPriceCurr
  *     (UnitPrice je v lokální měně), proto řádky v cizí měně nesou jen
- *     totalPrice + priceCalcMode 'fromTotal'.
+ *     totalPrice + priceCalcMode 'fromTotal',
+ *   - řádky nesou `computed` (základ, daň, cena s daní), jak je spočítal
+ *     dodavatel. Zdroj dat, který není plátcem DPH, bere daň dodavatele
+ *     jako součást ceny pořízení — applier pak na řádek dosadí cenu s daní
+ *     přímo z dokladu a nedopočítává ji ze sazby (#97 D6).
  */
 final class IsdocReader
 {
@@ -306,6 +310,7 @@ final class IsdocReader
     private function mapRows(\DOMElement $root, bool $isForeign): array
     {
         $rows = [];
+        $suffix = $isForeign ? 'Curr' : '';
         foreach ($this->all($root, 'InvoiceLines', 'InvoiceLine') as $index => $line) {
             $quantityEl = $this->el($line, 'InvoicedQuantity');
 
@@ -322,6 +327,13 @@ final class IsdocReader
                     // vat.code se nemapuje — doplní RowHistoryEnricher
                     // z historie, případně uživatel při review.
                     'pct' => $this->num($line, 'ClassifiedTaxCategory', 'Percent'),
+                ],
+                // Částky řádku od dodavatele; chybějící element prune()
+                // vypustí, řádek bez jediné hodnoty blok nenese (#97 D6).
+                'computed' => [
+                    'vatBase'   => $this->num($line, 'LineExtensionAmount' . $suffix),
+                    'vatAmount' => $this->num($line, 'LineExtensionTaxAmount' . $suffix),
+                    'vatTotal'  => $this->num($line, 'LineExtensionAmountTaxInclusive' . $suffix),
                 ],
             ];
 
