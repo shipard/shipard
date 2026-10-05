@@ -58,8 +58,10 @@ místo předmětu titulek, který AI odvodila z obsahu (například „Faktura
 2026-0042 — Dodavatel s.r.o., 13 105 Kč"), a pod ním dodavatele; technický
 odesílatel (skener, kolega) je až ve třetím řádku za názvem schránky.
 U běžných e-mailů zůstává předmět tak, jak ho znáš ze své pošty. Hledat
-můžeš podle předmětu, titulku i dodavatele. Původní předmět najdeš
-v detailu zprávy v **Technických údajích**. Dodavatele u zprávy můžeš
+můžeš podle předmětu, titulku, dodavatele i kódu zprávy — stačí krátký
+tvar, jak ho vidíš v náhledu dokladu nebo u dokladu (třeba `260905-0012`).
+Původní předmět a plný kód najdeš v detailu zprávy v **Technických
+údajích**. Dodavatele u zprávy můžeš
 změnit ručně ve formuláři (**Upravit** → sekce **Partner**) — ruční volbu
 už analýza nepřepíše; po **Použít** se dodavatel převezme z vytvořeného
 dokladu.

@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 324 tasků: **naplánováno** 5 · **částečně** 22 · **hotovo** 297.
+Celkem 325 tasků: **naplánováno** 5 · **částečně** 22 · **hotovo** 298.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -332,6 +332,7 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `ai-profile-sync-in-ds-upgrade.md` | Automatický sync AI profilu ze šablony v rámci `ds-upgrade` (upgrade-only) |
 | `enrichment-row-text-candidates.md` | Enrichment řádků z historie: matchování přes více kandidátních textů (description → item.description → item.name, tier-major) |
 | `enrichment-dominant-item.md` | Enrichment řádků z historie: úroveň „dominantní položka dodavatele“ (statistika bez textu, confidence low, guard přes částku) |
+| `mail-source-message-link.md` | Zdrojová zpráva v hlavičce náhledu dokladu a na detailu dokladu: krátký kód s tooltipem, modal zprávy místo přechodu do Došlé pošty, hledání podle kódu |
 | `mail-safety.md` | Pojistka odchozí pošty na dev a testovacích serverech: `mail.safety` v `server.json` (redirect / allowlist / drop), stopa ve frontě a v Odeslané poště, `doctor` (#95) |
 
 Daemony volající endpoint žijí v jiných repech: `mail_router:tasks/phase1.md`

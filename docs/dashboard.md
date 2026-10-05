@@ -490,6 +490,24 @@ přílohy zprávy). `onReject(ndx)` → `RejectReasonPrompt`. „Použít“ vol
 `onApply(messageNdx, userActions, target)` — target (`docs`/`registry`)
 z preview endpointu řídí post-apply UX (§6.2).
 
+**Zdrojová zpráva v hlavičce** (`tasks/mail-source-message-link.md`
+D1–D3, D8–D10): `subtitle` modalu je „Došlá zpráva #YYMMDD-NNNN · datum ·
+odesílatel“ z bloku `message` preview endpointu (`api-contract.md` §9.12;
+krátký kód `IncomingMessageCode::short()`, plný v tooltipu). Prop
+`onOpenMessage(messageNdx)`: Dashboard jím otevře svou existující
+instanci `ViewerDetailModal` (viewer `core.mail.incoming`, tab `content`
+— stejný cíl jako akce `open_detail` mail karet) **nad** review modalem;
+`ViewerDetailModal` je v DOM za review modalem, modal stack pošle Esc jen
+jemu, zavření vrátí do review s rozhodnutími. `ViewerDetail` (review
+z detailu téže zprávy) callback nepředává → kód je prostý text. Snippet
+subtitle se předává po celou dobu `open`, obsah až s `data.message`,
+aby badge počítadla fronty (`headerExtra`, se subtitle inline na jeho
+řádku) neskákal při načítání další zprávy. Tentýž modal zprávy otevírá
+i kód zdrojové zprávy na detailu dokladu (`DocumentDetail` → akce
+`open_detail` přes `onAction`, obsluha ve `Viewer.svelte`; bez `onAction`
+v read-only modalu zůstává přechod do vieweru Došlá pošta). Žádný nový
+globální store ani hostitel modalu (D10).
+
 ### 6.4 `reject_message` — prompt na důvod
 
 Sdílená komponenta `RejectReasonPrompt` (povinný neprázdný důvod) →

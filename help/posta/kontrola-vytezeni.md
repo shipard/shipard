@@ -29,7 +29,11 @@ na každém řádku.
 2. **Zorientuj se v náhledu.** Vlevo je **PDF** faktury, jak přišla,
    vpravo data, která z ní AI přečetla. Kontrola je porovnávání levé
    strany s pravou. Na telefonu a v úzkém okně se místo dvou sloupců
-   objeví taby **PDF** a **Náhled**.
+   objeví taby **PDF** a **Náhled**. Pod titulkem je řádek **Došlá
+   zpráva** s kódem, datem přijetí a odesílatelem zprávy, ze které návrh
+   vznikl — hodí se, když od jednoho dodavatele přišlo víc pošty. Klik na
+   kód ukáže celý e-mail i s přílohami; zavřením se vrátíš do náhledu
+   a nic z toho, co jsi v něm rozhodl, se neztratí.
 
 3. **Zkontroluj v tomhle pořadí.** Nezačínej řádky; začni tím, co se
    nejhůř opravuje později:
