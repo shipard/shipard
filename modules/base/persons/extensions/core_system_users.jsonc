@@ -1,0 +1,33 @@
+{
+    // Extension from base.persons: person
+    //
+    // Vazba uživatele na Osobu (#93 D6). Žije tady, ne v core.system:
+    // core.system na base.persons záviset nemůže (cyklus) a zdroj dat bez
+    // Osob (portál hostingu) sloupec nemá — nic ho proto nesmí předpokládat,
+    // přítomnost se ověřuje přes TableDefinition.
+    //
+    // Sloupec plní admin ve formuláři uživatele a import uživatelů
+    // (`/_exchange/users/user/apply`); po `ds-reset` může ukazovat na
+    // neexistující Osobu — uživatelé reset přežívají, Osoby ne.
+
+    "table": "core_system_users",
+    "columns": [
+        {
+            "id": "person",
+            "name": "Person",
+            "name:cs": "Osoba",
+            "name:en": "Person",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_persons_persons",
+            "group": "personal"
+        }
+    ],
+    "indexes": [
+        {
+            "id": "idx_person",
+            "type": "index",
+            "columns": [{"column": "person"}]
+        }
+    ]
+}

@@ -79,9 +79,13 @@ class UsersViewer extends TableViewer
 
     public function renderDetail(int $recordId): array
     {
+        // Osoba — sloupec přidává rozšíření z base.persons (#93 D6); zdroj dat
+        // bez Osob ho nemá.
+        $hasPerson = $this->hasColumn('person');
         $record = $this->db->fetchRow(
             'SELECT `id`, `login`, `full_name`, `email`, `is_active`, `is_admin`,'
             . ' `is_system`, (`password_hash` IS NOT NULL) AS `has_password`'
+            . ($hasPerson ? ', `person`' : '')
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
             $recordId,
         );
@@ -99,6 +103,12 @@ class UsersViewer extends TableViewer
             ['label' => 'Login', 'value' => (string) $record['login']],
             ['label' => 'E-mail', 'value' => (string) ($record['email'] ?? '')],
         ];
+        if ($hasPerson) {
+            $identity[] = [
+                'label' => $isCs ? 'Osoba' : 'Person',
+                'value' => $this->personName($record['person'] ?? null),
+            ];
+        }
 
         $account = [
             ['label' => $isCs ? 'Aktivní' : 'Active', 'value' => !empty($record['is_active']) ? $yes : $no],
@@ -138,5 +148,18 @@ class UsersViewer extends TableViewer
             ]],
             'actions' => $actions,
         ];
+    }
+
+    /** Jméno navázané Osoby; prázdné bez vazby i u vazby na neexistující Osobu. */
+    private function personName(mixed $personId): string
+    {
+        if ($personId === null || (int) $personId <= 0) {
+            return '';
+        }
+        $row = $this->db->fetchRow(
+            'SELECT `full_name` FROM `base_persons_persons` WHERE `id` = %i',
+            (int) $personId,
+        );
+        return $row !== null ? (string) ($row['full_name'] ?? '') : '';
     }
 }

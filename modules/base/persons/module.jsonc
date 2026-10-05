@@ -21,6 +21,10 @@
         "base_persons_addresses"
     ],
 
+    "extensions": [
+        "core_system_users"
+    ],
+
     // base_persons_persons má viewer base.persons (Osoby) a zůstává
     // v hlavní navigaci — do settings nepatří.
     "settingsItems": [

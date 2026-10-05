@@ -1,0 +1,49 @@
+{
+    // Formulář uživatele. Pole odpovídají tomu, co dřív generoval
+    // AutoFormBuilder (heslo se tu nezadává — pozvánka / reset), navíc Osoba:
+    // sloupec `person` přidává rozšíření z base.persons (#93 D6), proto
+    // `optional` — na zdroji dat bez Osob se pole nevykreslí.
+    "title": "User",
+    "title:cs": "Uživatel",
+    "title:en": "User",
+    "titleNew": "New user",
+    "titleNew:cs": "Nový uživatel",
+    "titleNew:en": "New user",
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "User",
+            "label:cs": "Uživatel",
+            "label:en": "User",
+            "sections": [
+                {
+                    "columns": [
+                        {
+                            "elements": [
+                                {"type": "input", "column": "login", "required": true},
+                                {"type": "input", "column": "full_name", "required": true},
+                                {"type": "input", "column": "email", "inputType": "email"},
+                                {
+                                    "type": "lookup",
+                                    "column": "person",
+                                    "optional": true,
+                                    "placeholder": "Find a person…",
+                                    "placeholder:cs": "Hledat osobu…",
+                                    "placeholder:en": "Find a person…",
+                                    "hint": "The person this user is in the address book. Optional.",
+                                    "hint:cs": "Osoba z adresáře, kterou tento uživatel je. Nepovinné.",
+                                    "hint:en": "The person this user is in the address book. Optional.",
+                                    "lookup": {"table": "base_persons_persons"}
+                                },
+                                {"type": "separator"},
+                                {"type": "input", "column": "is_active"},
+                                {"type": "input", "column": "is_admin"},
+                                {"type": "input", "column": "is_system"}
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -8,6 +8,7 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Database\SearchCondition;
+use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\StructuredFields\StructuredFieldRenderer;
 use Shipard\Core\StructuredFields\StructuredFieldResolver;
@@ -28,6 +29,14 @@ abstract class TableViewer
      * v testech může chybět.
      */
     protected ?DataSourceConfig $dsConfig = null;
+
+    /**
+     * Definice tabulek zdroje dat — injektuje ViewerRegistry; v testech
+     * může chybět.
+     *
+     * @var array<string, TableDefinition>
+     */
+    protected array $tables = [];
 
     /**
      * Request language (e.g. 'cs', 'en') — injected via setLanguage().
@@ -78,6 +87,30 @@ abstract class TableViewer
     public function setDsConfig(DataSourceConfig $dsConfig): void
     {
         $this->dsConfig = $dsConfig;
+    }
+
+    /**
+     * Inject table definitions — called by ViewerRegistry after construction.
+     *
+     * @param array<string, TableDefinition> $tables
+     */
+    public function setTables(array $tables): void
+    {
+        $this->tables = $tables;
+    }
+
+    /**
+     * Má tabulka vieweru na tomto zdroji dat daný sloupec? Pro sloupce
+     * z rozšíření volitelných modulů — bez definic tabulek false.
+     */
+    protected function hasColumn(string $column): bool
+    {
+        foreach (($this->tables[$this->table] ?? null)?->columns ?? [] as $col) {
+            if ($col->id === $column) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

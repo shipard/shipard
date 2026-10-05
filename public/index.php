@@ -107,6 +107,7 @@ try {
 
 	// ── 4b. Build viewer registry ─────────────────────────────────────────────
 	$viewerRegistry = ViewerLoader::load($resolved->config, $modulePathResolver, $language);
+	$viewerRegistry->setTables($tables);
 
 	// ── 4c. Build form registry ───────────────────────────────────────────────
 	$formRegistry = FormLoader::load($resolved->config, $modulePathResolver);

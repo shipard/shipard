@@ -7,6 +7,7 @@ namespace Shipard\Core\Viewer;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Module\ModuleDefinition;
 
 class ViewerRegistry
@@ -17,9 +18,23 @@ class ViewerRegistry
     /** Předává se každému vytvořenému vieweru (`setDsConfig`). */
     private ?DataSourceConfig $dsConfig = null;
 
+    /** @var array<string, TableDefinition> */
+    private array $tables = [];
+
     public function setDsConfig(DataSourceConfig $dsConfig): void
     {
         $this->dsConfig = $dsConfig;
+    }
+
+    /**
+     * Definice tabulek zdroje dat — předávají se každému vytvořenému vieweru
+     * (`setTables`), aby se mohl ptát na sloupce z rozšíření cizích modulů.
+     *
+     * @param array<string, TableDefinition> $tables
+     */
+    public function setTables(array $tables): void
+    {
+        $this->tables = $tables;
     }
 
     /**
@@ -105,6 +120,9 @@ class ViewerRegistry
         }
         if ($this->dsConfig !== null) {
             $viewer->setDsConfig($this->dsConfig);
+        }
+        if ($this->tables !== []) {
+            $viewer->setTables($this->tables);
         }
         return $viewer;
     }
