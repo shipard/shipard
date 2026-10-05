@@ -519,8 +519,26 @@ z `applier->preview()`; registry: passthrough + `target: "registry"`).
 (`{ndx, filename, mime_type, size_bytes}`). `userActions` = rozhodnutí
 uložená z review modalu (§9.13): flat mapa `{cesta: userAction}`, nebo `{}`
 — klíč je ve všech větvích odpovědi (i `aiFailed` a registry), na DS bez
-sloupce `user_actions_json` vždy `{}`. Chyby: `404 NOT_FOUND` /
-`NO_ANALYSIS` / `NO_PROPOSAL`, `500 CORRUPTED_DATA`.
+sloupce `user_actions_json` vždy `{}`. `message` = zdrojová zpráva pro
+řádek pod titulkem review modalu (`tasks/mail-source-message-link.md` D1,
+D3), rovněž ve všech větvích:
+
+```json
+"message": {
+  "ndx": 123,
+  "code": "MSG-20260905-0012",
+  "codeShort": "260905-0012",
+  "receivedAt": "5. 9. 2026 14:32",
+  "sender": "Odesílatel"
+}
+```
+
+`codeShort` = `YYMMDD-NNNN` (`Shipard\Core\Mail\IncomingMessageCode::short()`,
+D8; kód mimo vzor beze změny), `receivedAt` ve formátu `j. n. Y H:i`
+formátuje server (`null` když chybí), `sender` = `sender_name`, jinak
+`sender_email`, jinak `null`. Prázdný `message_id` → `code` i `codeShort`
+prázdný řetězec (frontend kód nevykreslí, zbytek řádku ano). Chyby:
+`404 NOT_FOUND` / `NO_ANALYSIS` / `NO_PROPOSAL`, `500 CORRUPTED_DATA`.
 
 ### 9.13 `POST /_mail/messages/{ndx}/decisions`
 

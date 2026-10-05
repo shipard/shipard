@@ -419,6 +419,8 @@ class DocsHeadsViewerDetailTest extends TestCase
         $this->assertSame('mail', $groups[0]['kind']);
         $this->assertSame('core.mail.incoming', $groups[0]['sourceViewerId']);
         $this->assertSame('MSG-A', $groups[0]['message_id']);
+        // Kód mimo vzor MSG-YYYYMMDD-NNNN zůstává v krátkém tvaru beze změny (D8).
+        $this->assertSame('MSG-A', $groups[0]['message_code_short']);
         $this->assertSame(11, $groups[0]['message_ndx']);
         $this->assertSame('1. 6. 2026', $groups[0]['received_at']);
         $this->assertSame(
@@ -431,6 +433,26 @@ class DocsHeadsViewerDetailTest extends TestCase
             ['id' => 301, 'name' => 'smlouva.pdf', 'mime_type' => 'application/pdf', 'file_size' => 4096],
             $groups[1]['attachments'][0],
         );
+    }
+
+    public function testMailGroupCarriesShortCodeForFullPattern(): void
+    {
+        // Nadpis skupiny ukazuje krátký tvar, plný kód zůstává pro tooltip
+        // (tasks/mail-source-message-link.md D9).
+        $messages = [
+            ['id' => 11, 'message_id' => 'MSG-20260601-0007', 'received_at' => '2026-06-01 10:00:00', 'raw_source_attachment' => null],
+        ];
+        $filesByMessage = [
+            11 => [
+                ['id' => 101, 'name' => 'faktura.pdf', 'file_name' => 'faktura.pdf', 'file_size' => 2048, 'mime_type' => 'application/pdf'],
+            ],
+        ];
+
+        $viewer = $this->makeViewer($this->baseRecord(), messages: $messages, filesByMessage: $filesByMessage);
+        $groups = $this->detailContent($viewer)['attachments']['groups'];
+
+        $this->assertSame('MSG-20260601-0007', $groups[0]['message_id']);
+        $this->assertSame('260601-0007', $groups[0]['message_code_short']);
     }
 
     public function testMessageWithoutAttachmentsIsSkipped(): void

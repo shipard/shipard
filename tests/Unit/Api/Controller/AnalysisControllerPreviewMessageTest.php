@@ -137,13 +137,30 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         return $db;
     }
 
-    /** @return array<string, mixed> */
-    private function message(int $ndx = 100, ?int $rawSource = null): array
+    /**
+     * `$extra` přidává sloupce zprávy, které výchozí řádek nemá (kód,
+     * odesílatel, datum přijetí) — default bez nich simuluje starší řádek,
+     * blok `message` je musí číst přes `?? null`.
+     *
+     * @return array<string, mixed>
+     */
+    private function message(int $ndx = 100, ?int $rawSource = null, array $extra = []): array
     {
-        return [
+        return array_merge([
             'id' => $ndx, 'docState' => 20, 'analysis_state' => 30,
             'target_row' => null, 'raw_source_attachment' => $rawSource,
-        ];
+        ], $extra);
+    }
+
+    /** @return array<string, mixed> */
+    private function sourceMessageColumns(array $overrides = []): array
+    {
+        return array_merge([
+            'message_id'   => 'MSG-20260905-0012',
+            'sender_name'  => 'Dodavatel s.r.o.',
+            'sender_email' => 'fakturace@example.test',
+            'received_at'  => '2026-09-05 14:32:10',
+        ], $overrides);
     }
 
     /** @return array<string, mixed> */
@@ -457,6 +474,108 @@ class AnalysisControllerPreviewMessageTest extends TestCase
         $this->assertSame('invoice.pdf', $atts[0]['filename']);
         $this->assertSame('application/pdf', $atts[0]['mime_type']);
         $this->assertSame(67890, $atts[1]['size_bytes']);
+    }
+
+    // ── Blok `message` — zdrojová zpráva pro hlavičku review modalu
+    //    (tasks/mail-source-message-link.md D1, D3, D8) ──
+
+    public function testPreviewMessageCarriesSourceMessageBlockInDocsBranch(): void
+    {
+        $canonical = $this->happyCanonical();
+        $db = $this->db(
+            $this->message(100, extra: $this->sourceMessageColumns()),
+            $this->analysis((string) json_encode($canonical)),
+        );
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
+
+        $resp = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100);
+        $this->assertSame([
+            'ndx'        => 100,
+            'code'       => 'MSG-20260905-0012',
+            'codeShort'  => '260905-0012',
+            'receivedAt' => '5. 9. 2026 14:32',
+            'sender'     => 'Dodavatel s.r.o.',
+        ], $resp->getPayload()['data']['message']);
+    }
+
+    public function testPreviewMessageCarriesSourceMessageBlockForAiFailed(): void
+    {
+        $wrapper = ['_validationError' => 'x', '_validationIssues' => [], '_rawOutput' => []];
+        $db = $this->db(
+            $this->message(200, extra: $this->sourceMessageColumns()),
+            $this->analysis((string) json_encode($wrapper)),
+        );
+
+        $data = $this->controller($db)->previewMessage($this->authed(), $this->request(), 200)->getPayload()['data'];
+        $this->assertTrue($data['aiFailed']);
+        $this->assertSame(200, $data['message']['ndx']);
+        $this->assertSame('260905-0012', $data['message']['codeShort']);
+        $this->assertSame('Dodavatel s.r.o.', $data['message']['sender']);
+    }
+
+    public function testPreviewMessageSourceMessageBlockIsPresentWithoutApplier(): void
+    {
+        $db = $this->db(
+            $this->message(100, extra: $this->sourceMessageColumns()),
+            $this->analysis((string) json_encode($this->happyCanonical())),
+        );
+
+        $data = $this->controller($db)->previewMessage($this->authed(), $this->request(), 100)->getPayload()['data'];
+        $this->assertArrayHasKey('canonical', $data);
+        $this->assertSame('MSG-20260905-0012', $data['message']['code']);
+    }
+
+    public function testPreviewMessageSenderFallsBackToEmailThenNull(): void
+    {
+        $canonical = $this->happyCanonical();
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
+        $analysis = $this->analysis((string) json_encode($canonical));
+
+        $byEmail = $this->db($this->message(100, extra: $this->sourceMessageColumns(['sender_name' => '  '])), $analysis);
+        $data = $this->controller($byEmail, $applier)->previewMessage($this->authed(), $this->request(), 100)->getPayload()['data'];
+        $this->assertSame('fakturace@example.test', $data['message']['sender']);
+
+        $nobody = $this->db(
+            $this->message(100, extra: $this->sourceMessageColumns(['sender_name' => null, 'sender_email' => ''])),
+            $analysis,
+        );
+        $data = $this->controller($nobody, $applier)->previewMessage($this->authed(), $this->request(), 100)->getPayload()['data'];
+        $this->assertNull($data['message']['sender']);
+    }
+
+    public function testPreviewMessageEmptyCodeAndMissingColumnsGiveEmptyBlock(): void
+    {
+        // Starší řádek bez sloupců (výchozí fixture) — blok existuje,
+        // kód je prázdný řetězec, datum a odesílatel null.
+        $canonical = $this->happyCanonical();
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
+        $db = $this->db($this->message(100), $this->analysis((string) json_encode($canonical)));
+
+        $data = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100)->getPayload()['data'];
+        $this->assertSame(
+            ['ndx' => 100, 'code' => '', 'codeShort' => '', 'receivedAt' => null, 'sender' => null],
+            $data['message'],
+        );
+    }
+
+    public function testPreviewMessageFormatsReceivedAtFromDateTimeObject(): void
+    {
+        // Dibi může vracet DATETIME jako objekt — formát je stejný.
+        $canonical = $this->happyCanonical();
+        $applier = $this->createMock(DocumentApplier::class);
+        $applier->method('preview')->willReturn(ApplyResult::ok($canonical));
+        $db = $this->db(
+            $this->message(100, extra: $this->sourceMessageColumns([
+                'received_at' => new \DateTimeImmutable('2026-01-02 08:05:00'),
+            ])),
+            $this->analysis((string) json_encode($canonical)),
+        );
+
+        $data = $this->controller($db, $applier)->previewMessage($this->authed(), $this->request(), 100)->getPayload()['data'];
+        $this->assertSame('2. 1. 2026 08:05', $data['message']['receivedAt']);
     }
 
     /**

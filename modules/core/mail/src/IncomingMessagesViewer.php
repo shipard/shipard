@@ -97,10 +97,12 @@ class IncomingMessagesViewer extends TableViewer
 
         // Fulltext search — subject i ai_title (vždy oba, D3), sender_email,
         // sender_name, partner (snapshot z canonicalu i jméno Osoby), body_plain
+        // a kód zprávy message_id (plný i krátký tvar `YYMMDD-NNNN` z náhledu
+        // dokladu je jeho podřetězec — tasks/mail-source-message-link.md D4)
         if ($search !== null && $search !== '') {
             [$searchSql, $searchParams] = SearchCondition::anyContains([
                 'm.`subject`', 'm.`ai_title`', 'm.`sender_email`', 'm.`sender_name`', 'm.`partner_name`',
-                'p.`full_name`', 'm.`body_plain`',
+                'p.`full_name`', 'm.`body_plain`', 'm.`message_id`',
             ], $search);
             $conditions[] = $searchSql;
             $params = array_merge($params, $searchParams);

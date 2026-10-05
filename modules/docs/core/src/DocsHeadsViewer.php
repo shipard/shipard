@@ -8,6 +8,7 @@ use Shipard\Core\Accounting\JournalDimensionLabels;
 use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Core\Database\SearchCondition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Mail\IncomingMessageCode;
 use Shipard\Core\Viewer\TableViewer;
 
 /**
@@ -916,7 +917,11 @@ class DocsHeadsViewer extends TableViewer
      * Přílohy zprávy = core_attachments_files s table_id = 303 (tableId
      * core_mail_incoming_messages), record_id = message.id.
      *
-     * @return list<array{kind:string, sourceViewerId:string, message_id:string, received_at:?string, message_ndx:int, attachments:list<array{id:int, name:string, mime_type:string, file_size:int}>}>
+     * `message_code_short` = krátký tvar kódu pro nadpis skupiny
+     * (tasks/mail-source-message-link.md D9); plný `message_id` zůstává
+     * pro tooltip.
+     *
+     * @return list<array{kind:string, sourceViewerId:string, message_id:string, message_code_short:string, received_at:?string, message_ndx:int, attachments:list<array{id:int, name:string, mime_type:string, file_size:int}>}>
      */
     private function sourceAttachmentGroups(int $docId): array
     {
@@ -949,13 +954,15 @@ class DocsHeadsViewer extends TableViewer
                 ];
             }
 
+            $messageCode = (string) $msg['message_id'];
             $groups[] = [
-                'kind'           => 'mail',
-                'sourceViewerId' => 'core.mail.incoming',
-                'message_id'     => (string) $msg['message_id'],
-                'received_at'    => $this->formatDate($msg['received_at'] ?? null),
-                'message_ndx'    => (int) $msg['id'],
-                'attachments'    => $attachments,
+                'kind'               => 'mail',
+                'sourceViewerId'     => 'core.mail.incoming',
+                'message_id'         => $messageCode,
+                'message_code_short' => IncomingMessageCode::short($messageCode),
+                'received_at'        => $this->formatDate($msg['received_at'] ?? null),
+                'message_ndx'        => (int) $msg['id'],
+                'attachments'        => $attachments,
             ];
         }
 

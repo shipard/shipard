@@ -15,6 +15,7 @@ use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\Mail\IncomingMessageCode;
 use Shipard\Core\Security\DsSecretCipher;
 use Shipard\Core\Security\Exception\InvalidCiphertextException;
 use Shipard\Core\Security\Exception\SecretsKeyInsecureException;
@@ -1743,6 +1744,10 @@ class AnalysisController
             'userActions'  => self::userActionsPayload(
                 MessageProposalApplier::decodeUserActions($analysis['user_actions_json'] ?? null),
             ),
+            // Zdrojová zpráva pro hlavičku review modalu
+            // (tasks/mail-source-message-link.md D1, D3) — rovněž ve všech
+            // větvích odpovědi.
+            'message'      => $this->sourceMessageBlock($messageNdx, $message),
         ];
 
         // ai_failed wrapper → return it for the special UI render path
@@ -1829,6 +1834,45 @@ class AnalysisController
             'aiFailed'  => false,
             'canonical' => $result->canonical,
         ]);
+    }
+
+    /**
+     * Metadata zdrojové zprávy pro subtitle review modalu: kód plný i krátký
+     * (D8), datum přijetí formátované serverem (`j. n. Y H:i` jako
+     * IncomingMessagesViewer::formatDateTime) a odesílatel — `sender_name`,
+     * jinak `sender_email`, jinak null (stejné pořadí jako t2 řádku Došlé
+     * pošty). Prázdný `message_id` → `code` i `codeShort` prázdný řetězec,
+     * frontend kód nevykreslí a zbytek řádku ano. Sloupce čte přes `?? null`:
+     * starší řádky je mít nemusí.
+     *
+     * @param array<string, mixed> $message
+     * @return array{ndx: int, code: string, codeShort: string, receivedAt: ?string, sender: ?string}
+     */
+    private function sourceMessageBlock(int $messageNdx, array $message): array
+    {
+        $code = trim((string) ($message['message_id'] ?? ''));
+        $senderName = trim((string) ($message['sender_name'] ?? ''));
+        $senderEmail = trim((string) ($message['sender_email'] ?? ''));
+
+        return [
+            'ndx'        => $messageNdx,
+            'code'       => $code,
+            'codeShort'  => IncomingMessageCode::short($code),
+            'receivedAt' => $this->formatReceivedAt($message['received_at'] ?? null),
+            'sender'     => $senderName !== '' ? $senderName : ($senderEmail !== '' ? $senderEmail : null),
+        ];
+    }
+
+    private function formatReceivedAt(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('j. n. Y H:i');
+        }
+        $ts = is_string($value) ? strtotime($value) : false;
+        return $ts !== false ? date('j. n. Y H:i', $ts) : null;
     }
 
     /**
