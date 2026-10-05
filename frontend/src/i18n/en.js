@@ -386,6 +386,7 @@ export default {
 
   // ── Exchange preview (Phase 3a) ──────────────────────────────────────────
   'exchange.preview.title': 'Document preview',
+  'exchange.preview.sourceMessage': 'Incoming message',
   'exchange.preview.tabs.pdf': 'PDF',
   'exchange.preview.tabs.preview': 'Preview',
   'exchange.preview.section.header': 'Header',

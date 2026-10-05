@@ -100,6 +100,14 @@
   // Čtení nic nemění, zavření na rozdíl od handleFormClose nevolá load().
   let detailModal = $state({ open: false, viewerId: '', recordId: null, tabId: null });
 
+  // Kód zdrojové zprávy v hlavičce review modalu → tentýž read-only detail
+  // jako akce „Otevřít e-mail" karet (tasks/mail-source-message-link.md
+  // D2, D10). ViewerDetailModal je v DOM za review modalem, leží nad ním;
+  // zavření vrátí do review s rozhodnutími.
+  function openSourceMessageDetail(messageNdx) {
+    detailModal = { open: true, viewerId: 'core.mail.incoming', recordId: messageNdx, tabId: 'content' };
+  }
+
   // Minimální lokální toast (app nemá toast infra). kind: 'applied' → Otevřít.
   // docTable řídí, kterou tabulku „Otevřít“ otevře — dnes jen Spisovna;
   // vystavená faktura (docs) se místo toastu otevírá rovnou ve FormDialogu.
@@ -670,6 +678,7 @@
   onApply={handleApplyFromModal}
   onReject={handleRejectFromModal}
   onSkip={handleQueueSkip}
+  onOpenMessage={openSourceMessageDetail}
 />
 
 <QueueCategoriesPrompt

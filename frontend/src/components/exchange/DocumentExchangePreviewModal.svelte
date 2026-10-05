@@ -52,6 +52,18 @@
   //     rozhodnutí zůstávají); refreshSeq zahodí starší odpověď / jinou zprávu.
   //   - rozhodnutí o stranách a položkách nový náhled nespouštějí.
   //
+  // Zdrojová zpráva v hlavičce (tasks/mail-source-message-link.md D1–D3):
+  //   - subtitle „Došlá zpráva #YYMMDD-NNNN · datum · odesílatel" z bloku
+  //     `message` preview endpointu (krátký kód i datum formátuje server,
+  //     plný kód je v tooltipu — D8, D9).
+  //   - s `onOpenMessage` je kód tlačítko: hostitel otevře read-only detail
+  //     zprávy NAD tímto modalem (Dashboard → jeho ViewerDetailModal; stack
+  //     v Modal.svelte pošle Esc jen hornímu). Bez callbacku (review
+  //     z detailu téže zprávy v Došlé poště) je kód prostý text (D2).
+  //   - snippet se předává po celou dobu `open`, obsah až s `data.message`
+  //     — jinak by ve frontovém režimu badge počítadla skákal mezi titulkem
+  //     a subtitle řádkem při načítání další zprávy.
+  //
   // Mobile (<768px): single column with PDF/Preview tab switcher.
 
   import Modal from '../ui/Modal.svelte';
@@ -75,6 +87,8 @@
     onApply = () => {},
     onReject = () => {},
     onSkip = () => {},
+    // `(messageNdx) => void` | null — viz hlavička, Zdrojová zpráva.
+    onOpenMessage = null,
   } = $props();
 
   let loading = $state(false);
@@ -277,7 +291,48 @@
   </span>
 {/snippet}
 
-<Modal title={t('exchange.preview.title')} {open} onClose={handleClose} width="full" testid="review-modal" headerExtra={queue ? queueBadge : undefined}>
+{#snippet sourceMessage()}
+  {#if data?.message}
+    {@const msg = data.message}
+    <span class="shpd-exchange-modal__source" data-testid="review-source-message">
+      <span class="shpd-exchange-modal__source-seg">
+        {t('exchange.preview.sourceMessage')}
+        {#if msg.codeShort}
+          {#if onOpenMessage}
+            <button
+              type="button"
+              class="shpd-exchange-modal__source-link"
+              title={msg.code}
+              data-testid="review-source-message-link"
+              onclick={() => onOpenMessage(msg.ndx)}
+            >#{msg.codeShort}</button>
+          {:else}
+            <span class="shpd-exchange-modal__source-code" title={msg.code}>#{msg.codeShort}</span>
+          {/if}
+        {/if}
+      </span>
+      {#if msg.receivedAt}
+        <span class="shpd-exchange-modal__source-seg">{msg.receivedAt}</span>
+      {/if}
+      {#if msg.sender}
+        <span class="shpd-exchange-modal__source-seg">{msg.sender}</span>
+      {/if}
+    </span>
+  {:else if loading}
+    <!-- Drží výšku řádku během načítání, hlavička neposkakuje. -->
+    &nbsp;
+  {/if}
+{/snippet}
+
+<Modal
+  title={t('exchange.preview.title')}
+  {open}
+  onClose={handleClose}
+  width="full"
+  testid="review-modal"
+  headerExtra={queue ? queueBadge : undefined}
+  subtitle={sourceMessage}
+>
   {#if loading}
     <div class="shpd-exchange-modal__loading">
       {t('exchange.preview.loading')}
@@ -404,6 +459,35 @@
 />
 
 <style>
+  /* Zdrojová zpráva pod titulkem — inline segmenty oddělené tečkou přes
+     ::before (oddělovač není v JS zdroji), prázdné segmenty se nevykreslí.
+     Elipsování řeší .shpd-modal__subtitle rodiče. */
+  .shpd-exchange-modal__source-seg + .shpd-exchange-modal__source-seg::before {
+    content: '\00B7';
+    margin: 0 0.4em;
+    color: var(--shpd-color-text-muted);
+  }
+
+  .shpd-exchange-modal__source-code {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .shpd-exchange-modal__source-link {
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--shpd-color-primary);
+    cursor: pointer;
+  }
+
+  .shpd-exchange-modal__source-link:hover {
+    text-decoration: underline;
+  }
+
   /* Počítadlo pozice ve frontě („3 / 8") — nenápadný badge v hlavičce. */
   .shpd-exchange-modal__queue-pos {
     padding: 2px var(--shpd-space-sm);

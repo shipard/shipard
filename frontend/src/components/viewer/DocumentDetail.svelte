@@ -48,10 +48,23 @@
     return [street, city].filter(Boolean).join(', ') || null;
   }
 
+  // Klik na kód zdrojové zprávy (tasks/mail-source-message-link.md D6, D10):
+  // s hostitelem, který obsluhuje akce (Viewer.svelte), otevře read-only
+  // detail zprávy v modalu a viewer se nepřepne. Akční id 'openSourceMessage'
+  // není ve sdíleném slovníku vestavěných akcí, propadne na obsluhu podle
+  // kind. Bez onAction (DocumentDetail uvnitř read-only ViewerDetailModal)
+  // zůstává dnešní přechod do vieweru Došlá pošta.
   function openSourceMessage(group) {
-    if (group.sourceViewerId) {
-      navigationStore.navigateToViewer(group.sourceViewerId, group.message_ndx);
+    if (!group.sourceViewerId) return;
+    if (onAction) {
+      onAction('openSourceMessage', {
+        id: 'openSourceMessage',
+        kind: 'open_detail',
+        target: { viewerId: group.sourceViewerId, recordId: group.message_ndx, tabId: 'content' },
+      });
+      return;
     }
+    navigationStore.navigateToViewer(group.sourceViewerId, group.message_ndx);
   }
 
   // Klik na partnera / položku řádku — otevře FormDialog přes generický
@@ -297,16 +310,18 @@
           <div class="shpd-docdetail__att-group">
             <h3 class="shpd-docdetail__section-heading">
               {#if group.kind === 'mail'}
+                <!-- Krátký kód zprávy, plný v tooltipu (D9). -->
                 {#if group.sourceViewerId}
                   <button
                     type="button"
                     class="shpd-docdetail__att-msglink"
+                    title={group.message_id}
                     onclick={() => openSourceMessage(group)}
                   >
-                    #{group.message_id}
+                    #{group.message_code_short ?? group.message_id}
                   </button>
                 {:else}
-                  <span>#{group.message_id}</span>
+                  <span title={group.message_id}>#{group.message_code_short ?? group.message_id}</span>
                 {/if}
                 {#if group.received_at}
                   <span class="shpd-docdetail__att-msgdate">· {group.received_at}</span>

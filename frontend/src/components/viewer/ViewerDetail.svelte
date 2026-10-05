@@ -1,6 +1,5 @@
 <script>
   import { applyMessage, rejectMessage } from '../../api/exchange.js';
-  import { navigationStore } from '../../stores/navigation.svelte.js';
   import Button from '../ui/Button.svelte';
   import Popover from '../ui/Popover.svelte';
   import DocumentExchangePreviewModal from '../exchange/DocumentExchangePreviewModal.svelte';
@@ -460,32 +459,6 @@
               </div>
             </div>
           {/if}
-        </div>
-
-      {:else if content?.type === 'attachments'}
-        <div class="shpd-detail__att-groups">
-          {#each content.groups ?? [] as group (group.message_ndx)}
-            <div class="shpd-detail__att-group">
-              <h4 class="shpd-detail__group-title">
-                {#if content.sourceViewerId}
-                  <button
-                    type="button"
-                    class="shpd-detail__att-msglink"
-                    onclick={() => navigationStore.navigateToViewer(content.sourceViewerId, group.message_ndx)}
-                  >
-                    #{group.message_id}
-                  </button>
-                {:else}
-                  <span>#{group.message_id}</span>
-                {/if}
-                {#if group.received_at}
-                  <span class="shpd-detail__att-msgdate">· {group.received_at}</span>
-                {/if}
-              </h4>
-
-              <AttachmentGrid attachments={group.attachments} />
-            </div>
-          {/each}
         </div>
 
       {:else if content?.type === 'attachment-grid'}
@@ -1134,31 +1107,6 @@
   .shpd-detail__att-toggle:hover {
     color: var(--shpd-color-text);
     border-color: var(--shpd-color-text-secondary);
-  }
-
-  .shpd-detail__att-groups {
-    display: flex;
-    flex-direction: column;
-    gap: var(--shpd-space-lg);
-  }
-
-  .shpd-detail__att-msglink {
-    border: none;
-    background: none;
-    padding: 0;
-    font: inherit;
-    font-weight: 600;
-    color: var(--shpd-color-primary);
-    cursor: pointer;
-  }
-
-  .shpd-detail__att-msglink:hover {
-    text-decoration: underline;
-  }
-
-  .shpd-detail__att-msgdate {
-    font-weight: 400;
-    color: var(--shpd-color-text-secondary);
   }
 
   /* Grid náhledů (karty s thumbnail/ikonou) je ve sdílené AttachmentGrid

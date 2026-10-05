@@ -399,6 +399,7 @@ export default {
   // ── Exchange preview (Fáze 3a) ───────────────────────────────────────────
   // Modal s vizualizovaným canonical dokladem + PDF split-view.
   'exchange.preview.title': 'Náhled dokladu',
+  'exchange.preview.sourceMessage': 'Došlá zpráva',
   'exchange.preview.tabs.pdf': 'PDF',
   'exchange.preview.tabs.preview': 'Náhled',
   'exchange.preview.section.header': 'Hlavička',
