@@ -1,6 +1,6 @@
 # Odchozí pošta — pojistka přesměrování na dev a testovacích serverech
 
-**Stav:** naplánováno — design zamčený v #95 (D1–D9), čeká na implementaci
+**Stav:** částečně — implementace, testy a docs hotové 2026-10-05 (3 commity); `drop` ověřen na dev serveru (CLI i proklik UI); zbývá ověřit `redirect` proti skutečnému SMTP a nastavit `mail.safety` na testovacím serveru (člověk), `ds-upgrade` zdrojů dat při nasazení
 
 > PRD pro Claude Code (3 commity). Design: issue #95, komentář
 > „Rozhodnutí“. Souvisí: #90 fáze 4 (`tasks/prints-phase4.md` —
@@ -205,3 +205,53 @@ Zamčeno v #95: D1–D9. Upřesnění z PRD:
 
 Nasazení: na testovacím serveru nastavit `mail.safety` na `redirect`
 na týmovou adresu (adresa jen v `server.json`).
+
+## Implementace
+
+Hotovo ve třech commitech podle task breakdownu. Odchylky a upřesnění proti
+zadání:
+
+- **`attemptSend()` otočil pořadí** — dřív `resolve()` před `compose()`,
+  teď compose → pojistka → resolve. Zachycená zpráva resolver nevolá, takže
+  projde i na zdroji dat bez relay.
+- **Stopa se zapisuje zvlášť, až po stavu `sent`** (fronta i Odeslaná
+  pošta). Zdroj dat před `ds-upgrade` nové sloupce nemá; chyba zápisu stopy
+  v hlavní větvi by z odeslané zprávy udělala selhanou a další pokus by ji
+  poslal znovu. Log pokusů nové sloupce nedostal — stačí `transport`
+  a `smtp_response`.
+- **Posluchač dostává výsledek parametrem** (`?MailSafetyResult` na konci
+  `outboxStateChanged()`), nečte ho z řádku fronty — nezávisí na sloupcích
+  fronty ani na pořadí zápisů.
+- **`MailSafetyConfig` skládá `fromServerData()`** nad dekódovaným
+  `server.json` (sdílí ho `ServerConfig::getMailSafety()` i `doctor`);
+  `forServer()` řeší nečitelný soubor. Bez sekce je `drop` na každém
+  serveru, který není `production` — i při neznámém režimu.
+- **Žádná změna adres = žádná stopa:** `redirect` na adresu, která je
+  jediným příjemcem, a `allowlist` se samými povolenými adresami vrací
+  akci `none`.
+- **`allowlist` bez `redirectTo`, část příjemců vypadne:** akce
+  `redirected` s prázdným `safety_target`, štítek „Příjemci omezeni
+  pojistkou“ (D6 zná jen dvě hodnoty; schváleno v chatu).
+- **Text upozornění pro `allowlist`:** „Pošta je na tomto serveru omezená
+  na povolené adresy — ostatním příjemcům nic neodejde.“
+- **Štítek ukazuje jen zpráva ve stavu Odesláno** — zpráva znovu ve frontě
+  nebo selhaná stopu dřívějšího odeslání neukazuje; odeslání bez zásahu ji
+  smaže.
+- **`safety_action` je `enumString`** s cfgItemem `core.mail.safetyActions`
+  (popisky štítků vč. `nameTarget` / `nameRestricted`).
+- **Upozornění v agendě a Nastavení kreslí `ContentArea`** podle seznamu
+  položek odchozí pošty (`frontend/src/utils/mailSafety.js`) — viewery na
+  serveru konfiguraci serveru nevidí. Fronta v administraci je generická
+  tabulka, nové sloupce ukazuje sama.
+- **Výsledek dialogu Odeslat** ukazuje štítek pojistky místo „Odesláno“
+  (`safety` v odpovědi `send`) — nad rámec zadání.
+- **`print-send` hlásí režim pojistky serveru**, ne výsledek: z příkazové
+  řádky se zpráva jen řadí do fronty, zásah pojistky ukáže až Odeslaná
+  pošta.
+- **Nápověda:** odstavec o štítcích v `help/posta/odeslana-posta.md`.
+
+Ověřeno na dev serveru (`mode: development`, bez `mail.safety` → `drop`):
+`mail-send-test`, `print-send` bez `--to`, `mail-outbox-run`, `doctor`,
+`/_app/info` a proklik agendy, formuláře zprávy, sekce u záznamu, dialogu
+Odeslat a Nastavení → Pošta v headless prohlížeči. `redirect` pokrývají
+unit testy s fake transportem.

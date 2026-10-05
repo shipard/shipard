@@ -4,7 +4,8 @@ Obecná služba odchozí pošty modulu `core.mail`: fronta v DB s logem
 doručení, per-sender SMTP transporty a relay fallback. Používá ji auth
 flow (pozvánky, reset hesla — Fáze 0b) a odesílání dokladů (Odeslaná
 pošta, [sent.md](sent.md)), později alerty. Spec: `tasks/mail-outbound.md`
-(rozhodnutí D22–D27).
+(rozhodnutí D22–D27). Na dev a testovacích serverech chrání skutečné
+příjemce [pojistka](#pojistka-odchozí-pošty-mailsafety) (`mail.safety`, #95).
 
 ## Architektura
 
@@ -15,15 +16,19 @@ volající (auth, alerty, …)
 MailOutboxService ──── enqueue / enqueueAndSend ───▶ core_mail_outbox
     │ attemptSend / processQueue                        │
     ▼                                                   ▼
-TransportResolver ──▶ MailComposer ──▶ SMTP      core_mail_outbox_log
-    │                                                (řádek per pokus)
+MailComposer                                     core_mail_outbox_log
+    ▼                                                (řádek per pokus)
+MailSafetyGuard — pojistka serveru: beze změny / jiná obálka / nic
+    ▼
+TransportResolver ──▶ SMTP
     ├─ hit v core_mail_senders → custom SMTP (heslo přes DsSecretCipher)
     └─ miss → relay z konfigurace (DS main.json ?? server.json)
 ```
 
 Třídy žijí v `src/Core/Mail/` (`Shipard\Core\Mail`), wiring dělá
 `MailServiceFactory::create($dsConfig, $db)` — jediné místo, kde se mergí
-relay konfigurace (DS override ?? server default).
+relay konfigurace (DS override ?? server default) a kde služba dostane
+pojistku serveru (`MailSafetyConfig`).
 
 - **Kdo posílá** rozhoduje volající: explicitní `from` v `OutboundMessage`,
   jinak DS default ze settings klíče **`mail.defaultFrom`** (Nastavení →
@@ -129,6 +134,121 @@ nevrací ani nepřijme (400 `SENSITIVE_COLUMN`), v DB je šifrované
 per-DS klíčem (`DsSecretCipher`, viz `docs/operations/secrets.md`).
 Jediná cesta zápisu je dedikovaný endpoint.
 
+## Pojistka odchozí pošty (`mail.safety`)
+
+Dev a testovací servery pracují s kopiemi ostrých dat — se skutečnými
+adresami partnerů. Pojistka (#95) zajistí, že pošta z takového serveru
+skutečným příjemcům nedojde. Nastavuje se **jen na úrovni serveru**
+(`/etc/shipard/server.json`, vedle `mail.relay`). Zdroj dat ji přepsat
+nemůže: kopie ostrého zdroje si může přinést vlastní relay i odesílatele
+s vlastním SMTP, pojistku ne.
+
+```json
+{
+    "mail": {
+        "relay": { "host": "relay.example.com" },
+        "safety": {
+            "mode": "redirect",
+            "redirectTo": "testy@example.com",
+            "allow": ["@example.com", "jan@example.org"]
+        }
+    }
+}
+```
+
+| Režim | Co se stane |
+|-------|-------------|
+| `off` | pošta odchází beze změny |
+| `redirect` | všichni příjemci (Komu, Kopie, skrytá kopie) → jedna adresa `redirectTo` |
+| `allowlist` | povolené adresy zůstanou na svých místech; ostatní nahradí jedna `redirectTo` v „Komu“, bez `redirectTo` vypadnou; nezbude-li nikdo, zpráva se zachytí jako u `drop` |
+| `drop` | nic neodejde |
+
+`redirectTo` je povinné pro `redirect` a volitelné pro `allowlist`.
+`allow` (jen `allowlist`) je seznam celých adres a domén ve tvaru
+`@doména`; porovnává se bez ohledu na velikost písmen a doména celá
+(`@example.com` nepovolí `sub.example.com`).
+
+### Výchozí stav
+
+Bez pojistky posílá jen server, který je výslovně produkční. Všechno
+ostatní je fail-closed:
+
+| `server.json` | Režim | `source` |
+|---------------|-------|----------|
+| sekce chybí, `mode: production` | `off` | `default` |
+| sekce chybí, jakýkoli jiný režim serveru | `drop` | `default` |
+| neznámý `mode`, `redirect` bez `redirectTo`, `allowlist` bez `allow`, neplatná adresa nebo doména | `drop` | `invalid` |
+| soubor nejde načíst | `drop` | `invalid` |
+
+`MailSafetyConfig` (`ServerConfig::getMailSafety()`, pro volající bez
+načteného configu `MailSafetyConfig::forServer()`) nikdy nevyhazuje
+výjimku — chybná konfigurace je `drop` s textem problému v `problem`.
+Chybu načtení relay `MailServiceFactory` polyká; pro pojistku to neplatí.
+
+Důsledek pro vývoj: dev server bez `mail.safety` neposílá nic, ani
+pozvánky a reset hesla. Kdo je potřebuje, nastaví `redirect`, nebo
+`allowlist` s vlastní doménou.
+
+### Kde se uplatní
+
+V `MailOutboxService::attemptSend()`, mezi sestavením e-mailu a výběrem
+transportu: `MailComposer::compose()` → `MailSafetyGuard::apply()` →
+`TransportResolver::resolve()` → SMTP. Je to jediné místo, kudy pošta
+odchází (auth e-maily, odeslání záznamu, `mail-send-test`), a leží před
+výběrem transportu — platí tedy pro relay i pro odesílatele s vlastním
+SMTP. `MailSafetyGuard` je čistá funkce nad Symfony `Email`: původní
+e-mail nemění, upravený vrací v `MailSafetyResult` (`action`: `none` /
+`redirected` / `dropped`, `target`).
+
+Mění se jen obálka. Řádek fronty (`email_to`, `email_cc`), Odeslaná pošta
+a historie si nechávají **původní** adresy, takže logiku příjemců jde na
+testovacím serveru zkoušet. Když se žádná adresa nezmění (allowlist se
+samými povolenými příjemci, redirect na adresu, která je jediným
+příjemcem), zpráva odejde beze stopy.
+
+### Stopa
+
+**V e-mailu**, když se aspoň jedna adresa změnila: předmět s prefixem
+`[TEST] ` (jen jednou) a hlavičky `X-Shipard-Original-To` /
+`X-Shipard-Original-Cc` s původními příjemci (`Cc` jen když kopie byla;
+skrytá kopie se do hlaviček nepropisuje). Tělo ani přílohy se nemění.
+
+**V aplikaci:**
+
+| Kde | Přesměrováno | Zachyceno |
+|-----|--------------|-----------|
+| `core_mail_outbox` | `state = sent`, `safety_action = redirected`, `safety_target` = adresa | `state = sent`, `safety_action = dropped` |
+| `core_mail_outbox_log` | skutečný transport; `smtp_response` začíná `mail safety: redirected to …` | transport `safety:<režim>` (`safety:drop`, `safety:allowlist`), SMTP se nevolá |
+| posluchač (`OutboxSourceListener`) | `sent` + `MailSafetyResult` | totéž |
+| Odeslaná pošta ([sent.md](sent.md)) | štítek „Přesměrováno na …“ | štítek „Zachyceno — neodesláno“ |
+
+Zachycená zpráva končí jako **odeslaná**, ne jako chyba — aplikace se
+chová jako v produkci, jen se štítkem (D6). `safety_action = redirected`
+s prázdným `safety_target` znamená allowlist bez `redirectTo`: část
+příjemců vypadla a nikam se nepřesměrovala. Popisky hodnot jsou v cfgItemu
+`core.mail.safetyActions`.
+
+Stopa se na řádek fronty zapisuje zvlášť, až po stavu `sent`: zdroj dat
+před `ds-upgrade` sloupce nemá a chyba zápisu stopy nesmí z odeslané
+zprávy udělat selhanou (další pokus by ji poslal znovu).
+
+### Viditelnost
+
+- **`shpd-server doctor`** — v sekci Outbound mail řádek `Mail safety`:
+  režim, cíl přesměrování a odkud se režim vzal (`configured` /
+  `default`). Chybná sekce je chyba (`✗ … (invalid) — <problém>`), vypnutá
+  pojistka na neprodukčním serveru varování.
+- **`GET /_app/info`** → `mailSafety: {mode}`. Endpoint je veřejný, proto
+  jen režim — žádné adresy ani domény.
+- **UI** — komponenta `MailSafetyNotice` (režim čte z `appInfoStore`)
+  ukáže při zapnuté pojistce upozornění „Pošta je na tomto serveru
+  přesměrovaná / zachycená / omezená na povolené adresy“ v dialogu
+  Odeslat, v agendě Odeslaná pošta a v Nastavení → Pošta (Odesílatelé
+  pošty, Odchozí pošta, Log odchozí pošty; seznam položek v
+  `frontend/src/utils/mailSafety.js`).
+- **CLI** — `mail-send-test` vypíše řádek `Safety:`, `print-send` řádek
+  `Mail safety:`.
+
 ## Stavový automat outboxu
 
 ```
@@ -149,6 +269,8 @@ enqueue → pending ──claim──▶ sending ──ok──▶ sent
   na `pending`, bez inkrementu počítadla.
 - Každý pokus zapíše řádek do `core_mail_outbox_log` (transport, výsledek,
   SMTP odpověď, trvání).
+- Zpráva zachycená [pojistkou](#pojistka-odchozí-pošty-mailsafety) jde
+  rovnou do `sent` — transport se nevolá, takže projde i bez relay.
 
 ## Cron
 
@@ -169,9 +291,9 @@ chybě.
   - `failed_24h` — terminálně selhané zprávy s pokusem za posledních 24 h,
   - `stuck_pending` — zprávy due přes 30 minut (worker neběží nebo leží
     transport; měří se od `next_attempt`, backoff není false positive).
-- **`shpd-server doctor`** — sekce Outbound mail per DS: relay/senders
-  nakonfigurovány, failed za 24 h, hloubka fronty, overdue pending
-  (> 30 min = error).
+- **`shpd-server doctor`** — sekce Outbound mail: režim pojistky serveru
+  a per DS relay/senders nakonfigurovány, failed za 24 h, hloubka fronty,
+  overdue pending (> 30 min = error).
 
 ## Runbook
 
@@ -181,7 +303,9 @@ chybě.
 2. `shpd-ds mail-outbox-run` ručně z adresáře DS — výstup říká
    sent/retried/failed.
 3. Transport: `shpd-ds mail-send-test --to <tvoje adresa>` — synchronní
-   pokus, vypíše transport, trvání a SMTP odpověď.
+   pokus, vypíše transport, trvání a SMTP odpověď. Řádek `Safety:` říká,
+   že zprávu zachytila nebo přesměrovala pojistka — pak na zadanou adresu
+   nedorazí.
 4. Leží relay → oprav `mail.relay` / síť; zprávy se pošlou samy
    (backoff), nic ručně přesouvat nemusíš.
 
@@ -211,8 +335,10 @@ záznamů je na provozovateli.
 Kdo do fronty zprávu zařadil a chce znát výsledek, zaregistruje se podle
 prefixu `source_ref`: `MailOutboxService::addSourceListener($prefix,
 OutboxSourceListener)`. Posluchač dostane `sent`, `failed` (vyčerpané
-pokusy) a `requeued` (`mail-outbox-retry`); mezistavy ne. Chyba posluchače
-stav fronty nemění. Používá to Odeslaná pošta — viz [sent.md](sent.md).
+pokusy) a `requeued` (`mail-outbox-retry`); mezistavy ne. U `sent` dostane
+i výsledek pojistky (`MailSafetyResult`) — „odesláno“ může znamenat
+přesměrováno nebo zachyceno. Chyba posluchače stav fronty nemění. Používá
+to Odeslaná pošta — viz [sent.md](sent.md).
 
 ## Non-goals (zatím)
 

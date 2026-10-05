@@ -368,6 +368,12 @@ Služba nečte HTTP ani UI — volá ji REST, CLI a později dávka.
 
 ## 11. Bezpečnost testování
 
+> **Doplněno po #95:** technickou pojistku má `mail.safety` v `server.json`
+> (`tasks/mail-safety.md`, `docs/mail/outbound.md` § Pojistka). Podmínka
+> „nic neodesílat z reálné kopie“ a povinné `--to` níže platí jen tam, kde
+> je pojistka `off`; se zapnutou pojistkou zpráva skutečným příjemcům
+> nedojde.
+
 Dev servery nemají zachytávání pošty a relay posílá ven (technickou
 pojistku řeší #95). Do té doby:
 

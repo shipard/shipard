@@ -68,7 +68,7 @@ posluchače pro řádky, jejichž `source_ref` začíná prefixem, při:
 
 | Událost | Kdy | Zpráva |
 |---|---|---|
-| `sent` | pokus prošel | `transport_state = sent`, `sent_at`, `send_count + 1` |
+| `sent` | pokus prošel | `transport_state = sent`, `sent_at`, `send_count + 1`; `safety_action` / `safety_target` podle pojistky |
 | `failed` | vyčerpané pokusy | `transport_state = failed`, `last_error` |
 | `requeued` | `mail-outbox-retry` vrátil selhaný řádek | `transport_state = queued` |
 
@@ -78,6 +78,23 @@ zaloguje a workera neshodí. `SentMessageOutboxListener` registruje
 `MailServiceFactory` pro prefix `sentMessage:`. Stav transportu přepisuje
 jen výsledek **posledního** řádku fronty (`last_outbox_id`) — opožděný
 výsledek staršího průchodu novější nepřebije; počet odeslání roste vždy.
+
+**Pojistka odchozí pošty** ([outbound.md](outbound.md) § Pojistka, #95).
+Na dev a testovacím serveru „odesláno“ nemusí znamenat, že zpráva došla
+příjemcům ze zprávy. Posluchač s událostí `sent` dostává výsledek pojistky
+a `SentMessageStore::markSafety()` ho zapíše na zprávu: `safety_action`
+(`redirected` / `dropped`, cfgItem `core.mail.safetyActions`)
+a `safety_target` (adresa přesměrování). Příjemci na zprávě (`email_to`,
+`email_cc`) zůstávají původní. Odeslání bez zásahu stopu dřívějšího
+odeslání smaže; zápis je oddělený od `markSent()`, takže zdroj dat před
+`ds-upgrade` o stav transportu nepřijde.
+
+`SentMessageTransportInfo::state()` vrací vedle stavu i `safety`
+(`{action, target, label, style}` nebo `null`) — štítek „Přesměrováno na
+<adresa>“, „Příjemci omezeni pojistkou“ (allowlist bez `redirectTo`, část
+příjemců vypadla) nebo „Zachyceno — neodesláno“. Jen u zprávy ve stavu
+`sent`: zpráva, která čeká ve frontě nebo selhala, stopu dřívějšího
+odeslání neukazuje.
 
 Úklid fronty tak historii nevezme: co, komu a kdy odešlo, zůstává na
 zprávě. Historie jednotlivých pokusů (formulář zprávy) se čte z
@@ -113,8 +130,9 @@ Práva: `guardTable()` na tabulku Odeslané pošty a zápis přes
 - **Agenda Odeslaná pošta** (`core.mail.sent`, `SentMessagesViewer`) —
   root-level položka hned za Došlou poštou (sekce „Pošta“ v navigaci
   není): datum, osoba a adresy příjemce, předmět, popisek záznamu
-  (`target_label`, snapshot z doby odeslání), stav transportu. Bez akce
-  Přidat. Detail má akci **Otevřít záznam** (`open_form` na cílový záznam).
+  (`target_label`, snapshot z doby odeslání), stav transportu a štítek
+  pojistky. Bez akce Přidat. Detail má akci **Otevřít záznam**
+  (`open_form` na cílový záznam).
 - **Formulář zprávy** (`SentMessagesForm`) — všechna pole jen pro čtení;
   stavová lišta nabízí Archivovat / Smazat / Obnovit. Komponenta
   `sentMessageTransport` (`SentMessageTransport.svelte`) ukazuje stav
@@ -126,6 +144,9 @@ Práva: `guardTable()` na tabulku Odeslané pošty a zápis přes
 - **Sekce Odeslaná pošta v detailu záznamu** — generický háček
   `ViewerController::detail()` pro libovolnou tabulku, viz
   [`../prints.md`](../prints.md) §7.
+- **Štítek pojistky** je všude, kde je stav transportu: řádek a detail
+  agendy, formulář zprávy, sekce u záznamu i výsledek dialogu Odeslat.
+  Nad agendou je při zapnuté pojistce upozornění (`MailSafetyNotice`).
 
 ## Mimo rozsah
 
@@ -136,11 +157,18 @@ sledování doručení a přečtení, HTML tělo.
 
 ## Bezpečnost testování
 
-Dev servery nemají zachytávání pošty a relay posílá ven (technickou
-pojistku řeší #95). Do té doby:
+Skutečné příjemce chrání pojistka odchozí pošty na úrovni serveru
+([outbound.md](outbound.md) § Pojistka, #95): dev server bez `mail.safety`
+neposílá nic, testovací server přesměrovává na týmovou adresu. Zprávy
+z kopie ostrých dat tak jde odesílat a logiku příjemců zkoušet — na
+zprávě zůstávají původní adresy a štítek říká, kam (ne)odešla.
+
+Co platí dál:
 
 - integrační testy jen `prepare` / zařazení do fronty (`trigger: cli`),
   nikdy `attemptSend` ani zpracování fronty; `RecordSendTest` běží celý
   v transakci s rollbackem, takže řádek fronty worker nikdy neuvidí;
-- ruční ověření odeslání jen na volném zdroji dat s vlastními adresami;
-- `print-send` bez `--dry-run` vyžaduje `--to`.
+- před ručním odesláním z kopie ostrých dat ověř režim pojistky
+  (`shpd-server doctor`, upozornění v dialogu Odeslat). Když je `off`,
+  platí původní pravidlo: odesílat jen z volného zdroje dat s vlastními
+  adresami a `print-send` bez `--dry-run` vyžaduje `--to`.

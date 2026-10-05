@@ -87,6 +87,11 @@ Read-only health check. Vypíše:
   ([ds-state.md](ds-state.md)): počty per stav, `⚠` DS v maintenance déle
   než 7 dní (zapomenutá? D8), `✗` poškozený `state.json` (DS fail-closed
   zavřený — počítá se jako chyba), `·` ostatní ne-active DS
+- **Outbound mail** — řádek `Mail safety` s režimem pojistky odchozí pošty
+  ([mail/outbound.md](mail/outbound.md) § Pojistka): cíl přesměrování
+  a zdroj režimu (`configured` / `default`); `✗` chybná sekce `mail.safety`
+  (nic neodejde — počítá se jako chyba), `⚠` vypnutá pojistka na
+  neprodukčním serveru. Pak per DS relay / odesílatelé a stav fronty
 
 Žádné side-effecty. Exit code `0` (vše OK) nebo `1` (alespoň jeden issue).
 Bez sudo (jen čte).
@@ -812,6 +817,7 @@ nevzniklo (druh selhání render služby je ve výpisu).
 cd /opt/shipard/data-sources/<id>
 shpd-ds print-send docs.invoicesOut.invoice 123 --dry-run             # návrh jako JSON, nic nevznikne
 shpd-ds print-send docs.invoicesOut.invoice 123 --to=ja@firma.example # zpráva + řádek fronty
+shpd-ds print-send docs.invoicesOut.invoice 123                       # příjemci z kontaktů partnera
 shpd-ds print-send docs.invoicesOut.invoice 123 \
     --to=ucetni@odberatel.example --cc=obchod@firma.example --language=en
 ```
@@ -824,18 +830,22 @@ s deklarovaným účelem (`sendPurpose`).
 | Opce | Význam |
 |------|--------|
 | `--dry-run` | Vypíše návrh odeslání (JSON na stdout): příjemce s důvody, odesílatele, předmět, text, přílohy a hlášení. Nic nevytvoří |
-| `--to <addr>` | Příjemce; lze opakovat. **Bez `--dry-run` povinné** |
+| `--to <addr>` | Příjemce; lze opakovat. Bez něj jde zpráva na adresy z kontaktů partnera — ty, které ukáže `--dry-run`. Povinné jen na neprodukčním serveru s vypnutou pojistkou pošty |
 | `--cc <addr>` | Kopie; lze opakovat |
 | `--from <addr>` | Adresa odesílatele — jedna z povolených; výchozí podle číselné řady, jinak `mail.defaultFrom` |
 | `--language <kód>` | Jazyk zprávy i PDF; výchozí podle partnera |
 
-**Proč je `--to` povinné:** zdroj dat neví, jestli nese ostrá data, nebo
-jejich kopii na vývojovém serveru — příkaz proto nikdy sám neposílá na
-adresy partnerů dohledané z kontaktů. Koho by oslovil, ukáže `--dry-run`.
-Technickou pojistku na úrovni serveru řeší #95.
+**Kdy je `--to` povinné:** zdroj dat neví, jestli nese ostrá data, nebo
+jejich kopii. Chrání ho pojistka odchozí pošty na úrovni serveru
+(`mail.safety`, [mail/outbound.md](mail/outbound.md) § Pojistka): se
+zapnutou pojistkou zpráva skutečným příjemcům nedojde, na produkčním
+serveru jim dojít má. `--to` proto příkaz vyžaduje jen tam, kde by pošta
+z kopie dat odešla nechtěně — na neprodukčním serveru s pojistkou `off`.
 
-Výstup: `Sent message #<id>: outbox #<id>, transport '<stav>'`; měkká
-hlášení tisku na stderr. Exit `INVALID` (2): neznámý tisk, nečíselné
+Výstup: `Sent message #<id>: outbox #<id>, transport '<stav>'`; na
+serveru se zapnutou pojistkou i řádek `Mail safety: <režim> — …`, který
+říká, kam zpráva (ne)půjde, až ji fronta odešle. Měkká hlášení tisku na
+stderr. Exit `INVALID` (2): neznámý tisk, nečíselné
 `recordId`, neplatný jazyk, chybějící `--to`. Exit `FAILURE` (1): tisk
 nejde odeslat nebo není pro záznam dostupný, chybí odesílatel, neplatná
 adresa (`<KÓD>: hláška`), PDF nevzniklo.
@@ -1071,6 +1081,13 @@ shpd-ds mail-send-test --to admin@example.com --to druhy@example.com --cc kopie@
 Smoke test transportu: synchronně odešle testovací zprávu (zapíše se do
 outboxu) a vypíše stav, použitý transport, trvání a SMTP odpověď. Exit
 podle výsledku. Bez `--from` se použije settings klíč `mail.defaultFrom`.
+
+Na serveru se zapnutou pojistkou odchozí pošty
+([mail/outbound.md](mail/outbound.md) § Pojistka) přibude řádek `Safety:`
+— `redirected to <adresa>`, nebo `held by mail safety — nothing was sent`
+(transport `safety:<režim>`, stav `sent`, exit 0). Zpráva pak na `--to`
+nedorazí; pro test skutečného doručení musí být adresa povolená
+(`allowlist`) nebo cílem přesměrování.
 
 | Opce | Význam |
 |------|--------|

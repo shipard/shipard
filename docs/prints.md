@@ -685,7 +685,11 @@ v `core.system.viewerDefaults.detailActions.send`. `Viewer.svelte` otevře
 - hlášení návrhu jsou nahoře; chyba, kterou uživatel v dialogu vyřešil
   (doplněný příjemce, zvolený odesílatel), zmizí;
 - po odeslání ukáže výsledek (Odesláno / Ve frontě) a hostitel obnoví
-  detail. Na úzké obrazovce je dialog přes celou plochu (`Modal`).
+  detail. Na úzké obrazovce je dialog přes celou plochu (`Modal`);
+- na serveru se zapnutou pojistkou odchozí pošty má nahoře upozornění
+  (`MailSafetyNotice`) a výsledek místo „Odesláno“ ukáže štítek pojistky
+  (`safety` v odpovědi `send`) — viz
+  [mail/outbound.md](mail/outbound.md) § Pojistka.
 
 **Sekce Odeslaná pošta (D45).** Tentýž háček přidá `detail.sentMessages` —
 zprávy ve stavu Odeslaná, které na záznam ukazují (`target_table_id` +
@@ -722,10 +726,10 @@ shpd-ds print-send <printId> <recordId> [--to=<adresa>]… [--cc=<adresa>]…
 
 Odešle záznam e-mailem (§9): vytvoří zprávu v Odeslané poště a zařadí ji do
 fronty (odešle ji worker `mail-outbox-run`). `--dry-run` vypíše návrh jako
-JSON a nic nevytvoří. **Bez `--dry-run` je `--to` povinné** — zdroj dat
-neví, jestli nese ostrá data nebo jejich kopii, takže příkaz nikdy sám
-neposílá na adresy partnerů dohledané z kontaktů (pojistka na úrovni
-serveru: #95).
+JSON a nic nevytvoří. Bez `--to` jde zpráva na adresy z kontaktů partnera;
+kopii ostrých dat chrání pojistka odchozí pošty na úrovni serveru
+(`mail.safety`, [mail/outbound.md](mail/outbound.md) § Pojistka). `--to` je
+povinné jen na neprodukčním serveru, kde je pojistka vypnutá.
 
 Viz [cli.md](cli.md).
 

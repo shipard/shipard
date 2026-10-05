@@ -325,6 +325,30 @@ Předpoklady, aby to fungovalo:
   override v `main.json`); stav fronty hlídá `shpd-server doctor` a alert
   check `core.mail.outbox_health`.
 
+- **Pojistka odchozí pošty (`mail.safety`):** klíč v `server.json` vedle
+  `mail.relay`, jen na úrovni serveru. Rozhoduje, jestli pošta dojde
+  skutečným příjemcům — režimy a přesné chování viz
+  [`../mail/outbound.md`](../mail/outbound.md) § Pojistka.
+
+  | Server | Nastavení |
+  |--------|-----------|
+  | produkční | nic — bez sekce a s `mode: production` pošta odchází beze změny |
+  | testovací (kopie ostrých dat) | **vždy výslovně** `redirect` na týmovou adresu, i když běží v `mode: production` |
+  | vývojový | bez sekce nic neodejde (`drop`); kdo chce poštu vidět, nastaví `redirect` na svou adresu nebo `allowlist` s vlastní doménou |
+
+  ```json
+  "mail": {
+      "relay":  { "host": "relay.example.com" },
+      "safety": { "mode": "redirect", "redirectTo": "testy@example.com" }
+  }
+  ```
+
+  Chybná sekce (neznámý režim, `redirect` bez `redirectTo`, neplatná
+  adresa) znamená, že neodejde nic — i na produkčním serveru. Po každé
+  úpravě ověř `shpd-server doctor` (řádek `Mail safety` v sekci Outbound
+  mail) a `shpd-ds mail-send-test --to <adresa>`. Konkrétní adresu
+  přesměrování drž jen v `server.json`, ne ve veřejných textech.
+
 ---
 
 ## 11. Nasazení nové verze
