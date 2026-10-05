@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 326 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 298.
+Celkem 327 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 298.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `exchange-received-non-vat-payer.md` | naplánováno | rozhodnutí D1–D9 zamčena 2026-10-05 (#97) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -229,6 +230,7 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `exchange-contact-name.md` | Kontaktní osoba strany dokladu (`contact.name`) — schéma, ISDOC, náhled; prompt v4.5.0 |
 | `exchange-received-reverse-charge.md` | Přenesení daňové povinnosti u přijatých dokladů — kód DPH odvozený ze signálů AI, registrace z naší DPH, přepočítaná rekapitulace; prompt v4.6.0 (#86) |
 | `exchange-received-vat-place.md` | Místo plnění přijatého dokladu podle DIČ dodavatele (`world.trade.unions`), ne podle adresy; prompt v4.6.1 (#86) |
+| `exchange-received-non-vat-payer.md` | Přijatý doklad u neplátce DPH — Bez DPH s daní dodavatele v cenách řádků, plátcovství k datu, ceny s daní z ISDOC (#97) |
 | `exchange-format-persons-phase1.md` | Výměnný formát osob (`shpd.persons.person.v1`) |
 | `exchange-format-items-phase1.md` | Výměnný formát položek (`shpd.items.item.v1`) |
 | `docs-import-number-mode.md` | Import-mód čísla dokladu + fix validace bank. spojení |
