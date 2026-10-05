@@ -389,6 +389,15 @@ viz `docs/exchange-format.md` a
 [tasks/ai-extraction-integrity.md](../../../../tasks/ai-extraction-integrity.md). Detaily: `docs/exchange-format.md` (sekce vat)
 a [tasks/docs-vat-mode-derivation.md](../../../../tasks/docs-vat-mode-derivation.md).
 
+**Zdroj dat neplátce DPH:** přijatý doklad, ke kterému k datu dokladu
+neplatí žádná registrace DPH, vznikne vždy „Bez DPH“ a daň dodavatele je
+součástí cen řádků (z ISDOC `computed.vatTotal`, jinak ze sazby řádku,
+s dorovnáním na rekapitulaci dodavatele). Derivace režimu pak říká jen,
+v jakých cenách řádky přišly; místo `vat_mode_derived` se hlásí info
+**`vat_non_payer`**. Platí pro AI i ISDOC větev — viz
+`docs/exchange-format.md` § 8.4 „Přijatý doklad neplátce DPH“
+a [tasks/exchange-received-non-vat-payer.md](../../../../tasks/exchange-received-non-vat-payer.md).
+
 ## Pohyb řádků při apply (doplnění operation)
 
 AI pohyb řádku (`rows[].operation`) záměrně nevrací — je to interní

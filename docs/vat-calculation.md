@@ -22,7 +22,10 @@ Z rekapitulace čte účtování (343), saldo, DPH výstupy (DP3/KH/SH) a podán
 
 Vlastnost dokladu (`docs.core.vatModes`), určuje, co znamená cena na řádku:
 
-- `0 Bez DPH` — nedaňový doklad; základ = cena, daň 0.
+- `0 Bez DPH` — nedaňový doklad; základ = cena, daň 0. U neplátce DPH
+  nese cena řádku i daň dodavatele (je součástí ceny pořízení) — přijaté
+  doklady z pošty tak převádí `DocumentApplier`
+  (`docs/exchange-format.md` § 8.4).
 - `1 Ze základu` — ceny na řádcích jsou bez DPH.
 - `2 Z ceny celkem` — ceny na řádcích jsou s DPH.
 

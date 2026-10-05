@@ -184,8 +184,12 @@ class DocumentApplierPreviewComputedTest extends TestCase
         return $heads;
     }
 
-    private function buildApplier(?\Throwable $createFails = null, bool $plainDocument = false): DocumentApplier
-    {
+    /** @param Connection|null $db DB applieru; výchozí zdroj s registrací DPH ({@see db()}). */
+    private function buildApplier(
+        ?\Throwable $createFails = null,
+        bool $plainDocument = false,
+        ?Connection $db = null,
+    ): DocumentApplier {
         $party = $this->createMock(PartyResolver::class);
         $party->method('resolve')->willReturn(ResolveResult::matched(42, 'companyId'));
         $party->method('resolveSelfParty')->willReturn(ResolveResult::matched(1, 'self'));
@@ -199,7 +203,7 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $account->method('resolve')->willReturn(null);
 
         return new TestableDocumentApplier(
-            db: $this->db(),
+            db: $db ?? $this->db(),
             config: $this->applierConfig(),
             headsGateway: $this->headsGateway($createFails, $plainDocument),
             personsGateway: $this->createMock(TransactionlessTableGateway::class),
@@ -479,5 +483,110 @@ class DocumentApplierPreviewComputedTest extends TestCase
                 $label,
             );
         }
+    }
+
+    // ── Ceny řádků v náhledu a přijatý doklad neplátce DPH (#97) ────────────
+
+    /** Zdroj bez registrace DPH — přijatý doklad je dokladem neplátce. */
+    private function dbWithoutVatRegistration(): Connection
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->method('fetchAll')->willReturn([]);
+        $db->method('getInsertId')->willReturn(0);
+        return $db;
+    }
+
+    /** Happy faktura s textovým řádkem před položkou — položka má index 1. */
+    private function payloadWithLeadingTextRow(): array
+    {
+        $payload = $this->happyPayload();
+        array_unshift($payload['rows'], ['rowKind' => 'text', 'description' => 'Fakturujeme vám']);
+        return $payload;
+    }
+
+    /** `computed.rows`: ceny spočítané dokladem, klíčované indexem canonicalu; textový řádek cenu nemá. */
+    public function testComputedRowsCarryDocumentPricesByCanonicalIndex(): void
+    {
+        $result = $this->buildApplier()->preview($this->payloadWithLeadingTextRow());
+
+        // Plátce: 10 × 1033,06 z ceny za jednotku, bez daně.
+        $this->assertSame(
+            [['index' => 1, 'unitPrice' => 1033.06, 'totalPrice' => 10330.60]],
+            $result->canonical['_resolve']['computed']['rows'],
+        );
+    }
+
+    /**
+     * Neplátce a faktura od plátce: doklad Bez DPH, řádek v ceně s daní
+     * dodavatele, celkem = částka k úhradě — bez rekapitulace a bez
+     * upozornění na rozdíl částek, které chybu dřív svádělo na čtení řádků.
+     */
+    public function testNonPayerPreviewShowsGrossRowsAndPayableTotal(): void
+    {
+        $applier = $this->buildApplier(db: $this->dbWithoutVatRegistration());
+
+        $result = $applier->preview($this->payloadWithLeadingTextRow());
+
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame(['value' => 'none', 'source' => 'nonPayer', 'auto' => 'none'], $resolve['vat']['mode']);
+        $computed = $resolve['computed'];
+        $this->assertSame('computed', $computed['recapSource']);
+        $this->assertNull($computed['recapFallback']);
+        $this->assertSame([], $computed['vatRecap']);
+        $this->assertSame(
+            ['totalBase' => 12500.00, 'totalVat' => 0.0, 'totalAmount' => 12500.00, 'totalRounding' => 0.0],
+            $computed['totals'],
+        );
+        $this->assertSame(
+            [['index' => 1, 'unitPrice' => 1250.0, 'totalPrice' => 12500.00]],
+            $computed['rows'],
+        );
+
+        $codes = $this->issueCodes($result->canonical);
+        $this->assertContains('vat_non_payer', $codes);
+        foreach (['computed_total_mismatch', 'totals_mismatch', 'computed_unavailable', 'recap_source_computed_fallback'] as $code) {
+            $this->assertNotContains($code, $codes);
+        }
+    }
+
+    /** Bez `computed.vatTotal` (AI) vyjde totéž ze sazby a dorovnání na rekapitulaci dodavatele. */
+    public function testNonPayerPreviewGrossesUpRowsWithoutSupplierTotals(): void
+    {
+        $payload = $this->happyPayload();
+        unset($payload['rows'][0]['computed']);
+
+        $result = $this->buildApplier(db: $this->dbWithoutVatRegistration())->preview($payload);
+
+        $computed = $result->canonical['_resolve']['computed'];
+        // 10 330,58 × 1,21 = 12 500,00 (12 500,0018 po zaokrouhlení).
+        $this->assertSame(12500.00, $computed['totals']['totalAmount']);
+        $this->assertSame(12500.00, $computed['rows'][0]['totalPrice']);
+        $this->assertNotContains('computed_total_mismatch', $this->issueCodes($result->canonical));
+    }
+
+    /** Parita s apply: doklad neplátce se uloží Bez DPH, s cenou s daní a bez registrace i rekapitulace. */
+    public function testNonPayerApplySavesWhatPreviewShows(): void
+    {
+        $applier = $this->buildApplier(db: $this->dbWithoutVatRegistration());
+        $payload = $this->happyPayload();
+        $computed = $applier->preview($payload)->canonical['_resolve']['computed'];
+
+        $applied = $applier->apply($payload);
+
+        $this->assertTrue($applied->success, "{$applied->errorCode} {$applied->errorMessage}");
+        $saved = $this->savedHeadsData;
+        $this->assertIsArray($saved);
+        $this->assertSame(0, (int) $saved['vat_mode']);
+        $this->assertTrue(empty($saved['vat_registration']));
+        $this->assertSame([], $saved['vatRecap']);
+        $this->assertSame($computed['totals']['totalAmount'], (float) $saved['total_amount']);
+        $this->assertSame(12500.00, (float) $saved['rows'][0]['total_price']);
+        $this->assertSame(1250.0, (float) $saved['rows'][0]['unit_price']);
+        $this->assertSame(1, (int) $saved['rows'][0]['price_calc_mode']);
+        $this->assertTrue(empty($saved['rows'][0]['vat_code']));
+        // Daň dodavatele je v základu řádku — tudy jde do nákladů i závazku.
+        $this->assertSame(12500.00, (float) $saved['rows'][0]['vat_base']);
+        $this->assertSame(0.0, (float) $saved['rows'][0]['vat_amount']);
     }
 }

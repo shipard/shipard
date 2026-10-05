@@ -99,6 +99,26 @@ final class VatModeDerivation
     }
 
     /**
+     * Rekapitulace, o kterou se dá opřít: neprázdná a každý řádek nese
+     * číselný `base` i `total`. Stejnou podmínku čte derivace režimu
+     * i dorovnání cen řádků u neplátce DPH (DocumentApplier, #97 D5).
+     */
+    public static function recapIsComplete(mixed $vatRecap): bool
+    {
+        if (!is_array($vatRecap) || $vatRecap === []) {
+            return false;
+        }
+        foreach ($vatRecap as $r) {
+            if (!is_array($r)
+                || !isset($r['base']) || !is_numeric($r['base'])
+                || !isset($r['total']) || !is_numeric($r['total'])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Reference [refBase, refTotal, rowCount] — primárně z kompletního
      * vatRecap, fallback z totals (`totalAmount − totalRounding`, protože
      * zaokrouhlení celkové částky se řádků netýká).
@@ -116,23 +136,14 @@ final class VatModeDerivation
         }
 
         $vatRecap = $canonical['vatRecap'] ?? null;
-        if (is_array($vatRecap) && count($vatRecap) > 0) {
+        if (self::recapIsComplete($vatRecap)) {
             $base = 0.0;
             $total = 0.0;
-            $complete = true;
             foreach ($vatRecap as $r) {
-                if (!is_array($r)
-                    || !isset($r['base']) || !is_numeric($r['base'])
-                    || !isset($r['total']) || !is_numeric($r['total'])) {
-                    $complete = false;
-                    break;
-                }
                 $base += (float) $r['base'];
                 $total += (float) $r['total'];
             }
-            if ($complete) {
-                return [round($base, 2), round($total, 2), $rowCount];
-            }
+            return [round($base, 2), round($total, 2), $rowCount];
         }
 
         $totals = $canonical['totals'] ?? null;

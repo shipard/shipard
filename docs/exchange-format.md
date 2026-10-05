@@ -222,6 +222,11 @@ Top-level struktura:
                                    //   počítala dvakrát. Canonical zůstává
                                    //   nedotčený, korekce je v _resolve.issues
                                    //   jako warning `vat_mode_derived`.
+                                   //   U přijatého dokladu neplátce DPH (žádná
+                                   //   registrace platná k datu dokladu) mode
+                                   //   přebíjí applier na `none` a říká jen,
+                                   //   v jakých cenách jsou řádky — § 8.4
+                                   //   „Přijatý doklad neplátce DPH“.
     "place": "domestic",          // domestic | intracom | thirdCountry | null
                                    //   Canonical názvy — číselník world.vat má
                                    //   pro thirdCountry `foreign`. Enum ve
@@ -360,6 +365,12 @@ dohledá z položkových řádků — mapa sazba → kód (kód, který na řád
 skončí: odvozený má přednost před canonicalem), použije se jen pro sazbu
 s jediným kódem. Bez kódu se rekapitulace převzít nedá (`vat_code` je NOT
 NULL a bez kódu nejdou určit flagy sčítání) → `computed` + info issue.
+
+**Neplátce DPH (#97 D8):** přijatý doklad na zdroji, který k datu dokladu
+není plátcem, rekapitulaci na doklad nedostane nikdy — ani při explicitním
+`declared`. Daň dodavatele je součástí cen řádků (§ 8.4), `vatRecap`
+slouží jen k dorovnání řádků a zůstává v canonicalu analýzy. Import
+(`applyOptions.importNumber`) se větve neplátce netýká.
 
 `totals` zůstávají informativní vždy. Důvod, proč jsou obě pole v canonical:
 
@@ -757,12 +768,82 @@ Postup:
 4. Žádný match → `notFound` + error `vat_code_unknown`.
 
 **Země registrace:** u přijatého dokladu (`selfParty: "customer"`) na zdroji
-s aktivní registrací DPH **vždy naše registrace** — první aktivní podle
-země a id, stejná volba jako výchozí hodnota formuláře dokladu (D2).
-`vat.registrationCountry` z AI i ISDOC se ignoruje; při rozporu info issue
-`vat_registration_country_derived`. U ostatních dokladů kaskáda
-`vat.registrationCountry` → prefix kódu (`cz-110` → `cz`) → země dodavatele.
-Zdroj bez registrace DPH (neplátce) jde kaskádou vždy.
+s registrací DPH **platnou k datu dokladu** (`valid_from` / `valid_to`
+proti DUZP, bez něj datu vystavení, bez obou dnešku) **vždy naše
+registrace** — první aktivní podle země a id, stejné pořadí jako výchozí
+hodnota formuláře dokladu (D2). `vat.registrationCountry` z AI i ISDOC se
+ignoruje; při rozporu info issue `vat_registration_country_derived`.
+Přijatý doklad, ke kterému žádná registrace neplatí, je doklad neplátce —
+kódy DPH se u něj neresolvují vůbec (podsekce níže). U ostatních dokladů
+(vystavené, účetní) kaskáda `vat.registrationCountry` → prefix kódu
+(`cz-110` → `cz`) → země dodavatele. Import (`applyOptions.importNumber`)
+platnost registrace nezkoumá: s registrací jde naší zemí, bez ní kaskádou.
+
+#### Přijatý doklad neplátce DPH
+
+`tasks/exchange-received-non-vat-payer.md` (#97). Zdroj dat, který k datu
+dokladu není plátcem DPH, si daň dodavatele odečíst nemůže — je pro něj
+**součástí ceny pořízení** a musí skončit v nákladech i v závazku vůči
+dodavateli. Doklad proto vznikne **Bez DPH** (`vat_mode` 0) a jeho řádky
+nesou ceny **včetně daně dodavatele**.
+
+**Kdo je neplátce (D2):** přijatý doklad (`selfParty: "customer"`), mimo
+import, a žádná aktivní registrace DPH platná k datu dokladu — DUZP, bez
+něj datum vystavení, bez obou dnešek. Rozhoduje registrace k datu, ne
+příznak `economy.vatAgenda` (`docs/ds-setup.md` D5): bývalý plátce má
+doklady po `valid_to` jako neplátce, starší jako plátce.
+
+**Cena řádku s daní (D4)** — pro každý položkový řádek (ne kontační)
+první dostupné:
+
+1. `rows[].computed.vatTotal` od dodavatele (ISDOC, případně AI),
+2. řádky už v cenách s daní — režim dokladu deklarovaný nebo odvozený
+   `VatModeDerivation` je `fromTotal` → cena řádku beze změny,
+3. cena řádku × (1 + `vat.pct` / 100), zaokrouhleno na 2 místa; řádek bez
+   sazby nebo s 0 % beze změny.
+
+Cenou řádku se rozumí `totalPrice` (chybí-li, množství × jednotková cena)
+**po slevě**; u řádku se slevou z ceny za jednotku se sleva odečítá od
+množství × jednotkové ceny, protože `totalPrice` z dokladu dodavatele ji
+zpravidla už obsahuje.
+
+**Dorovnání na rekapitulaci dodavatele (D5):** je-li `vatRecap` úplný
+(každý řádek má `base` i `total` — stejná podmínka jako u
+`VatModeDerivation`), srovnají se řádky každé sazby na `vatRecap[].total`
+té sazby. Rozdíl do tolerance zaokrouhlení (`max(0,02; 0,01 × počet řádků
+sazby)`) jde na řádek s největší absolutní částkou; větší rozdíl se
+nedorovnává a náhled ho ukáže jako `computed_total_mismatch`. Doklad tak
+sedí na částku k úhradě i v haléřích.
+
+**Co skončí na dokladu:** hlavička `vat_mode` 0, bez `vat_registration`
+a bez rekapitulace (D8); řádky `total_price` = cena s daní,
+`price_calc_mode` 1 (z celkové ceny, jednotkovou cenu dopočítá
+`DocRowCalculator`), bez slev (cena je obsahuje) a bez `vat_code` /
+`vat_pct` — kód z historie řádků ani sazba dodavatele se nepropisují.
+`total_rounding_mode` se odvodí ze součtu převedených řádků. Účtování
+žádnou změnu nepotřebuje: doklad Bez DPH zaúčtuje plnou částku řádku.
+
+| Situace | `vat_mode` | Řádky | Issues |
+|---|---|---|---|
+| neplátce, dodavatel plátce, ceny bez daně (ISDOC, AI fromBase) | 0 | ceny s daní dle D4/D5 | info `vat_non_payer` |
+| neplátce, ceny už s daní (účtenka, fromTotal) | 0 | ceny beze změny (+ D5) | info `vat_non_payer` |
+| neplátce, dodavatel neplátce (doklad daň nenese) | 0 | jak přišly | — |
+| neplátce, doklad nese přenesení daňové povinnosti (`vat.reverseCharge` nebo `rows[].vat.reverseChargeCode`) | 0 | dle D4 | + warning `non_payer_reverse_charge` |
+| plátce (registrace platná k datu) | beze změny | beze změny | beze změny |
+| bývalý plátce, doklad po `valid_to` | 0 | dle D4/D5 | info `vat_non_payer` |
+| vystavený doklad, import | beze změny | beze změny | beze změny |
+
+„Doklad nese daň dodavatele“ = některý položkový řádek má kladnou sazbu
+nebo nenulovou daň, případně ji nese rekapitulace. Jen takový doklad se
+převádí a hlásí `vat_non_payer`; doklad od neplátce zůstává, jak přišel.
+
+U neplátce se **nehlásí** `vat_mode_derived`, `vat_mode_suspect` ani
+`recap_source_computed_fallback` — režim i rekapitulace jsou dané a hlášky
+by mátly. Volby DPH (`useValue:` / `useCode:`) se u něj ignorují s info
+`vat_pin_ignored`; nabídka `_resolve.vatCodeOptions` chybí.
+
+Mimo rozsah: samovyměření u neplátce, který je identifikovanou osobou
+(jen warning `non_payer_reverse_charge`, daň se nevyměří).
 
 #### Místo plnění přijatého dokladu (`VatPlaceDerivation`)
 
@@ -995,7 +1076,8 @@ klient drží jeden payload mezi step preview a apply.
 
   // Efektivní hlavička DPH (#87 B, D14) — náhled zobrazuje tohle, ne
   // canonical. source: ai | vatId | user | derived | default (canonical
-  // hodnotu nenese, platí výchozí applieru). auto = hodnota bez volby
+  // hodnotu nenese, platí výchozí applieru) | nonPayer (jen mode: přijatý
+  // doklad neplátce DPH, vždy "none" — § 8.4). auto = hodnota bez volby
   // uživatele (select „Automaticky (…)“ ji ukazuje i po volbě). Volba:
   // userAction "useValue:<hodnota>" na vat.place / vat.mode (vstup; v
   // odpovědi není).
@@ -1027,7 +1109,13 @@ klient drží jeden payload mezi step preview a apply.
         "total": 12500.00, "isReversePair": false }
     ],
     "totals": { "totalBase": 10330.58, "totalVat": 2169.42,
-                "totalAmount": 12500.00, "totalRounding": 0.00 }
+                "totalAmount": 12500.00, "totalRounding": 0.00 },
+    // Ceny položkových řádků spočítané dokladem; index = index řádku
+    // v canonicalu (ne pořadí na dokladu). U neplátce DPH včetně daně
+    // dodavatele.
+    "rows": [
+      { "index": 0, "unitPrice": 1033.06, "totalPrice": 10330.60 }
+    ]
   },
 
   // Validation & sanity findings — chyby i warningy
@@ -1075,9 +1163,13 @@ do něj přidávají vlastní bloky bez změny schématu:
   (#87 task B, D13), jen přijatý doklad na zdroji s registrací DPH.
   Kandidáti k efektivnímu místu a DUZP; stejná množina, proti které
   applier validuje `useCode:` (`vat_code_pin_invalid`).
-- `_resolve.computed` — rekapitulace DPH a součty, **které skončí na
-  dokladu** (`{recapSource, recapFallback, vatRecap[], totals}`, tvar
-  v příkladu výše). Jen `/preview`: `transform()` s náhledovým plánem (kódy
+- `_resolve.computed` — rekapitulace DPH, součty a ceny řádků, **které
+  skončí na dokladu** (`{recapSource, recapFallback, vatRecap[], totals,
+  rows[]}`, tvar v příkladu výše). `rows[]` = `{index, unitPrice,
+  totalPrice}` položkových řádků podle **indexu canonicalu** (#97) — cena
+  za jednotku a cena řádku po slevě, jak je spočítal doklad; u přijatého
+  dokladu neplátce DPH včetně daně dodavatele. Náhled je zobrazuje místo
+  cen z canonicalu. Jen `/preview`: `transform()` s náhledovým plánem (kódy
   DPH a jednotky z čerstvého resolve, bez založených entit a řady) →
   `TableGateway::createDocument()` → `DocDocument::computeAmounts()`
   — stejný kód jako `beforeSave()` při apply, včetně přetížení podtříd
@@ -1111,7 +1203,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 |--------|----------|--------|
 | `required` | error | Chybí povinné pole per `docType` (issueDate, rows, supplier/customer). |
 | `totals_mismatch` | warning | Deklarovaná `totals.totalAmount` neodpovídá žádné vypočtené variantě (Σ řádků, Σ řádků s DPH, Σ recap). Heuristika validátoru; v `/preview` ji při dostupném `_resolve.computed` nahrazuje `computed_total_mismatch`. |
-| `computed_total_mismatch` | warning | Jen `/preview`: částka k úhradě podle skutečného výpočtu dokladu (`_resolve.computed.totals.totalAmount`) se od `totals.totalAmount` liší o víc než 0,01. Nese `declared` a `computed`. U samovyměření se liší daň, k úhradě sedí — warning nepadne. |
+| `computed_total_mismatch` | warning | Jen `/preview`: částka k úhradě podle skutečného výpočtu dokladu (`_resolve.computed.totals.totalAmount`) se od `totals.totalAmount` liší o víc než 0,01. Nese `declared` a `computed`; zpráva příčinu nehádá, jen vyzve ke kontrole řádků a režimu DPH. U samovyměření se liší daň, k úhradě sedí — warning nepadne. |
 | `computed_unavailable` | info | Jen `/preview`: výpočet `_resolve.computed` selhal výjimkou (zalogováno) — blok je `null`, náhled ukazuje údaje z canonicalu. |
 | `rows_recap_mismatch` | warning | Součet položkových řádků neodpovídá rekapitulaci/totals dle efektivního režimu DPH — řádky nejspíš neúplné. |
 | `vat_recap_inconsistent` | warning | Řádek rekapitulace vnitřně nesedí (`base + tax ≠ total` nebo `tax ≠ base × pct`) — recap dopočtený místo opsaného. |
@@ -1122,12 +1214,14 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `vat_code_pin_invalid` | error | Zvolený kód DPH řádku (`useCode:`) není v `_resolve.vatCodeOptions` k efektivnímu místu a DUZP — blokuje apply; vyber jiný (#87 B). |
 | `vat_code_pin_conflict` | warning | Zvolený kód DPH řádku odporuje signálům dokladu (`VatCodeDerivation::conflict()`); volba platí, zpráva nese důvod a odvozený kód (#87 B). |
 | `vat_pin_invalid` | error | Neplatná hodnota nebo akce volby DPH (`useValue:` mimo enum, `useCode:` bez kódu, jiná akce); path dle volby (#87 B). |
-| `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, zdroj bez registrace DPH) — ignorována; path dle volby (#87 B). |
+| `vat_pin_ignored` | info | Volba DPH mimo větev derivace (vystavený doklad, přijatý doklad neplátce DPH) — ignorována; path dle volby (#87 B). |
 | `supply_kind_derived` | warning | Řádek přijatého dokladu mimo tuzemsko bez `vat.supplyKind` — druh plnění doplněn ze štítku řádku (`crossBorderSupply` taxonomie, § 8.4). Zpráva nese název štítku a druh; path `rows.N.vat.supplyKind`. Hlásí se jen, když na doplněném druhu výsledek stojí (odvozený kód nebo `vat_code_unknown`). |
 | `vat_registration_country_derived` | info | `vat.registrationCountry` přijatého dokladu neodpovídá naší registraci — nepoužije se (D2). |
 | `vat_place_derived` | warning | Místo plnění přijatého dokladu odvozené z prefixu DIČ dodavatele (`VatPlaceDerivation`) se liší od neprázdné hodnoty `vat.place` z AI — použije se odvozené. Zpráva nese obě hodnoty a prefix. |
 | `vat_place_unknown` / `vat_mode_unknown` | warning | Neznámá hodnota `vat.place` / `vat.mode` — fallback tuzemsko / fromBase. Schéma má obě pole jako enum, takže jen mimo schema validaci. |
 | `vat_mode_suspect` | warning | Řádky vypadají jako ceny s DPH při deklarovaném `fromBase`, ale derivace nemá dost dat na korekci. |
+| `vat_non_payer` | info | Přijatý doklad, ke kterému neplatí žádná registrace DPH, a doklad nese daň dodavatele: vznikne Bez DPH s daní v cenách řádků (§ 8.4, #97). Path `vat.mode`. |
+| `non_payer_reverse_charge` | warning | Přijatý doklad neplátce nese přenesení daňové povinnosti — daň se nevyměří; identifikovaná osoba ji musí přiznat mimo doklad (#97 D9). Path `vat.reverseCharge`. |
 | `partner_doc_number_missing` | warning | Přijatá faktura cílí na stav ≥ 20 bez čísla dokladu dodavatele. |
 | `row_operation_config_invalid` | warning | Pohyb řádku nejde doplnit — chybná konfigurace rowOperations. |
 | `invalid_value` | error | `cashDirection` pokladního dokladu není 1 ani 2. |

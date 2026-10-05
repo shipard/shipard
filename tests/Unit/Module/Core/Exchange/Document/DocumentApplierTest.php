@@ -79,6 +79,12 @@ class DocumentApplierTest extends TestCase
 
     private static ?array $vatPlaces = null;
 
+    /**
+     * Import mód (starý Shipard, datové sady): doklad se přenáší, jak je —
+     * platnost registrace DPH se nezkoumá a větev neplátce se neuplatní (#97).
+     */
+    private const IMPORT_OPTIONS = ['importNumber' => ['docNumber' => '2024-0042', 'sequenceNumber' => 42]];
+
     private function buildApplier(
         ?Connection $db = null,
         ?PartyResolver $party = null,
@@ -393,7 +399,14 @@ class DocumentApplierTest extends TestCase
         $bank = $this->createMock(BankAccountResolver::class);
         $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
 
-        $applier = $this->buildApplier(party: $party, item: $itemResolver, unit: $unit, vat: $vat, bank: $bank);
+        $applier = $this->buildApplier(
+            db: $this->dbWithVatRegistration(),
+            party: $party,
+            item: $itemResolver,
+            unit: $unit,
+            vat: $vat,
+            bank: $bank,
+        );
 
         $payload = json_decode(
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
@@ -1320,7 +1333,7 @@ class DocumentApplierTest extends TestCase
     {
         // Top-level `vat` je od schema fixes nullable — null se musí chovat
         // stejně jako chybějící objekt (defaulty fromBase/domestic).
-        $applier = $this->buildApplier();
+        $applier = $this->buildApplier(db: $this->dbWithVatRegistration());
         $canonical = [
             'docType'   => 'invoiceReceived',
             'selfParty' => 'customer',
@@ -1398,7 +1411,7 @@ class DocumentApplierTest extends TestCase
      */
     private function transformWithRecap(array $extra): array
     {
-        $applier = $this->buildApplier();
+        $applier = $this->buildApplier(db: $this->dbWithVatRegistration());
         $canonical = array_merge([
             'docType'   => 'invoiceReceived',
             'selfParty' => 'customer',
@@ -1414,7 +1427,7 @@ class DocumentApplierTest extends TestCase
      */
     private function recapIssues(array $extra): array
     {
-        $applier = $this->buildApplier();
+        $applier = $this->buildApplier(db: $this->dbWithVatRegistration());
         $canonical = array_merge([
             'docType'   => 'invoiceReceived',
             'selfParty' => 'customer',
@@ -1522,7 +1535,8 @@ class DocumentApplierTest extends TestCase
         $this->assertCount(1, $issues);
         $this->assertSame('recap_source_computed_fallback', $issues[0]['code']);
         $this->assertStringContainsString('xx-999', $issues[0]['message']);
-        $this->assertStringContainsString('země XX', $issues[0]['message']);
+        // D2: u přijatého dokladu se kód hledá v číselníku naší registrace.
+        $this->assertStringContainsString('země CZ', $issues[0]['message']);
     }
 
     /** I7 platí i pro explicitní `declared` — bez kódu nejdou určit flagy sčítání. */
@@ -1542,7 +1556,11 @@ class DocumentApplierTest extends TestCase
         $this->assertStringContainsString('highEU', $this->recapIssues($recap)[0]['message']);
     }
 
-    /** Kaskáda země pro kód rekapitulace: bez prefixu v kódu země dodavatele. */
+    /**
+     * Kaskáda země pro kód rekapitulace: bez prefixu v kódu země dodavatele.
+     * Import na zdroji bez registrace DPH — mimo import je takový přijatý
+     * doklad dokladem neplátce a rekapitulaci nemá (#97).
+     */
     public function testRecapCodeResolvesWithSupplierCountryWhenNoPrefix(): void
     {
         $vat = $this->createMock(VatCodeResolver::class);
@@ -1564,6 +1582,7 @@ class DocumentApplierTest extends TestCase
             'vatRecap'  => [
                 ['vatCode' => 'special110', 'vatPct' => 21, 'base' => 100.00, 'tax' => 21.00, 'total' => 121.00],
             ],
+            'applyOptions' => self::IMPORT_OPTIONS,
         ]);
 
         $this->assertSame(1, $data['vat_recap_source']);
@@ -1662,7 +1681,7 @@ class DocumentApplierTest extends TestCase
      */
     private function transformWithTotals(array $extra): array
     {
-        $applier = $this->buildApplier();
+        $applier = $this->buildApplier(db: $this->dbWithVatRegistration());
         $canonical = array_merge([
             'docType'   => 'invoiceReceived',
             'selfParty' => 'customer',
@@ -1944,7 +1963,14 @@ class DocumentApplierTest extends TestCase
     public function testPreviewAddsVatModeDerivedIssueOnReceipt(): void
     {
         [$party, $item, $unit, $vat, $bank] = $this->buildMatchedResolvers();
-        $applier = $this->buildApplier(party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank);
+        $applier = $this->buildApplier(
+            db: $this->dbWithVatRegistration(),
+            party: $party,
+            item: $item,
+            unit: $unit,
+            vat: $vat,
+            bank: $bank,
+        );
 
         $payload = json_decode(
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
@@ -2205,9 +2231,12 @@ class DocumentApplierTest extends TestCase
      */
     /**
      * Kaskáda země (registrationCountry → prefix kódu → dodavatel) — tři
-     * testy níže jedou nad přijatým dokladem na zdroji BEZ registrace DPH
-     * (DB mock fetch → null), kde D2 ani derivace neplatí. Se známou
-     * registrací je země vždy naše (testReceivedRegistrationCountryOfSupplierIsIgnored).
+     * testy níže jedou nad přijatým dokladem z importu na zdroji BEZ
+     * registrace DPH (DB mock fetch → null), kde D2 ani derivace neplatí.
+     * Se známou registrací je země vždy naše
+     * (testReceivedRegistrationCountryOfSupplierIsIgnored); mimo import je
+     * přijatý doklad bez registrace dokladem neplátce a kód se neresolvuje
+     * (#97, testNonPayer*).
      */
     public function testRowVatCountryFallsBackToCodePrefixWhenVatObjectMissing(): void
     {
@@ -2238,6 +2267,7 @@ class DocumentApplierTest extends TestCase
             true,
         );
         unset($payload['vat']);
+        $payload['applyOptions'] = self::IMPORT_OPTIONS;
         $result = $applier->preview($payload);
 
         $this->assertTrue($result->success);
@@ -2276,6 +2306,7 @@ class DocumentApplierTest extends TestCase
         $payload['rows'][0]['vat']['code'] = 'special110';
         // Rekapitulace jde stejnou kaskádou — bez prefixu také země dodavatele.
         $payload['vatRecap'][0]['vatCode'] = 'special110';
+        $payload['applyOptions'] = self::IMPORT_OPTIONS;
         $applier->preview($payload);
     }
 
@@ -2304,6 +2335,7 @@ class DocumentApplierTest extends TestCase
             true,
         );
         $payload['vat']['registrationCountry'] = 'DE';
+        $payload['applyOptions'] = self::IMPORT_OPTIONS;
         $applier->preview($payload);
     }
 
@@ -2538,21 +2570,468 @@ class DocumentApplierTest extends TestCase
         $this->assertSame(1, $data['vatRecap'][1]['is_reverse_pair']);
     }
 
-    /** Zdroj bez registrace DPH (neplátce): derivace ani D2 se neuplatní, chování jako dřív. */
-    public function testNonVatPayerDataSourceKeepsLegacyBehaviour(): void
+    // ── Přijatý doklad neplátce DPH (#97) ───────────────────────────────────
+    // tasks/exchange-received-non-vat-payer.md — fiktivní dodavatelé a částky.
+    // Výchozí DB mock registraci DPH nemá (fetch → null) = zdroj neplátce.
+
+    /**
+     * Minimální přijatá faktura pro transform() na zdroji neplátce.
+     *
+     * @param array<string, mixed> $extra
+     * @return array<string, mixed>
+     */
+    private function nonPayerCanonical(array $extra): array
+    {
+        return array_merge([
+            'docType'   => 'invoiceReceived',
+            'selfParty' => 'customer',
+            'dates'     => ['issueDate' => '2026-07-01', 'taxPointDate' => '2026-07-01'],
+        ], $extra);
+    }
+
+    /**
+     * Issues, které applier přidá kvůli režimu a rekapitulaci.
+     *
+     * @param array<string, mixed> $canonical
+     * @return list<string>
+     */
+    private function vatIssueCodes(DocumentApplier $applier, array $canonical): array
+    {
+        $issues = [];
+        foreach (['appendVatModeIssue', 'appendRecapSourceIssue'] as $method) {
+            $ref = new \ReflectionMethod($applier, $method);
+            $ref->invokeArgs($applier, [$canonical, &$issues]);
+        }
+        return array_column($issues, 'code');
+    }
+
+    /**
+     * DB mock s registrací DPH (cz, id 5) platnou v daném intervalu: dotaz
+     * s datem vyhodnotí stejně jako SQL (`valid_from <= datum`, `valid_to`
+     * null nebo `>= datum`), dotaz bez data (import) registraci vrátí vždy.
+     */
+    private function dbWithVatRegistrationValidity(string $validFrom, ?string $validTo): Connection
     {
         $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturn(null);
-        $applier = $this->buildVatDerivingApplier($db);
+        $db->method('fetch')->willReturnCallback(static function (mixed ...$args) use ($validFrom, $validTo): ?Row {
+            $sql = (string) ($args[0] ?? '');
+            if (!str_contains($sql, 'economy_codebooks_vat_registrations')) {
+                return null;
+            }
+            if (str_contains($sql, 'valid_from')) {
+                $date = (string) $args[4];
+                if ($validFrom > $date || ($validTo !== null && $validTo < $date)) {
+                    return null;
+                }
+            }
+            return new Row(['id' => 5, 'country' => 'cz']);
+        });
+        return $db;
+    }
+
+    /** D4.1: cena s daní z `computed.vatTotal` dodavatele (ISDOC); doklad Bez DPH bez registrace a rekapitulace. */
+    public function testNonPayerTakesGrossPriceFromSupplierComputedTotal(): void
+    {
+        $applier = $this->buildApplier();
+        $canonical = $this->nonPayerCanonical([
+            'rows' => [
+                [
+                    'rowKind' => 'item', 'quantity' => 2, 'unitPrice' => 1000.0, 'totalPrice' => 2000.0,
+                    'priceCalcMode' => 'fromUnitPrice', 'vat' => ['pct' => 21.0],
+                    'computed' => ['vatBase' => 2000.0, 'vatAmount' => 420.0, 'vatTotal' => 2420.0],
+                ],
+                [
+                    'rowKind' => 'item', 'quantity' => 5, 'unitPrice' => 200.0, 'totalPrice' => 1000.0,
+                    'priceCalcMode' => 'fromUnitPrice', 'vat' => ['pct' => 12.0],
+                    'computed' => ['vatBase' => 1000.0, 'vatAmount' => 120.0, 'vatTotal' => 1120.0],
+                ],
+            ],
+            'vatRecap' => [
+                ['vatPct' => 21.0, 'base' => 2000.0, 'tax' => 420.0, 'total' => 2420.0],
+                ['vatPct' => 12.0, 'base' => 1000.0, 'tax' => 120.0, 'total' => 1120.0],
+            ],
+            'totals' => ['totalBase' => 3000.0, 'totalVat' => 540.0, 'totalAmount' => 3540.0],
+        ]);
+
+        $data = $this->invokeTransform($applier, $canonical);
+
+        $this->assertSame(0, $data['vat_mode']);
+        $this->assertSame(0, $data['vat_recap_source']);
+        $this->assertArrayNotHasKey('vatRecap', $data, 'rekapitulace dodavatele se neukládá (D8)');
+        $this->assertArrayNotHasKey('vat_registration', $data);
+        $this->assertArrayNotHasKey('total_rounding_mode', $data);
+
+        $this->assertSame(2420.0, $data['rows'][0]['total_price']);
+        $this->assertSame(1120.0, $data['rows'][1]['total_price']);
+        foreach ($data['rows'] as $row) {
+            $this->assertSame(1, $row['price_calc_mode'], 'z celkové ceny');
+            $this->assertArrayNotHasKey('unit_price', $row, 'jednotkovou cenu bez daně dopočítá DocRowCalculator');
+            $this->assertArrayNotHasKey('vat_code', $row);
+            $this->assertArrayNotHasKey('vat_pct', $row);
+        }
+
+        $codes = $this->vatIssueCodes($applier, $canonical);
+        $this->assertSame(['vat_non_payer'], $codes);
+    }
+
+    /** D4.3: AI řádky bez daně a bez `computed` → cena × (1 + sazba). */
+    public function testNonPayerGrossesUpNetRowsByRate(): void
+    {
+        $data = $this->invokeTransform($this->buildApplier(), $this->nonPayerCanonical([
+            'vat'  => ['mode' => 'fromBase'],
+            'rows' => [
+                ['rowKind' => 'item', 'quantity' => 1, 'unitPrice' => 1000.0, 'totalPrice' => 1000.0, 'vat' => ['pct' => 21]],
+                // Řádek bez sazby a s 0 % zůstává v ceně z dokladu.
+                ['rowKind' => 'item', 'quantity' => 1, 'unitPrice' => 50.0, 'totalPrice' => 50.0, 'vat' => ['pct' => 0]],
+                ['rowKind' => 'item', 'quantity' => 1, 'unitPrice' => 30.0, 'totalPrice' => 30.0],
+            ],
+        ]));
+
+        $this->assertSame(0, $data['vat_mode']);
+        $this->assertSame([1210.0, 50.0, 30.0], array_column($data['rows'], 'total_price'));
+        $this->assertSame([1, 1, 1], array_column($data['rows'], 'price_calc_mode'));
+    }
+
+    /** D5: každá sazba se dorovná na svou rekapitulaci, rozdíl jde na největší řádek sazby. */
+    public function testNonPayerAlignsEachRateToSupplierRecap(): void
+    {
+        $data = $this->invokeTransform($this->buildApplier(), $this->nonPayerCanonical([
+            'vat'  => ['mode' => 'fromBase'],
+            'rows' => [
+                ['rowKind' => 'item', 'totalPrice' => 100.03, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]],
+                ['rowKind' => 'item', 'totalPrice' => 200.03, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => '21.0']],
+                ['rowKind' => 'item', 'totalPrice' => 50.04, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 12]],
+                ['rowKind' => 'item', 'totalPrice' => 30.04, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 12.0]],
+            ],
+            // Dodavatel počítá daň ze součtu základů sazby — o haléř jinak než řádky.
+            'vatRecap' => [
+                ['vatPct' => 21, 'base' => 300.06, 'tax' => 63.01, 'total' => 363.07],
+                ['vatPct' => 12, 'base' => 80.08, 'tax' => 9.61, 'total' => 89.69],
+            ],
+            'totals' => ['totalBase' => 380.14, 'totalVat' => 72.62, 'totalAmount' => 452.76],
+        ]));
+
+        // Po řádcích: 121,04 + 242,04 = 363,08 (−0,01) a 56,04 + 33,64 = 89,68 (+0,01).
+        $this->assertSame([121.04, 242.03, 56.05, 33.64], array_column($data['rows'], 'total_price'));
+        $this->assertSame(452.76, round(array_sum(array_column($data['rows'], 'total_price')), 2));
+    }
+
+    /** D5: rozdíl nad tolerancí zaokrouhlení se nedorovnává — řádky jsou neúplné, ne haléřově jinak. */
+    public function testNonPayerLeavesDifferenceAboveToleranceAlone(): void
+    {
+        $data = $this->invokeTransform($this->buildApplier(), $this->nonPayerCanonical([
+            'vat'      => ['mode' => 'fromBase'],
+            'rows'     => [['rowKind' => 'item', 'totalPrice' => 1000.0, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]]],
+            'vatRecap' => [['vatPct' => 21, 'base' => 1000.41, 'tax' => 210.09, 'total' => 1210.50]],
+        ]));
+
+        $this->assertSame(1210.0, $data['rows'][0]['total_price']);
+    }
+
+    /** D4.2: řádky už v cenách s daní (účtenka) → ceny beze změny. */
+    public function testNonPayerKeepsPricesAlreadyIncludingVat(): void
+    {
+        $applier = $this->buildApplier();
+        $canonical = $this->nonPayerCanonical($this->receiptVatFragment());
+
+        $data = $this->invokeTransform($applier, $canonical);
+
+        $this->assertSame(0, $data['vat_mode']);
+        $this->assertSame(1746.0, $data['rows'][0]['total_price']);
+        $this->assertSame(1, $data['rows'][0]['price_calc_mode']);
+        $this->assertArrayNotHasKey('vat_code', $data['rows'][0]);
+        // Režim je daný neplátcovstvím — korekce „shora“ se nehlásí.
+        $this->assertSame(['vat_non_payer'], $this->vatIssueCodes($applier, $canonical));
+    }
+
+    /** Sleva se odečte jednou: cena s daní je po slevě a řádek slevu dál nenese. */
+    public function testNonPayerAppliesRowDiscountOnce(): void
+    {
+        $data = $this->invokeTransform($this->buildApplier(), $this->nonPayerCanonical([
+            'vat'  => ['mode' => 'fromBase'],
+            'rows' => [
+                // Na dokladu dodavatele 10 × 100 se slevou 10 % = 900 (totalPrice už po slevě).
+                [
+                    'rowKind' => 'item', 'quantity' => 10, 'unitPrice' => 100.0, 'totalPrice' => 900.0,
+                    'priceCalcMode' => 'fromUnitPrice', 'discountPct' => 10, 'vat' => ['pct' => 21],
+                ],
+                [
+                    'rowKind' => 'item', 'quantity' => 1, 'totalPrice' => 500.0,
+                    'priceCalcMode' => 'fromTotal', 'discountAmount' => 100.0, 'vat' => ['pct' => 21],
+                ],
+            ],
+        ]));
+
+        $this->assertSame([1089.0, 484.0], array_column($data['rows'], 'total_price'));
+        foreach ($data['rows'] as $row) {
+            $this->assertArrayNotHasKey('discount_pct', $row);
+            $this->assertArrayNotHasKey('discount_amount', $row);
+        }
+    }
+
+    /** Řádek bez `totalPrice` se převede z množství × jednotkové ceny — jinak by se u něj daň ztratila dál. */
+    public function testNonPayerFallsBackToQuantityTimesUnitPrice(): void
+    {
+        $data = $this->invokeTransform($this->buildApplier(), $this->nonPayerCanonical([
+            'rows' => [['rowKind' => 'item', 'quantity' => 3, 'unitPrice' => 100.0, 'vat' => ['pct' => 21]]],
+        ]));
+
+        $this->assertSame(363.0, $data['rows'][0]['total_price']);
+        $this->assertSame(1, $data['rows'][0]['price_calc_mode']);
+    }
+
+    /** Doklad od neplátce (bez daně): Bez DPH, řádky jak přišly, žádné hlášení. */
+    public function testNonPayerDocumentFromNonPayerSupplierStaysUntouched(): void
+    {
+        $applier = $this->buildApplier();
+        $canonical = $this->nonPayerCanonical([
+            'vat'  => ['mode' => 'none'],
+            'rows' => [
+                [
+                    'rowKind' => 'item', 'quantity' => 2, 'unitPrice' => 50.0, 'totalPrice' => 100.0,
+                    'priceCalcMode' => 'fromUnitPrice', 'discountPct' => 5,
+                ],
+            ],
+            'totals' => ['totalAmount' => 95.0],
+        ]);
+
+        $data = $this->invokeTransform($applier, $canonical);
+
+        $this->assertSame(0, $data['vat_mode']);
+        $this->assertArrayNotHasKey('vat_registration', $data);
+        $this->assertSame(50.0, $data['rows'][0]['unit_price']);
+        $this->assertSame(100.0, $data['rows'][0]['total_price']);
+        $this->assertSame(0, $data['rows'][0]['price_calc_mode']);
+        $this->assertSame(5, $data['rows'][0]['discount_pct']);
+        $this->assertSame([], $this->vatIssueCodes($applier, $canonical));
+    }
+
+    /** Kontační řádek účtuje částku přímo — nepřevádí se, ani když nese sazbu. */
+    public function testNonPayerLeavesContationRowsAlone(): void
+    {
+        $data = $this->invokeTransform($this->buildApplier(), $this->nonPayerCanonical([
+            'rows' => [
+                ['rowKind' => 'item', 'totalPrice' => 1000.0, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]],
+                ['rowKind' => 'item', 'accSide' => 'debit', 'account' => '548000', 'totalPrice' => 10.0, 'vat' => ['pct' => 21]],
+            ],
+        ]));
+
+        $this->assertSame([1210.0, 10.0], array_column($data['rows'], 'total_price'));
+    }
+
+    /**
+     * Ceny jdou podle indexu canonicalu, ne podle pořadí ve výstupu: řádek
+     * přeskočený volbou uživatele je nesmí posunout. Kód DPH z resolve (historie
+     * řádků) se na doklad Bez DPH nepropíše.
+     */
+    public function testNonPayerGrossPricesFollowCanonicalIndexWhenRowIsSkipped(): void
+    {
+        $matched = ['status' => 'matched', 'createPayload' => ['code' => 'cz-110', 'pct' => 21.0]];
+        $data = $this->invokeTransformWithPlan($this->buildApplier(), $this->nonPayerCanonical([
+            'rows' => [
+                ['rowKind' => 'item', 'totalPrice' => 100.0, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]],
+                ['rowKind' => 'item', 'totalPrice' => 200.0, 'priceCalcMode' => 'fromTotal', 'vat' => ['code' => 'cz-110', 'pct' => 21]],
+            ],
+        ]), [
+            'resolvedSupplier' => 5, 'resolvedCustomer' => null, 'resolvedSupplierBank' => null,
+            'rowSkips' => [0], 'resolvedRowItems' => [], 'resolvedRowUnits' => [],
+            'resolvedRowVatCodes' => [1 => $matched],
+        ]);
+
+        $this->assertCount(1, $data['rows']);
+        $this->assertSame(242.0, $data['rows'][0]['total_price']);
+        $this->assertSame(1, $data['rows'][0]['order_pos']);
+        $this->assertArrayNotHasKey('vat_code', $data['rows'][0]);
+        $this->assertArrayNotHasKey('vat_pct', $data['rows'][0]);
+    }
+
+    /**
+     * Zaokrouhlení celkové částky vychází z cen, které na doklad jdou: faktura
+     * zaokrouhlená na koruny i účtenka v cenách s daní bez rekapitulace (odhad
+     * z canonicalu by u ní sazbu přičetl podruhé).
+     */
+    public function testNonPayerDerivesTotalRoundingFromGrossRows(): void
+    {
+        $invoice = $this->invokeTransform($this->buildApplier(), $this->nonPayerCanonical([
+            'vat'      => ['mode' => 'fromBase'],
+            'rows'     => [['rowKind' => 'item', 'totalPrice' => 1000.25, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]]],
+            'vatRecap' => [['vatPct' => 21, 'base' => 1000.25, 'tax' => 210.05, 'total' => 1210.30]],
+            'totals'   => ['totalBase' => 1000.25, 'totalVat' => 210.05, 'totalAmount' => 1210.0, 'totalRounding' => -0.30],
+        ]));
+        $this->assertSame(1210.30, $invoice['rows'][0]['total_price']);
+        $this->assertSame(\Shipard\Module\Docs\Core\RoundingModes::MATH_UNIT, $invoice['total_rounding_mode']);
+
+        $receipt = $this->invokeTransform($this->buildApplier(), $this->nonPayerCanonical([
+            'vat'    => ['mode' => 'fromTotal'],
+            'rows'   => [['rowKind' => 'item', 'totalPrice' => 60.50, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]]],
+            'totals' => ['totalAmount' => 61.0],
+        ]));
+        $this->assertSame(60.50, $receipt['rows'][0]['total_price']);
+        $this->assertSame(\Shipard\Module\Docs\Core\RoundingModes::MATH_UNIT, $receipt['total_rounding_mode']);
+    }
+
+    /**
+     * Náhled na zdroji neplátce: režim „Bez DPH“ se zdrojem `nonPayer`, info
+     * `vat_non_payer`, žádné hlášky o režimu a rekapitulaci, bez nabídky kódů
+     * a bez bloku `vatCode` — neznámý kód z historie nesmí blokovat apply.
+     */
+    public function testNonPayerPreviewReportsModeAndSuppressesVatNoise(): void
+    {
+        $payload = $this->happyPayload();
+        $payload['rows'][0]['vat']['code'] = 'xx-999';
+        // Bez rekapitulace a základu by validátor hlásil vat_mode_suspect.
+        $suspect = $this->happyPayload();
+        unset($suspect['vatRecap'], $suspect['rows'][0]['computed']);
+        $suspect['rows'][0]['quantity'] = 1;
+        $suspect['rows'][0]['unitPrice'] = 12500.0;
+        $suspect['rows'][0]['totalPrice'] = 12500.0;
+        $suspect['totals'] = ['totalAmount' => 12500.0];
+        $this->assertContains(
+            'vat_mode_suspect',
+            $this->issueCodes($this->buildVatDerivingApplier()->preview($suspect)),
+            'u plátce podezření zůstává',
+        );
+
+        $applier = $this->buildVatDerivingApplier($this->createMock(Connection::class));
+        $result = $applier->preview($payload);
+
+        $this->assertTrue($result->success);
+        $resolve = $result->canonical['_resolve'];
+        $this->assertSame(['value' => 'none', 'source' => 'nonPayer', 'auto' => 'none'], $resolve['vat']['mode']);
+        $this->assertArrayNotHasKey('vatCodeOptions', $resolve);
+        $this->assertArrayNotHasKey('vatCode', $resolve['rows'][0]);
+
+        $issue = $this->issueByCode($result, 'vat_non_payer');
+        $this->assertNotNull($issue);
+        $this->assertSame('info', $issue['severity']);
+        $this->assertSame('vat.mode', $issue['path']);
+
+        $codes = $this->issueCodes($result);
+        foreach (['vat_mode_derived', 'vat_mode_suspect', 'recap_source_computed_fallback', 'vat_code_unknown', 'non_payer_reverse_charge'] as $code) {
+            $this->assertNotContains($code, $codes);
+        }
+        $this->assertNotContains('vat_mode_suspect', $this->issueCodes($applier->preview($suspect)));
+    }
+
+    /** D9: doklad se samovyměřením u neplátce → jen upozornění, daň se nevyměří. */
+    public function testNonPayerReverseChargeGetsWarning(): void
+    {
+        $applier = $this->buildVatDerivingApplier($this->createMock(Connection::class));
 
         $result = $applier->preview($this->euServicesPayload());
+
         $this->assertTrue($result->success);
+        $issue = $this->issueByCode($result, 'non_payer_reverse_charge');
+        $this->assertNotNull($issue);
+        $this->assertSame('warning', $issue['severity']);
+        $this->assertSame('none', $result->canonical['_resolve']['vat']['mode']['value']);
         $this->assertArrayNotHasKey('vatCode', $result->canonical['_resolve']['rows'][0]);
-        $this->assertNotContains('vat_code_unknown', $this->issueCodes($result));
-        $this->assertNotContains('vat_registration_country_derived', $this->issueCodes($result));
+        $codes = $this->issueCodes($result);
+        // Dodavatel daň neúčtoval — ceny se nemění, není co vysvětlovat.
+        $this->assertNotContains('vat_non_payer', $codes);
+        $this->assertNotContains('vat_code_unknown', $codes);
+        $this->assertNotContains('vat_registration_country_derived', $codes);
 
         $data = $this->invokeTransform($applier, $this->euServicesPayload());
+        $this->assertSame(0, $data['vat_mode'], 'ochrana samovyměření neplátce na fromBase nepřepne');
         $this->assertArrayNotHasKey('vat_registration', $data);
+        $this->assertSame(10330.58, $data['rows'][0]['total_price']);
+
+        // Tuzemské přenesení se pozná i z kódu předmětu plnění na řádku.
+        $domestic = $this->nonPayerCanonical([
+            'rows' => [['rowKind' => 'item', 'totalPrice' => 500.0, 'vat' => ['pct' => 0, 'reverseChargeCode' => '4']]],
+        ]);
+        $this->assertSame(['non_payer_reverse_charge'], $this->vatIssueCodes($this->buildApplier(), $domestic));
+    }
+
+    /** D2: plátcovství je registrace platná k DUZP — bývalý i budoucí plátce je k datu neplátce. */
+    public function testRegistrationOutsideValidityMakesDocumentNonPayer(): void
+    {
+        $canonical = $this->nonPayerCanonical([
+            'vat'  => ['mode' => 'fromBase', 'registrationCountry' => 'CZ'],
+            'rows' => [['rowKind' => 'item', 'totalPrice' => 1000.0, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]]],
+        ]);
+
+        $cases = [
+            'registrace skončila před DUZP' => $this->dbWithVatRegistrationValidity('2015-01-01', '2026-06-30'),
+            'registrace začíná po DUZP'     => $this->dbWithVatRegistrationValidity('2026-07-02', null),
+        ];
+        foreach ($cases as $label => $db) {
+            $data = $this->invokeTransform($this->buildApplier(db: $db), $canonical);
+            $this->assertSame(0, $data['vat_mode'], $label);
+            // Prošlou registraci nesmí vrátit ani hledání podle země z dokladu.
+            $this->assertArrayNotHasKey('vat_registration', $data, $label);
+            $this->assertSame(1210.0, $data['rows'][0]['total_price'], $label);
+        }
+    }
+
+    /** D2 regrese: registrace platná k DUZP (včetně krajních dnů) = dnešní chování plátce. */
+    public function testRegistrationValidAtTaxPointKeepsPayerBehaviour(): void
+    {
+        $canonical = $this->nonPayerCanonical([
+            'vat'  => ['mode' => 'fromBase'],
+            'rows' => [['rowKind' => 'item', 'totalPrice' => 1000.0, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]]],
+        ]);
+
+        $cases = [
+            'bez konce'         => $this->dbWithVatRegistrationValidity('2015-01-01', null),
+            'první den'         => $this->dbWithVatRegistrationValidity('2026-07-01', null),
+            'poslední den'      => $this->dbWithVatRegistrationValidity('2015-01-01', '2026-07-01'),
+        ];
+        foreach ($cases as $label => $db) {
+            $data = $this->invokeTransform($this->buildApplier(db: $db), $canonical);
+            $this->assertSame(1, $data['vat_mode'], $label);
+            $this->assertSame(5, $data['vat_registration'], $label);
+            $this->assertSame(1000.0, $data['rows'][0]['total_price'], $label);
+        }
+    }
+
+    /** D2: rozhoduje DUZP, bez něj datum vystavení. */
+    public function testPayerStatusFollowsTaxPointThenIssueDate(): void
+    {
+        $db = $this->dbWithVatRegistrationValidity('2026-07-01', null);
+        $rows = [['rowKind' => 'item', 'totalPrice' => 1000.0, 'priceCalcMode' => 'fromTotal', 'vat' => ['pct' => 21]]];
+
+        // Vystaveno už za plátcovství, plnění ještě před ním → neplátce.
+        $data = $this->invokeTransform($this->buildApplier(db: $db), $this->nonPayerCanonical([
+            'dates' => ['issueDate' => '2026-07-10', 'taxPointDate' => '2026-06-30'],
+            'rows'  => $rows,
+        ]));
+        $this->assertSame(0, $data['vat_mode']);
+
+        $data = $this->invokeTransform($this->buildApplier(db: $db), $this->nonPayerCanonical([
+            'dates' => ['issueDate' => '2026-07-10'],
+            'rows'  => $rows,
+        ]));
+        $this->assertSame(1, $data['vat_mode']);
+    }
+
+    /**
+     * Import (starý Shipard, datové sady) přenáší hotové doklady: platnost
+     * registrace se nezkoumá a doklad bez registrace se nepřevádí.
+     */
+    public function testImportModeIsNotTreatedAsNonPayer(): void
+    {
+        $canonical = $this->nonPayerCanonical([
+            'vat'          => ['mode' => 'fromBase'],
+            'rows'         => [['rowKind' => 'item', 'quantity' => 1, 'unitPrice' => 1000.0, 'totalPrice' => 1000.0, 'vat' => ['pct' => 21]]],
+            'applyOptions' => self::IMPORT_OPTIONS,
+        ]);
+
+        // Registrace k datu dokladu neplatí — import ji přesto použije.
+        $data = $this->invokeTransform(
+            $this->buildApplier(db: $this->dbWithVatRegistrationValidity('2026-08-01', null)),
+            $canonical,
+        );
+        $this->assertSame(1, $data['vat_mode']);
+        $this->assertSame(5, $data['vat_registration']);
+        $this->assertSame(1000.0, $data['rows'][0]['total_price']);
+
+        // Zdroj bez registrace: doklad zůstává, jak ho import poslal.
+        $data = $this->invokeTransform($this->buildApplier(), $canonical);
+        $this->assertSame(1, $data['vat_mode']);
+        $this->assertSame(1000.0, $data['rows'][0]['unit_price']);
+        $this->assertSame(0, $data['rows'][0]['price_calc_mode']);
     }
 
     /** D5: neznámé vat.place / vat.mode → warning; schéma (enum) ale takový payload zachytí dřív. */

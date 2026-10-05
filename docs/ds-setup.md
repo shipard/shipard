@@ -470,7 +470,12 @@ DPH nevyžaduje. Chybí tedy jen:
    **Účtování žádnou změnu nepotřebuje:** `AccountingEngine::buildVatLines()`
    staví řádky z `docs_core_vat_recap` a `buildRowLines()` bere
    `vat_base_dom`, takže doklad s `vat_mode = 0` zaúčtuje plnou částku
-   a na 343xxx nesáhne.
+   a na 343xxx nesáhne. Podmínkou je, aby řádky nesly cenu **včetně daně
+   dodavatele**: ruční formulář ji tak od neplátce dostává, přijaté
+   doklady z pošty (ISDOC, AI) na „Bez DPH“ s cenami s daní převádí
+   `DocumentApplier` — podle registrace platné k datu dokladu, ne podle
+   příznaku (`tasks/exchange-received-non-vat-payer.md`,
+   `docs/exchange-format.md` § 8.4).
 4. Provisioning instancí tvrzení **v okamžiku vzniku registrace** (hotové,
    revize #55 D9). Uložení registrace přes `VatRegistrationDocument` vyvolá
    `afterSave` documentEventHandler modulu `economy.vat`
