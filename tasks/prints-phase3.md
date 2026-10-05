@@ -1,6 +1,6 @@
 # Tisky — Fáze 3: vzhled a texty na tiscích
 
-**Stav:** částečně — kód, dokumentace a nápověda hotové 2026-10-05 (5 commitů + upřesnění PRD, #90 D46–D52); ověřeno na ukázkovém zdroji (tisk do PDF, e-mailový návrh, agenda a formulář v headless prohlížeči), `ds-upgrade` jen tam; zbývá ruční proklik v prohlížeči, nasazení na alfu (`ds-upgrade` všech zdrojů — bez něj se tiskne bez textů a s výchozím vzhledem) a komentář do #90
+**Stav:** částečně — kód, dokumentace a nápověda hotové 2026-10-05 (#90 D46–D52; podklad loga z D46 po prokliku zrušen); ověřeno na ukázkovém zdroji včetně ručního prokliku nastavení a výsledného tisku, `ds-upgrade` jen tam; zbývá nasazení na alfu (`ds-upgrade` všech zdrojů — bez něj se tiskne bez textů a s výchozím vzhledem) a komentář do #90
 
 > PRD pro Claude Code (5 commitů). Design: issue #90, komentář
 > „Rozhodnutí: fáze 3 — vzhled a texty na tiscích (D46–D52)“; základ D9
@@ -100,9 +100,9 @@ pojmenovanou úzkou politiku `userTexts()`.
   `--data`) a doplní výchozí hodnoty. `VERSION` builderů se nemění.
 - **Layout dokladů** — jen záhlaví (`header.html.twig`); tělo stránky
   (`doc-base.html.twig`, `doc-base.css`) se nebarví:
-  - akcent barví jen akcentové prvky hlavičky — svislý pruh u titulku,
-    linku pod hlavičkou, podklad za logem (je-li logo průhledné);
-    text zůstává černý / šedý,
+  - akcent barví jen akcentové prvky hlavičky — svislý pruh u titulku
+    a linku pod hlavičkou; text zůstává černý / šedý (podklad za logem
+    z D46 se po vyzkoušení zrušil — viz upřesnění níže),
   - logo vlevo = dnešní rozvržení; vpravo = titulek a číslo vlevo,
     logo vpravo,
   - barva do záhlaví inline (záhlaví nemá přístup k assetům); žádné
@@ -313,6 +313,10 @@ Upřesnění z plánování implementace (2026-10-05):
 
 - **Akcent je jen v záhlaví.** Stránka nedostává `--accent` a tělo dokladu
   se nebarví.
+- **Logo je bez podkladu** (rozhodnutí po ručním prokliku 2026-10-05,
+  změna proti D46): za průhledným logem dělal akcent barevný obdélník,
+  s výchozí barvou šedý. Akcent barví jen pruh u titulku a linku pod
+  hlavičkou.
 - **Poloha slotů:** `header` je první prvek těla před blokem `title`,
   `footer` za poznámkami před podpisy. Všechny čtyři sloty leží mimo bloky
   layoutu, aby je stránkové šablony nepřepsaly.

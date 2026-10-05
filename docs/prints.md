@@ -1002,8 +1002,9 @@ platí pro všechny tisky. **Ověřuje je i při čtení** — `ds-setting set`
 hodnotu nekontroluje, neplatná = výchozí vzhled.
 
 Vykresluje je **jen záhlaví** (`_layout/header.html.twig`): akcent barví
-svislý pruh u titulku, linku pod záhlavím a podklad loga (je vidět pod
-průhledným logem); text zůstává černý. Logo vpravo prohodí strany — titulek
+svislý pruh u titulku a linku pod záhlavím; text zůstává černý. Logo je bez
+podkladu — D46 s ním počítalo, ale za průhledným logem dělal barevný
+obdélník a po vyzkoušení se zrušil. Logo vpravo prohodí strany — titulek
 s číslem je vždy na opačné straně než logo. Tělo dokladu se nebarví
 a `--accent` do stránky nejde. Barva se do stylů vkládá jen jako ověřené
 `#rrggbb` z obálky. Kontace sdílí záhlaví dokladů, takže vzhled platí

@@ -82,9 +82,9 @@
                     "name": "Header accent colour",
                     "name:cs": "Akcentová barva hlavičky",
                     "name:en": "Header accent colour",
-                    "hint": "Colours the bar next to the document title, the line under the header and the background behind the logo. The text stays black. Empty = neutral grey.",
-                    "hint:cs": "Barví pruh u titulku dokladu, linku pod hlavičkou a podklad za logem. Text zůstává černý. Prázdné = neutrální šedá.",
-                    "hint:en": "Colours the bar next to the document title, the line under the header and the background behind the logo. The text stays black. Empty = neutral grey."
+                    "hint": "Colours the bar next to the document title and the line under the header. The text stays black. Empty = neutral grey.",
+                    "hint:cs": "Barví pruh u titulku dokladu a linku pod hlavičkou. Text zůstává černý. Prázdné = neutrální šedá.",
+                    "hint:en": "Colours the bar next to the document title and the line under the header. The text stays black. Empty = neutral grey."
                 },
                 {
                     "id": "prints.logoPlacement",

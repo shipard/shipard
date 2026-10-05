@@ -594,10 +594,13 @@ class DocPrintTemplatesTest extends TestCase
         );
         $header = (string) $document->header;
 
-        // Pruh u titulku, linka pod záhlavím a podklad loga.
+        // Pruh u titulku a linka pod záhlavím — nic dalšího.
         $this->assertStringContainsString('<div class="head-title" style="border-color: #0a5c8f">', $header);
         $this->assertStringContainsString('style="border-bottom-color: #0a5c8f"', $header);
-        $this->assertMatchesRegularExpression('#<img class="logo" [^>]*style="background-color: \#0a5c8f">#', $header);
+        $this->assertSame(2, substr_count($header, '#0a5c8f'));
+        // Logo je bez podkladu: za průhledným logem by akcent dělal barevný obdélník.
+        $this->assertStringContainsString('<img class="logo" src="data:image/png;base64,', $header);
+        $this->assertStringNotContainsString('background', $header);
         // Barvy je potřeba tisknout i bez volby „tisk pozadí“.
         $this->assertStringContainsString('-webkit-print-color-adjust: exact', $header);
 

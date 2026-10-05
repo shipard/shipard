@@ -59,7 +59,7 @@ V sekci Aplikace jsou stránka **Tisky** (`printsAppearance`) a agenda
 
 | Klíč | Typ pole | Popis | Bez hodnoty |
 |---|---|---|---|
-| `prints.accentColor` | `color` | Akcentová barva hlavičky jako `#rrggbb` — pruh u titulku, linka pod hlavičkou, podklad loga | neutrální šedá `#c8c8c8` (`PrintData::DEFAULT_ACCENT_COLOR`) |
+| `prints.accentColor` | `color` | Akcentová barva hlavičky jako `#rrggbb` — pruh u titulku a linka pod hlavičkou | neutrální šedá `#c8c8c8` (`PrintData::DEFAULT_ACCENT_COLOR`) |
 | `prints.logoPlacement` | `select` | Strana hlavičky s logem: `left` / `right` | `left` |
 
 Barvu i umístění ověřuje `PrintRunner` znovu při čtení — do nastavení se dá

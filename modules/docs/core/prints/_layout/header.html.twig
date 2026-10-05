@@ -3,11 +3,11 @@
     na každé straně. Nemá přístup k assetům stránky: styly inline, logo jako
     data URI. Vodorovné odsazení musí odpovídat okrajům stránky.
 
-    Vzhled z nastavení (#90 D46): `branding.accentColor` barví pruh u titulku,
-    linku pod záhlavím a podklad loga (je vidět jen pod průhledným logem);
-    text zůstává černý. `branding.logoPlacement` určí stranu loga, titulek
-    s číslem je na opačné. Barva jde do stylů jen jako ověřené `#rrggbb`
-    z obálky — jiný řetězec z nastavení se do CSS skládat nesmí.
+    Vzhled z nastavení (#90 D46): `branding.accentColor` barví pruh u titulku
+    a linku pod záhlavím; text zůstává černý a logo je bez podkladu.
+    `branding.logoPlacement` určí stranu loga, titulek s číslem je na opačné.
+    Barva jde do stylů jen jako ověřené `#rrggbb` z obálky — jiný řetězec
+    z nastavení se do CSS skládat nesmí.
 
     Pozor na názvy tříd: prvky s třídami `title`, `date`, `url`, `pageNumber`
     a `totalPages` Chromium v záhlaví a zápatí přepisuje vlastním obsahem
@@ -60,7 +60,7 @@
     <div class="head-inner{{ logoRight ? ' head-inner--logo-right' }}" style="border-bottom-color: {{ accent }}">
         <div>
             {% if branding.logoDataUri %}
-                <img class="logo" src="{{ branding.logoDataUri }}" alt="" style="background-color: {{ accent }}">
+                <img class="logo" src="{{ branding.logoDataUri }}" alt="">
             {% endif %}
         </div>
         <div class="head-title" style="border-color: {{ accent }}">{{ data.document.title }}<span class="head-number">{{ data.document.number }}</span></div>
