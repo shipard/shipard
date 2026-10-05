@@ -3,17 +3,62 @@
     "name": "Prints",
     "name:cs": "Tisky",
     "name:en": "Prints",
-    "description": "Settings shared by all prints — appearance of printed documents",
-    "description:cs": "Nastavení společné všem tiskům — vzhled tištěných dokladů",
-    "description:en": "Settings shared by all prints — appearance of printed documents",
+    "description": "Settings shared by all prints — appearance and custom texts on prints",
+    "description:cs": "Nastavení společné všem tiskům — vzhled a vlastní texty na tiscích",
+    "description:en": "Settings shared by all prints — appearance and custom texts on prints",
 
     "dependencies": [
         "core.system"
     ],
 
-    // Vzhled je branding — stránka Tisky stojí hned za stránkou Aplikace.
+    "tables": [
+        "core_prints_texts"
+    ],
+
+    // Texty na tiscích jsou konfigurace zdroje dat, ne data — ds-reset je
+    // nechává (stejně jako pravidla pošty a nastavení vzhledu).
+    "keepOnReset": [
+        "core_prints_texts"
+    ],
+
+    // Vzhled je branding — stránka Tisky stojí hned za stránkou Aplikace
+    // a texty na tiscích hned za ní.
     "settingsItems": [
-        { "page": "printsAppearance", "section": "app", "order": 20 }
+        { "page": "printsAppearance",   "section": "app", "order": 20 },
+        { "viewer": "core.prints.texts", "section": "app", "order": 30 }
+    ],
+
+    "viewers": [
+        {
+            "id": "core.prints.texts",
+            "name": "Texts on prints",
+            "name:cs": "Texty na tiscích",
+            "name:en": "Texts on prints",
+            "icon": "document",
+            "table": "core_prints_texts",
+            "class": "Shipard\\Module\\Core\\Prints\\PrintTextsViewer"
+        }
+    ],
+
+    "forms": [
+        {
+            "table": "core_prints_texts",
+            "class": "Shipard\\Module\\Core\\Prints\\PrintTextsForm"
+        }
+    ],
+
+    "documentClasses": [
+        {
+            "table": "core_prints_texts",
+            "class": "Shipard\\Module\\Core\\Prints\\PrintTextDocument"
+        }
+    ],
+
+    "config": [
+        {
+            "id": "core.prints.textSlots",
+            "file": "config/textSlots.jsonc"
+        }
     ],
 
     // Vzhled tisků (#90 D46). Klíče čte PrintRunner

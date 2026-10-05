@@ -1,0 +1,77 @@
+{
+    // core.prints.textSlots
+    //
+    // Sloty textů na tiscích (#90 D48) — místa, kam jde do tisku nebo do
+    // e-mailu vložit vlastní text (core_prints_texts.slot). Klíče musí sedět
+    // na výčet PrintTextSlot (src/Core/Prints/Texts) — ten je zdroj pravdy
+    // pro id a druh slotu; tady jsou názvy a popisy pro formulář. Shodu
+    // hlídá PrintTextSlotTest.
+    //
+    // Tisk v deklaraci (`textSlots`) uvede, které sloty jeho šablona vykreslí.
+    //
+    // Atributy:
+    //   description: kde se text objeví — nápověda pod polem ve formuláři
+    //   kind:        "html" = text do stránky tisku (Markdown + proměnné),
+    //                "text" = e-mail (prostý text + proměnné)
+
+    "header": {
+        "name": "Start of the document",
+        "name:cs": "Začátek dokumentu",
+        "name:en": "Start of the document",
+        "description": "At the top of the first page, under the page header.",
+        "description:cs": "Nahoře na první straně, pod záhlavím.",
+        "description:en": "At the top of the first page, under the page header.",
+        "kind": "html",
+        "order": 10
+    },
+    "beforeRows": {
+        "name": "Before the rows",
+        "name:cs": "Před řádky",
+        "name:en": "Before the rows",
+        "description": "Above the table of document rows.",
+        "description:cs": "Nad tabulkou řádků dokladu.",
+        "description:en": "Above the table of document rows.",
+        "kind": "html",
+        "order": 20
+    },
+    "afterRows": {
+        "name": "After the rows",
+        "name:cs": "Za řádky",
+        "name:en": "After the rows",
+        "description": "Under the table of document rows, above the totals.",
+        "description:cs": "Pod tabulkou řádků dokladu, nad součty.",
+        "description:en": "Under the table of document rows, above the totals.",
+        "kind": "html",
+        "order": 30
+    },
+    "footer": {
+        "name": "End of the document",
+        "name:cs": "Konec dokumentu",
+        "name:en": "End of the document",
+        "description": "At the end of the document, under the notes.",
+        "description:cs": "Na konci dokumentu, pod poznámkami.",
+        "description:en": "At the end of the document, under the notes.",
+        "kind": "html",
+        "order": 40
+    },
+    "emailSubject": {
+        "name": "E-mail subject",
+        "name:cs": "Předmět e-mailu",
+        "name:en": "E-mail subject",
+        "description": "Replaces the default subject of the e-mail the document is sent with.",
+        "description:cs": "Nahradí výchozí předmět e-mailu, kterým se doklad odesílá.",
+        "description:en": "Replaces the default subject of the e-mail the document is sent with.",
+        "kind": "text",
+        "order": 50
+    },
+    "emailBody": {
+        "name": "E-mail text",
+        "name:cs": "Text e-mailu",
+        "name:en": "E-mail text",
+        "description": "Replaces the default text of the e-mail the document is sent with.",
+        "description:cs": "Nahradí výchozí text e-mailu, kterým se doklad odesílá.",
+        "description:en": "Replaces the default text of the e-mail the document is sent with.",
+        "kind": "text",
+        "order": 60
+    }
+}

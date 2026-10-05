@@ -1,6 +1,6 @@
 # Tisky — Fáze 3: vzhled a texty na tiscích
 
-**Stav:** částečně — commit 1 hotový 2026-10-05 (modul `core.prints`, typ pole `color`, vzhled v záhlaví; `ds-upgrade` jen na ukázkovém zdroji); zbývají texty na tiscích, proměnné a dokumentace (commity 2–5)
+**Stav:** částečně — commity 1–2 hotové 2026-10-05 (modul `core.prints`, typ pole `color`, vzhled v záhlaví; tabulka a agenda Texty na tiscích, sloty, politika `userTexts()`; `ds-upgrade` jen na ukázkovém zdroji); zbývá výběr a vykreslení textů na tisku a v e-mailu, proměnné ve formuláři a dokumentace (commity 3–5)
 
 > PRD pro Claude Code (5 commitů). Design: issue #90, komentář
 > „Rozhodnutí: fáze 3 — vzhled a texty na tiscích (D46–D52)“; základ D9
@@ -326,9 +326,6 @@ Upřesnění z plánování implementace (2026-10-05):
   (`src/Core/Prints`); resolver v modulu ho implementuje
   a `PrintRunnerFactory` ho zapojí jen na zdroji, kde tabulka textů
   existuje. Twig → Markdown → HTML dělá jádro (potřebuje ho i validace).
-- **Politika `userTexts()`** povolí i testy `defined`, `empty`, `null`,
-  pokud je filtr `default` ve striktním sandboxu potřebuje — ověřit prvním
-  testem.
 - **Markdown escaper** escapuje zpětným lomítkem veškerou ASCII
   interpunkci (CommonMark to dovoluje u každého znaku), bez výjimky pro
   tečku.
@@ -338,6 +335,15 @@ Upřesnění z plánování implementace (2026-10-05):
   šablony používají výhradně na `texts.*`.
 - **Barva se validuje i při čtení** (`PrintRunner`,
   `PrintData::fromArray()`) — `ds-setting set` hodnotu nekontroluje.
+- **Deklarace tisků v konfiguraci:** formulář, Document a viewer textů
+  nemají cesty modulů, registr tisků si nepostaví. `ConfigCompiler` proto
+  skládá z deklarací `prints` aktivních modulů cfgItem
+  `core.prints.declarations` (název, tabulka, filtr, `textSlots`).
+- **Kontrola sandboxu při uložení:** Twig ověřuje politiku až při
+  vykreslení — `PrintTextCompiler::compile()` si kontrolu vynucuje, jinak
+  by validace formuláře zakázaný prvek nezachytila.
+- **Testy v politice:** `userTexts()` vyjmenovává `defined`, `empty`,
+  `null`, `none`; Twig je v sandboxu propouští i sám (ověřeno testem).
 - **`textVariables`** = seznam `{path, filter?}`, nebo odkaz na sdílenou
   sadu `@docs.core/_layout` (`text-variables.jsonc`). Endpoint bez `prints`
   vrací průnik přes všechny tisky se slotem.

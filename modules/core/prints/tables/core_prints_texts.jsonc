@@ -1,0 +1,202 @@
+{
+    "tableId": 456,
+    "name": "Texts on prints",
+    "name:cs": "Texty na tiscích",
+    "name:en": "Texts on prints",
+
+    "displayPattern": "{name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columnGroups": [
+        {
+            "id": "text",
+            "name": "Text",
+            "name:cs": "Text",
+            "name:en": "Text"
+        },
+        {
+            "id": "targeting",
+            "name": "Where the text applies",
+            "name:cs": "Kde se text použije",
+            "name:en": "Where the text applies"
+        },
+        {
+            "id": "validity",
+            "name": "Validity",
+            "name:cs": "Platnost",
+            "name:en": "Validity"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- text ---
+
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 120,
+            "nullable": false,
+            "group": "text"
+        },
+        {
+            // Hodnoty = PrintTextSlot (src/Core/Prints/Texts); cfgItem nese
+            // názvy a popisy pro formulář.
+            "id": "slot",
+            "name": "Placement",
+            "name:cs": "Umístění",
+            "name:en": "Placement",
+            "type": "enumString",
+            "length": 20,
+            "nullable": false,
+            "cfgItem": "core.prints.textSlots",
+            "group": "text"
+        },
+        {
+            // Markdown + proměnné Twigu (sloty do stránky tisku), nebo
+            // prostý text + proměnné (e-mailové sloty) — #90 D50.
+            "id": "text",
+            "name": "Text",
+            "name:cs": "Text",
+            "name:en": "Text",
+            "type": "text",
+            "nullable": false,
+            "group": "text"
+        },
+        {
+            "id": "note",
+            "name": "Note",
+            "name:cs": "Poznámka",
+            "name:en": "Note",
+            "type": "varchar",
+            "length": 250,
+            "nullable": true,
+            "group": "text"
+        },
+
+        // --- targeting ---
+
+        {
+            // Pole id tisků; NULL = všechny tisky, které slot podporují.
+            "id": "prints",
+            "name": "Prints",
+            "name:cs": "Tisky",
+            "name:en": "Prints",
+            "type": "json",
+            "nullable": true,
+            "group": "targeting"
+        },
+        {
+            // Pole typů dokladů; NULL = bez omezení. Platí jen u tisků nad
+            // tabulkou, kterou zná PrintTextTargeting (doklady).
+            "id": "doc_types",
+            "name": "Document types",
+            "name:cs": "Typy dokladů",
+            "name:en": "Document types",
+            "type": "json",
+            "nullable": true,
+            "group": "targeting"
+        },
+        {
+            // Pole id číselných řad; NULL = bez omezení. Stejné pravidlo
+            // jako doc_types.
+            "id": "number_series",
+            "name": "Number series",
+            "name:cs": "Číselné řady",
+            "name:en": "Number series",
+            "type": "json",
+            "nullable": true,
+            "group": "targeting"
+        },
+        {
+            // Jazyk tisku (PrintLanguageResolver::LANGUAGES); NULL = všechny.
+            "id": "language",
+            "name": "Language",
+            "name:cs": "Jazyk",
+            "name:en": "Language",
+            "type": "varchar",
+            "length": 5,
+            "nullable": true,
+            "group": "targeting"
+        },
+
+        // --- validity ---
+
+        {
+            "id": "valid_from",
+            "name": "Valid from",
+            "name:cs": "Platí od",
+            "name:en": "Valid from",
+            "type": "date",
+            "nullable": true,
+            "group": "validity"
+        },
+        {
+            "id": "valid_to",
+            "name": "Valid to",
+            "name:cs": "Platí do",
+            "name:en": "Valid to",
+            "type": "date",
+            "nullable": true,
+            "group": "validity"
+        },
+        {
+            "id": "order_pos",
+            "name": "Order",
+            "name:cs": "Pořadí",
+            "name:en": "Order",
+            "type": "int",
+            "nullable": false,
+            "default": 0,
+            "group": "validity"
+        },
+
+        // --- doc state (systémové, bez skupiny) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            // Výběr platných textů při tisku: stav V pořádku + slot.
+            "id": "idx_state_slot",
+            "type": "index",
+            "columns": [
+                {"column": "docState"},
+                {"column": "slot"}
+            ]
+        }
+    ]
+}

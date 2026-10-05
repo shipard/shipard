@@ -419,6 +419,97 @@ class ConfigCompilerTest extends TestCase
         $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::SEND_PURPOSES_ITEM]);
     }
 
+    // ── deklarace tisků (#90 D47) ───────────────────────────────────────────
+
+    /** @param list<array<string, mixed>> $declarations */
+    private function printsModule(string $moduleId, array $declarations): ModuleDefinition
+    {
+        $this->writeConfigFile(
+            $this->tmpDir . '/modules/' . str_replace('.', '/', $moduleId),
+            'config/prints.jsonc',
+            $declarations,
+        );
+
+        return ModuleDefinition::fromArray([
+            'id' => $moduleId, 'name' => $moduleId, 'prints' => [['file' => 'config/prints.jsonc']],
+        ]);
+    }
+
+    public function testPrintDeclarationsCompileIntoOneLocalizedCfgItem(): void
+    {
+        ConfigCompiler::compile(
+            [
+                $this->printsModule('docs.invoicesOut', [[
+                    'id'        => 'docs.invoicesOut.invoice',
+                    'name'      => 'Invoice', 'name:cs' => 'Faktura',
+                    'table'     => 'docs_core_heads',
+                    'filter'    => ['doc_type' => ['invno']],
+                    'docStates' => [40],
+                    'builder'   => 'Some\\Builder',
+                    'template'  => '@docs.invoicesOut/invoice',
+                    'textSlots' => ['header', 'emailBody'],
+                    'order'     => 10,
+                ]]),
+                $this->printsModule('economy.accounting', [[
+                    'id'    => 'economy.accounting.docJournal',
+                    'name'  => 'Accounting entries', 'name:cs' => 'Kontace',
+                    'table' => 'docs_core_heads',
+                ]]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['cs', 'en'],
+            $this->tmpDir . '/output',
+        );
+
+        // Jen to, co potřebuje agenda textů — builder ani šablona v konfiguraci nejsou.
+        $this->assertSame([
+            'docs.invoicesOut.invoice' => [
+                'name'      => 'Faktura',
+                'table'     => 'docs_core_heads',
+                'filter'    => ['doc_type' => ['invno']],
+                'textSlots' => ['header', 'emailBody'],
+                'order'     => 10,
+            ],
+            'economy.accounting.docJournal' => ['name' => 'Kontace', 'table' => 'docs_core_heads'],
+        ], $this->compiledItems('cs')[ConfigCompiler::PRINTS_ITEM]);
+        $this->assertSame(
+            'Invoice',
+            $this->compiledItems('en')[ConfigCompiler::PRINTS_ITEM]['docs.invoicesOut.invoice']['name'],
+        );
+    }
+
+    public function testNoPrintDeclarationsCompileToEmptyItem(): void
+    {
+        $this->stubModuleDir('core.system');
+
+        ConfigCompiler::compile(
+            [$this->makeModule('core.system', [])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::PRINTS_ITEM]);
+    }
+
+    public function testPrintDeclarationsCfgItemIsReserved(): void
+    {
+        $modulePath = $this->tmpDir . '/modules/core/prints';
+        $this->writeConfigFile($modulePath, 'config/declarations.jsonc', ['x' => ['name' => 'X']]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("cfgItem 'core.prints.declarations' is reserved for print declarations");
+
+        ConfigCompiler::compile(
+            [$this->makeModule('core.prints', [
+                ['id' => ConfigCompiler::PRINTS_ITEM, 'file' => 'config/declarations.jsonc'],
+            ])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
     public function testSendPurposeDeclaredByTwoModulesStopsCompilation(): void
     {
         $this->expectException(\RuntimeException::class);

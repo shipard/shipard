@@ -4,18 +4,53 @@ Nastavení společné všem tiskům zdroje dat. Modul je obecný — nezná dokl
 ani jiné agendy; samotný běh tisku (deklarace, builder, šablony, render)
 žije v `src/Core/Prints/` a popisuje ho [docs/prints.md](../../../docs/prints.md).
 
-Dnes drží **vzhled tisků** (#90 D46): akcentovou barvu hlavičky a umístění
-loga. Hodnoty čte `PrintRunner` a plní jimi `branding` v obálce `PrintData`;
-vykresluje je záhlaví tisku (`header.html.twig` layoutu dokladů). Tělo
-dokladu se nebarví.
+Drží dvě věci:
+
+- **Vzhled tisků** (#90 D46): akcentovou barvu hlavičky a umístění loga.
+  Hodnoty čte `PrintRunner` a plní jimi `branding` v obálce `PrintData`;
+  vykresluje je záhlaví tisku (`header.html.twig` layoutu dokladů). Tělo
+  dokladu se nebarví.
+- **Texty na tiscích** (#90 D47–D52): vlastní texty vkládané do slotů tisku
+  a do e-mailu — agenda v Nastavení, tabulka `core_prints_texts`.
 
 ## Závislosti
 
 - `core.system`
 
+Na dokladech modul nezávisí. Cílení textu na typ dokladu a číselnou řadu
+zná jen `PrintTextTargeting` (mapa tabulka tisku → sloupce) a nabídky se
+plní, jen když je číselník typů v konfiguraci zdroje.
+
+## Tabulky
+
+| Tabulka | Popis |
+|---|---|
+| [core_prints_texts](tables/core_prints_texts.md) | Texty na tiscích — text, slot, cílení, platnost |
+
+Tabulka je v `keepOnReset` — texty jsou konfigurace zdroje, `ds-reset` je
+nechává.
+
+## Zdrojové soubory
+
+| Soubor | Popis |
+|---|---|
+| [PrintTextDocument.php](src/PrintTextDocument.php) | Validace (povinná pole, kompilace textu v sandboxu, platnost, cílení), JSON sloupce |
+| [PrintTextsForm.php](src/PrintTextsForm.php) | Formulář — nabídky tisků, typů a řad podle umístění a vybraných tisků |
+| [PrintTextsViewer.php](src/PrintTextsViewer.php) | Agenda se štítkem „Platí dnes“ |
+| [PrintTextChoices.php](src/PrintTextChoices.php) | Sloty, tisky, typy dokladů a jazyky z kompilované konfigurace |
+| [PrintTextTargeting.php](src/PrintTextTargeting.php) | Která tabulka tisku má typ dokladu a číselnou řadu |
+
+## Konfigurace
+
+| Klíč | Soubor | Popis |
+|---|---|---|
+| `core.prints.textSlots` | [config/textSlots.jsonc](config/textSlots.jsonc) | Názvy a popisy slotů. Id a druh slotu drží výčet `PrintTextSlot` (`src/Core/Prints/Texts/`); shodu hlídá `PrintTextSlotTest` |
+| `core.prints.declarations` | — (skládá `ConfigCompiler`) | Deklarace tisků aktivních modulů: název, tabulka, filtr, `textSlots`. Formulář a Document z něj berou nabídku tisků — k registru tisků se bez cest modulů nedostanou |
+
 ## Nastavení
 
-Stránka **Tisky** (`printsAppearance`) v sekci Aplikace:
+V sekci Aplikace jsou stránka **Tisky** (`printsAppearance`) a agenda
+**Texty na tiscích** (`core.prints.texts`). Klíče stránky:
 
 | Klíč | Typ pole | Popis | Bez hodnoty |
 |---|---|---|---|

@@ -17,6 +17,7 @@ use Shipard\Core\Prints\PrintLanguageResolver;
 use Shipard\Core\Prints\PrintRegistry;
 use Shipard\Core\Prints\PrintRenderer;
 use Shipard\Core\Prints\PrintTemplatePaths;
+use Shipard\Core\Prints\Texts\PrintTextSlot;
 use Shipard\Core\Utils\JsoncParser;
 
 /**
@@ -98,6 +99,25 @@ class PrintDeclarationsTest extends TestCase
             'docs.invoicesOut.invoice'   => ['invoices', 'partner'],
             'docs.proformasOut.proforma' => ['invoices', 'partner'],
         ], $sendable);
+    }
+
+    public function testDocumentPrintsSupportAllTextSlotsAndJournalNone(): void
+    {
+        $slots = [];
+        foreach (self::definitions() as $definition) {
+            $slots[$definition->id] = $definition->textSlots;
+        }
+        ksort($slots);
+
+        $all = PrintTextSlot::ids();
+        $this->assertSame([
+            'docs.cashDocs.cash'            => $all,
+            'docs.cashRegister.receipt'     => $all,
+            'docs.invoicesOut.invoice'      => $all,
+            'docs.proformasOut.proforma'    => $all,
+            // Kontace je interní tisk — uživatelské texty nenese (D48).
+            'economy.accounting.docJournal' => [],
+        ], $slots);
     }
 
     public function testSendablePrintsHaveKnownPurposeAndEmailTemplates(): void

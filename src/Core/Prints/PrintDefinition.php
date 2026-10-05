@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Prints;
 
+use Shipard\Core\Prints\Texts\PrintTextSlot;
 use Shipard\Core\Render\PdfOptions;
 
 /**
@@ -13,7 +14,8 @@ use Shipard\Core\Render\PdfOptions;
  * (`template`, `catalogs`, `paper`). Volitelné `watermarks` určí vodoznak
  * podle stavu záznamu (D23) — stornovaný doklad jde vytisknout se „STORNO“.
  * Volitelné `sendPurpose` + `recipientPerson` dělají tisk odesílatelným
- * e-mailem (D34).
+ * e-mailem (D34). Volitelné `textSlots` vyjmenují sloty textů na tiscích,
+ * které šablona tisku vykreslí (D48).
  *
  * Vstupní pole je už lokalizované (`ConfigLocalizer` vyřešil `name:cs`
  * varianty před voláním `fromArray()` — vzor `ReportDefinition`).
@@ -45,6 +47,9 @@ final class PrintDefinition
      *        #90 D34) — tisk bez něj nejde odeslat. Jen u `audience: external`.
      * @param ?string $recipientPerson Sloupec záznamu s osobou příjemce
      *        (doklady `partner`); povinný se `sendPurpose`.
+     * @param list<string> $textSlots Podporované sloty textů na tiscích
+     *        (hodnoty `PrintTextSlot`); prázdné = tisk uživatelské texty
+     *        nenese. E-mailové sloty jen u tisku se `sendPurpose`.
      */
     public function __construct(
         public readonly string $id,
@@ -64,12 +69,18 @@ final class PrintDefinition
         public readonly array $watermarks = [],
         public readonly ?string $sendPurpose = null,
         public readonly ?string $recipientPerson = null,
+        public readonly array $textSlots = [],
     ) {}
 
     /** Jde tisk odeslat e-mailem? Jen tisk ven s deklarovaným účelem (#90 D34). */
     public function isSendable(): bool
     {
         return $this->sendPurpose !== null;
+    }
+
+    public function supportsTextSlot(PrintTextSlot $slot): bool
+    {
+        return in_array($slot->value, $this->textSlots, true);
     }
 
     /** @param array<string, mixed> $data */
@@ -242,6 +253,28 @@ final class PrintDefinition
             );
         }
 
+        $textSlots = [];
+        $rawTextSlots = $data['textSlots'] ?? [];
+        if (!is_array($rawTextSlots)) {
+            throw new \InvalidArgumentException("Print '{$id}': 'textSlots' must be an array of slot ids");
+        }
+        foreach ($rawTextSlots as $rawSlot) {
+            $slot = is_string($rawSlot) ? PrintTextSlot::tryFrom($rawSlot) : null;
+            if ($slot === null) {
+                throw new \InvalidArgumentException(
+                    "Print '{$id}': 'textSlots' entries must be one of " . implode('|', PrintTextSlot::ids()),
+                );
+            }
+            if ($slot->isEmail() && $sendPurpose === null) {
+                throw new \InvalidArgumentException(
+                    "Print '{$id}': text slot '{$slot->value}' is allowed only for prints with 'sendPurpose'",
+                );
+            }
+            if (!in_array($slot->value, $textSlots, true)) {
+                $textSlots[] = $slot->value;
+            }
+        }
+
         return new self(
             id: $id,
             name: $name,
@@ -260,6 +293,7 @@ final class PrintDefinition
             watermarks: $watermarks,
             sendPurpose: $sendPurpose,
             recipientPerson: $recipientPerson,
+            textSlots: $textSlots,
         );
     }
 

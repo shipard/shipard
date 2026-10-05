@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Prints\PrintDefinition;
 use Shipard\Core\Prints\PrintRegistry;
+use Shipard\Core\Prints\Texts\PrintTextSlot;
 
 class PrintDefinitionTest extends TestCase
 {
@@ -102,6 +103,68 @@ class PrintDefinitionTest extends TestCase
                 "/'recipientPerson' must be a column name/",
             ],
         ];
+    }
+
+    // ── sloty textů na tiscích (#90 D48) ────────────────────────────────────
+
+    public function testTextSlotsListSupportedSlots(): void
+    {
+        $def = PrintDefinition::fromArray(
+            self::declaration([
+                'sendPurpose' => 'invoices', 'recipientPerson' => 'partner',
+                'textSlots'   => ['header', 'footer', 'emailBody', 'footer'],
+            ]),
+            'docs.invoicesOut',
+        );
+
+        // Opakovaný slot se nezdvojí.
+        $this->assertSame(['header', 'footer', 'emailBody'], $def->textSlots);
+        $this->assertTrue($def->supportsTextSlot(PrintTextSlot::Footer));
+        $this->assertTrue($def->supportsTextSlot(PrintTextSlot::EmailBody));
+        $this->assertFalse($def->supportsTextSlot(PrintTextSlot::BeforeRows));
+    }
+
+    public function testPrintWithoutTextSlotsCarriesNoUserTexts(): void
+    {
+        $def = PrintDefinition::fromArray(self::declaration(), 'docs.invoicesOut');
+
+        $this->assertSame([], $def->textSlots);
+        foreach (PrintTextSlot::cases() as $slot) {
+            $this->assertFalse($def->supportsTextSlot($slot));
+        }
+    }
+
+    /** @return array<string, array{array<string, mixed>, string}> */
+    public static function invalidTextSlots(): array
+    {
+        return [
+            'unknown slot' => [
+                ['textSlots' => ['header', 'sidebar']],
+                "/'textSlots' entries must be one of header\\|beforeRows\\|afterRows\\|footer\\|emailSubject\\|emailBody/",
+            ],
+            'slot is not a string' => [
+                ['textSlots' => [1]],
+                "/'textSlots' entries must be one of/",
+            ],
+            'not an array' => [
+                ['textSlots' => 'header'],
+                "/'textSlots' must be an array of slot ids/",
+            ],
+            // Tisk, který nejde odeslat, e-mail nemá — text by nikdy neplatil.
+            'e-mail slot without sendPurpose' => [
+                ['textSlots' => ['footer', 'emailSubject']],
+                "/text slot 'emailSubject' is allowed only for prints with 'sendPurpose'/",
+            ],
+        ];
+    }
+
+    #[DataProvider('invalidTextSlots')]
+    public function testInvalidTextSlotsAreRejected(array $overrides, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches($message);
+
+        PrintDefinition::fromArray(self::declaration($overrides), 'docs.invoicesOut');
     }
 
     public function testFromArrayDefaults(): void

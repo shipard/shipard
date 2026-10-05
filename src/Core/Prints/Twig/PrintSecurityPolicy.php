@@ -11,9 +11,10 @@ use Twig\Sandbox\SecurityPolicy;
  * — logika patří do builderu — a dostává výhradně pole z `PrintData`,
  * proto nejsou povolené žádné metody ani vlastnosti objektů.
  *
- * `templates()` je široká politika pro systémové šablony z modulů. Úzkou
- * politiku pro uživatelské texty na tiscích (`userTexts()`: výpis proměnné,
- * `if`, formátovací filtry — #90 D9) zavede fáze 3.
+ * `templates()` je široká politika pro systémové šablony z modulů.
+ * `userTexts()` je úzká politika pro texty na tiscích, které píše uživatel
+ * v Nastavení (#90 D9, D50): výpis proměnné, `if` a formátovací filtry —
+ * žádné cykly, proměnné, vkládání šablon ani funkce.
  */
 final class PrintSecurityPolicy
 {
@@ -30,6 +31,20 @@ final class PrintSecurityPolicy
 
     public const TEMPLATE_TESTS = ['defined', 'null', 'none', 'empty', 'same as', 'even', 'odd', 'iterable'];
 
+    public const USER_TEXT_TAGS = ['if'];
+
+    /**
+     * `escape` nepíše uživatel, ale autoescape Twigu: hodnoty v textech pro
+     * stránku tisku se escapují pro Markdown a sandbox vidí i tento filtr.
+     */
+    public const USER_TEXT_FILTERS = [
+        'default', 'upper', 'lower', 'escape',
+        // PrintTwigExtension
+        'money', 'qty', 'pct', 'date',
+    ];
+
+    public const USER_TEXT_TESTS = ['defined', 'empty', 'null', 'none'];
+
     public static function templates(): SecurityPolicy
     {
         $policy = new SecurityPolicy(
@@ -42,6 +57,20 @@ final class PrintSecurityPolicy
         );
         // Nic není povolené mlčky (`extends`, `block()`, testy) — jen to,
         // co je ve výčtech výše.
+        $policy->setStrict(true);
+        return $policy;
+    }
+
+    public static function userTexts(): SecurityPolicy
+    {
+        $policy = new SecurityPolicy(
+            allowedTags: self::USER_TEXT_TAGS,
+            allowedFilters: self::USER_TEXT_FILTERS,
+            allowedMethods: [],
+            allowedProperties: [],
+            allowedFunctions: [],
+            allowedTests: self::USER_TEXT_TESTS,
+        );
         $policy->setStrict(true);
         return $policy;
     }

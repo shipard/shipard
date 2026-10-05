@@ -28,6 +28,15 @@ class ConfigCompiler
     /** cfgItem složený ze `sendPurposes` aktivních modulů — účely odesílání (#90 D34). */
     public const SEND_PURPOSES_ITEM = 'base.persons.sendPurposes';
 
+    /**
+     * cfgItem složený z deklarací tisků (`prints`) aktivních modulů — klíč
+     * = id tisku, hodnota název, tabulka, filtr a sloty textů (#90 D47).
+     */
+    public const PRINTS_ITEM = 'core.prints.declarations';
+
+    /** Klíče deklarace tisku, které jdou do `PRINTS_ITEM` (+ `name:<jazyk>`). */
+    private const PRINT_ITEM_KEYS = ['name', 'table', 'filter', 'textSlots', 'order'];
+
     /** cfgItem s jazyky dokumentů (#94 D3); klíč = jazyk. */
     public const DOCUMENT_LANGUAGES_ITEM = 'world.base.documentLanguages';
 
@@ -158,6 +167,39 @@ class ConfigCompiler
             );
         }
         $rawItems[self::SEND_PURPOSES_ITEM] = $purposes;
+
+        // Deklarace tisků (`prints` v module.jsonc) aktivních modulů → jeden
+        // cfgItem. Formulář, Document a viewer textů na tiscích (core.prints)
+        // z něj berou nabídku tisků a jejich sloty — mají konfiguraci, ale ne
+        // cesty modulů, takže si registr tisků sami nepostaví. Tvar deklarací
+        // tady nikdo neověřuje; to dělá PrintDefinitionLoader při běhu.
+        $prints = [];
+        foreach ($modules as $module) {
+            $modulePath = $resolver->getPath($module->id);
+            if ($modulePath === null) continue;
+
+            foreach ($module->prints as $entry) {
+                $declarations = JsoncParser::parseFile($modulePath . '/' . $entry['file']);
+                foreach (is_array($declarations) ? $declarations : [] as $declaration) {
+                    if (!is_array($declaration) || !is_string($declaration['id'] ?? null)) continue;
+
+                    $item = [];
+                    foreach ($declaration as $key => $value) {
+                        $isName = is_string($key) && str_starts_with($key, 'name:');
+                        if ($isName || in_array($key, self::PRINT_ITEM_KEYS, true)) {
+                            $item[$key] = $value;
+                        }
+                    }
+                    $prints[$declaration['id']] = $item;
+                }
+            }
+        }
+        if (isset($rawItems[self::PRINTS_ITEM])) {
+            throw new \RuntimeException(
+                "cfgItem '" . self::PRINTS_ITEM . "' is reserved for print declarations",
+            );
+        }
+        $rawItems[self::PRINTS_ITEM] = $prints;
 
         // Strukturovaná schémata — validace nad SUROVÝMI daty, tedy před
         // lokalizací: `name:cs` je vícejazyčná varianta, ne neznámý klíč.
