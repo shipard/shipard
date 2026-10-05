@@ -1029,6 +1029,12 @@ export default {
   'send.resultSentNote': 'Zpráva odešla. Najdete ji v Odeslané poště a u záznamu.',
   'send.resultQueued': 'Ve frontě',
   'send.resultQueuedNote': 'Zprávu se nepodařilo odeslat hned — čeká ve frontě odchozí pošty a odeslání se zkouší opakovaně. Stav uvidíte u záznamu v sekci Odeslaná pošta.',
+  'send.resultHeldNote': 'Zpráva nikam neodešla — pojistka odchozí pošty ji na tomto serveru zachytila. Najdete ji v Odeslané poště a u záznamu.',
+  'send.resultRedirectedNote': 'Pojistka odchozí pošty změnila příjemce — zpráva nešla všem adresám uvedeným v dialogu. Najdete ji v Odeslané poště a u záznamu.',
+  // Pojistka odchozí pošty na dev a testovacím serveru (#95 D7)
+  'mailSafety.notice.redirect': 'Pošta je na tomto serveru přesměrovaná — nic neodejde skutečným příjemcům.',
+  'mailSafety.notice.allowlist': 'Pošta je na tomto serveru omezená na povolené adresy — ostatním příjemcům nic neodejde.',
+  'mailSafety.notice.drop': 'Pošta je na tomto serveru zachycená — nic neodejde skutečným příjemcům.',
   'sentMessage.sectionTitle': 'Odeslaná pošta',
   'sentMessage.open': 'Otevřít zprávu',
   'error.PRINT_NOT_SENDABLE': 'Tento tisk nejde odeslat e-mailem',

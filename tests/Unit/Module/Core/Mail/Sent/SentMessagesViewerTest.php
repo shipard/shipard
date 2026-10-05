@@ -26,6 +26,15 @@ class SentMessagesViewerTest extends TestCase
                 'sent'   => ['name' => 'Odesláno', 'style' => 'success'],
                 'failed' => ['name' => 'Neodesláno', 'style' => 'danger'],
             ],
+            'core.mail.safetyActions' => [
+                'redirected' => [
+                    'name'           => 'Přesměrováno',
+                    'nameTarget'     => 'Přesměrováno na {target}',
+                    'nameRestricted' => 'Příjemci omezeni pojistkou',
+                    'style'          => 'warning',
+                ],
+                'dropped' => ['name' => 'Zachyceno — neodesláno', 'style' => 'warning'],
+            ],
             'core.system.viewerDefaults' => ['toolbarActions' => [
                 'create' => ['name' => 'Přidat'], 'edit' => ['name' => 'Otevřít'],
             ]],
@@ -92,6 +101,75 @@ class SentMessagesViewerTest extends TestCase
 
         $this->assertSame('ucetni@odberatel.example, jana@odberatel.example', $row['t2']);
         $this->assertSame('archive', $row['stateStyle']);
+    }
+
+    public function testRowOfRedirectedMessageCarriesSafetyLabel(): void
+    {
+        $row = $this->viewer()->renderRow($this->record([
+            'transport_state' => 'sent',
+            'safety_action'   => 'redirected',
+            'safety_target'   => 'testy@firma.example',
+        ]));
+
+        // Řádek dál ukazuje původní příjemce — pojistka je jen štítek.
+        $this->assertSame('ucetni@odberatel.example, jana@odberatel.example', $row['t3'][1]['text']);
+        $this->assertSame([
+            ['text' => 'Odesláno', 'class' => 'success'],
+            ['text' => 'Přesměrováno na testy@firma.example', 'class' => 'warning'],
+        ], $row['i2']);
+    }
+
+    public function testSafetyLabelVariants(): void
+    {
+        $label = fn (array $overrides): ?string => $this->viewer()
+            ->renderRow($this->record($overrides + ['transport_state' => 'sent']))['i2'][1]['text'] ?? null;
+
+        $this->assertSame('Zachyceno — neodesláno', $label(['safety_action' => 'dropped']));
+        // Část příjemců vypadla a nikam se nepřesměrovala (allowlist bez redirectTo).
+        $this->assertSame('Příjemci omezeni pojistkou', $label(['safety_action' => 'redirected', 'safety_target' => null]));
+        $this->assertNull($label(['safety_action' => null]));
+        // Zpráva znovu ve frontě stopu dřívějšího odeslání neukazuje.
+        $this->assertNull($label(['transport_state' => 'queued', 'safety_action' => 'dropped']));
+    }
+
+    public function testDetailOfHeldMessageCarriesSafetyBadge(): void
+    {
+        $detail = $this->viewer($this->record(['transport_state' => 'sent', 'safety_action' => 'dropped']))
+            ->renderDetail(7);
+
+        $this->assertSame([
+            ['label' => 'Odeslaná', 'style' => 'done'],
+            ['label' => 'Odesláno', 'style' => 'success'],
+            ['label' => 'Zachyceno — neodesláno', 'style' => 'warning'],
+        ], $detail['badges']);
+
+        $properties = array_values(array_filter(
+            $detail['tabs'][0]['content']['blocks'],
+            static fn (array $block): bool => $block['type'] === 'properties',
+        ))[0];
+        $this->assertContains(
+            ['label' => 'Pojistka', 'value' => 'Zachyceno — neodesláno'],
+            $properties['groups'][1]['items'],
+        );
+    }
+
+    public function testSafetyLabelFallsBackToEnglishWithoutConfig(): void
+    {
+        $info = new \Shipard\Module\Core\Mail\Sent\SentMessageTransportInfo(
+            $this->createMock(DataSourceConnection::class),
+        );
+
+        $state = $info->state([
+            'transport_state' => 'sent',
+            'safety_action'   => 'redirected',
+            'safety_target'   => 'testy@firma.example',
+        ]);
+
+        $this->assertSame(
+            ['action' => 'redirected', 'target' => 'testy@firma.example', 'label' => 'Redirected to testy@firma.example', 'style' => 'warning'],
+            $state['safety'],
+        );
+        $this->assertNull($info->state(['transport_state' => 'sent'])['safety']);
     }
 
     public function testToolbarHasNoCreateAction(): void

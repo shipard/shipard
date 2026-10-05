@@ -30,9 +30,9 @@ class SentMessagesViewer extends TableViewer
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
-        $sql = 'SELECT m.`id`, m.`subject`, m.`email_to`, m.`target_label`, m.`transport_state`,'
-            . ' m.`created`, m.`sent_at`, m.`docState`, m.`recipient_person`,'
-            . ' p.`full_name` AS recipient_name'
+        // Celý řádek zprávy: štítky stavu transportu a pojistky čtou sloupce,
+        // které zdroj dat před `ds-upgrade` mít nemusí.
+        $sql = 'SELECT m.*, p.`full_name` AS recipient_name'
             . ' FROM `' . $this->table . '` m'
             . ' LEFT JOIN `base_persons_persons` p ON p.`id` = m.`recipient_person`';
 
@@ -97,10 +97,16 @@ class SentMessagesViewer extends TableViewer
             't1'         => (string) ($rowData['subject'] ?? ''),
             'i1'         => SubtableCellFormatter::dateTime($rowData['created'] ?? null),
             't2'         => $recipient !== '' ? $recipient : ($to !== '' ? $to : null),
-            'i2'         => [[
-                'text'  => $transport['stateLabel'],
-                'class' => self::TRANSPORT_SPAN_CLASS[$transport['stateStyle']] ?? 'muted',
-            ]],
+            'i2'         => array_values(array_filter([
+                [
+                    'text'  => $transport['stateLabel'],
+                    'class' => self::TRANSPORT_SPAN_CLASS[$transport['stateStyle']] ?? 'muted',
+                ],
+                $transport['safety'] !== null ? [
+                    'text'  => $transport['safety']['label'],
+                    'class' => self::TRANSPORT_SPAN_CLASS[$transport['safety']['style']] ?? 'muted',
+                ] : null,
+            ])),
             't3'         => $t3 !== [] ? $t3 : null,
             'stateStyle' => $this->stateStyle((int) ($rowData['docState'] ?? SentMessageStore::DOC_STATE_SENT)),
         ];
@@ -163,6 +169,7 @@ class SentMessagesViewer extends TableViewer
 
         $sending = [];
         $this->addItem($sending, $cs ? 'Stav odeslání' : 'Transport state', $transport['stateLabel']);
+        $this->addItem($sending, $cs ? 'Pojistka' : 'Mail safety', $transport['safety']['label'] ?? null);
         $this->addItem($sending, $cs ? 'Odesláno' : 'Sent at', SubtableCellFormatter::dateTime($record['sent_at'] ?? null));
         $this->addItem($sending, $cs ? 'Počet odeslání' : 'Send count', (string) (int) ($record['send_count'] ?? 0));
         $this->addItem($sending, $cs ? 'Poslední chyba' : 'Last error', $record['last_error'] ?? null);
@@ -188,6 +195,9 @@ class SentMessagesViewer extends TableViewer
             'badges'   => array_values(array_filter([
                 $this->stateBadge((int) ($record['docState'] ?? SentMessageStore::DOC_STATE_SENT)),
                 ['label' => $transport['stateLabel'], 'style' => $transport['stateStyle']],
+                $transport['safety'] !== null
+                    ? ['label' => $transport['safety']['label'], 'style' => $transport['safety']['style']]
+                    : null,
             ])),
             'icon'     => 'mail-out',
             'tabs'     => [[

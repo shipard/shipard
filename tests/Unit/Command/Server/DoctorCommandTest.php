@@ -102,6 +102,11 @@ class TestableDoctorCommand extends DoctorCommand
     {
         $this->checkHostingDomainsFile($config, $user, $output);
     }
+
+    public function checkMailSafetyPublic(array $config, OutputInterface $output): int
+    {
+        return $this->checkMailSafety($config, $output);
+    }
 }
 
 class DoctorCommandTest extends TestCase
@@ -1194,5 +1199,91 @@ class DoctorCommandTest extends TestCase
         $this->assertStringContainsString("✗ {$home}: mode 0750 blocks nginx", $display);
         $this->assertStringContainsString("chmod o+x {$home}", $display);
         $this->assertStringContainsString('sudo shpd-server fix-permissions', $display);
+    }
+
+    // ── Pojistka odchozí pošty (#95 D7) ─────────────────────────────
+
+    /**
+     * @param array<string, mixed> $serverConfig
+     * @return array{int, string}
+     */
+    private function mailSafetyCheck(array $serverConfig): array
+    {
+        $command = new TestableDoctorCommand($this->tempConfigPath, $this->makeSpec());
+        $output  = new \Symfony\Component\Console\Output\BufferedOutput();
+        $errors  = $command->checkMailSafetyPublic($serverConfig, $output);
+
+        return [$errors, $output->fetch()];
+    }
+
+    public function testMailSafetyConfiguredRedirectShowsTarget(): void
+    {
+        [$errors, $display] = $this->mailSafetyCheck([
+            'mode' => 'production',
+            'mail' => ['safety' => ['mode' => 'redirect', 'redirectTo' => 'testy@example.com']],
+        ]);
+
+        $this->assertSame(0, $errors);
+        $this->assertStringContainsString('✓ Mail safety: redirect → testy@example.com (configured)', $display);
+    }
+
+    public function testMailSafetyConfiguredAllowlistShowsWhereTheRestGoes(): void
+    {
+        [, $display] = $this->mailSafetyCheck([
+            'mode' => 'development',
+            'mail' => ['safety' => ['mode' => 'allowlist', 'allow' => ['@example.com', 'jan@example.org']]],
+        ]);
+
+        $this->assertStringContainsString('✓ Mail safety: allowlist (2 allowed), others → dropped (configured)', $display);
+    }
+
+    public function testMailSafetyDefaultsFollowServerMode(): void
+    {
+        [$errors, $display] = $this->mailSafetyCheck(['mode' => 'development']);
+        $this->assertSame(0, $errors);
+        $this->assertStringContainsString('✓ Mail safety: drop — nothing is sent (default, no mail.safety in server.json)', $display);
+
+        [$errors, $display] = $this->mailSafetyCheck(['mode' => 'production']);
+        $this->assertSame(0, $errors);
+        $this->assertStringContainsString('✓ Mail safety: off (default, no mail.safety in server.json)', $display);
+    }
+
+    public function testMailSafetyInvalidSectionIsAnError(): void
+    {
+        [$errors, $display] = $this->mailSafetyCheck([
+            'mode' => 'production',
+            'mail' => ['safety' => ['mode' => 'redirect']],
+        ]);
+
+        $this->assertSame(1, $errors);
+        $this->assertStringContainsString('✗ Mail safety: drop (invalid)', $display);
+        $this->assertStringContainsString('redirectTo', $display);
+        $this->assertStringContainsString('until then nothing is sent', $display);
+    }
+
+    public function testMailSafetyOffOnDevelopmentServerIsAWarning(): void
+    {
+        [$errors, $display] = $this->mailSafetyCheck([
+            'mode' => 'development',
+            'mail' => ['safety' => ['mode' => 'off']],
+        ]);
+
+        $this->assertSame(0, $errors);
+        $this->assertStringContainsString('⚠ Mail safety: off (configured) on a non-production server', $display);
+    }
+
+    public function testOutboundMailSectionReportsMailSafety(): void
+    {
+        $this->writeServerJson('development');
+        $spec = $this->makeSpec();
+        $this->buildHealthyTree($spec);
+
+        $command = $this->makeTester($spec);
+        $command->stubPoolUser = $this->testUser;
+        $tester = new CommandTester($command);
+        $tester->execute([]);
+
+        $section = substr($tester->getDisplay(), (int) strpos($tester->getDisplay(), 'Outbound mail'));
+        $this->assertStringContainsString('Mail safety: drop — nothing is sent', $section);
     }
 }

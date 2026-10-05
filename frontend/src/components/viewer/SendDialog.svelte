@@ -19,6 +19,7 @@
   import Icon from '../ui/Icon.svelte';
   import SpanBadge from './SpanBadge.svelte';
   import PrintPreviewDialog from './PrintPreviewDialog.svelte';
+  import MailSafetyNotice from '../ui/MailSafetyNotice.svelte';
   import { fetchSendDraft, sendPrint } from '../../api/prints.js';
   import { iconSend, iconClose, iconPreview } from '../../icons.js';
   import { t } from '../../i18n/index.js';
@@ -57,7 +58,7 @@
 
   let sending = $state(false);
   let sendError = $state(null);
-  let result = $state(null);    // {transportState, messages}
+  let result = $state(null);    // {transportState, safety, messages}
   let previewOpen = $state(false);
 
   // Guard proti out-of-order odpovědím (zavření, jiný záznam, rychlá změna jazyka).
@@ -220,19 +221,28 @@
   {#snippet recordLabel()}{draft?.targetLabel ?? ''}{/snippet}
 
   <div class="shpd-send">
+    <MailSafetyNotice />
     {#if loading && draft === null}
       <div class="shpd-send__state">{t('send.loading')}</div>
     {:else if loadError}
       <div class="shpd-send__state shpd-send__state--error" role="alert">{loadError}</div>
     {:else if result}
       <div class="shpd-send__result" data-testid="send-result">
-        <SpanBadge
-          style={result.transportState === 'sent' ? 'success' : 'warning'}
-          text={result.transportState === 'sent' ? t('send.resultSent') : t('send.resultQueued')}
-        />
-        <p>
-          {result.transportState === 'sent' ? t('send.resultSentNote') : t('send.resultQueuedNote')}
-        </p>
+        {#if result.safety}
+          <!-- Pojistka odchozí pošty zasáhla (#95 D6) — „odesláno“ by klamalo. -->
+          <SpanBadge style={result.safety.style} text={result.safety.label} />
+          <p>
+            {result.safety.action === 'dropped' ? t('send.resultHeldNote') : t('send.resultRedirectedNote')}
+          </p>
+        {:else}
+          <SpanBadge
+            style={result.transportState === 'sent' ? 'success' : 'warning'}
+            text={result.transportState === 'sent' ? t('send.resultSent') : t('send.resultQueued')}
+          />
+          <p>
+            {result.transportState === 'sent' ? t('send.resultSentNote') : t('send.resultQueuedNote')}
+          </p>
+        {/if}
       </div>
     {:else if draft}
       {#if messages.length > 0}

@@ -27,6 +27,10 @@ const DEFAULT_NAME = 'Shipard';
 let unavailable = $state(null); // { state } | null
 let readOnly = $state(false);
 
+// Režim pojistky odchozí pošty (#95 D7): `redirect` | `allowlist` | `drop`
+// = pošta nejde skutečným příjemcům → MailSafetyNotice; `off` / null nic.
+let mailSafetyMode = $state(null);
+
 let info = $state({
   name: null,
   shortName: null,
@@ -55,6 +59,7 @@ async function load() {
       themeStore.setDsDefault(info.theme);
       shellStore.setDsDefault(info.shell);
       readOnly = response.data.dsState === 'read_only';
+      mailSafetyMode = response.data.mailSafety?.mode ?? null;
       unavailable = null;
     } else if (response?.error?.code === 'DS_UNAVAILABLE') {
       const detail = response.error.details?.find((d) => d.field === '_state');
@@ -93,6 +98,7 @@ export const appInfoStore = {
   get auth()        { return info.auth; },
   get unavailable() { return unavailable; },
   get readOnly()    { return readOnly; },
+  get mailSafetyMode() { return mailSafetyMode; },
   load,
   apply,
 };

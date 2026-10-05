@@ -50,6 +50,9 @@
   <div class="shpd-sent-transport" data-testid="sent-message-transport">
     <div class="shpd-sent-transport__head">
       <SpanBadge style={transport.stateStyle} text={transport.stateLabel} />
+      {#if transport.safety}
+        <SpanBadge style={transport.safety.style} text={transport.safety.label} />
+      {/if}
       {#if transport.sentAt}
         <span class="shpd-sent-transport__meta">{t('sentMessage.sentAt', { at: transport.sentAt })}</span>
       {/if}

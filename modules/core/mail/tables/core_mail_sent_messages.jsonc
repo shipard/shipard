@@ -266,6 +266,29 @@
             "nullable": true,
             "group": "transport"
         },
+        // Zásah pojistky odchozí pošty při posledním odeslání (#95 D6):
+        // prázdné = zpráva odešla na adresy v `email_to` / `email_cc`.
+        {
+            "id": "safety_action",
+            "name": "Mail safety",
+            "name:cs": "Pojistka",
+            "name:en": "Mail safety",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "core.mail.safetyActions",
+            "nullable": true,
+            "group": "transport"
+        },
+        {
+            "id": "safety_target",
+            "name": "Redirected to",
+            "name:cs": "Přesměrováno na",
+            "name:en": "Redirected to",
+            "type": "varchar",
+            "length": 200,
+            "nullable": true,
+            "group": "transport"
+        },
 
         // --- status ---
 

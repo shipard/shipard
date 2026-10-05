@@ -1,7 +1,7 @@
 ---
 title: Odeslaná pošta
 summary: Kde najdeš všechno, co z Shipardu odešlo e-mailem — komu, kdy, s jakými přílohami a jak odeslání dopadlo; jak zprávu odeslat znovu, archivovat nebo smazat.
-keywords: [odeslaná pošta, odeslané zprávy, odeslané e-maily, co odešlo, komu jsem poslal fakturu, kdy odešla faktura, historie odeslání, odeslat znovu, poslat znovu, zpráva ve frontě, ve frontě, neodesláno, odesláno, stav odeslání, pokusy o odeslání, archivovat zprávu, smazat odeslanou zprávu, obnovit zprávu, přílohy odeslané zprávy, sekce odeslaná pošta u dokladu]
+keywords: [odeslaná pošta, odeslané zprávy, odeslané e-maily, co odešlo, komu jsem poslal fakturu, kdy odešla faktura, historie odeslání, odeslat znovu, poslat znovu, zpráva ve frontě, ve frontě, neodesláno, odesláno, stav odeslání, pokusy o odeslání, archivovat zprávu, smazat odeslanou zprávu, obnovit zprávu, přílohy odeslané zprávy, sekce odeslaná pošta u dokladu, zachyceno neodesláno, přesměrováno, pošta je zachycená, pošta je přesměrovaná, testovací server neposílá poštu, žlutý pruh pošta]
 related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/odesilatel-faktur.md, posta/prijem-posty.md, co-dnes-nejde.md]
 ---
 
@@ -63,6 +63,14 @@ poštovní server; jestli ji příjemce dostal a přečetl, nezjistí.
 
 **Zprávu nejde odstranit nadobro.** **Smazat** ji přesune do **Koše**,
 odkud jde obnovit.
+
+**U zprávy je štítek „Zachyceno — neodesláno“ nebo „Přesměrováno na …“.**
+Pracuješ na testovacím nebo vývojovém serveru: pošta tam nejde skutečným
+příjemcům, aby se při zkoušení nic neposlalo zákazníkům. Zpráva má stav
+**Odesláno**, ale buď neodešla vůbec, nebo odešla jen na adresu ze štítku
+(štítek **Příjemci omezeni pojistkou** znamená, že odešla jen části
+příjemců). Upozorňuje na to i žlutý pruh nad přehledem a v okně **Odeslat
+e-mailem**. V ostrém provozu se štítek ani pruh neobjeví.
 
 ## Souvisí
 

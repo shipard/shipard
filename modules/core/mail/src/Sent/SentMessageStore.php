@@ -152,6 +152,27 @@ class SentMessageStore
         ], 'id = %i AND last_outbox_id = %i', $id, $outboxId);
     }
 
+    /**
+     * Zásah pojistky odchozí pošty při odeslání řádkem `$outboxId` (#95 D6);
+     * `$action` null = pojistka nezasáhla a stopa po dřívějším odeslání se
+     * smaže. Volá se až po `markSent()` — stav transportu na stopě nezávisí.
+     */
+    public function markSafety(int $id, int $outboxId, ?string $action, ?string $target): void
+    {
+        try {
+            $this->db->updateWhere(self::TABLE, [
+                'safety_action' => $action,
+                'safety_target' => $action !== null ? $target : null,
+            ], 'id = %i AND last_outbox_id = %i', $id, $outboxId);
+        } catch (\Dibi\Exception $e) {
+            // Zdroj dat před `ds-upgrade` sloupce nemá; bez zásahu pojistky
+            // není co ztratit.
+            if ($action !== null) {
+                throw $e;
+            }
+        }
+    }
+
     /** Řádek fronty selhal natrvalo. */
     public function markFailed(int $id, int $outboxId, ?string $error, \DateTimeImmutable $at): void
     {

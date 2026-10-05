@@ -8,6 +8,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Mail\AddressList;
+use Shipard\Core\Mail\MailSafetyConfig;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\PrintBuildException;
 use Shipard\Core\Prints\PrintLanguageNotCompiledException;
@@ -34,12 +35,14 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * `--dry-run` vypíše návrh (JSON na stdout) a nic nevytvoří.
  *
- * Bez `--dry-run` je `--to` povinné: zdroj dat neví, jestli nese ostrá data
- * nebo jejich kopii, takže příkaz nikdy sám neposílá na adresy partnerů
- * dohledané z kontaktů (pojistku na úrovni serveru řeší #95).
+ * Bez `--to` jde zpráva na adresy dohledané z kontaktů partnera. Kopii
+ * ostrých dat před tím chrání pojistka odchozí pošty (`mail.safety`, #95);
+ * jen na neprodukčním serveru, kde je vypnutá, je `--to` povinné (D8).
  */
 class PrintSendCommand extends Command
 {
+    private ?ServerConfig $loadedServerConfig = null;
+
     public function __construct(
         private readonly ?DataSourceConfig $dsConfig = null,
         private readonly ?RecordSendService $service = null,
@@ -54,7 +57,7 @@ class PrintSendCommand extends Command
              ->setDescription('Odešle záznam e-mailem: zpráva v Odeslané poště s PDF tisku + řádek fronty; --dry-run jen vypíše návrh (JSON)')
              ->addArgument('printId', InputArgument::REQUIRED, 'Id tisku (např. docs.invoicesOut.invoice)')
              ->addArgument('recordId', InputArgument::REQUIRED, 'Id záznamu v tabulce tisku')
-             ->addOption('to', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Příjemce (lze opakovat); bez --dry-run povinné')
+             ->addOption('to', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Příjemce (lze opakovat); bez něj adresy z kontaktů — povinné jen na neprodukčním serveru s vypnutou pojistkou pošty')
              ->addOption('cc', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Kopie (lze opakovat)')
              ->addOption('from', null, InputOption::VALUE_REQUIRED, 'Adresa odesílatele — jedna z povolených; výchozí podle číselné řady / nastavení')
              ->addOption('language', null, InputOption::VALUE_REQUIRED, 'Jazyk zprávy a tisku (cs | en | sk | de); výchozí podle partnera')
@@ -82,8 +85,9 @@ class PrintSendCommand extends Command
         $dryRun = (bool) $input->getOption('dry-run');
         $to     = AddressList::parse((array) $input->getOption('to'));
         $cc     = AddressList::parse((array) $input->getOption('cc'));
-        if (!$dryRun && $to === []) {
-            $err->writeln('<error>--to is required (the command never sends to addresses looked up from contacts); use --dry-run to see the proposal</error>');
+        $safety = $this->mailSafety();
+        if (!$dryRun && $to === [] && $this->recipientRequired($safety)) {
+            $err->writeln('<error>--to is required: mail safety is off on a non-production server, so the message would reach addresses looked up from contacts; use --dry-run to see the proposal</error>');
             return Command::INVALID;
         }
 
@@ -137,6 +141,14 @@ class PrintSendCommand extends Command
         }
 
         $output->writeln("Sent message #{$result->sentMessageId}: outbox #{$result->outboxId}, transport '{$result->transportState}'");
+        // Fronta zprávu odešle až po příkazu — kam (ne)půjde, říká režim serveru.
+        if ($safety->isActive()) {
+            $output->writeln('Mail safety: ' . match ($safety->mode) {
+                MailSafetyConfig::MODE_REDIRECT  => "redirect — the message goes to {$safety->redirectTo}, not to its recipients",
+                MailSafetyConfig::MODE_ALLOWLIST => 'allowlist — only allowed addresses receive the message',
+                default                          => 'drop — the message will not be sent',
+            });
+        }
         foreach ($result->messages as $message) {
             $err->writeln(sprintf('<comment>%s [%s]: %s</comment>', $message['severity'], $message['code'], $message['text']));
         }
@@ -144,13 +156,42 @@ class PrintSendCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function createService(string $dsDir): RecordSendService
+    /**
+     * `--to` je povinné jen tam, kde by zpráva bez něj došla skutečným
+     * příjemcům z kopie dat: pojistka vypnutá a server není produkční (D8).
+     */
+    private function recipientRequired(MailSafetyConfig $safety): bool
     {
-        $serverConfig = $this->serverConfig;
-        if ($serverConfig === null) {
+        // Vypnutá pojistka znamená, že se server.json podařilo načíst.
+        return !$safety->isActive() && $this->serverConfig()->getMode() !== 'production';
+    }
+
+    /** Pojistka serveru; bez čitelného server.json nic nepustí (fail-closed). */
+    private function mailSafety(): MailSafetyConfig
+    {
+        try {
+            return $this->serverConfig()->getMailSafety();
+        } catch (\Throwable $e) {
+            return MailSafetyConfig::failClosed('server.json cannot be read: ' . $e->getMessage());
+        }
+    }
+
+    private function serverConfig(): ServerConfig
+    {
+        if ($this->serverConfig !== null) {
+            return $this->serverConfig;
+        }
+        if ($this->loadedServerConfig === null) {
             $serverConfig = new ServerConfig();
             $serverConfig->load();
+            $this->loadedServerConfig = $serverConfig;
         }
+        return $this->loadedServerConfig;
+    }
+
+    private function createService(string $dsDir): RecordSendService
+    {
+        $serverConfig = $this->serverConfig();
         $dsConfig = $this->dsConfig ?? new DataSourceConfig($dsDir);
 
         return RecordSendServiceFactory::create(

@@ -78,6 +78,7 @@ class MailSendTestCommandTest extends TestCase
         $this->assertStringContainsString("Outbox #15: state 'sent'", $display);
         $this->assertStringContainsString('relay.example.com:587', $display);
         $this->assertStringContainsString('250 OK', $display);
+        $this->assertStringNotContainsString('Safety:', $display);
 
         $this->assertSame(['test@example.com', 'druhy@example.com'], $captured->to);
         $this->assertSame(['kopie@example.com'], $captured->cc);
@@ -102,6 +103,46 @@ class MailSendTestCommandTest extends TestCase
 
         $this->assertSame(Command::FAILURE, $tester->execute(['--to' => ['test@example.com']]));
         $this->assertStringContainsString('no relay configured', $tester->getDisplay());
+    }
+
+    public function testHeldMessageIsReportedAsSafetyNotAsDelivery(): void
+    {
+        $service = $this->createMock(MailOutboxService::class);
+        $service->method('enqueue')->willReturn(17);
+        // Zachycená zpráva končí jako odeslaná — pokus je úspěch.
+        $service->method('attemptSend')->willReturn(true);
+
+        $conn = $this->createMock(DataSourceConnection::class);
+        $conn->method('fetchRow')->willReturnCallback(
+            static fn (string $sql) => str_contains($sql, 'outbox_log')
+                ? ['transport' => 'safety:drop', 'duration_ms' => 1, 'smtp_response' => 'mail safety: not sent']
+                : ['state' => 'sent', 'last_error' => null, 'safety_action' => 'dropped', 'safety_target' => null],
+        );
+
+        $tester = $this->makeTester($service, $conn);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--to' => ['test@example.com']]));
+        $this->assertStringContainsString('safety:drop', $tester->getDisplay());
+        $this->assertStringContainsString('held by mail safety — nothing was sent', $tester->getDisplay());
+    }
+
+    public function testRedirectedMessageReportsTarget(): void
+    {
+        $service = $this->createMock(MailOutboxService::class);
+        $service->method('enqueue')->willReturn(18);
+        $service->method('attemptSend')->willReturn(true);
+
+        $conn = $this->createMock(DataSourceConnection::class);
+        $conn->method('fetchRow')->willReturnCallback(
+            static fn (string $sql) => str_contains($sql, 'outbox_log')
+                ? ['transport' => 'relay.example.com:587', 'duration_ms' => 90, 'smtp_response' => '250 OK']
+                : ['state' => 'sent', 'last_error' => null, 'safety_action' => 'redirected', 'safety_target' => 'testy@example.com'],
+        );
+
+        $tester = $this->makeTester($service, $conn);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--to' => ['test@example.com']]));
+        $this->assertStringContainsString('Safety:    redirected to testy@example.com', $tester->getDisplay());
     }
 
     public function testMissingToFails(): void

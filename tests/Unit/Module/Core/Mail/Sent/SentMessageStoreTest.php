@@ -87,4 +87,38 @@ class SentMessageStoreTest extends TestCase
         $this->assertSame('Mailbox unavailable', $updates[0][0]['last_error']);
         $this->assertSame([7, 31], $updates[0][2]);
     }
+
+    public function testMarkSafetyStoresTraceOfLastOutboxRow(): void
+    {
+        $updates = [];
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('updateWhere')->willReturnCallback(
+            function (string $table, array $data, string $where, mixed ...$params) use (&$updates): void {
+                $updates[] = [$data, $where, $params];
+            },
+        );
+        $store = new SentMessageStore($db);
+
+        $store->markSafety(7, 31, 'redirected', 'testy@firma.example');
+        // Bez zásahu se stopa dřívějšího odeslání smaže — i s adresou.
+        $store->markSafety(7, 32, null, 'testy@firma.example');
+
+        $this->assertSame(['safety_action' => 'redirected', 'safety_target' => 'testy@firma.example'], $updates[0][0]);
+        $this->assertSame('id = %i AND last_outbox_id = %i', $updates[0][1]);
+        $this->assertSame([7, 31], $updates[0][2]);
+        $this->assertSame(['safety_action' => null, 'safety_target' => null], $updates[1][0]);
+    }
+
+    public function testMarkSafetyToleratesMissingColumnsOnlyWithoutTrace(): void
+    {
+        // Zdroj dat před `ds-upgrade` sloupce pojistky nemá.
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('updateWhere')->willThrowException(new \Dibi\DriverException("Unknown column 'safety_action'"));
+        $store = new SentMessageStore($db);
+
+        $store->markSafety(7, 31, null, null);
+
+        $this->expectException(\Dibi\Exception::class);
+        $store->markSafety(7, 31, 'dropped', null);
+    }
 }

@@ -7,6 +7,8 @@ namespace Shipard\Tests\Unit\Command\DataSource;
 use PHPUnit\Framework\TestCase;
 use Shipard\Command\DataSource\PrintSendCommand;
 use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Config\ServerConfig;
+use Shipard\Core\Mail\MailSafetyConfig;
 use Shipard\Core\Prints\PrintNotAvailableException;
 use Shipard\Core\Prints\PrintNotFoundException;
 use Shipard\Module\Core\Mail\Sent\RecordSendException;
@@ -28,11 +30,28 @@ class TestablePrintSendCommand extends PrintSendCommand
 /** `shpd-ds print-send` — návrh (`--dry-run`) a odeslání záznamu z příkazové řádky. */
 class PrintSendCommandTest extends TestCase
 {
-    private function tester(RecordSendService $service): CommandTester
+    /**
+     * Server příkazu: výchozí je dev server s vypnutou pojistkou — jediná
+     * kombinace, kde je `--to` povinné (#95 D8).
+     *
+     * @param ?array<string, mixed> $safety Sekce `mail.safety`; null = chybí.
+     */
+    private function server(string $mode = 'development', ?array $safety = ['mode' => 'off']): ServerConfig
+    {
+        $data = ['mode' => $mode] + ($safety !== null ? ['mail' => ['safety' => $safety]] : []);
+
+        $server = $this->createMock(ServerConfig::class);
+        $server->method('getMode')->willReturn($mode);
+        $server->method('getMailSafety')->willReturn(MailSafetyConfig::fromServerData($data));
+        return $server;
+    }
+
+    private function tester(RecordSendService $service, ?ServerConfig $server = null): CommandTester
     {
         return new CommandTester(new TestablePrintSendCommand(
             $this->createMock(DataSourceConfig::class),
             $service,
+            $server ?? $this->server(),
         ));
     }
 
@@ -90,12 +109,78 @@ class PrintSendCommandTest extends TestCase
 
         $tester = $this->tester($service);
 
-        // Příkaz sám nikdy neposílá na adresy partnerů z kontaktů.
+        // Dev server bez pojistky: zpráva by došla adresám partnerů z kontaktů.
         $this->assertSame(
             Command::INVALID,
             $tester->execute(['printId' => 'docs.invoicesOut.invoice', 'recordId' => '55']),
         );
         $this->assertStringContainsString('--to is required', $tester->getDisplay());
+    }
+
+    /** @return array<string, array{ServerConfig}> */
+    private function serversWhereRecipientIsOptional(): array
+    {
+        $unreadable = $this->createMock(ServerConfig::class);
+        $unreadable->method('getMailSafety')->willThrowException(new \RuntimeException('Config file not found'));
+
+        return [
+            'dev server, default drop'      => [$this->server('development', null)],
+            'dev server, redirect'          => [$this->server('development', ['mode' => 'redirect', 'redirectTo' => 'testy@firma.example'])],
+            'production, no safety'         => [$this->server('production', null)],
+            'production, safety off'        => [$this->server('production', ['mode' => 'off'])],
+            'production (test), redirect'   => [$this->server('production', ['mode' => 'redirect', 'redirectTo' => 'testy@firma.example'])],
+            'dev server, invalid section'   => [$this->server('development', ['mode' => 'redirect'])],
+            'server.json cannot be read'    => [$unreadable],
+        ];
+    }
+
+    public function testRecipientIsOptionalWithActiveSafetyOrOnProduction(): void
+    {
+        foreach ($this->serversWhereRecipientIsOptional() as $case => [$server]) {
+            $captured = null;
+            $service  = $this->createMock(RecordSendService::class);
+            $service->method('send')->willReturnCallback(function (SendRequest $request) use (&$captured): SendResult {
+                $captured = $request;
+                return new SendResult(701, 31, 'sent');
+            });
+
+            $tester = $this->tester($service, $server);
+            $exit   = $tester->execute(['printId' => 'docs.invoicesOut.invoice', 'recordId' => '55']);
+
+            $this->assertSame(Command::SUCCESS, $exit, $case);
+            // Bez --to rozhodnou o příjemcích kontakty partnera.
+            $this->assertNotNull($captured, $case);
+            $this->assertNull($captured->to, $case);
+        }
+    }
+
+    public function testOutputSaysWhereMailGoesUnderSafety(): void
+    {
+        foreach ([
+            [$this->server('development', ['mode' => 'redirect', 'redirectTo' => 'testy@firma.example']), 'Mail safety: redirect — the message goes to testy@firma.example'],
+            [$this->server('development', ['mode' => 'allowlist', 'allow' => ['@firma.example']]), 'Mail safety: allowlist — only allowed addresses receive the message'],
+            [$this->server('development', null), 'Mail safety: drop — the message will not be sent'],
+        ] as [$server, $line]) {
+            $service = $this->createMock(RecordSendService::class);
+            // Zpráva čeká ve frontě — výsledek pojistky ještě není znám.
+            $service->method('send')->willReturn(new SendResult(701, 31, 'queued'));
+
+            $tester = $this->tester($service, $server);
+            $tester->execute(['printId' => 'docs.invoicesOut.invoice', 'recordId' => '55']);
+
+            $this->assertStringContainsString($line, $tester->getDisplay());
+        }
+    }
+
+    public function testOutputIsSilentAboutSafetyWhenItIsOff(): void
+    {
+        $service = $this->createMock(RecordSendService::class);
+        $service->method('send')->willReturn(new SendResult(701, 31, 'queued'));
+
+        $tester = $this->tester($service, $this->server('production', null));
+        $tester->execute(['printId' => 'docs.invoicesOut.invoice', 'recordId' => '55']);
+
+        $this->assertStringNotContainsString('Mail safety', $tester->getDisplay());
     }
 
     public function testSendPassesAddressesSenderAndLanguage(): void

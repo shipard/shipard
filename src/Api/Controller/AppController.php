@@ -9,6 +9,7 @@ use Shipard\Api\Response;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Mail\MailSafetyConfig;
 use Shipard\Core\Settings\AvatarStorage;
 use Shipard\Core\Settings\BrandingStorage;
 use Shipard\Core\Settings\SettingsStore;
@@ -29,6 +30,7 @@ use Shipard\Core\Settings\UserSettingsStore;
  *
  * Branding GET endpointy jsou vědomě veřejné (login obrazovka, favicon bez
  * tokenu) — nesmí sem přibýt nic citlivého (DB jméno, moduly, uživatelé).
+ * Z pojistky odchozí pošty proto `info` vystavuje jen režim, žádné adresy.
  * Avatar je naopak per-uživatel a celý za auth (i GET).
  */
 class AppController
@@ -46,6 +48,7 @@ class AppController
         private DataSourceConnection $db,
         private DataSourceConfig $config,
         private array $tables = [],
+        private ?MailSafetyConfig $mailSafety = null,
     ) {
         $this->settings = new SettingsStore($db);
         $this->storage  = new BrandingStorage($config->getDataSourceDir());
@@ -90,6 +93,10 @@ class AppController
             'shell'       => is_array($values['app.shell']) ? $values['app.shell'] : null,
             // Stav DS pro SPA: `read_only` → banner + skrytý chat (fáze 2).
             'dsState'     => $dsState,
+            // Pojistka odchozí pošty (#95 D7) — jen režim, SPA podle něj
+            // upozorní, že pošta nejde skutečným příjemcům. Adresy
+            // přesměrování ani povolené domény sem nepatří.
+            'mailSafety'  => $this->mailSafety !== null ? ['mode' => $this->mailSafety->mode] : null,
             // Auth politika pro login obrazovku — jen id + label providerů,
             // nikdy clientId/secret/issuer.
             'auth'        => [

@@ -540,6 +540,9 @@
                 <span class="shpd-detail__sent-date">{message.createdAt}</span>
                 <span class="shpd-detail__sent-to">{(message.to ?? []).join(', ')}</span>
                 <SpanBadge style={message.transport?.stateStyle ?? 'neutral'} text={message.transport?.stateLabel ?? ''} />
+                {#if message.transport?.safety}
+                  <SpanBadge style={message.transport.safety.style} text={message.transport.safety.label} />
+                {/if}
               </button>
               {#if (message.attachments ?? []).length > 0}
                 <AttachmentGrid attachments={message.attachments} />

@@ -353,7 +353,7 @@ function dispatch(
 		'ui'      => dispatchUi($route->action, $resolved->config, $modulePathResolver, resolveLanguage($request, $resolved->config), $configRuntime, $db, $auth, $tables, $resolved->isReadOnly()),
 		'dashboard' => dispatchDashboard($route, $db, $configRuntime, resolveLanguage($request, $resolved->config), $resolved->config, $alertCheckRegistry, $tables, $auth, $request, $resolved->isReadOnly()),
 		'settings' => dispatchSettings($route, $request, $auth, $resolved->config, $modulePathResolver, resolveLanguage($request, $resolved->config), $configRuntime, $db, $tables),
-		'app'     => dispatchApp($route, $auth, $db, $resolved->config, $tables, $resolved->isDevMode(), $resolved->state->getEffectiveState()),
+		'app'     => dispatchApp($route, $auth, $db, $resolved->config, $tables, $resolved->isDevMode(), $resolved->state->getEffectiveState(), $serverConfig),
 		'form'    => dispatchForm($route, $request, $auth, $tables, $db, $formRegistry ?? new FormRegistry(), $configRuntime, $modulePathResolver, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), resolveLanguage($request, $resolved->config), $resolved->config, $lookupRegistry ?? new LookupRegistry(), $documentEventDispatcher),
 		'lookup'  => dispatchLookup($route, $request, $auth, $tables, $db, $lookupRegistry ?? new LookupRegistry(), $configRuntime),
 		'viewer'  => dispatchViewer($route, $request, $auth, $viewerRegistry, $tables, $db, $configRuntime, resolveLanguage($request, $resolved->config), $documentRegistry, $resolved->config, $modulePathResolver),
@@ -1499,8 +1499,12 @@ function dispatchApp(
 	array $tables = [],
 	bool $devMode = false,
 	string $dsState = \Shipard\Core\Config\DataSourceState::ACTIVE,
+	?ServerConfig $serverConfig = null,
 ): Response {
-	$ctrl = new \Shipard\Api\Controller\AppController($db, $config, $tables);
+	$ctrl = new \Shipard\Api\Controller\AppController(
+		$db, $config, $tables,
+		\Shipard\Core\Mail\MailSafetyConfig::forServer($serverConfig),
+	);
 	$slot = (string) $route->table;
 	return match ($route->action) {
 		'info'           => $ctrl->info($dsState),

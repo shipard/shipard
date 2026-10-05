@@ -19,6 +19,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Smoke test transportu při zřizování — synchronně odešle testovací
  * zprávu (enqueue + okamžitý pokus), výsledek vč. SMTP odpovědi na
  * stdout. Zpráva se zapíše do outboxu; při selhání ji převezme cron.
+ * Zásah pojistky odchozí pošty (#95) výstup řekne — zachycená zpráva
+ * končí jako odeslaná, i když nikam neodešla.
  */
 class MailSendTestCommand extends Command
 {
@@ -96,6 +98,16 @@ class MailSendTestCommand extends Command
                 if (($log['smtp_response'] ?? '') !== '') {
                     $output->writeln('Response:  ' . $log['smtp_response']);
                 }
+            }
+            $safety = match ((string) ($row['safety_action'] ?? '')) {
+                'dropped'    => 'held by mail safety — nothing was sent',
+                'redirected' => ($row['safety_target'] ?? '') !== ''
+                    ? 'redirected to ' . $row['safety_target']
+                    : 'recipients restricted by mail safety',
+                default      => null,
+            };
+            if ($safety !== null) {
+                $output->writeln("<comment>Safety:    {$safety}</comment>");
             }
             if (!$sent && ($row['last_error'] ?? '') !== '') {
                 $output->writeln('<error>Error: ' . $row['last_error'] . '</error>');

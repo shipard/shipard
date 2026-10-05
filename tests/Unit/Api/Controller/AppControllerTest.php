@@ -10,6 +10,7 @@ use Shipard\Api\Controller\AppController;
 use Shipard\Api\Response;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Mail\MailSafetyConfig;
 
 class AppControllerTest extends TestCase
 {
@@ -93,6 +94,28 @@ class AppControllerTest extends TestCase
     {
         $data = $this->makeController()->info('read_only')->getPayload()['data'];
         $this->assertSame('read_only', $data['dsState']);
+    }
+
+    public function testInfoExposesOnlyMailSafetyMode(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturn([]);
+        $safety = MailSafetyConfig::fromServerData(['mode' => 'production', 'mail' => ['safety' => [
+            'mode'       => 'allowlist',
+            'redirectTo' => 'testy@firma.example',
+            'allow'      => ['@firma.example'],
+        ]]]);
+
+        $payload = (new AppController($db, new DataSourceConfig($this->dsDir), [], $safety))->info()->getPayload();
+
+        // Endpoint je veřejný — režim ano, adresy a domény ne.
+        $this->assertSame(['mode' => 'allowlist'], $payload['data']['mailSafety']);
+        $this->assertStringNotContainsString('firma.example', (string) json_encode($payload));
+    }
+
+    public function testInfoMailSafetyIsNullWithoutServerConfiguration(): void
+    {
+        $this->assertNull($this->makeController()->info()->getPayload()['data']['mailSafety']);
     }
 
     public function testInfoPrefersAppNameAndShortName(): void

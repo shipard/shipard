@@ -9,6 +9,7 @@ use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\RenderConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Mail\MailRelayConfig;
+use Shipard\Core\Mail\MailSafetyConfig;
 use Shipard\Core\Render\RenderClient;
 use Shipard\Core\Server\CronProvisioner;
 use Shipard\Core\Server\DomainsFile;
@@ -141,7 +142,8 @@ class DoctorCommand extends Command
 
         $output->writeln('');
         $output->writeln('<info>Outbound mail</info>');
-        $mailErrors = $this->checkMailOutbound($spec, $config, $output);
+        $mailErrors = $this->checkMailSafety($config, $output)
+                    + $this->checkMailOutbound($spec, $config, $output);
 
         $output->writeln('');
         $output->writeln(str_repeat('─', 55));
@@ -255,6 +257,47 @@ class DoctorCommand extends Command
             $output->writeln('  All data sources active ✓');
         }
         return $errors;
+    }
+
+    /**
+     * Pojistka odchozí pošty (`mail.safety`, #95 D7): režim, odkud se vzal
+     * a kam pošta jde. Chybná sekce je chyba (nic neodejde), vypnutá
+     * pojistka na neprodukčním serveru varování.
+     *
+     * @param array $serverConfig dekódovaný server.json
+     * @return int number of errors
+     */
+    protected function checkMailSafety(array $serverConfig, OutputInterface $output): int
+    {
+        $safety = MailSafetyConfig::fromServerData($serverConfig);
+
+        if ($safety->source === MailSafetyConfig::SOURCE_INVALID) {
+            $output->writeln("  ✗ Mail safety: {$safety->mode} (invalid) — {$safety->problem}");
+            $output->writeln('    <comment>→ Fix mail.safety in server.json; until then nothing is sent</comment>');
+            return 1;
+        }
+
+        $detail = match ($safety->mode) {
+            MailSafetyConfig::MODE_REDIRECT  => "redirect → {$safety->redirectTo}",
+            MailSafetyConfig::MODE_ALLOWLIST => sprintf(
+                'allowlist (%d allowed), others → %s',
+                count($safety->allow),
+                $safety->redirectTo ?? 'dropped',
+            ),
+            MailSafetyConfig::MODE_DROP      => 'drop — nothing is sent',
+            default                          => 'off',
+        };
+        $source = $safety->source === MailSafetyConfig::SOURCE_DEFAULT
+            ? 'default, no mail.safety in server.json'
+            : 'configured';
+
+        if (!$safety->isActive() && ($serverConfig['mode'] ?? null) !== 'production') {
+            $output->writeln("  ⚠ Mail safety: {$detail} ({$source}) on a non-production server — mail reaches real recipients");
+            return 0;
+        }
+
+        $output->writeln("  ✓ Mail safety: {$detail} ({$source})");
+        return 0;
     }
 
     /**

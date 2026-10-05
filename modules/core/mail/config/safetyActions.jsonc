@@ -4,11 +4,21 @@
     // Zásah pojistky odchozí pošty (#95 D6) — `safety_action` na řádku
     // fronty a na odeslané zprávě. Zpráva, do které pojistka nezasáhla,
     // hodnotu nemá. `style` = varianta štítku (design-system §5).
+    //
+    // Štítek u odeslané zprávy: `nameTarget` s adresou přesměrování
+    // (`{target}`), `nameRestricted` když část příjemců vypadla a nikam se
+    // nepřesměrovala (allowlist bez `redirectTo`).
 
     "redirected": {
         "name": "Redirected",
         "name:cs": "Přesměrováno",
         "name:en": "Redirected",
+        "nameTarget": "Redirected to {target}",
+        "nameTarget:cs": "Přesměrováno na {target}",
+        "nameTarget:en": "Redirected to {target}",
+        "nameRestricted": "Recipients restricted by mail safety",
+        "nameRestricted:cs": "Příjemci omezeni pojistkou",
+        "nameRestricted:en": "Recipients restricted by mail safety",
         "style": "warning"
     },
     "dropped": {

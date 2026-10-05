@@ -11,8 +11,10 @@
   import PortalContent from '../portal/PortalContent.svelte';
   import ReportsPage from '../reports/ReportsPage.svelte';
   import ReadOnlyBanner from '../ui/ReadOnlyBanner.svelte';
+  import MailSafetyNotice from '../ui/MailSafetyNotice.svelte';
   import { appInfoStore } from '../../stores/appInfo.svelte.js';
   import { t } from '../../i18n/index.js';
+  import { isOutboundMailItem } from '../../utils/mailSafety.js';
 
   let { activeItem = null, onOpenThemePanel } = $props();
 
@@ -35,6 +37,9 @@
 <main class="shpd-content">
   {#if appInfoStore.readOnly}
     <ReadOnlyBanner />
+  {/if}
+  {#if isOutboundMailItem(activeItem)}
+    <MailSafetyNotice banner />
   {/if}
   {#if activeItem?.type === 'dashboard'}
     <Dashboard />

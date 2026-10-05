@@ -175,13 +175,15 @@ class RecordSendService
             $this->transport->attempt($outboxId);
         }
 
-        $message = $this->store->get($messageId);
+        $message   = $this->store->get($messageId);
+        $transport = (new SentMessageTransportInfo($this->db, $this->config))->state($message ?? []);
 
         return new SendResult(
             $messageId,
             $outboxId,
-            (string) ($message['transport_state'] ?? SentMessageStore::TRANSPORT_QUEUED),
+            $transport['state'],
             $draft->messages,
+            $transport['safety'],
         );
     }
 

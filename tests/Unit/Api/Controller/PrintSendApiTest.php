@@ -251,6 +251,7 @@ class PrintSendApiTest extends TestCase
             [
                 'sentMessageId'  => 701,
                 'transportState' => 'queued',
+                'safety'         => null,
                 'messages'       => [['severity' => 'warning', 'code' => 'builder.note', 'text' => 'Poznámka builderu']],
             ],
             $response->getPayload()['data'],
@@ -415,7 +416,7 @@ class PrintSendApiTest extends TestCase
             'createdAt'   => '04.10.2026 14:30',
             'to'          => ['ucetni@odberatel.example', 'jana@odberatel.example'],
             'subject'     => 'Karta 5 — Naše firma s.r.o.',
-            'transport'   => ['state' => 'sent', 'stateLabel' => 'sent', 'stateStyle' => 'neutral'],
+            'transport'   => ['state' => 'sent', 'stateLabel' => 'sent', 'stateStyle' => 'neutral', 'safety' => null],
             'attachments' => [['id' => 101, 'name' => 'karta-5.pdf', 'mime_type' => 'application/pdf', 'file_size' => 2048]],
         ]], $detail['sentMessages']);
 

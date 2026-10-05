@@ -1016,6 +1016,12 @@ export default {
   'send.resultSentNote': 'The message has been sent. You will find it in Sent messages and at the record.',
   'send.resultQueued': 'Queued',
   'send.resultQueuedNote': 'The message could not be sent right away — it is waiting in the outbound queue and sending is retried automatically. See its state at the record, in the Sent messages section.',
+  'send.resultHeldNote': 'The message was not sent anywhere — mail safety on this server held it. You will find it in Sent messages and at the record.',
+  'send.resultRedirectedNote': 'Mail safety changed the recipients — the message did not go to all addresses given in the dialog. You will find it in Sent messages and at the record.',
+  // Outbound mail safety on dev and test servers (#95 D7)
+  'mailSafety.notice.redirect': 'Mail on this server is redirected — nothing reaches the real recipients.',
+  'mailSafety.notice.allowlist': 'Mail on this server is limited to allowed addresses — nothing reaches other recipients.',
+  'mailSafety.notice.drop': 'Mail on this server is held — nothing reaches the real recipients.',
   'sentMessage.sectionTitle': 'Sent messages',
   'sentMessage.open': 'Open the message',
   'error.PRINT_NOT_SENDABLE': 'This print cannot be sent by e-mail',

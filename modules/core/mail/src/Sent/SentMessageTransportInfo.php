@@ -17,6 +17,17 @@ use Shipard\Core\Form\SubtableCellFormatter;
 final class SentMessageTransportInfo
 {
     private const STATES_ITEM = 'core.mail.transportStates';
+    private const SAFETY_ITEM = 'core.mail.safetyActions';
+
+    /** Anglické štítky pojistky pro zdroj dat bez zkompilované konfigurace. */
+    private const SAFETY_FALLBACK = [
+        'redirected' => [
+            'name'           => 'Redirected',
+            'nameTarget'     => 'Redirected to {target}',
+            'nameRestricted' => 'Recipients restricted by mail safety',
+        ],
+        'dropped' => ['name' => 'Held — not sent'],
+    ];
 
     /** Kolik posledních pokusů formulář ukáže. */
     private const ATTEMPTS_LIMIT = 20;
@@ -28,7 +39,8 @@ final class SentMessageTransportInfo
 
     /**
      * @param array<string, mixed> $message Řádek `core_mail_sent_messages`.
-     * @return array{state: string, stateLabel: string, stateStyle: string}
+     * @return array{state: string, stateLabel: string, stateStyle: string,
+     *               safety: ?array{action: string, target: ?string, label: string, style: string}}
      */
     public function state(array $message): array
     {
@@ -40,6 +52,42 @@ final class SentMessageTransportInfo
             'state'      => $state,
             'stateLabel' => is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $state,
             'stateStyle' => is_array($entry) && isset($entry['style']) ? (string) $entry['style'] : 'neutral',
+            'safety'     => $this->safety($message, $state),
+        ];
+    }
+
+    /**
+     * Zásah pojistky odchozí pošty při posledním odeslání (#95 D6) —
+     * „Odesláno“ pak znamená přesměrováno nebo zachyceno. Zpráva, která
+     * čeká ve frontě nebo selhala, stopu dřívějšího odeslání neukazuje.
+     *
+     * @param array<string, mixed> $message
+     * @return array{action: string, target: ?string, label: string, style: string}|null
+     */
+    private function safety(array $message, string $state): ?array
+    {
+        $action = (string) ($message['safety_action'] ?? '');
+        if ($action === '' || $state !== SentMessageStore::TRANSPORT_SENT) {
+            return null;
+        }
+
+        $actions = $this->config?->cfgItem(self::SAFETY_ITEM);
+        $entry   = (is_array($actions) && is_array($actions[$action] ?? null) ? $actions[$action] : [])
+            + (self::SAFETY_FALLBACK[$action] ?? []);
+
+        $target = trim((string) ($message['safety_target'] ?? ''));
+        $label  = (string) ($entry['name'] ?? $action);
+        if ($action === 'redirected') {
+            $label = $target !== ''
+                ? str_replace('{target}', $target, (string) ($entry['nameTarget'] ?? $label))
+                : (string) ($entry['nameRestricted'] ?? $label);
+        }
+
+        return [
+            'action' => $action,
+            'target' => $target !== '' ? $target : null,
+            'label'  => $label,
+            'style'  => (string) ($entry['style'] ?? 'warning'),
         ];
     }
 
