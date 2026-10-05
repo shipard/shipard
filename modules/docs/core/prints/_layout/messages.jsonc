@@ -62,6 +62,14 @@
     "watermark.cancelled": { "cs": "STORNO", "en": "CANCELLED", "sk": "STORNO", "de": "STORNIERT" },
 
     // Měkká hlášení builderu (PrintData.messages)
+    // Uživatelský text na tisku, který nešel vykreslit (#90 D50) — tisk
+    // vznikne bez něj.
+    "message.textError": {
+        "cs": "Text na tiscích č. {id} se nevytiskl: {reason}",
+        "en": "Text on prints no. {id} was left out: {reason}",
+        "sk": "Text na tlačiach č. {id} sa nevytlačil: {reason}",
+        "de": "Der Drucktext Nr. {id} wurde ausgelassen: {reason}"
+    },
     "message.qrNoAccount": {
         "cs": "QR platba na dokladu chybí — doklad nemá bankovní účet s IBAN.",
         "en": "The payment QR code is missing — the document has no bank account with an IBAN.",

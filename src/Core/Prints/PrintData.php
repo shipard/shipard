@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Prints;
 
+use Shipard\Core\Prints\Texts\PrintTextSlot;
 use Shipard\Core\Utils\HexColor;
 
 /**
@@ -35,6 +36,9 @@ final class PrintData implements \JsonSerializable
      * @param string $logoPlacement Jedna z `LOGO_PLACEMENTS`.
      * @param string $accentColor Akcentová barva záhlaví jako `#rrggbb`.
      *        Šablona ji vkládá do stylů, proto obálka jiný tvar nepřijme.
+     * @param array<string, string> $texts Uživatelské texty na tiscích (#90
+     *        D50): slot (`PrintTextSlot`) → hotové HTML pro stránku tisku,
+     *        u e-mailových slotů prostý text. Slot bez textu v mapě není.
      * @throws \InvalidArgumentException Umístění loga nebo barva nemají
      *         očekávaný tvar.
      */
@@ -54,6 +58,7 @@ final class PrintData implements \JsonSerializable
         public readonly ?string $watermark = null,
         public readonly string $logoPlacement = self::LOGO_PLACEMENTS[0],
         public readonly string $accentColor = self::DEFAULT_ACCENT_COLOR,
+        public readonly array $texts = [],
     ) {
         if (!in_array($logoPlacement, self::LOGO_PLACEMENTS, true)) {
             throw new \InvalidArgumentException(
@@ -138,6 +143,24 @@ final class PrintData implements \JsonSerializable
             throw new \InvalidArgumentException("Print data: 'messages' must be an array");
         }
 
+        // Texty z JSON se berou tak, jak jsou (`print-run --data`, D28) —
+        // výběr ani vykreslení textů se při renderu hotových dat neopakuje.
+        $texts = [];
+        $rawTexts = $envelope['texts'] ?? [];
+        if (!is_array($rawTexts)) {
+            throw new \InvalidArgumentException("Print data: 'texts' must be an object");
+        }
+        foreach ($rawTexts as $slot => $text) {
+            if (!is_string($slot) || PrintTextSlot::tryFrom($slot) === null || !is_string($text)) {
+                throw new \InvalidArgumentException(
+                    "Print data: 'texts' must map text slots (" . implode('|', PrintTextSlot::ids()) . ') to strings',
+                );
+            }
+            if ($text !== '') {
+                $texts[$slot] = $text;
+            }
+        }
+
         return new self(
             printId: $printId,
             version: $version,
@@ -157,16 +180,38 @@ final class PrintData implements \JsonSerializable
             watermark: $watermark === '' ? null : $watermark,
             logoPlacement: $logoPlacement,
             accentColor: strtolower($accentColor),
+            texts: $texts,
         );
     }
 
     /** Stejná data v jiném jazyce tisku — popisky v `data` zůstávají, jak jsou. */
     public function withLanguage(string $language): self
     {
+        return $this->with(language: $language);
+    }
+
+    /**
+     * Stejná obálka s vyplněnými sloty textů; hlášení (vynechané texty) se
+     * přidají za stávající.
+     *
+     * @param array<string, string> $texts
+     * @param list<PrintMessage> $messages
+     */
+    public function withTexts(array $texts, array $messages = []): self
+    {
+        return $this->with(texts: $texts, messages: [...$this->messages, ...$messages]);
+    }
+
+    /**
+     * @param ?array<string, string> $texts
+     * @param ?list<PrintMessage> $messages
+     */
+    private function with(?string $language = null, ?array $texts = null, ?array $messages = null): self
+    {
         return new self(
             printId: $this->printId,
             version: $this->version,
-            language: $language,
+            language: $language ?? $this->language,
             table: $this->table,
             recordId: $this->recordId,
             docState: $this->docState,
@@ -174,11 +219,12 @@ final class PrintData implements \JsonSerializable
             title: $this->title,
             fileName: $this->fileName,
             logo: $this->logo,
-            messages: $this->messages,
+            messages: $messages ?? $this->messages,
             data: $this->data,
             watermark: $this->watermark,
             logoPlacement: $this->logoPlacement,
             accentColor: $this->accentColor,
+            texts: $texts ?? $this->texts,
         );
     }
 
@@ -205,8 +251,7 @@ final class PrintData implements \JsonSerializable
                 'logoPlacement' => $this->logoPlacement,
                 'accentColor'   => $this->accentColor,
             ],
-            // Sloty textů na tiscích (#90 D9) plní až fáze 3.
-            'texts'       => [],
+            'texts'       => $this->texts,
             'messages'    => array_map(
                 static fn (PrintMessage $message): array => $message->toArray(),
                 $this->messages,

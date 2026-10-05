@@ -4,6 +4,11 @@
     a logo jsou v záhlaví (header.html.twig) — opakují se na každé straně.
 
     Dostává PrintData jako pole; kontrakt `data` popisuje docs/prints.md.
+
+    Sloty uživatelských textů (`texts.header`, `beforeRows`, `afterRows`,
+    `footer`, #90 D48) leží MIMO bloky — stránková šablona, která blok
+    přepíše, o ně nepřijde. `|raw` je povolený jen tady: `texts.*` je HTML,
+    které vyrobil Markdown z escapovaného vstupu (docs/prints.md).
 #}
 {% set doc = data.document %}
 {% set showVat = doc.vatPayer and doc.vatMode != 0 %}
@@ -19,6 +24,8 @@
 <body>
 {% include '@docs.core/_partials/watermark.html.twig' %}
 <main class="doc">
+    {{ texts.header|default('')|raw }}
+
     {% block title %}
         {% if doc.text %}
             <p class="doc-subject">{{ doc.text }}</p>
@@ -52,9 +59,13 @@
         {% endblock %}
     </section>
 
+    {{ texts.beforeRows|default('')|raw }}
+
     {% block rows %}
         {% include '@docs.core/_partials/rows.html.twig' %}
     {% endblock %}
+
+    {{ texts.afterRows|default('')|raw }}
 
     <section class="doc-summary">
         {% block vatRecap %}
@@ -78,6 +89,8 @@
             </section>
         {% endif %}
     {% endblock %}
+
+    {{ texts.footer|default('')|raw }}
 
     {# Podpisová pole — layout je nemá, přidává je šablona typu dokladu. #}
     {% block signatures %}{% endblock %}

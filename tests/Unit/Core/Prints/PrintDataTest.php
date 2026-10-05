@@ -28,7 +28,7 @@ class PrintDataTest extends TestCase
                 'title' => 'Faktura 2026000123', 'fileName' => 'faktura-2026000123.pdf', 'watermark' => null,
             ],
             'branding'    => ['logo' => 'logo.png', 'logoPlacement' => 'right', 'accentColor' => '#0a5c8f'],
-            'texts'       => [],
+            'texts'       => ['footer' => '<div class="print-text"><p>Děkujeme.</p></div>', 'emailBody' => 'Dobrý den'],
             'messages'    => [['severity' => 'warning', 'code' => 'payment.qrNoAccount', 'text' => 'QR nevznikl']],
             'data'        => ['document' => ['number' => '2026000123'], 'rows' => []],
         ];
@@ -109,6 +109,61 @@ class PrintDataTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("'branding.");
         PrintData::fromArray($envelope);
+    }
+
+    public function testTextsComeFromEnvelopeAsTheyAre(): void
+    {
+        // `print-run --data`: texty se berou z JSON, nic se znovu nevykresluje.
+        $data = PrintData::fromArray(self::envelope());
+
+        $this->assertSame(
+            ['footer' => '<div class="print-text"><p>Děkujeme.</p></div>', 'emailBody' => 'Dobrý den'],
+            $data->texts,
+        );
+        $this->assertSame($data->texts, $data->withLanguage('en')->texts);
+
+        // Prázdný slot v mapě není; obálka bez `texts` je bez textů.
+        $envelope = self::envelope();
+        $envelope['texts'] = ['footer' => '', 'header' => 'x'];
+        $this->assertSame(['header' => 'x'], PrintData::fromArray($envelope)->texts);
+        unset($envelope['texts']);
+        $this->assertSame([], PrintData::fromArray($envelope)->texts);
+    }
+
+    /** @return array<string, array{mixed}> */
+    public static function invalidTexts(): array
+    {
+        return [
+            'není objekt'      => ['<p>text</p>'],
+            'neznámý slot'     => [['sidebar' => 'x']],
+            'seznam místo mapy' => [['x']],
+            'text není řetězec' => [['footer' => ['<p>x</p>']]],
+        ];
+    }
+
+    #[DataProvider('invalidTexts')]
+    public function testInvalidTextsThrow(mixed $texts): void
+    {
+        $envelope = self::envelope();
+        $envelope['texts'] = $texts;
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("'texts'");
+        PrintData::fromArray($envelope);
+    }
+
+    public function testWithTextsFillsSlotsAndAppendsMessages(): void
+    {
+        $data = PrintData::fromArray(self::envelope())->withTexts(
+            ['header' => '<div class="print-text"><p>Nahoře</p></div>'],
+            [PrintMessage::warning('textError', 'Text 7 se nevytiskl')],
+        );
+
+        $this->assertSame(['header' => '<div class="print-text"><p>Nahoře</p></div>'], $data->toArray()['texts']);
+        $this->assertSame(['payment.qrNoAccount', 'textError'], array_column($data->toArray()['messages'], 'code'));
+        // Zbytek obálky zůstává.
+        $this->assertSame('right', $data->logoPlacement);
+        $this->assertSame('2026000123', $data->data['document']['number']);
     }
 
     public function testWatermarkIsOptionalPartOfMeta(): void

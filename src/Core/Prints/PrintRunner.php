@@ -6,6 +6,8 @@ namespace Shipard\Core\Prints;
 
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Prints\Texts\PrintTextProvider;
+use Shipard\Core\Prints\Texts\PrintTextRenderer;
 use Shipard\Core\Render\RenderErrorKind;
 use Shipard\Core\Settings\BrandingStorage;
 use Shipard\Core\Settings\KeyValueStore;
@@ -16,7 +18,7 @@ use Shipard\Core\Utils\HexColor;
  * `run()`, nikdy builder přímo.
  *
  * registr → záznam → dostupnost (filtr, stav) → strana a jazyk → builder →
- * obálka `PrintData` → (PDF / HTML) renderer.
+ * obálka `PrintData` → uživatelské texty do slotů → (PDF / HTML) renderer.
  *
  * `renderData()` vstupuje až do posledního kroku s hotovým `PrintData`
  * — vývoj šablon bez záznamu v databázi (#90 D28).
@@ -41,6 +43,8 @@ final class PrintRunner
      * @param ?DataSourceConnection $db Null = runner umí jen `renderData()`.
      * @param ?KeyValueStore $settings Nastavení zdroje dat se vzhledem tisků;
      *        null = výchozí vzhled.
+     * @param ?PrintTextProvider $texts Zdroj uživatelských textů (modul
+     *        `core.prints`); null = tisk bez nich.
      */
     public function __construct(
         private readonly PrintRegistry $registry,
@@ -52,6 +56,7 @@ final class PrintRunner
         private readonly ?PrintRenderer $renderer = null,
         ?\Closure $clock = null,
         private readonly ?KeyValueStore $settings = null,
+        private readonly ?PrintTextProvider $texts = null,
     ) {
         $this->configFactory = $configFactory;
         $this->clock = $clock ?? static fn (): \DateTimeImmutable => new \DateTimeImmutable();
@@ -133,6 +138,8 @@ final class PrintRunner
         $docState     = (int) $record['docState'];
         $watermarkKey = $definition->watermarks[$docState] ?? null;
 
+        $now = ($this->clock)();
+
         $printData = new PrintData(
             printId: $definition->id,
             version: $builder->version(),
@@ -140,7 +147,7 @@ final class PrintRunner
             table: $definition->table,
             recordId: $recordId,
             docState: $docState,
-            generatedAt: ($this->clock)(),
+            generatedAt: $now,
             title: $result->title,
             fileName: $result->fileName,
             logo: $this->logoAssetName(),
@@ -151,12 +158,24 @@ final class PrintRunner
             accentColor: $this->accentColor(),
         );
 
+        // Uživatelské texty (#90 D50): vybírají se ke dni tisku (D52)
+        // a vykreslují nad hotovou obálkou — vidí `data` a `meta`.
+        if ($this->texts !== null && $definition->textSlots !== []) {
+            $rendered = (new PrintTextRenderer())->render(
+                $this->texts->resolve($definition, $record, $language, $now),
+                $printData,
+                $translator,
+            );
+            $printData = $printData->withTexts($rendered->texts, $rendered->messages);
+        }
+
         return $this->output($definition, $printData, $translator, $format);
     }
 
     /**
      * Render z hotového `PrintData` (výstup `format=json` nebo fixture) —
-     * bez záznamu, kontroly dostupnosti i builderu.
+     * bez záznamu, kontroly dostupnosti i builderu. Uživatelské texty se
+     * berou z obálky (`texts`), znovu se nevybírají.
      *
      * @param array<string, mixed> $envelope `PrintData` jako pole.
      * @param ?string $language Přebije jazyk z obálky (překlady šablony;

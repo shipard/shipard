@@ -12,7 +12,8 @@
         "symfony/mailer": "^8.1",
         "openspout/openspout": "^5.12",
         "twig/twig": "^3",
-        "chillerlan/php-qrcode": "^6.0"
+        "chillerlan/php-qrcode": "^6.0",
+        "league/commonmark": "^2"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0"

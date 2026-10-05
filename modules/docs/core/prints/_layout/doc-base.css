@@ -260,6 +260,71 @@ thead th {
     margin-top: 0.2cm;
 }
 
+/* ── uživatelské texty (sloty) ──────────────────────────────────────────── */
+
+/*
+ * HTML z Markdownu textů na tiscích. Běžná velikost textu, žádná barva —
+ * akcent patří jen záhlaví. Nadpisy Markdownu jsou jen tučný řádek: styl
+ * `h2` výše je popisek sekce dokladu, ne nadpis textu.
+ */
+.print-text {
+    margin: 0 0 0.5cm;
+}
+
+.print-text p,
+.print-text ul,
+.print-text ol,
+.print-text blockquote,
+.print-text pre {
+    margin: 0 0 0.15cm;
+}
+
+.print-text > :last-child {
+    margin-bottom: 0;
+}
+
+.print-text ul,
+.print-text ol {
+    padding-left: 0.6cm;
+}
+
+.print-text h1,
+.print-text h2,
+.print-text h3,
+.print-text h4,
+.print-text h5,
+.print-text h6 {
+    margin: 0 0 0.15cm;
+    font-size: inherit;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+    color: inherit;
+}
+
+.print-text blockquote {
+    padding-left: 0.3cm;
+    border-left: 1.5pt solid #ccc;
+}
+
+.print-text code,
+.print-text pre {
+    font-family: inherit;
+    white-space: pre-wrap;
+}
+
+.print-text hr {
+    margin: 0.2cm 0;
+    border: 0;
+    border-top: 0.5pt solid #666;
+}
+
+/* Text za poznámkami (slot footer) potřebuje odstup shora, ne zdola. */
+.doc-notes + .print-text,
+.doc-summary + .print-text {
+    margin-top: 0.6cm;
+}
+
 /* ── podpisy ────────────────────────────────────────────────────────────── */
 
 /* Prázdné linky s popiskem pod nimi; místo nad linkou je na podpis. */

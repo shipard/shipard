@@ -11,6 +11,7 @@ use Twig\Environment;
 use Twig\Error\Error;
 use Twig\Extension\SandboxExtension;
 use Twig\Loader\ArrayLoader;
+use Twig\Runtime\EscaperRuntime;
 use Twig\TemplateWrapper;
 
 /**
@@ -28,7 +29,8 @@ use Twig\TemplateWrapper;
  */
 final class PrintTextCompiler
 {
-    private ?Environment $twig = null;
+    /** @var array<int, Environment> prostředí podle escapování (0 = žádné, 1 = Markdown) */
+    private array $environments = [];
 
     /** @param PrintTranslator $translator Jazyk tisku — řídí podobu čísel a dat ve filtrech. */
     public function __construct(
@@ -36,11 +38,21 @@ final class PrintTextCompiler
     ) {}
 
     /**
+     * @param bool $markdown Výstup se bude zpracovávat jako Markdown (slot
+     *        stránky tisku): vypsané hodnoty se pro něj escapují
+     *        (`MarkdownEscaper`). Bez něj (e-mailový slot, kontrola zápisu)
+     *        jdou hodnoty do výstupu tak, jak jsou.
      * @throws Error Syntaktická chyba nebo prvek mimo politiku sandboxu.
      */
-    public function compile(string $text): TemplateWrapper
+    public function compile(string $text, bool $markdown = false): TemplateWrapper
     {
-        $template = $this->environment()->createTemplate($text);
+        // Název nese režim: Twig pojmenuje třídu šablony podle názvu a v rámci
+        // procesu ji sdílí mezi prostředími — stejný text přeložený pro
+        // Markdown by jinak vracel escapovaný výstup i e-mailovému slotu.
+        $template = $this->environment($markdown)->createTemplate(
+            $text,
+            $markdown ? 'print text (markdown)' : 'print text',
+        );
         $template->unwrap()->ensureSecurityChecked();
         return $template;
     }
@@ -67,17 +79,22 @@ final class PrintTextCompiler
         return $line > 0 ? "{$message} (řádek {$line})" : $message;
     }
 
-    private function environment(): Environment
+    private function environment(bool $markdown): Environment
     {
-        if ($this->twig === null) {
-            $this->twig = new Environment(new ArrayLoader(), [
+        if (!isset($this->environments[(int) $markdown])) {
+            $twig = new Environment(new ArrayLoader(), [
                 'cache'            => false,
-                'autoescape'       => false,
+                'autoescape'       => $markdown ? MarkdownEscaper::STRATEGY : false,
                 'strict_variables' => true,
             ]);
-            $this->twig->addExtension(new SandboxExtension(PrintSecurityPolicy::userTexts(), true));
-            $this->twig->addExtension(new PrintTwigExtension($this->translator));
+            $twig->addExtension(new SandboxExtension(PrintSecurityPolicy::userTexts(), true));
+            $twig->addExtension(new PrintTwigExtension($this->translator));
+            $twig->getRuntime(EscaperRuntime::class)->setEscaper(
+                MarkdownEscaper::STRATEGY,
+                static fn (string $value): string => MarkdownEscaper::escape($value),
+            );
+            $this->environments[(int) $markdown] = $twig;
         }
-        return $this->twig;
+        return $this->environments[(int) $markdown];
     }
 }

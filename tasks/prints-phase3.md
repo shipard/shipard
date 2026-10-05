@@ -1,6 +1,6 @@
 # Tisky — Fáze 3: vzhled a texty na tiscích
 
-**Stav:** částečně — commity 1–2 hotové 2026-10-05 (modul `core.prints`, typ pole `color`, vzhled v záhlaví; tabulka a agenda Texty na tiscích, sloty, politika `userTexts()`; `ds-upgrade` jen na ukázkovém zdroji); zbývá výběr a vykreslení textů na tisku a v e-mailu, proměnné ve formuláři a dokumentace (commity 3–5)
+**Stav:** částečně — commity 1–3 hotové 2026-10-05 (modul `core.prints`, typ pole `color`, vzhled v záhlaví; tabulka a agenda Texty na tiscích; výběr textů, Twig → Markdown → HTML do slotů, přepis předmětu a těla e-mailu; `ds-upgrade` jen na ukázkovém zdroji); zbývají proměnné ve formuláři a dokumentace s nápovědou (commity 4–5)
 
 > PRD pro Claude Code (5 commitů). Design: issue #90, komentář
 > „Rozhodnutí: fáze 3 — vzhled a texty na tiscích (D46–D52)“; základ D9
@@ -331,6 +331,13 @@ Upřesnění z plánování implementace (2026-10-05):
   tečku.
 - **Obrázky** vypíná vlastní renderer (jen alt text) —
   `allow_unsafe_links` je nezastaví.
+- **Odkazy** se tisknou jako text s adresou v závorce, bez `<a>`;
+  nebezpečná adresa se nevypíše vůbec.
+- **Název šablony textu nese režim** (Markdown / prostý text): Twig sdílí
+  třídu šablony v rámci procesu podle názvu, stejný text přeložený pro oba
+  režimy by jinak vracel výstup toho prvního.
+- **Text vidí jen `data`, `meta` a `language`** — ne `branding`, `record`
+  ani `messages`.
 - **`|raw`** přibude jen do politiky `templates()`; test hlídá, že ho
   šablony používají výhradně na `texts.*`.
 - **Barva se validuje i při čtení** (`PrintRunner`,
@@ -343,7 +350,8 @@ Upřesnění z plánování implementace (2026-10-05):
   vykreslení — `PrintTextCompiler::compile()` si kontrolu vynucuje, jinak
   by validace formuláře zakázaný prvek nezachytila.
 - **Testy v politice:** `userTexts()` vyjmenovává `defined`, `empty`,
-  `null`, `none`; Twig je v sandboxu propouští i sám (ověřeno testem).
+  `null`, `none`; Twig je v sandboxu propouští i sám (zjištěno pokusem při
+  implementaci, test na to není).
 - **`textVariables`** = seznam `{path, filter?}`, nebo odkaz na sdílenou
   sadu `@docs.core/_layout` (`text-variables.jsonc`). Endpoint bez `prints`
   vrací průnik přes všechny tisky se slotem.

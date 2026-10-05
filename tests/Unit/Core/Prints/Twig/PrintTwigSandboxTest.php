@@ -110,6 +110,19 @@ class PrintTwigSandboxTest extends TestCase
         $this->assertStringContainsString('<i>2</i>', $html);
     }
 
+    public function testRawIsAllowedForUserTextSlots(): void
+    {
+        // Jediné použití: sloty uživatelských textů, jejichž HTML vyrobil
+        // Markdown z escapovaného vstupu (#90 D50). Že šablony `|raw` nikde
+        // jinde nepoužívají, hlídá PrintTemplateRawRuleTest.
+        $html = $this->render(
+            "{{ texts.footer|default('')|raw }}{{ texts.header|default('')|raw }}",
+            ['texts' => ['footer' => '<div class="print-text"><p>Děkujeme.</p></div>']],
+        );
+
+        $this->assertSame('<div class="print-text"><p>Děkujeme.</p></div>', $html);
+    }
+
     /** @return array<string, array{string, class-string<SecurityError>}> */
     public static function forbiddenTemplates(): array
     {
@@ -117,7 +130,6 @@ class PrintTwigSandboxTest extends TestCase
             'tag macro'        => ['{% macro x() %}{% endmacro %}', SecurityNotAllowedTagError::class],
             'tag import'       => ["{% import '@test.prints/sample/page.html.twig' as m %}", SecurityNotAllowedTagError::class],
             'tag do'           => ['{% do 1 + 1 %}', SecurityNotAllowedTagError::class],
-            'filter raw'       => ['{{ value|raw }}', SecurityNotAllowedFilterError::class],
             'filter map'       => ["{{ rows|map(r => r)|join(',') }}", SecurityNotAllowedFilterError::class],
             'filter format'    => ["{{ '%s'|format(value) }}", SecurityNotAllowedFilterError::class],
             'function range'   => ['{{ range(1, 3)|join }}', SecurityNotAllowedFunctionError::class],

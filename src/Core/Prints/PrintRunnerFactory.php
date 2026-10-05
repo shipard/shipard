@@ -9,6 +9,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\I18n\DocumentLanguageResolver;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Prints\Texts\PrintTextProvider;
 use Shipard\Core\Prints\Twig\PrintTwigFactory;
 use Shipard\Core\Render\RenderClient;
 use Shipard\Core\Settings\BrandingStorage;
@@ -21,6 +22,12 @@ use Shipard\Core\Settings\SettingsStore;
  */
 final class PrintRunnerFactory
 {
+    /**
+     * Zdroj uživatelských textů z modulu `core.prints`. Jádro třídu modulu
+     * nezná jinak než jménem — na zdroji bez modulu se tiskne bez textů.
+     */
+    private const TEXT_PROVIDER_CLASS = 'Shipard\\Module\\Core\\Prints\\PrintTextResolver';
+
     /** Kompilované Twig šablony, relativně k adresáři zdroje dat. */
     public const TWIG_CACHE_DIR = 'cache/twig';
 
@@ -70,6 +77,17 @@ final class PrintRunnerFactory
             new PrintCatalogLoader($paths),
             $renderer,
             settings: $db === null ? null : new SettingsStore($db),
+            texts: $db === null ? null : self::textProvider($db),
         );
+    }
+
+    private static function textProvider(DataSourceConnection $db): ?PrintTextProvider
+    {
+        $class = self::TEXT_PROVIDER_CLASS;
+        if (!class_exists($class)) {
+            return null;
+        }
+        $provider = new $class($db);
+        return $provider instanceof PrintTextProvider ? $provider : null;
     }
 }

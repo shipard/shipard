@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Prints;
 
+use Shipard\Core\Prints\Texts\PrintTextSlot;
 use Shipard\Core\Prints\Twig\PrintTwigFactory;
 
 /**
@@ -18,6 +19,10 @@ use Shipard\Core\Prints\Twig\PrintTwigFactory;
  *
  * Výstup je prostý text: šablony `*.txt.twig` se neescapují. Předmět jde do
  * hlavičky zprávy, proto z něj mizí konce řádků.
+ *
+ * Uživatelský text ve slotu `emailSubject` / `emailBody` (#90 D49) výchozí
+ * šablonu **přepisuje** — obálka ho nese už vykreslený v `texts`, takže platí
+ * pro návrh v dialogu Odeslat i pro odeslání.
  */
 final class PrintEmailRenderer
 {
@@ -51,9 +56,12 @@ final class PrintEmailRenderer
         $twig    = $this->twigFactory->create($translator);
         $context = $data->toArray();
 
+        $subject = self::singleLine($data->texts[PrintTextSlot::EmailSubject->value] ?? '');
+        $body    = trim($data->texts[PrintTextSlot::EmailBody->value] ?? '');
+
         return new PrintEmail(
-            self::singleLine($twig->render($subjectTemplate, $context)),
-            self::text($twig->render($bodyTemplate, $context)),
+            $subject !== '' ? $subject : self::singleLine($twig->render($subjectTemplate, $context)),
+            self::text($body !== '' ? $body : $twig->render($bodyTemplate, $context)),
         );
     }
 

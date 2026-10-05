@@ -20,8 +20,13 @@ final class PrintSecurityPolicy
 {
     public const TEMPLATE_TAGS = ['if', 'for', 'set', 'block', 'extends', 'include', 'apply'];
 
+    /**
+     * `raw` je jen pro sloty uživatelských textů (`texts.*`) — jejich HTML
+     * vyrobil `PrintTextMarkdown` z escapovaného vstupu. Na nic jiného ho
+     * šablona použít nesmí; hlídá `PrintTemplateRawRuleTest`.
+     */
     public const TEMPLATE_FILTERS = [
-        'escape', 'e', 'default', 'length', 'join', 'upper', 'lower', 'nl2br',
+        'escape', 'e', 'raw', 'default', 'length', 'join', 'upper', 'lower', 'nl2br',
         'first', 'last', 'keys', 'merge',
         // PrintTwigExtension
         'money', 'qty', 'pct', 'date',

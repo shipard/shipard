@@ -60,6 +60,8 @@ class RecordSendTest extends IntegrationTestCase
 
     private const PRINT_ID = 'docs.invoicesOut.invoice';
 
+    private const TEXTS_TABLE = 'core_prints_texts';
+
     private RecordSendService $service;
     private AttachmentService $attachments;
     private SentMessageStore $store;
@@ -74,6 +76,11 @@ class RecordSendTest extends IntegrationTestCase
 
         // Vše od této chvíle vrátí rollback v onTearDown.
         $this->db->begin();
+        // Texty na tiscích, které na zdroji dat jsou, by přepsaly výchozí
+        // předmět a tělo — na dobu testu se vypnou.
+        if (isset($this->tables[self::TEXTS_TABLE])) {
+            $this->db->execute('UPDATE %n SET [docState] = 10', self::TEXTS_TABLE);
+        }
         $this->prepareFixtureDocuments();
         (new SettingsStore($this->db))->set('mail.defaultFrom', 'fakturace@firma.example');
 
@@ -351,6 +358,37 @@ class RecordSendTest extends IntegrationTestCase
             '[sk] Faktúra',
             (string) file_get_contents($this->attachments->getFilePath($print)),
         );
+    }
+
+    public function testUserEmailTextsOverrideDefaultSubjectAndBodyOfDraft(): void
+    {
+        if (!isset($this->tables[self::TEXTS_TABLE])) {
+            $this->markTestSkipped('DS nemá modul core.prints s texty na tiscích.');
+        }
+        $headId = $this->invoiceFor($this->insertPerson());
+
+        $default = $this->service->prepare($this->request($headId))->toArray();
+        // Výchozí šablona: „<titulek> <číslo> — <vlastní firma>“ v jazyce partnera.
+        $this->assertStringContainsString('IT-PRINT-INV — ', $default['subject']);
+
+        $dibi = $this->db->getDibiConnection();
+        foreach ([
+            'emailSubject' => 'Vaše faktura {{ data.document.number }}',
+            'emailBody'    => "Dobrý den,\n\nfaktura {{ data.document.number }} je splatná {{ data.dates.due|date }}.",
+        ] as $slot => $text) {
+            $dibi->insert(self::TEXTS_TABLE, [
+                'name' => 'IT e-mail', 'slot' => $slot, 'text' => $text,
+                'prints' => json_encode([self::PRINT_ID]), 'order_pos' => 0,
+                'docState' => 40, 'docStateMain' => 2,
+            ])->execute();
+        }
+
+        // Návrh v dialogu Odeslat i `print-send --dry-run` jdou přes prepare().
+        $draft = $this->service->prepare($this->request($headId))->toArray();
+
+        $this->assertSame('Vaše faktura IT-PRINT-INV', $draft['subject']);
+        $this->assertStringStartsWith("Dobrý den,\n\nfaktura IT-PRINT-INV je splatná ", $draft['body']);
+        $this->assertStringNotContainsString('{{', $draft['body']);
     }
 
     public function testChangedPersonEmailAppliesToNextSendAndKeepsHistory(): void

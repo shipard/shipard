@@ -37,8 +37,13 @@ nechává.
 | [PrintTextDocument.php](src/PrintTextDocument.php) | Validace (povinná pole, kompilace textu v sandboxu, platnost, cílení), JSON sloupce |
 | [PrintTextsForm.php](src/PrintTextsForm.php) | Formulář — nabídky tisků, typů a řad podle umístění a vybraných tisků |
 | [PrintTextsViewer.php](src/PrintTextsViewer.php) | Agenda se štítkem „Platí dnes“ |
+| [PrintTextResolver.php](src/PrintTextResolver.php) | Výběr textů platných pro tisk záznamu (tisk, typ, řada, jazyk, stav, platnost ke dni tisku) — implementace `PrintTextProvider` z jádra |
 | [PrintTextChoices.php](src/PrintTextChoices.php) | Sloty, tisky, typy dokladů a jazyky z kompilované konfigurace |
 | [PrintTextTargeting.php](src/PrintTextTargeting.php) | Která tabulka tisku má typ dokladu a číselnou řadu |
+
+Vykreslení textu (Twig v sandboxu → Markdown → HTML do slotu obálky) dělá
+jádro — `src/Core/Prints/Texts/` (`PrintTextCompiler`, `MarkdownEscaper`,
+`PrintTextMarkdown`, `PrintTextRenderer`). Modul texty jen drží a vybírá.
 
 ## Konfigurace
 

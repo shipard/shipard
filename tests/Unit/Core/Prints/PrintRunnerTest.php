@@ -29,6 +29,7 @@ use Shipard\Core\Config\RenderConfig;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Prints\PrintRenderer;
 use Shipard\Core\Prints\PrintTemplatePaths;
+use Shipard\Core\Prints\Texts\PrintTextProvider;
 use Shipard\Core\Prints\Twig\PrintTwigFactory;
 use Shipard\Core\Render\Engine\RenderEngineInterface;
 use Shipard\Core\Render\RenderClient;
@@ -89,6 +90,7 @@ class PrintRunnerTest extends TestCase
         ?array $catalog = null,
         string $builder = FakePrintBuilder::class,
         ?KeyValueStore $settings = null,
+        ?PrintTextProvider $texts = null,
     ): PrintRunner {
         $registry = new PrintRegistry();
         $registry->add(PrintDefinition::fromArray(
@@ -111,6 +113,7 @@ class PrintRunnerTest extends TestCase
             $catalog === null ? null : $this->catalogLoader($catalog),
             clock: static fn (): \DateTimeImmutable => new \DateTimeImmutable('2026-10-02T10:30:00+02:00'),
             settings: $settings,
+            texts: $texts,
         );
     }
 
@@ -467,6 +470,105 @@ class PrintRunnerTest extends TestCase
             ['logo' => null, 'logoPlacement' => 'left', 'accentColor' => PrintData::DEFAULT_ACCENT_COLOR],
             $output->printData->toArray()['branding'],
         );
+    }
+
+    // ── uživatelské texty (#90 D47–D52) ─────────────────────────────────────
+
+    /**
+     * Zdroj textů, který si pamatuje, na co se runner ptal.
+     *
+     * @param array<string, list<array{id: int, text: string}>> $texts
+     */
+    private static function textProvider(array $texts): PrintTextProvider
+    {
+        return new class ($texts) implements PrintTextProvider {
+            /** @var list<array{print: string, record: array<string, mixed>, language: string, day: string}> */
+            public array $calls = [];
+
+            /** @param array<string, list<array{id: int, text: string}>> $texts */
+            public function __construct(private readonly array $texts) {}
+
+            public function resolve(
+                PrintDefinition $definition,
+                array $record,
+                string $language,
+                \DateTimeImmutable $today,
+            ): array {
+                $this->calls[] = [
+                    'print' => $definition->id, 'record' => $record, 'language' => $language,
+                    'day' => $today->format('Y-m-d'),
+                ];
+                return $this->texts;
+            }
+        };
+    }
+
+    private const SENDABLE_WITH_SLOTS = [
+        'sendPurpose' => 'invoices', 'recipientPerson' => 'partner',
+        'textSlots'   => ['footer', 'emailSubject'],
+    ];
+
+    public function testUserTextsAreResolvedForPrintDayAndRenderedIntoEnvelope(): void
+    {
+        $provider = self::textProvider([
+            'footer'       => [['id' => 1, 'text' => 'Doklad **{{ data.document.number }}**']],
+            'emailSubject' => [['id' => 2, 'text' => 'Faktura {{ data.document.number }}']],
+        ]);
+
+        $output = $this->runner(declaration: self::SENDABLE_WITH_SLOTS, texts: $provider)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json, 'en');
+
+        $this->assertSame(
+            [
+                'footer'       => '<div class="print-text"><p>Doklad <strong>2026000123</strong></p></div>',
+                'emailSubject' => 'Faktura 2026000123',
+            ],
+            $output->printData->toArray()['texts'],
+        );
+        // Rozhoduje den tisku (hodiny runneru), ne datum dokladu; jazyk je jazyk tisku.
+        $this->assertSame(
+            [['print' => 'docs.invoicesOut.invoice', 'record' => self::RECORD, 'language' => 'en', 'day' => '2026-10-02']],
+            $provider->calls,
+        );
+    }
+
+    public function testBrokenUserTextBecomesMessageAndPrintStillRuns(): void
+    {
+        $provider = self::textProvider(['footer' => [
+            ['id' => 7, 'text' => '{{ data.document.numbr }}'],
+            ['id' => 8, 'text' => 'Děkujeme.'],
+        ]]);
+
+        $output = $this->runner(declaration: self::SENDABLE_WITH_SLOTS, texts: $provider)
+            ->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        $this->assertSame(
+            ['footer' => '<div class="print-text"><p>Děkujeme.</p></div>'],
+            $output->printData->texts,
+        );
+        // Hlášení builderu zůstává, za ním varování o vynechaném textu.
+        $this->assertSame(['qr.noAccount', 'textError'], self::messageCodes($output->printData->messages));
+    }
+
+    public function testPrintWithoutTextSlotsDoesNotAskForTexts(): void
+    {
+        $provider = self::textProvider(['footer' => [['id' => 1, 'text' => 'x']]]);
+
+        $output = $this->runner(texts: $provider)->run('docs.invoicesOut.invoice', 123, PrintFormat::Json);
+
+        $this->assertSame([], $provider->calls);
+        $this->assertSame([], $output->printData->texts);
+    }
+
+    public function testRenderDataTakesTextsFromEnvelopeWithoutResolving(): void
+    {
+        $envelope = self::envelope();
+        $envelope['texts'] = ['footer' => '<div class="print-text"><p>z JSON</p></div>'];
+
+        $output = $this->templateRunner(withDb: false)
+            ->renderData('docs.invoicesOut.invoice', $envelope, PrintFormat::Html);
+
+        $this->assertSame(['footer' => '<div class="print-text"><p>z JSON</p></div>'], $output->printData->texts);
     }
 
     /**

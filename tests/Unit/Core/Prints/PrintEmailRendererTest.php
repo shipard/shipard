@@ -139,6 +139,64 @@ class PrintEmailRendererTest extends TestCase
         $this->assertStringContainsString("S pozdravem\nNovák & syn <obchod>\n", $email->body);
     }
 
+    // ── uživatelské texty (#90 D49) ─────────────────────────────────────────
+
+    public function testUserTextsOverrideDefaultSubjectAndBody(): void
+    {
+        $email = self::render(self::printData(modify: static function (array $envelope): array {
+            $envelope['texts'] = [
+                'emailSubject' => 'Vaše faktura IT-PRINT-INV',
+                'emailBody'    => "Dobrý den,\r\n\r\n\r\n\r\nposíláme fakturu.  \nS pozdravem",
+            ];
+            return $envelope;
+        }));
+
+        $this->assertSame('Vaše faktura IT-PRINT-INV', $email->subject);
+        // Tělo projde stejnou úpravou jako výchozí šablona.
+        $this->assertSame("Dobrý den,\n\nposíláme fakturu.\nS pozdravem\n", $email->body);
+    }
+
+    public function testOnlyOverriddenPartIsReplaced(): void
+    {
+        $default = self::render(self::printData());
+
+        $subjectOnly = self::render(self::printData(modify: static function (array $envelope): array {
+            $envelope['texts'] = ['emailSubject' => 'Vlastní předmět'];
+            return $envelope;
+        }));
+        $this->assertSame('Vlastní předmět', $subjectOnly->subject);
+        $this->assertSame($default->body, $subjectOnly->body);
+
+        $bodyOnly = self::render(self::printData(modify: static function (array $envelope): array {
+            $envelope['texts'] = ['emailBody' => 'Vlastní text', 'footer' => '<div class="print-text"><p>x</p></div>'];
+            return $envelope;
+        }));
+        $this->assertSame($default->subject, $bodyOnly->subject);
+        $this->assertSame("Vlastní text\n", $bodyOnly->body);
+    }
+
+    public function testUserSubjectNeverCarriesLineBreaks(): void
+    {
+        $email = self::render(self::printData(modify: static function (array $envelope): array {
+            $envelope['texts'] = ['emailSubject' => "Faktura\r\nBcc: attacker@example.com"];
+            return $envelope;
+        }));
+
+        $this->assertSame('Faktura Bcc: attacker@example.com', $email->subject);
+    }
+
+    public function testBlankUserTextKeepsDefaultTemplate(): void
+    {
+        $default = self::render(self::printData());
+        $email   = self::render(self::printData(modify: static function (array $envelope): array {
+            $envelope['texts'] = ['emailSubject' => " \n ", 'emailBody' => "  \n"];
+            return $envelope;
+        }));
+
+        $this->assertSame($default->subject, $email->subject);
+        $this->assertSame($default->body, $email->body);
+    }
+
     public function testPrintCanOverrideSharedTemplatesInItsOwnDirectory(): void
     {
         // Kopie modulů s vlastní šablonou předmětu v adresáři tisku faktury.

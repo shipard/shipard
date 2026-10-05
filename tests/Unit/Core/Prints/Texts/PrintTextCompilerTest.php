@@ -68,6 +68,32 @@ class PrintTextCompilerTest extends TestCase
         $this->assertSame('prázdné', self::render('{% if data.payment.reference is empty %}prázdné{% endif %}'));
     }
 
+    public function testMarkdownModeEscapesValuesButNotUserText(): void
+    {
+        $compiler = new PrintTextCompiler(new PrintTranslator([], 'cs'));
+        $context  = ['data' => ['name' => 'Firma *Hvězda*', 'amount' => 1210.5]] + self::CONTEXT;
+        $text     = '**{{ data.name }}** {{ data.name|upper }} {{ data.amount|money }} {{ "*x*" }}';
+
+        // Slot stránky: hodnoty i výstup filtrů se escapují, text uživatele a jeho literály ne.
+        $this->assertSame(
+            '**Firma \\*Hvězda\\*** FIRMA \\*HVĚZDA\\* 1' . self::NBSP . '210\\,50 *x*',
+            $compiler->compile($text, markdown: true)->render($context),
+        );
+        // E-mailový slot: prostý text, nic se neescapuje.
+        $this->assertSame(
+            '**Firma *Hvězda*** FIRMA *HVĚZDA* 1' . self::NBSP . '210,50 *x*',
+            $compiler->compile($text)->render($context),
+        );
+    }
+
+    public function testMarkdownModeKeepsTheSamePolicy(): void
+    {
+        $compiler = new PrintTextCompiler(new PrintTranslator([], 'cs'));
+
+        $this->expectException(SecurityNotAllowedFilterError::class);
+        $compiler->compile('{{ data.document.number|raw }}', markdown: true);
+    }
+
     public function testUnknownVariableIsARuntimeError(): void
     {
         // Překlep v proměnné nesmí skončit prázdným místem na faktuře.

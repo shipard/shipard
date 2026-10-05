@@ -70,6 +70,7 @@ class DocPrintTemplatesTest extends TestCase
     /**
      * @param callable(array<string, mixed>): array<string, mixed>|null $modify
      * @param array<string, string> $branding Vzhled z nastavení (`logoPlacement`, `accentColor`).
+     * @param array<string, string> $texts Vykreslené uživatelské texty (slot → HTML / text).
      */
     private static function printData(
         string $fixture,
@@ -79,6 +80,7 @@ class DocPrintTemplatesTest extends TestCase
         ?string $logo = null,
         ?string $watermark = null,
         array $branding = [],
+        array $texts = [],
     ): PrintData {
         $envelope = json_decode(
             (string) file_get_contents(dirname(__DIR__, 5) . '/Fixtures/Prints/' . $fixture . '.json'),
@@ -92,6 +94,7 @@ class DocPrintTemplatesTest extends TestCase
         $envelope['printId']  = $printId;
         $envelope['language'] = $language;
         $envelope['branding'] = ['logo' => $logo] + $branding;
+        $envelope['texts']    = $texts;
         $envelope['meta']['watermark'] = $watermark;
         $envelope['meta']['title'] = $envelope['data']['document']['title'] . ' ' . $envelope['data']['document']['number'];
 
@@ -630,6 +633,115 @@ class DocPrintTemplatesTest extends TestCase
 
         $this->assertStringContainsString('head-inner--logo-right', $header);
         $this->assertStringContainsString('border-color: #0a5c8f', $header);
+    }
+
+    // ── uživatelské texty ve slotech (#90 D48) ──────────────────────────────
+
+    private const SLOT_TEXTS = [
+        'header'       => '<div class="print-text"><p>SLOT-HEADER</p></div>',
+        'beforeRows'   => '<div class="print-text"><p>SLOT-BEFORE-ROWS</p></div>',
+        'afterRows'    => '<div class="print-text"><p>SLOT-AFTER-ROWS <strong>tučně</strong></p></div>',
+        'footer'       => '<div class="print-text"><p>SLOT-FOOTER</p></div>',
+        'emailSubject' => 'SLOT-EMAIL-SUBJECT',
+        'emailBody'    => 'SLOT-EMAIL-BODY',
+    ];
+
+    /** Pozice značek v HTML v pořadí, v jakém jdou za sebou. */
+    private static function assertOrder(string $html, string ...$markers): void
+    {
+        $previous = -1;
+        foreach ($markers as $marker) {
+            $position = strpos($html, $marker);
+            self::assertNotFalse($position, "v HTML chybí „{$marker}“");
+            self::assertGreaterThan($previous, $position, "„{$marker}“ je na špatném místě");
+            $previous = $position;
+        }
+    }
+
+    public function testTextSlotsAreRenderedAtTheirPlacesOnInvoice(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $document   = $this->render($definition, self::printData('invoice', $definition->id, texts: self::SLOT_TEXTS));
+        $html       = $document->html;
+
+        self::assertOrder(
+            $html,
+            '<main class="doc">',
+            'SLOT-HEADER',
+            'Dodavatel',                    // strany
+            'Datum vystavení',
+            'SLOT-BEFORE-ROWS',
+            '<table class="doc-rows">',
+            'SLOT-AFTER-ROWS',
+            'Rekapitulace DPH',
+            'K úhradě',
+            'Děkujeme za včasnou úhradu.',  // poznámka na doklad
+            'SLOT-FOOTER',
+            '</main>',
+        );
+        // HTML textu jde do stránky tak, jak ho vyrobil Markdown — bez dalšího escapování.
+        $this->assertStringContainsString('SLOT-AFTER-ROWS <strong>tučně</strong>', $html);
+        $this->assertStringContainsString('.print-text', $document->assets['doc-base.css']);
+
+        // E-mailové sloty do stránky nepatří; záhlaví a zápatí texty nenesou.
+        $this->assertStringNotContainsString('SLOT-EMAIL', $html);
+        $this->assertStringNotContainsString('SLOT-', (string) $document->header);
+        $this->assertStringNotContainsString('SLOT-', (string) $document->footer);
+    }
+
+    public function testPageTemplatesThatOverrideBlocksKeepTheSlots(): void
+    {
+        // Pokladní doklad přepisuje bloky dat a podpisů, zálohová faktura titulek.
+        $cash = self::definition('docs.cashDocs', 'docs.cashDocs.cash');
+        self::assertOrder(
+            $this->render($cash, self::printData('cashInSale', $cash->id, texts: self::SLOT_TEXTS))->html,
+            'SLOT-HEADER',
+            'Dodavatel / přijal',
+            'SLOT-BEFORE-ROWS',
+            'SLOT-AFTER-ROWS',
+            'SLOT-FOOTER',
+            'doc-signatures',               // podpisy až za textem na konci
+        );
+
+        $proforma = self::definition('docs.proformasOut', 'docs.proformasOut.proforma');
+        self::assertOrder(
+            $this->render($proforma, self::printData('proforma', $proforma->id, texts: self::SLOT_TEXTS))->html,
+            'SLOT-HEADER',
+            'Nejedná se o daňový doklad.',
+            'SLOT-BEFORE-ROWS',
+            'SLOT-AFTER-ROWS',
+            'SLOT-FOOTER',
+        );
+
+        $receipt = self::definition('docs.cashRegister', 'docs.cashRegister.receipt');
+        self::assertOrder(
+            $this->render($receipt, self::printData('receiptCash', $receipt->id, texts: self::SLOT_TEXTS))->html,
+            'SLOT-HEADER',
+            'SLOT-BEFORE-ROWS',
+            'SLOT-AFTER-ROWS',
+            'SLOT-FOOTER',
+        );
+    }
+
+    public function testPrintWithoutTextsHasNoTextBlocks(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $html       = $this->render($definition, self::printData('invoice', $definition->id))->html;
+
+        $this->assertStringNotContainsString('print-text', $html);
+    }
+
+    public function testOnlyFilledSlotsAreRendered(): void
+    {
+        $definition = self::definition('docs.invoicesOut', 'docs.invoicesOut.invoice');
+        $html       = $this->render($definition, self::printData(
+            'invoice',
+            $definition->id,
+            texts: ['afterRows' => self::SLOT_TEXTS['afterRows']],
+        ))->html;
+
+        $this->assertSame(1, substr_count($html, 'class="print-text"'));
+        $this->assertStringContainsString('SLOT-AFTER-ROWS', $html);
     }
 
     // ── PDF přes render klienta ─────────────────────────────────────────────
