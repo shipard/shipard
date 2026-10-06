@@ -112,6 +112,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>vat-filing-account</info>      Zaúčtuje podané přiznání DPH — účetní doklad (koncept) navázaný na podání; --dry-run jen vypíše řádky');
         $output->writeln('  <info>vat-filing-import</info>       Importuje staré podání DPH z původního XML (snapshot composerem, podané hodnoty z XML, přílohy, Podáno); --dry-run jen porovná');
         $output->writeln('  <info>doc-reaccount</info>           Přegeneruje účetní deník dokladu ve stavu 40; --force obejde zámek období (zaloguje se)');
+        $output->writeln('  <info>assets-import-verify</info>    Ověří import majetku: zlatý test daňových odpisů, účetní okruh × deník, kontrola evidence × deník po letech; --asset=<číslo>, --json; exit 1 s rozdíly');
         $output->writeln('');
         $output->writeln('<comment>Registry (Spisovna):</comment>');
         $output->writeln('  <info>registry-extract-texts</info>  Fill registry documents extracted_text from attachments (default: missing only)');
