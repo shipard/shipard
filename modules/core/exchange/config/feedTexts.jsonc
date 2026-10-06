@@ -1,0 +1,54 @@
+{
+    // core.exchange.feedTexts
+    //
+    // Texty karty položky k založení (ContentTagSuggestionsSource,
+    // tasks/content-tag-ui.md D25; #101 D11–D15). Čte je
+    // Shipard\Core\Feed\FeedTexts: pole `text` je vzor ICU MessageFormat
+    // ve stejné syntaxi jako frontend/src/i18n/cs.js. Pravidla vzorů (`#`
+    // v plurálu, `''` pro apostrof, holé pole = anglický fallback shodný
+    // se zdrojem) viz core/mail/config/feedTexts.jsonc.
+    //
+    // Titulek karty = název štítku z core.exchange.contentTags, ne odsud.
+
+    // Počet otevřených návrhů se štítkem; {n} = počet dokladů.
+    "contentTag.waiting": {
+        "text": "{n, plural, one {# document waiting} other {# documents waiting}}",
+        "text:cs": "{n, plural, one {# doklad čeká} few {# doklady čekají} many {# dokladu čeká} other {# dokladů čeká}}",
+        "text:en": "{n, plural, one {# document waiting} other {# documents waiting}}"
+    },
+    // Podtitulek se startovní položkou z nabídky; {waiting} = text
+    // contentTag.waiting, {starter} = název položky, {account} = účet.
+    "contentTag.suggestion": {
+        "text": "{waiting} · suggestion: {starter}",
+        "text:cs": "{waiting} · návrh: {starter}",
+        "text:en": "{waiting} · suggestion: {starter}"
+    },
+    "contentTag.suggestionAccount": {
+        "text": "{waiting} · suggestion: {starter} ({account})",
+        "text:cs": "{waiting} · návrh: {starter} ({account})",
+        "text:en": "{waiting} · suggestion: {starter} ({account})"
+    },
+    // Podtitulek štítku goods.stock bez mapování (volba materiál / zboží).
+    "contentTag.chooseStock": {
+        "text": "{waiting} · choose posting: material or goods",
+        "text:cs": "{waiting} · zvolte účtování: materiál, nebo zboží",
+        "text:en": "{waiting} · choose posting: material or goods"
+    },
+    // Labely akcí (passthrough ze serveru — u goods.stock nesou číslo
+    // účtu z osnovy, frontend klíč nestačí).
+    "contentTag.create": {
+        "text": "Create item",
+        "text:cs": "Založit položku",
+        "text:en": "Create item"
+    },
+    "contentTag.asMaterial": {
+        "text": "As material ({account})",
+        "text:cs": "Jako materiál ({account})",
+        "text:en": "As material ({account})"
+    },
+    "contentTag.asGoods": {
+        "text": "As goods ({account})",
+        "text:cs": "Jako zboží ({account})",
+        "text:en": "As goods ({account})"
+    }
+}

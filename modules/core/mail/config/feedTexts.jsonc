@@ -1,0 +1,97 @@
+{
+    // core.mail.feedTexts
+    //
+    // Texty karet feedu dashboardu, které vyrábí modul core.mail
+    // (MailSuggestionsSource, MailDigestSource; #101 D11–D15). Čte je
+    // Shipard\Core\Feed\FeedTexts: pole `text` je vzor ICU MessageFormat
+    // (plurály, {param}) ve stejné syntaxi jako frontend/src/i18n/cs.js.
+    //
+    // Pravidla vzorů:
+    // - uvnitř plurálu vždy `#` (PHP intl neumí `{n}` v plurálové větvi
+    //   téhož argumentu — U_ARGUMENT_TYPE_MISMATCH); `#` formátuje číslo
+    //   v locale, u tisíců s nezlomitelnou mezerou;
+    // - apostrof je escape znak ICU: v anglických textech `''`;
+    // - holé pole `text` = anglický fallback, shodné s fallbackem ve
+    //   zdroji (FeedTextsCatalogTest hlídá úplnost cs/en, parsovatelnost
+    //   a shodné parametry obou jazyků).
+    //
+    // Labely akcí mail karet sem nepatří — lokalizuje je frontend podle
+    // action.id (D17). Formát data (`j. n. Y` / `Y-m-d`) řeší zdroj.
+
+    // Titulek karty „Není faktura“; {type} = název primárního typu zprávy.
+    "notInvoice.title": {
+        "text": "Not an invoice — {type}",
+        "text:cs": "Není faktura — {type}",
+        "text:en": "Not an invoice — {type}"
+    },
+    // Název typu `other`, když chybí cfgItem core.mail.primaryTypes.
+    "primaryType.other": {
+        "text": "Other",
+        "text:cs": "Ostatní",
+        "text:en": "Other"
+    },
+    // Část podtitulku návrhové karty; {pct} = celé procento jistoty.
+    "confidence": {
+        "text": "confidence {pct} %",
+        "text:cs": "jistota {pct} %",
+        "text:en": "confidence {pct} %"
+    },
+    // Část podtitulku: zdrojový e-mail. Dnešní znění končí ASCII
+    // uvozovkou — sjednocení na typografickou je samostatná změna.
+    "emailSubject": {
+        "text": "email „{subject}\"",
+        "text:cs": "e-mail „{subject}\"",
+        "text:en": "email „{subject}\""
+    },
+    // Část podtitulku registry karty; {date} už naformátované zdrojem.
+    "validUntil": {
+        "text": "valid until {date}",
+        "text:cs": "platí do {date}",
+        "text:en": "valid until {date}"
+    },
+    // Popisky řádků rozbalovacího detailu karty.
+    "detail.docNumber": {
+        "text": "Document number",
+        "text:cs": "Číslo dokladu",
+        "text:en": "Document number"
+    },
+    "detail.dueDate": {
+        "text": "Due date",
+        "text:cs": "Splatnost",
+        "text:en": "Due date"
+    },
+    "detail.paymentReference": {
+        "text": "Payment reference",
+        "text:cs": "Variabilní symbol",
+        "text:en": "Payment reference"
+    },
+    "detail.validUntil": {
+        "text": "Valid until",
+        "text:cs": "Platí do",
+        "text:en": "Valid until"
+    },
+    // Název typu dokladu, když návrh typ nenese.
+    "docType.fallback": {
+        "text": "Document",
+        "text:cs": "Doklad",
+        "text:en": "Document"
+    },
+    // Podtitulek chybové / „Není faktura“ karty se známým partnerem.
+    "partnerFrom": {
+        "text": "{partner} · from: {sender}",
+        "text:cs": "{partner} · od: {sender}",
+        "text:en": "{partner} · from: {sender}"
+    },
+    // Titulek digestu dnešního auto-archivu; {n} = počet zpráv.
+    "digest.title": {
+        "text": "{n, plural, one {# message auto-archived} other {# messages auto-archived}}",
+        "text:cs": "{n, plural, one {# zpráva automaticky archivována} few {# zprávy automaticky archivovány} many {# zprávy automaticky archivováno} other {# zpráv automaticky archivováno}}",
+        "text:en": "{n, plural, one {# message auto-archived} other {# messages auto-archived}}"
+    },
+    // Titulek karty návrhu pravidla odesílatele; {pattern} = vzor pravidla.
+    "senderRule.title": {
+        "text": "Always archive mail from {pattern}?",
+        "text:cs": "Vždy archivovat poštu od {pattern}?",
+        "text:en": "Always archive mail from {pattern}?"
+    }
+}

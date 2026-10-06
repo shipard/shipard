@@ -68,6 +68,10 @@
         {
             "id": "core.alerts.viewerDetailLabels",
             "file": "config/viewerDetailLabels.jsonc"
+        },
+        {
+            "id": "core.alerts.feedTexts",
+            "file": "config/feedTexts.jsonc"
         }
     ]
 }

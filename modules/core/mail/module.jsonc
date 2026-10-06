@@ -249,6 +249,10 @@
             "file": "config/analysisErrorKinds.jsonc"
         },
         {
+            "id": "core.mail.feedTexts",
+            "file": "config/feedTexts.jsonc"
+        },
+        {
             "id": "core.mail.primaryTypeSources",
             "file": "config/primaryTypeSources.jsonc"
         },
