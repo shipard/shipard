@@ -292,7 +292,8 @@
 
         // --- status ---
 
-        // Kdo odeslání spustil: dialog, CLI, později dávka.
+        // Kdo odeslání spustil: dialog, CLI, import ze starého systému (#104),
+        // později dávka.
         {
             "id": "send_trigger",
             "name": "Trigger",
@@ -303,6 +304,19 @@
             "cfgItem": "core.mail.sendTriggers",
             "default": "manual",
             "nullable": false,
+            "group": "status"
+        },
+        // Identita zprávy ve zdrojovém systému u importované zprávy
+        // (`oldShipard:<ndx>`, #104 D2); u zpráv vzniklých odesláním NULL.
+        // Unikátní index — opakovaný import téže zprávy vrátí tu existující.
+        {
+            "id": "import_ref",
+            "name": "Import reference",
+            "name:cs": "Reference importu",
+            "name:en": "Import reference",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
             "group": "status"
         },
         {
@@ -376,6 +390,13 @@
             "columns": [
                 {"column": "docStateMain", "order": "ASC"},
                 {"column": "created", "order": "DESC"}
+            ]
+        },
+        {
+            "id": "unq_import_ref",
+            "type": "unique",
+            "columns": [
+                {"column": "import_ref"}
             ]
         }
     ]

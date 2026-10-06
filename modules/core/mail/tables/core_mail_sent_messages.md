@@ -9,7 +9,9 @@ jen doručuje. Záznam (faktura) ví, co odešlo, přes zprávy, které na něj
 ukazují.
 
 Zpráva vzniká **až odesláním** záznamu (`RecordSendService`), rovnou ve
-stavu Odeslaná. Ručně ji založit nejde a fyzicky se nemaže.
+stavu Odeslaná, nebo **importem** ze starého systému
+(`SentMessageImportService`, #104 — viz `docs/mail/sent.md` → Import).
+Ručně ji založit nejde a fyzicky se nemaže.
 
 ## Sloupce
 
@@ -40,7 +42,7 @@ stavu Odeslaná. Ručně ji založit nejde a fyzicky se nemaže.
 
 | Sloupec | Typ | Popis |
 |---|---|---|
-| `transport_state` | enumString(10) → `core.mail.transportStates` | `queued` / `sent` / `failed` |
+| `transport_state` | enumString(10) → `core.mail.transportStates` | `queued` / `sent` / `failed`; `unknown` = importovaná zpráva bez adresy příjemce (#104 D4) |
 | `sent_at` | datetime, nullable | Poslední úspěšné odeslání |
 | `send_count` | int | Počet úspěšných odeslání |
 | `last_error` | varchar(500), nullable | Poslední chyba transportu |
@@ -48,8 +50,12 @@ stavu Odeslaná. Ručně ji založit nejde a fyzicky se nemaže.
 
 ### `status`
 
-`send_trigger` (`manual` / `cli`, rezerva `batch` — `core.mail.sendTriggers`),
-`created`, `created_by`, `modified`, `docState`, `docStateMain`.
+| Sloupec | Typ | Popis |
+|---|---|---|
+| `send_trigger` | enumString(10) → `core.mail.sendTriggers` | `manual` / `cli` / `import` (zpráva převzatá ze starého systému, #104 D2), rezerva `batch` |
+| `import_ref` | varchar(100), nullable, unikátní | Identita zprávy ve zdrojovém systému (`oldShipard:<ndx>`); u zpráv vzniklých odesláním NULL. Opakovaný import téže zprávy vrátí tu existující |
+| `created`, `created_by`, `modified` | | U importu čas a autor ze zdroje; `modified` = `created` |
+| `docState`, `docStateMain` | | Stavy níže |
 
 ## Stavy
 
@@ -79,6 +85,11 @@ přílohy — jen stav. Hlídá to víc vrstev, protože zápisových cest je v�
 - `SentMessageAttachmentGuard` — přílohy zprávy nejde smazat, přejmenovat,
   přeřadit ani přidat další (409 `ATTACHMENT_LOCKED`).
 
+Import (`SentMessageImportService`) zapisuje mimo tyto vrstvy —
+`SentMessageStore::import()` a `AttachmentService` bez guardů — a je
+jedinou cestou, jak zpráva vznikne jinak než odesláním. Importovanou zprávu
+(`send_trigger = import`) nejde odeslat znovu (409 `IMPORTED`, #104 D5).
+
 ## Přílohy
 
 Přílohy zprávy jsou řádky `core_attachments_files` s touto tabulkou
@@ -92,6 +103,7 @@ odeslání. Odeslat znovu posílá právě tyto soubory.
 | `idx_target` | `target_table_id`, `target_row`, `created` DESC | Zprávy u záznamu (sekce Odeslaná pošta v detailu) |
 | `idx_recipient_person` | `recipient_person` | Co odešlo osobě |
 | `idx_doc_state` | `docStateMain`, `created` DESC | Agenda |
+| `unq_import_ref` | `import_ref` (unikátní) | Deduplikace importu; NULL u odeslaných zpráv unikátnost neporušuje |
 
 ## Návaznosti
 

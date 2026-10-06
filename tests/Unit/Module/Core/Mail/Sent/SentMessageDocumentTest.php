@@ -34,6 +34,8 @@ class SentMessageDocumentTest extends TestCase
             'email_cc'        => null,
             'target_table_id' => 'docs_core_heads',
             'target_row'      => 55,
+            'send_trigger'    => 'import',
+            'import_ref'      => 'oldShipard:4711',
             'created'         => new \DateTimeImmutable('2026-10-04 14:30:00'),
             'docState'        => 40,
             'docStateMain'    => 1,
@@ -85,6 +87,11 @@ class SentMessageDocumentTest extends TestCase
             ['email_cc' => 'kopie@jinde.example'],
             ['email_from' => 'jiny@firma.example'],
             ['target_row' => 56],
+            // Identita ve zdrojovém systému a způsob vzniku jsou součást
+            // pevného obsahu (#104 D2).
+            ['import_ref' => 'oldShipard:9999'],
+            ['import_ref' => null],
+            ['send_trigger' => 'manual'],
         ] as $change) {
             $this->assertSame(['_form:immutable'], $this->errorCodes(['id' => 7] + $change), key($change));
         }
@@ -141,5 +148,36 @@ class SentMessageDocumentTest extends TestCase
         $this->assertTrue($def->systemManaged);
         $this->assertSame(455, $def->tableId);
         $this->assertSame('core.mail.docStatesSent', $def->docStates->cfgItem);
+    }
+
+    public function testImportRefIsNullableAndUnique(): void
+    {
+        $def = TableDefinition::fromArray(
+            JsoncParser::parseFile(self::MODULE_DIR . 'tables/core_mail_sent_messages.jsonc'),
+        );
+
+        $columns = array_values(array_filter($def->columns, static fn ($c): bool => $c->id === 'import_ref'));
+        $this->assertCount(1, $columns);
+        $this->assertTrue($columns[0]->nullable);
+        $this->assertSame(100, $columns[0]->length);
+
+        $unique = array_values(array_filter(
+            $def->indexes,
+            static fn ($index): bool => $index->type === 'unique',
+        ));
+        $this->assertCount(1, $unique);
+        $this->assertSame('unq_import_ref', $unique[0]->id);
+        $this->assertSame(['import_ref'], array_map(static fn (array $c): string => $c['column'], $unique[0]->columns));
+    }
+
+    public function testImportValuesAreInTheCodebooks(): void
+    {
+        $triggers = JsoncParser::parseFile(self::MODULE_DIR . 'config/sendTriggers.jsonc');
+        $states   = JsoncParser::parseFile(self::MODULE_DIR . 'config/transportStates.jsonc');
+
+        $this->assertSame('Import', $triggers['import']['name:cs']);
+        $this->assertSame('Nezjištěno', $states['unknown']['name:cs']);
+        // Neutrální štítek — ne success / warning / danger (design-system §5).
+        $this->assertSame('neutral', $states['unknown']['style']);
     }
 }

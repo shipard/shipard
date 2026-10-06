@@ -48,6 +48,46 @@ class SentMessageStoreTest extends TestCase
         $this->assertSame('2026-10-04 14:30:00', $data['created']);
     }
 
+    public function testImportInsertsTheRowAsGiven(): void
+    {
+        $captured = null;
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('insertRow')->willReturnCallback(function (string $table, array $data) use (&$captured): int {
+            $captured = [$table, $data];
+            return 8;
+        });
+
+        // Importovaná zpráva nese vlastní čas i transport (#104 D3, D4) —
+        // store je na rozdíl od create() nepřepisuje.
+        $fields = [
+            'subject'         => 'Faktura 2160011',
+            'email_to'        => 'ucetni@odberatel.example',
+            'transport_state' => 'sent',
+            'sent_at'         => '2021-06-01 09:00:00',
+            'send_count'      => 1,
+            'send_trigger'    => 'import',
+            'import_ref'      => 'oldShipard:4711',
+            'created'         => '2021-06-01 09:00:00',
+            'docState'        => 70,
+        ];
+        $id = (new SentMessageStore($db))->import($fields);
+
+        $this->assertSame(8, $id);
+        $this->assertSame(['core_mail_sent_messages', $fields], $captured);
+    }
+
+    public function testFindByImportRefReturnsIdOrNull(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchSingle')->willReturnCallback(
+            static fn (string $sql, string $table, string $ref): ?int => $ref === 'oldShipard:4711' ? 12 : null,
+        );
+        $store = new SentMessageStore($db);
+
+        $this->assertSame(12, $store->findByImportRef('oldShipard:4711'));
+        $this->assertNull($store->findByImportRef('oldShipard:9999'));
+    }
+
     public function testMarkSentCountsEverySendButStateFollowsLastOutboxRow(): void
     {
         $executed = [];

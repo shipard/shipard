@@ -8,9 +8,10 @@ use Shipard\Core\Database\DataSourceConnection;
 
 /**
  * Zápis a čtení Odeslané pošty (`core_mail_sent_messages`, #90 D40) mimo
- * dokumentový lifecycle — zprávy zakládá služba odeslání, uživatel je přes
- * formulář jen archivuje a maže (stav). Jediné místo, které zná stavy
- * transportu a tvar `source_ref` ve frontě.
+ * dokumentový lifecycle — zprávy zakládá služba odeslání (`create()`) nebo
+ * import ze starého systému (`import()`, #104), uživatel je přes formulář
+ * jen archivuje a maže (stav). Jediné místo, které zná stavy transportu
+ * a tvar `source_ref` ve frontě.
  */
 class SentMessageStore
 {
@@ -27,8 +28,13 @@ class SentMessageStore
     public const TRANSPORT_QUEUED = 'queued';
     public const TRANSPORT_SENT   = 'sent';
     public const TRANSPORT_FAILED = 'failed';
+    /** Importovaná zpráva bez adresy příjemce — výsledek zdroj nezaznamenal (#104 D4). */
+    public const TRANSPORT_UNKNOWN = 'unknown';
 
     public const CHANNEL_EMAIL = 'email';
+
+    /** `send_trigger` zprávy převzaté ze starého systému (#104 D2). */
+    public const TRIGGER_IMPORT = 'import';
 
     /** Prefix `source_ref` řádků fronty, které patří odeslané zprávě. */
     public const SOURCE_REF_PREFIX = 'sentMessage:';
@@ -76,6 +82,26 @@ class SentMessageStore
                 'docStateMain'    => self::MAIN_STATE_SENT,
             ],
         ));
+    }
+
+    /**
+     * Vloží importovanou zprávu tak, jak přišla (#104 D3): `created`,
+     * transport ani stav nepřepisuje — za jejich odvození ručí
+     * `SentMessageImportService`. Pro zprávy vzniklé odesláním je `create()`.
+     *
+     * @param array<string, mixed> $fields Všechny sloupce řádku.
+     * @return int id zprávy
+     */
+    public function import(array $fields): int
+    {
+        return $this->db->insertRow(self::TABLE, $fields);
+    }
+
+    /** Id zprávy s danou identitou ve zdrojovém systému; null = ještě neimportovaná. */
+    public function findByImportRef(string $importRef): ?int
+    {
+        $id = $this->db->fetchSingle('SELECT [id] FROM %n WHERE [import_ref] = %s', self::TABLE, $importRef);
+        return $id === null ? null : (int) $id;
     }
 
     /** @return array<string, mixed>|null */

@@ -4,6 +4,8 @@
     // Výsledek posledního průchodu odeslané zprávy transportem
     // (core_mail_sent_messages.transport_state, #90 D43). Mezistavy fronty
     // (další pokus po chybě) zpráva nevidí jinak než „Ve frontě“.
+    // `unknown` = importovaná zpráva bez zaznamenané adresy příjemce
+    // (#104 D4) — jestli a kam odešla, zdroj nezaznamenal.
     // `style` = varianta štítku (design-system §5).
 
     "queued": {
@@ -23,5 +25,11 @@
         "name:cs": "Neodesláno",
         "name:en": "Failed",
         "style": "danger"
+    },
+    "unknown": {
+        "name": "Unknown",
+        "name:cs": "Nezjištěno",
+        "name:en": "Unknown",
+        "style": "neutral"
     }
 }
