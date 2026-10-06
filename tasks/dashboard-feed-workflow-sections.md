@@ -1,6 +1,6 @@
 # Dashboard — sekce feedu podle toku práce, strop per sekce
 
-**Stav:** hotovo — implementováno 2026-10-06 (#101); ruční proklik na dev DS viz checklist
+**Stav:** hotovo — implementováno a ověřeno proklikem 2026-10-06 (#101)
 
 ## Cíl
 
@@ -367,7 +367,7 @@ Krok 4, `**Stav:**`, `python3 scripts/tasks-index.py`,
 - [x] MCP `feed_cards` vrací `feedSection` a pravdivé `has_more`.
 - [x] PHPUnit (cílené filtry, pak celá sada), `npm run build`,
       `npm run check:i18n` prošly.
-- [ ] Ruční proklik na dev DS: pořadí sekcí, počty po jednokliku
+- [x] Ruční proklik na dev DS: pořadí sekcí, počty po jednokliku
       Použít a po průchodu frontou, „a N dalších“, filtr Faktury.
 - [x] `docs/dashboard.md`, `CLAUDE.md` a stránky `help/` aktualizované,
       `help-index.py` a `tasks-index.py` prošly, `**Stav:**` aktualizovaný.
