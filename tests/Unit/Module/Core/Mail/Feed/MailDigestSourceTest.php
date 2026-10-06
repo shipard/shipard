@@ -9,6 +9,7 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Module\Core\Mail\Feed\MailDigestSource;
+use Shipard\Tests\Fixtures\Core\Feed\ShippedFeedTexts;
 
 /**
  * Unit testy pro MailDigestSource.
@@ -19,6 +20,8 @@ use Shipard\Module\Core\Mail\Feed\MailDigestSource;
  *   - akce digestu (open_viewer s tabem archive, undo_auto_archive s datem)
  *   - návrhové karty pravidel (kind review, akce confirm/reject/open_form)
  *   - prázdný vstup → []
+ *   - texty z katalogu core.mail.feedTexts (#101 D11): české plurály
+ *     titulku digestu, en katalog × en fallback bez katalogu dávají totéž
  */
 final class MailDigestSourceTest extends TestCase
 {
@@ -26,6 +29,10 @@ final class MailDigestSourceTest extends TestCase
      * Sestaví FeedContext s DB mockem routujícím dotazy dle tvaru SQL:
      * COUNT (digest souhrn), DISTINCT sender_email (vzorek), zbytek
      * (core_mail_sender_rules) = návrhy.
+     *
+     * Dodávaný katalog textů feedu se vrství nad případný mock configu
+     * (`$withCatalog`) — české texty bez něj nevzniknou, fallback v PHP je
+     * anglický (#101 D15).
      *
      * @param list<array<string,mixed>> $summaryRows
      * @param list<array<string,mixed>> $senderRows
@@ -37,6 +44,7 @@ final class MailDigestSourceTest extends TestCase
         array $ruleRows = [],
         ?ConfigRuntime $config = null,
         string $lang = 'cs',
+        bool $withCatalog = true,
     ): FeedContext {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchAll')->willReturnCallback(
@@ -50,6 +58,11 @@ final class MailDigestSourceTest extends TestCase
                 return $ruleRows;
             },
         );
+        if ($withCatalog) {
+            $inner = $config;
+            $config = $this->createMock(ConfigRuntime::class);
+            $config->method('cfgItem')->willReturnCallback(ShippedFeedTexts::resolver($lang, $inner));
+        }
         return new FeedContext($db, $config, $lang, 30);
     }
 
@@ -121,6 +134,41 @@ final class MailDigestSourceTest extends TestCase
         $cards = new MailDigestSource()->collectCards($ctx);
 
         $this->assertSame('2 messages auto-archived', $cards[0]['title']);
+    }
+
+    public function testDigestTitlePluralBoundaries(): void
+    {
+        // Hranice, které dřív řešil ruční ternár (=== 1, < 5): ICU one / few / other.
+        $expected = [
+            1  => '1 zpráva automaticky archivována',
+            2  => '2 zprávy automaticky archivovány',
+            4  => '4 zprávy automaticky archivovány',
+            5  => '5 zpráv automaticky archivováno',
+            21 => '21 zpráv automaticky archivováno',
+        ];
+        foreach ($expected as $count => $title) {
+            $ctx = $this->context([['cnt' => $count, 'last_at' => '2026-07-15 09:30:00']], [['sender_email' => 'a@x.cz']]);
+            $this->assertSame($title, new MailDigestSource()->collectCards($ctx)[0]['title'], "count = {$count}");
+        }
+
+        $en = $this->context([['cnt' => 1, 'last_at' => '2026-07-15 09:30:00']], [['sender_email' => 'a@x.cz']], lang: 'en');
+        $this->assertSame('1 message auto-archived', new MailDigestSource()->collectCards($en)[0]['title']);
+    }
+
+    public function testEnglishCatalogAndFallbackWithoutCatalogAgree(): void
+    {
+        // DS před ds-upgrade (bez cfgItemu) musí dávat stejné anglické texty
+        // jako katalog — fallbacky ve zdroji kopírují holé pole katalogu.
+        $summary = [['cnt' => 3, 'last_at' => '2026-07-15 09:30:00']];
+        $senders = [['sender_email' => 'a@x.cz']];
+        $rules   = [['id' => 7, 'pattern_kind' => 'email', 'pattern' => 'news@example.com', 'notice' => null, 'created' => '2026-07-15 08:00:00']];
+
+        $fromCatalog  = new MailDigestSource()->collectCards($this->context($summary, $senders, $rules, lang: 'en'));
+        $fromFallback = new MailDigestSource()->collectCards($this->context($summary, $senders, $rules, lang: 'en', withCatalog: false));
+
+        $this->assertSame('3 messages auto-archived', $fromCatalog[0]['title']);
+        $this->assertSame('Always archive mail from news@example.com?', $fromCatalog[1]['title']);
+        $this->assertSame(array_column($fromCatalog, 'title'), array_column($fromFallback, 'title'));
     }
 
     public function testSuggestedRuleEmitsReviewCard(): void

@@ -6,6 +6,7 @@ namespace Shipard\Module\Core\Exchange\Dashboard;
 
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Core\Feed\FeedSource;
+use Shipard\Core\Feed\FeedTexts;
 use Shipard\Module\Core\Mail\IncomingMessageDocument;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
 
@@ -26,6 +27,9 @@ use Shipard\Module\Economy\Items\AccountingItemsOffer;
  *
  * Akce nesou lokalizovaný `label` ze serveru (passthrough vzor AlertsSource)
  * — u goods.stock je v labelu číslo účtu z osnovy, frontend klíč nestačí.
+ * Texty podtitulku a labelů jdou z katalogu `core.exchange.feedTexts` přes
+ * `FeedTexts` (ICU plurály, #101 D11–D15), bez katalogu anglický fallback;
+ * titulek je název štítku z taxonomie `core.exchange.contentTags`.
  */
 final class ContentTagSuggestionsSource implements FeedSource
 {
@@ -34,6 +38,9 @@ final class ContentTagSuggestionsSource implements FeedSource
 
     /** Stejná trojice jako ContentTagResolver — položka musí být živá. */
     private const ITEM_ACTIVE_STATES = [10, 40, 80];
+
+    /** Katalog textů karet (`config/feedTexts.jsonc`). */
+    private const FEED_TEXTS_CFG_ITEM = 'core.exchange.feedTexts';
 
     /** @return list<array<string, mixed>> */
     public function collectCards(FeedContext $ctx): array
@@ -45,6 +52,7 @@ final class ContentTagSuggestionsSource implements FeedSource
 
         $covered = $this->coveredTags($ctx);
         $offer = new AccountingItemsOffer($ctx->db);
+        $texts = FeedTexts::forContext($ctx, self::FEED_TEXTS_CFG_ITEM);
 
         $cards = [];
         foreach ($tagRows as $row) {
@@ -52,7 +60,7 @@ final class ContentTagSuggestionsSource implements FeedSource
             if ($tag === '' || isset($covered[$tag])) {
                 continue;
             }
-            $card = $this->buildCard($ctx, $offer, $tag, (int) $row['waiting'], $row['latest'] ?? null);
+            $card = $this->buildCard($ctx, $texts, $offer, $tag, (int) $row['waiting'], $row['latest'] ?? null);
             if ($card !== null) {
                 $cards[] = $card;
             }
@@ -123,13 +131,18 @@ final class ContentTagSuggestionsSource implements FeedSource
     /** @return array<string, mixed>|null null = štítek bez čeho založit (review by design) */
     private function buildCard(
         FeedContext $ctx,
+        FeedTexts $texts,
         AccountingItemsOffer $offer,
         string $tag,
         int $waiting,
         mixed $latest,
     ): ?array {
-        $cs = $ctx->language === 'cs';
         $label = $this->tagLabel($ctx, $tag);
+        $waitingText = $texts->t(
+            'contentTag.waiting',
+            '{n, plural, one {# document waiting} other {# documents waiting}}',
+            ['n' => $waiting],
+        );
 
         $entry = $tag === 'goods.stock' ? null : $offer->entryForTag($tag);
         if ($entry !== null) {
@@ -137,13 +150,15 @@ final class ContentTagSuggestionsSource implements FeedSource
                 $entry, 'name', $ctx->language, (string) $entry['code'],
             );
             $account = (string) ($entry['account'] ?? '');
-            $subtitle = $this->waitingText($cs, $waiting)
-                . ' · ' . ($cs ? 'návrh' : 'suggestion') . ": {$starterName}"
-                . ($account !== '' ? " ({$account})" : '');
+            $subtitle = $account !== ''
+                ? $texts->t('contentTag.suggestionAccount', '{waiting} · suggestion: {starter} ({account})',
+                    ['waiting' => $waitingText, 'starter' => $starterName, 'account' => $account])
+                : $texts->t('contentTag.suggestion', '{waiting} · suggestion: {starter}',
+                    ['waiting' => $waitingText, 'starter' => $starterName]);
             $actions = [[
                 'id'      => 'materialize',
                 'kind'    => 'materialize_content_tag',
-                'label'   => $cs ? 'Založit položku' : 'Create item',
+                'label'   => $texts->t('contentTag.create', 'Create item'),
                 'target'  => ['tag' => $tag],
                 'primary' => true,
             ]];
@@ -153,20 +168,20 @@ final class ContentTagSuggestionsSource implements FeedSource
             if ($material === null || $goods === null) {
                 return null; // osnova bez 501/504 — není z čeho volit
             }
-            $subtitle = $this->waitingText($cs, $waiting)
-                . ' · ' . ($cs ? 'zvolte účtování: materiál, nebo zboží' : 'choose posting: material or goods');
+            $subtitle = $texts->t('contentTag.chooseStock', '{waiting} · choose posting: material or goods',
+                ['waiting' => $waitingText]);
             $actions = [
                 [
                     'id'      => 'materializeMaterial',
                     'kind'    => 'materialize_content_tag',
-                    'label'   => $cs ? "Jako materiál ({$material})" : "As material ({$material})",
+                    'label'   => $texts->t('contentTag.asMaterial', 'As material ({account})', ['account' => $material]),
                     'target'  => ['tag' => $tag, 'account' => $material],
                     'primary' => true,
                 ],
                 [
                     'id'     => 'materializeGoods',
                     'kind'   => 'materialize_content_tag',
-                    'label'  => $cs ? "Jako zboží ({$goods})" : "As goods ({$goods})",
+                    'label'  => $texts->t('contentTag.asGoods', 'As goods ({account})', ['account' => $goods]),
                     'target' => ['tag' => $tag, 'account' => $goods],
                 ],
             ];
@@ -220,18 +235,6 @@ final class ContentTagSuggestionsSource implements FeedSource
             self::ITEM_ACTIVE_STATES,
         );
         return is_string($number) && $number !== '' ? $number : null;
-    }
-
-    private function waitingText(bool $cs, int $waiting): string
-    {
-        if (!$cs) {
-            return $waiting === 1 ? '1 document waiting' : "{$waiting} documents waiting";
-        }
-        return match (true) {
-            $waiting === 1 => '1 doklad čeká',
-            $waiting < 5   => "{$waiting} doklady čekají",
-            default        => "{$waiting} dokladů čeká",
-        };
     }
 
     /** ATOM timestamp z DB hodnoty (DateTime|string|null) — vzor AlertsSource. */

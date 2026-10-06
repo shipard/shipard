@@ -6,6 +6,7 @@ namespace Shipard\Module\Core\Mail\Feed;
 
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Core\Feed\FeedSource;
+use Shipard\Core\Feed\FeedTexts;
 use Shipard\Module\Core\Mail\AnalysisConfidenceResolver;
 use Shipard\Module\Core\Mail\AnalysisErrorInfo;
 use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
@@ -71,7 +72,9 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  *
  * Akce se emitují bez `label` — frontend je lokalizuje podle `action.id`
  * (i18n klíče `dashboard.card.action.*`). Podtitulek a titulek jsou naopak
- * složené na serveru (data-driven), lokalizované dle `ctx->language`.
+ * složené na serveru (data-driven) z katalogu `core.mail.feedTexts` přes
+ * `FeedTexts` (ICU plurály, #101 D11–D15; bez katalogu anglický fallback);
+ * jen formát data řídí `ctx->language` přímo (D17).
  *
  * Přílohy: každá karta s ≥1 obsahovou přílohou zprávy nese volitelná pole
  * `attachments` (max MAX_CARD_ATTACHMENTS položek `{id, name, mime_type,
@@ -98,6 +101,9 @@ final class MailSuggestionsSource implements FeedSource
     private const MAX_CARD_ATTACHMENTS = 3;
 
     private const PRIMARY_TYPES_CFG_ITEM = 'core.mail.primaryTypes';
+
+    /** Katalog textů karet (`config/feedTexts.jsonc`, #101 D11–D15). */
+    private const FEED_TEXTS_CFG_ITEM = 'core.mail.feedTexts';
 
     /**
      * Jméno Osoby partnera zprávy jako korelovaný subselect (ne JOIN —
@@ -133,6 +139,7 @@ final class MailSuggestionsSource implements FeedSource
         // Jeden presenter per sběr — verzi výchozího profilu čte jednou.
         $presenter = new AnalysisErrorPresenter($ctx->db, $ctx->config);
         $preprocess = new PreprocessErrorPresenter($ctx->config);
+        $texts = FeedTexts::forContext($ctx, self::FEED_TEXTS_CFG_ITEM);
 
         $cards = [];
         foreach ($suggestionRows as $row) {
@@ -144,7 +151,7 @@ final class MailSuggestionsSource implements FeedSource
             // karta s reanalyze, návrh nelze použít.
             if (isset($canonical['_validationError'])) {
                 $cards[] = $this->withPreprocessWarning(
-                    $this->withAttachments($this->buildInvalidOutputCard($ctx, $row, $presenter), $attachments),
+                    $this->withAttachments($this->buildInvalidOutputCard($ctx, $texts, $row, $presenter), $attachments),
                     $row,
                     $preprocess,
                 );
@@ -163,21 +170,21 @@ final class MailSuggestionsSource implements FeedSource
             );
 
             $cards[] = $this->withPreprocessWarning(
-                $this->withAttachments($this->buildSuggestionCard($ctx, $row, $canonical, $band), $attachments),
+                $this->withAttachments($this->buildSuggestionCard($ctx, $texts, $row, $canonical, $band), $attachments),
                 $row,
                 $preprocess,
             );
         }
         foreach ($errorRows as $row) {
             $cards[] = $this->withPreprocessWarning(
-                $this->withAttachments($this->buildErrorCard($ctx, $row, $presenter), $attachmentsByMessage[(int) $row['message_ndx']] ?? []),
+                $this->withAttachments($this->buildErrorCard($ctx, $texts, $row, $presenter), $attachmentsByMessage[(int) $row['message_ndx']] ?? []),
                 $row,
                 $preprocess,
             );
         }
         foreach ($notInvoiceRows as $row) {
             $cards[] = $this->withPreprocessWarning(
-                $this->withAttachments($this->buildNotInvoiceCard($ctx, $row), $attachmentsByMessage[(int) $row['message_ndx']] ?? []),
+                $this->withAttachments($this->buildNotInvoiceCard($ctx, $texts, $row), $attachmentsByMessage[(int) $row['message_ndx']] ?? []),
                 $row,
                 $preprocess,
             );
@@ -222,7 +229,7 @@ final class MailSuggestionsSource implements FeedSource
      * @param array<string,mixed> $canonical
      * @return array<string,mixed>
      */
-    private function buildSuggestionCard(FeedContext $ctx, array $row, array $canonical, string $band): array
+    private function buildSuggestionCard(FeedContext $ctx, FeedTexts $texts, array $row, array $canonical, string $band): array
     {
         $messageNdx  = (int) $row['message_ndx'];
         $analysisNdx = (int) $row['analysis_ndx'];
@@ -265,8 +272,8 @@ final class MailSuggestionsSource implements FeedSource
             'category'   => $isRegistry ? FeedSource::CATEGORY_REGISTRY : FeedSource::CATEGORY_INVOICES,
             'navSection' => FeedSource::NAV_SECTION_TOP,
             'title'      => $isRegistry
-                ? $this->registryCardTitle($ctx, $docType, $canonical)
-                : $this->cardTitle($ctx, $docType, $canonical),
+                ? $this->registryCardTitle($ctx, $texts, $docType, $canonical)
+                : $this->cardTitle($ctx, $texts, $docType, $canonical),
             'timestamp'  => $this->toAtom($row['received_at'] ?? null),
             'context'    => [
                 'messageNdx'  => $messageNdx,
@@ -289,8 +296,8 @@ final class MailSuggestionsSource implements FeedSource
             $headline = [
                 'partnerName' => $partnerName,
                 'typeLabel'   => $isRegistry
-                    ? $this->docKindLabel($ctx, $docType)
-                    : $this->docTypeLabel($ctx, $docType),
+                    ? $this->docKindLabel($ctx, $texts, $docType)
+                    : $this->docTypeLabel($ctx, $texts, $docType),
             ];
             $amountText = $isRegistry ? null : $this->formatAmount($canonical);
             if ($amountText !== null) {
@@ -299,8 +306,8 @@ final class MailSuggestionsSource implements FeedSource
             $card['headline'] = $headline;
         } else {
             $card['subtitle'] = $isRegistry
-                ? $this->registryCardSubtitle($ctx, $docType, $canonical, $confidence, $subject)
-                : $this->cardSubtitle($ctx, $canonical, $confidence, $subject);
+                ? $this->registryCardSubtitle($ctx, $texts, $docType, $canonical, $confidence, $subject)
+                : $this->cardSubtitle($ctx, $texts, $canonical, $confidence, $subject);
         }
 
         // Interní numerická pole pro readySummary (Issue #32/2, D8) — jen
@@ -327,12 +334,12 @@ final class MailSuggestionsSource implements FeedSource
             $card['receivedDateText'] = $receivedDateText;
         }
         $details = $isRegistry
-            ? $this->registryDetails($ctx, $docType, $canonical)
-            : $this->docsDetails($ctx, $canonical);
+            ? $this->registryDetails($ctx, $texts, $docType, $canonical)
+            : $this->docsDetails($ctx, $texts, $canonical);
         if ($details !== []) {
             $card['details'] = $details;
         }
-        $findings = $this->secondaryFindings($ctx, (string) ($row['analysis_json'] ?? ''));
+        $findings = $this->secondaryFindings($ctx, $texts, (string) ($row['analysis_json'] ?? ''));
         if ($findings !== []) {
             $card['secondaryFindings'] = $findings;
         }
@@ -347,7 +354,7 @@ final class MailSuggestionsSource implements FeedSource
      * @param array<string,mixed> $row
      * @return array<string,mixed>
      */
-    private function buildInvalidOutputCard(FeedContext $ctx, array $row, AnalysisErrorPresenter $presenter): array
+    private function buildInvalidOutputCard(FeedContext $ctx, FeedTexts $texts, array $row, AnalysisErrorPresenter $presenter): array
     {
         $messageNdx = (int) $row['message_ndx'];
         $subject    = $this->messageTitle($ctx, $row);
@@ -364,7 +371,7 @@ final class MailSuggestionsSource implements FeedSource
             'category'   => FeedSource::CATEGORY_OTHER,
             'navSection' => FeedSource::NAV_SECTION_TOP,
             'title'      => $info->title,
-            'subtitle'   => $this->senderSubtitle($ctx, $row, trim((string) ($row['sender_name'] ?? ''))),
+            'subtitle'   => $this->senderSubtitle($texts, $row, trim((string) ($row['sender_name'] ?? ''))),
             'timestamp'  => $this->toAtom($row['received_at'] ?? null),
             'context'    => ['messageNdx' => $messageNdx],
             'details'    => $presenter->cardDetails($info),
@@ -420,7 +427,7 @@ final class MailSuggestionsSource implements FeedSource
      * @param array<string,mixed> $row
      * @return array<string,mixed>
      */
-    private function buildErrorCard(FeedContext $ctx, array $row, AnalysisErrorPresenter $presenter): array
+    private function buildErrorCard(FeedContext $ctx, FeedTexts $texts, array $row, AnalysisErrorPresenter $presenter): array
     {
         $messageNdx = (int) $row['message_ndx'];
         $subject    = $this->messageTitle($ctx, $row);
@@ -440,7 +447,7 @@ final class MailSuggestionsSource implements FeedSource
             'category'   => FeedSource::CATEGORY_OTHER,
             'navSection' => FeedSource::NAV_SECTION_TOP,
             'title'      => $info->title,
-            'subtitle'   => $this->senderSubtitle($ctx, $row, trim((string) ($row['sender_name'] ?? ''))),
+            'subtitle'   => $this->senderSubtitle($texts, $row, trim((string) ($row['sender_name'] ?? ''))),
             'timestamp'  => $this->toAtom($row['received_at'] ?? null),
             'context'    => ['messageNdx' => $messageNdx],
             'details'    => $presenter->cardDetails($info),
@@ -512,7 +519,7 @@ final class MailSuggestionsSource implements FeedSource
      * @param array<string,mixed> $row
      * @return array<string,mixed>
      */
-    private function buildNotInvoiceCard(FeedContext $ctx, array $row): array
+    private function buildNotInvoiceCard(FeedContext $ctx, FeedTexts $texts, array $row): array
     {
         $messageNdx = (int) $row['message_ndx'];
         $target = ['messageNdx' => $messageNdx];
@@ -530,9 +537,10 @@ final class MailSuggestionsSource implements FeedSource
             'stateStyle' => 'archive',
             'category'   => FeedSource::CATEGORY_OTHER,
             'navSection' => FeedSource::NAV_SECTION_TOP,
-            'title'      => ($ctx->language === 'cs' ? 'Není faktura — ' : 'Not an invoice — ')
-                . $this->primaryTypeLabel($ctx, (string) ($row['primary_type'] ?? 'other')),
-            'subtitle'   => $this->senderSubtitle($ctx, $row, $sender),
+            'title'      => $texts->t('notInvoice.title', 'Not an invoice — {type}', [
+                'type' => $this->primaryTypeLabel($ctx, $texts, (string) ($row['primary_type'] ?? 'other')),
+            ]),
+            'subtitle'   => $this->senderSubtitle($texts, $row, $sender),
             'timestamp'  => $this->toAtom($row['received_at'] ?? null),
             'context'    => ['messageNdx' => $messageNdx],
             'actions'    => [
@@ -647,7 +655,7 @@ final class MailSuggestionsSource implements FeedSource
      *
      * @return list<array{type: string, type_label: string, note: string}>
      */
-    private function secondaryFindings(FeedContext $ctx, string $analysisJson): array
+    private function secondaryFindings(FeedContext $ctx, FeedTexts $texts, string $analysisJson): array
     {
         $decoded = json_decode($analysisJson, true);
         $findings = is_array($decoded) ? ($decoded['secondary_findings'] ?? null) : null;
@@ -662,7 +670,7 @@ final class MailSuggestionsSource implements FeedSource
             $type = trim((string) ($f['type'] ?? ''));
             $out[] = [
                 'type' => $type,
-                'type_label' => $this->primaryTypeLabel($ctx, $type),
+                'type_label' => $this->primaryTypeLabel($ctx, $texts, $type),
                 'note' => trim((string) ($f['note'] ?? '')),
             ];
         }
@@ -670,13 +678,13 @@ final class MailSuggestionsSource implements FeedSource
     }
 
     /** Lokalizovaný label primárního typu z cfgItem; fallback na holý key. */
-    private function primaryTypeLabel(FeedContext $ctx, string $primaryType): string
+    private function primaryTypeLabel(FeedContext $ctx, FeedTexts $texts, string $primaryType): string
     {
         $cfg = $ctx->config?->cfgItem(self::PRIMARY_TYPES_CFG_ITEM);
         if (is_array($cfg) && isset($cfg[$primaryType]['name']) && is_string($cfg[$primaryType]['name'])) {
             return $cfg[$primaryType]['name'];
         }
-        return $primaryType === 'other' ? ($ctx->language === 'cs' ? 'Ostatní' : 'Other') : $primaryType;
+        return $primaryType === 'other' ? $texts->t('primaryType.other', 'Other') : $primaryType;
     }
 
     /**
@@ -685,9 +693,9 @@ final class MailSuggestionsSource implements FeedSource
      *
      * @param array<string,mixed> $canonical
      */
-    private function cardTitle(FeedContext $ctx, string $docType, array $canonical): string
+    private function cardTitle(FeedContext $ctx, FeedTexts $texts, string $docType, array $canonical): string
     {
-        $typeLabel = $this->docTypeLabel($ctx, $docType);
+        $typeLabel = $this->docTypeLabel($ctx, $texts, $docType);
         $partner   = $this->counterpartyName($canonical);
         return $partner !== null ? ($typeLabel . ' — ' . $partner) : $typeLabel;
     }
@@ -697,7 +705,7 @@ final class MailSuggestionsSource implements FeedSource
      *
      * @param array<string,mixed> $canonical
      */
-    private function cardSubtitle(FeedContext $ctx, array $canonical, ?float $confidence, string $subject): string
+    private function cardSubtitle(FeedContext $ctx, FeedTexts $texts, array $canonical, ?float $confidence, string $subject): string
     {
         $parts = [];
 
@@ -707,19 +715,20 @@ final class MailSuggestionsSource implements FeedSource
         }
         if ($confidence !== null) {
             $pct = (int) round($confidence * 100);
-            $parts[] = $ctx->language === 'cs' ? "jistota {$pct} %" : "confidence {$pct} %";
+            $parts[] = $texts->t('confidence', 'confidence {pct} %', ['pct' => $pct]);
         }
         $subject = trim($subject);
         if ($subject !== '') {
-            $parts[] = $this->emailSubjectLabel($ctx, $subject);
+            $parts[] = $this->emailSubjectLabel($texts, $subject);
         }
 
         return implode(' · ', $parts);
     }
 
-    private function emailSubjectLabel(FeedContext $ctx, string $subject): string
+    private function emailSubjectLabel(FeedTexts $texts, string $subject): string
     {
-        return ($ctx->language === 'cs' ? 'e-mail' : 'email') . ' „' . $subject . '"';
+        // Dnešní znění končí ASCII uvozovkou; sjednocení je samostatná změna.
+        return $texts->t('emailSubject', 'email „{subject}"', ['subject' => $subject]);
     }
 
     /**
@@ -729,9 +738,9 @@ final class MailSuggestionsSource implements FeedSource
      *
      * @param array<string,mixed> $canonical
      */
-    private function registryCardTitle(FeedContext $ctx, string $docType, array $canonical): string
+    private function registryCardTitle(FeedContext $ctx, FeedTexts $texts, string $docType, array $canonical): string
     {
-        $label = $this->docKindLabel($ctx, $docType);
+        $label = $this->docKindLabel($ctx, $texts, $docType);
         $party = $this->registryPartyName($canonical);
         return $party !== null ? ($label . ' — ' . $party) : $label;
     }
@@ -758,6 +767,7 @@ final class MailSuggestionsSource implements FeedSource
      */
     private function registryCardSubtitle(
         FeedContext $ctx,
+        FeedTexts $texts,
         string $docType,
         array $canonical,
         ?float $confidence,
@@ -767,22 +777,22 @@ final class MailSuggestionsSource implements FeedSource
 
         $validTo = $this->registryValidTo($ctx, $docType, $canonical);
         if ($validTo !== null) {
-            $parts[] = ($ctx->language === 'cs' ? 'platí do ' : 'valid until ') . $validTo;
+            $parts[] = $texts->t('validUntil', 'valid until {date}', ['date' => $validTo]);
         }
         if ($confidence !== null) {
             $pct = (int) round($confidence * 100);
-            $parts[] = $ctx->language === 'cs' ? "jistota {$pct} %" : "confidence {$pct} %";
+            $parts[] = $texts->t('confidence', 'confidence {pct} %', ['pct' => $pct]);
         }
         $subject = trim($subject);
         if ($subject !== '') {
-            $parts[] = $this->emailSubjectLabel($ctx, $subject);
+            $parts[] = $this->emailSubjectLabel($texts, $subject);
         }
 
         return implode(' · ', $parts);
     }
 
     /** Lokalizovaný label druhu dokumentu z `base.registry.docKinds`; fallback docTypeLabel. */
-    private function docKindLabel(FeedContext $ctx, string $docType): string
+    private function docKindLabel(FeedContext $ctx, FeedTexts $texts, string $docType): string
     {
         $docKind = PrimaryTypes::docKindFor($ctx->config, $docType);
         if ($docKind !== null) {
@@ -791,7 +801,7 @@ final class MailSuggestionsSource implements FeedSource
                 return $kinds[$docKind]['name'];
             }
         }
-        return $this->docTypeLabel($ctx, $docType);
+        return $this->docTypeLabel($ctx, $texts, $docType);
     }
 
     /**
@@ -846,14 +856,14 @@ final class MailSuggestionsSource implements FeedSource
      * @param array<string,mixed> $canonical
      * @return list<array{label: string, value: string}>
      */
-    private function docsDetails(FeedContext $ctx, array $canonical): array
+    private function docsDetails(FeedContext $ctx, FeedTexts $texts, array $canonical): array
     {
         $rows = [];
 
         $docNumber = $canonical['docNumber'] ?? null;
         if (is_string($docNumber) && trim($docNumber) !== '') {
             $rows[] = [
-                'label' => $ctx->language === 'cs' ? 'Číslo dokladu' : 'Document number',
+                'label' => $texts->t('detail.docNumber', 'Document number'),
                 'value' => trim($docNumber),
             ];
         }
@@ -862,7 +872,7 @@ final class MailSuggestionsSource implements FeedSource
         $dueDate = is_string($dueDate) ? $this->formatDate($ctx, $dueDate) : null;
         if ($dueDate !== null) {
             $rows[] = [
-                'label' => $ctx->language === 'cs' ? 'Splatnost' : 'Due date',
+                'label' => $texts->t('detail.dueDate', 'Due date'),
                 'value' => $dueDate,
             ];
         }
@@ -873,7 +883,7 @@ final class MailSuggestionsSource implements FeedSource
         }
         if (is_string($reference) && trim($reference) !== '') {
             $rows[] = [
-                'label' => $ctx->language === 'cs' ? 'Variabilní symbol' : 'Payment reference',
+                'label' => $texts->t('detail.paymentReference', 'Payment reference'),
                 'value' => trim($reference),
             ];
         }
@@ -888,23 +898,23 @@ final class MailSuggestionsSource implements FeedSource
      * @param array<string,mixed> $canonical
      * @return list<array{label: string, value: string}>
      */
-    private function registryDetails(FeedContext $ctx, string $docType, array $canonical): array
+    private function registryDetails(FeedContext $ctx, FeedTexts $texts, string $docType, array $canonical): array
     {
         $validTo = $this->registryValidTo($ctx, $docType, $canonical);
         if ($validTo === null) {
             return [];
         }
         return [[
-            'label' => $ctx->language === 'cs' ? 'Platí do' : 'Valid until',
+            'label' => $texts->t('detail.validUntil', 'Valid until'),
             'value' => $validTo,
         ]];
     }
 
     /** Lokalizovaný label typu dokladu z cfgItem; fallback na holý key. */
-    private function docTypeLabel(FeedContext $ctx, string $docType): string
+    private function docTypeLabel(FeedContext $ctx, FeedTexts $texts, string $docType): string
     {
         if ($docType === '') {
-            return $ctx->language === 'cs' ? 'Doklad' : 'Document';
+            return $texts->t('docType.fallback', 'Document');
         }
         $cfg = $ctx->config?->cfgItem(self::PRIMARY_TYPES_CFG_ITEM);
         if (is_array($cfg) && isset($cfg[$docType]['name']) && is_string($cfg[$docType]['name'])) {
@@ -961,7 +971,7 @@ final class MailSuggestionsSource implements FeedSource
      *
      * @param array<string,mixed> $row
      */
-    private function senderSubtitle(FeedContext $ctx, array $row, string $sender): string
+    private function senderSubtitle(FeedTexts $texts, array $row, string $sender): string
     {
         $partner = $this->messagePersonName($row) ?? $this->messagePartnerSnapshot($row);
         if ($partner === null) {
@@ -970,7 +980,7 @@ final class MailSuggestionsSource implements FeedSource
         if ($sender === '') {
             return $partner;
         }
-        return $partner . ' · ' . ($ctx->language === 'cs' ? 'od: ' : 'from: ') . $sender;
+        return $texts->t('partnerFrom', '{partner} · from: {sender}', ['partner' => $partner, 'sender' => $sender]);
     }
 
     /**

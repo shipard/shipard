@@ -8,6 +8,7 @@ use Shipard\Core\Alerts\AlertCheckRegistry;
 use Shipard\Core\Alerts\AlertReconciler;
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Core\Feed\FeedSource;
+use Shipard\Core\Feed\FeedTexts;
 
 /**
  * Feed zdroj deterministických alertů — aktivní alerty (`alert_state=10`,
@@ -39,6 +40,11 @@ use Shipard\Core\Feed\FeedSource;
  * je řadí collector dle `kind`, tedy dle závažnosti. Setup karta patří do
  * Položek k založení (`newItems`). `kind` zůstává dle severity (county,
  * badge sekcí navigace, AI shrnutí).
+ *
+ * Texty skupinových karet (podtitulek, labely akcí, setup karta) jdou
+ * z katalogu `core.alerts.feedTexts` přes `FeedTexts` (ICU plurály, #101
+ * D11–D15), bez katalogu anglický fallback. Titulky a zprávy samotných
+ * alertů vyrábí checky při reconcile (#102).
  * Detaily: docs/dashboard.md §5.2.
  */
 final class AlertsSource implements FeedSource
@@ -55,6 +61,9 @@ final class AlertsSource implements FeedSource
     /** Nad tolik aktivních alertů jednoho checku → jedna skupinová karta. */
     private const int GROUP_THRESHOLD = 3;
 
+    /** Katalog textů karet (`config/feedTexts.jsonc`). */
+    private const FEED_TEXTS_CFG_ITEM = 'core.alerts.feedTexts';
+
     /** `null` = titulky skupinových karet degradují na `check_id`. */
     public function __construct(
         private readonly ?AlertCheckRegistry $registry = null,
@@ -63,6 +72,7 @@ final class AlertsSource implements FeedSource
     public function collectCards(FeedContext $ctx): array
     {
         $cards = [];
+        $texts = FeedTexts::forContext($ctx, self::FEED_TEXTS_CFG_ITEM);
 
         // Fáze 0 — tagová agregace setup checků (D8). Bez prahu: osm
         // samostatných setup karet nechceme nikdy. Karta se přidává mimo
@@ -78,7 +88,7 @@ final class AlertsSource implements FeedSource
                 $setupCheckIds,
             );
             if ($agg !== null && (int) ($agg['cnt'] ?? 0) > 0) {
-                $cards[] = $this->buildSetupCard($ctx, $agg, $setupCheckIds);
+                $cards[] = $this->buildSetupCard($ctx, $texts, $agg, $setupCheckIds);
             }
         }
 
@@ -101,7 +111,7 @@ final class AlertsSource implements FeedSource
                 continue;
             }
             if ((int) $g['cnt'] > self::GROUP_THRESHOLD) {
-                $cards[] = $this->buildGroupCard($ctx, $g);
+                $cards[] = $this->buildGroupCard($texts, $g);
             } else {
                 $individualCheckIds[] = (string) $g['check_id'];
             }
@@ -175,7 +185,7 @@ final class AlertsSource implements FeedSource
      * @param array<string,mixed> $g  agregátní řádek (check_id, cnt, max_severity, last_at, first_at)
      * @return array<string,mixed>
      */
-    private function buildGroupCard(FeedContext $ctx, array $g): array
+    private function buildGroupCard(FeedTexts $texts, array $g): array
     {
         $checkId  = (string) $g['check_id'];
         $count    = (int) $g['cnt'];
@@ -184,7 +194,6 @@ final class AlertsSource implements FeedSource
         [$kind, $stateStyle, $icon] = $this->severityToPresentation($severity);
 
         $title = $this->registry?->get($checkId)?->name ?? $checkId;
-        $cs    = $ctx->language === 'cs';
 
         return [
             'id'          => 'alert-group:' . $checkId,
@@ -196,7 +205,7 @@ final class AlertsSource implements FeedSource
             'category'   => FeedSource::CATEGORY_OTHER,
             'navSection' => $this->registry?->get($checkId)?->navSection,
             'title'      => $title,
-            'subtitle'   => $cs ? "{$count} upozornění" : "{$count} alerts",
+            'subtitle'   => $texts->t('group.subtitle', '{n} alerts', ['n' => $count]),
             'timestamp'  => $this->toAtom($g['last_at'] ?? null) ?? $this->toAtom($g['first_at'] ?? null),
             'context'    => [
                 'checkId'  => $checkId,
@@ -206,7 +215,7 @@ final class AlertsSource implements FeedSource
             ],
             'actions'    => [[
                 'id'      => 'open_alerts',
-                'label'   => $cs ? 'Otevřít upozornění' : 'Open alerts',
+                'label'   => $texts->t('group.action', 'Open alerts'),
                 'kind'    => 'open_viewer',
                 'target'  => ['viewerId' => 'core.alerts.alerts'],
                 'primary' => true,
@@ -244,11 +253,10 @@ final class AlertsSource implements FeedSource
      * @param list<string> $setupCheckIds
      * @return array<string,mixed>
      */
-    private function buildSetupCard(FeedContext $ctx, array $agg, array $setupCheckIds): array
+    private function buildSetupCard(FeedContext $ctx, FeedTexts $texts, array $agg, array $setupCheckIds): array
     {
         $count    = (int) $agg['cnt'];
         $severity = (int) ($agg['max_severity'] ?? self::SEVERITY_WARNING);
-        $cs       = $ctx->language === 'cs';
 
         [$kind, $stateStyle, $icon] = $this->severityToPresentation($severity);
 
@@ -262,7 +270,8 @@ final class AlertsSource implements FeedSource
                 $setupCheckIds,
             );
         } else {
-            $subtitle = $this->pluralizeItems($count, $cs);
+            // Tři české tvary (1 položka / 2–4 položky / 5+ položek) řeší ICU.
+            $subtitle = $texts->t('setup.items', '{n, plural, one {# item} other {# items}}', ['n' => $count]);
         }
 
         return [
@@ -274,7 +283,7 @@ final class AlertsSource implements FeedSource
             'icon'       => $icon,
             'stateStyle' => $stateStyle,
             'category'   => FeedSource::CATEGORY_OTHER,
-            'title'      => $cs ? 'Dokončit nastavení' : 'Finish setup',
+            'title'      => $texts->t('setup.title', 'Finish setup'),
             'subtitle'   => $subtitle,
             'timestamp'  => $this->toAtom($agg['last_at'] ?? null) ?? $this->toAtom($agg['first_at'] ?? null),
             'context'    => [
@@ -285,30 +294,12 @@ final class AlertsSource implements FeedSource
             ],
             'actions'    => [[
                 'id'      => 'open_setup_panel',
-                'label'   => $cs ? 'Otevřít nastavení' : 'Open setup',
+                'label'   => $texts->t('setup.action', 'Open setup'),
                 'kind'    => 'open_panel',
                 'target'  => ['panelId' => 'dsSetup'],
                 'primary' => true,
             ]],
         ];
-    }
-
-    /**
-     * Počet položek se správným skloňováním — čeština má tři tvary
-     * (1 položka / 2–4 položky / 5+ položek), karta je na dashboardu
-     * vidět pořád. Jediné místo, žádné inline ternáry u volajících.
-     */
-    private function pluralizeItems(int $count, bool $cs): string
-    {
-        if (!$cs) {
-            return $count === 1 ? '1 item' : "{$count} items";
-        }
-        $noun = match (true) {
-            $count === 1               => 'položka',
-            $count >= 2 && $count <= 4 => 'položky',
-            default                    => 'položek',
-        };
-        return "{$count} {$noun}";
     }
 
     /**

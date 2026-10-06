@@ -10,6 +10,7 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Module\Core\Alerts\Feed\AlertsSource;
+use Shipard\Tests\Fixtures\Core\Feed\ShippedFeedTexts;
 
 /**
  * Unit testy pro AlertsSource.
@@ -22,6 +23,8 @@ use Shipard\Module\Core\Alerts\Feed\AlertsSource;
  *   - agregaci per check (práh GROUP_THRESHOLD = 3): skupinová karta
  *     nahrazuje individuální, titulek z registru s fallbackem na check_id,
  *     kind dle MAX(severity), jediná primary open_viewer akce
+ *   - texty z katalogu core.alerts.feedTexts (#101 D11): české plurály
+ *     setup karty, en katalog × en fallback bez katalogu dávají totéž
  */
 final class AlertsSourceTest extends TestCase
 {
@@ -30,6 +33,9 @@ final class AlertsSourceTest extends TestCase
      * dotaz na individuální řádky vrací `$rows`. Fáze 2 se při prázdném
      * seznamu checků pod prahem vůbec nevolá — počet volání není konstantní,
      * proto callback dle SQL, ne willReturnOnConsecutiveCalls.
+     *
+     * Config = dodávaný katalog textů feedu v jazyce testu (`$withCatalog`);
+     * bez něj zdroj dává anglický fallback (#101 D15).
      *
      * @param list<array<string,mixed>> $groups
      * @param list<array<string,mixed>> $rows
@@ -42,6 +48,7 @@ final class AlertsSourceTest extends TestCase
         ?array $setupAgg = null,
         ?string $setupTitle = null,
         ?int &$fetchRowCalls = null,
+        bool $withCatalog = true,
     ): FeedContext {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchAll')->willReturnCallback(
@@ -59,7 +66,7 @@ final class AlertsSourceTest extends TestCase
             },
         );
         $db->method('fetchSingle')->willReturn($setupTitle);
-        return new FeedContext($db, null, $lang, 30);
+        return new FeedContext($db, $withCatalog ? ShippedFeedTexts::config($lang) : null, $lang, 30);
     }
 
     /** @return array<string,mixed> agregátní řádek fáze 1 */
@@ -463,6 +470,40 @@ final class AlertsSourceTest extends TestCase
         $this->assertSame('5 items', $en['subtitle']);
         $this->assertSame('Finish setup', $en['title']);
         $this->assertSame('Open setup', $en['actions'][0]['label']);
+    }
+
+    public function testSetupSubtitlePluralBoundaries(): void
+    {
+        // Hranice dřívějšího ručního skloňování (2–4 / 5+): ICU few / other.
+        $src = new AlertsSource($this->setupRegistry());
+
+        $expected = [4 => '4 položky', 5 => '5 položek', 21 => '21 položek', 22 => '22 položek'];
+        foreach ($expected as $count => $subtitle) {
+            $card = $src->collectCards($this->context([], setupAgg: $this->setupAgg($count)))[0];
+            $this->assertSame($subtitle, $card['subtitle'], "count = {$count}");
+        }
+    }
+
+    public function testEnglishCatalogAndFallbackWithoutCatalogAgree(): void
+    {
+        // DS před ds-upgrade (bez cfgItemu) dává stejné anglické texty jako
+        // katalog — fallbacky ve zdroji kopírují holé pole katalogu.
+        $src = new AlertsSource($this->setupRegistry());
+        $groups = [$this->groupRow('x.y.z', 4, 20)];
+
+        $fromCatalog  = $src->collectCards($this->context($groups, lang: 'en', setupAgg: $this->setupAgg(5)));
+        $fromFallback = $src->collectCards($this->context($groups, lang: 'en', setupAgg: $this->setupAgg(5), withCatalog: false));
+
+        $this->assertCount(2, $fromCatalog);
+        $this->assertSame('Finish setup', $fromCatalog[0]['title']);
+        $this->assertSame('5 items', $fromCatalog[0]['subtitle']);
+        $this->assertSame('4 alerts', $fromCatalog[1]['subtitle']);
+        $this->assertSame('Open alerts', $fromCatalog[1]['actions'][0]['label']);
+        foreach ($fromCatalog as $i => $card) {
+            $this->assertSame($card['title'], $fromFallback[$i]['title']);
+            $this->assertSame($card['subtitle'], $fromFallback[$i]['subtitle']);
+            $this->assertSame($card['actions'][0]['label'], $fromFallback[$i]['actions'][0]['label']);
+        }
     }
 
     public function testSetupAndRegularAlertsDoNotOverlap(): void

@@ -12,6 +12,7 @@ use Shipard\Core\I18n\ConfigLocalizer;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
 use Shipard\Module\Core\Mail\Feed\MailSuggestionsSource;
+use Shipard\Tests\Fixtures\Core\Feed\ShippedFeedTexts;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessErrorPresenter;
 
 /**
@@ -52,6 +53,8 @@ final class MailSuggestionsSourceTest extends TestCase
      * @param list<array<string,mixed>> $attachmentRows
      * @param list<array<string,mixed>|null> $profileRows po sobě jdoucí návraty fetchRow (thresholds)
      * @param array<string,mixed>|null $profileVersionRow řádek s `prompt_version` výchozího profilu
+     * @param bool $withCatalog dodávaný katalog textů feedu (core.mail.feedTexts)
+     *        vrstvený nad `$config`; bez něj zdroj dává anglický fallback (#101 D15)
      */
     private function context(
         array $suggestionRows,
@@ -62,6 +65,7 @@ final class MailSuggestionsSourceTest extends TestCase
         array $attachmentRows = [],
         array $profileRows = [],
         ?array $profileVersionRow = null,
+        bool $withCatalog = true,
     ): FeedContext {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchAll')->willReturnCallback(
@@ -86,7 +90,66 @@ final class MailSuggestionsSourceTest extends TestCase
                 return $profileRows[$thresholdCall++] ?? null;
             },
         );
+        if ($withCatalog) {
+            $inner = $config;
+            $config = $this->createMock(ConfigRuntime::class);
+            $config->method('cfgItem')->willReturnCallback(ShippedFeedTexts::resolver($lang, $inner));
+        }
         return new FeedContext($db, $config, $lang, 30);
+    }
+
+    // ── Texty karet z katalogu core.mail.feedTexts (#101 D11) ──────────────
+
+    public function testEnglishCatalogAndFallbackWithoutCatalogAgree(): void
+    {
+        // DS před ds-upgrade (bez cfgItemu) dává stejné anglické texty jako
+        // katalog — fallbacky ve zdroji kopírují holé pole katalogu.
+        $suggestion = $this->suggestionRow();
+        $canonical = json_decode((string) $suggestion['canonical_json'], true);
+        unset($canonical['supplier']); // bez partnera → složený subtitle
+        $canonical['docNumber'] = 'FV-2026-001';
+        $canonical['payment'] = ['paymentReference' => '2026000123'];
+        $suggestion['canonical_json'] = json_encode($canonical);
+
+        $notInvoice = [
+            'message_ndx'           => 555,
+            'subject'               => 'Dopis od úřadu',
+            'source_type'           => 0,
+            'ai_title'              => null,
+            'sender_name'           => 'Kancelářský skener',
+            'sender_email'          => 'scanner@example.test',
+            'partner_name'          => 'Úřad práce',
+            'partner_full_name'     => null,
+            'received_at'           => '2026-06-28 10:00:00',
+            'primary_type'          => 'other',
+            'raw_source_attachment' => null,
+        ];
+
+        $collect = fn(bool $withCatalog): array => (new MailSuggestionsSource())->collectCards(
+            $this->context([$suggestion], [], null, 'en', [$notInvoice], withCatalog: $withCatalog),
+        );
+        $fromCatalog  = $collect(true);
+        $fromFallback = $collect(false);
+
+        $this->assertCount(2, $fromCatalog);
+        [$card, $info] = $fromCatalog;
+        $this->assertStringContainsString('confidence 94 %', $card['subtitle']);
+        $this->assertStringContainsString('email „Faktura 2026000123"', $card['subtitle']);
+        $this->assertSame(
+            [
+                ['label' => 'Document number', 'value' => 'FV-2026-001'],
+                ['label' => 'Payment reference', 'value' => '2026000123'],
+            ],
+            $card['details'],
+        );
+        $this->assertSame('Not an invoice — Other', $info['title']);
+        $this->assertSame('Úřad práce · from: Kancelářský skener', $info['subtitle']);
+
+        foreach ($fromCatalog as $i => $expected) {
+            foreach (['title', 'subtitle', 'details'] as $field) {
+                $this->assertSame($expected[$field] ?? null, $fromFallback[$i][$field] ?? null, "card {$i}: {$field}");
+            }
+        }
     }
 
     /** @return array<string,mixed> */
