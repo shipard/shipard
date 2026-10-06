@@ -143,7 +143,10 @@ routách).
 `feed_cards` (UI shells Fáze 5) je první core nástroj v `src/Api/Mcp/`:
 čte feed upozornění a návrhů přes `FeedCollector` (tentýž sběr jako
 dashboard), volitelný parametr `section` filtruje na jednu sekci navigace,
-projekce jen `{kind, title, subtitle, navSection, timestamp}`. Jazyk
+projekce jen `{kind, feedSection, title, subtitle, navSection, timestamp}`;
+karty po stropu per sekce feedu (`FeedResult::$cards`), `pagination.limit`
+= strop sekce a `has_more` = některá sekce přetekla (#101, celofeedově
+i při filtru `section`). Jazyk
 a `AlertCheckRegistry` nejsou v `McpInvocationContext` — injektují se
 konstruktorem při registraci v `buildMcpRegistry()` (vzor
 `ReportToolSupport`).

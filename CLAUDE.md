@@ -313,16 +313,23 @@ smí názvy nést — tam jsou potřeba k práci.
 - Home obrazovka, výchozí po loginu (root-level leaf, `type: 'dashboard'`).
   **Prioritizovaný feed akčních karet** + tasks widget pod ním (fáze 1 widget
   mřížka nahrazena).
-- `GET /_ui/dashboard` → `{summary{aiText,counts}, cards[], capabilities}`.
+- `GET /_ui/dashboard` → `{summary{aiText,counts}, sections[], cards[],
+  readySummary?, capabilities}`.
   Sběr karet dělá `Core\Feed\FeedCollector` (sdílený dashboardem, AI
   shrnutím a `GET /_ui/section-badges`): napevno registrované `FeedSource`
   zdroje (`MailSuggestionsSource`, `AlertsSource` — `src/Core/Feed/`
   + moduly); zdroj se registruje jen při přítomnosti jeho klíčové tabulky
   na DS a výjimka jednoho zdroje feed neshodí (per-source izolace).
   `capabilities {mailUpload, chat}` řídí skrytí tlačítka Nahrát /
-  drag&drop / ChatLauncheru na frontendu. **Řadí a stropuje server**
-  (`sortAndCap` dle `KIND_ORDER` urgent/review/ready/info + `timestamp` DESC,
-  `MAX_CARDS ~30` + „a další…" karta).
+  drag&drop / ChatLauncheru na frontendu. **Sekce, řazení a strop dělá
+  server** (#101): každá karta nese `feedSection` (newItems / ready /
+  review / failed / alerts / other — výchozí z `kind`, zdroj smí přepsat;
+  `kind` se nemění), `FeedCollector::sortAndCap` řadí sekce →
+  `KIND_ORDER` → `timestamp` DESC a stropuje `MAX_CARDS_PER_SECTION = 30`
+  **per sekce**; `sections[] {id,total,shown}` nese pravdivé počty, FE
+  kreslí „a N dalších“ (karta „a další…“ zanikla). Zdroje dostávají jen
+  pojistný `FeedContext::$sourceLimit` (500), ne strop. County, badge,
+  AI digest a `readySummary` (vč. `shown`) jdou z `FeedResult::$allCards`.
 - **Badge stavů sekcí** (UI shells Fáze 3, #45): karty nesou volitelný
   `navSection` (mail → `_top`, content-tag → `basic`, alerty per check
   z `alertChecks[].navSection`; setup checky bez pole). `GET
@@ -331,7 +338,7 @@ smí názvy nést — tam jsou potřeba k práci.
   `sectionBadges.svelte.js` (polling 60 s + focus, startuje AppShell),
   badge na root sekcích rozbaleného `NavTree` (jen app mód; collapsed
   a `_top` bez badge). Viz `docs/dashboard.md`, `docs/ui-shells.md` §8.
-- Kartový kontrakt `{id, source, kind, icon, stateStyle, title, subtitle,
+- Kartový kontrakt `{id, source, kind, feedSection, icon, stateStyle, title, subtitle,
   timestamp, context, actions[]}`. Chování akcí odvozuje frontend z `action.kind`
   (`apply_extracted`/`review_extracted`/`reject_extracted`/`reanalyze`/
   `trash_message`/`archive_message`/`open_viewer`/`open_form`/`open_detail`).

@@ -598,7 +598,8 @@ Všechny body, které §0 nechávala otevřené, jsou rozhodnuté:
   potvrzení); generátor jedné položky je od content-tag-ui (D26) sdílená
   služba `AccountingItemMaterializer` (`modules/economy/items/src/`) —
   používá ji i `POST /_exchange/content-tags/materialize` (dashboard
-  karta „Nová kategorie", settings stránka Obsahové štítky), chování
+  karta položky k založení — do #101 „Nová kategorie", settings stránka
+  Obsahové štítky), chování
   setup endpointu beze změny;
   nabídku servíruje `GET /_setup/accounting-items-offer` s gaty
   `chart_undecided` / `chart_none` / `accounting_inactive` a příznakem

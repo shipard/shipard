@@ -26,7 +26,7 @@ poštu a přijaté faktury.
 | menu vlevo | **Sekce** *Základní*, *Nákup*, *Prodej*, *Majetek*, *Účtárna*, *Systém* | Nad nimi stojí samostatné položky *Dashboard*, *Došlá pošta*, *Úkoly* a *Chat* |
 | dokumenty, smlouvy, přílohy k ničemu | **Spisovna** | Evidence dokumentů, které nejsou doklady — smlouvy, výpisy, úřední pošta |
 | asistent, AI, chatbot | **Chat** | Vestavěný AI asistent. Umí se dívat do tvých dat a odpovídat na otázky. Nic za tebe nezaloží ani nezmění |
-| hláška, varování, červená věc | **Upozornění** | Kontrola, která našla nesrovnalost. Objeví se jako karta na Dashboardu |
+| hláška, varování, červená věc | **Upozornění** | Kontrola, která našla nesrovnalost. Objeví se jako karta na Dashboardu v sekci **Upozornění** |
 
 ---
 

@@ -85,7 +85,7 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 
 | Agenda | Co s ní uděláš | Návod |
 |---|---|---|
-| **Upozornění** | Nesrovnalosti, které našly automatické kontroly — chyba účtování, doklad dlouho v opravě, blížící se expirace dokumentu ze Spisovny. Na Dashboardu se objevují jako karty | — |
+| **Upozornění** | Nesrovnalosti, které našly automatické kontroly — chyba účtování, doklad dlouho v opravě, blížící se expirace dokumentu ze Spisovny. Na Dashboardu se objevují jako karty v sekci **Upozornění** | — |
 
 ---
 

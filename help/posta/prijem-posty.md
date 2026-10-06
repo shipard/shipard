@@ -36,7 +36,11 @@ se ti ji přepisovat do systému ručně.
    zpráva se sama přepne na **K řešení** a na Dashboardu se objeví návrh —
    jistý v sekci **Připraveno** (sbalený souhrnný pruh, tlačítko
    **Použít** na řádku), ostatní jako karty v sekci **Ke kontrole**
-   s tlačítkem **Zkontrolovat**. Odtud pokračuj podle
+   s tlačítkem **Zkontrolovat**. Sekce jdou na Dashboardu v pořadí
+   práce: **Položky k založení**, **Připraveno**, **Ke kontrole**,
+   **Nepodařilo se zpracovat**, **Upozornění** a **Ostatní**. Každá
+   ukazuje nejvýš 30 karet — skutečný počet vidíš v hlavičce sekce
+   a zbytek otevřeš odkazem **a N dalších** pod ní. Odtud pokračuj podle
    [Kontrola vytěženého dokladu](kontrola-vytezeni.md).
 
 ## Na co narazíš
@@ -111,7 +115,8 @@ dál se pošta od té adresy archivuje sama, bez analýzy.
   vše**. Vrácení platí pro celý den z té karty.
 
 **Analýza selhala.** U zprávy svítí badge **Analýza selhala** a na
-Dashboardu je naléhavá karta. Její titulek říká, co se stalo — nejčastěji
+Dashboardu je karta v sekci **Nepodařilo se zpracovat**. Její titulek
+říká, co se stalo — nejčastěji
 **AI vrátila data v nečekaném tvaru**: to není chyba ve tvé zprávě ani
 v příloze, ale v nastavení analýzy na naší straně. Pod **Zobrazit detail**
 na kartě najdeš, co se stalo a co dělat; totéž ukazuje záložka **Návrh**

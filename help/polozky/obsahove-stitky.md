@@ -1,11 +1,11 @@
 ---
-title: Obsahové štítky a karta Nová kategorie
-summary: Jak AI třídí náklady z faktur do kategorií, co s kartou Nová kategorie na Dashboardu a kde spravovat štítky a pravidla dodavatelů.
-keywords: [obsahové štítky, obsahový štítek, nová kategorie, kategorie nákladů, otagování položek, štítky položek, pravidla dodavatelů, pravidlo dodavatele, pohonné hmoty, předvyplnění účtu, klasifikace dokladu, ISDOC]
+title: Obsahové štítky a položky k založení
+summary: Jak AI třídí náklady z faktur do kategorií, co s kartami v sekci Položky k založení na Dashboardu a kde spravovat štítky a pravidla dodavatelů.
+keywords: [obsahové štítky, obsahový štítek, položky k založení, položka k založení, založit položku, karta položky, nová kategorie, kategorie nákladů, otagování položek, štítky položek, pravidla dodavatelů, pravidlo dodavatele, pohonné hmoty, předvyplnění účtu, klasifikace dokladu, ISDOC]
 related: [polozky/zalozeni-polozky.md, posta/kontrola-vytezeni.md, slovnicek.md]
 ---
 
-# Obsahové štítky a karta Nová kategorie
+# Obsahové štítky a položky k založení
 
 Když Shipard čte fakturu — ať už ji vytěžila AI, nebo přišla ve formátu
 ISDOC — a nenajde k řádkům položku podle tvé historie, zkusí doklad
@@ -16,8 +16,9 @@ položku i účet.
 
 ## Kdy to potřebuješ
 
-- Na **Dashboardu** se objevila karta **Nová kategorie: …** a chceš vědět,
-  co udělá tlačítko **Založit položku**.
+- Na **Dashboardu** se v sekci **Položky k založení** objevila karta
+  s názvem kategorie (třeba *Pohonné hmoty*) a chceš vědět, co udělá
+  tlačítko **Založit položku**.
 - Návrh dokladu má u řádku jen účet, ale žádnou položku, a chceš, aby se
   příště předvyplňovala položka.
 - Chceš zkontrolovat, které kategorie už máš pokryté, nebo hromadně
@@ -25,11 +26,14 @@ položku i účet.
 
 ## Postup
 
-### Karta Nová kategorie
+### Karta v sekci Položky k založení
 
-1. Karta se ukáže v sekci **Ke kontrole**, když nějaké doklady čekají na
-   kategorii, pro kterou ještě nemáš otagovanou položku. V podtitulku
-   vidíš, kolik dokladů čeká a jaká položka se navrhne.
+1. Karta se ukáže v sekci **Položky k založení** úplně nahoře na
+   Dashboardu, když nějaké doklady čekají na kategorii, pro kterou ještě
+   nemáš otagovanou položku. Název karty je název kategorie; v podtitulku
+   vidíš, kolik dokladů čeká a jaká položka se navrhne. Ve stejné sekci
+   bývá i karta **Dokončit nastavení** — obojí odblokuje další práci,
+   proto je to nahoře.
 2. Klikni na **Založit položku** — položka vznikne rovnou otagovaná
    a s účtem. U kategorie **Zboží / materiál na sklad** si místo toho
    vybereš mezi **Jako materiál (501…)** a **Jako zboží (504…)** podle
@@ -69,6 +73,11 @@ položku i účet.
 žádnou položku nenavrhne nikdy — doklad si vždycky prohlédneš sám. To
 není chyba, ale pojistka proti slepému účtování.
 
+**Založení z průchodu frontou.** Když spustíš **Projít frontu** a nějaké
+položky k založení čekají, průchod začne dialogem **Nejdřív založte
+položky** se stejnými tlačítky jako na kartách — viz
+[Kontrola vytěženého dokladu](../posta/kontrola-vytezeni.md).
+
 **Návrh „jen účet" je platný.** Když kategorie nemá otagovanou položku,
 návrh řádku nese aspoň účet z nabídky. Takový doklad použiješ volbou
 **Jen účet — bez položky** v náhledu — viz
@@ -80,8 +89,8 @@ smaže — jednou kategorií by škodilo.
 
 **Faktury ISDOC se zařazují taky.** Fakturu ve formátu ISDOC Shipard
 převezme bez čtení AI, ale položky k řádkům hledá stejně — když je nenajde
-v historii, zařadí doklad podle obsahu a karta **Nová kategorie** se objeví
-i pro něj. Potvrzený ISDOC doklad učí pravidlo dodavatele jako každý jiný.
+v historii, zařadí doklad podle obsahu a karta v sekci **Položky
+k založení** se objeví i pro něj. Potvrzený ISDOC doklad učí pravidlo dodavatele jako každý jiný.
 Zařazení proběhne chvíli po doručení, ne v okamžiku nahrání.
 
 **Hromadné založení výchozích položek** je na jiném místě — v panelu

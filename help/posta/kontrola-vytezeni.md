@@ -15,11 +15,13 @@ projdi ho podle postupu níž.
 
 Zpráva s fakturou dorazila a analýza skončila — v **Došlé poště** má
 badge **Analyzováno** a stav **K řešení**, na **Dashboardu** se objevil
-návrh s procentem **Jistoty**. Dashboard řadí návrhy do sekcí podle
-naléhavosti: návrhy ke kontrole jsou karty v sekci **Ke kontrole**
-s hlavním tlačítkem **Zkontrolovat**; jisté návrhy najdeš v sekci
-**Připraveno**, sbalené do souhrnného pruhu s tlačítkem **Použít**
-na každém řádku.
+návrh s procentem **Jistoty**. Dashboard řadí karty do sekcí podle toku
+práce: nahoře **Položky k založení**, pak **Připraveno** (jisté návrhy
+sbalené do souhrnného pruhu s tlačítkem **Použít** na každém řádku),
+**Ke kontrole** (návrhy s hlavním tlačítkem **Zkontrolovat**),
+**Nepodařilo se zpracovat**, **Upozornění** a **Ostatní**. Každá sekce
+ukazuje nejvýš 30 karet; když jich čeká víc, hlavička říká skutečný počet
+a pod sekcí je odkaz **a N dalších**, který otevře **Došlou poštu**.
 
 ## Postup
 
@@ -112,6 +114,8 @@ sebou. Badge u návrhu se z něj odvozuje:
 **Jistý návrh můžeš použít rovnou z Dashboardu.** Faktury s badge
 **K použití** jsou v sekci **Připraveno** sbalené do jednoho pruhu —
 vidíš na něm počet čekajících, součet částek po měnách a rozsah jistoty.
+Počet i součty platí pro všechny připravené faktury, i když se do
+rozbaleného seznamu vejde jen prvních 30.
 Tlačítko **Zobrazit** pruh rozbalí na seznam řádků; každý řádek nese
 jistotu, dodavatele, datum, částku a tlačítko **Použít** — **Koncept**
 vznikne na jeden klik, bez otevírání náhledu. Když v návrhu zbývá
@@ -132,9 +136,9 @@ kolikátou zprávu z kolika právě řešíš. Po vystavení konceptu se ve fron
 formulář neotvírá — koncepty dokončíš po průchodu. Na konci (nebo když
 frontu zavřeš křížkem dřív) se ukáže souhrn, kolik jsi uzavřel, kolik
 vzniklo konceptů, kolik jsi zamítl a přeskočil. Pokud na Dashboardu čekají
-i karty **Nová kategorie**, průchod začne dialogem, kde můžeš chybějící
-kategorie nejdřív založit — návrhy, kterým chyběla jen položka, pak
-projdou rovnou.
+i karty v sekci **Položky k založení**, průchod začne dialogem **Nejdřív
+založte položky**, kde můžeš chybějící položky založit — návrhy, kterým
+chyběla jen položka, pak projdou rovnou.
 
 Pruh přijatých faktur v sekci **Připraveno** má navíc vlastní tlačítko
 **Projít** — stejný průchod, ale jen přes jisté faktury z tohoto pruhu.
@@ -260,14 +264,15 @@ zprávy. Ruční cesta je jen **Znovu analyzovat** u už doručené zprávy.
 **Když dodavatel umí ISDOC, popros ho o něj.** Přiloženou fakturu ve
 formátu ISDOC Shipard převezme přímo, bez čtení AI — a je to přesnější než
 cokoli popsané na téhle stránce. Položky k řádkům se hledají stejně jako
-u vytěžené faktury, takže návrh může skončit **Ke kontrole** kvůli nové
-kategorii — viz [Obsahové štítky](../polozky/obsahove-stitky.md).
+u vytěžené faktury, takže návrh může skončit **Ke kontrole** kvůli
+chybějící položce — její založení nabídne karta v sekci **Položky
+k založení**, viz [Obsahové štítky](../polozky/obsahove-stitky.md).
 
 ## Souvisí
 
 - [Když AI přečte fakturu špatně](kdyz-ai-cte-spatne.md) — kde se která
   chyba opravuje
-- [Obsahové štítky](../polozky/obsahove-stitky.md) — karta Nová kategorie
+- [Obsahové štítky](../polozky/obsahove-stitky.md) — položky k založení
   a správa kategorií nákladů
 - [Založení osoby](../osoby/zalozeni-osoby.md) — natažení firmy
   z registru mimo poštu a ruční založení

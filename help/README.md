@@ -42,7 +42,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
-| [Obsahové štítky a karta Nová kategorie](polozky/obsahove-stitky.md) | Jak AI třídí náklady z faktur do kategorií, co s kartou Nová kategorie na Dashboardu a kde spravovat štítky a pravidla dodavatelů. |
+| [Obsahové štítky a položky k založení](polozky/obsahove-stitky.md) | Jak AI třídí náklady z faktur do kategorií, co s kartami v sekci Položky k založení na Dashboardu a kde spravovat štítky a pravidla dodavatelů. |
 | [Založení položky](polozky/zalozeni-polozky.md) | Jak přidat položku do katalogu, co je povinné, co Shipard doplní sám a co na položce vědomě není. |
 
 ### Pošta
