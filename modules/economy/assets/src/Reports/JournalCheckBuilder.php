@@ -28,8 +28,11 @@ use Shipard\Module\Economy\Assets\Posting\AssetPostingInput;
  *
  * Každý nesoulad je zpráva s `rowRef`: rozdíl na účtu, (a) a (b) chyba,
  * zápisy bez karty a (c) varování — `status` reportu tak říká, jestli
- * kontrola prošla. Čistý stav = žádné zprávy. Logika je v
- * `AssetJournalCheck` (sdílí ji alerty a karta).
+ * kontrola prošla. Rozdíl na účtu pořízení je jen varování (D73):
+ * evidence tam počítá pouze pořízení s kartou, takže rozdíl znamená
+ * pořízení bez karty nebo zařazení bez navázaného pořízení, ne chybu
+ * evidence. Čistý stav = žádné zprávy. Logika je v `AssetJournalCheck`
+ * (sdílí ji alerty a karta).
  *
  * Drill-down (D70): účet vede do deníku s filtrem účtu a roku, nesoulad
  * karty na kartu (ve vieweru — je tam co opravit) a jeho druh do deníku
@@ -88,14 +91,20 @@ final class JournalCheckBuilder implements ReportBuilder
                 AssetReportSupport::journalLink($account['account'], $period['yearId']),
             );
             if (abs($account['difference']) >= Amounts::EPSILON) {
+                // D73: evidence počítá na účtu pořízení jen pořízení s kartou —
+                // rozdíl je vždy pořízení bez karty (vč. otevíracího zůstatku)
+                // nebo zařazení bez navázaného pořízení (import), ne chyba evidence.
+                $acquisition = $account['role'] === AssetPostingInput::ACCOUNT_ACQUISITION;
                 $messages[] = new ReportMessage(
-                    ReportMessageSeverity::Error,
-                    'assets.journalCheck.accountMismatch',
+                    $acquisition ? ReportMessageSeverity::Warning : ReportMessageSeverity::Error,
+                    $acquisition ? 'assets.journalCheck.acquisitionAccountDifference' : 'assets.journalCheck.accountMismatch',
                     $cs
                         ? sprintf('Účet %s: evidence %s, deník %s, rozdíl %s.', $account['account'], Amounts::money($account['evidence']),
                             Amounts::money($account['journal']), Amounts::money($account['difference']))
+                            . ($acquisition ? ' Na účtu pořízení je pořízení bez karty majetku nebo zařazení bez navázaného pořízení.' : '')
                         : sprintf('Account %s: register %s, journal %s, difference %s.', $account['account'], Amounts::money($account['evidence']),
-                            Amounts::money($account['journal']), Amounts::money($account['difference'])),
+                            Amounts::money($account['journal']), Amounts::money($account['difference']))
+                            . ($acquisition ? ' The acquisition account holds acquisitions without an asset card or activations without a linked acquisition.' : ''),
                     "rows.{$index}",
                 );
             }

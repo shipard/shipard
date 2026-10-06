@@ -103,6 +103,12 @@ dokladu, viz [Majetek na dokladech](naklady-na-majetek.md)), nebo ho
 nahraď událostí na kartě. Druhá příčina je karta s **počátečním stavem**,
 ke které v účetnictví chybí počáteční zůstatek účtu.
 
+**Rozdíl na účtu pořízení.** Jen varování: evidence na účtu pořízení
+počítá pouze pořízení s kartou, takže rozdíl znamená pořízení bez karty
+(včetně počátečního zůstatku účtu) nebo zařazení, ke kterému v Shipardu
+není navázané pořízení — typicky majetek převzatý ze starého systému.
+Zápisy bez karty ukazuje sloupec **Obrat roku bez karty**.
+
 **Pořízení ≠ zařazení.** Na účtu pořízení je s kartou jiná částka, než na
 jakou je karta zařazená. Typicky doplatek nebo další faktura po zařazení:
 zařaď ji tlačítkem **Technické zhodnocení**. Když je chybně částka

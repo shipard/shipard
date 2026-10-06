@@ -170,6 +170,44 @@ class JournalCheckBuilderTest extends AssetReportTestCase
         $this->assertContains('unposted:' . $unposted, $keys);
     }
 
+    public function testAcquisitionAccountDifferenceIsOnlyAWarning(): void
+    {
+        // D73: zařazení bez pořízení s kartou (import) — evidence na 042 je
+        // −100 000, deník 0. Rozdíl na účtu pořízení je varování, účet
+        // majetku sedí, report proto končí stavem warnings, ne errors.
+        $this->check->card(1);
+        $this->check->journal(null, '042100', 100000, 0, '2024-03-10', 'purchase.asset');
+        $this->check->event(1, 'activation', '2024-03-15', 100000);
+        $this->check->posting(1, 'asset.activation', '022100', '042100', 100000, '2024-03-15');
+
+        $result = $this->run2024();
+
+        $this->assertSame(ReportStatus::Warnings, $result->status);
+        $byCode = [];
+        foreach ($result->messages as $message) {
+            $byCode[$message->code][] = $message;
+        }
+        $this->assertSame(
+            ['assets.journalCheck.acquisitionAccountDifference', 'assets.journalCheck.withoutAsset'],
+            array_keys($byCode),
+        );
+        $difference = $byCode['assets.journalCheck.acquisitionAccountDifference'][0];
+        $this->assertSame(ReportMessageSeverity::Warning, $difference->severity);
+        $this->assertStringContainsString('Účet 042100', $difference->text);
+        $this->assertStringContainsString('zařazení bez navázaného pořízení', $difference->text);
+        $keys = $this->keys($result);
+        $this->assertSame('rows.' . array_search('account:042100', $keys, true), $difference->rowRef);
+        // Řádek účtu zůstává se sloupci evidence / deník / rozdíl.
+        $row = $result->rows[array_search('account:042100', $keys, true)];
+        $this->assertSame(-100000.0, $row->values['evidence']['balance']);
+        $this->assertSame(0.0, $row->values['journal']['balance']);
+        $this->assertSame(-100000.0, $row->values['difference']['balance']);
+
+        // Rozdíl na účtu majetku je dál chyba.
+        $this->check->journal(null, '022100', 30000, 0, '2024-09-01');
+        $this->assertSame(ReportStatus::Errors, $this->run2024()->status);
+    }
+
     public function testUnpostedEventsOfTheRunningPeriodAreNotReported(): void
     {
         // Dnes je říjen 2024 a účetní odpisy jsou roční: události roku 2024
