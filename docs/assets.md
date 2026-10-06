@@ -9,8 +9,10 @@
 > zaúčtování a dimenze deníku (`tasks/assets-phase3.md`, §5.4), oblast 4
 > **hotová** 2026-10-01 — vazba na doklady (`tasks/assets-phase4.md`,
 > §5.5), oblast 5 **hotová** 2026-10-01 — přehledy a kontrola evidence
-> proti deníku (`tasks/assets-phase5.md`, §5.6); oblast 6 (import)
-> naplánována (`tasks/assets-phase6.md`, D73–D82, §6); další oblasti se
+> proti deníku (`tasks/assets-phase5.md`, §5.6), oblast 6 (import)
+> **hotová** 2026-10-06 na straně nového Shipardu — výměnný formát karty,
+> doplnění karty na doklady a ověření (`tasks/assets-phase6.md`, D73–D82,
+> §5.7, §6; runner ve starém Shipardu navazuje); další oblasti se
 > rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
@@ -1063,7 +1065,7 @@ tak neopakuje kód, který účtuje, a nepotřebuje pravidla země.
 
 | Nesoulad | Co se porovnává | Závažnost |
 |---|---|---|
-| účet účetní skupiny | evidence (počáteční stavy + **zaúčtované** události) × deník; účty majetku, pořízení a oprávek konečným zůstatkem roku (otevírací období + běžné měsíce), účty odpisů a ZC obratem roku | chyba |
+| účet účetní skupiny | evidence (počáteční stavy + **zaúčtované** události vč. importovaných, D76) × deník; účty majetku, pořízení a oprávek konečným zůstatkem roku (otevírací období + běžné měsíce), účty odpisů a ZC obratem roku | chyba; účet pořízení jen varování `acquisitionAccountDifference` (D73) |
 | zápisy bez karty | řádky běžných měsíců roku na účtech skupin bez dimenze `asset` | varování |
 | (a) zaúčtování ≠ deník | zaúčtované události karty × řádky deníku `asset.*` s dimenzí karty, po účtech a stranách | chyba |
 | (b) pořízení ≠ zařazení | pořízení na 04x s dimenzí karty (mimo `asset.*`) × potvrzená zařazení + TZ − snížení | chyba |
@@ -1114,6 +1116,123 @@ z implementace):
   feedu ho na úrovni akce nečetla.
 - **Práh 30 dní je konstanta**, ne nastavení.
 
+### 5.7 Import — hotovo (nový Shipard)
+
+`tasks/assets-phase6.md` (D8, D73–D82). Nový Shipard připravil vše, co
+runner ve starém Shipardu potřebuje (§6): výměnný formát karty
+s historií, doplnění karty na už importované doklady a ověření výsledku.
+
+| Třída (`Shipard\Module\Economy\Assets\Import\`) | Role |
+|---|---|
+| `AssetImportApplier` (+ `AssetImportResult`) | formát `shpd.assets.asset.v1`: párování podle inventárního čísla, založení / přepis karty, náhrada událostí původu `import`, přeskočení karty s místními událostmi, koncept bez úplné účetní skupiny (D79), varování z plánu; `validate` = celý průběh s rollbackem |
+| `AssetDocLinkService` | doplnění karty na doklad (D80): párování řádků, sloupce `asset`, přegenerování deníku s pojistkou obratů, zámky jen do logu |
+| `AssetImportVerifier` | ověření (D82): zlatý test daňového okruhu, účetní okruh × deník, kontrola evidence × deník po letech |
+| `Command\DataSource\AssetsImportVerifyCommand` | `shpd-ds assets-import-verify [--asset=<číslo>] [--json]` |
+
+Schéma `modules/core/exchange/schemas/shpd.assets.asset.v1.jsonc` je
+u ostatních formátů (čte je `SchemaLoader`, parity hlídá `SchemaDriftTest`);
+applier a služby jsou v modulu majetku, protože závisejí na dokumentech
+karty a událostí, plánovači a účtovacím enginu — core.exchange na economy
+modulech záviset nesmí. `dispatchExchange` je zapojí jen s aktivní tabulkou
+karet (doplnění dokladů navíc s účetním deníkem).
+
+**Formát `shpd.assets.asset.v1`** (`POST /api/v1/_exchange/assets/asset/
+{validate|apply}`, admin nebo API klíč, jeden request = jedna karta):
+`asset` nese hlavičku (`assetNumber`, `name`, `category`, `tracking`,
+`type`, `accountingGroup`, `owner`, odpisové nastavení, `state`
+`confirmed` / `archived`; `acquiredDate`, `disposedDate` a `price` platí jen
+drobnému majetku — dlouhodobý je bere z událostí, D13, D38), `events`
+vnořené události (`kind`, `scope`, `date`, `periodBegin` / `periodEnd`,
+`amount`, `claimUnrecorded`, `halfYear`, `note`, `sourceRef` jen pro výpis
+chyb). Id číselníků a Osob jsou **nová** id — mapu drží runner. Odpověď
+`{status: created | updated | skipped, assetId, warnings[]}` (201 při
+založení); chyby ve společném tvaru s `details.issues[]` — cesta do
+payloadu (`asset.taxRule`, `events.3.amount`) a `sourceRef`. Varování:
+`asset_has_local_events` (přeskočeno), `accounting_group_incomplete`
+(koncept), `archived_without_disposal` (dlouhodobá karta zůstává V pořádku),
+`plan_error` (text hlášení plánu).
+
+**Průběh importu karty** (jedna transakce): smazání importovaných událostí
+existující karty (fyzicky — reimport nesmí tabulku zanášet) a vynulování
+dat pořízení / vyřazení dlouhodobé karty → hlavička přes `AssetDocument`
+→ události přes `AssetEventDocument` chronologicky (datum, pořadí druhu
+v rámci dne, pořadí v payloadu). Dlouhodobá karta se ukládá ve stavu
+V pořádku (koncept bez úplné skupiny); do archivu ji přesune potvrzené
+vyřazení (`syncCard`), drobný majetek dostane cílový stav přímo. Karta se
+hledá přes všechny stavy včetně smazaných (unikátní index čísla).
+
+**Importní mód dokumentů** — marker `_import` v payloadu (`IMPORT_KEY`,
+do SQL nejde): `isLockExempt()` = true (lock providery se nevolají,
+historie smí ležet v zamčených měsících), událost dostane původ `import`,
+dlouhodobá karta-koncept smí být bez účetní skupiny. **Validace uvolněné
+jen pro import** (uložená událost původu `import` má volněji jen celé
+koruny a účetní rok): `cardNotConfirmed` (události potvrzené i na
+kartě-konceptu, aby karta po doplnění skupiny rovnou běžela),
+`aboveResidual`, `reductionAboveResidual`, `halfYearNotAllowed`,
+`yearDepreciated`, `alreadyInterrupted`, `planHasErrors` u vyřazení (chybu
+plánu vrátí applier jako varování). Potvrzené vyřazení v importu
+**nezakládá** poslední odpisy (`writeFinalDepreciations`) — posílá je
+runner; jinak by vznikly systémové odpisy, které by další reimport karty
+zablokovaly a byly by nezaúčtované. Beze změny platí chronologie
+(`notAtEnd`, `afterDisposal`, `beforeActivation`), `periodOverlap`
+a tvarová pravidla — runner takové řádky vypíše.
+
+**Zaúčtováno mimo modul (D76).** Jedno místo pravdy „událost je
+zaúčtovaná“ = živý `doc_head` **nebo** původ `import`:
+`AssetPostingService::loadUnpostedEvents` importované vynechá (nejsou
+kandidáty a neblokují dřívější období), `AssetJournalCheck` je nese
+s příznakem `imported` (evidence po účtech je započítá, nálezy (a) a (c)
+je neposuzují), `AssetPlanService::postingOf` je vrací s `docId: null,
+external: true` (karta ukazuje „Zaúčtováno ve starém systému“),
+`AssetsViewer::unpostedExistsSql` je nepočítá do badge Nezaúčtováno.
+Dvě odchylky od zadání plynou z toho, že zápisy importovaného zařazení
+jsou v deníku obyčejné řádky s kartou (po doplnění karty na doklady):
+na účtu pořízení se importované zařazení neodečítá podruhé (je už
+v pořízení s kartou z deníku) a karta zařazená importem se v (b) pořízení
+× zařazení neposuzuje — její pořízení se srovnalo ve starém systému.
+
+**Doplnění karty na doklady (D80)** — `POST /api/v1/_exchange/assets/
+doc-links/apply`, `{docId, headAsset, rows: [{account, side?, amount,
+asset, orderHint?, sourceRef?}]}`: kandidáti = řádky dokladu se stejným
+číslem účtu, `vat_base_dom` = `amount` na haléř a stranou (`dr` / `cr`),
+je-li uvedená; jeden kandidát = shoda, víc rozhodne `orderHint`
+(`order_pos`), jinak `ambiguous`; řádek s jinou kartou `conflict`. Doklad
+se mění celý, nebo vůbec: přímý UPDATE sloupců `asset` (bez formuláře,
+nezávisle na nastavení Sledovat náklady), u stavu 40 `AccountingEngine::
+accountDocument` přes zámky (jen `warn` do logu, důvod „assets backfill“)
+s pojistkou shodných obratů MD / DAL po účtech, jinak rollback
+a `turnover_changed`; neúspěšné účtování = `accounting_failed`
+s rollbackem. Odpověď `{status: linked | unchanged | ambiguous | notFound |
+conflict | turnover_changed | accounting_failed, docId, rows: [{index,
+sourceRef, rowId, status}], head?}` — stav párování je obsah odpovědi
+(HTTP 200), chybný tvar 400 s `details.issues`. Formát nemá JSON schéma
+(malý, interní) — tvar hlídá služba.
+
+**Ověření (D82)** — `shpd-ds assets-import-verify`: (1) zlatý test
+daňového okruhu nepouští engine po letech znovu — `CircuitWalker` u každého
+potvrzeného odpisu už nese hodnotu spočtenou z historie před ním
+(`PlanRow::computed`, přerušení i polovina v roce vyřazení podle pravidel),
+porovnává se u importovaných daňových odpisů; karta se zablokovaným
+okruhem je nález „chyba plánu“; (2) účetní okruh × deník per karta
+a účetní rok: Σ potvrzených účetních odpisů × obrat účtů odpisů všech
+účetních skupin s dimenzí karty; (3) kontrola evidence × deník přes
+`ReportRunner` (`economy.assets.journalCheck`) za každý rok od prvního
+s dimenzí `asset` v deníku — stav a počty zpráv po kódech (jen bez
+`--asset`). Exit 0 bez rozdílů, 1 s rozdíly (varování D73 neshazují);
+`--json` pro log runneru.
+
+**Kontrola evidence × deník na účtu pořízení (D73)** hlásí rozdíl jako
+varování `assets.journalCheck.acquisitionAccountDifference` s textem,
+že jde o pořízení bez karty nebo zařazení bez navázaného pořízení.
+
+**Ověřeno na `4l3j-z0bz-kz39-echj`** (2026-10-06): dvě karty přes
+applier (dlouhodobá s historií od 2015 a vyřazená s polovinou odpisu),
+opakovaný `apply` = `updated`, doplnění karty na fakturu ve stavu 40
+(obraty beze změny, deník s dimenzí), opakování `unchanged`, jiná karta
+`conflict`; `assets-import-verify` odhalil záměrně chybné daňové částky
+první karty a kontrola po letech hlásí chybějící zůstatky účtů v deníku
+(DS bez migrovaného deníku).
+
 ---
 
 ## 6. Import (kontrakt pro `old_shipard`)
@@ -1124,7 +1243,8 @@ pak runner. Kroky runneru (D73–D82):
 1. číselníky obecným CRUD API: skupiny typů, typy, účetní skupiny
    (staré skupiny dlouhodobého majetku, D79),
 2. nastavení (D81),
-3. karty s hodnotovou historií — `shpd.assets.asset.v1` (D75):
+3. karty s hodnotovou historií — `shpd.assets.asset.v1` (D75,
+   `POST /api/v1/_exchange/assets/asset/validate` a `…/apply`, §5.7):
    - `depsPart` 0 → událost obou okruhů podle `rowType` (1 zařazení,
      2 TZ, 4 snížení, 120 vyřazení, 110 přerušení);
    - `depsPart` 1 + `rowType` 99 → daňový odpis (`usedDepreciation = 0`
@@ -1135,9 +1255,12 @@ pak runner. Kroky runneru (D73–D82):
    - řádky ve stavu 4000 a 9000, 9800 se vynechávají; všechny události
      původu `import` (D76);
 4. přílohy karet (obecný systém příloh),
-5. karta na dokladech — po dokladě přes mapu starý → nový doklad (D80),
-6. ověření v novém Shipardu: `shpd-ds assets-import-verify` (D82);
-   rozdíly evidence × deník z kroku 3 vypisuje runner.
+5. karta na dokladech — po dokladě přes mapu starý → nový doklad (D80,
+   `POST /api/v1/_exchange/assets/doc-links/apply`, §5.7); doklady se
+   stavem `ambiguous` / `conflict` / `notFound` runner vypíše,
+6. ověření v novém Shipardu: `shpd-ds assets-import-verify [--json]`
+   (D82, exit 1 s rozdíly); rozdíly evidence × deník z kroku 3 vypisuje
+   runner.
 
 Pohyby, příslušenství, vlastnosti a štítky až s fází 7 (D74).
 
@@ -1162,9 +1285,9 @@ Probírají se jedna po druhé; každá má vlastní PRD.
    podklad pro DPPO, soupis (D65–D72) — **hotovo** 2026-10-01,
    `tasks/assets-phase5.md` (§5.6 vč. odchylek; tisk karty až s tiskovou
    doménou, D68)
-6. Import (D8, D9, D11, D73–D82) + backfill — **naplánováno**, nový
-   Shipard `tasks/assets-phase6.md` (první bod D73 z ověření fáze 5), pak
-   runner ve starém Shipardu (§6)
+6. Import (D8, D9, D11, D73–D82) + backfill — nový Shipard **hotovo**
+   2026-10-06, `tasks/assets-phase6.md` (§5.7 vč. odchylek); runner ve
+   starém Shipardu (§6) navazuje
 7. Pohyby, příslušenství, vlastnosti, místa, inventarizace, prodej majetku
    (vydaná faktura s nabídkou vyřazení)
 8. Soubory a množstevní karty, odložená daň, zbytek (AV/AM, X)

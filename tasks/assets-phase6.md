@@ -1,6 +1,6 @@
 # Majetek Fáze 6 — import: applier, karta na dokladech, ověření
 
-**Stav:** naplánováno — D73–D82 potvrzena 2026-10-06; runner ve starém Shipardu navazuje
+**Stav:** hotovo — nový Shipard 2026-10-06 (6 commitů, ověřeno na `4l3j`); runner ve starém Shipardu navazuje
 
 > PRD pro jednu Claude Code session (6 commitů). Design: `docs/assets.md`
 > §1 (invarianty), §4 D8–D17 a D73–D82, §5, §6 (kontrakt importu);
@@ -224,16 +224,39 @@ Test na fake datech (rozdíl v roce, čistý stav).
 
 ## Hotovo když
 
-- [ ] Kontrola evidence × deník hlásí rozdíl na 04x jako varování (D73).
-- [ ] Importované události nejsou kandidáty zaúčtování, neblokují další
+- [x] Kontrola evidence × deník hlásí rozdíl na 04x jako varování (D73).
+- [x] Importované události nejsou kandidáty zaúčtování, neblokují další
       období a kontrola po účtech je počítá (D76).
-- [ ] `validate` / `apply` karty funguje podle pravidel §3, opakování je
+- [x] `validate` / `apply` karty funguje podle pravidel §3, opakování je
       idempotentní, karta s místní událostí se přeskočí.
-- [ ] Doplnění karty na doklad podle §4 včetně pojistky obratů a zámků.
-- [ ] `assets-import-verify` na ukázkovém DS (`4l3j-z0bz-kz39-echj`)
+- [x] Doplnění karty na doklad podle §4 včetně pojistky obratů a zámků.
+- [x] `assets-import-verify` na ukázkovém DS (`4l3j-z0bz-kz39-echj`)
       po ručním `apply` dvou karet (dlouhodobá s historií od 2015
       a vyřazená) a doplnění karty na jeden doklad.
-- [ ] PHPUnit (úzké filtry) zelené, dokumentace aktualizovaná.
+- [x] PHPUnit (úzké filtry) zelené, dokumentace aktualizovaná.
+
+## Odchylky od zadání (rozhodnuto při implementaci)
+
+- **Applier žije v modulu majetku** (`modules/economy/assets/src/Import/`),
+  schéma u ostatních formátů v core.exchange — core.exchange nesmí záviset
+  na economy modulech. Zapojení v `dispatchExchange` jen s aktivní
+  tabulkou karet.
+- **`validate` = celý průběh v transakci s rollbackem** (vzor
+  `vat-filing-import --dry-run`): kontextová pravidla událostí závisejí na
+  uložené kartě a sourozencích.
+- **Importované události při reimportu se mažou fyzicky**, ne do stavu 90.
+- **Importní mód dokumentů** je marker `_import` (vzor `_importNumber`
+  dokladů): `isLockExempt`, původ `import`, uvolněné validace vyjmenované
+  v `docs/assets.md` §5.7; importované vyřazení nezakládá poslední odpisy.
+- **D76 má dvě výjimky** kvůli tomu, že zápisy importovaného zařazení jsou
+  v deníku obyčejné řádky s kartou: na účtu pořízení se importované
+  zařazení neodečítá podruhé a karta zařazená importem se v (b) pořízení
+  × zařazení neposuzuje.
+- **Doc-links bez JSON schématu** (tvar hlídá služba); stav párování je
+  obsah odpovědi (HTTP 200), navíc stav `accounting_failed` pro neúspěšné
+  přeúčtování.
+- **Zlatý test nepouští engine po letech** — používá `PlanRow::computed`
+  potvrzených odpisů (hodnota z historie před odpisem), totéž levněji.
 
 ## Doporučené pořadí commitů
 

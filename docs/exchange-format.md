@@ -1413,8 +1413,10 @@ funguje stejně ve všech režimech.
 Všechny pod `/api/v1/_exchange/docs/document/`. Auth: standardní (API key
 nebo session token). Rate limit: standardní. Sesterské flow sdílejí
 dispatcher: `/_exchange/persons/person/`, `/_exchange/items/item/`,
-`/_exchange/bank/statement/` a import uživatelů `/_exchange/users/user/`
-(jen `validate` + `apply`, admin nebo API klíč — §14 → Uživatelé).
+`/_exchange/bank/statement/`, import uživatelů `/_exchange/users/user/`
+(jen `validate` + `apply`, admin nebo API klíč — §14 → Uživatelé) a import
+majetku `/_exchange/assets/asset/` + `/_exchange/assets/doc-links/apply`
+(stejná oprávnění — §14 → Majetek).
 
 ### POST `/validate`
 
@@ -1589,6 +1591,62 @@ je ruční akce admina (`docs/auth.md`). V read-only stavu zdroje dat projde
 `validate`, `apply` končí 403 (`ReadOnlyPolicy`, přípona akce).
 
 ---
+
+### Majetek — `shpd.assets.asset.v1` a doplnění karty na doklady
+
+Hotové formáty migrace majetku (#83 fáze 6, `docs/assets.md` §5.7);
+applier a služby jsou v modulu majetku
+(`modules/economy/assets/src/Import/`), schéma zde u ostatních. Oprávnění
+jako import uživatelů (admin nebo API klíč), vždy POST.
+
+```
+POST /api/v1/_exchange/assets/asset/validate     # celý průběh s rollbackem
+POST /api/v1/_exchange/assets/asset/apply
+POST /api/v1/_exchange/assets/doc-links/apply
+```
+
+```jsonc
+{
+  "format": "shpd.assets.asset.v1",   // verze je součást `format`
+  "asset": {
+    "assetNumber": "MA0012",          // klíč párování, převezme se beze změny
+    "name": "Soustruh", "shortName": null, "note": null,
+    "type": 12, "category": "tangible", "tracking": "single",
+    "accountingGroup": 3, "foreign": false, "owner": null,
+    "acquiredDate": null, "disposedDate": null, "price": null,   // jen drobný majetek
+    "taxMethod": "straight", "taxRule": "cz-2", "accMethod": "as_tax", "accMonths": null,
+    "state": "confirmed"              // confirmed | archived
+  },
+  "events": [
+    { "kind": "activation", "scope": "both", "date": "2019-05-01", "amount": 480000, "sourceRef": "row:1" },
+    { "kind": "depreciation", "scope": "tax", "date": "2019-12-31",
+      "periodBegin": "2019-01-01", "periodEnd": "2019-12-31", "amount": 52800,
+      "claimUnrecorded": false, "halfYear": false, "sourceRef": "deps:4711" }
+  ]
+}
+```
+
+Odpověď `{ "status": "created" | "updated" | "skipped", "assetId": 31,
+"warnings": [{code, message, path?}] }` — 201 při založení. Existující
+karta dostane přepsanou hlavičku a nahrazené události původu `import`;
+karta s ručními nebo systémovými událostmi se přeskočí
+(`asset_has_local_events`). Chyby ve společném tvaru (`schema_invalid` 400,
+`validation_failed` 422) s `details.issues[]` — cesta do payloadu
+(`events.3.amount`) a `sourceRef` události. `preview` flow nemá.
+
+```jsonc
+{ "docId": 4711, "headAsset": null,
+  "rows": [ { "account": "551022", "side": "dr", "amount": 13074.00,
+              "asset": 15, "orderHint": 3, "sourceRef": "row:812" } ] }
+```
+
+Odpověď `{ "status": "linked" | "unchanged" | "ambiguous" | "notFound" |
+"conflict" | "turnover_changed" | "accounting_failed", "docId", "rows":
+[{index, sourceRef, rowId, status}], "head"? }` — stav párování je obsah
+odpovědi (HTTP 200), chybný tvar 400 s `details.issues`. Doklad se mění
+celý, nebo vůbec; ve stavu 40 se přegeneruje deník s pojistkou shodných
+obratů. Pravidla párování a uvolněné validace importu: `docs/assets.md`
+§5.7.
 
 ## 15. Reference
 

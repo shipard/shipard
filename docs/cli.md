@@ -633,6 +633,29 @@ s výčtem důvodů; `--force` zámek vědomě obejde a zapíše `warn` do
 derivát dokladu — force slouží k opravě rozvrhu nebo předpisu nad uzavřeným
 obdobím, obsah dokladu se nemění. Viz [accounting.md](accounting.md) §7.6.
 
+#### `assets-import-verify [--asset=<číslo>] [--json]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds assets-import-verify                 # celý zdroj dat, text
+shpd-ds assets-import-verify --asset MA0012  # jedna karta (kontrola po letech se vynechá)
+shpd-ds assets-import-verify --json          # pro log runneru
+```
+
+Ověření importu majetku (`docs/assets.md` D82, §5.7) — čte, nic nemění:
+
+1. **Zlatý test daňového okruhu:** u každého importovaného daňového odpisu
+   hodnota, kterou engine spočítal z historie před ním, proti importované
+   částce (karta, rok, import, engine, rozdíl); karta se zablokovaným
+   okruhem je „chyba plánu“.
+2. **Účetní okruh × deník:** per karta a účetní rok součet účetních odpisů
+   z událostí × obrat účtů odpisů s dimenzí karty v deníku.
+3. **Kontrola evidence × deník** za každý účetní rok od prvního s dimenzí
+   `asset` v deníku: stav a počty zpráv po kódech.
+
+Exit 0 bez rozdílů, 1 s rozdíly nebo chybou plánu nebo rokem kontroly ve
+stavu `errors` (varování neshazují); FAILURE i při chybě prostředí.
+
 #### `accbal-match --all | --partner=<id> | --fiscal-year=<id> [--dry-run]`
 
 ```bash
