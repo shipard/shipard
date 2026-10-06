@@ -1,15 +1,25 @@
 <script>
   /**
-   * Feed rozdělený do sekcí podle pásem (Issue #32/2, D1/D2) — čistě
-   * prezentační vrstva: serverové řazení (sortAndCap) se nemění, sekce jsou
-   * $derived seskupení už seřazených karet (uvnitř sekce pořadí = pořadí
-   * serveru). Asymetrická váha: urgent full-width karty, review dnešní grid
-   * (auto-fill 2 sloupce), ready sbalený pruh / kompaktní řádky
-   * (FeedReadySection), info tlumené kompaktní řádky. Prázdná sekce se
-   * nerenderuje (ani hlavička). Akce bublou nahoru přes onCardAction(card,
-   * action); rodič (Dashboard) drží preview modal / reject prompt / toast.
-   * emptyText: per-záložkový empty stav filtru; null → globální „Vše
-   * zpracováno". onWalkthrough = sériový průchod omezený na ready pásmo (D9).
+   * Feed rozdělený do sekcí podle toku práce (#101): sekci každé karty
+   * určuje server (`card.feedSection`), frontend jen seskupuje a renderuje
+   * v pořadí D8 — Položky k založení → Připraveno → Ke kontrole →
+   * Nepodařilo se zpracovat → Upozornění → Ostatní. Uvnitř sekce pořadí =
+   * pořadí serveru. Rozvržení se řídí sekcí, ne pásmem (`kind`): failed
+   * full-width karty, newItems / review / alerts grid, ready sbalené pruhy
+   * (FeedReadySection), other tlumené kompaktní řádky.
+   *
+   * Strop 30 karet platí per sekce a `sections` ze serveru nese pravdivé
+   * počty (`total`/`shown`). Hlavička ukazuje `total` snížený o karty
+   * optimisticky odebrané z feedu (`total − (shown − present)`), pod sekcí
+   * je odkaz „a N dalších" (N = total − shown). Bez `sections` (záložka
+   * filtru, starší server) se sekce odvodí z karet — počet = viditelné karty.
+   * Sekce s nulou doručených karet, ale zbytkem na serveru, se dál renderuje
+   * (hlavička + odkaz), aby zbytek nezmizel po jednokliku na poslední kartu.
+   *
+   * Akce bublou nahoru přes onCardAction(card, action); rodič (Dashboard)
+   * drží preview modal / reject prompt / toast. emptyText: per-záložkový
+   * empty stav filtru; null → globální „Vše zpracováno". onWalkthrough =
+   * sériový průchod omezený na ready pásmo (D9).
    */
   import { t } from '../../i18n/index.js';
   import FeedCard from './FeedCard.svelte';
@@ -18,6 +28,7 @@
 
   let {
     cards = [],
+    sections = null,
     readySummary = null,
     onCardAction = () => {},
     onWalkthrough = () => {},
@@ -25,96 +36,158 @@
     emptyText = null,
   } = $props();
 
-  // Pořadí sekcí = prioritní žebříček KIND_ORDER serveru.
-  const KINDS = ['urgent', 'review', 'ready', 'info'];
+  // Pořadí sekcí = FeedCollector::SECTION_ORDER serveru (#101 D8).
+  const SECTION_ORDER = ['newItems', 'ready', 'review', 'failed', 'alerts', 'other'];
 
-  const sections = $derived.by(() => {
-    const by = { urgent: [], review: [], ready: [], info: [] };
+  // Fallback pro kartu bez feedSection (starší server) — zrcadlí
+  // FeedCollector::DEFAULT_SECTION_BY_KIND; neznámý kind → Ostatní.
+  const DEFAULT_SECTION_BY_KIND = { urgent: 'failed', review: 'review', ready: 'ready', info: 'other' };
+
+  // Cíl odkazu „a N dalších" (open_viewer) per sekce; newItems odkaz nemá —
+  // karty položek nemají viewer, do kterého by zbytek vedl.
+  const MORE_VIEWER = {
+    ready: 'core.mail.incoming',
+    review: 'core.mail.incoming',
+    failed: 'core.mail.incoming',
+    other: 'core.mail.incoming',
+    alerts: 'core.alerts.alerts',
+  };
+
+  function sectionOf(card) {
+    return SECTION_ORDER.includes(card.feedSection)
+      ? card.feedSection
+      : (DEFAULT_SECTION_BY_KIND[card.kind] ?? 'other');
+  }
+
+  const grouped = $derived.by(() => {
+    const by = Object.fromEntries(SECTION_ORDER.map((id) => [id, []]));
     for (const card of cards) {
-      // Neznámé pásmo (defenziva vůči budoucím kind) → sekce Ostatní.
-      (by[card.kind] ?? by.info).push(card);
+      by[sectionOf(card)].push(card);
     }
     return by;
   });
 
-  // Ready pásmo se dělí per kategorie (D11): pruh přijatých faktur
+  // Sekce k renderu: serverové počty (záložka Vše) nebo odvozené z karet
+  // (total = shown = present). `count` odečítá optimisticky odebrané karty,
+  // `more` = karty nad stropem na serveru.
+  const sectionInfos = $derived.by(() => {
+    const byId = sections ? Object.fromEntries(sections.map((s) => [s.id, s])) : {};
+    return SECTION_ORDER
+      .map((id) => {
+        const present = grouped[id].length;
+        const total = byId[id]?.total ?? present;
+        const shown = byId[id]?.shown ?? present;
+        return {
+          id,
+          cards: grouped[id],
+          present,
+          count: Math.max(present, total - (shown - present)),
+          more: Math.max(0, total - shown),
+        };
+      })
+      .filter((s) => s.present > 0 || s.more > 0);
+  });
+
+  // Ready sekce se dělí per kategorie (D11): pruh přijatých faktur
   // a samostatný pruh Spisovny — zrcadlí skupiny readySummary
   // (bez kategorie → invoices, stejný defenzivní default jako server).
   const readyGroups = $derived.by(() => {
     const g = { invoices: [], registry: [] };
-    for (const card of sections.ready) {
+    for (const card of grouped.ready) {
       (card.category === 'registry' ? g.registry : g.invoices).push(card);
     }
     return g;
   });
+
+  const isEmpty = $derived(sectionInfos.length === 0);
+
+  // „a N dalších" = syntetická open_viewer akce přes stávající cestu
+  // onCardAction (vzor chipu „+N" příloh ve FeedCard); card je jen nosič id.
+  function openMore(sectionId) {
+    const viewerId = MORE_VIEWER[sectionId];
+    if (!viewerId) return;
+    onCardAction(
+      { id: `section:${sectionId}` },
+      { id: 'openMore', kind: 'open_viewer', target: { viewerId } },
+    );
+  }
 </script>
 
-{#if cards.length === 0}
+{#if isEmpty}
   <div class="shpd-feed__empty">{emptyText ?? t('dashboard.feed.empty')}</div>
 {:else}
   <div class="shpd-feed" data-testid="feed">
-    {#each KINDS as kind (kind)}
-      {#if sections[kind].length > 0}
-        <section class="shpd-feed__section">
-          <h2 class="shpd-feed__section-title">
-            <span class="shpd-feed__section-dot shpd-feed__section-dot--{kind}" aria-hidden="true"></span>
-            {t(`dashboard.feed.section.${kind}`)}
-            <span class="shpd-feed__section-count">({sections[kind].length})</span>
-          </h2>
-          {#if kind === 'urgent'}
-            <div class="shpd-feed__stack">
-              {#each sections.urgent as card (card.id)}
-                <FeedCard
-                  {card}
-                  busy={busyCardId === card.id}
-                  onAction={(action) => onCardAction(card, action)}
-                />
-              {/each}
-            </div>
-          {:else if kind === 'review'}
-            <div class="shpd-feed__grid">
-              {#each sections.review as card (card.id)}
-                <FeedCard
-                  {card}
-                  busy={busyCardId === card.id}
-                  onAction={(action) => onCardAction(card, action)}
-                />
-              {/each}
-            </div>
-          {:else if kind === 'ready'}
-            {#if readyGroups.invoices.length > 0}
-              <FeedReadySection
-                cards={readyGroups.invoices}
-                summary={readySummary?.invoices ?? null}
-                variant="invoices"
-                {busyCardId}
-                {onCardAction}
-                {onWalkthrough}
-              />
-            {/if}
-            {#if readyGroups.registry.length > 0}
-              <FeedReadySection
-                cards={readyGroups.registry}
-                summary={readySummary?.registry ?? null}
-                variant="registry"
-                {busyCardId}
-                {onCardAction}
-              />
-            {/if}
-          {:else}
-            <div class="shpd-feed__rows">
-              {#each sections.info as card (card.id)}
-                <FeedRowCompact
-                  {card}
-                  mode="info"
-                  busy={busyCardId === card.id}
-                  onAction={(action) => onCardAction(card, action)}
-                />
-              {/each}
-            </div>
+    {#each sectionInfos as section (section.id)}
+      <section class="shpd-feed__section" data-section={section.id}>
+        <h2 class="shpd-feed__section-title">
+          <span class="shpd-feed__section-dot shpd-feed__section-dot--{section.id}" aria-hidden="true"></span>
+          {t(`dashboard.feed.section.${section.id}`)}
+          <span class="shpd-feed__section-count">({section.count})</span>
+        </h2>
+        {#if section.id === 'ready'}
+          {#if readyGroups.invoices.length > 0}
+            <FeedReadySection
+              cards={readyGroups.invoices}
+              summary={readySummary?.invoices ?? null}
+              variant="invoices"
+              {busyCardId}
+              {onCardAction}
+              {onWalkthrough}
+            />
           {/if}
-        </section>
-      {/if}
+          {#if readyGroups.registry.length > 0}
+            <FeedReadySection
+              cards={readyGroups.registry}
+              summary={readySummary?.registry ?? null}
+              variant="registry"
+              {busyCardId}
+              {onCardAction}
+            />
+          {/if}
+        {:else if section.id === 'failed'}
+          <div class="shpd-feed__stack">
+            {#each section.cards as card (card.id)}
+              <FeedCard
+                {card}
+                busy={busyCardId === card.id}
+                onAction={(action) => onCardAction(card, action)}
+              />
+            {/each}
+          </div>
+        {:else if section.id === 'other'}
+          <div class="shpd-feed__rows">
+            {#each section.cards as card (card.id)}
+              <FeedRowCompact
+                {card}
+                mode="info"
+                busy={busyCardId === card.id}
+                onAction={(action) => onCardAction(card, action)}
+              />
+            {/each}
+          </div>
+        {:else}
+          <div class="shpd-feed__grid">
+            {#each section.cards as card (card.id)}
+              <FeedCard
+                {card}
+                busy={busyCardId === card.id}
+                onAction={(action) => onCardAction(card, action)}
+              />
+            {/each}
+          </div>
+        {/if}
+        {#if section.more > 0}
+          <div class="shpd-feed__more">
+            {#if MORE_VIEWER[section.id]}
+              <button type="button" class="shpd-feed__more-link" onclick={() => openMore(section.id)}>
+                {t('dashboard.feed.sectionMore', { n: section.more })}
+              </button>
+            {:else}
+              <span class="shpd-feed__more-text">{t('dashboard.feed.sectionMore', { n: section.more })}</span>
+            {/if}
+          </div>
+        {/if}
+      </section>
     {/each}
   </div>
 {/if}
@@ -148,7 +221,9 @@
     font-weight: 500;
   }
 
-  /* Barevná tečka pásma — zrcadlí barvy stavových proužků karet. */
+  /* Barevná tečka sekce — failed/review/ready zrcadlí barvy stavových
+     proužků karet; alerts sdílí warning (sekce mísí závažnosti), newItems
+     primary (odlišná od stavových barev), other tlumená. */
   .shpd-feed__section-dot {
     width: 8px;
     height: 8px;
@@ -156,21 +231,23 @@
     flex-shrink: 0;
   }
 
-  .shpd-feed__section-dot--urgent { background: var(--shpd-color-danger); }
-  .shpd-feed__section-dot--review { background: var(--shpd-color-warning); }
-  .shpd-feed__section-dot--ready  { background: var(--shpd-color-success); }
-  .shpd-feed__section-dot--info   { background: var(--shpd-color-text-secondary); }
+  .shpd-feed__section-dot--newItems { background: var(--shpd-color-primary); }
+  .shpd-feed__section-dot--ready    { background: var(--shpd-color-success); }
+  .shpd-feed__section-dot--review   { background: var(--shpd-color-warning); }
+  .shpd-feed__section-dot--failed   { background: var(--shpd-color-danger); }
+  .shpd-feed__section-dot--alerts   { background: var(--shpd-color-warning); }
+  .shpd-feed__section-dot--other    { background: var(--shpd-color-text-secondary); }
 
-  /* Urgent: full-width karty pod sebou (D2). */
+  /* Failed: full-width karty pod sebou (D2). */
   .shpd-feed__stack {
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-md);
   }
 
-  /* Review: dnešní grid — karty v řádku mají stejnou výšku (stretch),
-     rozbalený detail vedle sbalené karty nechá u sousedky volné místo dole
-     (záměr, žádný masonry, nerozbíjí prioritní pořadí). */
+  /* Grid (newItems / review / alerts): karty v řádku mají stejnou výšku
+     (stretch), rozbalený detail vedle sbalené karty nechá u sousedky volné
+     místo dole (záměr, žádný masonry, nerozbíjí prioritní pořadí). */
   .shpd-feed__grid {
     display: grid;
     /* min(360px, 100%) — na displeji užším než 360px nesmí karta přetéct. */
@@ -179,11 +256,31 @@
     align-items: stretch;
   }
 
-  /* Info: sousední kompaktní řádky odděluje vlasová linka. Kreslí ji
+  /* Other: sousední kompaktní řádky odděluje vlasová linka. Kreslí ji
      rodič — uvnitř FeedRowCompact by sibling selektor mezi instancemi
      komponenty scoped styl vyhodil jako nepoužitý. */
   .shpd-feed__rows > :global(.shpd-feed-row + .shpd-feed-row) {
     border-top: 1px solid var(--shpd-color-border);
+  }
+
+  /* „a N dalších" pod sekcí — textový odkaz (vzor toggle v FeedReadySection). */
+  .shpd-feed__more {
+    font-size: var(--shpd-font-size-sm);
+    color: var(--shpd-color-text-secondary);
+  }
+
+  .shpd-feed__more-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--shpd-color-primary);
+    font-family: var(--shpd-font-family);
+    font-size: var(--shpd-font-size-sm);
+    cursor: pointer;
+  }
+
+  .shpd-feed__more-link:hover {
+    text-decoration: underline;
   }
 
   .shpd-feed__empty {

@@ -9,10 +9,14 @@
    * frontu". variant='registry' (Spisovna, D11): vlastní titulek, bez
    * součtů částek a bez Projít — průchod Spisovnou se přidá později.
    *
-   * Počet se bere z cards.length (konzistence s optimistickým odebíráním
-   * karet); částky a jistoty ze serverového summary (skupina z
-   * readySummary, zdroj pravdy, D8) — chybějící summary jen vynechá řádek
-   * souhrnu.
+   * Počet v titulku = summary.count − (summary.shown − cards.length)
+   * (#101 D3b): serverový počet všech připravených dokladů skupiny snížený
+   * o karty optimisticky odebrané z feedu — titulek a součty tak mluví
+   * o téže množině. Bez summary (nebo bez `shown` ze staršího serveru)
+   * fallback na cards.length. Částky a jistoty ze serverového summary
+   * (skupina z readySummary, zdroj pravdy, D8) — chybějící summary jen
+   * vynechá řádek souhrnu. Rozbalený seznam ukazuje doručené karty;
+   * „a N dalších" řeší sekce (Feed), pruh ne.
    */
   import { t } from '../../i18n/index.js';
   import { iconChevronDown, iconChevronUp } from '../../icons.js';
@@ -32,6 +36,12 @@
   let expanded = $state(false);
 
   const isInvoices = $derived(variant === 'invoices');
+
+  const count = $derived(
+    typeof summary?.shown === 'number' && typeof summary?.count === 'number'
+      ? Math.max(cards.length, summary.count - (summary.shown - cards.length))
+      : cards.length,
+  );
 
   // „1 234,56 CZK" — stejný formát jako serverový number_format(x, 2, ',', ' ')
   // v amountText karet (formatAmount v MailSuggestionsSource).
@@ -69,7 +79,7 @@
   <div class="shpd-ready__strip">
     <div class="shpd-ready__summary">
       <div class="shpd-ready__title">
-        {t(isInvoices ? 'dashboard.feed.readyStrip.title' : 'dashboard.feed.readyStrip.titleRegistry', { n: cards.length })}
+        {t(isInvoices ? 'dashboard.feed.readyStrip.title' : 'dashboard.feed.readyStrip.titleRegistry', { n: count })}
       </div>
       {#if summaryLine}
         <div class="shpd-ready__totals">{summaryLine}</div>

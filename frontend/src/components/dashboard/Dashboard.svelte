@@ -33,7 +33,7 @@
 
   // Filtr feedu — čistě klientský, drží se jen ve stavu komponenty (neresetuje
   // se v load(), takže přežije manuální Obnovit; reload aplikace → 'all').
-  // Karty bez `category` (např. „…a další") se zobrazují jen v záložce Vše.
+  // Karty bez `category` se zobrazují jen v záložce Vše (bezpečný default).
   let feedFilter = $state('all');
 
   const CATEGORIES = ['invoices', 'registry', 'other'];
@@ -653,8 +653,12 @@
       </div>
     {/if}
 
+    <!-- sections (#101): pravdivé počty per sekce jen v záložce Vše — ve
+         filtru jsou celofeedové počty zavádějící, Feed si je odvodí
+         z viditelných karet. -->
     <Feed
       cards={filteredCards}
+      sections={feedFilter === 'all' ? (data.sections ?? null) : null}
       readySummary={data.readySummary ?? null}
       {busyCardId}
       onCardAction={handleCardAction}

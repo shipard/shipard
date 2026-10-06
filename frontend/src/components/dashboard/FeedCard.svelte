@@ -4,7 +4,7 @@
    * .docState_* třídy), sémantická ikona, strukturovaná hlavička (partner /
    * typ dokladu / částka / donut jistoty), předmět e-mailu, chipy příloh,
    * rozbalovací detail a řada akčních tlačítek. Karty bez `headline`
-   * (alerty, chybové, „…a další") renderují dnešní title/subtitle fallback.
+   * (alerty, chybové, položky k založení) renderují title/subtitle fallback.
    * Chování akcí drží rodič (Dashboard) — FeedCard jen emituje onAction(action).
    */
   import { resolveIcon, iconMail, iconWarning, iconChevronDown, iconChevronUp } from '../../icons.js';
