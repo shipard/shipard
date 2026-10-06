@@ -194,6 +194,32 @@ class AssetPostingServiceTest extends TestCase
         $this->assertSame([], $this->writer->written);
     }
 
+    public function testImportedHistoryIsPostedOutsideTheModule(): void
+    {
+        // D76: karta s historií importovanou do roku 2023 bez vazby na doklad
+        // — náhled za 2024 nabídne jen odpis 2024, nic dřívějšího neblokuje
+        // a importované události nejsou kandidáty zaúčtování.
+        $this->card(1);
+        $this->event(1, 'activation', '2022-03-15', ['amount' => 100000, 'origin' => 'import']);
+        foreach ([2022 => 11000.0, 2023 => 22250.0] as $year => $amount) {
+            foreach (['tax', 'acc'] as $scope) {
+                $this->event(1, 'depreciation', "{$year}-12-31", [
+                    'scope' => $scope, 'amount' => $amount, 'origin' => 'import',
+                    'period_begin' => "{$year}-01-01", 'period_end' => "{$year}-12-31",
+                ]);
+            }
+        }
+
+        $preview = $this->service->preview(self::YEAR_2024);
+
+        $this->assertSame([1], array_column($preview['depreciations'], 'id'));
+        $this->assertSame(22250.0, $preview['depreciations'][0]['amount']);
+        $this->assertSame([], $preview['events']);
+        $this->assertSame([], $preview['excluded']);
+        $this->assertSame(2, $preview['rowCount']);
+        $this->assertTrue($preview['canPost']);
+    }
+
     // ── zaúčtování ──────────────────────────────────────────────────────────
 
     public function testPostWritesDepreciationsCreatesDocumentAndLinksEvents(): void
@@ -400,7 +426,7 @@ class TestablePostingService extends AssetPostingService
         $events = array_values(array_filter(
             $this->plans->events,
             static fn(array $e): bool => (int) $e['docState'] === 40 && $e['scope'] !== 'tax'
-                && empty($e['doc_head']) && $e['event_date'] <= $until,
+                && ($e['origin'] ?? 'manual') !== 'import' && empty($e['doc_head']) && $e['event_date'] <= $until,
         ));
         usort($events, static fn(array $a, array $b): int
             => [$a['asset'], $a['event_date'], $a['id']] <=> [$b['asset'], $b['event_date'], $b['id']]);

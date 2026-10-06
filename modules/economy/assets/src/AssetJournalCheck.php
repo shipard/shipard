@@ -20,13 +20,24 @@ use Shipard\Module\Economy\Assets\Posting\AssetPostingInput;
  * DAL majetek), ne přes `AssetPostingBuilder` ani plánovač — kontrola je
  * tak nezávislá na kódu, který účtuje, a nepotřebuje pravidla země.
  *
+ * „Zaúčtovaná“ událost = navázaný živý doklad **nebo** původ `import`
+ * (D76): importovaná událost je zaúčtovaná ve starém systému, bez vazby
+ * na doklad. Evidence po účtech ji započítá, nesoulady (a) a (c) ji
+ * neposuzují — její doklady nesou jiné zápisy než D49 a jsou mimo
+ * operace `asset.*`. Dvě výjimky plynou z toho, že zápisy importovaného
+ * zařazení jsou v deníku obyčejné řádky s kartou: na účtu pořízení je
+ * importované zařazení už v pořízení s kartou (nesmí se odečíst
+ * podruhé) a karta zařazená importem se v (b) neposuzuje — její pořízení
+ * se srovnalo ve starém systému.
+ *
  * Nesoulady po kartách:
  *  - `posting` (a) — zaúčtované události ≠ řádky deníku operací `asset.*`
- *    s dimenzí karty, po účtech a stranách;
+ *    s dimenzí karty, po účtech a stranách (bez importovaných);
  *  - `acquisition` (b) — pořízení na účtu pořízení (04x) s dimenzí karty
  *    ≠ potvrzená zařazení + TZ − snížení; jen u karet, které nějaké
- *    pořízení na dokladech mají. Počítá se z potvrzených událostí, ne ze
- *    zůstatku účtu — nezaúčtované zařazení nesoulad není;
+ *    pořízení na dokladech mají a nejsou zařazené importem. Počítá se
+ *    z potvrzených událostí, ne ze zůstatku účtu — nezaúčtované zařazení
+ *    nesoulad není;
  *  - `unposted` (c) — potvrzené účtovatelné události bez dokladu.
  *
  * DB přístup je v protected metodách (přepsatelné v testech).
@@ -86,9 +97,13 @@ class AssetJournalCheck
         foreach ($cards as $id => $card) {
             $ledger = $ledgers[$id];
 
-            // (a) zaúčtované události × řádky deníku `asset.*` karty.
+            // (a) zaúčtované události × řádky deníku `asset.*` karty;
+            // importované jsou zaúčtované mimo modul (D76).
             $expected = [];
             foreach ($ledger['entries'] as $entry) {
+                if ($entry['imported']) {
+                    continue;
+                }
                 $account = $card['accounts'][$entry['role']] ?? '';
                 $expected[$account] ??= ['dr' => 0.0, 'cr' => 0.0];
                 $expected[$account]['dr'] += $entry['dr'];
@@ -114,8 +129,9 @@ class AssetJournalCheck
                 $posting[] = self::identity($card) + ['accounts' => $accounts];
             }
 
-            // (b) pořízení na 04x s dimenzí karty × zařazení + TZ − snížení.
-            if (isset($acquisitions[$id])) {
+            // (b) pořízení na 04x s dimenzí karty × zařazení + TZ − snížení;
+            // karta zařazená importem se neposuzuje (D76).
+            if (isset($acquisitions[$id]) && !$ledger['importedStart']) {
                 $acquired = round($acquisitions[$id]['amount'], 2);
                 $activated = round($ledger['activated'], 2);
                 if (self::differs($acquired, $activated)) {
@@ -198,7 +214,7 @@ class AssetJournalCheck
      * a zůstatkové ceny obratem roku.
      *
      * Evidence = počáteční stavy + **zaúčtované** události do konce roku
-     * (nezaúčtované hlásí `unposted()`); u účtu pořízení pořízení s kartou
+     * včetně importovaných (D76; nezaúčtované hlásí `unposted()`); u účtu pořízení pořízení s kartou
      * z deníku mínus zaúčtovaná zařazení a TZ. `withAsset` / `withoutAsset`
      * je obrat běžných měsíců roku s kartou a bez ní — zápis bez karty
      * na účtu majetku evidence nevidí.
@@ -238,6 +254,11 @@ class AssetJournalCheck
                 }
                 $balance = in_array($roles[$number], self::BALANCE_ROLES, true);
                 foreach ($ledger['entries'] as $entry) {
+                    // Importované zařazení je na účtu pořízení už v pořízení
+                    // s kartou (řádek deníku mimo `asset.*`, D76).
+                    if ($role === AssetPostingInput::ACCOUNT_ACQUISITION && $entry['imported']) {
+                        continue;
+                    }
                     if ($entry['role'] === $role && ($balance || $entry['date'] >= $yearBegin)) {
                         $evidence[$number] += $entry['dr'] - $entry['cr'];
                     }
@@ -313,9 +334,10 @@ class AssetJournalCheck
      * bez ohledu na zaúčtování).
      *
      * @param array<int, array<string, mixed>> $cards
-     * @param list<array<string, mixed>> $events potvrzené události s příznakem `posted`
-     * @return array<int, array{entries: list<array{role: string, dr: float, cr: float, date: string}>,
-     *     openingEntry: float, openingAccumulated: float, activated: float, started: bool, lastValueDate: ?string}>
+     * @param list<array<string, mixed>> $events potvrzené události s příznaky `posted` a `imported`
+     * @return array<int, array{entries: list<array{role: string, dr: float, cr: float, date: string, imported: bool}>,
+     *     openingEntry: float, openingAccumulated: float, activated: float, started: bool, importedStart: bool,
+     *     lastValueDate: ?string}>
      */
     private function ledgers(array $cards, array $events, ?string $asOf): array
     {
@@ -335,7 +357,7 @@ class AssetJournalCheck
 
             $ledger = [
                 'entries' => [], 'openingEntry' => 0.0, 'openingAccumulated' => 0.0,
-                'activated' => 0.0, 'started' => false, 'lastValueDate' => null,
+                'activated' => 0.0, 'started' => false, 'importedStart' => false, 'lastValueDate' => null,
             ];
             $entry = 0.0;
             $accumulated = 0.0;
@@ -347,12 +369,13 @@ class AssetJournalCheck
                 $kind = (string) $event['event_kind'];
                 $amount = (float) $event['amount'];
                 $posted = !empty($event['posted']);
-                $post = static function (string $debit, string $credit, float $value) use (&$ledger, $posted, $date): void {
+                $imported = !empty($event['imported']);
+                $post = static function (string $debit, string $credit, float $value) use (&$ledger, $posted, $imported, $date): void {
                     if (!$posted || abs($value) < Amounts::EPSILON) {
                         return;
                     }
-                    $ledger['entries'][] = ['role' => $debit, 'dr' => $value, 'cr' => 0.0, 'date' => $date];
-                    $ledger['entries'][] = ['role' => $credit, 'dr' => 0.0, 'cr' => $value, 'date' => $date];
+                    $ledger['entries'][] = ['role' => $debit, 'dr' => $value, 'cr' => 0.0, 'date' => $date, 'imported' => $imported];
+                    $ledger['entries'][] = ['role' => $credit, 'dr' => 0.0, 'cr' => $value, 'date' => $date, 'imported' => $imported];
                 };
 
                 switch ($kind) {
@@ -367,6 +390,9 @@ class AssetJournalCheck
                     case AssetEvent::KIND_IMPROVEMENT:
                         $entry += $amount;
                         $ledger['activated'] += $amount;
+                        if ($kind === AssetEvent::KIND_ACTIVATION && !$ledger['started']) {
+                            $ledger['importedStart'] = $imported;
+                        }
                         $ledger['started'] = $ledger['started'] || $kind === AssetEvent::KIND_ACTIVATION;
                         $ledger['lastValueDate'] = $date;
                         $post(AssetPostingInput::ACCOUNT_ASSET, AssetPostingInput::ACCOUNT_ACQUISITION, $amount);
@@ -461,8 +487,9 @@ class AssetJournalCheck
     }
 
     /**
-     * Potvrzené události (všech karet nebo jedné) s příznakem `posted` —
-     * navázaný doklad mimo Storno / Smazáno (D52).
+     * Potvrzené události (všech karet nebo jedné) s příznaky `posted` —
+     * navázaný doklad mimo Storno / Smazáno (D52) nebo původ `import`
+     * (D76) — a `imported`.
      *
      * @return list<array<string, mixed>>
      */
@@ -473,8 +500,10 @@ class AssetJournalCheck
         }
         $args = [
             'SELECT [e].[id], [e].[asset], [e].[event_kind], [e].[scope], [e].[event_date], [e].[amount], [e].[accumulated],'
-            . ' ([h].[id] IS NOT NULL) AS [posted]'
-            . ' FROM [' . AssetPlanService::EVENTS_TABLE . '] [e]'
+            . ' ([h].[id] IS NOT NULL OR [e].[origin] = %s) AS [posted], ([e].[origin] = %s) AS [imported]',
+            AssetEvent::ORIGIN_IMPORT,
+            AssetEvent::ORIGIN_IMPORT,
+            'FROM [' . AssetPlanService::EVENTS_TABLE . '] [e]'
             . ' LEFT JOIN [docs_core_heads] [h] ON [h].[id] = [e].[doc_head] AND [h].[docState] NOT IN %in',
             AssetEventDocument::DEAD_DOC_STATES,
             'WHERE [e].[docState] = %i',

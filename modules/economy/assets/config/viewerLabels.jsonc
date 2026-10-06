@@ -45,6 +45,8 @@
     // Stav zaúčtování potvrzené události účetního okruhu (D52).
     "status.posted":      { "name": "Posted — document {number}", "name:cs": "Zaúčtováno — doklad {number}", "name:en": "Posted — document {number}" },
     "status.unposted":    { "name": "Waiting for posting", "name:cs": "Čeká na zaúčtování", "name:en": "Waiting for posting" },
+    // Importovaná událost je zaúčtovaná ve starém systému, bez dokladu (D76).
+    "status.postedExternal": { "name": "Posted in the previous system", "name:cs": "Zaúčtováno ve starém systému", "name:en": "Posted in the previous system" },
     "badge.unposted":     { "name": "Not posted", "name:cs": "Nezaúčtováno", "name:en": "Not posted" },
     "severity.error":     { "name": "Error", "name:cs": "Chyba", "name:en": "Error" },
     "severity.warning":   { "name": "Warning", "name:cs": "Varování", "name:en": "Warning" },

@@ -429,6 +429,29 @@ class AssetsViewerTest extends TestCase
         $this->assertSame('Confirmed', $tax[0], 'daňový okruh se neúčtuje');
     }
 
+    public function testAccountingPlanShowsImportedRowsAsPostedInThePreviousSystem(): void
+    {
+        // D76: importovaná událost je zaúčtovaná ve starém systému — bez dokladu.
+        $card = ['id' => 4, 'name' => 'Soustruh', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
+            'acc_method' => 'as_tax', 'docState' => 40, 'is_foreign' => 0, 'tracking' => 'single'];
+        $events = [
+            ['id' => 1, 'asset' => 4, 'event_kind' => 'activation', 'scope' => 'both', 'event_date' => '2022-03-15', 'amount' => 100000,
+                'origin' => 'import', 'docState' => 40],
+            ['id' => 2, 'asset' => 4, 'event_kind' => 'depreciation', 'scope' => 'acc', 'event_date' => '2022-12-31', 'amount' => 11000,
+                'period_begin' => '2022-01-01', 'period_end' => '2022-12-31', 'origin' => 'import', 'docState' => 40],
+        ];
+        $posting = [
+            1 => ['docId' => null, 'docNumber' => '', 'external' => true],
+            2 => ['docId' => null, 'docNumber' => '', 'external' => true],
+        ];
+        $detail = $this->detailViewer($card, $events, $posting)->renderDetail(4);
+
+        $acc = array_column(array_column($detail['tabs'], null, 'id')['accPlan']['content']['blocks'][1]['rows'], 'status');
+        $this->assertSame('Posted in the previous system', $acc[0]);
+        $this->assertSame('Posted in the previous system', $acc[1]);
+        $this->assertSame('Planned', $acc[2]);
+    }
+
     public function testDetailOfNewCardOffersActivationAndOpeningBalances(): void
     {
         $card = ['id' => 5, 'name' => 'Stroj', 'category' => 'tangible', 'tax_method' => 'straight', 'tax_rule' => 'cz-2',
@@ -485,6 +508,7 @@ class AssetsViewerTest extends TestCase
         $sql = (string) $captured[0];
         $this->assertStringContainsString('AS `has_unposted`', $sql);
         $this->assertStringContainsString("ue.`scope` <> 'tax'", $sql);
+        $this->assertStringContainsString("ue.`origin` <> 'import'", $sql, 'importované události jsou zaúčtované mimo modul (D76)');
         $this->assertStringContainsString('uh.`docState` IN (30, 90)', $sql);
         $this->assertStringNotContainsString("'opening'", $sql, 'počáteční stav se neúčtuje');
     }

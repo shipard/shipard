@@ -255,6 +255,64 @@ class AssetJournalCheckTest extends TestCase
         $this->assertSame('MA0001', $unposted[0]['number']);
     }
 
+    // ── Importované události (D76) ──────────────────────────────────────────
+
+    public function testImportedEventsArePostedOutsideTheModule(): void
+    {
+        // Karta ze starého systému: zařazení a odpisy importované bez dokladu,
+        // deník nese jejich zápisy jako obyčejné `acc.record` s kartou.
+        $this->check->card(1);
+        $this->check->event(1, 'activation', '2022-03-15', 100000, false, ['origin' => 'import']);
+        $this->check->journal(1, '022100', 100000, 0, '2022-03-15');
+        $this->check->journal(1, '042100', 0, 100000, '2022-03-15');
+        foreach ([2022 => 11000.0, 2023 => 22250.0] as $year => $amount) {
+            $this->check->event(1, 'depreciation', "{$year}-12-31", $amount, false, ['origin' => 'import']);
+            $this->check->journal(1, '551100', $amount, 0, "{$year}-12-31");
+            $this->check->journal(1, '082100', 0, $amount, "{$year}-12-31");
+        }
+
+        // Evidence po účtech importované události započítá — bez rozdílu.
+        // Účet pořízení: zápis importovaného zařazení je obyčejný řádek
+        // s kartou, evidence ho nese jako pořízení a podruhé ho neodečítá.
+        $accounts = $this->accountsByNumber(2022);
+        $this->assertSame(100000.0, $accounts['022100']['evidence']);
+        $this->assertSame(0.0, $accounts['022100']['difference']);
+        $this->assertSame(-100000.0, $accounts['042100']['evidence']);
+        $this->assertSame(0.0, $accounts['042100']['difference']);
+        $this->assertSame(-11000.0, $accounts['082100']['evidence']);
+        $this->assertSame(0.0, $accounts['082100']['difference']);
+        $this->assertSame(11000.0, $accounts['551100']['evidence']);
+        $this->assertSame(0.0, $accounts['551100']['difference']);
+        // Rok 2023 s počátečními zůstatky účtů (otevírací období).
+        $this->check->journal(null, '022100', 100000, 0, '2023-01-01', 'acc.record', 0);
+        $this->check->journal(null, '082100', 0, 11000, '2023-01-01', 'acc.record', 0);
+        $accounts = $this->accountsByNumber(2023);
+        $this->assertSame(0.0, $accounts['022100']['difference']);
+        $this->assertSame(-33250.0, $accounts['082100']['evidence']);
+        $this->assertSame(0.0, $accounts['082100']['difference']);
+        $this->assertSame(22250.0, $accounts['551100']['evidence']);
+        $this->assertSame(0.0, $accounts['551100']['difference']);
+
+        // (a) a (c) importované události neposuzují: deník `asset.*` je prázdný,
+        // nezaúčtovaná událost žádná. (b) kartu zařazenou importem nesrovnává —
+        // pořízení s kartou v deníku je po doplnění karty na doklady 0.
+        $this->check->journal(1, '042100', 100000, 0, '2022-03-10', 'purchase.asset');
+        $this->assertSame(['posting' => [], 'acquisition' => []], $this->check->cardFindings());
+        $this->assertSame([], $this->check->unposted('2023-12-31'));
+
+        // Odpis 2024 už zaúčtuje nový Shipard — chybějící doklad je (c),
+        // a jeho zápis `asset.depreciation` se porovnává jen sám se sebou.
+        $this->check->event(1, 'depreciation', '2024-12-31', 22250, false);
+        $this->assertCount(1, $this->check->unposted('2024-12-31'));
+        $this->check->events[array_key_last($this->check->events)]['posted'] = 1;
+        $this->check->posting(1, 'asset.depreciation', '551100', '082100', 22250, '2024-12-31');
+        $this->assertSame([], $this->check->cardFindings()['posting']);
+        $this->check->journal(null, '022100', 100000, 0, '2024-01-01', 'acc.record', 0);
+        $this->check->journal(null, '082100', 0, 33250, '2024-01-01', 'acc.record', 0);
+        $this->assertSame(0.0, $this->accountsByNumber(2024)['082100']['difference']);
+        $this->assertSame(22250.0, $this->accountsByNumber(2024)['551100']['evidence']);
+    }
+
     // ── Po účtech ───────────────────────────────────────────────────────────
 
     public function testJournalEntryWithoutCard(): void

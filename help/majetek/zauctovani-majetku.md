@@ -60,7 +60,10 @@ odpisy, přerušení a počáteční stav se neúčtují.
 **Kde to uvidíš**
 
 - Na kartě v záložce **Účetní odpisy** má potvrzený řádek stav
-  **Zaúčtováno — doklad …**, nebo **Čeká na zaúčtování**.
+  **Zaúčtováno — doklad …**, nebo **Čeká na zaúčtování**. Historie
+  převzatá ze starého systému má stav **Zaúčtováno ve starém systému**:
+  takové události Shipard znovu neúčtuje, nepočítá je jako nezaúčtované
+  a zaúčtování začíná prvním obdobím po nich.
 - V **Účtárna → Účetní deník** je sloupec a filtr **Majetek** — obraty
   účtu jdou rozpadnout po kartách.
 

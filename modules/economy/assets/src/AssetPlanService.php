@@ -223,9 +223,11 @@ class AssetPlanService
 
     /**
      * Zaúčtování událostí karty (D52): id události → živý účetní doklad
-     * (mimo Storno / Smazáno). Událost, která v mapě není, zaúčtovaná není.
+     * (mimo Storno / Smazáno). Importovaná událost (D76) je zaúčtovaná ve
+     * starém systému bez dokladu — v mapě je s `docId` null a `external`
+     * true. Událost, která v mapě není, zaúčtovaná není.
      *
-     * @return array<int, array{docId: int, docNumber: string}>
+     * @return array<int, array{docId: ?int, docNumber: string, external: bool}>
      */
     public function postingOf(int $assetId): array
     {
@@ -321,22 +323,28 @@ class AssetPlanService
         return $byAsset;
     }
 
-    /** @return array<int, array{docId: int, docNumber: string}> */
+    /** @return array<int, array{docId: ?int, docNumber: string, external: bool}> */
     protected function loadPosting(int $assetId): array
     {
         if ($this->db === null) {
             return [];
         }
         $rows = $this->db->fetchAll(
-            'SELECT [e].[id], [h].[id] AS [doc_id], [h].[doc_number] FROM [' . self::EVENTS_TABLE . '] [e]'
-            . ' JOIN [docs_core_heads] [h] ON [h].[id] = [e].[doc_head]'
-            . ' WHERE [e].[asset] = %i AND [h].[docState] NOT IN %in',
-            $assetId,
+            'SELECT [e].[id], [e].[origin], [h].[id] AS [doc_id], [h].[doc_number] FROM [' . self::EVENTS_TABLE . '] [e]'
+            . ' LEFT JOIN [docs_core_heads] [h] ON [h].[id] = [e].[doc_head] AND [h].[docState] NOT IN %in',
             AssetEventDocument::DEAD_DOC_STATES,
+            'WHERE [e].[asset] = %i AND ([h].[id] IS NOT NULL OR [e].[origin] = %s)',
+            $assetId,
+            AssetEvent::ORIGIN_IMPORT,
         );
         $posting = [];
         foreach ($rows as $row) {
-            $posting[(int) $row['id']] = ['docId' => (int) $row['doc_id'], 'docNumber' => (string) $row['doc_number']];
+            $docId = $row['doc_id'] !== null ? (int) $row['doc_id'] : null;
+            $posting[(int) $row['id']] = [
+                'docId'     => $docId,
+                'docNumber' => (string) ($row['doc_number'] ?? ''),
+                'external'  => $docId === null && (string) $row['origin'] === AssetEvent::ORIGIN_IMPORT,
+            ];
         }
         return $posting;
     }

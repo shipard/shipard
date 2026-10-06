@@ -631,7 +631,7 @@ class AssetsViewer extends AssetsViewerBase
      * tabulka řádků plánu (plánované tlumeně, chybové červeně) a hlášení.
      *
      * @param array<string, mixed> $card
-     * @param array<int, array{docId: int, docNumber: string}>|null $posting
+     * @param array<int, array{docId: ?int, docNumber: string, external?: bool}>|null $posting
      *        zaúčtování událostí (jen účetní okruh), null = okruh se neúčtuje
      * @return array<string, mixed> content typu composite
      */
@@ -682,7 +682,7 @@ class AssetsViewer extends AssetsViewerBase
     }
 
     /**
-     * @param array<int, array{docId: int, docNumber: string}>|null $posting
+     * @param array<int, array{docId: ?int, docNumber: string, external?: bool}>|null $posting
      * @return array<string, mixed> content typu table
      */
     private function planTable(Plan $plan, ?array $posting = null): array
@@ -734,10 +734,11 @@ class AssetsViewer extends AssetsViewerBase
 
     /**
      * Stav řádku plánu. V účetním okruhu (`$posting` není null) potvrzená
-     * účtovaná událost ukazuje doklad, nebo že na zaúčtování čeká (D52);
-     * počáteční stav a přerušení se neúčtují.
+     * účtovaná událost ukazuje doklad, zaúčtování ve starém systému
+     * (import, D76), nebo že na zaúčtování čeká (D52); počáteční stav
+     * a přerušení se neúčtují.
      *
-     * @param array<int, array{docId: int, docNumber: string}>|null $posting
+     * @param array<int, array{docId: ?int, docNumber: string, external?: bool}>|null $posting
      */
     private function planRowStatus(PlanRow $row, ?array $posting): string
     {
@@ -750,15 +751,20 @@ class AssetsViewer extends AssetsViewerBase
             return $this->text('status.confirmed', 'Confirmed');
         }
         $document = $posting[$row->eventId] ?? null;
+        if ($document === null) {
+            return $this->text('status.unposted', 'Waiting for posting');
+        }
+        if (!empty($document['external'])) {
+            return $this->text('status.postedExternal', 'Posted in the previous system');
+        }
 
-        return $document !== null
-            ? $this->text('status.posted', 'Posted — document {number}', ['number' => $document['docNumber']])
-            : $this->text('status.unposted', 'Waiting for posting');
+        return $this->text('status.posted', 'Posted — document {number}', ['number' => $document['docNumber']]);
     }
 
     /**
      * Podmínka seznamu: karta má potvrzenou událost účetního okruhu bez
-     * živého účetního dokladu (badge „Nezaúčtováno“).
+     * živého účetního dokladu (badge „Nezaúčtováno“). Importované události
+     * jsou zaúčtované ve starém systému (D76).
      */
     private function unpostedExistsSql(): string
     {
@@ -773,6 +779,7 @@ class AssetsViewer extends AssetsViewerBase
             . ' LEFT JOIN `docs_core_heads` uh ON uh.`id` = ue.`doc_head`'
             . ' WHERE ue.`asset` = a.`id` AND ue.`docState` = ' . AssetEventDocument::STATE_CONFIRMED
             . " AND ue.`scope` <> '" . AssetEvent::SCOPE_TAX . "'"
+            . " AND ue.`origin` <> '" . AssetEvent::ORIGIN_IMPORT . "'"
             . ' AND ue.`event_kind` IN (' . implode(', ', $kinds) . ')'
             . ' AND (ue.`doc_head` IS NULL OR uh.`id` IS NULL OR uh.`docState` IN ('
             . implode(', ', AssetEventDocument::DEAD_DOC_STATES) . ')))';

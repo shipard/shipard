@@ -25,6 +25,9 @@ use Shipard\Module\Economy\Assets\SystemDepreciationWriter;
  *   - vyloučení: nezaúčtované dřívější období (`earlierPeriodUnposted` —
  *     účtuje se bez děr), chyba plánu, neodepsané dřívější období, zamčený
  *     měsíc odpisu, chybějící účet účetní skupiny, neúplný plán vyřazení.
+ *   Události původu `import` jsou zaúčtované ve starém systému (D76):
+ *   kandidáty nejsou a nic neblokují — zaúčtování v novém Shipardu začíná
+ *   prvním obdobím po poslední importované.
  *
  * `post()` běží v jedné transakci: zámek karet → odpisy
  * (`SystemDepreciationWriter`) → řádky ({@see AssetPostingBuilder}) →
@@ -572,7 +575,9 @@ class AssetPostingService
 
     /**
      * Potvrzené události účetního okruhu bez živého účetního dokladu
-     * s datem do `$until`, chronologicky per karta.
+     * s datem do `$until`, chronologicky per karta. Importované události
+     * jsou zaúčtované ve starém systému (D76) — kandidáty nejsou a dřívější
+     * období jimi neblokují.
      *
      * @return list<array<string, mixed>>
      */
@@ -584,12 +589,13 @@ class AssetPostingService
         $rows = $this->db->fetchAll(
             'SELECT [e].* FROM [' . AssetEventDocument::TABLE . '] [e]'
             . ' LEFT JOIN [' . AssetPostingDocuments::HEADS_TABLE . '] [h] ON [h].[id] = [e].[doc_head]'
-            . ' WHERE [e].[docState] = %i AND [e].[event_date] <= %d AND [e].[scope] <> %s'
+            . ' WHERE [e].[docState] = %i AND [e].[event_date] <= %d AND [e].[scope] <> %s AND [e].[origin] <> %s'
             . ' AND ([e].[doc_head] IS NULL OR [h].[id] IS NULL OR [h].[docState] IN %in)'
             . ' ORDER BY [e].[asset], [e].[event_date], [e].[id]',
             AssetEventDocument::STATE_CONFIRMED,
             $until,
             AssetEvent::SCOPE_TAX,
+            AssetEvent::ORIGIN_IMPORT,
             AssetEventDocument::DEAD_DOC_STATES,
         );
         $events = [];

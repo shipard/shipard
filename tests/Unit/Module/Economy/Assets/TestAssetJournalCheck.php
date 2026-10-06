@@ -53,13 +53,20 @@ class TestAssetJournalCheck extends AssetJournalCheck
         ];
     }
 
-    /** @param array<string, mixed> $o */
+    /**
+     * Událost; `origin: import` v `$o` = zaúčtovaná ve starém systému
+     * (D76: `posted` i `imported`, bez ohledu na `$posted`).
+     *
+     * @param array<string, mixed> $o
+     */
     public function event(int $asset, string $kind, string $date, float $amount = 0.0, bool $posted = true, array $o = []): int
     {
         $id = $this->eventId++;
+        $imported = ($o['origin'] ?? 'manual') === 'import';
         $this->events[] = $o + [
             'id' => $id, 'asset' => $asset, 'event_kind' => $kind, 'scope' => $kind === 'depreciation' ? 'acc' : 'both',
-            'event_date' => $date, 'amount' => $amount, 'accumulated' => null, 'posted' => $posted ? 1 : 0,
+            'event_date' => $date, 'amount' => $amount, 'accumulated' => null,
+            'posted' => $posted || $imported ? 1 : 0, 'imported' => $imported ? 1 : 0,
         ];
         return $id;
     }
