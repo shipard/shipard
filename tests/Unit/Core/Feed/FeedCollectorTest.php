@@ -6,11 +6,17 @@ namespace Shipard\Tests\Unit\Core\Feed;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Feed\FeedCollector;
+use Shipard\Core\Feed\FeedSource;
 
 /**
  * Unit testy pro FeedCollector — čisté transformace nad kartami feedu
  * (sortAndCap / countByKind / stripInternalFields). Přestěhováno
  * z DashboardControllerTest při extrakci collectoru (UI shells Fáze 3).
+ *
+ * Sekce feedu (#101): výchozí `feedSection` z kind, explicitní hodnota ze
+ * zdroje přebije výchozí, neznámá hodnota padá na výchozí; řazení sekce →
+ * kind → čas; strop 30 **per sekce** s pravdivými počty v `sections`;
+ * `allCards` bez stropu.
  *
  * Zapojení zdrojů, per-source izolaci a degradaci dle tabulek pokrývají
  * integrační testy v DashboardControllerTest (přes dashboard()).
@@ -23,49 +29,172 @@ final class FeedCollectorTest extends TestCase
         return ['id' => $id, 'kind' => $kind, 'timestamp' => $timestamp];
     }
 
-    // ── sortAndCap / countByKind ─────────────────────────────────────────────
-
-    public function testSortAndCapOrdersByKindBand(): void
+    /** @return array<string,mixed> */
+    private function sectionedCard(string $kind, string $feedSection, string $id, ?string $timestamp = null): array
     {
-        $collector = new FeedCollector();
-        $input = [
-            $this->card('info', '2026-06-28T10:00:00+00:00', 'i'),
-            $this->card('ready', '2026-06-28T10:00:00+00:00', 'r'),
-            $this->card('urgent', '2026-06-28T10:00:00+00:00', 'u'),
-            $this->card('review', '2026-06-28T10:00:00+00:00', 'v'),
-        ];
-        [$sorted, $truncated] = $collector->sortAndCap($input, 30);
-
-        $this->assertFalse($truncated);
-        $this->assertSame(['u', 'v', 'r', 'i'], array_column($sorted, 'id'));
+        return [...$this->card($kind, $timestamp, $id), 'feedSection' => $feedSection];
     }
 
-    public function testSortAndCapTimestampDescWithinBand(): void
+    // ── sortAndCap — sekce (#101 D2b) ────────────────────────────────────────
+
+    public function testSortAndCapAssignsDefaultSectionFromKind(): void
     {
-        $collector = new FeedCollector();
-        $input = [
+        $result = (new FeedCollector())->sortAndCap([
+            $this->card('urgent', null, 'u'),
+            $this->card('review', null, 'v'),
+            $this->card('ready', null, 'r'),
+            $this->card('info', null, 'i'),
+            $this->card('weird', null, 'w'),   // neznámý kind → Ostatní
+        ]);
+
+        $sections = [];
+        foreach ($result->cards as $card) {
+            $sections[$card['id']] = $card['feedSection'];
+        }
+        $this->assertSame([
+            'r' => FeedSource::SECTION_READY,
+            'v' => FeedSource::SECTION_REVIEW,
+            'u' => FeedSource::SECTION_FAILED,
+            'i' => FeedSource::SECTION_OTHER,
+            'w' => FeedSource::SECTION_OTHER,
+        ], $sections);
+    }
+
+    public function testSortAndCapKeepsExplicitFeedSection(): void
+    {
+        // Zdroj smí výchozí mapování přepsat: karta položky (review) patří do
+        // Položek k založení, warning alert (review) do Upozornění.
+        $result = (new FeedCollector())->sortAndCap([
+            $this->sectionedCard('review', FeedSource::SECTION_NEW_ITEMS, 'tag'),
+            $this->sectionedCard('review', FeedSource::SECTION_ALERTS, 'alert'),
+            $this->card('review', null, 'plain'),
+        ]);
+
+        $this->assertSame(['tag', 'plain', 'alert'], array_column($result->cards, 'id'));
+        $this->assertSame(FeedSource::SECTION_NEW_ITEMS, $result->cards[0]['feedSection']);
+        $this->assertSame(FeedSource::SECTION_REVIEW, $result->cards[1]['feedSection']);
+        $this->assertSame(FeedSource::SECTION_ALERTS, $result->cards[2]['feedSection']);
+    }
+
+    public function testSortAndCapUnknownFeedSectionFallsBackToKind(): void
+    {
+        $result = (new FeedCollector())->sortAndCap([
+            $this->sectionedCard('ready', 'bogus', 'r'),
+            [...$this->card('urgent', null, 'u'), 'feedSection' => null],
+        ]);
+
+        $this->assertSame(FeedSource::SECTION_READY, $result->cards[0]['feedSection']);
+        $this->assertSame(FeedSource::SECTION_FAILED, $result->cards[1]['feedSection']);
+    }
+
+    // ── sortAndCap — řazení sekce → kind → čas ───────────────────────────────
+
+    public function testSortAndCapOrdersBySectionOrder(): void
+    {
+        $t = '2026-06-28T10:00:00+00:00';
+        $result = (new FeedCollector())->sortAndCap([
+            $this->card('info', $t, 'other'),
+            $this->sectionedCard('review', FeedSource::SECTION_ALERTS, 'alerts', $t),
+            $this->card('urgent', $t, 'failed'),
+            $this->card('review', $t, 'review'),
+            $this->card('ready', $t, 'ready'),
+            $this->sectionedCard('review', FeedSource::SECTION_NEW_ITEMS, 'newItems', $t),
+        ]);
+
+        // D8: Položky k založení → Připraveno → Ke kontrole → Nepodařilo se
+        // zpracovat → Upozornění → Ostatní (id karet = id sekcí).
+        $this->assertSame(FeedCollector::SECTION_ORDER, array_column($result->cards, 'id'));
+    }
+
+    public function testSortAndCapOrdersByKindWithinSection(): void
+    {
+        // Upozornění: uvnitř sekce dle kind = dle závažnosti (D5).
+        $t = '2026-06-28T10:00:00+00:00';
+        $result = (new FeedCollector())->sortAndCap([
+            $this->sectionedCard('info', FeedSource::SECTION_ALERTS, 'i', $t),
+            $this->sectionedCard('urgent', FeedSource::SECTION_ALERTS, 'u', $t),
+            $this->sectionedCard('review', FeedSource::SECTION_ALERTS, 'v', $t),
+        ]);
+
+        $this->assertSame(['u', 'v', 'i'], array_column($result->cards, 'id'));
+    }
+
+    public function testSortAndCapTimestampDescWithinKind(): void
+    {
+        $result = (new FeedCollector())->sortAndCap([
             $this->card('ready', '2026-06-01T10:00:00+00:00', 'old'),
             $this->card('ready', '2026-06-28T10:00:00+00:00', 'new'),
             $this->card('ready', null, 'notime'),
-        ];
-        [$sorted] = $collector->sortAndCap($input, 30);
+        ]);
 
         // Nejnovější první, karta bez timestampu naspod pásma.
-        $this->assertSame(['new', 'old', 'notime'], array_column($sorted, 'id'));
+        $this->assertSame(['new', 'old', 'notime'], array_column($result->cards, 'id'));
     }
 
-    public function testSortAndCapCapsAndFlagsTruncation(): void
+    // ── sortAndCap — strop per sekce, počty (#101 D3a/D3b) ───────────────────
+
+    public function testSortAndCapCapsPerSectionAndKeepsTruthfulCounts(): void
     {
-        $collector = new FeedCollector();
         $input = [];
-        for ($i = 0; $i < 35; $i++) {
-            $input[] = $this->card('ready', '2026-06-28T10:00:00+00:00', "c$i");
+        for ($i = 0; $i < 31; $i++) {
+            $input[] = $this->card('ready', '2026-06-28T10:00:00+00:00', "r$i");
         }
-        [$sorted, $truncated] = $collector->sortAndCap($input, 30);
+        $input[] = $this->card('review', null, 'v1');
+        $input[] = $this->card('review', null, 'v2');
 
-        $this->assertTrue($truncated);
-        $this->assertCount(30, $sorted);
+        $result = (new FeedCollector())->sortAndCap($input);
+
+        // Strop 30 platí jen na přetékající sekci; ostatní nedotčené.
+        $this->assertCount(32, $result->cards);
+        $this->assertCount(33, $result->allCards);
+        $this->assertSame(30, count(array_filter($result->cards, static fn (array $c): bool => $c['kind'] === 'ready')));
+        $this->assertSame(['v1', 'v2'], array_column(array_slice($result->cards, 30), 'id'));
+        $this->assertSame([
+            ['id' => FeedSource::SECTION_READY,  'total' => 31, 'shown' => 30],
+            ['id' => FeedSource::SECTION_REVIEW, 'total' => 2,  'shown' => 2],
+        ], $result->sections);
+        $this->assertTrue($result->hasMore());
+        // allCards nesou sekci i pořadí stejně jako cards.
+        $this->assertSame(FeedSource::SECTION_READY, $result->allCards[30]['feedSection']);
     }
+
+    public function testSortAndCapSectionsOnlyNonEmptyInSectionOrder(): void
+    {
+        $result = (new FeedCollector())->sortAndCap([
+            $this->card('info', null, 'i'),
+            $this->sectionedCard('review', FeedSource::SECTION_NEW_ITEMS, 'tag'),
+        ]);
+
+        $this->assertSame(
+            [FeedSource::SECTION_NEW_ITEMS, FeedSource::SECTION_OTHER],
+            array_column($result->sections, 'id'),
+        );
+        $this->assertFalse($result->hasMore());
+    }
+
+    public function testSortAndCapEmptyInput(): void
+    {
+        $result = (new FeedCollector())->sortAndCap([]);
+
+        $this->assertSame([], $result->cards);
+        $this->assertSame([], $result->allCards);
+        $this->assertSame([], $result->sections);
+        $this->assertFalse($result->hasMore());
+    }
+
+    public function testSortAndCapCustomMaxPerSection(): void
+    {
+        $result = (new FeedCollector())->sortAndCap([
+            $this->card('ready', null, 'a'),
+            $this->card('ready', null, 'b'),
+            $this->card('ready', null, 'c'),
+        ], 2);
+
+        $this->assertSame(['a', 'b'], array_column($result->cards, 'id'));
+        $this->assertSame([['id' => 'ready', 'total' => 3, 'shown' => 2]], $result->sections);
+    }
+
+    // ── countByKind ──────────────────────────────────────────────────────────
 
     public function testCountByKindCountsOnlyActionable(): void
     {

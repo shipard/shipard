@@ -11,9 +11,10 @@ use Shipard\Core\Feed\FeedContext;
 use Shipard\Module\Core\Exchange\Dashboard\ContentTagSuggestionsSource;
 
 /**
- * Karta „Nová kategorie" (tasks/content-tag-ui.md D25) — dedupe per štítek,
- * zmizení při pokrytí položkou, volba účtu u goods.stock, štítky bez
- * mapování nekartují.
+ * Karta položky k založení (tasks/content-tag-ui.md D25) — dedupe per
+ * štítek, zmizení při pokrytí položkou, volba účtu u goods.stock, štítky bez
+ * mapování nekartují; sekce Položky k založení a titulek = label štítku
+ * (#101 D2, D6).
  */
 class ContentTagSuggestionsSourceTest extends TestCase
 {
@@ -81,7 +82,10 @@ class ContentTagSuggestionsSourceTest extends TestCase
         $card = $cards[0];
         $this->assertSame('content_tag:vehicle.fuel', $card['id']);
         $this->assertSame('review', $card['kind']);
-        $this->assertSame('Nová kategorie: Pohonné hmoty', $card['title']);
+        // Sekce Položky k založení (#101 D2) — kind zůstává review.
+        $this->assertSame('newItems', $card['feedSection']);
+        // Titulek bez prefixu „Nová kategorie:“ (#101 D6).
+        $this->assertSame('Pohonné hmoty', $card['title']);
         $this->assertStringContainsString('3 doklady čekají', $card['subtitle']);
         $this->assertStringContainsString('Spotřeba PHM (503100)', $card['subtitle']);
         $this->assertCount(1, $card['actions']);
@@ -153,7 +157,7 @@ class ContentTagSuggestionsSourceTest extends TestCase
             language: 'en',
         ));
 
-        $this->assertSame('New category: Pohonné hmoty', $cards[0]['title']);
+        $this->assertSame('Pohonné hmoty', $cards[0]['title']);
         $this->assertStringContainsString('2 documents waiting', $cards[0]['subtitle']);
         $this->assertSame('Create item', $cards[0]['actions'][0]['label']);
     }

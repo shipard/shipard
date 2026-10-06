@@ -12,6 +12,11 @@ use Shipard\Core\Feed\FeedCollector;
  * navigace (UI shells Fáze 5, D3). Model si feed tahá sám (pull) — nic se
  * mu netlačí do promptu.
  *
+ * Vrací karty po stropu per sekce feedu (`FeedResult::$cards`, #101); každá
+ * položka nese `feedSection`. `pagination.has_more` říká, že některá sekce
+ * má karet víc, než se vešlo pod strop — celofeedově, i při filtru
+ * `section` (ten filtruje navSection, ne sekci feedu).
+ *
  * Jazyk a AlertCheckRegistry nejsou v `McpInvocationContext` — injektují se
  * při registraci v `buildMcpRegistry()` (vzor `ReportToolSupport`). Bez
  * registru by alertové karty měly `navSection = null` a sekční filtr by je
@@ -41,6 +46,8 @@ final class FeedCardsTool implements McpTool
 			. 'co na něj čeká, co je potřeba vyřešit nebo co je nového. Volitelný '
 			. 'parametr `section` omezí karty na jednu sekci navigace '
 			. '(např. purchase, sales, accounting); bez něj vrací celý feed. '
+			. 'Každá položka nese `feedSection` — sekci feedu podle toku práce '
+			. '(newItems, ready, review, failed, alerts, other). '
 			. 'Nástroj jen čte — akce karet vykonává uživatel v UI.';
 	}
 
@@ -62,13 +69,14 @@ final class FeedCardsTool implements McpTool
 	{
 		$section = isset($arguments['section']) ? trim((string) $arguments['section']) : '';
 
-		[$cards] = (new FeedCollector())->collect(
+		$result = (new FeedCollector())->collect(
 			$ctx->db,
 			$ctx->config,
 			$this->lang ?? 'en',
 			$this->alertRegistry,
 			$ctx->tables,
 		);
+		$cards = $result->cards;
 
 		if ($section !== '') {
 			$cards = array_values(array_filter(
@@ -78,26 +86,34 @@ final class FeedCardsTool implements McpTool
 		}
 
 		$items = array_map(static fn (array $c): array => [
-			'kind'       => $c['kind'] ?? null,
-			'title'      => $c['title'] ?? null,
-			'subtitle'   => $c['subtitle'] ?? null,
-			'navSection' => $c['navSection'] ?? null,
-			'timestamp'  => $c['timestamp'] ?? null,
+			'kind'        => $c['kind'] ?? null,
+			'feedSection' => $c['feedSection'] ?? null,
+			'title'       => $c['title'] ?? null,
+			'subtitle'    => $c['subtitle'] ?? null,
+			'navSection'  => $c['navSection'] ?? null,
+			'timestamp'   => $c['timestamp'] ?? null,
 		], $cards);
 
-		$shown = count($items);
-		$scope = $section !== '' ? " v sekci \"{$section}\"" : '';
+		$shown   = count($items);
+		$hasMore = $result->hasMore();
+		$scope   = $section !== '' ? " v sekci \"{$section}\"" : '';
+
+		$summary = $shown === 0
+			? "Žádné karty{$scope}."
+			: "Nalezeno {$shown} karet{$scope}.";
+		if ($hasMore) {
+			$summary .= ' Výpis je zkrácený — některá sekce feedu má víc karet,'
+				. ' než se vešlo pod strop ' . FeedCollector::MAX_CARDS_PER_SECTION . ' na sekci.';
+		}
 
 		return [
-			'summary' => $shown === 0
-				? "Žádné karty{$scope}."
-				: "Nalezeno {$shown} karet{$scope}.",
+			'summary' => $summary,
 			'items' => $items,
 			'pagination' => [
-				'limit'    => FeedCollector::MAX_CARDS,
+				'limit'    => FeedCollector::MAX_CARDS_PER_SECTION,
 				'offset'   => 0,
 				'returned' => $shown,
-				'has_more' => false,
+				'has_more' => $hasMore,
 			],
 		];
 	}

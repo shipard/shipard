@@ -17,9 +17,12 @@ use Shipard\Core\Logging\ErrorLogger;
 /**
  * Dashboard — prezentační vrstva feedu akčních karet (fáze 2).
  *
- * Sběr, řazení a strop karet řeší `FeedCollector` (sdílený s badge stavů
- * sekcí, UI shells Fáze 3); controller nad kartami staví odpovědi —
- * dashboard feed, AI shrnutí (SSE) a `readySummary`.
+ * Sběr, sekce, řazení a strop per sekce řeší `FeedCollector` (sdílený
+ * s badge stavů sekcí, UI shells Fáze 3) a vrací `FeedResult`; controller
+ * nad ním staví odpovědi — dashboard feed (`cards` po stropu, `sections`
+ * s pravdivými počty), AI shrnutí (SSE) a `readySummary`. County, badge,
+ * digest i `readySummary` se počítají ze **všech** karet (`allCards`),
+ * jen `cards` jsou stropnuté (#101 D3b).
  *
  * Detaily: `docs/dashboard.md`.
  */
@@ -43,16 +46,17 @@ class DashboardController
         $lang = $language ?? 'en';
 
         $collector = new FeedCollector();
-        [$cards, $truncated] = $collector->collect($db, $config, $lang, $alertRegistry, $tables);
+        $result    = $collector->collect($db, $config, $lang, $alertRegistry, $tables);
 
         // Sekční filtr `?section=` (UI shells Fáze 5, R4) — karty jedné sekce
-        // pro blok v scoped chat konverzaci. Filtruje se po collect; summary,
-        // readySummary i capabilities jsou celofeedové → při filtru se
-        // vynechají, odpověď nese jen karty. Nevalidní hodnota → přirozeně
-        // prázdný seznam, ne chyba.
+        // NAVIGACE (`navSection`, ne `feedSection`) pro blok v scoped chat
+        // konverzaci. Filtruje se po collect nad stropnutými kartami;
+        // summary, sections, readySummary i capabilities jsou celofeedové →
+        // při filtru se vynechají, odpověď nese jen karty. Nevalidní hodnota
+        // → přirozeně prázdný seznam, ne chyba.
         if ($section !== null && $section !== '') {
             $filtered = array_values(array_filter(
-                $cards,
+                $result->cards,
                 static fn (array $c): bool => ($c['navSection'] ?? null) === $section,
             ));
             return Response::success([
@@ -60,18 +64,17 @@ class DashboardController
                 'cards'       => $collector->stripInternalFields($filtered),
             ]);
         }
-        // readySummary se počítá nad kartami po stropu (Issue #32/2) a interní
-        // pole `amount`/`currency` se hned poté odstraní — do kontraktu nepatří.
-        $readySummary = $this->buildReadySummary($cards);
-        $cards        = $collector->stripInternalFields($cards);
-        if ($truncated) {
-            $cards[] = $this->andMoreCard($lang);
-        }
+        // readySummary se počítá nad VŠEMI ready kartami (#101 D3b) — pruh
+        // Připraveno mluví o celé sekci, `shown` říká, kolik z nich je
+        // v `cards`. Interní pole `amount`/`currency` se hned poté odstraní —
+        // do kontraktu nepatří.
+        $readySummary = $this->buildReadySummary($result->allCards, $result->cards);
 
         $data = [
             'generatedAt' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-            'summary'     => ['aiText' => null, 'counts' => $collector->countByKind($cards)],
-            'cards'       => $cards,
+            'summary'     => ['aiText' => null, 'counts' => $collector->countByKind($result->allCards)],
+            'sections'    => $result->sections,
+            'cards'       => $collector->stripInternalFields($result->cards),
         ];
         // Souhrn ready pásma pro sbalený pruh (Issue #32/2, D8) — jen když
         // je aspoň jedna ready karta; jinak se pole vynechá.
@@ -95,8 +98,9 @@ class DashboardController
     /**
      * GET /_ui/dashboard/summary — generované AI shrnutí feedu (SSE, fáze 2b).
      *
-     * Sdílí `FeedCollector::collect()` s `dashboard()`, takže shrnutí vzniká nad
-     * přesně týmiž kartami, jaké vidí uživatel. Události: `text {delta}` (jen při
+     * Sdílí `FeedCollector::collect()` s `dashboard()`; digest dostává
+     * všechny karty (pravdivé county, #101) — top karty vybírá služba z čela
+     * seznamu, tedy v pořadí sekcí. Události: `text {delta}` (jen při
      * cache miss), `done {text, cached}` (`text=null` = prázdný feed nebo
      * degradace — frontend ponechá statické county), `error {message}`.
      * Vzor streamu: ChatController. Detaily docs/dashboard.md §AI shrnutí.
@@ -112,9 +116,9 @@ class DashboardController
         $lang = $language ?? 'en';
 
         $collector = new FeedCollector();
-        [$cards] = $collector->collect($db, $config, $lang, $alertRegistry, $tables);
+        $result    = $collector->collect($db, $config, $lang, $alertRegistry, $tables);
         // Čisté karty i pro AI shrnutí — digest cache se interními poli nemění.
-        $cards = $collector->stripInternalFields($cards);
+        $cards = $collector->stripInternalFields($result->allCards);
 
         return Response::stream(
             function () use ($service, $cards, $lang): void {
@@ -139,9 +143,10 @@ class DashboardController
      * GET /_ui/section-badges — badge stavů sekcí navigace (UI shells Fáze 3).
      *
      * Stejný sběr karet jako dashboard (plný FeedContext), jiná prezentace:
-     * agregace per `navSection` (`FeedCollector::sectionBadges`, D2–D4).
-     * Odpověď: `{sections: {"<sectionId>": {count, severity}}}` — jen
-     * neprázdné sekce, `_top` je platný klíč.
+     * agregace per `navSection` (`FeedCollector::sectionBadges`, D2–D4) nad
+     * všemi kartami, ne jen pod stropem (#101). Odpověď:
+     * `{sections: {"<sectionId>": {count, severity}}}` — jen neprázdné
+     * sekce, `_top` je platný klíč.
      *
      * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
      */
@@ -155,39 +160,44 @@ class DashboardController
         $lang = $language ?? 'en';
 
         $collector = new FeedCollector();
-        [$cards] = $collector->collect($db, $config, $lang, $alertRegistry, $tables);
+        $result    = $collector->collect($db, $config, $lang, $alertRegistry, $tables);
 
         // (object) — prázdná mapa musí být v JSON `{}`, ne `[]`.
-        return Response::success(['sections' => (object) $collector->sectionBadges($cards)]);
+        return Response::success(['sections' => (object) $collector->sectionBadges($result->allCards)]);
     }
 
     /**
-     * Souhrn ready pásma pro sbalené pruhy feedu (Issue #32/2, D8 + D11).
-     * Počítá se z karet PO `sortAndCap` — souhrn odpovídá tomu, co uživatel
-     * vidí — a dělí se **per kategorie**: `invoices` (přijaté faktury,
-     * defenzivní default) a `registry` (Spisovna) mají každá vlastní pruh.
+     * Souhrn ready pásma pro sbalené pruhy feedu (Issue #32/2, D8 + D11;
+     * #101 D3b). Počítá se ze **všech** ready karet (`$cards` =
+     * `FeedResult::$allCards`) — titulek pruhu a součty mluví o celé sekci
+     * Připraveno, ne jen o kartách pod stropem — a dělí se **per kategorie**:
+     * `invoices` (přijaté faktury, defenzivní default) a `registry` (Spisovna)
+     * mají každá vlastní pruh. `shown` = počet ready karet skupiny
+     * v `$shownCards` (karty po stropu; bez argumentu = `count`), aby
+     * frontend uměl odečíst optimisticky smazané karty.
      * Částky se agregují per měna, nikdy napříč měnami; karta bez
      * `amount`/`currency` se do `amounts` nezapočítá, do `count` ano
      * (registry karty částky nenesou → jejich `amounts` je vždy prázdné).
      * `confidencePct` u ready karet vždy existuje (pásmo se bez jistoty
      * nespočítá), kód je přesto defenzivní — bez hodnot zůstane min/max null.
      *
-     * @param  list<array<string,mixed>> $cards
-     * @return array<string, array{count:int,
+     * @param  list<array<string,mixed>>      $cards       všechny karty (bez stropu)
+     * @param  list<array<string,mixed>>|null $shownCards  karty po stropu; null = `$cards`
+     * @return array<string, array{count:int, shown:int,
      *               amounts:list<array{currency:string,total:float}>,
      *               confidenceMin:int|null, confidenceMax:int|null}>|null
      *         klíče `invoices`/`registry`, jen neprázdné skupiny;
      *         null = žádná ready karta (pole se v odpovědi vynechá)
      * @internal Public pro účely testů — čistá transformace bez business logiky.
      */
-    public function buildReadySummary(array $cards): ?array
+    public function buildReadySummary(array $cards, ?array $shownCards = null): ?array
     {
         $groups = [];
         foreach ($cards as $card) {
             if (($card['kind'] ?? '') !== 'ready') {
                 continue;
             }
-            $key = ($card['category'] ?? '') === 'registry' ? 'registry' : 'invoices';
+            $key = self::readyGroupKey($card);
             $g = $groups[$key] ?? ['count' => 0, 'totals' => [], 'confMin' => null, 'confMax' => null];
             $g['count']++;
             $amount   = $card['amount'] ?? null;
@@ -206,6 +216,13 @@ class DashboardController
             return null;
         }
 
+        $shown = ['invoices' => 0, 'registry' => 0];
+        foreach ($shownCards ?? $cards as $card) {
+            if (($card['kind'] ?? '') === 'ready') {
+                $shown[self::readyGroupKey($card)]++;
+            }
+        }
+
         $summary = [];
         foreach (['invoices', 'registry'] as $key) {
             if (!isset($groups[$key])) {
@@ -217,6 +234,7 @@ class DashboardController
             }
             $summary[$key] = [
                 'count'         => $groups[$key]['count'],
+                'shown'         => min($shown[$key], $groups[$key]['count']),
                 'amounts'       => $amounts,
                 'confidenceMin' => $groups[$key]['confMin'],
                 'confidenceMax' => $groups[$key]['confMax'],
@@ -225,35 +243,17 @@ class DashboardController
         return $summary;
     }
 
+    /** Skupina pruhu Připraveno: `registry` (Spisovna), jinak `invoices` — shodné s frontendem. */
+    private static function readyGroupKey(array $card): string
+    {
+        return ($card['category'] ?? '') === 'registry' ? 'registry' : 'invoices';
+    }
+
     /** Writes one SSE event frame and flushes it to the client. */
     private function sse(string $event, array $data): void
     {
         echo "event: {$event}\n";
         echo 'data: ' . json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n\n";
         @flush();
-    }
-
-    /**
-     * Závěrečná info karta při ořezu feedu — navigace na došlou poštu.
-     *
-     * Záměrně bez `category` — karty bez kategorie frontend zobrazuje jen
-     * v záložce Vše (bezpečný default, docs/dashboard.md §4).
-     */
-    private function andMoreCard(string $lang): array
-    {
-        return [
-            'id'         => 'mail_more',
-            'source'     => 'mail',
-            'kind'       => 'info',
-            'icon'       => 'mail',
-            'stateStyle' => 'concept',
-            'title'      => $lang === 'cs' ? '…a další nezpracovaná pošta' : '…and more unprocessed mail',
-            'subtitle'   => '',
-            'timestamp'  => null,
-            'context'    => [],
-            'actions'    => [
-                ['id' => 'openMail', 'kind' => 'open_viewer', 'target' => ['viewerId' => 'core.mail.incoming']],
-            ],
-        ];
     }
 }

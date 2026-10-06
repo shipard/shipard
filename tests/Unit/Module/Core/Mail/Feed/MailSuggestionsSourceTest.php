@@ -275,6 +275,8 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame('mail_suggestion:101', $card['id']);
         $this->assertSame('mail', $card['source']);
         $this->assertSame('ready', $card['kind']);
+        // Návrh bez feedSection — sekci odvodí collector z kind (#101 D2b).
+        $this->assertArrayNotHasKey('feedSection', $card);
         $this->assertSame('done', $card['stateStyle']);
         $this->assertSame('check', $card['icon']);
         $this->assertSame('invoices', $card['category']);
@@ -382,6 +384,7 @@ final class MailSuggestionsSourceTest extends TestCase
         $card = $cards[0];
         $this->assertSame('mail_invalid:101', $card['id']);
         $this->assertSame('urgent', $card['kind']);
+        $this->assertSame('failed', $card['feedSection']);
         $this->assertSame('error', $card['stateStyle']);
         $this->assertSame('AI vrátila nepoužitelný návrh', $card['title']);
         $this->assertSame('ČEZ a.s.', $card['subtitle']);
@@ -432,6 +435,8 @@ final class MailSuggestionsSourceTest extends TestCase
         $card = $cards[0];
         $this->assertSame('mail_message:555', $card['id']);
         $this->assertSame('urgent', $card['kind']);
+        // Nepodařilo se zpracovat (#101 D4).
+        $this->assertSame('failed', $card['feedSection']);
         $this->assertSame('error', $card['stateStyle']);
         $this->assertSame('other', $card['category']);
         // Bez compiled configu anglický fallback katalogu.
@@ -532,6 +537,8 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertCount(1, $cards);
         $this->assertSame('review', $cards[0]['kind']);
         $this->assertSame('error', $cards[0]['stateStyle']);
+        // Degradovaná review karta zůstává v Nepodařilo se zpracovat (#101 D4).
+        $this->assertSame('failed', $cards[0]['feedSection']);
     }
 
     // ── Karta „Není faktura" ─────────────────────────────────────────────
@@ -558,6 +565,7 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertCount(1, $cards);
         $card = $cards[0];
         $this->assertSame('mail_notinvoice:777', $card['id']);
+        $this->assertArrayNotHasKey('feedSection', $card);
         $this->assertSame('info', $card['kind']);
         $this->assertSame('archive', $card['stateStyle']);
         $this->assertSame('other', $card['category']);

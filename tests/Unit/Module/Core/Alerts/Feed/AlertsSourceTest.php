@@ -117,6 +117,8 @@ final class AlertsSourceTest extends TestCase
         $this->assertSame('urgent', $card['kind']);
         $this->assertSame('error', $card['stateStyle']);
         $this->assertSame('other', $card['category']);
+        // Sekce Upozornění bez ohledu na závažnost (#101 D5).
+        $this->assertSame('alerts', $card['feedSection']);
         $this->assertSame('Chybí vlastní firma', $card['title']);
         $this->assertSame('Založ vlastní Osobu.', $card['subtitle']);
         $this->assertSame('2026-06-28T12:00:00+00:00', $card['timestamp']);
@@ -137,6 +139,8 @@ final class AlertsSourceTest extends TestCase
         $card = $src->collectCards($this->singleAlertContext($this->alertRow(10)))[0];
         $this->assertSame('info', $card['kind']);
         $this->assertSame('concept', $card['stateStyle']);
+        // I info alert patří do Upozornění, ne do Ostatní (#101 D5).
+        $this->assertSame('alerts', $card['feedSection']);
     }
 
     public function testActionsPassthrough(): void
@@ -195,6 +199,7 @@ final class AlertsSourceTest extends TestCase
         $this->assertSame('alert-group:docs.core.stale_in_repair', $card['id']);
         $this->assertSame('alerts', $card['source']);
         $this->assertSame('other', $card['category']);
+        $this->assertSame('alerts', $card['feedSection']);
         $this->assertStringContainsString('4', $card['subtitle']);
         $this->assertSame('4 upozornění', $card['subtitle']);
         $this->assertSame(4, $card['context']['count']);
@@ -414,6 +419,8 @@ final class AlertsSourceTest extends TestCase
         $this->assertSame('Dokončit nastavení', $card['title']);
         $this->assertSame('8 položek', $card['subtitle']);
         $this->assertSame('review', $card['kind']);
+        // Setup karta patří do Položek k založení, ne do Upozornění (#101 D5).
+        $this->assertSame('newItems', $card['feedSection']);
         $this->assertSame(
             ['tag' => 'setup', 'count' => 8, 'severity' => 20, 'group' => true],
             $card['context'],

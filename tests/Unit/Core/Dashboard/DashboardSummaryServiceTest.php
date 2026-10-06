@@ -109,7 +109,7 @@ final class DashboardSummaryServiceTest extends TestCase
         $a = $svc->buildDigest($this->sampleCards(), 'cs', self::TODAY);
 
         $cards   = $this->sampleCards();
-        $cards[] = ['id' => 'mail_more', 'kind' => 'info', 'title' => '…a další'];
+        $cards[] = ['id' => 'mail_notinvoice:9', 'kind' => 'info', 'title' => 'Není faktura'];
         $b = $svc->buildDigest($cards, 'cs', self::TODAY);
 
         $this->assertSame($this->hashDigest($a), $this->hashDigest($b));

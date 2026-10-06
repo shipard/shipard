@@ -33,6 +33,12 @@ use Shipard\Core\Feed\FeedSource;
  * vyřadí z per-check agregace i z individuálních karet. Primární akce
  * `open_panel` → panel dsSetup. Bez registry se tagy nedají zjistit →
  * fáze 0 se přeskočí (fail-open, alerty projdou individuálně).
+ *
+ * **Sekce feedu** (#101 D5): individuální i skupinové karty nesou
+ * `feedSection = alerts` (Upozornění) bez ohledu na závažnost — uvnitř sekce
+ * je řadí collector dle `kind`, tedy dle závažnosti. Setup karta patří do
+ * Položek k založení (`newItems`). `kind` zůstává dle severity (county,
+ * badge sekcí navigace, AI shrnutí).
  * Detaily: docs/dashboard.md §5.2.
  */
 final class AlertsSource implements FeedSource
@@ -77,7 +83,8 @@ final class AlertsSource implements FeedSource
         }
 
         // Fáze 1 — agregát per check. Malý výsledek (počet checků, ne alertů),
-        // bez LIMITu → skupinové karty mají pravdivý počet i nad MAX_CARDS.
+        // bez LIMITu → skupinové karty mají pravdivý počet i nad pojistným
+        // limitem zdroje.
         $groups = $ctx->db->fetchAll(
             'SELECT `check_id`, COUNT(*) AS `cnt`, MAX(`severity`) AS `max_severity`,'
             . ' MAX(`last_seen_at`) AS `last_at`, MAX(`first_seen_at`) AS `first_at`'
@@ -100,7 +107,9 @@ final class AlertsSource implements FeedSource
             }
         }
 
-        // Fáze 2 — individuální alerty jen pro checky pod prahem.
+        // Fáze 2 — individuální alerty jen pro checky pod prahem. LIMIT je
+        // pojistka zdroje (sourceLimit), ne strop feedu — stropuje collector
+        // per sekce. Reálně ≤ GROUP_THRESHOLD řádků per check.
         if ($individualCheckIds !== []) {
             $rows = $ctx->db->fetchAll(
                 'SELECT `id`, `check_id`, `title`, `message`, `severity`, `actions`,'
@@ -111,7 +120,7 @@ final class AlertsSource implements FeedSource
                 . ' LIMIT %i',
                 self::STATE_ACTIVE,
                 $individualCheckIds,
-                $ctx->maxCards,
+                $ctx->sourceLimit,
             );
             foreach ($rows as $row) {
                 $cards[] = $this->buildCard($row);
@@ -137,9 +146,10 @@ final class AlertsSource implements FeedSource
         $subtitle = $message !== '' ? $message : $checkId;
 
         return [
-            'id'         => 'alert:' . $id,
-            'source'     => 'alerts',
-            'kind'       => $kind,
+            'id'          => 'alert:' . $id,
+            'source'      => 'alerts',
+            'kind'        => $kind,
+            'feedSection' => FeedSource::SECTION_ALERTS,
             'icon'       => $icon,
             'stateStyle' => $stateStyle,
             'category'   => FeedSource::CATEGORY_OTHER,
@@ -177,9 +187,10 @@ final class AlertsSource implements FeedSource
         $cs    = $ctx->language === 'cs';
 
         return [
-            'id'         => 'alert-group:' . $checkId,
-            'source'     => 'alerts',
-            'kind'       => $kind,
+            'id'          => 'alert-group:' . $checkId,
+            'source'      => 'alerts',
+            'kind'        => $kind,
+            'feedSection' => FeedSource::SECTION_ALERTS,
             'icon'       => $icon,
             'stateStyle' => $stateStyle,
             'category'   => FeedSource::CATEGORY_OTHER,
@@ -255,9 +266,11 @@ final class AlertsSource implements FeedSource
         }
 
         return [
-            'id'         => 'alert-group:setup',
-            'source'     => 'alerts',
-            'kind'       => $kind,
+            'id'          => 'alert-group:setup',
+            'source'      => 'alerts',
+            'kind'        => $kind,
+            // Položky k založení (#101 D5): nastavení odblokuje ostatní práci.
+            'feedSection' => FeedSource::SECTION_NEW_ITEMS,
             'icon'       => $icon,
             'stateStyle' => $stateStyle,
             'category'   => FeedSource::CATEGORY_OTHER,

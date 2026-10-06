@@ -22,6 +22,9 @@ use Shipard\Core\Feed\FeedSource;
  * Akce se emitují bez `label` — frontend je lokalizuje podle `action.id`
  * (i18n klíče `dashboard.card.action.*`). Titulky/podtitulky jsou složené
  * na serveru dle `ctx->language` (vzor MailSuggestionsSource).
+ *
+ * Sekce feedu (#101 D10): bez `feedSection` — výchozí mapování z `kind`,
+ * tedy návrh pravidla (review) → Ke kontrole, digest (info) → Ostatní.
  */
 final class MailDigestSource implements FeedSource
 {
@@ -120,7 +123,7 @@ final class MailDigestSource implements FeedSource
             . ' LIMIT %i',
             self::RULE_STATE_DRAFT,
             'suggested',
-            $ctx->maxCards,
+            $ctx->sourceLimit,
         );
     }
 

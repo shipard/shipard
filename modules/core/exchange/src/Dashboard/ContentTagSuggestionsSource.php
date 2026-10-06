@@ -10,10 +10,12 @@ use Shipard\Module\Core\Mail\IncomingMessageDocument;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
 
 /**
- * Karta „Nová kategorie" (tasks/content-tag-ui.md D25): otevřené dokumentové
- * návrhy nesou obsahový štítek, který nemá živou otagovanou položku — jeden
- * klik založí startovní položku z nabídky (D26) a návrhy se při dalším
- * otevření povýší na plnou trojici bez reanalýzy (D16).
+ * Karta položky k založení (tasks/content-tag-ui.md D25): otevřené
+ * dokumentové návrhy nesou obsahový štítek, který nemá živou otagovanou
+ * položku — jeden klik založí startovní položku z nabídky (D26) a návrhy se
+ * při dalším otevření povýší na plnou trojici bez reanalýzy (D16). Ve feedu
+ * má karta vlastní sekci Položky k založení (`feedSection = newItems`,
+ * #101 D2) a titulek = jen label štítku (D6).
  *
  * Jedna karta per štítek (dedupe přes zprávy), query-driven bez dismiss
  * stavu — karta zmizí, jakmile položka existuje nebo žádný otevřený návrh
@@ -54,7 +56,7 @@ final class ContentTagSuggestionsSource implements FeedSource
             if ($card !== null) {
                 $cards[] = $card;
             }
-            if (count($cards) >= $ctx->maxCards) {
+            if (count($cards) >= $ctx->sourceLimit) {
                 break;
             }
         }
@@ -176,16 +178,18 @@ final class ContentTagSuggestionsSource implements FeedSource
             'id'         => 'content_tag:' . $tag,
             'source'     => 'contentTags',
             // review, ne info (Issue #32/2 D12): karta blokuje povýšení
-            // návrhů a po založení položky se přestane objevovat — patří
-            // mezi plné karty Ke kontrole, ne zapadlá v Ostatní.
-            'kind'       => 'review',
+            // návrhů a po založení položky se přestane objevovat. Sekci
+            // Položky k založení (#101 D2) určuje feedSection, kind zůstává
+            // (county, badge sekcí navigace a AI shrnutí na něm stojí).
+            'kind'        => 'review',
+            'feedSection' => FeedSource::SECTION_NEW_ITEMS,
             'icon'       => 'question',
             'stateStyle' => 'concept',
             'category'   => FeedSource::CATEGORY_INVOICES,
             // Po plánovaném sloučení sekce Základní do `_top` (ui-shells.md
             // §13) změnit na NAV_SECTION_TOP.
             'navSection' => 'basic',
-            'title'      => ($cs ? 'Nová kategorie: ' : 'New category: ') . $label,
+            'title'      => $label,
             'subtitle'   => $subtitle,
             'timestamp'  => $this->toAtom($latest),
             'context'    => ['tag' => $tag, 'waiting' => $waiting],

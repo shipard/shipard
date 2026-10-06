@@ -59,8 +59,15 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  * třech druzích karet `warning` — lokalizovaný řádek „Předzpracování:
  * {titulek kategorie}" z PreprocessErrorPresenter (tasks/mail-preprocess-
  * error-messages.md D3c); `preprocess_log` se čte jen ve stavu 40.
- * Data jdou z `canonical_json` (kanonický doklad) — feed je stropovaný
- * (maxCards), takže N `json_decode` je únosné.
+ * Data jdou z `canonical_json` (kanonický doklad) — dotazy zdroje omezuje
+ * pojistný `sourceLimit` (řádově stovky), takže N `json_decode` je únosné;
+ * strop toho, co uživatel uvidí, dělá collector per sekce (#101 D3a).
+ *
+ * Sekce feedu (#101 D4): chybové karty (`mail_message`, včetně degradované
+ * review varianty) a karta nevalidního výstupu (`mail_invalid`) nesou
+ * `feedSection = failed` (Nepodařilo se zpracovat). Návrhové a „Není
+ * faktura" karty pole nemají — výchozí mapování z `kind` (ready → Připraveno,
+ * review → Ke kontrole, info → Ostatní).
  *
  * Akce se emitují bez `label` — frontend je lokalizuje podle `action.id`
  * (i18n klíče `dashboard.card.action.*`). Podtitulek a titulek jsou naopak
@@ -206,7 +213,7 @@ final class MailSuggestionsSource implements FeedSource
             . ' LIMIT %i',
             [IncomingMessageDocument::DOC_STATE_NEW, IncomingMessageDocument::DOC_STATE_OPEN],
             IncomingMessageDocument::ANALYSIS_ANALYZED,
-            $ctx->maxCards,
+            $ctx->sourceLimit,
         );
     }
 
@@ -348,9 +355,10 @@ final class MailSuggestionsSource implements FeedSource
             isset($row['prompt_version']) ? (string) $row['prompt_version'] : null,
         );
         $card = [
-            'id'         => 'mail_invalid:' . $messageNdx,
-            'source'     => 'mail',
-            'kind'       => 'urgent',
+            'id'          => 'mail_invalid:' . $messageNdx,
+            'source'      => 'mail',
+            'kind'        => 'urgent',
+            'feedSection' => FeedSource::SECTION_FAILED,
             'icon'       => 'warning',
             'stateStyle' => 'error',
             'category'   => FeedSource::CATEGORY_OTHER,
@@ -399,7 +407,7 @@ final class MailSuggestionsSource implements FeedSource
             . ' LIMIT %i',
             IncomingMessageDocument::ANALYSIS_FAILED,
             [IncomingMessageDocument::DOC_STATE_ARCHIVED, IncomingMessageDocument::DOC_STATE_TRASH],
-            $ctx->maxCards,
+            $ctx->sourceLimit,
         );
     }
 
@@ -422,9 +430,11 @@ final class MailSuggestionsSource implements FeedSource
             isset($row['failed_prompt_version']) ? (string) $row['failed_prompt_version'] : null,
         );
         $card = [
-            'id'         => 'mail_message:' . $messageNdx,
-            'source'     => 'mail',
-            'kind'       => $isOther ? 'review' : 'urgent',
+            'id'          => 'mail_message:' . $messageNdx,
+            'source'      => 'mail',
+            'kind'        => $isOther ? 'review' : 'urgent',
+            // Nepodařilo se zpracovat (#101 D4) — i degradovaná review karta.
+            'feedSection' => FeedSource::SECTION_FAILED,
             'icon'       => 'warning',
             'stateStyle' => 'error',
             'category'   => FeedSource::CATEGORY_OTHER,
@@ -491,7 +501,7 @@ final class MailSuggestionsSource implements FeedSource
             . ' LIMIT %i',
             IncomingMessageDocument::ANALYSIS_ANALYZED,
             IncomingMessageDocument::DOC_STATE_NEW,
-            $ctx->maxCards,
+            $ctx->sourceLimit,
         );
     }
 

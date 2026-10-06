@@ -23,8 +23,9 @@ use Shipard\Core\Logging\ErrorLogger;
  *
  * Pokrývají:
  *   - buildReadySummary (čistá transformace)
- *   - dashboard() — tvar feedu, zapojení zdrojů, ořez + „a další“ karta,
- *     readySummary (Issue #32/2)
+ *   - dashboard() — tvar feedu, zapojení zdrojů, `sections` + strop per
+ *     sekce bez karty „a další“ (#101), readySummary ze všech ready karet
+ *     + `shown` (Issue #32/2, #101 D3b)
  *   - summary() — SSE události (text/done/error), degradace
  *
  * Čisté transformace collectoru (sortAndCap / countByKind /
@@ -171,6 +172,30 @@ final class DashboardControllerTest extends TestCase
         $this->assertSame(1, $onlyRegistry['registry']['count']);
     }
 
+    public function testBuildReadySummaryShownCountsOnlyCardsUnderCap(): void
+    {
+        // `count`/`amounts`/jistoty ze všech karet (allCards), `shown` jen
+        // z karet po stropu (cards) — per skupina. Bez druhého argumentu
+        // shown = count.
+        $ctrl = new DashboardController();
+        $all = [
+            $this->readyCard('a', 100.00, 'CZK', 95),
+            $this->readyCard('b', 200.00, 'CZK', 91),
+            $this->readyCard('c', 300.00, 'CZK', 98),
+            [...$this->readyCard('r1', null, null, 90), 'category' => 'registry'],
+        ];
+        $summary = $ctrl->buildReadySummary($all, [$all[0], $all[3]]);
+
+        $this->assertSame(3, $summary['invoices']['count']);
+        $this->assertSame(1, $summary['invoices']['shown']);
+        $this->assertSame([['currency' => 'CZK', 'total' => 600.00]], $summary['invoices']['amounts']);
+        $this->assertSame(91, $summary['invoices']['confidenceMin']);
+        $this->assertSame(1, $summary['registry']['count']);
+        $this->assertSame(1, $summary['registry']['shown']);
+
+        $this->assertSame(3, $ctrl->buildReadySummary($all)['invoices']['shown']);
+    }
+
     public function testBuildReadySummaryNullWithoutReadyCards(): void
     {
         $ctrl = new DashboardController();
@@ -200,6 +225,7 @@ final class DashboardControllerTest extends TestCase
         $this->assertArrayHasKey('generatedAt', $data);
         $this->assertNull($data['summary']['aiText']);
         $this->assertSame(['urgent' => 0, 'review' => 0, 'ready' => 0], $data['summary']['counts']);
+        $this->assertSame([], $data['sections']);
         $this->assertSame([], $data['cards']);
         $this->assertArrayNotHasKey('readySummary', $data);
         $this->assertArrayNotHasKey('tasks', $data);
@@ -258,14 +284,23 @@ final class DashboardControllerTest extends TestCase
         $data = $ctrl->dashboard($db, null, 'cs', null, $this->fullTables())->getPayload()['data'];
 
         $this->assertCount(2, $data['cards']);
-        // urgent (alert) před ready (mail)
-        $this->assertSame('alert:7', $data['cards'][0]['id']);
-        $this->assertSame('mail_suggestion:2', $data['cards'][1]['id']);
+        // Pořadí sekcí (#101 D8): Připraveno (mail) před Upozorněním (alert),
+        // přestože alert je urgent — řadí sekce, ne kind.
+        $this->assertSame('mail_suggestion:2', $data['cards'][0]['id']);
+        $this->assertSame('ready', $data['cards'][0]['feedSection']);
+        $this->assertSame('alert:7', $data['cards'][1]['id']);
+        $this->assertSame('alerts', $data['cards'][1]['feedSection']);
         $this->assertSame(['urgent' => 1, 'review' => 0, 'ready' => 1], $data['summary']['counts']);
+        $this->assertSame([
+            ['id' => 'ready',  'total' => 1, 'shown' => 1],
+            ['id' => 'alerts', 'total' => 1, 'shown' => 1],
+        ], $data['sections']);
     }
 
-    public function testDashboardAppendsAndMoreCardWhenTruncated(): void
+    public function testDashboardCapsPerSectionWithTruthfulCounts(): void
     {
+        // 35 ready návrhů → 30 karet, žádná karta „a další“ (#101 D3b);
+        // sections, counts i readySummary mluví o všech 35, `shown` o 30.
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturn(null);
         $db->method('fetchAll')->willReturnCallback(
@@ -284,11 +319,12 @@ final class DashboardControllerTest extends TestCase
         $ctrl = new DashboardController();
         $data = $ctrl->dashboard($db, null, 'cs', null, $this->fullTables())->getPayload()['data'];
 
-        $this->assertCount(31, $data['cards']); // 30 + „a další" karta
-        $last = $data['cards'][30];
-        $this->assertSame('mail_more', $last['id']);
-        $this->assertSame('info', $last['kind']);
-        $this->assertSame('open_viewer', $last['actions'][0]['kind']);
+        $this->assertCount(30, $data['cards']);
+        $this->assertNotContains('mail_more', array_column($data['cards'], 'id'));
+        $this->assertSame([['id' => 'ready', 'total' => 35, 'shown' => 30]], $data['sections']);
+        $this->assertSame(['urgent' => 0, 'review' => 0, 'ready' => 35], $data['summary']['counts']);
+        $this->assertSame(35, $data['readySummary']['invoices']['count']);
+        $this->assertSame(30, $data['readySummary']['invoices']['shown']);
     }
 
     public function testDashboardReadySummaryFromCanonicalAndStripsInternalFields(): void
@@ -321,6 +357,7 @@ final class DashboardControllerTest extends TestCase
 
         $invoices = $data['readySummary']['invoices'];
         $this->assertSame(3, $invoices['count']);
+        $this->assertSame(3, $invoices['shown']);
         $this->assertSame(
             [['currency' => 'CZK', 'total' => 1000.50], ['currency' => 'EUR', 'total' => 120.00]],
             $invoices['amounts'],
@@ -571,6 +608,7 @@ final class DashboardControllerTest extends TestCase
 
         $this->assertSame(['alert:7'], array_column($data['cards'], 'id'));
         $this->assertArrayNotHasKey('summary', $data);
+        $this->assertArrayNotHasKey('sections', $data);
         $this->assertArrayNotHasKey('readySummary', $data);
         $this->assertArrayNotHasKey('capabilities', $data);
     }

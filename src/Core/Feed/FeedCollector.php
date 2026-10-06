@@ -22,18 +22,54 @@ use Shipard\Module\Core\Mail\Feed\MailSuggestionsSource;
  * tabulek na DS (D8). Bezstavová služba bez konstruktoru — wiring přes
  * `new FeedCollector()` v controlleru (v repu není DI kontejner).
  *
+ * Sekce feedu (#101): každá karta dostane `feedSection` (explicitní ze
+ * zdroje, jinak výchozí z `kind`), karty se řadí sekce → pásmo → čas
+ * a stropují **per sekce** (`MAX_CARDS_PER_SECTION`). Zdroje dostávají jen
+ * pojistný `SOURCE_LIMIT` pro své dotazy. Výsledek nese `FeedResult`.
+ *
  * Detaily: `docs/dashboard.md`.
  */
 final class FeedCollector
 {
-    /** Strop počtu karet feedu; při ořezu controller přidá info kartu „a další…". */
-    public const int MAX_CARDS = 30;
+    /** Strop počtu karet **per sekce** feedu (#101 D3a); pravdivé počty nese `FeedResult::$sections`. */
+    public const int MAX_CARDS_PER_SECTION = 30;
 
-    /** Prioritní žebříček pásem karet (nižší = výše). Sekundárně timestamp DESC. */
+    /**
+     * Pojistný limit dotazů zdrojů (`FeedContext::$sourceLimit`) — ne strop
+     * feedu. Počty per sekce jsou pravdivé jen do tohoto limitu; nezvyšovat
+     * bez měření (`MailSuggestionsSource` dekóduje `canonical_json` každého
+     * řádku a sběr běží i při pollingu badge).
+     */
+    public const int SOURCE_LIMIT = 500;
+
+    /** Pořadí sekcí feedu podle toku práce (#101 D8). */
+    public const array SECTION_ORDER = [
+        FeedSource::SECTION_NEW_ITEMS,
+        FeedSource::SECTION_READY,
+        FeedSource::SECTION_REVIEW,
+        FeedSource::SECTION_FAILED,
+        FeedSource::SECTION_ALERTS,
+        FeedSource::SECTION_OTHER,
+    ];
+
+    /** Výchozí sekce karty bez `feedSection` dle `kind` (#101 D2b); neznámý kind → other. */
+    public const array DEFAULT_SECTION_BY_KIND = [
+        'urgent' => FeedSource::SECTION_FAILED,
+        'review' => FeedSource::SECTION_REVIEW,
+        'ready'  => FeedSource::SECTION_READY,
+        'info'   => FeedSource::SECTION_OTHER,
+    ];
+
+    /**
+     * Prioritní žebříček pásem karet uvnitř sekce (nižší = výše). V sekci
+     * Upozornění odpovídá závažnosti alertu (D5), protože `AlertsSource`
+     * mapuje severity na kind. Sekundárně timestamp DESC.
+     */
     private const array KIND_ORDER = ['urgent' => 0, 'review' => 1, 'ready' => 2, 'info' => 3];
 
     /**
-     * Posbírá karty ze zdrojů feedu, seřadí a stropuje (`sortAndCap`).
+     * Posbírá karty ze zdrojů feedu, doplní sekce, seřadí a stropuje per
+     * sekce (`sortAndCap`).
      *
      * Vrácené karty NESOU interní pole `amount`/`currency` (podklad pro
      * readySummary) — prezentační vrstva je před odesláním klientovi odstraní
@@ -42,8 +78,6 @@ final class FeedCollector
      * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
      *        Runtime definice tabulek — řídí registraci zdrojů (D8).
      *        Prázdná mapa = fail-closed.
-     * @return array{0: list<array<string,mixed>>, 1: bool}
-     *         [karty (seřazené, stropnuté, s interními poli), zda došlo k ořezu]
      */
     public function collect(
         DataSourceConnection $db,
@@ -51,8 +85,8 @@ final class FeedCollector
         string $lang,
         ?AlertCheckRegistry $alertRegistry = null,
         array $tables = [],
-    ): array {
-        $ctx = new FeedContext($db, $config, $lang, self::MAX_CARDS);
+    ): FeedResult {
+        $ctx = new FeedContext($db, $config, $lang, self::SOURCE_LIMIT);
 
         // Zdroje se registrují podle přítomnosti klíčové tabulky na DS (D8) —
         // feed nesmí padat na DS bez core.mail / core.alerts (hosting DS).
@@ -67,7 +101,7 @@ final class FeedCollector
         if (isset($tables['core_alerts_alerts'])) {
             $sources[] = new AlertsSource($alertRegistry);
         }
-        // Karta „Nová kategorie" (content-tag-ui D25) — potřebuje analýzy
+        // Karta položky k založení (content-tag-ui D25) — potřebuje analýzy
         // (štítky návrhů), položky (pokrytí štítků) i osnovu (volba účtu
         // goods.stock + materializace).
         if (isset($tables['core_mail_message_analyses'], $tables['economy_items'], $tables['economy_accounting_accounts'])) {
@@ -87,7 +121,7 @@ final class FeedCollector
             }
         }
 
-        return $this->sortAndCap($cards, self::MAX_CARDS);
+        return $this->sortAndCap($cards);
     }
 
     /**
@@ -106,16 +140,44 @@ final class FeedCollector
     }
 
     /**
-     * Seřadí karty dle prioritního žebříčku (`KIND_ORDER`), uvnitř pásma dle
-     * `timestamp` sestupně (nejnovější první; karty bez timestampu naspod), a
-     * ořízne na `$max`.
+     * Sekce karty: explicitní `feedSection` ze zdroje, pokud je známá;
+     * jinak výchozí dle `kind` (`DEFAULT_SECTION_BY_KIND`), neznámý kind →
+     * Ostatní — stejná defenziva, jakou má frontend.
      *
-     * @param  list<array<string,mixed>> $cards
-     * @return array{0: list<array<string,mixed>>, 1: bool}  [seřazené+oříznuté, zda došlo k ořezu]
+     * @param array<string,mixed> $card
      */
-    public function sortAndCap(array $cards, int $max): array
+    public static function resolveSection(array $card): string
     {
-        usort($cards, static function (array $a, array $b): int {
+        $section = $card['feedSection'] ?? null;
+        if (is_string($section) && in_array($section, self::SECTION_ORDER, true)) {
+            return $section;
+        }
+        return self::DEFAULT_SECTION_BY_KIND[(string) ($card['kind'] ?? '')] ?? FeedSource::SECTION_OTHER;
+    }
+
+    /**
+     * Doplní každé kartě `feedSection`, seřadí karty dle sekce
+     * (`SECTION_ORDER`), uvnitř sekce dle pásma (`KIND_ORDER`) a `timestamp`
+     * sestupně (nejnovější první; karty bez timestampu naspod), a ořízne
+     * každou sekci na `$maxPerSection`. Počty `total`/`shown` per sekce
+     * (jen neprázdné, v pořadí sekcí) nese výsledek.
+     *
+     * @param list<array<string,mixed>> $cards
+     */
+    public function sortAndCap(array $cards, int $maxPerSection = self::MAX_CARDS_PER_SECTION): FeedResult
+    {
+        foreach ($cards as &$card) {
+            $card['feedSection'] = self::resolveSection($card);
+        }
+        unset($card);
+
+        $sectionRank = array_flip(self::SECTION_ORDER);
+        usort($cards, static function (array $a, array $b) use ($sectionRank): int {
+            $sa = $sectionRank[$a['feedSection']];
+            $sb = $sectionRank[$b['feedSection']];
+            if ($sa !== $sb) {
+                return $sa <=> $sb;
+            }
             $oa = self::KIND_ORDER[$a['kind'] ?? ''] ?? 99;
             $ob = self::KIND_ORDER[$b['kind'] ?? ''] ?? 99;
             if ($oa !== $ob) {
@@ -135,11 +197,28 @@ final class FeedCollector
             return strcmp($tb, $ta); // ATOM formát řadí lexikálně = chronologicky
         });
 
-        $truncated = count($cards) > $max;
-        if ($truncated) {
-            $cards = array_slice($cards, 0, $max);
+        /** @var array<string, array{total:int, shown:int}> $counts */
+        $counts = [];
+        $capped = [];
+        foreach ($cards as $card) {
+            $section = $card['feedSection'];
+            $entry = $counts[$section] ?? ['total' => 0, 'shown' => 0];
+            $entry['total']++;
+            if ($entry['shown'] < $maxPerSection) {
+                $entry['shown']++;
+                $capped[] = $card;
+            }
+            $counts[$section] = $entry;
         }
-        return [$cards, $truncated];
+
+        $sections = [];
+        foreach (self::SECTION_ORDER as $id) {
+            if (isset($counts[$id])) {
+                $sections[] = ['id' => $id, 'total' => $counts[$id]['total'], 'shown' => $counts[$id]['shown']];
+            }
+        }
+
+        return new FeedResult($capped, $cards, $sections);
     }
 
     /**
@@ -148,6 +227,8 @@ final class FeedCollector
      * `urgent` (→ severity `danger`) a `review` (→ `warning`) s neprázdným
      * `navSection` (opt-in, D1); `ready`/`info` ne — trvale svítící badge
      * není signál. Sekce = součet karet + max severity (danger > warning).
+     * Volající předává `FeedResult::$allCards` — badge počítá ze všech karet,
+     * ne jen z karet pod stropem (#101).
      *
      * @param  list<array<string,mixed>> $cards
      * @return array<string, array{count:int, severity:string}>
@@ -177,7 +258,8 @@ final class FeedCollector
 
     /**
      * Počty karet dle kind (jen actionable pásma — urgent/review/ready).
-     * Info karty (vč. „a další…") se nezapočítávají.
+     * Info karty se nezapočítávají. Volající předává `FeedResult::$allCards`
+     * (pravdivé county nad stropem, #101 D3b).
      *
      * @param  list<array<string,mixed>> $cards
      * @return array{urgent:int, review:int, ready:int}

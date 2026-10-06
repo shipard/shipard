@@ -74,6 +74,8 @@ final class MailDigestSourceTest extends TestCase
         $this->assertCount(1, $cards);
         $card = $cards[0];
         $this->assertSame('info', $card['kind']);
+        // Bez feedSection — digest padá výchozím mapováním do Ostatní (#101 D10).
+        $this->assertArrayNotHasKey('feedSection', $card);
         $this->assertSame('archive', $card['stateStyle']);
         $this->assertSame('other', $card['category']);
         $this->assertStringContainsString('5 zpráv automaticky archivováno', $card['title']);
@@ -149,6 +151,8 @@ final class MailDigestSourceTest extends TestCase
         $card = $cards[0];
         $this->assertSame('mail_rule_suggestion:7', $card['id']);
         $this->assertSame('review', $card['kind']);
+        // Bez feedSection — návrh pravidla zůstává v Ke kontrole (#101 D10).
+        $this->assertArrayNotHasKey('feedSection', $card);
         $this->assertSame('other', $card['category']);
         $this->assertSame('Vždy archivovat poštu od news@example.com?', $card['title']);
         $this->assertSame('Navrženo po 3 ručních odklizeních · E-mailová adresa', $card['subtitle']);
@@ -165,6 +169,29 @@ final class MailDigestSourceTest extends TestCase
         foreach ($card['actions'] as $action) {
             $this->assertArrayNotHasKey('label', $action, 'akce lokalizuje frontend dle action.id');
         }
+    }
+
+    public function testSuggestedRulesQueryUsesSourceLimit(): void
+    {
+        // LIMIT dotazu = pojistka zdroje z kontextu, ne strop feedu (#101 D3a).
+        $limits = [];
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(
+            static function (mixed ...$args) use (&$limits): array {
+                $sql = (string) $args[0];
+                if (str_contains($sql, 'COUNT(*)')) {
+                    return [['cnt' => 0, 'last_at' => null]];
+                }
+                if (str_contains($sql, 'core_mail_sender_rules')) {
+                    $limits[] = $args[array_key_last($args)];
+                }
+                return [];
+            },
+        );
+
+        new MailDigestSource()->collectCards(new FeedContext($db, null, 'cs', 123));
+
+        $this->assertSame([123], $limits);
     }
 
     public function testDigestAndSuggestionsCombine(): void
