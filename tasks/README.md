@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 331 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 303.
+Celkem 332 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 303.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,6 +27,7 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-models-phase0.md` | naplánováno | čeká na potvrzení rozhodnutí F0-D1–F0-D7 (#85) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
+| `assets-phase6.md` | naplánováno | D73–D82 potvrzena 2026-10-06; runner ve starém Shipardu navazuje |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -311,6 +312,7 @@ Evidence majetku, odpisy a jejich zaúčtování. Designový dokument
 | `assets-phase3.md` | 3 | Zaúčtování majetku: obecné dimenze deníku (`asset`), operace `asset.*`, jeden doklad za období, zrušení zaúčtování, řada dokladů, zrušené vyřazení (D47–D56) |
 | `assets-phase4.md` | 4 | Vazba na doklady: nastavení Sledovat náklady na majetek, dimenze na hlavičce a řádcích dokladů, karta na řádku pořízení a její založení z řádku, zařazení z pořízení, tab Náklady a výnosy, alerty, validace účetní skupiny a data událostí (D57–D64) |
 | `assets-phase5.md` | 5 | Přehledy a kontroly: hromadné načítání plánů, sestava odpisů, přírůstky a úbytky, daňové odpisy pro DPPO, kontrola evidence × deník s alerty, soupis majetku, drill-down (D65–D72) |
+| `assets-phase6.md` | 6 | Import — nový Shipard: výměnný formát karty s historií `shpd.assets.asset.v1`, importované události zaúčtované mimo modul, karta na importovaných dokladech, `assets-import-verify`, účet pořízení v kontrole jen varováním (D73–D82) |
 
 ## Došlá pošta (core.mail)
 

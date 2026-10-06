@@ -1,6 +1,6 @@
 # Shipard — Majetek (`economy.assets`)
 
-> **Designový dokument.** **Stav:** D1–D72 rozhodnuto;
+> **Designový dokument.** **Stav:** D1–D82 rozhodnuto;
 > oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
 > (`tasks/assets-phase1.md`), oblast 2 **hotová** 2026-09-30 — pravidla
 > země a odpisový engine (`tasks/assets-phase2a.md`, §5.1–5.2), události,
@@ -9,8 +9,9 @@
 > zaúčtování a dimenze deníku (`tasks/assets-phase3.md`, §5.4), oblast 4
 > **hotová** 2026-10-01 — vazba na doklady (`tasks/assets-phase4.md`,
 > §5.5), oblast 5 **hotová** 2026-10-01 — přehledy a kontrola evidence
-> proti deníku (`tasks/assets-phase5.md`, §5.6); další oblasti se rozpadají
-> postupně (§7).
+> proti deníku (`tasks/assets-phase5.md`, §5.6); oblast 6 (import)
+> naplánována (`tasks/assets-phase6.md`, D73–D82, §6); další oblasti se
+> rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -571,6 +572,92 @@ kontrolu proti deníku neměl — nesoulad se hledal ručně (§3.2).
   MD / D jako sloupce, mezisoučty tučně, list Zprávy. Spouští se před
   fází 5.
 
+### D73–D82 — Oblast 6: import ze starého Shipardu (ROZHODNUTO)
+
+PRD: `tasks/assets-phase6.md` (nový Shipard); runner ve starém Shipardu
+následuje (§6). Rozbor dat 2026-10-06 nad pěti zdroji (`689089`, `732084`,
+`332718`, `426748`, `205976`): zhruba 145 dlouhodobých a 350 drobných
+karet, přes 1 000 řádků a přes 200 hlaviček dokladů s vazbou na majetek.
+
+Co data ukázala:
+
+- **Účetní odpisy už v deníku nového Shipardu jsou** — majetkové účetní
+  doklady (staré operace 1090070–73) import rozpadl na dvojice
+  `acc.record` s účty ze starého deníku, stav V pořádku; 551 v novém
+  deníku sedí se starým na korunu. Chybí jen karta na řádcích.
+- Starý deník nese vazbu odpisů na kartu od 2018 (`689089`, `732084`),
+  2019 (`205976`), 2020 (`332718`, `426748`); od té doby je 551 s kartou
+  ≥ evidence. Účetní odpisy jsou všude jen k 31. 12. (rok vyřazení k datu
+  vyřazení), stará volba měsíčně / pololetně se nedodržovala.
+- Daňová evidence na konci řady chybí: `732084` 2022–2025, `332718`
+  a `426748` 2025, `205976` 2024–2025 neúplně.
+- Inventární čísla jsou unikátní, archivovaná dlouhodobá karta má vždy
+  řádek vyřazení; bez účetní skupiny je jediná dlouhodobá karta.
+- Mapu starý doklad → nový drží jen runner (lokální mapa ID); nový
+  Shipard stará ID neukládá.
+
+Rozhodnutí:
+
+- **D73 Účet pořízení v kontrole jen varováním** (nález ověření fáze 5).
+  V Kontrole evidence × deník je rozdíl na účtu pořízení (04x) varování,
+  ne chyba `accountMismatch` — evidence tam počítá pořízení s kartou,
+  takže rozdíl je vždy pořízení bez karty (vč. otevíracího zůstatku)
+  nebo zařazení bez navázaného pořízení; na importech by report měl
+  trvale stav „errors“. Chyba zůstává u účtů majetku, oprávek, odpisů
+  a ZC.
+- **D74 Rozsah fáze 6:** typy, skupiny typů, účetní skupiny, karty
+  (i drobné, cizí a vyřazené), hodnotová historie, přílohy, karta na
+  dokladech (backfill, D8) a nastavení. Pohyby, příslušenství
+  a vlastnosti až s fází 7 (dnes nemají kam), štítky až bude mít nový
+  Shipard kam je uložit.
+- **D75 Formát `shpd.assets.asset.v1`** — karta s vnořenými událostmi;
+  klíč = inventární číslo, převezme se beze změny. Stav karty: starý
+  4000 → V pořádku, 9000 → V archívu. Opakovaný import karty nahradí jen
+  události původu `import`; kartu, na které už vznikly ruční nebo
+  systémové události, přeskočí s varováním. Číselníky jdou obecným CRUD
+  API jako ostatní číselníky importu.
+- **D76 Importované události jsou zaúčtované mimo modul.** Událost
+  původu `import` je zaúčtovaná (ve starém systému): zaúčtování z fáze 3
+  ji nebere a neblokuje jí další období, evidence v kontrole po účtech ji
+  započítá, kontroly (a) a (c) ji neposuzují, zrušení zaúčtování se jí
+  netýká. **Bez vazby na doklad** (`doc_head` prázdný) — staré doklady
+  účtují vyřazení jinými zápisy než D49 a zrušení zaúčtování nesmí
+  sáhnout na importovaný doklad; doklady karty najde deník přes dimenzi.
+  Zaúčtování v novém Shipardu začne prvním obdobím po posledním
+  importovaném účetním odpisu.
+- **D77 Účetní okruh podle D9 počítá runner.** Pro kartu a rok, kde
+  starý deník nese 551 s vazbou na kartu, je účetní odpis součet deníku
+  (k datu dokladu); jinak z evidence. Rozdíly evidence × deník runner
+  vypíše. Pravidlo „deník vyhrává“ je importní, do nového Shipardu
+  nepatří — ten dostane hotové události.
+- **D78 Chybějící daňové odpisy na konci řady** se neimportují ani
+  nedopočítávají — zůstanou plánem; uživatel je po kontrole s podaným
+  DPPO potvrdí v novém Shipardu (Odpisy za období, rok po roce). Mezera
+  uvnitř řady zůstává přerušením (D11).
+- **D79 Účetní skupiny.** Stará skupina dlouhodobého majetku → nová
+  účetní skupina (majetek, pořízení, oprávky, odpisy; účet ZC = 541,
+  na který šla vyřazení ve starém deníku, jinak výchozí). Starý
+  samostatný účet TZ se neimportuje — kde se lišil od účtu pořízení,
+  ukáže rozdíl kontrola po účtech. Skupiny drobného majetku (501 / 648)
+  se neimportují, drobné karty jsou bez účetní skupiny. Dlouhodobá karta
+  bez skupiny se založí jako koncept s varováním (D57).
+- **D80 Karta na dokladech (backfill, D8).** Runner pošle pro každý nový
+  doklad seznam řádků (účet, strana, částka, karta, starý řádek)
+  a kartu hlavičky. Nový Shipard spáruje řádky podle účtu, strany
+  a částky (pořadí jako pomocné), nastaví kartu a přegeneruje deník
+  dokladu systémovou cestou přes zámky měsíce i DPH (zalogovaně) s
+  pojistkou, že se obraty účtů dokladu nezmění. Doklad, kde párování
+  není jednoznačné, zůstane beze změny a je ve výsledku. Rozsah: účetní
+  doklady, přijaté a vydané faktury, pokladní doklady, hlavičky.
+- **D81 Nastavení:** Sledovat náklady na majetek (D59) podle staré volby;
+  účetní odpisy ročně (D12; stará volba se ignoruje).
+- **D82 Ověření a pořadí.** CLI `assets-import-verify`: zlatý test
+  daňového okruhu (engine přepočítá každý importovaný daňový odpis
+  z předchozí historie, D6), účetní okruh × deník po kartách a letech
+  a Kontrola evidence × deník za každý rok od prvního s vazbou. Přejetí:
+  pět zdrojů bez nevysvětleného rozdílu. Pořadí: nový Shipard (applier,
+  backfill, ověření) → runner → reimport zdrojů jeden po druhém.
+
 ---
 
 ## 5. Doménový model (návrh)
@@ -1031,17 +1118,28 @@ z implementace):
 
 ## 6. Import (kontrakt pro `old_shipard`)
 
-Pořadí dle `ai-workflow.md`: nejdřív nový Shipard (modul, applier,
-extensions), pak runner. Kroky:
+Pořadí dle `ai-workflow.md`: nejdřív nový Shipard (`tasks/assets-phase6.md`),
+pak runner. Kroky runneru (D73–D82):
 
-1. číselníky (typy, skupiny, účetní skupiny z `e10doc_debs_groups`),
-2. karty (+ vlastnosti, štítky, přílohy, příslušenství),
-3. hodnotová historie dle D9–D11 (mapování `depsPart` / `rowType` /
-   stavů na události),
-4. pohyby,
-5. backfill vazeb na doklady (D8, D15),
-6. kontrola: plán nového enginu vs. staré potvrzené odpisy (D6), účetní
-   okruh vs. deník per rok (invariant §1).
+1. číselníky obecným CRUD API: skupiny typů, typy, účetní skupiny
+   (staré skupiny dlouhodobého majetku, D79),
+2. nastavení (D81),
+3. karty s hodnotovou historií — `shpd.assets.asset.v1` (D75):
+   - `depsPart` 0 → událost obou okruhů podle `rowType` (1 zařazení,
+     2 TZ, 4 snížení, 120 vyřazení, 110 přerušení);
+   - `depsPart` 1 + `rowType` 99 → daňový odpis (`usedDepreciation = 0`
+     → `claim_unrecorded`, D11, D17); mezera uvnitř řady → přerušení,
+     chybějící roky na konci se neposílají (D78);
+   - účetní odpisy: rok s 551 s vazbou na kartu ve starém deníku → součet
+     deníku k datu dokladu, jinak `depsPart` 2 (D77);
+   - řádky ve stavu 4000 a 9000, 9800 se vynechávají; všechny události
+     původu `import` (D76);
+4. přílohy karet (obecný systém příloh),
+5. karta na dokladech — po dokladě přes mapu starý → nový doklad (D80),
+6. ověření v novém Shipardu: `shpd-ds assets-import-verify` (D82);
+   rozdíly evidence × deník z kroku 3 vypisuje runner.
+
+Pohyby, příslušenství, vlastnosti a štítky až s fází 7 (D74).
 
 ---
 
@@ -1064,7 +1162,9 @@ Probírají se jedna po druhé; každá má vlastní PRD.
    podklad pro DPPO, soupis (D65–D72) — **hotovo** 2026-10-01,
    `tasks/assets-phase5.md` (§5.6 vč. odchylek; tisk karty až s tiskovou
    doménou, D68)
-6. Import (D8, D9, D11) + backfill
+6. Import (D8, D9, D11, D73–D82) + backfill — **naplánováno**, nový
+   Shipard `tasks/assets-phase6.md` (první bod D73 z ověření fáze 5), pak
+   runner ve starém Shipardu (§6)
 7. Pohyby, příslušenství, vlastnosti, místa, inventarizace, prodej majetku
    (vydaná faktura s nabídkou vyřazení)
 8. Soubory a množstevní karty, odložená daň, zbytek (AV/AM, X)
