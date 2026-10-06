@@ -333,6 +333,10 @@ class Router
 			return $this->resolveUsersExchangeRoute($subpath, $method);
 		}
 
+		if (str_starts_with($subpath, '/_exchange/assets/')) {
+			return $this->resolveAssetsExchangeRoute($subpath, $method);
+		}
+
 		if (str_starts_with($subpath, '/_exchange/content-tags/')) {
 			return $this->resolveContentTagsRoute($subpath, $method);
 		}
@@ -977,6 +981,28 @@ class Router
 			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
 		}
 		return new Route('exchange', "user:{$rest}");
+	}
+
+	/**
+	 * Import majetku (#83 fáze 6) sdílí `exchange` dispatcher: karta
+	 * s historií `asset:validate` / `asset:apply` (bez `preview` — není co
+	 * rozhodovat). Vždy POST.
+	 */
+	private function resolveAssetsExchangeRoute(string $subpath, string $method): Route|Response
+	{
+		$rest = substr($subpath, strlen('/_exchange/assets/'));
+		$action = match ($rest) {
+			'asset/validate' => 'asset:validate',
+			'asset/apply'    => 'asset:apply',
+			default          => null,
+		};
+		if ($action === null) {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+		if ($method !== 'POST') {
+			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+		}
+		return new Route('exchange', $action);
 	}
 
 	/**

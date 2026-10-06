@@ -34,6 +34,17 @@ use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
  *     vyřazení až po zařazení a bez událostí za ním; polovina jen když
  *     to pravidla dovolují a majetek byl v evidenci na začátku roku.
  *
+ * Importní mód (fáze 6, docs/assets.md §5.7): applier posílá marker
+ * `_import` (`IMPORT_KEY`) — událost dostane původ `import`, lock
+ * providery se nevolají (`isLockExempt`, historie v zamčených měsících)
+ * a pravidla, která historická data splnit nemohou, se neuplatní:
+ * `cardNotConfirmed` (karta bez úplné účetní skupiny je koncept, D79),
+ * `aboveResidual`, `reductionAboveResidual`, `halfYearNotAllowed`,
+ * `yearDepreciated`, `alreadyInterrupted` a `planHasErrors` u vyřazení
+ * (chybu plánu vrátí applier jako varování). Potvrzené vyřazení
+ * v importu nezakládá poslední odpisy — posílá je runner (D76). Uložená
+ * událost původu `import` má volněji jen celé koruny a účetní rok.
+ *
  * Efekty na kartu (D38) běží v `afterPersist()` uvnitř transakce, kdykoli
  * událost vstupuje do stavu 40 nebo ho opouští (oprava i smazání):
  * datum pořízení z potvrzeného zařazení / počátečního stavu, datum
@@ -49,6 +60,9 @@ use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
 class AssetEventDocument extends Document
 {
     public const TABLE = 'economy_assets_events';
+
+    /** Marker importního módu v payloadu (applier fáze 6); do SQL nejde. */
+    public const IMPORT_KEY = '_import';
 
     public const STATE_CONFIRMED = 40;
     /** mainState stavu 40 v cfgItem economy.assets.eventStates. */
@@ -95,18 +109,29 @@ class AssetEventDocument extends Document
     /** Datum události před uložením — zrušené vyřazení maže odpisy k původnímu datu. */
     private ?string $originalDate = null;
 
+    /** Uložení v importním módu (marker `_import`) — vyřazení nezakládá odpisy. */
+    private bool $importMode = false;
+
     private ?AssetPlanService $planService = null;
 
     // ── Validace ────────────────────────────────────────────────────────────
+
+    /** Importní mód: marker `_import` v payloadu (applier fáze 6). */
+    public function isLockExempt(array $data): bool
+    {
+        return !empty($data[self::IMPORT_KEY]);
+    }
 
     public function validate(array &$data): ValidationResult
     {
         $result = new ValidationResult();
 
+        $import = $this->isLockExempt($data);
         $original = !empty($data['id']) ? $this->loadEvent((int) $data['id']) : null;
         $row = $original !== null ? array_merge($original, $data) : $data;
-        // Původ určuje server (beforeSave) — payload ho nesmí podvrhnout.
-        $row['origin'] = (string) ($original['origin'] ?? AssetEvent::ORIGIN_MANUAL);
+        // Původ určuje server (beforeSave) — payload ho nesmí podvrhnout;
+        // importní mód ho nese markerem, ne polem.
+        $row['origin'] = $import ? AssetEvent::ORIGIN_IMPORT : (string) ($original['origin'] ?? AssetEvent::ORIGIN_MANUAL);
 
         $kind = (string) ($row['event_kind'] ?? '');
         if (!AssetEvent::isKind($kind)) {
@@ -201,7 +226,7 @@ class AssetEventDocument extends Document
             return $result;
         }
 
-        $this->validateConfirmation($kind, $scope, $date, $amount, $row, $card, $depreciable, $result);
+        $this->validateConfirmation($kind, $scope, $date, $amount, $row, $card, $depreciable, $import, $result);
 
         return $result;
     }
@@ -259,6 +284,7 @@ class AssetEventDocument extends Document
 
     /**
      * Pravidla při potvrzení — závislá na kartě a ostatních událostech.
+     * `$import` = importní mód (uvolněná pravidla, viz doc-comment třídy).
      *
      * @param array<string, mixed> $row
      * @param array<string, mixed> $card
@@ -271,6 +297,7 @@ class AssetEventDocument extends Document
         array $row,
         array $card,
         bool $depreciable,
+        bool $import,
         ValidationResult $result,
     ): void {
         $assetId = (int) $card['id'];
@@ -286,7 +313,8 @@ class AssetEventDocument extends Document
                 return;
             }
         }
-        if ((int) ($card['docState'] ?? 0) !== AssetDocument::STATE_CONFIRMED) {
+        // Import smí potvrzovat historii i na kartě-konceptu (D79).
+        if (!$import && (int) ($card['docState'] ?? 0) !== AssetDocument::STATE_CONFIRMED) {
             $result->addError(
                 ValidationError::FIELD_FORM,
                 'Událost lze potvrdit jen u karty ve stavu V pořádku.',
@@ -398,7 +426,7 @@ class AssetEventDocument extends Document
                 } else {
                     $plans = $service->plan($card, $siblings);
                     $residual = min($plans['tax']->residual, $plans['acc']->residual);
-                    if ($amount > $residual + Amounts::EPSILON) {
+                    if (!$import && $amount > $residual + Amounts::EPSILON) {
                         $result->addError(
                             'amount',
                             'Snížení hodnoty nesmí být větší než zůstatková cena (' . Amounts::money($residual) . ').',
@@ -437,7 +465,7 @@ class AssetEventDocument extends Document
                     $result->addError('amount', 'Odpis musí být zaokrouhlený na celé koruny.', 'notWholeUnits');
                 }
                 $plan = $service->plan($card, $siblings)[$scope];
-                if ($amount > $plan->residual + Amounts::EPSILON) {
+                if (!$import && $amount > $plan->residual + Amounts::EPSILON) {
                     $result->addError(
                         'amount',
                         'Odpis nesmí být větší než zůstatková cena okruhu (' . Amounts::money($plan->residual) . ').',
@@ -461,7 +489,7 @@ class AssetEventDocument extends Document
                     return;
                 }
                 $year = $calendar->yearOf($date);
-                foreach ($siblings as $sibling) {
+                foreach ($import ? [] : $siblings as $sibling) {
                     $isTaxDepreciation = $sibling['event_kind'] === AssetEvent::KIND_DEPRECIATION
                         && (string) $sibling['scope'] === AssetEvent::SCOPE_TAX
                         && $year->contains((string) $sibling['period_end']);
@@ -502,14 +530,14 @@ class AssetEventDocument extends Document
                         return;
                     }
                 }
-                if (!empty($row['half_year']) && !$service->halfYearAllowed($card, $siblings, $date)) {
+                if (!$import && !empty($row['half_year']) && !$service->halfYearAllowed($card, $siblings, $date)) {
                     $result->addError(
                         'half_year',
                         'Polovinu ročního odpisu lze uplatnit jen u majetku evidovaného na začátku roku a u metod, které to dovolují.',
                         'halfYearNotAllowed',
                     );
                 }
-                if (!$result->isValid()) {
+                if (!$result->isValid() || $import) {
                     return;
                 }
                 // Vyřazení zakládá poslední odpisy (D35) — plán obou okruhů musí být čistý.
@@ -593,6 +621,10 @@ class AssetEventDocument extends Document
     {
         $this->trackStateChange($data, $originalData);
 
+        // Marker importního módu je virtuální pole — ven z dat před SQL.
+        $this->importMode = $this->isLockExempt($data);
+        unset($data[self::IMPORT_KEY]);
+
         // Vazbu na účetní doklad píše jen zaúčtování majetku (D52).
         unset($data['doc_head']);
 
@@ -604,10 +636,9 @@ class AssetEventDocument extends Document
         }
 
         // Původ určuje server: ruční zápis přes dokument je `manual`,
-        // systémové odpisy vznikají mimo dokument; import (fáze 6) si
-        // původ nastaví vlastní cestou.
+        // systémové odpisy vznikají mimo dokument, import nese marker.
         $data['origin'] = $originalData === null
-            ? AssetEvent::ORIGIN_MANUAL
+            ? ($this->importMode ? AssetEvent::ORIGIN_IMPORT : AssetEvent::ORIGIN_MANUAL)
             : (string) ($originalData['origin'] ?? AssetEvent::ORIGIN_MANUAL);
 
         if ($kind !== AssetEvent::KIND_OPENING) {
@@ -661,7 +692,8 @@ class AssetEventDocument extends Document
             return;
         }
 
-        if ($kind === AssetEvent::KIND_DISPOSAL && $is) {
+        // Import posílá poslední odpisy sám (D76) — vyřazení je nezakládá.
+        if ($kind === AssetEvent::KIND_DISPOSAL && $is && !$this->importMode) {
             $this->writeFinalDepreciations($assetId);
         }
         if ($kind === AssetEvent::KIND_DISPOSAL && $was && $this->originalDate !== null) {

@@ -33,7 +33,10 @@ use Shipard\Module\World\Assets\TaxRulesRegistry;
  *   - přechod do 70 (V archívu = vyřazeno) vyžaduje datum vyřazení;
  *   - inventární číslo unikátní přes všechny stavy (odpovídá unikátnímu
  *     indexu — smazaná karta číslo drží, jinak by DB vrátila SQL chybu
- *     místo srozumitelné validace).
+ *     místo srozumitelné validace);
+ *   - importní mód (marker `_import`, applier fáze 6): dlouhodobá karta
+ *     bez účetní skupiny se smí uložit jako koncept (D79), lock providery
+ *     se nevolají; marker do SQL nejde.
  *
  * Přidělení inventárního čísla (D22) při přechodu do 40 běží
  * v afterPersist(): gateway otevírá transakci až po beforeSave(), takže
@@ -46,6 +49,9 @@ class AssetDocument extends Document
 {
     public const TABLE = 'economy_assets_assets';
 
+    /** Marker importního módu v payloadu (applier fáze 6); do SQL nejde. */
+    public const IMPORT_KEY = '_import';
+
     /** Stavy archivní sady (core.system.docStatesArchive) a jejich mainState. */
     public const STATE_CONFIRMED = 40;
     public const STATE_ARCHIVED = 70;
@@ -54,9 +60,16 @@ class AssetDocument extends Document
     public const MAIN_EDIT = 2;
     public const MAIN_ARCHIVED = 4;
 
+    /** Importní mód: marker `_import` v payloadu (applier fáze 6). */
+    public function isLockExempt(array $data): bool
+    {
+        return !empty($data[self::IMPORT_KEY]);
+    }
+
     public function validate(array &$data): ValidationResult
     {
         $result = new ValidationResult();
+        $import = $this->isLockExempt($data);
         $categories = $this->categories();
         $id = !empty($data['id']) ? (int) $data['id'] : null;
         $original = $id !== null ? $this->loadCardRow($id) : null;
@@ -79,7 +92,8 @@ class AssetDocument extends Document
         } elseif ($categories->isUnknown($category)) {
             $result->addError('category', 'Neznámý druh majetku', 'invalid');
         } elseif ($longTerm) {
-            if (empty($data['accounting_group'])) {
+            // D79: import ukládá dlouhodobou kartu bez skupiny jako koncept.
+            if (empty($data['accounting_group']) && !($import && (int) ($data['docState'] ?? 10) === 10)) {
                 $result->addError(
                     'accounting_group',
                     'Dlouhodobý majetek musí mít účetní skupinu.',
@@ -201,6 +215,7 @@ class AssetDocument extends Document
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
         $this->trackStateChange($data, $originalData);
+        unset($data[self::IMPORT_KEY]);
 
         foreach (['asset_number', 'name', 'short_name'] as $col) {
             if (array_key_exists($col, $data) && $data[$col] !== null) {

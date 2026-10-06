@@ -13,6 +13,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\User\UserApplier;
+use Shipard\Module\Economy\Assets\Import\AssetImportApplier;
 
 /**
  * REST endpoints for the canonical exchange formats. Parallel flavours
@@ -27,6 +28,7 @@ use Shipard\Module\Core\Exchange\User\UserApplier;
  * and is limited to an admin or an API key:
  *
  *   POST /api/v1/_exchange/users/user/{validate|apply}
+ *   POST /api/v1/_exchange/assets/asset/{validate|apply}   (#83 fáze 6, karta majetku s historií)
  *
  * The controller is intentionally thin — body validation + delegate to
  * the relevant Applier + map ApplyResult to Response. Error shape
@@ -47,6 +49,7 @@ final class ExchangeController
         private readonly ?ItemApplier $itemApplier = null,
         private readonly ?BankStatementApplier $bankApplier = null,
         private readonly ?UserApplier $userApplier = null,
+        private readonly ?AssetImportApplier $assetApplier = null,
     ) {}
 
     // ── Document flow ──────────────────────────────────────────────────
@@ -211,11 +214,9 @@ final class ExchangeController
      */
     private function userFlow(Request $request, AuthContext $auth, bool $apply): Response
     {
-        if (!$auth->isAuthenticated) {
-            return Response::error('UNAUTHORIZED', 'Authentication required', 401);
-        }
-        if (!$auth->isAdmin && $auth->tokenType !== 'api_key') {
-            return Response::error('FORBIDDEN', 'User import requires an administrator or an API key', 403);
+        $denied = $this->requireAdminOrApiKey($auth, 'User import');
+        if ($denied !== null) {
+            return $denied;
         }
         if ($this->userApplier === null) {
             return Response::error('INTERNAL_ERROR', 'User exchange flow is not wired in this dispatcher.', 500);
@@ -235,7 +236,62 @@ final class ExchangeController
         );
     }
 
+    // ── Asset import flow (#83 fáze 6) ─────────────────────────────────
+
+    public function validateAsset(Request $request, AuthContext $auth): Response
+    {
+        return $this->assetFlow($request, $auth, false);
+    }
+
+    public function applyAsset(Request $request, AuthContext $auth): Response
+    {
+        return $this->assetFlow($request, $auth, true);
+    }
+
+    /**
+     * Karta majetku s historií (`shpd.assets.asset.v1`): oprávnění jako
+     * import uživatelů. Úspěch `{status, assetId, warnings}`, chyba ve
+     * společném tvaru s `details.issues` (cesta do payloadu + `sourceRef`).
+     */
+    private function assetFlow(Request $request, AuthContext $auth, bool $apply): Response
+    {
+        $denied = $this->requireAdminOrApiKey($auth, 'Asset import');
+        if ($denied !== null) {
+            return $denied;
+        }
+        if ($this->assetApplier === null) {
+            return Response::error('INTERNAL_ERROR', 'Asset exchange flow is not available on this data source.', 500);
+        }
+        $payload = $this->extractPayload($request);
+        if ($payload instanceof Response) {
+            return $payload;
+        }
+
+        $result = $apply ? $this->assetApplier->apply($payload) : $this->assetApplier->validate($payload);
+        if (!$result->success) {
+            return Response::error(
+                $result->errorCode ?? 'internal_error',
+                $result->errorMessage ?? 'Unknown error',
+                $result->statusCode,
+                ['issues' => $result->issues],
+            );
+        }
+        return Response::success($result->toArray(), $result->statusCode);
+    }
+
     // ── Shared plumbing ────────────────────────────────────────────────
+
+    /** Importy pro migraci smí admin nebo API klíč (#93 D13); null = povoleno. */
+    private function requireAdminOrApiKey(AuthContext $auth, string $what): ?Response
+    {
+        if (!$auth->isAuthenticated) {
+            return Response::error('UNAUTHORIZED', 'Authentication required', 401);
+        }
+        if (!$auth->isAdmin && $auth->tokenType !== 'api_key') {
+            return Response::error('FORBIDDEN', "{$what} requires an administrator or an API key", 403);
+        }
+        return null;
+    }
 
     /**
      * @return array<string, mixed>|Response

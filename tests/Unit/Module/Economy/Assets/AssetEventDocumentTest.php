@@ -327,6 +327,60 @@ class AssetEventDocumentTest extends TestCase
         $this->assertValid(['id' => 9, 'docState' => 40]);
     }
 
+    // --- importní mód (fáze 6, §5.7) ------------------------------------------
+
+    public function testImportMarkerSetsOriginAndConfirmsOnDraftCard(): void
+    {
+        $this->card(['docState' => 10]);
+        $data = $this->event('activation', '2019-03-15', ['amount' => 100000, '_import' => true]);
+
+        $this->assertTrue($this->doc->isLockExempt($data));
+        $this->assertValid($data);
+
+        $this->doc->beforeSave($data, null);
+        $this->assertSame('import', $data['origin']);
+        $this->assertArrayNotHasKey('_import', $data, 'marker nesmí dojít do SQL');
+    }
+
+    public function testImportMarkerRelaxesHistoricalRules(): void
+    {
+        $this->activated();
+        // Odpis nad zůstatek okruhu a necelé koruny.
+        $this->assertValid($this->event('depreciation', '2022-12-31', [
+            'scope' => 'tax', 'amount' => 150000.4, 'period_begin' => '2022-01-01', 'period_end' => '2022-12-31', '_import' => true,
+        ]));
+        // Snížení nad zůstatkovou cenu.
+        $this->assertValid($this->event('reduction', '2022-06-01', ['amount' => 250000, '_import' => true]));
+        // Polovina odpisu v roce zařazení.
+        $this->assertValid($this->event('disposal', '2022-09-01', ['half_year' => 1, '_import' => true]));
+        // Přerušení v roce s potvrzeným daňovým odpisem (odpis dřív v roce,
+        // aby přerušení nebylo před ním — historie od konce platí i importu).
+        $this->confirmed('depreciation', '2022-05-10', [
+            'scope' => 'tax', 'amount' => 11000.0, 'period_begin' => '2022-01-01', 'period_end' => '2022-12-31',
+        ]);
+        $this->assertValid($this->event('interruption', '2022-12-31', ['_import' => true]));
+        // Bez markeru platí pravidla dál.
+        $this->assertSame(['_form:yearDepreciated'], $this->codes($this->event('interruption', '2022-12-31')));
+    }
+
+    public function testImportedDisposalIgnoresPlanErrorsAndWritesNoFinalDepreciations(): void
+    {
+        // as_tax bez daňového vzorce = settingsInvalid; import projde.
+        $this->card(['tax_method' => 'none', 'tax_rule' => null, 'acc_method' => 'as_tax']);
+        $this->activated();
+        $data = $this->event('disposal', '2024-05-10', ['id' => 60, '_import' => true]);
+        $this->assertValid($data);
+
+        $this->doc->beforeSave($data, null);
+        $this->confirmed('disposal', '2024-05-10', ['id' => 60, 'origin' => 'import']);
+        $this->doc->afterPersist($data);
+
+        $this->assertSame([], $this->doc->writer->written, 'poslední odpisy posílá runner (D76)');
+        $this->assertSame([[self::ASSET, [
+            'acquired_date' => '2022-03-15', 'disposed_date' => '2024-05-10', 'docState' => 70, 'docStateMain' => 4,
+        ]]], $this->doc->cardUpdates);
+    }
+
     // --- přerušení -----------------------------------------------------------
 
     public function testInterruptionRules(): void

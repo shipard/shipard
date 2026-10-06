@@ -121,6 +121,23 @@ class AssetDocumentTest extends TestCase
         $this->assertSame('not_allowed', $this->errorsFor($data, 'price')[0]['code'] ?? null);
     }
 
+    public function testImportMayStoreLongTermDraftWithoutGroup(): void
+    {
+        // D79: import ukládá dlouhodobou kartu bez skupiny jako koncept.
+        $data = $this->tangibleAsset();
+        $data['accounting_group'] = null;
+        $data['_import'] = true;
+        $this->assertSame([], $this->errorsFor($data, 'accounting_group'));
+        $this->assertTrue($this->doc()->isLockExempt($data));
+
+        $data['docState'] = 40;
+        $this->assertSame('required', $this->errorsFor($data, 'accounting_group')[0]['code'] ?? null, 'potvrzená karta skupinu potřebuje i v importu');
+
+        $data['docState'] = 10;
+        $this->doc()->beforeSave($data, null);
+        $this->assertArrayNotHasKey('_import', $data, 'marker nesmí dojít do SQL');
+    }
+
     public function testLongTermWithGroupAndNoPriceIsValid(): void
     {
         $data = $this->smallAsset();

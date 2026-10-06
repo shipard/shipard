@@ -14,6 +14,8 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\User\UserApplier;
+use Shipard\Module\Economy\Assets\Import\AssetImportApplier;
+use Shipard\Module\Economy\Assets\Import\AssetImportResult;
 
 class ExchangeControllerTest extends TestCase
 {
@@ -442,6 +444,76 @@ class ExchangeControllerTest extends TestCase
 
         $this->assertSame(422, $this->getStatus($response));
         $this->assertSame('validation_failed', $response->getPayload()['error']['code']);
+    }
+
+    // ── Asset import flow (#83 fáze 6) ─────────────────────────────────
+
+    private const ASSET_PAYLOAD = ['format' => 'shpd.assets.asset.v1', 'asset' => ['assetNumber' => 'MA0001'], 'events' => []];
+
+    private function assetController(?AssetImportApplier $applier): ExchangeController
+    {
+        return new ExchangeController($this->createMock(DocumentApplier::class), assetApplier: $applier);
+    }
+
+    private function assetRequest(?array $body = self::ASSET_PAYLOAD): Request
+    {
+        return $this->buildRequest('POST', '/api/v1/_exchange/assets/asset/apply', $body);
+    }
+
+    public function testAssetImportRequiresAdminOrApiKey(): void
+    {
+        $applier = $this->createMock(AssetImportApplier::class);
+        $applier->expects($this->never())->method('apply');
+        $applier->expects($this->never())->method('validate');
+        $controller = $this->assetController($applier);
+
+        $this->assertSame(401, $this->getStatus($controller->applyAsset($this->assetRequest(), AuthContext::anonymous())));
+        $plainUser = new AuthContext(true, 5, 'session', 'shpd_st_x', isAdmin: false);
+        $this->assertSame(403, $this->getStatus($controller->applyAsset($this->assetRequest(), $plainUser)));
+        $this->assertSame(403, $this->getStatus($controller->validateAsset($this->assetRequest(), $plainUser)));
+    }
+
+    public function testAssetImportAnswersStatusIdAndWarnings(): void
+    {
+        $applier = $this->createMock(AssetImportApplier::class);
+        $applier->method('apply')->willReturn(AssetImportResult::ok('created', 31, [['code' => 'plan_error', 'message' => 'x']], 201));
+        $applier->method('validate')->willReturn(AssetImportResult::ok('updated', 31, [], 200));
+        $controller = $this->assetController($applier);
+
+        $created = $controller->applyAsset($this->assetRequest(), new AuthContext(true, 2, 'api_key', 'shpd_ak_x'));
+        $this->assertSame(201, $this->getStatus($created));
+        $this->assertSame(
+            ['status' => 'created', 'assetId' => 31, 'warnings' => [['code' => 'plan_error', 'message' => 'x']]],
+            $created->getPayload()['data'],
+        );
+
+        $validated = $controller->validateAsset($this->assetRequest(), new AuthContext(true, 1, 'session', 'shpd_st_x', isAdmin: true));
+        $this->assertSame(200, $this->getStatus($validated));
+        $this->assertSame('updated', $validated->getPayload()['data']['status']);
+    }
+
+    public function testAssetImportErrorCarriesIssues(): void
+    {
+        $issues = [['severity' => 'error', 'path' => 'events.2.amount', 'code' => 'aboveResidual', 'message' => 'm', 'sourceRef' => 'deps:9']];
+        $applier = $this->createMock(AssetImportApplier::class);
+        $applier->method('apply')->willReturn(AssetImportResult::error('validation_failed', 'Validace události selhala.', $issues, 422));
+
+        $response = $this->assetController($applier)
+            ->applyAsset($this->assetRequest(), new AuthContext(true, 2, 'api_key', 'shpd_ak_x'));
+
+        $this->assertSame(422, $this->getStatus($response));
+        $this->assertSame('validation_failed', $response->getPayload()['error']['code']);
+        $this->assertSame($issues, $response->getPayload()['error']['details']['issues']);
+    }
+
+    public function testAssetImportRejectsMissingBodyAndUnwiredFlow(): void
+    {
+        $apiKey = new AuthContext(true, 2, 'api_key', 'shpd_ak_x');
+        $applier = $this->createMock(AssetImportApplier::class);
+        $applier->expects($this->never())->method('apply');
+
+        $this->assertSame(400, $this->getStatus($this->assetController($applier)->applyAsset($this->assetRequest(null), $apiKey)));
+        $this->assertSame(500, $this->getStatus($this->assetController(null)->applyAsset($this->assetRequest(), $apiKey)));
     }
 
     public function testUserImportRejectsMissingBodyAndUnwiredFlow(): void

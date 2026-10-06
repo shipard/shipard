@@ -1,0 +1,222 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://shipard.cz/schemas/shpd.assets.asset.v1.json",
+    "title": "Shipard asset import v1",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "format",
+        "asset",
+        "events"
+    ],
+    "properties": {
+        "format": {
+            "const": "shpd.assets.asset.v1"
+        },
+        "asset": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "assetNumber",
+                "name",
+                "category",
+                "tracking",
+                "state"
+            ],
+            "properties": {
+                "assetNumber": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20,
+                    "pattern": "\\S"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 150,
+                    "pattern": "\\S"
+                },
+                "shortName": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "maxLength": 60
+                },
+                "note": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "type": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 1
+                },
+                "category": {
+                    "enum": [
+                        "small",
+                        "tangible",
+                        "intangible",
+                        "nondepreciable"
+                    ]
+                },
+                "tracking": {
+                    "enum": [
+                        "single",
+                        "set",
+                        "quantity"
+                    ]
+                },
+                "accountingGroup": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 1
+                },
+                "foreign": {
+                    "type": "boolean"
+                },
+                "owner": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 1
+                },
+                "acquiredDate": {
+                    "$ref": "#/$defs/dateOrNull"
+                },
+                "disposedDate": {
+                    "$ref": "#/$defs/dateOrNull"
+                },
+                "price": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "taxMethod": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "maxLength": 16
+                },
+                "taxRule": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "maxLength": 24
+                },
+                "accMethod": {
+                    "enum": [
+                        "as_tax",
+                        "time",
+                        null
+                    ]
+                },
+                "accMonths": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 1
+                },
+                "state": {
+                    "enum": [
+                        "confirmed",
+                        "archived"
+                    ]
+                }
+            }
+        },
+        "events": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "kind",
+                    "scope",
+                    "date",
+                    "amount"
+                ],
+                "properties": {
+                    "kind": {
+                        "enum": [
+                            "activation",
+                            "improvement",
+                            "reduction",
+                            "depreciation",
+                            "interruption",
+                            "disposal"
+                        ]
+                    },
+                    "scope": {
+                        "enum": [
+                            "both",
+                            "tax",
+                            "acc"
+                        ]
+                    },
+                    "date": {
+                        "$ref": "#/$defs/date"
+                    },
+                    "periodBegin": {
+                        "$ref": "#/$defs/dateOrNull"
+                    },
+                    "periodEnd": {
+                        "$ref": "#/$defs/dateOrNull"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "minimum": 0
+                    },
+                    "claimUnrecorded": {
+                        "type": "boolean"
+                    },
+                    "halfYear": {
+                        "type": "boolean"
+                    },
+                    "priceIncreased": {
+                        "type": "boolean"
+                    },
+                    "note": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 250
+                    },
+                    "sourceRef": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    }
+                }
+            }
+        }
+    },
+    "$defs": {
+        "date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "dateOrNull": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+    }
+}

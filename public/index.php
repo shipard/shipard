@@ -1071,7 +1071,17 @@ function dispatchExchange(
 		$documentEventDispatcher,
 	);
 	$userApplier = \Shipard\Module\Core\Exchange\User\UserApplier::create($db->getDibiConnection(), $tables);
-	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier);
+	// Import majetku (#83 fáze 6) — jen s aktivním modulem economy.assets.
+	$assetApplier = isset($tables['economy_assets_assets'])
+		? \Shipard\Module\Economy\Assets\Import\AssetImportApplier::create(
+			$db->getDibiConnection(),
+			$configRuntime,
+			$resolved->config,
+			$documentRegistry,
+			$tables,
+		)
+		: null;
+	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier, $assetApplier);
 	$auth ??= AuthContext::anonymous();
 
 	return match ($route->action) {
@@ -1089,6 +1099,8 @@ function dispatchExchange(
 		'bank:apply'      => $ctrl->applyBankStatement($request),
 		'user:validate'   => $ctrl->validateUser($request, $auth),
 		'user:apply'      => $ctrl->applyUser($request, $auth),
+		'asset:validate'  => $ctrl->validateAsset($request, $auth),
+		'asset:apply'     => $ctrl->applyAsset($request, $auth),
 		default           => Response::error('INTERNAL_ERROR', "Unknown exchange action: {$route->action}", 500),
 	};
 }
