@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Api\Controller;
 
 use Shipard\Api\AuthContext;
+use Shipard\Api\MultipartFiles;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Api\TableAccessGuard;
@@ -181,7 +182,7 @@ class MailController
 
         $fields['is_bulk'] = $this->detectBulkHeaders($rawSourceFile['tmp_name']) ? 1 : 0;
 
-        $attachmentFiles = $this->collectAttachmentFiles();
+        $attachmentFiles = MultipartFiles::collect('attachments');
 
         $uploadedFiles = [];
         $contentAttachments = [];
@@ -423,7 +424,7 @@ class MailController
             return Response::error('VALIDATION_ERROR', "mode musí být 'single' nebo 'perFile'", 422, [['field' => 'mode']]);
         }
 
-        $files = $this->collectAttachmentFiles();
+        $files = MultipartFiles::collect('attachments');
         if ($files === []) {
             return Response::error('VALIDATION_ERROR', 'Chybí soubory (pole attachments[])', 422, [['field' => 'attachments']]);
         }
@@ -909,32 +910,6 @@ class MailController
             'name' => (string) ($_FILES['raw_source']['name'] ?? 'message.eml'),
             'tmp_name' => (string) $_FILES['raw_source']['tmp_name'],
         ];
-    }
-
-    /**
-     * @return list<array{name: string, tmp_name: string}>
-     */
-    private function collectAttachmentFiles(): array
-    {
-        if (!isset($_FILES['attachments'])) {
-            return [];
-        }
-        $files = $_FILES['attachments'];
-        if (!is_array($files['name'])) {
-            return [];
-        }
-
-        $out = [];
-        foreach ($files['name'] as $i => $name) {
-            if (($files['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-                continue;
-            }
-            $out[] = [
-                'name' => (string) $name,
-                'tmp_name' => (string) $files['tmp_name'][$i],
-            ];
-        }
-        return $out;
     }
 
     /**

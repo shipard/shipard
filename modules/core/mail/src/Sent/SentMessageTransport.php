@@ -110,10 +110,12 @@ class SentMessageTransport
 
     /**
      * Odeslat znovu (D44): jen zprávu ve stavu Odeslaná (archivovanou
-     * nejdřív obnovit), která právě nečeká ve frontě.
+     * nejdřív obnovit), která právě nečeká ve frontě. Zpráva převzatá ze
+     * starého systému znovu nejde nikdy (#104 D5) — nové odeslání je
+     * Odeslat na záznamu.
      *
      * @return int id řádku fronty
-     * @throws SentMessageException `NOT_FOUND`, `INVALID_STATE`, `ALREADY_QUEUED`.
+     * @throws SentMessageException `NOT_FOUND`, `IMPORTED`, `INVALID_STATE`, `ALREADY_QUEUED`.
      */
     public function resend(int $sentMessageId, bool $sendNow = true, ?int $userId = null): int
     {
@@ -122,6 +124,12 @@ class SentMessageTransport
             throw new SentMessageException(
                 SentMessageException::NOT_FOUND,
                 "Sent message {$sentMessageId} not found",
+            );
+        }
+        if ((string) ($message['send_trigger'] ?? '') === SentMessageStore::TRIGGER_IMPORT) {
+            throw new SentMessageException(
+                SentMessageException::IMPORTED,
+                'An imported message cannot be sent again — use Send on the record instead',
             );
         }
         if ((int) $message['docState'] !== SentMessageStore::DOC_STATE_SENT) {

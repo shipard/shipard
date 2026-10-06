@@ -96,7 +96,8 @@ class SentMessagesViewer extends TableViewer
             'id'         => (int) $rowData['id'],
             't1'         => (string) ($rowData['subject'] ?? ''),
             'i1'         => SubtableCellFormatter::dateTime($rowData['created'] ?? null),
-            't2'         => $recipient !== '' ? $recipient : ($to !== '' ? $to : null),
+            // Bez osoby i adresy (importovaná zpráva bez příjemce, #104 D4) „—“.
+            't2'         => $recipient !== '' ? $recipient : ($to !== '' ? $to : '—'),
             'i2'         => array_values(array_filter([
                 [
                     'text'  => $transport['stateLabel'],
@@ -158,7 +159,7 @@ class SentMessagesViewer extends TableViewer
 
         $message = [];
         $this->addItem($message, $cs ? 'Odesílatel' : 'From', $from);
-        $this->addItem($message, $cs ? 'Komu' : 'To', $to);
+        $this->addItem($message, $cs ? 'Komu' : 'To', $to !== '' ? $to : '—');
         $this->addItem($message, $cs ? 'Kopie' : 'Cc', AddressList::format(AddressList::parse($record['email_cc'] ?? null)));
         $this->addItem($message, $cs ? 'Osoba' : 'Person', $record['recipient_name'] ?? null);
         $this->addItem($message, $cs ? 'Záznam' : 'Record', $record['target_label'] ?? null);
@@ -173,6 +174,7 @@ class SentMessagesViewer extends TableViewer
         $this->addItem($sending, $cs ? 'Odesláno' : 'Sent at', SubtableCellFormatter::dateTime($record['sent_at'] ?? null));
         $this->addItem($sending, $cs ? 'Počet odeslání' : 'Send count', (string) (int) ($record['send_count'] ?? 0));
         $this->addItem($sending, $cs ? 'Poslední chyba' : 'Last error', $record['last_error'] ?? null);
+        $this->addItem($sending, $cs ? 'Spuštěno' : 'Trigger', $this->triggerLabel((string) ($record['send_trigger'] ?? '')));
         $this->addItem($sending, $cs ? 'Vytvořeno' : 'Created', SubtableCellFormatter::dateTime($record['created'] ?? null));
         $this->addItem($sending, $cs ? 'Odeslal' : 'Sent by', $record['author_name'] ?? null);
 
@@ -256,6 +258,17 @@ class SentMessagesViewer extends TableViewer
     private function transportInfo(): SentMessageTransportInfo
     {
         return new SentMessageTransportInfo($this->db, $this->config);
+    }
+
+    /** Popisek `send_trigger` z `core.mail.sendTriggers`; bez konfigurace kód. */
+    private function triggerLabel(string $trigger): ?string
+    {
+        if ($trigger === '') {
+            return null;
+        }
+        $triggers = $this->config?->cfgItem('core.mail.sendTriggers');
+        $name     = is_array($triggers) ? ($triggers[$trigger]['name'] ?? null) : null;
+        return is_string($name) && $name !== '' ? $name : $trigger;
     }
 
     private function stateStyle(int $docState): string

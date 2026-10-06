@@ -66,9 +66,8 @@ class SentMessagesForm extends TableForm
 
         $info = [];
         $to   = AddressList::parse($data['email_to'] ?? null);
-        if ($to !== []) {
-            $info[] = ['label' => 'Komu', 'value' => AddressList::format($to)];
-        }
+        // Importovaná zpráva bez zaznamenané adresy (#104 D4) ukáže „—“.
+        $info[] = ['label' => 'Komu', 'value' => $to !== [] ? AddressList::format($to) : '—'];
         $created = SubtableCellFormatter::dateTime($data['created'] ?? null);
         if ($created !== null) {
             $info[] = ['label' => 'Vytvořeno', 'value' => $created];

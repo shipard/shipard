@@ -191,6 +191,14 @@ class Router
 			return new Route('mail', 'importMessage');
 		}
 
+		// Import odeslané zprávy ze starého systému (#104 D1).
+		if ($subpath === '/_mail/sent/import') {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('sentMessages', 'import');
+		}
+
 		// Odeslat znovu odeslanou zprávu (#90 D44).
 		if (str_starts_with($subpath, '/_sent-messages/')) {
 			if (!preg_match('#^/_sent-messages/(\d+)/resend$#', $subpath, $m) || (int) $m[1] <= 0) {

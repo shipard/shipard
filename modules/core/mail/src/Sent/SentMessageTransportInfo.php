@@ -99,6 +99,7 @@ final class SentMessageTransportInfo
     {
         $docState = (int) ($message['docState'] ?? 0);
         $queued   = (string) ($message['transport_state'] ?? '') === SentMessageStore::TRANSPORT_QUEUED;
+        $imported = (string) ($message['send_trigger'] ?? '') === SentMessageStore::TRIGGER_IMPORT;
 
         return $this->state($message) + [
             'messageId' => (int) $message['id'],
@@ -107,8 +108,12 @@ final class SentMessageTransportInfo
             'lastError' => isset($message['last_error']) && $message['last_error'] !== ''
                 ? (string) $message['last_error']
                 : null,
-            // Odeslat znovu jen zprávu ve stavu Odeslaná, která nečeká ve frontě.
-            'canResend' => $docState === SentMessageStore::DOC_STATE_SENT && !$queued,
+            // Zpráva převzatá ze starého systému (#104 D5) — rozhraní podle
+            // toho skryje Odeslat znovu, ne podle textu štítku.
+            'imported'  => $imported,
+            // Odeslat znovu jen zprávu ve stavu Odeslaná, která nečeká ve
+            // frontě a nevznikla importem.
+            'canResend' => $docState === SentMessageStore::DOC_STATE_SENT && !$queued && !$imported,
             'attempts'  => $this->attempts((int) $message['id']),
         ];
     }

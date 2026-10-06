@@ -7,6 +7,8 @@
    *
    * `params.transport` staví backend (`SentMessageTransportInfo::describe`);
    * odpověď Odeslat znovu nese tentýž tvar, takže se blok jen přepíše.
+   * Zpráva převzatá ze starého systému (`transport.imported`, #104 D5)
+   * tlačítko nemá vůbec — nové odeslání je Odeslat na záznamu.
    */
   import Button from '../ui/Button.svelte';
   import SpanBadge from '../viewer/SpanBadge.svelte';
@@ -60,17 +62,22 @@
         <span class="shpd-sent-transport__meta">{t('sentMessage.sendCount', { count: transport.sendCount })}</span>
       {/if}
       <span class="shpd-sent-transport__spacer"></span>
-      <Button
-        label={sending ? t('sentMessage.resending') : t('sentMessage.resend')}
-        variant="secondary"
-        size="sm"
-        icon={iconSend}
-        disabled={!transport.canResend || sending}
-        onclick={resend}
-        testid="sent-message-resend"
-      />
+      {#if !transport.imported}
+        <Button
+          label={sending ? t('sentMessage.resending') : t('sentMessage.resend')}
+          variant="secondary"
+          size="sm"
+          icon={iconSend}
+          disabled={!transport.canResend || sending}
+          onclick={resend}
+          testid="sent-message-resend"
+        />
+      {/if}
     </div>
 
+    {#if transport.imported}
+      <p class="shpd-sent-transport__note" data-testid="sent-message-imported-note">{t('sentMessage.importedNote')}</p>
+    {/if}
     {#if transport.state === 'queued'}
       <p class="shpd-sent-transport__note">{t('sentMessage.queuedNote')}</p>
     {/if}

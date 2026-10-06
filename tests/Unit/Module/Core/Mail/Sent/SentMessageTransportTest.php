@@ -58,6 +58,22 @@ class SentMessageTransportTest extends TestCase
         ];
     }
 
+    public function testImportedMessageCannotBeResent(): void
+    {
+        // Zpráva ze starého systému (#104 D5): odmítnutá hned po kontrole
+        // existence — před stavem i frontou, nic se nezařadí.
+        $this->store->method('get')->willReturn($this->message(['send_trigger' => 'import', 'docState' => 70]));
+        $this->store->expects($this->never())->method('markQueued');
+
+        try {
+            $this->transport()->resend(7);
+            $this->fail('Expected SentMessageException');
+        } catch (SentMessageException $e) {
+            $this->assertSame(SentMessageException::IMPORTED, $e->errorCode);
+        }
+        $this->assertSame([], $this->enqueued);
+    }
+
     public function testDispatchBuildsOutboundMessageFromTheStoredMessage(): void
     {
         $this->store->method('get')->willReturn($this->message());

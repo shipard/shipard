@@ -885,9 +885,19 @@ function dispatchSentMessages(
 			\Shipard\Core\Mail\MailServiceFactory::create($resolved->config, $db, $serverConfig),
 		),
 		new \Shipard\Module\Core\Mail\Sent\SentMessageTransportInfo($db, $configRuntime),
+		// Import ze starého systému (#104): přílohy zprávy zakládá
+		// AttachmentService bez guardů — pro ostatní jsou zamčené.
+		new \Shipard\Module\Core\Mail\Sent\SentMessageImportService(
+			$db,
+			$store,
+			new \Shipard\Module\Core\Attachments\AttachmentService($db, $resolved->config->getDataSourceDir(), $tables),
+			$tables,
+			$configRuntime,
+		),
 	);
 	return match ($route->action) {
 		'resend' => $ctrl->resend((int) $route->id, $auth, $tables),
+		'import' => $ctrl->import($auth, $_POST, \Shipard\Api\MultipartFiles::collect('attachments')),
 		default  => Response::error('INTERNAL_ERROR', "Unknown sent messages action: {$route->action}", 500),
 	};
 }

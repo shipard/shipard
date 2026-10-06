@@ -997,6 +997,8 @@ export default {
   'sentMessage.attempts': 'Send attempts ({count})',
   'sentMessage.attemptOk': 'sent',
   'sentMessage.attemptFail': 'error',
+  'sentMessage.importedNote': 'Imported message — it cannot be sent again; to send anew, use Send on the record.',
+  'error.IMPORTED': 'An imported message cannot be sent again — use Send on the record instead',
   'error.ALREADY_QUEUED': 'The message is already waiting in the outbound queue',
   'error.INVALID_STATE': 'Only a message in the Sent state can be sent again — restore an archived or deleted one first',
   'error.TABLE_SYSTEM_MANAGED': 'Records of this table are created and removed by the application only',

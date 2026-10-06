@@ -587,6 +587,17 @@ class RouterTest extends TestCase
 		}
 	}
 
+	public function testSentMessageImport(): void
+	{
+		$result = $this->router->resolve('/api/v1/_mail/sent/import', 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'sentMessages', 'import', null, null);
+
+		$result = $this->router->resolve('/api/v1/_mail/sent/import', 'GET');
+		$this->assertInstanceOf(Response::class, $result);
+		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
+	}
+
 	public function testMailSenderAddresses(): void
 	{
 		$result = $this->router->resolve('/api/v1/_mail/sender-addresses', 'GET');

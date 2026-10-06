@@ -1010,6 +1010,8 @@ export default {
   'sentMessage.attempts': 'Pokusy o odeslání ({count})',
   'sentMessage.attemptOk': 'odesláno',
   'sentMessage.attemptFail': 'chyba',
+  'sentMessage.importedNote': 'Importovaná zpráva — znovu ji neodešleš; pro nové odeslání použij Odeslat u záznamu.',
+  'error.IMPORTED': 'Importovanou zprávu nelze odeslat znovu — pro nové odeslání použijte Odeslat u záznamu',
   'error.ALREADY_QUEUED': 'Zpráva už čeká ve frontě odchozí pošty',
   'error.INVALID_STATE': 'Odeslat znovu jde jen zprávu ve stavu Odeslaná — archivovanou nebo smazanou nejdřív obnovte',
   'error.TABLE_SYSTEM_MANAGED': 'Záznamy této tabulky zakládá a ruší jen aplikace',
