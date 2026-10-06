@@ -209,6 +209,39 @@ Při kompilaci se pro každý jazyk:
 }
 ```
 
+### ICU vzory v katalozích textů
+
+Lokalizované pole nemusí být jen hotový řetězec — katalogy textů, které
+skládá server s parametry nebo plurálem, nesou **vzor ICU MessageFormat**
+(stejná syntaxe jako frontend, `frontend/src/i18n/cs.js`). Kompilace
+s ním zachází jako s každým jiným polem (`text`, `text:cs`, `text:en` →
+jedno `text` per jazyk); formátování dělá až čtenář katalogu přes
+`\MessageFormatter` s locale uživatele. První katalog tohoto druhu jsou
+texty karet feedu (`*.feedTexts`, `Shipard\Core\Feed\FeedTexts`,
+[dashboard.md](dashboard.md) §5).
+
+```jsonc
+"digest.title": {
+    "text": "{n, plural, one {# message auto-archived} other {# messages auto-archived}}",
+    "text:cs": "{n, plural, one {# zpráva automaticky archivována} few {# zprávy automaticky archivovány} other {# zpráv automaticky archivováno}}",
+    "text:en": "{n, plural, one {# message auto-archived} other {# messages auto-archived}}"
+}
+```
+
+Pravidla pro vzory (omezení PHP `ext-intl`):
+
+- uvnitř plurálu **vždy `#`**, ne `{n}` — PHP předá netypovaný `{n}` jako
+  řetězec a plurálový selektor jako číslo, tentýž argument v obou rolích
+  skončí `U_ARGUMENT_TYPE_MISMATCH`; `#` je číslo formátované v locale
+  (v `cs` s nezlomitelnou mezerou u tisíců);
+- apostrof je escape znak ICU — v anglických textech `''`;
+- české plurály: `one` = 1, `few` = 2–4, `other` = 5+ (i 21, 22…),
+  `many` jen pro desetinná čísla;
+- holé pole je anglický fallback a musí se shodovat s fallbackem v PHP,
+  který čtenář použije bez compiled configu; test úplnosti katalogu
+  (vzor `FeedTextsCatalogTest`) hlídá cs/en, parsovatelnost a shodné
+  parametry obou jazyků.
+
 ### Runtime
 
 Při startu aplikace se načte kompilovaný soubor pro jazyk přihlášeného uživatele:

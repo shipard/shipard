@@ -231,7 +231,7 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   (oddělené „·“). Na rozdíl od `timestamp` (řadicí pole všech karet,
   u alertů = last_seen) nese význam „kdy pošta přišla“.
 - `details` — **volitelné**, pole `{label, value}` pro rozbalovací detail
-  karty; labely lokalizuje server dle `ctx->language`. Jen neprázdné
+  karty; labely lokalizuje server z katalogu textů feedu (§5). Jen neprázdné
   hodnoty; prázdné pole se neposílá (expander na frontendu se ukazuje jen
   když `details` existuje).
 - `secondaryFindings` — **volitelné**, pole `{type, type_label, note}`
@@ -329,6 +329,46 @@ Mapování karet na sekce (#101 D8, D10):
 | `materialize_content_tag` | založení účetní položky pro obsahový štítek — `POST /_exchange/content-tags/materialize`, toast s „Otevřít" (form položky) + refetch; labely akcí posílá server (passthrough — u goods.stock nesou čísla účtů z osnovy) | `{tag, account?}` |
 
 ## 5. Zdroje karet
+
+### Texty karet — katalog `*.feedTexts` (#101 D11–D16)
+
+Titulky, podtitulky, labely detailu a serverem lokalizované labely akcí
+skládá zdroj z **katalogu modulu, který kartu vyrábí**: cfgItemy
+`core.mail.feedTexts`, `core.alerts.feedTexts`, `core.exchange.feedTexts`
+(`config/feedTexts.jsonc`, registrace v `config[]` module.jsonc). Čte je
+sdílený helper `Shipard\Core\Feed\FeedTexts`
+(`FeedTexts::forContext($ctx, cfgItem)`, jedna instance per sběr zdroje,
+předávaná helperům jako `AnalysisErrorPresenter`):
+
+```php
+$texts->t('digest.title', '{n, plural, one {# message auto-archived} other {# messages auto-archived}}', ['n' => $count]);
+```
+
+- Položka katalogu `{text, text:cs, text:en}`; `text` je vzor **ICU
+  MessageFormat** se syntaxí frontendu (`frontend/src/i18n/cs.js`) —
+  plurály, `{param}`; locale formátování = jazyk feedu. Uvnitř plurálu
+  vždy `#` (PHP intl neumí `{n}` v plurálové větvi téhož argumentu),
+  apostrof `''`. Pravidla: [modules.md](modules.md) → ICU vzory
+  v katalozích textů.
+- Druhý argument je **anglický fallback** — znak po znaku holé pole
+  katalogu. Použije se bez compiled configu i bez cfgItemu (DS před
+  `ds-upgrade`) tiše; chybějící klíč v existujícím katalogu nebo nevalidní
+  vzor → `ErrorLogger::warn` (jednou per klíč a sběr) + fallback; selže-li
+  i ten, vrátí se vzor beze změny. Nikdy výjimka — per-source izolace
+  collectoru by jinak zahodila celý zdroj.
+- `#` formátuje číslo v locale (`1 234 zpráv` s nezlomitelnou mezerou);
+  doslovné `{n}` mimo plurál ne.
+- **Jak přidat text:** klíč do `feedTexts.jsonc` modulu s `text` +
+  `text:cs` + `text:en`, volání `$texts->t(klíč, stejný anglický text,
+  params)` ve zdroji, `ds-upgrade` v dev DS. `FeedTextsCatalogTest` hlídá
+  úplnost cs/en, parsovatelnost vzorů, shodné parametry obou jazyků,
+  shodu fallbacků ve zdrojích s katalogem a že žádný klíč neleží ladem;
+  `tests/Fixtures/Core/Feed/ShippedFeedTexts` dodává katalogy testům
+  zdrojů (bez nich by assertovaly anglický fallback).
+- Mimo katalog (D17): labely akcí mail karet (frontend podle
+  `action.id`), formát data (`j. n. Y` / `Y-m-d` ve zdroji), prompt AI
+  shrnutí, titulky a zprávy samotných alertů (#102), hlášky selhané
+  analýzy (`analysisErrorKinds`, `preprocessErrorKinds`).
 
 ### 5.1 MailSuggestionsSource
 
