@@ -1,6 +1,6 @@
 # Import Odeslané pošty — endpoint `POST /_mail/sent/import` (#104)
 
-**Stav:** naplánováno — design schválen 2026-10-06 (#104 D1–D5), čeká na implementaci
+**Stav:** hotovo — implementováno 2026-10-06 (3 commity, #104 D1–D5); `ds-upgrade` a E2E přes API klíč na `4l3j` ověřeny, zbývá `ds-upgrade` na alfě a runner ve starém Shipardu
 
 ## Kontext
 
@@ -248,21 +248,37 @@ Routa, controller, `IMPORTED`, `describe()`, frontend + i18n, testy.
 
 ## Hotovo když
 
-- [ ] `ds-upgrade` na volném zdroji přidá sloupec a index; existující
-      zprávy beze změny.
-- [ ] Import přes API klíč na volném zdroji (zpráva navázaná na fakturu
-      vydanou, PDF + ISDOC) → 201. Zpráva je v agendě i v sekci Odeslaná
-      pošta u faktury s náhledem PDF, Spuštěno „Import“, bez tlačítka
-      Odeslat znovu.
-- [ ] `POST /_sent-messages/{id}/resend` → 409 `IMPORTED`.
-- [ ] Opakovaný import se stejným `import_ref` → 200 `created: false`,
+- [x] `ds-upgrade` na volném zdroji přidá sloupec a index; existující
+      zprávy beze změny. (`4l3j`, 2026-10-06: `added column: import_ref`,
+      `added index: unq_import_ref`)
+- [x] Import přes API klíč na volném zdroji (zpráva navázaná na doklad,
+      PDF + ISDOC) → 201. Zpráva je v agendě i v sekci Odeslaná
+      pošta u dokladu s náhledem PDF, Spuštěno „Import“, bez tlačítka
+      Odeslat znovu. (Na `4l3j` nejsou faktury vydané — navázáno na
+      fakturu přijatou, mechanismus je stejný; formulář ověřen i v headless
+      Chromiu.)
+- [x] `POST /_sent-messages/{id}/resend` → 409 `IMPORTED`.
+- [x] Opakovaný import se stejným `import_ref` → 200 `created: false`,
       žádná nová zpráva ani příloha.
-- [ ] Zpráva s prázdným `email_to` → stav Nezjištěno, „Komu“ „—“.
-- [ ] Generický upload přílohy k importované zprávě → 409
+- [x] Zpráva s prázdným `email_to` → stav Nezjištěno, „Komu“ „—“.
+- [x] Generický upload přílohy k importované zprávě → 409
       `ATTACHMENT_LOCKED` (guard beze změny).
-- [ ] Zdroj jen pro čtení → 403.
-- [ ] Testy (`--filter`), `npm run build`, `npm run check:i18n`.
-- [ ] Dokumentace, nápověda a indexy aktualizované.
+- [x] Zdroj jen pro čtení → 403 `DS_READ_ONLY`.
+- [x] Testy (`--filter`), `npm run build`, `npm run check:i18n`.
+- [x] Dokumentace, nápověda a indexy aktualizované.
+
+## Odchylky od zadání při implementaci
+
+- Unikátní index se jmenuje `unq_import_ref` (konvence
+  `docs/table-definitions.md` → Pojmenování indexů), ne `idx_import_ref`.
+- `created_by` zprávy jde výhradně z payloadu (bez něj NULL — uživatel API
+  klíče zprávu nepodepisuje, vzor `RegistryImportService`); autor příloh =
+  `created_by` z payloadu, bez něj uživatel API klíče.
+- Sběr souborů z multipartu je sdílený helper `Shipard\Api\MultipartFiles`
+  (dřív privátní metoda `MailController`), aby se nekopíroval.
+- Detail zprávy v agendě navíc ukazuje položku **Spuštěno** (label
+  z `core.mail.sendTriggers`) — bez ní by „Import“ nebylo kde vidět.
+- `email_to` přijímá seznam i text s čárkami (oboje umí `AddressList`).
 
 ## Rozhodnutí k designu (potvrzená)
 

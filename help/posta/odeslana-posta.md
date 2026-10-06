@@ -1,7 +1,7 @@
 ---
 title: Odeslaná pošta
 summary: Kde najdeš všechno, co z Shipardu odešlo e-mailem — komu, kdy, s jakými přílohami a jak odeslání dopadlo; jak zprávu odeslat znovu, archivovat nebo smazat.
-keywords: [odeslaná pošta, odeslané zprávy, odeslané e-maily, co odešlo, komu jsem poslal fakturu, kdy odešla faktura, historie odeslání, odeslat znovu, poslat znovu, zpráva ve frontě, ve frontě, neodesláno, odesláno, stav odeslání, pokusy o odeslání, archivovat zprávu, smazat odeslanou zprávu, obnovit zprávu, přílohy odeslané zprávy, sekce odeslaná pošta u dokladu, zachyceno neodesláno, přesměrováno, pošta je zachycená, pošta je přesměrovaná, testovací server neposílá poštu, žlutý pruh pošta]
+keywords: [odeslaná pošta, odeslané zprávy, odeslané e-maily, co odešlo, komu jsem poslal fakturu, kdy odešla faktura, historie odeslání, odeslat znovu, poslat znovu, zpráva ve frontě, ve frontě, neodesláno, odesláno, nezjištěno, stav odeslání, pokusy o odeslání, archivovat zprávu, smazat odeslanou zprávu, obnovit zprávu, přílohy odeslané zprávy, sekce odeslaná pošta u dokladu, zachyceno neodesláno, přesměrováno, pošta je zachycená, pošta je přesměrovaná, testovací server neposílá poštu, žlutý pruh pošta, zprávy ze starého shipardu, importovaná zpráva, import odeslané pošty, spuštěno import, chybí tlačítko odeslat znovu, zpráva bez příjemce]
 related: [faktury-vydane/odeslani-faktury.md, faktury-vydane/odesilatel-faktur.md, posta/prijem-posty.md, co-dnes-nejde.md]
 ---
 
@@ -42,6 +42,7 @@ záložce **Archiv** nebo **Koš** a tlačítkem **Obnovit** ji vrátíš.
 | **Odesláno** | Poštovní server zprávu převzal |
 | **Ve frontě** | Zpráva čeká na odeslání; Shipard to zkouší opakovaně, několik hodin |
 | **Neodesláno** | Odeslat se nepodařilo ani po opakování; důvod je u zprávy |
+| **Nezjištěno** | Zpráva převzatá ze starého Shipardu, u které starý systém nezaznamenal adresu příjemce; jestli a kam odešla, Shipard neví. V poli **Komu** je „—“ |
 
 Ve formuláři zprávy je pod stavem rozbalovací seznam **Pokusy o odeslání**
 s časem a odpovědí poštovního serveru.
@@ -54,6 +55,15 @@ jinam, dej u dokladu znovu **Odeslat**; vznikne nová zpráva.
 
 **Odeslat znovu je neaktivní.** Zpráva právě čeká ve frontě, nebo je
 v archivu či koši — tu nejdřív **Obnov**.
+
+**Zprávy ze starého Shipardu.** Pošta odeslaná ze starého Shipardu se při
+přechodu přenáší sem — v detailu zprávy má **Spuštěno: Import**. Vidíš
+u ní předmět, text, příjemce, přílohy a čas odeslání jako u ostatních.
+Odesílatele starý systém neukládal, proto je dopočítaný podle tehdejšího
+nastavení. Takovou zprávu **znovu odeslat nejde** — tlačítko **Odeslat
+znovu** u ní není a místo něj je poznámka; když ji potřebuješ poslat,
+dej u dokladu **Odeslat** a vznikne nová zpráva. Zprávy, u kterých starý
+systém nezaznamenal příjemce, mají stav **Nezjištěno**.
 
 **V přehledu není tlačítko Přidat.** Zprávy vznikají jen odesláním dokladu.
 Napsat z Shipardu samostatný e-mail zatím nejde.
