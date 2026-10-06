@@ -374,7 +374,7 @@
     }
   }
 
-  // Jednoklik Koš (90) / Archiv (80) z karty „Není faktura".
+  // Jednoklik Koš (90) / Archiv (80) z karty ostatní pošty.
   async function messageStateFlow(messageNdx, docState, cardId) {
     if (busyCardId !== null || !messageNdx) return;
     busyCardId = cardId;

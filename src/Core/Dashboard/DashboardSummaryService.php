@@ -105,7 +105,7 @@ final readonly class DashboardSummaryService
      * Canonical digest — the single input for both the hash and the prompt
      * (D13). Contains today's date so the summary regenerates at least once
      * a day (D12). Only actionable cards (urgent/review/ready) participate;
-     * info cards ("Není faktura", digest) carry no signal. Caller passes all
+     * info cards (other mail, digest) carry no signal. Caller passes all
      * cards (FeedResult::$allCards, #101) — counts are truthful above the
      * per-section cap and top cards follow the section order.
      *

@@ -380,7 +380,7 @@ Server transakčně:
 4. Workflow: `document` přítomen a validní **a** zpráva stále v Nové
    (`docState=10`) → UPDATE `docState=20` (K řešení). Běh bez dokumentu
    docState **nemění** — zpráva zůstává v Nové (dashboard emituje kartu
-   „Není faktura"). Ruční workflow stav pipeline nikdy nepřepisuje.
+   ostatní pošty). Ruční workflow stav pipeline nikdy nepřepisuje.
 5. `message_classification`: validace `primary_type` proti klíčům
    `core.mail.primaryTypes` (tolerují se i `enabled: false` typy;
    neznámý klíč → server-side warning + pole se ignoruje, **ne** 422).

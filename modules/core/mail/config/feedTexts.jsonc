@@ -18,11 +18,13 @@
     // Labely akcí mail karet sem nepatří — lokalizuje je frontend podle
     // action.id (D17). Formát data (`j. n. Y` / `Y-m-d`) řeší zdroj.
 
-    // Titulek karty „Není faktura“; {type} = název primárního typu zprávy.
-    "notInvoice.title": {
-        "text": "Not an invoice — {type}",
-        "text:cs": "Není faktura — {type}",
-        "text:en": "Not an invoice — {type}"
+    // Titulek karty ostatní pošty (zpráva `other` bez návrhu), když zpráva
+    // nemá AI titulek `ai_title` — jinak je titulkem ten
+    // (tasks/dashboard-other-row-title.md D1, D2).
+    "other.title": {
+        "text": "Contains no document",
+        "text:cs": "Neobsahuje doklad ani dokument",
+        "text:en": "Contains no document"
     },
     // Název typu `other`, když chybí cfgItem core.mail.primaryTypes.
     "primaryType.other": {
@@ -76,7 +78,7 @@
         "text:cs": "Doklad",
         "text:en": "Document"
     },
-    // Podtitulek chybové / „Není faktura“ karty se známým partnerem.
+    // Podtitulek chybové karty a karty ostatní pošty se známým partnerem.
     "partnerFrom": {
         "text": "{partner} · from: {sender}",
         "text:cs": "{partner} · od: {sender}",

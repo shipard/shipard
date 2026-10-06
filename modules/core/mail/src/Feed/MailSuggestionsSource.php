@@ -20,8 +20,8 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  * Feed zdroj došlé pošty — message-centricky (tasks/mail-message-centric.md
  * D10): karta = zpráva s otevřeným dokumentovým návrhem poslední úspěšné
  * analýzy, chybové karty per zpráva, u které selhala AI (nebo poslední běh
- * vrátil nevalidní canonical), a info karty „Není faktura" pro
- * AI-klasifikované ne-faktury.
+ * vrátil nevalidní canonical), a info karty ostatní pošty pro zprávy,
+ * ve kterých AI nenašla doklad ani dokument Spisovny.
  *
  * Návrhové karty: zprávy v docState 10/20 s poslední úspěšnou analýzou
  * (`canonical_json` NOT NULL, `resolution` IS NULL). Confidence pásmo se
@@ -38,9 +38,11 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  * a primární akce podle doporučení reanalýzy z AnalysisErrorPresenter —
  * tasks/mail-analysis-error-messages.md D3c, D4, D5)
  * také — akce reanalyze.
- * Karty „Není faktura": zpráva `analysis_state=30`, `docState=10` (Nová),
+ * Karty ostatní pošty: zpráva `analysis_state=30`, `docState=10` (Nová),
  * `primary_type='other'` bez otevřeného návrhu → kind=info s akcemi
- * Koš (primary) / Archiv / otevřít read-only náhled zprávy.
+ * Koš (primary) / Archiv / otevřít read-only náhled zprávy. Titulek je
+ * `ai_title` zprávy (AI popis obsahu), bez něj konstanta `other.title`
+ * z katalogu (tasks/dashboard-other-row-title.md D1, D2).
  *
  * Návrhové karty s partnerem nesou strukturovanou hlavičku `headline`
  * ({partnerName, typeLabel, amountText?}) + volitelná pole `confidencePct`
@@ -53,7 +55,9 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  * Všechny tři druhy mail karet nesou `emailSubject` — lidský titulek zprávy
  * (předmět; u generického / prázdného předmětu a ručních zpráv `ai_title`,
  * pravidlo D3 `IncomingMessageTitle`) — a volitelné `receivedDateText`.
- * Subtitle chybové a „Není faktura" karty: partner zprávy · od: odesílatel,
+ * Karta ostatní pošty `emailSubject` vynechá, když se shoduje s titulkem
+ * (sken, ruční nahrání, generický předmět — tasks/dashboard-other-row-title.md D3).
+ * Subtitle chybové karty a karty ostatní pošty: partner zprávy · od: odesílatel,
  * bez partnera jen odesílatel (D7). Neprázdné `secondary_findings` běhu →
  * pole `secondaryFindings` ({type, type_label, note}) — hint na kartě (D7).
  * Zpráva s předzpracováním ve stavu 40 „Hotovo s chybami" nese na všech
@@ -66,8 +70,8 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  *
  * Sekce feedu (#101 D4): chybové karty (`mail_message`, včetně degradované
  * review varianty) a karta nevalidního výstupu (`mail_invalid`) nesou
- * `feedSection = failed` (Nepodařilo se zpracovat). Návrhové a „Není
- * faktura" karty pole nemají — výchozí mapování z `kind` (ready → Připraveno,
+ * `feedSection = failed` (Nepodařilo se zpracovat). Návrhové karty a karty
+ * ostatní pošty pole nemají — výchozí mapování z `kind` (ready → Připraveno,
  * review → Ke kontrole, info → Ostatní).
  *
  * Akce se emitují bez `label` — frontend je lokalizuje podle `action.id`
@@ -483,7 +487,7 @@ final class MailSuggestionsSource implements FeedSource
     }
 
     /**
-     * Řádky zpráv pro karty „Není faktura" — AI klasifikovala zprávu jako
+     * Řádky zpráv pro karty ostatní pošty — AI klasifikovala zprávu jako
      * `other`, zpráva zůstala v Nové a nemá otevřený dokumentový návrh.
      *
      * @return list<array<string,mixed>>
@@ -513,8 +517,11 @@ final class MailSuggestionsSource implements FeedSource
     }
 
     /**
-     * Karta „Není faktura" — jednoklikový úklid: Koš (primary) / Archiv /
-     * otevřít read-only náhled zprávy.
+     * Karta ostatní pošty — jednoklikový úklid: Koš (primary) / Archiv /
+     * otevřít read-only náhled zprávy. Titulek = `ai_title` (AI popis
+     * obsahu zprávy), bez něj konstanta `other.title` z katalogu;
+     * `emailSubject` jen když se od titulku liší
+     * (tasks/dashboard-other-row-title.md D1–D3).
      *
      * @param array<string,mixed> $row
      * @return array<string,mixed>
@@ -525,6 +532,11 @@ final class MailSuggestionsSource implements FeedSource
         $target = ['messageNdx' => $messageNdx];
 
         $subject = $this->messageTitle($ctx, $row);
+        // D1, D2: titulek = AI popis obsahu zprávy; bez něj konstanta z katalogu.
+        $aiTitle = trim((string) ($row['ai_title'] ?? ''));
+        $title = $aiTitle !== ''
+            ? $aiTitle
+            : $texts->t('other.title', 'Contains no document');
         $sender = trim((string) ($row['sender_name'] ?? '')) !== ''
             ? trim((string) $row['sender_name'])
             : trim((string) ($row['sender_email'] ?? ''));
@@ -537,9 +549,7 @@ final class MailSuggestionsSource implements FeedSource
             'stateStyle' => 'archive',
             'category'   => FeedSource::CATEGORY_OTHER,
             'navSection' => FeedSource::NAV_SECTION_TOP,
-            'title'      => $texts->t('notInvoice.title', 'Not an invoice — {type}', [
-                'type' => $this->primaryTypeLabel($ctx, $texts, (string) ($row['primary_type'] ?? 'other')),
-            ]),
+            'title'      => $title,
             'subtitle'   => $this->senderSubtitle($texts, $row, $sender),
             'timestamp'  => $this->toAtom($row['received_at'] ?? null),
             'context'    => ['messageNdx' => $messageNdx],
@@ -549,7 +559,9 @@ final class MailSuggestionsSource implements FeedSource
                 ['id' => 'openMail', 'kind' => 'open_detail',     'target' => ['viewerId' => self::INCOMING_VIEWER_ID, 'recordId' => $messageNdx, 'tabId' => 'content']],
             ],
         ];
-        if ($subject !== '') {
+        // D3: předmět jen když se od titulku liší — u skenů, ručního nahrání
+        // a generických předmětů vrací messageTitle() právě ai_title.
+        if ($subject !== '' && $subject !== $title) {
             $card['emailSubject'] = $subject;
         }
         $receivedDateText = $this->formatDate($ctx, (string) ($row['received_at'] ?? ''));
@@ -965,7 +977,7 @@ final class MailSuggestionsSource implements FeedSource
     }
 
     /**
-     * Subtitle chybové / „Není faktura" karty: „partner · od: odesílatel"
+     * Subtitle chybové karty a karty ostatní pošty: „partner · od: odesílatel"
      * když zpráva partnera má (Osoba, jinak snapshot), jinak jen odesílatel
      * (D7 — zrcadlí t2/t3 vieweru).
      *

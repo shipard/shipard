@@ -309,7 +309,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         $this->assertNull($analysis['proposed_type']);
         $this->assertEqualsWithDelta(0.7, (float) $analysis['confidence'], 0.001);
 
-        // Zpráva zůstává v Nové (dashboard řeší karta „Není faktura").
+        // Zpráva zůstává v Nové (dashboard řeší karta ostatní pošty).
         $message = $this->messageRow();
         $this->assertSame(10, (int) $message['docState']);
         $this->assertSame(30, (int) $message['analysis_state']);

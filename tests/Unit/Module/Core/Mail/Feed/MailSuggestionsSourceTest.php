@@ -27,7 +27,9 @@ use Shipard\Module\Core\Mail\Preprocess\PreprocessErrorPresenter;
  *     z katalogu hlášek, primární akce podle doporučení reanalýzy (D4)
  *   - otevřený návrh s ai_failed wrapperem (_validationError) → chybová
  *     karta mail_invalid kategorie invalidOutput
- *   - karta „Není faktura" (kind info, akce trash/archive/open_detail)
+ *   - karta ostatní pošty (kind info, akce trash/archive/open_detail;
+ *     titulek `ai_title`, bez něj konstanta z katalogu; `emailSubject`
+ *     jen když se od titulku liší — tasks/dashboard-other-row-title.md)
  *   - strukturovaná hlavička `headline` (partner/typ/částka) + `confidencePct`
  *     + `emailSubject` + `details` + `secondaryFindings`; fallback na
  *     title/subtitle bez partnera
@@ -142,7 +144,7 @@ final class MailSuggestionsSourceTest extends TestCase
             ],
             $card['details'],
         );
-        $this->assertSame('Not an invoice — Other', $info['title']);
+        $this->assertSame('Contains no document', $info['title']);
         $this->assertSame('Úřad práce · from: Kancelářský skener', $info['subtitle']);
 
         foreach ($fromCatalog as $i => $expected) {
@@ -301,7 +303,10 @@ final class MailSuggestionsSourceTest extends TestCase
 
         $this->assertCount(1, $cards);
         $this->assertSame('Úřad práce · od: Kancelářský skener', $cards[0]['subtitle']);
-        $this->assertSame('Dopis od úřadu bez dokladu', $cards[0]['emailSubject']);
+        // D1: titulek = AI popis obsahu; D3: u ručního nahrání vrací
+        // messageTitle() tentýž ai_title → emailSubject by titulek jen opakoval.
+        $this->assertSame('Dopis od úřadu bez dokladu', $cards[0]['title']);
+        $this->assertArrayNotHasKey('emailSubject', $cards[0]);
 
         $en = (new MailSuggestionsSource())->collectCards($this->context([], lang: 'en', notInvoiceRows: [$row]));
         $this->assertSame('Úřad práce · from: Kancelářský skener', $en[0]['subtitle']);
@@ -604,7 +609,7 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame('failed', $cards[0]['feedSection']);
     }
 
-    // ── Karta „Není faktura" ─────────────────────────────────────────────
+    // ── Karta ostatní pošty ──────────────────────────────────────────────
 
     public function testNotInvoiceCardWithTrashArchiveActions(): void
     {
@@ -616,14 +621,9 @@ final class MailSuggestionsSourceTest extends TestCase
             'received_at'  => '2026-06-29 08:00:00',
             'primary_type' => 'other',
         ];
-        $config = $this->createMock(ConfigRuntime::class);
-        $config->method('cfgItem')->willReturnCallback(
-            static fn(string $id): mixed => $id === 'core.mail.primaryTypes'
-                ? ['other' => ['name' => 'Ostatní']]
-                : null,
-        );
+        // Bez ai_title (starší analýza) je titulkem konstanta z katalogu (D2).
         $src = new MailSuggestionsSource();
-        $cards = $src->collectCards($this->context([], [], $config, 'cs', [$row]));
+        $cards = $src->collectCards($this->context([], notInvoiceRows: [$row]));
 
         $this->assertCount(1, $cards);
         $card = $cards[0];
@@ -632,8 +632,8 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame('info', $card['kind']);
         $this->assertSame('archive', $card['stateStyle']);
         $this->assertSame('other', $card['category']);
-        $this->assertSame('Není faktura — Ostatní', $card['title']);
-        // Subtitle jen odesílatel; předmět jde strukturovaně v emailSubject.
+        $this->assertSame('Neobsahuje doklad ani dokument', $card['title']);
+        // Subtitle jen odesílatel; předmět se liší od titulku → emailSubject.
         $this->assertSame('Obchodník a.s.', $card['subtitle']);
         $this->assertSame('Nabídka spolupráce', $card['emailSubject']);
         $this->assertArrayNotHasKey('headline', $card);
@@ -648,6 +648,52 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertSame('open_detail', $actions[2]['kind']);
         $this->assertSame('core.mail.incoming', $actions[2]['target']['viewerId']);
         $this->assertSame('content', $actions[2]['target']['tabId']);
+    }
+
+    public function testOtherMailCardTitleIsAiTitleAndKeepsEmailSubject(): void
+    {
+        // Běžný e-mail: titulek = AI popis obsahu oříznutý o bílé znaky (D1),
+        // předmět se od něj liší → zůstává v emailSubject (D3).
+        $row = [
+            'message_ndx'  => 778,
+            'subject'      => 'Novinky — říjen',
+            'source_type'  => 0,
+            'ai_title'     => '  Newsletter — novinky dodavatele  ',
+            'sender_name'  => 'Dodavatel s.r.o.',
+            'sender_email' => 'news@example.com',
+            'received_at'  => '2026-06-29 09:00:00',
+            'primary_type' => 'other',
+        ];
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([], notInvoiceRows: [$row]));
+
+        $this->assertCount(1, $cards);
+        $this->assertSame('Newsletter — novinky dodavatele', $cards[0]['title']);
+        $this->assertSame('Novinky — říjen', $cards[0]['emailSubject']);
+        $this->assertSame('Dodavatel s.r.o.', $cards[0]['subtitle']);
+    }
+
+    public function testOtherMailCardBlankAiTitleFallsBackToCatalog(): void
+    {
+        // ai_title jen z bílých znaků = chybí → konstanta z katalogu (D2)
+        // v cs i en; předmět zůstává v emailSubject.
+        $row = [
+            'message_ndx'  => 779,
+            'subject'      => 'Upozornění na expiraci domény',
+            'source_type'  => 0,
+            'ai_title'     => "  \t ",
+            'sender_name'  => 'Registrátor',
+            'sender_email' => 'noreply@example.com',
+            'received_at'  => '2026-06-29 10:00:00',
+            'primary_type' => 'other',
+        ];
+
+        $cs = (new MailSuggestionsSource())->collectCards($this->context([], notInvoiceRows: [$row]));
+        $this->assertSame('Neobsahuje doklad ani dokument', $cs[0]['title']);
+        $this->assertSame('Upozornění na expiraci domény', $cs[0]['emailSubject']);
+
+        $en = (new MailSuggestionsSource())->collectCards($this->context([], lang: 'en', notInvoiceRows: [$row]));
+        $this->assertSame('Contains no document', $en[0]['title']);
     }
 
     // ── SQL pojistky ─────────────────────────────────────────────────────
@@ -677,7 +723,7 @@ final class MailSuggestionsSourceTest extends TestCase
 
     public function testNotInvoiceQueryFiltersPrimaryTypeOtherWithoutOpenProposal(): void
     {
-        // Registry primary typy na kartu „Není faktura" nesmí spadnout — SQL
+        // Registry primary typy na kartu ostatní pošty nesmí spadnout — SQL
         // filtruje primary_type='other'; otevřený návrh poslední analýzy
         // kartu potlačí přes COALESCE(derived flag)=0.
         $captured = null;

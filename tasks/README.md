@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 332 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 304.
+Celkem 333 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 305.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -387,6 +387,7 @@ Home obrazovka + modul úkolů. Reference [`docs/dashboard.md`](../docs/dashboar
 | `dashboard-alert-grouping.md` | Agregace alertů jednoho checku do skupinové karty feedu (práh > 3) |
 | `dashboard-chat-panel.md` | Plovoucí chat launcher + boční AI chat panel (AppShell overlay zprava) |
 | `dashboard-feed-workflow-sections.md` | Sekce feedu podle toku práce (Položky k založení → … → Ostatní), `feedSection` ze serveru, strop a pravdivé počty per sekce (#101) |
+| `dashboard-other-row-title.md` | Řádek sekce Ostatní s titulkem podle obsahu zprávy (`ai_title`) místo „Není faktura — Ostatní“ |
 | `feed-texts-catalog.md` | Texty karet feedu z katalogu modulu (`*.feedTexts` cfgItem, `FeedTexts`, ICU MessageFormat pro plurály), fallback anglicky v PHP (#101 D11–D17) |
 
 ## Dev dashboard

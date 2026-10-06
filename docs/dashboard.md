@@ -39,7 +39,7 @@ feedem (SSE, cache dle hashe feedu, tichá degradace na statické county — §1
 │  🟡 Upozornění (5)                                            │
 │  [alert karta]  [alert karta]      ← grid, dle závažnosti     │
 │  ⚪ Ostatní (93)                                               │
-│    Není faktura — … · „…"        Koš · Archiv ← kompaktní řádek│
+│    {AI titulek} · „…"            Koš · Archiv ← kompaktní řádek│
 │  a 63 dalších                                                 │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -224,7 +224,9 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   „e-mail „…"": předmět, u generického / prázdného předmětu a ručních
   zpráv titulek z AI (`ai_title`, pravidlo D3 `IncomingMessageTitle` —
   tasks/mail-message-title-partner.md); posílají ho všechny tři druhy mail
-  karet. Frontend přidává ikonu obálky a uvozovky.
+  karet, karta ostatní pošty jen když se liší od jejího `title`
+  (tasks/dashboard-other-row-title.md D3). Frontend přidává ikonu obálky
+  a uvozovky.
 - `receivedDateText` — **volitelné**, lokalizované datum doručení zprávy
   (server-formátované, cs `j. n. Y` / en `Y-m-d`); posílají ho všechny tři
   druhy mail karet. Frontend ho zobrazuje za typem dokladu / subtitle
@@ -262,7 +264,7 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   (`FeedFilter.svelte`). Karta **bez pole** se zobrazuje jen v záložce Vše
   (bezpečný default; dnes žádná taková karta není). Mapování: návrhová karta
   dle `context.target` (docs→invoices, registry→registry); chybové karty,
-  „Není faktura", digest, návrhy pravidel i alert karty → `other`.
+  karta ostatní pošty, digest, návrhy pravidel i alert karty → `other`.
 - `navSection` — **volitelné**, id sekce navigace (`global.navSections`)
   nebo sentinel `_top` (`FeedSource::NAV_SECTION_TOP`) — atribuce karty pro
   **badge stavů sekcí** (UI shells Fáze 3, `GET /_ui/section-badges`).
@@ -295,7 +297,7 @@ urgent → review → ready → info) → `timestamp` DESC.
 | `urgent` | 🔴 | alert `error`; zpráva `analysis_state=70` (analýza selhala); nevalidní výstup AI (`mail_invalid`) |
 | `review` | 🟡 | otevřený návrh v pásmu `review`/`low` (runtime resolver); alert `warning`; chybová karta s `primary_type=other`; karta položky k založení (content tag, D12 — blokuje povýšení návrhů); návrh pravidla odesílatele |
 | `ready`  | 🟢 | otevřený návrh v pásmu `ready` (jednoklik apply) |
-| `info`   | ℹ️ | alert `info`; karta „Není faktura"; digest auto-archivu |
+| `info`   | ℹ️ | alert `info`; karta ostatní pošty; digest auto-archivu |
 
 Mapování karet na sekce (#101 D8, D10):
 
@@ -309,7 +311,7 @@ Mapování karet na sekce (#101 D8, D10):
 | Selhaná analýza (`mail_message:*`), nevalidní výstup (`mail_invalid:*`) | urgent | `failed` | zdroj |
 | Selhaná analýza zprávy s `primary_type=other` | review | `failed` | zdroj |
 | Ostatní alerty — individuální i skupinové | dle závažnosti | `alerts` | zdroj |
-| Není faktura (`mail_notinvoice:*`), digest auto-archivu | info | `other` | výchozí |
+| Ostatní pošta (`mail_notinvoice:*`), digest auto-archivu | info | `other` | výchozí |
 
 ### 4.2 Slovník `kind` akcí (chování odvozuje frontend)
 
@@ -421,12 +423,18 @@ uživatele", tasks/mail-analysis-error-messages.md D3c–D5):
   u stavu 70 poslední běh se `status=3` (korelovaný subselect
   v `fetchErrorRows`), u wrapperu samotný řádek návrhu.
 
-**Karty „Není faktura"** — zprávy `analysis_state=30`, `docState=10` (Nová),
-`primary_type='other'` bez otevřeného návrhu → `kind=info`,
-`stateStyle=archive`, titulek „Není faktura — {label typu}"; akce
-`trash_message` (primary), `archive_message`, `open_detail`. Žádné
-auto-zavření ani digest — jedna karta per zpráva s jednoklikovým úklidem.
-(Sémantika beze změny proti extracted éře.)
+**Karty ostatní pošty** (`mail_notinvoice:*`) — zprávy `analysis_state=30`,
+`docState=10` (Nová), `primary_type='other'` bez otevřeného návrhu →
+`kind=info`, `stateStyle=archive`; akce `trash_message` (primary),
+`archive_message`, `open_detail`. Žádné auto-zavření ani digest — jedna
+karta per zpráva s jednoklikovým úklidem. Titulek = `ai_title` zprávy
+(AI popis obsahu — „Newsletter — novinky dodavatele", „Sken obálky"; jazyk
+AI profilu), bez něj konstanta `other.title` z katalogu („Neobsahuje doklad
+ani dokument" / „Contains no document") — analýzy před promptem v4.3.0 nebo
+analyzer bez `title`. `emailSubject` jen když se od titulku liší: u skenů,
+ručního nahrání a generických předmětů vrací pravidlo D3
+`IncomingMessageTitle` právě `ai_title` a předmět by titulek jen opakoval
+(tasks/dashboard-other-row-title.md D1–D3).
 
 Titulek: `proposed_type` → label z cfgItem `core.mail.primaryTypes`
 (registry typy label druhu z `base.registry.docKinds`) + partner
@@ -449,16 +457,17 @@ denormalizace headline do sloupců je pozdější optimalizace.
 - **Registry karta**: `partnerName` = `party.name`, `typeLabel` =
   `docKindLabel()`, bez `amountText`; `details` = jediný řádek „Platí do"
   z `registryValidTo()` (bez něj se `details` neposílá).
-- **Chybová karta / „Není faktura"**: bez `headline`/`confidencePct`;
-  `emailSubject` ano; `details` jen chybová karta (dva řádky z katalogu
-  hlášek, viz výše). Subtitle nedupluje předmět —
-  nese odesílatele (`sender_name`, „Není faktura" s fallbackem na
+- **Chybová karta / karta ostatní pošty**: bez `headline`/`confidencePct`;
+  `emailSubject` u chybové karty vždy, u karty ostatní pošty jen když se
+  liší od `title` (D3 výše); `details` jen chybová karta (dva řádky
+  z katalogu hlášek, viz výše). Subtitle nedupluje předmět —
+  nese odesílatele (`sender_name`, karta ostatní pošty s fallbackem na
   `sender_email`); má-li zpráva partnera (Osoba nebo `partner_name`),
   subtitle je „partner · od: odesílatel" (D7).
 - **Návrhová karta s neprázdnými `secondary_findings`** běhu navíc nese
   `secondaryFindings` (viz §4) — hint dalších nálezů, D7.
-- **Všechny tři druhy** (návrh vč. nevalidního výstupu, chybová, „Není
-  faktura") při `preprocess_state = 40` navíc nesou `warning` (viz §4) —
+- **Všechny tři druhy** (návrh vč. nevalidního výstupu, chybová, ostatní
+  pošta) při `preprocess_state = 40` navíc nesou `warning` (viz §4) —
   „Předzpracování: {titulek}" z `PreprocessErrorPresenter`
   (`modules/core/mail/docs/preprocess.md` → „Hlášky pro uživatele").
   Dotazy čtou `preprocess_state` vždy a `preprocess_log` jen ve stavu 40

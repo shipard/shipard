@@ -469,9 +469,10 @@ viz [Titulek zprávy](#titulek-zprávy-ai_title)). Server v transakci resultu za
 v `IncomingMessageDocument::beforeSave`). Neznámý typ = warning + ignore,
 uložení výsledku se nikdy nerozbije.
 
-Dokument s `doc_type='other'` neexistuje — ne-faktura vrací
-`document: null` + klasifikaci `other`; dashboard pak emituje info kartu
-„Není faktura" s akcemi Koš/Archiv (viz docs/dashboard.md). Ostatní nálezy
+Dokument s `doc_type='other'` neexistuje — zpráva bez dokladu i dokumentu
+Spisovny vrací `document: null` + klasifikaci `other`; dashboard pak emituje
+info kartu ostatní pošty s titulkem z `ai_title` a akcemi Koš/Archiv (viz
+docs/dashboard.md). Ostatní nálezy
 vedle primárního dokumentu (smlouva v příloze faktury apod.) vrací analyzer
 jako informativní `secondary_findings` (`{type, note}`, D7) — žijí jen
 v `analysis_json`, žádné entity, žádný stav; UI je ukazuje jako hint na
@@ -555,8 +556,8 @@ nefiltruje (LEFT JOIN), t2 padá na `partner_name`.
 
 **Dashboard a MCP:** návrhové karty (`MailSuggestionsSource`) berou
 `headline.partnerName` přednostně z Osoby zprávy (`partner_person`), pak
-z canonicalu, pak ze snapshotu `partner_name`; chybové a „Není faktura"
-karty mají v subtitle „partner · od: odesílatel". MCP `mail_list_pending`
+z canonicalu, pak ze snapshotu `partner_name`; chybové karty a karty
+ostatní pošty mají v subtitle „partner · od: odesílatel". MCP `mail_list_pending`
 vrací u položky `partner {name, person}` odděleně od `sender`.
 
 **Dataset** (`MailExporter` / `MailSeeder`): `partnerPerson` je odkaz
@@ -621,7 +622,10 @@ sloupec `core_mail_incoming_messages.ai_title` (varchar 200):
   (pravidla předzpracování, název souboru renderu těla, payload analyzeru)
   zůstávají na `subject`. Dashboardové karty (`MailSuggestionsSource`,
   pole `emailSubject`) a MCP `mail_list_pending` (`full_name` položky,
-  navíc holé `ai_title`) pravidlo používají také.
+  navíc holé `ai_title`) pravidlo používají také. Karta ostatní pošty
+  (`mail_notinvoice:*`) navíc používá `ai_title` **přímo jako titulek**
+  (popis obsahu zprávy, nezávisle na pravidle D3) a `emailSubject` vynechá,
+  když by titulek jen opakoval — tasks/dashboard-other-row-title.md.
 - **Dataset:** `aiTitle` (řetězec) v exporteru / seederu / schématu.
 
 ## Deterministický ISDOC import

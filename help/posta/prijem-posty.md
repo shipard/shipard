@@ -1,7 +1,7 @@
 ---
 title: Příjem pošty
-summary: Jak dostat fakturu do Shipardu, co se s ní pak děje a jak si poradit s poštou, která faktura není.
-keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, pravidlo odesílatele, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
+summary: Jak dostat fakturu do Shipardu, co se s ní pak děje a jak si poradit s poštou, ve které není doklad ani dokument.
+keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, ostatní pošta, sken obálky, neobsahuje doklad ani dokument, pravidlo odesílatele, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
 related: [posta/kontrola-vytezeni.md, slovnicek.md, co-dnes-nejde.md]
 ---
 
@@ -90,10 +90,15 @@ revizi nebo úřední písemnost, nabídne na Dashboardu zařazení do
 vlastní pruh, oddělený od faktur. Vzniklý záznam dostane **všechny
 přílohy zprávy** — jedno doručení = jeden záznam, jako v podacím deníku.
 
-**Když to není faktura.** Reklamu, newsletter nebo upomínku AI pozná
-a místo návrhu dokladu se na Dashboardu objeví nenápadný řádek v sekci
-**Ostatní** s akcemi **Do koše** a **Archivovat**. Rozdíl je jen v tom,
-kam zpráva zmizí; obojí ji odklidí z cesty a přílohy zůstanou.
+**Když zpráva neobsahuje doklad ani dokument.** Reklamu, newsletter,
+upozornění z e-shopu nebo sken obálky AI pozná a místo návrhu se na
+Dashboardu objeví nenápadný řádek v sekci **Ostatní** s akcemi **Do koše**
+a **Archivovat**. Tučně je na něm krátký popis toho, co ve zprávě je —
+třeba „Newsletter — novinky dodavatele“ nebo „Sken obálky“ —, vedle
+odesílatel a předmět e-mailu. U starších zpráv, ke kterým AI popis
+nenapsala, je místo něj **Neobsahuje doklad ani dokument**. Koš a Archiv
+se liší jen tím, kam zpráva zmizí; obojí ji odklidí z cesty a přílohy
+zůstanou.
 
 **Hromadnou poštu Shipard pozná, ale sám ji neodklidí.** Newslettery se
 dají rozpoznat z hlaviček e-mailu (odhlašovací odkaz a podobné). Je to pro
