@@ -362,7 +362,7 @@ function dispatch(
 		'senderRules' => dispatchSenderRules($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime, $documentEventDispatcher),
 		'registry' => dispatchRegistry($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime),
 		'analysis' => dispatchAnalysis($route, $request, $auth, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
-		'exchange' => dispatchExchange($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $auth),
+		'exchange' => dispatchExchange($route, $request, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher, $auth, $journalEventDispatcher, $journalContributors),
 		'contentTags' => dispatchContentTags($route, $request, $auth, $db, $configRuntime, resolveLanguage($request, $resolved->config), $tables, $resolved->config, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
 		'alerts' => dispatchAlerts($route, $request, $db, $alertCheckRegistry, $configRuntime, resolveLanguage($request, $resolved->config)),
 		'reports' => dispatchReports($route, $request, $db, $configRuntime, $modulePathResolver, $resolved, resolveLanguage($request, $resolved->config)),
@@ -1034,6 +1034,8 @@ function dispatchExchange(
 	\Shipard\Core\Document\DocumentRegistry $documentRegistry,
 	?\Shipard\Core\Document\DocumentEventDispatcher $documentEventDispatcher = null,
 	?AuthContext $auth = null,
+	?\Shipard\Core\Document\JournalEventDispatcher $journalEventDispatcher = null,
+	?\Shipard\Core\Accounting\JournalContributorSet $journalContributors = null,
 ): Response {
 	if ($configRuntime === null) {
 		return Response::error('INTERNAL_ERROR', 'ConfigRuntime is required for /_exchange endpoints', 500);
@@ -1081,7 +1083,18 @@ function dispatchExchange(
 			$tables,
 		)
 		: null;
-	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier, $assetApplier);
+	// Doplnění karty na doklady (D80) přegenerovává deník — chce účetní doménu.
+	$assetDocLinks = $assetApplier !== null && isset($tables['economy_accounting_journal'])
+		? new \Shipard\Module\Economy\Assets\Import\AssetDocLinkService(
+			$db->getDibiConnection(),
+			$configRuntime,
+			$resolved->config,
+			$documentRegistry,
+			$journalEventDispatcher,
+			$journalContributors,
+		)
+		: null;
+	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier, $assetApplier, $assetDocLinks);
 	$auth ??= AuthContext::anonymous();
 
 	return match ($route->action) {
@@ -1101,6 +1114,7 @@ function dispatchExchange(
 		'user:apply'      => $ctrl->applyUser($request, $auth),
 		'asset:validate'  => $ctrl->validateAsset($request, $auth),
 		'asset:apply'     => $ctrl->applyAsset($request, $auth),
+		'docLinks:apply'  => $ctrl->applyAssetDocLinks($request, $auth),
 		default           => Response::error('INTERNAL_ERROR', "Unknown exchange action: {$route->action}", 500),
 	};
 }

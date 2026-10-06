@@ -1126,6 +1126,9 @@ class RouterTest extends TestCase
 			$this->assertSame('exchange', $result->controller);
 			$this->assertSame("asset:{$action}", $result->action);
 		}
+		$links = $this->router->resolve('/api/v1/_exchange/assets/doc-links/apply', 'POST');
+		$this->assertInstanceOf(Route::class, $links);
+		$this->assertSame('docLinks:apply', $links->action);
 		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/assets/asset/preview', 'POST'));
 		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/assets/asset/apply', 'GET'));
 		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/assets/explode', 'POST'));

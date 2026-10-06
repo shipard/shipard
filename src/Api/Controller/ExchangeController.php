@@ -13,6 +13,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\User\UserApplier;
+use Shipard\Module\Economy\Assets\Import\AssetDocLinkService;
 use Shipard\Module\Economy\Assets\Import\AssetImportApplier;
 
 /**
@@ -29,6 +30,7 @@ use Shipard\Module\Economy\Assets\Import\AssetImportApplier;
  *
  *   POST /api/v1/_exchange/users/user/{validate|apply}
  *   POST /api/v1/_exchange/assets/asset/{validate|apply}   (#83 fáze 6, karta majetku s historií)
+ *   POST /api/v1/_exchange/assets/doc-links/apply           (#83 fáze 6, karta na importovaných dokladech)
  *
  * The controller is intentionally thin — body validation + delegate to
  * the relevant Applier + map ApplyResult to Response. Error shape
@@ -50,6 +52,7 @@ final class ExchangeController
         private readonly ?BankStatementApplier $bankApplier = null,
         private readonly ?UserApplier $userApplier = null,
         private readonly ?AssetImportApplier $assetApplier = null,
+        private readonly ?AssetDocLinkService $assetDocLinks = null,
     ) {}
 
     // ── Document flow ──────────────────────────────────────────────────
@@ -277,6 +280,33 @@ final class ExchangeController
             );
         }
         return Response::success($result->toArray(), $result->statusCode);
+    }
+
+    /**
+     * Doplnění karty na doklad (D80): stav párování je obsah odpovědi, ne
+     * HTTP chyba — runner čte `status` (`linked`, `unchanged`, `ambiguous`,
+     * `notFound`, `conflict`, `turnover_changed`, `accounting_failed`).
+     * Chybný tvar payloadu je 400 s `details.issues`.
+     */
+    public function applyAssetDocLinks(Request $request, AuthContext $auth): Response
+    {
+        $denied = $this->requireAdminOrApiKey($auth, 'Asset backfill');
+        if ($denied !== null) {
+            return $denied;
+        }
+        if ($this->assetDocLinks === null) {
+            return Response::error('INTERNAL_ERROR', 'Asset document backfill is not available on this data source.', 500);
+        }
+        $payload = $this->extractPayload($request);
+        if ($payload instanceof Response) {
+            return $payload;
+        }
+
+        $result = $this->assetDocLinks->apply($payload);
+        if ($result['status'] === AssetDocLinkService::STATUS_INVALID) {
+            return Response::error('schema_invalid', 'Struktura doplnění karty neodpovídá tvaru.', 400, ['issues' => $result['issues']]);
+        }
+        return Response::success($result);
     }
 
     // ── Shared plumbing ────────────────────────────────────────────────

@@ -14,6 +14,7 @@ use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\User\UserApplier;
+use Shipard\Module\Economy\Assets\Import\AssetDocLinkService;
 use Shipard\Module\Economy\Assets\Import\AssetImportApplier;
 use Shipard\Module\Economy\Assets\Import\AssetImportResult;
 
@@ -514,6 +515,33 @@ class ExchangeControllerTest extends TestCase
 
         $this->assertSame(400, $this->getStatus($this->assetController($applier)->applyAsset($this->assetRequest(null), $apiKey)));
         $this->assertSame(500, $this->getStatus($this->assetController(null)->applyAsset($this->assetRequest(), $apiKey)));
+    }
+
+    public function testAssetDocLinksAnswerMatchingStatusAndShapeErrors(): void
+    {
+        $apiKey = new AuthContext(true, 2, 'api_key', 'shpd_ak_x');
+        $service = $this->createMock(AssetDocLinkService::class);
+        $service->method('apply')->willReturnOnConsecutiveCalls(
+            ['status' => 'ambiguous', 'docId' => 4711, 'rows' => [['index' => 0, 'sourceRef' => 'row:1', 'rowId' => null, 'status' => 'ambiguous']]],
+            ['status' => 'invalid', 'docId' => 0, 'rows' => [], 'issues' => [['severity' => 'error', 'path' => 'docId', 'code' => 'required', 'message' => 'm']]],
+        );
+        $controller = new ExchangeController($this->createMock(DocumentApplier::class), assetDocLinks: $service);
+        $request = $this->buildRequest('POST', '/api/v1/_exchange/assets/doc-links/apply', ['docId' => 4711, 'rows' => []]);
+
+        // Stav párování je obsah odpovědi (200), ne HTTP chyba.
+        $response = $controller->applyAssetDocLinks($request, $apiKey);
+        $this->assertSame(200, $this->getStatus($response));
+        $this->assertSame('ambiguous', $response->getPayload()['data']['status']);
+
+        $invalid = $controller->applyAssetDocLinks($request, $apiKey);
+        $this->assertSame(400, $this->getStatus($invalid));
+        $this->assertSame('docId', $invalid->getPayload()['error']['details']['issues'][0]['path']);
+
+        // Oprávnění a nezapojená služba.
+        $this->assertSame(403, $this->getStatus($controller->applyAssetDocLinks($request, new AuthContext(true, 5, 'session', 'x'))));
+        $this->assertSame(500, $this->getStatus(
+            (new ExchangeController($this->createMock(DocumentApplier::class)))->applyAssetDocLinks($request, $apiKey),
+        ));
     }
 
     public function testUserImportRejectsMissingBodyAndUnwiredFlow(): void

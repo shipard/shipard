@@ -986,15 +986,16 @@ class Router
 	/**
 	 * Import majetku (#83 fáze 6) sdílí `exchange` dispatcher: karta
 	 * s historií `asset:validate` / `asset:apply` (bez `preview` — není co
-	 * rozhodovat). Vždy POST.
+	 * rozhodovat) a doplnění karty na doklady `docLinks:apply`. Vždy POST.
 	 */
 	private function resolveAssetsExchangeRoute(string $subpath, string $method): Route|Response
 	{
 		$rest = substr($subpath, strlen('/_exchange/assets/'));
 		$action = match ($rest) {
-			'asset/validate' => 'asset:validate',
-			'asset/apply'    => 'asset:apply',
-			default          => null,
+			'asset/validate'  => 'asset:validate',
+			'asset/apply'     => 'asset:apply',
+			'doc-links/apply' => 'docLinks:apply',
+			default           => null,
 		};
 		if ($action === null) {
 			return Response::error('NOT_FOUND', 'Not found', 404);
