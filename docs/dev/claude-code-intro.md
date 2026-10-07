@@ -208,26 +208,27 @@ Pak požádej Clauda:
 1. **Větev** — „založ větev pro opravu popisku v dashboardu“.
 2. **Práce a kontrola** — kapitoly 6 a 7.
 3. **Commit** — „commitni to“. U tasku Claude commituje podle jeho
-   commit strategie. Commit je zatím jen u tebe, nikam neodešel.
+    commit strategie. Commit je zatím jen u tebe, nikam neodešel.
 4. **Odeslání — jen na tvůj pokyn.** Požádej Clauda, ať připraví popis
-   PR do souboru („napiš popis PR do /tmp/pr.md“), a přečti si ho. Pak:
+    PR do souboru („napiš popis PR do /tmp/pr.md“), a přečti si ho. Pak:
 
-   > Pushni větev do mého forku a založ pull request do shipard/shipard
-   > s popisem z /tmp/pr.md.
+    > Pushni větev do mého forku a založ pull request do shipard/shipard
+    > s popisem z /tmp/pr.md.
 
-   Claude se před pushem i před založením PR **zeptá** — přečti si, co
-   a kam odesílá, a potvrď. Odkaz na PR pak vypíše. Stejný krok můžeš
-   udělat i sám v terminálu:
+    Claude se před pushem i před založením PR **zeptá** — přečti si, co
+    a kam odesílá, a potvrď. Odkaz na PR pak vypíše. Stejný krok můžeš
+    udělat i sám v terminálu:
 
-   ```bash
-   gh pr create --repo shipard/shipard --body-file /tmp/pr.md
-   ```
+    ```bash
+    gh pr create --repo shipard/shipard --body-file /tmp/pr.md
+    ```
 
-   `gh` se zeptá, kam větev pushnout (do tvého forku) a jaký má mít PR
-   název.
+    `gh` se zeptá, kam větev pushnout (do tvého forku) a jaký má mít PR
+    název.
+
 5. **Aktuální stav** — před další prací „stáhni změny z upstreamu do
-   stable a založ novou větev“. Po stažení se závislosti a frontend
-   aktualizují samy (git hooky z bootstrapu).
+    stable a založ novou větev“. Po stažení se závislosti a frontend
+    aktualizují samy (git hooky z bootstrapu).
 
 **Proč o odeslání rozhoduješ ty:** repozitář je veřejný. Co jednou
 odejde, vidí všichni — proto Claude nic neodešle sám od sebe a každé
