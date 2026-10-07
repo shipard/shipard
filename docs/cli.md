@@ -649,12 +649,20 @@ Ověření importu majetku (`docs/assets.md` D82, §5.7) — čte, nic nemění:
    částce (karta, rok, import, engine, rozdíl); karta se zablokovaným
    okruhem je „chyba plánu“.
 2. **Účetní okruh × deník:** per karta a účetní rok součet účetních odpisů
-   z událostí × obrat účtů odpisů s dimenzí karty v deníku.
+   z událostí × obrat účtů odpisů s dimenzí karty v deníku — od prvního
+   roku, kdy deník kartu na účtech odpisů nese (`summary.accFromYear`);
+   dřívější roky se neporovnávají.
 3. **Kontrola evidence × deník** za každý účetní rok od prvního s dimenzí
-   `asset` v deníku: stav a počty zpráv po kódech.
+   `asset` v deníku do roku dnešního data (další rok ještě nemá počáteční
+   stavy): stav a počty zpráv po kódech.
+4. **Uplynulá doba účetního odpisování:** karty, jejichž plán by u časové
+   účetní metody odepsal zůstatek v jednom období (konec doby, částka
+   nejbližšího plánovaného období) — upozornění s vlastním počtem
+   v souhrnu, oprava je delší doba na kartě.
 
 Exit 0 bez rozdílů, 1 s rozdíly nebo chybou plánu nebo rokem kontroly ve
-stavu `errors` (varování neshazují); FAILURE i při chybě prostředí.
+stavu `errors` (varování a uplynulá doba neshazují); FAILURE i při chybě
+prostředí.
 
 #### `accbal-match --all | --partner=<id> | --fiscal-year=<id> [--dry-run]`
 

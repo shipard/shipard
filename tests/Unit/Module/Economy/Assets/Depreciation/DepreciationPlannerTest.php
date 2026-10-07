@@ -1013,6 +1013,31 @@ class DepreciationPlannerTest extends TestCase
         $this->assertSame([11000.0, 22250.0, 22250.0, 22250.0, 22250.0], $this->planned($plan));
     }
 
+    public function testZeroConfirmedDepreciationCoversThePeriod(): void
+    {
+        // D84: rok bez účetního odpisu ve starém systému doplní runner nulovým
+        // odpisem — období je pokryté (žádné `missingPeriod`), nula proti
+        // výpočtu je jen varování `mismatch` a plán pokračuje.
+        $events = [$this->activation('2014-12-15', 100000.0)];
+        foreach ([2015 => 10000.0, 2016 => 10000.0, 2017 => 10000.0, 2018 => 0.0, 2019 => 10000.0, 2020 => 10000.0] as $year => $amount) {
+            $events[] = $this->depreciation('acc', $year, $amount, AssetEvent::ORIGIN_IMPORT);
+        }
+
+        $plan = $this->plan(['tax_method' => 'none', 'acc_method' => 'time', 'acc_months' => 120], $events)['acc'];
+
+        $this->assertNotContains(PlanMessage::MISSING_PERIOD, $this->codes($plan));
+        $this->assertFalse($plan->hasErrors());
+        $zero = $plan->rows[4];
+        $this->assertSame('2018-12-31', $zero->period?->end);
+        $this->assertSame(0.0, $zero->amount);
+        $this->assertSame([PlanMessage::MISMATCH], array_map(static fn(PlanMessage $m): string => $m->code, $zero->messages));
+        $this->assertSame(0.0, $zero->messages[0]->params['confirmed']);
+        $this->assertSame('2021-12-31', $plan->plannedRows()[0]->period?->end);
+        // Po potvrzených 50 000 zbývá 50 000 a plán je dopíše.
+        $this->assertSame(50000.0, $plan->rows[6]->residual);
+        $this->assertSame(50000.0, array_sum($this->planned($plan)));
+    }
+
     public function testGapInConfirmedDepreciationIsAnError(): void
     {
         // Rok 2021 nemá odpis ani přerušení. Do počtu let se nepočítá —

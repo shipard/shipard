@@ -663,7 +663,8 @@ Rozhodnutí:
 
 ### D83–D86 — Opravy po prvním ostrém importu (ROZHODNUTO)
 
-PRD: `tasks/assets-import-fixes.md` (nový Shipard), runner navazuje.
+PRD: `tasks/assets-import-fixes.md` (nový Shipard — hotovo 2026-10-07,
+§5.7), runner navazuje.
 Ostrý import 2026-10-07 na čtyřech zdrojích (`689089`, `732084`,
 `205976`, `219124` bez majetku): `205976` a `732084` čisté (daňový okruh
 ±1 Kč za tři roky, účetní okruh se liší jen v letech bez vazby v deníku,
@@ -831,6 +832,7 @@ texty drží cfgItem `economy.assets.planMessages` a skládá
 |---|---|---|
 | `mismatch` | varování | potvrzený odpis ≠ spočtený |
 | `openingMismatch` | varování | oprávky počátečního stavu neodpovídají pravidlům a počtu období |
+| `accPeriodElapsed` | varování | plánované období časové účetní metody začíná až po konci doby — zůstatek se odepíše najednou, oprava = delší doba na kartě (D83); jen plánované řádky |
 | `missingPeriod` | chyba | před potvrzeným odpisem chybí odpis dřívějšího období |
 | `dateOutsidePeriod` | chyba | datum odpisu mimo účetní rok konce období, nebo před jeho začátkem |
 | `notWholeUnits` | chyba | odpis není zaokrouhlený dle pravidel (mimo původ `import`, D10) |
@@ -1104,6 +1106,7 @@ tak neopakuje kód, který účtuje, a nepotřebuje pravidla země.
 |---|---|---|
 | účet účetní skupiny | evidence (počáteční stavy + **zaúčtované** události vč. importovaných, D76) × deník; účty majetku, pořízení a oprávek konečným zůstatkem roku (otevírací období + běžné měsíce), účty odpisů a ZC obratem roku | chyba; účet pořízení jen varování `acquisitionAccountDifference` (D73) |
 | zápisy bez karty | řádky běžných měsíců roku na účtech skupin bez dimenze `asset` | varování |
+| rok bez počátečních stavů | otevírací období roku bez jediného zápisu na účtech skupin, ačkoli evidence má k začátku roku stav na účtu majetku nebo oprávek (rok ještě neotevřený, D85) — účty majetku, pořízení a oprávek se neporovnají (deník prázdný, rozdíl 0, `noOpeningBalances`), účty odpisů a ZC obratem beze změny | varování `noOpeningBalances`, jedno za rok |
 | (a) zaúčtování ≠ deník | zaúčtované události karty × řádky deníku `asset.*` s dimenzí karty, po účtech a stranách | chyba |
 | (b) pořízení ≠ zařazení | pořízení na 04x s dimenzí karty (mimo `asset.*`) × potvrzená zařazení + TZ − snížení | chyba |
 | (c) nezaúčtovaná událost | potvrzená účtovatelná událost bez dokladu s datem do konce předchozího období účetních odpisů | varování |
@@ -1163,7 +1166,7 @@ s historií, doplnění karty na už importované doklady a ověření výsledku
 |---|---|
 | `AssetImportApplier` (+ `AssetImportResult`) | formát `shpd.assets.asset.v1`: párování podle inventárního čísla, založení / přepis karty, náhrada událostí původu `import`, přeskočení karty s místními událostmi, koncept bez úplné účetní skupiny (D79), varování z plánu; `validate` = celý průběh s rollbackem |
 | `AssetDocLinkService` | doplnění karty na doklad (D80): párování řádků, sloupce `asset`, přegenerování deníku s pojistkou obratů, zámky jen do logu |
-| `AssetImportVerifier` | ověření (D82): zlatý test daňového okruhu, účetní okruh × deník, kontrola evidence × deník po letech |
+| `AssetImportVerifier` | ověření (D82): zlatý test daňového okruhu, účetní okruh × deník od prvního roku s vazbou (D85), kontrola evidence × deník po letech do roku dnešního data (D85), uplynulá doba účetního odpisování (D83) |
 | `Command\DataSource\AssetsImportVerifyCommand` | `shpd-ds assets-import-verify [--asset=<číslo>] [--json]` |
 
 Schéma `modules/core/exchange/schemas/shpd.assets.asset.v1.jsonc` je
@@ -1207,7 +1210,11 @@ koruny a účetní rok): `cardNotConfirmed` (události potvrzené i na
 kartě-konceptu, aby karta po doplnění skupiny rovnou běžela),
 `aboveResidual`, `reductionAboveResidual`, `halfYearNotAllowed`,
 `yearDepreciated`, `alreadyInterrupted`, `planHasErrors` u vyřazení (chybu
-plánu vrátí applier jako varování). Potvrzené vyřazení v importu
+plánu vrátí applier jako varování). Nulový účetní odpis (D84: rok bez
+odpisu ve starém systému, runner ho pošle s poznámkou) import
+**neodmítá** — částka smí být nula v každém původu, jen ne záporná; v plánu
+období pokrývá (žádné `missingPeriod`), nula proti výpočtu je varování
+`mismatch`. Potvrzené vyřazení v importu
 **nezakládá** poslední odpisy (`writeFinalDepreciations`) — posílá je
 runner; jinak by vznikly systémové odpisy, které by další reimport karty
 zablokovaly a byly by nezaúčtované. Beze změny platí chronologie
@@ -1228,12 +1235,18 @@ na účtu pořízení se importované zařazení neodečítá podruhé (je už
 v pořízení s kartou z deníku) a karta zařazená importem se v (b) pořízení
 × zařazení neposuzuje — její pořízení se srovnalo ve starém systému.
 
-**Doplnění karty na doklady (D80)** — `POST /api/v1/_exchange/assets/
-doc-links/apply`, `{docId, headAsset, rows: [{account, side?, amount,
-asset, orderHint?, sourceRef?}]}`: kandidáti = řádky dokladu se stejným
-číslem účtu, `vat_base_dom` = `amount` na haléř a stranou (`dr` / `cr`),
-je-li uvedená; jeden kandidát = shoda, víc rozhodne `orderHint`
-(`order_pos`), jinak `ambiguous`; řádek s jinou kartou `conflict`. Doklad
+**Doplnění karty na doklady (D80, D86)** — `POST /api/v1/_exchange/assets/
+doc-links/apply`, `{docId, headAsset, rows: [{account?, side?, amount,
+asset, orderHint?, sourceRef?}]}`: kandidáti = účtované řádky dokladu
+(`row_kind` 1) se stejným číslem účtu, `vat_base_dom` = `amount` na haléř
+a stranou (`dr` / `cr`), je-li uvedená; řádek payloadu **bez `account`**
+(chybí nebo null, D86) se páruje jen s řádky dokladu bez účtu — faktury
+a pokladní doklady s účtem z položky nebo kategorie operace, účet dává až
+předpis — podle částky a strany; prázdný text účtu je chyba tvaru. Jeden
+kandidát = shoda, víc rozhodne `orderHint` (`order_pos`), jinak
+`ambiguous`; řádek s jinou kartou `conflict`. Dimenze deníku jde z řádku
+nezávisle na zdroji účtu (`JournalDimension::valueOf` čte
+`docs_core_rows.asset`; integrační test nad dev DS). Doklad
 se mění celý, nebo vůbec: přímý UPDATE sloupců `asset` (bez formuláře,
 nezávisle na nastavení Sledovat náklady), u stavu 40 `AccountingEngine::
 accountDocument` přes zámky (jen `warn` do logu, důvod „assets backfill“)
@@ -1252,11 +1265,22 @@ potvrzeného odpisu už nese hodnotu spočtenou z historie před ním
 porovnává se u importovaných daňových odpisů; karta se zablokovaným
 okruhem je nález „chyba plánu“; (2) účetní okruh × deník per karta
 a účetní rok: Σ potvrzených účetních odpisů × obrat účtů odpisů všech
-účetních skupin s dimenzí karty; (3) kontrola evidence × deník přes
-`ReportRunner` (`economy.assets.journalCheck`) za každý rok od prvního
-s dimenzí `asset` v deníku — stav a počty zpráv po kódech (jen bez
-`--asset`). Exit 0 bez rozdílů, 1 s rozdíly (varování D73 neshazují);
-`--json` pro log runneru.
+účetních skupin s dimenzí karty — od prvního roku, kdy deník kartu na
+některém účtu odpisů nese (`summary.accFromYear`, D85; bez jediné vazby
+se neporovnává), dřívější roky starý deník kartu neměl; (3) kontrola
+evidence × deník přes `ReportRunner` (`economy.assets.journalCheck`) za
+každý rok od prvního s dimenzí `asset` v deníku do roku dnešního data
+(D85, další rok ještě nemá počáteční stavy) — stav a počty zpráv po
+kódech (jen bez `--asset`); (4) uplynulá doba účetního odpisování (D83):
+karty, jejichž plán nese `accPeriodElapsed` — konec doby a částka
+nejbližšího plánovaného období, vlastní počet v souhrnu, do exit kódu se
+nepočítá. Exit 0 bez rozdílů, 1 s rozdíly (varování D73 a D85
+neshazují); `--json` pro log runneru. Po ostrém importu (2026-10-07):
+`p4zq-s` exit 0; `e8w1-i` bez účetních rozdílů, exit 1 jen kvůli třem
+rozdílům −1 Kč zlatého testu jedné karty (2013–2015, zaokrouhlení
+starého systému — ponecháno bez tolerance); `btpg-p` vypíše budovu
+s uplynulou dobou (plán 2026 přes 10 mil.) a účetní rozdíly jen v prvním
+roce s vazbou.
 
 **Kontrola evidence × deník na účtu pořízení (D73)** hlásí rozdíl jako
 varování `assets.journalCheck.acquisitionAccountDifference` s textem,

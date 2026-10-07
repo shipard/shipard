@@ -1,6 +1,6 @@
 # Majetek — opravy po prvním ostrém importu
 
-**Stav:** naplánováno — D83–D86 potvrzena 2026-10-07; runner navazuje (řádky bez účtu, nulové účetní odpisy v mezerách)
+**Stav:** hotovo — 2026-10-07, čtyři commity; runner navazuje (řádky bez účtu, nulové účetní odpisy v mezerách)
 
 > PRD pro jednu Claude Code session (4 commity). Design: `docs/assets.md`
 > §4 D44, D73–D86, §5.6, §5.7; issue #83.
@@ -120,17 +120,31 @@ u řádku z kategorie a obraty se nezměnily.
 
 ## Hotovo když
 
-- [ ] Plán karty s uplynulou účetní dobou nese varování, ověření ho vypíše,
+- [x] Plán karty s uplynulou účetní dobou nese varování, ověření ho vypíše,
       delší doba ho odstraní.
-- [ ] Kontrola za rok bez počátečních stavů vrací `warnings` s jedním
+- [x] Kontrola za rok bez počátečních stavů vrací `warnings` s jedním
       varováním; `assets-import-verify` končí aktuálním rokem a účetní okruh
       porovnává od prvního roku s vazbou.
-- [ ] `doc-links` páruje řádky bez účtu podle částky a `orderHint`.
-- [ ] Nulový účetní odpis importem projde a odblokuje plán.
-- [ ] Ověření na dev zdroji s ostrým importem (čtení): `assets-import-verify
+- [x] `doc-links` páruje řádky bez účtu podle částky a `orderHint`.
+- [x] Nulový účetní odpis importem projde a odblokuje plán (import ho
+      neodmítal ani dřív — jen testy a §5.7).
+- [x] Ověření na dev zdroji s ostrým importem (čtení): `assets-import-verify
       --json` na `btpg-p` vypíše budovu s uplynulou dobou a nehlásí rok
-      2027; na `e8w1-i` a `p4zq-s` exit 0. Výsledek do tasku (bez jmen).
-- [ ] PHPUnit (úzké filtry) zelené, dokumentace aktualizovaná.
+      2027; na `p4zq-s` exit 0; `e8w1-i` exit 1 jen kvůli třem známým
+      rozdílům −1 Kč zlatého testu (rozhodnuto 2026-10-07 nechat bez
+      tolerance). Výsledek níže.
+- [x] PHPUnit (úzké filtry) zelené, dokumentace aktualizovaná.
+
+## Výsledek ověření (2026-10-07, jen čtení)
+
+| zdroj | před | po |
+|---|---|---|
+| `btpg-p` | 46 účetních rozdílů (2012–2017), kontrola 2017–2027 vše `errors` | účetní okruh od 2017 (první rok s vazbou): 9 rozdílů jen 2017; kontrola 2017–2026; **uplynulá doba: 1 karta** (budova, doba do 10/2022, plán 2026 přes 10 mil.); exit 1 (rozdíly ze starých dat) |
+| `e8w1-i` | 11 účetních rozdílů (2012–2017), 2027 `errors` (14× `accountMismatch`) | účetní okruh od 2018: 0 rozdílů; kontrola 2018–2026 vše `ok`; exit 1 jen kvůli 3 × −1 Kč zlatého testu jedné karty (2013–2015) |
+| `p4zq-s` | 2027 `errors` → exit 1 | kontrola 2017–2026 (2026 `warnings`), **exit 0** |
+
+Report Kontrola evidence × deník za 2027 na `p4zq-s`: stav `warnings`,
+jediná zpráva `noOpeningBalances`, účty se stavem bez hodnoty deníku.
 
 ## Doporučené pořadí commitů
 

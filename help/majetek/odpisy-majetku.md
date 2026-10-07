@@ -124,6 +124,15 @@ zadej jako **Počáteční stav**.
 **Daňovou metodu po prvním potvrzeném daňovém odpisu nezměníš.** Účetní
 metodu změnit můžeš, plán se přepočítá od posledního potvrzeného odpisu.
 
+**Doba účetního odpisování uplynula a zůstatek zbývá.** Časová účetní
+metoda po konci doby odepíše celý zůstatek v nejbližším období — na
+záložce **Účetní odpisy** to u plánovaného řádku hlásí varování „Doba
+účetního odpisování skončila…“. Typicky majetek převzatý ze starého
+systému, který po technickém zhodnocení dobu prodloužil. Nic to
+neblokuje; když má odpisování pokračovat, dej kartu do opravy, prodluž
+**Dobu účetního odpisování** a vrať ji do stavu **V pořádku** — plán se
+přepočítá a varování zmizí.
+
 **Datum pořízení a vyřazení dlouhodobého majetku nepíšeš na kartu** —
 plní je zařazení a vyřazení. Kartu dlouhodobého majetku proto nejde
 poslat do archívu bez potvrzeného vyřazení.

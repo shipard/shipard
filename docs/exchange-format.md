@@ -1637,16 +1637,20 @@ karta s ručními nebo systémovými událostmi se přeskočí
 ```jsonc
 { "docId": 4711, "headAsset": null,
   "rows": [ { "account": "551022", "side": "dr", "amount": 13074.00,
-              "asset": 15, "orderHint": 3, "sourceRef": "row:812" } ] }
+              "asset": 15, "orderHint": 3, "sourceRef": "row:812" },
+            // řádek faktury bez účtu (účet dává položka / kategorie): jen částka
+            { "amount": 48000.00, "asset": 15, "sourceRef": "row:813" } ] }
 ```
 
-Odpověď `{ "status": "linked" | "unchanged" | "ambiguous" | "notFound" |
-"conflict" | "turnover_changed" | "accounting_failed", "docId", "rows":
-[{index, sourceRef, rowId, status}], "head"? }` — stav párování je obsah
-odpovědi (HTTP 200), chybný tvar 400 s `details.issues`. Doklad se mění
-celý, nebo vůbec; ve stavu 40 se přegeneruje deník s pojistkou shodných
-obratů. Pravidla párování a uvolněné validace importu: `docs/assets.md`
-§5.7.
+`account` je nepovinný: chybí-li (nebo je `null`), páruje se řádek jen
+s řádky dokladu bez účtu podle částky (a strany, je-li uvedená); prázdný
+text je chyba tvaru. Odpověď `{ "status": "linked" | "unchanged" |
+"ambiguous" | "notFound" | "conflict" | "turnover_changed" |
+"accounting_failed", "docId", "rows": [{index, sourceRef, rowId, status}],
+"head"? }` — stav párování je obsah odpovědi (HTTP 200), chybný tvar 400
+s `details.issues`. Doklad se mění celý, nebo vůbec; ve stavu 40 se
+přegeneruje deník s pojistkou shodných obratů. Pravidla párování
+a uvolněné validace importu: `docs/assets.md` §5.7.
 
 ## 15. Reference
 

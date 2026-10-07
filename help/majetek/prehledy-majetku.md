@@ -103,6 +103,12 @@ dokladu, viz [Majetek na dokladech](naklady-na-majetek.md)), nebo ho
 nahraď událostí na kartě. Druhá příčina je karta s **počátečním stavem**,
 ke které v účetnictví chybí počáteční zůstatek účtu.
 
+**Rok nemá v deníku počáteční stavy.** Jen varování: rok ještě není
+v účetnictví otevřený (otevírací období nemá žádný zápis na účtech
+majetku), i když evidence k jeho začátku stav má. Účty majetku, pořízení
+a oprávek mají ve sloupci **Deník** prázdno a **Rozdíl** nula — porovnají
+se, až rok otevřeš; účty odpisů a zůstatkové ceny se porovnávají dál.
+
 **Rozdíl na účtu pořízení.** Jen varování: evidence na účtu pořízení
 počítá pouze pořízení s kartou, takže rozdíl znamená pořízení bez karty
 (včetně počátečního zůstatku účtu) nebo zařazení, ke kterému v Shipardu

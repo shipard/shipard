@@ -396,6 +396,33 @@ class AssetImportApplierTest extends TestCase
         $this->assertNull($head['price']);
     }
 
+    public function testZeroAccountingDepreciationIsAccepted(): void
+    {
+        // D84: mezeru v účetním okruhu runner vyplní nulovým odpisem
+        // s poznámkou — import ho uloží jako každý jiný.
+        $events = [['kind' => 'activation', 'scope' => 'both', 'date' => '2014-12-15', 'amount' => 100000, 'sourceRef' => 'row:1']];
+        foreach ([2015 => 10000, 2016 => 10000, 2017 => 10000, 2018 => 0, 2019 => 10000, 2020 => 10000] as $year => $amount) {
+            $events[] = [
+                'kind' => 'depreciation', 'scope' => 'acc', 'date' => "{$year}-12-31", 'periodBegin' => "{$year}-01-01", 'periodEnd' => "{$year}-12-31",
+                'amount' => $amount, 'note' => $amount === 0 ? 'Rok bez účetního odpisu ve starém systému' : null, 'sourceRef' => "deps:{$year}",
+            ];
+        }
+
+        $result = $this->applier->apply($this->payload(
+            ['taxMethod' => 'none', 'taxRule' => null, 'accMethod' => 'time', 'accMonths' => 120],
+            $events,
+        ));
+
+        $this->assertTrue($result->success, json_encode($result->toArray()));
+        $this->assertSame([], $result->warnings);
+        $saved = $this->applier->savedEvents;
+        $this->assertCount(7, $saved);
+        $this->assertSame([2015, 2016, 2017, 2018, 2019, 2020], array_map(static fn(array $e): int => (int) substr($e['event_date'], 0, 4), array_slice($saved, 1)));
+        $this->assertSame(0, $saved[4]['amount']);
+        $this->assertSame('Rok bez účetního odpisu ve starém systému', $saved[4]['note']);
+        $this->assertTrue($saved[4]['_import']);
+    }
+
     public function testPlanWarningsArePassedThrough(): void
     {
         $this->applier->planWarnings = [['code' => 'plan_error', 'message' => 'Plán daňových odpisů: chybí období 2023.']];

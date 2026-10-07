@@ -363,6 +363,20 @@ class AssetEventDocumentTest extends TestCase
         $this->assertSame(['_form:yearDepreciated'], $this->codes($this->event('interruption', '2022-12-31')));
     }
 
+    public function testImportedZeroDepreciationIsValid(): void
+    {
+        // D84: nulový účetní odpis (rok bez odpisu ve starém systému) projde —
+        // částka smí být nula, jen ne záporná.
+        $this->activated();
+        $this->assertValid($this->event('depreciation', '2022-12-31', [
+            'scope' => 'acc', 'amount' => 0, 'period_begin' => '2022-01-01', 'period_end' => '2022-12-31', '_import' => true,
+            'note' => 'Rok bez účetního odpisu ve starém systému',
+        ]));
+        $this->assertSame(['amount:negative'], $this->codes($this->event('depreciation', '2022-12-31', [
+            'scope' => 'acc', 'amount' => -1, 'period_begin' => '2022-01-01', 'period_end' => '2022-12-31', '_import' => true,
+        ])));
+    }
+
     public function testImportedDisposalIgnoresPlanErrorsAndWritesNoFinalDepreciations(): void
     {
         // as_tax bez daňového vzorce = settingsInvalid; import projde.
