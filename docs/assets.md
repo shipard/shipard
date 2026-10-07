@@ -1,6 +1,6 @@
 # Shipard — Majetek (`economy.assets`)
 
-> **Designový dokument.** **Stav:** D1–D82 rozhodnuto;
+> **Designový dokument.** **Stav:** D1–D86 rozhodnuto;
 > oblast 1 (karta, typy, účetní skupiny) **hotová** 2026-09-29
 > (`tasks/assets-phase1.md`), oblast 2 **hotová** 2026-09-30 — pravidla
 > země a odpisový engine (`tasks/assets-phase2a.md`, §5.1–5.2), události,
@@ -12,8 +12,9 @@
 > proti deníku (`tasks/assets-phase5.md`, §5.6), oblast 6 (import)
 > **hotová** 2026-10-06 na straně nového Shipardu — výměnný formát karty,
 > doplnění karty na doklady a ověření (`tasks/assets-phase6.md`, D73–D82,
-> §5.7, §6; runner ve starém Shipardu navazuje); další oblasti se
-> rozpadají postupně (§7).
+> §5.7, §6; runner ve starém Shipardu navazuje), opravy po prvním
+> ostrém importu naplánovány (`tasks/assets-import-fixes.md`, D83–D86);
+> další oblasti se rozpadají postupně (§7).
 > **Datum:** 2026-09-29 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #83
 
@@ -660,6 +661,42 @@ Rozhodnutí:
   pět zdrojů bez nevysvětleného rozdílu. Pořadí: nový Shipard (applier,
   backfill, ověření) → runner → reimport zdrojů jeden po druhém.
 
+### D83–D86 — Opravy po prvním ostrém importu (ROZHODNUTO)
+
+PRD: `tasks/assets-import-fixes.md` (nový Shipard), runner navazuje.
+Ostrý import 2026-10-07 na čtyřech zdrojích (`689089`, `732084`,
+`205976`, `219124` bez majetku): `205976` a `732084` čisté (daňový okruh
+±1 Kč za tři roky, účetní okruh se liší jen v letech bez vazby v deníku,
+plán 2026 navazuje na 2025); `689089` — kontrola proti deníku sedí na
+korunu u majetku, oprávek movitých věcí a odpisů, zbylé rozdíly jsou ze
+starých dat (neimportovaná karta se dvěma zařazeními, oprávky staveb
+z let bez vazby, zhodnocení 2026 v deníku bez evidence). Zlatý test
+vysvětlen: jednorázový odpis levných karet 2006, sazby podle roku místo
+podle zařazení u karet z 1992, zhodnocení s přerušením 2020–2022.
+
+- **D83 Uplynulá účetní doba.** Časová účetní metoda po uplynutí doby
+  odepíše zůstatek najednou (D44) — u budovy se zhodnoceními by to byl
+  celý zůstatek v jednom roce, starý systém životnost prodloužil. Plán
+  dá varování „doba odpisování uplynula, zůstatek se odepíše najednou“,
+  `assets-import-verify` takové karty vypíše; oprava je ruční (delší doba
+  na kartě).
+- **D84 Mezery v účetním okruhu z importu.** Rok bez účetního odpisu
+  v evidenci i v deníku (karta zařazená, nevyřazená) blokuje plán
+  (`missingPeriod`). Runner takový rok doplní nulovým účetním odpisem
+  s poznámkou; přeodepsané karty (oprávky nad vstupní cenou) se opraví
+  ručně.
+- **D85 Rok bez počátečních stavů.** Kontrola evidence × deník za rok,
+  jehož otevírací období v deníku nemá zápisy, ačkoli evidence k začátku
+  roku stav má (rok ještě neotevřený), účty majetku, pořízení a oprávek
+  neporovnává a hlásí varování; `assets-import-verify` končí aktuálním
+  rokem a účetní okruh × deník porovnává od prvního roku s dimenzí
+  `asset` na účtech odpisů.
+- **D86 Řádky bez účtu v doplnění karty na doklady.** Řádky faktur
+  a pokladních dokladů s účtem z položky nebo kategorie mají
+  `account` prázdný; řádek payloadu bez účtu se páruje s nimi podle
+  částky (a strany, je-li uvedená), víc kandidátů rozhodne `orderHint`.
+  Runner pak pošle i řádky, které dnes vynechává.
+
 ---
 
 ## 5. Doménový model (návrh)
@@ -1287,7 +1324,8 @@ Probírají se jedna po druhé; každá má vlastní PRD.
    doménou, D68)
 6. Import (D8, D9, D11, D73–D82) + backfill — nový Shipard **hotovo**
    2026-10-06, `tasks/assets-phase6.md` (§5.7 vč. odchylek); runner ve
-   starém Shipardu (§6) navazuje
+   starém Shipardu (§6) hotov, ostrý import 2026-10-07; opravy D83–D86
+   `tasks/assets-import-fixes.md`
 7. Pohyby, příslušenství, vlastnosti, místa, inventarizace, prodej majetku
    (vydaná faktura s nabídkou vyřazení)
 8. Soubory a množstevní karty, odložená daň, zbytek (AV/AM, X)
@@ -1299,6 +1337,12 @@ Probírají se jedna po druhé; každá má vlastní PRD.
 - Místa: vlastní číselník v modulu, nebo obecný číselník míst (využijí
   ho i jiné moduly)?
 - Čísla karet (inv. č.): číselná řada per druh, nebo volný text s návrhem?
+- **Sazba pro zvýšenou vstupní cenu u majetku zařazeného před 1999**
+  (nález importu `689089`): engine bere sazby podle data prvního
+  zařazení (D43), takže TZ budovy z 1992 odpisuje sazbou 2,0 %; starý
+  systém a podaná přiznání používaly dnešní 3,4 %. Nižší odpis je
+  přípustný (sazby jsou maximální), ale mění daň — ověřit přechodná
+  ustanovení ZDP a rozhodnout, zda D43 platí i pro sazbu zvýšené ceny.
 - Podklad pro přiznání DPPO: součty po `taxReturnGroup` řeší D66;
   mapování na konkrétní řádky tiskopisu (ve starém `taxDepsTaxCI`) až
   s podáním DPPO — patří do konfigurace země.

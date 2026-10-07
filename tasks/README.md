@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 334 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 306.
+Celkem 335 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 306.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,6 +27,7 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-models-phase0.md` | naplánováno | čeká na potvrzení rozhodnutí F0-D1–F0-D7 (#85) |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
+| `assets-import-fixes.md` | naplánováno | D83–D86 potvrzena 2026-10-07; runner navazuje (řádky bez účtu, nulové účetní odpisy v mezerách) |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -312,6 +313,7 @@ Evidence majetku, odpisy a jejich zaúčtování. Designový dokument
 | `assets-phase4.md` | 4 | Vazba na doklady: nastavení Sledovat náklady na majetek, dimenze na hlavičce a řádcích dokladů, karta na řádku pořízení a její založení z řádku, zařazení z pořízení, tab Náklady a výnosy, alerty, validace účetní skupiny a data událostí (D57–D64) |
 | `assets-phase5.md` | 5 | Přehledy a kontroly: hromadné načítání plánů, sestava odpisů, přírůstky a úbytky, daňové odpisy pro DPPO, kontrola evidence × deník s alerty, soupis majetku, drill-down (D65–D72) |
 | `assets-phase6.md` | 6 | Import — nový Shipard: výměnný formát karty s historií `shpd.assets.asset.v1`, importované události zaúčtované mimo modul, karta na importovaných dokladech, `assets-import-verify`, účet pořízení v kontrole jen varováním (D73–D82) |
+| `assets-import-fixes.md` | 6+ | Opravy po prvním ostrém importu: varování plánu při uplynulé účetní době, kontrola a ověření bez neotevřeného roku a let bez vazby, `doc-links` pro řádky bez účtu, nulový účetní odpis v importu (D83–D86) |
 
 ## Došlá pošta (core.mail)
 
@@ -338,7 +340,6 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `enrichment-row-text-candidates.md` | Enrichment řádků z historie: matchování přes více kandidátních textů (description → item.description → item.name, tier-major) |
 | `enrichment-dominant-item.md` | Enrichment řádků z historie: úroveň „dominantní položka dodavatele“ (statistika bez textu, confidence low, guard přes částku) |
 | `mail-safety.md` | Pojistka odchozí pošty na dev a testovacích serverech: `mail.safety` v `server.json` (redirect / allowlist / drop), stopa ve frontě a v Odeslané poště, `doctor` (#95) |
-| `mail-sender-rules-after-analysis.md` | Pravidla odesílatelů: dispozice `archiveIfOther` (archivace po analýze, když zpráva neobsahuje doklad ani dokument), pojistka učení pro odesílatele s doklady, potvrzení pravidla odklidí čekající řádky Ostatní |
 
 Daemony volající endpoint žijí v jiných repech: `mail_router:tasks/phase1.md`
 (mail-router, Python) a `ai_analyzer:tasks/phase1.md` (AI analyzer, Python).
@@ -388,7 +389,6 @@ Home obrazovka + modul úkolů. Reference [`docs/dashboard.md`](../docs/dashboar
 | `dashboard-alert-grouping.md` | Agregace alertů jednoho checku do skupinové karty feedu (práh > 3) |
 | `dashboard-chat-panel.md` | Plovoucí chat launcher + boční AI chat panel (AppShell overlay zprava) |
 | `dashboard-feed-workflow-sections.md` | Sekce feedu podle toku práce (Položky k založení → … → Ostatní), `feedSection` ze serveru, strop a pravdivé počty per sekce (#101) |
-| `dashboard-other-row-title.md` | Řádek sekce Ostatní s titulkem podle obsahu zprávy (`ai_title`) místo „Není faktura — Ostatní“ |
 | `feed-texts-catalog.md` | Texty karet feedu z katalogu modulu (`*.feedTexts` cfgItem, `FeedTexts`, ICU MessageFormat pro plurály), fallback anglicky v PHP (#101 D11–D17) |
 
 ## Dev dashboard
