@@ -1,6 +1,6 @@
 # Ostatní pošta k vyřízení — pozornost u zpráv bez dokladu, sekce K vyřízení, hromadný archiv
 
-**Stav:** částečně — implementováno 2026-10-07 (#105 D1–D10), čeká na opravu schématu v4.7.1 (sekce „Oprava po ověření“); odchylky od zadání v sekci „Poznámky k implementaci“
+**Stav:** hotovo — implementováno 2026-10-07 (#105 D1–D10) včetně opravy schématu v4.7.1 (sekce „Oprava po ověření“), ověřeno read-only 2026-10-07; odchylky od zadání v sekci „Poznámky k implementaci“
 
 ## Cíl
 
@@ -543,14 +543,14 @@ Před každým commitem `php -l` změněných souborů, cílený
       `action` zpráva má poznámku, u lhůty ve zprávě i `action_due`;
       `partner_name` je dodavatel služby, ne přeposílající
 - [x] reanalýza zprávy `other` → doklad vynuluje tři pole (integrační test)
-- [ ] dashboard: sekce K vyřízení mezi Ke kontrole a Nepodařilo se
+- [x] dashboard: sekce K vyřízení mezi Ke kontrole a Nepodařilo se
       zpracovat, karta s poznámkou, badge lhůty, Vyřízeno archivuje
-- [ ] Ostatní: jen `info`/`promo`/NULL řádky; Archivovat vše (N) odklidí
+- [x] Ostatní: jen `info`/`promo`/NULL řádky; Archivovat vše (N) odklidí
       všechny `info`/`promo` (i mimo 30 zobrazených), toast Vrátit je
       vrátí; NULL řádky zůstaly
-- [ ] pravidlo `archiveIfOther` na dev DS neodklidí zprávu `action`,
+- [x] pravidlo `archiveIfOther` na dev DS neodklidí zprávu `action`,
       `info` odklidí; digest + Vrátit vše beze změny
-- [ ] detail zprávy ukazuje pozornost, poznámku, lhůtu; `mail_list_pending`
+- [x] detail zprávy ukazuje pozornost, poznámku, lhůtu; `mail_list_pending`
       je vrací
 - [x] cílené unit + integrační testy prošly; `php -l`, `check:i18n`,
       `build`, `help-index.py --check`, `tasks-index.py --check`,

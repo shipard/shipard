@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 336 tasků: **naplánováno** 5 · **částečně** 24 · **hotovo** 307.
+Celkem 336 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 308.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -42,7 +42,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`) |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
-| `mail-other-attention.md` | částečně | implementováno 2026-10-07 (#105 D1–D10), čeká na opravu schématu v4.7.1 (sekce „Oprava po ověření“); odchylky od zadání v sekci „Poznámky k implementaci“ |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
 | `mail-safety.md` | částečně | implementace, testy a docs hotové 2026-10-05 (3 commity); `drop` ověřen na dev serveru (CLI i proklik UI); zbývá ověřit `redirect` proti skutečnému SMTP a nastavit `mail.safety` na testovacím serveru (člověk), `ds-upgrade` zdrojů dat při nasazení |
 | `prints-languages.md` | částečně | implementace hotová (4 commity); čeká na revizi formulací `sk` / `de` kolegy (sekce „Formulace k revizi“ na konci) a `ds-upgrade` zdrojů dat při nasazení |
