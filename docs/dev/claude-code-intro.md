@@ -2,10 +2,10 @@
 
 Návod pro člověka, který s Claude Code (nebo podobným nástrojem) ještě
 nepracoval. Předpokládá hotové vývojové prostředí podle
-[`local-dev.md`](local-dev.md) nebo `DEVELOPERS.md`. Jak se v projektu
-dělí práce mezi Claude v chatu, Claude Code a člověka, popisuje
-[`ai-workflow.md`](../ai-workflow.md) — tady jde o to, jak s Claude Code
-prakticky začít.
+[`local-dev.md`](local-dev.md) nebo [`linux-install.md`](linux-install.md).
+Jak se v projektu dělí práce mezi Claude v chatu, Claude Code a člověka,
+popisuje [`ai-workflow.md`](../ai-workflow.md) — tady jde o to, jak
+s Claude Code prakticky začít.
 
 Podrobnosti o samotném nástroji jsou v oficiální dokumentaci
 [code.claude.com/docs](https://code.claude.com/docs). Tady jsou jen věci,

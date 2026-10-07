@@ -1573,7 +1573,7 @@ curl -fsSL https://raw.githubusercontent.com/shipard/shipard/stable/scripts/dev-
 curl -fsSL … | bash -s -- --with-ssh --ssh-pubkey-file <cesta>
 ```
 
-Vývojové prostředí jedním příkazem — skládá za sebe kroky z `DEVELOPERS.md`:
+Vývojové prostředí jedním příkazem — skládá za sebe kroky z [`dev/linux-install.md`](dev/linux-install.md):
 checkout → `install-packages.sh --mode=development` → `dev-update.sh` →
 `server-init` → `git config core.hooksPath .githooks` → volitelné části →
 `shpd-server doctor` → souhrn s adresou dashboardu. Návod pro macOS

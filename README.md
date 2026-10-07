@@ -77,12 +77,11 @@ Přijď klidně jen nakouknout.
 
 ## Pro vývojáře
 
-Shipard má modulární backend v **PHP 8.5** s **MariaDB**, REST API
-a frontend ve **Svelte 5**. Podporuje provoz více firem na jednom serveru
-s oddělenými daty.
+Kód Shipardu píše AI — lidé řídí architekturu, pravidla a zadání a čtou
+každý diff. Pod kapotou je modulární backend v **PHP 8.5** s **MariaDB**,
+REST API a frontend ve **Svelte 5**; jeden server unese víc firem
+s oddělenými daty. Co v základu chybí, doplňují moduly — i soukromé, mimo
+tento repozitář.
 
-- [Průvodce vývojáře](DEVELOPERS.md) — zprovoznění vývojového prostředí na Ubuntu LTS.
-- [Lokální vývoj na macOS a Windows](docs/dev/local-dev.md) — Ubuntu v Multipassu nebo ve WSL, instalace jedním příkazem.
-- [Claude Code pro začátečníky](docs/dev/claude-code-intro.md) — instalace, režimy oprávnění, zadávání a kontrola práce, odeslání pull requestu.
-- [Technická dokumentace](docs/README.md) — architektura, moduly, API a provoz.
-- [Přehled funkcí a plánů](docs/features.md) — hotové, rozpracované a plánované možnosti.
+**[Jak začít s vývojem →](DEVELOPERS.md)** — proč a jak Shipard stavíme,
+zprovoznění prostředí na Macu, ve Windows i na Linuxu a rozcestník návodů.

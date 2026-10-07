@@ -1,273 +1,152 @@
-# Průvodce vývojáře — Shipard
+# Pro vývojáře
 
-Vítej v projektu Shipard! Tenhle dokument tě provede od nuly k funkčnímu vývojovému prostředí.
+Shipard je otevřený účetní systém (licence MIT), jehož kód píše AI.
+Lidé rozhodují o architektuře, pravidlech a zadání — a čtou každý diff.
 
-> **Stav projektu:** Shipard je v **alfa fázi**. Backend, REST API i Svelte
-> frontend běží, ale věci se ještě aktivně mění a místy něco zaskřípe.
-> Když na něco narazíš, dej nám vědět — viz poslední kapitola
-> [Něco nefunguje?](#9-něco-nefunguje).
+> **Chceš si ho rovnou pustit?**
+> Mac nebo Windows → [instalace jedním příkazem](docs/dev/local-dev.md) ·
+> Linux → [ruční instalace](docs/dev/linux-install.md)
 
-> **Mac nebo Windows?** → [`docs/dev/local-dev.md`](docs/dev/local-dev.md): Ubuntu
-> v Multipassu nebo ve WSL a instalace jedním příkazem. Kroky 1–5 níže
-> spouští za sebou `scripts/dev-bootstrap.sh`; tento dokument zůstává
-> referencí pro Linux server.
->
-> **S Claude Code začínáš?** → [`docs/dev/claude-code-intro.md`](docs/dev/claude-code-intro.md).
+Shipard je v **alfa verzi**: hlavní věci běží, leccos se ještě mění.
+Co dnes umí a co ne, popisuje [README](README.md).
 
 ---
 
-## Požadavky
+## Proč znovu a proč takhle
 
-- **Ubuntu LTS** — pro novou instalaci **26.04**; 24.04 zůstává podporovaná
-  pro stávající instalace
-- **MariaDB ≥ 10.10** — hledání bez diakritiky používá collation `uca1400`
-  (obě podporované verze Ubuntu požadavek splňují)
-- **git** (obvykle předinstalovaný — pokud není, `sudo apt install git`)
-- **root přístup** přes `sudo` pro one-time instalaci
+Nový Shipard je přepis staršího systému stejného jména. Stojí za ním
+dvacet let vývoje podobných systémů — víme, co bychom dnes udělali jinak,
+a tak to děláme znovu a od základu.
 
----
+Od prvního dne přitom platí jedno pravidlo: **kód píše AI**. V celém
+systému není řádek kódu, který by napsal člověk. Lidé řídí architekturu,
+pravidla a zadání a výsledek kontrolují.
 
-## 1. Stažení repozitáře
+Není to „napiš mi účetnictví“. Je to řízený vývoj se zamčenými
+rozhodnutími, podrobnou dokumentací principů a pravidly, která AI svazují.
+Děláme to tak, protože to vychází: při téhle metodice má kód psaný AI
+lepší poměr ceny a výsledku než kód psaný ručně. Ruční programování pro
+nás skončilo.
 
-```bash
-git clone https://github.com/shipard/shipard.git ~/sw/shpd
-cd ~/sw/shpd
-```
+## Jak to děláme
 
-Klon přes HTTPS funguje i bez SSH klíče na GitHubu; kdo bude pushovat, může
-klonovat rovnou přes SSH (`git@github.com:shipard/shipard.git`) nebo si
-`remote` přepnout později (`git remote set-url origin …`).
+1. **Návrh.** Problém se probere s Claudem v chatu. Rozhodnutí se očíslují
+   a zamknou v issue na GitHubu dřív, než vznikne zadání.
+2. **Zadání.** Z rozhodnutí vznikne task v [`tasks/`](tasks/README.md):
+   co si přečíst, co udělat a podle čeho poznat, že je hotovo.
+3. **Implementace.** Claude Code podle zadání napíše kód a testy —
+   zpravidla jiný model než ten, se kterým vznikl návrh.
+4. **Revize.** Hotová práce se vrací do chatu a prochází se celá, proti
+   zadání i proti kódu okolo.
+5. **Člověk** čte diff a rozhoduje, co se odešle. AI neodesílá nic
+   z vlastní iniciativy.
 
----
+Kódu se tak dostane víc pozornosti, než kdyby ho psali jen lidé.
+Podrobně: [Vývoj s Claudem](docs/ai-workflow.md).
 
-## 2. Instalace systémových balíčků a setup
+V historii repozitáře najdeš i commity bez podpisu Clauda. Commituje
+člověk — kód v nich přesto psala AI.
 
-```bash
-sudo bash scripts/install-packages.sh --mode=development
-```
+## Dokumentaci nemusíš číst předem
 
-Skript je idempotentní a zařídí:
+Pravidla a dokumentace jsou rozsáhlé: [`CLAUDE.md`](CLAUDE.md), desítky
+dokumentů v [`docs/`](docs/README.md) a přes tři sta zadání v `tasks/`.
+Jsou psané hlavně pro AI, která je čte při každé práci. Ty je předem číst
+nemusíš.
 
-- Instalaci PHP 8.5 s rozšířeními, MariaDB, nginx, composeru a Node.js 24
-  (LTS), pokud už není nainstalovaný Node ≥ 22. Na Ubuntu 24.04 se PHP bere
-  z PPA `ondrej/php`, na 26.04 ze systémových repozitářů. Na jiné verzi
-  systému skript skončí chybou dřív, než cokoli nainstaluje
-- Vytvoření `/opt/shipard/` (datový root) a `/etc/shipard/` (config root)
-  s ownership vlastněným tvým uživatelem (detekce přes `$SUDO_USER`)
-- Konfiguraci samostatného **PHP-FPM poolu `shipard`** běžícího pod tvým
-  uživatelem (žádný group hack se `www-data`)
-- Symlink `/opt/shipard/shpd` → tento clone (kvůli nginx root path)
-- Aktivaci nginx site `shipard.conf` (existující `development.conf` se
-  uloží jako `.disabled-TIMESTAMP`)
+**Chceš vědět, jak něco funguje? Zeptej se Claude Code** ve svém
+checkoutu. Odpoví podle kódu a dokumentace, ne z hlavy.
 
-Permission kontrakt je popsán v
-[`docs/operations/permissions.md`](docs/operations/permissions.md).
+## Základ a moduly
 
----
+Shipard je základ: uživatelé a přihlašování, modulový systém, uživatelské
+rozhraní řízené serverem a nad tím běžné agendy — doklady, účetnictví,
+DPH, banka, majetek.
 
-## 3. Závislosti a build frontendu
+To hlavní je rozšiřitelnost. Když ti něco chybí:
 
-```bash
-bash scripts/dev-update.sh
-```
+- **Hodí se to všem?** Patří to do základu — založ issue nebo pošli
+  pull request.
+- **Je to potřeba jedné firmy?** Udělej z toho soukromý modul mimo hlavní
+  repozitář. Modul přidává tabulky, přehledy, formuláře a vlastní logiku;
+  vlastní komponenty frontendu zatím ne
+  ([`docs/modules.md`](docs/modules.md), kapitola 10).
 
-Skript spustí `composer install`, `npm install` (ve `frontend/`)
-a `npm run build`. Bez buildu frontendu by aplikace `/{ds-id}/app/` neměla
-co servírovat. Spouštěj ho pod svým uživatelem, ne přes `sudo`. Závěrečnou
-výzvu k `ds-upgrade-all` můžeš při prvním setupu ignorovat — žádný datový
-zdroj ještě neexistuje. Stejný skript budeš pouštět po každém `git pull`
-(kapitola 7).
+V obou případech nepíšeš kód, ale zadání. A za výsledek ručíš ty.
 
-Na Ubuntu 24.04 vypíše composer při každém spuštění stovky řádků
-`Deprecation Notice: Constant E_STRICT is deprecated…` — composer z apt
-(2.7.1) je starší než PHP 8.5. Výpisy jsou neškodné, instalace proběhne
-v pořádku; na 26.04 se neobjevují.
+## Jak se Shipard vyvíjí
 
-`composer.lock` je verzovaný, `composer install` tak všude nainstaluje stejné
-verze balíků. Závislost přidávej přes `composer require <balík>`, verzi měň
-přes `composer update <balík>`; po ruční úpravě `composer.json` (např.
-`ext-*`) přepočti lock příkazem `composer update --lock`. `composer.json`
-a `composer.lock` patří vždy do stejného commitu.
+Shipard běží na Linuxu (Ubuntu) jako server — nginx, PHP, MariaDB. Vyvíjí
+se proto **vzdáleně** (remote development): kód neleží na disku tvého Macu
+nebo Windows, ale na linuxovém stroji, ke kterému se připojuješ. Claude
+Code běží přímo na něm a ty mu zadáváš práci z terminálu.
 
----
+Tím strojem může být:
 
-## 4. Inicializace server configu
+- **virtuální stroj ve tvém počítači** — Multipass na Macu, WSL ve
+  Windows. Je to tentýž server, jen uvnitř tvého počítače. Stačí na
+  vyzkoušení i na běžnou práci.
+- **vlastní Linux server** — pro tým a vážný vývoj: běží pořád, unese víc
+  zdrojů dat a přihlásí se k němu víc lidí.
 
-```bash
-sudo shpd-server server-init --mode=development
-```
+## Co budeš potřebovat
 
-Vytvoří `/etc/shipard/server.json` s admin DB credentials. Soubor má
-ownership `root:<tvůj-user>` a mode `0640` — root ho edituje, ty čteš
-přes group membership.
+- **Počítač** s asi 20 GB místa a 4 GB paměti pro virtuální stroj, nebo
+  server s Ubuntu 26.04.
+- **Placený účet Claude** (Pro, Max, Team nebo Enterprise) pro Claude
+  Code. Na pouhé puštění Shipardu potřeba není.
+- **Účet na GitHubu**, až budeš chtít poslat svou práci.
 
----
+Programovat umět nemusíš. Musíš umět přesně popsat, co chceš, a být
+ochotný výsledek zkontrolovat.
 
-## 5. Ověření
+## Kudy dál
 
-```bash
-shpd-server doctor
-```
+### Chci si Shipard pustit
 
-Vypíše report: mode, shipard-user, PHP-FPM pool user, kontrolu cest,
-DB connection per DS. Exit 0 = vše OK.
+1. Prostředí — [na Macu nebo ve Windows](docs/dev/local-dev.md), nebo
+   [na Linux serveru](docs/dev/linux-install.md).
+2. [První kroky a každodenní práce](docs/dev/dev-daily.md) — vývojářský
+   dashboard, první zdroj dat, co dělat po `git pull`.
 
-Pokud něco nesouhlasí:
+### Chci něco opravit nebo přidat
 
-```bash
-sudo shpd-server fix-permissions --dry-run    # preview
-sudo shpd-server fix-permissions              # apply
-```
-
-Až je doctor zelený, otevři vývojářský dashboard (viz kapitola 6) — odtud
-už můžeš vytvořit první datový zdroj a aplikaci otevřít.
-
----
-
-## 6. Vývojářský dashboard
-
-V development módu běží na kořeni serveru jednoduchý webový dashboard,
-který shrnuje vše, co při testování potřebuješ — bez ručního skládání URL
-a hledání ID datových zdrojů v terminálu.
-
-Otevři v prohlížeči:
-
-```
-http://<adresa-serveru>/_dev/
-```
-
-Kořen `/` se v dev módu automaticky přesměruje na `/_dev/`, takže stačí
-zadat jen adresu serveru. V produkčním módu dashboard neexistuje —
-`/_dev/...` vrací 404.
-
-Co dashboard umí:
-
-- **Seznam datových zdrojů** — všechny DS s názvem, datem vytvoření a
-  databází. U každého tlačítka **Open** (otevře aplikaci `/{ds-id}/app/`
-  v novém tabu), **Logs** a **Upgrade**. ID lze jedním klikem zkopírovat
-  do schránky. Seznam se sám obnovuje.
-- **+ New DS** — vytvoření nového datového zdroje rovnou z formuláře
-  (výběr instalačního modulu, admin login a heslo, volitelně testovací
-  data). Průběh (`ds-create` → `ds-upgrade` → `user-create` → příp. seed)
-  se streamuje živě do stránky; po dokončení vede odkaz přímo do nového DS.
-- **Logs** — prohlížeč logu (`/opt/shipard/log/shipard.log`) s filtrováním
-  podle úrovně, datového zdroje a fulltextu, auto-refresh ve stylu
-  `tail -f` a rozbalitelný detail záznamu včetně exception trace.
-- **Doctor** — spustí `shpd-server doctor` a zobrazí report.
-- **Upgrade All** — spustí `shpd-server ds-upgrade-all` na všech DS.
-
-Dashboard je chráněný pouze kontrolou `mode: development` — počítá s tím,
-že **vývojový server běží v důvěryhodné síti**. Oranžový banner
-„DEVELOPMENT MODE" nahoře je připomínka, ať se prostředí neplete
-s produkčním.
-
----
-
-## 7. Po `git pull`
-
-Po každém stažení nové verze:
-
-```bash
-bash scripts/dev-update.sh
-```
-
-Skript vždy spustí `composer install`, `npm install` (ve `frontend/`)
-a `npm run build`. Všechny kroky jsou idempotentní — pokud se nic
-nezměnilo, projdou během pár sekund.
-
-Pokud se měnily definice tabulek nebo cfgItems modulů, je potřeba
-zaktualizovat i datové zdroje:
-
-```bash
-shpd-server ds-upgrade-all
-```
-
-(Totéž lze spustit tlačítkem **Upgrade All** ve vývojářském dashboardu —
-viz kapitola 6.)
-
-### Automatizace přes git hooks (volitelné)
-
-```bash
-git config core.hooksPath .githooks
-```
-
-Stačí spustit jednou v repu.
-
----
-
-## 8. CLI utility
-
-Přehled v [`docs/cli.md`](docs/cli.md). Po základním setupu nepotřebuješ
-`sudo` pro běžné shipard operace.
-
-### `shpd-server` — správa serveru
-
-| Příkaz | Popis |
-|--------|-------|
-| `shpd-server version` | Verze aplikace |
-| `shpd-server help` | Nápověda |
-| `shpd-server ds-create --name <název>` | Vytvoří nový datový zdroj |
-| `shpd-server ds-upgrade-all` | Spustí `ds-upgrade` na všech DS |
-| `shpd-server doctor` | Health check kontraktu a DB konektivity |
-| `sudo shpd-server fix-permissions` | Opraví ownership/mode dle kontraktu |
-| `sudo shpd-server server-init` | Inicializace server configu |
-| `shpd-server next-table-id` | Vrátí další volné tableId |
-
-### `shpd-ds` — správa datového zdroje
-
-Spouštěj z adresáře datového zdroje (musí obsahovat `config/main.json`).
-
-| Příkaz | Popis |
-|--------|-------|
-| `shpd-ds version` | Verze aplikace |
-| `shpd-ds help` | Nápověda |
-| `shpd-ds ds-upgrade` | Synchronizuje DB schéma podle modulů |
-| `shpd-ds ds-secrets-health` | Kontrola encryption key pro `encrypted_text` |
-| `shpd-ds ds-secrets-rotate` | Rotace encryption key |
-
----
-
-## 9. Něco nefunguje?
-
-Většinu potíží s rozchozením odhalí health check:
-
-```bash
-shpd-server doctor
-```
-
-Pokud hlásí problém s právy:
-
-```bash
-sudo shpd-server fix-permissions --dry-run    # co by se změnilo
-sudo shpd-server fix-permissions              # oprav
-```
-
-Logy aplikace najdeš ve vývojářském dashboardu pod **Logs**
-(`/_dev/logs/`) — s filtrováním podle úrovně a fulltextu — nebo přímo
-v souboru `/opt/shipard/log/shipard.log`.
-
-Když po `git pull` aplikace hlásí nesoulad schématu, „dojely" ti definice
-tabulek — spusť `shpd-server ds-upgrade-all` (nebo **Upgrade All**
-v dashboardu).
-
-Pořád to nejde? Založ issue na
-[GitHubu](https://github.com/shipard/shipard/issues) s výstupem
-`shpd-server doctor` a relevantními řádky z logu — díky tomu to
-rozklíčujeme nejrychleji.
-
-A když jde jen o rychlý dotaz, na který se nechce zakládat issue —
-„je tohle záměr, nebo bug?“, „jak se dělá X?“ — stav se na našem
-**[Discordu](https://discord.gg/PWTt5EUFAV)**. Je nás tam málo, ale
-odpovídáme ochotně a rychle.
-
----
-
-## 10. Kam dál
-
-- **Architektura projektu:** [`docs/architecture.md`](docs/architecture.md)
-- **Modulový systém:** [`docs/modules.md`](docs/modules.md)
-- **Definice databázových tabulek:** [`docs/table-definitions.md`](docs/table-definitions.md)
-- **Permission kontrakt:** [`docs/operations/permissions.md`](docs/operations/permissions.md)
-- **CLI reference:** [`docs/cli.md`](docs/cli.md)
-- **Přehled dokumentace:** [`docs/README.md`](docs/README.md)
-- **Hlavní README:** [`README.md`](README.md)
+1. [Claude Code pro začátečníky](docs/dev/claude-code-intro.md) —
+   instalace, oprávnění, jak zadávat a kontrolovat práci.
+2. [Vývoj s Claudem](docs/ai-workflow.md) — role, postup od issue po
+   ověření, pravidla.
+3. [Jak vypadá zadání](tasks/README.md) — a přes tři sta hotových jako
+   vzor.
+4. [Fork a pull request](docs/dev/claude-code-intro.md#8-repozitář-větve-a-odeslání-práce)
+   — jak svou práci poslat.
+
+### Chci vlastní modul
+
+[Modulový systém](docs/modules.md) popisuje strukturu modulu a v kapitole
+10 moduly mimo hlavní repozitář. Nejrychlejší cesta: popiš Claude Code,
+co má modul umět, a nech si navrhnout tabulky a formuláře.
+
+### Chci Shipard pro svou zemi
+
+Začínáme českým účetnictvím; cílem je systém pro firmy kdekoli v EU.
+Další země není překlad rozhraní, ale modul země postavený na jádru —
+záměr popisuje [roadmapa](docs/roadmap.md) (oddíl „Za horizontem“).
+Znáš účetní a daňové reálie své země? Ozvi se nám.
+
+### Hledám, jak je něco udělané
+
+- [Technická dokumentace](docs/README.md) — rozcestník specifikací.
+- [Architektura](docs/architecture.md) a [CLI](docs/cli.md).
+- [Roadmapa](docs/roadmap.md) a [přehled funkcí a plánů](docs/features.md).
+- [Produkční instalace](docs/operations/production.md) a další provozní
+  postupy v `docs/operations/`.
+
+## Kde se ptát
+
+Rychlý dotaz — „je tohle záměr, nebo chyba?“, „jak se dělá X?“ — patří na
+**[Discord](https://discord.gg/PWTt5EUFAV)**. Je nás tam hrstka,
+odpovídáme rychle.
+
+Chyby a nápady zakládej jako
+[issue na GitHubu](https://github.com/shipard/shipard/issues). Hlášení
+jsou veřejná — nepatří do nich skutečná jména, částky ani čísla účtů.

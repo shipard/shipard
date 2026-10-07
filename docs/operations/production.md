@@ -1,7 +1,7 @@
 # Produkční instalace
 
 Postup pro nasazení Shipardu do produkčního (ostrého) provozu na čistém
-Ubuntu LTS. Vývojové prostředí řeší [`../../DEVELOPERS.md`](../../DEVELOPERS.md);
+Ubuntu LTS. Vývojové prostředí řeší [`../dev/linux-install.md`](../dev/linux-install.md);
 tenhle dokument popisuje produkční mód, který se od dev liší ve třech věcech:
 
 - běží pod dedikovaným systémovým uživatelem `shipard` (ne pod tvým účtem),

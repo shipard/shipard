@@ -10,7 +10,7 @@ tvého počítače. Instalaci udělá jeden skript,
 [`scripts/dev-bootstrap.sh`](../../scripts/dev-bootstrap.sh).
 
 > **Máš linuxový server, nebo Ubuntu přímo v počítači?** Tenhle návod
-> nepotřebuješ — postup pro Linux je v [`DEVELOPERS.md`](../../DEVELOPERS.md).
+> nepotřebuješ — postup pro Linux je v [`linux-install.md`](linux-install.md).
 > Bootstrap jen spouští jeho kroky za sebou.
 
 ---
@@ -176,17 +176,9 @@ Na co si dát pozor:
 ## 4. První zdroj dat
 
 Zdroj dat je jedna firma — vlastní databáze a soubory. Založíš ho
-v dashboardu:
-
-1. Klikni na **+ New DS**.
-2. Vyplň **Name**, **Admin login** a **Admin password**; jazyk, zemi
-   a instalační modul můžeš nechat, jak jsou.
-3. Zaškrtni **Seed test data** — dostaneš ukázkové osoby a poštu.
-4. **Create Data Source**. Průběh se vypisuje do stránky; na konci je odkaz
-   **Open data source →**.
-5. Přihlas se loginem a heslem z kroku 2.
-
-Zdroj dat pak najdeš v seznamu na dashboardu pod tlačítkem **Open**.
+v dashboardu tlačítkem **+ New DS**; zaškrtni **Seed test data**, ať máš
+rovnou s čím pracovat. Kroky jednotlivě a co dělat dál:
+[`dev-daily.md`](dev-daily.md#2-první-zdroj-dat) (oddíl 2).
 
 ---
 
@@ -227,22 +219,12 @@ Místní síť, bez kterého se k virtuálnímu stroji nedostane.
 ## 6. Každodenní práce
 
 Terminál v Ubuntu: na Macu `multipass shell shipard`, ve Windows okno Ubuntu.
+Kód je v `~/sw/shpd`.
 
-```bash
-cd ~/sw/shpd
-git pull
-```
-
-Po `git pull` se závislosti a frontend aktualizují samy — bootstrap zapnul
-git hooky, které spustí `scripts/dev-update.sh`. Když se měnily definice
-tabulek, aktualizuj ještě zdroje dat:
-
-```bash
-shpd-server ds-upgrade-all
-```
-
-(nebo tlačítko **Upgrade All** v dashboardu). Podrobnosti a další příkazy:
-[`DEVELOPERS.md`](../../DEVELOPERS.md) od kapitoly 6.
+Co dělat po `git pull`, kdy spustit `ds-upgrade-all` a kde je přehled
+příkazů, říká [`dev-daily.md`](dev-daily.md) — stejně pro Multipass, WSL
+i Linux server. Bootstrap zapnul git hooky, takže se závislosti a frontend
+po `git pull` aktualizují samy.
 
 Bootstrap jde kdykoli spustit znovu — hotové kroky jen ověří. Stejně se
 doplní volitelné části:
@@ -260,7 +242,7 @@ bash ~/sw/shpd/scripts/dev-bootstrap.sh --with-render
 ```
 
 Checkout je stažený přes HTTPS. Až budeš chtít posílat změny, přepni ho
-podle kapitoly 1 v [`DEVELOPERS.md`](../../DEVELOPERS.md).
+podle [`dev-daily.md`](dev-daily.md#5-až-budeš-chtít-posílat-změny) (oddíl 5).
 
 ---
 
@@ -284,26 +266,7 @@ sleduj ji podle kroku 5 v kapitole 2.
 **Dashboard se neotevře.** Na Macu ověř adresu a stav stroje
 (`multipass info shipard`), ve Windows měj otevřené okno Ubuntu.
 
-**Aplikace hlásí chybu nebo se chová divně.** Zdravotní kontrola:
-
-```bash
-shpd-server doctor
-```
-
-Když najde potíže s právy:
-
-```bash
-sudo shpd-server fix-permissions --dry-run    # co by se změnilo
-sudo shpd-server fix-permissions              # oprav
-```
-
-`fix-permissions` se před opravou ptá na potvrzení. Ve skriptu nebo přes
-vzdálený nástroj, kde není kdo by odpověděl, použij `--dry-run`, případně
-`--force`.
-
-**Stovky řádků `Deprecation Notice` od composeru** na Ubuntu 24.04 jsou
-neškodné — composer z balíčků je starší než PHP 8.5. Na 26.04 se neobjevují.
-
-**Pořád to nejde?** Napiš na [Discord](https://discord.gg/PWTt5EUFAV), nebo
-založ [issue](https://github.com/shipard/shipard/issues) s výstupem
-`shpd-server doctor` a posledními řádky z bootstrapu.
+**Aplikace hlásí chybu, nebo to pořád nejde?** Zdravotní kontrola
+`shpd-server doctor`, oprava práv, logy a kam se obrátit —
+[`dev-daily.md`](dev-daily.md#7-něco-nefunguje) (oddíl 7). K hlášení
+o bootstrapu přilož poslední řádky jeho výpisu.

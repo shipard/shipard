@@ -2,7 +2,7 @@
 
 Tento dokument říká, **jak se v projektu pracuje s AI asistentem** (Claude v chatu
 i Claude Code). Je určen člověku, který se zapojuje do vývoje, a zároveň ho čte
-Claude sám (odkaz z `CLAUDE.md`). Doplňuje `DEVELOPERS.md` (rozchození prostředí)
+Claude sám (odkaz z `CLAUDE.md`). Doplňuje `DEVELOPERS.md` (úvod a rozcestník)
 a `tasks/README.md` (formát zadání).
 
 Co sem **nepatří**: adresy serverů, názvy zdrojů dat, cesty k heslům, konfigurace
@@ -181,7 +181,7 @@ práce — instrukce Projektu na to ukazují. `CLAUDE.local.md` v knowledge nen�
 
 1. **Prostředí** — na Macu nebo ve Windows podle
    [`dev/local-dev.md`](dev/local-dev.md), na vlastním Linux serveru podle
-   `DEVELOPERS.md`.
+   [`dev/linux-install.md`](dev/linux-install.md).
 2. **Claude Code** v checkoutu (`~/sw/shpd`) — `CLAUDE.md` se načte sám;
    první kroky a režimy oprávnění v [`dev/claude-code-intro.md`](dev/claude-code-intro.md).
 3. **`CLAUDE.local.md`** ze šablony (níže) — hlavně zdroje dat a jejich režimy.

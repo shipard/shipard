@@ -2,8 +2,8 @@
 # dev-bootstrap.sh — one-command development setup of Shipard on Ubuntu LTS
 # (24.04 / 26.04): Multipass VM, WSL or a plain machine.
 #
-# Glues the steps of DEVELOPERS.md together, it does not replace them — fixes
-# belong to install-packages.sh and DEVELOPERS.md:
+# Glues the steps of docs/dev/linux-install.md together, it does not replace
+# them — fixes belong to install-packages.sh and docs/dev/linux-install.md:
 #   checkout → install-packages.sh → dev-update.sh → server-init → git hooks
 #   → render service (--with-render) → SSH for remote-dev-bridge (--with-ssh)
 #   → doctor → summary with the dashboard address
