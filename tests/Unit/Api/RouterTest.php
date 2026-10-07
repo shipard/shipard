@@ -1016,6 +1016,30 @@ class RouterTest extends TestCase
 		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
 	}
 
+	// Archivovat vše / Vrátit v sekci Ostatní (tasks/mail-other-attention.md D5).
+
+	public function testMailMessagesArchiveInformationalPost(): void
+	{
+		$result = $this->router->resolve('/api/v1/_mail/messages/archive-informational', 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertSame('mail', $result->controller);
+		$this->assertSame('archiveInformational', $result->action);
+
+		$result = $this->router->resolve('/api/v1/_mail/messages/restore-archived', 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertSame('mail', $result->controller);
+		$this->assertSame('restoreArchived', $result->action);
+	}
+
+	public function testMailMessagesArchiveInformationalGetNotAllowed(): void
+	{
+		foreach (['archive-informational', 'restore-archived'] as $literal) {
+			$result = $this->router->resolve('/api/v1/_mail/messages/' . $literal, 'GET');
+			$this->assertInstanceOf(Response::class, $result);
+			$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
+		}
+	}
+
 	public function testExtractedDocumentsRoutesAreGone(): void
 	{
 		// Tabulka core_mail_extracted_documents zanikla — celý podstrom je 404.

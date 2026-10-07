@@ -19,8 +19,9 @@ final readonly class FeedResult
     /**
      * @param list<array<string,mixed>> $cards     seřazené, strop per sekce, s interními poli
      * @param list<array<string,mixed>> $allCards  seřazené, bez stropu, s interními poli
-     * @param list<array{id:string, total:int, shown:int}> $sections
-     *        jen neprázdné sekce, v pořadí FeedCollector::SECTION_ORDER
+     * @param list<array{id:string, total:int, shown:int, archivable?:int}> $sections
+     *        jen neprázdné sekce, v pořadí FeedCollector::SECTION_ORDER;
+     *        `archivable` jen u sekce s kartami, které odklidí Archivovat vše
      */
     public function __construct(
         public array $cards,

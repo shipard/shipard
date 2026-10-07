@@ -777,6 +777,15 @@ class Router
 			return new Route('mail', 'uploadMessages');
 		}
 
+		// Archivovat vše v sekci Ostatní + Vrátit z toastu
+		// (tasks/mail-other-attention.md D5). Literály před parsováním {ndx}.
+		if ($rest === 'archive-informational' || $rest === 'restore-archived') {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('mail', $rest === 'archive-informational' ? 'archiveInformational' : 'restoreArchived');
+		}
+
 		// Message-centrické akce nad dokumentovým návrhem poslední analýzy
 		// (tasks/mail-message-centric.md A4). Preview je GET (read-only),
 		// zbytek POST. `decisions` = průběžné ukládání rozhodnutí z review

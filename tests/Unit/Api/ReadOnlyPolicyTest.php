@@ -68,6 +68,7 @@ class ReadOnlyPolicyTest extends TestCase
 			// mail (D4)
 			['mail', 'receiveIncoming', $d503],
 			['mail', 'importMessage', $d403], ['mail', 'uploadMessages', $d403], ['mail', 'setSenderPassword', $d403],
+			['mail', 'archiveInformational', $d403], ['mail', 'restoreArchived', $d403],
 			['mail', 'senderAddresses', $allow],
 			// Odeslaná pošta — Odeslat znovu i import ze starého systému jsou zápis
 			['sentMessages', 'resend', $d403], ['sentMessages', 'import', $d403],

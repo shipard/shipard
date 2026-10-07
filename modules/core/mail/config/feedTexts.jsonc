@@ -78,6 +78,18 @@
         "text:cs": "Doklad",
         "text:en": "Document"
     },
+    // Badge lhůty karty K vyřízení (tasks/mail-other-attention.md D4);
+    // {date} už naformátované zdrojem (cs `j. n. Y`, en `Y-m-d`).
+    "attention.due": {
+        "text": "by {date}",
+        "text:cs": "do {date}",
+        "text:en": "by {date}"
+    },
+    "attention.overdue": {
+        "text": "overdue {date}",
+        "text:cs": "po lhůtě {date}",
+        "text:en": "overdue {date}"
+    },
     // Podtitulek chybové karty a karty ostatní pošty se známým partnerem.
     "partnerFrom": {
         "text": "{partner} · from: {sender}",

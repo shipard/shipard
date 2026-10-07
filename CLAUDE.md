@@ -324,10 +324,12 @@ smí názvy nést — tam jsou potřeba k práci.
   `capabilities {mailUpload, chat}` řídí skrytí tlačítka Nahrát /
   drag&drop / ChatLauncheru na frontendu. **Sekce, řazení a strop dělá
   server** (#101): každá karta nese `feedSection` (newItems / ready /
-  review / failed / alerts / other — výchozí z `kind`, zdroj smí přepsat;
-  `kind` se nemění), `FeedCollector::sortAndCap` řadí sekce →
-  `KIND_ORDER` → `timestamp` DESC a stropuje `MAX_CARDS_PER_SECTION = 30`
-  **per sekce**; `sections[] {id,total,shown}` nese pravdivé počty, FE
+  review / attention / failed / alerts / other — výchozí z `kind`, zdroj
+  smí přepsat; `kind` se nemění), `FeedCollector::sortAndCap` řadí sekce →
+  `KIND_ORDER` → interní `sortKey` ASC (K vyřízení = lhůta, #105) →
+  `timestamp` DESC a stropuje `MAX_CARDS_PER_SECTION = 30`
+  **per sekce**; `sections[] {id,total,shown,archivable?}` nese pravdivé
+  počty (`archivable` = řádky Ostatní pro **Archivovat vše**, #105 D5), FE
   kreslí „a N dalších“ (karta „a další…“ zanikla). Zdroje dostávají jen
   pojistný `FeedContext::$sourceLimit` (500), ne strop. County, badge,
   AI digest a `readySummary` (vč. `shown`) jdou z `FeedResult::$allCards`.

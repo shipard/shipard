@@ -1,4 +1,4 @@
-import { get, put } from './client.js';
+import { get, post, put } from './client.js';
 import { API_BASE_URL } from './config.js';
 import { language } from '../i18n/index.js';
 import { parseSseFrames } from './sse.js';
@@ -24,6 +24,28 @@ export async function fetchDashboard(section = null) {
  */
 export async function setMessageDocState(messageNdx, docState) {
   return put(`/_ui/form/core_mail_incoming_messages/save/${messageNdx}`, { docState });
+}
+
+/**
+ * „Archivovat vše“ v sekci Ostatní (tasks/mail-other-attention.md D5):
+ * server odklidí všechny čekající řádky Ostatní s pozorností info / promo
+ * (i nad stropem 30 karet) a vrátí jejich id pro Vrátit v toastu.
+ *
+ * @returns {Promise<{success: boolean, data?: {archived: number[], count: number}, error?: object}>}
+ */
+export async function archiveInformational() {
+  return await post('/_mail/messages/archive-informational', {});
+}
+
+/**
+ * Vrátit po Archivovat vše — jen zprávy archivované ručně (bez pravidla),
+ * zpět do Nové bez nové analýzy.
+ *
+ * @param {number[]} ids
+ * @returns {Promise<{success: boolean, data?: {restored: number}, error?: object}>}
+ */
+export async function restoreArchived(ids) {
+  return await post('/_mail/messages/restore-archived', { ids });
 }
 
 /**

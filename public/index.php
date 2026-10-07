@@ -358,7 +358,7 @@ function dispatch(
 		'form'    => dispatchForm($route, $request, $auth, $tables, $db, $formRegistry ?? new FormRegistry(), $configRuntime, $modulePathResolver, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), resolveLanguage($request, $resolved->config), $resolved->config, $lookupRegistry ?? new LookupRegistry(), $documentEventDispatcher),
 		'lookup'  => dispatchLookup($route, $request, $auth, $tables, $db, $lookupRegistry ?? new LookupRegistry(), $configRuntime),
 		'viewer'  => dispatchViewer($route, $request, $auth, $viewerRegistry, $tables, $db, $configRuntime, resolveLanguage($request, $resolved->config), $documentRegistry, $resolved->config, $modulePathResolver),
-		'mail'    => dispatchMail($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime),
+		'mail'    => dispatchMail($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime, $documentEventDispatcher),
 		'senderRules' => dispatchSenderRules($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime, $documentEventDispatcher),
 		'registry' => dispatchRegistry($route, $request, $auth, $tables, $db, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $configRuntime),
 		'analysis' => dispatchAnalysis($route, $request, $auth, $tables, $db, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $documentEventDispatcher),
@@ -1174,6 +1174,7 @@ function dispatchMail(
 	\Shipard\Api\ResolvedDataSource $resolved,
 	\Shipard\Core\Document\DocumentRegistry $documentRegistry,
 	?\Shipard\Core\Config\ConfigRuntime $configRuntime = null,
+	?\Shipard\Core\Document\DocumentEventDispatcher $eventDispatcher = null,
 ): Response {
 	$dsPath = $resolved->config->getDataSourceDir();
 
@@ -1194,12 +1195,14 @@ function dispatchMail(
 
 	$ctrl = new MailController(
 		$db, $dsPath, $tables, $documentRegistry, $configRuntime, $resolved->config,
-		$isdocImportFactory,
+		$isdocImportFactory, null, $eventDispatcher,
 	);
 	return match ($route->action) {
 		'receiveIncoming'   => $ctrl->receiveIncoming($auth, $request),
 		'importMessage'     => $ctrl->importMessage($auth, $request),
 		'uploadMessages'    => $ctrl->uploadMessages($auth, $request),
+		'archiveInformational' => $ctrl->archiveInformational($auth),
+		'restoreArchived'   => $ctrl->restoreArchived($auth, $request),
 		'setSenderPassword' => $ctrl->setSenderPassword($auth, $request, (int) $route->id),
 		'senderAddresses'   => $ctrl->senderAddresses($auth),
 		default             => Response::error('INTERNAL_ERROR', "Unknown mail action: {$route->action}", 500),

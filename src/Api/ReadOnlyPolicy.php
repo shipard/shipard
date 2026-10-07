@@ -120,7 +120,9 @@ final class ReadOnlyPolicy
 			'receiveIncoming' => ReadOnlyVerdict::Deny503,
 			// Nabídka adres odesílatele — čtení.
 			'senderAddresses' => ReadOnlyVerdict::Allow,
-			// importMessage, uploadMessages, setSenderPassword → 403
+			// importMessage, uploadMessages, setSenderPassword,
+			// archiveInformational, restoreArchived (Archivovat vše / Vrátit
+			// v Ostatních) → 403
 		],
 		// Odeslaná pošta: Odeslat znovu (nový průchod frontou) i import
 		// ze starého systému jsou zápis → 403.

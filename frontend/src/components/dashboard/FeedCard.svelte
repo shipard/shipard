@@ -73,6 +73,11 @@
     <div class="shpd-feed-card__head">
       <div class="shpd-feed-card__heading">
         <div class="shpd-feed-card__title">{card.headline ? card.headline.partnerName : card.title}</div>
+        {#if card.dueText}
+          <!-- Badge lhůty karty K vyřízení (tasks/mail-other-attention.md D4):
+               text i stav (overdue / soon / later) posílá server. -->
+          <span class="shpd-feed-card__due shpd-feed-card__due--{card.dueState ?? 'later'}" data-testid="card-due">{card.dueText}</span>
+        {/if}
         {#if subLine}
           <div class="shpd-feed-card__subtitle">{subLine}</div>
         {/if}
@@ -243,6 +248,25 @@
   .shpd-feed-card__title {
     font-weight: 600;
     color: var(--shpd-color-text);
+  }
+
+  /* Badge lhůty (K vyřízení): neutrální, po lhůtě nebo do 3 dnů danger. */
+  .shpd-feed-card__due {
+    display: inline-block;
+    margin-top: 2px;
+    padding: 0 var(--shpd-space-xs);
+    border-radius: var(--shpd-radius-sm);
+    font-size: var(--shpd-font-size-sm);
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--shpd-color-text-secondary);
+    background: color-mix(in srgb, var(--shpd-color-text-secondary) 14%, transparent);
+  }
+
+  .shpd-feed-card__due--overdue,
+  .shpd-feed-card__due--soon {
+    color: var(--shpd-color-danger);
+    background: color-mix(in srgb, var(--shpd-color-danger) 14%, transparent);
   }
 
   .shpd-feed-card__subtitle {

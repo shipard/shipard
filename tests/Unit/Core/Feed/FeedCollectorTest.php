@@ -99,10 +99,12 @@ final class FeedCollectorTest extends TestCase
             $this->card('review', $t, 'review'),
             $this->card('ready', $t, 'ready'),
             $this->sectionedCard('review', FeedSource::SECTION_NEW_ITEMS, 'newItems', $t),
+            $this->sectionedCard('review', FeedSource::SECTION_ATTENTION, 'attention', $t),
         ]);
 
-        // D8: Položky k založení → Připraveno → Ke kontrole → Nepodařilo se
-        // zpracovat → Upozornění → Ostatní (id karet = id sekcí).
+        // D8 (+ K vyřízení, #105 D4): Položky k založení → Připraveno →
+        // Ke kontrole → K vyřízení → Nepodařilo se zpracovat → Upozornění
+        // → Ostatní (id karet = id sekcí).
         $this->assertSame(FeedCollector::SECTION_ORDER, array_column($result->cards, 'id'));
     }
 
@@ -117,6 +119,57 @@ final class FeedCollectorTest extends TestCase
         ]);
 
         $this->assertSame(['u', 'v', 'i'], array_column($result->cards, 'id'));
+    }
+
+    public function testSortAndCapOrdersBySectionOrderWithAttention(): void
+    {
+        // tasks/mail-other-attention.md D4: K vyřízení mezi Ke kontrole
+        // a Nepodařilo se zpracovat.
+        $t = '2026-06-28T10:00:00+00:00';
+        $result = (new FeedCollector())->sortAndCap([
+            $this->card('urgent', $t, 'failed'),
+            $this->sectionedCard('review', FeedSource::SECTION_ATTENTION, 'attention', $t),
+            $this->card('review', $t, 'review'),
+        ]);
+
+        $this->assertSame(['review', 'attention', 'failed'], array_column($result->cards, 'id'));
+        $this->assertSame(
+            [FeedSource::SECTION_REVIEW, FeedSource::SECTION_ATTENTION, FeedSource::SECTION_FAILED],
+            array_column($result->sections, 'id'),
+        );
+    }
+
+    public function testSortAndCapSortKeyBeforeTimestampWithinKind(): void
+    {
+        // Interní `sortKey` zdroje řadí vzestupně před timestampem — jen
+        // mezi kartami, které ho nesou obě; karty bez klíče se řadí časem.
+        $result = (new FeedCollector())->sortAndCap([
+            ['id' => 'later', 'kind' => 'review', 'feedSection' => FeedSource::SECTION_ATTENTION, 'timestamp' => '2026-06-28T10:00:00+00:00', 'sortKey' => '9999-12-31'],
+            ['id' => 'soon',  'kind' => 'review', 'feedSection' => FeedSource::SECTION_ATTENTION, 'timestamp' => '2026-06-01T10:00:00+00:00', 'sortKey' => '2026-07-01'],
+            ['id' => 'now',   'kind' => 'review', 'feedSection' => FeedSource::SECTION_ATTENTION, 'timestamp' => '2026-06-10T10:00:00+00:00', 'sortKey' => '2026-06-29'],
+            ['id' => 'tie-old', 'kind' => 'review', 'feedSection' => FeedSource::SECTION_ATTENTION, 'timestamp' => '2026-06-02T10:00:00+00:00', 'sortKey' => '2026-07-01'],
+        ]);
+
+        $this->assertSame(['now', 'tie-old', 'soon', 'later'], array_column($result->cards, 'id'));
+    }
+
+    public function testSortAndCapCountsArchivableCardsPerSectionBeyondCap(): void
+    {
+        // D5: `archivable` se počítá ze všech karet sekce (i nad stropem)
+        // a vrací se jen u sekce, která nějakou má.
+        $input = [];
+        for ($i = 0; $i < 5; $i++) {
+            $input[] = [...$this->card('info', null, "a$i"), 'archivable' => true];
+        }
+        $input[] = $this->card('info', null, 'plain');
+        $input[] = $this->card('review', null, 'v');
+
+        $result = (new FeedCollector())->sortAndCap($input, 2);
+
+        $this->assertSame([
+            ['id' => FeedSource::SECTION_REVIEW, 'total' => 1, 'shown' => 1],
+            ['id' => FeedSource::SECTION_OTHER,  'total' => 6, 'shown' => 2, 'archivable' => 5],
+        ], $result->sections);
     }
 
     public function testSortAndCapTimestampDescWithinKind(): void
@@ -274,12 +327,14 @@ final class FeedCollectorTest extends TestCase
         $collector = new FeedCollector();
         $stripped = $collector->stripInternalFields([
             ['id' => 'a', 'kind' => 'ready', 'amount' => 500.00, 'currency' => 'CZK', 'confidencePct' => 92],
-            $this->card('info', null, 'i'),
+            [...$this->card('info', null, 'i'), 'archivable' => true, 'sortKey' => '2026-10-15'],
         ]);
 
         foreach ($stripped as $card) {
             $this->assertArrayNotHasKey('amount', $card);
             $this->assertArrayNotHasKey('currency', $card);
+            $this->assertArrayNotHasKey('archivable', $card);
+            $this->assertArrayNotHasKey('sortKey', $card);
         }
         // Ostatní pole zůstávají.
         $this->assertSame(92, $stripped[0]['confidencePct']);

@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { t } from '../../i18n/index.js';
   import { translateError } from '../../i18n/errors.js';
-  import { fetchDashboard, setMessageDocState } from '../../api/dashboard.js';
+  import { archiveInformational, fetchDashboard, restoreArchived, setMessageDocState } from '../../api/dashboard.js';
   import {
     applyMessage,
     rejectMessage,
@@ -108,10 +108,11 @@
     detailModal = { open: true, viewerId: 'core.mail.incoming', recordId: messageNdx, tabId: 'content' };
   }
 
-  // Minimální lokální toast (app nemá toast infra). kind: 'applied' → Otevřít.
+  // Minimální lokální toast (app nemá toast infra). kind: 'applied' → Otevřít,
+  // kind: 'archived' → Vrátit (restoreIds z Archivovat vše, D5).
   // docTable řídí, kterou tabulku „Otevřít“ otevře — dnes jen Spisovna;
   // vystavená faktura (docs) se místo toastu otevírá rovnou ve FormDialogu.
-  let toast = $state({ visible: false, kind: null, message: '', docId: null, docTable: null });
+  let toast = $state({ visible: false, kind: null, message: '', docId: null, docTable: null, restoreIds: [] });
   let toastTimer = null;
 
   // Ruční nahrání (tasks/mail-dashboard-upload.md) — modal otevírá tlačítko
@@ -147,13 +148,13 @@
 
   function showToast(next) {
     clearTimeout(toastTimer);
-    toast = { visible: true, docId: null, docTable: null, ...next };
+    toast = { visible: true, docId: null, docTable: null, restoreIds: [], ...next };
     toastTimer = setTimeout(dismissToast, 8000);
   }
 
   function dismissToast() {
     clearTimeout(toastTimer);
-    toast = { visible: false, kind: null, message: '', docId: null, docTable: null };
+    toast = { visible: false, kind: null, message: '', docId: null, docTable: null, restoreIds: [] };
   }
 
   function openCreatedDoc() {
@@ -200,6 +201,8 @@
         return senderRuleFlow(rejectSenderRule, target.ruleId, card.id);
       case 'undo_auto_archive':
         return undoAutoArchiveFlow(target.date ?? null, card.id);
+      case 'archive_informational':
+        return archiveInformationalFlow(card.id);
       case 'materialize_content_tag':
         return materializeTagFlow(target.tag, target.account ?? null, card.id);
       case 'open_viewer':
@@ -322,6 +325,48 @@
       }
     } finally {
       busyCardId = null;
+    }
+  }
+
+  // „Archivovat vše“ z hlavičky sekce Ostatní (tasks/mail-other-attention.md
+  // D5): server odklidí všechny info / promo řádky (i nad stropem 30) a vrátí
+  // jejich id; toast nabídne Vrátit, které je pošle zpět do Nové.
+  async function archiveInformationalFlow(cardId) {
+    if (busyCardId !== null) return;
+    busyCardId = cardId;
+    try {
+      const result = await archiveInformational();
+      if (result?.success) {
+        const ids = result.data?.archived ?? [];
+        if (ids.length > 0) {
+          showToast({
+            kind: 'archived',
+            message: t('dashboard.toast.archivedInformational', { count: ids.length }),
+            restoreIds: ids,
+          });
+        }
+        load();
+      } else {
+        alert(t('dashboard.card.actionFailed', { msg: translateError(result?.error) }));
+      }
+    } finally {
+      busyCardId = null;
+    }
+  }
+
+  async function restoreArchivedFlow() {
+    const ids = toast.restoreIds ?? [];
+    dismissToast();
+    if (ids.length === 0) return;
+    const result = await restoreArchived(ids);
+    if (result?.success) {
+      showToast({
+        kind: 'reverted',
+        message: t('dashboard.toast.autoArchiveReverted', { count: result.data?.restored ?? 0 }),
+      });
+      load();
+    } else {
+      alert(t('dashboard.card.actionFailed', { msg: translateError(result?.error) }));
     }
   }
 
@@ -738,6 +783,8 @@
     <span class="shpd-toast__msg">{toast.message}</span>
     {#if toast.kind === 'applied'}
       <button type="button" class="shpd-toast__action" data-testid="toast-open" onclick={openCreatedDoc}>{t('dashboard.toast.open')}</button>
+    {:else if toast.kind === 'archived'}
+      <button type="button" class="shpd-toast__action" data-testid="toast-restore" onclick={restoreArchivedFlow}>{t('dashboard.toast.restore')}</button>
     {/if}
     <button type="button" class="shpd-toast__close" onclick={dismissToast} aria-label={t('common.cancel')}>×</button>
   </div>

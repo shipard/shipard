@@ -590,6 +590,31 @@ uložena (po sanitizaci; prázdná jako `{}`). Chyby: `422 VALIDATION_ERROR`
 `404 NOT_FOUND`, `409 INVALID_STATE`, `500 INTERNAL_ERROR`; v read-only
 stavu DS `403 DS_READ_ONLY`.
 
+### 9.14 `POST /_mail/messages/archive-informational`
+
+**Archivovat vše** v sekci Ostatní dashboardu (`tasks/mail-other-attention.md`
+D5, #105). Auth: běžný uživatelský token, bez těla. Server vybere řádky
+čekající ostatní pošty (`docState=10`, `analysis_state=30`,
+`primary_type=other`, bez otevřeného návrhu — `OtherMailQuery`) s pozorností
+`attention IN (info, promo)` a každý převede do Archivu (80) přes
+`TableGateway` / `IncomingMessageDocument` (hooky, `docStateMain`, handlery;
+každá zpráva vlastní transakce). Řádky s NULL pozorností (starší analýza)
+a `action` (K vyřízení) zůstávají.
+
+Response 200: `{ archived: [id…], count }`; prázdný výběr → `count: 0`.
+Read-only DS → 403.
+
+### 9.15 `POST /_mail/messages/restore-archived`
+
+**Vrátit** z toastu po Archivovat vše. Auth: běžný uživatelský token. Body
+`{ "ids": [int…] }` (422 bez pole). Zpět do Nové (10) jdou jen zprávy
+v Archivu (80) **bez** `auto_disposed_by` — zprávy archivované pravidlem
+mají vlastní digest + Vrátit vše (§9.x `auto-archive/undo`, jiná
+sémantika); `analysis_state` zůstává 30 (bez nové analýzy). Cizí nebo už
+přesunutá id se tiše přeskočí.
+
+Response 200: `{ restored }`.
+
 ## 10. Známé limity
 
 - **Velikost message:** v Shipardu žádný tvrdý limit. Postfix v mail-routeru

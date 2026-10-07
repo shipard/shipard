@@ -31,6 +31,9 @@ feedem (SSE, cache dle hashe feedu, tichá degradace na statické county — §1
 │  [plná karta]  [plná karta]        ← grid, 2 sloupce          │
 │  … (30 karet)                                                 │
 │  a 22 dalších                                                 │
+│  🟡 K vyřízení (4)                                            │
+│  [plná karta: Expirace 3 domén — Registrátor a.s.             │
+│   Prodloužit 3 domény… [do 15. 10. 2026]  [Vyřízeno][Otevřít]]│
 │  🔴 Nepodařilo se zpracovat (7)                               │
 │  ┌──────────────────────────────────────────────────────────┐│
 │  │ AI vrátila nepoužitelný návrh      ← plná karta, full-width│
@@ -38,23 +41,26 @@ feedem (SSE, cache dle hashe feedu, tichá degradace na statické county — §1
 │  └──────────────────────────────────────────────────────────┘│
 │  🟡 Upozornění (5)                                            │
 │  [alert karta]  [alert karta]      ← grid, dle závažnosti     │
-│  ⚪ Ostatní (93)                                               │
+│  ⚪ Ostatní (93)                      [Archivovat vše (61)]    │
 │    {AI titulek} · „…"            Koš · Archiv ← kompaktní řádek│
 │  a 63 dalších                                                 │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-Feed je rozdělený do **šesti sekcí podle toku práce** (#101 D1/D8):
-Položky k založení → Připraveno → Ke kontrole → Nepodařilo se zpracovat
-→ Upozornění → Ostatní. První čtyři jsou tok příchozí pošty (nejdřív to,
-co odblokuje ostatní, pak rychlé potvrzení, pak kontrola, pak ruční
-řešení), Upozornění je stav účetnictví (jiný režim práce, často
-přetrvává), Ostatní úklid. Sekci karty **určuje server** (pole
-`feedSection`, §4), frontend jen seskupuje. Vizuální váha odpovídá
-potřebné pozornosti (Issue #32/2): selhané zpracování plné full-width
-karty, položky / kontrola / upozornění grid, ready pásmo defaultně
-**sbalené do souhrnného pruhu** (rozbalené = kompaktní jednořádkové
-položky) a Ostatní tlumené řádky. Prázdná sekce se nerenderuje.
+Feed je rozdělený do **sedmi sekcí podle toku práce** (#101 D1/D8,
+#105 D4): Položky k založení → Připraveno → Ke kontrole → K vyřízení →
+Nepodařilo se zpracovat → Upozornění → Ostatní. Prvních pět je tok
+příchozí pošty (nejdřív to, co odblokuje ostatní, pak rychlé potvrzení,
+pak kontrola, pak pošta bez dokladu, která chce lidskou akci — expirace,
+výzva k platbě, žádost —, pak ruční řešení), Upozornění je stav
+účetnictví (jiný režim práce, často přetrvává), Ostatní úklid
+informativní pošty s hromadným **Archivovat vše**. Sekci karty **určuje
+server** (pole `feedSection`, §4), frontend jen seskupuje. Vizuální váha
+odpovídá potřebné pozornosti (Issue #32/2): selhané zpracování plné
+full-width karty, položky / kontrola / k vyřízení / upozornění grid,
+ready pásmo defaultně **sbalené do souhrnného pruhu** (rozbalené =
+kompaktní jednořádkové položky) a Ostatní tlumené řádky. Prázdná sekce se
+nerenderuje.
 
 **Strop 30 karet platí per sekce** (D3a) a hlavička sekce ukazuje
 **pravdivý počet** všech karet sekce (D3b); pod přetékající sekcí je
@@ -154,9 +160,13 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
      ready, info → other; neznámý kind i neznámá sekce → other);
   2. seřadí dle `SECTION_ORDER` (D8), uvnitř sekce dle `KIND_ORDER`
      (urgent/review/ready/info — v Upozornění = závažnost, D5), pak
-     `timestamp` DESC (bez timestampu naspod);
+     volitelný interní `sortKey` zdroje ASC (jen mezi kartami, které ho
+     nesou obě — K vyřízení řadí lhůtou, #105 D4), pak `timestamp` DESC
+     (bez timestampu naspod);
   3. ořízne každou sekci na `MAX_CARDS_PER_SECTION = 30` a spočítá
-     `sections[] {id, total, shown}` (jen neprázdné, v pořadí D8).
+     `sections[] {id, total, shown, archivable?}` (jen neprázdné, v pořadí
+     D8; `archivable` = počet karet s interním `archivable` ze **všech**
+     karet sekce — podklad tlačítka Archivovat vše, #105 D5).
   `FeedResult::$cards` = po stropu, `$allCards` = bez stropu (county,
   badge, AI digest, `readySummary`), `hasMore()` = některá sekce přetekla.
 - **Pojistný limit zdrojů**: `FeedContext::$sourceLimit`
@@ -274,7 +284,19 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   `basic`, alert karty per check z `alertChecks[].navSection`
   v `module.jsonc` (setup checky pole nemají — agregují se do setup
   karty).
+- `dueText` + `dueState` — **volitelná**, jen karta K vyřízení
+  (`mail_attention:*`, #105 D4) se známou lhůtou: `dueText` je
+  server-formátovaný badge („do 15. 10. 2026" / „po lhůtě 1. 10. 2026",
+  katalog `attention.due` / `attention.overdue`, datum jako
+  `receivedDateText`), `dueState` ∈ `overdue` | `soon` (≤ 3 dny) |
+  `later` — frontend jen kreslí (overdue a soon v barvě danger).
 - `timestamp` — sekundární řazení uvnitř pásma (ATOM).
+- `sortKey` a `archivable` — **interní pole pro collector**, klient je
+  nedostane (`stripInternalFields`): `sortKey` (string, nižší dřív) řadí
+  před `timestamp` mezi kartami, které ho nesou obě (K vyřízení = lhůta,
+  bez lhůty `9999-12-31`); `archivable: true` označuje řádek Ostatní, který
+  odklidí Archivovat vše (pozornost `info` / `promo`) — collector je sčítá
+  do `sections[].archivable`.
 - `context` — volitelná zdrojově-specifická data.
 - `attachments` + `attachmentsTotal` — **volitelná** pole, jen mail karty
   s ≥1 obsahovou přílohou zprávy (karty bez příloh je nemají vůbec).
@@ -290,12 +312,13 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
 `kind` je pásmo karty (barva proužku, `summary.counts`, badge sekcí
 navigace, AI shrnutí) — **nemění se** (#101). Sekci feedu nese
 `feedSection`; řazení je sekce (`SECTION_ORDER`) → `kind` (`KIND_ORDER`
-urgent → review → ready → info) → `timestamp` DESC.
+urgent → review → ready → info) → interní `sortKey` ASC (jen K vyřízení)
+→ `timestamp` DESC.
 
 | `kind` | Pásmo | Zdroj → mapování |
 |---|---|---|
 | `urgent` | 🔴 | alert `error`; zpráva `analysis_state=70` (analýza selhala); nevalidní výstup AI (`mail_invalid`) |
-| `review` | 🟡 | otevřený návrh v pásmu `review`/`low` (runtime resolver); alert `warning`; chybová karta s `primary_type=other`; karta položky k založení (content tag, D12 — blokuje povýšení návrhů); návrh pravidla odesílatele |
+| `review` | 🟡 | otevřený návrh v pásmu `review`/`low` (runtime resolver); alert `warning`; chybová karta s `primary_type=other`; karta položky k založení (content tag, D12 — blokuje povýšení návrhů); návrh pravidla odesílatele; karta K vyřízení (`mail_attention`, #105) |
 | `ready`  | 🟢 | otevřený návrh v pásmu `ready` (jednoklik apply) |
 | `info`   | ℹ️ | alert `info`; karta ostatní pošty; digest auto-archivu |
 
@@ -308,10 +331,11 @@ Mapování karet na sekce (#101 D8, D10):
 | Návrh dokladu / Spisovny — pásmo ready | ready | `ready` | výchozí |
 | Návrh dokladu / Spisovny — pásmo review/low | review | `review` | výchozí |
 | Návrh pravidla odesílatele (`mail_rule_suggestion:*`; titulek podle dispozice — `senderRule.title` pro `archive`, `senderRule.titleIfOther` pro `archiveIfOther`) | review | `review` | výchozí |
+| K vyřízení (`mail_attention:*`) — ostatní pošta s pozorností `action` (#105 D4) | review | `attention` | zdroj |
 | Selhaná analýza (`mail_message:*`), nevalidní výstup (`mail_invalid:*`) | urgent | `failed` | zdroj |
 | Selhaná analýza zprávy s `primary_type=other` | review | `failed` | zdroj |
 | Ostatní alerty — individuální i skupinové | dle závažnosti | `alerts` | zdroj |
-| Ostatní pošta (`mail_notinvoice:*`), digest auto-archivu (zprávy archivované při příjmu i po analýze / při potvrzení pravidla — shodný audit `auto_disposed_*`) | info | `other` | výchozí |
+| Ostatní pošta (`mail_notinvoice:*` — pozornost `info` / `promo` / NULL), digest auto-archivu (zprávy archivované při příjmu i po analýze / při potvrzení pravidla — shodný audit `auto_disposed_*`) | info | `other` | výchozí |
 
 ### 4.2 Slovník `kind` akcí (chování odvozuje frontend)
 
@@ -322,7 +346,8 @@ Mapování karet na sekce (#101 D8, D10):
 | `reject_message` | `RejectReasonPrompt` → reject | `{messageNdx}` |
 | `reanalyze` | inline `reanalyzeMessage(messageNdx)`, refetch | `{messageNdx}` |
 | `trash_message` | zpráva do Koše (`docState=90`, docState-only save), refetch | `{messageNdx}` |
-| `archive_message` | zpráva do Archivu (`docState=80`, docState-only save), refetch | `{messageNdx}` |
+| `archive_message` | zpráva do Archivu (`docState=80`, docState-only save), refetch; karta K vyřízení ji nese s `id: done` (popisek „Vyřízeno", #105 D4) | `{messageNdx}` |
+| `archive_informational` | syntetická akce z hlavičky sekce Ostatní (tlačítko **Archivovat vše (N)**, `Feed.svelte` → `onCardAction`), bez potvrzení: `POST /_mail/messages/archive-informational` → toast „Archivováno N zpráv" s **Vrátit** (`POST /_mail/messages/restore-archived {ids}`) + refetch (#105 D5) | — |
 | `confirm_sender_rule` / `reject_sender_rule` | potvrzení/zamítnutí návrhu pravidla odesílatele, refetch; potvrzení po commitu odklidí čekající řádky Ostatní od adresy (`SenderRuleConfirmedHandler`, D8) — refetch je ukáže v digestu | `{ruleId}` |
 | `undo_auto_archive` | „Vrátit vše" z digest karty auto-archivu, toast + refetch; zprávy archivované po analýze se vrátí jako řádky Ostatní bez nové analýzy (`analysis_state` 30 zůstává, D7), zprávy z pre-triage jdou do fronty | `{date?}` |
 | `open_viewer` | navigace | `{viewerId, recordId?, viewGroup?, filters?}` — `viewGroup` chip cílového vieweru, `filters` `{filterId: value}` jeho custom filtrů (jednorázové hinty `pendingViewGroup` / `pendingFilters`, viz `docs/frontend.md`) |
@@ -424,10 +449,15 @@ uživatele", tasks/mail-analysis-error-messages.md D3c–D5):
   v `fetchErrorRows`), u wrapperu samotný řádek návrhu.
 
 **Karty ostatní pošty** (`mail_notinvoice:*`) — zprávy `analysis_state=30`,
-`docState=10` (Nová), `primary_type='other'` bez otevřeného návrhu →
+`docState=10` (Nová), `primary_type='other'` bez otevřeného návrhu
+(sdílená podmínka `OtherMailQuery::pendingWhere()`) s pozorností
+`attention` ∈ `info` / `promo` / NULL (starší analýza) →
 `kind=info`, `stateStyle=archive`; akce `trash_message` (primary),
 `archive_message`, `open_detail`. Žádné auto-zavření ani digest — jedna
-karta per zpráva s jednoklikovým úklidem. Titulek = `ai_title` zprávy
+karta per zpráva s jednoklikovým úklidem; řádky `info` / `promo` nesou
+interní `archivable` → `sections[].archivable` → tlačítko **Archivovat
+vše (N)** v hlavičce sekce (#105 D5; NULL řádky zůstávají per řádek —
+lze je reanalyzovat). Titulek = `ai_title` zprávy
 (AI popis obsahu — „Newsletter — novinky dodavatele", „Sken obálky"; jazyk
 AI profilu), bez něj konstanta `other.title` z katalogu („Neobsahuje doklad
 ani dokument" / „Contains no document") — analýzy před promptem v4.3.0 nebo
@@ -435,6 +465,20 @@ analyzer bez `title`. `emailSubject` jen když se od titulku liší: u skenů,
 ručního nahrání a generických předmětů vrací pravidlo D3
 `IncomingMessageTitle` právě `ai_title` a předmět by titulek jen opakoval
 (tasks/dashboard-other-row-title.md D1–D3).
+
+**Karty K vyřízení** (`mail_attention:*`, tasks/mail-other-attention.md
+D4) — tatáž množina s `attention='action'` (expirace domény, výzva
+k platbě, upomínka, žádost — prompt od v4.7.0 ji určuje z obsahu, ne
+z odesílatele) → `kind=review`, `feedSection=attention`,
+`stateStyle=confirmed`, ikona `question`, `category=other`. Titulek
+`ai_title` (fallback `other.title`), podtitulek věta `action_note` („co
+udělat"; bez ní odesílatel jako u Ostatních), s lhůtou `action_due`
+badge `dueText` + `dueState` (§4; po lhůtě nebo do 3 dnů `danger`)
+a interní `sortKey` = lhůta (bez lhůty na konec sekce). Akce
+`archive_message` s `id: done` (**Vyřízeno**, primary), `open_detail`,
+`trash_message`. Pravidlo odesílatele `archiveIfOther` tyto zprávy
+neodklidí (D6). `promo` se zatím od `info` neliší — sbírá se pro
+pozdější rozhodnutí o auto-koši newsletterů.
 
 Titulek: `proposed_type` → label z cfgItem `core.mail.primaryTypes`
 (registry typy label druhu z `base.registry.docKinds`) + partner
@@ -719,9 +763,10 @@ načte další zprávu místo zavření. Vše frontend nad existujícími endpoi
       { "id": "newItems", "total": 2,  "shown": 2 },
       { "id": "ready",    "total": 41, "shown": 30 },
       { "id": "review",   "total": 52, "shown": 30 },
+      { "id": "attention", "total": 4, "shown": 4 },
       { "id": "failed",   "total": 7,  "shown": 7 },
       { "id": "alerts",   "total": 5,  "shown": 5 },
-      { "id": "other",    "total": 93, "shown": 30 }
+      { "id": "other",    "total": 93, "shown": 30, "archivable": 61 }
     ],
     "cards": [ /* seřazené sekce → kind → čas, strop 30 per sekce; každá nese feedSection */ ],
     "readySummary": {
@@ -745,7 +790,9 @@ načte další zprávu místo zavření. Vše frontend nad existujícími endpoi
   (#101 D3b).
 - `sections` (#101 D3a/D3b) — jen neprázdné sekce v pořadí D8, `total` =
   pravdivý počet karet sekce (do pojistného limitu zdrojů), `shown` =
-  kolik z nich je v `cards`. Strop `MAX_CARDS_PER_SECTION = 30` platí per
+  kolik z nich je v `cards`; `archivable` (#105 D5) jen u sekce s řádky,
+  které odklidí Archivovat vše (Ostatní s pozorností `info` / `promo`) —
+  N v tlačítku, nikdy z délky pole karet. Strop `MAX_CARDS_PER_SECTION = 30` platí per
   sekce; karta „…a další nezpracovaná pošta" (`mail_more`) se už neposílá —
   odkaz „a N dalších" kreslí frontend (`N = total − shown`), kontrakt
   nenese akci.
@@ -833,6 +880,31 @@ a `docs/mail/api-contract.md` §9.11.
 **Odpovědi**: `200 { messageNdx, analysisNdx, trashedDocId }`,
 `409 INVALID_STATE` / `409 DOC_ADVANCED`, `404 NOT_FOUND`, `500 INTERNAL_ERROR`.
 
+### `POST /_mail/messages/archive-informational`
+
+**Auth**: běžný uživatelský token. **Archivovat vše** v sekci Ostatní
+(tasks/mail-other-attention.md D5): vybere řádky čekající ostatní pošty
+s pozorností `info` / `promo` bez otevřeného návrhu
+(`OtherMailQuery::informationalWhere()` — tatáž množina jako karty
+s `archivable`, **všechny**, i nad stropem 30) a každý převede do Archivu
+(80) přes `TableGateway` / `IncomingMessageDocument` (hooky,
+`docStateMain`, handlery; každá zpráva vlastní transakce gateway, MariaDB
+vnořené transakce nemá). Řádky s NULL pozorností a K vyřízení zůstávají.
+
+**Odpovědi**: `200 { archived: [id…], count }` (prázdný výběr → `count:
+0`), `401`, `500`. Read-only DS → `403` (`ReadOnlyPolicy`, mail skupina).
+
+### `POST /_mail/messages/restore-archived`
+
+**Auth**: běžný uživatelský token. **Vrátit** z toastu po Archivovat vše:
+tělo `{ids: [int…]}`; zpět do Nové (10) jdou jen zprávy v Archivu (80)
+bez `auto_disposed_by` (ruční archiv — zprávy archivované pravidlem mají
+vlastní digest + Vrátit vše s jinou sémantikou), `analysis_state`
+zůstává 30 (bez nové analýzy). Cizí nebo už přesunutá id se tiše přeskočí.
+
+**Odpovědi**: `200 { restored }`, `422 VALIDATION_ERROR` (chybí `ids`),
+`401`, `500`.
+
 ### `POST /api/v1/_exchange/content-tags/materialize`
 
 **Auth**: běžný uživatelský token. Body `{tag, account?}` — založí účetní
@@ -854,7 +926,8 @@ Sesterské endpointy pro settings panel: `GET …/content-tags/overview`
 frontend/src/components/dashboard/
 ├── Dashboard.svelte      — fetch, layout, review modal,
 │                           reject prompt, form po vystavení,
-│                           toast (registry / auto-archiv),
+│                           toast (registry / auto-archiv / Archivovat vše
+│                           s akcí Vrátit → restore-archived, #105 D5),
 │                           stav sériového průchodu frontou (§6.6)
 ├── Feed.svelte           — sekce podle toku práce (#101): seskupení karet dle
 │                           card.feedSection (chybějící/neznámá → fallback
@@ -867,8 +940,12 @@ frontend/src/components/dashboard/
 │                           (mail viewer; alerts → viewer upozornění;
 │                           newItems jen text); sekce s nulou doručených
 │                           karet a zbytkem na serveru se dál renderuje;
-│                           rozvržení per sekce: failed full-width stack,
-│                           newItems/review/alerts grid (auto-fill
+│                           hlavička Ostatní navíc tlačítko „Archivovat
+│                           vše (N)" (N = sections[].archivable ze
+│                           serveru; syntetická akce archive_informational,
+│                           #105 D5); rozvržení per sekce: failed
+│                           full-width stack,
+│                           newItems/review/attention/alerts grid (auto-fill
 │                           minmax(360px,1fr) → 2 sloupce na desktopu,
 │                           1 na mobilu; row-major = serverové řazení;
 │                           stejná výška karet v řádku, žádný masonry),
@@ -905,7 +982,9 @@ frontend/src/components/dashboard/
 │                           ikona, strukturovaná hlavička (headline: partner
 │                           tučně / typ dokladu / částka velkým) + donut
 │                           jistoty (confidencePct, barva dle kind), předmět
-│                           e-mailu (emailSubject + iconMail), chipy příloh,
+│                           e-mailu (emailSubject + iconMail), badge lhůty
+│                           (dueText/dueState karty K vyřízení, #105 D4),
+│                           chipy příloh,
 │                           hint řádek dalších nálezů (secondaryFindings),
 │                           řádek upozornění (card.warning, varovná barva),
 │                           expander „Zobrazit detail" (details, lokální

@@ -12,6 +12,7 @@ use Shipard\Core\I18n\ConfigLocalizer;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
 use Shipard\Module\Core\Mail\Feed\MailSuggestionsSource;
+use Shipard\Module\Core\Mail\OtherMailQuery;
 use Shipard\Tests\Fixtures\Core\Feed\ShippedFeedTexts;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessErrorPresenter;
 
@@ -719,6 +720,138 @@ final class MailSuggestionsSourceTest extends TestCase
         $this->assertStringContainsString("COALESCE(`a`.`proposed_type`, 'other') != 'other'", $captured);
         $this->assertStringContainsString('`a`.`resolution` IS NULL', $captured);
         $this->assertStringContainsString('`a`.`canonical_json` IS NOT NULL', $captured);
+    }
+
+    // ── K vyřízení a Archivovat vše (tasks/mail-other-attention.md D4, D5) ──
+
+    /** @return array<string,mixed> řádek Ostatní s pozorností. */
+    private function attentionRow(?string $attention, ?string $note = null, ?string $due = null, int $ndx = 901): array
+    {
+        return [
+            'message_ndx'  => $ndx,
+            'subject'      => 'Expirace domén',
+            'source_type'  => 2,
+            'ai_title'     => 'Expirace 3 domén — Registrátor a.s.',
+            'sender_name'  => 'Kolega',
+            'sender_email' => 'kolega@example.test',
+            'partner_name' => 'Registrátor a.s.',
+            'received_at'  => '2026-06-28 10:00:00',
+            'primary_type' => 'other',
+            'attention'    => $attention,
+            'action_note'  => $note,
+            'action_due'   => $due,
+        ];
+    }
+
+    public function testActionRowBecomesAttentionCardWithDueBadgeAndSortKey(): void
+    {
+        $due = date('Y-m-d', strtotime('+10 days'));
+        $row = $this->attentionRow('action', 'Prodloužit 3 domény, jinak expirují.', $due);
+
+        $cards = (new MailSuggestionsSource())->collectCards($this->context([], notInvoiceRows: [$row]));
+
+        $this->assertCount(1, $cards);
+        $card = $cards[0];
+        $this->assertSame('mail_attention:901', $card['id']);
+        $this->assertSame('review', $card['kind']);
+        $this->assertSame('attention', $card['feedSection']);
+        $this->assertSame('other', $card['category']);
+        $this->assertSame('_top', $card['navSection']);
+        $this->assertSame('Expirace 3 domén — Registrátor a.s.', $card['title']);
+        $this->assertSame('Prodloužit 3 domény, jinak expirují.', $card['subtitle']);
+        $this->assertSame('Expirace domén', $card['emailSubject']);
+        $this->assertSame($due, $card['sortKey']);
+        $this->assertSame('later', $card['dueState']);
+        $this->assertSame('do ' . date('j. n. Y', strtotime($due)), $card['dueText']);
+        $this->assertArrayNotHasKey('archivable', $card);
+        // Vyřízeno = archiv jako primární akce, popisek podle id `done`.
+        $this->assertSame(['done', 'openMail', 'trash'], array_column($card['actions'], 'id'));
+        $this->assertSame('archive_message', $card['actions'][0]['kind']);
+        $this->assertTrue($card['actions'][0]['primary']);
+        $this->assertSame(['messageNdx' => 901], $card['actions'][0]['target']);
+        $this->assertSame('open_detail', $card['actions'][1]['kind']);
+        $this->assertSame('trash_message', $card['actions'][2]['kind']);
+
+        $en = (new MailSuggestionsSource())->collectCards($this->context([], lang: 'en', notInvoiceRows: [$row]));
+        $this->assertSame('by ' . $due, $en[0]['dueText']);
+        $fallback = (new MailSuggestionsSource())->collectCards($this->context([], lang: 'en', notInvoiceRows: [$row], withCatalog: false));
+        $this->assertSame($en[0]['dueText'], $fallback[0]['dueText']);
+    }
+
+    public function testAttentionCardDueStates(): void
+    {
+        $src = new MailSuggestionsSource();
+        $overdue = $src->collectCards($this->context([], notInvoiceRows: [$this->attentionRow('action', 'Zaplatit', date('Y-m-d', strtotime('-1 day')))]))[0];
+        $this->assertSame('overdue', $overdue['dueState']);
+        $this->assertStringStartsWith('po lhůtě ', $overdue['dueText']);
+
+        $today = $src->collectCards($this->context([], notInvoiceRows: [$this->attentionRow('action', 'Zaplatit', date('Y-m-d'))]))[0];
+        $this->assertSame('soon', $today['dueState']);
+        $this->assertStringStartsWith('do ', $today['dueText']);
+
+        $threeDays = $src->collectCards($this->context([], notInvoiceRows: [$this->attentionRow('action', 'Zaplatit', date('Y-m-d', strtotime('+3 days')))]))[0];
+        $this->assertSame('soon', $threeDays['dueState']);
+
+        $fourDays = $src->collectCards($this->context([], notInvoiceRows: [$this->attentionRow('action', 'Zaplatit', date('Y-m-d', strtotime('+4 days')))]))[0];
+        $this->assertSame('later', $fourDays['dueState']);
+
+        // Dibi vrací DATE jako DateTime — stejný výsledek.
+        $asObject = $src->collectCards($this->context([], notInvoiceRows: [$this->attentionRow('action', 'Zaplatit', null) + []]))[0];
+        $this->assertArrayNotHasKey('dueState', $asObject);
+        $row = $this->attentionRow('action', 'Zaplatit');
+        $row['action_due'] = new \DateTimeImmutable('+10 days');
+        $fromObject = $src->collectCards($this->context([], notInvoiceRows: [$row]))[0];
+        $this->assertSame('later', $fromObject['dueState']);
+    }
+
+    public function testAttentionCardWithoutDueOrNoteFallsBack(): void
+    {
+        $card = (new MailSuggestionsSource())->collectCards($this->context([], notInvoiceRows: [$this->attentionRow('action')]))[0];
+
+        $this->assertSame('mail_attention:901', $card['id']);
+        $this->assertArrayNotHasKey('dueText', $card);
+        $this->assertArrayNotHasKey('dueState', $card);
+        $this->assertSame('9999-12-31', $card['sortKey'], 'bez lhůty na konec sekce');
+        $this->assertSame('Registrátor a.s. · od: Kolega', $card['subtitle'], 'bez poznámky jako řádek Ostatní');
+    }
+
+    public function testInformationalRowsStayOtherAndCarryArchivable(): void
+    {
+        $src = new MailSuggestionsSource();
+        foreach (['info', 'promo'] as $attention) {
+            $card = $src->collectCards($this->context([], notInvoiceRows: [$this->attentionRow($attention, 'Nic', '2026-10-15')]))[0];
+            $this->assertSame('mail_notinvoice:901', $card['id'], $attention);
+            $this->assertSame('info', $card['kind'], $attention);
+            $this->assertArrayNotHasKey('feedSection', $card, $attention);
+            $this->assertTrue($card['archivable'], $attention);
+            $this->assertArrayNotHasKey('dueText', $card, $attention);
+            $this->assertArrayNotHasKey('sortKey', $card, $attention);
+        }
+
+        // NULL pozornost (starší analýza): řádek Ostatní bez archivable.
+        $legacy = $src->collectCards($this->context([], notInvoiceRows: [$this->attentionRow(null)]))[0];
+        $this->assertSame('mail_notinvoice:901', $legacy['id']);
+        $this->assertArrayNotHasKey('archivable', $legacy);
+    }
+
+    public function testNotInvoiceQuerySelectsAttentionColumnsAndSharedCondition(): void
+    {
+        $captured = null;
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(
+            static function (mixed ...$args) use (&$captured): array {
+                $sql = (string) $args[0];
+                if (str_contains($sql, 'COALESCE((')) {
+                    $captured = $sql;
+                }
+                return [];
+            },
+        );
+        (new MailSuggestionsSource())->collectCards(new FeedContext($db, null, 'cs', 30));
+
+        $this->assertNotNull($captured);
+        $this->assertStringContainsString('`m`.`attention`, `m`.`action_note`, `m`.`action_due`', $captured);
+        $this->assertStringContainsString(OtherMailQuery::pendingWhere(), $captured);
     }
 
     public function testNotInvoiceQueryFiltersPrimaryTypeOtherWithoutOpenProposal(): void

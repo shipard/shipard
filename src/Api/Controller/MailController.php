@@ -15,7 +15,9 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Security\DsSecretCipher;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocStateConfig;
+use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
+use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Mail\AllowedSenders;
 use Shipard\Core\Settings\SettingsStore;
@@ -31,6 +33,7 @@ use Shipard\Module\Core\Mail\MailRouterProvisioner;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
 use Shipard\Module\Core\Mail\MessageTargetWriter;
 use Shipard\Module\Core\Mail\MessageTitleComposer;
+use Shipard\Module\Core\Mail\OtherMailQuery;
 use Shipard\Module\Core\Mail\SenderRuleDispositions;
 use Shipard\Module\Core\Mail\SenderRuleMatcher;
 
@@ -71,6 +74,9 @@ class MailController
      *        service bez enricheru a writerů.
      * @param \Closure(int): void|null $preprocessSpawner Test seam — náhrada
      *        detached spawnu runneru předzpracování (default PreprocessSpawner).
+     * @param DocumentEventDispatcher|null $eventDispatcher Handlery dokumentů
+     *        pro zápisy přes TableGateway (Archivovat vše / Vrátit) — vzor
+     *        SenderRulesController.
      */
     public function __construct(
         private readonly DataSourceConnection $db,
@@ -81,6 +87,7 @@ class MailController
         private readonly ?DataSourceConfig $dsConfig = null,
         private readonly ?\Closure $isdocImportFactory = null,
         private readonly ?\Closure $preprocessSpawner = null,
+        private readonly ?DocumentEventDispatcher $eventDispatcher = null,
     ) {
         $this->attachments = new AttachmentService($db, $dsPath, $tables);
         $this->idempotency = new IdempotencyStore($db);
@@ -121,6 +128,136 @@ class MailController
         $this->db->updateWhere('core_mail_senders', ['password_enc' => $encrypted], 'id = %i', $id);
 
         return Response::success(['id' => $id, 'passwordSet' => true]);
+    }
+
+    /**
+     * `POST /_mail/messages/archive-informational` — Archivovat vše v sekci
+     * Ostatní dashboardu (tasks/mail-other-attention.md D5, #105). Vybere
+     * řádky čekající ostatní pošty s pozorností `info` / `promo`
+     * (`OtherMailQuery::informationalWhere` — tatáž množina, kterou feed
+     * označuje `archivable`) a každý převede do Archivu (80) přes
+     * `TableGateway` / `IncomingMessageDocument` (hooky, `docStateMain`,
+     * handlery), ne hromadným UPDATE. Řádky s NULL pozorností (starší
+     * analýza) a K vyřízení zůstávají. Vrací `{archived: [id…], count}`;
+     * prázdný výběr → 200 s `count: 0`. Práva jako `archive_message`
+     * (přihlášený uživatel).
+     *
+     * Každá zpráva je vlastní transakce gateway (MariaDB vnořené transakce
+     * nemá — vnější `begin` by druhý `START TRANSACTION` tiše commitl); při
+     * chybě uprostřed odpověď nese jen skutečně archivované id.
+     *
+     * Učení pravidel (`SenderRuleSuggestionHandler`): `IncomingMessageDocument`
+     * dnes přechod stavu neeviduje, takže gateway `stateChanged` nevysílá
+     * a hromadný archiv nic neučí (známý bug, D6). Až se opraví, počítal
+     * by se každý řádek jako ruční odklizení per odesílatel — pak zvážit
+     * vynechání hromadného archivu z učení.
+     */
+    public function archiveInformational(AuthContext $auth): Response
+    {
+        if (!$auth->isAuthenticated) {
+            return Response::error('UNAUTHORIZED', 'Authentication required', 401);
+        }
+
+        $gateway = $this->buildMessagesGateway();
+        if ($gateway === null) {
+            return Response::error('INTERNAL_ERROR', 'Messages table is not available', 500);
+        }
+
+        $rows = $this->db->fetchAll(
+            'SELECT `m`.`id` FROM %n `m` WHERE ' . OtherMailQuery::informationalWhere() . ' ORDER BY `m`.`id`',
+            self::MAIL_TABLE,
+        );
+
+        $archived = [];
+        foreach ($rows as $row) {
+            $id = (int) $row['id'];
+            $doc = $gateway->loadDocument($id);
+            // Souběh: uživatel zprávu mezitím odklidil sám → přeskočit.
+            if ($doc === null || (int) ($doc['docState'] ?? 0) !== IncomingMessageDocument::DOC_STATE_NEW) {
+                continue;
+            }
+            $doc['docState'] = self::DOC_STATE_ARCHIVED;
+            if ($gateway->saveDocument($doc)->isSuccess()) {
+                $archived[] = $id;
+            }
+        }
+
+        return Response::success(['archived' => $archived, 'count' => count($archived)]);
+    }
+
+    /**
+     * `POST /_mail/messages/restore-archived` `{ids: [int…]}` — Vrátit
+     * z toastu po Archivovat vše (D5): jen zprávy v Archivu (80) bez
+     * `auto_disposed_by` (ruční archiv; pravidlem archivované mají vlastní
+     * digest + Vrátit vše s jinou sémantikou) zpět do Nové (10) přes
+     * gateway; `analysis_state` zůstává. Cizí nebo už přesunutá id se tiše
+     * přeskočí. Vrací `{restored: n}`.
+     */
+    public function restoreArchived(AuthContext $auth, Request $request): Response
+    {
+        if (!$auth->isAuthenticated) {
+            return Response::error('UNAUTHORIZED', 'Authentication required', 401);
+        }
+
+        $body = $request->getBody();
+        $ids = is_array($body) && is_array($body['ids'] ?? null) ? $body['ids'] : null;
+        if ($ids === null) {
+            return Response::error('VALIDATION_ERROR', 'ids must be an array of message ids', 422, [['field' => 'ids']]);
+        }
+        $ids = array_values(array_unique(array_filter(
+            array_map(static fn (mixed $v): int => is_numeric($v) ? (int) $v : 0, $ids),
+            static fn (int $v): bool => $v > 0,
+        )));
+        if ($ids === []) {
+            return Response::success(['restored' => 0]);
+        }
+
+        $gateway = $this->buildMessagesGateway();
+        if ($gateway === null) {
+            return Response::error('INTERNAL_ERROR', 'Messages table is not available', 500);
+        }
+
+        $rows = $this->db->fetchAll(
+            'SELECT id FROM %n WHERE id IN %in AND docState = %i AND auto_disposed_by IS NULL',
+            self::MAIL_TABLE,
+            $ids,
+            self::DOC_STATE_ARCHIVED,
+        );
+
+        $restored = 0;
+        foreach ($rows as $row) {
+            $doc = $gateway->loadDocument((int) $row['id']);
+            if ($doc === null) {
+                continue;
+            }
+            $doc['docState'] = IncomingMessageDocument::DOC_STATE_NEW;
+            if ($gateway->saveDocument($doc)->isSuccess()) {
+                $restored++;
+            }
+        }
+
+        return Response::success(['restored' => $restored]);
+    }
+
+    /** Gateway nad zprávami pro zápisy se všemi hooky (vzor SenderRulesController::buildGateway). */
+    private function buildMessagesGateway(): ?TableGateway
+    {
+        $def = $this->tables[self::MAIL_TABLE] ?? null;
+        if ($def === null) {
+            return null;
+        }
+
+        return new TableGateway(
+            self::MAIL_TABLE,
+            $this->db->getDibiConnection(),
+            $this->documentRegistry,
+            $def->childTables,
+            $this->config,
+            $this->dsConfig,
+            $this->eventDispatcher,
+            $def->docStates,
+            $def,
+        );
     }
 
     /**

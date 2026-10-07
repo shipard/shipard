@@ -10,8 +10,10 @@ use Shipard\Core\Feed\FeedTexts;
 use Shipard\Module\Core\Mail\AnalysisConfidenceResolver;
 use Shipard\Module\Core\Mail\AnalysisErrorInfo;
 use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
+use Shipard\Module\Core\Mail\AttentionKinds;
 use Shipard\Module\Core\Mail\IncomingMessageDocument;
 use Shipard\Module\Core\Mail\IncomingMessageTitle;
+use Shipard\Module\Core\Mail\OtherMailQuery;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessErrorPresenter;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
 use Shipard\Module\Core\Mail\PrimaryTypes;
@@ -39,10 +41,18 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  * tasks/mail-analysis-error-messages.md D3c, D4, D5)
  * také — akce reanalyze.
  * Karty ostatní pošty: zpráva `analysis_state=30`, `docState=10` (Nová),
- * `primary_type='other'` bez otevřeného návrhu → kind=info s akcemi
- * Koš (primary) / Archiv / otevřít read-only náhled zprávy. Titulek je
- * `ai_title` zprávy (AI popis obsahu), bez něj konstanta `other.title`
- * z katalogu (tasks/dashboard-other-row-title.md D1, D2).
+ * `primary_type='other'` bez otevřeného návrhu (`OtherMailQuery`) → kind=info
+ * s akcemi Koš (primary) / Archiv / otevřít read-only náhled zprávy. Titulek
+ * je `ai_title` zprávy (AI popis obsahu), bez něj konstanta `other.title`
+ * z katalogu (tasks/dashboard-other-row-title.md D1, D2). Řádky
+ * s pozorností `info` / `promo` nesou interní `archivable` (podklad
+ * `sections[].archivable` pro Archivovat vše, tasks/mail-other-attention.md D5).
+ * Karty K vyřízení (`mail_attention`, D4): tatáž množina s `attention =
+ * action` → kind=review, `feedSection = attention`, titulek `ai_title`,
+ * podtitulek `action_note`, badge lhůty `dueText` + `dueState`
+ * (overdue / soon ≤ 3 dny / later; datum formátuje server), interní
+ * `sortKey` = lhůta (bez lhůty na konec), akce Vyřízeno (`done` =
+ * archive_message, primary) / otevřít / Koš.
  *
  * Návrhové karty s partnerem nesou strukturovanou hlavičku `headline`
  * ({partnerName, typeLabel, amountText?}) + volitelná pole `confidencePct`
@@ -187,8 +197,12 @@ final class MailSuggestionsSource implements FeedSource
             );
         }
         foreach ($notInvoiceRows as $row) {
+            // D4: akční zpráva → karta K vyřízení, zbytek řádek Ostatní.
+            $card = (string) ($row['attention'] ?? '') === AttentionKinds::ACTION
+                ? $this->buildAttentionCard($ctx, $texts, $row)
+                : $this->buildNotInvoiceCard($ctx, $texts, $row);
             $cards[] = $this->withPreprocessWarning(
-                $this->withAttachments($this->buildNotInvoiceCard($ctx, $texts, $row), $attachmentsByMessage[(int) $row['message_ndx']] ?? []),
+                $this->withAttachments($card, $attachmentsByMessage[(int) $row['message_ndx']] ?? []),
                 $row,
                 $preprocess,
             );
@@ -487,8 +501,9 @@ final class MailSuggestionsSource implements FeedSource
     }
 
     /**
-     * Řádky zpráv pro karty ostatní pošty — AI klasifikovala zprávu jako
-     * `other`, zpráva zůstala v Nové a nemá otevřený dokumentový návrh.
+     * Řádky zpráv pro karty ostatní pošty a K vyřízení — AI klasifikovala
+     * zprávu jako `other`, zpráva zůstala v Nové a nemá otevřený dokumentový
+     * návrh (podmínka sdílená s Archivovat vše — `OtherMailQuery`).
      *
      * @return list<array<string,mixed>>
      */
@@ -497,23 +512,108 @@ final class MailSuggestionsSource implements FeedSource
         return $ctx->db->fetchAll(
             'SELECT `m`.`id` AS `message_ndx`, `m`.`subject`, `m`.`ai_title`, `m`.`source_type`,'
             . ' `m`.`sender_name`, `m`.`partner_name`,' . self::PARTNER_FULL_NAME_SQL . ','
-            . ' `m`.`sender_email`, `m`.`received_at`, `m`.`primary_type`, `m`.`raw_source_attachment`' . self::PREPROCESS_SQL
+            . ' `m`.`sender_email`, `m`.`received_at`, `m`.`primary_type`, `m`.`raw_source_attachment`,'
+            . ' `m`.`attention`, `m`.`action_note`, `m`.`action_due`' . self::PREPROCESS_SQL
             . ' FROM `' . self::MESSAGES_TABLE . '` `m`'
-            . ' WHERE `m`.`analysis_state` = %i'
-            . ' AND `m`.`docState` = %i'
-            . ' AND `m`.`primary_type` = \'other\''
-            . ' AND COALESCE(('
-            . '     SELECT `a`.`canonical_json` IS NOT NULL AND `a`.`resolution` IS NULL'
-            . '     FROM `' . self::ANALYSES_TABLE . '` `a`'
-            . '     WHERE `a`.`message` = `m`.`id` AND `a`.`status` = 2'
-            . '     ORDER BY `a`.`analyzed_at` DESC, `a`.`id` DESC LIMIT 1'
-            . ' ), 0) = 0'
+            . ' WHERE ' . OtherMailQuery::pendingWhere()
             . ' ORDER BY `m`.`received_at` DESC, `m`.`id` DESC'
             . ' LIMIT %i',
-            IncomingMessageDocument::ANALYSIS_ANALYZED,
-            IncomingMessageDocument::DOC_STATE_NEW,
             $ctx->sourceLimit,
         );
+    }
+
+    /**
+     * Karta K vyřízení (tasks/mail-other-attention.md D4) — zpráva bez
+     * dokladu, která vyžaduje akci nebo rozhodnutí (expirace, výzva
+     * k platbě, žádost). Titulek `ai_title` (fallback `other.title`),
+     * podtitulek věta `action_note` (bez ní odesílatel jako u Ostatních),
+     * lhůta jako `dueText` + `dueState` (`overdue` / `soon` ≤ 3 dny /
+     * `later`; jen s `action_due`), interní `sortKey` = lhůta ASC, bez lhůty
+     * na konec sekce. Primární akce Vyřízeno = archiv (`id: done`, frontend
+     * popisek lokalizuje podle id).
+     *
+     * @param array<string,mixed> $row
+     * @return array<string,mixed>
+     */
+    private function buildAttentionCard(FeedContext $ctx, FeedTexts $texts, array $row): array
+    {
+        $messageNdx = (int) $row['message_ndx'];
+        $target = ['messageNdx' => $messageNdx];
+
+        $subject = $this->messageTitle($ctx, $row);
+        $aiTitle = trim((string) ($row['ai_title'] ?? ''));
+        $title = $aiTitle !== ''
+            ? $aiTitle
+            : $texts->t('other.title', 'Contains no document');
+        $note = trim((string) ($row['action_note'] ?? ''));
+        $sender = trim((string) ($row['sender_name'] ?? '')) !== ''
+            ? trim((string) $row['sender_name'])
+            : trim((string) ($row['sender_email'] ?? ''));
+        $due = $this->isoDate($row['action_due'] ?? null);
+
+        $card = [
+            'id'          => 'mail_attention:' . $messageNdx,
+            'source'      => 'mail',
+            'kind'        => 'review',
+            'feedSection' => FeedSource::SECTION_ATTENTION,
+            'icon'        => 'question',
+            'stateStyle'  => 'confirmed',
+            'category'    => FeedSource::CATEGORY_OTHER,
+            'navSection'  => FeedSource::NAV_SECTION_TOP,
+            'title'       => $title,
+            'subtitle'    => $note !== '' ? $note : $this->senderSubtitle($texts, $row, $sender),
+            'timestamp'   => $this->toAtom($row['received_at'] ?? null),
+            'sortKey'     => $due ?? '9999-12-31',
+            'context'     => ['messageNdx' => $messageNdx],
+            'actions'     => [
+                ['id' => 'done',     'kind' => 'archive_message', 'target' => $target, 'primary' => true],
+                ['id' => 'openMail', 'kind' => 'open_detail',     'target' => ['viewerId' => self::INCOMING_VIEWER_ID, 'recordId' => $messageNdx, 'tabId' => 'content']],
+                ['id' => 'trash',    'kind' => 'trash_message',   'target' => $target],
+            ],
+        ];
+        if ($due !== null) {
+            $state = self::dueState($due);
+            $dateText = (string) $this->formatDate($ctx, $due);
+            $card['dueState'] = $state;
+            $card['dueText'] = $state === 'overdue'
+                ? $texts->t('attention.overdue', 'overdue {date}', ['date' => $dateText])
+                : $texts->t('attention.due', 'by {date}', ['date' => $dateText]);
+        }
+        if ($subject !== '' && $subject !== $title) {
+            $card['emailSubject'] = $subject;
+        }
+        $receivedDateText = $this->formatDate($ctx, (string) ($row['received_at'] ?? ''));
+        if ($receivedDateText !== null) {
+            $card['receivedDateText'] = $receivedDateText;
+        }
+        return $card;
+    }
+
+    /** Stav lhůty k dnešku: po lhůtě / do 3 dnů včetně / později. */
+    private static function dueState(string $isoDate): string
+    {
+        $today = new \DateTimeImmutable('today');
+        $due = new \DateTimeImmutable($isoDate);
+        if ($due < $today) {
+            return 'overdue';
+        }
+        return $due <= $today->modify('+3 days') ? 'soon' : 'later';
+    }
+
+    /** DB date (Dibi DateTime nebo string) → `Y-m-d`; prázdné/nevalidní → null. */
+    private function isoDate(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+        try {
+            return (new \DateTimeImmutable(trim($value)))->format('Y-m-d');
+        } catch (\Exception) {
+            return null;
+        }
     }
 
     /**
@@ -567,6 +667,11 @@ final class MailSuggestionsSource implements FeedSource
         $receivedDateText = $this->formatDate($ctx, (string) ($row['received_at'] ?? ''));
         if ($receivedDateText !== null) {
             $card['receivedDateText'] = $receivedDateText;
+        }
+        // Interní podklad pro Archivovat vše (D5): jen info / promo; NULL
+        // (starší analýza) zůstává per řádek.
+        if (in_array((string) ($row['attention'] ?? ''), AttentionKinds::INFORMATIONAL, true)) {
+            $card['archivable'] = true;
         }
         return $card;
     }

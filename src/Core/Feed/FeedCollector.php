@@ -47,6 +47,7 @@ final class FeedCollector
         FeedSource::SECTION_NEW_ITEMS,
         FeedSource::SECTION_READY,
         FeedSource::SECTION_REVIEW,
+        FeedSource::SECTION_ATTENTION,
         FeedSource::SECTION_FAILED,
         FeedSource::SECTION_ALERTS,
         FeedSource::SECTION_OTHER,
@@ -125,8 +126,10 @@ final class FeedCollector
     }
 
     /**
-     * Odstraní interní pole `amount`/`currency` (podklad pro readySummary)
-     * ze všech karet — do kartového kontraktu (docs/dashboard.md §4) nepatří.
+     * Odstraní interní pole `amount`/`currency` (podklad pro readySummary),
+     * `sortKey` (řazení zdroje) a `archivable` (podklad pro
+     * `sections[].archivable`) ze všech karet — do kartového kontraktu
+     * (docs/dashboard.md §4) nepatří.
      *
      * @param  list<array<string,mixed>> $cards
      * @return list<array<string,mixed>>
@@ -134,7 +137,7 @@ final class FeedCollector
     public function stripInternalFields(array $cards): array
     {
         foreach ($cards as &$card) {
-            unset($card['amount'], $card['currency']);
+            unset($card['amount'], $card['currency'], $card['sortKey'], $card['archivable']);
         }
         return $cards;
     }
@@ -157,10 +160,14 @@ final class FeedCollector
 
     /**
      * Doplní každé kartě `feedSection`, seřadí karty dle sekce
-     * (`SECTION_ORDER`), uvnitř sekce dle pásma (`KIND_ORDER`) a `timestamp`
-     * sestupně (nejnovější první; karty bez timestampu naspod), a ořízne
-     * každou sekci na `$maxPerSection`. Počty `total`/`shown` per sekce
-     * (jen neprázdné, v pořadí sekcí) nese výsledek.
+     * (`SECTION_ORDER`), uvnitř sekce dle pásma (`KIND_ORDER`), volitelného
+     * `sortKey` zdroje vzestupně (jen mezi kartami, které ho nesou obě —
+     * sekce K vyřízení řadí lhůtou, tasks/mail-other-attention.md D4)
+     * a `timestamp` sestupně (nejnovější první; karty bez timestampu
+     * naspod), a ořízne každou sekci na `$maxPerSection`. Počty
+     * `total`/`shown` per sekce (jen neprázdné, v pořadí sekcí) nese
+     * výsledek; sekce s kartami `archivable` navíc `archivable` (kolik jich
+     * odklidí Archivovat vše, D5 — ze všech karet, ne jen pod stropem).
      *
      * @param list<array<string,mixed>> $cards
      */
@@ -183,6 +190,11 @@ final class FeedCollector
             if ($oa !== $ob) {
                 return $oa <=> $ob;
             }
+            $ka = $a['sortKey'] ?? null;
+            $kb = $b['sortKey'] ?? null;
+            if (is_string($ka) && is_string($kb) && $ka !== $kb) {
+                return strcmp($ka, $kb);
+            }
             $ta = (string) ($a['timestamp'] ?? '');
             $tb = (string) ($b['timestamp'] ?? '');
             if ($ta === $tb) {
@@ -197,16 +209,19 @@ final class FeedCollector
             return strcmp($tb, $ta); // ATOM formát řadí lexikálně = chronologicky
         });
 
-        /** @var array<string, array{total:int, shown:int}> $counts */
+        /** @var array<string, array{total:int, shown:int, archivable:int}> $counts */
         $counts = [];
         $capped = [];
         foreach ($cards as $card) {
             $section = $card['feedSection'];
-            $entry = $counts[$section] ?? ['total' => 0, 'shown' => 0];
+            $entry = $counts[$section] ?? ['total' => 0, 'shown' => 0, 'archivable' => 0];
             $entry['total']++;
             if ($entry['shown'] < $maxPerSection) {
                 $entry['shown']++;
                 $capped[] = $card;
+            }
+            if (($card['archivable'] ?? false) === true) {
+                $entry['archivable']++;
             }
             $counts[$section] = $entry;
         }
@@ -214,7 +229,11 @@ final class FeedCollector
         $sections = [];
         foreach (self::SECTION_ORDER as $id) {
             if (isset($counts[$id])) {
-                $sections[] = ['id' => $id, 'total' => $counts[$id]['total'], 'shown' => $counts[$id]['shown']];
+                $entry = ['id' => $id, 'total' => $counts[$id]['total'], 'shown' => $counts[$id]['shown']];
+                if ($counts[$id]['archivable'] > 0) {
+                    $entry['archivable'] = $counts[$id]['archivable'];
+                }
+                $sections[] = $entry;
             }
         }
 

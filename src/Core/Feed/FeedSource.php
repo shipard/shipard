@@ -11,7 +11,11 @@ namespace Shipard\Core\Feed;
  * Karty vrací v kontraktu popsaném v `docs/dashboard.md` (kartový kontrakt):
  * `{id, source, kind, feedSection?, icon, stateStyle, category?, navSection?,
  * title, subtitle, timestamp, context, actions[]}`. Řazení a strop per sekce
- * řeší `FeedCollector` (`sortAndCap`), zdroj karty jen emituje.
+ * řeší `FeedCollector` (`sortAndCap`), zdroj karty jen emituje. Interní pole
+ * pro collector (klient je nedostane): `sortKey` (string, nižší dřív —
+ * řadí před `timestamp`, jen když ho nesou obě porovnávané karty) a
+ * `archivable` (true = karta Ostatní, kterou odklidí Archivovat vše;
+ * collector sčítá do `sections[].archivable`).
  *
  * Tři ortogonální pole karty:
  * - `feedSection` (SECTION_*) — sekce feedu podle toku práce (#101 D2b).
@@ -35,6 +39,8 @@ interface FeedSource
     public const string SECTION_NEW_ITEMS = 'newItems';
     public const string SECTION_READY     = 'ready';
     public const string SECTION_REVIEW    = 'review';
+    /** K vyřízení — pošta bez dokladu, která chce lidskou akci (tasks/mail-other-attention.md D4). */
+    public const string SECTION_ATTENTION = 'attention';
     public const string SECTION_FAILED    = 'failed';
     public const string SECTION_ALERTS    = 'alerts';
     public const string SECTION_OTHER     = 'other';

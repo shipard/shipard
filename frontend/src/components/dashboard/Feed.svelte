@@ -3,10 +3,14 @@
    * Feed rozdělený do sekcí podle toku práce (#101): sekci každé karty
    * určuje server (`card.feedSection`), frontend jen seskupuje a renderuje
    * v pořadí D8 — Položky k založení → Připraveno → Ke kontrole →
-   * Nepodařilo se zpracovat → Upozornění → Ostatní. Uvnitř sekce pořadí =
-   * pořadí serveru. Rozvržení se řídí sekcí, ne pásmem (`kind`): failed
-   * full-width karty, newItems / review / alerts grid, ready sbalené pruhy
-   * (FeedReadySection), other tlumené kompaktní řádky.
+   * K vyřízení (tasks/mail-other-attention.md D4) → Nepodařilo se
+   * zpracovat → Upozornění → Ostatní. Uvnitř sekce pořadí = pořadí
+   * serveru. Rozvržení se řídí sekcí, ne pásmem (`kind`): failed
+   * full-width karty, newItems / review / attention / alerts grid, ready
+   * sbalené pruhy (FeedReadySection), other tlumené kompaktní řádky.
+   * Sekce Ostatní má v hlavičce „Archivovat vše (N)“ — N posílá server
+   * v `sections[].archivable` (všechny info / promo řádky, i nad stropem);
+   * klik emituje syntetickou akci `archive_informational` (D5).
    *
    * Strop 30 karet platí per sekce a `sections` ze serveru nese pravdivé
    * počty (`total`/`shown`). Hlavička ukazuje `total` snížený o karty
@@ -22,6 +26,7 @@
    * sériový průchod omezený na ready pásmo (D9).
    */
   import { t } from '../../i18n/index.js';
+  import Button from '../ui/Button.svelte';
   import FeedCard from './FeedCard.svelte';
   import FeedReadySection from './FeedReadySection.svelte';
   import FeedRowCompact from './FeedRowCompact.svelte';
@@ -36,8 +41,8 @@
     emptyText = null,
   } = $props();
 
-  // Pořadí sekcí = FeedCollector::SECTION_ORDER serveru (#101 D8).
-  const SECTION_ORDER = ['newItems', 'ready', 'review', 'failed', 'alerts', 'other'];
+  // Pořadí sekcí = FeedCollector::SECTION_ORDER serveru (#101 D8, #105 D4).
+  const SECTION_ORDER = ['newItems', 'ready', 'review', 'attention', 'failed', 'alerts', 'other'];
 
   // Fallback pro kartu bez feedSection (starší server) — zrcadlí
   // FeedCollector::DEFAULT_SECTION_BY_KIND; neznámý kind → Ostatní.
@@ -48,6 +53,7 @@
   const MORE_VIEWER = {
     ready: 'core.mail.incoming',
     review: 'core.mail.incoming',
+    attention: 'core.mail.incoming',
     failed: 'core.mail.incoming',
     other: 'core.mail.incoming',
     alerts: 'core.alerts.alerts',
@@ -83,6 +89,7 @@
           present,
           count: Math.max(present, total - (shown - present)),
           more: Math.max(0, total - shown),
+          archivable: byId[id]?.archivable ?? 0,
         };
       })
       .filter((s) => s.present > 0 || s.more > 0);
@@ -111,6 +118,12 @@
       { id: 'openMore', kind: 'open_viewer', target: { viewerId } },
     );
   }
+
+  // „Archivovat vše“ v hlavičce Ostatní — stejná syntetická cesta jako
+  // openMore; bez potvrzovacího dialogu, akce je vratná z toastu (D5).
+  function archiveAll() {
+    onCardAction({ id: 'section:other' }, { id: 'archiveAll', kind: 'archive_informational' });
+  }
 </script>
 
 {#if isEmpty}
@@ -123,6 +136,18 @@
           <span class="shpd-feed__section-dot shpd-feed__section-dot--{section.id}" aria-hidden="true"></span>
           {t(`dashboard.feed.section.${section.id}`)}
           <span class="shpd-feed__section-count">({section.count})</span>
+          {#if section.id === 'other' && section.archivable > 0}
+            <span class="shpd-feed__section-action">
+              <Button
+                label={t('dashboard.feed.archiveAll', { n: section.archivable })}
+                variant="secondary"
+                size="sm"
+                disabled={busyCardId !== null}
+                testid="feed-archive-all"
+                onclick={archiveAll}
+              />
+            </span>
+          {/if}
         </h2>
         {#if section.id === 'ready'}
           {#if readyGroups.invoices.length > 0}
@@ -221,6 +246,13 @@
     font-weight: 500;
   }
 
+  /* Akce sekce (Archivovat vše) — vpravo v hlavičce, bez uppercase nadpisu. */
+  .shpd-feed__section-action {
+    margin-left: auto;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
   /* Barevná tečka sekce — failed/review/ready zrcadlí barvy stavových
      proužků karet; alerts sdílí warning (sekce mísí závažnosti), newItems
      primary (odlišná od stavových barev), other tlumená. */
@@ -234,6 +266,7 @@
   .shpd-feed__section-dot--newItems { background: var(--shpd-color-primary); }
   .shpd-feed__section-dot--ready    { background: var(--shpd-color-success); }
   .shpd-feed__section-dot--review   { background: var(--shpd-color-warning); }
+  .shpd-feed__section-dot--attention { background: var(--shpd-color-warning); }
   .shpd-feed__section-dot--failed   { background: var(--shpd-color-danger); }
   .shpd-feed__section-dot--alerts   { background: var(--shpd-color-warning); }
   .shpd-feed__section-dot--other    { background: var(--shpd-color-text-secondary); }
