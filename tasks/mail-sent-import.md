@@ -1,6 +1,6 @@
 # Import Odeslané pošty — endpoint `POST /_mail/sent/import` (#104)
 
-**Stav:** hotovo — implementováno 2026-10-06 (3 commity, #104 D1–D5); `ds-upgrade` a E2E přes API klíč na `4l3j` ověřeny, zbývá `ds-upgrade` na alfě a runner ve starém Shipardu
+**Stav:** hotovo — implementováno 2026-10-06 (3 commity, #104 D1–D5); `ds-upgrade` a E2E přes API klíč na `4l3j` ověřeny, 2026-10-07 ověřeno reimportem čtyř migrovaných zdrojů na dev serveru (runner ve starém Shipardu); zbývá `ds-upgrade` na alfě při nasazení
 
 ## Kontext
 
@@ -279,6 +279,23 @@ Routa, controller, `IMPORTED`, `describe()`, frontend + i18n, testy.
 - Detail zprávy v agendě navíc ukazuje položku **Spuštěno** (label
   z `core.mail.sendTriggers`) — bez ní by „Import“ nebylo kde vidět.
 - `email_to` přijímá seznam i text s čárkami (oboje umí `AddressList`).
+
+## Ověření importem (2026-10-07)
+
+Úplný reimport čtyř migrovaných zdrojů na dev serveru runnerem ve starém
+Shipardu (tři s přílohami, jeden bez). Kontrola SQL proti staré databázi,
+jen počty:
+
+- zpráv 26 251 = staré zprávy mimo koš na všech čtyřech zdrojích;
+  duplicitní `import_ref` 0;
+- přílohy 6 699 ze 6 700 (jeden soubor chybí na disku zdroje); první
+  příloha zprávy je PDF tam, kde byla první i ve starém;
+- `created` = starý čas odeslání (min, max i součet hodin shodné — žádný
+  posun časové zóny);
+- vazby na doklady, osoby a došlou poštu sedí na staré vazby mimo záznamy,
+  které se neimportovaly (koš, zakázky);
+- stav Nezjištěno má 1 247 zpráv (bez adresy, s prázdnou nebo neplatnou
+  adresou), placeholder odesílatele 0.
 
 ## Rozhodnutí k designu (potvrzená)
 
