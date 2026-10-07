@@ -95,7 +95,7 @@ z vlastní iniciativy ani „na závěr tasku“; pokyn platí pro ten jeden př
 Bez pokynu připrav commity a popis PR do souboru. V Claude Code si tyto
 příkazy vyžádají potvrzení v každém režimu (`.claude/settings.json`,
 `permissions.ask`) — piš je v běžném tvaru, dotaz neobcházej. Viz
-`docs/ai-workflow.md` §3 a `docs/claude-code-intro.md` kapitola 8.
+`docs/ai-workflow.md` §3 a `docs/dev/claude-code-intro.md` kapitola 8.
 
 ### Uživatelská dokumentace (`help/`)
 

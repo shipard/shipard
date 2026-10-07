@@ -7,10 +7,10 @@ vývojářský dashboard.
 Shipard běží na Ubuntu. Na Macu ho proto spustíš ve virtuálním stroji
 (**Multipass**), na Windows ve **WSL** — v obou případech je to Ubuntu uvnitř
 tvého počítače. Instalaci udělá jeden skript,
-[`scripts/dev-bootstrap.sh`](../scripts/dev-bootstrap.sh).
+[`scripts/dev-bootstrap.sh`](../../scripts/dev-bootstrap.sh).
 
 > **Máš linuxový server, nebo Ubuntu přímo v počítači?** Tenhle návod
-> nepotřebuješ — postup pro Linux je v [`DEVELOPERS.md`](../DEVELOPERS.md).
+> nepotřebuješ — postup pro Linux je v [`DEVELOPERS.md`](../../DEVELOPERS.md).
 > Bootstrap jen spouští jeho kroky za sebou.
 
 ---
@@ -193,7 +193,7 @@ Zdroj dat pak najdeš v seznamu na dashboardu pod tlačítkem **Open**.
 ## 5. Napojení na Clauda
 
 V projektu se pracuje s AI asistentem ve dvou rolích — popisuje je
-[`ai-workflow.md`](ai-workflow.md).
+[`ai-workflow.md`](../ai-workflow.md).
 
 **Claude Code** běží přímo uvnitř Ubuntu, v adresáři `~/sw/shpd`. Na běžnou
 práci (implementace, testy) stačí on. Bootstrap ho neinstaluje — instalace,
@@ -202,7 +202,7 @@ přihlášení a první kroky jsou v [`claude-code-intro.md`](claude-code-intro.
 **Claude v chatu** (návrh, zadání, ověřování) se k Ubuntu připojuje přes SSH
 aplikací [`remote-dev-bridge`](https://github.com/shipard/remote-dev-bridge)
 na tvém počítači — instalace a napojení do desktopové aplikace Claude
-v [`ai-workflow.md` §7](ai-workflow.md#7-nastavení-pro-nového-člověka).
+v [`ai-workflow.md` §7](../ai-workflow.md#7-nastavení-pro-nového-člověka).
 V nastavení mostu přidej server a projekt s ID **`shipard`**:
 
 | | Multipass | WSL |
@@ -242,14 +242,14 @@ shpd-server ds-upgrade-all
 ```
 
 (nebo tlačítko **Upgrade All** v dashboardu). Podrobnosti a další příkazy:
-[`DEVELOPERS.md`](../DEVELOPERS.md) od kapitoly 6.
+[`DEVELOPERS.md`](../../DEVELOPERS.md) od kapitoly 6.
 
 Bootstrap jde kdykoli spustit znovu — hotové kroky jen ověří. Stejně se
 doplní volitelné části:
 
 | Volba | Co přidá |
 |-------|----------|
-| `--with-render` | PDF rendering službu (tisky dokladů) — viz [`operations/render-service.md`](operations/render-service.md) |
+| `--with-render` | PDF rendering službu (tisky dokladů) — viz [`operations/render-service.md`](../operations/render-service.md) |
 | `--with-ssh` | SSH server na portu 2222, přihlášení jen klíčem |
 | `--ssh-pubkey-file <cesta>` | veřejný klíč, který se smí přes SSH přihlásit |
 | `--branch <větev>` | větev pro nový checkout (výchozí `stable`) |
@@ -260,7 +260,7 @@ bash ~/sw/shpd/scripts/dev-bootstrap.sh --with-render
 ```
 
 Checkout je stažený přes HTTPS. Až budeš chtít posílat změny, přepni ho
-podle kapitoly 1 v [`DEVELOPERS.md`](../DEVELOPERS.md).
+podle kapitoly 1 v [`DEVELOPERS.md`](../../DEVELOPERS.md).
 
 ---
 

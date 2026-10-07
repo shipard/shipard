@@ -1578,7 +1578,7 @@ checkout → `install-packages.sh --mode=development` → `dev-update.sh` →
 `server-init` → `git config core.hooksPath .githooks` → volitelné části →
 `shpd-server doctor` → souhrn s adresou dashboardu. Návod pro macOS
 (Multipass, cloud-init `scripts/multipass/shipard-dev.yaml`) a Windows (WSL):
-[`local-dev.md`](local-dev.md).
+[`dev/local-dev.md`](dev/local-dev.md).
 
 - Běží **pod běžným uživatelem**, `sudo` volá sám (jako root skončí chybou —
   vývojář se určuje ze `$SUDO_USER`). Heslo chce jednou na začátku.

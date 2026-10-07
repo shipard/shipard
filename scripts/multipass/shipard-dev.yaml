@@ -16,7 +16,7 @@
 # Jen výchozí síť Multipassu — nepřidávej --network ani --bridged. Vývojářský
 # dashboard nemá přihlášení a v místní síti by byl dostupný komukoli.
 #
-# Návod krok za krokem: docs/local-dev.md
+# Návod krok za krokem: docs/dev/local-dev.md
 
 users:
   - default

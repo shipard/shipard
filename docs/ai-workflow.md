@@ -180,10 +180,10 @@ práce — instrukce Projektu na to ukazují. `CLAUDE.local.md` v knowledge nen�
 ## 7. Nastavení pro nového člověka
 
 1. **Prostředí** — na Macu nebo ve Windows podle
-   [`local-dev.md`](local-dev.md), na vlastním Linux serveru podle
+   [`dev/local-dev.md`](dev/local-dev.md), na vlastním Linux serveru podle
    `DEVELOPERS.md`.
 2. **Claude Code** v checkoutu (`~/sw/shpd`) — `CLAUDE.md` se načte sám;
-   první kroky a režimy oprávnění v [`claude-code-intro.md`](claude-code-intro.md).
+   první kroky a režimy oprávnění v [`dev/claude-code-intro.md`](dev/claude-code-intro.md).
 3. **`CLAUDE.local.md`** ze šablony (níže) — hlavně zdroje dat a jejich režimy.
 4. **GitHub CLI** — `gh auth login`, když budeš pracovat s issues (kapitola 4).
 5. Volitelně **Claude v chatu**: MCP most `remote-dev-bridge` (níže) a Projekt
@@ -210,7 +210,7 @@ v kostce:
 3. **Server** = host, port, uživatel a SSH klíč **bez passphrase** (most
    jinou zatím neumí). **Projekt** = server + root (checkout) + povolené
    příkazy; jeho ID je `project_id`, který Claude uvádí v každém volání.
-   Pro lokální VM jsou konkrétní údaje v `local-dev.md`.
+   Pro lokální VM jsou konkrétní údaje v `dev/local-dev.md`.
 
 **Konvence `project_id`** — dodržet, ať instrukce Projektu a tento dokument
 platí pro všechny. Root = **tvůj** checkout, cesty se liší per člověk.

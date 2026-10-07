@@ -20,12 +20,12 @@
 # downloaded copy (curl | bash) never runs half of the steps.
 #
 # Step headers are in English like the scripts this one calls; hints, errors
-# and the final summary are in Czech (docs/local-dev.md is the guide).
+# and the final summary are in Czech (docs/dev/local-dev.md is the guide).
 
 set -euo pipefail
 
 REPO_URL="https://github.com/shipard/shipard.git"
-DOCS_URL="https://github.com/shipard/shipard/blob/stable/docs/local-dev.md"
+DOCS_URL="https://github.com/shipard/shipard/blob/stable/docs/dev/local-dev.md"
 SERVER_JSON="/etc/shipard/server.json"
 RENDER_URL="http://127.0.0.1:3000"
 RENDER_WAIT_SEC=600
@@ -65,7 +65,7 @@ Volby:
                              z checkoutu ten checkout)
   -h, --help                 tato nápověda
 
-Návod krok za krokem: docs/local-dev.md
+Návod krok za krokem: docs/dev/local-dev.md
 EOF
 }
 

@@ -4,7 +4,7 @@ Návod pro člověka, který s Claude Code (nebo podobným nástrojem) ještě
 nepracoval. Předpokládá hotové vývojové prostředí podle
 [`local-dev.md`](local-dev.md) nebo `DEVELOPERS.md`. Jak se v projektu
 dělí práce mezi Claude v chatu, Claude Code a člověka, popisuje
-[`ai-workflow.md`](ai-workflow.md) — tady jde o to, jak s Claude Code
+[`ai-workflow.md`](../ai-workflow.md) — tady jde o to, jak s Claude Code
 prakticky začít.
 
 Podrobnosti o samotném nástroji jsou v oficiální dokumentaci
@@ -260,11 +260,11 @@ ostatní posílají pull requesty.
 
 ## 10. Kam dál
 
-- [`ai-workflow.md`](ai-workflow.md) — role, postup, pravidla, Claude
+- [`ai-workflow.md`](../ai-workflow.md) — role, postup, pravidla, Claude
   v chatu a `remote-dev-bridge`
-- [`tasks/README.md`](../tasks/README.md) — formát tasků a jejich stav;
+- [`tasks/README.md`](../../tasks/README.md) — formát tasků a jejich stav;
   rozpracované a naplánované tasky jsou dobrý start
-- [`README.md`](README.md) — mapa dokumentace
-- [`roadmap.md`](roadmap.md) — kam projekt míří
+- [`README.md`](../README.md) — mapa dokumentace
+- [`roadmap.md`](../roadmap.md) — kam projekt míří
 - **[Discord](https://discord.gg/PWTt5EUFAV)** — když nevíš, čím začít,
   nebo se zasekneš
