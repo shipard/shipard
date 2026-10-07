@@ -539,7 +539,7 @@ Před každým commitem `php -l` změněných souborů, cílený
       `MSG-20261001-0049` na dev DS) a je v K vyřízení bez badge
 - [x] `ds-upgrade` na dev DS přidal tři sloupce, cfgItem `attentionKinds`
       a synchronizoval profil (`[UPDATE] profile … → v4.7.0`) — `lh6x-l`
-- [ ] nová zpráva bez dokladu na dev DS po analýze nese `attention`;
+- [x] nová zpráva bez dokladu na dev DS po analýze nese `attention`;
       `action` zpráva má poznámku, u lhůty ve zprávě i `action_due`;
       `partner_name` je dodavatel služby, ne přeposílající
 - [x] reanalýza zprávy `other` → doklad vynuluje tři pole (integrační test)
