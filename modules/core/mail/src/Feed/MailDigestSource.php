@@ -7,6 +7,7 @@ namespace Shipard\Module\Core\Mail\Feed;
 use Shipard\Core\Feed\FeedContext;
 use Shipard\Core\Feed\FeedSource;
 use Shipard\Core\Feed\FeedTexts;
+use Shipard\Module\Core\Mail\SenderRuleDispositions;
 
 /**
  * Feed zdroj šumu došlé pošty (Fáze 3, design §8):
@@ -19,6 +20,11 @@ use Shipard\Core\Feed\FeedTexts;
  *   - **Karty návrhů pravidel**: pravidla docState=10 (Koncept)
  *     s `origin='suggested'` z učícího handleru — potvrdit / zamítnout /
  *     upravit (formulář, např. změna na doménové pravidlo před potvrzením).
+ *     Titulek podle dispozice (tasks/mail-sender-rules-after-analysis.md
+ *     D3): `archiveIfOther` → „Archivovat poštu od …, když neobsahuje
+ *     doklad ani dokument?“, `archive` → „Vždy archivovat poštu od …?“.
+ *     Digest ukazuje zprávy archivované při příjmu i po analýze (shodný
+ *     audit `auto_disposed_*`); „Vrátit vše“ vrací obojí (D7).
  *
  * Akce se emitují bez `label` — frontend je lokalizuje podle `action.id`
  * (i18n klíče `dashboard.card.action.*`). Titulky/podtitulky skládá server
@@ -121,7 +127,7 @@ final class MailDigestSource implements FeedSource
     private function fetchSuggestedRules(FeedContext $ctx): array
     {
         return $ctx->db->fetchAll(
-            'SELECT `id`, `pattern_kind`, `pattern`, `notice`, `created`'
+            'SELECT `id`, `pattern_kind`, `pattern`, `disposition`, `notice`, `created`'
             . ' FROM `' . self::RULES_TABLE . '`'
             . ' WHERE `docState` = %i AND `origin` = %s'
             . ' ORDER BY `created` DESC, `id` DESC'
@@ -145,6 +151,11 @@ final class MailDigestSource implements FeedSource
         }
         $subtitleParts[] = $this->patternKindLabel($ctx, (string) $row['pattern_kind']);
 
+        // D3: titulek podle dispozice návrhu.
+        $title = (string) ($row['disposition'] ?? '') === SenderRuleDispositions::ARCHIVE_IF_OTHER
+            ? $texts->t('senderRule.titleIfOther', 'Archive mail from {pattern} when it contains no document?', ['pattern' => $pattern])
+            : $texts->t('senderRule.title', 'Always archive mail from {pattern}?', ['pattern' => $pattern]);
+
         return [
             'id'         => 'mail_rule_suggestion:' . $ruleId,
             'source'     => 'mail',
@@ -153,7 +164,7 @@ final class MailDigestSource implements FeedSource
             'stateStyle' => 'concept',
             'category'   => FeedSource::CATEGORY_OTHER,
             'navSection' => FeedSource::NAV_SECTION_TOP,
-            'title'      => $texts->t('senderRule.title', 'Always archive mail from {pattern}?', ['pattern' => $pattern]),
+            'title'      => $title,
             'subtitle'   => implode(' · ', $subtitleParts),
             'timestamp'  => $this->toAtom($row['created'] ?? null),
             'context'    => ['ruleId' => $ruleId],

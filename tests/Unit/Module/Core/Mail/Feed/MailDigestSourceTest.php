@@ -219,6 +219,44 @@ final class MailDigestSourceTest extends TestCase
         }
     }
 
+    public function testSuggestedRuleTitleFollowsDisposition(): void
+    {
+        // D3: `archiveIfOther` má vlastní titulek, `archive` (i chybějící
+        // dispozice ve starých řádcích) ten dosavadní.
+        $rules = [
+            ['id' => 7, 'pattern_kind' => 'email', 'pattern' => 'scan@example.com', 'disposition' => 'archiveIfOther', 'notice' => null, 'created' => '2026-07-15 08:00:00'],
+            ['id' => 8, 'pattern_kind' => 'email', 'pattern' => 'news@example.com', 'disposition' => 'archive', 'notice' => null, 'created' => '2026-07-15 07:00:00'],
+        ];
+
+        $cs = new MailDigestSource()->collectCards($this->context([['cnt' => 0, 'last_at' => null]], [], $rules));
+        $this->assertSame(
+            'Archivovat poštu od scan@example.com, když neobsahuje doklad ani dokument?',
+            $cs[0]['title'],
+        );
+        $this->assertSame('Vždy archivovat poštu od news@example.com?', $cs[1]['title']);
+        // Akce karty se dispozicí nemění.
+        $this->assertSame(array_column($cs[0]['actions'], 'kind'), array_column($cs[1]['actions'], 'kind'));
+
+        $en = new MailDigestSource()->collectCards($this->context([['cnt' => 0, 'last_at' => null]], [], $rules, lang: 'en'));
+        $fallback = new MailDigestSource()->collectCards($this->context([['cnt' => 0, 'last_at' => null]], [], $rules, lang: 'en', withCatalog: false));
+        $this->assertSame('Archive mail from scan@example.com when it contains no document?', $en[0]['title']);
+        $this->assertSame(array_column($en, 'title'), array_column($fallback, 'title'));
+    }
+
+    public function testSuggestedRulesQuerySelectsDisposition(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(
+            function (string $sql): array {
+                if (str_contains($sql, 'core_mail_sender_rules')) {
+                    $this->assertStringContainsString('`disposition`', $sql);
+                }
+                return [];
+            },
+        );
+        new MailDigestSource()->collectCards(new FeedContext($db, null, 'cs', 30));
+    }
+
     public function testSuggestedRulesQueryUsesSourceLimit(): void
     {
         // LIMIT dotazu = pojistka zdroje z kontextu, ne strop feedu (#101 D3a).

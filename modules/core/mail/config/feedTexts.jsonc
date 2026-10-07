@@ -90,10 +90,18 @@
         "text:cs": "{n, plural, one {# zpráva automaticky archivována} few {# zprávy automaticky archivovány} many {# zprávy automaticky archivováno} other {# zpráv automaticky archivováno}}",
         "text:en": "{n, plural, one {# message auto-archived} other {# messages auto-archived}}"
     },
-    // Titulek karty návrhu pravidla odesílatele; {pattern} = vzor pravidla.
+    // Titulek karty návrhu pravidla odesílatele s dispozicí `archive`;
+    // {pattern} = vzor pravidla.
     "senderRule.title": {
         "text": "Always archive mail from {pattern}?",
         "text:cs": "Vždy archivovat poštu od {pattern}?",
         "text:en": "Always archive mail from {pattern}?"
+    },
+    // Titulek karty návrhu pravidla s dispozicí `archiveIfOther`
+    // (tasks/mail-sender-rules-after-analysis.md D3).
+    "senderRule.titleIfOther": {
+        "text": "Archive mail from {pattern} when it contains no document?",
+        "text:cs": "Archivovat poštu od {pattern}, když neobsahuje doklad ani dokument?",
+        "text:en": "Archive mail from {pattern} when it contains no document?"
     }
 }

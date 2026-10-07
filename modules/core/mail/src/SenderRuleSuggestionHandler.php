@@ -21,6 +21,14 @@ use Shipard\Core\Document\AbstractDocumentEventHandler;
  * Duplicitní návrhy nevznikají — existuje-li živé pravidlo (10/40/80) pro
  * e-mail nebo jeho doménu, handler končí.
  *
+ * Pojistka pro smíšené odesílatele (tasks/mail-sender-rules-after-analysis.md
+ * D1, D2): když od adresy už přišel doklad nebo dokument — zpráva navázaná
+ * na cílovou entitu (`target_row`), nebo s `primary_type` ≠ `other` určeným
+ * AI, ISDOC importem či uživatelem, v libovolném stavu včetně Koše a Archivu
+ * — navrhne se dispozice `archiveIfOther` (archivovat až po analýze, jen
+ * zprávy bez dokladu). Výchozí typ schránky bez navázané entity nic
+ * nedokazuje a nepočítá se. Jinak `archive` jako dřív.
+ *
  * Nikdy neblokuje přechod zprávy: běží po commitu a dispatcher výjimky
  * z onStateChanged loguje a polyká.
  *
@@ -109,14 +117,41 @@ class SenderRuleSuggestionHandler extends AbstractDocumentEventHandler
         return $row !== null;
     }
 
+    /**
+     * D1: od adresy existuje zpráva navázaná na cílovou entitu, nebo
+     * s typem jiným než `other`, který určila AI, ISDOC nebo uživatel.
+     * Historie z importu se počítá přes navázanou entitu.
+     */
+    private function senderHasDocuments(string $email): bool
+    {
+        $row = $this->db->fetch(
+            'SELECT 1 FROM [core_mail_incoming_messages]
+             WHERE LOWER([sender_email]) = %s
+               AND ([target_row] IS NOT NULL
+                    OR ([primary_type] <> %s AND [primary_type_source] IN %in))
+             LIMIT 1',
+            $email,
+            PrimaryTypes::OTHER,
+            ['ai', 'isdoc', 'user'],
+        );
+
+        return $row !== null;
+    }
+
     private function insertSuggestion(string $email): void
     {
+        // D2: odesílateli s doklady se navrhne bezpečná dispozice.
+        $hasDocuments = $this->senderHasDocuments($email);
         $data = [
             'pattern_kind' => 'email',
             'pattern' => $email,
-            'disposition' => 'archive',
+            'disposition' => $hasDocuments
+                ? SenderRuleDispositions::ARCHIVE_IF_OTHER
+                : SenderRuleDispositions::ARCHIVE,
             'origin' => 'suggested',
-            'notice' => sprintf('Navrženo po %d ručních odklizeních', self::THRESHOLD),
+            'notice' => $hasDocuments
+                ? sprintf('Navrženo po %d ručních odklizeních; od adresy chodí i doklady', self::THRESHOLD)
+                : sprintf('Navrženo po %d ručních odklizeních', self::THRESHOLD),
             'docState' => self::RULE_STATE_DRAFT,
             'docStateMain' => 1,
         ];
