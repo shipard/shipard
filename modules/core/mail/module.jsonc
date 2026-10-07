@@ -228,6 +228,13 @@
             "table": "core_mail_incoming_messages",
             "class": "Shipard\\Module\\Core\\Mail\\SenderRuleSuggestionHandler",
             "events": ["stateChanged"]
+        },
+        // Potvrzení pravidla odesílatele odklidí čekající řádky Ostatní
+        // (tasks/mail-sender-rules-after-analysis.md D8).
+        {
+            "table": "core_mail_sender_rules",
+            "class": "Shipard\\Module\\Core\\Mail\\SenderRuleConfirmedHandler",
+            "events": ["stateChanged"]
         }
     ],
 

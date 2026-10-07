@@ -9,7 +9,7 @@ use Shipard\Module\Core\Mail\SenderRuleMatcher;
 
 /**
  * Matchování pravidel odesílatelů — parametry dotazu (jen potvrzená 40,
- * jen archive, e-mail > doména) a lowercase normalizace vstupu.
+ * bez filtru dispozice — D6, e-mail > doména) a lowercase normalizace vstupu.
  */
 class SenderRuleMatcherTest extends TestCase
 {
@@ -56,17 +56,38 @@ class SenderRuleMatcherTest extends TestCase
         $this->assertContains('example.com', $this->captured);
     }
 
-    public function testMatchFiltersConfirmedStateAndArchiveDisposition(): void
+    public function testMatchFiltersConfirmedStateOnlyAndReturnsDisposition(): void
     {
         $matcher = $this->matcher();
 
         $matcher->match('news@example.com');
 
+        // D6: dispozici vyhodnocuje volající — SQL filtruje jen stav 40,
+        // dispozice se vrací ve sloupcích.
         $sql = (string) $this->captured[0];
         $this->assertStringContainsString('docState = %i', $sql);
-        $this->assertStringContainsString('disposition = %s', $sql);
+        $this->assertStringNotContainsString('disposition = %s', $sql);
+        $this->assertStringContainsString('SELECT id, pattern_kind, pattern, disposition', $sql);
         $this->assertContains(40, $this->captured);
-        $this->assertContains('archive', $this->captured);
+        $this->assertNotContains('archive', $this->captured);
+    }
+
+    public function testMatchReturnsArchiveIfOtherRuleUnfiltered(): void
+    {
+        // E-mailové `archiveIfOther` vrácené dotazem (řazení e-mail > doména)
+        // projde beze změny — i když na doméně je `archive`, rozhoduje
+        // konkrétnější pravidlo a jeho dispozice (D6).
+        $matcher = $this->matcher(new \Dibi\Row([
+            'id' => 11,
+            'pattern_kind' => 'email',
+            'pattern' => 'scan@example.com',
+            'disposition' => 'archiveIfOther',
+        ]));
+
+        $rule = $matcher->match('scan@example.com');
+
+        $this->assertSame('archiveIfOther', $rule['disposition']);
+        $this->assertSame(11, $rule['id']);
     }
 
     public function testMatchOrdersEmailKindBeforeDomain(): void

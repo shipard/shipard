@@ -30,6 +30,7 @@ use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Ai\AIBackendDocument;
 use Shipard\Module\Core\Mail\AIAnalyzerProvisioner;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
+use Shipard\Module\Core\Mail\PostAnalysisDisposer;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
 use Shipard\Module\Core\Mail\MessageTitleComposer;
 use Shipard\Module\Core\Mail\PrimaryTypes;
@@ -95,6 +96,9 @@ class AnalysisController
 
     /** Lazy zápis partnera zprávy z canonicalu (viz partnerWriter()). */
     private ?MessagePartnerWriter $partnerWriter = null;
+
+    /** Lazy archivace ostatní pošty podle pravidla odesílatele (viz postAnalysisDisposer()). */
+    private ?PostAnalysisDisposer $postAnalysisDisposer = null;
 
     /**
      * Lazy fallback titulku zprávy z canonicalu per AI profil běhu
@@ -782,6 +786,11 @@ class AnalysisController
      * (`partner_name` / `partner_person`, vrstva 1 — {@see MessagePartnerWriter})
      * a titulek zprávy `ai_title` (`message_classification.title`, fallback
      * {@see MessageTitleComposer}).
+     *
+     * Běh bez dokumentu u zprávy `other` od odesílatele s potvrzeným
+     * pravidlem ji může rovnou archivovat ({@see PostAnalysisDisposer},
+     * tasks/mail-sender-rules-after-analysis.md D4–D6) — jen první úspěšná
+     * analýza, jistota klasifikace ≥ `review` práh profilu, ne ruční nahrání.
      */
     public function result(AuthContext $auth, Request $request, int $messageNdx): Response
     {
@@ -953,6 +962,26 @@ class AnalysisController
                 );
             } catch (\Throwable $e) {
                 ErrorLogger::warn('AnalysisController::result title write failed', [
+                    'messageNdx' => $messageNdx,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            // 9) Pravidlo odesílatele po analýze
+            //    (tasks/mail-sender-rules-after-analysis.md D4–D6): zpráva
+            //    `other` bez dokumentu od odesílatele s potvrzeným pravidlem
+            //    → Archiv s auditem `auto_disposed_*`. Čte stav po zápisu
+            //    klasifikace (ruční volba uživatele má přednost), nad stejným
+            //    spojením. Best-effort jako partner a titulek.
+            try {
+                $this->postAnalysisDisposer()->afterResult(
+                    $messageNdx,
+                    $document !== null,
+                    $this->classificationConfidence($body),
+                    $profileNdx,
+                );
+            } catch (\Throwable $e) {
+                ErrorLogger::warn('AnalysisController::result post-analysis disposal failed', [
                     'messageNdx' => $messageNdx,
                     'error' => $e->getMessage(),
                 ]);
@@ -1632,6 +1661,40 @@ class AnalysisController
             $def->docStates,
             $def,
         );
+    }
+
+    /**
+     * Jistota AI klasifikace typu zprávy (`message_classification.confidence`)
+     * pro archivaci podle pravidla odesílatele (D5) — stejný fallback do
+     * `analysis_json` jako {@see applyMessageClassification()}. Nečíselná
+     * nebo chybějící hodnota → null (zpráva se neodklízí).
+     *
+     * @param array<string, mixed> $body
+     */
+    private function classificationConfidence(array $body): ?float
+    {
+        $classification = $body['message_classification'] ?? null;
+        if (!is_array($classification)) {
+            $analysisJson = $body['analysis_json'] ?? null;
+            $classification = is_array($analysisJson)
+                ? ($analysisJson['message_classification'] ?? null)
+                : null;
+        }
+        if (!is_array($classification)) {
+            return null;
+        }
+
+        $confidence = $classification['confidence'] ?? null;
+        return is_numeric($confidence) ? (float) $confidence : null;
+    }
+
+    /**
+     * Archivace ostatní pošty podle pravidla odesílatele — nad DS connection
+     * resultu (sdílí transakci), lazy.
+     */
+    private function postAnalysisDisposer(): PostAnalysisDisposer
+    {
+        return $this->postAnalysisDisposer ??= new PostAnalysisDisposer($this->db, $this->configRuntime);
     }
 
     /**

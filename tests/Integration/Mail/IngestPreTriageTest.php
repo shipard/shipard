@@ -132,6 +132,41 @@ class IngestPreTriageTest extends IntegrationTestCase
         $this->assertSame(80, (int) $row['docState']);
     }
 
+    // --- archiveIfOther (tasks/mail-sender-rules-after-analysis.md D6) --
+
+    public function testArchiveIfOtherRuleLetsMessageThroughAtIngest(): void
+    {
+        $ruleId = $this->insertRule('email', self::TEST_SENDER, 40, 'archiveIfOther');
+
+        $ndx = $this->ingest(self::TEST_SENDER, 'archiveIfOther rule');
+
+        // Při příjmu archivuje jen „Archivovat hned“ — zpráva vzniká v Nové
+        // a jde do fronty analýzy (10 s aktivním AI profilem, jinak 0);
+        // pravidlo zasáhne až po analýze.
+        $this->assertMessageWentThroughNormally($ndx);
+        $row = $this->db->fetchRow('SELECT analysis_state FROM core_mail_incoming_messages WHERE id = %i', $ndx);
+        $expected = $this->db->fetchRow('SELECT id FROM core_mail_ai_profiles WHERE is_active = 1 LIMIT 1') !== null ? 10 : 0;
+        $this->assertSame($expected, (int) $row['analysis_state']);
+
+        $rule = $this->db->fetchRow('SELECT hit_count, last_hit_at FROM core_mail_sender_rules WHERE id = %i', $ruleId);
+        $this->assertSame(0, (int) $rule['hit_count']);
+        $this->assertNull($rule['last_hit_at']);
+    }
+
+    public function testEmailArchiveIfOtherWinsOverDomainArchive(): void
+    {
+        // D6: konkrétnější pravidlo určuje fázi — doménové „Archivovat hned“
+        // zprávu od adresy s vlastním `archiveIfOther` při příjmu nespolkne.
+        $domainRuleId = $this->insertRule('domain', 'example.com', 40, 'archive');
+        $this->insertRule('email', self::TEST_SENDER, 40, 'archiveIfOther');
+
+        $ndx = $this->ingest(self::TEST_SENDER, 'email beats domain');
+
+        $this->assertMessageWentThroughNormally($ndx);
+        $rule = $this->db->fetchRow('SELECT hit_count FROM core_mail_sender_rules WHERE id = %i', $domainRuleId);
+        $this->assertSame(0, (int) $rule['hit_count']);
+    }
+
     // --- is_bulk ---------------------------------------------------------
 
     public function testBulkHeaderSetsFlagButDoesNotArchive(): void
@@ -156,13 +191,13 @@ class IngestPreTriageTest extends IntegrationTestCase
 
     // --- helpers ---------------------------------------------------------
 
-    private function insertRule(string $kind, string $pattern, int $docState): int
+    private function insertRule(string $kind, string $pattern, int $docState, string $disposition = 'archive'): int
     {
         $now = date('Y-m-d H:i:s');
         $this->db->getDibiConnection()->insert('core_mail_sender_rules', [
             'pattern_kind' => $kind,
             'pattern' => strtolower($pattern),
-            'disposition' => 'archive',
+            'disposition' => $disposition,
             'origin' => 'user',
             'hit_count' => 0,
             'created' => $now,

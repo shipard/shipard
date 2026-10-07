@@ -31,6 +31,7 @@ use Shipard\Module\Core\Mail\MailRouterProvisioner;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
 use Shipard\Module\Core\Mail\MessageTargetWriter;
 use Shipard\Module\Core\Mail\MessageTitleComposer;
+use Shipard\Module\Core\Mail\SenderRuleDispositions;
 use Shipard\Module\Core\Mail\SenderRuleMatcher;
 
 /**
@@ -188,25 +189,32 @@ class MailController
         $contentAttachments = [];
         $dibi = $this->db->getDibiConnection();
 
-        // Pre-triage (Fáze 3, D7): potvrzené pravidlo odesílatele → zpráva
-        // vzniká rovnou v Archivu, bez analýzy, s auditem na zprávě.
+        // Pre-triage (Fáze 3, D7): potvrzené pravidlo odesílatele s dispozicí
+        // „Archivovat hned“ → zpráva vzniká rovnou v Archivu, bez analýzy,
+        // s auditem na zprávě. Matcher vrací nejkonkrétnější pravidlo bez
+        // ohledu na dispozici (tasks/mail-sender-rules-after-analysis.md D6):
+        // `archiveIfOther` nechá zprávu projít normální cestou (předzpracování,
+        // ISDOC, AI) a zasáhne až po analýze (PostAnalysisDisposer).
         $matchedRule = new SenderRuleMatcher($dibi)->match($fields['sender_email']);
+        $preTriageRule = ($matchedRule['disposition'] ?? null) === SenderRuleDispositions::ARCHIVE
+            ? $matchedRule
+            : null;
 
         // Technické předzpracování (tasks/mail-preprocess.md): jen zprávy,
         // které nejdou do Archivu. Plán je snapshot pravidel v čase intake
         // (D12) — runner vykonává jej, ne aktuální pravidla.
-        $preprocessPlan = $matchedRule === null ? $this->matchPreprocessPlan($fields) : null;
+        $preprocessPlan = $preTriageRule === null ? $this->matchPreprocessPlan($fields) : null;
 
         $dibi->begin();
 
         try {
-            $messageId = $this->insertIncomingMessage($fields, $mailboxId, $auth->userId, $matchedRule, $preprocessPlan);
+            $messageId = $this->insertIncomingMessage($fields, $mailboxId, $auth->userId, $preTriageRule, $preprocessPlan);
 
-            if ($matchedRule !== null) {
+            if ($preTriageRule !== null) {
                 $dibi->query(
                     'UPDATE core_mail_sender_rules SET hit_count = hit_count + 1, last_hit_at = %s WHERE id = %i',
                     date('Y-m-d H:i:s'),
-                    (int) $matchedRule['id'],
+                    (int) $preTriageRule['id'],
                 );
             }
 
@@ -278,7 +286,7 @@ class MailController
             // import udělá sám nad původními i vygenerovanými přílohami;
             // bez plánu se inline jen detekuje a platný ISDOC se do runneru
             // odloží (#81 D4), import s obsahovou eskalací běží tam.
-            if ($matchedRule === null) {
+            if ($preTriageRule === null) {
                 if ($preprocessPlan === null) {
                     $this->deferIsdocImport($messageId, $contentAttachments);
                 } else {
@@ -921,8 +929,10 @@ class MailController
      * attachmentů do jedné tx.
      *
      * @param array<string, mixed>|null $matchedRule Potvrzené pravidlo
-     *        odesílatele (pre-triage) — zpráva pak vzniká rovnou v Archivu
-     *        (80), bez analýzy, s auditem `auto_disposed_*`.
+     *        odesílatele s dispozicí `archive` (pre-triage) — zpráva pak
+     *        vzniká rovnou v Archivu (80), bez analýzy, s auditem
+     *        `auto_disposed_*`. Pravidlo `archiveIfOther` sem nepatří
+     *        (zasahuje až po analýze).
      * @param list<array<string, mixed>>|null $preprocessPlan Plán
      *        předzpracování — zpráva vzniká s `preprocess_state=10` a plánem
      *        v `preprocess_log` (snapshot, D12). `analysis_state` se počítá

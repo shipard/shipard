@@ -18,6 +18,9 @@ final class PrimaryTypes
     public const TARGET_DOCS = 'docs';
     public const TARGET_REGISTRY = 'registry';
 
+    /** Zpráva bez dokladu i dokumentu Spisovny („ostatní pošta“). */
+    public const OTHER = 'other';
+
     /**
      * Target typu: `primaryTypes[type]['target'] ?? 'docs'`.
      * Chybějící compiled config, neznámý typ i typ bez `target` degradují

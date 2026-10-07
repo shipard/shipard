@@ -42,6 +42,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     private int $messageRowId = 0;
     private int $claimRowId = 0;
 
+    /** @var list<int> */
+    private array $createdRuleIds = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -85,18 +88,25 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         if ($this->createdAnalyzerUser && $this->analyzerUserId > 0) {
             $dibi->query('DELETE FROM core_system_users WHERE id = %i', $this->analyzerUserId);
         }
+        foreach ($this->createdRuleIds as $id) {
+            $dibi->query('DELETE FROM core_mail_sender_rules WHERE id = %i', $id);
+        }
     }
 
     // -------------------------------------------------------------------------
     // Fixtures
     // -------------------------------------------------------------------------
 
-    /** Zpráva v Nové (10), analysis_state 20 (Analyzuje se — drží claim). */
-    private function provisionMessage(): int
+    /**
+     * Zpráva v Nové (10), analysis_state 20 (Analyzuje se — drží claim).
+     *
+     * @param array<string, mixed> $overrides sloupce navíc / přepsané
+     */
+    private function provisionMessage(array $overrides = []): int
     {
         $now = date('Y-m-d H:i:s');
         $dibi = $this->db->getDibiConnection();
-        $dibi->insert('core_mail_incoming_messages', [
+        $dibi->insert('core_mail_incoming_messages', $overrides + [
             'message_id'          => self::PREFIX . '-MSG-' . uniqid(),
             'mailbox'             => $this->mailboxId,
             'primary_type'        => 'other',
@@ -115,6 +125,67 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         ])->execute();
         $this->messageRowId = (int) $dibi->getInsertId();
         return $this->messageRowId;
+    }
+
+    /** Potvrzené pravidlo (40) pro odesílatele fixturové zprávy. */
+    private function insertConfirmedRule(string $disposition, string $kind = 'email', string $pattern = 'vendor@example.cz'): int
+    {
+        $now = date('Y-m-d H:i:s');
+        $dibi = $this->db->getDibiConnection();
+        $dibi->insert('core_mail_sender_rules', [
+            'pattern_kind' => $kind,
+            'pattern' => $pattern,
+            'disposition' => $disposition,
+            'origin' => 'user',
+            'hit_count' => 0,
+            'notice' => self::PREFIX . ' rule',
+            'created' => $now,
+            'modified' => $now,
+            'docState' => 40,
+            'docStateMain' => 3,
+        ])->execute();
+        $id = (int) $dibi->getInsertId();
+        $this->createdRuleIds[] = $id;
+        return $id;
+    }
+
+    /** Dřívější úspěšný běh analýzy zprávy (status 2) — zpráva už není „na první analýze“. */
+    private function insertPriorSuccessfulAnalysis(int $messageNdx): void
+    {
+        $past = date('Y-m-d H:i:s', time() - 3600);
+        $this->db->getDibiConnection()->insert('core_mail_message_analyses', [
+            'message' => $messageNdx,
+            'analyzed_at' => $past,
+            'status' => 2,
+            'model_name' => 'fixture-model',
+            'prompt_version' => 'v4.0.0',
+            'analysis_json' => '{"message_classification":{"primary_type":"other","confidence":0.9}}',
+            'created' => $past,
+        ])->execute();
+    }
+
+    /** Tělo běhu bez dokumentu s klasifikací `other` a danou jistotou. */
+    private function otherBody(?float $confidence): array
+    {
+        $body = $this->baseBody();
+        $body['message_classification'] = ['primary_type' => 'other'];
+        if ($confidence !== null) {
+            $body['message_classification']['confidence'] = $confidence;
+        }
+        $body['overall_confidence'] = 0.7;
+        return $body;
+    }
+
+    /** Zpráva zůstala v Nové bez auditu a pravidlo bez zásahu. */
+    private function assertNotDisposed(int $ruleId): void
+    {
+        $message = $this->messageRow();
+        $this->assertSame(10, (int) $message['docState']);
+        $this->assertSame(30, (int) $message['analysis_state']);
+        $this->assertNull($message['auto_disposed_by']);
+        $this->assertNull($message['auto_disposed_at']);
+        $rule = $this->db->fetchRow('SELECT hit_count FROM core_mail_sender_rules WHERE id = %i', $ruleId);
+        $this->assertSame(0, (int) $rule['hit_count']);
     }
 
     /** Aktivní claim pro zprávu — vrací claim token pro X-Claim-Token. */
@@ -314,6 +385,126 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         $this->assertSame(10, (int) $message['docState']);
         $this->assertSame(30, (int) $message['analysis_state']);
         $this->assertSame(1, (int) $this->claimRow()['released']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Pravidlo odesílatele po analýze (tasks/mail-sender-rules-after-analysis.md D4–D6)
+    // -------------------------------------------------------------------------
+
+    public function testResultOtherFromSenderWithArchiveIfOtherRuleArchivesMessage(): void
+    {
+        $ruleId = $this->insertConfirmedRule('archiveIfOther');
+        $messageNdx = $this->provisionMessage();
+        $token = $this->createClaim($messageNdx);
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.8)), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+
+        // Archiv s auditem; analysis_state zůstává 30 (D7 — návrat bez nové analýzy).
+        $message = $this->messageRow();
+        $this->assertSame(80, (int) $message['docState']);
+        $this->assertSame(4, (int) $message['docStateMain']);
+        $this->assertSame(30, (int) $message['analysis_state']);
+        $this->assertSame('other', (string) $message['primary_type']);
+        $this->assertSame($ruleId, (int) $message['auto_disposed_by']);
+        $this->assertNotNull($message['auto_disposed_at']);
+        $this->assertSame(1, (int) $this->claimRow()['released']);
+
+        $rule = $this->db->fetchRow('SELECT hit_count, last_hit_at FROM core_mail_sender_rules WHERE id = %i', $ruleId);
+        $this->assertSame(1, (int) $rule['hit_count']);
+        $this->assertNotNull($rule['last_hit_at']);
+    }
+
+    public function testResultOtherWithArchiveRuleArchivesAfterAnalysisToo(): void
+    {
+        // D6: `archive` znamená „všechno“ — i zprávu, která pre-triage minula
+        // (pravidlo potvrzené až po příjmu).
+        $ruleId = $this->insertConfirmedRule('archive');
+        $messageNdx = $this->provisionMessage();
+        $token = $this->createClaim($messageNdx);
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.95)), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp));
+
+        $message = $this->messageRow();
+        $this->assertSame(80, (int) $message['docState']);
+        $this->assertSame($ruleId, (int) $message['auto_disposed_by']);
+    }
+
+    public function testResultWithDocumentFromRuledSenderIsNotArchived(): void
+    {
+        $ruleId = $this->insertConfirmedRule('archiveIfOther');
+        $messageNdx = $this->provisionMessage();
+        $token = $this->createClaim($messageNdx);
+
+        $body = $this->baseBody();
+        $body['document'] = [
+            'doc_type' => 'invoiceReceived',
+            'confidence' => 0.9,
+            'extracted_json' => $this->validCanonical(),
+        ];
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+
+        // Faktura od téhož odesílatele jde dál normálně (Nová → K řešení).
+        $message = $this->messageRow();
+        $this->assertSame(20, (int) $message['docState']);
+        $this->assertNull($message['auto_disposed_by']);
+        $rule = $this->db->fetchRow('SELECT hit_count FROM core_mail_sender_rules WHERE id = %i', $ruleId);
+        $this->assertSame(0, (int) $rule['hit_count']);
+    }
+
+    public function testResultOtherBelowReviewThresholdStaysNew(): void
+    {
+        // D5: práh `review` profilu běhu (bez profilu výchozích 0,6).
+        $ruleId = $this->insertConfirmedRule('archiveIfOther');
+        $messageNdx = $this->provisionMessage();
+        $token = $this->createClaim($messageNdx);
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.5)), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp));
+
+        $this->assertNotDisposed($ruleId);
+    }
+
+    public function testResultOtherWithoutClassificationConfidenceStaysNew(): void
+    {
+        $ruleId = $this->insertConfirmedRule('archiveIfOther');
+        $messageNdx = $this->provisionMessage();
+        $token = $this->createClaim($messageNdx);
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(null)), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp));
+
+        $this->assertNotDisposed($ruleId);
+    }
+
+    public function testResultOtherOnRepeatedAnalysisIsNotArchived(): void
+    {
+        // Zpráva vrácená z Archivu / ručně reanalyzovaná: druhá úspěšná
+        // analýza pravidlo neuplatní.
+        $ruleId = $this->insertConfirmedRule('archiveIfOther');
+        $messageNdx = $this->provisionMessage();
+        $this->insertPriorSuccessfulAnalysis($messageNdx);
+        $token = $this->createClaim($messageNdx);
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.95)), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp));
+
+        $this->assertNotDisposed($ruleId);
+    }
+
+    public function testResultOtherFromManualUploadIsNotArchived(): void
+    {
+        $ruleId = $this->insertConfirmedRule('archiveIfOther');
+        $messageNdx = $this->provisionMessage(['source_type' => 1]);
+        $token = $this->createClaim($messageNdx);
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.95)), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp));
+
+        $this->assertNotDisposed($ruleId);
     }
 
     public function testResultRequiresMessageClassification(): void

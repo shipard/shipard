@@ -24,9 +24,16 @@ use Shipard\Core\Document\TableGateway;
  *
  * Undo vrací všechny zprávy auto-archivované v daném dni (default dnešek,
  * povolen jen dnešek/včerejšek — starší přes viewer): docState 80 → 10,
- * `analysis_state` znovu do fronty (10; bez aktivního AI profilu 0 — zrcadlí
- * IncomingMessageDocument::resolveInitialAnalysisState), `auto_disposed_*`
- * NULL. Přechody jdou přes Document flow per záznam (TableGateway).
+ * `auto_disposed_*` NULL. `analysis_state` podle toho, kdy pravidlo zasáhlo
+ * (tasks/mail-sender-rules-after-analysis.md D7): zpráva archivovaná při
+ * příjmu (0, bez analýzy) jde znovu do fronty (10; bez aktivního AI profilu
+ * 0 — zrcadlí IncomingMessageDocument::resolveInitialAnalysisState), zpráva
+ * archivovaná po analýze (30) zůstává analyzovaná — vrátí se jako řádek
+ * Ostatní a AI se znovu neplatí. Přechody jdou přes Document flow per
+ * záznam (TableGateway).
+ *
+ * Potvrzení pravidla (10 → 40) spouští po commitu SenderRuleConfirmedHandler,
+ * který odklidí čekající řádky Ostatní od adresy (D8).
  *
  * Odpovědi: 404 NOT_FOUND, 409 INVALID_STATE, 422 VALIDATION_ERROR.
  */
@@ -46,6 +53,7 @@ class SenderRulesController
     /** analysis_state (core.mail.analysisStates). */
     private const ANALYSIS_NONE = 0;
     private const ANALYSIS_QUEUED = 10;
+    private const ANALYSIS_ANALYZED = 30;
 
     /**
      * @param array<string, TableDefinition> $tables
@@ -112,7 +120,10 @@ class SenderRulesController
                 continue;
             }
             $doc['docState'] = self::MSG_STATE_NEW;
-            $doc['analysis_state'] = $analysisState;
+            // D7: zpráva archivovaná po analýze se vrací bez nové analýzy.
+            $doc['analysis_state'] = (int) ($doc['analysis_state'] ?? 0) === self::ANALYSIS_ANALYZED
+                ? self::ANALYSIS_ANALYZED
+                : $analysisState;
             $doc['auto_disposed_by'] = null;
             $doc['auto_disposed_at'] = null;
 

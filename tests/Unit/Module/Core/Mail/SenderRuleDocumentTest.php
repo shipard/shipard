@@ -179,7 +179,8 @@ class SenderRuleDocumentTest extends TestCase
         $doc->beforeSave($data);
 
         $this->assertSame('email', $data['pattern_kind']);
-        $this->assertSame('archive', $data['disposition']);
+        // D9: ručně zakládané pravidlo archivuje až po analýze.
+        $this->assertSame('archiveIfOther', $data['disposition']);
         $this->assertSame('user', $data['origin']);
         $this->assertSame(0, $data['hit_count']);
         $this->assertArrayHasKey('created', $data);
@@ -215,5 +216,47 @@ class SenderRuleDocumentTest extends TestCase
 
         $this->assertSame($existingCreated, $data['created']);
         $this->assertNotSame($existingCreated, $data['modified']);
+    }
+
+    // --- přechod docState (stateChanged → SenderRuleConfirmedHandler, D8) ---
+
+    public function testBeforeSaveTracksConfirmationTransition(): void
+    {
+        $doc = $this->doc();
+        $data = ['id' => 7, 'pattern' => 'news@example.com', 'docState' => 40];
+
+        $doc->beforeSave($data, ['id' => 7, 'pattern' => 'news@example.com', 'docState' => 10]);
+
+        $this->assertSame(['old' => 10, 'new' => 40], $doc->getStateTransition());
+    }
+
+    public function testBeforeSaveWithoutStateChangeHasNoTransition(): void
+    {
+        $doc = $this->doc();
+        $data = ['id' => 7, 'pattern' => 'news@example.com', 'notice' => 'x'];
+
+        $doc->beforeSave($data, ['id' => 7, 'pattern' => 'news@example.com', 'docState' => 40]);
+
+        $this->assertNull($doc->getStateTransition());
+    }
+
+    public function testNewRecordOutsideDraftIsTransitionFromZero(): void
+    {
+        $doc = $this->doc();
+        $data = ['pattern' => 'news@example.com', 'docState' => 40];
+
+        $doc->beforeSave($data);
+
+        $this->assertSame(['old' => 0, 'new' => 40], $doc->getStateTransition());
+    }
+
+    public function testNewDraftRecordHasNoTransition(): void
+    {
+        $doc = $this->doc();
+        $data = ['pattern' => 'news@example.com'];
+
+        $doc->beforeSave($data);
+
+        $this->assertNull($doc->getStateTransition());
     }
 }

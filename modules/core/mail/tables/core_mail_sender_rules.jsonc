@@ -75,7 +75,7 @@
             "length": 20,
             "nullable": false,
             "cfgItem": "core.mail.senderRuleDispositions",
-            "default": "archive",
+            "default": "archiveIfOther",
             "group": "rule"
         },
         {

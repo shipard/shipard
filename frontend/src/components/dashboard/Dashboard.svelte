@@ -325,7 +325,9 @@
     }
   }
 
-  // „Vrátit vše" z digest karty — obnoví dnešní auto-archiv vč. re-queue analýzy.
+  // „Vrátit vše" z digest karty — obnoví dnešní auto-archiv; zprávy archivované
+  // při příjmu jdou znovu do fronty analýzy, zprávy archivované po analýze se
+  // vrátí jako řádky Ostatní bez nové analýzy (server, D7).
   async function undoAutoArchiveFlow(date, cardId) {
     if (busyCardId !== null) return;
     busyCardId = cardId;
