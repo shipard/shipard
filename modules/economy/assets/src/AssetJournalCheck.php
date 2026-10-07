@@ -63,7 +63,9 @@ class AssetJournalCheck
     ];
 
     /** Součty deníku účtu bez jediného zápisu. */
-    private const NO_JOURNAL = ['opening' => 0.0, 'turnover' => 0.0, 'withAsset' => 0.0, 'withoutAsset' => 0.0, 'withoutAssetRows' => 0, 'rows' => 0];
+    private const NO_JOURNAL = [
+        'opening' => 0.0, 'turnover' => 0.0, 'withAsset' => 0.0, 'withoutAsset' => 0.0, 'withoutAssetRows' => 0, 'rows' => 0, 'openingRows' => 0,
+    ];
 
     /** Operace vlastního zaúčtování majetku v deníku. */
     public const SYSTEM_OPERATIONS = 'asset.%';
@@ -221,10 +223,16 @@ class AssetJournalCheck
      *
      * Účet bez stavu v evidenci a bez jediného zápisu v deníku roku se vynechá.
      *
+     * **Rok bez počátečních stavů (D85):** nemá-li otevírací období roku
+     * v deníku žádný zápis na účtech skupin, ačkoli evidence má k začátku
+     * roku stav na účtu majetku nebo oprávek (rok ještě neotevřený), účty
+     * se stavem se neporovnají — `journal` null, `difference` 0,
+     * `noOpeningBalances` true; účty obratem beze změny.
+     *
      * @param list<int> $openingMonthIds účetní měsíce před běžnými (otevírací období)
      * @param list<int> $regularMonthIds běžné účetní měsíce roku
-     * @return list<array{account: string, name: string, role: string, balance: bool, evidence: float, journal: float,
-     *     difference: float, withAsset: float, withoutAsset: float, withoutAssetRows: int}>
+     * @return list<array{account: string, name: string, role: string, balance: bool, evidence: float, journal: ?float,
+     *     difference: float, withAsset: float, withoutAsset: float, withoutAssetRows: int, noOpeningBalances: bool}>
      */
     public function accounts(string $yearBegin, string $yearEnd, int $fiscalYearId, array $openingMonthIds, array $regularMonthIds): array
     {
@@ -245,14 +253,18 @@ class AssetJournalCheck
         }
 
         $evidence = array_fill_keys(array_keys($roles), 0.0);
+        // Stav evidence k začátku roku na účtech majetku a oprávek (D85).
+        $start = $evidence;
         foreach ($cards as $id => $card) {
             $ledger = $ledgers[$id];
+            $openedBefore = $ledger['openingDate'] !== null && $ledger['openingDate'] < $yearBegin;
             foreach (self::ROLES as $role) {
                 $number = $card['accounts'][$role] ?? '';
                 if ($number === '' || !isset($roles[$number])) {
                     continue;
                 }
                 $balance = in_array($roles[$number], self::BALANCE_ROLES, true);
+                $tracked = $role === AssetPostingInput::ACCOUNT_ASSET || $role === AssetPostingInput::ACCOUNT_ACCUMULATED;
                 foreach ($ledger['entries'] as $entry) {
                     // Importované zařazení je na účtu pořízení už v pořízení
                     // s kartou (řádek deníku mimo `asset.*`, D76).
@@ -261,21 +273,28 @@ class AssetJournalCheck
                     }
                     if ($entry['role'] === $role && ($balance || $entry['date'] >= $yearBegin)) {
                         $evidence[$number] += $entry['dr'] - $entry['cr'];
+                        if ($tracked && $entry['date'] < $yearBegin) {
+                            $start[$number] += $entry['dr'] - $entry['cr'];
+                        }
                     }
                 }
                 if ($role === AssetPostingInput::ACCOUNT_ASSET) {
                     $evidence[$number] += $ledger['openingEntry'];
+                    $start[$number] += $openedBefore ? $ledger['openingEntry'] : 0.0;
                 } elseif ($role === AssetPostingInput::ACCOUNT_ACCUMULATED) {
                     $evidence[$number] -= $ledger['openingAccumulated'];
+                    $start[$number] -= $openedBefore ? $ledger['openingAccumulated'] : 0.0;
                 } elseif ($role === AssetPostingInput::ACCOUNT_ACQUISITION) {
                     $evidence[$number] += $acquisitions[$id]['amount'] ?? 0.0;
                 }
             }
         }
+        $hasStart = array_any($start, static fn(float $value): bool => self::differs($value, 0.0));
 
         $opening = array_flip($openingMonthIds);
         $regular = array_flip($regularMonthIds);
         $journal = [];
+        $openingRows = 0;
         foreach ($this->loadAccountJournal($fiscalYearId, array_map(strval(...), array_keys($roles))) as $row) {
             $number = (string) $row['account_number'];
             $month = (int) $row['fiscal_month'];
@@ -284,6 +303,8 @@ class AssetJournalCheck
             if (isset($opening[$month])) {
                 $journal[$number]['opening'] += $amount;
                 $journal[$number]['rows'] += (int) $row['row_count'];
+                $journal[$number]['openingRows'] += (int) $row['row_count'];
+                $openingRows += (int) $row['row_count'];
             } elseif (isset($regular[$month])) {
                 $journal[$number]['turnover'] += $amount;
                 $journal[$number]['rows'] += (int) $row['row_count'];
@@ -296,6 +317,9 @@ class AssetJournalCheck
             }
         }
 
+        // Rok ještě neotevřený: evidence stav má, deník počáteční stavy ne (D85).
+        $noOpening = $hasStart && $openingRows === 0;
+
         $names = $this->loadAccountNames(array_map(strval(...), array_keys($roles)));
         $out = [];
         foreach ($roles as $number => $role) {
@@ -307,17 +331,19 @@ class AssetJournalCheck
             if (!self::differs($evidenceValue, 0.0) && $sums['rows'] === 0) {
                 continue;
             }
+            $skipped = $noOpening && $balance;
             $out[] = [
-                'account'          => $number,
-                'name'             => $names[$number] ?? $number,
-                'role'             => $role,
-                'balance'          => $balance,
-                'evidence'         => $evidenceValue,
-                'journal'          => $journalValue,
-                'difference'       => round($evidenceValue - $journalValue, 2),
-                'withAsset'        => round($sums['withAsset'], 2),
-                'withoutAsset'     => round($sums['withoutAsset'], 2),
-                'withoutAssetRows' => $sums['withoutAssetRows'],
+                'account'           => $number,
+                'name'              => $names[$number] ?? $number,
+                'role'              => $role,
+                'balance'           => $balance,
+                'evidence'          => $evidenceValue,
+                'journal'           => $skipped ? null : $journalValue,
+                'difference'        => $skipped ? 0.0 : round($evidenceValue - $journalValue, 2),
+                'withAsset'         => round($sums['withAsset'], 2),
+                'withoutAsset'      => round($sums['withoutAsset'], 2),
+                'withoutAssetRows'  => $sums['withoutAssetRows'],
+                'noOpeningBalances' => $skipped,
             ];
         }
         usort($out, static fn(array $a, array $b): int => strcmp($a['account'], $b['account']));
@@ -336,8 +362,8 @@ class AssetJournalCheck
      * @param array<int, array<string, mixed>> $cards
      * @param list<array<string, mixed>> $events potvrzené události s příznaky `posted` a `imported`
      * @return array<int, array{entries: list<array{role: string, dr: float, cr: float, date: string, imported: bool}>,
-     *     openingEntry: float, openingAccumulated: float, activated: float, started: bool, importedStart: bool,
-     *     lastValueDate: ?string}>
+     *     openingEntry: float, openingAccumulated: float, openingDate: ?string, activated: float, started: bool,
+     *     importedStart: bool, lastValueDate: ?string}>
      */
     private function ledgers(array $cards, array $events, ?string $asOf): array
     {
@@ -356,7 +382,7 @@ class AssetJournalCheck
             ]);
 
             $ledger = [
-                'entries' => [], 'openingEntry' => 0.0, 'openingAccumulated' => 0.0,
+                'entries' => [], 'openingEntry' => 0.0, 'openingAccumulated' => 0.0, 'openingDate' => null,
                 'activated' => 0.0, 'started' => false, 'importedStart' => false, 'lastValueDate' => null,
             ];
             $entry = 0.0;
@@ -384,6 +410,7 @@ class AssetJournalCheck
                         $accumulated = (float) ($event['accumulated'] ?? 0);
                         $ledger['openingEntry'] = $entry;
                         $ledger['openingAccumulated'] = $accumulated;
+                        $ledger['openingDate'] = $date;
                         $ledger['started'] = true;
                         break;
                     case AssetEvent::KIND_ACTIVATION:

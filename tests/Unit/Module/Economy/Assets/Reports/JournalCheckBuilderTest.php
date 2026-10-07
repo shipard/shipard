@@ -17,6 +17,9 @@ use Shipard\Tests\Unit\Module\Economy\Assets\TestAssetJournalCheck;
  */
 class JournalCheckBuilderTest extends AssetReportTestCase
 {
+    /** Id otevíracího měsíce roku 2025 (běžné měsíce mají 149–160). */
+    private const OPENING_2025 = 148;
+
     private TestAssetJournalCheck $check;
 
     protected function setUp(): void
@@ -33,8 +36,14 @@ class JournalCheckBuilderTest extends AssetReportTestCase
 
     private function run2024(string $language = 'cs'): ReportResult
     {
+        return $this->report(2024, [], $language);
+    }
+
+    /** @param list<int> $openingMonthIds */
+    private function report(int $year, array $openingMonthIds = [], string $language = 'cs'): ReportResult
+    {
         return (new JournalCheckBuilder($this->support, $this->check))->build(
-            $this->request('economy.assets.journalCheck', 2024, [], 1, 12, $language),
+            $this->request('economy.assets.journalCheck', $year, [], 1, 12, $language, $openingMonthIds),
         );
     }
 
@@ -206,6 +215,41 @@ class JournalCheckBuilderTest extends AssetReportTestCase
         // Rozdíl na účtu majetku je dál chyba.
         $this->check->journal(null, '022100', 30000, 0, '2024-09-01');
         $this->assertSame(ReportStatus::Errors, $this->run2024()->status);
+    }
+
+    public function testYearWithoutOpeningBalancesIsOnlyAWarning(): void
+    {
+        // D85: rok 2025 ještě nemá v deníku počáteční stavy — bez varování by
+        // účty majetku a oprávek hlásily falešný rozdíl v celé výši.
+        $this->cleanCard();
+        $this->check->event(1, 'depreciation', '2025-12-31', 22250);
+        $this->check->posting(1, 'asset.depreciation', '551100', '082100', 22250, '2025-12-31');
+
+        $result = $this->report(2025);
+
+        $this->assertSame(ReportStatus::Warnings, $result->status);
+        $this->assertSame(['assets.journalCheck.noOpeningBalances'], $this->codes($result));
+        $this->assertNull($result->messages[0]->rowRef);
+        $this->assertStringContainsString('Rok 2025 nemá v deníku počáteční stavy', $result->messages[0]->text);
+        $keys = $this->keys($result);
+        $asset = $result->rows[array_search('account:022100', $keys, true)];
+        $this->assertSame(100000.0, $asset->values['evidence']['balance']);
+        $this->assertArrayNotHasKey('journal', $asset->values, 'bez počátečních stavů zůstává deník prázdný');
+        $this->assertSame(0.0, $asset->values['difference']['balance']);
+        $depreciation = $result->rows[array_search('account:551100', $keys, true)];
+        $this->assertSame(22250.0, $depreciation->values['journal']['balance']);
+        $this->assertSame(0.0, $depreciation->values['difference']['balance']);
+        $this->assertStringContainsString('Year 2025 has no opening balances', $this->report(2025, [], 'en')->messages[0]->text);
+
+        // Otevřený rok: počáteční stavy v otevíracím období, porovnání jako dřív.
+        $this->check->journal(null, '022100', 100000, 0, '2025-01-01', 'acc.record', self::OPENING_2025);
+        $this->check->journal(null, '082100', 0, 11000, '2025-01-01', 'acc.record', self::OPENING_2025);
+        $result = $this->report(2025, [self::OPENING_2025]);
+        $this->assertSame(ReportStatus::Ok, $result->status);
+        $this->assertSame([], $result->messages);
+        $asset = $result->rows[array_search('account:022100', $this->keys($result), true)];
+        $this->assertSame(100000.0, $asset->values['journal']['balance']);
+        $this->assertSame(0.0, $asset->values['difference']['balance']);
     }
 
     public function testUnpostedEventsOfTheRunningPeriodAreNotReported(): void

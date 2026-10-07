@@ -19,6 +19,8 @@ class TestAssetImportVerifier extends AssetImportVerifier
     public array $journal = [];
     /** @var int|null id prvního roku s dimenzí majetku v deníku */
     public ?int $firstYearId = null;
+    /** @var int|null id prvního roku s kartou na účtech odpisů v deníku (D85) */
+    public ?int $firstDepreciationYearId = null;
 
     public function __construct(private readonly TestAssetPlanService $memory, ?\Closure $reports)
     {
@@ -46,8 +48,19 @@ class TestAssetImportVerifier extends AssetImportVerifier
 
     protected function firstYearWithAssets(): ?array
     {
+        return $this->yearById($this->firstYearId);
+    }
+
+    protected function firstYearWithLinkedDepreciation(): ?array
+    {
+        return $this->yearById($this->firstDepreciationYearId);
+    }
+
+    /** @return array{id: int, name: string, begin: string, end: string}|null */
+    private function yearById(?int $id): ?array
+    {
         foreach ($this->plans->fiscalYears() as $year) {
-            if ($year['id'] === $this->firstYearId) {
+            if ($year['id'] === $id) {
                 return $year;
             }
         }
@@ -57,9 +70,10 @@ class TestAssetImportVerifier extends AssetImportVerifier
 
 /**
  * Ověření importu majetku (docs/assets.md D82): zlatý test daňového
- * okruhu z `PlanRow::computed`, účetní okruh × deník po letech, kontrola
- * evidence × deník po letech od prvního s dimenzí; čistý stav a rozdíly.
- * Kalendářní roky 2021–2026 mají id 1–6.
+ * okruhu z `PlanRow::computed`, účetní okruh × deník po letech od prvního
+ * s kartou na účtech odpisů, kontrola evidence × deník po letech od
+ * prvního s dimenzí do roku dnešního data (D85); čistý stav a rozdíly.
+ * Kalendářní roky 2021–2026 mají id 1–6, dnes je 10. 3. 2025.
  */
 class AssetImportVerifierTest extends TestCase
 {
@@ -130,6 +144,7 @@ class AssetImportVerifierTest extends TestCase
         $verifier = $this->verifier();
         $verifier->journal[1] = [2 => 11000.0, 3 => 22250.0];
         $verifier->firstYearId = 2;
+        $verifier->firstDepreciationYearId = 2;
 
         $result = $verifier->run();
 
@@ -137,12 +152,13 @@ class AssetImportVerifierTest extends TestCase
         $this->assertSame([], $result['tax']);
         $this->assertSame([], $result['planErrors']);
         $this->assertSame([], $result['accounting']);
-        $this->assertSame(['2022', '2023', '2024', '2025', '2026'], array_column($result['journalCheck'], 'year'));
-        $this->assertSame(['ok', 'ok', 'ok', 'ok', 'ok'], array_column($result['journalCheck'], 'status'));
-        $this->assertSame([['2022', 12], ['2023', 12], ['2024', 12], ['2025', 12], ['2026', 12]], $this->reportCalls);
+        // Rok 2026 (po dnešku) se nekontroluje — nemá ještě počáteční stavy.
+        $this->assertSame(['2022', '2023', '2024', '2025'], array_column($result['journalCheck'], 'year'));
+        $this->assertSame(['ok', 'ok', 'ok', 'ok'], array_column($result['journalCheck'], 'status'));
+        $this->assertSame([['2022', 12], ['2023', 12], ['2024', 12], ['2025', 12]], $this->reportCalls);
         $this->assertSame(
             ['cards' => 1, 'taxChecked' => 2, 'taxDifferences' => 0, 'planErrors' => 0, 'accChecked' => 2, 'accDifferences' => 0,
-                'checkYears' => 5, 'checkErrors' => 0, 'accPeriodElapsed' => 0],
+                'accFromYear' => '2022', 'checkYears' => 4, 'checkErrors' => 0, 'accPeriodElapsed' => 0],
             $result['summary'],
         );
         $this->assertSame([], $result['accPeriodElapsed']);
@@ -159,6 +175,7 @@ class AssetImportVerifierTest extends TestCase
         $verifier = $this->verifier();
         $verifier->journal[1] = [1 => 1000.0, 2 => 1000.0];
         $verifier->firstYearId = 1;
+        $verifier->firstDepreciationYearId = 1;
 
         $result = $verifier->run();
 
@@ -201,6 +218,7 @@ class AssetImportVerifierTest extends TestCase
         $verifier = $this->verifier();
         // Deník: 2023 jen 20 000, 2024 odpis bez události v evidenci.
         $verifier->journal[1] = [2 => 11000.0, 3 => 20000.0, 4 => 22250.0];
+        $verifier->firstDepreciationYearId = 2;
 
         $result = $verifier->run();
 
@@ -211,6 +229,32 @@ class AssetImportVerifierTest extends TestCase
         );
         $this->assertSame(3, $result['summary']['accChecked']);
         $this->assertSame([], $result['journalCheck'], 'bez roku s dimenzí v deníku');
+    }
+
+    public function testYearsBeforeLinkAndFutureYearAreSkipped(): void
+    {
+        // D85: deník nese kartu na účtech odpisů až od 2023 — odpis 2022 bez
+        // vazby není rozdíl; kontrola po letech končí rokem dnešního data.
+        $this->importedCard();
+        $verifier = $this->verifier();
+        $verifier->journal[1] = [3 => 22250.0];
+        $verifier->firstYearId = 2;
+        $verifier->firstDepreciationYearId = 3;
+
+        $result = $verifier->run();
+
+        $this->assertTrue($result['ok']);
+        $this->assertSame([], $result['accounting']);
+        $this->assertSame(1, $result['summary']['accChecked']);
+        $this->assertSame('2023', $result['summary']['accFromYear']);
+        $this->assertSame(['2022', '2023', '2024', '2025'], array_column($result['journalCheck'], 'year'));
+
+        // Bez jediné vazby se účetní okruh neporovnává vůbec.
+        $none = $this->verifier();
+        $result = $none->run();
+        $this->assertSame([], $result['accounting']);
+        $this->assertSame(0, $result['summary']['accChecked']);
+        $this->assertNull($result['summary']['accFromYear']);
     }
 
     public function testPlanErrorsAndSingleCardFilter(): void
@@ -225,6 +269,7 @@ class AssetImportVerifierTest extends TestCase
         $verifier = $this->verifier();
         $verifier->journal[1] = [2 => 11000.0, 3 => 22250.0];
         $verifier->firstYearId = 2;
+        $verifier->firstDepreciationYearId = 2;
 
         $result = $verifier->run();
 
@@ -241,6 +286,7 @@ class AssetImportVerifierTest extends TestCase
         $single = $this->verifier();
         $single->journal[1] = [2 => 11000.0, 3 => 22250.0];
         $single->firstYearId = 2;
+        $single->firstDepreciationYearId = 2;
         $result = $single->run('MA0001');
         $this->assertTrue($result['ok']);
         $this->assertSame(1, $result['summary']['cards']);
@@ -262,6 +308,7 @@ class AssetImportVerifierTest extends TestCase
         $verifier = $this->verifier();
         $verifier->journal[1] = [2 => 11000.0, 3 => 22250.0];
         $verifier->firstYearId = 2;
+        $verifier->firstDepreciationYearId = 2;
 
         $result = $verifier->run();
 

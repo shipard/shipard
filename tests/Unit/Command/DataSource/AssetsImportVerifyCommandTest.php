@@ -86,7 +86,8 @@ class AssetsImportVerifyCommandTest extends TestCase
                 'assetId' => 2, 'number' => 'MA0002', 'name' => 'Budova', 'end' => '2022-12-31', 'periodEnd' => '2024-12-31', 'amount' => 10500000.0,
             ]],
             'summary' => ['cards' => 1, 'taxChecked' => 2, 'taxDifferences' => $ok ? 0 : 1, 'planErrors' => 0, 'accChecked' => 2,
-                'accDifferences' => $ok ? 0 : 1, 'checkYears' => 1, 'checkErrors' => $ok ? 0 : 1, 'accPeriodElapsed' => $ok ? 0 : 1],
+                'accDifferences' => $ok ? 0 : 1, 'accFromYear' => '2022', 'checkYears' => 1, 'checkErrors' => $ok ? 0 : 1,
+                'accPeriodElapsed' => $ok ? 0 : 1],
             'ok' => $ok,
         ];
     }
@@ -98,6 +99,7 @@ class AssetsImportVerifyCommandTest extends TestCase
         $this->assertSame(Command::SUCCESS, $tester->execute([]));
         $display = $tester->getDisplay();
         $this->assertStringContainsString('1. Zlatý test daňového okruhu', $display);
+        $this->assertStringContainsString('porovnáváno od roku 2022', $display);
         $this->assertStringContainsString('2024  ok', $display);
         $this->assertStringContainsString('4. Uplynulá doba účetního odpisování', $display);
         $this->assertStringContainsString('karet s varováním: 0', $display);

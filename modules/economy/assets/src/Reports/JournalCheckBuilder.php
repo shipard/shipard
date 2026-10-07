@@ -31,8 +31,10 @@ use Shipard\Module\Economy\Assets\Posting\AssetPostingInput;
  * kontrola prošla. Rozdíl na účtu pořízení je jen varování (D73):
  * evidence tam počítá pouze pořízení s kartou, takže rozdíl znamená
  * pořízení bez karty nebo zařazení bez navázaného pořízení, ne chybu
- * evidence. Čistý stav = žádné zprávy. Logika je v `AssetJournalCheck`
- * (sdílí ji alerty a karta).
+ * evidence. Rok, který v deníku ještě nemá počáteční stavy (D85), dostane
+ * jedno varování `noOpeningBalances` a účty se stavem bez hodnoty deníku
+ * a rozdílu — porovnají se až po otevření roku. Čistý stav = žádné
+ * zprávy. Logika je v `AssetJournalCheck` (sdílí ji alerty a karta).
  *
  * Drill-down (D70): účet vede do deníku s filtrem účtu a roku, nesoulad
  * karty na kartu (ve vieweru — je tam co opravit) a jeho druh do deníku
@@ -69,23 +71,42 @@ final class JournalCheckBuilder implements ReportBuilder
         if ($accounts !== []) {
             $rows[] = $this->section('accounts', $cs ? 'Účty účetních skupin' : 'Accounting group accounts');
         }
+        if (array_any($accounts, static fn(array $a): bool => $a['noOpeningBalances'])) {
+            // D85: rok ještě neotevřený — stavy účtů majetku, pořízení a oprávek
+            // v deníku nejsou, porovnání by hlásilo rozdíl v celé výši.
+            $messages[] = new ReportMessage(
+                ReportMessageSeverity::Warning,
+                'assets.journalCheck.noOpeningBalances',
+                $cs
+                    ? sprintf('Rok %s nemá v deníku počáteční stavy — účty majetku, pořízení a oprávek se porovnají až po otevření roku.',
+                        $period['yearName'])
+                    : sprintf('Year %s has no opening balances in the journal — the asset, acquisition and accumulated depreciation'
+                        . ' accounts will be compared once the year is opened.', $period['yearName']),
+            );
+        }
         foreach ($accounts as $account) {
             $index = count($rows);
+            $values = [
+                'number'   => '',
+                'kind'     => $this->roleLabel($account['role'], $cs),
+                'measure'  => $account['balance'] ? ($cs ? 'zůstatek' : 'balance') : ($cs ? 'obrat' : 'turnover'),
+                'evidence' => AssetReportSupport::money($account['evidence']),
+            ];
+            if ($account['journal'] !== null) {
+                // Bez počátečních stavů (D85) zůstává buňka deníku prázdná.
+                $values['journal'] = AssetReportSupport::money($account['journal']);
+            }
+            $values += [
+                'difference'   => AssetReportSupport::money($account['difference']),
+                'withAsset'    => AssetReportSupport::money($account['withAsset']),
+                'withoutAsset' => AssetReportSupport::money($account['withoutAsset']),
+            ];
             $rows[] = new ReportRow(
                 ReportRowKind::Detail,
                 1,
                 $account['account'],
                 $account['name'],
-                [
-                    'number'       => '',
-                    'kind'         => $this->roleLabel($account['role'], $cs),
-                    'measure'      => $account['balance'] ? ($cs ? 'zůstatek' : 'balance') : ($cs ? 'obrat' : 'turnover'),
-                    'evidence'     => AssetReportSupport::money($account['evidence']),
-                    'journal'      => AssetReportSupport::money($account['journal']),
-                    'difference'   => AssetReportSupport::money($account['difference']),
-                    'withAsset'    => AssetReportSupport::money($account['withAsset']),
-                    'withoutAsset' => AssetReportSupport::money($account['withoutAsset']),
-                ],
+                $values,
                 'account:' . $account['account'],
                 // Deník účtu za kontrolovaný rok.
                 AssetReportSupport::journalLink($account['account'], $period['yearId']),

@@ -25,8 +25,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * `shpd-ds assets-import-verify [--asset=<číslo>] [--json]` — ověření
  * importu majetku (docs/assets.md D82): zlatý test daňového okruhu,
- * účetní okruh × deník po kartách a letech, Kontrola evidence × deník za
- * každý rok od prvního s dimenzí `asset` a karty s uplynulou dobou
+ * účetní okruh × deník po kartách a letech od prvního s kartou na účtech
+ * odpisů, Kontrola evidence × deník za každý rok od prvního s dimenzí
+ * `asset` do roku dnešního data a karty s uplynulou dobou
  * účetního odpisování (D83, jen upozornění). Čte, nic nemění. Exit 0 bez
  * rozdílů, 1 s rozdíly; `--json` vypíše výsledek pro log runneru.
  * Logika je v {@see AssetImportVerifier}.
@@ -136,6 +137,9 @@ class AssetsImportVerifyCommand extends Command
 
         $output->writeln('<comment>2. Účetní okruh × deník</comment>');
         $output->writeln(sprintf('   kontrolovaných let karet: %d, rozdílů: %d', $s['accChecked'], $s['accDifferences']));
+        $output->writeln(($s['accFromYear'] ?? null) !== null
+            ? sprintf('   porovnáváno od roku %s (první rok s kartou na účtech odpisů v deníku)', $s['accFromYear'])
+            : '   (deník nenese kartu na žádném účtu odpisů — účetní okruh se neporovnává)');
         foreach ($result['accounting'] as $row) {
             $output->writeln(sprintf(
                 '   %-12s %-30s %s  evidence %14s  deník %14s  rozdíl %12s',
@@ -148,7 +152,7 @@ class AssetsImportVerifyCommand extends Command
             ));
         }
 
-        $output->writeln('<comment>3. Kontrola evidence × deník po letech</comment>');
+        $output->writeln('<comment>3. Kontrola evidence × deník po letech (do roku dnešního data)</comment>');
         if ($result['journalCheck'] === []) {
             $output->writeln('   (bez roku s dimenzí majetku v deníku, nebo filtr na kartu)');
         }

@@ -87,9 +87,19 @@ class AssetJournalCheckTest extends TestCase
         $this->assertSame(89000.0, $accounts['541100']['evidence']);
         $this->assertSame(0.0, $accounts['541100']['difference']);
         // Stavové účty: evidence po vyřazení nula; deník roku 2025 bez
-        // otevíracího dokladu má jen obrat vyřazení.
+        // otevíracího dokladu má jen obrat vyřazení — rok není otevřený,
+        // účet se neporovná (D85).
         $this->assertSame(0.0, $accounts['022100']['evidence']);
-        $this->assertSame(-100000.0, $accounts['022100']['journal']);
+        $this->assertNull($accounts['022100']['journal']);
+        $this->assertTrue($accounts['022100']['noOpeningBalances']);
+
+        // S otevíracím dokladem sedí stav účtu majetku po vyřazení na nulu.
+        $this->check->journal(null, '022100', 100000, 0, '2025-01-01', 'acc.record', 0);
+        $this->check->journal(null, '082100', 0, 11000, '2025-01-01', 'acc.record', 0);
+        $accounts = $this->accountsByNumber(2025);
+        $this->assertSame(0.0, $accounts['022100']['journal']);
+        $this->assertSame(0.0, $accounts['022100']['difference']);
+        $this->assertSame(0.0, $accounts['082100']['difference']);
     }
 
     // ── (a) zaúčtované události ≠ deník ─────────────────────────────────────
@@ -377,6 +387,54 @@ class AssetJournalCheckTest extends TestCase
         $this->assertSame(22250.0, $accounts['551100']['evidence']);
         $this->assertSame(0.0, $accounts['551100']['difference']);
         $this->assertSame(-33250.0, $accounts['082100']['evidence']);
+    }
+
+    public function testYearWithoutOpeningBalancesSkipsBalanceAccounts(): void
+    {
+        // D85: rok 2025 ještě není otevřený — deník nemá v měsíci 0 žádný
+        // zápis, evidence ale k 1. 1. 2025 stav má. Účty se stavem se
+        // neporovnají (deník null, rozdíl 0), účty obratem beze změny.
+        $this->cleanCard();
+        $this->check->event(1, 'depreciation', '2025-12-31', 22250);
+        $this->check->posting(1, 'asset.depreciation', '551100', '082100', 22250, '2025-12-31');
+
+        $accounts = $this->accountsByNumber(2025);
+
+        $this->assertTrue($accounts['022100']['noOpeningBalances']);
+        $this->assertSame(100000.0, $accounts['022100']['evidence']);
+        $this->assertNull($accounts['022100']['journal']);
+        $this->assertSame(0.0, $accounts['022100']['difference']);
+        $this->assertTrue($accounts['082100']['noOpeningBalances']);
+        $this->assertSame(-33250.0, $accounts['082100']['evidence']);
+        $this->assertNull($accounts['082100']['journal']);
+        $this->assertSame(0.0, $accounts['082100']['difference']);
+        $this->assertFalse($accounts['551100']['noOpeningBalances']);
+        $this->assertSame(22250.0, $accounts['551100']['journal']);
+        $this->assertSame(0.0, $accounts['551100']['difference']);
+
+        // Otevřený rok (počáteční stavy v měsíci 0) se porovnává jako dřív.
+        $this->check->journal(null, '022100', 100000, 0, '2025-01-01', 'acc.record', 0);
+        $this->check->journal(null, '082100', 0, 11000, '2025-01-01', 'acc.record', 0);
+        $accounts = $this->accountsByNumber(2025);
+        $this->assertFalse($accounts['022100']['noOpeningBalances']);
+        $this->assertSame(100000.0, $accounts['022100']['journal']);
+        $this->assertSame(0.0, $accounts['022100']['difference']);
+        $this->assertSame(-33250.0, $accounts['082100']['journal']);
+        $this->assertSame(0.0, $accounts['082100']['difference']);
+    }
+
+    public function testFirstYearWithAssetsIsComparedWithoutOpeningBalances(): void
+    {
+        // Před rokem 2024 evidence nic nemá — chybějící otevírací období
+        // není nález, účty se porovnají obratem roku.
+        $this->cleanCard();
+        $this->check->journal(null, '022100', 30000, 0, '2024-09-01');
+
+        $accounts = $this->accountsByNumber();
+
+        $this->assertFalse($accounts['022100']['noOpeningBalances']);
+        $this->assertSame(130000.0, $accounts['022100']['journal']);
+        $this->assertSame(-30000.0, $accounts['022100']['difference']);
     }
 
     public function testAccountsOfGroupsWithoutCards(): void

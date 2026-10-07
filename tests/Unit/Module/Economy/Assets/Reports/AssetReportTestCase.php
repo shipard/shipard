@@ -59,16 +59,26 @@ abstract class AssetReportTestCase extends TestCase
         ]);
     }
 
-    /** @param array<string, mixed> $params */
-    protected function request(string $reportId, int $year, array $params = [], int $monthFrom = 1, int $monthTo = 12, string $language = 'cs'): ReportRequest
-    {
+    /**
+     * @param array<string, mixed> $params
+     * @param list<int> $openingMonthIds id otevíracích měsíců roku (výchozí žádný — jako rok bez otevření)
+     */
+    protected function request(
+        string $reportId,
+        int $year,
+        array $params = [],
+        int $monthFrom = 1,
+        int $monthTo = 12,
+        string $language = 'cs',
+        array $openingMonthIds = [],
+    ): ReportRequest {
         $base = 100 + 12 * ($year - 2021);
         $range = new FiscalRange(
             fiscalYearId: $year - 2020,
             fiscalYear: (string) $year,
             monthFrom: $monthFrom,
             monthTo: $monthTo,
-            monthIdsBefore: $monthFrom > 1 ? range($base + 1, $base + $monthFrom - 1) : [],
+            monthIdsBefore: [...$openingMonthIds, ...($monthFrom > 1 ? range($base + 1, $base + $monthFrom - 1) : [])],
             monthIdsInRange: range($base + $monthFrom, $base + $monthTo),
         );
 

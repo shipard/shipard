@@ -24,10 +24,13 @@ use Shipard\Module\Economy\Assets\Depreciation\PlanRow;
  *     (zablokovaný okruh, chybějící období) je samostatný nález.
  *  2. **Účetní okruh × deník:** per karta a účetní rok součet potvrzených
  *     účetních odpisů × obrat účtů odpisů (všech účetních skupin)
- *     s dimenzí karty v deníku.
+ *     s dimenzí karty v deníku — od prvního roku, kdy deník kartu na
+ *     účtech odpisů nese (D85; `summary.accFromYear`), dřívější roky
+ *     starý deník kartu neměl.
  *  3. **Kontrola evidence × deník** (report `economy.assets.journalCheck`)
- *     za každý účetní rok od prvního s dimenzí `asset` v deníku: stav
- *     a počty zpráv po kódech. Běží jen bez filtru na kartu.
+ *     za každý účetní rok od prvního s dimenzí `asset` v deníku do roku
+ *     dnešního data (D85): stav a počty zpráv po kódech. Běží jen bez
+ *     filtru na kartu.
  *  4. **Uplynulá doba účetního odpisování (D83):** karty, jejichž plán
  *     nese varování `accPeriodElapsed` — časová metoda by zůstatek
  *     odepsala v jednom období (konec doby, částka nejbližšího plánovaného
@@ -57,7 +60,7 @@ class AssetImportVerifier
      * @return array{
      *     tax: list<array<string, mixed>>, planErrors: list<array<string, mixed>>,
      *     accounting: list<array<string, mixed>>, journalCheck: list<array<string, mixed>>,
-     *     accPeriodElapsed: list<array<string, mixed>>, summary: array<string, int>, ok: bool}
+     *     accPeriodElapsed: list<array<string, mixed>>, summary: array<string, int|string|null>, ok: bool}
      */
     public function run(?string $assetNumber = null): array
     {
@@ -135,12 +138,18 @@ class AssetImportVerifier
         foreach ($this->plans->fiscalYears() as $year) {
             $years[$year['id']] = $year;
         }
+        // Od prvního roku s kartou na účtech odpisů v deníku (D85): dřív
+        // starý deník kartu nenesl a rozdíl by byl vždy.
+        $linkedFrom = $this->firstYearWithLinkedDepreciation();
         $accounting = [];
         $accChecked = 0;
         foreach ($cards as $id => $card) {
             $yearIds = array_unique([...array_keys($evidence[$id] ?? []), ...array_keys($journal[$id] ?? [])]);
             usort($yearIds, static fn(int $a, int $b): int => ($years[$a]['begin'] ?? '') <=> ($years[$b]['begin'] ?? ''));
             foreach ($yearIds as $yearId) {
+                if ($linkedFrom === null || ($years[$yearId]['begin'] ?? '') < $linkedFrom['begin']) {
+                    continue;
+                }
                 $accChecked++;
                 $expected = round($evidence[$id][$yearId] ?? 0.0, 2);
                 $actual = round($journal[$id][$yearId] ?? 0.0, 2);
@@ -161,8 +170,10 @@ class AssetImportVerifier
         $journalCheck = [];
         if ($assetNumber === null && $this->reports !== null) {
             $first = $this->firstYearWithAssets();
+            // Jen do roku dnešního data (D85): další rok ještě nemá počáteční stavy.
+            $today = $this->plans->today();
             foreach ($first !== null ? $this->plans->fiscalYears() : [] as $year) {
-                if ($year['begin'] < $first['begin']) {
+                if ($year['begin'] < $first['begin'] || $year['begin'] > $today) {
                     continue;
                 }
                 $months = 0;
@@ -196,6 +207,7 @@ class AssetImportVerifier
                 'planErrors'       => count($planErrors),
                 'accChecked'       => $accChecked,
                 'accDifferences'   => count($accounting),
+                'accFromYear'      => $linkedFrom['name'] ?? null,
                 'checkYears'       => count($journalCheck),
                 'checkErrors'      => $checkErrors,
                 'accPeriodElapsed' => count($accPeriodElapsed),
@@ -273,15 +285,7 @@ class AssetImportVerifier
         if ($this->db === null || $assetIds === []) {
             return [];
         }
-        $accounts = [];
-        foreach ($this->db->fetchAll(
-            'SELECT DISTINCT [a].[number] FROM [economy_assets_accounting_groups] [g]'
-            . ' JOIN [economy_accounting_accounts] [a] ON [a].[id] = [g].[account_depreciation]'
-            . ' WHERE [g].[docState] <> %i',
-            AssetDocument::STATE_DELETED,
-        ) as $row) {
-            $accounts[] = (string) $row['number'];
-        }
+        $accounts = $this->depreciationAccounts();
         if ($accounts === []) {
             return [];
         }
@@ -295,6 +299,51 @@ class AssetImportVerifier
             $out[(int) $row['asset']][(int) $row['fiscal_year']] = (float) $row['amount'];
         }
         return $out;
+    }
+
+    /**
+     * Nejstarší účetní rok, ve kterém deník nese dimenzi `asset` na některém
+     * účtu odpisů účetních skupin (D85) — od něj má smysl účetní okruh × deník.
+     *
+     * @return array{id: int, name: string, begin: string, end: string}|null
+     */
+    protected function firstYearWithLinkedDepreciation(): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $accounts = $this->depreciationAccounts();
+        if ($accounts === []) {
+            return null;
+        }
+        $ids = [];
+        foreach ($this->db->fetchAll(
+            'SELECT DISTINCT [fiscal_year] FROM [economy_accounting_journal] WHERE [asset] > 0 AND [account_number] IN %in',
+            $accounts,
+        ) as $row) {
+            $ids[(int) $row['fiscal_year']] = true;
+        }
+        foreach ($this->plans->fiscalYears() as $year) {
+            if (isset($ids[$year['id']])) {
+                return $year;
+            }
+        }
+        return null;
+    }
+
+    /** @return list<string> čísla účtů odpisů všech účetních skupin mimo smazané */
+    private function depreciationAccounts(): array
+    {
+        $accounts = [];
+        foreach ($this->db?->fetchAll(
+            'SELECT DISTINCT [a].[number] FROM [economy_assets_accounting_groups] [g]'
+            . ' JOIN [economy_accounting_accounts] [a] ON [a].[id] = [g].[account_depreciation]'
+            . ' WHERE [g].[docState] <> %i',
+            AssetDocument::STATE_DELETED,
+        ) ?? [] as $row) {
+            $accounts[] = (string) $row['number'];
+        }
+        return $accounts;
     }
 
     /**
