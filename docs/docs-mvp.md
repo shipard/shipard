@@ -20,7 +20,9 @@ modelem.
   doklad z `cash_dir`, řada vázaná na pokladnu) a Prodejka (`cashreg`) — #59;
   Zálohová faktura vydaná (`invpo`, #79 D1) — první **nedaňový** typ
   (`docTypes[].tax_document: false`, jediné čtení `DocTypes::isTaxDocument()`):
-  DPH jen informativně, bez DUZP/DPPD a bez zařazení do tvrzení DPH
+  DPH jen informativně, bez DUZP/DPPD a bez zařazení do tvrzení DPH;
+  Zálohová faktura přijatá (`invpi`, #106 D1) — totéž na vstupní straně
+  (výzva dodavatele k platbě, podrozvaha 799/757)
 - **Hlavička, řádky, rekapitulace DPH** — kompletní třístupňová struktura
 - **DPH model pro Českou republiku** — všechny kódy DPH ze starého Shipardu
   (tuzemsko vstup/výstup ve všech sazbách, EU plnění, dovoz/vývoz, tuzemský
@@ -46,7 +48,8 @@ Záměrně nepokrývá (a očekává se, že přijde v dalších fázích):
 - **Saldokonto** — žádné párování úhrad, žádné otevřené pohledávky/závazky
 - **PDF výstupy a tisk** dokladů
 - **Bankovní výpisy a pokladní doklady** (typy `bank`, `cash`)
-- **Zálohové faktury** (typy `prfmin`, `invpo`)
+- **Zálohové faktury** (typy `prfmin`, `invpo`) — po MVP hotové jako
+  `invpo` (#79) a `invpi` (#106)
 - **Objednávky, dodací listy, nabídky**
 - **DPH per EU stát** — pouze CZ; ostatní státy přijdou jako samostatný úkol
   s revizí kódů ze starého Shipardu

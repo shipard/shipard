@@ -728,6 +728,40 @@ doplní contributor deníku `CaseClosureContributor` modulu saldokonta
 (#79 D3b/c, `journalContributors` v §7.1, `docs/accbal.md` §5.8) —
 do výše zbytku proformy, v cizí měně kurzem proformy.
 
+### Zálohová faktura přijatá — podrozvaha (#106 D2)
+
+Zrcadlo vydané proformy na vstupní straně: `invpi` (výzva dodavatele
+k platbě) není daňový doklad a účtuje se **jen na podrozvahu celkovou
+částkou hlavičky** — `799100 MD / 757100 DAL` (kategorie
+`offbalance.contra` s maskou `799`, `proformas.in` s maskou `757`).
+Předpis výzvy je na straně **DAL** jako závazek, aby byla saldokontní
+skupina **Zálohové faktury přijaté** pro výdaj přirozená
+(`LedgerOpenItemLookup`, `docs/accbal.md` §5.1). Řádky, rekapitulace DPH,
+náklady ani závazek 321 se neúčtují; identita obou řádků je z hlavičky
+(partner, VS, SS, KS, splatnost).
+
+```jsonc
+{"docType": "invpi",
+    "accounting": [
+        {"cat": "offbalance.contra", "src": "head", "col": "total", "side": 0, "text": "Zálohová faktura přijatá"},
+        {"cat": "proformas.in",      "src": "head", "col": "total", "side": 1, "text": "Zálohová faktura přijatá"}
+    ]
+}
+```
+
+Účty `757` / `757100` „Přijaté zálohové faktury“ (povaha 6) zajišťuje
+tentýž `OffBalanceAccountsProvisioner`. Úhrada výzvy se na 757 **nikdy
+neúčtuje**: bankovní výdaj s VS výzvy položí engine přes
+`OpenItem::paymentCategory` na poskytnutou zálohu 314 (`advances.given`),
+pokladní doklad s `advance.given` účtuje 314 z předpisu; uzavírací pár
+`757100 MD / 799100 DAL` doplní `CaseClosureContributor` (předpisová
+strana skupiny je DAL, proto 799 na DAL a 757100 na MD). Konečná faktura
+přijatá s ručním řádkem `purchase.advanceDeduction` (VS + SS výzvy)
+uzavře poskytnutou zálohu jako dnes. Rozvaha ani výsledovka se nemění
+(`ProformaInAccountingTest`), uzavírání ověřuje `ProformaInClosureTest`.
+Žádný engine, lookup ani handler nový kód nedostal — vše jde z nastavení
+skupiny.
+
 ---
 
 ## 5. Dohledávání účtů

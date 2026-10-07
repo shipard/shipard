@@ -1697,6 +1697,12 @@ class ProformaOutForm extends IssuedInvoiceFormBase  // FVZ, doc_type='invpo'
     protected function getDocTypeLabel(): string { return 'Zálohová faktura'; }
     protected function getHeaderIcon(): ?string  { return 'invoice-proforma'; }
 }
+
+class ProformaInForm extends ReceivedInvoiceFormBase  // FPZ, doc_type='invpi' (#106 D1)
+{
+    protected function getDocTypeLabel(): string { return 'Zálohová faktura přijatá'; }
+    protected function getHeaderIcon(): ?string  { return 'invoice-proforma-in'; }
+}
 ```
 
 Stejný hook-pattern jako `getFormTitle()` / `getNewFormTitle()` / `buildExtraTabs()`. Společná logika (`buildHeaderInfo`, `resolvePartnerName`, `buildHeaderSummary`) žije v `DocsHeadsFormBase` jako `protected`, takže subclassy můžou kterýkoliv jednotlivý kus override-ovat, pokud potřebují (např. ručně sestavit `summary` z atypických polí pro bankovní výpis).
@@ -2162,14 +2168,16 @@ Pro nový záznam otevřený z **generického vieweru** (bez hintu `doc_type`) j
 TableForm (abstract, core)
     └── DocsHeadsFormBase (abstract, docs.core)
             ├── DocsHeadsForm            (docs.core)        — defaultClass
-            ├── ReceivedInvoiceForm      (docs.invoicesIn)  — invni
+            ├── ReceivedInvoiceFormBase  (abstract, docs.core) — sdílený layout přijatých dokladů
+            │       ├── ReceivedInvoiceForm (docs.invoicesIn)  — invni
+            │       └── ProformaInForm    (docs.proformasIn) — invpi (#106 D1)
             ├── IssuedInvoiceFormBase    (abstract, docs.core) — sdílený layout vydaných dokladů
             │       ├── IssuedInvoiceForm (docs.invoicesOut)  — invno
             │       └── ProformaOutForm   (docs.proformasOut) — invpo (#79 D1)
             └── CashDeskFormBase         (abstract, docs.core) — pokladní doklad, prodejka
 ```
 
-Společná logika žije v base třídě (build tabů, recalculate, options resolvery, HTML renderery). Subclassy přepisují jen tam, kde se chování má lišit — typicky `getFormTitle()` / `getNewFormTitle()` a header-info hooky. Rodina typů se stejným layoutem (FVB + zálohová faktura vydaná) má abstraktní mezistupeň v `docs.core` (`IssuedInvoiceFormBase`, vzor `CashDeskFormBase`), ne kopii `buildHeaderTab()` per modul. Nedaňový typ (`docTypes[].tax_document: false`) řídí base přes `DocsHeadsFormBase::isTaxDocument()` — skrývá DUZP/DPPD, selecty období DPH a `cs_mode`, nepředvyplňuje DUZP; per-typ třída o tom nic neví.
+Společná logika žije v base třídě (build tabů, recalculate, options resolvery, HTML renderery). Subclassy přepisují jen tam, kde se chování má lišit — typicky `getFormTitle()` / `getNewFormTitle()` a header-info hooky. Rodina typů se stejným layoutem (FVB + zálohová faktura vydaná, FPB + zálohová faktura přijatá) má abstraktní mezistupeň v `docs.core` (`IssuedInvoiceFormBase`, `ReceivedInvoiceFormBase`, vzor `CashDeskFormBase`), ne kopii `buildHeaderTab()` per modul. Nedaňový typ (`docTypes[].tax_document: false`) řídí base přes `DocsHeadsFormBase::isTaxDocument()` — skrývá DUZP/DPPD, selecty období DPH a `cs_mode`, nepředvyplňuje DUZP; per-typ třída o tom nic neví.
 
 ```php
 abstract class DocsHeadsFormBase extends TableForm

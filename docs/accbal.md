@@ -160,8 +160,8 @@ tableId **416**. docStates: archivní sada (`core.system.docStatesArchive`).
 | `show_in_navigation` | bool | vlastní položka v sidebaru (otevře viewer případů s fixním chipem) |
 | `valid_from` / `valid_to` | date, nullable | platnost skupiny |
 | `provisioning_variant` | varchar 10, nullable, system | varianta seedu (#69 D18): NULL = výchozí (sign-pravidla dobropisů), `legacy` = importovaný DS bez nich; řídí jen doplňování řádků seedu (§3.2), uživatelské řádky nemění |
-| `payment_category` | varchar 40, nullable, system | kategorie účtovacího předpisu, na kterou se účtuje **úhrada nalezená lookupem v této skupině** místo účtu předpisu (#79 D3a; `proformas_out` → `advances.received`, 324). NULL = účet předpisu (dosavadní chování). Plní jen seed při založení skupiny, ve formuláři není |
-| `closing_category` | varchar 40, nullable, system | kategorie protiúčtu, proti kterému se případ skupiny uzavírá, když úhrada odešla na `payment_category` (`proformas_out` → `offbalance.contra`, 799). Čte `CaseClosureContributor` (#79 D3b, §5.8) — uzavírací pár `799 MD / 756 DAL` v deníku úhrady. Plní jen seed při založení skupiny, ve formuláři není |
+| `payment_category` | varchar 40, nullable, system | kategorie účtovacího předpisu, na kterou se účtuje **úhrada nalezená lookupem v této skupině** místo účtu předpisu (#79 D3a; `proformas_out` → `advances.received`, 324; `proformas_in` → `advances.given`, 314, #106 D2). NULL = účet předpisu (dosavadní chování). Plní jen seed při založení skupiny, ve formuláři není |
+| `closing_category` | varchar 40, nullable, system | kategorie protiúčtu, proti kterému se případ skupiny uzavírá, když úhrada odešla na `payment_category` (`proformas_out` i `proformas_in` → `offbalance.contra`, 799). Čte `CaseClosureContributor` (#79 D3b, §5.8) — uzavírací pár `799 MD / 756 DAL` (u přijatých výzev `757 MD / 799 DAL`) v deníku úhrady. Plní jen seed při založení skupiny, ve formuláři není |
 | `docState` / `docStateMain` | tinyint, system | |
 
 Seed (dle screenshotu starého systému): Pohledávky, Poskytnuté půjčky,
@@ -170,9 +170,13 @@ Závazky, Úvěry, Přijaté půjčky, Poskytnuté zálohy, Přijaté zálohy,
 od #79 D2 i **Zálohové faktury vydané** (`proformas_out`, sort 15 hned za
 Pohledávkami: `756 MD` = předpis proformy, `756 DAL` = úhrada / uzavření;
 `payment_category = advances.received`, `closing_category =
-offbalance.contra`). Skupina je bez sign-pravidel, takže ji legacy
-varianta (§3.2) nemění kromě částek Všechny; na existujících DS vznikne
-při dalším `ds-upgrade` (provisioner doplňuje chybějící skupiny dle `code`).
+offbalance.contra`) a od #106 D2 **Zálohové faktury přijaté**
+(`proformas_in`, sort 25 hned za Závazky: `757 DAL` = předpis výzvy,
+`757 MD` = úhrada / uzavření; `payment_category = advances.given`,
+`closing_category = offbalance.contra`). Obě skupiny jsou bez
+sign-pravidel, takže je legacy varianta (§3.2) nemění kromě částek Všechny;
+na existujících DS vzniknou při dalším `ds-upgrade` (provisioner doplňuje
+chybějící skupiny dle `code`).
 
 ### 3.2 `economy_accbal_balance_accounts` — účty saldokont
 
@@ -755,7 +759,8 @@ interface OpenItemLookup
   výchozím seedu jde na clearing (§13). „Nespárované platby" nemají řádek
   předpisu → nikdy se neprohledají.
 - **Kategorie úhrady skupiny (#79 D3a)**: skupina s `payment_category`
-  (§3.1; na seedu jen Zálohové faktury vydané → `advances.received`)
+  (§3.1; na seedu Zálohové faktury vydané → `advances.received` a od
+  #106 D2 Zálohové faktury přijaté → `advances.given`)
   vrátí `OpenItem::paymentCategory`. Engine pak úhradu položí na masku
   této kategorie (324) místo na `accountNumber` (756 je podrozvaha, peníze
   tam nepatří); `accountNumber` dál nese účet předpisu pro diagnostiku a
@@ -769,7 +774,12 @@ interface OpenItemLookup
   stejným VS proformu najde jen do výše zbytku; po úplném uzavření jde na
   clearing jako každý příjem na uhrazený klíč (§5.3). Pokladní doklad
   s `advance.received` účtuje 324 přímo z předpisu, lookupu se netýká;
-  proformu uzavírá tentýž contributor.
+  proformu uzavírá tentýž contributor. **Výdaj** s VS přijaté výzvy
+  zrcadlově (#106 D2): projde Závazky (20), pak Zálohové faktury přijaté
+  (25) → `314 MD / 221 DAL` pod klíčem výzvy → generátor z 314 MD udělá
+  předpis v Poskytnutých zálohách → konečná faktura přijatá s ručním
+  odpočtem (VS + SS výzvy) ho uzavře; výzvu uzavře contributor
+  (`757 MD / 799 DAL`). Pokladní `advance.given` stejně jako u vydané.
 - **Přednost nejdelšího prefixu (#69 D22) se v lookupu neuplatňuje**:
   je per řádek deníku a per účetní datum — skupinu pohybu už rozhodl
   generátor a nese ji `balance` v klíči dotazu; prefixy skupiny (bez
@@ -952,8 +962,8 @@ bankovní příjem 12 100 s VS proformy
 `journalContributors` v module.jsonc) je **generický nad nastavením
 skupin**, ne nad proformami: cílová skupina G je každá aktivní skupina
 s vyplněnou `payment_category` **a** `closing_category`
-(`LedgerOpenItemLookup::closingGroups()`; na seedu jen Zálohové faktury
-vydané, §3.1).
+(`LedgerOpenItemLookup::closingGroups()`; na seedu Zálohové faktury
+vydané a od #106 D2 Zálohové faktury přijaté, §3.1).
 
 - **Spouštěcí řádek** pro G: operace příjmu/výdeje peněz nebo zálohy
   (`CaseClosureContributor::TRIGGER_OPERATIONS` = `payment.in`,
@@ -961,8 +971,9 @@ vydané, §3.1).
   `sale.advanceVat` / `sale.advanceDeduction` na faktuře ani ruční
   `acc.entry` na 324 nespouští nic), účet začíná první maskou kategorie
   `payment_category` z předpisu (`324`), strana **opačná** k předpisové
-  straně G (756 MD → spouští 324 DAL; přijaté proformy by zrcadlově
-  spouštěl 314 MD), kladná částka, vyplněný partner a VS, bez chyby.
+  straně G (756 MD → spouští 324 DAL; přijaté výzvy 757 DAL → spouští
+  314 MD, tj. `payment.out` z banky nebo `advance.given` z pokladny),
+  kladná částka, vyplněný partner a VS, bez chyby.
 - **Klíč případu** = (G, fiskální rok zdroje, partner, VS, SS, měna
   zdroje) — normalizace jako `CaseQuery` (D10), období v klíči (D11):
   úhrada v jiném roce proformu nenajde, dokud ji nepřenese otevírací
@@ -984,9 +995,12 @@ vydané, §3.1).
   identita spouštěcího řádku, text „Uzavření zálohové faktury vydané
   {VS}" (z názvu skupiny), operace NULL → generátor řádek 756 DAL zařadí
   podle nastavení jako úhradu v G (§4.2 krok 4), 799 žádná skupina nemá.
+  U přijatých výzev zrcadlově 799 DAL / 757100 MD, text „Uzavření
+  zálohové faktury přijaté {VS}".
 - Contributor **nic nezapisuje** a čte jen ledger ostatních zdrojů;
   výpočet je čistá funkce `closures()` (unit test nad poli), DB jen
-  v agregátu případu. Integrační `ProformaClosureTest`.
+  v agregátu případu. Integrační `ProformaClosureTest`, přijatá strana
+  `ProformaInClosureTest`.
 
 **Vlastnosti:**
 
@@ -1014,8 +1028,8 @@ vydané, §3.1).
 
 Mimo scope: storno / snížení uhrazené proformy, uzavření neuhrazeného
 zbytku, přehled proforem k vyřízení (#79 D5); vratka zálohy (výdaj proti
-324) proformu znovu neotevírá; přijaté proformy (`invpi`) — mechanismus
-je obecný, seed je nemá.
+324) proformu znovu neotevírá. Přijaté výzvy (`invpi`) jedou od #106 D2
+na témže mechanismu bez nového kódu (seed `proformas_in`).
 
 ---
 
@@ -1340,6 +1354,14 @@ partner resolution při ingestaci.
     klíč vč. fiskálního roku (D11). Generický nad skupinami s
     `payment_category` + `closing_category`, ne nad proformami. Pokladní
     záloha před proformou přes `CaseClosureRerouteHandler` (§5.2, §5.8).
+42. **Zálohové faktury přijaté** (#106 D2, 2026-10-07,
+    `tasks/doc-proforma-in.md`): skupina `proformas_in` (757 DAL předpis /
+    757 MD úhrada, pořadí 25 za Závazky) jako zrcadlo `proformas_out`.
+    Předpis výzvy je na DAL, aby byla skupina pro výdej přirozená; úhrada
+    jde na `advances.given` (314), uzavření proti `offbalance.contra`
+    (`757 MD / 799 DAL`). Lookup, engine, contributor i reroute handlery
+    beze změny — vše nad nastavením skupiny. Starý typ `prfmin` se
+    v importovaných zdrojích nepoužívá, import se tasku netýká.
 
 ---
 

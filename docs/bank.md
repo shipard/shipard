@@ -343,7 +343,10 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
     maska kategorie předpisu (`advances.received` → 324) přes
     `AccountMaskResolver`, ne účet předpisu; strana dál ze směru (příjem →
     324 DAL = předpis přijaté zálohy pod klíčem proformy, `accbal.md` §5.1).
-    Chybějící maska / účet → `account_not_found` jako u masky kategorie.
+    Výdaj s VS přijaté výzvy (#106 D2, skupina `proformas_in`, 757 na
+    podrozvaze) zrcadlově → `advances.given` → 314 MD = předpis poskytnuté
+    zálohy. Chybějící maska / účet → `account_not_found` jako u masky
+    kategorie.
   - `fee.out` → 568 (bankovní poplatky), `interest.in` → 662, `interest.out`
     → 562, `tax.*` → … — reálný účet z kategorie předpisu (jako `acc.entry`).
 - **Contributoři deníku (#79 D3b, `journalContributors`):** po sestavení
@@ -358,8 +361,9 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
   bez příspěvku. Konzument: úhrada proformy nalezená ve skupině
   s `payment_category` dostane v témže deníku uzavírací pár
   `799 MD / 756 DAL` (`CaseClosureContributor`, `accbal.md` §5.8):
-  `221 MD / 324 DAL / 799 MD / 756100 DAL`. Sdílený mechanismus obou
-  enginů: `docs/accounting.md` §7.1.
+  `221 MD / 324 DAL / 799 MD / 756100 DAL`; výdaj na přijatou výzvu
+  (#106 D2): `314 MD / 221 DAL / 757100 MD / 799100 DAL`. Sdílený
+  mechanismus obou enginů: `docs/accounting.md` §7.1.
 
 ### 6.2 Pohyby transakce — `txOperations`
 
@@ -588,6 +592,10 @@ přegenerace clearing → 311/321.
     engine). Uzavření případu proformy (`799 MD / 756 DAL`) doplní do
     deníku transakce `CaseClosureContributor` přes `journalContributors`
     (#79 D3b, §6.1, `accbal.md` §5.8) — engine o proformách nic neví.
+    Zrcadlo pro přijaté výzvy (#106 D2): skupina `proformas_in` →
+    `advances.given` (314 MD), uzavření `757 MD / 799 DAL`; výdaj bez
+    otevřené výzvy čeká na clearingu 261300 a po jejím zaúčtování ho
+    přeúčtuje `ClearingRerouteHandler`.
 
 ---
 

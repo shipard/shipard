@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 336 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 308.
+Celkem 337 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 309.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -297,6 +297,7 @@ Saldokonto nad účetním deníkem. Designový dokument
 | `doc-proforma-out.md` | #79 D1 | Zálohová faktura vydaná (`invpo`): nový typ dokladu a modul `docs.proformasOut`, atribut `tax_document` — DPH jen informativně, bez DUZP a období DPH, kanonický typ `proformaIssued` |
 | `accbal-proformas-out.md` | #79 D2, D3a | Proforma na podrozvahu `756100/799100` (účty, povaha 75–79, provisioner), předpis `invpo`, skupina saldokonta `proformas_out`, úhrada nalezená v ní se účtuje na přijatou zálohu (`payment_category`) |
 | `accbal-proforma-closure.md` | #79 D3b, D3c | Core rozhraní `JournalContributor` volané oběma enginy před zápisem deníku; `CaseClosureContributor` uzavře případ proformy (`799/756`) úhradou na 324 z banky i pokladny, kurzem proformy, do výše rezidua; reroute pokladní platby dřív než proforma |
+| `doc-proforma-in.md` | #106 D1, D2 | Zálohová faktura přijatá (`invpi`): typ dokladu a modul `docs.proformasIn`, báze přijatých faktur v `docs.core`, podrozvaha `799100/757100`, skupina saldokonta `proformas_in`, úhrada jako poskytnutá záloha a uzavření stávajícím contributorem |
 
 ## Majetek (economy.assets)
 

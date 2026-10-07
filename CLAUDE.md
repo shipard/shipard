@@ -213,13 +213,18 @@ smí názvy nést — tam jsou potřeba k práci.
 - Vzor: `docs.core` registruje `DocsHeadsForm` jako defaultClass,
   `docs.invoicesOut` přidává `invno → IssuedInvoiceForm`, `docs.invoicesIn`
   přidává `invni → ReceivedInvoiceForm`, `docs.proformasOut` přidává
-  `invpo → ProformaOutForm` (#79 D1). Hierarchie tříd:
-  `TableForm → DocsHeadsFormBase → {DocsHeadsForm, ReceivedInvoiceForm,
+  `invpo → ProformaOutForm` (#79 D1), `docs.proformasIn` přidává
+  `invpi → ProformaInForm` (#106 D1). Hierarchie tříd:
+  `TableForm → DocsHeadsFormBase → {DocsHeadsForm,
+  ReceivedInvoiceFormBase → {ReceivedInvoiceForm, ProformaInForm},
   IssuedInvoiceFormBase → {IssuedInvoiceForm, ProformaOutForm}, CashDeskFormBase → …}`;
-  `IssuedInvoiceFormBase` (docs.core) drží sdílený layout hlavičky a tab
-  Nastavení vydaných dokladů — nekopírovat `buildHeaderTab()` per modul.
-- **Nedaňový typ dokladu**: `docTypes[].tax_document: false` (zatím jen
-  `invpo`; chybí = daňový). Jediné čtení `DocTypes::isTaxDocument()` /
+  `IssuedInvoiceFormBase` / `ReceivedInvoiceFormBase` (docs.core) drží
+  sdílený layout hlavičky a tab Nastavení vydaných / přijatých dokladů —
+  nekopírovat `buildHeaderTab()` per modul. Document třídy přijatých
+  dokladů dědí `ReceivedInvoiceDocumentBase` (docs.core, doporučení
+  bankovního spojení dodavatele při Potvrzení).
+- **Nedaňový typ dokladu**: `docTypes[].tax_document: false` (`invpo`
+  a `invpi`; chybí = daňový). Jediné čtení `DocTypes::isTaxDocument()` /
   `nonTaxDocTypes()` (docs.core) — nikdy `=== 'invpo'` v kódu. Řídí:
   `DocDocument::applyDateDefaults` (DUZP/DPPD null i z payloadu),
   `DocsHeadsFormBase::isTaxDocument()` (skrytá pole, bez defaultu DUZP),

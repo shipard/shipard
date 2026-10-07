@@ -121,10 +121,15 @@ zálohy* s variabilním symbolem proformy. **Daňový doklad k přijaté záloze
 Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou. Viz
 [Zálohová faktura](faktury-vydane/zalohova-faktura.md).
 
-**Zálohovou fakturu přijatou Shipard nezná.** Výzvu k platbě od dodavatele
-AI z pošty pozná a dá ji na Dashboard do sekce **K vyřízení**, ale doklad
-z ní nevznikne — zaplatíš podle e-mailu a zálohu zaúčtuješ až s fakturou.
-Viz [Příjem pošty](posta/prijem-posty.md).
+**Výzvu k platbě od dodavatele Shipard z pošty sám nezaloží.** AI ji
+v poště pozná a dá ji na Dashboard do sekce **K vyřízení**, doklad z ní ale
+nevznikne — zálohovou fakturu přijatou zadáš ručně v **Nákup → Zálohové
+faktury přijaté** a zaplatíš podle ní. **Odpočet poskytnuté zálohy na
+konečné faktuře přijaté** zadáš ručně řádkem *Odpočet poskytnuté zálohy*
+s variabilním symbolem výzvy — Shipard zálohu k faktuře sám nenabídne
+a **daňový doklad k poskytnuté záloze** zatím neumí. Viz
+[Zálohová faktura přijatá](faktury-prijate/zalohova-faktura-prijata.md)
+a [Příjem pošty](posta/prijem-posty.md).
 
 ---
 

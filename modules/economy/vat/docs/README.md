@@ -84,7 +84,8 @@ spočítaným) pravidlem `VatPeriodAssigner`:
   datum** = `COALESCE(vat_dppd, vat_duzp)` oříznuté do rozsahu instance
   přiznání dokladu. Jinak NULL (= doklad do hlášení nespadá).
 - **Nedaňový typ dokladu** (`docTypes[].tax_document: false`, zálohová
-  faktura vydaná `invpo`, #79 D1) do instancí nepatří: handler nastaví
+  faktura vydaná `invpo`, #79 D1, a zálohová faktura přijatá `invpi`,
+  #106 D1) do instancí nepatří: handler nastaví
   všechna tři období na NULL **i při ruční hodnotě v payloadu** (výjimka
   není), `VatPeriodLockProvider` pro něj žádné nové ukazatele nepočítá
   a `VatDocumentSelection` takové typy vyřazuje (`NOT IN` ze seznamu

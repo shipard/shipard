@@ -101,9 +101,10 @@ Karty se řadí podle lhůty, bez lhůty jsou na konci. Jakmile věc vyřídíš
 klikni na **Vyřízeno** — zpráva jde do Archivu. **Otevřít e-mail** ukáže
 původní zprávu, **Do koše** ji zahodí. Dodavatel u takové zprávy je ten,
 od koho opravdu je (registrátor, úřad), ne kolega, který ji přeposlal.
-Výzvy k platbě zatím chodí sem; až bude mít Shipard zálohové faktury
-přijaté, budou z nich vznikat doklady (viz
-[Co Shipard dnes neumí](../co-dnes-nejde.md)).
+Výzvy k platbě zatím chodí sem; zálohovou fakturu přijatou z nich
+Shipard sám nezaloží — zadáš ji ručně, viz
+[Zálohová faktura přijatá](../faktury-prijate/zalohova-faktura-prijata.md)
+a [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 **Když zpráva jen informuje.** Potvrzení platby, změnu stavu objednávky,
 notifikaci z banky, doručenku, sken obálky i reklamu a newsletter AI
