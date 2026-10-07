@@ -671,13 +671,16 @@
     {"number":"71","name":"Účet zisků a ztrát","short_name":"Účet zisků a ztrát","account_kind":9},
     {"number":"710","name":"Účet zisků a ztrát","short_name":"Účet zisků a ztrát","account_kind":9},
     {"number":"710100","name":"Účet zisků a ztrát","short_name":"Účet zisků a ztrát","account_kind":9},
-    // Podrozvaha (#79 D2): skupiny 75–79 mají povahu 6 (Podrozvaha), ne 0 —
-    // rozvaha ani výsledovka třídu 7 nečtou. 756100 = vydané zálohové faktury,
-    // 799100 = společný evidenční protiúčet; obojí zajišťuje i
-    // OffBalanceAccountsProvisioner (bezpodmínečně, migrované rozvrhy).
+    // Podrozvaha (#79 D2, #106 D2): skupiny 75–79 mají povahu 6 (Podrozvaha),
+    // ne 0 — rozvaha ani výsledovka třídu 7 nečtou. 756100 = vydané zálohové
+    // faktury, 757100 = přijaté zálohové faktury, 799100 = společný evidenční
+    // protiúčet; vše zajišťuje i OffBalanceAccountsProvisioner (bezpodmínečně,
+    // migrované rozvrhy).
     {"number":"75","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
     {"number":"756","name":"Vydané zálohové faktury","short_name":"Vydané zálohové faktury","account_kind":6},
     {"number":"756100","name":"Vydané zálohové faktury","short_name":"Vydané zálohové faktury","account_kind":6},
+    {"number":"757","name":"Přijaté zálohové faktury","short_name":"Přijaté zálohové faktury","account_kind":6},
+    {"number":"757100","name":"Přijaté zálohové faktury","short_name":"Přijaté zálohové faktury","account_kind":6},
     {"number":"76","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
     {"number":"77","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
     {"number":"78","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},

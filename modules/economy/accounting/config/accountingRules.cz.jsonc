@@ -34,6 +34,7 @@
         "fx.gain":          {"name:cs": "Kurzové zisky"},
         "cash.transit":     {"name:cs": "Převod peněz — peníze na cestě"},
         "proformas.out":     {"name:cs": "Zálohové faktury vydané (podrozvaha)"},
+        "proformas.in":      {"name:cs": "Zálohové faktury přijaté (podrozvaha)"},
         "offbalance.contra": {"name:cs": "Evidenční protiúčet podrozvahy"},
 
         "bank.unmatched.in":  {"name:cs": "Banka — nespárovaný příjem"},
@@ -86,12 +87,15 @@
         // řeší se rozvrhem DS.
         {"cat": "cash.transit",       "accountMask": "261100"},
 
-        // Podrozvaha (#79 D2): zálohová faktura vydaná 756 MD / 799 DAL.
-        // 799 je společný evidenční protiúčet pro budoucí podrozvahové
-        // evidence. Účty zajišťuje OffBalanceAccountsProvisioner bezpodmínečně.
-        // Úhradu proformy lookup přesměruje na advances.received (D3a,
-        // payment_category skupiny saldokonta) — 756 se úhradou nikdy neúčtuje.
+        // Podrozvaha (#79 D2, #106 D2): zálohová faktura vydaná 756 MD / 799 DAL,
+        // zálohová faktura přijatá 799 MD / 757 DAL. 799 je společný evidenční
+        // protiúčet pro budoucí podrozvahové evidence. Účty zajišťuje
+        // OffBalanceAccountsProvisioner bezpodmínečně. Úhradu proformy lookup
+        // přesměruje na advances.received / advances.given (D3a,
+        // payment_category skupiny saldokonta) — 756 ani 757 se úhradou nikdy
+        // neúčtuje, uzavírá je CaseClosureContributor.
         {"cat": "proformas.out",     "accountMask": "756"},
+        {"cat": "proformas.in",      "accountMask": "757"},
         {"cat": "offbalance.contra", "accountMask": "799"},
 
         // DPH analytiky per kód — konvence 343{NNN}, NNN = číselná část kódu.
@@ -221,6 +225,19 @@
                     "text": "Zálohová faktura vydaná"},
                 {"cat": "offbalance.contra", "src": "head", "col": "total", "side": 1,
                     "text": "Zálohová faktura vydaná"}
+            ]
+        },
+        // Zálohová faktura přijatá (#106 D2): jen podrozvaha, celkovou částkou
+        // hlavičky, zrcadlo invpo — předpis na straně DAL jako závazek, aby
+        // skupina proformas_in byla pro výdej přirozená (LedgerOpenItemLookup).
+        // Žádné DPH, náklady ani rozvaha. Partner, VS, SS a splatnost z hlavičky
+        // → klíč případu. Úhradu uzavírá CaseClosureContributor (757 MD / 799 DAL).
+        {"docType": "invpi",
+            "accounting": [
+                {"cat": "offbalance.contra", "src": "head", "col": "total", "side": 0,
+                    "text": "Zálohová faktura přijatá"},
+                {"cat": "proformas.in", "src": "head", "col": "total", "side": 1,
+                    "text": "Zálohová faktura přijatá"}
             ]
         },
         {"docType": "invni",

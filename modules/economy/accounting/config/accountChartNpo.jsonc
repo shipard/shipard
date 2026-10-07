@@ -429,13 +429,16 @@
     {"number":"69","name":"Provozní dotace","short_name":"Provozní dotace","account_kind":3,"results_type":1},
     {"number":"691","name":"Provozní dotace","short_name":"Provozní dotace","account_kind":3,"results_type":1},
     {"number":"691100","name":"Provozní dotace","short_name":"Provozní dotace","account_kind":3,"results_type":1},
-    // Třída 7 = podrozvaha (#79 D2): NPO osnova ji původně neměla, účtovací
-    // předpis ale míří pevnou maskou 756/799 nezávisle na variantě osnovy.
-    // Povaha 6 (Podrozvaha); rozvaha ani výsledovka třídu 7 nečtou.
+    // Třída 7 = podrozvaha (#79 D2, #106 D2): NPO osnova ji původně neměla,
+    // účtovací předpis ale míří pevnou maskou 756/757/799 nezávisle na
+    // variantě osnovy. Povaha 6 (Podrozvaha); rozvaha ani výsledovka třídu 7
+    // nečtou.
     {"number":"7","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
     {"number":"75","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
     {"number":"756","name":"Vydané zálohové faktury","short_name":"Vydané zálohové faktury","account_kind":6},
     {"number":"756100","name":"Vydané zálohové faktury","short_name":"Vydané zálohové faktury","account_kind":6},
+    {"number":"757","name":"Přijaté zálohové faktury","short_name":"Přijaté zálohové faktury","account_kind":6},
+    {"number":"757100","name":"Přijaté zálohové faktury","short_name":"Přijaté zálohové faktury","account_kind":6},
     {"number":"79","name":"Podrozvahové účty","short_name":"Podrozvahové účty","account_kind":6},
     {"number":"799","name":"Evidenční protiúčet podrozvahy","short_name":"Evidenční protiúčet podrozvahy","account_kind":6},
     {"number":"799100","name":"Evidenční protiúčet podrozvahy","short_name":"Evidenční protiúčet podrozvahy","account_kind":6},

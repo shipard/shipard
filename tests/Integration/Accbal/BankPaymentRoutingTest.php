@@ -300,6 +300,75 @@ class BankPaymentRoutingTest extends IntegrationTestCase
         $this->assertSame(0, (int) $advance['bal_side']);
     }
 
+    // ── 3c. Zálohová faktura přijatá: výdaj na poskytnutou zálohu (#106 D2) ─
+
+    public function testOpenReceivedProformaRoutesOutgoingPaymentToGivenAdvances(): void
+    {
+        // Výzva 12 100 na podrozvaze (757 DAL, skupina proformas_in
+        // s payment_category advances.given) → výdaj s jejím VS jde na
+        // 314 MD, ne na 757; saldo z 314 MD udělá předpis v Poskytnutých
+        // zálohách pod klíčem výzvy (D23). Uzavření dělá contributor,
+        // tady jen routing.
+        $advanceAccount = $this->ensureAccountByMask('314')['number'];
+        $this->seedRequest('proformas_in', '757100', 12100.00);
+
+        [$txId, $result] = $this->accountPayment(12100.00, ['direction' => 2, 'operation' => 'payment.out']);
+
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+        $this->assertSame($advanceAccount, $this->counterpartyAccount($txId), 'úhrada výzvy na poskytnutou zálohu, ne na 757');
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'), 'na clearingu nic');
+        $advance = $this->ledgerMove($txId, 'advances_given');
+        $this->assertNotNull($advance, 'ledger: poskytnutá záloha pod klíčem výzvy');
+        $this->assertSame(0, (int) $advance['bal_side'], '314 MD = předpisová strana Poskytnutých záloh (D23)');
+        $this->assertEqualsWithDelta(12100.00, (float) $advance['amount'], 0.001);
+        $this->assertSame(self::VS, (string) $advance['payment_reference']);
+    }
+
+    public function testOutgoingPaymentPrefersOpenPayableOverReceivedProforma(): void
+    {
+        // Stejný VS na otevřené faktuře přijaté i na výzvě: Závazky (20)
+        // jsou v pořadí nastavení před Zálohovými fakturami přijatými (25).
+        $payable = $this->ensureAccountByMask('321')['number'];
+        $this->ensureAccountByMask('314');
+        $this->seedRequest('payables', $payable, 12100.00);
+        $this->seedRequest('proformas_in', '757100', 12100.00);
+
+        [$txId] = $this->accountPayment(12100.00, ['direction' => 2, 'operation' => 'payment.out']);
+
+        $this->assertSame($payable, $this->counterpartyAccount($txId), 'Závazky před výzvami');
+        $this->assertNotNull($this->ledgerMove($txId, 'payables'));
+        $this->assertNull($this->ledgerMove($txId, 'advances_given'));
+    }
+
+    public function testPaymentBeforeReceivedProformaIsReroutedToGivenAdvances(): void
+    {
+        $this->ensureAccountByMask('314');
+        $this->ensureAccountByNumber('757100');
+        $this->ensureAccountByNumber('799100');
+        $this->ensureAccountByNumber('261300');
+        [$txId] = $this->accountPayment(12100.00, ['direction' => 2, 'operation' => 'payment.out']);
+        $this->assertSame('261300', $this->counterpartyAccount($txId), 'bez předpisu na výdajovém clearingu');
+
+        $headId = $this->insertInvoice(10000.00, 21.0, 'invpi');
+        $result = (new AccountingEngine($this->db->getDibiConnection(), $this->config, $this->journalEvents))
+            ->accountDocument($headId);
+        $this->assertSame(1, $result['state'], json_encode($result['messages']));
+
+        $request = $this->db->fetchRow(
+            'SELECT account_number, balance FROM economy_accbal_ledger WHERE doc_head = %i AND bal_side = 0',
+            $headId,
+        );
+        $this->assertNotNull($request, 'výzva má předpis v ledgeru');
+        $this->assertSame('757100', (string) $request['account_number']);
+        $this->assertSame($this->balanceId('proformas_in'), (int) $request['balance']);
+
+        $this->assertStringStartsWith('314', (string) $this->counterpartyAccount($txId), 'trigger přeúčtoval úhradu na poskytnutou zálohu');
+        $this->assertNull($this->ledgerMove($txId, 'unmatched_payments'), 'clearing pohyb zmizel');
+        $advance = $this->ledgerMove($txId, 'advances_given');
+        $this->assertNotNull($advance, 'předpis v Poskytnutých zálohách pod klíčem výzvy');
+        $this->assertSame(0, (int) $advance['bal_side']);
+    }
+
     public function testPaymentCategoryWithoutMaskIsAccountingError(): void
     {
         // Skupina s kategorií, kterou předpis nezná → chybový řádek jako

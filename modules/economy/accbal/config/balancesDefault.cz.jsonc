@@ -91,6 +91,24 @@
             {"account_number": "379", "acc_side": 0, "amounts_sign": 1, "bal_side": 1, "modify_sign": false}
         ]
     },
+    // Zálohové faktury přijaté (#106 D2): podrozvahová evidence výzev
+    // k platbě. Předpis = výzva (757 DAL), úhrada = uzavření (757 MD,
+    // CaseClosureContributor). Výdaj nalezený v této skupině se účtuje na
+    // poskytnutou zálohu (payment_category), ne na 757. Pořadí 25: VS, který
+    // sedí i na otevřenou fakturu, najde nejdřív Závazky (20).
+    {
+        "code": "proformas_in",
+        "name": "Zálohové faktury přijaté",
+        "short_name": "Zál. faktury přij.",
+        "sort_order": 25,
+        "show_in_navigation": 1,
+        "payment_category": "advances.given",
+        "closing_category": "offbalance.contra",
+        "accounts": [
+            {"account_number": "757", "acc_side": 1, "amounts_sign": 1, "bal_side": 0, "modify_sign": false, "note": "Zálohová faktura přijata"},
+            {"account_number": "757", "acc_side": 0, "amounts_sign": 1, "bal_side": 1, "modify_sign": false, "note": "Zálohová faktura uhrazena / uzavřena"}
+        ]
+    },
     {
         "code": "advances_given",
         "name": "Poskytnuté zálohy",

@@ -23,6 +23,7 @@ use Shipard\Module\Economy\Accbal\CaseResidual;
 class CaseClosureContributorTest extends TestCase
 {
     private const PROFORMAS = 6;
+    private const PROFORMAS_IN = 7;
     private const FY = 5;
 
     /** @var array<string, CaseResidual|null> "balance|fy|partner|vs|ss|cur" → agregát */
@@ -47,6 +48,23 @@ class CaseClosureContributorTest extends TestCase
         ]];
     }
 
+    /**
+     * Zálohové faktury přijaté (#106 D2): předpis 757 DAL, úhrada jde na
+     * poskytnutou zálohu 314, uzavření proti 799 — zrcadlo targets().
+     *
+     * @return list<array{balance: int, name: string, request_side: int, payment_mask: string, closing_category: string}>
+     */
+    private function targetsIn(): array
+    {
+        return [[
+            'balance'          => self::PROFORMAS_IN,
+            'name'             => 'Zálohové faktury přijaté',
+            'request_side'     => 1,
+            'payment_mask'     => '314',
+            'closing_category' => 'offbalance.contra',
+        ]];
+    }
+
     private static function line(
         int $side, string $account, ?string $operation, float $amount,
         ?int $partner = 42, ?string $vs = 'PRO-1', ?string $ss = null, ?float $dom = null,
@@ -59,17 +77,27 @@ class CaseClosureContributorTest extends TestCase
         return new CaseResidual($requested, $requestedHc, $paid, $paidHc, '756100', '756100');
     }
 
-    private function seedCase(CaseResidual $case, int $partner = 42, string $vs = 'PRO-1', ?string $ss = null, string $cur = 'czk', int $fy = self::FY): void
+    private function seedCase(CaseResidual $case, int $partner = 42, string $vs = 'PRO-1', ?string $ss = null, string $cur = 'czk', int $fy = self::FY, int $balance = self::PROFORMAS): void
     {
-        $this->cases[implode('|', [self::PROFORMAS, $fy, $partner, $vs, $ss ?? '', $cur])] = $case;
+        $this->cases[implode('|', [$balance, $fy, $partner, $vs, $ss ?? '', $cur])] = $case;
     }
 
-    /** @param list<JournalLineView> $lines @return list<JournalLineRequest> */
-    private function closures(array $lines, ?string $currency = 'czk'): array
+    private static function proformaIn(float $requested, float $requestedHc, float $paid = 0.0, float $paidHc = 0.0): CaseResidual
+    {
+        return new CaseResidual($requested, $requestedHc, $paid, $paidHc, '757100', '757100');
+    }
+
+    private function seedCaseIn(CaseResidual $case, string $vs = 'FPZ-1'): void
+    {
+        $this->seedCase($case, vs: $vs, balance: self::PROFORMAS_IN);
+    }
+
+    /** @param list<JournalLineView> $lines @param ?list<array<string, mixed>> $targets @return list<JournalLineRequest> */
+    private function closures(array $lines, ?string $currency = 'czk', ?array $targets = null): array
     {
         $this->asked = [];
         return CaseClosureContributor::closures(
-            $this->context($currency), $lines, $this->targets(),
+            $this->context($currency), $lines, $targets ?? $this->targets(),
             function (int $balance, array $key): ?CaseResidual {
                 $this->asked[] = [$balance, $key];
                 $id = implode('|', [$balance, $key['fiscal_year'], $key['partner'], $key['payment_reference'], $key['specific_symbol'] ?? '', $key['currency']]);
@@ -275,6 +303,83 @@ class CaseClosureContributorTest extends TestCase
             $this->context(), [self::line(1, '324100', 'payment.in', 100.0)], [],
             static fn(): ?CaseResidual => self::proforma(100.0, 100.0),
         ));
+    }
+
+    // ── Zrcadlo: Zálohové faktury přijaté (#106 D2) — předpis na DAL ─────────
+
+    public function testReceivedProformaIsClosedByOutgoingPaymentOnGivenAdvances(): void
+    {
+        $this->seedCaseIn(self::proformaIn(12100.0, 12100.0));
+
+        $requests = $this->closures([self::line(0, '314100', 'payment.out', 12100.0, vs: 'FPZ-1')], targets: $this->targetsIn());
+
+        $this->assertSame([
+            [1, 'offbalance.contra', null, 12100.0, 12100.0],
+            [0, null, '757100', 12100.0, 12100.0],
+        ], self::shape($requests), '799 DAL (předpisová strana skupiny) / 757100 MD (strana úhrady)');
+        foreach ($requests as $r) {
+            $this->assertSame(42, $r->partner);
+            $this->assertSame('FPZ-1', $r->paymentReference);
+            $this->assertSame('Uzavření zálohové faktury přijaté FPZ-1', $r->text);
+        }
+        $this->assertSame([[self::PROFORMAS_IN, [
+            'fiscal_year' => self::FY, 'partner' => 42, 'payment_reference' => 'FPZ-1', 'specific_symbol' => null, 'currency' => 'czk',
+        ]]], $this->asked);
+    }
+
+    public function testCashAdvanceGivenClosesReceivedProforma(): void
+    {
+        $this->seedCaseIn(self::proformaIn(12100.0, 12100.0));
+
+        $requests = $this->closures([self::line(0, '314100', 'advance.given', 12100.0, vs: 'FPZ-1')], targets: $this->targetsIn());
+
+        $this->assertSame([
+            [1, 'offbalance.contra', null, 12100.0, 12100.0],
+            [0, null, '757100', 12100.0, 12100.0],
+        ], self::shape($requests));
+    }
+
+    public function testReceivedProformaPartialPaymentAndOverpaymentCloseOnlyResidual(): void
+    {
+        $this->seedCaseIn(self::proformaIn(12100.0, 12100.0));
+        $partial = $this->closures([self::line(0, '314100', 'payment.out', 5000.0, vs: 'FPZ-1')], targets: $this->targetsIn());
+        $this->assertSame([[1, 'offbalance.contra', null, 5000.0, 5000.0], [0, null, '757100', 5000.0, 5000.0]], self::shape($partial));
+
+        $this->seedCaseIn(self::proformaIn(12100.0, 12100.0, 5000.0, 5000.0));
+        $over = $this->closures([self::line(0, '314100', 'payment.out', 10000.0, vs: 'FPZ-1')], targets: $this->targetsIn());
+        $this->assertSame([[1, 'offbalance.contra', null, 7100.0, 7100.0], [0, null, '757100', 7100.0, 7100.0]], self::shape($over), 'jen do výše rezidua');
+    }
+
+    public function testReceivedProformaIgnoresCreditSideOtherMaskAndInvoiceOperations(): void
+    {
+        $this->seedCaseIn(self::proformaIn(12100.0, 12100.0));
+        $in = $this->targetsIn();
+
+        $this->assertSame([], $this->closures([self::line(1, '314100', 'payment.out', 12100.0, vs: 'FPZ-1')], targets: $in), '314 DAL (vratka zálohy) nespouští');
+        $this->assertSame([], $this->closures([self::line(0, '324100', 'payment.out', 12100.0, vs: 'FPZ-1')], targets: $in), 'mimo masku 314');
+        $this->assertSame([], $this->closures([self::line(0, '314100', 'purchase.advanceDeduction', 12100.0, vs: 'FPZ-1')], targets: $in), 'odpočet zálohy na faktuře nespouští');
+        $this->assertSame([], $this->closures([self::line(0, '314100', 'payment.out', 12100.0, vs: 'PRO-1')], targets: $in), 'jiný VS = jiný klíč');
+    }
+
+    public function testBothProformaGroupsAreMatchedByTheirOwnSide(): void
+    {
+        // Oba cíle najednou (seed): příjem 324 DAL uzavírá vydanou, výdaj
+        // 314 MD přijatou; strana i maska rozhodují, pořadí cílů ne.
+        $this->seedCase(self::proforma(100.0, 100.0));
+        $this->seedCaseIn(self::proformaIn(200.0, 200.0));
+        $both = [...$this->targets(), ...$this->targetsIn()];
+
+        $requests = $this->closures([
+            self::line(1, '324100', 'payment.in', 100.0),
+            self::line(0, '314100', 'payment.out', 200.0, vs: 'FPZ-1'),
+        ], targets: $both);
+
+        $this->assertSame([
+            [0, 'offbalance.contra', null, 100.0, 100.0],
+            [1, null, '756100', 100.0, 100.0],
+            [1, 'offbalance.contra', null, 200.0, 200.0],
+            [0, null, '757100', 200.0, 200.0],
+        ], self::shape($requests));
     }
 
     // ── CaseResidual ─────────────────────────────────────────────────────────

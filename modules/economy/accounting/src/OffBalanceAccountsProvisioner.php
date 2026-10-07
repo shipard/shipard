@@ -8,14 +8,15 @@ use Shipard\Core\Database\DataSourceConnection;
 
 /**
  * Bezpodmínečně zajistí podrozvahové účty, na které míří účtovací předpis
- * pevnou maskou (#79 D2):
+ * pevnou maskou (#79 D2, #106 D2):
  *   - 756100 proformas.out — vydané zálohové faktury (předpis proformy)
+ *   - 757100 proformas.in — přijaté zálohové faktury (předpis výzvy k platbě)
  *   - 799100 offbalance.contra — evidenční protiúčet podrozvahy (společný
  *     pro budoucí podrozvahové evidence)
- *   - syntetiky 75 / 756 / 79 / 799, když v rozvrhu chybí
+ *   - syntetiky 75 / 756 / 757 / 79 / 799, když v rozvrhu chybí
  *
  * Vzor TransitAccountsProvisioner: definice inline (enginový kontrakt —
- * masky 756/799 v accountingRules), NEČTE seed osnovy; drift proti seedům
+ * masky 756/757/799 v accountingRules), NEČTE seed osnovy; drift proti seedům
  * hlídá OffBalanceAccountingRulesTest. Volá se z DsUpgradeCommand
  * bezpodmínečně, i pod skipProvisioning — migrovaný rozvrh má zpravidla jen
  * syntetiky 75 a 79 bez analytik a potvrzená proforma by skončila chybovým
@@ -40,6 +41,8 @@ class OffBalanceAccountsProvisioner
         ['number' => '75',     'name' => 'Podrozvahové účty',              'short_name' => 'Podrozvahové účty',              'account_kind' => self::KIND_OFF_BALANCE],
         ['number' => '756',    'name' => 'Vydané zálohové faktury',        'short_name' => 'Vydané zálohové faktury',        'account_kind' => self::KIND_OFF_BALANCE],
         ['number' => '756100', 'name' => 'Vydané zálohové faktury',        'short_name' => 'Vydané zálohové faktury',        'account_kind' => self::KIND_OFF_BALANCE],
+        ['number' => '757',    'name' => 'Přijaté zálohové faktury',       'short_name' => 'Přijaté zálohové faktury',       'account_kind' => self::KIND_OFF_BALANCE],
+        ['number' => '757100', 'name' => 'Přijaté zálohové faktury',       'short_name' => 'Přijaté zálohové faktury',       'account_kind' => self::KIND_OFF_BALANCE],
         ['number' => '79',     'name' => 'Podrozvahové účty',              'short_name' => 'Podrozvahové účty',              'account_kind' => self::KIND_OFF_BALANCE],
         ['number' => '799',    'name' => 'Evidenční protiúčet podrozvahy', 'short_name' => 'Evidenční protiúčet podrozvahy', 'account_kind' => self::KIND_OFF_BALANCE],
         ['number' => '799100', 'name' => 'Evidenční protiúčet podrozvahy', 'short_name' => 'Evidenční protiúčet podrozvahy', 'account_kind' => self::KIND_OFF_BALANCE],

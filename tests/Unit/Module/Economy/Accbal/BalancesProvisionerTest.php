@@ -94,11 +94,27 @@ class BalancesProvisionerTest extends TestCase
         $this->assertArrayNotHasKey('creditNoteRule', $group['accounts'][0], 'bez sign-pravidel → legacy transformace ji nemění');
 
         foreach ($this->seedGroups() as $g) {
-            if ($g['code'] !== 'proformas_out') {
-                $this->assertArrayNotHasKey('payment_category', $g, "{$g['code']}: kategorie úhrady má jen skupina proforem");
+            if (!in_array($g['code'], ['proformas_out', 'proformas_in'], true)) {
+                $this->assertArrayNotHasKey('payment_category', $g, "{$g['code']}: kategorie úhrady mají jen skupiny proforem");
                 $this->assertArrayNotHasKey('closing_category', $g);
             }
         }
+    }
+
+    // ── #106 D2: skupina proformas_in — zrcadlo na vstupní straně ────────────
+
+    public function testSeedHasProformasInWithPaymentAndClosingCategory(): void
+    {
+        $group = array_values(array_filter($this->seedGroups(), fn(array $g) => $g['code'] === 'proformas_in'))[0] ?? null;
+        $this->assertNotNull($group, 'seed má skupinu Zálohové faktury přijaté');
+        $this->assertSame('advances.given', $group['payment_category'], 'úhrada výzvy jde na poskytnutou zálohu (314)');
+        $this->assertSame('offbalance.contra', $group['closing_category'], 'uzavření proti 799 (CaseClosureContributor)');
+        $this->assertSame(25, $group['sort_order'], 'za Závazky (20) — VS sedící i na otevřenou fakturu najde lookup nejdřív tam');
+        $this->assertSame(1, $group['show_in_navigation']);
+        $numbers = array_map(fn(array $a) => $a['account_number'] . '/' . $a['acc_side'] . '/' . $a['bal_side'], $group['accounts']);
+        $this->assertSame(['757/1/0', '757/0/1'], $numbers, '757 DAL = předpis (přirozená pro výdaj), 757 MD = úhrada / uzavření');
+        $this->assertSame([false], array_values(array_unique(array_column($group['accounts'], 'modify_sign'))));
+        $this->assertArrayNotHasKey('creditNoteRule', $group['accounts'][0], 'bez sign-pravidel → legacy transformace ji nemění');
     }
 
     public function testCreatedGroupCarriesCategoriesInBothVariants(): void
@@ -116,6 +132,13 @@ class BalancesProvisionerTest extends TestCase
             $rows = array_values(array_filter($store->accounts, fn(array $a) => (int) $a['balance'] === (int) $byCode['proformas_out']['id']));
             $this->assertSame(['756', '756'], array_column($rows, 'account_number'));
             $this->assertSame([$legacy ? 0 : 1, $legacy ? 0 : 1], array_column($rows, 'amounts_sign'), 'legacy = částky Všechny; záporná proforma v datech není');
+
+            $this->assertSame('advances.given', $byCode['proformas_in']['payment_category'], '#106 D2, legacy=' . var_export($legacy, true));
+            $this->assertSame('offbalance.contra', $byCode['proformas_in']['closing_category']);
+            $rowsIn = array_values(array_filter($store->accounts, fn(array $a) => (int) $a['balance'] === (int) $byCode['proformas_in']['id']));
+            $this->assertSame(['757', '757'], array_column($rowsIn, 'account_number'));
+            $this->assertSame([1, 0], array_map('intval', array_column($rowsIn, 'acc_side')), 'předpis DAL, úhrada MD');
+            $this->assertSame([$legacy ? 0 : 1, $legacy ? 0 : 1], array_column($rowsIn, 'amounts_sign'));
         }
     }
 

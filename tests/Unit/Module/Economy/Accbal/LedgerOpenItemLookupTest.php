@@ -29,6 +29,7 @@ class LedgerOpenItemLookupTest extends TestCase
     private const ADVANCES_RECEIVED = 4;
     private const UNMATCHED         = 5;
     private const PROFORMAS         = 6;
+    private const PROFORMAS_IN      = 7;
     private const FY                = 5;
 
     /** @var list<array{sql: string, params: list<mixed>}> */
@@ -99,6 +100,25 @@ class LedgerOpenItemLookupTest extends TestCase
         ];
     }
 
+    /** Seed vč. obou skupin proforem (#79 D3a, #106 D2): vydané za Pohledávkami (předpis MD), přijaté za Závazky (předpis DAL). */
+    private function settingsWithBothProformas(): array
+    {
+        return [
+            self::rule(self::RECEIVABLES, '311', 0, 0),
+            self::rule(self::RECEIVABLES, '311', 1, 1),
+            self::rule(self::PROFORMAS, '756', 0, 0, 0, 1, 'advances.received', 'offbalance.contra'),
+            self::rule(self::PROFORMAS, '756', 1, 1, 0, 1, 'advances.received', 'offbalance.contra'),
+            self::rule(self::PAYABLES, '321', 1, 0),
+            self::rule(self::PAYABLES, '321', 0, 1),
+            self::rule(self::PROFORMAS_IN, '757', 1, 0, 0, 1, 'advances.given', 'offbalance.contra'),
+            self::rule(self::PROFORMAS_IN, '757', 0, 1, 0, 1, 'advances.given', 'offbalance.contra'),
+            self::rule(self::ADVANCES_GIVEN, '314', 0, 0),
+            self::rule(self::ADVANCES_GIVEN, '314', 1, 1),
+            self::rule(self::ADVANCES_RECEIVED, '324', 1, 0),
+            self::rule(self::ADVANCES_RECEIVED, '324', 0, 1),
+        ];
+    }
+
     private function lookup(): LedgerOpenItemLookup
     {
         $this->queries = [];
@@ -143,6 +163,64 @@ class LedgerOpenItemLookupTest extends TestCase
     private static function row(int $balSide, string $account, float $amount, ?float $amountHc = null): array
     {
         return ['id' => random_int(1, 1_000_000), 'bal_side' => $balSide, 'account_number' => $account, 'amount' => $amount, 'amount_hc' => $amountHc ?? $amount];
+    }
+
+    // ── #106 D2: Zálohové faktury přijaté — výdaj na poskytnutou zálohu ──────
+
+    public function testOutgoingFindsOpenReceivedProformaWithGivenAdvanceCategory(): void
+    {
+        $this->settings = $this->settingsWithBothProformas();
+        $this->ledger[self::PROFORMAS_IN] = [self::row(0, '757100', 12100.00)];
+
+        $item = $this->lookup()->findOpenRequest(42, 'FPZ-1', '', 'czk', 2, self::FY);
+
+        $this->assertNotNull($item);
+        $this->assertSame(self::PROFORMAS_IN, $item->balance);
+        $this->assertSame('757100', $item->accountNumber, 'účet předpisu pro diagnostiku');
+        $this->assertSame('advances.given', $item->paymentCategory, 'engine účtuje úhradu na 314, ne na 757');
+        $this->assertSame([self::PAYABLES, self::PROFORMAS_IN], $this->queriedBalances(), 'Závazky (20) před výzvami (25), obě přirozené pro výdaj');
+        $this->assertSame([self::PROFORMAS_IN, self::FY, 42, 'FPZ-1', 'czk', '757'], $this->ledgerQuery(1)['params']);
+    }
+
+    public function testOutgoingPrefersOpenPayableOverReceivedProforma(): void
+    {
+        $this->settings = $this->settingsWithBothProformas();
+        $this->ledger[self::PAYABLES]     = [self::row(0, '321100', 12100.00)];
+        $this->ledger[self::PROFORMAS_IN] = [self::row(0, '757100', 12100.00)];
+
+        $item = $this->lookup()->findOpenRequest(42, 'FPZ-1', '', 'czk', 2, self::FY);
+
+        $this->assertNotNull($item);
+        $this->assertSame(self::PAYABLES, $item->balance, 'VS sedící i na otevřenou fakturu najde nejdřív Závazky');
+        $this->assertNull($item->paymentCategory);
+        $this->assertSame([self::PAYABLES], $this->queriedBalances());
+    }
+
+    public function testIncomingDoesNotFindOpenReceivedProforma(): void
+    {
+        // Pro příjem je skupina výzev opačná: otevřená výzva (reziduum > 0)
+        // není vratka → miss. Cíle: přirozené 311, 756, 314, pak opačné
+        // 321, 757, 324 — vydané proformy zrcadlově.
+        $this->settings = $this->settingsWithBothProformas();
+        $this->ledger[self::PROFORMAS_IN] = [self::row(0, '757100', 12100.00)];
+
+        $this->assertNull($this->lookup()->findOpenRequest(42, 'FPZ-1', '', 'czk', 1, self::FY));
+        $this->assertSame(
+            [self::RECEIVABLES, self::PROFORMAS, self::ADVANCES_GIVEN, self::PAYABLES, self::PROFORMAS_IN, self::ADVANCES_RECEIVED],
+            $this->queriedBalances(),
+        );
+    }
+
+    public function testClosingGroupsListBothProformaGroupsInSettingsOrder(): void
+    {
+        $this->settings = $this->settingsWithBothProformas();
+
+        $groups = $this->lookup()->closingGroups();
+
+        $this->assertSame([self::PROFORMAS, self::PROFORMAS_IN], array_column($groups, 'balance'));
+        $this->assertSame([0, 1], array_column($groups, 'request_side'), 'vydané předpis MD, přijaté DAL');
+        $this->assertSame(['advances.received', 'advances.given'], array_column($groups, 'payment_category'));
+        $this->assertSame([['756'], ['757']], array_column($groups, 'prefixes'));
     }
 
     // ── #79 D3b: skupiny s uzavřením a agregát klíče pro contributory ────────

@@ -9,8 +9,8 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Economy\Accounting\OffBalanceAccountsProvisioner;
 
 /**
- * Podrozvahové účty (#79 D2): bezpodmínečný provisioner pro migrované DS
- * (756100 / 799100 + syntetiky) a jednorázová oprava povahy 75–79
+ * Podrozvahové účty (#79 D2, #106 D2): bezpodmínečný provisioner pro migrované
+ * DS (756100 / 757100 / 799100 + syntetiky) a jednorázová oprava povahy 75–79
  * (kind 0 → 6). Recording mock jako u TransitAccountsProvisionerTest;
  * UPDATE povahy se simuluje nad uloženými řádky.
  */
@@ -75,8 +75,8 @@ class OffBalanceAccountsProvisionerTest extends TestCase
 
         $result = (new OffBalanceAccountsProvisioner($store->db))->provision();
 
-        $this->assertSame(['created' => 6, 'existing' => 0, 'kindFixed' => 0], $result);
-        $this->assertSame(['75', '756', '756100', '79', '799', '799100'], array_column($store->accounts, 'number'));
+        $this->assertSame(['created' => 8, 'existing' => 0, 'kindFixed' => 0], $result);
+        $this->assertSame(['75', '756', '756100', '757', '757100', '79', '799', '799100'], array_column($store->accounts, 'number'));
 
         $group = $store->accounts[0];
         $this->assertSame(2, $group['account_level'], 'dvouznakové číslo = skupina');
@@ -90,6 +90,11 @@ class OffBalanceAccountsProvisionerTest extends TestCase
         $this->assertSame(1, $proformas['is_system']);
         $this->assertSame(40, $proformas['docState']);
         $this->assertSame(3, $proformas['docStateMain']);
+
+        $received = $store->accounts[4];
+        $this->assertSame('757100', $received['number'], 'přijaté zálohové faktury (#106 D2)');
+        $this->assertSame('757', $received['g3']);
+        $this->assertSame(6, $received['account_kind']);
 
         $this->assertSame([6], array_values(array_unique(array_column($store->accounts, 'account_kind'))));
     }
@@ -108,9 +113,9 @@ class OffBalanceAccountsProvisionerTest extends TestCase
 
         $result = (new OffBalanceAccountsProvisioner($store->db))->provision();
 
-        $this->assertSame(['created' => 4, 'existing' => 2, 'kindFixed' => 3], $result);
+        $this->assertSame(['created' => 6, 'existing' => 2, 'kindFixed' => 3], $result);
         $this->assertSame(
-            ['7', '701100', '75', '79', '751001', '756', '756100', '799', '799100'],
+            ['7', '701100', '75', '79', '751001', '756', '756100', '757', '757100', '799', '799100'],
             array_column($store->accounts, 'number'),
         );
         $byNumber = array_column($store->accounts, null, 'number');
@@ -146,10 +151,10 @@ class OffBalanceAccountsProvisionerTest extends TestCase
         ]);
 
         $provisioner = new OffBalanceAccountsProvisioner($store->db);
-        $this->assertSame(['created' => 4, 'existing' => 2, 'kindFixed' => 1], $provisioner->provision());
-        $this->assertSame(['created' => 0, 'existing' => 6, 'kindFixed' => 0], $provisioner->provision());
+        $this->assertSame(['created' => 6, 'existing' => 2, 'kindFixed' => 1], $provisioner->provision());
+        $this->assertSame(['created' => 0, 'existing' => 8, 'kindFixed' => 0], $provisioner->provision());
 
-        $this->assertCount(6, $store->accounts);
+        $this->assertCount(8, $store->accounts);
         $this->assertSame('Proformy (naše)', $store->accounts[1]['name'], 'uživatelský název ani archiv se nepřepisují');
         $this->assertCount(2, $store->updates, 'oprava povahy běží při každém provisionu, po prvním běhu je no-op');
     }
