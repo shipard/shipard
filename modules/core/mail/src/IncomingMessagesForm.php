@@ -54,7 +54,19 @@ class IncomingMessagesForm extends TableForm
                     ->input('subject', required: true)
                     ->input('ai_title', readOnly: true,
                         hint: 'Titulek odvozený AI z obsahu — u skenů a nahraných souborů se zobrazuje místo předmětu. Přepíše ho každá analýza.',
-                    )
+                    );
+        // Pozornost u zprávy bez dokladu (tasks/mail-other-attention.md D9):
+        // jen read-only a jen když ji analýza určila — u dokladu, dokumentu
+        // Spisovny a starší analýzy je NULL a pole se nekreslí (podmínka
+        // v PHP nad $data, žádný nový mechanismus).
+        if (!empty($data['attention'])) {
+            $basic->select('attention', options: $this->resolveAttentionOptions(), readOnly: true,
+                    hint: 'Určila AI z obsahu: k vyřízení (expirace, výzva k platbě, žádost), informativní, nebo obchodní sdělení. Vyřízení = archivace zprávy.',
+                )
+                ->input('action_note', readOnly: true)
+                ->date('action_due', readOnly: true);
+        }
+        $basic = $basic
                     ->textarea('body_plain',
                         hint: 'Prostý text zprávy. HTML varianta se v Fázi 1 neupravuje ručně — vzniká jen přes import.',
                     )
@@ -257,6 +269,39 @@ class IncomingMessagesForm extends TableForm
             ];
         }
 
+        usort($entries, static fn(array $a, array $b): int => $a['order'] <=> $b['order']);
+
+        return array_map(static fn(array $e): array => ['value' => $e['value'], 'label' => $e['label']], $entries);
+    }
+
+    /**
+     * Možnosti pozornosti z cfgItem `core.mail.attentionKinds` (read-only
+     * select — hodnotu určuje AI, uživatel ji needituje).
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    private function resolveAttentionOptions(): array
+    {
+        $cfgData = $this->config?->cfgItem('core.mail.attentionKinds');
+        if (!is_array($cfgData)) {
+            return [
+                ['value' => 'action', 'label' => 'K vyřízení'],
+                ['value' => 'info', 'label' => 'Informativní'],
+                ['value' => 'promo', 'label' => 'Obchodní sdělení'],
+            ];
+        }
+
+        $entries = [];
+        foreach ($cfgData as $key => $entry) {
+            if (!is_array($entry) || !isset($entry['name'])) {
+                continue;
+            }
+            $entries[] = [
+                'order' => (int) ($entry['order'] ?? 999),
+                'value' => (string) $key,
+                'label' => (string) $entry['name'],
+            ];
+        }
         usort($entries, static fn(array $a, array $b): int => $a['order'] <=> $b['order']);
 
         return array_map(static fn(array $e): array => ['value' => $e['value'], 'label' => $e['label']], $entries);

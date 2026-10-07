@@ -1,7 +1,7 @@
 ---
 title: Příjem pošty
 summary: Jak dostat fakturu do Shipardu, co se s ní pak děje a jak si poradit s poštou, ve které není doklad ani dokument.
-keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, ostatní pošta, sken obálky, neobsahuje doklad ani dokument, pravidlo odesílatele, archivovat bez analýzy, archivovat hned, smíšený odesílatel, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
+keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, ostatní pošta, sken obálky, neobsahuje doklad ani dokument, k vyřízení, expirace domény, výzva k platbě, upomínka, lhůta, vyřízeno, archivovat vše, vrátit, pravidlo odesílatele, archivovat bez analýzy, archivovat hned, smíšený odesílatel, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
 related: [posta/kontrola-vytezeni.md, slovnicek.md, co-dnes-nejde.md]
 ---
 
@@ -38,10 +38,10 @@ se ti ji přepisovat do systému ručně.
    **Použít** na řádku), ostatní jako karty v sekci **Ke kontrole**
    s tlačítkem **Zkontrolovat**. Sekce jdou na Dashboardu v pořadí
    práce: **Položky k založení**, **Připraveno**, **Ke kontrole**,
-   **Nepodařilo se zpracovat**, **Upozornění** a **Ostatní**. Každá
-   ukazuje nejvýš 30 karet — skutečný počet vidíš v hlavičce sekce
-   a zbytek otevřeš odkazem **a N dalších** pod ní. Odtud pokračuj podle
-   [Kontrola vytěženého dokladu](kontrola-vytezeni.md).
+   **K vyřízení**, **Nepodařilo se zpracovat**, **Upozornění**
+   a **Ostatní**. Každá ukazuje nejvýš 30 karet — skutečný počet vidíš
+   v hlavičce sekce a zbytek otevřeš odkazem **a N dalších** pod ní.
+   Odtud pokračuj podle [Kontrola vytěženého dokladu](kontrola-vytezeni.md).
 
 ## Na co narazíš
 
@@ -90,15 +90,38 @@ revizi nebo úřední písemnost, nabídne na Dashboardu zařazení do
 vlastní pruh, oddělený od faktur. Vzniklý záznam dostane **všechny
 přílohy zprávy** — jedno doručení = jeden záznam, jako v podacím deníku.
 
-**Když zpráva neobsahuje doklad ani dokument.** Reklamu, newsletter,
-upozornění z e-shopu nebo sken obálky AI pozná a místo návrhu se na
-Dashboardu objeví nenápadný řádek v sekci **Ostatní** s akcemi **Do koše**
-a **Archivovat**. Tučně je na něm krátký popis toho, co ve zprávě je —
-třeba „Newsletter — novinky dodavatele“ nebo „Sken obálky“ —, vedle
-odesílatel a předmět e-mailu. U starších zpráv, ke kterým AI popis
-nenapsala, je místo něj **Neobsahuje doklad ani dokument**. Koš a Archiv
+**Když zpráva neobsahuje doklad ani dokument, ale chce něco po tobě.**
+Přehled expirujících domén, výzva k platbě, upomínka nebo žádost — AI
+pozná, že z toho sice nevznikne doklad, ale že musíš něco udělat nebo
+rozhodnout, a dá zprávu na Dashboard do sekce **K vyřízení**. Karta má
+v titulku, o co jde (třeba „Expirace 3 domén — Registrátor a.s.“), pod
+ním větu, co máš udělat, a když zpráva uvádí lhůtu, štítek **do 15. 10.
+2026**; po lhůtě nebo do tří dnů před ní je červený (**po lhůtě …**).
+Karty se řadí podle lhůty, bez lhůty jsou na konci. Jakmile věc vyřídíš,
+klikni na **Vyřízeno** — zpráva jde do Archivu. **Otevřít e-mail** ukáže
+původní zprávu, **Do koše** ji zahodí. Dodavatel u takové zprávy je ten,
+od koho opravdu je (registrátor, úřad), ne kolega, který ji přeposlal.
+Výzvy k platbě zatím chodí sem; až bude mít Shipard zálohové faktury
+přijaté, budou z nich vznikat doklady (viz
+[Co Shipard dnes neumí](../co-dnes-nejde.md)).
+
+**Když zpráva jen informuje.** Potvrzení platby, změnu stavu objednávky,
+notifikaci z banky, doručenku, sken obálky i reklamu a newsletter AI
+pozná a místo návrhu se na Dashboardu objeví nenápadný řádek v sekci
+**Ostatní** s akcemi **Do koše** a **Archivovat**. Tučně je na něm krátký
+popis toho, co ve zprávě je — třeba „Newsletter — novinky dodavatele“
+nebo „Sken obálky“ —, vedle odesílatel a předmět e-mailu. Koš a Archiv
 se liší jen tím, kam zpráva zmizí; obojí ji odklidí z cesty a přílohy
-zůstanou.
+zůstanou. Nemusíš je odklízet po jedné: v hlavičce sekce je tlačítko
+**Archivovat vše (N)**, které jedním klikem archivuje všechny
+informativní zprávy — i ty, které se do třiceti zobrazených řádků
+nevešly. Hned nato se dole ukáže hlášení *„Archivováno N zpráv“*
+s tlačítkem **Vrátit**; máš na něj pár sekund, pak zprávy najdeš
+v **Došlé poště** v Archivu a vrátíš je odtud. U starších zpráv, ke
+kterým AI popis nenapsala (je u nich **Neobsahuje doklad ani dokument**),
+Shipard neví, jestli něco chtějí, a tak je **Archivovat vše** nechá na
+místě — buď je odklidíš po jedné, nebo v detailu zprávy dáš **Znovu
+analyzovat** a AI je roztřídí.
 
 **Hromadnou poštu Shipard pozná, ale sám ji neodklidí.** Newslettery se
 dají rozpoznat z hlaviček e-mailu (odhlašovací odkaz a podobné). Je to pro
@@ -109,11 +132,14 @@ odklidíš poštu od stejného odesílatele do Archivu nebo Koše, Shipard
 navrhne pravidlo a na Dashboardu ti ho nabídne k **Potvrzení**. Pravidlo
 má jednu ze dvou akcí:
 
-- **Archivovat, když neobsahuje doklad ani dokument** — zpráva projde
-  analýzou jako každá jiná, a když v ní AI nenajde fakturu ani dokument
-  pro Spisovnu, odklidí ji do Archivu. Faktury od téhož odesílatele chodí
-  dál normálně. Shipard tuhle akci navrhne, když od adresy už někdy přišel
-  doklad nebo dokument, a je výchozí i u pravidla, které zakládáš sám.
+- **Archivovat, když neobsahuje doklad ani nic k vyřízení** — zpráva
+  projde analýzou jako každá jiná, a když v ní AI nenajde fakturu ani
+  dokument pro Spisovnu a zpráva nic nechce (není to expirace, výzva
+  k platbě ani žádost), odklidí ji do Archivu. Faktury od téhož
+  odesílatele chodí dál normálně a zprávy **K vyřízení** také — pravidlo
+  je nikdy neodklidí. Shipard tuhle akci navrhne, když od adresy už někdy
+  přišel doklad nebo dokument, a je výchozí i u pravidla, které zakládáš
+  sám.
 - **Archivovat hned, bez analýzy** — zpráva jde rovnou do Archivu a AI ji
   vůbec nečte. Šetří to analýzu, ale spolkne i fakturu, kdyby od té adresy
   nějaká přišla. Hodí se jen pro odesílatele, kteří doklady nikdy

@@ -95,6 +95,7 @@ dokladu — kruh uzavírá. Automatické stahování přes bankovní API je v M4
 | Zbytky po M0: dokončení message-centric nasazení na alfě (živá analýza, aktuální prompt — v4.2.0, `schema_error` v provozu), vzory koncových cen nad reálnými analýzami | `mail-message-centric.md` |
 | Zaokrouhlovací módy dokladu: sloučení 0/2, matematicky na 0,05 (SK účtenky hrazené hotově končí s `totals_mismatch`), užší nabídka pro DPH | `doc-rounding-modes.md` |
 | Obsahové štítky i pro ISDOC faktury — import v runneru předzpracování, karta Nová kategorie, učení pravidel (#81) | `mail-isdoc-content-tags.md` (hotovo) |
+| Zálohová faktura přijatá jako typ dokladu: výzvy k platbě dnes jdou z pošty do sekce K vyřízení jako `other` / `action` (#105 D8); až typ vznikne (navazuje na #79), prompt je přeřadí z `other` na doklad — účetně bezpečnější, člověk hlídá, co platí | `mail-other-attention.md` (D8), #79 |
 
 **Hotovo když:** přijatá faktura z e-mailu projde až do spárované úhrady
 a uživatel do toho zasáhne jen potvrzením návrhu; saldo po partnerech

@@ -481,7 +481,29 @@ info kartu ostatní pošty s titulkem z `ai_title` a akcemi Koš/Archiv (viz
 docs/dashboard.md). Má-li odesílatel potvrzené pravidlo a klasifikace má
 `confidence` aspoň na `review` prahu profilu, zprávu místo karty rovnou
 archivuje `PostAnalysisDisposer` (viz výše); bez `confidence` zůstává
-v Ostatních. Ostatní nálezy
+v Ostatních.
+
+**Pozornost u zprávy bez dokladu** (od promptu v4.7.0, volitelná pole nullable od v4.7.1,
+[tasks/mail-other-attention.md](../../../../tasks/mail-other-attention.md)
+D1–D3, D7): u `other` klasifikace navíc nese `attention` — `action`
+(vyžaduje akci nebo rozhodnutí: expirace domény, výzva k platbě, upomínka,
+žádost), `info` (potvrzení, stav objednávky, notifikace, doručenka, sken
+obálky), `promo` (newsletter, leták, nabídka) —, u `action` větu
+`action_note` („co udělat", ≤ 200 znaků) a `due_date` (jen lhůta výslovně
+ve zprávě, model ji neodhaduje), a protistranu `party {name, companyId,
+email}` — od koho zpráva skutečně je, ne kdo ji přeposlal (přes 70 %
+pošty chodí přes skupinu). Server je zapíše tímtéž UPDATE jako typ do
+sloupců `attention` / `action_note` / `action_due` (cfgItem
+`core.mail.attentionKinds`; neznámá hodnota = warning + NULL; mimo `action`
+poznámka i lhůta NULL; u dokladu a dokumentu Spisovny vše NULL — reanalýza
+`other` → faktura starou poznámku smaže; ruční volba typu `user` se
+nedotkne). Dashboard z nich staví sekci **K vyřízení** (`action`:
+poznámka, badge lhůty, akce Vyřízeno = archiv) a Ostatní (`info` /
+`promo` / NULL) s hromadným Archivovat vše; pravidlo `archiveIfOther`
+akční zprávy vynechá (D6). `promo` se zatím v UI od `info` neliší — sbírá
+se pro pozdější rozhodnutí o auto-koši newsletterů. Bez backfillu —
+čekající řádky Ostatní si uživatel reanalyzuje nebo odklidí po staru.
+Ostatní nálezy
 vedle primárního dokumentu (smlouva v příloze faktury apod.) vrací analyzer
 jako informativní `secondary_findings` (`{type, note}`, D7) — žijí jen
 v `analysis_json`, žádné entity, žádný stav; UI je ukazuje jako hint na
@@ -511,7 +533,13 @@ Plní se ve dvou vrstvách, obě řeší `MessagePartnerWriter`
    klasifikací; `IsdocImportService` ve své transakci — ISDOC obchází AI,
    proto si partnera plní sám). Jen z **validního** canonicalu (forenzní
    wrapper se ignoruje). Strana: docs → `supplier` (při `selfParty =
-   supplier` `customer`), registry → `party`.
+   supplier` `customer`), registry → `party`. **Druhý zdroj — klasifikace**
+   (`writeFromClassification`, tasks/mail-other-attention.md D7): u běhu
+   bez `document` s typem `other` je protistranou
+   `message_classification.party {name, companyId, email}` — provozovatel
+   služby, dodavatel, úřad, ne kdo zprávu přeposlal; stejná pravidla
+   (jméno dokud `target_row IS NULL`, Osoba jen shodou IČO; e-mail se na
+   Osobu nepáruje).
    - `partner_name` se přepíše vždy, dokud `target_row IS NULL`
      (bez jména v canonicalu se ponechá předchozí hodnota, nenuluje se);
    - `partner_person` se zapíše **jen do NULL** a jen dokud `target_row IS

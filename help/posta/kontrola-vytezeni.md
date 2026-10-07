@@ -19,7 +19,9 @@ návrh s procentem **Jistoty**. Dashboard řadí karty do sekcí podle toku
 práce: nahoře **Položky k založení**, pak **Připraveno** (jisté návrhy
 sbalené do souhrnného pruhu s tlačítkem **Použít** na každém řádku),
 **Ke kontrole** (návrhy s hlavním tlačítkem **Zkontrolovat**),
-**Nepodařilo se zpracovat**, **Upozornění** a **Ostatní**. Každá sekce
+**K vyřízení** (pošta bez dokladu, která chce akci — viz
+[Příjem pošty](prijem-posty.md)), **Nepodařilo se zpracovat**,
+**Upozornění** a **Ostatní**. Každá sekce
 ukazuje nejvýš 30 karet; když jich čeká víc, hlavička říká skutečný počet
 a pod sekcí je odkaz **a N dalších**, který otevře **Došlou poštu**.
 

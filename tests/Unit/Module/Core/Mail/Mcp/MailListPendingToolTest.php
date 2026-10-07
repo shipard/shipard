@@ -74,7 +74,38 @@ final class MailListPendingToolTest extends TestCase
             'docState'            => 20,
             'analysis_status_raw' => 2,
             'has_open_proposal'   => 1,
+            'attention'           => null,
+            'action_note'         => null,
+            'action_due'          => null,
         ], $overrides);
+    }
+
+    public function testItemCarriesAttentionFieldsOfOtherMail(): void
+    {
+        // tasks/mail-other-attention.md D9: pozornost, poznámka a lhůta
+        // (Dibi vrací DATE jako DateTime → ISO řetězec); bez pozornosti null.
+        [$tool, $ctx] = $this->tool([
+            $this->row([
+                'id' => 1, 'attention' => 'action', 'action_note' => 'Prodloužit 3 domény.',
+                'action_due' => new \DateTimeImmutable('2026-10-15'),
+            ]),
+            $this->row(['id' => 2, 'attention' => 'info', 'action_due' => '2026-10-15 00:00:00']),
+            $this->row(['id' => 3]),
+        ]);
+
+        $items = $tool->call([], $ctx)['items'];
+
+        $this->assertSame('action', $items[0]['attention']);
+        $this->assertSame('Prodloužit 3 domény.', $items[0]['action_note']);
+        $this->assertSame('2026-10-15', $items[0]['action_due']);
+        $this->assertSame('info', $items[1]['attention']);
+        $this->assertNull($items[1]['action_note']);
+        $this->assertSame('2026-10-15', $items[1]['action_due']);
+        $this->assertNull($items[2]['attention']);
+        $this->assertNull($items[2]['action_note']);
+        $this->assertNull($items[2]['action_due']);
+        $this->assertStringContainsString('`m`.`attention`, `m`.`action_note`, `m`.`action_due`', (string) $this->capturedSql);
+        $this->assertStringContainsString('`attention`', $tool->description());
     }
 
     public function testItemCarriesTitlePartnerAndSenderSeparately(): void

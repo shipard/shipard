@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH]
+keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH]
 related: [slovnicek.md]
 ---
 
@@ -120,6 +120,11 @@ vystav vydanou fakturu ručně a zálohu na ní odečti řádkem *Odpočet přij
 zálohy* s variabilním symbolem proformy. **Daňový doklad k přijaté záloze**
 Shipard zatím neumí — daň z přijaté zálohy tak přiznáš až fakturou. Viz
 [Zálohová faktura](faktury-vydane/zalohova-faktura.md).
+
+**Zálohovou fakturu přijatou Shipard nezná.** Výzvu k platbě od dodavatele
+AI z pošty pozná a dá ji na Dashboard do sekce **K vyřízení**, ale doklad
+z ní nevznikne — zaplatíš podle e-mailu a zálohu zaúčtuješ až s fakturou.
+Viz [Příjem pošty](posta/prijem-posty.md).
 
 ---
 

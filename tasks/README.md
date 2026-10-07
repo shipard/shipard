@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 335 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 307.
+Celkem 336 tasků: **naplánováno** 5 · **částečně** 24 · **hotovo** 307.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -42,6 +42,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`) |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
+| `mail-other-attention.md` | částečně | implementováno 2026-10-07 (#105 D1–D10), čeká na opravu schématu v4.7.1 (sekce „Oprava po ověření“); odchylky od zadání v sekci „Poznámky k implementaci“ |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
 | `mail-safety.md` | částečně | implementace, testy a docs hotové 2026-10-05 (3 commity); `drop` ověřen na dev serveru (CLI i proklik UI); zbývá ověřit `redirect` proti skutečnému SMTP a nastavit `mail.safety` na testovacím serveru (člověk), `ds-upgrade` zdrojů dat při nasazení |
 | `prints-languages.md` | částečně | implementace hotová (4 commity); čeká na revizi formulací `sk` / `de` kolegy (sekce „Formulace k revizi“ na konci) a `ds-upgrade` zdrojů dat při nasazení |
@@ -339,6 +340,8 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `enrichment-row-text-candidates.md` | Enrichment řádků z historie: matchování přes více kandidátních textů (description → item.description → item.name, tier-major) |
 | `enrichment-dominant-item.md` | Enrichment řádků z historie: úroveň „dominantní položka dodavatele“ (statistika bez textu, confidence low, guard přes částku) |
 | `mail-safety.md` | Pojistka odchozí pošty na dev a testovacích serverech: `mail.safety` v `server.json` (redirect / allowlist / drop), stopa ve frontě a v Odeslané poště, `doctor` (#95) |
+| `mail-sender-rules-after-analysis.md` | Pravidla odesílatelů: dispozice `archiveIfOther` (archiv až po analýze, jen zprávy bez dokladu — `PostAnalysisDisposer`), pojistka učení u smíšených odesílatelů, potvrzení pravidla odklidí čekající Ostatní |
+| `mail-other-attention.md` | Ostatní pošta k vyřízení: prompt v4.7.0 vrací pozornost (`action` / `info` / `promo`), poznámku, lhůtu a protistranu u zprávy bez dokladu; sekce feedu K vyřízení, Archivovat vše v Ostatních, `archiveIfOther` vynechá akční zprávy (#105) |
 
 Daemony volající endpoint žijí v jiných repech: `mail_router:tasks/phase1.md`
 (mail-router, Python) a `ai_analyzer:tasks/phase1.md` (AI analyzer, Python).
@@ -388,6 +391,7 @@ Home obrazovka + modul úkolů. Reference [`docs/dashboard.md`](../docs/dashboar
 | `dashboard-alert-grouping.md` | Agregace alertů jednoho checku do skupinové karty feedu (práh > 3) |
 | `dashboard-chat-panel.md` | Plovoucí chat launcher + boční AI chat panel (AppShell overlay zprava) |
 | `dashboard-feed-workflow-sections.md` | Sekce feedu podle toku práce (Položky k založení → … → Ostatní), `feedSection` ze serveru, strop a pravdivé počty per sekce (#101) |
+| `dashboard-other-row-title.md` | Řádek sekce Ostatní s titulkem podle obsahu zprávy (`ai_title`), fallback „Neobsahuje doklad ani dokument“, předmět jen když se liší |
 | `feed-texts-catalog.md` | Texty karet feedu z katalogu modulu (`*.feedTexts` cfgItem, `FeedTexts`, ICU MessageFormat pro plurály), fallback anglicky v PHP (#101 D11–D17) |
 
 ## Dev dashboard

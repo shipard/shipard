@@ -31,7 +31,7 @@ další providers (Ollama, ...), odeslaná pošta.
 | [core_mail_extracted_documents](tables/core_mail_extracted_documents.md) | Kandidáti na business entity z AI analýzy (Fáze 3a) |
 | [core_mail_ai_profiles](tables/core_mail_ai_profiles.md) | Prompty + JSON schémata + thresholdy per use-case (Fáze 3a); FK `backend` → `core_ai_backends` (modul core/ai) |
 | [core_mail_analysis_claims](tables/core_mail_analysis_claims.md) | Lease mechanismus pro pull protocol (Fáze 3a) |
-| [core_mail_sender_rules](tables/core_mail_sender_rules.md) | Pravidla odesílatelů — auto-archiv šumu při ingestu (`archive`) nebo až po analýze, jen zprávy bez dokladu (`archiveIfOther`, výchozí); potvrzení odklidí čekající řádky Ostatní (Fáze 3 Spisovny, `tasks/mail-sender-rules-after-analysis.md`) |
+| [core_mail_sender_rules](tables/core_mail_sender_rules.md) | Pravidla odesílatelů — auto-archiv šumu při ingestu (`archive`) nebo až po analýze, jen zprávy bez dokladu a bez ničeho k vyřízení (`archiveIfOther`, výchozí); potvrzení odklidí čekající řádky Ostatní (Fáze 3 Spisovny, `tasks/mail-sender-rules-after-analysis.md`) |
 | [core_mail_preprocess_rules](tables/core_mail_preprocess_rules.md) | Pravidla technického předzpracování (stažení dokladu z odkazu, render HTML těla do PDF) — [docs/preprocess.md](docs/preprocess.md) |
 
 ## Zdrojové soubory
@@ -72,7 +72,8 @@ další providers (Ollama, ...), odeslaná pošta.
 | `core.mail.extractedDocStates` | [config/extractedDocStates.jsonc](config/extractedDocStates.jsonc) | Stavy review extrahovaných dokumentů |
 | `core.mail.extractedDocTypes` | [config/extractedDocTypes.jsonc](config/extractedDocTypes.jsonc) | Typy extrahovaných dokumentů |
 | `core.mail.senderRulePatternKinds` | [config/senderRulePatternKinds.jsonc](config/senderRulePatternKinds.jsonc) | Druhy vzorů pravidel (`email` \| `domain`) |
-| `core.mail.senderRuleDispositions` | [config/senderRuleDispositions.jsonc](config/senderRuleDispositions.jsonc) | Akce pravidla (zatím jen `archive`) |
+| `core.mail.senderRuleDispositions` | [config/senderRuleDispositions.jsonc](config/senderRuleDispositions.jsonc) | Akce pravidla (`archiveIfOther` \| `archive`) |
+| `core.mail.attentionKinds` | [config/attentionKinds.jsonc](config/attentionKinds.jsonc) | Pozornost u zprávy bez dokladu (`action` \| `info` \| `promo`) — sekce K vyřízení / Ostatní na dashboardu, `tasks/mail-other-attention.md` |
 | `core.mail.senderRuleOrigins` | [config/senderRuleOrigins.jsonc](config/senderRuleOrigins.jsonc) | Původ pravidla (`user` \| `suggested`) |
 
 ## Default AI profil
@@ -96,6 +97,7 @@ další providers (Ollama, ...), odeslaná pošta.
 | `POST /api/v1/_mail/extracted-documents/{ndx}/reject` | UI akce "Zamítnout" — povinný `reason` v body. |
 | `POST /api/v1/_mail/sender-rules/{id}/confirm` | Potvrzení návrhu pravidla (Koncept 10 → 40). Auth: běžný uživatel. Po commitu `SenderRuleConfirmedHandler` archivuje čekající řádky Ostatní od adresy (D8). |
 | `POST /api/v1/_mail/sender-rules/{id}/reject` | Zamítnutí návrhu pravidla (10 → 90). |
+| `POST /api/v1/_mail/messages/archive-informational` | Archivovat vše v sekci Ostatní — řádky s pozorností `info` / `promo` do Archivu přes gateway; `restore-archived {ids}` je vrátí (#105 D5). |
 | `POST /api/v1/_mail/auto-archive/undo` | „Vrátit vše" — obnova zpráv auto-archivovaných v daném dni (body `{date?}`, jen dnešek/včerejšek). Zprávy archivované při příjmu jdou znovu do fronty analýzy, zprávy archivované po analýze zůstávají analyzované (D7). |
 
 Kontrakty: [docs/mail/api-contract.md](../../../docs/mail/api-contract.md).

@@ -43,7 +43,11 @@ final class MailListPendingTool implements McpTool
 			. 'souborů odvozený z obsahu, ne generický předmět), partnera '
 			. 'dokumentu (dodavatele / protistranu — ne odesílatele e-mailu), '
 			. 'odesílatele, stav AI analýzy a zda má otevřený dokumentový návrh '
-			. 'čekající na akci (potvrzení/zamítnutí). '
+			. 'čekající na akci (potvrzení/zamítnutí). U zprávy bez dokladu '
+			. '`attention`: `action` = chce lidskou akci nebo rozhodnutí '
+			. '(expirace, výzva k platbě, žádost; `action_note` říká co, '
+			. '`action_due` dokdy), `info` = jen informuje, `promo` = obchodní '
+			. 'sdělení, null = neurčeno. '
 			. '`only_actionable=true` zúží na zprávy s otevřeným návrhem — '
 			. 'typicky to, co má agent vyřešit.';
 	}
@@ -71,6 +75,7 @@ final class MailListPendingTool implements McpTool
 		// only_actionable filtruje nad derived tabulkou, ať LIMIT/OFFSET
 		// (a has_more) sedí.
 		$inner = 'SELECT `m`.`id`, `m`.`subject`, `m`.`ai_title`, `m`.`source_type`,'
+			. ' `m`.`attention`, `m`.`action_note`, `m`.`action_due`,'
 			. ' `m`.`sender_name`, `m`.`sender_email`,'
 			. ' `m`.`sender_person`, `m`.`partner_person`, `m`.`partner_name`,'
 			. ' (SELECT `p`.`full_name` FROM `base_persons_persons` `p` WHERE `p`.`id` = `m`.`partner_person`) AS `partner_full_name`,'
@@ -124,6 +129,9 @@ final class MailListPendingTool implements McpTool
 				),
 				'subject'           => $r['subject'] ?: null,
 				'ai_title'          => !empty($r['ai_title']) ? (string) $r['ai_title'] : null,
+				'attention'         => !empty($r['attention']) ? (string) $r['attention'] : null,
+				'action_note'       => !empty($r['action_note']) ? (string) $r['action_note'] : null,
+				'action_due'        => self::isoDate($r['action_due'] ?? null),
 				'partner'           => $partnerName !== '' || !empty($r['partner_person'])
 					? [
 						'name'   => $partnerName !== '' ? $partnerName : null,
@@ -160,6 +168,15 @@ final class MailListPendingTool implements McpTool
 	}
 
 	/** NULL (žádný běh) → none; 1 → pending; 2 → success; 3 → failed. */
+	/** DB date (Dibi DateTime nebo string) → `Y-m-d`; prázdné → null. */
+	private static function isoDate(mixed $value): ?string
+	{
+		if ($value instanceof \DateTimeInterface) {
+			return $value->format('Y-m-d');
+		}
+		return is_string($value) && $value !== '' ? substr($value, 0, 10) : null;
+	}
+
 	private function mapAnalysisStatus(mixed $raw): string
 	{
 		return match ((int) $raw) {
