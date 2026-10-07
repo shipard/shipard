@@ -12,6 +12,16 @@ Modulární multi-tenant SaaS účetní systém — backend a CLI utility, webov
 
 Podrobné specifikace jsou v adresáři `docs/`. Přečti příslušný dokument PŘED implementací.
 
+Kam patří **nový** dokument:
+
+- `help/` — uživatel a vestavěný asistent; „jak to udělám“
+- `docs/` — Claude a vývojář; „jak je to udělané“ — specifikace
+- `docs/dev/` — vývojář, hlavně začínající; návod krok za krokem
+- `docs/operations/` — správce systému; provozní postup
+
+Návod krok za krokem pro člověka patří do `docs/dev/`, provozní postup pro
+správce do `docs/operations/`; specifikace zůstávají v kořeni `docs/`.
+
 | Dokument | Obsah |
 |----------|-------|
 | `docs/roadmap.md` | **Roadmapa** — milníky, pravidlo prioritizace. Než začneš nový task: ověř, do kterého milníku patří |

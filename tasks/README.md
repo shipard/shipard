@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 337 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 309.
+Celkem 338 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 310.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -72,6 +72,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `dev-install-followups.md` | Práva logu podle kontraktu (`ErrorLogger`: adresář `0750`, `shipard.log` `0640`) a Ubuntu 26.04 jako doporučená verze pro nové instalace (#96 D15, D16) |
 | `local-dev-bootstrap.md` | Lokální vývoj na macOS a Windows — `scripts/dev-bootstrap.sh`, cloud-init pro Multipass, WSL, `docs/local-dev.md` (#96 D17–D25) |
 | `claude-code-settings.md` | Sdílené `.claude/settings.json` — potvrzení odeslání (`git push`, `gh pr create`, `gh pr merge`) a zákaz čtení konfigurace a secrets zdrojů dat v každém režimu Claude Code (#96 D27, D30) |
+| `dev-docs-intro.md` | Dokumentace pro vývojáře — `DEVELOPERS.md` jako úvod a rozcestník, návody v `docs/dev/` (ruční instalace na Linuxu, každodenní práce), `docs/README.md` podle čtenáře (#108 D1–D9) |
 | `dev-update-script.md` | `scripts/dev-update.sh` + git hooks (post-pull workflow) |
 | `ds-upgrade-all.md` | `shpd-server ds-upgrade-all` + kompletní `docs/cli.md` |
 | `ds-upgrade-quiet-default.md` | Tichý default `ds-upgrade`, plný výpis jen s `-v` |
