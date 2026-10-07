@@ -26,7 +26,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * `shpd-ds assets-import-verify [--asset=<číslo>] [--json]` — ověření
  * importu majetku (docs/assets.md D82): zlatý test daňového okruhu,
  * účetní okruh × deník po kartách a letech, Kontrola evidence × deník za
- * každý rok od prvního s dimenzí `asset`. Čte, nic nemění. Exit 0 bez
+ * každý rok od prvního s dimenzí `asset` a karty s uplynulou dobou
+ * účetního odpisování (D83, jen upozornění). Čte, nic nemění. Exit 0 bez
  * rozdílů, 1 s rozdíly; `--json` vypíše výsledek pro log runneru.
  * Logika je v {@see AssetImportVerifier}.
  */
@@ -43,7 +44,7 @@ class AssetsImportVerifyCommand extends Command
     protected function configure(): void
     {
         $this->setName('assets-import-verify')
-             ->setDescription('Ověří import majetku: zlatý test daňových odpisů, účetní okruh × deník, kontrola evidence × deník po letech (nic nemění)')
+             ->setDescription('Ověří import majetku: zlatý test daňových odpisů, účetní okruh × deník, kontrola evidence × deník po letech, uplynulá doba účetního odpisování (nic nemění)')
              ->addOption('asset', null, InputOption::VALUE_REQUIRED, 'Jen karta s tímto inventárním číslem (kontrola po letech se pak vynechá)')
              ->addOption('json', null, InputOption::VALUE_NONE, 'Výsledek jako JSON na stdout');
     }
@@ -159,15 +160,29 @@ class AssetsImportVerifyCommand extends Command
             $output->writeln(sprintf('   %s  %-9s %s', $year['year'], $year['status'], $codes === [] ? 'bez zpráv' : implode(', ', $codes)));
         }
 
+        $output->writeln('<comment>4. Uplynulá doba účetního odpisování</comment>');
+        $output->writeln(sprintf('   karet s varováním: %d (zůstatek by se odepsal v jednom období; oprava = delší doba na kartě)', $s['accPeriodElapsed']));
+        foreach ($result['accPeriodElapsed'] as $row) {
+            $output->writeln(sprintf(
+                '   %-12s %-30s doba do %s  plán %s  částka %14s',
+                $row['number'],
+                mb_substr($row['name'], 0, 30),
+                $row['end'],
+                substr((string) $row['periodEnd'], 0, 4),
+                Amounts::money($row['amount']),
+            ));
+        }
+
         $output->writeln('');
         $output->writeln(sprintf(
-            '%s karet: %d; rozdíly daňové %d, účetní %d, chyby plánu %d, roky kontroly s chybou %d',
+            '%s karet: %d; rozdíly daňové %d, účetní %d, chyby plánu %d, roky kontroly s chybou %d, uplynulá doba %d',
             $result['ok'] ? '<info>V pořádku.</info>' : '<error>Rozdíly.</error>',
             $s['cards'],
             $s['taxDifferences'],
             $s['accDifferences'],
             $s['planErrors'],
             $s['checkErrors'],
+            $s['accPeriodElapsed'],
         ));
     }
 }

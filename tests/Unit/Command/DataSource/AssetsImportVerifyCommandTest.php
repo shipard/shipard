@@ -82,8 +82,11 @@ class AssetsImportVerifyCommandTest extends TestCase
             'planErrors' => [],
             'accounting' => $ok ? [] : [['assetId' => 1, 'number' => 'MA0001', 'name' => 'Stroj', 'year' => '2024', 'evidence' => 0.0, 'journal' => 22250.0, 'difference' => -22250.0]],
             'journalCheck' => [['year' => '2024', 'status' => $ok ? 'ok' : 'errors', 'codes' => $ok ? [] : ['assets.journalCheck.accountMismatch' => 2]]],
+            'accPeriodElapsed' => $ok ? [] : [[
+                'assetId' => 2, 'number' => 'MA0002', 'name' => 'Budova', 'end' => '2022-12-31', 'periodEnd' => '2024-12-31', 'amount' => 10500000.0,
+            ]],
             'summary' => ['cards' => 1, 'taxChecked' => 2, 'taxDifferences' => $ok ? 0 : 1, 'planErrors' => 0, 'accChecked' => 2,
-                'accDifferences' => $ok ? 0 : 1, 'checkYears' => 1, 'checkErrors' => $ok ? 0 : 1],
+                'accDifferences' => $ok ? 0 : 1, 'checkYears' => 1, 'checkErrors' => $ok ? 0 : 1, 'accPeriodElapsed' => $ok ? 0 : 1],
             'ok' => $ok,
         ];
     }
@@ -96,6 +99,8 @@ class AssetsImportVerifyCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertStringContainsString('1. Zlatý test daňového okruhu', $display);
         $this->assertStringContainsString('2024  ok', $display);
+        $this->assertStringContainsString('4. Uplynulá doba účetního odpisování', $display);
+        $this->assertStringContainsString('karet s varováním: 0', $display);
         $this->assertStringContainsString('V pořádku.', $display);
         $this->assertNull($verifier->asked);
     }
@@ -109,7 +114,9 @@ class AssetsImportVerifyCommandTest extends TestCase
         $this->assertStringContainsString('MA0001', $display);
         $this->assertStringContainsString('(neuplatněno)', $display);
         $this->assertStringContainsString('assets.journalCheck.accountMismatch: 2', $display);
+        $this->assertStringContainsString('MA0002       Budova                         doba do 2022-12-31  plán 2024  částka  10 500 000,00', $display);
         $this->assertStringContainsString('Rozdíly.', $display);
+        $this->assertStringContainsString('uplynulá doba 1', $display);
         $this->assertSame('MA0001', $verifier->asked);
     }
 

@@ -142,9 +142,33 @@ class AssetImportVerifierTest extends TestCase
         $this->assertSame([['2022', 12], ['2023', 12], ['2024', 12], ['2025', 12], ['2026', 12]], $this->reportCalls);
         $this->assertSame(
             ['cards' => 1, 'taxChecked' => 2, 'taxDifferences' => 0, 'planErrors' => 0, 'accChecked' => 2, 'accDifferences' => 0,
-                'checkYears' => 5, 'checkErrors' => 0],
+                'checkYears' => 5, 'checkErrors' => 0, 'accPeriodElapsed' => 0],
             $result['summary'],
         );
+        $this->assertSame([], $result['accPeriodElapsed']);
+    }
+
+    public function testElapsedAccountingPeriodIsListedButDoesNotFail(): void
+    {
+        // D83: časová metoda 12 měsíců od 4/2021, starý systém odepsal jen
+        // 2 × 1 000 — plán 2023 by odepsal zbylých 98 000 najednou.
+        $this->card(1, ['tax_method' => 'none', 'tax_rule' => null, 'acc_method' => 'time', 'acc_months' => 12]);
+        $this->event(1, 'activation', '2021-03-15', ['amount' => 100000]);
+        $this->depreciation(1, 'acc', 2021, 1000.0);
+        $this->depreciation(1, 'acc', 2022, 1000.0);
+        $verifier = $this->verifier();
+        $verifier->journal[1] = [1 => 1000.0, 2 => 1000.0];
+        $verifier->firstYearId = 1;
+
+        $result = $verifier->run();
+
+        $this->assertTrue($result['ok'], 'upozornění není rozdíl importu');
+        $this->assertSame(
+            [['MA0001', '2022-03-31', '2023-12-31', 98000.0]],
+            array_map(static fn(array $r): array => [$r['number'], $r['end'], $r['periodEnd'], $r['amount']], $result['accPeriodElapsed']),
+        );
+        $this->assertSame(1, $result['summary']['accPeriodElapsed']);
+        $this->assertSame([], $result['planErrors']);
     }
 
     public function testTaxDepreciationDifferentFromEngineIsReported(): void

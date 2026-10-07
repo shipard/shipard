@@ -13,6 +13,11 @@
         "text:cs": "Oprávky počátečního stavu ({accumulated}) neodpovídají pravidlům — po {units} obdobích odpisování mají být {expected}.",
         "text:en": "Accumulated depreciation of the opening balance ({accumulated}) does not match the rules — after {units} periods it should be {expected}."
     },
+    "accPeriodElapsed": {
+        "text": "The accounting depreciation period ended on {end}; the remaining {amount} will be depreciated in a single period. If that is wrong, extend the period on the card.",
+        "text:cs": "Doba účetního odpisování skončila {end}; zůstatek {amount} se odepíše v jednom období. Je-li to chyba, prodluž dobu na kartě.",
+        "text:en": "The accounting depreciation period ended on {end}; the remaining {amount} will be depreciated in a single period. If that is wrong, extend the period on the card."
+    },
     "missingPeriod": {
         "text": "An earlier period has no confirmed depreciation.",
         "text:cs": "Před tímto odpisem chybí potvrzený odpis dřívějšího období.",

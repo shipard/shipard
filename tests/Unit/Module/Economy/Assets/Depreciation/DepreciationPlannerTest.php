@@ -677,6 +677,41 @@ class DepreciationPlannerTest extends TestCase
         $this->assertSame('51 000,00 / 51 × 12', $plan->rows[2]->formula);
     }
 
+    public function testAccountingTimeElapsedPlansWholeResidualWithWarning(): void
+    {
+        // D83: starý systém po TZ dobu prodloužil, takže na konci původní
+        // doby (360 měsíců, 1/1994–12/2023) zbývá 4 800 000 − 30 × 100 000
+        // = 1 800 000. Plán 2024 odepíše celý zůstatek najednou a řekne to
+        // varováním — jen na plánovaném řádku, potvrzené ho nenesou.
+        $events = [$this->activation('1993-12-15', 3600000.0), $this->improvement('2015-06-10', 1200000.0)];
+        foreach (range(1994, 2023) as $year) {
+            $events[] = $this->depreciation('acc', $year, 100000.0, AssetEvent::ORIGIN_IMPORT);
+        }
+        $settings = ['tax_method' => 'none', 'acc_method' => 'time', 'acc_months' => 360];
+
+        $plan = $this->plan($settings, $events)['acc'];
+
+        $planned = $plan->plannedRows();
+        $this->assertCount(1, $planned);
+        $this->assertSame(1800000.0, $planned[0]->amount);
+        $this->assertSame('2024-12-31', $planned[0]->period?->end);
+        $this->assertSame('1 800 000,00 / 1 × 1', $planned[0]->formula);
+        $this->assertCount(1, $planned[0]->messages);
+        $this->assertSame(PlanMessage::ACC_PERIOD_ELAPSED, $planned[0]->messages[0]->code);
+        $this->assertSame(PlanMessage::SEVERITY_WARNING, $planned[0]->messages[0]->severity);
+        $this->assertSame(['end' => '2023-12-31', 'amount' => 1800000.0], $planned[0]->messages[0]->params);
+        $this->assertSame(1, array_count_values($this->codes($plan))[PlanMessage::ACC_PERIOD_ELAPSED]);
+        $this->assertFalse($plan->hasErrors());
+
+        // Delší doba na kartě (600 měsíců, do 12/2043): plán se přepočítá
+        // rovnoměrně a varování zmizí.
+        $plan = $this->plan(['acc_months' => 600] + $settings, $events)['acc'];
+
+        $this->assertSame(90000.0, $plan->plannedRows()[0]->amount);
+        $this->assertSame('1 800 000,00 / 240 × 12', $plan->plannedRows()[0]->formula);
+        $this->assertNotContains(PlanMessage::ACC_PERIOD_ELAPSED, $this->codes($plan));
+    }
+
     public function testAccountingTimeRoundsUpOncePerPeriod(): void
     {
         // 100 000 / 36 × 9 = 25 000; další rok 75 000 / 27 × 12 = 33 333,33 → 33 334,

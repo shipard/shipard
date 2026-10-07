@@ -17,7 +17,8 @@ use Shipard\Module\Economy\Assets\Depreciation\PlanMessage;
  * technické zhodnocení se tak od následujícího měsíce rozpustí do zbytku
  * doby (D44), snížení hodnoty obdobně. Součet měsíců období se
  * zaokrouhluje nahoru na koruny jednou za období (D36). Po uplynutí doby
- * jde případný zbytek do nejbližšího období.
+ * jde případný zbytek do nejbližšího období — plán to řekne varováním
+ * `accPeriodElapsed` (D83), oprava je delší doba na kartě.
  *
  * @internal
  */
@@ -108,6 +109,8 @@ final class AccTimeMethod implements CircuitMethod
         if ($first > $to) {
             return null;
         }
+        // Období začíná až po konci doby: zůstatek jde celý do něj (D83).
+        $elapsed = $first > $this->end;
 
         $pending = $this->pending;
         usort($pending, static fn(array $a, array $b): int => $a['month'] <=> $b['month']);
@@ -138,7 +141,11 @@ final class AccTimeMethod implements CircuitMethod
             return null;
         }
 
-        return new Computed($amount, implode(' + ', $parts), $later);
+        $messages = $elapsed
+            ? [PlanMessage::warning(PlanMessage::ACC_PERIOD_ELAPSED, ['end' => Months::lastDay($this->end), 'amount' => $amount])]
+            : [];
+
+        return new Computed($amount, implode(' + ', $parts), $later, $messages);
     }
 
     public function applied(CircuitState $state, int $from, int $to, float $amount, ?Computed $computed): void

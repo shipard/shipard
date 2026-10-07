@@ -10,7 +10,9 @@ use Shipard\Module\Economy\Assets\AssetDocument;
 use Shipard\Module\Economy\Assets\AssetPlanService;
 use Shipard\Module\Economy\Assets\Depreciation\Amounts;
 use Shipard\Module\Economy\Assets\Depreciation\AssetEvent;
+use Shipard\Module\Economy\Assets\Depreciation\PlanMessage;
 use Shipard\Module\Economy\Assets\Depreciation\PlanMessageTexts;
+use Shipard\Module\Economy\Assets\Depreciation\PlanRow;
 
 /**
  * Ověření importu majetku (docs/assets.md D82) — čte, nic nemění:
@@ -26,6 +28,10 @@ use Shipard\Module\Economy\Assets\Depreciation\PlanMessageTexts;
  *  3. **Kontrola evidence × deník** (report `economy.assets.journalCheck`)
  *     za každý účetní rok od prvního s dimenzí `asset` v deníku: stav
  *     a počty zpráv po kódech. Běží jen bez filtru na kartu.
+ *  4. **Uplynulá doba účetního odpisování (D83):** karty, jejichž plán
+ *     nese varování `accPeriodElapsed` — časová metoda by zůstatek
+ *     odepsala v jednom období (konec doby, částka nejbližšího plánovaného
+ *     období). Upozornění, ne rozdíl importu: do `ok` se nepočítá.
  *
  * `ok` = žádný rozdíl v 1 a 2, žádná chyba plánu a žádný rok kontroly
  * ve stavu `errors` (varování D73 neshazují). DB přístup je v protected
@@ -51,7 +57,7 @@ class AssetImportVerifier
      * @return array{
      *     tax: list<array<string, mixed>>, planErrors: list<array<string, mixed>>,
      *     accounting: list<array<string, mixed>>, journalCheck: list<array<string, mixed>>,
-     *     summary: array<string, int>, ok: bool}
+     *     accPeriodElapsed: list<array<string, mixed>>, summary: array<string, int>, ok: bool}
      */
     public function run(?string $assetNumber = null): array
     {
@@ -61,6 +67,7 @@ class AssetImportVerifier
 
         $tax = [];
         $planErrors = [];
+        $accPeriodElapsed = [];
         $taxChecked = 0;
         $evidence = [];
         foreach ($cards as $id => $card) {
@@ -88,6 +95,15 @@ class AssetImportVerifier
                         ];
                     }
                 }
+            }
+            $elapsed = $this->elapsedRow($plan[AssetEvent::SCOPE_ACC]->plannedRows());
+            if ($elapsed !== null) {
+                [$row, $message] = $elapsed;
+                $accPeriodElapsed[] = $identity + [
+                    'end'       => (string) ($message->params['end'] ?? ''),
+                    'periodEnd' => $row->period?->end ?? $row->date,
+                    'amount'    => round($row->amount, 2),
+                ];
             }
             foreach ($plan[AssetEvent::SCOPE_TAX]->rows as $row) {
                 if (!$row->isDepreciation() || $row->isPlanned() || $row->eventId === null
@@ -168,22 +184,42 @@ class AssetImportVerifier
         $checkErrors = count(array_filter($journalCheck, static fn(array $y): bool => $y['status'] === ReportStatus::Errors->value));
 
         return [
-            'tax'          => $tax,
-            'planErrors'   => $planErrors,
-            'accounting'   => $accounting,
-            'journalCheck' => $journalCheck,
-            'summary'      => [
-                'cards'          => count($cards),
-                'taxChecked'     => $taxChecked,
-                'taxDifferences' => count($tax),
-                'planErrors'     => count($planErrors),
-                'accChecked'     => $accChecked,
-                'accDifferences' => count($accounting),
-                'checkYears'     => count($journalCheck),
-                'checkErrors'    => $checkErrors,
+            'tax'              => $tax,
+            'planErrors'       => $planErrors,
+            'accounting'       => $accounting,
+            'journalCheck'     => $journalCheck,
+            'accPeriodElapsed' => $accPeriodElapsed,
+            'summary'          => [
+                'cards'            => count($cards),
+                'taxChecked'       => $taxChecked,
+                'taxDifferences'   => count($tax),
+                'planErrors'       => count($planErrors),
+                'accChecked'       => $accChecked,
+                'accDifferences'   => count($accounting),
+                'checkYears'       => count($journalCheck),
+                'checkErrors'      => $checkErrors,
+                'accPeriodElapsed' => count($accPeriodElapsed),
             ],
             'ok' => $tax === [] && $planErrors === [] && $accounting === [] && $checkErrors === 0,
         ];
+    }
+
+    /**
+     * První plánovaný řádek s varováním uplynulé doby (D83).
+     *
+     * @param list<PlanRow> $rows
+     * @return array{PlanRow, PlanMessage}|null
+     */
+    private function elapsedRow(array $rows): ?array
+    {
+        foreach ($rows as $row) {
+            foreach ($row->messages as $message) {
+                if ($message->code === PlanMessage::ACC_PERIOD_ELAPSED) {
+                    return [$row, $message];
+                }
+            }
+        }
+        return null;
     }
 
     /** @return array{id: int, name: string, begin: string, end: string}|null založený účetní rok data */

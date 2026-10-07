@@ -302,6 +302,8 @@ final class CircuitWalker
                 $computed->amount,
                 $computed->amount,
                 $computed->formula,
+                // Hlášení výpočtu patří jen plánu — potvrzený odpis má svou částku.
+                $computed->messages,
                 halfYear: $disposedInPeriod && $state->disposalHalfYear,
             );
         }

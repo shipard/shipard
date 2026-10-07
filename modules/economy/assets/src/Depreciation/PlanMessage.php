@@ -32,6 +32,8 @@ final readonly class PlanMessage
     public const RULE_NOT_VALID = 'ruleNotValid';
     /** Kombinace metod na kartě nedává výpočet. */
     public const SETTINGS_INVALID = 'settingsInvalid';
+    /** Plánované období časové účetní metody začíná až po konci doby — zůstatek jde najednou (D83). */
+    public const ACC_PERIOD_ELAPSED = 'accPeriodElapsed';
 
     /** @param array<string, scalar|null> $params */
     public function __construct(
