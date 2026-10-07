@@ -88,8 +88,8 @@ reanalýzy; unapply obě strany nuluje.
 | `created` | datetime | Čas založení záznamu |
 | `created_by` | int → `core_system_users` | Uživatel, který záznam vytvořil |
 | `modified` | datetime | Čas poslední změny |
-| `auto_disposed_by` | int → `core_mail_sender_rules` | Pravidlo, které zprávu při ingestu auto-archivovalo. NULL = zpráva prošla normálně. Auditní stopa — digest karta i „Vrátit vše" se derivují dotazem. |
-| `auto_disposed_at` | datetime | Čas auto-archivace. Undo obojí nuluje. |
+| `auto_disposed_by` | int → `core_mail_sender_rules` | Pravidlo, které zprávu auto-archivovalo — při ingestu (`archive`, `analysis_state` 0), po analýze nebo při potvrzení pravidla (`analysis_state` 30; `PostAnalysisDisposer`). NULL = zpráva prošla normálně. Auditní stopa — digest karta i „Vrátit vše" se derivují dotazem. |
+| `auto_disposed_at` | datetime | Čas auto-archivace. Undo obojí nuluje; `analysis_state` 30 přitom ponechá (zpráva se vrátí bez nové analýzy, D7). |
 | `docState` | tinyint (system) | Stav zprávy — viz [docStatesIncoming.jsonc](../config/docStatesIncoming.jsonc) |
 | `docStateMain` | tinyint (system) | Řazení podle stavu |
 

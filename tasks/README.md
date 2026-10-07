@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 333 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 305.
+Celkem 334 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 306.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -338,6 +338,7 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `enrichment-row-text-candidates.md` | Enrichment řádků z historie: matchování přes více kandidátních textů (description → item.description → item.name, tier-major) |
 | `enrichment-dominant-item.md` | Enrichment řádků z historie: úroveň „dominantní položka dodavatele“ (statistika bez textu, confidence low, guard přes částku) |
 | `mail-safety.md` | Pojistka odchozí pošty na dev a testovacích serverech: `mail.safety` v `server.json` (redirect / allowlist / drop), stopa ve frontě a v Odeslané poště, `doctor` (#95) |
+| `mail-sender-rules-after-analysis.md` | Pravidla odesílatelů: dispozice `archiveIfOther` (archivace po analýze, když zpráva neobsahuje doklad ani dokument), pojistka učení pro odesílatele s doklady, potvrzení pravidla odklidí čekající řádky Ostatní |
 
 Daemony volající endpoint žijí v jiných repech: `mail_router:tasks/phase1.md`
 (mail-router, Python) a `ai_analyzer:tasks/phase1.md` (AI analyzer, Python).

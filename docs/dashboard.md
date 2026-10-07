@@ -307,11 +307,11 @@ Mapování karet na sekce (#101 D8, D10):
 | Dokončit nastavení (`alert-group:setup`) | dle závažnosti | `newItems` | zdroj |
 | Návrh dokladu / Spisovny — pásmo ready | ready | `ready` | výchozí |
 | Návrh dokladu / Spisovny — pásmo review/low | review | `review` | výchozí |
-| Návrh pravidla odesílatele (`mail_rule_suggestion:*`) | review | `review` | výchozí |
+| Návrh pravidla odesílatele (`mail_rule_suggestion:*`; titulek podle dispozice — `senderRule.title` pro `archive`, `senderRule.titleIfOther` pro `archiveIfOther`) | review | `review` | výchozí |
 | Selhaná analýza (`mail_message:*`), nevalidní výstup (`mail_invalid:*`) | urgent | `failed` | zdroj |
 | Selhaná analýza zprávy s `primary_type=other` | review | `failed` | zdroj |
 | Ostatní alerty — individuální i skupinové | dle závažnosti | `alerts` | zdroj |
-| Ostatní pošta (`mail_notinvoice:*`), digest auto-archivu | info | `other` | výchozí |
+| Ostatní pošta (`mail_notinvoice:*`), digest auto-archivu (zprávy archivované při příjmu i po analýze / při potvrzení pravidla — shodný audit `auto_disposed_*`) | info | `other` | výchozí |
 
 ### 4.2 Slovník `kind` akcí (chování odvozuje frontend)
 
@@ -323,8 +323,8 @@ Mapování karet na sekce (#101 D8, D10):
 | `reanalyze` | inline `reanalyzeMessage(messageNdx)`, refetch | `{messageNdx}` |
 | `trash_message` | zpráva do Koše (`docState=90`, docState-only save), refetch | `{messageNdx}` |
 | `archive_message` | zpráva do Archivu (`docState=80`, docState-only save), refetch | `{messageNdx}` |
-| `confirm_sender_rule` / `reject_sender_rule` | potvrzení/zamítnutí návrhu pravidla odesílatele, refetch | `{ruleId}` |
-| `undo_auto_archive` | „Vrátit vše" z digest karty auto-archivu, toast + refetch | `{date?}` |
+| `confirm_sender_rule` / `reject_sender_rule` | potvrzení/zamítnutí návrhu pravidla odesílatele, refetch; potvrzení po commitu odklidí čekající řádky Ostatní od adresy (`SenderRuleConfirmedHandler`, D8) — refetch je ukáže v digestu | `{ruleId}` |
+| `undo_auto_archive` | „Vrátit vše" z digest karty auto-archivu, toast + refetch; zprávy archivované po analýze se vrátí jako řádky Ostatní bez nové analýzy (`analysis_state` 30 zůstává, D7), zprávy z pre-triage jdou do fronty | `{date?}` |
 | `open_viewer` | navigace | `{viewerId, recordId?, viewGroup?, filters?}` — `viewGroup` chip cílového vieweru, `filters` `{filterId: value}` jeho custom filtrů (jednorázové hinty `pendingViewGroup` / `pendingFilters`, viz `docs/frontend.md`) |
 | `open_form` | otevři form | `{table, recordId?/id?}` |
 | `open_detail` | read-only detail záznamu v modalu (`ViewerDetailModal` → `GET /_ui/viewer/{viewerId}/detail/{id}`; `toolbar` z odpovědi se ignoruje, `tabId` ořeže detail na jediný tab) | `{viewerId, recordId, tabId?}` |

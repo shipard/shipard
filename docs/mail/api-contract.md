@@ -396,6 +396,16 @@ Server transakčně:
    (trim, 200 znaků), jinak fallback `MessageTitleComposer` z validního
    canonicalu, jinak NULL — zapisuje se **vždy** (AI-vlastněný sloupec,
    bez guardů; re-analýza bez dokumentu titulek smaže). Best-effort.
+8. Pravidlo odesílatele po analýze (`PostAnalysisDisposer::afterResult`,
+   `tasks/mail-sender-rules-after-analysis.md` D4–D6): když běh nevrátil
+   `document`, výsledný `primary_type` zprávy je `other` (čte se po kroku 5
+   — ruční volba uživatele má přednost), zpráva je stále v Nové, jde
+   o první úspěšnou analýzu zprávy, zpráva nevznikla ručním nahráním
+   (`source_type` ≠ 1), `message_classification.confidence` je přítomná
+   a ≥ `review` práh AI profilu běhu a odesílatel má potvrzené pravidlo
+   (nejkonkrétnější, jakékoli dispozice) → UPDATE `docState=80` +
+   `auto_disposed_by/at`, `analysis_state` zůstává 30, pravidlu
+   `hit_count + 1`. Best-effort — selhání jen zaloguje warning.
 
 Response 201: `{ analysis_ndx }`.
 

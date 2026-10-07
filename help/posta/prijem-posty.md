@@ -1,7 +1,7 @@
 ---
 title: Příjem pošty
 summary: Jak dostat fakturu do Shipardu, co se s ní pak děje a jak si poradit s poštou, ve které není doklad ani dokument.
-keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, ostatní pošta, sken obálky, neobsahuje doklad ani dokument, pravidlo odesílatele, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
+keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, ostatní pošta, sken obálky, neobsahuje doklad ani dokument, pravidlo odesílatele, archivovat bez analýzy, archivovat hned, smíšený odesílatel, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
 related: [posta/kontrola-vytezeni.md, slovnicek.md, co-dnes-nejde.md]
 ---
 
@@ -106,18 +106,39 @@ Shipard jen příznak — nikdy podle něj nic automaticky nearchivuje.
 
 **Pravidla odesílatelů se učí z toho, co děláš.** Když **třikrát** ručně
 odklidíš poštu od stejného odesílatele do Archivu nebo Koše, Shipard
-navrhne pravidlo a na Dashboardu ti ho nabídne k **Potvrzení**. Od potvrzení
-dál se pošta od té adresy archivuje sama, bez analýzy.
+navrhne pravidlo a na Dashboardu ti ho nabídne k **Potvrzení**. Pravidlo
+má jednu ze dvou akcí:
+
+- **Archivovat, když neobsahuje doklad ani dokument** — zpráva projde
+  analýzou jako každá jiná, a když v ní AI nenajde fakturu ani dokument
+  pro Spisovnu, odklidí ji do Archivu. Faktury od téhož odesílatele chodí
+  dál normálně. Shipard tuhle akci navrhne, když od adresy už někdy přišel
+  doklad nebo dokument, a je výchozí i u pravidla, které zakládáš sám.
+- **Archivovat hned, bez analýzy** — zpráva jde rovnou do Archivu a AI ji
+  vůbec nečte. Šetří to analýzu, ale spolkne i fakturu, kdyby od té adresy
+  nějaká přišla. Hodí se jen pro odesílatele, kteří doklady nikdy
+  neposílají.
+
+Když pravidlo potvrdíš, Shipard rovnou odklidí i zprávy od té adresy,
+které už čekají v sekci **Ostatní**.
 
 - Navržené pravidlo je vždy na konkrétní adresu. Pravidlo na celou doménu
   si můžeš založit sám, ale Shipard ti ho nikdy nenavrhne — na domény je
-  úmyslně opatrný.
+  úmyslně opatrný. Když má adresa vlastní pravidlo a její doména jiné,
+  platí to na adresu.
 - Do těch tří odklizení se počítají **jen tvoje ruční akce**. Co Shipard
   archivoval sám podle pravidla, se nezapočítá, takže se pravidla nemůžou
   nabalovat sama na sebe.
+- Když si AI není dost jistá, že ve zprávě opravdu nic není, pravidlo ji
+  nechá v sekci **Ostatní** a rozhodneš ty. Totéž platí pro zprávy
+  analyzované starší verzí analýzy, která míru jistoty ještě neuváděla.
+- Zprávu, kterou jsi z Archivu vrátil nebo nechal **Znovu analyzovat**,
+  už pravidlo podruhé neodklidí.
 - Auto-archivované zprávy nezmizí bez zprávy: Dashboard ukáže denní kartu
   *„N zpráv automaticky archivováno"* s tlačítky **Zobrazit** a **Vrátit
-  vše**. Vrácení platí pro celý den z té karty.
+  vše**. Vrácení platí pro celý den z té karty. Zprávy, které AI už
+  přečetla, se vrátí rovnou do sekce **Ostatní** bez nové analýzy; zprávy
+  archivované hned při doručení jdou nejdřív na analýzu.
 
 **Analýza selhala.** U zprávy svítí badge **Analýza selhala** a na
 Dashboardu je karta v sekci **Nepodařilo se zpracovat**. Její titulek

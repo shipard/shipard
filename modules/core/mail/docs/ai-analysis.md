@@ -77,7 +77,13 @@ per zpráva" tedy vynucuje aplikační kód v claim controlleru.
 `confidence`; nevalidní canonical → forenzní wrapper `{_validationError, …}`
 do `canonical_json`, běh se uloží a 201 se vrací) → `UPDATE claims SET
 released=1` → `UPDATE messages SET analysis_state=30` (+ podmíněný
-`docState 10→20` a zápis klasifikace). Při selhání se vše rollbackuje.
+`docState 10→20` a zápis klasifikace) → archivace podle pravidla
+odesílatele (`PostAnalysisDisposer::afterResult`, best-effort: běh bez
+dokumentu, zpráva `other` v Nové, první úspěšná analýza, ne ruční nahrání,
+jistota klasifikace ≥ `review` práh profilu, potvrzené pravidlo libovolné
+dispozice → `docState 10→80` + `auto_disposed_*`;
+`tasks/mail-sender-rules-after-analysis.md` D4–D6). Při selhání se vše
+rollbackuje.
 Kontrakt v4 detailně: [docs/mail/api-contract.md §9.5](../../../../docs/mail/api-contract.md).
 
 ## Šifrování API klíčů backendů
@@ -472,7 +478,10 @@ uložení výsledku se nikdy nerozbije.
 Dokument s `doc_type='other'` neexistuje — zpráva bez dokladu i dokumentu
 Spisovny vrací `document: null` + klasifikaci `other`; dashboard pak emituje
 info kartu ostatní pošty s titulkem z `ai_title` a akcemi Koš/Archiv (viz
-docs/dashboard.md). Ostatní nálezy
+docs/dashboard.md). Má-li odesílatel potvrzené pravidlo a klasifikace má
+`confidence` aspoň na `review` prahu profilu, zprávu místo karty rovnou
+archivuje `PostAnalysisDisposer` (viz výše); bez `confidence` zůstává
+v Ostatních. Ostatní nálezy
 vedle primárního dokumentu (smlouva v příloze faktury apod.) vrací analyzer
 jako informativní `secondary_findings` (`{type, note}`, D7) — žijí jen
 v `analysis_json`, žádné entity, žádný stav; UI je ukazuje jako hint na
