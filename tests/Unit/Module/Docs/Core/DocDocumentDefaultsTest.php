@@ -82,12 +82,37 @@ class DocDocumentDefaultsTest extends TestCase
         $docTypes = [
             'invno' => ['trade_dir' => 1],
             'invpo' => ['trade_dir' => 1, 'tax_document' => false],
+            'invni' => ['trade_dir' => 2],
+            'invpi' => ['trade_dir' => 2, 'tax_document' => false],
         ];
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(
             static fn (string $id): mixed => $id === 'docs.core.docTypes' ? $docTypes : null,
         );
         return $config;
+    }
+
+    public function testReceivedProformaGetsNoDuzpNorDppdEvenFromPayload(): void
+    {
+        // #106 D1: zrcadlo vydané proformy na vstupní straně.
+        $doc = new TestableDocsHeadsDocument();
+        $doc->setConfig($this->configWithProforma());
+        $data = [
+            'doc_type'   => 'invpi',
+            'issue_date' => '2026-05-06',
+            'vat_duzp'   => '2026-05-06',
+            'vat_dppd'   => '2026-05-10',
+        ];
+        $doc->applyDateDefaultsPub($data);
+
+        $this->assertNull($data['vat_duzp'], 'DUZP z payloadu se u výzvy k platbě nuluje');
+        $this->assertNull($data['vat_dppd']);
+        $this->assertSame('2026-05-06', $data['accounting_date']);
+
+        $invoice = ['doc_type' => 'invni', 'issue_date' => '2026-05-06'];
+        $doc->applyDateDefaultsPub($invoice);
+        $this->assertSame('2026-05-06', $invoice['vat_duzp'], 'FPB beze změny (regrese)');
+        $this->assertSame('2026-05-06', $invoice['vat_dppd']);
     }
 
     public function testNonTaxDocumentGetsNoDuzpNorDppdEvenFromPayload(): void

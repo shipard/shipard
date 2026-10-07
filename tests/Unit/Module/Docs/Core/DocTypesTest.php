@@ -37,10 +37,14 @@ class DocTypesTest extends TestCase
         $config = $this->config([
             'invno' => ['trade_dir' => 1],
             'invpo' => ['trade_dir' => 1, 'tax_document' => false],
+            'invni' => ['trade_dir' => 2],
+            'invpi' => ['trade_dir' => 2, 'tax_document' => false],
         ]);
 
         $this->assertFalse(DocTypes::isTaxDocument($config, 'invpo'));
+        $this->assertFalse(DocTypes::isTaxDocument($config, 'invpi'), 'zálohová faktura přijatá je nedaňová (#106 D1)');
         $this->assertTrue(DocTypes::isTaxDocument($config, 'invno'));
+        $this->assertTrue(DocTypes::isTaxDocument($config, 'invni'));
     }
 
     public function testExplicitTrueAndOtherValuesMeanTaxDocument(): void
@@ -70,24 +74,25 @@ class DocTypesTest extends TestCase
         $config = $this->config([
             'invno' => ['trade_dir' => 1],
             'invpo' => ['trade_dir' => 1, 'tax_document' => false],
+            'invpi' => ['trade_dir' => 2, 'tax_document' => false],
             'x'     => ['tax_document' => true],
             'y'     => 'not-an-array',
         ]);
 
-        $this->assertSame(['invpo'], DocTypes::nonTaxDocTypes($config));
+        $this->assertSame(['invpo', 'invpi'], DocTypes::nonTaxDocTypes($config));
         $this->assertSame([], DocTypes::nonTaxDocTypes(null));
         $this->assertSame([], DocTypes::nonTaxDocTypes($this->config([])));
     }
 
-    /** Pojistka nad reálnou konfigurací: nedaňová je jen zálohová faktura. */
-    public function testRealConfigMarksOnlyProformaAsNonTax(): void
+    /** Pojistka nad reálnou konfigurací: nedaňové jsou jen zálohové faktury (vydaná #79, přijatá #106). */
+    public function testRealConfigMarksOnlyProformasAsNonTax(): void
     {
         $docTypes = JsoncParser::parseFile(
             dirname(__DIR__, 5) . '/modules/docs/core/config/docTypes.jsonc',
         );
         $config = $this->config($docTypes);
 
-        $this->assertSame(['invpo'], DocTypes::nonTaxDocTypes($config));
+        $this->assertSame(['invpo', 'invpi'], DocTypes::nonTaxDocTypes($config));
         foreach (['invno', 'invni', 'cmnbkp', 'cash', 'cashreg'] as $type) {
             $this->assertTrue(DocTypes::isTaxDocument($config, $type), $type);
         }

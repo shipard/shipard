@@ -1,0 +1,45 @@
+{
+    "id": "docs.proformasIn",
+    "name": "Received proforma invoices",
+    "name:cs": "Zálohové faktury přijaté",
+    "name:en": "Received proforma invoices",
+    "description": "Document type subclass for received proforma invoices (invpi)",
+    "description:cs": "Zálohové faktury přijaté (invpi) — nedaňový doklad; specifická Document třída, formulář a viewer (#106)",
+    "description:en": "Document type subclass for received proforma invoices (invpi)",
+
+    "dependencies": ["docs.core"],
+
+    "viewers": [
+        {
+            "id": "docs.proformasIn.heads",
+            "name": "Received proforma invoices",
+            "name:cs": "Zálohové faktury přijaté",
+            "name:en": "Received proforma invoices",
+            "icon": "invoice-proforma-in",
+            "table": "docs_core_heads",
+            "class": "Shipard\\Module\\Docs\\ProformasIn\\ProformasInViewer",
+            "navSection": "purchase",
+            "navOrder": 15
+        }
+    ],
+
+    "documentClasses": [
+        {
+            "table": "docs_core_heads",
+            "typeColumn": "doc_type",
+            "classes": {
+                "invpi": "Shipard\\Module\\Docs\\ProformasIn\\ProformaInDocument"
+            }
+        }
+    ],
+
+    "forms": [
+        {
+            "table": "docs_core_heads",
+            "typeColumn": "doc_type",
+            "classes": {
+                "invpi": "Shipard\\Module\\Docs\\ProformasIn\\ProformaInForm"
+            }
+        }
+    ]
+}

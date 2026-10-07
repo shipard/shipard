@@ -82,6 +82,7 @@
         "name:en": "Purchase of goods",
         "docTypes": {
             "invni": {"order": 100},
+            "invpi": {"order": 100},
             "cash": {"order": 100, "cashDir": 2}
         }
     },
@@ -91,6 +92,7 @@
         "name:en": "Purchase of services",
         "docTypes": {
             "invni": {"order": 200},
+            "invpi": {"order": 200},
             "cash": {"order": 200, "cashDir": 2}
         }
     },
@@ -100,6 +102,7 @@
         "name:en": "Other purchase",
         "docTypes": {
             "invni": {"order": 300},
+            "invpi": {"order": 300},
             "cash": {"order": 300, "cashDir": 2}
         }
     },

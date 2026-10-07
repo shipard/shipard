@@ -20,6 +20,8 @@ final class DocsHeadsVatPeriodHandlerTest extends TestCase
         $docTypes = [
             'invno' => ['trade_dir' => 1],
             'invpo' => ['trade_dir' => 1, 'tax_document' => false],
+            'invni' => ['trade_dir' => 2],
+            'invpi' => ['trade_dir' => 2, 'tax_document' => false],
         ];
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(
@@ -55,6 +57,24 @@ final class DocsHeadsVatPeriodHandlerTest extends TestCase
         $this->handler()->onBeforeSave('docs_core_heads', $data, $original);
 
         $this->assertNull($data['vat_period']);
+    }
+
+    public function testReceivedProformaClearsAllPeriodsIncludingManualValue(): void
+    {
+        // #106 D1: výzva k platbě od dodavatele do tvrzení nepatří.
+        $data = [
+            'doc_type'         => 'invpi',
+            'vat_registration' => 5,
+            'vat_duzp'         => '2026-01-15',
+            'vat_period'       => 7,
+            'cs_period'        => '3',
+            'rs_period'        => '4',
+        ];
+        $this->handler()->onBeforeSave('docs_core_heads', $data, null);
+
+        $this->assertNull($data['vat_period']);
+        $this->assertNull($data['cs_period']);
+        $this->assertNull($data['rs_period']);
     }
 
     public function testTaxTypeWithoutDbIsLeftUntouched(): void

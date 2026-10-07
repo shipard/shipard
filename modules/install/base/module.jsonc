@@ -33,6 +33,7 @@
         "docs.invoicesOut",
         "docs.proformasOut",
         "docs.invoicesIn",
+        "docs.proformasIn",
         "docs.accountingDocs",
         "docs.cashDocs",
         "docs.cashRegister",

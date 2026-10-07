@@ -2,9 +2,10 @@
     // docs.core.docTypes
     //
     // Typy dokladů v systému: invno (faktura vydaná), invpo (zálohová
-    // faktura vydaná — nedaňový doklad), invni (faktura přijatá), cmnbkp
-    // (účetní doklad), cash (pokladní doklad, směr per doklad z cash_dir),
-    // cashreg (prodejka). Postupně přibudou další (bank, stockin/stockout,
+    // faktura vydaná — nedaňový doklad), invni (faktura přijatá), invpi
+    // (zálohová faktura přijatá — nedaňový doklad), cmnbkp (účetní doklad),
+    // cash (pokladní doklad, směr per doklad z cash_dir), cashreg
+    // (prodejka). Postupně přibudou další (bank, stockin/stockout,
     // purchase, …).
     //
     // Atributy:
@@ -86,6 +87,26 @@
         "trade_dir": 2,
         "doc_number_pattern_default": "%D%y%C%4",
         "subclass": "Shipard\\Module\\Docs\\InvoicesIn\\ReceivedInvoiceDocument"
+    },
+
+    // Zálohová faktura přijatá (#106 D1): pevně vstup, není daňový doklad
+    // (tax_document: false) — DPH jen informativně, bez DUZP a bez zařazení
+    // do tvrzení DPH. Účtuje se na podrozvahu (accountingRules, #106 D2).
+    // Kód 22 a zkratka FPZ jako starý typ prfmin.
+    "invpi": {
+        "name": "Received proforma invoice",
+        "name:cs": "Zálohová faktura přijatá",
+        "name:en": "Received proforma invoice",
+        "name:sk": "Zálohová faktúra prijatá",
+        "name:de": "Eingangs-Proformarechnung",
+        "shortcut": "FPZ",
+        "shortcut:cs": "FPZ",
+        "shortcut:en": "RPI",
+        "doc_id_code": "22",
+        "trade_dir": 2,
+        "tax_document": false,
+        "doc_number_pattern_default": "%D%y%C%4",
+        "subclass": "Shipard\\Module\\Docs\\ProformasIn\\ProformaInDocument"
     },
 
     "cmnbkp": {

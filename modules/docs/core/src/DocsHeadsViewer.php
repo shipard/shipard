@@ -594,6 +594,7 @@ class DocsHeadsViewer extends TableViewer
             'invni'   => 'invoice-in',
             'invno'   => 'invoice',
             'invpo'   => 'invoice-proforma',
+            'invpi'   => 'invoice-proforma-in',
             'cash'    => 'wallet',
             'cashreg' => 'cash-register',
             default   => 'document',

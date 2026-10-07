@@ -34,6 +34,8 @@ final class VatDocumentSelectionTest extends TestCase
         $docTypes = [
             'invno' => ['trade_dir' => 1],
             'invpo' => ['trade_dir' => 1, 'tax_document' => false],
+            'invni' => ['trade_dir' => 2],
+            'invpi' => ['trade_dir' => 2, 'tax_document' => false],
         ];
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(
@@ -55,7 +57,7 @@ final class VatDocumentSelectionTest extends TestCase
         $this->assertSame('h.vat_period', $captured[1]);
         $this->assertSame(5, $captured[2]);
         $this->assertSame(40, $captured[3]);
-        $this->assertSame(['invpo'], $captured[4], 'seznam nedaňových typů z configu, ne natvrdo');
+        $this->assertSame(['invpo', 'invpi'], $captured[4], 'seznam nedaňových typů z configu, ne natvrdo');
     }
 
     public function testWithoutConfigNothingIsExcluded(): void
