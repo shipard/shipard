@@ -218,6 +218,20 @@ class DocumentExporterTest extends TestCase
         $this->assertSame('Dodavatel a.s.', $c['customer']['name']);
     }
 
+    /** Zálohová faktura přijatá (#106 D1): kanonický typ proformaReceived, partner = dodavatel vč. bankovního spojení. */
+    public function testReceivedProformaMapsToProformaReceivedOnSupplierSide(): void
+    {
+        $c = (new DocumentExporter($this->db()))->exportDocument($this->headRow([
+            'doc_type' => 'invpi', 'doc_number' => '222600001', 'sequence_number' => 1,
+        ]))->data;
+
+        $this->assertSame('proformaReceived', $c['docType']);
+        $this->assertSame('customer', $c['selfParty']);
+        $this->assertArrayNotHasKey('customer', $c);
+        $this->assertSame('Dodavatel a.s.', $c['supplier']['name']);
+        $this->assertSame('123456789/0100', $c['supplier']['bankAccount']['accountNumber'], 'kam platit — spojení dodavatele jako u FPB');
+    }
+
     public function testDraftWithoutNumberHasNoImportNumberAndDraftSlug(): void
     {
         $c = (new DocumentExporter($this->db(partner: false)))->exportDocument($this->headRow([

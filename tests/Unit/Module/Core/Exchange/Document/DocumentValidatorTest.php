@@ -87,6 +87,52 @@ class DocumentValidatorTest extends TestCase
         $this->assertNull($this->findByPath($issues, 'customer'));
     }
 
+    /** Zálohová faktura přijatá (#106 D1): dodavatel povinný jako u přijaté faktury. */
+    public function testProformaReceivedRequiresSupplier(): void
+    {
+        $issues = $this->v->validate([
+            'docType' => 'proformaReceived',
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [['rowKind' => 'item']],
+        ]);
+        $supplierIssue = $this->findByPath($issues, 'supplier');
+        $this->assertNotNull($supplierIssue);
+        $this->assertSame('error', $supplierIssue['severity']);
+        $this->assertSame('required', $supplierIssue['code']);
+
+        $issues = $this->v->validate([
+            'docType' => 'proformaReceived',
+            'supplier' => ['name' => 'Dodavatel a.s.'],
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [['rowKind' => 'item']],
+        ]);
+        $this->assertNull($this->findByPath($issues, 'supplier'));
+    }
+
+    /** Zálohová faktura přijatá nese číslo dokladu dodavatele jako přijatá faktura. */
+    public function testProformaReceivedWarnsAboutMissingPartnerDocNumber(): void
+    {
+        $issues = $this->v->validate([
+            'docType' => 'proformaReceived',
+            'supplier' => ['name' => 'V'],
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [['rowKind' => 'item']],
+            'applyOptions' => ['targetDocState' => 40],
+        ]);
+        $w = $this->findByCode($issues, 'partner_doc_number_missing');
+        $this->assertNotNull($w);
+        $this->assertSame('warning', $w['severity']);
+
+        $issues = $this->v->validate([
+            'docType' => 'proformaIssued',
+            'customer' => ['name' => 'O'],
+            'dates' => ['issueDate' => '2026-04-15'],
+            'rows' => [['rowKind' => 'item']],
+            'applyOptions' => ['targetDocState' => 40],
+        ]);
+        $this->assertNull($this->findByCode($issues, 'partner_doc_number_missing'), 'vydaná strana číslo dodavatele nemá');
+    }
+
     public function testTotalsMismatchProducesWarningWhenNoVariantFits(): void
     {
         // None of the variants lands within 0.01 — neither base-sum nor

@@ -59,6 +59,7 @@ class DocumentApplierTest extends TestCase
             'invno'   => ['trade_dir' => 1],
             'invpo'   => ['trade_dir' => 1, 'tax_document' => false],
             'invni'   => ['trade_dir' => 2],
+            'invpi'   => ['trade_dir' => 2, 'tax_document' => false],
             'cmnbkp'  => ['trade_dir' => 0],
             'cash'    => ['trade_dir' => 0, 'trade_dir_column' => 'cash_dir', 'series_binding' => 'cash_desk'],
             'cashreg' => ['trade_dir' => 1, 'series_binding' => 'cash_desk'],
@@ -1378,6 +1379,35 @@ class DocumentApplierTest extends TestCase
         $this->assertSame('Odběratel a.s.', $data['_importPartnerSnapshot']['name']);
     }
 
+    /** Zálohová faktura přijatá (#106 D1): import vytvoří invpi bez DUZP/DPPD, partner = dodavatel. */
+    public function testTransformProformaReceivedInImportModeDropsTaxDates(): void
+    {
+        $applier = $this->buildApplier();
+        $canonical = [
+            'docType'   => 'proformaReceived',
+            'selfParty' => 'customer',
+            'dates'     => [
+                'issueDate'         => '2024-06-01',
+                'dueDate'           => '2024-06-15',
+                'taxPointDate'      => '2024-06-01',
+                'vatObligationDate' => '2024-06-01',
+            ],
+            'supplier'  => ['name' => 'Dodavatel a.s.', 'vatId' => 'CZ11122233'],
+            'customer'  => ['name' => 'Naše firma s.r.o.'],
+            'applyOptions' => ['importNumber' => ['docNumber' => '222400001', 'sequenceNumber' => 1]],
+        ];
+
+        $data = $this->invokeTransform($applier, $canonical);
+
+        $this->assertSame('invpi', $data['doc_type']);
+        $this->assertArrayNotHasKey('vat_duzp', $data, 'nedaňový doklad DUZP nenese');
+        $this->assertArrayNotHasKey('vat_dppd', $data);
+        $this->assertSame('2024-06-01', $data['issue_date']);
+        $this->assertSame('2024-06-15', $data['due_date']);
+        $this->assertSame(['docNumber' => '222400001', 'sequenceNumber' => 1], $data['_importNumber']);
+        $this->assertSame('Dodavatel a.s.', $data['_importPartnerSnapshot']['name']);
+    }
+
     /** Regrese: faktura vydaná DUZP/DPPD z kanonického dokladu přebírá. */
     public function testTransformInvoiceIssuedKeepsTaxDates(): void
     {
@@ -2267,6 +2297,7 @@ class DocumentApplierTest extends TestCase
         $this->assertSame('invni', DocumentApplier::mapDocTypeValue('invoiceReceived'));
         $this->assertSame('invno', DocumentApplier::mapDocTypeValue('invoiceIssued'));
         $this->assertSame('invpo', DocumentApplier::mapDocTypeValue('proformaIssued'));
+        $this->assertSame('invpi', DocumentApplier::mapDocTypeValue('proformaReceived'));
         $this->assertSame('cmnbkp', DocumentApplier::mapDocTypeValue('accountingDocument'));
         $this->assertSame('invni', DocumentApplier::mapDocTypeValue('invni'));
         $this->assertSame('xyz', DocumentApplier::mapDocTypeValue('xyz'));

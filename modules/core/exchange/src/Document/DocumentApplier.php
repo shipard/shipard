@@ -156,6 +156,7 @@ class DocumentApplier
         'invoiceReceived'      => 'invni',
         'invoiceIssued'        => 'invno',
         'proformaIssued'       => 'invpo',
+        'proformaReceived'     => 'invpi',
         'accountingDocument'   => 'cmnbkp',
         'cashDocument'         => 'cash',
         'cashRegisterDocument' => 'cashreg',

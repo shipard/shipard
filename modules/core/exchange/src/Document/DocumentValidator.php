@@ -106,6 +106,13 @@ final class DocumentValidator
                     $issues[] = $this->required('customer', 'U zálohové faktury vydané je odběratel povinný.');
                 }
                 break;
+            // Zálohová faktura přijatá (#106 D1): strany jako u přijaté faktury;
+            // DUZP/DPPD a období DPH se ignorují (nedaňový doklad).
+            case 'proformaReceived':
+                if (empty($canonical['supplier'])) {
+                    $issues[] = $this->required('supplier', 'U zálohové faktury přijaté je dodavatel povinný.');
+                }
+                break;
             // Pokladní doklad / prodejka (#59 D12): řada je vázaná na pokladnu,
             // proto je kód pokladny povinný; směr PD 1 příjem / 2 výdej.
             // Strany (supplier/customer) jsou nepovinné — anonymní doklady.
@@ -477,7 +484,9 @@ final class DocumentValidator
     private function checkPartnerDocNumber(array $canonical, array &$issues): void
     {
         $docType = (string) ($canonical['docType'] ?? '');
-        if ($docType !== 'invoiceReceived') {
+        // Přijaté doklady: faktura i zálohová faktura (#106 D1) nesou číslo
+        // dokladu dodavatele.
+        if (!in_array($docType, ['invoiceReceived', 'proformaReceived'], true)) {
             return;
         }
         // Warning platí pro všechny cíle mimo Koncept (40, 30 i 80).

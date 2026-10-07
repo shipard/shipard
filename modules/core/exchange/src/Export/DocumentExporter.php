@@ -34,6 +34,7 @@ final class DocumentExporter implements RecordExporter
         'invni'  => 'invoiceReceived',
         'invno'  => 'invoiceIssued',
         'invpo'  => 'proformaIssued',
+        'invpi'  => 'proformaReceived',
         'cmnbkp' => 'accountingDocument',
     ];
 
@@ -135,9 +136,9 @@ final class DocumentExporter implements RecordExporter
         $docNumber = V::str($h['doc_number'] ?? null);
         $label = $docNumber ?? "#{$id}";
 
-        // Strana partnera: přijatá faktura → my jsme odběratel, partner dodavatel;
-        // vydaná (i zálohová) → naopak; účetní doklad partnera v hlavičce
-        // nemá povinně.
+        // Strana partnera: přijatá faktura (i zálohová) → my jsme odběratel,
+        // partner dodavatel; vydaná (i zálohová) → naopak; účetní doklad
+        // partnera v hlavičce nemá povinně.
         [$selfParty, $partnerSide] = match ($docTypeCode) {
             'invno', 'invpo' => ['supplier', 'customer'],
             'cmnbkp' => [null, null],
