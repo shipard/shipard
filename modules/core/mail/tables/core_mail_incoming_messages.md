@@ -73,6 +73,18 @@ reanalýzy; unapply obě strany nuluje.
 | `ai_analysis_enabled` | boolean (nullable) | Override per zpráva. `NULL` = zděděno ze schránky (`mailboxes.ai_analysis_disabled`); `true`/`false` = explicitní přepis. |
 | `needs_reanalysis` | boolean, default false | Příznak nastavený akcí "Znovu analyzovat" — zapne se po reanalyze hooku, vypne se při dalším úspěšném `result`. |
 | `profile_override` | int → `core_mail_ai_profiles` | Pro ad-hoc znovu-analýzu s jiným profilem. NULL = použít default profil DS. |
+| `attention` | enumString(10), nullable | Pozornost u zprávy bez dokladu (`primary_type = other`): `action` vyžaduje akci nebo rozhodnutí, `info` jen informuje, `promo` obchodní sdělení. Viz [attentionKinds.jsonc](../config/attentionKinds.jsonc). NULL = neurčeno (starší analýza, doklad, dokument Spisovny). |
+| `action_note` | varchar(200), nullable | Jedna věta od AI, co má člověk udělat — jen u `attention = action`, jazyk AI profilu jako `ai_title`. |
+| `action_due` | date, nullable | Lhůta z `message_classification.due_date` — jen u `action` a jen když je ve zprávě výslovně uvedená (model ji neodhaduje). |
+
+Tři sloupce pozornosti plní `POST /result` v transakci vedle `primary_type`
+(`AnalysisController::applyMessageClassification`, [tasks/mail-other-attention.md](../../../../tasks/mail-other-attention.md)
+D3): jen u typu `other`, u dokladu a dokumentu Spisovny se nastaví NULL
+(zpráva mohla být dřív `other` a reanalýzou se stát fakturou). Ruční
+volba typu (`primary_type_source = user`) je nedotkne. Uživatel pole
+needituje — reaguje archivací (Vyřízeno). Dashboard z nich staví sekci
+K vyřízení (`action`) a Ostatní (`info` / `promo` / NULL), pravidlo
+odesílatele `archiveIfOther` zprávy `action` vynechá.
 
 ### Technické předzpracování (ai)
 

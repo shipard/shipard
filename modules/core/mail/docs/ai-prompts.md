@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.6.2)
+## Default prompt (v4.7.1)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -35,7 +35,13 @@ i přílohy jsou jeden kontext, tělo zprávy je plnohodnotný zdroj dat
 - **právě jedna `message_classification`** (`{primary_type, confidence,
   title}`) — povinná, server ji vynucuje (422); `title` je volitelný
   krátký titulek zprávy (≤ 120 znaků, od v4.3.0) — bez něj server složí
-  fallback z canonicalu (`MessageTitleComposer`),
+  fallback z canonicalu (`MessageTitleComposer`); u `primary_type =
+  other` navíc **pozornost** `attention` (`action` / `info` / `promo`),
+  u `action` věta `action_note` (≤ 200 znaků) a `due_date` (ISO, jen
+  je-li lhůta ve zprávě), a protistrana `party {name, companyId, email}`
+  — od koho zpráva skutečně je, ne kdo ji přeposlal (od v4.7.0,
+  [tasks/mail-other-attention.md](../../../../tasks/mail-other-attention.md)
+  D1, D2, D7); u dokladů a dokumentů se tato pole nevracejí,
 - **nejvýše jeden `document`** — *primární* dokument zprávy. Kritérium
   primárnosti: business dokument, kvůli kterému zpráva přišla
   (faktura > smlouva > obchodní podmínky a doprovodné přílohy),
@@ -113,7 +119,7 @@ JSON Schema **draft-2020-12** (od `v2.0.0`; dřív draft-07). Wrapper (v4):
   "additionalProperties": false,
   "properties": {
     "overall_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-    "message_classification": { /* primary_type + confidence, enum enabled typů */ },
+    "message_classification": { /* primary_type + confidence + title; u other attention, action_note, due_date, party — vše volitelné */ },
     "secondary_findings": {
       "type": "array",
       "items": {
@@ -144,6 +150,13 @@ JSON Schema **draft-2020-12** (od `v2.0.0`; dřív draft-07). Wrapper (v4):
   }
 }
 ```
+
+**Pravidlo pro volitelná pole:** každé pole, které prompt dovoluje
+vynechat, musí ve schématu připouštět i `null` (`"type": ["string",
+"null"]`, `["object", "null"]`) — modely absenci běžně vyjadřují nullem
+a `additionalProperties: false` neodpustí nic; analyzer validuje celý
+výstup, takže jediné `null` v nenullable poli shodí celou analýzu do
+`schema_error` (poučení z v4.7.1: akční zpráva bez lhůty).
 
 Pole `documents[]` a `source_attachment_ndxs` z kontraktu **v4 zanikla**
 (přílohy návrhu = všechny obsahové přílohy zprávy; `extracted_documents`
@@ -251,6 +264,61 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.7.1 (2026-10-07)
+
+Oprava po ověření v4.7.0 na dev DS
+([tasks/mail-other-attention.md](../../../../tasks/mail-other-attention.md)
+→ *Oprava po ověření*): akční zpráva bez výslovné lhůty skončila
+v Nepodařilo se zpracovat — model vrátil `"due_date": null` (prompt
+vynechání nebo null dovoluje), ale nová pole byla deklarovaná jen jako
+`string` / `object` a analyzer validuje celý výstup
+(`None is not of type 'string'`). Každá upomínka bez termínu, žádost nebo
+výpověď by tak padala.
+
+- SCHÉMA: `action_note` a `due_date` `["string", "null"]`, `party`
+  `["object", "null"]` a jeho `name` / `companyId` / `email`
+  `["string", "null"]`. `attention` zůstává `string` + enum (u `other`
+  je obsahově povinná; chybět smí jen u dokladu, kde se nevrací vůbec).
+- PRAVIDLA (TRIAGE): věta o `due_date` doplněna „…jen pokud je lhůta ve
+  zprávě výslovně uvedená — jinak vrať null, NIKDY ji neodhaduj“. Ukázka
+  beze změny (délka promptu).
+- Server beze změny — na null byl připravený (`isoDateOrNull`,
+  `MessageTitleComposer::clean`, `is_array` u party); test pokrývá
+  `due_date` / `action_note` / `party` null → NULL bez warningu.
+
+### v4.7.0 (2026-10-07)
+
+Pozornost, lhůta a protistrana u zprávy bez dokladu
+([tasks/mail-other-attention.md](../../../../tasks/mail-other-attention.md),
+#105 D1, D2, D7). Sekce Ostatní na dashboardu není homogenní: jeden
+registrátor domén posílá vedle faktur přehledy expirujících domén
+(rozhodnout), výzvy k platbě (zaplatit) i potvrzení (jen vědět) — a vše
+padalo do jednoho řádku per zpráva mezi notifikace. `title` ty skupiny
+rozlišoval, jen o to nikdo nežádal strukturovaně. Přes 70 % pošty navíc
+chodí přeposíláním přes skupinu, takže odesílatel zprávy bez dokladu je
+ten, kdo přeposlal — rozhodovat podle obsahu je robustnější.
+
+- PRAVIDLA (TRIAGE): u `"other"` model vrací `attention` — `action`
+  (vyžaduje akci nebo rozhodnutí: expirace, výzva k platbě, upomínka,
+  žádost, výpověď, termín), `info` (potvrzení, stav objednávky,
+  notifikace, doručenka, sken obálky, prázdná zpráva), `promo`
+  (newsletter, leták, nabídka, pozvánka). U `action` navíc `action_note`
+  (jedna česká věta, ≤ 200 znaků) a `due_date` (ISO) jen při výslovně
+  uvedené lhůtě — nikdy neodhadovat. U `other` dále `party {name,
+  companyId, email}` — od koho zpráva skutečně pochází, ne kdo ji
+  přeposlal. U dokladů a dokumentů se pole nevracejí. Ukázka v závěru
+  promptu rozšířena o jeden příklad `action` s lhůtou (minor).
+- SCHÉMA: `message_classification` deklaruje `attention` (enum),
+  `action_note` (maxLength 200), `due_date` (pattern `YYYY-MM-DD`)
+  a `party` (objekt, `additionalProperties: false`) — vše volitelné,
+  `required` zůstává `["primary_type"]`; bez deklarace by analyzer celý
+  výstup odmítl (`schema_error`).
+- Server (nezávisle na verzi promptu): bez polí zůstávají sloupce
+  `attention` / `action_note` / `action_due` NULL a zpráva jde do Ostatních
+  jako dřív; `promo` se zatím v UI od `info` neliší (sbírá se pro
+  pozdější rozhodnutí o auto-koši newsletterů). Bez backfillu — čekající
+  řádky Ostatní si uživatel reanalyzuje nebo odklidí po staru (D10).
 
 ### v4.6.2 (2026-10-01)
 

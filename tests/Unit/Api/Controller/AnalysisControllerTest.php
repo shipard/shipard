@@ -901,6 +901,9 @@ class AnalysisControllerTest extends TestCase
     // vzor jako validateAndStoreCanonical v AnalysisControllerExchangeTest.
     // -------------------------------------------------------------------
 
+    /** Sloupce pozornosti, které UPDATE klasifikace nese vždy (tasks/mail-other-attention.md D3). */
+    private const NO_ATTENTION = ['attention' => null, 'action_note' => null, 'action_due' => null];
+
     private function callApplyClassification(\Dibi\Connection $dibi, array $body): void
     {
         $db = $this->createMock(DataSourceConnection::class);
@@ -929,7 +932,7 @@ class AnalysisControllerTest extends TestCase
             ->method('update')
             ->with(
                 'core_mail_incoming_messages',
-                ['primary_type' => 'other', 'primary_type_source' => 'ai'],
+                ['primary_type' => 'other', 'primary_type_source' => 'ai', ...self::NO_ATTENTION],
             )
             ->willReturn($fluent);
 
@@ -955,7 +958,7 @@ class AnalysisControllerTest extends TestCase
             ->method('update')
             ->with(
                 'core_mail_incoming_messages',
-                ['primary_type' => 'invoiceReceived', 'primary_type_source' => 'ai'],
+                ['primary_type' => 'invoiceReceived', 'primary_type_source' => 'ai', ...self::NO_ATTENTION],
             )
             ->willReturn($fluent);
 
@@ -979,7 +982,7 @@ class AnalysisControllerTest extends TestCase
             ->method('update')
             ->with(
                 'core_mail_incoming_messages',
-                ['primary_type' => 'other', 'primary_type_source' => 'ai'],
+                ['primary_type' => 'other', 'primary_type_source' => 'ai', ...self::NO_ATTENTION],
             )
             ->willReturn($fluent);
 
@@ -1007,6 +1010,162 @@ class AnalysisControllerTest extends TestCase
         $dibi->expects($this->never())->method('update');
 
         $this->callApplyClassification($dibi, ['model_name' => 'claude']);
+    }
+
+    // -------------------------------------------------------------------
+    // Pozornost u zprávy bez dokladu (tasks/mail-other-attention.md D3)
+    // -------------------------------------------------------------------
+
+    /**
+     * Dibi mock zachycující data jediného UPDATE klasifikace.
+     *
+     * @param array<string, mixed>|null $captured
+     */
+    private function capturingDibi(?array &$captured): \Dibi\Connection
+    {
+        $fluent = $this->createMock(\Dibi\Fluent::class);
+        $fluent->method('__call')->willReturnSelf();
+        $fluent->expects($this->once())->method('execute');
+
+        $dibi = $this->createMock(\Dibi\Connection::class);
+        $dibi->expects($this->once())->method('update')->willReturnCallback(
+            function (string $table, array $data) use (&$captured, $fluent): \Dibi\Fluent {
+                $this->assertSame('core_mail_incoming_messages', $table);
+                $captured = $data;
+                return $fluent;
+            },
+        );
+        return $dibi;
+    }
+
+    public function testClassificationOtherActionWritesAttentionNoteAndDue(): void
+    {
+        $captured = null;
+        $this->callApplyClassification($this->capturingDibi($captured), [
+            'message_classification' => [
+                'primary_type' => 'other',
+                'confidence' => 0.9,
+                'attention' => 'action',
+                'action_note' => "  Prodloužit 3 domény,\n jinak 15. 10. expirují.  ",
+                'due_date' => '2026-10-15',
+            ],
+        ]);
+
+        $this->assertSame([
+            'primary_type' => 'other',
+            'primary_type_source' => 'ai',
+            'attention' => 'action',
+            'action_note' => 'Prodloužit 3 domény, jinak 15. 10. expirují.',
+            'action_due' => '2026-10-15',
+        ], $captured);
+    }
+
+    public function testClassificationActionNoteIsTruncatedToColumnLength(): void
+    {
+        $captured = null;
+        $this->callApplyClassification($this->capturingDibi($captured), [
+            'message_classification' => [
+                'primary_type' => 'other',
+                'attention' => 'action',
+                'action_note' => str_repeat('ž', 250),
+            ],
+        ]);
+
+        $this->assertSame(200, mb_strlen((string) $captured['action_note']));
+        $this->assertNull($captured['action_due']);
+    }
+
+    public function testClassificationInfoDropsNoteAndDueEvenWhenSent(): void
+    {
+        $captured = null;
+        $this->callApplyClassification($this->capturingDibi($captured), [
+            'message_classification' => [
+                'primary_type' => 'other',
+                'attention' => 'info',
+                'action_note' => 'Nic nedělat',
+                'due_date' => '2026-10-15',
+            ],
+        ]);
+
+        $this->assertSame('info', $captured['attention']);
+        $this->assertNull($captured['action_note']);
+        $this->assertNull($captured['action_due']);
+    }
+
+    public function testClassificationUnknownAttentionLeavesFieldsNullButStoresType(): void
+    {
+        // Neznámá hodnota = warning + ignore, uložení resultu se nerozbije
+        // (stejně jako neznámý primary_type) — typ se zapíše, pozornost NULL.
+        $captured = null;
+        $this->callApplyClassification($this->capturingDibi($captured), [
+            'message_classification' => [
+                'primary_type' => 'other',
+                'attention' => 'urgent',
+                'action_note' => 'Zaplatit',
+                'due_date' => '2026-10-15',
+            ],
+        ]);
+
+        $this->assertSame(['primary_type' => 'other', 'primary_type_source' => 'ai', ...self::NO_ATTENTION], $captured);
+    }
+
+    public function testClassificationDocumentTypeClearsAttentionFields(): void
+    {
+        // Zpráva mohla být dřív `other` s poznámkou „Zaplatit“ — reanalýzou
+        // se stala fakturou, tři pole musí být NULL i když je model poslal.
+        $captured = null;
+        $this->callApplyClassification($this->capturingDibi($captured), [
+            'message_classification' => [
+                'primary_type' => 'invoiceReceived',
+                'attention' => 'action',
+                'action_note' => 'Zaplatit',
+                'due_date' => '2026-10-15',
+            ],
+        ]);
+
+        $this->assertSame(['primary_type' => 'invoiceReceived', 'primary_type_source' => 'ai', ...self::NO_ATTENTION], $captured);
+    }
+
+    public function testClassificationActionWithNullNoteDueAndPartyStoresNull(): void
+    {
+        // Oprava v4.7.1: model absenci vyjadřuje nullem (schéma ho od v4.7.1
+        // připouští) — server uloží NULL bez warningu a typ i pozornost zapíše.
+        $captured = null;
+        $this->callApplyClassification($this->capturingDibi($captured), [
+            'message_classification' => [
+                'primary_type' => 'other',
+                'confidence' => 0.9,
+                'attention' => 'action',
+                'action_note' => null,
+                'due_date' => null,
+                'party' => null,
+            ],
+        ]);
+
+        $this->assertSame([
+            'primary_type' => 'other',
+            'primary_type_source' => 'ai',
+            'attention' => 'action',
+            'action_note' => null,
+            'action_due' => null,
+        ], $captured);
+    }
+
+    public function testClassificationInvalidDueDateYieldsNull(): void
+    {
+        foreach (['15. 10. 2026', '2026-02-30', '2026-10-15T00:00:00', '', 20261015] as $invalid) {
+            $captured = null;
+            $this->callApplyClassification($this->capturingDibi($captured), [
+                'message_classification' => [
+                    'primary_type' => 'other',
+                    'attention' => 'action',
+                    'action_note' => 'Zaplatit',
+                    'due_date' => $invalid,
+                ],
+            ]);
+            $this->assertNull($captured['action_due'], 'due_date ' . json_encode($invalid));
+            $this->assertSame('Zaplatit', $captured['action_note']);
+        }
     }
 
     // -------------------------------------------------------------------

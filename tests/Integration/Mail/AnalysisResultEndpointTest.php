@@ -507,6 +507,112 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         $this->assertNotDisposed($ruleId);
     }
 
+    // ── pozornost u zprávy bez dokladu (tasks/mail-other-attention.md D3, D7) ──
+
+    public function testResultOtherWithActionWritesAttentionFieldsAndPartnerFromClassification(): void
+    {
+        $messageNdx = $this->provisionMessage(['sender_email' => 'forwarder@example.cz']);
+        $token = $this->createClaim($messageNdx);
+
+        $body = $this->otherBody(0.9);
+        $body['message_classification'] += [
+            'attention' => 'action',
+            'action_note' => 'Prodloužit 3 domény, jinak 15. 10. 2026 expirují.',
+            'due_date' => '2026-10-15',
+            'party' => ['name' => 'Registrátor a.s.', 'companyId' => '00000000', 'email' => 'podpora@registrator.example'],
+        ];
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+
+        $message = $this->messageRow();
+        $this->assertSame('other', $message['primary_type']);
+        $this->assertSame('action', $message['attention']);
+        $this->assertSame('Prodloužit 3 domény, jinak 15. 10. 2026 expirují.', $message['action_note']);
+        $this->assertSame('2026-10-15', (string) ($message['action_due'] instanceof \DateTimeInterface
+            ? $message['action_due']->format('Y-m-d')
+            : $message['action_due']));
+        // D7: protistrana z klasifikace, ne přeposílající odesílatel.
+        $this->assertSame('Registrátor a.s.', $message['partner_name']);
+        $this->assertSame(10, (int) $message['docState'], 'zpráva bez dokladu zůstává v Nové');
+    }
+
+    public function testResultOtherActionWithNullOptionalFieldsIsStoredWithoutPartner(): void
+    {
+        // Oprava v4.7.1 (akční zpráva bez lhůty): due_date / action_note /
+        // party null → 201, attention action, NULL sloupce, partner nedotčen.
+        $messageNdx = $this->provisionMessage(['partner_name' => 'Původní partner']);
+        $token = $this->createClaim($messageNdx);
+
+        $body = $this->otherBody(0.9);
+        $body['message_classification'] += [
+            'attention' => 'action',
+            'action_note' => null,
+            'due_date' => null,
+            'party' => null,
+        ];
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+
+        $message = $this->messageRow();
+        $this->assertSame('action', $message['attention']);
+        $this->assertNull($message['action_note']);
+        $this->assertNull($message['action_due']);
+        $this->assertSame('Původní partner', $message['partner_name']);
+        $this->assertSame(30, (int) $message['analysis_state']);
+    }
+
+    public function testResultOtherInfoDropsNoteAndDue(): void
+    {
+        $messageNdx = $this->provisionMessage();
+        $token = $this->createClaim($messageNdx);
+
+        $body = $this->otherBody(0.9);
+        $body['message_classification'] += [
+            'attention' => 'info',
+            'action_note' => 'Nic',
+            'due_date' => '2026-10-15',
+        ];
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp));
+
+        $message = $this->messageRow();
+        $this->assertSame('info', $message['attention']);
+        $this->assertNull($message['action_note']);
+        $this->assertNull($message['action_due']);
+    }
+
+    public function testResultWithDocumentClearsAttentionFromEarlierOtherAnalysis(): void
+    {
+        // Zpráva dřív `other` s poznámkou „Zaplatit“ — reanalýza našla
+        // fakturu: tři pole musí být NULL (faktura nenese starou poznámku).
+        $messageNdx = $this->provisionMessage([
+            'attention' => 'action',
+            'action_note' => 'Zaplatit do 15. 10.',
+            'action_due' => '2026-10-15',
+        ]);
+        $token = $this->createClaim($messageNdx);
+
+        $body = $this->baseBody();
+        $body['document'] = [
+            'doc_type' => 'invoiceReceived',
+            'confidence' => 0.9,
+            'extracted_json' => $this->validCanonical(),
+        ];
+        $body['overall_confidence'] = 0.8;
+
+        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
+        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+
+        $message = $this->messageRow();
+        $this->assertSame('invoiceReceived', $message['primary_type']);
+        $this->assertNull($message['attention']);
+        $this->assertNull($message['action_note']);
+        $this->assertNull($message['action_due']);
+    }
+
     public function testResultRequiresMessageClassification(): void
     {
         $messageNdx = $this->provisionMessage();

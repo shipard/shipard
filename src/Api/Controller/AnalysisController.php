@@ -29,6 +29,7 @@ use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Ai\AIBackendDocument;
 use Shipard\Module\Core\Mail\AIAnalyzerProvisioner;
+use Shipard\Module\Core\Mail\AttentionKinds;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
 use Shipard\Module\Core\Mail\PostAnalysisDisposer;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
@@ -937,20 +938,29 @@ class AnalysisController
             // 6) AI klasifikace typu zprávy (message_classification).
             $this->applyMessageClassification($dibi, $messageNdx, $body);
 
-            // 7) Partner zprávy z canonicalu — vrstva 1
+            // 7) Partner zprávy — vrstva 1
             //    (tasks/mail-message-title-partner.md D5/D8): partner_name
             //    dokud target_row IS NULL, partner_person jen do NULL a jen
-            //    shodou identifikátorem. Best-effort — selhání nesmí shodit
-            //    uložení výsledku (analyzer by zprávu retryoval).
-            if (is_array($canonical) && $proposedType !== null) {
-                try {
+            //    shodou identifikátorem. Zdroj: validní canonical návrhu;
+            //    u zprávy bez dokladu (`other`, document null) protistrana
+            //    z klasifikace (tasks/mail-other-attention.md D7 — od koho
+            //    zpráva skutečně je, ne kdo ji přeposlal). Best-effort —
+            //    selhání nesmí shodit uložení výsledku (analyzer by zprávu
+            //    retryoval).
+            try {
+                if (is_array($canonical) && $proposedType !== null) {
                     $this->partnerWriter()->writeFromCanonical($dibi, $messageNdx, $canonical, $proposedType);
-                } catch (\Throwable $e) {
-                    ErrorLogger::warn('AnalysisController::result partner write failed', [
-                        'messageNdx' => $messageNdx,
-                        'error' => $e->getMessage(),
-                    ]);
+                } elseif ($document === null
+                    && trim((string) ($classification['primary_type'] ?? '')) === PrimaryTypes::OTHER
+                    && is_array($classification['party'] ?? null)
+                ) {
+                    $this->partnerWriter()->writeFromClassification($dibi, $messageNdx, $classification['party']);
                 }
+            } catch (\Throwable $e) {
+                ErrorLogger::warn('AnalysisController::result partner write failed', [
+                    'messageNdx' => $messageNdx,
+                    'error' => $e->getMessage(),
+                ]);
             }
 
             // 8) Titulek zprávy (ai_title) — AI-vlastněný, zapisuje se každý
@@ -1000,15 +1010,21 @@ class AnalysisController
 
     /**
      * Zapíše AI klasifikaci typu zprávy z `message_classification`
-     * (spec tasks/mail-states-and-classification.md §B1). Běží uvnitř
-     * transakce resultu. Přítomnost pole vynucuje result() (422) —
-     * kontrakt v4 ho má povinné; fallback čtení z `analysis_json` zůstává
-     * pro robustnost.
+     * (spec tasks/mail-states-and-classification.md §B1) a s ní pozornost
+     * u zprávy bez dokladu (tasks/mail-other-attention.md D1–D3, #105):
+     * `attention`, `action_note`, `action_due`. Běží uvnitř transakce
+     * resultu. Přítomnost pole vynucuje result() (422) — kontrakt v4 ho má
+     * povinné; fallback čtení z `analysis_json` zůstává pro robustnost.
      *
      * - Neznámý `primary_type` → warning + ignore; nesmí rozbít uložení
-     *   výsledku (žádná 422).
+     *   výsledku (žádná 422). Totéž neznámá `attention` (pole zůstane NULL).
      * - AI nikdy nepřepisuje hodnotu nastavenou uživatelem
-     *   (`primary_type_source = 'user'` → UPDATE se nedotkne řádku).
+     *   (`primary_type_source = 'user'` → UPDATE se nedotkne řádku) —
+     *   jeden UPDATE, jeden guard pro typ i pozornost.
+     * - Pozornost jen u typu `other`; u dokladu a dokumentu Spisovny jsou
+     *   všechna tři pole NULL (zpráva mohla být dřív `other` a reanalýzou
+     *   se stát fakturou — faktura nesmí nést poznámku „Zaplatit“).
+     *   Poznámka a lhůta jen u `action`, i kdyby je model poslal jinde.
      *
      * @param array<string, mixed> $body
      */
@@ -1041,10 +1057,60 @@ class AnalysisController
         $dibi->update(self::MESSAGES_TABLE, [
             'primary_type' => $primaryType,
             'primary_type_source' => 'ai',
+            ...$this->attentionFields($messageNdx, $primaryType, $classification),
         ])
         ->where('id = %i', $messageNdx)
         ->where('primary_type_source != %s', 'user')
         ->execute();
+    }
+
+    /**
+     * Sloupce pozornosti z klasifikace (tasks/mail-other-attention.md D3):
+     * u typu jiného než `other` vše NULL; `attention` validovaná proti
+     * `core.mail.attentionKinds` (neznámá → warning + NULL); `action_note`
+     * trim + sjednocení whitespace + 200 znaků (stejný helper jako titulek);
+     * `due_date` jen round-trip validní `YYYY-MM-DD`, jinak NULL. Mimo
+     * `action` poznámka i lhůta NULL.
+     *
+     * @param array<string, mixed> $classification
+     * @return array{attention: ?string, action_note: ?string, action_due: ?string}
+     */
+    private function attentionFields(int $messageNdx, string $primaryType, array $classification): array
+    {
+        $fields = ['attention' => null, 'action_note' => null, 'action_due' => null];
+        if ($primaryType !== PrimaryTypes::OTHER) {
+            return $fields;
+        }
+
+        $attention = trim((string) ($classification['attention'] ?? ''));
+        if ($attention === '') {
+            return $fields;
+        }
+        if (!in_array($attention, AttentionKinds::known($this->configRuntime), true)) {
+            ErrorLogger::warn('AnalysisController::result ignoring unknown attention', [
+                'messageNdx' => $messageNdx,
+                'attention' => $attention,
+            ]);
+            return $fields;
+        }
+
+        $fields['attention'] = $attention;
+        if ($attention === AttentionKinds::ACTION) {
+            $fields['action_note'] = MessageTitleComposer::clean($classification['action_note'] ?? null);
+            $fields['action_due'] = self::isoDateOrNull($classification['due_date'] ?? null);
+        }
+        return $fields;
+    }
+
+    /** `YYYY-MM-DD` s round-trip kontrolou (2026-02-30 → null); jiný vstup → null. */
+    private static function isoDateOrNull(mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+        $value = trim($value);
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        return $date !== false && $date->format('Y-m-d') === $value ? $value : null;
     }
 
     /**

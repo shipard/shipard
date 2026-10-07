@@ -86,7 +86,7 @@ class ProfileSchemaDriftTest extends TestCase
         [$profile] = $this->loadProfile();
 
         $this->assertSame('czech_general', $profile['profile_id']);
-        $this->assertSame('v4.6.2', $profile['prompt_version']);
+        $this->assertSame('v4.7.1', $profile['prompt_version']);
         $this->assertContains('invoiceReceived', $profile['supported_doc_types']);
         foreach (['contract', 'insurance', 'quotation', 'certificate', 'official'] as $registryType) {
             $this->assertContains($registryType, $profile['supported_doc_types']);
@@ -110,11 +110,46 @@ class ProfileSchemaDriftTest extends TestCase
         $this->assertStringContainsString('120 znaků', $prompt);
         // Verze v promptu (source.promptVersion + ukázka) sleduje prompt_version profilu.
         $this->assertSame(2, substr_count($prompt, $profile['prompt_version']));
+        $this->assertStringNotContainsString('v4.7.0', $prompt);
+        $this->assertStringNotContainsString('v4.6.2', $prompt);
         $this->assertStringNotContainsString('v4.6.1', $prompt);
         $this->assertStringNotContainsString('v4.6.0', $prompt);
         $this->assertStringNotContainsString('v4.5.0', $prompt);
         $this->assertStringNotContainsString('v4.4.0', $prompt);
         $this->assertStringNotContainsString('v4.2.0', $prompt);
+    }
+
+    public function testClassificationAttentionFieldsAreOptionalAndMatchCatalog(): void
+    {
+        // tasks/mail-other-attention.md D1, D2, D7 (#105): pozornost, poznámka,
+        // lhůta a protistrana musí být ve schématu (additionalProperties:
+        // false by jinak odmítlo celý výstup), ale ne required; enum
+        // pozornosti = klíče cfgItem core.mail.attentionKinds.
+        [$profile, $modulesRoot] = $this->loadProfile();
+        $classification = $profile['output_schema']['properties']['message_classification'];
+        $props = $classification['properties'];
+
+        $kinds = JsoncParser::parseFile($modulesRoot . '/core/mail/config/attentionKinds.jsonc');
+        $this->assertSame(array_keys($kinds), $props['attention']['enum']);
+        $this->assertSame('string', $props['attention']['type']);
+        // Oprava v4.7.1: volitelná pole, která prompt dovoluje vynechat, musí
+        // připouštět i null — model absenci vyjadřuje nullem a
+        // additionalProperties: false shodí celý výstup (schema_error).
+        $this->assertSame(['type' => ['string', 'null'], 'maxLength' => 200], $props['action_note']);
+        $this->assertSame(['string', 'null'], $props['due_date']['type']);
+        $this->assertSame('^\\d{4}-\\d{2}-\\d{2}$', $props['due_date']['pattern']);
+        $this->assertSame(['object', 'null'], $props['party']['type']);
+        $this->assertFalse($props['party']['additionalProperties']);
+        $this->assertSame(['name', 'companyId', 'email'], array_keys($props['party']['properties']));
+        foreach ($props['party']['properties'] as $key => $def) {
+            $this->assertSame(['string', 'null'], $def['type'], "party.{$key} nullable");
+        }
+        $this->assertSame(['primary_type'], $classification['required']);
+
+        $prompt = (string) $profile['prompt_template'];
+        foreach (['"attention"', '"action_note"', '"due_date"', '"party"', 'jinak vrať null, NIKDY ji neodhaduj', '200 znaků'] as $needle) {
+            $this->assertStringContainsString($needle, $prompt);
+        }
     }
 
     public function testPromptEnumeratesKindFieldsExactly(): void
@@ -140,6 +175,8 @@ class ProfileSchemaDriftTest extends TestCase
         }
 
         $this->assertStringContainsString('"' . $profile['prompt_version'] . '"', $prompt, 'prompt must pin its own version');
+        $this->assertStringNotContainsString('v4.7.0', $prompt, 'stale prompt version reference');
+        $this->assertStringNotContainsString('v4.6.2', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.6.1', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.6.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.5.0', $prompt, 'stale prompt version reference');

@@ -11,12 +11,15 @@ use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 
 /**
- * Partner došlé zprávy z canonical návrhu — vrstva 1
+ * Partner došlé zprávy z návrhu — vrstva 1
  * (tasks/mail-message-title-partner.md D4, D5, D8).
  *
  * Partner = protistrana dokumentu (dodavatel u dokladu, `party` u registry
- * dokumentu), ne odesílatel e-mailu (`sender_person`). Zapisuje se ve dvou
- * sloupcích:
+ * dokumentu), ne odesílatel e-mailu (`sender_person`). U zprávy bez dokladu
+ * (`other`) je zdrojem protistrana z klasifikace
+ * (`message_classification.party`, tasks/mail-other-attention.md D7 — od
+ * koho zpráva skutečně je, ne kdo ji přeposlal) se stejnými pravidly.
+ * Zapisuje se ve dvou sloupcích:
  *
  *   - `partner_name`   — jméno z canonicalu, přepisuje se, dokud zpráva nemá
  *                        `target_row` (po Použít je snapshot toho, co bylo
@@ -28,10 +31,10 @@ use Shipard\Module\Docs\Core\OwnCompanyResolver;
  *                        NULL (ruční volba ve formuláři má přednost) a jen
  *                        dokud `target_row IS NULL` (Použít je autoritativní).
  *
- * Sdílí ho `/result` (AI) a `IsdocImportService` (deterministický import,
- * obchází AI). Volá se **uvnitř otevřené transakce volajícího**; vlastní
- * selhání resolveru polyká (partner je best-effort, výsledek analýzy se
- * kvůli němu nesmí ztratit).
+ * Sdílí ho `/result` (AI — canonical i klasifikace) a `IsdocImportService`
+ * (deterministický import, obchází AI). Volá se **uvnitř otevřené
+ * transakce volajícího**; vlastní selhání resolveru polyká (partner je
+ * best-effort, výsledek analýzy se kvůli němu nesmí ztratit).
  */
 final class MessagePartnerWriter
 {
@@ -73,6 +76,35 @@ final class MessagePartnerWriter
             return;
         }
 
+        $this->writeParty($dibi, $messageNdx, $party);
+    }
+
+    /**
+     * Zapíše partnera z protistrany klasifikace zprávy bez dokladu
+     * (`message_classification.party {name, companyId, email}`,
+     * tasks/mail-other-attention.md D7) — stejná pravidla jako u canonicalu:
+     * jméno dokud `target_row IS NULL`, Osoba jen shodou identifikátorem
+     * (IČO; e-mail se na Osobu nepáruje), nikdy jménem, nikdy create.
+     * Prázdná protistrana nic nedělá.
+     *
+     * @param array<string, mixed> $party
+     */
+    public function writeFromClassification(\Dibi\Connection $dibi, int $messageNdx, array $party): void
+    {
+        if ($party === []) {
+            return;
+        }
+
+        $this->writeParty($dibi, $messageNdx, $party);
+    }
+
+    /**
+     * Společný zápis `partner_name` + best-effort `partner_person`.
+     *
+     * @param array<string, mixed> $party
+     */
+    private function writeParty(\Dibi\Connection $dibi, int $messageNdx, array $party): void
+    {
         $name = self::normalizeName($party['name'] ?? null);
         if ($name !== null) {
             $dibi->update(self::MESSAGES_TABLE, ['partner_name' => $name])

@@ -257,6 +257,65 @@ final class MessagePartnerWriterTest extends TestCase
         $this->assertSame(['partner_person' => 77], $this->updates[0]['data']);
     }
 
+    // ── protistrana z klasifikace (tasks/mail-other-attention.md D7) ────────
+
+    public function testClassificationPartyWritesNameAndPersonWithSameGuards(): void
+    {
+        $captured = null;
+        $writer = new MessagePartnerWriter($this->resolver(ResolveResult::matched(77, 'companyId'), $captured));
+
+        $writer->writeFromClassification($this->dibi(), self::MESSAGE_NDX, [
+            'name' => "  Registrátor \n a.s. ",
+            'companyId' => ' 12345678 ',
+            'email' => 'podpora@registrator.example',
+        ]);
+
+        $this->assertCount(2, $this->updates);
+        [$name, $person] = $this->updates;
+        $this->assertSame(['partner_name' => 'Registrátor a.s.'], $name['data']);
+        $this->assertContains('target_row IS NULL', $name['where']);
+        $this->assertSame(['partner_person' => 77], $person['data']);
+        $this->assertContains('target_row IS NULL', $person['where']);
+        $this->assertContains('partner_person IS NULL', $person['where'], 'ruční volba má přednost (D8)');
+
+        // Jen identifikátory — e-mail ani jméno se do resolveru nedostanou.
+        $this->assertSame(['companyId' => '12345678'], $captured[0]);
+        $this->assertTrue($captured[2]);
+    }
+
+    public function testClassificationPartyWithoutIdentifierNeverAsksResolver(): void
+    {
+        $resolver = $this->createMock(PartyResolver::class);
+        $resolver->expects($this->never())->method('resolve');
+
+        (new MessagePartnerWriter($resolver))->writeFromClassification(
+            $this->dibi(), self::MESSAGE_NDX, ['name' => 'Dodavatel s.r.o.', 'email' => 'news@dodavatel.example'],
+        );
+
+        $this->assertCount(1, $this->updates);
+        $this->assertSame(['partner_name' => 'Dodavatel s.r.o.'], $this->updates[0]['data']);
+    }
+
+    public function testClassificationPartyNotFoundWritesOnlyName(): void
+    {
+        $writer = new MessagePartnerWriter($this->resolver(ResolveResult::notFound()));
+        $writer->writeFromClassification($this->dibi(), self::MESSAGE_NDX, ['name' => 'Úřad', 'companyId' => '00000000']);
+
+        $this->assertCount(1, $this->updates);
+        $this->assertSame(['partner_name' => 'Úřad'], $this->updates[0]['data']);
+    }
+
+    public function testEmptyClassificationPartyWritesNothing(): void
+    {
+        $resolver = $this->createMock(PartyResolver::class);
+        $resolver->expects($this->never())->method('resolve');
+
+        (new MessagePartnerWriter($resolver))->writeFromClassification($this->dibi(), self::MESSAGE_NDX, []);
+        (new MessagePartnerWriter($resolver))->writeFromClassification($this->dibi(), self::MESSAGE_NDX, ['name' => '  ']);
+
+        $this->assertSame([], $this->updates);
+    }
+
     // ── normalizace jména ───────────────────────────────────────────────────
 
     public function testNormalizeNameCollapsesWhitespaceAndTruncates(): void

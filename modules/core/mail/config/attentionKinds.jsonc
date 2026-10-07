@@ -1,0 +1,35 @@
+{
+    // core.mail.attentionKinds
+    //
+    // Pozornost u zprávy bez dokladu (core_mail_incoming_messages.attention,
+    // tasks/mail-other-attention.md D1, D3, #105). Určuje ji AI u
+    // primary_type `other` (message_classification.attention); NULL =
+    // neurčeno (starší analýza, doklad, dokument Spisovny).
+    //
+    //   - action — vyžaduje akci nebo rozhodnutí (expirace, výzva k platbě,
+    //     upomínka, žádost) → sekce K vyřízení na dashboardu, pravidlo
+    //     archiveIfOther ji vynechá;
+    //   - info  — jen informuje (potvrzení platby, stav objednávky,
+    //     notifikace, doručenka, sken obálky) → Ostatní, Archivovat vše;
+    //   - promo — obchodní sdělení (newsletter, leták, nabídka, pozvánka)
+    //     → zatím jako info; sbírá se pro pozdější rozhodnutí o auto-koši.
+
+    "action": {
+        "name": "Action required",
+        "name:cs": "K vyřízení",
+        "name:en": "Action required",
+        "order": 10
+    },
+    "info": {
+        "name": "Informational",
+        "name:cs": "Informativní",
+        "name:en": "Informational",
+        "order": 20
+    },
+    "promo": {
+        "name": "Promotional",
+        "name:cs": "Obchodní sdělení",
+        "name:en": "Promotional",
+        "order": 30
+    }
+}

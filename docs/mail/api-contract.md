@@ -353,6 +353,12 @@ návrh. Headers: `X-Claim-Token`. Request body:
   zůstává pro robustnost, top-level pole má přednost. `title` (volitelný,
   ≤ 120 znaků, od promptu v4.3.0) je lidský titulek zprávy → sloupec
   `ai_title`; bez něj server složí fallback z canonicalu.
+- U `primary_type = other` nese klasifikace navíc volitelná pole
+  (od promptu v4.7.0, od v4.7.1 nullable; `tasks/mail-other-attention.md` D1, D2, D7):
+  `attention` (`action` / `info` / `promo`), u `action` `action_note`
+  (≤ 200 znaků) a `due_date` (`YYYY-MM-DD`, jen je-li lhůta ve zprávě),
+  a `party {name, companyId, email}` — protistrana zprávy (od koho
+  skutečně je, ne kdo ji přeposlal). Starší analyzer bez polí projde.
 - `document` je volitelný (0..1) — primární dokument zprávy. Pole
   `doc_type` se ukládá do sloupce `proposed_type`.
 - `secondary_findings` je volitelný informativní seznam dalších nálezů
@@ -386,12 +392,20 @@ Server transakčně:
    neznámý klíč → server-side warning + pole se ignoruje, **ne** 422).
    UPDATE `primary_type` + `primary_type_source='ai'` — **jen pokud**
    `primary_type_source != 'user'` (volba uživatele má vždy přednost).
-6. Partner zprávy z validního canonicalu (`MessagePartnerWriter`, spec
-   `tasks/mail-message-title-partner.md`): UPDATE `partner_name` ←
+   Tentýž UPDATE nese sloupce pozornosti `attention`, `action_note`,
+   `action_due` (`tasks/mail-other-attention.md` D3): u typu `other`
+   `attention` validovaná proti `core.mail.attentionKinds` (neznámá →
+   warning + NULL), poznámka trim + 200 znaků, lhůta jen validní
+   `YYYY-MM-DD`; mimo `action` poznámka i lhůta NULL; u dokladu a dokumentu
+   Spisovny všechna tři pole NULL.
+6. Partner zprávy (`MessagePartnerWriter`, spec
+   `tasks/mail-message-title-partner.md`) — z validního canonicalu, u běhu
+   bez `document` s typem `other` z `message_classification.party`
+   (`tasks/mail-other-attention.md` D7): UPDATE `partner_name` ←
    `supplier.name` / `party.name` (jen dokud `target_row IS NULL`) a
    `partner_person` ← Osoba při shodě IČO / DIČ / VAT ID (jen do NULL a jen
-   dokud `target_row IS NULL`; nikdy shoda jménem). Best-effort — selhání
-   nevrací chybu.
+   dokud `target_row IS NULL`; nikdy shoda jménem, e-mail se nepáruje).
+   Best-effort — selhání nevrací chybu.
 7. Titulek zprávy: UPDATE `ai_title` ← `message_classification.title`
    (trim, 200 znaků), jinak fallback `MessageTitleComposer` z validního
    canonicalu, jinak NULL — zapisuje se **vždy** (AI-vlastněný sloupec,

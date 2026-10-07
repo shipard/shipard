@@ -369,6 +369,46 @@
             "nullable": true,
             "group": "ai"
         },
+        {
+            // Pozornost u zprávy bez dokladu (tasks/mail-other-attention.md
+            // D1, D3, #105): AI u primary_type `other` rozliší, zda zpráva
+            // vyžaduje akci (`action`), jen informuje (`info`), nebo je to
+            // obchodní sdělení (`promo`). Zapisuje /result jen u typu `other`;
+            // u dokladu a dokumentu Spisovny NULL. NULL = neurčeno (starší
+            // analýza). Uživatel pole needituje — reaguje archivací.
+            "id": "attention",
+            "name": "Attention",
+            "name:cs": "Pozornost",
+            "name:en": "Attention",
+            "type": "enumString",
+            "length": 10,
+            "nullable": true,
+            "cfgItem": "core.mail.attentionKinds",
+            "group": "ai"
+        },
+        {
+            // Co má člověk udělat — jedna věta od AI (jazyk AI profilu jako
+            // ai_title), jen u attention = action; jinak NULL.
+            "id": "action_note",
+            "name": "Action note",
+            "name:cs": "Co udělat",
+            "name:en": "Action note",
+            "type": "varchar",
+            "length": 200,
+            "nullable": true,
+            "group": "ai"
+        },
+        {
+            // Lhůta z message_classification.due_date — jen když je ve zprávě
+            // výslovně uvedená (model ji neodhaduje), jen u action; jinak NULL.
+            "id": "action_due",
+            "name": "Action due",
+            "name:cs": "Lhůta",
+            "name:en": "Action due",
+            "type": "date",
+            "nullable": true,
+            "group": "ai"
+        },
 
         // --- technické předzpracování (tasks/mail-preprocess.md) ---
 

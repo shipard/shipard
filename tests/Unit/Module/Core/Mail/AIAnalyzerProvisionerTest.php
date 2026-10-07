@@ -174,7 +174,7 @@ class AIAnalyzerProvisionerTest extends TestCase
 
         $this->assertSame('czech_general', $profile['profile_id']);
         $this->assertSame('cs', $profile['language']);
-        $this->assertSame('v4.6.2', $profile['prompt_version']);
+        $this->assertSame('v4.7.1', $profile['prompt_version']);
 
         // JSON pole musí být validní serializace
         $supportedTypes = json_decode($profile['supported_doc_types'], true);
