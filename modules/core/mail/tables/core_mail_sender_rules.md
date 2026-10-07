@@ -5,13 +5,15 @@ Spisovny, design `docs/registry-mvp.md` §8, zásady D6/D7). Pravidlo má
 jednu ze dvou dispozic (`core.mail.senderRuleDispositions`,
 `tasks/mail-sender-rules-after-analysis.md`):
 
-- **`archiveIfOther`** — „Archivovat, když neobsahuje doklad ani dokument“
+- **`archiveIfOther`** — „Archivovat, když neobsahuje doklad ani nic k vyřízení“
   (výchozí). Zpráva při příjmu projde normálně (předzpracování, ISDOC, AI);
   když první úspěšná analýza nevrátí dokument a klasifikace zprávy je
   `other` s jistotou aspoň na `review` prahu profilu, `PostAnalysisDisposer`
   ji v transakci `/result` archivuje. Faktury od téhož odesílatele chodí
   dál normálně — bezpečná volba pro smíšené odesílatele (sken obálky
-  i obsahu, dodavatel posílající upozornění i faktury).
+  i obsahu, dodavatel posílající upozornění i faktury). Zprávu s pozorností
+  `action` (expirace, výzva k platbě — `tasks/mail-other-attention.md` D6)
+  pravidlo vynechá, zůstává v sekci K vyřízení.
 - **`archive`** — „Archivovat hned, bez analýzy“. Zpráva, jejíž odesílatel
   matchne **potvrzené** pravidlo, vzniká při ingestu rovnou v Archivu
   (pre-triage v `MailController::receiveIncoming`). Po analýze a při

@@ -98,10 +98,11 @@
         "text:en": "Always archive mail from {pattern}?"
     },
     // Titulek karty návrhu pravidla s dispozicí `archiveIfOther`
-    // (tasks/mail-sender-rules-after-analysis.md D3).
+    // (tasks/mail-sender-rules-after-analysis.md D3; znění po
+    // tasks/mail-other-attention.md D6 — akční zprávy pravidlo vynechá).
     "senderRule.titleIfOther": {
-        "text": "Archive mail from {pattern} when it contains no document?",
-        "text:cs": "Archivovat poštu od {pattern}, když neobsahuje doklad ani dokument?",
-        "text:en": "Archive mail from {pattern} when it contains no document?"
+        "text": "Archive mail from {pattern} when it contains no document or action?",
+        "text:cs": "Archivovat poštu od {pattern}, když neobsahuje doklad ani nic k vyřízení?",
+        "text:en": "Archive mail from {pattern} when it contains no document or action?"
     }
 }

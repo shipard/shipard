@@ -568,7 +568,8 @@ reference) — chybové stavy jdou přímo do toastu.
 - **Nová tabulka `core_mail_sender_rules`** (core.mail; pozor — nesouvisí
   s `core_mail_senders`, což jsou odchozí SMTP transporty): pattern
   (přesný e-mail / doména), dispozice (`archive` při příjmu, nebo výchozí
-  `archiveIfOther` — archivovat až po analýze, jen zprávy bez dokladu;
+  `archiveIfOther` — archivovat až po analýze, jen zprávy bez dokladu
+  a bez ničeho k vyřízení;
   `tasks/mail-sender-rules-after-analysis.md`), původ (user /
   ai-suggested), potvrzeno, statistiky zásahů.
 - **Ingest signály**: sloupec `is_bulk` na zprávě (hlavička
@@ -582,8 +583,11 @@ reference) — chybové stavy jdou přímo do toastu.
   odesílatel; od prahu emituje návrhovou kartu „Vždy archivovat poštu od
   X?" → potvrzením vzniká pravidlo. Odesílateli, od kterého už přišel
   doklad nebo dokument, navrhne `archiveIfOther` („Archivovat poštu od X,
-  když neobsahuje doklad ani dokument?"); potvrzení odklidí i řádky Ostatní,
-  které od adresy už čekají. AI klasifikace šumu jen navrhuje;
+  když neobsahuje doklad ani nic k vyřízení?"); potvrzení odklidí i řádky
+  Ostatní, které od adresy už čekají. Zprávu, která vyžaduje akci
+  (`attention = action` — expirace, výzva k platbě, žádost;
+  `tasks/mail-other-attention.md` D6), pravidlo nikdy neodklidí: zůstává
+  v sekci K vyřízení. AI klasifikace šumu jen navrhuje;
   auto-archiv čistě z AI až za per-DS opt-in nastavením (settingsPage).
   `archiveIfOther` tuto zásadu D7 neporušuje: uživatel pravidlo potvrzuje
   pro konkrétní adresu (deterministický match), AI jen určí, že ve zprávě

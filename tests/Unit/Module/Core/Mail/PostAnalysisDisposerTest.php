@@ -198,6 +198,26 @@ final class PostAnalysisDisposerTest extends TestCase
         $this->assertSame([], $this->executes);
     }
 
+    public function testActionAttentionNeverArchives(): void
+    {
+        // tasks/mail-other-attention.md D6: zpráva K vyřízení (expirace, výzva
+        // k platbě) pravidlem nikdy do Archivu — zůstává na dashboardu.
+        $disposer = $this->disposer(message: ['attention' => 'action'] + self::MESSAGE_OK);
+
+        $this->assertNull($disposer->afterResult(77, false, 0.95, null));
+        $this->assertSame([], $this->executes);
+    }
+
+    public function testInformationalAndUnknownAttentionArchive(): void
+    {
+        foreach (['info', 'promo', null] as $attention) {
+            $disposer = $this->disposer(message: ['attention' => $attention] + self::MESSAGE_OK);
+
+            $this->assertSame(5, $disposer->afterResult(77, false, 0.95, null), 'attention ' . var_export($attention, true));
+            $this->assertCount(1, $this->messageUpdates());
+        }
+    }
+
     public function testMissingMessageRowSkips(): void
     {
         $disposer = $this->disposer(message: null);
@@ -319,12 +339,15 @@ final class PostAnalysisDisposerTest extends TestCase
         $this->assertStringContainsString('m.docState = %i AND m.analysis_state = %i', $sql);
         $this->assertStringContainsString('m.primary_type = %s AND m.source_type <> %i', $sql);
         $this->assertStringContainsString('NOT (a.canonical_json IS NOT NULL AND a.resolution IS NULL)', $sql);
+        // D6 (#105): řádky K vyřízení pravidlo vynechá.
+        $this->assertStringContainsString('(m.attention IS NULL OR m.attention <> %s)', $sql);
         $this->assertStringContainsString('LOWER(m.sender_email) = %s', $sql);
         $this->assertStringNotContainsString('SUBSTRING_INDEX', $sql);
         $this->assertSame('$.message_classification.confidence', $call[1]);
         $this->assertContains(10, $call);
         $this->assertContains(30, $call);
         $this->assertContains('other', $call);
+        $this->assertContains('action', $call);
         $this->assertSame('scan@example.com', $call[count($call) - 1]);
     }
 

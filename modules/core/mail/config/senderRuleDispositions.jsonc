@@ -6,16 +6,18 @@
     // (tasks/mail-sender-rules-after-analysis.md D3, D6):
     //
     //   - archiveIfOther — po analýze: archivuje, jen když AI ve zprávě
-    //     nenašla doklad ani dokument Spisovny (primary_type `other`).
-    //     Bezpečný výchozí stav pro smíšené odesílatele (D9).
+    //     nenašla doklad ani dokument Spisovny (primary_type `other`)
+    //     a zpráva nevyžaduje akci (attention ≠ action —
+    //     tasks/mail-other-attention.md D6). Bezpečný výchozí stav pro
+    //     smíšené odesílatele (D9).
     //   - archive — před analýzou: zpráva vznikne rovnou v Archivu,
     //     AI ji nečte. Po analýze a při potvrzení pravidla archivuje
     //     ostatní poštu také („všechno“ zahrnuje i ostatní).
 
     "archiveIfOther": {
-        "name": "Archive when it contains no document",
-        "name:cs": "Archivovat, když neobsahuje doklad ani dokument",
-        "name:en": "Archive when it contains no document",
+        "name": "Archive when it contains no document or action",
+        "name:cs": "Archivovat, když neobsahuje doklad ani nic k vyřízení",
+        "name:en": "Archive when it contains no document or action",
         "order": 10
     },
     "archive": {

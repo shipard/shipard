@@ -230,7 +230,7 @@ final class MailDigestSourceTest extends TestCase
 
         $cs = new MailDigestSource()->collectCards($this->context([['cnt' => 0, 'last_at' => null]], [], $rules));
         $this->assertSame(
-            'Archivovat poštu od scan@example.com, když neobsahuje doklad ani dokument?',
+            'Archivovat poštu od scan@example.com, když neobsahuje doklad ani nic k vyřízení?',
             $cs[0]['title'],
         );
         $this->assertSame('Vždy archivovat poštu od news@example.com?', $cs[1]['title']);
@@ -239,7 +239,7 @@ final class MailDigestSourceTest extends TestCase
 
         $en = new MailDigestSource()->collectCards($this->context([['cnt' => 0, 'last_at' => null]], [], $rules, lang: 'en'));
         $fallback = new MailDigestSource()->collectCards($this->context([['cnt' => 0, 'last_at' => null]], [], $rules, lang: 'en', withCatalog: false));
-        $this->assertSame('Archive mail from scan@example.com when it contains no document?', $en[0]['title']);
+        $this->assertSame('Archive mail from scan@example.com when it contains no document or action?', $en[0]['title']);
         $this->assertSame(array_column($en, 'title'), array_column($fallback, 'title'));
     }
 

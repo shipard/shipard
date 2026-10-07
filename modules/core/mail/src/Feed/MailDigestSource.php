@@ -153,7 +153,7 @@ final class MailDigestSource implements FeedSource
 
         // D3: titulek podle dispozice návrhu.
         $title = (string) ($row['disposition'] ?? '') === SenderRuleDispositions::ARCHIVE_IF_OTHER
-            ? $texts->t('senderRule.titleIfOther', 'Archive mail from {pattern} when it contains no document?', ['pattern' => $pattern])
+            ? $texts->t('senderRule.titleIfOther', 'Archive mail from {pattern} when it contains no document or action?', ['pattern' => $pattern])
             : $texts->t('senderRule.title', 'Always archive mail from {pattern}?', ['pattern' => $pattern]);
 
         return [

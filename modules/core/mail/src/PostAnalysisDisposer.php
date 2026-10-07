@@ -26,6 +26,10 @@ use Shipard\Core\Document\DocStateConfig;
  * (D5; chybí-li, zpráva zůstává), odesílatel má potvrzené pravidlo —
  * **jakékoli** dispozice (D6: `archive` znamená „všechno“, tedy i ostatní).
  * Nejkonkrétnější pravidlo (e-mail > doména) určuje {@see SenderRuleMatcher}.
+ * Zpráva s pozorností `action` (tasks/mail-other-attention.md D6, #105 —
+ * expirace, výzva k platbě, žádost) se pravidlem **nikdy neodklidí**:
+ * zůstává v K vyřízení; `info` / `promo` / NULL (starší analýza) se
+ * archivují jako dosud.
  *
  * Archivace jde přímým UPDATE (jako pre-triage při příjmu), ne přes
  * TableGateway — `stateChanged` handlery zpráv se nespouštějí; učící
@@ -93,7 +97,7 @@ class PostAnalysisDisposer
         }
 
         $row = $this->db->fetchRow(
-            'SELECT sender_email, primary_type, docState, source_type FROM %n WHERE id = %i',
+            'SELECT sender_email, primary_type, docState, source_type, attention FROM %n WHERE id = %i',
             self::MESSAGES_TABLE,
             $messageNdx,
         );
@@ -101,6 +105,7 @@ class PostAnalysisDisposer
             || (string) ($row['primary_type'] ?? '') !== PrimaryTypes::OTHER
             || (int) ($row['docState'] ?? 0) !== IncomingMessageDocument::DOC_STATE_NEW
             || (int) ($row['source_type'] ?? 0) === self::SOURCE_TYPE_MANUAL
+            || (string) ($row['attention'] ?? '') === AttentionKinds::ACTION
         ) {
             return null;
         }
@@ -133,7 +138,8 @@ class PostAnalysisDisposer
      * `MailSuggestionsSource::fetchNotInvoiceRows()`, navíc bez ručního
      * nahrání), pro které je pravidlo nejkonkrétnějším zásahem (D6) a jistota
      * poslední úspěšné analýzy prošla prahem jejího profilu (D5).
-     * Pravidlo mimo stav 40 → 0. Vrací počet archivovaných zpráv.
+     * Pravidlo mimo stav 40 → 0. Vrací počet archivovaných zpráv. Řádky
+     * K vyřízení (`attention = action`) do kandidátů nevstupují (D6 #105).
      *
      * Doménový vzor = přesná doména za posledním `@` (jako matcher), ne
      * subdomény. `LOWER(sender_email)` neumí index — kandidáty zužuje
@@ -169,6 +175,7 @@ class PostAnalysisDisposer
             . ' WHERE m.docState = %i AND m.analysis_state = %i'
             . ' AND m.primary_type = %s AND m.source_type <> %i'
             . ' AND NOT (a.canonical_json IS NOT NULL AND a.resolution IS NULL)'
+            . ' AND (m.attention IS NULL OR m.attention <> %s)'
             . ' AND ' . $patternSql,
             self::CLASSIFICATION_CONFIDENCE_PATH,
             self::MESSAGES_TABLE,
@@ -179,6 +186,7 @@ class PostAnalysisDisposer
             IncomingMessageDocument::ANALYSIS_ANALYZED,
             PrimaryTypes::OTHER,
             self::SOURCE_TYPE_MANUAL,
+            AttentionKinds::ACTION,
             $pattern,
         );
 
