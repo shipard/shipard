@@ -22,10 +22,13 @@ use Shipard\Module\Economy\Assets\AssetDocument;
  *
  * Párování řádků: kandidáti = řádky dokladu se stejným číslem účtu,
  * `vat_base_dom` = `amount` na haléř a stranou, je-li v payloadu (účetní
- * doklady; faktury a pokladní doklady stranu nemají). Jeden kandidát =
- * shoda; víc kandidátů rozhodne `orderHint` (`order_pos`), jinak
- * `ambiguous`. Každý řádek dokladu se spáruje nejvýš jednou. Řádek, který
- * už nese jinou kartu, je `conflict`; stejnou → `unchanged`.
+ * doklady; faktury a pokladní doklady stranu nemají). Řádek payloadu bez
+ * `account` (chybí nebo null, D86) se páruje s řádky dokladu bez účtu —
+ * účet jim dává položka nebo kategorie operace až v předpisu — jen podle
+ * částky a strany. Jeden kandidát = shoda; víc kandidátů rozhodne
+ * `orderHint` (`order_pos`), jinak `ambiguous`. Každý řádek dokladu se
+ * spáruje nejvýš jednou. Řádek, který už nese jinou kartu, je `conflict`;
+ * stejnou → `unchanged`. Kandidáty jsou jen účtované řádky (`row_kind` 1).
  *
  * Doklad se mění celý, nebo vůbec (transakce): nastaví se `asset` na
  * řádcích a hlavičce; u dokladu ve stavu 40 se přegeneruje deník
@@ -75,7 +78,7 @@ class AssetDocLinkService
     }
 
     /**
-     * @param array<string, mixed> $payload {docId, headAsset?, rows: [{account, side?, amount, asset, orderHint?, sourceRef?}]}
+     * @param array<string, mixed> $payload {docId, headAsset?, rows: [{account?, side?, amount, asset, orderHint?, sourceRef?}]}
      * @return array<string, mixed> {status, docId, rows: [{index, sourceRef, rowId, status}], head?, issues?, messages?}
      */
     public function apply(array $payload): array
@@ -183,14 +186,18 @@ class AssetDocLinkService
      */
     private function match(array $spec, array $rows, array $taken): array|string
     {
-        $account = trim((string) $spec['account']);
+        $account = isset($spec['account']) ? trim((string) $spec['account']) : null;
         $amount = round((float) $spec['amount'], 2);
         $side = isset($spec['side']) ? self::SIDES[(string) $spec['side']] : null;
 
         $candidates = [];
         foreach ($rows as $row) {
+            // Bez účtu v payloadu jen řádky bez účtu (účet z položky / kategorie, D86).
+            $accountMatches = $account === null
+                ? ($row['account'] ?? null) === null
+                : (string) ($row['account_number'] ?? '') === $account;
             if (isset($taken[(int) $row['id']])
-                || (string) ($row['account_number'] ?? '') !== $account
+                || !$accountMatches
                 || abs(round((float) ($row['vat_base_dom'] ?? 0), 2) - $amount) >= self::AMOUNT_EPSILON
                 || ($side !== null && (int) ($row['acc_side'] ?? -1) !== $side)
             ) {
@@ -270,8 +277,10 @@ class AssetDocLinkService
                 $error("rows.{$index}", 'invalid', 'Řádek musí být objekt.');
                 continue;
             }
-            if (!isset($row['account']) || !is_string($row['account']) || trim($row['account']) === '') {
-                $error("rows.{$index}.account", 'required', 'Číslo účtu je povinné.');
+            // Účet je nepovinný (chybí / null = řádek bez účtu, D86); prázdný text
+            // je chyba, aby se nemaskoval omyl runneru.
+            if (isset($row['account']) && (!is_string($row['account']) || trim($row['account']) === '')) {
+                $error("rows.{$index}.account", 'invalid', 'Číslo účtu musí být neprázdný text, nebo null.');
             }
             if (isset($row['side']) && !isset(self::SIDES[(string) $row['side']])) {
                 $error("rows.{$index}.side", 'invalid', 'Strana musí být dr, nebo cr.');
@@ -322,18 +331,19 @@ class AssetDocLinkService
     /**
      * Řádky dokladu s číslem účtu rozvrhu.
      *
-     * @return list<array{id: int, account_number: ?string, acc_side: ?int, vat_base_dom: mixed, order_pos: int, asset: ?int}>
+     * @return list<array{id: int, account: ?int, account_number: ?string, acc_side: ?int, vat_base_dom: mixed, order_pos: int, asset: ?int}>
      */
     protected function loadRows(int $docId): array
     {
         if ($this->db === null) {
             return [];
         }
+        // Jen účtované řádky (`row_kind` 1) — ostatní engine neúčtuje.
         $rows = $this->db->fetchAll(
-            'SELECT [r].[id], [r].[acc_side], [r].[vat_base_dom], [r].[order_pos], [r].[asset], [a].[number] AS [account_number]'
+            'SELECT [r].[id], [r].[account], [r].[acc_side], [r].[vat_base_dom], [r].[order_pos], [r].[asset], [a].[number] AS [account_number]'
             . ' FROM [' . self::ROWS_TABLE . '] [r]'
             . ' LEFT JOIN [economy_accounting_accounts] [a] ON [a].[id] = [r].[account]'
-            . ' WHERE [r].[doc_head] = %i ORDER BY [r].[order_pos], [r].[id]',
+            . ' WHERE [r].[doc_head] = %i AND [r].[row_kind] = 1 ORDER BY [r].[order_pos], [r].[id]',
             $docId,
         );
         return array_map(static fn(iterable $row): array => iterator_to_array($row), $rows);

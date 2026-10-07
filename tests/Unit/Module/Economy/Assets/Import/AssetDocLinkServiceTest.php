@@ -48,9 +48,13 @@ class RecordingAssetDocLinkService extends AssetDocLinkService
         $this->heads[$id] = $o + ['id' => $id, 'docState' => $docState, 'asset' => $asset, 'doc_number' => "UD{$id}", 'accounting_date' => '2024-12-31'];
     }
 
-    public function row(int $doc, int $id, string $account, ?int $side, float $amount, int $orderPos, ?int $asset = null): void
+    /** Řádek dokladu; `$account` null = bez účtu (účet z položky / kategorie, D86). */
+    public function row(int $doc, int $id, ?string $account, ?int $side, float $amount, int $orderPos, ?int $asset = null): void
     {
-        $this->rows[$doc][] = ['id' => $id, 'account_number' => $account, 'acc_side' => $side, 'vat_base_dom' => $amount, 'order_pos' => $orderPos, 'asset' => $asset];
+        $this->rows[$doc][] = [
+            'id' => $id, 'account' => $account !== null ? (int) $account : null, 'account_number' => $account,
+            'acc_side' => $side, 'vat_base_dom' => $amount, 'order_pos' => $orderPos, 'asset' => $asset,
+        ];
     }
 
     protected function loadHead(int $docId): ?array
@@ -121,7 +125,8 @@ class RecordingAssetDocLinkService extends AssetDocLinkService
 /**
  * Doplnění karty na importované doklady (docs/assets.md D80): párování
  * řádků podle účtu, částky a strany, `orderHint`, konflikt, celý doklad
- * nebo nic, přegenerování deníku s pojistkou obratů a zámky jen do logu.
+ * nebo nic, přegenerování deníku s pojistkou obratů a zámky jen do logu;
+ * řádky bez účtu jen podle částky (D86).
  */
 class AssetDocLinkServiceTest extends TestCase
 {
@@ -200,6 +205,58 @@ class AssetDocLinkServiceTest extends TestCase
         $this->assertSame('linked', $result['status']);
         $this->assertSame([12, 11], array_column($result['rows'], 'rowId'));
         $this->assertSame([[12, 15], [11, 16]], $this->service->rowUpdates);
+    }
+
+    public function testRowsWithoutAccountMatchByAmount(): void
+    {
+        // D86: faktura — první řádek bez účtu (účet dá položka), druhý
+        // s účtem. Payload bez `account` páruje jen řádky bez účtu.
+        $this->service->head(3);
+        $this->service->row(3, 31, null, null, 48000.00, 1);
+        $this->service->row(3, 32, '042100', null, 48000.00, 2);
+        $this->service->row(3, 33, null, null, 350.00, 3);
+        $this->service->turnover[3] = [];
+
+        $result = $this->service->apply(['docId' => 3, 'headAsset' => null, 'rows' => [
+            ['amount' => 48000, 'asset' => 17, 'sourceRef' => 'row:1'],
+            ['account' => '042100', 'amount' => 48000, 'asset' => 17, 'sourceRef' => 'row:2'],
+            ['account' => null, 'amount' => 350, 'asset' => 16, 'sourceRef' => 'row:3'],
+        ]]);
+
+        $this->assertSame('linked', $result['status']);
+        $this->assertSame([31, 32, 33], array_column($result['rows'], 'rowId'));
+        $this->assertSame([[31, 17], [32, 17], [33, 16]], $this->service->rowUpdates);
+        $this->assertSame([3], $this->service->reaccounted);
+
+        // Řádek bez účtu s částkou, kterou má jen řádek s účtem → nenalezen.
+        $this->service->rowUpdates = [];
+        $this->service->reaccounted = [];
+        $result = $this->service->apply(['docId' => 3, 'rows' => [['amount' => 48000, 'asset' => 17], ['amount' => 48000, 'asset' => 17]]]);
+        $this->assertSame('notFound', $result['status']);
+        $this->assertSame(['linked', 'notFound'], array_column($result['rows'], 'status'));
+        $this->assertSame([], $this->service->rowUpdates);
+    }
+
+    public function testSameAmountRowsWithoutAccountNeedOrderHint(): void
+    {
+        $this->service->head(4);
+        $this->service->row(4, 41, null, null, 1000.00, 1);
+        $this->service->row(4, 42, null, null, 1000.00, 2);
+        $this->service->turnover[4] = [];
+
+        $result = $this->service->apply(['docId' => 4, 'rows' => [
+            ['amount' => 1000, 'asset' => 15],
+            ['amount' => 1000, 'asset' => 16],
+        ]]);
+        $this->assertSame('ambiguous', $result['status']);
+        $this->assertSame([], $this->service->log);
+
+        $result = $this->service->apply(['docId' => 4, 'rows' => [
+            ['amount' => 1000, 'asset' => 15, 'orderHint' => 2],
+            ['amount' => 1000, 'asset' => 16],
+        ]]);
+        $this->assertSame('linked', $result['status']);
+        $this->assertSame([[42, 15], [41, 16]], $this->service->rowUpdates);
     }
 
     public function testInvoiceWithHeadAssetAndNoSide(): void
@@ -327,6 +384,8 @@ class AssetDocLinkServiceTest extends TestCase
             array_column($result['issues'], 'path'),
         );
         $this->assertSame('asset_not_found', $result['issues'][1]['code']);
+        // Prázdný účet je chyba tvaru (omyl runneru), ne řádek bez účtu (D86).
+        $this->assertSame('invalid', $result['issues'][2]['code']);
         $this->assertSame([], $this->service->log);
     }
 }
