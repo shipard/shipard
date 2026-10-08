@@ -20,10 +20,14 @@ use Shipard\Module\Economy\Items\AccountingItemsOffer;
  *
  * Jedna karta per štítek (dedupe přes zprávy), query-driven bez dismiss
  * stavu — karta zmizí, jakmile položka existuje nebo žádný otevřený návrh
- * štítek nepotřebuje. `goods.stock` nemá mapování v nabídce (D7) — karta
- * nabízí volbu účtu materiál (501…) / zboží (504…) z aktivní osnovy.
- * Štítky vědomě bez mapování (admin.other, people.benefits) nekartují —
- * jsou „review by design" a karta by neměla co založit.
+ * štítek nepotřebuje. Štítky dokladu = primární `content_tag` **i** štítky
+ * řádkových výjimek (`_resolve.contentTag.rowExceptions`, elektřina na
+ * faktuře za nájem — tasks/content-tag-row-exceptions.md D1); doklad se
+ * do každé své karty počítá právě jednou. `goods.stock` nemá mapování
+ * v nabídce (D7) — karta nabízí volbu účtu materiál (501…) / zboží (504…)
+ * z aktivní osnovy. Štítky vědomě bez mapování (admin.other,
+ * people.benefits) nekartují — jsou „review by design" a karta by neměla
+ * co založit.
  *
  * Akce nesou lokalizovaný `label` ze serveru (passthrough vzor AlertsSource)
  * — u goods.stock je v labelu číslo účtu z osnovy, frontend klíč nestačí.
@@ -73,15 +77,26 @@ final class ContentTagSuggestionsSource implements FeedSource
 
     /**
      * Otevřené návrhy (poslední úspěšná analýza per zpráva, bez verdiktu,
-     * zpráva mimo Hotovo/Archiv/Koš) agregované per štítek.
+     * zpráva mimo Hotovo/Archiv/Koš) agregované per štítek. Štítek dokladu je
+     * primární `content_tag` **i** každá řádková výjimka
+     * (`_resolve.contentTag.rowExceptions[*].tag`,
+     * tasks/content-tag-row-exceptions.md D1), proto dotaz vrací řádky
+     * analýz a agregace běží v PHP: doklad se do každého svého štítku
+     * počítá právě jednou. Řazení waiting DESC, latest DESC, tag ASC.
      *
-     * @return list<array<string, mixed>>
+     * Sloupec `content_tag` zůstává primární štítek (learning, ISDOC,
+     * filtrování) — výjimky se čtou z canonicalu. Podmínka na
+     * `rowExceptions[0]` kryje i návrh bez primárního štítku s výjimkami
+     * (dnes se nepersistuje, do budoucna stojí málo).
+     *
+     * @return list<array{tag: string, waiting: int, latest: mixed}>
      */
     private function fetchOpenTagCounts(FeedContext $ctx): array
     {
-        return $ctx->db->fetchAll(
-            'SELECT `a`.`content_tag` AS `tag`, COUNT(*) AS `waiting`,'
-            . ' MAX(`m`.`received_at`) AS `latest`'
+        $rows = $ctx->db->fetchAll(
+            'SELECT `a`.`content_tag` AS `tag`,'
+            . ' JSON_EXTRACT(`a`.`canonical_json`, \'$._resolve.contentTag.rowExceptions[*].tag\') AS `row_tags`,'
+            . ' `m`.`received_at` AS `latest`'
             . ' FROM `' . self::MESSAGES_TABLE . '` `m`'
             . ' JOIN `' . self::ANALYSES_TABLE . '` `a` ON `a`.`id` = ('
             . '     SELECT `a2`.`id` FROM `' . self::ANALYSES_TABLE . '` `a2`'
@@ -92,12 +107,62 @@ final class ContentTagSuggestionsSource implements FeedSource
             . ' AND `m`.`analysis_state` = %i'
             . ' AND `a`.`canonical_json` IS NOT NULL'
             . ' AND `a`.`resolution` IS NULL'
-            . ' AND `a`.`content_tag` IS NOT NULL'
-            . ' GROUP BY `a`.`content_tag`'
-            . ' ORDER BY `waiting` DESC, `latest` DESC',
+            . ' AND (`a`.`content_tag` IS NOT NULL'
+            . '   OR JSON_EXTRACT(`a`.`canonical_json`, \'$._resolve.contentTag.rowExceptions[0]\') IS NOT NULL)',
             [IncomingMessageDocument::DOC_STATE_NEW, IncomingMessageDocument::DOC_STATE_OPEN],
             IncomingMessageDocument::ANALYSIS_ANALYZED,
         );
+
+        /** @var array<string, array{waiting: int, latest: mixed, latestTs: ?int}> $agg */
+        $agg = [];
+        foreach ($rows as $row) {
+            $latest = $row['latest'] ?? null;
+            $latestTs = $this->toDateTime($latest)?->getTimestamp();
+            foreach ($this->documentTags($row) as $tag) {
+                $entry = $agg[$tag] ?? ['waiting' => 0, 'latest' => null, 'latestTs' => null];
+                $entry['waiting']++;
+                if ($latestTs !== null && ($entry['latestTs'] === null || $latestTs > $entry['latestTs'])) {
+                    $entry['latest'] = $latest;
+                    $entry['latestTs'] = $latestTs;
+                }
+                $agg[$tag] = $entry;
+            }
+        }
+
+        uksort($agg, static fn (string $a, string $b): int =>
+            [$agg[$b]['waiting'], $agg[$b]['latestTs'] ?? PHP_INT_MIN, $a]
+            <=> [$agg[$a]['waiting'], $agg[$a]['latestTs'] ?? PHP_INT_MIN, $b]);
+
+        $result = [];
+        foreach ($agg as $tag => $entry) {
+            $result[] = ['tag' => (string) $tag, 'waiting' => $entry['waiting'], 'latest' => $entry['latest']];
+        }
+        return $result;
+    }
+
+    /**
+     * Štítky jednoho otevřeného návrhu bez duplicit: primární + řádkové
+     * výjimky. `row_tags` přijde z JSON_EXTRACT jako string s JSON polem
+     * (`["a","a","b"]`, Dibi JSON typ nevrací) nebo NULL, když cesta chybí.
+     *
+     * @param array<string, mixed>|\ArrayAccess<string, mixed> $row
+     * @return list<string>
+     */
+    private function documentTags(array|\ArrayAccess $row): array
+    {
+        $tags = [];
+        $primary = trim((string) ($row['tag'] ?? ''));
+        if ($primary !== '') {
+            $tags[$primary] = true;
+        }
+        $decoded = json_decode((string) ($row['row_tags'] ?? ''), true);
+        foreach (is_array($decoded) ? $decoded : [] as $tag) {
+            $tag = is_string($tag) ? trim($tag) : '';
+            if ($tag !== '') {
+                $tags[$tag] = true;
+            }
+        }
+        return array_map('strval', array_keys($tags));
     }
 
     /**
@@ -240,12 +305,18 @@ final class ContentTagSuggestionsSource implements FeedSource
     /** ATOM timestamp z DB hodnoty (DateTime|string|null) — vzor AlertsSource. */
     private function toAtom(mixed $value): ?string
     {
+        return $this->toDateTime($value)?->format(\DateTimeInterface::ATOM);
+    }
+
+    /** DB hodnota (DateTime|string|null) jako datum; nečitelná → null. */
+    private function toDateTime(mixed $value): ?\DateTimeImmutable
+    {
         if ($value instanceof \DateTimeInterface) {
-            return $value->format(\DateTimeInterface::ATOM);
+            return \DateTimeImmutable::createFromInterface($value);
         }
         if (is_string($value) && $value !== '') {
             try {
-                return (new \DateTimeImmutable($value))->format(\DateTimeInterface::ATOM);
+                return new \DateTimeImmutable($value);
             } catch (\Throwable) {
                 return null;
             }
