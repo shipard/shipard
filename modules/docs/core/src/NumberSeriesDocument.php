@@ -9,11 +9,13 @@ use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Core\Mail\AddressList;
 use Shipard\Core\Mail\AllowedSenders;
+use Shipard\Core\Numbering\NumberPattern;
 use Shipard\Core\Settings\SettingsStore;
 
 class NumberSeriesDocument extends Document
 {
-    private const KNOWN_PLACEHOLDERS = ['D', 'C', 'y', 'Y', '3', '4', '5', '6'];
+    /** Doménové placeholdery vzorce nad obecnými z NumberPattern: `%D` = kód typu dokladu. */
+    private const DOMAIN_PLACEHOLDERS = ['D'];
     private const ALLOWED_RESET_SCOPES = ['none', 'fiscal_year'];
 
     /**
@@ -52,31 +54,19 @@ class NumberSeriesDocument extends Document
         if (empty($data['doc_type'])) {
             $result->addError('doc_type', 'Typ dokladu je povinný', 'required');
         }
-        if (empty($data['doc_number_pattern'])) {
-            $result->addError('doc_number_pattern', 'Vzorec čísla dokladu je povinný', 'required');
-        }
-
-        $pattern = (string) ($data['doc_number_pattern'] ?? '');
-
-        if (str_contains($pattern, '%C') && empty($data['doc_number_code'])) {
+        // Vzorec a kód řady validuje jádro číslování (#110 D17); chyby
+        // s cílem „code“ patří ke kódu řady, ostatní ke vzorci.
+        $patternErrors = NumberPattern::validate(
+            (string) ($data['doc_number_pattern'] ?? ''),
+            (string) ($data['doc_number_code'] ?? ''),
+            self::DOMAIN_PLACEHOLDERS,
+        );
+        foreach ($patternErrors as $error) {
             $result->addError(
-                'doc_number_code',
-                'Vzorec obsahuje %C — kód řady je povinný',
-                'required_for_pattern',
+                $error['target'] === NumberPattern::TARGET_CODE ? 'doc_number_code' : 'doc_number_pattern',
+                $error['message'],
+                $error['code'],
             );
-        }
-
-        if ($pattern !== '' && preg_match_all('/%([A-Za-z0-9])/', $pattern, $matches)) {
-            foreach ($matches[1] as $placeholder) {
-                if (!in_array($placeholder, self::KNOWN_PLACEHOLDERS, true)) {
-                    $result->addError(
-                        'doc_number_pattern',
-                        "Neznámý placeholder %{$placeholder}",
-                        'unknown_placeholder',
-                    );
-                    break;
-                }
-            }
         }
 
         if (!empty($data['reset_scope'])

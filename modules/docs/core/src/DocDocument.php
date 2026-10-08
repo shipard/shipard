@@ -8,7 +8,10 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationError;
 use Shipard\Core\Document\ValidationResult;
+use Shipard\Core\Numbering\NumberContext;
+use Shipard\Core\Numbering\NumberPattern;
 use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
+use Shipard\Module\Economy\Codebooks\FiscalYearLookup;
 use Shipard\Module\World\Vat\VatRateResolver;
 
 /**
@@ -44,9 +47,6 @@ abstract class DocDocument extends Document
 
     /** Snapshots are built/refreshed when entering Done or while being edited. */
     private const SNAPSHOT_STATES = [40, 80];
-
-    /** Deleted doc state — period lookups skip only this; archived periods stay resolvable by date. */
-    private const DOC_STATE_DELETED = 90;
 
     /**
      * Vazba řady (docTypes[].series_binding) → sloupec hlavičky, do kterého
@@ -869,21 +869,13 @@ abstract class DocDocument extends Document
         // věc economy.vat — DocsHeadsVatPeriodHandler (beforeSave event).
     }
 
+    /** Fiskální rok účetního data — sdílený dotaz FiscalYearLookup (čítač čísel ho klíčuje). */
     protected function resolveFiscalYearId(string $accountingDate): ?int
     {
-        if ($this->db === null || $accountingDate === '') {
+        if ($this->db === null) {
             return null;
         }
-        $row = $this->db->fetch(
-            'SELECT [id] FROM [economy_codebooks_fiscal_years]
-             WHERE [date_begin] <= %d AND [date_end] >= %d
-               AND [docState] != %i
-             ORDER BY [date_begin] DESC
-             LIMIT 1',
-            $accountingDate, $accountingDate,
-            self::DOC_STATE_DELETED,
-        );
-        return $row !== null ? (int) $row['id'] : null;
+        return FiscalYearLookup::yearIdForDate($this->db, $accountingDate);
     }
 
     /**
@@ -2017,28 +2009,20 @@ abstract class DocDocument extends Document
     }
 
     /**
+     * Vzorec čísla dokladu nad jádrem NumberPattern (#110 D17): doménový
+     * placeholder `%D` = kód typu dokladu, popisek roku líně (dotaz do
+     * fiskálních let až po přidělení pořadí z čítače).
+     *
      * @param array<string, mixed> $series
      */
     protected function resolvePattern(string $pattern, array $data, array $series): string
     {
-        $resolved = preg_replace_callback(
-            '/%(D|C|y|Y|3|4|5|6)/',
-            function (array $m) use ($data, $series): string {
-                return match ($m[1]) {
-                    'D' => $this->getDocIdCode((string) ($data['doc_type'] ?? '')),
-                    'C' => (string) ($series['doc_number_code'] ?? ''),
-                    'y' => substr($this->getFiscalYearLabel($data), -2),
-                    'Y' => $this->getFiscalYearLabel($data),
-                    '3' => str_pad((string) ($data['sequence_number'] ?? 0), 3, '0', STR_PAD_LEFT),
-                    '4' => str_pad((string) ($data['sequence_number'] ?? 0), 4, '0', STR_PAD_LEFT),
-                    '5' => str_pad((string) ($data['sequence_number'] ?? 0), 5, '0', STR_PAD_LEFT),
-                    '6' => str_pad((string) ($data['sequence_number'] ?? 0), 6, '0', STR_PAD_LEFT),
-                    default => $m[0],
-                };
-            },
-            $pattern,
-        );
-        return $resolved ?? $pattern;
+        return NumberPattern::resolve($pattern, new NumberContext(
+            sequence:   (int) ($data['sequence_number'] ?? 0),
+            seriesCode: (string) ($series['doc_number_code'] ?? ''),
+            yearLabel:  fn(): string => $this->getFiscalYearLabel($data),
+            domain:     ['D' => $this->getDocIdCode((string) ($data['doc_type'] ?? ''))],
+        ));
     }
 
     private function getDocIdCode(string $docType): string
@@ -2053,28 +2037,17 @@ abstract class DocDocument extends Document
     }
 
     /**
+     * Popisek roku pro `%y` / `%Y`: z fiskálního roku hlavičky, bez něj
+     * (nebo bez DB) rok účetního data, jinak aktuální rok.
+     *
      * @param array<string, mixed> $data
      */
     private function getFiscalYearLabel(array $data): string
     {
         if (empty($data['fiscal_year']) || $this->db === null) {
-            if (!empty($data['accounting_date'])) {
-                return substr((string) $data['accounting_date'], 0, 4);
-            }
-            return date('Y');
+            return FiscalYearLookup::labelFromDate((string) ($data['accounting_date'] ?? ''));
         }
-        $row = $this->db->fetch(
-            'SELECT [doc_number_prefix], [name] FROM [economy_codebooks_fiscal_years] WHERE [id] = %i',
-            (int) $data['fiscal_year'],
-        );
-        if ($row === null) {
-            return date('Y');
-        }
-        $name = (string) ($row['name'] ?? '');
-        if (preg_match('/^(\d{4})/', $name, $matches)) {
-            return $matches[1];
-        }
-        return date('Y');
+        return FiscalYearLookup::yearLabel($this->db, (int) $data['fiscal_year']);
     }
 
     // ── Snapshots ───────────────────────────────────────────────────────────
