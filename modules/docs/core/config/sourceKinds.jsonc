@@ -25,6 +25,13 @@
         "name:cs": "Ručně pořízeno",
         "name:en": "Manual entry"
     },
+    "workOrder": {
+        // Doklad vystavený periodickou fakturací zakázky (economy.workOrders,
+        // docs/work-orders.md D5) — InvoiceBuilder::SOURCE_KIND.
+        "name": "Periodic invoicing",
+        "name:cs": "Periodická fakturace",
+        "name:en": "Periodic invoicing"
+    },
     "import.flexibee": {
         "name": "Import — Flexibee",
         "name:cs": "Import — Flexibee",

@@ -1454,6 +1454,15 @@ Vlastní strana se staví standardně (dnešní adresářová data vlastní firm
 partnera v payloadu = partnerský snapshot zůstává NULL (kanonické zdroje
 bez stran, např. účetní doklady).
 
+`applyOptions.numberSeriesId` (#110) vybírá číselnou řadu **podle id**
+(`docs_core_number_series.id`) — pro doklady, které Shipard generuje sám
+z nastavení (periodická fakturace zakázek: řada je na druhu / zakázce
+uložená jako id; kód řady `%C` je nepovinný a neunikátní, takže
+`numberSeriesCode` by u řady bez kódu vzal „první aktivní“). Řada musí být
+aktivní a typu `docType`, jinak `number_series_not_found` (422); obě volby
+najednou = `number_series_conflict` (422). U typů vázaných na pokladnu se
+ignoruje stejně jako `numberSeriesCode`.
+
 `applyOptions.importOwnBankAccount` (vlastní bankovní účet u vydaných
 faktur ve stavu 40+) přijímá buď interní id, nebo **string = `code`
 z číselníku `economy_codebooks_bank_accounts`** — přenosná varianta pro

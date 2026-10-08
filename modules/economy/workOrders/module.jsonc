@@ -22,7 +22,8 @@
         "economy_work_orders_number_series",
         "economy_work_orders_number_counters",
         "economy_work_orders_heads",
-        "economy_work_orders_rows"
+        "economy_work_orders_rows",
+        "economy_work_orders_periods"
     ],
 
     // Nastavení → Zakázky (P1): druhy a číselné řady. Bez seedu — druhy
@@ -139,6 +140,16 @@
             // Fakturace na počátku / konci období (D6).
             "id": "economy.workOrders.invoiceTimings",
             "file": "config/invoiceTimings.jsonc"
+        },
+        {
+            // Stavy období fakturace (D5, D10) — PeriodRepository, záložka Fakturace.
+            "id": "economy.workOrders.periodStates",
+            "file": "config/periodStates.jsonc"
+        },
+        {
+            // Tvar {období} v jazycích dokumentů (D12, Q6) — PeriodLabel.
+            "id": "economy.workOrders.periodTexts",
+            "file": "config/periodTexts.jsonc"
         }
     ]
 }

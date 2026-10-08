@@ -1,0 +1,23 @@
+{
+    // economy.workOrders.periodTexts — tvar proměnné {období} v textu
+    // dokladu (docs/work-orders.md D12, Q6) v jazycích dokumentů. Měsíc se
+    // skládá přes ext-intl (název měsíce v 1. pádě + rok), rok je holé
+    // číslo; čtvrtletí a pololetí nesou text tady. Zástupné symboly:
+    // {n} = pořadí v roce, {year} = rok. Čte PeriodLabel z konfigurace
+    // zkompilované v jazyce dokumentu (cs / en / sk / de); bez katalogu
+    // anglický fallback v PHP.
+    "quarter": {
+        "text": "Q{n} {year}",
+        "text:cs": "{n}. čtvrtletí {year}",
+        "text:en": "Q{n} {year}",
+        "text:sk": "{n}. štvrťrok {year}",
+        "text:de": "{n}. Quartal {year}"
+    },
+    "halfyear": {
+        "text": "H{n} {year}",
+        "text:cs": "{n}. pololetí {year}",
+        "text:en": "H{n} {year}",
+        "text:sk": "{n}. polrok {year}",
+        "text:de": "{n}. Halbjahr {year}"
+    }
+}

@@ -190,12 +190,7 @@ abstract class DocsHeadsFormBase extends TableForm
         if ($this->db === null) {
             return null;
         }
-        $row = $this->db->fetchRow(
-            'SELECT `id` FROM `economy_codebooks_bank_accounts`'
-            . ' WHERE `is_default` = 1 AND `docState` = 40'
-            . ' ORDER BY `sort_order` ASC, `id` ASC LIMIT 1',
-        );
-        return $row !== null ? (int) $row['id'] : null;
+        return DefaultBankAccountResolver::resolve($this->db);
     }
 
     public function buildFormDefinition(array $data, bool $isNew): FormDefinition

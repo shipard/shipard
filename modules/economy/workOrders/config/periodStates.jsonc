@@ -1,0 +1,26 @@
+{
+    // economy.workOrders.periodStates — stav období periodické fakturace
+    // (docs/work-orders.md D5, D10). Hodnoty = enumString `state` na
+    // economy_work_orders_periods; `stopped` se neukládá — je odvozený
+    // (issued + doklad Smazaný nebo chybí) a slouží jen záložce Fakturace.
+    "planned": {
+        "name": "Planned",
+        "name:cs": "Naplánováno",
+        "name:en": "Planned"
+    },
+    "waiting": {
+        "name": "Waiting for input",
+        "name:cs": "Čeká na podklady",
+        "name:en": "Waiting for input"
+    },
+    "issued": {
+        "name": "Issued",
+        "name:cs": "Vystaveno",
+        "name:en": "Issued"
+    },
+    "stopped": {
+        "name": "Stopped",
+        "name:cs": "Zastaveno",
+        "name:en": "Stopped"
+    }
+}

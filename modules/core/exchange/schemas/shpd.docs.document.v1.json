@@ -123,6 +123,11 @@
                     "minLength": 1,
                     "description": "Výběr číselné řady v rámci doc_type (%C = docs_core_number_series.doc_number_code). Bez něj platí stávající chování (první aktivní řada). Neznámý kód = apply selže (number_series_not_found), žádný tichý fallback."
                 },
+                "numberSeriesId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Výběr číselné řady podle id (docs_core_number_series.id) — pro doklady, které Shipard generuje sám z nastavení (periodická fakturace, #110); kód řady je nepovinný a neunikátní. Řada musí být aktivní a typu docType, jinak number_series_not_found; společně s numberSeriesCode = number_series_conflict."
+                },
                 "createMissingEntities": { "type": "boolean" },
                 "rejectOnIssues": {
                     "type": "array",

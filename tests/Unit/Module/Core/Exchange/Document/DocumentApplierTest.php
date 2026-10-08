@@ -2323,6 +2323,78 @@ class DocumentApplierTest extends TestCase
         $this->assertContains('5', $captured);
     }
 
+    private function invokeResolveSeriesById(DocumentApplier $applier, string $docType, int $seriesId): int
+    {
+        $ref = new \ReflectionMethod($applier, 'resolveNumberSeriesById');
+        return $ref->invoke($applier, $docType, $seriesId);
+    }
+
+    /** `applyOptions.numberSeriesId` (#110): řada podle id, musí být aktivní a typu dokladu. */
+    public function testResolveNumberSeriesByIdChecksDocTypeAndActiveState(): void
+    {
+        $captured = null;
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(function (...$args) use (&$captured) {
+            $captured = $args;
+            return new Row(['id' => 7]);
+        });
+        $applier = $this->buildApplier(db: $db);
+
+        $this->assertSame(7, $this->invokeResolveSeriesById($applier, 'invno', 7));
+        $sql = (string) $captured[0];
+        $this->assertStringContainsString('[id] = %i', $sql);
+        $this->assertStringContainsString('[doc_type] = %s', $sql);
+        $this->assertStringContainsString('[docState] IN', $sql);
+        $this->assertSame(7, $captured[1]);
+        $this->assertSame('invno', $captured[2]);
+    }
+
+    public function testResolveNumberSeriesByIdOfOtherTypeOrInactiveThrows(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $applier = $this->buildApplier(db: $db);
+
+        $this->expectException(NumberSeriesNotFoundException::class);
+        $this->invokeResolveSeriesById($applier, 'invno', 7);
+    }
+
+    public function testNumberSeriesIdAndCodeTogetherAreRejectedBeforeTheTransaction(): void
+    {
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->expects($this->never())->method('begin');
+        $heads = $this->createMock(TransactionlessTableGateway::class);
+        $heads->expects($this->never())->method('saveDocument');
+        $applier = $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'], heads: $heads,
+        );
+
+        $payload = $this->payloadWithCanCreateSupplier(
+            ['full_name' => 'X', 'company_id' => '12345678'],
+            applyOptions: ['autoCreateMode' => 'safe', 'numberSeriesCode' => 'FV', 'numberSeriesId' => 3],
+        );
+        $result = $applier->apply($payload);
+
+        $this->assertFalse($result->success);
+        $this->assertSame('number_series_conflict', $result->errorCode);
+        $this->assertSame(422, $result->statusCode);
+    }
+
+    public function testValidateAcceptsNumberSeriesIdInSchema(): void
+    {
+        $applier = $this->buildApplier();
+        $payload = $this->happyPayload();
+        $payload['applyOptions'] = ['numberSeriesId' => 5];
+        $this->assertNotSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $payload['applyOptions'] = ['numberSeriesId' => 0];
+        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $payload['applyOptions'] = ['numberSeriesId' => '5'];
+        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+    }
+
     public function testResolveNumberSeriesByUnknownCodeThrows(): void
     {
         $db = $this->createMock(Connection::class);

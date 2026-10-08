@@ -1,0 +1,154 @@
+{
+    // Evidence vyfakturovaných období periodické zakázky (docs/work-orders.md
+    // D5, §5.5): zakázka × období → doklad. Jediný zdroj pravdy o tom, co je
+    // vystaveno — běh se nikdy neptá dokladů. Období vznikají jen pro splatná
+    // období (PeriodCalendar::duePeriods), takže `planned` bez `doc` = dlužné.
+    //
+    // state: planned (naplánováno, bez dokladu) → waiting (koncept vznikl,
+    // čeká na podklady přispěvatele, D10) → issued (vystaveno). „Zastaveno“
+    // se neukládá: issued období, jehož doklad je Smazaný nebo neexistuje
+    // (PeriodRepository::isStopped). result = strojový kód výsledku
+    // posledního běhu (failed / no_rows / catchup / waiting / edited, NULL
+    // = v pořádku) pro upozornění; message = text pro uživatele.
+    // content_hash = otisk obsahu dokladu při vzniku / přegenerování
+    // (ContentHash) — guard „koncept byl ručně upraven“.
+    "tableId": 462,
+    "name": "Work order invoicing periods",
+    "name:cs": "Období fakturace zakázek",
+    "name:en": "Work order invoicing periods",
+
+    "hideFromNavigation": true,
+
+    "displayPattern": "{period_from} – {period_to}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "work_order",
+            "name": "Work order",
+            "name:cs": "Zakázka",
+            "name:en": "Work order",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_work_orders_heads"
+        },
+        {
+            "id": "period_from",
+            "name": "Period from",
+            "name:cs": "Začátek období",
+            "name:en": "Period from",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "id": "period_to",
+            "name": "Period to",
+            "name:cs": "Konec období",
+            "name:en": "Period to",
+            "type": "date",
+            "nullable": false
+        },
+        {
+            "id": "state",
+            "name": "State",
+            "name:cs": "Stav",
+            "name:en": "State",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "economy.workOrders.periodStates",
+            "nullable": false,
+            "default": "planned"
+        },
+        {
+            "id": "doc",
+            "name": "Document",
+            "name:cs": "Doklad",
+            "name:en": "Document",
+            "type": "int",
+            "nullable": true,
+            "reference": "docs_core_heads"
+        },
+        {
+            "id": "content_hash",
+            "name": "Content hash",
+            "name:cs": "Otisk obsahu",
+            "name:en": "Content hash",
+            "type": "varchar",
+            "length": 64,
+            "nullable": true
+        },
+        {
+            "id": "result",
+            "name": "Last run result",
+            "name:cs": "Výsledek běhu",
+            "name:en": "Last run result",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true
+        },
+        {
+            "id": "waiting_since",
+            "name": "Waiting since",
+            "name:cs": "Čeká od",
+            "name:en": "Waiting since",
+            "type": "datetime",
+            "nullable": true
+        },
+        {
+            "id": "message",
+            "name": "Message",
+            "name:cs": "Zpráva",
+            "name:en": "Message",
+            "type": "varchar",
+            "length": 500,
+            "nullable": true
+        },
+        {
+            "id": "created_at",
+            "name": "Created at",
+            "name:cs": "Vytvořeno",
+            "name:en": "Created at",
+            "type": "datetime",
+            "nullable": false
+        },
+        {
+            "id": "updated_at",
+            "name": "Updated at",
+            "name:cs": "Změněno",
+            "name:en": "Updated at",
+            "type": "datetime",
+            "nullable": false
+        }
+    ],
+
+    "indexes": [
+        {
+            // Souběh dvou běhů: druhý INSERT téhož období selže na klíči.
+            "id": "unq_work_order_period",
+            "type": "unique",
+            "columns": [
+                {"column": "work_order"},
+                {"column": "period_from"}
+            ]
+        },
+        {
+            "id": "idx_doc",
+            "type": "index",
+            "columns": [{"column": "doc"}]
+        },
+        {
+            "id": "idx_state",
+            "type": "index",
+            "columns": [
+                {"column": "state"},
+                {"column": "result"}
+            ]
+        }
+    ]
+}

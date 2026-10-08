@@ -666,8 +666,20 @@ class DocumentApplier
         } else {
             $seriesCode = $canonical['applyOptions']['numberSeriesCode'] ?? null;
             $seriesCode = is_string($seriesCode) && $seriesCode !== '' ? $seriesCode : null;
+            $seriesIdOption = $canonical['applyOptions']['numberSeriesId'] ?? null;
+            $seriesIdOption = is_int($seriesIdOption) && $seriesIdOption > 0 ? $seriesIdOption : null;
+            if ($seriesCode !== null && $seriesIdOption !== null) {
+                return ApplyResult::error(
+                    'number_series_conflict',
+                    'applyOptions nese numberSeriesCode i numberSeriesId — řadu určuje jen jedno z nich.',
+                    $enriched,
+                    statusCode: 422,
+                );
+            }
             try {
-                $numberSeriesId = $this->resolveNumberSeriesFor($docTypeCode, $seriesCode);
+                $numberSeriesId = $seriesIdOption !== null
+                    ? $this->resolveNumberSeriesById($docTypeCode, $seriesIdOption)
+                    : $this->resolveNumberSeriesFor($docTypeCode, $seriesCode);
             } catch (NumberSeriesNotFoundException $e) {
                 return ApplyResult::error('number_series_not_found', $e->getMessage(), $enriched, statusCode: 422);
             }
@@ -3731,6 +3743,27 @@ class DocumentApplier
         return $row !== null ? (int) $row['id'] : null;
     }
 
+    /**
+     * Řada podle id (`applyOptions.numberSeriesId`, #110 — generované doklady
+     * znají řadu z nastavení, kód řady je nepovinný a neunikátní): musí
+     * existovat, být aktivní a typu dokladu, jinak number_series_not_found.
+     *
+     * @throws NumberSeriesNotFoundException
+     */
+    private function resolveNumberSeriesById(string $docType, int $seriesId): int
+    {
+        $row = $this->db->fetch(
+            'SELECT [id] FROM [docs_core_number_series]
+             WHERE [id] = %i AND [doc_type] = %s AND [docState] IN (%i, %i, %i)',
+            $seriesId, $docType,
+            self::ACTIVE_STATES[0], self::ACTIVE_STATES[1], self::ACTIVE_STATES[2],
+        );
+        if ($row === null) {
+            throw new NumberSeriesNotFoundException($docType, "#{$seriesId}");
+        }
+        return (int) $row['id'];
+    }
+
     /** Má typ dokladu řadu vázanou na pokladnu (`docTypes[].series_binding = cash_desk`)? */
     private function isCashDeskBoundDocType(string $docType): bool
     {
@@ -3814,6 +3847,30 @@ class DocumentApplier
     public static function mapDocTypeValue(string $docType): string
     {
         return self::DOC_TYPE_MAP[$docType] ?? $docType;
+    }
+
+    /**
+     * Opačné mapy pro generátory kanonických dokladů z interních dat
+     * (periodická fakturace, #110): krátký kód doc_type → kanonický název,
+     * `vat_mode` → `vat.mode`, `payment_method` → `payment.method`. Neznámá
+     * hodnota = passthrough / null, žádná výjimka — builder ji ohlásí sám.
+     */
+    public static function canonicalDocType(string $docTypeCode): string
+    {
+        $name = array_search($docTypeCode, self::DOC_TYPE_MAP, true);
+        return $name === false ? $docTypeCode : $name;
+    }
+
+    public static function canonicalVatMode(int $vatMode): ?string
+    {
+        $name = array_search($vatMode, self::VAT_MODE_MAP, true);
+        return $name === false ? null : $name;
+    }
+
+    public static function canonicalPaymentMethod(int $paymentMethod): ?string
+    {
+        $name = array_search($paymentMethod, self::PAYMENT_METHOD_MAP, true);
+        return $name === false ? null : $name;
     }
 
     /**

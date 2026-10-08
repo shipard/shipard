@@ -375,43 +375,7 @@ final class DocumentExporter implements RecordExporter
             return $this->partyCache[$personId];
         }
 
-        $p = $this->db->fetch('SELECT * FROM [base_persons_persons] WHERE [id] = %i', $personId);
-        if ($p === null) {
-            return $this->partyCache[$personId] = null;
-        }
-        $p = is_array($p) ? $p : $p->toArray();
-        $a = $this->db->fetch(
-            'SELECT * FROM [base_persons_addresses] WHERE [person] = %i AND [docState] IN %in
-             ORDER BY [order_pos], [address_type], [id] LIMIT 1',
-            $personId,
-            self::ACTIVE_STATES,
-        );
-        $a = $a === null ? [] : (is_array($a) ? $a : $a->toArray());
-
-        $party = [
-            'name'              => V::str($p['full_name'] ?? null),
-            'country'           => V::countryLower($a['country'] ?? null),
-            'companyId'         => V::str($p['company_id'] ?? null),
-            'taxId'             => V::str($p['tax_id'] ?? null),
-            'vatId'             => V::str($p['vat_id'] ?? null),
-            'courtRegistration' => V::str($p['court_registration'] ?? null),
-            'address'           => [
-                'street'       => V::str($a['street'] ?? null),
-                'houseNumber'  => V::str($a['house_number'] ?? null),
-                'city'         => V::str($a['city'] ?? null),
-                'cityPart'     => V::str($a['city_part'] ?? null),
-                'zip'          => V::str($a['zip'] ?? null),
-                'country'      => V::countryLower($a['country'] ?? null),
-                'registryCode' => V::str($a['registry_code'] ?? null),
-            ],
-            'contact'           => [
-                'email' => V::str($p['email'] ?? null),
-                'phone' => V::str($p['phone'] ?? null),
-                'web'   => V::str($p['web'] ?? null),
-            ],
-        ];
-
-        return $this->partyCache[$personId] = V::prune($party);
+        return $this->partyCache[$personId] = CanonicalParty::fromPerson($this->db, $personId);
     }
 
     // ── rows / recap ────────────────────────────────────────────────────────
