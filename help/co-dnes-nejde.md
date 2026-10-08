@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, sklad, zásoby, příjemka, výdejka, zakázky, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
+keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
 related: [slovnicek.md]
 ---
 
@@ -234,6 +234,10 @@ je v [TESTERS.md](../TESTERS.md).
   doručení zprávy; ručně jde jen **Znovu analyzovat** u zprávy, která už
   je analyzovaná nebo u které analýza selhala. Zprávu v Archivu nebo
   v koši znovu analyzovat nelze.
+- **Pravidlo odesílatele Shipard sám nenavrhne.** I když poštu od stejné
+  adresy opakovaně odklízíš ručně, návrh pravidla nepřijde. Pravidlo si
+  založíš sám v **Nastavení → Ostatní → Pošta → Pravidla odesílatelů**,
+  viz [Příjem pošty](posta/prijem-posty.md).
 - **Předzpracování znovu nespustíš.** Když se nepovedlo stáhnout fakturu
   z odkazu nebo převést text e-mailu do PDF (badge **Hotovo s chybami**),
   v aplikaci není tlačítko, které by to zkusilo znovu. Dokument stáhni

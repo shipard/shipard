@@ -128,34 +128,26 @@ analyzovat** a AI je roztřídí.
 dají rozpoznat z hlaviček e-mailu (odhlašovací odkaz a podobné). Je to pro
 Shipard jen příznak — nikdy podle něj nic automaticky nearchivuje.
 
-**Pravidla odesílatelů se učí z toho, co děláš.** Když **třikrát** ručně
-odklidíš poštu od stejného odesílatele do Archivu nebo Koše, Shipard
-navrhne pravidlo a na Dashboardu ti ho nabídne k **Potvrzení**. Pravidlo
-má jednu ze dvou akcí:
+**Pravidlo odesílatele si založíš sám.** V **Nastavení → Ostatní →
+Pošta → Pravidla odesílatelů** přidáš pravidlo na adresu nebo na celou
+doménu. Shipard ho sám nenavrhne, ani když poštu od stejné adresy
+opakovaně odklízíš ručně. Pravidlo má jednu ze dvou akcí:
 
 - **Archivovat, když neobsahuje doklad ani nic k vyřízení** — zpráva
   projde analýzou jako každá jiná, a když v ní AI nenajde fakturu ani
   dokument pro Spisovnu a zpráva nic nechce (není to expirace, výzva
   k platbě ani žádost), odklidí ji do Archivu. Faktury od téhož
   odesílatele chodí dál normálně a zprávy **K vyřízení** také — pravidlo
-  je nikdy neodklidí. Shipard tuhle akci navrhne, když od adresy už někdy
-  přišel doklad nebo dokument, a je výchozí i u pravidla, které zakládáš
-  sám.
+  je nikdy neodklidí. U nového pravidla je tahle akce výchozí.
 - **Archivovat hned, bez analýzy** — zpráva jde rovnou do Archivu a AI ji
   vůbec nečte. Šetří to analýzu, ale spolkne i fakturu, kdyby od té adresy
   nějaká přišla. Hodí se jen pro odesílatele, kteří doklady nikdy
   neposílají.
 
-Když pravidlo potvrdíš, Shipard rovnou odklidí i zprávy od té adresy,
-které už čekají v sekci **Ostatní**.
+Pravidlo platí, až ho uložíš jako **V pořádku**. Shipard pak rovnou
+odklidí i zprávy od té adresy, které už čekají v sekci **Ostatní**.
 
-- Navržené pravidlo je vždy na konkrétní adresu. Pravidlo na celou doménu
-  si můžeš založit sám, ale Shipard ti ho nikdy nenavrhne — na domény je
-  úmyslně opatrný. Když má adresa vlastní pravidlo a její doména jiné,
-  platí to na adresu.
-- Do těch tří odklizení se počítají **jen tvoje ruční akce**. Co Shipard
-  archivoval sám podle pravidla, se nezapočítá, takže se pravidla nemůžou
-  nabalovat sama na sebe.
+- Když má adresa vlastní pravidlo a její doména jiné, platí to na adresu.
 - Když si AI není dost jistá, že ve zprávě opravdu nic není, pravidlo ji
   nechá v sekci **Ostatní** a rozhodneš ty. Totéž platí pro zprávy
   analyzované starší verzí analýzy, která míru jistoty ještě neuváděla.

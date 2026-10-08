@@ -48,7 +48,7 @@ poštu a přijaté faktury.
 | co je vyplněné podle mých starších faktur | **Doplněno z historie** | Poznámka u pole: hodnota nepřišla z faktury, ale z tvých dřívějších dokladů od téhož dodavatele |
 | položka nebo dodavatel, které mám potvrdit | **Reference** | Odkaz na záznam v tvé evidenci. Když si AI není jistá, který to je, nabídne kandidáty, vyhledávání a **Vytvořit novou osobu** nebo **položku** — a dokud nerozhodneš, tlačítka **Vystavit…** jsou zašedlá |
 | přečíst to znovu | **Znovu analyzovat** | Spustí novou analýzu už doručené zprávy. Nový návrh nahradí ten dosavadní; starší běhy zůstávají na záložce **Analýzy**. Zprávu s už použitým návrhem znovu analyzovat nejde |
-| ať už mi tohle nechodí | **Pravidlo odesílatele** | Po třech tvých ručních odklizeních pošty od stejné adresy Shipard navrhne pravidlo. Potvrzené pravidlo pak poštu od té adresy archivuje samo |
+| ať už mi tohle nechodí | **Pravidlo odesílatele** | Pravidlo, které si založíš v **Nastavení → Ostatní → Pošta**. Pravidlo ve stavu **V pořádku** pak poštu od té adresy archivuje samo |
 | účtenka, paragon | **Zjednodušený daňový doklad** | Doklad z prodejny bez tvých údajů. Shipard je zpracovává také |
 
 ### Stavy návrhu
