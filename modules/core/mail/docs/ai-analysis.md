@@ -347,8 +347,10 @@ backend; doporučení: levný model). Obojí zatím jen přes `ds-setting set`.
 pásmo na `review` vždy — obsahový návrh potvrzuje člověk.
 
 **Learning (D22):** `ContentTagRuleCaptureHandler` (registrace
-`documentEventHandlers` v `core.exchange/module.jsonc`) při přechodu
-dokladu 10 → 20 s lineage `aiExtraction` a LLM štítkem zapíše pravidlo
+`documentEventHandlers` v `core.exchange/module.jsonc`) při vstupu
+dokladu do V pořádku — z Konceptu (10 → 40) i rovnou při „Vystavit
+a uzavřít“ (0 → 40); oprava 80 → 40 ne — s lineage `aiExtraction`
+a LLM štítkem zapíše pravidlo
 IČO → štítek (origin `learned`, platné okamžitě). Shoda s existujícím
 pravidlem → jen statistiky; konflikt s `learned` pravidlem → pravidlo se
 smaže (dodavatel s pestrým sortimentem); `user`/`seed` pravidla learning

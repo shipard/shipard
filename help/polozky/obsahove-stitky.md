@@ -56,8 +56,8 @@ položku i účet.
 
 ### Pravidla dodavatelů
 
-1. Když doklad zařazený AI dáš z **Konceptu** do **V pořádku**, Shipard
-   si zapamatuje **IČO
+1. Když doklad zařazený AI dokončíš (**Vystavit a uzavřít** v náhledu
+   návrhu, nebo z **Konceptu** do **V pořádku**), Shipard si zapamatuje **IČO
    dodavatele → štítek** — příště se stejný dodavatel zařadí okamžitě
    a bez AI. Pravidla najdeš v **Nastavení → Položky → Pravidla
    obsahových štítků**.
@@ -91,7 +91,7 @@ smaže — jednou kategorií by škodilo.
 **Faktury ISDOC se zařazují taky.** Fakturu ve formátu ISDOC Shipard
 převezme bez čtení AI, ale položky k řádkům hledá stejně — když je nenajde
 v historii, zařadí doklad podle obsahu a karta v sekci **Položky
-k založení** se objeví i pro něj. ISDOC doklad dokončený z Konceptu učí pravidlo dodavatele jako každý jiný.
+k založení** se objeví i pro něj. Dokončený ISDOC doklad učí pravidlo dodavatele jako každý jiný.
 Zařazení proběhne chvíli po doručení, ne v okamžiku nahrání.
 
 **Hromadné založení výchozích položek** je na jiném místě — v panelu

@@ -9,9 +9,11 @@ use Shipard\Core\Logging\ErrorLogger;
 
 /**
  * Učení pravidel obsahových štítků (tasks/content-tag-enrichment.md, D22):
- * při potvrzení dokladu vzniklého z AI extrakce nebo ISDOC importu
- * (přechod 10 Koncept → 40 V pořádku, lineage `aiExtraction` / `isdoc` —
- * #81 D2, ISDOC prochází touž obsahovou eskalací) s LLM štítkem zapíše
+ * při vstupu dokladu vzniklého z AI extrakce nebo ISDOC importu do stavu
+ * 40 V pořádku — z Konceptu (10 → 40) i rovnou při vzniku (0 → 40,
+ * „Vystavit a uzavřít“ v náhledu návrhu); oprava 80 → 40 se neučí.
+ * Lineage `aiExtraction` / `isdoc` (#81 D2, ISDOC prochází touž obsahovou
+ * eskalací) se zdrojovou zprávou, s LLM štítkem zapíše
  * pravidlo IČO dodavatele → štítek do `core_exchange_tag_rules` (origin
  * `learned`, platné okamžitě — další doklad téhož IČO jde bez LLM).
  *
@@ -33,6 +35,7 @@ use Shipard\Core\Logging\ErrorLogger;
  */
 class ContentTagRuleCaptureHandler extends AbstractDocumentEventHandler
 {
+    private const STATE_NEW = 0;
     private const STATE_DRAFT = 10;
     private const STATE_CONFIRMED = 40;
 
@@ -44,7 +47,11 @@ class ContentTagRuleCaptureHandler extends AbstractDocumentEventHandler
         if ($this->db === null || empty($data['id'])) {
             return;
         }
-        if ($oldState !== self::STATE_DRAFT || $newState !== self::STATE_CONFIRMED) {
+        // Insert rovnou ve 40 dává old = 0 (DocDocument::trackStateChange) —
+        // bez něj by se z „Vystavit a uzavřít“ nenaučilo nic. Importy
+        // vyřadí filtr lineage níže (source_kind + source_message).
+        $fromDraftOrNew = in_array($oldState, [self::STATE_NEW, self::STATE_DRAFT], true);
+        if (!$fromDraftOrNew || $newState !== self::STATE_CONFIRMED) {
             return;
         }
         $docId = (int) $data['id'];

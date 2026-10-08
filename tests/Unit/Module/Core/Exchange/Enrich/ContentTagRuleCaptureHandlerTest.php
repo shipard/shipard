@@ -200,12 +200,41 @@ class ContentTagRuleCaptureHandlerTest extends TestCase
         $this->assertSame([], $handler->sqlCalls);
     }
 
+    public function testDirectCloseInsertsLearnedRule(): void
+    {
+        // „Vystavit a uzavřít“ — doklad vzniká rovnou ve 40, přechod 0 → 40.
+        $handler = $this->handler($this->aiHead(), $this->llmCanonical());
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 555], 0, 40);
+
+        $this->assertCount(1, $handler->sqlCalls);
+        [$sql, $companyId, $tag, $origin] = $handler->sqlCalls[0];
+        $this->assertStringContainsString('INSERT INTO [core_exchange_tag_rules]', $sql);
+        $this->assertSame('12345678', $companyId);
+        $this->assertSame('vehicle.fuel', $tag);
+        $this->assertSame('learned', $origin);
+    }
+
+    public function testDirectCloseWithoutMessageLineageIsNoOp(): void
+    {
+        // Import ve 40 (old = 0) nemá AI/ISDOC lineage se zprávou — neučí se.
+        $handler = $this->handler(
+            ['source_kind' => 'manual', 'source_message' => null],
+            $this->llmCanonical(),
+        );
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 555], 0, 40);
+
+        $this->assertSame([], $handler->sqlCalls);
+    }
+
     public function testOtherTransitionsAreNoOp(): void
     {
         $handler = $this->handler($this->aiHead(), $this->llmCanonical());
 
         $handler->onStateChanged('docs_core_heads', ['id' => 555], 80, 40);
         $handler->onStateChanged('docs_core_heads', ['id' => 555], 10, 90);
+        $handler->onStateChanged('docs_core_heads', ['id' => 555], 0, 90);
 
         $this->assertSame([], $handler->sqlCalls);
     }
