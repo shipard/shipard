@@ -130,7 +130,7 @@ zatím nemá, a bez nich se firma za pár týdnů vrátí. Všechno níže je
 |---|---|
 | Bankovní API — automatické stahování transakcí (FIO token, plánovač, šifrované credentials); šev připravený v `docs/bank.md` §8 | — |
 | Platební příkazy — nad stejným konektorem | — |
-| Prodejní smlouvy — podklad pro opakovanou fakturaci | — |
+| Zakázky s periodickou fakturací — jedna evidence místo prodejních smluv (nájemné, služby, od konceptu ke kontrole po automatické odeslání); středisko a zakázka jako standardní dimenze deníku (`docs/work-orders.md`, #110) | `dimensions-core.md` |
 | Tisk / PDF dokladu — faktura vydaná, zálohová faktura, pokladní doklad, prodejka, Kontace, vodoznak storna a jazyky tisku `cs` / `en` / `sk` / `de` hotové (`docs/prints.md`), stejně jako vzhled hlavičky a vlastní texty na tiscích včetně textů e-mailu (#90 fáze 3, `docs/prints.md` §12); zbývá revize slovenských a německých formulací a nasazení fáze 3 (`ds-upgrade` na zdrojích dat) | `prints-phase1.md`, `prints-phase2.md`, `prints-languages.md`, `prints-phase3.md` |
 | Odeslání dokladu odběrateli e-mailem — ruční odeslání z detailu hotové: účely kontaktů, příjemci, odesílatel podle číselné řady, Odeslaná pošta s Odeslat znovu (`docs/prints.md` §9, `docs/mail/sent.md`); zbývá ověření proti skutečnému SMTP a nasazení, hromadné a automatické odesílání (D11); pojistka přesměrování pošty na dev a testovacích serverech je hotová (#95, `mail.safety`, `docs/mail/outbound.md`) — zbývá ji nastavit na testovacím serveru | `prints-phase4.md`, `mail-safety.md` |
 | Majetek — evidence a odpisy | — |
@@ -201,7 +201,7 @@ v každé diskuzi.
 | Co | Proč |
 |---|---|
 | Zásoby (příjemky, výdejky, přehledy, účtování A/B) | pro ostrý provoz nejsou potřeba; budou se dělat, návrh zatím neexistuje |
-| Zakázky | totéž — až po M4, po platebních příkazech |
+| Projektové funkce zakázek (faktura ze zakázky dílčí i konečná, termíny, přehled stavu se sčítáním podzakázek), výkazy práce, plánování | až po M4; evidence zakázek a periodická fakturace jsou v M4 (#110 D19) |
 | Zálohové faktury a zúčtování záloh | totéž; saldokonto na ně počítá (`docs/accbal.md` §5, mimo Fázi 3) |
 | Účetní závěrka (uzávěrka roku, rozvaha, výsledovka) | není potřeba pro přechod na ostro; přijde s prvním uzavíraným rokem |
 | PostgreSQL driver | MariaDB stačí; abstrakce v `DatabaseManager` je připravená |
@@ -222,6 +222,9 @@ v každé diskuzi.
 
 ### Historie revizí
 
+- **8. 10. 2026:** v M4 nahrazeny Prodejní smlouvy Zakázkami s periodickou
+  fakturací (#110 D1, D19) — evidence zakázek se z Vědomě odložených
+  přesunula do M4, odložené zůstávají projektové funkce zakázek.
 - **15. 9. 2026:** doplněn oddíl „Za horizontem — účetnictví pro celou EU"
   (dlouhodobý záměr, bez vlivu na pořadí M1–M6; vazba na vývojový web
   shipard.dev).

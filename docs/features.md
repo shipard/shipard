@@ -57,7 +57,6 @@ Legenda: `[x]` hotovo · `[ ] 🟠` částečně · `[ ]` plánováno
 ### Prodej
 
 - [x] Prodejky
-- [ ] Prodejní smlouvy — podklad pro opakovanou fakturaci
 
 ## Zásoby
 
@@ -68,9 +67,11 @@ Legenda: `[x]` hotovo · `[ ] 🟠` částečně · `[ ]` plánováno
 
 ## Zakázky
 
-- [ ] Evidence zakázek
+- [ ] Evidence zakázek — periodické, externí jednorázové, interní (režie i výrobní příkazy), číselné řady, nadřazená zakázka
+- [ ] Periodická fakturace — nájemné a služby od konceptu ke kontrole po automatické odeslání (nahrazuje prodejní smlouvy)
 - [ ] Přiřazení dokladů a pohybů k zakázce
-- [ ] Účetní vyhodnocení zakázky — náklady a výnosy po zakázkách
+- [ ] Účetní vyhodnocení zakázky — náklady a výnosy po zakázkách, se sčítáním podzakázek
+- [ ] Faktura ze zakázky — dílčí a konečná fakturace
 
 ## Pokladna
 
@@ -82,6 +83,7 @@ Legenda: `[x]` hotovo · `[ ] 🟠` částečně · `[ ]` plánováno
 - [x] Účetní doklady — ruční zápis MD/DAL s kontrolou vyrovnanosti
 - [x] Účetní deník — účty se skládají automaticky z dokladů a transakcí
 - [x] Účtový rozvrh ze šablon (podnikatel / nezisková organizace) s úpravami
+- [ ] 🟠 Dimenze dokladů a deníku — majetek existuje; středisko a zakázka plánované
 - [ ] Účetní závěrka — uzávěrka roku, rozvaha, výsledovka
 
 ## Banka a saldokonto

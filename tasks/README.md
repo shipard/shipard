@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 339 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 311.
+Celkem 340 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 311.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `dimensions-core.md` | naplánováno | #110 D20, D21, D23; T1–T3 potvrzené 2026-10-08 |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -258,6 +259,7 @@ Automatické účtování dokladů ([`docs/accounting.md`](../docs/accounting.md
 | `accounting-docs-phase3.md` | `cmnbkp` — UI (viewer, form, sekce Účtárna) |
 | `accounting-docs-phase4-import.md` | `cmnbkp` — exchange + applier (import ze starého Shipardu) |
 | `reports-export.md` | Export všech reportů do XLSX / CSV (OpenSpout): REST `format`, tlačítko Export, CLI `report-run --format` (#83 D72) |
+| `dimensions-core.md` | Standardní dimenze v jádru — majetek a středisko: sloupce v tabulkách jádra, deklarace v `economy.accounting`, nastavení „Dimenze na dokladech“, dimenze ve výměnném formátu (#110 D20, D21, D23) |
 
 ## Banka
 
