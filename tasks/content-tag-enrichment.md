@@ -72,7 +72,7 @@ obrazovka správy štítků) je samostatný task `content-tag-ui.md` (vznikne).
 | D19 | Taxonomie = cfgItem `core.exchange.contentTags`; defaults v `economy.items`. |
 | D20 | Persistence: `_resolve.contentTag` (dokument-level) + `matchedBy: 'contentTag'` v řádkovém enrichment bloku + sloupec `content_tag` na `core_mail_message_analyses`. |
 | D21 | Tabulka `core_exchange_tag_rules` (jen osa IČO), tableId 438. |
-| D22 | Apply dokladu s LLM štítkem zapisuje pravidlo IČO→štítek (origin `learned`), platné okamžitě. |
+| D22 | Apply dokladu s LLM štítkem zapisuje pravidlo IČO→štítek (origin `learned`), platné okamžitě. Zúženo `tasks/content-tag-row-exceptions.md` D2: doklad s neprázdnými `rowExceptions` pravidlo neučí. |
 
 ## Taxonomie v1 (aplikace D2 na reálnou nabídku položek)
 

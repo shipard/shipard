@@ -59,7 +59,11 @@ položku i účet.
 1. Když doklad zařazený AI dokončíš (**Vystavit a uzavřít** v náhledu
    návrhu, nebo z **Konceptu** do **V pořádku**), Shipard si zapamatuje **IČO
    dodavatele → štítek** — příště se stejný dodavatel zařadí okamžitě
-   a bez AI. Pravidla najdeš v **Nastavení → Položky → Pravidla
+   a bez AI. Pravidlo vznikne jen z dokladu, kde všechny řádky patří do
+   jedné kategorie. Faktura, která kombinuje víc kategorií (nájem
+   + energie + parkovné), pravidlo nezaloží — takového dodavatele AI
+   zařadí pokaždé znovu, aby se neztratily kategorie jednotlivých řádků.
+   Pravidla najdeš v **Nastavení → Položky → Pravidla
    obsahových štítků**.
 2. U pravidla vidíš štítek, IČO s názvem partnera, původ (**Ruční** /
    **Naučené**) a kolikrát zasáhlo. Otevřením pravidla můžeš štítek
@@ -83,6 +87,12 @@ položky** se stejnými tlačítky jako na kartách — viz
 návrh řádku nese aspoň účet z nabídky. Takový doklad použiješ volbou
 **Jen účet — bez položky** v náhledu — viz
 [Kontrola vytěženého dokladu](../posta/kontrola-vytezeni.md).
+
+**Karta i pro vedlejší řádky.** Karta v sekci **Položky k založení** se
+objeví i pro kategorie jednotlivých řádků, ne jen pro hlavní obsah
+dokladu. Faktura za nájem s řádkem elektřiny a parkovného tak nabídne
+založení položky pro *Elektřina* i *Parkovné*, i když *Nájemné* už
+položku má. Jeden doklad se v každé kartě počítá jednou.
 
 **Dodavatel s pestrým sortimentem pravidlo nedostane.** Když od stejného
 IČO chodí pokaždé něco jiného (hobbymarket), naučené pravidlo se samo

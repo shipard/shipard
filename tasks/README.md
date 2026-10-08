@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 338 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 310.
+Celkem 339 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 311.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -329,6 +329,7 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `mail-states-and-classification.md` | Oddělení `analysis_state` od `docState` + AI klasifikace `primary_type`, karta „Není faktura“ |
 | `mail-isdoc-import.md` | Deterministický import ISDOC příloh místo AI analýzy |
 | `mail-isdoc-content-tags.md` | Obsahové štítky u ISDOC importu: `enrichAtResult` + `content_tag`, import v runneru předzpracování, inline jen detekce (#81) |
+| `content-tag-row-exceptions.md` | Obsahové štítky: karty Položky k založení i ze řádkových výjimek (`rowExceptions`), pravidlo dodavatele se neučí z dokladu s výjimkami |
 | `mail-message-title-partner.md` | Partner dokumentu (`partner_person`/`partner_name`) a titulek zprávy z AI (`ai_title`) — zobrazení v seznamu, fulltext, ruční partner má přednost (#43) |
 | `mail-import-partner-title.md` | Partner a titulek u zpráv navázaných na doklad (import, Použít před #43) — odvození při `POST /_mail/import` + backfill `mail-target-backfill` (#43 D6) |
 | `mail-analysis-schema-fixes.md` | Opravy AI analýzy: schema_error (kind/vat/courtRegistration), prompt v2.3.0, frontování dle docState + data fix |

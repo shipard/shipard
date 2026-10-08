@@ -591,12 +591,19 @@ projdou individuálně. Karta čerpá z tabulky alertů (D12), může být až
 Karta **položky k založení** (tasks/content-tag-ui.md D25; do #101 „Nová
 kategorie"): otevřené
 dokumentové návrhy (poslední úspěšná analýza, `resolution IS NULL`,
-zpráva v docState 10/20) nesou obsahový štítek
-(`core_mail_message_analyses.content_tag`), který **nemá živou otagovanou
-položku** (`economy_items.content_tags`, stavy 10/40/80; JSON filtr
-v PHP). Jedna karta per štítek — agregace `GROUP BY content_tag` dělá
-dedupe přes zprávy; query-driven bez dismiss stavu (karta zmizí, jakmile
-položka vznikne nebo žádný otevřený návrh štítek nepotřebuje).
+zpráva v docState 10/20) nesou obsahový štítek, který **nemá živou
+otagovanou položku** (`economy_items.content_tags`, stavy 10/40/80; JSON
+filtr v PHP). Štítky dokladu = primární
+(`core_mail_message_analyses.content_tag`) **i** štítky řádkových výjimek
+(`canonical_json` → `_resolve.contentTag.rowExceptions[*].tag` přes
+`JSON_EXTRACT`; tasks/content-tag-row-exceptions.md D1) — elektřina
+a parkovné na faktuře za nájem kartují, i když primární štítek položku
+má. Dotaz vrací řádky analýz, agregace per štítek běží v PHP: jedna karta
+per štítek, doklad se do každé své karty počítá právě jednou (dvě
+parkovné na jednom dokladu = 1), řazení waiting DESC, latest DESC, tag
+ASC. Sloupec `content_tag` zůstává primární štítek (learning, ISDOC,
+filtrování). Query-driven bez dismiss stavu (karta zmizí, jakmile položka
+vznikne nebo žádný otevřený návrh štítek nepotřebuje).
 
 `id = "content_tag:{tag}"`, `kind=review` (od Issue #32/2 D12 — plná
 karta; původně `info`, ale karta blokuje povýšení návrhů a po založení

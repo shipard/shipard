@@ -354,7 +354,11 @@ a LLM štítkem zapíše pravidlo
 IČO → štítek (origin `learned`, platné okamžitě). Shoda s existujícím
 pravidlem → jen statistiky; konflikt s `learned` pravidlem → pravidlo se
 smaže (dodavatel s pestrým sortimentem); `user`/`seed` pravidla learning
-nikdy nemění.
+nikdy nemění. Doklad, jehož LLM blok nese neprázdné `rowExceptions`
+(nájem + energie + parkovné), pravidlo **neučí** vůbec — ani INSERT, ani
+statistiky, jen `info` log; dokument-wide pravidlo by výjimky zahodilo,
+takový dodavatel jde vždy přes LLM (tasks/content-tag-row-exceptions.md
+D2). Ruční a seedovaná pravidla se uplatňují dokument-wide dál (D2b).
 
 **Seed z účetní historie:** třetí zdroj pravidel `IČO → štítek` (kromě
 ruční správy a learningu) je import agregované účetní historie ze
