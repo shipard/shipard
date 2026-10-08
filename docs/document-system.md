@@ -744,7 +744,8 @@ API volání: saveDocument({customer_id: 42, rows: [...]})
 ├─ 8. document.afterSave(data)
 │
 ├─ 8b. documentEventHandlers: afterSave (každé uložení), pak stateChanged
-│      (jen při změně docState) — výjimky se logují a polykají
+│      (jen při změně docState; insert mimo Koncept = old 0) — výjimky
+│      se logují a polykají
 │
 └─ 9. return DocumentResult::ok(data)
 ```
