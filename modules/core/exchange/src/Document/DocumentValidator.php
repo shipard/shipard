@@ -48,9 +48,42 @@ final class DocumentValidator
         $this->checkVatRecapArithmetic($canonical, $issues);
         $this->checkPartnerDocNumber($canonical, $issues);
         $this->checkParkingStateRequiresImport($canonical, $issues);
+        $this->checkReplaceConceptOptions($canonical, $issues);
         $this->checkDimensions($canonical, $issues);
 
         return $issues;
+    }
+
+    /**
+     * `applyOptions.replaceConcept` (#110 D24, Q2) ukládá vždy Koncept —
+     * `targetDocState` musí být 10 nebo chybět a import čísla (`importNumber`)
+     * se s přegenerováním nekombinuje (koncept číslo nemá).
+     *
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkReplaceConceptOptions(array $canonical, array &$issues): void
+    {
+        $options = $canonical['applyOptions'] ?? [];
+        if (!is_array($options) || !isset($options['replaceConcept'])) {
+            return;
+        }
+        $targetState = $options['targetDocState'] ?? null;
+        if ($targetState !== null && (int) $targetState !== 10) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => 'applyOptions.targetDocState',
+                'code'     => 'replace_concept_requires_draft',
+                'message'  => 'Přegenerování (replaceConcept) ukládá vždy Koncept — targetDocState musí být 10 nebo chybět.',
+            ];
+        }
+        if (is_array($options['importNumber'] ?? null)) {
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => 'applyOptions.importNumber',
+                'code'     => 'replace_concept_with_import',
+                'message'  => 'Přegenerování (replaceConcept) se nekombinuje s importNumber — koncept číslo nemá.',
+            ];
+        }
     }
 
     /**

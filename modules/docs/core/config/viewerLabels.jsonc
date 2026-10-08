@@ -1,0 +1,6 @@
+{
+    // docs.core.viewerLabels — popisky prohlížečů dokladů, které nejsou
+    // taby detailu (ty mají *.viewerDetailLabels): filtry pravého panelu.
+    // Čte DocsHeadsViewer přes cfgItem; bez katalogu anglický fallback.
+    "filter.sourceKind": { "name": "Source", "name:cs": "Zdroj", "name:en": "Source" }
+}

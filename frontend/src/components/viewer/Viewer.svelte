@@ -10,6 +10,7 @@
   import { reaccountDocument } from '../../api/accounting.js';
   import { recomposeFiling, generateFilingFiles, reloadFilingHeader, lockReportPeriod, accountFiling } from '../../api/vat.js';
   import { importStatement, reaccountTransaction } from '../../api/bank.js';
+  import { issueDuePeriods, regeneratePeriod, restorePeriod } from '../../api/workOrders.js';
   import { inviteUser } from '../../api/security.js';
   import { fileFromMessage } from '../../api/registry.js';
   import ViewerRow from './ViewerRow.svelte';
@@ -685,6 +686,41 @@
     if (actionId === 'send') {
       const printId = value ?? action.target?.printId;
       if (printId) sendDialog = { printId, recordId };
+      return;
+    }
+    // Periodická fakturace zakázky (WorkOrdersViewer, docs/work-orders.md
+    // D24): Vystavit dlužná období = běh jen pro tuto zakázku (i přes
+    // pojistku dohánění); Přegenerovat = dropdown období s konceptem,
+    // ruční úpravy konceptu se ztratí, proto potvrzení (dropdown confirm
+    // ViewerDetail neumí); Obnovit = dropdown zastavených období.
+    if (actionId === 'workOrderIssueDue') {
+      const result = await issueDuePeriods(recordId);
+      if (result?.success) {
+        const counts = result.data?.counts ?? {};
+        alert(t('viewer.detail.workOrderIssued', { issued: counts.issued ?? 0, failed: counts.failed ?? 0 }));
+        refreshAfterAction();
+      } else {
+        alert(translateError(result?.error));
+      }
+      return;
+    }
+    if (actionId === 'workOrderRegenerate') {
+      if (!value) return;
+      if (!confirm(t('viewer.detail.workOrderRegenerateConfirm'))) return;
+      const result = await regeneratePeriod(Number(value));
+      if (result?.success) refreshAfterAction();
+      else alert(translateError(result?.error));
+      return;
+    }
+    if (actionId === 'workOrderRestore') {
+      if (!value) return;
+      const result = await restorePeriod(Number(value));
+      if (result?.success) {
+        if (result.data?.outcome !== 'issued') alert(result.data?.message ?? result.data?.outcome ?? '');
+        refreshAfterAction();
+      } else {
+        alert(translateError(result?.error));
+      }
       return;
     }
     // Přeúčtovat doklad (DocsHeadsViewer, doklad ve stavu 40). Success

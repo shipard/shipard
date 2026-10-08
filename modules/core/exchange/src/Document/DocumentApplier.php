@@ -566,10 +566,15 @@ class DocumentApplier
             ? $canonical['applyOptions']
             : [];
 
+        // Přegenerovat v místě (#110 D24, Q2): cílový koncept se nahradí
+        // z payloadu; idempotence podle zprávy se pro výslovné
+        // přegenerování nehodí (zpráva už na doklad ukazuje).
+        $replaceId = self::replaceConceptId($this->applyOptionsCache);
+
         // 0. Idempotency check — same extracted_document already applied?
         //    Return existing savedDocId without re-saving. See Phase 2 spec
         //    "Idempotency apply".
-        $idempotent = $this->checkIdempotent($canonical);
+        $idempotent = $replaceId === null ? $this->checkIdempotent($canonical) : null;
         if ($idempotent !== null) {
             return $idempotent;
         }
@@ -721,7 +726,11 @@ class DocumentApplier
         //       Neúspěch closure = rollback vlastní práce; vnější transakce
         //       zůstává volajícímu.
         try {
-            [$savedDocId, $sideCreatedIds] = NestedTransaction::run($this->db, function () use ($canonical, $resolved, &$plan, &$validatorIssues, $numberSeriesId): array {
+            [$savedDocId, $sideCreatedIds] = NestedTransaction::run($this->db, function () use ($canonical, $resolved, &$plan, &$validatorIssues, $numberSeriesId, $replaceId, $docTypeCode): array {
+            // Přegenerovat (Q2): zámek cílového konceptu — zavře závod
+            // „koncept mezitím potvrzený“ (ApplyAbortedException → 409/422).
+            $this->lockReplaceTarget($replaceId, $docTypeCode);
+
             // Side-creates first so we have ids to link in the doc.
             $sideCreatedIds = $this->runSideCreates($plan, $resolved);
 
@@ -735,6 +744,9 @@ class DocumentApplier
 
             // Transform canonical → internal $data.
             $data = $this->transform($canonical, $plan, $sideCreatedIds, $numberSeriesId);
+            if ($replaceId !== null) {
+                $data = $this->applyReplaceConcept($data, $replaceId, $validatorIssues);
+            }
 
             // Save doc head + rows + vat_recap through DocDocument.
             $result = $this->headsGateway->saveDocument($data);
@@ -766,6 +778,8 @@ class DocumentApplier
 
             return [$savedDocId, $sideCreatedIds];
             });
+        } catch (ApplyAbortedException $e) {
+            return ApplyResult::error($e->errorCode, $e->getMessage(), $enriched, statusCode: $e->statusCode);
         } catch (\Throwable $e) {
             return ApplyResult::error('internal_error', $e->getMessage(), $enriched, statusCode: 500);
         }
@@ -3768,6 +3782,120 @@ class DocumentApplier
             throw new NumberSeriesNotFoundException($docType, "#{$seriesId}");
         }
         return (int) $row['id'];
+    }
+
+    // ── Přegenerovat v místě — applyOptions.replaceConcept (#110 D24, Q2) ──
+
+    /**
+     * Hlavičkové sloupce, které `transform()` při null zahodí a které tedy
+     * replace mód musí explicitně vynulovat / vrátit na default — update
+     * přes TableGateway zapisuje jen přítomné klíče a staré hodnoty by
+     * přežily. Hodnota = to, co by měl čerstvý doklad z applieru.
+     */
+    private const REPLACE_RESET_HEAD = [
+        'doc_text' => null, 'partner_doc_number' => null, 'partner' => null, 'partner_address' => null,
+        'partner_balance' => null, 'partner_balance_manual' => 0,
+        'partner_bank' => null, 'partner_bank_account' => null, 'partner_bank_iban' => null, 'partner_bank_bic' => null,
+        'due_date' => null, 'vat_duzp' => null, 'vat_dppd' => null, 'period_from' => null, 'period_to' => null,
+        'fiscal_period_type' => null, 'vat_registration' => null, 'doc_currency' => null, 'exchange_rate' => null,
+        'cash_desk' => null, 'cash_dir' => 0, 'bank_account' => null, 'payment_terminal' => null, 'transport' => null,
+        'payment_reference' => null, 'specific_symbol' => null, 'constant_symbol' => null,
+        'notice' => null, 'doc_notice' => null, 'total_rounding_mode' => 0, 'vat_rounding_mode' => 0,
+        'source_kind' => null, 'source_message' => null, 'source_extracted_at' => null,
+    ];
+
+    /** @param array<string, mixed> $applyOptions */
+    private static function replaceConceptId(array $applyOptions): ?int
+    {
+        $value = $applyOptions['replaceConcept'] ?? null;
+        return is_int($value) && $value > 0 ? $value : null;
+    }
+
+    /**
+     * Cílový koncept zamčený do konce transakce: musí existovat, být
+     * v Konceptu (10) a stejného typu jako payload.
+     *
+     * @throws ApplyAbortedException replace_target_not_found (422)
+     *         | replace_target_not_concept (409) | replace_target_type_mismatch (422)
+     */
+    private function lockReplaceTarget(?int $docId, string $docTypeCode): void
+    {
+        if ($docId === null) {
+            return;
+        }
+        $row = $this->db->fetch(
+            'SELECT [id], [docState], [doc_type] FROM [docs_core_heads] WHERE [id] = %i FOR UPDATE',
+            $docId,
+        );
+        if ($row === null) {
+            throw new ApplyAbortedException('replace_target_not_found', "Doklad #{$docId} k přegenerování neexistuje.", 422);
+        }
+        $state = (int) ($row['docState'] ?? 0);
+        if ($state !== 10) {
+            throw new ApplyAbortedException(
+                'replace_target_not_concept',
+                "Doklad #{$docId} není Koncept (stav {$state}) — přegenerovat jde jen koncept.",
+                409,
+            );
+        }
+        $targetType = (string) ($row['doc_type'] ?? '');
+        if ($targetType !== $docTypeCode) {
+            throw new ApplyAbortedException(
+                'replace_target_type_mismatch',
+                "Doklad #{$docId} je typu {$targetType}, payload {$docTypeCode}.",
+                422,
+            );
+        }
+    }
+
+    /**
+     * Hlavička pro update v místě: `id` cíle, autor zůstává (klíč se
+     * neposílá — přítomný klíč by přepsal), sloupce mimo payload se
+     * vrátí na hodnotu čerstvého dokladu; `rows` bez id nahradí řádky
+     * (TableGateway::syncChildren), rekapitulaci přepočítá DocDocument.
+     *
+     * @param array<string, mixed> $head
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, mixed>
+     */
+    private function applyReplaceConcept(array $head, int $docId, array &$issues): array
+    {
+        $head['id'] = $docId;
+        if (array_key_exists('author', $head)) {
+            unset($head['author']);
+            $issues[] = [
+                'severity' => 'warning',
+                'path'     => 'applyOptions.author',
+                'code'     => 'replace_author_ignored',
+                'message'  => 'Při přegenerování zůstává autor původního konceptu.',
+            ];
+        }
+        foreach ($this->replaceResetColumns() as $column => $reset) {
+            if (!array_key_exists($column, $head)) {
+                $head[$column] = $reset;
+            }
+        }
+        return $head;
+    }
+
+    /**
+     * Reset mapa vč. dynamických sloupců: hlavičkové sloupce dimenzí deníku
+     * (podle konfigurace DS) a `cs_mode` jen s extension economy.vat.
+     *
+     * @return array<string, int|null>
+     */
+    private function replaceResetColumns(): array
+    {
+        $columns = self::REPLACE_RESET_HEAD;
+        foreach (JournalDimensionSet::fromConfig($this->config) as $dimension) {
+            if ($dimension->headColumn !== null) {
+                $columns[$dimension->headColumn] = null;
+            }
+        }
+        if (is_array($this->config->cfgItem('economy.vat.controlStatementModes'))) {
+            $columns['cs_mode'] = 0;
+        }
+        return $columns;
     }
 
     /** Má typ dokladu řadu vázanou na pokladnu (`docTypes[].series_binding = cash_desk`)? */

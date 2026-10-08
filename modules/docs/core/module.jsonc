@@ -184,6 +184,7 @@
         { "id": "docs.core.cashDirections",  "file": "config/cashDirections.jsonc" },
         { "id": "docs.core.resetScopes",     "file": "config/resetScopes.jsonc" },
         { "id": "docs.core.sourceKinds",     "file": "config/sourceKinds.jsonc" },
+        { "id": "docs.core.viewerLabels",    "file": "config/viewerLabels.jsonc" },
         { "id": "docs.core.fiscalPeriodTypes", "file": "config/fiscalPeriodTypes.jsonc" }
     ],
 

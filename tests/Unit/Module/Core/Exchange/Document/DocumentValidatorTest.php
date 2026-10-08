@@ -555,6 +555,32 @@ class DocumentValidatorTest extends TestCase
         $this->assertNull($this->findByCode($issues, 'target_state_80_requires_import'));
     }
 
+    // ── applyOptions.replaceConcept (#110 D24, Q2) ───────────────────────────
+
+    public function testReplaceConceptRequiresDraftTargetStateAndNoImportNumber(): void
+    {
+        $base = [
+            'docType' => 'invoiceIssued',
+            'customer' => ['name' => 'Z'],
+            'dates' => ['issueDate' => '2026-10-01'],
+            'rows' => [['rowKind' => 'item']],
+        ];
+        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'targetDocState' => 40]]);
+        $e = $this->findByCode($issues, 'replace_concept_requires_draft');
+        $this->assertNotNull($e);
+        $this->assertSame('error', $e['severity']);
+        $this->assertSame('applyOptions.targetDocState', $e['path']);
+
+        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'importNumber' => ['docNumber' => 'X', 'sequenceNumber' => 1]]]);
+        $this->assertNotNull($this->findByCode($issues, 'replace_concept_with_import'));
+
+        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605, 'targetDocState' => 10]]);
+        $this->assertNull($this->findByCode($issues, 'replace_concept_requires_draft'));
+        $this->assertNull($this->findByCode($issues, 'replace_concept_with_import'));
+        $issues = $this->v->validate($base + ['applyOptions' => ['replaceConcept' => 605]]);
+        $this->assertNull($this->findByCode($issues, 'replace_concept_requires_draft'));
+    }
+
     public function testPartnerDocNumberNotChalliengedForDraft(): void
     {
         $issues = $this->v->validate([

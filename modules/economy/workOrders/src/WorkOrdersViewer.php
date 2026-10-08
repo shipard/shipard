@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\WorkOrders;
 
 use Shipard\Core\Database\SearchCondition;
+use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
+use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodCalendar;
+use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
 
 /**
  * Viewer zakázek (sekce Zakázky, tasks/work-orders-phase1.md §5).
@@ -31,6 +34,8 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
     public const JOURNAL_VIEWER = 'economy.accounting.journal';
     /** Filtr deníku podle dimenze `workOrder` (JournalViewer: `dim_{id dimenze}`). */
     public const JOURNAL_DIMENSION_FILTER = 'dim_workOrder';
+    /** Viewer dokladu podle typu (odkaz z tabu Fakturace). */
+    public const DOC_TYPE_VIEWERS = ['invno' => 'docs.invoicesOut.heads', 'invpo' => 'docs.proformasOut.heads'];
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
@@ -180,12 +185,178 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
             ]];
         }
 
+        $actions = [];
+        $type = (string) ($record['type'] ?? '');
+        if ($type !== '' && $this->types()->invoicing($type) === WorkOrderTypes::INVOICING_PERIODIC) {
+            $invoicing = $this->invoicingTab($record);
+            $detail['tabs'][] = $invoicing['tab'];
+            $actions = $invoicing['actions'];
+        }
+
         $journalTab = $this->journalTab($recordId);
         if ($journalTab !== null) {
             $detail['tabs'][] = $journalTab;
-            $detail['actions'] = [$this->journalAction($recordId)];
+            $actions[] = $this->journalAction($recordId);
+        }
+        if ($actions !== []) {
+            $detail['actions'] = $actions;
         }
         return $detail;
+    }
+
+    /**
+     * Tab Fakturace periodické zakázky (D24): příští splatné období
+     * a předpis nahoře, evidence období (nejnovější nahoře) se stavem vč.
+     * odvozeného „zastaveno“, dokladem, částkou a zprávou; akce Vystavit
+     * dlužná období (jen V pořádku), Přegenerovat (období s konceptem)
+     * a Obnovit (zastavená období).
+     *
+     * @param array<string, mixed> $record
+     * @return array{tab: array<string, mixed>, actions: list<array<string, mixed>>}
+     */
+    private function invoicingTab(array $record): array
+    {
+        $workOrderId = (int) $record['id'];
+        $kind = $this->kindRow((int) ($record['kind'] ?? 0));
+        $settings = InvoicingSettingsResolver::resolve($record, $kind);
+        $periodicity = (string) ($record['inv_periodicity'] ?? '');
+        $invoiceFrom = $this->isoDate($record['inv_from'] ?? null);
+
+        $items = [];
+        if ($periodicity !== '' && $invoiceFrom !== null) {
+            $next = PeriodCalendar::nextDue($invoiceFrom, $this->isoDate($record['date_end'] ?? null), $this->today(), $periodicity, $settings->timing);
+            $this->addItem(
+                $items,
+                $this->text('label.nextDue', 'Next period due'),
+                $next !== null
+                    ? $this->formatDate($next->from) . ' – ' . $this->formatDate($next->to)
+                    : $this->text('text.noNextDue', 'none — past the end date'),
+            );
+        }
+        $this->addItem($items, $this->text('label.periodicity', 'Periodicity'), $this->cfgLabel('economy.workOrders.periodicities', $periodicity));
+        $this->addItem($items, $this->text('label.invoiceFrom', 'Invoice from'), $this->formatDate($invoiceFrom));
+        $this->addItem($items, $this->text('label.invoiceTiming', 'Invoicing'), $this->cfgLabel('economy.workOrders.invoiceTimings', $settings->timing));
+        $this->addItem($items, $this->text('label.invoiceDocType', 'Document type'), $settings->docType !== null ? $this->cfgLabel('docs.core.docTypes', $settings->docType) : null);
+
+        $periods = $this->periodRepository()->listFor($workOrderId);
+        $docInfo = $this->periodRepository()->docInfo(array_map(static fn(array $p): int => (int) ($p['doc'] ?? 0), $periods));
+
+        $rows = [];
+        $regenerable = [];
+        $stopped = [];
+        foreach ($periods as $period) {
+            $state = PeriodRepository::effectiveState($period, $docInfo);
+            $docId = (int) ($period['doc'] ?? 0);
+            $doc = $docInfo[$docId] ?? null;
+            $label = $this->formatDate($period['period_from']) . ' – ' . $this->formatDate($period['period_to']);
+            $row = [
+                'period'   => $label,
+                'state'    => $this->cfgLabel('economy.workOrders.periodStates', $state),
+                'document' => $doc !== null ? $this->documentLabel($doc, $docId) : '',
+                'amount'   => $doc !== null && $doc['total_amount'] !== null
+                    ? trim($this->formatAmount($doc['total_amount']) . ' ' . strtoupper((string) ($doc['doc_currency'] ?? '')))
+                    : '',
+                'message'  => (string) ($period['message'] ?? ''),
+            ];
+            if ($doc !== null) {
+                $row['_action'] = [
+                    'id'     => 'openDocument',
+                    'kind'   => 'open_detail',
+                    'target' => [
+                        'viewerId' => self::DOC_TYPE_VIEWERS[(string) ($doc['doc_type'] ?? '')] ?? self::DOCUMENTS_VIEWER,
+                        'recordId' => $docId,
+                    ],
+                ];
+                if ((int) ($doc['docState'] ?? 0) === 10 && $state !== PeriodRepository::STATE_STOPPED) {
+                    $regenerable[] = ['label' => $label . ' — ' . $row['document'], 'value' => (string) $period['id']];
+                }
+            }
+            if ($state === PeriodRepository::STATE_STOPPED) {
+                $stopped[] = ['label' => $label, 'value' => (string) $period['id']];
+            }
+            $rows[] = $row;
+        }
+
+        $blocks = [
+            ['type' => 'properties', 'groups' => [['title' => $this->text('group.invoicing', 'Invoicing'), 'items' => $items]]],
+            ['type' => 'heading', 'text' => $this->text('heading.periods', 'Periods')],
+        ];
+        if ($rows === []) {
+            $blocks[] = ['type' => 'heading', 'text' => $this->text('text.noPeriods', 'No period has been issued yet.')];
+        } else {
+            $blocks[] = [
+                'type'    => 'table',
+                'columns' => [
+                    ['id' => 'period', 'label' => $this->text('column.period', 'Period')],
+                    ['id' => 'state', 'label' => $this->text('column.state', 'State')],
+                    ['id' => 'document', 'label' => $this->text('column.document', 'Document'), 'link' => true],
+                    ['id' => 'amount', 'label' => $this->text('column.amount', 'Amount'), 'align' => 'right'],
+                    ['id' => 'message', 'label' => $this->text('column.message', 'Message')],
+                ],
+                'rows' => $rows,
+            ];
+        }
+
+        $actions = [];
+        if ((int) ($record['docState'] ?? 0) === WorkOrderDocument::STATE_CONFIRMED) {
+            $actions[] = [
+                'id'      => 'workOrderIssueDue',
+                'label'   => $this->text('action.issueDue', 'Issue due periods'),
+                'kind'    => 'button',
+                'variant' => 'secondary',
+            ];
+        }
+        if ($regenerable !== []) {
+            $actions[] = [
+                'id'      => 'workOrderRegenerate',
+                'label'   => $this->text('action.regenerate', 'Regenerate'),
+                'kind'    => 'dropdown',
+                'variant' => 'secondary',
+                'items'   => $regenerable,
+            ];
+        }
+        if ($stopped !== []) {
+            $actions[] = [
+                'id'      => 'workOrderRestore',
+                'label'   => $this->text('action.restore', 'Restore'),
+                'kind'    => 'dropdown',
+                'variant' => 'secondary',
+                'items'   => $stopped,
+            ];
+        }
+
+        return [
+            'tab' => [
+                'id'      => 'invoicing',
+                'label'   => $this->text('tab.invoicing', 'Invoicing'),
+                'content' => ['type' => 'composite', 'blocks' => $blocks],
+            ],
+            'actions' => $actions,
+        ];
+    }
+
+    /**
+     * Číslo dokladu, nebo „koncept #id“ — koncept nese jen zástupné číslo
+     * (`!000…`, DocDocument::afterPersist), to uživateli nic neřekne.
+     *
+     * @param array<string, mixed> $doc
+     */
+    private function documentLabel(array $doc, int $docId): string
+    {
+        $number = (string) ($doc['doc_number'] ?? '');
+        if ($number !== '' && !str_starts_with($number, '!')) {
+            return $number;
+        }
+        return $this->text('text.draft', 'draft') . ' #' . $docId;
+    }
+
+    private function isoDate(mixed $value): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        $string = trim((string) ($value ?? ''));
+        return $string !== '' ? substr($string, 0, 10) : null;
     }
 
     /**
@@ -370,6 +541,24 @@ class WorkOrdersViewer extends WorkOrdersViewerBase
     protected function journalService(): WorkOrderJournalService
     {
         return new WorkOrderJournalService($this->db->getDibiConnection());
+    }
+
+    protected function periodRepository(): PeriodRepository
+    {
+        return new PeriodRepository($this->db->getDibiConnection());
+    }
+
+    /** Druh zakázky (sloupce předpisu inv_*), null = neexistuje. */
+    protected function kindRow(int $kindId): ?array
+    {
+        return $kindId > 0
+            ? $this->db->fetchRow('SELECT * FROM `' . KindDocument::TABLE . '` WHERE `id` = %i', $kindId)
+            : null;
+    }
+
+    protected function today(): string
+    {
+        return date('Y-m-d');
     }
 
     /**

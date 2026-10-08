@@ -193,6 +193,86 @@ class InvoicingRunServiceTest extends TestCase
         $this->assertSame(0, $service->fakeApplier->applied);
     }
 
+    // ── Přegenerovat a Obnovit (D24) ────────────────────────────────────────
+
+    public function testRegenerateReplacesDraftInPlaceAndRefreshesHash(): void
+    {
+        $service = $this->service([$this->workOrder()]);
+        $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'));
+        $october = $service->fakeRepo->periods[6]['2026-10-01'];
+        $service->fakeRepo->docs = [1003 => ['id' => 1003, 'docState' => 10, 'doc_type' => 'invno']];
+        $service->contentHashes[1003] = 'hash-after-regenerate';
+
+        $line = $service->regenerate((int) $october['id'], new RunOptions('2026-10-20', now: '2026-10-20 10:00:00'));
+
+        $this->assertSame(RunReport::OUTCOME_ISSUED, $line->outcome);
+        $this->assertSame(1003, $line->docId, 'doklad si drží id');
+        $last = end($service->fakeApplier->canonicals);
+        $this->assertSame(1003, $last['applyOptions']['replaceConcept']);
+        $this->assertSame(10, $last['applyOptions']['targetDocState']);
+        $this->assertSame('hash-after-regenerate', $service->fakeRepo->periods[6]['2026-10-01']['content_hash']);
+        $this->assertSame('issued', $service->fakeRepo->periods[6]['2026-10-01']['state']);
+        $this->assertSame(['begin', 'commit'], array_slice($service->transactions, -2));
+    }
+
+    public function testRegenerateRefusesConfirmedOrMissingDocument(): void
+    {
+        $service = $this->service([$this->workOrder()]);
+        $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'));
+        $id = (int) $service->fakeRepo->periods[6]['2026-10-01']['id'];
+
+        $service->fakeRepo->docs = [1003 => ['id' => 1003, 'docState' => 40, 'doc_type' => 'invno']];
+        try {
+            $service->regenerate($id, new RunOptions('2026-10-20'));
+            $this->fail('potvrzený doklad');
+        } catch (\DomainException $e) {
+            $this->assertSame(409, $e->getCode());
+        }
+        $service->fakeRepo->docs = [];
+        try {
+            $service->regenerate($id, new RunOptions('2026-10-20'));
+            $this->fail('chybějící doklad');
+        } catch (\DomainException $e) {
+            $this->assertSame(409, $e->getCode());
+        }
+        try {
+            $service->regenerate(999, new RunOptions('2026-10-20'));
+            $this->fail('neexistující období');
+        } catch (\DomainException $e) {
+            $this->assertSame(404, $e->getCode());
+        }
+    }
+
+    public function testRestoreUnlinksDeletedDraftAndIssuesNewOne(): void
+    {
+        $service = $this->service([$this->workOrder()]);
+        $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'));
+        $september = $service->fakeRepo->periods[6]['2026-09-01'];
+        // Září v koši = zastaveno; běh ho sám znovu nevystaví.
+        $service->fakeRepo->docs = [
+            1001 => ['id' => 1001, 'docState' => 10, 'doc_type' => 'invno'],
+            1002 => ['id' => 1002, 'docState' => 90, 'doc_type' => 'invno'],
+            1003 => ['id' => 1003, 'docState' => 10, 'doc_type' => 'invno'],
+        ];
+        $this->assertSame([], $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'))->lines);
+
+        $line = $service->restore((int) $september['id'], new RunOptions('2026-10-08', now: '2026-10-08 12:00:00'));
+
+        $this->assertSame(RunReport::OUTCOME_ISSUED, $line->outcome);
+        $this->assertSame(1004, $line->docId, 'nový koncept, starý zůstává v koši');
+        $restored = $service->fakeRepo->periods[6]['2026-09-01'];
+        $this->assertSame('issued', $restored['state']);
+        $this->assertSame(1004, $restored['doc']);
+
+        // Nezastavené období obnovit nejde.
+        try {
+            $service->restore((int) $service->fakeRepo->periods[6]['2026-08-01']['id'], new RunOptions('2026-10-08'));
+            $this->fail('vystavené období s živým dokladem');
+        } catch (\DomainException $e) {
+            $this->assertSame(409, $e->getCode());
+        }
+    }
+
     // ── testovací služba ────────────────────────────────────────────────────
 
     /** @param list<array<string, mixed>> $workOrders */
@@ -265,9 +345,22 @@ class TestableInvoicingRunService extends InvoicingRunService
         return $this->rows;
     }
 
+    /** @var array<int, string> doklad → otisk (výchozí hash-<id>) */
+    public array $contentHashes = [];
+
     protected function contentHashOf(int $docId): string
     {
-        return 'hash-' . $docId;
+        return $this->contentHashes[$docId] ?? 'hash-' . $docId;
+    }
+
+    protected function workOrder(int $workOrderId): ?array
+    {
+        foreach ($this->workOrders as $wo) {
+            if ((int) $wo['id'] === $workOrderId) {
+                return $wo;
+            }
+        }
+        return null;
     }
 }
 
@@ -279,6 +372,31 @@ class FakePeriodRepository extends PeriodRepository
     public int $locks = 0;
     /** @var array<string, int> začátek → doklad, který „mezitím“ vystavil jiný běh */
     public array $issuedUnderLock = [];
+    /** @var array<int, array<string, mixed>> doklady podle id (docState, doc_type) — pro docInfo */
+    public array $docs = [];
+
+    public function find(int $id): ?array
+    {
+        foreach ($this->periods as $rows) {
+            foreach ($rows as $period) {
+                if ((int) $period['id'] === $id) {
+                    return $period;
+                }
+            }
+        }
+        return null;
+    }
+
+    public function docInfo(array $docIds): array
+    {
+        $out = [];
+        foreach ($docIds as $docId) {
+            if (isset($this->docs[(int) $docId])) {
+                $out[(int) $docId] = $this->docs[(int) $docId];
+            }
+        }
+        return $out;
+    }
 
     public function listFor(int $workOrderId): array
     {
@@ -430,6 +548,7 @@ class FakeApplier extends DocumentApplier
             return ApplyResult::error('validation_failed', 'Doklad neprošel validací', $canonical, statusCode: 422);
         }
         $this->applied++;
-        return ApplyResult::ok($canonical, 1000 + $this->applied);
+        $replace = $canonical['applyOptions']['replaceConcept'] ?? null;
+        return ApplyResult::ok($canonical, is_int($replace) ? $replace : 1000 + $this->applied);
     }
 }

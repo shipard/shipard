@@ -230,6 +230,8 @@ export default {
   'viewer.detail.inviteSent': 'Invitation sent.',
   'viewer.detail.filingFilesCreated': 'Filing files created: {names}. You will find them in the Attachments tab.',
   'viewer.detail.reloadFilingHeaderConfirm': 'Reload the filing header from the registration filing details? Manual edits in the Header tab will be overwritten.',
+  'viewer.detail.workOrderRegenerateConfirm': 'Regenerate the draft from the current work order? Manual edits to the draft will be lost.',
+  'viewer.detail.workOrderIssued': 'Periods issued: {issued}, failed: {failed}.',
   'print.preview.title': 'Print',
   'print.preview.loading': 'Preparing the print…',
   'print.preview.unsupported': 'This browser cannot preview PDF files. Use Download to save the file.',

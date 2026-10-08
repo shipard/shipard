@@ -524,6 +524,22 @@ class Router
 			return new Route('assets', $subpath === '/_assets/posting' ? 'posting' : 'postingCancel');
 		}
 
+		// Zakázky — periodická fakturace (docs/work-orders.md D24):
+		//   POST /_work-orders/invoice-run        {workOrder}  Vystavit dlužná období
+		//   POST /_work-orders/periods/regenerate {period}     Přegenerovat koncept
+		//   POST /_work-orders/periods/restore    {period}     Obnovit zastavené období
+		$workOrderActions = [
+			'/_work-orders/invoice-run'        => 'issueDue',
+			'/_work-orders/periods/regenerate' => 'regeneratePeriod',
+			'/_work-orders/periods/restore'    => 'restorePeriod',
+		];
+		if (isset($workOrderActions[$subpath])) {
+			if ($method !== 'POST') {
+				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+			}
+			return new Route('workOrders', $workOrderActions[$subpath]);
+		}
+
 		if ($subpath === '/_mcp') {
 			if ($method !== 'POST') {
 				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);

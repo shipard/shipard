@@ -612,6 +612,11 @@
                                                     ],
                                                     "minimum": 1,
                                                     "description": "Explicit author of the document (docs_core_heads.author → core_system_users.id, printed as “Issued by”). A present key is an explicit choice — null = document without an author; a missing key = default (the signed-in user, otherwise the author of automatically issued documents). Must be the id of an existing user (active or not), unknown id = author_not_found. Not limited to import mode."
+                                                },
+                                                "replaceConcept": {
+                                                    "type": "integer",
+                                                    "minimum": 1,
+                                                    "description": "Regenerate in place (#110 D24, Q2): id of an existing docs_core_heads record in state 10 (Koncept) with the same doc_type as docType. Head and rows are replaced from this payload in one transaction (same validation and derivations as a new document); id, attachments and author are kept, columns the payload does not carry are reset. targetDocState must be 10 or absent, importNumber must be absent. Rejections: replace_target_not_found (422), replace_target_not_concept (409), replace_target_type_mismatch (422)."
                                                 }
                                             }
                                         },

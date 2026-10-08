@@ -38,6 +38,16 @@ najednou:
 5. **Importy z účetních / ERP systémů** — adaptér přečte jejich formát,
    transformuje na canonical, předá applieru. Stejná cesta pro Pohodu, Money,
    Flexibee, atd. — odlišuje se jen vstupní adaptér.
+6. **Doklady, které Shipard generuje sám** — periodická fakturace zakázek
+   (#110 Q1), později faktura ze zakázky, faktura ze zálohy apod. Vznikají
+   **i se přegenerovávají výhradně přes výměnný formát a `DocumentApplier`**
+   (`applyOptions.replaceConcept`, Q2) — generátor skládá kanonický payload
+   z interních dat, žádné přímé skládání hlavičky a řádků mimo applier;
+   odvození DPH, řada, zaokrouhlení i dimenze tak mají jedinou implementaci.
+   Známé výjimky z doby před touto zásadou (#112): zaúčtování podaného
+   přiznání DPH (`VatReturnAccountingService`) a účetní doklady majetku
+   (`AssetPostingDocuments`) jdou přes `TableGateway`; sjednotí je
+   samostatný task.
 6. **Mezikrok pro elektronickou fakturaci** — ISDOC, Peppol UBL, e-Faktura
    se rozparsují na canonical, ten se uloží. Stejný flow pro AI extrakci
    i strukturovaná data. Příchozí ISDOC je implementován — viz `IsdocReader`
@@ -1319,8 +1329,14 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `dimension_unknown` | error | Klíč objektu `dimensions` není id deklarované dimenze deníku, nebo dimenze nemá `exchangeKey` (#110 T2). Path `dimensions.<id>` / `rows.N.dimensions.<id>`. Kontroluje `DocumentValidator` se znalostí sady dimenzí (apply, /validate); preflight sady bez DS ho nehlásí. |
 | `dimension_not_found` | error | Hodnota dimenze (přirozený klíč — kód střediska, inventární číslo) nemá záznam v cílové tabulce (`DimensionResolver`, koš se nepočítá). Path dle místa, např. `rows.3.dimensions.costCenter`. Klíč je autoritativní, bez userAction. |
 | `cash_desk_ignored` | warning | `cashDesk` na faktuře bez `payment.method: "cash"` — pokladna se nepropíše. |
+| `replace_concept_requires_draft` | error | `applyOptions.replaceConcept` s `targetDocState` jiným než 10 — přegenerování ukládá vždy Koncept (#110 Q2). |
+| `replace_concept_with_import` | error | `applyOptions.replaceConcept` spolu s `importNumber` — koncept číslo nemá. |
+| `replace_author_ignored` | warning | `applyOptions.author` při přegenerování — autor původního konceptu zůstává, klíč se ignoruje. |
 
 Apply-level kódy (`ApplyResult.errorCode`, 422): `number_series_not_found`,
+`number_series_conflict` (`numberSeriesCode` i `numberSeriesId` najednou),
+`replace_target_not_found` / `replace_target_type_mismatch` (422)
+a `replace_target_not_concept` (409) u `replaceConcept`,
 `own_bank_account_not_found`, **`cash_desk_not_found`** (neznámý kód pokladny,
 nebo pokladna mimo stav V pořádku (40), takže jí nelze založit řadu typu
 `cash`/`cashreg`; pokladně ve stavu 40 applier chybějící řadu založí sám).
@@ -1342,7 +1358,12 @@ POST /api/v1/_exchange/docs/document/apply
   ├─ 4. Validation gate
   │      - blok `issues` s severity="error" → 422 s payloadem
   │
-  ├─ 5. BEGIN TRANSACTION
+  ├─ 5. NestedTransaction — vlastní transakce, nebo SAVEPOINT uvnitř
+  │      transakce volajícího (generátory dokladů, které na výsledek
+  │      atomicky navazují — periodická fakturace, #110)
+  │
+  ├─ 5b. replaceConcept: zámek cílového konceptu FOR UPDATE + kontrola
+  │      stavu 10 a typu (replace_target_* → rollback vlastní práce)
   │
   ├─ 6. Side-creates (per execution plan)
   │      - canCreate Party → PersonDocument::saveDocument(...)
@@ -1363,7 +1384,9 @@ POST /api/v1/_exchange/docs/document/apply
   ├─ 8. TableGateway.saveDocument('docs_core_heads', $data)
   │      → DocDocument::validate (+ subclass per docType)
   │      → DocDocument::beforeSave (snapshoty, recap, totals, čísla)
-  │      → insert/update docs_core_heads + rows + vat_recap
+  │      → insert docs_core_heads + rows + vat_recap; s replaceConcept
+  │        update hlavičky (id cíle, sloupce mimo payload explicitně
+  │        resetované) a náhrada řádků (bez id = staré smazat, nové vložit)
   │
   ├─ 9. Attachments — u dokladu z pošty se přílohy NEkopírují: zůstávají
   │      na zdrojové zprávě a detail dokladu je zobrazuje jako skupinu
@@ -1378,7 +1401,7 @@ POST /api/v1/_exchange/docs/document/apply
   │       v téže transakci. Verdikt analýzy — resolution — a docState
   │       zprávy sem záměrně NEpatří, ty píše MessageProposalApplier)
   │
-  ├─ 11. COMMIT
+  ├─ 11. COMMIT / RELEASE SAVEPOINT
   │
   └─ 12. Vrátí enriched canonical JSON
         - _resolve aktualizován: status="matched" pro všechny canCreate
@@ -1487,6 +1510,42 @@ rozhoduje uživatel klíče — člověk se stane autorem, systémový uživatel
 zakládá předem přes `/_exchange/users/user/apply` (§14 → Uživatelé).
 Exportér (`DocumentExporter`) autora nevydává: datová sada uživatele
 nepřenáší.
+
+### Přegenerovat v místě — `applyOptions.replaceConcept`
+
+`applyOptions.replaceConcept: <id dokladu>` (#110 D24, Q2) nahradí
+**existující Koncept** obsahem payloadu místo založení nového dokladu —
+obecný mechanismus pro generátory dokladů (periodická fakturace: akce
+*Přegenerovat* a automatické doplnění konceptu po příchodu podkladů), ne
+specialita zakázek. Validace, resolve a odvození jsou stejné jako u nového
+dokladu; liší se jen uložení:
+
+| Zachováno | Nahrazeno / resetováno |
+|---|---|
+| `id` (odkazy, přílohy — vážou se na `table_id` + `record_id`), `author` (klíč `author` v payloadu se ignoruje, warning `replace_author_ignored`), `docState` = 10, `doc_state_changed_at`, `doc_number` / `sequence_number` (koncept je nemá), `fiscal_year` / `fiscal_month` (přepočte `DocDocument`), součty a rekapitulace (přepočet) | všechny hlavičkové sloupce, které applier plní: text, partner, data, období, DPH, měna, platba, symboly, poznámky, `source_*`, dimenze, vlastní účet, řada — **sloupec mimo payload se vrátí na hodnotu čerstvého dokladu** (NULL / default), update přes `TableGateway` by jinak starou hodnotu nechal; řádky se nahradí celé (`rows` bez `id` → staré smazat, nové vložit) |
+
+Podmínky: cíl existuje, je v Konceptu (10 — koš 90 se nepočítá) a má
+stejný `doc_type` jako `docType` payloadu; `targetDocState` chybí nebo 10
+(`replace_concept_requires_draft`), bez `importNumber`
+(`replace_concept_with_import`). Kontrola cíle běží **uvnitř transakce se
+zámkem řádku** (`FOR UPDATE`), takže koncept potvrzený mezi rozhodnutím
+a apply skončí `replace_target_not_concept` (409), chybějící
+`replace_target_not_found` (422), jiný typ `replace_target_type_mismatch`
+(422). Idempotence podle `source.message` se při přegenerování přeskočí
+(zpráva už na doklad ukazuje); `writeLineageTargets` propíše stejné id.
+Provenience (`source_*`) sleduje payload — volající je autorita.
+
+### Apply uvnitř cizí transakce
+
+`apply()` ukládá v `NestedTransaction` (`src/Core/Database/`): mimo
+transakci otevře vlastní, uvnitř transakce volajícího použije SAVEPOINT.
+Volající, který musí na výsledek atomicky navázat (periodická fakturace:
+zámek řádku období → apply → zápis `doc` do období), zabalí `apply()` do
+`NestedTransaction::run` a při `success === false` svou práci vrátí
+výjimkou — neúspěšný apply vrátil jen vlastní savepoint a vnější transakce
+zůstává volajícímu. `internal_error` po pádu celé transakce na serveru
+(deadlock) = volající dávku ukončí. Top-level volající (REST, pošta,
+datové sady) se nemění.
 
 Opačný směr (DB → canonical) dělají exportery v
 `modules/core/exchange/src/Export/` (`DocumentExporter`, `PersonExporter`,

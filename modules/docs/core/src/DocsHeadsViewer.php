@@ -55,6 +55,9 @@ class DocsHeadsViewer extends TableViewer
      */
     protected ?string $scopedDocType = null;
 
+    /** Id filtru zdroje dokladu (`docs_core_heads.source_kind`, cfgItem docs.core.sourceKinds). */
+    public const FILTER_SOURCE_KIND = 'source_kind';
+
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT h.`id`, h.`doc_type`, h.`doc_number`, h.`doc_text`,'
@@ -72,6 +75,7 @@ class DocsHeadsViewer extends TableViewer
         $viewGroup = 'active';
         $docTypeFilter = $this->scopedDocType;
         $numberSeriesFilter = null;
+        $sourceKindFilter = null;
         foreach ($filters as $filter) {
             $id = $filter['id'] ?? null;
             if ($id === 'viewGroup') {
@@ -82,6 +86,10 @@ class DocsHeadsViewer extends TableViewer
             } elseif ($id === 'bottomTab') {
                 // Bottom tab = number series id (getBottomTabs).
                 $numberSeriesFilter = (int) $filter['value'];
+            } elseif ($id === self::FILTER_SOURCE_KIND) {
+                // Zdroj dokladu (docs.core.sourceKinds) — upozornění „koncepty
+                // z periodické fakturace ke kontrole“ otevírá viewer s tímto filtrem.
+                $sourceKindFilter = (string) $filter['value'];
             }
         }
 
@@ -103,6 +111,11 @@ class DocsHeadsViewer extends TableViewer
             $params[] = $numberSeriesFilter;
         }
 
+        if ($sourceKindFilter !== null && $sourceKindFilter !== '') {
+            $conditions[] = 'h.`source_kind` = %s';
+            $params[] = $sourceKindFilter;
+        }
+
         if ($search !== null && $search !== '') {
             [$searchSql, $searchParams] = SearchCondition::anyContains([
                 'h.`doc_number`', 'h.`doc_text`', 'p.`full_name`',
@@ -121,6 +134,34 @@ class DocsHeadsViewer extends TableViewer
         $sql .= ' LIMIT ' . $offset . ', ' . $limit;
 
         return $this->db->fetchAll($sql, ...$params);
+    }
+
+    /**
+     * Filtr pravého panelu: zdroj dokladu (`source_kind`) — AI extrakce,
+     * ISDOC, ruční pořízení, periodická fakturace, importy. Nabídka
+     * z cfgItem `docs.core.sourceKinds`; bez konfigurace bez filtru.
+     *
+     * @return list<array{id: string, label: string, type: string, options: list<array{value: string, label: string}>}>
+     */
+    public function getFilters(): array
+    {
+        $kinds = $this->config?->cfgItem('docs.core.sourceKinds');
+        if (!is_array($kinds) || $kinds === []) {
+            return [];
+        }
+        $options = [];
+        foreach ($kinds as $key => $entry) {
+            if (is_array($entry)) {
+                $options[] = ['value' => (string) $key, 'label' => (string) ($entry['name'] ?? $key)];
+            }
+        }
+        $labels = $this->config?->cfgItem('docs.core.viewerLabels');
+        return [[
+            'id'      => self::FILTER_SOURCE_KIND,
+            'label'   => (string) ((is_array($labels) ? ($labels['filter.sourceKind']['name'] ?? null) : null) ?? 'Source'),
+            'type'    => 'select',
+            'options' => $options,
+        ]];
     }
 
     /**

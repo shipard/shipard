@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
 use Shipard\Module\Economy\WorkOrders\WorkOrderJournalService;
 use Shipard\Module\Economy\WorkOrders\WorkOrdersViewer;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTreeService;
@@ -51,6 +52,10 @@ class WorkOrdersViewerTest extends TestCase
             [WorkOrderTypes::CFG_ITEM, self::TYPES],
             ['economy.workOrders.docStates', JsoncParser::parseFile(self::MODULE . '/config/docStates.jsonc')],
             ['economy.workOrders.viewerLabels', ['label.kind' => ['name' => 'Druh'], 'group.customer' => ['name' => 'Zákazník']]],
+            ['economy.workOrders.periodStates', ['planned' => ['name' => 'Naplánováno'], 'waiting' => ['name' => 'Čeká na podklady'], 'issued' => ['name' => 'Vystaveno'], 'stopped' => ['name' => 'Zastaveno']]],
+            ['economy.workOrders.periodicities', ['month' => ['name' => 'Měsíčně']]],
+            ['economy.workOrders.invoiceTimings', ['start' => ['name' => 'Na počátku období']]],
+            ['docs.core.docTypes', ['invno' => ['name' => 'Faktura vydaná'], 'invpo' => ['name' => 'Zálohová faktura vydaná']]],
         ]);
         $viewer = new TestableWorkOrdersViewer($db, 'economy_work_orders_heads');
         $viewer->setConfig($config);
@@ -195,6 +200,71 @@ class WorkOrdersViewerTest extends TestCase
             $detail['actions'],
         );
     }
+
+    public function testPeriodicDetailHasInvoicingTabWithPeriodsAndActions(): void
+    {
+        $record = [
+            'id' => 6, 'number' => 'S260001', 'title' => 'Nájem kanceláře', 'type' => 'periodic', 'date_start' => '2026-08-01',
+            'date_end' => null, 'docState' => 40, 'kind' => 4, 'kind_name' => 'Smlouvy', 'customer_name' => 'MP toner',
+            'series_name' => 'Smlouvy', 'currency' => 'czk', 'payment_reference' => '20260001', 'parent' => null,
+            'cost_center_code' => 'S01', 'cost_center_name' => 'Správa', 'internal_note' => null,
+            'inv_periodicity' => 'month', 'inv_from' => '2026-08-01', 'inv_doc_type' => null, 'inv_number_series' => null,
+            'inv_due_days' => null, 'inv_timing' => null, 'inv_vat_mode' => null, 'inv_payment_method' => null, 'inv_bank_account' => null,
+        ];
+        $viewer = $this->viewer($queries, $record);
+        $viewer->kind = ['id' => 4, 'type' => 'periodic', 'inv_doc_type' => 'invno', 'inv_number_series' => 1, 'inv_timing' => 'start'];
+        $viewer->today = '2026-10-08';
+        $viewer->periods = [
+            ['id' => 3, 'work_order' => 6, 'period_from' => '2026-10-01', 'period_to' => '2026-10-31', 'state' => 'issued', 'doc' => 605, 'result' => null, 'message' => null],
+            ['id' => 2, 'work_order' => 6, 'period_from' => '2026-09-01', 'period_to' => '2026-09-30', 'state' => 'issued', 'doc' => 604, 'result' => null, 'message' => null],
+            ['id' => 1, 'work_order' => 6, 'period_from' => '2026-08-01', 'period_to' => '2026-08-31', 'state' => 'planned', 'doc' => null, 'result' => 'failed', 'message' => 'Chybí řada'],
+        ];
+        $viewer->docs = [
+            605 => ['id' => 605, 'docState' => 10, 'doc_type' => 'invno', 'doc_number' => '!0000000605', 'total_amount' => '17545.00', 'doc_currency' => 'czk'],
+            604 => ['id' => 604, 'docState' => 90, 'doc_type' => 'invpo', 'doc_number' => null, 'total_amount' => '16940.00', 'doc_currency' => 'czk'],
+        ];
+
+        $detail = $viewer->renderDetail(6);
+
+        $this->assertSame(['overview', 'invoicing'], array_column($detail['tabs'], 'id'));
+        $tab = $detail['tabs'][1];
+        $this->assertSame('Invoicing', $tab['label']);
+        $blocks = $tab['content']['blocks'];
+        $items = $blocks[0]['groups'][0]['items'];
+        $this->assertSame(['label' => 'Next period due', 'value' => '01.11.2026 – 30.11.2026'], $items[0]);
+        $this->assertSame(['label' => 'Periodicity', 'value' => 'Měsíčně'], $items[1]);
+        $this->assertSame(['label' => 'Document type', 'value' => 'Faktura vydaná'], $items[4]);
+
+        $rows = $blocks[2]['rows'];
+        $this->assertSame(['period', 'state', 'document', 'amount', 'message'], array_column($blocks[2]['columns'], 'id'));
+        $this->assertSame('01.10.2026 – 31.10.2026', $rows[0]['period']);
+        $this->assertSame('Vystaveno', $rows[0]['state']);
+        $this->assertSame('draft #605', $rows[0]['document']);
+        $this->assertSame('17 545,00 CZK', $rows[0]['amount']);
+        $this->assertSame(['viewerId' => 'docs.invoicesOut.heads', 'recordId' => 605], $rows[0]['_action']['target']);
+        // Září: doklad v koši = zastaveno, odkaz na viewer zálohových faktur.
+        $this->assertSame('Zastaveno', $rows[1]['state']);
+        $this->assertSame('docs.proformasOut.heads', $rows[1]['_action']['target']['viewerId']);
+        // Srpen: bez dokladu, se zprávou.
+        $this->assertSame('Naplánováno', $rows[2]['state']);
+        $this->assertSame('', $rows[2]['document']);
+        $this->assertArrayNotHasKey('_action', $rows[2]);
+        $this->assertSame('Chybí řada', $rows[2]['message']);
+
+        $actions = $detail['actions'];
+        $this->assertSame(['workOrderIssueDue', 'workOrderRegenerate', 'workOrderRestore'], array_column($actions, 'id'));
+        $this->assertSame('button', $actions[0]['kind']);
+        $this->assertSame('dropdown', $actions[1]['kind']);
+        $this->assertSame([['label' => '01.10.2026 – 31.10.2026 — draft #605', 'value' => '3']], $actions[1]['items']);
+        $this->assertSame([['label' => '01.09.2026 – 30.09.2026', 'value' => '2']], $actions[2]['items']);
+
+        // Koncept zakázky bez období: bez akcí, místo tabulky jen text.
+        $draftViewer = $this->viewer($q2, ['docState' => 10] + $record);
+        $draftViewer->kind = $viewer->kind;
+        $draft = $draftViewer->renderDetail(6);
+        $this->assertArrayNotHasKey('actions', $draft);
+        $this->assertSame('No period has been issued yet.', $draft['tabs'][1]['content']['blocks'][2]['text']);
+    }
 }
 
 class TestableWorkOrdersViewer extends WorkOrdersViewer
@@ -205,6 +275,43 @@ class TestableWorkOrdersViewer extends WorkOrdersViewer
     public array $children = [];
     /** @var array<string, mixed>|null */
     public ?array $customer = null;
+    /** @var array<string, mixed>|null druh zakázky (inv_*) */
+    public ?array $kind = null;
+    /** @var list<array<string, mixed>> období (nejnovější nahoře) */
+    public array $periods = [];
+    /** @var array<int, array<string, mixed>> doklady období podle id */
+    public array $docs = [];
+    public string $today = '2026-10-08';
+
+    protected function periodRepository(): PeriodRepository
+    {
+        $viewer = $this;
+        return new class($viewer) extends PeriodRepository {
+            public function __construct(private readonly TestableWorkOrdersViewer $viewer)
+            {
+            }
+
+            public function listFor(int $workOrderId): array
+            {
+                return $this->viewer->periods;
+            }
+
+            public function docInfo(array $docIds): array
+            {
+                return array_intersect_key($this->viewer->docs, array_flip(array_map('intval', $docIds)));
+            }
+        };
+    }
+
+    protected function kindRow(int $kindId): ?array
+    {
+        return $this->kind;
+    }
+
+    protected function today(): string
+    {
+        return $this->today;
+    }
 
     protected function treeService(): WorkOrderTreeService
     {

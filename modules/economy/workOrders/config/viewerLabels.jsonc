@@ -62,5 +62,24 @@
     "action.openJournal":     { "name": "Open in journal",    "name:cs": "Otevřít v deníku",   "name:en": "Open in journal" },
     "text.journalRowsLimit":  { "name": "Showing the latest {limit} entries — open the journal for the rest.", "name:cs": "Zobrazeno posledních {limit} zápisů — zbytek je v deníku.", "name:en": "Showing the latest {limit} entries — open the journal for the rest." },
     "label.yes":        { "name": "Yes",             "name:cs": "Ano",              "name:en": "Yes" },
-    "label.no":         { "name": "No",              "name:cs": "Ne",               "name:en": "No" }
+    "label.no":         { "name": "No",              "name:cs": "Ne",               "name:en": "No" },
+
+    // --- periodická fakturace: záložka Fakturace a akce (fáze 2, D24) ---
+    "tab.invoicing":          { "name": "Invoicing",          "name:cs": "Fakturace",          "name:en": "Invoicing" },
+    "group.invoicing":        { "name": "Invoicing",          "name:cs": "Fakturace",          "name:en": "Invoicing" },
+    "label.nextDue":          { "name": "Next period due",    "name:cs": "Příští splatné období", "name:en": "Next period due" },
+    "label.periodicity":      { "name": "Periodicity",        "name:cs": "Periodicita",        "name:en": "Periodicity" },
+    "label.invoiceFrom":      { "name": "Invoice from",       "name:cs": "Fakturovat od",      "name:en": "Invoice from" },
+    "label.invoiceTiming":    { "name": "Invoicing",          "name:cs": "Fakturace",          "name:en": "Invoicing" },
+    "label.invoiceDocType":   { "name": "Document type",      "name:cs": "Typ dokladu",        "name:en": "Document type" },
+    "heading.periods":        { "name": "Periods",            "name:cs": "Období",             "name:en": "Periods" },
+    "column.period":          { "name": "Period",             "name:cs": "Období",             "name:en": "Period" },
+    "column.amount":          { "name": "Amount",             "name:cs": "Částka",             "name:en": "Amount" },
+    "column.message":         { "name": "Message",            "name:cs": "Zpráva",             "name:en": "Message" },
+    "text.draft":             { "name": "draft",              "name:cs": "koncept",            "name:en": "draft" },
+    "text.noPeriods":         { "name": "No period has been issued yet.", "name:cs": "Zatím nebylo vystaveno žádné období.", "name:en": "No period has been issued yet." },
+    "text.noNextDue":         { "name": "none — past the end date", "name:cs": "žádné — po datu ukončení", "name:en": "none — past the end date" },
+    "action.issueDue":        { "name": "Issue due periods",  "name:cs": "Vystavit dlužná období", "name:en": "Issue due periods" },
+    "action.regenerate":      { "name": "Regenerate",         "name:cs": "Přegenerovat",       "name:en": "Regenerate" },
+    "action.restore":         { "name": "Restore",            "name:cs": "Obnovit",            "name:en": "Restore" }
 }

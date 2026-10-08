@@ -1007,6 +1007,167 @@ class DocumentApplierTest extends TestCase
         $this->assertStringContainsString('boom', (string) $result->errorMessage);
     }
 
+    // ── applyOptions.replaceConcept — přegenerovat v místě (#110 D24, Q2) ─────
+
+    /**
+     * Applier s cílovým konceptem: `fetch` s FOR UPDATE vrací cíl (null =
+     * neexistuje), hlavičkový gateway zachytí uložená data.
+     *
+     * @return array{DocumentApplier, \PHPUnit\Framework\MockObject\MockObject, \PHPUnit\Framework\MockObject\MockObject}
+     */
+    private function applierForReplaceTests(?array $target, ?ConfigRuntime $config = null, ?array &$saved = null): array
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(static function (...$args) use ($target) {
+            $sql = (string) $args[0];
+            if (str_contains($sql, 'FOR UPDATE') && str_contains($sql, '[docs_core_heads]')) {
+                return $target === null ? null : new Row($target);
+            }
+            if (str_contains($sql, 'core_system_users')) {
+                return new Row(['id' => 7, 'is_system' => 0, 'is_active' => 1]);
+            }
+            return null;
+        });
+        $db->method('fetchSingle')->willReturn(0);
+        $db->method('getInsertId')->willReturn(0);
+        $heads = $this->createMock(TransactionlessTableGateway::class);
+        $heads->method('saveDocument')->willReturnCallback(static function (array $data) use (&$saved) {
+            $saved = $data;
+            return \Shipard\Core\Document\DocumentResult::ok(['id' => (int) ($data['id'] ?? 1234)]);
+        });
+        $party = $this->createMock(PartyResolver::class);
+        $party->method('resolve')->willReturn(ResolveResult::matched(5, 'companyId'));
+        $unit = $this->createMock(UnitResolver::class);
+        $unit->method('resolve')->willReturn(ResolveResult::matched(3, 'systemCode'));
+        $item = $this->createMock(ItemResolver::class);
+        $item->method('resolve')->willReturn(ResolveResult::matched(18, 'ourCode'));
+        $vat = $this->createMock(VatCodeResolver::class);
+        $vat->method('resolve')->willReturn(new ResolveResult(
+            ResolveStatus::Matched, matchedId: 0, matchedBy: 'cfgItem',
+            createPayload: ['code' => 'cz-110', 'pct' => 21.0, 'reverseVatCode' => null, 'noPayTax' => false],
+        ));
+        $bank = $this->createMock(BankAccountResolver::class);
+        $bank->method('resolvePartnerBank')->willReturn(ResolveResult::matched(7, 'iban'));
+        $applier = $this->buildApplier(db: $db, party: $party, item: $item, unit: $unit, vat: $vat, bank: $bank, heads: $heads, config: $config);
+        return [$applier, $db, $heads];
+    }
+
+    /** Přijatá faktura z happy fixture s volbou replaceConcept. */
+    private function replacePayload(array $applyOptions = ['replaceConcept' => 605]): array
+    {
+        $payload = $this->happyPayload();
+        $payload['applyOptions'] = $applyOptions;
+        return $payload;
+    }
+
+    public function testReplaceConceptKeepsIdResetsAbsentColumnsAndReplacesRows(): void
+    {
+        $saved = null;
+        [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], saved: $saved);
+        $result = $applier->apply($this->replacePayload());
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame(605, $result->savedId);
+        $this->assertSame(605, $saved['id']);
+        $this->assertSame(10, $saved['docState']);
+        $this->assertNotEmpty($saved['rows']);
+        foreach ($saved['rows'] as $row) {
+            $this->assertArrayNotHasKey('id', $row, 'řádky bez id = staré se smažou, nové vloží');
+        }
+        // Sloupce mimo payload se explicitně vrátí na hodnotu čerstvého dokladu.
+        foreach (['period_to', 'notice', 'specific_symbol', 'bank_account', 'partner_address', 'transport', 'payment_terminal', 'fiscal_period_type'] as $column) {
+            $this->assertArrayHasKey($column, $saved, $column);
+            $this->assertNull($saved[$column], $column);
+        }
+        $this->assertSame(0, $saved['partner_balance_manual']);
+        $this->assertSame(0, $saved['cash_dir']);
+        $this->assertSame(0, $saved['vat_rounding_mode']);
+        $this->assertArrayNotHasKey('cs_mode', $saved, 'bez extension economy.vat');
+        $this->assertArrayNotHasKey('author', $saved);
+    }
+
+    public function testReplaceConceptResetsDimensionColumnsAndCsModeWhenConfigured(): void
+    {
+        $saved = null;
+        $config = $this->configWithDimensions();
+        [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], $config, $saved);
+        $result = $applier->apply($this->replacePayload());
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertArrayHasKey('cost_center', $saved);
+        $this->assertNull($saved['cost_center']);
+        $this->assertArrayHasKey('asset', $saved);
+        $this->assertNull($saved['asset']);
+    }
+
+    public function testReplaceConceptIgnoresAuthorOptionWithWarning(): void
+    {
+        $saved = null;
+        [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], saved: $saved);
+        $result = $applier->apply($this->replacePayload(['replaceConcept' => 605, 'author' => 7]));
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertArrayNotHasKey('author', $saved);
+        $codes = array_column($result->canonical['_resolve']['issues'] ?? [], 'code');
+        $this->assertContains('replace_author_ignored', $codes);
+    }
+
+    public function testReplaceConceptRejectsConfirmedMissingOrOtherTypeTarget(): void
+    {
+        foreach ([
+            [['id' => 605, 'docState' => 40, 'doc_type' => 'invni'], 'replace_target_not_concept', 409],
+            [['id' => 605, 'docState' => 90, 'doc_type' => 'invni'], 'replace_target_not_concept', 409],
+            [null, 'replace_target_not_found', 422],
+            [['id' => 605, 'docState' => 10, 'doc_type' => 'invno'], 'replace_target_type_mismatch', 422],
+        ] as [$target, $code, $status]) {
+            [$applier, $db, $heads] = $this->applierForReplaceTests($target);
+            $db->expects($this->once())->method('rollback');
+            $db->expects($this->never())->method('commit');
+            $heads->expects($this->never())->method('saveDocument');
+
+            $result = $applier->apply($this->replacePayload());
+            $this->assertFalse($result->success, $code);
+            $this->assertSame($code, $result->errorCode);
+            $this->assertSame($status, $result->statusCode, $code);
+        }
+    }
+
+    public function testReplaceConceptWithConfirmedTargetStateFailsValidationBeforeTransaction(): void
+    {
+        [$applier, $db, $heads] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni']);
+        $db->expects($this->never())->method('begin');
+        $heads->expects($this->never())->method('saveDocument');
+
+        $result = $applier->apply($this->replacePayload(['replaceConcept' => 605, 'targetDocState' => 40]));
+        $this->assertSame('validation_failed', $result->errorCode);
+        $codes = array_column($result->canonical['_resolve']['issues'] ?? [], 'code');
+        $this->assertContains('replace_concept_requires_draft', $codes);
+    }
+
+    public function testReplaceConceptSkipsMessageIdempotencyShortcut(): void
+    {
+        $saved = null;
+        [$applier] = $this->applierForReplaceTests(['id' => 605, 'docState' => 10, 'doc_type' => 'invni'], saved: $saved);
+        $payload = $this->replacePayload();
+        $payload['source']['message'] = 678;
+        $result = $applier->apply($payload);
+
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame(605, $saved['id']);
+    }
+
+    public function testValidateAcceptsReplaceConceptInSchema(): void
+    {
+        $applier = $this->buildApplier();
+        $payload = $this->happyPayload();
+        $payload['applyOptions'] = ['replaceConcept' => 5];
+        $this->assertNotSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $payload['applyOptions'] = ['replaceConcept' => 0];
+        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+        $payload['applyOptions'] = ['replaceConcept' => '5'];
+        $this->assertSame('schema_invalid', $applier->validate($payload)->errorCode);
+    }
+
     public function testControlStatementModeMapsToCsModeOnlyWhenManual(): void
     {
         $cases = [['exclude', 3], ['detail', 1], ['aggregate', 2], ['auto', null], [null, null]];

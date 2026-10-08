@@ -158,6 +158,10 @@ final class ReadOnlyPolicy
 			'postingPreview'         => ReadOnlyVerdict::Allow,
 		],
 
+		// Zakázky — periodická fakturace: vystavení, přegenerování i obnovení
+		// zapisují doklady a evidenci období → vše 403 (#110 D24).
+		'workOrders' => [],
+
 		// senderRules, registry, bank, accounting, accbal → vše 403 (default)
 	];
 

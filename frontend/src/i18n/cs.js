@@ -239,6 +239,8 @@ export default {
   'viewer.detail.inviteSent': 'Pozvánka byla odeslána.',
   'viewer.detail.filingFilesCreated': 'Soubory podání byly vytvořeny: {names}. Najdete je v záložce Přílohy.',
   'viewer.detail.reloadFilingHeaderConfirm': 'Načíst hlavičku podání znovu z podacích údajů registrace? Ruční úpravy v záložce Hlavička se přepíšou.',
+  'viewer.detail.workOrderRegenerateConfirm': 'Přegenerovat koncept podle aktuální zakázky? Ruční úpravy konceptu se ztratí.',
+  'viewer.detail.workOrderIssued': 'Vystaveno období: {issued}, selhalo: {failed}.',
   'print.preview.title': 'Tisk',
   'print.preview.loading': 'Připravuji tisk…',
   'print.preview.unsupported': 'Tento prohlížeč náhled PDF neumí zobrazit. Soubor si stáhni tlačítkem Stáhnout.',

@@ -164,6 +164,87 @@ class InvoicingRunService
         }
     }
 
+    // ── Přegenerovat a Obnovit (D24) ────────────────────────────────────────
+
+    /**
+     * Přegenerovat (D24, Q2): koncept období se nahradí z aktuální zakázky
+     * přes `applyOptions.replaceConcept` — stejné id, přílohy a autor.
+     * Jen období s dokladem v Konceptu; jinak \DomainException.
+     */
+    public function regenerate(int $periodId, RunOptions $options): RunLine
+    {
+        $periodRow = $this->periods->find($periodId);
+        if ($periodRow === null) {
+            throw new \DomainException('Období neexistuje.', 404);
+        }
+        $workOrder = $this->workOrder((int) $periodRow['work_order']);
+        if ($workOrder === null) {
+            throw new \DomainException('Zakázka období neexistuje.', 404);
+        }
+        $docInfo = $this->periods->docInfo([(int) ($periodRow['doc'] ?? 0)]);
+        $doc = $docInfo[(int) ($periodRow['doc'] ?? 0)] ?? null;
+        if ($doc === null || (int) ($doc['docState'] ?? 0) !== 10
+            || !in_array((string) $periodRow['state'], [PeriodRepository::STATE_ISSUED, PeriodRepository::STATE_WAITING], true)
+        ) {
+            throw new \DomainException('Přegenerovat jde jen období s dokladem v Konceptu.', 409);
+        }
+
+        $kind = $this->kind((int) ($workOrder['kind'] ?? 0));
+        $rows = $this->rowsOf((int) $workOrder['id']);
+        $period = new Period((string) self::isoDate($periodRow['period_from']), (string) self::isoDate($periodRow['period_to']));
+
+        try {
+            return NestedTransaction::run($this->db, function () use ($workOrder, $kind, $period, $periodId, $rows, $options, $doc): RunLine {
+                $locked = $this->periods->lockForUpdate($periodId);
+                if ($locked === null || (int) ($locked['doc'] ?? 0) !== (int) $doc['id']) {
+                    throw new \DomainException('Období se mezitím změnilo — načti detail znovu.', 409);
+                }
+                $built = $this->builder->build($workOrder, $kind, $period, $rows);
+                $canonical = $built->canonical;
+                $canonical['applyOptions']['replaceConcept'] = (int) $doc['id'];
+                $docId = $this->applyCanonical($canonical);
+                $hash = $this->contentHashOf($docId);
+                $this->periods->markIssued($periodId, $docId, $hash, $options->timestamp());
+
+                return $this->line($workOrder, $locked, RunReport::OUTCOME_ISSUED, $docId, $built->canonical['docText'] ?? null);
+            });
+        } catch (InvoiceBuildException $e) {
+            throw new \DomainException($e->getMessage(), 422, $e);
+        }
+    }
+
+    /**
+     * Obnovit (D24): zastavené období (doklad v koši nebo chybí) se vrátí
+     * do `planned` a hned vystaví během pro tuto zakázku (bez pojistky
+     * dohánění). Vrací řádek obnoveného období z běhu.
+     */
+    public function restore(int $periodId, RunOptions $options): RunLine
+    {
+        $periodRow = $this->periods->find($periodId);
+        if ($periodRow === null) {
+            throw new \DomainException('Období neexistuje.', 404);
+        }
+        $docInfo = $this->periods->docInfo([(int) ($periodRow['doc'] ?? 0)]);
+        if (!PeriodRepository::isStopped($periodRow, $docInfo)) {
+            throw new \DomainException('Obnovit jde jen zastavené období — doklad je smazaný nebo chybí.', 409);
+        }
+        $this->periods->unlinkDoc($periodId, $options->timestamp());
+
+        $report = $this->run(new RunOptions(
+            date: $options->date,
+            workOrderId: (int) $periodRow['work_order'],
+            dryRun: false,
+            force: true,
+            now: $options->now,
+        ));
+        foreach ($report->lines as $line) {
+            if ($line->periodId === $periodId) {
+                return $line;
+            }
+        }
+        throw new \DomainException('Zakázka není V pořádku, nebo období už není splatné — obnovené období se nevystavilo.', 409);
+    }
+
     /**
      * Vystavení zamčeného období uvnitř transakce: sestavení, apply,
      * zápis dokladu a otisku obsahu. Období `waiting` (D10) se znovu
@@ -283,6 +364,13 @@ class InvoicingRunService
         $sql .= ' ORDER BY [id]';
         $rows = $this->db->fetchAll($sql, ...$args);
         return array_map(static fn($r): array => is_array($r) ? $r : $r->toArray(), $rows);
+    }
+
+    /** @return array<string, mixed>|null */
+    protected function workOrder(int $workOrderId): ?array
+    {
+        $row = $this->db->fetch('SELECT * FROM [' . WorkOrderDocument::TABLE . '] WHERE [id] = %i', $workOrderId);
+        return $row === null ? null : (is_array($row) ? $row : $row->toArray());
     }
 
     /** @return array<string, mixed>|null */
