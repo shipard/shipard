@@ -1,0 +1,16 @@
+{
+    // economy.workOrders.invoiceTimings — kdy se období fakturuje (D6):
+    // datum vystavení a DUZP dokladu je počátek, nebo konec období.
+    // Hodnoty = enumString `inv_timing` na druhu a zakázce
+    // (InvoicingSettings::TIMING_START / TIMING_END).
+    "start": {
+        "name": "At period start",
+        "name:cs": "Na počátku období",
+        "name:en": "At period start"
+    },
+    "end": {
+        "name": "At period end",
+        "name:cs": "Na konci období",
+        "name:en": "At period end"
+    }
+}

@@ -4,7 +4,9 @@
     // zakázek všech čtyř typů s nadřazenou zakázkou (D15, D18) a zakázka
     // jako standardní dimenze jádra (D20, D23 — sloupce v tabulkách jádra,
     // deklarace v economy.accounting). Fáze 1 = tasks/work-orders-phase1.md;
-    // periodická fakturace přijde ve fázi 2.
+    // fáze 2 = tasks/work-orders-phase2.md: fakturační předpis periodické
+    // zakázky (druh → zakázka → řádky), evidence období, denní běh přes
+    // výměnný formát (src/Invoicing/).
     "id": "economy.workOrders",
     "name": "Work orders",
     "name:cs": "Zakázky",
@@ -19,7 +21,8 @@
         "economy_work_orders_kinds",
         "economy_work_orders_number_series",
         "economy_work_orders_number_counters",
-        "economy_work_orders_heads"
+        "economy_work_orders_heads",
+        "economy_work_orders_rows"
     ],
 
     // Nastavení → Zakázky (P1): druhy a číselné řady. Bez seedu — druhy
@@ -75,6 +78,12 @@
         {
             "table": "economy_work_orders_number_series",
             "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderSeriesForm"
+        },
+        {
+            // Řádek předpisu — sub-formulář tabu Řádky zakázky (fáze 2).
+            "table": "economy_work_orders_rows",
+            "id": "economy.workOrders.rows",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderRowsForm"
         }
     ],
 
@@ -82,6 +91,10 @@
         {
             "table": "economy_work_orders_heads",
             "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderDocument"
+        },
+        {
+            "table": "economy_work_orders_rows",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderRowDocument"
         },
         {
             "table": "economy_work_orders_kinds",
@@ -116,6 +129,16 @@
         {
             "id": "economy.workOrders.viewerLabels",
             "file": "config/viewerLabels.jsonc"
+        },
+        {
+            // Periodicita periodické zakázky (D2, Q3) — PeriodCalendar.
+            "id": "economy.workOrders.periodicities",
+            "file": "config/periodicities.jsonc"
+        },
+        {
+            // Fakturace na počátku / konci období (D6).
+            "id": "economy.workOrders.invoiceTimings",
+            "file": "config/invoiceTimings.jsonc"
         }
     ]
 }

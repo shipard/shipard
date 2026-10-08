@@ -45,6 +45,7 @@ class WorkOrdersModuleTest extends TestCase
             [
                 'economy_work_orders_kinds' => 457, 'economy_work_orders_number_series' => 458,
                 'economy_work_orders_number_counters' => 459, 'economy_work_orders_heads' => 460,
+                'economy_work_orders_rows' => 461,
             ],
             $ids,
         );

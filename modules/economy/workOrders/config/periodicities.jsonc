@@ -1,0 +1,27 @@
+{
+    // economy.workOrders.periodicities — periodicita periodické zakázky
+    // (docs/work-orders.md D2, D16, Q3). Hodnoty = enumString
+    // `inv_periodicity` na hlavičce zakázky. Období jsou kalendářní;
+    // hranice počítá PeriodCalendar, popisek `{období}` PeriodLabel —
+    // oba se ptají jen na klíč.
+    "month": {
+        "name": "Monthly",
+        "name:cs": "Měsíčně",
+        "name:en": "Monthly"
+    },
+    "quarter": {
+        "name": "Quarterly",
+        "name:cs": "Čtvrtletně",
+        "name:en": "Quarterly"
+    },
+    "halfyear": {
+        "name": "Half-yearly",
+        "name:cs": "Pololetně",
+        "name:en": "Half-yearly"
+    },
+    "year": {
+        "name": "Yearly",
+        "name:cs": "Ročně",
+        "name:en": "Yearly"
+    }
+}

@@ -5,7 +5,11 @@
     // společný engine čísel (fiskální rok = rok data zahájení u řady
     // s ročním restartem); importované číslo zůstává. Strana (zákazník,
     // měna, VS) jen u externích typů, nadřazená zakázka jen u jednorázových
-    // (WorkOrderTypes). Fakturační pole a řádky předpisu přidá fáze 2.
+    // (WorkOrderTypes). Fakturační předpis (skupina `invoicing`, D3, D11,
+    // D12) jen u periodického typu: periodicita, fakturovat od, text dokladu
+    // a přepisy výchozích hodnot druhu — NULL = hodnota druhu
+    // (InvoicingSettingsResolver). Řádky předpisu jsou
+    // economy_work_orders_rows, evidence období economy_work_orders_periods.
     //
     // Vlastní sada stavů s Ukončeno a Zrušeno; přechody stavu jdou přes
     // Document lifecycle (číslo při potvrzení, datum ukončení).
@@ -48,6 +52,12 @@
             "name": "Validity",
             "name:cs": "Platnost",
             "name:en": "Validity"
+        },
+        {
+            "id": "invoicing",
+            "name": "Invoicing",
+            "name:cs": "Fakturace",
+            "name:en": "Invoicing"
         }
     ],
 
@@ -227,6 +237,118 @@
             "type": "date",
             "nullable": true,
             "group": "validity"
+        },
+
+        // --- invoicing (jen periodický typ; D3, D11, D12) ---
+
+        {
+            // Kalendářní období (Q3); povinná při potvrzení.
+            "id": "inv_periodicity",
+            "name": "Periodicity",
+            "name:cs": "Periodicita",
+            "name:en": "Periodicity",
+            "type": "enumString",
+            "length": 10,
+            "cfgItem": "economy.workOrders.periodicities",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            // První fakturované období = období obsahující toto datum;
+            // výchozí = zahájení (doplní WorkOrderDocument při uložení).
+            "id": "inv_from",
+            "name": "Invoice from",
+            "name:cs": "Fakturovat od",
+            "name:en": "Invoice from",
+            "type": "date",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            // Text dokladu s proměnnou {období} (D12); prázdný =
+            // „{název zakázky} {období}“ (Q6).
+            "id": "inv_doc_text",
+            "name": "Document text",
+            "name:cs": "Text dokladu",
+            "name:en": "Document text",
+            "type": "varchar",
+            "length": 200,
+            "nullable": true,
+            "group": "invoicing"
+        },
+
+        // Přepisy výchozích hodnot druhu (stejné názvy sloupců jako na
+        // economy_work_orders_kinds); NULL = z druhu.
+        {
+            "id": "inv_doc_type",
+            "name": "Invoice document type",
+            "name:cs": "Typ dokladu",
+            "name:en": "Invoice document type",
+            "type": "enumString",
+            "length": 20,
+            "cfgItem": "docs.core.docTypes",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_number_series",
+            "name": "Document number series",
+            "name:cs": "Řada dokladů",
+            "name:en": "Document number series",
+            "type": "int",
+            "nullable": true,
+            "reference": "docs_core_number_series",
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_due_days",
+            "name": "Due days",
+            "name:cs": "Splatnost (dny)",
+            "name:en": "Due days",
+            "type": "smallint",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_timing",
+            "name": "Invoicing timing",
+            "name:cs": "Fakturace",
+            "name:en": "Invoicing timing",
+            "type": "enumString",
+            "length": 5,
+            "cfgItem": "economy.workOrders.invoiceTimings",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_vat_mode",
+            "name": "VAT mode",
+            "name:cs": "Režim DPH",
+            "name:en": "VAT mode",
+            "type": "enumInt",
+            "cfgItem": "docs.core.vatModes",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_payment_method",
+            "name": "Payment method",
+            "name:cs": "Způsob platby",
+            "name:en": "Payment method",
+            "type": "enumInt",
+            "cfgItem": "docs.core.paymentMethods",
+            "nullable": true,
+            "group": "invoicing"
+        },
+        {
+            "id": "inv_bank_account",
+            "name": "Our bank account",
+            "name:cs": "Bankovní účet",
+            "name:en": "Our bank account",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_bank_accounts",
+            "group": "invoicing"
         },
 
         // --- doc state (systémové) ---

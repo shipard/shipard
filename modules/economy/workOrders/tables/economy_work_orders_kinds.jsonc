@@ -1,8 +1,10 @@
 {
     // Druh zakázky (docs/work-orders.md D14, §5.2): nese typ zakázky, který
     // zakázky druhu dědí. Typ je po prvním potvrzení druhu jen ke čtení
-    // (hlídá KindDocument) — mění, co zakázky druhu mají. Výchozí hodnoty
-    // fakturace periodického typu (D3) přidá fáze 2.
+    // (hlídá KindDocument) — mění, co zakázky druhu mají. Druh periodického
+    // typu nese výchozí hodnoty fakturace (D3, sloupce `inv_*`): zakázka je
+    // smí přepsat stejnojmennými sloupci, NULL na zakázce = hodnota druhu
+    // (InvoicingSettingsResolver). U ostatních typů jsou prázdné.
     "tableId": 457,
     "name": "Work order kinds",
     "name:cs": "Druhy zakázek",
@@ -51,6 +53,78 @@
             "type": "varchar",
             "length": 250,
             "nullable": true
+        },
+
+        // --- výchozí hodnoty fakturace (D3, jen periodický typ) ---
+
+        {
+            // invno (faktura vydaná) nebo invpo (zálohová faktura vydaná);
+            // povolené hodnoty hlídá InvoicingSettings::DOC_TYPES.
+            "id": "inv_doc_type",
+            "name": "Invoice document type",
+            "name:cs": "Typ dokladu",
+            "name:en": "Invoice document type",
+            "type": "enumString",
+            "length": 20,
+            "cfgItem": "docs.core.docTypes",
+            "nullable": true
+        },
+        {
+            // Řada dokladů; její doc_type musí odpovídat inv_doc_type.
+            "id": "inv_number_series",
+            "name": "Document number series",
+            "name:cs": "Řada dokladů",
+            "name:en": "Document number series",
+            "type": "int",
+            "nullable": true,
+            "reference": "docs_core_number_series"
+        },
+        {
+            "id": "inv_due_days",
+            "name": "Due days",
+            "name:cs": "Splatnost (dny)",
+            "name:en": "Due days",
+            "type": "smallint",
+            "nullable": true
+        },
+        {
+            // start = fakturace na počátku období, end = na konci (D6).
+            "id": "inv_timing",
+            "name": "Invoicing timing",
+            "name:cs": "Fakturace",
+            "name:en": "Invoicing timing",
+            "type": "enumString",
+            "length": 5,
+            "cfgItem": "economy.workOrders.invoiceTimings",
+            "nullable": true
+        },
+        {
+            "id": "inv_vat_mode",
+            "name": "VAT mode",
+            "name:cs": "Režim DPH",
+            "name:en": "VAT mode",
+            "type": "enumInt",
+            "cfgItem": "docs.core.vatModes",
+            "nullable": true
+        },
+        {
+            "id": "inv_payment_method",
+            "name": "Payment method",
+            "name:cs": "Způsob platby",
+            "name:en": "Payment method",
+            "type": "enumInt",
+            "cfgItem": "docs.core.paymentMethods",
+            "nullable": true
+        },
+        {
+            // Prázdné = výchozí účet dokladu (Q5).
+            "id": "inv_bank_account",
+            "name": "Our bank account",
+            "name:cs": "Bankovní účet",
+            "name:en": "Our bank account",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_bank_accounts"
         },
 
         // --- doc state (systémové) ---

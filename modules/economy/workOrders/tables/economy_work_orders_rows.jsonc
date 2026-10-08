@@ -1,0 +1,160 @@
+{
+    // Řádky zakázky (docs/work-orders.md §5.3, D10): v M4 fakturační předpis
+    // periodické zakázky. Řádek se na fakturu použije, když jeho platnost
+    // pokrývá DUZP období (valid_from ≤ DUZP ≤ valid_to, NULL = neomezeno) —
+    // změna ceny k datu bez zásahu do starých řádků. Typy sloupců zrcadlí
+    // docs_core_rows, aby řádek šel 1:1 do kanonického dokladu
+    // (InvoiceBuilder). Pohyb smí být prázdný = výchozí pohyb cílového
+    // dokladu. `contributor` = id registrovaného přispěvatele obsahu
+    // (workOrderInvoiceContributors), NULL = pevný řádek.
+    //
+    // Sub-tabulka zakázky spravovaná přes formulář zakázky (tab Řádky),
+    // editovatelná i u zakázky V pořádku (independentRows).
+    "tableId": 461,
+    "name": "Work order rows",
+    "name:cs": "Řádky zakázek",
+    "name:en": "Work order rows",
+
+    "hideFromNavigation": true,
+
+    "displayPattern": "{description}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "work_order",
+            "name": "Work order",
+            "name:cs": "Zakázka",
+            "name:en": "Work order",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_work_orders_heads"
+        },
+        {
+            "id": "order_pos",
+            "name": "Sort order",
+            "name:cs": "Pořadí",
+            "name:en": "Sort order",
+            "type": "smallint",
+            "default": 0
+        },
+
+        // --- obsah řádku ---
+
+        {
+            "id": "item",
+            "name": "Item",
+            "name:cs": "Položka",
+            "name:en": "Item",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_items"
+        },
+        {
+            "id": "description",
+            "name": "Description",
+            "name:cs": "Popis",
+            "name:en": "Description",
+            "type": "varchar",
+            "length": 500,
+            "nullable": true
+        },
+        {
+            "id": "quantity",
+            "name": "Quantity",
+            "name:cs": "Množství",
+            "name:en": "Quantity",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 4,
+            "nullable": true
+        },
+        {
+            "id": "unit",
+            "name": "Unit",
+            "name:cs": "Jednotka",
+            "name:en": "Unit",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_units"
+        },
+        {
+            "id": "unit_price",
+            "name": "Unit price",
+            "name:cs": "Cena/jednotka",
+            "name:en": "Unit price",
+            "type": "numeric",
+            "precision": 15,
+            "scale": 4,
+            "nullable": true
+        },
+        {
+            // Kód DPH je na řádku — položka sazbu nenese (§5.3).
+            "id": "vat_code",
+            "name": "VAT code",
+            "name:cs": "Kód DPH",
+            "name:en": "VAT code",
+            "type": "varchar",
+            "length": 20,
+            "nullable": true
+        },
+        {
+            "id": "operation",
+            "name": "Operation",
+            "name:cs": "Pohyb",
+            "name:en": "Operation",
+            "type": "enumString",
+            "length": 40,
+            "cfgItem": "docs.core.rowOperations",
+            "nullable": true
+        },
+
+        // --- platnost ---
+
+        {
+            "id": "valid_from",
+            "name": "Valid from",
+            "name:cs": "Platnost od",
+            "name:en": "Valid from",
+            "type": "date",
+            "nullable": true
+        },
+        {
+            "id": "valid_to",
+            "name": "Valid to",
+            "name:cs": "Platnost do",
+            "name:en": "Valid to",
+            "type": "date",
+            "nullable": true
+        },
+
+        // --- přispěvatel obsahu (D10) ---
+
+        {
+            "id": "contributor",
+            "name": "Content contributor",
+            "name:cs": "Přispěvatel obsahu",
+            "name:en": "Content contributor",
+            "type": "varchar",
+            "length": 60,
+            "nullable": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_work_order",
+            "type": "index",
+            "columns": [
+                {"column": "work_order"},
+                {"column": "order_pos"}
+            ]
+        }
+    ]
+}

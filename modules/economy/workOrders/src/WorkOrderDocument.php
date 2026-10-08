@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Shipard\Module\Economy\WorkOrders;
 
 use Shipard\Core\Document\Document;
+use Shipard\Core\Document\ValidationError;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Core\Numbering\NumberContext;
 use Shipard\Core\Numbering\NumberPattern;
 use Shipard\Core\Numbering\SequenceCounter;
 use Shipard\Core\Numbering\SequenceStorage;
 use Shipard\Module\Economy\Codebooks\FiscalYearLookup;
+use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettings;
+use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
 
 /**
  * Zakázka (economy_work_orders_heads, docs/work-orders.md §5.3–5.4,
@@ -33,7 +36,12 @@ use Shipard\Module\Economy\Codebooks\FiscalYearLookup;
  *     a potvrzená zakázka se do Konceptu nevrací (číslo se neuvolňuje);
  *   - přechod do Ukončeno / Zrušeno doplní prázdné datum ukončení dneškem;
  *   - smazat jde jen koncept (sada stavů vede do 90 jen z 10; beforeDelete
- *     to hlídá i pro přímé mazání).
+ *     to hlídá i pro přímé mazání); s konceptem odejdou i jeho řádky;
+ *   - fakturační předpis (fáze 2, D3, D11, D12) jen u periodického typu:
+ *     potvrzení vyžaduje periodicitu, efektivní typ dokladu a řadu (zakázka
+ *     nebo druh) a aspoň jeden řádek předpisu; prázdné „fakturovat od“ se
+ *     doplní zahájením; řada v přepisu musí být typu efektivního dokladu;
+ *     u ostatních typů se fakturační pole vynulují.
  *
  * Číslo se čerpá v beforeSave — před transakcí gateway, čítač má vlastní
  * (jako u dokladů; uvnitř vnější transakce applieru se vlastní neotevírá).
@@ -43,6 +51,7 @@ class WorkOrderDocument extends Document
     public const TABLE = 'economy_work_orders_heads';
     public const SERIES_TABLE = 'economy_work_orders_number_series';
     public const COUNTERS_TABLE = 'economy_work_orders_number_counters';
+    public const ROWS_TABLE = 'economy_work_orders_rows';
 
     public const STATE_DRAFT = 10;
     public const STATE_CANCELLED = 30;
@@ -144,7 +153,72 @@ class WorkOrderDocument extends Document
             $result->addError('number', "Číslo {$number} už má jiná zakázka.", 'duplicate');
         }
 
+        if ($type !== '' && $types->invoicing($type) === WorkOrderTypes::INVOICING_PERIODIC) {
+            $this->validateInvoicing($data, $result, $id, $newState === self::STATE_CONFIRMED);
+        }
+
         return $result;
+    }
+
+    /**
+     * Fakturační předpis periodické zakázky (D3, D11, D12): tvar hodnot
+     * vždy, při potvrzení periodicita, efektivní typ dokladu a řada
+     * (zakázka → druh) a aspoň jeden řádek předpisu.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function validateInvoicing(array $data, ValidationResult $result, ?int $id, bool $confirming): void
+    {
+        $periodicity = $data['inv_periodicity'] ?? null;
+        if ($periodicity !== null && $periodicity !== '' && !InvoicingSettings::isPeriodicity($periodicity)) {
+            $result->addError('inv_periodicity', 'Neznámá periodicita.', 'invalid');
+        } elseif (($periodicity === null || $periodicity === '') && $confirming) {
+            $result->addError('inv_periodicity', 'Periodicita je povinná při potvrzení periodické zakázky.', 'required');
+        }
+
+        $docType = $data['inv_doc_type'] ?? null;
+        if ($docType !== null && $docType !== '' && !InvoicingSettings::isDocType($docType)) {
+            $result->addError('inv_doc_type', 'Periodická fakturace vystavuje jen faktury a zálohové faktury vydané.', 'invalid');
+        }
+        $timing = $data['inv_timing'] ?? null;
+        if ($timing !== null && $timing !== '' && !InvoicingSettings::isTiming($timing)) {
+            $result->addError('inv_timing', 'Neznámý okamžik fakturace.', 'invalid');
+        }
+        if (isset($data['inv_due_days']) && $data['inv_due_days'] !== '' && (int) $data['inv_due_days'] < 0) {
+            $result->addError('inv_due_days', 'Splatnost nesmí být záporná.', 'invalid');
+        }
+
+        $kindId = (int) ($data['kind'] ?? 0);
+        $settings = InvoicingSettingsResolver::resolve($data, $kindId > 0 ? $this->loadKind($kindId) : null);
+
+        $seriesId = (int) ($data['inv_number_series'] ?? 0);
+        if ($seriesId > 0) {
+            $series = $this->loadDocSeries($seriesId);
+            if ($series === null) {
+                if ($this->db !== null) {
+                    $result->addError('inv_number_series', 'Řada dokladů neexistuje', 'not_found');
+                }
+            } elseif ($settings->docType !== null && (string) ($series['doc_type'] ?? '') !== $settings->docType) {
+                $result->addError('inv_number_series', 'Řada dokladů musí být stejného typu jako typ dokladu.', 'series_type_mismatch');
+            }
+        }
+
+        if (!$confirming) {
+            return;
+        }
+        if ($settings->docType === null) {
+            $result->addError('inv_doc_type', 'Zakázka ani její druh nemají typ dokladu — doplň ho před potvrzením.', 'required');
+        }
+        if ($settings->numberSeries === null) {
+            $result->addError('inv_number_series', 'Zakázka ani její druh nemají řadu dokladů — doplň ji před potvrzením.', 'required');
+        }
+        if ($id === null || $this->countRows($id) === 0) {
+            $result->addError(
+                ValidationError::FIELD_FORM,
+                'Periodická zakázka potřebuje aspoň jeden řádek předpisu — co se má fakturovat.',
+                'rows_required',
+            );
+        }
     }
 
     public function beforeSave(array &$data, ?array $originalData = null): void
@@ -170,6 +244,16 @@ class WorkOrderDocument extends Document
         if ($type !== '' && !$types->isOneOff($type)) {
             $data['parent'] = null;
         }
+        if ($type !== '' && $types->invoicing($type) !== WorkOrderTypes::INVOICING_PERIODIC) {
+            foreach ([...InvoicingSettings::COLUMNS, ...InvoicingSettings::WORK_ORDER_COLUMNS] as $col) {
+                $data[$col] = null;
+            }
+        } elseif ($type !== '' && !self::hasValue($data['inv_from'] ?? null)) {
+            $start = self::isoDate($data['date_start'] ?? $originalData['date_start'] ?? null);
+            if ($start !== null) {
+                $data['inv_from'] = $start;
+            }
+        }
 
         $t = $this->stateTransition;
         if ($t === null) {
@@ -190,6 +274,14 @@ class WorkOrderDocument extends Document
     {
         if ((int) ($data['docState'] ?? self::STATE_DRAFT) !== self::STATE_DRAFT) {
             throw new \DomainException('Smazat jde jen koncept zakázky — potvrzenou zakázku ukonči nebo zruš.');
+        }
+    }
+
+    public function afterDelete(array $data): void
+    {
+        $id = (int) ($data['id'] ?? 0);
+        if ($id > 0) {
+            $this->deleteRows($id);
         }
     }
 
@@ -333,6 +425,48 @@ class WorkOrderDocument extends Document
             $seriesId,
         );
         return $row === null || $row === false ? null : iterator_to_array($row);
+    }
+
+    /** Druh (sloupce fakturačního předpisu inv_*), null = neexistuje. */
+    protected function loadKind(int $kindId): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch(
+            'SELECT [id], [type], ' . implode(', ', array_map(static fn(string $c): string => "[{$c}]", InvoicingSettings::COLUMNS))
+            . ' FROM [' . KindDocument::TABLE . '] WHERE [id] = %i',
+            $kindId,
+        );
+        return $row === null || $row === false ? null : iterator_to_array($row);
+    }
+
+    /** Řada dokladů (id, doc_type, docState), null = neexistuje. */
+    protected function loadDocSeries(int $seriesId): ?array
+    {
+        if ($this->db === null) {
+            return null;
+        }
+        $row = $this->db->fetch('SELECT [id], [doc_type], [docState] FROM [docs_core_number_series] WHERE [id] = %i', $seriesId);
+        return $row === null || $row === false ? null : iterator_to_array($row);
+    }
+
+    /** Počet řádků předpisu zakázky. */
+    protected function countRows(int $workOrderId): int
+    {
+        if ($this->db === null) {
+            return 0;
+        }
+        return (int) $this->db->fetchSingle(
+            'SELECT COUNT(*) FROM [' . self::ROWS_TABLE . '] WHERE [work_order] = %i',
+            $workOrderId,
+        );
+    }
+
+    /** Smaže řádky předpisu smazaného konceptu (query je final — seam pro testy). */
+    protected function deleteRows(int $workOrderId): void
+    {
+        $this->db?->query('DELETE FROM [' . self::ROWS_TABLE . '] WHERE [work_order] = %i', $workOrderId);
     }
 
     /** Id jiné zakázky s tímto číslem (libovolný stav), null = volné. */

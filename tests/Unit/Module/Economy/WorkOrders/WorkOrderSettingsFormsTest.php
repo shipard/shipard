@@ -108,6 +108,75 @@ class WorkOrderSettingsFormsTest extends TestCase
         $this->assertSame('Servis (Externí jednorázová) — neplatný druh', $kind->options[0]['label']);
     }
 
+    // --- výchozí hodnoty fakturace periodického druhu (fáze 2, D3) -------------
+
+    private function periodicKindsForm(): KindsForm
+    {
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnMap([
+            [WorkOrderTypes::CFG_ITEM, self::TYPES + ['periodic' => ['name' => 'Periodická', 'external' => true, 'oneOff' => false, 'invoicing' => 'periodic']]],
+            ['docs.core.docTypes', ['invno' => ['name' => 'Faktura vydaná'], 'invpo' => ['name' => 'Zálohová faktura vydaná']]],
+            ['economy.workOrders.invoiceTimings', ['start' => ['name' => 'Na počátku období'], 'end' => ['name' => 'Na konci období']]],
+            ['docs.core.vatModes', ['0' => ['name' => 'Bez DPH'], '1' => ['name' => 'Ze základu'], '2' => ['name' => 'Z ceny celkem']]],
+            ['docs.core.paymentMethods', ['0' => ['name' => 'Hotovost'], '1' => ['name' => 'Převodem']]],
+        ]);
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(static function (string $sql): array {
+            if (str_contains($sql, 'docs_core_number_series')) {
+                return [['id' => 5, 'name' => 'FV 2026']];
+            }
+            if (str_contains($sql, 'economy_codebooks_bank_accounts')) {
+                return [['id' => 3, 'code' => 'HLAVNI', 'name' => 'Provozní účet', 'currency' => 'czk']];
+            }
+            return [];
+        });
+        $form = new KindsForm('economy_work_orders_kinds');
+        $form->setDb($db);
+        $form->setConfig($config);
+        $form->setTableDef(TableDefinition::fromArray(JsoncParser::parseFile(self::MODULE . '/tables/economy_work_orders_kinds.jsonc')));
+        return $form;
+    }
+
+    public function testPeriodicKindShowsInvoicingDefaultsAndSeriesFollowsDocType(): void
+    {
+        $form = $this->periodicKindsForm();
+
+        $project = $form->buildFormDefinition(['type' => 'project'], true);
+        $this->assertTrue($this->element($project, 'inv_doc_type')->hidden);
+        $this->assertSame('reload', $this->element($project, 'type')->triggers);
+
+        $periodic = $form->buildFormDefinition(['type' => 'periodic'], true);
+        $docType = $this->element($periodic, 'inv_doc_type');
+        $this->assertFalse($docType->hidden);
+        $this->assertSame(['invno', 'invpo'], array_column($docType->options, 'value'));
+        $this->assertSame(['Faktura vydaná', 'Zálohová faktura vydaná'], array_column($docType->options, 'label'));
+        $this->assertSame('reload', $docType->triggers);
+        $this->assertSame([], $this->element($periodic, 'inv_number_series')->options);
+        $this->assertSame('Nejdřív vyber typ dokladu.', $this->element($periodic, 'inv_number_series')->hint);
+        $this->assertSame(['start', 'end'], array_column($this->element($periodic, 'inv_timing')->options, 'value'));
+        $this->assertSame([0, 1, 2], array_column($this->element($periodic, 'inv_vat_mode')->options, 'value'));
+        $this->assertSame([3], array_column($this->element($periodic, 'inv_bank_account')->options, 'value'));
+
+        $withType = $form->buildFormDefinition(['type' => 'periodic', 'inv_doc_type' => 'invno'], true);
+        $this->assertSame([['value' => 5, 'label' => 'FV 2026']], $this->element($withType, 'inv_number_series')->options);
+    }
+
+    public function testKindRecalculateClearsSeriesOnDocTypeChangeAndDefaultsOnNonPeriodicType(): void
+    {
+        $form = $this->periodicKindsForm();
+
+        $result = $form->recalculate('inv_doc_type', ['type' => 'periodic', 'inv_doc_type' => 'invpo', 'inv_number_series' => 5]);
+        $this->assertNull($result->data['inv_number_series']);
+
+        $result = $form->recalculate('type', ['type' => 'project', 'inv_doc_type' => 'invno', 'inv_number_series' => 5, 'inv_due_days' => 14]);
+        $this->assertNull($result->data['inv_doc_type']);
+        $this->assertNull($result->data['inv_number_series']);
+        $this->assertNull($result->data['inv_due_days']);
+
+        $kept = $form->recalculate('type', ['type' => 'periodic', 'inv_doc_type' => 'invno', 'inv_number_series' => 5]);
+        $this->assertSame(5, $kept->data['inv_number_series']);
+    }
+
     public function testChoosingKindPrefillsEmptyName(): void
     {
         $form = $this->seriesForm([['id' => 3, 'name' => 'Servis', 'type' => 'project', 'docState' => 40]]);

@@ -301,6 +301,99 @@ class WorkOrderDocumentTest extends TestCase
         $this->expectException(\DomainException::class);
         $doc->beforeDelete(['id' => 5, 'docState' => 40]);
     }
+
+    public function testDeletingDraftRemovesItsRows(): void
+    {
+        $doc = $this->doc();
+        $doc->afterDelete(['id' => 5, 'docState' => 10]);
+        $this->assertSame([5], $doc->deletedRows);
+    }
+
+    // --- fakturační předpis periodické zakázky (fáze 2, D3) --------------------
+
+    /** @return array<string, mixed> periodická zakázka (řada 3, druh 13) */
+    private function periodic(array $overrides = []): array
+    {
+        return array_merge([
+            'number_series'   => 3,
+            'title'           => 'Nájem kanceláře',
+            'customer'        => 50,
+            'date_start'      => '2026-08-01',
+            'inv_periodicity' => 'month',
+            'docState'        => 10,
+        ], $overrides);
+    }
+
+    public function testPeriodicConfirmationNeedsPeriodicitySettingsAndRows(): void
+    {
+        $doc = $this->doc();
+        $doc->kinds = [13 => ['id' => 13, 'type' => 'periodic', 'inv_doc_type' => 'invno', 'inv_number_series' => 5]];
+        $doc->rowCounts = [5 => 2];
+
+        // Koncept nic z toho nepotřebuje.
+        $data = $this->periodic(['inv_periodicity' => null]);
+        $this->assertSame([], $this->codes($doc, $data));
+
+        $data = $this->periodic(['id' => 5, 'inv_periodicity' => null, 'docState' => 40]);
+        $this->assertSame(['inv_periodicity:required'], $this->codes($doc, $data));
+
+        $data = $this->periodic(['id' => 5, 'docState' => 40]);
+        $this->assertSame([], $this->codes($doc, $data));
+
+        // Bez řádků předpisu nejde potvrdit — chyba formuláře, ne pole.
+        $data = $this->periodic(['id' => 6, 'docState' => 40]);
+        $this->assertSame(['_form:rows_required'], $this->codes($doc, $data));
+
+        // Druh bez typu dokladu a řady: potvrzení vyžaduje přepis na zakázce.
+        $doc->kinds = [13 => ['id' => 13, 'type' => 'periodic']];
+        $data = $this->periodic(['id' => 5, 'docState' => 40]);
+        $this->assertSame(['inv_doc_type:required', 'inv_number_series:required'], $this->codes($doc, $data));
+        $data = $this->periodic(['id' => 5, 'docState' => 40, 'inv_doc_type' => 'invpo', 'inv_number_series' => 6]);
+        $this->assertSame([], $this->codes($doc, $data));
+    }
+
+    public function testPeriodicValuesAreCheckedForShapeAndSeriesTypeMatchesEffectiveDocType(): void
+    {
+        $doc = $this->doc();
+        $doc->kinds = [13 => ['id' => 13, 'type' => 'periodic', 'inv_doc_type' => 'invno', 'inv_number_series' => 5]];
+
+        $data = $this->periodic(['inv_periodicity' => 'week', 'inv_doc_type' => 'invni', 'inv_timing' => 'middle', 'inv_due_days' => -3]);
+        $this->assertSame(
+            ['inv_periodicity:invalid', 'inv_doc_type:invalid', 'inv_timing:invalid', 'inv_due_days:invalid'],
+            $this->codes($doc, $data),
+        );
+
+        // Řada zálohových faktur k typu z druhu (FV) nesedí …
+        $data = $this->periodic(['inv_number_series' => 6]);
+        $this->assertSame(['inv_number_series:series_type_mismatch'], $this->codes($doc, $data));
+        // … s přepisem typu na zakázce sedí.
+        $data = $this->periodic(['inv_doc_type' => 'invpo', 'inv_number_series' => 6]);
+        $this->assertSame([], $this->codes($doc, $data));
+        $data = $this->periodic(['inv_number_series' => 77]);
+        $this->assertSame(['inv_number_series:not_found'], $this->codes($doc, $data));
+    }
+
+    public function testInvoiceFromDefaultsToStartAndNonPeriodicDropsInvoicingFields(): void
+    {
+        $doc = $this->doc();
+        $data = $this->periodic(['inv_from' => null]);
+        $doc->validate($data);
+        $doc->beforeSave($data, null);
+        $this->assertSame('2026-08-01', $data['inv_from']);
+
+        $data = $this->periodic(['inv_from' => '2026-09-01']);
+        $doc->validate($data);
+        $doc->beforeSave($data, null);
+        $this->assertSame('2026-09-01', $data['inv_from']);
+
+        $data = $this->project(['inv_periodicity' => 'month', 'inv_from' => '2026-09-01', 'inv_doc_type' => 'invno', 'inv_due_days' => 14]);
+        $doc->validate($data);
+        $doc->beforeSave($data, null);
+        $this->assertNull($data['inv_periodicity']);
+        $this->assertNull($data['inv_from']);
+        $this->assertNull($data['inv_doc_type']);
+        $this->assertNull($data['inv_due_days']);
+    }
 }
 
 class TestableWorkOrderDocument extends WorkOrderDocument
@@ -317,10 +410,41 @@ class TestableWorkOrderDocument extends WorkOrderDocument
     /** @var list<array{int, ?int}> */
     public array $sequenceCalls = [];
     public string $today = '2026-10-08';
+    /** @var array<int, array<string, mixed>> druhy podle id (sloupce inv_*) */
+    public array $kinds = [];
+    /** @var array<int, array<string, mixed>> řady dokladů: 5 = FV, 6 = zálohová FV */
+    public array $docSeries = [
+        5 => ['id' => 5, 'doc_type' => 'invno', 'docState' => 40],
+        6 => ['id' => 6, 'doc_type' => 'invpo', 'docState' => 40],
+    ];
+    /** @var array<int, int> zakázka → počet řádků předpisu */
+    public array $rowCounts = [];
+    /** @var list<int> */
+    public array $deletedRows = [];
 
     protected function loadRow(int $id): ?array
     {
         return $this->rows[$id] ?? null;
+    }
+
+    protected function loadKind(int $kindId): ?array
+    {
+        return $this->kinds[$kindId] ?? null;
+    }
+
+    protected function loadDocSeries(int $seriesId): ?array
+    {
+        return $this->docSeries[$seriesId] ?? null;
+    }
+
+    protected function countRows(int $workOrderId): int
+    {
+        return $this->rowCounts[$workOrderId] ?? 0;
+    }
+
+    protected function deleteRows(int $workOrderId): void
+    {
+        $this->deletedRows[] = $workOrderId;
     }
 
     protected function loadSeries(int $seriesId): ?array
