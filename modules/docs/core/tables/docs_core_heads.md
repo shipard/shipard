@@ -44,6 +44,15 @@ tvrzení (`vat_period`, `cs_period`, `rs_period`) dodává extension modulu
 `economy.vat` a plní jeho handler při uložení — viz
 `modules/economy/vat/docs/README.md`.
 
+Dimenze deníku (#110 D20, `docs/accounting.md` § Dimenze deníku) — výchozí
+hodnota pro řádky bez vlastní hodnoty a pro hlavičkové kroky předpisu;
+deklarace `journalDimensions` v `economy.accounting`, pole na formuláři
+zapíná nastavení Dimenze na dokladech:
+
+| Sloupec | Typ | Popis |
+|---|---|---|
+| `asset` | int → `economy_assets_assets`, nullable, index `idx_asset` | Karta majetku, které se doklad týká (`docs/assets.md` D59, D60). Řádek pořízení kartu z hlavičky nedědí |
+
 ### `vat`
 
 `vat_mode` (0 bez DPH / 1 ze základu / 2 z ceny celkem),

@@ -939,7 +939,7 @@ class ModuleDefinitionTest extends TestCase
                 'forms' => [
                     'docTypes' => ['invni', 'cash', 'invni'],
                     'head' => true,
-                    'enabledBySetting' => 'economy.assets.trackExpenses',
+                    'enabledBySetting' => 'economy.accounting.dimension.asset',
                     'ignored' => 1,
                 ],
             ])],
@@ -949,7 +949,7 @@ class ModuleDefinitionTest extends TestCase
             'docTypes' => ['invni', 'cash'],
             'head' => true,
             'rows' => false,
-            'enabledBySetting' => 'economy.assets.trackExpenses',
+            'enabledBySetting' => 'economy.accounting.dimension.asset',
         ], $def->journalDimensions[0]['forms']);
     }
 

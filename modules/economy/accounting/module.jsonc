@@ -20,6 +20,76 @@
         "economy_codebooks_cash_desks"
     ],
 
+    // Standardní dimenze deníku (#110 D20, docs/accounting.md § Dimenze
+    // deníku). Sloupce dimenzí jsou přímo v definicích docs_core_heads,
+    // docs_core_rows a economy_accounting_journal; evidence zůstává ve svém
+    // modulu (karty majetku v economy.assets — každý zdroj s účetnictvím ho
+    // má přes install.base). Mechanismus (engine, deník, formuláře, Kontace)
+    // jede nad tímto seznamem a je otevřený dalším dimenzím.
+    //
+    // `forms` = pole dimenze na hlavičce a řádcích dokladů, jen se zapnutým
+    // nastavením Dimenze na dokladech (`enabledBySetting`, D21) — řídí jen
+    // zobrazení, uložená hodnota se do deníku propisuje vždy.
+    //
+    // asset — karta majetku: řádek bez karty zdědí kartu hlavičky (assets
+    //   D60). Řádek pořízení a systémové operace majetku mají pole vždy
+    //   (vlajka `rowAsset` operace) a kartu z hlavičky nedědí (`rowFlag`).
+    //   Zálohová faktura se neúčtuje do nákladů — pole nemá.
+    "journalDimensions": [
+        {
+            "id": "asset",
+            "rowColumn": "asset",
+            "headColumn": "asset",
+            "journalColumn": "asset",
+            "table": "economy_assets_assets",
+            "rowFlag": "rowAsset",
+            "name": "Asset",
+            "name:cs": "Majetek",
+            "name:en": "Asset",
+            "name:sk": "Majetok",
+            "name:de": "Anlagegut",
+            "forms": {
+                "docTypes": ["invni", "invno", "cash", "cmnbkp"],
+                "head": true,
+                "rows": true,
+                "enabledBySetting": "economy.accounting.dimension.asset"
+            }
+        }
+    ],
+
+    "settingsItems": [
+        { "page": "accountingDimensions", "section": "accounting" }
+    ],
+
+    // Dimenze na dokladech (#110 D21): jedno pole ano / ne na dimenzi, klíč
+    // `economy.accounting.dimension.<id>`, prázdné = ne; pořadí polí = pořadí
+    // dimenzí. Čte JournalDimensionSet::forForm přes `forms.enabledBySetting`.
+    "settingsPages": [
+        {
+            "id": "accountingDimensions",
+            "name": "Dimensions on documents",
+            "name:cs": "Dimenze na dokladech",
+            "name:en": "Dimensions on documents",
+            "icon": "document",
+            "fields": [
+                {
+                    "id": "economy.accounting.dimension.asset",
+                    "type": "select",
+                    "name": "Asset on documents",
+                    "name:cs": "Majetek na dokladech",
+                    "name:en": "Asset on documents",
+                    "hint": "Adds the Asset field to the header and rows of received and issued invoices, cash and accounting documents. Empty = no. Asset acquisition rows always have the field.",
+                    "hint:cs": "Přidá pole Majetek na hlavičku a řádky přijatých a vydaných faktur, pokladních a účetních dokladů. Prázdné = ne. Řádek pořízení majetku má pole vždy.",
+                    "hint:en": "Adds the Asset field to the header and rows of received and issued invoices, cash and accounting documents. Empty = no. Asset acquisition rows always have the field.",
+                    "options": [
+                        { "value": "yes", "label": "Yes", "label:cs": "Ano", "label:en": "Yes" },
+                        { "value": "no",  "label": "No",  "label:cs": "Ne",  "label:en": "No" }
+                    ]
+                }
+            ]
+        }
+    ],
+
     "viewers": [
         {
             "id": "economy.accounting.accounts",

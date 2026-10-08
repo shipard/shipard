@@ -27,7 +27,7 @@ use Shipard\Module\Docs\ProformasOut\ProformaOutForm;
  */
 class DimensionFormFieldsTest extends TestCase
 {
-    private const SETTING = 'economy.assets.trackExpenses';
+    private const SETTING = 'economy.accounting.dimension.asset';
 
     private function config(): ConfigRuntime
     {

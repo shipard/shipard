@@ -259,6 +259,26 @@
             "name:en": "Due date",
             "type": "date",
             "nullable": true
+        },
+
+        // --- dimenze deníku (#110 D20) ---
+        // Standardní dimenze jádra (journalDimensions modulu
+        // economy.accounting, docs/accounting.md § Dimenze deníku): plní je
+        // AccountingEngine z řádku dokladu, prázdnou z hlavičky; bankovní
+        // zápisy a příspěvky contributorů je nemají (NULL). Hodnoty jsou
+        // součást klíče seskupení řádků.
+        //
+        // asset — karta majetku, které se zápis týká (docs/assets.md D15,
+        //   D47). Na ní stojí invariant „evidence = deník“ (docs/assets.md §1).
+
+        {
+            "id": "asset",
+            "name": "Asset",
+            "name:cs": "Majetek",
+            "name:en": "Asset",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_assets_assets"
         }
     ],
 
@@ -298,6 +318,12 @@
             "id": "idx_payment_reference",
             "type": "index",
             "columns": [{"column": "payment_reference"}]
+        },
+        // dimenze deníku (#110 D20)
+        {
+            "id": "idx_asset",
+            "type": "index",
+            "columns": [{"column": "asset"}]
         }
     ]
 }

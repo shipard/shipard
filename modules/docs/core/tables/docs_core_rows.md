@@ -54,11 +54,22 @@ fázi (až framework bude umět dynamický cfgItem) může přejít na `enumStri
 
 Plněné v `Document::beforeSave` ve Fázi 2.
 
+### Dimenze deníku (#110 D20)
+
+Hodnota řádku jde do řádku deníku (`journalDimensions` v `economy.accounting`,
+`docs/accounting.md` § Dimenze deníku); prázdnou doplní engine z hlavičky.
+Pole na formuláři zapíná nastavení Dimenze na dokladech.
+
+| Sloupec | Typ | Popis |
+|---|---|---|
+| `asset` | int → `economy_assets_assets`, nullable | Karta majetku, které se řádek týká (`docs/assets.md` D15, D47). Povinná u operací s vlajkou `rowAsset: 1`, nepovinná u pořízení (`purchase.asset`) — tyhle řádky kartu z hlavičky nedědí |
+
 ## Indexy
 
 - `idx_doc_head` — `(doc_head, order_pos)`
 - `idx_item` — `(item)`
 - `idx_vat_code` — `(vat_code)`
+- `idx_asset` — `(asset)`
 
 ## Související
 

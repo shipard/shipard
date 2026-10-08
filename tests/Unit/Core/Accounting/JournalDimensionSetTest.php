@@ -95,7 +95,7 @@ class JournalDimensionSetTest extends TestCase
         $set = JournalDimensionSet::fromConfig($this->config([
             'asset' => ['headColumn' => 'asset', 'forms' => [
                 'docTypes' => ['invni', 'cmnbkp'], 'head' => true, 'rows' => true,
-                'enabledBySetting' => 'economy.assets.trackExpenses',
+                'enabledBySetting' => 'economy.accounting.dimension.asset',
             ]] + self::ASSET,
             // Bez nastavení a jen na řádcích.
             'centre' => ['id' => 'centre', 'rowColumn' => 'centre', 'journalColumn' => 'centre', 'table' => 't', 'name' => 'Středisko',
@@ -104,8 +104,8 @@ class JournalDimensionSetTest extends TestCase
             'project' => ['id' => 'project', 'rowColumn' => 'project', 'journalColumn' => 'project', 'table' => 'p', 'name' => 'Zakázka'],
         ]));
         $ids = static fn(array $dimensions): array => array_map(static fn(JournalDimension $d): string => $d->id, $dimensions);
-        $on = $this->settings(['economy.assets.trackExpenses' => 'yes']);
-        $off = $this->settings(['economy.assets.trackExpenses' => 'no']);
+        $on = $this->settings(['economy.accounting.dimension.asset' => 'yes']);
+        $off = $this->settings(['economy.accounting.dimension.asset' => 'no']);
 
         $this->assertSame(['asset', 'centre'], $ids($set->forForm('invni', false, $on)));
         $this->assertSame(['asset'], $ids($set->forForm('invni', true, $on)));

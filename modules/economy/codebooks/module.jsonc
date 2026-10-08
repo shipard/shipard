@@ -31,8 +31,9 @@
         { "viewer": "economy.codebooks.paymentTerminals", "section": "accounting" },
         { "viewer": "economy.codebooks.transports",       "section": "accounting" },
         { "viewer": "economy.codebooks.bankAccounts",     "section": "accounting" },
-        { "viewer": "economy.codebooks.warehouses",       "section": "warehouses" },
-        { "viewer": "economy.codebooks.costCenters",      "section": "warehouses" }
+        // Střediska jsou účetní dimenze (#110 D20) — patří k účetnictví.
+        { "viewer": "economy.codebooks.costCenters",      "section": "accounting" },
+        { "viewer": "economy.codebooks.warehouses",       "section": "warehouses" }
     ],
 
     "viewers": [

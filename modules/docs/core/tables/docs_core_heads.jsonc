@@ -324,6 +324,29 @@
             "reference": "economy_codebooks_vat_registrations",
             "group": "accounting"
         },
+
+        // --- dimenze deníku (#110 D20) ---
+        // Standardní dimenze jádra: hlavička nese výchozí hodnotu dimenze
+        // pro řádky bez vlastní hodnoty a pro hlavičkové kroky předpisu
+        // (`headColumn` v journalDimensions modulu economy.accounting,
+        // docs/accounting.md § Dimenze deníku). Pole nabízí formulář jen se
+        // zapnutým nastavením Dimenze na dokladech (D21); uložená hodnota se
+        // do deníku propisuje vždy.
+        //
+        // asset — karta majetku, které se doklad týká (docs/assets.md D59,
+        //   D60): řádek bez vlastní karty a hlavičkové kroky předpisu ji
+        //   zdědí. Řádek pořízení kartu z hlavičky nedědí (`rowFlag`).
+
+        {
+            "id": "asset",
+            "name": "Asset",
+            "name:cs": "Majetek",
+            "name:en": "Asset",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_assets_assets",
+            "group": "accounting"
+        },
         // --- vat ---
 
         {
@@ -788,6 +811,13 @@
             "id": "idx_partner",
             "type": "index",
             "columns": [{"column": "partner"}]
+        },
+
+        // dimenze deníku (#110 D20)
+        {
+            "id": "idx_asset",
+            "type": "index",
+            "columns": [{"column": "asset"}]
         },
 
         // doklady pokladny (pokladní kniha, hotově placené faktury)

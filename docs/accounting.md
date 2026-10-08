@@ -897,9 +897,11 @@ podle `is_error`.
 | `specific_symbol` | varchar 20, nullable | specifický symbol (ze zdroje) |
 | `constant_symbol` | varchar 10, nullable | konstantní symbol (ze zdroje) |
 | `due_date` | date, nullable | splatnost z hlavičky dokladu (bankovní transakce: NULL) |
+| `asset` | int, FK `economy_assets_assets`, nullable | dimenze deníku Majetek (#110 D20, § Dimenze deníku) |
 
 Indexy: (`doc_head`), (`source_kind`), (`account_number`, `accounting_date`),
-(`fiscal_year`, `fiscal_month`), (`partner`), (`payment_reference`).
+(`fiscal_year`, `fiscal_month`), (`partner`), (`payment_reference`),
+(`asset`).
 
 Poznámky:
 
@@ -913,15 +915,26 @@ Poznámky:
   zdroj a šel filtr deníku za VS. Symboly v konvenci dokladů (varchar 35 pro
   RF/EndToEndId). Tím se **částečně obrací rozhodnutí #10** (viz Log rozhodnutí).
 
-### Dimenze deníku (assets D47)
+### Dimenze deníku (assets D47, #110 D20)
 
 Analytická dimenze = sloupec deníku, do kterého engine kopíruje hodnotu
-z řádku dokladu, aby šel obrat účtu rozpadnout podle entity jiného modulu
-(první: karta majetku; středisko a zakázka půjdou stejnou cestou).
-Mechanismus je obecný — `economy.accounting` ani `docs.core` o konkrétní
-dimenzi nevědí.
+z řádku dokladu, aby šel obrat účtu rozpadnout podle entity jiného modulu.
+Sada dimenzí je v praxi pevná (starý deník měl dvacet let tytéž čtyři)
+a ekonomické moduly jsou přes `install.base` v každém zdroji, proto jsou
+středisko, zakázka a majetek **standardní dimenze jádra** (#110 D20):
+sloupce leží přímo v definicích `docs_core_heads`, `docs_core_rows`
+a `economy_accounting_journal`, deklaraci `journalDimensions` nese
+`economy.accounting`. Evidence (číselník středisek, zakázky, karty majetku)
+a jejich chování zůstávají ve svých modulech. Mechanismus je obecný
+a otevřený dalším dimenzím — engine, deník, formuláře i tisk Kontace jedou
+nad jednotným seznamem a o konkrétní dimenzi nevědí.
 
-- **Deklarace** v `module.jsonc` modulu dimenze:
+| dimenze | id | sloupec (hlavička, řádky, deník) | cílová tabulka | doklady s polem |
+|---|---|---|---|---|
+| Zakázka | `workOrder` | `work_order` | `economy_work_orders_heads` | plánovaná (`tasks/work-orders-phase1.md`) |
+| Majetek | `asset` | `asset` | `economy_assets_assets` | `invni`, `invno`, `cash`, `cmnbkp`; řádky s vlajkou `rowAsset` vždy |
+
+- **Deklarace** v `module.jsonc` modulu `economy.accounting`:
 
   ```jsonc
   "journalDimensions": [{
@@ -932,15 +945,16 @@ dimenzi nevědí.
       "forms": {
           "docTypes": ["invni", "invno", "cash", "cmnbkp"],
           "head": true, "rows": true,
-          "enabledBySetting": "economy.assets.trackExpenses"
+          "enabledBySetting": "economy.accounting.dimension.asset"
       }
   }]
   ```
 
   `rowColumn` = sloupec `docs_core_rows`, `journalColumn` = sloupec
   deníku, `headColumn` = volitelná výchozí hodnota z hlavičky dokladu
-  (sloupec `docs_core_heads`), `table` = cílová tabulka. Sloupce zakládá
-  modul dimenze přes **extensions** (int, null, reference, index).
+  (sloupec `docs_core_heads`), `table` = cílová tabulka (na zdroji aktivní —
+  kontroluje kompilace). Sloupce (int, null, reference, index) leží
+  v definicích tabulek jádra; modul evidence je nezakládá.
   `rowFlag` (volitelné) = vlajka řádkové operace z `docs.core.rowOperations`,
   jejíž řádek **nese hodnotu sám**: výchozí hodnotu z hlavičky nedědí
   a pole mu staví layout operace, ne `forms` (majetek: `rowAsset` —
@@ -948,7 +962,12 @@ dimenzi nevědí.
 - **Formuláře** (`forms`, volitelné; assets D59): na kterých formulářích
   dokladů se pole dimenze nabízí — typy dokladů, hlavička (`head`, chce
   `headColumn`) a řádky (`rows`), případně jen se zapnutým nastavením
-  (`enabledBySetting` = klíč `SettingsStore`; zapnuto = `yes`). Bez
+  (`enabledBySetting` = klíč `SettingsStore`, konvence
+  `economy.accounting.dimension.<id>`; zapnuto = `yes`). Pole zapíná stránka
+  **Dimenze na dokladech** (Nastavení → Účetnictví;
+  `settingsPages.accountingDimensions` v `economy.accounting`, jedno pole
+  ano / ne na dimenzi v pořadí dimenzí, prázdné = ne; #110 D21 — nahradila
+  `economy.assets.trackExpenses` bez převzetí hodnoty). Bez
   `forms` se pole negeneruje. Vyhodnocuje
   `JournalDimensionSet::forForm($docType, $head, $settings)`; pole staví
   `DocsHeadsFormBase::addDimensionElements()` (volá ho každý per-typ
@@ -961,8 +980,8 @@ dimenzi nevědí.
   `displayPattern` cílové tabulky; dimenze mířící na neznámou tabulku nebo
   deklarovaná dvakrát zastaví `ds-upgrade`). Čte se výhradně přes
   `Shipard\Core\Accounting\JournalDimensionSet::fromConfig()` — žádný
-  loader ani injektáž; sada odpovídá aktivním modulům, takže sloupce
-  vždy existují.
+  loader ani injektáž; sloupce dimenzí jsou v tabulkách jádra, takže vždy
+  existují.
 - **Engine**: `makeLine` vezme hodnotu z řádku dokladu, prázdnou
   z `headColumn` hlavičky (má-li ho dimenze a nejde-li o řádek s vlajkou
   `rowFlag`); kroky `vat` / `head` nemají řádek, dostanou jen výchozí

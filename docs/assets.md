@@ -511,7 +511,10 @@ přes 250 řádků pořízení na 042 i 501).
   Majetek na hlavičce (nový sloupec `asset` přes extension) a na řádcích
   přijatých a vydaných faktur, pokladních a účetních dokladů. Vypnuté =
   pole jen u pořízení majetku a systémových operací. Import převezme
-  starou volbu (fáze 6).
+  starou volbu (fáze 6). *Nahrazeno #110 D21:* pole zapíná **Dimenze na
+  dokladech** (Nastavení → Účetnictví, klíč
+  `economy.accounting.dimension.asset`), sloupec `asset` je v tabulkách
+  jádra (#110 D20); hodnota `trackExpenses` se nepřevádí.
 - **D60 Výchozí hodnota z hlavičky** — `journalDimensions.asset.headColumn
   = "asset"`; řádek bez karty zdědí kartu hlavičky (engine to umí),
   formulář řádku ji ukáže jako placeholder.
@@ -712,7 +715,7 @@ Ilustrativní — konkrétní sloupce se zamknou v PRD jednotlivých oblastí.
 | `economy_assets_events` | D3: majetek, druh události, okruh, datum, období od–do, částka, stav (návrh / potvrzeno / zaúčtováno), vazba na doklad a řádek |
 | `economy_assets_custody` | pohyby: předání / vrácení / zápůjčka; množstevní příjem / výdej |
 | `economy_assets_accessories` | příslušenství |
-| extensions | sloupec `asset` na `docs_core_rows`, `docs_core_heads` a `economy_accounting_journal` (D4, D15, D59) |
+| sloupec `asset` v tabulkách jádra | `docs_core_rows`, `docs_core_heads` a `economy_accounting_journal` (D4, D15, D59) — standardní dimenze jádra (#110 D20), původně extensions tohoto modulu |
 
 **Vlastnosti per typ** — kandidát na strukturovaná pole
 (`structured-fields.md`): sada se mění podle typu, hodnoty jsou opis, ne
@@ -945,8 +948,9 @@ událost před obdobím — má přednost), důvody běhu odpisů `planError` /
 dokladů období, `doc_head = NULL`; systémové odpisy zůstávají potvrzené.
 
 **Dimenze deníku** `asset` (D47) — obecný mechanismus v
-`docs/accounting.md` §6; `economy.assets` jen deklaruje dimenzi a přidává
-sloupce extensions. Na ní stojí invariant §1: Σ MD účtu odpisů karty
+`docs/accounting.md` §6; od #110 D20 je majetek standardní dimenze jádra
+(deklarace v `economy.accounting`, sloupce v tabulkách jádra). Na ní stojí
+invariant §1: Σ MD účtu odpisů karty
 v deníku = Σ potvrzených účetních odpisů karty.
 
 **Odchylky od PRD** (potvrzené před implementací, N1–N4, a nálezy z ní):
@@ -997,11 +1001,13 @@ pořízení na řádku přijaté faktury, náklady a výnosy přes dimenzi dení
 | `Checks\PurchaseWithoutAssetCheck` | alert per doklad: potvrzený doklad s řádkem pořízení bez karty |
 | `Checks\AwaitingActivationCheck` | alert per karta: dlouhodobá karta s pořízením na 04x bez potvrzeného zařazení / počátečního stavu |
 
-**Dimenze `asset` na dokladech** (D59, D60) — deklarace v `module.jsonc`
+**Dimenze `asset` na dokladech** (D59, D60; #110 D20, D21) — deklarace
+v `modules/economy/accounting/module.jsonc` jako standardní dimenze jádra
 (`headColumn: "asset"`, `rowFlag: "rowAsset"`, `forms` s
-`enabledBySetting: economy.assets.trackExpenses`); obecný mechanismus
-v `docs/accounting.md` § Dimenze deníku. Se zapnutým nastavením
-(Nastavení → Majetek → Majetek na dokladech) má pole Majetek hlavička
+`enabledBySetting: economy.accounting.dimension.asset`), sloupce `asset`
+přímo v tabulkách jádra; obecný mechanismus v `docs/accounting.md`
+§ Dimenze deníku. Se zapnutým nastavením (Nastavení → Účetnictví →
+Dimenze na dokladech → Majetek na dokladech) má pole Majetek hlavička
 i řádky `invni`, `invno`, `cash`, `cmnbkp`; řádek bez karty dědí kartu
 hlavičky a pole řádku to ukazuje placeholderem. Vypnutí pole jen skryje.
 
