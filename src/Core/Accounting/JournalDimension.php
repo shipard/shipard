@@ -20,6 +20,10 @@ namespace Shipard\Core\Accounting;
  * typy dokladů, hlavička / řádky a volitelně klíč nastavení, které pole
  * zapíná (`enabledBySetting`). Řídí jen zobrazení pole — uložená hodnota
  * se do deníku propisuje vždy.
+ *
+ * `exchangeKey` (#110 T2) je sloupec cílové tabulky, který slouží jako
+ * přirozený klíč ve výměnném formátu dokladu (objekt `dimensions`: středisko
+ * kód, majetek inventární číslo). Dimenze bez něj ve formátu není.
  */
 final class JournalDimension
 {
@@ -37,6 +41,7 @@ final class JournalDimension
         public readonly bool $formRows = false,
         public readonly ?string $enabledBySetting = null,
         public readonly ?string $rowFlag = null,
+        public readonly ?string $exchangeKey = null,
     ) {
     }
 
@@ -73,6 +78,9 @@ final class JournalDimension
             enabledBySetting: is_string($setting) && $setting !== '' ? $setting : null,
             rowFlag: isset($data['rowFlag']) && is_string($data['rowFlag']) && $data['rowFlag'] !== ''
                 ? $data['rowFlag']
+                : null,
+            exchangeKey: isset($data['exchangeKey']) && is_string($data['exchangeKey']) && $data['exchangeKey'] !== ''
+                ? $data['exchangeKey']
                 : null,
         );
     }

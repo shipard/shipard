@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Document;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Accounting\JournalDimension;
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 
 class DocumentValidatorTest extends TestCase
@@ -14,6 +16,53 @@ class DocumentValidatorTest extends TestCase
     protected function setUp(): void
     {
         $this->v = new DocumentValidator();
+    }
+
+    /** Sada dimenzí jako na DS: středisko s klíčem, projekt bez něj. */
+    private function dimensions(): JournalDimensionSet
+    {
+        return new JournalDimensionSet([
+            JournalDimension::fromArray([
+                'id' => 'costCenter', 'rowColumn' => 'cost_center', 'headColumn' => 'cost_center',
+                'journalColumn' => 'cost_center', 'table' => 'economy_codebooks_cost_centers',
+                'name' => 'Středisko', 'exchangeKey' => 'code',
+            ]),
+            JournalDimension::fromArray([
+                'id' => 'project', 'rowColumn' => 'project', 'journalColumn' => 'project',
+                'table' => 'x_projects', 'name' => 'Projekt',
+            ]),
+        ]);
+    }
+
+    public function testUnknownDimensionOrDimensionWithoutExchangeKeyIsAnError(): void
+    {
+        // #110 T2: překlep v klíči nesmí hodnotu tiše zahodit.
+        $issues = (new DocumentValidator($this->dimensions()))->validate([
+            'docType' => 'accountingDocument',
+            'dates' => ['issueDate' => '2026-04-15'],
+            'dimensions' => ['costCenter' => 'S01', 'costcenter' => 'S01'],
+            'rows' => [
+                ['rowKind' => 'item', 'dimensions' => ['project' => 'P1']],
+                ['rowKind' => 'item', 'dimensions' => ['costCenter' => 'V01']],
+            ],
+        ]);
+
+        $unknown = array_values(array_filter($issues, static fn(array $i): bool => $i['code'] === 'dimension_unknown'));
+        $this->assertSame(['dimensions.costcenter', 'rows.0.dimensions.project'], array_column($unknown, 'path'));
+        $this->assertSame(['error', 'error'], array_column($unknown, 'severity'));
+        $this->assertStringContainsString('exchangeKey', $unknown[1]['message']);
+    }
+
+    public function testWithoutDimensionSetDimensionsAreNotChecked(): void
+    {
+        // Preflight sady bez DS: neznámé id odhalí až apply.
+        $issues = $this->v->validate([
+            'docType' => 'accountingDocument',
+            'dates' => ['issueDate' => '2026-04-15'],
+            'dimensions' => ['whatever' => 'X'],
+            'rows' => [['rowKind' => 'item']],
+        ]);
+        $this->assertNotContains('dimension_unknown', array_column($issues, 'code'));
     }
 
     public function testMissingIssueDateProducesRequiredError(): void

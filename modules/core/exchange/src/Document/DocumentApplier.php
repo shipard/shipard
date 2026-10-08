@@ -23,7 +23,9 @@ use Shipard\Module\Docs\Core\DocRowCalculator;
 use Shipard\Module\Docs\Core\DocTypes;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Docs\Core\RoundingModes;
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
+use Shipard\Module\Core\Exchange\Resolve\DimensionResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
@@ -196,6 +198,12 @@ class DocumentApplier
          * @var array<string, array<string, mixed>>
          */
         private readonly array $contentTags = [],
+        /**
+         * Dimenze deníku z objektu `dimensions` (#110 T2) — přirozený klíč →
+         * id záznamu. Null = DS bez dimenzí s `exchangeKey`, objekt se ignoruje
+         * (neznámé klíče hlásí DocumentValidator).
+         */
+        private readonly ?DimensionResolver $dimensionResolver = null,
     ) {}
 
     /**
@@ -227,7 +235,7 @@ class DocumentApplier
             personsGateway: self::buildGateway('base_persons_persons', $db, $registry, $config, $dsConfig, $tables),
             itemsGateway: self::buildGateway('economy_items', $db, $registry, $config, $dsConfig, $tables),
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
-            documentValidator: new DocumentValidator(),
+            documentValidator: new DocumentValidator(JournalDimensionSet::fromConfig($config)),
             partyResolver: new PartyResolver($db, $own),
             itemResolver: new ItemResolver($db),
             unitResolver: new UnitResolver($db),
@@ -237,6 +245,7 @@ class DocumentApplier
             vatCodeDerivation: new VatCodeDerivation($vatRateResolver),
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($config)),
             contentTags: is_array($contentTags) ? $contentTags : [],
+            dimensionResolver: new DimensionResolver($db, JournalDimensionSet::fromConfig($config), $tables),
         );
     }
 
@@ -825,6 +834,14 @@ class DocumentApplier
                     ];
                 }
             }
+            $rowDimensions = $this->resolveDimensions(
+                is_array($row['dimensions'] ?? null) ? $row['dimensions'] : [],
+                "rows.{$idx}.dimensions",
+                $issues,
+            );
+            if ($rowDimensions !== []) {
+                $rowResolve['dimensions'] = $rowDimensions;
+            }
             $vatResolve = $this->resolveRowVatCode(
                 (int) $idx,
                 is_array($row) ? $row : [],
@@ -840,6 +857,15 @@ class DocumentApplier
         }
 
         $resolved = ['rows' => $rowsResolve];
+        // Dimenze hlavičky (#110 D23) — výchozí hodnota pro řádky bez vlastní.
+        $headDimensions = $this->resolveDimensions(
+            is_array($canonical['dimensions'] ?? null) ? $canonical['dimensions'] : [],
+            'dimensions',
+            $issues,
+        );
+        if ($headDimensions !== []) {
+            $resolved['dimensions'] = $headDimensions;
+        }
         // For accounting documents these stay unset → reconcile skips them
         // (no supplier/customer/bank to reconcile, no unresolved_required).
         if ($supplierResult !== null) {
@@ -896,6 +922,10 @@ class DocumentApplier
             'resolvedRowAccounts' => [],
             'resolvedRowPartners' => [],
             'resolvedHeadPartner' => null,
+            // Dimenze deníku (#110 T2): id dimenze → id záznamu, jen nalezené.
+            // Klíč je autoritativní — žádná userAction, nenalezený dal error.
+            'resolvedHeadDimensions' => self::matchedDimensionIds($resolved['dimensions'] ?? []),
+            'resolvedRowDimensions'  => [],
         ];
 
         // Hlavičkový partner účetního dokladu — nepovinný, pin přes
@@ -966,6 +996,7 @@ class DocumentApplier
             $plan['resolvedRowUnits'][$i] = ($unitFresh['status'] ?? null) === 'matched'
                 ? ($unitFresh['matchedId'] ?? null)
                 : null;
+            $plan['resolvedRowDimensions'][$i] = self::matchedDimensionIds($rowResolve['dimensions'] ?? []);
 
             $plan['resolvedRowVatCodes'][$i] = $rowResolve['vatCode'] ?? null;
 
@@ -1473,6 +1504,9 @@ class DocumentApplier
             'source_kind'          => $canonical['source']['kind'] ?? null,
             'source_message'       => $canonical['source']['message'] ?? null,
             'source_extracted_at'  => $this->mapExtractedAt($canonical['source']['extractedAt'] ?? null),
+            // Dimenze deníku (#110 T2): sloupce hlavičky podle deklarace
+            // (`headColumn`); chybějící objekt = sloupce se nezapíší (NULL).
+            ...$this->dimensionColumns($plan['resolvedHeadDimensions'] ?? [], head: true),
             'docState'             => $targetDocState,
             'rows'                 => $this->transformRows(
                 $canonical['rows'] ?? [],
@@ -3403,11 +3437,92 @@ class DocumentApplier
                                         ? (['debit' => 0, 'credit' => 1][$row['accSide']] ?? null)
                                         : null,
                 'partner'           => $plan['resolvedRowPartners'][$i] ?? null,
+                // Dimenze deníku řádku (#110 T2) — sloupce `rowColumn`.
+                ...$this->dimensionColumns($plan['resolvedRowDimensions'][$i] ?? [], head: false),
                 'payment_reference' => $row['paymentReference'] ?? null,
                 'specific_symbol'   => $row['specificSymbol'] ?? null,
                 'constant_symbol'   => $row['constantSymbol'] ?? null,
                 'due_date'          => $row['dueDate'] ?? null,
             ], static fn($v) => $v !== null);
+        }
+        return $out;
+    }
+
+    /**
+     * Dimenze deníku z objektu `dimensions` (#110 T2): klíč = id dimenze,
+     * hodnota = přirozený klíč záznamu (`exchangeKey`). Neznámé id hlásí
+     * {@see DocumentValidator} (`dimension_unknown`) — tady se přeskočí;
+     * prázdná hodnota = bez dimenze; hodnota bez záznamu = chyba
+     * `dimension_not_found` (blokuje apply, klíč je autoritativní). Platí
+     * i v importním módu. Bez resolveru (DS bez dimenzí) se nic neřeší.
+     *
+     * @param array<string, mixed> $dimensions
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @return array<string, array{value: string, status: string, matchedId?: int}>
+     */
+    private function resolveDimensions(array $dimensions, string $path, array &$issues): array
+    {
+        if ($this->dimensionResolver === null) {
+            return [];
+        }
+        $out = [];
+        foreach ($dimensions as $id => $value) {
+            $id = (string) $id;
+            if (!is_scalar($value) || trim((string) $value) === '' || !$this->dimensionResolver->knows($id)) {
+                continue;
+            }
+            $value = trim((string) $value);
+            $matchedId = $this->dimensionResolver->resolve($id, $value);
+            if ($matchedId !== null) {
+                $out[$id] = ['value' => $value, 'status' => 'matched', 'matchedId' => $matchedId];
+                continue;
+            }
+            $out[$id] = ['value' => $value, 'status' => 'notFound'];
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => "{$path}.{$id}",
+                'code'     => 'dimension_not_found',
+                'message'  => $this->dimensionResolver->name($id) . ": záznam „{$value}“ nebyl nalezen.",
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * @param array<string, array{value: string, status: string, matchedId?: int}> $resolve
+     * @return array<string, int> id dimenze → id záznamu (jen nalezené)
+     */
+    private static function matchedDimensionIds(array $resolve): array
+    {
+        $out = [];
+        foreach ($resolve as $id => $r) {
+            if (($r['status'] ?? null) === 'matched' && isset($r['matchedId'])) {
+                $out[(string) $id] = (int) $r['matchedId'];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Sloupce hlavičky (`headColumn`) / řádku (`rowColumn`) pro nalezené
+     * dimenze. Dimenze bez sloupce na dané úrovni se vynechá.
+     *
+     * @param array<string, int> $matched id dimenze → id záznamu
+     * @return array<string, int>
+     */
+    private function dimensionColumns(array $matched, bool $head): array
+    {
+        if ($matched === []) {
+            return [];
+        }
+        $out = [];
+        $set = JournalDimensionSet::fromConfig($this->config);
+        foreach ($matched as $id => $recordId) {
+            $dimension = $set->get($id);
+            $column = $head ? $dimension?->headColumn : $dimension?->rowColumn;
+            if ($column !== null) {
+                $out[$column] = $recordId;
+            }
         }
         return $out;
     }

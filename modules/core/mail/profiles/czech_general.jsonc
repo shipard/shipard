@@ -465,6 +465,15 @@
                                                 }
                                             }
                                         },
+                                        "dimensions": {
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ],
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        },
                                         "rows": {
                                             "type": "array",
                                             "items": {
@@ -920,6 +929,15 @@
                                                         "null"
                                                     ],
                                                     "format": "date"
+                                                },
+                                                "dimensions": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "additionalProperties": {
+                                                        "type": "string"
+                                                    }
                                                 }
                                             }
                                         },

@@ -19,6 +19,17 @@ class SetupExporterTest extends TestCase
         return TableDefinition::fromArray(JsoncParser::parseFile($path));
     }
 
+    public function testCostCentersAreCarriedByCode(): void
+    {
+        // #110 T2: doklady v sadě odkazují na střediska kódem (objekt dimensions).
+        $this->assertSame(
+            ['table' => 'economy_codebooks_cost_centers', 'key' => ['code']],
+            SetupExporter::TABLES['cost_centers'],
+        );
+        $schema = JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/core/exchange/schemas/shpd.dataset.setup.v1.jsonc');
+        $this->assertSame(array_keys(SetupExporter::TABLES), $schema['properties']['table']['enum']);
+    }
+
     public function testExportsOnlyActiveTablesWithTypedRowsAndNaturalOrder(): void
     {
         $tables = [

@@ -68,6 +68,7 @@ data. Sada proto nese (`SetupExporter::TABLES`):
 |--------|---------|------|----------|
 | `settings.jsonc` | `core_system_settings` | `key` | jen `economy.*` + `app.name/shortName/theme/shell`; aplikuje se **před** resetem (tabulka je `keepOnReset`, provisionery ji čtou) |
 | `bank_accounts.jsonc` | `economy_codebooks_bank_accounts` | `code` | vlastní účty (vydané faktury ve 40 ho vyžadují) |
+| `cost_centers.jsonc` | `economy_codebooks_cost_centers` | `code` | střediska — doklady v sadě na ně odkazují kódem v objektu `dimensions` (#110 T2) |
 | `vat_registrations.jsonc` | `economy_codebooks_vat_registrations` | `country`, `name` | `DocDocument` vyžaduje při `vat_mode != 0` |
 | `binders.jsonc` | `base_registry_binders` | `name` | šanony spisovny |
 | `mailboxes.jsonc` | `core_mail_mailboxes` | `mailbox_id` | `default` po resetu existuje, jen se aktualizuje |
@@ -116,6 +117,14 @@ Exportery jsou zrcadlem applierů (`DocumentApplier::transform()`,
 neexportují (fiskální rok, DPH období, domácí měna, snapshoty partnera,
 účetní stav, rekapitulace je jen informativní) — při seedu je spočítá
 `DocDocument`.
+
+**Dimenze deníku na dokladech** (#110 T2): `DocumentExporter` vypisuje
+objekt `dimensions` na hlavičce i řádcích s přirozeným klíčem
+(`exchangeKey` dimenze), ale jen u dimenzí, jejichž cílovou tabulku sada
+nese v `setup/` — dnes středisko (`cost_centers.jsonc`). Majetek na
+dokladech se do sady nepřenáší (karty majetku nejsou součást sady a seed by
+doklad odmítl `dimension_not_found`); dump to ohlásí jedním varováním per
+dimenze s počtem dokladů.
 
 ## 3. `dataset-seed`
 

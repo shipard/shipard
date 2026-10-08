@@ -3,7 +3,8 @@
     //
     // Číselníky, které `ds-reset` + provisionery neobnoví, ale sada na nich
     // stojí: rozhodovací parametry DS (settings), vlastní bankovní účty,
-    // registrace DPH, šanony spisovny, mailboxy. Jeden soubor per tabulka, řádky = sloupce tabulky bez
+    // střediska (dimenze dokladů, #110), registrace DPH, šanony spisovny,
+    // mailboxy. Jeden soubor per tabulka, řádky = sloupce tabulky bez
     // interních id a auditních sloupců; FK sloupce se nepřenáší (účet
     // z rozvrhu jako číslo účtu). Klíče řádků jsou sloupce tabulky, proto
     // `additionalProperties: true` — přesnou sadu určuje TableDefinition DS.
@@ -17,7 +18,7 @@
     "properties": {
         "format": { "const": "shpd.dataset.setup.v1" },
         // settings = klíč/hodnota z core_system_settings (rows: [{key, value}]), aplikuje se před resetem
-        "table":  { "enum": ["settings", "bank_accounts", "vat_registrations", "binders", "mailboxes"] },
+        "table":  { "enum": ["settings", "bank_accounts", "cost_centers", "vat_registrations", "binders", "mailboxes"] },
         "rows": {
             "type": "array",
             "items": { "type": "object", "additionalProperties": true }

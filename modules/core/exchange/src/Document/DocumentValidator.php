@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Document;
 
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Docs\Core\RoundingModes;
 
 /**
@@ -15,6 +16,10 @@ use Shipard\Module\Docs\Core\RoundingModes;
  *   - Totals coherence — declared vs. computed amounts; mismatch produces
  *     a warning, not an error, since the canonical's totals are
  *     informative and DocDocument::beforeSave recomputes them anyway.
+ *   - Dimenze deníku (objekt `dimensions`, #110 T2): klíč musí být id
+ *     deklarované dimenze s `exchangeKey`, jinak `dimension_unknown`.
+ *     Kontroluje se jen se znalostí sady dimenzí; bez ní (preflight sady
+ *     bez DS) se neznámé id odhalí až při apply.
  *
  * Returns the same `{severity, path, code, message}` shape as
  * {@see \Shipard\Module\Core\Exchange\Schema\SchemaValidator}. Issues
@@ -23,6 +28,10 @@ use Shipard\Module\Docs\Core\RoundingModes;
  */
 final class DocumentValidator
 {
+    public function __construct(
+        private readonly ?JournalDimensionSet $dimensions = null,
+    ) {}
+
     /**
      * @param array<string, mixed> $canonical
      * @return array<int, array{severity: string, path: string, code: string, message: string}>
@@ -39,8 +48,57 @@ final class DocumentValidator
         $this->checkVatRecapArithmetic($canonical, $issues);
         $this->checkPartnerDocNumber($canonical, $issues);
         $this->checkParkingStateRequiresImport($canonical, $issues);
+        $this->checkDimensions($canonical, $issues);
 
         return $issues;
+    }
+
+    /**
+     * Objekt `dimensions` na hlavičce a řádcích (#110 T2): klíč = id dimenze
+     * deníku s `exchangeKey`. Neznámé id i dimenze bez klíče jsou chyba —
+     * překlep v sadě nesmí hodnotu tiše zahodit. Hodnoty (existence záznamu)
+     * řeší applier při resolve (`dimension_not_found`).
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkDimensions(array $canonical, array &$issues): void
+    {
+        if ($this->dimensions === null) {
+            return;
+        }
+        $this->checkDimensionKeys($canonical['dimensions'] ?? null, 'dimensions', $issues);
+        foreach ((array) ($canonical['rows'] ?? []) as $i => $row) {
+            if (is_array($row)) {
+                $this->checkDimensionKeys($row['dimensions'] ?? null, "rows.{$i}.dimensions", $issues);
+            }
+        }
+    }
+
+    /**
+     * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     */
+    private function checkDimensionKeys(mixed $dimensions, string $path, array &$issues): void
+    {
+        if (!is_array($dimensions)) {
+            return;
+        }
+        foreach (array_keys($dimensions) as $id) {
+            $dimension = $this->dimensions?->get((string) $id);
+            if ($dimension === null) {
+                $message = "Neznámá dimenze deníku „{$id}“.";
+            } elseif ($dimension->exchangeKey === null) {
+                $message = "Dimenze „{$id}“ nemá klíč pro výměnný formát (exchangeKey) — formát ji nenese.";
+            } else {
+                continue;
+            }
+            $issues[] = [
+                'severity' => 'error',
+                'path'     => "{$path}.{$id}",
+                'code'     => 'dimension_unknown',
+                'message'  => $message,
+            ];
+        }
     }
 
     /**

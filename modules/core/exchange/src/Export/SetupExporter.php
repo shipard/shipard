@@ -13,7 +13,8 @@ use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
 /**
  * Sekce `setup/` sady — číselníky, které `ds-reset` + provisionery
  * neobnoví, ale sada na nich stojí (R1 v tasks/dataset-phase1.md):
- * vlastní bankovní účty, registrace DPH, šanony spisovny, mailboxy.
+ * vlastní bankovní účty, střediska (dimenze dokladů, #110), registrace DPH,
+ * šanony spisovny, mailboxy.
  *
  * Jeden soubor per tabulka (`shpd.dataset.setup.v1`), řádky s přirozeným
  * klíčem, bez interních id a auditních sloupců. Hodnoty se typují podle
@@ -41,6 +42,8 @@ final class SetupExporter
     public const TABLES = [
         'settings'          => ['table' => 'core_system_settings',                'key' => ['key']],
         'bank_accounts'     => ['table' => 'economy_codebooks_bank_accounts',     'key' => ['code']],
+        // Dimenze Středisko na dokladech (#110 D20) — doklady v sadě nesou kód.
+        'cost_centers'      => ['table' => 'economy_codebooks_cost_centers',      'key' => ['code']],
         'vat_registrations' => ['table' => 'economy_codebooks_vat_registrations', 'key' => ['country', 'name']],
         'binders'           => ['table' => 'base_registry_binders',               'key' => ['name']],
         'mailboxes'         => ['table' => 'core_mail_mailboxes',                 'key' => ['mailbox_id']],

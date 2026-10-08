@@ -108,6 +108,22 @@ class StandardDimensionsTest extends TestCase
         );
     }
 
+    public function testExchangeKeysPointToColumnsOfTargetTables(): void
+    {
+        // #110 T2: středisko kód, majetek inventární číslo — sloupec musí
+        // v cílové tabulce existovat, jinak by resolver padal v SQL.
+        $tables = [
+            'economy_codebooks_cost_centers' => 'economy/codebooks/tables/economy_codebooks_cost_centers.jsonc',
+            'economy_assets_assets'          => 'economy/assets/tables/economy_assets_assets.jsonc',
+        ];
+        $expected = ['costCenter' => 'code', 'asset' => 'asset_number'];
+        foreach (self::dimensions() as $dimension) {
+            $this->assertSame($expected[$dimension->id] ?? null, $dimension->exchangeKey, $dimension->id);
+            $def = JsoncParser::parseFile(self::MODULES . '/' . $tables[$dimension->table]);
+            $this->assertContains($dimension->exchangeKey, array_column($def['columns'], 'id'), "{$dimension->id}: klíč v tabulce");
+        }
+    }
+
     public function testAssetModuleNoLongerOwnsTheDimension(): void
     {
         $path = self::MODULES . '/economy/assets/module.jsonc';

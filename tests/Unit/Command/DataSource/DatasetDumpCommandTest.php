@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Command\DataSource;
 use Dibi\Connection;
 use PHPUnit\Framework\TestCase;
 use Shipard\Command\DataSource\DatasetDumpCommand;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
@@ -44,7 +45,7 @@ class TestableDatasetDumpCommand extends DatasetDumpCommand
         return [];
     }
 
-    protected function createExporters(Connection $db, array $tables, DataSourceConfig $dsConfig, string $dsDir): array
+    protected function createExporters(Connection $db, array $tables, DataSourceConfig $dsConfig, string $dsDir, ?ConfigRuntime $config = null): array
     {
         return ['setup' => null, 'records' => $this->exporters];
     }

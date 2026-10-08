@@ -6,6 +6,7 @@ namespace Shipard\Command\DataSource;
 
 use Dibi\Connection;
 use Shipard\Api\TableLoader;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -88,8 +89,13 @@ class DatasetDumpCommand extends Command
      * @param array<string, TableDefinition> $tables
      * @return array{setup: ?SetupExporter, records: list<RecordExporter>}
      */
-    protected function createExporters(Connection $db, array $tables, DataSourceConfig $dsConfig, string $dsDir): array
-    {
+    protected function createExporters(
+        Connection $db,
+        array $tables,
+        DataSourceConfig $dsConfig,
+        string $dsDir,
+        ?ConfigRuntime $config = null,
+    ): array {
         $country = $dsConfig->hasCountry() ? strtolower($dsConfig->getCountry()) : 'cz';
         $records = [];
         if (isset($tables['base_persons_persons'])) {
@@ -99,7 +105,8 @@ class DatasetDumpCommand extends Command
             $records[] = new ItemExporter($db);
         }
         if (isset($tables['docs_core_heads'])) {
-            $records[] = new DocumentExporter($db);
+            // Konfigurace kvůli dimenzím deníku na dokladech (#110 T2).
+            $records[] = new DocumentExporter($db, $config);
         }
         if (isset($tables['base_registry_documents'])) {
             $records[] = new RegistryExporter($db, $dsDir);
@@ -146,7 +153,12 @@ class DatasetDumpCommand extends Command
             );
 
             $writer = DatasetWriter::create($targetDir, overwrite: (bool) $input->getOption('force'));
-            $exporters = $this->createExporters($db, $tables, $dsConfig, $dsDir);
+            // Kompilovaná konfigurace kvůli dimenzím deníku na dokladech; DS
+            // bez ní (před ds-upgrade) se dumpne bez dimenzí.
+            $config = is_file($dsDir . '/config/configuration/compiled.' . $lang . '.json')
+                ? ConfigRuntime::load($dsDir, $lang)
+                : null;
+            $exporters = $this->createExporters($db, $tables, $dsConfig, $dsDir, $config);
 
             $output->writeln("<info>Dataset dump</info> → {$writer->getRootDir()}");
             $result = (new DatasetDumper($writer))->dump($manifest, $exporters['setup'], $exporters['records']);

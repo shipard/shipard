@@ -119,6 +119,14 @@ class JournalDimensionSetTest extends TestCase
         $this->assertSame([], $ids($set->forForm('invni', true, null)));
     }
 
+    public function testExchangeKeyIsOptional(): void
+    {
+        // #110 T2: přirozený klíč ve výměnném formátu; prázdný nebo chybějící = null.
+        $this->assertSame('code', JournalDimension::fromArray(['exchangeKey' => 'code'] + self::ASSET)->exchangeKey);
+        $this->assertNull(JournalDimension::fromArray(['exchangeKey' => ''] + self::ASSET)->exchangeKey);
+        $this->assertNull(JournalDimension::fromArray(self::ASSET)->exchangeKey);
+    }
+
     public function testHeadFieldNeedsHeadColumn(): void
     {
         // Ruční zásah do kompilátu: head bez headColumn se ignoruje.

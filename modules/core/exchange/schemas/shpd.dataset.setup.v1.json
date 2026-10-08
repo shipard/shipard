@@ -17,6 +17,7 @@
             "enum": [
                 "settings",
                 "bank_accounts",
+                "cost_centers",
                 "vat_registrations",
                 "binders",
                 "mailboxes"

@@ -291,6 +291,19 @@ Top-level struktura:
     "onDocument": "Děkujeme."     // → docs_core_heads.doc_notice
   },
 
+  // ── Dimenze deníku (#110 D20, T2) ────────────────────────────────────────
+  "dimensions": {                 // klíč = id dimenze (journalDimensions
+    "costCenter": "S01"           //   v economy.accounting), hodnota =
+  },                              //   přirozený klíč záznamu (`exchangeKey`:
+                                  //   středisko kód, majetek inventární
+                                  //   číslo). Hlavička = výchozí hodnota pro
+                                  //   řádky bez vlastní (→ docs_core_heads
+                                  //   .cost_center). Neznámé id / dimenze
+                                  //   bez exchangeKey → dimension_unknown,
+                                  //   hodnota bez záznamu → dimension_not_found
+                                  //   (obě blokují apply). Chybějící objekt
+                                  //   = sloupce zůstanou prázdné.
+
   // ── Rows ─────────────────────────────────────────────────────────────────
   "rows": [
     { /* DocumentRow — viz sekce 7 */ }
@@ -661,7 +674,11 @@ nebo import mezi dvěma cizími subjekty.
   "paymentReference": "2026000042",  // VS hrazeného dokladu
   "specificSymbol":   null,
   "constantSymbol":   null,
-  "dueDate":          null
+  "dueDate":          null,
+
+  // Dimenze deníku řádku (#110 T2): stejný tvar jako na hlavičce (sekce 5),
+  // → docs_core_rows.cost_center. Řádek bez hodnoty dědí hlavičku (engine).
+  "dimensions":       { "costCenter": "V01" }
 }
 ```
 
@@ -1235,6 +1252,8 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `partner_doc_number_missing` | warning | Přijatá faktura cílí na stav ≥ 20 bez čísla dokladu dodavatele. |
 | `row_operation_config_invalid` | warning | Pohyb řádku nejde doplnit — chybná konfigurace rowOperations. |
 | `invalid_value` | error | `cashDirection` pokladního dokladu není 1 ani 2. |
+| `dimension_unknown` | error | Klíč objektu `dimensions` není id deklarované dimenze deníku, nebo dimenze nemá `exchangeKey` (#110 T2). Path `dimensions.<id>` / `rows.N.dimensions.<id>`. Kontroluje `DocumentValidator` se znalostí sady dimenzí (apply, /validate); preflight sady bez DS ho nehlásí. |
+| `dimension_not_found` | error | Hodnota dimenze (přirozený klíč — kód střediska, inventární číslo) nemá záznam v cílové tabulce (`DimensionResolver`, koš se nepočítá). Path dle místa, např. `rows.3.dimensions.costCenter`. Klíč je autoritativní, bez userAction. |
 | `cash_desk_ignored` | warning | `cashDesk` na faktuře bez `payment.method: "cash"` — pokladna se nepropíše. |
 
 Apply-level kódy (`ApplyResult.errorCode`, 422): `number_series_not_found`,

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Exchange\Export;
 
 use Dibi\Connection;
+use Shipard\Core\Accounting\JournalDimension;
+use Shipard\Core\Accounting\JournalDimensionSet;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Module\Core\Exchange\Dataset\ExportedRecord;
 use Shipard\Module\Core\Exchange\Dataset\RecordExporter;
 use Shipard\Module\Core\Exchange\Dataset\ValueNormalizer as V;
@@ -56,9 +59,45 @@ final class DocumentExporter implements RecordExporter
     /** @var list<string> */
     private array $warnings = [];
 
+    /**
+     * Dimenze deníku s `exchangeKey` (#110 T2) — jen ty, jejichž cílovou
+     * tabulku sada nese v sekci setup (středisko). Dimenze mířící na záznamy
+     * mimo sadu (karty majetku) se nepřenáší: seed by jinak doklad odmítl
+     * (`dimension_not_found`), i když je zbytek dat v pořádku.
+     *
+     * @var list<JournalDimension>
+     */
+    private readonly array $dimensions;
+
+    /** @var list<JournalDimension> dimenze s klíčem, které sada neumí obnovit */
+    private readonly array $unportableDimensions;
+
+    /** @var array<string, array<int, ?string>> id dimenze → id záznamu → přirozený klíč */
+    private array $dimensionKeys = [];
+
+    /** @var array<string, array<string, true>> id dimenze → doklady, kde se hodnota zahodila */
+    private array $droppedDimensions = [];
+
     public function __construct(
         private readonly Connection $db,
-    ) {}
+        ?ConfigRuntime $config = null,
+    ) {
+        $portableTables = array_column(SetupExporter::TABLES, 'table');
+        $portable = [];
+        $unportable = [];
+        foreach (JournalDimensionSet::fromConfig($config) as $dimension) {
+            if ($dimension->exchangeKey === null) {
+                continue;
+            }
+            if (in_array($dimension->table, $portableTables, true)) {
+                $portable[] = $dimension;
+            } else {
+                $unportable[] = $dimension;
+            }
+        }
+        $this->dimensions = $portable;
+        $this->unportableDimensions = $unportable;
+    }
 
     public function section(): string
     {
@@ -85,7 +124,24 @@ final class DocumentExporter implements RecordExporter
 
     public function getWarnings(): array
     {
-        return $this->warnings;
+        $warnings = $this->warnings;
+        // Jedno varování per dimenze, ne per doklad — DS po importu majetku má
+        // kartu na stovkách dokladů.
+        foreach ($this->droppedDimensions as $dimensionId => $labels) {
+            $dimension = null;
+            foreach ($this->unportableDimensions as $candidate) {
+                if ($candidate->id === $dimensionId) {
+                    $dimension = $candidate;
+                }
+            }
+            $warnings[] = sprintf(
+                'docs: dimenze %s se do sady nepřenáší (%d dokladů) — záznamy %s nejsou součást sady',
+                $dimension?->name ?? $dimensionId,
+                count($labels),
+                $dimension?->table ?? '?',
+            );
+        }
+        return $warnings;
     }
 
     private function selectSql(): string
@@ -236,6 +292,7 @@ final class DocumentExporter implements RecordExporter
                 'internal'   => V::str($h['notice'] ?? null),
                 'onDocument' => V::str($h['doc_notice'] ?? null),
             ],
+            'dimensions'    => $this->dimensionValues($h, true, $label),
             'rows'          => $this->rows($id, $label),
             'vatRecap'      => $this->vatRecap($id),
             'totals'        => [
@@ -257,6 +314,51 @@ final class DocumentExporter implements RecordExporter
         }
 
         return new ExportedRecord($id, $slug, $pruned);
+    }
+
+    // ── dimenze deníku ──────────────────────────────────────────────────────
+
+    /**
+     * Objekt `dimensions` hlavičky (`headColumn`) / řádku (`rowColumn`):
+     * id dimenze → přirozený klíč záznamu. Prázdné hodnoty se vynechají
+     * (prune), nepřenositelná dimenze s hodnotou se zaznamená do varování.
+     *
+     * @param array<string, mixed> $record
+     * @return array<string, string>
+     */
+    private function dimensionValues(array $record, bool $head, string $label): array
+    {
+        $out = [];
+        foreach ($this->dimensions as $dimension) {
+            $recordId = V::int($record[$head ? $dimension->headColumn : $dimension->rowColumn] ?? null);
+            if ($recordId === null) {
+                continue;
+            }
+            $key = $this->dimensionKey($dimension, $recordId);
+            if ($key === null) {
+                $this->warnings[] = "docs {$label}: dimenze {$dimension->name} #{$recordId} nemá klíč {$dimension->exchangeKey} — nepřenáší se";
+                continue;
+            }
+            $out[$dimension->id] = $key;
+        }
+        foreach ($this->unportableDimensions as $dimension) {
+            if (V::int($record[$head ? $dimension->headColumn : $dimension->rowColumn] ?? null) !== null) {
+                $this->droppedDimensions[$dimension->id][$label] = true;
+            }
+        }
+        return $out;
+    }
+
+    private function dimensionKey(JournalDimension $dimension, int $recordId): ?string
+    {
+        if (!array_key_exists($recordId, $this->dimensionKeys[$dimension->id] ?? [])) {
+            $row = $this->db->fetch(
+                "SELECT [{$dimension->exchangeKey}] AS [k] FROM [{$dimension->table}] WHERE [id] = %i",
+                $recordId,
+            );
+            $this->dimensionKeys[$dimension->id][$recordId] = $row !== null ? V::str($row['k'] ?? null) : null;
+        }
+        return $this->dimensionKeys[$dimension->id][$recordId];
     }
 
     // ── partner ─────────────────────────────────────────────────────────────
@@ -374,6 +476,7 @@ final class DocumentExporter implements RecordExporter
                 'specificSymbol'   => V::str($r['specific_symbol'] ?? null),
                 'constantSymbol'   => V::str($r['constant_symbol'] ?? null),
                 'dueDate'          => V::date($r['due_date'] ?? null),
+                'dimensions'       => $this->dimensionValues($r, false, $label),
             ]);
         }
         return $out;

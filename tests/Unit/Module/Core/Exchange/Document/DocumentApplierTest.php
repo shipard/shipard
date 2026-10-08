@@ -19,6 +19,9 @@ use Shipard\Module\Core\Exchange\Document\VatPlaceDerivation;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
 use Shipard\Module\Core\Exchange\Resolve\AccountResolver;
 use Shipard\Module\Core\Exchange\Resolve\BankAccountResolver;
+use Shipard\Module\Core\Exchange\Resolve\DimensionResolver;
+use Shipard\Core\Accounting\JournalDimension;
+use Shipard\Core\Accounting\JournalDimensionSet;
 use Shipard\Module\Core\Exchange\Resolve\ItemResolver;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Exchange\Resolve\ResolveResult;
@@ -101,6 +104,8 @@ class DocumentApplierTest extends TestCase
         ?VatCodeDerivation $derivation = null,
         ?VatPlaceDerivation $placeDerivation = null,
         ?array $contentTags = null,
+        ?DimensionResolver $dimension = null,
+        ?DocumentValidator $validator = null,
     ): DocumentApplier {
         $db ??= $this->createMock(Connection::class);
         $party ??= $this->createMock(PartyResolver::class);
@@ -135,7 +140,7 @@ class DocumentApplierTest extends TestCase
             personsGateway: $persons,
             itemsGateway: $items,
             schemaValidator: new SchemaValidator(SchemaLoader::default()),
-            documentValidator: new DocumentValidator(),
+            documentValidator: $validator ?? new DocumentValidator(),
             partyResolver: $party,
             itemResolver: $item,
             unitResolver: $unit,
@@ -151,7 +156,151 @@ class DocumentApplierTest extends TestCase
             // Skutečná taxonomie (contentTags.jsonc) — fallback druhu plnění
             // ze štítku a veto, tasks/exchange-received-supply-kind.md D2/D4.
             contentTags: $contentTags ?? $this->contentTaxonomy(),
+            dimensionResolver: $dimension,
         );
+    }
+
+    // ── Dimenze deníku (#110 T2) ────────────────────────────────────────────
+
+    /** Sada dimenzí jako na DS: středisko (klíč `code`) a majetek (`asset_number`). */
+    private function dimensionSet(): JournalDimensionSet
+    {
+        return JournalDimensionSet::fromConfig($this->configWithDimensions());
+    }
+
+    /** Výchozí config + cfgItem dimenzí deníku (applier z něj bere sloupce). */
+    private function configWithDimensions(): ConfigRuntime
+    {
+        $base = $this->defaultConfig();
+        $dimensions = [
+            'costCenter' => [
+                'id' => 'costCenter', 'rowColumn' => 'cost_center', 'headColumn' => 'cost_center',
+                'journalColumn' => 'cost_center', 'table' => 'economy_codebooks_cost_centers',
+                'name' => 'Středisko', 'exchangeKey' => 'code',
+            ],
+            'asset' => [
+                'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => 'asset', 'journalColumn' => 'asset',
+                'table' => 'economy_assets_assets', 'name' => 'Majetek', 'exchangeKey' => 'asset_number',
+            ],
+        ];
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === JournalDimensionSet::CFG_ITEM ? $dimensions : $base->cfgItem($id),
+        );
+        return $config;
+    }
+
+    /** Resolver nad DB, kde existuje středisko S01 (id 3) a V01 (id 5), nic jiného. */
+    private function dimensionResolver(): DimensionResolver
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(static function (string $sql, string $value): ?Row {
+            $ids = ['S01' => 3, 'V01' => 5];
+            return str_contains($sql, 'economy_codebooks_cost_centers') && isset($ids[$value])
+                ? new Row(['id' => $ids[$value]])
+                : null;
+        });
+        return new DimensionResolver($db, $this->dimensionSet());
+    }
+
+    /**
+     * Apply přijaté faktury s objekty `dimensions`; vrací výsledek a data,
+     * která šla do gateway hlaviček.
+     *
+     * @param array<string, string>|null $headDimensions
+     * @param array<string, string>|null $rowDimensions na prvním řádku
+     * @return array{0: ApplyResult, 1: array<string, mixed>|null}
+     */
+    private function applyWithDimensions(?array $headDimensions, ?array $rowDimensions, bool $withResolver = true): array
+    {
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $persons   = $this->createMock(TransactionlessTableGateway::class);
+        $persons->method('saveDocument')->willReturn(DocumentResult::ok(['id' => 99]));
+
+        $saved = null;
+        $heads = $this->createMock(TransactionlessTableGateway::class);
+        $heads->method('saveDocument')->willReturnCallback(static function (array $data) use (&$saved) {
+            $saved = $data;
+            return DocumentResult::ok(['id' => 1234]);
+        });
+
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->method('getInsertId')->willReturn(0);
+
+        $applier = $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'],
+            heads: $heads, persons: $persons,
+            config: $this->configWithDimensions(),
+            dimension: $withResolver ? $this->dimensionResolver() : null,
+            validator: new DocumentValidator($this->dimensionSet()),
+        );
+
+        $payload = $this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'safe']);
+        if ($headDimensions !== null) {
+            $payload['dimensions'] = $headDimensions;
+        }
+        if ($rowDimensions !== null) {
+            $payload['rows'][0]['dimensions'] = $rowDimensions;
+        }
+        return [$applier->apply($payload), $saved];
+    }
+
+    public function testDimensionsAreWrittenToHeadAndRowColumns(): void
+    {
+        [$result, $saved] = $this->applyWithDimensions(['costCenter' => 'S01'], ['costCenter' => 'V01']);
+
+        $this->assertTrue($result->success, "{$result->errorCode} {$result->errorMessage}");
+        $this->assertSame(3, $saved['cost_center']);
+        $this->assertSame(5, $saved['rows'][0]['cost_center']);
+        // Ostatní řádky bez objektu dimenzí sloupec nenesou (NULL → dědí hlavičku).
+        $this->assertArrayNotHasKey('cost_center', $saved['rows'][1] ?? []);
+        $this->assertArrayNotHasKey('asset', $saved);
+        $this->assertSame(
+            ['value' => 'V01', 'status' => 'matched', 'matchedId' => 5],
+            $result->canonical['_resolve']['rows'][0]['dimensions']['costCenter'],
+        );
+    }
+
+    public function testUnknownDimensionValueFailsValidationWithRowPath(): void
+    {
+        [$result, $saved] = $this->applyWithDimensions(['costCenter' => 'S01'], ['costCenter' => 'S99']);
+
+        $this->assertFalse($result->success);
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertNull($saved, 'doklad se neuloží');
+        $issues = array_values(array_filter(
+            $result->canonical['_resolve']['issues'] ?? [],
+            static fn (array $issue): bool => $issue['code'] === 'dimension_not_found',
+        ));
+        $this->assertCount(1, $issues);
+        $this->assertSame('rows.0.dimensions.costCenter', $issues[0]['path']);
+        $this->assertSame('error', $issues[0]['severity']);
+        $this->assertStringContainsString('S99', $issues[0]['message']);
+    }
+
+    public function testUnknownDimensionIdFailsValidation(): void
+    {
+        [$result, $saved] = $this->applyWithDimensions(['costcenter' => 'S01'], null);
+
+        $this->assertFalse($result->success);
+        $this->assertSame('validation_failed', $result->errorCode);
+        $this->assertNull($saved);
+        $codes = array_column($result->canonical['_resolve']['issues'] ?? [], 'code', 'path');
+        $this->assertSame('dimension_unknown', $codes['dimensions.costcenter'] ?? null);
+    }
+
+    public function testEmptyValueAndMissingResolverLeaveColumnsUntouched(): void
+    {
+        [$result, $saved] = $this->applyWithDimensions(['costCenter' => ''], null);
+        $this->assertTrue($result->success, "{$result->errorCode} {$result->errorMessage}");
+        $this->assertArrayNotHasKey('cost_center', $saved);
+
+        // DS bez resolveru (bez dimenzí s klíčem): objekt se ignoruje.
+        [$result, $saved] = $this->applyWithDimensions(['costCenter' => 'S01'], null, withResolver: false);
+        $this->assertTrue($result->success, "{$result->errorCode} {$result->errorMessage}");
+        $this->assertArrayNotHasKey('cost_center', $saved);
     }
 
     private static ?array $contentTaxonomy = null;

@@ -898,6 +898,29 @@ class ModuleDefinitionTest extends TestCase
         ModuleDefinition::fromArray(['id' => 'economy.assets', 'name' => 'Assets', 'journalDimensions' => [$dimension]]);
     }
 
+    public function testJournalDimensionExchangeKeyIsOptionalIdentifier(): void
+    {
+        // #110 T2: přirozený klíč ve výměnném formátu; bez něj klíč v entry chybí.
+        $with = ModuleDefinition::fromArray([
+            'id' => 'economy.accounting', 'name' => 'Accounting',
+            'journalDimensions' => [$this->assetDimension(['exchangeKey' => 'asset_number'])],
+        ]);
+        $this->assertSame('asset_number', $with->journalDimensions[0]['exchangeKey']);
+
+        $without = ModuleDefinition::fromArray([
+            'id' => 'economy.accounting', 'name' => 'Accounting',
+            'journalDimensions' => [$this->assetDimension()],
+        ]);
+        $this->assertArrayNotHasKey('exchangeKey', $without->journalDimensions[0]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('journalDimensions[0].exchangeKey must be an identifier');
+        ModuleDefinition::fromArray([
+            'id' => 'economy.accounting', 'name' => 'Accounting',
+            'journalDimensions' => [$this->assetDimension(['exchangeKey' => 'asset number'])],
+        ]);
+    }
+
     public function testJournalDimensionColumnMustBeIdentifier(): void
     {
         // Sloupce a tabulka jdou do SQL — nic než identifikátor.

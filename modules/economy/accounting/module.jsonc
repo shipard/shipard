@@ -30,6 +30,8 @@
     // `forms` = pole dimenze na hlavičce a řádcích dokladů, jen se zapnutým
     // nastavením Dimenze na dokladech (`enabledBySetting`, D21) — řídí jen
     // zobrazení, uložená hodnota se do deníku propisuje vždy.
+    // `exchangeKey` = přirozený klíč ve výměnném formátu dokladu (objekt
+    // `dimensions`, T2): středisko kód, majetek inventární číslo.
     //
     // costCenter — středisko (D23): na hlavičce jako výchozí hodnota, na
     //   řádcích skutečná; řádek bez střediska zdědí hlavičku i u pořízení
@@ -46,6 +48,7 @@
             "headColumn": "cost_center",
             "journalColumn": "cost_center",
             "table": "economy_codebooks_cost_centers",
+            "exchangeKey": "code",
             "name": "Cost center",
             "name:cs": "Středisko",
             "name:en": "Cost center",
@@ -65,6 +68,7 @@
             "journalColumn": "asset",
             "table": "economy_assets_assets",
             "rowFlag": "rowAsset",
+            "exchangeKey": "asset_number",
             "name": "Asset",
             "name:cs": "Majetek",
             "name:en": "Asset",

@@ -82,6 +82,10 @@
                 "onDocument": { "type": ["string", "null"] }
             }
         },
+        "dimensions": {
+            "type": ["object", "null"],
+            "additionalProperties": { "type": "string" }
+        },
         "rows": {
             "type": "array",
             "items": { "$ref": "#/$defs/Row" }
@@ -235,7 +239,11 @@
                 "paymentReference": { "type": ["string", "null"], "maxLength": 35 },
                 "specificSymbol":   { "type": ["string", "null"], "maxLength": 20 },
                 "constantSymbol":   { "type": ["string", "null"], "maxLength": 10 },
-                "dueDate":          { "type": ["string", "null"], "format": "date" }
+                "dueDate":          { "type": ["string", "null"], "format": "date" },
+                "dimensions": {
+                    "type": ["object", "null"],
+                    "additionalProperties": { "type": "string" }
+                }
             }
         },
         "RowItem": {

@@ -7,6 +7,8 @@ namespace Shipard\Tests\Unit\Module\Core\Exchange\Export;
 use Dibi\Connection;
 use Dibi\Row;
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Accounting\JournalDimensionSet;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Module\Core\Exchange\Document\DocumentValidator;
 use Shipard\Module\Core\Exchange\Export\DocumentExporter;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
@@ -44,7 +46,11 @@ class DocumentExporterTest extends TestCase
     private function db(array $rows = [], array $recap = [], bool $hasAccounting = true, bool $partner = true): Connection
     {
         $db = $this->createMock(Connection::class);
-        $db->method('fetch')->willReturnCallback(function (string $sql) use ($hasAccounting, $partner): ?Row {
+        $db->method('fetch')->willReturnCallback(function (string $sql, mixed ...$args) use ($hasAccounting, $partner): ?Row {
+            if (str_contains($sql, 'FROM [economy_codebooks_cost_centers]')) {
+                $codes = [3 => 'S01', 5 => 'V01'];
+                return isset($codes[(int) ($args[0] ?? 0)]) ? new Row(['k' => $codes[(int) $args[0]]]) : null;
+            }
             if (str_contains($sql, 'SHOW TABLES')) {
                 return $hasAccounting ? new Row(['t' => 'economy_accounting_accounts']) : null;
             }
@@ -89,6 +95,59 @@ class DocumentExporterTest extends TestCase
             'item_code' => 'K-001', 'item_name' => 'Konzultace IT', 'unit_code' => 'hour', 'unit_shortcut' => 'h',
             'account_number' => null,
         ];
+    }
+
+    /** cfgItem dimenzí deníku jako na DS: středisko (setup sady) a majetek (mimo sadu). */
+    private function configWithDimensions(): ConfigRuntime
+    {
+        $dimensions = [
+            'costCenter' => [
+                'id' => 'costCenter', 'rowColumn' => 'cost_center', 'headColumn' => 'cost_center',
+                'journalColumn' => 'cost_center', 'table' => 'economy_codebooks_cost_centers',
+                'name' => 'Středisko', 'exchangeKey' => 'code',
+            ],
+            'asset' => [
+                'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => 'asset', 'journalColumn' => 'asset',
+                'table' => 'economy_assets_assets', 'name' => 'Majetek', 'exchangeKey' => 'asset_number',
+            ],
+        ];
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(
+            static fn (string $id): mixed => $id === JournalDimensionSet::CFG_ITEM ? $dimensions : null,
+        );
+        return $config;
+    }
+
+    public function testDimensionsAreExportedByNaturalKeyOnlyWhenTheDatasetCarriesThem(): void
+    {
+        // #110 T2: středisko kódem na hlavičce i řádku; majetek sada nenese
+        // (karty nejsou její součást) — vynechá se s jedním varováním.
+        $rows = [
+            ['cost_center' => 5, 'asset' => 7] + $this->itemRowRow(),
+            ['id' => 2, 'order_pos' => 2, 'cost_center' => null, 'asset' => null] + $this->itemRowRow(),
+        ];
+        $exporter = new DocumentExporter($this->db(rows: $rows), $this->configWithDimensions());
+
+        $c = $exporter->exportDocument($this->headRow(['cost_center' => 3, 'asset' => 7]))->data;
+
+        $this->assertSame(['costCenter' => 'S01'], $c['dimensions']);
+        $this->assertSame(['costCenter' => 'V01'], $c['rows'][0]['dimensions']);
+        $this->assertArrayNotHasKey('dimensions', $c['rows'][1]);
+        $this->assertSame([], (new SchemaValidator(SchemaLoader::default()))->validate($c, 'shpd.docs.document', '1'));
+
+        $exporter->exportDocument($this->headRow(['id' => 101, 'doc_number' => 'FP-2026-0008', 'cost_center' => null, 'asset' => 7]));
+        $warnings = array_values(array_filter($exporter->getWarnings(), static fn(string $w): bool => str_contains($w, 'Majetek')));
+        $this->assertCount(1, $warnings, 'jedno varování per dimenze, ne per doklad');
+        $this->assertStringContainsString('2 dokladů', $warnings[0]);
+    }
+
+    public function testWithoutConfigNoDimensionsAreExported(): void
+    {
+        $c = (new DocumentExporter($this->db(rows: [['cost_center' => 5] + $this->itemRowRow()])))
+            ->exportDocument($this->headRow(['cost_center' => 3]))->data;
+
+        $this->assertArrayNotHasKey('dimensions', $c);
+        $this->assertArrayNotHasKey('dimensions', $c['rows'][0]);
     }
 
     public function testReceivedInvoiceMapsToCanonicalAndValidates(): void
