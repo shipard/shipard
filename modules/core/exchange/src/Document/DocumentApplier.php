@@ -7,6 +7,7 @@ namespace Shipard\Module\Core\Exchange\Document;
 use Dibi\Connection;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Database\NestedTransaction;
 use Shipard\Core\Database\TableDefinition;
 use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
@@ -43,8 +44,9 @@ use Shipard\Module\World\Trade\TradeUnionResolver;
  *   /validate  — schema + DocumentValidator, no DB writes, no resolve.
  *   /preview   — validate + full resolve, populates `_resolve`.
  *   /apply     — validate + resolve + reconcile with userAction +
- *                outer transaction { side-creates + saveDocument +
- *                lineage update }.
+ *                NestedTransaction { side-creates + saveDocument +
+ *                lineage update } — vlastní transakce, nebo SAVEPOINT
+ *                uvnitř transakce volajícího (generátory dokladů, #110).
  *
  * The Applier never reaches below the Document layer — all business
  * logic (number assignment, snapshots, totals, recap) stays in
@@ -713,9 +715,13 @@ class DocumentApplier
             $canonical['applyOptions']['importOwnBankAccount'] = $ownBankId;
         }
 
-        // 6–11. Transactional save.
-        $this->db->begin();
+        // 6–11. Transactional save — NestedTransaction: vlastní transakce,
+        //       nebo SAVEPOINT uvnitř cizí (periodická fakturace volá apply()
+        //       ve své transakci a atomicky navazuje doklad na období, #110).
+        //       Neúspěch closure = rollback vlastní práce; vnější transakce
+        //       zůstává volajícímu.
         try {
+            [$savedDocId, $sideCreatedIds] = NestedTransaction::run($this->db, function () use ($canonical, $resolved, &$plan, &$validatorIssues, $numberSeriesId): array {
             // Side-creates first so we have ids to link in the doc.
             $sideCreatedIds = $this->runSideCreates($plan, $resolved);
 
@@ -758,9 +764,9 @@ class DocumentApplier
             // stays one place. See tasks/mail-message-centric.md D6.
             $this->writeLineageTargets($canonical, $savedDocId);
 
-            $this->db->commit();
+            return [$savedDocId, $sideCreatedIds];
+            });
         } catch (\Throwable $e) {
-            $this->db->rollback();
             return ApplyResult::error('internal_error', $e->getMessage(), $enriched, statusCode: 500);
         }
 

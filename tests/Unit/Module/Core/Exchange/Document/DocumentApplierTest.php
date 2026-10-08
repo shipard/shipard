@@ -947,6 +947,66 @@ class DocumentApplierTest extends TestCase
      * `cs_mode`; `auto` a chybějící hodnota klíč do payloadu nedají
      * (default sloupce 0, na DS bez economy.vat sloupec ani neexistuje).
      */
+    // ── NestedTransaction (#110): vlastní transakce vs. savepoint uvnitř cizí ──
+
+    /** @return array{TestableDocumentApplier, \PHPUnit\Framework\MockObject\MockObject} */
+    private function applierForTransactionTests(int $inTransaction, bool $saveSucceeds = true): array
+    {
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $persons = $this->createMock(TransactionlessTableGateway::class);
+        $persons->method('saveDocument')->willReturn(\Shipard\Core\Document\DocumentResult::ok(['id' => 99]));
+        $heads = $this->createMock(TransactionlessTableGateway::class);
+        $heads->method('saveDocument')->willReturn(
+            $saveSucceeds
+                ? \Shipard\Core\Document\DocumentResult::ok(['id' => 1234])
+                : \Shipard\Core\Document\DocumentResult::error('boom'),
+        );
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->method('fetchSingle')->willReturn($inTransaction);
+        $db->method('getInsertId')->willReturn(0);
+        $applier = $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'], heads: $heads, persons: $persons,
+        );
+        return [$applier, $db];
+    }
+
+    public function testApplyAtTopLevelOpensAndCommitsItsOwnTransaction(): void
+    {
+        [$applier, $db] = $this->applierForTransactionTests(0);
+        $db->expects($this->once())->method('begin')->with(null);
+        $db->expects($this->once())->method('commit')->with(null);
+        $db->expects($this->never())->method('rollback');
+
+        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']));
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame(1234, $result->savedId);
+    }
+
+    public function testApplyInsideCallersTransactionUsesSavepoint(): void
+    {
+        [$applier, $db] = $this->applierForTransactionTests(1);
+        $db->expects($this->once())->method('begin')->with($this->matchesRegularExpression('/^shpd_nested_\d+$/'));
+        $db->expects($this->once())->method('commit')->with($this->matchesRegularExpression('/^shpd_nested_\d+$/'));
+
+        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']));
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+    }
+
+    public function testFailedSaveInsideCallersTransactionRollsBackOnlyTheSavepoint(): void
+    {
+        [$applier, $db] = $this->applierForTransactionTests(1, saveSucceeds: false);
+        $db->expects($this->once())->method('rollback')->with($this->matchesRegularExpression('/^shpd_nested_\d+$/'));
+        $db->expects($this->never())->method('commit');
+
+        $result = $applier->apply($this->payloadWithCanCreateSupplier(['full_name' => 'X', 'company_id' => '12345678'], ['autoCreateMode' => 'safe']));
+        $this->assertFalse($result->success);
+        $this->assertSame('internal_error', $result->errorCode);
+        $this->assertSame(500, $result->statusCode);
+        $this->assertStringContainsString('boom', (string) $result->errorMessage);
+    }
+
     public function testControlStatementModeMapsToCsModeOnlyWhenManual(): void
     {
         $cases = [['exclude', 3], ['detail', 1], ['aggregate', 2], ['auto', null], [null, null]];

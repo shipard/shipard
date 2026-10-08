@@ -246,7 +246,7 @@ podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 | `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep` | `active` |
 | `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) |
 | `five-minutes` | à 5 min | `alerts-run` (self-throttling přes `next_run_at`) | `active` |
-| `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) |
+| `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) |
 | `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` |
 
 Registr povolených stavů je `CronCommand::JOB_ALLOWED_STATES`; job bez
@@ -663,6 +663,40 @@ Ověření importu majetku (`docs/assets.md` D82, §5.7) — čte, nic nemění:
 Exit 0 bez rozdílů, 1 s rozdíly nebo chybou plánu nebo rokem kontroly ve
 stavu `errors` (varování a uplynulá doba neshazují); FAILURE i při chybě
 prostředí.
+
+#### `work-orders-invoice-run [--date=YYYY-MM-DD] [--work-order=<číslo>] [--dry-run]`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds work-orders-invoice-run --dry-run                   # která období by se vystavila a jaké doklady
+shpd-ds work-orders-invoice-run                             # vystaví koncepty za splatná období (denní cron)
+shpd-ds work-orders-invoice-run --date=2026-11-01 --dry-run # simulace běhu k datu
+shpd-ds work-orders-invoice-run --work-order=S260001        # jedna zakázka — i přes pojistku dohánění
+```
+
+Běh periodické fakturace ([work-orders.md](work-orders.md) §5.5, #110 D5):
+pro každou periodickou zakázku **V pořádku** s „fakturovat od“ založí
+chybějící splatná období (den fakturace = počátek / konec období ≤ datum
+běhu) a vystaví je jako **koncepty** faktur nebo zálohových faktur
+vydaných přes výměnný formát (`DocumentApplier`, Q1). Založení dokladu
+a zápis do evidence období jsou jedna transakce; `issued` období se
+nikdy nevystaví podruhé (idempotentní, smazaný koncept = zastaveno).
+Víc než 3 dlužná období jedné zakázky běh nevystaví (pojistka dohánění,
+Q4) — vystaví je `--work-order` nebo akce *Vystavit dlužná období*
+v detailu zakázky. Chyba jednoho období (chybějící řada, validace
+dokladu, žádný platný řádek) zastaví jen to období; důvod zůstane
+v evidenci a hlásí ho upozornění. Výstup: řádek per zakázka × období
+(vystaveno / čeká na podklady / selhalo / pojistka) a souhrn. Na DS bez
+modulu zakázek rychlý exit 0.
+
+Exit 0; 1 když se některé období nepodařilo vystavit; INVALID při špatném
+datu nebo neznámém čísle zakázky.
+
+| Opce | Význam |
+|------|--------|
+| `--date=YYYY-MM-DD` | datum běhu (splatnost období); výchozí dnešek |
+| `--work-order=<číslo>` | jen tato zakázka, bez pojistky dohánění |
+| `--dry-run` | jen výčet, nic se nezapíše (ani období se nezaloží) |
 
 #### `accbal-match --all | --partner=<id> | --fiscal-year=<id> [--dry-run]`
 

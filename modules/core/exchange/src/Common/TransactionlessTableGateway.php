@@ -9,8 +9,10 @@ use Shipard\Core\Document\TableGateway;
 /**
  * TableGateway variant that does NOT manage its own DB transaction —
  * begin/commit/rollback are no-ops. Used by exchange Appliers so the
- * Applier can own the outer transaction (side-creates + doc save +
- * lineage update must be atomic, see docs/exchange-format.md §10).
+ * Applier can own the transaction (side-creates + doc save + lineage
+ * update must be atomic, see docs/exchange-format.md §10). The Applier
+ * runs the save in `NestedTransaction` — its own transaction, or a
+ * SAVEPOINT inside the caller's (document generators, #110).
  *
  * Reason this can't be solved with nested $db->begin(): MariaDB has no
  * concept of nested START TRANSACTION — a second begin implicitly
