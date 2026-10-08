@@ -62,6 +62,25 @@
             }
         },
         {
+            "id": "workOrder",
+            "rowColumn": "work_order",
+            "headColumn": "work_order",
+            "journalColumn": "work_order",
+            "table": "economy_work_orders_heads",
+            "exchangeKey": "number",
+            "name": "Work order",
+            "name:cs": "Zakázka",
+            "name:en": "Work order",
+            "name:sk": "Zákazka",
+            "name:de": "Auftrag",
+            "forms": {
+                "docTypes": ["invno", "invpo", "invni", "cash", "cmnbkp"],
+                "head": true,
+                "rows": true,
+                "enabledBySetting": "economy.accounting.dimension.workOrder"
+            }
+        },
+        {
             "id": "asset",
             "rowColumn": "asset",
             "headColumn": "asset",
@@ -107,6 +126,20 @@
                     "hint": "Adds the Cost center field to the header and rows of received, issued and proforma issued invoices, cash and accounting documents. Empty = no. The header value is the default for rows without their own.",
                     "hint:cs": "Přidá pole Středisko na hlavičku a řádky přijatých, vydaných a zálohových vydaných faktur, pokladních a účetních dokladů. Prázdné = ne. Středisko z hlavičky platí pro řádky bez vlastního.",
                     "hint:en": "Adds the Cost center field to the header and rows of received, issued and proforma issued invoices, cash and accounting documents. Empty = no. The header value is the default for rows without their own.",
+                    "options": [
+                        { "value": "yes", "label": "Yes", "label:cs": "Ano", "label:en": "Yes" },
+                        { "value": "no",  "label": "No",  "label:cs": "Ne",  "label:en": "No" }
+                    ]
+                },
+                {
+                    "id": "economy.accounting.dimension.workOrder",
+                    "type": "select",
+                    "name": "Work order on documents",
+                    "name:cs": "Zakázka na dokladech",
+                    "name:en": "Work order on documents",
+                    "hint": "Adds the Work order field to the header and rows of received, issued and proforma issued invoices, cash and accounting documents. Empty = no. The header value is the default for rows without their own.",
+                    "hint:cs": "Přidá pole Zakázka na hlavičku a řádky přijatých, vydaných a zálohových vydaných faktur, pokladních a účetních dokladů. Prázdné = ne. Zakázka z hlavičky platí pro řádky bez vlastní.",
+                    "hint:en": "Adds the Work order field to the header and rows of received, issued and proforma issued invoices, cash and accounting documents. Empty = no. The header value is the default for rows without their own.",
                     "options": [
                         { "value": "yes", "label": "Yes", "label:cs": "Ano", "label:en": "Yes" },
                         { "value": "no",  "label": "No",  "label:cs": "Ne",  "label:en": "No" }

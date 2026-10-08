@@ -29,6 +29,7 @@ class DimensionFormFieldsTest extends TestCase
 {
     private const SETTING = 'economy.accounting.dimension.asset';
     private const SETTING_CC = 'economy.accounting.dimension.costCenter';
+    private const SETTING_WO = 'economy.accounting.dimension.workOrder';
 
     private function config(): ConfigRuntime
     {
@@ -42,6 +43,15 @@ class DimensionFormFieldsTest extends TestCase
                     'forms' => [
                         'docTypes' => ['invno', 'invpo', 'invni', 'cash', 'cmnbkp'], 'head' => true, 'rows' => true,
                         'enabledBySetting' => self::SETTING_CC,
+                    ],
+                ],
+                'workOrder' => [
+                    'id' => 'workOrder', 'rowColumn' => 'work_order', 'headColumn' => 'work_order',
+                    'journalColumn' => 'work_order', 'table' => 'economy_work_orders_heads',
+                    'name' => 'Zakázka', 'displayPattern' => '{number} — {title}',
+                    'forms' => [
+                        'docTypes' => ['invno', 'invpo', 'invni', 'cash', 'cmnbkp'], 'head' => true, 'rows' => true,
+                        'enabledBySetting' => self::SETTING_WO,
                     ],
                 ],
                 'asset' => [
@@ -92,8 +102,9 @@ class DimensionFormFieldsTest extends TestCase
         ?array $head = null,
         ?array $headAsset = null,
         ?string $costCenterSetting = null,
+        ?string $workOrderSetting = null,
     ): DataSourceConnection {
-        $settings = [self::SETTING => $setting, self::SETTING_CC => $costCenterSetting];
+        $settings = [self::SETTING => $setting, self::SETTING_CC => $costCenterSetting, self::SETTING_WO => $workOrderSetting];
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchSingle')->willReturnCallback(
             static function (string $sql, mixed ...$args) use ($settings): mixed {
@@ -105,6 +116,7 @@ class DimensionFormFieldsTest extends TestCase
             static fn(string $sql): ?array => match (true) {
                 str_contains($sql, 'economy_assets_assets')          => $headAsset,
                 str_contains($sql, 'economy_codebooks_cost_centers') => null,
+                str_contains($sql, 'economy_work_orders_heads')      => null,
                 default                                              => $head,
             },
         );
@@ -129,11 +141,16 @@ class DimensionFormFieldsTest extends TestCase
     }
 
     /** @param class-string<DocsHeadsFormBase> $class */
-    private function headDefinition(string $class, array $data, ?string $setting, ?string $costCenterSetting = null): FormDefinition
-    {
+    private function headDefinition(
+        string $class,
+        array $data,
+        ?string $setting,
+        ?string $costCenterSetting = null,
+        ?string $workOrderSetting = null,
+    ): FormDefinition {
         $form = new $class('docs_core_heads');
         $form->setConfig($this->config());
-        $form->setDb($this->db($setting, costCenterSetting: $costCenterSetting));
+        $form->setDb($this->db($setting, costCenterSetting: $costCenterSetting, workOrderSetting: $workOrderSetting));
         return $form->buildFormDefinition($data, true);
     }
 
@@ -145,7 +162,7 @@ class DimensionFormFieldsTest extends TestCase
             foreach ($tab->sections as $section) {
                 foreach ($section->columns as $col) {
                     foreach ($col->elements as $el) {
-                        if (in_array($el->column, ['cost_center', 'asset'], true)) {
+                        if (in_array($el->column, ['cost_center', 'work_order', 'asset'], true)) {
                             $out[] = $el->column;
                         }
                     }
@@ -209,10 +226,40 @@ class DimensionFormFieldsTest extends TestCase
     #[DataProvider('headForms')]
     public function testHeadOffersDimensionsInDeclaredOrder(string $class, array $data): void
     {
-        // Obě dimenze zapnuté: pole v pořadí dimenzí; každé řídí jen své nastavení.
+        // Všechny dimenze zapnuté: pole v pořadí dimenzí (středisko →
+        // zakázka → majetek); každé řídí jen své nastavení.
+        $this->assertSame(
+            ['cost_center', 'work_order', 'asset'],
+            $this->dimensionColumns($this->headDefinition($class, $data, 'yes', 'yes', 'yes')),
+        );
         $this->assertSame(['cost_center', 'asset'], $this->dimensionColumns($this->headDefinition($class, $data, 'yes', 'yes')));
         $this->assertSame(['cost_center'], $this->dimensionColumns($this->headDefinition($class, $data, 'no', 'yes')));
         $this->assertSame(['asset'], $this->dimensionColumns($this->headDefinition($class, $data, 'yes', null)));
+        $this->assertSame(['work_order'], $this->dimensionColumns($this->headDefinition($class, $data, 'no', 'no', 'yes')));
+    }
+
+    #[DataProvider('headForms')]
+    public function testHeadOffersWorkOrderOnlyWithSettingOn(string $class, array $data): void
+    {
+        // #110 D23: zakázka na hlavičce jako výchozí hodnota pro řádky.
+        $field = $this->findElement($this->headDefinition($class, $data, null, null, 'yes'), 'work_order');
+        $this->assertNotNull($field, "{$class} nabízí pole Zakázka");
+        $this->assertSame('lookup', $field->type);
+        $this->assertSame('economy_work_orders_heads', $field->lookup['table']);
+        $this->assertSame('Zakázka', $field->label);
+        $this->assertFalse($field->required);
+
+        $this->assertNull($this->findElement($this->headDefinition($class, $data, null, null, 'no'), 'work_order'));
+        $this->assertNull($this->findElement($this->headDefinition($class, $data, null, null, null), 'work_order'));
+    }
+
+    public function testProformaOffersWorkOrder(): void
+    {
+        // Zálohová faktura vydaná zakázku nese — periodická fakturace z ní
+        // vystavuje zálohy (tasks/work-orders-phase1.md §4).
+        $field = $this->findElement($this->headDefinition(ProformaOutForm::class, ['doc_type' => 'invpo'], null, null, 'yes'), 'work_order');
+        $this->assertNotNull($field);
+        $this->assertSame('economy_work_orders_heads', $field->lookup['table']);
     }
 
     /**
@@ -225,12 +272,13 @@ class DimensionFormFieldsTest extends TestCase
         ?string $setting,
         ?array $headAsset = null,
         ?string $costCenterSetting = null,
+        ?string $workOrderSetting = null,
     ): FormDefinition {
         $form = new DocRowsForm('docs_core_rows');
         $form->setConfig($this->config());
         $form->setDb($this->db($setting, [
             'doc_type' => $docType, 'vat_place' => 0, 'vat_duzp' => null, 'vat_mode' => 0, 'vat_registration' => null,
-        ], $headAsset, $costCenterSetting));
+        ], $headAsset, $costCenterSetting, $workOrderSetting));
         return $form->buildFormDefinition($data + ['row_kind' => 1, 'doc_head' => 5], true);
     }
 
@@ -244,6 +292,19 @@ class DimensionFormFieldsTest extends TestCase
             $this->assertSame('economy_codebooks_cost_centers', $field->lookup['table']);
             $this->assertFalse($field->required);
             $this->assertNull($this->findElement($this->rowDefinition($docType, ['operation' => $operation], 'no', null, 'no'), 'cost_center'));
+        }
+    }
+
+    public function testRowOffersWorkOrderOnEveryDocumentIncludingAcquisition(): void
+    {
+        // Zakázka na řádku zálohové faktury, pořízení majetku i kontace —
+        // pole je generické a nepovinné, řídí ho jen vlastní nastavení.
+        foreach ([['invpo', 'purchase.goods'], ['invni', 'purchase.asset'], ['cmnbkp', 'acc.record']] as [$docType, $operation]) {
+            $field = $this->findElement($this->rowDefinition($docType, ['operation' => $operation], 'no', null, 'no', 'yes'), 'work_order');
+            $this->assertNotNull($field, "{$docType} / {$operation}");
+            $this->assertSame('economy_work_orders_heads', $field->lookup['table']);
+            $this->assertFalse($field->required);
+            $this->assertNull($this->findElement($this->rowDefinition($docType, ['operation' => $operation], 'no', null, 'no', 'no'), 'work_order'));
         }
     }
 

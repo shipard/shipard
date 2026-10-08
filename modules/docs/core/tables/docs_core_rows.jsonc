@@ -341,6 +341,18 @@
             "reference": "economy_codebooks_cost_centers"
         },
 
+        // work_order — zakázka, které se řádek týká (#110 D23); prázdné
+        //   = zakázka hlavičky.
+        {
+            "id": "work_order",
+            "name": "Work order",
+            "name:cs": "Zakázka",
+            "name:en": "Work order",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_work_orders_heads"
+        },
+
         // asset — karta majetku, které se řádek týká (docs/assets.md D15,
         //   D47). Povinná u operací s vlajkou `rowAsset: 1` (asset.*, D48),
         //   nepovinná u pořízení (`purchase.asset`, D61) — tyhle řádky kartu
@@ -382,6 +394,11 @@
             "id": "idx_cost_center",
             "type": "index",
             "columns": [{"column": "cost_center"}]
+        },
+        {
+            "id": "idx_work_order",
+            "type": "index",
+            "columns": [{"column": "work_order"}]
         },
         {
             "id": "idx_asset",

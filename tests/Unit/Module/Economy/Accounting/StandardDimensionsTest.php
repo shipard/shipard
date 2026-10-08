@@ -57,7 +57,8 @@ class StandardDimensionsTest extends TestCase
 
     public function testDimensionsAreDeclaredInOrder(): void
     {
-        $this->assertSame(['costCenter', 'asset'], self::ids(self::dimensions()));
+        // #110 D20: středisko → zakázka → majetek (pořadí polí na formulářích i v deníku).
+        $this->assertSame(['costCenter', 'workOrder', 'asset'], self::ids(self::dimensions()));
     }
 
     public function testCostCenterIsOnHeadAndRowsOfEveryDocumentIncludingProforma(): void
@@ -77,6 +78,24 @@ class StandardDimensionsTest extends TestCase
         $operations = JsoncParser::parseFile(self::MODULES . '/docs/core/config/rowOperations.jsonc');
         $this->assertSame(3, $dimension->valueOf([], ['cost_center' => 3], $operations['purchase.asset']));
         $this->assertSame(4, $dimension->valueOf(['cost_center' => 4], ['cost_center' => 3]));
+    }
+
+    public function testWorkOrderIsOnHeadAndRowsOfEveryDocumentIncludingProforma(): void
+    {
+        // tasks/work-orders-phase1.md §4: stejné doklady jako středisko,
+        // hodnota hlavičky je výchozí pro řádky, žádná vlajka řádku.
+        $dimension = self::dimension('workOrder');
+
+        $this->assertSame('work_order', $dimension->headColumn);
+        $this->assertSame('work_order', $dimension->rowColumn);
+        $this->assertSame('work_order', $dimension->journalColumn);
+        $this->assertNull($dimension->rowFlag);
+        foreach (['invno', 'invpo', 'invni', 'cash', 'cmnbkp'] as $docType) {
+            $this->assertTrue($dimension->isOnForm($docType, true), "{$docType}: hlavička");
+            $this->assertTrue($dimension->isOnForm($docType, false), "{$docType}: řádek");
+        }
+        $this->assertSame(3, $dimension->valueOf([], ['work_order' => 3]));
+        $this->assertSame(4, $dimension->valueOf(['work_order' => 4], ['work_order' => 3]));
     }
 
     public function testEveryDimensionHasColumnsAndIndexesInCoreTables(): void
@@ -114,9 +133,10 @@ class StandardDimensionsTest extends TestCase
         // v cílové tabulce existovat, jinak by resolver padal v SQL.
         $tables = [
             'economy_codebooks_cost_centers' => 'economy/codebooks/tables/economy_codebooks_cost_centers.jsonc',
+            'economy_work_orders_heads'      => 'economy/workOrders/tables/economy_work_orders_heads.jsonc',
             'economy_assets_assets'          => 'economy/assets/tables/economy_assets_assets.jsonc',
         ];
-        $expected = ['costCenter' => 'code', 'asset' => 'asset_number'];
+        $expected = ['costCenter' => 'code', 'workOrder' => 'number', 'asset' => 'asset_number'];
         foreach (self::dimensions() as $dimension) {
             $this->assertSame($expected[$dimension->id] ?? null, $dimension->exchangeKey, $dimension->id);
             $def = JsoncParser::parseFile(self::MODULES . '/' . $tables[$dimension->table]);

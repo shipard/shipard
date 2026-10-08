@@ -63,6 +63,7 @@ Pole na formuláři zapíná nastavení Dimenze na dokladech.
 | Sloupec | Typ | Popis |
 |---|---|---|
 | `cost_center` | int → `economy_codebooks_cost_centers`, nullable | Středisko řádku (#110 D23); prázdné = středisko hlavičky, i u pořízení majetku |
+| `work_order` | int → `economy_work_orders_heads`, nullable | Zakázka řádku (#110 D23); prázdné = zakázka hlavičky |
 | `asset` | int → `economy_assets_assets`, nullable | Karta majetku, které se řádek týká (`docs/assets.md` D15, D47). Povinná u operací s vlajkou `rowAsset: 1`, nepovinná u pořízení (`purchase.asset`) — tyhle řádky kartu z hlavičky nedědí |
 
 ## Indexy
@@ -71,6 +72,7 @@ Pole na formuláři zapíná nastavení Dimenze na dokladech.
 - `idx_item` — `(item)`
 - `idx_vat_code` — `(vat_code)`
 - `idx_cost_center` — `(cost_center)`
+- `idx_work_order` — `(work_order)`
 - `idx_asset` — `(asset)`
 
 ## Související

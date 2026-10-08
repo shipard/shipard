@@ -347,6 +347,20 @@
             "group": "accounting"
         },
 
+        // work_order — zakázka, které se doklad týká (#110 D23): výchozí
+        //   hodnota pro řádky bez vlastní zakázky; na fakturách vydaných
+        //   i zálohových, přijatých, pokladních a účetních dokladech.
+        {
+            "id": "work_order",
+            "name": "Work order",
+            "name:cs": "Zakázka",
+            "name:en": "Work order",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_work_orders_heads",
+            "group": "accounting"
+        },
+
         // asset — karta majetku, které se doklad týká (docs/assets.md D59,
         //   D60): řádek bez vlastní karty a hlavičkové kroky předpisu ji
         //   zdědí. Řádek pořízení kartu z hlavičky nedědí (`rowFlag`).
@@ -832,6 +846,11 @@
             "id": "idx_cost_center",
             "type": "index",
             "columns": [{"column": "cost_center"}]
+        },
+        {
+            "id": "idx_work_order",
+            "type": "index",
+            "columns": [{"column": "work_order"}]
         },
         {
             "id": "idx_asset",

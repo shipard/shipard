@@ -280,6 +280,19 @@
             "reference": "economy_codebooks_cost_centers"
         },
 
+        // work_order — zakázka zápisu (#110 D23): z řádku dokladu, prázdné
+        //   z hlavičky; filtr a sloupec Zakázka v deníku a v Kontaci, Deník
+        //   na detailu zakázky.
+        {
+            "id": "work_order",
+            "name": "Work order",
+            "name:cs": "Zakázka",
+            "name:en": "Work order",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_work_orders_heads"
+        },
+
         // asset — karta majetku, které se zápis týká (docs/assets.md D15,
         //   D47). Na ní stojí invariant „evidence = deník“ (docs/assets.md §1).
 
@@ -336,6 +349,11 @@
             "id": "idx_cost_center",
             "type": "index",
             "columns": [{"column": "cost_center"}]
+        },
+        {
+            "id": "idx_work_order",
+            "type": "index",
+            "columns": [{"column": "work_order"}]
         },
         {
             "id": "idx_asset",

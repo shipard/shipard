@@ -898,6 +898,7 @@ podle `is_error`.
 | `constant_symbol` | varchar 10, nullable | konstantní symbol (ze zdroje) |
 | `due_date` | date, nullable | splatnost z hlavičky dokladu (bankovní transakce: NULL) |
 | `cost_center` | int, FK `economy_codebooks_cost_centers`, nullable | dimenze deníku Středisko (#110 D20, § Dimenze deníku) |
+| `work_order` | int, FK `economy_work_orders_heads`, nullable | dimenze deníku Zakázka (#110 D20, § Dimenze deníku) |
 | `asset` | int, FK `economy_assets_assets`, nullable | dimenze deníku Majetek (#110 D20, § Dimenze deníku) |
 
 Indexy: (`doc_head`), (`source_kind`), (`account_number`, `accounting_date`),
@@ -933,7 +934,7 @@ nad jednotným seznamem a o konkrétní dimenzi nevědí.
 | dimenze | id | sloupec (hlavička, řádky, deník) | cílová tabulka | doklady s polem |
 |---|---|---|---|---|
 | Středisko | `costCenter` | `cost_center` | `economy_codebooks_cost_centers` | `invno`, `invpo`, `invni`, `cash`, `cmnbkp` — hlavička výchozí, řádky skutečná (#110 D23) |
-| Zakázka | `workOrder` | `work_order` | `economy_work_orders_heads` | plánovaná (`tasks/work-orders-phase1.md`) |
+| Zakázka | `workOrder` | `work_order` | `economy_work_orders_heads` | `invno`, `invpo`, `invni`, `cash`, `cmnbkp` — hlavička výchozí, řádky skutečná (#110 D23); klíč výměnného formátu = číslo zakázky |
 | Majetek | `asset` | `asset` | `economy_assets_assets` | `invni`, `invno`, `cash`, `cmnbkp`; řádky s vlajkou `rowAsset` vždy |
 
 - **Deklarace** v `module.jsonc` modulu `economy.accounting`:
