@@ -222,8 +222,10 @@ TableDefinition + ExtensionDefinition
 
 ## 8. Číslování (`src/Core/Numbering/`)
 
-Společný engine čísel pro záznamy v číselných řadách (#110 D17): dnes
-doklady (`docs.core`), dál číselné řady zakázek (`economy.workOrders`).
+Společný engine čísel pro záznamy v číselných řadách (#110 D17): doklady
+(`docs.core`) a zakázky (`economy.workOrders`, `WorkOrderDocument` —
+vlastní `SequenceStorage` nad `economy_work_orders_number_counters`,
+bez doménových placeholderů, rozsah = fiskální rok data zahájení).
 Jádro nezná fiskální roky ani typy dokladů — rozsah čítače a doménové
 placeholdery dodává volající. Čítače zůstávají per doména (vlastní
 tabulka), engine je parametrizovaný popisem tabulek.
@@ -316,10 +318,10 @@ DataSourceConfig ←── DsUpgradeCommand
              ←── TableLoader ←── index.php
 DatabaseManager ←── DsCreateCommand
 
-NumberContext ←── NumberPattern ←── DocDocument (resolvePattern)
-                                ←── NumberSeriesDocument (validate)
-SequenceStorage ←── SequenceCounter ←── DocDocument (sequenceCounter)
-FiscalYearLookup (economy.codebooks) ←── DocDocument
+NumberContext ←── NumberPattern ←── DocDocument (resolvePattern), WorkOrderDocument (assignNumber)
+                                ←── NumberSeriesDocument, WorkOrderSeriesDocument (validate)
+SequenceStorage ←── SequenceCounter ←── DocDocument, WorkOrderDocument (sequenceCounter)
+FiscalYearLookup (economy.codebooks) ←── DocDocument, WorkOrderDocument
 
 Request ──────────────────────────────────┐
 AuthContext ←── AuthMiddleware            │

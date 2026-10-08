@@ -335,6 +335,36 @@ jen periodická; akce Obnovit u zastaveného období) a záložka *Deník*
 (vlastní řádky deníku se zakázkou; sčítání podzakázek až s přehledem
 stavu).
 
+**Hotovo ve fázi 1** (2026-10-08, `tasks/work-orders-phase1.md`): modul
+`economy.workOrders` v `install.base` — `economy_work_orders_kinds`
+(typ přes cfgItem `economy.workOrders.types` s příznaky `external` /
+`oneOff` / `invoicing`, čte jen `WorkOrderTypes`; typ po opuštění Konceptu
+jen ke čtení), `economy_work_orders_number_series` + `_number_counters`
+(`WorkOrderSeriesDocument`: vzorec přes `NumberPattern::validate` bez
+doménových placeholderů a navíc s povinným pořadím `%3`–`%6`, druh po
+založení neměnný), `economy_work_orders_heads` s poli identita / strana /
+strom / platnost / poznámka (fakturační pole a řádky přidá fáze 2).
+`WorkOrderDocument`: druh a typ denormalizované z řady při každém uložení,
+validace podle příznaků typu (neexterní typ zákazníka, měnu a VS vynuluje;
+nadřazená jen u `oneOff` — jinak chyba `not_allowed`; nadřazená ne
+periodická, ne smazaná, bez cyklu), zahájení povinné při potvrzení,
+chybějící fiskální rok hlášený na `date_start` (`fiscalYearMissing`),
+číslo při přechodu 0/10 → 40 přes `SequenceCounter` nad vlastní
+`SequenceStorage` (rozsah = `FiscalYearLookup::yearIdForDate(date_start)`
+u `fiscal_year`, jinak NULL), importované číslo zůstává, přechod do 70 /
+30 doplní `date_end`, `beforeDelete` pustí jen koncept. `WorkOrdersForm`
+(pole podle typu, řada jen u konceptu, `applyNewRecordDefaults` z tabu
+řady dosadí druh, typ a domácí měnu, tab Přílohy), `WorkOrdersViewer`
+(spodní taby = řady V pořádku jako u dokladů, filtry druh / typ, detail:
+Přehled + tabulka nadřazené a podzakázek + zákazník interní jednorázové
+z nejbližší externí v řetězci předků (`WorkOrderTreeService`), tab Deník
+(`WorkOrderJournalService`, strop 200 řádků) a akce Otevřít v deníku
+s filtrem `dim_workOrder=#id`), `WorkOrdersLookup` (V pořádku a V opravě;
+filtr `role=parent` přidá koncepty pro pole Nadřazená). Sekce sidebaru
+*Zakázky* (`navSections` order 33) a sekce Nastavení *Zakázky*
+(`settingsSections` order 12). Helper `Document::trackStateChange` je
+sdílený jádrem (dřív kopie v pěti dokumentech).
+
 ### 5.4 Stavy zakázky (D18)
 
 Vlastní sada stavů (`economy.workOrders.docStates`): Koncept, V pořádku
@@ -403,9 +433,11 @@ v řadách dokladů.
 Hotovo (2026-10-08, `tasks/number-series-engine.md`): `src/Core/Numbering/`
 — `NumberPattern` + `NumberContext` (vzorec), `SequenceStorage` +
 `SequenceCounter` (čítač), id a popisek roku `FiscalYearLookup`
-v `economy.codebooks`; `docs/architecture.md` §8. Řady zakázek dodají
-vlastní `SequenceStorage` (tabulka čítačů + hlavičky zakázek), doménové
-placeholdery a převod restartu na rozsah čítače.
+v `economy.codebooks`; `docs/architecture.md` §8. Řady zakázek
+(`WorkOrderDocument::sequenceCounter`, fáze 1) používají vlastní
+`SequenceStorage` nad `economy_work_orders_number_counters` +
+`economy_work_orders_heads`, žádné doménové placeholdery a rozsah čítače
+= fiskální rok data zahájení (`reset_scope = fiscal_year`), jinak NULL.
 
 ---
 
@@ -431,7 +463,7 @@ Otevřené: O6 (§8).
 |---|---|---|---|
 | 1 | `tasks/dimensions-core.md` — majetek a středisko jako standardní dimenze jádra, nastavení *Dimenze na dokladech*, středisko ve výměnném formátu | D20, D21, D23 | hotovo (2026-10-08) |
 | 2 | `tasks/number-series-engine.md` — společný engine čísel vytažený z číselných řad dokladů | D17 | hotovo (2026-10-08) |
-| 3 | `tasks/work-orders-phase1.md` — modul, druhy, číselné řady, hlavička všech typů, stavy, nadřazená zakázka, dimenze zakázka, záložka Deník | D14–D18, D22, D23 | naplánováno |
+| 3 | `tasks/work-orders-phase1.md` — modul, druhy, číselné řady, hlavička všech typů, stavy, nadřazená zakázka, dimenze zakázka, záložka Deník | D14–D18, D22, D23 | hotovo (2026-10-08) |
 | 4 | `tasks/work-orders-phase2.md` — periodická fakturace: předpis, evidence období, běh, koncept s kartou ve feedu, Přegenerovat a Obnovit, VS, `období`, záložka Fakturace, rozhraní přispěvatelů | D2–D7, D10–D12, D24 | připravuje se |
 | 5 | `tasks/work-orders-phase3.md` — úrovně V pořádku a automatické odeslání | D4 | připravuje se; navazuje na #90 D11 |
 | 6 | `tasks/work-orders-import.md` — výměnný formát zakázky včetně fakturačního předpisu a *fakturovat od*, doplnění zakázky na už importované doklady | D9 | připravuje se; po fázi 2 |

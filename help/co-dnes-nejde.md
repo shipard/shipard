@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
+keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, vyhodnocení zakázek, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
 related: [slovnicek.md]
 ---
 
@@ -20,7 +20,10 @@ Seznam se mění. Když něco nenajdeš ani tady, ani v dokumentaci, napiš na
 Tyhle části účetního provozu v Shipardu zatím vůbec nenajdeš:
 
 - **Sklad** — příjemky, výdejky, stavy a pohyby zásob.
-- **Zakázky** — přiřazení dokladů k zakázce a její vyhodnocení.
+- **Vyhodnocení zakázek** — evidence zakázek, zakázka na dokladech
+  a její Deník už jsou (viz [Zakázky](zakazky/zakazky.md)); cena, předmět
+  dodávky, termíny, přehled stavu se sčítáním podzakázek a přehledy po
+  zakázkách zatím ne. Bankovní výpis zakázku nenese.
 - **Přehledy po střediscích** — středisko na dokladech a v účetním deníku
   už je (filtr a sloupec **Středisko**, viz [Střediska](uctarna/strediska.md)),
   výsledovka nebo hlavní kniha po střediscích zatím ne. Bankovní výpis
@@ -29,8 +32,8 @@ Tyhle části účetního provozu v Shipardu zatím vůbec nenajdeš:
   období ale spočítáš jako report.
 - **Platební příkazy a přímé napojení na banku.** Výpisy nahráváš jako
   soubor, platby zadáváš ve svém bankovnictví.
-- **Opakovaná fakturace** — smlouvy, ze kterých by se faktury vystavovaly
-  samy.
+- **Opakovaná fakturace** — periodická zakázka už jde založit, faktury
+  se z ní ale zatím nevystavují.
 
 ---
 

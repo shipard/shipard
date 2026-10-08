@@ -53,6 +53,14 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 
 ---
 
+## Zakázky
+
+| Agenda | Co s ní uděláš | Návod |
+|---|---|---|
+| **Zakázky** | Evidence zakázek čtyř typů — **Periodická** (smlouva pro budoucí periodickou fakturaci), **Externí jednorázová** (projekt pro zákazníka), **Interní průběžná** (režie) a **Interní jednorázová** (vnitřní úkol, zákazníka přebírá z nadřazené). Typ dává druh zakázky, zakázka vzniká v číselné řadě druhu (záložky dole) a při **V pořádku** dostane číslo podle vzorce řady; jednorázové zakázky mohou mít **Nadřazenou zakázku**. Hotovou zakázku **Ukončíš**, nerealizovanou **Zrušíš** (obě v archivu), přílohy má na záložce **Přílohy**. Se zapnutým **Zakázka na dokladech** (Nastavení → Účetnictví → Dimenze na dokladech) má pole **Zakázka** hlavička i řádky faktur, pokladních a účetních dokladů; detail zakázky má záložku **Deník** s obraty po letech a zápisy účetního deníku, účetní deník filtr a sloupec **Zakázka**. **Periodická fakturace ze zakázky, cena, předmět dodávky a vyhodnocení projektu zatím nejsou** | [Zakázky](zakazky/zakazky.md) · [Nastavení zakázek](zakazky/nastaveni-zakazek.md) · [Zakázka na dokladech](zakazky/zakazka-na-dokladech.md) |
+
+---
+
 ## Majetek
 
 | Agenda | Co s ní uděláš | Návod |

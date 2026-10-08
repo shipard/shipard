@@ -1,6 +1,6 @@
 # Zakázky Fáze 1 — evidence, číselné řady, dimenze zakázka
 
-**Stav:** naplánováno — #110 D14–D18, D22, D23; P1–P5 potvrzené 2026-10-08
+**Stav:** hotovo — 2026-10-08 (5 commitů, ověřeno na `4l3j` vč. číslování přes dva účetní roky, dimenze v deníku a detailu; odchylky viz „Poznámky k implementaci“); zbývá `ds-upgrade` na ostatních zdrojích a alfě, komentář #110
 
 > PRD pro jednu Claude Code session (5 commitů). Design:
 > `docs/work-orders.md` §4 (D14–D18, D20–D23), §5.1–5.4, §5.6; issue #110.
@@ -273,3 +273,26 @@ Na ukázkovém zdroji (`4l3j-z0bz-kz39-echj`, režim volný):
 - ✓ **P6 — Spodní taby po řadách a přílohy** (2026-10-08): viewer zakázek
   se chová jako viewery dokladů — spodní tab je číselná řada a určuje řadu
   nové zakázky; zakázka má přílohy.
+
+## Poznámky k implementaci (2026-10-08)
+
+- **`Document::trackStateChange`** je od této fáze sdílený helper jádra;
+  kopie v `AssetDocument`, `AssetEventDocument`, `SenderRuleDocument`
+  a `BankTransactionDocument` zmizely, `DocDocument` přidává jen
+  `doc_state_changed_at`.
+- **Nadřazená u typu bez `oneOff`** je validační chyba (`parent`,
+  `not_allowed`), ne tiché vynulování — formulář pole skrývá a při změně
+  řady ho vyprázdní, dokument vynuluje jen při uložení bez chyby.
+- **Lookup zakázek** má filtr `role=parent` (pole Nadřazená nabízí
+  i koncepty); výchozí nabídka pro dimenzi na dokladech je V pořádku
+  a V opravě.
+- **Chybějící fiskální rok** se hlásí už ve `validate()` na `date_start`
+  (`fiscalYearMissing`), čítač se nečerpá.
+- **Smazání** hlídá kromě sady stavů i `beforeDelete` (jen koncept) — platí
+  pro cesty přes `TableGateway`; generické CRUD DELETE gateway obchází.
+- **Dimenze ve výměnném formátu** přišla deklarací zdarma
+  (`exchangeKey: number`); datová sada zakázku vynechá s varováním sama,
+  protože tabulka není v `SetupExporter::TABLES`.
+- Ikona `briefcase` přidaná do `frontend/src/icons.js` (sekce sidebaru
+  i Nastavení).
+
