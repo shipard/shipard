@@ -63,16 +63,36 @@ class ContentTagRuleCaptureHandlerTest extends TestCase
         return ['source_kind' => 'aiExtraction', 'source_message' => 678];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param list<array{rowIndex: int, tag: string}> $rowExceptions prázdný
+     *        list = čistý doklad (persistuje se vždy, i prázdný)
+     * @return array<string, mixed>
+     */
     private function llmCanonical(
         string $tag = 'vehicle.fuel',
         string $tagSource = 'llm',
         ?string $companyId = '123 456 78',
+        array $rowExceptions = [],
     ): array {
         return [
             'selfParty' => 'customer',
             'supplier' => ['name' => 'Benzina', 'companyId' => $companyId],
-            '_resolve' => ['contentTag' => ['tag' => $tag, 'tagSource' => $tagSource]],
+            '_resolve' => ['contentTag' => [
+                'tag'           => $tag,
+                'tagSource'     => $tagSource,
+                'rowExceptions' => $rowExceptions,
+            ]],
+        ];
+    }
+
+    /** @return list<array{rowIndex: int, tag: string}> */
+    private static function mixedContent(): array
+    {
+        // Faktura za nájem s elektřinou a dvěma parkovnými (D1 vzor).
+        return [
+            ['rowIndex' => 2, 'tag' => 'premises.electricity'],
+            ['rowIndex' => 4, 'tag' => 'vehicle.parking'],
+            ['rowIndex' => 5, 'tag' => 'vehicle.parking'],
         ];
     }
 
@@ -142,6 +162,35 @@ class ContentTagRuleCaptureHandlerTest extends TestCase
         $handler = $this->handler($this->aiHead(), $this->llmCanonical(tagSource: 'rule'));
 
         $handler->onStateChanged('docs_core_heads', ['id' => 555], 10, 40);
+
+        $this->assertSame([], $handler->sqlCalls);
+    }
+
+    public function testRowExceptionsDoNotLearnRule(): void
+    {
+        // Doklad s řádkovými výjimkami (vícedruhový obsah) pravidlo neučí —
+        // žádný INSERT, i když pro IČO pravidlo neexistuje (D2).
+        $handler = $this->handler(
+            $this->aiHead(),
+            $this->llmCanonical(tag: 'premises.rent', rowExceptions: self::mixedContent()),
+        );
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 555], 10, 40);
+
+        $this->assertSame([], $handler->sqlCalls);
+    }
+
+    public function testRowExceptionsSkipStatsOfMatchingRule(): void
+    {
+        // Existující learned pravidlo se stejným štítkem — handler končí
+        // před načtením pravidla, statistiky se neinkrementují (D2a).
+        $handler = $this->handler(
+            $this->aiHead(),
+            $this->llmCanonical(tag: 'premises.rent', rowExceptions: self::mixedContent()),
+            rule: ['id' => 7, 'tag' => 'premises.rent', 'origin' => 'learned'],
+        );
+
+        $handler->onStateChanged('docs_core_heads', ['id' => 555], 0, 40);
 
         $this->assertSame([], $handler->sqlCalls);
     }

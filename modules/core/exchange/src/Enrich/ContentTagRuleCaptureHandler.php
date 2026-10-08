@@ -18,6 +18,10 @@ use Shipard\Core\Logging\ErrorLogger;
  * `learned`, platné okamžitě — další doklad téhož IČO jde bez LLM).
  *
  * Upsert logika (jedno pravidlo per IČO):
+ *  - LLM blok s neprázdnými `rowExceptions` → nic (ani statistiky) + log —
+ *    dodavatel s vícedruhovým obsahem (nájem + energie + parkovné),
+ *    dokument-wide pravidlo by výjimky zahodilo; jde vždy přes LLM
+ *    (tasks/content-tag-row-exceptions.md D2),
  *  - žádné pravidlo → INSERT learned,
  *  - existující se STEJNÝM štítkem → jen statistiky (hit_count/last_hit_at),
  *  - existující learned s JINÝM štítkem → pravidlo SMAZAT + log — dodavatel
@@ -81,6 +85,20 @@ class ContentTagRuleCaptureHandler extends AbstractDocumentEventHandler
         }
         $tag = trim((string) ($block['tag'] ?? ''));
         if ($tag === '') {
+            return;
+        }
+
+        // Doklad s řádkovými výjimkami = dodavatel s vícedruhovým obsahem
+        // (nájem + energie + parkovné). Pravidlo IČO → štítek je dokument-wide
+        // (D12/D16) a výjimky by zahodilo — neučit, dodavatel jde vždy přes
+        // LLM (tasks/content-tag-row-exceptions.md D2). Prázdný list = čistý
+        // doklad, učí se.
+        $exceptions = $block['rowExceptions'] ?? null;
+        if (is_array($exceptions) && $exceptions !== []) {
+            ErrorLogger::info('ContentTagRuleCaptureHandler: document with row exceptions, rule not learned', [
+                'tag'        => $tag,
+                'exceptions' => count($exceptions),
+            ]);
             return;
         }
 
