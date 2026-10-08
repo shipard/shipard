@@ -18,7 +18,8 @@
     "tables": [
         "economy_work_orders_kinds",
         "economy_work_orders_number_series",
-        "economy_work_orders_number_counters"
+        "economy_work_orders_number_counters",
+        "economy_work_orders_heads"
     ],
 
     // Nastavení → Zakázky (P1): druhy a číselné řady. Bez seedu — druhy
@@ -29,6 +30,19 @@
     ],
 
     "viewers": [
+        {
+            // Sekce sidebaru Zakázky (P1, navSections.jsonc v install.base).
+            // Spodní taby = číselné řady (P6), detail s Přehledem a Deníkem.
+            "id": "economy.workOrders.heads",
+            "name": "Work orders",
+            "name:cs": "Zakázky",
+            "name:en": "Work orders",
+            "icon": "briefcase",
+            "table": "economy_work_orders_heads",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrdersViewer",
+            "navSection": "workOrders",
+            "navOrder": 10
+        },
         {
             "id": "economy.workOrders.kinds",
             "name": "Work order kinds",
@@ -51,6 +65,10 @@
 
     "forms": [
         {
+            "table": "economy_work_orders_heads",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrdersForm"
+        },
+        {
             "table": "economy_work_orders_kinds",
             "class": "Shipard\\Module\\Economy\\WorkOrders\\KindsForm"
         },
@@ -62,6 +80,10 @@
 
     "documentClasses": [
         {
+            "table": "economy_work_orders_heads",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderDocument"
+        },
+        {
             "table": "economy_work_orders_kinds",
             "class": "Shipard\\Module\\Economy\\WorkOrders\\KindDocument"
         },
@@ -71,7 +93,21 @@
         }
     ],
 
+    // Lookup zakázky: pole Nadřazená zakázka (filtr role=parent) a od
+    // fáze dimenzí pole Zakázka na hlavičce a řádcích dokladů.
+    "lookups": [
+        {
+            "table": "economy_work_orders_heads",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrdersLookup"
+        }
+    ],
+
     "config": [
+        {
+            // Stavy zakázky (D18, P2) — vlastní sada s Ukončeno a Zrušeno.
+            "id": "economy.workOrders.docStates",
+            "file": "config/docStates.jsonc"
+        },
         {
             // Typy zakázek s příznaky (D14) — jediné čtení WorkOrderTypes.
             "id": "economy.workOrders.types",

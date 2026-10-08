@@ -98,33 +98,6 @@ class SenderRuleDocument extends Document
         $data['modified'] = $now;
     }
 
-    /**
-     * Přechod docState pro TableGateway → dispatch `stateChanged`. Nový
-     * záznam vzniklý rovnou mimo Koncept (např. ručně založené pravidlo
-     * uložené jako potvrzené) je taky přechod s old = 0.
-     *
-     * @param array<string, mixed>      $data
-     * @param array<string, mixed>|null $originalData
-     */
-    private function trackStateChange(array $data, ?array $originalData): void
-    {
-        $this->stateTransition = null;
-
-        if ($originalData === null) {
-            $newState = (int) ($data['docState'] ?? 10);
-            if ($newState !== 10) {
-                $this->stateTransition = ['old' => 0, 'new' => $newState];
-            }
-            return;
-        }
-
-        $newState = (int) ($data['docState'] ?? $originalData['docState'] ?? 10);
-        $oldState = (int) ($originalData['docState'] ?? 10);
-        if ($newState !== $oldState) {
-            $this->stateTransition = ['old' => $oldState, 'new' => $newState];
-        }
-    }
-
     /** Vrátí id živého pravidla se stejným (pattern_kind, pattern), nebo null. */
     private function findLiveDuplicate(string $kind, string $pattern, int $excludeId): ?int
     {

@@ -1,0 +1,294 @@
+{
+    // Zakázka (docs/work-orders.md §5.3, D11–D15, D17, D18, D22) — hlavička
+    // všech čtyř typů. Druh a typ se denormalizují z číselné řady při
+    // uložení (jako doc_type u dokladů). Číslo přidělí potvrzení přes
+    // společný engine čísel (fiskální rok = rok data zahájení u řady
+    // s ročním restartem); importované číslo zůstává. Strana (zákazník,
+    // měna, VS) jen u externích typů, nadřazená zakázka jen u jednorázových
+    // (WorkOrderTypes). Fakturační pole a řádky předpisu přidá fáze 2.
+    //
+    // Vlastní sada stavů s Ukončeno a Zrušeno; přechody stavu jdou přes
+    // Document lifecycle (číslo při potvrzení, datum ukončení).
+    "tableId": 460,
+    "name": "Work orders",
+    "name:cs": "Zakázky",
+    "name:en": "Work orders",
+
+    "displayPattern": "{number} — {title}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "economy.workOrders.docStates"
+    },
+
+    "stateTransitionsRunDocumentHooks": true,
+
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Identity",
+            "name:cs": "Identifikace",
+            "name:en": "Identity"
+        },
+        {
+            "id": "party",
+            "name": "Customer",
+            "name:cs": "Zákazník",
+            "name:en": "Customer"
+        },
+        {
+            "id": "tree",
+            "name": "Hierarchy",
+            "name:cs": "Zařazení",
+            "name:en": "Hierarchy"
+        },
+        {
+            "id": "validity",
+            "name": "Validity",
+            "name:cs": "Platnost",
+            "name:en": "Validity"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- identity ---
+
+        {
+            "id": "number_series",
+            "name": "Number series",
+            "name:cs": "Číselná řada",
+            "name:en": "Number series",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_work_orders_number_series",
+            "group": "identity"
+        },
+        {
+            // Denormalizováno z řady při uložení (WorkOrderDocument).
+            "id": "kind",
+            "name": "Kind",
+            "name:cs": "Druh",
+            "name:en": "Kind",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_work_orders_kinds",
+            "group": "identity"
+        },
+        {
+            // Denormalizováno z druhu při uložení (WorkOrderDocument).
+            "id": "type",
+            "name": "Work order type",
+            "name:cs": "Typ zakázky",
+            "name:en": "Work order type",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "economy.workOrders.types",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            // Prázdné u konceptu; UNIQUE v celém zdroji (P3).
+            "id": "number",
+            "name": "Number",
+            "name:cs": "Číslo",
+            "name:en": "Number",
+            "type": "varchar",
+            "length": 50,
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            "id": "sequence_number",
+            "name": "Sequence number",
+            "name:cs": "Pořadové číslo",
+            "name:en": "Sequence number",
+            "type": "int",
+            "nullable": true,
+            "group": "identity"
+        },
+        {
+            // Rozsah čítače u řady s ročním restartem (rok data zahájení).
+            "id": "fiscal_year",
+            "name": "Fiscal year",
+            "name:cs": "Fiskální rok",
+            "name:en": "Fiscal year",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_fiscal_years",
+            "group": "identity"
+        },
+        {
+            "id": "title",
+            "name": "Title",
+            "name:cs": "Název",
+            "name:en": "Title",
+            "type": "varchar",
+            "length": 200,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            // Výchozí středisko dokladů zakázky (fáze 2).
+            "id": "cost_center",
+            "name": "Cost center",
+            "name:cs": "Středisko",
+            "name:en": "Cost center",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_cost_centers",
+            "group": "identity"
+        },
+        {
+            "id": "internal_note",
+            "name": "Internal note",
+            "name:cs": "Interní poznámka",
+            "name:en": "Internal note",
+            "type": "text",
+            "nullable": true,
+            "group": "identity"
+        },
+
+        // --- party (jen externí typy) ---
+
+        {
+            "id": "customer",
+            "name": "Customer",
+            "name:cs": "Zákazník",
+            "name:en": "Customer",
+            "type": "int",
+            "nullable": true,
+            "reference": "base_persons_persons",
+            "group": "party"
+        },
+        {
+            "id": "currency",
+            "name": "Currency",
+            "name:cs": "Měna",
+            "name:en": "Currency",
+            "type": "enumString",
+            "length": 3,
+            "cfgItem": "world.base.currencies",
+            "nullable": true,
+            "group": "party"
+        },
+        {
+            // Pevný variabilní symbol faktur zakázky (D11); fáze 1 jen ukládá.
+            "id": "payment_reference",
+            "name": "Payment reference",
+            "name:cs": "Variabilní symbol",
+            "name:en": "Payment reference",
+            "type": "varchar",
+            "length": 35,
+            "nullable": true,
+            "group": "party"
+        },
+
+        // --- tree (jen jednorázové typy) ---
+
+        {
+            "id": "parent",
+            "name": "Parent work order",
+            "name:cs": "Nadřazená zakázka",
+            "name:en": "Parent work order",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_work_orders_heads",
+            "group": "tree"
+        },
+
+        // --- validity ---
+
+        {
+            // Povinné při potvrzení; určuje fiskální rok čísla.
+            "id": "date_start",
+            "name": "Start date",
+            "name:cs": "Zahájení",
+            "name:en": "Start date",
+            "type": "date",
+            "nullable": true,
+            "group": "validity"
+        },
+        {
+            // Periodická: do kdy platí (smí být v budoucnu). Ostatní:
+            // skutečné ukončení — vyplní přechod do Ukončeno / Zrušeno.
+            "id": "date_end",
+            "name": "End date",
+            "name:cs": "Ukončení",
+            "name:en": "End date",
+            "type": "date",
+            "nullable": true,
+            "group": "validity"
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_number",
+            "type": "unique",
+            "columns": [{"column": "number"}]
+        },
+        {
+            // SequenceCounter::maxSequence + výpis řady.
+            "id": "idx_series_year",
+            "type": "index",
+            "columns": [
+                {"column": "number_series"},
+                {"column": "fiscal_year"},
+                {"column": "sequence_number"}
+            ]
+        },
+        {
+            "id": "idx_kind",
+            "type": "index",
+            "columns": [{"column": "kind"}]
+        },
+        {
+            "id": "idx_customer",
+            "type": "index",
+            "columns": [{"column": "customer"}]
+        },
+        {
+            "id": "idx_parent",
+            "type": "index",
+            "columns": [{"column": "parent"}]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "number", "order": "DESC"}
+            ]
+        }
+    ]
+}

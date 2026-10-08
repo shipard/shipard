@@ -107,30 +107,4 @@ class BankTransactionDocument extends Document
         $this->trackStateChange($data, $originalData);
     }
 
-    /**
-     * Eviduje přechod docState pro TableGateway (dispatch
-     * documentEventHandlers → účtování při vstupu do 40, úklid při odchodu).
-     * Transakce nemá doc_state_changed_at, nastavuje se jen stateTransition.
-     *
-     * Nový záznam mimo stav Nová (import výpisu rovnou do 40) je taky přechod
-     * (old = 0), ať se importované transakce zaúčtují.
-     */
-    private function trackStateChange(array $data, ?array $originalData): void
-    {
-        $this->stateTransition = null;
-
-        if ($originalData === null) {
-            $newState = (int) ($data['docState'] ?? 10);
-            if ($newState !== 10) {
-                $this->stateTransition = ['old' => 0, 'new' => $newState];
-            }
-            return;
-        }
-
-        $newState = (int) ($data['docState'] ?? $originalData['docState'] ?? 10);
-        $oldState = (int) ($originalData['docState'] ?? 10);
-        if ($newState !== $oldState) {
-            $this->stateTransition = ['old' => $oldState, 'new' => $newState];
-        }
-    }
 }

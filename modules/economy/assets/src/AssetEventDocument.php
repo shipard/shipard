@@ -778,29 +778,6 @@ class AssetEventDocument extends Document
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     /**
-     * Přechod docState (vzor AssetDocument). Nový záznam vzniklý rovnou
-     * mimo Koncept je přechod s old = 0.
-     */
-    protected function trackStateChange(array $data, ?array $originalData): void
-    {
-        $this->stateTransition = null;
-
-        if ($originalData === null) {
-            $newState = (int) ($data['docState'] ?? 10);
-            if ($newState !== 10) {
-                $this->stateTransition = ['old' => 0, 'new' => $newState];
-            }
-            return;
-        }
-
-        $newState = (int) ($data['docState'] ?? $originalData['docState'] ?? 10);
-        $oldState = (int) ($originalData['docState'] ?? 10);
-        if ($newState !== $oldState) {
-            $this->stateTransition = ['old' => $oldState, 'new' => $newState];
-        }
-    }
-
-    /**
      * Pořadí události v historii: datum, pořadí druhu v rámci dne
      * (`AssetEvent::kindOrder`), id; neuložená událost je za uloženými
      * téhož dne a druhu.

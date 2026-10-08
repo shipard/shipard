@@ -8,6 +8,9 @@
     "group.identity":  { "name": "Identity",  "name:cs": "Identifikace", "name:en": "Identity" },
     "group.numbering": { "name": "Numbering", "name:cs": "Číslování",    "name:en": "Numbering" },
     "group.validity":  { "name": "Validity",  "name:cs": "Platnost",     "name:en": "Validity" },
+    "group.customer":  { "name": "Customer",  "name:cs": "Zákazník",     "name:en": "Customer" },
+    "group.tree":      { "name": "Hierarchy", "name:cs": "Zařazení",     "name:en": "Hierarchy" },
+    "group.note":      { "name": "Note",      "name:cs": "Poznámka",     "name:en": "Note" },
 
     // --- položky ---
     "label.name":       { "name": "Name",            "name:cs": "Název",            "name:en": "Name" },
@@ -19,6 +22,19 @@
     "label.validFrom":  { "name": "Valid from",      "name:cs": "Platnost od",      "name:en": "Valid from" },
     "label.validTo":    { "name": "Valid to",        "name:cs": "Platnost do",      "name:en": "Valid to" },
     "label.notice":     { "name": "Notice",          "name:cs": "Poznámka",         "name:en": "Notice" },
+    "label.number":           { "name": "Number",             "name:cs": "Číslo",              "name:en": "Number" },
+    "label.title":            { "name": "Title",              "name:cs": "Název",              "name:en": "Title" },
+    "label.series":           { "name": "Number series",      "name:cs": "Číselná řada",       "name:en": "Number series" },
+    "label.state":            { "name": "State",              "name:cs": "Stav",               "name:en": "State" },
+    "label.customer":         { "name": "Customer",           "name:cs": "Zákazník",           "name:en": "Customer" },
+    "label.currency":         { "name": "Currency",           "name:cs": "Měna",               "name:en": "Currency" },
+    "label.paymentReference": { "name": "Payment reference",  "name:cs": "Variabilní symbol",  "name:en": "Payment reference" },
+    "label.parent":           { "name": "Parent work order",  "name:cs": "Nadřazená zakázka",  "name:en": "Parent work order" },
+    "label.costCenter":       { "name": "Cost center",        "name:cs": "Středisko",          "name:en": "Cost center" },
+    "label.dateStart":        { "name": "Start",              "name:cs": "Zahájení",           "name:en": "Start" },
+    "label.dateEnd":          { "name": "End",                "name:cs": "Ukončení",           "name:en": "End" },
+    "label.validUntil":       { "name": "Valid until",        "name:cs": "Platí do",           "name:en": "Valid until" },
+    "label.internalNote":     { "name": "Internal note",      "name:cs": "Interní poznámka",   "name:en": "Internal note" },
     "label.yes":        { "name": "Yes",             "name:cs": "Ano",              "name:en": "Yes" },
     "label.no":         { "name": "No",              "name:cs": "Ne",               "name:en": "No" }
 }

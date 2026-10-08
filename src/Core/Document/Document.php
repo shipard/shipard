@@ -18,7 +18,7 @@ abstract class Document
     protected ?SettingsStore $settings = null;
 
     /**
-     * Přechod docState detekovaný v beforeSave (DocDocument::trackStateChange).
+     * Přechod docState detekovaný v beforeSave (`trackStateChange`).
      * Null = stav se neměnil. Pro nový záznam vzniklý rovnou mimo Koncept
      * (import) je old = 0. Čte TableGateway po commitu pro dispatch
      * documentEventHandlers — gateway sám nic nedopočítává.
@@ -133,6 +133,36 @@ abstract class Document
      */
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
+    }
+
+    /**
+     * Detekce přechodu docState pro `$stateTransition` — volá se z `beforeSave`
+     * jako první (vzor DocDocument, AssetDocument, BankTransactionDocument).
+     * Nový záznam vzniklý rovnou mimo Koncept (import, „Vystavit a uzavřít“)
+     * je přechod s old = 0; uložení bez změny stavu přechod nenastaví.
+     * `$data` je referencí kvůli potomkům, kteří k přechodu dopisují sloupce
+     * (DocDocument: `doc_state_changed_at`).
+     *
+     * @param array<string, mixed>      $data
+     * @param array<string, mixed>|null $originalData
+     */
+    protected function trackStateChange(array &$data, ?array $originalData): void
+    {
+        $this->stateTransition = null;
+
+        if ($originalData === null) {
+            $newState = (int) ($data['docState'] ?? 10);
+            if ($newState !== 10) {
+                $this->stateTransition = ['old' => 0, 'new' => $newState];
+            }
+            return;
+        }
+
+        $newState = (int) ($data['docState'] ?? $originalData['docState'] ?? 10);
+        $oldState = (int) ($originalData['docState'] ?? 10);
+        if ($newState !== $oldState) {
+            $this->stateTransition = ['old' => $oldState, 'new' => $newState];
+        }
     }
 
     /**

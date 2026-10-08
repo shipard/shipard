@@ -42,7 +42,10 @@ class WorkOrdersModuleTest extends TestCase
             $ids[$table] = $def->tableId;
         }
         $this->assertSame(
-            ['economy_work_orders_kinds' => 457, 'economy_work_orders_number_series' => 458, 'economy_work_orders_number_counters' => 459],
+            [
+                'economy_work_orders_kinds' => 457, 'economy_work_orders_number_series' => 458,
+                'economy_work_orders_number_counters' => 459, 'economy_work_orders_heads' => 460,
+            ],
             $ids,
         );
     }
@@ -74,6 +77,47 @@ class WorkOrdersModuleTest extends TestCase
 
         $install = JsoncParser::parseFile(self::MODULES . '/install/base/module.jsonc');
         $this->assertContains('economy.workOrders', $install['dependencies']);
+    }
+
+    public function testWorkOrdersSectionSitsBetweenSalesAndAssets(): void
+    {
+        $sections = JsoncParser::parseFile(self::MODULES . '/install/base/config/navSections.jsonc')['sections'];
+        $orders = array_column($sections, 'order', 'id');
+        $this->assertGreaterThan($orders['sales'], $orders['workOrders']);
+        $this->assertLessThan($orders['assets'], $orders['workOrders']);
+
+        $viewers = array_column(self::module()['viewers'], null, 'id');
+        $this->assertSame('workOrders', $viewers['economy.workOrders.heads']['navSection']);
+        $this->assertArrayNotHasKey('navSection', $viewers['economy.workOrders.kinds']);
+    }
+
+    public function testStateSetMatchesTheAgreedAutomaton(): void
+    {
+        // P2: Ukončeno a Zrušeno v archivu se stejným mainState, potvrzená
+        // zakázka se do Konceptu nevrací, smazat jde jen koncept.
+        $states = JsoncParser::parseFile(self::MODULE . '/config/docStates.jsonc');
+        $goto = array_map(static fn(array $s): array => $s['goto'], $states);
+        $this->assertSame(
+            ['10' => [40, 90], '80' => [40, 70, 30], '40' => [80, 70, 30], '70' => [80], '30' => [80], '90' => [10]],
+            $goto,
+        );
+        $this->assertSame('archive', $states['70']['viewGroup']);
+        $this->assertSame('archive', $states['30']['viewGroup']);
+        $this->assertSame($states['70']['mainState'], $states['30']['mainState']);
+        $this->assertSame('archive', $states['70']['stateStyle']);
+        $this->assertSame('cancelled', $states['30']['stateStyle']);
+        foreach (['40', '70', '30', '90'] as $readOnly) {
+            $this->assertSame(1, $states[$readOnly]['readOnly'], $readOnly);
+        }
+
+        $heads = JsoncParser::parseFile(self::MODULE . '/tables/economy_work_orders_heads.jsonc');
+        $this->assertSame('economy.workOrders.docStates', $heads['docStates']['cfgItem']);
+        $this->assertTrue($heads['stateTransitionsRunDocumentHooks']);
+        $this->assertSame('{number} — {title}', $heads['displayPattern']);
+        $this->assertSame('unique', $heads['indexes'][0]['type']);
+        $this->assertSame([['column' => 'number']], $heads['indexes'][0]['columns']);
+        $config = array_column(self::module()['config'], 'file', 'id');
+        $this->assertSame('config/docStates.jsonc', $config['economy.workOrders.docStates']);
     }
 
     public function testTypesConfigHasFourTypesWithFlags(): void

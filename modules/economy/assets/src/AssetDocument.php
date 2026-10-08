@@ -285,30 +285,6 @@ class AssetDocument extends Document
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     /**
-     * Přechod docState (vzor DocDocument::trackStateChange). Nový záznam
-     * vzniklý rovnou mimo Koncept (import, exchange) je taky přechod
-     * s old = 0, aby dostal inventární číslo.
-     */
-    protected function trackStateChange(array $data, ?array $originalData): void
-    {
-        $this->stateTransition = null;
-
-        if ($originalData === null) {
-            $newState = (int) ($data['docState'] ?? 10);
-            if ($newState !== 10) {
-                $this->stateTransition = ['old' => 0, 'new' => $newState];
-            }
-            return;
-        }
-
-        $newState = (int) ($data['docState'] ?? $originalData['docState'] ?? 10);
-        $oldState = (int) ($originalData['docState'] ?? 10);
-        if ($newState !== $oldState) {
-            $this->stateTransition = ['old' => $oldState, 'new' => $newState];
-        }
-    }
-
-    /**
      * Prefix inventárního čísla: settings klíč per druh, fallback prefix
      * z cfgItem druhu, fallback DEFAULT_PREFIX.
      */

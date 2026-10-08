@@ -1,0 +1,110 @@
+{
+    // economy.workOrders.docStates
+    //
+    // Stavy zakázky (economy_work_orders_heads, docs/work-orders.md D18,
+    // tasks/work-orders-phase1.md P2). Dva koncové stavy v archivní skupině:
+    // Ukončeno (úspěšně dokončená, u periodické konec platnosti) a Zrušeno
+    // (nerealizovaná). Oba mají mainState 4 — v archivu se řadí společně
+    // podle čísla.
+    //
+    // Stavový automat:
+    //   Koncept   → V pořádku | Smazáno
+    //   V opravě  → V pořádku | Ukončeno | Zrušeno
+    //   V pořádku → V opravě | Ukončeno | Zrušeno
+    //   Ukončeno  → V opravě
+    //   Zrušeno   → V opravě
+    //   Smazáno   → Koncept
+    //
+    // Potvrzená zakázka se do Konceptu nevrací — číslo jí zůstává (žádné
+    // uvolňování čísla jako u dokladů). Smazat jde jen koncept. Číslo
+    // přiděluje přechod Koncept → V pořádku (WorkOrderDocument, D17);
+    // přechod do Ukončeno / Zrušeno doplní prázdné datum ukončení.
+
+    "10": {
+        "stateName": "Draft",
+        "stateName:cs": "Koncept",
+        "stateName:en": "Draft",
+        "actionName": "Save as draft",
+        "actionName:cs": "Uložit jako koncept",
+        "actionName:en": "Save as draft",
+        "stateStyle": "concept",
+        "mainState": 1,
+        "viewGroup": "active",
+        "closeForm": 0,
+        "goto": [40, 90]
+    },
+
+    "80": {
+        "stateName": "Being edited",
+        "stateName:cs": "V opravě",
+        "stateName:en": "Being edited",
+        "actionName": "Edit",
+        "actionName:cs": "Opravit",
+        "actionName:en": "Edit",
+        "stateStyle": "edit",
+        "mainState": 2,
+        "viewGroup": "active",
+        "closeForm": 0,
+        "goto": [40, 70, 30]
+    },
+
+    "40": {
+        "stateName": "Confirmed",
+        "stateName:cs": "V pořádku",
+        "stateName:en": "Confirmed",
+        "actionName": "Confirm",
+        "actionName:cs": "V pořádku",
+        "actionName:en": "Confirm",
+        "stateStyle": "done",
+        "mainState": 3,
+        "viewGroup": "active",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [80, 70, 30]
+    },
+
+    "70": {
+        "stateName": "Finished",
+        "stateName:cs": "Ukončeno",
+        "stateName:en": "Finished",
+        "actionName": "Finish",
+        "actionName:cs": "Ukončit",
+        "actionName:en": "Finish",
+        "stateStyle": "archive",
+        "mainState": 4,
+        "viewGroup": "archive",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [80]
+    },
+
+    "30": {
+        "stateName": "Cancelled",
+        "stateName:cs": "Zrušeno",
+        "stateName:en": "Cancelled",
+        "actionName": "Cancel",
+        "actionName:cs": "Zrušit",
+        "actionName:en": "Cancel",
+        "stateStyle": "cancelled",
+        "mainState": 4,
+        "viewGroup": "archive",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [80]
+    },
+
+    "90": {
+        "stateName": "Deleted",
+        "stateName:cs": "Smazáno",
+        "stateName:en": "Deleted",
+        "actionName": "Delete",
+        "actionName:cs": "Smazat",
+        "actionName:en": "Delete",
+        "stateStyle": "trash",
+        "mainState": 5,
+        "viewGroup": "trash",
+        "readOnly": 1,
+        "closeForm": 1,
+        "goto": [10]
+    }
+}

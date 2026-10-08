@@ -36,6 +36,15 @@
             "order": 30
         },
         {
+            // Zakázky (#110 P1) — mezi Prodej a Majetek.
+            "id": "workOrders",
+            "name": "Work orders",
+            "name:cs": "Zakázky",
+            "name:en": "Work orders",
+            "icon": "briefcase",
+            "order": 33
+        },
+        {
             "id": "assets",
             "name": "Assets",
             "name:cs": "Majetek",

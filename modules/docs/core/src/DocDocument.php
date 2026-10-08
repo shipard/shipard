@@ -603,41 +603,21 @@ abstract class DocDocument extends Document
     }
 
     /**
-     * Eviduje čas poslední změny `docState`. Vstup pro alert check
+     * Přechod docState (Document::trackStateChange) + čas poslední změny
+     * stavu `doc_state_changed_at` — vstup pro alert check
      * `docs.core.stale_in_repair` (doklady visící v 80 V opravě > 24 h).
-     *
-     * - Nové záznamy (`$originalData === null`): nastav na NOW, ať od prvního
-     *   uložení existuje validní hodnota.
-     * - Update s nezměněným `docState`: zachovej původní hodnotu — klient ji
-     *   v payloadu nemá nastavovat (sloupec je `system: true`).
-     * - Update se změněným `docState`: nastav na NOW.
      */
     protected function trackStateChange(array &$data, ?array $originalData): void
     {
-        $this->stateTransition = null;
+        parent::trackStateChange($data, $originalData);
 
-        if ($originalData === null) {
+        // Nový záznam i změna stavu: NOW. Stejný stav: zachovej původní
+        // hodnotu (sloupec je `system: true`, klient ji neposílá); fallback
+        // NOW pro řádek před backfillem (defenzivně).
+        if ($originalData === null || $this->stateTransition !== null) {
             $data['doc_state_changed_at'] = date('Y-m-d H:i:s');
-            // Nový záznam vzniklý rovnou mimo Koncept (import) je taky
-            // přechod — old = 0, ať se importované doklady ve 40 zaúčtují.
-            $newState = (int) ($data['docState'] ?? 10);
-            if ($newState !== 10) {
-                $this->stateTransition = ['old' => 0, 'new' => $newState];
-            }
             return;
         }
-
-        $newState = (int) ($data['docState'] ?? $originalData['docState'] ?? 10);
-        $oldState = (int) ($originalData['docState'] ?? 10);
-
-        if ($newState !== $oldState) {
-            $data['doc_state_changed_at'] = date('Y-m-d H:i:s');
-            $this->stateTransition = ['old' => $oldState, 'new' => $newState];
-            return;
-        }
-
-        // Same state — preserve original. Fallback to NOW if pre-backfill row
-        // somehow still has NULL (defensive, should not happen post-upgrade).
         $data['doc_state_changed_at'] = $originalData['doc_state_changed_at']
             ?? date('Y-m-d H:i:s');
     }
