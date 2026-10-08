@@ -57,7 +57,26 @@ class StandardDimensionsTest extends TestCase
 
     public function testDimensionsAreDeclaredInOrder(): void
     {
-        $this->assertSame(['asset'], self::ids(self::dimensions()));
+        $this->assertSame(['costCenter', 'asset'], self::ids(self::dimensions()));
+    }
+
+    public function testCostCenterIsOnHeadAndRowsOfEveryDocumentIncludingProforma(): void
+    {
+        $dimension = self::dimension('costCenter');
+
+        $this->assertSame('cost_center', $dimension->headColumn);
+        $this->assertNull($dimension->rowFlag, 'Středisko nemá řádek, který by hodnotu nesl sám');
+        // T3: zálohová faktura vydaná pole má — periodická fakturace z ní
+        // vystavuje zálohy a nese na nich středisko.
+        foreach (['invno', 'invpo', 'invni', 'cash', 'cmnbkp'] as $docType) {
+            $this->assertTrue($dimension->isOnForm($docType, true), "{$docType}: hlavička");
+            $this->assertTrue($dimension->isOnForm($docType, false), "{$docType}: řádek");
+        }
+
+        // Řádek bez střediska dědí hlavičku — i řádek pořízení majetku.
+        $operations = JsoncParser::parseFile(self::MODULES . '/docs/core/config/rowOperations.jsonc');
+        $this->assertSame(3, $dimension->valueOf([], ['cost_center' => 3], $operations['purchase.asset']));
+        $this->assertSame(4, $dimension->valueOf(['cost_center' => 4], ['cost_center' => 3]));
     }
 
     public function testEveryDimensionHasColumnsAndIndexesInCoreTables(): void

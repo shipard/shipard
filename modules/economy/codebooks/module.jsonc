@@ -207,6 +207,11 @@
         {
             "table": "economy_codebooks_warehouses",
             "class": "Shipard\\Module\\Economy\\Codebooks\\WarehousesLookup"
+        },
+        // Pole dimenze Středisko na dokladech (#110 D23).
+        {
+            "table": "economy_codebooks_cost_centers",
+            "class": "Shipard\\Module\\Economy\\Codebooks\\CostCentersLookup"
         }
     ],
 

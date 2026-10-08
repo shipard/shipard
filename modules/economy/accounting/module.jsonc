@@ -31,11 +31,33 @@
     // nastavením Dimenze na dokladech (`enabledBySetting`, D21) — řídí jen
     // zobrazení, uložená hodnota se do deníku propisuje vždy.
     //
+    // costCenter — středisko (D23): na hlavičce jako výchozí hodnota, na
+    //   řádcích skutečná; řádek bez střediska zdědí hlavičku i u pořízení
+    //   majetku. Pole má i zálohová faktura vydaná — periodická fakturace
+    //   z ní vystavuje zálohy a nese na nich středisko (T3).
     // asset — karta majetku: řádek bez karty zdědí kartu hlavičky (assets
     //   D60). Řádek pořízení a systémové operace majetku mají pole vždy
     //   (vlajka `rowAsset` operace) a kartu z hlavičky nedědí (`rowFlag`).
     //   Zálohová faktura se neúčtuje do nákladů — pole nemá.
     "journalDimensions": [
+        {
+            "id": "costCenter",
+            "rowColumn": "cost_center",
+            "headColumn": "cost_center",
+            "journalColumn": "cost_center",
+            "table": "economy_codebooks_cost_centers",
+            "name": "Cost center",
+            "name:cs": "Středisko",
+            "name:en": "Cost center",
+            "name:sk": "Stredisko",
+            "name:de": "Kostenstelle",
+            "forms": {
+                "docTypes": ["invno", "invpo", "invni", "cash", "cmnbkp"],
+                "head": true,
+                "rows": true,
+                "enabledBySetting": "economy.accounting.dimension.costCenter"
+            }
+        },
         {
             "id": "asset",
             "rowColumn": "asset",
@@ -72,6 +94,20 @@
             "name:en": "Dimensions on documents",
             "icon": "document",
             "fields": [
+                {
+                    "id": "economy.accounting.dimension.costCenter",
+                    "type": "select",
+                    "name": "Cost center on documents",
+                    "name:cs": "Středisko na dokladech",
+                    "name:en": "Cost center on documents",
+                    "hint": "Adds the Cost center field to the header and rows of received, issued and proforma issued invoices, cash and accounting documents. Empty = no. The header value is the default for rows without their own.",
+                    "hint:cs": "Přidá pole Středisko na hlavičku a řádky přijatých, vydaných a zálohových vydaných faktur, pokladních a účetních dokladů. Prázdné = ne. Středisko z hlavičky platí pro řádky bez vlastního.",
+                    "hint:en": "Adds the Cost center field to the header and rows of received, issued and proforma issued invoices, cash and accounting documents. Empty = no. The header value is the default for rows without their own.",
+                    "options": [
+                        { "value": "yes", "label": "Yes", "label:cs": "Ano", "label:en": "Yes" },
+                        { "value": "no",  "label": "No",  "label:cs": "Ne",  "label:en": "No" }
+                    ]
+                },
                 {
                     "id": "economy.accounting.dimension.asset",
                     "type": "select",

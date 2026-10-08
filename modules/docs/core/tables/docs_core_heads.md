@@ -51,6 +51,7 @@ zapíná nastavení Dimenze na dokladech:
 
 | Sloupec | Typ | Popis |
 |---|---|---|
+| `cost_center` | int → `economy_codebooks_cost_centers`, nullable, index `idx_cost_center` | Středisko, kterého se doklad týká (#110 D23) — výchozí pro řádky bez vlastního; i na zálohové faktuře vydané |
 | `asset` | int → `economy_assets_assets`, nullable, index `idx_asset` | Karta majetku, které se doklad týká (`docs/assets.md` D59, D60). Řádek pořízení kartu z hlavičky nedědí |
 
 ### `vat`

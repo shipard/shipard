@@ -897,11 +897,12 @@ podle `is_error`.
 | `specific_symbol` | varchar 20, nullable | specifický symbol (ze zdroje) |
 | `constant_symbol` | varchar 10, nullable | konstantní symbol (ze zdroje) |
 | `due_date` | date, nullable | splatnost z hlavičky dokladu (bankovní transakce: NULL) |
+| `cost_center` | int, FK `economy_codebooks_cost_centers`, nullable | dimenze deníku Středisko (#110 D20, § Dimenze deníku) |
 | `asset` | int, FK `economy_assets_assets`, nullable | dimenze deníku Majetek (#110 D20, § Dimenze deníku) |
 
 Indexy: (`doc_head`), (`source_kind`), (`account_number`, `accounting_date`),
 (`fiscal_year`, `fiscal_month`), (`partner`), (`payment_reference`),
-(`asset`).
+(`cost_center`), (`asset`).
 
 Poznámky:
 
@@ -931,6 +932,7 @@ nad jednotným seznamem a o konkrétní dimenzi nevědí.
 
 | dimenze | id | sloupec (hlavička, řádky, deník) | cílová tabulka | doklady s polem |
 |---|---|---|---|---|
+| Středisko | `costCenter` | `cost_center` | `economy_codebooks_cost_centers` | `invno`, `invpo`, `invni`, `cash`, `cmnbkp` — hlavička výchozí, řádky skutečná (#110 D23) |
 | Zakázka | `workOrder` | `work_order` | `economy_work_orders_heads` | plánovaná (`tasks/work-orders-phase1.md`) |
 | Majetek | `asset` | `asset` | `economy_assets_assets` | `invni`, `invno`, `cash`, `cmnbkp`; řádky s vlajkou `rowAsset` vždy |
 

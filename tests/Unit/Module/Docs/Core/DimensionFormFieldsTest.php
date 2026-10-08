@@ -28,11 +28,22 @@ use Shipard\Module\Docs\ProformasOut\ProformaOutForm;
 class DimensionFormFieldsTest extends TestCase
 {
     private const SETTING = 'economy.accounting.dimension.asset';
+    private const SETTING_CC = 'economy.accounting.dimension.costCenter';
 
     private function config(): ConfigRuntime
     {
         $items = [
             JournalDimensionSet::CFG_ITEM => [
+                // Pořadí dimenzí = pořadí polí (#110 D20): středisko před majetkem.
+                'costCenter' => [
+                    'id' => 'costCenter', 'rowColumn' => 'cost_center', 'headColumn' => 'cost_center',
+                    'journalColumn' => 'cost_center', 'table' => 'economy_codebooks_cost_centers',
+                    'name' => 'Středisko', 'displayPattern' => '{code} — {name}',
+                    'forms' => [
+                        'docTypes' => ['invno', 'invpo', 'invni', 'cash', 'cmnbkp'], 'head' => true, 'rows' => true,
+                        'enabledBySetting' => self::SETTING_CC,
+                    ],
+                ],
                 'asset' => [
                     'id' => 'asset', 'rowColumn' => 'asset', 'headColumn' => 'asset', 'journalColumn' => 'asset',
                     'table' => 'economy_assets_assets', 'name' => 'Majetek', 'rowFlag' => 'rowAsset',
@@ -74,16 +85,28 @@ class DimensionFormFieldsTest extends TestCase
     /**
      * @param array<string, mixed>|null $head hlavička, kterou řádkový formulář načte
      * @param array<string, mixed>|null $headAsset karta na hlavičce (placeholder řádku)
+     * @param string|null $costCenterSetting nastavení dimenze Středisko (null = nerozhodnuto)
      */
-    private function db(?string $setting, ?array $head = null, ?array $headAsset = null): DataSourceConnection
-    {
+    private function db(
+        ?string $setting,
+        ?array $head = null,
+        ?array $headAsset = null,
+        ?string $costCenterSetting = null,
+    ): DataSourceConnection {
+        $settings = [self::SETTING => $setting, self::SETTING_CC => $costCenterSetting];
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchSingle')->willReturnCallback(
-            static fn(string $sql, mixed ...$args): mixed
-                => ($args[0] ?? null) === self::SETTING && $setting !== null ? json_encode($setting) : null,
+            static function (string $sql, mixed ...$args) use ($settings): mixed {
+                $value = $settings[$args[0] ?? ''] ?? null;
+                return $value !== null ? json_encode($value) : null;
+            },
         );
         $db->method('fetchRow')->willReturnCallback(
-            static fn(string $sql): ?array => str_contains($sql, 'economy_assets_assets') ? $headAsset : $head,
+            static fn(string $sql): ?array => match (true) {
+                str_contains($sql, 'economy_assets_assets')          => $headAsset,
+                str_contains($sql, 'economy_codebooks_cost_centers') => null,
+                default                                              => $head,
+            },
         );
         $db->method('fetchAll')->willReturn([]);
         return $db;
@@ -106,12 +129,30 @@ class DimensionFormFieldsTest extends TestCase
     }
 
     /** @param class-string<DocsHeadsFormBase> $class */
-    private function headDefinition(string $class, array $data, ?string $setting): FormDefinition
+    private function headDefinition(string $class, array $data, ?string $setting, ?string $costCenterSetting = null): FormDefinition
     {
         $form = new $class('docs_core_heads');
         $form->setConfig($this->config());
-        $form->setDb($this->db($setting));
+        $form->setDb($this->db($setting, costCenterSetting: $costCenterSetting));
         return $form->buildFormDefinition($data, true);
+    }
+
+    /** @return list<string> sloupce polí dimenzí v pořadí na formuláři */
+    private function dimensionColumns(FormDefinition $def): array
+    {
+        $out = [];
+        foreach ($def->tabs as $tab) {
+            foreach ($tab->sections as $section) {
+                foreach ($section->columns as $col) {
+                    foreach ($col->elements as $el) {
+                        if (in_array($el->column, ['cost_center', 'asset'], true)) {
+                            $out[] = $el->column;
+                        }
+                    }
+                }
+            }
+        }
+        return $out;
     }
 
     /** @return iterable<string, array{class-string<DocsHeadsFormBase>, array<string, mixed>}> */
@@ -147,18 +188,63 @@ class DimensionFormFieldsTest extends TestCase
         ));
     }
 
+    public function testProformaOffersCostCenterButNotAsset(): void
+    {
+        // #110 D23, T3: středisko je i na zálohové faktuře vydané, majetek ne.
+        $def = $this->headDefinition(ProformaOutForm::class, ['doc_type' => 'invpo'], 'yes', 'yes');
+        $field = $this->findElement($def, 'cost_center');
+        $this->assertNotNull($field);
+        $this->assertSame('lookup', $field->type);
+        $this->assertSame('economy_codebooks_cost_centers', $field->lookup['table']);
+        $this->assertSame('Středisko', $field->label);
+        $this->assertFalse($field->required);
+        $this->assertNull($this->findElement($def, 'asset'));
+
+        $this->assertNull($this->findElement(
+            $this->headDefinition(ProformaOutForm::class, ['doc_type' => 'invpo'], 'yes', 'no'),
+            'cost_center',
+        ));
+    }
+
+    #[DataProvider('headForms')]
+    public function testHeadOffersDimensionsInDeclaredOrder(string $class, array $data): void
+    {
+        // Obě dimenze zapnuté: pole v pořadí dimenzí; každé řídí jen své nastavení.
+        $this->assertSame(['cost_center', 'asset'], $this->dimensionColumns($this->headDefinition($class, $data, 'yes', 'yes')));
+        $this->assertSame(['cost_center'], $this->dimensionColumns($this->headDefinition($class, $data, 'no', 'yes')));
+        $this->assertSame(['asset'], $this->dimensionColumns($this->headDefinition($class, $data, 'yes', null)));
+    }
+
     /**
      * @param array<string, mixed> $data
      * @param array<string, mixed>|null $headAsset
      */
-    private function rowDefinition(string $docType, array $data, ?string $setting, ?array $headAsset = null): FormDefinition
-    {
+    private function rowDefinition(
+        string $docType,
+        array $data,
+        ?string $setting,
+        ?array $headAsset = null,
+        ?string $costCenterSetting = null,
+    ): FormDefinition {
         $form = new DocRowsForm('docs_core_rows');
         $form->setConfig($this->config());
         $form->setDb($this->db($setting, [
             'doc_type' => $docType, 'vat_place' => 0, 'vat_duzp' => null, 'vat_mode' => 0, 'vat_registration' => null,
-        ], $headAsset));
+        ], $headAsset, $costCenterSetting));
         return $form->buildFormDefinition($data + ['row_kind' => 1, 'doc_head' => 5], true);
+    }
+
+    public function testRowOffersCostCenterOnEveryDocumentIncludingAcquisition(): void
+    {
+        // Středisko na řádku zálohové faktury i na řádku pořízení majetku —
+        // vlajka rowAsset se střediska netýká, pole je generické a nepovinné.
+        foreach ([['invpo', 'purchase.goods'], ['invni', 'purchase.asset'], ['cmnbkp', 'acc.record']] as [$docType, $operation]) {
+            $field = $this->findElement($this->rowDefinition($docType, ['operation' => $operation], 'no', null, 'yes'), 'cost_center');
+            $this->assertNotNull($field, "{$docType} / {$operation}");
+            $this->assertSame('economy_codebooks_cost_centers', $field->lookup['table']);
+            $this->assertFalse($field->required);
+            $this->assertNull($this->findElement($this->rowDefinition($docType, ['operation' => $operation], 'no', null, 'no'), 'cost_center'));
+        }
     }
 
     public function testItemRowOffersDimensionWithSettingOn(): void

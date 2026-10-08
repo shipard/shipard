@@ -123,6 +123,26 @@ class AccountingEngineDimensionsTest extends TestCase
         $this->assertSame([9, 3], array_map(static fn(array $l): ?int => $l['dimensions']['centre'], $journal));
     }
 
+    public function testHeadDefaultAndRowValueCombineAcrossTwoDimensions(): void
+    {
+        // Středisko z hlavičky, majetek z řádku (#110 D23): řádek deníku nese
+        // obě hodnoty v pořadí dimenzí a řádky téhož účtu se slijí jen při
+        // shodě obou — jiné středisko na řádku drží vlastní zápis.
+        $journal = $this->journal($this->engine(['centre' => self::CENTRE, 'asset' => self::ASSET]), [
+            $this->row(1, 0, 1000.0, ['asset' => 5]),
+            $this->row(2, 0, 200.0, ['asset' => 5]),
+            $this->row(3, 0, 400.0, ['asset' => 6]),
+            $this->row(4, 0, 50.0, ['asset' => 5, 'centre' => 9]),
+        ]);
+
+        $this->assertCount(3, $journal);
+        $this->assertSame(
+            [['centre' => 3, 'asset' => 5], ['centre' => 3, 'asset' => 6], ['centre' => 9, 'asset' => 5]],
+            array_map(static fn(array $l): array => $l['dimensions'], $journal),
+        );
+        $this->assertSame([1200.0, 400.0, 50.0], array_map(static fn(array $l): float => $l['money_dr'], $journal));
+    }
+
     public function testHeadStepLineCarriesOnlyHeadDefault(): void
     {
         $engine = $this->engine(['asset' => self::ASSET, 'centre' => self::CENTRE]);

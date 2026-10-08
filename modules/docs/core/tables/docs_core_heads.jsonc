@@ -333,6 +333,20 @@
         // zapnutým nastavením Dimenze na dokladech (D21); uložená hodnota se
         // do deníku propisuje vždy.
         //
+        // cost_center — středisko, kterého se doklad týká (#110 D23): výchozí
+        //   hodnota pro řádky bez vlastního střediska; na fakturách vydaných
+        //   i zálohových, přijatých, pokladních a účetních dokladech.
+        {
+            "id": "cost_center",
+            "name": "Cost center",
+            "name:cs": "Středisko",
+            "name:en": "Cost center",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_cost_centers",
+            "group": "accounting"
+        },
+
         // asset — karta majetku, které se doklad týká (docs/assets.md D59,
         //   D60): řádek bez vlastní karty a hlavičkové kroky předpisu ji
         //   zdědí. Řádek pořízení kartu z hlavičky nedědí (`rowFlag`).
@@ -814,6 +828,11 @@
         },
 
         // dimenze deníku (#110 D20)
+        {
+            "id": "idx_cost_center",
+            "type": "index",
+            "columns": [{"column": "cost_center"}]
+        },
         {
             "id": "idx_asset",
             "type": "index",
