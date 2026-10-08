@@ -80,7 +80,6 @@
 
 <style>
   .shpd-confirm__message {
-    padding: var(--shpd-space-lg);
     font-size: var(--shpd-font-size-base);
     color: var(--shpd-color-text);
     line-height: 1.5;

@@ -72,6 +72,7 @@
   {onClose}
   width="clamp(1200px, 80vw, 1700px)"
   height="clamp(720px, 88vh, 1100px)"
+  flush
 >
   {#if error}
     <div class="shpd-detail-modal__error">{error}</div>

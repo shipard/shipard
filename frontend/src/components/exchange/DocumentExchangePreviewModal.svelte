@@ -332,6 +332,7 @@
   testid="review-modal"
   headerExtra={queue ? queueBadge : undefined}
   subtitle={sourceMessage}
+  flush
 >
   {#if loading}
     <div class="shpd-exchange-modal__loading">

@@ -183,7 +183,6 @@
 
 <style>
   .shpd-bank-bridge {
-    padding: var(--shpd-space-lg);
     display: flex;
     flex-direction: column;
     gap: var(--shpd-space-md);

@@ -275,7 +275,7 @@
   let displayName = $derived(canonical?.name?.fullName ?? selectedRow?.fullName ?? '');
 </script>
 
-<Modal title={t(asOwn ? 'registry.wizard.titleOwn' : 'registry.wizard.title')} {open} {onClose} width="full">
+<Modal title={t(asOwn ? 'registry.wizard.titleOwn' : 'registry.wizard.title')} {open} {onClose} width="full" flush>
   {#if screen === 'search'}
     {#if asOwn}
       <p class="shpd-registry-wizard__own-intro">{t('registry.wizard.ownIntro')}</p>

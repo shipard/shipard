@@ -286,6 +286,7 @@
     headerNav={showNav ? headerNavSnippet : undefined}
     onKeydown={handleKeydown}
     testid="form-dialog"
+    flush
   >
     {#if notice}
       <div class="shpd-form-dialog__notice" role="status">{notice}</div>

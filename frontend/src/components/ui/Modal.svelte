@@ -79,6 +79,12 @@
      *  (ConfirmDialog, 480 px), které by po zmenšení o 60 px na každou
      *  hloubku přestaly být použitelné; rodič pod nimi vyčnívá i tak. */
     fixedSize?: boolean;
+    /** Tělo bez odsazení — obsah sahá až k okrajům karty. Pro dialogy
+     *  s vlastním rozvržením na celou plochu (formulář, detail záznamu,
+     *  review, průvodce), které si odsazení řeší po sekcích. Výchozí
+     *  (false) = tělo má padding `--shpd-space-lg`, vodorovně lícuje
+     *  s hlavičkou a patičkou; obsah malých dialogů si ho nenese sám. */
+    flush?: boolean;
     /** Navigační ovládání v hlavičce (šipky Předchozí/Další sub-záznamu,
      *  FormDialog `navigation`), renderované mezi `summary` a `×`. Na mobilu
      *  zůstává viditelné — na rozdíl od summary. */
@@ -103,6 +109,7 @@
     height,
     testid,
     fixedSize = false,
+    flush = false,
     headerNav,
     onKeydown,
   }: Props = $props();
@@ -207,7 +214,7 @@
         {/if}
         <button class="shpd-modal__close" onclick={onClose} aria-label={t('common.close')}>×</button>
       </div>
-      <div class="shpd-modal__body">
+      <div class="shpd-modal__body" class:shpd-modal__body--padded={!flush}>
         {@render children()}
       </div>
       {#if footer}
@@ -389,6 +396,21 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+  }
+
+  /* Výchozí odsazení obsahu (bez `flush`). Okraj u hrany drží padding,
+     proto krajní děti ztrácejí vnější margin — jinak by se k paddingu
+     přičetl (výchozí margin <p>, margin-bottom posledního pole). */
+  .shpd-modal__body--padded {
+    padding: var(--shpd-space-lg);
+  }
+
+  .shpd-modal__body--padded > :global(:first-child) {
+    margin-top: 0;
+  }
+
+  .shpd-modal__body--padded > :global(:last-child) {
+    margin-bottom: 0;
   }
 
   .shpd-modal__footer {

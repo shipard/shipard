@@ -339,6 +339,12 @@ posledního.
 - Tlačítka v patce přes snippet `footer` + `<Button>` komponentu
 - Title + volitelný `headerExtra` snippet pro badge/stav v hlavičce
 - Width default 640px, lze předělat (`width="800px"`, `width="480px"` atd.)
+- **Odsazení těla**: tělo má výchozí padding `--shpd-space-lg` (vodorovně
+  lícuje s hlavičkou a patičkou) a krajním dětem ruší vnější margin. Obsah
+  malého dialogu si padding **nenese sám** — zdvojil by se. Dialogy
+  s vlastním rozvržením na celou plochu (`FormDialog`, `ViewerDetailModal`,
+  review modal, průvodce importem z registru) ho vypínají propem `flush`
+  a odsazení řeší po sekcích
 - **Mobil (≤ 768px)**: každý modál je fullscreen (`100vw × 100dvh`,
   bez zaoblení/okrajů), footer tlačítka na plnou šířku, header summary
   skryt, depth-shrink vypnut (vnořený modál překryje rodiče). Pevné

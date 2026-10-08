@@ -62,7 +62,6 @@
 </script>
 
 <Modal title={t('dashboard.queue.precheckTitle')} {open} {onClose} width="560px">
-  <!-- Modal body padding nedodává — obsah si ho nese sám (vzor MailUploadModal). -->
   <div class="shpd-queue-precheck">
     {#if remaining.length === 0}
       <p class="shpd-queue-precheck__empty">{t('dashboard.queue.precheckEmpty')}</p>
@@ -112,10 +111,6 @@
 </Modal>
 
 <style>
-  .shpd-queue-precheck {
-    padding: var(--shpd-space-md) var(--shpd-space-lg);
-  }
-
   .shpd-queue-precheck__empty {
     margin: 0;
     color: var(--shpd-color-text-secondary);

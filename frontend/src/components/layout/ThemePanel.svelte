@@ -85,9 +85,7 @@
 
 {#if layoutStore.isMobile}
   <Modal title={t('theme.panel.title')} {open} {onClose}>
-    <div class="shpd-theme-panel__modal-body">
-      {@render panelContent()}
-    </div>
+    {@render panelContent()}
   </Modal>
 {:else if open}
   <div
@@ -151,9 +149,5 @@
   .shpd-theme-panel__close:hover {
     background-color: var(--shpd-color-bg-hover);
     color: var(--shpd-color-text);
-  }
-
-  .shpd-theme-panel__modal-body {
-    padding: var(--shpd-space-md) var(--shpd-space-lg);
   }
 </style>
