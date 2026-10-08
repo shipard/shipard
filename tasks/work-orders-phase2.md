@@ -1,6 +1,6 @@
 # Zakázky Fáze 2 — periodická fakturace
 
-**Stav:** naplánováno — #110 D2–D7, D10–D12, D24; Q1–Q7 potvrzené 2026-10-08
+**Stav:** hotovo — 2026-10-08 (6 commitů, ověřeno na `4l3j`: tři koncepty z měsíční zakázky, druhý běh nic, smazaný koncept = zastaveno + Obnovit, Přegenerovat se stejným id, karta ve feedu; odchylky viz „Poznámky k implementaci“); zbývá `ds-upgrade` na ostatních zdrojích a alfě, komentář #110
 
 > PRD pro jednu Claude Code session (6 commitů). Design:
 > `docs/work-orders.md` §4 (D2–D7, D10–D12, D24), §5.5; issue #110.
@@ -328,3 +328,51 @@ Na ukázkovém zdroji (`4l3j-z0bz-kz39-echj`, režim volný):
   text dokladu = „{název zakázky} {období}“.
 - ✓ **Q7 — Fáze 2 vytváří vždy Koncept**; nastavení úrovně stavu (D4)
   přijde s fází 3.
+
+## Poznámky k implementaci (2026-10-08)
+
+- **Řada dokladů do applieru podle id** — nová obecná volba
+  `applyOptions.numberSeriesId` (vedle `numberSeriesCode`; obě najednou =
+  `number_series_conflict`). Kód řady `doc_number_code` je nullable
+  a neunikátní, takže by `numberSeriesCode` u řady bez kódu vzal „první
+  aktivní“. Schéma ve třech kopiích (`.jsonc`, `.json`, mail profil).
+- **Výchozí vlastní účet** dosazuje builder (`DefaultBankAccountResolver`
+  sdílený s formulářem dokladu, `applyOptions.importOwnBankAccount`) —
+  applier výchozí účet nedosazuje a pro ostatní volající se nemění.
+  Výsledek odpovídá Q5 (koncept jde potvrdit bez ručního doplnění účtu).
+- **`inv_vat_mode`** nabízí celý cfgItem `docs.core.vatModes` včetně
+  Bez DPH (neplátce), zadání jmenovalo jen Ze základu / Z ceny celkem.
+- **Řádky předpisu** jsou sub-tabulka editovatelná i u zakázky V pořádku
+  (`independentRows`) — změna ceny k datu nevyžaduje V opravě; hlavičkové
+  přepisy se mění přes V opravě jako ostatní pole.
+- **Výsledek posledního běhu** na období je strojový kód ve sloupci
+  `result` (`failed` / `no_rows` / `no_doc_type` / `no_series` /
+  `no_customer` / `contributor_failed` / `catchup` / `waiting` / `edited`)
+  vedle textové `message`; alert checky se ptají na kód. Období `planned`
+  vznikají jen pro splatná období, takže `planned` bez `doc` = dlužné.
+- **Applier ukládá v `NestedTransaction`** (vlastní transakce, nebo
+  SAVEPOINT uvnitř transakce volajícího) — předpoklad atomicity běhu
+  (zámek řádku období → apply → zápis `doc`). `replaceConcept` zamyká
+  cílový koncept `FOR UPDATE` a sloupce mimo payload explicitně resetuje
+  (update přes `TableGateway` zapisuje jen přítomné klíče).
+- **Id alert checků malými písmeny** (`economy.workorders.*`) — regex id
+  checku nedovolí camelCase; `navSection` naopak camelCase dovolí
+  (rozvolněno, `workOrders` je id sekce sidebaru).
+- **`{období}`** texty čtvrtletí / pololetí v cfgItem
+  `economy.workOrders.periodTexts` (cs / en / sk / de) čtené v jazyce
+  dokumentu (lazy `ConfigRuntime::load` per jazyk jako u tisku), měsíc
+  přes ext-intl `LLLL yyyy` (1. pád); bez katalogu anglický fallback.
+- **Přispěvatelé** se registrují `workOrderInvoiceContributors` a kompilují
+  do cfgItem `economy.workOrders.invoiceContributors` (nabídka řádku,
+  validace id, třídy pro `InvoiceContributorRegistry::fromConfig`) —
+  žádný runtime loader přes resolver modulů. Volají se před apply:
+  Failed → období `planned` + `contributor_failed`, Waiting → koncept
+  s řádky přispěvatele s množstvím 0, Ready v dalším běhu →
+  `replaceConcept` jen při shodném `content_hash`, jinak `edited`.
+- **Obnovit** odváže smazaný doklad (zůstává v koši) a spustí běh pro
+  zakázku s `force`; vrací řádek obnoveného období.
+- **Viewer dokladů** dostal filtr Zdroj (`source_kind`,
+  `docs.core.viewerLabels`) — akce souhrnného alertu otevírá Faktury
+  vydané / Zálohové faktury vydané s filtrem Periodická fakturace.
+- Alert z CLI / cronu vzniká v jazyce DS (`defaultLanguage`); v UI se
+  texty nepřekládají (jako u ostatních checků).

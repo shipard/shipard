@@ -88,6 +88,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | Stránka | Co v ní najdeš |
 |---------|----------------|
 | [Nastavení zakázek](zakazky/nastaveni-zakazek.md) | Kde založíš druhy zakázek s typem a číselné řady zakázek, jak napsat vzorec čísla zakázky a co se po založení už nedá změnit. |
+| [Periodická fakturace](zakazky/periodicka-fakturace.md) | Jak nastavit periodické zakázce fakturační předpis (druh, zakázka, řádky s platností), kdy a jak vznikají koncepty faktur, co s nimi udělat a jak období přegenerovat, obnovit nebo dovystavit. |
 | [Zakázka na dokladech](zakazky/zakazka-na-dokladech.md) | Jak zapnout pole Zakázka na fakturách, pokladních a účetních dokladech, kdy ji dát na hlavičku a kdy jen na řádek, a kde pak zakázku najdeš v účetním deníku. |
 | [Zakázky](zakazky/zakazky.md) | Jak založit zakázku, co znamenají čtyři typy zakázek, jak zakázka dostane číslo, jak funguje nadřazená zakázka a podzakázky a jak zakázku ukončit nebo zrušit. |
 

@@ -2,7 +2,7 @@
 title: Zakázky
 summary: Jak založit zakázku, co znamenají čtyři typy zakázek, jak zakázka dostane číslo, jak funguje nadřazená zakázka a podzakázky a jak zakázku ukončit nebo zrušit.
 keywords: [zakázka, zakázky, zakázku, zakázce, nová zakázka, založit zakázku, přidat zakázku, číslo zakázky, číslování zakázek, typ zakázky, typy zakázek, periodická zakázka, externí jednorázová, interní průběžná, interní jednorázová, projekt, režijní zakázka, režie, nadřazená zakázka, podzakázka, podzakázky, strom zakázek, zákazník zakázky, zákazník z nadřazené, ukončit zakázku, zrušit zakázku, ukončená zakázka, zrušená zakázka, archiv zakázek, datum zahájení, datum ukončení, zakázka v opravě, smazat zakázku, přílohy k zakázce, smlouva, nájemní smlouva, work order]
-related: [zakazky/nastaveni-zakazek.md, zakazky/zakazka-na-dokladech.md, uctarna/strediska.md, co-shipard-umi.md, co-dnes-nejde.md]
+related: [zakazky/periodicka-fakturace.md, zakazky/nastaveni-zakazek.md, zakazky/zakazka-na-dokladech.md, uctarna/strediska.md, co-shipard-umi.md, co-dnes-nejde.md]
 ---
 
 # Zakázky
@@ -17,8 +17,9 @@ pak vidíš její náklady a výnosy (viz
 
 Chceš vědět, kolik tě stojí a kolik vynáší jednotlivý projekt nebo
 smlouva. Nebo máš větší projekt rozdělený na dílčí práce a chceš je držet
-pod jednou zakázkou. Nebo připravuješ periodickou fakturaci — ta bude
-stát na zakázkách (viz [Co Shipard dnes neumí](../co-dnes-nejde.md)).
+pod jednou zakázkou. Nebo chceš nájemné či paušální služby fakturovat
+automaticky — to dělá periodická zakázka (viz
+[Periodická fakturace](periodicka-fakturace.md)).
 
 ## Postup
 
@@ -89,12 +90,16 @@ konceptu na jiný typ, tahle pole se vyprázdní.
 Pole **Zakázka** na dokladech zapíná nastavení, viz
 [Zakázka na dokladech](zakazka-na-dokladech.md).
 
-**Cena, předmět dodávky, termíny a vyhodnocení projektu zatím nejsou**,
-stejně jako periodická fakturace ze zakázky. Viz
-[Co Shipard dnes neumí](../co-dnes-nejde.md).
+**Periodická zakázka má navíc sekci Fakturace a záložku Řádky** —
+předpis, ze kterého běh každé období vystaví koncept faktury. Jak ho
+nastavit, viz [Periodická fakturace](periodicka-fakturace.md).
+
+**Cena, předmět dodávky, termíny a vyhodnocení projektu zatím nejsou.**
+Viz [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 ## Souvisí
 
+- [Periodická fakturace](periodicka-fakturace.md)
 - [Nastavení zakázek](nastaveni-zakazek.md)
 - [Zakázka na dokladech](zakazka-na-dokladech.md)
 - [Střediska](../uctarna/strediska.md)

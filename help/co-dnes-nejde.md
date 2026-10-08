@@ -32,8 +32,10 @@ Tyhle části účetního provozu v Shipardu zatím vůbec nenajdeš:
   období ale spočítáš jako report.
 - **Platební příkazy a přímé napojení na banku.** Výpisy nahráváš jako
   soubor, platby zadáváš ve svém bankovnictví.
-- **Opakovaná fakturace** — periodická zakázka už jde založit, faktury
-  se z ní ale zatím nevystavují.
+- **Opakovaná fakturace** vystavuje vždy jen **koncepty** — automatické
+  potvrzení (rovnou V pořádku) ani automatické odeslání faktury zatím
+  není, a žádný přispěvatel obsahu (přefakturace spotřeby) zatím není
+  k dispozici. Viz [Periodická fakturace](zakazky/periodicka-fakturace.md).
 
 ---
 

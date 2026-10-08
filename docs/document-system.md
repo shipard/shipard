@@ -703,6 +703,23 @@ class IssuedInvoiceDocument extends Document
 
 ---
 
+## 12b. Doklady, které Shipard generuje sám
+
+Doklady, které nevznikají z ruky uživatele ani z externího zdroje, ale
+Shipard je skládá z vlastních dat — periodická fakturace zakázek
+(#110 Q1), později faktura ze zakázky, faktura ze zálohy apod. — vznikají
+**i se přegenerovávají výhradně přes výměnný formát a `DocumentApplier`**
+(`docs/exchange-format.md` §1, § Apply a doc state → `replaceConcept`).
+Generátor sestaví kanonický `shpd.docs.document.v1` a applier udělá
+zbytek: validaci, resolve, odvození DPH, řadu, zaokrouhlení, dimenze,
+`TableGateway::saveDocument` s Document hooky. Žádné přímé skládání
+hlavičky a řádků mimo applier — druhá implementace by se rozešla.
+
+Známé výjimky z doby před touto zásadou (#112): zaúčtování podaného
+přiznání DPH (`VatReturnAccountingService`) a účetní doklady majetku
+(`AssetPostingDocuments`) jdou přes `TableGateway` přímo; sjednotí je
+samostatný task.
+
 ## 13. Tok dat — saveDocument
 
 ```

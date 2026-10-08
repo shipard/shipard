@@ -1,8 +1,8 @@
 ---
 title: Nastavení zakázek
 summary: Kde založíš druhy zakázek s typem a číselné řady zakázek, jak napsat vzorec čísla zakázky a co se po založení už nedá změnit.
-keywords: [nastavení zakázek, druh zakázky, druhy zakázek, nový druh zakázky, typ zakázky, typ druhu, číselná řada zakázek, číselné řady zakázek, nová řada zakázek, kód řady, vzorec čísla zakázky, vzorec čísla, číslování zakázek, pořadové číslo, restart počítadla, restart každý fiskální rok, průběžné číslování, bez restartu, platnost řady, "%C", "%y", "%Y", "%4", placeholder, řada bez pořadí, nejde uložit řadu, nejde změnit typ druhu, nejde změnit druh řady]
-related: [zakazky/zakazky.md, zakazky/zakazka-na-dokladech.md, co-shipard-umi.md]
+keywords: [nastavení zakázek, výchozí hodnoty fakturace, druh zakázky, druhy zakázek, nový druh zakázky, typ zakázky, typ druhu, číselná řada zakázek, číselné řady zakázek, nová řada zakázek, kód řady, vzorec čísla zakázky, vzorec čísla, číslování zakázek, pořadové číslo, restart počítadla, restart každý fiskální rok, průběžné číslování, bez restartu, platnost řady, "%C", "%y", "%Y", "%4", placeholder, řada bez pořadí, nejde uložit řadu, nejde změnit typ druhu, nejde změnit druh řady]
+related: [zakazky/zakazky.md, zakazky/periodicka-fakturace.md, zakazky/zakazka-na-dokladech.md, co-shipard-umi.md]
 ---
 
 # Nastavení zakázek
@@ -27,7 +27,12 @@ výchozí tvar čísla a chceš vlastní vzorec.
    zakázky**: **Periodická**, **Externí jednorázová**, **Interní
    průběžná** nebo **Interní jednorázová**. Co jednotlivé typy znamenají,
    říká tabulka v [Zakázkách](zakazky.md).
-3. Dej **V pořádku**. Od té chvíle je typ druhu jen ke čtení — určuje,
+3. U typu **Periodická** vyplň sekci **Výchozí hodnoty fakturace** —
+   **Typ dokladu** a **Řada dokladů** jsou pro **V pořádku** povinné,
+   ostatní (splatnost, fakturace na počátku / konci, režim DPH, způsob
+   platby, účet) volitelné; zakázka je smí přepsat. Podrobně viz
+   [Periodická fakturace](periodicka-fakturace.md).
+4. Dej **V pořádku**. Od té chvíle je typ druhu jen ke čtení — určuje,
    co zakázky druhu mají, a jeho změna by je rozbila. Pro jiný typ založ
    nový druh.
 
@@ -69,4 +74,5 @@ jiný kód.
 ## Souvisí
 
 - [Zakázky](zakazky.md)
+- [Periodická fakturace](periodicka-fakturace.md)
 - [Zakázka na dokladech](zakazka-na-dokladech.md)

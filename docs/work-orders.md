@@ -1,7 +1,8 @@
 # Shipard — Zakázky a periodická fakturace (`economy.workOrders`)
 
 > **Designový dokument.** **Stav:** D1–D24 rozhodnuto 2026-10-08;
-> implementace nezačala, tasky v §7.
+> fáze 1 (evidence) a fáze 2 (periodická fakturace, úroveň Koncept)
+> hotové 2026-10-08, tasky v §7.
 > **Datum:** 2026-10-08 · **Milník:** M4 (blokátor migrace) ·
 > **Issue:** #110
 
@@ -399,6 +400,46 @@ zastaveno*), doklad. Unikátní klíč zakázka × začátek období.
 - **Smazaný koncept** období zastaví; **Přegenerovat** a **Obnovit**
   podle D24.
 
+**Hotovo ve fázi 2** (2026-10-08, `tasks/work-orders-phase2.md`, úroveň
+Koncept — Q7): fakturační předpis — sloupce `inv_*` na druhu
+(`economy_work_orders_kinds`) a zakázce (NULL = z druhu), periodicita,
+`inv_from` (výchozí zahájení) a `inv_doc_text` s `{období}`; efektivní
+hodnoty skládá jen `InvoicingSettingsResolver`; řádky
+`economy_work_orders_rows` (`WorkOrderRowDocument` / `WorkOrderRowsForm`,
+sub-tabulka editovatelná i u zakázky V pořádku, pohyby a kódy DPH podle
+efektivního typu dokladu, `contributor`); potvrzení vyžaduje periodicitu,
+efektivní typ dokladu a řadu a aspoň jeden řádek. Evidence
+`economy_work_orders_periods` (UNIQUE zakázka × začátek; `state` planned /
+waiting / issued, zastaveno odvozené = issued s dokladem v koši nebo bez
+něj; `result` + `message` = výsledek posledního běhu, `content_hash` =
+otisk konceptu). `src/Invoicing/`: `PeriodCalendar` (kalendářní období,
+den fakturace, splatná období k datu, ukončení bez krácení),
+`PeriodLabel` (`{období}` přes ext-intl a cfgItem `periodTexts` cs / en /
+sk / de), `InvoiceBuilder` → kanonický `shpd.docs.document.v1`
+(`DocumentApplier`, Q1: `numberSeriesId`, `importOwnBankAccount`
+efektivní nebo výchozí účet, pin zákazníka, dimenze zakázka a středisko,
+`source.kind = workOrder`), `InvoicingRunService` (zámek řádku období +
+apply + zápis dokladu v jedné transakci — applier ukládá v
+`NestedTransaction`; chyba jednoho období zastaví jen je; pojistka
+dohánění `MAX_CATCHUP = 3` s `force`; dry-run bez zápisu; Přegenerovat
+přes `applyOptions.replaceConcept`, Obnovit = odvázání dokladu + běh),
+CLI `work-orders-invoice-run` a cron `daily`. Detail: tab *Fakturace*
+a akce Vystavit dlužná období / Přegenerovat / Obnovit
+(`WorkOrdersInvoicingController`, `/_work-orders/…`). Přispěvatelé:
+`InvoiceContributor` + registrace `workOrderInvoiceContributors` →
+cfgItem `economy.workOrders.invoiceContributors`
+(`InvoiceContributorRegistry`), Waiting = koncept s řádky přispěvatele
+s množstvím 0, Ready v dalším běhu přegeneruje jen nezměněný koncept
+(`ContentHash`), nastavení `economy.workOrders.contributorWaitDays`;
+žádný přispěvatel zatím. Upozornění `economy.workorders.*`
+(invoices_to_review souhrnně, period_failed, catchup_blocked,
+period_waiting per zakázka). Viewer dokladů má filtr Zdroj
+(`source_kind`). Odchylky od zadání: řada do applieru podle id
+(`numberSeriesId` — kód řady je nepovinný a neunikátní), výchozí účet
+dosazuje builder přes `DefaultBankAccountResolver` (applier pro ostatní
+volající beze změny), `inv_vat_mode` nabízí i Bez DPH, id alertů malými
+písmeny (`economy.workorders.*`).
+
 ### 5.6 Standardní dimenze (D20, D21, D23)
 
 | dimenze | id | sloupec (hlavička, řádky, deník) | cílová tabulka | doklady |
@@ -464,7 +505,7 @@ Otevřené: O6 (§8).
 | 1 | `tasks/dimensions-core.md` — majetek a středisko jako standardní dimenze jádra, nastavení *Dimenze na dokladech*, středisko ve výměnném formátu | D20, D21, D23 | hotovo (2026-10-08) |
 | 2 | `tasks/number-series-engine.md` — společný engine čísel vytažený z číselných řad dokladů | D17 | hotovo (2026-10-08) |
 | 3 | `tasks/work-orders-phase1.md` — modul, druhy, číselné řady, hlavička všech typů, stavy, nadřazená zakázka, dimenze zakázka, záložka Deník | D14–D18, D22, D23 | hotovo (2026-10-08) |
-| 4 | `tasks/work-orders-phase2.md` — periodická fakturace: předpis, evidence období, běh, koncept s kartou ve feedu, Přegenerovat a Obnovit, VS, `období`, záložka Fakturace, rozhraní přispěvatelů | D2–D7, D10–D12, D24 | naplánováno |
+| 4 | `tasks/work-orders-phase2.md` — periodická fakturace: předpis, evidence období, běh, koncept s kartou ve feedu, Přegenerovat a Obnovit, VS, `období`, záložka Fakturace, rozhraní přispěvatelů | D2–D7, D10–D12, D24 | hotovo (2026-10-08) |
 | 5 | `tasks/work-orders-phase3.md` — úrovně V pořádku a automatické odeslání | D4 | připravuje se; navazuje na #90 D11 |
 | 6 | `tasks/work-orders-import.md` — výměnný formát zakázky včetně fakturačního předpisu a *fakturovat od*, doplnění zakázky na už importované doklady | D9 | připravuje se; po fázi 2 |
 
