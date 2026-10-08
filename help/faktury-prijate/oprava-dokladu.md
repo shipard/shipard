@@ -2,7 +2,7 @@
 title: Oprava dokladu
 summary: Jak opravit nebo zrušit přijatou fakturu, která už je ve stavu V pořádku, a čemu se přitom vyhnout.
 keywords: [oprava, opravit doklad, oprava přijaté faktury, v opravě, storno, stornovat, zrušit fakturu, smazat doklad, přeúčtovat, špatná částka na faktuře]
-related: [faktury-prijate/dokonceni-dokladu.md, slovnicek.md, co-dnes-nejde.md]
+related: [faktury-prijate/dokonceni-dokladu.md, uctarna/uzamceni-obdobi.md, slovnicek.md, co-dnes-nejde.md]
 ---
 
 # Oprava dokladu
@@ -52,9 +52,10 @@ a dej u dokladu **Přeúčtovat**.
 Doklad zůstane ve **V pořádku** a — na rozdíl od opravy — se párování
 s platbou nerozpojí.
 
-**Z V opravě se nedá vrátit do Konceptu.** Z tohohle stavu vedou jen cesty
-zpět na **V pořádku**, do **Storna**, nebo do koše. Je to tak schválně:
-doklad už má číslo a Koncept by ho uvolnil.
+**Do Konceptu se z V opravy vrátí jen poslední doklad v řadě.** Tlačítko
+**Uložit jako koncept** doklad vrátí do Konceptu a uvolní jeho číslo;
+u staršího dokladu se nenabízí, aby v číslování nezůstala díra. Jinak
+vedou z V opravy cesty zpět na **V pořádku**, do **Storna** nebo do koše.
 
 **Storno doklad nemaže.** Zůstává v evidenci, ale neplatí a je odúčtovaný.
 Ze Storna se dá jít jedině přes **Opravit**, takže ani storno není konečné.
@@ -63,10 +64,11 @@ Ze Storna se dá jít jedině přes **Opravit**, takže ani storno není konečn
 a nebude dohledatelné, co se s dokladem stalo. Správná cesta je **Storno**.
 Smazaný doklad se dá vrátit tlačítkem **Opravit**.
 
-**Opravu po odevzdaném přiznání k DPH Shipard nezastaví.** Období se dnes
-nedá uzamknout (viz [Co Shipard dnes neumí](../co-dnes-nejde.md)), takže si
-klidně opravíš doklad v období, které už je nahlášené — a podklady se zpětně
-změní. Jestli tě to potkalo, řeš to s účetní, ne kliknutím.
+**Doklad v uzamčeném období neopravíš.** Po podání přiznání k DPH období
+uzamkni — zamčený doklad pak nejde opravit, stornovat ani smazat a podklady,
+které už jsi odevzdal, se zpětně nezmění. Zámek se nenastaví sám; jak na
+něj a jak ho pro dodatečné přiznání zase sundat, je v
+[Uzamčení období](../uctarna/uzamceni-obdobi.md).
 
 ## Souvisí
 

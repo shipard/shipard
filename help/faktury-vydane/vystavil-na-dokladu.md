@@ -56,7 +56,7 @@ nastavený autor.
 
 **Pole Vystavil nejde změnit.** Doklad ve stavu **V pořádku** je jen ke
 čtení, stejně jako jeho ostatní pole. Vrať ho do stavu **V opravě**, autora
-změň a doklad znovu potvrď — viz
+změň a doklad dej znovu do **V pořádku** — viz
 [Oprava dokladu](../faktury-prijate/oprava-dokladu.md).
 
 **V nabídce je u jména „neaktivní“.** Doklad vystavil uživatel, který už

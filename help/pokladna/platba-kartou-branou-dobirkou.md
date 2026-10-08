@@ -51,7 +51,7 @@ Pokud zákazník platí hotově nebo převodem, nic z toho nastavovat nemusíš.
    dokladu; kdyby měl platit někdo jiný, zaškrtni **Zadat plátce ručně**
    a vyber ho.
 
-4. **Potvrď doklad.** Zaúčtuje se pohledávka za plátcem s variabilním
+4. **Dej V pořádku.** Zaúčtuje se pohledávka za plátcem s variabilním
    symbolem rovným číslu dokladu. V **Účtárna → Saldokonto** ji najdeš ve
    skupině **Pohledávky** pod plátcem (terminálem, bránou, dopravcem), ne
    pod zákazníkem — u zákazníka žádná otevřená položka nevznikne.

@@ -56,11 +56,10 @@ ještě neproběhlo.
 4. **Zkontroluj tab Rekapitulace DPH.** Je to rozpis částky, kterou má
    odběratel zaplatit, po sazbách a celkem s daní.
 
-5. **Dej Potvrdit.** Proforma dostane **číslo** z vlastní číselné řady
+5. **Dej V pořádku.** Proforma dostane **číslo** z vlastní číselné řady
    (Shipard ji zakládá sám) a jako **Variabilní symbol** se předplní pořadové
-   číslo v řadě. Tenhle symbol pak odběratel uvede na platbě.
-
-6. **Dej V pořádku.** Doklad se uzamkne, formulář se zavře a proforma se
+   číslo v řadě — ten pak odběratel uvede na platbě. Doklad se uzamkne,
+   formulář se zavře a proforma se
    zaúčtuje **na podrozvahu** celkovou částkou — do rozvahy, výsledovky ani
    DPH nevstupuje. V saldokontu ji od té chvíle vidíš ve skupině
    **Zálohové faktury vydané** jako otevřenou položku, dokud ji odběratel
@@ -77,7 +76,7 @@ platba s variabilním symbolem proformy (nebo zákazník zaplatí na pokladně
 příjmovým dokladem s pohybem *Přijatá záloha* a symbolem proformy), Shipard
 ji zaúčtuje jako přijatou zálohu a zároveň proformu ve skupině
 **Zálohové faktury vydané** uzavře — funguje to i tehdy, když platba
-dorazila dřív, než jsi proformu potvrdil. V saldokontu pak vidíš dvě
+dorazila dřív, než jsi proformu dal do **V pořádku**. V saldokontu pak vidíš dvě
 věci: proforma je vyrovnaná a ve skupině **Přijaté zálohy** leží pod jejím
 symbolem otevřená záloha. Tu uzavře až faktura s řádkem *Odpočet přijaté
 zálohy* a stejným variabilním (a případně specifickým) symbolem.

@@ -7,7 +7,7 @@ related: [zaciname.md, o-zdroji-dat.md, osoby/zalozeni-osoby.md]
 
 # První nastavení zdroje dat
 
-Čerstvě založený zdroj dat neví, kdo jsi — a bez toho v něm nepotvrdíš
+Čerstvě založený zdroj dat neví, kdo jsi — a bez toho v něm nedokončíš
 žádný doklad. Karta **Dokončit nastavení** na Dashboardu tě dovede
 k panelu, kde chybějící nastavení doplníš.
 
@@ -17,7 +17,7 @@ k panelu, kde chybějící nastavení doplníš.
   nastavení**.
 - Karta se objevila později — třeba proto, že vlastní firma nemá sídlo
   nebo ses zatím nerozhodl o účtové osnově.
-- Nejde ti potvrdit doklad a hláška mluví o chybějící vlastní firmě,
+- Nejde ti dát doklad do **V pořádku** a hláška mluví o chybějící vlastní firmě,
   Registraci DPH nebo bankovním účtu.
 
 ## Postup
@@ -58,7 +58,7 @@ i karta z Dashboardu a panel hlásí, že je vše potřebné nastavené.
 ## Na co narazíš
 
 - **Nic z toho není blokující** — panel můžeš kdykoli opustit a vrátit
-  se. Bez vlastní firmy ale nepotvrdíš žádný doklad, bez Registrace DPH
+  se. Bez vlastní firmy ale nedokončíš žádný doklad, bez Registrace DPH
   doklad s DPH a bez bankovního účtu vydanou fakturu. Začni proto
   vlastní firmou.
 - **Položky nejde odklikat ani odložit.** Karta i seznam zmizí jedině

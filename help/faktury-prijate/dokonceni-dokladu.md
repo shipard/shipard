@@ -1,16 +1,16 @@
 ---
 title: Dokončení dokladu
-summary: Co se děje po Vystavit koncept — od Konceptu přes Potvrzeno k V pořádku a co se tím spustí.
-keywords: [dokončení, koncept, potvrzeno, v pořádku, vystavit koncept, číslo faktury, číselná řada, zaúčtování, saldokonto, uzamčení dokladu]
+summary: Co se děje po Vystavit koncept — od Konceptu k V pořádku a co se tím spustí.
+keywords: [dokončení, dokončit doklad, potvrdit doklad, koncept, v pořádku, vrátit do konceptu, uložit jako koncept, vystavit koncept, číslo faktury, číselná řada, zaúčtování, saldokonto, uzamčení dokladu]
 related: [posta/kontrola-vytezeni.md, faktury-prijate/oprava-dokladu.md, slovnicek.md]
 ---
 
 # Dokončení dokladu
 
 Doklad vystavený z došlé pošty přes **Vystavit koncept** vzniká jako
-**Koncept** — rozpracovaný záznam, který zatím nikam nepočítá. Aby se
-zaúčtoval a objevil v saldokontu, musí projít dvěma přechody. Tahle stránka
-je o tom, co se při každém z nich stane. (Doklad vystavený přes **Vystavit
+**Koncept** — rozpracovaný záznam, který zatím nikam nepočítá. Aby dostal
+číslo, zaúčtoval se a objevil v saldokontu, dáš mu **V pořádku**. Tahle
+stránka je o tom, co se při tom stane. (Doklad vystavený přes **Vystavit
 a uzavřít** je hotový rovnou — nic z toho ho nečeká.)
 
 ## Kdy to potřebuješ
@@ -21,33 +21,31 @@ a nedokončil.
 
 ## Postup
 
-Kroky 1–3 se dějí v **editačním formuláři** — tom, který se ti otevřel po
+Kroky 1–2 se dějí v **editačním formuláři** — tom, který se ti otevřel po
 **Vystavit koncept**. Tlačítka dole ve formuláři jsou **Uložit**,
-**Potvrdit** a **V pořádku**.
+**V pořádku** a **Smazat**.
 
 1. **Dokonči Koncept.** Tady je editovatelné všechno: řádky, částky, sazby,
    datumy, dodavatel. Zkontroluj především **Účetní datum**,
    **DUZP** a **Datum splatnosti** — od nich se odvíjí období a saldokonto.
    Doklad z pošty už má nastavenou **číselnou řadu**, takže na ni myslet
-   nemusíš.
+   nemusíš. Rozdělaný doklad ulož tlačítkem **Uložit** — číslo ani
+   zaúčtování se tím nespustí.
 
-2. **Dej Potvrdit.** Tím doklad dostane **číslo** z číselné řady. Formulář
-   zůstane otevřený a doklad se dál dá upravovat — Potvrzeno není
-   uzamčené.
-
-   Tenhle mezikrok má smysl u faktur, které chceš mít očíslované, ale
-   nechceš je zaúčtovat: čekáš na chybějící informaci, ověřuješ dodávku,
-   nebo se s dodavatelem o něčem dohaduješ.
-
-3. **Dej V pořádku.** Teprve tím se doklad stává hotovým a **formulář se
+2. **Dej V pořádku.** Tím se doklad stává hotovým a **formulář se
    zavře** — práce s dokladem tím pro tebe končí. Na pozadí se stane tohle:
 
-   - doklad se **uzamkne** — v tomto stavu se needituje,
+   - doklad dostane **číslo** z číselné řady,
+   - **uzamkne se** — v tomto stavu se needituje,
    - **zaúčtuje se** — vznikne zápis v **Účetním deníku**,
    - **objeví se v saldokontu** jako nezaplacená položka, kterou pak
      spáruješ s platbou z banky.
 
-4. **Když chceš zkontrolovat zaúčtování, jdi na doklad znovu.** Ve
+   Když na dokladu něco chybí (partner, registrace DPH, vlastní firma),
+   Shipard ho do V pořádku nepustí, napíše proč a doklad zůstane
+   v Konceptu.
+
+3. **Když chceš zkontrolovat zaúčtování, jdi na doklad znovu.** Ve
    formuláři účetní zápis není. Otevři **Nákup → Faktury přijaté**, klikni
    na doklad a přepni na záložku **Zaúčtování**. Je tam odznak
    **Zaúčtováno**, **Neúčtováno** nebo **Chyba účtování**, pod ním
@@ -61,24 +59,25 @@ Kroky 1–3 se dějí v **editačním formuláři** — tom, který se ti otevř
 
 ## Na co narazíš
 
-**Z Konceptu se nedá skočit přímo na V pořádku.** Cesta je vždycky
-Koncept → Potvrzeno → V pořádku. Není to obtěžování: mezi přidělením čísla
-a zaúčtováním je krok, kdy má člověk poslední možnost si doklad přečíst.
-Jediná zkratka je **Vystavit a uzavřít** v náhledu vytěženého návrhu —
-tam kontrola proběhla nad náhledem a doklad vznikne rovnou ve V pořádku;
-jednou vystavený Koncept už touhle zkratkou projít nemůže.
+**Mezikrok „s číslem, ale nezaúčtovaný“ není.** Číslo doklad dostane až
+s **V pořádku** a tím se zároveň zaúčtuje. Když na něco čekáš (chybějící
+informaci, ověření dodávky, odpověď dodavatele), nech doklad v Konceptu.
+Hotový doklad, který potřebuješ změnit, převedeš na **V opravě** — číslo
+si nechá, viz [Oprava dokladu](oprava-dokladu.md).
 
-**Vracet do Konceptu se dá jen od konce číselné řady.** Dokladů můžeš
-vrátit i víc, ale vždy postupně od nejnovějšího: jak si číslo vezme zpátky
-poslední doklad, stane se posledním ten před ním a jde vrátit také. Když
-zkusíš vrátit doklad, po kterém už novější číslo existuje, Shipard to
-odmítne a napíše, který doklad je poslední — jinak by v číslování zůstala
-díra. Počítá se to zvlášť pro každou číselnou řadu a účetní rok. Když
-potřebuješ opravit starší doklad, použij **Storno** a vystav nový.
+**Do Konceptu se vrací jen poslední doklad v řadě.** Hotový doklad
+nejdřív převeď na **V opravě**; tam je tlačítko **Uložit jako koncept**,
+které ho vrátí do Konceptu a vezme mu číslo. Nabízí se jen u posledního
+dokladu v číselné řadě — u staršího by v číslování zůstala díra. Dokladů
+můžeš vrátit i víc, ale vždy postupně od nejnovějšího: jak číslo vrátí
+poslední doklad, stane se posledním ten před ním. Počítá se to zvlášť pro
+každou číselnou řadu a účetní rok. Starší doklad oprav ve **V opravě** —
+číslo si nechá.
 
 **Vrácením do Konceptu se číslo uvolní — a příště to nemusí být to samé.**
-Uvolněné číslo připadne tomu dokladu, který potvrdíš nejdřív. Vrátíš-li
-do Konceptu dva doklady a potvrdíš je v jiném pořadí, vymění si čísla.
+Uvolněné číslo připadne tomu dokladu, který dáš do **V pořádku** nejdřív.
+Vrátíš-li do Konceptu dva doklady a dokončíš je v jiném pořadí, vymění si
+čísla.
 U dokladu, který už jsi někam nahlásil nebo poslal, proto číslo neměň.
 
 **Chybu účtování spravíš bez rozebírání dokladu.** Když doplníš, co
@@ -88,8 +87,8 @@ vrať se na doklad a dej **Přeúčtovat**.
 Doklad zůstane ve **V pořádku** a účetní zápis se vytvoří znovu; jakmile
 projde, upozornění na Dashboardu zmizí samo.
 
-**Dokončit to nemusíš hned.** Když formulář zavřeš v Konceptu nebo
-v Potvrzeno, doklad nezmizí — najdeš ho v **Nákup → Faktury přijaté**
+**Dokončit to nemusíš hned.** Když formulář zavřeš v Konceptu, doklad
+nezmizí — najdeš ho v **Nákup → Faktury přijaté**
 a tlačítkem **Otevřít** se vrátíš do stejného formuláře včetně tlačítek
 pro přechody.
 

@@ -58,7 +58,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 
 | Stránka | Co v ní najdeš |
 |---------|----------------|
-| [Dokončení dokladu](faktury-prijate/dokonceni-dokladu.md) | Co se děje po Vystavit koncept — od Konceptu přes Potvrzeno k V pořádku a co se tím spustí. |
+| [Dokončení dokladu](faktury-prijate/dokonceni-dokladu.md) | Co se děje po Vystavit koncept — od Konceptu k V pořádku a co se tím spustí. |
 | [Oprava dokladu](faktury-prijate/oprava-dokladu.md) | Jak opravit nebo zrušit přijatou fakturu, která už je ve stavu V pořádku, a čemu se přitom vyhnout. |
 | [Zálohová faktura přijatá](faktury-prijate/zalohova-faktura-prijata.md) | Jak zadat výzvu dodavatele k platbě předem, proč není daňovým dokladem, co se stane po zaplacení a jak zálohu odečíst na konečné faktuře. |
 

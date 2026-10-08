@@ -88,7 +88,7 @@ faktura od nového dodavatele je nejhorší; pátá bývá skoro bez práce.
 
 **Když u řádku přiřadíš správnou položku, Shipard si to může zapamatovat.**
 Spojení mezi dodavatelovým kódem položky a tvou položkou se ukládá při
-přechodu dokladu z **Konceptu** na **Potvrzeno** — příští faktura od téhož
+přechodu dokladu z **Konceptu** do **V pořádku** — příští faktura od téhož
 dodavatele pak řádek přiřadí sama.
 
 **Opakovanou chybu u jednoho dodavatele řeší ISDOC.** Když od něj dostáváš

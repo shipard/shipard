@@ -25,7 +25,7 @@ Právě ses poprvé přihlásil a koukáš na prázdný zdroj dat. Tahle stránk
 2. **Dokonči nastavení.** Na Dashboardu svítí karta **Dokončit
    nastavení** — projdi ji podle stránky
    [První nastavení zdroje dat](prvni-nastaveni.md). Minimálně načti
-   vlastní firmu z registru; bez ní nepotvrdíš žádný doklad.
+   vlastní firmu z registru; bez ní nedokončíš žádný doklad.
 3. **Dostaň do Shipardu první přijatou fakturu.** Buď ji nahraj —
    tlačítko **Nahrát** na Dashboardu, nebo PDF přetáhni myší na plochu
    Dashboardu — nebo ji přepošli e-mailem. Jak zjistíš adresu pro

@@ -86,7 +86,7 @@ Pro rychlý prodej zboží bez partnera se víc hodí [Prodejka](prodejka.md).
      **Variabilního symbolu** číslo zálohového dokladu.
    - *Účetní položka* — cokoli jiného, účet dá vybraná položka.
 
-6. **Dej Potvrdit a pak V pořádku.** Doklad dostane číslo z řady pokladny
+6. **Dej V pořádku.** Doklad dostane číslo z řady pokladny
    (například `31HP12600001`: typ, kód pokladny, rok, pořadí), zaúčtuje se
    a úhrada faktury se v saldokontu spáruje s fakturou.
 

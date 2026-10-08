@@ -39,7 +39,7 @@ viz [Tisk faktury](../faktury-vydane/tisk-faktury.md).
 
 - **Titulek** *Kontace* s číslem dokladu, pod ním text dokladu.
 - **Účetní jednotka** a **Partner** — tak, jak byly na dokladu zmrazené
-  při potvrzení. Doklad bez partnera má místo partnera prázdné.
+  při přechodu do **V pořádku**. Doklad bez partnera má místo partnera prázdné.
 - **Typ dokladu**, **Datum vystavení**, **Účetní datum** a u daňového
   dokladu datum zdanitelného plnění.
 - **Stav účtování** a **Měna**; u dokladu v cizí měně i kurz.

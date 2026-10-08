@@ -54,10 +54,8 @@ zaplatit, a aby se poskytnutá záloha správně potkala s konečnou fakturou.
 4. **Zkontroluj tab Rekapitulace DPH.** Je to rozpis částky, kterou máš
    zaplatit, po sazbách a celkem s daní — má sedět s výzvou.
 
-5. **Dej Potvrdit.** Doklad dostane **číslo** z vlastní číselné řady
-   (Shipard ji zakládá sám).
-
-6. **Dej V pořádku.** Doklad se uzamkne, formulář se zavře a výzva se
+5. **Dej V pořádku.** Doklad dostane **číslo** z vlastní číselné řady
+   (Shipard ji zakládá sám), uzamkne se, formulář se zavře a výzva se
    zaúčtuje **na podrozvahu** celkovou částkou — do rozvahy, výsledovky
    ani DPH nevstupuje. V saldokontu ji od té chvíle vidíš ve skupině
    **Zálohové faktury přijaté** jako otevřenou položku, dokud ji
@@ -74,7 +72,7 @@ platba s variabilním symbolem výzvy (nebo zaplatíš z pokladny výdajovým
 dokladem s pohybem *Poskytnutá záloha* a symbolem výzvy), Shipard ji
 zaúčtuje jako poskytnutou zálohu a zároveň výzvu ve skupině
 **Zálohové faktury přijaté** uzavře — funguje to i tehdy, když jsi
-zaplatil dřív, než jsi výzvu potvrdil. V saldokontu pak vidíš dvě věci:
+zaplatil dřív, než jsi výzvu dal do **V pořádku**. V saldokontu pak vidíš dvě věci:
 výzva je vyrovnaná a ve skupině **Poskytnuté zálohy** leží pod jejím
 symbolem otevřená záloha. Tu uzavře až konečná faktura přijatá.
 
@@ -109,8 +107,7 @@ vidět.
 
 ## Souvisí
 
-- [Dokončení dokladu](dokonceni-dokladu.md) — stavy Koncept, Potvrzeno
-  a V pořádku
+- [Dokončení dokladu](dokonceni-dokladu.md) — stavy Koncept a V pořádku
 - [Oprava dokladu](oprava-dokladu.md) — oprava a storno
 - [Zálohová faktura](../faktury-vydane/zalohova-faktura.md) — totéž
   z druhé strany, pro odběratele

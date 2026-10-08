@@ -56,7 +56,8 @@ položku i účet.
 
 ### Pravidla dodavatelů
 
-1. Když potvrdíš doklad zařazený AI, Shipard si zapamatuje **IČO
+1. Když doklad zařazený AI dáš z **Konceptu** do **V pořádku**, Shipard
+   si zapamatuje **IČO
    dodavatele → štítek** — příště se stejný dodavatel zařadí okamžitě
    a bez AI. Pravidla najdeš v **Nastavení → Položky → Pravidla
    obsahových štítků**.
@@ -65,7 +66,7 @@ položku i účet.
    změnit — pravidlo se tím označí jako **Ruční** a učení ho už nemění.
 3. Špatné pravidlo smažeš v detailu tlačítkem **Smazat pravidlo**.
    Smazání je trvalé, ale o nic nepřijdeš — pravidlo se může znovu
-   naučit z dalšího potvrzeného dokladu.
+   naučit z dalšího dokončeného dokladu.
 
 ## Na co narazíš
 
@@ -90,7 +91,7 @@ smaže — jednou kategorií by škodilo.
 **Faktury ISDOC se zařazují taky.** Fakturu ve formátu ISDOC Shipard
 převezme bez čtení AI, ale položky k řádkům hledá stejně — když je nenajde
 v historii, zařadí doklad podle obsahu a karta v sekci **Položky
-k založení** se objeví i pro něj. Potvrzený ISDOC doklad učí pravidlo dodavatele jako každý jiný.
+k založení** se objeví i pro něj. ISDOC doklad dokončený z Konceptu učí pravidlo dodavatele jako každý jiný.
 Zařazení proběhne chvíli po doručení, ne v okamžiku nahrání.
 
 **Hromadné založení výchozích položek** je na jiném místě — v panelu

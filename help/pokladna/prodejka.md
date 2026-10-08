@@ -42,7 +42,7 @@ s pohybem *Úhrada pohledávky*, nebo na faktuře zvol platbu *Hotovost* rovnou.
    služeb*, **Položka**, **Množství**, cena a **Kód DPH** — stejně jako na
    vydané faktuře.
 
-5. **Dej Potvrdit a V pořádku.** Prodejka dostane číslo (například
+5. **Dej V pořádku.** Prodejka dostane číslo (například
    `14HP12600001`), zaúčtuje se — hotovost na pokladnu, karta, brána
    a dobírka jako pohledávka za plátcem s variabilním symbolem rovným
    číslu prodejky — a DPH z ní jde do přiznání za období podle DUZP.

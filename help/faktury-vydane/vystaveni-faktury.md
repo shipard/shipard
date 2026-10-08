@@ -52,10 +52,10 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
 
    - **Registrace DPH** je u faktury s daní povinná; předvybraná je první
      z tvých registrací. Bez ní nepůjde na řádku zvolit **Kód DPH** a doklad
-     nepotvrdíš.
+     nepůjde dát do **V pořádku**.
    - **Náš bankovní účet** je u vydané faktury povinný — je to účet, na který
      má odběratel zaplatit. Předvybraný je účet označený v Nastavení jako
-     **Výchozí**; bez výchozího účtu ho vyber ručně, jinak doklad nepotvrdíš.
+     **Výchozí**; bez výchozího účtu ho vyber ručně, jinak doklad nepůjde dát do **V pořádku**.
 
    Na stejné záložce je pole **Vystavil** — jméno, které se vytiskne
    v zápatí faktury. Předvybraný jsi ty; viz
@@ -100,26 +100,24 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
    každé změně řádku přepočítají.
 
 5. **Zkontroluj tab Rekapitulace DPH.** Je to rozpis základu a daně po sazbách
-   a celkový součet. Nesouhlasí-li s tím, co čekáš, oprav řádky teď — ne až po
-   potvrzení.
+   a celkový součet. Nesouhlasí-li s tím, co čekáš, oprav řádky teď — ne až
+   v hotovém dokladu.
 
    Daň se počítá **jednou ze součtu řádků v každé sazbě**, ne po řádcích —
    tak to předepisuje zákon. U dokladu v cenách s DPH proto může být základ
    na řádku o haléř jinak, než kolik by vyšlo z ceny toho řádku samotného;
    součet za sazbu i celková částka jsou vždy správně.
 
-6. **Dej Potvrdit.** Doklad dostane **číslo** z číselné řady, jako
+6. **Dej V pořádku.** Doklad dostane **číslo** z číselné řady, jako
    **Variabilní symbol** se předplní jeho pořadové číslo a do dokladu se
    zmrazí **Fakturační údaje** — tvoje i odběratelovy údaje v podobě, v jaké
-   platí teď. Formulář zůstává otevřený a doklad se dál dá upravovat.
-
-7. **Dej V pořádku.** Doklad se uzamkne, **zaúčtuje** a **objeví se
+   platí teď. Zároveň se doklad uzamkne, **zaúčtuje** a **objeví se
    v saldokontu** jako nezaplacená pohledávka, kterou pak spáruješ s platbou
    z banky. Formulář se zavře. Řádky uzamčeného dokladu si dál můžeš
    prohlédnout: na tabu **Řádky** je u každého tlačítko **Zobrazit** (oko),
    měnit je ale nejde.
 
-8. **Dej Odeslat** v detailu dokladu a faktura odejde odběrateli e-mailem
+7. **Dej Odeslat** v detailu dokladu a faktura odejde odběrateli e-mailem
    — viz [Odeslání faktury e-mailem](odeslani-faktury.md). PDF bez odeslání
    si prohlédneš a stáhneš tlačítkem **Tisk** — viz
    [Tisk faktury](tisk-faktury.md).
@@ -127,8 +125,8 @@ toho, kdo ti kolik dluží — a doklad, který mu pošleš.
 ## Na co narazíš
 
 **Než vystavíš první fakturu, potřebuješ nastavené tři věci.** Vlastní firmu
-v **Osobách** — bez ní Shipard při Potvrzení napíše, že vlastní firma není
-nastavená a doklad nepotvrdí. Dál **Registraci DPH** a **Bankovní spojení**.
+v **Osobách** — bez ní Shipard při **V pořádku** napíše, že vlastní firma
+není nastavená, a doklad nedokončí. Dál **Registraci DPH** a **Bankovní spojení**.
 Nejrychlejší cesta je karta **Dokončit nastavení** na Dashboardu — otevře
 panel **Nastavení zdroje dat**, který registraci předvyplní z údajů vlastní
 firmy (doplníš jen datum a frekvence) a bankovní účty **převezme** z jejích

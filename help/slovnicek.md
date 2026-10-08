@@ -75,11 +75,10 @@ a čekají na tebe, zbytek je už vyřízený:
 | faktura, co mi přišla | **Faktura přijatá** (sekce *Nákup*) | Doklad od dodavatele |
 | faktura, co jsem poslal | **Faktura vydaná** (sekce *Prodej*) | Doklad pro odběratele |
 | rozdělaný, ještě to nechci | stav **Koncept** | Doklad se dá libovolně měnit, nemá vliv na nic dalšího |
-| mám číslo, ale ještě to ladím | stav **Potvrzeno** | Doklad má přidělené číslo z číselné řady, ale pořád se dá upravovat |
 | hotovo, platí to | stav **V pořádku** | Doklad je uzavřený a nedá se přímo měnit. Tenhle stav se účtuje |
-| chci to opravit | stav **V opravě** | Do tohohle stavu doklad převedeš, když potřebuješ změnit hotový doklad |
+| chci to opravit | stav **V opravě** | Do tohohle stavu doklad převedeš, když potřebuješ změnit hotový doklad; číslo si nechá |
 | zrušit fakturu, škrtnout | stav **Storno** | Doklad zůstává v evidenci, ale neplatí. Nemazat — storno je správná cesta |
-| číslování faktur | **Číselná řada** | Předpis, podle kterého Shipard přiděluje čísla dokladů. Číslo se přiděluje při přechodu z Konceptu |
+| číslování faktur | **Číselná řada** | Předpis, podle kterého Shipard přiděluje čísla dokladů. Číslo se přiděluje při přechodu z Konceptu do V pořádku |
 | řádek faktury, co se fakturuje | **Položka** | Jeden řádek dokladu — množství, jednotková cena, sazba DPH |
 | co se na řádku vlastně děje, druh řádku | **Pohyb** | Volba na řádku dokladu — *Prodej služeb*, *Nákup zboží a materiálu*, *Účetní položka* a další. Podle ní se řádek zaúčtuje — účet tedy neurčuje položka, ale pohyb |
 | kam mi mají zaplatit, na jaký účet | **Náš bankovní účet** | Volba na dokladu, u faktur na záložce **Nastavení**. U vydané faktury povinná — je to účet, na který má odběratel zaplatit. Účty se zakládají v Nastavení → Účetnictví → Bankovní spojení |

@@ -58,7 +58,7 @@ zaúčtovaný správně — vytvoří zápis znovu z týchž dat. Dvojí zápisy
 nevzniknou.
 
 **„Neúčtováno" u rozdělaného dokladu není chyba.** Účtuje se jen doklad
-ve stavu **V pořádku**. V **Konceptu** a v **Potvrzeno** je odznak
+ve stavu **V pořádku**. V **Konceptu** a ve **V opravě** je odznak
 **Neúčtováno** správný stav věci.
 
 **Nejčastější příčina je datum, ne položka.** Když hláška mluví

@@ -53,7 +53,7 @@ stejný.
   doklad*, u neplátce *Faktura*, u zálohové faktury *Zálohová faktura*
   s větou *Nejedná se o daňový doklad.*
 - **Dodavatel a odběratel** z **Fakturačních údajů** zmrazených při
-  **Potvrdit** — tedy tak, jak platily při vystavení. Když odběrateli
+  přechodu do **V pořádku** — tedy tak, jak platily při vystavení. Když odběrateli
   později změníš adresu v **Osobách**, vystavená faktura se nezmění.
 - **Platební údaje**: způsob úhrady, variabilní, specifický a konstantní
   symbol. **Náš bankovní účet** se tiskne jen u dokladu placeného
