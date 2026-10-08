@@ -64,11 +64,15 @@ class WorkOrdersModuleTest extends TestCase
     public function testKindsAndSeriesLiveInWorkOrdersSettingsSection(): void
     {
         $module = self::module();
-        $items = array_column($module['settingsItems'], 'section', 'viewer');
+        $viewers = array_filter($module['settingsItems'], static fn(array $i): bool => isset($i['viewer']));
         $this->assertSame(
             ['economy.workOrders.kinds' => 'workOrders', 'economy.workOrders.numberSeries' => 'workOrders'],
-            $items,
+            array_column($viewers, 'section', 'viewer'),
         );
+        // Stránka nastavení periodické fakturace (fáze 2) v téže sekci.
+        $pages = array_filter($module['settingsItems'], static fn(array $i): bool => isset($i['page']));
+        $this->assertSame(['workOrdersInvoicing' => 'workOrders'], array_column($pages, 'section', 'page'));
+        $this->assertSame(['workOrdersInvoicing'], array_column($module['settingsPages'], 'id'));
 
         $sections = JsoncParser::parseFile(self::MODULES . '/install/base/config/settingsSections.jsonc')['sections'];
         $orders = array_column($sections, 'order', 'id');

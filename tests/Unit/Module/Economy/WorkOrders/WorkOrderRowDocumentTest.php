@@ -12,9 +12,9 @@ use Shipard\Module\Economy\WorkOrders\WorkOrderRowDocument;
  */
 class WorkOrderRowDocumentTest extends TestCase
 {
-    private function doc(int $nextOrderPos = 4): WorkOrderRowDocument
+    private function doc(int $nextOrderPos = 4, ?array $contributors = null): WorkOrderRowDocument
     {
-        return new class($nextOrderPos) extends WorkOrderRowDocument {
+        $doc = new class($nextOrderPos) extends WorkOrderRowDocument {
             public array $orderPosCalls = [];
 
             public function __construct(private readonly int $next)
@@ -27,6 +27,14 @@ class WorkOrderRowDocumentTest extends TestCase
                 return $this->next;
             }
         };
+        if ($contributors !== null) {
+            $config = $this->createMock(\Shipard\Core\Config\ConfigRuntime::class);
+            $config->method('cfgItem')->willReturnCallback(
+                static fn(string $id): mixed => $id === 'economy.workOrders.invoiceContributors' ? $contributors : null,
+            );
+            $doc->setConfig($config);
+        }
+        return $doc;
     }
 
     /** @return list<string> column:code */
@@ -54,6 +62,15 @@ class WorkOrderRowDocumentTest extends TestCase
         $this->assertSame([], $this->codes($doc, [
             'work_order' => 7, 'quantity' => '1', 'unit_price' => 1500.5, 'valid_from' => '2026-10-01', 'contributor' => 'energy.consumption',
         ]));
+    }
+
+    public function testContributorMustBeRegisteredWhenTheRegistryIsCompiled(): void
+    {
+        $registered = ['energy.consumption' => ['class' => 'X', 'name' => 'Spotřeba']];
+        $this->assertSame([], $this->codes($this->doc(contributors: $registered), ['work_order' => 7, 'contributor' => 'energy.consumption']));
+        $this->assertSame(['contributor:invalid'], $this->codes($this->doc(contributors: $registered), ['work_order' => 7, 'contributor' => 'water.consumption']));
+        // Bez zkompilovaného registru (DS před ds-upgrade) se id nehlídá.
+        $this->assertSame([], $this->codes($this->doc(), ['work_order' => 7, 'contributor' => 'water.consumption']));
     }
 
     public function testNewRowGetsNextOrderPosAndEmptyTextsBecomeNull(): void

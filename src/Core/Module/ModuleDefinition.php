@@ -36,6 +36,7 @@ class ModuleDefinition
         public readonly array $prints = [],
         public readonly array $sendPurposes = [],
         public readonly array $recordSenderProviders = [],
+        public readonly array $workOrderInvoiceContributors = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -454,6 +455,56 @@ class ModuleDefinition
             $sendPurposes = array_values($sendPurposes);
         }
 
+        // workOrderInvoiceContributors — přispěvatelé obsahu faktury
+        // periodické zakázky (#110 D7, D10): {id, class, name[:lang]}.
+        // ConfigCompiler je složí do cfgItem economy.workOrders.invoiceContributors
+        // (nabídka řádku předpisu, validace id); instance staví
+        // InvoiceContributorRegistry::fromConfig.
+        $workOrderInvoiceContributors = [];
+        if (array_key_exists('workOrderInvoiceContributors', $data)) {
+            if (!is_array($data['workOrderInvoiceContributors']) || !array_is_list($data['workOrderInvoiceContributors'])) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': workOrderInvoiceContributors must be a JSON array",
+                );
+            }
+            foreach ($data['workOrderInvoiceContributors'] as $idx => $contributor) {
+                if (!is_array($contributor)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': workOrderInvoiceContributors[{$idx}] must be an object",
+                    );
+                }
+                $contributorId = $contributor['id'] ?? null;
+                if (!is_string($contributorId) || !preg_match('/^[a-z][a-zA-Z0-9_.]*$/', $contributorId)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': workOrderInvoiceContributors[{$idx}].id must be an identifier",
+                    );
+                }
+                if (!isset($contributor['class']) || !is_string($contributor['class']) || $contributor['class'] === '') {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': workOrderInvoiceContributors[{$idx}] requires 'class'",
+                    );
+                }
+                if (!isset($contributor['name']) || !is_string($contributor['name']) || $contributor['name'] === '') {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': workOrderInvoiceContributors[{$idx}] requires 'name'",
+                    );
+                }
+                if (isset($workOrderInvoiceContributors[$contributorId])) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': workOrderInvoiceContributors has duplicate id '{$contributorId}'",
+                    );
+                }
+                $entry = ['id' => $contributorId, 'class' => $contributor['class']];
+                foreach ($contributor as $key => $value) {
+                    if (($key === 'name' || str_starts_with((string) $key, 'name:')) && is_string($value)) {
+                        $entry[$key] = $value;
+                    }
+                }
+                $workOrderInvoiceContributors[$contributorId] = $entry;
+            }
+            $workOrderInvoiceContributors = array_values($workOrderInvoiceContributors);
+        }
+
         // navigationProviders — třídy dodávající dynamické položky hlavní
         // navigace z dat (NavigationItemsProvider). Registrace je jen {class};
         // instancování a merge dělá NavigationController.
@@ -563,6 +614,7 @@ class ModuleDefinition
             prints: $prints,
             sendPurposes: $sendPurposes,
             recordSenderProviders: $recordSenderProviders,
+            workOrderInvoiceContributors: $workOrderInvoiceContributors,
         );
     }
 

@@ -677,6 +677,43 @@ class ModuleDefinitionTest extends TestCase
         ]);
     }
 
+    // ── workOrderInvoiceContributors (#110 D10) ─────────────────────────────
+
+    public function testWorkOrderInvoiceContributorsParsed(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'economy.energy',
+            'name' => 'Energy',
+            'workOrderInvoiceContributors' => [
+                ['id' => 'energy.consumption', 'class' => 'Foo\\ConsumptionContributor', 'name' => 'Consumption', 'name:cs' => 'Spotřeba', 'extra' => 'ignored'],
+            ],
+        ]);
+
+        $this->assertSame(
+            [['id' => 'energy.consumption', 'class' => 'Foo\\ConsumptionContributor', 'name' => 'Consumption', 'name:cs' => 'Spotřeba']],
+            $def->workOrderInvoiceContributors,
+        );
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'base.persons', 'name' => 'Persons'])->workOrderInvoiceContributors);
+    }
+
+    public function testWorkOrderInvoiceContributorsValidation(): void
+    {
+        foreach ([
+            [[['class' => 'Foo\\Bar', 'name' => 'X']], '.id must be an identifier'],
+            [[['id' => 'Bad Id', 'class' => 'Foo\\Bar', 'name' => 'X']], '.id must be an identifier'],
+            [[['id' => 'ok', 'name' => 'X']], "requires 'class'"],
+            [[['id' => 'ok', 'class' => 'Foo\\Bar']], "requires 'name'"],
+            [[['id' => 'ok', 'class' => 'Foo\\Bar', 'name' => 'X'], ['id' => 'ok', 'class' => 'Foo\\Baz', 'name' => 'Y']], "duplicate id 'ok'"],
+        ] as [$contributors, $message]) {
+            try {
+                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'workOrderInvoiceContributors' => $contributors]);
+                $this->fail($message);
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString($message, $e->getMessage());
+            }
+        }
+    }
+
     // ── openItemLookup (#69 D3/D8) ──────────────────────────────────────────
 
     public function testOpenItemLookupParsed(): void

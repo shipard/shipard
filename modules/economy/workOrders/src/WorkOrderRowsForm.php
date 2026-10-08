@@ -10,6 +10,7 @@ use Shipard\Core\Form\TableForm;
 use Shipard\Module\Docs\Core\DocDocument;
 use Shipard\Module\Docs\Core\DocHeadVatContext;
 use Shipard\Module\Docs\Core\DocRowOperationRules;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRegistry;
 use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
 
 /**
@@ -159,14 +160,14 @@ class WorkOrderRowsForm extends TableForm
     }
 
     /**
-     * Registrovaní přispěvatelé obsahu jako options; prázdné = pole se
-     * nezobrazí. Registr doplní fáze přispěvatelů.
+     * Registrovaní přispěvatelé obsahu (cfgItem z `workOrderInvoiceContributors`)
+     * jako options; prázdné = pole se nezobrazí.
      *
      * @return list<array{value: string, label: string}>
      */
     protected function contributorOptions(): array
     {
-        return [];
+        return InvoiceContributorRegistry::options($this->config);
     }
 
     /** @return list<array{value: int, label: string}> */

@@ -106,6 +106,23 @@ class WorkOrderRowsFormTest extends TestCase
         $this->assertSame('Ručně', $kept->data['description']);
     }
 
+    public function testContributorOptionsComeFromCompiledRegistry(): void
+    {
+        $form = new WorkOrderRowsForm('economy_work_orders_rows');
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnCallback(static fn(string $id): mixed => match ($id) {
+            'economy.workOrders.invoiceContributors' => ['energy.consumption' => ['class' => 'X', 'name' => 'Spotřeba energií']],
+            default => null,
+        });
+        $form->setConfig($config);
+        $form->setTableDef(TableDefinition::fromArray(JsoncParser::parseFile(self::MODULE . '/tables/economy_work_orders_rows.jsonc')));
+
+        $def = $form->buildFormDefinition([], true);
+        $contributor = $this->element($def, 'contributor');
+        $this->assertFalse($contributor->hidden);
+        $this->assertSame([['value' => 'energy.consumption', 'label' => 'Spotřeba energií']], $contributor->options);
+    }
+
     public function testContributorFieldOnlyWithRegisteredContributors(): void
     {
         $def = $this->form()->buildFormDefinition(['work_order' => 9], true);

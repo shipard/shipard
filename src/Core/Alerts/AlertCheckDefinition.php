@@ -99,11 +99,13 @@ final readonly class AlertCheckDefinition
 
         $navSection = null;
         if (isset($data['navSection'])) {
-            if (!is_string($data['navSection']) || !preg_match('/^[a-z_][a-z0-9_]*$/', $data['navSection'])) {
+            // Id sekce sidebaru z navSections.jsonc — včetně camelCase
+            // (`workOrders`); sentinel `_top`.
+            if (!is_string($data['navSection']) || !preg_match('/^[a-z_][a-zA-Z0-9_]*$/', $data['navSection'])) {
                 $got = is_string($data['navSection']) ? $data['navSection'] : gettype($data['navSection']);
                 throw new \InvalidArgumentException(
                     "alertChecks['{$id}']: invalid navSection '{$got}' (in module '{$moduleId}')."
-                    . ' Expected [a-z_][a-z0-9_]*',
+                    . ' Expected [a-z_][a-zA-Z0-9_]*',
                 );
             }
             $navSection = $data['navSection'];

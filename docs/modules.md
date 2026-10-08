@@ -422,6 +422,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `journalDimensions` | object[] | Ne | Ano (`name`) | Analytické dimenze deníku: `id`, `rowColumn`, `journalColumn`, `table`, `name` povinné, `headColumn`, `rowFlag`, `forms`, `exchangeKey` (přirozený klíč ve výměnném formátu) volitelné. Standardní dimenze jádra (#110 D20): sloupce leží v definicích `docs_core_heads`, `docs_core_rows` a `economy_accounting_journal`, deklaraci nese `economy.accounting`; `ConfigCompiler` je skládá do cfgItem `core.accounting.journalDimensions` (`docs/accounting.md` §6 Dimenze deníku) |
 | `sendPurposes` | object[] | Ne | Ano (`name`) | Účely odesílání: `id`, `name` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `base.persons.sendPurposes` (viz níže) |
 | `recordSenderProviders` | object[] | Ne | Ne | Odesílatel podle záznamu (#90 D39): `{table, class}`, třída implementuje `RecordSenderProvider`. Jeden poskytovatel na tabulku — druhá registrace téže tabulky je chyba. Čte `RecordSenderProviderLoader`, ptá se `SenderResolver` (`docs/mail/outbound.md`) |
+| `workOrderInvoiceContributors` | object[] | Ne | Ano (`name`) | Přispěvatelé obsahu faktury periodické zakázky (#110 D7, D10): `id`, `class`, `name` povinné. `ConfigCompiler` je skládá do cfgItem `economy.workOrders.invoiceContributors` (id → název, třída); instance staví `InvoiceContributorRegistry::fromConfig` (viz níže) |
 
 ### Pole `sendPurposes`
 
@@ -499,6 +500,40 @@ typicky dědí z `AbstractDocumentLockProvider` (settery `db`/`config`/
 `economy.vat` → `VatPeriodLockProvider` (zamčená instance tvrzení),
 `economy.codebooks` → `FiscalMonthLockProvider` (zamčený fiskální měsíc).
 Detaily: `docs/document-system.md` sekce 16.
+
+### Pole `workOrderInvoiceContributors`
+
+Přispěvatelé obsahu faktury periodické zakázky (#110 D7, D10,
+`docs/work-orders.md` §5.5): jiný modul doplní nebo upraví řádky faktury
+za období podle podkladů (první případ: přefakturace spotřeby). Zapíná se
+řádkem fakturačního předpisu zakázky s `contributor = id`; zakázka bez
+takového řádku přispěvatele nevolá.
+
+```jsonc
+"workOrderInvoiceContributors": [
+    {
+        "id": "energy.consumption",
+        "class": "Shipard\\Module\\Economy\\Energy\\ConsumptionContributor",
+        "name": "Energy consumption",
+        "name:cs": "Spotřeba energií"
+    }
+]
+```
+
+`ConfigCompiler` registrace aktivních modulů složí do cfgItem
+`economy.workOrders.invoiceContributors` (klíč = id, `name` lokalizovaný,
+`class`); duplicitní id přes moduly je chyba kompilace. Z cfgItem bere
+formulář řádku předpisu nabídku pole *Přispěvatel obsahu* (bez registrace
+se pole neukáže), `WorkOrderRowDocument` ověřuje id a
+`InvoiceContributorRegistry::fromConfig` staví instance (neexistující
+třída nebo třída bez rozhraní = `LogicException`). Třída implementuje
+`Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributor`
+(`id()`, `contribute(ContributionContext): ContributionResult` — *Ready*
+s kanonickými řádky, které nahradí řádky přispěvatele, *Waiting* s důvodem,
+*Failed* se zprávou), typicky dědí `AbstractInvoiceContributor` (settery
+`db` / `config` / `dsConfig`). Běh (`InvoicingRunService`) přispěvatele
+volá nad rozpracovaným kanonickým dokladem před apply; v produkci zatím
+žádný registrovaný není.
 
 ### Pole `journalEventHandlers`, `openItemLookup` a `journalContributors`
 

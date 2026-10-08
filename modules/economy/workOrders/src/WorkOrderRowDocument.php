@@ -6,6 +6,7 @@ namespace Shipard\Module\Economy\WorkOrders;
 
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRegistry;
 
 /**
  * Řádek zakázky (economy_work_orders_rows, docs/work-orders.md §5.3) —
@@ -37,7 +38,10 @@ class WorkOrderRowDocument extends Document
             $result->addError('valid_to', 'Platnost do nesmí být dříve než platnost od.', 'invalid_range');
         }
         $contributor = trim((string) ($data['contributor'] ?? ''));
-        if ($contributor !== '' && !preg_match('/^[a-z][a-zA-Z0-9_.]*$/', $contributor)) {
+        if ($contributor !== ''
+            && (!preg_match('/^[a-z][a-zA-Z0-9_.]*$/', $contributor)
+                || InvoiceContributorRegistry::isKnown($this->config, $contributor) === false)
+        ) {
             $result->addError('contributor', 'Neznámý přispěvatel obsahu.', 'invalid');
         }
 

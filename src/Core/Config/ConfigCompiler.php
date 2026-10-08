@@ -29,6 +29,13 @@ class ConfigCompiler
     public const SEND_PURPOSES_ITEM = 'base.persons.sendPurposes';
 
     /**
+     * cfgItem složený z `workOrderInvoiceContributors` aktivních modulů —
+     * přispěvatelé obsahu faktury periodické zakázky (#110 D10): klíč = id,
+     * hodnota název (lokalizovaný) a třída.
+     */
+    public const INVOICE_CONTRIBUTORS_ITEM = 'economy.workOrders.invoiceContributors';
+
+    /**
      * cfgItem složený z deklarací tisků (`prints`) aktivních modulů — klíč
      * = id tisku, hodnota název, tabulka, filtr a sloty textů (#90 D47).
      */
@@ -167,6 +174,30 @@ class ConfigCompiler
             );
         }
         $rawItems[self::SEND_PURPOSES_ITEM] = $purposes;
+
+        // Přispěvatelé obsahu faktury (`workOrderInvoiceContributors`
+        // v module.jsonc) aktivních modulů → jeden cfgItem: nabídka řádku
+        // předpisu, validace id a třídy pro InvoiceContributorRegistry.
+        $contributors = [];
+        foreach ($modules as $module) {
+            foreach ($module->workOrderInvoiceContributors as $contributor) {
+                $contributorId = (string) $contributor['id'];
+                if (isset($contributors[$contributorId])) {
+                    throw new \RuntimeException(
+                        "Invoice contributor '{$contributorId}' is declared by more than one module"
+                        . " (again in '{$module->id}')",
+                    );
+                }
+                unset($contributor['id']);
+                $contributors[$contributorId] = $contributor;
+            }
+        }
+        if (isset($rawItems[self::INVOICE_CONTRIBUTORS_ITEM])) {
+            throw new \RuntimeException(
+                "cfgItem '" . self::INVOICE_CONTRIBUTORS_ITEM . "' is reserved for workOrderInvoiceContributors",
+            );
+        }
+        $rawItems[self::INVOICE_CONTRIBUTORS_ITEM] = $contributors;
 
         // Deklarace tisků (`prints` v module.jsonc) aktivních modulů → jeden
         // cfgItem. Formulář, Document a viewer textů na tiscích (core.prints)

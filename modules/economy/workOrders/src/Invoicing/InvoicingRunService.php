@@ -9,6 +9,8 @@ use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\NestedTransaction;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\ContributionContext;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRegistry;
 use Shipard\Module\Economy\WorkOrders\KindDocument;
 use Shipard\Module\Economy\WorkOrders\WorkOrderDocument;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTypes;
@@ -45,6 +47,7 @@ class InvoicingRunService
         protected readonly InvoiceBuilder $builder,
         protected readonly DocumentApplier $applier,
         protected readonly WorkOrderTypes $types,
+        protected readonly ?InvoiceContributorRegistry $contributors = null,
     ) {
     }
 
@@ -152,6 +155,9 @@ class InvoicingRunService
                 if ($locked === null || !in_array((string) $locked['state'], [PeriodRepository::STATE_PLANNED, PeriodRepository::STATE_WAITING], true)) {
                     return $this->line($workOrder, ['id' => $periodId, 'period_from' => $period->from, 'period_to' => $period->to], RunReport::OUTCOME_SKIPPED, message: 'Období mezitím vystavil jiný běh.');
                 }
+                if ((string) $locked['state'] === PeriodRepository::STATE_WAITING) {
+                    return $this->continueWaiting($workOrder, $kind, $period, $locked, $rows, $options);
+                }
                 return $this->issueLocked($workOrder, $kind, $period, $locked, $rows, $options);
             });
             $report->add($line);
@@ -258,11 +264,168 @@ class InvoicingRunService
     protected function issueLocked(array $workOrder, ?array $kind, Period $period, array $locked, array $rows, RunOptions $options): RunLine
     {
         $built = $this->builder->build($workOrder, $kind, $period, $rows);
-        $docId = $this->applyCanonical($built->canonical);
+        [$canonical, $waiting] = $this->contribute($workOrder, $period, $built);
+        $docId = $this->applyCanonical($canonical);
         $hash = $this->contentHashOf($docId);
+        if ($waiting !== null) {
+            // Úroveň Koncept (D10): doklad vznikl hned, řádky přispěvatele
+            // s množstvím 0; další běhy přispěvatele volají znovu.
+            $this->periods->markWaiting((int) $locked['id'], $docId, $hash, $waiting, $options->timestamp(), $locked['waiting_since'] ?? null);
+            return $this->line($workOrder, $locked, RunReport::OUTCOME_WAITING, $docId, $waiting);
+        }
         $this->periods->markIssued((int) $locked['id'], $docId, $hash, $options->timestamp());
 
-        return $this->line($workOrder, $locked, RunReport::OUTCOME_ISSUED, $docId, $built->canonical['docText'] ?? null);
+        return $this->line($workOrder, $locked, RunReport::OUTCOME_ISSUED, $docId, $canonical['docText'] ?? null);
+    }
+
+    /**
+     * Období `waiting` (D10): přispěvatelé znovu. Ready → koncept se
+     * přegeneruje v místě (replaceConcept), ale jen když ho nikdo ručně
+     * neupravil (otisk obsahu = otisk při vzniku); jinak `result = edited`
+     * a upozornění „podklady jsou, koncept upravený — Přegenerovat“.
+     *
+     * @param array<string, mixed> $workOrder
+     * @param array<string, mixed>|null $kind
+     * @param array<string, mixed> $locked
+     * @param list<array<string, mixed>> $rows
+     */
+    protected function continueWaiting(array $workOrder, ?array $kind, Period $period, array $locked, array $rows, RunOptions $options): RunLine
+    {
+        $periodId = (int) $locked['id'];
+        $docId = (int) ($locked['doc'] ?? 0);
+        $built = $this->builder->build($workOrder, $kind, $period, $rows);
+        [$canonical, $waiting] = $this->contribute($workOrder, $period, $built);
+        if ($waiting !== null) {
+            $this->periods->markResult($periodId, PeriodRepository::RESULT_WAITING, $waiting, $options->timestamp());
+            return $this->line($workOrder, $locked, RunReport::OUTCOME_WAITING, $docId, $waiting);
+        }
+        if ($docId > 0 && $this->contentHashOf($docId) !== (string) ($locked['content_hash'] ?? '')) {
+            $message = 'Podklady jsou k dispozici, ale koncept byl ručně upraven — použij Přegenerovat.';
+            $this->periods->markResult($periodId, PeriodRepository::RESULT_EDITED, $message, $options->timestamp());
+            return $this->line($workOrder, $locked, RunReport::OUTCOME_WAITING, $docId, $message);
+        }
+        if ($docId > 0) {
+            $canonical['applyOptions']['replaceConcept'] = $docId;
+        }
+        $savedId = $this->applyCanonical($canonical);
+        $this->periods->markIssued($periodId, $savedId, $this->contentHashOf($savedId), $options->timestamp());
+
+        return $this->line($workOrder, $locked, RunReport::OUTCOME_ISSUED, $savedId, $canonical['docText'] ?? null);
+    }
+
+    /**
+     * Zavolá přispěvatele řádků předpisu s `contributor` (D10) nad
+     * rozpracovaným dokladem. Failed = InvoiceBuildException
+     * (`contributor_failed`), Waiting = doklad beze změny + důvod, Ready =
+     * řádky přispěvatele nahrazené vrácenými (pořadí zachované, `orderPos`
+     * přečíslované, piny `_resolve.rows` přemapované).
+     *
+     * @param array<string, mixed> $workOrder
+     * @return array{0: array<string, mixed>, 1: ?string} [kanonický doklad, důvod čekání]
+     */
+    protected function contribute(array $workOrder, Period $period, BuiltInvoice $built): array
+    {
+        $canonical = $built->canonical;
+        $byContributor = [];
+        foreach ($built->rows as $index => $row) {
+            $id = trim((string) ($row['contributor'] ?? ''));
+            if ($id !== '') {
+                $byContributor[$id][] = ['index' => $index, 'row' => $row];
+            }
+        }
+        if ($byContributor === []) {
+            return [$canonical, null];
+        }
+
+        $waiting = [];
+        $replacements = [];
+        foreach ($byContributor as $id => $entries) {
+            $contributor = $this->contributors?->get($id);
+            if ($contributor === null) {
+                throw new InvoiceBuildException(
+                    InvoiceBuildException::CONTRIBUTOR_FAILED,
+                    "Přispěvatel obsahu '{$id}' není registrovaný — řádek předpisu se nedá doplnit.",
+                );
+            }
+            $indexes = array_map(static fn(array $e): int => (int) $e['index'], $entries);
+            $result = $contributor->contribute(new ContributionContext(
+                $workOrder,
+                $period,
+                $built->billingDate,
+                array_map(static fn(array $e): array => $e['row'], $entries),
+                $canonical,
+                $indexes,
+            ));
+            if ($result->isFailed()) {
+                throw new InvoiceBuildException(
+                    InvoiceBuildException::CONTRIBUTOR_FAILED,
+                    "Přispěvatel '{$id}': " . (string) $result->message,
+                );
+            }
+            if ($result->isWaiting()) {
+                $waiting[] = (string) $result->message;
+                continue;
+            }
+            $replacements[] = ['indexes' => $indexes, 'rows' => $result->rows];
+        }
+        if ($waiting !== []) {
+            return [$canonical, implode('; ', $waiting)];
+        }
+
+        return [self::replaceRows($canonical, $replacements), null];
+    }
+
+    /**
+     * Nahradí řádky přispěvatelů v kanonickém dokladu: vrácené řádky jdou
+     * na místo prvního řádku přispěvatele, ostatní jeho řádky mizí.
+     *
+     * @param array<string, mixed> $canonical
+     * @param list<array{indexes: list<int>, rows: list<array<string, mixed>>}> $replacements
+     * @return array<string, mixed>
+     */
+    private static function replaceRows(array $canonical, array $replacements): array
+    {
+        $insertAt = [];
+        $removed = [];
+        foreach ($replacements as $replacement) {
+            $first = min($replacement['indexes']);
+            $insertAt[$first] = $replacement['rows'];
+            foreach ($replacement['indexes'] as $index) {
+                $removed[$index] = true;
+            }
+        }
+
+        $rows = [];
+        $indexMap = [];
+        foreach ($canonical['rows'] ?? [] as $index => $row) {
+            if (isset($insertAt[$index])) {
+                foreach ($insertAt[$index] as $newRow) {
+                    $rows[] = $newRow;
+                }
+            }
+            if (isset($removed[$index])) {
+                continue;
+            }
+            $indexMap[$index] = count($rows);
+            $rows[] = $row;
+        }
+        foreach ($rows as $i => $row) {
+            $rows[$i]['orderPos'] = $i + 1;
+        }
+        $canonical['rows'] = $rows;
+
+        $pins = [];
+        foreach ($canonical['_resolve']['rows'] ?? [] as $pin) {
+            $old = (int) ($pin['index'] ?? -1);
+            if (isset($indexMap[$old])) {
+                $pin['index'] = $indexMap[$old];
+                $pins[] = $pin;
+            }
+        }
+        if (isset($canonical['_resolve'])) {
+            $canonical['_resolve']['rows'] = $pins;
+        }
+        return $canonical;
     }
 
     /**

@@ -405,6 +405,50 @@ class ConfigCompilerTest extends TestCase
         $this->assertSame('Contracts', $this->compiledItems('en')[ConfigCompiler::SEND_PURPOSES_ITEM]['contracts']['name']);
     }
 
+    // ── workOrderInvoiceContributors (#110 D10) ─────────────────────────────
+
+    public function testInvoiceContributorsOfAllModulesCompileIntoOneCfgItem(): void
+    {
+        $this->stubModuleDir('economy.energy');
+        $this->stubModuleDir('economy.water');
+        ConfigCompiler::compile(
+            [
+                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'workOrderInvoiceContributors' => [
+                    ['id' => 'energy.consumption', 'class' => 'Foo\\Energy', 'name' => 'Energy consumption', 'name:cs' => 'Spotřeba energií'],
+                ]]),
+                ModuleDefinition::fromArray(['id' => 'economy.water', 'name' => 'Water', 'workOrderInvoiceContributors' => [
+                    ['id' => 'water.consumption', 'class' => 'Foo\\Water', 'name' => 'Water consumption', 'name:cs' => 'Spotřeba vody'],
+                ]]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['cs', 'en'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([
+            'energy.consumption' => ['class' => 'Foo\\Energy', 'name' => 'Spotřeba energií'],
+            'water.consumption'  => ['class' => 'Foo\\Water', 'name' => 'Spotřeba vody'],
+        ], $this->compiledItems('cs')[ConfigCompiler::INVOICE_CONTRIBUTORS_ITEM]);
+        $this->assertSame('Energy consumption', $this->compiledItems('en')[ConfigCompiler::INVOICE_CONTRIBUTORS_ITEM]['energy.consumption']['name']);
+    }
+
+    public function testDuplicateInvoiceContributorAcrossModulesIsAnError(): void
+    {
+        $this->stubModuleDir('economy.energy');
+        $this->stubModuleDir('economy.water');
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("Invoice contributor 'consumption' is declared by more than one module");
+        ConfigCompiler::compile(
+            [
+                ModuleDefinition::fromArray(['id' => 'economy.energy', 'name' => 'Energy', 'workOrderInvoiceContributors' => [['id' => 'consumption', 'class' => 'A', 'name' => 'A']]]),
+                ModuleDefinition::fromArray(['id' => 'economy.water', 'name' => 'Water', 'workOrderInvoiceContributors' => [['id' => 'consumption', 'class' => 'B', 'name' => 'B']]]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
     public function testNoSendPurposesCompileToEmptyItem(): void
     {
         $this->stubModuleDir('core.system');

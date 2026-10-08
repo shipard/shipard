@@ -30,7 +30,96 @@
     // a řady zakládá uživatel nebo import.
     "settingsItems": [
         { "viewer": "economy.workOrders.kinds",        "section": "workOrders", "order": 10 },
-        { "viewer": "economy.workOrders.numberSeries", "section": "workOrders", "order": 20 }
+        { "viewer": "economy.workOrders.numberSeries", "section": "workOrders", "order": 20 },
+        { "page":   "workOrdersInvoicing",             "section": "workOrders", "order": 30 }
+    ],
+
+    // Nastavení → Zakázky → Periodická fakturace (fáze 2, D10): lhůta
+    // čekání na podklady přispěvatele, po které se hlásí upozornění.
+    "settingsPages": [
+        {
+            "id": "workOrdersInvoicing",
+            "name": "Periodic invoicing",
+            "name:cs": "Periodická fakturace",
+            "name:en": "Periodic invoicing",
+            "icon": "briefcase",
+            "fields": [
+                {
+                    "id": "economy.workOrders.contributorWaitDays",
+                    "type": "text",
+                    "name": "Waiting for input (days)",
+                    "name:cs": "Čekání na podklady (dny)",
+                    "name:en": "Waiting for input (days)",
+                    "hint": "Empty = 10. A period waiting for contributor input longer than this raises an alert.",
+                    "hint:cs": "Prázdné = 10. Období, které čeká na podklady přispěvatele déle, ohlásí upozornění.",
+                    "hint:en": "Empty = 10. A period waiting for contributor input longer than this raises an alert.",
+                    "maxLength": 3
+                }
+            ]
+        }
+    ],
+
+    // Upozornění periodické fakturace (fáze 2, §6): jeden souhrnný nález
+    // konceptů ke kontrole, per zakázka selhání období, pojistka dohánění
+    // a čekání na podklady. Id checku musí být malými písmeny
+    // (AlertCheckDefinition), proto `workorders`, ne id modulu.
+    "alertChecks": [
+        {
+            "id": "economy.workorders.invoices_to_review",
+            "name": "Periodic invoicing drafts to review",
+            "name:cs": "Koncepty z periodické fakturace ke kontrole",
+            "name:en": "Periodic invoicing drafts to review",
+            "description": "One summary finding: drafts issued by periodic invoicing waiting for review.",
+            "description:cs": "Jeden souhrnný nález: koncepty vystavené periodickou fakturací čekají na kontrolu.",
+            "description:en": "One summary finding: drafts issued by periodic invoicing waiting for review.",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\Checks\\InvoicesToReviewCheck",
+            "severity": "info",
+            "interval": "1h",
+            "navSection": "workOrders",
+            "tags": ["workOrders", "documents"]
+        },
+        {
+            "id": "economy.workorders.period_failed",
+            "name": "Periodic invoicing period failed",
+            "name:cs": "Období periodické fakturace se nepodařilo vystavit",
+            "name:en": "Periodic invoicing period failed",
+            "description": "Per work order: periods the run could not issue (error, no valid row, missing series).",
+            "description:cs": "Per zakázka: období, která běh nevystavil (chyba, žádný platný řádek, chybějící řada).",
+            "description:en": "Per work order: periods the run could not issue (error, no valid row, missing series).",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\Checks\\PeriodFailedCheck",
+            "severity": "warning",
+            "interval": "1h",
+            "navSection": "workOrders",
+            "tags": ["workOrders"]
+        },
+        {
+            "id": "economy.workorders.catchup_blocked",
+            "name": "Periodic invoicing catch-up blocked",
+            "name:cs": "Periodická fakturace čeká na vystavení dlužných období",
+            "name:en": "Periodic invoicing catch-up blocked",
+            "description": "Per work order: more than three due periods — the run stops, use Issue due periods.",
+            "description:cs": "Per zakázka: víc než tři dlužná období — běh je nevystaví, použij Vystavit dlužná období.",
+            "description:en": "Per work order: more than three due periods — the run stops, use Issue due periods.",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\Checks\\CatchupBlockedCheck",
+            "severity": "warning",
+            "interval": "1d",
+            "navSection": "workOrders",
+            "tags": ["workOrders"]
+        },
+        {
+            "id": "economy.workorders.period_waiting",
+            "name": "Periodic invoicing period waiting for input",
+            "name:cs": "Období periodické fakturace čeká na podklady",
+            "name:en": "Periodic invoicing period waiting for input",
+            "description": "Per work order: periods waiting for contributor input longer than the limit, or with input ready but a manually edited draft.",
+            "description:cs": "Per zakázka: období čekající na podklady déle než lhůta, nebo s podklady a ručně upraveným konceptem.",
+            "description:en": "Per work order: periods waiting for contributor input longer than the limit, or with input ready but a manually edited draft.",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\Checks\\PeriodWaitingCheck",
+            "severity": "warning",
+            "interval": "1d",
+            "navSection": "workOrders",
+            "tags": ["workOrders"]
+        }
     ],
 
     "viewers": [

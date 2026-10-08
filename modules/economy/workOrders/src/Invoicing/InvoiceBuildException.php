@@ -16,6 +16,7 @@ final class InvoiceBuildException extends \RuntimeException
     public const NO_DOC_TYPE = 'no_doc_type';
     public const NO_SERIES = 'no_series';
     public const NO_CUSTOMER = 'no_customer';
+    public const CONTRIBUTOR_FAILED = 'contributor_failed';
 
     public function __construct(
         public readonly string $reason,

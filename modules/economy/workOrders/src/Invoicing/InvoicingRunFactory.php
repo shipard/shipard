@@ -10,6 +10,7 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Document\DocumentEventDispatcher;
 use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRegistry;
 use Shipard\Module\Economy\WorkOrders\WorkOrderTypes;
 
 /**
@@ -57,6 +58,7 @@ final class InvoicingRunFactory
             $builder,
             $applier,
             new WorkOrderTypes($config),
+            InvoiceContributorRegistry::fromConfig($config, $db, $dsConfig),
         );
     }
 }

@@ -109,7 +109,7 @@ Validace v `ModuleDefinition::fromArray()` (uvnitř modulu — duplicit ID detek
 a `AlertCheckRegistry` (napříč moduly — duplicit ID detekce, severity whitelist,
 interval parsing).
 
-**`navSection`** (volitelné, formát `[a-z_][a-z0-9_]*`) — atribuce karet
+**`navSection`** (volitelné, formát `[a-z_][a-zA-Z0-9_]*` — id sekce z `navSections.jsonc`, např. `workOrders`) — atribuce karet
 checku pro **badge stavů sekcí** v sidebaru (UI shells Fáze 3,
 `GET /_ui/section-badges`): id sekce z `global.navSections` nebo sentinel
 `_top`. `AlertsSource` ho propisuje do individuální i skupinové karty

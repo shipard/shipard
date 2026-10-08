@@ -9,6 +9,10 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Module\Core\Exchange\Common\ApplyResult;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\AbstractInvoiceContributor;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\ContributionContext;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\ContributionResult;
+use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRegistry;
 use Shipard\Module\Economy\WorkOrders\Invoicing\InvoiceBuilder;
 use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingRunService;
 use Shipard\Module\Economy\WorkOrders\Invoicing\Period;
@@ -193,6 +197,108 @@ class InvoicingRunServiceTest extends TestCase
         $this->assertSame(0, $service->fakeApplier->applied);
     }
 
+    // ── Přispěvatelé obsahu (D7, D10) ───────────────────────────────────────
+
+    /** Řádky předpisu: pevný nájem + řádek přispěvatele spotřeby. */
+    private function rowsWithContributor(): array
+    {
+        return [
+            ['id' => 1, 'description' => 'Nájem', 'quantity' => 1, 'unit_price' => 12000, 'valid_from' => null, 'valid_to' => null, 'contributor' => null],
+            ['id' => 2, 'description' => 'Spotřeba energií', 'quantity' => 1, 'unit_price' => 1, 'valid_from' => null, 'valid_to' => null, 'contributor' => 'energy.consumption'],
+        ];
+    }
+
+    public function testReadyContributorReplacesItsRowsBeforeApply(): void
+    {
+        $contributor = new FakeContributor(ContributionResult::ready([
+            ['rowKind' => 'item', 'description' => 'Elektřina 10/2026', 'quantity' => 120.0, 'unitPrice' => 6.5],
+            ['rowKind' => 'item', 'description' => 'Plyn 10/2026', 'quantity' => 30.0, 'unitPrice' => 20.0],
+        ]));
+        $service = $this->service([$this->workOrder(['inv_from' => '2026-10-01'])], $contributor);
+        $service->rows = $this->rowsWithContributor();
+        $report = $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'));
+
+        $this->assertSame(1, $report->count(RunReport::OUTCOME_ISSUED));
+        $canonical = $service->fakeApplier->canonicals[0];
+        $this->assertSame(['Nájem', 'Elektřina 10/2026', 'Plyn 10/2026'], array_column($canonical['rows'], 'description'));
+        $this->assertSame([1, 2, 3], array_column($canonical['rows'], 'orderPos'));
+        $this->assertSame('issued', $service->fakeRepo->periods[6]['2026-10-01']['state']);
+        // Kontext přispěvatele: jeho řádky předpisu a jejich pozice v dokladu.
+        $this->assertSame([2], array_column($contributor->contexts[0]->rows, 'id'));
+        $this->assertSame([1], $contributor->contexts[0]->rowIndexes);
+        $this->assertSame(0.0, $contributor->contexts[0]->canonical['rows'][1]['quantity']);
+    }
+
+    public function testWaitingContributorCreatesDraftAndPeriodWaitsThenIssuesWhenReady(): void
+    {
+        $contributor = new FakeContributor(ContributionResult::waiting('Podklady dodavatele za říjen ještě nepřišly.'));
+        $service = $this->service([$this->workOrder(['inv_from' => '2026-10-01'])], $contributor);
+        $service->rows = $this->rowsWithContributor();
+        $report = $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'));
+
+        $this->assertSame(1, $report->count(RunReport::OUTCOME_WAITING));
+        $this->assertSame(1001, $report->lines[0]->docId, 'koncept vznikl hned');
+        $period = $service->fakeRepo->periods[6]['2026-10-01'];
+        $this->assertSame('waiting', $period['state']);
+        $this->assertSame(1001, $period['doc']);
+        $this->assertSame('2026-10-08 03:17:00', $period['waiting_since']);
+        $this->assertSame(0.0, $service->fakeApplier->canonicals[0]['rows'][1]['quantity']);
+
+        // Další běh: stále čeká — waiting_since zůstává.
+        $second = $service->run(new RunOptions('2026-10-12', now: '2026-10-12 03:17:00'));
+        $this->assertSame(1, $second->count(RunReport::OUTCOME_WAITING));
+        $this->assertSame('2026-10-08 03:17:00', $service->fakeRepo->periods[6]['2026-10-01']['waiting_since']);
+        $this->assertSame(1, $service->fakeApplier->applied);
+
+        // Podklady přišly, koncept nikdo neupravil → přegenerování v místě.
+        $contributor->result = ContributionResult::ready([['rowKind' => 'item', 'description' => 'Elektřina', 'quantity' => 120.0, 'unitPrice' => 6.5]]);
+        $third = $service->run(new RunOptions('2026-10-15', now: '2026-10-15 03:17:00'));
+        $this->assertSame(1, $third->count(RunReport::OUTCOME_ISSUED));
+        $last = end($service->fakeApplier->canonicals);
+        $this->assertSame(1001, $last['applyOptions']['replaceConcept']);
+        $this->assertSame(['Nájem', 'Elektřina'], array_column($last['rows'], 'description'));
+        $this->assertSame('issued', $service->fakeRepo->periods[6]['2026-10-01']['state']);
+        $this->assertNull($service->fakeRepo->periods[6]['2026-10-01']['result']);
+    }
+
+    public function testEditedDraftIsNotRegeneratedAutomatically(): void
+    {
+        $contributor = new FakeContributor(ContributionResult::waiting('čekám'));
+        $service = $this->service([$this->workOrder(['inv_from' => '2026-10-01'])], $contributor);
+        $service->rows = $this->rowsWithContributor();
+        $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'));
+
+        // Ruční úprava konceptu = jiný otisk obsahu.
+        $service->contentHashes[1001] = 'edited-by-user';
+        $contributor->result = ContributionResult::ready([['rowKind' => 'item', 'description' => 'Elektřina', 'quantity' => 1.0, 'unitPrice' => 1.0]]);
+        $report = $service->run(new RunOptions('2026-10-15', now: '2026-10-15 03:17:00'));
+
+        $this->assertSame(1, $report->count(RunReport::OUTCOME_WAITING));
+        $this->assertStringContainsString('Přegenerovat', (string) $report->lines[0]->message);
+        $period = $service->fakeRepo->periods[6]['2026-10-01'];
+        $this->assertSame('waiting', $period['state']);
+        $this->assertSame('edited', $period['result']);
+        $this->assertSame(1, $service->fakeApplier->applied, 'žádný další apply');
+    }
+
+    public function testFailedOrUnknownContributorLeavesPeriodPlanned(): void
+    {
+        $service = $this->service([$this->workOrder(['inv_from' => '2026-10-01'])], new FakeContributor(ContributionResult::failed('Dodavatel vrátil chybu.')));
+        $service->rows = $this->rowsWithContributor();
+        $report = $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'));
+        $this->assertSame(1, $report->count(RunReport::OUTCOME_FAILED));
+        $this->assertStringContainsString('Dodavatel vrátil chybu.', (string) $report->lines[0]->message);
+        $this->assertSame('contributor_failed', $service->fakeRepo->periods[6]['2026-10-01']['result']);
+        $this->assertSame(0, $service->fakeApplier->applied);
+
+        // Řádek s neregistrovaným přispěvatelem.
+        $service = $this->service([$this->workOrder(['inv_from' => '2026-10-01'])]);
+        $service->rows = $this->rowsWithContributor();
+        $report = $service->run(new RunOptions('2026-10-08', now: '2026-10-08 03:17:00'));
+        $this->assertSame(1, $report->count(RunReport::OUTCOME_FAILED));
+        $this->assertStringContainsString('není registrovaný', (string) $report->lines[0]->message);
+    }
+
     // ── Přegenerovat a Obnovit (D24) ────────────────────────────────────────
 
     public function testRegenerateReplacesDraftInPlaceAndRefreshesHash(): void
@@ -276,7 +382,7 @@ class InvoicingRunServiceTest extends TestCase
     // ── testovací služba ────────────────────────────────────────────────────
 
     /** @param list<array<string, mixed>> $workOrders */
-    private function service(array $workOrders): TestableInvoicingRunService
+    private function service(array $workOrders, ?FakeContributor $contributor = null): TestableInvoicingRunService
     {
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnCallback(static fn(string $id): mixed => match ($id) {
@@ -294,6 +400,7 @@ class InvoicingRunServiceTest extends TestCase
             new FakeInvoiceBuilder($db, $config, 'cz'),
             new FakeApplier(),
             new WorkOrderTypes($config),
+            $contributor !== null ? new InvoiceContributorRegistry([$contributor->id() => $contributor]) : InvoiceContributorRegistry::empty(),
         );
         $service->workOrders = $workOrders;
         $service->kinds = [4 => self::KIND];
@@ -323,8 +430,9 @@ class TestableInvoicingRunService extends InvoicingRunService
         InvoiceBuilder $builder,
         public readonly FakeApplier $fakeApplier,
         WorkOrderTypes $types,
+        ?InvoiceContributorRegistry $contributors = null,
     ) {
-        parent::__construct($db, $config, $fakeRepo, $builder, $fakeApplier, $types);
+        parent::__construct($db, $config, $fakeRepo, $builder, $fakeApplier, $types, $contributors);
     }
 
     protected function candidates(?int $workOrderId): array
@@ -550,5 +658,27 @@ class FakeApplier extends DocumentApplier
         $this->applied++;
         $replace = $canonical['applyOptions']['replaceConcept'] ?? null;
         return ApplyResult::ok($canonical, is_int($replace) ? $replace : 1000 + $this->applied);
+    }
+}
+
+/** Přispěvatel s pevným výsledkem; zachytí kontexty volání. */
+class FakeContributor extends AbstractInvoiceContributor
+{
+    /** @var list<ContributionContext> */
+    public array $contexts = [];
+
+    public function __construct(public ContributionResult $result)
+    {
+    }
+
+    public function id(): string
+    {
+        return 'energy.consumption';
+    }
+
+    public function contribute(ContributionContext $context): ContributionResult
+    {
+        $this->contexts[] = $context;
+        return $this->result;
     }
 }
