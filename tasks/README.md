@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 341 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 313.
+Celkem 342 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 313.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -30,6 +30,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `work-orders-phase1.md` | naplánováno | #110 D14–D18, D22, D23; P1–P5 potvrzené 2026-10-08 |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -317,6 +318,17 @@ Evidence majetku, odpisy a jejich zaúčtování. Designový dokument
 | `assets-phase5.md` | 5 | Přehledy a kontroly: hromadné načítání plánů, sestava odpisů, přírůstky a úbytky, daňové odpisy pro DPPO, kontrola evidence × deník s alerty, soupis majetku, drill-down (D65–D72) |
 | `assets-phase6.md` | 6 | Import — nový Shipard: výměnný formát karty s historií `shpd.assets.asset.v1`, importované události zaúčtované mimo modul, karta na importovaných dokladech, `assets-import-verify`, účet pořízení v kontrole jen varováním (D73–D82) |
 | `assets-import-fixes.md` | 6+ | Opravy po prvním ostrém importu: varování plánu při uplynulé účetní době, kontrola a ověření bez neotevřeného roku a let bez vazby, `doc-links` pro řádky bez účtu, nulový účetní odpis v importu (D83–D86) |
+
+## Zakázky (economy.workOrders)
+
+Evidence zakázek, periodická fakturace a zakázka jako dimenze deníku.
+Designový dokument [`docs/work-orders.md`](../docs/work-orders.md),
+issue #110. Předpoklady: `dimensions-core.md` (Účetnictví),
+`number-series-engine.md` (Dokladový systém).
+
+| Task | Fáze | Co řeší |
+|------|------|---------|
+| `work-orders-phase1.md` | 1 | Modul `economy.workOrders`: druhy s typem zakázky, číselné řady nad společným enginem čísel, hlavička všech typů, stavy Ukončeno / Zrušeno, nadřazená zakázka, dimenze zakázka na dokladech, detail s Deníkem (#110 D14–D18, D22, D23) |
 
 ## Došlá pošta (core.mail)
 
