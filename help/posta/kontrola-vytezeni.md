@@ -201,8 +201,9 @@ vůbec nezmiňuje (typicky software nebo předplatné z USA), je také
 samovyměření — Shipard ho dovodí sám. Když AI u řádku neurčila, zda jde
 o zboží, nebo službu, doplní to Shipard podle kategorie dokladu a v náhledu
 to ukáže upozorněním u řádku; zkontroluj, že kategorie sedí. Kurz cizí
-měny návrh nedoplní, zadáš ho v dokladu před potvrzením. Co u samovyměření
-návrh zatím neumí, je v [Co Shipard dnes neumí](../co-dnes-nejde.md).
+měny návrh nedoplní, zadáš ho v dokladu dřív, než mu dáš **V pořádku**.
+Co u samovyměření návrh zatím neumí, je v
+[Co Shipard dnes neumí](../co-dnes-nejde.md).
 
 **Neplátce DPH.** Když k datu faktury nejsi plátcem DPH, daň dodavatele
 si odečíst nemůžeš — je součástí ceny. Návrh faktury od plátce proto
