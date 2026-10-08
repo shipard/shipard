@@ -1,8 +1,8 @@
 ---
 title: Majetek na dokladech
 summary: Jak přiřadit fakturu, pokladní nebo účetní doklad ke kartě majetku, jak z řádku pořízení rovnou založit kartu a kde na kartě uvidíš pořízení, náklady a výnosy.
-keywords: [náklady na majetek, nákladů na majetek, sledovat náklady na majetek, výnosy z majetku, majetek na faktuře, majetek na dokladu, majetek na řádku, karta majetku na faktuře, přiřadit fakturu k majetku, oprava auta, servis stroje, náklady na auto, kolik stál majetek, pořízení majetku, pořízení majetku bez karty, řádek pořízení, účet 042, založit kartu z faktury, karta z faktury, majetek z hlavičky, majetek čeká na zařazení, zařadit z faktury, náklady a výnosy, otevřít v deníku, deník podle majetku, analytika majetku]
-related: [majetek/evidence-majetku.md, majetek/odpisy-majetku.md, majetek/zauctovani-majetku.md, majetek/nastaveni-majetku.md, co-dnes-nejde.md]
+keywords: [náklady na majetek, nákladů na majetek, sledovat náklady na majetek, výnosy z majetku, majetek na faktuře, majetek na dokladu, majetek na řádku, karta majetku na faktuře, přiřadit fakturu k majetku, dimenze na dokladech, majetek na dokladech zapnout, oprava auta, servis stroje, náklady na auto, kolik stál majetek, pořízení majetku, pořízení majetku bez karty, řádek pořízení, účet 042, založit kartu z faktury, karta z faktury, majetek z hlavičky, majetek čeká na zařazení, zařadit z faktury, náklady a výnosy, otevřít v deníku, deník podle majetku, analytika majetku]
+related: [majetek/evidence-majetku.md, majetek/odpisy-majetku.md, majetek/zauctovani-majetku.md, majetek/nastaveni-majetku.md, uctarna/strediska.md, co-dnes-nejde.md]
 ---
 
 # Majetek na dokladech
@@ -48,8 +48,9 @@ uložíš i bez karty, Shipard na to ale upozorní (viz níže).
 
 **Náklady a výnosy na majetek**
 
-1. V **Nastavení aplikace → Majetek → Majetek na dokladech** nastav
-   **Sledovat náklady na majetek** na *Ano*.
+1. V **Nastavení aplikace → Účetnictví → Dimenze na dokladech** nastav
+   **Majetek na dokladech** na *Ano* a dej **Uložit**. Na téže stránce se
+   zapíná i **Středisko na dokladech**, viz [Střediska](../uctarna/strediska.md).
 2. Na **Faktuře přijaté**, **Faktuře vydané**, **Pokladním dokladu**
    a **Účetním dokladu** se objeví pole **Majetek** — na hlavičce i na
    každém řádku.
@@ -101,4 +102,5 @@ faktura vydaná pole nemá.
 - [Odpisy majetku](odpisy-majetku.md)
 - [Zaúčtování majetku](zauctovani-majetku.md)
 - [Nastavení majetku](nastaveni-majetku.md)
+- [Střediska](../uctarna/strediska.md)
 - [Co Shipard dnes neumí](../co-dnes-nejde.md)

@@ -1,6 +1,6 @@
 # Standardní dimenze v jádru — majetek a středisko
 
-**Stav:** naplánováno — #110 D20, D21, D23; T1–T3 potvrzené 2026-10-08
+**Stav:** hotovo — 2026-10-08 (4 commity, ověřeno na `4l3j` a round-trip sady do `vlm9`; odchylky viz „Poznámky k implementaci“); zbývá `ds-upgrade` na ostatních zdrojích a alfě
 
 > PRD pro jednu Claude Code session (4 commity). Design:
 > `docs/work-orders.md` §4 (D20, D21, D23), §5.6; issue #110.
@@ -268,3 +268,33 @@ Na ukázkovém zdroji (`4l3j-z0bz-kz39-echj`, režim volný):
 - ✓ **T3 — Pole Středisko i na zálohové faktuře vydané** — periodická
   fakturace vystavuje zálohy a nese na nich středisko (majetek tam pole
   nemá).
+
+## Poznámky k implementaci
+
+Zjištěno při implementaci 2026-10-08, odchylky od zadání výše:
+
+- **`dimension_unknown` hlásí `DocumentValidator` jen se znalostí sady
+  dimenzí** (volitelný parametr konstruktoru; `DocumentApplier::create`
+  ji předává). Preflight sady (`DatasetPreflight`) validátor staví bez
+  DS, neznámé id tam neodhalí — odhalí ho apply. `dimension_not_found`
+  potřebuje DB, proto žije v `DocumentApplier::resolveAll` přes nový
+  `Resolve\DimensionResolver` (vzor `AccountResolver`), ne ve validátoru.
+- **`DocumentExporter` exportuje jen dimenze, jejichž cílovou tabulku sada
+  nese v `setup/`** (středisko). Majetek na dokladech se do sady
+  nepřenáší — karty majetku nejsou součást sady a seed by doklad odmítl
+  chybou `dimension_not_found`, čímž by padl round-trip dump → seed
+  (ukázkový zdroj má kartu na dokladu). Dump to ohlásí jedním varováním
+  per dimenze s počtem dokladů. `exchangeKey` majetku (`asset_number`)
+  zůstává pro API apply.
+- **Větev „merge“ u existujícího dokladu** nemá v kódu kam dopadnout:
+  applier doklady jen zakládá (idempotence vrací existující bez přepisu).
+  Chybějící objekt `dimensions` = sloupce zůstanou NULL.
+- **Kopie kanonického schématu v `modules/core/mail/profiles/czech_general.jsonc`**
+  musí dostat objekt `dimensions` stejně jako `shpd.docs.document.v1`
+  (`ProfileSchemaDriftTest`); kompilace `.jsonc → .json` je odstranění
+  komentářů a koncových čárek (byte-shodné s dosavadním `.json`), setup
+  schéma je `JSON_PRETTY_PRINT`.
+- Po změně `module.jsonc` je nutný `ds-upgrade` — bez něj kompilovaná
+  konfigurace dimenze nezná `exchangeKey` a dump dimenze tiše vynechá.
+- Položka *Dimenze na dokladech* je v sekci Účetnictví bez `order`,
+  stejně jako okolní číselníky (řadí se za ně podle pořadí modulů).

@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
+keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, pravidlo odesílatele, navrhne pravidlo, sklad, zásoby, příjemka, výdejka, zakázky, střediska, výsledovka po střediscích, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
 related: [slovnicek.md]
 ---
 
@@ -21,6 +21,10 @@ Tyhle části účetního provozu v Shipardu zatím vůbec nenajdeš:
 
 - **Sklad** — příjemky, výdejky, stavy a pohyby zásob.
 - **Zakázky** — přiřazení dokladů k zakázce a její vyhodnocení.
+- **Přehledy po střediscích** — středisko na dokladech a v účetním deníku
+  už je (filtr a sloupec **Středisko**, viz [Střediska](uctarna/strediska.md)),
+  výsledovka nebo hlavní kniha po střediscích zatím ne. Bankovní výpis
+  středisko nenese.
 - **Účetní závěrka** — uzávěrka roku. Rozvahu a výsledovku za zvolené
   období ale spočítáš jako report.
 - **Platební příkazy a přímé napojení na banku.** Výpisy nahráváš jako

@@ -102,6 +102,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [Živé výstupy DPH](uctarna/dph-zive-vystupy.md) | Jak si přečíst živé přiznání k DPH, kontrolní hlášení a souhrnné hlášení za zvolené období a co znamenají upozornění pod tabulkou. |
 | [Export reportu do Excelu nebo CSV](uctarna/export-reportu.md) | Jak stáhnout hlavní knihu, výsledovku, rozvahu nebo výstup DPH jako sešit pro Excel nebo jako CSV a co ve staženém souboru najdeš. |
 | [Když se doklad nezaúčtuje](uctarna/kdyz-se-doklad-nezauctuje.md) | Co znamenají hlášky u chyby účtování, kde se která spravuje a proč doklad nemusíš rozebírat. |
+| [Střediska](uctarna/strediska.md) | Jak založit číselník středisek, zapnout středisko na dokladech, dát ho na hlavičku nebo jen na řádek a najít zápisy střediska v účetním deníku a na Kontaci. |
 | [Tisk kontace](uctarna/tisk-kontace.md) | Jak k dokladu vytisknout Kontaci — PDF s účetními zápisy, kterými je doklad zaúčtovaný — a co na ní je. |
 | [Uzamčení období](uctarna/uzamceni-obdobi.md) | Jak po podání DPH uzamknout tvrzení nebo celý fiskální měsíc, co zámek zastaví, jak vypadá zamčený doklad a jak zámek zase sundat. |
 

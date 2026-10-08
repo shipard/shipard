@@ -2,16 +2,18 @@
 title: Nastavení majetku
 summary: Kde nastavíš typy majetku, skupiny typů, účetní skupiny majetku a prefixy inventárních čísel — a co z toho karta majetku přebírá.
 keywords: [nastavení majetku, typy majetku, typ majetku, nový typ majetku, skupiny typů, skupina typů majetku, účetní skupiny majetku, účetní skupina majetku, účty majetku, účet majetku, sledovat náklady na majetek, majetek na dokladech, účet oprávek, účet odpisů, účet pořízení, účet vyřazení, zůstatková cena, prefix inventárního čísla, číslování majetku, inventární čísla, MA0001, výchozí druh, výchozí účetní skupina, stavby, samostatné movité věci, software, pozemky]
-related: [majetek/evidence-majetku.md, majetek/naklady-na-majetek.md, uctarna/kdyz-se-doklad-nezauctuje.md, co-shipard-umi.md, slovnicek.md]
+related: [majetek/evidence-majetku.md, majetek/naklady-na-majetek.md, uctarna/strediska.md, uctarna/kdyz-se-doklad-nezauctuje.md, co-shipard-umi.md, slovnicek.md]
 ---
 
 # Nastavení majetku
 
 Číselníky majetku najdeš v **Nastavení aplikace → Majetek**: **Typy
 majetku**, **Skupiny typů majetku**, **Účetní skupiny majetku** a stránky
-**Inventární čísla**, **Odpisy** a **Majetek na dokladech**. Nic z toho
-není nutné k založení první karty
-drobného majetku — dlouhodobý majetek ale účetní skupinu potřebuje.
+**Inventární čísla** a **Odpisy**. Nic z toho není nutné k založení první
+karty drobného majetku — dlouhodobý majetek ale účetní skupinu potřebuje.
+Pole **Majetek** na fakturách, pokladních a účetních dokladech zapíná
+**Nastavení aplikace → Účetnictví → Dimenze na dokladech**, viz
+[Majetek na dokladech](naklady-na-majetek.md).
 
 ## Kdy to potřebuješ
 
@@ -41,12 +43,13 @@ zaúčtovat nejde.
 
 **Majetek na dokladech**
 
-1. Otevři **Nastavení aplikace → Majetek → Majetek na dokladech**.
-2. **Sledovat náklady na majetek** nastav na *Ano*, když chceš pole
-   **Majetek** na hlavičce i řádcích faktur, pokladních a účetních
-   dokladů. Prázdné nebo *Ne* = pole je jen na řádku pořízení majetku.
+1. Otevři **Nastavení aplikace → Účetnictví → Dimenze na dokladech**.
+2. **Majetek na dokladech** nastav na *Ano*, když chceš pole **Majetek**
+   na hlavičce i řádcích faktur, pokladních a účetních dokladů. Prázdné
+   nebo *Ne* = pole je jen na řádku pořízení majetku.
 3. Dej **Uložit**. Co s polem dál, popisuje
-   [Majetek na dokladech](naklady-na-majetek.md).
+   [Majetek na dokladech](naklady-na-majetek.md). Stejná stránka zapíná
+   i **Středisko na dokladech** — viz [Střediska](../uctarna/strediska.md).
 
 **Typ majetku**
 
