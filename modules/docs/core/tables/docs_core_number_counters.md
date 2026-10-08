@@ -1,7 +1,10 @@
 # Tabulka: docs_core_number_counters
 
-Atomický counter čísel dokladů per `(number_series, fiscal_year)`. Plně
-využívaný až ve Fázi 2 (`DocDocument::assignDocumentNumber`).
+Atomický counter čísel dokladů per `(number_series, fiscal_year)`.
+Obsluhuje ho `Shipard\Core\Numbering\SequenceCounter` (`src/Core/Numbering/`,
+#110 D17, `docs/architecture.md` §8) s popisem tabulek `SequenceStorage`
+z `DocDocument::sequenceCounter()`; klíč čítače (řada, fiskální rok podle
+`reset_scope`, jinak NULL) určuje doklad.
 
 ## Sloupce
 
@@ -25,14 +28,22 @@ dokud existuje řada.
   logika (`SELECT … FOR UPDATE` s `WHERE fiscal_year IS NULL`) zajistí
   jediný záznam.
 
-## Algoritmus přidělení čísla (Fáze 2)
+## Algoritmus přidělení čísla (`SequenceCounter::next`)
 
-1. `INSERT IGNORE` placeholder counter (idempotentní)
-2. `BEGIN TRANSACTION`
+1. `BEGIN` — jen když doklad nedrží vnější transakci (exchange Applier)
+2. `INSERT IGNORE` placeholder counter (idempotentní)
 3. `SELECT last_assigned … FOR UPDATE` (lock)
-4. `UPDATE … SET last_assigned = last_assigned + 1`
-5. Použít `last_assigned + 1` jako `sequence_number` na hlavičce
-6. `COMMIT`
+4. `UPDATE … SET last_assigned = N + 1`
+5. `COMMIT`; doklad použije `N + 1` jako `sequence_number` a vyhodnotí vzorec
+
+**Import** (`syncImported`, `_importNumber`): `INSERT IGNORE` + `UPDATE …
+GREATEST(last_assigned, pořadí)` — idempotentní, nezávislé na pořadí importu,
+snáší díry po smazaných zdrojových dokladech.
+
+**Uvolnění** (`release`, návrat V opravě → Koncept): `last_assigned - 1` jen
+když `last_assigned = pořadí`. Že jde o poslední doklad v řadě, hlídá doklad
+přes `maxSequence` nad `docs_core_heads` (stejný dotaz filtruje nabídku
+přechodu do Konceptu).
 
 Pojistka: na `docs_core_heads` je UNIQUE constraint na trojici
 `(number_series, fiscal_year, sequence_number)`. I kdyby logika selhala,

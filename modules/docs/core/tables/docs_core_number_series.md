@@ -83,11 +83,19 @@ nepoužije.
 Default vzorec pro nový typ je `%D%y%C%4` (přidělován provisionerem
 z `docs.core.docTypes.{type}.doc_number_pattern_default`).
 
-Resolver vzorce přijde ve Fázi 2 (`assignDocumentNumber`).
+Vzorec vyhodnocuje a validuje jádro `Shipard\Core\Numbering\NumberPattern`
+(`src/Core/Numbering/`, #110 D17, `docs/architecture.md` §8): obecné
+placeholdery (`%C`, `%y` / `%Y`, `%3`–`%6`) zná jádro, `%D` dodává
+`DocDocument::resolvePattern` jako doménový placeholder; popisek roku dává
+`FiscalYearLookup` (`economy.codebooks`). Přidělení pořadí viz
+[docs_core_number_counters](docs_core_number_counters.md).
 
 ## Validace
 
-Implementováno v `NumberSeriesDocument::validate`:
+Implementováno v `NumberSeriesDocument::validate`; vzorec a kód řady
+kontroluje `NumberPattern::validate` (texty a kódy chyb `required` /
+`required_for_pattern` / `unknown_placeholder` žijí tam, dokument je jen
+mapuje na sloupce):
 
 - `name`, `doc_type`, `doc_number_pattern` jsou povinné
 - Pokud vzorec obsahuje `%C`, `doc_number_code` je povinný

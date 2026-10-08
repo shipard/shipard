@@ -751,6 +751,10 @@ je tedy primárně na úrovni transakce, ne UNIQUE.
 
 Volá se v `Document::beforeSave` při přechodu Koncept (10) → V pořádku (40).
 
+> Od #110 D17 žije čítač v `src/Core/Numbering/SequenceCounter` a vzorec
+> v `NumberPattern` (`docs/architecture.md` §8); ukázky kódu v 5.3 a 5.4
+> jsou původní návrh, chování je stejné.
+
 ```php
 public function assignDocumentNumber(array &$data): void
 {

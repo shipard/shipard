@@ -1,6 +1,6 @@
 # Společný engine čísel — vytažení z číselných řad dokladů
 
-**Stav:** naplánováno — #110 D17; N1–N3 potvrzené 2026-10-08
+**Stav:** hotovo — 2026-10-08 (3 commity; `ds-upgrade` na `4l3j` beze změny schématu; smoke přes API na `vlm9`: navazující číslo, uvolnění a opětovné použití, Koncept jen u posledního, uložení dat V opravě bez změny čísla, hlášky řady; odchylky viz „Poznámky k implementaci“); zbývá alfa
 
 > PRD pro jednu Claude Code session (3 commity). Design:
 > `docs/work-orders.md` §4 (D17), §5.7; issue #110. Předpoklad pro
@@ -167,3 +167,23 @@ dokladů.
   tabulka čítačů by znamenala migraci dat čítačů bez užitku.
 - ✓ **N3 — Inventární čísla majetku zůstávají mimo** — jiný model (prefix
   druhu + pořadí, bez řady a čítače); sjednocení případně později.
+
+## Poznámky k implementaci (2026-10-08)
+
+- Vyhodnocení vzorce běží až po commitu vlastní transakce čítače (dřív
+  uvnitř ní). Neutrální: `beforeSave` běží před transakcí gateway, čítač
+  se commitoval samostatně i dřív a popisek roku je jen čtení.
+- Popisek roku se čte líně (closure v `NumberContext`) a nejvýš jednou —
+  pořadí dotazů řada → rok → čítač → popisek zůstává (testy mockují fetch
+  po pořadí), vzorec s `%y` i `%Y` dělá jeden dotaz místo dvou.
+- Zápisy čítače jdou přes executor předaný dokumentem (`executeSql`),
+  názvy tabulek a sloupců se vkládají jako `[name]`, ne jako parametry
+  Dibi — testy kontrolují zachycené SQL i argumenty beze změny.
+- Smoke na `vlm9` místo `4l3j`: na `4l3j` nejsou faktury vydané a čítač
+  řady FV nese náhodnou hodnotu po starších integračních testech; obě
+  sady jsou z téže datové sady. Reset `4l3j` přes `dataset-seed` se
+  nedělá (sdílený zdroj), import kryjí `SequenceCounterTest`
+  a `DocDocumentImportNumberTest` se shodným SQL.
+- `BankTransactionAccountingEngine::resolveFiscalYearId` má týž dotaz
+  jako `FiscalYearLookup::yearIdForDate`; mimo scope, kandidát na
+  sjednocení.

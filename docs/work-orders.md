@@ -400,6 +400,13 @@ tabulkou řad a čítačů. Vazby specifické pro doklady (typ dokladu,
 pokladna, sklad, odesílatel e-mailu, automatický autor) zůstávají
 v řadách dokladů.
 
+Hotovo (2026-10-08, `tasks/number-series-engine.md`): `src/Core/Numbering/`
+— `NumberPattern` + `NumberContext` (vzorec), `SequenceStorage` +
+`SequenceCounter` (čítač), id a popisek roku `FiscalYearLookup`
+v `economy.codebooks`; `docs/architecture.md` §8. Řady zakázek dodají
+vlastní `SequenceStorage` (tabulka čítačů + hlavičky zakázek), doménové
+placeholdery a převod restartu na rozsah čítače.
+
 ---
 
 ## 6. Import (kontrakt pro `old_shipard`)
@@ -423,7 +430,7 @@ Otevřené: O6 (§8).
 | # | Task | Rozhodnutí | Stav |
 |---|---|---|---|
 | 1 | `tasks/dimensions-core.md` — majetek a středisko jako standardní dimenze jádra, nastavení *Dimenze na dokladech*, středisko ve výměnném formátu | D20, D21, D23 | hotovo (2026-10-08) |
-| 2 | `tasks/number-series-engine.md` — společný engine čísel vytažený z číselných řad dokladů | D17 | naplánováno |
+| 2 | `tasks/number-series-engine.md` — společný engine čísel vytažený z číselných řad dokladů | D17 | hotovo (2026-10-08) |
 | 3 | `tasks/work-orders-phase1.md` — modul, druhy, číselné řady, hlavička všech typů, stavy, nadřazená zakázka, dimenze zakázka, záložka Deník | D14–D18, D22, D23 | připravuje se |
 | 4 | `tasks/work-orders-phase2.md` — periodická fakturace: předpis, evidence období, běh, koncept s kartou ve feedu, Přegenerovat a Obnovit, VS, `období`, záložka Fakturace, rozhraní přispěvatelů | D2–D7, D10–D12, D24 | připravuje se |
 | 5 | `tasks/work-orders-phase3.md` — úrovně V pořádku a automatické odeslání | D4 | připravuje se; navazuje na #90 D11 |

@@ -67,6 +67,8 @@ src/
 │   │                           # ValidationResult, ValidationError, DocumentResult
 │   ├── I18n/                   # LocalizedFieldResolver, ConfigLocalizer
 │   ├── Module/                 # ModuleDefinition, ModuleLoader, ModuleResolver
+│   ├── Numbering/              # NumberPattern, NumberContext, SequenceStorage, SequenceCounter
+│   │                           # (společný engine čísel řad — doklady, zakázky; #110 D17)
 │   └── Utils/                  # JsoncParser, IdGenerator
 modules/{skupina}/{modul}/src/  # Document třídy modulů (PersonDocument, IssuedInvoiceDocument...)
                                 # Skupiny: core, base, economy, docs, tasks, world, install

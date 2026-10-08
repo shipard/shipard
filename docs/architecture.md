@@ -220,7 +220,40 @@ TableDefinition + ExtensionDefinition
 
 ---
 
-## 8. CLI příkazy (`src/Command/`)
+## 8. Číslování (`src/Core/Numbering/`)
+
+Společný engine čísel pro záznamy v číselných řadách (#110 D17): dnes
+doklady (`docs.core`), dál číselné řady zakázek (`economy.workOrders`).
+Jádro nezná fiskální roky ani typy dokladů — rozsah čítače a doménové
+placeholdery dodává volající. Čítače zůstávají per doména (vlastní
+tabulka), engine je parametrizovaný popisem tabulek.
+
+| Třída | Účel |
+|-------|------|
+| `NumberPattern` | Vzorec čísla — `validate()` (prázdný vzorec, `%C` bez kódu řady, neznámý placeholder; texty a kódy chyb jsou kontrakt formuláře řady) a `resolve()` nad `NumberContext`. Obecné placeholdery `%C`, `%y` / `%Y`, `%3`–`%6`; doménové (`%D` typ dokladu) jako mapa znak → hodnota. Neznámý placeholder zůstává literál. |
+| `NumberContext` | Readonly hodnoty pro vyhodnocení: pořadí, kód řady, popisek roku (string nebo líná closure — u dokladů dotaz do fiskálních let až po přidělení pořadí, nejvýš jednou), doménové hodnoty. |
+| `SequenceStorage` | Readonly popis tabulky čítačů (tabulka, sloupec řady, rozsahu, hodnoty) a tabulky záznamů (tabulka, sloupec řady, rozsahu, pořadí). Identifikátory jdou do SQL jako `[name]`, konstruktor je omezuje na `[a-z][a-z0-9_]*`. |
+| `SequenceCounter` | `next()` (`INSERT IGNORE` → `SELECT … FOR UPDATE` → `UPDATE`), `syncImported()` (`GREATEST`, idempotentní, nezávislé na pořadí), `maxSequence()` (guard „poslední v řadě“ nad tabulkou záznamů), `release()` (snížení jen když čítač stojí na uvolňovaném pořadí). Rozsah NULL-safe (`<=>`). Vlastní transakce jen když volající nedrží vnější (`Document::$externalTransaction`). Zápisy přes executor (výchozí `Connection::query`; doklad předává své `executeSql`, testovací šev). |
+
+**Doklady** (`modules/docs/core/src/DocDocument.php`): `assignDocumentNumber`
+načte řadu, určí rozsah (`reset_scope` = `fiscal_year` → id fiskálního roku
+přes `FiscalYearLookup::yearIdForDate` z `economy.codebooks`, jinak NULL),
+vezme pořadí z `next()` a číslo z `resolvePattern()` (`%D` = `doc_id_code`
+typu, popisek roku `FiscalYearLookup::yearLabel`). `applyImportNumber` →
+`syncImported`, `releaseDocumentNumber` → `maxSequence` + `release`,
+`filterStateTransitions` → `maxSequence`. Kdy se číslo přiděluje
+(`{0, 10} → 40`) a uvolňuje (`80 → 10`), placeholder `!id` po uvolnění
+a mazání snapshotů zůstávají v dokladu. `NumberSeriesDocument::validate`
+mapuje chyby `NumberPattern::validate` na sloupce `doc_number_pattern` /
+`doc_number_code`. Tabulky: `modules/docs/core/tables/docs_core_number_series.md`,
+`docs_core_number_counters.md`.
+
+**Mimo engine:** inventární čísla majetku (`AssetNumberAllocator` — prefix
+druhu + pořadí bez řady a čítače, #110 N3).
+
+---
+
+## 9. CLI příkazy (`src/Command/`)
 
 ### Server (`src/Command/Server/`)
 
@@ -254,7 +287,7 @@ TableDefinition + ExtensionDefinition
 
 ---
 
-## 9. Mapa závislostí mezi třídami
+## 10. Mapa závislostí mezi třídami
 
 ```
 JsoncParser ←── ModuleLoader
@@ -283,6 +316,11 @@ DataSourceConfig ←── DsUpgradeCommand
              ←── TableLoader ←── index.php
 DatabaseManager ←── DsCreateCommand
 
+NumberContext ←── NumberPattern ←── DocDocument (resolvePattern)
+                                ←── NumberSeriesDocument (validate)
+SequenceStorage ←── SequenceCounter ←── DocDocument (sequenceCounter)
+FiscalYearLookup (economy.codebooks) ←── DocDocument
+
 Request ──────────────────────────────────┐
 AuthContext ←── AuthMiddleware            │
 Route ←── Router ←── index.php ──────────┤
@@ -295,7 +333,7 @@ SpecGenerator  ←── OpenApiController
 
 ---
 
-## 10. Konvence v kódu
+## 11. Konvence v kódu
 
 ### Datové třídy (Definition)
 - Readonly properties nebo gettery
