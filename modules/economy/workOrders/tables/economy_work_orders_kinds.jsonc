@@ -1,0 +1,88 @@
+{
+    // Druh zakázky (docs/work-orders.md D14, §5.2): nese typ zakázky, který
+    // zakázky druhu dědí. Typ je po prvním potvrzení druhu jen ke čtení
+    // (hlídá KindDocument) — mění, co zakázky druhu mají. Výchozí hodnoty
+    // fakturace periodického typu (D3) přidá fáze 2.
+    "tableId": 457,
+    "name": "Work order kinds",
+    "name:cs": "Druhy zakázek",
+    "name:en": "Work order kinds",
+
+    "displayPattern": "{name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "name",
+            "name": "Name",
+            "name:cs": "Název",
+            "name:en": "Name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false
+        },
+        {
+            "id": "type",
+            "name": "Work order type",
+            "name:cs": "Typ zakázky",
+            "name:en": "Work order type",
+            "type": "enumString",
+            "length": 16,
+            "cfgItem": "economy.workOrders.types",
+            "nullable": false
+        },
+        {
+            "id": "notice",
+            "name": "Notice",
+            "name:cs": "Poznámka",
+            "name:en": "Notice",
+            "type": "varchar",
+            "length": 250,
+            "nullable": true
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        }
+    ]
+}

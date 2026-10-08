@@ -27,6 +27,7 @@
         "economy.bank",
         "economy.accbal",
         "economy.assets",
+        "economy.workOrders",
         "world.vat",
         "world.assets",
         "docs.core",

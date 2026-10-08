@@ -17,6 +17,15 @@
             "order": 10
         },
         {
+            // Zakázky (#110 P1): druhy a číselné řady zakázek.
+            "id": "workOrders",
+            "name": "Work orders",
+            "name:cs": "Zakázky",
+            "name:en": "Work orders",
+            "icon": "briefcase",
+            "order": 12
+        },
+        {
             "id": "assets",
             "name": "Assets",
             "name:cs": "Majetek",

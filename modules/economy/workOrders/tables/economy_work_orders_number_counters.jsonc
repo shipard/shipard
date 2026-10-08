@@ -1,0 +1,62 @@
+{
+    // Čítače čísel zakázek (docs/work-orders.md D17, §5.7) — stejný model
+    // jako docs_core_number_counters (#110 N2): řádek per (řada, fiskální
+    // rok), fiskální rok NULL = průběžná řada. Čte a zapisuje jen
+    // SequenceCounter z WorkOrderDocument; uživatel tabulku nevidí.
+    "tableId": 459,
+    "name": "Work order number counters",
+    "name:cs": "Počítadla čísel zakázek",
+    "name:en": "Work order number counters",
+
+    "hideFromNavigation": true,
+
+    "displayPattern": "{number_series}/{fiscal_year}",
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+        {
+            "id": "number_series",
+            "name": "Number series",
+            "name:cs": "Číselná řada",
+            "name:en": "Number series",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_work_orders_number_series"
+        },
+        {
+            "id": "fiscal_year",
+            "name": "Fiscal year",
+            "name:cs": "Fiskální rok",
+            "name:en": "Fiscal year",
+            "type": "int",
+            "nullable": true,
+            "reference": "economy_codebooks_fiscal_years"
+        },
+        {
+            "id": "last_assigned",
+            "name": "Last assigned",
+            "name:cs": "Poslední přidělené",
+            "name:en": "Last assigned",
+            "type": "int",
+            "nullable": false,
+            "default": 0
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_series_year",
+            "type": "unique",
+            "columns": [
+                {"column": "number_series"},
+                {"column": "fiscal_year"}
+            ]
+        }
+    ]
+}

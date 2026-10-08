@@ -65,9 +65,9 @@ s varováním, jako majetek).
 
 ## 1. Modul a druhy zakázek (D14)
 
-- Modul `economy.workOrders`, závislosti `core.system`, `base.persons`,
-  `economy.codebooks`, `docs.core`, `economy.accounting`. Přidat do
-  závislostí `install.base`.
+- Modul `economy.workOrders`, závislosti `core.system`, `core.attachments`,
+  `base.persons`, `economy.codebooks`, `docs.core`, `economy.accounting`.
+  Přidat do závislostí `install.base`.
 - **`economy_work_orders_kinds`** (archivní stavy): `name`, `type`
   (enum `economy.workOrders.types`: `periodic`, `project`, `overhead`,
   `internal` — názvy cs: periodická, externí jednorázová, interní
@@ -181,7 +181,11 @@ se; detail ho ukáže z nejbližší externí zakázky v řetězci předků.
   s Druhy zakázek a Číselnými řadami zakázek.
 - **Viewer zakázek**: taby podle `viewGroup` (aktivní / archiv / koš),
   sloupce číslo, název, zákazník, druh, zahájení, stav; filtr podle druhu
-  a typu. Nová zakázka začíná výběrem číselné řady.
+  a typu. **Spodní taby = číselné řady** jako u dokladů (P6, vzor
+  `DocsHeadsViewer::getBottomTabs`): tab filtruje zakázky řady a **Přidat**
+  z něj předvyplní řadu nové zakázky; formulář řadu nabízí jen u konceptu.
+- **Formulář zakázky** má tab *Přílohy* (`core.attachments`, jako karta
+  majetku).
 - **Detail** (vzor `AssetsViewer`):
   - *Přehled* — hlavička, nadřazená zakázka (odkaz), podzakázky (seznam
     s odkazy), zákazník z nadřazené u interní jednorázové;
@@ -266,3 +270,6 @@ Na ukázkovém zdroji (`4l3j-z0bz-kz39-echj`, režim volný):
 - ✓ **P5 — Výměnný formát a import zakázek** jako samostatný task
   `tasks/work-orders-import.md` po fázi 2 (nese i fakturační předpis
   a *fakturovat od*, které fáze 1 nemá).
+- ✓ **P6 — Spodní taby po řadách a přílohy** (2026-10-08): viewer zakázek
+  se chová jako viewery dokladů — spodní tab je číselná řada a určuje řadu
+  nové zakázky; zakázka má přílohy.

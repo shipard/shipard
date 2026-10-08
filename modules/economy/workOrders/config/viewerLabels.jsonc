@@ -1,0 +1,24 @@
+{
+    // economy.workOrders.viewerLabels — popisky viewerů zakázek: skupiny
+    // a položky detailu, sloupce, akce. Viewery je čtou přes
+    // WorkOrdersViewerBase::text(klíč, anglický fallback); PHP nenese
+    // `cs() ? … : …`.
+
+    // --- skupiny detailu ---
+    "group.identity":  { "name": "Identity",  "name:cs": "Identifikace", "name:en": "Identity" },
+    "group.numbering": { "name": "Numbering", "name:cs": "Číslování",    "name:en": "Numbering" },
+    "group.validity":  { "name": "Validity",  "name:cs": "Platnost",     "name:en": "Validity" },
+
+    // --- položky ---
+    "label.name":       { "name": "Name",            "name:cs": "Název",            "name:en": "Name" },
+    "label.type":       { "name": "Type",            "name:cs": "Typ",              "name:en": "Type" },
+    "label.kind":       { "name": "Kind",            "name:cs": "Druh",             "name:en": "Kind" },
+    "label.code":       { "name": "Series code",     "name:cs": "Kód řady",         "name:en": "Series code" },
+    "label.pattern":    { "name": "Number pattern",  "name:cs": "Vzorec čísla",     "name:en": "Number pattern" },
+    "label.resetScope": { "name": "Counter reset",   "name:cs": "Restart počítadla", "name:en": "Counter reset" },
+    "label.validFrom":  { "name": "Valid from",      "name:cs": "Platnost od",      "name:en": "Valid from" },
+    "label.validTo":    { "name": "Valid to",        "name:cs": "Platnost do",      "name:en": "Valid to" },
+    "label.notice":     { "name": "Notice",          "name:cs": "Poznámka",         "name:en": "Notice" },
+    "label.yes":        { "name": "Yes",             "name:cs": "Ano",              "name:en": "Yes" },
+    "label.no":         { "name": "No",              "name:cs": "Ne",               "name:en": "No" }
+}

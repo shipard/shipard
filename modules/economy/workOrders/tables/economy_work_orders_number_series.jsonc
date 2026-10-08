@@ -1,0 +1,180 @@
+{
+    // Číselná řada zakázek (docs/work-orders.md D17, §5.2, §5.7): patří
+    // jednomu druhu (po založení jen ke čtení — jako typ dokladu u řad
+    // dokladů), druh může mít víc řad. Vzorec, kód řady a restart vyhodnocuje
+    // společný engine čísel (src/Core/Numbering/); čítače drží
+    // economy_work_orders_number_counters. Vzorec musí obsahovat pořadí
+    // (%3–%6), jinak by čísla kolidovala (P3) — hlídá WorkOrderSeriesDocument.
+    "tableId": 458,
+    "name": "Work order number series",
+    "name:cs": "Číselné řady zakázek",
+    "name:en": "Work order number series",
+
+    "displayPattern": "{name}",
+
+    "docStates": {
+        "stateColumn": "docState",
+        "mainColumn": "docStateMain",
+        "cfgItem": "core.system.docStatesArchive"
+    },
+
+    "columnGroups": [
+        {
+            "id": "identity",
+            "name": "Identity",
+            "name:cs": "Identifikace",
+            "name:en": "Identity"
+        },
+        {
+            "id": "numbering",
+            "name": "Numbering",
+            "name:cs": "Číslování",
+            "name:en": "Numbering"
+        },
+        {
+            "id": "validity",
+            "name": "Validity",
+            "name:cs": "Platnost",
+            "name:en": "Validity"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- identity ---
+
+        {
+            "id": "kind",
+            "name": "Work order kind",
+            "name:cs": "Druh zakázky",
+            "name:en": "Work order kind",
+            "type": "int",
+            "nullable": false,
+            "reference": "economy_work_orders_kinds",
+            "group": "identity"
+        },
+        {
+            "id": "name",
+            "name": "Series name",
+            "name:cs": "Název řady",
+            "name:en": "Series name",
+            "type": "varchar",
+            "length": 100,
+            "nullable": false,
+            "group": "identity"
+        },
+        {
+            "id": "notice",
+            "name": "Notice",
+            "name:cs": "Poznámka",
+            "name:en": "Notice",
+            "type": "varchar",
+            "length": 250,
+            "nullable": true,
+            "group": "identity"
+        },
+
+        // --- numbering ---
+
+        {
+            "id": "number_code",
+            "name": "Series code (%C)",
+            "name:cs": "Kód řady (%C)",
+            "name:en": "Series code (%C)",
+            "type": "varchar",
+            "length": 10,
+            "nullable": true,
+            "group": "numbering"
+        },
+        {
+            "id": "number_pattern",
+            "name": "Work order number pattern",
+            "name:cs": "Vzorec čísla zakázky",
+            "name:en": "Work order number pattern",
+            "type": "varchar",
+            "length": 50,
+            "nullable": false,
+            "group": "numbering"
+        },
+        {
+            // Stejné hodnoty jako u řad dokladů (docs.core.resetScopes):
+            // none = průběžně, fiscal_year = restart po fiskálním roce
+            // data zahájení zakázky.
+            "id": "reset_scope",
+            "name": "Counter reset",
+            "name:cs": "Restart počítadla",
+            "name:en": "Counter reset",
+            "type": "enumString",
+            "length": 15,
+            "cfgItem": "docs.core.resetScopes",
+            "default": "fiscal_year",
+            "nullable": false,
+            "group": "numbering"
+        },
+
+        // --- validity ---
+
+        {
+            "id": "valid_from",
+            "name": "Valid from",
+            "name:cs": "Platnost od",
+            "name:en": "Valid from",
+            "type": "date",
+            "nullable": true,
+            "group": "validity"
+        },
+        {
+            "id": "valid_to",
+            "name": "Valid to",
+            "name:cs": "Platnost do",
+            "name:en": "Valid to",
+            "type": "date",
+            "nullable": true,
+            "group": "validity"
+        },
+
+        // --- doc state (systémové) ---
+
+        {
+            "id": "docState",
+            "name": "Document state",
+            "name:cs": "Stav dokumentu",
+            "name:en": "Document state",
+            "type": "tinyint",
+            "default": 10,
+            "system": true
+        },
+        {
+            "id": "docStateMain",
+            "name": "Document state (sort)",
+            "name:cs": "Stav dokumentu (řazení)",
+            "name:en": "Document state (sort)",
+            "type": "tinyint",
+            "default": 1,
+            "system": true
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "idx_kind",
+            "type": "index",
+            "columns": [{"column": "kind"}]
+        },
+        {
+            "id": "idx_doc_state",
+            "type": "index",
+            "columns": [
+                {"column": "docStateMain", "order": "ASC"},
+                {"column": "name", "order": "ASC"}
+            ]
+        }
+    ]
+}

@@ -1,0 +1,46 @@
+{
+    // economy.workOrders.types — typ zakázky (D14, docs/work-orders.md §5.1).
+    // Hodnoty = enumString `type` na druhu zakázky (economy_work_orders_kinds)
+    // a denormalizovaně na hlavičce zakázky. Typ je po prvním potvrzení druhu
+    // jen ke čtení.
+    //
+    // Kód se NIKDY neptá na klíč typu, jen na příznaky (WorkOrderTypes):
+    //   external  — zakázka má stranu: zákazník (povinný při potvrzení),
+    //               měna, pevný variabilní symbol (D11)
+    //   oneOff    — jednorázová: smí mít nadřazenou zakázku (D15)
+    //   invoicing — "periodic" = periodická fakturace (fáze 2), null = žádná.
+    //               Zakázka s fakturací nemůže být nadřazenou (P4) — náklady
+    //               podzakázek se pod nájemní smlouvou nesčítají.
+    "periodic": {
+        "name": "Periodic",
+        "name:cs": "Periodická",
+        "name:en": "Periodic",
+        "external": true,
+        "oneOff": false,
+        "invoicing": "periodic"
+    },
+    "project": {
+        "name": "External one-off",
+        "name:cs": "Externí jednorázová",
+        "name:en": "External one-off",
+        "external": true,
+        "oneOff": true,
+        "invoicing": null
+    },
+    "overhead": {
+        "name": "Internal ongoing",
+        "name:cs": "Interní průběžná",
+        "name:en": "Internal ongoing",
+        "external": false,
+        "oneOff": false,
+        "invoicing": null
+    },
+    "internal": {
+        "name": "Internal one-off",
+        "name:cs": "Interní jednorázová",
+        "name:en": "Internal one-off",
+        "external": false,
+        "oneOff": true,
+        "invoicing": null
+    }
+}

@@ -1,0 +1,85 @@
+{
+    // Zakázky (docs/work-orders.md, #110): druhy zakázek s typem (D14),
+    // číselné řady zakázek nad společným enginem čísel (D17), evidence
+    // zakázek všech čtyř typů s nadřazenou zakázkou (D15, D18) a zakázka
+    // jako standardní dimenze jádra (D20, D23 — sloupce v tabulkách jádra,
+    // deklarace v economy.accounting). Fáze 1 = tasks/work-orders-phase1.md;
+    // periodická fakturace přijde ve fázi 2.
+    "id": "economy.workOrders",
+    "name": "Work orders",
+    "name:cs": "Zakázky",
+    "name:en": "Work orders",
+    "description": "Work orders: kinds with a type, number series, work order register and the work order journal dimension",
+    "description:cs": "Zakázky: druhy s typem, číselné řady, evidence zakázek a dimenze deníku zakázka",
+    "description:en": "Work orders: kinds with a type, number series, work order register and the work order journal dimension",
+
+    "dependencies": ["core.system", "core.attachments", "base.persons", "economy.codebooks", "docs.core", "economy.accounting"],
+
+    "tables": [
+        "economy_work_orders_kinds",
+        "economy_work_orders_number_series",
+        "economy_work_orders_number_counters"
+    ],
+
+    // Nastavení → Zakázky (P1): druhy a číselné řady. Bez seedu — druhy
+    // a řady zakládá uživatel nebo import.
+    "settingsItems": [
+        { "viewer": "economy.workOrders.kinds",        "section": "workOrders", "order": 10 },
+        { "viewer": "economy.workOrders.numberSeries", "section": "workOrders", "order": 20 }
+    ],
+
+    "viewers": [
+        {
+            "id": "economy.workOrders.kinds",
+            "name": "Work order kinds",
+            "name:cs": "Druhy zakázek",
+            "name:en": "Work order kinds",
+            "icon": "kinds",
+            "table": "economy_work_orders_kinds",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\KindsViewer"
+        },
+        {
+            "id": "economy.workOrders.numberSeries",
+            "name": "Work order number series",
+            "name:cs": "Číselné řady zakázek",
+            "name:en": "Work order number series",
+            "icon": "hash",
+            "table": "economy_work_orders_number_series",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderSeriesViewer"
+        }
+    ],
+
+    "forms": [
+        {
+            "table": "economy_work_orders_kinds",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\KindsForm"
+        },
+        {
+            "table": "economy_work_orders_number_series",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderSeriesForm"
+        }
+    ],
+
+    "documentClasses": [
+        {
+            "table": "economy_work_orders_kinds",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\KindDocument"
+        },
+        {
+            "table": "economy_work_orders_number_series",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderSeriesDocument"
+        }
+    ],
+
+    "config": [
+        {
+            // Typy zakázek s příznaky (D14) — jediné čtení WorkOrderTypes.
+            "id": "economy.workOrders.types",
+            "file": "config/types.jsonc"
+        },
+        {
+            "id": "economy.workOrders.viewerLabels",
+            "file": "config/viewerLabels.jsonc"
+        }
+    ]
+}

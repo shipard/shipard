@@ -73,6 +73,7 @@ import {
   faEnvelope,
   faRulerCombined,
   faCube,
+  faBriefcase,
   faCalendarDays,
   faBook,
   faListCheck,
@@ -184,6 +185,7 @@ export const iconAddressBook = faAddressBook; // Odesílatelé
 export const iconMagic = faWandMagicSparkles; // Preprocess pravidla
 export const iconRuler = faRulerCombined;
 export const iconBox = faCube;
+export const iconBriefcase = faBriefcase;
 export const iconCalendar = faCalendarDays;
 export const iconBook = faBook;
 export const iconListCheck = faListCheck;
@@ -280,6 +282,7 @@ export const iconMap = {
   'magic': iconMagic,
   'ruler': iconRuler,
   'box': iconBox,
+  'briefcase': iconBriefcase,
   'calendar': iconCalendar,
   'book': iconBook,
   'list-check': iconListCheck,
