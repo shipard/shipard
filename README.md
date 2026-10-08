@@ -49,10 +49,10 @@ navazujícího účetnictví. Pomůže nám vědět, jak si poradí s tvými dok
 a kde je práce v aplikaci nejasná nebo zbytečně složitá.
 
 Aplikace se aktivně vyvíjí a zatím nepokrývá celý účetní provoz.
-Například živé přehledy DPH už existují, ale export pro podání na daňový
-portál ještě chybí. Vydané faktury lze evidovat a zaúčtovat, jejich tisk,
-PDF a odeslání odběrateli zatím nejsou k dispozici. Proto zatím nepoužívej
-Shipard jako jediné místo, kde vedeš účetnictví.
+Přijaté i vydané faktury, banku, saldokonto, DPH včetně souboru pro
+daňový portál a majetek už zvládne, chybí ale například sklad, zakázky,
+pokladní kniha a účetní závěrka. Proto zatím nepoužívej Shipard jako
+jediné místo, kde vedeš účetnictví.
 
 Podrobnosti najdeš v [přehledu omezení](help/co-dnes-nejde.md).
 [Roadmapa](docs/roadmap.md) ukazuje, co doděláváme a v jakém pořadí.

@@ -1,7 +1,7 @@
 ---
 title: Co Shipard dnes neumí
 summary: Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla.
-keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH]
+keywords: [neumí, nejde, chybí, omezení, alfa, hromadné odeslání faktur, automatické odesílání, odeslat upomínku, vlastní text e-mailu, doručenka, vzhled faktury, dobropis, opravný daňový doklad, ISDOC, přiznání k DPH, kontrolní hlášení, záloha, zálohová faktura přijatá, výzva k platbě, nefunguje, odpisy, majetek, odepisování, samovyměření, reverse charge, přenesení daňové povinnosti, dovoz zboží, celní doklad, identifikovaná osoba, neplátce DPH, sklad, zásoby, příjemka, výdejka, zakázky, účetní závěrka, uzávěrka roku, platební příkaz, napojení na banku, opakovaná fakturace, převod majetku]
 related: [slovnicek.md]
 ---
 
@@ -12,6 +12,21 @@ nemusíš hledat funkci, která ještě neexistuje — a ať ti ji nikdo neslibu
 
 Seznam se mění. Když něco nenajdeš ani tady, ani v dokumentaci, napiš na
 **podpora@shipard.cz**.
+
+---
+
+## Agendy, které zatím nejsou
+
+Tyhle části účetního provozu v Shipardu zatím vůbec nenajdeš:
+
+- **Sklad** — příjemky, výdejky, stavy a pohyby zásob.
+- **Zakázky** — přiřazení dokladů k zakázce a její vyhodnocení.
+- **Účetní závěrka** — uzávěrka roku. Rozvahu a výsledovku za zvolené
+  období ale spočítáš jako report.
+- **Platební příkazy a přímé napojení na banku.** Výpisy nahráváš jako
+  soubor, platby zadáváš ve svém bankovnictví.
+- **Opakovaná fakturace** — smlouvy, ze kterých by se faktury vystavovaly
+  samy.
 
 ---
 
@@ -70,10 +85,6 @@ není.
 z Shipardu e-mailem neodejdou — účely kontaktů pro ně jsou připravené, ale
 nic je zatím nepoužívá. Napsat samostatný e-mail bez dokladu nejde.
 
-**Text e-mailu je předepsaný.** Předmět a text si pro jednu zprávu přepíšeš
-v okně **Odeslat e-mailem**, vlastní výchozí znění ale nastavit nejde.
-Zpráva je prostý text, bez formátování a bez podpisu s logem.
-
 **Shipard neví, jestli zpráva došla.** Stav **Odesláno** znamená, že ji
 převzal poštovní server. Nedoručitelnost ani přečtení se nesledují.
 
@@ -99,8 +110,10 @@ pokladnu.** Cílit jde na tisk, typ dokladu, číselnou řadu a jazyk. Text
 si před uložením nevyzkoušíš na konkrétním dokladu — uvidíš ho až v náhledu
 tisku. Obrázky a tabulky do textu vložit nejdou.
 
-**E-mail s dokladem je jen prostý text.** Vlastní předmět a text si
-nastavíš, formátování ani obrázky v e-mailu ne.
+**E-mail s dokladem je jen prostý text.** Výchozí předmět a text si
+nastavíš v [Textech na tiscích](faktury-vydane/texty-na-tiscich.md), pro
+jednu zprávu je přepíšeš v okně **Odeslat e-mailem**. Formátování, obrázky
+ani podpis s logem v e-mailu nejsou.
 
 **Doklad vytiskneš jen česky, anglicky, slovensky a německy.** Jiné jazyky
 nejsou — odběrateli z jiné země se tiskne anglicky.
@@ -178,9 +191,10 @@ procesoru (viz [Přehledy majetku](majetek/prehledy-majetku.md)).
 Daňové odpisy pro DPPO jsou podklad po odpisových skupinách — do řádků
 tiskopisu přiznání je Shipard nepřenáší.
 
-**Majetek ze starého Shipardu se zatím nepřenáší.** Import karet, historie
-odpisů a vazeb na doklady přijde později; do té doby karty zakládáš ručně,
-viz [Evidence majetku](majetek/evidence-majetku.md).
+**Majetek ze starého Shipardu převádíme my**, stejně jako ostatní data —
+karty i s historií odpisů a vazbou na doklady. Když majetek ve starém
+Shipardu máš a v Novém Shipardu ho nevidíš, napiš na podporu dřív, než
+začneš karty zakládat ručně.
 
 **Soubor a množstevní karta jsou zatím jen popisky.** **Způsob sledování**
 na kartě vybereš, ale Shipard se podle něj ještě nechová — žádné množství,
@@ -188,14 +202,9 @@ na kartě vybereš, ale Shipard se podle něj ještě nechová — žádné mno�
 
 ## Kde ještě nemusí souhlasit čísla
 
-Tohle je pro nás priorita číslo jedna a pracuje se na tom. Do té doby
-u těchto případů **porovnej celkovou částku dokladu s originálem faktury**:
+Správnost čísel je pro nás priorita číslo jedna. Známý případ, kdy
+výsledek zatím sám nesedí:
 
-- **Faktury s jednotkovými cenami včetně DPH** (typicky drobný prodej,
-  občerstvení). Daň se může spočítat dvakrát a celková částka pak vyjde
-  vyšší než na faktuře.
-- **Zaokrouhlení celkové částky** — dodělané, ale ještě neověřené na širší
-  sadě faktur.
 - **Vratka dobropisu z bankovního výpisu** — dobropis vydané faktury vede
   Shipard v saldokontu jako závazek a přijatý dobropis jako pohledávku.
   Když ho pak zákazník nebo dodavatel skutečně vrátí z účtu, platba
