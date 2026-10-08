@@ -10,6 +10,8 @@ use Shipard\Core\Document\ValidationError;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Core\Numbering\NumberContext;
 use Shipard\Core\Numbering\NumberPattern;
+use Shipard\Core\Numbering\SequenceCounter;
+use Shipard\Core\Numbering\SequenceStorage;
 use Shipard\Module\Economy\Codebooks\FiscalMonthLookup;
 use Shipard\Module\Economy\Codebooks\FiscalYearLookup;
 use Shipard\Module\World\Vat\VatRateResolver;
@@ -1789,25 +1791,10 @@ abstract class DocDocument extends Document
         // fiscal_year) for reset_scope = 'fiscal_year', else fiscal_year = NULL.
         $resetScope = $this->numberSeriesResetScope($seriesId);
         $fyId = ($resetScope === 'fiscal_year')
-            ? ($data['fiscal_year'] ?? null)   // already resolved by resolveAccountingPeriods()
+            ? self::counterScope($data['fiscal_year'] ?? null)   // already resolved by resolveAccountingPeriods()
             : null;
 
-        // Two-step, NULL-safe (matches assignDocumentNumber): INSERT IGNORE the
-        // counter row, then bump it via GREATEST. A single ON DUPLICATE KEY
-        // UPDATE would not fire for fiscal_year = NULL rows (UNIQUE treats NULL
-        // as distinct in MariaDB).
-        $this->executeSql(
-            'INSERT IGNORE INTO [docs_core_number_counters]
-                ([number_series], [fiscal_year], [last_assigned])
-             VALUES (%i, %iN, 0)',
-            $seriesId, $fyId,
-        );
-        $this->executeSql(
-            'UPDATE [docs_core_number_counters]
-             SET [last_assigned] = GREATEST([last_assigned], %i)
-             WHERE [number_series] = %i AND [fiscal_year] <=> %iN',
-            $sequence, $seriesId, $fyId,
-        );
+        $this->sequenceCounter()->syncImported($seriesId, $fyId, $sequence);
     }
 
     /**
@@ -1855,53 +1842,13 @@ abstract class DocDocument extends Document
         // nesmí otevřít — implicitně by ji commitnul (MariaDB, viz
         // Document::$externalTransaction). FOR UPDATE zámek counteru funguje
         // ve vnější transakci stejně, jen se drží do jejího commitu.
-        $ownTx = !$this->externalTransaction;
-        if ($ownTx) {
-            $this->db->begin();
-        }
-        try {
-            // Idempotent counter init
-            $this->executeSql(
-                'INSERT IGNORE INTO [docs_core_number_counters]
-                 ([number_series], [fiscal_year], [last_assigned])
-                 VALUES (%i, %iN, 0)',
-                $seriesId, $fyId,
-            );
-
-            // Lock + read counter (NULL-safe equality for fiscal_year)
-            $row = $this->db->fetch(
-                'SELECT [last_assigned] FROM [docs_core_number_counters]
-                 WHERE [number_series] = %i AND [fiscal_year] <=> %iN
-                 FOR UPDATE',
-                $seriesId, $fyId,
-            );
-            $current = (int) ($row['last_assigned'] ?? 0);
-            $newSeq = $current + 1;
-
-            $this->executeSql(
-                'UPDATE [docs_core_number_counters]
-                 SET [last_assigned] = %i
-                 WHERE [number_series] = %i AND [fiscal_year] <=> %iN',
-                $newSeq, $seriesId, $fyId,
-            );
-
-            $data['sequence_number'] = $newSeq;
-            $data['fiscal_year']     = $fyId;
-            $data['doc_number']      = $this->resolvePattern(
-                (string) $series['doc_number_pattern'],
-                $data,
-                $series,
-            );
-
-            if ($ownTx) {
-                $this->db->commit();
-            }
-        } catch (\Throwable $e) {
-            if ($ownTx) {
-                $this->db->rollback();
-            }
-            throw $e;
-        }
+        $data['sequence_number'] = $this->sequenceCounter()->next($seriesId, $fyId, !$this->externalTransaction);
+        $data['fiscal_year']     = $fyId;
+        $data['doc_number']      = $this->resolvePattern(
+            (string) $series['doc_number_pattern'],
+            $data,
+            $series,
+        );
     }
 
     /**
@@ -1927,14 +1874,9 @@ abstract class DocDocument extends Document
             return $transitions;
         }
 
-        // Stejný dotaz jako guard v releaseDocumentNumber.
-        $maxRow = $this->db->fetch(
-            'SELECT MAX([sequence_number]) AS [max_seq]
-             FROM [docs_core_heads]
-             WHERE [number_series] = %i AND [fiscal_year] <=> %iN',
-            $seriesId, $row['fiscal_year'] ?? null,
-        );
-        if ((int) ($maxRow['max_seq'] ?? 0) === $sequence) {
+        // Stejný guard jako v releaseDocumentNumber.
+        $maxSeq = $this->sequenceCounter()->maxSequence($seriesId, self::counterScope($row['fiscal_year'] ?? null));
+        if ($maxSeq === $sequence) {
             return $transitions;
         }
 
@@ -1951,7 +1893,7 @@ abstract class DocDocument extends Document
         }
 
         $seriesId = (int) ($originalData['number_series'] ?? 0);
-        $fyId     = $originalData['fiscal_year'] ?? null;
+        $fyId     = self::counterScope($originalData['fiscal_year'] ?? null);
         $sequence = (int) ($originalData['sequence_number'] ?? 0);
 
         if ($seriesId === 0 || $sequence === 0) {
@@ -1960,14 +1902,8 @@ abstract class DocDocument extends Document
             return;
         }
 
-        $maxRow = $this->db->fetch(
-            'SELECT MAX([sequence_number]) AS [max_seq]
-             FROM [docs_core_heads]
-             WHERE [number_series] = %i AND [fiscal_year] <=> %iN',
-            $seriesId, $fyId,
-        );
-        $maxSeq = (int) ($maxRow['max_seq'] ?? 0);
-
+        $counter = $this->sequenceCounter();
+        $maxSeq  = $counter->maxSequence($seriesId, $fyId);
         if ($maxSeq !== $sequence) {
             throw new \DomainException(
                 "Doklad #{$sequence} není poslední v řadě (poslední je #{$maxSeq}). "
@@ -1977,35 +1913,21 @@ abstract class DocDocument extends Document
 
         // Stejný kontrakt jako assignDocumentNumber: uvnitř externí transakce
         // žádný vlastní begin/commit.
-        $ownTx = !$this->externalTransaction;
-        if ($ownTx) {
-            $this->db->begin();
-        }
-        try {
-            $this->executeSql(
-                'UPDATE [docs_core_number_counters]
-                 SET [last_assigned] = [last_assigned] - 1
-                 WHERE [number_series] = %i AND [fiscal_year] <=> %iN AND [last_assigned] = %i',
-                $seriesId, $fyId, $sequence,
-            );
+        $counter->release($seriesId, $fyId, $sequence, !$this->externalTransaction);
 
-            $data['sequence_number'] = null;
-            $data['fiscal_year']     = null;
-            $data['doc_number']      = !empty($data['id'])
-                ? '!' . str_pad((string) $data['id'], 10, '0', STR_PAD_LEFT)
-                : '';
-            $data['supplier_snapshot'] = null;
-            $data['customer_snapshot'] = null;
+        $data['sequence_number'] = null;
+        $data['fiscal_year']     = null;
+        $data['doc_number']      = !empty($data['id'])
+            ? '!' . str_pad((string) $data['id'], 10, '0', STR_PAD_LEFT)
+            : '';
+        $data['supplier_snapshot'] = null;
+        $data['customer_snapshot'] = null;
+    }
 
-            if ($ownTx) {
-                $this->db->commit();
-            }
-        } catch (\Throwable $e) {
-            if ($ownTx) {
-                $this->db->rollback();
-            }
-            throw $e;
-        }
+    /** Rozsah čítače z hodnoty `fiscal_year` hlavičky: NULL / '' = průběžná řada (shodně s `%iN`). */
+    private static function counterScope(mixed $fiscalYear): ?int
+    {
+        return $fiscalYear === null || $fiscalYear === '' ? null : (int) $fiscalYear;
     }
 
     /**
@@ -2267,6 +2189,35 @@ abstract class DocDocument extends Document
     }
 
     // ── Lazy service factories ──────────────────────────────────────────────
+
+    /**
+     * Čítač čísel dokladů (#110 D17) nad `docs_core_number_counters`
+     * a `docs_core_heads`; zápisy vede přes executeSql (testovací šev).
+     * Levná konstrukce per volání — žádná cache, ať DB injektovaná později
+     * nezůstane za zastaralou instancí.
+     */
+    protected function sequenceCounter(): SequenceCounter
+    {
+        if ($this->db === null) {
+            throw new \LogicException('No DB connection available');
+        }
+        return new SequenceCounter(
+            $this->db,
+            new SequenceStorage(
+                countersTable: 'docs_core_number_counters',
+                counterSeriesColumn: 'number_series',
+                counterScopeColumn: 'fiscal_year',
+                counterValueColumn: 'last_assigned',
+                recordsTable: 'docs_core_heads',
+                recordSeriesColumn: 'number_series',
+                recordScopeColumn: 'fiscal_year',
+                recordSequenceColumn: 'sequence_number',
+            ),
+            function (mixed ...$args): void {
+                $this->executeSql(...$args);
+            },
+        );
+    }
 
     protected function vatRateResolver(): VatRateResolver
     {
