@@ -265,7 +265,7 @@ rozhodnutí mění dřívější, je to u obou vyznačené.
   *Fakturace* — vrátí se do „naplánováno“ a vystaví se hned.
 
 
-### D25–D26 — Import zakázek (2026-10-09)
+### D25–D27 — Import zakázek (2026-10-09)
 
 - **D25 — `689089`: roční část ze zakázek, měsíční ze smluv** (upřesňuje
   D9). Kontrola dat (§6.1) ukázala, že rozpracované zakázky pokrývají
@@ -276,8 +276,14 @@ rozhodnutí mění dřívější, je to u obou vyznačené.
   Drobné rozdíly roční části se doladí ručně ve zdrojovém DS.
 - **D26 — Celý reimport, zakázky před doklady.** Testuje se opakovaným
   plným importem, takže doplnění zakázky na už importované doklady se
-  neřeší (O6 odpadá): zakázky se importují **před** doklady a doklady
-  nesou zakázku rovnou v `dimensions.workOrder`.
+  neřeší: zakázky se importují **před** doklady a doklady nesou zakázku
+  rovnou v `dimensions.workOrder`.
+- **D27 — Ostatní zdroje: smlouva → zakázka** (uzavírá O6). Prodejní
+  smlouva se importuje jako periodická zakázka:
+  smlouva navázaná na zakázku (ve starých datech vždy 1:1) převezme svůj
+  předpis do ní, smlouva bez zakázky založí novou. Stejný postup jako
+  u měsíční části `689089` (D25); efektivní hodnoty smlouvy (druh vs.
+  smlouva) runner počítá jako starý generátor.
 ---
 
 ## 5. Doménový model (návrh)
@@ -512,7 +518,7 @@ v `economy.codebooks`; `docs/architecture.md` §8. Řady zakázek
 
 ## 6. Import (kontrakt pro `old_shipard`)
 
-Import je oblast importu ze starého Shipardu (D9, D25, D26). Nový Shipard
+Import je oblast importu ze starého Shipardu (D9, D25–D27). Nový Shipard
 pro něj připraví:
 
 - středisko a zakázku ve výměnném formátu dokladu (`dimensions`, §5.6) —
@@ -590,4 +596,4 @@ od*) je oblast importu a tenhle task ho nepokrývá.
 
 ## 8. Otevřené otázky
 
-- ~~O6~~ → D26 (celý reimport; zakázky před doklady).
+- ~~O6~~ → D27.
