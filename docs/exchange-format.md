@@ -372,6 +372,14 @@ Rekapitulace dodavatele je z jeho pohledu (0 %, daň 0); naše nese nárok na
 odpočet a oddaňovací pár. Explicitní `recapSource: "declared"` (import ze
 starého Shipardu, s páry) zůstává beze změny.
 
+**Vynechaný řádek (#111 D12):** když uživatel v náhledu řádek vynechá
+(`_resolve.rows[i].item.userAction: "skip"`, nebo řádková `userAction`),
+je rekapitulace vždy `computed` + info issue s důvodem „vynechaný řádek“
+— i při explicitním `recapSource: "declared"`. Rekapitulace dodavatele je
+za všechny řádky, doklad jich má míň; převzetím by součty dokladu zůstaly
+za celou fakturu a náhled by vynechání neukázal. Platí pro `/preview`
+i `/apply` stejně.
+
 **DPH kód rekapitulace:** ISDOC ho v rekapitulaci nenese (`TaxSubTotal` má
 jen sazbu a částky) a AI od promptu v4.6.0 také ne, takže ho applier
 dohledá z položkových řádků — mapa sazba → kód (kód, který na řádku
@@ -1098,6 +1106,10 @@ klient drží jeden payload mezi step preview a apply.
                      "pinned": false },   // efektivní položka (jen /preview,
                                           //   #111 D3): volba useExisting
                                           //   > napárování; pinned = z volby
+        "matchedDisplay": { "id": 18, "code": "SPOTR-TON",
+                            "name": "Tonery a náplně" },
+                                          // automatické napárování nezávisle
+                                          //   na volbě (jen /preview, #111 D10)
         "userAction": null                // "useExisting:<id>" platí i nad
                                           //   matched — přebije napárování
       },
@@ -1207,6 +1219,11 @@ do něj přidávají vlastní bloky bez změny schématu:
   matched`, `pinned: false`). U `noItem`, `skip`, nerozhodnutého
   nenapárovaného řádku a volby na neexistující položku klíč chybí.
   Review modal z něj kreslí druhý řádek buňky Položka.
+- `_resolve.rows[i].item.matchedDisplay` — automaticky napárovaná položka
+  `{id, code, name}` u každého bloku `status: matched`, nezávisle na volbě
+  uživatele (#111 D10), jen `/preview`. Po ruční volbě z ní panel kreslí
+  „Napárováno automaticky: …“ s názvem a zdrojem; `display` dál nese
+  efektivní položku. Smazaná položka klíč nemá (klient ukáže `#id`).
 - `_resolve.rows[i].effectiveAccount` — účet, podle kterého se řádek
   zaúčtuje, nebo návrh účtu řádku, `{id, number, name, source}` | `null`
   (#111 D7b), jen `/preview`, klíč na každém řádku. `skip` → `null`;
@@ -1237,8 +1254,12 @@ do něj přidávají vlastní bloky bez změny schématu:
   totalPrice}` položkových řádků podle **indexu canonicalu** (#97) — cena
   za jednotku a cena řádku po slevě, jak je spočítal doklad; u přijatého
   dokladu neplátce DPH včetně daně dodavatele. Náhled je zobrazuje místo
-  cen z canonicalu. Jen `/preview`: `transform()` s náhledovým plánem (kódy
-  DPH a jednotky z čerstvého resolve, bez založených entit a řady) →
+  cen z canonicalu. Řádky vynechané volbou `skip` (řádková i `rows[i].item`)
+  v `rows[]`, rekapitulaci ani součtech nejsou — plán náhledu nese
+  `rowSkips` stejně jako apply (#111 D9) a rekapitulace se přepočítá
+  z řádků s důvodem „vynechaný řádek“ (D12, § 8). Jen `/preview`:
+  `transform()` s náhledovým plánem (kódy DPH a jednotky z čerstvého
+  resolve, vynechané řádky, bez založených entit a řady) →
   `TableGateway::createDocument()` → `DocDocument::computeAmounts()`
   — stejný kód jako `beforeSave()` při apply, včetně přetížení podtříd
   (účetní doklad sčítá z řádků, `vatRecap` prázdné). Při výjimce `null`
@@ -1255,7 +1276,7 @@ do něj přidávají vlastní bloky bez změny schématu:
 | `null` | Default — applier použije resolved match. Pokud `status == "matched"`, OK; jinak chyba (`unresolved_required`). |
 | `"useExisting:<id>"` | Použít konkrétní existující záznam — kandidáta z `candidates`, výsledek hledání, nebo jinou položku než napárovanou: u `rows[i].item` platí i nad `status == "matched"` a automatické napárování přebije (#111 D4). |
 | `"create"` | Vytvořit novou entitu z payloadu (jen pro `canCreate`). |
-| `"skip"` | Vynechat řádek (jen `rows[i].item`; řádek se na doklad nezapíše). Pro hlavičkové reference je default `null`. |
+| `"skip"` | Vynechat řádek — `rows[i].item` („Vynechat řádek“ v review) nebo řádková `rows[i].userAction`; řádek se na doklad nezapíše a v `/preview` chybí v `_resolve.computed` (#111 D9). Pro hlavičkové reference je default `null`. |
 | `"noItem"` | Jen `rows[i].item`: řádek se pořídí bez položky, s účtem řádku (`tasks/content-tag-ui.md` D24); bez platného účtu `no_item_requires_account`. |
 | `"useCode:<kód>"` | Jen `rows[i].vatCode` (#87 task B): zvolený kód DPH řádku z `_resolve.vatCodeOptions`. |
 | `"useValue:<hodnota>"` | Jen `_resolve.vat.place` (`domestic` / `intracom` / `thirdCountry`) a `_resolve.vat.mode` (`fromBase` / `fromTotal` / `none`) (#87 task B). |

@@ -107,8 +107,13 @@ class DocumentApplierItemPinTest extends TestCase
      *
      * @return array<string, mixed>
      */
-    private function payload(?string $rowAccount, ?string $suggestedAccount, ?string $itemAction, int $rowCount = 1): array
-    {
+    private function payload(
+        ?string $rowAccount,
+        ?string $suggestedAccount,
+        ?string $itemAction,
+        int $rowCount = 1,
+        ?string $rowAction = null,
+    ): array {
         $payload = json_decode(
             (string) file_get_contents(__DIR__ . '/../../../../../Fixtures/Exchange/invoiceReceived_happy.json'),
             true,
@@ -134,6 +139,9 @@ class DocumentApplierItemPinTest extends TestCase
         }
         if ($itemAction !== null) {
             $resolveRow['item'] = ['userAction' => $itemAction];
+        }
+        if ($rowAction !== null) {
+            $resolveRow['userAction'] = $rowAction;
         }
         $payload['_resolve'] = ['rows' => [0 => $resolveRow]];
         return $payload;
@@ -232,6 +240,20 @@ class DocumentApplierItemPinTest extends TestCase
         $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), null);
 
         $result = $applier->apply($this->payload(null, null, 'skip', rowCount: 2));
+
+        $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
+        $rows = $this->savedHeadsData['rows'] ?? [];
+        $this->assertCount(1, $rows, 'vynechaný řádek 0 na dokladu není');
+        $this->assertSame(1, $rows[0]['order_pos']);
+        $this->assertSame(18, $rows[0]['item']);
+    }
+
+    /** Řádková volba `rows[i].userAction = skip` vynechává stejně jako položková ({@see DocumentApplier::skippedRowIndices}). */
+    public function testRowLevelSkipLeavesRowOutOfDocument(): void
+    {
+        $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), null);
+
+        $result = $applier->apply($this->payload(null, null, null, rowCount: 2, rowAction: 'skip'));
 
         $this->assertTrue($result->success, "errorCode={$result->errorCode} msg={$result->errorMessage}");
         $rows = $this->savedHeadsData['rows'] ?? [];

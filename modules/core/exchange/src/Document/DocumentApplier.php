@@ -344,19 +344,25 @@ class DocumentApplier
         }
 
         // 2. Semantic checks + resolve. Both contribute to _resolve.issues.
+        //    Vynechané řádky (#111 D9, D12) z klientského _resolve jednou pro
+        //    všechny kroky: důvod přepočtu rekapitulace, náhledový plán,
+        //    bloky řádků.
+        $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
+        $rowSkips = $this->skippedRowIndices($canonical, $clientResolve);
         $issues = $this->documentValidator->validate($canonical);
         $this->appendAuthorIssue($canonical, $issues);
         $this->appendVatModeIssue($canonical, $issues);
         $this->appendVatHeaderIssues($canonical, $issues);
-        $this->appendRecapSourceIssue($canonical, $issues);
+        $this->appendRecapSourceIssue($canonical, $issues, $rowSkips);
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $issues));
         // 2b. Efektivní položka a účet řádku pro review modal (#111 D3, D7b)
         //     — čte uložené volby z klientského _resolve, ale nerozhoduje
         //     (reconcile se v náhledu nevolá).
-        $resolved = $this->annotateRowDisplay($canonical, $resolved);
+        $resolved = $this->annotateRowDisplay($canonical, $resolved, $rowSkips);
         // 3. Rekapitulace a součty, jak skončí na dokladu — stejným kódem
-        //    jako uložení (tasks/exchange-preview-vat-recompute.md D2–D4, D6).
-        $resolved['computed'] = $this->computePreviewAmounts($canonical, $resolved, $issues);
+        //    jako uložení (tasks/exchange-preview-vat-recompute.md D2–D4, D6);
+        //    vynechané řádky v nich nejsou (#111 D9).
+        $resolved['computed'] = $this->computePreviewAmounts($canonical, $resolved, $issues, $rowSkips);
         $enriched = $this->withResolve($canonical, $resolved, $issues);
 
         // preview always succeeds even with errors — client renders the
@@ -391,13 +397,20 @@ class DocumentApplier
      * dokladu neplátce DPH jsou to ceny včetně daně dodavatele; bez nich by
      * náhled ukazoval řádky bez daně a součty s daní.
      *
+     * Vynechané řádky (#111 D9): náhledový plán nese `rowSkips` stejně jako
+     * apply, takže vynechaný řádek chybí v `rows`, rekapitulaci i součtech
+     * a rozdíl proti dokladu dodavatele hlásí `computed_total_mismatch`.
+     * Rekapitulace se při vynechání přepočítá z řádků (D12,
+     * {@see resolveRecapSource()}).
+     *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
      * @return array{recapSource: string, recapFallback: ?string, vatRecap: list<array<string, mixed>>, totals: array<string, float>, rows: list<array{index: int, unitPrice: ?float, totalPrice: ?float}>}|null
      *         Blok `_resolve.computed` (D3) v měně dokladu; domácí měna se nevrací.
      */
-    private function computePreviewAmounts(array $canonical, array $resolved, array &$issues): ?array
+    private function computePreviewAmounts(array $canonical, array $resolved, array &$issues, array $rowSkips): ?array
     {
         $unavailable = static function (array &$issues): void {
             $issues[] = [
@@ -408,7 +421,7 @@ class DocumentApplier
                     . ' — náhled ukazuje údaje přečtené z dokladu, ne výsledek výpočtu.',
             ];
         };
-        $plan = $this->previewPlan($resolved);
+        $plan = $this->previewPlan($resolved, $rowSkips);
         try {
             $data = $this->transform($canonical, $plan, self::NO_SIDE_IDS, null);
             $doc = $this->headsGateway->createDocument($data);
@@ -425,7 +438,7 @@ class DocumentApplier
             return null;
         }
 
-        $recapSource = $this->resolveRecapSource($canonical);
+        $recapSource = $this->resolveRecapSource($canonical, $rowSkips);
         $rowIndices = $this->transformedRowIndices(
             is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [],
             $plan,
@@ -492,18 +505,20 @@ class DocumentApplier
     }
 
     /**
-     * Plán pro náhled (D2): tvar {@see reconcile}, ale bez klientských
-     * rozhodnutí a bez založených entit — strany, položky a účty `null`,
-     * jen kódy DPH a jednotky z čerstvého resolve. `reconcile()` se
-     * **nevolá**: u nespárované strany či položky by nastavil
-     * `unresolved_required` a přidal error issue, které náhled nehlásí.
-     * Číselná řada je parametr `transform()` (null), `rowOperationDefaults`
-     * chybí (pohyb řádku výpočet částek neovlivní).
+     * Plán pro náhled (D2): tvar {@see reconcile}, ale z klientských
+     * rozhodnutí jen vynechané řádky (`rowSkips`, #111 D9) a bez založených
+     * entit — strany, položky a účty `null`, jen kódy DPH a jednotky
+     * z čerstvého resolve. `reconcile()` se **nevolá**: u nespárované
+     * strany či položky by nastavil `unresolved_required` a přidal error
+     * issue, které náhled nehlásí. Číselná řada je parametr `transform()`
+     * (null), `rowOperationDefaults` chybí (pohyb řádku výpočet částek
+     * neovlivní).
      *
      * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
+     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
      * @return array<string, mixed>
      */
-    private function previewPlan(array $resolved): array
+    private function previewPlan(array $resolved, array $rowSkips): array
     {
         $plan = [
             'errorCode'            => null,
@@ -511,7 +526,7 @@ class DocumentApplier
             'partyCreates'         => [],
             'bankCreate'           => null,
             'rowItemCreates'       => [],
-            'rowSkips'             => [],
+            'rowSkips'             => $rowSkips,
             'rowNoItems'           => [],
             'rowItemPins'          => [],
             'resolvedSupplier'     => null,
@@ -567,18 +582,21 @@ class DocumentApplier
                 statusCode: 400,
             );
         }
+        $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
+        // Vynechané řádky (#111 D9, D12) — tentýž seznam pro důvod přepočtu
+        // rekapitulace i pro plán.
+        $rowSkips = $this->skippedRowIndices($canonical, $clientResolve);
         $validatorIssues = $this->documentValidator->validate($canonical);
         $this->appendAuthorIssue($canonical, $validatorIssues);
         $this->appendVatModeIssue($canonical, $validatorIssues);
         $this->appendVatHeaderIssues($canonical, $validatorIssues);
-        $this->appendRecapSourceIssue($canonical, $validatorIssues);
+        $this->appendRecapSourceIssue($canonical, $validatorIssues, $rowSkips);
 
         // 3. Re-run resolve (fresh DB read; client's _resolve might be stale).
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $validatorIssues));
 
         // 4. Reconcile with client _resolve.*.userAction.
-        $clientResolve = is_array($canonical['_resolve'] ?? null) ? $canonical['_resolve'] : [];
-        $plan = $this->reconcile($resolved, $clientResolve, $validatorIssues);
+        $plan = $this->reconcile($resolved, $clientResolve, $validatorIssues, $rowSkips);
 
         $enriched = $this->withResolve($canonical, $resolved, $validatorIssues);
 
@@ -824,7 +842,7 @@ class DocumentApplier
                 'index'   => $idx,
                 'rowText' => CanonicalRowText::compose(is_array($row) ? $row : []),
             ];
-            if (is_array($row['item'] ?? null) && $row['item'] !== []) {
+            if (self::rowHasItem($row)) {
                 $rowResolve['item'] = $this->itemResolver->resolve($row['item'], $supplierPersonId)->toArray();
             }
 
@@ -907,12 +925,61 @@ class DocumentApplier
         return $resolved;
     }
 
+    // ── Vynechané řádky (#111 D9, D12) ──────────────────────────────────────
+
+    /**
+     * Řádek canonicalu nese blok položky — tatáž podmínka, podle které
+     * {@see resolveAll()} vyrábí `_resolve.rows[i].item`; podle ní
+     * {@see skippedRowIndices()} uznává položkovou volbu `skip`.
+     */
+    private static function rowHasItem(mixed $row): bool
+    {
+        return is_array($row) && is_array($row['item'] ?? null) && $row['item'] !== [];
+    }
+
+    /**
+     * Indexy řádků canonicalu vynechaných volbou uživatele v klientském
+     * `_resolve` (#111 D9): řádková `rows[i].userAction = skip`, nebo
+     * položková `rows[i].item.userAction = skip` u řádku s blokem položky
+     * („Vynechat řádek“ z review modalu). Jediný zdroj pro {@see reconcile()}
+     * (`rowSkips` plánu), {@see previewPlan()}, {@see resolveRecapSource()}
+     * (D12) i {@see annotateRowDisplay()} — náhled a apply vynechávají
+     * stejně. Pozice v `_resolve.rows` = index canonicalu ({@see resolveAll()}
+     * vyrábí záznam pro každý řádek). Jede nad canonicalem, protože ho
+     * {@see appendRecapSourceIssue()} potřebuje před resolve.
+     *
+     * @param array<string, mixed> $canonical
+     * @param array<string, mixed> $clientResolve Klientské `_resolve`.
+     * @return list<int>
+     */
+    private function skippedRowIndices(array $canonical, array $clientResolve): array
+    {
+        $rows = is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [];
+        $clientRows = is_array($clientResolve['rows'] ?? null) ? $clientResolve['rows'] : [];
+        $out = [];
+        foreach ($rows as $i => $row) {
+            $clientRow = is_array($clientRows[$i] ?? null) ? $clientRows[$i] : [];
+            if (($clientRow['userAction'] ?? null) === 'skip') {
+                $out[] = (int) $i;
+                continue;
+            }
+            if (self::rowHasItem($row)
+                && is_array($clientRow['item'] ?? null)
+                && ($clientRow['item']['userAction'] ?? null) === 'skip'
+            ) {
+                $out[] = (int) $i;
+            }
+        }
+        return $out;
+    }
+
     // ── Reconcile: validate userAction → execution plan ─────────────────────
 
     /**
      * @param array<string, mixed> $resolved        Fresh resolve output.
      * @param array<string, mixed> $clientResolve   Client's _resolve with userAction set.
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}, #111 D9).
      * @return array{
      *   errorCode: ?string, errorMessage: ?string,
      *   partyCreates: array<string, array<string, mixed>>,
@@ -928,7 +995,7 @@ class DocumentApplier
      *   resolvedRowVatCodes: array<int, array<string, mixed>|null>
      * }
      */
-    private function reconcile(array $resolved, array $clientResolve, array &$issues): array
+    private function reconcile(array $resolved, array $clientResolve, array &$issues, array $rowSkips): array
     {
         $plan = [
             'errorCode'           => null,
@@ -936,7 +1003,7 @@ class DocumentApplier
             'partyCreates'        => [],
             'bankCreate'          => null,
             'rowItemCreates'      => [],
-            'rowSkips'            => [],
+            'rowSkips'            => $rowSkips,
             'rowNoItems'          => [],
             // Řádky s výslovnou volbou položky useExisting:<id> (#111 D7b, D8):
             // účet navržený historií / štítkem se nezapíše, mapování kódu
@@ -1001,25 +1068,18 @@ class DocumentApplier
             }
         }
         foreach ($resolved['rows'] ?? [] as $i => $rowResolve) {
-            $clientRow = $clientRows[$i] ?? null;
-            $rowUserAction = is_array($clientRow) ? ($clientRow['userAction'] ?? null) : null;
-            if ($rowUserAction === 'skip') {
-                $plan['rowSkips'][] = $i;
+            if (in_array($i, $rowSkips, true)) {
+                // Vynechaný řádek — řádková volba i „Vynechat řádek" z review
+                // modalu (rows[i].item = skip), {@see skippedRowIndices}:
+                // na doklad se nezapíše, resolveOne se nevolá.
                 continue;
             }
+            $clientRow = $clientRows[$i] ?? null;
 
             $itemFresh = $rowResolve['item'] ?? null;
             if ($itemFresh !== null) {
                 $itemClient = is_array($clientRow['item'] ?? null) ? $clientRow['item'] : null;
                 $itemAction = $itemClient['userAction'] ?? null;
-                if ($itemAction === 'skip') {
-                    // „Vynechat řádek" z review modalu přichází jako volba
-                    // položky (rows[i].item = skip), ne řádku — řádek se na
-                    // doklad nezapíše (#111; dřív prošel resolveOne a zůstal
-                    // na dokladu bez položky).
-                    $plan['rowSkips'][] = $i;
-                    continue;
-                }
                 if ($itemAction === 'noItem') {
                     // „Jen účet — bez položky" (D24): řádek se pořídí bez item
                     // FK. resolveOne se nevolá — pin přebíjí fresh status i
@@ -1473,7 +1533,7 @@ class DocumentApplier
         // do payloadu nedává — prázdný child set by u nového dokladu nic
         // nezměnil, ale u převzaté je to jediná cesta, jak se data dostanou
         // do docs_core_vat_recap.
-        $recapSource = $this->resolveRecapSource($canonical);
+        $recapSource = $this->resolveRecapSource($canonical, $plan['rowSkips'] ?? []);
         $calcSource = self::VAT_CALC_SOURCE_MAP[(string) ($canonical['vat']['calcSource'] ?? 'header')] ?? 0;
         $csMode = self::CS_MODE_MAP[(string) ($canonical['vat']['controlStatementMode'] ?? 'auto')] ?? 0;
         // Pokladní doklad bez způsobu úhrady = Hotovost (ostatní Převodem).
@@ -2619,10 +2679,16 @@ class DocumentApplier
      * odmítl `DomainException` a apply by skončil 500 — místo toho se
      * rekapitulace přepočítá z řádků a uživatel dostane info issue s důvodem.
      *
+     * Vynechaný řádek (#111 D12): rekapitulace dodavatele je za všechny
+     * řádky, doklad jich má míň — přepočet i při explicitním `declared`,
+     * důvod „vynechaný řádek“. Jinak by součty dokladu zůstaly za celou
+     * fakturu a náhled by vynechání neukázal.
+     *
      * @param array<string, mixed> $canonical
+     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
      * @return array{source: int, recap: array<int, array<string, mixed>>, fallback: ?string}
      */
-    private function resolveRecapSource(array $canonical): array
+    private function resolveRecapSource(array $canonical, array $rowSkips = []): array
     {
         $computed = ['source' => 0, 'recap' => [], 'fallback' => null];
         if ($this->vatContext($canonical)['nonPayer']) {
@@ -2645,6 +2711,12 @@ class DocumentApplier
         // přijímáme — u vystaveného ji počítáme sami.
         if (!$explicit && (string) ($canonical['selfParty'] ?? '') !== 'customer') {
             return $computed;
+        }
+        // D12 (#111): vynechaný řádek — až tady, kde by se jinak převzala,
+        // aby důvod odpovídal skutečnosti (prázdná rekapitulace a vystavený
+        // doklad mají svoje).
+        if ($rowSkips !== []) {
+            return ['source' => 0, 'recap' => [], 'fallback' => 'vynechaný řádek'];
         }
 
         $vatCtx = $this->vatContext($canonical);
@@ -2795,10 +2867,11 @@ class DocumentApplier
      *
      * @param array<string, mixed> $canonical
      * @param array<int, array{severity: string, path: string, code: string, message: string}> $issues
+     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}, D12).
      */
-    private function appendRecapSourceIssue(array $canonical, array &$issues): void
+    private function appendRecapSourceIssue(array $canonical, array &$issues, array $rowSkips = []): void
     {
-        $resolved = $this->resolveRecapSource($canonical);
+        $resolved = $this->resolveRecapSource($canonical, $rowSkips);
         if ($resolved['fallback'] === null) {
             return;
         }
@@ -3982,17 +4055,23 @@ class DocumentApplier
      *    `canCreate`, `ambiguous`, `notFound`, pin na neexistující id) →
      *    účet řádku jako návrh (`source: "row"`).
      *
+     *  - `item.matchedDisplay` = `{id, code, name}` automaticky napárované
+     *    položky u každého bloku `status: matched`, nezávisle na volbě
+     *    (#111 D10) — panel „Napárováno automaticky“ i po ruční volbě.
+     *    Smazaná položka klíč nemá (klient ukáže `#id`).
+     *
      * Volby se čtou stejně jako v {@see reconcile()} — pozičně z
-     * `_resolve.rows[$pos].item.userAction` (řádková `userAction: skip`
-     * platí také). Dva dotazy nezávisle na počtu řádků: položky (s LEFT
-     * JOIN na účty, jen když sloupec `accounting_account` existuje) a účty
-     * řádků (název).
+     * `_resolve.rows[$pos].item.userAction`; vynechané řádky dává
+     * `$rowSkips` ({@see skippedRowIndices}). Dva dotazy nezávisle na počtu
+     * řádků: položky (efektivní i napárované, s LEFT JOIN na účty, jen když
+     * sloupec `accounting_account` existuje) a účty řádků (název).
      *
      * @param array<string, mixed> $canonical Vstup s klientským `_resolve`.
      * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
+     * @param list<int> $rowSkips Vynechané řádky ({@see skippedRowIndices}).
      * @return array<string, mixed>
      */
-    private function annotateRowDisplay(array $canonical, array $resolved): array
+    private function annotateRowDisplay(array $canonical, array $resolved, array $rowSkips): array
     {
         $rows = is_array($resolved['rows'] ?? null) ? $resolved['rows'] : [];
         if ($rows === []) {
@@ -4001,9 +4080,10 @@ class DocumentApplier
         $canonicalRows = is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [];
         $clientRows = is_array($canonical['_resolve']['rows'] ?? null) ? $canonical['_resolve']['rows'] : [];
 
-        // 1. Per řádek: volba, efektivní položka, id účtu řádku.
+        // 1. Per řádek: volba, efektivní a napárovaná položka, id účtu řádku.
         $decisions = [];
         $effectiveItems = [];
+        $matchedItems = [];
         $itemIds = [];
         $accountIds = [];
         foreach ($rows as $pos => $rowResolve) {
@@ -4014,7 +4094,14 @@ class DocumentApplier
             $itemAction = is_array($clientRow['item'] ?? null) ? ($clientRow['item']['userAction'] ?? null) : null;
             $decision = null;
             $itemId = null;
-            if (($clientRow['userAction'] ?? null) === 'skip') {
+            // Automatické napárování nezávisle na volbě (D10).
+            $matchedId = null;
+            if (($rowResolve['item']['status'] ?? null) === 'matched') {
+                $candidate = $rowResolve['item']['matchedId'] ?? null;
+                $matchedId = is_int($candidate) && $candidate > 0 ? $candidate : null;
+            }
+            if (in_array($pos, $rowSkips, true)) {
+                // Řádková i položková volba skip ({@see skippedRowIndices}).
                 $decision = 'skip';
             } elseif (!isset($rowResolve['item'])) {
                 // Řádek bez bloku položky (text, kontace) — volby položky
@@ -4025,17 +4112,20 @@ class DocumentApplier
                     $decision = 'useExisting';
                     $itemId = (int) $idStr;
                 }
-            } elseif ($itemAction === 'noItem' || $itemAction === 'skip') {
-                $decision = $itemAction;
+            } elseif ($itemAction === 'noItem') {
+                $decision = 'noItem';
             }
-            if ($decision === null && ($rowResolve['item']['status'] ?? null) === 'matched') {
-                $matchedId = $rowResolve['item']['matchedId'] ?? null;
-                $itemId = is_int($matchedId) && $matchedId > 0 ? $matchedId : null;
+            if ($decision === null) {
+                $itemId = $matchedId;
             }
             $decisions[$pos] = $decision;
             $effectiveItems[$pos] = $itemId;
+            $matchedItems[$pos] = $matchedId;
             if ($itemId !== null) {
                 $itemIds[] = $itemId;
+            }
+            if ($matchedId !== null) {
+                $itemIds[] = $matchedId;
             }
             if (($rowResolve['account']['status'] ?? null) === 'matched' && isset($rowResolve['account']['matchedId'])) {
                 $accountIds[] = (int) $rowResolve['account']['matchedId'];
@@ -4058,6 +4148,14 @@ class DocumentApplier
                     'code'   => $item['code'],
                     'name'   => $item['name'],
                     'pinned' => $decision === 'useExisting',
+                ];
+            }
+            $matched = ($matchedItems[$pos] ?? null) !== null ? ($items[$matchedItems[$pos]] ?? null) : null;
+            if ($matched !== null) {
+                $resolved['rows'][$pos]['item']['matchedDisplay'] = [
+                    'id'   => $matched['id'],
+                    'code' => $matched['code'],
+                    'name' => $matched['name'],
                 ];
             }
 

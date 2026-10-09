@@ -29,7 +29,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  * Náhled: efektivní položka a účet řádku v `_resolve.rows[*]`
  * (tasks/exchange-preview-matched-item.md, #111 D3, D7b):
  * `item.display` {id, code, name, pinned} a `effectiveAccount`
- * {id, number, name, source} | null.
+ * {id, number, name, source} | null; `item.matchedDisplay` {id, code, name}
+ * = automatické napárování nezávisle na volbě (D10).
  */
 class DocumentApplierRowDisplayTest extends TestCase
 {
@@ -197,6 +198,68 @@ class DocumentApplierRowDisplayTest extends TestCase
         $this->assertSame('item', $row['effectiveAccount']['source']);
         // Fresh status zůstává matched na původní položku.
         $this->assertSame(18, $row['item']['matchedId']);
+        // D10: automatické napárování s názvem pro panel „Napárováno automaticky“.
+        $this->assertSame(
+            ['id' => 18, 'code' => 'SPOTR-TON', 'name' => 'Tonery a náplně'],
+            $row['item']['matchedDisplay'],
+        );
+    }
+
+    public function testMatchedRowCarriesMatchedDisplayWithoutPinned(): void
+    {
+        $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), null);
+
+        $row = $this->previewRow($applier, $this->payload());
+
+        $this->assertSame(
+            ['id' => 18, 'code' => 'SPOTR-TON', 'name' => 'Tonery a náplně'],
+            $row['item']['matchedDisplay'],
+        );
+        $this->assertSame(18, $row['item']['display']['id']);
+    }
+
+    public function testNoItemAndSkipKeepMatchedDisplayWithoutDisplay(): void
+    {
+        foreach (['noItem', 'skip'] as $action) {
+            $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
+
+            $row = $this->previewRow($applier, $this->payload('503100', $action));
+
+            $this->assertArrayNotHasKey('display', $row['item'], $action);
+            $this->assertSame(18, $row['item']['matchedDisplay']['id'], $action);
+        }
+    }
+
+    public function testRowLevelSkipHasNeitherDisplayNorAccount(): void
+    {
+        $applier = $this->buildApplier(ResolveResult::matched(18, 'ourCode'), 55);
+        $payload = $this->payload('503100');
+        $payload['_resolve'] = ['rows' => [0 => ['userAction' => 'skip']]];
+
+        $row = $this->previewRow($applier, $payload);
+
+        $this->assertArrayNotHasKey('display', $row['item']);
+        $this->assertNull($row['effectiveAccount']);
+        $this->assertSame(18, $row['item']['matchedDisplay']['id']);
+    }
+
+    public function testUnmatchedRowHasNoMatchedDisplay(): void
+    {
+        $applier = $this->buildApplier(ResolveResult::canCreate(['name' => 'Konzultace']), null);
+
+        $row = $this->previewRow($applier, $this->payload());
+
+        $this->assertArrayNotHasKey('matchedDisplay', $row['item']);
+    }
+
+    public function testDeletedMatchedItemHasNoMatchedDisplay(): void
+    {
+        $applier = $this->buildApplier(ResolveResult::matched(99, 'ourCode'), null);
+
+        $row = $this->previewRow($applier, $this->payload());
+
+        $this->assertArrayNotHasKey('matchedDisplay', $row['item'], 'klient ukáže #99');
+        $this->assertArrayNotHasKey('display', $row['item']);
     }
 
     public function testServiceItemWithoutAccountHidesRowAccountFromHistory(): void
@@ -263,6 +326,7 @@ class DocumentApplierRowDisplayTest extends TestCase
 
         $this->assertArrayNotHasKey('display', $row['item']);
         $this->assertSame('row', $row['effectiveAccount']['source']);
+        $this->assertSame(18, $row['item']['matchedDisplay']['id']);
     }
 
     public function testQueryCountDoesNotDependOnRowCount(): void

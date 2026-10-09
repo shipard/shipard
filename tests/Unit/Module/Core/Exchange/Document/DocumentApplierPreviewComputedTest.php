@@ -589,4 +589,172 @@ class DocumentApplierPreviewComputedTest extends TestCase
         $this->assertSame(12500.00, (float) $saved['rows'][0]['vat_base']);
         $this->assertSame(0.0, (float) $saved['rows'][0]['vat_amount']);
     }
+
+    // ── Vynechaný řádek v náhledu (#111 D9, D12) ────────────────────────────
+
+    /**
+     * Tři řádky 1 × 100, 1 × 200, 1 × 300 (21 %), rekapitulace a součty
+     * dodavatele za všechny tři (726). `$recap` false = bez rekapitulace,
+     * počítá se z řádků.
+     *
+     * @return array<string, mixed>
+     */
+    private function threeRowsPayload(bool $recap = true): array
+    {
+        $payload = $this->happyPayload();
+        $row = $payload['rows'][0];
+        $payload['rows'] = [];
+        foreach ([100.0, 200.0, 300.0] as $i => $price) {
+            $r = $row;
+            $r['orderPos'] = $i + 1;
+            $r['item']['supplierCode'] = 'KONZ-00' . ($i + 1);
+            $r['quantity'] = 1;
+            $r['unitPrice'] = $price;
+            $r['totalPrice'] = $price;
+            $r['computed'] = [
+                'vatBase'   => $price,
+                'vatAmount' => round($price * 0.21, 2),
+                'vatTotal'  => round($price * 1.21, 2),
+            ];
+            $payload['rows'][] = $r;
+        }
+        $payload['vatRecap'] = [
+            ['vatCode' => 'cz-110', 'vatPct' => 21, 'base' => 600.0, 'tax' => 126.0, 'total' => 726.0],
+        ];
+        $payload['totals'] = ['totalBase' => 600.0, 'totalVat' => 126.0, 'totalAmount' => 726.0, 'totalRounding' => 0.0];
+        if (!$recap) {
+            unset($payload['vatRecap']);
+        }
+        return $payload;
+    }
+
+    /**
+     * Klientské `_resolve` s vynechaným řádkem `$index` — položková volba
+     * („Vynechat řádek“ z review modalu) nebo řádková.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private function withSkip(array $payload, int $index, bool $itemLevel): array
+    {
+        $rows = [];
+        foreach (array_keys($payload['rows']) as $i) {
+            $entry = ['index' => $i];
+            if ($i === $index) {
+                if ($itemLevel) {
+                    $entry['item'] = ['userAction' => 'skip'];
+                } else {
+                    $entry['userAction'] = 'skip';
+                }
+            }
+            $rows[] = $entry;
+        }
+        $payload['_resolve'] = ['rows' => $rows];
+        return $payload;
+    }
+
+    /** Vynechaný prostřední řádek chybí v cenách, rekapitulaci i součtech; řádek za ním drží svůj index. */
+    public function testSkippedRowIsLeftOutOfComputedRowsRecapAndTotals(): void
+    {
+        foreach (['položková volba' => true, 'řádková volba' => false] as $label => $itemLevel) {
+            $payload = $this->withSkip($this->threeRowsPayload(recap: false), 1, $itemLevel);
+
+            $result = $this->buildApplier()->preview($payload);
+
+            $this->assertTrue($result->success, $label);
+            $computed = $result->canonical['_resolve']['computed'];
+            $this->assertSame(
+                [
+                    ['index' => 0, 'unitPrice' => 100.0, 'totalPrice' => 100.0],
+                    ['index' => 2, 'unitPrice' => 300.0, 'totalPrice' => 300.0],
+                ],
+                $computed['rows'],
+                $label,
+            );
+            $this->assertSame('computed', $computed['recapSource'], $label);
+            $this->assertCount(1, $computed['vatRecap'], $label);
+            $this->assertSame(400.0, $computed['vatRecap'][0]['base'], $label);
+            $this->assertSame(84.0, $computed['vatRecap'][0]['tax'], $label);
+            $this->assertSame(
+                ['totalBase' => 400.0, 'totalVat' => 84.0, 'totalAmount' => 484.0, 'totalRounding' => 0.0],
+                $computed['totals'],
+                $label,
+            );
+            // Faktura je za tři řádky — rozdíl hlásí existující upozornění (D9).
+            $issue = $this->issue($result->canonical, 'computed_total_mismatch');
+            $this->assertNotNull($issue, $label);
+            $this->assertSame(726.0, $issue['declared'], $label);
+            $this->assertSame(484.0, $issue['computed'], $label);
+        }
+    }
+
+    public function testWithoutSkipThreeRowsStayComplete(): void
+    {
+        $result = $this->buildApplier()->preview($this->threeRowsPayload(recap: false));
+
+        $computed = $result->canonical['_resolve']['computed'];
+        $this->assertSame([0, 1, 2], array_column($computed['rows'], 'index'));
+        $this->assertSame(726.0, $computed['totals']['totalAmount']);
+        $this->assertNotContains('computed_total_mismatch', $this->issueCodes($result->canonical));
+    }
+
+    /** Náhled = apply se stejným `_resolve`, s převzatou rekapitulací i bez ní. */
+    public function testSkippedRowPreviewMatchesWhatApplySaves(): void
+    {
+        foreach (['převzatá' => true, 'bez rekapitulace' => false] as $label => $recap) {
+            $payload = $this->withSkip($this->threeRowsPayload($recap), 1, itemLevel: true);
+            $applier = $this->buildApplier();
+            $computed = $applier->preview($payload)->canonical['_resolve']['computed'];
+
+            $applied = $applier->apply($payload);
+
+            $this->assertTrue($applied->success, "{$label}: {$applied->errorCode} {$applied->errorMessage}");
+            $saved = $this->savedHeadsData;
+            $this->assertIsArray($saved, $label);
+            $this->assertSame(
+                [100.0, 300.0],
+                array_map(static fn (array $r): float => (float) $r['total_price'], array_values($saved['rows'])),
+                $label,
+            );
+            $this->assertSame($computed['totals']['totalBase'], (float) $saved['total_base'], $label);
+            $this->assertSame($computed['totals']['totalAmount'], (float) $saved['total_amount'], $label);
+            $this->assertSame(484.0, (float) $saved['total_amount'], $label);
+            $this->assertSame(0, (int) $saved['vat_recap_source'], "{$label}: rekapitulace přepočítaná");
+        }
+    }
+
+    /** D12: převzatá rekapitulace by součty držela za celou fakturu — vynechání ji přepočítá. */
+    public function testSkippedRowForcesRecapRecomputeEvenWhenDeclared(): void
+    {
+        $payload = $this->threeRowsPayload();
+        $full = $this->buildApplier()->preview($payload);
+        $this->assertSame('declared', $full->canonical['_resolve']['computed']['recapSource']);
+        $this->assertNotContains('recap_source_computed_fallback', $this->issueCodes($full->canonical));
+
+        $result = $this->buildApplier()->preview($this->withSkip($payload, 1, itemLevel: true));
+
+        $computed = $result->canonical['_resolve']['computed'];
+        $this->assertSame('computed', $computed['recapSource']);
+        $this->assertSame('vynechaný řádek', $computed['recapFallback']);
+        $this->assertSame(400.0, $computed['vatRecap'][0]['base']);
+        $this->assertSame(484.0, $computed['totals']['totalAmount']);
+        $issue = $this->issue($result->canonical, 'recap_source_computed_fallback');
+        $this->assertNotNull($issue);
+        $this->assertStringContainsString('vynechaný řádek', $issue['message']);
+        $this->assertContains('computed_total_mismatch', $this->issueCodes($result->canonical));
+    }
+
+    /** D12 platí i pro explicitní `recapSource: declared`. */
+    public function testExplicitDeclaredRecapIsRecomputedOnSkipToo(): void
+    {
+        $payload = $this->threeRowsPayload();
+        $payload['vat']['recapSource'] = 'declared';
+
+        $result = $this->buildApplier()->preview($this->withSkip($payload, 1, itemLevel: false));
+
+        $computed = $result->canonical['_resolve']['computed'];
+        $this->assertSame('computed', $computed['recapSource']);
+        $this->assertSame('vynechaný řádek', $computed['recapFallback']);
+        $this->assertSame(484.0, $computed['totals']['totalAmount']);
+    }
 }
