@@ -80,3 +80,15 @@ test('hasSecondLine: rozhodnutí nebo efektivní položka', () => {
   assert.equal(hasSecondLine(null, null), false);
   assert.equal(hasSecondLine(null, undefined), false);
 });
+
+test('matchSourceKey: matchedDisplay bez pinned (panel po ruční volbě) → zdroj automatického napárování, ne user', () => {
+  // Po ruční volbě nese display zvolenou položku (pinned); panel čte
+  // automatické napárování z matchedDisplay (#111 D10).
+  const block = { matchedBy: 'ourCode', display: { code: 'OTHER', pinned: true } };
+  const matched = { id: 18, code: 'NET500', name: 'Sitovy kabel' };
+  const e = { matchedBy: 'historyExactRaw', suggested: { ourCode: 'NET500' } };
+  assert.equal(matchSourceKey(block, e, matched), 'historyExact');
+  assert.equal(matchSourceKey({ matchedBy: 'supplierCode' }, null, matched), 'supplierCode');
+  // Smazaná položka: matchedDisplay chybí — zdroj z matchedBy, bez pádu.
+  assert.equal(matchSourceKey(block, e, null), 'ourCode');
+});

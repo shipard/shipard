@@ -338,19 +338,19 @@
   }
 
   // „Napárováno automaticky: …“ v panelu (D5) — jen nad matched blokem.
-  // Po volbě nese display zvolenou položku; automatické napárování pak jen #id.
+  // Název i zdroj z `item.matchedDisplay` (automatické napárování nezávisle
+  // na volbě, #111 D10); bez něj (smazaná položka) jen #id.
   function automaticMatchLabel(path) {
     const i = rowIndexOfPath(path);
     if (i === null) return null;
     const rowResolve = resolve?.rows?.[i] ?? null;
     const block = rowResolve?.item ?? null;
     if (block?.status !== 'matched') return null;
-    const display = block.display && !block.display.pinned ? block.display : null;
-    const label = display ? displayLabel(display) : `#${block.matchedId}`;
-    const sourceKey = matchSourceKey(block, rowResolve?.enrichment ?? null, display, false);
+    const matched = block.matchedDisplay ?? null;
+    const enrichment = rowResolve?.enrichment ?? null;
     return t('exchange.preview.match.automatic', {
-      label,
-      source: matchSourceText(sourceKey === 'user' ? 'ourCode' : sourceKey, rowResolve?.enrichment ?? null),
+      label: matched ? displayLabel(matched) : `#${block.matchedId}`,
+      source: matchSourceText(matchSourceKey(block, enrichment, matched), enrichment),
     });
   }
 

@@ -1,6 +1,6 @@
 # Task: Review přijaté faktury — vynechaný řádek v součtech náhledu, název automatického napárování
 
-**Stav:** naplánováno — doplněk k `exchange-preview-matched-item.md`, rozhodnutí D9–D12 potvrzená v chatu (#111; D12 2026-10-09)
+**Stav:** hotovo — kód, testy, docs a help 2026-10-09 (D9–D12, #111), ověřeno na dev zdroji
 
 **Issue:** #111
 
@@ -203,14 +203,16 @@ Uzavření: `**Stav:**` v tomto tasku, `python3 scripts/tasks-index.py`;
 
 ## Hotovo když
 
-- [ ] Vynechaný řádek chybí v `computed` (řádky, rekapitulace, součty);
+- [x] Vynechaný řádek chybí v `computed` (řádky, rekapitulace, součty);
       náhled = apply (D9).
-- [ ] Vynechaný řádek vynutí přepočet rekapitulace s důvodem, i u převzaté
+- [x] Vynechaný řádek vynutí přepočet rekapitulace s důvodem, i u převzaté
       (D12).
-- [ ] `item.matchedDisplay` u `matched`; panel „Napárováno automaticky“
+- [x] `item.matchedDisplay` u `matched`; panel „Napárováno automaticky“
       s názvem a správným zdrojem (D10).
-- [ ] Help opravený (D11); `help-index.py`, `tasks-index.py`.
-- [ ] Testy (filtry výše), `npm run test`, `npm run check:i18n`,
+- [x] Help opravený (D11); `help-index.py`, `tasks-index.py`.
+- [x] Testy (filtry výše), `npm run test`, `npm run check:i18n`,
       `npm run build`.
-- [ ] Ověření na dev zdroji body 1–3.
-- [ ] Komentář do #111 se shrnutím obou tasků, issue uzavřené.
+- [x] Ověření na dev zdroji body 1–3 (2026-10-09; k bodu 1 SQL nad
+      konceptem z review: 4 z 5 řádků, rekapitulace přepočítaná z řádků,
+      součty bez vynechaného řádku).
+- [x] Komentář do #111 se shrnutím obou tasků, issue uzavřené.

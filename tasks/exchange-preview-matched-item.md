@@ -418,4 +418,4 @@ Uzavření: `**Stav:**` v tomto tasku + `python3 scripts/tasks-index.py`;
 - [x] `docs/exchange-format.md`, `modules/core/mail/docs/ai-analysis.md`,
       help a slovníček aktualizované; `help-index.py`, `tasks-index.py`.
 - [x] Ověření na dev zdroji body 1–4b, 6 (2026-10-09).
-- [ ] Komentář do #111 se shrnutím.
+- [x] Komentář do #111 se shrnutím.

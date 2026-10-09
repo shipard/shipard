@@ -72,7 +72,11 @@ a pod sekcí je odkaz **a N dalších**, který otevře **Došlou poštu**.
    - **Jen účet — bez položky** — jen u řádku faktury, který už nese
      účet (typicky doplněný obsahovou klasifikací). Řádek se pořídí
      s účtem a bez položky; to je v pořádku, položku zakládat nemusíš,
-   - **Vynechat řádek**, ale jen u řádku faktury.
+   - **Vynechat řádek**, ale jen u řádku faktury. Řádek se na doklad
+     nezapíše a nezapočítá se do součtů v náhledu; **DPH rekapitulace**
+     se pak spočítá z řádků, které zůstaly. Když kvůli tomu **Celkem**
+     nesedí s fakturou, náhled to ukáže upozorněním a pod **Celkem**
+     částkou *Na dokladu dodavatele*.
 
    Rozhodnutí se pak ukáže jako **Vybráno: …** a vezmeš ho zpět
    tlačítkem **Zrušit výběr**. Každé rozhodnutí se hned uloží — když
@@ -203,7 +207,7 @@ položkou účet té položky, u řádku *jen účet* a u účetního dokladu ú
 podle druhu položky, i když historie nebo kategorie nějaký účet
 navrhly. Sloupec se ukazuje, jen když má účet aspoň jeden řádek. Když
 u řádku vybereš položku ručně, účet navržený historií nebo kategorií se
-na doklad nezapíše; sazba DPH zůstává, jak ji přečetla AI.
+na doklad nezapíše; kód DPH řádku se změnou položky nemění.
 
 **Oprava napárování se zapamatuje.** Když u řádku s kódem dodavatele
 vybereš jinou položku, než Shipard napároval, uloží si pro ten kód
