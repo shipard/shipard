@@ -200,7 +200,9 @@ class AnalysisClaimService
     /**
      * Prodlouží lease neuvolněného claimu; `false` = claim už neplatí
      * (uvolněný výsledkem, selháním nebo reaperem) — volající nesmí zapsat
-     * výsledek.
+     * výsledek. Platnost se čte dotazem, ne z počtu ovlivněných řádků:
+     * MariaDB hlásí 0 i u živého claimu, když nová `expires_at` vyjde
+     * stejně jako stará (prodloužení ve stejné sekundě po claimu).
      */
     public function extend(int $claimId, int $leaseSeconds): bool
     {
@@ -211,7 +213,7 @@ class AnalysisClaimService
             $claimId,
             0,
         );
-        return $this->db->getAffectedRows() > 0;
+        return $this->isActive($claimId);
     }
 
     /** Claim je stále živý: neuvolněný a lease nevypršel. */

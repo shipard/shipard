@@ -286,8 +286,10 @@ class AnalysisClaimServiceTest extends TestCase
 
     public function testExtendReturnsFalseWhenClaimAlreadyReleased(): void
     {
+        // Platnost po UPDATE se čte dotazem (isActive), ne z affected rows —
+        // MariaDB hlásí 0 i u živého claimu se stejnou expires_at.
         $db = $this->createMock(DataSourceConnection::class);
-        $db->method('getAffectedRows')->willReturnOnConsecutiveCalls(1, 0);
+        $db->method('fetchRow')->willReturnOnConsecutiveCalls(['id' => 77], null);
         $db->expects($this->exactly(2))->method('execute')->with(
             $this->stringContains('AND released = %i'),
             'core_mail_analysis_claims',
