@@ -102,6 +102,8 @@ export default {
   'lock.message.vat_period': 'The document belongs to a locked VAT report period. Unlock the period first (Report periods → Unlock).',
   'lock.source.fiscal_month': 'Fiscal month {label} is locked',
   'lock.message.fiscal_month': 'The document is dated within a locked fiscal month. Unlock the month first (Fiscal periods → Months).',
+  'lock.source.work_order_state': 'Work order {label} is read-only — edit its rows via Being edited.',
+  'lock.message.work_order_state': 'Prescription rows follow the work order state ({state}): switch the work order to Being edited, change the rows and confirm it again. Then regenerate any invoice draft built from the old rows.',
   'error.DOCUMENT_LOCKED': 'The record is locked',
   'app.selectMenuItem': 'Select an item from the menu',
   'app.unsupportedPanel': 'Unsupported panel type: {type}',

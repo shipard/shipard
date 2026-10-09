@@ -52,6 +52,8 @@ class WorkOrderDocument extends Document
     public const SERIES_TABLE = 'economy_work_orders_number_series';
     public const COUNTERS_TABLE = 'economy_work_orders_number_counters';
     public const ROWS_TABLE = 'economy_work_orders_rows';
+    /** cfgItem stavů zakázky (config/docStates.jsonc) — jediný zdroj id. */
+    public const DOC_STATES_CFG_ITEM = 'economy.workOrders.docStates';
 
     public const STATE_DRAFT = 10;
     public const STATE_CANCELLED = 30;

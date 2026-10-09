@@ -196,6 +196,17 @@
         }
     ],
 
+    // Řádky předpisu se řídí stavem zakázky (tasks/work-orders-rows-readonly.md):
+    // u zakázky ve stavu s readOnly (V pořádku, Ukončeno, Zrušeno, Smazáno)
+    // jsou jen ke čtení, úprava přes V opravě. Provider jádro vynucuje na
+    // uložení, mazání i generickém CRUD; stavy čte z cfgItem docStates.
+    "documentLockProviders": [
+        {
+            "table": "economy_work_orders_rows",
+            "class": "Shipard\\Module\\Economy\\WorkOrders\\WorkOrderRowLockProvider"
+        }
+    ],
+
     // Lookup zakázky: pole Nadřazená zakázka (filtr role=parent) a od
     // fáze dimenzí pole Zakázka na hlavičce a řádcích dokladů.
     "lookups": [

@@ -26,7 +26,7 @@ use Shipard\Module\Economy\WorkOrders\Invoicing\PeriodRepository;
  */
 class WorkOrdersViewer extends WorkOrdersViewerBase
 {
-    protected ?string $docStatesCfgItem = 'economy.workOrders.docStates';
+    protected ?string $docStatesCfgItem = WorkOrderDocument::DOC_STATES_CFG_ITEM;
 
     public const VIEWER_ID = 'economy.workOrders.heads';
     /** Souhrnný viewer dokladů — cíl odkazů na doklad (`open_detail`). */

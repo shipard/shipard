@@ -111,6 +111,8 @@ export default {
   'lock.message.vat_period': 'Doklad spadá do uzamčeného tvrzení DPH. Změna vyžaduje odemknutí tvrzení (Daňová tvrzení → Odemknout).',
   'lock.source.fiscal_month': 'Fiskální měsíc {label} je uzamčený',
   'lock.message.fiscal_month': 'Doklad má účetní datum v uzamčeném fiskálním měsíci. Změna vyžaduje odemknutí měsíce (Fiskální období → Měsíce).',
+  'lock.source.work_order_state': 'Zakázka {label} je jen ke čtení — řádky uprav přes V opravě.',
+  'lock.message.work_order_state': 'Řádky předpisu se řídí stavem zakázky ({state}): dej zakázku V opravě, uprav řádky a vrať ji V pořádku. Koncept faktury se starými řádky pak Přegeneruj.',
   'error.DOCUMENT_LOCKED': 'Záznam je uzamčený',
   'app.selectMenuItem': 'Vyberte položku v menu',
   'app.unsupportedPanel': 'Nepodporovaný typ panelu: {type}',

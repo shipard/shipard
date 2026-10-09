@@ -375,6 +375,18 @@ pro přehledy. Fakturuje jen zakázka **V pořádku** v době platnosti;
 zakázka V opravě se přeskočí a její období se díky dohánění (D5) vystaví
 po návratu do V pořádku.
 
+**Řádky předpisu se řídí stavem zakázky** jako řádky dokladu
+(`tasks/work-orders-rows-readonly.md`, 2026-10-09 — ruší odchylku fáze 2):
+Přidat, Smazat, přesun i úprava jen v Konceptu a V opravě, ve stavech
+s `readOnly` jen ke čtení. Sub-tabulka Řádky je běžná (bez
+`independentRows`), takže přebírá read-only rodiče; server to vynucuje
+`WorkOrderRowLockProvider` (`documentLockProviders` nad
+`economy_work_orders_rows`, `docs/document-system.md` §16) na uložení
+z dialogu, mazání i generickém CRUD — stavy čte z cfgItem, ne natvrdo;
+přesun řádků hlídá `/subtable/…/move` podle stavu rodiče. Změna ceny
+k datu = V opravě → platnost starého řádku → nový řádek → V pořádku →
+případně Přegenerovat koncept.
+
 ### 5.5 Periodická fakturace (D2–D7, D10–D12, D24)
 
 **`economy_work_orders_periods`** — evidence období: zakázka, začátek
@@ -406,7 +418,8 @@ Koncept — Q7): fakturační předpis — sloupce `inv_*` na druhu
 `inv_from` (výchozí zahájení) a `inv_doc_text` s `{období}`; efektivní
 hodnoty skládá jen `InvoicingSettingsResolver`; řádky
 `economy_work_orders_rows` (`WorkOrderRowDocument` / `WorkOrderRowsForm`,
-sub-tabulka editovatelná i u zakázky V pořádku, pohyby a kódy DPH podle
+sub-tabulka řízená stavem zakázky — oprava
+`tasks/work-orders-rows-readonly.md`, §5.4; pohyby a kódy DPH podle
 efektivního typu dokladu, `contributor`); potvrzení vyžaduje periodicitu,
 efektivní typ dokladu a řadu a aspoň jeden řádek. Evidence
 `economy_work_orders_periods` (UNIQUE zakázka × začátek; `state` planned /
@@ -494,6 +507,12 @@ připraví:
 - doplnění zakázky na už importované doklady (vzor doplnění karty
   majetku) pro zdroje, kde se zakázky importují až po dokladech.
 
+Pozor na pořadí zápisu: řádky předpisu podléhají zámku podle stavu
+zakázky (`WorkOrderRowLockProvider`, §5.4) **bez výjimky pro import** —
+importní runner musí řádky zapsat, dokud je zakázka v Konceptu, a teprve
+potom ji potvrdit; řádek do potvrzené zakázky server odmítne
+(`DOCUMENT_LOCKED`).
+
 Otevřené: O6 (§8).
 
 ---
@@ -506,6 +525,7 @@ Otevřené: O6 (§8).
 | 2 | `tasks/number-series-engine.md` — společný engine čísel vytažený z číselných řad dokladů | D17 | hotovo (2026-10-08) |
 | 3 | `tasks/work-orders-phase1.md` — modul, druhy, číselné řady, hlavička všech typů, stavy, nadřazená zakázka, dimenze zakázka, záložka Deník | D14–D18, D22, D23 | hotovo (2026-10-08) |
 | 4 | `tasks/work-orders-phase2.md` — periodická fakturace: předpis, evidence období, běh, koncept s kartou ve feedu, Přegenerovat a Obnovit, VS, `období`, záložka Fakturace, rozhraní přispěvatelů | D2–D7, D10–D12, D24 | hotovo (2026-10-08) |
+| 4a | `tasks/work-orders-rows-readonly.md` — oprava fáze 2: řádky předpisu se řídí stavem zakázky (bez `independentRows`, `WorkOrderRowLockProvider`) | D22, D24 | hotovo (2026-10-09) |
 | 5 | `tasks/work-orders-phase3.md` — úrovně V pořádku a automatické odeslání | D4 | připravuje se; navazuje na #90 D11 |
 | 6 | `tasks/work-orders-import.md` — výměnný formát zakázky včetně fakturačního předpisu a *fakturovat od*, doplnění zakázky na už importované doklady | D9 | připravuje se; po fázi 2 |
 

@@ -62,11 +62,19 @@ rok. Nechceš faktury zakládat ručně a zapomínat na ně.
 
 **Změna ceny od data**
 
-1. Starému řádku vyplň **Platnost do** (poslední den staré ceny).
-2. Přidej nový řádek s novou cenou a **Platnost od** (první den nové
-   ceny). Řádky jde upravovat i u zakázky **V pořádku**.
-3. Faktura za období použije řádky platné k datu vystavení (DUZP) — za
-   říjen novou cenu, za září ještě starou.
+Řádky zakázky **V pořádku** jsou jen ke čtení — stejně jako celá
+zakázka. Úprava jde přes **V opravě**:
+
+1. Dej zakázku **V opravě** (tlačítko **Opravit**). Zakázku V opravě
+   noční běh přeskočí; po návratu do V pořádku dožene, co bylo mezitím
+   splatné.
+2. Starému řádku vyplň **Platnost do** (poslední den staré ceny).
+3. Přidej nový řádek s novou cenou a **Platnost od** (první den nové
+   ceny).
+4. Dej zakázku zpět **V pořádku**.
+5. Faktura za období použije řádky platné k datu vystavení (DUZP) — za
+   říjen novou cenu, za září ještě starou. Koncept, který už vznikl se
+   starou cenou, na záložce **Fakturace** **Přegeneruj**.
 
 **Kdy a jak faktura vznikne**
 

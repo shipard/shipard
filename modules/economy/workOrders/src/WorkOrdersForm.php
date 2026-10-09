@@ -28,8 +28,10 @@ use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
  * Fakturační předpis (D3): sekce Fakturace (periodicita, fakturovat od,
  * text dokladu) a přepisy výchozích hodnot druhu — prázdné pole ukazuje
  * hodnotu druhu jako placeholder „Z druhu: …“ (InvoicingSettingsResolver).
- * Tab Řádky = sub-tabulka řádků předpisu (WorkOrderRowsForm), editovatelná
- * i u zakázky V pořádku (změna ceny k datu nevyžaduje V opravě). Tab
+ * Tab Řádky = sub-tabulka řádků předpisu (WorkOrderRowsForm); řídí se
+ * stavem zakázky jako řádky dokladu — Přidat / Smazat / přesun v Konceptu
+ * a V opravě, u V pořádku jen ke čtení (server hlídá
+ * WorkOrderRowLockProvider, tasks/work-orders-rows-readonly.md). Tab
  * Přílohy (P6).
  */
 class WorkOrdersForm extends TableForm
@@ -226,7 +228,6 @@ class WorkOrdersForm extends TableForm
                 'work_order',
                 formId: self::ROWS_FORM_ID,
                 orderColumn: 'order_pos',
-                independentRows: true,
             );
         }
         $tabs[] = $this->attachmentsTab();

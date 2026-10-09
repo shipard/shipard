@@ -14,6 +14,9 @@ use Shipard\Module\Economy\WorkOrders\Invoicing\Contributor\InvoiceContributorRe
  * od ≤ do, tvar id přispěvatele) a pořadí nového řádku jako u řádků
  * dokladu (DocRowsDocument): MAX(order_pos) + 1 v rámci zakázky, explicitní
  * pořadí zůstává. Jestli řádek platí k DUZP, rozhoduje až InvoiceBuilder.
+ * Stav zakázky řádek sám nehlídá — zámek podle stavu rodiče (V pořádku
+ * a další stavy s readOnly) dodává WorkOrderRowLockProvider, který jádro
+ * vynucuje i na generickém CRUD (tasks/work-orders-rows-readonly.md).
  */
 class WorkOrderRowDocument extends Document
 {

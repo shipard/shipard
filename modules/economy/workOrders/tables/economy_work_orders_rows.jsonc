@@ -8,8 +8,11 @@
     // dokladu. `contributor` = id registrovaného přispěvatele obsahu
     // (workOrderInvoiceContributors), NULL = pevný řádek.
     //
-    // Sub-tabulka zakázky spravovaná přes formulář zakázky (tab Řádky),
-    // editovatelná i u zakázky V pořádku (independentRows).
+    // Sub-tabulka zakázky spravovaná přes formulář zakázky (tab Řádky).
+    // Řídí se stavem zakázky: Přidat / Smazat / úprava jen v Konceptu
+    // a V opravě, u zakázky ve stavu s readOnly (V pořádku, Ukončeno,
+    // Zrušeno, Smazáno) jen ke čtení — server hlídá WorkOrderRowLockProvider
+    // (documentLockProviders, tasks/work-orders-rows-readonly.md).
     "tableId": 461,
     "name": "Work order rows",
     "name:cs": "Řádky zakázek",

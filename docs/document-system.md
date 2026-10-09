@@ -907,11 +907,14 @@ Obecný mechanismus „záznam je uzamčený": modul, který o zámku rozhoduje,
 dodá **provider**, jádro ho vynucuje na všech zápisových cestách a posílá
 důvody do UI. `docs.core` o DPH ani fiskálních měsících neví — providery
 dodávají `economy.vat` (`VatPeriodLockProvider`, zamčená instance tvrzení),
-`economy.codebooks` (`FiscalMonthLockProvider`, zamčený fiskální měsíc)
-a `economy.assets` (`AssetEventLockProvider` nad `economy_assets_events`:
+`economy.codebooks` (`FiscalMonthLockProvider`, zamčený fiskální měsíc),
+`economy.assets` (`AssetEventLockProvider` nad `economy_assets_events`:
 pozdější potvrzený odpis okruhu + zamčený měsíc + zaúčtování,
 `docs/assets.md` §5.3; `AssetPostingDocLockProvider` nad `docs_core_heads`:
-doklad s řádky `asset.*` spravuje Majetek, §5.4).
+doklad s řádky `asset.*` spravuje Majetek, §5.4) a `economy.workOrders`
+(`WorkOrderRowLockProvider` nad `economy_work_orders_rows`: řádek předpisu
+zakázky ve stavu s `readOnly` — V pořádku, Ukončeno, Zrušeno, Smazáno —
+`docs/work-orders.md` §5.4).
 
 ### Rozhraní a registrace
 

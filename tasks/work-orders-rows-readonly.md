@@ -1,6 +1,8 @@
 # Zakázky — řádky předpisu se řídí stavem zakázky
 
-**Stav:** naplánováno — oprava fáze 2 (#110 D22, D24)
+**Stav:** hotovo — 2026-10-09 (1 commit; guard jako lock provider místo hooků
+v Document třídě, viz Poznámky k implementaci; `ds-upgrade` jen `4l3j`);
+zbývá `ds-upgrade` na ostatních zdrojích a alfě
 
 > PRD pro jednu Claude Code session (1 commit). Opravuje odchylku
 > z `tasks/work-orders-phase2.md` (Poznámky k implementaci — řádky
@@ -100,3 +102,34 @@ Na ukázkovém zdroji (`4l3j-z0bz-kz39-echj`, režim volný):
 
 - ✓ **Zakázka V pořádku je jen ke čtení včetně řádků předpisu**; úpravy
   jdou přes V opravě (2026-10-09). Odchylka fáze 2 se ruší.
+- ✓ **Guard jako lock provider**, ne hooky v `WorkOrderRowDocument`
+  (2026-10-09, viz níže).
+
+## Poznámky k implementaci (2026-10-09)
+
+- **Guard je `WorkOrderRowLockProvider`** (`documentLockProviders` nad
+  `economy_work_orders_rows`), ne `validate()` / `beforeDelete()`
+  v `WorkOrderRowDocument`, jak stálo v zadání. Důvod: Smazat ze
+  sub-tabulky jde přes generické `DELETE /{table}/{id}`
+  (`CrudController::delete` maže přímým SQL) a CRUD PUT / PATCH jedou
+  jen přes validátor sloupců — Document hooky na těchto cestách neběží
+  vůbec. Jediný mechanismus, který jádro vynucuje na gateway *i* CRUD
+  update / patch / delete, je zámek záznamu (`docs/document-system.md`
+  §16). Kontrakt chyb je tedy standardní: uložení řádku → 422
+  `VALIDATION_ERROR` s chybou `_form` / kód `locked` (banner dialogu
+  řádku), mazání a CRUD → 422 `DOCUMENT_LOCKED`; kód `parent_read_only`
+  neexistuje. Meta řádku `lock` nenese (tabulka řádků nemá docStates) —
+  read-only dialog řádku dává sub-tabulka z rodiče.
+- **Sloupec `work_order` není pole formuláře řádku** — chyba na něm by se
+  v dialogu nevykreslila; lock reason jde do banneru formuláře.
+- Důvod zámku: `source` `work_order_state`, title „Zakázka {číslo} je jen
+  ke čtení — řádky uprav přes V opravě.“ (smazaný koncept bez čísla →
+  název), `params {label, state, docState}`; klient lokalizuje přes
+  `lock.source.work_order_state` / `lock.message.work_order_state`
+  (cs, en), bez klíče spadne na text ze serveru. Stavy z cfgItem
+  `economy.workOrders.docStates` (`WorkOrderDocument::DOC_STATES_CFG_ITEM`);
+  bez zkompilovaného cfgItem (DS před `ds-upgrade`) provider nezamyká.
+- **Generické CRUD `POST /{table}`** lock providery nevolá (guard jádra
+  chce id) — nový řádek do potvrzené zakázky přes CRUD create server
+  nehlídá. Platí pro všechny providery, ne jen tento; řešení patří do
+  jádra (`CrudController::create` → `guardLock` s `original = null`).

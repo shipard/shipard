@@ -203,7 +203,10 @@ class WorkOrdersFormTest extends TestCase
         $this->assertSame('work_order', $rows->subtable['foreignKey']);
         $this->assertSame('economy.workOrders.rows', $rows->subtable['formId']);
         $this->assertSame('order_pos', $rows->subtable['orderColumn']);
-        $this->assertTrue($rows->subtable['independentRows']);
+        // Řádky se řídí stavem zakázky (tasks/work-orders-rows-readonly.md) —
+        // bez independentRows sub-tabulka převezme read-only rodiče.
+        $this->assertFalse($rows->subtable['independentRows']);
+        $this->assertArrayNotHasKey('independent_rows', $rows->toArray()['subtable']);
 
         $this->assertFalse($this->element($def, 'inv_periodicity')->hidden);
         $this->assertSame(['month', 'quarter'], array_column($this->element($def, 'inv_periodicity')->options, 'value'));

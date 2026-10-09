@@ -345,6 +345,9 @@ Na ukázkovém zdroji (`4l3j-z0bz-kz39-echj`, režim volný):
 - **Řádky předpisu** jsou sub-tabulka editovatelná i u zakázky V pořádku
   (`independentRows`) — změna ceny k datu nevyžaduje V opravě; hlavičkové
   přepisy se mění přes V opravě jako ostatní pole.
+  **Nahrazeno `tasks/work-orders-rows-readonly.md`** (2026-10-09): řádky
+  se řídí stavem zakázky, u V pořádku jen ke čtení, server hlídá
+  `WorkOrderRowLockProvider`.
 - **Výsledek posledního běhu** na období je strojový kód ve sloupci
   `result` (`failed` / `no_rows` / `no_doc_type` / `no_series` /
   `no_customer` / `contributor_failed` / `catchup` / `waiting` / `edited`)

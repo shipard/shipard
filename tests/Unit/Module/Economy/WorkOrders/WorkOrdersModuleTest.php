@@ -6,8 +6,10 @@ namespace Shipard\Tests\Unit\Module\Economy\WorkOrders;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\TableDefinition;
+use Shipard\Core\Document\DocumentLockProvider;
 use Shipard\Core\Module\ModuleDefinition;
 use Shipard\Core\Utils\JsoncParser;
+use Shipard\Module\Economy\WorkOrders\WorkOrderRowLockProvider;
 
 /**
  * Deklarace modulu economy.workOrders nad skutečnými soubory
@@ -123,6 +125,16 @@ class WorkOrdersModuleTest extends TestCase
         $this->assertSame([['column' => 'number']], $heads['indexes'][0]['columns']);
         $config = array_column(self::module()['config'], 'file', 'id');
         $this->assertSame('config/docStates.jsonc', $config['economy.workOrders.docStates']);
+    }
+
+    public function testRowsAreLockedByWorkOrderState(): void
+    {
+        // tasks/work-orders-rows-readonly.md: řádky předpisu podléhají zámku
+        // podle stavu zakázky — provider nad tabulkou řádků, ne nad hlavičkou.
+        $expected = [['table' => 'economy_work_orders_rows', 'class' => WorkOrderRowLockProvider::class]];
+        $this->assertSame($expected, self::module()['documentLockProviders']);
+        $this->assertSame($expected, ModuleDefinition::fromArray(self::module())->documentLockProviders);
+        $this->assertInstanceOf(DocumentLockProvider::class, new WorkOrderRowLockProvider());
     }
 
     public function testTypesConfigHasFourTypesWithFlags(): void
