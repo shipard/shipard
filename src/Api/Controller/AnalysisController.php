@@ -16,24 +16,22 @@ use Shipard\Core\Document\DocumentRegistry;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Mail\IncomingMessageCode;
-use Shipard\Core\Security\DsSecretCipher;
-use Shipard\Core\Security\Exception\InvalidCiphertextException;
-use Shipard\Core\Security\Exception\SecretsKeyInsecureException;
-use Shipard\Core\Security\Exception\SecretsKeyMissingException;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Base\Registry\RegistryApplier;
 use Shipard\Module\Core\Exchange\Document\DocumentApplier;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
-use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
-use Shipard\Module\Core\Ai\AIBackendDocument;
 use Shipard\Module\Core\Mail\AIAnalyzerProvisioner;
-use Shipard\Module\Core\Mail\AttentionKinds;
-use Shipard\Module\Core\Mail\MessagePartnerWriter;
-use Shipard\Module\Core\Mail\PostAnalysisDisposer;
+use Shipard\Module\Core\Mail\Analysis\AnalysisClaimException;
+use Shipard\Module\Core\Mail\Analysis\AnalysisClaimService;
+use Shipard\Module\Core\Mail\Analysis\AnalysisQueue;
+use Shipard\Module\Core\Mail\Analysis\AnalysisResultException;
+use Shipard\Module\Core\Mail\Analysis\AnalysisResultWriter;
+use Shipard\Module\Core\Mail\Analysis\AnalysisServices;
+use Shipard\Module\Core\Mail\Analysis\AnalysisStates;
+use Shipard\Module\Core\Mail\IncomingMessageDocument;
 use Shipard\Module\Core\Mail\MessageProposalApplier;
-use Shipard\Module\Core\Mail\MessageTitleComposer;
 use Shipard\Module\Core\Mail\PrimaryTypes;
 use Shipard\Module\Core\Mail\ProposalApplyOutcome;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
@@ -45,6 +43,11 @@ use Shipard\Module\Docs\Core\OwnCompanyResolver;
  * (viz `ai-analyzer-setup` CLI). Endpointy vyžadují `X-Claim-Token` hlavičku
  * (vyjma /queue a /claim).
  *
+ * Fronta, claim a zápis výsledku žijí ve službách
+ * `Shipard\Module\Core\Mail\Analysis\*` (sdílené s in-process runnerem,
+ * tasks/mail-analysis-inprocess.md D13); endpointy jsou tenké obálky
+ * nad nimi — tvar odpovědí a chybové kódy se nemění.
+ *
  * Spec: tasks/mail-phase3a.md §3.
  */
 class AnalysisController
@@ -54,60 +57,35 @@ class AnalysisController
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
     private const MAILBOXES_TABLE = 'core_mail_mailboxes';
     private const ANALYSES_TABLE = 'core_mail_message_analyses';
-    private const BACKENDS_TABLE = 'core_ai_backends';
     private const PROFILES_TABLE = 'core_mail_ai_profiles';
     private const CLAIMS_TABLE = 'core_mail_analysis_claims';
     private const ATTACHMENTS_TABLE = 'core_attachments_files';
     private const HEADS_TABLE = 'docs_core_heads';
     private const REGISTRY_TABLE = 'base_registry_documents';
 
-    /** Kontrakt registry extrakce (schéma v modules/base/registry/schemas). */
-    private const REGISTRY_FORMAT_ID = 'shpd.registry.document';
-    private const REGISTRY_FORMAT_VERSION = '1';
-
-    // Workflow stavy zprávy (core.mail.docStatesIncoming) — pipeline na ně
-    // sahá jediným místem: result s dokumenty posouvá Novou na K řešení.
-    private const DOC_STATE_NEW = 10;
-    private const DOC_STATE_IN_PROGRESS = 20;
-    private const DOC_STATE_IN_PROGRESS_MAIN = 2;
-    private const DOC_STATE_ARCHIVED = 80;
-    private const DOC_STATE_TRASH = 90;
+    // Workflow stavy zprávy (core.mail.docStatesIncoming) — reanalyze
+    // odmítá Archiv a Koš; posun Nová → K řešení dělá AnalysisResultWriter.
+    private const DOC_STATE_ARCHIVED = IncomingMessageDocument::DOC_STATE_ARCHIVED;
+    private const DOC_STATE_TRASH = IncomingMessageDocument::DOC_STATE_TRASH;
 
     // Pipeline status analýzy (core.mail.analysisStates) — ortogonální
-    // ke workflow, řídí ho výhradně pipeline + reanalyze.
-    public const ANALYSIS_NONE = 0;
-    public const ANALYSIS_QUEUED = 10;
-    public const ANALYSIS_ANALYZING = 20;
-    public const ANALYSIS_ANALYZED = 30;
-    public const ANALYSIS_FAILED = 70;
+    // ke workflow, řídí ho výhradně pipeline + reanalyze. Zdroj hodnot
+    // je AnalysisStates; aliasy drží dnešní názvy pro ostatní třídy.
+    public const ANALYSIS_NONE = AnalysisStates::NONE;
+    public const ANALYSIS_QUEUED = AnalysisStates::QUEUED;
+    public const ANALYSIS_ANALYZING = AnalysisStates::ANALYZING;
+    public const ANALYSIS_ANALYZED = AnalysisStates::ANALYZED;
+    public const ANALYSIS_FAILED = AnalysisStates::FAILED;
+
+    /** @see AnalysisStates::PREPROCESS_BLOCKING_STATES */
+    public const PREPROCESS_BLOCKING_STATES = AnalysisStates::PREPROCESS_BLOCKING_STATES;
 
     /**
-     * preprocess_state (core.mail.preprocessStates), ve kterých zpráva do
-     * fronty nepatří — technické předzpracování ještě nedoběhlo (gate,
-     * tasks/mail-preprocess.md D9). Ortogonální k analysis_state.
+     * Služby analýzy (fronta, claim, zápis výsledku) — líně ze stejných
+     * závislostí jako controller; wiring sdílený s in-process runnerem
+     * (tasks/mail-analysis-inprocess.md D13).
      */
-    public const PREPROCESS_BLOCKING_STATES = [10, 20];
-
-    private const DEFAULT_LEASE_SECONDS = 300;
-    private const MIN_LEASE_SECONDS = 60;
-    private const MAX_LEASE_SECONDS = 900;
-
-    /** Lazy validator registry canonicalu (viz registrySchemaValidator()). */
-    private ?SchemaValidator $registrySchemaValidator = null;
-
-    /** Lazy zápis partnera zprávy z canonicalu (viz partnerWriter()). */
-    private ?MessagePartnerWriter $partnerWriter = null;
-
-    /** Lazy archivace ostatní pošty podle pravidla odesílatele (viz postAnalysisDisposer()). */
-    private ?PostAnalysisDisposer $postAnalysisDisposer = null;
-
-    /**
-     * Lazy fallback titulku zprávy z canonicalu per AI profil běhu
-     * (klíč 0 = výchozí profil DS) — viz titleComposer().
-     *
-     * @var array<int, MessageTitleComposer>
-     */
-    private array $titleComposers = [];
+    private ?AnalysisServices $services = null;
 
     /**
      * SchemaValidator + DocumentApplier are intentionally nullable for
@@ -129,6 +107,17 @@ class AnalysisController
         private readonly ?DocumentEventDispatcher $eventDispatcher = null,
         private readonly ?RowEnrichmentPipeline $enricher = null,
     ) {}
+
+    private function services(): AnalysisServices
+    {
+        return $this->services ??= AnalysisServices::create(
+            $this->db,
+            $this->config,
+            $this->schemaValidator,
+            $this->enricher,
+            $this->configRuntime,
+        );
+    }
 
     // -------------------------------------------------------------------
     // Auth helpers
@@ -212,18 +201,14 @@ class AnalysisController
             ->withHeader('Pragma', 'no-cache');
     }
 
-    private function clampLeaseSeconds(?int $requested): int
-    {
-        $seconds = $requested ?? self::DEFAULT_LEASE_SECONDS;
-        return max(self::MIN_LEASE_SECONDS, min(self::MAX_LEASE_SECONDS, $seconds));
-    }
-
     // -------------------------------------------------------------------
     // GET /queue
     // -------------------------------------------------------------------
 
     /**
-     * Vrátí zprávy připravené k analýze. Spec §3.1.
+     * Vrátí zprávy připravené k analýze. Spec §3.1. Predikát fronty drží
+     * {@see AnalysisQueue}; tady jen dekorace řádků (počet příloh,
+     * doporučený profil).
      */
     public function queue(AuthContext $auth, Request $request): Response
     {
@@ -246,44 +231,9 @@ class AnalysisController
         );
         $defaultProfileId = $defaultProfile !== null ? (int) $defaultProfile['id'] : null;
 
-        // Najdi zprávy ve frontě (analysis_state=10) mimo Archiv/Koš,
-        // ai_analysis_enabled NOT FALSE (NULL nebo true), schránka bez
-        // ai_analysis_disabled (explicitní message-level enabled=1 flag
-        // schránky přebíjí), bez aktivní claim. SQL inspirace: NOT EXISTS
-        // na claims s released=0 a expires_at v budoucnu. docState se
-        // jinak nekontroluje — workflow je ortogonální.
+        $queue = $this->services()->queue;
         $now = date('Y-m-d H:i:s');
-        $rows = $this->db->fetchAll(
-            'SELECT m.id AS ndx, m.received_at, m.subject, m.sender_email,
-                    m.profile_override, m.raw_source_attachment
-               FROM %n m
-               JOIN %n mb ON mb.id = m.mailbox
-              WHERE m.analysis_state = %i
-                AND m.docState NOT IN %in
-                AND m.preprocess_state NOT IN %in
-                AND (m.ai_analysis_enabled IS NULL OR m.ai_analysis_enabled = %i)
-                AND (mb.ai_analysis_disabled = %i OR m.ai_analysis_enabled = %i)
-                AND NOT EXISTS (
-                    SELECT 1 FROM %n c
-                     WHERE c.message = m.id
-                       AND c.released = %i
-                       AND c.expires_at > %s
-                )
-              ORDER BY m.received_at ASC, m.id ASC
-              LIMIT %i',
-            self::MESSAGES_TABLE,
-            self::MAILBOXES_TABLE,
-            self::ANALYSIS_QUEUED,
-            [self::DOC_STATE_ARCHIVED, self::DOC_STATE_TRASH],
-            self::PREPROCESS_BLOCKING_STATES,
-            1,
-            0,
-            1,
-            self::CLAIMS_TABLE,
-            0,
-            $now,
-            $limit,
-        );
+        $rows = $queue->eligible($limit, $now);
 
         $messages = [];
         foreach ($rows as $row) {
@@ -312,32 +262,7 @@ class AnalysisController
             ];
         }
 
-        $totalAvailable = (int) $this->db->fetchSingle(
-            'SELECT COUNT(*) FROM %n m
-               JOIN %n mb ON mb.id = m.mailbox
-              WHERE m.analysis_state = %i
-                AND m.docState NOT IN %in
-                AND m.preprocess_state NOT IN %in
-                AND (m.ai_analysis_enabled IS NULL OR m.ai_analysis_enabled = %i)
-                AND (mb.ai_analysis_disabled = %i OR m.ai_analysis_enabled = %i)
-                AND NOT EXISTS (
-                    SELECT 1 FROM %n c
-                     WHERE c.message = m.id
-                       AND c.released = %i
-                       AND c.expires_at > %s
-                )',
-            self::MESSAGES_TABLE,
-            self::MAILBOXES_TABLE,
-            self::ANALYSIS_QUEUED,
-            [self::DOC_STATE_ARCHIVED, self::DOC_STATE_TRASH],
-            self::PREPROCESS_BLOCKING_STATES,
-            1,
-            0,
-            1,
-            self::CLAIMS_TABLE,
-            0,
-            $now,
-        );
+        $totalAvailable = $queue->countEligible($now);
 
         return Response::success([
             'messages' => $messages,
@@ -366,7 +291,8 @@ class AnalysisController
     /**
      * Atomic claim — ověř analysis_state=10 (ve frontě), žádná aktivní claim,
      * vytvoř claim record, přepni analysis_state→20, decryptuj api_key.
-     * docState (workflow) se nemění. Spec §3.2.
+     * docState (workflow) se nemění. Spec §3.2. Tělo drží
+     * {@see AnalysisClaimService}; tady vstup a mapování chyby na Response.
      */
     public function claim(AuthContext $auth, Request $request, int $messageNdx): Response
     {
@@ -387,144 +313,21 @@ class AnalysisController
         }
 
         $requestedProfile = isset($body['profile_ndx']) ? (int) $body['profile_ndx'] : null;
-        $leaseSeconds = $this->clampLeaseSeconds(
+        $leaseSeconds = AnalysisClaimService::clampLeaseSeconds(
             isset($body['lease_seconds']) ? (int) $body['lease_seconds'] : null,
         );
 
-        $dibi = $this->db->getDibiConnection();
-        $dibi->begin();
         try {
-            // FOR UPDATE serializuje souběžné claim() přes řádek zprávy —
-            // bez tohoto by dva analyzéry mohli oba projít SELECT a oba
-            // INSERT do claims (tabulka nemá partial unique). Spec §3.2
-            // "Atomicky" + §2.4 popis invariantu max-jedna-aktivní-claim.
-            $msgRow = $dibi->fetch(
-                'SELECT id, analysis_state, preprocess_state, profile_override FROM %n WHERE id = %i FOR UPDATE',
-                self::MESSAGES_TABLE,
-                $messageNdx,
-            );
-            if ($msgRow === null) {
-                $dibi->rollback();
-                return Response::error('NOT_FOUND', "Message {$messageNdx} not found", 404);
-            }
-            if ((int) $msgRow['analysis_state'] !== self::ANALYSIS_QUEUED) {
-                $dibi->rollback();
-                return Response::error(
-                    'INVALID_STATE',
-                    'Message is not queued for analysis (analysis_state != 10)',
-                    409,
-                );
-            }
-            // Gate předzpracování i na claimu — /queue zprávu nevydá, ale
-            // analyzer může claimovat ze staršího snapshotu fronty.
-            if (in_array((int) ($msgRow['preprocess_state'] ?? 0), self::PREPROCESS_BLOCKING_STATES, true)) {
-                $dibi->rollback();
-                return Response::error(
-                    'INVALID_STATE',
-                    'Message is being preprocessed (preprocess_state in 10/20)',
-                    409,
-                );
-            }
-
-            $now = date('Y-m-d H:i:s');
-            $activeClaim = $dibi->fetch(
-                'SELECT id FROM %n WHERE message = %i AND released = %i AND expires_at > %s LIMIT 1',
-                self::CLAIMS_TABLE,
-                $messageNdx,
-                0,
-                $now,
-            );
-            if ($activeClaim !== null) {
-                $dibi->rollback();
-                return Response::error('ALREADY_CLAIMED', 'Message already has an active claim', 409);
-            }
-
-            // Vyber profil + backend
-            $profileNdx = $requestedProfile
-                ?? (isset($msgRow['profile_override']) ? (int) $msgRow['profile_override'] : null);
-            $profile = $this->resolveProfile($profileNdx);
-            if ($profile === null) {
-                $dibi->rollback();
-                return Response::error(
-                    'NO_PROFILE',
-                    'No active profile available (default missing or requested profile invalid)',
-                    409,
-                );
-            }
-            $backend = $this->resolveBackend((int) $profile['backend']);
-            if ($backend === null) {
-                $dibi->rollback();
-                return Response::error(
-                    'NO_BACKEND',
-                    'Profile references a backend that is missing or inactive',
-                    409,
-                );
-            }
-
-            // Decrypt api_key přes AIBackendDocument — single source of truth
-            try {
-                $cipher = DsSecretCipher::forConfig($this->config);
-            } catch (SecretsKeyMissingException | SecretsKeyInsecureException $e) {
-                $dibi->rollback();
-                return Response::error(
-                    'SECRETS_UNAVAILABLE',
-                    'Server cannot decrypt backend API key: ' . $e->getMessage(),
-                    500,
-                );
-            }
-            $backendDoc = new AIBackendDocument();
-            $backendDoc->setSecretCipher($cipher);
-            try {
-                $apiKey = $backendDoc->decryptApiKey($backend);
-            } catch (InvalidCiphertextException $e) {
-                $dibi->rollback();
-                return Response::error(
-                    'BACKEND_KEY_CORRUPTED',
-                    'Stored API key cannot be decrypted (corrupted or wrong secrets.key)',
-                    500,
-                );
-            }
-            if ($apiKey === null || $apiKey === '') {
-                $dibi->rollback();
-                return Response::error(
-                    'BACKEND_KEY_MISSING',
-                    "Backend '{$backend['backend_id']}' has no API key set. Run ai-analyzer-set-key.",
-                    409,
-                );
-            }
-
-            // Vytvoř claim
-            $claimToken = $this->generateClaimToken();
-            $expiresAt = date('Y-m-d H:i:s', time() + $leaseSeconds);
-            $dibi->insert(self::CLAIMS_TABLE, [
-                'message' => $messageNdx,
-                'analyzer_id' => $analyzerId,
-                'claim_token' => $claimToken,
-                'claimed_at' => $now,
-                'expires_at' => $expiresAt,
-                'released' => 0,
-            ])->execute();
-
-            // Přepni analýzu na "Analyzuje se" — docState zůstává
-            $dibi->update(self::MESSAGES_TABLE, [
-                'analysis_state' => self::ANALYSIS_ANALYZING,
-                'modified' => $now,
-            ])->where('id = %i', $messageNdx)->execute();
-
-            $dibi->commit();
-        } catch (\Throwable $e) {
-            $dibi->rollback();
-            // Plaintext API key žije v této metodě v paměti — exception message
-            // nesmí prosáknout do klienta (spec §10 dec.2). Detail loguj server-side.
-            ErrorLogger::warn('AnalysisController::claim failed', [
-                'error' => $e->getMessage(),
-            ]);
-            return Response::error('INTERNAL_ERROR', 'Internal server error during claim', 500);
+            $claim = $this->services()->claims->claim($messageNdx, $analyzerId, $leaseSeconds, $requestedProfile);
+        } catch (AnalysisClaimException $e) {
+            return Response::error($e->errorCode, $e->getMessage(), $e->httpStatus);
         }
 
+        $profile = $claim->profile;
+        $backend = $claim->backend;
         $response = Response::success([
-            'claim_token' => $claimToken,
-            'expires_at' => $expiresAt,
+            'claim_token' => $claim->claimToken,
+            'expires_at' => $claim->expiresAt,
             'profile' => [
                 'profile_ndx' => (int) $profile['id'],
                 'profile_id' => (string) $profile['profile_id'],
@@ -542,7 +345,7 @@ class AnalysisController
                 'backend_ndx' => (int) $backend['id'],
                 'provider' => (string) $backend['provider'],
                 'model' => (string) $backend['model'],
-                'api_key' => $apiKey,
+                'api_key' => $claim->apiKey,
                 'base_url' => $backend['base_url'] !== null ? (string) $backend['base_url'] : null,
                 'max_tokens' => (int) $backend['max_tokens'],
                 'temperature' => (float) $backend['temperature'],
@@ -550,47 +353,6 @@ class AnalysisController
         ]);
 
         return $this->withNoStoreHeaders($response);
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    private function resolveProfile(?int $requestedNdx): ?array
-    {
-        if ($requestedNdx !== null && $requestedNdx > 0) {
-            $row = $this->db->fetchRow(
-                'SELECT * FROM %n WHERE id = %i AND is_active = %i LIMIT 1',
-                self::PROFILES_TABLE,
-                $requestedNdx,
-                1,
-            );
-            return $row;
-        }
-
-        return $this->db->fetchRow(
-            'SELECT * FROM %n WHERE is_default = %i AND is_active = %i LIMIT 1',
-            self::PROFILES_TABLE,
-            1,
-            1,
-        );
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    private function resolveBackend(int $backendNdx): ?array
-    {
-        return $this->db->fetchRow(
-            'SELECT * FROM %n WHERE id = %i AND is_active = %i LIMIT 1',
-            self::BACKENDS_TABLE,
-            $backendNdx,
-            1,
-        );
-    }
-
-    private function generateClaimToken(): string
-    {
-        return 'ct_' . bin2hex(random_bytes(30));
     }
 
     private function decodeJsonField(mixed $raw): mixed
@@ -770,28 +532,9 @@ class AnalysisController
     // -------------------------------------------------------------------
 
     /**
-     * Atomicky uloží výsledek analýzy (kontrakt v4, message-centricky):
-     * vytvoří záznam v message_analyses s canonical návrhem (`document`
-     * 0..1 → canonical_json + proposed_type), uvolní claim, přepne
-     * analysis_state→30. docState: jen když je zpráva stále v Nové (10)
-     * a běh přinesl validní dokument → 10→20 (K řešení). Běh bez dokumentu
-     * docState nemění (zpráva zůstává v Nové — dashboard řeší karta „Není
-     * faktura"); ruční workflow stav pipeline nikdy nepřepisuje.
-     *
-     * `message_classification` je povinná (prompt v4 ji vždy generuje);
-     * pole `extracted_documents` se od v4 nepřijímá (D11 — big-bang, bez
-     * kompatibilní mezivrstvy). `secondary_findings` se strukturálně
-     * nevaliduje — žije jen v analysis_json.
-     *
-     * Z validního canonicalu se navíc zapíše partner zprávy
-     * (`partner_name` / `partner_person`, vrstva 1 — {@see MessagePartnerWriter})
-     * a titulek zprávy `ai_title` (`message_classification.title`, fallback
-     * {@see MessageTitleComposer}).
-     *
-     * Běh bez dokumentu u zprávy `other` od odesílatele s potvrzeným
-     * pravidlem ji může rovnou archivovat ({@see PostAnalysisDisposer},
-     * tasks/mail-sender-rules-after-analysis.md D4–D6) — jen první úspěšná
-     * analýza, jistota klasifikace ≥ `review` práh profilu, ne ruční nahrání.
+     * Uloží výsledek analýzy (kontrakt v4, message-centricky) — tělo drží
+     * {@see AnalysisResultWriter::storeResult()}; tady auth, claim token
+     * a mapování výjimky na Response. `created_by` = uživatel `_ai_analyzer`.
      */
     public function result(AuthContext $auth, Request $request, int $messageNdx): Response
     {
@@ -806,201 +549,15 @@ class AnalysisController
         }
 
         $body = $request->getBody() ?? [];
-        $modelName = trim((string) ($body['model_name'] ?? ''));
-        $promptVersion = trim((string) ($body['prompt_version'] ?? ''));
-        if ($modelName === '' || $promptVersion === '') {
-            return Response::error(
-                'VALIDATION_ERROR',
-                'model_name and prompt_version are required',
-                422,
-            );
-        }
-
-        if (array_key_exists('extracted_documents', $body)) {
-            return Response::error(
-                'VALIDATION_ERROR',
-                'extracted_documents is no longer accepted — send document (0..1), contract v4',
-                422,
-                [['field' => 'extracted_documents']],
-            );
-        }
-
-        $classification = $body['message_classification'] ?? null;
-        if (!is_array($classification)
-            || trim((string) ($classification['primary_type'] ?? '')) === ''
-        ) {
-            return Response::error(
-                'VALIDATION_ERROR',
-                'message_classification with primary_type is required',
-                422,
-                [['field' => 'message_classification']],
-            );
-        }
-
-        $document = is_array($body['document'] ?? null) ? $body['document'] : null;
-
-        $profileNdx = isset($body['profile_ndx']) && (int) $body['profile_ndx'] > 0
-            ? (int) $body['profile_ndx']
-            : null;
-        $backendNdx = isset($body['backend_ndx']) && (int) $body['backend_ndx'] > 0
-            ? (int) $body['backend_ndx']
-            : null;
-
-        // 1) Canonical návrhu: validace + enrichment (včetně případné LLM
-        //    klasifikace obsahového štítku). Běží PŘED transakcí — jen čte
-        //    (validace, SELECTy, LLM volání); držet kvůli LLM otevřenou tx
-        //    by blokovalo zámky. Nevalidní výstup dostává forenzní wrapper
-        //    (dashboard z něj staví chybovou kartu), běh se uloží a vrací
-        //    se 201.
-        $canonicalJson = null;
-        $proposedType = null;
-        $documentValid = false;
-        $docConfidence = null;
-        if ($document !== null) {
-            $proposedType = trim((string) ($document['doc_type'] ?? 'other'));
-            $docConfidence = isset($document['confidence']) ? (float) $document['confidence'] : null;
-            $extractedJson = is_array($document['extracted_json'] ?? null)
-                ? $document['extracted_json']
-                : null;
-            [$canonicalJson, $documentValid] = $this->validateAndStoreCanonical(
-                $extractedJson,
-                $proposedType,
-            );
-        }
-        $contentTag = $this->extractContentTag($canonicalJson, $documentValid);
-        // Canonical jako pole pro zápis partnera (vrstva 1) — jen validní
-        // návrh, forenzní wrapper se do partnera nepropisuje.
-        $canonical = $documentValid && $canonicalJson !== null
-            ? json_decode($canonicalJson, true)
-            : null;
-
-        $dibi = $this->db->getDibiConnection();
-        $dibi->begin();
         try {
-            $now = date('Y-m-d H:i:s');
-
-            // 2) message_analyses záznam. `confidence` nese jistotu návrhu
-            //    (document.confidence) — z ní se za běhu počítá pásmo
-            //    ready/review/low; běh bez dokumentu ukládá overall_confidence.
-            $dibi->insert(self::ANALYSES_TABLE, [
-                'message' => $messageNdx,
-                'profile' => $profileNdx,
-                'backend' => $backendNdx,
-                'analyzed_at' => $now,
-                'status' => 2, // success
-                'model_name' => $modelName,
-                'model_version' => isset($body['model_version']) ? (string) $body['model_version'] : null,
-                'prompt_version' => $promptVersion,
-                'analysis_json' => isset($body['analysis_json'])
-                    ? (string) json_encode($body['analysis_json'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-                    : null,
-                'canonical_json' => $canonicalJson,
-                'proposed_type' => $proposedType,
-                'content_tag' => $contentTag,
-                'confidence' => $docConfidence
-                    ?? (isset($body['overall_confidence']) ? (float) $body['overall_confidence'] : null),
-                'tokens_input' => isset($body['tokens_input']) ? (int) $body['tokens_input'] : null,
-                'tokens_output' => isset($body['tokens_output']) ? (int) $body['tokens_output'] : null,
-                'duration_ms' => isset($body['duration_ms']) ? (int) $body['duration_ms'] : null,
-                'cost_usd' => isset($body['cost_usd']) ? (float) $body['cost_usd'] : null,
-                'created' => $now,
-                'created_by' => $auth->userId,
-            ])->execute();
-            $analysisNdx = (int) $dibi->getInsertId();
-
-            // 3) Uvolni claim
-            $dibi->update(self::CLAIMS_TABLE, [
-                'released' => 1,
-                'released_at' => $now,
-                'release_reason' => 'result',
-            ])->where('id = %i', (int) $claim['id'])->execute();
-
-            // 4) analysis_state → 30 (Analyzováno), vynulovat needs_reanalysis.
-            $dibi->update(self::MESSAGES_TABLE, [
-                'analysis_state' => self::ANALYSIS_ANALYZED,
-                'needs_reanalysis' => 0,
-                'modified' => $now,
-            ])->where('id = %i', $messageNdx)->execute();
-
-            // 5) Workflow: Nová → K řešení, jen když běh přinesl validní
-            // dokument a uživatel mezitím stav ručně nezměnil
-            // (docState != 10 → nechat být).
-            if ($documentValid) {
-                $dibi->update(self::MESSAGES_TABLE, [
-                    'docState' => self::DOC_STATE_IN_PROGRESS,
-                    'docStateMain' => self::DOC_STATE_IN_PROGRESS_MAIN,
-                ])
-                ->where('id = %i', $messageNdx)
-                ->where('docState = %i', self::DOC_STATE_NEW)
-                ->execute();
-            }
-
-            // 6) AI klasifikace typu zprávy (message_classification).
-            $this->applyMessageClassification($dibi, $messageNdx, $body);
-
-            // 7) Partner zprávy — vrstva 1
-            //    (tasks/mail-message-title-partner.md D5/D8): partner_name
-            //    dokud target_row IS NULL, partner_person jen do NULL a jen
-            //    shodou identifikátorem. Zdroj: validní canonical návrhu;
-            //    u zprávy bez dokladu (`other`, document null) protistrana
-            //    z klasifikace (tasks/mail-other-attention.md D7 — od koho
-            //    zpráva skutečně je, ne kdo ji přeposlal). Best-effort —
-            //    selhání nesmí shodit uložení výsledku (analyzer by zprávu
-            //    retryoval).
-            try {
-                if (is_array($canonical) && $proposedType !== null) {
-                    $this->partnerWriter()->writeFromCanonical($dibi, $messageNdx, $canonical, $proposedType);
-                } elseif ($document === null
-                    && trim((string) ($classification['primary_type'] ?? '')) === PrimaryTypes::OTHER
-                    && is_array($classification['party'] ?? null)
-                ) {
-                    $this->partnerWriter()->writeFromClassification($dibi, $messageNdx, $classification['party']);
-                }
-            } catch (\Throwable $e) {
-                ErrorLogger::warn('AnalysisController::result partner write failed', [
-                    'messageNdx' => $messageNdx,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-
-            // 8) Titulek zprávy (ai_title) — AI-vlastněný, zapisuje se každý
-            //    běh (i NULL). Best-effort ze stejného důvodu jako partner.
-            try {
-                $this->applyMessageTitle(
-                    $dibi, $messageNdx, $body,
-                    is_array($canonical) ? $canonical : null, $proposedType, $profileNdx,
-                );
-            } catch (\Throwable $e) {
-                ErrorLogger::warn('AnalysisController::result title write failed', [
-                    'messageNdx' => $messageNdx,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-
-            // 9) Pravidlo odesílatele po analýze
-            //    (tasks/mail-sender-rules-after-analysis.md D4–D6): zpráva
-            //    `other` bez dokumentu od odesílatele s potvrzeným pravidlem
-            //    → Archiv s auditem `auto_disposed_*`. Čte stav po zápisu
-            //    klasifikace (ruční volba uživatele má přednost), nad stejným
-            //    spojením. Best-effort jako partner a titulek.
-            try {
-                $this->postAnalysisDisposer()->afterResult(
-                    $messageNdx,
-                    $document !== null,
-                    $this->classificationConfidence($body),
-                    $profileNdx,
-                );
-            } catch (\Throwable $e) {
-                ErrorLogger::warn('AnalysisController::result post-analysis disposal failed', [
-                    'messageNdx' => $messageNdx,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-
-            $dibi->commit();
-        } catch (\Throwable $e) {
-            $dibi->rollback();
-            return Response::error('INTERNAL_ERROR', $e->getMessage(), 500);
+            $analysisNdx = $this->services()->results->storeResult(
+                $messageNdx,
+                (int) $claim['id'],
+                $body,
+                $auth->userId,
+            );
+        } catch (AnalysisResultException $e) {
+            return Response::error($e->errorCode, $e->getMessage(), $e->httpStatus, $e->details);
         }
 
         return Response::success([
@@ -1009,128 +566,32 @@ class AnalysisController
     }
 
     /**
-     * Zapíše AI klasifikaci typu zprávy z `message_classification`
-     * (spec tasks/mail-states-and-classification.md §B1) a s ní pozornost
-     * u zprávy bez dokladu (tasks/mail-other-attention.md D1–D3, #105):
-     * `attention`, `action_note`, `action_due`. Běží uvnitř transakce
-     * resultu. Přítomnost pole vynucuje result() (422) — kontrakt v4 ho má
-     * povinné; fallback čtení z `analysis_json` zůstává pro robustnost.
+     * Validace canonicalu návrhu — delegát na
+     * {@see AnalysisResultWriter::validateCanonical()}; jednotkové testy
+     * ho volají reflexí pod tímto názvem.
      *
-     * - Neznámý `primary_type` → warning + ignore; nesmí rozbít uložení
-     *   výsledku (žádná 422). Totéž neznámá `attention` (pole zůstane NULL).
-     * - AI nikdy nepřepisuje hodnotu nastavenou uživatelem
-     *   (`primary_type_source = 'user'` → UPDATE se nedotkne řádku) —
-     *   jeden UPDATE, jeden guard pro typ i pozornost.
-     * - Pozornost jen u typu `other`; u dokladu a dokumentu Spisovny jsou
-     *   všechna tři pole NULL (zpráva mohla být dřív `other` a reanalýzou
-     *   se stát fakturou — faktura nesmí nést poznámku „Zaplatit“).
-     *   Poznámka a lhůta jen u `action`, i kdyby je model poslal jinde.
+     * @param array<string, mixed>|null $extractedJson
+     * @return array{0: ?string, 1: bool}  [jsonForDb, isValid]
+     */
+    private function validateAndStoreCanonical(?array $extractedJson, string $docType): array
+    {
+        return $this->services()->results->validateCanonical($extractedJson, $docType);
+    }
+
+    /**
+     * Delegáty na {@see AnalysisResultWriter} pro jednotkové testy, které
+     * klasifikaci, titulek a seznam typů volají reflexí na controlleru.
      *
      * @param array<string, mixed> $body
      */
     private function applyMessageClassification(\Dibi\Connection $dibi, int $messageNdx, array $body): void
     {
-        $classification = $body['message_classification'] ?? null;
-        if (!is_array($classification)) {
-            $analysisJson = $body['analysis_json'] ?? null;
-            $classification = is_array($analysisJson)
-                ? ($analysisJson['message_classification'] ?? null)
-                : null;
-        }
-        if (!is_array($classification)) {
-            return;
-        }
-
-        $primaryType = trim((string) ($classification['primary_type'] ?? ''));
-        if ($primaryType === '') {
-            return;
-        }
-
-        if (!in_array($primaryType, $this->knownPrimaryTypes(), true)) {
-            ErrorLogger::warn('AnalysisController::result ignoring unknown primary_type', [
-                'messageNdx' => $messageNdx,
-                'primary_type' => $primaryType,
-            ]);
-            return;
-        }
-
-        $dibi->update(self::MESSAGES_TABLE, [
-            'primary_type' => $primaryType,
-            'primary_type_source' => 'ai',
-            ...$this->attentionFields($messageNdx, $primaryType, $classification),
-        ])
-        ->where('id = %i', $messageNdx)
-        ->where('primary_type_source != %s', 'user')
-        ->execute();
+        $this->services()->results->applyMessageClassification($dibi, $messageNdx, $body);
     }
 
     /**
-     * Sloupce pozornosti z klasifikace (tasks/mail-other-attention.md D3):
-     * u typu jiného než `other` vše NULL; `attention` validovaná proti
-     * `core.mail.attentionKinds` (neznámá → warning + NULL); `action_note`
-     * trim + sjednocení whitespace + 200 znaků (stejný helper jako titulek);
-     * `due_date` jen round-trip validní `YYYY-MM-DD`, jinak NULL. Mimo
-     * `action` poznámka i lhůta NULL.
-     *
-     * @param array<string, mixed> $classification
-     * @return array{attention: ?string, action_note: ?string, action_due: ?string}
-     */
-    private function attentionFields(int $messageNdx, string $primaryType, array $classification): array
-    {
-        $fields = ['attention' => null, 'action_note' => null, 'action_due' => null];
-        if ($primaryType !== PrimaryTypes::OTHER) {
-            return $fields;
-        }
-
-        $attention = trim((string) ($classification['attention'] ?? ''));
-        if ($attention === '') {
-            return $fields;
-        }
-        if (!in_array($attention, AttentionKinds::known($this->configRuntime), true)) {
-            ErrorLogger::warn('AnalysisController::result ignoring unknown attention', [
-                'messageNdx' => $messageNdx,
-                'attention' => $attention,
-            ]);
-            return $fields;
-        }
-
-        $fields['attention'] = $attention;
-        if ($attention === AttentionKinds::ACTION) {
-            $fields['action_note'] = MessageTitleComposer::clean($classification['action_note'] ?? null);
-            $fields['action_due'] = self::isoDateOrNull($classification['due_date'] ?? null);
-        }
-        return $fields;
-    }
-
-    /** `YYYY-MM-DD` s round-trip kontrolou (2026-02-30 → null); jiný vstup → null. */
-    private static function isoDateOrNull(mixed $value): ?string
-    {
-        if (!is_string($value)) {
-            return null;
-        }
-        $value = trim($value);
-        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-        return $date !== false && $date->format('Y-m-d') === $value ? $value : null;
-    }
-
-    /**
-     * Titulek zprávy `ai_title` (tasks/mail-message-title-partner.md D1/D2):
-     * `message_classification.title` (trim, sjednocení whitespace, 200 znaků;
-     * fallback čtení z `analysis_json` jako u klasifikace), když chybí →
-     * deterministický fallback z validního canonicalu
-     * ({@see MessageTitleComposer}), jinak NULL.
-     *
-     * Zapisuje se **vždy**, i NULL — sloupec vlastní AI, re-analýza bez
-     * dokumentu titulek smaže. Bez guardu na `primary_type_source` (uživatel
-     * titulek needituje) i na `target_row` (záměr, P2). Starší analyzer bez
-     * `title` projde — pole není v kontraktu povinné (P8).
-     *
-     * Fallback skládá labely typů v jazyce AI profilu běhu (`$profileNdx`,
-     * jinak výchozí profil DS) — stejně jako titulek od AI (D2), ne v jazyce
-     * requestu analyzeru.
-     *
      * @param array<string, mixed>      $body
-     * @param array<string, mixed>|null $canonical validní canonical návrhu (bez wrapperu), nebo null
+     * @param array<string, mixed>|null $canonical
      */
     private function applyMessageTitle(
         \Dibi\Connection $dibi,
@@ -1140,185 +601,13 @@ class AnalysisController
         ?string $proposedType,
         ?int $profileNdx = null,
     ): void {
-        $classification = $body['message_classification'] ?? null;
-        if (!is_array($classification)) {
-            $analysisJson = $body['analysis_json'] ?? null;
-            $classification = is_array($analysisJson)
-                ? ($analysisJson['message_classification'] ?? null)
-                : null;
-        }
-
-        $title = is_array($classification)
-            ? MessageTitleComposer::clean($classification['title'] ?? null)
-            : null;
-        if ($title === null && $canonical !== null && $proposedType !== null) {
-            $title = $this->titleComposer($profileNdx)->compose($canonical, $proposedType);
-        }
-
-        $dibi->update(self::MESSAGES_TABLE, ['ai_title' => $title])
-            ->where('id = %i', $messageNdx)
-            ->execute();
+        $this->services()->results->applyMessageTitle($dibi, $messageNdx, $body, $canonical, $proposedType, $profileNdx);
     }
 
-    /**
-     * Klíče cfgItem `core.mail.primaryTypes` — server toleruje i typy
-     * s `enabled: false` (prompt AI omezuje na enabled). Bez compiled
-     * configu degraduje na pevný seznam (musí odpovídat primaryTypes.jsonc).
-     *
-     * @return list<string>
-     */
+    /** @return list<string> */
     private function knownPrimaryTypes(): array
     {
-        $cfg = $this->configRuntime?->cfgItem('core.mail.primaryTypes');
-        if (is_array($cfg) && $cfg !== []) {
-            return array_map('strval', array_keys($cfg));
-        }
-
-        return [
-            'invoiceReceived', 'other', 'creditNote', 'order', 'quotation', 'statement', 'complaint',
-            'contract', 'insurance', 'certificate', 'official',
-        ];
-    }
-
-    /**
-     * Validate the proposed canonical against shpd.docs.document.v1 schema.
-     * Invalid output is wrapped (for forensics) — never rejected outright,
-     * so the user can still see what came out and trigger reanalyze.
-     *
-     * Registry targety (dle `primaryTypes[doc_type].target`) se validují
-     * proti `shpd.registry.document.v1` a přeskakují enrichment
-     * (docs-specifikum). Confidence pásma se nepersistují (D3) — počítá je
-     * za běhu AnalysisConfidenceResolver.
-     *
-     * @param array<string, mixed>|null $extractedJson  Raw canonical from AI (or null).
-     * @return array{0: ?string, 1: bool}  [jsonForDb, isValid]
-     */
-    private function validateAndStoreCanonical(
-        ?array $extractedJson,
-        string $docType,
-    ): array {
-        if ($extractedJson === null) {
-            return [null, false];
-        }
-
-        // D12: čas extrakce je serverový fakt — hodnotu od modelu nepodmíněně
-        // přepisujeme. Registry schéma pole source nezná, razítkuje se jen
-        // docs větev; bez source pole se forenzní obsah nedotváří.
-        if (
-            PrimaryTypes::targetFor($this->configRuntime, $docType) !== PrimaryTypes::TARGET_REGISTRY
-            && is_array($extractedJson['source'] ?? null)
-        ) {
-            $extractedJson['source']['extractedAt'] = date(DATE_ATOM);
-        }
-
-        // If no SchemaValidator was wired (e.g. unit tests), skip validation
-        // and store as-is.
-        if ($this->schemaValidator === null) {
-            return [
-                (string) json_encode($extractedJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                true,
-            ];
-        }
-
-        if (PrimaryTypes::targetFor($this->configRuntime, $docType) === PrimaryTypes::TARGET_REGISTRY) {
-            return $this->validateAndStoreRegistryCanonical($extractedJson);
-        }
-
-        $schemaIssues = $this->schemaValidator->validate(
-            $extractedJson,
-            DocumentApplier::FORMAT_ID,
-            DocumentApplier::FORMAT_VERSION,
-        );
-
-        if ($schemaIssues === []) {
-            if ($this->enricher !== null) {
-                // Obohacení řádků — Vrstva 0 (historie) + obsahová eskalace
-                // (pravidlo IČO / LLM klasifikace, D16/D17) — do canonical_json
-                // se ukládá obohacený canonical. Selhání /result nesmí shodit
-                // (analyzer by zprávu retryoval) → pokračuje se neobohaceně.
-                try {
-                    $extractedJson = $this->enricher->enrichAtResult($extractedJson);
-                } catch (\Throwable $e) {
-                    ErrorLogger::logException($e, 'AnalysisController::result row enrichment failed');
-                }
-            }
-            return [
-                (string) json_encode($extractedJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                true,
-            ];
-        }
-
-        $wrapped = [
-            '_validationError' => 'Canonical schema validation failed',
-            '_validationIssues' => $schemaIssues,
-            '_rawOutput' => $extractedJson,
-        ];
-        return [
-            (string) json_encode($wrapped, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            false,
-        ];
-    }
-
-    /**
-     * Obsahový štítek z `_resolve.contentTag.tag` obohaceného canonicalu —
-     * denormalizace do sloupce `content_tag` (filtrování analýz, learning
-     * handler). null = bez štítku / nevalidní dokument. Tělo sdílí
-     * s ISDOC importem ({@see RowEnrichmentPipeline::contentTagOf()}).
-     */
-    private function extractContentTag(?string $canonicalJson, bool $documentValid): ?string
-    {
-        if ($canonicalJson === null || !$documentValid) {
-            return null;
-        }
-        $canonical = json_decode($canonicalJson, true);
-        return is_array($canonical) ? RowEnrichmentPipeline::contentTagOf($canonical) : null;
-    }
-
-    /**
-     * Registry větev ingestu: validace proti `shpd.registry.document.v1`
-     * (schéma modulu base.registry) — žádný RowHistoryEnricher
-     * (docs-specifikum). Invalid výstup dostává stejný forenzní wrapper
-     * jako docs cesta.
-     *
-     * @param array<string, mixed> $extractedJson
-     * @return array{0: ?string, 1: bool}  [jsonForDb, isValid]
-     */
-    private function validateAndStoreRegistryCanonical(array $extractedJson): array
-    {
-        $schemaIssues = $this->registrySchemaValidator()->validate(
-            $extractedJson,
-            self::REGISTRY_FORMAT_ID,
-            self::REGISTRY_FORMAT_VERSION,
-        );
-
-        if ($schemaIssues === []) {
-            return [
-                (string) json_encode($extractedJson, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-                true,
-            ];
-        }
-
-        $wrapped = [
-            '_validationError' => 'Canonical schema validation failed',
-            '_validationIssues' => $schemaIssues,
-            '_rawOutput' => $extractedJson,
-        ];
-        return [
-            (string) json_encode($wrapped, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            false,
-        ];
-    }
-
-    /**
-     * SchemaValidator nad schématy base.registry — druhá instance loaderu
-     * mířící do `modules/base/registry/schemas` (soubor drží konvenci
-     * `{formatId}.v{version}.json`, takže SchemaLoader funguje beze změny).
-     */
-    private function registrySchemaValidator(): SchemaValidator
-    {
-        return $this->registrySchemaValidator ??= new SchemaValidator(
-            new SchemaLoader(dirname(__DIR__, 3) . '/modules/base/registry/schemas'),
-        );
+        return $this->services()->results->knownPrimaryTypes();
     }
 
     // -------------------------------------------------------------------
@@ -1326,9 +615,9 @@ class AnalysisController
     // -------------------------------------------------------------------
 
     /**
-     * Atomicky uloží neúspěch analýzy: vytvoří failed analysis record,
-     * uvolní claim, přepne analysis_state 20→10 (retryable) nebo 20→70
-     * (permanent). docState se nemění. Spec §3.6.
+     * Uloží neúspěch analýzy: failed analysis record, uvolnění claimu,
+     * analysis_state 20→10 (retryable) nebo 20→70 (permanent). docState se
+     * nemění. Spec §3.6. Tělo drží {@see AnalysisResultWriter::storeFailure()}.
      */
     public function failed(AuthContext $auth, Request $request, int $messageNdx): Response
     {
@@ -1348,47 +637,26 @@ class AnalysisController
         $retryable = (bool) ($body['retryable'] ?? false);
         $tokensUsed = isset($body['tokens_used']) ? (int) $body['tokens_used'] : null;
 
-        $dibi = $this->db->getDibiConnection();
-        $dibi->begin();
         try {
-            $now = date('Y-m-d H:i:s');
-
-            $dibi->insert(self::ANALYSES_TABLE, [
-                'message' => $messageNdx,
-                'analyzed_at' => $now,
-                'status' => 3, // failed
-                'model_name' => isset($body['model_name']) ? (string) $body['model_name'] : 'unknown',
-                'prompt_version' => isset($body['prompt_version']) ? (string) $body['prompt_version'] : 'unknown',
-                'error_message' => $errorMessage !== '' ? "[{$errorType}] {$errorMessage}" : "[{$errorType}]",
-                'tokens_input' => $tokensUsed,
-                'created' => $now,
-                'created_by' => $auth->userId,
-            ])->execute();
-
-            $dibi->update(self::CLAIMS_TABLE, [
-                'released' => 1,
-                'released_at' => $now,
-                'release_reason' => 'failed',
-            ])->where('id = %i', (int) $claim['id'])->execute();
-
-            // retryable=true → zpět do fronty (10), jinak permanent error (70)
-            $newState = $retryable ? self::ANALYSIS_QUEUED : self::ANALYSIS_FAILED;
-
-            $dibi->update(self::MESSAGES_TABLE, [
-                'analysis_state' => $newState,
-                'modified' => $now,
-            ])->where('id = %i', $messageNdx)->execute();
-
-            $dibi->commit();
-        } catch (\Throwable $e) {
-            $dibi->rollback();
-            return Response::error('INTERNAL_ERROR', $e->getMessage(), 500);
+            $newState = $this->services()->results->storeFailure(
+                $messageNdx,
+                (int) $claim['id'],
+                $errorType,
+                $errorMessage,
+                $retryable,
+                $tokensUsed,
+                isset($body['model_name']) ? (string) $body['model_name'] : null,
+                isset($body['prompt_version']) ? (string) $body['prompt_version'] : null,
+                $auth->userId,
+            );
+        } catch (AnalysisResultException $e) {
+            return Response::error($e->errorCode, $e->getMessage(), $e->httpStatus, $e->details);
         }
 
         return Response::success([
             'message_ndx' => $messageNdx,
             'retryable' => $retryable,
-            'new_state' => $retryable ? 'queued' : 'ai_failed',
+            'new_state' => $newState === AnalysisStates::QUEUED ? 'queued' : 'ai_failed',
         ], 200);
     }
 
@@ -1727,62 +995,6 @@ class AnalysisController
             $def->docStates,
             $def,
         );
-    }
-
-    /**
-     * Jistota AI klasifikace typu zprávy (`message_classification.confidence`)
-     * pro archivaci podle pravidla odesílatele (D5) — stejný fallback do
-     * `analysis_json` jako {@see applyMessageClassification()}. Nečíselná
-     * nebo chybějící hodnota → null (zpráva se neodklízí).
-     *
-     * @param array<string, mixed> $body
-     */
-    private function classificationConfidence(array $body): ?float
-    {
-        $classification = $body['message_classification'] ?? null;
-        if (!is_array($classification)) {
-            $analysisJson = $body['analysis_json'] ?? null;
-            $classification = is_array($analysisJson)
-                ? ($analysisJson['message_classification'] ?? null)
-                : null;
-        }
-        if (!is_array($classification)) {
-            return null;
-        }
-
-        $confidence = $classification['confidence'] ?? null;
-        return is_numeric($confidence) ? (float) $confidence : null;
-    }
-
-    /**
-     * Archivace ostatní pošty podle pravidla odesílatele — nad DS connection
-     * resultu (sdílí transakci), lazy.
-     */
-    private function postAnalysisDisposer(): PostAnalysisDisposer
-    {
-        return $this->postAnalysisDisposer ??= new PostAnalysisDisposer($this->db, $this->configRuntime);
-    }
-
-    /**
-     * Zápis partnera zprávy z canonicalu (vrstva 1) — resolver nad DS
-     * connection, lazy (běh bez dokumentu ho nepotřebuje).
-     */
-    private function partnerWriter(): MessagePartnerWriter
-    {
-        return $this->partnerWriter ??= MessagePartnerWriter::create(
-            $this->db->getDibiConnection(),
-            $this->configRuntime,
-        );
-    }
-
-    /**
-     * Fallback titulku z canonicalu — labely typů z compiled configu
-     * v jazyce AI profilu běhu (lazy, cache per profil).
-     */
-    private function titleComposer(?int $profileNdx): MessageTitleComposer
-    {
-        $key = $profileNdx ?? 0;
-        return $this->titleComposers[$key] ??= MessageTitleComposer::forDataSource($this->db, $this->config, $profileNdx);
     }
 
     /**
