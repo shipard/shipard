@@ -1670,6 +1670,7 @@ function dispatchForm(
 		'recalculate' => $ctrl->recalculate($table, $request, $tables, $db, $formRegistry, $configRuntime, $lookupReg, $modulePathResolver, $language, $auth, $documentRegistry),
 		'subtable'     => $ctrl->subtable($table, $route->key, $route->id, $tables, $db, $formRegistry, $configRuntime, $auth),
 		'subtableMove' => $ctrl->subtableMove($table, $route->key, $route->id, $request, $tables, $db, $formRegistry, $configRuntime, $auth),
+		'subtableDelete' => $ctrl->subtableDelete($table, $route->key, $route->id, $request, $tables, $db, $formRegistry, $configRuntime, $documentRegistry, $dsConfig, $eventDispatcher, $auth),
 		default       => Response::error('INTERNAL_ERROR', "Unknown form action: {$route->action}", 500),
 	};
 }

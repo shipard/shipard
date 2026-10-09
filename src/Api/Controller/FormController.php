@@ -498,6 +498,125 @@ class FormController
     }
 
     /**
+     * POST /_ui/form/{table}/subtable/{tabId}/{parentId}/delete
+     * body `{id}` — smazání řádku sub-tabulky přes TableGateway dětské
+     * tabulky (#113 bod 2, `tasks/subtable-delete-gateway.md`).
+     *
+     * Generické `DELETE /{table}/{id}` maže přímým SQL bez Document
+     * lifecycle — u řádku dokladu se nespustil `DocRowsDocument::afterDelete`
+     * (přepočet hlavičky) a součty zůstaly zastaralé do příštího Uložit.
+     * Tady jde mazání přes `TableGateway::deleteDocument`: zámek providerů,
+     * `beforeDelete`, události, child tabulky, `afterDelete`.
+     *
+     * Rodič v read-only doc state → 422 DOCUMENT_READONLY (stejně jako save
+     * a /move); dětská tabulka `systemManaged` → 405 TABLE_SYSTEM_MANAGED
+     * (stejná pojistka jako CRUD — nový endpoint nesmí být volnější než
+     * dnešní cesta); řádek mimo rodiče → 404 RECORD_NOT_FOUND; zamčený
+     * záznam → 422 DOCUMENT_LOCKED (kód a hláška z gateway, bez `details`);
+     * jiná chyba gateway → 500. Read-only DS odmítá ReadOnlyPolicy
+     * (fail-closed). Odpověď `{success: true, data: null}`.
+     *
+     * @param array<string, TableDefinition> $tables
+     */
+    public function subtableDelete(
+        string $table,
+        ?string $tabId,
+        ?int $parentId,
+        Request $request,
+        array $tables,
+        DataSourceConnection $db,
+        FormRegistry $formRegistry,
+        ?ConfigRuntime $config,
+        ?DocumentRegistry $documentRegistry = null,
+        ?\Shipard\Core\Config\DataSourceConfig $dsConfig = null,
+        ?\Shipard\Core\Document\DocumentEventDispatcher $eventDispatcher = null,
+        ?AuthContext $auth = null,
+    ): Response {
+        $ctx = $this->resolveSubtableContext(
+            $table, $tabId, $parentId, $tables, $db, $formRegistry, $config, $auth ?? new AuthContext(false),
+        );
+        if ($ctx instanceof Response) {
+            return $ctx;
+        }
+
+        $body = $request->getBody() ?? [];
+        $rawId = $body['id'] ?? null;
+        if (!is_numeric($rawId) || (int) $rawId <= 0) {
+            return Response::error('BAD_REQUEST', 'Body must contain positive "id"', 400);
+        }
+        $rowId = (int) $rawId;
+
+        $readOnlyErr = $this->guardParentWritable($ctx['def'], $ctx['data'], $config);
+        if ($readOnlyErr !== null) {
+            return $readOnlyErr;
+        }
+
+        $childTable = $ctx['childTable'];
+        $childDef = $ctx['childDef'];
+        if ($childDef->systemManaged) {
+            return Response::error(
+                'TABLE_SYSTEM_MANAGED',
+                "Records of table '{$childTable}' are created and removed by the application only",
+                405,
+            );
+        }
+
+        $owned = $db->fetchRow(
+            "SELECT `id` FROM `{$childTable}` WHERE `id` = %i AND `{$ctx['fk']}` = %i",
+            $rowId,
+            $parentId,
+        );
+        if ($owned === null) {
+            return Response::error('RECORD_NOT_FOUND', "Row {$rowId} does not belong to record {$parentId}", 404);
+        }
+
+        $gateway = $this->buildChildGateway(
+            $childTable, $childDef, $db, $documentRegistry ?? new DocumentRegistry(), $config, $dsConfig, $eventDispatcher,
+        );
+        $result = $gateway->deleteDocument($rowId);
+        if (!$result->isSuccess()) {
+            if ($result->isDomainError()) {
+                return Response::error(
+                    $result->getDomainErrorCode() ?: 'DOMAIN_ERROR',
+                    $result->getErrorMessage() ?? 'Domain rule violated',
+                    422,
+                );
+            }
+            return Response::error('INTERNAL_ERROR', $result->getErrorMessage() ?? 'Delete failed', 500);
+        }
+
+        return Response::success(null);
+    }
+
+    /**
+     * Gateway dětské tabulky pro mazání řádku sub-tabulky — stejná konstrukce
+     * jako u `save`. Seam pro testy (Dibi\Connection je final, reálný
+     * TableGateway se v unit testu postavit nedá — vzor
+     * `HostingPortalController::buildGateway`).
+     */
+    protected function buildChildGateway(
+        string $childTable,
+        TableDefinition $childDef,
+        DataSourceConnection $db,
+        DocumentRegistry $documentRegistry,
+        ?ConfigRuntime $config,
+        ?\Shipard\Core\Config\DataSourceConfig $dsConfig,
+        ?\Shipard\Core\Document\DocumentEventDispatcher $eventDispatcher,
+    ): TableGateway {
+        return new TableGateway(
+            $childTable,
+            $db->getDibiConnection(),
+            $documentRegistry,
+            $childDef->childTables,
+            $config,
+            $dsConfig,
+            $eventDispatcher,
+            $childDef->docStates,
+            $childDef,
+        );
+    }
+
+    /**
      * Společné resolvování pro endpointy sub-tabulky: rodič (tabulka, guard,
      * záznam), jeho PHP form, tab typu `subtable`, dětská tabulka (guard),
      * FK a pořadový sloupec (oba musí být sloupce dětské tabulky — jinak

@@ -1192,6 +1192,8 @@ $fallback)` (lokalizovaný label sloupce dětské tabulky), `subtableColumnSpec(
   listener), Esc = zrušit (Modal přes stack zavře jen vršek). Karta 480 px
   s `Modal fixedSize` (mimo depth-shrink vnořených modalů). Ostatní výskyty
   `window.confirm` viz `tasks/TODO.md`; `FormDialog.handleClose` řeší fáze 2.
+  Potvrzení volá `POST …/delete` — endpoint formuláře, který maže přes
+  `TableGateway` dětské tabulky (kap. 15.6), ne generické `DELETE /{table}/{id}`.
 - **Filtr:** od 11 řádků (`FILTER_THRESHOLD = 10`) `Input` vpravo
   v toolbaru; klientsky přes texty všech buněk bez diakritiky
   (`foldDiacritics` z `utils/paletteMatch.js`), reset při změně `parentId`,
@@ -1299,6 +1301,45 @@ bude druhá tabulka s pořadím, přesune se do `Document` podle `orderColumn`.
 Konzumenti pořadí (`DocsHeadsViewer::buildDetailRows`, `AccountingEngine`)
 čtou `ORDER BY order_pos` (viewer s `id` tiebreakerem) — přečíslování jen
 zpevňuje pořadí, obsah nemění.
+
+### 15.6 Mazání řádku — endpoint `/delete` (#113 bod 2)
+
+**`POST /_ui/form/{parentTable}/subtable/{tabId}/{parentId}/delete`**, tělo
+`{ "id": 4711 }` → `FormController::subtableDelete()`:
+
+1. `resolveSubtableContext()` jako u výpisu a `/move` (guard rodiče i dětské
+   tabulky přes `TableAccessGuard`); špatné tělo → 400 `BAD_REQUEST`.
+2. Rodič v read-only doc state → 422 `DOCUMENT_READONLY` se stejnou hláškou
+   jako `save` a `/move`. Read-only DS odmítá `ReadOnlyPolicy` (fail-closed —
+   akce `subtableDelete` není v allow-listu `form`).
+3. Dětská tabulka `systemManaged` → 405 `TABLE_SYSTEM_MANAGED` (stejná
+   pojistka jako generické CRUD; nový endpoint nesmí být volnější než
+   dosavadní cesta).
+4. Řádek musí patřit rodiči (`SELECT id FROM child WHERE id = ? AND fk = ?`),
+   jinak 404 `RECORD_NOT_FOUND`.
+5. `TableGateway` **dětské** tabulky (`buildChildGateway()` — stejná konstrukce
+   jako v `save`: registry, child tables, config, dispatcher, docStates, def;
+   protected seam pro testy) → `deleteDocument($id)`. Domain error gateway →
+   422 s jejím kódem (zámek providera = `DOCUMENT_LOCKED`, hláška
+   `DocumentLockRegistry::summarize`; bez `details`, které posílá CRUD —
+   `DocumentResult` důvody nenese a frontend sub-tabulky používá jen kód
+   a hlášku); jiná chyba → 500 `INTERNAL_ERROR`.
+6. Odpověď `{ success: true, data: null }`.
+
+**Proč přes gateway:** generické `DELETE /{table}/{id}` (`CrudController`)
+maže přímým SQL a Document lifecycle nevolá. U řádku dokladu se tak
+nespustil `DocRowsDocument::afterDelete` (přepočet hlavičky,
+`DocHeadRecomputer`) — součty zůstaly zastaralé do příštího Uložit; totéž
+`VatRecapDocument::afterDelete`, `beforeDelete` handlery a zámky řádků přes
+providery (`WorkOrderRowLockProvider` CRUD hlídal jen přes vlastní
+`guardLock`). `TableGateway::deleteDocument` dělá zámek, `beforeDelete`,
+události, child tabulky i `afterDelete` v jednom místě. Generické CRUD
+zůstává beze změny — jeho převod na gateway řeší #113.
+
+Frontend (`FormSubTable.confirmDelete`): po úspěchu `fetchRows()` +
+`onChanged` → `FormEditor.handleSubtableChanged()` načte rodiče už
+s přepočtenou hlavičkou (jen bez neuložených změn, kap. 15.3). Chyby přes
+`translateError` (`error.DOCUMENT_LOCKED`, jinak hláška serveru).
 
 ---
 

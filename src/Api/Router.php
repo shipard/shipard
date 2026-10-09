@@ -1415,8 +1415,11 @@ class Router
 		}
 
 		// POST /_ui/form/{table}/subtable/{tabId}/{parentId}/move
-		// Přesun řádku sub-tabulky o jednu pozici (issue #53, fáze 3).
-		if ($count === 5 && $action === 'subtable' && $parts[4] === 'move') {
+		//   přesun řádku sub-tabulky o jednu pozici (issue #53, fáze 3);
+		// POST /_ui/form/{table}/subtable/{tabId}/{parentId}/delete
+		//   smazání řádku přes TableGateway dětské tabulky (#113 bod 2).
+		$subtableActions = ['move' => 'subtableMove', 'delete' => 'subtableDelete'];
+		if ($count === 5 && $action === 'subtable' && isset($subtableActions[$parts[4]])) {
 			if ($method !== 'POST') {
 				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
 			}
@@ -1428,7 +1431,7 @@ class Router
 			if (!ctype_digit($rawId) || (int) $rawId <= 0) {
 				return Response::error('NOT_FOUND', 'Not found', 404);
 			}
-			return new Route('form', 'subtableMove', $table, (int) $rawId, key: $tabId);
+			return new Route('form', $subtableActions[$parts[4]], $table, (int) $rawId, key: $tabId);
 		}
 
 		return Response::error('NOT_FOUND', 'Not found', 404);

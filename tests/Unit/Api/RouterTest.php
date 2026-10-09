@@ -391,6 +391,21 @@ class RouterTest extends TestCase
 		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
 	}
 
+	public function testFormSubtableDelete(): void
+	{
+		$result = $this->router->resolve('/api/v1/_ui/form/docs_core_heads/subtable/rows/42/delete', 'POST');
+		$this->assertInstanceOf(Route::class, $result);
+		$this->assertRoute($result, 'form', 'subtableDelete', 'docs_core_heads', 42);
+		$this->assertSame('rows', $result->key);
+	}
+
+	public function testFormSubtableDeleteRequiresPost(): void
+	{
+		$result = $this->router->resolve('/api/v1/_ui/form/docs_core_heads/subtable/rows/42/delete', 'DELETE');
+		$this->assertInstanceOf(Response::class, $result);
+		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
+	}
+
 	public function testFormSubtableUnknownTailIsNotFound(): void
 	{
 		$result = $this->router->resolve('/api/v1/_ui/form/docs_core_heads/subtable/rows/42/swap', 'POST');

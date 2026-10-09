@@ -33,8 +33,13 @@
    * ▲ ▼ → `POST …/move`, server skupinu přečísluje 1..N a prohodí sousedy;
    * poté jen refetch (mění se i sloupec #). Šipky chybí u read-only rodiče
    * a při zadaném textu filtru (soused ve filtru není soused v pořadí).
+   *
+   * Mazání: `POST …/delete` — endpoint formuláře, který řádek maže přes
+   * TableGateway dětské tabulky (zámky, beforeDelete, afterDelete = přepočet
+   * hlavičky dokladu), ne generické `DELETE /{table}/{id}` (#113 bod 2).
+   * Po úspěchu refetch + `onChanged`, rodič si načte přepočtenou hlavičku.
    */
-  import { get, post, del } from '../../api/client.js';
+  import { get, post } from '../../api/client.js';
   import Button from '../ui/Button.svelte';
   import Input from '../ui/Input.svelte';
   import ConfirmDialog from '../ui/ConfirmDialog.svelte';
@@ -190,7 +195,10 @@
   async function confirmDelete() {
     if (deleteId == null || deleting) return;
     deleting = true;
-    const res = await del(`/${element.table}/${deleteId}`);
+    // Endpoint formuláře, ne generické DELETE /{table}/{id}: mazání jde přes
+    // TableGateway dětské tabulky, takže se spustí afterDelete (přepočet
+    // hlavičky dokladu) a zámky — viz docs/edit-forms.md kap. 15.6.
+    const res = await post(`/_ui/form/${parentTable}/subtable/${tabId}/${parentId}/delete`, { id: deleteId });
     deleting = false;
     deleteId = null;
     if (!res?.success) {

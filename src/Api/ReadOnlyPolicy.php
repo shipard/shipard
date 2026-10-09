@@ -71,7 +71,7 @@ final class ReadOnlyPolicy
 			// Sloupce + řádky sub-tabulky (issue #53) — čtení, bez ní by tab
 			// Řádky / Adresy na read-only DS zůstal prázdný.
 			'subtable' => ReadOnlyVerdict::Allow,
-			// save, recalculate, subtableMove → 403
+			// save, recalculate, subtableMove, subtableDelete → 403
 		],
 		'lookup' => [self::ANY => ReadOnlyVerdict::Allow],
 		'attachment' => [

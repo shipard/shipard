@@ -43,6 +43,7 @@ class ReadOnlyPolicyTest extends TestCase
 			['viewer', 'meta', $allow], ['viewer', 'rows', $allow], ['viewer', 'detail', $allow],
 			['form', 'meta', $allow], ['form', 'subtable', $allow],
 			['form', 'save', $d403], ['form', 'recalculate', $d403], ['form', 'subtableMove', $d403],
+			['form', 'subtableDelete', $d403],
 			['lookup', 'search', $allow], ['lookup', 'resolve', $allow],
 			// POST, ale jen počítá návrh nového záznamu — nic nezapisuje.
 			['lookup', 'createDefaults', $allow],

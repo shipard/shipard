@@ -1,6 +1,6 @@
 # Sub-tabulky — mazání řádku přes TableGateway
 
-**Stav:** naplánováno — #113 bod 2 (rychlá oprava před přestavbou CRUD); S1 potvrzené 2026-10-09
+**Stav:** hotovo — 2026-10-09 (#113 bod 2); generické `DELETE /{table}/{id}` zůstává na #113
 
 > PRD pro jednu Claude Code session (1 commit). Kontext: issue #113
 > (generické CRUD obchází Document lifecycle). Navazuje na

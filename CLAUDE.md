@@ -216,7 +216,9 @@ smí názvy nést — tam jsou potřeba k práci.
   `PersonsForm` (kontakty / adresy / účty).
 - Formát čísel, částek a dat v buňkách **jen** přes `SubtableCellFormatter` — nepřidávat
   další privátní `formatMoney()`. Boolean labely z cfgItem `core.system.formDefaults`.
-- Read-only rodič → `FormDialog readOnly` (jen Zobrazit); mazání přes `ui/ConfirmDialog`.
+- Read-only rodič → `FormDialog readOnly` (jen Zobrazit); mazání přes `ui/ConfirmDialog`
+  → `POST …/subtable/{tabId}/{parentId}/delete` = `TableGateway::deleteDocument` dětské
+  tabulky (zámky, `afterDelete` = přepočet hlavičky), **ne** generické `DELETE /{table}/{id}`.
   Detaily `docs/edit-forms.md` kapitola 15.
 
 ### Editační formuláře — polymorfismus per typ
