@@ -45,7 +45,7 @@ poštu a přijaté faktury.
 | uklidit z cesty | stav **Archiv** | Zpráva, se kterou už nic nebude — reklama, nevyžádaná pošta |
 | elektronická faktura, XML faktura | **ISDOC** | Strojově čitelný formát faktury. Když ho dodavatel přiloží, Shipard ho použije přímo a AI analýzu vůbec nepotřebuje — je to přesnější |
 | obrazovka, kde se to kontroluje | **Náhled dokladu** | Vlevo PDF faktury, jak přišla, vpravo data, která z ní AI přečetla. Na telefonu se z toho stanou taby **PDF** a **Náhled** |
-| co je vyplněné podle mých starších faktur | **Doplněno z historie** | Poznámka u pole: hodnota nepřišla z faktury, ale z tvých dřívějších dokladů od téhož dodavatele |
+| co je vyplněné podle mých starších faktur | **Doplněno z historie** | Zdroj *z historie*, *podobný text* nebo *častá položka dodavatele* za názvem položky pod řádkem v náhledu: položka, sazba nebo účet nepřišly z faktury, ale z tvých dřívějších dokladů od téhož dodavatele. Detail po najetí myší |
 | položka nebo dodavatel, které mám potvrdit | **Reference** | Odkaz na záznam v tvé evidenci. Když si AI není jistá, který to je, nabídne kandidáty, vyhledávání a **Vytvořit novou osobu** nebo **položku** — a dokud nerozhodneš, tlačítka **Vystavit…** jsou zašedlá |
 | přečíst to znovu | **Znovu analyzovat** | Spustí novou analýzu už doručené zprávy. Nový návrh nahradí ten dosavadní; starší běhy zůstávají na záložce **Analýzy**. Zprávu s už použitým návrhem znovu analyzovat nejde |
 | ať už mi tohle nechodí | **Pravidlo odesílatele** | Pravidlo, které si založíš v **Nastavení → Ostatní → Pošta**. Pravidlo ve stavu **V pořádku** pak poštu od té adresy archivuje samo |

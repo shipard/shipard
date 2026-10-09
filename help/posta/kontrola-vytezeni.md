@@ -1,7 +1,7 @@
 ---
 title: Kontrola vytěženého dokladu
 summary: Jak porovnat návrh dokladu s originálem faktury, co kontrolovat první a kdy návrh zamítnout.
-keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU, faktura z USA, software ze zahraničí, místo plnění, DIČ dodavatele, neplátce DPH, faktura od plátce, daň v ceně, bez DPH]
+keywords: [kontrola, vytěžení, analýza, náhled dokladu, jistota, použít, vystavit koncept, vystavit a uzavřít, zamítnout, AI přečetla špatně, sedí částka, review, vytvořit z registru, hledat v registru, nový dodavatel z faktury, projít frontu, přeskočit, fronta faktur, reverse charge, samovyměření, faktura z EU, faktura z USA, software ze zahraničí, místo plnění, DIČ dodavatele, neplátce DPH, faktura od plátce, daň v ceně, bez DPH, napárování, napárovaná položka, špatná položka, změnit položku, položka řádku, zdroj napárování, kód dodavatele, sloupec Účet]
 related: [slovnicek.md, co-dnes-nejde.md, osoby/zalozeni-osoby.md]
 ---
 
@@ -80,7 +80,27 @@ a pod sekcí je odkaz **a N dalších**, který otevře **Došlou poštu**.
    zůstává nerozhodnuté, obě tlačítka **Vystavit…** jsou zašedlá — bez
    vysvětlení, takže když nejde kliknout, hledej nedořešenou referenci.
 
-6. **Vystav doklad, nebo návrh zamítni.**
+6. **Zkontroluj položky řádků.** U každého řádku, který Shipard
+   napároval na položku z tvého číselníku, je pod textem řádku druhý,
+   menší řádek: kód a název položky a za tečkou zdroj napárování — *kód
+   dodavatele*, *EAN*, *SKU*, *náš kód*, *z historie*, *podobný text*,
+   *častá položka dodavatele*, *kategorie …*, *podle názvu*. Šedý zdroj
+   je spolehlivý; **jantarový ověř** — *podobný text*, *častá položka
+   dodavatele*, *kategorie* a *podle názvu* jsou odhady. Když je položka
+   špatně, klikni na zelený odznak ✓ nebo rovnou na ten druhý řádek:
+   otevře se stejný panel jako u nenapárované položky, nahoře s řádkem
+   *Napárováno automaticky: …*, pod ním **Hledat…**, **Vytvořit novou
+   položku** (předvyplněnou textem řádku), **Jen účet — bez položky**
+   (jen u řádku, který nese účet) a **Vynechat řádek**. Po volbě se pod
+   řádkem hned objeví název zvolené položky se zdrojem *zvoleno ručně*,
+   odznak ✓ dostane obrys a náhled se obnoví — sloupec **Účet** pak
+   ukazuje účet nové položky. **Zrušit výběr** vrátí automatické
+   napárování. Rozhodnutí *jen účet* a *vynechat řádek* vidíš pod řádkem
+   slovy (*jen účet 518100 …*, *řádek se vynechá*). Napárované řádky
+   měníš po jednom; hromadné **+** v hlavičce sloupce **Položka** plní
+   jen řádky bez položky.
+
+7. **Vystav doklad, nebo návrh zamítni.**
    - **Vystavit a uzavřít** — **Faktura přijatá** vznikne rovnou ve
      stavu **V pořádku**: dostane číslo, zaúčtuje se a nic dalšího po
      tobě nechce. Zpráva přejde na **Hotovo**. Volba pro návrhy, které
@@ -94,7 +114,7 @@ a pod sekcí je odkaz **a N dalších**, který otevře **Došlou poštu**.
      nebo je vytěžení nepoužitelné. Důvod je povinný a uloží se k návrhu:
      *špatně rozpoznaný typ*, *není to faktura*.
 
-7. **Dokonči koncept.** Po **Vystavit koncept** se ti doklad hned otevře
+8. **Dokonči koncept.** Po **Vystavit koncept** se ti doklad hned otevře
    v editačním formuláři a je plně editovatelný — co jsi v náhledu jen
    zaregistroval, oprav teď. Zaúčtuje se teprve přechodem
    na stav **V pořádku**. Po **Vystavit a uzavřít** tenhle krok odpadá —
@@ -159,19 +179,37 @@ dokument zprávy (typicky fakturu). Když ve zprávě najde ještě něco dalš�
 poznámku; dokument z toho nevznikne a založíš ho ručně. Viz
 [Co Shipard dnes neumí](../co-dnes-nejde.md).
 
-**Doplněno z historie.** U některých polí najdeš poznámku, že hodnota
-nepřišla z faktury, ale z tvých starších dokladů od stejného dodavatele —
-*přesná shoda*, *podobný text* nebo *častá položka dodavatele*. První dvě
-bývají spolehlivé; **častou položku ověřuj vždy** — znamená jen „tohle
-u tohohle dodavatele býváš zvyklý", ne že to je na téhle faktuře.
+**Doplněno z historie.** Položka, sazba DPH nebo účet řádku nemusely
+přijít z faktury, ale z tvých starších dokladů od stejného dodavatele.
+Poznáš to podle zdroje za názvem položky pod řádkem — *z historie*
+(přesná shoda textu), *podobný text* nebo *častá položka dodavatele*.
+Po najetí myší na ten řádek uvidíš, ze kterého dokladu to je a co všechno
+se z něj doplnilo. První zdroj bývá spolehlivý; **podobný text a častou
+položku ověřuj vždy** — jsou jantarově a znamenají jen „tohle u tohohle
+dodavatele býváš zvyklý", ne že to je na téhle faktuře.
 
 **Obsahová klasifikace.** Když historie mlčí, AI doklad zařadí podle
-obsahu — poznámka u řádku pak říká *Obsahová klasifikace — Pohonné hmoty
-(pravidlo dodavatele)* nebo *(AI)*. Návrh doplní položku, nebo aspoň
-účet — ten vidíš ve sloupci **Účet** tabulky řádků (sloupec se ukazuje,
-jen když ho aspoň jeden řádek má). U kategorií jako občerstvení poznámka
-navíc upozorní na DPH typicky bez nároku na odpočet. Detaily a správa
-kategorií: [Obsahové štítky](../polozky/obsahove-stitky.md).
+obsahu. Když kategorie určí položku, je pod řádkem se zdrojem *kategorie
+Pohonné hmoty* (jantarově — ověř) a po najetí myší vidíš, zda ji dala
+*pravidlo dodavatele*, nebo *AI*. Když kategorie najde jen účet, ne
+položku, je u řádku ikona ⟲ se stejnou poznámkou. U kategorií jako
+občerstvení poznámka navíc upozorní na DPH typicky bez nároku na odpočet.
+Detaily a správa kategorií:
+[Obsahové štítky](../polozky/obsahove-stitky.md).
+
+**Sloupec Účet.** Ukazuje, kam se řádek zaúčtuje: u řádku s účetní
+položkou účet té položky, u řádku *jen účet* a u účetního dokladu účet
+řádku. Služba nebo zásoba bez vlastního účtu mají **—** — účtují se
+podle druhu položky, i když historie nebo kategorie nějaký účet
+navrhly. Sloupec se ukazuje, jen když má účet aspoň jeden řádek. Když
+u řádku vybereš položku ručně, účet navržený historií nebo kategorií se
+na doklad nezapíše; sazba DPH zůstává, jak ji přečetla AI.
+
+**Oprava napárování se zapamatuje.** Když u řádku s kódem dodavatele
+vybereš jinou položku, než Shipard napároval, uloží si pro ten kód
+dodavatele tu tvou — příští faktura od téhož dodavatele řádek napáruje
+správně. Platí to jen pro položku vybranou v náhledu; oprava až
+v Konceptu dosavadní zapamatování nepřepíše.
 
 **Faktury s cenami včetně DPH.** U dokladů, kde jsou jednotkové ceny
 uvedené s daní (typicky drobný prodej, občerstvení), se daň může spočítat

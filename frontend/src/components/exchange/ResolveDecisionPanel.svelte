@@ -4,9 +4,11 @@
   // typeahead — search input + result list (max 8) + "create new" button
   // — driving `_resolve.*.userAction` decisions.
   //
-  // Outcomes (via `onDecide(action)`):
-  //   - pick a result            → onDecide(`useExisting:${item.id}`)
-  //   - "create new" → save      → onDecide(`useExisting:${newId}`)  (real id, no side-create)
+  // Outcomes (via `onDecide(action, meta)`; `meta.label` = lidský název
+  // zvoleného záznamu pro optimistický štítek, než nový náhled přinese
+  // `display` ze serveru — #111 D3; chybí, když ho panel nezná):
+  //   - pick a result            → onDecide(`useExisting:${item.id}`, {label: item.primary})
+  //   - "create new" → save      → onDecide(`useExisting:${newId}`, {label})  (real id, no side-create)
   //   - "skip row"  (items only) → onDecide('skip')
   //   - "account only" (items with account) → onDecide('noItem')
   //   - "create"   (bank only)   → onDecide('create')  // fallback when no parent
@@ -42,6 +44,13 @@
     // „Jen účet — bez položky" (D24) — jen referenceKind 'item' a jen když
     // řádek (u bulku všechny řádky) nese účet; rozhoduje rodič.
     allowNoItem = false,
+    // Napárovaná položka (#111 D5): „Napárováno automaticky: kód název
+    // (zdroj)" nad hledáním — jen nad `matched` blokem položky; rodič text
+    // složí (lokalizace zdroje), panel jen renderuje.
+    automaticLabel = null,
+    // Lidský popisek aktuální volby pro „Vybráno: …" (U4) — název zvolené
+    // položky místo „Použít #id"; null = výchozí popis akce.
+    currentLabel = null,
     onDecide = () => {},
     // Quick-add z registru (Issue #28) — jen referenceKind === 'party'.
     // Stav i logika žijí v DocumentExchangePreview (sdílené s kartou strany),
@@ -94,7 +103,7 @@
     return base;
   });
 
-  const currentLabel = $derived(formatCurrentUserAction(currentUserAction));
+  const currentLabelText = $derived(currentLabel ?? formatCurrentUserAction(currentUserAction));
 
   function formatCurrentUserAction(action) {
     if (action === null || action === undefined) return '';
@@ -188,11 +197,11 @@
   // ── Actions ─────────────────────────────────────────────────────────────
 
   function chooseResult(item) {
-    onDecide(`useExisting:${item.id}`);
+    onDecide(`useExisting:${item.id}`, { label: item.primary ?? null });
   }
 
-  function chooseCandidate(id) {
-    onDecide(`useExisting:${id}`);
+  function chooseCandidate(id, name = null) {
+    onDecide(`useExisting:${id}`, { label: name ?? null });
   }
 
   function chooseSkip() {
@@ -227,7 +236,11 @@
     const newId = record?.id ?? record?.data?.id ?? null;
     if (newId == null) return;
     createDialogOpen = false;
-    onDecide(`useExisting:${newId}`);
+    const saved = record?.data && typeof record.data === 'object' ? record.data : record;
+    const code = typeof saved?.code === 'string' ? saved.code.trim() : '';
+    const name = typeof saved?.name === 'string' ? saved.name.trim() : '';
+    const label = code && name ? `${code} \u2014 ${name}` : (name || code || null);
+    onDecide(`useExisting:${newId}`, { label });
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────
@@ -244,9 +257,13 @@
     <p class="shpd-resolve__hint">{t('exchange.preview.bulk.hint', { count: bulkCount })}</p>
   {/if}
 
+  {#if automaticLabel}
+    <p class="shpd-resolve__hint shpd-resolve__automatic">{automaticLabel}</p>
+  {/if}
+
   {#if currentUserAction !== null && currentUserAction !== undefined}
     <div class="shpd-resolve__current">
-      <span>{t('exchange.preview.decide.selected', { label: currentLabel })}</span>
+      <span>{t('exchange.preview.decide.selected', { label: currentLabelText })}</span>
       <button type="button" class="shpd-resolve__unselect" onclick={chooseUnselect}>
         {t('exchange.preview.decide.unselect')}
       </button>
@@ -270,7 +287,7 @@
           <button
             type="button"
             class="shpd-resolve__candidate"
-            onclick={() => chooseCandidate(c.id)}
+            onclick={() => chooseCandidate(c.id, c.name ?? null)}
           >
             <span class="shpd-resolve__candidate-id">#{c.id}</span>
             <span class="shpd-resolve__candidate-name">{c.name ?? '—'}</span>
@@ -633,5 +650,11 @@
     border-radius: var(--shpd-radius-sm);
     color: var(--shpd-color-text-secondary);
     font-size: 0.8125rem;
+  }
+
+  /* Napárovaná položka nad hledáním (#111 D5) — tišší než „Vybráno“,
+     zalamuje dlouhé názvy. */
+  .shpd-resolve__automatic {
+    overflow-wrap: anywhere;
   }
 </style>

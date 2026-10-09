@@ -26,6 +26,12 @@
   import RegistryImportWizard from '../registry/RegistryImportWizard.svelte';
   import { enrichedRowCount, matchKindKey, suggestedFieldKeys } from './enrichBadge.js';
   import {
+    itemDecision,
+    matchSourceKey,
+    isWeakSource,
+    isEnrichmentSource,
+  } from './rowMatch.js';
+  import {
     findRegistryQuickHit,
     fetchRegistryPerson,
     applyRegistryPerson,
@@ -90,11 +96,29 @@
     return out;
   });
   let bulkVatCodeVisible = $derived(vatChoiceEnabled && vatCodeRowIndices.length >= 2);
-  // Sloupec Účet se ukazuje, jen když ho aspoň jeden řádek nese —
-  // faktury bez kontace/enrichmentu zůstávají beze změny (D23).
-  let hasAccountColumn = $derived(
-    (canonical?.rows ?? []).some((r) => r?.account != null && String(r.account) !== ''),
-  );
+  // Sloupec Účet ukazuje účet, podle kterého se řádek zaúčtuje
+  // (_resolve.rows[i].effectiveAccount, #111 D7b: účetní položka → její
+  // účet, kontace / „jen účet“ / návrh → účet řádku, služba bez účtu → „—“).
+  // Sloupec je vidět, jen když ho aspoň jeden řádek nese (D23); canonical
+  // bez effectiveAccount (starší server, bez _resolve) → účet z canonicalu.
+  let hasAccountColumn = $derived.by(() => {
+    const rows = resolve?.rows;
+    if (Array.isArray(rows) && rows.some((r) => r && typeof r === 'object' && 'effectiveAccount' in r)) {
+      return rows.some((r) => r?.effectiveAccount != null);
+    }
+    return (canonical?.rows ?? []).some((r) => r?.account != null && String(r.account) !== '');
+  });
+
+  function rowEffectiveAccount(i) {
+    const rowResolve = resolve?.rows?.[i] ?? null;
+    if (rowResolve && typeof rowResolve === 'object' && 'effectiveAccount' in rowResolve) {
+      return rowResolve.effectiveAccount ?? null;
+    }
+    const account = canonical?.rows?.[i]?.account;
+    return account != null && String(account) !== ''
+      ? { id: null, number: String(account), name: null, source: 'row' }
+      : null;
+  }
 
   // ── DPH & platba: lokalizace canonical enum klíčů ──────────────────────
   // Canonical nese stringové klíče (fromBase, domestic, bankTransfer, …);
@@ -189,6 +213,10 @@
       if (by === 'created') {
         return t('exchange.preview.status.matchedCreated', { id });
       }
+      // Položka: kód a název ze serveru místo „#id“ (#111 D3).
+      if (resolveBlock.display && !resolveBlock.display.pinned) {
+        return t('exchange.preview.status.matchedItem', { label: displayLabel(resolveBlock.display) });
+      }
       return t('exchange.preview.status.matched', { id });
     }
     if (s === 'canCreate') return t('exchange.preview.status.canCreate');
@@ -223,6 +251,128 @@
   function rowHasAccountForPath(path) {
     const m = /^rows\[(\d+)\]\.item$/.exec(path ?? '');
     return m !== null && rowHasAccount(Number(m[1]));
+  }
+
+  // ── Napárovaná položka v řádku (tasks/exchange-preview-matched-item.md) ──
+  // Druhý řádek buňky Položka: efektivní položka (volba > napárování,
+  // `_resolve.rows[i].item.display` ze serveru) se zdrojem napárování,
+  // nebo rozhodnutí slovy („jen účet …“, „řádek se vynechá“). Po volbě drží
+  // `pendingLabels` název z panelu, než nový náhled přinese `display`
+  // se stejným id (D3).
+  let pendingLabels = $state({});
+
+  function rowIndexOfPath(path) {
+    const m = /^rows\[(\d+)\]\.item$/.exec(path ?? '');
+    return m !== null ? Number(m[1]) : null;
+  }
+
+  function isItemPath(path) {
+    return rowIndexOfPath(path) !== null;
+  }
+
+  function displayLabel(display) {
+    return [display?.code, display?.name]
+      .filter((v) => v != null && String(v) !== '')
+      .join(' ');
+  }
+
+  function matchSourceText(key, enrichment) {
+    if (key === null || key === undefined) return '';
+    if (key === 'contentTag') {
+      return t('exchange.preview.match.source.contentTag', {
+        tag: enrichment?.tagLabel ?? enrichment?.tag ?? '\u2014',
+      });
+    }
+    return t(`exchange.preview.match.source.${key}`);
+  }
+
+  // Název zvolené položky: `display` ze serveru (po obnovení náhledu),
+  // do té doby optimistický štítek z panelu, jinak #id.
+  function itemChoiceLabel(i, decision, display) {
+    if (display?.pinned && display.id === decision.id) return displayLabel(display);
+    const pending = pendingLabels[`rows[${i}].item`] ?? null;
+    if (pending && pending.action === `useExisting:${decision.id}` && pending.label) return pending.label;
+    return `#${decision.id}`;
+  }
+
+  // null = řádek druhý řádek nemá (nenapárovaný bez rozhodnutí, bez _resolve).
+  function rowMatchInfo(i) {
+    const rowResolve = resolve?.rows?.[i] ?? null;
+    if (!rowResolve) return null;
+    const block = rowResolve.item ?? null;
+    const enrichment = rowResolve.enrichment ?? null;
+    const display = block?.display ?? null;
+    const decision = block ? itemDecision(userActions, i) : null;
+    if (decision?.kind === 'skip') {
+      return { kind: 'skip', weak: false, title: t('exchange.preview.status.decided.skip') };
+    }
+    if (decision?.kind === 'noItem') {
+      const acc = rowEffectiveAccount(i);
+      const account = acc ? [acc.number, acc.name].filter(Boolean).join(' ') : '';
+      return { kind: 'noItem', account, weak: false, title: t('exchange.preview.status.decided.noItem') };
+    }
+    if (decision?.kind === 'useExisting') {
+      const sourceText = matchSourceText('user', null);
+      return {
+        kind: 'item',
+        label: itemChoiceLabel(i, decision, display),
+        sourceKey: 'user',
+        sourceText,
+        weak: false,
+        title: sourceText,
+      };
+    }
+    if (!display) return null;
+    const sourceKey = matchSourceKey(block, enrichment, display);
+    const sourceText = matchSourceText(sourceKey, enrichment);
+    return {
+      kind: 'item',
+      label: displayLabel(display),
+      sourceKey,
+      sourceText,
+      weak: isWeakSource(sourceKey),
+      // Detail enrichmentu (zdrojový doklad, doplněná pole, odpočet DPH)
+      // přešel z ikony ⟲ do tooltipu druhého řádku (D2, U1).
+      title: isEnrichmentSource(sourceKey) && enrichment ? enrichTitle(enrichment) : sourceText,
+    };
+  }
+
+  // „Napárováno automaticky: …“ v panelu (D5) — jen nad matched blokem.
+  // Po volbě nese display zvolenou položku; automatické napárování pak jen #id.
+  function automaticMatchLabel(path) {
+    const i = rowIndexOfPath(path);
+    if (i === null) return null;
+    const rowResolve = resolve?.rows?.[i] ?? null;
+    const block = rowResolve?.item ?? null;
+    if (block?.status !== 'matched') return null;
+    const display = block.display && !block.display.pinned ? block.display : null;
+    const label = display ? displayLabel(display) : `#${block.matchedId}`;
+    const sourceKey = matchSourceKey(block, rowResolve?.enrichment ?? null, display, false);
+    return t('exchange.preview.match.automatic', {
+      label,
+      source: matchSourceText(sourceKey === 'user' ? 'ourCode' : sourceKey, rowResolve?.enrichment ?? null),
+    });
+  }
+
+  // „Vybráno: {název}“ v panelu (U4) — jen u volby položky.
+  function currentChoiceLabel(path) {
+    const i = rowIndexOfPath(path);
+    if (i === null) return null;
+    const decision = itemDecision(userActions, i);
+    if (decision?.kind !== 'useExisting') return null;
+    return itemChoiceLabel(i, decision, resolve?.rows?.[i]?.item?.display ?? null);
+  }
+
+  function rememberPendingLabels(paths, action, label) {
+    const next = { ...pendingLabels };
+    for (const p of paths) {
+      if (typeof action === 'string' && action.startsWith('useExisting:') && label) {
+        next[p] = { action, label };
+      } else {
+        delete next[p];
+      }
+    }
+    pendingLabels = next;
   }
 
   // ── Phase 3b: interactive decisions ────────────────────────────────────
@@ -401,8 +551,9 @@
     onUserActionsChange?.(next);
   }
 
-  function handleDecide(action) {
+  function handleDecide(action, meta = null) {
     if (!decisionOpen) return;
+    rememberPendingLabels(decisionOpen.bulkPaths ?? [decisionOpen.path], action, meta?.label ?? null);
     if (decisionOpen.bulkPaths) {
       // Bulk: všechny cesty v jednom novém objektu — jediné volání
       // onUserActionsChange, žádné N dílčích callbacků.
@@ -511,7 +662,9 @@
   function effectiveStatusKey(path, resolveBlock) {
     const original = statusKey(resolveBlock?.status);
     if (path === null || onUserActionsChange === null) return original;
-    if (resolveBlock?.status === 'matched') return 'matched';
+    // Položka: volba má přednost i nad napárováním (#111 D4, D5); strany
+    // a bankovní účet u matched zůstávají bez volby.
+    if (resolveBlock?.status === 'matched' && !isItemPath(path)) return 'matched';
     const ua = userActions[path] ?? null;
     if (ua === null) return original;
     if (typeof ua === 'string' && ua.startsWith('useExisting:')) return 'matchedDecided';
@@ -526,6 +679,10 @@
     const ua = userActions[path] ?? null;
     if (ua === null) return statusLabel(resolveBlock);
     if (typeof ua === 'string' && ua.startsWith('useExisting:')) {
+      if (isItemPath(path)) {
+        const label = currentChoiceLabel(path) ?? `#${ua.slice('useExisting:'.length)}`;
+        return t('exchange.preview.status.decided.useItem', { label });
+      }
       return t('exchange.preview.status.decided.useExisting', { id: ua.slice('useExisting:'.length) });
     }
     if (ua === 'create') return t('exchange.preview.status.decided.create');
@@ -586,9 +743,11 @@
   {#if resolveBlock && statusKey(resolveBlock.status)}
     {@const modifier = effectiveStatusKey(path, resolveBlock)}
     {@const label = effectiveStatusLabel(path, resolveBlock)}
+    <!-- Napárovaná položka je klikací (změna napárování, #111 D4); strany
+         a bankovní účet u matched ne. -->
     {@const interactive
       = onUserActionsChange !== null
-      && resolveBlock.status !== 'matched'
+      && (resolveBlock.status !== 'matched' || kind === 'item')
       && path !== null
       && kind !== null}
     {#if interactive}
@@ -617,6 +776,32 @@
       class="shpd-exchange__enrich shpd-exchange__enrich--{e.confidence}"
       title={enrichTitle(e)}
     >⟲</span>
+  {/if}
+{/snippet}
+
+<!-- Druhý řádek buňky Položka (#111 D1, D2): napárovaná / zvolená položka
+     a zdroj, nebo rozhodnutí slovy. V interaktivním režimu tlačítko vzhledu
+     textu — tatáž akce jako ✓ (D4); bez callbacku prostý text. -->
+{#snippet rowMatchLine(i, match)}
+  {@const text = match.kind === 'skip'
+    ? t('exchange.preview.match.skip')
+    : match.kind === 'noItem'
+      ? t('exchange.preview.match.noItem', { account: match.account })
+      : `${match.label} \u00b7 ${match.sourceText}`}
+  {#if onUserActionsChange !== null && resolve?.rows?.[i]?.item}
+    <button
+      type="button"
+      class="shpd-exchange__row-match shpd-exchange__row-match--interactive"
+      class:shpd-exchange__row-match--weak={match.weak}
+      title={match.title}
+      onclick={(e) => openDecision(e, `rows[${i}].item`, resolve?.rows?.[i]?.item, 'item')}
+    ><span class="shpd-exchange__row-match-arrow" aria-hidden="true">{'\u21b3'}</span> {text}</button>
+  {:else}
+    <span
+      class="shpd-exchange__row-match"
+      class:shpd-exchange__row-match--weak={match.weak}
+      title={match.title}
+    ><span class="shpd-exchange__row-match-arrow" aria-hidden="true">{'\u21b3'}</span> {text}</span>
   {/if}
 {/snippet}
 
@@ -897,6 +1082,7 @@
             {#each canonical.rows as row, i}
               {@const effVat = effectiveRowVat(resolve?.rows?.[i]?.vatCode)}
               {@const rowPrices = computedRowPrices.get(i)}
+              {@const match = rowMatchInfo(i)}
               <tr>
                 <td>{row.orderPos ?? i + 1}</td>
                 <td>
@@ -908,13 +1094,22 @@
                     <span class="shpd-exchange__row-code">{row.item.supplierCode}</span>
                   {/if}
                   {@render statusBadge(resolve?.rows?.[i]?.item, `rows[${i}].item`, 'item')}
-                  {@render enrichBadge(resolve?.rows?.[i]?.enrichment)}
+                  <!-- ⟲ jen u řádku s enrichmentem bez druhého řádku (U1): obsahová
+                       klasifikace jen s návrhem účtu, guarded, návrh bez napárování. -->
+                  {#if match === null}
+                    {@render enrichBadge(resolve?.rows?.[i]?.enrichment)}
+                  {:else}
+                    {@render rowMatchLine(i, match)}
+                  {/if}
                 </td>
                 {#if hasAccountColumn}
+                  {@const acc = rowEffectiveAccount(i)}
                   <td>
-                    {#if row.account}
-                      <span class="shpd-exchange__row-code">{row.account}</span>
-                      {@render statusBadge(resolve?.rows?.[i]?.account)}
+                    {#if acc}
+                      <span class="shpd-exchange__row-code" title={acc.name ?? ''}>{acc.number}</span>
+                      {#if acc.source === 'row'}
+                        {@render statusBadge(resolve?.rows?.[i]?.account)}
+                      {/if}
                     {:else}
                       —
                     {/if}
@@ -1070,6 +1265,12 @@
         parentMatchedId={decisionOpen.parentMatchedId}
         currentUserAction={decisionOpen.path !== null ? userActions[decisionOpen.path] ?? null : null}
         allowNoItem={decisionOpen.allowNoItem ?? false}
+        automaticLabel={decisionOpen.kind === 'item' && decisionOpen.path !== null
+          ? automaticMatchLabel(decisionOpen.path)
+          : null}
+        currentLabel={decisionOpen.kind === 'item' && decisionOpen.path !== null
+          ? currentChoiceLabel(decisionOpen.path)
+          : null}
         bulkCount={decisionOpen.bulkPaths?.length ?? 0}
         bulkDecidedCount={decisionOpen.bulkPaths
           ? decisionOpen.bulkPaths.filter((p) => (userActions[p] ?? null) !== null).length
@@ -1498,6 +1699,45 @@
 
   .shpd-exchange__row-name {
     font-weight: 500;
+  }
+
+  /* Druhý řádek buňky Položka (#111 D1, D2): napárovaná / zvolená položka
+     a zdroj — menší a šedě; slabý zdroj (podobný text, častá položka,
+     kategorie, podle názvu) jantarově přes token varování (světlý i tmavý
+     vzhled). Interaktivní varianta je <button> vzhledu textu. */
+  .shpd-exchange__row-match {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    color: var(--shpd-color-text-muted);
+    text-align: left;
+  }
+
+  .shpd-exchange__row-match--weak {
+    color: var(--shpd-color-warning);
+  }
+
+  .shpd-exchange__row-match-arrow {
+    opacity: 0.7;
+  }
+
+  .shpd-exchange__row-match--interactive {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .shpd-exchange__row-match--interactive:hover {
+    text-decoration: underline;
+  }
+
+  .shpd-exchange__row-match--interactive:focus-visible {
+    outline: 2px solid var(--shpd-color-primary);
+    outline-offset: 1px;
+    border-radius: 2px;
   }
 
   .shpd-exchange__row-code {

@@ -1,6 +1,6 @@
 # Task: Review přijaté faktury — napárovaná položka v řádku a změna napárování
 
-**Stav:** naplánováno — rozhodnutí D1–D8 potvrzená v #111
+**Stav:** hotovo
 
 **Issue:** #111
 
@@ -333,6 +333,23 @@ Help (stejný commit):
 Uzavření: `**Stav:**` v tomto tasku + `python3 scripts/tasks-index.py`;
 `cd frontend && npm run test && npm run check:i18n && npm run build`.
 
+## Odchylky při implementaci (2026-10-09)
+
+- **Vynechání řádku opraveno.** Náhled posílá `rows[i].item = skip`, ale
+  `reconcile()` plnil `rowSkips` jen z řádkové `rows[i].userAction` —
+  řádek s **Vynechat řádek** zůstával na dokladu bez položky. Item-level
+  `skip` teď řádek do `rowSkips` přidá (Commit 2, test
+  `DocumentApplierItemPinTest::testItemLevelSkipLeavesRowOutOfDocument`).
+- **Read-only větev** (`onUserActionsChange === null`) nemá živé použití —
+  tab Návrh v detailu zprávy náhled nerenderuje, jen souhrn a tlačítko do
+  modalu. Druhý řádek je v ní implementovaný jen defenzivně (prostý text);
+  ověřovací bod 5 níže je neaplikovatelný.
+- `DocumentApplier` dostal konstruktorový parametr
+  `itemsHaveAccountingAccount` (z `$tables['economy_items']` v `create()`),
+  aby dotaz na účet položky přežil zdroj dat bez `economy.accounting`.
+- Po ruční volbě nese `display` zvolenou položku; „Napárováno automaticky“
+  v panelu pak ukazuje jen `#id` původního napárování (název server nenese).
+
 ## Ověření na dev zdroji (`lh6x-l`, režim volný)
 
 1. Zpráva s řádky napárovanými historií a obsahovou klasifikací: druhý
@@ -344,7 +361,10 @@ Uzavření: `**Stav:**` v tomto tasku + `python3 scripts/tasks-index.py`;
 4. **Vystavit koncept** → řádek dokladu má zvolenou položku a účet
    z historie na něm není (SQL); `economy_items_supplier_codes` pro kód
    dodavatele řádku míří na zvolenou položku.
-5. Detail zprávy, tab Návrh (read-only): druhý řádek bez klikání.
+4b. **Vynechat řádek** → **Vystavit koncept** → vynechaný řádek na dokladu
+   není (oprava, viz Odchylky).
+5. ~~Detail zprávy, tab Návrh (read-only): druhý řádek bez klikání.~~ —
+   neaplikovatelné, tab náhled nerenderuje (viz Odchylky).
 6. Světlý i tmavý vzhled: jantarová čitelná.
 
 ## Mimo rozsah
@@ -384,18 +404,18 @@ Uzavření: `**Stav:**` v tomto tasku + `python3 scripts/tasks-index.py`;
 
 ## Hotovo když
 
-- [ ] Druhý řádek u každého napárovaného a rozhodnutého řádku, zdroj
+- [x] Druhý řádek u každého napárovaného a rozhodnutého řádku, zdroj
       a jantarové zvýraznění slabých zdrojů (D1, D2, U1).
-- [ ] `display`, `effectiveAccount` a `createPayload` u `matched`
+- [x] `display`, `effectiveAccount` a `createPayload` u `matched`
       v `/preview` (D3, D5, U3).
-- [ ] Změna napárované položky z ✓ i z druhého řádku, optimistický
+- [x] Změna napárované položky z ✓ i z druhého řádku, optimistický
       štítek, obnovení náhledu (D3, D4, D5, U4).
-- [ ] Sloupec Účet podle `effectiveAccount`; účet z historie se po ruční
+- [x] Sloupec Účet podle `effectiveAccount`; účet z historie se po ruční
       volbě nezapíše (D7b).
-- [ ] Mapování kódu dodavatele se po ruční volbě přepíše (D8).
-- [ ] Testy PHPUnit (filtry výše), `npm run test`, `npm run check:i18n`,
+- [x] Mapování kódu dodavatele se po ruční volbě přepíše (D8).
+- [x] Testy PHPUnit (filtry výše), `npm run test`, `npm run check:i18n`,
       `npm run build`.
-- [ ] `docs/exchange-format.md`, `modules/core/mail/docs/ai-analysis.md`,
+- [x] `docs/exchange-format.md`, `modules/core/mail/docs/ai-analysis.md`,
       help a slovníček aktualizované; `help-index.py`, `tasks-index.py`.
-- [ ] Ověření na dev zdroji body 1–6.
+- [x] Ověření na dev zdroji body 1–4b, 6 (2026-10-09).
 - [ ] Komentář do #111 se shrnutím.

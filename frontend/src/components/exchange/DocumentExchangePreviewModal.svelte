@@ -43,14 +43,17 @@
   //   - saveSeq (ne-reaktivní čítač) řeší závod odpovědí: starší pomalejší
   //     odpověď nesmí přepsat pendingSave / saveError.
   //
-  // Volby DPH (tasks/exchange-preview-vat-choices.md D15, #87 B):
-  //   - změna cesty `vat.*` / `rows[i].vatCode` → po ÚSPĚŠNÉM uložení nový
-  //     náhled (refreshPreview): server čte uložená rozhodnutí, refresh
-  //     před dokončením POST /decisions by ukázal stav bez volby; selhání
-  //     uložení = žádný refresh (saveError zůstává).
+  // Volby DPH (tasks/exchange-preview-vat-choices.md D15, #87 B) a položky
+  // řádků (tasks/exchange-preview-matched-item.md D3, #111):
+  //   - změna cesty `vat.*` / `rows[i].vatCode` / `rows[i].item` → po
+  //     ÚSPĚŠNÉM uložení nový náhled (refreshPreview): server čte uložená
+  //     rozhodnutí a u položky dodá `display` (kód + název) a
+  //     `effectiveAccount`; refresh před dokončením POST /decisions by
+  //     ukázal stav bez volby; selhání uložení = žádný refresh (saveError
+  //     zůstává).
   //   - refreshPreview nemění userActions ani loading (modal nebliká,
   //     rozhodnutí zůstávají); refreshSeq zahodí starší odpověď / jinou zprávu.
-  //   - rozhodnutí o stranách a položkách nový náhled nespouštějí.
+  //   - rozhodnutí o stranách a bankovním účtu nový náhled nespouštějí.
   //
   // Zdrojová zpráva v hlavičce (tasks/mail-source-message-link.md D1–D3):
   //   - subtitle „Došlá zpráva #YYMMDD-NNNN · datum · odesílatel" z bloku
@@ -109,10 +112,11 @@
   // Sekvence POST /decisions — poslední odpověď vyhrává, starší se ignorují.
   // Ne-reaktivní: nic se na něj nevykresluje.
   let saveSeq = 0;
-  // Sekvence refreshe náhledu po volbě DPH (D15) — totéž pravidlo.
+  // Sekvence refreshe náhledu po volbě DPH / položky (D15, #111 D3) — totéž pravidlo.
   let refreshSeq = 0;
 
-  const VAT_CHOICE_PATH_RE = /^(vat\.(place|mode)|rows\[\d+\]\.vatCode)$/;
+  // Cesty rozhodnutí, po jejichž změně se náhled obnoví ze serveru.
+  const REFRESH_PATH_RE = /^(vat\.(place|mode)|rows\[\d+\]\.(vatCode|item))$/;
 
   $effect(() => {
     if (open && messageNdx !== null && messageNdx !== undefined) {
@@ -160,16 +164,16 @@
   }
 
   function handleUserActionsChange(next) {
-    const refresh = vatChoiceChanged(userActions, next);
+    const refresh = refreshChoiceChanged(userActions, next);
     userActions = next;
     void persist(next).then((saved) => {
       if (saved && refresh) void refreshPreview();
     });
   }
 
-  function vatChoiceChanged(prev, next) {
+  function refreshChoiceChanged(prev, next) {
     for (const key of new Set([...Object.keys(prev), ...Object.keys(next)])) {
-      if (VAT_CHOICE_PATH_RE.test(key) && (prev[key] ?? null) !== (next[key] ?? null)) return true;
+      if (REFRESH_PATH_RE.test(key) && (prev[key] ?? null) !== (next[key] ?? null)) return true;
     }
     return false;
   }
@@ -194,7 +198,7 @@
     return !saveError;
   }
 
-  // Nový náhled po volbě DPH — bez resetu userActions a bez loading.
+  // Nový náhled po volbě DPH / položky — bez resetu userActions a bez loading.
   async function refreshPreview() {
     const seq = ++refreshSeq;
     const ndx = messageNdx;
