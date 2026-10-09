@@ -33,6 +33,8 @@ class IngestPreprocessTest extends IntegrationTestCase
     private array $createdMessageIds = [];
     /** @var list<int> */
     private array $spawned = [];
+    /** @var list<int> */
+    private array $analysisSpawned = [];
 
     protected function setUp(): void
     {
@@ -52,6 +54,7 @@ class IngestPreprocessTest extends IntegrationTestCase
         }
 
         $this->spawned = [];
+        $this->analysisSpawned = [];
         $_POST = [];
         $_FILES = [];
     }
@@ -89,6 +92,7 @@ class IngestPreprocessTest extends IntegrationTestCase
         $this->assertSame('fetchLinkedDocument', $log['plan'][0]['actions'][0]['action']);
 
         $this->assertSame([$ndx], $this->spawned);
+        $this->assertSame([], $this->analysisSpawned, 'analýzu spustí až runner předzpracování (D14)');
 
         $rule = $this->db->fetchRow('SELECT hit_count, last_hit_at FROM core_mail_preprocess_rules WHERE id = %i', $ruleNdx);
         $this->assertSame(1, (int) $rule['hit_count']);
@@ -105,6 +109,10 @@ class IngestPreprocessTest extends IntegrationTestCase
         $this->assertSame(0, (int) $row['preprocess_state']);
         $this->assertNull($row['preprocess_log']);
         $this->assertSame([], $this->spawned);
+
+        // #85 D14: bez předzpracování jde spawn analýzy rovnou z příjmu — právě když je zpráva ve frontě.
+        $eligible = new \Shipard\Module\Core\Mail\Analysis\AnalysisQueue($this->db)->isEligible($ndx);
+        $this->assertSame($eligible ? [$ndx] : [], $this->analysisSpawned);
     }
 
     public function testArchivedRuleDoesNotMatch(): void
@@ -199,6 +207,10 @@ class IngestPreprocessTest extends IntegrationTestCase
             null,
             function (int $messageId): void {
                 $this->spawned[] = $messageId;
+            },
+            null,
+            function (int $messageId): void {
+                $this->analysisSpawned[] = $messageId;
             },
         );
         $auth = new AuthContext(true, $this->routerUserId, 'api_key', 'shpd_ak_test');

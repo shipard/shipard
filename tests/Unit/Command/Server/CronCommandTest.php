@@ -220,15 +220,17 @@ class CronCommandTest extends TestCase
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-outbox-run'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-analysis-reap'],
             ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-preprocess --sweep'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-analyze --sweep'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-outbox-run'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analysis-reap'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-preprocess --sweep'],
+            ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analyze --sweep'],
         ], $cmd->callLog);
     }
 
     public function testSlotJobsMapping(): void
     {
-        $this->assertSame(['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep'], CronCommand::SLOT_JOBS['minute']);
+        $this->assertSame(['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep'], CronCommand::SLOT_JOBS['minute']);
         $this->assertSame(['alerts-run'], CronCommand::SLOT_JOBS['five-minutes']);
         $this->assertSame(['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'], CronCommand::SLOT_JOBS['daily']);
         $this->assertSame(['alerts-prune'], CronCommand::SLOT_JOBS['weekly']);
@@ -347,11 +349,12 @@ class CronCommandTest extends TestCase
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-outbox-run'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analysis-reap'],
             ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-preprocess --sweep'],
+            ['ds' => 'bbbb-bbbb-bbbb-bbbb', 'job' => 'mail-analyze --sweep'],
         ], $cmd->callLog);
         $hb = $this->readHeartbeat('minute');
         $this->assertSame(2, $hb['dsCount']);
         $this->assertSame(1, $hb['skippedDataSources']);
-        $this->assertSame(3, $hb['jobsRun']);
+        $this->assertSame(4, $hb['jobsRun']);
         $this->assertStringContainsString('1 skipped by state', $tester->getDisplay());
     }
 

@@ -16,6 +16,7 @@ use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
+use Shipard\Module\Core\Mail\Analysis\AnalysisSpawner;
 use Shipard\Module\Core\Mail\IsdocImportService;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
 use Shipard\Module\Core\Mail\MessageTitleComposer;
@@ -27,7 +28,8 @@ use Shipard\Module\Core\Mail\Preprocess\Http\CurlHttpFetcher;
  * Produkční wiring runneru pro CLI `mail-preprocess`: přílohy, registr
  * akcí, rendering klient (#34), ISDOC import s obohacením řádků (jediné
  * místo, kde import běží — intake v public/index.php dělá jen detekci,
- * #81 D1), spawner pro sweep a matcher pro --force.
+ * #81 D1), spawner pro sweep, matcher pro --force a spawner AI analýzy
+ * po konci běhu (tasks/mail-analysis-inprocess.md D14).
  */
 final class PreprocessRunnerFactory
 {
@@ -82,6 +84,7 @@ final class PreprocessRunnerFactory
         };
 
         $spawner = new PreprocessSpawner($dsDir);
+        $analysisSpawner = new AnalysisSpawner($dsDir);
 
         return new PreprocessRunner(
             $db,
@@ -92,6 +95,9 @@ final class PreprocessRunnerFactory
                 $spawner->spawn($messageId);
             },
             new PreprocessRuleMatcher($dibi),
+            static function (int $messageId) use ($analysisSpawner): void {
+                $analysisSpawner->spawn($messageId);
+            },
         );
     }
 

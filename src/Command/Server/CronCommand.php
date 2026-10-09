@@ -30,10 +30,13 @@ class CronCommand extends Command
      * slot → per-DS shpd-ds příkazy (řetězec = příkaz + volby oddělené
      * mezerou); deklarativní registr v module.jsonc až bude jobů víc.
      * mail-preprocess --sweep je jen záchrana — primární spouštěč runneru
-     * je detached spawn z intake (tasks/mail-preprocess.md D8).
+     * je detached spawn z intake (tasks/mail-preprocess.md D8). Totéž
+     * mail-analyze --sweep za reaperem: runnery AI analýzy spouští příjem,
+     * předzpracování a reanalýza, sweep dohledává frontu bez claimu
+     * (tasks/mail-analysis-inprocess.md D14).
      */
     public const SLOT_JOBS = [
-        'minute'       => ['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep'],
+        'minute'       => ['mail-outbox-run', 'mail-analysis-reap', 'mail-preprocess --sweep', 'mail-analyze --sweep'],
         'two-minutes'  => [],
         'five-minutes' => ['alerts-run'],
         'daily'        => ['mail-idempotency-prune', 'vat-periods-ensure', 'work-orders-invoice-run'],
@@ -50,6 +53,7 @@ class CronCommand extends Command
         'mail-outbox-run'         => [DataSourceState::ACTIVE],
         'mail-analysis-reap'      => [DataSourceState::ACTIVE],
         'mail-preprocess --sweep' => [DataSourceState::ACTIVE],
+        'mail-analyze --sweep'    => [DataSourceState::ACTIVE],
         'alerts-run'              => [DataSourceState::ACTIVE],
         'mail-idempotency-prune'  => [DataSourceState::ACTIVE, DataSourceState::READ_ONLY],
         'vat-periods-ensure'      => [DataSourceState::ACTIVE],

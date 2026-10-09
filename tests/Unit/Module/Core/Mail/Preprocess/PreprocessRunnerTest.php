@@ -641,4 +641,45 @@ class PreprocessRunnerTest extends TestCase
         $this->assertTrue($record['ok']);
         $this->assertArrayNotHasKey('code', $record);
     }
+
+    // --- spawn AI analýzy po běhu -------------------------------------------
+
+    public function testSpawnsAnalysisWhenMessageIsQueuedAfterRun(): void
+    {
+        $db = $this->db($this->message());
+        $db->method('fetchSingle')->willReturn(1); // AnalysisQueue::isEligible → ve frontě
+        $spawned = [];
+        $runner = new PreprocessRunner($db, $this->attachments(), new ActionRegistry(), null, null, null,
+            static function (int $id) use (&$spawned): void {
+                $spawned[] = $id;
+            });
+
+        $result = $runner->run(42);
+
+        $this->assertSame('done_with_errors', $result['status'], 'neznámá akce → 40, gate AI fronty je i tak otevřená');
+        $this->assertSame([42], $spawned);
+    }
+
+    public function testDoesNotSpawnAnalysisWhenNotQueuedOrRaceLost(): void
+    {
+        $spawned = [];
+        $spawn = static function (int $id) use (&$spawned): void {
+            $spawned[] = $id;
+        };
+
+        // ISDOC import (nebo vypnutá schránka) → zpráva ve frontě není.
+        $db = $this->db($this->message());
+        $db->method('fetchSingle')->willReturn(0);
+        new PreprocessRunner($db, $this->attachments(), new ActionRegistry(), null, null, null, $spawn)->run(42);
+        $this->assertSame([], $spawned);
+
+        // Finální zápis prohrál závod se sweepem → další běh to zopakuje, bez spawnu.
+        $this->executes = [];
+        $this->affected = [1 => 0];
+        $db = $this->db($this->message());
+        $db->method('fetchSingle')->willReturn(1);
+        $result = new PreprocessRunner($db, $this->attachments(), new ActionRegistry(), null, null, null, $spawn)->run(42);
+        $this->assertSame('lost_race', $result['status']);
+        $this->assertSame([], $spawned);
+    }
 }

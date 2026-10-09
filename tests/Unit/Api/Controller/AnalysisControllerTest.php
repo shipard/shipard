@@ -671,6 +671,55 @@ class AnalysisControllerTest extends TestCase
         $this->assertSame(10, $captured['analysis_state']);
     }
 
+    public function testReanalyzeSpawnsRunnerAfterCommitWhenQueued(): void
+    {
+        // D14: po commitu reanalýzy spawn runneru — jen přes wiring (closure)
+        // a jen pro zprávu ve frontě (AnalysisQueue::isEligible → fetchSingle).
+        $captured = null;
+        $dibi = $this->dibiForReanalyze(
+            ['id' => 42, 'docState' => 20, 'analysis_state' => 30, 'target_row' => null,
+                'mailbox' => 5, 'ai_analysis_enabled' => 1],
+            null,
+            $captured,
+        );
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('getDibiConnection')->willReturn($dibi);
+        $db->method('fetchSingle')->willReturnOnConsecutiveCalls(1, 0);
+        $spawned = [];
+        $ctrl = new AnalysisController(
+            $db, $this->config, $this->tmpDir, [], new DocumentRegistry(),
+            null, null, null, null, null,
+            static function (int $id) use (&$spawned): void {
+                $spawned[] = $id;
+            },
+        );
+
+        $response = $ctrl->reanalyze($this->userAuth(), $this->request('POST', '/x'), 42);
+        $this->assertSame(200, $this->statusOf($response));
+        $this->assertSame([42], $spawned);
+
+        // Druhé volání: zpráva ve frontě není (gate předzpracování) → bez spawnu.
+        $dibi2 = $this->dibiForReanalyze(
+            ['id' => 42, 'docState' => 20, 'analysis_state' => 30, 'target_row' => null,
+                'mailbox' => 5, 'ai_analysis_enabled' => 1],
+            null,
+            $captured,
+        );
+        $db2 = $this->createMock(DataSourceConnection::class);
+        $db2->method('getDibiConnection')->willReturn($dibi2);
+        $db2->method('fetchSingle')->willReturn(0);
+        $spawned = [];
+        $ctrl2 = new AnalysisController(
+            $db2, $this->config, $this->tmpDir, [], new DocumentRegistry(),
+            null, null, null, null, null,
+            static function (int $id) use (&$spawned): void {
+                $spawned[] = $id;
+            },
+        );
+        $ctrl2->reanalyze($this->userAuth(), $this->request('POST', '/x'), 42);
+        $this->assertSame([], $spawned);
+    }
+
     public function testReanalyzeKeepsOverrideUntouchedWhenAlreadyEnabled(): void
     {
         // Message-level enabled=1 → flag schránky se vůbec nedotazuje

@@ -94,6 +94,9 @@ class AnalysisController
      * /applyExtracted falls back to plain status update.
      *
      * @param array<string, TableDefinition> $tables
+     * @param \Closure(int): void|null $analysisSpawner Detached spawn runneru
+     *        AI analýzy po reanalýze (tasks/mail-analysis-inprocess.md D14) —
+     *        wiring jen v public/index.php; null = bez spawnu (sweep).
      */
     public function __construct(
         private readonly DataSourceConnection $db,
@@ -106,6 +109,7 @@ class AnalysisController
         private readonly ?ConfigRuntime $configRuntime = null,
         private readonly ?DocumentEventDispatcher $eventDispatcher = null,
         private readonly ?RowEnrichmentPipeline $enricher = null,
+        private readonly ?\Closure $analysisSpawner = null,
     ) {}
 
     private function services(): AnalysisServices
@@ -792,10 +796,31 @@ class AnalysisController
             return Response::error('INTERNAL_ERROR', $e->getMessage(), 500);
         }
 
+        $this->spawnAnalysis($messageNdx);
+
         return Response::success([
             'message_ndx' => $messageNdx,
             'profile_override_ndx' => $profileOverrideNdx,
         ]);
+    }
+
+    /**
+     * Detached spawn runneru analýzy po reanalýze (D14) — po commitu, jen
+     * je-li zpráva ve frontě (gate předzpracování, bez claimu); bez wiringu
+     * nic — dohledá ji sweep. Selhání jen zalogovat.
+     */
+    private function spawnAnalysis(int $messageNdx): void
+    {
+        if ($this->analysisSpawner === null) {
+            return;
+        }
+        try {
+            if ($this->services()->queue->isEligible($messageNdx)) {
+                ($this->analysisSpawner)($messageNdx);
+            }
+        } catch (\Throwable $e) {
+            ErrorLogger::logException($e, 'AnalysisController reanalyze spawn failed — sweep will pick the message up');
+        }
     }
 
     // -------------------------------------------------------------------

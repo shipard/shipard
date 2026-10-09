@@ -229,6 +229,36 @@ class MailUploadEndpointTest extends IntegrationTestCase
         $this->assertSame($filesOnDiskBefore, $this->countStorageFiles(), 'orphaned files must be unlinked');
     }
 
+    public function testPlainUploadSpawnsAnalysisOnlyWhenQueued(): void
+    {
+        // #85 D14: po commitu nahrání spawn runneru analýzy — jen pro zprávu
+        // ve frontě (DS s AI profilem → analysis_state 10), jinak nic.
+        $paths = $this->prepareFiles(2);
+        $_POST = ['mode' => 'perFile'];
+        $_FILES = ['attachments' => $this->fakeFileArray($paths, [
+            self::SUBJECT_PREFIX . ' a.pdf',
+            self::SUBJECT_PREFIX . ' b.pdf',
+        ])];
+        $spawned = [];
+
+        $response = $this->invokeController(
+            analysisSpawner: static function (int $messageId) use (&$spawned): void {
+                $spawned[] = $messageId;
+            },
+        );
+        $this->assertResponseStatus(201, $response);
+
+        $ndxs = array_map(static fn(array $m): int => (int) $m['ndx'], $response->getPayload()['data']['messages']);
+        $this->createdMessageIds = [...$this->createdMessageIds, ...$ndxs];
+
+        $queue = new \Shipard\Module\Core\Mail\Analysis\AnalysisQueue($this->db);
+        $expected = array_values(array_filter($ndxs, static fn(int $ndx): bool => $queue->isEligible($ndx)));
+        $this->assertSame($expected, $spawned, 'spawn analýzy právě pro zprávy ve frontě');
+        if ($this->expectedAnalysisState() === 10) {
+            $this->assertSame($ndxs, $spawned);
+        }
+    }
+
     public function testIsdocCandidateIsDeferredToPreprocessRunner(): void
     {
         // #81 D4: upload inline neimportuje — jen detekce; platný ISDOC →
@@ -247,6 +277,7 @@ class MailUploadEndpointTest extends IntegrationTestCase
         );
         $service->expects($this->never())->method('tryImport');
         $spawned = [];
+        $analysisSpawned = [];
 
         $_POST = ['mode' => 'perFile'];
         $_FILES = ['attachments' => $this->fakeFileArray([$isdocPath], [self::SUBJECT_PREFIX . ' faktura.isdoc'])];
@@ -256,6 +287,9 @@ class MailUploadEndpointTest extends IntegrationTestCase
             spawner: static function (int $messageId) use (&$spawned): void {
                 $spawned[] = $messageId;
             },
+            analysisSpawner: static function (int $messageId) use (&$analysisSpawned): void {
+                $analysisSpawned[] = $messageId;
+            },
         );
         $this->assertResponseStatus(201, $response);
 
@@ -264,6 +298,7 @@ class MailUploadEndpointTest extends IntegrationTestCase
 
         $this->assertSame([$ndx], $detectedMessageIds, 'ISDOC detection must run for the created message');
         $this->assertSame([$ndx], $spawned, 'preprocess runner must be spawned for the deferred message');
+        $this->assertSame([], $analysisSpawned, 'analýzu spustí až runner předzpracování po ISDOC detekci (D14, pořadí vůči ISDOC)');
 
         $row = $this->db->fetchRow(
             'SELECT preprocess_state, preprocess_log, analysis_state FROM core_mail_incoming_messages WHERE id = %i',
@@ -342,6 +377,7 @@ class MailUploadEndpointTest extends IntegrationTestCase
         ?\Closure $isdocFactory = null,
         ?int $userId = null,
         ?\Closure $spawner = null,
+        ?\Closure $analysisSpawner = null,
     ): \Shipard\Api\Response {
         $ctrl = new MailController(
             $this->db,
@@ -352,6 +388,8 @@ class MailUploadEndpointTest extends IntegrationTestCase
             null,
             $isdocFactory,
             $spawner,
+            null,
+            $analysisSpawner,
         );
         $auth = new AuthContext(true, $userId ?? $this->userWithEmailId, 'session', 'shpd_st_test');
         $server = ['HTTP_HOST' => 'test.local', 'REMOTE_ADDR' => '127.0.0.1'];

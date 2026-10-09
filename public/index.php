@@ -1232,9 +1232,15 @@ function dispatchMail(
 			$dsPath,
 		);
 
+	// Spawn runneru AI analýzy po commitu příjmu / nahrání (#85 D14) —
+	// wiring jen tady: testy stavějí controller bez něj (žádné placené běhy).
+	$analysisSpawner = new \Shipard\Module\Core\Mail\Analysis\AnalysisSpawner($dsPath);
 	$ctrl = new MailController(
 		$db, $dsPath, $tables, $documentRegistry, $configRuntime, $resolved->config,
 		$isdocImportFactory, null, $eventDispatcher,
+		static function (int $messageId) use ($analysisSpawner): void {
+			$analysisSpawner->spawn($messageId);
+		},
 	);
 	return match ($route->action) {
 		'receiveIncoming'   => $ctrl->receiveIncoming($auth, $request),
@@ -1348,10 +1354,15 @@ function dispatchAnalysis(
 		? \Shipard\Module\Core\Exchange\Enrich\RowEnrichmentPipeline::create($db, $configRuntime, $resolved->config)
 		: null;
 
+	// Spawn runneru AI analýzy po reanalýze (#85 D14) — wiring jen tady.
+	$analysisSpawner = new \Shipard\Module\Core\Mail\Analysis\AnalysisSpawner($dsPath);
 	$ctrl = new AnalysisController(
 		$db, $resolved->config, $dsPath, $tables, $documentRegistry,
 		$schemaValidator, $applier, $configRuntime, $documentEventDispatcher,
 		$enricher,
+		static function (int $messageId) use ($analysisSpawner): void {
+			$analysisSpawner->spawn($messageId);
+		},
 	);
 	return match ($route->action) {
 		'queue'             => $ctrl->queue($auth, $request),

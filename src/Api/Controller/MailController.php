@@ -25,6 +25,7 @@ use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Mail\BulkHeadersDetector;
 use Shipard\Module\Core\Mail\IdempotencyStore;
 use Shipard\Module\Core\Mail\IncomingMessageDocument;
+use Shipard\Module\Core\Mail\Analysis\AnalysisQueue;
 use Shipard\Module\Core\Mail\IsdocImportService;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRuleMatcher;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
@@ -77,6 +78,10 @@ class MailController
      * @param DocumentEventDispatcher|null $eventDispatcher Handlery dokumentů
      *        pro zápisy přes TableGateway (Archivovat vše / Vrátit) — vzor
      *        SenderRulesController.
+     * @param \Closure(int): void|null $analysisSpawner Detached spawn runneru
+     *        AI analýzy (tasks/mail-analysis-inprocess.md D14) — wiring jen
+     *        v public/index.php (AnalysisSpawner); null = bez spawnu, zprávu
+     *        dohledá `mail-analyze --sweep` (testy nesmí pouštět placené běhy).
      */
     public function __construct(
         private readonly DataSourceConnection $db,
@@ -88,6 +93,7 @@ class MailController
         private readonly ?\Closure $isdocImportFactory = null,
         private readonly ?\Closure $preprocessSpawner = null,
         private readonly ?DocumentEventDispatcher $eventDispatcher = null,
+        private readonly ?\Closure $analysisSpawner = null,
     ) {
         $this->attachments = new AttachmentService($db, $dsPath, $tables);
         $this->idempotency = new IdempotencyStore($db);
@@ -425,7 +431,9 @@ class MailController
             // odloží (#81 D4), import s obsahovou eskalací běží tam.
             if ($preTriageRule === null) {
                 if ($preprocessPlan === null) {
-                    $this->deferIsdocImport($messageId, $contentAttachments);
+                    if (!$this->deferIsdocImport($messageId, $contentAttachments)) {
+                        $this->spawnAnalysis($messageId);
+                    }
                 } else {
                     $this->spawnPreprocess($messageId);
                 }
@@ -455,11 +463,13 @@ class MailController
      *
      * @param list<array<string, mixed>> $contentAttachments Uploady příloh
      *        bez raw .eml souboru.
+     * @return bool Zpráva odložena do runneru předzpracování (ten pak spustí
+     *         i analýzu); false = zpráva zůstává přímo ve frontě AI.
      */
-    private function deferIsdocImport(int $messageId, array $contentAttachments): void
+    private function deferIsdocImport(int $messageId, array $contentAttachments): bool
     {
         if ($this->isdocImportFactory === null) {
-            return;
+            return false;
         }
 
         try {
@@ -471,11 +481,11 @@ class MailController
                 }
             }
             if (!$hasCandidate) {
-                return;
+                return false;
             }
 
             if (!($this->isdocImportFactory)()->detect($messageId, $contentAttachments)) {
-                return; // žádný / vadný ISDOC, více identit → AI fronta jako dřív
+                return false; // žádný / vadný ISDOC, více identit → AI fronta jako dřív
             }
 
             $this->db->execute(
@@ -490,12 +500,14 @@ class MailController
                 IsdocImportService::ANALYSIS_IMPORTABLE_STATES,
             );
             if ($this->db->getAffectedRows() === 0) {
-                return; // analyzer si zprávu mezitím claimnul — nechat mu ji
+                return false; // analyzer si zprávu mezitím claimnul — nechat mu ji
             }
 
             $this->spawnPreprocess($messageId);
+            return true;
         } catch (\Throwable $e) {
             ErrorLogger::logException($e, 'MailController ISDOC deferral failed — message stays in AI queue');
+            return false;
         }
     }
 
@@ -537,6 +549,30 @@ class MailController
             new PreprocessSpawner($this->dsPath)->spawn($messageId);
         } catch (\Throwable $e) {
             ErrorLogger::logException($e, 'MailController preprocess spawn failed — sweep will pick the message up');
+        }
+    }
+
+    /**
+     * Detached spawn runneru AI analýzy po commitu příjmu / nahrání
+     * (tasks/mail-analysis-inprocess.md D14) — jen pro zprávu, která nešla
+     * do předzpracování (odtud ji spouští runner předzpracování sám) a je
+     * ve frontě (`AnalysisQueue::isEligible`: stav 10, schránka s AI, bez
+     * claimu). Pořadí vůči ISDOC: až po `deferIsdocImport()`, jinak by si
+     * AI zprávu claimla dřív, než doběhne detekce, a za peníze analyzovala
+     * fakturu, kterou umí deterministický import. Bez wiringu nic — zprávu
+     * dohledá `mail-analyze --sweep`; selhání jen zalogovat.
+     */
+    private function spawnAnalysis(int $messageId): void
+    {
+        if ($this->analysisSpawner === null) {
+            return;
+        }
+        try {
+            if (new AnalysisQueue($this->db)->isEligible($messageId)) {
+                ($this->analysisSpawner)($messageId);
+            }
+        } catch (\Throwable $e) {
+            ErrorLogger::logException($e, 'MailController analysis spawn failed — sweep will pick the message up');
         }
     }
 
@@ -667,7 +703,9 @@ class MailController
             // se odloží do runneru per zpráva (#81 D4 — až 20 runnerů naráz
             // je v pořádku, neserializovat). Nikdy nesmí shodit upload.
             foreach ($isdocBatches as $messageId => $contentAttachments) {
-                $this->deferIsdocImport($messageId, $contentAttachments);
+                if (!$this->deferIsdocImport($messageId, $contentAttachments)) {
+                    $this->spawnAnalysis($messageId);
+                }
             }
 
             return Response::success(['mode' => $mode, 'messages' => $messages], 201);

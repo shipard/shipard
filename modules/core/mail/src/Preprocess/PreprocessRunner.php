@@ -7,6 +7,7 @@ namespace Shipard\Module\Core\Mail\Preprocess;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Core\Attachments\AttachmentService;
+use Shipard\Module\Core\Mail\Analysis\AnalysisQueue;
 use Shipard\Module\Core\Mail\IsdocImportService;
 
 /**
@@ -66,6 +67,10 @@ final class PreprocessRunner
      * @param \Closure(int): void|null $spawn Respawn runneru při sweepu
      *        (produkčně PreprocessSpawner::spawn); null = jen reset stavu.
      * @param PreprocessRuleMatcher|null $matcher Re-match pro --force.
+     * @param \Closure(int): void|null $spawnAnalysis Spawn runneru AI analýzy
+     *        po konci běhu, když je zpráva ve frontě (produkčně
+     *        AnalysisSpawner::spawn, tasks/mail-analysis-inprocess.md D14);
+     *        null = bez spawnu (sweep).
      */
     public function __construct(
         private readonly DataSourceConnection $db,
@@ -74,6 +79,7 @@ final class PreprocessRunner
         private readonly ?\Closure $isdocImportFactory = null,
         private readonly ?\Closure $spawn = null,
         private readonly ?PreprocessRuleMatcher $matcher = null,
+        private readonly ?\Closure $spawnAnalysis = null,
     ) {
     }
 
@@ -223,6 +229,8 @@ final class PreprocessRunner
             // výsledek nepřepisujeme, další běh ho zopakuje idempotentně.
             return ['status' => 'lost_race', 'message' => $messageId, 'results' => $log['results'], 'isdoc' => $log['isdoc']];
         }
+
+        $this->spawnAnalysisIfQueued($messageId);
 
         return [
             'status' => $allOk ? 'done' : 'done_with_errors',
@@ -413,6 +421,27 @@ final class PreprocessRunner
         } catch (\Throwable $e) {
             ErrorLogger::logException($e, 'PreprocessRunner ISDOC import failed — message stays in AI queue');
             return 'failed';
+        }
+    }
+
+    /**
+     * Po konci běhu (stav 30 / 40) zpráva prošla gate AI fronty — spawn
+     * runneru analýzy (tasks/mail-analysis-inprocess.md D14). Stav fronty
+     * se čte znovu: ISDOC import mezitím mohl analýzu přepnout na 30
+     * (importováno) a schránka ji může mít vypnutou. Selhání nikdy
+     * neshodí běh — zprávu dohledá `mail-analyze --sweep`.
+     */
+    private function spawnAnalysisIfQueued(int $messageId): void
+    {
+        if ($this->spawnAnalysis === null) {
+            return;
+        }
+        try {
+            if (new AnalysisQueue($this->db)->isEligible($messageId)) {
+                ($this->spawnAnalysis)($messageId);
+            }
+        } catch (\Throwable $e) {
+            ErrorLogger::logException($e, 'PreprocessRunner analysis spawn failed — sweep will pick the message up');
         }
     }
 
