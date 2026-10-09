@@ -1,0 +1,99 @@
+{
+    // shpd.workOrders.workOrder.v1 — import zakázky ze starého Shipardu
+    // (docs/work-orders.md §6, #110 D9, D25, D26; tasks/work-orders-import.md).
+    // Jeden request = jedna zakázka včetně řádků předpisu a cílového stavu.
+    //
+    // Důležité:
+    //   - `number` je klíč párování; převezme se beze změny (jako číslo
+    //     dokladu v importu). Zakázka se stejným číslem už v DS → `skipped`,
+    //     přepis se nedělá (reimport jde do resetovaného zdroje, I2).
+    //     Chybí-li číslo a stav není `draft`, přidělí ho řada při potvrzení.
+    //   - `sequenceNumber` s `number` srovná čítač řady (SequenceCounter::
+    //     syncImported) v rozsahu fiskálního roku `dateStart`; bez něj jen
+    //     varování `counter_not_synced`.
+    //   - `numberSeries`, `costCenter`, `customer`, `item`,
+    //     `invoicing.numberSeries` a `invoicing.bankAccount` jsou NOVÁ id
+    //     záznamů v cílovém zdroji dat — mapu starých na nová drží runner
+    //     (I1). Kódy jen tam, kde jsou přirozené: měna, kód DPH, pohyb,
+    //     jednotka (system_code / zkratka), periodicita, okamžik fakturace,
+    //     režim DPH a způsob platby (stejné kódy jako shpd.docs.document.v1).
+    //   - Řada určuje druh a typ zakázky; pravidla typu (WorkOrderTypes)
+    //     hlídá verifier: strana jen u externích, `parent` jen u jednorázových,
+    //     `invoicing` a `rows` jen u periodického typu.
+    //   - `parent` je ČÍSLO nadřazené zakázky (runner posílá nadřazené dřív).
+    //   - V `invoicing` je chybějící / null hodnota přepisu = hodnota druhu
+    //     (InvoicingSettingsResolver).
+    //   - Verzi nese přímo `format` (jako shpd.assets.asset.v1).
+
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://shipard.cz/schemas/shpd.workOrders.workOrder.v1.json",
+    "title": "Shipard work order import v1",
+    "type": "object",
+    "additionalProperties": false,
+
+    "required": ["format", "workOrder"],
+
+    "properties": {
+        "format": { "const": "shpd.workOrders.workOrder.v1" },
+
+        "workOrder": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["numberSeries", "title", "state"],
+            "properties": {
+                "number":           { "type": ["string", "null"], "minLength": 1, "maxLength": 50, "pattern": "\\S" },
+                "sequenceNumber":   { "type": ["integer", "null"], "minimum": 1 },
+                "numberSeries":     { "type": "integer", "minimum": 1 },
+                "title":            { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "\\S" },
+                "state":            { "enum": ["draft", "confirmed", "finished", "cancelled"] },
+                "dateStart":        { "$ref": "#/$defs/dateOrNull" },
+                "dateEnd":          { "$ref": "#/$defs/dateOrNull" },
+                "costCenter":       { "type": ["integer", "null"], "minimum": 1 },
+                "internalNote":     { "type": ["string", "null"] },
+                "customer":         { "type": ["integer", "null"], "minimum": 1 },
+                "currency":         { "type": ["string", "null"], "minLength": 3, "maxLength": 3 },
+                "paymentReference": { "type": ["string", "null"], "maxLength": 35 },
+                "parent":           { "type": ["string", "null"], "minLength": 1, "maxLength": 50 },
+                "invoicing": {
+                    "type": ["object", "null"],
+                    "additionalProperties": false,
+                    "properties": {
+                        "periodicity":   { "enum": ["month", "quarter", "halfyear", "year", null] },
+                        "invoiceFrom":   { "$ref": "#/$defs/dateOrNull" },
+                        "docText":       { "type": ["string", "null"], "maxLength": 200 },
+                        "docType":       { "enum": ["invno", "invpo", null] },
+                        "numberSeries":  { "type": ["integer", "null"], "minimum": 1 },
+                        "dueDays":       { "type": ["integer", "null"], "minimum": 0, "maximum": 999 },
+                        "timing":        { "enum": ["start", "end", null] },
+                        "vatMode":       { "enum": ["none", "fromBase", "fromTotal", null] },
+                        "paymentMethod": { "enum": ["cash", "bankTransfer", "card", "cashOnDelivery", "setOff", "paymentGateway", null] },
+                        "bankAccount":   { "type": ["integer", "null"], "minimum": 1 }
+                    }
+                }
+            }
+        },
+
+        "rows": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "item":        { "type": ["integer", "null"], "minimum": 1 },
+                    "description": { "type": ["string", "null"], "maxLength": 500 },
+                    "quantity":    { "type": ["number", "null"] },
+                    "unit":        { "type": ["string", "null"], "maxLength": 20 },
+                    "unitPrice":   { "type": ["number", "null"] },
+                    "vatCode":     { "type": ["string", "null"], "maxLength": 20 },
+                    "operation":   { "type": ["string", "null"], "maxLength": 40 },
+                    "validFrom":   { "$ref": "#/$defs/dateOrNull" },
+                    "validTo":     { "$ref": "#/$defs/dateOrNull" }
+                }
+            }
+        }
+    },
+
+    "$defs": {
+        "dateOrNull": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" }
+    }
+}
