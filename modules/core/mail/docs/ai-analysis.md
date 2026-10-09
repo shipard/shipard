@@ -11,11 +11,22 @@ Z došlé zprávy v `core_mail_incoming_messages` strojově vytěžit **nejvýš
 jeden dokumentový návrh** (přijatá faktura, dobropis, registry dokument…)
 a nabídnout ho uživateli k review/použití. Jednotkou analýzy je **celá
 zpráva** — subject + body + přílohy jsou jeden kontext (D1). Vlastní
-extrakci dělá **externí analyzer daemon** (samostatný repozitář
-`ai_analyzer`). Shipard je server-of-record: spravuje frontu, claimy,
-ukládá výsledky, řídí review workflow.
+extrakci dělá **runner v procesu** (`shpd-ds mail-analyze`, viz
+[Analýza v procesu](#analýza-v-procesu), #85 D9); dočasně vedle něj
+funguje i **externí analyzer daemon** (samostatný repozitář `ai_analyzer`)
+přes pull protokol níže. Shipard je server-of-record: spravuje frontu,
+claimy, ukládá výsledky, řídí review workflow — pro obě cesty stejně.
 
 ## Pull-based protokol
+
+> **Stav (říjen 2026):** primární cestou je [analýza v procesu](#analýza-v-procesu);
+> protokol zůstává kvůli souběhu s démonem a porovnání obou cest, dokud ho
+> nezruší `tasks/ai-analyzer-removal.md`. Stavový automat, claimy a zápis
+> výsledku jsou pro obě cesty tytéž — endpointy jsou tenké obálky nad
+> službami `Shipard\Module\Core\Mail\Analysis\*` (`AnalysisQueue`,
+> `AnalysisClaimService`, `AnalysisResultWriter`), které volá i runner.
+> Na serveru, kde má dál pracovat démon, se runner vypíná
+> `ai.analysis.maxConcurrent = 0`.
 
 Externí analyzer drží trvale token a periodicky volá:
 
@@ -85,6 +96,121 @@ dispozice → `docState 10→80` + `auto_disposed_*`;
 `tasks/mail-sender-rules-after-analysis.md` D4–D6). Při selhání se vše
 rollbackuje.
 Kontrakt v4 detailně: [docs/mail/api-contract.md §9.5](../../../../docs/mail/api-contract.md).
+
+## Analýza v procesu
+
+Tasks/mail-analysis-inprocess.md (#85 D9–D19). Runner dělá tytéž kroky
+jako pull protokol, ale volá je jako služby v procesu — stavy zprávy,
+tab Analýzy, hlášky selhání, reanalýza, zámek zprávy při `analysis_state =
+20` i závod s ISDOC importem zůstávají beze změny. `analyzer_id` claimu
+je `internal:<hostname>:<pid>`, `created_by` běhu je NULL (strojový
+kontext; běh přes HTTP nese uživatele `_ai_analyzer`).
+
+```
+příjem / nahrání zprávy (commit)
+   ├─ plán předzpracování nebo ISDOC → spawn mail-preprocess
+   │      └─ konec běhu (stav 30/40), zpráva ve frontě → spawn mail-analyze
+   └─ jinak, zpráva ve frontě ──────────────────────────→ spawn mail-analyze
+
+reanalyze (analysis_state → 10) ────────────────────────→ spawn mail-analyze
+cron minute: mail-analysis-reap → mail-analyze --sweep ─→ spawn mail-analyze (≤ volné sloty)
+
+mail-analyze --message N  (AnalysisRunner::run)
+   1. slot (flock, neblokující)      bez slotu → konec, zpráva čeká ve frontě
+   2. AnalysisQueue::isEligible(N)   ne → konec
+   3. AnalysisClaimService::claim    10 → 20, lease 900 s; profil + backend + klíč
+   4. AttachmentPreparer → PromptRenderer
+   5. LLM (stream, opakování, před každým pokusem prodloužení lease)
+   6. OutputParser (JSON + output_schema profilu)
+   7. AnalysisResultWriter::storeResult / storeFailure   20 → 30 / 10 / 70
+```
+
+**Spouštění** (D14): `AnalysisSpawner` spouští `shpd-ds mail-analyze
+--message <id>` přes `DetachedProcess` (stdout do `analysis.log` vedle
+serverového logu) — po commitu příjmu nebo nahrání u zprávy, která nešla
+do předzpracování (až **po** `deferIsdocImport()`, jinak by si AI za peníze
+claimla fakturu, kterou umí deterministický import), na konci běhu
+`PreprocessRunner`, po `reanalyze`; vždy jen pro zprávu ve frontě
+(`AnalysisQueue::isEligible`). Spawner se wiruje jen v `public/index.php`
+a `PreprocessRunnerFactory`; testy stavějí controllery bez něj. Záchrana:
+`mail-analyze --sweep` v minutovém slotu za reaperem — pro zprávy ve
+frontě bez aktivního claimu spustí runnery, nejvýš tolik, kolik je
+volných slotů; bez použitelného backendu (aktivní výchozí profil → aktivní
+backend s klíčem) nic a jedno varování. Druhý runner na tutéž zprávu skončí
+na `ALREADY_CLAIMED`.
+
+**Sloty souběhu** (D15): `ai.analysis.maxConcurrent` v `server.json`
+(výchozí 2), slot = neblokující `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`
+(`AnalysisSlots`). Runner bez slotu končí bez claimu. `0` = analýza
+v procesu vypnutá (spawn i sweep nic nedělají). Do adresáře zapisuje
+i PHP-FPM worker (spawn z requestu) — vlastní ho shipard-user, pod kterým
+pool běží; nezapisovatelný adresář zapíše chybu do logu při každém běhu.
+
+**Příprava příloh** (D16, `AttachmentPreparer`): přílohy jako `/payload`
+(bez `raw_source_attachment`, bez smazaných); ZIP se rozbalí jednu úroveň
+(vnořený ZIP se přeskočí, soubory dědí `ndx` rodiče a název
+`<zip>/<vnitřní název>`); třídění na PDF / obrázek (`jpeg`, `png`, `gif`,
+`webp`) / text (`text/*`), u `application/octet-stream` odhad podle
+přípony; text se dekóduje `utf-8` → `utf-16` (jen s BOM) → `windows-1250`
+→ `latin-1`. Limity jsou konstanty: 20 příloh, 30 MB v požadavku
+(priorita PDF > obrázek > text, při stejné prioritě větší dřív, zachované
+přílohy v původním pořadí), nad 10 MB na přílohu jen varování. Příloha
+`.eml` / `message/rfc822` se **nerozbaluje** — přeskočí se jako
+nepodporovaný typ.
+
+**Prompt** (D17, `PromptRenderer`): `prompt_template` profilu vykreslí Twig
+v sandboxu (`AnalysisPromptPolicy`: tagy `if`, `for`, `set`; filtry
+`length`, `default`, `join`, `trim`, `lower`, `upper`; žádné funkce,
+metody ani vlastnosti objektů), `strict_variables`, bez autoescape.
+Kontext jako u démona: `message` (`subject`, `sender_email`, `sender_name`,
+`received_at`, `body_plain`, `body_html`), `attachments[]` (`ndx`,
+`filename`, `mime_type`, `kind`, `size_human`), `output_schema`. Šablony
+vznikly pro Jinja2 s `trim_blocks` + `lstrip_blocks`: první konec řádku za
+blokovým tagem stříhá Twig sám, `lstrip_blocks` doplňuje renderer nad
+zdrojem — výstup je bajtově shodný s démonem.
+
+**Volání modelu a výstup** (D18): jedna zpráva `user` — text promptu, pak
+za každou přílohu blok `document` (PDF, base64) / `image` / `text`
+(`--- Attachment <název> (#<ndx>) ---`). `max_tokens` kaskádou profil →
+backend → 32768, teplota z backendu, streamovaně, `stallTimeoutSeconds =
+180`, `timeoutSeconds = 840` (lease 900 s). `OutputParser`: první textový
+blok → JSON (přímo, jinak z markdown bloku ```` ```json ````) → validace
+proti `output_schema` přes `opis/json-schema` **bez formátů** (démon je
+nekontroloval; `source.extractedAt` server přepíše) → objekt na nejvyšší
+úrovni. Z chyb validace se bere ta s nejhlubší cestou (jako `best_match`
+v Pythonu — u `oneOf` dokumentu vyhraje konkrétní pole) a zpráva má
+textový tvar jsonschema, ze kterého `AnalysisErrorPresenter` skládá hlášku
+(`output does not match schema: Additional properties are not allowed
+('x' was unexpected) at ['document', 'extracted_json', …]`).
+
+**Chyby a opakování** (D18):
+
+| Situace | Zápis | Opakování |
+|---|---|---|
+| chyba claimu z konfigurace (`NO_PROFILE`, `NO_BACKEND`, `BACKEND_KEY_*`, `SECRETS_UNAVAILABLE`) | žádný — zpráva zůstává ve frontě, jedno varování | sweep každou minutu |
+| šablona promptu nejde vykreslit, nevalidní `output_schema`, nepodporovaný provider | `config_error`, stav 70 | ne |
+| výstup není JSON / neodpovídá schématu | `schema_error`, stav 70 | ne |
+| `stop_reason = max_tokens` | `ai_error` „output truncated at max_tokens=<n>“, stav 70 | ne |
+| vyčerpaný měsíční strop útraty (429 s `error.details.error_code = enforced_spend_limit_reached`, bez `retry-after`) | `config_error` se zprávou poskytovatele, stav 70 | ne — API stojí do dalšího měsíce; u hostovaných DS jde o strop společné organizace |
+| přechodná chyba (transport, 408, 429, 5xx, `overloaded_error`) | v rámci běhu další dva pokusy po 10 a 60 s (`LlmRetry`); po vyčerpání `ai_error`, stav 10 | nejvýš třikrát za hodinu (počítají se selhané běhy zprávy), pak stav 70 |
+| jiná chyba API (400, 401, 404) | `ai_error`, stav 70 | ne |
+| lease nešla prodloužit / claim expiroval před zápisem | žádný — jen varování včetně ceny | reaper už zprávu vrátil do fronty |
+| nečekaná výjimka (DB, disk) | žádný — claim se nechá vypršet | reaper + sweep |
+
+**Cena** (D19): `cost_usd` počítá `Shipard\Core\Ai\AnthropicPricing`
+z tabulky cen podle nejdelšího shodného prefixu ID modelu (ID z odpovědi
+streamu, fallback model backendu); neznámý model = 0 a varování. Dočasné —
+ceny převezme katalog modelů (#85 fáze 1).
+
+**Třídy:** `modules/core/mail/src/Analysis/` — `AnalysisStates`,
+`AnalysisQueue`, `AnalysisClaimService` (+ `AnalysisClaim`,
+`AnalysisClaimException`), `AnalysisResultWriter` (+ `AnalysisResultException`),
+`AnalysisServices` (wiring), `AttachmentPreparer` (+ `RawAttachment`,
+`PreparedAttachment`), `PromptRenderer` (+ `AnalysisPromptPolicy`,
+`PromptRenderException`), `OutputParser` (+ `SchemaValidationException`),
+`AnalysisSlots` (+ `AnalysisSlot`), `AnalysisRunner`, `AnalysisSpawner`,
+`AnalysisRunnerFactory`; CLI `src/Command/DataSource/MailAnalyzeCommand.php`
+([docs/cli.md](../../../../docs/cli.md) § `mail-analyze`).
 
 ## Šifrování API klíčů backendů
 
@@ -805,11 +931,15 @@ Volitelný `profile_override_ndx` v body. Logika:
    message-level `ai_analysis_enabled=1` dostane navíc `ai_analysis_enabled=1` —
    explicitní záměr uživatele přebíjí default schránky, jinak by `/queue`
    zprávu tiše nikdy nevydal.
+5. Po commitu spawn runneru `mail-analyze --message` (jen je-li zpráva ve
+   frontě, viz [Analýza v procesu](#analýza-v-procesu)); bez něj ji do
+   minuty dohledá sweep.
 
 Historie analýz se nemění — „aktuální návrh" je implicitně poslední
 úspěšný běh, žádný supersede krok neexistuje (koncept `superseded` zanikl).
 Reanalýza po rejectu je možná — vznikne nový běh s `resolution=NULL`.
-Analyzer při dalším GET /queue zprávu uvidí včetně override profilu.
+Runner převezme `profile_override` v claimu; analyzer při dalším GET /queue
+zprávu uvidí včetně override profilu.
 
 ## Chybové hlášky pro uživatele
 
@@ -933,6 +1063,8 @@ default *se nepřepíše*; admin zachová svůj override.
   — deterministický ISDOC import (mapovací tabulka ISDOC → canonical)
 - [tasks/mail-analysis-error-messages.md](../../../../tasks/mail-analysis-error-messages.md)
   — lidské hlášky selhané analýzy (katalog, presenter, pravidlo D4)
+- [tasks/mail-analysis-inprocess.md](../../../../tasks/mail-analysis-inprocess.md)
+  — analýza v procesu (#85 D9–D19): služby, runner, sloty, spouštění, opakování
 - [docs/operations/secrets.md](../../../../docs/operations/secrets.md) — DsSecretCipher
 - [docs/mail/api-contract.md](../../../../docs/mail/api-contract.md) — API kontrakty
 - [ai-prompts.md](ai-prompts.md) — default prompt + customization guidelines

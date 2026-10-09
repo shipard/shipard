@@ -244,6 +244,23 @@ bash ~/sw/shpd/scripts/dev-bootstrap.sh --with-render
 Checkout je stažený přes HTTPS. Až budeš chtít posílat změny, přepni ho
 podle [`dev-daily.md`](dev-daily.md#5-až-budeš-chtít-posílat-změny) (oddíl 5).
 
+### AI na lokální instalaci
+
+K vytěžení dokladu z Dashboardu i k asistentovi stačí klíč AI backendu —
+žádný další runtime ani démon. Z adresáře zdroje dat:
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds ai-analyzer-set-key --backend default --api-key sk-ant-…
+```
+
+Pak nahraj doklad (PDF, obrázek účtenky) na Dashboardu. Analýza běží jako
+odpojený proces `shpd-ds mail-analyze` a do minuty je výsledek v detailu
+zprávy; běhy s tokeny, cenou a trváním vidíš v tabu *Analýzy*. Bez klíče
+zpráva zůstane „Ve frontě“ a v logu je jednou za minutu varování sweepu.
+Limit souběhu a vypnutí (`ai.analysis.maxConcurrent`) popisuje
+[`operations/production.md`](../operations/production.md) §10.
+
 ---
 
 ## 7. Něco nefunguje?

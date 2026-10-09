@@ -1,6 +1,6 @@
 # Došlá pošta — AI analýza v `shpd` místo démona `ai-analyzer` (#85 D9)
 
-**Stav:** naplánováno — rozhodnutí D9–D19 potvrzena 2026-10-09 (#85), připraveno k implementaci
+**Stav:** částečně — kroky 1–6 hotové 2026-10-09 (služby, vstup/výstup, LLM vrstva, runner + CLI + sloty, spouštění, dokumentace); zbývá ověření 1–11 na dev serveru a komentář do #85
 
 ## Status / cíl
 
@@ -448,12 +448,12 @@ testů**.
 
 ## Hotovo když
 
-- [ ] Kroky 1–6 jako samostatné commity, `php -l` na změněných souborech.
-- [ ] Po kroku 1 projdou stávající testy analýzy beze změny.
-- [ ] Cílené testy: `vendor/bin/phpunit --filter 'AnalysisQueueTest|AnalysisClaimServiceTest|AttachmentPreparerTest|PromptRendererTest|OutputParserTest|AnthropicPricingTest|LlmRetryTest|AnthropicLlmClientTest|AnalysisRunnerTest|MailAnalyzeCommandTest|AnalysisControllerTest|PreprocessRunnerTest'`, pak celá sada.
+- [x] Kroky 1–6 jako samostatné commity, `php -l` na změněných souborech.
+- [x] Po kroku 1 projdou stávající testy analýzy beze změny.
+- [x] Cílené testy: `vendor/bin/phpunit --filter 'AnalysisQueueTest|AnalysisClaimServiceTest|AttachmentPreparerTest|PromptRendererTest|OutputParserTest|AnthropicPricingTest|LlmRetryTest|AnthropicLlmClientTest|AnalysisRunnerTest|MailAnalyzeCommandTest|AnalysisControllerTest|PreprocessRunnerTest'`, pak celá sada.
 - [ ] Nahraný doklad se na serveru bez démona vytěží do minuty.
 - [ ] Pull protokol dál funguje (démon proti stejnému serveru zprávu
       zpracuje, když je `maxConcurrent = 0`).
 - [ ] Ověření 1–11 provedeno, výsledek do #85.
-- [ ] Dokumentace podle kroku 6.
+- [x] Dokumentace podle kroku 6.
 - [ ] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.

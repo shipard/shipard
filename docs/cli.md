@@ -243,7 +243,7 @@ podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 
 | Slot | Kadence | Příkazy | Běží ve stavech |
 |------|---------|---------|-----------------|
-| `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep` | `active` |
+| `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep` | `active` |
 | `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) |
 | `five-minutes` | à 5 min | `alerts-run` (self-throttling přes `next_run_at`) | `active` |
 | `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) |
@@ -1259,6 +1259,33 @@ skončí ve stavu Hotovo s chybami (40) a projde do AI fronty.
 | `--message <id>` | Id zprávy (`core_mail_incoming_messages.id`) |
 | `--force` | Re-match dle **aktuálních** potvrzených pravidel, smazání dříve vygenerovaných příloh (dle provenance) a přegenerování. Funguje i na stavech 0/30/40 — ladění nového pravidla nad starou zprávou. Odmítne zprávu s aktivním AI claimem (`analysis_state=20`) |
 | `--sweep` | Rescue: stav 10 starší než 5 min (spawn selhal) a stav 20 starší než 15 min (proces umřel) → zpět na 10 + spawn; po 3 pokusech stav 40. Exit 0 i bez nálezu |
+
+#### `mail-analyze`
+
+```bash
+sudo shpd-ds mail-analyze --message 1234   # AI analýza jedné zprávy ve frontě
+sudo shpd-ds mail-analyze --sweep          # runnery pro frontu bez claimu (cron, minute slot)
+```
+
+Runner AI analýzy došlé zprávy v procesu (`modules/core/mail/docs/ai-analysis.md`
+§ Analýza v procesu, #85 D9). `--message` vezme slot souběhu, ověří, že je
+zpráva ve frontě (stav Ve frontě, mimo Archiv a Koš, po předzpracování,
+schránka s AI, bez claimu), claimne ji (10 → 20), připraví přílohy
+a prompt, zavolá model a zapíše výsledek (20 → 30) nebo selhání (20 → 10 /
+70). Primárně ho spouští příjem, nahrání, konec předzpracování a reanalýza
+detached spawnem; ručně se hodí při ladění. Selhaná analýza **není** chyba
+příkazu — FAILURE jen špatné volání a chyby infrastruktury.
+
+| Opce | Význam |
+|------|--------|
+| `--message <id>` | Id zprávy (`core_mail_incoming_messages.id`). Bez volného slotu, mimo frontu nebo bez nastaveného backendu / klíče skončí bez zápisu a zpráva zůstává ve frontě |
+| `--sweep` | Záchrana: zprávy ve frontě bez aktivního claimu → spawn runneru, nejvýš tolik, kolik je volných slotů; bez použitelného backendu nic (jedno varování). Exit 0 i bez nálezu |
+
+Limit souběhu per server `ai.analysis.maxConcurrent` v `server.json`
+(výchozí 2, `0` = analýza v procesu vypnutá — server, kde dál pracuje
+démon `ai-analyzer`), sloty = `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`;
+viz [operations/production.md](operations/production.md) § 10. Běh zvedne
+`memory_limit` na 512 MB, je-li nižší (přílohy v base64 a v těle požadavku).
 
 #### `mail-target-backfill`
 

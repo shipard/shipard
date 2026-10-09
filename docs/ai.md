@@ -13,14 +13,14 @@ Jazykový model je vyměnitelný díl; nástroje jsou napsané jednou.
 ## 1. Vrstvená mapa
 
 ```
-  Konzumenti:   vnitřní chat        externí MCP         ai_analyzer
-                (core/chat,         klienti             (Python daemon,
-                 in-process)        (/_mcp, HTTP)        analýza pošty)
+  Konzumenti:   vnitřní chat        externí MCP         analýza pošty
+                (core/chat,         klienti             (mail-analyze,
+                 in-process)        (/_mcp, HTTP)        PHP runner)
                      │                   │                    │
                      └──── nástroje ─────┘                    │ vlastní cesta
-                              ▼                               │ (claim/result,
-              ┌─────────────────────────────────┐            │  ne přes MCP)
-              │ MCP nástroje (src/Api/Mcp)       │            │
+                              ▼                               │ (claim/result
+              ┌─────────────────────────────────┐            │  jako služby,
+              │ MCP nástroje (src/Api/Mcp)       │            │  ne přes MCP)
               │ doménové operace nad daty        │            │
               └───────────────┬─────────────────┘            │
                               ▼                               │
@@ -35,7 +35,10 @@ Jazykový model je vyměnitelný díl; nástroje jsou napsané jednou.
 Klíčový poznatek: **MCP server (= nástroje nad Shipardem) je společný základ,
 vnitřní chat je jen jeden z jeho klientů.** Nástroje volá vnitřní chat
 in-process (registr je hned vedle), externí klienti přes `/_mcp` po HTTP.
-Analýza došlé pošty má vlastní cestu (Python daemon), backend ale sdílí.
+Analýza došlé pošty má vlastní cestu — runner `shpd-ds mail-analyze` v PHP
+(fronta → claim → model → zápis, #85 D9); backend i LLM klienta ale sdílí.
+Dočasně vedle něj funguje i pull protokol pro Python daemon `ai_analyzer`
+(zrušení řeší `tasks/ai-analyzer-removal.md`).
 
 ---
 
@@ -47,7 +50,8 @@ Analýza došlé pošty má vlastní cestu (Python daemon), backend ale sdílí.
 | MCP server | `src/Api/Mcp/` + `src/Api/Controller/McpController.php`; routa `POST /api/v1/_mcp` | JSON-RPC 2.0 (`initialize`, `tools/list`, `tools/call`), registr nástrojů, mapování obálky |
 | Nástroje | `modules/*/*/src/Mcp/` | doménové operace (viz §3) |
 | Chat orchestrátor | `src/Api/Controller/ChatController.php` + `modules/core/chat/` | konverzace, SSE smyčka, in-process volání nástrojů |
-| LLM klient | `src/Core/Ai/` (`LlmClient`, `AnthropicLlmClient`, `AiBackendResolver`) | streamovaný Anthropic Messages API (+ tool-use); resolver default backendu + dešifrování klíče |
+| LLM klient | `src/Core/Ai/` (`LlmClient`, `AnthropicLlmClient`, `AiBackendResolver`, `LlmRetry`, `AnthropicPricing`) | streamovaný Anthropic Messages API (+ tool-use, timeouty); resolver default backendu + dešifrování klíče; opakování přechodných chyb; tabulka cen |
+| Analýza pošty | `modules/core/mail/src/Analysis/` + `src/Command/DataSource/MailAnalyzeCommand.php` | služby fronty / claimu / zápisu výsledku (sdílené s pull endpointy), příprava příloh, prompt v Twig sandboxu, parser výstupu, runner a sloty souběhu — viz [`../modules/core/mail/docs/ai-analysis.md`](../modules/core/mail/docs/ai-analysis.md) § Analýza v procesu |
 | Dashboard shrnutí | `src/Core/Dashboard/DashboardSummaryService.php` + `modules/core/ai/tables/core_ai_dashboard_summary.jsonc` | generované shrnutí feedu (SSE, cache dle hashe digestu) — viz [`dashboard.md`](dashboard.md) §11 |
 | Frontend | `frontend/src/components/chat/` + `api/chat.js` | pohled „Chat", SSE konzumace přes `fetch` + reader |
 
@@ -80,18 +84,20 @@ ano, „neuhrazeno" ne: stav úhrady žádný z dokladových nástrojů nevrací
 
 | Cesta | Kdo volá LLM | Režim | Nástroje |
 |-------|--------------|-------|----------|
-| **Analýza pošty** | Python daemon `ai_analyzer` (pull/claim přes `AnalysisController`) | strukturovaný výstup, ne-streamovaně | — |
+| **Analýza pošty** | PHP `AnalysisRunner` (CLI `shpd-ds mail-analyze`: spawn po příjmu / předzpracování / reanalýze + minutový sweep) přes `AnthropicLlmClient`; dočasně i Python daemon `ai_analyzer` přes pull protokol `AnalysisController` | strukturovaný výstup (JSON dle `output_schema` profilu), streamovaně, timeouty 180 / 840 s, opakování přechodných chyb | — |
 | **Vnitřní chat** | PHP `AnthropicLlmClient` (in-process) | streamovaně (SSE), tool-use smyčka | čtecí MCP nástroje |
 | **Dashboard shrnutí** | PHP `AnthropicLlmClient` přes `DashboardSummaryService` | streamovaně (SSE), **bez tools**, `maxTokens ~300` | — |
 
 Všechny cesty čtou backend (provider/model/klíč) z `core_ai_backends`; default
-backend na PHP straně resolvuje `AiBackendResolver`. Pozn.: PHP strana neměla
-LLM klienta, dokud nevznikl chat — analýza pošty volá model výhradně z Python
-daemonu.
+backend na PHP straně resolvuje `AiBackendResolver`, analýza pošty bere
+profil a backend z claimu (`AnalysisClaimService`). Souběh analýz hlídá limit
+per server `ai.analysis.maxConcurrent` (sloty `flock`), ne AI gateway
+hostingu (#85 D11, D15).
 
-`max_tokens` je kaskáda **AI profil → backend → default provideru analyzeru**;
-`0` = nenastaveno, spadni níž. Jediné skutečné číslo žije v provideru
-analyzeru — limit tak nezkamení v datech každého DS. Chat backendový
+`max_tokens` je kaskáda **AI profil → backend → default runneru**
+(`AnalysisRunner::DEFAULT_MAX_TOKENS` = 32768; démon drží totéž číslo ve
+svém provideru); `0` = nenastaveno, spadni níž. Jediné skutečné číslo žije
+v kódu — limit tak nezkamení v datech každého DS. Chat backendový
 `max_tokens` respektuje, při 0/NULL drží vlastní fallback 4096
 (`ChatController`); dashboard shrnutí má vlastní konstantu (~300) a backend
 limit nečte.

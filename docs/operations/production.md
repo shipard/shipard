@@ -325,6 +325,22 @@ Předpoklady, aby to fungovalo:
   override v `main.json`); stav fronty hlídá `shpd-server doctor` a alert
   check `core.mail.outbox_health`.
 
+- **AI analýza pošty (`ai.analysis.maxConcurrent`):** limit souběžných
+  běhů `shpd-ds mail-analyze` per server, klíč v `server.json`; výchozí
+  `2`, `0` = analýza v procesu vypnutá (server, kde dál pracuje démon
+  `ai-analyzer`), záporná nebo nečíselná hodnota = chyba konfigurace
+  (běží se s výchozí hodnotou a chybou v logu). Každý běh drží jedno HTTP
+  spojení k modelu až 14 minut; u zdrojů dat přes AI gateway hostingu
+  drží spojení i PHP-FPM worker portálu — limit proto nezvedej nad počet
+  workerů, které si gateway může dovolit ([`ai-gateway.md`](ai-gateway.md)).
+  Sloty jsou `flock` soubory `ai-analysis-<n>.lock` v `/opt/shipard/run/`;
+  adresář vlastní shipard-user, pod kterým běží i PHP-FPM pool (spawn
+  z requestu). Runnery logují do `/opt/shipard/log/analysis.log`.
+
+  ```json
+  "ai": { "analysis": { "maxConcurrent": 2 } }
+  ```
+
 - **Pojistka odchozí pošty (`mail.safety`):** klíč v `server.json` vedle
   `mail.relay`, jen na úrovni serveru. Rozhoduje, jestli pošta dojde
   skutečným příjemcům — režimy a přesné chování viz
