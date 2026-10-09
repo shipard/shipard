@@ -33,12 +33,18 @@ class ResolveResult
         public readonly bool $authoritativeRefresh = false,
     ) {}
 
-    public static function matched(int $id, string $by, bool $authoritativeRefresh = false): self
+    /**
+     * @param array<string, mixed> $createPayload Předvyplnění formuláře
+     *        nové entity i u napárovaného výsledku (ItemResolver, #111 D5):
+     *        applier ho u `matched` nečte, slouží jen review modalu.
+     */
+    public static function matched(int $id, string $by, bool $authoritativeRefresh = false, array $createPayload = []): self
     {
         return new self(
             ResolveStatus::Matched,
             matchedId: $id,
             matchedBy: $by,
+            createPayload: $createPayload,
             authoritativeRefresh: $authoritativeRefresh,
         );
     }

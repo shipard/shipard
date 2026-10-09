@@ -204,6 +204,14 @@ class DocumentApplier
          * (neznámé klíče hlásí DocumentValidator).
          */
         private readonly ?DimensionResolver $dimensionResolver = null,
+        /**
+         * `economy_items.accounting_account` existuje (extension
+         * `economy.accounting`) — účet položky pro `effectiveAccount`
+         * v náhledu (#111 D7b). False = zdroj dat bez účetnictví: účet
+         * z položky se nedohledává (dotaz na chybějící sloupec by náhled
+         * shodil), `effectiveAccount` z položky je null.
+         */
+        private readonly bool $itemsHaveAccountingAccount = false,
     ) {}
 
     /**
@@ -246,7 +254,18 @@ class DocumentApplier
             vatPlaceDerivation: new VatPlaceDerivation(new TradeUnionResolver($config)),
             contentTags: is_array($contentTags) ? $contentTags : [],
             dimensionResolver: new DimensionResolver($db, JournalDimensionSet::fromConfig($config), $tables),
+            itemsHaveAccountingAccount: self::hasColumn($tables['economy_items'] ?? null, 'accounting_account'),
         );
+    }
+
+    private static function hasColumn(?TableDefinition $table, string $column): bool
+    {
+        foreach ($table?->columns ?? [] as $col) {
+            if ($col->id === $column) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -331,6 +350,10 @@ class DocumentApplier
         $this->appendVatHeaderIssues($canonical, $issues);
         $this->appendRecapSourceIssue($canonical, $issues);
         $resolved = $this->withVatBlocks($canonical, $this->resolveAll($canonical, $issues));
+        // 2b. Efektivní položka a účet řádku pro review modal (#111 D3, D7b)
+        //     — čte uložené volby z klientského _resolve, ale nerozhoduje
+        //     (reconcile se v náhledu nevolá).
+        $resolved = $this->annotateRowDisplay($canonical, $resolved);
         // 3. Rekapitulace a součty, jak skončí na dokladu — stejným kódem
         //    jako uložení (tasks/exchange-preview-vat-recompute.md D2–D4, D6).
         $resolved['computed'] = $this->computePreviewAmounts($canonical, $resolved, $issues);
@@ -3884,6 +3907,210 @@ class DocumentApplier
             }
         }
         return $freshRows;
+    }
+
+    // ── Náhled: efektivní položka a účet řádku (#111) ──────────────────────
+
+    /**
+     * Doplní do `_resolve.rows[*]` bloky pro review modal (#111 D3, D7b),
+     * jen `/preview`:
+     *
+     *  - `item.display` = `{id, code, name, pinned}` efektivní položky:
+     *    uložená volba `useExisting:<id>` (`pinned: true`) má přednost před
+     *    automatickým napárováním (`status: matched`, `pinned: false`).
+     *    Volba na neexistující nebo smazanou položku → klíč chybí (apply ji
+     *    stejně odmítne `conflict`). `noItem`, `skip` a nerozhodnutý
+     *    nenapárovaný řádek `display` nemají.
+     *  - `effectiveAccount` = účet, podle kterého se řádek zaúčtuje, nebo
+     *    návrh účtu řádku; `null` = sloupec Účet ukáže „—“. Klíč je na
+     *    každém řádku. Volba `skip` → null; kontační řádek (`accSide`) nebo
+     *    volba `noItem` → účet řádku (`source: "row"`); efektivní položka →
+     *    její účet, jen u účetní položky (`item_type` 2) s vyplněným
+     *    `accounting_account` (`source: "item"`), jinak null — účet doplněný
+     *    historií nebo štítkem se na řádek s položkou při apply nezapíše
+     *    (D7b, {@see reconcile}); bez efektivní položky (nerozhodnuto,
+     *    `canCreate`, `ambiguous`, `notFound`, pin na neexistující id) →
+     *    účet řádku jako návrh (`source: "row"`).
+     *
+     * Volby se čtou stejně jako v {@see reconcile()} — pozičně z
+     * `_resolve.rows[$pos].item.userAction` (řádková `userAction: skip`
+     * platí také). Dva dotazy nezávisle na počtu řádků: položky (s LEFT
+     * JOIN na účty, jen když sloupec `accounting_account` existuje) a účty
+     * řádků (název).
+     *
+     * @param array<string, mixed> $canonical Vstup s klientským `_resolve`.
+     * @param array<string, mixed> $resolved  Výstup {@see resolveAll}.
+     * @return array<string, mixed>
+     */
+    private function annotateRowDisplay(array $canonical, array $resolved): array
+    {
+        $rows = is_array($resolved['rows'] ?? null) ? $resolved['rows'] : [];
+        if ($rows === []) {
+            return $resolved;
+        }
+        $canonicalRows = is_array($canonical['rows'] ?? null) ? $canonical['rows'] : [];
+        $clientRows = is_array($canonical['_resolve']['rows'] ?? null) ? $canonical['_resolve']['rows'] : [];
+
+        // 1. Per řádek: volba, efektivní položka, id účtu řádku.
+        $decisions = [];
+        $effectiveItems = [];
+        $itemIds = [];
+        $accountIds = [];
+        foreach ($rows as $pos => $rowResolve) {
+            if (!is_array($rowResolve)) {
+                continue;
+            }
+            $clientRow = is_array($clientRows[$pos] ?? null) ? $clientRows[$pos] : [];
+            $itemAction = is_array($clientRow['item'] ?? null) ? ($clientRow['item']['userAction'] ?? null) : null;
+            $decision = null;
+            $itemId = null;
+            if (($clientRow['userAction'] ?? null) === 'skip') {
+                $decision = 'skip';
+            } elseif (!isset($rowResolve['item'])) {
+                // Řádek bez bloku položky (text, kontace) — volby položky
+                // reconcile ignoruje, tady také.
+            } elseif (is_string($itemAction) && str_starts_with($itemAction, 'useExisting:')) {
+                $idStr = substr($itemAction, strlen('useExisting:'));
+                if (ctype_digit($idStr) && (int) $idStr > 0) {
+                    $decision = 'useExisting';
+                    $itemId = (int) $idStr;
+                }
+            } elseif ($itemAction === 'noItem' || $itemAction === 'skip') {
+                $decision = $itemAction;
+            }
+            if ($decision === null && ($rowResolve['item']['status'] ?? null) === 'matched') {
+                $matchedId = $rowResolve['item']['matchedId'] ?? null;
+                $itemId = is_int($matchedId) && $matchedId > 0 ? $matchedId : null;
+            }
+            $decisions[$pos] = $decision;
+            $effectiveItems[$pos] = $itemId;
+            if ($itemId !== null) {
+                $itemIds[] = $itemId;
+            }
+            if (($rowResolve['account']['status'] ?? null) === 'matched' && isset($rowResolve['account']['matchedId'])) {
+                $accountIds[] = (int) $rowResolve['account']['matchedId'];
+            }
+        }
+
+        $items = $this->fetchItemsForDisplay(array_values(array_unique($itemIds)));
+        $accounts = $this->fetchAccountsForDisplay(array_values(array_unique($accountIds)));
+
+        // 2. Zápis bloků.
+        foreach ($rows as $pos => $rowResolve) {
+            if (!is_array($rowResolve)) {
+                continue;
+            }
+            $decision = $decisions[$pos] ?? null;
+            $item = ($effectiveItems[$pos] ?? null) !== null ? ($items[$effectiveItems[$pos]] ?? null) : null;
+            if ($item !== null) {
+                $resolved['rows'][$pos]['item']['display'] = [
+                    'id'     => $item['id'],
+                    'code'   => $item['code'],
+                    'name'   => $item['name'],
+                    'pinned' => $decision === 'useExisting',
+                ];
+            }
+
+            $rowAccount = null;
+            if (($rowResolve['account']['status'] ?? null) === 'matched' && isset($rowResolve['account']['matchedId'])) {
+                $accId = (int) $rowResolve['account']['matchedId'];
+                $rowAccount = [
+                    'id'     => $accId,
+                    'number' => (string) ($rowResolve['account']['number'] ?? ($accounts[$accId]['number'] ?? '')),
+                    'name'   => $accounts[$accId]['name'] ?? null,
+                    'source' => 'row',
+                ];
+            }
+            $canonicalRow = $canonicalRows[$rowResolve['index'] ?? $pos] ?? null;
+            $contation = is_array($canonicalRow) && isset($canonicalRow['accSide']);
+
+            if ($decision === 'skip') {
+                $effective = null;
+            } elseif ($contation || $decision === 'noItem') {
+                $effective = $rowAccount;
+            } elseif ($item !== null) {
+                $effective = $item['item_type'] === 2 && $item['account_id'] !== null
+                    ? [
+                        'id'     => $item['account_id'],
+                        'number' => (string) $item['account_number'],
+                        'name'   => $item['account_name'],
+                        'source' => 'item',
+                    ]
+                    : null;
+            } else {
+                $effective = $rowAccount;
+            }
+            $resolved['rows'][$pos]['effectiveAccount'] = $effective;
+        }
+        return $resolved;
+    }
+
+    /**
+     * Položky pro `display` / `effectiveAccount` jedním dotazem; účet jen
+     * s extension `economy.accounting` (jinak `account_*` null).
+     *
+     * @param list<int> $itemIds
+     * @return array<int, array{id: int, code: string, name: string, item_type: int, account_id: ?int, account_number: ?string, account_name: ?string}>
+     */
+    private function fetchItemsForDisplay(array $itemIds): array
+    {
+        if ($itemIds === []) {
+            return [];
+        }
+        $rows = $this->itemsHaveAccountingAccount
+            ? $this->db->fetchAll(
+                'SELECT [i.id], [i.code], [i.name], [i.item_type],
+                        [a.id] AS [account_id], [a.number] AS [account_number], [a.name] AS [account_name]
+                 FROM [economy_items] AS [i]
+                 LEFT JOIN [economy_accounting_accounts] AS [a] ON [a.id] = [i.accounting_account]
+                 WHERE [i.id] IN %in AND [i.docState] IN %in',
+                $itemIds, self::LINKABLE_STATES,
+            )
+            : $this->db->fetchAll(
+                'SELECT [i.id], [i.code], [i.name], [i.item_type]
+                 FROM [economy_items] AS [i]
+                 WHERE [i.id] IN %in AND [i.docState] IN %in',
+                $itemIds, self::LINKABLE_STATES,
+            );
+        $out = [];
+        foreach ($rows as $row) {
+            $id = (int) $row['id'];
+            $accountId = isset($row['account_id']) ? (int) $row['account_id'] : null;
+            $out[$id] = [
+                'id'             => $id,
+                'code'           => (string) ($row['code'] ?? ''),
+                'name'           => (string) ($row['name'] ?? ''),
+                'item_type'      => (int) ($row['item_type'] ?? 0),
+                'account_id'     => $accountId,
+                'account_number' => $accountId !== null ? (string) ($row['account_number'] ?? '') : null,
+                'account_name'   => $accountId !== null && isset($row['account_name']) ? (string) $row['account_name'] : null,
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Názvy účtů řádků (`_resolve.rows[*].account`) jedním dotazem.
+     *
+     * @param list<int> $accountIds
+     * @return array<int, array{number: string, name: ?string}>
+     */
+    private function fetchAccountsForDisplay(array $accountIds): array
+    {
+        if ($accountIds === []) {
+            return [];
+        }
+        $out = [];
+        foreach ($this->db->fetchAll(
+            'SELECT [id], [number], [name] FROM [economy_accounting_accounts] WHERE [id] IN %in',
+            $accountIds,
+        ) as $row) {
+            $out[(int) $row['id']] = [
+                'number' => (string) ($row['number'] ?? ''),
+                'name'   => isset($row['name']) ? (string) $row['name'] : null,
+            ];
+        }
+        return $out;
     }
 
     /**

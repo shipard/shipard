@@ -21,6 +21,11 @@ use Dibi\Connection;
  *   6. No match → `canCreate` payload (caller still needs to supply
  *      `item_kind` and `unit` before INSERT — see ItemDocument::validate).
  *
+ * A `matched` result also carries a `createPayload` — only `name` +
+ * `description` — so the review modal can offer "create a new item" with
+ * the row text pre-filled even when the row matched automatically
+ * (#111 D5, U3). The applier never reads it for matched rows.
+ *
  * The `$identifiersOnly` flag drops probe 5 (the `name` fuzzy match). Used by
  * the legacy migration, where the old item `id` is an authoritative code: two
  * distinct items that merely share a name (e.g. "Parkovné" as a service vs. as
@@ -55,7 +60,7 @@ class ItemResolver
         if ($ourCode !== null) {
             $row = $this->fetchByColumn('code', $ourCode);
             if ($row !== null) {
-                return ResolveResult::matched((int) $row['id'], 'ourCode');
+                return ResolveResult::matched((int) $row['id'], 'ourCode', createPayload: $this->matchedPayload($item, $name));
             }
         }
 
@@ -67,28 +72,28 @@ class ItemResolver
                 $supplierPersonId, $supplierCode,
             );
             if ($row !== null) {
-                return ResolveResult::matched((int) $row['item'], 'supplierCode');
+                return ResolveResult::matched((int) $row['item'], 'supplierCode', createPayload: $this->matchedPayload($item, $name));
             }
         }
 
         if ($ean !== null) {
             $row = $this->fetchByColumn('ean', $ean);
             if ($row !== null) {
-                return ResolveResult::matched((int) $row['id'], 'ean');
+                return ResolveResult::matched((int) $row['id'], 'ean', createPayload: $this->matchedPayload($item, $name));
             }
         }
 
         if ($sku !== null) {
             $row = $this->fetchByColumn('sku', $sku);
             if ($row !== null) {
-                return ResolveResult::matched((int) $row['id'], 'sku');
+                return ResolveResult::matched((int) $row['id'], 'sku', createPayload: $this->matchedPayload($item, $name));
             }
         }
 
         if ($name !== null && !$identifiersOnly) {
             $candidates = $this->fetchByName($name);
             if (count($candidates) === 1) {
-                return ResolveResult::matched((int) $candidates[0]['id'], 'name');
+                return ResolveResult::matched((int) $candidates[0]['id'], 'name', createPayload: $this->matchedPayload($item, $name));
             }
             if (count($candidates) > 1) {
                 return ResolveResult::ambiguous($candidates);
@@ -137,6 +142,28 @@ class ItemResolver
             ];
         }
         return $out;
+    }
+
+    /**
+     * Předvyplnění formuláře „Vytvořit novou položku" u napárovaného řádku
+     * (#111 D5, U3): jen `name` a `description`. Bez `code`, `sku` a `ean`
+     * — to jsou identifikátory, přes které se řádek napároval (`ourCode`
+     * z historie = kód existující položky); nová položka by s nimi
+     * kolidovala. Bez názvu prázdné pole (`ResolveResult::toArray` klíč
+     * vynechá).
+     *
+     * @param array<string, mixed> $item
+     * @return array<string, mixed>
+     */
+    private function matchedPayload(array $item, ?string $name): array
+    {
+        if ($name === null) {
+            return [];
+        }
+        return [
+            'name'        => $name,
+            'description' => $this->normalize($item['description'] ?? null) ?? '',
+        ];
     }
 
     /**

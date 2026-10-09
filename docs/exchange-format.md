@@ -761,6 +761,12 @@ Postup:
 6. Žádný kandidát → `canCreate` s payloadem připraveným pro vytvoření
    `economy_items` row (potřebuje uživatelské doplnění `item_kind`).
 
+I `matched` výsledek nese `createPayload` — jen `name` a `description`
+(#111 D5, U3): review modal z něj předvyplní „Vytvořit novou položku“
+i u automaticky napárovaného řádku. Bez `code`, `sku` a `ean`, přes které
+se řádek napároval (`ourCode` z historie je kód existující položky) — nová
+položka by s nimi kolidovala. Applier ho u `matched` nečte.
+
 Per-partner mapování v `economy_items_supplier_codes` se buduje jednak ručně,
 jednak applierem: když uživatel rozhodne "tato extrahovaná položka odpovídá naší
 `K-001`" pro `supplierCode: "KONZ-001"` od `personId: 42`, applier zaznamená
@@ -1079,8 +1085,23 @@ klient drží jeden payload mezi step preview a apply.
                                           //   (CanonicalRowText, §7); u každého
                                           //   řádku, bez textu null
       "item": {
-        "status": "matched", "itemId": 18, "matchedBy": "ourCode"
+        "status": "matched", "matchedId": 18, "matchedBy": "ourCode",
+        "createPayload": { "name": "Toner černý", "description": "" },
+                                          // i u matched — předvyplnění
+                                          //   „Vytvořit novou položku“ (#111)
+        "display": { "id": 18, "code": "SPOTR-TON", "name": "Tonery a náplně",
+                     "pinned": false },   // efektivní položka (jen /preview,
+                                          //   #111 D3): volba useExisting
+                                          //   > napárování; pinned = z volby
+        "userAction": null                // "useExisting:<id>" platí i nad
+                                          //   matched — přebije napárování
       },
+      // Účet, podle kterého se řádek zaúčtuje (jen /preview, #111 D7b);
+      // null = sloupec Účet ukáže „—“. source: item (účetní položka) |
+      // row (kontační řádek, volba noItem, nebo návrh účtu řádku bez
+      // efektivní položky).
+      "effectiveAccount": { "id": 412, "number": "501300",
+                            "name": "Spotřeba materiálu", "source": "item" },
       "unit":     { "status": "matched", "unitId": 3, "matchedBy": "iso" },
       "vatCode":  { "status": "matched", "code": "cz-110",
                     "userAction": null }  // "useCode:<kód>" = volba uživatele
@@ -1175,6 +1196,22 @@ do něj přidávají vlastní bloky bez změny schématu:
 - `_resolve.rows[i].enrichment` — obohacení řádku z historie partnera
   nebo obsahové eskalace (viz `modules/core/mail/docs/ai-analysis.md`,
   sekce „Obohacení řádků z historie" a „Obsahová eskalace").
+- `_resolve.rows[i].item.display` — efektivní položka řádku `{id, code,
+  name, pinned}` (#111 D3), jen `/preview`: uložená volba `useExisting:<id>`
+  (`pinned: true`) má přednost před automatickým napárováním (`status:
+  matched`, `pinned: false`). U `noItem`, `skip`, nerozhodnutého
+  nenapárovaného řádku a volby na neexistující položku klíč chybí.
+  Review modal z něj kreslí druhý řádek buňky Položka.
+- `_resolve.rows[i].effectiveAccount` — účet, podle kterého se řádek
+  zaúčtuje, nebo návrh účtu řádku, `{id, number, name, source}` | `null`
+  (#111 D7b), jen `/preview`, klíč na každém řádku. `skip` → `null`;
+  kontační řádek (`accSide`) nebo `noItem` → účet řádku (`source: "row"`);
+  efektivní položka → její `accounting_account`, jen u účetní položky
+  (`item_type` 2; `source: "item"`), jinak `null` — služba a zásoba se
+  účtují maskou kategorie a účet doplněný historií nebo štítkem se na
+  řádek s ručně zvolenou položkou nezapíše; bez efektivní položky → účet
+  řádku jako návrh (`source: "row"`). Bez extension `economy.accounting`
+  je účet z položky vždy `null`.
 - `_resolve.contentTag` — dokument-level obsahový štítek
   (`{tag, tagSource: "rule"|"llm", ruleId? | tagConfidence?,
   promptVersion?, rowExceptions?}`), persistuje se při `/result`,
@@ -1211,9 +1248,10 @@ do něj přidávají vlastní bloky bez změny schématu:
 | Hodnota | Význam |
 |---------|--------|
 | `null` | Default — applier použije resolved match. Pokud `status == "matched"`, OK; jinak chyba (`unresolved_required`). |
-| `"useExisting:<id>"` | Použít konkrétního kandidáta z `candidates`. |
+| `"useExisting:<id>"` | Použít konkrétní existující záznam — kandidáta z `candidates`, výsledek hledání, nebo jinou položku než napárovanou: u `rows[i].item` platí i nad `status == "matched"` a automatické napárování přebije (#111 D4). |
 | `"create"` | Vytvořit novou entitu z payloadu (jen pro `canCreate`). |
-| `"skip"` | Skipnout položku (jen pro řádky; pro hlavičkové reference je default `null`). |
+| `"skip"` | Vynechat řádek (jen `rows[i].item`; řádek se na doklad nezapíše). Pro hlavičkové reference je default `null`. |
+| `"noItem"` | Jen `rows[i].item`: řádek se pořídí bez položky, s účtem řádku (`tasks/content-tag-ui.md` D24); bez platného účtu `no_item_requires_account`. |
 | `"useCode:<kód>"` | Jen `rows[i].vatCode` (#87 task B): zvolený kód DPH řádku z `_resolve.vatCodeOptions`. |
 | `"useValue:<hodnota>"` | Jen `_resolve.vat.place` (`domestic` / `intracom` / `thirdCountry`) a `_resolve.vat.mode` (`fromBase` / `fromTotal` / `none`) (#87 task B). |
 

@@ -139,6 +139,60 @@ class ItemResolverTest extends TestCase
         $this->assertCount(2, $r->candidates);
     }
 
+    /**
+     * Napárovaný výsledek nese předvyplnění nové položky jen s `name`
+     * a `description` — bez `code` / `sku` / `ean`, přes které se řádek
+     * napároval (#111 D5, U3).
+     */
+    public function testMatchedCarriesNameAndDescriptionOnlyAsCreatePayload(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new Row(['id' => 18]));
+
+        $r = (new ItemResolver($db))->resolve([
+            'ourCode'      => 'K-001',
+            'supplierCode' => 'KONZ-001',
+            'sku'          => 'K-001-EN',
+            'ean'          => '8590000000001',
+            'name'         => ' Konzultace ',
+            'description'  => 'Hodinová sazba',
+        ], 42);
+
+        $this->assertSame(ResolveStatus::Matched, $r->status);
+        $this->assertSame(['name' => 'Konzultace', 'description' => 'Hodinová sazba'], $r->createPayload);
+        $this->assertSame(
+            ['status' => 'matched', 'matchedId' => 18, 'matchedBy' => 'ourCode',
+             'createPayload' => ['name' => 'Konzultace', 'description' => 'Hodinová sazba']],
+            $r->toArray(),
+        );
+    }
+
+    public function testMatchedByNameCarriesCreatePayloadWithEmptyDescription(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->method('fetchAll')->willReturn([
+            new Row(['id' => 22, 'name' => 'Konzultace IT', 'code' => 'K-IT']),
+        ]);
+
+        $r = (new ItemResolver($db))->resolve(['name' => 'Konzultace'], null);
+
+        $this->assertSame('name', $r->matchedBy);
+        $this->assertSame(['name' => 'Konzultace', 'description' => ''], $r->createPayload);
+    }
+
+    public function testMatchedWithoutNameHasNoCreatePayload(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(new Row(['id' => 18]));
+
+        $r = (new ItemResolver($db))->resolve(['ourCode' => 'K-001'], null);
+
+        $this->assertSame(ResolveStatus::Matched, $r->status);
+        $this->assertSame([], $r->createPayload);
+        $this->assertArrayNotHasKey('createPayload', $r->toArray());
+    }
+
     public function testNoMatchWithNameProducesCanCreate(): void
     {
         $db = $this->createMock(Connection::class);
