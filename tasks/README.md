@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 346 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 318.
+Celkem 347 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 318.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -30,6 +30,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `subtable-delete-gateway.md` | naplánováno | #113 bod 2 (rychlá oprava před přestavbou CRUD); S1 potvrzené 2026-10-09 |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -143,6 +144,7 @@ Server-driven formuláře, generický klient. Reference
 | `subtable-phase1.md` | Sub-tabulky: sloupce ze serveru, read-only prohlížení, `ConfirmDialog`, filtr (issue #53) |
 | `subtable-phase2.md` | Dialog sub-záznamu: Přidat / Přidat a pokračovat, šipky Předchozí/Další |
 | `subtable-phase3.md` | Přesun řádků sub-tabulky (`/move`) a automatické `order_pos` |
+| `subtable-delete-gateway.md` | Mazání řádku sub-tabulky přes endpoint formuláře `…/delete` a `TableGateway` — přepočet hlavičky dokladu, zámky, guard rodiče (#113 bod 2) |
 
 ## Nastavení aplikace a vlastní vzhledy
 
