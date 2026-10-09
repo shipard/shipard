@@ -142,6 +142,10 @@ GitHub Issue: shipard/shipard#85 (D9, D10, D11).
   - Opakování v rámci běhu: přechodné chyby (transport, 408, 429, 5xx,
     `overloaded_error`) — další dva pokusy po 10 a 60 s; před každým
     pokusem se prodlouží lease claimu.
+  - Vyčerpaný měsíční strop útraty u poskytovatele (429
+    s `error.details.error_code = enforced_spend_limit_reached`, bez
+    hlavičky `retry-after`) se **neopakuje** a zpráva se nevrací do
+    fronty: `config_error`, stav 70. *(Doplněno 2026-10-09.)*
   - Typy chyb beze změny: `ai_error`, `schema_error`, `config_error`.
   - Přechodná chyba po vyčerpání pokusů vrací zprávu do fronty, **nejvýš
     třikrát za hodinu** (počítají se selhané běhy zprávy); potom stav 70
@@ -259,8 +263,13 @@ testů**.
   `AnthropicLlmClient::sendStreamingRequest()` je promítne do curl
   (`CURLOPT_LOW_SPEED_LIMIT` / `CURLOPT_LOW_SPEED_TIME`,
   `CURLOPT_TIMEOUT`); vypršení = `LlmApiException` se stavem 0.
+- `LlmApiException`: nové pole `?string $errorCode` — hodnota
+  `error.details.error_code` z těla chybové odpovědi (dnes se z něj čte
+  jen `type` a `message`).
 - `LlmApiException::isTransient()` — stav 0, 408, 429, ≥ 500 nebo inline
   chyba streamu typu `overloaded_error` / `api_error` / `rate_limit_error`.
+  **Výjimka:** `errorCode = enforced_spend_limit_reached` (vyčerpaný
+  strop útraty, taky 429) přechodná není — `false`.
 - `Shipard\Core\Ai\LlmRetry::run(callable $call, array $delays,
   ?callable $beforeAttempt)` — opakuje jen `isTransient()`; `sleep`
   injektovatelný kvůli testům.
@@ -279,7 +288,10 @@ testů**.
     / `BACKEND_KEY_*` / `SECRETS_UNAVAILABLE` → konec bez zápisu, zpráva
     zůstává ve frontě (dnešní chování), jedno varování do logu;
     `SchemaValidationException` → `storeFailure('schema_error', retryable:
-    false)`; `LlmApiException` → `ai_error` s `retryable` podle
+    false)`; `LlmApiException` s `errorCode =
+    enforced_spend_limit_reached` → `storeFailure('config_error',
+    retryable: false)` se zprávou poskytovatele (říká, kdy se přístup
+    obnoví); jiná `LlmApiException` → `ai_error` s `retryable` podle
     `isTransient()` a stropu z D18; `stop_reason = max_tokens` → `ai_error`,
     `retryable: false`; neplatný claim při zápisu (mezitím expiroval)
     → jen varování do logu včetně ceny volání.
@@ -343,11 +355,13 @@ testů**.
   porušení schématu, pole místo objektu.
 - `AnthropicPricingTest` — nejdelší prefix, neznámý model.
 - `LlmRetryTest`, `AnthropicLlmClientTest` (timeouty v curl volbách přes
-  stávající test seam; `isTransient()`).
+  stávající test seam; `isTransient()` včetně 429 se stropem útraty;
+  `errorCode` z těla chyby).
 - `AnalysisRunnerTest` — s falešným `LlmClient`: úspěch (výsledek
   zapsaný, claim uvolněný, stav 30), `schema_error` (stav 70), přechodná
   chyba (stav 10) a strop třikrát za hodinu (stav 70), `max_tokens`
-  (stav 70), bez slotu (žádný claim), bez klíče (žádný zápis), claim
+  (stav 70), strop útraty (jediné volání, `config_error`, stav 70),
+  bez slotu (žádný claim), bez klíče (žádný zápis), claim
   expirovaný během volání (výsledek se nezapíše).
 - `MailAnalyzeCommandTest` — validace voleb, návratové kódy.
 - Integrační: zpráva s PDF přílohou → `AnalysisRunner::run()` s falešným
@@ -391,6 +405,16 @@ testů**.
 - **Klíč backendu.** Dešifrovaný klíč žije jen v paměti runneru — nikdy
   do logu, do zprávy výjimky ani do argumentů procesu (spawn předává jen
   id zprávy).
+- **Dvě různé 429.** Běžný rate limit (tempo za minutu, s `retry-after`)
+  je přechodný. Vyčerpaný měsíční strop útraty organizace se vrací taky
+  jako 429 `rate_limit_error`, ale bez `retry-after` a s
+  `error_code = enforced_spend_limit_reached` — API stojí do začátku
+  dalšího měsíce a opakování nepomůže. Gateway hostingu propouští stav
+  i tělo odpovědi beze změny, takže runner oba případy rozliší i přes ni;
+  u hostovaných zdrojů dat jde o strop **společné** organizace, ne
+  o nastavení zákazníka — hláška pro uživatele nemá radit „zkontrolujte
+  klíč“. Vlastní limit útraty nastavený v konzoli poskytovatele vrací
+  400 `invalid_request_error`; ten končí jako `ai_error` bez opakování.
 - **Timeout curl.** `AnthropicLlmClient` dnes žádný timeout nenastavuje;
   bez kroku 3 může runner viset déle než lease a zprávu zpracují dva
   procesy.
