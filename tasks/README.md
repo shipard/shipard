@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 344 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 315.
+Celkem 345 tasků: **naplánováno** 7 · **částečně** 23 · **hotovo** 315.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `exchange-preview-matched-item-fixes.md` | naplánováno | doplněk k `exchange-preview-matched-item.md`, rozhodnutí D9–D12 potvrzená v chatu (#111; D12 2026-10-09) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `work-orders-phase2.md` | naplánováno | #110 D2–D7, D10–D12, D24; Q1–Q7 potvrzené 2026-10-08 |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -231,6 +232,7 @@ historických dat. Reference [`docs/exchange-format.md`](../docs/exchange-format
 | `exchange-resolve-decision-ui.md` | Rebuild rozhodování canCreate/ambiguous/notFound + smart totals |
 | `exchange-row-text.md` | Text řádku z kanonického formátu — jeden helper pro applier, náhled a porovnávání; prompt v4.4.0 (#84) |
 | `exchange-preview-matched-item.md` | Review přijaté faktury: napárovaná položka viditelně v řádku, změna napárování, účet podle položky, přepis mapování kódu dodavatele (#111) |
+| `exchange-preview-matched-item-fixes.md` | Doplněk k #111: vynechaný řádek mimo součty náhledu, automatické napárování s názvem v panelu, oprava helpu |
 | `exchange-contact-name.md` | Kontaktní osoba strany dokladu (`contact.name`) — schéma, ISDOC, náhled; prompt v4.5.0 |
 | `exchange-received-reverse-charge.md` | Přenesení daňové povinnosti u přijatých dokladů — kód DPH odvozený ze signálů AI, registrace z naší DPH, přepočítaná rekapitulace; prompt v4.6.0 (#86) |
 | `exchange-received-vat-place.md` | Místo plnění přijatého dokladu podle DIČ dodavatele (`world.trade.unions`), ne podle adresy; prompt v4.6.1 (#86) |
