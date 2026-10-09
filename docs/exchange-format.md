@@ -770,7 +770,12 @@ položka by s nimi kolidovala. Applier ho u `matched` nečte.
 Per-partner mapování v `economy_items_supplier_codes` se buduje jednak ručně,
 jednak applierem: když uživatel rozhodne "tato extrahovaná položka odpovídá naší
 `K-001`" pro `supplierCode: "KONZ-001"` od `personId: 42`, applier zaznamená
-mapping. Příště se napaří automaticky.
+mapping. Příště se napaří automaticky. Výslovná volba položky v review
+(`userAction: useExisting:<id>` u řádku se `supplierCode`) naučené
+mapování **přepíše** (`ON DUPLICATE KEY UPDATE`, #111 D8) — oprava
+špatného napárování se projeví u příští faktury; automatické napárování
+a potvrzení z Konceptu (`SupplierCodeCaptureHandler`) zapisují jen
+`INSERT IGNORE`.
 
 ### 8.3 UnitResolver
 

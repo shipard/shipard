@@ -211,6 +211,15 @@ Fresh běh je idempotentní: vlastní dřívější návrhy (poznané podle
 znovu proti aktuální DB. `DocumentApplier::withResolve()` přenáší
 enrichment blok přes fresh resolve per row index.
 
+**Ruční volba položky v review** (`rows[i].item = useExisting:<id>`,
+#111 D7b) účet navržený historií nebo obsahovým štítkem odvolá: účet jde
+s položkou (účetní položka → její účet, služba / zásoba → maska
+kategorie), takže `DocumentApplier::reconcile()` účet řádku, jehož číslo
+se shoduje s `enrichment.suggested.account`, na řádek nezapíše. Účet od
+uživatele nebo z AI zůstává; kód DPH se při změně položky nemění (D7a).
+Náhled ukazuje účet, podle kterého se řádek zaúčtuje
+(`_resolve.rows[i].effectiveAccount`, `docs/exchange-format.md` §9).
+
 Audit per řádek v `_resolve.rows[i].enrichment` (žádná změna schématu,
 `_resolve` má `additionalProperties: true`); blok se zapisuje vždy,
 i pro nenapárované a přeskočené řádky:
@@ -246,7 +255,11 @@ se nepersistuje.
 apply-time zápis `DocumentApplier::writeSupplierCodeMappings` (ten pokryje
 řádky vyřešené už při apply, handler ruční přiřazení v Konceptu); překryv
 řeší unique index `(person, supplier_code)`. Párování canonical → finální
-řádky je poziční přes `order_pos` s guardem na shodu popisu.
+řádky je poziční přes `order_pos` s guardem na shodu popisu. Jedinou
+cestou, která naučené mapování **přepíše**, je výslovná volba položky
+v review (`useExisting:<id>` u řádku se `supplierCode`, #111 D8 —
+`ON DUPLICATE KEY UPDATE` v apply); automatické napárování i handler
+z Konceptu dál jen `INSERT IGNORE`.
 
 ## Obsahová eskalace (content tags)
 

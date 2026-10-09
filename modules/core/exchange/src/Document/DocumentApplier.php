@@ -513,6 +513,7 @@ class DocumentApplier
             'rowItemCreates'       => [],
             'rowSkips'             => [],
             'rowNoItems'           => [],
+            'rowItemPins'          => [],
             'resolvedSupplier'     => null,
             'resolvedCustomer'     => null,
             'resolvedBalanceParty' => null,
@@ -918,6 +919,8 @@ class DocumentApplier
      *   bankCreate: ?array<string, mixed>,
      *   rowItemCreates: array<int, array<string, mixed>>,
      *   rowSkips: list<int>,
+     *   rowNoItems: list<int>,
+     *   rowItemPins: list<int>,
      *   resolvedSupplier: ?int, resolvedCustomer: ?int, resolvedBalanceParty: ?int,
      *   resolvedSupplierBank: ?int,
      *   resolvedRowItems: array<int, int|null>,
@@ -935,6 +938,10 @@ class DocumentApplier
             'rowItemCreates'      => [],
             'rowSkips'            => [],
             'rowNoItems'          => [],
+            // Řádky s výslovnou volbou položky useExisting:<id> (#111 D7b, D8):
+            // účet navržený historií / štítkem se nezapíše, mapování kódu
+            // dodavatele se přepíše.
+            'rowItemPins'         => [],
             'resolvedSupplier'    => null,
             'resolvedCustomer'    => null,
             'resolvedBalanceParty' => null,
@@ -985,6 +992,14 @@ class DocumentApplier
         }
 
         $clientRows = is_array($clientResolve['rows'] ?? null) ? $clientResolve['rows'] : [];
+        // Enrichment řádků podle klíče `index` (RowHistoryEnricher::writeEnrichment),
+        // ne podle pozice — pro D7b porovnání účtu.
+        $enrichmentByIndex = [];
+        foreach ($clientRows as $entry) {
+            if (is_array($entry) && isset($entry['index']) && is_array($entry['enrichment'] ?? null)) {
+                $enrichmentByIndex[(int) $entry['index']] = $entry['enrichment'];
+            }
+        }
         foreach ($resolved['rows'] ?? [] as $i => $rowResolve) {
             $clientRow = $clientRows[$i] ?? null;
             $rowUserAction = is_array($clientRow) ? ($clientRow['userAction'] ?? null) : null;
@@ -997,6 +1012,14 @@ class DocumentApplier
             if ($itemFresh !== null) {
                 $itemClient = is_array($clientRow['item'] ?? null) ? $clientRow['item'] : null;
                 $itemAction = $itemClient['userAction'] ?? null;
+                if ($itemAction === 'skip') {
+                    // „Vynechat řádek" z review modalu přichází jako volba
+                    // položky (rows[i].item = skip), ne řádku — řádek se na
+                    // doklad nezapíše (#111; dřív prošel resolveOne a zůstal
+                    // na dokladu bez položky).
+                    $plan['rowSkips'][] = $i;
+                    continue;
+                }
                 if ($itemAction === 'noItem') {
                     // „Jen účet — bez položky" (D24): řádek se pořídí bez item
                     // FK. resolveOne se nevolá — pin přebíjí fresh status i
@@ -1009,6 +1032,9 @@ class DocumentApplier
                     $plan['resolvedRowItems'][$i] = $itemRes['id'];
                     if ($itemRes['autoCreate']) {
                         $plan['rowItemCreates'][$i] = $itemFresh['createPayload'] ?? [];
+                    }
+                    if ($itemRes['id'] !== null && is_string($itemAction) && str_starts_with($itemAction, 'useExisting:')) {
+                        $plan['rowItemPins'][] = $i;
                     }
                 }
             } else {
@@ -1029,6 +1055,18 @@ class DocumentApplier
             $plan['resolvedRowAccounts'][$i] = ($accountFresh['status'] ?? null) === 'matched'
                 ? ($accountFresh['matchedId'] ?? null)
                 : null;
+
+            // D7b (#111): u ručně zvolené položky jde účet s položkou — účet
+            // řádku navržený historií nebo štítkem (shoda čísla se
+            // `enrichment.suggested.account`) se nezapíše. Účet od uživatele
+            // nebo z AI zůstává; `noItem` se nemění.
+            $suggestedAccount = $enrichmentByIndex[(int) ($rowResolve['index'] ?? $i)]['suggested']['account'] ?? null;
+            if ($plan['resolvedRowAccounts'][$i] !== null
+                && in_array($i, $plan['rowItemPins'], true)
+                && is_string($suggestedAccount)
+                && trim((string) ($accountFresh['number'] ?? '')) === trim($suggestedAccount)) {
+                $plan['resolvedRowAccounts'][$i] = null;
+            }
 
             // Řádek s pinem noItem bez naresolvovaného účtu nemá co účtovat —
             // apply musí selhat srozumitelně, ne až při účtování konceptu.
@@ -1290,6 +1328,12 @@ class DocumentApplier
      * Per-partner item code learning — see docs/exchange-format.md §"Side-
      * creates a per-partner item mapping". Idempotent via unique index.
      *
+     * Řádek s výslovnou volbou položky (`rowItemPins`, #111 D8) naučené
+     * mapování **přepíše** (`ON DUPLICATE KEY UPDATE`) — oprava špatného
+     * napárování se musí projevit u příští faktury. Automatické napárování
+     * a potvrzení z Konceptu (`SupplierCodeCaptureHandler`) dál jen
+     * `INSERT IGNORE`.
+     *
      * @param array<string, mixed> $canonical
      * @param array<string, mixed> $plan
      * @param array{supplier: ?int, customer: ?int, supplierBank: ?int, rowItems: array<int, int>} $sideIds
@@ -1315,10 +1359,16 @@ class DocumentApplier
             if ($itemId === null) {
                 continue;
             }
+            $sql = in_array($i, $plan['rowItemPins'] ?? [], true)
+                ? 'INSERT INTO [economy_items_supplier_codes]
+                   ([person], [item], [supplier_code], [supplier_name], [created])
+                   VALUES (%i, %i, %s, %sN, NOW())
+                   ON DUPLICATE KEY UPDATE [item] = VALUES([item]), [supplier_name] = VALUES([supplier_name])'
+                : 'INSERT IGNORE INTO [economy_items_supplier_codes]
+                   ([person], [item], [supplier_code], [supplier_name], [created])
+                   VALUES (%i, %i, %s, %sN, NOW())';
             $this->executeSql(
-                'INSERT IGNORE INTO [economy_items_supplier_codes]
-                 ([person], [item], [supplier_code], [supplier_name], [created])
-                 VALUES (%i, %i, %s, %sN, NOW())',
+                $sql,
                 $supplierId, $itemId, $supplierCode,
                 isset($row['item']['name']) ? (string) $row['item']['name'] : null,
             );
