@@ -1173,6 +1173,19 @@ class RouterTest extends TestCase
 		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/assets/explode', 'POST'));
 	}
 
+	public function testWorkOrdersExchangeRoutesShareExchangeDispatcher(): void
+	{
+		foreach (['validate', 'apply'] as $action) {
+			$result = $this->router->resolve("/api/v1/_exchange/workOrders/workOrder/{$action}", 'POST');
+			$this->assertInstanceOf(Route::class, $result);
+			$this->assertSame('exchange', $result->controller);
+			$this->assertSame("workOrder:{$action}", $result->action);
+		}
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/workOrders/workOrder/preview', 'POST'));
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/workOrders/workOrder/apply', 'GET'));
+		$this->assertInstanceOf(Response::class, $this->router->resolve('/api/v1/_exchange/workOrders/explode', 'POST'));
+	}
+
 	public function testItemExchangeValidate(): void
 	{
 		$result = $this->router->resolve('/api/v1/_exchange/items/item/validate', 'POST');

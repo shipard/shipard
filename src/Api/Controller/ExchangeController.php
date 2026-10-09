@@ -15,6 +15,7 @@ use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\User\UserApplier;
 use Shipard\Module\Economy\Assets\Import\AssetDocLinkService;
 use Shipard\Module\Economy\Assets\Import\AssetImportApplier;
+use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
 
 /**
  * REST endpoints for the canonical exchange formats. Parallel flavours
@@ -31,6 +32,7 @@ use Shipard\Module\Economy\Assets\Import\AssetImportApplier;
  *   POST /api/v1/_exchange/users/user/{validate|apply}
  *   POST /api/v1/_exchange/assets/asset/{validate|apply}   (#83 fáze 6, karta majetku s historií)
  *   POST /api/v1/_exchange/assets/doc-links/apply           (#83 fáze 6, karta na importovaných dokladech)
+ *   POST /api/v1/_exchange/workOrders/workOrder/{validate|apply}  (#110 D25, D26, zakázka s předpisem)
  *
  * The controller is intentionally thin — body validation + delegate to
  * the relevant Applier + map ApplyResult to Response. Error shape
@@ -53,6 +55,7 @@ final class ExchangeController
         private readonly ?UserApplier $userApplier = null,
         private readonly ?AssetImportApplier $assetApplier = null,
         private readonly ?AssetDocLinkService $assetDocLinks = null,
+        private readonly ?WorkOrderImportApplier $workOrderApplier = null,
     ) {}
 
     // ── Document flow ──────────────────────────────────────────────────
@@ -307,6 +310,50 @@ final class ExchangeController
             return Response::error('schema_invalid', 'Struktura doplnění karty neodpovídá tvaru.', 400, ['issues' => $result['issues']]);
         }
         return Response::success($result);
+    }
+
+    // ── Work order import flow (#110 D25, D26) ─────────────────────────
+
+    public function validateWorkOrder(Request $request, AuthContext $auth): Response
+    {
+        return $this->workOrderFlow($request, $auth, false);
+    }
+
+    public function applyWorkOrder(Request $request, AuthContext $auth): Response
+    {
+        return $this->workOrderFlow($request, $auth, true);
+    }
+
+    /**
+     * Zakázka s předpisem a řádky (`shpd.workOrders.workOrder.v1`):
+     * oprávnění jako import majetku. Úspěch `{status, workOrderId, number,
+     * warnings}` (201 při založení), chyba ve společném tvaru
+     * s `details.issues` (cesta do payloadu).
+     */
+    private function workOrderFlow(Request $request, AuthContext $auth, bool $apply): Response
+    {
+        $denied = $this->requireAdminOrApiKey($auth, 'Work order import');
+        if ($denied !== null) {
+            return $denied;
+        }
+        if ($this->workOrderApplier === null) {
+            return Response::error('INTERNAL_ERROR', 'Work order exchange flow is not available on this data source.', 500);
+        }
+        $payload = $this->extractPayload($request);
+        if ($payload instanceof Response) {
+            return $payload;
+        }
+
+        $result = $apply ? $this->workOrderApplier->apply($payload) : $this->workOrderApplier->validate($payload);
+        if (!$result->success) {
+            return Response::error(
+                $result->errorCode ?? 'internal_error',
+                $result->errorMessage ?? 'Unknown error',
+                $result->statusCode,
+                ['issues' => $result->issues],
+            );
+        }
+        return Response::success($result->toArray(), $result->statusCode);
     }
 
     // ── Shared plumbing ────────────────────────────────────────────────

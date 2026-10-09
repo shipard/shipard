@@ -36,7 +36,8 @@ use Shipard\Module\World\Vat\VatRateResolver;
  *    (`InvoicingSettingsResolver`: zakázka → druh);
  *  - číslo a čítač (I4): `sequenceNumber` u řady s ročním restartem potřebuje
  *    fiskální rok data zahájení; `number` bez `sequenceNumber` = varování
- *    `counter_not_synced`; `sequenceNumber` bez `number` je chyba.
+ *    `counter_not_synced`; `sequenceNumber` bez `number` je chyba. Zakázku
+ *    se stejným číslem jen dohledá (`existingId`) — přeskočení je věc applieru.
  *
  * Ostatní pravidla (zákazník povinný při potvrzení, nadřazená ne periodická,
  * cyklus, duplicitní číslo, splatnost…) hlídá `WorkOrderDocument` při
@@ -249,7 +250,10 @@ class WorkOrderImportVerifier
             }
         }
 
-        return new WorkOrderImportCheck($issues, $series, $kind, $parentId, $unitIds, $fiscalYearId);
+        // Zakázka se stejným číslem — applier ji přeskočí (I2), tady jen dohledání.
+        $existing = $number !== '' ? $this->findWorkOrder($number) : null;
+
+        return new WorkOrderImportCheck($issues, $series, $kind, $parentId, $unitIds, $fiscalYearId, $existing !== null ? (int) $existing['id'] : null);
     }
 
     /**

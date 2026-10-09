@@ -256,6 +256,51 @@ class WorkOrderDocumentTest extends TestCase
         $this->assertSame(['old' => 0, 'new' => 40], $doc->getStateTransition());
     }
 
+    // --- převzaté číslo s pořadím (import, I4) ----------------------------------
+
+    public function testImportSequenceSyncsCounterAndLeavesData(): void
+    {
+        $doc = $this->doc();
+        $data = $this->project(['number' => 'Z260007', WorkOrderDocument::IMPORT_SEQUENCE_KEY => 7]);
+
+        $doc->validate($data);
+        $doc->beforeSave($data, null);
+
+        $this->assertArrayNotHasKey(WorkOrderDocument::IMPORT_SEQUENCE_KEY, $data, 'marker nesmí dojít do SQL');
+        $this->assertSame(7, $data['sequence_number']);
+        $this->assertSame(26, $data['fiscal_year'], 'rozsah = fiskální rok zahájení');
+        $this->assertSame([[1, 26, 7]], $doc->syncCalls);
+        $this->assertSame([], $doc->sequenceCalls, 'číslo se nepřiděluje');
+        $this->assertSame('Z260007', $data['number']);
+
+        // Průběžná řada: rozsah NULL.
+        $doc = $this->doc(fiscalYearId: null);
+        $data = $this->project(['number_series' => 2, 'number' => 'R-00012', WorkOrderDocument::IMPORT_SEQUENCE_KEY => 12, 'docState' => 40]);
+        $doc->validate($data);
+        $doc->beforeSave($data, null);
+        $this->assertSame(12, $data['sequence_number']);
+        $this->assertNull($data['fiscal_year']);
+        $this->assertSame([[2, null, 12]], $doc->syncCalls);
+        $this->assertSame([], $doc->sequenceCalls);
+    }
+
+    public function testImportSequenceWithoutNumberOrYearlySeriesWithoutYear(): void
+    {
+        // Bez čísla se marker jen vyhodí.
+        $doc = $this->doc();
+        $data = $this->project([WorkOrderDocument::IMPORT_SEQUENCE_KEY => 7]);
+        $doc->beforeSave($data, null);
+        $this->assertArrayNotHasKey(WorkOrderDocument::IMPORT_SEQUENCE_KEY, $data);
+        $this->assertArrayNotHasKey('sequence_number', $data);
+        $this->assertSame([], $doc->syncCalls);
+
+        // Roční řada bez fiskálního roku: pojistka za verifierem importu.
+        $doc = $this->doc(fiscalYearId: null);
+        $data = $this->project(['number' => 'Z260007', WorkOrderDocument::IMPORT_SEQUENCE_KEY => 7]);
+        $this->expectException(\DomainException::class);
+        $doc->beforeSave($data, null);
+    }
+
     public function testImportedNumberIsKeptAndRepairDoesNotRenumber(): void
     {
         $doc = $this->doc();
@@ -409,6 +454,8 @@ class TestableWorkOrderDocument extends WorkOrderDocument
     public array $nextSequences = [];
     /** @var list<array{int, ?int}> */
     public array $sequenceCalls = [];
+    /** @var list<array{int, ?int, int}> syncImported(řada, rozsah, pořadí) */
+    public array $syncCalls = [];
     public string $today = '2026-10-08';
     /** @var array<int, array<string, mixed>> druhy podle id (sloupce inv_*) */
     public array $kinds = [];
@@ -472,6 +519,11 @@ class TestableWorkOrderDocument extends WorkOrderDocument
     {
         $this->sequenceCalls[] = [$seriesId, $fiscalYearId];
         return array_shift($this->nextSequences) ?? 1;
+    }
+
+    protected function syncSequence(int $seriesId, ?int $fiscalYearId, int $sequence): void
+    {
+        $this->syncCalls[] = [$seriesId, $fiscalYearId, $sequence];
     }
 
     protected function today(): string

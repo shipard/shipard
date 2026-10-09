@@ -4008,6 +4008,21 @@ class DocumentApplier
     }
 
     /**
+     * Kanonický kód → interní hodnota pro importy, které nesou kódy
+     * dokladového formátu mimo doklad (fakturační předpis zakázky, #110).
+     * Neznámý kód = null; tvar kódu hlídá schéma volajícího.
+     */
+    public static function vatModeFromCanonical(string $mode): ?int
+    {
+        return self::VAT_MODE_MAP[$mode] ?? null;
+    }
+
+    public static function paymentMethodFromCanonical(string $method): ?int
+    {
+        return self::PAYMENT_METHOD_MAP[$method] ?? null;
+    }
+
+    /**
      * @param array<string, mixed> $canonical
      */
     private function resolveVatRegistrationFor(array $canonical): ?int

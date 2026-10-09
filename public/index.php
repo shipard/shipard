@@ -1121,7 +1121,17 @@ function dispatchExchange(
 			$journalContributors,
 		)
 		: null;
-	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier, $assetApplier, $assetDocLinks);
+	// Import zakázek (#110 D25, D26) — jen s aktivním modulem economy.workOrders.
+	$workOrderApplier = isset($tables['economy_work_orders_heads'])
+		? \Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier::create(
+			$db->getDibiConnection(),
+			$configRuntime,
+			$resolved->config,
+			$documentRegistry,
+			$tables,
+		)
+		: null;
+	$ctrl = new ExchangeController($applier, $personApplier, $itemApplier, $bankApplier, $userApplier, $assetApplier, $assetDocLinks, $workOrderApplier);
 	$auth ??= AuthContext::anonymous();
 
 	return match ($route->action) {
@@ -1142,6 +1152,8 @@ function dispatchExchange(
 		'asset:validate'  => $ctrl->validateAsset($request, $auth),
 		'asset:apply'     => $ctrl->applyAsset($request, $auth),
 		'docLinks:apply'  => $ctrl->applyAssetDocLinks($request, $auth),
+		'workOrder:validate' => $ctrl->validateWorkOrder($request, $auth),
+		'workOrder:apply'    => $ctrl->applyWorkOrder($request, $auth),
 		default           => Response::error('INTERNAL_ERROR', "Unknown exchange action: {$route->action}", 500),
 	};
 }

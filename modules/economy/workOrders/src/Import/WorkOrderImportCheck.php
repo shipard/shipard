@@ -9,7 +9,8 @@ namespace Shipard\Module\Economy\WorkOrders\Import;
  * ({@see WorkOrderImportVerifier}): nálezy s cestou do payloadu
  * (`rows.2.vatCode`) a to, co si verifier při kontrole dohledal a applier
  * potřebuje k zápisu — řadu s druhem, id nadřazené zakázky podle čísla,
- * id jednotek řádků a fiskální rok data zahájení pro čítač.
+ * id jednotek řádků, fiskální rok data zahájení pro čítač a id zakázky,
+ * která už importované číslo nese (applier ji přeskočí).
  *
  * Nálezy mají `severity` `error` (zápis se nekoná) nebo `warning`
  * (jde do odpovědi jako varování — `counter_not_synced`).
@@ -21,6 +22,7 @@ final class WorkOrderImportCheck
      * @param array<string, mixed>|null $series řada zakázek s typem druhu (id, kind, type, reset_scope, docState)
      * @param array<string, mixed>|null $kind druh (id, type, inv_*)
      * @param array<int, int> $unitIds index řádku payloadu → id jednotky
+     * @param int|null $existingId zakázka se stejným číslem v libovolném stavu
      */
     public function __construct(
         public readonly array $issues,
@@ -29,6 +31,7 @@ final class WorkOrderImportCheck
         public readonly ?int $parentId,
         public readonly array $unitIds,
         public readonly ?int $fiscalYearId,
+        public readonly ?int $existingId = null,
     ) {
     }
 

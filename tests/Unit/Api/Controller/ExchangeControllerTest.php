@@ -17,6 +17,8 @@ use Shipard\Module\Core\Exchange\User\UserApplier;
 use Shipard\Module\Economy\Assets\Import\AssetDocLinkService;
 use Shipard\Module\Economy\Assets\Import\AssetImportApplier;
 use Shipard\Module\Economy\Assets\Import\AssetImportResult;
+use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportApplier;
+use Shipard\Module\Economy\WorkOrders\Import\WorkOrderImportResult;
 
 class ExchangeControllerTest extends TestCase
 {
@@ -515,6 +517,76 @@ class ExchangeControllerTest extends TestCase
 
         $this->assertSame(400, $this->getStatus($this->assetController($applier)->applyAsset($this->assetRequest(null), $apiKey)));
         $this->assertSame(500, $this->getStatus($this->assetController(null)->applyAsset($this->assetRequest(), $apiKey)));
+    }
+
+    // ── Work order import flow (#110 D25, D26) ─────────────────────────
+
+    private const WORK_ORDER_PAYLOAD = ['format' => 'shpd.workOrders.workOrder.v1', 'workOrder' => ['numberSeries' => 3, 'title' => 'x', 'state' => 'confirmed']];
+
+    private function workOrderController(?WorkOrderImportApplier $applier): ExchangeController
+    {
+        return new ExchangeController($this->createMock(DocumentApplier::class), workOrderApplier: $applier);
+    }
+
+    private function workOrderRequest(?array $body = self::WORK_ORDER_PAYLOAD): Request
+    {
+        return $this->buildRequest('POST', '/api/v1/_exchange/workOrders/workOrder/apply', $body);
+    }
+
+    public function testWorkOrderImportRequiresAdminOrApiKey(): void
+    {
+        $applier = $this->createMock(WorkOrderImportApplier::class);
+        $applier->expects($this->never())->method('apply');
+        $applier->expects($this->never())->method('validate');
+        $controller = $this->workOrderController($applier);
+
+        $this->assertSame(401, $this->getStatus($controller->applyWorkOrder($this->workOrderRequest(), AuthContext::anonymous())));
+        $plainUser = new AuthContext(true, 5, 'session', 'shpd_st_x', isAdmin: false);
+        $this->assertSame(403, $this->getStatus($controller->applyWorkOrder($this->workOrderRequest(), $plainUser)));
+        $this->assertSame(403, $this->getStatus($controller->validateWorkOrder($this->workOrderRequest(), $plainUser)));
+    }
+
+    public function testWorkOrderImportAnswersStatusIdNumberAndWarnings(): void
+    {
+        $applier = $this->createMock(WorkOrderImportApplier::class);
+        $applier->method('apply')->willReturn(WorkOrderImportResult::ok('created', 31, 'S260001', [['code' => 'counter_not_synced', 'message' => 'x', 'path' => 'workOrder.sequenceNumber']], 201));
+        $applier->method('validate')->willReturn(WorkOrderImportResult::ok('skipped', 31, 'S260001', [], 200));
+        $controller = $this->workOrderController($applier);
+
+        $created = $controller->applyWorkOrder($this->workOrderRequest(), new AuthContext(true, 2, 'api_key', 'shpd_ak_x'));
+        $this->assertSame(201, $this->getStatus($created));
+        $this->assertSame(
+            ['status' => 'created', 'workOrderId' => 31, 'number' => 'S260001', 'warnings' => [['code' => 'counter_not_synced', 'message' => 'x', 'path' => 'workOrder.sequenceNumber']]],
+            $created->getPayload()['data'],
+        );
+
+        $validated = $controller->validateWorkOrder($this->workOrderRequest(), new AuthContext(true, 1, 'session', 'shpd_st_x', isAdmin: true));
+        $this->assertSame(200, $this->getStatus($validated));
+        $this->assertSame('skipped', $validated->getPayload()['data']['status']);
+    }
+
+    public function testWorkOrderImportErrorCarriesIssues(): void
+    {
+        $issues = [['severity' => 'error', 'path' => 'rows.2.vatCode', 'code' => 'vat_code_unknown', 'message' => 'm']];
+        $applier = $this->createMock(WorkOrderImportApplier::class);
+        $applier->method('apply')->willReturn(WorkOrderImportResult::error('validation_failed', 'Validace zakázky selhala.', $issues, 422));
+
+        $response = $this->workOrderController($applier)
+            ->applyWorkOrder($this->workOrderRequest(), new AuthContext(true, 2, 'api_key', 'shpd_ak_x'));
+
+        $this->assertSame(422, $this->getStatus($response));
+        $this->assertSame('validation_failed', $response->getPayload()['error']['code']);
+        $this->assertSame($issues, $response->getPayload()['error']['details']['issues']);
+    }
+
+    public function testWorkOrderImportRejectsMissingBodyAndUnwiredFlow(): void
+    {
+        $apiKey = new AuthContext(true, 2, 'api_key', 'shpd_ak_x');
+        $applier = $this->createMock(WorkOrderImportApplier::class);
+        $applier->expects($this->never())->method('apply');
+
+        $this->assertSame(400, $this->getStatus($this->workOrderController($applier)->applyWorkOrder($this->workOrderRequest(null), $apiKey)));
+        $this->assertSame(500, $this->getStatus($this->workOrderController(null)->applyWorkOrder($this->workOrderRequest(), $apiKey)));
     }
 
     public function testAssetDocLinksAnswerMatchingStatusAndShapeErrors(): void

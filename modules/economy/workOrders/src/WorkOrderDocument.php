@@ -41,7 +41,12 @@ use Shipard\Module\Economy\WorkOrders\Invoicing\InvoicingSettingsResolver;
  *     potvrzení vyžaduje periodicitu, efektivní typ dokladu a řadu (zakázka
  *     nebo druh) a aspoň jeden řádek předpisu; prázdné „fakturovat od“ se
  *     doplní zahájením; řada v přepisu musí být typu efektivního dokladu;
- *     u ostatních typů se fakturační pole vynulují.
+ *     u ostatních typů se fakturační pole vynulují;
+ *   - import (tasks/work-orders-import.md I4): převzaté číslo zůstává
+ *     a virtuální pole `_importSequence` (pořadí v řadě) k němu doplní
+ *     pořadí a fiskální rok a srovná čítač řady přes GREATEST, aby další
+ *     zakázka ve formuláři pokračovala za importovaným číslem. Marker se
+ *     vyjme před SQL.
  *
  * Číslo se čerpá v beforeSave — před transakcí gateway, čítač má vlastní
  * (jako u dokladů; uvnitř vnější transakce applieru se vlastní neotevírá).
@@ -66,6 +71,8 @@ class WorkOrderDocument extends Document
     public const END_STATES = [self::STATE_FINISHED, self::STATE_CANCELLED];
 
     public const RESET_SCOPE_FISCAL_YEAR = 'fiscal_year';
+    /** Virtuální pole importu: pořadí v řadě k převzatému číslu (applier importu, I4). */
+    public const IMPORT_SEQUENCE_KEY = '_importSequence';
     public const HOME_CURRENCY_SETTING = 'economy.homeCurrency';
     public const DEFAULT_HOME_CURRENCY = 'czk';
 
@@ -225,6 +232,10 @@ class WorkOrderDocument extends Document
 
     public function beforeSave(array &$data, ?array $originalData = null): void
     {
+        // Marker importu ven z dat hned — nesmí dojít do SQL.
+        $importSequence = $data[self::IMPORT_SEQUENCE_KEY] ?? null;
+        unset($data[self::IMPORT_SEQUENCE_KEY]);
+
         $this->trackStateChange($data, $originalData);
 
         foreach (['title', 'number', 'payment_reference', 'internal_note'] as $col) {
@@ -255,6 +266,10 @@ class WorkOrderDocument extends Document
             if ($start !== null) {
                 $data['inv_from'] = $start;
             }
+        }
+
+        if ($importSequence !== null && (int) $importSequence > 0 && self::hasValue($data['number'] ?? null)) {
+            $this->syncImportedNumber($data, (int) $importSequence);
         }
 
         $t = $this->stateTransition;
@@ -317,10 +332,43 @@ class WorkOrderDocument extends Document
         ));
     }
 
+    /**
+     * Převzaté číslo s pořadím (import, I4): pořadí a fiskální rok na
+     * zakázce + srovnání čítače řady (SequenceCounter::syncImported —
+     * GREATEST, idempotentní). Rozsah čítače jako při přidělení: fiskální
+     * rok data zahájení u řady s ročním restartem, jinak NULL. Chybějící
+     * rok hlásí verifier importu předem; tady je to jen pojistka.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function syncImportedNumber(array &$data, int $sequence): void
+    {
+        $seriesId = (int) ($data['number_series'] ?? 0);
+        $series = $seriesId > 0 ? $this->loadSeries($seriesId) : null;
+        if ($series === null) {
+            throw new \LogicException("Číselná řada zakázek id={$seriesId} nenalezena");
+        }
+        $start = self::isoDate($data['date_start'] ?? null);
+        $yearly = (string) ($series['reset_scope'] ?? self::RESET_SCOPE_FISCAL_YEAR) === self::RESET_SCOPE_FISCAL_YEAR;
+        $fyId = $yearly && $start !== null ? $this->fiscalYearIdForDate($start) : null;
+        if ($yearly && $fyId === null) {
+            throw new \DomainException('Pro datum zahájení není založený fiskální rok — čítač řady nejde srovnat.');
+        }
+        $data['sequence_number'] = $sequence;
+        $data['fiscal_year'] = $fyId;
+        $this->syncSequence($seriesId, $fyId, $sequence);
+    }
+
     /** Další pořadí v řadě z čítače (přepsatelné v testech). */
     protected function nextSequence(int $seriesId, ?int $fiscalYearId): int
     {
         return $this->sequenceCounter()->next($seriesId, $fiscalYearId, !$this->externalTransaction);
+    }
+
+    /** Srovnání čítače na importované pořadí (přepsatelné v testech). */
+    protected function syncSequence(int $seriesId, ?int $fiscalYearId, int $sequence): void
+    {
+        $this->sequenceCounter()->syncImported($seriesId, $fiscalYearId, $sequence);
     }
 
     /** Čítač čísel zakázek nad vlastní tabulkou čítačů a hlavičkami zakázek. */

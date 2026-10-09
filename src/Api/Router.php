@@ -337,6 +337,10 @@ class Router
 			return $this->resolveAssetsExchangeRoute($subpath, $method);
 		}
 
+		if (str_starts_with($subpath, '/_exchange/workOrders/workOrder/')) {
+			return $this->resolveWorkOrdersExchangeRoute($subpath, $method);
+		}
+
 		if (str_starts_with($subpath, '/_exchange/content-tags/')) {
 			return $this->resolveContentTagsRoute($subpath, $method);
 		}
@@ -1029,6 +1033,22 @@ class Router
 			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
 		}
 		return new Route('exchange', $action);
+	}
+
+	/**
+	 * Import zakázek (#110 D25, D26) sdílí `exchange` dispatcher:
+	 * `workOrder:validate` / `workOrder:apply` (bez `preview`). Vždy POST.
+	 */
+	private function resolveWorkOrdersExchangeRoute(string $subpath, string $method): Route|Response
+	{
+		$rest = substr($subpath, strlen('/_exchange/workOrders/workOrder/'));
+		if (!in_array($rest, ['validate', 'apply'], true)) {
+			return Response::error('NOT_FOUND', 'Not found', 404);
+		}
+		if ($method !== 'POST') {
+			return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
+		}
+		return new Route('exchange', "workOrder:{$rest}");
 	}
 
 	/**
