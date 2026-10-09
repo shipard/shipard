@@ -10,6 +10,8 @@ use Shipard\Core\Server\HostingConfig;
 
 class ServerConfig
 {
+    public const DEFAULT_AI_ANALYSIS_MAX_CONCURRENT = 2;
+
     private array $data = [];
 
     public function __construct(private readonly string $configPath = '/etc/shipard/server.json')
@@ -182,6 +184,27 @@ class ServerConfig
             throw new \RuntimeException("Server config 'render' must be an object");
         }
         return RenderConfig::fromArray($render);
+    }
+
+    /**
+     * Limit souběhu AI analýz pošty per server — nested klíč
+     * `ai.analysis.maxConcurrent` (tasks/mail-analysis-inprocess.md D15).
+     * Chybějící sekce = výchozí {@see DEFAULT_AI_ANALYSIS_MAX_CONCURRENT};
+     * `0` = analýza v procesu vypnutá (server, kde dál pracuje démon).
+     * Záporná nebo nečíselná hodnota je chyba konfigurace.
+     */
+    public function getAiAnalysisMaxConcurrent(): int
+    {
+        $ai = $this->data['ai'] ?? null;
+        $analysis = is_array($ai) ? ($ai['analysis'] ?? null) : null;
+        $value = is_array($analysis) ? ($analysis['maxConcurrent'] ?? null) : null;
+        if ($value === null) {
+            return self::DEFAULT_AI_ANALYSIS_MAX_CONCURRENT;
+        }
+        if (!is_int($value) || $value < 0) {
+            throw new \RuntimeException("Server config 'ai.analysis.maxConcurrent' must be a non-negative integer");
+        }
+        return $value;
     }
 
     /**

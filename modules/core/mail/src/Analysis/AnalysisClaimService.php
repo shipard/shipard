@@ -24,7 +24,7 @@ use Shipard\Module\Core\Ai\AIBackendDocument;
  * dešifruje klíč backendu, vloží claim a přepne `analysis_state` 10 → 20.
  * `docState` (workflow) se nemění. Spec tasks/mail-phase3a.md §3.2.
  */
-final class AnalysisClaimService
+class AnalysisClaimService
 {
     public const DEFAULT_LEASE_SECONDS = 300;
     public const MIN_LEASE_SECONDS = 60;

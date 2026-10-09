@@ -53,6 +53,29 @@ class ServerConfigTest extends TestCase
         $this->assertSame('/etc/shipard/domains.json', $config->getDomainsFile());
     }
 
+    public function testGetAiAnalysisMaxConcurrentDefaultsAndValidates(): void
+    {
+        $base = ['host' => 'h', 'port' => 1, 'admin_user' => 'u', 'admin_password' => 'p', 'mode' => 'development'];
+
+        $config = new ServerConfig($this->createConfig($base));
+        $config->load();
+        $this->assertSame(2, $config->getAiAnalysisMaxConcurrent());
+
+        $config = new ServerConfig($this->createConfig($base + ['ai' => ['analysis' => ['maxConcurrent' => 0]]]));
+        $config->load();
+        $this->assertSame(0, $config->getAiAnalysisMaxConcurrent());
+
+        $config = new ServerConfig($this->createConfig($base + ['ai' => ['analysis' => ['maxConcurrent' => 5]]]));
+        $config->load();
+        $this->assertSame(5, $config->getAiAnalysisMaxConcurrent());
+
+        $config = new ServerConfig($this->createConfig($base + ['ai' => ['analysis' => ['maxConcurrent' => -1]]]));
+        $config->load();
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('ai.analysis.maxConcurrent');
+        $config->getAiAnalysisMaxConcurrent();
+    }
+
     public function testGetDomainsFileCustomPath(): void
     {
         $path = $this->createConfig([

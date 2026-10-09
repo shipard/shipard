@@ -51,7 +51,7 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  * `storeFailure()`: záznam se status 3, uvolnění claimu, analysis_state
  * 20 → 10 (retryable) nebo 20 → 70 (permanent). docState se nemění.
  */
-final class AnalysisResultWriter
+class AnalysisResultWriter
 {
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
     private const ANALYSES_TABLE = 'core_mail_message_analyses';
@@ -376,6 +376,22 @@ final class AnalysisResultWriter
         }
 
         return $newState;
+    }
+
+    /**
+     * Počet selhaných běhů zprávy (`status = 3`) za posledních `$sinceSeconds`
+     * — strop opakování přechodných chyb v runneru (nejvýš třikrát za hodinu,
+     * tasks/mail-analysis-inprocess.md D18).
+     */
+    public function countRecentFailures(int $messageId, int $sinceSeconds, ?int $now = null): int
+    {
+        return (int) $this->db->fetchSingle(
+            'SELECT COUNT(*) FROM %n WHERE message = %i AND status = %i AND analyzed_at > %s',
+            self::ANALYSES_TABLE,
+            $messageId,
+            3,
+            date('Y-m-d H:i:s', ($now ?? time()) - $sinceSeconds),
+        );
     }
 
     /**

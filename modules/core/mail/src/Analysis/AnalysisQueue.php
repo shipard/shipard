@@ -23,7 +23,7 @@ use Shipard\Module\Core\Mail\IncomingMessageDocument;
  * Sdílí ji pull endpoint `GET /queue`, in-process runner (`isEligible()`
  * před claimem) a sweep (`eligible(freeCount())`).
  */
-final class AnalysisQueue
+class AnalysisQueue
 {
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
     private const MAILBOXES_TABLE = 'core_mail_mailboxes';

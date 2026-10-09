@@ -90,6 +90,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>mail-outbox-retry</info>       Re-queue a failed outbound message');
         $output->writeln('  <info>mail-send-test</info>          Send a test message through the outbound mail transport');
         $output->writeln('  <info>mail-preprocess</info>         Run the stored preprocess plan of a message (--message <id> [--force]) or rescue stuck ones (--sweep)');
+        $output->writeln('  <info>mail-analyze</info>            Run the AI analysis of a queued message in process (--message <id>) or spawn runners for the queue (--sweep)');
         $output->writeln('  <info>mail-target-backfill</info>   Fill partner and title of messages linked to a document (--dry-run, --limit, --batch)');
         $output->writeln('');
         $output->writeln('<comment>Alerts:</comment>');

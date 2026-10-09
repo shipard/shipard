@@ -28,7 +28,7 @@ use Shipard\Module\Core\Attachments\AttachmentService;
  * (přílohy jako `GET /payload`: bez `raw_source_attachment`, bez
  * smazaných), čistá část {@see prepareRaw()} jde testovat bez databáze.
  */
-final class AttachmentPreparer
+class AttachmentPreparer
 {
     public const MAX_ATTACHMENTS = 20;
     public const MAX_TOTAL_BYTES = 30 * 1024 * 1024;
