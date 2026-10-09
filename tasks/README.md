@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 348 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 320.
+Celkem 350 tasků: **naplánováno** 7 · **částečně** 23 · **hotovo** 320.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,10 +25,12 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
-| `ai-models-phase0.md` | naplánováno | čeká na potvrzení rozhodnutí F0-D1–F0-D7 (#85) |
+| `ai-analyzer-removal.md` | naplánováno | po ověření `mail-analysis-inprocess.md`; čeká na potvrzení rozhodnutí D20–D24 (#85) |
+| `ai-models-phase0.md` | naplánováno | čeká na potvrzení rozhodnutí F0-D1, F0-D2, F0-D4–F0-D7 (#85); F0-D3 a commit 3 odpadají po D9 |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `mail-analysis-inprocess.md` | naplánováno | rozhodnutí D9–D19 potvrzena 2026-10-09 (#85), připraveno k implementaci |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -363,6 +365,7 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `mail-safety.md` | Pojistka odchozí pošty na dev a testovacích serverech: `mail.safety` v `server.json` (redirect / allowlist / drop), stopa ve frontě a v Odeslané poště, `doctor` (#95) |
 | `mail-sender-rules-after-analysis.md` | Pravidla odesílatelů: dispozice `archiveIfOther` (archiv až po analýze, jen zprávy bez dokladu — `PostAnalysisDisposer`), pojistka učení u smíšených odesílatelů, potvrzení pravidla odklidí čekající Ostatní |
 | `mail-other-attention.md` | Ostatní pošta k vyřízení: prompt v4.7.0 vrací pozornost (`action` / `info` / `promo`), poznámku, lhůtu a protistranu u zprávy bez dokladu; sekce feedu K vyřízení, Archivovat vše v Ostatních, `archiveIfOther` vynechá akční zprávy (#105) |
+| `mail-analysis-inprocess.md` | AI analýza v `shpd` místo démona `ai-analyzer`: služby z `AnalysisController`, příprava příloh, prompt přes Twig, runner a CLI `mail-analyze` (spawn + sweep), limit souběhu per server (#85 D9–D19) |
 
 Daemony volající endpoint žijí v jiných repech: `mail_router:tasks/phase1.md`
 (mail-router, Python) a `ai_analyzer:tasks/phase1.md` (AI analyzer, Python).
@@ -384,6 +387,7 @@ Sdílené LLM backendy, MCP nástroje, vnitřní chat. Přehled
 | `chat-phase2a-streaming.md` | Streamovaný chat bez nástrojů (`LlmClient::streamChat`) |
 | `chat-phase2b-tools.md` | Tool-use smyčka |
 | `chat-phase3-ui.md` | Svelte UI chatu |
+| `ai-analyzer-removal.md` | Zrušení pull protokolu `/_mail/analysis/*`, uživatele `_ai_analyzer`, registru analyzerů na hostingu a démona `ai-analyzer`; příkaz `ai-backend-set-key`; upozornění „Analýza pošty stojí“ (#85 D20–D24) |
 
 ## Upozornění (core.alerts)
 

@@ -1,6 +1,15 @@
 # AI modely — fáze 0: minimum pro aktuální generaci modelů
 
-**Stav:** naplánováno — čeká na potvrzení rozhodnutí F0-D1–F0-D7 (#85)
+**Stav:** naplánováno — čeká na potvrzení rozhodnutí F0-D1, F0-D2, F0-D4–F0-D7 (#85); F0-D3 a commit 3 odpadají po D9
+
+> **Poznámka 2026-10-09 (#85 D9).** Analýzu došlé pošty přebírá `shpd`
+> (`tasks/mail-analysis-inprocess.md`) a démon `ai-analyzer` končí. Z tohoto
+> tasku proto **odpadá** F0-D3, commit 3 (claim payload a kontrakt)
+> a souběžný task v analyzeru. Pokud už runner analýzy (`AnalysisRunner`)
+> existuje, patří v commitu 2 mezi volající, kteří čtou ladicí parametry
+> přes `AiBackendResolver::tuning()`. Body ověření a checklistu, které
+> mluví o analyzeru, claim payloadu a `AnalysisControllerTest`, se čtou
+> v tomto smyslu.
 
 ## Cíl
 
@@ -57,7 +66,8 @@ Dokumentace API k chování modelů:
   odmítá) — chybu 400 vrátí API a projeví se jako selhání volání. Validaci
   proti schopnostem modelu přinese katalog modelů ve fázi 1, která tyto sloupce
   přesune do AI úloh (bez ostrých dat stačí jednoduchá migrace).
-- **F0-D3 — Claim payload: jen volitelná pole.** `backend.temperature` se při
+- **F0-D3 — Claim payload: jen volitelná pole.** *(Odpadá — #85 D9.)*
+  `backend.temperature` se při
   `NULL` **vynechá** (ne `null` — starý analyzer dělá `float(...)`), `thinking`
   a `effort` se přidají jen při hodnotě ≠ `auto`. Obě strany tak jdou nasadit
   v libovolném pořadí: starý analyzer nová pole ignoruje a chybějící
@@ -136,7 +146,7 @@ Dokumentace API k chování modelů:
     `stopReason: 'max_tokens'` → `null` (dávka selhala); `'refusal'` totéž.
   - `DashboardSummaryServiceTest`: useknutý výsledek se necachuje.
 
-### Commit 3 — claim payload a kontrakt
+### Commit 3 — claim payload a kontrakt *(odpadá — #85 D9)*
 
 - **Nejdřív dokumentace** (`docs/services.md` §12 bod 1):
   `docs/mail/api-contract.md` §9.2 — příklad odpovědi bez `temperature`,
