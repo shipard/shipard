@@ -115,6 +115,72 @@ class AnthropicLlmClientTest extends TestCase
         }
     }
 
+    public function testTimeoutCurlOptionsOnlyWhenRequested(): void
+    {
+        $this->assertSame([], AnthropicLlmClient::timeoutCurlOptions($this->params()));
+
+        $bounded = new LlmChatParams(
+            provider: 'anthropic', model: 'm', apiKey: 'k', baseUrl: '', system: null, messages: [],
+            maxTokens: 10, stallTimeoutSeconds: 180, timeoutSeconds: 840,
+        );
+        $this->assertSame(
+            [CURLOPT_LOW_SPEED_LIMIT => 1, CURLOPT_LOW_SPEED_TIME => 180, CURLOPT_TIMEOUT => 840],
+            AnthropicLlmClient::timeoutCurlOptions($bounded),
+        );
+
+        $zero = new LlmChatParams(
+            provider: 'anthropic', model: 'm', apiKey: 'k', baseUrl: '', system: null, messages: [],
+            maxTokens: 10, stallTimeoutSeconds: 0, timeoutSeconds: null,
+        );
+        $this->assertSame([], AnthropicLlmClient::timeoutCurlOptions($zero));
+    }
+
+    public function testErrorResponseCarriesTypeMessageAndErrorCode(): void
+    {
+        $e = AnthropicLlmClient::exceptionFromErrorResponse(429, json_encode([
+            'type' => 'error',
+            'error' => [
+                'type' => 'rate_limit_error',
+                'message' => 'Your organization has reached its monthly spend limit.',
+                'details' => ['error_code' => 'enforced_spend_limit_reached'],
+            ],
+        ]));
+
+        $this->assertSame(429, $e->statusCode);
+        $this->assertSame('rate_limit_error', $e->errorType);
+        $this->assertSame('enforced_spend_limit_reached', $e->errorCode);
+        $this->assertStringContainsString('spend limit', $e->getMessage());
+        $this->assertFalse($e->isTransient());
+        $this->assertTrue($e->isSpendLimitReached());
+
+        $plain = AnthropicLlmClient::exceptionFromErrorResponse(429, '{"type":"error","error":{"type":"rate_limit_error","message":"slow down"}}');
+        $this->assertNull($plain->errorCode);
+        $this->assertTrue($plain->isTransient());
+
+        $garbage = AnthropicLlmClient::exceptionFromErrorResponse(502, '<html>bad gateway</html>');
+        $this->assertSame('api_error', $garbage->errorType);
+        $this->assertSame('HTTP 502', $garbage->getMessage());
+        $this->assertNull($garbage->errorCode);
+    }
+
+    public function testIsTransientByStatusAndStreamErrorType(): void
+    {
+        $this->assertTrue(new LlmApiException(0, 'transport_error', 'curl')->isTransient());
+        $this->assertTrue(new LlmApiException(408, 'api_error', 'x')->isTransient());
+        $this->assertTrue(new LlmApiException(429, 'rate_limit_error', 'x')->isTransient());
+        $this->assertTrue(new LlmApiException(500, 'api_error', 'x')->isTransient());
+        $this->assertTrue(new LlmApiException(529, 'overloaded_error', 'x')->isTransient());
+        $this->assertFalse(new LlmApiException(400, 'invalid_request_error', 'x')->isTransient());
+        $this->assertFalse(new LlmApiException(401, 'authentication_error', 'x')->isTransient());
+        $this->assertFalse(new LlmApiException(404, 'not_found_error', 'x')->isTransient());
+
+        // Inline chyba streamu (HTTP 200) — jen podle typu.
+        $this->assertTrue(new LlmApiException(200, 'overloaded_error', 'x')->isTransient());
+        $this->assertTrue(new LlmApiException(200, 'api_error', 'x')->isTransient());
+        $this->assertTrue(new LlmApiException(200, 'rate_limit_error', 'x')->isTransient());
+        $this->assertFalse(new LlmApiException(200, 'invalid_request_error', 'x')->isTransient());
+    }
+
     public function testEmptyToolUseInputIsSentAsJsonObject(): void
     {
         // Regrese: model zavolal nástroj bez argumentů (mail_list_pending),

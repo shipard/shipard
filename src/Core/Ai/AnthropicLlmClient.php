@@ -177,7 +177,7 @@ class AnthropicLlmClient implements LlmClient
         $errorBody = '';
 
         $ch = curl_init($url);
-        curl_setopt_array($ch, [
+        curl_setopt_array($ch, self::timeoutCurlOptions($params) + [
             CURLOPT_POST           => true,
             CURLOPT_HTTPHEADER     => $headers,
             CURLOPT_POSTFIELDS     => $jsonBody,
@@ -204,14 +204,52 @@ class AnthropicLlmClient implements LlmClient
         curl_close($ch);
 
         if ($status >= 400) {
-            $decoded = json_decode($errorBody, true);
-            $type = is_array($decoded) ? ($decoded['error']['type'] ?? 'api_error') : 'api_error';
-            $msg  = is_array($decoded) ? ($decoded['error']['message'] ?? "HTTP {$status}") : "HTTP {$status}";
-            throw new LlmApiException($status, (string) $type, (string) $msg);
+            throw self::exceptionFromErrorResponse($status, $errorBody);
         }
         if ($ok === false || $errno !== 0) {
             throw new LlmApiException(0, 'transport_error', $errmsg !== '' ? $errmsg : 'curl transport error');
         }
+    }
+
+    /**
+     * curl options bounding the call: no bytes for `stallTimeoutSeconds`
+     * (CURLOPT_LOW_SPEED_*) or more than `timeoutSeconds` in total
+     * (CURLOPT_TIMEOUT) ends the request with a transport error (status 0).
+     * Null params = no option set (today's unbounded behaviour).
+     *
+     * @return array<int, int>
+     */
+    public static function timeoutCurlOptions(LlmChatParams $params): array
+    {
+        $options = [];
+        if ($params->stallTimeoutSeconds !== null && $params->stallTimeoutSeconds > 0) {
+            $options[CURLOPT_LOW_SPEED_LIMIT] = 1;
+            $options[CURLOPT_LOW_SPEED_TIME] = $params->stallTimeoutSeconds;
+        }
+        if ($params->timeoutSeconds !== null && $params->timeoutSeconds > 0) {
+            $options[CURLOPT_TIMEOUT] = $params->timeoutSeconds;
+        }
+        return $options;
+    }
+
+    /**
+     * Error response body (`{"type":"error","error":{"type","message",
+     * "details":{"error_code"}}}`) → exception. A non-JSON body degrades to
+     * `api_error` / `HTTP <status>`; `error_code` is carried when present
+     * (exhausted spend limit — tasks/mail-analysis-inprocess.md D18).
+     */
+    public static function exceptionFromErrorResponse(int $status, string $body): LlmApiException
+    {
+        $decoded = json_decode($body, true);
+        $error = is_array($decoded) && is_array($decoded['error'] ?? null) ? $decoded['error'] : [];
+        $type = (string) ($error['type'] ?? 'api_error');
+        $msg = (string) ($error['message'] ?? "HTTP {$status}");
+        $details = is_array($error['details'] ?? null) ? $error['details'] : [];
+        $code = isset($details['error_code']) && is_string($details['error_code']) && $details['error_code'] !== ''
+            ? $details['error_code']
+            : null;
+
+        return new LlmApiException($status, $type, $msg, $code);
     }
 
     /**

@@ -13,6 +13,12 @@ namespace Shipard\Core\Ai;
  *
  * `temperature` is nullable on purpose: Opus 4.7/4.8 reject any temperature
  * (HTTP 400), so the caller passes null to omit it from the request.
+ *
+ * `stallTimeoutSeconds` / `timeoutSeconds` bound the HTTP call (no bytes
+ * received for N seconds / whole request longer than N seconds → transport
+ * error, status 0). Null = no limit, today's behaviour; the mail analysis
+ * runner sets both so a hung call can never outlive its claim lease
+ * (tasks/mail-analysis-inprocess.md D18).
  */
 final readonly class LlmChatParams
 {
@@ -31,5 +37,7 @@ final readonly class LlmChatParams
         public int $maxTokens,
         public ?float $temperature = null,
         public ?array $tools = null,
+        public ?int $stallTimeoutSeconds = null,
+        public ?int $timeoutSeconds = null,
     ) {}
 }
