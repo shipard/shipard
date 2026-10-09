@@ -1,6 +1,6 @@
 # Došlá pošta — AI analýza v `shpd` místo démona `ai-analyzer` (#85 D9)
 
-**Stav:** částečně — kroky 1–6 hotové 2026-10-09 (služby, vstup/výstup, LLM vrstva, runner + CLI + sloty, spouštění, dokumentace); zbývá ověření 1–11 na dev serveru a komentář do #85
+**Stav:** hotovo — 2026-10-09 (kroky 1–6 v samostatných commitech, ověření 1–11 na dev serveru viz „Ověřeno“); zbývá push, komentář do #85, nasazení na alfě a živý souběh s démonem při `maxConcurrent = 0`
 
 ## Status / cíl
 
@@ -393,6 +393,45 @@ testů**.
 11. DS s gateway hostingu (backend s `base_url` gateway) → analýza projde
     a spotřeba se objeví v přehledu gateway.
 
+### Ověřeno 2026-10-09 (dev server, DS `4l3j`, `060z`, `vlm9`)
+
+1. Cron na dev stroji neběží, démon také ne; `ds-upgrade` nebyl potřeba.
+2. **Schéma:** 17 uložených úspěšných běhů (4l3j 1, 060z 15, vlm9 1) prošlo
+   `OutputParser` validací až na jeden běh s promptem v4.2.0, kde
+   `vat.place = "foreign"` není v dnešním výčtu — vývoj schématu profilu,
+   ne rozdíl mezi `opis` a Pythonem.
+3. PDF faktura (zpráva založená in-process, `mail-analyze --message`): do
+   20 s stav Analyzováno, návrh dokladu (číslo, dodavatel, řádek, částka),
+   titulek a partner zprávy, Nová → K řešení, claim uvolněný `result`,
+   `created_by` NULL, cena z tabulky; slot `ai-analysis-1.lock` založen.
+   Spawn z HTTP příjmu/nahrání kryjí integrační testy (seam closure), živý
+   odpojený spawn ověřen přes reanalýzu a sweep (bod 5, 9, 10).
+4. ZIP se dvěma PDF → primární dokument faktura, VOP jako sekundární nález,
+   `attachments[]` jen faktura; zpráva bez příloh → `other` / `promo`,
+   docState zůstává Nová. Obrázek účtenky jen jednotkovým testem.
+5. Reanalýza přes `AnalysisController::reanalyze()` s reálným
+   `AnalysisSpawner` → nový běh, canonical shodný s prvním během
+   (číslo, částka, IČO, řádky, dokonce stejné tokeny). Porovnání s během
+   přes démona nebylo možné — démon tu neběží.
+6. ISDOC → pořadí spawnu kryjí integrační testy (`IngestPreprocessTest`,
+   `MailUploadEndpointTest`), živě neověřeno.
+7. DS bez klíče (060z): `--message` končí „Not configured: NO_BACKEND“,
+   zpráva zůstává Ve frontě, žádný řádek v Analýzách; `--sweep` „Skipped:
+   no usable AI backend“ + jedno varování v logu.
+8. Špatný klíč (060z, dočasně): `[ai_error] anthropic permanent: HTTP 401
+   authentication_error: invalid x-api-key`, stav 70, presenter dává
+   kategorii `aiError` (stejně jako u démona — hláška radí k příloze, ne
+   ke klíči; kandidát na `configError` pro 401/403 v navazujícím tasku).
+   Backend vrácen do původního stavu (bez klíče, neaktivní).
+9. Tři runnery naráz při dvou slotech: dva „Done“, třetí „No free slot“;
+   `--sweep` ho spustil odpojeně (`analysis.log`), všechny tři Analyzováno,
+   nikdy víc než dva claimy současně.
+10. `kill -9` běžícího runneru po claimu → zpráva Analyzuje se; po
+    vypršení lease (simulováno) reaper vrátil 10, sweep spustil nový běh →
+    Analyzováno, claimy `expired` + `result`.
+11. DS přes AI gateway hostingu (vlm9 → gn5c): analýza prošla, model a
+    tokeny v běhu; přehled gateway neověřen ručně.
+
 ## Pasti
 
 - **Pořadí vůči ISDOC.** Spawn analýzy až po `deferIsdocImport()`.
@@ -451,9 +490,11 @@ testů**.
 - [x] Kroky 1–6 jako samostatné commity, `php -l` na změněných souborech.
 - [x] Po kroku 1 projdou stávající testy analýzy beze změny.
 - [x] Cílené testy: `vendor/bin/phpunit --filter 'AnalysisQueueTest|AnalysisClaimServiceTest|AttachmentPreparerTest|PromptRendererTest|OutputParserTest|AnthropicPricingTest|LlmRetryTest|AnthropicLlmClientTest|AnalysisRunnerTest|MailAnalyzeCommandTest|AnalysisControllerTest|PreprocessRunnerTest'`, pak celá sada.
-- [ ] Nahraný doklad se na serveru bez démona vytěží do minuty.
+- [x] Nahraný doklad se na serveru bez démona vytěží do minuty.
 - [ ] Pull protokol dál funguje (démon proti stejnému serveru zprávu
-      zpracuje, když je `maxConcurrent = 0`).
-- [ ] Ověření 1–11 provedeno, výsledek do #85.
+      zpracuje, když je `maxConcurrent = 0`) — endpointy kryjí nezměněné
+      testy a integrační porovnání s runnerem; živý démon neověřen.
+- [x] Ověření 1–11 provedeno (viz „Ověřeno 2026-10-09“); komentář do #85
+      připraven, zapíše se s pushem.
 - [x] Dokumentace podle kroku 6.
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.

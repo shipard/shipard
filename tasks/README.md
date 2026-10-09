@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 350 tasků: **naplánováno** 6 · **částečně** 24 · **hotovo** 320.
+Celkem 350 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 321.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -41,7 +41,6 @@ nevypisují — níže je jen to, co není dokončené.
 | `docs-import-party-snapshots.md` | částečně | kód, testy a docs hotové 2026-09-01; zbývá ověření po re-importu qrce (task 29 old_shipard, ops) — poslední dva body checklistu |
 | `hosting-09-federated-login.md` | částečně | kód + testy + docs hotové 2026-08-14 (commity 1–3); zbývá ds-upgrade na hostingu, zapnutí Google/GitHub na alfě dle runbooku (mutace — David) a ruční E2E řetěz |
 | `local-dev-bootstrap.md` | částečně | skripty, cloud-init a docs hotové 2026-10-03 (4 commity, #96 D17–D25); ověřeno na čisté Multipass VM 26.04 (aarch64) podle `docs/local-dev.md`: cloud-init bootstrap, opakovaný běh s `--with-render --with-ssh`; zbývá WSL na Windows (čeká na Windows build `remote-dev-bridge`) |
-| `mail-analysis-inprocess.md` | částečně | kroky 1–6 hotové 2026-10-09 (služby, vstup/výstup, LLM vrstva, runner + CLI + sloty, spouštění, dokumentace); zbývá ověření 1–11 na dev serveru a komentář do #85 |
 | `mail-import-partner-title.md` | částečně | implementace, testy a dokumentace hotové 2026-09-10 (5 commitů), backfill ověřen na dev DS; zbývá nasazení na alfu, re-import a SQL kontroly ze sekce „Ověření na alfě“ |
 | `mail-message-centric.md` | částečně | Fáze A–D v tomto repozitáři hotové (schéma, /result v4, |
 | `mail-preprocess.md` | částečně | Fáze 1 hotová (2026-08-29, 6 commitů), otevřený jen Bolt E2E na alfě (živý odkaz ze vzorku); Fáze 2 (`renderBodyToPdf`, `renderIfHtml`, aktivace Apple/Google) hotová 2026-08-29 — `tasks/mail-preprocess-phase2.md` |
