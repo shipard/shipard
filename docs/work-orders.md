@@ -192,7 +192,8 @@ rozhodnutí mění dřívější, je to u obou vyznačené.
   *Upřesněno D20.*
 - **D9 — Import (oblast importu ze starého Shipardu).** U `689089` se
   importují rozpracované zakázky, smlouvy ne; před importem se ověří
-  shoda se smlouvami. Specifikum tohoto zdroje.
+  shoda se smlouvami. Specifikum tohoto zdroje. *Upřesněno D25 — platí
+  pro roční část; měsíční část převezme runner ze smluv.*
 
 ### D10–D13 — Přispěvatelé, VS, text, poznámka
 
@@ -263,6 +264,20 @@ rozhodnutí mění dřívější, je to u obou vyznačené.
   id (koncept nemá číslo). Zastavené období lze obnovit akcí na záložce
   *Fakturace* — vrátí se do „naplánováno“ a vystaví se hned.
 
+
+### D25–D26 — Import zakázek (2026-10-09)
+
+- **D25 — `689089`: roční část ze zakázek, měsíční ze smluv** (upřesňuje
+  D9). Kontrola dat (§6.1) ukázala, že rozpracované zakázky pokrývají
+  roční fakturaci (párování 1:1 se smlouvami), ale zakázky měsíčních
+  druhů nemají řádky ani periodicitu. Runner proto u měsíční části
+  převezme obsah platných smluv — do zakázky spárované podle zákazníka,
+  nebo do nové zakázky; zakázky bez smlouvy se uklidí ručně ve zdroji.
+  Drobné rozdíly roční části se doladí ručně ve zdrojovém DS.
+- **D26 — Celý reimport, zakázky před doklady.** Testuje se opakovaným
+  plným importem, takže doplnění zakázky na už importované doklady se
+  neřeší (O6 odpadá): zakázky se importují **před** doklady a doklady
+  nesou zakázku rovnou v `dimensions.workOrder`.
 ---
 
 ## 5. Doménový model (návrh)
@@ -497,24 +512,47 @@ v `economy.codebooks`; `docs/architecture.md` §8. Řady zakázek
 
 ## 6. Import (kontrakt pro `old_shipard`)
 
-Import je oblast importu ze starého Shipardu (D9). Nový Shipard pro něj
-připraví:
+Import je oblast importu ze starého Shipardu (D9, D25, D26). Nový Shipard
+pro něj připraví:
 
-- středisko ve výměnném formátu dokladu (§5.6) a zapnutí dimenze
-  v nastavení podle toho, zda ji zdroj používá;
-- výměnný formát zakázky (samostatný task po fázi 2) včetně fakturačního předpisu
-  a *fakturovat od*, aby se po importu nic nevystavilo zpětně;
-- doplnění zakázky na už importované doklady (vzor doplnění karty
-  majetku) pro zdroje, kde se zakázky importují až po dokladech.
+- středisko a zakázku ve výměnném formátu dokladu (`dimensions`, §5.6) —
+  hotovo;
+- výměnný formát zakázky `shpd.workOrders.workOrder.v1` včetně
+  fakturačního předpisu a *fakturovat od* (`tasks/work-orders-import.md`).
 
-Pozor na pořadí zápisu: řádky předpisu podléhají zámku podle stavu
-zakázky (`WorkOrderRowLockProvider`, §5.4) **bez výjimky pro import** —
-importní runner musí řádky zapsat, dokud je zakázka v Konceptu, a teprve
-potom ji potvrdit; řádek do potvrzené zakázky server odmítne
-(`DOCUMENT_LOCKED`).
+**Pořadí** (D26): druhy a číselné řady zakázek → osoby, položky,
+střediska → **zakázky** (nadřazené před podřízenými) → doklady
+s `dimensions.workOrder`. Řádky předpisu se zapisují, dokud je zakázka
+v Konceptu (`WorkOrderRowLockProvider`, §5.4, bez výjimky pro import) —
+formát zakázky to řeší sám: hlavička a řádky v jednom požadavku, potvrzení
+až po řádcích.
 
-Otevřené: O6 (§8).
+**Fakturovat od** (pravidlo runneru): smlouva / zakázka s vystavenou
+fakturou → den po konci posledního vyfakturovaného období; bez faktury →
+první začátek období v den zahájení nebo po něm (starý generátor
+nefakturoval zpětně za rozběhnuté období). Jinak by import vystavil
+období, která starý Shipard nefakturoval.
 
+### 6.1 Kontrola dat `689089` (2026-10-09, agregovaně)
+
+- **Roční část** (≈240 zálohových faktur ročně): 342 ze 343 platných
+  smluv má podle zákazníka právě jednu aktivní zakázku a naopak. Řádek
+  (vždy jeden) má shodnou položku u 341, shodnou částku u 337 dvojic;
+  periodicita sedí u 336 (5 smluv pololetních proti roční zakázce,
+  1 zakázka bez periodicity). 17 aktivních zakázek nemá platnou smlouvu
+  (13 „nefakturuje se“).
+- **Měsíční část** (≈1 050 faktur ročně, 95 platných smluv): zakázky
+  měsíčních druhů (85 aktivních) nemají řádky a většinou ani periodicitu.
+  Podle zákazníka má zakázku 64 smluv, 31 ne; 24 zakázek nemá smlouvu.
+- **Středisko** dává faktuře druh smlouvy, ne smlouva (druhy 1–4 → jedno
+  středisko, druh 5 → jiné); zakázky nesou středisko shodné s fakturami.
+  Nová zakázka ze smlouvy bere středisko z druhu smlouvy.
+- **Fakturovat od:** roční — 241 smluv vyfakturováno do konce 2026, 95 bez
+  faktury (85 začíná 2027, 6 v 2028, 4 v 2026); měsíční — většina má další
+  období jako první nevyfakturované, 6 je o 1–3 měsíce pozadu, 1 má
+  nekalendářní měsíční období, 1 bez faktury — k ruční kontrole ve zdroji.
+- Období starých faktur jsou kalendářní (měsíc od 1., pololetí od 1. 1.
+  a 1. 7., rok od 1. 1.) — odpovídá Q3 fáze 2.
 ---
 
 ## 7. Fáze a tasky
@@ -527,11 +565,10 @@ Otevřené: O6 (§8).
 | 4 | `tasks/work-orders-phase2.md` — periodická fakturace: předpis, evidence období, běh, koncept s kartou ve feedu, Přegenerovat a Obnovit, VS, `období`, záložka Fakturace, rozhraní přispěvatelů | D2–D7, D10–D12, D24 | hotovo (2026-10-08) |
 | 4a | `tasks/work-orders-rows-readonly.md` — oprava fáze 2: řádky předpisu se řídí stavem zakázky (bez `independentRows`, `WorkOrderRowLockProvider`) | D22, D24 | hotovo (2026-10-09) |
 | 5 | `tasks/work-orders-phase3.md` — úrovně V pořádku a automatické odeslání | D4 | připravuje se; navazuje na #90 D11 |
-| 6 | `tasks/work-orders-import.md` — výměnný formát zakázky včetně fakturačního předpisu a *fakturovat od*, doplnění zakázky na už importované doklady | D9 | připravuje se; po fázi 2 |
+| 6 | `tasks/work-orders-import.md` — výměnný formát zakázky `shpd.workOrders.workOrder.v1` včetně fakturačního předpisu a *fakturovat od* | D9, D25, D26 | připravuje se |
 
 ---
 
 ## 8. Otevřené otázky
 
-- **O6 — Import ostatních zdrojů.** Smlouva → zakázka; smlouva s vazbou
-  1:1 na existující zakázku se sloučí do ní? (Oblast importu.)
+- ~~O6~~ → D26 (celý reimport; zakázky před doklady).
