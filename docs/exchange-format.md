@@ -1812,6 +1812,107 @@ s `details.issues`. Doklad se mění celý, nebo vůbec; ve stavu 40 se
 přegeneruje deník s pojistkou shodných obratů. Pravidla párování
 a uvolněné validace importu: `docs/assets.md` §5.7.
 
+---
+
+### Zakázky — `shpd.workOrders.workOrder.v1`
+
+Import zakázky ze starého Shipardu (#110 D9, D25, D26; `docs/work-orders.md`
+§6, `tasks/work-orders-import.md`). Verifier a applier jsou v modulu zakázek
+(`modules/economy/workOrders/src/Import/`), schéma zde u ostatních. Oprávnění
+jako import majetku (admin nebo API klíč), vždy POST; `preview` flow nemá.
+
+```
+POST /api/v1/_exchange/workOrders/workOrder/validate   # celý průběh s rollbackem
+POST /api/v1/_exchange/workOrders/workOrder/apply
+```
+
+```jsonc
+{
+  "format": "shpd.workOrders.workOrder.v1",
+  "workOrder": {
+    "number": "S260001",            // klíč párování; chybí → číslo přidělí řada při potvrzení
+    "sequenceNumber": 1,            // nepovinné; s number srovná čítač řady
+    "numberSeries": 3,              // řada zakázek (id) — určuje druh a typ
+    "title": "Nájem kanceláře",
+    "state": "confirmed",           // draft | confirmed | finished | cancelled
+    "dateStart": "2026-01-01", "dateEnd": null,
+    "costCenter": 2, "internalNote": null,
+    "customer": 41, "currency": "czk", "paymentReference": null,   // jen externí typy
+    "parent": null,                 // ČÍSLO nadřazené zakázky (jen jednorázové typy)
+    "invoicing": {                  // jen periodický typ
+      "periodicity": "month", "invoiceFrom": "2026-11-01", "docText": null,
+      // přepisy z druhu — chybějící / null = z druhu
+      "docType": null, "numberSeries": null, "dueDays": null, "timing": null,
+      "vatMode": null, "paymentMethod": null, "bankAccount": null
+    }
+  },
+  "rows": [                         // jen periodický typ; mimo Koncept aspoň jeden
+    { "item": 15, "description": "Nájem", "quantity": 1, "unit": "pcs",
+      "unitPrice": 4500, "vatCode": "cz-110", "operation": null,
+      "validFrom": null, "validTo": null }
+  ]
+}
+```
+
+**Reference a kódy (I1):** `numberSeries`, `costCenter`, `customer`, `item`,
+`invoicing.numberSeries` a `invoicing.bankAccount` jsou **id záznamů nového
+Shipardu** — mapu starých na nová drží runner (jako `type` / `owner` u karty
+majetku). Kódy jen tam, kde jsou přirozené: měna (`world.base.currencies`),
+`vatCode`, `operation` (`docs.core.rowOperations`), jednotka (`system_code`,
+zkratka nebo název přes `UnitResolver`), `periodicity` (`month` / `quarter` /
+`halfyear` / `year`), `timing` (`start` / `end`), `vatMode` a `paymentMethod`
+ve stejných kódech jako `shpd.docs.document.v1` (`none` / `fromBase` /
+`fromTotal`, `cash` / `bankTransfer` / `card` / …).
+
+**Kontrola před zápisem** (`WorkOrderImportVerifier`): existence referencí,
+kódy, pravidla typu z `WorkOrderTypes` podle řady (strana jen u externích,
+`parent` jen u jednorázových, `invoicing` a `rows` jen u periodického typu;
+periodická mimo Koncept potřebuje periodicitu a aspoň jeden řádek),
+`invoicing.numberSeries` typu efektivního dokladu (zakázka → druh), nadřazená
+podle čísla (`parent_not_found` — runner posílá nadřazené dřív). Co verifier
+nehlídá, hlídá `WorkOrderDocument` při zápisu (zákazník povinný při
+potvrzení, nadřazená ne periodická, cyklus, duplicitní číslo…) a applier
+odmítnutí překládá na cestu payloadu (`inv_periodicity` →
+`workOrder.invoicing.periodicity`, `_form` → `workOrder`). Bez registrace
+k DPH se kódy DPH neověřují.
+
+**Apply (I2):** v jedné transakci hlavička v Konceptu → řádky předpisu
+(zámek řádků potvrzené zakázky ještě neplatí) → cílový stav uložením
+hlavičky znovu; `finished` / `cancelled` projdou přes V pořádku, takže
+číslo i datum ukončení (chybí-li, dnešek) vznikají jako ve formuláři.
+Zakázka se stejným číslem v libovolném stavu → `skipped` s varováním
+`work_order_exists`, nic se nemění (reimport jde do resetovaného zdroje;
+přepis se nedělá). Koncept bez čísla klíč nemá a opakovaný import ho
+založí znovu.
+
+**Číslo (I4):** `number` se převezme beze změny; `sequenceNumber` doplní
+pořadí a fiskální rok data zahájení (u řady s ročním restartem — bez
+založeného roku chyba `fiscal_year_missing`) a srovná čítač řady přes
+`SequenceCounter::syncImported` (GREATEST, idempotentní), takže další
+zakázka ve formuláři pokračuje za importovaným číslem. `number` bez
+`sequenceNumber` = varování `counter_not_synced`; `sequenceNumber` bez
+`number` = chyba `number_required`. Chybí-li `number` a stav není `draft`,
+přidělí číslo řada při potvrzení.
+
+Odpověď `{ "status": "created" | "skipped", "workOrderId": 31,
+"number": "S260001", "warnings": [{code, message, path?}] }` — 201 při
+založení; runner si `number` uloží pro `dimensions.workOrder` dokladů.
+Chyby ve společném tvaru (`schema_invalid` 400, `validation_failed` 422,
+`work_orders_unavailable` 500 bez modulu) s `details.issues[]` a cestou do
+payloadu (`rows.2.vatCode`). `validate` projde celým průběhem s rollbackem
+(pravidla potvrzení závisejí na uložené hlavičce a řádcích) — výsledek je
+totožný s `apply`, nic se nezapíše. V read-only stavu zdroje projde
+`validate`, `apply` končí 403 (`ReadOnlyPolicy`).
+
+**Pořadí importu (D26):** druhy a číselné řady zakázek (formát je nenese —
+runner je založí předem, I3) → osoby, položky, střediska → **zakázky**
+(nadřazené před podřízenými) → doklady s `dimensions.workOrder` = číslo
+zakázky. **Fakturovat od:** evidence vyfakturovaných období po importu
+začíná prázdná, takže `invoicing.invoiceFrom` musí být první dosud
+nevyfakturované období (pravidlo runneru v `docs/work-orders.md` §6) —
+jinak by periodická fakturace vystavila období, která starý Shipard už
+fakturoval.
+
 ## 15. Reference
 
 - [docs/document-system.md](document-system.md) — Document/TableGateway

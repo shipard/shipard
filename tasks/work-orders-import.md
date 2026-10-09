@@ -1,6 +1,6 @@
 # Zakázky — výměnný formát a import ze starého Shipardu
 
-**Stav:** naplánováno — #110 D9, D25, D26; I1–I4 potvrzené 2026-10-09
+**Stav:** hotovo — 2026-10-09; #110 D9, D25, D26; I1–I4 potvrzené 2026-10-09
 
 > PRD pro jednu Claude Code session (3 commity). Design:
 > `docs/work-orders.md` §4 (D9, D17, D25, D26), §6; issue #110. Vzor:
@@ -165,6 +165,43 @@ Na ukázkovém zdroji (`4l3j-z0bz-kz39-echj`, režim volný):
   *fakturovat od*, nic dřív.
 - Opakované `apply` téhož čísla → `skipped`.
 - Celá sada PHPUnit zelená.
+
+## Hotovo (2026-10-09)
+
+Tři commity podle breakdownu: schéma + `WorkOrderImportVerifier`
+(`WorkOrderImportCheck`), `WorkOrderImportApplier` + `WorkOrderImportResult`
++ endpointy, dokumentace. Kontrakt: `docs/exchange-format.md` § Zakázky,
+`docs/work-orders.md` §6.
+
+Odchylky a upřesnění proti zadání:
+
+- **Verifier je kontrola payloadu před zápisem** (reference, kódy, pravidla
+  typu, řada dokladů vs. typ dokladu, nadřazená podle čísla, číslo a čítač),
+  ne kontrola dat po importu jako `AssetImportVerifier`. Vrací
+  `WorkOrderImportCheck` s dohledanými id (jednotky, nadřazená, fiskální
+  rok, existující zakázka), aby applier dotazy neopakoval. Nálezy mají
+  `severity` error / warning (`counter_not_synced` je varování).
+- **Čítač**: `WorkOrderDocument` dostal virtuální pole `_importSequence`
+  (vzor `_importNumber` dokladu) — doplní `sequence_number`, `fiscal_year`
+  a zavolá `syncImported`; applier ho posílá jen s prvním uložením.
+  `sequenceNumber` bez `number` je chyba `number_required`.
+- **Stavy**: `finished` / `cancelled` jdou dvěma uloženími (10 → 40 → 70 /
+  30), ne přímým zápisem stavu — číslo i `date_end` vznikají stejnou cestou
+  jako ve formuláři.
+- **Kódy DPH** se bez registrace k DPH na zdroji neověřují (stejná
+  degradace jako nabídka ve formuláři); verifier bere i skryté kódy.
+- `rows` je ve schématu nepovinné; u neperiodického typu musí být prázdné.
+- `DocumentApplier` dostal `vatModeFromCanonical` / `paymentMethodFromCanonical`
+  (opak existujících `canonical*`), aby mapy kódů zůstaly na jednom místě.
+- **Smoke na 4l3j** proběhl in-process skriptem (endpointy chtějí admina)
+  a záznamy se po něm smazaly: validate bez zápisu, apply s převzatým
+  číslem (čítač řady 1 → 2), opakovaný apply `skipped`, bez čísla S260003,
+  `finished` přes V pořádku s dneškem v ukončení, podzakázka s nadřazenou
+  podle čísla, chybové cesty, `dimensions.workOrder` v `preview` dokladu
+  (validate dokladu rezoluci nedělá), `work-orders-invoice-run --dry-run`
+  nabídl jen období od *fakturovat od*. Deník zakázky s importovanou
+  fakturou se neověřoval (žádný doklad se na 4l3j nezakládal) — pokrývá ho
+  mechanismus dimenzí z `tasks/dimensions-core.md`.
 
 ## Rozhodnutí k designu (potvrzená)
 

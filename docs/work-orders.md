@@ -518,7 +518,8 @@ pro něj připraví:
 - středisko a zakázku ve výměnném formátu dokladu (`dimensions`, §5.6) —
   hotovo;
 - výměnný formát zakázky `shpd.workOrders.workOrder.v1` včetně
-  fakturačního předpisu a *fakturovat od* (`tasks/work-orders-import.md`).
+  fakturačního předpisu a *fakturovat od* (`tasks/work-orders-import.md`) —
+  hotovo 2026-10-09, kontrakt v `docs/exchange-format.md` § Zakázky.
 
 **Pořadí** (D26): druhy a číselné řady zakázek → osoby, položky,
 střediska → **zakázky** (nadřazené před podřízenými) → doklady
@@ -532,6 +533,24 @@ fakturou → den po konci posledního vyfakturovaného období; bez faktury →
 první začátek období v den zahájení nebo po něm (starý generátor
 nefakturoval zpětně za rozběhnuté období). Jinak by import vystavil
 období, která starý Shipard nefakturoval.
+
+**Hotovo na straně nového Shipardu** (2026-10-09,
+`tasks/work-orders-import.md`, I1–I4): schéma
+`modules/core/exchange/schemas/shpd.workOrders.workOrder.v1`, v modulu
+`src/Import/` `WorkOrderImportVerifier` (kontrola payloadu před zápisem:
+reference podle id, kódy, pravidla typu podle řady, řada dokladů vs.
+efektivní typ dokladu, nadřazená podle čísla, číslo a čítač; nálezy
+s cestou do payloadu, `WorkOrderImportCheck` nese dohledané id) a
+`WorkOrderImportApplier` (jedna transakce: hlavička v Konceptu → řádky →
+cílový stav přes V pořádku uložením přes `WorkOrderDocument`
+a `WorkOrderRowDocument`; existující číslo = `skipped`; `validate` =
+průběh s rollbackem). Převzaté číslo: `WorkOrderDocument` čte virtuální
+pole `_importSequence` a srovná čítač řady (`SequenceCounter::syncImported`)
+v rozsahu fiskálního roku data zahájení. Endpointy
+`POST /_exchange/workOrders/workOrder/{validate|apply}` (admin nebo API
+klíč, exchange dispatcher, `ReadOnlyPolicy` podle přípony akce). Runner ve
+starém Shipardu (párování smluv a zakázek `689089`, pravidlo *fakturovat
+od*) je oblast importu a tenhle task ho nepokrývá.
 
 ### 6.1 Kontrola dat `689089` (2026-10-09, agregovaně)
 
@@ -565,7 +584,7 @@ období, která starý Shipard nefakturoval.
 | 4 | `tasks/work-orders-phase2.md` — periodická fakturace: předpis, evidence období, běh, koncept s kartou ve feedu, Přegenerovat a Obnovit, VS, `období`, záložka Fakturace, rozhraní přispěvatelů | D2–D7, D10–D12, D24 | hotovo (2026-10-08) |
 | 4a | `tasks/work-orders-rows-readonly.md` — oprava fáze 2: řádky předpisu se řídí stavem zakázky (bez `independentRows`, `WorkOrderRowLockProvider`) | D22, D24 | hotovo (2026-10-09) |
 | 5 | `tasks/work-orders-phase3.md` — úrovně V pořádku a automatické odeslání | D4 | připravuje se; navazuje na #90 D11 |
-| 6 | `tasks/work-orders-import.md` — výměnný formát zakázky `shpd.workOrders.workOrder.v1` včetně fakturačního předpisu a *fakturovat od* | D9, D25, D26 | připravuje se |
+| 6 | `tasks/work-orders-import.md` — výměnný formát zakázky `shpd.workOrders.workOrder.v1` včetně fakturačního předpisu a *fakturovat od* (strana nového Shipardu; runner v `old_shipard`) | D9, D25, D26 | hotovo (2026-10-09) |
 
 ---
 
