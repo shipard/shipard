@@ -381,7 +381,6 @@ function dispatch(
 		'hostingOidc' => dispatchHostingOidc($route, $request, $auth, $db, $tables, $resolved),
 		'hostingServer' => dispatchHostingServer($route, $request, $db, $tables, $resolved),
 		'hostingMail' => dispatchHostingMail($route, $request, $db, $tables, $resolved),
-		'hostingAiAnalyzer' => dispatchHostingAiAnalyzer($route, $request, $db, $tables, $resolved),
 		'hostingAiGateway' => dispatchHostingAiGateway($route, $request, $db, $tables, $resolved),
 		'mcp'     => dispatchMcp($request, $auth, $resolved->connection, $tables, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), resolveLanguage($request, $resolved->config), $alertCheckRegistry),
 		'openapi' => (new OpenApiController())->spec($auth, $openApiPublic, $tables, $baseUrl),
@@ -721,22 +720,6 @@ function dispatchHostingMail(
 	return match ($route->action) {
 		'lookup' => $ctrl->lookup($request, $db, $tables),
 		default  => Response::error('INTERNAL_ERROR', "Unknown hostingMail action: {$route->action}", 500),
-	};
-}
-
-function dispatchHostingAiAnalyzer(
-	Route $route,
-	Request $request,
-	\Shipard\Core\Database\DataSourceConnection $db,
-	array $tables,
-	\Shipard\Api\ResolvedDataSource $resolved,
-): Response {
-	// Endpoint je exempt (auth klíčem analyzeru dělá kontroler); config
-	// kvůli DsSecretCipher — api_token se dešifruje až do lookup odpovědi.
-	$ctrl = new \Shipard\Api\Controller\HostingAiAnalyzerController($resolved->config);
-	return match ($route->action) {
-		'lookup' => $ctrl->lookup($request, $db, $tables),
-		default  => Response::error('INTERNAL_ERROR', "Unknown hostingAiAnalyzer action: {$route->action}", 500),
 	};
 }
 

@@ -52,12 +52,6 @@ class DataSourcesForm extends TableForm
                         hint: 'Token DS pro příjem pošty (shpd_ak_…). Normálně ho hlásí provisioning; ručně jen backfill.',
                         inputType: 'password',
                     )
-                    ->input(
-                        'analyzer_token',
-                        placeholder: '●●●●●● (zadat pro změnu)',
-                        hint: 'API klíč DS pro AI analyzer (shpd_ak_…). Normálně ho hlásí provisioning; ručně jen backfill.',
-                        inputType: 'password',
-                    )
             ->build();
 
         return new FormDefinition(
@@ -69,15 +63,14 @@ class DataSourcesForm extends TableForm
     }
 
     /**
-     * Sensitive pole editovatelná tímto formem — ruční backfill tokenů
-     * (D4 mail, hosting-10 D7 analyzer); šifrování řeší
-     * HostingDataSourceDocument.
+     * Sensitive pole editovatelná tímto formem — ruční backfill mail
+     * tokenu (D4); šifrování řeší HostingDataSourceDocument.
      *
      * @return list<string>
      */
     public function getEditableSensitiveColumns(): array
     {
-        return ['mail_token', 'analyzer_token'];
+        return ['mail_token'];
     }
 
     /**

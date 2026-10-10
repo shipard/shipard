@@ -31,7 +31,6 @@ class HostingModuleDefinitionTest extends TestCase
                 'hosting_core_ds_users',
                 'hosting_core_oidc_codes',
                 'hosting_core_mail_routers',
-                'hosting_core_ai_analyzers',
                 'hosting_core_ai_tokens',
                 'hosting_core_ai_usage',
                 'hosting_core_ds_stats',
@@ -92,17 +91,19 @@ class HostingModuleDefinitionTest extends TestCase
 
         $columnIds = array_map(static fn ($c) => $c->id, $def->columns);
         foreach (['ds_id', 'name', 'web_id', 'server', 'url_app', 'install_module', 'lifecycle',
-            'oidc_client_secret', 'oidc_redirect_uri', 'mail_token', 'analyzer_token'] as $expected) {
+            'oidc_client_secret', 'oidc_redirect_uri', 'mail_token'] as $expected) {
             $this->assertContains($expected, $columnIds);
         }
+        // Token externího AI analyzeru zanikl s registrem analyzerů (#85 D22).
+        $this->assertNotContains('analyzer_token', $columnIds);
 
-        // Secrety nesmí uniknout do API/form odpovědí (D2, D4, hosting-10 D2)
+        // Secrety nesmí uniknout do API/form odpovědí (D2, D4)
         // — sensitive flag hlídá TableAccessGuard.
         foreach ($def->columns as $col) {
             if ($col->id === 'oidc_client_secret') {
                 $this->assertTrue($col->sensitive, 'oidc_client_secret musí být sensitive');
             }
-            if ($col->id === 'mail_token' || $col->id === 'analyzer_token') {
+            if ($col->id === 'mail_token') {
                 $this->assertTrue($col->sensitive, "{$col->id} musí být sensitive");
                 $this->assertSame('encrypted_text', $col->type, "{$col->id} musí být encrypted_text");
             }
@@ -132,28 +133,6 @@ class HostingModuleDefinitionTest extends TestCase
 
         // Hash klíče nesmí uniknout do API/form odpovědí — sensitive flag
         // hlídá TableAccessGuard (stejný vzor jako hosting_core_servers).
-        foreach ($def->columns as $col) {
-            if ($col->id === 'api_key_hash') {
-                $this->assertTrue($col->sensitive, 'api_key_hash musí být sensitive');
-            }
-        }
-    }
-
-    public function testAiAnalyzersTableShape(): void
-    {
-        $raw = JsoncParser::parseFile(
-            dirname(__DIR__, 5) . self::MODULE_PATH . '/tables/hosting_core_ai_analyzers.jsonc',
-        );
-        $def = TableDefinition::fromArray($raw);
-
-        // Analog mail-routerů bez `domains` (hosting-10 D1) — analyzer
-        // obsluhuje všechny DS.
-        $columnIds = array_map(static fn ($c) => $c->id, $def->columns);
-        foreach (['name', 'api_key_prefix', 'api_key_hash', 'last_seen', 'note'] as $expected) {
-            $this->assertContains($expected, $columnIds);
-        }
-        $this->assertNotContains('domains', $columnIds);
-
         foreach ($def->columns as $col) {
             if ($col->id === 'api_key_hash') {
                 $this->assertTrue($col->sensitive, 'api_key_hash musí být sensitive');

@@ -72,7 +72,6 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\HostingOidcClientCommand());
         $app->add(new \Shipard\Command\DataSource\HostingServerKeyCommand());
         $app->add(new \Shipard\Command\DataSource\HostingRouterKeyCommand());
-        $app->add(new \Shipard\Command\DataSource\HostingAnalyzerKeyCommand());
         $app->add(new \Shipard\Command\DataSource\HostingAiGwInitCommand());
         $app->add(new \Shipard\Command\DataSource\HostingAiTokenCommand());
         $app->add(new \Shipard\Command\DataSource\HostingStatsCommand());

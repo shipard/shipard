@@ -22,9 +22,8 @@ use Shipard\Core\Version;
  *      merge auth.providers do main.json → user-create ownera
  *      s předpropojenou identitou → mail-router-setup --json (D4, jen
  *      s aktivním core.mail; token jde do confirm body jako mail_token)
- *      → ai-analyzer-setup --json (hosting-10 D3, jen s aktivním
- *      core.mail i core.ai; token jde do confirm body jako
- *      analyzer_token) → confirm ok/failed.
+ *      → ai-backend-set-key --base-url (D5, jen s `ai` sekcí payloadu
+ *      a aktivním core.ai) → confirm ok/failed.
  *   3. Stats push (D7) — jen když reconcile response nese
  *      stats_wanted=true (nebo ruční --stats): `hosting-stats --json`
  *      per lokální DS, nasbírané počty jedním POST …/stats. Selhání
@@ -122,13 +121,9 @@ class HostingSyncRunner
                 $allOk = false;
             } else {
                 // D4: mail token jde hostingu jen při úspěchu kroku f.;
-                // bez core.mail confirm token nenese. Analog hosting-10 D3
-                // pro analyzer token z kroku h.
+                // bez core.mail confirm token nenese.
                 if ($result['mailToken'] !== null) {
                     $confirmBody['mail_token'] = $result['mailToken'];
-                }
-                if ($result['analyzerToken'] !== null) {
-                    $confirmBody['analyzer_token'] = $result['analyzerToken'];
                 }
                 $this->logLine('  done.');
             }
@@ -234,25 +229,23 @@ class HostingSyncRunner
 
     /**
      * @param array<string, mixed> $item
-     * @return array{error: ?string, mailToken: ?string, analyzerToken: ?string}
+     * @return array{error: ?string, mailToken: ?string}
      *     error = zpráva pro confirm failed (null = úspěch); mailToken =
      *     shpd_ak_ token z kroku f. pro confirm body (null = DS bez core.mail
-     *     nebo chyba); analyzerToken = shpd_ak_ token z kroku h. (null = DS
-     *     bez core.mail+core.ai nebo chyba)
+     *     nebo chyba)
      */
     private function provisionRequest(array $item): array
     {
         $mailToken = null;
-        $analyzerToken = null;
-        $error = $this->provisionSteps($item, $mailToken, $analyzerToken);
-        return ['error' => $error, 'mailToken' => $mailToken, 'analyzerToken' => $analyzerToken];
+        $error = $this->provisionSteps($item, $mailToken);
+        return ['error' => $error, 'mailToken' => $mailToken];
     }
 
     /**
      * @param array<string, mixed> $item
      * @return string|null chybová zpráva pro confirm failed, null = úspěch
      */
-    private function provisionSteps(array $item, ?string &$mailToken, ?string &$analyzerToken): ?string
+    private function provisionSteps(array $item, ?string &$mailToken): ?string
     {
         $dsId = (string) ($item['ds_id'] ?? '');
         $name = (string) ($item['name'] ?? '');
@@ -367,15 +360,9 @@ class HostingSyncRunner
         }
 
         // g. AI gateway backend (D5) — jen s `ai` sekcí payloadu a aktivním
-        //    core.ai.
-        $error = $this->setupAiBackend($dsDir, $item);
-        if ($error !== null) {
-            return $error;
-        }
-
-        // h. Analyzer token pro AI analyzer (hosting-10 D3) — jen s aktivním
-        //    core.mail i core.ai.
-        return $this->mintAnalyzerToken($dsDir, $analyzerToken);
+        //    core.ai. (Krok h., token pro externí AI analyzer, zanikl
+        //    s registrem analyzerů — #85 D22.)
+        return $this->setupAiBackend($dsDir, $item);
     }
 
     /**
@@ -415,46 +402,7 @@ class HostingSyncRunner
     }
 
     /**
-     * Krok h. — `ai-analyzer-setup --json` v adresáři DS; token jde do
-     * confirm body jako analyzer_token. Stejný retry vzor jako krok f.:
-     * existující klíč shodí běh bez --force, druhý pokus rotuje s --force
-     * (neškodné — token na hostingu stejně přepíše tento confirm, analyzer
-     * DS ještě nepulluje).
-     */
-    private function mintAnalyzerToken(string $dsDir, ?string &$analyzerToken): ?string
-    {
-        if (!$this->isModuleActiveForDs($dsDir, 'core.mail')
-            || !$this->isModuleActiveForDs($dsDir, 'core.ai')
-        ) {
-            $this->logLine('  ai-analyzer-setup skipped — core.mail or core.ai not active.');
-            return null;
-        }
-
-        $this->logLine('  ai-analyzer-setup…');
-        $result = $this->runProcess([$this->shpdDsPath, 'ai-analyzer-setup', '--json'], $dsDir);
-        if ($result['exitCode'] !== 0) {
-            $this->logLine('  ai-analyzer-setup retry with --force…');
-            $result = $this->runProcess([$this->shpdDsPath, 'ai-analyzer-setup', '--json', '--force'], $dsDir);
-        }
-        if ($result['exitCode'] !== 0) {
-            $tail = trim($result['output']);
-            return sprintf(
-                'ai-analyzer-setup failed (exit %d)%s',
-                $result['exitCode'],
-                $tail !== '' ? ': ' . $tail : '',
-            );
-        }
-
-        $token = $this->parseSetupOutput($result['output']);
-        if ($token === null) {
-            return 'ai-analyzer-setup returned no parsable api_key JSON';
-        }
-        $analyzerToken = $token;
-        return null;
-    }
-
-    /**
-     * Krok g. — `ai-analyzer-set-key --base-url` v adresáři DS zapíše
+     * Krok g. — `ai-backend-set-key --base-url` v adresáři DS zapíše
      * gateway backend (D5). Idempotentní (set-key je upsert nad default
      * backendem, který zakládá MailAiProvisioner při ds-upgrade).
      * api_key v argv je lokální root kontext (proc_open s argv polem, žádný
@@ -475,13 +423,13 @@ class HostingSyncRunner
         }
 
         if (!$this->isModuleActiveForDs($dsDir, 'core.ai')) {
-            $this->logLine('  ai-analyzer-set-key skipped — core.ai not active.');
+            $this->logLine('  ai-backend-set-key skipped — core.ai not active.');
             return null;
         }
 
-        $this->logLine('  ai-analyzer-set-key…');
+        $this->logLine('  ai-backend-set-key…');
         $result = $this->runProcess([
-            $this->shpdDsPath, 'ai-analyzer-set-key',
+            $this->shpdDsPath, 'ai-backend-set-key',
             '--backend', 'default',
             '--api-key', $apiKey,
             '--base-url', $baseUrl,
@@ -489,7 +437,7 @@ class HostingSyncRunner
         if ($result['exitCode'] !== 0) {
             $tail = trim(str_replace($apiKey, '***', $result['output']));
             return sprintf(
-                'ai-analyzer-set-key failed (exit %d)%s',
+                'ai-backend-set-key failed (exit %d)%s',
                 $result['exitCode'],
                 $tail !== '' ? ': ' . $tail : '',
             );
@@ -498,7 +446,7 @@ class HostingSyncRunner
     }
 
     /**
-     * Výstup setup subprocesu (mail-router-setup / ai-analyzer-setup)
+     * Výstup setup subprocesu (mail-router-setup)
      * prokládá stdout a stderr — vzít poslední JSON objekt s validním
      * api_key, dekorace okolo ignorovat.
      */

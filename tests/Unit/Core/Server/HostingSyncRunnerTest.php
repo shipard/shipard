@@ -60,8 +60,6 @@ class HostingSyncRunnerTest extends TestCase
     private const ISSUER = 'http://127.0.0.1/gggg-gggg-gggg-gggg/api/v1/_hosting/oidc';
     private const MAIL_TOKEN = 'shpd_ak_00112233445566778899aabbccddeeff';
     private const MAIL_SETUP_JSON = '{"api_key":"' . self::MAIL_TOKEN . '","user_id":3}';
-    private const ANALYZER_TOKEN = 'shpd_ak_ffeeddccbbaa99887766554433221100';
-    private const ANALYZER_SETUP_JSON = '{"api_key":"' . self::ANALYZER_TOKEN . '","user_id":4}';
 
     private string $dataSourcesDir;
 
@@ -147,9 +145,6 @@ class HostingSyncRunnerTest extends TestCase
             if ($argv[1] === 'mail-router-setup') {
                 return ['exitCode' => 0, 'output' => self::MAIL_SETUP_JSON];
             }
-            if ($argv[1] === 'ai-analyzer-setup') {
-                return ['exitCode' => 0, 'output' => self::ANALYZER_SETUP_JSON];
-            }
             return ['exitCode' => 0, 'output' => ''];
         };
 
@@ -163,14 +158,15 @@ class HostingSyncRunnerTest extends TestCase
         $this->assertSame(self::EXISTING_DS, $reconcile['body']['dataSources'][0]['ds_id']);
         $this->assertSame(['install.base', 'core.mail'], $reconcile['body']['dataSources'][0]['modules']);
 
-        // Kroky v pořadí: ds-create → … → mail-router-setup → ai-analyzer-setup.
+        // Kroky v pořadí: ds-create → … → mail-router-setup (bez `ai` sekce
+        // payloadu krok g. neběží; krok h. externího analyzeru zanikl, #85 D22).
         $labels = array_map(static fn(array $c): string => $c['argv'][1], $runner->processCalls);
         $this->assertSame(
-            ['ds-create', 'ds-upgrade', 'domain-add', 'user-create', 'mail-router-setup', 'ai-analyzer-setup'],
+            ['ds-create', 'ds-upgrade', 'domain-add', 'user-create', 'mail-router-setup'],
             $labels,
         );
 
-        [$dsCreate, $dsUpgrade, $domainAdd, $userCreate, $mailSetup, $analyzerSetup] = $runner->processCalls;
+        [$dsCreate, $dsUpgrade, $domainAdd, $userCreate, $mailSetup] = $runner->processCalls;
         $this->assertSame('/fake/bin/shpd-server', $dsCreate['argv'][0]);
         $this->assertContains('--ds-id', $dsCreate['argv']);
         $this->assertContains(self::NEW_DS, $dsCreate['argv']);
@@ -187,9 +183,6 @@ class HostingSyncRunnerTest extends TestCase
         $this->assertContains('--json', $mailSetup['argv']);
         $this->assertNotContains('--force', $mailSetup['argv']);
         $this->assertSame($this->dataSourcesDir . '/' . self::NEW_DS, $mailSetup['cwd']);
-        $this->assertContains('--json', $analyzerSetup['argv']);
-        $this->assertNotContains('--force', $analyzerSetup['argv']);
-        $this->assertSame($this->dataSourcesDir . '/' . self::NEW_DS, $analyzerSetup['cwd']);
 
         // auth.providers v main.json nového DS, mode 0600, ostatní klíče netknuté.
         $mainFile = $this->dataSourcesDir . '/' . self::NEW_DS . '/config/main.json';
@@ -203,8 +196,8 @@ class HostingSyncRunnerTest extends TestCase
         $this->assertSame('db', $config['database_name']);
         $this->assertSame(0600, fileperms($mainFile) & 0777);
 
-        // Confirm ok + mail_token z kroku f. (D4) + analyzer_token z kroku h.
-        // (hosting-10 D3).
+        // Confirm ok + mail_token z kroku f. (D4); token externího analyzeru
+        // už confirm nenese (#85 D22).
         $confirm = $runner->httpCalls[2];
         $this->assertStringContainsString('/confirm', $confirm['url']);
         $this->assertSame(
@@ -213,7 +206,6 @@ class HostingSyncRunnerTest extends TestCase
                 'ds_id' => self::NEW_DS,
                 'status' => 'ok',
                 'mail_token' => self::MAIL_TOKEN,
-                'analyzer_token' => self::ANALYZER_TOKEN,
             ],
             $confirm['body'],
         );
@@ -231,9 +223,8 @@ class HostingSyncRunnerTest extends TestCase
         $labels = array_map(static fn(array $c): string => $c['argv'][1], $runner->processCalls);
         $this->assertSame(['ds-upgrade', 'domain-add', 'user-create'], $labels);
         $this->assertSame('ok', $runner->httpCalls[2]['body']['status']);
-        // Bez core.mail confirm tokeny nenese.
+        // Bez core.mail confirm token nenese.
         $this->assertArrayNotHasKey('mail_token', $runner->httpCalls[2]['body']);
-        $this->assertArrayNotHasKey('analyzer_token', $runner->httpCalls[2]['body']);
     }
 
     public function testStepFailureConfirmsFailedAndContinuesWithNextRequest(): void
@@ -351,9 +342,6 @@ class HostingSyncRunnerTest extends TestCase
         // Retry po pádu za krokem f.: bez --force selže na existující klíč,
         // s --force projde. Výstup má okolo JSON i dekorace (stderr mix).
         $runner->onProcess = static function (array $argv): array {
-            if ($argv[1] === 'ai-analyzer-setup') {
-                return ['exitCode' => 0, 'output' => self::ANALYZER_SETUP_JSON];
-            }
             if ($argv[1] !== 'mail-router-setup') {
                 return ['exitCode' => 0, 'output' => ''];
             }
@@ -411,115 +399,7 @@ class HostingSyncRunnerTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // Krok h. — ai-analyzer-setup (hosting-10 D3)
-    // -------------------------------------------------------------------------
-
-    public function testAnalyzerSetupSkippedWithOnlyCoreMail(): void
-    {
-        $this->createDs(self::NEW_DS, 'Nová firma', ['install.base']);
-        $runner = $this->makeRunner();
-        $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItem()]);
-        $runner->onModuleCheck = static fn(string $dsDir, string $moduleId): bool => $moduleId === 'core.mail';
-        $runner->onProcess = static fn(array $argv): array => $argv[1] === 'mail-router-setup'
-            ? ['exitCode' => 0, 'output' => self::MAIL_SETUP_JSON]
-            : ['exitCode' => 0, 'output' => ''];
-
-        $this->assertTrue($runner->run());
-
-        $labels = array_map(static fn(array $c): string => $c['argv'][1], $runner->processCalls);
-        $this->assertNotContains('ai-analyzer-setup', $labels);
-        $this->assertSame('ok', $runner->httpCalls[2]['body']['status']);
-        $this->assertArrayNotHasKey('analyzer_token', $runner->httpCalls[2]['body']);
-    }
-
-    public function testAnalyzerSetupSkippedWithOnlyCoreAi(): void
-    {
-        $this->createDs(self::NEW_DS, 'Nová firma', ['install.base']);
-        $runner = $this->makeRunner();
-        $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItem()]);
-        $runner->onModuleCheck = static fn(string $dsDir, string $moduleId): bool => $moduleId === 'core.ai';
-
-        $this->assertTrue($runner->run());
-
-        $labels = array_map(static fn(array $c): string => $c['argv'][1], $runner->processCalls);
-        $this->assertNotContains('ai-analyzer-setup', $labels);
-        $this->assertArrayNotHasKey('analyzer_token', $runner->httpCalls[2]['body']);
-    }
-
-    public function testAnalyzerSetupRetriesWithForceOnExistingKey(): void
-    {
-        $this->createDs(self::NEW_DS, 'Nová firma', ['install.base']);
-        $runner = $this->makeRunner();
-        $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItem()]);
-        $runner->onModuleCheck = static fn(): bool => true;
-        // Retry po pádu za krokem h.: bez --force selže na existující klíč,
-        // s --force projde. Výstup má okolo JSON i dekorace (stderr mix).
-        $runner->onProcess = static function (array $argv): array {
-            if ($argv[1] === 'mail-router-setup') {
-                return ['exitCode' => 0, 'output' => self::MAIL_SETUP_JSON];
-            }
-            if ($argv[1] !== 'ai-analyzer-setup') {
-                return ['exitCode' => 0, 'output' => ''];
-            }
-            if (!in_array('--force', $argv, true)) {
-                return ['exitCode' => 1, 'output' => 'Error: An active ai-analyzer API key already exists. Use --force to rotate it.'];
-            }
-            return ['exitCode' => 0, 'output' => "some stderr noise\n" . self::ANALYZER_SETUP_JSON . "\n"];
-        };
-
-        $this->assertTrue($runner->run());
-
-        $analyzerCalls = array_values(array_filter(
-            $runner->processCalls,
-            static fn(array $c): bool => $c['argv'][1] === 'ai-analyzer-setup',
-        ));
-        $this->assertCount(2, $analyzerCalls);
-        $this->assertNotContains('--force', $analyzerCalls[0]['argv']);
-        $this->assertContains('--force', $analyzerCalls[1]['argv']);
-
-        $confirm = $runner->httpCalls[2];
-        $this->assertSame('ok', $confirm['body']['status']);
-        $this->assertSame(self::ANALYZER_TOKEN, $confirm['body']['analyzer_token']);
-    }
-
-    public function testAnalyzerSetupFailureConfirmsFailed(): void
-    {
-        $this->createDs(self::NEW_DS, 'Nová firma', ['install.base']);
-        $runner = $this->makeRunner();
-        $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItem()]);
-        $runner->onModuleCheck = static fn(): bool => true;
-        $runner->onProcess = static fn(array $argv): array => match ($argv[1]) {
-            'mail-router-setup' => ['exitCode' => 0, 'output' => self::MAIL_SETUP_JSON],
-            'ai-analyzer-setup' => ['exitCode' => 1, 'output' => 'boom'],
-            default => ['exitCode' => 0, 'output' => ''],
-        };
-
-        $this->assertFalse($runner->run());
-
-        $confirm = $runner->httpCalls[2];
-        $this->assertSame('failed', $confirm['body']['status']);
-        $this->assertStringContainsString('ai-analyzer-setup failed', $confirm['body']['error']);
-        $this->assertArrayNotHasKey('analyzer_token', $confirm['body']);
-    }
-
-    public function testAnalyzerSetupUnparsableOutputConfirmsFailed(): void
-    {
-        $this->createDs(self::NEW_DS, 'Nová firma', ['install.base']);
-        $runner = $this->makeRunner();
-        $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItem()]);
-        $runner->onModuleCheck = static fn(): bool => true;
-        $runner->onProcess = static fn(array $argv): array => match ($argv[1]) {
-            'mail-router-setup' => ['exitCode' => 0, 'output' => self::MAIL_SETUP_JSON],
-            'ai-analyzer-setup' => ['exitCode' => 0, 'output' => 'not json at all'],
-            default => ['exitCode' => 0, 'output' => ''],
-        };
-
-        $this->assertFalse($runner->run());
-        $this->assertStringContainsString('no parsable api_key', $runner->httpCalls[2]['body']['error']);
-    }
-
-    // -------------------------------------------------------------------------
-    // Krok g. — ai-analyzer-set-key (D5)
+    // Krok g. — ai-backend-set-key (D5)
     // -------------------------------------------------------------------------
 
     private const GW_TOKEN = 'shpd_gw_' . 'abcdefghijkl' . 'mnopqrstuvwxyz0123456789ABCDEFG';
@@ -541,7 +421,6 @@ class HostingSyncRunnerTest extends TestCase
         $runner->onModuleCheck = static fn(): bool => true;
         $runner->onProcess = static fn(array $argv): array => match ($argv[1]) {
             'mail-router-setup' => ['exitCode' => 0, 'output' => self::MAIL_SETUP_JSON],
-            'ai-analyzer-setup' => ['exitCode' => 0, 'output' => self::ANALYZER_SETUP_JSON],
             default => ['exitCode' => 0, 'output' => ''],
         };
 
@@ -549,7 +428,7 @@ class HostingSyncRunnerTest extends TestCase
 
         $aiCalls = array_values(array_filter(
             $runner->processCalls,
-            static fn(array $c): bool => $c['argv'][1] === 'ai-analyzer-set-key',
+            static fn(array $c): bool => $c['argv'][1] === 'ai-backend-set-key',
         ));
         $this->assertCount(1, $aiCalls);
         $argv = $aiCalls[0]['argv'];
@@ -576,7 +455,7 @@ class HostingSyncRunnerTest extends TestCase
         $this->assertTrue($runner->run());
 
         $labels = array_map(static fn(array $c): string => $c['argv'][1], $runner->processCalls);
-        $this->assertNotContains('ai-analyzer-set-key', $labels);
+        $this->assertNotContains('ai-backend-set-key', $labels);
         $this->assertSame('ok', $runner->httpCalls[2]['body']['status']);
     }
 
@@ -590,7 +469,7 @@ class HostingSyncRunnerTest extends TestCase
         $this->assertTrue($runner->run());
 
         $labels = array_map(static fn(array $c): string => $c['argv'][1], $runner->processCalls);
-        $this->assertNotContains('ai-analyzer-set-key', $labels);
+        $this->assertNotContains('ai-backend-set-key', $labels);
     }
 
     public function testAiSetupFailureMasksKeyInConfirmError(): void
@@ -609,7 +488,7 @@ class HostingSyncRunnerTest extends TestCase
         $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItemWithAi()]);
         $runner->onModuleCheck = static fn(): bool => true;
         // Selhání s api_key ve výstupu (např. echo argv v error hlášce).
-        $runner->onProcess = static fn(array $argv): array => $argv[1] === 'ai-analyzer-set-key'
+        $runner->onProcess = static fn(array $argv): array => $argv[1] === 'ai-backend-set-key'
             ? ['exitCode' => 1, 'output' => 'Error: cannot store key ' . self::GW_TOKEN . ' (db gone)']
             : ($argv[1] === 'mail-router-setup'
                 ? ['exitCode' => 0, 'output' => self::MAIL_SETUP_JSON]
@@ -619,7 +498,7 @@ class HostingSyncRunnerTest extends TestCase
 
         $confirm = $runner->httpCalls[2];
         $this->assertSame('failed', $confirm['body']['status']);
-        $this->assertStringContainsString('ai-analyzer-set-key failed', $confirm['body']['error']);
+        $this->assertStringContainsString('ai-backend-set-key failed', $confirm['body']['error']);
         // Token nesmí uniknout do confirm.error ani do logu — maskuje se.
         $this->assertStringNotContainsString(self::GW_TOKEN, $confirm['body']['error']);
         $this->assertStringContainsString('***', $confirm['body']['error']);

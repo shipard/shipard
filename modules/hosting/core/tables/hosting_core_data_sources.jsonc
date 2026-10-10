@@ -253,22 +253,6 @@
             "group": "mail"
         },
 
-        // --- AI analyzer (hosting-10 D2) — token API klíče DS pro analyzer
-        // daemon, mintuje agent (ai-analyzer-setup) a hlásí confirmem; šifruje
-        // HostingDataSourceDocument; servíruje ho jen lookup endpoint pro
-        // AI analyzery ---
-
-        {
-            "id": "analyzer_token",
-            "name": "Analyzer token",
-            "name:cs": "Analyzer token",
-            "name:en": "Analyzer token",
-            "type": "encrypted_text",
-            "nullable": true,
-            "sensitive": true,
-            "group": "mail"
-        },
-
         // --- doc state (systémové) ---
 
         {

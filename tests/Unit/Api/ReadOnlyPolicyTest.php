@@ -100,7 +100,7 @@ class ReadOnlyPolicyTest extends TestCase
 			// hosting* — vše (řídí jiné DS)
 			['hostingPortal', 'myDatasources', $allow], ['hostingPortal', 'createDatasource', $allow],
 			['hostingOidc', 'token', $allow], ['hostingServer', 'reconcile', $allow],
-			['hostingMail', 'lookup', $allow], ['hostingAiAnalyzer', 'lookup', $allow], ['hostingAiGateway', 'messages', $allow],
+			['hostingMail', 'lookup', $allow], ['hostingAiGateway', 'messages', $allow],
 		];
 
 		foreach ($rows as [$controller, $action, $verdict]) {

@@ -793,27 +793,15 @@ class RouterTest extends TestCase
 		$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code']);
 	}
 
-	// Hosting AI analyzer lookup route (hosting-10 D4)
+	// Lookup registru AI analyzerů zanikl (#85 D22) — cesta je 404, ne 405.
 
-	public function testHostingAiAnalyzerLookupGet(): void
+	public function testRemovedHostingAiAnalyzerLookupReturns404(): void
 	{
-		$result = $this->router->resolve('/api/v1/_hosting/ai-analyzer/lookup', 'GET');
-		$this->assertInstanceOf(Route::class, $result);
-		$this->assertRoute($result, 'hostingAiAnalyzer', 'lookup');
-	}
-
-	public function testHostingAiAnalyzerLookupPostNotAllowed(): void
-	{
-		$result = $this->router->resolve('/api/v1/_hosting/ai-analyzer/lookup', 'POST');
-		$this->assertInstanceOf(Response::class, $result);
-		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
-	}
-
-	public function testHostingAiAnalyzerUnknownPathIs404(): void
-	{
-		$result = $this->router->resolve('/api/v1/_hosting/ai-analyzer/unknown', 'GET');
-		$this->assertInstanceOf(Response::class, $result);
-		$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code']);
+		foreach (['GET', 'POST'] as $method) {
+			$result = $this->router->resolve('/api/v1/_hosting/ai-analyzer/lookup', $method);
+			$this->assertInstanceOf(Response::class, $result);
+			$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code'], $method);
+		}
 	}
 
 	// AI gateway route (D5)

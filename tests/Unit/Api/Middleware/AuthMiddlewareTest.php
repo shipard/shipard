@@ -203,15 +203,16 @@ class AuthMiddlewareTest extends TestCase
 		$this->assertFalse($result->isAuthenticated);
 	}
 
-	public function testHostingAiAnalyzerLookupIsExempt(): void
+	public function testRemovedHostingAiAnalyzerLookupIsNotExempt(): void
 	{
-		// Auth klíčem shpd_hk_ analyzeru si dělá HostingAiAnalyzerController sám.
+		// Registr AI analyzerů zanikl (#85 D22) — bývalá výjimka pro jeho
+		// lookup je pryč, routa s vadnou hlavičkou dostane 401 jako každá jiná.
 		$route = new Route('hostingAiAnalyzer', 'lookup');
 		$req = $this->req(server: ['HTTP_AUTHORIZATION' => 'Token malformed']);
 		$result = $this->middleware->handle($req, $route, $this->db);
 
-		$this->assertInstanceOf(AuthContext::class, $result);
-		$this->assertFalse($result->isAuthenticated);
+		$this->assertInstanceOf(Response::class, $result);
+		$this->assertSame(401, $this->getStatus($result));
 	}
 
 	public function testHostingAiGatewayMessagesIsExempt(): void

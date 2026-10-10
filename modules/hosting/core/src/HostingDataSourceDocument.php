@@ -15,7 +15,7 @@ use Shipard\Core\Utils\IdGenerator;
  *
  * Zodpovědnosti navíc proti DefaultDocument:
  *
- * 1. Šifrování `oidc_client_secret`, `mail_token` a `analyzer_token`
+ * 1. Šifrování `oidc_client_secret` a `mail_token`
  *    přes DsSecretCipher
  *    v `beforeSave()` (vzor AIBackendDocument, viz docs/operations/secrets.md):
  *      - sloupec chybí v $data      → UPDATE ho nezahrne
@@ -196,7 +196,7 @@ class HostingDataSourceDocument extends Document
             $this->prepareRequest($data);
         }
 
-        foreach (['oidc_client_secret', 'mail_token', 'analyzer_token'] as $secretColumn) {
+        foreach (['oidc_client_secret', 'mail_token'] as $secretColumn) {
             if (array_key_exists($secretColumn, $data)) {
                 $value = $data[$secretColumn];
                 if ($value === null || $value === '') {

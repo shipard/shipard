@@ -77,7 +77,6 @@ class HelpCommand extends Command
         $output->writeln('  <info>hosting-oidc-client</info>     Register a data source as an OIDC OP client — set client secret and redirect URI');
         $output->writeln('  <info>hosting-server-key</info>      Generate or revoke the provisioning API key of a hosting server');
         $output->writeln('  <info>hosting-router-key</info>      Generate or revoke the lookup API key of a hosting mail router');
-        $output->writeln('  <info>hosting-analyzer-key</info>    Generate or revoke the lookup API key of a hosting AI analyzer');
         $output->writeln('  <info>hosting-ai-gw-init</info>      Manage the AI gateway org key (secrets/ai-gw-anthropic.key)');
         $output->writeln('  <info>hosting-ai-token</info>        Generate or revoke an AI gateway token for a data source');
         $output->writeln('  <info>hosting-stats</info>           Collect pending-work counts (alerts, mail) for the hosting stats push');

@@ -79,11 +79,6 @@ class AuthMiddleware
 		if ($route->controller === 'hostingMail' && $route->action === 'lookup') {
 			return true;
 		}
-		// Lookup pro AI analyzery (hosting-10 D4): klíče shpd_hk_ vázané
-		// na řádek analyzeru validuje HostingAiAnalyzerController sám.
-		if ($route->controller === 'hostingAiAnalyzer' && $route->action === 'lookup') {
-			return true;
-		}
 		// AI gateway (D5): gateway tokeny shpd_gw_ validuje
 		// HostingAiGatewayController sám; bez exemption by klient posílající
 		// Authorization header dostal Shipard 401 ještě před controllerem.

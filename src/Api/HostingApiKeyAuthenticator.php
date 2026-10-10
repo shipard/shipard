@@ -8,16 +8,15 @@ use Shipard\Core\Database\DataSourceConnection;
 
 /**
  * Validace hosting API klíčů `shpd_hk_…` — sdílená serverovými
- * (`hosting_core_servers`), mail-routerovými (`hosting_core_mail_routers`)
- * a analyzerovými (`hosting_core_ai_analyzers`) endpointy. Tabulky nesou
- * stejné sloupce `api_key_prefix`, `api_key_hash`, `last_seen`,
- * `docState`; liší se jen názvem.
+ * (`hosting_core_servers`) a mail-routerovými (`hosting_core_mail_routers`)
+ * endpointy. Tabulky nesou stejné sloupce `api_key_prefix`, `api_key_hash`,
+ * `last_seen`, `docState`; liší se jen názvem.
  *
  * Prefix lookup + `hash_equals` nad sha256 celého tokenu (vzor
  * AuthMiddleware::handleApiKey); hash je nad tokenem VČETNĚ prefixu
  * `shpd_hk_`, sloupec prefix drží prvních 12 znaků náhodné části.
  * Úspěch aktualizuje `last_seen` a vrací celý řádek. Klíče plní CLI
- * `hosting-server-key` / `hosting-router-key` / `hosting-analyzer-key`.
+ * `hosting-server-key` / `hosting-router-key`.
  */
 final class HostingApiKeyAuthenticator
 {

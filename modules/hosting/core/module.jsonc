@@ -20,7 +20,6 @@
         "hosting_core_ds_users",
         "hosting_core_oidc_codes",
         "hosting_core_mail_routers",
-        "hosting_core_ai_analyzers",
         "hosting_core_ai_tokens",
         "hosting_core_ai_usage",
         "hosting_core_ds_stats"
@@ -40,10 +39,6 @@
             "class": "Shipard\\Module\\Hosting\\Core\\MailRouterDocument"
         },
         {
-            "table": "hosting_core_ai_analyzers",
-            "class": "Shipard\\Module\\Hosting\\Core\\AiAnalyzerDocument"
-        },
-        {
             "table": "hosting_core_ai_tokens",
             "class": "Shipard\\Module\\Hosting\\Core\\HostingAiTokenDocument"
         }
@@ -53,7 +48,6 @@
         { "viewer": "hosting.core.servers",     "section": "other", "subsection": "other.hosting", "order": 10 },
         { "viewer": "hosting.core.dataSources", "section": "other", "subsection": "other.hosting", "order": 20 },
         { "viewer": "hosting.core.mailRouters", "section": "other", "subsection": "other.hosting", "order": 25 },
-        { "viewer": "hosting.core.aiAnalyzers", "section": "other", "subsection": "other.hosting", "order": 27 },
         { "viewer": "hosting.core.dsUsers",     "section": "other", "subsection": "other.hosting", "order": 30 },
         { "page": "hostingOidc",                "section": "other", "subsection": "other.hosting", "order": 40 },
         { "viewer": "hosting.core.aiTokens",    "section": "other", "subsection": "other.hosting", "order": 50 },
@@ -159,15 +153,6 @@
             "class": "Shipard\\Module\\Hosting\\Core\\MailRoutersViewer"
         },
         {
-            "id": "hosting.core.aiAnalyzers",
-            "name": "AI analyzers",
-            "name:cs": "AI analyzery",
-            "name:en": "AI analyzers",
-            "icon": "robot",
-            "table": "hosting_core_ai_analyzers",
-            "class": "Shipard\\Module\\Hosting\\Core\\AiAnalyzersViewer"
-        },
-        {
             "id": "hosting.core.aiTokens",
             "name": "AI gateway tokens",
             "name:cs": "AI gateway — tokeny",
@@ -203,10 +188,6 @@
         {
             "table": "hosting_core_mail_routers",
             "class": "Shipard\\Module\\Hosting\\Core\\MailRoutersForm"
-        },
-        {
-            "table": "hosting_core_ai_analyzers",
-            "class": "Shipard\\Module\\Hosting\\Core\\AiAnalyzersForm"
         },
         {
             "table": "hosting_core_ai_tokens",

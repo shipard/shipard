@@ -210,12 +210,12 @@ class HostingServerController
      * POST /_hosting/server/confirm
      *
      * Body: {request_id: int, ds_id: string, status: "ok"|"failed",
-     *        error?: string, mail_token?: string, analyzer_token?: string}
+     *        error?: string, mail_token?: string}
      *
      * mail_token (D4) = shpd_ak_ klíč z kroku mail-router-setup agenta;
-     * analyzer_token (hosting-10 D3) = shpd_ak_ klíč z kroku
-     * ai-analyzer-setup agenta; oba se ukládají šifrovaně a přepisují
-     * předchozí hodnotu.
+     * ukládá se šifrovaně a přepisuje předchozí hodnotu. Pole
+     * `analyzer_token` od staršího agenta (hosting-10 D3, registr
+     * analyzerů zrušen #85 D22) se tiše ignoruje — žádná chyba, žádný zápis.
      *
      * @param array<string, \Shipard\Core\Database\TableDefinition> $tables
      */
@@ -256,11 +256,11 @@ class HostingServerController
         $lifecycle = (string) $row['lifecycle'];
 
         if ($status === 'ok') {
-            // D4 mail_token, hosting-10 D3 analyzer_token — ukládají se
-            // šifrovaně a NEPODMÍNĚNĚ (i při idempotentním re-confirmu už
-            // aktivního DS; retry agenta token rotuje, hosting musí držet
-            // ten poslední).
-            foreach (['mail_token', 'analyzer_token'] as $tokenColumn) {
+            // D4 mail_token — ukládá se šifrovaně a NEPODMÍNĚNĚ (i při
+            // idempotentním re-confirmu už aktivního DS; retry agenta token
+            // rotuje, hosting musí držet ten poslední). Jiné klíče těla
+            // (např. analyzer_token staršího agenta) se neukládají.
+            foreach (['mail_token'] as $tokenColumn) {
                 $token = trim((string) ($body[$tokenColumn] ?? ''));
                 if ($token !== '') {
                     $cipher = $this->cipher ?? DsSecretCipher::forConfig($this->config);
@@ -553,7 +553,7 @@ class HostingServerController
 
         // AI gateway (D5): sekce jen když je gateway zřízená (org klíč
         // existuje). Selhání AI sekce provisioning neblokuje — DS vznikne
-        // bez AI, backfill přes hosting-ai-token + ai-analyzer-set-key.
+        // bez AI, backfill přes hosting-ai-token + ai-backend-set-key.
         $ai = $this->buildAiSection($db, $row, $issuer);
         if ($ai !== null) {
             $item['ai'] = $ai;

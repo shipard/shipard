@@ -542,75 +542,27 @@ class HostingServerControllerTest extends TestCase
         );
     }
 
-    public function testConfirmOkStoresAnalyzerTokenEncrypted(): void
+    public function testConfirmIgnoresAnalyzerTokenFromOlderAgent(): void
     {
-        $reqId = $this->addRequest(['server' => $this->serverId, 'lifecycle' => 'creating']);
-        $token = 'shpd_ak_' . str_repeat('f', 32);
-
-        $resp = $this->confirm($reqId, 'bbbb-bbbb-bbbb-bbbb', 'ok', analyzerToken: $token);
-        $this->assertSame(200, $this->getStatus($resp));
-
-        $stored = (string) $this->db->dataSources[$reqId]['analyzer_token'];
-        $this->assertNotSame($token, $stored);
-        $this->assertSame($token, $this->cipher->decrypt($stored));
-    }
-
-    public function testConfirmWithoutAnalyzerTokenLeavesColumnUntouched(): void
-    {
-        $reqId = $this->addRequest([
-            'server' => $this->serverId,
-            'lifecycle' => 'creating',
-            'analyzer_token' => $this->cipher->encrypt('shpd_ak_' . str_repeat('1', 32)),
-        ]);
-
-        $this->confirm($reqId, 'bbbb-bbbb-bbbb-bbbb', 'ok');
-
-        $this->assertSame(
-            'shpd_ak_' . str_repeat('1', 32),
-            $this->cipher->decrypt((string) $this->db->dataSources[$reqId]['analyzer_token']),
-        );
-    }
-
-    public function testConfirmAnalyzerTokenOverwritesOnActiveReconfirm(): void
-    {
-        // Retry agenta rotuje token — hosting drží poslední, i když už je
-        // DS active (lifecycle update se přeskočí, token ne).
-        $reqId = $this->addRequest([
-            'server' => $this->serverId,
-            'lifecycle' => 'active',
-            'analyzer_token' => $this->cipher->encrypt('shpd_ak_' . str_repeat('1', 32)),
-        ]);
-        $newToken = 'shpd_ak_' . str_repeat('2', 32);
-
-        $resp = $this->confirm($reqId, 'bbbb-bbbb-bbbb-bbbb', 'ok', analyzerToken: $newToken);
-        $this->assertSame(200, $this->getStatus($resp));
-
-        $this->assertSame(
-            $newToken,
-            $this->cipher->decrypt((string) $this->db->dataSources[$reqId]['analyzer_token']),
-        );
-    }
-
-    public function testConfirmStoresBothTokens(): void
-    {
+        // Registr analyzerů zanikl (#85 D22): starší agent, který ještě
+        // posílá analyzer_token, nesmí dostat chybu — pole se jen nezapíše,
+        // mail_token z téhož těla se uloží normálně.
         $reqId = $this->addRequest(['server' => $this->serverId, 'lifecycle' => 'creating']);
         $mailToken = 'shpd_ak_' . str_repeat('c', 32);
-        $analyzerToken = 'shpd_ak_' . str_repeat('f', 32);
 
         $resp = $this->confirm(
             $reqId,
             'bbbb-bbbb-bbbb-bbbb',
             'ok',
             mailToken: $mailToken,
-            analyzerToken: $analyzerToken,
+            analyzerToken: 'shpd_ak_' . str_repeat('f', 32),
         );
         $this->assertSame(200, $this->getStatus($resp));
 
-        $this->assertSame($mailToken, $this->cipher->decrypt((string) $this->db->dataSources[$reqId]['mail_token']));
-        $this->assertSame(
-            $analyzerToken,
-            $this->cipher->decrypt((string) $this->db->dataSources[$reqId]['analyzer_token']),
-        );
+        $row = $this->db->dataSources[$reqId];
+        $this->assertSame($mailToken, $this->cipher->decrypt((string) $row['mail_token']));
+        $this->assertArrayNotHasKey('analyzer_token', $row);
+        $this->assertSame('active', $row['lifecycle']);
     }
 
     public function testConfirmForeignRequestIs403(): void

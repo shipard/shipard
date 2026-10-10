@@ -296,15 +296,6 @@ class Router
 			return new Route('hostingMail', 'lookup');
 		}
 
-		// Lookup pro AI analyzery (hosting-10 D4) — autentizaci klíčem
-		// shpd_hk_ analyzeru i gating dělá kontroler (endpoint je exempt).
-		if ($subpath === '/_hosting/ai-analyzer/lookup') {
-			if ($method !== 'GET') {
-				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
-			}
-			return new Route('hostingAiAnalyzer', 'lookup');
-		}
-
 		if (str_starts_with($subpath, '/_registry/')) {
 			return $this->resolveRegistryRoute($subpath, $method);
 		}
