@@ -165,10 +165,13 @@ Dashboardu je karta v sekci **Nepodařilo se zpracovat**. Její titulek
 **AI vrátila data v nečekaném tvaru**: to není chyba ve tvé zprávě ani
 v příloze, ale v nastavení analýzy na naší straně. Pod **Zobrazit detail**
 na kartě najdeš, co se stalo a co dělat; totéž ukazuje záložka **Návrh**
-u zprávy (technické podrobnosti jsou sbalené). **Znovu analyzovat** má
-smysl, jen když se analýza od té doby aktualizovala — v tom případě ti to
-karta řekne a tlačítko je hlavní akcí. Jinak opakování dopadne stejně:
-doklad zadej ručně a dej nám vědět, o jakou zprávu šlo. Když AI
+u zprávy (technické podrobnosti jsou sbalené). Titulek **AI není správně
+nastavená** znamená, že chybí klíč, model není dostupný nebo došel limit
+útraty — to opraví správce a **Znovu analyzovat** má smysl až potom.
+Jinak má **Znovu analyzovat** smysl, jen když se analýza od té doby
+aktualizovala — v tom případě ti to karta řekne a tlačítko je hlavní
+akcí. Jinak opakování dopadne stejně: doklad zadej ručně a dej nám
+vědět, o jakou zprávu šlo. Když AI
 odpověděla, ale návrh neprošel kontrolou formátu, uvidíš na záložce
 **Návrh** odznak **Chyba extrakce** a pod ním stejnou kartu s vysvětlením
 (**AI vrátila nepoužitelný návrh**).

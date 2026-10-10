@@ -24,6 +24,8 @@ use Shipard\Core\Database\DataSourceConnection;
  *   [ai_error] anthropic: output truncated at max_tokens=<n>
  *   [ai_error] anthropic permanent: … | anthropic sdk: … | anthropic error: … | unsupported provider: …
  *   [config_error] shpd rejected /result body (<status> <code>): … | shpd <status> <code>: …
+ *   [config_error] anthropic: HTTP 401|403|404|429 <typ>: … | prompt template: … (runner)
+ *   [ai_error] internal: <třída>: … (pád runneru) | analysis did not finish 3 times within an hour (claim expired) (reaper)
  *
  * Rozbor textu z Pythonu je křehký — ai_analyzer#1 plánuje hlásit všechny
  * chyby najednou (`iter_errors`). Neznámý, vícenásobný nebo budoucí tvar
@@ -99,8 +101,8 @@ class AnalysisErrorPresenter
             'description' => 'For example because of an unsupported or damaged attachment.',
         ],
         self::KIND_CONFIG_ERROR => [
-            'name'        => 'Error in the link between the analyzer and Shipard',
-            'description' => "The problem is in Shipard's operation, not in the message.",
+            'name'        => 'AI is not set up correctly',
+            'description' => 'The API key is missing or invalid, the model is unavailable, or the spending limit is exhausted. An administrator has to fix the setup — retrying will not help until then.',
         ],
         self::KIND_INVALID_OUTPUT => [
             'name'        => 'AI returned an unusable proposal',

@@ -24,6 +24,9 @@ class LlmApiException extends LlmException
     /** Inline stream error types worth a retry (the stream itself was 200). */
     private const TRANSIENT_STREAM_TYPES = ['overloaded_error', 'api_error', 'rate_limit_error'];
 
+    /** HTTP statuses behind which the setup is wrong, not the request: key, permission, model. */
+    private const CONFIGURATION_STATUSES = [401, 403, 404];
+
     public function __construct(
         public readonly int $statusCode,
         public readonly string $errorType,
@@ -55,5 +58,16 @@ class LlmApiException extends LlmException
     public function isSpendLimitReached(): bool
     {
         return $this->errorCode === self::ERROR_CODE_SPEND_LIMIT;
+    }
+
+    /**
+     * The setup is wrong, not the message: invalid API key (401), missing
+     * permission (403), unknown or retired model (404), or the exhausted
+     * spend limit. Retrying is pointless until an administrator fixes it
+     * (tasks/mail-analysis-queue-drain.md).
+     */
+    public function isConfigurationError(): bool
+    {
+        return $this->isSpendLimitReached() || in_array($this->statusCode, self::CONFIGURATION_STATUSES, true);
     }
 }

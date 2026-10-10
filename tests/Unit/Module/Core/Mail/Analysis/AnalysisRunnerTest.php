@@ -359,14 +359,36 @@ final class AnalysisRunnerTest extends TestCase
 
     public function testPermanentApiErrorFailsWithoutRetry(): void
     {
-        $llm = new ScriptedLlmClient([new LlmApiException(401, 'authentication_error', 'invalid x-api-key')]);
+        $llm = new ScriptedLlmClient([new LlmApiException(400, 'invalid_request_error', 'invalid document')]);
         $this->expectFailure('ai_error', false);
 
         $result = $this->runner($llm)->run(42);
 
-        $this->assertSame('anthropic permanent: HTTP 401 authentication_error: invalid x-api-key', $result['note']);
+        $this->assertSame('anthropic permanent: HTTP 400 invalid_request_error: invalid document', $result['note']);
         $this->assertCount(1, $llm->calls);
         $this->assertSame([], $this->slept);
+    }
+
+    public function testConfigurationApiErrorsAreConfigErrorWithSingleCall(): void
+    {
+        foreach ([
+            [401, 'authentication_error', 'invalid x-api-key'],
+            [403, 'permission_error', 'no access'],
+            [404, 'not_found_error', 'model: claude-old-1 not found'],
+        ] as [$status, $type, $message]) {
+            $this->results = $this->createMock(AnalysisResultWriter::class);
+            $this->results->expects($this->never())->method('countRecentFailures');
+            $this->expectFailure('config_error', false);
+            $llm = new ScriptedLlmClient([new LlmApiException($status, $type, $message)]);
+
+            $result = $this->runner($llm)->run(42);
+
+            $this->assertSame('failed', $result['status'], (string) $status);
+            $this->assertSame(AnalysisStates::FAILED, $result['newState']);
+            $this->assertSame("anthropic: HTTP {$status} {$type}: {$message}", $result['note']);
+            $this->assertCount(1, $llm->calls);
+            $this->assertSame([], $this->slept);
+        }
     }
 
     public function testMaxTokensStopReasonFailsWithoutRetry(): void
@@ -389,7 +411,7 @@ final class AnalysisRunnerTest extends TestCase
         $result = $this->runner($llm)->run(42);
 
         $this->assertSame('failed', $result['status']);
-        $this->assertStringContainsString('monthly spend limit', $result['note']);
+        $this->assertStringStartsWith('anthropic: HTTP 429 rate_limit_error: This organization has reached its monthly spend limit', $result['note']);
         $this->assertCount(1, $llm->calls);
         $this->assertSame([], $this->slept);
     }

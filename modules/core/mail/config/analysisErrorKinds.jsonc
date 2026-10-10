@@ -92,13 +92,15 @@
         "description:cs": "Například kvůli nepodporované nebo poškozené příloze.",
         "description:en": "For example because of an unsupported or damaged attachment."
     },
+    // Klíč, oprávnění, model nebo strop útraty (runner), šablona promptu
+    // nebo schéma profilu — opraví správce, opakování do té doby nepomůže.
     "configError": {
-        "name": "Error in the link between the analyzer and Shipard",
-        "name:cs": "Chyba propojení analyzátoru se Shipardem",
-        "name:en": "Error in the link between the analyzer and Shipard",
-        "description": "The problem is in Shipard's operation, not in the message.",
-        "description:cs": "Problém je v provozu Shipardu, ne ve zprávě.",
-        "description:en": "The problem is in Shipard's operation, not in the message."
+        "name": "AI is not set up correctly",
+        "name:cs": "AI není správně nastavená",
+        "name:en": "AI is not set up correctly",
+        "description": "The API key is missing or invalid, the model is unavailable, or the spending limit is exhausted. An administrator has to fix the setup — retrying will not help until then.",
+        "description:cs": "Chybí nebo neplatí klíč, model není dostupný, nebo je vyčerpaný limit útraty. Opravit to musí správce — opakování nepomůže, dokud se nastavení neopraví.",
+        "description:en": "The API key is missing or invalid, the model is unavailable, or the spending limit is exhausted. An administrator has to fix the setup — retrying will not help until then."
     },
     "invalidOutput": {
         "name": "AI returned an unusable proposal",

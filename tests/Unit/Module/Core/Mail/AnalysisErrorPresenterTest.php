@@ -160,6 +160,8 @@ final class AnalysisErrorPresenterTest extends TestCase
             '[ai_error] anthropic sdk: boom',
             '[ai_error] anthropic error: boom',
             "[ai_error] unsupported provider: 'foo'",
+            '[ai_error] internal: RuntimeException: disk gone',
+            '[ai_error] analysis did not finish 3 times within an hour (claim expired)',
             '[ai_error]',
         ] as $message) {
             $this->assertSame(AnalysisErrorPresenter::KIND_AI_ERROR, $presenter->fromErrorMessage($message)->kind, $message);
@@ -169,12 +171,29 @@ final class AnalysisErrorPresenterTest extends TestCase
 
     public function testConfigError(): void
     {
-        $info = $this->presenter()->fromErrorMessage(
+        $presenter = $this->presenter();
+        foreach ([
             '[config_error] shpd rejected /result body (422 VALIDATION_ERROR): message_classification required',
-        );
+            '[config_error] anthropic: HTTP 401 authentication_error: invalid x-api-key',
+            '[config_error] anthropic: HTTP 404 not_found_error: model: claude-old-1',
+            '[config_error] anthropic: HTTP 429 rate_limit_error: This organization has reached its monthly spend limit',
+            '[config_error] prompt template: Unknown "nope" variable',
+        ] as $message) {
+            $info = $presenter->fromErrorMessage($message);
+            $this->assertSame(AnalysisErrorPresenter::KIND_CONFIG_ERROR, $info->kind, $message);
+            $this->assertSame('AI není správně nastavená', $info->title, $message);
+            $this->assertSame(
+                'Chybí nebo neplatí klíč, model není dostupný, nebo je vyčerpaný limit útraty. Opravit to musí správce — opakování nepomůže, dokud se nastavení neopraví.',
+                $info->description,
+            );
+            $this->assertNull($info->detail);
+        }
 
-        $this->assertSame(AnalysisErrorPresenter::KIND_CONFIG_ERROR, $info->kind);
-        $this->assertSame('Chyba propojení analyzátoru se Shipardem', $info->title);
+        $english = $this->presenter(null, $this->shippedConfig('en'))->fromErrorMessage('[config_error] x');
+        $this->assertSame('AI is not set up correctly', $english->title);
+        $fallback = $this->presenter(null, null, false)->fromErrorMessage('[config_error] x');
+        $this->assertSame($english->title, $fallback->title, 'FALLBACK = holé pole katalogu');
+        $this->assertSame($english->description, $fallback->description);
     }
 
     public function testUnknownShapesFallToUnknown(): void

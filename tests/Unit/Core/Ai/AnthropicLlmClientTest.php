@@ -181,6 +181,20 @@ class AnthropicLlmClientTest extends TestCase
         $this->assertFalse(new LlmApiException(200, 'invalid_request_error', 'x')->isTransient());
     }
 
+    public function testIsConfigurationErrorByStatusAndSpendLimit(): void
+    {
+        $this->assertTrue(new LlmApiException(401, 'authentication_error', 'x')->isConfigurationError());
+        $this->assertTrue(new LlmApiException(403, 'permission_error', 'x')->isConfigurationError());
+        $this->assertTrue(new LlmApiException(404, 'not_found_error', 'x')->isConfigurationError());
+        $this->assertTrue(new LlmApiException(429, 'rate_limit_error', 'x', LlmApiException::ERROR_CODE_SPEND_LIMIT)->isConfigurationError());
+
+        $this->assertFalse(new LlmApiException(0, 'transport_error', 'curl')->isConfigurationError());
+        $this->assertFalse(new LlmApiException(400, 'invalid_request_error', 'x')->isConfigurationError());
+        $this->assertFalse(new LlmApiException(429, 'rate_limit_error', 'x')->isConfigurationError());
+        $this->assertFalse(new LlmApiException(500, 'api_error', 'x')->isConfigurationError());
+        $this->assertFalse(new LlmApiException(200, 'invalid_request_error', 'x')->isConfigurationError());
+    }
+
     public function testEmptyToolUseInputIsSentAsJsonObject(): void
     {
         // Regrese: model zavolal nástroj bez argumentů (mail_list_pending),

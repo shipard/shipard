@@ -30,8 +30,9 @@ use Shipard\Core\Logging\ErrorLogger;
  * Mapování chyb: chyba claimu z konfigurace (`NO_PROFILE`, `NO_BACKEND`,
  * `BACKEND_KEY_*`, `SECRETS_UNAVAILABLE`) = konec bez zápisu, zpráva
  * zůstává ve frontě, jedno varování; `schema_error` bez opakování;
- * vyčerpaný strop útraty poskytovatele = `config_error` bez opakování;
- * jiná chyba API = `ai_error`, opakovatelná podle `isTransient()` a stropu
+ * chyba nastavení (klíč, oprávnění, neznámý model, vyčerpaný strop
+ * útraty — `LlmApiException::isConfigurationError()`) = `config_error`
+ * bez opakování; jiná chyba API = `ai_error`, opakovatelná podle `isTransient()` a stropu
  * tří selhaných běhů za hodinu; `stop_reason = max_tokens` = `ai_error`
  * bez opakování; neplatný claim při zápisu = jen varování včetně ceny;
  * nečekaná výjimka po claimu (DB, disk, chyba kódu) = `ai_error`
@@ -364,10 +365,12 @@ class AnalysisRunner
         } catch (SchemaValidationException $e) {
             return $this->fail($messageId, $claim, 'schema_error', $e->getMessage(), false, $result?->inputTokens, $cost);
         } catch (LlmApiException $e) {
-            if ($e->isSpendLimitReached()) {
-                // Strop útraty organizace — API stojí do dalšího měsíce; hláška
-                // poskytovatele říká kdy (D18). Žádné opakování, žádná fronta.
-                return $this->fail($messageId, $claim, 'config_error', 'anthropic: ' . $e->getMessage(), false, null, $cost);
+            if ($e->isConfigurationError()) {
+                // Klíč, oprávnění, neznámý či vyřazený model, strop útraty
+                // organizace (D18) — opraví správce; hláška poskytovatele říká
+                // co (u stropu i kdy). Žádné opakování, žádná fronta.
+                $note = sprintf('anthropic: HTTP %d %s: %s', $e->statusCode, $e->errorType, $e->getMessage());
+                return $this->fail($messageId, $claim, 'config_error', $note, false, null, $cost);
             }
             $transient = $e->isTransient();
             $retryable = $transient
