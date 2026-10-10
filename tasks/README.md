@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 351 tasků: **naplánováno** 4 · **částečně** 23 · **hotovo** 324.
+Celkem 352 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 324.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,6 +25,7 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
+| `ai-model-catalog.md` | naplánováno | rozhodnutí D30–D35 potvrzena 2026-10-10 (#85), připraveno k implementaci |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
@@ -379,6 +380,7 @@ Sdílené LLM backendy, MCP nástroje, vnitřní chat. Přehled
 |------|---------|
 | `core-ai-extract-backends.md` | Extrakce AI backendů do `core/ai` (sdíleno analyzer/chat) |
 | `ai-models-phase0.md` | Odchod ze Sonnetu 4.5 (končí 30. 11. 2026): přemostění přes Sonnet 4.6, volitelná teplota, thinking/effort, kontrola `stop_reason`, vyšší stropy `max_tokens`, oprava ceníku (#85 F0-D1–D9) |
+| `ai-model-catalog.md` | Katalog modelů (`core.ai.models`: úroveň, schopnosti, ceny, životní cyklus), tvarování požadavku podle schopností modelu, ceník a přepis vyřazených modelů z katalogu, pojistka chatu (#85 fáze 1a, D30–D35) |
 | `mcp-server-01-skeleton.md` | Skeleton MCP serveru + `persons_search` |
 | `mcp-server-02-read-tools.md` | Zbývající čtecí nástroje (`documents_search`, `mail_list_pending`, …) |
 | `mcp-server-03-draft-tool.md` | Draft nástroj `mail_draft_document` (první zápisový) |
