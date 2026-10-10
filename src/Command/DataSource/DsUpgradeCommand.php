@@ -564,6 +564,12 @@ class DsUpgradeCommand extends Command
             $output->writeln("  [OK]     backend 'default' (id={$backend['id']})", OutputInterface::VERBOSITY_VERBOSE);
         }
 
+        // Jednorázový přepis vyřazených modelů (AIAnalyzerProvisioner::RETIRED_MODELS,
+        // tasks/ai-models-phase0.md F0-D8) — po prvním běhu prázdný seznam.
+        foreach ($result['retired'] ?? [] as $retired) {
+            $output->writeln("  [MODEL]  backend '{$retired['backend_id']}' (id={$retired['id']}): {$retired['from']} → {$retired['to']} (retired model)");
+        }
+
         // Jednorázový rename legacy profilu (czech_invoices → czech_general),
         // po prvním běhu 0 řádků = žádný výpis (viz AIAnalyzerProvisioner).
         $renamed = $result['profile_rename']['renamed'] ?? 0;

@@ -1083,8 +1083,11 @@ Při každém `ds-upgrade` se zavolá `AIAnalyzerProvisioner::provision()`:
 
 1. Systémový uživatel `_ai_analyzer` (idempotentně).
 2. Default backend (`backend_id=default`, `provider=anthropic`,
-   `model=claude-sonnet-4-5`, `api_key=NULL`, `is_active=0`) — admin doplní
-   klíč přes `ai-analyzer-set-key`, čímž `is_active=1`.
+   `model=claude-sonnet-4-6`, `temperature=NULL`, `api_key=NULL`,
+   `is_active=0`) — admin doplní klíč přes `ai-analyzer-set-key`, čímž
+   `is_active=1`. Tentýž krok u všech backendů jednorázově přepíše
+   vyřazený model na náhradu (`AIAnalyzerProvisioner::RETIRED_MODELS`,
+   výpis `[MODEL]`; tasks/ai-models-phase0.md F0-D8).
 3. Default profil (`profile_id=czech_general`) ze šablony
    `profiles/czech_general.jsonc`. Před lookupem běží jednorázový rename
    legacy id `czech_invoices` → `czech_general` (včetně `name`; ds-upgrade

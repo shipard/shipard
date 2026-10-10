@@ -20,6 +20,26 @@ class AIAnalyzerProvisioner
 {
     public const ANALYZER_LOGIN = '_ai_analyzer';
     public const DEFAULT_BACKEND_ID = 'default';
+
+    /**
+     * Model nově zakládaného výchozího backendu (tasks/ai-models-phase0.md
+     * F0-D8): Sonnet 4.6 — stejná cena a tokenizer jako 4.5, přijímá
+     * `temperature`, bez parametru nepřemýšlí; aktivní nejméně do
+     * 17. 2. 2027. Řada 5 se zkouší přes druhý backend (F0-D6).
+     */
+    public const DEFAULT_MODEL = 'claude-sonnet-4-6';
+
+    /**
+     * Vyřazené modely → náhrada (F0-D8). Klíč sedí na přesné ID i na ID
+     * s datovou příponou (`claude-sonnet-4-5-20250929`); ID s prefixem
+     * platformy (`anthropic.claude-sonnet-4-5` na Bedrocku) se nemění —
+     * partnerské platformy mají vlastní termíny. Připraveno na další řádky.
+     *
+     * @var array<string, string>
+     */
+    public const RETIRED_MODELS = [
+        'claude-sonnet-4-5' => 'claude-sonnet-4-6',
+    ];
     public const DEFAULT_PROFILE_ID = 'czech_general';
     public const DEFAULT_PROFILE_TEMPLATE = __DIR__ . '/../profiles/czech_general.jsonc';
 
@@ -35,6 +55,7 @@ class AIAnalyzerProvisioner
      * @return array{
      *     user: array{id: int, created: bool},
      *     backend: array{id: int, created: bool},
+     *     retired: list<array{id: int, backend_id: string, from: string, to: string}>,
      *     profile_rename: array{renamed: int},
      *     profile: array{id: int, profile_id: string, created: bool, skipped_reason?: string},
      *     queue_fix: array{fixed: int}
@@ -44,6 +65,7 @@ class AIAnalyzerProvisioner
     {
         $user = $this->ensureAnalyzerUser();
         $backend = $this->ensureDefaultBackend();
+        $retired = $this->retireModels();
         $renamed = $this->renameLegacyProfile();
         $profile = $this->ensureDefaultProfile($backend['id']);
         $queueFix = $this->fixQueuedArchivedMessages();
@@ -51,10 +73,59 @@ class AIAnalyzerProvisioner
         return [
             'user' => $user,
             'backend' => $backend,
+            'retired' => $retired,
             'profile_rename' => ['renamed' => $renamed],
             'profile' => $profile,
             'queue_fix' => ['fixed' => $queueFix],
         ];
+    }
+
+    /**
+     * Náhrada vyřazeného modelu podle {@see RETIRED_MODELS}, null = model
+     * se nemění. Shoda na přesné ID nebo na ID s datovou příponou
+     * (`<id>-YYYYMMDD`); prefix platformy před ID shodu vylučuje.
+     */
+    public static function retiredReplacement(string $model): ?string
+    {
+        foreach (self::RETIRED_MODELS as $retired => $replacement) {
+            if ($model === $retired || str_starts_with($model, $retired . '-')) {
+                return $replacement;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Jednorázový idempotentní přepis vyřazených modelů u **všech** backendů
+     * (F0-D8) — i u backendu hostovaného DS, který míří na AI gateway
+     * (gateway model jen předává dál). Po přepisu navždy matchne 0 řádků.
+     *
+     * @return list<array{id: int, backend_id: string, from: string, to: string}> Změněné backendy.
+     */
+    public function retireModels(): array
+    {
+        $rows = $this->db->fetchAll('SELECT id, backend_id, model FROM core_ai_backends');
+        $changed = [];
+        foreach ($rows as $row) {
+            $model = (string) ($row['model'] ?? '');
+            $replacement = self::retiredReplacement($model);
+            if ($replacement === null) {
+                continue;
+            }
+            $this->db->updateWhere(
+                'core_ai_backends',
+                ['model' => $replacement, 'modified' => date('Y-m-d H:i:s')],
+                'id = %i',
+                (int) $row['id'],
+            );
+            $changed[] = [
+                'id' => (int) $row['id'],
+                'backend_id' => (string) ($row['backend_id'] ?? ''),
+                'from' => $model,
+                'to' => $replacement,
+            ];
+        }
+        return $changed;
     }
 
     /**
@@ -133,9 +204,11 @@ class AIAnalyzerProvisioner
     }
 
     /**
-     * Vytvoří (pokud chybí) default backend `default` (Anthropic Claude).
-     * `api_key` zůstává NULL, `is_active` = false — admin doplní klíč přes
-     * `ai-analyzer-set-key` (Fáze C).
+     * Vytvoří (pokud chybí) default backend `default` (Anthropic Claude,
+     * model {@see DEFAULT_MODEL}). `api_key` zůstává NULL, `is_active`
+     * = false — admin doplní klíč přes `ai-analyzer-set-key` (Fáze C).
+     * `temperature` NULL = parametr se neposílá (F0-D1); `thinking`
+     * a `effort` nechává na DB defaultu `auto`.
      *
      * @return array{id: int, created: bool, skipped_reason?: string}
      */
@@ -168,13 +241,13 @@ class AIAnalyzerProvisioner
             'backend_id' => self::DEFAULT_BACKEND_ID,
             'name' => 'Anthropic Claude',
             'provider' => 'anthropic',
-            'model' => 'claude-sonnet-4-5',
+            'model' => self::DEFAULT_MODEL,
             'api_key' => null,
             'base_url' => null,
             // 0 = nenastaveno — limit se rozhoduje kaskádou profil → backend
             // → default v provideru analyzéru (jediné místo se skutečným číslem).
             'max_tokens' => 0,
-            'temperature' => 0,
+            'temperature' => null,
             'is_default' => 1,
             'is_active' => 0,
             'docState' => 40,

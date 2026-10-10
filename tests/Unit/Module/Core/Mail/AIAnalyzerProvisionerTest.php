@@ -151,6 +151,91 @@ class AIAnalyzerProvisionerTest extends TestCase
         $this->assertSame('anthropic', $backend['provider']);
         // 0 = nenastaveno; skutečný default žije v provideru analyzéru.
         $this->assertSame(0, $backend['max_tokens']);
+        // Přemostění (F0-D8) + teplota NULL = neposílat (F0-D1); thinking
+        // a effort nechává na DB defaultu `auto`.
+        $this->assertSame('claude-sonnet-4-6', $backend['model']);
+        $this->assertNull($backend['temperature']);
+        $this->assertArrayNotHasKey('thinking', $backend);
+        $this->assertArrayNotHasKey('effort', $backend);
+    }
+
+    // --- přepis vyřazených modelů (F0-D8) ------------------------------------
+
+    public function testRetiredReplacementMatchesExactAndDatedIdsOnly(): void
+    {
+        $this->assertSame('claude-sonnet-4-6', AIAnalyzerProvisioner::retiredReplacement('claude-sonnet-4-5'));
+        $this->assertSame('claude-sonnet-4-6', AIAnalyzerProvisioner::retiredReplacement('claude-sonnet-4-5-20250929'));
+        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement('claude-sonnet-4-6'));
+        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement('claude-sonnet-4-50'));
+        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement('claude-opus-4-8'));
+        // Prefix platformy (Bedrock) — partnerské platformy mají vlastní termíny.
+        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement('anthropic.claude-sonnet-4-5'));
+        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement(''));
+    }
+
+    public function testRetireModelsRewritesEveryRetiredBackendAndLeavesOthers(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturn([
+            ['id' => 1, 'backend_id' => 'default', 'model' => 'claude-sonnet-4-5'],
+            ['id' => 2, 'backend_id' => 'dated', 'model' => 'claude-sonnet-4-5-20250929'],
+            ['id' => 3, 'backend_id' => 'bedrock', 'model' => 'anthropic.claude-sonnet-4-5'],
+            ['id' => 4, 'backend_id' => 'opus', 'model' => 'claude-opus-4-8'],
+            ['id' => 5, 'backend_id' => 'gateway', 'model' => 'claude-sonnet-4-6'],
+        ]);
+        $updates = [];
+        $db->expects($this->exactly(2))->method('updateWhere')->willReturnCallback(
+            function (string $table, array $data, string $where, mixed ...$params) use (&$updates): void {
+                $this->assertSame('core_ai_backends', $table);
+                $this->assertSame('id = %i', $where);
+                $this->assertArrayHasKey('modified', $data);
+                $updates[] = [$params[0], $data['model']];
+            },
+        );
+        $db->expects($this->never())->method('execute');
+
+        $changed = (new AIAnalyzerProvisioner($db))->retireModels();
+
+        $this->assertSame([[1, 'claude-sonnet-4-6'], [2, 'claude-sonnet-4-6']], $updates);
+        $this->assertSame([
+            ['id' => 1, 'backend_id' => 'default', 'from' => 'claude-sonnet-4-5', 'to' => 'claude-sonnet-4-6'],
+            ['id' => 2, 'backend_id' => 'dated', 'from' => 'claude-sonnet-4-5-20250929', 'to' => 'claude-sonnet-4-6'],
+        ], $changed);
+    }
+
+    public function testRetireModelsSecondRunChangesNothing(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturn([
+            ['id' => 1, 'backend_id' => 'default', 'model' => 'claude-sonnet-4-6'],
+            ['id' => 2, 'backend_id' => 'dated', 'model' => 'claude-sonnet-4-6'],
+        ]);
+        $db->expects($this->never())->method('updateWhere');
+
+        $this->assertSame([], (new AIAnalyzerProvisioner($db))->retireModels());
+    }
+
+    public function testProvisionReportsRetiredModels(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnOnConsecutiveCalls(
+            ['id' => 1],   // user
+            ['id' => 2],   // backend by backend_id
+            ['id' => 3],   // profile by profile_id
+        );
+        $db->method('fetchAll')->willReturn([
+            ['id' => 2, 'backend_id' => 'default', 'model' => 'claude-sonnet-4-5'],
+        ]);
+        $db->method('getAffectedRows')->willReturn(0);
+        $db->expects($this->never())->method('insertRow');
+
+        $result = (new AIAnalyzerProvisioner($db))->provision();
+
+        $this->assertSame(
+            [['id' => 2, 'backend_id' => 'default', 'from' => 'claude-sonnet-4-5', 'to' => 'claude-sonnet-4-6']],
+            $result['retired'],
+        );
+        $this->assertSame(['id' => 2, 'created' => false], $result['backend']);
     }
 
     public function testProvisionedProfileLoadsTemplateAndJsonEncodes(): void
