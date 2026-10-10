@@ -1,0 +1,380 @@
+{
+    // core.ai.models — katalog modelů (tasks/ai-model-catalog.md, #85 D30–D33)
+    //
+    // Jediné místo, kde Shipard ví, „jak s modelem mluvit“: schopnosti, ceny
+    // a životní cyklus. Čte ho `Shipard\Core\Ai\ModelCatalog` (compiled
+    // config, cfgItem `core.ai.models`); podle schopností tvaruje
+    // `RequestShaper` tělo požadavku, z cen počítá `costUsd()`, podle
+    // životního cyklu přepisuje `ds-upgrade` vyřazené modely backendů.
+    //
+    // Klíč položky = ID modelu na přímém API bez datové přípony
+    // (`claude-sonnet-4-6`; `claude-sonnet-4-5` platí i pro
+    // `claude-sonnet-4-5-20250929`). Pole:
+    //
+    //   name, vendor, dialect, order   — popis; `order` řadí výpisy.
+    //   tier                           — `fast` | `balanced` | `strong` | null
+    //                                    (null = model nenabízíme, jen ceník).
+    //   tierDefault                    — true u výchozího modelu úrovně
+    //                                    (zatím jen `balanced`, D34).
+    //   platformIds                    — ID modelu per platforma (`anthropic`,
+    //                                    `bedrock`); chybějící platforma =
+    //                                    model tam není.
+    //   capabilities (D31)             — jen to, podle čeho se rozhodujeme:
+    //     temperature          true/false — přijímá nevýchozí teplotu
+    //     thinkingModes        přijímané hodnoty `thinking.type`
+    //     thinkingDefault      `off` / `adaptive` — chování bez parametru
+    //     effortLevels         přijímané úrovně; [] = parametr nezná
+    //     thinkingOffMaxEffort nejvyšší effort přijímaný spolu s vypnutým
+    //                          thinkingem (`disabled` / `between_tools`)
+    //     maxOutputTokens      horní mez `max_tokens`
+    //     chatToolLoop         true/false — tool smyčka chatu funguje bez
+    //                          vracení thinking bloků (= model bez parametru
+    //                          nepřemýšlí; fáze 4 pojistku zruší)
+    //   prices (D33)                   — USD za milion tokenů: `input`,
+    //                                    `output`, volitelně `longPrompt`
+    //                                    {over, input, output}.
+    //   lifecycle (D33)                — `status` active | deprecated |
+    //                                    retired, `retiresAt`,
+    //                                    `retiresNotBefore`, `replacedBy`
+    //                                    (naše náhrada při `ds-upgrade`).
+    //
+    // PRAVIDLO: `null` (nebo chybějící pole) = nevíme → neomezovat, hodnota
+    // se pošle beze změny. Co nejde doložit z dokumentace, zůstává null;
+    // žádné odhady. Položka smí nést jen ceny (modely, které nenabízíme).
+    //
+    // Zdroje (poslední kontrola 2026-10-10):
+    //   https://platform.claude.com/docs/en/about-claude/models/overview
+    //   https://platform.claude.com/docs/en/build-with-claude/thinking  (tabulka hodnot `thinking`)
+    //   https://platform.claude.com/docs/en/build-with-claude/effort    (úrovně per model)
+    //   https://platform.claude.com/docs/en/about-claude/model-deprecations
+    //   https://platform.claude.com/docs/en/about-claude/pricing
+    //   https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock
+    //   https://platform.claude.com/docs/en/models/<model>/overview
+
+    // ---------------------------------------------------------------- strong
+
+    "claude-opus-5-5": {
+        "name": "Claude Opus 5.5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 10,
+        "tier": "strong",
+        "tierDefault": false,
+        "platformIds": { "anthropic": "claude-opus-5-5", "bedrock": "anthropic.claude-opus-5-5" },
+        "capabilities": {
+            "temperature": false,
+            "thinkingModes": ["adaptive"],
+            "thinkingDefault": "adaptive",
+            "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+            "thinkingOffMaxEffort": null,
+            "maxOutputTokens": 128000,
+            "chatToolLoop": false
+        },
+        "prices": { "input": 4, "output": 20 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-09-22" }
+    },
+    "claude-opus-5": {
+        "name": "Claude Opus 5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 11,
+        "tier": "strong",
+        "tierDefault": false,
+        "platformIds": { "anthropic": "claude-opus-5", "bedrock": "anthropic.claude-opus-5" },
+        "capabilities": {
+            "temperature": false,
+            "thinkingModes": ["adaptive", "disabled"],
+            "thinkingDefault": "adaptive",
+            "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+            "thinkingOffMaxEffort": "high",
+            "maxOutputTokens": 128000,
+            "chatToolLoop": false
+        },
+        "prices": { "input": 5, "output": 25 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-07-24" }
+    },
+    "claude-opus-4-8": {
+        "name": "Claude Opus 4.8",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 12,
+        "tier": "strong",
+        "tierDefault": false,
+        "platformIds": { "anthropic": "claude-opus-4-8", "bedrock": "anthropic.claude-opus-4-8" },
+        "capabilities": {
+            "temperature": false,
+            "thinkingModes": ["adaptive", "disabled"],
+            "thinkingDefault": "off",
+            "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+            "thinkingOffMaxEffort": null,
+            "maxOutputTokens": 128000,
+            "chatToolLoop": true
+        },
+        "prices": { "input": 5, "output": 25 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-05-28" }
+    },
+
+    // -------------------------------------------------------------- balanced
+
+    "claude-sonnet-5-5": {
+        "name": "Claude Sonnet 5.5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 20,
+        "tier": "balanced",
+        "tierDefault": false,
+        "platformIds": { "anthropic": "claude-sonnet-5-5", "bedrock": "anthropic.claude-sonnet-5-5" },
+        "capabilities": {
+            "temperature": false,
+            "thinkingModes": ["adaptive", "between_tools"],
+            "thinkingDefault": "adaptive",
+            "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+            "thinkingOffMaxEffort": "high",
+            "maxOutputTokens": 128000,
+            "chatToolLoop": false
+        },
+        "prices": { "input": 2, "output": 10 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-09-28" }
+    },
+    "claude-sonnet-5": {
+        "name": "Claude Sonnet 5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 21,
+        "tier": "balanced",
+        "tierDefault": false,
+        "platformIds": { "anthropic": "claude-sonnet-5", "bedrock": "anthropic.claude-sonnet-5" },
+        "capabilities": {
+            "temperature": false,
+            "thinkingModes": ["adaptive", "disabled"],
+            "thinkingDefault": "adaptive",
+            "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+            "thinkingOffMaxEffort": null,
+            "maxOutputTokens": 128000,
+            "chatToolLoop": false
+        },
+        "prices": { "input": 2, "output": 10 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-06-30" }
+    },
+    // Výchozí model (D34, přemostění F0-D8): stejná cena i tokenizer jako
+    // 4.5, přijímá teplotu, bez parametru nepřemýšlí → tool smyčka chatu
+    // funguje. Aktivní nejméně do 17. 2. 2027.
+    "claude-sonnet-4-6": {
+        "name": "Claude Sonnet 4.6",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 22,
+        "tier": "balanced",
+        "tierDefault": true,
+        "platformIds": { "anthropic": "claude-sonnet-4-6" },
+        "capabilities": {
+            "temperature": true,
+            "thinkingModes": ["adaptive", "disabled", "enabled"],
+            "thinkingDefault": "off",
+            "effortLevels": ["low", "medium", "high", "max"],
+            "thinkingOffMaxEffort": null,
+            "maxOutputTokens": 128000,
+            "chatToolLoop": true
+        },
+        "prices": { "input": 3, "output": 15 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-02-17" }
+    },
+    // Deprecated od 30. 9. 2026, konec 30. 11. 2026. Poskytovatel
+    // doporučuje 5.5; naše přemostění je 4.6 (F0-D8) — chat a teplota.
+    "claude-sonnet-4-5": {
+        "name": "Claude Sonnet 4.5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 23,
+        "tier": "balanced",
+        "tierDefault": false,
+        "platformIds": { "anthropic": "claude-sonnet-4-5" },
+        "capabilities": {
+            "temperature": true,
+            "thinkingModes": ["disabled", "enabled"],
+            "thinkingDefault": "off",
+            "effortLevels": [],
+            "thinkingOffMaxEffort": null,
+            "maxOutputTokens": 64000,
+            "chatToolLoop": true
+        },
+        "prices": { "input": 3, "output": 15 },
+        "lifecycle": { "status": "deprecated", "retiresAt": "2026-11-30", "replacedBy": "claude-sonnet-4-6" }
+    },
+
+    // ------------------------------------------------------------------ fast
+
+    "claude-haiku-5-5": {
+        "name": "Claude Haiku 5.5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 30,
+        "tier": "fast",
+        "tierDefault": false,
+        "platformIds": { "anthropic": "claude-haiku-5-5", "bedrock": "anthropic.claude-haiku-5-5" },
+        "capabilities": {
+            "temperature": false,
+            "thinkingModes": ["adaptive", "disabled"],
+            "thinkingDefault": "adaptive",
+            "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+            "thinkingOffMaxEffort": "high",
+            "maxOutputTokens": 128000,
+            "chatToolLoop": false
+        },
+        "prices": { "input": 0.10, "output": 0.50, "longPrompt": { "over": 100000, "input": 0.50, "output": 2.50 } },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-10-07" }
+    },
+    "claude-haiku-4-5": {
+        "name": "Claude Haiku 4.5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 31,
+        "tier": "fast",
+        "tierDefault": false,
+        "platformIds": { "anthropic": "claude-haiku-4-5", "bedrock": "anthropic.claude-haiku-4-5" },
+        "capabilities": {
+            "temperature": true,
+            "thinkingModes": ["disabled", "enabled"],
+            "thinkingDefault": "off",
+            "effortLevels": [],
+            "thinkingOffMaxEffort": null,
+            "maxOutputTokens": 64000,
+            "chatToolLoop": true
+        },
+        "prices": { "input": 1, "output": 5 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2026-10-15" }
+    },
+
+    // ------------------------------------------- jen ceník (modely nenabízíme)
+
+    "claude-fable-5-1": {
+        "name": "Claude Fable 5.1",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 100,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-fable-5-1", "bedrock": "anthropic.claude-fable-5-1" },
+        "prices": { "input": 10, "output": 50 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-09-01" }
+    },
+    "claude-mythos-5-1": {
+        "name": "Claude Mythos 5.1",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 101,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-mythos-5-1", "bedrock": "anthropic.claude-mythos-5-1" },
+        "prices": { "input": 10, "output": 50 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-09-01" }
+    },
+    "claude-fable-5": {
+        "name": "Claude Fable 5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 102,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-fable-5", "bedrock": "anthropic.claude-fable-5" },
+        "prices": { "input": 10, "output": 50 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-06-09" }
+    },
+    "claude-mythos-5": {
+        "name": "Claude Mythos 5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 103,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-mythos-5", "bedrock": "anthropic.claude-mythos-5" },
+        "prices": { "input": 10, "output": 50 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-06-09" }
+    },
+    "claude-opus-4-7": {
+        "name": "Claude Opus 4.7",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 110,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-opus-4-7", "bedrock": "anthropic.claude-opus-4-7" },
+        "prices": { "input": 5, "output": 25 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-04-16" }
+    },
+    "claude-opus-4-6": {
+        "name": "Claude Opus 4.6",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 111,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-opus-4-6" },
+        "prices": { "input": 5, "output": 25 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2027-02-05" }
+    },
+    "claude-opus-4-5": {
+        "name": "Claude Opus 4.5",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 112,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-opus-4-5" },
+        "prices": { "input": 5, "output": 25 },
+        "lifecycle": { "status": "active", "retiresNotBefore": "2026-11-24" }
+    },
+    "claude-opus-4-1": {
+        "name": "Claude Opus 4.1",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 113,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-opus-4-1" },
+        "prices": { "input": 15, "output": 75 },
+        "lifecycle": { "status": "retired", "retiresAt": "2026-08-05", "replacedBy": "claude-opus-4-8" }
+    },
+    "claude-opus-4": {
+        "name": "Claude Opus 4",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 114,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-opus-4" },
+        "prices": { "input": 15, "output": 75 },
+        "lifecycle": { "status": "retired", "retiresAt": "2026-06-15", "replacedBy": "claude-opus-4-8" }
+    },
+    "claude-sonnet-4": {
+        "name": "Claude Sonnet 4",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 120,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-sonnet-4" },
+        "prices": { "input": 3, "output": 15 },
+        "lifecycle": { "status": "retired", "retiresAt": "2026-06-15", "replacedBy": "claude-sonnet-4-6" }
+    },
+    "claude-3-5-sonnet": {
+        "name": "Claude 3.5 Sonnet",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 130,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-3-5-sonnet" },
+        "prices": { "input": 3, "output": 15 },
+        "lifecycle": { "status": "retired", "retiresAt": "2025-10-28", "replacedBy": "claude-sonnet-4-6" }
+    },
+    "claude-3-5-haiku": {
+        "name": "Claude 3.5 Haiku",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 131,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-3-5-haiku" },
+        "prices": { "input": 0.80, "output": 4 },
+        "lifecycle": { "status": "retired", "retiresAt": "2026-02-19", "replacedBy": "claude-haiku-4-5" }
+    },
+    "claude-3-opus": {
+        "name": "Claude 3 Opus",
+        "vendor": "anthropic",
+        "dialect": "anthropic-messages",
+        "order": 132,
+        "tier": null,
+        "platformIds": { "anthropic": "claude-3-opus" },
+        "prices": { "input": 15, "output": 75 },
+        "lifecycle": { "status": "retired", "retiresAt": "2026-01-05", "replacedBy": "claude-opus-4-8" }
+    }
+}

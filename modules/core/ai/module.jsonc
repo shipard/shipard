@@ -47,6 +47,11 @@
         {
             "id": "core.ai.effortLevels",
             "file": "config/effortLevels.jsonc"
+        },
+        {
+            // Katalog modelů — schopnosti, ceny, životní cyklus (#85 D30).
+            "id": "core.ai.models",
+            "file": "config/models.jsonc"
         }
     ],
 
