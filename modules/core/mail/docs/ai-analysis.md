@@ -345,10 +345,12 @@ selhaného běhu, sdílí ho `storeFailure()`; `created_by = NULL`, model
 a verze promptu `unknown`). Obojí jen pokud je zpráva stále ve stavu 20
 (řádek zprávy `FOR UPDATE`, result nebo failed mohl mezitím doběhnout).
 
-**Cena** (D19): `cost_usd` počítá `Shipard\Core\Ai\AnthropicPricing`
-z tabulky cen podle nejdelšího shodného prefixu ID modelu (ID z odpovědi
-streamu, fallback model backendu); neznámý model = 0 a varování. Dočasné —
-ceny převezme katalog modelů (#85 fáze 1).
+**Cena** (D19, #85 D33): `cost_usd` počítá `ModelCatalog::costUsd()`
+z ceníku katalogu modelů `core.ai.models` (ID z odpovědi streamu, fallback
+model backendu; datová přípona i prefix Bedrocku se dohledají, Haiku 5.5
+má dražší pásmo nad 100 000 vstupních tokenů); model mimo katalog nebo
+prázdný katalog = 0 a varování. Katalog předává `AnalysisRunnerFactory`
+z compiled configu (`docs/ai.md` §5.1).
 
 **Třídy:** `modules/core/mail/src/Analysis/` — `AnalysisStates`,
 `AnalysisQueue`, `AnalysisClaimService` (+ `AnalysisClaim`,
@@ -1190,11 +1192,14 @@ v detailu obsahuje "Otevřít" (form edit) a "Znovu analyzovat" (podmíněně dl
 Při každém `ds-upgrade` se zavolá `MailAiProvisioner::provision()`:
 
 1. Default backend (`backend_id=default`, `provider=anthropic`,
-   `model=claude-sonnet-4-6`, `temperature=NULL`, `api_key=NULL`,
+   `model` = výchozí model úrovně `balanced` z katalogu `core.ai.models`,
+   dnes `claude-sonnet-4-6`, `temperature=NULL`, `api_key=NULL`,
    `is_active=0`) — admin doplní klíč přes `ai-backend-set-key`, čímž
    `is_active=1`. Tentýž krok u všech backendů jednorázově přepíše
-   vyřazený model na náhradu (`MailAiProvisioner::RETIRED_MODELS`,
-   výpis `[MODEL]`; tasks/ai-models-phase0.md F0-D8).
+   vyřazený model na náhradu (`lifecycle.replacedBy` v katalogu, výpis
+   `[MODEL]`; tasks/ai-models-phase0.md F0-D8, #85 D33). Bez katalogu
+   (compiled config bez `core.ai.models`) backend nevzniká — `[WARN]`
+   + `[SKIP]` (tasks/ai-model-catalog.md D34).
 2. Default profil (`profile_id=czech_general`) ze šablony
    `profiles/czech_general.jsonc`. Před lookupem běží jednorázový rename
    legacy id `czech_invoices` → `czech_general` (včetně `name`; ds-upgrade

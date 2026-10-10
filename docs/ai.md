@@ -50,7 +50,7 @@ Externí Python daemon `ai_analyzer` s pull protokolem byl zrušen
 | MCP server | `src/Api/Mcp/` + `src/Api/Controller/McpController.php`; routa `POST /api/v1/_mcp` | JSON-RPC 2.0 (`initialize`, `tools/list`, `tools/call`), registr nástrojů, mapování obálky |
 | Nástroje | `modules/*/*/src/Mcp/` | doménové operace (viz §3) |
 | Chat orchestrátor | `src/Api/Controller/ChatController.php` + `modules/core/chat/` | konverzace, SSE smyčka, in-process volání nástrojů |
-| LLM klient | `src/Core/Ai/` (`LlmClient`, `AnthropicLlmClient`, `AiBackendResolver`, `LlmRetry`, `AnthropicPricing`) | streamovaný Anthropic Messages API (+ tool-use, timeouty); resolver default backendu + dešifrování klíče; opakování přechodných chyb; tabulka cen |
+| LLM klient | `src/Core/Ai/` (`LlmClient`, `AnthropicLlmClient`, `AiBackendResolver`, `LlmRetry`, `ModelCatalog` + `ModelSpec`, `RequestShaper`) | streamovaný Anthropic Messages API (+ tool-use, timeouty); resolver default backendu + dešifrování klíče; opakování přechodných chyb; katalog modelů (schopnosti, ceny, životní cyklus, §5.1) a tvarování požadavku podle něj |
 | Analýza pošty | `modules/core/mail/src/Analysis/` + `src/Command/DataSource/MailAnalyzeCommand.php` | služby fronty / claimu / zápisu výsledku (sdílené s pull endpointy), příprava příloh, prompt v Twig sandboxu, parser výstupu, runner a sloty souběhu — viz [`../modules/core/mail/docs/ai-analysis.md`](../modules/core/mail/docs/ai-analysis.md) § Analýza v procesu |
 | Dashboard shrnutí | `src/Core/Dashboard/DashboardSummaryService.php` + `modules/core/ai/tables/core_ai_dashboard_summary.jsonc` | generované shrnutí feedu (SSE, cache dle hashe digestu) — viz [`dashboard.md`](dashboard.md) §11 |
 | Frontend | `frontend/src/components/chat/` + `api/chat.js` | pohled „Chat", SSE konzumace přes `fetch` + reader |
@@ -111,11 +111,15 @@ jinak `thinking: {type}` / `output_config: {effort}`). Na parametry je
 převádí jediné místo, `AiBackendResolver::tuning()`; `thinking` a `effort`
 z něj berou všichni volající, **teplotu jen runner analýzy pošty** — chat,
 shrnutí i klasifikátory posílají `temperature: null` a posílat nezačnou
-(existující řádky mají `0`, změnilo by se jim chování). Hodnoty se proti
-modelu neověřují: nepřijatelnou kombinaci (řada 5 s nevýchozí teplotou nebo
-`thinking: disabled`, `between_tools` s `xhigh` / `max`) vrátí API jako
-HTTP 400 a volání selže čitelně v logu, u analýzy pošty jako `config_error`
-v tabu Analýzy. Validaci přinese katalog modelů (fáze 1).
+(existující řádky mají `0`, změnilo by se jim chování). **Hodnoty se před
+odesláním tvarují podle katalogu modelů** (§5.1, #85 D32): kombinaci, kterou
+model nepřijímá (řada 5 s nevýchozí teplotou nebo `thinking: disabled`,
+`between_tools` s `xhigh` / `max`, `xhigh` na Sonnetu 4.6), `RequestShaper`
+v `AnthropicLlmClient` vynechá nebo nahradí nejbližší platnou hodnotou
+a úpravu zapíše do logu (`info`, model + seznam úprav). Model mimo katalog
+nebo chybějící compiled config = beze změny, chybu 400 pak vrátí API
+a volání selže čitelně v logu, u analýzy pošty jako `config_error` v tabu
+Analýzy.
 
 **Kontrola `stop_reason`** (#85 F0-D4): `LlmChatResult::isComplete()` je
 `true` jen pro `end_turn`, `tool_use`, `stop_sequence` a chybějící stop
@@ -148,11 +152,12 @@ klíč). Per DS může být víc backendů, právě jeden `is_default`. Detaily 
 
 - Klíč je šifrovaný přes `DsSecretCipher` — viz [`operations/secrets.md`](operations/secrets.md).
 - Nastavení klíče: `bin/shpd-ds ai-backend-set-key --backend default` (klíč skrytým vstupem nebo ze STDIN, `--api-key` jen pro provisioning agenta; aktivuje backend). Auto-provisioning vytvoří `default` backend při `ds-upgrade`.
-- **Výchozí model a přemostění (#85 F0-D8):** nový backend vzniká
-  s `claude-sonnet-4-6` a `temperature` NULL. Sonnet 4.5 je od 30. 9. 2026
+- **Výchozí model a přemostění (#85 F0-D8, D34):** nový backend vzniká
+  s výchozím modelem úrovně `balanced` z katalogu modelů (§5.1, dnes
+  `claude-sonnet-4-6`) a `temperature` NULL. Sonnet 4.5 je od 30. 9. 2026
   deprecated a **30. 11. 2026 končí**; `ds-upgrade` proto u všech backendů
-  jednorázově přepíše `claude-sonnet-4-5` (i s datovou příponou) na 4.6
-  podle `MailAiProvisioner::RETIRED_MODELS` a vypíše `[MODEL]`. ID
+  jednorázově přepíše modely se statusem `deprecated` / `retired` na jejich
+  `lifecycle.replacedBy` (i s datovou příponou) a vypíše `[MODEL]`. ID
   s prefixem platformy (`anthropic.…`) nechává být. Sonnet 4.6 je stejná
   cena i tokenizer, přijímá `temperature` a bez parametru nepřemýšlí —
   chování se nemění. **Aktivní je nejméně do 17. 2. 2027**; do té doby musí
@@ -161,6 +166,12 @@ klíč). Per DS může být víc backendů, právě jeden `is_default`. Detaily 
   smyčka na modelech s thinking vyžaduje vracet thinking bloky beze změny
   a historii jen přidávat — `AnthropicLlmClient::finalizeBlocks()` je dnes
   zahazuje. Totéž platí pro shrnutí dashboardu (sdílí výchozí backend).
+  **Pojistka (#85 D29, D35):** má-li model backendu v katalogu
+  `chatToolLoop: false` (bez parametru přemýšlí — celá řada 5),
+  `ChatController` ho nevolá a vrátí 503 `AI_MODEL_NOT_SUPPORTED_FOR_CHAT`
+  s modelem v `details`; UI asistenta ukáže „Asistent zatím neumí pracovat
+  s modelem …, správce nastaví jiný“. `null` (nevíme) a `true` = beze změny.
+  Pojistka zmizí s fází 4.
 - **Jak zkoušet model řady 5 (`claude-sonnet-5-5`, `claude-haiku-5-5`)
   přes druhý backend:** založit backend v Nastavení → AI backendy
   (teplota prázdná, thinking / effort `auto` nebo konkrétní hodnota),
@@ -171,8 +182,9 @@ klíč). Per DS může být víc backendů, právě jeden `is_default`. Detaily 
   pro řadu 5 platí (odmítá teplotu, bez `thinking` přemýšlí adaptivně,
   `between_tools` jen s effortem do `high`, `refusal`, o ~30 % víc tokenů
   na stejný text, odmítá `tool_choice` any/tool a prefill):
-  `tasks/ai-models-phase0.md`. Ceny drží `AnthropicPricing` (F0-D9,
-  dočasně do katalogu modelů).
+  `tasks/ai-models-phase0.md`. Teplotu `0` nebo `thinking: disabled`
+  z backendu katalog pro řadu 5 vynechá / nahradí (§5.1) — volání projde
+  a úprava je v logu. Ceny bere `ModelCatalog::costUsd()` z katalogu.
 - **AI přes hosting gateway (D5/D6):** DS hostovaný pod portálem může místo
   vlastního klíče používat AI gateway hostingu — backend má `base_url` =
   gateway (`…/api/v1/_hosting/ai-gw`) a `api_key` = gateway token
@@ -194,6 +206,67 @@ klíč). Per DS může být víc backendů, právě jeden `is_default`. Detaily 
 - **Provider scope:** v1 jen `anthropic`; rozhraní `LlmClient` drží dveře pro
   další providery (lokální, OpenAI) otevřené, aniž by se předčasně abstrahoval
   formát streamu.
+
+### 5.1 Katalog modelů
+
+Jedno místo v repu, kde Shipard ví, „jak s modelem mluvit“ (#85 fáze 1a,
+`tasks/ai-model-catalog.md` D30–D35): cfgItem **`core.ai.models`**
+(`modules/core/ai/config/models.jsonc`, modul `core.ai`), čtený přes
+compiled config třídou `Shipard\Core\Ai\ModelCatalog` (položky =
+`ModelSpec`). Klíč položky je ID modelu na přímém API bez datové přípony
+(`claude-sonnet-4-6`); `find()` přijme i ID s příponou
+(`claude-sonnet-4-5-20250929`) a ID z Bedrocku (`anthropic.claude-sonnet-5-5`)
+— shoda je přesné ID nebo ID + `-YYYYMMDD`, vyhrává nejdelší kandidát,
+prefix sám nestačí (`claude-opus-4` nechytí `claude-opus-4-8`).
+
+| Pole | Význam |
+|------|--------|
+| `name`, `vendor`, `dialect`, `order` | popis; `order` řadí výpisy |
+| `tier`, `tierDefault` | `fast` / `balanced` / `strong` / `null` (model nenabízíme, jen ceník); `tierDefault: true` = výchozí model úrovně — zatím jen `balanced` (D34) |
+| `platformIds` | ID per platforma (`anthropic`, `bedrock`); chybějící platforma = model tam není |
+| `capabilities.temperature` | přijímá nevýchozí teplotu (řada 4.7 a novější ne) |
+| `capabilities.thinkingModes`, `thinkingDefault` | přijímané hodnoty `thinking.type`; chování bez parametru `off` / `adaptive` |
+| `capabilities.effortLevels`, `thinkingOffMaxEffort` | přijímané úrovně (`[]` = parametr nezná); nejvyšší effort spolu s vypnutým thinkingem (`disabled` / `between_tools`) |
+| `capabilities.maxOutputTokens` | horní mez `max_tokens` |
+| `capabilities.chatToolLoop` | tool smyčka chatu funguje bez vracení thinking bloků = model bez parametru nepřemýšlí (pojistka D35, zmizí s fází 4) |
+| `prices` | USD za milion tokenů `input` / `output`, volitelně `longPrompt {over, input, output}` (Haiku 5.5 nad 100 000 vstupních tokenů) |
+| `lifecycle` | `status` `active` / `deprecated` / `retired`, `retiresAt`, `retiresNotBefore`, `replacedBy` (naše náhrada při `ds-upgrade`) |
+
+**`null` (nebo chybějící pole) = nevíme → neomezovat**, hodnota se pošle
+beze změny. Co nejde doložit z dokumentace, zůstává `null` — žádné odhady;
+zdroje a datum poslední kontroly jsou v hlavičce souboru. Položka smí nést
+jen ceny (modely, které nenabízíme). Bez compiled configu je katalog prázdný:
+nic se netvaruje, ceny jsou 0 s varováním, `ds-upgrade` backend nezaloží
+(`[WARN]` + `[SKIP]`).
+
+**Tvarování požadavku** (`RequestShaper`, volá ho `AnthropicLlmClient`
+před sestavením těla, platí pro všechny volající):
+
+1. teplota, kterou model nepřijímá → vynechat;
+2. `thinking` mimo `thinkingModes` → náhrada `disabled` ↔ `between_tools`
+   (tu z dvojice, kterou model má), jinak vynechat;
+3. `effort` mimo `effortLevels` → nejbližší nižší přijímaná (model effort
+   nezná → vynechat); vypnutý thinking s `thinkingOffMaxEffort` → effort
+   nejvýš tato mez (Sonnet 5.5 `between_tools`, Opus 5 a Haiku 5.5
+   `disabled`: `high`);
+4. `max_tokens` nad `maxOutputTokens` → snížit.
+
+Úpravy jdou do logu jednou za volání (`info`, model + seznam úprav); model
+mimo katalog se netvaruje a varování padne jednou za proces. Pro výchozí
+backend (Sonnet 4.6, teplota 0, `auto`) je tělo požadavku stejné jako před
+katalogem (test). Co z katalogu čtou ostatní: `ModelCatalog::costUsd()`
+(cena běhu analýzy, `cost_usd`), `MailAiProvisioner` (`defaultModel('balanced')`
+a `retiredReplacement()` při `ds-upgrade`), `ChatController` (`chatToolLoop`).
+Katalog se uplatní na straně zdroje dat; gateway hostingu model jen předává.
+
+**Jak přidat nebo změnit model:** doplnit položku do `models.jsonc` s odkazem
+na stránku modelu (schopnosti jen doložené, jinak `null`; ceny vždy;
+`lifecycle` s datem), spustit `vendor/bin/phpunit --filter
+'ModelCatalogFileTest'` (konzistence: ceny, jediný `tierDefault` na úroveň,
+`replacedBy` na aktivní model, hodnoty z cfgItemů `core.ai.thinkingModes`
+/ `effortLevels`), na zdrojích dat `ds-upgrade` (překompiluje config).
+Vyřazení modelu = `status: deprecated` + `retiresAt` + `replacedBy`;
+`ds-upgrade` pak backendy přepíše a vypíše `[MODEL]`.
 
 ---
 

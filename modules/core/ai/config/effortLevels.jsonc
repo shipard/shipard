@@ -5,9 +5,12 @@
     // F0-D2). `auto` = parametr se neposílá a platí výchozí úsilí modelu
     // (řada 5: `high`). Jiná hodnota odchází jako
     // `output_config: {"effort": "<hodnota>"}`. Thinking se na řadě 5
-    // počítá do `max_tokens` a účtuje jako výstup. Kombinace, které model
-    // nepřijímá (`between_tools` + `xhigh` / `max`), se neověřují — chybu
-    // 400 vrátí API. Dočasné — katalog modelů (#85 fáze 1).
+    // počítá do `max_tokens` a účtuje jako výstup. Které úrovně model
+    // přijímá, říká katalog modelů `core.ai.models` (`capabilities.
+    // effortLevels`, `thinkingOffMaxEffort`, #85 D32): nepřijímaná úroveň
+    // spadne na nejbližší nižší, s vypnutým thinkingem nejvýš na strop
+    // modelu (`between_tools` + `xhigh` → `high`), model bez effortu ji
+    // nedostane. Dočasné — fáze 1b (#85) přesune ladění do AI úloh.
 
     "auto": {
         "name": "Model default (not sent)",
