@@ -195,8 +195,11 @@ zdrojem — výstup je bajtově shodný s démonem.
 **Volání modelu a výstup** (D18): jedna zpráva `user` — text promptu, pak
 za každou přílohu blok `document` (PDF, base64) / `image` / `text`
 (`--- Attachment <název> (#<ndx>) ---`). `max_tokens` kaskádou profil →
-backend → 32768, teplota z backendu, streamovaně, `stallTimeoutSeconds =
-180`, `timeoutSeconds = 840` (lease 900 s). `OutputParser`: první textový
+backend → 32768, ladění z backendu přes `AiBackendResolver::tuning()`
+(teplota — NULL se neposílá, `0` z existujících řádků ano; `thinking`
+a `effort` — `auto` se neposílá; tasks/ai-models-phase0.md F0-D1, F0-D7),
+streamovaně, `stallTimeoutSeconds = 180`, `timeoutSeconds = 840` (lease
+900 s). `OutputParser`: první textový
 blok → JSON (přímo, jinak z markdown bloku ```` ```json ````) → validace
 proti `output_schema` přes `opis/json-schema` **bez formátů** (démon je
 nekontroloval; `source.extractedAt` server přepíše) → objekt na nejvyšší
@@ -214,6 +217,7 @@ textový tvar jsonschema, ze kterého `AnalysisErrorPresenter` skládá hlášku
 | šablona promptu nejde vykreslit, nevalidní `output_schema`, nepodporovaný provider | `config_error`, stav 70 | ne |
 | výstup není JSON / neodpovídá schématu | `schema_error`, stav 70 | ne |
 | `stop_reason = max_tokens` | `ai_error` „output truncated at max_tokens=<n>“, stav 70 | ne |
+| jiný neúplný výsledek — `refusal` (bezpečnostní klasifikátor řady 5), `model_context_window_exceeded`, … (`!LlmChatResult::isComplete()`, F0-D4) | `ai_error` „anthropic: stop_reason <hodnota>“, stav 70 | ne |
 | chyba nastavení: 401, 403, 404 (klíč, oprávnění, neznámý nebo vyřazený model — `LlmApiException::isConfigurationError()`) | `config_error` `anthropic: HTTP <stav> <typ>: <text>`, stav 70 | ne — opraví správce |
 | vyčerpaný měsíční strop útraty (429 s `error.details.error_code = enforced_spend_limit_reached`, bez `retry-after`; též `isConfigurationError()`) | `config_error` `anthropic: HTTP 429 rate_limit_error: <zpráva poskytovatele>`, stav 70 | ne — API stojí do dalšího měsíce; u hostovaných DS jde o strop společné organizace |
 | přechodná chyba (transport, 408, 429, 5xx, `overloaded_error`) | v rámci běhu další dva pokusy po 10 a 60 s (`LlmRetry`); po vyčerpání `ai_error`, stav 10 | nejvýš třikrát za hodinu (počítají se selhané běhy zprávy), pak stav 70 |

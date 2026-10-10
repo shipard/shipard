@@ -1,6 +1,6 @@
 # AI modely — fáze 0: odchod ze Sonnetu 4.5 a minimum pro aktuální generaci modelů
 
-**Stav:** naplánováno — rozhodnutí F0-D1, F0-D2, F0-D4–F0-D9 potvrzena 2026-10-10 (#85)
+**Stav:** hotovo — kód (5 commitů) a ověření 1–6 na dev DS `4l3j` 2026-10-10 (#85); výsledky pro fázi 2 (krok 7) připravené jako komentář do #85, zapíší se po potvrzení
 
 ## Status / cíl
 
@@ -298,9 +298,35 @@ Každý krok je samostatný commit.
 
 ## Hotovo když
 
-- [ ] Kroky 1–5 jako samostatné commity, `php -l` na změněných souborech.
-- [ ] Cílené testy: `vendor/bin/phpunit --filter 'AnthropicLlmClientTest|AiBackendResolverTest|AnthropicPricingTest|AnalysisRunnerTest|ContentTagClassifierTest|BookingHistoryClassifierTest|DashboardSummaryServiceTest|AIAnalyzerProvisionerTest'`, pak celá sada.
-- [ ] Backend s `temperature = 0` a `auto` posílá z runneru analýzy
+- [x] Kroky 1–5 jako samostatné commity, `php -l` na změněných souborech.
+- [x] Cílené testy: `vendor/bin/phpunit --filter 'AnthropicLlmClientTest|AiBackendResolverTest|AnthropicPricingTest|AnalysisRunnerTest|ContentTagClassifierTest|BookingHistoryClassifierTest|DashboardSummaryServiceTest|AIAnalyzerProvisionerTest'`, pak celá sada (8878 testů OK).
+- [x] Backend s `temperature = 0` a `auto` posílá z runneru analýzy
       identický požadavek jako před změnou (test).
-- [ ] Ověření 1–7 provedeno, výsledek do #85.
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.
+- [x] Ověření 1–6 provedeno 2026-10-10 na `4l3j` (viz „Výsledek ověření“ níže); krok 7 = komentář do #85 připravený, zapíše se po potvrzení.
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.
+
+## Výsledek ověření (2026-10-10, dev DS `4l3j`)
+
+Druhý backend `sonnet55` (`claude-sonnet-5-5`) a třetí `haiku55`
+(`claude-haiku-5-5`) s teplotou NULL, navázané na kopie výchozího AI
+profilu; `exchange.contentTag.backend` jde nastavit jen přes
+`SettingsStore` (není deklarovaný na stránce nastavení, `ds-setting set`
+ho odmítá). Tatáž syntetická faktura (PDF, bez ISDOC), stejný prompt:
+
+| Model | thinking / effort | tokeny vstup / výstup | čas | cena USD | výsledek |
+|---|---|---|---|---|---|
+| Sonnet 4.5 (dřívější běhy) | — | 8 627 / 802–853 | 8,6–14,0 s | 0,038–0,039 | referenční |
+| Sonnet 4.6 (výchozí backend po přepisu) | auto / auto, teplota 0 | 8 629 / 835 | 13,4 s | 0,0384 | shodný doklad i štítek |
+| Sonnet 5.5 | auto / auto (adaptive, high) | 10 457 / 835 | 5,0 s | 0,0293 | shodný doklad |
+| Sonnet 5.5 | between_tools / low | 10 342 / 964 | 5,4 s | 0,0303 | shodný doklad i štítek (klasifikátor štítků na 5.5) |
+| Haiku 5.5 | auto / auto | 10 344 / 1 964 | 8,2 s | 0,0020 | shodný doklad i štítek |
+| Sonnet 5.5 | disabled / auto | — | — | — | `[ai_error] anthropic permanent: HTTP 400 invalid_request_error: To turn thinking off on this model, send "thinking": {"type": "between_tools"} …`, stav 70, čitelné v logu i v tabu Analýzy |
+
+Extrahovaný doklad (číslo, dodavatel, IČO/DIČ, měna, řádky, celkem)
+i klasifikace zprávy jsou na všech modelech shodné; řada 5 má o ~20 %
+víc vstupních tokenů (tokenizer), Haiku 5.5 utratí část výstupu
+přemýšlením. Thinking na 5.5 ani Haiku nenarazil na stall timeout 180 s
+(volání trvá 5–8 s). Chat na 4.6 odpověděl s voláním nástroje
+(`mail_list_pending`), shrnutí dashboardu se na 4.6 vygenerovalo
+a uložilo do cache. `ds-upgrade`: první běh přepsal model a vypsal
+`[MODEL]`, druhý nic nemění.

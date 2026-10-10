@@ -86,7 +86,8 @@ ano, „neuhrazeno" ne: stav úhrady žádný z dokladových nástrojů nevrací
 |-------|--------------|-------|----------|
 | **Analýza pošty** | PHP `AnalysisRunner` (CLI `shpd-ds mail-analyze`: spawn po příjmu / předzpracování / reanalýze + minutový sweep) přes `AnthropicLlmClient`; dočasně i Python daemon `ai_analyzer` přes pull protokol `AnalysisController` | strukturovaný výstup (JSON dle `output_schema` profilu), streamovaně, timeouty 180 / 840 s, opakování přechodných chyb | — |
 | **Vnitřní chat** | PHP `AnthropicLlmClient` (in-process) | streamovaně (SSE), tool-use smyčka | čtecí MCP nástroje |
-| **Dashboard shrnutí** | PHP `AnthropicLlmClient` přes `DashboardSummaryService` | streamovaně (SSE), **bez tools**, `maxTokens ~300` | — |
+| **Dashboard shrnutí** | PHP `AnthropicLlmClient` přes `DashboardSummaryService` | streamovaně (SSE), **bez tools**, `maxTokens` 2000 (délku drží prompt) | — |
+| **Klasifikace štítků** | PHP `ContentTagClassifier` (obsahová eskalace řádků při analýze) a `BookingHistoryClassifier` (CLI `booking-history`) | jedno volání na doklad / dávku textů, `maxTokens` 8000 / 16000 | — |
 
 Všechny cesty čtou backend (provider/model/klíč) z `core_ai_backends`; default
 backend na PHP straně resolvuje `AiBackendResolver`, analýza pošty bere
@@ -99,8 +100,32 @@ hostingu (#85 D11, D15).
 svém provideru); `0` = nenastaveno, spadni níž. Jediné skutečné číslo žije
 v kódu — limit tak nezkamení v datech každého DS. Chat backendový
 `max_tokens` respektuje, při 0/NULL drží vlastní fallback 4096
-(`ChatController`); dashboard shrnutí má vlastní konstantu (~300) a backend
-limit nečte.
+(`ChatController`); dashboard shrnutí a klasifikátory mají vlastní konstanty
+a backend limit nečtou. Na modelech s thinking se přemýšlení počítá do
+`max_tokens`, proto jsou tyhle konstanty **strop, ne cena** — řádově vyšší
+než délka odpovědi (2000 / 8000 / 16000; #85 F0-D5). Na modelu bez thinking
+se spotřeba nemění.
+
+**Ladicí parametry backendu** (`core_ai_backends`, #85 F0-D1, F0-D2, F0-D7):
+`temperature` (NULL = neposílat), `thinking` a `effort` (`auto` = neposílat,
+jinak `thinking: {type}` / `output_config: {effort}`). Na parametry je
+převádí jediné místo, `AiBackendResolver::tuning()`; `thinking` a `effort`
+z něj berou všichni volající, **teplotu jen runner analýzy pošty** — chat,
+shrnutí i klasifikátory posílají `temperature: null` a posílat nezačnou
+(existující řádky mají `0`, změnilo by se jim chování). Hodnoty se proti
+modelu neověřují: nepřijatelnou kombinaci (řada 5 s nevýchozí teplotou nebo
+`thinking: disabled`, `between_tools` s `xhigh` / `max`) vrátí API jako
+HTTP 400 a volání selže čitelně v logu, u analýzy pošty jako `config_error`
+v tabu Analýzy. Validaci přinese katalog modelů (fáze 1).
+
+**Kontrola `stop_reason`** (#85 F0-D4): `LlmChatResult::isComplete()` je
+`true` jen pro `end_turn`, `tool_use`, `stop_sequence` a chybějící stop
+reason; `max_tokens`, `refusal` (bezpečnostní klasifikátor řady 5, může
+zasáhnout i neškodný obsah), `model_context_window_exceeded` a nové hodnoty
+jsou neúplný výsledek. Runner analýzy ho ukládá jako `ai_error` bez
+opakování (`anthropic: stop_reason <hodnota>`, u `max_tokens` dnešní
+hláška), klasifikátory a shrnutí vrací `null` a **shrnutí se necachuje**,
+chat jen loguje.
 
 Výsledek extrakce navíc prochází obohacením řádků (`RowEnrichmentPipeline`):
 deterministická vrstva z historie dokladů partnera (`RowHistoryEnricher`,
@@ -124,6 +149,31 @@ klíč). Per DS může být víc backendů, právě jeden `is_default`. Detaily 
 
 - Klíč je šifrovaný přes `DsSecretCipher` — viz [`operations/secrets.md`](operations/secrets.md).
 - Nastavení klíče: `bin/shpd-ds ai-analyzer-set-key --backend default --api-key <api-key>` (aktivuje backend). Auto-provisioning vytvoří `default` backend při `ds-upgrade`.
+- **Výchozí model a přemostění (#85 F0-D8):** nový backend vzniká
+  s `claude-sonnet-4-6` a `temperature` NULL. Sonnet 4.5 je od 30. 9. 2026
+  deprecated a **30. 11. 2026 končí**; `ds-upgrade` proto u všech backendů
+  jednorázově přepíše `claude-sonnet-4-5` (i s datovou příponou) na 4.6
+  podle `AIAnalyzerProvisioner::RETIRED_MODELS` a vypíše `[MODEL]`. ID
+  s prefixem platformy (`anthropic.…`) nechává být. Sonnet 4.6 je stejná
+  cena i tokenizer, přijímá `temperature` a bez parametru nepřemýšlí —
+  chování se nemění. **Aktivní je nejméně do 17. 2. 2027**; do té doby musí
+  proběhnout fáze 4 (thinking bloky v tool smyčce chatu) a přechod na řadu 5.
+- **Chat zůstává na výchozím backendu se Sonnetem 4.6 (#85 F0-D6):** tool
+  smyčka na modelech s thinking vyžaduje vracet thinking bloky beze změny
+  a historii jen přidávat — `AnthropicLlmClient::finalizeBlocks()` je dnes
+  zahazuje. Totéž platí pro shrnutí dashboardu (sdílí výchozí backend).
+- **Jak zkoušet model řady 5 (`claude-sonnet-5-5`, `claude-haiku-5-5`)
+  přes druhý backend:** založit backend v Nastavení → AI backendy
+  (teplota prázdná, thinking / effort `auto` nebo konkrétní hodnota),
+  klíč přes `ai-analyzer-set-key --backend <kód>`; pro analýzu pošty
+  druhý AI profil s tímto backendem (reanalýza zprávy s profilem, nebo
+  `profile_override`), pro štítky nastavení `exchange.contentTag.backend`
+  = id backendu, pro historii účtování `booking-history --backend`. Co
+  pro řadu 5 platí (odmítá teplotu, bez `thinking` přemýšlí adaptivně,
+  `between_tools` jen s effortem do `high`, `refusal`, o ~30 % víc tokenů
+  na stejný text, odmítá `tool_choice` any/tool a prefill):
+  `tasks/ai-models-phase0.md`. Ceny drží `AnthropicPricing` (F0-D9,
+  dočasně do katalogu modelů).
 - **AI přes hosting gateway (D5/D6):** DS hostovaný pod portálem může místo
   vlastního klíče používat AI gateway hostingu — backend má `base_url` =
   gateway (`…/api/v1/_hosting/ai-gw`) a `api_key` = gateway token
