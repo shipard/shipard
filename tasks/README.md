@@ -25,7 +25,7 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
-| `ai-analyzer-removal.md` | naplánováno | po ověření `mail-analysis-inprocess.md`; čeká na potvrzení rozhodnutí D20–D24 (#85) |
+| `ai-analyzer-removal.md` | naplánováno | rozhodnutí D20–D24 potvrzena 2026-10-10 (#85), připraveno k implementaci |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
