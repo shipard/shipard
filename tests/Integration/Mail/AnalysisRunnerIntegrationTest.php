@@ -70,7 +70,7 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
             1, 1, 1,
         );
         if ($backend === null || (string) ($backend['api_key'] ?? '') === '') {
-            $this->markTestSkipped('DS nemá aktivní výchozí profil s backendem a klíčem — run ai-analyzer-set-key.');
+            $this->markTestSkipped('DS nemá aktivní výchozí profil s backendem a klíčem — run ai-backend-set-key.');
         }
         $mailbox = $this->db->fetchRow('SELECT id FROM core_mail_mailboxes WHERE ai_analysis_disabled = %i LIMIT 1', 0);
         if ($mailbox === null) {

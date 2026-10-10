@@ -24,7 +24,7 @@
                                 {"type": "input", "column": "model", "required": true},
                                 {"type": "input", "column": "base_url"},
 
-                                {"type": "separator", "label": "API klíč se nastavuje přes CLI (ai-analyzer-set-key)", "label:cs": "API klíč se nastavuje přes CLI (ai-analyzer-set-key)", "label:en": "API key is set via CLI (ai-analyzer-set-key)"},
+                                {"type": "separator", "label": "API klíč se nastavuje přes CLI (ai-backend-set-key)", "label:cs": "API klíč se nastavuje přes CLI (ai-backend-set-key)", "label:en": "API key is set via CLI (ai-backend-set-key)"},
 
                                 {"type": "separator", "label": "Ladění", "label:cs": "Ladění", "label:en": "Tuning"},
                                 {"type": "input", "column": "max_tokens"},

@@ -4,9 +4,10 @@ Modul spravuje e-mailovou komunikaci.
 
 - **Fáze 1** — evidence došlé pošty (schránky, zprávy, struktura pro analýzy).
 - **Fáze 2a** — HTTP endpoint `POST /_mail/incoming` pro externí mail-router.
-- **Fáze 3a** — AI analýza došlých zpráv (extrakce dokumentů, pull-based protokol
-  pro externí analyzer, UI pro review extrahovaných dokumentů, akce "Znova
-  analyzovat").
+- **Fáze 3a** — AI analýza došlých zpráv (extrakce dokumentů, UI pro review
+  návrhu, akce „Znovu analyzovat“); původní pull protokol pro externí
+  analyzer zrušen #85 D20 — analýzu dělá runner v procesu
+  (`tasks/mail-analysis-inprocess.md`).
 - **Fáze 3 Spisovny (šum)** — deterministická pravidla odesílatelů s učením ze
   zpětné vazby (auto-archiv při ingestu, návrhové karty), signál `is_bulk`
   z hlaviček `.eml`, denní digest karta s „Vrátit vše". Viz `tasks/registry-phase3.md`.
@@ -46,7 +47,7 @@ další providers (Ollama, ...), odeslaná pošta.
 | [IdempotencyStore.php](src/IdempotencyStore.php) | Lookup/store idempotency klíčů |
 | [AIProfileDocument.php](src/AIProfileDocument.php) | AI profil — JSON validace, `is_default` invariant |
 | [ExtractedDocumentDocument.php](src/ExtractedDocumentDocument.php) | Extrahovaný dokument — atomický auto-transition zprávy 30→40 v `afterPersist` |
-| [AIAnalyzerProvisioner.php](src/AIAnalyzerProvisioner.php) | Bootstrap `_ai_analyzer` + default backend + default profil |
+| [MailAiProvisioner.php](src/MailAiProvisioner.php) | Bootstrap default backendu + default profilu, přepis vyřazených modelů, deaktivace zrušeného uživatele `_ai_analyzer` |
 | [AnalysisClaimReaper.php](src/AnalysisClaimReaper.php) | Reaper expirovaných claimů |
 | [SenderRuleDocument.php](src/SenderRuleDocument.php) | Pravidla odesílatelů — formát dle druhu, lowercase, unikátnost mezi živými |
 | [SenderRulesViewer.php](src/SenderRulesViewer.php) | Settings viewer pravidel odesílatelů |
@@ -79,7 +80,7 @@ další providers (Ollama, ...), odeslaná pošta.
 ## Default AI profil
 
 [profiles/czech_general.jsonc](profiles/czech_general.jsonc) — šablona, ze které
-`AIAnalyzerProvisioner` při `ds-upgrade` vytvoří první profil `czech_general`.
+`MailAiProvisioner` při `ds-upgrade` vytvoří první profil `czech_general`.
 
 ## API endpointy
 
@@ -103,13 +104,12 @@ Kontrakty: [docs/mail/api-contract.md](../../../docs/mail/api-contract.md).
 | `bin/shpd-ds mail-router-bootstrap` | Bootstrap `_mail_router` + default schránky. |
 | `bin/shpd-ds mail-router-setup [--force] [--ip=X]` | API klíč pro mail-router. |
 | `bin/shpd-ds mail-idempotency-prune [--days N]` | Prune idempotency klíčů (cron 1×/den). |
-| `bin/shpd-ds ai-analyzer-bootstrap` | Bootstrap `_ai_analyzer` + default backend + default profile. |
-| `bin/shpd-ds ai-analyzer-setup [--force] [--ip=X]` | API klíč pro AI analyzer. |
-| `bin/shpd-ds ai-analyzer-set-key --backend default --api-key sk-ant-...` | Nastaví/zrotuje API klíč backendu (šifruje přes `DsSecretCipher`). |
+| `bin/shpd-ds ai-backend-set-key [--backend default]` | Nastaví/zrotuje API klíč AI backendu — skrytý vstup / STDIN, `--api-key` pro provisioning agenta (šifruje přes `DsSecretCipher`). |
+| `bin/shpd-ds mail-analyze --message <id>` / `--sweep` | Runner AI analýzy v procesu / minutový sweep fronty. Viz [docs/ai-analysis.md](docs/ai-analysis.md). |
 | `bin/shpd-ds mail-analysis-reap` | Reaper expirovaných claimů (cron 1×/min). |
 | `bin/shpd-ds mail-preprocess --message <id> [--force]` / `--sweep` | Runner technického předzpracování zprávy (plán z intake) / záchrana zaseknutých (cron 1×/min). Viz [docs/preprocess.md](docs/preprocess.md). |
 
-`ai-analyzer-bootstrap` a `mail-router-bootstrap` se volají automaticky z `ds-upgrade`.
+Default AI backend a profil zakládá `ds-upgrade` (`MailAiProvisioner`); `mail-router-bootstrap` se z něj volá automaticky.
 
 ## Dokumentace
 

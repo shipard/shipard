@@ -151,7 +151,7 @@ class AnalysisClaimService
             if ($apiKey === null || $apiKey === '') {
                 throw new AnalysisClaimException(
                     AnalysisClaimException::BACKEND_KEY_MISSING,
-                    "Backend '{$backend['backend_id']}' has no API key set. Run ai-analyzer-set-key.",
+                    "Backend '{$backend['backend_id']}' has no API key set. Run ai-backend-set-key.",
                     409,
                 );
             }

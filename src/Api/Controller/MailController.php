@@ -30,6 +30,7 @@ use Shipard\Module\Core\Mail\IsdocImportService;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRuleMatcher;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRunner;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessSpawner;
+use Shipard\Module\Core\Mail\MailAiProvisioner;
 use Shipard\Module\Core\Mail\MailRouterProvisioner;
 use Shipard\Module\Core\Mail\MessagePartnerWriter;
 use Shipard\Module\Core\Mail\MessageTargetWriter;
@@ -59,8 +60,8 @@ class MailController
     /** Strop souborů v jedné dávce ručního uploadu (D6). */
     private const UPLOAD_MAX_FILES = 20;
 
-    /** Systémové účty, kterým upload endpoint nepatří — je pro UI uživatele. */
-    private const UPLOAD_FORBIDDEN_LOGINS = [MailRouterProvisioner::ROUTER_LOGIN, '_ai_analyzer'];
+    /** Systémové účty, kterým upload endpoint nepatří — je pro UI uživatele (účet zrušeného analyzeru je deaktivovaný, guard zůstává). */
+    private const UPLOAD_FORBIDDEN_LOGINS = [MailRouterProvisioner::ROUTER_LOGIN, MailAiProvisioner::LEGACY_ANALYZER_LOGIN];
 
     private AttachmentService $attachments;
     private IdempotencyStore $idempotency;

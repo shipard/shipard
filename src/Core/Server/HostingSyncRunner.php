@@ -456,7 +456,7 @@ class HostingSyncRunner
     /**
      * Krok g. — `ai-analyzer-set-key --base-url` v adresáři DS zapíše
      * gateway backend (D5). Idempotentní (set-key je upsert nad default
-     * backendem, který zakládá AIAnalyzerProvisioner při ds-upgrade).
+     * backendem, který zakládá MailAiProvisioner při ds-upgrade).
      * api_key v argv je lokální root kontext (proc_open s argv polem, žádný
      * shell) — do logu ani confirm.error ale nesmí: failure tail se maskuje.
      *

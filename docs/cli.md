@@ -2,7 +2,7 @@
 
 Shipard má dvě hlavní CLI utility a tři podpůrné shell skripty. Dohromady
 pokrývají instalaci serveru, vytváření a správu datových zdrojů (DS),
-údržbu (secrets, mail-router, AI analyzer) a vývojový workflow.
+údržbu (secrets, mail-router, AI backend) a vývojový workflow.
 
 | Nástroj | Účel | Spouštět z |
 |---------|------|-----------|
@@ -479,7 +479,7 @@ VAT období, číselné řady, mail router). Bezpodmínečně (i pod
 `skipProvisioning`) běží jen enginové kontrakty: clearing 261200/261300
 se skupinou Nespárované platby, tranzit 261100, podrozvahové účty
 756100/799100 s opravou povahy 75–79 (`OffBalanceAccountsProvisioner`,
-#79 D2), AI analyzer, pravidla předzpracování pošty a vázané řady.
+#79 D2), AI backend a profil pošty, pravidla předzpracování pošty a vázané řady.
 Určeno pro import dat
 z jiného systému, kde tyto údaje dodává sám import. Po dokončení importu
 nastav `skipProvisioning` zpět na `false` a spusť `ds-upgrade` znovu —
@@ -495,11 +495,14 @@ skupině. Import nastavení saldokont ze starého systému se zrušil
 `ds-upgrade` s flagem `false` do ní sign-pravidla nedoplní, přepnutí na
 výchozí chování je ruční úkon účetní na přelomu roku (`accbal.md` §3.2).
 
-**AI analyzer provisioning běží vždy**, i pod `skipProvisioning` — user
-`_ai_analyzer`, default backend, default profil i version sync profilu
-nejsou migrovaná data, ale systémový kontrakt modulů `core.mail`/`core.ai`
-(stejně jako clearing infrastruktura). Na DS bez modulu `core.mail` se
-tiše přeskočí (verbose `[SKIP]`).
+**Provisioning AI pošty běží vždy**, i pod `skipProvisioning` — default
+backend, default profil i version sync profilu nejsou migrovaná data, ale
+systémový kontrakt modulů `core.mail`/`core.ai` (stejně jako clearing
+infrastruktura). Tentýž krok jednorázově deaktivuje systémového uživatele
+`_ai_analyzer` zrušeného externího analyzeru a zneplatní jeho API klíče
+(`[DEACTIVATE]`, jen při změně; účet se nemaže kvůli `created_by` starých
+běhů — #85 D21). Na DS bez modulu `core.mail` se tiše přeskočí (verbose
+`[SKIP]`).
 
 #### `ds-reset`
 
@@ -522,10 +525,10 @@ výchozím stavu zůstávají:
 - `core.system` — uživatelé, relace, nastavení, API klíče (vč. importního),
   rate limity (login funguje i po resetu),
 - `core.ai` — `core_ai_backends` kvůli zašifrovanému AI klíči
-  (`ai-analyzer-set-key`),
+  (`ai-backend-set-key`),
 - `core.mail` — `core_mail_ai_profiles`: AI profil je konfigurace (vč.
   admin úprav a lokálně laděného promptu), ne migrovaná data. Spolu se
-  zachovanými backendy a klíči tak po resetu analyzer funguje bez
+  zachovanými backendy a klíči tak po resetu AI analýza funguje bez
   jakékoliv ruční akce.
 
 Vše ostatní se dropuje, **včetně osiřelých tabulek** po odebraných modulech
@@ -612,7 +615,7 @@ potvrzení, selhání zápisu, nebo `show` nad poškozeným souborem.
 
 HTTP: `suspended` / maintenance / `pending_deletion` → 503 `DS_UNAVAILABLE`
 + `Retry-After: 300` (i pro `/_mail/incoming` — mail-router frontuje);
-`read_only` → čtení běží, mutace 403 `DS_READ_ONLY`, pošta a analyzer
+`read_only` → čtení běží, mutace 403 `DS_READ_ONLY`, příjem pošty
 503, chat vypnutý ([ds-state.md](ds-state.md) §6). Na hostovaných DS bude
 stav řídit hosting (`hosting-sync`, fáze 3); lokální CLI je pro nehostované
 DS a nouzové zásahy.
@@ -978,9 +981,8 @@ DS (ochrana proti zamčení). Neaktivnímu adminovi lze práva odebrat vždy.
 ### API keys
 
 Generické příkazy pro správu API klíčů libovolného uživatele. Pro
-role-specifické bootstrap subsystémů (mail-router, AI analyzer) viz
-příslušné sekce níže — ty jsou samostatné a tyto generické příkazy
-je nenahrazují.
+role-specifický bootstrap mail-routeru viz sekce níže — je samostatný
+a tyto generické příkazy ho nenahrazují.
 
 Klíč žije v `core_system_api_keys`: ukládá se jen SHA-256 hash + 12-znakový
 `key_prefix` pro lookup. Plaintext token (`shpd_ak_` + 32 hex chars) se
@@ -1161,52 +1163,39 @@ nedorazí; pro test skutečného doručení musí být adresa povolená
 | `--from <addr>` | From adresa — rozhoduje o transportu (sender vs. relay) |
 | `--subject <s>` | Předmět (default `Shipard mail-send-test`) |
 
-### AI Analyzer
+### AI
 
-#### `ai-analyzer-bootstrap`
+Výchozí AI backend `default` a výchozí profil analýzy pošty zakládá
+`ds-upgrade` sám (bezpodmínečně, i pod `skipProvisioning`). Jediný ruční
+krok při zřízení zdroje dat je klíč backendu:
 
-```bash
-sudo shpd-ds ai-analyzer-bootstrap
-```
-
-Idempotentně zajistí systémového uživatele `_ai_analyzer`, výchozí AI
-backend a výchozí profil.
-
-Totéž automaticky pokrývá `ds-upgrade` (bezpodmínečně, i pod
-`skipProvisioning`) — příkaz slouží pro ruční zásah mimo upgrade.
-
-#### `ai-analyzer-setup`
+#### `ai-backend-set-key`
 
 ```bash
-sudo shpd-ds ai-analyzer-setup
-sudo shpd-ds ai-analyzer-setup --force
-sudo shpd-ds ai-analyzer-setup --ip 203.0.113.10
+sudo shpd-ds ai-backend-set-key                       # klíč zadáš skrytě na výzvu
+sudo shpd-ds ai-backend-set-key --backend=claude-5    # jiný než výchozí backend
+echo "$KEY" | sudo shpd-ds ai-backend-set-key         # ze STDIN (skripty)
+sudo shpd-ds ai-backend-set-key --api-key=sk-xxx      # jen pro provisioning agenta
 ```
 
-Vygeneruje (nebo rotuje) API klíč pro externí AI analyzer.
-
-| Opce | Význam |
-|------|--------|
-| `--force` | Deaktivovat stávající aktivní klíč a vygenerovat nový |
-| `--ip <addr>` | Omezit klíč na konkrétní zdrojovou IP |
-
-#### `ai-analyzer-set-key`
-
-```bash
-sudo shpd-ds ai-analyzer-set-key --api-key=sk-xxx
-sudo shpd-ds ai-analyzer-set-key --backend=openai-gpt4 --api-key=sk-xxx
-```
-
-Nastaví (nebo rotuje) API klíč na konkrétním AI backendu. Klíč se před
-uložením zašifruje přes `DsSecretCipher`. `--base-url` směruje backend na
+Nastaví (nebo rotuje) API klíč AI backendu — platí pro všechny AI cesty
+(analýza pošty, chat, shrnutí dashboardu, obsahové štítky). Bez `--api-key`
+se klíč čte skrytým vstupem z terminálu, nebo ze STDIN pipe; neinteraktivní
+běh bez klíče končí chybou. Klíč se před uložením zašifruje přes
+`DsSecretCipher` a backend se aktivuje. `--base-url` směruje backend na
 AI gateway hostingu (D5/D6) — klíčem je pak gateway token `shpd_gw_…`;
 prázdná hodnota (`--base-url ''`) vrací backend na přímé Anthropic API.
 
 | Opce | Význam |
 |------|--------|
-| `--backend <kód>` | Backend code (default: `default`) |
-| `--api-key <klíč>` | **povinné** — plaintext API klíč |
-| `--base-url <url>` | base URL API (AI gateway); `''` = reset na přímé Anthropic; nezadaná = beze změny |
+| `--backend <kód>` | Kód backendu (default `default`) |
+| `--api-key <klíč>` | Klíč v argumentu — pro provisioning agenta hostingu (`HostingSyncRunner`), kde argv nejde přes shell; ručně dej přednost skrytému vstupu |
+| `--base-url <url>` | Base URL API (AI gateway); prázdný řetězec = přímé Anthropic |
+
+`ai-analyzer-set-key` je alias z doby externího analyzeru (zrušen #85
+D20–D21) — jedno vydání funguje s upozorněním na stderr. Příkazy
+`ai-analyzer-bootstrap` a `ai-analyzer-setup` zanikly; uživatele
+`_ai_analyzer` `ds-upgrade` deaktivuje (`[DEACTIVATE]`, viz výše).
 
 #### `ai-profile-reload`
 
@@ -1290,8 +1279,7 @@ a chyby infrastruktury (kterákoli zpráva `crashed`).
 | `--sweep` | Záchrana: zprávy ve frontě bez aktivního claimu → spawn runneru, nejvýš tolik, kolik je volných slotů; bez použitelného backendu nic (jedno varování). Exit 0 i bez nálezu |
 
 Limit souběhu per server `ai.analysis.maxConcurrent` v `server.json`
-(výchozí 2, `0` = analýza v procesu vypnutá — server, kde dál pracuje
-démon `ai-analyzer`), sloty = `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`;
+(výchozí 2, `0` = analýza pošty na tomto serveru vypnutá), sloty = `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`;
 viz [operations/production.md](operations/production.md) § 10. Běh zvedne
 `memory_limit` na 512 MB, je-li nižší (přílohy v base64 a v těle požadavku).
 
@@ -1422,7 +1410,7 @@ sudo shpd-ds hosting-ai-token --revoke 3
 Gateway token DS pro AI gateway `/_hosting/ai-gw/v1/messages` (D5).
 `--generate` vytvoří token `shpd_gw_…`, na řádek `hosting_core_ai_tokens`
 uloží prefix + SHA-256 hash + šifrovaný plaintext (queue payload)
-a token vytiskne **jednou** — patří do `ai-analyzer-set-key --api-key`
+a token vytiskne **jednou** — patří do `ai-backend-set-key --api-key`
 na klientském DS. Určeno pro ruční backfill existujících DS; nové
 požadavky mintuje queue payload sám. `--revoke` nastaví `active = 0`
 (gateway token okamžitě odmítá, 401).
@@ -1761,8 +1749,8 @@ sudo shpd-ds ds-upgrade             # doplní zbývající referenční data
 takže při zapnutém flagu reset rekreuje jen schéma a žádné referenční data
 nevytvoří (výjimky: clearing infrastruktura, tranzitní účty, saldokonta ve
 variantě legacy — enginové kontrakty, které import potřebuje mít před sebou). Po celou dobu opakovaného testování zůstává flag `true`; na
-`false` se přepne, až je import hotový „naostro". AI analyzer žádnou ruční
-akci nevyžaduje: profil, backend i klíče reset přežívají (`keepOnReset`)
+`false` se přepne, až je import hotový „naostro". AI analýza žádnou ruční
+akci nevyžaduje: profil, backend i klíč reset přežívají (`keepOnReset`)
 a `ds-upgrade` je zajišťuje i pod `skipProvisioning`.
 
 ### 8. Připojení DS serveru k hostingu
@@ -1840,7 +1828,7 @@ Detailní postup vč. backfillu existujících DS:
 |--------|--------|
 | `ds-*` | datový zdroj jako celek (`ds-create`, `ds-upgrade`, `ds-upgrade-all`, `ds-secrets-*`) |
 | `mail-*` | core.mail modul a router |
-| `ai-*` | AI analyzer |
+| `ai-*` | AI backendy a profily |
 | `seed-*` | testovací data |
 | `domain-*` | hostname → DS routing |
 | `*-bootstrap` | jednorázová idempotentní inicializace (system uživatel, default mailbox, default profil) |

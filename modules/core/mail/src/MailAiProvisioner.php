@@ -8,17 +8,23 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Utils\JsoncParser;
 
 /**
- * Idempotentní provisioning systémového uživatele `_ai_analyzer`, default
- * AI backendu a default profilu. Volá se z:
- *   - `ds-upgrade` (auto-hook na konci, vedle MailRouterProvisioner)
- *   - `ai-analyzer-bootstrap` (manuální spuštění z Fáze C)
- *   - `ai-analyzer-setup` (musí zajistit existenci uživatele před tokenem)
+ * Idempotentní provisioning AI analýzy pošty: výchozí AI backend (včetně
+ * přepisu vyřazených modelů) a výchozí profil, plus jednorázové datové
+ * opravy. Volá ho `ds-upgrade` bezpodmínečně (i pod `skipProvisioning`,
+ * tasks/ai-provisioning-unconditional.md) a `ai-profile-reload` (sync
+ * profilu ze šablony).
  *
- * Spec: tasks/mail-phase3a.md §6.1, §6.2, §11.
+ * Systémový uživatel `_ai_analyzer` (externí analyzer, zrušen #85 D20–D21,
+ * tasks/ai-analyzer-removal.md) se už nezakládá; existující účet se při
+ * `ds-upgrade` deaktivuje a jeho API klíče zneplatní. Nemaže se — běhy
+ * analýz z té doby na něj odkazují v `created_by`.
+ *
+ * Spec: tasks/mail-phase3a.md §6.1, §6.2, §11; tasks/ai-analyzer-removal.md.
  */
-class AIAnalyzerProvisioner
+class MailAiProvisioner
 {
-    public const ANALYZER_LOGIN = '_ai_analyzer';
+    /** Login zrušeného systémového uživatele externího analyzeru. */
+    public const LEGACY_ANALYZER_LOGIN = '_ai_analyzer';
     public const DEFAULT_BACKEND_ID = 'default';
 
     /**
@@ -53,30 +59,30 @@ class AIAnalyzerProvisioner
 
     /**
      * @return array{
-     *     user: array{id: int, created: bool},
      *     backend: array{id: int, created: bool},
      *     retired: list<array{id: int, backend_id: string, from: string, to: string}>,
      *     profile_rename: array{renamed: int},
      *     profile: array{id: int, profile_id: string, created: bool, skipped_reason?: string},
-     *     queue_fix: array{fixed: int}
+     *     queue_fix: array{fixed: int},
+     *     legacy_analyzer: array{users: int, keys: int}
      * }
      */
     public function provision(): array
     {
-        $user = $this->ensureAnalyzerUser();
         $backend = $this->ensureDefaultBackend();
         $retired = $this->retireModels();
         $renamed = $this->renameLegacyProfile();
         $profile = $this->ensureDefaultProfile($backend['id']);
         $queueFix = $this->fixQueuedArchivedMessages();
+        $legacy = $this->deactivateLegacyAnalyzer();
 
         return [
-            'user' => $user,
             'backend' => $backend,
             'retired' => $retired,
             'profile_rename' => ['renamed' => $renamed],
             'profile' => $profile,
             'queue_fix' => ['fixed' => $queueFix],
+            'legacy_analyzer' => $legacy,
         ];
     }
 
@@ -154,7 +160,7 @@ class AIAnalyzerProvisioner
 
     /**
      * Idempotentní datová oprava: zprávy v Archivu/Koši (docState 80/90)
-     * s analysis_state=10 (Ve frontě) nemají ve frontě co dělat — `/queue`
+     * s analysis_state=10 (Ve frontě) nemají ve frontě co dělat — fronta
      * je nikdy nevydá a hrozí hromadná analýza při odarchivování. Vznikaly
      * zrcadlením archivní pošty před zavedením pravidla docState
      * v `IncomingMessageDocument::resolveInitialAnalysisState` (spec
@@ -177,36 +183,44 @@ class AIAnalyzerProvisioner
     }
 
     /**
-     * @return array{id: int, created: bool}
+     * Jednorázová idempotentní deaktivace systémového uživatele
+     * `_ai_analyzer` a zneplatnění jeho API klíčů (tasks/ai-analyzer-removal.md
+     * D21) — externí analyzer už nemá kam volat. UPDATE jen nad aktivními
+     * řádky, po prvním běhu navždy 0 / 0. Uživatel se **nemaže**:
+     * `core_mail_message_analyses.created_by` starších běhů na něj odkazuje.
+     *
+     * @return array{users: int, keys: int} Počty právě deaktivovaných řádků.
      */
-    public function ensureAnalyzerUser(): array
+    public function deactivateLegacyAnalyzer(): array
     {
-        $row = $this->db->fetchRow(
-            'SELECT id FROM core_system_users WHERE login = %s',
-            self::ANALYZER_LOGIN,
+        $now = date('Y-m-d H:i:s');
+
+        $this->db->execute(
+            'UPDATE core_system_api_keys SET is_active = %i, modified = %s
+              WHERE is_active = %i
+                AND user_id IN (SELECT id FROM core_system_users WHERE login = %s)',
+            0,
+            $now,
+            1,
+            self::LEGACY_ANALYZER_LOGIN,
         );
+        $keys = $this->db->getAffectedRows();
 
-        if ($row !== null) {
-            return ['id' => (int) $row['id'], 'created' => false];
-        }
+        $this->db->execute(
+            'UPDATE core_system_users SET is_active = %i WHERE login = %s AND is_active = %i',
+            0,
+            self::LEGACY_ANALYZER_LOGIN,
+            1,
+        );
+        $users = $this->db->getAffectedRows();
 
-        $randomPassword = bin2hex(random_bytes(32));
-        $id = $this->db->insertRow('core_system_users', [
-            'login' => self::ANALYZER_LOGIN,
-            'password_hash' => password_hash($randomPassword, PASSWORD_DEFAULT),
-            'full_name' => 'AI Analyzer (system)',
-            'email' => null,
-            'is_active' => 1,
-            'is_system' => 1,
-        ]);
-
-        return ['id' => $id, 'created' => true];
+        return ['users' => $users, 'keys' => $keys];
     }
 
     /**
      * Vytvoří (pokud chybí) default backend `default` (Anthropic Claude,
      * model {@see DEFAULT_MODEL}). `api_key` zůstává NULL, `is_active`
-     * = false — admin doplní klíč přes `ai-analyzer-set-key` (Fáze C).
+     * = false — admin doplní klíč přes `ai-backend-set-key`.
      * `temperature` NULL = parametr se neposílá (F0-D1); `thinking`
      * a `effort` nechává na DB defaultu `auto`.
      *
@@ -245,7 +259,7 @@ class AIAnalyzerProvisioner
             'api_key' => null,
             'base_url' => null,
             // 0 = nenastaveno — limit se rozhoduje kaskádou profil → backend
-            // → default v provideru analyzéru (jediné místo se skutečným číslem).
+            // → default runneru (AnalysisRunner::DEFAULT_MAX_TOKENS).
             'max_tokens' => 0,
             'temperature' => null,
             'is_default' => 1,

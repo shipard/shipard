@@ -24,7 +24,7 @@ use Shipard\Core\Settings\LayerCParameters;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Core\Version;
-use Shipard\Module\Core\Mail\AIAnalyzerProvisioner;
+use Shipard\Module\Core\Mail\MailAiProvisioner;
 use Shipard\Module\Core\Mail\MailRouterProvisioner;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRulesProvisioner;
 use Shipard\Module\Core\Units\UnitsProvisioner;
@@ -327,12 +327,13 @@ class DsUpgradeCommand extends Command
         // migrovaný rozvrh má jen syntetiky 75 a 79 bez analytik. Idempotentní.
         $this->provisionOffBalanceAccounts($resolvedModules, $dsConnection, $output);
 
-        // AI analyzer (user, backend, profil + version sync ze šablony) se
-        // zajišťuje BEZPODMÍNEČNĚ — i pod skipProvisioning. Není to migrovaná
-        // data, ale systémový kontrakt modulů core.mail/core.ai. Idempotentní;
-        // klíče (backend key, analyzer API key) přežívají ds-reset přes
-        // keepOnReset, takže po resetu není potřeba žádná ruční akce.
-        $this->provisionAiAnalyzer($resolvedModules, $dsConnection, $output);
+        // AI analýza pošty (backend, profil + version sync ze šablony,
+        // deaktivace zrušeného uživatele _ai_analyzer) se zajišťuje
+        // BEZPODMÍNEČNĚ — i pod skipProvisioning. Není to migrovaná data, ale
+        // systémový kontrakt modulů core.mail/core.ai. Idempotentní; klíč
+        // backendu přežívá ds-reset přes keepOnReset, takže po resetu není
+        // potřeba žádná ruční akce.
+        $this->provisionMailAi($resolvedModules, $dsConnection, $output);
 
         // Systémová pravidla předzpracování pošty (tasks/mail-preprocess.md
         // §2) — BEZPODMÍNEČNĚ, i pod skipProvisioning: import-mode DS
@@ -524,13 +525,13 @@ class DsUpgradeCommand extends Command
         }
     }
 
-    private function provisionAiAnalyzer(
+    private function provisionMailAi(
         array $resolvedModules,
         DataSourceConnection $dsConnection,
         OutputInterface $output,
     ): void {
         $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
-        $output->writeln('Provisioning AI analyzer...', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning mail AI (backend, profile)...', OutputInterface::VERBOSITY_VERBOSE);
 
         // core.mail deklaruje dependency na core.ai — druhá podmínka je
         // defenzivní. Bez guardu by bezpodmínečné volání na DS bez mail
@@ -542,36 +543,29 @@ class DsUpgradeCommand extends Command
             return;
         }
 
-        $provisioner = new AIAnalyzerProvisioner($dsConnection);
+        $provisioner = new MailAiProvisioner($dsConnection);
         $result = $provisioner->provision();
 
-        $user = $result['user'];
         $backend = $result['backend'];
         $profile = $result['profile'];
 
-        if ($user['created']) {
-            $output->writeln("  [CREATE] user '_ai_analyzer' (id={$user['id']})");
-        } else {
-            $output->writeln("  [OK]     user '_ai_analyzer' (id={$user['id']})", OutputInterface::VERBOSITY_VERBOSE);
-        }
-
         if ($backend['created']) {
             $output->writeln("  [CREATE] backend 'default' (id={$backend['id']})");
-            $output->writeln("           <comment>API key not set — run 'bin/shpd-ds ai-analyzer-set-key' to enable.</comment>");
+            $output->writeln("           <comment>API key not set — run 'bin/shpd-ds ai-backend-set-key' to enable.</comment>");
         } elseif (isset($backend['skipped_reason'])) {
             $output->writeln("  <comment>[SKIP]   backend 'default' — {$backend['skipped_reason']}</comment>");
         } else {
             $output->writeln("  [OK]     backend 'default' (id={$backend['id']})", OutputInterface::VERBOSITY_VERBOSE);
         }
 
-        // Jednorázový přepis vyřazených modelů (AIAnalyzerProvisioner::RETIRED_MODELS,
+        // Jednorázový přepis vyřazených modelů (MailAiProvisioner::RETIRED_MODELS,
         // tasks/ai-models-phase0.md F0-D8) — po prvním běhu prázdný seznam.
         foreach ($result['retired'] ?? [] as $retired) {
             $output->writeln("  [MODEL]  backend '{$retired['backend_id']}' (id={$retired['id']}): {$retired['from']} → {$retired['to']} (retired model)");
         }
 
         // Jednorázový rename legacy profilu (czech_invoices → czech_general),
-        // po prvním běhu 0 řádků = žádný výpis (viz AIAnalyzerProvisioner).
+        // po prvním běhu 0 řádků = žádný výpis (viz MailAiProvisioner).
         $renamed = $result['profile_rename']['renamed'] ?? 0;
         if ($renamed > 0) {
             $output->writeln("  [RENAME] profile 'czech_invoices' → '{$profile['profile_id']}'");
@@ -586,12 +580,25 @@ class DsUpgradeCommand extends Command
         }
 
         // Datová oprava nafrontovaných archivních zpráv — idempotentní,
-        // po prvním běhu no-op (viz AIAnalyzerProvisioner).
+        // po prvním běhu no-op (viz MailAiProvisioner).
         $queueFixed = $result['queue_fix']['fixed'] ?? 0;
         if ($queueFixed > 0) {
             $output->writeln("  [FIX]    analysis_state 10 → 0 for {$queueFixed} archived/trashed message(s)");
         } else {
             $output->writeln('  [OK]     no queued archived messages', OutputInterface::VERBOSITY_VERBOSE);
+        }
+
+        // Zrušený externí analyzer (tasks/ai-analyzer-removal.md D21): účet
+        // _ai_analyzer se deaktivuje a jeho klíče zneplatní — jen při změně,
+        // po prvním běhu bez výpisu. Účet se nemaže (created_by starých běhů).
+        $legacy = $result['legacy_analyzer'] ?? ['users' => 0, 'keys' => 0];
+        if (($legacy['users'] ?? 0) > 0 || ($legacy['keys'] ?? 0) > 0) {
+            $output->writeln(sprintf(
+                "  [DEACTIVATE] user '%s' (%d user, %d API key(s)) — external analyzer retired",
+                MailAiProvisioner::LEGACY_ANALYZER_LOGIN,
+                (int) $legacy['users'],
+                (int) $legacy['keys'],
+            ));
         }
 
         // Sync obsahových polí profilu ze šablony v repu — upgrade-only,

@@ -419,7 +419,7 @@ pošty) se nefrontují — `/queue` by je nikdy nevydal (trvale zavádějící
 „Ve frontě") a hrozila by hromadná analýza při odarchivování. Explicitní
 `analysis_state` v requestu (`POST /_mail/import`) má vždy přednost.
 Dříve nafrontované archivní zprávy opravuje idempotentní datový krok
-v `ds-upgrade` (`AIAnalyzerProvisioner::fixQueuedArchivedMessages` —
+v `ds-upgrade` (`MailAiProvisioner::fixQueuedArchivedMessages` —
 jen docState 80/90; Hotovo do opravy nepatří, tam mohla zpráva dojít
 legálně workflow cestou s dokončenou analýzou).
 
@@ -1176,19 +1176,22 @@ v detailu obsahuje "Otevřít" (form edit) a "Znovu analyzovat" (podmíněně dl
 
 ## Auto-provisioning
 
-Při každém `ds-upgrade` se zavolá `AIAnalyzerProvisioner::provision()`:
+Při každém `ds-upgrade` se zavolá `MailAiProvisioner::provision()`:
 
-1. Systémový uživatel `_ai_analyzer` (idempotentně).
-2. Default backend (`backend_id=default`, `provider=anthropic`,
+1. Default backend (`backend_id=default`, `provider=anthropic`,
    `model=claude-sonnet-4-6`, `temperature=NULL`, `api_key=NULL`,
-   `is_active=0`) — admin doplní klíč přes `ai-analyzer-set-key`, čímž
+   `is_active=0`) — admin doplní klíč přes `ai-backend-set-key`, čímž
    `is_active=1`. Tentýž krok u všech backendů jednorázově přepíše
-   vyřazený model na náhradu (`AIAnalyzerProvisioner::RETIRED_MODELS`,
+   vyřazený model na náhradu (`MailAiProvisioner::RETIRED_MODELS`,
    výpis `[MODEL]`; tasks/ai-models-phase0.md F0-D8).
-3. Default profil (`profile_id=czech_general`) ze šablony
+2. Default profil (`profile_id=czech_general`) ze šablony
    `profiles/czech_general.jsonc`. Před lookupem běží jednorázový rename
    legacy id `czech_invoices` → `czech_general` (včetně `name`; ds-upgrade
    vypíše `[RENAME]`, po prvním běhu no-op).
+3. Datová oprava nafrontovaných archivních zpráv (`[FIX]`, viz Stavy
+   zprávy) a deaktivace systémového uživatele `_ai_analyzer` zrušeného
+   externího analyzeru včetně zneplatnění jeho API klíčů (`[DEACTIVATE]`,
+   jen při změně; účet se nemaže — `created_by` starších běhů; #85 D21).
 
 Bootstrap je idempotentní — když existuje jiný profil/backend s `is_default=1`,
 default *se nepřepíše*; admin zachová svůj override.

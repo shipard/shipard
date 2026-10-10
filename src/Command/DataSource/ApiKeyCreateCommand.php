@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Generický příkaz pro vytvoření API klíče pro libovolného uživatele.
  * Vrací plaintext jen jednou — v DB zůstává SHA-256 hash a 12-znakový prefix.
  *
- * Doplněk k role-specifickým `mail-router-setup` / `ai-analyzer-setup`.
+ * Doplněk k role-specifickému `mail-router-setup`.
  */
 class ApiKeyCreateCommand extends Command
 {

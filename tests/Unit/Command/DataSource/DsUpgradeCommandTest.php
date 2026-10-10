@@ -127,7 +127,7 @@ class DsUpgradeCommandTest extends TestCase
 
     /**
      * Minimal core.mail + core.ai fixture modules (empty tables) — enough
-     * to pass the module guard in provisionAiAnalyzer(). The real modules
+     * to pass the module guard in provisionMailAi(). The real modules
      * are not used so the test doesn't depend on their table definitions.
      */
     private function createAiFixtureModules(): void
@@ -523,12 +523,13 @@ class DsUpgradeCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertStringContainsString('Provisioning disabled via config', $display);
         $this->assertStringContainsString('Upgrade complete.', $display);
-        // AI analyzer už není součástí gatovaného provisioningu — hláška
+        // AI pošty už není součástí gatovaného provisioningu — hláška
         // ho nesmí uvádět mezi přeskočenými položkami.
         $this->assertStringNotContainsString('AI analyzer', $display);
+        $this->assertStringNotContainsString('mail AI', $display);
     }
 
-    public function testAiAnalyzerProvisionedUnderSkipProvisioning(): void
+    public function testMailAiProvisionedUnderSkipProvisioning(): void
     {
         $this->createAiFixtureModules();
         $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'core.mail']);
@@ -544,12 +545,36 @@ class DsUpgradeCommandTest extends TestCase
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $display = $tester->getDisplay();
-        $this->assertStringContainsString("[CREATE] user '_ai_analyzer'", $display);
         $this->assertStringContainsString("[CREATE] backend 'default'", $display);
+        $this->assertStringContainsString('ai-backend-set-key', $display);
         $this->assertStringContainsString("[CREATE] profile 'czech_general'", $display);
         $this->assertStringContainsString('Provisioning disabled via config', $display);
-        // Čistý DS — legacy profil neexistuje, RENAME se nevypisuje.
+        // Uživatel _ai_analyzer se nezakládá (#85 D21); čistý DS — nikdo
+        // k deaktivaci (getAffectedRows → 0), legacy profil neexistuje.
+        $this->assertStringNotContainsString("user '_ai_analyzer'", $display);
+        $this->assertStringNotContainsString('[DEACTIVATE]', $display);
         $this->assertStringNotContainsString('[RENAME]', $display);
+    }
+
+    public function testMailAiDeactivatesLegacyAnalyzerUserOnlyWhenSomethingChanged(): void
+    {
+        $this->createAiFixtureModules();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'core.mail']);
+
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        // getAffectedRows: 1. rename, 2. queue fix, 3. API klíče, 4. uživatel
+        $this->dsConnection->method('getAffectedRows')->willReturnOnConsecutiveCalls(0, 0, 2, 1);
+
+        $tester = $this->createCommandTester();
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString(
+            "[DEACTIVATE] user '_ai_analyzer' (1 user, 2 API key(s)) — external analyzer retired",
+            $tester->getDisplay(),
+        );
     }
 
     public function testPreprocessRulesProvisionedUnderSkipProvisioning(): void
@@ -572,7 +597,7 @@ class DsUpgradeCommandTest extends TestCase
         $this->assertStringContainsString('Provisioning disabled via config', $display);
     }
 
-    public function testAiAnalyzerRenamesLegacyProfile(): void
+    public function testMailAiRenamesLegacyProfile(): void
     {
         $this->createAiFixtureModules();
         $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'core.mail']);
@@ -580,8 +605,8 @@ class DsUpgradeCommandTest extends TestCase
         $this->dsConnection->method('getTableColumns')->willReturn([]);
         $this->dsConnection->method('getTableIndexes')->willReturn([]);
         $this->dsConnection->method('executeSQL');
-        // 1. getAffectedRows = rename legacy profilu, 2. = queue fix
-        $this->dsConnection->method('getAffectedRows')->willReturnOnConsecutiveCalls(1, 0);
+        // getAffectedRows: 1. rename legacy profilu, 2. queue fix, 3.–4. deaktivace _ai_analyzer
+        $this->dsConnection->method('getAffectedRows')->willReturnOnConsecutiveCalls(1, 0, 0, 0);
 
         $tester = $this->createCommandTester();
         $exitCode = $tester->execute([]);
@@ -593,7 +618,7 @@ class DsUpgradeCommandTest extends TestCase
         );
     }
 
-    public function testAiAnalyzerSkippedWithoutMailModule(): void
+    public function testMailAiSkippedWithoutMailModule(): void
     {
         $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit']);
 

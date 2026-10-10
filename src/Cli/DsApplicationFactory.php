@@ -40,9 +40,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\MailOutboxRunCommand());
         $app->add(new \Shipard\Command\DataSource\MailOutboxRetryCommand());
         $app->add(new \Shipard\Command\DataSource\MailSendTestCommand());
-        $app->add(new \Shipard\Command\DataSource\AiAnalyzerBootstrapCommand());
-        $app->add(new \Shipard\Command\DataSource\AiAnalyzerSetupCommand());
-        $app->add(new \Shipard\Command\DataSource\AiAnalyzerSetKeyCommand());
+        $app->add(new \Shipard\Command\DataSource\AiBackendSetKeyCommand());
         $app->add(new \Shipard\Command\DataSource\AiProfileReloadCommand());
         $app->add(new \Shipard\Command\DataSource\MailAnalysisReapCommand());
         $app->add(new \Shipard\Command\DataSource\MailPreprocessCommand());

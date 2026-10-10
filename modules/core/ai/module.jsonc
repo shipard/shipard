@@ -17,7 +17,7 @@
     ],
 
     // ds-reset chrání AI backend kvůli zašifrovanému API klíči
-    // (ai-analyzer-set-key). Přesunuto z core.mail spolu s tabulkou.
+    // (ai-backend-set-key). Přesunuto z core.mail spolu s tabulkou.
     "keepOnReset": [
         "core_ai_backends"
     ],

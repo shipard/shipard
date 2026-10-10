@@ -3,7 +3,7 @@
 ## Default profil `czech_general`
 
 Šablona: [profiles/czech_general.jsonc](../profiles/czech_general.jsonc).
-Při prvním `ds-upgrade` z ní `AIAnalyzerProvisioner` vytvoří záznam v
+Při prvním `ds-upgrade` z ní `MailAiProvisioner` vytvoří záznam v
 `core_mail_ai_profiles`. Pozdější editace probíhá přímo v DB / UI; soubor
 v repu není zdroj pravdy pro běžící DS.
 

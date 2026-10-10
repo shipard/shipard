@@ -108,7 +108,7 @@ class AiProfileReloadCommandTest extends TestCase
         $this->assertSame(Command::FAILURE, $exitCode);
         $output = $tester->getDisplay();
         $this->assertStringContainsString("'czech_general' not found", $output);
-        $this->assertStringContainsString('ai-analyzer-bootstrap', $output);
+        $this->assertStringContainsString('ds-upgrade', $output);
     }
 
     public function testSkipsWhenSameVersionWithoutForce(): void

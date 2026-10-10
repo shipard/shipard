@@ -6,16 +6,22 @@ namespace Shipard\Tests\Unit\Command\DataSource;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Shipard\Command\DataSource\AiAnalyzerSetKeyCommand;
+use Shipard\Command\DataSource\AiBackendSetKeyCommand;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Security\DsSecretCipher;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class TestableAiAnalyzerSetKeyCommand extends AiAnalyzerSetKeyCommand
+class TestableAiBackendSetKeyCommand extends AiBackendSetKeyCommand
 {
+    /** Co „zadá“ skrytý prompt / STDIN (null = nic). */
+    public ?string $promptedKey = null;
+    public int $promptCalls = 0;
+
     public function __construct(
         DataSourceConfig $dsConfig,
         DataSourceConnection $dsConnection,
@@ -28,9 +34,21 @@ class TestableAiAnalyzerSetKeyCommand extends AiAnalyzerSetKeyCommand
     {
         return $this->dsDir;
     }
+
+    protected function readKeyInput(InputInterface $input, OutputInterface $output): ?string
+    {
+        $this->promptCalls++;
+        return $this->promptedKey;
+    }
 }
 
-class AiAnalyzerSetKeyCommandTest extends TestCase
+/**
+ * `ai-backend-set-key`: klíč z `--api-key` nebo skrytého vstupu, šifrování
+ * přes AIBackendDocument, aktivace backendu, `--base-url`, alias
+ * `ai-analyzer-set-key` s upozorněním (tasks/ai-analyzer-removal.md D21).
+ */
+
+class AiBackendSetKeyCommandTest extends TestCase
 {
     private string $tempDir;
     private MockObject $dsConfig;
@@ -85,24 +103,85 @@ class AiAnalyzerSetKeyCommandTest extends TestCase
         @rmdir($dir);
     }
 
-    private function tester(): CommandTester
+    private TestableAiBackendSetKeyCommand $command;
+
+    private function tester(?string $promptedKey = null): CommandTester
     {
-        $command = new TestableAiAnalyzerSetKeyCommand(
+        $this->command = new TestableAiBackendSetKeyCommand(
             $this->dsConfig,
             $this->dsConnection,
             $this->tempDir,
         );
-        (new Application())->add($command);
-        return new CommandTester($command);
+        $this->command->promptedKey = $promptedKey;
+        (new Application())->add($this->command);
+        return new CommandTester($this->command);
     }
 
-    public function testFailsWithoutApiKey(): void
+    public function testFailsWithoutApiKeyWhenNothingIsEntered(): void
     {
-        $tester = $this->tester();
+        // Neinteraktivní běh bez --api-key a bez pipe = chyba, ne tiché nic.
+        $tester = $this->tester(promptedKey: null);
         $exitCode = $tester->execute([]);
 
         $this->assertSame(Command::FAILURE, $exitCode);
-        $this->assertStringContainsString('--api-key is required', $tester->getDisplay());
+        $this->assertSame(1, $this->command->promptCalls);
+        $this->assertStringContainsString('no API key given', $tester->getDisplay());
+    }
+
+    public function testReadsKeyFromHiddenInputWhenOptionMissing(): void
+    {
+        $this->dsConnection->method('fetchRow')->willReturn(['id' => 17]);
+
+        $captured = null;
+        $this->dsConnection->method('updateWhere')
+            ->willReturnCallback(function (string $table, array $data) use (&$captured): void {
+                $captured = $data;
+            });
+
+        $tester = $this->tester(promptedKey: 'sk-ant-from-prompt');
+        $exitCode = $tester->execute(['--backend' => 'default']);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame(1, $this->command->promptCalls);
+        $this->assertStringStartsWith('v1:', $captured['api_key']);
+        $this->assertSame(1, $captured['is_active']);
+        $this->assertStringNotContainsString('sk-ant-from-prompt', $tester->getDisplay());
+    }
+
+    public function testApiKeyOptionSkipsThePrompt(): void
+    {
+        $this->dsConnection->method('fetchRow')->willReturn(['id' => 17]);
+        $this->dsConnection->method('updateWhere');
+
+        $tester = $this->tester(promptedKey: 'unused');
+        $exitCode = $tester->execute(['--api-key' => 'sk-ant-test']);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame(0, $this->command->promptCalls);
+    }
+
+    public function testLegacyAliasWorksAndWarns(): void
+    {
+        $this->dsConnection->method('fetchRow')->willReturn(['id' => 17]);
+        $this->dsConnection->method('updateWhere');
+
+        $tester = $this->tester();
+        $exitCode = $tester->execute(['command' => 'ai-analyzer-set-key', '--api-key' => 'sk-ant-test']);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertStringContainsString('deprecated alias', $tester->getDisplay());
+        $this->assertStringContainsString('ai-backend-set-key', $tester->getDisplay());
+    }
+
+    public function testPrimaryNameDoesNotWarn(): void
+    {
+        $this->dsConnection->method('fetchRow')->willReturn(['id' => 17]);
+        $this->dsConnection->method('updateWhere');
+
+        $tester = $this->tester();
+        $tester->execute(['--api-key' => 'sk-ant-test']);
+
+        $this->assertStringNotContainsString('deprecated', $tester->getDisplay());
     }
 
     public function testFailsWhenBackendNotFound(): void
@@ -114,7 +193,7 @@ class AiAnalyzerSetKeyCommandTest extends TestCase
 
         $this->assertSame(Command::FAILURE, $exitCode);
         $this->assertStringContainsString("backend 'default' not found", $tester->getDisplay());
-        $this->assertStringContainsString('ai-analyzer-bootstrap', $tester->getDisplay());
+        $this->assertStringContainsString('ds-upgrade', $tester->getDisplay());
     }
 
     public function testEncryptsKeyAndActivatesBackend(): void

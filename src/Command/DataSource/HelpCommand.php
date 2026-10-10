@@ -119,10 +119,8 @@ class HelpCommand extends Command
         $output->writeln('<comment>Registry (Spisovna):</comment>');
         $output->writeln('  <info>registry-extract-texts</info>  Fill registry documents extracted_text from attachments (default: missing only)');
         $output->writeln('');
-        $output->writeln('<comment>AI Analyzer:</comment>');
-        $output->writeln('  <info>ai-analyzer-bootstrap</info>   Ensure _ai_analyzer user, default AI backend and default profile exist');
-        $output->writeln('  <info>ai-analyzer-setup</info>       Generate (or rotate) the API key used by the external AI analyzer');
-        $output->writeln('  <info>ai-analyzer-set-key</info>     Set (or rotate) the API key on an AI backend; encrypts via DsSecretCipher');
+        $output->writeln('<comment>AI:</comment>');
+        $output->writeln('  <info>ai-backend-set-key</info>      Set (or rotate) the API key of an AI backend — hidden prompt / STDIN, or --api-key; encrypts via DsSecretCipher');
         $output->writeln('  <info>ai-profile-reload</info>       Reload AI profile from JSONC template into the DB');
         $output->writeln('  <info>mail-analysis-reap</info>      Release expired AI analysis claims and re-queue affected messages');
         $output->writeln('');
@@ -147,7 +145,7 @@ class HelpCommand extends Command
         $output->writeln('  shpd-ds ds-setting list');
         $output->writeln('  shpd-ds ds-state maintenance --on --reason=import');
         $output->writeln('  shpd-ds user-create --login=admin --password=...');
-        $output->writeln('  shpd-ds ai-analyzer-set-key --backend default --api-key <api-key>');
+        $output->writeln('  shpd-ds ai-backend-set-key --backend default');
         $output->writeln('  shpd-ds ds-secrets-rotate --dry-run');
         $output->writeln('  shpd-ds dataset-dump /tmp/web-demo --zip');
         $output->writeln('  shpd-ds dataset-seed /tmp/web-demo.zip -y');

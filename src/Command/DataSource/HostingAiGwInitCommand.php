@@ -80,7 +80,7 @@ class HostingAiGwInitCommand extends Command
         $output->writeln('');
         $output->writeln('<comment>Next steps:</comment>');
         $output->writeln('  1. Issue gateway tokens: shpd-ds hosting-ai-token --ds <ndx> --generate');
-        $output->writeln('  2. Point client data sources at the gateway: shpd-ds ai-analyzer-set-key --base-url ...');
+        $output->writeln('  2. Point client data sources at the gateway: shpd-ds ai-backend-set-key --base-url ...');
 
         return Command::SUCCESS;
     }

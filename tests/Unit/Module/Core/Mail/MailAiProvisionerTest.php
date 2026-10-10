@@ -6,13 +6,14 @@ namespace Shipard\Tests\Unit\Module\Core\Mail;
 
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Database\DataSourceConnection;
-use Shipard\Module\Core\Mail\AIAnalyzerProvisioner;
+use Shipard\Module\Core\Mail\MailAiProvisioner;
 
 /**
- * AIAnalyzerProvisioner musí být idempotentní (každý ensure*() je ok volat
- * opakovaně) a respektovat jediné default omezení per DS.
+ * MailAiProvisioner musí být idempotentní (každý ensure*() je ok volat
+ * opakovaně) a respektovat jediné default omezení per DS. Uživatel
+ * `_ai_analyzer` se nezakládá — existující se deaktivuje (#85 D21).
  */
-class AIAnalyzerProvisionerTest extends TestCase
+class MailAiProvisionerTest extends TestCase
 {
     private ?string $tempTemplate = null;
 
@@ -43,43 +44,41 @@ class AIAnalyzerProvisionerTest extends TestCase
     public function testProvisionsAllOnFreshDs(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
-        // 4× fetchRow: user (null), backend (null), backend default (null),
+        // 4× fetchRow: backend (null), backend default (null),
         //              profile (null), profile default (null)
         $db->method('fetchRow')->willReturnOnConsecutiveCalls(
-            null, // user lookup
             null, // backend by backend_id
             null, // backend any default
             null, // profile by profile_id
             null, // profile any default
         );
         $db->method('insertRow')->willReturnOnConsecutiveCalls(
-            42, // user id
             17, // backend id
             33, // profile id
         );
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->provision();
 
-        $this->assertSame(['id' => 42, 'created' => true], $result['user']);
         $this->assertSame(['id' => 17, 'created' => true], $result['backend']);
         $this->assertSame(['id' => 33, 'profile_id' => 'czech_general', 'created' => true], $result['profile']);
+        $this->assertSame(['users' => 0, 'keys' => 0], $result['legacy_analyzer']);
+        // Uživatel _ai_analyzer se už nezakládá (#85 D21).
+        $this->assertArrayNotHasKey('user', $result);
     }
 
     public function testIsIdempotentWhenAllExist(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturnOnConsecutiveCalls(
-            ['id' => 1],   // user
             ['id' => 2],   // backend by backend_id
             ['id' => 3],   // profile by profile_id
         );
         $db->expects($this->never())->method('insertRow');
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->provision();
 
-        $this->assertSame(['id' => 1, 'created' => false], $result['user']);
         $this->assertSame(['id' => 2, 'created' => false], $result['backend']);
         $this->assertSame(['id' => 3, 'profile_id' => 'czech_general', 'created' => false], $result['profile']);
     }
@@ -88,7 +87,6 @@ class AIAnalyzerProvisionerTest extends TestCase
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturnOnConsecutiveCalls(
-            ['id' => 1],                                     // user exists
             null,                                            // backend 'default' missing
             ['id' => 99, 'backend_id' => 'claude-opus'],     // ALE jiný backend je default
             null,                                            // profile lookup
@@ -96,7 +94,7 @@ class AIAnalyzerProvisionerTest extends TestCase
         );
         $db->method('insertRow')->willReturn(50); // pro profile
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->provision();
 
         $this->assertSame(99, $result['backend']['id']);
@@ -111,14 +109,13 @@ class AIAnalyzerProvisionerTest extends TestCase
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturnOnConsecutiveCalls(
-            ['id' => 1],                                                // user
             ['id' => 17],                                               // backend default exists
             null,                                                       // profile 'czech_general' missing
             ['id' => 88, 'profile_id' => 'english_invoices'],           // ALE jiný profil je default
         );
         $db->expects($this->never())->method('insertRow');
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->provision();
 
         $this->assertSame(88, $result['profile']['id']);
@@ -140,7 +137,7 @@ class AIAnalyzerProvisionerTest extends TestCase
             },
         );
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $provisioner->provision();
 
         $this->assertArrayHasKey('core_ai_backends', $insertedRows);
@@ -163,14 +160,14 @@ class AIAnalyzerProvisionerTest extends TestCase
 
     public function testRetiredReplacementMatchesExactAndDatedIdsOnly(): void
     {
-        $this->assertSame('claude-sonnet-4-6', AIAnalyzerProvisioner::retiredReplacement('claude-sonnet-4-5'));
-        $this->assertSame('claude-sonnet-4-6', AIAnalyzerProvisioner::retiredReplacement('claude-sonnet-4-5-20250929'));
-        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement('claude-sonnet-4-6'));
-        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement('claude-sonnet-4-50'));
-        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement('claude-opus-4-8'));
+        $this->assertSame('claude-sonnet-4-6', MailAiProvisioner::retiredReplacement('claude-sonnet-4-5'));
+        $this->assertSame('claude-sonnet-4-6', MailAiProvisioner::retiredReplacement('claude-sonnet-4-5-20250929'));
+        $this->assertNull(MailAiProvisioner::retiredReplacement('claude-sonnet-4-6'));
+        $this->assertNull(MailAiProvisioner::retiredReplacement('claude-sonnet-4-50'));
+        $this->assertNull(MailAiProvisioner::retiredReplacement('claude-opus-4-8'));
         // Prefix platformy (Bedrock) — partnerské platformy mají vlastní termíny.
-        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement('anthropic.claude-sonnet-4-5'));
-        $this->assertNull(AIAnalyzerProvisioner::retiredReplacement(''));
+        $this->assertNull(MailAiProvisioner::retiredReplacement('anthropic.claude-sonnet-4-5'));
+        $this->assertNull(MailAiProvisioner::retiredReplacement(''));
     }
 
     public function testRetireModelsRewritesEveryRetiredBackendAndLeavesOthers(): void
@@ -194,7 +191,7 @@ class AIAnalyzerProvisionerTest extends TestCase
         );
         $db->expects($this->never())->method('execute');
 
-        $changed = (new AIAnalyzerProvisioner($db))->retireModels();
+        $changed = (new MailAiProvisioner($db))->retireModels();
 
         $this->assertSame([[1, 'claude-sonnet-4-6'], [2, 'claude-sonnet-4-6']], $updates);
         $this->assertSame([
@@ -212,14 +209,13 @@ class AIAnalyzerProvisionerTest extends TestCase
         ]);
         $db->expects($this->never())->method('updateWhere');
 
-        $this->assertSame([], (new AIAnalyzerProvisioner($db))->retireModels());
+        $this->assertSame([], (new MailAiProvisioner($db))->retireModels());
     }
 
     public function testProvisionReportsRetiredModels(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturnOnConsecutiveCalls(
-            ['id' => 1],   // user
             ['id' => 2],   // backend by backend_id
             ['id' => 3],   // profile by profile_id
         );
@@ -229,7 +225,7 @@ class AIAnalyzerProvisionerTest extends TestCase
         $db->method('getAffectedRows')->willReturn(0);
         $db->expects($this->never())->method('insertRow');
 
-        $result = (new AIAnalyzerProvisioner($db))->provision();
+        $result = (new MailAiProvisioner($db))->provision();
 
         $this->assertSame(
             [['id' => 2, 'backend_id' => 'default', 'from' => 'claude-sonnet-4-5', 'to' => 'claude-sonnet-4-6']],
@@ -251,7 +247,7 @@ class AIAnalyzerProvisionerTest extends TestCase
             },
         );
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $provisioner->provision();
 
         $this->assertArrayHasKey('core_mail_ai_profiles', $insertedRows);
@@ -279,14 +275,14 @@ class AIAnalyzerProvisionerTest extends TestCase
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturnOnConsecutiveCalls(
-            ['id' => 1],   // user
             ['id' => 2],   // backend by backend_id
             ['id' => 3],   // profile by profile_id
         );
 
-        // provision() volá execute 2×: rename legacy profilu + queue fix
+        // provision() volá execute 4×: rename legacy profilu, queue fix,
+        // zneplatnění klíčů a deaktivace uživatele _ai_analyzer
         $capturedSqls = [];
-        $db->expects($this->exactly(2))
+        $db->expects($this->exactly(4))
             ->method('execute')
             ->willReturnCallback(function (mixed ...$args) use (&$capturedSqls): void {
                 $capturedSqls[] = (string) $args[0];
@@ -294,9 +290,11 @@ class AIAnalyzerProvisionerTest extends TestCase
         $db->method('getAffectedRows')->willReturnOnConsecutiveCalls(
             0,   // rename — žádný legacy profil
             268, // queue fix
+            0,   // api keys
+            0,   // user
         );
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->provision();
 
         $this->assertSame(['fixed' => 268], $result['queue_fix']);
@@ -317,7 +315,7 @@ class AIAnalyzerProvisionerTest extends TestCase
             });
         $db->method('getAffectedRows')->willReturn(1);
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $renamed = $provisioner->renameLegacyProfile();
 
         $this->assertSame(1, $renamed);
@@ -332,17 +330,18 @@ class AIAnalyzerProvisionerTest extends TestCase
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturnOnConsecutiveCalls(
-            ['id' => 1],   // user
             ['id' => 2],   // backend by backend_id
             ['id' => 3],   // profile by profile_id (po renamu už existuje)
         );
         $db->method('getAffectedRows')->willReturnOnConsecutiveCalls(
             1, // rename — legacy profil přejmenován
             0, // queue fix
+            0, // api keys
+            0, // user
         );
         $db->expects($this->never())->method('insertRow');
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->provision();
 
         $this->assertSame(['renamed' => 1], $result['profile_rename']);
@@ -352,23 +351,69 @@ class AIAnalyzerProvisionerTest extends TestCase
         $db2 = $this->createMock(DataSourceConnection::class);
         $db2->method('getAffectedRows')->willReturn(0);
 
-        $this->assertSame(0, (new AIAnalyzerProvisioner($db2))->renameLegacyProfile());
+        $this->assertSame(0, (new MailAiProvisioner($db2))->renameLegacyProfile());
     }
 
     public function testProvisionQueueFixIsNoopOnCleanDs(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturnOnConsecutiveCalls(
-            ['id' => 1],
             ['id' => 2],
             ['id' => 3],
         );
         $db->method('getAffectedRows')->willReturn(0);
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->provision();
 
         $this->assertSame(['fixed' => 0], $result['queue_fix']);
+    }
+
+    // --- deaktivace zrušeného uživatele _ai_analyzer (#85 D21) --------------
+
+    public function testDeactivateLegacyAnalyzerUpdatesOnlyActiveRowsAndReportsCounts(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $captured = [];
+        $db->expects($this->exactly(2))
+            ->method('execute')
+            ->willReturnCallback(function (mixed ...$args) use (&$captured): void {
+                $captured[] = $args;
+            });
+        $db->method('getAffectedRows')->willReturnOnConsecutiveCalls(2, 1);
+
+        $result = (new MailAiProvisioner($db))->deactivateLegacyAnalyzer();
+
+        $this->assertSame(['users' => 1, 'keys' => 2], $result);
+        [$keysSql, $usersSql] = [(string) $captured[0][0], (string) $captured[1][0]];
+        $this->assertStringContainsString('UPDATE core_system_api_keys SET is_active', $keysSql);
+        $this->assertStringContainsString('WHERE is_active = %i', $keysSql);
+        $this->assertStringContainsString('login = %s', $keysSql);
+        $this->assertContains('_ai_analyzer', $captured[0]);
+        $this->assertStringContainsString('UPDATE core_system_users SET is_active', $usersSql);
+        $this->assertStringContainsString('AND is_active = %i', $usersSql);
+        $this->assertContains('_ai_analyzer', $captured[1]);
+        $this->assertStringNotContainsString('DELETE', $keysSql . $usersSql);
+    }
+
+    public function testProvisionReportsLegacyAnalyzerDeactivationAndSecondRunIsNoop(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnOnConsecutiveCalls(['id' => 2], ['id' => 3]);
+        $db->method('getAffectedRows')->willReturnOnConsecutiveCalls(
+            0, // rename
+            0, // queue fix
+            1, // api keys
+            1, // user
+        );
+
+        $result = (new MailAiProvisioner($db))->provision();
+        $this->assertSame(['users' => 1, 'keys' => 1], $result['legacy_analyzer']);
+
+        // Druhý běh: uživatel i klíče už jsou neaktivní → 0 / 0.
+        $db2 = $this->createMock(DataSourceConnection::class);
+        $db2->method('getAffectedRows')->willReturn(0);
+        $this->assertSame(['users' => 0, 'keys' => 0], (new MailAiProvisioner($db2))->deactivateLegacyAnalyzer());
     }
 
     public function testSyncUpdatesWhenTemplateIsNewer(): void
@@ -383,7 +428,7 @@ class AIAnalyzerProvisionerTest extends TestCase
                 $captured = ['table' => $table, 'data' => $data];
             });
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame('updated', $result['status']);
@@ -418,7 +463,7 @@ class AIAnalyzerProvisionerTest extends TestCase
         $db->method('fetchRow')->willReturn(['id' => 33, 'prompt_version' => 'v1.2.0']);
         $db->expects($this->never())->method('updateWhere');
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame('up_to_date', $result['status']);
@@ -431,7 +476,7 @@ class AIAnalyzerProvisionerTest extends TestCase
         $db->method('fetchRow')->willReturn(['id' => 33, 'prompt_version' => 'v2.0.0']);
         $db->expects($this->never())->method('updateWhere');
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame('db_newer', $result['status']);
@@ -446,7 +491,7 @@ class AIAnalyzerProvisionerTest extends TestCase
         $db->expects($this->never())->method('insertRow');
         $db->expects($this->never())->method('updateWhere');
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame(['status' => 'not_found', 'profile_id' => 'czech_general'], $result);
@@ -459,7 +504,7 @@ class AIAnalyzerProvisionerTest extends TestCase
         $db->method('fetchRow')->willReturn(['id' => 33, 'prompt_version' => '1.1.0']);
         $db->expects($this->once())->method('updateWhere');
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame('updated', $result['status']);
@@ -471,7 +516,7 @@ class AIAnalyzerProvisionerTest extends TestCase
         $db->method('fetchRow')->willReturn(['id' => 33, 'prompt_version' => 'v1.2.0']);
         $db->expects($this->once())->method('updateWhere');
 
-        $provisioner = new AIAnalyzerProvisioner($db);
+        $provisioner = new MailAiProvisioner($db);
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'), force: true);
 
         $this->assertSame('updated', $result['status']);

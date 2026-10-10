@@ -23,7 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * --generate vygeneruje token `shpd_gw_` + 43 url-safe znaků, uloží
  * prefix (lookup) + SHA-256 hash + šifrovaný plaintext (queue payload)
- * a token vytiskne JEDNOU — patří do `ai-analyzer-set-key --api-key`
+ * a token vytiskne JEDNOU — patří do `ai-backend-set-key --api-key`
  * na klientském DS. --revoke nastaví active = 0 (gateway token okamžitě
  * odmítá, 401).
  *
@@ -165,7 +165,7 @@ class HostingAiTokenCommand extends Command
             $output->writeln("<comment>Warning: data source lifecycle is '{$ds['lifecycle']}' — the gateway only accepts tokens of active data sources.</comment>");
         }
         $output->writeln('');
-        $output->writeln('<comment>Gateway token (shown only once — use it as --api-key of ai-analyzer-set-key on the client data source):</comment>');
+        $output->writeln('<comment>Gateway token (shown only once — use it as --api-key of ai-backend-set-key on the client data source):</comment>');
         $output->writeln($minted['token']);
 
         return Command::SUCCESS;

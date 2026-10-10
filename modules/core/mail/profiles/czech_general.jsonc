@@ -2,7 +2,7 @@
 // přijatých dokladů (faktury, dobropisy, účtenky) a registry dokumentů
 // (smlouvy, pojistky, nabídky, revize, úřední písemnosti).
 //
-// Tento soubor slouží jako šablona — `AIAnalyzerProvisioner` z něj vytvoří
+// Tento soubor slouží jako šablona — `MailAiProvisioner` z něj vytvoří
 // řádek v `core_mail_ai_profiles` při prvním ds-upgrade. Reload existujícího
 // profile na novou verzi: `bin/shpd-ds ai-profile-reload --force`.
 //
@@ -12,8 +12,8 @@
 // nebo `shpd.registry.document.v1` (registry typy). Pole `extracted_json`
 // v `output_schema` je proto oneOf dvou INLINE KOPIÍ:
 // `modules/core/exchange/schemas/shpd.docs.document.v1.json`
-// a `modules/base/registry/schemas/shpd.registry.document.v1.json` (analyzer
-// neresolvuje $ref napříč soubory). Drift obou embedů hlídá
+// a `modules/base/registry/schemas/shpd.registry.document.v1.json` (validátor
+// výstupu neresolvuje $ref napříč soubory). Drift obou embedů hlídá
 // `tests/Unit/Module/Core/Mail/ProfileSchemaDriftTest`.
 {
     "profile_id": "czech_general",
@@ -79,15 +79,15 @@
                         "maximum": 1
                     },
                     // Titulek zprávy (tasks/mail-message-title-partner.md D2)
-                    // — volitelný (P8: starší analyzer bez title nesmí padat
-                    // na 422), server má deterministický fallback.
+                    // — volitelný (P8: starší prompt bez title nesmí padat
+                    // na schema_error), server má deterministický fallback.
                     "title": {
                         "type": "string",
                         "maxLength": 120
                     },
                     // Pozornost u zprávy bez dokladu (tasks/mail-other-attention.md
                     // D1, D2, D7, #105) — jen u primary_type other; všechna pole
-                    // volitelná (starší analyzer bez nich projde, server nechá NULL).
+                    // volitelná (výstup staršího promptu bez nich projde, server nechá NULL).
                     // Volitelná pole připouštějí i null — model absenci běžně
                     // vyjadřuje nullem a additionalProperties: false neodpustí
                     // nic (oprava 2026-10-07: akční zpráva bez lhůty padala na

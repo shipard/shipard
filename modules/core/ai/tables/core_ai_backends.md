@@ -30,7 +30,7 @@ zprávy.
 | Sloupec | Typ | Popis |
 |---|---|---|
 | `provider` | varchar(30), NOT NULL, default `anthropic` | Identifikátor providera. V MVP pouze `anthropic`. |
-| `model` | varchar(100), NOT NULL | Model name (`claude-sonnet-4-6`, …). Vyřazené modely přepisuje `ds-upgrade` (`AIAnalyzerProvisioner::RETIRED_MODELS`, viz Životní cyklus). |
+| `model` | varchar(100), NOT NULL | Model name (`claude-sonnet-4-6`, …). Vyřazené modely přepisuje `ds-upgrade` (`MailAiProvisioner::RETIRED_MODELS`, viz Životní cyklus). |
 | `base_url` | varchar(200) | Volitelný custom endpoint (pro non-default proxy) |
 
 ### Přístup (credentials)
@@ -59,7 +59,7 @@ a `effort` jsou přechodné — katalog modelů (#85 fáze 1) je přesune do AI
 | Sloupec | Typ | Popis |
 |---|---|---|
 | `is_default` | boolean, default false | Výchozí backend DS. Smí být `true` jen u jedné řádky (vynuceno aplikačně v `AIBackendDocument::validate`). |
-| `is_active` | boolean, default false | Aktivuje se po nastavení `api_key` přes `ai-analyzer-set-key`. |
+| `is_active` | boolean, default false | Aktivuje se po nastavení `api_key` přes `ai-backend-set-key`. |
 
 ### Stav (status)
 
@@ -86,13 +86,13 @@ a `effort` jsou přechodné — katalog modelů (#85 fáze 1) je přesune do AI
    `is_active=false`, `api_key=NULL`. Tentýž běh u **všech** backendů
    jednorázově a idempotentně přepíše vyřazený model
    (`claude-sonnet-4-5`, i s datovou příponou) na jeho náhradu podle
-   `AIAnalyzerProvisioner::RETIRED_MODELS` a vypíše `[MODEL]`; ID
+   `MailAiProvisioner::RETIRED_MODELS` a vypíše `[MODEL]`; ID
    s prefixem platformy (`anthropic.…` na Bedrocku) nechává být.
-2. **Nastavení klíče**: admin spustí `bin/shpd-ds ai-analyzer-set-key`,
-   který klíč zašifruje a nastaví `is_active=true`.
-3. **Claim**: `AnalysisController::claim()` načte default aktivní backend,
-   `DsSecretCipher::decrypt()` vrátí plaintext, plaintext se vloží do response
-   a okamžitě zapomene.
+2. **Nastavení klíče**: admin spustí `bin/shpd-ds ai-backend-set-key`
+   (skrytý vstup), který klíč zašifruje a nastaví `is_active=true`.
+3. **Claim**: `AnalysisClaimService::claim()` načte backend profilu,
+   `DsSecretCipher::decrypt()` vrátí plaintext jen do paměti runneru na dobu
+   volání modelu.
 
 ## Návaznosti
 

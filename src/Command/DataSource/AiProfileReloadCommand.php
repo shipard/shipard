@@ -6,7 +6,7 @@ namespace Shipard\Command\DataSource;
 
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
-use Shipard\Module\Core\Mail\AIAnalyzerProvisioner;
+use Shipard\Module\Core\Mail\MailAiProvisioner;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * a language. Nepřepisuje admin-controlled pole (name, is_default, is_active,
  * backend) — admin si je mohl lokálně upravit.
  *
- * Tenký wrapper nad AIAnalyzerProvisioner::syncProfileFromTemplate() —
+ * Tenký wrapper nad MailAiProvisioner::syncProfileFromTemplate() —
  * tutéž logiku volá automaticky ds-upgrade (upgrade-only). Manuální příkaz
  * slouží pro --force (downgrade / same-version overwrite), --dry-run
  * a --template-path scénáře.
@@ -82,7 +82,7 @@ class AiProfileReloadCommand extends Command
 
         $templatePath = $input->getOption('template-path');
         try {
-            $template = AIAnalyzerProvisioner::loadProfileTemplate(
+            $template = MailAiProvisioner::loadProfileTemplate(
                 $templatePath !== null ? (string) $templatePath : null,
             );
         } catch (\RuntimeException $e) {
@@ -110,7 +110,7 @@ class AiProfileReloadCommand extends Command
         );
         if ($row === null) {
             $output->writeln("<error>Error: profile '{$profileCode}' not found.</error>");
-            $output->writeln('<comment>Run "shpd-ds ai-analyzer-bootstrap" first.</comment>');
+            $output->writeln('<comment>Run "shpd-ds ds-upgrade" first — it creates the default profile.</comment>');
             return Command::FAILURE;
         }
 
@@ -120,7 +120,7 @@ class AiProfileReloadCommand extends Command
         $force = (bool) $input->getOption('force');
         $dryRun = (bool) $input->getOption('dry-run');
 
-        $cmp = AIAnalyzerProvisioner::compareVersions($newVersion, $currentVersion);
+        $cmp = MailAiProvisioner::compareVersions($newVersion, $currentVersion);
 
         if ($cmp === 0 && !$force) {
             $output->writeln(
@@ -147,7 +147,7 @@ class AiProfileReloadCommand extends Command
             return Command::SUCCESS;
         }
 
-        $provisioner = new AIAnalyzerProvisioner($dsConnection);
+        $provisioner = new MailAiProvisioner($dsConnection);
         $sync = $provisioner->syncProfileFromTemplate(
             $templatePath !== null ? (string) $templatePath : null,
             force: $force,
