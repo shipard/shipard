@@ -28,7 +28,7 @@ repozitář). Fáze 3+ přidává AI analyzátor a odeslanou poštu.
 **Mimo rozsah:**
 
 - Mail-router daemon samotný (SMTP/IMAP příjem, parsing `.eml`) — **samostatný repozitář**, nasazuje se nezávisle
-- AI analyzátor — Fáze 3
+- AI analýza — Fáze 3, runner v procesu ([ai-analysis.md](ai-analysis.md))
 - Threading (`In-Reply-To`, `References`) — ukládáme, nezpracováváme
 - Deduplikace dle `external_message_id` — ukládáme, nevyužíváme
 - Automatické matchování odesílatele na `base_persons_persons` — naplňuje Fáze 3
@@ -65,7 +65,7 @@ tabulce. Vazba je polymorfní přes `target_table_id` + `target_row` na
          │  zařazení do AI fronty (analysis_state = 10, ortogonální osa)
          ▼
 ┌──────────────────────────┐
-│  AI analyzer             │─→ core_mail_message_analyses
+│  AI analýza (runner)     │─→ core_mail_message_analyses
 └────────┬─────────────────┘        (historie běhů; MAX(analyzed_at) = aktuální
          │                           návrh: canonical_json + proposed_type)
          ▼                           docState 10 → 20 (K řešení)

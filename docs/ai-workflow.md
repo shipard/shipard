@@ -218,7 +218,7 @@ platí pro všechny. Root = **tvůj** checkout, cesty se liší per člověk.
 | `project_id` | Root |
 |--------------|------|
 | `shipard` | checkout `shipard/shipard` — **ne** `shpd`, to je jen název adresáře |
-| `ai_analyzer`, `mail_router` | checkouty samostatných komponent (`docs/services.md`) |
+| `mail_router` | checkout samostatné komponenty (`docs/services.md`); `ai_analyzer` zrušen (#85 D24), repozitář archivován |
 | jiné (testovací stroj, čerstvá VM) | libovolné, popsat v `CLAUDE.local.md` |
 
 **Provozní poznámky:**

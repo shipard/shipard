@@ -327,8 +327,8 @@ Předpoklady, aby to fungovalo:
 
 - **AI analýza pošty (`ai.analysis.maxConcurrent`):** limit souběžných
   běhů `shpd-ds mail-analyze` per server, klíč v `server.json`; výchozí
-  `2`, `0` = analýza v procesu vypnutá (server, kde dál pracuje démon
-  `ai-analyzer`), záporná nebo nečíselná hodnota = chyba konfigurace
+  `2`, `0` = analýza pošty na tomto serveru vypnutá (vypínač — žádný runner
+  se nespustí), záporná nebo nečíselná hodnota = chyba konfigurace
   (běží se s výchozí hodnotou a chybou v logu). Každý běh drží jedno HTTP
   spojení k modelu až 14 minut; u zdrojů dat přes AI gateway hostingu
   drží spojení i PHP-FPM worker portálu — limit proto nezvedej nad počet
@@ -434,3 +434,47 @@ sudo shpd-server doctor
 > PHP-FPM si změněné soubory načte sám — reload FPM po upgradu není potřeba.
 > Kdyby se validace timestampů někdy vypnula, patří na konec upgradu
 > `systemctl reload php8.5-fpm`.
+
+## 12. Vypnutí `ai-analyzer`
+
+Externí AI analyzer (repozitář `shipard/ai-analyzer`, systemd služba na
+samostatném stroji) byl zrušen (#85 D20–D24, `tasks/ai-analyzer-removal.md`):
+analýzu došlé pošty dělá `shpd` sám runnerem `shpd-ds mail-analyze`
+a pull protokol `/_mail/analysis/*`, na který démon volal, vrací 404.
+Na serveru, kde démon ještě běží, ho vypni **po** nasazení této verze —
+jinak jen plní log chybami 404.
+
+1. Nasadit `shpd` (`shpd-server upgrade`, §11) a pustit `ds-upgrade` na
+   všech zdrojích dat (`ds-upgrade-all` je součást upgradu). Ve výpisu
+   zdrojů dat s poštou se jednou objeví
+   `[DEACTIVATE] user '_ai_analyzer'` — účet démona je od té chvíle
+   neaktivní a jeho API klíče zneplatněné (účet zůstává kvůli `created_by`
+   starších běhů analýz).
+2. Ověřit analýzu v procesu: nahrát doklad bez ISDOC z Dashboardu →
+   do minuty návrh v sekci **Připraveno** / **Ke kontrole**; v logu
+   `analysis.log` běh `mail-analyze`. Když zprávy zůstávají **Ve frontě**,
+   do 15 minut se ozve upozornění **Analýza pošty stojí**
+   (`core.mail.analysis_stalled`) — zkontroluj cron, `ai.analysis.maxConcurrent`
+   a práva k `/opt/shipard/run` (§10).
+3. Na stroji démona zastavit a odregistrovat jednotky (názvy z `deploy/systemd`
+   repozitáře: `shipard-ai-analyzer-reload.path`, `shipard-ai-analyzer-reload.service`, `shipard-ai-analyzer-sources-sync.service`, `shipard-ai-analyzer-sources-sync.timer`, `shipard-ai-analyzer.service`):
+
+   ```bash
+   sudo systemctl disable --now shipard-ai-analyzer-reload.path shipard-ai-analyzer-reload.service shipard-ai-analyzer-sources-sync.service shipard-ai-analyzer-sources-sync.timer shipard-ai-analyzer.service
+   ```
+
+4. Odstranit instalaci — unit soubory, konfiguraci, stavový adresář
+   a venv (cesty z `deploy/install.sh`):
+
+   ```bash
+   sudo rm -f /etc/systemd/system/shipard-ai-analyzer*
+   sudo systemctl daemon-reload
+   sudo rm -rf /etc/shipard-ai-analyzer /var/lib/shipard-ai-analyzer /opt/shipard-ai-analyzer
+   sudo userdel shipard-ai-analyzer
+   ```
+
+5. Na hostingu už není co mazat — registr analyzerů z UI zmizel, tabulka
+   `hosting_core_ai_analyzers` a sloupec `analyzer_token` zůstávají
+   v databázi osiřelé (servisní výmaz je položka roadmapy M5). Nový agent
+   `hosting-sync` token analyzeru už nemintuje; starší agent, který ho
+   ještě pošle, chybu nedostane.

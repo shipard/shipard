@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 351 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 323.
+Celkem 351 tasků: **naplánováno** 4 · **částečně** 23 · **hotovo** 324.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,7 +25,6 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
-| `ai-analyzer-removal.md` | naplánováno | rozhodnutí D20–D24 potvrzena 2026-10-10 (#85), připraveno k implementaci |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
@@ -366,8 +365,9 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `mail-analysis-inprocess.md` | AI analýza v `shpd` místo démona `ai-analyzer`: služby z `AnalysisController`, příprava příloh, prompt přes Twig, runner a CLI `mail-analyze` (spawn + sweep), limit souběhu per server (#85 D9–D19) |
 | `mail-analysis-queue-drain.md` | Runner AI analýzy dobírá frontu (rozpočet 10 min, nástupce), strop tří pádů za hodinu v runneru i reaperu, 401/403/404 jako chyba nastavení, nová hláška `configError` (#85 D25, D26) |
 
-Daemony volající endpoint žijí v jiných repech: `mail_router:tasks/phase1.md`
-(mail-router, Python) a `ai_analyzer:tasks/phase1.md` (AI analyzer, Python).
+Démon volající endpoint žije v jiném repu: `mail_router:tasks/phase1.md`
+(mail-router, Python). Externí AI analyzer (`ai_analyzer`) byl zrušen
+(#85 D20–D24, `ai-analyzer-removal.md`) — analýzu dělá `shpd` v procesu.
 
 ## AI — MCP server a chat
 
@@ -534,7 +534,6 @@ Když task odkazuje na něco v jiném repu, používej prefix `<projekt>:cesta`,
 kde `<projekt>` je `project_id` z mapy projektů níže:
 
 - `mail_router:tasks/phase1.md`
-- `ai_analyzer:tasks/phase1.md`
 - `shipard:docs/mail/api-contract.md` (zpětný odkaz z jiných repo tasků)
 
 ### Otevřené otázky
@@ -554,7 +553,7 @@ otevřené.
 | `old_shipard` | `shipard/shipard-old` (soukromé) | Starý Shipard + migrační pipeline do nového |
 | `dev_env` | `shipard/dev-env` (soukromé) | Přístupy a prostředí týmu (`docs/ai-workflow.md` §6) |
 | `mail_router` | `shipard/mail-router` | Mail-router daemon (Python) |
-| `ai_analyzer` | `shipard/ai-analyzer` | AI analyzer daemon (Python) |
+| `ai_analyzer` | `shipard/ai-analyzer` | AI analyzer daemon (Python) — **zrušen** #85 D24 (2026-10-10), repozitář archivován |
 
 Úplný seznam včetně testovacího serveru je v `dev-env.md` §3. Lokální
 adresář checkoutu se může jmenovat jinak (`shpd`); `project_id` se řídí

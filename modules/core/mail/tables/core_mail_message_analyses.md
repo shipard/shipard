@@ -60,14 +60,14 @@ Verdikt uživatele nad dokumentovým návrhem běhu — zapisuje ho
 | `tokens_input` | int | Počet vstupních tokenů (cost tracking) |
 | `tokens_output` | int | Počet výstupních tokenů |
 | `duration_ms` | int | Trvání volání v milisekundách |
-| `cost_usd` | numeric(10,6) | Self-reported cena volání v USD (analyzer ji počítá z provider price-listu) |
+| `cost_usd` | numeric(10,6) | Cena volání v USD podle ceníku modelů (počítá runner; starší běhy zrušeného externího analyzeru ji hlásily samy) |
 
 ### Auditní pole (status)
 
 | Sloupec | Typ | Popis |
 |---|---|---|
 | `created` | datetime | Čas založení záznamu |
-| `created_by` | int → `core_system_users` | Obvykle systémový uživatel AI služby |
+| `created_by` | int → `core_system_users` | NULL = běh runneru v procesu (strojový kontext). Starší běhy zrušeného externího analyzeru nesou uživatele `_ai_analyzer` — účet je deaktivovaný, nemaže se (#85 D21) |
 
 ## Indexy
 

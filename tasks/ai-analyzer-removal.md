@@ -1,6 +1,6 @@
 # AI — zrušení pull protokolu, registru analyzerů a démona `ai-analyzer` (#85 D9, D11)
 
-**Stav:** naplánováno — rozhodnutí D20–D24 potvrzena 2026-10-10 (#85), připraveno k implementaci
+**Stav:** hotovo — implementováno 2026-10-10 v pěti commitech (D20 protokol, D21 provisioning + `ai-backend-set-key`, D22 hosting, D23 upozornění, D24 dokumentace + README repa `ai_analyzer`); ověření 1–7 na dev serveru, vypnutí démona na serverech a archivace repozitáře zbývá člověku (runbook `docs/operations/production.md` §12)
 
 ## Status / cíl
 
@@ -268,8 +268,8 @@ Každý krok je samostatný commit.
 
 ## Hotovo když
 
-- [ ] Kroky 1–5 jako samostatné commity (krok 5 navíc commit v repu
+- [x] Kroky 1–5 jako samostatné commity (krok 5 navíc commit v repu
       `ai_analyzer`), `php -l`, cílené testy, celá sada.
-- [ ] Ověření 1–7 provedeno, výsledek do #85.
-- [ ] Runbook vypnutí démona je v `docs/operations/production.md`.
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.
+- [x] Ověření 1–7 provedeno na dev serveru (2 přes integrační test runneru a jednotkové testy, 6 přes zprávu s posunutým `modified` — `server.json` na dev stroji bez root přístupu); výsledek do #85 zapíše člověk s push.
+- [x] Runbook vypnutí démona je v `docs/operations/production.md` §12.
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.

@@ -115,13 +115,13 @@ Bolest vzniká z toho, že se do jednoho pytle míchají tři věci s různým
 | Vrstva | Co to je | Kde žije | Kdy se rozhoduje | Změnitelné? |
 |---|---|---|---|---|
 | **A** | Instalační parametry — jazyk a země | `config/main.json` (read-only instalační config) | při zakládání DS | ne |
-| **B** | Referenční data — jednotky, druhy položek, osnova, saldo skupiny, instance daňových tvrzení, číselné řady, mail router, AI analyzer | tabulky, generuje `ds-upgrade` | automaticky, bez vstupu uživatele | idempotentně dorovnává |
+| **B** | Referenční data — jednotky, druhy položek, osnova, saldo skupiny, instance daňových tvrzení, číselné řady, mail router, AI backend a profil | tabulky, generuje `ds-upgrade` | automaticky, bez vstupu uživatele | idempotentně dorovnává |
 | **C** | Firemní identita a parametry účetnictví | `core_system_settings` (parametry) + business tabulky (řádky) | při prvním otevření DS, průvodcem | ano |
 
 **Vrstva B je už hotová** — `DsUpgradeCommand` spouští provisionery jednotek,
 druhů položek, účtové osnovy, saldo skupin, fiskálních roků, instancí
 daňových tvrzení a číselných řad; clearing infrastruktura, tranzitní a podrozvahové účty
-(261100, 756100/799100) a AI analyzer se zajišťují bezpodmínečně
+(261100, 756100/799100) a AI backend s profilem se zajišťují bezpodmínečně
 (i pod `skipProvisioning`). Vrstva B je dobrý precedent hlavně tím, že je
 **idempotentní a spouští se opakovaně**, ne jednorázově při zakládání.
 
@@ -182,7 +182,7 @@ nevznikne; nabídky checky vědomě nemají).
    ┌──────────────────────────────────────────────────────────────┐
    │  ds-upgrade  (vrstva B, idempotentní, opakovaně)             │
    │  jednotky · druhy položek · saldo skupiny · daňová tvrzení · │
-   │  číselné řady · mail router · AI analyzer                    │
+   │  číselné řady · mail router · AI backend a profil            │
    │  osnova a fiskální roky JEN když je rozhodnuto (D2/D6)       │
    └──────────────────────────────────┬───────────────────────────┘
                                       │

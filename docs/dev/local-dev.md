@@ -251,7 +251,7 @@ K vytěžení dokladu z Dashboardu i k asistentovi stačí klíč AI backendu �
 
 ```bash
 cd /opt/shipard/data-sources/<id>
-shpd-ds ai-analyzer-set-key --backend default --api-key sk-ant-…
+shpd-ds ai-backend-set-key --backend default   # klíč zadáš skrytě na výzvu
 ```
 
 Pak nahraj doklad (PDF, obrázek účtenky) na Dashboardu. Analýza běží jako

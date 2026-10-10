@@ -66,7 +66,7 @@ v primitivnější podobě — jeho data se budou importovat (viz §10).
   DMS není cíl (starý `wkf.docs` per-složková práva měl; nemigrují se)
 - **Spisy / subjekty** (šanon → spis vozidla/zaměstnance) — model to nesmí
   zablokovat, ale nestaví se
-- **OCR skenů bez textové vrstvy** — extrakce textu jen tam, kam analyzer
+- **OCR skenů bez textové vrstvy** — extrakce textu jen tam, kam AI analýza
   dosáhne dnes
 - **Datová schránka jako intake** — `source_kind` je na to připravený,
   kanál přijde později
@@ -375,8 +375,8 @@ Poznámky:
   metadat; sync řeší beforeSave.
 - **`extracted_text`** se ve fázi 1 neplní (sloupec připraven). Fáze 2 ho
   plní **na PHP straně** přes `pdftotext` (poppler-utils — na serverech už
-  je kvůli thumbnailům) při zařazení; analyzer lokální text nemá, přílohy
-  posílá providerovi binárně. Táž služba jde zavolat i z ruční cesty.
+  je kvůli thumbnailům) při zařazení; runner analýzy lokální text nemá, přílohy
+  posílá modelu binárně. Táž služba jde zavolat i z ruční cesty.
 - **Přílohy** standardně přes `core.attachments` (`table_id = 428`).
 
 ## 6. Fáze 1 — základ bez AI
@@ -505,8 +505,8 @@ Kroky (jedna transakce + kopie souborů s úklidem orphanů, vzor mail ingest):
 
 ### 7.4 Kontrakt `shpd.registry.document.v1`
 
-Výstup analyzeru pro registry typy — **názvy polí = přesně `docKinds.fields`**
-(analyzer nepřejmenovává; nesoulad = tiché prázdno, ověřená lekce):
+Výstup AI analýzy pro registry typy — **názvy polí = přesně `docKinds.fields`**
+(model ani runner nepřejmenovávají; nesoulad = tiché prázdno, ověřená lekce):
 
 ```jsonc
 {
@@ -523,7 +523,7 @@ Výstup analyzeru pro registry typy — **názvy polí = přesně `docKinds.fiel
 
 Kontrakt je jednodušší než docs exchange — žádné povinné reference, žádný
 `_resolve` resolve panel. Nepatří pod `core.exchange` schema machinery;
-je to čistý analyzer↔applier kontrakt (JSON schema v
+je to čistý kontrakt výstup modelu ↔ applier (JSON schema v
 `modules/base/registry/schemas/`). Tentýž formát s volitelnými rozšířeními
 používá import ze starého Shipardu (§10).
 
@@ -533,7 +533,7 @@ Dvouvrstvě, bez LLM při apply:
 
 1. **Historie**: nejčastější šanon dřívějších dokumentů téhož partnera a
    druhu (vzor RowHistoryEnricher — deterministická paměť).
-2. **Jméno**: `binderSuggestion` z analyzeru se matchne case-insensitive
+2. **Jméno**: `binderSuggestion` z výstupu modelu se matchne case-insensitive
    na existující živé šanony; **nikdy nezakládá nový šanon** (safe mode
    analogie). Bez matche → `binder=NULL` (Nezařazené).
 

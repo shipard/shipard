@@ -37,8 +37,8 @@ vnitřní chat je jen jeden z jeho klientů.** Nástroje volá vnitřní chat
 in-process (registr je hned vedle), externí klienti přes `/_mcp` po HTTP.
 Analýza došlé pošty má vlastní cestu — runner `shpd-ds mail-analyze` v PHP
 (fronta → claim → model → zápis, #85 D9); backend i LLM klienta ale sdílí.
-Dočasně vedle něj funguje i pull protokol pro Python daemon `ai_analyzer`
-(zrušení řeší `tasks/ai-analyzer-removal.md`).
+Externí Python daemon `ai_analyzer` s pull protokolem byl zrušen
+(#85 D20–D24, `tasks/ai-analyzer-removal.md`).
 
 ---
 
@@ -84,7 +84,7 @@ ano, „neuhrazeno" ne: stav úhrady žádný z dokladových nástrojů nevrací
 
 | Cesta | Kdo volá LLM | Režim | Nástroje |
 |-------|--------------|-------|----------|
-| **Analýza pošty** | PHP `AnalysisRunner` (CLI `shpd-ds mail-analyze`: spawn po příjmu / předzpracování / reanalýze + minutový sweep) přes `AnthropicLlmClient`; dočasně i Python daemon `ai_analyzer` přes pull protokol `AnalysisController` | strukturovaný výstup (JSON dle `output_schema` profilu), streamovaně, timeouty 180 / 840 s, opakování přechodných chyb | — |
+| **Analýza pošty** | PHP `AnalysisRunner` (CLI `shpd-ds mail-analyze`: spawn po příjmu / předzpracování / reanalýze + minutový sweep) přes `AnthropicLlmClient` | strukturovaný výstup (JSON dle `output_schema` profilu), streamovaně, timeouty 180 / 840 s, opakování přechodných chyb | — |
 | **Vnitřní chat** | PHP `AnthropicLlmClient` (in-process) | streamovaně (SSE), tool-use smyčka | čtecí MCP nástroje |
 | **Dashboard shrnutí** | PHP `AnthropicLlmClient` přes `DashboardSummaryService` | streamovaně (SSE), **bez tools**, `maxTokens` 2000 (délku drží prompt) | — |
 | **Klasifikace štítků** | PHP `ContentTagClassifier` (obsahová eskalace řádků při analýze) a `BookingHistoryClassifier` (CLI `booking-history`) | jedno volání na doklad / dávku textů, `maxTokens` 8000 / 16000 | — |
@@ -96,8 +96,7 @@ per server `ai.analysis.maxConcurrent` (sloty `flock`), ne AI gateway
 hostingu (#85 D11, D15).
 
 `max_tokens` je kaskáda **AI profil → backend → default runneru**
-(`AnalysisRunner::DEFAULT_MAX_TOKENS` = 32768; démon drží totéž číslo ve
-svém provideru); `0` = nenastaveno, spadni níž. Jediné skutečné číslo žije
+(`AnalysisRunner::DEFAULT_MAX_TOKENS` = 32768); `0` = nenastaveno, spadni níž. Jediné skutečné číslo žije
 v kódu — limit tak nezkamení v datech každého DS. Chat backendový
 `max_tokens` respektuje, při 0/NULL drží vlastní fallback 4096
 (`ChatController`); dashboard shrnutí a klasifikátory mají vlastní konstanty
@@ -135,7 +134,7 @@ taxonomie štítků — pravidlem IČO, jinak levným LLM voláním) — viz
 a „Obsahová eskalace (content tags)".
 
 **Soukromí digestu shrnutí**: prompt shrnutí obsahuje titulky karet
-(partneři/částky z hlaviček dokladů) — stejná data, jaká analyzer LLM už
+(partneři/částky z hlaviček dokladů) — stejná data, jaká analýza pošty LLM už
 posílá při extrakci; žádná nová datová hranice. Plný `canonical_json` se do
 promptu nikdy nedává.
 
@@ -148,12 +147,12 @@ klíč). Per DS může být víc backendů, právě jeden `is_default`. Detaily 
 [`core_ai_backends.md`](../modules/core/ai/tables/core_ai_backends.md).
 
 - Klíč je šifrovaný přes `DsSecretCipher` — viz [`operations/secrets.md`](operations/secrets.md).
-- Nastavení klíče: `bin/shpd-ds ai-analyzer-set-key --backend default --api-key <api-key>` (aktivuje backend). Auto-provisioning vytvoří `default` backend při `ds-upgrade`.
+- Nastavení klíče: `bin/shpd-ds ai-backend-set-key --backend default` (klíč skrytým vstupem nebo ze STDIN, `--api-key` jen pro provisioning agenta; aktivuje backend). Auto-provisioning vytvoří `default` backend při `ds-upgrade`.
 - **Výchozí model a přemostění (#85 F0-D8):** nový backend vzniká
   s `claude-sonnet-4-6` a `temperature` NULL. Sonnet 4.5 je od 30. 9. 2026
   deprecated a **30. 11. 2026 končí**; `ds-upgrade` proto u všech backendů
   jednorázově přepíše `claude-sonnet-4-5` (i s datovou příponou) na 4.6
-  podle `AIAnalyzerProvisioner::RETIRED_MODELS` a vypíše `[MODEL]`. ID
+  podle `MailAiProvisioner::RETIRED_MODELS` a vypíše `[MODEL]`. ID
   s prefixem platformy (`anthropic.…`) nechává být. Sonnet 4.6 je stejná
   cena i tokenizer, přijímá `temperature` a bez parametru nepřemýšlí —
   chování se nemění. **Aktivní je nejméně do 17. 2. 2027**; do té doby musí
@@ -165,7 +164,7 @@ klíč). Per DS může být víc backendů, právě jeden `is_default`. Detaily 
 - **Jak zkoušet model řady 5 (`claude-sonnet-5-5`, `claude-haiku-5-5`)
   přes druhý backend:** založit backend v Nastavení → AI backendy
   (teplota prázdná, thinking / effort `auto` nebo konkrétní hodnota),
-  klíč přes `ai-analyzer-set-key --backend <kód>`; pro analýzu pošty
+  klíč přes `ai-backend-set-key --backend <kód>`; pro analýzu pošty
   druhý AI profil s tímto backendem (reanalýza zprávy s profilem, nebo
   `profile_override`), pro štítky nastavení `exchange.contentTag.backend`
   = id backendu, pro historii účtování `booking-history --backend`. Co
@@ -178,19 +177,19 @@ klíč). Per DS může být víc backendů, právě jeden `is_default`. Detaily 
   vlastního klíče používat AI gateway hostingu — backend má `base_url` =
   gateway (`…/api/v1/_hosting/ai-gw`) a `api_key` = gateway token
   (`shpd_gw_…`). Na straně DS se nemění žádný kód: `AnthropicLlmClient`
-  i Python analyzer si na `base_url` sami připojují `/v1/messages`
-  a autentizují se `x-api-key`. Zápis: `ai-analyzer-set-key --backend
+  si na `base_url` sám připojuje `/v1/messages` a autentizuje se
+  `x-api-key`. Zápis: `ai-backend-set-key --backend
   default --api-key shpd_gw_… --base-url https://portal…/_hosting/ai-gw`
   (u nových DS to dělá provisioning agent automaticky). **Vlastní klíč
   zůstává rovnocennou cestou** (D6) — `--base-url ''` vrátí backend na
   přímé Anthropic API. Detaily gateway: [`hosting.md`](hosting.md) §5.5,
   runbook [`operations/ai-gateway.md`](operations/ai-gateway.md).
-- **Lifecycle:** jediné ruční kroky jsou jednorázové při prvním zřízení DS —
-  `ai-analyzer-set-key` (klíč backendu) a `ai-analyzer-setup` (API klíč
-  analyzeru). Všechno ostatní drží `ds-upgrade` automaticky a bezpodmínečně
-  (i pod `skipProvisioning`): user `_ai_analyzer`, default backend, default
-  profil + version sync profilu ze šablony. `ds-reset` backendy s klíči,
-  profily i uživatele/API klíče zachovává (`keepOnReset`), takže reset ani
+- **Lifecycle:** jediný ruční krok je jednorázový při prvním zřízení DS —
+  `ai-backend-set-key` (klíč backendu). Všechno ostatní drží `ds-upgrade`
+  automaticky a bezpodmínečně (i pod `skipProvisioning`): default backend,
+  default profil + version sync profilu ze šablony, jednorázová deaktivace
+  účtu `_ai_analyzer` zrušeného externího analyzeru (#85 D21). `ds-reset`
+  backendy s klíči i profily zachovává (`keepOnReset`), takže reset ani
   upgrade žádnou ruční AI akci nevyžadují.
 - **Provider scope:** v1 jen `anthropic`; rozhraní `LlmClient` drží dveře pro
   další providery (lokální, OpenAI) otevřené, aniž by se předčasně abstrahoval
@@ -232,5 +231,5 @@ spadne na své tréninkové datum a může pokládat současný rok za budoucnos
   [`core_chat_conversations.md`](../modules/core/chat/tables/core_chat_conversations.md),
   [`core_chat_messages.md`](../modules/core/chat/tables/core_chat_messages.md)
 - [`operations/secrets.md`](operations/secrets.md) — šifrování klíčů
-- [`cli.md`](cli.md) — `ai-analyzer-set-key` a další příkazy
+- [`cli.md`](cli.md) — `ai-backend-set-key` a další příkazy
 - [`mail/api-contract.md`](mail/api-contract.md) — analýza došlé pošty (sousední cesta)

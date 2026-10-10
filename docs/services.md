@@ -1,7 +1,7 @@
 # Standard samostatných komponent
 
 Pravidla pro komponenty, které nejsou součástí repozitáře `shipard/shipard`, ale
-tvoří s ním jeden systém — dnes `ai-analyzer` a `mail-router`, dále generátor
+tvoří s ním jeden systém — dnes `mail-router`, dále generátor
 UI videa (#48) a PDF rendering (#34).
 
 Cíl: vývojář (i Claude Code) přijde do libovolného repozitáře komponenty
@@ -23,7 +23,7 @@ na tři kategorie s různými požadavky:
 
 | Kategorie | Charakteristika | Dnes |
 |---|---|---|
-| **Runtime služba** | Dlouho běžící démon. Systemd unity, config v `/etc/`, systémový uživatel, stav v `/var/lib/`. | `ai-analyzer`, `mail-router` |
+| **Runtime služba** | Dlouho běžící démon. Systemd unity, config v `/etc/`, systémový uživatel, stav v `/var/lib/`. | `mail-router` (`ai-analyzer` zrušen #85 D24) |
 | **Nástroj** | Spouštěný příležitostně, ručně nebo z CI. Bez systemd, bez dedikovaného uživatele, běží ze zdrojového adresáře. | generátor videa (#48) |
 | **Vendorovaná infrastruktura** | Cizí software, žádný náš kód. Jen deployment descriptor a provozní dokumentace. | Gotenberg (#34) |
 
@@ -122,7 +122,7 @@ rozbitý. Interpretované podpříkazy (admin operace nad daty) volá přes
 | `config-check` | Validace configu proti schématu. Bez sítě, bez systemd. | ne | ne |
 | `logs` | Tenký wrapper nad `journalctl -u …` (`-f`, `-n <N>`). | ne | ne |
 
-Verby specifické pro komponentu (např. `stats`, `sources-sync`, `queue`) jsou
+Verby specifické pro komponentu (např. `stats`, `lookup-sync`, `queue`) jsou
 povolené, ale musí být v `--help` vizuálně oddělené od standardní sady.
 
 ### `upgrade` — sekvence
@@ -196,8 +196,8 @@ prostě zavolá `install` každé komponenty.
   (vzor: `mail-router`).
 - Instaluje a refreshuje je `install` / `upgrade`, nikdy ne ruční `cp`.
 - `RuntimeDirectory=` pro `/run/…` — nikdy nepředvytvářet v instalaci.
-- Timery a `path` unity patří sem taky (vzor: `sources-sync.timer`,
-  `reload.path` v `ai-analyzer`).
+- Timery a `path` unity patří sem taky (vzor: `lookup-sync` v `mail-router`;
+  historicky `sources-sync.timer` a `reload.path` ve zrušeném `ai-analyzer`).
 
 ---
 
@@ -208,7 +208,7 @@ balíček. Pro diagnostiku ale nestačí — `status` proto vypisuje **verzi
 i krátký git hash**:
 
 ```
-shipard-ai-analyzer 0.2.0 (97a7f38)
+shipard-mail-router <verze> (<commit>)
 ```
 
 Bez toho není na alfě jednoznačně určitelné, co běží.
@@ -275,7 +275,7 @@ Pravidla:
    dnešní vazba mezi těmi dvěma commity.
 4. Přejmenování polí je změna kontraktu, i když se „nic nemění". Precedent:
    názvy polí ve schématu AI výstupu musí přesně odpovídat výměnnému formátu,
-   protože analyzer nic nepřejmenovává — nesoulad se projeví tichým prázdným
+   protože klient (model, runner) nic nepřejmenovává — nesoulad se projeví tichým prázdným
    `_rawOutput`, ne chybou.
 
 Absence atomicity těchto dvou commitů je jediný reálný důvod, proč zůstává
@@ -303,7 +303,7 @@ Komponenta je v souladu se standardem, když:
 
 | Komponenta | Kategorie | Stav |
 |---|---|---|
-| `ai-analyzer` | runtime služba | nesouladná — chybí `CLAUDE.md`, CLI, dokumentace anglicky |
+| `ai-analyzer` | runtime služba | **zrušena** (#85 D24, 2026-10-10) — repozitář archivován, analýzu pošty dělá `shpd` v procesu |
 | `mail-router` | runtime služba | nesouladná — chybí `CLAUDE.md`, CLI, prázdné `tasks/` |
 | generátor videa (#48) | nástroj | nevzniklo — píše se přímo podle standardu |
 | Gotenberg (#34) | vendorovaná infra | dle standardu — pin + unit template `docs/render/shpd-render.service`, provoz `docs/operations/render-service.md`, klient `src/Core/Render/` (`docs/render.md`); rollout na alfě zbývá |

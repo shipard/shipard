@@ -31,7 +31,7 @@ vynechává fakturaci, helpdesk a HW evidenci.
 > **Fáze 4 hotová** (2026-08-06): AI gateway — passthrough endpoint
 > `/_hosting/ai-gw/v1/messages` s metering, tabulky ai_tokens/ai_usage,
 > CLI `hosting-ai-gw-init`/`hosting-ai-token`, ai sekce queue payloadu +
-> krok `ai-analyzer-set-key --base-url` v agentu (task `hosting-05-ai-gateway`).
+> krok `ai-analyzer-set-key --base-url` (dnes `ai-backend-set-key`) v agentu (task `hosting-05-ai-gateway`).
 > **Fáze 5 hotová** (2026-08-06): přehled napříč DS — `shpd-ds
 > hosting-stats`, stats krok agenta řízený `stats_wanted` z reconcile,
 > tabulka ds_stats (snapshot upsert), badge „k řešení" na portálu
@@ -63,14 +63,14 @@ vynechává fakturaci, helpdesk a HW evidenci.
 | D3 | Provisioning DS = **pull agent** `shpd-server hosting-sync` (cron na DS serveru). Polluje hosting, lokálně provede založení, potvrdí zpět. Součástí je rekonciliace (inventura existujících DS + verzí). |
 | D4 | Mail-router lookup: `lookup.json` generuje **pull proces na mail-router stroji** z hosting API. Per-DS `shpd_ak_` tokeny mintuje DS server při provisioningu (`mail-router-setup`) a **hlásí je hostingu**; hosting je broker (uložené v `encrypted_text`). |
 | D5 | AI gateway na hostingu: PHP endpoint, Anthropic Messages **passthrough** (včetně SSE). V1 = auth + metering (per-DS log tokenů); limity a model allowlist v2, schéma logu na ně připravené. Jen Anthropic. |
-| D6 | Vlastní AI klíč zůstává **rovnocennou cestou** — gateway je jen jiná data v `core_ai_backends` (`base_url` = gateway, `api_key` = gateway token). Nulová změna kódu na straně DS — `base_url` respektuje PHP `AnthropicLlmClient` i Python `ai_analyzer`. |
+| D6 | Vlastní AI klíč zůstává **rovnocennou cestou** — gateway je jen jiná data v `core_ai_backends` (`base_url` = gateway, `api_key` = gateway token). Nulová změna kódu na straně DS — `base_url` respektuje PHP `AnthropicLlmClient`. |
 | D7 | Přehled napříč DS = **push agregátů** z DS do hostingu (agent, cron). On-demand fetch lze doplnit kdykoli později. |
 | D8 | Portálové účty = `core_system_users` hosting DS. Žádná nová tabulka uživatelů — OP autentizuje proti běžné user bázi hostingu (lokální login, pozvánky/reset z Fáze 0b fungují beze změny). |
 | D9 | **Admin-only tabulky**: definice tabulky může deklarovat `"adminOnly": true`; `TableAccessGuard` to vynucuje plošně (CRUD/viewer/form/lookup → 403 pro ne-admina) stejně jako dnes prefix `core_system_`. Všechny `hosting_core_*` tabulky flag nesou. Malé rozšíření jádra s hodnotou i mimo hosting; nejhrubší stupeň budoucího RBAC. |
 | D10 | **Jedno přihlášení** = session na hosting DS. ~~Ne-admin po přihlášení vidí pouze portál~~ *(revize 2026-08-13, task `hosting-07-portal-in-shell`)*: ne-admin vidí **app shell s navigací ořezanou na to, co mu server dovolí** — portálová data jdou dál výhradně přes dedikované endpointy `/_hosting/portal/*` scopované na session uživatele (žádné generické viewery nad hosting tabulkami); admin navíc standardní aplikaci s hosting viewery (= administrace hostingu). OIDC `authorize` používá tutéž session — SSO: uživatel se session proletí na DS bez zastávky. |
 | D11 | Hosting DS je **dedikovaný** — install modul `install.hosting`; vlastní agenda provozovatele (účetnictví, pošta…) žije v samostatném běžném DS. Doporučení, ne tvrdý zámek — D9+D10 chrání i smíšený případ. |
 | D12 | OIDC **issuer je explicitně uložený v nastavení hostingu**, ne odvozovaný z requestu. `(issuer, sub)` je klíč identit na všech DS — změna domény portálu ho nesmí tiše zneplatnit. Doménu portálu volit s rozmyslem hned na začátku. |
-| D13 | AI analyzer se na nové DS napojuje **stejným vzorem jako mail-router** (task `hosting-10-ai-analyzer`): agent mintuje `analyzer_token` (`ai-analyzer-setup --json`, krok h.), hlásí ho confirmem, hosting brokeruje přes `GET /_hosting/ai-analyzer/lookup` (klíč `shpd_hk_` analyzeru v `hosting_core_ai_analyzers`), analyzer stroj si obsah stahuje oneshot procesem `sources-sync` do spravovaného `sources.d/hosting.json`; restart daemonu dělá systemd path unit. |
+| D13 | **Zrušeno** (#85 D22, 2026-10-10, `tasks/ai-analyzer-removal.md`) — externí AI analyzer se na DS už nenapojuje; analýzu pošty dělá runner v procesu na DS serveru a přes hosting jde jen volání modelu (AI gateway, D5/D6). Původní řešení (task `hosting-10-ai-analyzer`): agent mintoval `analyzer_token` (`ai-analyzer-setup --json`, krok h.), hosting ho brokeroval přes `GET /_hosting/ai-analyzer/lookup` (klíč `shpd_hk_` analyzeru v `hosting_core_ai_analyzers`), analyzer stroj si ho stahoval procesem `sources-sync`. Tabulka a sloupec zůstávají v databázích osiřelé (servisní výmaz = roadmapa M5). |
 
 Vědomě mimo scope (lze přidat později jako samostatné moduly / fáze):
 fakturace (partners, invoicingGroups), helpdesk, monitoring (updown.io,
@@ -89,10 +89,10 @@ v cílovém DS.
 ## 1. Motivace
 
 1. **Noví uživatelé** — ruční zakládání DS je pracné (ds-create, ds-upgrade,
-   domain-add, user-create, mail-router-setup, ai-analyzer-set-key — šest
+   domain-add, user-create, mail-router-setup, ai-backend-set-key — šest
    ručních kroků na různých strojích).
 2. **Napojení na mail-router a AI** je ruční a chybové (editace `lookup.json`
-   a `sources.d/` analyzeru, distribuce API klíčů).
+   mail-routeru, distribuce API klíčů).
 3. **Portál** — uživatelé s více DS potřebují jeden vstupní bod: seznam svých
    DS, tlačítka pro vstup, přehled „co je kde potřeba řešit".
 4. **Centrální autorita pro přihlašování** — RP infrastruktura (authorization
@@ -131,7 +131,6 @@ v cílovém DS.
                        │  Portál API /_hosting/portal/* (D10)     │
                        │  Server API /_hosting/server/* (D3, D7)  │
                        │  Mail API  /_hosting/mail/lookup (D4)    │
-                       │  Analyzer  /_hosting/ai-analyzer/lookup  │
                        │  AI gateway /_hosting/ai-gw/v1/messages  │
                        └───▲──────────▲──────────▲────────────────┘
                            │          │          │
@@ -150,9 +149,7 @@ v cílovém DS.
 ```
 
 Všechny integrační směry jsou **pull od klienta k hostingu** — hosting nikdy
-aktivně nevolá DS servery, mail-router ani AI analyzer (ten si analogicky
-k mail-routeru stahuje `sources.d/hosting.json` procesem `sources-sync`,
-D13). Jediná výjimka: AI gateway volá ven na `api.anthropic.com`
+aktivně nevolá DS servery ani mail-router. Jediná výjimka: AI gateway volá ven na `api.anthropic.com`
 (passthrough).
 
 ### 3.1 Endpointy a jejich zařazení
@@ -167,7 +164,6 @@ funkční jen když je na DS aktivní `hosting.core`. Auth režimy:
 | `/_hosting/portal/*` (my-datasources, my-summary) | session uživatele hostingu; server vrací **jen řádky daného uživatele** (D10) |
 | `/_hosting/server/*` | `shpd_hk_` klíč serveru (vlastní prefix; prefix + SHA-256 hash na `hosting_core_servers`, validuje `HostingServerController` sám — `core_system_api_keys` jsou vázané na uživatele a `AuthContext` identitu klíče nenese) |
 | `/_hosting/mail/lookup` | `shpd_hk_` klíč routeru (stejné schéma jako klíče serverů; prefix + SHA-256 hash na `hosting_core_mail_routers`, sdílená validace `HostingApiKeyAuthenticator`) |
-| `/_hosting/ai-analyzer/lookup` | `shpd_hk_` klíč analyzeru (stejné schéma; prefix + SHA-256 hash na `hosting_core_ai_analyzers`, sdílená validace `HostingApiKeyAuthenticator`) |
 | `/_hosting/ai-gw/*` | gateway token (vlastní tabulka, ne `core_system_api_keys` — jiná audience) |
 
 ## 4. Datový model (náčrt — tableId přidělí `next-table-id` v PRD)
@@ -181,10 +177,9 @@ výhradně přes `/_hosting/portal/*`.
 | Tabulka | Obsah |
 |---|---|
 | `hosting_core_servers` | DS servery: název, FQDN, stav, příznaky „smí zakládat DS", hash API klíče serveru, last_seen, verze (shpd, OS) z rekonciliace |
-| `hosting_core_data_sources` | Evidence DS: ds_id (`xxxx-xxxx-…`), název, web-id slug, server (FK), doména/URL aplikace, install modul, lifecycle stav (požadavek → zakládá se → aktivní → …), mail token + analyzer token (`encrypted_text`, D4/D13), časy |
+| `hosting_core_data_sources` | Evidence DS: ds_id (`xxxx-xxxx-…`), název, web-id slug, server (FK), doména/URL aplikace, install modul, lifecycle stav (požadavek → zakládá se → aktivní → …), mail token (`encrypted_text`, D4), časy |
 | `hosting_core_ds_users` | Vazba uživatel (FK `core_system_users` hostingu) ↔ DS + role (admin/člen). Zdroj pro portálový seznam „moje DS" |
 | `hosting_core_mail_routers` | Mail-routery: název, obsluhované domény, hash API klíče, last_seen |
-| `hosting_core_ai_analyzers` | AI analyzery (D13): název, hash API klíče, last_seen — analog mail-routerů bez domén, analyzer obsluhuje všechny DS |
 | `hosting_core_ds_stats` | Push agregáty per DS (D7): `alerts_count` + `mail_count` (NULL = modul na DS neaktivní), `collected_at`. Snapshot — jeden řádek per DS (unique `data_source`, upsert, bez historie). Malé, bez osobních dat |
 | `hosting_core_ai_tokens` | Gateway tokeny: DS (FK), hash tokenu, aktivní, expirace |
 | `hosting_core_ai_usage` | Metering: DS, model, input/output tokeny, timestamp, (rezerva: cache-read tokeny). Schéma připravené na limity v2 |
@@ -252,10 +247,10 @@ Jeden běh (cron slot `two-minutes`; `--dry-run` = náhled fronty přes
    `failed` → `lifecycle = failed` + `provision_error`, retry = admin
    přepne zpět na `request`. Za user-create následují: krok f.
    `mail-router-setup --json` (D4, jen s aktivním `core.mail`; token →
-   confirm `mail_token`), krok g. `ai-analyzer-set-key` (D5, jen s `ai`
-   sekcí payloadu a aktivním `core.ai`) a krok h. `ai-analyzer-setup
-   --json` (D13, jen s aktivním `core.mail` **i** `core.ai`; token →
-   confirm `analyzer_token`).
+   confirm `mail_token`) a krok g. `ai-backend-set-key` (D5, jen s `ai`
+   sekcí payloadu a aktivním `core.ai`). Krok h. (token externího AI
+   analyzeru, D13) zanikl (#85 D22); `analyzer_token` od staršího agenta
+   hosting tiše ignoruje.
 3. **Stats push** (D7) — jen když reconcile response nese
    `stats_wanted: true` (hosting ho vrací, když je nejstarší snapshot
    jeho aktivních DS starší než ~10 min nebo žádný nemá; kadenci tedy
@@ -290,37 +285,16 @@ systemd timer à 2 min): validace před zápisem → atomický zápis (temp +
 rename) → existující mtime-watch reload. Hosting down ⇒ jede se na stale
 lookup, pošta se neztrácí.
 
-### 5.3b AI analyzer lookup (D13, task hosting-10)
+### 5.3b AI analyzer lookup — zrušeno (#85 D22)
 
-`GET /_hosting/ai-analyzer/lookup` (klíč analyzeru `shpd_hk_`, CLI
-`hosting-analyzer-key`) → **přesně** obsah jednoho `sources.d` souboru
-analyzeru (JSON pole, žádný success envelope): položky
-`{id: ds_id, base_url: url_app, api_token}` za aktivní DS
-(`lifecycle = active`, živý docState) s vyplněným `analyzer_token`
-(dešifrovaný do `api_token`), řazené dle `ds_id`; žádné web-id aliasy —
-loader analyzeru duplicitní `id` odmítá. Bez `timeout_seconds` (default
-60 doplní loader). ETag = sha256 kanonizovaného obsahu, `If-None-Match`
-shoda → 304 bez body.
-
-Token mintuje agent v kroku h. provisioningu (`ai-analyzer-setup --json`,
-jen s aktivním `core.mail` **i** `core.ai`; retry po pádu rotuje
-s `--force`) a hlásí ho v confirm body (`analyzer_token`) — hosting ho
-ukládá šifrovaně (`HostingDataSourceDocument`) a přepisuje nepodmíněně.
-
-Na analyzer stroji oneshot **`sources-sync`** (repo `ai_analyzer`,
-systemd timer à 2 min): validace payloadu Pydantic modelem `SourceConfig`
-(tentýž jako loader — co projde syncem, projde startem daemonu) →
-atomický zápis `sources.d/hosting.json` (temp + rename, 0600) → systemd
-path unit (`PathChanged=` na `sources.d/`) restartuje daemon (graceful:
-drain, claims v SQLite, lease expiry requeuene). Hosting down ⇒ jede se
-na stale sources, analýza běží dál.
-
-Ruční backfill existujícího DS: `shpd-ds ai-analyzer-setup --force
---json` na DS serveru → token vložit do admin formu DS na hostingu
-(opt-in sensitive pole Analyzer token) → počkat na sync (~2 min) →
-smazat případný ruční soubor v `sources.d/` (kolize `id` by shodila
-start daemonu). Okno 401 mezi rotací tokenu a syncem je vědomé — pull
-model poštu neztrácí, alerter throttluje.
+Endpoint `GET /_hosting/ai-analyzer/lookup`, CLI `hosting-analyzer-key`,
+tabulka `hosting_core_ai_analyzers` a sloupec `analyzer_token` zanikly
+spolu s externím analyzerem (D13 zrušeno, `tasks/ai-analyzer-removal.md`).
+Analýzu pošty dělá runner v procesu na DS serveru; přes hosting jde jen
+volání modelu AI gateway (§5.5). Osiřelá tabulka a sloupec v databázích
+hostingů zůstávají, `ds-upgrade` je nemaže — servisní výmaz je položka
+roadmapy M5. Potvrzení provisioningu od staršího agenta s polem
+`analyzer_token` hosting přijme a pole ignoruje.
 
 ### 5.4 OIDC OP (D2, D12)
 
@@ -448,7 +422,7 @@ Provozní poznámky:
   když org klíč existuje. Token se mintuje **lazy při stavbě queue
   payloadu** (existující aktivní token se dešifruje z `token_encrypted`
   — retry-stabilní; jinak nový řádek). Agent (krok g.) na DS s aktivním
-  `core.ai` spustí `ai-analyzer-set-key --backend default --api-key …
+  `core.ai` spustí `ai-backend-set-key --backend default --api-key …
   --base-url …`. Ruční backfill: `hosting-ai-token --ds <ndx> --generate`.
 - Vlastní klíč = uživatel si backend přepne/založí jiný (D6) — gateway je
   jen jiná data v `core_ai_backends`, na straně DS se nemění žádný kód.
@@ -558,10 +532,10 @@ identity na všech DS.
 
 ## 7. Bezpečnostní poznámky
 
-- Hosting DB drží citlivé hodnoty (mail tokeny DS, analyzer tokeny DS,
-  gateway tokeny, client_secrets) — vše `encrypted_text` (per-DS šifrování
+- Hosting DB drží citlivé hodnoty (mail tokeny DS, gateway tokeny,
+  client_secrets) — vše `encrypted_text` (per-DS šifrování
   hostingu).
-- API klíče serverů/routerů/analyzerů: jen SHA-256 hash (vzor
+- API klíče serverů/routerů: jen SHA-256 hash (vzor
   `core_system_api_keys`).
   Gateway tokeny (`shpd_gw_`): prefix + SHA-256 hash pro runtime validaci,
   navíc šifrovaný plaintext (`token_encrypted`) pro opakované servírování
@@ -587,8 +561,9 @@ identity na všech DS.
 | **5 — Přehled** | Stats push v agentovi, `hosting_core_ds_stats`, agregáty na portálu | Uživatel na portálu vidí, kolik čeho v jednotlivých DS čeká |
 
 **Všechny fáze 0–5 jsou hotové** — data dokončení a rozsah viz stavový
-blok v hlavičce dokumentu. Follow-up D13 (automatické napojení nových DS
-na AI analyzer, task `hosting-10-ai-analyzer`) — §5.3b.
+blok v hlavičce dokumentu. Follow-up D13 (napojení nových DS na externí
+AI analyzer, task `hosting-10-ai-analyzer`) byl realizován a následně
+zrušen spolu s analyzerem (#85 D22) — §5.3b.
 
 Pořadí 1↔2 lze prohodit; OP dřív znamená, že provisioning zapisuje
 `auth.providers` od první verze a DS se rodí rovnou s centrálním loginem.
@@ -599,5 +574,5 @@ Pořadí 1↔2 lze prohodit; OP dřív znamená, že provisioning zapisuje
 |---|---|
 | `nov_shipard` | Rozšíření jádra: `adminOnly` v table-definitions + `TableAccessGuard` (D9). Nová skupina `modules/hosting/` + `install.hosting`, controllery + routy, `hosting-sync` v `shpd-server`, rozšíření `server.json`, portálový režim frontend |
 | `mail_router` | Nový proces/cron `lookup-sync` (fáze 3); běhové jádro beze změny |
-| `ai_analyzer` | Nový oneshot `sources-sync` + systemd timer a path-unit reload (D13) — plní spravovaný `sources.d/hosting.json`; běhové jádro daemonu beze změny |
+| `ai_analyzer` | Oneshot `sources-sync` + systemd timer a path-unit reload (D13) — komponenta i s tímto napojením zrušena (#85 D22–D24), repozitář archivován |
 | `shipard_node` | Beze změny ve fázích 0–5; odchozí pošta per DS je samostatné budoucí téma |

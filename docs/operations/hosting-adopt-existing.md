@@ -171,14 +171,14 @@ routeru už jen přes evidenci.
 ## Fáze 6 — AI gateway (volitelně, postupně)
 
 Dle `ai-gateway.md`: `hosting-ai-gw-init --set-key` (klíč organizace),
-pak per DS token + přepnutí backendu (`ai-analyzer-set-key
+pak per DS token + přepnutí backendu (`ai-backend-set-key
 --backend default --api-key <token> --base-url
 https://<PORTAL_HOST>/api/v1/_hosting/ai-gw`). Začít jedním DS,
 zkontrolovat usage řádky vs. reálný provoz, pak dle záměru.
 Doporučení: **nechat část DS trvale na přímých klíčích** jako
 kontrolní skupinu cesty D6 (vlastní klíč musí zůstat rovnocenný).
 
-Rollback per DS: `ai-analyzer-set-key` zpět s přímým klíčem bez
+Rollback per DS: `ai-backend-set-key` zpět s přímým klíčem bez
 `--base-url`.
 
 ## Fáze 7 — ověření plného cyklu

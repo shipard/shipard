@@ -121,7 +121,7 @@ class AnalysisController
     /**
      * UI akce "Znovu analyzovat". Spec §4.
      *
-     * Auth: běžný přihlášený uživatel (UI), ne _ai_analyzer.
+     * Auth: běžný přihlášený uživatel (UI).
      *
      * Validace: analysis_state ∈ {30 Analyzováno, 70 Analýza selhala}
      * a zpráva není v Archivu/Koši. Zprávu s aplikovaným návrhem

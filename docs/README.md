@@ -28,7 +28,7 @@
 | [ai-workflow.md](ai-workflow.md) | **Vývoj s Claudem** — role chat / Claude Code / člověk, postup issue → rozhodnutí → PRD → implementace → ověření, pravidla pro testovací server s reálnými daty, ověřené návyky, mapa zdrojů (repo / soukromé `dev-env` / stroj / Projekt), osobní `CLAUDE.local.md` s režimy zdrojů dat, text instrukcí Projektu |
 | [documentation.md](documentation.md) | Pravidla pro dokumentaci modulů a tabulek — kde leží README.md, co obsahuje .md k tabulce, vzory |
 | [help-authoring.md](help-authoring.md) | Pravidla pro **uživatelskou** dokumentaci v [`help/`](../help/README.md) — žánrová hranice, front matter, šablona stránky, generovaný rozcestník |
-| [services.md](services.md) | **Standard samostatných komponent** — pravidla pro repozitáře mimo `shpd` (`ai-analyzer`, `mail-router`, generátor videa, vendorovaná infrastruktura): tři kategorie, struktura repa, povinná sada CLI verbů, cesty na cílovém stroji, kontrakty vůči `shpd`, checklist souladu |
+| [services.md](services.md) | **Standard samostatných komponent** — pravidla pro repozitáře mimo `shpd` (`mail-router`, generátor videa, vendorovaná infrastruktura; `ai-analyzer` zrušen #85): tři kategorie, struktura repa, povinná sada CLI verbů, cesty na cílovém stroji, kontrakty vůči `shpd`, checklist souladu |
 
 ## Specifikace
 

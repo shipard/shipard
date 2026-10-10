@@ -112,7 +112,7 @@ vstup" — transformační vrstva nad existujícím dokumentovým systémem.
 Vstup (PDF, ISDOC, ruční zadání, ...)
   │
   ▼
-[Adaptér / AI analyzer / parser]
+[Adaptér / AI analýza pošty / parser]
   │
   ▼
 Canonical JSON  ──────►  /validate     → vrátí jen issues (no DB writes)

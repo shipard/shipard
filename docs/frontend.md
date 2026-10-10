@@ -1608,7 +1608,7 @@ if (!result?.success) {
 Pokrývané kódy v `cs.js` / `en.js`: `VALIDATION_ERROR`, `NOT_FOUND`,
 `RECORD_NOT_FOUND`, `TABLE_NOT_FOUND`, `UNAUTHORIZED`, `FORBIDDEN`,
 `BAD_REQUEST`, `METHOD_NOT_ALLOWED`, `INTERNAL_ERROR`, `UPLOAD_ERROR`,
-`NETWORK_ERROR`. Méně časté kódy z analyzer pipeline a podobně se
+`NETWORK_ERROR`. Méně časté kódy z pipeline analýzy pošty a podobně se
 nemapují — fallback na server `message` stačí.
 
 `details[].field` (id sloupce) zůstává v anglickém ID podle backendu;

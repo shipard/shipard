@@ -84,7 +84,7 @@ Fáze 1 (widget MVP) říkala *„přehled, ne přístupový bod"*. Fáze 2 ten 
   nic nefinalizuje, vše je auditovatelné (`source_kind='aiExtraction'`,
   `resolved_by` na analýze) a `apply` je **vratné** (unapply, §6.5).
 - Deterministika zůstává deterministická: **pravidla (alerts) pro stav, AI
-  (analyzer) pro jazyk a nejednoznačnost.** Oba zdroje padají do téhož feedu.
+  (model) pro jazyk a nejednoznačnost.** Oba zdroje padají do téhož feedu.
 - **Řadí, stropuje a do sekcí dělí server** (`FeedCollector::sortAndCap`
   → `FeedResult`), frontend jen renderuje.
 - **Sekce feedu určuje server** (#101 D2b): každá karta nese
@@ -461,7 +461,7 @@ lze je reanalyzovat). Titulek = `ai_title` zprávy
 (AI popis obsahu — „Newsletter — novinky dodavatele", „Sken obálky"; jazyk
 AI profilu), bez něj konstanta `other.title` z katalogu („Neobsahuje doklad
 ani dokument" / „Contains no document") — analýzy před promptem v4.3.0 nebo
-analyzer bez `title`. `emailSubject` jen když se od titulku liší: u skenů,
+výstup bez `title`. `emailSubject` jen když se od titulku liší: u skenů,
 ručního nahrání a generických předmětů vrací pravidlo D3
 `IncomingMessageTitle` právě `ai_title` a předmět by titulek jen opakoval
 (tasks/dashboard-other-row-title.md D1–D3).
@@ -1111,7 +1111,7 @@ text z countů (2a), unmount/refresh zavře stream (`handle.close()`).
 **Rozhodnutí**: shrnutí je **per-DS + per-jazyk** (feed není per-user); prompt
 je pevný; levnější model override odložen (D15); žádný polling — jen mount +
 manuální refresh. **Soukromí**: digest obsahuje partnery/částky — stejná data,
-jaká analyzer LLM už posílá (viz `ai.md`).
+jaká analýza pošty LLM už posílá (viz `ai.md`).
 
 ## 12. Budoucí rozšíření
 

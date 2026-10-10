@@ -15,8 +15,8 @@ v repu není zdroj pravdy pro běžící DS.
 | `name` | UI název |
 | `language` | ISO 639-1 (`cs`) — řídí jazyk uživatelských textů v promptu |
 | `prompt_version` | SemVer (`v1.0.0`) — manuálně bumpuj při netriviální změně promptu |
-| `prompt_template` | Vlastní text promptu pro analyzer |
-| `output_schema` | JSON Schema, proti kterému analyzer validuje výstup providera |
+| `prompt_template` | Vlastní text promptu (Twig šablona, vykresluje `PromptRenderer`) |
+| `output_schema` | JSON Schema, proti kterému runner (`OutputParser`) validuje výstup modelu |
 | `supported_doc_types` | JSON pole klíčů z `core.mail.primaryTypes` |
 | `confidence_thresholds` | `{"ready": 0.9, "review": 0.6}` — prahy runtime confidence pásem návrhu (`ready`/`review`/`low`, počítá `AnalysisConfidenceResolver`; pásmo se nikam nepersistuje) |
 
@@ -28,7 +28,7 @@ změnách profilu.
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
-D1/D11): analyzer zpracovává zprávu **jako celek** — subject, tělo
+D1/D11): analýza zpracovává zprávu **jako celek** — subject, tělo
 i přílohy jsou jeden kontext, tělo zprávy je plnohodnotný zdroj dat
 (platební instrukce, faktura přímo v textu, úřední obsah). Výstup:
 
@@ -154,14 +154,14 @@ JSON Schema **draft-2020-12** (od `v2.0.0`; dřív draft-07). Wrapper (v4):
 **Pravidlo pro volitelná pole:** každé pole, které prompt dovoluje
 vynechat, musí ve schématu připouštět i `null` (`"type": ["string",
 "null"]`, `["object", "null"]`) — modely absenci běžně vyjadřují nullem
-a `additionalProperties: false` neodpustí nic; analyzer validuje celý
+a `additionalProperties: false` neodpustí nic; runner validuje celý
 výstup, takže jediné `null` v nenullable poli shodí celou analýzu do
 `schema_error` (poučení z v4.7.1: akční zpráva bez lhůty).
 
 Pole `documents[]` a `source_attachment_ndxs` z kontraktu **v4 zanikla**
 (přílohy návrhu = všechny obsahové přílohy zprávy; `extracted_documents`
 v `POST /result` server odmítá 422). Názvy polí jsou přesně dle kontraktu
-— analyzer nic nepřejmenovává.
+— model ani runner nic nepřejmenovávají.
 
 **`extracted_json` je oneOf dvou inline kopií** — struktura se volí podle
 **targetu** typu dokumentu (cfgItem `core.mail.primaryTypes`):
@@ -172,14 +172,14 @@ v `POST /result` server odmítá 422). Názvy polí jsou přesně dle kontraktu
   písemnosti — Spisovna) →
   `modules/base/registry/schemas/shpd.registry.document.v1.json`.
 
-Analyzer (`/claim` response) dostává `output_schema` napřímo — neumí
+Runner dostává `output_schema` profilu napřímo (z claimu) — validátor neumí
 `$ref` resolve napříč souborům, takže obě canonical schémata musí být
 doslovně embedded. Drift mezi profilem a canonical soubory hlídá test
 [`tests/Unit/Module/Core/Mail/ProfileSchemaDriftTest.php`](../../../../tests/Unit/Module/Core/Mail/ProfileSchemaDriftTest.php) —
 selže s odkazem na regeneraci, pokud někdo updatuje jedno a zapomene
 druhé. Shodu `kindFields` registry schématu s `base.registry.docKinds`
 hlídá `tests/Unit/Module/Base/Registry/RegistrySchemaDriftTest.php` —
-názvy polí se **nikdy nesmí lišit** (analyzer plní kindFields přesně dle
+názvy polí se **nikdy nesmí lišit** (model plní kindFields přesně dle
 schématu; přejmenované pole = tiché prázdno v metadatech).
 
 Plné schéma viz [`profiles/czech_general.jsonc`](../profiles/czech_general.jsonc).
@@ -254,7 +254,7 @@ default profil):
 6. Porovnej kvalitu před / po (`message_analyses.prompt_version` umožňuje
    filtrovat).
 
-Analyzer čte prompt z DB při každém claimu, takže reload neovlivní právě
+Runner čte prompt z DB při každém claimu, takže reload neovlivní právě
 běžící zpracování — promítne se až do nových claimů po reload.
 
 ### Jinak vybraný backend per profil
@@ -272,7 +272,7 @@ Oprava po ověření v4.7.0 na dev DS
 → *Oprava po ověření*): akční zpráva bez výslovné lhůty skončila
 v Nepodařilo se zpracovat — model vrátil `"due_date": null` (prompt
 vynechání nebo null dovoluje), ale nová pole byla deklarovaná jen jako
-`string` / `object` a analyzer validuje celý výstup
+`string` / `object` a runner validuje celý výstup
 (`None is not of type 'string'`). Každá upomínka bez termínu, žádost nebo
 výpověď by tak padala.
 
@@ -312,7 +312,7 @@ ten, kdo přeposlal — rozhodovat podle obsahu je robustnější.
 - SCHÉMA: `message_classification` deklaruje `attention` (enum),
   `action_note` (maxLength 200), `due_date` (pattern `YYYY-MM-DD`)
   a `party` (objekt, `additionalProperties: false`) — vše volitelné,
-  `required` zůstává `["primary_type"]`; bez deklarace by analyzer celý
+  `required` zůstává `["primary_type"]`; bez deklarace by validátor celý
   výstup odmítl (`schema_error`).
 - Server (nezávisle na verzi promptu): bez polí zůstávají sloupce
   `attention` / `action_note` / `action_due` NULL a zpráva jde do Ostatních
@@ -427,7 +427,8 @@ místo a `additionalProperties: false` odmítlo celý výstup.
   ji náhled jako **Kontakt** (D2′); do Osoby ani do snapshotů dokladu se
   nepropisuje. ISDOC `Contact/Name` mapuje `IsdocReader` (D3).
   Systémová ochrana proti improvizovaným klíčům (tolerantní validace
-  výstupu) je `ai_analyzer` issue #1.
+  výstupu) zatím není; původně evidovaná jako issue zrušeného repozitáře
+  `ai_analyzer`.
 
 ### v4.4.0 (2026-09-29)
 
@@ -467,7 +468,7 @@ hledat:
   JSONy doplněny.
 - `output_schema.message_classification.properties.title`
   (`{"type": "string", "maxLength": 120}`), **ne** required — starší
-  analyzer bez `title` projde, server doplní deterministický fallback
+  prompt bez `title` projde, server doplní deterministický fallback
   z canonicalu (`MessageTitleComposer`).
 - Server ukládá titulek do `core_mail_incoming_messages.ai_title`
   (AI-vlastněný sloupec, přepisuje každý běh) a zobrazuje ho místo předmětu
@@ -500,8 +501,8 @@ Prompt je pojistka první linie — nezávisle na něm `DocumentValidator`
 oba vzory chytá warningy **`rows_recap_mismatch`** (součet řádků vs.
 rekapitulace dle režimu DPH) a **`vat_recap_inconsistent`** (vnitřní
 aritmetika řádků rekapitulace). U dlouhých faktur vyžaduje úplná
-extrakce zvýšený `max_tokens` na straně ai_analyzeru (samostatný task
-v repu ai_analyzer) — nasazovat společně.
+extrakce dostatečný `max_tokens` (kaskáda profil → backend →
+`AnalysisRunner::DEFAULT_MAX_TOKENS` 32768) — ladit společně s promptem.
 
 ### v4.1.0 (2026-08-14)
 

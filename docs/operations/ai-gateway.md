@@ -43,7 +43,7 @@ sudo shpd-ds hosting-ai-token --ds <ndx> --generate --note "backfill"
 # vytiskne token JEDNOU
 
 # na klientském DS
-sudo shpd-ds ai-analyzer-set-key --backend default \
+sudo shpd-ds ai-backend-set-key --backend default \
     --api-key shpd_gw_… \
     --base-url https://portal.example.com/api/v1/_hosting/ai-gw
 ```
@@ -67,7 +67,7 @@ sudo shpd-ds hosting-ai-token --revoke <ndx tokenu>   # active = 0 → 401
 Přechod DS na vlastní klíč (D6):
 
 ```bash
-sudo shpd-ds ai-analyzer-set-key --backend default --api-key sk-ant-… --base-url ''
+sudo shpd-ds ai-backend-set-key --backend default --base-url ''   # klíč zadáš skrytě na výzvu
 ```
 
 ## Troubleshooting
