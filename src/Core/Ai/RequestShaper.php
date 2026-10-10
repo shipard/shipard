@@ -107,6 +107,7 @@ final class RequestShaper
                 timeoutSeconds: $params->timeoutSeconds,
                 thinking: $thinking,
                 effort: $effort,
+                shapeAs: $params->shapeAs,
             ),
             $changes,
         ];

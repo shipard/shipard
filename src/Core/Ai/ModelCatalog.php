@@ -118,6 +118,12 @@ final class ModelCatalog
         return $this->resolve($modelId)['spec'] ?? null;
     }
 
+    /** Platforma, jejíž ID `$modelId` je (`anthropic` / `bedrock`); null = mimo katalog. */
+    public function platformOf(string $modelId): ?string
+    {
+        return $this->resolve($modelId)['platform'] ?? null;
+    }
+
     /**
      * ID výchozího modelu úrovně podle mapy úrovní `core.ai.tiers` (D37),
      * null pro neznámou úroveň nebo katalog bez mapy. Vrací se, co mapa

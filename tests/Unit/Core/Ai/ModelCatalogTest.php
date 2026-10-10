@@ -145,6 +145,16 @@ final class ModelCatalogTest extends TestCase
         $this->assertNull($catalog->find('claude-opus-4-8-latest'));
     }
 
+    public function testPlatformOfTellsWhichPlatformAnIdBelongsTo(): void
+    {
+        $catalog = $this->catalog();
+
+        $this->assertSame('anthropic', $catalog->platformOf('claude-sonnet-5-5'));
+        $this->assertSame('anthropic', $catalog->platformOf('claude-sonnet-4-5-20250929'));
+        $this->assertSame('bedrock', $catalog->platformOf('anthropic.claude-sonnet-5-5'));
+        $this->assertNull($catalog->platformOf('gpt-5'));
+    }
+
     public function testFindUnknownOrEmptyIsNull(): void
     {
         $catalog = $this->catalog();

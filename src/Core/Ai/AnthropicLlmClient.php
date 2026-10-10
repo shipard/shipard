@@ -121,19 +121,23 @@ class AnthropicLlmClient implements LlmClient
      * Shapes the params to the model's capabilities (D32). No catalog or an
      * empty one = untouched; a model the catalog does not know = untouched
      * plus one warning per process (the hosting gateway passes bare model
-     * IDs through, so a backend pointed at it still resolves).
+     * IDs through, so a backend pointed at it still resolves). With
+     * `shapeAs` (custom model ID, tasks/ai-functions.md D43) the catalog
+     * entry is looked up by that ID while `model` goes out verbatim.
      */
     private function shapeForModel(LlmChatParams $params): LlmChatParams
     {
         if ($this->catalog === null || $this->catalog->isEmpty()) {
             return $params;
         }
-        $spec = $this->catalog->find($params->model);
+        $lookup = $params->shapeAs !== null && $params->shapeAs !== '' ? $params->shapeAs : $params->model;
+        $spec = $this->catalog->find($lookup);
         if ($spec === null) {
-            if (!isset(self::$unknownModelsWarned[$params->model])) {
-                self::$unknownModelsWarned[$params->model] = true;
+            if (!isset(self::$unknownModelsWarned[$lookup])) {
+                self::$unknownModelsWarned[$lookup] = true;
                 ErrorLogger::warn('AnthropicLlmClient: model is not in the model catalog — request sent unshaped', [
                     'model' => $params->model,
+                    'shapeAs' => $params->shapeAs,
                 ]);
             }
             return $params;

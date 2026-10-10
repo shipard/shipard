@@ -22,6 +22,10 @@ namespace Shipard\Core\Ai;
  * out verbatim as `thinking: {type}` and `output_config: {effort}`; whether
  * the model accepts them is not validated here (F0-D2).
  *
+ * `shapeAs` (tasks/ai-functions.md D40, D43) names the catalog model the
+ * request is shaped after when `model` is a custom ID the catalog does not
+ * know; null = shape after `model` itself. Resolved by AiFunctionResolver.
+ *
  * `stallTimeoutSeconds` / `timeoutSeconds` bound the HTTP call (no bytes
  * received for N seconds / whole request longer than N seconds → transport
  * error, status 0). Null = no limit, today's behaviour; the mail analysis
@@ -49,5 +53,6 @@ final readonly class LlmChatParams
         public ?int $timeoutSeconds = null,
         public ?string $thinking = null,
         public ?string $effort = null,
+        public ?string $shapeAs = null,
     ) {}
 }

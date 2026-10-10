@@ -480,6 +480,29 @@ class AnthropicLlmClientTest extends TestCase
         }
     }
 
+    public function testShapeAsDrivesShapingWhileTheModelGoesOutVerbatim(): void
+    {
+        // Vlastní ID modelu (tasks/ai-functions.md D43): katalog ho nezná,
+        // tvaruje se podle `shapeAs` (Sonnet 5.5 odmítá teplotu), ID odchází beze změny.
+        $params = $this->tunedParams('claude-sonnet-6', 0.0, 'disabled', 'xhigh');
+        $custom = new LlmChatParams(
+            provider: $params->provider, model: $params->model, apiKey: $params->apiKey, baseUrl: $params->baseUrl,
+            system: $params->system, messages: $params->messages, maxTokens: $params->maxTokens,
+            temperature: $params->temperature, thinking: $params->thinking, effort: $params->effort,
+            shapeAs: 'claude-sonnet-5-5',
+        );
+        ErrorLogger::setLogLevel('error');
+        try {
+            $body = $this->capturedBodyWith($this->catalog(), $custom);
+        } finally {
+            ErrorLogger::resetForTesting();
+        }
+        $this->assertSame('claude-sonnet-6', $body['model']);
+        $this->assertArrayNotHasKey('temperature', $body);
+        $this->assertSame(['type' => 'between_tools'], $body['thinking']);
+        $this->assertSame(['effort' => 'high'], $body['output_config']);
+    }
+
     public function testModelOutsideTheCatalogIsSentUnshaped(): void
     {
         ErrorLogger::setLogLevel('error');
