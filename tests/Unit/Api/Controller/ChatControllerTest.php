@@ -16,6 +16,7 @@ use Shipard\Api\Mcp\McpToolRegistry;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\I18n\ConfigLocalizer;
@@ -556,6 +557,74 @@ class ChatControllerTest extends TestCase
         // user message survives; no assistant message written
         $this->assertCount(1, $inserts);
         $this->assertSame('user', $inserts[0]['role']);
+    }
+
+    // -------------------------------------------------------------------
+    // Pojistka katalogu modelů (tasks/ai-model-catalog.md D35)
+    // -------------------------------------------------------------------
+
+    /** ConfigRuntime jen s katalogem modelů ze skutečného souboru v repu. */
+    private function configWithCatalog(): ConfigRuntime
+    {
+        $models = JsoncParser::parseFile(dirname(__DIR__, 4) . '/modules/core/ai/config/models.jsonc');
+        $cfg = $this->createMock(ConfigRuntime::class);
+        $cfg->method('cfgItem')->willReturnCallback(
+            fn (string $id) => $id === ModelCatalog::CFG_ITEM ? $models : null,
+        );
+        return $cfg;
+    }
+
+    /** @return array<string, mixed> JSON payload odpovědi */
+    private function payloadOf(Response $response): array
+    {
+        $ref = new \ReflectionClass($response);
+        return (array) $ref->getProperty('payload')->getValue($response);
+    }
+
+    public function testSendMessageRefusesModelWithoutChatToolLoop(): void
+    {
+        $inserts = [];
+        $db = $this->streamDb($inserts, ['model' => 'claude-sonnet-5-5'] + self::BACKEND);
+        // Kdyby se model zavolal, fake vyhodí výjimku — ale k volání nesmí dojít.
+        $llm = new FakeLlmClient([], new \LogicException('model must not be called'));
+        $ctrl = new ChatController($db, $this->configWithCatalog(), null, $llm);
+
+        $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
+
+        $this->assertSame(503, $this->statusOf($response));
+        $payload = $this->payloadOf($response);
+        $this->assertSame('AI_MODEL_NOT_SUPPORTED_FOR_CHAT', $payload['error']['code']);
+        $this->assertStringContainsString('claude-sonnet-5-5', $payload['error']['message']);
+        $this->assertSame([['field' => 'model', 'value' => 'claude-sonnet-5-5']], $payload['error']['details']);
+        // Uživatelská zpráva zůstává uložená (jako u NO_BACKEND), asistent nic nenapsal.
+        $this->assertCount(1, $inserts);
+        $this->assertSame('user', $inserts[0]['role']);
+    }
+
+    public function testSendMessageAllowsModelsWithChatToolLoopUnknownOrOutsideCatalog(): void
+    {
+        foreach ([
+            'claude-sonnet-4-6'          => 'chatToolLoop true',
+            'claude-sonnet-4-6-20260217' => 'datová přípona',
+            'claude-opus-4-7'            => 'položka jen s cenami (chatToolLoop null)',
+            'claude-test'                => 'model mimo katalog',
+        ] as $model => $why) {
+            $inserts = [];
+            $db = $this->streamDb($inserts, ['model' => $model] + self::BACKEND);
+            $ctrl = new ChatController($db, $this->configWithCatalog(), null, new FakeLlmClient(['Ahoj']));
+
+            $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
+
+            $this->assertSame(200, $this->statusOf($response), $why);
+            $this->assertStringContainsString('event: message-complete', $this->runProducer($response), $why);
+        }
+
+        // Bez compiled configu (katalog prázdný) pojistka nic neblokuje.
+        $inserts = [];
+        $db = $this->streamDb($inserts, ['model' => 'claude-sonnet-5-5'] + self::BACKEND);
+        $ctrl = new ChatController($db, null, null, new FakeLlmClient(['Ahoj']));
+        $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
+        $this->assertSame(200, $this->statusOf($response));
     }
 
     public function testSendMessageWithoutLlmReturns503(): void

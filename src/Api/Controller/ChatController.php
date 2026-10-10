@@ -12,6 +12,7 @@ use Shipard\Core\Ai\Exception\LlmException;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Api\Mcp\McpInvocationContext;
 use Shipard\Api\Mcp\McpToolRegistry;
 use Shipard\Core\Config\ConfigRuntime;
@@ -283,6 +284,21 @@ class ChatController
         $backend = $this->resolveBackend($conversation);
         if ($backend === null) {
             return Response::error('NO_BACKEND', 'No active AI backend is configured', 503);
+        }
+
+        // Pojistka katalogu (tasks/ai-model-catalog.md D35, #85 D29): model,
+        // jehož tool smyčku klient neumí obsloužit (bez parametru přemýšlí
+        // a thinking bloky by se musely vracet — fáze 4), se nevolá.
+        // `chatToolLoop` null (nevíme) i true = beze změny. Uživatelská
+        // zpráva je už uložená, stejně jako u NO_BACKEND.
+        $model = (string) ($backend['model'] ?? '');
+        if ($this->chatUnsupported($model)) {
+            return Response::error(
+                'AI_MODEL_NOT_SUPPORTED_FOR_CHAT',
+                "The assistant cannot work with model {$model} yet; an administrator has to select another model for the AI backend",
+                503,
+                [['field' => 'model', 'value' => $model]],
+            );
         }
 
         try {
@@ -579,6 +595,12 @@ class ChatController
             date('Y-m-d H:i:s'),
             $conversationId,
         );
+    }
+
+    /** Katalog modelů říká `chatToolLoop: false` (D35); null / true / model mimo katalog = povoleno. */
+    private function chatUnsupported(string $model): bool
+    {
+        return ModelCatalog::fromConfig($this->config)->find($model)?->chatToolLoop === false;
     }
 
     /**

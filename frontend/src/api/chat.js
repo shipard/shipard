@@ -77,8 +77,16 @@ export async function sendMessageStream(conversationId, text, handlers = {}) {
 
   if (!res.ok || !res.body) {
     // Mid-stream token refresh is out of scope (v1) — surface a clear 401.
-    const code = res.status === 401 ? 'UNAUTHORIZED' : 'STREAM_ERROR';
-    onError?.({ code, message: `HTTP ${res.status}` });
+    if (res.status === 401) {
+      onError?.({ code: 'UNAUTHORIZED', message: `HTTP ${res.status}` });
+      return;
+    }
+    // Server-side refusal before the stream starts (NO_BACKEND,
+    // AI_MODEL_NOT_SUPPORTED_FOR_CHAT, …) comes as a JSON error body —
+    // pass code/message/details on so translateError() can localize it;
+    // a body that is not JSON degrades to the generic STREAM_ERROR.
+    const err = res.ok ? null : await readJsonError(res);
+    onError?.(err ?? { code: 'STREAM_ERROR', message: `HTTP ${res.status}` });
     return;
   }
 
@@ -117,6 +125,21 @@ export async function sendMessageStream(conversationId, text, handlers = {}) {
 
   if (!terminated) {
     onError?.({ code: 'STREAM_ERROR', message: 'stream ended unexpectedly' });
+  }
+}
+
+/**
+ * `{code, message, details?}` from a JSON error response, or null when the
+ * body is not the API's error envelope.
+ */
+async function readJsonError(res) {
+  try {
+    const json = await res.json();
+    const error = json?.error;
+    if (!error || typeof error.code !== 'string') return null;
+    return { code: error.code, message: error.message ?? '', details: error.details };
+  } catch {
+    return null;
   }
 }
 
