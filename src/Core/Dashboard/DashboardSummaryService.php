@@ -35,7 +35,12 @@ final readonly class DashboardSummaryService
     /** Karty vstupující do digestu/promptu (nejvýše, feed je už seřazený). */
     private const int TOP_CARDS = 6;
 
-    private const int MAX_TOKENS = 300;
+    /**
+     * A ceiling, not a budget: on thinking models the reasoning counts
+     * toward `max_tokens`; the summary length is held by the prompt
+     * (2–4 sentences; tasks/ai-models-phase0.md F0-D5).
+     */
+    private const int MAX_TOKENS = 2000;
 
     public function __construct(
         private DataSourceConnection $db,
@@ -79,6 +84,10 @@ final readonly class DashboardSummaryService
             return ['text' => null, 'cached' => false];
         }
 
+        // Temperature is never sent (F0-D1) — existing rows carry `0` and
+        // the summary never depended on it; thinking / effort come from the
+        // backend row (F0-D7).
+        $tuning = AiBackendResolver::tuning($backend);
         $params = new LlmChatParams(
             provider: (string) ($backend['provider'] ?? 'anthropic'),
             model: (string) ($backend['model'] ?? ''),
@@ -87,12 +96,24 @@ final readonly class DashboardSummaryService
             system: $this->systemPrompt($language),
             messages: [['role' => 'user', 'content' => $this->userPrompt($digest)]],
             maxTokens: self::MAX_TOKENS,
-            temperature: null, // Opus 4.7/4.8 reject `temperature` (HTTP 400)
+            temperature: null,
             tools: null,
+            thinking: $tuning['thinking'],
+            effort: $tuning['effort'],
         );
 
         $result = $this->llm->streamChat($params, $onDelta);
-        $text   = trim($result->text);
+        if (!$result->isComplete()) {
+            // Truncated or refused (F0-D4): never cache a partial summary —
+            // the client falls back to the static counts.
+            ErrorLogger::warn('DashboardSummaryService: incomplete model output — summary not cached', [
+                'stopReason' => $result->stopReason,
+                'model' => $result->model ?? $params->model,
+                'maxTokens' => self::MAX_TOKENS,
+            ]);
+            return ['text' => null, 'cached' => false];
+        }
+        $text = trim($result->text);
         if ($text === '') {
             return ['text' => null, 'cached' => false];
         }

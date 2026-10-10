@@ -28,7 +28,12 @@ class ContentTagClassifier
 {
     public const TAG_PROMPT_VERSION = 'tag-v1.0.0';
 
-    private const MAX_TOKENS = 500;
+    /**
+     * Strop, ne cena: na modelech s thinking se přemýšlení počítá do
+     * `max_tokens`, odpověď sama je pár desítek tokenů
+     * (tasks/ai-models-phase0.md F0-D5).
+     */
+    private const MAX_TOKENS = 8000;
 
     /** Ořez digestu — víc řádků model pro dominantní štítek nepotřebuje. */
     private const MAX_ROWS = 50;
@@ -93,6 +98,9 @@ class ContentTagClassifier
             return null;
         }
 
+        // Teplota se neposílá nikdy (F0-D1) — existující řádky mají `0`
+        // a klasifikace na ní nikdy nestála; thinking / effort z backendu.
+        $tuning = AiBackendResolver::tuning($backend);
         $params = new LlmChatParams(
             provider: (string) ($backend['provider'] ?? 'anthropic'),
             model: (string) ($backend['model'] ?? ''),
@@ -105,9 +113,20 @@ class ContentTagClassifier
             maxTokens: self::MAX_TOKENS,
             temperature: null,
             tools: null,
+            thinking: $tuning['thinking'],
+            effort: $tuning['effort'],
         );
 
         $result = $this->llm->streamChat($params, static function (string $delta): void {});
+        if (!$result->isComplete()) {
+            // Useknutá nebo odmítnutá odpověď (F0-D4) = totéž co selhání.
+            ErrorLogger::warn('ContentTagClassifier: incomplete model output discarded', [
+                'stopReason' => $result->stopReason,
+                'model' => $result->model ?? $params->model,
+                'maxTokens' => self::MAX_TOKENS,
+            ]);
+            return null;
+        }
         return $this->parseOutput($result->text, $taxonomy);
     }
 

@@ -125,6 +125,43 @@ class ContentTagClassifierTest extends TestCase
         $this->assertNull($this->classifier('Sorry, I cannot classify this.')->classify($this->canonical()));
     }
 
+    /** Useknutý nebo odmítnutý výstup (F0-D4) = totéž co selhání, bez parsování. */
+    public function testIncompleteOutputYieldsNull(): void
+    {
+        foreach (['max_tokens', 'refusal'] as $stop) {
+            $llm = $this->createMock(LlmClient::class);
+            $llm->method('streamChat')->willReturn(
+                new LlmChatResult('{"primaryTag": "vehicle.fuel", "confidence": 0.9, "rowExceptions": []}', 100, 40, $stop, 'claude-x'),
+            );
+            $this->assertNull($this->classifier('', llm: $llm)->classify($this->canonical()), $stop);
+        }
+    }
+
+    /** Teplota se neposílá ani při `0` na backendu (F0-D1); thinking / effort z backendu (F0-D7). */
+    public function testTemperatureIsNeverSentAndTuningIsPassed(): void
+    {
+        $captured = null;
+        $llm = $this->createMock(LlmClient::class);
+        $llm->method('streamChat')->willReturnCallback(
+            static function (LlmChatParams $params, callable $onDelta) use (&$captured): LlmChatResult {
+                $captured = $params;
+                return new LlmChatResult('{"primaryTag": null, "confidence": 0, "rowExceptions": []}', 100, 40, 'end_turn', 'claude-x');
+            },
+        );
+        $backend = [
+            'provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null,
+            'temperature' => '0.00', 'thinking' => 'adaptive', 'effort' => 'low',
+        ];
+
+        $this->classifier('', backend: $backend, llm: $llm)->classify($this->canonical());
+
+        $this->assertInstanceOf(LlmChatParams::class, $captured);
+        $this->assertNull($captured->temperature);
+        $this->assertSame('adaptive', $captured->thinking);
+        $this->assertSame('low', $captured->effort);
+        $this->assertSame(8000, $captured->maxTokens);
+    }
+
     public function testClientExceptionYieldsNull(): void
     {
         $llm = $this->createMock(LlmClient::class);

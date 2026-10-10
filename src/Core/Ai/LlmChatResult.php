@@ -28,4 +28,20 @@ final readonly class LlmChatResult
         public array $toolUses = [],
         public array $contentBlocks = [],
     ) {}
+
+    /** Stop reasons after which the model's output is whole and usable. */
+    private const COMPLETE_STOP_REASONS = ['end_turn', 'tool_use', 'stop_sequence'];
+
+    /**
+     * Whether the turn finished on its own terms (tasks/ai-models-phase0.md
+     * F0-D4): `end_turn`, `tool_use`, `stop_sequence`, or no stop reason at
+     * all (mocks, streams cut before `message_delta`). False for
+     * `max_tokens` (truncated), `refusal` (safety classifier, may fire on
+     * harmless content), `model_context_window_exceeded`, `pause_turn` and
+     * anything new — callers must not parse such text as a finished answer.
+     */
+    public function isComplete(): bool
+    {
+        return $this->stopReason === null || in_array($this->stopReason, self::COMPLETE_STOP_REASONS, true);
+    }
 }

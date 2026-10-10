@@ -38,9 +38,19 @@ class AnthropicLlmClient implements LlmClient
         if ($params->system !== null && $params->system !== '') {
             $body['system'] = $params->system;
         }
-        // Omitted when null: Opus 4.7/4.8 reject `temperature` with HTTP 400.
+        // Omitted when null: the 4.7 family and the 5 series reject
+        // `temperature` with HTTP 400 (tasks/ai-models-phase0.md F0-D1).
         if ($params->temperature !== null) {
             $body['temperature'] = $params->temperature;
+        }
+        // Tuning from the backend row (F0-D2, F0-D7): null = model default,
+        // nothing sent. Values are not validated against the model — an
+        // unsupported combination comes back as HTTP 400 from the API.
+        if ($params->thinking !== null && $params->thinking !== '') {
+            $body['thinking'] = ['type' => $params->thinking];
+        }
+        if ($params->effort !== null && $params->effort !== '') {
+            $body['output_config'] = ['effort' => $params->effort];
         }
         if ($params->tools !== null && $params->tools !== []) {
             $body['tools'] = $params->tools;

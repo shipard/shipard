@@ -271,6 +271,8 @@ final class AnalysisRunnerTest extends TestCase
         $this->assertSame('sk-plain', $params->apiKey);
         $this->assertSame(AnalysisRunner::DEFAULT_MAX_TOKENS, $params->maxTokens);
         $this->assertSame(0.0, $params->temperature);
+        $this->assertNull($params->thinking);
+        $this->assertNull($params->effort);
         $this->assertSame(AnalysisRunner::STALL_TIMEOUT_SECONDS, $params->stallTimeoutSeconds);
         $this->assertSame(AnalysisRunner::CALL_TIMEOUT_SECONDS, $params->timeoutSeconds);
         $this->assertNull($params->system);
@@ -399,6 +401,63 @@ final class AnalysisRunnerTest extends TestCase
         $result = $this->runner($llm)->run(42);
 
         $this->assertSame('anthropic: output truncated at max_tokens=32768', $result['note']);
+    }
+
+    /**
+     * Odmítnutí a přetečení kontextu (F0-D4) končí stejně jako max_tokens:
+     * `ai_error` bez opakování, stav 70, jediné volání — ne zavádějící
+     * chyba schématu z parsování prázdného textu.
+     */
+    public function testIncompleteStopReasonsFailWithoutRetry(): void
+    {
+        foreach (['refusal', 'model_context_window_exceeded'] as $stop) {
+            $this->results = $this->createMock(AnalysisResultWriter::class);
+            $this->results->expects($this->never())->method('countRecentFailures');
+            $this->expectFailure('ai_error', false);
+            $llm = new ScriptedLlmClient([$this->okResult('', $stop)]);
+
+            $result = $this->runner($llm)->run(42);
+
+            $this->assertSame('failed', $result['status'], $stop);
+            $this->assertSame(AnalysisStates::FAILED, $result['newState'], $stop);
+            $this->assertSame("anthropic: stop_reason {$stop}", $result['note'], $stop);
+            $this->assertCount(1, $llm->calls, $stop);
+            $this->assertSame([], $this->slept, $stop);
+        }
+    }
+
+    /**
+     * Ladění backendu (F0-D1, F0-D7): backend s `temperature = 0` a `auto`
+     * posílá identický požadavek jako před změnou; NULL teplota se neposílá;
+     * explicitní thinking / effort projdou beze změny.
+     */
+    public function testBackendTuningIsPassedToTheModel(): void
+    {
+        $this->claims = $this->createMock(AnalysisClaimService::class);
+        $this->claims->method('claim')->willReturn(
+            $this->claim([], ['temperature' => 0.0, 'thinking' => 'auto', 'effort' => 'auto']),
+        );
+        $this->claims->method('extend')->willReturn(true);
+        $this->claims->method('isActive')->willReturn(true);
+        $llm = new ScriptedLlmClient([$this->okResult()]);
+        $this->runner($llm)->run(42);
+        $params = $llm->calls[0];
+        $this->assertSame(0.0, $params->temperature);
+        $this->assertNull($params->thinking);
+        $this->assertNull($params->effort);
+
+        $this->claims = $this->createMock(AnalysisClaimService::class);
+        $this->claims->method('claim')->willReturn(
+            $this->claim([], ['temperature' => null, 'thinking' => 'between_tools', 'effort' => 'low']),
+        );
+        $this->claims->method('extend')->willReturn(true);
+        $this->claims->method('isActive')->willReturn(true);
+        $llm = new ScriptedLlmClient([$this->okResult()]);
+        $this->runner($llm)->run(42);
+        $params = $llm->calls[0];
+        $this->assertNull($params->temperature);
+        $this->assertSame('between_tools', $params->thinking);
+        $this->assertSame('low', $params->effort);
     }
 
     public function testSpendLimitIsConfigErrorWithSingleCall(): void

@@ -41,10 +41,11 @@ class BookingHistoryClassifier
     public const DEFAULT_BATCH_SIZE = 50;
 
     /**
-     * Dávka 50 textů × ~20 tokenů odpovědi + režie JSON. Se štědrou
-     * rezervou, aby model neusekl odpověď v půlce pole.
+     * Dávka 50 textů × ~20 tokenů odpovědi + režie JSON. Strop, ne cena:
+     * na modelech s thinking se přemýšlení počítá do `max_tokens`, proto
+     * řádově víc než délka odpovědi (tasks/ai-models-phase0.md F0-D5).
      */
-    private const MAX_TOKENS = 4000;
+    private const MAX_TOKENS = 16000;
 
     private const SYSTEM_PROMPT = <<<'PROMPT'
         You classify short accounting line-item texts into a fixed semantic
@@ -161,9 +162,21 @@ class BookingHistoryClassifier
                     maxTokens: self::MAX_TOKENS,
                     temperature: null,
                     tools: null,
+                    thinking: $params->thinking,
+                    effort: $params->effort,
                 ),
                 static function (string $delta): void {},
             );
+            if (!$result->isComplete()) {
+                // Useknutá nebo odmítnutá odpověď (F0-D4) = selhaná dávka,
+                // texty zůstanou neklasifikované a cache se neotráví.
+                ErrorLogger::warn('BookingHistoryClassifier: incomplete model output — batch failed', [
+                    'stopReason' => $result->stopReason,
+                    'model' => $result->model ?? $params->model,
+                    'maxTokens' => self::MAX_TOKENS,
+                ]);
+                return null;
+            }
             return $this->parseOutput($result->text, $batch, $taxonomy);
         } catch (\Throwable $e) {
             ErrorLogger::logException($e, 'BookingHistoryClassifier: batch failed');
@@ -255,7 +268,8 @@ class BookingHistoryClassifier
 
     /**
      * Backend + klíč jednou pro celý běh (ne per dávku) — jinak by se
-     * dešifrování klíče opakovalo u každého volání.
+     * dešifrování klíče opakovalo u každého volání. Teplota se neposílá
+     * nikdy (F0-D1); thinking / effort z backendu (F0-D7).
      */
     private function baseParams(): ?LlmChatParams
     {
@@ -270,6 +284,7 @@ class BookingHistoryClassifier
             if ($apiKey === null) {
                 return null;
             }
+            $tuning = AiBackendResolver::tuning($backend);
             return new LlmChatParams(
                 provider: (string) ($backend['provider'] ?? 'anthropic'),
                 model: (string) ($backend['model'] ?? ''),
@@ -282,6 +297,8 @@ class BookingHistoryClassifier
                 maxTokens: self::MAX_TOKENS,
                 temperature: null,
                 tools: null,
+                thinking: $tuning['thinking'],
+                effort: $tuning['effort'],
             );
         } catch (\Throwable $e) {
             ErrorLogger::logException($e, 'BookingHistoryClassifier: backend unavailable');

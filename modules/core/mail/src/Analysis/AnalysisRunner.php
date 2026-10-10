@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail\Analysis;
 
+use Shipard\Core\Ai\AiBackendResolver;
 use Shipard\Core\Ai\AnthropicPricing;
 use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
@@ -33,8 +34,11 @@ use Shipard\Core\Logging\ErrorLogger;
  * chyba nastavení (klíč, oprávnění, neznámý model, vyčerpaný strop
  * útraty — `LlmApiException::isConfigurationError()`) = `config_error`
  * bez opakování; jiná chyba API = `ai_error`, opakovatelná podle `isTransient()` a stropu
- * tří selhaných běhů za hodinu; `stop_reason = max_tokens` = `ai_error`
- * bez opakování; neplatný claim při zápisu = jen varování včetně ceny;
+ * tří selhaných běhů za hodinu; neúplný výsledek
+ * (`!LlmChatResult::isComplete()` — `max_tokens`, `refusal`,
+ * `model_context_window_exceeded`, …) = `ai_error` bez opakování
+ * (tasks/ai-models-phase0.md F0-D4); neplatný claim při zápisu = jen
+ * varování včetně ceny;
  * nečekaná výjimka po claimu (DB, disk, chyba kódu) = `ai_error`
  * „internal: <třída>: <text>“ se stejným stropem jako přechodné chyby
  * (tasks/mail-analysis-queue-drain.md D26) — selže-li i zápis selhání,
@@ -333,9 +337,15 @@ class AnalysisRunner
             $modelName = $result->model ?? (string) $claim->backend['model'];
             $cost = AnthropicPricing::costUsd($modelName, $tokensIn, $tokensOut);
 
-            if ($result->stopReason === 'max_tokens') {
-                // Useknutý výstup = rozbitý JSON; opakování se stejným limitem dopadne stejně.
-                return $this->fail($messageId, $claim, 'ai_error', "anthropic: output truncated at max_tokens={$maxTokens}", false, $tokensIn, $cost);
+            if (!$result->isComplete()) {
+                // Useknutý výstup = rozbitý JSON; opakování se stejným limitem
+                // dopadne stejně. Odmítnutí (`refusal`) a přetečení kontextu
+                // (`model_context_window_exceeded`) by jinak propadly do
+                // parsování a skončily zavádějící chybou schématu (F0-D4).
+                $note = $result->stopReason === 'max_tokens'
+                    ? "anthropic: output truncated at max_tokens={$maxTokens}"
+                    : "anthropic: stop_reason {$result->stopReason}";
+                return $this->fail($messageId, $claim, 'ai_error', $note, false, $tokensIn, $cost);
             }
             if ($result->stopReason !== null && $result->stopReason !== 'end_turn') {
                 ErrorLogger::warn('AnalysisRunner: unexpected stop_reason', ['message' => $messageId, 'stopReason' => $result->stopReason]);
@@ -515,16 +525,6 @@ class AnalysisRunner
         return self::DEFAULT_MAX_TOKENS;
     }
 
-    /**
-     * Teplota z backendu, jako ji posílal démon. Jediné místo, kde runner
-     * čte ladicí parametry backendu — ladění (thinking, volitelná teplota)
-     * přebere `AiBackendResolver::tuning()` z tasks/ai-models-phase0.md.
-     */
-    private static function temperatureOf(AnalysisClaim $claim): ?float
-    {
-        return (float) ($claim->backend['temperature'] ?? 0.0);
-    }
-
     /** `output_schema` profilu jako objekt (`\stdClass` drží prázdné objekty). */
     private static function outputSchemaOf(array $profile): \stdClass
     {
@@ -542,10 +542,18 @@ class AnalysisRunner
         return $decoded;
     }
 
-    /** @param list<array<string, mixed>> $content */
+    /**
+     * Ladicí parametry backendu bere runner jako jediný volající všechny tři
+     * z `AiBackendResolver::tuning()` — teplotu včetně (NULL = neposílat,
+     * `0` z existujících řádků se posílá jako dřív; tasks/ai-models-phase0.md
+     * F0-D1, F0-D7).
+     *
+     * @param list<array<string, mixed>> $content
+     */
     private function chatParams(AnalysisClaim $claim, int $maxTokens, array $content): LlmChatParams
     {
         $backend = $claim->backend;
+        $tuning = AiBackendResolver::tuning($backend);
         return new LlmChatParams(
             provider: (string) ($backend['provider'] ?? 'anthropic'),
             model: (string) ($backend['model'] ?? ''),
@@ -554,10 +562,12 @@ class AnalysisRunner
             system: null,
             messages: [['role' => 'user', 'content' => $content]],
             maxTokens: $maxTokens,
-            temperature: self::temperatureOf($claim),
+            temperature: $tuning['temperature'],
             tools: null,
             stallTimeoutSeconds: self::STALL_TIMEOUT_SECONDS,
             timeoutSeconds: self::CALL_TIMEOUT_SECONDS,
+            thinking: $tuning['thinking'],
+            effort: $tuning['effort'],
         );
     }
 

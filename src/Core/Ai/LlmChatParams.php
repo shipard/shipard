@@ -11,8 +11,16 @@ namespace Shipard\Core\Ai;
  * `{role: 'user'|'assistant', content: <blocks>}` where content blocks match
  * the persisted core_chat_messages format.
  *
- * `temperature` is nullable on purpose: Opus 4.7/4.8 reject any temperature
- * (HTTP 400), so the caller passes null to omit it from the request.
+ * `temperature` is nullable on purpose: models from the 4.7 family on
+ * (Opus 4.7/4.8, the whole 5 series) reject any non-default temperature
+ * with HTTP 400, so null means "omit the parameter". Only the mail
+ * analysis runner reads it from the backend row (tasks/ai-models-phase0.md
+ * F0-D1); every other caller passes null.
+ *
+ * `thinking` / `effort` are the backend's tuning values after
+ * `AiBackendResolver::tuning()` (`auto` → null = omit). Non-null values go
+ * out verbatim as `thinking: {type}` and `output_config: {effort}`; whether
+ * the model accepts them is not validated here (F0-D2).
  *
  * `stallTimeoutSeconds` / `timeoutSeconds` bound the HTTP call (no bytes
  * received for N seconds / whole request longer than N seconds → transport
@@ -39,5 +47,7 @@ final readonly class LlmChatParams
         public ?array $tools = null,
         public ?int $stallTimeoutSeconds = null,
         public ?int $timeoutSeconds = null,
+        public ?string $thinking = null,
+        public ?string $effort = null,
     ) {}
 }

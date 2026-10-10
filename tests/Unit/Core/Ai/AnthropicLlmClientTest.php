@@ -9,6 +9,7 @@ use Shipard\Core\Ai\AnthropicLlmClient;
 use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
 use Shipard\Core\Ai\LlmChatParams;
+use Shipard\Core\Ai\LlmChatResult;
 
 /**
  * Parsing tests for AnthropicLlmClient. The network transport is replaced by a
@@ -246,6 +247,66 @@ class AnthropicLlmClientTest extends TestCase
         $this->assertSame([], $blocks[1]->input->ids);
         // tool_result zůstává beze změny (řetězcový content).
         $this->assertSame('[]', $decoded->messages[2]->content[1]->content);
+    }
+
+    /**
+     * Tělo požadavku s laděním backendu (tasks/ai-models-phase0.md F0-D2,
+     * F0-D7): `thinking` a `output_config` jen při nenulové hodnotě,
+     * `temperature` chybí při null. Formát hodnot se neověřuje.
+     *
+     * @return array<string, mixed> dekódované tělo
+     */
+    private function capturedBody(LlmChatParams $params): array
+    {
+        $captured = null;
+        $client = new class($this->sampleStream(), function (string $body) use (&$captured): void {
+            $captured = $body;
+        }) extends AnthropicLlmClient {
+            /** @param callable(string): void $capture */
+            public function __construct(private string $stream, private $capture) {}
+
+            protected function sendStreamingRequest(LlmChatParams $params, string $jsonBody, callable $onChunk): void
+            {
+                ($this->capture)($jsonBody);
+                $onChunk($this->stream);
+            }
+        };
+        $client->streamChat($params, static function (): void {});
+        return json_decode((string) $captured, true);
+    }
+
+    public function testTuningParamsAreSentOnlyWhenSet(): void
+    {
+        $base = [
+            'provider' => 'anthropic', 'model' => 'claude-sonnet-5-5', 'apiKey' => 'sk-test', 'baseUrl' => '',
+            'system' => null, 'messages' => [['role' => 'user', 'content' => 'hi']], 'maxTokens' => 1024,
+        ];
+
+        $body = $this->capturedBody(new LlmChatParams(...$base));
+        $this->assertArrayNotHasKey('temperature', $body);
+        $this->assertArrayNotHasKey('thinking', $body);
+        $this->assertArrayNotHasKey('output_config', $body);
+
+        $body = $this->capturedBody(new LlmChatParams(...$base, thinking: 'between_tools', effort: 'low'));
+        $this->assertSame(['type' => 'between_tools'], $body['thinking']);
+        $this->assertSame(['effort' => 'low'], $body['output_config']);
+        $this->assertArrayNotHasKey('temperature', $body);
+
+        // Dnešní požadavek runneru analýzy: teplota 0 odchází, ladění ne.
+        $body = $this->capturedBody(new LlmChatParams(...$base, temperature: 0.0));
+        $this->assertSame(0, $body['temperature']);
+        $this->assertArrayNotHasKey('thinking', $body);
+        $this->assertArrayNotHasKey('output_config', $body);
+    }
+
+    public function testIsCompleteByStopReason(): void
+    {
+        foreach (['end_turn', 'tool_use', 'stop_sequence', null] as $stop) {
+            $this->assertTrue((new LlmChatResult('', 1, 1, $stop, 'm'))->isComplete(), (string) $stop);
+        }
+        foreach (['max_tokens', 'refusal', 'model_context_window_exceeded', 'pause_turn'] as $stop) {
+            $this->assertFalse((new LlmChatResult('', 1, 1, $stop, 'm'))->isComplete(), $stop);
+        }
     }
 
     public function testParsesToolUseBlock(): void

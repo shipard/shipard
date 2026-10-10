@@ -59,6 +59,40 @@ class AiBackendResolver
     }
 
     /**
+     * Backend row → tuning parameters for `LlmChatParams`
+     * (tasks/ai-models-phase0.md F0-D7). One place for the conversion:
+     * `auto` (and NULL / empty) → null = parameter not sent; NULL
+     * temperature → null, any numeric value (including `0`) → float.
+     *
+     * Who reads what: `thinking` and `effort` go to every caller; the
+     * `temperature` key is for the mail analysis runner only (F0-D1) —
+     * chat, dashboard summary and the tag classifiers keep passing null,
+     * otherwise the `0` stored on existing rows would change their
+     * behaviour.
+     *
+     * @param array<string, mixed> $backend
+     * @return array{temperature: ?float, thinking: ?string, effort: ?string}
+     */
+    public static function tuning(array $backend): array
+    {
+        $temperature = $backend['temperature'] ?? null;
+        return [
+            'temperature' => is_numeric($temperature) ? (float) $temperature : null,
+            'thinking' => self::tuningValue($backend['thinking'] ?? null),
+            'effort' => self::tuningValue($backend['effort'] ?? null),
+        ];
+    }
+
+    private static function tuningValue(mixed $value): ?string
+    {
+        if (!is_string($value)) {
+            return null;
+        }
+        $value = trim($value);
+        return $value === '' || $value === 'auto' ? null : $value;
+    }
+
+    /**
      * Decrypts the backend's API key. Returns null when the backend has no
      * key stored (not activated yet).
      *

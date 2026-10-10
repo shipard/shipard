@@ -7,6 +7,7 @@ namespace Shipard\Api\Controller;
 use Shipard\Api\AuthContext;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Core\Ai\AiBackendResolver;
 use Shipard\Core\Ai\Exception\LlmException;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
@@ -295,6 +296,11 @@ class ChatController
         // also re-checks isReadOnly() before executing any requested tool.
         [$tools, $toolDefs] = $this->readOnlyTools();
 
+        // Teplota se neposílá nikdy (tasks/ai-models-phase0.md F0-D1);
+        // thinking / effort z backendu jen předáváme (F0-D7). Tool smyčka
+        // na modelech s thinking chce vracet thinking bloky — to je fáze 4
+        // (#85), proto chat zůstává na výchozím backendu se Sonnetem 4.6.
+        $tuning = AiBackendResolver::tuning($backend);
         $params = new LlmChatParams(
             provider: (string) ($backend['provider'] ?? 'anthropic'),
             model: (string) ($backend['model'] ?? ''),
@@ -305,8 +311,10 @@ class ChatController
             // 0/NULL na backendu = nenastaveno — chat drží vlastní skromný
             // default, nula nesmí odejít do API (HTTP 400).
             maxTokens: ((int) ($backend['max_tokens'] ?? 0)) ?: 4096,
-            temperature: null, // v1: omitted — Opus 4.7/4.8 reject `temperature` (HTTP 400)
+            temperature: null,
             tools: $toolDefs !== [] ? $toolDefs : null,
+            thinking: $tuning['thinking'],
+            effort: $tuning['effort'],
         );
 
         $ctx = new McpInvocationContext($auth, $this->db, $this->tables, $this->config);
@@ -357,6 +365,18 @@ class ChatController
                 $cumInput += $result->inputTokens ?? 0;
                 $cumOutput += $result->outputTokens ?? 0;
                 $lastModel = $result->model ?? $lastModel;
+
+                if (!$result->isComplete()) {
+                    // Useknuto / odmítnuto (F0-D4): chat jen loguje, smyčka
+                    // běží dál beze změny — uživatel text viděl streamovaně.
+                    ErrorLogger::warn('ChatController: incomplete model output', [
+                        'conversation' => $conversationId,
+                        'iteration' => $iteration,
+                        'stopReason' => $result->stopReason,
+                        'model' => $result->model ?? $base->model,
+                        'maxTokens' => $base->maxTokens,
+                    ]);
+                }
 
                 $content = $result->contentBlocks !== []
                     ? $result->contentBlocks
@@ -477,6 +497,8 @@ class ChatController
             maxTokens: $base->maxTokens,
             temperature: $base->temperature,
             tools: $base->tools,
+            thinking: $base->thinking,
+            effort: $base->effort,
         );
     }
 

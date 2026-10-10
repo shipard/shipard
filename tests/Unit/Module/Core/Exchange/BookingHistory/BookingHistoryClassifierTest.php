@@ -140,6 +140,58 @@ class BookingHistoryClassifierTest extends TestCase
         $this->assertSame(['b' => 'it.internet'], $cache->load(BookingHistoryClassifier::PROMPT_VERSION));
     }
 
+    /** Useknutá / odmítnutá dávka (F0-D4) selže jako dávka a neotráví cache. */
+    public function testIncompleteOutputFailsTheBatchWithoutPoisoningCache(): void
+    {
+        foreach (['max_tokens', 'refusal'] as $stop) {
+            $cache = $this->cache();
+            $llm = $this->createMock(LlmClient::class);
+            $llm->method('streamChat')->willReturn(
+                new LlmChatResult(json_encode([['i' => 0, 'tag' => 'it.internet']]), 100, 40, $stop, 'claude-x'),
+            );
+            $backends = $this->createMock(AiBackendResolver::class);
+            $backends->method('defaultBackend')->willReturn(['provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null]);
+            $backends->method('apiKey')->willReturn('sk-test');
+            $config = $this->createMock(ConfigRuntime::class);
+            $config->method('cfgItem')->willReturnMap([['core.exchange.contentTags', self::TAXONOMY]]);
+
+            $result = (new BookingHistoryClassifier($llm, $backends, $config, null, $cache))->classify($this->clusters(['a']));
+
+            $this->assertSame(1, $result['failedBatches'], $stop);
+            $this->assertSame([], $result['tags'], $stop);
+            $this->assertSame([], $cache->load(BookingHistoryClassifier::PROMPT_VERSION), $stop);
+        }
+    }
+
+    /** Teplota se neposílá ani při `0` na backendu (F0-D1); thinking / effort z backendu (F0-D7). */
+    public function testTemperatureIsNeverSentAndTuningIsPassed(): void
+    {
+        $captured = null;
+        $llm = $this->createMock(LlmClient::class);
+        $llm->method('streamChat')->willReturnCallback(
+            static function (LlmChatParams $params, callable $onDelta) use (&$captured): LlmChatResult {
+                $captured = $params;
+                return new LlmChatResult('[]', 100, 40, 'end_turn', 'claude-x');
+            },
+        );
+        $backends = $this->createMock(AiBackendResolver::class);
+        $backends->method('defaultBackend')->willReturn([
+            'provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null,
+            'temperature' => 0, 'thinking' => 'between_tools', 'effort' => 'medium',
+        ]);
+        $backends->method('apiKey')->willReturn('sk-test');
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnMap([['core.exchange.contentTags', self::TAXONOMY]]);
+
+        (new BookingHistoryClassifier($llm, $backends, $config))->classify($this->clusters(['a']));
+
+        $this->assertInstanceOf(LlmChatParams::class, $captured);
+        $this->assertNull($captured->temperature);
+        $this->assertSame('between_tools', $captured->thinking);
+        $this->assertSame('medium', $captured->effort);
+        $this->assertSame(16000, $captured->maxTokens);
+    }
+
     public function testNonJsonOutputFailsTheBatch(): void
     {
         $result = $this->classifier(['Sorry, I cannot do that.'])->classify($this->clusters(['a']));

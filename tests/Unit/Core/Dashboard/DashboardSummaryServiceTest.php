@@ -272,6 +272,56 @@ final class DashboardSummaryServiceTest extends TestCase
         $this->assertSame(['text' => null, 'cached' => false], $result);
     }
 
+    /** Useknuté / odmítnuté shrnutí (F0-D4) se necachuje a vrací text null. */
+    public function testIncompleteOutputIsNotCached(): void
+    {
+        foreach (['max_tokens', 'refusal'] as $stop) {
+            $db = $this->createMock(DataSourceConnection::class);
+            $db->method('fetchRow')->willReturn(null);
+            $db->expects($this->never())->method('insertRow');
+            $db->expects($this->never())->method('updateWhere');
+
+            $backends = $this->createMock(AiBackendResolver::class);
+            $backends->method('defaultBackend')->willReturn(['provider' => 'anthropic', 'model' => 'm', 'base_url' => null]);
+            $backends->method('apiKey')->willReturn('sk-test');
+
+            $llm = $this->createMock(LlmClient::class);
+            $llm->method('streamChat')->willReturn(new LlmChatResult('Dnes máte tři věci a', 10, 5, $stop, 'm'));
+
+            $result = $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
+            $this->assertSame(['text' => null, 'cached' => false], $result, $stop);
+        }
+    }
+
+    /** Teplota se neposílá ani při `0` na backendu (F0-D1); thinking / effort z backendu (F0-D7). */
+    public function testTemperatureIsNeverSentAndTuningIsPassed(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(null);
+
+        $backends = $this->createMock(AiBackendResolver::class);
+        $backends->method('defaultBackend')->willReturn([
+            'provider' => 'anthropic', 'model' => 'claude-x', 'base_url' => null,
+            'temperature' => '0.00', 'thinking' => 'adaptive', 'effort' => 'high',
+        ]);
+        $backends->method('apiKey')->willReturn('sk-test');
+
+        $captured = null;
+        $llm = $this->createMock(LlmClient::class);
+        $llm->method('streamChat')->willReturnCallback(
+            static function (LlmChatParams $params, callable $onDelta) use (&$captured): LlmChatResult {
+                $captured = $params;
+                return new LlmChatResult('Text.', 1, 1, 'end_turn', 'claude-x');
+            },
+        );
+
+        $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
+
+        $this->assertNull($captured->temperature);
+        $this->assertSame('adaptive', $captured->thinking);
+        $this->assertSame('high', $captured->effort);
+    }
+
     public function testLlmParamsCarryPromptAndLimits(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
@@ -297,8 +347,10 @@ final class DashboardSummaryServiceTest extends TestCase
         $this->assertInstanceOf(LlmChatParams::class, $captured);
         $this->assertSame('claude-x', $captured->model);
         $this->assertSame('https://api.example.test', $captured->baseUrl);
-        $this->assertSame(300, $captured->maxTokens);
+        $this->assertSame(2000, $captured->maxTokens);
         $this->assertNull($captured->temperature);
+        $this->assertNull($captured->thinking);
+        $this->assertNull($captured->effort);
         $this->assertNull($captured->tools);
         $this->assertStringContainsString('2 až 4 věty', (string) $captured->system);
         $userContent = (string) $captured->messages[0]['content'];
