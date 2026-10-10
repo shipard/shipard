@@ -50,6 +50,8 @@ use Shipard\Module\Core\Mail\PrimaryTypes;
  *
  * `storeFailure()`: záznam se status 3, uvolnění claimu, analysis_state
  * 20 → 10 (retryable) nebo 20 → 70 (permanent). docState se nemění.
+ * Samotný řádek selhaného běhu zapisuje `recordFailedRun()` — sdílí ho
+ * reaper při třetím vypršení claimu za hodinu (D26).
  */
 class AnalysisResultWriter
 {
@@ -329,25 +331,12 @@ class AnalysisResultWriter
         ?string $promptVersion,
         ?int $userId,
     ): int {
-        $errorType = trim($errorType);
-        $errorMessage = trim($errorMessage);
-
         $dibi = $this->db->getDibiConnection();
         $dibi->begin();
         try {
             $now = date('Y-m-d H:i:s');
 
-            $dibi->insert(self::ANALYSES_TABLE, [
-                'message' => $messageId,
-                'analyzed_at' => $now,
-                'status' => 3, // failed
-                'model_name' => $modelName ?? 'unknown',
-                'prompt_version' => $promptVersion ?? 'unknown',
-                'error_message' => $errorMessage !== '' ? "[{$errorType}] {$errorMessage}" : "[{$errorType}]",
-                'tokens_input' => $tokensUsed,
-                'created' => $now,
-                'created_by' => $userId,
-            ])->execute();
+            $this->recordFailedRun($messageId, $errorType, $errorMessage, $tokensUsed, $modelName, $promptVersion, $userId, $now);
 
             $dibi->update(self::CLAIMS_TABLE, [
                 'released' => 1,
@@ -376,6 +365,43 @@ class AnalysisResultWriter
         }
 
         return $newState;
+    }
+
+    /**
+     * Řádek selhaného běhu v `core_mail_message_analyses` (status 3,
+     * `error_message` = `[typ] zpráva`) — bez vlastní transakce a bez změny
+     * stavu zprávy či claimu. Volá ho `storeFailure()` uvnitř své transakce
+     * a {@see \Shipard\Module\Core\Mail\AnalysisClaimReaper} při třetím
+     * vypršení claimu za hodinu (tasks/mail-analysis-queue-drain.md D26);
+     * jediné místo s tímto INSERTem.
+     *
+     * @param string|null $now `analyzed_at` a `created`; null = teď.
+     */
+    public function recordFailedRun(
+        int $messageId,
+        string $errorType,
+        string $errorMessage,
+        ?int $tokensUsed,
+        ?string $modelName,
+        ?string $promptVersion,
+        ?int $userId,
+        ?string $now = null,
+    ): void {
+        $errorType = trim($errorType);
+        $errorMessage = trim($errorMessage);
+        $now ??= date('Y-m-d H:i:s');
+
+        $this->db->getDibiConnection()->insert(self::ANALYSES_TABLE, [
+            'message' => $messageId,
+            'analyzed_at' => $now,
+            'status' => 3, // failed
+            'model_name' => $modelName ?? 'unknown',
+            'prompt_version' => $promptVersion ?? 'unknown',
+            'error_message' => $errorMessage !== '' ? "[{$errorType}] {$errorMessage}" : "[{$errorType}]",
+            'tokens_input' => $tokensUsed,
+            'created' => $now,
+            'created_by' => $userId,
+        ])->execute();
     }
 
     /**

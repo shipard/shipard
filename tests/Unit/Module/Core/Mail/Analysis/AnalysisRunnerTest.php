@@ -17,6 +17,7 @@ use Shipard\Module\Core\Mail\Analysis\AnalysisClaim;
 use Shipard\Module\Core\Mail\Analysis\AnalysisClaimException;
 use Shipard\Module\Core\Mail\Analysis\AnalysisClaimService;
 use Shipard\Module\Core\Mail\Analysis\AnalysisQueue;
+use Shipard\Module\Core\Mail\Analysis\AnalysisResultException;
 use Shipard\Module\Core\Mail\Analysis\AnalysisResultWriter;
 use Shipard\Module\Core\Mail\Analysis\AnalysisRunner;
 use Shipard\Module\Core\Mail\Analysis\AnalysisServices;
@@ -59,7 +60,8 @@ final class ScriptedLlmClient implements LlmClient
  * a hodinový strop, max_tokens, strop útraty, bez slotu, bez konfigurace,
  * claim zaniklý během volání, sweep; dobírání fronty (D25): jeden slot na
  * víc zpráv, zpracované id se nebere znovu, `not_configured` končí,
- * rozpočet a nástupce. Služby jsou mocky — SQL kryjí jejich vlastní testy
+ * rozpočet a nástupce; nečekaná výjimka po claimu jako selhaný běh se
+ * stropem (D26). Služby jsou mocky — SQL kryjí jejich vlastní testy
  * a integrační test.
  */
 final class AnalysisRunnerTest extends TestCase
@@ -498,16 +500,76 @@ final class AnalysisRunnerTest extends TestCase
         $this->assertSame('lost_claim', $result['status']);
     }
 
-    public function testUnexpectedExceptionLeavesClaimToExpire(): void
+    // ── nečekané výjimky po claimu (D26) ───────────────────────────────────
+
+    public function testUnexpectedExceptionAfterClaimIsStoredAsFailedRun(): void
     {
         $this->attachments = $this->createMock(AttachmentPreparer::class);
         $this->attachments->method('prepare')->willThrowException(new \RuntimeException('disk gone'));
-        $this->results->expects($this->never())->method('storeFailure');
+        $this->expectFailure('ai_error', true);
+
+        $result = $this->runner(new ScriptedLlmClient([]))->run(42);
+
+        $this->assertSame('failed', $result['status']);
+        $this->assertSame(AnalysisStates::QUEUED, $result['newState']);
+        $this->assertSame('internal: RuntimeException: disk gone', $result['note']);
+    }
+
+    public function testUnexpectedExceptionOverHourlyCapFailsPermanently(): void
+    {
+        $this->attachments = $this->createMock(AttachmentPreparer::class);
+        $this->attachments->method('prepare')->willThrowException(new \RuntimeException('disk gone'));
+        $this->results = $this->createMock(AnalysisResultWriter::class);
+        $this->results->method('countRecentFailures')->with(42, AnalysisRunner::FAILURE_WINDOW_SECONDS)->willReturn(AnalysisRunner::MAX_FAILURES_PER_HOUR);
+        $this->expectFailure('ai_error', false);
+
+        $result = $this->runner(new ScriptedLlmClient([]))->run(42);
+
+        $this->assertSame(AnalysisStates::FAILED, $result['newState']);
+    }
+
+    public function testUnexpectedExceptionWithFailedStoreLeavesClaimToExpire(): void
+    {
+        $this->attachments = $this->createMock(AttachmentPreparer::class);
+        $this->attachments->method('prepare')->willThrowException(new \RuntimeException('disk gone'));
+        $this->results->expects($this->once())->method('storeFailure')
+            ->willThrowException(new AnalysisResultException(AnalysisResultException::INTERNAL_ERROR, 'db gone', 500));
 
         $result = $this->runner(new ScriptedLlmClient([]))->run(42);
 
         $this->assertSame('crashed', $result['status']);
         $this->assertStringContainsString('disk gone', $result['note']);
+    }
+
+    public function testUnexpectedExceptionBeforeClaimIsCrashedWithoutStore(): void
+    {
+        $this->queue = $this->createMock(AnalysisQueue::class);
+        $this->queue->method('isEligible')->willThrowException(new \RuntimeException('db gone'));
+        $this->claims->expects($this->never())->method('claim');
+        $this->results->expects($this->never())->method('storeFailure');
+
+        $this->assertSame('crashed', $this->runner(new ScriptedLlmClient([]))->run(42)['status']);
+    }
+
+    public function testDrainContinuesAfterCrash(): void
+    {
+        $excludeCalls = [];
+        $this->queueFor([8], $excludeCalls);
+        $this->attachments = $this->createMock(AttachmentPreparer::class);
+        $this->attachments->method('prepare')->willReturnCallback(static function (int $messageId): array {
+            if ($messageId === 42) {
+                throw new \RuntimeException('disk gone');
+            }
+            return [];
+        });
+        $this->results->method('storeFailure')
+            ->willThrowException(new AnalysisResultException(AnalysisResultException::INTERNAL_ERROR, 'db gone', 500));
+        $this->results->expects($this->once())->method('storeResult')->willReturn(78);
+
+        $drained = $this->runner(new ScriptedLlmClient([$this->okResult()]))->drain(42);
+
+        $this->assertSame(['crashed', 'done'], array_column($drained['results'], 'status'));
+        $this->assertSame('queue_empty', $drained['reason']);
     }
 
     // ── dobírání fronty (D25) ──────────────────────────────────────────────

@@ -33,8 +33,13 @@ use Shipard\Core\Logging\ErrorLogger;
  * vyčerpaný strop útraty poskytovatele = `config_error` bez opakování;
  * jiná chyba API = `ai_error`, opakovatelná podle `isTransient()` a stropu
  * tří selhaných běhů za hodinu; `stop_reason = max_tokens` = `ai_error`
- * bez opakování; neplatný claim při zápisu = jen varování včetně ceny.
- * Běh v procesu zapisuje `created_by = NULL` (strojový kontext).
+ * bez opakování; neplatný claim při zápisu = jen varování včetně ceny;
+ * nečekaná výjimka po claimu (DB, disk, chyba kódu) = `ai_error`
+ * „internal: <třída>: <text>“ se stejným stropem jako přechodné chyby
+ * (tasks/mail-analysis-queue-drain.md D26) — selže-li i zápis selhání,
+ * claim se nechá vypršet a reaper zprávu vrátí do fronty (při třetím
+ * vypršení za hodinu ji sám přepne na stav 70). Běh v procesu zapisuje
+ * `created_by = NULL` (strojový kontext).
  *
  * `drain()` (CLI `--message`, tasks/mail-analysis-queue-drain.md D25):
  * po dokončení zprávy s jakýmkoli výsledkem drží slot a bere další zprávu
@@ -202,9 +207,10 @@ class AnalysisRunner
     }
 
     /**
-     * Jedna zpráva v drženém slotu; nečekaná chyba mimo analýzu (DB, disk)
-     * končí jako `crashed` — claim, pokud vznikl, se nechá vypršet a reaper
-     * zprávu vrátí do fronty (jako u pádu démona).
+     * Jedna zpráva v drženém slotu; nečekaná chyba před claimem (gate,
+     * claim) nebo při zápisu selhání končí jako `crashed` — claim, pokud
+     * vznikl, se nechá vypršet a reaper zprávu vrátí do fronty (jako
+     * u pádu démona).
      *
      * @return array<string, mixed>
      */
@@ -264,7 +270,32 @@ class AnalysisRunner
             return ['status' => 'claim_failed', 'message' => $messageId, 'note' => $e->errorCode . ': ' . $e->getMessage()];
         }
 
-        return $this->analyze($messageId, $claim);
+        try {
+            return $this->analyze($messageId, $claim);
+        } catch (\Throwable $e) {
+            return $this->failInternal($messageId, $claim, $e);
+        }
+    }
+
+    /**
+     * Nečekaná výjimka po claimu (D26): selhaný běh `ai_error` „internal:
+     * <třída>: <text>“ — do fronty nejvýš {@see MAX_FAILURES_PER_HOUR}krát
+     * za hodinu, pak stav 70 (stejné okno jako u přechodných chyb modelu).
+     * Když selže i zápis selhání, claim se nechá vypršet (dnešní chování).
+     *
+     * @return array<string, mixed>
+     */
+    private function failInternal(int $messageId, AnalysisClaim $claim, \Throwable $e): array
+    {
+        $note = 'internal: ' . get_class($e) . ': ' . $e->getMessage();
+        ErrorLogger::logException($e, "AnalysisRunner: message {$messageId} — unexpected error after claim, stored as a failed run");
+        try {
+            $retryable = $this->services->results->countRecentFailures($messageId, self::FAILURE_WINDOW_SECONDS) < self::MAX_FAILURES_PER_HOUR;
+            return $this->fail($messageId, $claim, 'ai_error', $note, $retryable, null, null);
+        } catch (\Throwable $storeError) {
+            ErrorLogger::logException($storeError, "AnalysisRunner: message {$messageId} crashed and the failure could not be stored — claim left to expire");
+            return ['status' => 'crashed', 'message' => $messageId, 'note' => get_class($e) . ': ' . $e->getMessage()];
+        }
     }
 
     /** @return array<string, mixed> */

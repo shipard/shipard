@@ -6,13 +6,15 @@ namespace Shipard\Command\DataSource;
 
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Module\Core\Mail\Analysis\AnalysisResultWriter;
 use Shipard\Module\Core\Mail\AnalysisClaimReaper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Reaper expirovaných AI claimů. Spouští se 1×/min z cronu. Spec §3.7.
+ * Reaper expirovaných AI claimů. Spouští se 1×/min z cronu. Spec §3.7;
+ * třetí vypršení za hodinu = stav Analýza selhala (#85 D26).
  */
 class MailAnalysisReapCommand extends Command
 {
@@ -46,7 +48,7 @@ class MailAnalysisReapCommand extends Command
         $dsConfig = $this->dsConfig ?? new DataSourceConfig($dsDir);
         $dsConnection = $this->dsConnection ?? new DataSourceConnection($dsConfig);
 
-        $reaper = new AnalysisClaimReaper($dsConnection);
+        $reaper = new AnalysisClaimReaper($dsConnection, new AnalysisResultWriter($dsConnection, $dsConfig));
         $reaped = $reaper->reapExpired();
 
         if ($reaped === []) {
@@ -57,11 +59,12 @@ class MailAnalysisReapCommand extends Command
         $output->writeln('<info>Reaped ' . count($reaped) . ' expired claim(s):</info>');
         foreach ($reaped as $entry) {
             $output->writeln(sprintf(
-                '  claim=%d message=%d analyzer=%s duration=%ds',
+                '  claim=%d message=%d analyzer=%s duration=%ds%s',
                 $entry['claim_id'],
                 $entry['message_id'],
                 $entry['analyzer_id'],
                 $entry['duration_seconds'],
+                $entry['failed'] ? ' → analysis failed (claim expired 3 times within an hour)' : '',
             ));
         }
 
