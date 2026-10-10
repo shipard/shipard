@@ -6,6 +6,7 @@ namespace Shipard\Module\Core\Exchange\Enrich;
 
 use Shipard\Core\Ai\AiBackendResolver;
 use Shipard\Core\Ai\AnthropicLlmClient;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -72,7 +73,7 @@ final class RowEnrichmentPipeline
                 $configRuntime,
             ),
             new ContentTagClassifier(
-                new AnthropicLlmClient(),
+                new AnthropicLlmClient(ModelCatalog::fromConfig($configRuntime)),
                 new AiBackendResolver($db, $dsConfig),
                 $configRuntime,
                 $backendNdx,

@@ -10,6 +10,9 @@ use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
+use Shipard\Core\Ai\ModelCatalog;
+use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\Utils\JsoncParser;
 
 /**
  * Parsing tests for AnthropicLlmClient. The network transport is replaced by a
@@ -382,5 +385,113 @@ class AnthropicLlmClientTest extends TestCase
         $this->assertSame('tool_use', $result->contentBlocks[1]['type']);
         $this->assertSame('documents_search', $result->contentBlocks[1]['name']);
         $this->assertCount(1, $result->toolUses);
+    }
+
+    // -------------------------------------------------------------------
+    // Tvarování podle katalogu modelů (tasks/ai-model-catalog.md D32)
+    // -------------------------------------------------------------------
+
+    /** Katalog ze skutečného souboru v repozitáři. */
+    private function catalog(): ModelCatalog
+    {
+        return ModelCatalog::fromArray(JsoncParser::parseFile(dirname(__DIR__, 4) . '/modules/core/ai/config/models.jsonc'));
+    }
+
+    /** @return array<string, mixed> dekódované tělo odeslané klientem s katalogem */
+    private function capturedBodyWith(?ModelCatalog $catalog, LlmChatParams $params): array
+    {
+        $captured = null;
+        $client = new class($catalog, $this->sampleStream(), function (string $body) use (&$captured): void {
+            $captured = $body;
+        }) extends AnthropicLlmClient {
+            /** @param callable(string): void $capture */
+            public function __construct(?ModelCatalog $catalog, private string $stream, private $capture)
+            {
+                parent::__construct($catalog);
+            }
+
+            protected function sendStreamingRequest(LlmChatParams $params, string $jsonBody, callable $onChunk): void
+            {
+                ($this->capture)($jsonBody);
+                $onChunk($this->stream);
+            }
+        };
+        $client->streamChat($params, static function (): void {});
+        return json_decode((string) $captured, true);
+    }
+
+    /** @return array<string, mixed> */
+    private function tunedParams(string $model, ?float $temperature, ?string $thinking, ?string $effort, int $maxTokens = 1024): LlmChatParams
+    {
+        return new LlmChatParams(
+            provider: 'anthropic', model: $model, apiKey: 'sk-test', baseUrl: '',
+            system: 'sys', messages: [['role' => 'user', 'content' => 'hi']], maxTokens: $maxTokens,
+            temperature: $temperature, thinking: $thinking, effort: $effort,
+        );
+    }
+
+    public function testCatalogShapesTheRequestForTheModel(): void
+    {
+        ErrorLogger::setLogLevel('error');
+        try {
+            // Backend se Sonnetem 5.5, kde zůstala teplota 0 a thinking disabled
+            // (dřív HTTP 400): teplota se nepošle, disabled odejde jako between_tools.
+            $body = $this->capturedBodyWith($this->catalog(), $this->tunedParams('claude-sonnet-5-5', 0.0, 'disabled', 'xhigh'));
+            $this->assertArrayNotHasKey('temperature', $body);
+            $this->assertSame(['type' => 'between_tools'], $body['thinking']);
+            $this->assertSame(['effort' => 'high'], $body['output_config'], 'between_tools nejvýš high');
+
+            // xhigh na Sonnetu 4.6 → high; teplota zůstává.
+            $body = $this->capturedBodyWith($this->catalog(), $this->tunedParams('claude-sonnet-4-6', 0.0, null, 'xhigh'));
+            $this->assertSame(0, $body['temperature']);
+            $this->assertSame(['effort' => 'high'], $body['output_config']);
+
+            // Strop max_tokens: Sonnet 4.5 má 64 000.
+            $body = $this->capturedBodyWith($this->catalog(), $this->tunedParams('claude-sonnet-4-5-20250929', null, null, null, 100_000));
+            $this->assertSame(64000, $body['max_tokens']);
+        } finally {
+            ErrorLogger::resetForTesting();
+        }
+    }
+
+    /** Hotovo když: tělo pro výchozí backend (Sonnet 4.6, teplota 0, `auto`) je identické s katalogem i bez něj. */
+    public function testDefaultBackendRequestIsIdenticalWithAndWithoutCatalog(): void
+    {
+        $params = $this->tunedParams('claude-sonnet-4-6', 0.0, null, null, 32768);
+
+        $without = $this->capturedBodyWith(null, $params);
+        $with = $this->capturedBodyWith($this->catalog(), $params);
+
+        $this->assertSame($without, $with);
+        $this->assertSame(0, $with['temperature']);
+        $this->assertArrayNotHasKey('thinking', $with);
+        $this->assertArrayNotHasKey('output_config', $with);
+        $this->assertSame(32768, $with['max_tokens']);
+    }
+
+    public function testWithoutCatalogTheBodyIsUnchanged(): void
+    {
+        // Bez katalogu (null i prázdný) odejde kombinace, kterou model nepřijímá, beze změny.
+        foreach ([null, ModelCatalog::empty()] as $catalog) {
+            $body = $this->capturedBodyWith($catalog, $this->tunedParams('claude-sonnet-5-5', 0.0, 'disabled', 'xhigh'));
+            $this->assertSame(0, $body['temperature']);
+            $this->assertSame(['type' => 'disabled'], $body['thinking']);
+            $this->assertSame(['effort' => 'xhigh'], $body['output_config']);
+        }
+    }
+
+    public function testModelOutsideTheCatalogIsSentUnshaped(): void
+    {
+        ErrorLogger::setLogLevel('error');
+        AnthropicLlmClient::resetUnknownModelWarningsForTesting();
+        try {
+            $body = $this->capturedBodyWith($this->catalog(), $this->tunedParams('claude-test-model', 0.0, 'disabled', 'xhigh'));
+            $this->assertSame(0, $body['temperature']);
+            $this->assertSame(['type' => 'disabled'], $body['thinking']);
+            $this->assertSame(['effort' => 'xhigh'], $body['output_config']);
+        } finally {
+            AnthropicLlmClient::resetUnknownModelWarningsForTesting();
+            ErrorLogger::resetForTesting();
+        }
     }
 }

@@ -6,28 +6,49 @@ namespace Shipard\Core\Ai;
 
 use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
+use Shipard\Core\Logging\ErrorLogger;
 
 /**
- * Anthropic Messages API client, streaming, no tool-use (Phase 2a).
+ * Anthropic Messages API client, streaming, with tool-use blocks.
  *
- * Raw HTTP (curl) on purpose — the project has no PHP Anthropic SDK dependency
- * (the analyzer side is Python), and the task specifies a thin streamed path.
+ * Raw HTTP (curl) on purpose — the project has no PHP Anthropic SDK dependency,
+ * and the task specifies a thin streamed path.
  *
  * SSE parsing is split from the network transport: `sendStreamingRequest()` is
  * the only method that touches curl and is `protected` so tests can override it
  * and feed fixture chunks (including chunks split mid-line). Everything else is
  * pure and unit-tested without a network.
+ *
+ * Request shaping (tasks/ai-model-catalog.md D32): with a {@see ModelCatalog}
+ * the params are passed through {@see RequestShaper} before the body is
+ * built, so every caller gets a request the model accepts without touching
+ * its own code. Adjustments are logged once per call; a model outside the
+ * catalog is sent as-is and warned about once per process. Without a
+ * catalog (null, or an empty one before `ds-upgrade`) nothing is shaped.
  */
 class AnthropicLlmClient implements LlmClient
 {
     private const ANTHROPIC_VERSION = '2023-06-01';
     private const DEFAULT_BASE_URL  = 'https://api.anthropic.com';
 
+    /** Declared with a default so test subclasses that skip the constructor keep working. */
+    private ?ModelCatalog $catalog = null;
+
+    /** @var array<string, true> models already reported as missing from the catalog */
+    private static array $unknownModelsWarned = [];
+
+    public function __construct(?ModelCatalog $catalog = null)
+    {
+        $this->catalog = $catalog;
+    }
+
     public function streamChat(LlmChatParams $params, callable $onTextDelta): LlmChatResult
     {
         if ($params->provider !== 'anthropic') {
             throw new LlmUnsupportedProviderException($params->provider);
         }
+
+        $params = $this->shapeForModel($params);
 
         $body = [
             'model'      => $params->model,
@@ -44,8 +65,9 @@ class AnthropicLlmClient implements LlmClient
             $body['temperature'] = $params->temperature;
         }
         // Tuning from the backend row (F0-D2, F0-D7): null = model default,
-        // nothing sent. Values are not validated against the model — an
-        // unsupported combination comes back as HTTP 400 from the API.
+        // nothing sent. Values the model does not accept were already
+        // replaced or dropped by shapeForModel() when the catalog knows
+        // the model; otherwise they go out verbatim (HTTP 400 from the API).
         if ($params->thinking !== null && $params->thinking !== '') {
             $body['thinking'] = ['type' => $params->thinking];
         }
@@ -93,6 +115,44 @@ class AnthropicLlmClient implements LlmClient
             $toolUses,
             $contentBlocks,
         );
+    }
+
+    /**
+     * Shapes the params to the model's capabilities (D32). No catalog or an
+     * empty one = untouched; a model the catalog does not know = untouched
+     * plus one warning per process (the hosting gateway passes bare model
+     * IDs through, so a backend pointed at it still resolves).
+     */
+    private function shapeForModel(LlmChatParams $params): LlmChatParams
+    {
+        if ($this->catalog === null || $this->catalog->isEmpty()) {
+            return $params;
+        }
+        $spec = $this->catalog->find($params->model);
+        if ($spec === null) {
+            if (!isset(self::$unknownModelsWarned[$params->model])) {
+                self::$unknownModelsWarned[$params->model] = true;
+                ErrorLogger::warn('AnthropicLlmClient: model is not in the model catalog — request sent unshaped', [
+                    'model' => $params->model,
+                ]);
+            }
+            return $params;
+        }
+        [$shaped, $changes] = RequestShaper::shape($params, $spec);
+        if ($changes !== []) {
+            ErrorLogger::info('AnthropicLlmClient: request shaped to the model capabilities', [
+                'model' => $params->model,
+                'catalogModel' => $spec->id,
+                'changes' => $changes,
+            ]);
+        }
+        return $shaped;
+    }
+
+    /** Forgets which unknown models were already warned about (tests). */
+    public static function resetUnknownModelWarningsForTesting(): void
+    {
+        self::$unknownModelsWarned = [];
     }
 
     /**

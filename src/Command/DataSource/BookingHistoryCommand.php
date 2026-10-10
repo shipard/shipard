@@ -10,6 +10,7 @@ use Shipard\Api\JournalEventHandlerLoader;
 use Shipard\Api\TableLoader;
 use Shipard\Core\Ai\AiBackendResolver;
 use Shipard\Core\Ai\AnthropicLlmClient;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Ai\LlmClient;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
@@ -101,9 +102,9 @@ class BookingHistoryCommand extends Command
         }
     }
 
-    protected function createLlmClient(): LlmClient
+    protected function createLlmClient(?ModelCatalog $catalog = null): LlmClient
     {
-        return $this->llm ?? new AnthropicLlmClient();
+        return $this->llm ?? new AnthropicLlmClient($catalog);
     }
 
     /** Seam pro testy — e2e test podstrčí mock LLM i mock resolver backendů. */
@@ -115,7 +116,7 @@ class BookingHistoryCommand extends Command
         TagCache $cache,
     ): BookingHistoryClassifier {
         return new BookingHistoryClassifier(
-            llm: $this->createLlmClient(),
+            llm: $this->createLlmClient(ModelCatalog::fromConfig($config)),
             backends: new AiBackendResolver($db, $dsConfig),
             config: $config,
             backendNdx: $backendNdx,

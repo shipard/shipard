@@ -1445,7 +1445,7 @@ function dispatchChat(
 	$registry = $resolved !== null
 		? buildMcpRegistry($db, $tables, $configRuntime, $resolved, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), $language, $alertCheckRegistry)
 		: null;
-	$ctrl = new ChatController($db, $configRuntime, $resolved?->config, new AnthropicLlmClient(), $tables, $registry);
+	$ctrl = new ChatController($db, $configRuntime, $resolved?->config, new AnthropicLlmClient(\Shipard\Core\Ai\ModelCatalog::fromConfig($configRuntime)), $tables, $registry);
 	return match ($route->action) {
 		'list'        => $ctrl->list($auth, $request),
 		'create'      => $ctrl->create($auth, $request),
@@ -1534,7 +1534,7 @@ function dispatchDashboard(
 			$db,
 			new \Shipard\Core\Dashboard\DashboardSummaryService(
 				$db,
-				new AnthropicLlmClient(),
+				new AnthropicLlmClient(\Shipard\Core\Ai\ModelCatalog::fromConfig($configRuntime)),
 				new \Shipard\Core\Ai\AiBackendResolver($db, $dsConfig),
 			),
 			$configRuntime,
