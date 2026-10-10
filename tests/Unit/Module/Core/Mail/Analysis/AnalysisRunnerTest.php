@@ -12,6 +12,7 @@ use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
 use Shipard\Core\Ai\ModelCatalog;
+use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Utils\JsoncParser;
@@ -136,8 +137,21 @@ final class AnalysisRunnerTest extends TestCase
         @rmdir($this->runDir);
     }
 
-    private function claim(array $profileOverrides = [], array $backendOverrides = []): AnalysisClaim
+    /**
+     * Claim s hotovým rozhodnutím o volání (tasks/ai-functions.md D40):
+     * výchozí = funkce mail.extraction bez přepsání (Sonnet 4.5 z testu,
+     * 32768 tokenů, teplota 0, bez thinking / effort).
+     *
+     * @param array<string, mixed> $callOverrides pole ResolvedAiCall
+     */
+    private function claim(array $profileOverrides = [], array $callOverrides = []): AnalysisClaim
     {
+        $call = $callOverrides + [
+            'functionId' => 'mail.extraction', 'platform' => 'anthropic', 'baseUrl' => '', 'apiKey' => 'sk-plain',
+            'model' => 'claude-sonnet-4-5', 'shapeAs' => 'claude-sonnet-4-5', 'catalogModel' => 'claude-sonnet-4-5',
+            'maxTokens' => 32768, 'temperature' => 0.0, 'thinking' => null, 'effort' => null,
+            'connectionId' => 5, 'connectionCode' => 'default',
+        ];
         return new AnalysisClaim(
             31,
             'ct_x',
@@ -147,11 +161,7 @@ final class AnalysisRunnerTest extends TestCase
                 'prompt_template' => 'Subject: {{ message.subject }} / {{ attachments|length }} attachments',
                 'output_schema' => json_encode(self::SCHEMA),
             ],
-            $backendOverrides + [
-                'id' => 5, 'provider' => 'anthropic', 'model' => 'claude-sonnet-4-5', 'base_url' => null,
-                'max_tokens' => 0, 'temperature' => 0.0,
-            ],
-            'sk-plain',
+            new ResolvedAiCall(...$call),
         );
     }
 
@@ -278,10 +288,12 @@ final class AnalysisRunnerTest extends TestCase
 
         $params = $llm->calls[0];
         $this->assertSame('sk-plain', $params->apiKey);
-        $this->assertSame(AnalysisRunner::DEFAULT_MAX_TOKENS, $params->maxTokens);
+        $this->assertSame(32768, $params->maxTokens, 'strop z deklarace funkce mail.extraction');
         $this->assertSame(0.0, $params->temperature);
         $this->assertNull($params->thinking);
         $this->assertNull($params->effort);
+        $this->assertSame('claude-sonnet-4-5', $params->model);
+        $this->assertSame('claude-sonnet-4-5', $params->shapeAs);
         $this->assertSame(AnalysisRunner::STALL_TIMEOUT_SECONDS, $params->stallTimeoutSeconds);
         $this->assertSame(AnalysisRunner::CALL_TIMEOUT_SECONDS, $params->timeoutSeconds);
         $this->assertNull($params->system);
@@ -293,10 +305,11 @@ final class AnalysisRunnerTest extends TestCase
         $this->assertSame([], $this->slept);
     }
 
-    public function testMaxTokensCascadeProfileOverBackend(): void
+    /** Strop tokenů přijde hotový z rozhodnutí (profil → řádek funkce → deklarace řeší resolver). */
+    public function testMaxTokensComesFromTheResolvedCall(): void
     {
         $this->claims = $this->createMock(AnalysisClaimService::class);
-        $this->claims->method('claim')->willReturn($this->claim(['max_tokens' => 2048], ['max_tokens' => 4096]));
+        $this->claims->method('claim')->willReturn($this->claim(['max_tokens' => 2048], ['maxTokens' => 2048]));
         $this->claims->method('extend')->willReturn(true);
         $this->claims->method('isActive')->willReturn(true);
         $llm = new ScriptedLlmClient([$this->okResult()]);
@@ -436,16 +449,15 @@ final class AnalysisRunnerTest extends TestCase
     }
 
     /**
-     * Ladění backendu (F0-D1, F0-D7): backend s `temperature = 0` a `auto`
-     * posílá identický požadavek jako před změnou; NULL teplota se neposílá;
-     * explicitní thinking / effort projdou beze změny.
+     * Ladění z rozhodnutí resolveru (D40): výchozí = teplota 0 z deklarace,
+     * bez thinking / effort (tělo jako před změnou); přepsané hodnoty
+     * projdou beze změny, včetně vlastního ID modelu tvarovaného podle
+     * `shapeAs` (D43).
      */
-    public function testBackendTuningIsPassedToTheModel(): void
+    public function testResolvedTuningIsPassedToTheModel(): void
     {
         $this->claims = $this->createMock(AnalysisClaimService::class);
-        $this->claims->method('claim')->willReturn(
-            $this->claim([], ['temperature' => 0.0, 'thinking' => 'auto', 'effort' => 'auto']),
-        );
+        $this->claims->method('claim')->willReturn($this->claim());
         $this->claims->method('extend')->willReturn(true);
         $this->claims->method('isActive')->willReturn(true);
         $llm = new ScriptedLlmClient([$this->okResult()]);
@@ -457,7 +469,8 @@ final class AnalysisRunnerTest extends TestCase
 
         $this->claims = $this->createMock(AnalysisClaimService::class);
         $this->claims->method('claim')->willReturn(
-            $this->claim([], ['temperature' => null, 'thinking' => 'between_tools', 'effort' => 'low']),
+            $this->claim([], ['temperature' => null, 'thinking' => 'between_tools', 'effort' => 'low',
+                'model' => 'claude-sonnet-6', 'shapeAs' => 'claude-sonnet-5-5', 'catalogModel' => null]),
         );
         $this->claims->method('extend')->willReturn(true);
         $this->claims->method('isActive')->willReturn(true);
@@ -467,6 +480,8 @@ final class AnalysisRunnerTest extends TestCase
         $this->assertNull($params->temperature);
         $this->assertSame('between_tools', $params->thinking);
         $this->assertSame('low', $params->effort);
+        $this->assertSame('claude-sonnet-6', $params->model);
+        $this->assertSame('claude-sonnet-5-5', $params->shapeAs);
     }
 
     public function testSpendLimitIsConfigErrorWithSingleCall(): void

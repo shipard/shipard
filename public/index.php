@@ -1535,7 +1535,7 @@ function dispatchDashboard(
 			new \Shipard\Core\Dashboard\DashboardSummaryService(
 				$db,
 				new AnthropicLlmClient(\Shipard\Core\Ai\ModelCatalog::fromConfig($configRuntime)),
-				new \Shipard\Core\Ai\AiBackendResolver($db, $dsConfig),
+				new \Shipard\Core\Ai\AiFunctionResolver($db, $configRuntime, $dsConfig),
 			),
 			$configRuntime,
 			$language,

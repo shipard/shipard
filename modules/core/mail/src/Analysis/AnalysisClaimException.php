@@ -8,7 +8,9 @@ namespace Shipard\Module\Core\Mail\Analysis;
  * Claim zprávy neproběhl. `errorCode` nese dnešní kódy pull protokolu
  * (`NOT_FOUND`, `INVALID_STATE`, `ALREADY_CLAIMED`, `NO_PROFILE`,
  * `NO_BACKEND`, `SECRETS_UNAVAILABLE`, `BACKEND_KEY_CORRUPTED`,
- * `BACKEND_KEY_MISSING`, `INTERNAL_ERROR`), `httpStatus` stav, na který ho
+ * `BACKEND_KEY_MISSING`, `BACKEND_CONFIG_INVALID` — špatně zvolený model
+ * AI funkce / profilu, tasks/ai-functions.md D48 —, `INTERNAL_ERROR`),
+ * `httpStatus` stav, na který ho
  * `AnalysisController::claim()` mapuje. Runner podle kódu rozhoduje, zda
  * zpráva zůstává ve frontě (konfigurace) nebo jde o chybu běhu.
  */
@@ -22,6 +24,7 @@ final class AnalysisClaimException extends \RuntimeException
     public const SECRETS_UNAVAILABLE = 'SECRETS_UNAVAILABLE';
     public const BACKEND_KEY_CORRUPTED = 'BACKEND_KEY_CORRUPTED';
     public const BACKEND_KEY_MISSING = 'BACKEND_KEY_MISSING';
+    public const BACKEND_CONFIG_INVALID = 'BACKEND_CONFIG_INVALID';
     public const INTERNAL_ERROR = 'INTERNAL_ERROR';
 
     /** Kódy, u kterých chybí konfigurace DS — zpráva zůstává ve frontě. */
@@ -31,6 +34,7 @@ final class AnalysisClaimException extends \RuntimeException
         self::SECRETS_UNAVAILABLE,
         self::BACKEND_KEY_CORRUPTED,
         self::BACKEND_KEY_MISSING,
+        self::BACKEND_CONFIG_INVALID,
     ];
 
     public function __construct(

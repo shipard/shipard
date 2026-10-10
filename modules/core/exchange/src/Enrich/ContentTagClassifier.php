@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Enrich;
 
-use Shipard\Core\Ai\AiBackendResolver;
-use Shipard\Core\Ai\LlmChatParams;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\Exception\AiFunctionException;
 use Shipard\Core\Ai\LlmClient;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Logging\ErrorLogger;
@@ -20,20 +20,16 @@ use Shipard\Module\Core\Exchange\Document\CanonicalRowText;
  * Jakékoli selhání (chybějící backend/klíč, síť, nevalidní výstup) →
  * null, zalogováno, nikdy nepropadne výš (D17) — /result nesmí spadnout.
  *
- * Backend: override ze settings `exchange.contentTag.backend` (ndx), jinak
- * default backend DS. Doporučení: levný model (Haiku) přes dedikovaný
- * backend — klasifikace je triviální úloha.
+ * Model, připojení a ladění určuje AI funkce `exchange.contentTags`
+ * (tasks/ai-functions.md D36, D40): deklarace úrovně fast se stropem 8000
+ * → řádek funkce v Nastavení (levný model přes vlastní připojení) → mapa
+ * úrovní. Nenastavená funkce = klasifikace přeskočena (null).
  */
 class ContentTagClassifier
 {
     public const TAG_PROMPT_VERSION = 'tag-v1.0.0';
 
-    /**
-     * Strop, ne cena: na modelech s thinking se přemýšlení počítá do
-     * `max_tokens`, odpověď sama je pár desítek tokenů
-     * (tasks/ai-models-phase0.md F0-D5).
-     */
-    private const MAX_TOKENS = 8000;
+    public const string AI_FUNCTION = 'exchange.contentTags';
 
     /** Ořez digestu — víc řádků model pro dominantní štítek nepotřebuje. */
     private const MAX_ROWS = 50;
@@ -54,9 +50,8 @@ class ContentTagClassifier
 
     public function __construct(
         private readonly LlmClient $llm,
-        private readonly AiBackendResolver $backends,
+        private readonly AiFunctionResolver $functions,
         private readonly ?ConfigRuntime $config = null,
-        private readonly ?int $backendNdx = null,
     ) {}
 
     /**
@@ -87,34 +82,20 @@ class ContentTagClassifier
             return null;
         }
 
-        $backend = $this->backendNdx !== null
-            ? $this->backends->backendByNdx($this->backendNdx)
-            : $this->backends->defaultBackend();
-        if ($backend === null) {
+        try {
+            $call = $this->functions->resolve(self::AI_FUNCTION);
+        } catch (AiFunctionException $e) {
+            // Nenastavená AI (bez připojení / klíče, špatný model) — žádná
+            // klasifikace, žádná chyba běhu (D17).
+            ErrorLogger::info('ContentTagClassifier: AI function unavailable — classification skipped', [
+                'code' => $e->errorCode,
+                'error' => $e->getMessage(),
+            ]);
             return null;
         }
-        $apiKey = $this->backends->apiKey($backend);
-        if ($apiKey === null) {
-            return null;
-        }
-
-        // Teplota se neposílá nikdy (F0-D1) — existující řádky mají `0`
-        // a klasifikace na ní nikdy nestála; thinking / effort z backendu.
-        $tuning = AiBackendResolver::tuning($backend);
-        $params = new LlmChatParams(
-            provider: (string) ($backend['provider'] ?? 'anthropic'),
-            model: (string) ($backend['model'] ?? ''),
-            apiKey: $apiKey,
-            baseUrl: isset($backend['base_url']) && $backend['base_url'] !== null
-                ? (string) $backend['base_url']
-                : '',
+        $params = $call->chatParams(
             system: self::SYSTEM_PROMPT,
             messages: [['role' => 'user', 'content' => $this->userPrompt($canonical, $taxonomy)]],
-            maxTokens: self::MAX_TOKENS,
-            temperature: null,
-            tools: null,
-            thinking: $tuning['thinking'],
-            effort: $tuning['effort'],
         );
 
         $result = $this->llm->streamChat($params, static function (string $delta): void {});
@@ -123,7 +104,7 @@ class ContentTagClassifier
             ErrorLogger::warn('ContentTagClassifier: incomplete model output discarded', [
                 'stopReason' => $result->stopReason,
                 'model' => $result->model ?? $params->model,
-                'maxTokens' => self::MAX_TOKENS,
+                'maxTokens' => $params->maxTokens,
             ]);
             return null;
         }

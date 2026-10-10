@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Exchange\BookingHistory;
 
 use PHPUnit\Framework\TestCase;
-use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\Exception\AiFunctionException;
+use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
@@ -34,8 +36,8 @@ class BookingHistoryClassifierTest extends TestCase
         array $responses,
         ?TagCache $cache = null,
         int $batchSize = 50,
-        ?array $backend = ['provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null],
-        ?string $apiKey = 'sk-test',
+        ?ResolvedAiCall $call = null,
+        bool $unresolved = false,
         array $taxonomy = self::TAXONOMY,
     ): BookingHistoryClassifier {
         $calls = 0;
@@ -52,15 +54,33 @@ class BookingHistoryClassifierTest extends TestCase
             },
         );
 
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn($backend);
-        $backends->method('backendByNdx')->willReturn($backend);
-        $backends->method('apiKey')->willReturn($apiKey);
-
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([['core.exchange.contentTags', $taxonomy]]);
 
-        return new BookingHistoryClassifier($llm, $backends, $config, null, $cache, $batchSize);
+        return new BookingHistoryClassifier($llm, $this->functions($call, $unresolved), $config, null, $cache, $batchSize);
+    }
+
+    /** Resolver AI funkce: hotové rozhodnutí, nebo nenastavená funkce (D40). */
+    private function functions(?ResolvedAiCall $call = null, bool $unresolved = false): AiFunctionResolver
+    {
+        $functions = $this->createMock(AiFunctionResolver::class);
+        if ($unresolved) {
+            $functions->method('resolve')->willThrowException(new AiFunctionException(AiFunctionException::NO_CONNECTION, 'none'));
+        } else {
+            $functions->method('resolve')->willReturn($call ?? $this->call());
+        }
+        return $functions;
+    }
+
+    /** @param array<string, mixed> $overrides */
+    private function call(array $overrides = []): ResolvedAiCall
+    {
+        $values = $overrides + [
+            'functionId' => 'exchange.bookingHistory', 'platform' => 'anthropic', 'baseUrl' => '', 'apiKey' => 'sk-test',
+            'model' => 'claude-x', 'shapeAs' => null, 'catalogModel' => null, 'maxTokens' => 16000,
+            'temperature' => null, 'thinking' => null, 'effort' => null, 'connectionId' => 1, 'connectionCode' => 'default',
+        ];
+        return new ResolvedAiCall(...$values);
     }
 
     /** @param list<string> $texts */
@@ -149,13 +169,10 @@ class BookingHistoryClassifierTest extends TestCase
             $llm->method('streamChat')->willReturn(
                 new LlmChatResult(json_encode([['i' => 0, 'tag' => 'it.internet']]), 100, 40, $stop, 'claude-x'),
             );
-            $backends = $this->createMock(AiBackendResolver::class);
-            $backends->method('defaultBackend')->willReturn(['provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null]);
-            $backends->method('apiKey')->willReturn('sk-test');
             $config = $this->createMock(ConfigRuntime::class);
             $config->method('cfgItem')->willReturnMap([['core.exchange.contentTags', self::TAXONOMY]]);
 
-            $result = (new BookingHistoryClassifier($llm, $backends, $config, null, $cache))->classify($this->clusters(['a']));
+            $result = (new BookingHistoryClassifier($llm, $this->functions(), $config, null, $cache))->classify($this->clusters(['a']));
 
             $this->assertSame(1, $result['failedBatches'], $stop);
             $this->assertSame([], $result['tags'], $stop);
@@ -163,8 +180,12 @@ class BookingHistoryClassifierTest extends TestCase
         }
     }
 
-    /** Teplota se neposílá ani při `0` na backendu (F0-D1); thinking / effort z backendu (F0-D7). */
-    public function testTemperatureIsNeverSentAndTuningIsPassed(): void
+    /**
+     * Parametry volání jdou z rozhodnutí resolveru (tasks/ai-functions.md
+     * D40): výchozí = 16000 tokenů, bez teploty a ladění — stejné tělo
+     * jako před změnou; přepsané ladění projde beze změny.
+     */
+    public function testParamsComeFromTheResolvedCall(): void
     {
         $captured = null;
         $llm = $this->createMock(LlmClient::class);
@@ -174,22 +195,42 @@ class BookingHistoryClassifierTest extends TestCase
                 return new LlmChatResult('[]', 100, 40, 'end_turn', 'claude-x');
             },
         );
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn([
-            'provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null,
-            'temperature' => 0, 'thinking' => 'between_tools', 'effort' => 'medium',
-        ]);
-        $backends->method('apiKey')->willReturn('sk-test');
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([['core.exchange.contentTags', self::TAXONOMY]]);
 
-        (new BookingHistoryClassifier($llm, $backends, $config))->classify($this->clusters(['a']));
-
+        (new BookingHistoryClassifier($llm, $this->functions(), $config))->classify($this->clusters(['a']));
         $this->assertInstanceOf(LlmChatParams::class, $captured);
+        $this->assertSame('claude-x', $captured->model);
+        $this->assertSame('sk-test', $captured->apiKey);
         $this->assertNull($captured->temperature);
+        $this->assertNull($captured->thinking);
+        $this->assertNull($captured->effort);
+        $this->assertNull($captured->tools);
+        $this->assertSame(16000, $captured->maxTokens);
+        $this->assertStringContainsString('classify short accounting', (string) $captured->system);
+
+        $tuned = $this->call(['thinking' => 'between_tools', 'effort' => 'medium', 'maxTokens' => 9000, 'shapeAs' => 'claude-sonnet-5-5']);
+        (new BookingHistoryClassifier($llm, $this->functions($tuned), $config))->classify($this->clusters(['b']));
         $this->assertSame('between_tools', $captured->thinking);
         $this->assertSame('medium', $captured->effort);
-        $this->assertSame(16000, $captured->maxTokens);
+        $this->assertSame(9000, $captured->maxTokens);
+        $this->assertSame('claude-sonnet-5-5', $captured->shapeAs);
+    }
+
+    /** Přepsání z voleb příkazu se předává resolveru. */
+    public function testOverrideIsPassedToTheResolver(): void
+    {
+        $override = new \Shipard\Core\Ai\AiCallOverride(connectionId: 2, model: 'claude-haiku-5-5');
+        $functions = $this->createMock(AiFunctionResolver::class);
+        $functions->expects($this->once())->method('resolve')
+            ->with('exchange.bookingHistory', $override)
+            ->willReturn($this->call());
+        $llm = $this->createMock(LlmClient::class);
+        $llm->method('streamChat')->willReturn(new LlmChatResult('[]', 1, 1, 'end_turn', 'claude-x'));
+        $config = $this->createMock(ConfigRuntime::class);
+        $config->method('cfgItem')->willReturnMap([['core.exchange.contentTags', self::TAXONOMY]]);
+
+        (new BookingHistoryClassifier($llm, $functions, $config, $override))->classify($this->clusters(['a']));
     }
 
     public function testNonJsonOutputFailsTheBatch(): void
@@ -255,12 +296,9 @@ class BookingHistoryClassifierTest extends TestCase
 
     public function testMissingBackendOrTaxonomyMeansUnavailableNotFailure(): void
     {
-        $noBackend = $this->classifier([], backend: null)->classify($this->clusters(['a']));
+        $noBackend = $this->classifier([], unresolved: true)->classify($this->clusters(['a']));
         $this->assertTrue($noBackend['unavailable']);
         $this->assertSame(0, $noBackend['calls']);
-
-        $noKey = $this->classifier([], apiKey: null)->classify($this->clusters(['a']));
-        $this->assertTrue($noKey['unavailable']);
 
         $noTaxonomy = $this->classifier([], taxonomy: [])->classify($this->clusters(['a']));
         $this->assertTrue($noTaxonomy['unavailable']);

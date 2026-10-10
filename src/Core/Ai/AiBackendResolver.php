@@ -9,12 +9,11 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Security\DsSecretCipher;
 
 /**
- * Resolves the DS-wide default AI backend and decrypts its API key.
- *
- * Extracted from the ChatController pattern (default active backend from
- * `core_ai_backends`, key decryption via DsSecretCipher) so non-chat LLM
- * consumers (dashboard summary) don't duplicate the SQL + secrets plumbing.
- * The `api_key` column is `encrypted_text` — see docs/operations/secrets.md.
+ * Loads AI connections (`core_ai_backends`: the DS-wide default or a row by
+ * id) and decrypts their API key. Used by {@see AiFunctionResolver} only —
+ * callers get a {@see ResolvedAiCall} through it, never a raw row
+ * (tasks/ai-functions.md D40). The `api_key` column is `encrypted_text` —
+ * see docs/operations/secrets.md.
  */
 class AiBackendResolver
 {
@@ -41,8 +40,8 @@ class AiBackendResolver
 
     /**
      * A specific active backend by its row id, or null when it does not
-     * exist or is inactive. Used by per-feature backend overrides
-     * (e.g. the `exchange.contentTag.backend` setting).
+     * exist or is inactive (a connection chosen on an AI function row,
+     * in a mail AI profile, or by a CLI option).
      *
      * @return array<string, mixed>|null
      */
@@ -56,43 +55,6 @@ class AiBackendResolver
             $ndx,
             1,
         );
-    }
-
-    /**
-     * Backend row → tuning parameters for `LlmChatParams`
-     * (tasks/ai-models-phase0.md F0-D7). One place for the conversion:
-     * `auto` (and NULL / empty) → null = parameter not sent; NULL
-     * temperature → null, any numeric value (including `0`) → float.
-     *
-     * Who reads what: `thinking` and `effort` go to every caller; the
-     * `temperature` key is for the mail analysis runner only (F0-D1) —
-     * chat, dashboard summary and the tag classifiers keep passing null,
-     * otherwise the `0` stored on existing rows would change their
-     * behaviour.
-     *
-     * @param array<string, mixed> $backend
-     * @return array{temperature: ?float, thinking: ?string, effort: ?string}
-     */
-    public static function tuning(array $backend): array
-    {
-        $temperature = $backend['temperature'] ?? null;
-        return [
-            'temperature' => is_numeric($temperature) ? (float) $temperature : null,
-            'thinking' => self::tuningValue($backend['thinking'] ?? null),
-            'effort' => self::tuningValue($backend['effort'] ?? null),
-        ];
-    }
-
-    private static function tuningValue(mixed $value): ?string
-    {
-        if (!is_string($value)) {
-            return null;
-        }
-        $value = trim($value);
-        // `default` je hodnota přepsání AI funkce (tasks/ai-functions.md D46)
-        // — pro řádek backendu znamená totéž co `auto`, dokud ladění
-        // backendu nezanikne.
-        return $value === '' || $value === 'auto' || $value === 'default' ? null : $value;
     }
 
     /**

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Dashboard;
 
-use Shipard\Core\Ai\AiBackendResolver;
-use Shipard\Core\Ai\LlmChatParams;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\Exception\AiFunctionException;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
+use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
 
@@ -22,9 +23,14 @@ use Shipard\Core\Logging\ErrorLogger;
  * (no tools) and upserts the cache.
  *
  * Degrades to `text = null` (frontend keeps the static count text) when the
- * feed has no actionable cards, no default backend exists, or the backend has
- * no usable API key. LLM/transport errors propagate to the caller — the SSE
- * endpoint maps them to an `error` event and nothing is cached.
+ * feed has no actionable cards or the AI function `dashboard.summary` cannot
+ * be resolved (no connection, no key, bad model — tasks/ai-functions.md
+ * D40). LLM/transport errors propagate to the caller — the SSE endpoint
+ * maps them to an `error` event and nothing is cached.
+ *
+ * The cache key is the digest hash plus the resolved model (D48): a model
+ * switched in the AI function settings regenerates the summary instead of
+ * serving the old one until the date changes.
  *
  * See docs/dashboard.md §AI shrnutí.
  */
@@ -35,17 +41,13 @@ final readonly class DashboardSummaryService
     /** Karty vstupující do digestu/promptu (nejvýše, feed je už seřazený). */
     private const int TOP_CARDS = 6;
 
-    /**
-     * A ceiling, not a budget: on thinking models the reasoning counts
-     * toward `max_tokens`; the summary length is held by the prompt
-     * (2–4 sentences; tasks/ai-models-phase0.md F0-D5).
-     */
-    private const int MAX_TOKENS = 2000;
+    /** AI funkce shrnutí (tasks/ai-functions.md D36): strop 2000 drží deklarace, bez nástrojů. */
+    public const string AI_FUNCTION = 'dashboard.summary';
 
     public function __construct(
         private DataSourceConnection $db,
         private LlmClient $llm,
-        private AiBackendResolver $backends,
+        private AiFunctionResolver $functions,
     ) {}
 
     /**
@@ -63,43 +65,28 @@ final readonly class DashboardSummaryService
         if ($this->isEmpty($digest)) {
             return ['text' => null, 'cached' => false];
         }
-        $hash = hash('sha256', json_encode($digest, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+
+        try {
+            $call = $this->functions->resolve(self::AI_FUNCTION);
+        } catch (AiFunctionException $e) {
+            // Nenastavená AI (bez připojení / klíče, špatný model) = bez
+            // shrnutí, ne chyba — klient ukáže statické county.
+            ErrorLogger::info('DashboardSummaryService: AI function unavailable — no summary', [
+                'code' => $e->errorCode,
+                'error' => $e->getMessage(),
+            ]);
+            return ['text' => null, 'cached' => false];
+        }
+        $hash = self::cacheKey($digest, $call->model);
 
         $cached = $this->readCache($language);
         if ($cached !== null && $cached['input_hash'] === $hash && $cached['text'] !== null && $cached['text'] !== '') {
             return ['text' => (string) $cached['text'], 'cached' => true];
         }
 
-        $backend = $this->backends->defaultBackend();
-        if ($backend === null) {
-            return ['text' => null, 'cached' => false];
-        }
-        try {
-            $apiKey = $this->backends->apiKey($backend);
-        } catch (\Throwable $e) {
-            ErrorLogger::warn('DashboardSummaryService: backend key decrypt failed', ['error' => $e->getMessage()]);
-            return ['text' => null, 'cached' => false];
-        }
-        if ($apiKey === null) {
-            return ['text' => null, 'cached' => false];
-        }
-
-        // Temperature is never sent (F0-D1) — existing rows carry `0` and
-        // the summary never depended on it; thinking / effort come from the
-        // backend row (F0-D7).
-        $tuning = AiBackendResolver::tuning($backend);
-        $params = new LlmChatParams(
-            provider: (string) ($backend['provider'] ?? 'anthropic'),
-            model: (string) ($backend['model'] ?? ''),
-            apiKey: $apiKey,
-            baseUrl: $backend['base_url'] !== null ? (string) $backend['base_url'] : '',
+        $params = $call->chatParams(
             system: $this->systemPrompt($language),
             messages: [['role' => 'user', 'content' => $this->userPrompt($digest)]],
-            maxTokens: self::MAX_TOKENS,
-            temperature: null,
-            tools: null,
-            thinking: $tuning['thinking'],
-            effort: $tuning['effort'],
         );
 
         $result = $this->llm->streamChat($params, $onDelta);
@@ -109,7 +96,7 @@ final readonly class DashboardSummaryService
             ErrorLogger::warn('DashboardSummaryService: incomplete model output — summary not cached', [
                 'stopReason' => $result->stopReason,
                 'model' => $result->model ?? $params->model,
-                'maxTokens' => self::MAX_TOKENS,
+                'maxTokens' => $params->maxTokens,
             ]);
             return ['text' => null, 'cached' => false];
         }
@@ -160,6 +147,17 @@ final readonly class DashboardSummaryService
             'counts'   => $counts,
             'topCards' => $topCards,
         ];
+    }
+
+    /**
+     * Klíč cache: hash digestu a modelu, kterým se shrnutí generuje (D48).
+     * Model do promptu nejde — jen do klíče.
+     *
+     * @param array<string, mixed> $digest
+     */
+    public static function cacheKey(array $digest, string $model): string
+    {
+        return hash('sha256', json_encode(['digest' => $digest, 'model' => $model], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
     }
 
     /**

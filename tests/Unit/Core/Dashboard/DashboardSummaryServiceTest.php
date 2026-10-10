@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Core\Dashboard;
 
 use PHPUnit\Framework\TestCase;
-use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\Exception\AiFunctionException;
+use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
@@ -49,18 +51,41 @@ final class DashboardSummaryServiceTest extends TestCase
     private function service(
         ?DataSourceConnection $db = null,
         ?LlmClient $llm = null,
-        ?AiBackendResolver $backends = null,
+        ?AiFunctionResolver $functions = null,
     ): DashboardSummaryService {
         return new DashboardSummaryService(
             $db ?? $this->createMock(DataSourceConnection::class),
             $llm ?? $this->createMock(LlmClient::class),
-            $backends ?? $this->createMock(AiBackendResolver::class),
+            $functions ?? $this->functions(),
         );
     }
 
-    private function hashDigest(array $digest): string
+    /** Resolver AI funkce `dashboard.summary`: hotové rozhodnutí, nebo nenastavená funkce. */
+    private function functions(?ResolvedAiCall $call = null, ?AiFunctionException $failure = null): AiFunctionResolver
     {
-        return hash('sha256', json_encode($digest, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+        $functions = $this->createMock(AiFunctionResolver::class);
+        if ($failure !== null) {
+            $functions->method('resolve')->willThrowException($failure);
+        } else {
+            $functions->method('resolve')->willReturn($call ?? $this->call());
+        }
+        return $functions;
+    }
+
+    /** @param array<string, mixed> $overrides */
+    private function call(array $overrides = []): ResolvedAiCall
+    {
+        $values = $overrides + [
+            'functionId' => 'dashboard.summary', 'platform' => 'anthropic', 'baseUrl' => '', 'apiKey' => 'sk-test',
+            'model' => 'claude-x', 'shapeAs' => null, 'catalogModel' => null, 'maxTokens' => 2000,
+            'temperature' => null, 'thinking' => null, 'effort' => null, 'connectionId' => 1, 'connectionCode' => 'default',
+        ];
+        return new ResolvedAiCall(...$values);
+    }
+
+    private function hashDigest(array $digest, string $model = 'claude-x'): string
+    {
+        return DashboardSummaryService::cacheKey($digest, $model);
     }
 
     // -------------------------------------------------------------------------
@@ -175,12 +200,6 @@ final class DashboardSummaryServiceTest extends TestCase
                     && $row['input_hash'] !== '',
             ));
 
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn([
-            'provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null,
-        ]);
-        $backends->method('apiKey')->willReturn('sk-test');
-
         $llm = $this->createMock(LlmClient::class);
         $llm->expects($this->once())->method('streamChat')
             ->willReturnCallback(static function (LlmChatParams $params, callable $onDelta): LlmChatResult {
@@ -190,7 +209,7 @@ final class DashboardSummaryServiceTest extends TestCase
             });
 
         $deltas = [];
-        $result = $this->service($db, $llm, $backends)->stream(
+        $result = $this->service($db, $llm)->stream(
             $this->sampleCards(), 'cs',
             static function (string $d) use (&$deltas): void { $deltas[] = $d; },
         );
@@ -211,65 +230,54 @@ final class DashboardSummaryServiceTest extends TestCase
                 static fn (array $row): bool => $row['text'] === 'Nové shrnutí.',
             ), '`language` = %s', 'cs');
 
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn(['provider' => 'anthropic', 'model' => 'm', 'base_url' => null]);
-        $backends->method('apiKey')->willReturn('sk-test');
-
         $llm = $this->createMock(LlmClient::class);
         $llm->method('streamChat')->willReturn(new LlmChatResult('Nové shrnutí.', 10, 5, 'end_turn', 'm'));
 
-        $result = $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
+        $result = $this->service($db, $llm)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
         $this->assertSame(['text' => 'Nové shrnutí.', 'cached' => false], $result);
     }
 
-    public function testNoBackendDegradesToNull(): void
+    /** Změna modelu funkce (D48) = jiný klíč cache: uložené shrnutí se neservíruje. */
+    public function testCacheKeyIncludesTheModel(): void
     {
-        $db = $this->createMock(DataSourceConnection::class);
-        $db->method('fetchRow')->willReturn(null);
-        $db->expects($this->never())->method('insertRow');
+        $digest = $this->service()->buildDigest($this->sampleCards(), 'cs', date('Y-m-d'));
+        $this->assertNotSame($this->hashDigest($digest, 'claude-x'), $this->hashDigest($digest, 'claude-haiku-5-5'));
 
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn(null);
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn([
+            'language' => 'cs', 'input_hash' => $this->hashDigest($digest, 'claude-x'), 'text' => 'Uložené shrnutí.',
+        ]);
+        $db->expects($this->once())->method('updateWhere');
 
         $llm = $this->createMock(LlmClient::class);
-        $llm->expects($this->never())->method('streamChat');
+        $llm->expects($this->once())->method('streamChat')
+            ->willReturn(new LlmChatResult('Nové shrnutí.', 10, 5, 'end_turn', 'claude-haiku-5-5'));
 
-        $result = $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
-        $this->assertSame(['text' => null, 'cached' => false], $result);
+        $result = $this->service($db, $llm, $this->functions($this->call(['model' => 'claude-haiku-5-5'])))
+            ->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
+        $this->assertSame(['text' => 'Nové shrnutí.', 'cached' => false], $result);
     }
 
-    public function testBackendWithoutKeyDegradesToNull(): void
+    /** Nenastavená AI funkce (bez připojení, klíče, model mimo platformu) = bez shrnutí, ne chyba. */
+    public function testUnresolvedFunctionDegradesToNull(): void
     {
-        $db = $this->createMock(DataSourceConnection::class);
-        $db->method('fetchRow')->willReturn(null);
-        $db->expects($this->never())->method('insertRow');
+        foreach ([
+            AiFunctionException::NO_CONNECTION,
+            AiFunctionException::KEY_MISSING,
+            AiFunctionException::KEY_CORRUPTED,
+            AiFunctionException::MODEL_NOT_ON_PLATFORM,
+        ] as $code) {
+            $db = $this->createMock(DataSourceConnection::class);
+            $db->method('fetchRow')->willReturn(null);
+            $db->expects($this->never())->method('insertRow');
 
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn(['provider' => 'anthropic', 'model' => 'm', 'base_url' => null]);
-        $backends->method('apiKey')->willReturn(null);
+            $llm = $this->createMock(LlmClient::class);
+            $llm->expects($this->never())->method('streamChat');
 
-        $llm = $this->createMock(LlmClient::class);
-        $llm->expects($this->never())->method('streamChat');
-
-        $result = $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
-        $this->assertSame(['text' => null, 'cached' => false], $result);
-    }
-
-    public function testKeyDecryptFailureDegradesToNull(): void
-    {
-        $db = $this->createMock(DataSourceConnection::class);
-        $db->method('fetchRow')->willReturn(null);
-        $db->expects($this->never())->method('insertRow');
-
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn(['provider' => 'anthropic', 'model' => 'm', 'base_url' => null]);
-        $backends->method('apiKey')->willThrowException(new \RuntimeException('cipher failure'));
-
-        $llm = $this->createMock(LlmClient::class);
-        $llm->expects($this->never())->method('streamChat');
-
-        $result = $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
-        $this->assertSame(['text' => null, 'cached' => false], $result);
+            $functions = $this->functions(failure: new AiFunctionException($code, 'x'));
+            $result = $this->service($db, $llm, $functions)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
+            $this->assertSame(['text' => null, 'cached' => false], $result, $code);
+        }
     }
 
     /** Useknuté / odmítnuté shrnutí (F0-D4) se necachuje a vrací text null. */
@@ -281,30 +289,19 @@ final class DashboardSummaryServiceTest extends TestCase
             $db->expects($this->never())->method('insertRow');
             $db->expects($this->never())->method('updateWhere');
 
-            $backends = $this->createMock(AiBackendResolver::class);
-            $backends->method('defaultBackend')->willReturn(['provider' => 'anthropic', 'model' => 'm', 'base_url' => null]);
-            $backends->method('apiKey')->willReturn('sk-test');
-
             $llm = $this->createMock(LlmClient::class);
             $llm->method('streamChat')->willReturn(new LlmChatResult('Dnes máte tři věci a', 10, 5, $stop, 'm'));
 
-            $result = $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
+            $result = $this->service($db, $llm)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
             $this->assertSame(['text' => null, 'cached' => false], $result, $stop);
         }
     }
 
-    /** Teplota se neposílá ani při `0` na backendu (F0-D1); thinking / effort z backendu (F0-D7). */
-    public function testTemperatureIsNeverSentAndTuningIsPassed(): void
+    /** Přepsané ladění z rozhodnutí resolveru projde beze změny (teplotu funkce nedeklaruje). */
+    public function testTuningComesFromTheResolvedCall(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturn(null);
-
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn([
-            'provider' => 'anthropic', 'model' => 'claude-x', 'base_url' => null,
-            'temperature' => '0.00', 'thinking' => 'adaptive', 'effort' => 'high',
-        ]);
-        $backends->method('apiKey')->willReturn('sk-test');
 
         $captured = null;
         $llm = $this->createMock(LlmClient::class);
@@ -315,24 +312,21 @@ final class DashboardSummaryServiceTest extends TestCase
             },
         );
 
-        $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
+        $functions = $this->functions($this->call(['thinking' => 'adaptive', 'effort' => 'high', 'shapeAs' => 'claude-sonnet-5-5']));
+        $this->service($db, $llm, $functions)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
 
         $this->assertNull($captured->temperature);
         $this->assertSame('adaptive', $captured->thinking);
         $this->assertSame('high', $captured->effort);
+        $this->assertSame('claude-sonnet-5-5', $captured->shapeAs);
     }
 
+    /** Výchozí rozhodnutí (D36): 2000 tokenů, bez teploty, ladění a nástrojů — stejné tělo jako před změnou. */
     public function testLlmParamsCarryPromptAndLimits(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturn(null);
 
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn([
-            'provider' => 'anthropic', 'model' => 'claude-x', 'base_url' => 'https://api.example.test',
-        ]);
-        $backends->method('apiKey')->willReturn('sk-test');
-
         $captured = null;
         $llm = $this->createMock(LlmClient::class);
         $llm->method('streamChat')->willReturnCallback(
@@ -342,7 +336,8 @@ final class DashboardSummaryServiceTest extends TestCase
             },
         );
 
-        $this->service($db, $llm, $backends)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
+        $functions = $this->functions($this->call(['baseUrl' => 'https://api.example.test']));
+        $this->service($db, $llm, $functions)->stream($this->sampleCards(), 'cs', static fn (string $d) => null);
 
         $this->assertInstanceOf(LlmChatParams::class, $captured);
         $this->assertSame('claude-x', $captured->model);

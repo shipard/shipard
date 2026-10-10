@@ -7,12 +7,13 @@ namespace Shipard\Api\Controller;
 use Shipard\Api\AuthContext;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
-use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiCallOverride;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\Exception\AiFunctionException;
 use Shipard\Core\Ai\Exception\LlmException;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
-use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Api\Mcp\McpInvocationContext;
 use Shipard\Api\Mcp\McpToolRegistry;
 use Shipard\Core\Config\ConfigRuntime;
@@ -20,8 +21,6 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Logging\ErrorLogger;
-use Shipard\Core\Security\DsSecretCipher;
-use Shipard\Module\Core\Ai\AIBackendDocument;
 
 /**
  * API controller for chat conversation management (Phase 1).
@@ -47,8 +46,10 @@ class ChatController
     private const STATE_DELETED        = 90;
     private const DEFAULT_LIMIT        = 50;
     private const MAX_LIMIT            = 200;
-    private const BACKENDS_TABLE       = 'core_ai_backends';
     private const MAX_TOOL_ITERATIONS  = 8;
+
+    /** AI funkce chatu (tasks/ai-functions.md D36): model, připojení a ladění určuje AiFunctionResolver. */
+    public const string AI_FUNCTION    = 'chat.default';
 
     /**
      * Fallback id sekcí pro validaci `section`, když chybí kompilovaná
@@ -74,6 +75,7 @@ class ChatController
         private ?LlmClient $llm = null,
         private array $tables = [],
         private ?McpToolRegistry $toolRegistry = null,
+        private ?AiFunctionResolver $functions = null,
     ) {}
 
     /**
@@ -281,56 +283,27 @@ class ChatController
         // Persist the user message before calling the model (resilience).
         $this->insertMessage($id, $userId, 'user', 'user_text', [['type' => 'text', 'text' => $text]], $this->nextSeq($id));
 
-        $backend = $this->resolveBackend($conversation);
-        if ($backend === null) {
-            return Response::error('NO_BACKEND', 'No active AI backend is configured', 503);
-        }
-
-        // Pojistka katalogu (tasks/ai-model-catalog.md D35, #85 D29): model,
-        // jehož tool smyčku klient neumí obsloužit (bez parametru přemýšlí
-        // a thinking bloky by se musely vracet — fáze 4), se nevolá.
-        // `chatToolLoop` null (nevíme) i true = beze změny. Uživatelská
-        // zpráva je už uložená, stejně jako u NO_BACKEND.
-        $model = (string) ($backend['model'] ?? '');
-        if ($this->chatUnsupported($model)) {
-            return Response::error(
-                'AI_MODEL_NOT_SUPPORTED_FOR_CHAT',
-                "The assistant cannot work with model {$model} yet; an administrator has to select another model for the AI backend",
-                503,
-                [['field' => 'model', 'value' => $model]],
-            );
-        }
-
+        // Model, připojení a ladění určuje AI funkce `chat.default`
+        // (tasks/ai-functions.md D40): deklarace (strop 4096, bez teploty)
+        // → řádek funkce v Nastavení → mapa úrovní. Konverzace přišpendlená
+        // na připojení ho přepisuje; chybějící nebo neaktivní připojení
+        // padá na výchozí (chování před resolverem). Model bez tool smyčky
+        // odmítne resolver (zobecněná pojistka D35, fáze 4 ji zruší).
+        // Uživatelská zpráva je už uložená, stejně jako dřív u NO_BACKEND.
         try {
-            $apiKey = $this->resolveApiKey($backend);
-        } catch (\Throwable $e) {
-            ErrorLogger::warn('ChatController: backend key decrypt failed', ['error' => $e->getMessage()]);
-            return Response::error('BACKEND_KEY_ERROR', 'Cannot read backend API key', 500);
+            $call = $this->resolveCall($conversation);
+        } catch (AiFunctionException $e) {
+            return $this->aiFunctionError($e);
         }
 
         // Offer the model only read-only tools (security invariant); the loop
         // also re-checks isReadOnly() before executing any requested tool.
         [$tools, $toolDefs] = $this->readOnlyTools();
 
-        // Teplota se neposílá nikdy (tasks/ai-models-phase0.md F0-D1);
-        // thinking / effort z backendu jen předáváme (F0-D7). Tool smyčka
-        // na modelech s thinking chce vracet thinking bloky — to je fáze 4
-        // (#85), proto chat zůstává na výchozím backendu se Sonnetem 4.6.
-        $tuning = AiBackendResolver::tuning($backend);
-        $params = new LlmChatParams(
-            provider: (string) ($backend['provider'] ?? 'anthropic'),
-            model: (string) ($backend['model'] ?? ''),
-            apiKey: $apiKey,
-            baseUrl: $backend['base_url'] !== null ? (string) $backend['base_url'] : '',
+        $params = $call->chatParams(
             system: $this->systemPrompt($conversation['section'] ?? null),
             messages: $this->buildAnthropicMessages($id),
-            // 0/NULL na backendu = nenastaveno — chat drží vlastní skromný
-            // default, nula nesmí odejít do API (HTTP 400).
-            maxTokens: ((int) ($backend['max_tokens'] ?? 0)) ?: 4096,
-            temperature: null,
             tools: $toolDefs !== [] ? $toolDefs : null,
-            thinking: $tuning['thinking'],
-            effort: $tuning['effort'],
         );
 
         $ctx = new McpInvocationContext($auth, $this->db, $this->tables, $this->config);
@@ -515,6 +488,7 @@ class ChatController
             tools: $base->tools,
             thinking: $base->thinking,
             effort: $base->effort,
+            shapeAs: $base->shapeAs,
         );
     }
 
@@ -597,60 +571,62 @@ class ChatController
         );
     }
 
-    /** Katalog modelů říká `chatToolLoop: false` (D35); null / true / model mimo katalog = povoleno. */
-    private function chatUnsupported(string $model): bool
+    private function functions(): AiFunctionResolver
     {
-        return ModelCatalog::fromConfig($this->config)->find($model)?->chatToolLoop === false;
+        return $this->functions ??= new AiFunctionResolver($this->db, $this->config, $this->dsConfig);
     }
 
     /**
-     * Backend = conversation.backend if set and active, else the default active
-     * backend. Returns null when no active backend exists.
+     * Volání funkce chatu; `conversation.backend` (přišpendlené připojení)
+     * je přepsání — když neexistuje nebo je neaktivní, platí výchozí
+     * připojení jako před resolverem.
      *
      * @param array<string, mixed> $conversation
-     * @return array<string, mixed>|null
+     * @throws AiFunctionException
      */
-    private function resolveBackend(array $conversation): ?array
+    private function resolveCall(array $conversation): \Shipard\Core\Ai\ResolvedAiCall
     {
-        $backendId = isset($conversation['backend']) && $conversation['backend'] !== null
-            ? (int) $conversation['backend']
-            : 0;
-
-        if ($backendId > 0) {
-            $row = $this->db->fetchRow(
-                'SELECT * FROM `' . self::BACKENDS_TABLE . '` WHERE `id` = %i AND `is_active` = %i LIMIT 1',
-                $backendId,
-                1,
-            );
-            if ($row !== null) {
-                return $row;
+        $pinned = isset($conversation['backend']) && $conversation['backend'] !== null ? (int) $conversation['backend'] : 0;
+        if ($pinned > 0) {
+            try {
+                return $this->functions()->resolve(self::AI_FUNCTION, new AiCallOverride(connectionId: $pinned));
+            } catch (AiFunctionException $e) {
+                if ($e->errorCode !== AiFunctionException::NO_CONNECTION) {
+                    throw $e;
+                }
             }
         }
-
-        return $this->db->fetchRow(
-            'SELECT * FROM `' . self::BACKENDS_TABLE . '` WHERE `is_default` = %i AND `is_active` = %i LIMIT 1',
-            1,
-            1,
-        );
+        return $this->functions()->resolve(self::AI_FUNCTION);
     }
 
     /**
-     * Decrypts the backend API key. Builds the cipher only when a key is set,
-     * so backends without a key (or test fixtures) need no secrets infra.
-     *
-     * @param array<string, mixed> $backend
+     * Chyba resolveru → odpověď s dnešními kódy pro frontend: `NO_BACKEND`
+     * (bez připojení nebo klíče), `BACKEND_KEY_ERROR` (klíč nejde přečíst),
+     * `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` (model bez tool smyčky, D35),
+     * `AI_NOT_CONFIGURED` (ostatní chyby nastavení funkce).
      */
-    private function resolveApiKey(array $backend): ?string
+    private function aiFunctionError(AiFunctionException $e): Response
     {
-        if (!isset($backend['api_key']) || $backend['api_key'] === null || $backend['api_key'] === '') {
-            return null;
+        switch ($e->errorCode) {
+            case AiFunctionException::NO_CONNECTION:
+            case AiFunctionException::KEY_MISSING:
+                return Response::error('NO_BACKEND', 'No active AI connection with an API key is configured', 503);
+            case AiFunctionException::SECRETS_UNAVAILABLE:
+            case AiFunctionException::KEY_CORRUPTED:
+                ErrorLogger::warn('ChatController: AI connection key unavailable', ['code' => $e->errorCode, 'error' => $e->getMessage()]);
+                return Response::error('BACKEND_KEY_ERROR', 'Cannot read the AI connection API key', 500);
+            case AiFunctionException::MODEL_NOT_SUPPORTED_FOR_FUNCTION:
+                $model = (string) ($e->details['model'] ?? '');
+                return Response::error(
+                    'AI_MODEL_NOT_SUPPORTED_FOR_CHAT',
+                    "The assistant cannot work with model {$model} yet; an administrator has to select another model for the AI function " . self::AI_FUNCTION,
+                    503,
+                    [['field' => 'model', 'value' => $model]],
+                );
+            default:
+                ErrorLogger::warn('ChatController: AI function cannot be resolved', ['code' => $e->errorCode, 'error' => $e->getMessage()]);
+                return Response::error('AI_NOT_CONFIGURED', $e->getMessage(), 503, [['field' => 'code', 'value' => $e->errorCode]]);
         }
-        if ($this->dsConfig === null) {
-            throw new \RuntimeException('DataSourceConfig is required to decrypt the backend API key');
-        }
-        $doc = new AIBackendDocument();
-        $doc->setSecretCipher(DsSecretCipher::forConfig($this->dsConfig));
-        return $doc->decryptApiKey($backend);
     }
 
     /**

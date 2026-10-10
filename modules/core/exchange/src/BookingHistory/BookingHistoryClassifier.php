@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\BookingHistory;
 
-use Shipard\Core\Ai\AiBackendResolver;
-use Shipard\Core\Ai\LlmChatParams;
+use Shipard\Core\Ai\AiCallOverride;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\Exception\AiFunctionException;
+use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Ai\LlmClient;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Logging\ErrorLogger;
@@ -29,9 +31,11 @@ use Shipard\Module\Core\Exchange\Enrich\ContentTagPrompt;
  *    neklasifikované a report to přizná,
  *  - **enum je autorita** — štítek mimo taxonomii se zahodí.
  *
- * Backend: `$backendNdx` (z `--backend` nebo settings
- * `exchange.contentTag.backend`), jinak default backend DS — stejná
- * kaskáda jako D18.
+ * Model, připojení a ladění určuje AI funkce `exchange.bookingHistory`
+ * (tasks/ai-functions.md D36, D40): deklarace (strop 16000 — dávka 50
+ * textů × ~20 tokenů odpovědi, na modelech s thinking i přemýšlení)
+ * → řádek funkce v Nastavení → mapa úrovní; `$override` z voleb příkazu
+ * (`--backend`, `--model`, `--model-like`) má přednost.
  */
 class BookingHistoryClassifier
 {
@@ -40,12 +44,7 @@ class BookingHistoryClassifier
 
     public const DEFAULT_BATCH_SIZE = 50;
 
-    /**
-     * Dávka 50 textů × ~20 tokenů odpovědi + režie JSON. Strop, ne cena:
-     * na modelech s thinking se přemýšlení počítá do `max_tokens`, proto
-     * řádově víc než délka odpovědi (tasks/ai-models-phase0.md F0-D5).
-     */
-    private const MAX_TOKENS = 16000;
+    public const string AI_FUNCTION = 'exchange.bookingHistory';
 
     private const SYSTEM_PROMPT = <<<'PROMPT'
         You classify short accounting line-item texts into a fixed semantic
@@ -66,9 +65,9 @@ class BookingHistoryClassifier
 
     public function __construct(
         private readonly LlmClient $llm,
-        private readonly AiBackendResolver $backends,
+        private readonly AiFunctionResolver $functions,
         private readonly ?ConfigRuntime $config = null,
-        private readonly ?int $backendNdx = null,
+        private readonly ?AiCallOverride $override = null,
         private readonly ?TagCache $cache = null,
         private readonly int $batchSize = self::DEFAULT_BATCH_SIZE,
     ) {}
@@ -114,9 +113,9 @@ class BookingHistoryClassifier
         }
 
         $taxonomy = $this->taxonomy();
-        $params = $taxonomy !== [] ? $this->baseParams() : null;
-        if ($params === null) {
-            // Chybějící taxonomie / backend / klíč — ne chyba běhu, jen
+        $call = $taxonomy !== [] ? $this->resolveCall() : null;
+        if ($call === null) {
+            // Chybějící taxonomie / připojení / klíč — ne chyba běhu, jen
             // nedostupná klasifikace (report pojede z reverzu).
             $result['unavailable'] = true;
             return $result;
@@ -125,7 +124,7 @@ class BookingHistoryClassifier
         $done = 0;
         foreach (array_chunk($todo, max(1, $this->batchSize)) as $batch) {
             $result['calls']++;
-            $tags = $this->classifyBatch($batch, $taxonomy, $params);
+            $tags = $this->classifyBatch($batch, $taxonomy, $call);
             $done += count($batch);
             if ($tags === null) {
                 $result['failedBatches']++;
@@ -147,33 +146,22 @@ class BookingHistoryClassifier
      * @param array<string, mixed> $taxonomy
      * @return array<string, string|null>|null null = dávka selhala
      */
-    private function classifyBatch(array $batch, array $taxonomy, LlmChatParams $params): ?array
+    private function classifyBatch(array $batch, array $taxonomy, ResolvedAiCall $call): ?array
     {
         try {
             $prompt = $this->userPrompt($batch, $taxonomy);
-            $result = $this->llm->streamChat(
-                new LlmChatParams(
-                    provider: $params->provider,
-                    model: $params->model,
-                    apiKey: $params->apiKey,
-                    baseUrl: $params->baseUrl,
-                    system: self::SYSTEM_PROMPT,
-                    messages: [['role' => 'user', 'content' => $prompt]],
-                    maxTokens: self::MAX_TOKENS,
-                    temperature: null,
-                    tools: null,
-                    thinking: $params->thinking,
-                    effort: $params->effort,
-                ),
-                static function (string $delta): void {},
+            $params = $call->chatParams(
+                system: self::SYSTEM_PROMPT,
+                messages: [['role' => 'user', 'content' => $prompt]],
             );
+            $result = $this->llm->streamChat($params, static function (string $delta): void {});
             if (!$result->isComplete()) {
                 // Useknutá nebo odmítnutá odpověď (F0-D4) = selhaná dávka,
                 // texty zůstanou neklasifikované a cache se neotráví.
                 ErrorLogger::warn('BookingHistoryClassifier: incomplete model output — batch failed', [
                     'stopReason' => $result->stopReason,
                     'model' => $result->model ?? $params->model,
-                    'maxTokens' => self::MAX_TOKENS,
+                    'maxTokens' => $params->maxTokens,
                 ]);
                 return null;
             }
@@ -267,41 +255,21 @@ class BookingHistoryClassifier
     }
 
     /**
-     * Backend + klíč jednou pro celý běh (ne per dávku) — jinak by se
-     * dešifrování klíče opakovalo u každého volání. Teplota se neposílá
-     * nikdy (F0-D1); thinking / effort z backendu (F0-D7).
+     * Rozhodnutí o volání jednou pro celý běh (ne per dávku) — jinak by se
+     * dešifrování klíče opakovalo u každého volání.
      */
-    private function baseParams(): ?LlmChatParams
+    private function resolveCall(): ?ResolvedAiCall
     {
         try {
-            $backend = $this->backendNdx !== null
-                ? $this->backends->backendByNdx($this->backendNdx)
-                : $this->backends->defaultBackend();
-            if ($backend === null) {
-                return null;
-            }
-            $apiKey = $this->backends->apiKey($backend);
-            if ($apiKey === null) {
-                return null;
-            }
-            $tuning = AiBackendResolver::tuning($backend);
-            return new LlmChatParams(
-                provider: (string) ($backend['provider'] ?? 'anthropic'),
-                model: (string) ($backend['model'] ?? ''),
-                apiKey: $apiKey,
-                baseUrl: isset($backend['base_url']) && $backend['base_url'] !== null
-                    ? (string) $backend['base_url']
-                    : '',
-                system: self::SYSTEM_PROMPT,
-                messages: [],
-                maxTokens: self::MAX_TOKENS,
-                temperature: null,
-                tools: null,
-                thinking: $tuning['thinking'],
-                effort: $tuning['effort'],
-            );
+            return $this->functions->resolve(self::AI_FUNCTION, $this->override);
+        } catch (AiFunctionException $e) {
+            ErrorLogger::warn('BookingHistoryClassifier: AI function unavailable — classification skipped', [
+                'code' => $e->errorCode,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
         } catch (\Throwable $e) {
-            ErrorLogger::logException($e, 'BookingHistoryClassifier: backend unavailable');
+            ErrorLogger::logException($e, 'BookingHistoryClassifier: AI function resolution failed');
             return null;
         }
     }

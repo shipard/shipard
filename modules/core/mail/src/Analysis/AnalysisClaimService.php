@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail\Analysis;
 
+use Shipard\Core\Ai\AiCallOverride;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\Exception\AiFunctionException;
+use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
-use Shipard\Core\Security\DsSecretCipher;
-use Shipard\Core\Security\Exception\InvalidCiphertextException;
-use Shipard\Core\Security\Exception\SecretsKeyInsecureException;
-use Shipard\Core\Security\Exception\SecretsKeyMissingException;
-use Shipard\Module\Core\Ai\AIBackendDocument;
 
 /**
  * Rezervace zprávy k analýze (`core_mail_analysis_claims`) — tělo
@@ -20,9 +19,12 @@ use Shipard\Module\Core\Ai\AIBackendDocument;
  *
  * `claim()`: v transakci `SELECT … FOR UPDATE` na řádku zprávy (serializuje
  * souběžné claimy — tabulka claimů nemá partial unique), ověří stav 10
- * a gate předzpracování, odmítne aktivní claim, vybere profil a backend,
- * dešifruje klíč backendu, vloží claim a přepne `analysis_state` 10 → 20.
- * `docState` (workflow) se nemění. Spec tasks/mail-phase3a.md §3.2.
+ * a gate předzpracování, odmítne aktivní claim, vybere profil, nechá
+ * {@see AiFunctionResolver} složit volání funkce `mail.extraction`
+ * s přepsáním z profilu (připojení, model, ladění, strop tokenů —
+ * tasks/ai-functions.md D4, D40; klíč dešifrovaný), vloží claim a přepne
+ * `analysis_state` 10 → 20. `docState` (workflow) se nemění.
+ * Spec tasks/mail-phase3a.md §3.2.
  */
 class AnalysisClaimService
 {
@@ -30,15 +32,27 @@ class AnalysisClaimService
     public const MIN_LEASE_SECONDS = 60;
     public const MAX_LEASE_SECONDS = 900;
 
+    public const string AI_FUNCTION = 'mail.extraction';
+
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
-    private const BACKENDS_TABLE = 'core_ai_backends';
     private const PROFILES_TABLE = 'core_mail_ai_profiles';
     private const CLAIMS_TABLE = 'core_mail_analysis_claims';
+
+    private ?AiFunctionResolver $functions;
 
     public function __construct(
         private readonly DataSourceConnection $db,
         private readonly DataSourceConfig $config,
-    ) {}
+        private readonly ?ConfigRuntime $configRuntime = null,
+        ?AiFunctionResolver $functions = null,
+    ) {
+        $this->functions = $functions;
+    }
+
+    private function functions(): AiFunctionResolver
+    {
+        return $this->functions ??= new AiFunctionResolver($this->db, $this->configRuntime, $this->config);
+    }
 
     public static function clampLeaseSeconds(?int $requested): int
     {
@@ -116,44 +130,12 @@ class AnalysisClaimService
                     409,
                 );
             }
-            $backend = $this->resolveBackend((int) $profile['backend']);
-            if ($backend === null) {
-                throw new AnalysisClaimException(
-                    AnalysisClaimException::NO_BACKEND,
-                    'Profile references a backend that is missing or inactive',
-                    409,
-                );
-            }
-
-            // Decrypt api_key přes AIBackendDocument — single source of truth
+            // Připojení, model, ladění a klíč: funkce mail.extraction
+            // s přepsáním z profilu (profil → řádek funkce → deklarace).
             try {
-                $cipher = DsSecretCipher::forConfig($this->config);
-            } catch (SecretsKeyMissingException | SecretsKeyInsecureException $e) {
-                throw new AnalysisClaimException(
-                    AnalysisClaimException::SECRETS_UNAVAILABLE,
-                    'Server cannot decrypt backend API key: ' . $e->getMessage(),
-                    500,
-                    $e,
-                );
-            }
-            $backendDoc = new AIBackendDocument();
-            $backendDoc->setSecretCipher($cipher);
-            try {
-                $apiKey = $backendDoc->decryptApiKey($backend);
-            } catch (InvalidCiphertextException $e) {
-                throw new AnalysisClaimException(
-                    AnalysisClaimException::BACKEND_KEY_CORRUPTED,
-                    'Stored API key cannot be decrypted (corrupted or wrong secrets.key)',
-                    500,
-                    $e,
-                );
-            }
-            if ($apiKey === null || $apiKey === '') {
-                throw new AnalysisClaimException(
-                    AnalysisClaimException::BACKEND_KEY_MISSING,
-                    "Backend '{$backend['backend_id']}' has no API key set. Run ai-backend-set-key.",
-                    409,
-                );
+                $call = $this->functions()->resolve(self::AI_FUNCTION, AiCallOverride::fromRow($profile));
+            } catch (AiFunctionException $e) {
+                throw self::claimExceptionFrom($e);
             }
 
             // Vytvoř claim
@@ -194,7 +176,25 @@ class AnalysisClaimService
             );
         }
 
-        return new AnalysisClaim($claimId, $claimToken, $expiresAt, $profile, $backend, $apiKey);
+        return new AnalysisClaim($claimId, $claimToken, $expiresAt, $profile, $call);
+    }
+
+    /**
+     * Kódy resolveru → dnešní kódy claimu: bez připojení `NO_BACKEND`,
+     * klíč `BACKEND_KEY_MISSING` / `SECRETS_UNAVAILABLE` /
+     * `BACKEND_KEY_CORRUPTED`, špatný model `BACKEND_CONFIG_INVALID` (D48).
+     * Všechno jsou chyby konfigurace — zpráva zůstává ve frontě.
+     */
+    public static function claimExceptionFrom(AiFunctionException $e): AnalysisClaimException
+    {
+        [$code, $status] = match ($e->errorCode) {
+            AiFunctionException::NO_CONNECTION => [AnalysisClaimException::NO_BACKEND, 409],
+            AiFunctionException::KEY_MISSING => [AnalysisClaimException::BACKEND_KEY_MISSING, 409],
+            AiFunctionException::SECRETS_UNAVAILABLE => [AnalysisClaimException::SECRETS_UNAVAILABLE, 500],
+            AiFunctionException::KEY_CORRUPTED => [AnalysisClaimException::BACKEND_KEY_CORRUPTED, 500],
+            default => [AnalysisClaimException::BACKEND_CONFIG_INVALID, 409],
+        };
+        return new AnalysisClaimException($code, $e->getMessage(), $status, $e);
     }
 
     /**
@@ -265,19 +265,6 @@ class AnalysisClaimService
             'SELECT * FROM %n WHERE is_default = %i AND is_active = %i LIMIT 1',
             self::PROFILES_TABLE,
             1,
-            1,
-        );
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    private function resolveBackend(int $backendNdx): ?array
-    {
-        return $this->db->fetchRow(
-            'SELECT * FROM %n WHERE id = %i AND is_active = %i LIMIT 1',
-            self::BACKENDS_TABLE,
-            $backendNdx,
             1,
         );
     }

@@ -9,6 +9,9 @@ use Shipard\Api\AuthContext;
 use Shipard\Api\Controller\ChatController;
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiFunctionRegistry;
+use Shipard\Core\Ai\AiFunctionResolver;
 use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Api\Mcp\McpInvocationContext;
 use Shipard\Api\Mcp\McpTool;
@@ -432,6 +435,39 @@ class ChatControllerTest extends TestCase
         return $db;
     }
 
+    /**
+     * Resolver funkce `chat.default` (tasks/ai-functions.md D40) mimo DB
+     * a šifrování: připojení z $backend (null = žádné), klíč `sk-test`,
+     * model z řádku funkce ($model) nebo z mapy úrovní (Sonnet 4.6).
+     */
+    private function functions(?array $backend, ?string $model = null, ?ConfigRuntime $config = null): AiFunctionResolver
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn($model !== null ? ['function_id' => 'chat.default', 'model' => $model] : null);
+        $backends = $this->createMock(AiBackendResolver::class);
+        $backends->method('defaultBackend')->willReturn($backend);
+        $backends->method('backendByNdx')->willReturn($backend);
+        $backends->method('apiKey')->willReturn('sk-test');
+        return new AiFunctionResolver($db, $config ?? $this->aiConfig(), null, null, null, $backends);
+    }
+
+    /** ConfigRuntime s deklarací chat.default a katalogem, mapou úrovní a platformami ze skutečných souborů v repu. */
+    private function aiConfig(): ConfigRuntime
+    {
+        $configDir = dirname(__DIR__, 4) . '/modules/core/ai/config';
+        $items = [
+            AiFunctionRegistry::CFG_ITEM => [
+                'chat.default' => ['name' => 'Chat', 'tier' => 'balanced', 'defaults' => ['maxTokens' => 4096], 'requires' => ['tools']],
+            ],
+            ModelCatalog::CFG_ITEM => JsoncParser::parseFile($configDir . '/models.jsonc'),
+            ModelCatalog::TIERS_CFG_ITEM => JsoncParser::parseFile($configDir . '/tiers.jsonc'),
+            AiFunctionResolver::PLATFORMS_CFG_ITEM => JsoncParser::parseFile($configDir . '/platforms.jsonc'),
+        ];
+        $cfg = $this->createMock(ConfigRuntime::class);
+        $cfg->method('cfgItem')->willReturnCallback(static fn (string $id): mixed => $items[$id] ?? null);
+        return $cfg;
+    }
+
     private function runProducer(Response $response): string
     {
         $ref = new \ReflectionClass($response);
@@ -451,7 +487,7 @@ class ChatControllerTest extends TestCase
     {
         $inserts = [];
         $db = $this->streamDb($inserts, self::BACKEND);
-        $ctrl = new ChatController($db, null, null, new FakeLlmClient(['Ahoj', ', světe']));
+        $ctrl = new ChatController($db, null, null, new FakeLlmClient(['Ahoj', ', světe']), [], null, $this->functions(self::BACKEND));
 
         $response = $ctrl->sendMessage(
             $this->auth(),
@@ -475,20 +511,25 @@ class ChatControllerTest extends TestCase
         $this->assertSame(7, $inserts[1]['tokens_output']);
     }
 
-    public function testSendMessageZeroMaxTokensFallsBackToChatDefault(): void
+    public function testParamsComeFromTheAiFunction(): void
     {
-        // max_tokens = 0 na backendu znamená „nenastaveno" — chat nesmí
-        // poslat nulu do API, drží vlastní default 4096.
+        // Deklarace chat.default (tasks/ai-functions.md D36): strop 4096,
+        // bez teploty a ladění, model z mapy úrovní (Sonnet 4.6) — stejné
+        // tělo jako před resolverem.
         $inserts = [];
-        $backend = ['max_tokens' => 0] + self::BACKEND;
-        $db = $this->streamDb($inserts, $backend);
+        $db = $this->streamDb($inserts, self::BACKEND);
         $llm = new ScriptedLlmClient([$this->finalResult('Ahoj.')]);
-        $ctrl = new ChatController($db, null, null, $llm);
+        $ctrl = new ChatController($db, null, null, $llm, [], null, $this->functions(self::BACKEND));
 
         $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj'])));
 
         $this->assertNotNull($llm->lastParams);
         $this->assertSame(4096, $llm->lastParams->maxTokens);
+        $this->assertSame('claude-sonnet-4-6', $llm->lastParams->model);
+        $this->assertSame('sk-test', $llm->lastParams->apiKey);
+        $this->assertNull($llm->lastParams->temperature);
+        $this->assertNull($llm->lastParams->thinking);
+        $this->assertNull($llm->lastParams->effort);
     }
 
     // -------------------------------------------------------------------
@@ -500,7 +541,7 @@ class ChatControllerTest extends TestCase
         $inserts = [];
         $db = $this->streamDb($inserts, self::BACKEND, 'accounting');
         $llm = new ScriptedLlmClient([$this->finalResult('Ahoj.')]);
-        $ctrl = new ChatController($db, $this->configRuntime(), null, $llm);
+        $ctrl = new ChatController($db, $this->configRuntime(), null, $llm, [], null, $this->functions(self::BACKEND));
 
         $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj'])));
 
@@ -521,7 +562,7 @@ class ChatControllerTest extends TestCase
         $inserts = [];
         $db = $this->streamDb($inserts, self::BACKEND, 'system');
         $llm = new ScriptedLlmClient([$this->finalResult('Ahoj.')]);
-        $ctrl = new ChatController($db, $this->configRuntime(), null, $llm);
+        $ctrl = new ChatController($db, $this->configRuntime(), null, $llm, [], null, $this->functions(self::BACKEND));
 
         $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj'])));
 
@@ -534,7 +575,7 @@ class ChatControllerTest extends TestCase
         $inserts = [];
         $db = $this->streamDb($inserts, self::BACKEND);
         $llm = new ScriptedLlmClient([$this->finalResult('Ahoj.')]);
-        $ctrl = new ChatController($db, $this->configRuntime(), null, $llm);
+        $ctrl = new ChatController($db, $this->configRuntime(), null, $llm, [], null, $this->functions(self::BACKEND));
 
         $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj'])));
 
@@ -547,7 +588,7 @@ class ChatControllerTest extends TestCase
         $db = $this->streamDb($inserts, self::BACKEND);
         // Throws before emitting any delta → no partial assistant text.
         $fake = new FakeLlmClient([], new LlmApiException(500, 'api_error', 'boom'));
-        $ctrl = new ChatController($db, null, null, $fake);
+        $ctrl = new ChatController($db, null, null, $fake, [], null, $this->functions(self::BACKEND));
 
         $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
         $out = $this->runProducer($response);
@@ -563,17 +604,6 @@ class ChatControllerTest extends TestCase
     // Pojistka katalogu modelů (tasks/ai-model-catalog.md D35)
     // -------------------------------------------------------------------
 
-    /** ConfigRuntime jen s katalogem modelů ze skutečného souboru v repu. */
-    private function configWithCatalog(): ConfigRuntime
-    {
-        $models = JsoncParser::parseFile(dirname(__DIR__, 4) . '/modules/core/ai/config/models.jsonc');
-        $cfg = $this->createMock(ConfigRuntime::class);
-        $cfg->method('cfgItem')->willReturnCallback(
-            fn (string $id) => $id === ModelCatalog::CFG_ITEM ? $models : null,
-        );
-        return $cfg;
-    }
-
     /** @return array<string, mixed> JSON payload odpovědi */
     private function payloadOf(Response $response): array
     {
@@ -584,10 +614,11 @@ class ChatControllerTest extends TestCase
     public function testSendMessageRefusesModelWithoutChatToolLoop(): void
     {
         $inserts = [];
-        $db = $this->streamDb($inserts, ['model' => 'claude-sonnet-5-5'] + self::BACKEND);
+        $db = $this->streamDb($inserts, self::BACKEND);
         // Kdyby se model zavolal, fake vyhodí výjimku — ale k volání nesmí dojít.
         $llm = new FakeLlmClient([], new \LogicException('model must not be called'));
-        $ctrl = new ChatController($db, $this->configWithCatalog(), null, $llm);
+        // Model Sonnet 5.5 nastavený u funkce chat.default (řádek funkce).
+        $ctrl = new ChatController($db, null, null, $llm, [], null, $this->functions(self::BACKEND, 'claude-sonnet-5-5'));
 
         $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
 
@@ -607,11 +638,10 @@ class ChatControllerTest extends TestCase
             'claude-sonnet-4-6'          => 'chatToolLoop true',
             'claude-sonnet-4-6-20260217' => 'datová přípona',
             'claude-opus-4-7'            => 'položka jen s cenami (chatToolLoop null)',
-            'claude-test'                => 'model mimo katalog',
         ] as $model => $why) {
             $inserts = [];
-            $db = $this->streamDb($inserts, ['model' => $model] + self::BACKEND);
-            $ctrl = new ChatController($db, $this->configWithCatalog(), null, new FakeLlmClient(['Ahoj']));
+            $db = $this->streamDb($inserts, self::BACKEND);
+            $ctrl = new ChatController($db, null, null, new FakeLlmClient(['Ahoj']), [], null, $this->functions(self::BACKEND, $model));
 
             $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
 
@@ -619,12 +649,41 @@ class ChatControllerTest extends TestCase
             $this->assertStringContainsString('event: message-complete', $this->runProducer($response), $why);
         }
 
-        // Bez compiled configu (katalog prázdný) pojistka nic neblokuje.
+        // Model mimo katalog bez model_like (D43) nejde sestavit — AI_NOT_CONFIGURED,
+        // uživatelská zpráva zůstává uložená.
         $inserts = [];
-        $db = $this->streamDb($inserts, ['model' => 'claude-sonnet-5-5'] + self::BACKEND);
-        $ctrl = new ChatController($db, null, null, new FakeLlmClient(['Ahoj']));
-        $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
-        $this->assertSame(200, $this->statusOf($response));
+        $db = $this->streamDb($inserts, self::BACKEND);
+        $ctrl = new ChatController($db, null, null, new FakeLlmClient(['Ahoj']), [], null, $this->functions(self::BACKEND, 'claude-test-x'));
+        \Shipard\Core\Logging\ErrorLogger::setLogLevel('error');
+        try {
+            $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
+        } finally {
+            \Shipard\Core\Logging\ErrorLogger::resetForTesting();
+        }
+        $this->assertSame(503, $this->statusOf($response));
+        $this->assertSame('AI_NOT_CONFIGURED', $this->payloadOf($response)['error']['code']);
+        $this->assertCount(1, $inserts);
+    }
+
+    public function testSendMessageWithoutCompiledConfigIsNotConfigured(): void
+    {
+        // Bez compiled configu (registr funkcí prázdný) chat volání nesestaví —
+        // srozumitelná chyba místo tichého výchozího modelu.
+        $inserts = [];
+        $db = $this->streamDb($inserts, self::BACKEND);
+        $empty = $this->createMock(ConfigRuntime::class);
+        $empty->method('cfgItem')->willReturn(null);
+        $ctrl = new ChatController($db, null, null, new FakeLlmClient(['Ahoj']), [], null, $this->functions(self::BACKEND, null, $empty));
+
+        \Shipard\Core\Logging\ErrorLogger::setLogLevel('error');
+        try {
+            $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
+        } finally {
+            \Shipard\Core\Logging\ErrorLogger::resetForTesting();
+        }
+
+        $this->assertSame(503, $this->statusOf($response));
+        $this->assertSame('AI_NOT_CONFIGURED', $this->payloadOf($response)['error']['code']);
     }
 
     public function testSendMessageWithoutLlmReturns503(): void
@@ -641,12 +700,13 @@ class ChatControllerTest extends TestCase
     public function testSendMessageNoActiveBackendReturns503(): void
     {
         $inserts = [];
-        $db = $this->streamDb($inserts, null); // backends query → null
-        $ctrl = new ChatController($db, null, null, new FakeLlmClient(['x']));
+        $db = $this->streamDb($inserts, null);
+        $ctrl = new ChatController($db, null, null, new FakeLlmClient(['x']), [], null, $this->functions(null)); // žádné připojení
 
         $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
 
         $this->assertSame(503, $this->statusOf($response));
+        $this->assertSame('NO_BACKEND', $this->payloadOf($response)['error']['code']);
         $this->assertCount(1, $inserts); // user message persisted before backend resolution
     }
 
@@ -714,7 +774,7 @@ class ChatControllerTest extends TestCase
             $this->toolUseResult('tu1', 'persons_search', ['query' => 'Acme']),
             $this->finalResult('Našel jsem Acme.'),
         ]);
-        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read, $write));
+        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read, $write), $this->functions(self::BACKEND));
 
         $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Najdi Acme']));
         $out = $this->runProducer($response);
@@ -756,7 +816,7 @@ class ChatControllerTest extends TestCase
             ['type' => 'tool_use', 'id' => 't2', 'name' => 'documents_search', 'input' => []],
         ]);
         $llm = new ScriptedLlmClient([$multi, $this->finalResult('Hotovo.')]);
-        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($a, $b));
+        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($a, $b), $this->functions(self::BACKEND));
 
         $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'x'])));
 
@@ -777,7 +837,7 @@ class ChatControllerTest extends TestCase
             $this->toolUseResult('tu1', 'fake_write', []),
             $this->finalResult('ok'),
         ]);
-        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read, $write));
+        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read, $write), $this->functions(self::BACKEND));
 
         $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'x'])));
 
@@ -795,7 +855,7 @@ class ChatControllerTest extends TestCase
             $this->toolUseResult('tu1', 'persons_search', []),
             $this->finalResult('omlouvám se'),
         ]);
-        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read));
+        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read), $this->functions(self::BACKEND));
 
         $out = $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'x'])));
 
@@ -813,7 +873,7 @@ class ChatControllerTest extends TestCase
         $read = new FakeReadTool('persons_search');
         // Every turn requests a tool → never converges.
         $llm = new ScriptedLlmClient([], $this->toolUseResult('tu', 'persons_search', []));
-        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read));
+        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read), $this->functions(self::BACKEND));
 
         $out = $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'x'])));
 

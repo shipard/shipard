@@ -6,7 +6,9 @@ namespace Shipard\Tests\Unit\Command\DataSource;
 
 use Dibi\Connection;
 use PHPUnit\Framework\TestCase;
-use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiCallOverride;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
@@ -163,31 +165,29 @@ class BookingHistoryCommandTest extends TestCase
                 return new ModulePathResolver([dirname(__DIR__, 4) . '/modules']);
             }
 
-            /** Backend resolver se v testu nedrátuje na DB ani na šifrování. */
+            /** Resolver AI funkce se v testu nedrátuje na DB ani na šifrování. */
             protected function createClassifier(
                 DataSourceConnection $db,
                 DataSourceConfig $dsConfig,
                 ConfigRuntime $config,
-                ?int $backendNdx,
+                ?AiCallOverride $override,
                 TagCache $cache,
             ): BookingHistoryClassifier {
-                $backends = $this->createBackendsStub();
-                return new BookingHistoryClassifier($this->testLlm, $backends, $config, null, $cache);
+                return new BookingHistoryClassifier($this->testLlm, $this->createFunctionsStub(), $config, $override, $cache);
             }
 
-            private function createBackendsStub(): AiBackendResolver
+            private function createFunctionsStub(): AiFunctionResolver
             {
-                return new class extends AiBackendResolver {
+                return new class extends AiFunctionResolver {
                     public function __construct() {}
 
-                    public function defaultBackend(): ?array
+                    public function resolve(string $functionId, ?AiCallOverride $override = null): ResolvedAiCall
                     {
-                        return ['provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null];
-                    }
-
-                    public function apiKey(array $backend): ?string
-                    {
-                        return 'sk-test';
+                        return new ResolvedAiCall(
+                            functionId: $functionId, platform: 'anthropic', baseUrl: '', apiKey: 'sk-test',
+                            model: 'claude-x', shapeAs: null, catalogModel: null, maxTokens: 16000,
+                            temperature: null, thinking: null, effort: null, connectionId: 1, connectionCode: 'default',
+                        );
                     }
                 };
             }

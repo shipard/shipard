@@ -380,6 +380,7 @@ export default {
   'error.OIDC_TXN_INVALID': 'Přihlašovací požadavek je neplatný nebo vypršel — zkuste to znovu ze zdrojové aplikace',
   'error.LLM_ERROR': 'AI model vrátil chybu: {message}',
   'error.AI_MODEL_NOT_SUPPORTED_FOR_CHAT': 'Asistent zatím neumí pracovat s modelem {value}. Správce nastaví v AI backendu jiný model',
+  'error.AI_NOT_CONFIGURED': 'AI funkce asistenta není správně nastavená: {message}',
   'error.NO_BACKEND': 'Není nastavený žádný aktivní AI backend',
   'error.LLM_NOT_CONFIGURED': 'AI asistent není na tomto zdroji dat nakonfigurovaný',
   'error.STREAM_ERROR': 'Přenos odpovědi selhal ({message}) — odpověď se nemusela uložit',

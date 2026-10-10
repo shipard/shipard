@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail\Analysis;
 
-use Shipard\Core\Ai\AiBackendResolver;
 use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
-use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
 use Shipard\Core\Ai\LlmRetry;
@@ -21,7 +19,9 @@ use Shipard\Core\Logging\ErrorLogger;
  *
  *   1. slot souběhu (flock, neblokující) — bez slotu konec, zpráva čeká
  *   2. {@see AnalysisQueue::isEligible()} — ne → konec
- *   3. {@see AnalysisClaimService::claim()} 10 → 20, lease; profil, backend, klíč
+ *   3. {@see AnalysisClaimService::claim()} 10 → 20, lease; profil + rozhodnutí
+ *      o volání (připojení, model, ladění, strop, klíč — AI funkce
+ *      `mail.extraction` s přepsáním z profilu, tasks/ai-functions.md D40)
  *   4. přílohy ({@see AttachmentPreparer}) → prompt ({@see PromptRenderer})
  *   5. model (streamovaně; opakování přechodných chyb, před každým pokusem
  *      prodloužení lease — vypršelá lease = konec bez zápisu)
@@ -29,7 +29,7 @@ use Shipard\Core\Logging\ErrorLogger;
  *   7. {@see AnalysisResultWriter} 20 → 30 / 10 / 70
  *
  * Mapování chyb: chyba claimu z konfigurace (`NO_PROFILE`, `NO_BACKEND`,
- * `BACKEND_KEY_*`, `SECRETS_UNAVAILABLE`) = konec bez zápisu, zpráva
+ * `BACKEND_KEY_*`, `SECRETS_UNAVAILABLE`, `BACKEND_CONFIG_INVALID`) = konec bez zápisu, zpráva
  * zůstává ve frontě, jedno varování; `schema_error` bez opakování;
  * chyba nastavení (klíč, oprávnění, neznámý model, vyčerpaný strop
  * útraty — `LlmApiException::isConfigurationError()`) = `config_error`
@@ -65,8 +65,6 @@ class AnalysisRunner
     public const CALL_TIMEOUT_SECONDS = 840;
     /** Pauzy mezi pokusy při přechodné chybě (celkem tři pokusy). */
     public const RETRY_DELAYS = [10, 60];
-    /** Kaskáda profil → backend → tento default (0 = nenastaveno). */
-    public const DEFAULT_MAX_TOKENS = 32768;
     /** Přechodná chyba vrací zprávu do fronty nejvýš tolikrát za hodinu. */
     public const MAX_FAILURES_PER_HOUR = 3;
     public const FAILURE_WINDOW_SECONDS = 3600;
@@ -306,7 +304,7 @@ class AnalysisRunner
     /** @return array<string, mixed> */
     private function analyze(int $messageId, AnalysisClaim $claim): array
     {
-        $maxTokens = self::maxTokensOf($claim);
+        $maxTokens = $claim->call->maxTokens;
         $result = null;
         $cost = null;
 
@@ -315,7 +313,12 @@ class AnalysisRunner
             $schema = self::outputSchemaOf($claim->profile);
             $attachments = $this->attachments->prepare($messageId, (int) ($message['raw_source_attachment'] ?? 0));
             $prompt = $this->prompts->render((string) ($claim->profile['prompt_template'] ?? ''), $message, $attachments, $schema);
-            $params = $this->chatParams($claim, $maxTokens, self::contentBlocks($prompt, $attachments));
+            $params = $claim->call->chatParams(
+                system: null,
+                messages: [['role' => 'user', 'content' => self::contentBlocks($prompt, $attachments)]],
+                stallTimeoutSeconds: self::STALL_TIMEOUT_SECONDS,
+                timeoutSeconds: self::CALL_TIMEOUT_SECONDS,
+            );
 
             $startedAt = 0.0;
             $result = LlmRetry::run(
@@ -334,7 +337,7 @@ class AnalysisRunner
             $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
             $tokensIn = $result->inputTokens ?? 0;
             $tokensOut = $result->outputTokens ?? 0;
-            $modelName = $result->model ?? (string) $claim->backend['model'];
+            $modelName = $result->model ?? $claim->model();
             $cost = ($this->catalog ?? ModelCatalog::empty())->costUsd($modelName, $tokensIn, $tokensOut);
 
             if (!$result->isComplete()) {
@@ -453,7 +456,7 @@ class AnalysisRunner
             $note,
             $retryable,
             $tokensUsed,
-            (string) ($claim->backend['model'] ?? ''),
+            $claim->model(),
             (string) ($claim->profile['prompt_version'] ?? ''),
             null,
         );
@@ -500,17 +503,6 @@ class AnalysisRunner
         return $this->analyzerId ?? ('internal:' . (gethostname() ?: 'unknown') . ':' . getmypid());
     }
 
-    /** `max_tokens` kaskádou profil → backend → default (0 = nenastaveno). */
-    public static function maxTokensOf(AnalysisClaim $claim): int
-    {
-        foreach ([(int) ($claim->profile['max_tokens'] ?? 0), (int) ($claim->backend['max_tokens'] ?? 0)] as $value) {
-            if ($value > 0) {
-                return $value;
-            }
-        }
-        return self::DEFAULT_MAX_TOKENS;
-    }
-
     /** `output_schema` profilu jako objekt (`\stdClass` drží prázdné objekty). */
     private static function outputSchemaOf(array $profile): \stdClass
     {
@@ -526,35 +518,6 @@ class AnalysisRunner
             throw new ProfileConfigException('profile output_schema is not a JSON object');
         }
         return $decoded;
-    }
-
-    /**
-     * Ladicí parametry backendu bere runner jako jediný volající všechny tři
-     * z `AiBackendResolver::tuning()` — teplotu včetně (NULL = neposílat,
-     * `0` z existujících řádků se posílá jako dřív; tasks/ai-models-phase0.md
-     * F0-D1, F0-D7).
-     *
-     * @param list<array<string, mixed>> $content
-     */
-    private function chatParams(AnalysisClaim $claim, int $maxTokens, array $content): LlmChatParams
-    {
-        $backend = $claim->backend;
-        $tuning = AiBackendResolver::tuning($backend);
-        return new LlmChatParams(
-            provider: (string) ($backend['provider'] ?? 'anthropic'),
-            model: (string) ($backend['model'] ?? ''),
-            apiKey: $claim->apiKey,
-            baseUrl: isset($backend['base_url']) && $backend['base_url'] !== null ? (string) $backend['base_url'] : '',
-            system: null,
-            messages: [['role' => 'user', 'content' => $content]],
-            maxTokens: $maxTokens,
-            temperature: $tuning['temperature'],
-            tools: null,
-            stallTimeoutSeconds: self::STALL_TIMEOUT_SECONDS,
-            timeoutSeconds: self::CALL_TIMEOUT_SECONDS,
-            thinking: $tuning['thinking'],
-            effort: $tuning['effort'],
-        );
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Enrich;
 
-use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiFunctionResolver;
 use Shipard\Core\Ai\AnthropicLlmClient;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\ConfigRuntime;
@@ -47,9 +47,10 @@ final class RowEnrichmentPipeline
 
     /**
      * Production factory — čte settings `exchange.contentTag.beforeDominance`
-     * (D13) a `exchange.contentTag.backend` (D18, ndx core_ai_backends,
-     * null = default backend). Classifier je null-safe: bez backendu/klíče
-     * degraduje na čistě deterministickou část.
+     * (D13); připojení a model klasifikace určuje AI funkce
+     * `exchange.contentTags` (tasks/ai-functions.md, dřívější nastavení
+     * `exchange.contentTag.backend` převedl ds-upgrade). Classifier je
+     * null-safe: bez připojení/klíče degraduje na deterministickou část.
      */
     public static function create(
         DataSourceConnection $db,
@@ -60,10 +61,6 @@ final class RowEnrichmentPipeline
         $settings = new SettingsStore($db);
 
         $beforeDominance = $settings->get('exchange.contentTag.beforeDominance');
-        $backendSetting  = $settings->get('exchange.contentTag.backend');
-        $backendNdx = is_numeric($backendSetting) && (int) $backendSetting > 0
-            ? (int) $backendSetting
-            : null;
 
         return new self(
             RowHistoryEnricher::create($dibi),
@@ -74,9 +71,8 @@ final class RowEnrichmentPipeline
             ),
             new ContentTagClassifier(
                 new AnthropicLlmClient(ModelCatalog::fromConfig($configRuntime)),
-                new AiBackendResolver($db, $dsConfig),
+                new AiFunctionResolver($db, $configRuntime, $dsConfig),
                 $configRuntime,
-                $backendNdx,
             ),
             $beforeDominance === null ? true : (bool) $beforeDominance,
         );

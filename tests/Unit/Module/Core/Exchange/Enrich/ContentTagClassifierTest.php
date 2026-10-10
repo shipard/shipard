@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Exchange\Enrich;
 
 use PHPUnit\Framework\TestCase;
-use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\Exception\AiFunctionException;
+use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
@@ -41,8 +43,8 @@ class ContentTagClassifierTest extends TestCase
     private function classifier(
         string $llmText,
         array $taxonomy = self::TAXONOMY,
-        ?array $backend = ['provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null],
-        ?string $apiKey = 'sk-test',
+        ?ResolvedAiCall $call = null,
+        bool $unresolved = false,
         ?LlmClient $llm = null,
         ?string &$capturedPrompt = null,
     ): ContentTagClassifier {
@@ -56,17 +58,35 @@ class ContentTagClassifierTest extends TestCase
             );
         }
 
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn($backend);
-        $backends->method('backendByNdx')->willReturn($backend);
-        $backends->method('apiKey')->willReturn($apiKey);
-
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([
             ['core.exchange.contentTags', $taxonomy],
         ]);
 
-        return new ContentTagClassifier($llm, $backends, $config);
+        return new ContentTagClassifier($llm, $this->functions($call, $unresolved), $config);
+    }
+
+    /** Resolver AI funkce: hotové rozhodnutí, nebo nenastavená funkce (D40). */
+    private function functions(?ResolvedAiCall $call = null, bool $unresolved = false): AiFunctionResolver
+    {
+        $functions = $this->createMock(AiFunctionResolver::class);
+        if ($unresolved) {
+            $functions->method('resolve')->willThrowException(new AiFunctionException(AiFunctionException::KEY_MISSING, 'no key'));
+        } else {
+            $functions->method('resolve')->willReturn($call ?? $this->call());
+        }
+        return $functions;
+    }
+
+    /** @param array<string, mixed> $overrides */
+    private function call(array $overrides = []): ResolvedAiCall
+    {
+        $values = $overrides + [
+            'functionId' => 'exchange.contentTags', 'platform' => 'anthropic', 'baseUrl' => '', 'apiKey' => 'sk-test',
+            'model' => 'claude-x', 'shapeAs' => null, 'catalogModel' => null, 'maxTokens' => 8000,
+            'temperature' => null, 'thinking' => null, 'effort' => null, 'connectionId' => 1, 'connectionCode' => 'default',
+        ];
+        return new ResolvedAiCall(...$values);
     }
 
     public function testValidJsonOutputParsed(): void
@@ -137,8 +157,12 @@ class ContentTagClassifierTest extends TestCase
         }
     }
 
-    /** Teplota se neposílá ani při `0` na backendu (F0-D1); thinking / effort z backendu (F0-D7). */
-    public function testTemperatureIsNeverSentAndTuningIsPassed(): void
+    /**
+     * Parametry volání jdou z rozhodnutí resolveru (tasks/ai-functions.md
+     * D40): výchozí = 8000 tokenů, bez teploty a ladění — stejné tělo jako
+     * před změnou; přepsané ladění projde beze změny.
+     */
+    public function testParamsComeFromTheResolvedCall(): void
     {
         $captured = null;
         $llm = $this->createMock(LlmClient::class);
@@ -148,18 +172,25 @@ class ContentTagClassifierTest extends TestCase
                 return new LlmChatResult('{"primaryTag": null, "confidence": 0, "rowExceptions": []}', 100, 40, 'end_turn', 'claude-x');
             },
         );
-        $backend = [
-            'provider' => 'anthropic', 'model' => 'claude-x', 'api_key' => 'enc', 'base_url' => null,
-            'temperature' => '0.00', 'thinking' => 'adaptive', 'effort' => 'low',
-        ];
 
-        $this->classifier('', backend: $backend, llm: $llm)->classify($this->canonical());
-
+        $this->classifier('', llm: $llm)->classify($this->canonical());
         $this->assertInstanceOf(LlmChatParams::class, $captured);
+        $this->assertSame('anthropic', $captured->provider);
+        $this->assertSame('claude-x', $captured->model);
+        $this->assertSame('sk-test', $captured->apiKey);
         $this->assertNull($captured->temperature);
+        $this->assertNull($captured->thinking);
+        $this->assertNull($captured->effort);
+        $this->assertNull($captured->tools);
+        $this->assertSame(8000, $captured->maxTokens);
+        $this->assertStringContainsString('fixed', (string) $captured->system);
+
+        $tuned = $this->call(['thinking' => 'adaptive', 'effort' => 'low', 'maxTokens' => 4000, 'baseUrl' => 'https://gw.example']);
+        $this->classifier('', call: $tuned, llm: $llm)->classify($this->canonical());
         $this->assertSame('adaptive', $captured->thinking);
         $this->assertSame('low', $captured->effort);
-        $this->assertSame(8000, $captured->maxTokens);
+        $this->assertSame(4000, $captured->maxTokens);
+        $this->assertSame('https://gw.example', $captured->baseUrl);
     }
 
     public function testClientExceptionYieldsNull(): void
@@ -170,18 +201,12 @@ class ContentTagClassifierTest extends TestCase
         $this->assertNull($this->classifier('', llm: $llm)->classify($this->canonical()));
     }
 
-    public function testMissingBackendYieldsNullWithoutLlmCall(): void
+    public function testUnresolvedFunctionYieldsNullWithoutLlmCall(): void
     {
         $llm = $this->createMock(LlmClient::class);
         $llm->expects($this->never())->method('streamChat');
 
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn(null);
-        $config = $this->createMock(ConfigRuntime::class);
-        $config->method('cfgItem')->willReturn(self::TAXONOMY);
-
-        $classifier = new ContentTagClassifier($llm, $backends, $config);
-        $this->assertNull($classifier->classify($this->canonical()));
+        $this->assertNull($this->classifier('', unresolved: true, llm: $llm)->classify($this->canonical()));
     }
 
     public function testMissingTaxonomyYieldsNullWithoutLlmCall(): void
@@ -189,11 +214,12 @@ class ContentTagClassifierTest extends TestCase
         $llm = $this->createMock(LlmClient::class);
         $llm->expects($this->never())->method('streamChat');
 
-        $backends = $this->createMock(AiBackendResolver::class);
+        $functions = $this->createMock(AiFunctionResolver::class);
+        $functions->expects($this->never())->method('resolve');
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturn(null);
 
-        $this->assertNull((new ContentTagClassifier($llm, $backends, $config))->classify($this->canonical()));
+        $this->assertNull((new ContentTagClassifier($llm, $functions, $config))->classify($this->canonical()));
     }
 
     public function testPromptContainsAllRealTaxonomyKeysAndDigest(): void

@@ -8,7 +8,8 @@ use Shipard\Api\DocumentEventHandlerLoader;
 use Shipard\Api\DocumentLoader;
 use Shipard\Api\JournalEventHandlerLoader;
 use Shipard\Api\TableLoader;
-use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiCallOverride;
+use Shipard\Core\Ai\AiFunctionResolver;
 use Shipard\Core\Ai\AnthropicLlmClient;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Ai\LlmClient;
@@ -17,7 +18,6 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
-use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Core\Exchange\BookingHistory\AccountTagMap;
 use Shipard\Module\Core\Exchange\BookingHistory\BookingHistoryAnalysis;
 use Shipard\Module\Core\Exchange\BookingHistory\BookingHistoryAnalyzer;
@@ -77,7 +77,9 @@ class BookingHistoryCommand extends Command
             ->addOption('apply-seed', null, InputOption::VALUE_NONE, 'Zapiš seed pravidla IČO→štítek')
             ->addOption('tag-items', null, InputOption::VALUE_OPTIONAL, 'Otaguj živé položky DS: offer (podle účtů) | usage (podle klasifikace textů) | auto (default)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Jen vypiš plán, nic neměň')
-            ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'AI backend pro klasifikaci (id nebo název)')
+            ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'AI připojení pro klasifikaci (id nebo název) — přepíše nastavení funkce exchange.bookingHistory')
+            ->addOption('model', null, InputOption::VALUE_REQUIRED, 'Model pro klasifikaci (ID z katalogu, nebo vlastní s --model-like) — přepíše nastavení funkce')
+            ->addOption('model-like', null, InputOption::VALUE_REQUIRED, 'U vlastního ID modelu: model z katalogu, podle kterého se požadavek tvaruje')
             ->addOption('no-llm', null, InputOption::VALUE_NONE, 'Bez LLM klasifikace — report jen z reverzu účet→štítek')
             ->addOption('seed-min-share', null, InputOption::VALUE_REQUIRED, 'Seed: min. podíl řádků dominantního štítku (default ' . BookingHistorySeedBuilder::DEFAULT_MIN_SHARE . ')')
             ->addOption('seed-min-docs', null, InputOption::VALUE_REQUIRED, 'Seed: min. počet dokladů dominantního štítku (default ' . BookingHistorySeedBuilder::DEFAULT_MIN_DOC_COUNT . ')')
@@ -107,19 +109,19 @@ class BookingHistoryCommand extends Command
         return $this->llm ?? new AnthropicLlmClient($catalog);
     }
 
-    /** Seam pro testy — e2e test podstrčí mock LLM i mock resolver backendů. */
+    /** Seam pro testy — e2e test podstrčí mock LLM i resolver AI funkce. */
     protected function createClassifier(
         DataSourceConnection $db,
         DataSourceConfig $dsConfig,
         ConfigRuntime $config,
-        ?int $backendNdx,
+        ?AiCallOverride $override,
         TagCache $cache,
     ): BookingHistoryClassifier {
         return new BookingHistoryClassifier(
             llm: $this->createLlmClient(ModelCatalog::fromConfig($config)),
-            backends: new AiBackendResolver($db, $dsConfig),
+            functions: new AiFunctionResolver($db, $config, $dsConfig),
             config: $config,
-            backendNdx: $backendNdx,
+            override: $override,
             cache: $cache,
         );
     }
@@ -206,7 +208,7 @@ class BookingHistoryCommand extends Command
             $needsLlm = $wantReport;
         }
         if ($needsLlm && !$noLlm) {
-            $this->classify($output, $analysis, $inputPath, $dsConnection, $dsConfig, $config, $input->getOption('backend'));
+            $this->classify($output, $analysis, $inputPath, $dsConnection, $dsConfig, $config, $this->callOverride($dsConnection, $input));
         }
 
         $taxonomy = $config->cfgItem('core.exchange.contentTags');
@@ -282,7 +284,7 @@ class BookingHistoryCommand extends Command
         DataSourceConnection $db,
         DataSourceConfig $dsConfig,
         ConfigRuntime $config,
-        mixed $backendOption,
+        ?AiCallOverride $override,
     ): void {
         $clusters = $analysis->clustersForClassification();
         if ($clusters === []) {
@@ -294,7 +296,7 @@ class BookingHistoryCommand extends Command
             $db,
             $dsConfig,
             $config,
-            $this->resolveBackendNdx($db, $backendOption),
+            $override,
             $cache,
         );
 
@@ -318,7 +320,7 @@ class BookingHistoryCommand extends Command
         }
 
         if ($result['unavailable']) {
-            $output->writeln('<comment>  AI backend nebo taxonomie není k dispozici'
+            $output->writeln('<comment>  AI funkce exchange.bookingHistory (připojení, klíč, model) nebo taxonomie není k dispozici'
                 . ' — report pojede jen z reverzu.</comment>');
             return;
         }
@@ -684,16 +686,31 @@ class BookingHistoryCommand extends Command
     }
 
     /**
-     * `--backend` bere id nebo název backendu; bez přepínače platí settings
-     * override `exchange.contentTag.backend` a pak default backend DS
-     * (kaskáda z D18). null = default backend.
+     * Přepsání volání z voleb příkazu (tasks/ai-functions.md D40): `--backend`
+     * = id nebo název připojení, `--model` (+ `--model-like` u vlastního ID).
+     * Bez voleb null = nastavení funkce `exchange.bookingHistory`.
      */
-    private function resolveBackendNdx(DataSourceConnection $db, mixed $option): ?int
+    private function callOverride(DataSourceConnection $db, InputInterface $input): ?AiCallOverride
+    {
+        $connectionId = $this->resolveConnectionId($db, $input->getOption('backend'));
+        $model = trim((string) ($input->getOption('model') ?? ''));
+        $modelLike = trim((string) ($input->getOption('model-like') ?? ''));
+        if ($connectionId === null && $model === '' && $modelLike === '') {
+            return null;
+        }
+        return new AiCallOverride(
+            connectionId: $connectionId,
+            model: $model !== '' ? $model : null,
+            modelLike: $modelLike !== '' ? $modelLike : null,
+        );
+    }
+
+    /** `--backend` bere id nebo název připojení; neznámý název = null (platí nastavení funkce). */
+    private function resolveConnectionId(DataSourceConnection $db, mixed $option): ?int
     {
         $option = is_string($option) ? trim($option) : '';
         if ($option === '') {
-            $setting = (new SettingsStore($db))->get('exchange.contentTag.backend');
-            return is_numeric($setting) && (int) $setting > 0 ? (int) $setting : null;
+            return null;
         }
         if (preg_match('/^\d+$/', $option) === 1) {
             return (int) $option;

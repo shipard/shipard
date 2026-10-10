@@ -8,7 +8,8 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Api\AuthContext;
 use Shipard\Api\Controller\DashboardController;
 use Shipard\Api\Response;
-use Shipard\Core\Ai\AiBackendResolver;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
@@ -665,12 +666,13 @@ final class DashboardControllerTest extends TestCase
 
     private function summaryService(DataSourceConnection $db, LlmClient $llm): DashboardSummaryService
     {
-        $backends = $this->createMock(AiBackendResolver::class);
-        $backends->method('defaultBackend')->willReturn([
-            'provider' => 'anthropic', 'model' => 'claude-x', 'base_url' => null,
-        ]);
-        $backends->method('apiKey')->willReturn('sk-test');
-        return new DashboardSummaryService($db, $llm, $backends);
+        $functions = $this->createMock(AiFunctionResolver::class);
+        $functions->method('resolve')->willReturn(new ResolvedAiCall(
+            functionId: 'dashboard.summary', platform: 'anthropic', baseUrl: '', apiKey: 'sk-test',
+            model: 'claude-x', shapeAs: null, catalogModel: null, maxTokens: 2000,
+            temperature: null, thinking: null, effort: null, connectionId: 1, connectionCode: 'default',
+        ));
+        return new DashboardSummaryService($db, $llm, $functions);
     }
 
     public function testSummaryEmptyFeedEmitsDoneNull(): void

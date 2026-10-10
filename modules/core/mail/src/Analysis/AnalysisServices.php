@@ -32,7 +32,7 @@ final readonly class AnalysisServices
     ): self {
         return new self(
             new AnalysisQueue($db),
-            new AnalysisClaimService($db, $config),
+            new AnalysisClaimService($db, $config, $configRuntime),
             new AnalysisResultWriter($db, $config, $schemaValidator, $enricher, $configRuntime),
         );
     }
