@@ -336,6 +336,9 @@ Předpoklady, aby to fungovalo:
   Sloty jsou `flock` soubory `ai-analysis-<n>.lock` v `/opt/shipard/run/`;
   adresář vlastní shipard-user, pod kterým běží i PHP-FPM pool (spawn
   z requestu). Runnery logují do `/opt/shipard/log/analysis.log`.
+  Runner po dokončení zprávy dobírá frontu a slot drží nejvýš 10 minut;
+  pak ho uvolní a pro zbytek fronty spustí nástupce — dlouhá fronta
+  jednoho zdroje dat tak slot neobsadí trvale (#85 D25).
 
   ```json
   "ai": { "analysis": { "maxConcurrent": 2 } }

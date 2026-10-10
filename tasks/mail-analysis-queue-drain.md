@@ -1,6 +1,6 @@
 # Došlá pošta — runner AI analýzy dobírá frontu, strop pro pády (#85 D25, D26)
 
-**Stav:** naplánováno — rozhodnutí D25, D26 potvrzena 2026-10-09 (#85)
+**Stav:** hotovo — implementováno a ověřeno na dev serveru 2026-10-10 (#85 D25, D26)
 
 ## Status / cíl
 
@@ -190,9 +190,44 @@ GitHub Issue: shipard/shipard#85 (D25, D26).
 
 ## Hotovo když
 
-- [ ] Kroky 1–4 jako samostatné commity, `php -l`, cílené testy
+- [x] Kroky 1–4 jako samostatné commity, `php -l`, cílené testy
       (`--filter 'AnalysisRunnerTest|AnalysisQueueTest|AnalysisClaimReaperTest|AnalysisErrorPresenterTest|MailAnalyzeCommandTest'`),
       pak celá sada.
-- [ ] Ověření 1–4 provedeno, výsledek do #85.
-- [ ] Dokumentace podle kroku 4.
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.
+- [x] Ověření 1–4 provedeno (níže); výsledek do #85.
+- [x] Dokumentace podle kroku 4.
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.
+
+## Ověřeno 2026-10-10 (dev server bez cronu, `ai.analysis.maxConcurrent` výchozí 2)
+
+1. **Dobírání** (`4l3j`): pět zpráv s PDF ve frontě, pět runnerů
+   spuštěných naráz (jako pět spawnů z nahrání) → tři skončily `no_slot`,
+   dva procesy odbavily všech pět (2 + 3), všechny „Analyzováno“ bez
+   sweepu; claimy nesou dva `analyzer_id`, výpis per zpráva a souhrn
+   `queue empty`. Cca 0,20 USD.
+2. **Bez klíče** (`060z`, backend neaktivní, tři zprávy ve frontě):
+   `mail-analyze --message` → `Not configured: NO_BACKEND …`, souhrn
+   `AI analysis is not configured, queue left as is`, jedno varování
+   v logu, proces skončil za 0,1 s, zprávy zůstaly ve frontě.
+3. **Neexistující model** (`4l3j`, model backendu dočasně přepsán): jediné
+   volání (0,6 s), `[config_error] anthropic: HTTP 404 not_found_error:
+   model: …` → stav 70, `created_by` NULL. Kompilovaný katalog na `4l3j`
+   po `ds-upgrade` nese titulek „AI není správně nastavená“; mapování
+   cs / en / fallback kryje `AnalysisErrorPresenterTest`. Model vrácen,
+   zpráva vrácena do stavu 30.
+4. **Strop vypršelých claimů** (`4l3j`; místo `kill -9` tři ručně vložené
+   claimy s `expires_at` v minulosti — tatáž cesta reaperu): první
+   a druhý `mail-analysis-reap` → stav 10, třetí → stav 70 a řádek
+   `[ai_error] analysis did not finish 3 times within an hour (claim
+   expired)` (`model_name` / `prompt_version` `unknown`, `created_by`
+   NULL); výpis reaperu řádek označí. Vložené claimy a řádek smazány,
+   zpráva vrácena do stavu 30.
+
+Integrační test `AnalysisRunnerIntegrationTest` (sada `Integration`, `4l3j`,
+falešný LLM) prošel — kryje `storeFailure()` přes `recordFailedRun()` nad
+reálnou DB.
+
+Odchylky od zadání: žádné v kódu. Dobírání vrací exit FAILURE, když
+kterákoli zpráva v procesu skončila `crashed` (dřív jediná zpráva);
+poznámka u stropu útraty má nově prefix `anthropic: HTTP 429
+rate_limit_error:` jako ostatní chyby nastavení; `AnalysisClaimReaper`
+dostává `AnalysisResultWriter` jako povinnou závislost.

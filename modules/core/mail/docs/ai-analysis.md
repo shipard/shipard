@@ -115,14 +115,18 @@ příjem / nahrání zprávy (commit)
 reanalyze (analysis_state → 10) ────────────────────────→ spawn mail-analyze
 cron minute: mail-analysis-reap → mail-analyze --sweep ─→ spawn mail-analyze (≤ volné sloty)
 
-mail-analyze --message N  (AnalysisRunner::run)
+mail-analyze --message N  (AnalysisRunner::drain)
    1. slot (flock, neblokující)      bez slotu → konec, zpráva čeká ve frontě
-   2. AnalysisQueue::isEligible(N)   ne → konec
+   2. AnalysisQueue::isEligible(N)   ne → krok 8
    3. AnalysisClaimService::claim    10 → 20, lease 900 s; profil + backend + klíč
+                                     chybí profil / backend / klíč → konec (not_configured)
    4. AttachmentPreparer → PromptRenderer
    5. LLM (stream, opakování, před každým pokusem prodloužení lease)
    6. OutputParser (JSON + output_schema profilu)
    7. AnalysisResultWriter::storeResult / storeFailure   20 → 30 / 10 / 70
+   8. další zpráva z fronty (AnalysisQueue::eligible, bez už zpracovaných)
+      žádná → konec; rozpočet 10 min pryč → uvolnit slot, spawn nástupce;
+      jinak → krok 2
 ```
 
 **Spouštění** (D14): `AnalysisSpawner` spouští `shpd-ds mail-analyze
@@ -138,6 +142,25 @@ frontě bez aktivního claimu spustí runnery, nejvýš tolik, kolik je
 volných slotů; bez použitelného backendu (aktivní výchozí profil → aktivní
 backend s klíčem) nic a jedno varování. Druhý runner na tutéž zprávu skončí
 na `ALREADY_CLAIMED`.
+
+**Dobírání fronty** (tasks/mail-analysis-queue-drain.md D25,
+`AnalysisRunner::drain()`): runner po dokončení zprávy s jakýmkoli
+výsledkem drží slot a bere další zprávu z fronty, nejstarší první
+(`AnalysisQueue::eligible(1, null, $excludeIds)`). Každou zprávu nejvýš
+jednou za proces — zpráva vrácená do fronty (přechodná chyba,
+`claim_failed`) se v témže procesu znovu nebere, jinak by se runner točil
+na místě. `not_configured` dobírání ukončí (další zprávy by dopadly
+stejně). Rozpočet `DRAIN_BUDGET_SECONDS` (600 s) od startu procesu: po
+jeho vypršení runner novou zprávu nezačne; zbývá-li něco ve frontě,
+uvolní slot a spustí nástupce (`AnalysisSpawner`) pro první zbývající
+zprávu — jen když sám aspoň jednu zprávu dokončil (`done` / `failed`).
+Dlouhá fronta tak jedním procesem neobsadí slot trvale (ostatní zdroje
+dat na serveru, nový kód po upgradu). Dva dobírající runnery na jednom
+zdroji dat sáhnou po téže nejstarší zprávě; claim je atomický, poražený
+ji zařadí mezi zpracované a jde dál. Fronta se tím odbaví i na stroji
+bez cronu; `--sweep` zůstává záchranou pro zprávy vrácené do fronty,
+vypršelé claimy a stroj po restartu. CLI vypisuje řádek per zpráva
+a souhrn; exit FAILURE jen když kterákoli zpráva skončila `crashed`.
 
 **Sloty souběhu** (D15): `ai.analysis.maxConcurrent` v `server.json`
 (výchozí 2), slot = neblokující `flock` na `/opt/shipard/run/ai-analysis-<n>.lock`
@@ -191,11 +214,28 @@ textový tvar jsonschema, ze kterého `AnalysisErrorPresenter` skládá hlášku
 | šablona promptu nejde vykreslit, nevalidní `output_schema`, nepodporovaný provider | `config_error`, stav 70 | ne |
 | výstup není JSON / neodpovídá schématu | `schema_error`, stav 70 | ne |
 | `stop_reason = max_tokens` | `ai_error` „output truncated at max_tokens=<n>“, stav 70 | ne |
-| vyčerpaný měsíční strop útraty (429 s `error.details.error_code = enforced_spend_limit_reached`, bez `retry-after`) | `config_error` se zprávou poskytovatele, stav 70 | ne — API stojí do dalšího měsíce; u hostovaných DS jde o strop společné organizace |
+| chyba nastavení: 401, 403, 404 (klíč, oprávnění, neznámý nebo vyřazený model — `LlmApiException::isConfigurationError()`) | `config_error` `anthropic: HTTP <stav> <typ>: <text>`, stav 70 | ne — opraví správce |
+| vyčerpaný měsíční strop útraty (429 s `error.details.error_code = enforced_spend_limit_reached`, bez `retry-after`; též `isConfigurationError()`) | `config_error` `anthropic: HTTP 429 rate_limit_error: <zpráva poskytovatele>`, stav 70 | ne — API stojí do dalšího měsíce; u hostovaných DS jde o strop společné organizace |
 | přechodná chyba (transport, 408, 429, 5xx, `overloaded_error`) | v rámci běhu další dva pokusy po 10 a 60 s (`LlmRetry`); po vyčerpání `ai_error`, stav 10 | nejvýš třikrát za hodinu (počítají se selhané běhy zprávy), pak stav 70 |
-| jiná chyba API (400, 401, 404) | `ai_error`, stav 70 | ne |
+| jiná chyba API (400) | `ai_error`, stav 70 | ne |
 | lease nešla prodloužit / claim expiroval před zápisem | žádný — jen varování včetně ceny | reaper už zprávu vrátil do fronty |
-| nečekaná výjimka (DB, disk) | žádný — claim se nechá vypršet | reaper + sweep |
+| nečekaná výjimka po claimu (DB, disk, chyba kódu) | `ai_error` „internal: <třída>: <text>“, stav 10 (D26) | nejvýš třikrát za hodinu jako u přechodných chyb, pak stav 70; selže-li i zápis selhání, claim se nechá vypršet |
+| nečekaná výjimka před claimem (gate, claim) | žádný — zpráva zůstává ve frontě, `crashed` | sweep |
+| claim vypršel (pád, který PHP nezachytí: paměť, zabitý proces; i claim démona) | reaper: zpráva zpět do fronty; při třetím vypršení za hodinu stav 70 + selhaný běh `ai_error` „analysis did not finish 3 times within an hour (claim expired)“ (D26) | reaper každou minutu |
+
+**Stropy pro pády** (tasks/mail-analysis-queue-drain.md D26): oba stropy
+počítají totéž okno jako přechodné chyby — `AnalysisRunner::MAX_FAILURES_PER_HOUR`
+(3) a `FAILURE_WINDOW_SECONDS` (3600), konstanty na jednom místě, čte je
+i reaper. Runner: výjimka zachycená po claimu → `fail()` se stropem podle
+`AnalysisResultWriter::countRecentFailures()`; pád jedné zprávy dobírání
+nepřeruší. Reaper (`AnalysisClaimReaper`, CLI `mail-analysis-reap`): po
+uvolnění vypršelého claimu spočítá claimy zprávy s `release_reason =
+expired` a `released_at` v okně (včetně právě uvolněného); při třetím
+zprávu do fronty nevrátí — stav 70 a řádek selhaného běhu přes
+`AnalysisResultWriter::recordFailedRun()` (jediné místo s INSERTem
+selhaného běhu, sdílí ho `storeFailure()`; `created_by = NULL`, model
+a verze promptu `unknown`). Obojí jen pokud je zpráva stále ve stavu 20
+(řádek zprávy `FOR UPDATE`, result nebo failed mohl mezitím doběhnout).
 
 **Cena** (D19): `cost_usd` počítá `Shipard\Core\Ai\AnthropicPricing`
 z tabulky cen podle nejdelšího shodného prefixu ID modelu (ID z odpovědi
@@ -209,8 +249,9 @@ ceny převezme katalog modelů (#85 fáze 1).
 `PreparedAttachment`), `PromptRenderer` (+ `AnalysisPromptPolicy`,
 `PromptRenderException`), `OutputParser` (+ `SchemaValidationException`),
 `AnalysisSlots` (+ `AnalysisSlot`), `AnalysisRunner`, `AnalysisSpawner`,
-`AnalysisRunnerFactory`; CLI `src/Command/DataSource/MailAnalyzeCommand.php`
-([docs/cli.md](../../../../docs/cli.md) § `mail-analyze`).
+`AnalysisRunnerFactory`; reaper `modules/core/mail/src/AnalysisClaimReaper.php`;
+CLI `src/Command/DataSource/MailAnalyzeCommand.php` a `MailAnalysisReapCommand.php`
+([docs/cli.md](../../../../docs/cli.md) § `mail-analyze`, § `mail-analysis-reap`).
 
 ## Šifrování API klíčů backendů
 
@@ -256,9 +297,10 @@ analýzy, přežívá Koš i Archiv; řídí ho výhradně pipeline + reanalyze:
 
 10 (Ve frontě) ──claim──▶ 20 (Analyzuje se) ──result──▶ 30 (Analyzováno)
                                │                              │
-                               ├─failed retryable / reaper─▶ 10
-                               │                              └─reanalyze─▶ 10
-                               └─failed permanent─▶ 70 (Analýza selhala) ─reanalyze─▶ 10
+                               ├─failed retryable / reaper──▶ 10
+                               │  (vypršelý claim)             └─reanalyze─▶ 10
+                               └─failed permanent / reaper──▶ 70 (Analýza selhala) ─reanalyze─▶ 10
+                                  (3. vypršení za hodinu)
 ```
 
 `analysis_state=20` (aktivní claim) drží read-only zámek formuláře —

@@ -255,9 +255,12 @@ shpd-ds ai-analyzer-set-key --backend default --api-key sk-ant-…
 ```
 
 Pak nahraj doklad (PDF, obrázek účtenky) na Dashboardu. Analýza běží jako
-odpojený proces `shpd-ds mail-analyze` a do minuty je výsledek v detailu
-zprávy; běhy s tokeny, cenou a trváním vidíš v tabu *Analýzy*. Bez klíče
-zpráva zůstane „Ve frontě“ a v logu je jednou za minutu varování sweepu.
+odpojený proces `shpd-ds mail-analyze` a zhruba do minuty je výsledek
+v detailu zprávy; víc dokladů naráz odbaví týž proces postupně (po
+dokončení zprávy bere další z fronty), cron k tomu není potřeba. Běhy
+s tokeny, cenou a trváním vidíš v tabu *Analýzy*. Bez klíče zpráva
+zůstane „Ve frontě“ — runner zapíše jedno varování do `analysis.log`
+a skončí; na stroji s cronem se varování sweepu opakuje každou minutu.
 Limit souběhu a vypnutí (`ai.analysis.maxConcurrent`) popisuje
 [`operations/production.md`](../operations/production.md) §10.
 

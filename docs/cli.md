@@ -1237,7 +1237,11 @@ sudo shpd-ds mail-analysis-reap
 ```
 
 Uvolní vypršené AI analysis claims (zaseknutí workeři) a re-queueuje
-postižené zprávy. Bezpečné spouštět opakovaně (např. z cronu).
+postižené zprávy. Zprávu, které za poslední hodinu vypršel claim potřetí,
+do fronty nevrací: přepne ji na **Analýza selhala** a zapíše selhaný běh
+(`ai_error`, „analysis did not finish 3 times within an hour (claim
+expired)“) — strop pro pády, které PHP nezachytí (#85 D26); takový řádek
+výpis označí. Bezpečné spouštět opakovaně (např. z cronu).
 
 #### `mail-preprocess`
 
@@ -1272,13 +1276,17 @@ Runner AI analýzy došlé zprávy v procesu (`modules/core/mail/docs/ai-analysi
 zpráva ve frontě (stav Ve frontě, mimo Archiv a Koš, po předzpracování,
 schránka s AI, bez claimu), claimne ji (10 → 20), připraví přílohy
 a prompt, zavolá model a zapíše výsledek (20 → 30) nebo selhání (20 → 10 /
-70). Primárně ho spouští příjem, nahrání, konec předzpracování a reanalýza
-detached spawnem; ručně se hodí při ladění. Selhaná analýza **není** chyba
-příkazu — FAILURE jen špatné volání a chyby infrastruktury.
+70). Po dokončení zprávy **dobírá frontu** (#85 D25): drží slot a bere
+další zprávy, nejstarší první, každou nejvýš jednou za proces; po
+10 minutách od startu novou nezačne, uvolní slot a pro první zbývající
+spustí nástupce. Primárně ho spouští příjem, nahrání, konec
+předzpracování a reanalýza detached spawnem; ručně se hodí při ladění.
+Selhaná analýza **není** chyba příkazu — FAILURE jen špatné volání
+a chyby infrastruktury (kterákoli zpráva `crashed`).
 
 | Opce | Význam |
 |------|--------|
-| `--message <id>` | Id zprávy (`core_mail_incoming_messages.id`). Bez volného slotu, mimo frontu nebo bez nastaveného backendu / klíče skončí bez zápisu a zpráva zůstává ve frontě |
+| `--message <id>` | Id první zprávy (`core_mail_incoming_messages.id`). Bez volného slotu skončí bez zápisu; mimo frontu nebo po claimu jiným runnerem pokračuje další zprávou z fronty; bez nastaveného backendu / klíče skončí hned (jedno varování). Výpis: řádek per zpráva a souhrn (počty, důvod konce, nástupce) |
 | `--sweep` | Záchrana: zprávy ve frontě bez aktivního claimu → spawn runneru, nejvýš tolik, kolik je volných slotů; bez použitelného backendu nic (jedno varování). Exit 0 i bez nálezu |
 
 Limit souběhu per server `ai.analysis.maxConcurrent` v `server.json`
