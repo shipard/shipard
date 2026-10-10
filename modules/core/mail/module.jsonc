@@ -215,6 +215,20 @@
             "interval": "15m",
             "navSection": "_top",
             "tags": ["mail"]
+        },
+        {
+            "id": "core.mail.analysis_stalled",
+            "name": "Mail analysis stalled",
+            "name:cs": "Analýza pošty stojí",
+            "name:en": "Mail analysis stalled",
+            "description": "Messages waiting for AI analysis for more than 15 minutes although a usable AI backend is configured (runner, cron or slots down).",
+            "description:cs": "Zprávy čekají na AI analýzu déle než 15 minut, přestože je nastavený použitelný AI backend (neběží runner, cron nebo sloty).",
+            "description:en": "Messages waiting for AI analysis for more than 15 minutes although a usable AI backend is configured (runner, cron or slots down).",
+            "class": "Shipard\\Module\\Core\\Mail\\Analysis\\AnalysisStalledAlertCheck",
+            "severity": "warning",
+            "interval": "15m",
+            "navSection": "_top",
+            "tags": ["mail", "ai"]
         }
     ],
 

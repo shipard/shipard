@@ -21,7 +21,8 @@ use Shipard\Module\Core\Mail\IncomingMessageDocument;
  *
  * Sdílí ji in-process runner (`isEligible()` před claimem,
  * `eligible(1, null, $excludeIds)` při dobírání fronty), sweep
- * (`eligible(freeCount())`) a gate reanalýzy v `AnalysisController`.
+ * (`eligible(freeCount())`), gate reanalýzy v `AnalysisController`
+ * a upozornění „Analýza pošty stojí“ (`stalled()`).
  */
 class AnalysisQueue
 {
@@ -94,6 +95,38 @@ class AnalysisQueue
             self::MAILBOXES_TABLE,
             ...self::predicateParams($now),
         );
+    }
+
+    /**
+     * Zprávy ve frontě déle než `$olderThanSeconds` podle `modified`
+     * (vstup do fronty i návrat z reaperu `modified` razítkují) — vstup
+     * upozornění „Analýza pošty stojí“ ({@see AnalysisStalledAlertCheck}).
+     *
+     * @return array{count: int, oldest: ?string} `oldest` = nejstarší `modified`
+     */
+    public function stalled(int $olderThanSeconds, ?string $now = null): array
+    {
+        $now ??= date('Y-m-d H:i:s');
+        $cutoff = date('Y-m-d H:i:s', strtotime($now) - $olderThanSeconds);
+
+        $row = $this->db->fetchRow(
+            'SELECT COUNT(*) AS cnt, MIN(m.modified) AS oldest
+               FROM %n m
+               JOIN %n mb ON mb.id = m.mailbox
+              WHERE ' . self::PREDICATE . '
+                AND m.modified <= %s',
+            self::MESSAGES_TABLE,
+            self::MAILBOXES_TABLE,
+            ...self::predicateParams($now),
+            ...[$cutoff],
+        );
+
+        return [
+            'count' => (int) ($row['cnt'] ?? 0),
+            'oldest' => isset($row['oldest']) && $row['oldest'] !== null
+                ? ($row['oldest'] instanceof \DateTimeInterface ? $row['oldest']->format('Y-m-d H:i:s') : (string) $row['oldest'])
+                : null,
+        ];
     }
 
     /** Jedna zpráva splňuje celý predikát fronty (gate před claimem runneru). */

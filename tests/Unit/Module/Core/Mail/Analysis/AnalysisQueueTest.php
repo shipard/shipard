@@ -12,15 +12,16 @@ use Shipard\Module\Core\Mail\Analysis\AnalysisStates;
 
 /**
  * Predikát fronty AI analýzy — každá podmínka zvlášť, shodně pro výdej
- * (`eligible`), počet (`countEligible`) i gate runneru (`isEligible`).
- * Reálné vyhodnocení SQL kryjí integrační testy pull endpointu.
+ * (`eligible`), počet (`countEligible`), gate runneru (`isEligible`)
+ * i zaseklé zprávy (`stalled`). Reálné vyhodnocení SQL kryjí integrační
+ * testy runneru.
  */
 class AnalysisQueueTest extends TestCase
 {
     private const NOW = '2026-10-09 12:00:00';
 
     /**
-     * Zachytí argumenty všech tří dotazů.
+     * Zachytí argumenty všech čtyř dotazů.
      *
      * @return array<string, list<mixed>> klíč = metoda fronty
      */
@@ -32,6 +33,12 @@ class AnalysisQueueTest extends TestCase
             static function (...$args) use (&$captured): array {
                 $captured['eligible'] = $args;
                 return [];
+            },
+        );
+        $db->method('fetchRow')->willReturnCallback(
+            static function (...$args) use (&$captured): array {
+                $captured['stalled'] = $args;
+                return ['cnt' => 0, 'oldest' => null];
             },
         );
         $single = 0;
@@ -47,6 +54,7 @@ class AnalysisQueueTest extends TestCase
         $queue->eligible(5, self::NOW);
         $queue->countEligible(self::NOW);
         $queue->isEligible(42, self::NOW);
+        $queue->stalled(900, self::NOW);
 
         return $captured;
     }
@@ -103,6 +111,28 @@ class AnalysisQueueTest extends TestCase
         $this->assertTrue($queue->isEligible(42));
         $this->assertFalse($queue->isEligible(42));
         $this->assertTrue($queue->isEligible(42));
+    }
+
+    public function testStalledAddsModifiedCutoffAfterPredicateAndCasts(): void
+    {
+        $args = $this->capturedArgs()['stalled'];
+        $sql = (string) $args[0];
+        $this->assertStringContainsString('SELECT COUNT(*) AS cnt, MIN(m.modified) AS oldest', $sql);
+        $this->assertStringContainsString("c.expires_at > %s
+                )
+                AND m.modified <= %s", $sql, 'cutoff až za celým predikátem');
+        $this->assertSame('2026-10-09 11:45:00', end($args), 'cutoff = now − 900 s');
+
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnOnConsecutiveCalls(
+            ['cnt' => '2', 'oldest' => new \DateTimeImmutable('2026-10-09 11:30:00')],
+            ['cnt' => 0, 'oldest' => null],
+            null,
+        );
+        $queue = new AnalysisQueue($db);
+        $this->assertSame(['count' => 2, 'oldest' => '2026-10-09 11:30:00'], $queue->stalled(900));
+        $this->assertSame(['count' => 0, 'oldest' => null], $queue->stalled(900));
+        $this->assertSame(['count' => 0, 'oldest' => null], $queue->stalled(900));
     }
 
     public function testCountEligibleCastsToInt(): void

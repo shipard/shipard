@@ -75,8 +75,6 @@ class AnalysisRunner
     public const DRAIN_BUDGET_SECONDS = 600;
 
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
-    private const PROFILES_TABLE = 'core_mail_ai_profiles';
-    private const BACKENDS_TABLE = 'core_ai_backends';
 
     /**
      * @param \Closure(int): void|null $spawn Spuštění runneru pro zprávu
@@ -415,7 +413,7 @@ class AnalysisRunner
         if ($this->slots->isDisabled()) {
             return ['spawned' => [], 'skipped' => 'in-process analysis is disabled (ai.analysis.maxConcurrent = 0)'];
         }
-        if (!$this->hasUsableBackend()) {
+        if (!new AnalysisBackendProbe($this->db)->hasUsableBackend()) {
             ErrorLogger::warn('AnalysisRunner sweep: no usable AI backend (active default profile with an active backend holding an API key) — queue left as is');
             return ['spawned' => [], 'skipped' => 'no usable AI backend'];
         }
@@ -492,20 +490,6 @@ class AnalysisRunner
             throw new \RuntimeException("message {$messageId} vanished after claim");
         }
         return $message;
-    }
-
-    private function hasUsableBackend(): bool
-    {
-        $row = $this->db->fetchRow(
-            'SELECT b.api_key FROM %n p JOIN %n b ON b.id = p.backend
-              WHERE p.is_default = %i AND p.is_active = %i AND b.is_active = %i LIMIT 1',
-            self::PROFILES_TABLE,
-            self::BACKENDS_TABLE,
-            1,
-            1,
-            1,
-        );
-        return $row !== null && (string) ($row['api_key'] ?? '') !== '';
     }
 
     private function analyzerId(): string

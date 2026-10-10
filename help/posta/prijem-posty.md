@@ -1,7 +1,7 @@
 ---
 title: Příjem pošty
 summary: Jak dostat fakturu do Shipardu, co se s ní pak děje a jak si poradit s poštou, ve které není doklad ani dokument.
-keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, ostatní pošta, sken obálky, neobsahuje doklad ani dokument, k vyřízení, expirace domény, výzva k platbě, upomínka, lhůta, vyřízeno, archivovat vše, vrátit, pravidlo odesílatele, archivovat bez analýzy, archivovat hned, smíšený odesílatel, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
+keywords: [příjem pošty, přeposlat fakturu, adresa pro poštu, kam poslat fakturu, nahrát soubor, nahrání z dashboardu, přetáhnout soubor, nedorazilo, reklama, newsletter, hromadná pošta, ostatní pošta, sken obálky, neobsahuje doklad ani dokument, k vyřízení, expirace domény, výzva k platbě, upomínka, lhůta, vyřízeno, archivovat vše, vrátit, pravidlo odesílatele, archivovat bez analýzy, archivovat hned, smíšený odesílatel, ISDOC, sken, skener, předmět zprávy, titulek zprávy, hledání v poště, dodavatel u zprávy, analýza selhala, chyba analýzy, analýza pošty stojí, zprávy ve frontě, AI vrátila data v nečekaném tvaru, nepoužitelný návrh, znovu analyzovat, předzpracování, hotovo s chybami, faktura z odkazu, odkaz na dokument nefunguje, návrh vznikl bez výsledku předzpracování, pravidla předzpracování]
 related: [posta/kontrola-vytezeni.md, slovnicek.md, co-dnes-nejde.md]
 ---
 
@@ -175,6 +175,13 @@ vědět, o jakou zprávu šlo. Když AI
 odpověděla, ale návrh neprošel kontrolou formátu, uvidíš na záložce
 **Návrh** odznak **Chyba extrakce** a pod ním stejnou kartu s vysvětlením
 (**AI vrátila nepoužitelný návrh**).
+
+**Zprávy zůstávají Ve frontě.** Když zprávy čekají na strojové čtení
+déle než čtvrt hodiny, přestože je AI nastavená, objeví se na Dashboardu
+v sekci **Upozornění** karta **Analýza pošty stojí**. To není chyba
+ve zprávách ani v tvém nastavení — analýza na serveru neběží a řeší to
+správce serveru. O zprávy nepřijdeš: jakmile se analýza rozběhne,
+zpracují se samy a upozornění zmizí.
 
 **Předzpracování skončilo s chybami.** U některých odesílatelů faktura
 nepřijde jako příloha, ale jen jako odkaz ke stažení nebo přímo jako text

@@ -232,8 +232,19 @@ a `PreprocessRunnerFactory`; testy stavějí controllery bez něj. Záchrana:
 `mail-analyze --sweep` v minutovém slotu za reaperem — pro zprávy ve
 frontě bez aktivního claimu spustí runnery, nejvýš tolik, kolik je
 volných slotů; bez použitelného backendu (aktivní výchozí profil → aktivní
-backend s klíčem) nic a jedno varování. Druhý runner na tutéž zprávu skončí
-na `ALREADY_CLAIMED`.
+backend s klíčem — `AnalysisBackendProbe`) nic a jedno varování. Druhý
+runner na tutéž zprávu skončí na `ALREADY_CLAIMED`.
+
+**Upozornění „Analýza pošty stojí“** (`core.mail.analysis_stalled`,
+`AnalysisStalledAlertCheck`, interval 15 min; tasks/ai-analyzer-removal.md
+D23): zdroj dat má použitelný backend (tatáž sonda jako sweep) a ve frontě
+leží zpráva déle než 15 minut podle `modified`
+(`AnalysisQueue::stalled()`, stejný predikát jako výdej fronty). Jedno
+varování per zdroj dat (finding `queue_stalled`, počet + nejstarší);
+po doběhnutí analýz zmizí. Hlídá, že runner vůbec běží — cron se sweepem,
+`ai.analysis.maxConcurrent`, práva ke slotům; jednotlivá selhání běhů
+ukazuje Dashboard. Bez použitelného backendu check mlčí (fronta bez klíče
+je nedokončené nastavení, ne porucha).
 
 **Dobírání fronty** (tasks/mail-analysis-queue-drain.md D25,
 `AnalysisRunner::drain()`): runner po dokončení zprávy s jakýmkoli
