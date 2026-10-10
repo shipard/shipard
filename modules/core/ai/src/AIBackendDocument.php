@@ -12,7 +12,8 @@ use Shipard\Core\Security\DsSecretCipher;
  * Document třída pro `core_ai_backends`.
  *
  * Zodpovědnosti:
- *   - validace povinných polí (backend_id, name, model)
+ *   - validace povinných polí (backend_id, name); model připojení nenese
+ *     (tasks/ai-functions.md D39 — určuje ho AI funkce)
  *   - platforma (`provider`) z cfgItemu core.ai.platforms (#85 D39, D45)
  *   - vynucení invariantu "max. jeden backend s is_default = true per DS"
  *   - šifrování `api_key` přes DsSecretCipher v `beforeSave()` při dirty change
@@ -50,10 +51,6 @@ class AIBackendDocument extends Document
             $result->addError('name', 'Název je povinný', 'required');
         }
 
-        if (empty(trim((string) ($data['model'] ?? '')))) {
-            $result->addError('model', 'Model je povinný', 'required');
-        }
-
         // Chybějící klíč = výchozí hodnota sloupce (`anthropic`); prázdná
         // nebo neznámá platforma je chyba.
         if (array_key_exists('provider', $data)) {
@@ -71,7 +68,7 @@ class AIBackendDocument extends Document
             if ($existing !== null) {
                 $result->addError(
                     'is_default',
-                    "Výchozí backend již existuje: {$existing}",
+                    "Výchozí připojení již existuje: {$existing}",
                     'duplicate_default',
                 );
             }

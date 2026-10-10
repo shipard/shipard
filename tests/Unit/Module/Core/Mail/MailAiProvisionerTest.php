@@ -14,9 +14,10 @@ use Shipard\Module\Core\Mail\MailAiProvisioner;
  * MailAiProvisioner musí být idempotentní (každý ensure*() je ok volat
  * opakovaně) a respektovat jediné default omezení per DS. Uživatel
  * `_ai_analyzer` se nezakládá — existující se deaktivuje (#85 D21).
- * Výchozí model a náhrady vyřazených modelů bere z katalogu modelů
- * (skutečný soubor v repu, #85 D33, D34); bez výchozího modelu backend
- * ani profil nezakládá.
+ * Připojení vzniká bez modelu (tasks/ai-functions.md D39); náhrady
+ * vyřazených modelů u profilů bere z katalogu (skutečný soubor v repu,
+ * #85 D33); převod dřívějšího ladění připojení do profilů (D41, pravidlo
+ * 1) zapisuje jen do prázdných polí profilu.
  */
 class MailAiProvisionerTest extends TestCase
 {
@@ -161,14 +162,15 @@ class MailAiProvisionerTest extends TestCase
         $this->assertSame(0, $backend['is_active']);
         $this->assertSame(1, $backend['is_default']);
         $this->assertSame('anthropic', $backend['provider']);
-        // 0 = nenastaveno; skutečný default žije v provideru analyzéru.
-        $this->assertSame(0, $backend['max_tokens']);
-        // Přemostění (F0-D8) + teplota NULL = neposílat (F0-D1); thinking
-        // a effort nechává na DB defaultu `auto`.
-        $this->assertSame('claude-sonnet-4-6', $backend['model']);
-        $this->assertNull($backend['temperature']);
-        $this->assertArrayNotHasKey('thinking', $backend);
-        $this->assertArrayNotHasKey('effort', $backend);
+        // Jen přístup (D39): model a ladění určuje AI funkce — nic z toho
+        // se nezapisuje (staré sloupce v DB drží své výchozí hodnoty).
+        foreach (['model', 'max_tokens', 'temperature', 'thinking', 'effort'] as $column) {
+            $this->assertArrayNotHasKey($column, $backend, $column);
+        }
+
+        // Profil bez připojení (D4) = podle funkce.
+        $this->assertArrayHasKey('core_mail_ai_profiles', $insertedRows);
+        $this->assertNull($insertedRows['core_mail_ai_profiles']['backend']);
     }
 
     // --- přepis vyřazených modelů (F0-D8) ------------------------------------
@@ -187,28 +189,24 @@ class MailAiProvisionerTest extends TestCase
         $this->assertNull($catalog->retiredReplacement(''));
     }
 
-    public function testWithoutDefaultModelBackendAndProfileAreSkippedWithReason(): void
+    public function testEmptyCatalogStillCreatesConnectionAndProfileButRewritesNothing(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchRow')->willReturn(null);
         $db->method('fetchAll')->willReturn([
-            ['id' => 1, 'backend_id' => 'legacy', 'model' => 'claude-sonnet-4-5'],
+            ['id' => 1, 'profile_id' => 'legacy', 'model' => 'claude-sonnet-4-5'],
         ]);
         $db->method('getAffectedRows')->willReturn(0);
-        $db->expects($this->never())->method('insertRow');
+        $db->method('insertRow')->willReturnOnConsecutiveCalls(17, 33);
         $db->expects($this->never())->method('updateWhere');
 
-        // Prázdný katalog (DS před kompilací configu): žádný odhad modelu,
-        // žádný přepis — jen důvody přeskočení.
+        // Prázdný katalog (DS před kompilací configu): připojení model
+        // nepotřebuje, profil také ne; přepis vyřazených modelů se nekoná.
         $result = (new MailAiProvisioner($db, ModelCatalog::empty()))->provision();
 
-        $this->assertSame(0, $result['backend']['id']);
-        $this->assertFalse($result['backend']['created']);
-        $this->assertStringContainsString("no default model for tier 'balanced'", $result['backend']['skipped_reason']);
+        $this->assertSame(['id' => 17, 'created' => true], $result['backend']);
+        $this->assertSame(['id' => 33, 'profile_id' => 'czech_general', 'created' => true], $result['profile']);
         $this->assertSame([], $result['retired']);
-        $this->assertSame(0, $result['profile']['id']);
-        $this->assertFalse($result['profile']['created']);
-        $this->assertStringContainsString('default backend is not available', $result['profile']['skipped_reason']);
     }
 
     public function testExistingBackendAndProfileSurviveAnEmptyCatalog(): void
@@ -228,20 +226,20 @@ class MailAiProvisionerTest extends TestCase
         $this->assertSame(['id' => 3, 'profile_id' => 'czech_general', 'created' => false], $result['profile']);
     }
 
-    public function testRetireModelsRewritesEveryRetiredBackendAndLeavesOthers(): void
+    public function testRetireProfileModelsRewritesEveryRetiredProfileAndLeavesOthers(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchAll')->willReturn([
-            ['id' => 1, 'backend_id' => 'default', 'model' => 'claude-sonnet-4-5'],
-            ['id' => 2, 'backend_id' => 'dated', 'model' => 'claude-sonnet-4-5-20250929'],
-            ['id' => 3, 'backend_id' => 'bedrock', 'model' => 'anthropic.claude-sonnet-4-5'],
-            ['id' => 4, 'backend_id' => 'opus', 'model' => 'claude-opus-4-8'],
-            ['id' => 5, 'backend_id' => 'gateway', 'model' => 'claude-sonnet-4-6'],
+            ['id' => 1, 'profile_id' => 'czech_general', 'model' => 'claude-sonnet-4-5'],
+            ['id' => 2, 'profile_id' => 'dated', 'model' => 'claude-sonnet-4-5-20250929'],
+            ['id' => 3, 'profile_id' => 'bedrock', 'model' => 'anthropic.claude-sonnet-4-5'],
+            ['id' => 4, 'profile_id' => 'opus', 'model' => 'claude-opus-4-8'],
+            ['id' => 5, 'profile_id' => 'current', 'model' => 'claude-sonnet-4-6'],
         ]);
         $updates = [];
         $db->expects($this->exactly(2))->method('updateWhere')->willReturnCallback(
             function (string $table, array $data, string $where, mixed ...$params) use (&$updates): void {
-                $this->assertSame('core_ai_backends', $table);
+                $this->assertSame('core_mail_ai_profiles', $table);
                 $this->assertSame('id = %i', $where);
                 $this->assertArrayHasKey('modified', $data);
                 $updates[] = [$params[0], $data['model']];
@@ -249,25 +247,25 @@ class MailAiProvisionerTest extends TestCase
         );
         $db->expects($this->never())->method('execute');
 
-        $changed = (new MailAiProvisioner($db, self::catalog()))->retireModels();
+        $changed = (new MailAiProvisioner($db, self::catalog()))->retireProfileModels();
 
         $this->assertSame([[1, 'claude-sonnet-4-6'], [2, 'claude-sonnet-4-6']], $updates);
         $this->assertSame([
-            ['id' => 1, 'backend_id' => 'default', 'from' => 'claude-sonnet-4-5', 'to' => 'claude-sonnet-4-6'],
-            ['id' => 2, 'backend_id' => 'dated', 'from' => 'claude-sonnet-4-5-20250929', 'to' => 'claude-sonnet-4-6'],
+            ['id' => 1, 'profile_id' => 'czech_general', 'from' => 'claude-sonnet-4-5', 'to' => 'claude-sonnet-4-6'],
+            ['id' => 2, 'profile_id' => 'dated', 'from' => 'claude-sonnet-4-5-20250929', 'to' => 'claude-sonnet-4-6'],
         ], $changed);
     }
 
-    public function testRetireModelsSecondRunChangesNothing(): void
+    public function testRetireProfileModelsSecondRunChangesNothing(): void
     {
         $db = $this->createMock(DataSourceConnection::class);
         $db->method('fetchAll')->willReturn([
-            ['id' => 1, 'backend_id' => 'default', 'model' => 'claude-sonnet-4-6'],
-            ['id' => 2, 'backend_id' => 'dated', 'model' => 'claude-sonnet-4-6'],
+            ['id' => 1, 'profile_id' => 'czech_general', 'model' => 'claude-sonnet-4-6'],
         ]);
         $db->expects($this->never())->method('updateWhere');
 
-        $this->assertSame([], (new MailAiProvisioner($db, self::catalog()))->retireModels());
+        $this->assertSame([], (new MailAiProvisioner($db, self::catalog()))->retireProfileModels());
+        $this->assertSame([], (new MailAiProvisioner($db, ModelCatalog::empty()))->retireProfileModels(), 'bez katalogu nic');
     }
 
     public function testProvisionReportsRetiredModels(): void
@@ -277,19 +275,114 @@ class MailAiProvisionerTest extends TestCase
             ['id' => 2],   // backend by backend_id
             ['id' => 3],   // profile by profile_id
         );
-        $db->method('fetchAll')->willReturn([
-            ['id' => 2, 'backend_id' => 'default', 'model' => 'claude-sonnet-4-5'],
-        ]);
+        $db->method('fetchAll')->willReturnCallback(static fn (string $sql): array => str_contains($sql, 'JOIN core_ai_backends')
+            ? []   // převod: žádné nepřevedené připojení
+            : [['id' => 3, 'profile_id' => 'czech_general', 'model' => 'claude-sonnet-4-5']]);
         $db->method('getAffectedRows')->willReturn(0);
         $db->expects($this->never())->method('insertRow');
 
         $result = (new MailAiProvisioner($db, self::catalog()))->provision();
 
         $this->assertSame(
-            [['id' => 2, 'backend_id' => 'default', 'from' => 'claude-sonnet-4-5', 'to' => 'claude-sonnet-4-6']],
+            [['id' => 3, 'profile_id' => 'czech_general', 'from' => 'claude-sonnet-4-5', 'to' => 'claude-sonnet-4-6']],
             $result['retired'],
         );
+        $this->assertSame([], $result['converted']);
         $this->assertSame(['id' => 2, 'created' => false], $result['backend']);
+    }
+
+    // --- převod ladění připojení do profilů (tasks/ai-functions.md D41, pravidlo 1) ----
+
+    /** @return array<string, mixed> řádek JOINu profil × nepřevedené připojení */
+    private function legacyJoinRow(array $overrides = []): array
+    {
+        return $overrides + [
+            'id' => 7, 'profile_id' => 'czech_general', 'backend' => 1, 'model' => null,
+            'thinking' => 'default', 'effort' => 'default', 'max_tokens' => 0,
+            'backend_id' => 'default', 'is_default' => 1, 'backend_model' => 'claude-sonnet-4-6',
+            'backend_thinking' => 'auto', 'backend_effort' => 'auto', 'backend_max_tokens' => 0,
+        ];
+    }
+
+    public function testConvertLegacyProfileTuningCopiesModelAndTuningAndUnpinsDefaultConnection(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('getTableColumns')->willReturn(['thinking' => 'char(15)', 'effort' => 'char(10)', 'max_tokens' => 'int', 'temperature' => 'decimal']);
+        $captured = null;
+        $db->method('fetchAll')->willReturnCallback(function (string $sql) use (&$captured): array {
+            $captured = $sql;
+            return [
+                // Výchozí připojení se Sonnetem 5.5 + ladění + strop 4096: model
+                // i ladění do profilu, vazba na výchozí připojení pryč, strop
+                // jen jako poznámka.
+                $this->legacyJoinRow(['backend_model' => 'claude-sonnet-5-5', 'backend_thinking' => 'between_tools',
+                    'backend_effort' => 'high', 'backend_max_tokens' => 4096]),
+                // Druhé připojení s modelem úrovně a bez ladění: model se nepřevádí,
+                // vazba na ne-výchozí připojení zůstává — nic k zápisu.
+                $this->legacyJoinRow(['id' => 8, 'profile_id' => 'haiku', 'backend' => 2, 'backend_id' => 'second', 'is_default' => 0]),
+                // Profil s vlastním modelem a effortem: připojení ho nepřepíše.
+                $this->legacyJoinRow(['id' => 9, 'profile_id' => 'pinned', 'backend' => 2, 'backend_id' => 'second', 'is_default' => 0,
+                    'model' => 'claude-haiku-5-5', 'effort' => 'low', 'backend_model' => 'claude-opus-5-5', 'backend_effort' => 'max']),
+            ];
+        });
+        $updates = [];
+        $db->method('updateWhere')->willReturnCallback(
+            static function (string $table, array $data, string $where, mixed ...$params) use (&$updates): void {
+                unset($data['modified']);
+                $updates[] = [$table, $params[0], $data];
+            },
+        );
+
+        $converted = (new MailAiProvisioner($db, self::catalog()))->convertLegacyProfileTuning();
+
+        $this->assertStringContainsString('b.thinking AS backend_thinking', (string) $captured);
+        $this->assertStringContainsString('WHERE b.model IS NOT NULL', (string) $captured);
+        $this->assertSame([
+            ['core_mail_ai_profiles', 7, ['model' => 'claude-sonnet-5-5', 'thinking' => 'between_tools', 'effort' => 'high', 'backend' => null]],
+        ], $updates);
+        $this->assertSame([
+            [
+                'profile_id' => 'czech_general',
+                'changes' => [
+                    "model claude-sonnet-5-5 (from connection 'default')",
+                    "thinking between_tools (from connection 'default')",
+                    "effort high (from connection 'default')",
+                    "connection 'default' is the default → by function",
+                ],
+                'notes' => ["extraction max_tokens 4096 (connection 'default') → 32768 (function default; set max_tokens on the profile to keep the old ceiling)"],
+            ],
+        ], $converted);
+    }
+
+    public function testConvertLegacyProfileTuningWithoutTuningColumnsAndSecondRun(): void
+    {
+        // Nový zdroj dat: staré sloupce ladění v DB nejsou — převádí se jen model a vazba.
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('getTableColumns')->willReturn(['model' => 'varchar(100)']);
+        $captured = null;
+        $db->method('fetchAll')->willReturnCallback(function (string $sql) use (&$captured): array {
+            $captured = $sql;
+            return [$this->legacyJoinRow(['backend_model' => 'claude-haiku-5-5', 'is_default' => 0, 'backend_id' => 'fast'])];
+        });
+        $updates = [];
+        $db->method('updateWhere')->willReturnCallback(
+            static function (string $table, array $data, string $where, mixed ...$params) use (&$updates): void {
+                unset($data['modified']);
+                $updates[] = $data;
+            },
+        );
+
+        $converted = (new MailAiProvisioner($db, self::catalog()))->convertLegacyProfileTuning();
+
+        $this->assertStringNotContainsString('backend_thinking', (string) $captured);
+        $this->assertSame([['model' => 'claude-haiku-5-5']], $updates);
+        $this->assertSame(["model claude-haiku-5-5 (from connection 'fast')"], $converted[0]['changes']);
+
+        // Druhý běh: připojení už značku nemá (finishLegacyConversion) → JOIN nic nevrátí.
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturn([]);
+        $db->expects($this->never())->method('updateWhere');
+        $this->assertSame([], (new MailAiProvisioner($db, self::catalog()))->convertLegacyProfileTuning());
     }
 
     public function testProvisionedProfileLoadsTemplateAndJsonEncodes(): void

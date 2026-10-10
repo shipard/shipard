@@ -10,18 +10,25 @@ use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Utils\JsoncParser;
 
 /**
- * Idempotentní provisioning AI analýzy pošty: výchozí AI backend (včetně
- * přepisu vyřazených modelů) a výchozí profil, plus jednorázové datové
- * opravy. Volá ho `ds-upgrade` bezpodmínečně (i pod `skipProvisioning`,
- * tasks/ai-provisioning-unconditional.md) a `ai-profile-reload` (sync
- * profilu ze šablony).
+ * Idempotentní provisioning AI analýzy pošty: výchozí AI připojení
+ * (`core_ai_backends`, bez modelu — model určuje AI funkce
+ * `mail.extraction`, tasks/ai-functions.md D39), výchozí profil (bez
+ * připojení = podle funkce, D4), převod dřívějšího ladění backendu do
+ * profilů (D41, pravidlo 1), přepis vyřazených modelů u profilů
+ * a jednorázové datové opravy. Volá ho `ds-upgrade` bezpodmínečně (i pod
+ * `skipProvisioning`, tasks/ai-provisioning-unconditional.md) po
+ * AiFunctionProvisioneru a `ai-profile-reload` (sync profilu ze šablony).
  *
- * Model nového backendu i náhrady vyřazených modelů určuje katalog modelů
- * (`ModelCatalog`, tasks/ai-model-catalog.md D33, D34): výchozí model
- * úrovně {@see DEFAULT_MODEL_TIER} (mapa `core.ai.tiers`) a `lifecycle.replacedBy`
- * u modelů se statusem deprecated / retired. Bez katalogu (prázdný, DS
- * před kompilací configu) se backend nezakládá a nic nepřepisuje —
- * provisioner to vrátí jako `skipped_reason`, nikdy neodhaduje.
+ * Převod profilů (D41, jednorázově; připojení s vyplněným `model` je
+ * značka „nepřevedeno“, kterou po obou provisionerech vynuluje
+ * AiFunctionProvisioner::finishLegacyConversion, D46): profil navázaný
+ * na takové připojení dostane jeho model, liší-li se od modelu úrovně
+ * funkce, a `thinking` / `effort` jiné než `auto`; vazba na výchozí
+ * připojení se vynuluje (= podle funkce). `max_tokens` připojení se
+ * nepřevádí — jen poznámka, že strop analýzy je teď podle funkce.
+ *
+ * Náhrady vyřazených modelů určuje katalog modelů (`ModelCatalog`,
+ * `lifecycle.replacedBy`); bez katalogu se nic nepřepisuje.
  *
  * Systémový uživatel `_ai_analyzer` (externí analyzer, zrušen #85 D20–D21,
  * tasks/ai-analyzer-removal.md) se už nezakládá; existující účet se při
@@ -37,11 +44,11 @@ class MailAiProvisioner
     public const DEFAULT_BACKEND_ID = 'default';
 
     /**
-     * Úroveň, jejíž výchozí model (mapa `core.ai.tiers`, D37) dostane nově
-     * zakládaný backend (D34): dnes Sonnet 4.6 — přemostění F0-D8, řada 5
-     * se zkouší přes druhý backend (F0-D6).
+     * Úroveň funkce `mail.extraction` (deklarace v module.jsonc): model
+     * připojení shodný s modelem této úrovně se do profilu nepřevádí.
      */
-    public const DEFAULT_MODEL_TIER = ModelSpec::TIER_BALANCED;
+    public const EXTRACTION_TIER = ModelSpec::TIER_BALANCED;
+    public const EXTRACTION_MAX_TOKENS = 32768;
     public const DEFAULT_PROFILE_ID = 'czech_general';
     public const DEFAULT_PROFILE_TEMPLATE = __DIR__ . '/../profiles/czech_general.jsonc';
 
@@ -56,8 +63,9 @@ class MailAiProvisioner
 
     /**
      * @return array{
-     *     backend: array{id: int, created: bool},
-     *     retired: list<array{id: int, backend_id: string, from: string, to: string}>,
+     *     backend: array{id: int, created: bool, skipped_reason?: string},
+     *     converted: list<array{profile_id: string, changes: list<string>, notes: list<string>}>,
+     *     retired: list<array{id: int, profile_id: string, from: string, to: string}>,
      *     profile_rename: array{renamed: int},
      *     profile: array{id: int, profile_id: string, created: bool, skipped_reason?: string},
      *     queue_fix: array{fixed: int},
@@ -67,18 +75,18 @@ class MailAiProvisioner
     public function provision(): array
     {
         $backend = $this->ensureDefaultBackend();
-        $retired = $this->retireModels();
         $renamed = $this->renameLegacyProfile();
-        // Bez backendu (katalog bez výchozího modelu) profil nevzniká —
-        // vazba na backend je povinná; existující profil se jen ohlásí.
-        $profile = $backend['id'] > 0 || $backend['created']
-            ? $this->ensureDefaultProfile($backend['id'])
-            : $this->defaultProfileWithoutBackend();
+        $profile = $this->ensureDefaultProfile();
+        // Převod před přepisem vyřazených modelů: model z připojení skončí
+        // v profilu a případná náhrada se udělá tam.
+        $converted = $this->convertLegacyProfileTuning();
+        $retired = $this->retireProfileModels();
         $queueFix = $this->fixQueuedArchivedMessages();
         $legacy = $this->deactivateLegacyAnalyzer();
 
         return [
             'backend' => $backend,
+            'converted' => $converted,
             'retired' => $retired,
             'profile_rename' => ['renamed' => $renamed],
             'profile' => $profile,
@@ -88,18 +96,94 @@ class MailAiProvisioner
     }
 
     /**
-     * Jednorázový idempotentní přepis vyřazených modelů u **všech** backendů
-     * (F0-D8, D33) podle `lifecycle.replacedBy` katalogu — i u backendu
-     * hostovaného DS, který míří na AI gateway (gateway model jen předává
-     * dál). Shoda na přesné ID nebo na ID s datovou příponou; ID s prefixem
-     * platformy (`anthropic.…` na Bedrocku) se nemění — partnerské
-     * platformy mají vlastní termíny. Po přepisu navždy matchne 0 řádků.
+     * Pravidlo 1 převodu (D41): profily navázané na dosud nepřevedené
+     * připojení (`core_ai_backends.model IS NOT NULL`). Zapisuje jen do
+     * polí profilu, která jsou ještě prázdné / `default` — druhý běh nic
+     * nemění. Sloupce ladění připojení se čtou, jen pokud v databázi
+     * existují (nový zdroj dat je nemá).
      *
-     * @return list<array{id: int, backend_id: string, from: string, to: string}> Změněné backendy.
+     * @return list<array{profile_id: string, changes: list<string>, notes: list<string>}>
      */
-    public function retireModels(): array
+    public function convertLegacyProfileTuning(): array
     {
-        $rows = $this->db->fetchAll('SELECT id, backend_id, model FROM core_ai_backends');
+        $columns = $this->db->getTableColumns('core_ai_backends');
+        $hasTuning = isset($columns['thinking']) && isset($columns['effort']);
+        $hasMaxTokens = isset($columns['max_tokens']);
+
+        $select = 'SELECT p.id, p.profile_id, p.backend, p.model, p.thinking, p.effort, p.max_tokens,'
+            . ' b.backend_id, b.is_default, b.model AS backend_model'
+            . ($hasTuning ? ', b.thinking AS backend_thinking, b.effort AS backend_effort' : '')
+            . ($hasMaxTokens ? ', b.max_tokens AS backend_max_tokens' : '')
+            . ' FROM core_mail_ai_profiles p JOIN core_ai_backends b ON b.id = p.backend'
+            . ' WHERE b.model IS NOT NULL ORDER BY p.id';
+        $tierModel = $this->catalog->defaultModel(self::EXTRACTION_TIER);
+
+        $converted = [];
+        foreach ($this->db->fetchAll($select) as $row) {
+            $code = (string) ($row['backend_id'] ?? '');
+            $update = [];
+            $changes = [];
+            $notes = [];
+
+            $model = trim((string) ($row['backend_model'] ?? ''));
+            if ($model !== '' && $model !== $tierModel && self::blank($row['model'] ?? null)) {
+                $update['model'] = $model;
+                $changes[] = "model {$model} (from connection '{$code}')";
+            }
+            if ($hasTuning) {
+                foreach (['thinking', 'effort'] as $column) {
+                    $value = trim((string) ($row['backend_' . $column] ?? ''));
+                    if ($value !== '' && $value !== 'auto' && $value !== 'default'
+                        && trim((string) ($row[$column] ?? 'default')) === 'default'
+                    ) {
+                        $update[$column] = $value;
+                        $changes[] = "{$column} {$value} (from connection '{$code}')";
+                    }
+                }
+            }
+            if (!empty($row['is_default'])) {
+                $update['backend'] = null;
+                $changes[] = "connection '{$code}' is the default → by function";
+            }
+            if ($hasMaxTokens && (int) ($row['backend_max_tokens'] ?? 0) > 0 && (int) ($row['max_tokens'] ?? 0) === 0) {
+                $notes[] = sprintf(
+                    "extraction max_tokens %d (connection '%s') → %d (function default; set max_tokens on the profile to keep the old ceiling)",
+                    (int) $row['backend_max_tokens'],
+                    $code,
+                    self::EXTRACTION_MAX_TOKENS,
+                );
+            }
+
+            if ($update !== []) {
+                $this->db->updateWhere(
+                    'core_mail_ai_profiles',
+                    $update + ['modified' => date('Y-m-d H:i:s')],
+                    'id = %i',
+                    (int) $row['id'],
+                );
+            }
+            if ($changes !== [] || $notes !== []) {
+                $converted[] = ['profile_id' => (string) ($row['profile_id'] ?? ''), 'changes' => $changes, 'notes' => $notes];
+            }
+        }
+        return $converted;
+    }
+
+    /**
+     * Jednorázový idempotentní přepis vyřazených modelů u profilů pošty
+     * (F0-D8, D33) podle `lifecycle.replacedBy` katalogu. Shoda na přesné
+     * ID nebo na ID s datovou příponou; ID s prefixem platformy
+     * (`anthropic.…` na Bedrocku) se nemění — partnerské platformy mají
+     * vlastní termíny. Po přepisu navždy matchne 0 řádků; bez katalogu nic.
+     *
+     * @return list<array{id: int, profile_id: string, from: string, to: string}> Změněné profily.
+     */
+    public function retireProfileModels(): array
+    {
+        if ($this->catalog->isEmpty()) {
+            return [];
+        }
+        $rows = $this->db->fetchAll('SELECT id, profile_id, model FROM core_mail_ai_profiles WHERE model IS NOT NULL');
         $changed = [];
         foreach ($rows as $row) {
             $model = (string) ($row['model'] ?? '');
@@ -108,19 +192,24 @@ class MailAiProvisioner
                 continue;
             }
             $this->db->updateWhere(
-                'core_ai_backends',
+                'core_mail_ai_profiles',
                 ['model' => $replacement, 'modified' => date('Y-m-d H:i:s')],
                 'id = %i',
                 (int) $row['id'],
             );
             $changed[] = [
                 'id' => (int) $row['id'],
-                'backend_id' => (string) ($row['backend_id'] ?? ''),
+                'profile_id' => (string) ($row['profile_id'] ?? ''),
                 'from' => $model,
                 'to' => $replacement,
             ];
         }
         return $changed;
+    }
+
+    private static function blank(mixed $value): bool
+    {
+        return $value === null || trim((string) $value) === '';
     }
 
     /**
@@ -207,12 +296,10 @@ class MailAiProvisioner
     }
 
     /**
-     * Vytvoří (pokud chybí) default backend `default` (Anthropic Claude,
-     * model = výchozí model úrovně {@see DEFAULT_MODEL_TIER} z katalogu,
-     * D34). `api_key` zůstává NULL, `is_active` = false — admin doplní klíč
-     * přes `ai-backend-set-key`. `temperature` NULL = parametr se neposílá
-     * (F0-D1); `thinking` a `effort` nechává na DB defaultu `auto`. Bez
-     * výchozího modelu v katalogu backend nevznikne (`id` 0 + důvod).
+     * Vytvoří (pokud chybí) výchozí připojení `default` (platforma
+     * Anthropic). Model nenese — určuje ho AI funkce (D39). `api_key`
+     * zůstává NULL, `is_active` = false — admin doplní klíč přes
+     * `ai-backend-set-key`.
      *
      * @return array{id: int, created: bool, skipped_reason?: string}
      */
@@ -240,27 +327,13 @@ class MailAiProvisioner
             ];
         }
 
-        $model = $this->catalog->defaultModel(self::DEFAULT_MODEL_TIER);
-        if ($model === null) {
-            return [
-                'id' => 0,
-                'created' => false,
-                'skipped_reason' => "model catalog has no default model for tier '" . self::DEFAULT_MODEL_TIER . "'",
-            ];
-        }
-
         $now = date('Y-m-d H:i:s');
         $id = $this->db->insertRow('core_ai_backends', [
             'backend_id' => self::DEFAULT_BACKEND_ID,
             'name' => 'Anthropic Claude',
             'provider' => 'anthropic',
-            'model' => $model,
             'api_key' => null,
             'base_url' => null,
-            // 0 = nenastaveno — limit se rozhoduje kaskádou profil → backend
-            // → default runneru (AnalysisRunner::DEFAULT_MAX_TOKENS).
-            'max_tokens' => 0,
-            'temperature' => null,
             'is_default' => 1,
             'is_active' => 0,
             'docState' => 40,
@@ -274,14 +347,15 @@ class MailAiProvisioner
 
     /**
      * Vytvoří default profil `czech_general` ze šablony
-     * `modules/core/mail/profiles/czech_general.jsonc`. Když profil tohoto
+     * `modules/core/mail/profiles/czech_general.jsonc` — bez připojení
+     * (NULL = podle funkce `mail.extraction`, D4). Když profil tohoto
      * kódu existuje, beze změny ho přeskočí (admin může mít upravený
      * prompt). `profile_id` ve výsledku je kód provisionovaného default
      * profilu (pro výpisy v ds-upgrade), ne kód případného cizího defaultu.
      *
      * @return array{id: int, profile_id: string, created: bool, skipped_reason?: string}
      */
-    public function ensureDefaultProfile(int $backendId): array
+    public function ensureDefaultProfile(): array
     {
         $row = $this->db->fetchRow(
             'SELECT id FROM core_mail_ai_profiles WHERE profile_id = %s',
@@ -312,7 +386,7 @@ class MailAiProvisioner
         $id = $this->db->insertRow('core_mail_ai_profiles', [
             'profile_id' => (string) $template['profile_id'],
             'name' => (string) $template['name'],
-            'backend' => $backendId,
+            'backend' => null,
             'supported_doc_types' => json_encode(
                 $template['supported_doc_types'],
                 JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
@@ -337,30 +411,6 @@ class MailAiProvisioner
         ]);
 
         return ['id' => $id, 'profile_id' => (string) $template['profile_id'], 'created' => true];
-    }
-
-    /**
-     * Stav default profilu, když default backend není k dispozici
-     * (katalog modelů bez výchozího modelu): existující profil se ohlásí
-     * beze změny, chybějící se nezakládá — má důvod přeskočení.
-     *
-     * @return array{id: int, profile_id: string, created: bool, skipped_reason?: string}
-     */
-    private function defaultProfileWithoutBackend(): array
-    {
-        $row = $this->db->fetchRow(
-            'SELECT id FROM core_mail_ai_profiles WHERE profile_id = %s',
-            self::DEFAULT_PROFILE_ID,
-        );
-        if ($row !== null) {
-            return ['id' => (int) $row['id'], 'profile_id' => self::DEFAULT_PROFILE_ID, 'created' => false];
-        }
-        return [
-            'id' => 0,
-            'profile_id' => self::DEFAULT_PROFILE_ID,
-            'created' => false,
-            'skipped_reason' => 'default backend is not available (model catalog has no default model)',
-        ];
     }
 
     /**

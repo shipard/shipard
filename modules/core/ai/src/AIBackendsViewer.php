@@ -15,8 +15,8 @@ class AIBackendsViewer extends TableViewer
     {
         // api_key se NIKDY neselektuje jako hodnota — jen boolean příznak
         // has_api_key (zašifrovaný klíč se nastavuje výhradně přes CLI).
-        $sql = 'SELECT `id`, `backend_id`, `name`, `provider`, `model`, `base_url`,'
-            . ' `max_tokens`, `temperature`, `is_default`, `is_active`,'
+        $sql = 'SELECT `id`, `backend_id`, `name`, `provider`, `base_url`,'
+            . ' `is_default`, `is_active`,'
             . ' `docState`, `docStateMain`,'
             . ' (`api_key` IS NOT NULL AND `api_key` != \'\') AS `has_api_key`'
             . ' FROM `' . $this->table . '`';
@@ -41,7 +41,7 @@ class AIBackendsViewer extends TableViewer
 
         if ($search !== null && $search !== '') {
             [$searchSql, $searchParams] = $this->buildSearchCondition(
-                ['name', 'backend_id', 'model', 'provider'],
+                ['name', 'backend_id', 'provider'],
                 $search,
             );
             if ($searchSql !== '') {
@@ -79,9 +79,10 @@ class AIBackendsViewer extends TableViewer
             : ['text' => 'neaktivní', 'class' => 'muted'];
         $row['i1'] = $badges;
 
+        // Jen přístup (D39): platforma a případná vlastní adresa (gateway).
         $provider = (string) ($rowData['provider'] ?? '');
-        $model = (string) ($rowData['model'] ?? '');
-        $t2 = trim($provider . ($provider !== '' && $model !== '' ? ' / ' : '') . $model);
+        $baseUrl = trim((string) ($rowData['base_url'] ?? ''));
+        $t2 = trim($provider . ($provider !== '' && $baseUrl !== '' ? ' · ' : '') . $baseUrl);
         $row['t2'] = $t2 !== '' ? ['text' => $t2, 'class' => 'muted'] : null;
 
         $backendId = (string) ($rowData['backend_id'] ?? '');
@@ -94,8 +95,8 @@ class AIBackendsViewer extends TableViewer
     {
         // api_key NIKDY jako hodnota — jen has_api_key příznak.
         $record = $this->db->fetchRow(
-            'SELECT `id`, `backend_id`, `name`, `provider`, `model`, `base_url`,'
-            . ' `max_tokens`, `temperature`, `thinking`, `effort`, `is_default`, `is_active`,'
+            'SELECT `id`, `backend_id`, `name`, `provider`, `base_url`,'
+            . ' `is_default`, `is_active`,'
             . ' `created`, `modified`,'
             . ' (`api_key` IS NOT NULL AND `api_key` != \'\') AS `has_api_key`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
@@ -107,26 +108,18 @@ class AIBackendsViewer extends TableViewer
         }
 
         $identity = [];
-        $this->addItem($identity, 'Kód backendu', $record['backend_id'] ?? null);
+        $this->addItem($identity, 'Kód připojení', $record['backend_id'] ?? null);
         $this->addItem($identity, 'Název', $record['name'] ?? null);
 
         $provider = [];
-        $this->addItem($provider, 'Provider', $record['provider'] ?? null);
-        $this->addItem($provider, 'Model', $record['model'] ?? null);
+        $this->addItem($provider, 'Platforma', $this->platformLabel($record['provider'] ?? null));
         $this->addItem($provider, 'Base URL', $record['base_url'] ?? null);
 
         $access = [];
         $this->addItem($access, 'API klíč', !empty($record['has_api_key']) ? 'nastaven' : 'nenastaven');
 
-        // NULL teplota a `auto` = parametr se neposílá (tasks/ai-models-phase0.md F0-D1, F0-D2).
-        $tuning = [];
-        $this->addItem($tuning, 'Max. tokenů', ((int) ($record['max_tokens'] ?? 0)) ?: 'automaticky');
-        $this->addItem($tuning, 'Teplota', $record['temperature'] ?? 'výchozí modelu');
-        $this->addItem($tuning, 'Přemýšlení', $this->tuningLabel('core.ai.thinkingModes', $record['thinking'] ?? null));
-        $this->addItem($tuning, 'Úsilí', $this->tuningLabel('core.ai.effortLevels', $record['effort'] ?? null));
-
         $flags = [];
-        $this->addItem($flags, 'Výchozí backend', !empty($record['is_default']) ? 'Ano' : 'Ne');
+        $this->addItem($flags, 'Výchozí připojení', !empty($record['is_default']) ? 'Ano' : 'Ne');
         $this->addItem($flags, 'Aktivní', !empty($record['is_active']) ? 'Ano' : 'Ne');
 
         $status = [];
@@ -141,9 +134,8 @@ class AIBackendsViewer extends TableViewer
                     'type'   => 'properties',
                     'groups' => [
                         ['title' => 'Identifikace', 'items' => $identity],
-                        ['title' => 'Provider', 'items' => $provider],
+                        ['title' => 'Platforma', 'items' => $provider],
                         ['title' => 'Přístup', 'items' => $access],
-                        ['title' => 'Ladění', 'items' => $tuning],
                         ['title' => 'Příznaky', 'items' => $flags],
                         ['title' => 'Stav', 'items' => $status],
                     ],
@@ -161,14 +153,14 @@ class AIBackendsViewer extends TableViewer
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
     }
 
-    /** Popisek hodnoty z cfgItemu (`name` po lokalizaci); bez konfigurace surová hodnota. */
-    private function tuningLabel(string $cfgItemId, mixed $value): ?string
+    /** Název platformy z cfgItemu core.ai.platforms; bez konfigurace surová hodnota. */
+    private function platformLabel(mixed $value): ?string
     {
         if ($value === null || $value === '') {
             return null;
         }
         $value = (string) $value;
-        $cfg = $this->config?->cfgItem($cfgItemId);
+        $cfg = $this->config?->cfgItem('core.ai.platforms');
         $entry = is_array($cfg) ? ($cfg[$value] ?? null) : null;
         return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $value;
     }

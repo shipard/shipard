@@ -578,7 +578,7 @@ class DsUpgradeCommandTest extends TestCase
 
         $this->assertSame(Command::SUCCESS, $exitCode);
         $display = $tester->getDisplay();
-        $this->assertStringContainsString("[CREATE] backend 'default'", $display);
+        $this->assertStringContainsString("[CREATE] connection 'default'", $display);
         $this->assertStringContainsString('ai-backend-set-key', $display);
         $this->assertStringContainsString("[CREATE] profile 'czech_general'", $display);
         $this->assertStringContainsString('Provisioning disabled via config', $display);
@@ -606,7 +606,7 @@ class DsUpgradeCommandTest extends TestCase
         $this->assertStringContainsString("[CREATE] AI function 'mail.extraction'", $display);
         $this->assertStringContainsString("[CREATE] AI function 'chat.default'", $display);
         // AI funkce před AI poštou (převod ladění je potřebuje).
-        $this->assertLessThan(strpos($display, "[CREATE] backend 'default'"), strpos($display, "[CREATE] AI function 'mail.extraction'"));
+        $this->assertLessThan(strpos($display, "[CREATE] connection 'default'"), strpos($display, "[CREATE] AI function 'mail.extraction'"));
     }
 
     public function testAiFunctionsWithoutDeclarationsWarnAndSkip(): void
@@ -628,7 +628,7 @@ class DsUpgradeCommandTest extends TestCase
         $this->assertStringNotContainsString('[CREATE] AI function', $display);
     }
 
-    public function testMailAiWithoutModelCatalogWarnsAndSkipsBackendCreation(): void
+    public function testMailAiWithoutModelCatalogWarnsButStillCreatesConnectionAndProfile(): void
     {
         $this->createAiFixtureModules();
         $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'core.mail']);
@@ -641,15 +641,60 @@ class DsUpgradeCommandTest extends TestCase
         $tester = new CommandTester($command);
         $exitCode = $tester->execute([]);
 
-        // Bez katalogu se model neodhaduje: upgrade projde, backend i profil
-        // se přeskočí s důvodem, [WARN] ukáže na cfgItem.
+        // Připojení model nenese (D39) a profil ho nepotřebuje — bez katalogu
+        // se jen nepřepisují vyřazené modely, [WARN] ukáže na cfgItem.
         $this->assertSame(Command::SUCCESS, $exitCode);
         $display = $tester->getDisplay();
         $this->assertStringContainsString('[WARN]   model catalog unavailable (cfgItem core.ai.models)', $display);
-        $this->assertStringContainsString("[SKIP]   backend 'default' — model catalog has no default model", $display);
-        $this->assertStringContainsString("[SKIP]   profile 'czech_general' — default backend is not available", $display);
-        $this->assertStringNotContainsString("[CREATE] backend 'default'", $display);
-        $this->assertStringNotContainsString("[CREATE] profile", $display);
+        $this->assertStringContainsString("[CREATE] connection 'default'", $display);
+        $this->assertStringContainsString("[CREATE] profile 'czech_general'", $display);
+        $this->assertStringNotContainsString('[SKIP]   connection', $display);
+    }
+
+    public function testAiLegacyConversionIsReportedAndFinishedAfterMailAi(): void
+    {
+        $this->createAiFixtureModules();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'core.mail']);
+        $this->dsConnection->method('getTableColumns')->willReturnCallback(static fn (string $table): array => $table === 'core_ai_backends'
+            ? ['model' => 'varchar(100)', 'thinking' => 'char(15)', 'effort' => 'char(10)', 'max_tokens' => 'int', 'temperature' => 'decimal']
+            : []);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        // fetchRow: připojení 'default' existuje (id 1), profil existuje (id 3);
+        // výchozí připojení se značkou a thinking adaptive (pravidlo 3).
+        $this->dsConnection->method('fetchRow')->willReturnCallback(static fn (string $sql, mixed ...$args): ?array => match (true) {
+            str_contains($sql, 'is_default = %i AND model IS NOT NULL') => ['id' => 1, 'backend_id' => 'default', 'thinking' => 'adaptive', 'effort' => 'auto'],
+            str_contains($sql, 'WHERE backend_id = %s') => ['id' => 1],
+            str_contains($sql, 'WHERE profile_id = %s') => ['id' => 3, 'prompt_version' => 'v9.9.9'],
+            default => null,
+        });
+        $this->dsConnection->method('fetchAll')->willReturnCallback(static fn (string $sql): array => match (true) {
+            str_contains($sql, 'JOIN core_ai_backends') => [[
+                'id' => 3, 'profile_id' => 'czech_general', 'backend' => 1, 'model' => null, 'thinking' => 'default', 'effort' => 'default',
+                'max_tokens' => 0, 'backend_id' => 'default', 'is_default' => 1, 'backend_model' => 'claude-sonnet-5-5',
+                'backend_thinking' => 'adaptive', 'backend_effort' => 'auto', 'backend_max_tokens' => 4096,
+            ]],
+            str_contains($sql, 'SELECT id, function_id, thinking, effort FROM') => [
+                ['id' => 1, 'function_id' => 'mail.extraction', 'thinking' => 'default', 'effort' => 'default'],
+                ['id' => 2, 'function_id' => 'chat.default', 'thinking' => 'default', 'effort' => 'default'],
+            ],
+            str_contains($sql, 'SELECT id, backend_id FROM core_ai_backends WHERE model IS NOT NULL') => [['id' => 1, 'backend_id' => 'default']],
+            str_contains($sql, 'SELECT function_id FROM') => [['function_id' => 'mail.extraction'], ['function_id' => 'chat.default']],
+            default => [],
+        });
+
+        $tester = $this->createCommandTester();
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString("[CONVERT] AI function 'mail.extraction': thinking adaptive (from default connection 'default')", $display);
+        $this->assertStringContainsString("[CONVERT] AI function 'chat.default': thinking adaptive (from default connection 'default')", $display);
+        $this->assertStringContainsString("[CONVERT] profile 'czech_general': model claude-sonnet-5-5 (from connection 'default'); thinking adaptive (from connection 'default'); connection 'default' is the default → by function", $display);
+        $this->assertStringContainsString("[NOTE]   profile 'czech_general': extraction max_tokens 4096 (connection 'default') → 32768", $display);
+        $this->assertStringContainsString("[CONVERT] connection 'default': legacy model and tuning cleared", $display);
+        // Značka až po převodu profilů.
+        $this->assertLessThan(strpos($display, "[CONVERT] connection 'default'"), strpos($display, "[CONVERT] profile 'czech_general'"));
     }
 
     public function testMailAiDeactivatesLegacyAnalyzerUserOnlyWhenSomethingChanged(): void

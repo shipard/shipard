@@ -1,8 +1,14 @@
 {
     "tableId": 307,
-    "name": "AI backends",
-    "name:cs": "AI backendy",
-    "name:en": "AI backends",
+    "name": "AI connections",
+    "name:cs": "AI připojení",
+    "name:en": "AI connections",
+
+    // AI připojení (tasks/ai-functions.md D39): jen přístup — platforma,
+    // adresa, šifrovaný klíč. Model a ladění určuje AI funkce
+    // (core_ai_function_settings) a profil pošty. Sloupce ladění
+    // (max_tokens, temperature, thinking, effort) z definice zmizely
+    // ve fázi 1b; v databázích je ds-upgrade nechává (nemaže).
 
     "displayPattern": "{name}",
 
@@ -30,12 +36,6 @@
             "name": "Credentials",
             "name:cs": "Přístup",
             "name:en": "Credentials"
-        },
-        {
-            "id": "tuning",
-            "name": "Tuning",
-            "name:cs": "Ladění",
-            "name:en": "Tuning"
         },
         {
             "id": "flags",
@@ -100,13 +100,19 @@
             "group": "provider"
         },
         {
+            // Nepoužívá se od fáze 1b (#85 D39): model určuje AI funkce. Sloupec
+            // zůstává v definici jako nullable — v databázích byl NOT NULL bez
+            // výchozí hodnoty a ds-upgrade sloupce nemaže, takže by po vyjmutí
+            // selhal INSERT nového připojení. Mimo formulář i viewer; odstraní
+            // servisní výmaz. Dokud je vyplněný, je to značka nepřevedeného
+            // připojení (D46 — ds-upgrade ho po převodu vynuluje).
             "id": "model",
-            "name": "Model",
-            "name:cs": "Model",
-            "name:en": "Model",
+            "name": "Model (unused since phase 1b)",
+            "name:cs": "Model (nepoužívá se od fáze 1b)",
+            "name:en": "Model (unused since phase 1b)",
             "type": "varchar",
             "length": 100,
-            "nullable": false,
+            "nullable": true,
             "group": "provider"
         },
         {
@@ -131,62 +137,6 @@
             "nullable": true,
             "sensitive": true,
             "group": "credentials"
-        },
-
-        // --- tuning ---
-
-        {
-            "id": "max_tokens",
-            "name": "Max tokens (0 = automatic)",
-            "name:cs": "Max. tokenů (0 = automaticky)",
-            "name:en": "Max tokens (0 = automatic)",
-            "type": "int",
-            "nullable": false,
-            "default": 0,
-            "group": "tuning"
-        },
-        {
-            // NULL = parametr se neposílá, model použije svůj výchozí stav
-            // (řada 5 nevýchozí teplotu odmítá — tasks/ai-models-phase0.md F0-D1).
-            // Čte ji jen analýza pošty; chat, shrnutí a klasifikátory ji neposílají.
-            "id": "temperature",
-            "name": "Temperature (empty = model default)",
-            "name:cs": "Teplota (prázdné = výchozí modelu)",
-            "name:en": "Temperature (empty = model default)",
-            "type": "numeric",
-            "precision": 3,
-            "scale": 2,
-            "nullable": true,
-            "group": "tuning"
-        },
-        {
-            // `auto` = parametr se neposílá; jiná hodnota jde jako
-            // `thinking: {"type": "<hodnota>"}`. Které hodnoty model přijímá,
-            // se neověřuje — chybu vrátí API (F0-D2).
-            "id": "thinking",
-            "name": "Thinking",
-            "name:cs": "Přemýšlení (thinking)",
-            "name:en": "Thinking",
-            "type": "enumString",
-            "length": 15,
-            "nullable": false,
-            "cfgItem": "core.ai.thinkingModes",
-            "default": "auto",
-            "group": "tuning"
-        },
-        {
-            // `auto` = parametr se neposílá; jiná hodnota jde jako
-            // `output_config: {"effort": "<hodnota>"}` (F0-D2).
-            "id": "effort",
-            "name": "Effort",
-            "name:cs": "Úsilí (effort)",
-            "name:en": "Effort",
-            "type": "enumString",
-            "length": 10,
-            "nullable": false,
-            "cfgItem": "core.ai.effortLevels",
-            "default": "auto",
-            "group": "tuning"
         },
 
         // --- flags ---

@@ -343,6 +343,10 @@ class DsUpgradeCommand extends Command
 
         $this->provisionMailAi($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
 
+        // Značka hotového převodu ladění backendů (D41, D46) — až po obou
+        // provisionerech, které staré sloupce čtou. Po prvním běhu nic.
+        $this->finishAiLegacyConversion($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
+
         // Systémová pravidla předzpracování pošty (tasks/mail-preprocess.md
         // §2) — BEZPODMÍNEČNĚ, i pod skipProvisioning: import-mode DS
         // přijímá poštu stejně. Idempotentní upsert dle rule_id,
@@ -579,7 +583,7 @@ class DsUpgradeCommand extends Command
         }
 
         $registry = $this->loadAiFunctionRegistry($dsDir, $dsConfig);
-        $result = (new AiFunctionProvisioner($dsConnection, $registry))->provision();
+        $result = $this->createAiFunctionProvisioner($dsConnection, $registry, $this->loadModelCatalog($dsDir, $dsConfig))->provision();
         $functions = $result['functions'];
 
         if (isset($functions['skipped_reason'])) {
@@ -592,6 +596,45 @@ class DsUpgradeCommand extends Command
         if ($functions['created'] === []) {
             $output->writeln("  [OK]     {$functions['existing']} AI function(s)", OutputInterface::VERBOSITY_VERBOSE);
         }
+        // Převod dřívějšího nastavení (D41, pravidla 2 a 3) — jen při změně.
+        foreach ($result['converted'] as $entry) {
+            $output->writeln("  [CONVERT] AI function '{$entry['function_id']}': " . implode('; ', $entry['changes']));
+        }
+        foreach ($result['retired'] as $retired) {
+            $output->writeln("  [MODEL]  AI function '{$retired['function_id']}': {$retired['from']} → {$retired['to']} (retired model)");
+        }
+    }
+
+    /** Seam pro testy (nastavení jde přes SettingsStore nad DS připojením). */
+    protected function createAiFunctionProvisioner(
+        DataSourceConnection $dsConnection,
+        AiFunctionRegistry $registry,
+        ModelCatalog $catalog,
+    ): AiFunctionProvisioner {
+        return new AiFunctionProvisioner($dsConnection, $registry, $catalog, new SettingsStore($dsConnection));
+    }
+
+    private function finishAiLegacyConversion(
+        array $resolvedModules,
+        string $dsDir,
+        DataSourceConfig $dsConfig,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        if (!$this->isModuleActive($resolvedModules, 'core.ai')) {
+            return;
+        }
+        $registry = $this->loadAiFunctionRegistry($dsDir, $dsConfig);
+        if ($registry->isEmpty()) {
+            // Bez deklarací funkcí řádky nevznikly a převod neproběhl —
+            // značku nechat, převod doběhne po kompilaci configu.
+            return;
+        }
+        $cleared = $this->createAiFunctionProvisioner($dsConnection, $registry, $this->loadModelCatalog($dsDir, $dsConfig))
+            ->finishLegacyConversion();
+        foreach ($cleared as $code) {
+            $output->writeln("  [CONVERT] connection '{$code}': legacy model and tuning cleared (set per AI function now)");
+        }
     }
 
     private function provisionMailAi(
@@ -602,7 +645,7 @@ class DsUpgradeCommand extends Command
         OutputInterface $output,
     ): void {
         $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
-        $output->writeln('Provisioning mail AI (backend, profile)...', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning mail AI (connection, profile)...', OutputInterface::VERBOSITY_VERBOSE);
 
         // core.mail deklaruje dependency na core.ai — druhá podmínka je
         // defenzivní. Bez guardu by bezpodmínečné volání na DS bez mail
@@ -617,7 +660,7 @@ class DsUpgradeCommand extends Command
         $catalog = $this->loadModelCatalog($dsDir, $dsConfig);
         if ($catalog->isEmpty()) {
             $output->writeln('  <comment>[WARN]   model catalog unavailable (cfgItem ' . ModelCatalog::CFG_ITEM
-                . ') — default backend and retired-model rewrite skipped</comment>');
+                . ') — retired-model rewrite skipped</comment>');
         }
 
         $provisioner = new MailAiProvisioner($dsConnection, $catalog);
@@ -627,18 +670,28 @@ class DsUpgradeCommand extends Command
         $profile = $result['profile'];
 
         if ($backend['created']) {
-            $output->writeln("  [CREATE] backend 'default' (id={$backend['id']})");
+            $output->writeln("  [CREATE] connection 'default' (id={$backend['id']})");
             $output->writeln("           <comment>API key not set — run 'bin/shpd-ds ai-backend-set-key' to enable.</comment>");
         } elseif (isset($backend['skipped_reason'])) {
-            $output->writeln("  <comment>[SKIP]   backend 'default' — {$backend['skipped_reason']}</comment>");
+            $output->writeln("  <comment>[SKIP]   connection 'default' — {$backend['skipped_reason']}</comment>");
         } else {
-            $output->writeln("  [OK]     backend 'default' (id={$backend['id']})", OutputInterface::VERBOSITY_VERBOSE);
+            $output->writeln("  [OK]     connection 'default' (id={$backend['id']})", OutputInterface::VERBOSITY_VERBOSE);
+        }
+
+        // Převod ladění backendu do profilů (D41, pravidlo 1) — jen při změně.
+        foreach ($result['converted'] ?? [] as $entry) {
+            if ($entry['changes'] !== []) {
+                $output->writeln("  [CONVERT] profile '{$entry['profile_id']}': " . implode('; ', $entry['changes']));
+            }
+            foreach ($entry['notes'] as $note) {
+                $output->writeln("  <comment>[NOTE]   profile '{$entry['profile_id']}': {$note}</comment>");
+            }
         }
 
         // Jednorázový přepis vyřazených modelů podle katalogu
         // (lifecycle.replacedBy, #85 D33) — po prvním běhu prázdný seznam.
         foreach ($result['retired'] ?? [] as $retired) {
-            $output->writeln("  [MODEL]  backend '{$retired['backend_id']}' (id={$retired['id']}): {$retired['from']} → {$retired['to']} (retired model)");
+            $output->writeln("  [MODEL]  profile '{$retired['profile_id']}' (id={$retired['id']}): {$retired['from']} → {$retired['to']} (retired model)");
         }
 
         // Jednorázový rename legacy profilu (czech_invoices → czech_general),

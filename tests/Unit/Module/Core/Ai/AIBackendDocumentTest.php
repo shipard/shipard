@@ -127,16 +127,11 @@ class AIBackendDocumentTest extends TestCase
         $this->assertContains('name', $columns);
     }
 
-    public function testValidateMissingModelFails(): void
+    public function testModelIsNotRequired(): void
     {
-        $doc = $this->doc();
+        // Model připojení nenese (tasks/ai-functions.md D39) — určuje ho AI funkce.
         $data = ['backend_id' => 'default', 'name' => 'Anthropic'];
-
-        $result = $doc->validate($data);
-
-        $this->assertFalse($result->isValid());
-        $columns = array_column($result->toArray(), 'column');
-        $this->assertContains('model', $columns);
+        $this->assertTrue($this->doc()->validate($data)->isValid());
     }
 
     public function testValidateCompleteDataPasses(): void

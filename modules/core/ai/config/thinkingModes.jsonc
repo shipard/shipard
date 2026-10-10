@@ -1,8 +1,9 @@
 {
     // core.ai.thinkingModes
     //
-    // Režim přemýšlení modelu (core_ai_backends.thinking,
-    // tasks/ai-models-phase0.md F0-D2). `auto` = parametr `thinking` se
+    // Režim přemýšlení modelu (core_ai_function_settings.thinking,
+    // core_mail_ai_profiles.thinking; tasks/ai-models-phase0.md F0-D2,
+    // tasks/ai-functions.md D38). `auto` = parametr `thinking` se
     // neposílá a model běží ve svém výchozím režimu (řada 5 přemýšlí
     // adaptivně, Sonnet 4.6 nepřemýšlí). Jiná hodnota odchází jako
     // `thinking: {"type": "<hodnota>"}`. Které hodnoty konkrétní model

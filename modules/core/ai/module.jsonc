@@ -3,9 +3,9 @@
     "name": "AI",
     "name:cs": "AI",
     "name:en": "AI",
-    "description": "Shared AI infrastructure: LLM provider backends (credentials, model, encrypted API key) reused by mail analysis, chat, and future AI features",
-    "description:cs": "Sdílená AI infrastruktura: LLM backendy (přístupové údaje, model, zašifrovaný API klíč) sdílené analýzou pošty, chatem a dalšími AI funkcemi",
-    "description:en": "Shared AI infrastructure: LLM provider backends (credentials, model, encrypted API key) reused by mail analysis, chat, and future AI features",
+    "description": "Shared AI infrastructure: AI connections (platform, encrypted API key), model catalog, tier map and per-function settings reused by mail analysis, chat and other AI functions",
+    "description:cs": "Sdílená AI infrastruktura: AI připojení (platforma, zašifrovaný API klíč), katalog modelů, mapa úrovní a nastavení AI funkcí sdílené analýzou pošty, chatem a dalšími AI funkcemi",
+    "description:en": "Shared AI infrastructure: AI connections (platform, encrypted API key), model catalog, tier map and per-function settings reused by mail analysis, chat and other AI functions",
 
     "dependencies": [
         "core.system"
@@ -34,9 +34,9 @@
     "viewers": [
         {
             "id": "core.ai.backends",
-            "name": "AI backends",
-            "name:cs": "AI backendy",
-            "name:en": "AI backends",
+            "name": "AI connections",
+            "name:cs": "AI připojení",
+            "name:en": "AI connections",
             "icon": "chip",
             "table": "core_ai_backends",
             "class": "Shipard\\Module\\Core\\Ai\\AIBackendsViewer"

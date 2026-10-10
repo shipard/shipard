@@ -1,16 +1,16 @@
 {
-    "title": "AI backend",
-    "title:cs": "AI backend",
-    "title:en": "AI backend",
-    "titleNew": "Nový AI backend",
-    "titleNew:cs": "Nový AI backend",
-    "titleNew:en": "New AI backend",
+    "title": "AI connection",
+    "title:cs": "AI připojení",
+    "title:en": "AI connection",
+    "titleNew": "Nové AI připojení",
+    "titleNew:cs": "Nové AI připojení",
+    "titleNew:en": "New AI connection",
     "tabs": [
         {
             "id": "basic",
-            "label": "AI backend",
-            "label:cs": "AI backend",
-            "label:en": "AI backend",
+            "label": "AI connection",
+            "label:cs": "AI připojení",
+            "label:en": "AI connection",
             "sections": [
                 {
                     "columns": [
@@ -21,16 +21,9 @@
 
                                 {"type": "separator", "label": "Platform", "label:cs": "Platforma", "label:en": "Platform"},
                                 {"type": "input", "column": "provider", "required": true},
-                                {"type": "input", "column": "model", "required": true},
                                 {"type": "input", "column": "base_url"},
 
-                                {"type": "separator", "label": "API klíč se nastavuje přes CLI (ai-backend-set-key)", "label:cs": "API klíč se nastavuje přes CLI (ai-backend-set-key)", "label:en": "API key is set via CLI (ai-backend-set-key)"},
-
-                                {"type": "separator", "label": "Ladění", "label:cs": "Ladění", "label:en": "Tuning"},
-                                {"type": "input", "column": "max_tokens"},
-                                {"type": "input", "column": "temperature"},
-                                {"type": "select", "column": "thinking", "required": true},
-                                {"type": "select", "column": "effort", "required": true},
+                                {"type": "separator", "label": "API key is set via CLI (ai-backend-set-key); model and tuning per AI function", "label:cs": "API klíč se nastavuje přes CLI (ai-backend-set-key); model a ladění jsou u AI funkcí", "label:en": "API key is set via CLI (ai-backend-set-key); model and tuning per AI function"},
 
                                 {"type": "separator", "label": "Příznaky", "label:cs": "Příznaky", "label:en": "Flags"},
                                 {"type": "input", "column": "is_default"},

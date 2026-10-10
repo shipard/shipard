@@ -9,12 +9,13 @@ use Shipard\Core\Form\Lookup\LookupItem;
 use Shipard\Core\Form\Lookup\TableLookup;
 
 /**
- * Lookup pro AI backendy — používá ho formulář AI profilu (FK `backend`).
- * Malá konfigurační tabulka, search přes název / kód backendu.
+ * Lookup pro AI připojení — používají ho formuláře AI funkce
+ * (`connection`) a AI profilu pošty (`backend`). Malá konfigurační
+ * tabulka, search přes název / kód připojení.
  *
- * Primary: name. Secondary: backend_id (+ provider/model, je-li k dispozici).
- * resolve() vrací popis pro libovolné ID (i archivované), aby form uměl
- * zobrazit dříve vybraný backend; search řadí výchozí nahoru.
+ * Primary: name. Secondary: backend_id · platforma (připojení model nenese,
+ * D39). resolve() vrací popis pro libovolné ID (i archivované), aby form
+ * uměl zobrazit dříve vybrané připojení; search řadí výchozí nahoru.
  */
 class AIBackendLookup extends TableLookup
 {
@@ -24,7 +25,7 @@ class AIBackendLookup extends TableLookup
             return [];
         }
 
-        $sql = 'SELECT `id`, `backend_id`, `name`, `provider`, `model`'
+        $sql = 'SELECT `id`, `backend_id`, `name`, `provider`, `is_active`'
             . ' FROM `core_ai_backends`';
         $params = [];
         if ($q !== '') {
@@ -49,7 +50,7 @@ class AIBackendLookup extends TableLookup
             return [];
         }
         $rows = $this->db->fetchAll(
-            'SELECT `id`, `backend_id`, `name`, `provider`, `model`'
+            'SELECT `id`, `backend_id`, `name`, `provider`, `is_active`'
             . ' FROM `core_ai_backends` WHERE `id` IN %in',
             $intIds,
         );
@@ -64,7 +65,6 @@ class AIBackendLookup extends TableLookup
         $name = trim((string) ($row['name'] ?? ''));
         $backendId = trim((string) ($row['backend_id'] ?? ''));
         $provider = trim((string) ($row['provider'] ?? ''));
-        $model = trim((string) ($row['model'] ?? ''));
 
         $primary = $name !== '' ? $name : ($backendId !== '' ? $backendId : '#' . (string) $row['id']);
 
@@ -72,9 +72,11 @@ class AIBackendLookup extends TableLookup
         if ($backendId !== '') {
             $parts[] = $backendId;
         }
-        $pm = trim($provider . ($provider !== '' && $model !== '' ? ' / ' : '') . $model);
-        if ($pm !== '') {
-            $parts[] = $pm;
+        if ($provider !== '') {
+            $parts[] = $provider;
+        }
+        if (array_key_exists('is_active', $row) && empty($row['is_active'])) {
+            $parts[] = 'neaktivní';
         }
         $secondary = $parts !== [] ? implode(' · ', $parts) : null;
 
