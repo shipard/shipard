@@ -65,8 +65,9 @@ final class AnalysisRunnerFactory
         );
         $slots = AnalysisSlots::fromServerConfig($serverConfig);
         $spawner = new AnalysisSpawner($dsDir, maxConcurrent: $slots->maxConcurrent());
-        // Katalog modelů (#85 D32): klient podle něj tvaruje požadavek;
-        // bez compiled configu je prázdný a nic se netvaruje.
+        // Katalog modelů (#85 D32, D33): klient podle něj tvaruje požadavek,
+        // runner z něj počítá cenu; bez compiled configu je prázdný — nic se
+        // netvaruje a cena je 0 s varováním.
         $catalog = ModelCatalog::fromConfig($configRuntime);
 
         return new AnalysisRunner(
@@ -80,6 +81,7 @@ final class AnalysisRunnerFactory
             static function (int $messageId) use ($spawner): void {
                 $spawner->spawn($messageId);
             },
+            catalog: $catalog,
         );
     }
 }

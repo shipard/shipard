@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Shipard\Module\Core\Mail\Analysis;
 
 use Shipard\Core\Ai\AiBackendResolver;
-use Shipard\Core\Ai\AnthropicPricing;
 use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
 use Shipard\Core\Ai\LlmRetry;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
 
@@ -84,6 +84,8 @@ class AnalysisRunner
      *        `internal:<hostname>:<pid>`.
      * @param \Closure(): float|null $clock Čas v sekundách pro rozpočet
      *        dobírání (testy); null = `microtime(true)`.
+     * @param ModelCatalog|null $catalog Ceník pro `cost_usd` (#85 D33);
+     *        null = prázdný katalog, cena 0 s varováním.
      */
     public function __construct(
         private readonly DataSourceConnection $db,
@@ -97,6 +99,7 @@ class AnalysisRunner
         private readonly ?\Closure $sleep = null,
         private readonly ?string $analyzerId = null,
         private readonly ?\Closure $clock = null,
+        private readonly ?ModelCatalog $catalog = null,
     ) {}
 
     /**
@@ -332,7 +335,7 @@ class AnalysisRunner
             $tokensIn = $result->inputTokens ?? 0;
             $tokensOut = $result->outputTokens ?? 0;
             $modelName = $result->model ?? (string) $claim->backend['model'];
-            $cost = AnthropicPricing::costUsd($modelName, $tokensIn, $tokensOut);
+            $cost = ($this->catalog ?? ModelCatalog::empty())->costUsd($modelName, $tokensIn, $tokensOut);
 
             if (!$result->isComplete()) {
                 // Useknutý výstup = rozbitý JSON; opakování se stejným limitem

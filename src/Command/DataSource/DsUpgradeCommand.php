@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Command\DataSource;
 
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\ConfigCompiler;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
@@ -333,7 +334,7 @@ class DsUpgradeCommand extends Command
         // systémový kontrakt modulů core.mail/core.ai. Idempotentní; klíč
         // backendu přežívá ds-reset přes keepOnReset, takže po resetu není
         // potřeba žádná ruční akce.
-        $this->provisionMailAi($resolvedModules, $dsConnection, $output);
+        $this->provisionMailAi($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
 
         // Systémová pravidla předzpracování pošty (tasks/mail-preprocess.md
         // §2) — BEZPODMÍNEČNĚ, i pod skipProvisioning: import-mode DS
@@ -525,8 +526,26 @@ class DsUpgradeCommand extends Command
         }
     }
 
+    /**
+     * Katalog modelů z právě zkompilovaného configu (#85 D33, D34) — zdroj
+     * výchozího modelu backendu a náhrad vyřazených modelů. Bez compiled
+     * configu prázdný katalog: provisioner pak backend nezaloží a nic
+     * nepřepíše (hlásí se jako [WARN] / [SKIP], nikdy odhadem). Seam pro
+     * testy (fixture moduly nemají katalog).
+     */
+    protected function loadModelCatalog(string $dsDir, DataSourceConfig $dsConfig): ModelCatalog
+    {
+        try {
+            return ModelCatalog::fromConfig(ConfigRuntime::load($dsDir, $dsConfig->getDefaultLanguage()));
+        } catch (\Throwable) {
+            return ModelCatalog::empty();
+        }
+    }
+
     private function provisionMailAi(
         array $resolvedModules,
+        string $dsDir,
+        DataSourceConfig $dsConfig,
         DataSourceConnection $dsConnection,
         OutputInterface $output,
     ): void {
@@ -543,7 +562,13 @@ class DsUpgradeCommand extends Command
             return;
         }
 
-        $provisioner = new MailAiProvisioner($dsConnection);
+        $catalog = $this->loadModelCatalog($dsDir, $dsConfig);
+        if ($catalog->isEmpty()) {
+            $output->writeln('  <comment>[WARN]   model catalog unavailable (cfgItem ' . ModelCatalog::CFG_ITEM
+                . ') — default backend and retired-model rewrite skipped</comment>');
+        }
+
+        $provisioner = new MailAiProvisioner($dsConnection, $catalog);
         $result = $provisioner->provision();
 
         $backend = $result['backend'];
@@ -558,8 +583,8 @@ class DsUpgradeCommand extends Command
             $output->writeln("  [OK]     backend 'default' (id={$backend['id']})", OutputInterface::VERBOSITY_VERBOSE);
         }
 
-        // Jednorázový přepis vyřazených modelů (MailAiProvisioner::RETIRED_MODELS,
-        // tasks/ai-models-phase0.md F0-D8) — po prvním běhu prázdný seznam.
+        // Jednorázový přepis vyřazených modelů podle katalogu
+        // (lifecycle.replacedBy, #85 D33) — po prvním běhu prázdný seznam.
         foreach ($result['retired'] ?? [] as $retired) {
             $output->writeln("  [MODEL]  backend '{$retired['backend_id']}' (id={$retired['id']}): {$retired['from']} → {$retired['to']} (retired model)");
         }

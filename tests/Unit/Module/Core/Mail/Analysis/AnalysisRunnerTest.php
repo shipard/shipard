@@ -11,8 +11,10 @@ use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Mail\Analysis\AnalysisClaim;
 use Shipard\Module\Core\Mail\Analysis\AnalysisClaimException;
 use Shipard\Module\Core\Mail\Analysis\AnalysisClaimService;
@@ -157,6 +159,12 @@ final class AnalysisRunnerTest extends TestCase
     private float $clockStep = 0.0;
     private float $clockNow = 1000.0;
 
+    /** Katalog modelů ze skutečného souboru — zdroj ceníku pro `cost_usd` (#85 D33). */
+    private static function catalog(): ModelCatalog
+    {
+        return ModelCatalog::fromArray(JsoncParser::parseFile(dirname(__DIR__, 6) . '/modules/core/ai/config/models.jsonc'));
+    }
+
     private function runner(ScriptedLlmClient $llm, int $maxConcurrent = 2): AnalysisRunner
     {
         return new AnalysisRunner(
@@ -178,6 +186,7 @@ final class AnalysisRunnerTest extends TestCase
                 $this->clockNow += $this->clockStep;
                 return $this->clockNow;
             },
+            self::catalog(),
         );
     }
 
@@ -761,6 +770,7 @@ final class AnalysisRunnerTest extends TestCase
                 $this->clockNow += $this->clockStep;
                 return $this->clockNow;
             },
+            self::catalog(),
         );
 
         $drained = $runner->drain(42);

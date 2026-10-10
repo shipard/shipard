@@ -5,17 +5,28 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Module\Core\Mail;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Database\DataSourceConnection;
+use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Core\Mail\MailAiProvisioner;
 
 /**
  * MailAiProvisioner musí být idempotentní (každý ensure*() je ok volat
  * opakovaně) a respektovat jediné default omezení per DS. Uživatel
  * `_ai_analyzer` se nezakládá — existující se deaktivuje (#85 D21).
+ * Výchozí model a náhrady vyřazených modelů bere z katalogu modelů
+ * (skutečný soubor v repu, #85 D33, D34); bez výchozího modelu backend
+ * ani profil nezakládá.
  */
 class MailAiProvisionerTest extends TestCase
 {
     private ?string $tempTemplate = null;
+
+    /** Katalog modelů ze skutečného souboru v repozitáři. */
+    private static function catalog(): ModelCatalog
+    {
+        return ModelCatalog::fromArray(JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/core/ai/config/models.jsonc'));
+    }
 
     protected function tearDown(): void
     {
@@ -57,7 +68,7 @@ class MailAiProvisionerTest extends TestCase
             33, // profile id
         );
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->provision();
 
         $this->assertSame(['id' => 17, 'created' => true], $result['backend']);
@@ -76,7 +87,7 @@ class MailAiProvisionerTest extends TestCase
         );
         $db->expects($this->never())->method('insertRow');
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->provision();
 
         $this->assertSame(['id' => 2, 'created' => false], $result['backend']);
@@ -94,7 +105,7 @@ class MailAiProvisionerTest extends TestCase
         );
         $db->method('insertRow')->willReturn(50); // pro profile
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->provision();
 
         $this->assertSame(99, $result['backend']['id']);
@@ -115,7 +126,7 @@ class MailAiProvisionerTest extends TestCase
         );
         $db->expects($this->never())->method('insertRow');
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->provision();
 
         $this->assertSame(88, $result['profile']['id']);
@@ -137,7 +148,7 @@ class MailAiProvisionerTest extends TestCase
             },
         );
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $provisioner->provision();
 
         $this->assertArrayHasKey('core_ai_backends', $insertedRows);
@@ -158,16 +169,59 @@ class MailAiProvisionerTest extends TestCase
 
     // --- přepis vyřazených modelů (F0-D8) ------------------------------------
 
+    /** Náhrady dává katalog (ModelCatalog::retiredReplacement) — stejná očekávání jako dřív. */
     public function testRetiredReplacementMatchesExactAndDatedIdsOnly(): void
     {
-        $this->assertSame('claude-sonnet-4-6', MailAiProvisioner::retiredReplacement('claude-sonnet-4-5'));
-        $this->assertSame('claude-sonnet-4-6', MailAiProvisioner::retiredReplacement('claude-sonnet-4-5-20250929'));
-        $this->assertNull(MailAiProvisioner::retiredReplacement('claude-sonnet-4-6'));
-        $this->assertNull(MailAiProvisioner::retiredReplacement('claude-sonnet-4-50'));
-        $this->assertNull(MailAiProvisioner::retiredReplacement('claude-opus-4-8'));
+        $catalog = self::catalog();
+        $this->assertSame('claude-sonnet-4-6', $catalog->retiredReplacement('claude-sonnet-4-5'));
+        $this->assertSame('claude-sonnet-4-6', $catalog->retiredReplacement('claude-sonnet-4-5-20250929'));
+        $this->assertNull($catalog->retiredReplacement('claude-sonnet-4-6'));
+        $this->assertNull($catalog->retiredReplacement('claude-sonnet-4-50'));
+        $this->assertNull($catalog->retiredReplacement('claude-opus-4-8'));
         // Prefix platformy (Bedrock) — partnerské platformy mají vlastní termíny.
-        $this->assertNull(MailAiProvisioner::retiredReplacement('anthropic.claude-sonnet-4-5'));
-        $this->assertNull(MailAiProvisioner::retiredReplacement(''));
+        $this->assertNull($catalog->retiredReplacement('anthropic.claude-sonnet-4-5'));
+        $this->assertNull($catalog->retiredReplacement(''));
+    }
+
+    public function testWithoutDefaultModelBackendAndProfileAreSkippedWithReason(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(null);
+        $db->method('fetchAll')->willReturn([
+            ['id' => 1, 'backend_id' => 'legacy', 'model' => 'claude-sonnet-4-5'],
+        ]);
+        $db->method('getAffectedRows')->willReturn(0);
+        $db->expects($this->never())->method('insertRow');
+        $db->expects($this->never())->method('updateWhere');
+
+        // Prázdný katalog (DS před kompilací configu): žádný odhad modelu,
+        // žádný přepis — jen důvody přeskočení.
+        $result = (new MailAiProvisioner($db, ModelCatalog::empty()))->provision();
+
+        $this->assertSame(0, $result['backend']['id']);
+        $this->assertFalse($result['backend']['created']);
+        $this->assertStringContainsString("no default model for tier 'balanced'", $result['backend']['skipped_reason']);
+        $this->assertSame([], $result['retired']);
+        $this->assertSame(0, $result['profile']['id']);
+        $this->assertFalse($result['profile']['created']);
+        $this->assertStringContainsString('default backend is not available', $result['profile']['skipped_reason']);
+    }
+
+    public function testExistingBackendAndProfileSurviveAnEmptyCatalog(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturnOnConsecutiveCalls(
+            ['id' => 2],   // backend by backend_id
+            ['id' => 3],   // profile by profile_id
+        );
+        $db->method('fetchAll')->willReturn([]);
+        $db->method('getAffectedRows')->willReturn(0);
+        $db->expects($this->never())->method('insertRow');
+
+        $result = (new MailAiProvisioner($db, ModelCatalog::empty()))->provision();
+
+        $this->assertSame(['id' => 2, 'created' => false], $result['backend']);
+        $this->assertSame(['id' => 3, 'profile_id' => 'czech_general', 'created' => false], $result['profile']);
     }
 
     public function testRetireModelsRewritesEveryRetiredBackendAndLeavesOthers(): void
@@ -191,7 +245,7 @@ class MailAiProvisionerTest extends TestCase
         );
         $db->expects($this->never())->method('execute');
 
-        $changed = (new MailAiProvisioner($db))->retireModels();
+        $changed = (new MailAiProvisioner($db, self::catalog()))->retireModels();
 
         $this->assertSame([[1, 'claude-sonnet-4-6'], [2, 'claude-sonnet-4-6']], $updates);
         $this->assertSame([
@@ -209,7 +263,7 @@ class MailAiProvisionerTest extends TestCase
         ]);
         $db->expects($this->never())->method('updateWhere');
 
-        $this->assertSame([], (new MailAiProvisioner($db))->retireModels());
+        $this->assertSame([], (new MailAiProvisioner($db, self::catalog()))->retireModels());
     }
 
     public function testProvisionReportsRetiredModels(): void
@@ -225,7 +279,7 @@ class MailAiProvisionerTest extends TestCase
         $db->method('getAffectedRows')->willReturn(0);
         $db->expects($this->never())->method('insertRow');
 
-        $result = (new MailAiProvisioner($db))->provision();
+        $result = (new MailAiProvisioner($db, self::catalog()))->provision();
 
         $this->assertSame(
             [['id' => 2, 'backend_id' => 'default', 'from' => 'claude-sonnet-4-5', 'to' => 'claude-sonnet-4-6']],
@@ -247,7 +301,7 @@ class MailAiProvisionerTest extends TestCase
             },
         );
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $provisioner->provision();
 
         $this->assertArrayHasKey('core_mail_ai_profiles', $insertedRows);
@@ -294,7 +348,7 @@ class MailAiProvisionerTest extends TestCase
             0,   // user
         );
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->provision();
 
         $this->assertSame(['fixed' => 268], $result['queue_fix']);
@@ -315,7 +369,7 @@ class MailAiProvisionerTest extends TestCase
             });
         $db->method('getAffectedRows')->willReturn(1);
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $renamed = $provisioner->renameLegacyProfile();
 
         $this->assertSame(1, $renamed);
@@ -341,7 +395,7 @@ class MailAiProvisionerTest extends TestCase
         );
         $db->expects($this->never())->method('insertRow');
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->provision();
 
         $this->assertSame(['renamed' => 1], $result['profile_rename']);
@@ -351,7 +405,7 @@ class MailAiProvisionerTest extends TestCase
         $db2 = $this->createMock(DataSourceConnection::class);
         $db2->method('getAffectedRows')->willReturn(0);
 
-        $this->assertSame(0, (new MailAiProvisioner($db2))->renameLegacyProfile());
+        $this->assertSame(0, (new MailAiProvisioner($db2, self::catalog()))->renameLegacyProfile());
     }
 
     public function testProvisionQueueFixIsNoopOnCleanDs(): void
@@ -363,7 +417,7 @@ class MailAiProvisionerTest extends TestCase
         );
         $db->method('getAffectedRows')->willReturn(0);
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->provision();
 
         $this->assertSame(['fixed' => 0], $result['queue_fix']);
@@ -382,7 +436,7 @@ class MailAiProvisionerTest extends TestCase
             });
         $db->method('getAffectedRows')->willReturnOnConsecutiveCalls(2, 1);
 
-        $result = (new MailAiProvisioner($db))->deactivateLegacyAnalyzer();
+        $result = (new MailAiProvisioner($db, self::catalog()))->deactivateLegacyAnalyzer();
 
         $this->assertSame(['users' => 1, 'keys' => 2], $result);
         [$keysSql, $usersSql] = [(string) $captured[0][0], (string) $captured[1][0]];
@@ -407,13 +461,13 @@ class MailAiProvisionerTest extends TestCase
             1, // user
         );
 
-        $result = (new MailAiProvisioner($db))->provision();
+        $result = (new MailAiProvisioner($db, self::catalog()))->provision();
         $this->assertSame(['users' => 1, 'keys' => 1], $result['legacy_analyzer']);
 
         // Druhý běh: uživatel i klíče už jsou neaktivní → 0 / 0.
         $db2 = $this->createMock(DataSourceConnection::class);
         $db2->method('getAffectedRows')->willReturn(0);
-        $this->assertSame(['users' => 0, 'keys' => 0], (new MailAiProvisioner($db2))->deactivateLegacyAnalyzer());
+        $this->assertSame(['users' => 0, 'keys' => 0], (new MailAiProvisioner($db2, self::catalog()))->deactivateLegacyAnalyzer());
     }
 
     public function testSyncUpdatesWhenTemplateIsNewer(): void
@@ -428,7 +482,7 @@ class MailAiProvisionerTest extends TestCase
                 $captured = ['table' => $table, 'data' => $data];
             });
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame('updated', $result['status']);
@@ -463,7 +517,7 @@ class MailAiProvisionerTest extends TestCase
         $db->method('fetchRow')->willReturn(['id' => 33, 'prompt_version' => 'v1.2.0']);
         $db->expects($this->never())->method('updateWhere');
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame('up_to_date', $result['status']);
@@ -476,7 +530,7 @@ class MailAiProvisionerTest extends TestCase
         $db->method('fetchRow')->willReturn(['id' => 33, 'prompt_version' => 'v2.0.0']);
         $db->expects($this->never())->method('updateWhere');
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame('db_newer', $result['status']);
@@ -491,7 +545,7 @@ class MailAiProvisionerTest extends TestCase
         $db->expects($this->never())->method('insertRow');
         $db->expects($this->never())->method('updateWhere');
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame(['status' => 'not_found', 'profile_id' => 'czech_general'], $result);
@@ -504,7 +558,7 @@ class MailAiProvisionerTest extends TestCase
         $db->method('fetchRow')->willReturn(['id' => 33, 'prompt_version' => '1.1.0']);
         $db->expects($this->once())->method('updateWhere');
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'));
 
         $this->assertSame('updated', $result['status']);
@@ -516,7 +570,7 @@ class MailAiProvisionerTest extends TestCase
         $db->method('fetchRow')->willReturn(['id' => 33, 'prompt_version' => 'v1.2.0']);
         $db->expects($this->once())->method('updateWhere');
 
-        $provisioner = new MailAiProvisioner($db);
+        $provisioner = new MailAiProvisioner($db, self::catalog());
         $result = $provisioner->syncProfileFromTemplate($this->writeTemplate('v1.2.0'), force: true);
 
         $this->assertSame('updated', $result['status']);

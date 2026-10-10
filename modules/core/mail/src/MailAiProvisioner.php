@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail;
 
+use Shipard\Core\Ai\ModelCatalog;
+use Shipard\Core\Ai\ModelSpec;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Utils\JsoncParser;
 
@@ -13,6 +15,13 @@ use Shipard\Core\Utils\JsoncParser;
  * opravy. Volá ho `ds-upgrade` bezpodmínečně (i pod `skipProvisioning`,
  * tasks/ai-provisioning-unconditional.md) a `ai-profile-reload` (sync
  * profilu ze šablony).
+ *
+ * Model nového backendu i náhrady vyřazených modelů určuje katalog modelů
+ * (`ModelCatalog`, tasks/ai-model-catalog.md D33, D34): výchozí model
+ * úrovně {@see DEFAULT_MODEL_TIER} (`tierDefault`) a `lifecycle.replacedBy`
+ * u modelů se statusem deprecated / retired. Bez katalogu (prázdný, DS
+ * před kompilací configu) se backend nezakládá a nic nepřepisuje —
+ * provisioner to vrátí jako `skipped_reason`, nikdy neodhaduje.
  *
  * Systémový uživatel `_ai_analyzer` (externí analyzer, zrušen #85 D20–D21,
  * tasks/ai-analyzer-removal.md) se už nezakládá; existující účet se při
@@ -28,24 +37,11 @@ class MailAiProvisioner
     public const DEFAULT_BACKEND_ID = 'default';
 
     /**
-     * Model nově zakládaného výchozího backendu (tasks/ai-models-phase0.md
-     * F0-D8): Sonnet 4.6 — stejná cena a tokenizer jako 4.5, přijímá
-     * `temperature`, bez parametru nepřemýšlí; aktivní nejméně do
-     * 17. 2. 2027. Řada 5 se zkouší přes druhý backend (F0-D6).
+     * Úroveň katalogu, jejíž výchozí model (`tierDefault`) dostane nově
+     * zakládaný backend (D34): dnes Sonnet 4.6 — přemostění F0-D8, řada 5
+     * se zkouší přes druhý backend (F0-D6).
      */
-    public const DEFAULT_MODEL = 'claude-sonnet-4-6';
-
-    /**
-     * Vyřazené modely → náhrada (F0-D8). Klíč sedí na přesné ID i na ID
-     * s datovou příponou (`claude-sonnet-4-5-20250929`); ID s prefixem
-     * platformy (`anthropic.claude-sonnet-4-5` na Bedrocku) se nemění —
-     * partnerské platformy mají vlastní termíny. Připraveno na další řádky.
-     *
-     * @var array<string, string>
-     */
-    public const RETIRED_MODELS = [
-        'claude-sonnet-4-5' => 'claude-sonnet-4-6',
-    ];
+    public const DEFAULT_MODEL_TIER = ModelSpec::TIER_BALANCED;
     public const DEFAULT_PROFILE_ID = 'czech_general';
     public const DEFAULT_PROFILE_TEMPLATE = __DIR__ . '/../profiles/czech_general.jsonc';
 
@@ -55,6 +51,7 @@ class MailAiProvisioner
 
     public function __construct(
         private readonly DataSourceConnection $db,
+        private readonly ModelCatalog $catalog,
     ) {}
 
     /**
@@ -72,7 +69,11 @@ class MailAiProvisioner
         $backend = $this->ensureDefaultBackend();
         $retired = $this->retireModels();
         $renamed = $this->renameLegacyProfile();
-        $profile = $this->ensureDefaultProfile($backend['id']);
+        // Bez backendu (katalog bez výchozího modelu) profil nevzniká —
+        // vazba na backend je povinná; existující profil se jen ohlásí.
+        $profile = $backend['id'] > 0 || $backend['created']
+            ? $this->ensureDefaultProfile($backend['id'])
+            : $this->defaultProfileWithoutBackend();
         $queueFix = $this->fixQueuedArchivedMessages();
         $legacy = $this->deactivateLegacyAnalyzer();
 
@@ -87,24 +88,12 @@ class MailAiProvisioner
     }
 
     /**
-     * Náhrada vyřazeného modelu podle {@see RETIRED_MODELS}, null = model
-     * se nemění. Shoda na přesné ID nebo na ID s datovou příponou
-     * (`<id>-YYYYMMDD`); prefix platformy před ID shodu vylučuje.
-     */
-    public static function retiredReplacement(string $model): ?string
-    {
-        foreach (self::RETIRED_MODELS as $retired => $replacement) {
-            if ($model === $retired || str_starts_with($model, $retired . '-')) {
-                return $replacement;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Jednorázový idempotentní přepis vyřazených modelů u **všech** backendů
-     * (F0-D8) — i u backendu hostovaného DS, který míří na AI gateway
-     * (gateway model jen předává dál). Po přepisu navždy matchne 0 řádků.
+     * (F0-D8, D33) podle `lifecycle.replacedBy` katalogu — i u backendu
+     * hostovaného DS, který míří na AI gateway (gateway model jen předává
+     * dál). Shoda na přesné ID nebo na ID s datovou příponou; ID s prefixem
+     * platformy (`anthropic.…` na Bedrocku) se nemění — partnerské
+     * platformy mají vlastní termíny. Po přepisu navždy matchne 0 řádků.
      *
      * @return list<array{id: int, backend_id: string, from: string, to: string}> Změněné backendy.
      */
@@ -114,7 +103,7 @@ class MailAiProvisioner
         $changed = [];
         foreach ($rows as $row) {
             $model = (string) ($row['model'] ?? '');
-            $replacement = self::retiredReplacement($model);
+            $replacement = $this->catalog->retiredReplacement($model);
             if ($replacement === null) {
                 continue;
             }
@@ -219,10 +208,11 @@ class MailAiProvisioner
 
     /**
      * Vytvoří (pokud chybí) default backend `default` (Anthropic Claude,
-     * model {@see DEFAULT_MODEL}). `api_key` zůstává NULL, `is_active`
-     * = false — admin doplní klíč přes `ai-backend-set-key`.
-     * `temperature` NULL = parametr se neposílá (F0-D1); `thinking`
-     * a `effort` nechává na DB defaultu `auto`.
+     * model = výchozí model úrovně {@see DEFAULT_MODEL_TIER} z katalogu,
+     * D34). `api_key` zůstává NULL, `is_active` = false — admin doplní klíč
+     * přes `ai-backend-set-key`. `temperature` NULL = parametr se neposílá
+     * (F0-D1); `thinking` a `effort` nechává na DB defaultu `auto`. Bez
+     * výchozího modelu v katalogu backend nevznikne (`id` 0 + důvod).
      *
      * @return array{id: int, created: bool, skipped_reason?: string}
      */
@@ -250,12 +240,21 @@ class MailAiProvisioner
             ];
         }
 
+        $model = $this->catalog->defaultModel(self::DEFAULT_MODEL_TIER);
+        if ($model === null) {
+            return [
+                'id' => 0,
+                'created' => false,
+                'skipped_reason' => "model catalog has no default model for tier '" . self::DEFAULT_MODEL_TIER . "'",
+            ];
+        }
+
         $now = date('Y-m-d H:i:s');
         $id = $this->db->insertRow('core_ai_backends', [
             'backend_id' => self::DEFAULT_BACKEND_ID,
             'name' => 'Anthropic Claude',
             'provider' => 'anthropic',
-            'model' => self::DEFAULT_MODEL,
+            'model' => $model,
             'api_key' => null,
             'base_url' => null,
             // 0 = nenastaveno — limit se rozhoduje kaskádou profil → backend
@@ -338,6 +337,30 @@ class MailAiProvisioner
         ]);
 
         return ['id' => $id, 'profile_id' => (string) $template['profile_id'], 'created' => true];
+    }
+
+    /**
+     * Stav default profilu, když default backend není k dispozici
+     * (katalog modelů bez výchozího modelu): existující profil se ohlásí
+     * beze změny, chybějící se nezakládá — má důvod přeskočení.
+     *
+     * @return array{id: int, profile_id: string, created: bool, skipped_reason?: string}
+     */
+    private function defaultProfileWithoutBackend(): array
+    {
+        $row = $this->db->fetchRow(
+            'SELECT id FROM core_mail_ai_profiles WHERE profile_id = %s',
+            self::DEFAULT_PROFILE_ID,
+        );
+        if ($row !== null) {
+            return ['id' => (int) $row['id'], 'profile_id' => self::DEFAULT_PROFILE_ID, 'created' => false];
+        }
+        return [
+            'id' => 0,
+            'profile_id' => self::DEFAULT_PROFILE_ID,
+            'created' => false,
+            'skipped_reason' => 'default backend is not available (model catalog has no default model)',
+        ];
     }
 
     /**

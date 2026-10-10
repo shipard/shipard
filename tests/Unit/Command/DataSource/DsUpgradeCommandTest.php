@@ -7,10 +7,12 @@ namespace Shipard\Tests\Unit\Command\DataSource;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shipard\Command\DataSource\DsUpgradeCommand;
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Security\DsSecretCipher;
+use Shipard\Core\Utils\JsoncParser;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,6 +20,9 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 class TestableDsUpgradeCommand extends DsUpgradeCommand
 {
+    /** true = simuluje DS bez katalogu modelů (compiled config bez core.ai.models). */
+    public bool $emptyModelCatalog = false;
+
     public function __construct(
         DataSourceConfig $dsConfig,
         DataSourceConnection $dsConnection,
@@ -35,6 +40,15 @@ class TestableDsUpgradeCommand extends DsUpgradeCommand
     protected function getModulePathResolver(): ModulePathResolver
     {
         return new ModulePathResolver([$this->modulesPath]);
+    }
+
+    /** Fixture moduly katalog nemají — bere se skutečný soubor z repozitáře. */
+    protected function loadModelCatalog(string $dsDir, DataSourceConfig $dsConfig): ModelCatalog
+    {
+        if ($this->emptyModelCatalog) {
+            return ModelCatalog::empty();
+        }
+        return ModelCatalog::fromArray(JsoncParser::parseFile(dirname(__DIR__, 4) . '/modules/core/ai/config/models.jsonc'));
     }
 }
 
@@ -554,6 +568,30 @@ class DsUpgradeCommandTest extends TestCase
         $this->assertStringNotContainsString("user '_ai_analyzer'", $display);
         $this->assertStringNotContainsString('[DEACTIVATE]', $display);
         $this->assertStringNotContainsString('[RENAME]', $display);
+    }
+
+    public function testMailAiWithoutModelCatalogWarnsAndSkipsBackendCreation(): void
+    {
+        $this->createAiFixtureModules();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'core.mail']);
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+
+        $command = new TestableDsUpgradeCommand($this->dsConfig, $this->dsConnection, $this->modulesPath, $this->dsDir);
+        $command->emptyModelCatalog = true;
+        $tester = new CommandTester($command);
+        $exitCode = $tester->execute([]);
+
+        // Bez katalogu se model neodhaduje: upgrade projde, backend i profil
+        // se přeskočí s důvodem, [WARN] ukáže na cfgItem.
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('[WARN]   model catalog unavailable (cfgItem core.ai.models)', $display);
+        $this->assertStringContainsString("[SKIP]   backend 'default' — model catalog has no default model", $display);
+        $this->assertStringContainsString("[SKIP]   profile 'czech_general' — default backend is not available", $display);
+        $this->assertStringNotContainsString("[CREATE] backend 'default'", $display);
+        $this->assertStringNotContainsString("[CREATE] profile", $display);
     }
 
     public function testMailAiDeactivatesLegacyAnalyzerUserOnlyWhenSomethingChanged(): void

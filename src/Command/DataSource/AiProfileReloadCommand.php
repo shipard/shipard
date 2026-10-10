@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Command\DataSource;
 
+use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Module\Core\Mail\MailAiProvisioner;
@@ -147,7 +148,8 @@ class AiProfileReloadCommand extends Command
             return Command::SUCCESS;
         }
 
-        $provisioner = new MailAiProvisioner($dsConnection);
+        // Sync profilu katalog modelů nepotřebuje (backend se tu nezakládá).
+        $provisioner = new MailAiProvisioner($dsConnection, ModelCatalog::empty());
         $sync = $provisioner->syncProfileFromTemplate(
             $templatePath !== null ? (string) $templatePath : null,
             force: $force,
