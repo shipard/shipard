@@ -33,7 +33,9 @@ sekci `ai` nenese.
 ## 2. Gateway tokeny
 
 **Nové DS z portálu**: nic — token mintuje queue payload při provisioningu
-a agent (krok g.) na DS s aktivním `core.ai` rovnou zapíše backend řádek.
+a agent (krok g.) na DS s aktivním `core.ai` rovnou zapíše řádek připojení
+(`core_ai_backends`; model a ladění zůstávají u AI funkcí, gateway model
+jen předává).
 
 **Backfill existujícího DS**:
 

@@ -1,6 +1,6 @@
 # AI — připojení, AI funkce a jeden resolver volání (#85 fáze 1b)
 
-**Stav:** naplánováno — rozhodnutí D36–D43 potvrzena 2026-10-10 (#85), připraveno k implementaci
+**Stav:** hotovo — implementace 2026-10-10 (kroky 1–7, D36–D48); ověření 1–8 na 4l3j / gn5c viz závěr
 
 ## Status / cíl
 
@@ -388,10 +388,40 @@ Každý krok je samostatný commit. Kroky 1–3 chování nemění.
 
 ## Hotovo když
 
-- [ ] Kroky 1–7 jako samostatné commity, `php -l`, cílené testy, celá
+- [x] Kroky 1–7 jako samostatné commity, `php -l`, cílené testy, celá
       sada, `npm run build` při změně frontendu.
-- [ ] Těla požadavků všech pěti volajících pro výchozí nastavení jsou
+- [x] Těla požadavků všech pěti volajících pro výchozí nastavení jsou
       stejná jako před změnou (testy).
-- [ ] Ověření 1–8 provedeno, výsledek do #85.
-- [ ] Dokumentace podle kroku 7.
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.
+- [x] Ověření 1–8 provedeno (viz níže), výsledek do #85 (zapíše se po
+      pushi na pokyn).
+- [x] Dokumentace podle kroku 7.
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py` spuštěný.
+
+## Výsledek ověření (2026-10-10, dev server)
+
+| # | Výsledek |
+|---|----------|
+| 1 | `ds-upgrade` na `4l3j`: tabulka + 5 řádků funkcí; převod: profil výchozího připojení odvázán (`→ by function`), zkušební profily dostaly model Sonnet 5.5 / Haiku 5.5 z připojení, tři připojení vyčištěna; druhý běh bez výpisu. |
+| 2 | Zpráva s PDF, výchozí profil → `claude-sonnet-4-6`, 10 307 / 893 tokenů, 0,044 USD, štítek klasifikován; v logu žádná úprava požadavku. |
+| 3 | Reanalýza s profily pro Sonnet 5.5 (10 459 / 835, 0,029 USD) a Haiku 5.5 (10 457 / 1 928, 0,002 USD) — běhy na těchto modelech, `backend_ndx` = připojení profilu. |
+| 4 | `exchange.contentTags` = `claude-haiku-5-5` → resolver pro štítky Haiku (původ `function`), vytěžení dál Sonnet 4.6 (8 632 / 840); po vrácení model úrovně. |
+| 5 | Shrnutí dashboardu streamuje; chat se skutečným tokenem: `text-delta` + `message-complete` na Sonnetu 4.6; `chat.default` = `claude-sonnet-5-5` → 503 `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` s modelem v `details`; vráceno, zkušební uživatel smazán. |
+| 6 | Profil s `claude-sonnet-6` + `model_like` Sonnet 5.5: požadavek odešel tvarovaný (log: teplota vynechána, `catalogModel` Sonnet 5.5), API 404 → `config_error`, stav 70; profil vrácen. |
+| 7 | Viz odchylka níže — nález ověřen s modelem se statusem `retired`. |
+| 8 | `vlm9` (připojení přes AI gateway `gn5c`): `ds-upgrade` projde, adresa gateway beze změny, model vyčištěn, `[NOTE]` o stropu 4096 → 32768; vytěžení přes gateway na Sonnetu 4.6 (8 721 / 953, 0,040 USD). `gn5c` samo `core.ai` nemá. |
+
+Odchylky od zadání:
+
+- **Ověření 7:** `claude-sonnet-4-5` končí 2026-11-30, k datu ověření
+  tedy za víc než 30 dnů — upozornění správně mlčí. Nález se ověřil
+  s modelem se statusem `retired` v katalogu (`claude-opus-4-1`):
+  `core.ai.model_retiring` → 1 nález (error), po vrácení vyřešen.
+- **Převod (D41):** na 4l3j tři připojení: `default` (model úrovně,
+  `auto`) → profil jen odvázán od výchozího připojení; zkušební
+  připojení Sonnet 5.5 / Haiku 5.5 → model do profilů; druhý běh tichý.
+- **Zrušení `AiBackendResolver::tuning()`** už v kroku 4 (po převodu
+  volajících ho nikdo nečetl); třída zůstává jako načtení připojení
+  a klíče pro resolver.
+- **Chat bez compiled configu** (registr funkcí prázdný) nově končí 503
+  `AI_NOT_CONFIGURED` místo tichého volání modelu z řádku backendu —
+  `ds-upgrade` je součást každého nasazení.

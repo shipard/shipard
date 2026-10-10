@@ -246,8 +246,10 @@ podle [`dev-daily.md`](dev-daily.md#5-až-budeš-chtít-posílat-změny) (oddíl
 
 ### AI na lokální instalaci
 
-K vytěžení dokladu z Dashboardu i k asistentovi stačí klíč AI backendu —
-žádný další runtime ani démon. Z adresáře zdroje dat:
+K vytěžení dokladu z Dashboardu i k asistentovi stačí klíč AI připojení —
+žádný další runtime ani démon (model a ladění per AI funkce jsou
+v Nastavení → Pošta → AI funkce, výchozí = Sonnet 4.6). Z adresáře zdroje
+dat:
 
 ```bash
 cd /opt/shipard/data-sources/<id>

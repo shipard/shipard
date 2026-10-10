@@ -424,8 +424,10 @@ Provozní poznámky:
   — retry-stabilní; jinak nový řádek). Agent (krok g.) na DS s aktivním
   `core.ai` spustí `ai-backend-set-key --backend default --api-key …
   --base-url …`. Ruční backfill: `hosting-ai-token --ds <ndx> --generate`.
-- Vlastní klíč = uživatel si backend přepne/založí jiný (D6) — gateway je
-  jen jiná data v `core_ai_backends`, na straně DS se nemění žádný kód.
+- Vlastní klíč = uživatel si připojení přepne/založí jiné (D6) — gateway je
+  jen jiná data v `core_ai_backends` (připojení = platforma + adresa +
+  klíč; model a ladění drží AI funkce, tasks/ai-functions.md D39), na
+  straně DS se nemění žádný kód.
 - Vědomý limit v1: streamované proxy spojení drží PHP-FPM worker. Pro
   desítky klientů OK; při růstu se gateway vydělí do samostatného daemonu
   (rozhraní se nemění — je to jen `base_url`).

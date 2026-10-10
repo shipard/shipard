@@ -41,10 +41,14 @@ Stavový automat analýzy žije ve službách `Shipard\Module\Core\Mail\Analysis
   FOR UPDATE` na řádku zprávy: ověří stav 10 a gate předzpracování, že
   neexistuje aktivní claim, vloží řádek `core_mail_analysis_claims`
   (`analyzer_id`, `claim_token`, lease 60–900 s), přepne `analysis_state`
-  10 → 20 a dešifruje `api_key` backendu profilu (profil =
-  `profile_override` zprávy, jinak aktivní výchozí). Chyby konfigurace
-  (`AnalysisClaimException`): `NO_PROFILE`, `NO_BACKEND`,
-  `BACKEND_KEY_MISSING`, `SECRETS_UNAVAILABLE`, `BACKEND_KEY_CORRUPTED`.
+  10 → 20 a nechá `AiFunctionResolver` složit volání AI funkce
+  `mail.extraction` s přepsáním z profilu (profil = `profile_override`
+  zprávy, jinak aktivní výchozí): připojení, model, ladění, strop
+  a dešifrovaný klíč (`AnalysisClaim::$call`, tasks/ai-functions.md
+  D4, D40). Chyby konfigurace (`AnalysisClaimException`): `NO_PROFILE`,
+  `NO_BACKEND`, `BACKEND_KEY_MISSING`, `SECRETS_UNAVAILABLE`,
+  `BACKEND_KEY_CORRUPTED`, `BACKEND_CONFIG_INVALID` (špatný model —
+  vlastní ID bez `model_like`, model mimo platformu; D48).
   `docState` se nemění. MariaDB neumí partial unique index `(message)
   WHERE released=0`, invariant „nejvýš jeden aktivní claim per zpráva“
   tedy drží tato transakce. `extend()` prodlužuje lease před každým
@@ -210,8 +214,9 @@ cron minute: mail-analysis-reap → mail-analyze --sweep ─→ spawn mail-analy
 mail-analyze --message N  (AnalysisRunner::drain)
    1. slot (flock, neblokující)      bez slotu → konec, zpráva čeká ve frontě
    2. AnalysisQueue::isEligible(N)   ne → krok 8
-   3. AnalysisClaimService::claim    10 → 20, lease 900 s; profil + backend + klíč
-                                     chybí profil / backend / klíč → konec (not_configured)
+   3. AnalysisClaimService::claim    10 → 20, lease 900 s; profil + volání (AiFunctionResolver:
+                                     připojení, model, ladění, klíč)
+                                     chybí profil / připojení / klíč, špatný model → konec (not_configured)
    4. AttachmentPreparer → PromptRenderer
    5. LLM (stream, opakování, před každým pokusem prodloužení lease)
    6. OutputParser (JSON + output_schema profilu)
@@ -231,20 +236,29 @@ claimla fakturu, kterou umí deterministický import), na konci běhu
 a `PreprocessRunnerFactory`; testy stavějí controllery bez něj. Záchrana:
 `mail-analyze --sweep` v minutovém slotu za reaperem — pro zprávy ve
 frontě bez aktivního claimu spustí runnery, nejvýš tolik, kolik je
-volných slotů; bez použitelného backendu (aktivní výchozí profil → aktivní
-backend s klíčem — `AnalysisBackendProbe`) nic a jedno varování. Druhý
+volných slotů; bez použitelného připojení (aktivní výchozí profil →
+aktivní připojení s klíčem, vybrané jako v resolveru: profil → řádek
+funkce `mail.extraction` → výchozí — `AnalysisBackendProbe`) nic a jedno
+varování. Druhý
 runner na tutéž zprávu skončí na `ALREADY_CLAIMED`.
 
 **Upozornění „Analýza pošty stojí“** (`core.mail.analysis_stalled`,
 `AnalysisStalledAlertCheck`, interval 15 min; tasks/ai-analyzer-removal.md
-D23): zdroj dat má použitelný backend (tatáž sonda jako sweep) a ve frontě
+D23): zdroj dat má použitelné připojení (tatáž sonda jako sweep) a ve frontě
 leží zpráva déle než 15 minut podle `modified`
 (`AnalysisQueue::stalled()`, stejný predikát jako výdej fronty). Jedno
 varování per zdroj dat (finding `queue_stalled`, počet + nejstarší);
 po doběhnutí analýz zmizí. Hlídá, že runner vůbec běží — cron se sweepem,
 `ai.analysis.maxConcurrent`, práva ke slotům; jednotlivá selhání běhů
-ukazuje Dashboard. Bez použitelného backendu check mlčí (fronta bez klíče
+ukazuje Dashboard. Bez použitelného připojení check mlčí (fronta bez klíče
 je nedokončené nastavení, ne porucha).
+
+**Upozornění „AI model profilu pošty brzy končí“**
+(`core.mail.profile_model_retiring`, `ProfileModelRetiringAlertCheck`,
+interval 1 den; tasks/ai-functions.md D42, D47): aktivní profil
+s výslovně přepsaným modelem, který podle katalogu do 30 dnů končí
+(warning) nebo už skončil (error). Totéž nad řádky AI funkcí dělá
+`core.ai.model_retiring`.
 
 **Dobírání fronty** (tasks/mail-analysis-queue-drain.md D25,
 `AnalysisRunner::drain()`): runner po dokončení zprávy s jakýmkoli
@@ -298,12 +312,13 @@ zdrojem — výstup je bajtově shodný s původním Python rendererem
 
 **Volání modelu a výstup** (D18): jedna zpráva `user` — text promptu, pak
 za každou přílohu blok `document` (PDF, base64) / `image` / `text`
-(`--- Attachment <název> (#<ndx>) ---`). `max_tokens` kaskádou profil →
-backend → 32768, ladění z backendu přes `AiBackendResolver::tuning()`
-(teplota — NULL se neposílá, `0` z existujících řádků ano; `thinking`
-a `effort` — `auto` se neposílá; tasks/ai-models-phase0.md F0-D1, F0-D7),
-streamovaně, `stallTimeoutSeconds = 180`, `timeoutSeconds = 840` (lease
-900 s). `OutputParser`: první textový
+(`--- Attachment <název> (#<ndx>) ---`). Model, strop a ladění přijdou
+hotové z claimu (`AnalysisClaim::$call->chatParams()`): strop profil
+(`max_tokens` > 0) → řádek funkce → deklarace 32768, teplota 0
+z deklarace funkce, `thinking` / `effort` profil → řádek funkce →
+neposílat (`auto` = výslovně neposílat, `default` = podle funkce;
+tasks/ai-functions.md D40), streamovaně, `stallTimeoutSeconds = 180`,
+`timeoutSeconds = 840` (lease 900 s). `OutputParser`: první textový
 blok → JSON (přímo, jinak z markdown bloku ```` ```json ````) → validace
 proti `output_schema` přes `opis/json-schema` **bez formátů** (původní
 Python validátor je nekontroloval; `source.extractedAt` server přepíše) → objekt na nejvyšší
@@ -317,7 +332,7 @@ textový tvar jsonschema, ze kterého `AnalysisErrorPresenter` skládá hlášku
 
 | Situace | Zápis | Opakování |
 |---|---|---|
-| chyba claimu z konfigurace (`NO_PROFILE`, `NO_BACKEND`, `BACKEND_KEY_*`, `SECRETS_UNAVAILABLE`) | žádný — zpráva zůstává ve frontě, jedno varování | sweep každou minutu |
+| chyba claimu z konfigurace (`NO_PROFILE`, `NO_BACKEND`, `BACKEND_KEY_*`, `SECRETS_UNAVAILABLE`, `BACKEND_CONFIG_INVALID`) | žádný — zpráva zůstává ve frontě, jedno varování | sweep každou minutu |
 | šablona promptu nejde vykreslit, nevalidní `output_schema`, nepodporovaný provider | `config_error`, stav 70 | ne |
 | výstup není JSON / neodpovídá schématu | `schema_error`, stav 70 | ne |
 | `stop_reason = max_tokens` | `ai_error` „output truncated at max_tokens=<n>“, stav 70 | ne |
@@ -347,9 +362,9 @@ a verze promptu `unknown`). Obojí jen pokud je zpráva stále ve stavu 20
 
 **Cena** (D19, #85 D33): `cost_usd` počítá `ModelCatalog::costUsd()`
 z ceníku katalogu modelů `core.ai.models` (ID z odpovědi streamu, fallback
-model backendu; datová přípona i prefix Bedrocku se dohledají, Haiku 5.5
-má dražší pásmo nad 100 000 vstupních tokenů); model mimo katalog nebo
-prázdný katalog = 0 a varování. Katalog předává `AnalysisRunnerFactory`
+model z claimu; datová přípona i prefix Bedrocku se dohledají, Haiku 5.5
+má dražší pásmo nad 100 000 vstupních tokenů); model mimo katalog
+(vlastní ID, D43) nebo prázdný katalog = 0 a varování. Katalog předává `AnalysisRunnerFactory`
 z compiled configu (`docs/ai.md` §5.1).
 
 **Třídy:** `modules/core/mail/src/Analysis/` — `AnalysisStates`,
@@ -363,7 +378,7 @@ z compiled configu (`docs/ai.md` §5.1).
 CLI `src/Command/DataSource/MailAnalyzeCommand.php` a `MailAnalysisReapCommand.php`
 ([docs/cli.md](../../../../docs/cli.md) § `mail-analyze`, § `mail-analysis-reap`).
 
-## Šifrování API klíčů backendů
+## Šifrování API klíčů připojení
 
 `core_ai_backends.api_key` je sloupec typu `encrypted_text` (viz
 [docs/operations/secrets.md](../../../../docs/operations/secrets.md)).
@@ -601,9 +616,11 @@ Audit per řádek (`_resolve.rows[i].enrichment`):
 **Precedence (D13):** setting `exchange.contentTag.beforeDominance`
 (SettingsStore, default `true`) — contentTag má přednost před dominancí
 (tier 3 Vrstvy 0 běží až jako úklid po eskalaci); `false` = stávající
-pořadí. Backend LLM klasifikace jde přes setting
-`exchange.contentTag.backend` (ndx `core_ai_backends`, null = default
-backend; doporučení: levný model). Obojí zatím jen přes `ds-setting set`.
+pořadí (jen přes `ds-setting set`). Model, připojení a ladění LLM
+klasifikace určuje AI funkce **`exchange.contentTags`** (úroveň fast,
+strop 8000; Nastavení → Pošta → AI funkce — doporučení: levný model;
+tasks/ai-functions.md). Dřívější nastavení `exchange.contentTag.backend`
+převedl `ds-upgrade` do řádku funkce a klíč smazal (D41).
 
 **UI (tasks/content-tag-ui.md, D23–D28):**
 
@@ -1057,7 +1074,7 @@ ignoruje a pokračuje se zbytkem kandidátů. Selhání spawnu runneru = zprávu
 zvedne sweep po 5 minutách (týká se jen ISDOC zpráv, běžná PDF pošta
 odložení neprochází).
 
-Degradace bez AI: DS bez AI backendu / API klíče importuje stejně —
+Degradace bez AI: DS bez AI připojení / API klíče importuje stejně —
 classifier v pipeline je null-safe, uplatní se jen Vrstva 0 a pravidlo IČO,
 `content_tag` zůstane NULL a návrh vznikne jako dřív (thresholds fallback
 `{ready: 0.9, review: 0.6}`). Učení pravidel (`ContentTagRuleCaptureHandler`)
@@ -1191,25 +1208,31 @@ v detailu obsahuje "Otevřít" (form edit) a "Znovu analyzovat" (podmíněně dl
 
 Při každém `ds-upgrade` se zavolá `MailAiProvisioner::provision()`:
 
-1. Default backend (`backend_id=default`, `provider=anthropic`,
-   `model` = výchozí model úrovně `balanced` z katalogu `core.ai.models`,
-   dnes `claude-sonnet-4-6`, `temperature=NULL`, `api_key=NULL`,
-   `is_active=0`) — admin doplní klíč přes `ai-backend-set-key`, čímž
-   `is_active=1`. Tentýž krok u všech backendů jednorázově přepíše
-   vyřazený model na náhradu (`lifecycle.replacedBy` v katalogu, výpis
-   `[MODEL]`; tasks/ai-models-phase0.md F0-D8, #85 D33). Bez katalogu
-   (compiled config bez `core.ai.models`) backend nevzniká — `[WARN]`
-   + `[SKIP]` (tasks/ai-model-catalog.md D34).
+1. Výchozí připojení (`backend_id=default`, `provider=anthropic`,
+   `api_key=NULL`, `is_active=0`; bez modelu — ten určuje AI funkce
+   `mail.extraction`, tasks/ai-functions.md D39) — admin doplní klíč přes
+   `ai-backend-set-key`, čímž `is_active=1`. Katalog modelů k tomu není
+   potřeba.
 2. Default profil (`profile_id=czech_general`) ze šablony
-   `profiles/czech_general.jsonc`. Před lookupem běží jednorázový rename
-   legacy id `czech_invoices` → `czech_general` (včetně `name`; ds-upgrade
-   vypíše `[RENAME]`, po prvním běhu no-op).
-3. Datová oprava nafrontovaných archivních zpráv (`[FIX]`, viz Stavy
+   `profiles/czech_general.jsonc`, bez připojení (`backend=NULL` = podle
+   funkce, D4). Před lookupem běží jednorázový rename legacy id
+   `czech_invoices` → `czech_general` (včetně `name`; ds-upgrade vypíše
+   `[RENAME]`, po prvním běhu no-op).
+3. Jednorázový převod dřívějšího ladění připojení do profilů (D41,
+   pravidlo 1): profil navázaný na dosud nepřevedené připojení dostane
+   jeho model (liší-li se od modelu úrovně) a `thinking` / `effort` jiné
+   než `auto`; vazba na výchozí připojení se vynuluje (`[CONVERT]
+   profile …`); strop `max_tokens` se nepřevádí — jen `[NOTE]`, že
+   vytěžení má teď strop 32768 podle funkce. Pak přepis vyřazených modelů
+   u profilů (`lifecycle.replacedBy`, `[MODEL]`). Řádky AI funkcí
+   a pravidla 2–3 převodu dělá před tím `AiFunctionProvisioner`
+   (core.ai), značku hotového převodu nastaví po obou.
+4. Datová oprava nafrontovaných archivních zpráv (`[FIX]`, viz Stavy
    zprávy) a deaktivace systémového uživatele `_ai_analyzer` zrušeného
    externího analyzeru včetně zneplatnění jeho API klíčů (`[DEACTIVATE]`,
    jen při změně; účet se nemaže — `created_by` starších běhů; #85 D21).
 
-Bootstrap je idempotentní — když existuje jiný profil/backend s `is_default=1`,
+Bootstrap je idempotentní — když existuje jiný profil/připojení s `is_default=1`,
 default *se nepřepíše*; admin zachová svůj override.
 
 ## Reference

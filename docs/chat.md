@@ -102,13 +102,16 @@ jen `anthropic`; rozhraní drží dveře pro další.
 
 ---
 
-## 5. Backend, klíč a systémový prompt
+## 5. AI funkce, klíč a systémový prompt
 
-- **Výběr backendu** (`resolveBackend`): `conversation.backend`, jinak default
-  aktivní z `core_ai_backends`. Klíč dešifruje `DsSecretCipher` (stejně jako
-  analýza pošty). Viz [`ai.md`](ai.md) §5. `max_tokens` backendu chat
-  respektuje; při 0/NULL (= nenastaveno) drží vlastní fallback 4096 — nula
-  nikdy neodejde do API.
+- **Volání modelu** (`resolveCall`): AI funkce `chat.default`
+  (`AiFunctionResolver`, [`ai.md`](ai.md) §5.3–5.4) — připojení, klíč,
+  model, strop 4096 z deklarace a ladění přijdou hotové; chat nic
+  neskládá. `conversation.backend` (přišpendlené připojení) je přepsání;
+  když chybí nebo je neaktivní, platí výchozí připojení jako dřív. Chyby
+  resolveru → `NO_BACKEND` / `BACKEND_KEY_ERROR` /
+  `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` (model bez tool smyčky, D35) /
+  `AI_NOT_CONFIGURED`.
 - **Systémový prompt** (`systemPrompt`): základ z cfgItem `core.chat.settings`
   (`module.jsonc`), s built-in fallbackem. K němu se **při každém požadavku
   přilepí aktuální datum** + instrukce „neodhaduj podle tréninkových dat, ověř

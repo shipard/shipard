@@ -853,8 +853,9 @@ Generované AI shrnutí feedu (fáze 2b, §11). Události:
 - **Prázdný feed** (žádné actionable karty) → rovnou `done{text:null}`, žádné LLM.
 - **Cache hit** → `done{text, cached:true}` okamžitě, žádné LLM.
 - **Cache miss** → stream `text` delt → `done{text, cached:false}` + upsert cache.
-- **Backend chybí / bez API klíče / klíč nejde dešifrovat** → `done{text:null}`
-  (tichá degradace, log server-side).
+- **AI funkce `dashboard.summary` nejde sestavit** (bez připojení / klíče,
+  klíč nejde dešifrovat, špatný model) → `done{text:null}` (tichá
+  degradace, log server-side).
 
 ### `GET /_ui/section-badges`
 
@@ -1093,10 +1094,12 @@ viditelný generativní AI prvek na home obrazovce.
   „regeneruj aspoň jednou denně" bez TTL časovače — přes půlnoc nový hash,
   v rámci dne regenerace jen při změně feedu. Usage (tokeny) se ukládá pro
   budoucí telemetrii.
-- **LLM cesta**: default backend přes `AiBackendResolver` (`src/Core/Ai/` —
-  extrakce chat vzoru: default aktivní řádek `core_ai_backends` + dešifrování
-  klíče `DsSecretCipher`), jedno streamované `LlmClient::streamChat` volání,
-  `maxTokens ~300`, `temperature=null`, `tools=null` (D15).
+- **LLM cesta**: AI funkce `dashboard.summary` přes `AiFunctionResolver`
+  (`src/Core/Ai/`, `docs/ai.md` §5.3 — připojení, klíč, model z mapy
+  úrovní nebo z řádku funkce, strop 2000 z deklarace), jedno streamované
+  `LlmClient::streamChat` volání, `temperature=null`, `tools=null` (D15).
+  Klíč cache zahrnuje model (`DashboardSummaryService::cacheKey`) — změna
+  modelu funkce shrnutí přegeneruje.
 - `DashboardController::summary()` sdílí `FeedCollector::collect()`
   s `dashboard()` a digest dostává **všechny** karty (`allCards`, #101):
   county jsou pravdivé nad stropem, top karty jdou z čela seznamu v pořadí

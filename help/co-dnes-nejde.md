@@ -296,8 +296,9 @@ o ISDOC dodavatele požádat.
   je to správná odpověď — lepší než vymyšlený návod.
 - **Nepracuje s každým modelem.** Modely, které přemýšlejí samy od sebe
   (řada 5 — Sonnet 5.5, Haiku 5.5, Opus 5.5 a podobné), asistent zatím
-  neumí použít: místo odpovědi uvidíš hlášku, že správce má v AI backendu
-  nastavit jiný model. Analýza pošty a štítky s těmito modely fungují.
+  neumí použít: místo odpovědi uvidíš hlášku, že správce má u AI funkce
+  **Chat asistenta** (Nastavení aplikace → Pošta → AI funkce) nastavit
+  jiný model. Analýza pošty a štítky s těmito modely fungují.
 
 ---
 

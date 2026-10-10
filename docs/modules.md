@@ -423,6 +423,7 @@ ID modulu přímo odpovídá cestě v souborovém systému:
 | `sendPurposes` | object[] | Ne | Ano (`name`) | Účely odesílání: `id`, `name` povinné, `order` volitelné (default 1000). `ConfigCompiler` je skládá do cfgItem `base.persons.sendPurposes` (viz níže) |
 | `recordSenderProviders` | object[] | Ne | Ne | Odesílatel podle záznamu (#90 D39): `{table, class}`, třída implementuje `RecordSenderProvider`. Jeden poskytovatel na tabulku — druhá registrace téže tabulky je chyba. Čte `RecordSenderProviderLoader`, ptá se `SenderResolver` (`docs/mail/outbound.md`) |
 | `workOrderInvoiceContributors` | object[] | Ne | Ano (`name`) | Přispěvatelé obsahu faktury periodické zakázky (#110 D7, D10): `id`, `class`, `name` povinné. `ConfigCompiler` je skládá do cfgItem `economy.workOrders.invoiceContributors` (id → název, třída); instance staví `InvoiceContributorRegistry::fromConfig` (viz níže) |
+| `aiFunctions` | object[] | Ne | Ano (`name`, `description`) | AI funkce modulu (#85 D36): `id` (`oblast.nazev`), `name`, `tier` (`fast` / `balanced` / `strong`), `defaults.maxTokens` povinné; `defaults.temperature`, `requires` (`tools`, `pdf`), `description` volitelné. `ConfigCompiler` je skládá do cfgItem `core.ai.functions`; čte `AiFunctionRegistry`, volání skládá `AiFunctionResolver` (viz níže, `docs/ai.md` §5.3) |
 
 ### Pole `sendPurposes`
 
@@ -444,6 +445,44 @@ rozšiřitelný seznam vlastní klíč — stejný vzor jako `journalDimensions`
 vlastní bez zásahu do něj. Stejné `id` ve dvou modulech zastaví kompilaci,
 cfgItem `base.persons.sendPurposes` nejde deklarovat v `config`.
 Po přidání účelu je potřeba `ds-upgrade`.
+
+### Pole `aiFunctions`
+
+AI funkce (#85 D36, `tasks/ai-functions.md`) — co modul volá na jazykovém
+modelu. Deklarace nese **úroveň modelu**, ne model: který model úroveň
+dnes znamená, říká mapa `core.ai.tiers` v repu; zdroj dat může u funkce
+přepsat připojení, model i ladění v tabulce `core_ai_function_settings`
+(řádek zakládá `ds-upgrade`). Stejný vzor jako `sendPurposes` — vlastní
+klíč, protože cfg položky se mezi moduly neslučují:
+
+```jsonc
+"aiFunctions": [
+    {
+        "id": "mail.extraction",
+        "name": "Incoming mail extraction",
+        "name:cs": "Vytěžení došlé pošty",
+        "name:en": "Incoming mail extraction",
+        "description:cs": "Strukturované vytěžení dokladů z došlých zpráv…",
+        "tier": "balanced",                  // fast | balanced | strong
+        "defaults": { "maxTokens": 32768, "temperature": 0 },
+        "requires": ["pdf"]                  // tools | pdf
+    }
+]
+```
+
+Validace v `ModuleDefinition`: `id` ve tvaru `oblast.nazev` (unikátní
+v modulu), `tier` z trojice, `defaults.maxTokens` kladné celé číslo,
+`defaults.temperature` číslo nebo nic (jiné klíče v `defaults` = chyba),
+`requires` jen `tools` (tool smyčka — model musí mít `chatToolLoop`)
+a `pdf`. `thinking` a `effort` deklarace nemá (výchozí = neposílat).
+`ConfigCompiler` funkce všech aktivních modulů složí do cfgItemu
+**`core.ai.functions`** (klíč = `id`, pořadí deklarací; stejné `id` ve dvou
+modulech zastaví kompilaci, cfgItem nejde deklarovat v `config`). `core.ai`
+na deklarujících modulech nezávisí — `AiFunctionRegistry::fromConfig()`
+čte compiled config. Po přidání funkce je potřeba `ds-upgrade` (kompilace
++ založení řádku nastavení). Volající pak píše jen
+`$resolver->resolve('mail.extraction', $override)->chatParams(...)` —
+viz `docs/ai.md` §5.3–5.4.
 
 ### Pole `attachmentGuards`
 

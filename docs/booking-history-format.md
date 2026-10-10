@@ -228,9 +228,12 @@ výsledky se cachují do `<input>.tags.jsonl`. Opakovaný report nad týmž
 souborem je proto zadarmo. Padlá dávka běh neshodí a do cache nic nezapíše
 — příště se zkusí znovu.
 
-Backend: `--backend`, jinak nastavení `exchange.contentTag.backend`, jinak
-default backend DS. Doporučení stejné jako u analýzy dokladů — levný model,
-klasifikace krátkého textu je triviální úloha.
+Model, připojení a ladění určuje AI funkce `exchange.bookingHistory`
+(Nastavení → Pošta → AI funkce; `docs/ai.md` §5.3). Volby příkazu ji
+přepisují: `--backend <id|název>` jiné připojení, `--model <ID>` jiný
+model (z katalogu, nebo vlastní ID s `--model-like <ID z katalogu>`).
+Doporučení stejné jako u analýzy dokladů — levný model, klasifikace
+krátkého textu je triviální úloha.
 
 ### Reverz na neznámé osnově — kontrola názvů
 

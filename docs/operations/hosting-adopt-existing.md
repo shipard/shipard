@@ -186,7 +186,7 @@ Rollback per DS: `ai-backend-set-key` zpět s přímým klíčem bez
 Založit z portálu jeden **testovací DS** (`can_provision = true` na
 řádku serveru): projde se celý agent — ds-create, doména,
 `auth.providers`, owner s předpropojenou identitou, mail token,
-AI backend, confirm, vazba na portálu. Tím je adopce kompletní
+AI připojení, confirm, vazba na portálu. Tím je adopce kompletní
 a server se chová stejně pro staré i nové DS. Testovací DS pak
 smazat/ponechat dle záměru.
 

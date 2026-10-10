@@ -2,7 +2,7 @@
 
 Shipard má dvě hlavní CLI utility a tři podpůrné shell skripty. Dohromady
 pokrývají instalaci serveru, vytváření a správu datových zdrojů (DS),
-údržbu (secrets, mail-router, AI backend) a vývojový workflow.
+údržbu (secrets, mail-router, AI připojení) a vývojový workflow.
 
 | Nástroj | Účel | Spouštět z |
 |---------|------|-----------|
@@ -479,7 +479,7 @@ VAT období, číselné řady, mail router). Bezpodmínečně (i pod
 `skipProvisioning`) běží jen enginové kontrakty: clearing 261200/261300
 se skupinou Nespárované platby, tranzit 261100, podrozvahové účty
 756100/799100 s opravou povahy 75–79 (`OffBalanceAccountsProvisioner`,
-#79 D2), AI backend a profil pošty, pravidla předzpracování pošty a vázané řady.
+#79 D2), AI připojení, řádky AI funkcí a profil pošty, pravidla předzpracování pošty a vázané řady.
 Určeno pro import dat
 z jiného systému, kde tyto údaje dodává sám import. Po dokončení importu
 nastav `skipProvisioning` zpět na `false` a spusť `ds-upgrade` znovu —
@@ -1165,30 +1165,32 @@ nedorazí; pro test skutečného doručení musí být adresa povolená
 
 ### AI
 
-Výchozí AI backend `default` a výchozí profil analýzy pošty zakládá
-`ds-upgrade` sám (bezpodmínečně, i pod `skipProvisioning`). Jediný ruční
-krok při zřízení zdroje dat je klíč backendu:
+Výchozí AI připojení `default`, řádky AI funkcí a výchozí profil analýzy
+pošty zakládá `ds-upgrade` sám (bezpodmínečně, i pod `skipProvisioning`).
+Jediný ruční krok při zřízení zdroje dat je klíč připojení:
 
 #### `ai-backend-set-key`
 
 ```bash
 sudo shpd-ds ai-backend-set-key                       # klíč zadáš skrytě na výzvu
-sudo shpd-ds ai-backend-set-key --backend=claude-5    # jiný než výchozí backend
+sudo shpd-ds ai-backend-set-key --backend=second      # jiné než výchozí připojení
 echo "$KEY" | sudo shpd-ds ai-backend-set-key         # ze STDIN (skripty)
 sudo shpd-ds ai-backend-set-key --api-key=sk-xxx      # jen pro provisioning agenta
 ```
 
-Nastaví (nebo rotuje) API klíč AI backendu — platí pro všechny AI cesty
-(analýza pošty, chat, shrnutí dashboardu, obsahové štítky). Bez `--api-key`
-se klíč čte skrytým vstupem z terminálu, nebo ze STDIN pipe; neinteraktivní
-běh bez klíče končí chybou. Klíč se před uložením zašifruje přes
-`DsSecretCipher` a backend se aktivuje. `--base-url` směruje backend na
-AI gateway hostingu (D5/D6) — klíčem je pak gateway token `shpd_gw_…`;
-prázdná hodnota (`--base-url ''`) vrací backend na přímé Anthropic API.
+Nastaví (nebo rotuje) API klíč AI připojení (`core_ai_backends`) — platí
+pro všechny AI funkce, které připojení používají (analýza pošty, chat,
+shrnutí dashboardu, obsahové štítky; model a ladění se nastavují
+u AI funkcí, `docs/ai.md` §5.3). Bez `--api-key` se klíč čte skrytým
+vstupem z terminálu, nebo ze STDIN pipe; neinteraktivní běh bez klíče
+končí chybou. Klíč se před uložením zašifruje přes `DsSecretCipher`
+a připojení se aktivuje. `--base-url` směruje připojení na AI gateway
+hostingu (D5/D6) — klíčem je pak gateway token `shpd_gw_…`; prázdná
+hodnota (`--base-url ''`) vrací připojení na přímé Anthropic API.
 
 | Opce | Význam |
 |------|--------|
-| `--backend <kód>` | Kód backendu (default `default`) |
+| `--backend <kód>` | Kód připojení (default `default`) |
 | `--api-key <klíč>` | Klíč v argumentu — pro provisioning agenta hostingu (`HostingSyncRunner`), kde argv nejde přes shell; ručně dej přednost skrytému vstupu |
 | `--base-url <url>` | Base URL API (AI gateway); prázdný řetězec = přímé Anthropic |
 
@@ -1828,7 +1830,7 @@ Detailní postup vč. backfillu existujících DS:
 |--------|--------|
 | `ds-*` | datový zdroj jako celek (`ds-create`, `ds-upgrade`, `ds-upgrade-all`, `ds-secrets-*`) |
 | `mail-*` | core.mail modul a router |
-| `ai-*` | AI backendy a profily |
+| `ai-*` | AI připojení a profily |
 | `seed-*` | testovací data |
 | `domain-*` | hostname → DS routing |
 | `*-bootstrap` | jednorázová idempotentní inicializace (system uživatel, default mailbox, default profil) |
