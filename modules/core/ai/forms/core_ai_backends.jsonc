@@ -29,6 +29,8 @@
                                 {"type": "separator", "label": "Ladění", "label:cs": "Ladění", "label:en": "Tuning"},
                                 {"type": "input", "column": "max_tokens"},
                                 {"type": "input", "column": "temperature"},
+                                {"type": "select", "column": "thinking", "required": true},
+                                {"type": "select", "column": "effort", "required": true},
 
                                 {"type": "separator", "label": "Příznaky", "label:cs": "Příznaky", "label:en": "Flags"},
                                 {"type": "input", "column": "is_default"},

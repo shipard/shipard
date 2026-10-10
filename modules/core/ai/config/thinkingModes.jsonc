@@ -1,0 +1,38 @@
+{
+    // core.ai.thinkingModes
+    //
+    // Režim přemýšlení modelu (core_ai_backends.thinking,
+    // tasks/ai-models-phase0.md F0-D2). `auto` = parametr `thinking` se
+    // neposílá a model běží ve svém výchozím režimu (řada 5 přemýšlí
+    // adaptivně, Sonnet 4.6 nepřemýšlí). Jiná hodnota odchází jako
+    // `thinking: {"type": "<hodnota>"}`. Které hodnoty konkrétní model
+    // přijímá, se neověřuje — chybu 400 vrátí API a projeví se jako
+    // selhání volání (Sonnet 5.5: jen `adaptive` a `between_tools`,
+    // `between_tools` jen s effortem `low` / `medium` / `high`).
+    // Dočasné — katalog modelů (#85 fáze 1) přesune ladění do AI úloh.
+
+    "auto": {
+        "name": "Model default (not sent)",
+        "name:cs": "Výchozí modelu (neposílat)",
+        "name:en": "Model default (not sent)",
+        "order": 10
+    },
+    "adaptive": {
+        "name": "Adaptive",
+        "name:cs": "Adaptivní (adaptive)",
+        "name:en": "Adaptive",
+        "order": 20
+    },
+    "between_tools": {
+        "name": "Only between tool calls",
+        "name:cs": "Jen mezi voláními nástrojů (between_tools)",
+        "name:en": "Only between tool calls",
+        "order": 30
+    },
+    "disabled": {
+        "name": "Disabled",
+        "name:cs": "Vypnuto (disabled)",
+        "name:en": "Disabled",
+        "order": 40
+    }
+}

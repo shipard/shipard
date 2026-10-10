@@ -30,7 +30,7 @@ zprávy.
 | Sloupec | Typ | Popis |
 |---|---|---|
 | `provider` | varchar(30), NOT NULL, default `anthropic` | Identifikátor providera. V MVP pouze `anthropic`. |
-| `model` | varchar(100), NOT NULL | Model name (`claude-sonnet-4-5`, …) |
+| `model` | varchar(100), NOT NULL | Model name (`claude-sonnet-4-6`, …). Vyřazené modely přepisuje `ds-upgrade` (`AIAnalyzerProvisioner::RETIRED_MODELS`, viz Životní cyklus). |
 | `base_url` | varchar(200) | Volitelný custom endpoint (pro non-default proxy) |
 
 ### Přístup (credentials)
@@ -44,7 +44,15 @@ zprávy.
 | Sloupec | Typ | Popis |
 |---|---|---|
 | `max_tokens` | int, NOT NULL, default 0 | Max output tokenů na request. `0` = automaticky — spadne na default provideru analyzeru; přebít může nenulová hodnota na AI profilu (kaskáda profil → backend → provider). Chat si při 0 drží vlastní fallback 4096. |
-| `temperature` | numeric(3,2), NOT NULL, default 0.00 | Extrakce má být deterministická |
+| `temperature` | numeric(3,2), NULL | `NULL` = parametr se neposílá, model běží se svou výchozí teplotou. **Čte ji jen analýza pošty**; chat, shrnutí dashboardu a klasifikátory štítků teplotu neposílají nikdy. Provisioner zakládá backend s `NULL`; existující řádky s `0` zůstávají (pro Sonnet 4.6 platná hodnota). **Při přepnutí backendu na model řady 5 teplotu vymaž** — řada 5 nevýchozí teplotu odmítá (HTTP 400). |
+| `thinking` | enumString(15), NOT NULL, default `auto`, cfgItem `core.ai.thinkingModes` | Režim přemýšlení: `auto` = parametr se neposílá; `adaptive` / `between_tools` / `disabled` odchází jako `thinking: {"type": …}`. Které hodnoty model přijímá, se neověřuje — chybu 400 vrátí API (např. `disabled` na Sonnetu 5.5). |
+| `effort` | enumString(10), NOT NULL, default `auto`, cfgItem `core.ai.effortLevels` | Úsilí: `auto` = parametr se neposílá; `low` … `max` odchází jako `output_config: {"effort": …}`. Thinking se na řadě 5 počítá do `max_tokens`. |
+
+Ladicí parametry převádí na jednom místě `AiBackendResolver::tuning()`
+(`auto` → `null`, `NULL` teplota → `null`); všichni volající z něj berou
+`thinking` a `effort`, teplotu jen runner analýzy pošty. Sloupce `thinking`
+a `effort` jsou přechodné — katalog modelů (#85 fáze 1) je přesune do AI
+úloh. Zadání: `tasks/ai-models-phase0.md` (F0-D1, F0-D2, F0-D7).
 
 ### Příznaky (flags)
 
@@ -74,7 +82,12 @@ zprávy.
 ## Životní cyklus
 
 1. **Auto-provisioning** při `ds-upgrade`: vznikne backend `default`
-   s `is_default=true`, `is_active=false`, `api_key=NULL`.
+   s `model=claude-sonnet-4-6`, `temperature=NULL`, `is_default=true`,
+   `is_active=false`, `api_key=NULL`. Tentýž běh u **všech** backendů
+   jednorázově a idempotentně přepíše vyřazený model
+   (`claude-sonnet-4-5`, i s datovou příponou) na jeho náhradu podle
+   `AIAnalyzerProvisioner::RETIRED_MODELS` a vypíše `[MODEL]`; ID
+   s prefixem platformy (`anthropic.…` na Bedrocku) nechává být.
 2. **Nastavení klíče**: admin spustí `bin/shpd-ds ai-analyzer-set-key`,
    který klíč zašifruje a nastaví `is_active=true`.
 3. **Claim**: `AnalysisController::claim()` načte default aktivní backend,

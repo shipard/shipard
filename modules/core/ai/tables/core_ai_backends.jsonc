@@ -143,15 +143,46 @@
             "group": "tuning"
         },
         {
+            // NULL = parametr se neposílá, model použije svůj výchozí stav
+            // (řada 5 nevýchozí teplotu odmítá — tasks/ai-models-phase0.md F0-D1).
+            // Čte ji jen analýza pošty; chat, shrnutí a klasifikátory ji neposílají.
             "id": "temperature",
-            "name": "Temperature",
-            "name:cs": "Teplota",
-            "name:en": "Temperature",
+            "name": "Temperature (empty = model default)",
+            "name:cs": "Teplota (prázdné = výchozí modelu)",
+            "name:en": "Temperature (empty = model default)",
             "type": "numeric",
             "precision": 3,
             "scale": 2,
+            "nullable": true,
+            "group": "tuning"
+        },
+        {
+            // `auto` = parametr se neposílá; jiná hodnota jde jako
+            // `thinking: {"type": "<hodnota>"}`. Které hodnoty model přijímá,
+            // se neověřuje — chybu vrátí API (F0-D2).
+            "id": "thinking",
+            "name": "Thinking",
+            "name:cs": "Přemýšlení (thinking)",
+            "name:en": "Thinking",
+            "type": "enumString",
+            "length": 15,
             "nullable": false,
-            "default": 0,
+            "cfgItem": "core.ai.thinkingModes",
+            "default": "auto",
+            "group": "tuning"
+        },
+        {
+            // `auto` = parametr se neposílá; jiná hodnota jde jako
+            // `output_config: {"effort": "<hodnota>"}` (F0-D2).
+            "id": "effort",
+            "name": "Effort",
+            "name:cs": "Úsilí (effort)",
+            "name:en": "Effort",
+            "type": "enumString",
+            "length": 10,
+            "nullable": false,
+            "cfgItem": "core.ai.effortLevels",
+            "default": "auto",
             "group": "tuning"
         },
 

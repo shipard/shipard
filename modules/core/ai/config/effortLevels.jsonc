@@ -1,0 +1,48 @@
+{
+    // core.ai.effortLevels
+    //
+    // Úsilí modelu (core_ai_backends.effort, tasks/ai-models-phase0.md
+    // F0-D2). `auto` = parametr se neposílá a platí výchozí úsilí modelu
+    // (řada 5: `high`). Jiná hodnota odchází jako
+    // `output_config: {"effort": "<hodnota>"}`. Thinking se na řadě 5
+    // počítá do `max_tokens` a účtuje jako výstup. Kombinace, které model
+    // nepřijímá (`between_tools` + `xhigh` / `max`), se neověřují — chybu
+    // 400 vrátí API. Dočasné — katalog modelů (#85 fáze 1).
+
+    "auto": {
+        "name": "Model default (not sent)",
+        "name:cs": "Výchozí modelu (neposílat)",
+        "name:en": "Model default (not sent)",
+        "order": 10
+    },
+    "low": {
+        "name": "Low",
+        "name:cs": "Nízké (low)",
+        "name:en": "Low",
+        "order": 20
+    },
+    "medium": {
+        "name": "Medium",
+        "name:cs": "Střední (medium)",
+        "name:en": "Medium",
+        "order": 30
+    },
+    "high": {
+        "name": "High",
+        "name:cs": "Vysoké (high)",
+        "name:en": "High",
+        "order": 40
+    },
+    "xhigh": {
+        "name": "Extra high",
+        "name:cs": "Velmi vysoké (xhigh)",
+        "name:en": "Extra high",
+        "order": 50
+    },
+    "max": {
+        "name": "Maximum",
+        "name:cs": "Maximální (max)",
+        "name:en": "Maximum",
+        "order": 60
+    }
+}

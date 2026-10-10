@@ -95,7 +95,7 @@ class AIBackendsViewer extends TableViewer
         // api_key NIKDY jako hodnota — jen has_api_key příznak.
         $record = $this->db->fetchRow(
             'SELECT `id`, `backend_id`, `name`, `provider`, `model`, `base_url`,'
-            . ' `max_tokens`, `temperature`, `is_default`, `is_active`,'
+            . ' `max_tokens`, `temperature`, `thinking`, `effort`, `is_default`, `is_active`,'
             . ' `created`, `modified`,'
             . ' (`api_key` IS NOT NULL AND `api_key` != \'\') AS `has_api_key`'
             . ' FROM `' . $this->table . '` WHERE `id` = %i',
@@ -118,9 +118,12 @@ class AIBackendsViewer extends TableViewer
         $access = [];
         $this->addItem($access, 'API klíč', !empty($record['has_api_key']) ? 'nastaven' : 'nenastaven');
 
+        // NULL teplota a `auto` = parametr se neposílá (tasks/ai-models-phase0.md F0-D1, F0-D2).
         $tuning = [];
         $this->addItem($tuning, 'Max. tokenů', ((int) ($record['max_tokens'] ?? 0)) ?: 'automaticky');
-        $this->addItem($tuning, 'Teplota', $record['temperature'] ?? null);
+        $this->addItem($tuning, 'Teplota', $record['temperature'] ?? 'výchozí modelu');
+        $this->addItem($tuning, 'Přemýšlení', $this->tuningLabel('core.ai.thinkingModes', $record['thinking'] ?? null));
+        $this->addItem($tuning, 'Úsilí', $this->tuningLabel('core.ai.effortLevels', $record['effort'] ?? null));
 
         $flags = [];
         $this->addItem($flags, 'Výchozí backend', !empty($record['is_default']) ? 'Ano' : 'Ne');
@@ -156,6 +159,18 @@ class AIBackendsViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
+    }
+
+    /** Popisek hodnoty z cfgItemu (`name` po lokalizaci); bez konfigurace surová hodnota. */
+    private function tuningLabel(string $cfgItemId, mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $value = (string) $value;
+        $cfg = $this->config?->cfgItem($cfgItemId);
+        $entry = is_array($cfg) ? ($cfg[$value] ?? null) : null;
+        return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $value;
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

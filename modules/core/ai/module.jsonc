@@ -39,6 +39,17 @@
         }
     ],
 
+    "config": [
+        {
+            "id": "core.ai.thinkingModes",
+            "file": "config/thinkingModes.jsonc"
+        },
+        {
+            "id": "core.ai.effortLevels",
+            "file": "config/effortLevels.jsonc"
+        }
+    ],
+
     "lookups": [
         {
             "table": "core_ai_backends",
