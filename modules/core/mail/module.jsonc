@@ -254,6 +254,20 @@
             "interval": "15m",
             "navSection": "_top",
             "tags": ["mail", "ai"]
+        },
+        {
+            // Model přepsaný v AI profilu, který podle katalogu končí (#85 D42, D47).
+            "id": "core.mail.profile_model_retiring",
+            "name": "AI model of a mail profile retiring",
+            "name:cs": "AI model profilu pošty brzy končí",
+            "name:en": "AI model of a mail profile retiring",
+            "description": "An active mail AI profile overrides the model with one that the model catalog retires within 30 days or has already retired.",
+            "description:cs": "Aktivní AI profil pošty přepisuje model na takový, který podle katalogu modelů do 30 dnů končí nebo už skončil.",
+            "description:en": "An active mail AI profile overrides the model with one that the model catalog retires within 30 days or has already retired.",
+            "class": "Shipard\\Module\\Core\\Mail\\Analysis\\ProfileModelRetiringAlertCheck",
+            "severity": "warning",
+            "interval": "1d",
+            "tags": ["mail", "ai"]
         }
     ],
 

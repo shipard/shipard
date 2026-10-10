@@ -115,6 +115,25 @@
         }
     ],
 
+    // „AI model brzy končí“ (#85 D42, D47): výslovně nastavený model u AI
+    // funkce, který podle katalogu do 30 dnů končí nebo už skončil. Profily
+    // pošty hlídá core.mail.profile_model_retiring nad stejným úsudkem.
+    "alertChecks": [
+        {
+            "id": "core.ai.model_retiring",
+            "name": "AI model retiring",
+            "name:cs": "AI model brzy končí",
+            "name:en": "AI model retiring",
+            "description": "An AI function has an explicitly set model that the model catalog retires within 30 days or has already retired.",
+            "description:cs": "AI funkce má výslovně nastavený model, který podle katalogu modelů do 30 dnů končí nebo už skončil.",
+            "description:en": "An AI function has an explicitly set model that the model catalog retires within 30 days or has already retired.",
+            "class": "Shipard\\Module\\Core\\Ai\\Alerts\\ModelRetiringAlertCheck",
+            "severity": "warning",
+            "interval": "1d",
+            "tags": ["ai"]
+        }
+    ],
+
     "lookups": [
         {
             "table": "core_ai_backends",
