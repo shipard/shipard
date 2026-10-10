@@ -6,6 +6,12 @@ namespace Shipard\Core\Module;
 
 class ModuleDefinition
 {
+    /** Úrovně modelu AI funkce (`aiFunctions[].tier`, #85 D36) — mapu na modely nese cfgItem `core.ai.tiers`. */
+    public const array AI_FUNCTION_TIERS = ['fast', 'balanced', 'strong'];
+
+    /** Požadavky AI funkce na model (`aiFunctions[].requires`): tool smyčka, PDF přílohy. */
+    public const array AI_FUNCTION_REQUIRES = ['tools', 'pdf'];
+
     public function __construct(
         public readonly string $id,
         public readonly string $name,
@@ -37,6 +43,7 @@ class ModuleDefinition
         public readonly array $sendPurposes = [],
         public readonly array $recordSenderProviders = [],
         public readonly array $workOrderInvoiceContributors = [],
+        public readonly array $aiFunctions = [],
     ) {}
 
     public static function fromArray(array $data): self
@@ -505,6 +512,107 @@ class ModuleDefinition
             $workOrderInvoiceContributors = array_values($workOrderInvoiceContributors);
         }
 
+        // aiFunctions — AI funkce modulu (#85 D36): co modul volá na jazykovém
+        // modelu (`mail.extraction`, `exchange.contentTags`, …). Deklarace nese
+        // úroveň modelu (`tier`), výchozí ladění (`defaults`) a požadavky na
+        // model (`requires`). ConfigCompiler je složí do cfgItem
+        // `core.ai.functions`; čte ho AiFunctionRegistry a AiFunctionResolver.
+        $aiFunctions = [];
+        if (array_key_exists('aiFunctions', $data)) {
+            if (!is_array($data['aiFunctions']) || !array_is_list($data['aiFunctions'])) {
+                throw new \InvalidArgumentException(
+                    "Module '{$data['id']}': aiFunctions must be a JSON array",
+                );
+            }
+            foreach ($data['aiFunctions'] as $idx => $function) {
+                if (!is_array($function)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}] must be an object",
+                    );
+                }
+                $functionId = $function['id'] ?? null;
+                if (!is_string($functionId) || !preg_match('/^[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$/', $functionId)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}].id must be '<area>.<name>'",
+                    );
+                }
+                if (!isset($function['name']) || !is_string($function['name']) || $function['name'] === '') {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}] requires 'name'",
+                    );
+                }
+                $tier = $function['tier'] ?? null;
+                if (!is_string($tier) || !in_array($tier, self::AI_FUNCTION_TIERS, true)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}].tier must be one of "
+                        . implode(', ', self::AI_FUNCTION_TIERS),
+                    );
+                }
+                $defaults = $function['defaults'] ?? null;
+                if (!is_array($defaults) || array_is_list($defaults)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}].defaults must be an object with maxTokens",
+                    );
+                }
+                $unknownDefaults = array_diff(array_keys($defaults), ['maxTokens', 'temperature']);
+                if ($unknownDefaults !== []) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}].defaults has unknown key '"
+                        . implode("', '", array_map('strval', $unknownDefaults)) . "'",
+                    );
+                }
+                $maxTokens = $defaults['maxTokens'] ?? null;
+                if (!is_int($maxTokens) || $maxTokens <= 0) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}].defaults.maxTokens must be a positive integer",
+                    );
+                }
+                $temperature = $defaults['temperature'] ?? null;
+                if ($temperature !== null && (!is_int($temperature) && !is_float($temperature))) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}].defaults.temperature must be a number or omitted",
+                    );
+                }
+                $requires = $function['requires'] ?? [];
+                if (!is_array($requires) || !array_is_list($requires)) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions[{$idx}].requires must be a JSON array",
+                    );
+                }
+                foreach ($requires as $requirement) {
+                    if (!is_string($requirement) || !in_array($requirement, self::AI_FUNCTION_REQUIRES, true)) {
+                        throw new \InvalidArgumentException(
+                            "Module '{$data['id']}': aiFunctions[{$idx}].requires must contain only "
+                            . implode(', ', self::AI_FUNCTION_REQUIRES),
+                        );
+                    }
+                }
+                if (isset($aiFunctions[$functionId])) {
+                    throw new \InvalidArgumentException(
+                        "Module '{$data['id']}': aiFunctions has duplicate id '{$functionId}'",
+                    );
+                }
+                $entry = [
+                    'id' => $functionId,
+                    'tier' => $tier,
+                    'defaults' => ['maxTokens' => $maxTokens]
+                        + ($temperature !== null ? ['temperature' => (float) $temperature] : []),
+                    'requires' => array_values(array_unique($requires)),
+                ];
+                // Název a popis vč. jazykových variant — lokalizuje až kompilace.
+                foreach ($function as $key => $value) {
+                    $key = (string) $key;
+                    $isText = $key === 'name' || str_starts_with($key, 'name:')
+                        || $key === 'description' || str_starts_with($key, 'description:');
+                    if ($isText && is_string($value)) {
+                        $entry[$key] = $value;
+                    }
+                }
+                $aiFunctions[$functionId] = $entry;
+            }
+            $aiFunctions = array_values($aiFunctions);
+        }
+
         // navigationProviders — třídy dodávající dynamické položky hlavní
         // navigace z dat (NavigationItemsProvider). Registrace je jen {class};
         // instancování a merge dělá NavigationController.
@@ -615,6 +723,7 @@ class ModuleDefinition
             sendPurposes: $sendPurposes,
             recordSenderProviders: $recordSenderProviders,
             workOrderInvoiceContributors: $workOrderInvoiceContributors,
+            aiFunctions: $aiFunctions,
         );
     }
 

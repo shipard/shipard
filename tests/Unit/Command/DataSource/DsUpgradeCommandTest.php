@@ -48,7 +48,11 @@ class TestableDsUpgradeCommand extends DsUpgradeCommand
         if ($this->emptyModelCatalog) {
             return ModelCatalog::empty();
         }
-        return ModelCatalog::fromArray(JsoncParser::parseFile(dirname(__DIR__, 4) . '/modules/core/ai/config/models.jsonc'));
+        $configDir = dirname(__DIR__, 4) . '/modules/core/ai/config';
+        return ModelCatalog::fromArray(
+            JsoncParser::parseFile($configDir . '/models.jsonc'),
+            JsoncParser::parseFile($configDir . '/tiers.jsonc'),
+        );
     }
 }
 

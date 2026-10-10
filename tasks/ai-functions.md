@@ -174,6 +174,30 @@ GitHub Issue: shipard/shipard#85 (D1, D3, D4, D27, D28, D36–D43; fáze 1b).
   platformu odchází ID tak, jak je napsané, cena je 0 s varováním
   (neznámý ceník se neodhaduje).
 
+### Prováděcí doplňky (potvrzeno 2026-10-10 při plánování implementace)
+
+- ✓ **D44 — Pole model ve formulářích.** `select` s příznakem `allowCustom`:
+  frontend ho vykreslí jako textový vstup s `<datalist>` — volby z katalogu
+  (modely s úrovní), vlastní ID jde napsat. Jedno pole pro oba případy D43.
+- ✓ **D45 — Platforma zůstává `varchar`.** Hodnotu hlídá validace
+  `AIBackendDocument` proti cfgItemu `core.ai.platforms`; změna typu
+  sloupce na `enumString` není bezpečný MODIFY.
+- ✓ **D46 — Značka převodu.** Převod D41 po dokončení vynuluje `model`
+  a ladění na řádku připojení; druhý běh tak nemá co převádět. Pravidlo 1
+  (profily) žije v `MailAiProvisioner`, pravidla 2 a 3 v novém
+  `AiFunctionProvisioner` (core.ai), který `ds-upgrade` volá před
+  `provisionMailAi`. Hodnota `default` přibývá do `core.ai.thinkingModes`
+  / `effortLevels` už s tabulkou funkcí; do převodu volajících ji
+  `AiBackendResolver::tuning()` bere jako `auto`.
+- ✓ **D47 — Upozornění D42 ve dvou modulech.** `core.ai.model_retiring`
+  nad řádky funkcí a `core.mail.profile_model_retiring` nad profily, obě
+  nad společným pomocníkem v core.ai — core.ai nezná tabulku profilů.
+- ✓ **D48 — Chyby modelu v claimu.** `AnalysisClaimException` dostává kód
+  `BACKEND_CONFIG_INVALID` (409) pro `MODEL_*` / `UNKNOWN_MODEL`
+  z resolveru; runner ho řadí ke konfiguračním chybám jako `NO_BACKEND`.
+  Hash cache shrnutí dashboardu zahrnuje ID modelu (prompt ne). Resolver
+  je konstruktorová závislost volajících.
+
 **Profil pošty (D4):** `core_mail_ai_profiles.backend` je nově nullable
 (`NULL` = výchozí připojení); nové sloupce `model` (nullable), `model_like`,
 `thinking`, `effort` (enum s `default`) — přepsání pro `mail.extraction`.

@@ -44,6 +44,13 @@ class ConfigCompiler
     /** Klíče deklarace tisku, které jdou do `PRINTS_ITEM` (+ `name:<jazyk>`). */
     private const PRINT_ITEM_KEYS = ['name', 'table', 'filter', 'textSlots', 'order'];
 
+    /**
+     * cfgItem složený z `aiFunctions` aktivních modulů — AI funkce (#85 D36):
+     * klíč = id funkce, hodnota úroveň modelu, výchozí ladění, požadavky
+     * a lokalizovaný název. Čte ho AiFunctionRegistry.
+     */
+    public const AI_FUNCTIONS_ITEM = 'core.ai.functions';
+
     /** cfgItem s jazyky dokumentů (#94 D3); klíč = jazyk. */
     public const DOCUMENT_LANGUAGES_ITEM = 'world.base.documentLanguages';
 
@@ -198,6 +205,31 @@ class ConfigCompiler
             );
         }
         $rawItems[self::INVOICE_CONTRIBUTORS_ITEM] = $contributors;
+
+        // AI funkce (`aiFunctions` v module.jsonc) aktivních modulů → jeden
+        // cfgItem v pořadí deklarací. Resolver volání i tabulka nastavení
+        // funkcí z něj berou úroveň, výchozí ladění a požadavky; core.ai
+        // tak nezávisí na modulech, které funkce deklarují.
+        $aiFunctions = [];
+        foreach ($modules as $module) {
+            foreach ($module->aiFunctions as $function) {
+                $functionId = (string) $function['id'];
+                if (isset($aiFunctions[$functionId])) {
+                    throw new \RuntimeException(
+                        "AI function '{$functionId}' is declared by more than one module"
+                        . " (again in '{$module->id}')",
+                    );
+                }
+                unset($function['id']);
+                $aiFunctions[$functionId] = $function;
+            }
+        }
+        if (isset($rawItems[self::AI_FUNCTIONS_ITEM])) {
+            throw new \RuntimeException(
+                "cfgItem '" . self::AI_FUNCTIONS_ITEM . "' is reserved for aiFunctions",
+            );
+        }
+        $rawItems[self::AI_FUNCTIONS_ITEM] = $aiFunctions;
 
         // Deklarace tisků (`prints` v module.jsonc) aktivních modulů → jeden
         // cfgItem. Formulář, Document a viewer textů na tiscích (core.prints)

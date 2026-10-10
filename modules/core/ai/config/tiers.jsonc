@@ -1,0 +1,36 @@
+{
+    // core.ai.tiers — mapa úrovní modelu (tasks/ai-functions.md, #85 D37)
+    //
+    // Každá AI funkce (`aiFunctions[].tier` v module.jsonc) deklaruje úroveň
+    // modelu, ne konkrétní model. Který model úroveň dnes znamená, říká tahle
+    // mapa v repu — `ModelCatalog::defaultModel(úroveň)`. Zdroj dat může
+    // model u funkce přepsat (tabulka `core_ai_function_settings`).
+    //
+    // Všechny tři úrovně zatím ukazují na Sonnet 4.6: nasazení AI funkcí
+    // nemění chování (řada 5 přemýšlí bez parametru a chat ji neumí —
+    // #85 F0-D6, D35). Výchozí modely pro řadu 5 doplní evaluace (fáze 2).
+    // Model musí být v katalogu `core.ai.models` s úrovní a statusem
+    // `active` (hlídá ModelCatalogFileTest).
+
+    "fast": {
+        "name": "Fast",
+        "name:cs": "Rychlý",
+        "name:en": "Fast",
+        "order": 10,
+        "model": "claude-sonnet-4-6"
+    },
+    "balanced": {
+        "name": "Balanced",
+        "name:cs": "Vyvážený",
+        "name:en": "Balanced",
+        "order": 20,
+        "model": "claude-sonnet-4-6"
+    },
+    "strong": {
+        "name": "Strong",
+        "name:cs": "Silný",
+        "name:en": "Strong",
+        "order": 30,
+        "model": "claude-sonnet-4-6"
+    }
+}

@@ -14,6 +14,11 @@ use Shipard\Core\Logging\ErrorLogger;
  * configu; bez configu je katalog prázdný — nic se netvaruje, ceny jsou 0
  * s varováním, výchozí model žádný.
  *
+ * Výchozí model úrovně (`fast` / `balanced` / `strong`) určuje mapa úrovní
+ * — cfgItem `core.ai.tiers` (tasks/ai-functions.md D37), načtená spolu
+ * s katalogem; {@see defaultModel()} ji čte, položky katalogu samy příznak
+ * výchozího modelu nenesou.
+ *
  * {@see find()} přijme ID z kterékoli platformy i s datovou příponou
  * (`claude-sonnet-4-5-20250929`, `anthropic.claude-sonnet-5-5`): shoda je
  * přesné ID nebo ID + `-YYYYMMDD`, vyhrává nejdelší kandidát. Prefix sám
@@ -24,26 +29,44 @@ final class ModelCatalog
 {
     public const string CFG_ITEM = 'core.ai.models';
 
+    /** Mapa úrovní: úroveň → {name, order, model} (#85 D37). */
+    public const string TIERS_CFG_ITEM = 'core.ai.tiers';
+
     public const string PLATFORM_ANTHROPIC = 'anthropic';
     public const string PLATFORM_BEDROCK   = 'bedrock';
 
-    /** @param array<string, ModelSpec> $models id → spec */
-    private function __construct(private readonly array $models) {}
+    /**
+     * @param array<string, ModelSpec>                                      $models id → spec
+     * @param array<string, array{model: string, name: string, order: int}> $tiers  úroveň → výchozí model
+     */
+    private function __construct(
+        private readonly array $models,
+        private readonly array $tiers,
+    ) {}
 
-    /** Katalog z compiled configu; `null` config nebo chybějící cfgItem = prázdný katalog. */
+    /**
+     * Katalog z compiled configu; `null` config nebo chybějící cfgItem =
+     * prázdný katalog. Mapa úrovní se načte, je-li v configu; bez ní
+     * katalog žádný výchozí model nemá.
+     */
     public static function fromConfig(?ConfigRuntime $config): self
     {
         $raw = $config?->cfgItem(self::CFG_ITEM);
-        return is_array($raw) ? self::fromArray($raw) : self::empty();
+        if (!is_array($raw)) {
+            return self::empty();
+        }
+        $tiers = $config?->cfgItem(self::TIERS_CFG_ITEM);
+        return self::fromArray($raw, is_array($tiers) ? $tiers : []);
     }
 
     /**
-     * Katalog ze surových dat cfgItemu (testy, `ds-upgrade` před kompilací).
+     * Katalog ze surových dat cfgItemů (testy, `ds-upgrade` před kompilací).
      *
      * @param array<string, array<string, mixed>> $items id → položka
-     * @throws \InvalidArgumentException při nevalidní položce
+     * @param array<string, array<string, mixed>> $tiers úroveň → {model, name?, order?}
+     * @throws \InvalidArgumentException při nevalidní položce nebo úrovni
      */
-    public static function fromArray(array $items): self
+    public static function fromArray(array $items, array $tiers = []): self
     {
         $models = [];
         foreach ($items as $id => $data) {
@@ -52,12 +75,28 @@ final class ModelCatalog
             }
             $models[(string) $id] = ModelSpec::fromArray((string) $id, $data);
         }
-        return new self($models);
+        $tierMap = [];
+        foreach ($tiers as $tier => $data) {
+            $tier = (string) $tier;
+            if (!in_array($tier, ModelSpec::TIERS, true)) {
+                throw new \InvalidArgumentException("ModelCatalog: unknown tier '{$tier}' in " . self::TIERS_CFG_ITEM);
+            }
+            if (!is_array($data) || !is_string($data['model'] ?? null) || trim($data['model']) === '') {
+                throw new \InvalidArgumentException("ModelCatalog: tier '{$tier}' must declare a model");
+            }
+            $tierMap[$tier] = [
+                'model' => trim($data['model']),
+                'name' => (string) ($data['name'] ?? $tier),
+                'order' => is_numeric($data['order'] ?? null) ? (int) $data['order'] : 1000,
+            ];
+        }
+        uasort($tierMap, static fn (array $a, array $b): int => [$a['order'], $a['model']] <=> [$b['order'], $b['model']]);
+        return new self($models, $tierMap);
     }
 
     public static function empty(): self
     {
-        return new self([]);
+        return new self([], []);
     }
 
     public function isEmpty(): bool
@@ -79,15 +118,25 @@ final class ModelCatalog
         return $this->resolve($modelId)['spec'] ?? null;
     }
 
-    /** ID výchozího modelu úrovně (`tierDefault`), null bez výchozího (D34). */
+    /**
+     * ID výchozího modelu úrovně podle mapy úrovní `core.ai.tiers` (D37),
+     * null pro neznámou úroveň nebo katalog bez mapy. Vrací se, co mapa
+     * deklaruje — že model v katalogu existuje a je aktivní, hlídá test
+     * souboru v repu (ModelCatalogFileTest), ne běh.
+     */
     public function defaultModel(string $tier): ?string
     {
-        foreach ($this->all() as $spec) {
-            if ($spec->tier === $tier && $spec->tierDefault) {
-                return $spec->id;
-            }
-        }
-        return null;
+        return $this->tiers[$tier]['model'] ?? null;
+    }
+
+    /**
+     * Mapa úrovní seřazená podle `order`: úroveň → {model, name, order}.
+     *
+     * @return array<string, array{model: string, name: string, order: int}>
+     */
+    public function tiers(): array
+    {
+        return $this->tiers;
     }
 
     /**

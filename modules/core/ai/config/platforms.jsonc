@@ -1,0 +1,19 @@
+{
+    // core.ai.platforms — platformy AI připojení (tasks/ai-functions.md, #85 D39)
+    //
+    // Sloupec `core_ai_backends.provider` (popisek „Platforma“) nese klíč
+    // z téhle mapy. Platforma určuje dialekt API (`dialect`, dnes jen
+    // Anthropic Messages) a výchozí adresu; připojení ji může přepsat
+    // v `base_url` (AI gateway hostingu). ID modelu pro platformu bere
+    // resolver z katalogu modelů (`platformIds`). Platforma `bedrock`
+    // přijde ve fázi 3.
+
+    "anthropic": {
+        "name": "Anthropic",
+        "name:cs": "Anthropic",
+        "name:en": "Anthropic",
+        "order": 10,
+        "dialect": "anthropic-messages",
+        "baseUrl": "https://api.anthropic.com"
+    }
+}

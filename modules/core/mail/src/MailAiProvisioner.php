@@ -18,7 +18,7 @@ use Shipard\Core\Utils\JsoncParser;
  *
  * Model nového backendu i náhrady vyřazených modelů určuje katalog modelů
  * (`ModelCatalog`, tasks/ai-model-catalog.md D33, D34): výchozí model
- * úrovně {@see DEFAULT_MODEL_TIER} (`tierDefault`) a `lifecycle.replacedBy`
+ * úrovně {@see DEFAULT_MODEL_TIER} (mapa `core.ai.tiers`) a `lifecycle.replacedBy`
  * u modelů se statusem deprecated / retired. Bez katalogu (prázdný, DS
  * před kompilací configu) se backend nezakládá a nic nepřepisuje —
  * provisioner to vrátí jako `skipped_reason`, nikdy neodhaduje.
@@ -37,7 +37,7 @@ class MailAiProvisioner
     public const DEFAULT_BACKEND_ID = 'default';
 
     /**
-     * Úroveň katalogu, jejíž výchozí model (`tierDefault`) dostane nově
+     * Úroveň, jejíž výchozí model (mapa `core.ai.tiers`, D37) dostane nově
      * zakládaný backend (D34): dnes Sonnet 4.6 — přemostění F0-D8, řada 5
      * se zkouší přes druhý backend (F0-D6).
      */

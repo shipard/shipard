@@ -56,7 +56,7 @@ final class ModelCatalogTest extends TestCase
             'prices' => ['input' => 2, 'output' => 10],
         ],
         'claude-sonnet-4-6' => [
-            'name' => 'Claude Sonnet 4.6', 'order' => 22, 'tier' => 'balanced', 'tierDefault' => true,
+            'name' => 'Claude Sonnet 4.6', 'order' => 22, 'tier' => 'balanced',
             'platformIds' => ['anthropic' => 'claude-sonnet-4-6'],
             'capabilities' => ['temperature' => true, 'thinkingModes' => ['adaptive', 'disabled', 'enabled'], 'thinkingDefault' => 'off',
                 'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000, 'chatToolLoop' => true],
@@ -95,9 +95,15 @@ final class ModelCatalogTest extends TestCase
         ErrorLogger::resetForTesting();
     }
 
+    /** Mapa úrovní jako v repu (D37): fast a balanced, strong záměrně bez výchozího. */
+    private const TIERS = [
+        'balanced' => ['name' => 'Balanced', 'order' => 20, 'model' => 'claude-sonnet-4-6'],
+        'fast' => ['name' => 'Fast', 'order' => 10, 'model' => 'claude-haiku-5-5'],
+    ];
+
     private function catalog(): ModelCatalog
     {
-        return ModelCatalog::fromArray(self::FIXTURE);
+        return ModelCatalog::fromArray(self::FIXTURE, self::TIERS);
     }
 
     // -------------------------------------------------------------- find()
@@ -150,15 +156,38 @@ final class ModelCatalogTest extends TestCase
 
     // ------------------------------------------------------ defaultModel()
 
-    public function testDefaultModelPerTier(): void
+    public function testDefaultModelComesFromTheTierMap(): void
     {
         $catalog = $this->catalog();
 
         $this->assertSame('claude-sonnet-4-6', $catalog->defaultModel(ModelSpec::TIER_BALANCED));
-        $this->assertNull($catalog->defaultModel(ModelSpec::TIER_FAST), 'fast zatím bez výchozího (D34)');
-        $this->assertNull($catalog->defaultModel(ModelSpec::TIER_STRONG));
+        $this->assertSame('claude-haiku-5-5', $catalog->defaultModel(ModelSpec::TIER_FAST));
+        $this->assertNull($catalog->defaultModel(ModelSpec::TIER_STRONG), 'úroveň mimo mapu je bez výchozího');
         $this->assertNull($catalog->defaultModel('nonsense'));
         $this->assertNull(ModelCatalog::empty()->defaultModel(ModelSpec::TIER_BALANCED));
+        // Katalog bez mapy úrovní (compiled config před přidáním core.ai.tiers).
+        $this->assertNull(ModelCatalog::fromArray(self::FIXTURE)->defaultModel(ModelSpec::TIER_BALANCED));
+    }
+
+    public function testTiersAreOrderedAndValidated(): void
+    {
+        $this->assertSame(['fast', 'balanced'], array_keys($this->catalog()->tiers()));
+        $this->assertSame('claude-haiku-5-5', $this->catalog()->tiers()['fast']['model']);
+        $this->assertSame('Fast', $this->catalog()->tiers()['fast']['name']);
+        $this->assertSame([], ModelCatalog::empty()->tiers());
+
+        try {
+            ModelCatalog::fromArray(self::FIXTURE, ['huge' => ['model' => 'claude-opus-5-5']]);
+            $this->fail('neznámá úroveň musí být chyba');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString("unknown tier 'huge'", $e->getMessage());
+        }
+        try {
+            ModelCatalog::fromArray(self::FIXTURE, ['fast' => ['name' => 'Fast']]);
+            $this->fail('úroveň bez modelu musí být chyba');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString("tier 'fast' must declare a model", $e->getMessage());
+        }
     }
 
     // ------------------------------------------------ retiredReplacement()
@@ -262,11 +291,23 @@ final class ModelCatalogTest extends TestCase
 
         $cfg = $this->createMock(ConfigRuntime::class);
         $cfg->method('cfgItem')->willReturnCallback(
-            fn (string $id) => $id === ModelCatalog::CFG_ITEM ? self::FIXTURE : null,
+            fn (string $id) => match ($id) {
+                ModelCatalog::CFG_ITEM => self::FIXTURE,
+                ModelCatalog::TIERS_CFG_ITEM => self::TIERS,
+                default => null,
+            },
         );
         $catalog = ModelCatalog::fromConfig($cfg);
         $this->assertFalse($catalog->isEmpty());
         $this->assertSame('claude-sonnet-4-6', $catalog->defaultModel('balanced'));
+
+        // Config s katalogem, ale bez mapy úrovní — katalog ano, výchozí model ne.
+        $noTiers = $this->createMock(ConfigRuntime::class);
+        $noTiers->method('cfgItem')->willReturnCallback(
+            fn (string $id) => $id === ModelCatalog::CFG_ITEM ? self::FIXTURE : null,
+        );
+        $this->assertFalse(ModelCatalog::fromConfig($noTiers)->isEmpty());
+        $this->assertNull(ModelCatalog::fromConfig($noTiers)->defaultModel('balanced'));
 
         $without = $this->createMock(ConfigRuntime::class);
         $without->method('cfgItem')->willReturn(null);
@@ -320,7 +361,6 @@ final class ModelCatalogTest extends TestCase
     {
         $base = ['name' => 'X', 'platformIds' => ['anthropic' => 'claude-x']];
         yield 'unknown tier' => [$base + ['tier' => 'huge']];
-        yield 'tierDefault without tier' => [$base + ['tierDefault' => true]];
         yield 'unknown status' => [$base + ['lifecycle' => ['status' => 'gone']]];
         yield 'negative price' => [$base + ['prices' => ['input' => -1, 'output' => 5]]];
         yield 'only one price' => [$base + ['prices' => ['input' => 1]]];

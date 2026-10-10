@@ -13,8 +13,9 @@ use Shipard\Core\Utils\JsoncParser;
 
 /**
  * Konzistence skutečného katalogu `modules/core/ai/config/models.jsonc`
- * (tasks/ai-model-catalog.md krok 1): každá položka má ceny, `tierDefault`
- * nejvýš jednou na úroveň a `balanced` = Sonnet 4.6 (D34), `replacedBy`
+ * (tasks/ai-model-catalog.md krok 1) a mapy úrovní `tiers.jsonc`
+ * (tasks/ai-functions.md D37): každá položka má ceny, každá úroveň mapy
+ * ukazuje na aktivní model katalogu se shodnou úrovní, `replacedBy`
  * ukazuje na existující aktivní model, `thinkingModes` / `effortLevels`
  * obsahují jen hodnoty z cfgItemů `core.ai.thinkingModes` /
  * `core.ai.effortLevels` (kromě `enabled`, které naše parametry neposílají),
@@ -24,14 +25,14 @@ final class ModelCatalogFileTest extends TestCase
 {
     private const MODULE = 'core.ai';
 
-    /** @var array<string, array<string, mixed>>|null */
-    private static ?array $raw = null;
+    /** @var array<string, array<string, array<string, mixed>>> cfgItem id → surová data z repozitáře */
+    private static array $raw = [];
 
-    /** @return array<string, array<string, mixed>> surový katalog z repozitáře */
-    private static function raw(): array
+    /** @return array<string, array<string, mixed>> surový cfgItem modulu core.ai z repozitáře */
+    private static function rawItem(string $cfgItemId): array
     {
-        if (self::$raw !== null) {
-            return self::$raw;
+        if (isset(self::$raw[$cfgItemId])) {
+            return self::$raw[$cfgItemId];
         }
         $resolver = new ModulePathResolver([dirname(__DIR__, 4) . '/modules']);
         foreach (ModuleLoader::loadAllModules($resolver) as $module) {
@@ -39,15 +40,21 @@ final class ModelCatalogFileTest extends TestCase
                 continue;
             }
             foreach ($module->config as $entry) {
-                if (($entry['id'] ?? null) === ModelCatalog::CFG_ITEM) {
+                if (($entry['id'] ?? null) === $cfgItemId) {
                     $raw = JsoncParser::parseFile($resolver->getPath($module->id) . '/' . $entry['file']);
                     self::assertIsArray($raw);
                     self::assertNotEmpty($raw);
-                    return self::$raw = $raw;
+                    return self::$raw[$cfgItemId] = $raw;
                 }
             }
         }
-        self::fail('core.ai neregistruje cfgItem ' . ModelCatalog::CFG_ITEM);
+        self::fail('core.ai neregistruje cfgItem ' . $cfgItemId);
+    }
+
+    /** @return array<string, array<string, mixed>> surový katalog z repozitáře */
+    private static function raw(): array
+    {
+        return self::rawItem(ModelCatalog::CFG_ITEM);
     }
 
     /** @return list<string> klíče cfgItemu bez `auto` */
@@ -59,7 +66,7 @@ final class ModelCatalogFileTest extends TestCase
 
     private function catalog(): ModelCatalog
     {
-        return ModelCatalog::fromArray(self::raw());
+        return ModelCatalog::fromArray(self::raw(), self::rawItem(ModelCatalog::TIERS_CFG_ITEM));
     }
 
     public function testCatalogBuildsAndEveryEntryHasPrices(): void
@@ -74,19 +81,29 @@ final class ModelCatalogFileTest extends TestCase
         }
     }
 
-    public function testTierDefaultAtMostOncePerTierAndBalancedIsSonnet46(): void
+    public function testEveryTierOfTheTierMapPointsToAnActiveCatalogModel(): void
     {
-        $defaults = [];
-        foreach ($this->catalog()->all() as $spec) {
-            if ($spec->tierDefault) {
-                $this->assertArrayNotHasKey((string) $spec->tier, $defaults, "úroveň {$spec->tier} má dva výchozí modely");
-                $defaults[(string) $spec->tier] = $spec->id;
-            }
+        $catalog = $this->catalog();
+        $tiers = $catalog->tiers();
+
+        // D37: všechny tři úrovně deklarované, žádná navíc.
+        $this->assertSame(ModelSpec::TIERS, array_values(array_intersect(ModelSpec::TIERS, array_keys($tiers))));
+        $this->assertCount(count(ModelSpec::TIERS), $tiers);
+
+        foreach ($tiers as $tier => $entry) {
+            $spec = $catalog->find($entry['model']);
+            $this->assertNotNull($spec, "úroveň {$tier}: model '{$entry['model']}' není v katalogu");
+            $this->assertSame($entry['model'], $spec->id, "úroveň {$tier}: model musí být klíč katalogu, ne alias");
+            $this->assertSame(ModelSpec::STATUS_ACTIVE, $spec->status, "úroveň {$tier}: model '{$spec->id}' není aktivní");
+            $this->assertNotNull($spec->tier, "úroveň {$tier}: model '{$spec->id}' nemá úroveň (jen ceník)");
+            $this->assertNotEmpty($entry['name'], "úroveň {$tier}: chybí název");
         }
 
-        // D34: zatím jen balanced; fast a strong až po evaluaci (fáze 2).
-        $this->assertSame([ModelSpec::TIER_BALANCED => 'claude-sonnet-4-6'], $defaults);
-        $this->assertSame('claude-sonnet-4-6', $this->catalog()->defaultModel(ModelSpec::TIER_BALANCED));
+        // Přemostění (tasks/ai-functions.md): do evaluace fáze 2 všechny
+        // úrovně na Sonnetu 4.6 — nasazení AI funkcí nemění chování.
+        foreach (ModelSpec::TIERS as $tier) {
+            $this->assertSame('claude-sonnet-4-6', $catalog->defaultModel($tier), "úroveň {$tier}");
+        }
     }
 
     public function testReplacedByPointsToAnActiveModelAndRetiringEntriesHaveOne(): void

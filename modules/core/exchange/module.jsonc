@@ -23,6 +23,34 @@
         "core_exchange_tag_rules"
     ],
 
+    // AI funkce modulu (#85 D36): klasifikace do taxonomie obsahových štítků
+    // při analýze pošty a dávková klasifikace historie účtování (CLI
+    // booking-history). Obě jsou jednoduché úlohy — úroveň fast / balanced.
+    "aiFunctions": [
+        {
+            "id": "exchange.contentTags",
+            "name": "Content tag classification",
+            "name:cs": "Klasifikace obsahových štítků",
+            "name:en": "Content tag classification",
+            "description": "Classifies an extracted document into the content tag taxonomy (one call per document during mail analysis).",
+            "description:cs": "Zařadí vytěžený doklad do taxonomie obsahových štítků (jedno volání na doklad při analýze pošty).",
+            "description:en": "Classifies an extracted document into the content tag taxonomy (one call per document during mail analysis).",
+            "tier": "fast",
+            "defaults": { "maxTokens": 8000 }
+        },
+        {
+            "id": "exchange.bookingHistory",
+            "name": "Booking history classification",
+            "name:cs": "Klasifikace historie účtování",
+            "name:en": "Booking history classification",
+            "description": "Batch classification of row texts from the booking history export (CLI booking-history).",
+            "description:cs": "Dávková klasifikace textů řádků z exportu historie účtování (CLI booking-history).",
+            "description:en": "Batch classification of row texts from the booking history export (CLI booking-history).",
+            "tier": "balanced",
+            "defaults": { "maxTokens": 16000 }
+        }
+    ],
+
     "config": [
         { "id": "core.exchange.contentTags", "file": "config/contentTags.jsonc" },
         { "id": "core.exchange.tagRuleOrigins", "file": "config/tagRuleOrigins.jsonc" },

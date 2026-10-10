@@ -890,6 +890,68 @@ class ModuleDefinitionTest extends TestCase
         ];
     }
 
+    // ── aiFunctions (#85 D36) ───────────────────────────────────────────────
+
+    public function testAiFunctionsParsedWithTextsDefaultsAndRequires(): void
+    {
+        $def = ModuleDefinition::fromArray([
+            'id'   => 'core.mail',
+            'name' => 'Mail',
+            'aiFunctions' => [
+                [
+                    'id' => 'mail.extraction', 'name' => 'Incoming mail extraction', 'name:cs' => 'Vytěžení došlé pošty',
+                    'description:cs' => 'Popis', 'tier' => 'balanced',
+                    'defaults' => ['maxTokens' => 32768, 'temperature' => 0], 'requires' => ['pdf', 'pdf'], 'ignored' => 'x',
+                ],
+                ['id' => 'mail.titles', 'name' => 'Titles', 'tier' => 'fast', 'defaults' => ['maxTokens' => 500]],
+            ],
+        ]);
+
+        $this->assertSame([
+            [
+                'id' => 'mail.extraction', 'tier' => 'balanced',
+                'defaults' => ['maxTokens' => 32768, 'temperature' => 0.0], 'requires' => ['pdf'],
+                'name' => 'Incoming mail extraction', 'name:cs' => 'Vytěžení došlé pošty', 'description:cs' => 'Popis',
+            ],
+            ['id' => 'mail.titles', 'tier' => 'fast', 'defaults' => ['maxTokens' => 500], 'requires' => [], 'name' => 'Titles'],
+        ], $def->aiFunctions);
+    }
+
+    public function testAiFunctionsAbsentDefaultsToEmptyList(): void
+    {
+        $this->assertSame([], ModuleDefinition::fromArray(['id' => 'core.mail', 'name' => 'Mail'])->aiFunctions);
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidAiFunctions')]
+    public function testInvalidAiFunctionsAreRejected(mixed $functions, string $message): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches($message);
+
+        ModuleDefinition::fromArray(['id' => 'core.mail', 'name' => 'Mail', 'aiFunctions' => $functions]);
+    }
+
+    /** @return array<string, array{mixed, string}> */
+    public static function invalidAiFunctions(): array
+    {
+        $ok = ['id' => 'mail.extraction', 'name' => 'X', 'tier' => 'balanced', 'defaults' => ['maxTokens' => 100]];
+        return [
+            'not a list'        => [['mail.extraction' => $ok], '/must be a JSON array/'],
+            'not an object'     => [['mail.extraction'], '/aiFunctions\[0\] must be an object/'],
+            'bad id'            => [[['id' => 'extraction'] + $ok], "/id must be '<area>.<name>'/"],
+            'missing name'      => [[['id' => 'mail.extraction', 'tier' => 'fast', 'defaults' => ['maxTokens' => 1]]], "/requires 'name'/"],
+            'unknown tier'      => [[['tier' => 'huge'] + $ok], '/tier must be one of fast, balanced, strong/'],
+            'missing defaults'  => [[['id' => 'mail.extraction', 'name' => 'X', 'tier' => 'fast']], '/defaults must be an object/'],
+            'unknown default'   => [[['defaults' => ['maxTokens' => 1, 'max_tokens' => 2]] + $ok], "/unknown key 'max_tokens'/"],
+            'zero maxTokens'    => [[['defaults' => ['maxTokens' => 0]] + $ok], '/maxTokens must be a positive integer/'],
+            'string maxTokens'  => [[['defaults' => ['maxTokens' => '100']] + $ok], '/maxTokens must be a positive integer/'],
+            'bad temperature'   => [[['defaults' => ['maxTokens' => 1, 'temperature' => 'cold']] + $ok], '/temperature must be a number/'],
+            'requires not list' => [[['requires' => 'tools'] + $ok], '/requires must be a JSON array/'],
+            'unknown require'   => [[['requires' => ['vision']] + $ok], '/requires must contain only tools, pdf/'],
+            'duplicate id'      => [[$ok, $ok], "/duplicate id 'mail.extraction'/"],
+        ];
+    }
+
     // ── journalDimensions (assets D47) ──────────────────────────────────────
 
     /** @return array<string, mixed> */

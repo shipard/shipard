@@ -52,6 +52,45 @@
             // Katalog modelů — schopnosti, ceny, životní cyklus (#85 D30).
             "id": "core.ai.models",
             "file": "config/models.jsonc"
+        },
+        {
+            // Mapa úrovní modelu fast / balanced / strong → model (#85 D37).
+            "id": "core.ai.tiers",
+            "file": "config/tiers.jsonc"
+        },
+        {
+            // Platformy připojení (`core_ai_backends.provider`, #85 D39).
+            "id": "core.ai.platforms",
+            "file": "config/platforms.jsonc"
+        }
+    ],
+
+    // AI funkce jádra (#85 D36): shrnutí dashboardu a vnitřní chat. Funkce
+    // ostatních modulů deklaruje každý modul sám (core.mail, core.exchange);
+    // core.ai na nich nezávisí — registr je čte z compiled configu.
+    "aiFunctions": [
+        {
+            "id": "dashboard.summary",
+            "name": "Dashboard summary",
+            "name:cs": "Shrnutí dashboardu",
+            "name:en": "Dashboard summary",
+            "description": "Short generated summary of the home feed (2–4 sentences, no tools).",
+            "description:cs": "Krátké generované shrnutí domovského feedu (2–4 věty, bez nástrojů).",
+            "description:en": "Short generated summary of the home feed (2–4 sentences, no tools).",
+            "tier": "fast",
+            "defaults": { "maxTokens": 2000 }
+        },
+        {
+            "id": "chat.default",
+            "name": "Assistant chat",
+            "name:cs": "Chat asistenta",
+            "name:en": "Assistant chat",
+            "description": "Built-in assistant with the read-only tool loop over the data source.",
+            "description:cs": "Vestavěný asistent s tool smyčkou nad čtecími nástroji zdroje dat.",
+            "description:en": "Built-in assistant with the read-only tool loop over the data source.",
+            "tier": "balanced",
+            "defaults": { "maxTokens": 4096 },
+            "requires": ["tools"]
         }
     ],
 

@@ -44,7 +44,6 @@ final readonly class ModelSpec
         public string $dialect,
         public int $order,
         public ?string $tier,
-        public bool $tierDefault,
         public array $platformIds,
         public ?bool $temperature,
         public ?array $thinkingModes,
@@ -69,9 +68,6 @@ final readonly class ModelSpec
         }
         if ($tier !== null && !in_array($tier, self::TIERS, true)) {
             throw new \InvalidArgumentException("ModelSpec {$id}: unknown tier '{$tier}'");
-        }
-        if ($tierDefault && $tier === null) {
-            throw new \InvalidArgumentException("ModelSpec {$id}: tierDefault requires a tier");
         }
         foreach ($platformIds as $platform => $platformId) {
             if (!is_string($platform) || $platform === '' || !is_string($platformId) || $platformId === '') {
@@ -155,7 +151,6 @@ final readonly class ModelSpec
             dialect: (string) ($data['dialect'] ?? 'anthropic-messages'),
             order: is_numeric($data['order'] ?? null) ? (int) $data['order'] : 1000,
             tier: self::optString($data['tier'] ?? null),
-            tierDefault: (bool) ($data['tierDefault'] ?? false),
             platformIds: $platformIds,
             temperature: self::optBool($caps['temperature'] ?? null),
             thinkingModes: self::optList($caps['thinkingModes'] ?? null),

@@ -14,8 +14,8 @@
     //   name, vendor, dialect, order   — popis; `order` řadí výpisy.
     //   tier                           — `fast` | `balanced` | `strong` | null
     //                                    (null = model nenabízíme, jen ceník).
-    //   tierDefault                    — true u výchozího modelu úrovně
-    //                                    (zatím jen `balanced`, D34).
+    //                                    Výchozí model úrovně určuje mapa
+    //                                    `core.ai.tiers` (tiers.jsonc, D37).
     //   platformIds                    — ID modelu per platforma (`anthropic`,
     //                                    `bedrock`); chybějící platforma =
     //                                    model tam není.
@@ -59,7 +59,6 @@
         "dialect": "anthropic-messages",
         "order": 10,
         "tier": "strong",
-        "tierDefault": false,
         "platformIds": { "anthropic": "claude-opus-5-5", "bedrock": "anthropic.claude-opus-5-5" },
         "capabilities": {
             "temperature": false,
@@ -79,7 +78,6 @@
         "dialect": "anthropic-messages",
         "order": 11,
         "tier": "strong",
-        "tierDefault": false,
         "platformIds": { "anthropic": "claude-opus-5", "bedrock": "anthropic.claude-opus-5" },
         "capabilities": {
             "temperature": false,
@@ -99,7 +97,6 @@
         "dialect": "anthropic-messages",
         "order": 12,
         "tier": "strong",
-        "tierDefault": false,
         "platformIds": { "anthropic": "claude-opus-4-8", "bedrock": "anthropic.claude-opus-4-8" },
         "capabilities": {
             "temperature": false,
@@ -122,7 +119,6 @@
         "dialect": "anthropic-messages",
         "order": 20,
         "tier": "balanced",
-        "tierDefault": false,
         "platformIds": { "anthropic": "claude-sonnet-5-5", "bedrock": "anthropic.claude-sonnet-5-5" },
         "capabilities": {
             "temperature": false,
@@ -142,7 +138,6 @@
         "dialect": "anthropic-messages",
         "order": 21,
         "tier": "balanced",
-        "tierDefault": false,
         "platformIds": { "anthropic": "claude-sonnet-5", "bedrock": "anthropic.claude-sonnet-5" },
         "capabilities": {
             "temperature": false,
@@ -165,7 +160,6 @@
         "dialect": "anthropic-messages",
         "order": 22,
         "tier": "balanced",
-        "tierDefault": true,
         "platformIds": { "anthropic": "claude-sonnet-4-6" },
         "capabilities": {
             "temperature": true,
@@ -187,7 +181,6 @@
         "dialect": "anthropic-messages",
         "order": 23,
         "tier": "balanced",
-        "tierDefault": false,
         "platformIds": { "anthropic": "claude-sonnet-4-5" },
         "capabilities": {
             "temperature": true,
@@ -210,7 +203,6 @@
         "dialect": "anthropic-messages",
         "order": 30,
         "tier": "fast",
-        "tierDefault": false,
         "platformIds": { "anthropic": "claude-haiku-5-5", "bedrock": "anthropic.claude-haiku-5-5" },
         "capabilities": {
             "temperature": false,
@@ -230,7 +222,6 @@
         "dialect": "anthropic-messages",
         "order": 31,
         "tier": "fast",
-        "tierDefault": false,
         "platformIds": { "anthropic": "claude-haiku-4-5", "bedrock": "anthropic.claude-haiku-4-5" },
         "capabilities": {
             "temperature": true,

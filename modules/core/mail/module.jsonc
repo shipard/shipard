@@ -14,6 +14,26 @@
         "base.persons"
     ],
 
+    // AI funkce modulu (#85 D36). Model určuje mapa úrovní `core.ai.tiers`,
+    // zdroj dat ji přepíše v nastavení funkce nebo v AI profilu (D4).
+    "aiFunctions": [
+        {
+            "id": "mail.extraction",
+            "name": "Incoming mail extraction",
+            "name:cs": "Vytěžení došlé pošty",
+            "name:en": "Incoming mail extraction",
+            "description": "Structured extraction of documents from incoming messages and their attachments (AI profile prompt, JSON output).",
+            "description:cs": "Strukturované vytěžení dokladů z došlých zpráv a jejich příloh (prompt AI profilu, výstup JSON).",
+            "description:en": "Structured extraction of documents from incoming messages and their attachments (AI profile prompt, JSON output).",
+            "tier": "balanced",
+            // Strop výstupu, ne cena: thinking se na řadě 5 počítá do max_tokens.
+            // Teplota 0 jako dosud u výchozího backendu; model, který ji
+            // nepřijímá, ji vynechá RequestShaper.
+            "defaults": { "maxTokens": 32768, "temperature": 0 },
+            "requires": ["pdf"]
+        }
+    ],
+
     "tables": [
         "core_mail_mailboxes",
         "core_mail_incoming_messages",

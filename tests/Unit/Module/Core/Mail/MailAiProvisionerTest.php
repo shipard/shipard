@@ -22,10 +22,14 @@ class MailAiProvisionerTest extends TestCase
 {
     private ?string $tempTemplate = null;
 
-    /** Katalog modelů ze skutečného souboru v repozitáři. */
+    /** Katalog modelů a mapa úrovní ze skutečných souborů v repozitáři. */
     private static function catalog(): ModelCatalog
     {
-        return ModelCatalog::fromArray(JsoncParser::parseFile(dirname(__DIR__, 5) . '/modules/core/ai/config/models.jsonc'));
+        $configDir = dirname(__DIR__, 5) . '/modules/core/ai/config';
+        return ModelCatalog::fromArray(
+            JsoncParser::parseFile($configDir . '/models.jsonc'),
+            JsoncParser::parseFile($configDir . '/tiers.jsonc'),
+        );
     }
 
     protected function tearDown(): void

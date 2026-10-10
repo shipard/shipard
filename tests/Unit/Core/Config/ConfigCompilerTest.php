@@ -463,6 +463,74 @@ class ConfigCompilerTest extends TestCase
         $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::SEND_PURPOSES_ITEM]);
     }
 
+    // ── aiFunctions (#85 D36) ───────────────────────────────────────────────
+
+    /** @param list<array<string, mixed>> $functions */
+    private function aiModule(string $moduleId, array $functions): ModuleDefinition
+    {
+        $this->stubModuleDir($moduleId);
+
+        return ModuleDefinition::fromArray(['id' => $moduleId, 'name' => $moduleId, 'aiFunctions' => $functions]);
+    }
+
+    public function testAiFunctionsOfAllModulesCompileIntoOneLocalizedCfgItem(): void
+    {
+        ConfigCompiler::compile(
+            [
+                $this->aiModule('core.ai', [
+                    ['id' => 'chat.default', 'name' => 'Assistant chat', 'name:cs' => 'Chat asistenta', 'tier' => 'balanced',
+                        'defaults' => ['maxTokens' => 4096], 'requires' => ['tools']],
+                ]),
+                $this->aiModule('core.mail', [
+                    ['id' => 'mail.extraction', 'name' => 'Mail extraction', 'name:cs' => 'Vytěžení pošty',
+                        'description' => 'Extracts documents', 'description:cs' => 'Vytěží doklady', 'tier' => 'balanced',
+                        'defaults' => ['maxTokens' => 32768, 'temperature' => 0], 'requires' => ['pdf']],
+                ]),
+            ],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['cs', 'en'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([
+            'chat.default' => ['tier' => 'balanced', 'defaults' => ['maxTokens' => 4096], 'requires' => ['tools'], 'name' => 'Chat asistenta'],
+            'mail.extraction' => [
+                // JSON zápis 0.0 → 0; registr ji čte jako float (AiFunctionRegistryTest).
+                'tier' => 'balanced', 'defaults' => ['maxTokens' => 32768, 'temperature' => 0], 'requires' => ['pdf'],
+                'name' => 'Vytěžení pošty', 'description' => 'Vytěží doklady',
+            ],
+        ], $this->compiledItems('cs')[ConfigCompiler::AI_FUNCTIONS_ITEM]);
+        $this->assertSame('Mail extraction', $this->compiledItems('en')[ConfigCompiler::AI_FUNCTIONS_ITEM]['mail.extraction']['name']);
+        $this->assertSame('Extracts documents', $this->compiledItems('en')[ConfigCompiler::AI_FUNCTIONS_ITEM]['mail.extraction']['description']);
+    }
+
+    public function testDuplicateAiFunctionAcrossModulesIsAnError(): void
+    {
+        $function = ['id' => 'mail.extraction', 'name' => 'X', 'tier' => 'fast', 'defaults' => ['maxTokens' => 1]];
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("AI function 'mail.extraction' is declared by more than one module (again in 'core.other')");
+        ConfigCompiler::compile(
+            [$this->aiModule('core.mail', [$function]), $this->aiModule('core.other', [$function])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+    }
+
+    public function testNoAiFunctionsCompileToEmptyItem(): void
+    {
+        $this->stubModuleDir('core.system');
+
+        ConfigCompiler::compile(
+            [$this->makeModule('core.system', [])],
+            new ModulePathResolver([$this->tmpDir . '/modules']),
+            ['en'],
+            $this->tmpDir . '/output',
+        );
+
+        $this->assertSame([], $this->compiledItems('en')[ConfigCompiler::AI_FUNCTIONS_ITEM]);
+    }
+
     // ── deklarace tisků (#90 D47) ───────────────────────────────────────────
 
     /** @param list<array<string, mixed>> $declarations */
