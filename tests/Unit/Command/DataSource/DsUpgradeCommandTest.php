@@ -7,6 +7,7 @@ namespace Shipard\Tests\Unit\Command\DataSource;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shipard\Command\DataSource\DsUpgradeCommand;
+use Shipard\Core\Ai\AiFunctionRegistry;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -40,6 +41,20 @@ class TestableDsUpgradeCommand extends DsUpgradeCommand
     protected function getModulePathResolver(): ModulePathResolver
     {
         return new ModulePathResolver([$this->modulesPath]);
+    }
+
+    public bool $emptyAiFunctions = false;
+
+    /** Fixture moduly funkce nedeklarují — dvě funkce napevno. */
+    protected function loadAiFunctionRegistry(string $dsDir, DataSourceConfig $dsConfig): AiFunctionRegistry
+    {
+        if ($this->emptyAiFunctions) {
+            return AiFunctionRegistry::empty();
+        }
+        return AiFunctionRegistry::fromArray([
+            'mail.extraction' => ['name' => 'Vytěžení', 'tier' => 'balanced', 'defaults' => ['maxTokens' => 32768]],
+            'chat.default' => ['name' => 'Chat', 'tier' => 'balanced', 'defaults' => ['maxTokens' => 4096], 'requires' => ['tools']],
+        ]);
     }
 
     /** Fixture moduly katalog nemají — bere se skutečný soubor z repozitáře. */
@@ -572,6 +587,45 @@ class DsUpgradeCommandTest extends TestCase
         $this->assertStringNotContainsString("user '_ai_analyzer'", $display);
         $this->assertStringNotContainsString('[DEACTIVATE]', $display);
         $this->assertStringNotContainsString('[RENAME]', $display);
+    }
+
+    public function testAiFunctionsProvisionedUnderSkipProvisioning(): void
+    {
+        $this->createAiFixtureModules();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'core.mail']);
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        // fetchAll → [] (mock default) = žádný řádek funkce, oba se založí.
+
+        $tester = $this->createCommandTester();
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString("[CREATE] AI function 'mail.extraction'", $display);
+        $this->assertStringContainsString("[CREATE] AI function 'chat.default'", $display);
+        // AI funkce před AI poštou (převod ladění je potřebuje).
+        $this->assertLessThan(strpos($display, "[CREATE] backend 'default'"), strpos($display, "[CREATE] AI function 'mail.extraction'"));
+    }
+
+    public function testAiFunctionsWithoutDeclarationsWarnAndSkip(): void
+    {
+        $this->createAiFixtureModules();
+        $this->dsConfig = $this->createSkipProvisioningConfig(['test.unit', 'core.mail']);
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+
+        $command = new TestableDsUpgradeCommand($this->dsConfig, $this->dsConnection, $this->modulesPath, $this->dsDir);
+        $command->emptyAiFunctions = true;
+        $tester = new CommandTester($command);
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('[WARN]   AI function declarations unavailable (cfgItem core.ai.functions)', $display);
+        $this->assertStringNotContainsString('[CREATE] AI function', $display);
     }
 
     public function testMailAiWithoutModelCatalogWarnsAndSkipsBackendCreation(): void

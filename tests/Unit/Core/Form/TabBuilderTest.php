@@ -222,6 +222,19 @@ class TabBuilderTest extends TestCase
         $this->assertSame($options, $el->options);
     }
 
+    public function testSelectAllowCustom(): void
+    {
+        $tab = (new TabBuilder('basic', 'Basic'))
+            ->section()->col()
+                ->select('model', options: [['value' => 'claude-sonnet-4-6', 'label' => 'Sonnet 4.6']], allowCustom: true, placeholder: 'Podle úrovně')
+            ->build();
+
+        $el = $tab->sections[0]->columns[0]->elements[0];
+        $this->assertTrue($el->allowCustom);
+        $this->assertSame('Podle úrovně', $el->placeholder);
+        $this->assertTrue($el->toArray()['allow_custom']);
+    }
+
     public function testMultiselect(): void
     {
         $options = [

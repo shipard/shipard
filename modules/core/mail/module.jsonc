@@ -182,6 +182,11 @@
         {
             "table": "core_mail_sent_messages",
             "class": "Shipard\\Module\\Core\\Mail\\Sent\\SentMessagesForm"
+        },
+        {
+            // Nabídka modelů z katalogu (přepsání AI funkce, #85 D4) — JSONC form ji nesloží.
+            "table": "core_mail_ai_profiles",
+            "class": "Shipard\\Module\\Core\\Mail\\AIProfileForm"
         }
     ],
     // core_mail_preprocess_rules: JSONC form forms/core_mail_preprocess_rules.jsonc

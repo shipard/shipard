@@ -3,6 +3,7 @@
   import TextArea from '../ui/TextArea.svelte';
   import Checkbox from '../ui/Checkbox.svelte';
   import Select from '../ui/Select.svelte';
+  import ComboInput from '../ui/ComboInput.svelte';
   import MultiselectInput from '../ui/MultiselectInput.svelte';
   import NumberInput from '../ui/NumberInput.svelte';
   import DateInput from '../ui/DateInput.svelte';
@@ -70,7 +71,10 @@
 
 {:else}
   <FormFieldRow {element} id={inputId}>
-    {#if element.type === 'select'}
+    {#if element.type === 'select' && element.allow_custom}
+      <ComboInput id={inputId} bind:value={formData[element.column]} options={element.options ?? []} required={element.required ?? false} disabled={elDisabled} placeholder={element.placeholder} {error} onchange={handleChange} />
+
+    {:else if element.type === 'select'}
       <Select id={inputId} bind:value={formData[element.column]} options={element.options ?? []} required={element.required ?? false} disabled={elDisabled} placeholder={element.placeholder} {error} onchange={handleChange} />
 
     {:else if element.type === 'multiselect'}

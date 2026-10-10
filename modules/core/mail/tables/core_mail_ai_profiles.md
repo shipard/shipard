@@ -5,8 +5,11 @@ výstupní JSON schéma, jaké typy dokumentů profil pokrývá, v jakém jazyce
 a s jakými prahy jistoty. Per DS obvykle 1–2 profily (např.
 `czech_general`, `english_invoices`).
 
-Profil je vždy vázán na konkrétní backend (provider + model) — admin tak
-může pro různé typy pošty zvolit jiný model.
+Model a připojení profil **nedrží** — ty určuje AI funkce `mail.extraction`
+(`core_ai_function_settings`, tasks/ai-functions.md D4, D38). Profil je může
+**přepsat**: připojení (`backend`), model, ladění a strop tokenů. Prázdná
+hodnota = podle funkce. Tak lze zkoušet jiný model na jednom profilu
+(reanalýza zprávy s profilem) bez změny nastavení celého zdroje dat.
 
 ## Struktura
 
@@ -16,7 +19,7 @@ může pro různé typy pošty zvolit jiný model.
 |---|---|---|
 | `profile_id` | varchar(50), NOT NULL, UNIQUE | Lidský identifikátor (`czech_general`) |
 | `name` | varchar(100), NOT NULL | Zobrazovaný název v UI |
-| `backend` | int → `core_ai_backends`, NOT NULL | Backend, přes který profil běží |
+| `backend` | int → `core_ai_backends`, NULL | Přepsané AI připojení; `NULL` = připojení podle funkce `mail.extraction` (řádek funkce, jinak výchozí připojení zdroje dat) |
 
 ### Záběr (scope)
 
@@ -31,7 +34,20 @@ může pro různé typy pošty zvolit jiný model.
 |---|---|---|
 | `prompt_version` | varchar(50), NOT NULL, default `v1.0.0` | Verze promptu (SemVer). Loguje se do `message_analyses.prompt_version`. |
 | `prompt_template` | longtext, NOT NULL | Vlastní text promptu s Jinja-style placeholders |
-| `max_tokens` | int, NOT NULL, default 0 | Volitelný override limitu output tokenů — kaskáda profil → backend → default provideru analyzeru; `0` = nenastaveno. Admin pole: seed ani reload profilu ho nemění. |
+
+### Přepsání AI funkce (override)
+
+Přepsání hodnot funkce `mail.extraction` jen pro tento profil; pořadí
+zdrojů je profil → řádek funkce → deklarace funkce / mapa úrovní
+(`AiFunctionResolver`). Admin pole: seed ani reload profilu je nemění.
+
+| Sloupec | Typ | Popis |
+|---|---|---|
+| `model` | varchar(100), NULL | ID modelu z katalogu `core.ai.models` nebo vlastní (D43); `NULL` = podle funkce |
+| `model_like` | varchar(100), NULL | U vlastního ID model z katalogu, podle kterého se požadavek tvaruje; jinak se ignoruje |
+| `thinking` | enumString(15), NOT NULL, default `default`, cfgItem `core.ai.thinkingModes` | `default` = podle funkce, `auto` = neposílat, jinak `thinking.type` |
+| `effort` | enumString(10), NOT NULL, default `default`, cfgItem `core.ai.effortLevels` | obdobně `output_config.effort` |
+| `max_tokens` | int, NOT NULL, default 0 | Strop výstupu; `0` = podle funkce (řádek funkce, jinak deklarace 32768) |
 
 ### Výstupní schéma (schema)
 
@@ -87,6 +103,7 @@ analýz je auditovatelná i po pozdějších změnách profilu.
 
 | Tabulka | Vazba | Popis |
 |---|---|---|
-| [core_ai_backends](../../ai/tables/core_ai_backends.md) | `ai_profiles.backend` → `core_ai_backends.id` | Backend, na kterém profil běží (modul core/ai) |
+| [core_ai_backends](../../ai/tables/core_ai_backends.md) | `ai_profiles.backend` → `core_ai_backends.id` | Přepsané AI připojení (modul core/ai); NULL = podle funkce |
+| [core_ai_function_settings](../../ai/tables/core_ai_function_settings.md) | — | Nastavení funkce `mail.extraction`, které profil přepisuje |
 | [core_mail_message_analyses](core_mail_message_analyses.md) | `message_analyses.profile` → `ai_profiles.id` | Audit běhu |
 | [core_mail_incoming_messages](core_mail_incoming_messages.md) | `incoming_messages.profile_override` → `ai_profiles.id` | Per-zpráva override profilu pro znovu-analýzu |

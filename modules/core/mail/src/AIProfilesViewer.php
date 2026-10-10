@@ -18,7 +18,7 @@ class AIProfilesViewer extends TableViewer
         // `p.` — `docState`/`name` existují i v joinované tabulce, proto
         // viewGroup filtr skládáme ručně a search voláme přes SearchCondition
         // s prefixem (buildViewGroupFilter / buildSearchCondition sloupce nekvalifikují).
-        $sql = 'SELECT p.`id`, p.`profile_id`, p.`name`, p.`language`, p.`prompt_version`,'
+        $sql = 'SELECT p.`id`, p.`profile_id`, p.`name`, p.`language`, p.`prompt_version`, p.`model`,'
             . ' p.`is_default`, p.`is_active`, p.`docState`, p.`docStateMain`,'
             . ' b.`name` AS `backend_name`'
             . ' FROM `' . $this->table . '` p'
@@ -83,9 +83,22 @@ class AIProfilesViewer extends TableViewer
             : ['text' => 'neaktivní', 'class' => 'muted'];
         $row['i1'] = $badges;
 
+        // Připojení i model jsou přepsání funkce mail.extraction (D4):
+        // prázdné = podle funkce.
+        $parts = [];
         $backendName = (string) ($rowData['backend_name'] ?? '');
+        if ($backendName !== '') {
+            $parts[] = $backendName;
+        }
+        $model = trim((string) ($rowData['model'] ?? ''));
+        if ($model !== '') {
+            $parts[] = $model;
+        }
         $language = (string) ($rowData['language'] ?? '');
-        $t2 = trim($backendName . ($backendName !== '' && $language !== '' ? ' · ' : '') . $language);
+        if ($language !== '') {
+            $parts[] = $language;
+        }
+        $t2 = implode(' · ', $parts);
         $row['t2'] = $t2 !== '' ? ['text' => $t2, 'class' => 'muted'] : null;
 
         $profileId = (string) ($rowData['profile_id'] ?? '');
@@ -99,8 +112,9 @@ class AIProfilesViewer extends TableViewer
     public function renderDetail(int $recordId): array
     {
         $record = $this->db->fetchRow(
-            'SELECT p.`profile_id`, p.`name`, b.`name` AS `backend_name`,'
+            'SELECT p.`profile_id`, p.`name`, p.`backend`, b.`name` AS `backend_name`,'
             . ' p.`supported_doc_types`, p.`language`, p.`prompt_version`,'
+            . ' p.`model`, p.`model_like`, p.`thinking`, p.`effort`,'
             . ' p.`max_tokens`, p.`is_default`, p.`is_active`, p.`created`, p.`modified`'
             . ' FROM `' . $this->table . '` p'
             . ' LEFT JOIN `core_ai_backends` b ON b.`id` = p.`backend`'
@@ -115,7 +129,6 @@ class AIProfilesViewer extends TableViewer
         $identity = [];
         $this->addItem($identity, 'Kód profilu', $record['profile_id'] ?? null);
         $this->addItem($identity, 'Název', $record['name'] ?? null);
-        $this->addItem($identity, 'Backend', $record['backend_name'] ?? null);
 
         $scope = [];
         $this->addItem($scope, 'Podporované typy dokumentů', $record['supported_doc_types'] ?? null);
@@ -125,10 +138,17 @@ class AIProfilesViewer extends TableViewer
         // strojové hodnoty — do properties nepatří, zobrazíme jen verzi promptu.
         $prompt = [];
         $this->addItem($prompt, 'Verze promptu', $record['prompt_version'] ?? null);
-        // 0 = bez override — limit se řeší kaskádou backend → default analyzéru.
-        if (((int) ($record['max_tokens'] ?? 0)) !== 0) {
-            $this->addItem($prompt, 'Max. tokenů', (int) $record['max_tokens']);
-        }
+
+        // Přepsání AI funkce mail.extraction (D4): prázdné = podle funkce.
+        $override = [];
+        $this->addItem($override, 'AI připojení', ($record['backend'] ?? null) !== null
+            ? (string) ($record['backend_name'] ?? ('#' . (int) $record['backend']))
+            : 'podle funkce');
+        $this->addItem($override, 'Model', $record['model'] ?? 'podle funkce');
+        $this->addItem($override, 'Tvarovat jako model', $record['model_like'] ?? null);
+        $this->addItem($override, 'Přemýšlení', $this->tuningLabel('core.ai.thinkingModes', $record['thinking'] ?? null));
+        $this->addItem($override, 'Úsilí', $this->tuningLabel('core.ai.effortLevels', $record['effort'] ?? null));
+        $this->addItem($override, 'Max. tokenů', ((int) ($record['max_tokens'] ?? 0)) > 0 ? (int) $record['max_tokens'] : 'podle funkce');
 
         $flags = [];
         $this->addItem($flags, 'Výchozí profil', !empty($record['is_default']) ? 'Ano' : 'Ne');
@@ -148,6 +168,7 @@ class AIProfilesViewer extends TableViewer
                         ['title' => 'Identifikace', 'items' => $identity],
                         ['title' => 'Záběr', 'items' => $scope],
                         ['title' => 'Prompt', 'items' => $prompt],
+                        ['title' => 'Přepsání AI funkce', 'items' => $override],
                         ['title' => 'Příznaky', 'items' => $flags],
                         ['title' => 'Stav', 'items' => $status],
                     ],
@@ -163,6 +184,18 @@ class AIProfilesViewer extends TableViewer
         }
         $cfg = DocStateConfig::fromCfgItem($this->config->cfgItem($this->docStatesCfgItem));
         return $cfg->getState($docState)['stateStyle'] ?? 'concept';
+    }
+
+    /** Popisek hodnoty z cfgItemu (`name` po lokalizaci); bez konfigurace surová hodnota. */
+    private function tuningLabel(string $cfgItemId, mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $value = (string) $value;
+        $cfg = $this->config?->cfgItem($cfgItemId);
+        $entry = is_array($cfg) ? ($cfg[$value] ?? null) : null;
+        return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $value;
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

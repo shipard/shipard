@@ -57,6 +57,7 @@ final class FormElement
         public readonly ?string $inputType = null,
         public readonly ?array $lookup = null,
         public readonly ?array $params = null,
+        public readonly bool $allowCustom = false,
     ) {
         if (!in_array($type, self::ALLOWED_TYPES, true)) {
             throw new \InvalidArgumentException(sprintf(
@@ -93,6 +94,12 @@ final class FormElement
                     ));
                 }
             }
+        }
+
+        // allowCustom (tasks/ai-functions.md D44): select, do kterého jde
+        // napsat i hodnota mimo nabídku — klient vykreslí vstup s datalistem.
+        if ($allowCustom && $type !== 'select') {
+            throw new \InvalidArgumentException('allowCustom is only valid for select elements');
         }
 
         if ($type === 'multiselect' && ($column === null || $column === '')) {
@@ -166,6 +173,9 @@ final class FormElement
         }
         if ($this->options !== null) {
             $result['options'] = $this->options;
+        }
+        if ($this->allowCustom) {
+            $result['allow_custom'] = true;
         }
         if ($this->elements !== null) {
             $result['elements'] = array_map(

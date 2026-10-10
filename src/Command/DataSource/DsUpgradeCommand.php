@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Command\DataSource;
 
+use Shipard\Core\Ai\AiFunctionRegistry;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\ConfigCompiler;
 use Shipard\Core\Config\ConfigRuntime;
@@ -25,6 +26,7 @@ use Shipard\Core\Settings\LayerCParameters;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Core\Version;
+use Shipard\Module\Core\Ai\AiFunctionProvisioner;
 use Shipard\Module\Core\Mail\MailAiProvisioner;
 use Shipard\Module\Core\Mail\MailRouterProvisioner;
 use Shipard\Module\Core\Mail\Preprocess\PreprocessRulesProvisioner;
@@ -334,6 +336,11 @@ class DsUpgradeCommand extends Command
         // systémový kontrakt modulů core.mail/core.ai. Idempotentní; klíč
         // backendu přežívá ds-reset přes keepOnReset, takže po resetu není
         // potřeba žádná ruční akce.
+        // AI funkce (tasks/ai-functions.md D38) — BEZPODMÍNEČNĚ: jeden řádek
+        // nastavení na každou funkci deklarovanou aktivním modulem. Před AI
+        // poštou — převod ladění backendů do řádků funkcí je potřebuje.
+        $this->provisionAiFunctions($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
+
         $this->provisionMailAi($resolvedModules, $dsDir, $dsConfig, $dsConnection, $output);
 
         // Systémová pravidla předzpracování pošty (tasks/mail-preprocess.md
@@ -539,6 +546,51 @@ class DsUpgradeCommand extends Command
             return ModelCatalog::fromConfig(ConfigRuntime::load($dsDir, $dsConfig->getDefaultLanguage()));
         } catch (\Throwable) {
             return ModelCatalog::empty();
+        }
+    }
+
+    /**
+     * Registr AI funkcí z právě zkompilovaného configu (#85 D36). Bez
+     * compiled configu prázdný registr — řádky funkcí se nezakládají
+     * ([WARN]). Seam pro testy (fixture moduly funkce nedeklarují).
+     */
+    protected function loadAiFunctionRegistry(string $dsDir, DataSourceConfig $dsConfig): AiFunctionRegistry
+    {
+        try {
+            return AiFunctionRegistry::fromConfig(ConfigRuntime::load($dsDir, $dsConfig->getDefaultLanguage()));
+        } catch (\Throwable) {
+            return AiFunctionRegistry::empty();
+        }
+    }
+
+    private function provisionAiFunctions(
+        array $resolvedModules,
+        string $dsDir,
+        DataSourceConfig $dsConfig,
+        DataSourceConnection $dsConnection,
+        OutputInterface $output,
+    ): void {
+        $output->writeln('', OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln('Provisioning AI functions...', OutputInterface::VERBOSITY_VERBOSE);
+
+        if (!$this->isModuleActive($resolvedModules, 'core.ai')) {
+            $output->writeln('  <comment>[SKIP] core.ai module not active</comment>', OutputInterface::VERBOSITY_VERBOSE);
+            return;
+        }
+
+        $registry = $this->loadAiFunctionRegistry($dsDir, $dsConfig);
+        $result = (new AiFunctionProvisioner($dsConnection, $registry))->provision();
+        $functions = $result['functions'];
+
+        if (isset($functions['skipped_reason'])) {
+            $output->writeln("  <comment>[WARN]   {$functions['skipped_reason']} — function settings skipped</comment>");
+            return;
+        }
+        foreach ($functions['created'] as $functionId) {
+            $output->writeln("  [CREATE] AI function '{$functionId}'");
+        }
+        if ($functions['created'] === []) {
+            $output->writeln("  [OK]     {$functions['existing']} AI function(s)", OutputInterface::VERBOSITY_VERBOSE);
         }
     }
 

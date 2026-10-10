@@ -324,6 +324,7 @@ class JsoncFormLoader
             params: $elData['params'] ?? null,
             inputType: $inputType,
             lookup: $lookup,
+            allowCustom: (bool) ($elData['allowCustom'] ?? false),
         );
     }
 

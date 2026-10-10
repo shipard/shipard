@@ -6,13 +6,18 @@ namespace Shipard\Module\Core\Mail;
 
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
+use Shipard\Module\Core\Ai\AiFunctionSettingsDocument;
+use Shipard\Module\Core\Ai\ModelFieldValidator;
 
 /**
  * Document třída pro `core_mail_ai_profiles`.
  *
  * Zodpovědnosti:
- *   - validace povinných polí (profile_id, name, backend, prompt_template,
+ *   - validace povinných polí (profile_id, name, prompt_template,
  *     output_schema, supported_doc_types, confidence_thresholds)
+ *   - přepsání AI funkce mail.extraction (backend = připojení, model,
+ *     model_like, thinking, effort; tasks/ai-functions.md D4): prázdné =
+ *     podle funkce, vlastní ID modelu vyžaduje model_like (D43)
  *   - validace JSON polí (output_schema, supported_doc_types,
  *     confidence_thresholds) — neukládáme rozbité JSON
  *   - vynucení invariantu "max. jeden profil s is_default = true per DS"
@@ -32,10 +37,17 @@ class AIProfileDocument extends Document
             $result->addError('name', 'Název je povinný', 'required');
         }
 
-        $backend = isset($data['backend']) ? (int) $data['backend'] : 0;
-        if ($backend <= 0) {
-            $result->addError('backend', 'Backend je povinný', 'required');
+        foreach (['thinking' => 'core.ai.thinkingModes', 'effort' => 'core.ai.effortLevels'] as $column => $cfgItemId) {
+            $value = trim((string) ($data[$column] ?? ''));
+            if ($value === '') {
+                continue;
+            }
+            $cfg = $this->config?->cfgItem($cfgItemId);
+            if (is_array($cfg) && $cfg !== [] && !isset($cfg[$value])) {
+                $result->addError($column, "Hodnota '{$value}' není v nabídce", 'invalid_value');
+            }
         }
+        ModelFieldValidator::validate($this->config, $data, $result);
 
         if (empty(trim((string) ($data['prompt_template'] ?? '')))) {
             $result->addError('prompt_template', 'Šablona promptu je povinná', 'required');
@@ -69,6 +81,25 @@ class AIProfileDocument extends Document
         }
         if (isset($data['is_active'])) {
             $data['is_active'] = $data['is_active'] ? 1 : 0;
+        }
+
+        // Přepsání AI funkce (D4): prázdné = podle funkce → NULL / `default`.
+        if (array_key_exists('backend', $data)) {
+            $data['backend'] = AiFunctionSettingsDocument::intOrNull($data['backend']);
+        }
+        foreach (['model', 'model_like'] as $column) {
+            if (array_key_exists($column, $data)) {
+                $data[$column] = AiFunctionSettingsDocument::stringOrNull($data[$column]);
+            }
+        }
+        foreach (['thinking', 'effort'] as $column) {
+            if (array_key_exists($column, $data)) {
+                $value = trim((string) ($data[$column] ?? ''));
+                $data[$column] = $value === '' ? 'default' : $value;
+            }
+        }
+        if (array_key_exists('max_tokens', $data)) {
+            $data['max_tokens'] = is_numeric($data['max_tokens']) && (int) $data['max_tokens'] > 0 ? (int) $data['max_tokens'] : 0;
         }
 
         if ($isNew) {

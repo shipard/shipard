@@ -77,6 +77,32 @@ class AIBackendDocumentTest extends TestCase
 
     // --- validate -----------------------------------------------------------
 
+    public function testValidatePlatformAgainstCfgItem(): void
+    {
+        $cfg = $this->createMock(\Shipard\Core\Config\ConfigRuntime::class);
+        $cfg->method('cfgItem')->willReturnCallback(static fn (string $id): mixed => $id === 'core.ai.platforms'
+            ? ['anthropic' => ['name' => 'Anthropic', 'dialect' => 'anthropic-messages']]
+            : null);
+        $doc = $this->doc();
+        $doc->setConfig($cfg);
+
+        $data = ['backend_id' => 'default', 'name' => 'X', 'model' => 'claude-sonnet-4-6', 'provider' => 'anthropic'];
+        $this->assertTrue($doc->validate($data)->isValid());
+
+        $data['provider'] = 'openai';
+        $result = $doc->validate($data);
+        $this->assertFalse($result->isValid());
+        $this->assertSame('unknown_platform', $result->toArray()[0]['code']);
+
+        $data['provider'] = '';
+        $result = $doc->validate($data);
+        $this->assertContains('provider', array_column($result->toArray(), 'column'));
+
+        // Bez compiled configu se platforma neověřuje (jen povinnost).
+        $data['provider'] = 'openai';
+        $this->assertTrue($this->doc()->validate($data)->isValid());
+    }
+
     public function testValidateMissingBackendIdFails(): void
     {
         $doc = $this->doc();

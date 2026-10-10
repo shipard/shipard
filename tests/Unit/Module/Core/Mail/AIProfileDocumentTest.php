@@ -43,13 +43,55 @@ class AIProfileDocumentTest extends TestCase
         $this->assertContains('profile_id', array_column($result->toArray(), 'column'));
     }
 
-    public function testValidateMissingBackendFails(): void
+    public function testBackendIsOptionalAndEmptyMeansByFunction(): void
     {
+        // Připojení je přepsání AI funkce mail.extraction (tasks/ai-functions.md D4):
+        // chybějící i prázdné = podle funkce, beforeSave normalizuje na NULL.
         $data = $this->validData();
         unset($data['backend']);
-        $result = $this->doc()->validate($data);
+        $this->assertTrue($this->doc()->validate($data)->isValid());
+
+        $data = ['backend' => '', 'model' => ' ', 'model_like' => '', 'thinking' => '', 'effort' => '', 'max_tokens' => ''] + $this->validData();
+        $this->assertTrue($this->doc()->validate($data)->isValid());
+        $this->doc()->beforeSave($data);
+        $this->assertNull($data['backend']);
+        $this->assertNull($data['model']);
+        $this->assertNull($data['model_like']);
+        $this->assertSame('default', $data['thinking']);
+        $this->assertSame('default', $data['effort']);
+        $this->assertSame(0, $data['max_tokens']);
+
+        $data = ['backend' => '7', 'model' => 'claude-haiku-5-5', 'max_tokens' => '16000'] + $this->validData();
+        $this->doc()->beforeSave($data);
+        $this->assertSame(7, $data['backend']);
+        $this->assertSame('claude-haiku-5-5', $data['model']);
+        $this->assertSame(16000, $data['max_tokens']);
+    }
+
+    public function testCustomModelRequiresModelLikeWhenCatalogIsKnown(): void
+    {
+        $cfg = $this->createMock(\Shipard\Core\Config\ConfigRuntime::class);
+        $cfg->method('cfgItem')->willReturnCallback(static fn (string $id): mixed => match ($id) {
+            \Shipard\Core\Ai\ModelCatalog::CFG_ITEM => [
+                'claude-sonnet-4-6' => ['name' => 'Claude Sonnet 4.6', 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-4-6'], 'prices' => ['input' => 3, 'output' => 15]],
+            ],
+            'core.ai.thinkingModes' => ['default' => ['name' => 'D'], 'auto' => ['name' => 'A']],
+            default => null,
+        });
+        $doc = $this->doc();
+        $doc->setConfig($cfg);
+
+        $data = ['model' => 'claude-sonnet-6'] + $this->validData();
+        $result = $doc->validate($data);
         $this->assertFalse($result->isValid());
-        $this->assertContains('backend', array_column($result->toArray(), 'column'));
+        $this->assertSame('model_like_required', $result->toArray()[0]['code']);
+
+        $data = ['model' => 'claude-sonnet-6', 'model_like' => 'claude-sonnet-4-6'] + $this->validData();
+        $this->assertTrue($doc->validate($data)->isValid());
+
+        $data = ['thinking' => 'enabled'] + $this->validData();
+        $result = $doc->validate($data);
+        $this->assertContains('thinking', array_column($result->toArray(), 'column'));
     }
 
     public function testValidateInvalidOutputSchemaJsonFails(): void

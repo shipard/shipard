@@ -21,9 +21,9 @@
         },
         {
             "id": "provider",
-            "name": "Provider",
-            "name:cs": "Provider",
-            "name:en": "Provider"
+            "name": "Platform",
+            "name:cs": "Platforma",
+            "name:en": "Platform"
         },
         {
             "id": "credentials",
@@ -86,10 +86,13 @@
         // --- provider ---
 
         {
+            // Platforma připojení (tasks/ai-functions.md D39, D45): klíč z cfgItemu
+            // `core.ai.platforms` (dialekt API, výchozí adresa); hodnotu hlídá
+            // AIBackendDocument, typ zůstává varchar (změna typu není bezpečný MODIFY).
             "id": "provider",
-            "name": "Provider",
-            "name:cs": "Provider",
-            "name:en": "Provider",
+            "name": "Platform",
+            "name:cs": "Platforma",
+            "name:en": "Platform",
             "type": "varchar",
             "length": 30,
             "nullable": false,

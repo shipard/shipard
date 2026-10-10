@@ -10,8 +10,17 @@
     // thinkingModes`, #85 D32): nepřijímanou hodnotu klient před odesláním
     // nahradí (`disabled` ↔ `between_tools`) nebo vynechá a zaloguje.
     // Katalog nezná `enabled` (thinking s rozpočtem) — neposíláme ho.
-    // Dočasné — fáze 1b (#85) přesune ladění do AI úloh.
+    // Ladění žije u AI funkcí a profilů pošty (fáze 1b, #85).
 
+    // `default` = převzít z deklarace AI funkce (core_ai_function_settings,
+    // core_mail_ai_profiles; tasks/ai-functions.md D38, D46). Není to `auto`:
+    // `auto` parametr výslovně neposílá, `default` nechá rozhodnout funkci.
+    "default": {
+        "name": "By function (default)",
+        "name:cs": "Podle funkce (default)",
+        "name:en": "By function (default)",
+        "order": 5
+    },
     "auto": {
         "name": "Model default (not sent)",
         "name:cs": "Výchozí modelu (neposílat)",

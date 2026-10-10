@@ -32,6 +32,12 @@
             "name:en": "Prompt"
         },
         {
+            "id": "override",
+            "name": "AI function override",
+            "name:cs": "Přepsání AI funkce",
+            "name:en": "AI function override"
+        },
+        {
             "id": "schema",
             "name": "Output schema",
             "name:cs": "Výstupní schéma",
@@ -89,12 +95,13 @@
             "group": "identity"
         },
         {
+            // NULL = výchozí AI připojení zdroje dat (tasks/ai-functions.md D4).
             "id": "backend",
-            "name": "Backend",
-            "name:cs": "Backend",
-            "name:en": "Backend",
+            "name": "AI connection",
+            "name:cs": "AI připojení",
+            "name:en": "AI connection",
             "type": "int",
-            "nullable": false,
+            "nullable": true,
             "reference": "core_ai_backends",
             "group": "identity"
         },
@@ -145,14 +152,63 @@
             "group": "prompt"
         },
         {
+            // 0 = podle AI funkce mail.extraction (řádek funkce, jinak deklarace).
             "id": "max_tokens",
-            "name": "Max tokens (0 = automatic)",
-            "name:cs": "Max. tokenů (0 = automaticky)",
-            "name:en": "Max tokens (0 = automatic)",
+            "name": "Max tokens (0 = by function)",
+            "name:cs": "Max. tokenů (0 = podle funkce)",
+            "name:en": "Max tokens (0 = by function)",
             "type": "int",
             "nullable": false,
             "default": 0,
-            "group": "prompt"
+            "group": "override"
+        },
+
+        // --- override (přepsání AI funkce mail.extraction, #85 D4, D38) ---
+
+        {
+            // NULL = model podle nastavení funkce mail.extraction.
+            "id": "model",
+            "name": "Model",
+            "name:cs": "Model",
+            "name:en": "Model",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "group": "override"
+        },
+        {
+            "id": "model_like",
+            "name": "Shape request like model",
+            "name:cs": "Tvarovat jako model",
+            "name:en": "Shape request like model",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "group": "override"
+        },
+        {
+            "id": "thinking",
+            "name": "Thinking",
+            "name:cs": "Přemýšlení (thinking)",
+            "name:en": "Thinking",
+            "type": "enumString",
+            "length": 15,
+            "nullable": false,
+            "cfgItem": "core.ai.thinkingModes",
+            "default": "default",
+            "group": "override"
+        },
+        {
+            "id": "effort",
+            "name": "Effort",
+            "name:cs": "Úsilí (effort)",
+            "name:en": "Effort",
+            "type": "enumString",
+            "length": 10,
+            "nullable": false,
+            "cfgItem": "core.ai.effortLevels",
+            "default": "default",
+            "group": "override"
         },
 
         // --- schema ---

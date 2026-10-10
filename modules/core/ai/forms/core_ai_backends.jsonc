@@ -19,7 +19,7 @@
                                 {"type": "input", "column": "backend_id", "required": true},
                                 {"type": "input", "column": "name", "required": true},
 
-                                {"type": "separator", "label": "Provider", "label:cs": "Provider", "label:en": "Provider"},
+                                {"type": "separator", "label": "Platform", "label:cs": "Platforma", "label:en": "Platform"},
                                 {"type": "input", "column": "provider", "required": true},
                                 {"type": "input", "column": "model", "required": true},
                                 {"type": "input", "column": "base_url"},

@@ -57,11 +57,14 @@ final class ModelCatalogFileTest extends TestCase
         return self::rawItem(ModelCatalog::CFG_ITEM);
     }
 
-    /** @return list<string> klíče cfgItemu bez `auto` */
+    /** @return list<string> klíče cfgItemu bez `auto` a `default` (hodnoty nastavení, ne parametry API) */
     private static function cfgKeys(string $file): array
     {
         $raw = JsoncParser::parseFile(dirname(__DIR__, 4) . '/modules/core/ai/config/' . $file);
-        return array_values(array_filter(array_map('strval', array_keys($raw)), static fn (string $k): bool => $k !== 'auto'));
+        return array_values(array_filter(
+            array_map('strval', array_keys($raw)),
+            static fn (string $k): bool => !in_array($k, ['auto', 'default'], true),
+        ));
     }
 
     private function catalog(): ModelCatalog

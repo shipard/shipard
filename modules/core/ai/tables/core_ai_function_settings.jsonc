@@ -1,0 +1,182 @@
+{
+    "tableId": 463,
+    "name": "AI functions",
+    "name:cs": "AI funkce",
+    "name:en": "AI functions",
+
+    // Nastavení AI funkce per zdroj dat (tasks/ai-functions.md, #85 D38):
+    // jeden řádek na funkci deklarovanou aktivním modulem (`aiFunctions`
+    // v module.jsonc), zakládá ho `ds-upgrade` (AiFunctionProvisioner).
+    // Uživatel řádky nezakládá ani nemaže — jen přepisuje připojení, model
+    // a ladění; NULL / `default` = podle deklarace funkce a mapy úrovní.
+    // Není to doklad (bez docStates). Čte AiFunctionResolver.
+
+    "displayPattern": "{function_id}",
+
+    "columnGroups": [
+        {
+            "id": "function",
+            "name": "Function",
+            "name:cs": "Funkce",
+            "name:en": "Function"
+        },
+        {
+            "id": "override",
+            "name": "Override",
+            "name:cs": "Přepsání",
+            "name:en": "Override"
+        },
+        {
+            "id": "status",
+            "name": "Status",
+            "name:cs": "Stav",
+            "name:en": "Status"
+        }
+    ],
+
+    "columns": [
+        {
+            "id": "id",
+            "name": "ID",
+            "type": "int",
+            "autoIncrement": true,
+            "primaryKey": true
+        },
+
+        // --- function ---
+
+        {
+            // ID z deklarace (`mail.extraction`); po založení se nemění.
+            "id": "function_id",
+            "name": "Function",
+            "name:cs": "Funkce",
+            "name:en": "Function",
+            "type": "varchar",
+            "length": 80,
+            "nullable": false,
+            "group": "function"
+        },
+
+        // --- override ---
+
+        {
+            // NULL = výchozí připojení zdroje dat (is_default + is_active).
+            "id": "connection",
+            "name": "AI connection",
+            "name:cs": "AI připojení",
+            "name:en": "AI connection",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_ai_backends",
+            "group": "override"
+        },
+        {
+            // ID modelu z katalogu `core.ai.models` nebo vlastní (D43);
+            // NULL = model úrovně funkce z mapy `core.ai.tiers`.
+            "id": "model",
+            "name": "Model",
+            "name:cs": "Model",
+            "name:en": "Model",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "group": "override"
+        },
+        {
+            // Jen u vlastního ID: model z katalogu, podle kterého se požadavek
+            // tvaruje (schopnosti, strop tokenů); cena je pak 0 (D43).
+            "id": "model_like",
+            "name": "Shape request like model",
+            "name:cs": "Tvarovat jako model",
+            "name:en": "Shape request like model",
+            "type": "varchar",
+            "length": 100,
+            "nullable": true,
+            "group": "override"
+        },
+        {
+            // `default` = podle deklarace funkce (dnes neposílat), `auto` =
+            // výslovně neposílat, jinak hodnota `thinking.type`.
+            "id": "thinking",
+            "name": "Thinking",
+            "name:cs": "Přemýšlení (thinking)",
+            "name:en": "Thinking",
+            "type": "enumString",
+            "length": 15,
+            "nullable": false,
+            "cfgItem": "core.ai.thinkingModes",
+            "default": "default",
+            "group": "override"
+        },
+        {
+            "id": "effort",
+            "name": "Effort",
+            "name:cs": "Úsilí (effort)",
+            "name:en": "Effort",
+            "type": "enumString",
+            "length": 10,
+            "nullable": false,
+            "cfgItem": "core.ai.effortLevels",
+            "default": "default",
+            "group": "override"
+        },
+        {
+            // NULL = strop z deklarace funkce (`defaults.maxTokens`).
+            "id": "max_tokens",
+            "name": "Max tokens (empty = by function)",
+            "name:cs": "Max. tokenů (prázdné = podle funkce)",
+            "name:en": "Max tokens (empty = by function)",
+            "type": "int",
+            "nullable": true,
+            "group": "override"
+        },
+
+        // --- audit ---
+
+        {
+            "id": "created",
+            "name": "Created",
+            "name:cs": "Vytvořeno",
+            "name:en": "Created",
+            "type": "datetime",
+            "nullable": false,
+            "group": "status"
+        },
+        {
+            "id": "created_by",
+            "name": "Created by",
+            "name:cs": "Vytvořil",
+            "name:en": "Created by",
+            "type": "int",
+            "nullable": true,
+            "reference": "core_system_users",
+            "group": "status"
+        },
+        {
+            "id": "modified",
+            "name": "Modified",
+            "name:cs": "Změněno",
+            "name:en": "Modified",
+            "type": "datetime",
+            "nullable": false,
+            "group": "status"
+        }
+    ],
+
+    "indexes": [
+        {
+            "id": "unq_function_id",
+            "type": "unique",
+            "columns": [
+                {"column": "function_id"}
+            ]
+        },
+        {
+            "id": "idx_connection",
+            "type": "index",
+            "columns": [
+                {"column": "connection"}
+            ]
+        }
+    ]
+}

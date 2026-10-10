@@ -13,18 +13,22 @@
 
     "tables": [
         "core_ai_backends",
+        "core_ai_function_settings",
         "core_ai_dashboard_summary"
     ],
 
-    // ds-reset chrání AI backend kvůli zašifrovanému API klíči
-    // (ai-backend-set-key). Přesunuto z core.mail spolu s tabulkou.
+    // ds-reset chrání AI připojení kvůli zašifrovanému API klíči
+    // (ai-backend-set-key) a přepsání AI funkcí (#85 D38).
     "keepOnReset": [
-        "core_ai_backends"
+        "core_ai_backends",
+        "core_ai_function_settings"
     ],
 
-    // Umístění v nastavení zachováno 1:1 z core.mail (subsekce other.mail).
+    // Umístění v nastavení zachováno 1:1 z core.mail (subsekce other.mail);
+    // AI funkce hned vedle připojení.
     "settingsItems": [
-        { "viewer": "core.ai.backends", "section": "other", "subsection": "other.mail", "order": 40 }
+        { "viewer": "core.ai.backends", "section": "other", "subsection": "other.mail", "order": 40 },
+        { "viewer": "core.ai.functions", "section": "other", "subsection": "other.mail", "order": 45 }
     ],
 
     "viewers": [
@@ -36,6 +40,23 @@
             "icon": "chip",
             "table": "core_ai_backends",
             "class": "Shipard\\Module\\Core\\Ai\\AIBackendsViewer"
+        },
+        {
+            // Nastavení AI funkcí per zdroj dat (#85 D38) — řádky zakládá ds-upgrade.
+            "id": "core.ai.functions",
+            "name": "AI functions",
+            "name:cs": "AI funkce",
+            "name:en": "AI functions",
+            "icon": "chip",
+            "table": "core_ai_function_settings",
+            "class": "Shipard\\Module\\Core\\Ai\\AiFunctionsViewer"
+        }
+    ],
+
+    "forms": [
+        {
+            "table": "core_ai_function_settings",
+            "class": "Shipard\\Module\\Core\\Ai\\AiFunctionSettingsForm"
         }
     ],
 
@@ -105,6 +126,10 @@
         {
             "table": "core_ai_backends",
             "class": "Shipard\\Module\\Core\\Ai\\AIBackendDocument"
+        },
+        {
+            "table": "core_ai_function_settings",
+            "class": "Shipard\\Module\\Core\\Ai\\AiFunctionSettingsDocument"
         }
     ]
 }

@@ -13,6 +13,7 @@ use Shipard\Core\Security\DsSecretCipher;
  *
  * Zodpovědnosti:
  *   - validace povinných polí (backend_id, name, model)
+ *   - platforma (`provider`) z cfgItemu core.ai.platforms (#85 D39, D45)
  *   - vynucení invariantu "max. jeden backend s is_default = true per DS"
  *   - šifrování `api_key` přes DsSecretCipher v `beforeSave()` při dirty change
  *   - audit pole (created, modified)
@@ -51,6 +52,18 @@ class AIBackendDocument extends Document
 
         if (empty(trim((string) ($data['model'] ?? '')))) {
             $result->addError('model', 'Model je povinný', 'required');
+        }
+
+        // Chybějící klíč = výchozí hodnota sloupce (`anthropic`); prázdná
+        // nebo neznámá platforma je chyba.
+        if (array_key_exists('provider', $data)) {
+            $platform = trim((string) ($data['provider'] ?? ''));
+            $platforms = $this->config?->cfgItem('core.ai.platforms');
+            if ($platform === '') {
+                $result->addError('provider', 'Platforma je povinná', 'required');
+            } elseif (is_array($platforms) && $platforms !== [] && !isset($platforms[$platform])) {
+                $result->addError('provider', "Platforma '{$platform}' není podporovaná", 'unknown_platform');
+            }
         }
 
         if (!empty($data['is_default']) && $this->db !== null) {

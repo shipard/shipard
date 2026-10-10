@@ -89,7 +89,10 @@ class AiBackendResolver
             return null;
         }
         $value = trim($value);
-        return $value === '' || $value === 'auto' ? null : $value;
+        // `default` je hodnota přepsání AI funkce (tasks/ai-functions.md D46)
+        // — pro řádek backendu znamená totéž co `auto`, dokud ladění
+        // backendu nezanikne.
+        return $value === '' || $value === 'auto' || $value === 'default' ? null : $value;
     }
 
     /**

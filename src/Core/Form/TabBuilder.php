@@ -261,6 +261,7 @@ final class TabBuilder
         bool $hidden = false,
         ?string $hint = null,
         ?string $placeholder = null,
+        bool $allowCustom = false,
     ): static {
         $this->pushElement(new FormElement(
             type: 'select',
@@ -273,6 +274,7 @@ final class TabBuilder
             triggers: $triggers,
             options: $options,
             hint: $hint,
+            allowCustom: $allowCustom,
         ));
         return $this;
     }

@@ -144,6 +144,16 @@ class FormElementTest extends TestCase
         $this->assertTrue($arr['hidden']);
     }
 
+    public function testAllowCustomOnlyOnSelectAndGoesToWireFormat(): void
+    {
+        $el = new FormElement(type: 'select', column: 'model', options: [['value' => 'a', 'label' => 'A']], allowCustom: true);
+        $this->assertTrue($el->toArray()['allow_custom']);
+        $this->assertArrayNotHasKey('allow_custom', (new FormElement(type: 'select', column: 'model'))->toArray());
+
+        $this->expectException(\InvalidArgumentException::class);
+        new FormElement(type: 'input', column: 'model', allowCustom: true);
+    }
+
     public function testToArrayOmitsFalseBooleans(): void
     {
         $el = new FormElement(type: 'input', column: 'x');

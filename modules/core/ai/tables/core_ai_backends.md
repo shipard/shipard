@@ -25,11 +25,11 @@ zprávy.
 | `backend_id` | varchar(50), NOT NULL, UNIQUE | Lidský identifikátor (`default`, `claude-opus`) |
 | `name` | varchar(100), NOT NULL | Zobrazovaný název v UI |
 
-### Provider
+### Platforma (provider)
 
 | Sloupec | Typ | Popis |
 |---|---|---|
-| `provider` | varchar(30), NOT NULL, default `anthropic` | Identifikátor providera. V MVP pouze `anthropic`. |
+| `provider` | varchar(30), NOT NULL, default `anthropic` | Platforma (popisek „Platforma“, #85 D39): klíč z cfgItemu `core.ai.platforms` — dialekt API a výchozí adresa. Zatím jen `anthropic`; hodnotu hlídá `AIBackendDocument::validate`. |
 | `model` | varchar(100), NOT NULL | Model name (`claude-sonnet-4-6`, …). Schopnosti, ceny a životní cyklus modelu drží katalog `core.ai.models` (`docs/ai.md` §5.1); vyřazené modely přepisuje `ds-upgrade` podle `lifecycle.replacedBy` (viz Životní cyklus). |
 | `base_url` | varchar(200) | Volitelný custom endpoint (pro non-default proxy) |
 

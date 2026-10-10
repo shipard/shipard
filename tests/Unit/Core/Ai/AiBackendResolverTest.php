@@ -45,5 +45,8 @@ final class AiBackendResolverTest extends TestCase
         $this->assertSame(['temperature' => null, 'thinking' => 'between_tools', 'effort' => 'xhigh'], $tuning);
         // Neznámá hodnota se neověřuje — chybu vrátí API (F0-D2).
         $this->assertSame('whatever', AiBackendResolver::tuning(['thinking' => 'whatever'])['thinking']);
+        // `default` je hodnota přepsání AI funkce (tasks/ai-functions.md D46) — u backendu = neposílat.
+        $this->assertNull(AiBackendResolver::tuning(['thinking' => 'default', 'effort' => 'default'])['thinking']);
+        $this->assertNull(AiBackendResolver::tuning(['thinking' => 'default', 'effort' => 'default'])['effort']);
     }
 }
