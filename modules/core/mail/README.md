@@ -86,15 +86,9 @@ další providers (Ollama, ...), odeslaná pošta.
 | Endpoint | Popis |
 |---|---|
 | `POST /api/v1/_mail/incoming` | Příjem došlé pošty z mail-routeru. Auth: `_mail_router`. |
-| `GET /api/v1/_mail/analysis/queue` | Fronta zpráv k analýze. Auth: `_ai_analyzer`. |
-| `POST /api/v1/_mail/analysis/{ndx}/claim` | Atomic claim. Vrací plaintext API klíč backendu (Cache-Control no-store). |
-| `GET /api/v1/_mail/analysis/{ndx}/payload` | Subject/body/sender + metadata příloh. Auth: claim token. |
-| `GET /api/v1/_mail/analysis/{ndx}/attachments/{att_ndx}/content` | Streamuje obsah přílohy. |
-| `POST /api/v1/_mail/analysis/{ndx}/result` | Uloží výsledek + extracted documents. |
-| `POST /api/v1/_mail/analysis/{ndx}/failed` | Failed analysis. retryable=true → 10, false → 70. |
-| `POST /api/v1/_mail/messages/{ndx}/reanalyze` | UI akce "Znovu analyzovat". Auth: běžný uživatel. |
-| `POST /api/v1/_mail/extracted-documents/{ndx}/apply` | UI akce "Použít" — prochází přes `ExtractedDocumentDocument` hooky (auto-transition zprávy 30→40). |
-| `POST /api/v1/_mail/extracted-documents/{ndx}/reject` | UI akce "Zamítnout" — povinný `reason` v body. |
+| `POST /api/v1/_mail/messages/{ndx}/reanalyze` | UI akce "Znovu analyzovat" — zpráva zpět do fronty, spawn runneru. Auth: běžný uživatel. |
+| `POST /api/v1/_mail/messages/{ndx}/apply` / `reject` / `unapply` | Akce nad návrhem poslední úspěšné analýzy (použít, zamítnout s povinným `reason`, vrátit). |
+| `GET /api/v1/_mail/messages/{ndx}/preview` / `POST …/decisions` | Náhled návrhu pro review modal / průběžná rozhodnutí z modalu. |
 | `POST /api/v1/_mail/sender-rules/{id}/confirm` | Potvrzení návrhu pravidla (Koncept 10 → 40). Auth: běžný uživatel. Po commitu `SenderRuleConfirmedHandler` archivuje čekající řádky Ostatní od adresy (D8). |
 | `POST /api/v1/_mail/sender-rules/{id}/reject` | Zamítnutí návrhu pravidla (10 → 90). |
 | `POST /api/v1/_mail/messages/archive-informational` | Archivovat vše v sekci Ostatní — řádky s pozorností `info` / `promo` do Archivu přes gateway; `restore-archived {ids}` je vrátí (#105 D5). |

@@ -75,10 +75,10 @@ class ReadOnlyPolicyTest extends TestCase
 			['mail', 'senderAddresses', $allow],
 			// Odeslaná pošta — Odeslat znovu i import ze starého systému jsou zápis
 			['sentMessages', 'resend', $d403], ['sentMessages', 'import', $d403],
-			// analysis — analyzer callbacky 503, uživatelské akce 403, preview GET allow
-			['analysis', 'queue', $d503], ['analysis', 'claim', $d503], ['analysis', 'payload', $d503],
-			['analysis', 'attachmentContent', $d503], ['analysis', 'result', $d503], ['analysis', 'failed', $d503],
+			// analysis — uživatelské akce 403, preview GET allow; zrušené callbacky
+			// analyzeru (#85 D20) fail-closed 403 jako každá neznámá akce
 			['analysis', 'previewMessage', $allow],
+			['analysis', 'queue', $d403], ['analysis', 'result', $d403],
 			['analysis', 'reanalyze', $d403], ['analysis', 'applyMessage', $d403],
 			['analysis', 'unapplyMessage', $d403], ['analysis', 'rejectMessage', $d403],
 			['analysis', 'saveDecisions', $d403],

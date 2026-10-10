@@ -841,74 +841,26 @@ class RouterTest extends TestCase
 		}
 	}
 
-	// Analysis routes (Fáze 3a)
+	// Pull protokol analyzeru /_mail/analysis/* zanikl (#85 D20) — každá
+	// z bývalých cest je 404, ne 405 (routa neexistuje, metoda je jedno).
 
-	public function testAnalysisQueueGet(): void
+	/** @return list<array{0: string, 1: string}> */
+	public static function removedAnalysisRoutes(): array
 	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/queue', 'GET');
-		$this->assertInstanceOf(Route::class, $result);
-		$this->assertRoute($result, 'analysis', 'queue');
+		return [
+			['/api/v1/_mail/analysis/queue', 'GET'],
+			['/api/v1/_mail/analysis/12345/claim', 'POST'],
+			['/api/v1/_mail/analysis/42/payload', 'GET'],
+			['/api/v1/_mail/analysis/42/attachments/7/content', 'GET'],
+			['/api/v1/_mail/analysis/42/result', 'POST'],
+			['/api/v1/_mail/analysis/42/failed', 'POST'],
+		];
 	}
 
-	public function testAnalysisQueuePostNotAllowed(): void
+	#[\PHPUnit\Framework\Attributes\DataProvider('removedAnalysisRoutes')]
+	public function testRemovedAnalysisProtocolRoutesReturn404(string $path, string $method): void
 	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/queue', 'POST');
-		$this->assertInstanceOf(Response::class, $result);
-		$this->assertSame('METHOD_NOT_ALLOWED', $result->getPayload()['error']['code']);
-	}
-
-	public function testAnalysisClaimPost(): void
-	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/12345/claim', 'POST');
-		$this->assertInstanceOf(Route::class, $result);
-		$this->assertSame('analysis', $result->controller);
-		$this->assertSame('claim', $result->action);
-		$this->assertSame(12345, $result->id);
-	}
-
-	public function testAnalysisClaimZeroNdxReturns404(): void
-	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/0/claim', 'POST');
-		$this->assertInstanceOf(Response::class, $result);
-		$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code']);
-	}
-
-	public function testAnalysisPayloadGet(): void
-	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/42/payload', 'GET');
-		$this->assertInstanceOf(Route::class, $result);
-		$this->assertSame('payload', $result->action);
-		$this->assertSame(42, $result->id);
-	}
-
-	public function testAnalysisAttachmentContentGet(): void
-	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/42/attachments/7/content', 'GET');
-		$this->assertInstanceOf(Route::class, $result);
-		$this->assertSame('attachmentContent', $result->action);
-		$this->assertSame(42, $result->id);
-		$this->assertSame(7, $result->secondaryId);
-	}
-
-	public function testAnalysisResultPost(): void
-	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/42/result', 'POST');
-		$this->assertInstanceOf(Route::class, $result);
-		$this->assertSame('result', $result->action);
-		$this->assertSame(42, $result->id);
-	}
-
-	public function testAnalysisFailedPost(): void
-	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/42/failed', 'POST');
-		$this->assertInstanceOf(Route::class, $result);
-		$this->assertSame('failed', $result->action);
-		$this->assertSame(42, $result->id);
-	}
-
-	public function testAnalysisUnknownActionReturns404(): void
-	{
-		$result = $this->router->resolve('/api/v1/_mail/analysis/42/whatever', 'POST');
+		$result = $this->router->resolve($path, $method);
 		$this->assertInstanceOf(Response::class, $result);
 		$this->assertSame('NOT_FOUND', $result->getPayload()['error']['code']);
 	}

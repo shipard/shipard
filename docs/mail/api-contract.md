@@ -1,6 +1,7 @@
 # `core.mail` — API kontrakt pro mail-router
 
 **Status:** Stabilní od Fáze 2a.
+**Verze:** 2.0 (2026-10-10) — viz [Historie změn](#11-historie-změn).
 **Implementace:** `src/Api/Controller/MailController.php`, `src/Api/Router.php`,
 idempotence přes `core_mail_incoming_idempotency`.
 
@@ -192,265 +193,20 @@ Kontrakt je **stable**. Breaking změny vyžadují:
 
 Přidávání **volitelných polí** je vždy zpětně kompatibilní.
 
-## 9. Pull-based AI analyzer protokol (Fáze 3a)
+## 9. Akce nad analyzovanou zprávou
 
-Druhá sada endpointů `/_mail/analysis/*` slouží externímu AI analyzeru
-(samostatný daemon, viz Fáze 3b). Auth: `Bearer shpd_ak_…` token systémového
-uživatele `_ai_analyzer` (vygeneruje `ai-analyzer-setup`). Endpointy modifikující
-state pak vyžadují navíc hlavičku `X-Claim-Token: ct_…`.
+Endpointy `/_mail/messages/{ndx}/…` volá UI (review modal, detail zprávy,
+dashboard) a MCP nad výsledkem AI analýzy. Auth: běžný uživatelský token
+(`shpd_st_…` nebo admin `shpd_ak_…`). Samotnou analýzu dělá runner
+v procesu (`shpd-ds mail-analyze`, viz
+[`modules/core/mail/docs/ai-analysis.md`](../../modules/core/mail/docs/ai-analysis.md)
+→ „Analýza v procesu“ a „Zápis výsledku běhu“). Strojový pull protokol
+`/_mail/analysis/*` pro externí analyzer byl zrušen ve verzi 2.0 (#85 D20);
+tyto cesty vrací `404 NOT_FOUND`.
 
-### 9.1 `GET /_mail/analysis/queue`
+### 9.1 `POST /_mail/messages/{ndx}/reanalyze`
 
-Query: `?limit=5&profile_id=czech_general` (oba volitelné, default `limit=5`).
-
-Response 200:
-```json
-{
-  "success": true,
-  "data": {
-    "messages": [
-      {
-        "ndx": 12345,
-        "received_at": "2026-04-26T10:00:00",
-        "subject": "Faktura č. 2026000123",
-        "sender_email": "accounts@example.com",
-        "attachment_count": 2,
-        "recommended_profile_ndx": 17,
-        "has_raw_source": true
-      }
-    ],
-    "total_available": 23
-  }
-}
-```
-
-Filtruje `analysis_state=10` (Ve frontě), `docState NOT IN (80, 90)` — Koš
-a Archiv zprávu z fronty přirozeně vyřadí — `ai_analysis_enabled NOT FALSE`,
-bez aktivní claim. Workflow `docState` se jinak nekontroluje (osy jsou
-ortogonální, viz `modules/core/mail/docs/ai-analysis.md` „Stavy zprávy").
-
-**Gate předzpracování:** navíc `preprocess_state NOT IN (10, 20)` — zpráva,
-které běží technické předzpracování (stažení dokladu z odkazu, viz
-`modules/core/mail/docs/preprocess.md`) **nebo odložený ISDOC import**
-(#81 — zpráva s platným ISDOC se po intake / uploadu odloží do runneru
-s `trigger: 'isdoc'`, import s obsahovou eskalací běží tam), se do fronty
-ani do `total_available` nedostane, dokud runner neskončí (30 hotovo /
-40 hotovo s chybami). Selhání předzpracování frontu **nikdy neblokuje** — zpráva
-doteče se stavem 40. Stejnou podmínku kontroluje i `/claim` (409
-`INVALID_STATE`), kdyby analyzer claimoval ze staršího snapshotu fronty.
-
-### 9.2 `POST /_mail/analysis/{ndx}/claim`
-
-Request body:
-```json
-{
-  "analyzer_id": "uuid-of-this-analyzer-instance",
-  "profile_ndx": 17,
-  "lease_seconds": 300
-}
-```
-
-`lease_seconds` se clampuje do rozsahu 60–900 s (default 300). Atomicky:
-`SELECT … FOR UPDATE` na zprávu, ověř `analysis_state=10` a žádná aktivní
-claim, INSERT claims, UPDATE `analysis_state→20`, decrypt `backend.api_key`.
-`docState` se nemění.
-
-Response 200:
-```json
-{
-  "success": true,
-  "data": {
-    "claim_token": "ct_abc123…",
-    "expires_at": "2026-04-26T10:05:00",
-    "profile": {
-      "profile_ndx": 17,
-      "profile_id": "czech_general",
-      "prompt_version": "v1.0.0",
-      "prompt_template": "…",
-      "output_schema": { },
-      "supported_doc_types": ["invoiceReceived", "creditNote"],
-      "language": "cs",
-      "confidence_thresholds": { "ready": 0.9, "review": 0.6 },
-      "max_tokens": 0
-    },
-    "backend": {
-      "backend_ndx": 5,
-      "provider": "anthropic",
-      "model": "claude-sonnet-4-5",
-      "api_key": "sk-ant-…",
-      "base_url": null,
-      "max_tokens": 0,
-      "temperature": 0.0
-    }
-  }
-}
-```
-
-`max_tokens` je kaskáda **profil → backend → default provideru analyzeru**:
-`0` znamená „nenastaveno, spadni níž". Jediný skutečný default (číslo) žije
-v provideru analyzeru; nenulová hodnota na profilu přebíjí backend (limit
-souvisí s komplexností promptu/výstupu, které žijí na profilu).
-
-Response headers: `Cache-Control: no-store, no-cache, must-revalidate`,
-`Pragma: no-cache`. Plaintext API klíč žije v paměti analyzeru jen po dobu
-zpracování zprávy.
-
-Chybové kódy: `404 NOT_FOUND`, `409 INVALID_STATE` (analysis_state != 10),
-`409 ALREADY_CLAIMED`, `409 NO_PROFILE`, `409 NO_BACKEND`, `409 BACKEND_KEY_MISSING`,
-`500 SECRETS_UNAVAILABLE`, `500 BACKEND_KEY_CORRUPTED`, `500 INTERNAL_ERROR`
-(generická hláška, detail jen v server-side logu — spec §10 dec.2).
-
-### 9.3 `GET /_mail/analysis/{ndx}/payload`
-
-Headers: `X-Claim-Token: ct_…`.
-
-Response: `subject`, `sender_email`, `sender_name`, `body_plain`, `body_html`,
-`received_at` + pole `attachments[]` s metadaty (bez obsahu). `raw_source_attachment`
-je z listu vyloučen — analyzer pracuje s rozparsovanými přílohami, ne se .eml.
-
-### 9.4 `GET /_mail/analysis/{ndx}/attachments/{att_ndx}/content`
-
-Headers: `X-Claim-Token`. Streamuje binární obsah jedné přílohy.
-Response headers: `Content-Type` z attachment metadat, `Content-Disposition: attachment`,
-`Cache-Control: no-store`. `raw_source_attachment` je explicitně blokovaný (404).
-
-### 9.5 `POST /_mail/analysis/{ndx}/result`
-
-Kontrakt v4 (message-centrický, `tasks/mail-message-centric.md` D11):
-jednotkou analýzy je celá zpráva, výsledkem **nejvýše jeden** dokumentový
-návrh. Headers: `X-Claim-Token`. Request body:
-```json
-{
-  "model_name": "claude-sonnet-4-5",
-  "model_version": "20260101",
-  "prompt_version": "v4.0.0",
-  "profile_ndx": 17,
-  "backend_ndx": 5,
-  "tokens_input": 4500,
-  "tokens_output": 1200,
-  "duration_ms": 12340,
-  "cost_usd": 0.0234,
-  "overall_confidence": 0.92,
-  "analysis_json": { },
-  "message_classification": {
-    "primary_type": "invoiceReceived",
-    "confidence": 0.97,
-    "title": "Faktura 2026-0042 — Dodavatel s.r.o., 13 105 Kč"
-  },
-  "document": {
-    "doc_type": "invoiceReceived",
-    "extracted_json": { },
-    "confidence": 0.94
-  },
-  "secondary_findings": [
-    { "type": "contract", "note": "Rámcová smlouva v příloze smlouva.pdf" }
-  ]
-}
-```
-
-- `message_classification` je **povinná** (422 při absenci; prompt v4 ji
-  vždy generuje). Fallback čtení z `analysis_json.message_classification`
-  zůstává pro robustnost, top-level pole má přednost. `title` (volitelný,
-  ≤ 120 znaků, od promptu v4.3.0) je lidský titulek zprávy → sloupec
-  `ai_title`; bez něj server složí fallback z canonicalu.
-- U `primary_type = other` nese klasifikace navíc volitelná pole
-  (od promptu v4.7.0, od v4.7.1 nullable; `tasks/mail-other-attention.md` D1, D2, D7):
-  `attention` (`action` / `info` / `promo`), u `action` `action_note`
-  (≤ 200 znaků) a `due_date` (`YYYY-MM-DD`, jen je-li lhůta ve zprávě),
-  a `party {name, companyId, email}` — protistrana zprávy (od koho
-  skutečně je, ne kdo ji přeposlal). Starší analyzer bez polí projde.
-- `document` je volitelný (0..1) — primární dokument zprávy. Pole
-  `doc_type` se ukládá do sloupce `proposed_type`.
-- `secondary_findings` je volitelný informativní seznam dalších nálezů
-  (`{type, note}`) — server ho strukturálně nevaliduje nad rámec tvaru,
-  žije jen v `analysis_json`.
-- Pole `extracted_documents` server od v4 **nepřijímá** (422) — big-bang,
-  bez kompatibilní mezivrstvy. `source_attachment_ndxs` z kontraktu zaniklo
-  (přílohy návrhu = všechny obsahové přílohy zprávy).
-
-Server transakčně:
-
-1. Validace `document.extracted_json` proti canonical schématu
-   (`shpd.docs.document.v1`, registry typy proti
-   `shpd.registry.document.v1`) + enrichment (`RowHistoryEnricher`);
-   INSERT `core_mail_message_analyses` (status=2, `canonical_json`,
-   `proposed_type`, `confidence` = `document.confidence`, u běhu bez
-   dokumentu `overall_confidence`). Nevalidní canonical → forenzní wrapper
-   `{_validationError, _validationIssues, _rawOutput}` do `canonical_json`,
-   běh se uloží (dashboard emituje chybovou kartu), 201 se vrací.
-   Confidence pásma (ready/review/low) se **nepersistují** — počítají se
-   za běhu z `confidence` vs. thresholds profilu.
-2. UPDATE claims SET `released=1, release_reason='result'`.
-3. UPDATE messages SET `analysis_state=30` (Analyzováno), vynuluj
-   `needs_reanalysis`.
-4. Workflow: `document` přítomen a validní **a** zpráva stále v Nové
-   (`docState=10`) → UPDATE `docState=20` (K řešení). Běh bez dokumentu
-   docState **nemění** — zpráva zůstává v Nové (dashboard emituje kartu
-   ostatní pošty). Ruční workflow stav pipeline nikdy nepřepisuje.
-5. `message_classification`: validace `primary_type` proti klíčům
-   `core.mail.primaryTypes` (tolerují se i `enabled: false` typy;
-   neznámý klíč → server-side warning + pole se ignoruje, **ne** 422).
-   UPDATE `primary_type` + `primary_type_source='ai'` — **jen pokud**
-   `primary_type_source != 'user'` (volba uživatele má vždy přednost).
-   Tentýž UPDATE nese sloupce pozornosti `attention`, `action_note`,
-   `action_due` (`tasks/mail-other-attention.md` D3): u typu `other`
-   `attention` validovaná proti `core.mail.attentionKinds` (neznámá →
-   warning + NULL), poznámka trim + 200 znaků, lhůta jen validní
-   `YYYY-MM-DD`; mimo `action` poznámka i lhůta NULL; u dokladu a dokumentu
-   Spisovny všechna tři pole NULL.
-6. Partner zprávy (`MessagePartnerWriter`, spec
-   `tasks/mail-message-title-partner.md`) — z validního canonicalu, u běhu
-   bez `document` s typem `other` z `message_classification.party`
-   (`tasks/mail-other-attention.md` D7): UPDATE `partner_name` ←
-   `supplier.name` / `party.name` (jen dokud `target_row IS NULL`) a
-   `partner_person` ← Osoba při shodě IČO / DIČ / VAT ID (jen do NULL a jen
-   dokud `target_row IS NULL`; nikdy shoda jménem, e-mail se nepáruje).
-   Best-effort — selhání nevrací chybu.
-7. Titulek zprávy: UPDATE `ai_title` ← `message_classification.title`
-   (trim, 200 znaků), jinak fallback `MessageTitleComposer` z validního
-   canonicalu, jinak NULL — zapisuje se **vždy** (AI-vlastněný sloupec,
-   bez guardů; re-analýza bez dokumentu titulek smaže). Best-effort.
-8. Pravidlo odesílatele po analýze (`PostAnalysisDisposer::afterResult`,
-   `tasks/mail-sender-rules-after-analysis.md` D4–D6): když běh nevrátil
-   `document`, výsledný `primary_type` zprávy je `other` (čte se po kroku 5
-   — ruční volba uživatele má přednost), zpráva je stále v Nové, jde
-   o první úspěšnou analýzu zprávy, zpráva nevznikla ručním nahráním
-   (`source_type` ≠ 1), `message_classification.confidence` je přítomná
-   a ≥ `review` práh AI profilu běhu a odesílatel má potvrzené pravidlo
-   (nejkonkrétnější, jakékoli dispozice) → UPDATE `docState=80` +
-   `auto_disposed_by/at`, `analysis_state` zůstává 30, pravidlu
-   `hit_count + 1`. Best-effort — selhání jen zaloguje warning.
-
-Response 201: `{ analysis_ndx }`.
-
-### 9.6 `POST /_mail/analysis/{ndx}/failed`
-
-Headers: `X-Claim-Token`. Request body:
-```json
-{
-  "error_type": "schema_error | ai_error | config_error",
-  "error_message": "…",
-  "tokens_used": 123,
-  "retryable": true,
-  "model_name": "claude-sonnet-4-5",
-  "prompt_version": "v1.0.0"
-}
-```
-
-Server: INSERT failed `message_analyses` (status=3; `error_message` se
-ukládá jako `"[error_type] error_message"` — z tohoto tvaru odvozuje
-`AnalysisErrorPresenter` lidskou hlášku pro UI, viz
-`modules/core/mail/docs/ai-analysis.md` → „Chybové hlášky pro uživatele"),
-uvolni claim (`release_reason='failed'`), přepni stav analýzy (`docState`
-se nemění):
-
-- `retryable=true` → `analysis_state=10` (vrátí se do fronty)
-- `retryable=false` → `analysis_state=70` (Analýza selhala, manuální zásah)
-
-### 9.7 `POST /_mail/messages/{ndx}/reanalyze`
-
-UI akce, **jiný auth** — vyžaduje běžný uživatelský token (`shpd_st_…` nebo
-admin `shpd_ak_…`), ne `_ai_analyzer`. Request body:
+UI akce „Znovu analyzovat“. Request body:
 ```json
 {
   "profile_override_ndx": 42
@@ -471,9 +227,10 @@ Server v transakci: UPDATE `messages` SET `analysis_state=10`,
 analýz se nemění — „aktuální návrh" je implicitně poslední úspěšný běh
 (koncept superseded zanikl).
 
-Analyzer při dalším GET /queue zprávu uvidí včetně override profilu.
+Po commitu server spustí runner (`mail-analyze --message`), který
+`profile_override` převezme při claimu (viz `ai-analysis.md` → „Reanalýza“).
 
-### 9.8 `POST /_mail/messages/{ndx}/apply`
+### 9.2 `POST /_mail/messages/{ndx}/apply`
 
 UI akce „Použít" nad dokumentovým návrhem **poslední úspěšné analýzy**
 zprávy. Auth: běžný uživatelský token. Body volitelně `{ "_resolve":
@@ -495,7 +252,7 @@ Vrací `{ savedDocId, messageNdx, analysisNdx }` + jeden z `idempotent: true`
 `409 INVALID_STATE`, `422 NO_PROPOSAL` / `AI_OUTPUT_INVALID` /
 `unresolved_required` (s `canonical._resolve.issues`), `500`.
 
-### 9.9 `POST /_mail/messages/{ndx}/reject`
+### 9.3 `POST /_mail/messages/{ndx}/reject`
 
 UI akce „Zamítnout". Request body: `{ "reason": "…" }` — povinné, neprázdné.
 Zapíše na poslední úspěšnou analýzu `resolution=50` + `rejected_reason` +
@@ -504,16 +261,7 @@ uživatel může následně Koš/Archiv). Reanalýza po rejectu zůstává možn
 (vznikne nový běh s `resolution=NULL`). Vrací
 `{ messageNdx, analysisNdx, resolution: 50 }`.
 
-### 9.10 Reaper expirovaných claimů
-
-CLI `bin/shpd-ds mail-analysis-reap` (cron 1×/min) vyčistí stale claimy:
-
-- Najde `released=0 AND expires_at < now()`.
-- Označí `released=1, release_reason='expired'`.
-- UPDATE messages SET `analysis_state=10` WHERE `id=msg AND analysis_state=20`
-  (dokončený result/failed má přednost). `docState` se nemění.
-
-### 9.11 `POST /_mail/messages/{ndx}/unapply`
+### 9.4 `POST /_mail/messages/{ndx}/unapply`
 
 Bez UI — záchranná brzda pro MCP / ruční volání. Auth: běžný uživatelský
 token. Vrátí předchozí apply — viz `MessageProposalApplier::unapply`.
@@ -532,7 +280,7 @@ Transakčně:
 Vrací `{ messageNdx, analysisNdx, trashedDocId }`. Chyby: `409 INVALID_STATE`
 / `409 DOC_ADVANCED`, `404 NOT_FOUND`, `500 INTERNAL_ERROR`.
 
-### 9.12 `GET /_mail/messages/{ndx}/preview`
+### 9.5 `GET /_mail/messages/{ndx}/preview`
 
 Read-only náhled návrhu poslední úspěšné analýzy pro review modal. Auth:
 běžný uživatelský token. Vrací `{ messageNdx, analysisNdx, proposedType,
@@ -541,7 +289,7 @@ výstup), nebo `canonical` (docs: s fresh enrichmentem a `_resolve`
 z `applier->preview()`; registry: passthrough + `target: "registry"`).
 `attachments` = **všechny** obsahové přílohy zprávy
 (`{ndx, filename, mime_type, size_bytes}`). `userActions` = rozhodnutí
-uložená z review modalu (§9.13): flat mapa `{cesta: userAction}`, nebo `{}`
+uložená z review modalu (§9.6): flat mapa `{cesta: userAction}`, nebo `{}`
 — klíč je ve všech větvích odpovědi (i `aiFailed` a registry), na DS bez
 sloupce `user_actions_json` vždy `{}`. `message` = zdrojová zpráva pro
 řádek pod titulkem review modalu (`tasks/mail-source-message-link.md` D1,
@@ -564,16 +312,16 @@ formátuje server (`null` když chybí), `sender` = `sender_name`, jinak
 prázdný řetězec (frontend kód nevykreslí, zbytek řádku ano). Chyby:
 `404 NOT_FOUND` / `NO_ANALYSIS` / `NO_PROPOSAL`, `500 CORRUPTED_DATA`.
 
-### 9.13 `POST /_mail/messages/{ndx}/decisions`
+### 9.6 `POST /_mail/messages/{ndx}/decisions`
 
 Průběžné ukládání rozhodnutí z review modalu (resolve badge popovery,
 issue #76). Auth: běžný uživatelský token. Body **povinně**
 `{ "_resolve": {cesta: userAction} }` — vždy **celá** mapa, ne delta;
-last-write-wins bez ETagu. Tvar shodný s `_resolve` v §9.8, např.
+last-write-wins bez ETagu. Tvar shodný s `_resolve` v §9.2, např.
 `{"supplier": "useExisting:42", "rows[0].item": "skip"}`; prázdný objekt =
 smazat všechna rozhodnutí.
 
-Guardy shodné s reject (§9.9): zpráva existuje a je mimo Archiv/Koš,
+Guardy shodné s reject (§9.3): zpráva existuje a je mimo Archiv/Koš,
 poslední úspěšná analýza + `analysis_state=30`, `resolution IS NULL`.
 Server mapu **sanitizuje** — ponechá jen cesty z whitelistu
 `supplier|customer|supplierBank|customerBank` a `rows[N].(item|unit|vatCode)`
@@ -590,7 +338,7 @@ uložena (po sanitizaci; prázdná jako `{}`). Chyby: `422 VALIDATION_ERROR`
 `404 NOT_FOUND`, `409 INVALID_STATE`, `500 INTERNAL_ERROR`; v read-only
 stavu DS `403 DS_READ_ONLY`.
 
-### 9.14 `POST /_mail/messages/archive-informational`
+### 9.7 `POST /_mail/messages/archive-informational`
 
 **Archivovat vše** v sekci Ostatní dashboardu (`tasks/mail-other-attention.md`
 D5, #105). Auth: běžný uživatelský token, bez těla. Server vybere řádky
@@ -604,7 +352,7 @@ a `action` (K vyřízení) zůstávají.
 Response 200: `{ archived: [id…], count }`; prázdný výběr → `count: 0`.
 Read-only DS → 403.
 
-### 9.15 `POST /_mail/messages/restore-archived`
+### 9.8 `POST /_mail/messages/restore-archived`
 
 **Vrátit** z toastu po Archivovat vše. Auth: běžný uživatelský token. Body
 `{ "ids": [int…] }` (422 bez pole). Zpět do Nové (10) jdou jen zprávy
@@ -625,6 +373,13 @@ Response 200: `{ restored }`.
 - **Scope restrictions** na API klíče (omezit klíč jen na `/_mail/incoming`)
   zatím neexistuje — follow-up.
 - **Race condition při claim:** invariant "max jedna aktivní claim per zpráva"
-  vynucuje aplikační kód v `claim()` přes `SELECT … FOR UPDATE`. MariaDB neumí
-  partial unique index `(message) WHERE released=0`. Aktuální implementace
-  serializuje souběžné claim() přes řádek zprávy.
+  vynucuje aplikační kód v `AnalysisClaimService::claim()` přes `SELECT … FOR
+  UPDATE`. MariaDB neumí partial unique index `(message) WHERE released=0`.
+  Souběžné claimy (víc runnerů) se serializují přes řádek zprávy.
+
+## 11. Historie změn
+
+| Verze | Datum | Změna |
+|---|---|---|
+| 2.0 | 2026-10-10 | Zrušen pull protokol `/_mail/analysis/*` pro externí AI analyzer (`queue`, `claim`, `payload`, `attachments/…/content`, `result`, `failed`) — analýzu dělá runner v procesu; §9 zůstává jen s akcemi nad analyzovanou zprávou a je přečíslovaná (#85 D20). Tělo výsledku běhu (kontrakt v4) a jeho zpracování popisuje `modules/core/mail/docs/ai-analysis.md` → „Zápis výsledku běhu“. |
+| 1.x | 2026-04 – 2026-09 | Fáze 2a `POST /_mail/incoming` + idempotence; Fáze 3a pull protokol analyzeru; message-centrický kontrakt v4 (`tasks/mail-message-centric.md`); akce `apply` / `reject` / `unapply` / `preview` / `decisions`; `archive-informational` / `restore-archived` (#105). Dokument do verze 2.0 číslo verze nenesl. |

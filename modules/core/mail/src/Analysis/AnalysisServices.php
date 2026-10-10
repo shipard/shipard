@@ -12,7 +12,7 @@ use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 
 /**
  * Wiring služeb AI analýzy na jednom místě (tasks/mail-analysis-inprocess.md
- * D13) — sdílí ho `AnalysisController` (pull protokol, reanalýza)
+ * D13) — sdílí ho `AnalysisController` (gate fronty při reanalýze)
  * a in-process runner (`AnalysisRunnerFactory`).
  */
 final readonly class AnalysisServices

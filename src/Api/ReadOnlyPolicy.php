@@ -127,15 +127,10 @@ final class ReadOnlyPolicy
 		// Odeslaná pošta: Odeslat znovu (nový průchod frontou) i import
 		// ze starého systému jsou zápis → 403.
 		'sentMessages' => [],
-		// Callbacky AI analyzeru — stroj, retryuje; uživatelské akce nad
-		// návrhem dokumentu 403, preview je GET bez zápisu.
+		// Akce nad analyzovanou zprávou — uživatelské akce nad návrhem
+		// dokumentu 403, preview je GET bez zápisu. (Strojové callbacky
+		// analyzeru s 503 zanikly s pull protokolem, #85 D20.)
 		'analysis' => [
-			'queue'             => ReadOnlyVerdict::Deny503,
-			'claim'             => ReadOnlyVerdict::Deny503,
-			'payload'           => ReadOnlyVerdict::Deny503,
-			'attachmentContent' => ReadOnlyVerdict::Deny503,
-			'result'            => ReadOnlyVerdict::Deny503,
-			'failed'            => ReadOnlyVerdict::Deny503,
 			'previewMessage'    => ReadOnlyVerdict::Allow,
 			// reanalyze, applyMessage, unapplyMessage, rejectMessage, saveDecisions → 403
 		],

@@ -9,8 +9,7 @@ use Shipard\Module\Core\Mail\IncomingMessageDocument;
 
 /**
  * Fronta AI analýzy — jediné místo s predikátem „zpráva čeká na analýzu“
- * (tasks/mail-analysis-inprocess.md D13; dřív dvakrát v
- * `AnalysisController::queue()`):
+ * (tasks/mail-analysis-inprocess.md D13):
  *
  *   - `analysis_state = 10` (Ve frontě),
  *   - mimo Archiv a Koš (workflow se jinak nekontroluje),
@@ -20,9 +19,9 @@ use Shipard\Module\Core\Mail\IncomingMessageDocument;
  *     enabled=1 (přebíjí default schránky),
  *   - bez aktivního claimu (released=0 a expires_at v budoucnu).
  *
- * Sdílí ji pull endpoint `GET /queue`, in-process runner (`isEligible()`
- * před claimem, `eligible(1, null, $excludeIds)` při dobírání fronty)
- * a sweep (`eligible(freeCount())`).
+ * Sdílí ji in-process runner (`isEligible()` před claimem,
+ * `eligible(1, null, $excludeIds)` při dobírání fronty), sweep
+ * (`eligible(freeCount())`) a gate reanalýzy v `AnalysisController`.
  */
 class AnalysisQueue
 {

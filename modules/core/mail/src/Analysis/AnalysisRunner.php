@@ -17,7 +17,7 @@ use Shipard\Core\Logging\ErrorLogger;
 
 /**
  * AI analýza došlé zprávy v procesu (tasks/mail-analysis-inprocess.md
- * D12–D18) — tytéž kroky jako pull protokol démona, volané jako služby:
+ * D12–D18) — kroky stavového automatu analýzy volané jako služby:
  *
  *   1. slot souběhu (flock, neblokující) — bez slotu konec, zpráva čeká
  *   2. {@see AnalysisQueue::isEligible()} — ne → konec
@@ -214,8 +214,7 @@ class AnalysisRunner
     /**
      * Jedna zpráva v drženém slotu; nečekaná chyba před claimem (gate,
      * claim) nebo při zápisu selhání končí jako `crashed` — claim, pokud
-     * vznikl, se nechá vypršet a reaper zprávu vrátí do fronty (jako
-     * u pádu démona).
+     * vznikl, se nechá vypršet a reaper zprávu vrátí do fronty.
      *
      * @return array<string, mixed>
      */
@@ -600,9 +599,9 @@ class AnalysisRunner
     }
 
     /**
-     * Tělo výsledku = dnešní tělo `/result` (kontrakt v4, přenos
-     * `_build_result_payload` démona): top-level pole z výstupu modelu,
-     * nic tvarově specifického navíc.
+     * Tělo výsledku pro {@see AnalysisResultWriter::storeResult()} (kontrakt
+     * v4, modules/core/mail/docs/ai-analysis.md → „Zápis výsledku běhu“):
+     * top-level pole z výstupu modelu, nic tvarově specifického navíc.
      *
      * @param array<string, mixed> $parsed
      * @return array<string, mixed>

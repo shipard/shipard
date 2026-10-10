@@ -79,7 +79,7 @@ může pro různé typy pošty zvolit jiný model.
 
 ## Vztah k běhu analýzy
 
-Při uložení výsledku přes `POST /_mail/analysis/{ndx}/result` se
+Při uložení výsledku (`AnalysisResultWriter::storeResult()`) se
 `profile.id` propíše do `core_mail_message_analyses.profile`, takže historie
 analýz je auditovatelná i po pozdějších změnách profilu.
 

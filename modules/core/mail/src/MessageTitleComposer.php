@@ -71,7 +71,7 @@ final class MessageTitleComposer
 
     /**
      * Jazyk AI profilu: profil běhu (`$profileNdx`), jinak výchozí aktivní
-     * profil DS (stejná kritéria jako `AnalysisController::resolveProfile`).
+     * profil DS (stejná kritéria jako `AnalysisClaimService::resolveProfile`).
      * Null = profil neexistuje, bez jazyka, nebo DB nedostupná.
      */
     public static function profileLanguage(DataSourceConnection $db, ?int $profileNdx = null): ?string

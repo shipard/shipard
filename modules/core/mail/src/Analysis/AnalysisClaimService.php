@@ -79,8 +79,8 @@ class AnalysisClaimService
                     409,
                 );
             }
-            // Gate předzpracování i na claimu — /queue zprávu nevydá, ale
-            // analyzer může claimovat ze staršího snapshotu fronty.
+            // Gate předzpracování i na claimu — fronta zprávu nevydá, ale
+            // runner může claimovat ze staršího snapshotu fronty.
             if (in_array((int) ($msgRow['preprocess_state'] ?? 0), AnalysisStates::PREPROCESS_BLOCKING_STATES, true)) {
                 throw new AnalysisClaimException(
                     AnalysisClaimException::INVALID_STATE,

@@ -20,10 +20,10 @@ use Shipard\Module\Core\Mail\PostAnalysisDisposer;
 use Shipard\Module\Core\Mail\PrimaryTypes;
 
 /**
- * Zápis výsledku a selhání AI analýzy — těla dnešních `POST /result`
- * a `POST /failed` jako služba (tasks/mail-analysis-inprocess.md D12/D13),
- * sdílená pull endpointem i in-process runnerem. Tvar `$body` =
- * kontrakt v4 (docs/mail/api-contract.md §9.5), message-centricky.
+ * Zápis výsledku a selhání AI analýzy jako služba
+ * (tasks/mail-analysis-inprocess.md D12/D13), volaná in-process runnerem.
+ * Tvar `$body` = kontrakt v4 (modules/core/mail/docs/ai-analysis.md →
+ * „Zápis výsledku běhu“), message-centricky.
  *
  * `storeResult()`: vytvoří záznam v `core_mail_message_analyses`
  * s canonical návrhem (`document` 0..1 → canonical_json + proposed_type),
@@ -244,8 +244,8 @@ class AnalysisResultWriter
             //    u zprávy bez dokladu (`other`, document null) protistrana
             //    z klasifikace (tasks/mail-other-attention.md D7 — od koho
             //    zpráva skutečně je, ne kdo ji přeposlal). Best-effort —
-            //    selhání nesmí shodit uložení výsledku (analyzer by zprávu
-            //    retryoval).
+            //    selhání nesmí shodit uložení výsledku (runner by běh
+            //    opakoval).
             try {
                 if (is_array($canonical) && $proposedType !== null) {
                     $this->partnerWriter()->writeFromCanonical($dibi, $messageId, $canonical, $proposedType);
@@ -473,7 +473,7 @@ class AnalysisResultWriter
                 // Obohacení řádků — Vrstva 0 (historie) + obsahová eskalace
                 // (pravidlo IČO / LLM klasifikace, D16/D17) — do canonical_json
                 // se ukládá obohacený canonical. Selhání zápisu nesmí shodit
-                // (analyzer by zprávu retryoval) → pokračuje se neobohaceně.
+                // (runner by běh opakoval) → pokračuje se neobohaceně.
                 try {
                     $extractedJson = $this->enricher->enrichAtResult($extractedJson);
                 } catch (\Throwable $e) {
@@ -669,12 +669,11 @@ class AnalysisResultWriter
      *
      * Zapisuje se **vždy**, i NULL — sloupec vlastní AI, re-analýza bez
      * dokumentu titulek smaže. Bez guardu na `primary_type_source` (uživatel
-     * titulek needituje) i na `target_row` (záměr, P2). Starší analyzer bez
-     * `title` projde — pole není v kontraktu povinné (P8).
+     * titulek needituje) i na `target_row` (záměr, P2). Výstup staršího
+     * promptu bez `title` projde — pole není v kontraktu povinné (P8).
      *
      * Fallback skládá labely typů v jazyce AI profilu běhu (`$profileNdx`,
-     * jinak výchozí profil DS) — stejně jako titulek od AI (D2), ne v jazyce
-     * requestu analyzeru.
+     * jinak výchozí profil DS) — stejně jako titulek od AI (D2).
      *
      * @param array<string, mixed>      $body
      * @param array<string, mixed>|null $canonical validní canonical návrhu (bez wrapperu), nebo null
@@ -703,7 +702,7 @@ class AnalysisResultWriter
 
     /**
      * `message_classification` z těla, fallback z `analysis_json`
-     * (robustnost vůči starším analyzerům); null = chybí v obou.
+     * (robustnost vůči staršímu tvaru těla); null = chybí v obou.
      *
      * @param array<string, mixed> $body
      * @return array<string, mixed>|null

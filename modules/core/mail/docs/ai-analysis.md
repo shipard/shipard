@@ -12,99 +12,191 @@ jeden dokumentový návrh** (přijatá faktura, dobropis, registry dokument…)
 a nabídnout ho uživateli k review/použití. Jednotkou analýzy je **celá
 zpráva** — subject + body + přílohy jsou jeden kontext (D1). Vlastní
 extrakci dělá **runner v procesu** (`shpd-ds mail-analyze`, viz
-[Analýza v procesu](#analýza-v-procesu), #85 D9); dočasně vedle něj
-funguje i **externí analyzer daemon** (samostatný repozitář `ai_analyzer`)
-přes pull protokol níže. Shipard je server-of-record: spravuje frontu,
-claimy, ukládá výsledky, řídí review workflow — pro obě cesty stejně.
+[Analýza v procesu](#analýza-v-procesu), #85 D9). Shipard je zároveň
+server-of-record: spravuje frontu, claimy, ukládá výsledky a řídí review
+workflow. Externí analyzer daemon s pull protokolem `/_mail/analysis/*`
+byl zrušen (#85 D20, `tasks/ai-analyzer-removal.md`); starší běhy v DB
+ho ještě nesou (`created_by` = uživatel `_ai_analyzer`, `analyzer_id`
+claimu = UUID démona).
 
-## Pull-based protokol
+## Fronta, claim a zápis výsledku
 
-> **Stav (říjen 2026):** primární cestou je [analýza v procesu](#analýza-v-procesu);
-> protokol zůstává kvůli souběhu s démonem a porovnání obou cest, dokud ho
-> nezruší `tasks/ai-analyzer-removal.md`. Stavový automat, claimy a zápis
-> výsledku jsou pro obě cesty tytéž — endpointy jsou tenké obálky nad
-> službami `Shipard\Module\Core\Mail\Analysis\*` (`AnalysisQueue`,
-> `AnalysisClaimService`, `AnalysisResultWriter`), které volá i runner.
-> Na serveru, kde má dál pracovat démon, se runner vypíná
-> `ai.analysis.maxConcurrent = 0`.
+Stavový automat analýzy žije ve službách `Shipard\Module\Core\Mail\Analysis\*`
+(tasks/mail-analysis-inprocess.md D12/D13), které volá runner:
 
-Externí analyzer drží trvale token a periodicky volá:
+- **`AnalysisQueue`** — jediné místo s predikátem „zpráva čeká na analýzu“:
+  `analysis_state = 10` (Ve frontě), mimo Archiv a Koš (`docState NOT IN
+  (80, 90)` — Koš a Archiv zprávu z fronty přirozeně vyřadí, workflow
+  `docState` se jinak nekontroluje, osy jsou ortogonální, viz
+  [Stavy zprávy](#stavy-zprávy)), `preprocess_state NOT IN (10, 20)`
+  (gate předzpracování a odloženého ISDOC importu — zpráva, které běží
+  stažení dokladu z odkazu ([preprocess.md](preprocess.md)) nebo import
+  s obsahovou eskalací ([Deterministický ISDOC import](#deterministický-isdoc-import)),
+  do fronty nevstoupí, dokud runner předzpracování neskončí; selhání
+  předzpracování frontu nikdy neblokuje — zpráva doteče se stavem 40),
+  `ai_analysis_enabled` zprávy NULL nebo true, schránka bez
+  `ai_analysis_disabled` nebo explicitní povolení na zprávě, bez aktivního
+  claimu. Nejstarší první.
+- **`AnalysisClaimService::claim()`** — atomicky v transakci se `SELECT …
+  FOR UPDATE` na řádku zprávy: ověří stav 10 a gate předzpracování, že
+  neexistuje aktivní claim, vloží řádek `core_mail_analysis_claims`
+  (`analyzer_id`, `claim_token`, lease 60–900 s), přepne `analysis_state`
+  10 → 20 a dešifruje `api_key` backendu profilu (profil =
+  `profile_override` zprávy, jinak aktivní výchozí). Chyby konfigurace
+  (`AnalysisClaimException`): `NO_PROFILE`, `NO_BACKEND`,
+  `BACKEND_KEY_MISSING`, `SECRETS_UNAVAILABLE`, `BACKEND_KEY_CORRUPTED`.
+  `docState` se nemění. MariaDB neumí partial unique index `(message)
+  WHERE released=0`, invariant „nejvýš jeden aktivní claim per zpráva“
+  tedy drží tato transakce. `extend()` prodlužuje lease před každým
+  pokusem volání modelu.
+- **`AnalysisResultWriter::storeResult()` / `storeFailure()`** — zápis
+  běhu, viz níže.
+- **`AnalysisClaimReaper`** (CLI `mail-analysis-reap`, cron 1×/min) —
+  claim s `expires_at < now()` označí `released=1,
+  release_reason='expired'` a zprávu vrátí do fronty (`analysis_state`
+  20 → 10, jen pokud je stále ve 20 — dokončený výsledek má přednost);
+  při třetím vypršení za hodinu stav 70 (D26, tabulka selhání níže).
 
+### Zápis výsledku běhu
+
+Tělo výsledku (`AnalysisRunner::resultBody()` → `storeResult($body)`) je
+**kontrakt v4** (message-centrický, `tasks/mail-message-centric.md` D11):
+jednotkou analýzy je celá zpráva, výsledkem **nejvýše jeden** dokumentový
+návrh.
+
+```json
+{
+  "model_name": "claude-sonnet-4-6",
+  "model_version": "20260101",
+  "prompt_version": "v4.0.0",
+  "profile_ndx": 17,
+  "backend_ndx": 5,
+  "tokens_input": 4500,
+  "tokens_output": 1200,
+  "duration_ms": 12340,
+  "cost_usd": 0.0234,
+  "overall_confidence": 0.92,
+  "analysis_json": { },
+  "message_classification": {
+    "primary_type": "invoiceReceived",
+    "confidence": 0.97,
+    "title": "Faktura 2026-0042 — Dodavatel s.r.o., 13 105 Kč"
+  },
+  "document": {
+    "doc_type": "invoiceReceived",
+    "extracted_json": { },
+    "confidence": 0.94
+  },
+  "secondary_findings": [
+    { "type": "contract", "note": "Rámcová smlouva v příloze smlouva.pdf" }
+  ]
+}
 ```
-GET  /api/v1/_mail/analysis/queue
-POST /api/v1/_mail/analysis/{ndx}/claim
-GET  /api/v1/_mail/analysis/{ndx}/payload
-GET  /api/v1/_mail/analysis/{ndx}/attachments/{att_ndx}/content
-POST /api/v1/_mail/analysis/{ndx}/result
-POST /api/v1/_mail/analysis/{ndx}/failed
-```
 
-Auth: `Bearer shpd_ak_…` token systémového uživatele `_ai_analyzer`. Vygeneruje
-ho `ai-analyzer-setup` CLI; zobrazí se jednou.
+- `message_classification` je **povinná** (`AnalysisResultException`
+  422 při absenci; prompt v4 ji vždy generuje). Fallback čtení
+  z `analysis_json.message_classification` zůstává pro robustnost,
+  top-level pole má přednost. `title` (volitelný, ≤ 120 znaků, od promptu
+  v4.3.0) je lidský titulek zprávy → sloupec `ai_title`; bez něj server
+  složí fallback z canonicalu.
+- U `primary_type = other` nese klasifikace navíc volitelná pole
+  (od promptu v4.7.0, od v4.7.1 nullable; `tasks/mail-other-attention.md`
+  D1, D2, D7): `attention` (`action` / `info` / `promo`), u `action`
+  `action_note` (≤ 200 znaků) a `due_date` (`YYYY-MM-DD`, jen je-li lhůta
+  ve zprávě), a `party {name, companyId, email}` — protistrana zprávy (od
+  koho skutečně je, ne kdo ji přeposlal). Výstup staršího promptu bez
+  polí projde.
+- `document` je volitelný (0..1) — primární dokument zprávy. Pole
+  `doc_type` se ukládá do sloupce `proposed_type`.
+- `secondary_findings` je volitelný informativní seznam dalších nálezů
+  (`{type, note}`) — server ho strukturálně nevaliduje nad rámec tvaru,
+  žije jen v `analysis_json`.
+- Pole `extracted_documents` server od v4 **nepřijímá** (422) — big-bang,
+  bez kompatibilní mezivrstvy. `source_attachment_ndxs` z kontraktu
+  zaniklo (přílohy návrhu = všechny obsahové přílohy zprávy).
 
-### Životní cyklus jednoho běhu
+`storeResult()` v jedné transakci:
 
-Pipeline status žije v `analysis_state` (cfgItem `core.mail.analysisStates`),
-ortogonálně k workflow stavu `docState` — viz sekce "Stavy zprávy".
+1. Validace `document.extracted_json` proti canonical schématu
+   (`shpd.docs.document.v1`, registry typy proti
+   `shpd.registry.document.v1`) + enrichment (`RowHistoryEnricher`);
+   INSERT `core_mail_message_analyses` (status=2, `canonical_json`,
+   `proposed_type`, `confidence` = `document.confidence`, u běhu bez
+   dokumentu `overall_confidence`). Nevalidní canonical → forenzní wrapper
+   `{_validationError, _validationIssues, _rawOutput}` do `canonical_json`,
+   běh se uloží (dashboard emituje chybovou kartu). Confidence pásma
+   (ready/review/low) se **nepersistují** — počítají se za běhu
+   z `confidence` vs. thresholds profilu.
+2. UPDATE claims SET `released=1, release_reason='result'`.
+3. UPDATE messages SET `analysis_state=30` (Analyzováno), vynuluj
+   `needs_reanalysis`.
+4. Workflow: `document` přítomen a validní **a** zpráva stále v Nové
+   (`docState=10`) → UPDATE `docState=20` (K řešení). Běh bez dokumentu
+   docState **nemění** — zpráva zůstává v Nové (dashboard emituje kartu
+   ostatní pošty). Ruční workflow stav pipeline nikdy nepřepisuje.
+5. `message_classification`: validace `primary_type` proti klíčům
+   `core.mail.primaryTypes` (tolerují se i `enabled: false` typy;
+   neznámý klíč → server-side warning + pole se ignoruje, **ne** chyba).
+   UPDATE `primary_type` + `primary_type_source='ai'` — **jen pokud**
+   `primary_type_source != 'user'` (volba uživatele má vždy přednost).
+   Tentýž UPDATE nese sloupce pozornosti `attention`, `action_note`,
+   `action_due` (`tasks/mail-other-attention.md` D3): u typu `other`
+   `attention` validovaná proti `core.mail.attentionKinds` (neznámá →
+   warning + NULL), poznámka trim + 200 znaků, lhůta jen validní
+   `YYYY-MM-DD`; mimo `action` poznámka i lhůta NULL; u dokladu a dokumentu
+   Spisovny všechna tři pole NULL.
+6. Partner zprávy (`MessagePartnerWriter`, spec
+   `tasks/mail-message-title-partner.md`) — z validního canonicalu, u běhu
+   bez `document` s typem `other` z `message_classification.party`
+   (`tasks/mail-other-attention.md` D7): UPDATE `partner_name` ←
+   `supplier.name` / `party.name` (jen dokud `target_row IS NULL`) a
+   `partner_person` ← Osoba při shodě IČO / DIČ / VAT ID (jen do NULL a jen
+   dokud `target_row IS NULL`; nikdy shoda jménem, e-mail se nepáruje).
+   Best-effort — selhání běh neshodí.
+7. Titulek zprávy: UPDATE `ai_title` ← `message_classification.title`
+   (trim, 200 znaků), jinak fallback `MessageTitleComposer` z validního
+   canonicalu, jinak NULL — zapisuje se **vždy** (AI-vlastněný sloupec,
+   bez guardů; re-analýza bez dokumentu titulek smaže). Best-effort.
+8. Pravidlo odesílatele po analýze (`PostAnalysisDisposer::afterResult`,
+   `tasks/mail-sender-rules-after-analysis.md` D4–D6): když běh nevrátil
+   `document`, výsledný `primary_type` zprávy je `other` (čte se po kroku 5
+   — ruční volba uživatele má přednost), zpráva je stále v Nové, jde
+   o první úspěšnou analýzu zprávy, zpráva nevznikla ručním nahráním
+   (`source_type` ≠ 1), `message_classification.confidence` je přítomná
+   a ≥ `review` práh AI profilu běhu a odesílatel má potvrzené pravidlo
+   (nejkonkrétnější, jakékoli dispozice) → UPDATE `docState=80` +
+   `auto_disposed_by/at`, `analysis_state` zůstává 30, pravidlu
+   `hit_count + 1`. Best-effort — selhání jen zaloguje warning.
 
-```
-1. analyzer GET /queue                  ← zprávy s analysis_state=10 mimo Archiv/Koš,
-                                            z povolených schránek (viz "Stavy zprávy")
-2. analyzer POST /{ndx}/claim           ← atomicky: analysis_state 10→20, vznikne claim row,
-                                            response obsahuje plaintext API klíč backendu
-                                            (jen v paměti; Cache-Control: no-store)
-3. analyzer GET /{ndx}/payload          ← subject, body, metadata příloh
-4. analyzer GET /{ndx}/attachments/.../content   ← streamuje binární obsah
-5. analyzer ➜ provider (Anthropic, ...) ← analyzer.provider extrahuje, vrátí JSON
-6. analyzer POST /{ndx}/result          ← uloží běh do message_analyses (canonical_json,
-                                            proposed_type, confidence), uvolní claim,
-                                            analysis_state →30; zpracuje povinnou
-                                            message_classification; nese-li běh validní
-                                            dokumentový návrh a zpráva je stále v Nové,
-                                            docState 10→20 (K řešení)
-```
+Při selhání kteréhokoli kroku se vše rollbackuje. `created_by` běhu je
+NULL (strojový kontext runneru).
 
-Při chybě:
+### Zápis selhání
 
-```
-2'. POST /{ndx}/failed { retryable: true }   ← analysis_state 20→10 (vrátí do fronty)
-2'. POST /{ndx}/failed { retryable: false }  ← analysis_state 20→70 ("Analýza selhala")
-```
+`storeFailure(messageId, claimId, errorType, errorMessage, retryable,
+tokensUsed, modelName, promptVersion, userId)`: INSERT selhaného běhu
+(`status=3`; `error_message` se ukládá jako `"[error_type]
+error_message"` — z tohoto tvaru odvozuje `AnalysisErrorPresenter` lidskou
+hlášku pro UI, viz [Chybové hlášky pro uživatele](#chybové-hlášky-pro-uživatele)),
+uvolnění claimu (`release_reason='failed'`), přepnutí stavu analýzy
+(`docState` se nemění):
 
-`docState` se při failed nemění. Pokud analyzer mezi `claim` a `result` spadne,
-`mail-analysis-reap` (cron 1×/min) najde claim s `expires_at < now()`, označí ho
-`released=true` s reason `expired` a vrátí `analysis_state` zpět na 10 (jen
-pokud je stále ve 20 — dokončený result/failed má přednost).
+- `retryable=true` → `analysis_state=10` (vrátí se do fronty)
+- `retryable=false` → `analysis_state=70` (Analýza selhala, manuální zásah)
 
-### Atomicita a souběh
-
-`POST /claim` běží v transakci s `SELECT … FOR UPDATE` na řádku zprávy →
-serializuje souběžné claim() přes stejnou zprávu. MariaDB nepodporuje partial
-unique index `(message) WHERE released=0`, invariant "max jedna aktivní claim
-per zpráva" tedy vynucuje aplikační kód v claim controlleru.
-
-`POST /result` v jedné transakci: `INSERT message_analyses` (status=2,
-`canonical_json` = validovaný + obohacený canonical návrhu, `proposed_type`,
-`confidence`; nevalidní canonical → forenzní wrapper `{_validationError, …}`
-do `canonical_json`, běh se uloží a 201 se vrací) → `UPDATE claims SET
-released=1` → `UPDATE messages SET analysis_state=30` (+ podmíněný
-`docState 10→20` a zápis klasifikace) → archivace podle pravidla
-odesílatele (`PostAnalysisDisposer::afterResult`, best-effort: běh bez
-dokumentu, zpráva `other` v Nové, první úspěšná analýza, ne ruční nahrání,
-jistota klasifikace ≥ `review` práh profilu, potvrzené pravidlo libovolné
-dispozice → `docState 10→80` + `auto_disposed_*`;
-`tasks/mail-sender-rules-after-analysis.md` D4–D6). Při selhání se vše
-rollbackuje.
-Kontrakt v4 detailně: [docs/mail/api-contract.md §9.5](../../../../docs/mail/api-contract.md).
+Samotný INSERT řádku selhaného běhu dělá `recordFailedRun()`, sdílený
+s reaperem (třetí vypršení claimu za hodinu, D26). Kdy runner volí který
+typ a zda zprávu vrátí do fronty: tabulka selhání v
+[Analýza v procesu](#analýza-v-procesu).
 
 ## Analýza v procesu
 
-Tasks/mail-analysis-inprocess.md (#85 D9–D19). Runner dělá tytéž kroky
-jako pull protokol, ale volá je jako služby v procesu — stavy zprávy,
-tab Analýzy, hlášky selhání, reanalýza, zámek zprávy při `analysis_state =
-20` i závod s ISDOC importem zůstávají beze změny. `analyzer_id` claimu
-je `internal:<hostname>:<pid>`, `created_by` běhu je NULL (strojový
-kontext; běh přes HTTP nese uživatele `_ai_analyzer`).
+Tasks/mail-analysis-inprocess.md (#85 D9–D19). Runner volá služby
+z předchozí sekce v procesu — stavy zprávy, tab Analýzy, hlášky selhání,
+reanalýza, zámek zprávy při `analysis_state = 20` i závod s ISDOC importem
+jsou na nich postavené. `analyzer_id` claimu je `internal:<hostname>:<pid>`,
+`created_by` běhu je NULL (strojový kontext; běhy zrušeného démona nesou
+uživatele `_ai_analyzer`).
 
 ```
 příjem / nahrání zprávy (commit)
@@ -190,7 +282,8 @@ Kontext jako u démona: `message` (`subject`, `sender_email`, `sender_name`,
 `filename`, `mime_type`, `kind`, `size_human`), `output_schema`. Šablony
 vznikly pro Jinja2 s `trim_blocks` + `lstrip_blocks`: první konec řádku za
 blokovým tagem stříhá Twig sám, `lstrip_blocks` doplňuje renderer nad
-zdrojem — výstup je bajtově shodný s démonem.
+zdrojem — výstup je bajtově shodný s původním Python rendererem
+(`prompt.py` zrušeného démona, kvůli porovnatelnosti starších běhů).
 
 **Volání modelu a výstup** (D18): jedna zpráva `user` — text promptu, pak
 za každou přílohu blok `document` (PDF, base64) / `image` / `text`
@@ -201,8 +294,8 @@ a `effort` — `auto` se neposílá; tasks/ai-models-phase0.md F0-D1, F0-D7),
 streamovaně, `stallTimeoutSeconds = 180`, `timeoutSeconds = 840` (lease
 900 s). `OutputParser`: první textový
 blok → JSON (přímo, jinak z markdown bloku ```` ```json ````) → validace
-proti `output_schema` přes `opis/json-schema` **bez formátů** (démon je
-nekontroloval; `source.extractedAt` server přepíše) → objekt na nejvyšší
+proti `output_schema` přes `opis/json-schema` **bez formátů** (původní
+Python validátor je nekontroloval; `source.extractedAt` server přepíše) → objekt na nejvyšší
 úrovni. Z chyb validace se bere ta s nejhlubší cestou (jako `best_match`
 v Pythonu — u `oneOf` dokumentu vyhraje konkrétní pole) a zpráva má
 textový tvar jsonschema, ze kterého `AnalysisErrorPresenter` skládá hlášku
@@ -225,7 +318,7 @@ textový tvar jsonschema, ze kterého `AnalysisErrorPresenter` skládá hlášku
 | lease nešla prodloužit / claim expiroval před zápisem | žádný — jen varování včetně ceny | reaper už zprávu vrátil do fronty |
 | nečekaná výjimka po claimu (DB, disk, chyba kódu) | `ai_error` „internal: <třída>: <text>“, stav 10 (D26) | nejvýš třikrát za hodinu jako u přechodných chyb, pak stav 70; selže-li i zápis selhání, claim se nechá vypršet |
 | nečekaná výjimka před claimem (gate, claim) | žádný — zpráva zůstává ve frontě, `crashed` | sweep |
-| claim vypršel (pád, který PHP nezachytí: paměť, zabitý proces; i claim démona) | reaper: zpráva zpět do fronty; při třetím vypršení za hodinu stav 70 + selhaný běh `ai_error` „analysis did not finish 3 times within an hour (claim expired)“ (D26) | reaper každou minutu |
+| claim vypršel (pád, který PHP nezachytí: paměť, zabitý proces) | reaper: zpráva zpět do fronty; při třetím vypršení za hodinu stav 70 + selhaný běh `ai_error` „analysis did not finish 3 times within an hour (claim expired)“ (D26) | reaper každou minutu |
 
 **Stropy pro pády** (tasks/mail-analysis-queue-drain.md D26): oba stropy
 počítají totéž okno jako přechodné chyby — `AnalysisRunner::MAX_FAILURES_PER_HOUR`
@@ -618,7 +711,7 @@ zprávy; jádro je HTTP-agnostická služba `MessageProposalApplier` (sdílí ji
 HTTP controller i MCP nástroj `mail_draft_document`), výsledek nese
 `ProposalApplyOutcome`. Guardy: zpráva mimo Archiv/Koš, `analysis_state=30`,
 otevřený návrh (`resolution IS NULL`). Endpointy (detailně
-[docs/mail/api-contract.md §9.8–9.13](../../../../docs/mail/api-contract.md)):
+[docs/mail/api-contract.md §9.2–9.6](../../../../docs/mail/api-contract.md)):
 
 - **`GET /_mail/messages/{ndx}/preview`** — read-only náhled návrhu pro
   review modal: canonical + fresh enrichment + `applier->preview()`
@@ -656,7 +749,7 @@ otevřený návrh (`resolution IS NULL`). Endpointy (detailně
 
 ## Klasifikace typu zprávy (message_classification)
 
-Analyzer v prvním kroku klasifikuje zprávu jako celek a vrací top-level
+Model v prvním kroku klasifikuje zprávu jako celek a vrací top-level
 pole `message_classification: {primary_type, confidence, title}` v `POST
 /result` — od kontraktu v4 **povinné** (422 při absenci; prompt v4 ho vždy
 generuje). `title` je volitelný lidský titulek zprávy (od promptu v4.3.0,
@@ -695,7 +788,7 @@ akční zprávy vynechá (D6). `promo` se zatím v UI od `info` neliší — sb�
 se pro pozdější rozhodnutí o auto-koši newsletterů. Bez backfillu —
 čekající řádky Ostatní si uživatel reanalyzuje nebo odklidí po staru.
 Ostatní nálezy
-vedle primárního dokumentu (smlouva v příloze faktury apod.) vrací analyzer
+vedle primárního dokumentu (smlouva v příloze faktury apod.) vrací model
 jako informativní `secondary_findings` (`{type, note}`, D7) — žijí jen
 v `analysis_json`, žádné entity, žádný stav; UI je ukazuje jako hint na
 kartě a v detailu zprávy.
@@ -803,7 +896,7 @@ sloupec `core_mail_incoming_messages.ai_title` (varchar 200):
 - **Zdroj:** `message_classification.title` (prompt v4.3.0, ≤ 120 znaků,
   jazyk profilu — „co to je + od koho + částka / číslo", u `other` stručný
   popis obsahu; nikdy název souboru ani opis generického předmětu). Když
-  `title` chybí (starší analyzer, P8 — pole není required), server složí
+  `title` chybí (starší prompt, P8 — pole není required), server složí
   fallback deterministicky z validního canonicalu:
   `MessageTitleComposer` — docs `{label typu} {docNumber} — {supplier.name},
   {totalAmount} {currency}` (chybějící části vypadnou), registry `title`,
@@ -847,7 +940,7 @@ sloupec `core_mail_incoming_messages.ai_title` (varchar 200):
   `core.mail.viewerDetailLabels.labels.subject`), `IncomingMessagesForm`
   (`header_info`), `FileFromMessageService` (název registry dokumentu ze
   zprávy), `RegistryDocumentsViewer` (Zdrojová zpráva). Technická místa
-  (pravidla předzpracování, název souboru renderu těla, payload analyzeru)
+  (pravidla předzpracování, název souboru renderu těla, kontext promptu)
   zůstávají na `subject`. Dashboardové karty (`MailSuggestionsSource`,
   pole `emailSubject`) a MCP `mail_list_pending` (`full_name` položky,
   navíc holé `ai_title`) pravidlo používají také. Karta ostatní pošty
@@ -886,7 +979,7 @@ může volat LLM a nesmí zpomalit intake ani ruční nahrání až 20 souborů.
    detekce = parse, validace schématu, dedup identitou, **bez zápisu**).
 2. `detect() === true` → podmíněný `UPDATE … SET preprocess_state = 10,
    preprocess_log = {plan: [], trigger: 'isdoc'} WHERE preprocess_state = 0
-   AND analysis_state IN (0, 10)` + spawn runneru. 0 řádků = analyzer si
+   AND analysis_state IN (0, 10)` + spawn runneru. 0 řádků = runner analýzy si
    zprávu mezitím claimnul (závod v okně mezi commitem a detekcí, kterou
    může protáhnout `pdfdetach`) — odložení se vzdá, zpráva zůstává jeho.
    `detect() === false` (PDF bez ISDOC, vadný ISDOC, více identit) →
@@ -917,7 +1010,7 @@ Service (`tryImport`):
    LLM latence nikdy nedrží zámky. Selhání obohacení není fatální,
    import pokračuje neobohaceně,
 4. ve vlastní transakci s `FOR UPDATE` guardem (`analysis_state IN (0, 10)`
-   — závod s analyzerem prohrává import) zapíše:
+   — závod s runnerem analýzy prohrává import) zapíše:
    - záznam do `core_mail_message_analyses` (`status=2`,
      `model_name='isdoc'`, `prompt_version='isdoc'`, `model_version`
      z `@version` XML, cost/tokens NULL, `confidence=1.0`,
@@ -938,12 +1031,12 @@ Service (`tryImport`):
      primární zdroj — žádná AI), viz [Titulek zprávy](#titulek-zprávy-ai_title).
 
 Vztah k frontě: odložená zpráva (`preprocess_state` 10/20) je za gate AI
-fronty ([api-contract.md §9.1](../../../../docs/mail/api-contract.md));
+fronty (`AnalysisQueue`, viz [Fronta, claim a zápis výsledku](#fronta-claim-a-zápis-výsledku));
 úspěšně naimportovaná zpráva se v ní pak **vůbec neobjeví**
-(analysis_state přeskočí 10 → 30), analyzer daemon nevyžaduje změny. Když
-se import v runneru vzdá (prohraný závod, vadný soubor), runner skončí ve
-stavu 30 s `isdoc: none`, gate se otevře a zpráva jde k analyzeru
-s `analysis_state` 10 — nikdy se nezasekne. Vadná **samostatná** ISDOC
+(analysis_state přeskočí 10 → 30). Když se import v runneru vzdá (prohraný
+závod, vadný soubor), runner skončí ve stavu 30 s `isdoc: none`, gate se
+otevře a zpráva jde do AI fronty s `analysis_state` 10 — nikdy se
+nezasekne. Vadná **samostatná** ISDOC
 příloha / nepodporovaný `DocumentType` (zálohové faktury apod.) = celá
 větev se vzdá už při `detect()` a zpráva jde normálně do AI fronty (warning
 v logu, příjem pošty nikdy neselže); vadný **embedded** ISDOC se naopak jen
@@ -984,8 +1077,8 @@ Volitelný `profile_override_ndx` v body. Logika:
 Historie analýz se nemění — „aktuální návrh" je implicitně poslední
 úspěšný běh, žádný supersede krok neexistuje (koncept `superseded` zanikl).
 Reanalýza po rejectu je možná — vznikne nový běh s `resolution=NULL`.
-Runner převezme `profile_override` v claimu; analyzer při dalším GET /queue
-zprávu uvidí včetně override profilu.
+Runner převezme `profile_override` při claimu (spawn hned po commitu
+reanalýzy, jinak minutový sweep).
 
 ## Chybové hlášky pro uživatele
 
@@ -1017,12 +1110,12 @@ jazyk, texty přijdou lokalizované; bez configu anglický fallback v PHP.
 **Helper** `AnalysisErrorPresenter` (`modules/core/mail/src/`):
 
 - `fromErrorMessage(?string $errorMessage, ?string $failedPromptVersion)`
-  rozebere prefix `[typ]` a u `schema_error` tvar textu z
-  `ai_analyzer/schema.py`; `{path}` z Python listu bez obalu
+  rozebere prefix `[typ]` a u `schema_error` tvar textu
+  `SchemaValidationException` (shodný s původním Python validátorem, aby
+  hlášky starších běhů četl stejně); `{path}` z listu bez obalu
   `document` / `extracted_json`, tečkovaně (`rows.0.vat.code`), `{key}`
   z `('<klíč>' was unexpected)`. Rozbor je záměrně tolerantní — neznámý
-  tvar padá do `schemaOther` / `unknown`, nikdy výjimkou (ai_analyzer#1
-  plánuje hlásit všechny chyby najednou).
+  tvar padá do `schemaOther` / `unknown`, nikdy výjimkou.
 - `forInvalidOutput(?string $failedPromptVersion)` — kategorie
   `invalidOutput`.
 - `isReanalysisRecommended(?string $failedPromptVersion)` (**D4**):
@@ -1102,7 +1195,10 @@ default *se nepřepíše*; admin zachová svůj override.
 
 ## Reference
 
-- [tasks/mail-phase3a.md](../../../../tasks/mail-phase3a.md) — spec protokolu (Fáze 3a)
+- [tasks/mail-phase3a.md](../../../../tasks/mail-phase3a.md) — původní spec pull
+  protokolu a review workflow (Fáze 3a; protokol zrušen #85 D20)
+- [tasks/ai-analyzer-removal.md](../../../../tasks/ai-analyzer-removal.md)
+  — zrušení pull protokolu, uživatele `_ai_analyzer` a démona (#85 D20–D24)
 - [tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
   — message-centrický model (D1–D12): zánik extrahovaných dokumentů,
   resolution, secondary_findings, lineage

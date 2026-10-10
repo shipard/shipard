@@ -12,9 +12,10 @@ use Shipard\Core\Database\DataSourceConnection;
  * (tasks/mail-analysis-error-messages.md, D1–D5).
  *
  * Vstupem je `core_mail_message_analyses.error_message` ve tvaru
- * `[typ] zpráva`, jak ho skládá `AnalysisController::failed` z `error_type`
- * + `error_message` analyzeru. Kategorii odvozuje rozbor prefixu a u
- * `schema_error` tvar textu z `ai_analyzer/schema.py` (jsonschema):
+ * `[typ] zpráva`, jak ho skládá `AnalysisResultWriter::recordFailedRun` z
+ * `error_type` + `error_message` runneru. Kategorii odvozuje rozbor prefixu
+ * a u `schema_error` tvar textu knihovny jsonschema (`SchemaValidationException`;
+ * stejný tvar nesou i starší běhy démona):
  *
  *   [schema_error] output does not match schema: Additional properties are not allowed ('x' was unexpected) at ['document', 'extracted_json', 'customer']
  *   [schema_error] output does not match schema: 'abc' is too long at [...]

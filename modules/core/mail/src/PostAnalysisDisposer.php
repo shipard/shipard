@@ -14,7 +14,7 @@ use Shipard\Core\Document\DocStateConfig;
  * s logikou „zpráva bez dokladu od odesílatele s potvrzeným pravidlem jde
  * do Archivu“. Volají ji dva vstupy:
  *
- *   - {@see afterResult()} z `AnalysisController::result` uvnitř transakce
+ *   - {@see afterResult()} z `AnalysisResultWriter::storeResult` uvnitř transakce
  *     výsledku (D4): první úspěšná analýza zprávy v Nové bez dokumentu;
  *   - {@see applyToWaiting()} z {@see SenderRuleConfirmedHandler} po
  *     potvrzení pravidla (D8): čekající řádky Ostatní od adresy (domény).

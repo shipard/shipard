@@ -37,11 +37,11 @@ Třetí ortogonální osa zprávy vedle `docState` (workflow) a
 | 30 Hotovo | Všechny akce proběhly | runner |
 | 40 Hotovo s chybami | Některá akce selhala, nebo sweep vzdal po 3 pokusech | runner, sweep |
 
-**Gate AI fronty:** `GET /_mail/analysis/queue` (i `total_available`)
-a `/claim` vyřazují `preprocess_state IN (10, 20)`. Zpráva má normálně
-`analysis_state = 10` už od intake, do fronty se ale dostane až po
-doběhnutí runneru. **Selhání nikdy neblokuje tok** — zpráva doteče
-se stavem 40 a analyzer ji dostane s tím, co k ní je (D9).
+**Gate AI fronty:** `AnalysisQueue` (výdej i počet) a claim
+(`AnalysisClaimService`) vyřazují `preprocess_state IN (10, 20)`. Zpráva má
+normálně `analysis_state = 10` už od intake, do fronty se ale dostane až po
+doběhnutí runneru předzpracování. **Selhání nikdy neblokuje tok** — zpráva
+doteče se stavem 40 a AI analýza ji dostane s tím, co k ní je (D9).
 
 `preprocess_log` (JSON):
 
@@ -265,7 +265,7 @@ souboru, sanitizace názvu) žijí v `Action/GeneratedAttachments`.
   Návrh upozornění — viz [Hlášky pro uživatele](#hlášky-pro-uživatele).
 
 CLI reference: [docs/cli.md](../../../../docs/cli.md) § `mail-preprocess`.
-API gate: [docs/mail/api-contract.md](../../../../docs/mail/api-contract.md) § 9.1.
+Gate AI fronty: [ai-analysis.md](ai-analysis.md) → „Fronta, claim a zápis výsledku“ (`AnalysisQueue`).
 
 ## Hlášky pro uživatele
 

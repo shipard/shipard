@@ -1,9 +1,12 @@
 # Tabulka: Rezervace analýz (core_mail_analysis_claims)
 
-Lease mechanismus pro pull-based AI analyzer. Když externí analyzer claimne
-zprávu k analýze, vznikne záznam s `expires_at`. Reaper cron (`mail-analysis-reap`)
-najde expirované rezervace a vrátí zprávu zpět do queue — to je recovery,
-když analyzer mezi `claim` a `result` spadne.
+Lease mechanismus AI analýzy. Když si runner (`shpd-ds mail-analyze`,
+`AnalysisClaimService::claim()`) vezme zprávu k analýze, vznikne záznam
+s `expires_at`; před každým pokusem volání modelu lease prodlužuje. Reaper
+cron (`mail-analysis-reap`) najde expirované rezervace a vrátí zprávu zpět
+do fronty — to je recovery, když runner mezi claimem a zápisem výsledku
+spadne (pád, který PHP nezachytí). Řádky z doby zrušeného externího
+analyzeru (#85 D20) zůstávají, liší se jen hodnotou `analyzer_id`.
 
 ## Struktura
 
@@ -12,8 +15,8 @@ když analyzer mezi `claim` a `result` spadne.
 | Sloupec | Typ | Popis |
 |---|---|---|
 | `message` | int → `core_mail_incoming_messages`, NOT NULL | Zpráva, kterou analyzer drží |
-| `analyzer_id` | varchar(64), NOT NULL | UUID instance analyzeru — self-reported v request body |
-| `claim_token` | varchar(64), NOT NULL, UNIQUE | Server-generated tajný token. Analyzer ho posílá v hlavičce `X-Claim-Token` u všech navazujících requestů. |
+| `analyzer_id` | varchar(64), NOT NULL | Identita běhu: runner `internal:<hostname>:<pid>`; starší řádky nesou UUID instance zrušeného démona |
+| `claim_token` | varchar(64), NOT NULL, UNIQUE | Náhodný token claimu (dřív ověřoval navazující HTTP volání analyzeru; runner v procesu ho jen nese) |
 
 ### Rezervace (lease)
 
@@ -42,21 +45,23 @@ když analyzer mezi `claim` a `result` spadne.
 
 Specifikace zmiňuje "partial unique `(message) WHERE released = false`".
 MariaDB partial unique nepodporuje, takže invariant vynucujeme aplikačně —
-`AnalysisController::claim()` před INSERT v rámci transakce ověří, že
+`AnalysisClaimService::claim()` před INSERT v rámci transakce ověří, že
 ke zprávě neexistuje řádek se `released = false` (s expirací v budoucnu),
-jinak vrátí 409 ALREADY_CLAIMED. Při expiraci reaper rezervaci uvolní a
+jinak skončí `ALREADY_CLAIMED`. Při expiraci reaper rezervaci uvolní a
 další claim může proběhnout.
 
 ## Životní cyklus
 
-1. **Claim**: `POST /_mail/analysis/{ndx}/claim` v transakci ověří, že zpráva
-   je `docState=10` a nemá živou claim → vytvoří záznam, vrátí token,
-   přepne zprávu na `docState=20`.
-2. **Použití**: analyzer s tokenem volá `payload`, `attachments/{ndx}/content`.
-3. **Result/Failed**: analyzer pošle výsledek → `released=true`,
+1. **Claim**: `AnalysisClaimService::claim()` v transakci ověří, že zpráva
+   je `analysis_state=10` a nemá živou claim → vytvoří záznam, přepne zprávu
+   na `analysis_state=20`.
+2. **Běh**: runner připraví přílohy, vykreslí prompt a volá model; před
+   každým pokusem `extend()` prodlouží lease.
+3. **Result/Failed**: `AnalysisResultWriter` zapíše běh → `released=true`,
    `release_reason='result'` nebo `'failed'`.
 4. **Expirace**: reaper nastaví `released=true`, `release_reason='expired'`,
-   přepne zprávu zpět na `docState=10`.
+   přepne zprávu zpět na `analysis_state=10` (při třetím vypršení za hodinu
+   stav 70).
 
 ## Návaznosti
 

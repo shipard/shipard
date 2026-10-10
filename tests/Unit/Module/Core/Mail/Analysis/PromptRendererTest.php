@@ -13,7 +13,7 @@ use Shipard\Module\Core\Mail\Analysis\PromptRenderException;
 /**
  * Prompt z `prompt_template` profilu (D17): dodávaná šablona se vykreslí,
  * sandbox a `strict_variables` hlásí výjimkou, emulace Jinja
- * `trim_blocks` / `lstrip_blocks` drží výstup shodný s démonem.
+ * `trim_blocks` / `lstrip_blocks` drží výstup shodný s původním Jinja2 rendererem.
  */
 final class PromptRendererTest extends TestCase
 {
@@ -48,7 +48,7 @@ final class PromptRendererTest extends TestCase
         );
 
         $this->assertStringContainsString('- Předmět: Faktura č. 2026000123', $out);
-        // Jinja2 `trim_blocks` démona stříhá konec řádku za `{% endif %}` (slitek s dalším
+        // Jinja2 `trim_blocks` stříhá konec řádku za `{% endif %}` (slitek s dalším
         // řádkem) i za `{% endfor %}` — výstup je s ním shodný bajt po bajtu (ověřeno
         // proti jinja2 3.1), včetně tohoto slitku.
         $this->assertStringContainsString("- Odesílatel: acc@example.com (Účetní)- Tělo zprávy: V příloze faktura.\n", $out);
@@ -139,7 +139,7 @@ final class PromptRendererTest extends TestCase
         $this->assertSame("A\n  B\nC- 1\n- 2\n\nD", $out);
     }
 
-    public function testHumanSizeMatchesDaemon(): void
+    public function testHumanSizeMatchesOriginalRenderer(): void
     {
         $this->assertSame('0 B', PromptRenderer::humanSize(0));
         $this->assertSame('1023 B', PromptRenderer::humanSize(1023));

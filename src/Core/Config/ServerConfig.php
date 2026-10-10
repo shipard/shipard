@@ -122,8 +122,7 @@ class ServerConfig
      *   `{baseUrl}/{country}/{companyId}/json?formatMode=ns`
      *
      * Used by `PersonsRegistryClient` (modul base.persons) for the
-     * "Přidat firmu z registru" wizard and the AI Analyzer person
-     * importer.
+     * "Přidat firmu z registru" wizard and the exchange party import.
      */
     public function getRegistryPersonsBaseUrl(): string
     {
@@ -190,7 +189,8 @@ class ServerConfig
      * Limit souběhu AI analýz pošty per server — nested klíč
      * `ai.analysis.maxConcurrent` (tasks/mail-analysis-inprocess.md D15).
      * Chybějící sekce = výchozí {@see DEFAULT_AI_ANALYSIS_MAX_CONCURRENT};
-     * `0` = analýza v procesu vypnutá (server, kde dál pracuje démon).
+     * `0` = analýza pošty na tomto serveru vypnutá (vypínač, žádný
+     * runner se nespustí).
      * Záporná nebo nečíselná hodnota je chyba konfigurace.
      */
     public function getAiAnalysisMaxConcurrent(): int

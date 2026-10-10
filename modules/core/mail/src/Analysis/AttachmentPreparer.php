@@ -8,8 +8,7 @@ use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Module\Core\Attachments\AttachmentService;
 
 /**
- * Příprava příloh zprávy pro model (tasks/mail-analysis-inprocess.md D16,
- * přenos `ai_analyzer/preprocessing.py`):
+ * Příprava příloh zprávy pro model (tasks/mail-analysis-inprocess.md D16):
  *
  *   1. rozbalení ZIP (jedna úroveň, vnořený ZIP se přeskočí; soubory dědí
  *      `ndx` rodiče a název `<zip>/<vnitřní název>`),

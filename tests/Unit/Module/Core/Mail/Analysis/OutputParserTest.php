@@ -15,7 +15,7 @@ use Shipard\Module\Core\Mail\AnalysisErrorPresenter;
  * Výstup modelu → objekt (D18): čistý JSON, markdown blok, nevalidní JSON,
  * porušení schématu v textovém tvaru jsonschema (včetně výběru nejhlubší
  * chyby v `oneOf` dokumentu reálného profilu) a pole místo objektu.
- * Presenter z hlášek musí vyčíst stejný druh chyby jako z démona.
+ * Presenter z hlášek musí vyčíst stejný druh chyby jako ze starších běhů.
  */
 final class OutputParserTest extends TestCase
 {
@@ -193,7 +193,7 @@ final class OutputParserTest extends TestCase
 
     public function testFormatsAreNotValidated(): void
     {
-        // Démon formáty nekontroloval; placeholder z ukázky v promptu server přepíše (D12).
+        // Formáty se nekontrolují (jako původní Python validátor); placeholder z ukázky v promptu server přepíše (D12).
         $output = $this->docsOutput();
         $output['document']['extracted_json']['source']['extractedAt'] = '<ISO timestamp from current time>';
 

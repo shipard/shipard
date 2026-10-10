@@ -8,14 +8,15 @@ use Opis\JsonSchema\Errors\ValidationError;
 use Opis\JsonSchema\Validator;
 
 /**
- * Výstup modelu → objekt (tasks/mail-analysis-inprocess.md D18, přenos
- * `ai_analyzer/schema.py`): JSON přímo, jinak z markdown bloku
+ * Výstup modelu → objekt (tasks/mail-analysis-inprocess.md D18): JSON
+ * přímo, jinak z markdown bloku
  * ```` ```json ```` (model občas obalí výstup i přes zákaz v promptu),
  * validace proti `output_schema` profilu přes `opis/json-schema`,
  * na nejvyšší úrovni musí být objekt.
  *
- * Formáty (`date-time`, `date`) se nekontrolují — démon (Python
- * `jsonschema.validate` bez format checkeru) je nekontroloval a server
+ * Formáty (`date-time`, `date`) se nekontrolují — původní Python
+ * validátor (`jsonschema.validate` bez format checkeru) je nekontroloval,
+ * hlášky starších běhů tak zůstávají srovnatelné, a server
  * `source.extractedAt` stejně přepíše (D12). Z chyb validace se vybírá
  * ta s nejhlubší cestou (jako `best_match` v Pythonu — u `oneOf`
  * dokumentu tak vyhraje konkrétní pole, ne „neodpovídá žádné větvi“)

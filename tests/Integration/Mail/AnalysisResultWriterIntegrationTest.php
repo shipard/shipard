@@ -4,40 +4,34 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Integration\Mail;
 
-use Shipard\Api\AuthContext;
-use Shipard\Api\Controller\AnalysisController;
 use Shipard\Api\DocumentLoader;
-use Shipard\Api\Request;
-use Shipard\Api\Response;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
-use Shipard\Module\Core\Mail\AIAnalyzerProvisioner;
+use Shipard\Module\Core\Mail\Analysis\AnalysisResultException;
+use Shipard\Module\Core\Mail\Analysis\AnalysisResultWriter;
 use Shipard\Tests\Integration\IntegrationTestCase;
 
 /**
- * Integrační pokrytí transakce `POST /_mail/analysis/{ndx}/result`
- * (kontrakt v4, message-centricky — tasks/mail-message-centric.md):
+ * Integrační pokrytí transakce `AnalysisResultWriter::storeResult()`
+ * (kontrakt v4, message-centricky — tasks/mail-message-centric.md; dřív
+ * přes `POST /_mail/analysis/{ndx}/result`, protokol zrušen #85 D20):
  * povinná message_classification, volitelný `document` (0..1) →
  * analyses.canonical_json + proposed_type, uvolnění claimu,
  * analysis_state → 30 a workflow posun Nová → K řešení jen při validním
- * dokumentu. Reálná DB + reálný SchemaValidator/ConfigRuntime; analyzer
- * auth jede přes skutečného systémového uživatele `_ai_analyzer`
- * (verifyAnalyzerAuth kontroluje login v core_system_users) a claim token
- * vložený přímo do core_mail_analysis_claims. Spustitelné s
+ * dokumentu, archivace podle pravidla odesílatele. Reálná DB + reálný
+ * SchemaValidator/ConfigRuntime; claim vložený přímo do
+ * core_mail_analysis_claims. Spustitelné s
  * `SHIPARD_INTEGRATION_DS_PATH=/opt/shipard/data-sources/<id>`.
  */
-class AnalysisResultEndpointTest extends IntegrationTestCase
+class AnalysisResultWriterIntegrationTest extends IntegrationTestCase
 {
     private const PREFIX = 'IT-AIRES';
 
-    private AnalysisController $controller;
+    private AnalysisResultWriter $writer;
     private ConfigRuntime $configRuntime;
     private int $mailboxId = 0;
-
-    private int $analyzerUserId = 0;
-    private bool $createdAnalyzerUser = false;
 
     private int $messageRowId = 0;
     private int $claimRowId = 0;
@@ -49,8 +43,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        $resolver = new ModulePathResolver([dirname(__DIR__, 3) . '/modules']);
-        $documentRegistry = DocumentLoader::load($this->dsConfig, $resolver);
+        // Document třídy modulů (IncomingMessageDocument apod.) musí být
+        // načtené kvůli autoloadu tříd modulů.
+        DocumentLoader::load($this->dsConfig, new ModulePathResolver([dirname(__DIR__, 3) . '/modules']));
         $this->configRuntime = ConfigRuntime::load($this->realDsPath, 'cs');
 
         $mailbox = $this->db->fetchRow('SELECT id FROM core_mail_mailboxes LIMIT 1');
@@ -59,17 +54,11 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         }
         $this->mailboxId = (int) $mailbox['id'];
 
-        // Analyzer auth: verifyAnalyzerAuth vyžaduje api_key token uživatele
-        // s loginem _ai_analyzer — zajistí (idempotentně) provisioner.
-        $user = new AIAnalyzerProvisioner($this->db)->ensureAnalyzerUser();
-        $this->analyzerUserId = $user['id'];
-        $this->createdAnalyzerUser = $user['created'];
-
-        // DocumentApplier tu není potřeba (/result doklady nezakládá) —
-        // canonical validaci nese SchemaValidator + ConfigRuntime (registry
-        // routing v validateAndStoreCanonical).
-        $this->controller = new AnalysisController(
-            $this->db, $this->dsConfig, $this->realDsPath, $this->tables, $documentRegistry,
+        // Canonical validaci nese SchemaValidator + ConfigRuntime (registry
+        // routing ve validateCanonical); enricher tu není potřeba.
+        $this->writer = new AnalysisResultWriter(
+            $this->db,
+            $this->dsConfig,
             new SchemaValidator(SchemaLoader::default()),
             null,
             $this->configRuntime,
@@ -84,9 +73,6 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
             $dibi->query('DELETE FROM core_mail_message_analyses WHERE message = %i', $this->messageRowId);
             $dibi->query('DELETE FROM core_mail_analysis_claims WHERE message = %i', $this->messageRowId);
             $dibi->query('DELETE FROM core_mail_incoming_messages WHERE id = %i', $this->messageRowId);
-        }
-        if ($this->createdAnalyzerUser && $this->analyzerUserId > 0) {
-            $dibi->query('DELETE FROM core_system_users WHERE id = %i', $this->analyzerUserId);
         }
         foreach ($this->createdRuleIds as $id) {
             $dibi->query('DELETE FROM core_mail_sender_rules WHERE id = %i', $id);
@@ -188,8 +174,8 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         $this->assertSame(0, (int) $rule['hit_count']);
     }
 
-    /** Aktivní claim pro zprávu — vrací claim token pro X-Claim-Token. */
-    private function createClaim(int $messageNdx): string
+    /** Aktivní claim pro zprávu (id v $this->claimRowId). */
+    private function createClaim(int $messageNdx): void
     {
         $token = 'ct_' . bin2hex(random_bytes(30));
         $dibi = $this->db->getDibiConnection();
@@ -202,7 +188,6 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
             'released'    => 0,
         ])->execute();
         $this->claimRowId = (int) $dibi->getInsertId();
-        return $token;
     }
 
     /** @return array<string, mixed> Validní canonical (fixture happy path). */
@@ -231,27 +216,30 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         ];
     }
 
-    private function analyzerAuth(): AuthContext
+    /**
+     * Zápis výsledku nad fixturovou zprávou a jejím claimem — strojový
+     * kontext (`created_by` NULL) jako v runneru.
+     *
+     * @param array<string, mixed> $body
+     * @return int id běhu v core_mail_message_analyses
+     */
+    private function storeResult(int $messageNdx, array $body): int
     {
-        return new AuthContext(true, $this->analyzerUserId, 'api_key', 'shpd_ak_test');
+        $analysisNdx = $this->writer->storeResult($messageNdx, $this->claimRowId, $body, null);
+        $this->assertGreaterThan(0, $analysisNdx);
+        return $analysisNdx;
     }
 
-    /** @param array<string, mixed> $body */
-    private function resultRequest(string $claimToken, array $body): Request
+    private function expectValidationError(callable $call): void
     {
-        return Request::fromArray(
-            'POST',
-            '/api/v1/_mail/analysis/x/result',
-            [],
-            (string) json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            ['HTTP_HOST' => 'test', 'HTTP_X_CLAIM_TOKEN' => $claimToken],
-        );
-    }
-
-    private function statusOf(Response $response): int
-    {
-        $ref = new \ReflectionClass($response);
-        return (int) $ref->getProperty('status')->getValue($response);
+        try {
+            $call();
+        } catch (AnalysisResultException $e) {
+            $this->assertSame('VALIDATION_ERROR', $e->errorCode);
+            $this->assertSame(422, $e->httpStatus);
+            return;
+        }
+        $this->fail('AnalysisResultException expected');
     }
 
     /** @return array<string, mixed> */
@@ -283,7 +271,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     public function testResultWithValidDocumentStoresCanonicalAndAdvancesMessage(): void
     {
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->baseBody();
         $body['document'] = [
@@ -293,10 +281,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         ];
         $body['overall_confidence'] = 0.8;
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
-        $analysisNdx = (int) $resp->getPayload()['data']['analysis_ndx'];
-        $this->assertGreaterThan(0, $analysisNdx);
+        $analysisNdx = $this->storeResult($messageNdx, $body);
 
         // 1. Analysis řádek: canonical_json s validním canonicalem (bez
         //    wrapperu), proposed_type + confidence návrhu (ne overall).
@@ -333,20 +318,18 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     public function testResultWithInvalidCanonicalStoresWrapperAndKeepsMessageNew(): void
     {
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->baseBody();
         $body['document'] = [
             'doc_type' => 'invoiceReceived',
             'confidence' => 0.4,
             // Schema-invalid výstup (chybí formatVersion/docType) → forenzní
-            // wrapper, běh se přesto uloží a vrací 201.
+            // wrapper, běh se přesto uloží.
             'extracted_json' => ['format' => 'shpd.docs.document'],
         ];
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
-        $analysisNdx = (int) $resp->getPayload()['data']['analysis_ndx'];
+        $analysisNdx = $this->storeResult($messageNdx, $body);
 
         $analysis = $this->db->fetchRow('SELECT * FROM core_mail_message_analyses WHERE id = %i', $analysisNdx);
         $canonical = json_decode((string) $analysis['canonical_json'], true);
@@ -364,15 +347,13 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     public function testResultWithoutDocumentKeepsMessageNew(): void
     {
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->baseBody();
         $body['message_classification']['primary_type'] = 'other';
         $body['overall_confidence'] = 0.7;
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
-        $analysisNdx = (int) $resp->getPayload()['data']['analysis_ndx'];
+        $analysisNdx = $this->storeResult($messageNdx, $body);
 
         // Bez dokumentu: canonical_json NULL, confidence = overall_confidence.
         $analysis = $this->db->fetchRow('SELECT * FROM core_mail_message_analyses WHERE id = %i', $analysisNdx);
@@ -395,10 +376,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     {
         $ruleId = $this->insertConfirmedRule('archiveIfOther');
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.8)), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+        $this->storeResult($messageNdx, $this->otherBody(0.8));
 
         // Archiv s auditem; analysis_state zůstává 30 (D7 — návrat bez nové analýzy).
         $message = $this->messageRow();
@@ -421,10 +401,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         // (pravidlo potvrzené až po příjmu).
         $ruleId = $this->insertConfirmedRule('archive');
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.95)), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp));
+        $this->storeResult($messageNdx, $this->otherBody(0.95));
 
         $message = $this->messageRow();
         $this->assertSame(80, (int) $message['docState']);
@@ -435,7 +414,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     {
         $ruleId = $this->insertConfirmedRule('archiveIfOther');
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->baseBody();
         $body['document'] = [
@@ -444,8 +423,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
             'extracted_json' => $this->validCanonical(),
         ];
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+        $this->storeResult($messageNdx, $body);
 
         // Faktura od téhož odesílatele jde dál normálně (Nová → K řešení).
         $message = $this->messageRow();
@@ -460,10 +438,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         // D5: práh `review` profilu běhu (bez profilu výchozích 0,6).
         $ruleId = $this->insertConfirmedRule('archiveIfOther');
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.5)), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp));
+        $this->storeResult($messageNdx, $this->otherBody(0.5));
 
         $this->assertNotDisposed($ruleId);
     }
@@ -472,10 +449,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     {
         $ruleId = $this->insertConfirmedRule('archiveIfOther');
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(null)), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp));
+        $this->storeResult($messageNdx, $this->otherBody(null));
 
         $this->assertNotDisposed($ruleId);
     }
@@ -487,10 +463,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         $ruleId = $this->insertConfirmedRule('archiveIfOther');
         $messageNdx = $this->provisionMessage();
         $this->insertPriorSuccessfulAnalysis($messageNdx);
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.95)), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp));
+        $this->storeResult($messageNdx, $this->otherBody(0.95));
 
         $this->assertNotDisposed($ruleId);
     }
@@ -499,10 +474,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     {
         $ruleId = $this->insertConfirmedRule('archiveIfOther');
         $messageNdx = $this->provisionMessage(['source_type' => 1]);
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $this->otherBody(0.95)), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp));
+        $this->storeResult($messageNdx, $this->otherBody(0.95));
 
         $this->assertNotDisposed($ruleId);
     }
@@ -512,7 +486,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     public function testResultOtherWithActionWritesAttentionFieldsAndPartnerFromClassification(): void
     {
         $messageNdx = $this->provisionMessage(['sender_email' => 'forwarder@example.cz']);
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->otherBody(0.9);
         $body['message_classification'] += [
@@ -522,8 +496,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
             'party' => ['name' => 'Registrátor a.s.', 'companyId' => '00000000', 'email' => 'podpora@registrator.example'],
         ];
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+        $this->storeResult($messageNdx, $body);
 
         $message = $this->messageRow();
         $this->assertSame('other', $message['primary_type']);
@@ -540,9 +513,9 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     public function testResultOtherActionWithNullOptionalFieldsIsStoredWithoutPartner(): void
     {
         // Oprava v4.7.1 (akční zpráva bez lhůty): due_date / action_note /
-        // party null → 201, attention action, NULL sloupce, partner nedotčen.
+        // party null → běh se uloží, attention action, NULL sloupce, partner nedotčen.
         $messageNdx = $this->provisionMessage(['partner_name' => 'Původní partner']);
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->otherBody(0.9);
         $body['message_classification'] += [
@@ -552,8 +525,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
             'party' => null,
         ];
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+        $this->storeResult($messageNdx, $body);
 
         $message = $this->messageRow();
         $this->assertSame('action', $message['attention']);
@@ -566,7 +538,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     public function testResultOtherInfoDropsNoteAndDue(): void
     {
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->otherBody(0.9);
         $body['message_classification'] += [
@@ -575,8 +547,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
             'due_date' => '2026-10-15',
         ];
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp));
+        $this->storeResult($messageNdx, $body);
 
         $message = $this->messageRow();
         $this->assertSame('info', $message['attention']);
@@ -593,7 +564,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
             'action_note' => 'Zaplatit do 15. 10.',
             'action_due' => '2026-10-15',
         ]);
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->baseBody();
         $body['document'] = [
@@ -603,8 +574,7 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
         ];
         $body['overall_confidence'] = 0.8;
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(201, $this->statusOf($resp), 'result: ' . json_encode($resp->getPayload()));
+        $this->storeResult($messageNdx, $body);
 
         $message = $this->messageRow();
         $this->assertSame('invoiceReceived', $message['primary_type']);
@@ -616,14 +586,12 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     public function testResultRequiresMessageClassification(): void
     {
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->baseBody();
         unset($body['message_classification']);
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(422, $this->statusOf($resp));
-        $this->assertSame('VALIDATION_ERROR', $resp->getPayload()['error']['code']);
+        $this->expectValidationError(fn() => $this->storeResult($messageNdx, $body));
 
         // Nic se nezapsalo — žádný běh, claim drží, stavy netknuté.
         $this->assertSame(0, (int) $this->db->fetchSingle(
@@ -638,14 +606,12 @@ class AnalysisResultEndpointTest extends IntegrationTestCase
     public function testResultRejectsLegacyExtractedDocumentsField(): void
     {
         $messageNdx = $this->provisionMessage();
-        $token = $this->createClaim($messageNdx);
+        $this->createClaim($messageNdx);
 
         $body = $this->baseBody();
         $body['extracted_documents'] = []; // kontrakt v3 — od v4 se nepřijímá
 
-        $resp = $this->controller->result($this->analyzerAuth(), $this->resultRequest($token, $body), $messageNdx);
-        $this->assertSame(422, $this->statusOf($resp));
-        $this->assertSame('VALIDATION_ERROR', $resp->getPayload()['error']['code']);
+        $this->expectValidationError(fn() => $this->storeResult($messageNdx, $body));
 
         // Nic se nezapsalo — žádný běh, claim drží, stavy netknuté.
         $this->assertSame(0, (int) $this->db->fetchSingle(

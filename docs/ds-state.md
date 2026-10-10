@@ -29,7 +29,7 @@ subsystémy rozhodují podle efektivního stavu.
 
 ## 2. Chování per subsystém
 
-| Efektivní stav | HTTP | `/_mail/incoming`, analyzer callbacky | cron per-DS joby | cron server-level joby |
+| Efektivní stav | HTTP | `/_mail/incoming` | cron per-DS joby | cron server-level joby |
 |---|---|---|---|---|
 | `active` | běží | běží | všechny | běží |
 | `read_only` | čtení běží, mutace **403** `DS_READ_ONLY`, chat celý 403 (sekce 6) | **503** `DS_UNAVAILABLE` + `Retry-After: 300` (D4 — router frontuje) | jen `mail-idempotency-prune`, `alerts-prune` | běží |
@@ -153,7 +153,7 @@ Tři verdikty:
 |---|---|---|
 | `Allow` | routa běží | čtení, auth, reporty, přílohy download, MCP (filtr uvnitř) |
 | `Deny403` | **403** `DS_READ_ONLY` „Data source is read-only" | uživatelské mutace — klient zobrazí, neretryuje |
-| `Deny503` | **503** `DS_UNAVAILABLE` + `Retry-After: 300` (shodné s zavřeným DS) | strojový ingest: `/_mail/incoming` (D4), callbacky AI analyzeru (`queue`/`claim`/`payload`/`attachmentContent`/`result`/`failed`) — volající frontuje, práci nezahazuje |
+| `Deny503` | **503** `DS_UNAVAILABLE` + `Retry-After: 300` (shodné s zavřeným DS) | strojový ingest: `/_mail/incoming` (D4) — volající frontuje, práci nezahazuje. (Callbacky AI analyzeru zanikly s pull protokolem, #85 D20.) |
 
 **Fail-closed:** controller nebo akce mimo tabulku = `Deny403`. Nová routa
 přidaná bez rozmyslu je v read-only zavřená, dokud ji někdo v

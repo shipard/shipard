@@ -152,7 +152,7 @@ try {
 		$verdict = (new ReadOnlyPolicy())->verdict($route);
 		if ($verdict === ReadOnlyVerdict::Deny503) {
 			// Strojový ingest (D4): stejná odpověď jako zavřený DS, volající
-			// frontuje. Info do logu — ops vidí, že router/analyzer čeká.
+			// frontuje. Info do logu — ops vidí, že mail-router čeká.
 			ErrorLogger::info('request refused — data source read-only', [
 				'controller' => $route->controller,
 				'action' => $route->action,
@@ -300,7 +300,7 @@ function resolveLanguage(Request $request, ?\Shipard\Core\Config\DataSourceConfi
 
 /**
  * 503 pro DS, který teď nepřijímá požadavek (zavřený stav, nebo read-only
- * pro strojový ingest). Retry-After — mail-router a analyzer frontují.
+ * pro strojový ingest). Retry-After — mail-router frontuje.
  */
 function unavailableResponse(string $effectiveState): Response
 {
@@ -1330,10 +1330,9 @@ function dispatchAnalysis(
 ): Response {
 	$dsPath = $resolved->config->getDataSourceDir();
 
-	// Exchange wiring: SchemaValidator for /result canonical validation,
-	// DocumentApplier for /applyExtracted. Both require ConfigRuntime; if
-	// the compiled config is missing we degrade gracefully (controller
-	// falls back to legacy behaviour). See Phase 2 spec.
+	// Exchange wiring: SchemaValidator + DocumentApplier pro preview /
+	// apply návrhu. Obojí chce ConfigRuntime; bez kompilované konfigurace
+	// se degraduje (controller vrátí chybu nastavení místo pádu).
 	$schemaValidator = new \Shipard\Module\Core\Exchange\Schema\SchemaValidator(
 		\Shipard\Module\Core\Exchange\Schema\SchemaLoader::default(),
 	);
@@ -1365,12 +1364,6 @@ function dispatchAnalysis(
 		},
 	);
 	return match ($route->action) {
-		'queue'             => $ctrl->queue($auth, $request),
-		'claim'             => $ctrl->claim($auth, $request, (int) $route->id),
-		'payload'           => $ctrl->payload($auth, $request, (int) $route->id),
-		'attachmentContent' => $ctrl->attachmentContent($auth, $request, (int) $route->id, (int) $route->secondaryId),
-		'result'            => $ctrl->result($auth, $request, (int) $route->id),
-		'failed'            => $ctrl->failed($auth, $request, (int) $route->id),
 		'reanalyze'         => $ctrl->reanalyze($auth, $request, (int) $route->id),
 		'applyMessage'      => $ctrl->applyMessage($auth, $request, (int) $route->id),
 		'unapplyMessage'    => $ctrl->unapplyMessage($auth, $request, (int) $route->id),

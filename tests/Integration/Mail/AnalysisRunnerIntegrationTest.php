@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Tests\Integration\Mail;
 
-use Shipard\Api\AuthContext;
-use Shipard\Api\Controller\AnalysisController;
 use Shipard\Api\DocumentLoader;
-use Shipard\Api\Request;
 use Shipard\Core\Ai\LlmChatParams;
 use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
@@ -17,7 +14,6 @@ use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Module\Core\Attachments\AttachmentService;
 use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
-use Shipard\Module\Core\Mail\AIAnalyzerProvisioner;
 use Shipard\Module\Core\Mail\Analysis\AnalysisRunner;
 use Shipard\Module\Core\Mail\Analysis\AnalysisServices;
 use Shipard\Module\Core\Mail\Analysis\AnalysisSlots;
@@ -45,11 +41,11 @@ final class FixedOutputLlmClient implements LlmClient
 /**
  * Runner analýzy v procesu nad reálnou DB (tasks/mail-analysis-inprocess.md
  * D12): zpráva s PDF přílohou → `AnalysisRunner::run()` s falešným LLM
- * vracejícím uložený výstup → stejné řádky v `core_mail_message_analyses`
- * a stejný stav zprávy jako přes `POST /result` démona. Reálné služby
- * (claim s dešifrováním klíče backendu, writer s validací canonicalu),
- * reálný profil DS. Spustitelné s `SHIPARD_INTEGRATION_DS_PATH=…`; bez
- * aktivního backendu s klíčem se přeskočí.
+ * vracejícím uložený výstup → řádek v `core_mail_message_analyses`, uvolněný
+ * claim a stav zprávy podle kontraktu v4. Reálné služby (claim
+ * s dešifrováním klíče backendu, writer s validací canonicalu), reálný
+ * profil DS. Spustitelné s `SHIPARD_INTEGRATION_DS_PATH=…`; bez aktivního
+ * backendu s klíčem se přeskočí.
  */
 class AnalysisRunnerIntegrationTest extends IntegrationTestCase
 {
@@ -58,8 +54,6 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
     private ConfigRuntime $configRuntime;
     private AttachmentService $attachments;
     private int $mailboxId = 0;
-    private int $analyzerUserId = 0;
-    private bool $createdAnalyzerUser = false;
     private string $runDir;
 
     /** @var list<int> */
@@ -89,10 +83,6 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
         $this->configRuntime = ConfigRuntime::load($this->realDsPath, 'cs');
         $this->attachments = new AttachmentService($this->db, $this->realDsPath, $this->tables);
 
-        $user = new AIAnalyzerProvisioner($this->db)->ensureAnalyzerUser();
-        $this->analyzerUserId = $user['id'];
-        $this->createdAnalyzerUser = $user['created'];
-
         $this->runDir = sys_get_temp_dir() . '/shpd_airun_' . bin2hex(random_bytes(6));
         mkdir($this->runDir, 0750, true);
     }
@@ -110,9 +100,6 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
             $dibi->query('DELETE FROM core_mail_message_analyses WHERE message = %i', $id);
             $dibi->query('DELETE FROM core_mail_analysis_claims WHERE message = %i', $id);
             $dibi->query('DELETE FROM core_mail_incoming_messages WHERE id = %i', $id);
-        }
-        if ($this->createdAnalyzerUser && $this->analyzerUserId > 0) {
-            $dibi->query('DELETE FROM core_system_users WHERE id = %i', $this->analyzerUserId);
         }
         foreach (glob($this->runDir . '/*') ?: [] as $f) {
             @unlink($f);
@@ -209,37 +196,13 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
         return $row;
     }
 
-    /** Sloupce srovnatelné mezi runnerem a `/result` (bez id, časů a autora). */
-    private function comparable(array $analysis): array
-    {
-        $canonical = json_decode((string) $analysis['canonical_json'], true);
-        unset($canonical['source']['extractedAt']); // serverové razítko, liší se o sekundy
-        return [
-            'status' => (int) $analysis['status'],
-            'model_name' => $analysis['model_name'],
-            'prompt_version' => $analysis['prompt_version'],
-            'profile' => (int) $analysis['profile'],
-            'backend' => (int) $analysis['backend'],
-            'proposed_type' => $analysis['proposed_type'],
-            'content_tag' => $analysis['content_tag'],
-            'confidence' => (float) $analysis['confidence'],
-            'tokens_input' => (int) $analysis['tokens_input'],
-            'tokens_output' => (int) $analysis['tokens_output'],
-            'cost_usd' => (float) $analysis['cost_usd'],
-            'analysis_json' => json_decode((string) $analysis['analysis_json'], true),
-            'canonical' => $canonical,
-            'error_message' => $analysis['error_message'],
-        ];
-    }
-
     // ── tests ──────────────────────────────────────────────────────────────
 
-    public function testRunnerStoresSameRowsAsResultEndpoint(): void
+    public function testRunnerStoresResultRowsAndAdvancesMessage(): void
     {
         $output = $this->modelOutput();
         $llm = new FixedOutputLlmClient((string) json_encode($output, JSON_UNESCAPED_UNICODE));
 
-        // 1) Runner v procesu.
         $viaRunner = $this->provisionQueuedMessage('runner');
         $result = $this->runner($llm)->run($viaRunner);
         $this->assertSame('done', $result['status'], 'runner: ' . json_encode($result));
@@ -266,54 +229,6 @@ class AnalysisRunnerIntegrationTest extends IntegrationTestCase
         $this->assertSame('Faktura 2026000123 — Dodavatel s.r.o.', $runnerMessage['ai_title']);
         $this->assertNotNull($runnerAnalysis['duration_ms'], 'trvání volání modelu se ukládá (falešný LLM odpoví pod milisekundu)');
         $this->assertSame(0.0126, (float) $runnerAnalysis['cost_usd'], 'cena podle tabulky: 1200 × 3 + 600 × 15 USD/Mtok');
-
-        // 2) Totéž tělo přes POST /result démona (stejný profil a backend).
-        $viaEndpoint = $this->provisionQueuedMessage('endpoint');
-        $dibi = $this->db->getDibiConnection();
-        $token = 'ct_' . bin2hex(random_bytes(30));
-        $dibi->update('core_mail_incoming_messages', ['analysis_state' => 20])->where('id = %i', $viaEndpoint)->execute();
-        $dibi->insert('core_mail_analysis_claims', [
-            'message' => $viaEndpoint, 'analyzer_id' => self::PREFIX . '-daemon', 'claim_token' => $token,
-            'claimed_at' => date('Y-m-d H:i:s'), 'expires_at' => date('Y-m-d H:i:s', time() + 300), 'released' => 0,
-        ])->execute();
-
-        $body = [
-            'model_name' => 'claude-sonnet-4-5-20260101',
-            'prompt_version' => $runnerAnalysis['prompt_version'],
-            'profile_ndx' => (int) $runnerAnalysis['profile'],
-            'backend_ndx' => (int) $runnerAnalysis['backend'],
-            'tokens_input' => 1200,
-            'tokens_output' => 600,
-            'duration_ms' => 1234,
-            'cost_usd' => 0.0126,
-            'overall_confidence' => 0.92,
-            'analysis_json' => $output,
-            'message_classification' => $output['message_classification'],
-            'document' => $output['document'],
-            'secondary_findings' => $output['secondary_findings'],
-        ];
-        $controller = new AnalysisController(
-            $this->db, $this->dsConfig, $this->realDsPath, $this->tables,
-            DocumentLoader::load($this->dsConfig, new ModulePathResolver([dirname(__DIR__, 3) . '/modules'])),
-            new SchemaValidator(SchemaLoader::default()), null, $this->configRuntime,
-        );
-        $request = Request::fromArray(
-            'POST', '/api/v1/_mail/analysis/x/result', [],
-            (string) json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            ['HTTP_HOST' => 'test', 'HTTP_X_CLAIM_TOKEN' => $token],
-        );
-        $response = $controller->result(new AuthContext(true, $this->analyzerUserId, 'api_key', 'shpd_ak_test'), $request, $viaEndpoint);
-        $this->assertTrue((bool) ($response->getPayload()['success'] ?? false), 'result: ' . json_encode($response->getPayload()));
-
-        $endpointAnalysis = $this->latestAnalysis($viaEndpoint);
-        $endpointMessage = $this->messageRow($viaEndpoint);
-
-        // 3) Shodné řádky analýzy a shodný stav zprávy.
-        $this->assertSame($this->comparable($endpointAnalysis), $this->comparable($runnerAnalysis));
-        $this->assertSame($this->analyzerUserId, (int) $endpointAnalysis['created_by'], 'HTTP cesta zapisuje uživatele _ai_analyzer');
-        foreach (['analysis_state', 'docState', 'docStateMain', 'primary_type', 'primary_type_source', 'ai_title', 'partner_name', 'needs_reanalysis'] as $column) {
-            $this->assertEquals($endpointMessage[$column], $runnerMessage[$column], $column);
-        }
     }
 
     public function testRunnerStoresSchemaFailureAndLeavesMessageForUser(): void

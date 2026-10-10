@@ -11,10 +11,10 @@ use Twig\Loader\ArrayLoader;
 
 /**
  * Vykreslení promptu z `prompt_template` AI profilu (tasks/mail-analysis-
- * inprocess.md D17, přenos `ai_analyzer/prompt.py`): Twig v sandboxu
+ * inprocess.md D17): Twig v sandboxu
  * ({@see AnalysisPromptPolicy}), `strict_variables`, bez autoescape.
  *
- * Kontext jako u démona: `message` (`subject`, `sender_email`,
+ * Kontext: `message` (`subject`, `sender_email`,
  * `sender_name`, `received_at`, `body_plain`, `body_html` — null jako
  * prázdný řetězec), `attachments[]` (`ndx`, `filename`, `mime_type`,
  * `kind`, `size_human`) a `output_schema`.
@@ -22,8 +22,9 @@ use Twig\Loader\ArrayLoader;
  * Šablony vznikly pro Jinja2 s `trim_blocks` + `lstrip_blocks`. První
  * konec řádku za blokovým tagem stříhá Twig sám (jako `trim_blocks`),
  * `lstrip_blocks` nemá — doplní ho {@see jinjaCompatible()} nad zdrojem
- * před kompilací, aby byl výstup bajtově shodný s démonem (porovnání
- * reanalýzy; ověřeno proti jinja2 3.1) — profil se kvůli tomu nemění.
+ * před kompilací, aby byl výstup bajtově shodný s původním Jinja2
+ * rendererem (šablony profilů vznikly pro něj; porovnatelnost reanalýzy
+ * se staršími běhy; ověřeno proti jinja2 3.1) — profil se kvůli tomu nemění.
  */
 final class PromptRenderer
 {
@@ -91,7 +92,7 @@ final class PromptRenderer
         return (string) preg_replace('/^[ \t]+(?=\{%)/m', '', $source);
     }
 
-    /** Stejný tvar jako `_human_size` démona: celočíselné dělení, jedno desetinné místo. */
+    /** Velikost přílohy pro prompt: celočíselné dělení, jedno desetinné místo (tvar shodný s původním Python rendererem). */
     public static function humanSize(int $bytes): string
     {
         $n = $bytes;

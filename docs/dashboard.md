@@ -664,7 +664,7 @@ z preview endpointu řídí post-apply UX (§6.2).
 
 **Zdrojová zpráva v hlavičce** (`tasks/mail-source-message-link.md`
 D1–D3, D8–D10): `subtitle` modalu je „Došlá zpráva #YYMMDD-NNNN · datum ·
-odesílatel“ z bloku `message` preview endpointu (`api-contract.md` §9.12;
+odesílatel“ z bloku `message` preview endpointu (`api-contract.md` §9.5;
 krátký kód `IncomingMessageCode::short()`, plný v tooltipu). Prop
 `onOpenMessage(messageNdx)`: Dashboard jím otevře svou existující
 instanci `ViewerDetailModal` (viewer `core.mail.incoming`, tab `content`
@@ -882,7 +882,7 @@ dashboard, jiná prezentace: agregace per `navSection`
 ### `POST /_mail/messages/{ndx}/unapply`
 
 **Auth**: běžný uživatelský token. Transakčně vrátí apply — viz §6.5
-a `docs/mail/api-contract.md` §9.11.
+a `docs/mail/api-contract.md` §9.4.
 
 **Odpovědi**: `200 { messageNdx, analysisNdx, trashedDocId }`,
 `409 INVALID_STATE` / `409 DOC_ADVANCED`, `404 NOT_FOUND`, `500 INTERNAL_ERROR`.

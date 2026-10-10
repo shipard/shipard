@@ -16,7 +16,8 @@ use Shipard\Core\Process\DetachedProcess;
  * po vzoru {@see \Shipard\Module\Core\Mail\Preprocess\PreprocessSpawner}:
  * stdout/stderr potomka do `analysis.log` vedle serverového logu, selhání
  * spawnu se jen zaloguje — zprávu ve frontě dohledá `mail-analyze --sweep`.
- * Při `ai.analysis.maxConcurrent = 0` nespouští nic (server s démonem).
+ * Při `ai.analysis.maxConcurrent = 0` nespouští nic (analýza na serveru
+ * vypnutá).
  * Spawn předává jen id zprávy — klíč backendu si runner dešifruje sám.
  */
 final class AnalysisSpawner

@@ -218,10 +218,6 @@ class Router
 			return new Route('mail', 'senderAddresses');
 		}
 
-		if (str_starts_with($subpath, '/_mail/analysis')) {
-			return $this->resolveAnalysisRoute($subpath, $method);
-		}
-
 		if (str_starts_with($subpath, '/_mail/messages/')) {
 			return $this->resolveMailMessagesRoute($subpath, $method);
 		}
@@ -703,70 +699,6 @@ class Router
 		return Response::error('NOT_FOUND', 'Not found', 404);
 	}
 
-	private function resolveAnalysisRoute(string $subpath, string $method): Route|Response
-	{
-		$rest = substr($subpath, strlen('/_mail/analysis'));
-
-		// GET /_mail/analysis/queue
-		if ($rest === '/queue') {
-			if ($method !== 'GET') {
-				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
-			}
-			return new Route('analysis', 'queue');
-		}
-
-		// /_mail/analysis/{ndx}/...
-		if (preg_match('#^/(\d+)/(.+)$#', $rest, $m)) {
-			$ndx = (int) $m[1];
-			$tail = $m[2];
-			if ($ndx <= 0) {
-				return Response::error('NOT_FOUND', 'Not found', 404);
-			}
-
-			if ($tail === 'claim') {
-				if ($method !== 'POST') {
-					return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
-				}
-				return new Route('analysis', 'claim', null, $ndx);
-			}
-
-			if ($tail === 'payload') {
-				if ($method !== 'GET') {
-					return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
-				}
-				return new Route('analysis', 'payload', null, $ndx);
-			}
-
-			if ($tail === 'result') {
-				if ($method !== 'POST') {
-					return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
-				}
-				return new Route('analysis', 'result', null, $ndx);
-			}
-
-			if ($tail === 'failed') {
-				if ($method !== 'POST') {
-					return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
-				}
-				return new Route('analysis', 'failed', null, $ndx);
-			}
-
-			// /_mail/analysis/{ndx}/attachments/{att_ndx}/content
-			if (preg_match('#^attachments/(\d+)/content$#', $tail, $am)) {
-				$attNdx = (int) $am[1];
-				if ($attNdx <= 0) {
-					return Response::error('NOT_FOUND', 'Not found', 404);
-				}
-				if ($method !== 'GET') {
-					return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
-				}
-				return new Route('analysis', 'attachmentContent', null, $ndx, $attNdx);
-			}
-		}
-
-		return Response::error('NOT_FOUND', 'Not found', 404);
-	}
-
 	private function resolveMailSendersRoute(string $subpath, string $method): Route|Response
 	{
 		$rest = substr($subpath, strlen('/_mail/senders/'));
@@ -820,6 +752,7 @@ class Router
 			if ($method !== $expectedMethod) {
 				return Response::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
 			}
+			// Akce nad analyzovanou zprávou (docs/mail/api-contract.md §9).
 			// Nová akce = tři místa: tahle mapa, dispatchAnalysis() v
 			// public/index.php (jinak 500 „Unknown analysis action") a
 			// ReadOnlyPolicy (aspoň komentář + test).

@@ -106,7 +106,7 @@ class AIBackendDocument extends Document
 
     /**
      * Decrypt API key from a freshly loaded row. Volá se v
-     * AnalysisController::claim() těsně před vložením plaintext do API response.
+     * AnalysisClaimService::claim() těsně před předáním klíče runneru.
      * Plaintext se nikdy neuchovává mimo dobu zpracování.
      */
     public function decryptApiKey(array $row): ?string
