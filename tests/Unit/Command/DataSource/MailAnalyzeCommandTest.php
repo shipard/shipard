@@ -37,16 +37,25 @@ class TestableMailAnalyzeCommand extends MailAnalyzeCommand
 
 /**
  * Volby příkazu (--message xor --sweep) a mapování výsledků runneru na
- * výstup / exit kód: selhaná analýza není chyba příkazu. Logiku runneru
- * kryje AnalysisRunnerTest.
+ * výstup / exit kód: selhaná analýza není chyba příkazu; `--message`
+ * dobírá frontu (řádek per zpráva + souhrn, D25). Logiku runneru kryje
+ * AnalysisRunnerTest.
  */
 class MailAnalyzeCommandTest extends TestCase
 {
-    /** @param array<string, mixed>|null $runResult */
+    /**
+     * @param array<string, mixed>|null $runResult Výsledek jediné zprávy
+     *        (dobírání s důvodem `queue_empty`), nebo celý výsledek
+     *        `drain()` s klíčem `reason`.
+     */
     private function makeTester(?array $runResult = null, ?array $sweepResult = null): CommandTester
     {
         $runner = $this->createMock(AnalysisRunner::class);
-        $runner->method('run')->willReturn($runResult ?? ['status' => 'done', 'message' => 1]);
+        $runResult ??= ['status' => 'done', 'message' => 1];
+        $drained = isset($runResult['reason'])
+            ? $runResult
+            : ['reason' => 'queue_empty', 'results' => [$runResult], 'successor' => null];
+        $runner->method('drain')->willReturn($drained);
         $runner->method('sweep')->willReturn($sweepResult ?? ['spawned' => [], 'skipped' => null]);
 
         $command = new TestableMailAnalyzeCommand(
@@ -120,6 +129,85 @@ class MailAnalyzeCommandTest extends TestCase
 
         $this->assertSame(Command::FAILURE, $tester->execute(['--message' => '5']));
         $this->assertStringContainsString('db gone', $tester->getDisplay());
+    }
+
+    public function testDrainPrintsEachMessageAndSummary(): void
+    {
+        $tester = $this->makeTester([
+            'reason' => 'queue_empty',
+            'results' => [
+                ['status' => 'done', 'message' => 5, 'analysisNdx' => 77, 'hasDocument' => true, 'note' => 'tokens 10/5'],
+                ['status' => 'failed', 'message' => 6, 'errorType' => 'ai_error', 'retryable' => true, 'newState' => 10, 'note' => 'down'],
+                ['status' => 'claim_failed', 'message' => 7, 'note' => 'ALREADY_CLAIMED: taken'],
+            ],
+            'successor' => null,
+        ]);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--message' => '5']));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Done message 5: analysis #77 (document: yes; tokens 10/5)', $display);
+        $this->assertStringContainsString('Failed message 6: [ai_error] down → analysis_state 10 (queued again)', $display);
+        $this->assertStringContainsString('Claim failed message 7: ALREADY_CLAIMED: taken', $display);
+        $this->assertStringContainsString('Drained 3 message(s): 1 done, 1 failed, 1 skipped — queue empty.', $display);
+        $this->assertStringNotContainsString('Successor', $display);
+    }
+
+    public function testDrainBudgetReportsSuccessor(): void
+    {
+        $tester = $this->makeTester([
+            'reason' => 'budget',
+            'results' => [['status' => 'done', 'message' => 5, 'analysisNdx' => 1, 'note' => 'x']],
+            'successor' => 9,
+        ]);
+
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--message' => '5']));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('budget of ' . AnalysisRunner::DRAIN_BUDGET_SECONDS . ' s exhausted', $display);
+        $this->assertStringContainsString('Successor spawned for message 9.', $display);
+
+        $tester = $this->makeTester([
+            'reason' => 'budget',
+            'results' => [['status' => 'claim_failed', 'message' => 5, 'note' => 'taken']],
+            'successor' => null,
+        ]);
+        $tester->execute(['--message' => '5']);
+        $this->assertStringContainsString('No successor: this process made no progress', $tester->getDisplay());
+    }
+
+    public function testDrainWithNotConfiguredAndNoSlot(): void
+    {
+        $tester = $this->makeTester([
+            'reason' => 'not_configured',
+            'results' => [['status' => 'not_configured', 'message' => 5, 'note' => 'NO_PROFILE: none']],
+            'successor' => null,
+        ]);
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--message' => '5']));
+        $this->assertStringContainsString('AI analysis is not configured, queue left as is', $tester->getDisplay());
+
+        $tester = $this->makeTester([
+            'reason' => 'no_slot',
+            'results' => [['status' => 'no_slot', 'message' => 5, 'note' => 'x']],
+            'successor' => null,
+        ]);
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--message' => '5']));
+        $this->assertStringContainsString('No free slot: message 5 stays queued', $tester->getDisplay());
+        $this->assertStringNotContainsString('Drained', $tester->getDisplay());
+    }
+
+    public function testCrashOfAnyDrainedMessageIsAFailure(): void
+    {
+        $tester = $this->makeTester([
+            'reason' => 'queue_empty',
+            'results' => [
+                ['status' => 'done', 'message' => 5, 'analysisNdx' => 1, 'note' => 'x'],
+                ['status' => 'crashed', 'message' => 6, 'note' => 'RuntimeException: db gone'],
+                ['status' => 'done', 'message' => 7, 'analysisNdx' => 2, 'note' => 'y'],
+            ],
+            'successor' => null,
+        ]);
+
+        $this->assertSame(Command::FAILURE, $tester->execute(['--message' => '5']));
+        $this->assertStringContainsString('Drained 3 message(s): 2 done, 0 failed, 1 skipped', $tester->getDisplay());
     }
 
     public function testSweepOutputs(): void

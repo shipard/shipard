@@ -19,9 +19,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Runner AI analýzy došlé zprávy v procesu (tasks/mail-analysis-inprocess.md
  * D14). Primárně ho spouští příjem, nahrání, předzpracování a reanalýza
- * detached spawnem (`--message`), z cronu běží minutový `--sweep`. Selhaná
- * analýza **není** chyba příkazu (zpráva doteče do stavu 10 / 70) —
- * FAILURE jen pro špatné volání a chyby infrastruktury.
+ * detached spawnem (`--message`), z cronu běží minutový `--sweep`.
+ * `--message` po první zprávě dobírá frontu ({@see AnalysisRunner::drain()},
+ * tasks/mail-analysis-queue-drain.md D25): řádek výpisu per zpráva
+ * a souhrn. Selhaná analýza **není** chyba příkazu (zpráva doteče do
+ * stavu 10 / 70) — FAILURE jen pro špatné volání a chyby infrastruktury
+ * (kterákoli zpráva `crashed`).
  */
 class MailAnalyzeCommand extends Command
 {
@@ -206,50 +209,79 @@ class MailAnalyzeCommand extends Command
 
     private function runMessage(AnalysisRunner $runner, int $messageId, OutputInterface $output): int
     {
-        $result = $runner->run($messageId);
+        $drained = $runner->drain($messageId);
+        $exit = Command::SUCCESS;
+        $counts = ['done' => 0, 'failed' => 0, 'skipped' => 0];
+
+        foreach ($drained['results'] as $result) {
+            [$line, $code] = self::describeResult($result);
+            $output->writeln($line);
+            if ($code === Command::FAILURE) {
+                $exit = Command::FAILURE;
+            }
+            $status = (string) $result['status'];
+            $counts[$status === 'done' || $status === 'failed' ? $status : 'skipped']++;
+        }
+
+        if (in_array($drained['reason'], ['disabled', 'no_slot'], true)) {
+            return $exit;
+        }
+        $output->writeln(sprintf(
+            'Drained %d message(s): %d done, %d failed, %d skipped — %s.',
+            count($drained['results']),
+            $counts['done'],
+            $counts['failed'],
+            $counts['skipped'],
+            match ($drained['reason']) {
+                'queue_empty' => 'queue empty',
+                'not_configured' => 'AI analysis is not configured, queue left as is',
+                'budget' => sprintf('budget of %d s exhausted', AnalysisRunner::DRAIN_BUDGET_SECONDS),
+                default => (string) $drained['reason'],
+            },
+        ));
+        if ($drained['reason'] === 'budget') {
+            $output->writeln($drained['successor'] !== null
+                ? sprintf('Successor spawned for message %d.', $drained['successor'])
+                : 'No successor: this process made no progress — the queue is left for the sweep.');
+        }
+
+        return $exit;
+    }
+
+    /**
+     * Řádek výpisu pro výsledek jedné zprávy a exit kód, který by měla sama.
+     *
+     * @param array<string, mixed> $result
+     * @return array{0: string, 1: int}
+     */
+    private static function describeResult(array $result): array
+    {
+        $messageId = (int) ($result['message'] ?? 0);
         $note = (string) ($result['note'] ?? '');
 
-        switch ($result['status']) {
-            case 'disabled':
-                $output->writeln('Skipped: ' . $note);
-                return Command::SUCCESS;
-            case 'no_slot':
-                $output->writeln("No free slot: message {$messageId} stays queued for the sweep.");
-                return Command::SUCCESS;
-            case 'not_eligible':
-                $output->writeln("Skipped: message {$messageId} is not queued for analysis.");
-                return Command::SUCCESS;
-            case 'not_configured':
-                $output->writeln("<comment>Not configured:</comment> {$note} — message {$messageId} stays queued.");
-                return Command::SUCCESS;
-            case 'claim_failed':
-                $output->writeln("Claim failed: {$note}");
-                return Command::SUCCESS;
-            case 'done':
-                $output->writeln(sprintf(
-                    '<info>Done</info> message %d: analysis #%d (document: %s; %s)',
-                    $messageId,
-                    (int) ($result['analysisNdx'] ?? 0),
-                    !empty($result['hasDocument']) ? 'yes' : 'no',
-                    $note,
-                ));
-                return Command::SUCCESS;
-            case 'failed':
-                $output->writeln(sprintf(
-                    '<comment>Failed</comment> message %d: [%s] %s → analysis_state %d (%s)',
-                    $messageId,
-                    (string) ($result['errorType'] ?? ''),
-                    $note,
-                    (int) ($result['newState'] ?? 0),
-                    !empty($result['retryable']) ? 'queued again' : 'needs a user decision',
-                ));
-                return Command::SUCCESS;
-            case 'lost_claim':
-                $output->writeln("<comment>Claim lost</comment> message {$messageId}: {$note}");
-                return Command::SUCCESS;
-            default:
-                $output->writeln("<error>Error: message {$messageId}: {$note}</error>");
-                return Command::FAILURE;
-        }
+        return match ($result['status']) {
+            'disabled' => ['Skipped: ' . $note, Command::SUCCESS],
+            'no_slot' => ["No free slot: message {$messageId} stays queued for the sweep.", Command::SUCCESS],
+            'not_eligible' => ["Skipped: message {$messageId} is not queued for analysis.", Command::SUCCESS],
+            'not_configured' => ["<comment>Not configured:</comment> {$note} — message {$messageId} stays queued.", Command::SUCCESS],
+            'claim_failed' => ["Claim failed message {$messageId}: {$note}", Command::SUCCESS],
+            'done' => [sprintf(
+                '<info>Done</info> message %d: analysis #%d (document: %s; %s)',
+                $messageId,
+                (int) ($result['analysisNdx'] ?? 0),
+                !empty($result['hasDocument']) ? 'yes' : 'no',
+                $note,
+            ), Command::SUCCESS],
+            'failed' => [sprintf(
+                '<comment>Failed</comment> message %d: [%s] %s → analysis_state %d (%s)',
+                $messageId,
+                (string) ($result['errorType'] ?? ''),
+                $note,
+                (int) ($result['newState'] ?? 0),
+                !empty($result['retryable']) ? 'queued again' : 'needs a user decision',
+            ), Command::SUCCESS],
+            'lost_claim' => ["<comment>Claim lost</comment> message {$messageId}: {$note}", Command::SUCCESS],
+            default => ["<error>Error: message {$messageId}: {$note}</error>", Command::FAILURE],
+        };
     }
 }

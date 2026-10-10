@@ -113,6 +113,33 @@ class AnalysisQueueTest extends TestCase
         $this->assertSame(3, new AnalysisQueue($db)->countEligible());
     }
 
+    public function testEligibleExcludesGivenIdsOnlyWhenAsked(): void
+    {
+        $captured = [];
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchAll')->willReturnCallback(static function (...$args) use (&$captured): array {
+            $captured[] = $args;
+            return [];
+        });
+        $queue = new AnalysisQueue($db);
+
+        $queue->eligible(1, self::NOW, [42, 8]);
+        $queue->eligible(1, self::NOW);
+        $queue->eligible(1, self::NOW, []);
+
+        $withExclude = $captured[0];
+        $this->assertStringContainsString('AND m.id NOT IN %in', (string) $withExclude[0]);
+        $this->assertStringContainsString('NOT IN %in
+              ORDER BY', (string) $withExclude[0], 'vyloučení až za celým predikátem');
+        $this->assertSame([42, 8], $withExclude[count($withExclude) - 2], 'parametr vyloučení před limitem');
+        $this->assertSame(1, end($withExclude));
+
+        foreach ([$captured[1], $captured[2]] as $args) {
+            $this->assertStringNotContainsString('m.id NOT IN', (string) $args[0]);
+            $this->assertNotContains([], $args);
+        }
+    }
+
     public function testEligibleReturnsRowsAsGiven(): void
     {
         $rows = [['ndx' => 7, 'subject' => 'x']];

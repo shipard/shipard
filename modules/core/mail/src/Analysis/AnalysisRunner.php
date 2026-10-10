@@ -36,8 +36,17 @@ use Shipard\Core\Logging\ErrorLogger;
  * bez opakování; neplatný claim při zápisu = jen varování včetně ceny.
  * Běh v procesu zapisuje `created_by = NULL` (strojový kontext).
  *
+ * `drain()` (CLI `--message`, tasks/mail-analysis-queue-drain.md D25):
+ * po dokončení zprávy s jakýmkoli výsledkem drží slot a bere další zprávu
+ * z fronty, nejstarší první — každou nejvýš jednou za proces (zpráva
+ * vrácená do fronty se v témže procesu znovu nebere), `not_configured`
+ * dobírání ukončí, po rozpočtu {@see DRAIN_BUDGET_SECONDS} od startu
+ * novou zprávu nezačne: uvolní slot a pro první zbývající spustí nástupce
+ * (jen když sám aspoň jednu zprávu dokončil — `done` / `failed`).
+ *
  * `sweep()` (minutový cron za reaperem): pro zprávy ve frontě bez
- * aktivního claimu spustí runner — nejvýš tolik, kolik je volných slotů.
+ * aktivního claimu spustí runner — nejvýš tolik, kolik je volných slotů;
+ * každý pak dobírá.
  */
 class AnalysisRunner
 {
@@ -52,6 +61,8 @@ class AnalysisRunner
     public const MAX_FAILURES_PER_HOUR = 3;
     public const FAILURE_WINDOW_SECONDS = 3600;
     public const ERROR_MESSAGE_MAX_LENGTH = 2000;
+    /** Dobírání fronty: po tolika sekundách od startu procesu runner novou zprávu nezačne (D25). */
+    public const DRAIN_BUDGET_SECONDS = 600;
 
     private const MESSAGES_TABLE = 'core_mail_incoming_messages';
     private const PROFILES_TABLE = 'core_mail_ai_profiles';
@@ -63,6 +74,8 @@ class AnalysisRunner
      * @param \Closure(int): void|null $sleep Pauza mezi pokusy (testy).
      * @param string|null $analyzerId `analyzer_id` claimu; null =
      *        `internal:<hostname>:<pid>`.
+     * @param \Closure(): float|null $clock Čas v sekundách pro rozpočet
+     *        dobírání (testy); null = `microtime(true)`.
      */
     public function __construct(
         private readonly DataSourceConnection $db,
@@ -75,6 +88,7 @@ class AnalysisRunner
         private readonly ?\Closure $spawn = null,
         private readonly ?\Closure $sleep = null,
         private readonly ?string $analyzerId = null,
+        private readonly ?\Closure $clock = null,
     ) {}
 
     /**
@@ -91,24 +105,142 @@ class AnalysisRunner
      */
     public function run(int $messageId): array
     {
-        if ($this->slots->isDisabled()) {
-            return ['status' => 'disabled', 'message' => $messageId, 'note' => 'in-process analysis is disabled (ai.analysis.maxConcurrent = 0)'];
-        }
-        $slot = $this->slots->tryAcquire();
+        $slot = $this->acquireSlot($messageId, $refusal);
         if ($slot === null) {
-            return ['status' => 'no_slot', 'message' => $messageId, 'note' => 'no free analysis slot — message stays queued for the sweep'];
+            return $refusal;
         }
 
         try {
-            return $this->runInSlot($messageId);
-        } catch (\Throwable $e) {
-            // Nečekaná chyba (DB, disk): claim se neuvolňuje — vyprší a reaper
-            // zprávu vrátí do fronty (jako u pádu démona).
-            ErrorLogger::logException($e, "AnalysisRunner: message {$messageId} crashed — claim left to expire");
-            return ['status' => 'crashed', 'message' => $messageId, 'note' => get_class($e) . ': ' . $e->getMessage()];
+            return $this->runOne($messageId);
         } finally {
             $slot->release();
         }
+    }
+
+    /**
+     * Dobírání fronty (D25): první zpráva, pak další ze fronty, dokud nějaká
+     * je — viz docblock třídy. `results` = výsledky {@see run()} v pořadí
+     * zpracování; `reason` = proč dobírání skončilo; `successor` = zpráva,
+     * pro kterou po vyčerpání rozpočtu běží nástupce (null = žádný).
+     *
+     * @return array{
+     *     reason: 'disabled'|'no_slot'|'queue_empty'|'not_configured'|'budget',
+     *     results: list<array<string, mixed>>,
+     *     successor: int|null
+     * }
+     */
+    public function drain(int $firstMessageId): array
+    {
+        $slot = $this->acquireSlot($firstMessageId, $refusal);
+        if ($slot === null) {
+            return ['reason' => $refusal['status'], 'results' => [$refusal], 'successor' => null];
+        }
+
+        $startedAt = $this->now();
+        $results = [];
+        $processed = [];
+        $progress = false;
+        $successor = null;
+        $messageId = $firstMessageId;
+
+        try {
+            while (true) {
+                $result = $this->runOne($messageId);
+                $results[] = $result;
+                $processed[] = $messageId;
+                $progress = $progress || in_array($result['status'], ['done', 'failed'], true);
+                // Přílohy a tělo požadavku jsou lokální v analyze(); cykly uvolnit hned.
+                gc_collect_cycles();
+
+                if ($result['status'] === 'not_configured') {
+                    // Chybí profil, backend nebo klíč — další zprávy by dopadly stejně.
+                    $reason = 'not_configured';
+                    break;
+                }
+                $next = $this->nextQueued($processed);
+                if ($next === null) {
+                    $reason = 'queue_empty';
+                    break;
+                }
+                if ($this->now() - $startedAt >= self::DRAIN_BUDGET_SECONDS) {
+                    $reason = 'budget';
+                    $successor = $progress ? $next : null;
+                    break;
+                }
+                $messageId = $next;
+            }
+        } finally {
+            $slot->release();
+        }
+
+        if ($successor !== null && $this->spawn !== null) {
+            // Až po uvolnění slotu — jinak nástupce skončí na „no free slot“.
+            ($this->spawn)($successor);
+        }
+
+        return ['reason' => $reason, 'results' => $results, 'successor' => $successor];
+    }
+
+    /**
+     * Slot pro běh; bez něj vrací přes `$refusal` výsledek `disabled` /
+     * `no_slot` ve tvaru {@see run()}.
+     *
+     * @param array<string, mixed>|null $refusal
+     */
+    private function acquireSlot(int $messageId, ?array &$refusal): ?AnalysisSlot
+    {
+        $refusal = null;
+        if ($this->slots->isDisabled()) {
+            $refusal = ['status' => 'disabled', 'message' => $messageId, 'note' => 'in-process analysis is disabled (ai.analysis.maxConcurrent = 0)'];
+            return null;
+        }
+        $slot = $this->slots->tryAcquire();
+        if ($slot === null) {
+            $refusal = ['status' => 'no_slot', 'message' => $messageId, 'note' => 'no free analysis slot — message stays queued for the sweep'];
+        }
+        return $slot;
+    }
+
+    /**
+     * Jedna zpráva v drženém slotu; nečekaná chyba mimo analýzu (DB, disk)
+     * končí jako `crashed` — claim, pokud vznikl, se nechá vypršet a reaper
+     * zprávu vrátí do fronty (jako u pádu démona).
+     *
+     * @return array<string, mixed>
+     */
+    private function runOne(int $messageId): array
+    {
+        try {
+            return $this->runInSlot($messageId);
+        } catch (\Throwable $e) {
+            ErrorLogger::logException($e, "AnalysisRunner: message {$messageId} crashed — claim left to expire");
+            return ['status' => 'crashed', 'message' => $messageId, 'note' => get_class($e) . ': ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Nejstarší zpráva ve frontě mimo už zpracované; id, které fronta vrátí
+     * podruhé, se bere jako prázdná fronta (pojistka proti točení na místě).
+     *
+     * @param list<int> $processed
+     */
+    private function nextQueued(array $processed): ?int
+    {
+        $rows = $this->services->queue->eligible(1, null, $processed);
+        if ($rows === []) {
+            return null;
+        }
+        $next = (int) $rows[0]['ndx'];
+        if (in_array($next, $processed, true)) {
+            ErrorLogger::warn('AnalysisRunner: queue returned an already processed message — drain stops', ['message' => $next]);
+            return null;
+        }
+        return $next;
+    }
+
+    private function now(): float
+    {
+        return $this->clock !== null ? (float) ($this->clock)() : microtime(true);
     }
 
     /** @return array<string, mixed> */

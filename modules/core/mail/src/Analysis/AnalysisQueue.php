@@ -21,7 +21,8 @@ use Shipard\Module\Core\Mail\IncomingMessageDocument;
  *   - bez aktivního claimu (released=0 a expires_at v budoucnu).
  *
  * Sdílí ji pull endpoint `GET /queue`, in-process runner (`isEligible()`
- * před claimem) a sweep (`eligible(freeCount())`).
+ * před claimem, `eligible(1, null, $excludeIds)` při dobírání fronty)
+ * a sweep (`eligible(freeCount())`).
  */
 class AnalysisQueue
 {
@@ -52,25 +53,32 @@ class AnalysisQueue
     /**
      * Zprávy ve frontě, nejstarší první.
      *
+     * @param list<int> $excludeIds Zprávy, které se nevydají — runner při
+     *        dobírání fronty vynechává zprávy už zpracované v témže procesu
+     *        (tasks/mail-analysis-queue-drain.md D25), jinak by se točil
+     *        na zprávě vrácené do fronty.
      * @return list<array<string, mixed>> Sloupce `ndx`, `received_at`,
      *         `subject`, `sender_email`, `profile_override`,
      *         `raw_source_attachment`.
      */
-    public function eligible(int $limit, ?string $now = null): array
+    public function eligible(int $limit, ?string $now = null, array $excludeIds = []): array
     {
         $now ??= date('Y-m-d H:i:s');
+        $exclude = $excludeIds !== [] ? ' AND m.id NOT IN %in' : '';
+        $excludeParams = $excludeIds !== [] ? [array_values($excludeIds)] : [];
 
         return $this->db->fetchAll(
             'SELECT m.id AS ndx, m.received_at, m.subject, m.sender_email,
                     m.profile_override, m.raw_source_attachment
                FROM %n m
                JOIN %n mb ON mb.id = m.mailbox
-              WHERE ' . self::PREDICATE . '
+              WHERE ' . self::PREDICATE . $exclude . '
               ORDER BY m.received_at ASC, m.id ASC
               LIMIT %i',
             self::MESSAGES_TABLE,
             self::MAILBOXES_TABLE,
             ...self::predicateParams($now),
+            ...$excludeParams,
             ...[$limit],
         );
     }

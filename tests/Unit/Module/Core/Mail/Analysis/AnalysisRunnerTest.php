@@ -57,8 +57,10 @@ final class ScriptedLlmClient implements LlmClient
 /**
  * Runner s falešným LLM (D12–D18): úspěch, schema_error, přechodná chyba
  * a hodinový strop, max_tokens, strop útraty, bez slotu, bez konfigurace,
- * claim zaniklý během volání, sweep. Služby jsou mocky — SQL kryjí jejich
- * vlastní testy a integrační test.
+ * claim zaniklý během volání, sweep; dobírání fronty (D25): jeden slot na
+ * víc zpráv, zpracované id se nebere znovu, `not_configured` končí,
+ * rozpočet a nástupce. Služby jsou mocky — SQL kryjí jejich vlastní testy
+ * a integrační test.
  */
 final class AnalysisRunnerTest extends TestCase
 {
@@ -149,6 +151,10 @@ final class AnalysisRunnerTest extends TestCase
         );
     }
 
+    /** Čas pro rozpočet dobírání: posouvá se o tolik sekund při každém čtení. */
+    private float $clockStep = 0.0;
+    private float $clockNow = 1000.0;
+
     private function runner(ScriptedLlmClient $llm, int $maxConcurrent = 2): AnalysisRunner
     {
         return new AnalysisRunner(
@@ -166,6 +172,34 @@ final class AnalysisRunnerTest extends TestCase
                 $this->slept[] = $seconds;
             },
             'internal:test:1',
+            function (): float {
+                $this->clockNow += $this->clockStep;
+                return $this->clockNow;
+            },
+        );
+    }
+
+    /**
+     * Fronta pro dobírání: vydá první id z `$queued`, které není mezi
+     * vyloučenými; zachytí vyloučená id každého dotazu.
+     *
+     * @param list<int> $queued
+     * @param list<list<int>> $excludeCalls
+     */
+    private function queueFor(array $queued, array &$excludeCalls): void
+    {
+        $this->queue = $this->createMock(AnalysisQueue::class);
+        $this->queue->method('isEligible')->willReturn(true);
+        $this->queue->method('eligible')->willReturnCallback(
+            static function (int $limit, ?string $now, array $excludeIds) use ($queued, &$excludeCalls): array {
+                $excludeCalls[] = $excludeIds;
+                foreach ($queued as $id) {
+                    if (!in_array($id, $excludeIds, true)) {
+                        return [['ndx' => $id]];
+                    }
+                }
+                return [];
+            },
         );
     }
 
@@ -474,6 +508,156 @@ final class AnalysisRunnerTest extends TestCase
 
         $this->assertSame('crashed', $result['status']);
         $this->assertStringContainsString('disk gone', $result['note']);
+    }
+
+    // ── dobírání fronty (D25) ──────────────────────────────────────────────
+
+    public function testDrainProcessesQueuedMessagesWithOneSlot(): void
+    {
+        $excludeCalls = [];
+        $this->queueFor([8, 9], $excludeCalls);
+        $llm = new ScriptedLlmClient([$this->okResult(), $this->okResult(), $this->okResult()]);
+        $this->results->expects($this->exactly(3))->method('storeResult')->willReturn(77);
+        $claimed = [];
+        $this->claims->method('claim')->willReturnCallback(function (int $id) use (&$claimed): AnalysisClaim {
+            $claimed[] = $id;
+            return $this->claim();
+        });
+
+        $drained = $this->runner($llm, 1)->drain(42);
+
+        $this->assertSame('queue_empty', $drained['reason']);
+        $this->assertNull($drained['successor']);
+        $this->assertSame([42, 8, 9], array_column($drained['results'], 'message'));
+        $this->assertSame(['done', 'done', 'done'], array_column($drained['results'], 'status'));
+        $this->assertSame([42, 8, 9], $claimed);
+        $this->assertSame([[42], [42, 8], [42, 8, 9]], $excludeCalls, 'každý dotaz vynechává všechny zpracované zprávy');
+        $this->assertSame([], $this->spawned);
+        $this->assertNotNull((new AnalysisSlots(1, $this->runDir))->tryAcquire(), 'slot je po dobírání volný');
+    }
+
+    public function testDrainDoesNotRetakeMessageReturnedToQueue(): void
+    {
+        // 42 skončí přechodnou chybou (zpět do fronty 10) — fronta by ji
+        // vydala znovu; 8 ztroskotá na claimu — také zůstává ve frontě.
+        $excludeCalls = [];
+        $this->queueFor([42, 8], $excludeCalls);
+        $this->claims = $this->createMock(AnalysisClaimService::class);
+        $this->claims->method('claim')->willReturnCallback(function (int $id): AnalysisClaim {
+            if ($id === 8) {
+                throw new AnalysisClaimException(AnalysisClaimException::ALREADY_CLAIMED, 'taken', 409);
+            }
+            return $this->claim();
+        });
+        $this->claims->method('extend')->willReturn(true);
+        $this->claims->method('isActive')->willReturn(true);
+        $this->results->expects($this->once())->method('storeFailure')->willReturn(AnalysisStates::QUEUED);
+        $llm = new ScriptedLlmClient([
+            new LlmApiException(503, 'api_error', 'down'),
+            new LlmApiException(503, 'api_error', 'down'),
+            new LlmApiException(503, 'api_error', 'down'),
+        ]);
+
+        $drained = $this->runner($llm)->drain(42);
+
+        $this->assertSame(['failed', 'claim_failed'], array_column($drained['results'], 'status'));
+        $this->assertSame('queue_empty', $drained['reason']);
+        $this->assertSame([[42], [42, 8]], $excludeCalls);
+        $this->assertCount(3, $llm->calls, 'zpráva 42 se v témže procesu nebere znovu');
+    }
+
+    public function testDrainStopsWhenQueueRepeatsProcessedId(): void
+    {
+        $this->queue = $this->createMock(AnalysisQueue::class);
+        $this->queue->method('isEligible')->willReturn(true);
+        $this->queue->expects($this->once())->method('eligible')->willReturn([['ndx' => 42]]);
+
+        $drained = $this->runner(new ScriptedLlmClient([$this->okResult()]))->drain(42);
+
+        $this->assertSame('queue_empty', $drained['reason']);
+        $this->assertCount(1, $drained['results']);
+    }
+
+    public function testDrainEndsOnMissingConfiguration(): void
+    {
+        $this->claims = $this->createMock(AnalysisClaimService::class);
+        $this->claims->method('claim')->willThrowException(new AnalysisClaimException(AnalysisClaimException::NO_BACKEND, 'none', 409));
+        $this->queue->expects($this->never())->method('eligible');
+
+        $drained = $this->runner(new ScriptedLlmClient([]))->drain(42);
+
+        $this->assertSame('not_configured', $drained['reason']);
+        $this->assertSame(['not_configured'], array_column($drained['results'], 'status'));
+        $this->assertNull($drained['successor']);
+    }
+
+    public function testDrainBudgetSpawnsSuccessorAfterReleasingSlot(): void
+    {
+        $excludeCalls = [];
+        $this->queueFor([8, 9], $excludeCalls);
+        $this->clockStep = AnalysisRunner::DRAIN_BUDGET_SECONDS; // druhé čtení hodin = rozpočet pryč
+        $llm = new ScriptedLlmClient([$this->okResult()]);
+        $slotFreeAtSpawn = null;
+        $runner = new AnalysisRunner(
+            $this->db,
+            new AnalysisServices($this->queue, $this->claims, $this->results),
+            $this->attachments,
+            new PromptRenderer(),
+            new OutputParser(),
+            $llm,
+            new AnalysisSlots(1, $this->runDir),
+            function (int $id) use (&$slotFreeAtSpawn): void {
+                $this->spawned[] = $id;
+                $probe = (new AnalysisSlots(1, $this->runDir))->tryAcquire();
+                $slotFreeAtSpawn = $probe !== null;
+                $probe?->release();
+            },
+            null,
+            'internal:test:1',
+            function (): float {
+                $this->clockNow += $this->clockStep;
+                return $this->clockNow;
+            },
+        );
+
+        $drained = $runner->drain(42);
+
+        $this->assertSame('budget', $drained['reason']);
+        $this->assertSame(8, $drained['successor']);
+        $this->assertSame([8], $this->spawned);
+        $this->assertTrue($slotFreeAtSpawn, 'nástupce se spouští až po uvolnění slotu');
+        $this->assertCount(1, $drained['results']);
+        $this->assertCount(1, $llm->calls);
+    }
+
+    public function testDrainBudgetWithoutProgressSpawnsNothing(): void
+    {
+        $excludeCalls = [];
+        $this->queueFor([8], $excludeCalls);
+        $this->clockStep = AnalysisRunner::DRAIN_BUDGET_SECONDS;
+        $this->claims = $this->createMock(AnalysisClaimService::class);
+        $this->claims->method('claim')->willThrowException(new AnalysisClaimException(AnalysisClaimException::ALREADY_CLAIMED, 'taken', 409));
+
+        $drained = $this->runner(new ScriptedLlmClient([]))->drain(42);
+
+        $this->assertSame('budget', $drained['reason']);
+        $this->assertNull($drained['successor']);
+        $this->assertSame([], $this->spawned);
+    }
+
+    public function testDrainWithoutSlotOrDisabledReturnsRefusal(): void
+    {
+        $holder = new AnalysisSlots(1, $this->runDir);
+        $held = $holder->tryAcquire();
+        $this->queue->expects($this->never())->method('eligible');
+
+        $drained = $this->runner(new ScriptedLlmClient([]), 1)->drain(42);
+        $this->assertSame('no_slot', $drained['reason']);
+        $this->assertSame(['no_slot'], array_column($drained['results'], 'status'));
+        $held?->release();
+
+        $drained = $this->runner(new ScriptedLlmClient([]), 0)->drain(42);
+        $this->assertSame('disabled', $drained['reason']);
     }
 
     public function testSweepSpawnsUpToFreeSlots(): void
