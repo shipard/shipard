@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 350 tasků: **naplánováno** 6 · **částečně** 23 · **hotovo** 321.
+Celkem 351 tasků: **naplánováno** 7 · **částečně** 23 · **hotovo** 321.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -30,6 +30,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `mail-analysis-queue-drain.md` | naplánováno | rozhodnutí D25, D26 potvrzena 2026-10-09 (#85) |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -365,6 +366,7 @@ Evidence → API endpoint → AI analýza do dokladů. Kontrakt endpointu
 | `mail-sender-rules-after-analysis.md` | Pravidla odesílatelů: dispozice `archiveIfOther` (archiv až po analýze, jen zprávy bez dokladu — `PostAnalysisDisposer`), pojistka učení u smíšených odesílatelů, potvrzení pravidla odklidí čekající Ostatní |
 | `mail-other-attention.md` | Ostatní pošta k vyřízení: prompt v4.7.0 vrací pozornost (`action` / `info` / `promo`), poznámku, lhůtu a protistranu u zprávy bez dokladu; sekce feedu K vyřízení, Archivovat vše v Ostatních, `archiveIfOther` vynechá akční zprávy (#105) |
 | `mail-analysis-inprocess.md` | AI analýza v `shpd` místo démona `ai-analyzer`: služby z `AnalysisController`, příprava příloh, prompt přes Twig, runner a CLI `mail-analyze` (spawn + sweep), limit souběhu per server (#85 D9–D19) |
+| `mail-analysis-queue-drain.md` | Runner AI analýzy dobírá frontu (rozpočet 10 min, nástupce), strop tří pádů za hodinu v runneru i reaperu, 401/403/404 jako chyba nastavení, nová hláška `configError` (#85 D25, D26) |
 
 Daemony volající endpoint žijí v jiných repech: `mail_router:tasks/phase1.md`
 (mail-router, Python) a `ai_analyzer:tasks/phase1.md` (AI analyzer, Python).
