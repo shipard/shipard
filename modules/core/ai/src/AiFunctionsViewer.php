@@ -206,6 +206,14 @@ class AiFunctionsViewer extends AiViewerBase
         );
         $this->addItem($call, $this->text('label.platform', 'Platform'), $this->platformLabel($plan->platform));
         $this->addItem($call, $this->text('label.baseUrl', 'API address'), $plan->baseUrl);
+        if (abs($plan->priceMultiplier - 1.0) > 0.0001) {
+            // Příplatek platformy proti ceníku katalogu (tasks/ai-bedrock-eu.md D60).
+            $this->addItem($call, $this->text('label.price', 'Price'), $this->text(
+                'value.priceMultiplier',
+                '{multiplier}× the catalog price list',
+                ['multiplier' => rtrim(rtrim(number_format($plan->priceMultiplier, 2, $this->language === 'cs' ? ',' : '.', ''), '0'), ',.')],
+            ));
+        }
         $this->addItem($call, $this->text('label.model', 'Model'), $plan->model . ' — ' . $origin('model'));
         if ($plan->isCustomModel() && $plan->shapeAs !== null) {
             $this->addItem($call, $this->text('label.shapeAs', 'Shape as model'), $plan->shapeAs);

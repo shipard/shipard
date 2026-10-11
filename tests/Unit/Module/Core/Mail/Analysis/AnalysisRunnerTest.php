@@ -235,6 +235,59 @@ final class AnalysisRunnerTest extends TestCase
         return new LlmChatResult($text, 1000, 500, $stop, $model);
     }
 
+    public function testCostComesFromTheCallNotFromTheModelInTheResponse(): void
+    {
+        // tasks/ai-bedrock-eu.md D60: ceník modelu rozhodnutí × násobitel platformy;
+        // Bedrock vrací v odpovědi základní ID místo profilu — na cenu nemá vliv.
+        $llm = new ScriptedLlmClient([$this->okResult(model: 'anthropic.claude-sonnet-5-5')]);
+        $body = null;
+        $this->results->method('storeResult')->willReturnCallback(
+            function (int $messageId, int $claimId, array $b, ?int $userId) use (&$body): int {
+                $body = $b;
+                return 78;
+            },
+        );
+        $claim = $this->claim(callOverrides: [
+            'platform' => 'bedrock-eu', 'baseUrl' => 'https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic',
+            'model' => 'eu.anthropic.claude-sonnet-5-5', 'shapeAs' => 'claude-sonnet-5-5', 'catalogModel' => 'claude-sonnet-5-5',
+            'priceMultiplier' => 1.1,
+        ]);
+        $this->claims = $this->createMock(AnalysisClaimService::class);
+        $this->claims->method('claim')->willReturn($claim);
+        $this->claims->method('extend')->willReturn(true);
+        $this->claims->method('isActive')->willReturn(true);
+
+        $result = $this->runner($llm)->run(42);
+
+        $this->assertSame('done', $result['status']);
+        $this->assertSame('anthropic.claude-sonnet-5-5', $body['model_name'], 'audit nese ID z odpovědi');
+        // Sonnet 5.5: (1000 × 2 + 500 × 10) / 1M = 0,007 USD × 1,1.
+        $this->assertSame(0.0077, $body['cost_usd']);
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5', $llm->calls[0]->model);
+        $this->assertSame('bedrock-eu', $llm->calls[0]->provider);
+    }
+
+    public function testCustomModelOutsideTheCatalogHasZeroCost(): void
+    {
+        $llm = new ScriptedLlmClient([$this->okResult(model: 'claude-sonnet-6')]);
+        $body = null;
+        $this->results->method('storeResult')->willReturnCallback(
+            function (int $messageId, int $claimId, array $b, ?int $userId) use (&$body): int {
+                $body = $b;
+                return 79;
+            },
+        );
+        $this->claims = $this->createMock(AnalysisClaimService::class);
+        $this->claims->method('claim')->willReturn($this->claim(callOverrides: [
+            'model' => 'claude-sonnet-6', 'shapeAs' => 'claude-sonnet-5-5', 'catalogModel' => null,
+        ]));
+        $this->claims->method('extend')->willReturn(true);
+        $this->claims->method('isActive')->willReturn(true);
+
+        $this->assertSame('done', $this->runner($llm)->run(42)['status']);
+        $this->assertSame(0.0, $body['cost_usd'], 'vlastní ID bez ceny (D43)');
+    }
+
     /** @return array<string, mixed> zachycené argumenty storeFailure */
     private function expectFailure(string $errorType, bool $retryable): array
     {

@@ -82,7 +82,8 @@ class AnalysisRunner
      *        `internal:<hostname>:<pid>`.
      * @param \Closure(): float|null $clock Čas v sekundách pro rozpočet
      *        dobírání (testy); null = `microtime(true)`.
-     * @param ModelCatalog|null $catalog Ceník pro `cost_usd` (#85 D33);
+     * @param ModelCatalog|null $catalog Ceník pro `cost_usd` (#85 D33,
+     *        přes `ResolvedAiCall::costUsd()` s násobitelem platformy D60);
      *        null = prázdný katalog, cena 0 s varováním.
      */
     public function __construct(
@@ -338,7 +339,9 @@ class AnalysisRunner
             $tokensIn = $result->inputTokens ?? 0;
             $tokensOut = $result->outputTokens ?? 0;
             $modelName = $result->model ?? $claim->model();
-            $cost = ($this->catalog ?? ModelCatalog::empty())->costUsd($modelName, $tokensIn, $tokensOut);
+            // Cena z rozhodnutí resolveru (model katalogu × násobitel platformy,
+            // tasks/ai-bedrock-eu.md D60), ne z ID v odpovědi; vlastní ID = 0 (D43).
+            $cost = $claim->call->costUsd($this->catalog ?? ModelCatalog::empty(), $tokensIn, $tokensOut) ?? 0.0;
 
             if (!$result->isComplete()) {
                 // Useknutý výstup = rozbitý JSON; opakování se stejným limitem

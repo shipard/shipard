@@ -75,6 +75,21 @@ final readonly class ResolvedAiCall
     }
 
     /**
+     * Cena volání v USD (tasks/ai-bedrock-eu.md D60) — **jediné místo**
+     * výpočtu pro běh analýzy i `ai-test`: ceník katalogu pro model
+     * rozhodnutí (`catalogModel`, ne ID z odpovědi — Bedrock může vrátit
+     * základní ID místo profilu) × násobitel platformy, na 6 míst. Vlastní
+     * ID mimo katalog nemá cenu (D43) → null.
+     */
+    public function costUsd(ModelCatalog $catalog, int $tokensInput, int $tokensOutput): ?float
+    {
+        if ($this->catalogModel === null) {
+            return null;
+        }
+        return round($catalog->costUsd($this->catalogModel, $tokensInput, $tokensOutput) * $this->priceMultiplier, 6);
+    }
+
+    /**
      * @param array<int, array{role: string, content: mixed}>                                $messages
      * @param array<int, array{name: string, description: string, input_schema: array}>|null $tools
      */

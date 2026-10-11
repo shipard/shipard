@@ -33,7 +33,7 @@ final class AiFunctionsViewerTest extends TestCase
     private const MODELS = [
         'claude-sonnet-5-5' => [
             'name' => 'Claude Sonnet 5.5', 'order' => 20, 'tier' => 'balanced',
-            'platformIds' => ['anthropic' => 'claude-sonnet-5-5'],
+            'platformIds' => ['anthropic' => 'claude-sonnet-5-5', 'bedrock' => 'anthropic.claude-sonnet-5-5'],
             'capabilities' => ['temperature' => false, 'thinkingModes' => ['adaptive', 'between_tools'], 'thinkingDefault' => 'adaptive',
                 'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high', 'maxOutputTokens' => 128000],
             'prices' => ['input' => 2, 'output' => 10],
@@ -69,7 +69,11 @@ final class AiFunctionsViewerTest extends TestCase
             AiFunctionRegistry::CFG_ITEM => self::FUNCTIONS,
             ModelCatalog::CFG_ITEM => self::MODELS,
             ModelCatalog::TIERS_CFG_ITEM => self::TIERS,
-            AiFunctionResolver::PLATFORMS_CFG_ITEM => ['anthropic' => ['name' => 'Anthropic', 'baseUrl' => 'https://api.anthropic.com']],
+            AiFunctionResolver::PLATFORMS_CFG_ITEM => [
+                'anthropic' => ['name' => 'Anthropic', 'baseUrl' => 'https://api.anthropic.com'],
+                'bedrock-eu' => ['name' => 'Amazon Bedrock (EU)', 'baseUrl' => 'https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic',
+                    'modelIds' => 'bedrock', 'modelIdPrefix' => 'eu.', 'priceMultiplier' => 1.1],
+            ],
             AiViewerBase::LABELS_CFG_ITEM => self::localized('viewerLabels.jsonc', 'name'),
             AiTexts::CFG_ITEM => self::localized('texts.jsonc', 'text'),
             'core.ai.thinkingModes' => ['default' => ['name' => 'Podle funkce'], 'adaptive' => ['name' => 'Adaptivní'], 'disabled' => ['name' => 'Vypnuté']],
@@ -241,6 +245,22 @@ final class AiFunctionsViewerTest extends TestCase
             $row['i1'],
         );
         $this->assertSame('claude-sonnet-5-5 · výchozí připojení', $row['t2']['text']);
+    }
+
+    public function testDetailOnBedrockEuShowsThePlatformModelAndTheSurcharge(): void
+    {
+        // tasks/ai-bedrock-eu.md D58, D60: výchozí připojení na Bedrocku EU.
+        $bedrock = ['id' => 2, 'backend_id' => 'bedrock-eu', 'name' => 'Bedrock EU', 'provider' => 'bedrock-eu'] + self::CONNECTION;
+        $detail = $this->viewer([], $bedrock)->renderDetail(3);
+
+        $call = $this->items($detail, 'Volání');
+        $this->assertSame('Amazon Bedrock (EU)', $call['Platforma']);
+        $this->assertSame('https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic', $call['Adresa API']);
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5 — podle úrovně modelu', $call['Model']);
+        $this->assertSame('1,1× ceník katalogu', $call['Cena']);
+
+        // Na přímém API se cena nevypisuje (násobitel 1).
+        $this->assertArrayNotHasKey('Cena', $this->items($this->viewer([])->renderDetail(3), 'Volání'));
     }
 
     public function testRowEstimateUsesTheTierModelOfTheConnectionPlatform(): void

@@ -56,6 +56,8 @@
     "label.connection":    { "name": "AI connection",         "name:cs": "AI připojení",           "name:en": "AI connection" },
     "label.platform":      { "name": "Platform",              "name:cs": "Platforma",              "name:en": "Platform" },
     "label.baseUrl":       { "name": "API address",           "name:cs": "Adresa API",             "name:en": "API address" },
+    "label.price":         { "name": "Price",                 "name:cs": "Cena",                   "name:en": "Price" },
+    "value.priceMultiplier": { "name": "{multiplier}× the catalog price list", "name:cs": "{multiplier}× ceník katalogu", "name:en": "{multiplier}× the catalog price list" },
     "label.model":         { "name": "Model",                 "name:cs": "Model",                  "name:en": "Model" },
     "label.shapeAs":       { "name": "Shape as model",        "name:cs": "Tvarovat jako model",    "name:en": "Shape as model" },
     "label.thinking":      { "name": "Thinking",              "name:cs": "Přemýšlení",             "name:en": "Thinking" },

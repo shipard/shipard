@@ -543,6 +543,21 @@ final class AiFunctionResolverTest extends TestCase
         $this->assertSame(1.0, $call->priceMultiplier);
     }
 
+    public function testCostUsesTheCatalogModelAndThePlatformMultiplier(): void
+    {
+        // tasks/ai-bedrock-eu.md D60: Sonnet 5.5 (2 / 10 USD za 1M) na 1000 / 500 tokenech = 0,007 USD.
+        $resolver = $this->resolver();
+        $direct = $resolver->resolve('mail.extraction', new AiCallOverride(model: 'claude-sonnet-5-5'));
+        $this->assertSame(0.007, $direct->costUsd($resolver->catalog(), 1000, 500));
+
+        $bedrock = $this->resolver(default: self::BEDROCK_CONNECTION, connections: [3 => self::BEDROCK_CONNECTION], keys: ['bedrock-eu' => 'k'])
+            ->resolve('mail.extraction');
+        $this->assertSame(0.0077, $bedrock->costUsd($resolver->catalog(), 1000, 500), '1,1× ceník');
+
+        $custom = $resolver->resolve('mail.extraction', new AiCallOverride(model: 'claude-sonnet-6', modelLike: 'claude-sonnet-5-5'));
+        $this->assertNull($custom->costUsd($resolver->catalog(), 1000, 500), 'vlastní ID bez ceny (D43)');
+    }
+
     public function testFunctionRequiringToolsAcceptsEveryCatalogModel(): void
     {
         // Pojistka D35 zanikla (tasks/chat-thinking-blocks.md D54): tool

@@ -195,8 +195,8 @@ class AiTestCommand extends Command
 
         $inputTokens = (int) ($result->inputTokens ?? 0);
         $outputTokens = (int) ($result->outputTokens ?? 0);
-        // Vlastní ID mimo katalog nemá cenu (D43) — costUsd by jen varovalo.
-        $costUsd = $call->catalogModel !== null ? $catalog->costUsd($call->catalogModel, $inputTokens, $outputTokens) : null;
+        // Jedno místo výpočtu (D60): ceník katalogu × násobitel platformy; vlastní ID mimo katalog bez ceny (D43).
+        $costUsd = $call->costUsd($catalog, $inputTokens, $outputTokens);
 
         return $base + [
             'ok' => true,

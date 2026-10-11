@@ -64,7 +64,8 @@ final class AiTestCommandTest extends TestCase
 
     private const MODELS = [
         'claude-sonnet-5-5' => [
-            'name' => 'Claude Sonnet 5.5', 'order' => 20, 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-5-5'],
+            'name' => 'Claude Sonnet 5.5', 'order' => 20, 'tier' => 'balanced',
+            'platformIds' => ['anthropic' => 'claude-sonnet-5-5', 'bedrock' => 'anthropic.claude-sonnet-5-5'],
             'capabilities' => ['temperature' => false, 'thinkingModes' => ['adaptive', 'between_tools'], 'thinkingDefault' => 'adaptive',
                 'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high', 'maxOutputTokens' => 128000],
             'prices' => ['input' => 2, 'output' => 10],
@@ -84,11 +85,19 @@ final class AiTestCommandTest extends TestCase
 
     private const TIERS = [
         'fast' => ['name' => 'Rychlý', 'order' => 10, 'model' => 'claude-sonnet-4-6'],
-        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6'],
+        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
+    ];
+
+    private const PLATFORMS = [
+        'anthropic' => ['name' => 'Anthropic', 'baseUrl' => 'https://api.anthropic.com'],
+        'bedrock-eu' => ['name' => 'Amazon Bedrock (EU)', 'baseUrl' => 'https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic',
+            'modelIds' => 'bedrock', 'modelIdPrefix' => 'eu.', 'priceMultiplier' => 1.1],
     ];
 
     private const CONNECTION = ['id' => 1, 'backend_id' => 'default', 'name' => 'Anthropic Claude', 'provider' => 'anthropic',
         'base_url' => null, 'api_key' => 'enc', 'is_default' => 1, 'is_active' => 1];
+    private const BEDROCK_CONNECTION = ['id' => 2, 'backend_id' => 'bedrock-eu', 'name' => 'Bedrock EU', 'provider' => 'bedrock-eu',
+        'base_url' => null, 'api_key' => 'enc2', 'is_default' => 1, 'is_active' => 1];
 
     protected function setUp(): void
     {
@@ -111,7 +120,7 @@ final class AiTestCommandTest extends TestCase
             AiFunctionRegistry::CFG_ITEM => self::FUNCTIONS,
             ModelCatalog::CFG_ITEM => self::MODELS,
             ModelCatalog::TIERS_CFG_ITEM => self::TIERS,
-            AiFunctionResolver::PLATFORMS_CFG_ITEM => ['anthropic' => ['name' => 'Anthropic', 'baseUrl' => 'https://api.anthropic.com']],
+            AiFunctionResolver::PLATFORMS_CFG_ITEM => self::PLATFORMS,
             AiTexts::CFG_ITEM => $texts,
         ];
         $cfg = $this->createMock(ConfigRuntime::class);
@@ -208,6 +217,31 @@ final class AiTestCommandTest extends TestCase
         $this->assertSame(30, $params->stallTimeoutSeconds);
         $this->assertSame(60, $params->timeoutSeconds);
         $this->assertSame('claude-sonnet-4-6', $params->shapeAs);
+    }
+
+    public function testBedrockEuConnectionTestsThePlatformModelWithTheSurcharge(): void
+    {
+        // tasks/ai-bedrock-eu.md D58, D60: model úrovně pro platformu s prefixem, cena 1,1× ceníku
+        // — i když odpověď nese základní ID místo profilu.
+        $llm = new ScriptedLlmClient([self::ok('anthropic.claude-sonnet-5-5')]);
+        $tester = $this->tester($llm, connection: self::BEDROCK_CONNECTION, apiKey: 'bedrock-key');
+
+        $exit = $tester->execute(['--function' => 'mail.extraction', '--json' => true]);
+        $f = json_decode(trim($tester->getDisplay()), true)['functions'][0];
+
+        $this->assertSame(0, $exit);
+        $this->assertTrue($f['ok']);
+        $this->assertSame('bedrock-eu', $f['connection']);
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5', $f['model']);
+        // Sonnet 5.5: (12 × 2 + 3 × 10) / 1M = 0,000054 USD × 1,1 = 0,0000594 → 6 míst.
+        $this->assertSame(0.000059, $f['costUsd']);
+
+        $params = $llm->calls[0];
+        $this->assertSame('bedrock-key', $params->apiKey);
+        $this->assertSame('https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic', $params->baseUrl);
+        $this->assertSame('bedrock-eu', $params->provider);
+        $this->assertSame('anthropic-messages', $params->dialect);
+        $this->assertSame('disabled', $params->thinking, 'model se známými režimy: thinking vypnout (shaper v klientovi přepne na between_tools)');
     }
 
     public function testModelWithUnknownCapabilitiesKeepsThePlannedThinking(): void
