@@ -1,0 +1,55 @@
+{
+    // core.ai.viewerLabels — popisky viewerů AI v Nastavení (Modely, AI
+    // funkce): skupiny a položky detailu, badge řádků, hodnoty. Viewery je
+    // čtou přes AiViewerBase::text(klíč, anglický fallback, parametry);
+    // `{param}` se nahradí z parametrů. PHP nenese `cs() ? … : …`.
+
+    // --- přehled modelů: řádek ---
+    "badge.defaultFor":    { "name": "Default for {tiers}",   "name:cs": "Výchozí pro: {tiers}",   "name:en": "Default for {tiers}" },
+    "badge.retiring":      { "name": "Retires {date}",        "name:cs": "Končí {date}",           "name:en": "Retires {date}" },
+    "badge.retired":       { "name": "Retired",               "name:cs": "Skončil",                "name:en": "Retired" },
+    "row.prices":          { "name": "in {input} · out {output} / 1M tokens", "name:cs": "vstup {input} · výstup {output} / 1M tokenů", "name:en": "in {input} · out {output} / 1M tokens" },
+
+    // --- přehled modelů: skupiny detailu ---
+    "group.model":         { "name": "Model",                 "name:cs": "Model",                  "name:en": "Model" },
+    "group.tiers":         { "name": "Tiers",                 "name:cs": "Úrovně",                 "name:en": "Tiers" },
+    "group.prices":        { "name": "Prices",                "name:cs": "Ceny",                   "name:en": "Prices" },
+    "group.capabilities":  { "name": "Capabilities",          "name:cs": "Schopnosti",             "name:en": "Capabilities" },
+    "group.platforms":     { "name": "IDs on platforms",      "name:cs": "ID na platformách",      "name:en": "IDs on platforms" },
+
+    // --- přehled modelů: položky ---
+    "label.name":          { "name": "Name",                  "name:cs": "Název",                  "name:en": "Name" },
+    "label.id":            { "name": "ID",                    "name:cs": "ID",                     "name:en": "ID" },
+    "label.vendor":        { "name": "Vendor",                "name:cs": "Dodavatel",              "name:en": "Vendor" },
+    "label.tier":          { "name": "Tier",                  "name:cs": "Úroveň",                 "name:en": "Tier" },
+    "label.status":        { "name": "Status",                "name:cs": "Stav",                   "name:en": "Status" },
+    "label.replacedBy":    { "name": "Replacement",           "name:cs": "Náhrada",                "name:en": "Replacement" },
+    "label.retiresNotBefore": { "name": "Available at least until", "name:cs": "Dostupný nejméně do", "name:en": "Available at least until" },
+    "label.defaultFor":    { "name": "Default model for tiers", "name:cs": "Výchozí model úrovní", "name:en": "Default model for tiers" },
+    "label.priceInput":    { "name": "Input",                 "name:cs": "Vstup",                  "name:en": "Input" },
+    "label.priceOutput":   { "name": "Output",                "name:cs": "Výstup",                 "name:en": "Output" },
+    "label.longPrompt":    { "name": "Long prompt",           "name:cs": "Dlouhý vstup",           "name:en": "Long prompt" },
+    "label.temperature":   { "name": "Accepts temperature",   "name:cs": "Přijímá teplotu",        "name:en": "Accepts temperature" },
+    "label.thinkingModes": { "name": "Thinking modes",        "name:cs": "Režimy přemýšlení",      "name:en": "Thinking modes" },
+    "label.thinkingDefault": { "name": "Thinking without the parameter", "name:cs": "Přemýšlení bez parametru", "name:en": "Thinking without the parameter" },
+    "label.effortLevels":  { "name": "Effort levels",         "name:cs": "Úrovně úsilí",           "name:en": "Effort levels" },
+    "label.thinkingOffMaxEffort": { "name": "Max. effort with thinking off", "name:cs": "Nejvyšší úsilí bez přemýšlení", "name:en": "Max. effort with thinking off" },
+    "label.maxOutputTokens": { "name": "Output limit",        "name:cs": "Strop výstupu",          "name:en": "Output limit" },
+    "label.chatToolLoop":  { "name": "Assistant tool loop",   "name:cs": "Tool smyčka asistenta",  "name:en": "Assistant tool loop" },
+
+    // --- hodnoty ---
+    "value.active":        { "name": "Active",                "name:cs": "Aktivní",                "name:en": "Active" },
+    "value.retiring":      { "name": "Retires {date}",        "name:cs": "Končí {date}",           "name:en": "Retires {date}" },
+    "value.retired":       { "name": "Retired {date}",        "name:cs": "Skončil {date}",         "name:en": "Retired {date}" },
+    "value.retiredNoDate": { "name": "Retired",               "name:cs": "Skončil",                "name:en": "Retired" },
+    "value.none":          { "name": "None",                  "name:cs": "Žádná",                  "name:en": "None" },
+    "value.yes":           { "name": "Yes",                   "name:cs": "Ano",                    "name:en": "Yes" },
+    "value.no":            { "name": "No",                    "name:cs": "Ne",                     "name:en": "No" },
+    "value.unknown":       { "name": "Unknown — sent unchanged", "name:cs": "Neznámo — posílá se beze změny", "name:en": "Unknown — sent unchanged" },
+    "value.noEffort":      { "name": "Not supported",         "name:cs": "Nepodporuje",            "name:en": "Not supported" },
+    "value.thinkingOff":   { "name": "Off",                   "name:cs": "Vypnuté",                "name:en": "Off" },
+    "value.thinkingAdaptive": { "name": "Adaptive (thinks on its own)", "name:cs": "Adaptivní (přemýšlí samo)", "name:en": "Adaptive (thinks on its own)" },
+    "value.perMillion":    { "name": "{price} / 1M tokens",   "name:cs": "{price} / 1M tokenů",    "name:en": "{price} / 1M tokens" },
+    "value.longPrompt":    { "name": "over {over} input tokens: in {input} · out {output} / 1M tokens", "name:cs": "nad {over} vstupních tokenů: vstup {input} · výstup {output} / 1M tokenů", "name:en": "over {over} input tokens: in {input} · out {output} / 1M tokens" },
+    "value.tokens":        { "name": "{n} tokens",            "name:cs": "{n} tokenů",             "name:en": "{n} tokens" }
+}

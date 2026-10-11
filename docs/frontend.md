@@ -901,6 +901,16 @@ class PersonsViewer extends TableViewer
 }
 ```
 
+**Viewer bez tabulky** (`table` v deklaraci chybí, `ViewerDefinition::$table
+=== null`): řádky i detail jdou z konfigurace, ne z databáze — vzor
+`core.ai.modelCatalog` (`ModelCatalogViewer`, #85 D50). Konstruktor dostane
+`''`, `ViewerController` přeskočí `TableAccessGuard` a záznam pro detail
+bere z `TableViewer::loadRecord(int $id): ?array`, které viewer přepíše
+(syntetický záznam s kladným celočíselným id, null = 404). Takový viewer
+nemá formulář (`getToolbarActions()` vrací `[]`), zámky, tisky ani
+Odeslanou poštu a do hlavní navigace nevstupuje — patří do `settingsItems`.
+Tabulkové viewery `loadRecord()` nepřepisují (výchozí `SELECT … WHERE id`).
+
 Viz také `docs/doc-states.md` — sekce Viewer systém.
 
 ### Existující viewery

@@ -56,7 +56,7 @@ class ViewerRegistry
                 $def = new ViewerDefinition(
                     id: $viewer['id'],
                     name: $name,
-                    table: $viewer['table'],
+                    table: $viewer['table'] ?? null,
                     class: $viewer['class'] ?? null,
                     moduleId: $module->id,
                     icon: $viewer['icon'] ?? null,
@@ -111,7 +111,8 @@ class ViewerRegistry
             return null;
         }
 
-        $viewer = new $class($db, $def->table);
+        // Viewer bez tabulky dostane '' — SQL nad tabulkou nikdy nevolá.
+        $viewer = new $class($db, $def->table ?? '');
         if ($config !== null) {
             $viewer->setConfig($config);
         }

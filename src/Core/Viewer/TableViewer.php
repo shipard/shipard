@@ -100,6 +100,22 @@ abstract class TableViewer
     }
 
     /**
+     * Záznam pro detail (`ViewerController::detail()`): výchozí
+     * `SELECT * FROM <tabulka> WHERE id`. Viewer bez tabulky
+     * (`ViewerDefinition::$table === null`, konstruktor dostane '')
+     * přepisuje a vrací syntetický záznam z konfigurace; null = 404.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function loadRecord(int $recordId): ?array
+    {
+        if ($this->table === '') {
+            return null;
+        }
+        return $this->db->fetchRow('SELECT * FROM `' . $this->table . '` WHERE `id` = %i', $recordId);
+    }
+
+    /**
      * Má tabulka vieweru na tomto zdroji dat daný sloupec? Pro sloupce
      * z rozšíření volitelných modulů — bez definic tabulek false.
      */

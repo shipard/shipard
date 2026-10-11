@@ -151,9 +151,9 @@ Tři vrstvy nastavení (tasks/ai-functions.md, #85 D1, D3, D4, D36–D48):
 
 | Vrstva | Co nese | Kde | Kdo mění |
 |--------|---------|-----|----------|
-| **AI připojení** | přístup: platforma, adresa, šifrovaný klíč | `core_ai_backends` (Nastavení → Pošta → AI připojení), `ai-backend-set-key` | správce DS, provisioning hostingu |
+| **AI připojení** | přístup: platforma, adresa, šifrovaný klíč | `core_ai_backends` (Nastavení → AI → Připojení), `ai-backend-set-key` | správce DS, provisioning hostingu |
 | **Katalog modelů + mapa úrovní** | jak s modelem mluvit (schopnosti, ceny, životní cyklus) a který model dnes znamená úroveň `fast` / `balanced` / `strong` | `core.ai.models`, `core.ai.tiers` (repo) | vývoj (evaluace) |
-| **AI funkce** | co se volá: úroveň modelu, výchozí strop a teplota, požadavky; per DS přepsání připojení, modelu a ladění | deklarace `aiFunctions` v `module.jsonc` → cfgItem `core.ai.functions`; řádky `core_ai_function_settings` (Nastavení → Pošta → AI funkce); profil pošty pro `mail.extraction` | modul (deklarace), správce DS (přepsání) |
+| **AI funkce** | co se volá: úroveň modelu, výchozí strop a teplota, požadavky; per DS přepsání připojení, modelu a ladění | deklarace `aiFunctions` v `module.jsonc` → cfgItem `core.ai.functions`; řádky `core_ai_function_settings` (Nastavení → AI → Funkce); profil pošty pro `mail.extraction` | modul (deklarace), správce DS (přepsání) |
 
 Nasazením fáze 1b se chování nezměnilo: všechny úrovně ukazují na
 `claude-sonnet-4-6`, výchozí ladění funkcí odpovídá dřívějšku (teplota 0
@@ -306,7 +306,7 @@ Sloupce `connection` (NULL = výchozí připojení), `model` (NULL = podle
 úrovně; z katalogu, nebo vlastní ID — pak povinné `model_like`, D43),
 `thinking` / `effort` (`default` = podle funkce, `auto` = neposílat,
 jinak hodnota), `max_tokens` (NULL = podle funkce). Formulář (Nastavení →
-Pošta → AI funkce) nabízí model jako `select` s `allowCustom`
+AI → Funkce) nabízí model jako `select` s `allowCustom`
 (`ComboInput`, datalist — volby z katalogu, vlastní ID jde napsat; D44).
 **`default` není `auto`** — nepléct ve formuláři ani v kódu.
 
@@ -379,7 +379,7 @@ nastaví jiný“. Pojistka zmizí s fází 4.
 ### 5.5 Jak vyzkoušet jiný model
 
 - **Jedna funkce na jiném modelu** (např. štítky na Haiku 5.5): Nastavení
-  → Pošta → AI funkce → funkce → Model (z katalogu, nebo vlastní ID
+  → AI → Funkce → funkce → Model (z katalogu, nebo vlastní ID
   + „Tvarovat jako model“); případně jiné připojení a ladění. Platí pro
   všechny volající té funkce; ostatní funkce beze změny.
 - **Vytěžení pošty na jiném modelu jen pro některé zprávy:** druhý AI profil

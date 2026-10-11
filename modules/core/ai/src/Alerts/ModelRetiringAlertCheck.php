@@ -62,8 +62,8 @@ class ModelRetiringAlertCheck extends AlertCheck
                 : ($verdict['retired'] ? "AI model retired: {$name}" : "AI model retiring soon: {$name}"),
             message: ModelRetirementJudge::describe($verdict, $this->language)
                 . ($isCs
-                    ? " Změňte model u AI funkce „{$name}“ v Nastavení aplikace → Pošta → AI funkce, nebo pole vyprázdněte (model podle úrovně)."
-                    : " Change the model of the AI function “{$name}” in Application settings → Mail → AI functions, or clear it (tier model)."),
+                    ? " Změňte model u AI funkce „{$name}“ v Nastavení aplikace → AI → Funkce, nebo pole vyprázdněte (model podle úrovně)."
+                    : " Change the model of the AI function “{$name}” in Application settings → AI → Functions, or clear it (tier model)."),
             severity: $verdict['retired'] ? 'error' : 'warning',
             context: [
                 'functionId' => $functionId,

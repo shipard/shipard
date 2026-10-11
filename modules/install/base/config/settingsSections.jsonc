@@ -50,6 +50,17 @@
             "order": 30
         },
         {
+            // AI (#85 D49): připojení, funkce a přehled modelů (core.ai).
+            // AI profily pošty zůstávají u Pošty (D8). Instalace bez core.ai
+            // sekci nevykreslí — prázdné sekce SettingsController vynechává.
+            "id": "ai",
+            "name": "AI",
+            "name:cs": "AI",
+            "name:en": "AI",
+            "icon": "chip",
+            "order": 40
+        },
+        {
             "id": "other",
             "name": "Other",
             "name:cs": "Ostatní",

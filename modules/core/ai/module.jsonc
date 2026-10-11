@@ -24,19 +24,22 @@
         "core_ai_function_settings"
     ],
 
-    // Umístění v nastavení zachováno 1:1 z core.mail (subsekce other.mail);
-    // AI funkce hned vedle připojení.
+    // Sekce AI v Nastavení (#85 D49): připojení, funkce, přehled modelů.
+    // Sekci deklaruje install.base (settingsSections.jsonc); instalace bez
+    // ní položky tiše vynechá. AI profily pošty zůstávají u Pošty (D8).
     "settingsItems": [
-        { "viewer": "core.ai.backends", "section": "other", "subsection": "other.mail", "order": 40 },
-        { "viewer": "core.ai.functions", "section": "other", "subsection": "other.mail", "order": 45 }
+        { "viewer": "core.ai.backends", "section": "ai", "order": 10 },
+        { "viewer": "core.ai.functions", "section": "ai", "order": 20 },
+        { "viewer": "core.ai.modelCatalog", "section": "ai", "order": 30 }
     ],
 
     "viewers": [
         {
+            // Názvy položek sekce AI (#85 D49): Připojení / Funkce / Modely.
             "id": "core.ai.backends",
-            "name": "AI connections",
-            "name:cs": "AI připojení",
-            "name:en": "AI connections",
+            "name": "Connections",
+            "name:cs": "Připojení",
+            "name:en": "Connections",
             "icon": "chip",
             "table": "core_ai_backends",
             "class": "Shipard\\Module\\Core\\Ai\\AIBackendsViewer"
@@ -44,12 +47,22 @@
         {
             // Nastavení AI funkcí per zdroj dat (#85 D38) — řádky zakládá ds-upgrade.
             "id": "core.ai.functions",
-            "name": "AI functions",
-            "name:cs": "AI funkce",
-            "name:en": "AI functions",
+            "name": "Functions",
+            "name:cs": "Funkce",
+            "name:en": "Functions",
             "icon": "chip",
             "table": "core_ai_function_settings",
             "class": "Shipard\\Module\\Core\\Ai\\AiFunctionsViewer"
+        },
+        {
+            // Přehled katalogu modelů jen pro čtení (#85 D50) — viewer bez
+            // tabulky: řádky z cfgItemů core.ai.models + core.ai.tiers.
+            "id": "core.ai.modelCatalog",
+            "name": "Models",
+            "name:cs": "Modely",
+            "name:en": "Models",
+            "icon": "chip",
+            "class": "Shipard\\Module\\Core\\Ai\\ModelCatalogViewer"
         }
     ],
 
@@ -83,6 +96,12 @@
             // Platformy připojení (`core_ai_backends.provider`, #85 D39).
             "id": "core.ai.platforms",
             "file": "config/platforms.jsonc"
+        },
+        {
+            // Popisky viewerů AI (skupiny a položky detailu, badge) — čte
+            // AiViewerBase::text(); PHP nenese cs/en větvení (#85 D50).
+            "id": "core.ai.viewerLabels",
+            "file": "config/viewerLabels.jsonc"
         }
     ],
 

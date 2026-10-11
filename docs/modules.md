@@ -786,6 +786,12 @@ sekcí**, ne podle prefixu module ID. Mechanismus je paralelní k Nastavení:
 ]
 ```
 
+**Viewer bez `table`:** klíč `table` je volitelný. Viewer bez tabulky
+(přehled z konfigurace, vzor `core.ai.modelCatalog`) přepisuje
+`TableViewer::loadRecord()`, nemá formulář ani zámky a v hlavní navigaci
+se neobjeví — deklaruje se v `settingsItems`. Detaily `docs/frontend.md`
+→ Registrace vieweru.
+
 **`hideFromNavigation` na vieweru:** kromě tabulky (`tables/*.jsonc`) lze
 `hideFromNavigation: true` deklarovat i na vieweru v `module.jsonc`. Skryje
 **jen ten viewer**; sdílenou tabulku dál zobrazují ostatní viewery (vzor:

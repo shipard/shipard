@@ -618,7 +618,7 @@ Audit per řádek (`_resolve.rows[i].enrichment`):
 (tier 3 Vrstvy 0 běží až jako úklid po eskalaci); `false` = stávající
 pořadí (jen přes `ds-setting set`). Model, připojení a ladění LLM
 klasifikace určuje AI funkce **`exchange.contentTags`** (úroveň fast,
-strop 8000; Nastavení → Pošta → AI funkce — doporučení: levný model;
+strop 8000; Nastavení → AI → Funkce — doporučení: levný model;
 tasks/ai-functions.md). Dřívější nastavení `exchange.contentTag.backend`
 převedl `ds-upgrade` do řádku funkce a klíč smazal (D41).
 

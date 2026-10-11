@@ -923,6 +923,69 @@ class SettingsControllerTest extends TestCase
         $this->assertContains('viewer:core.system.users', $ids);
     }
 
+    // --- settings navigation: sekce AI (#85 D49) ---
+
+    /** Config s reálným modulem core.ai (připojení, funkce, přehled modelů bez tabulky). */
+    private function aiConfig(): DataSourceConfig
+    {
+        file_put_contents($this->dsDir . '/config/main.json', json_encode([
+            'id'                => 'test-test-test-test',
+            'name'              => 'Testovací firma',
+            'database_name'     => 'x',
+            'database_user'     => 'x',
+            'database_password' => 'x',
+            'created'           => '2026-01-01T00:00:00+00:00',
+            'modules'           => ['core.ai'],
+        ]));
+        return new DataSourceConfig($this->dsDir);
+    }
+
+    /** Sekce jako v install.base (`ai` před `other`); hosting sekci `ai` nemá. */
+    private function aiRuntime(bool $withAiSection): \Shipard\Core\Config\ConfigRuntime
+    {
+        $sections = [[
+            'id' => 'other', 'name' => 'Other', 'order' => 100,
+            'subsections' => [['id' => 'other.mail', 'name' => 'Mail', 'order' => 20]],
+        ]];
+        if ($withAiSection) {
+            array_unshift($sections, ['id' => 'ai', 'name' => 'AI', 'icon' => 'chip', 'order' => 40]);
+        }
+        $configRuntime = $this->createMock(\Shipard\Core\Config\ConfigRuntime::class);
+        $configRuntime->method('cfgItem')->willReturnCallback(
+            static fn(string $id) => $id === 'global.settingsSections' ? ['sections' => $sections] : null,
+        );
+        return $configRuntime;
+    }
+
+    public function testNavigationGroupsAiItemsIntoAiSectionInDeclaredOrder(): void
+    {
+        $resp = $this->ctrl->navigation(
+            $this->aiConfig(), $this->resolver, 'cs', $this->aiRuntime(true), 'settings', $this->auth(),
+        );
+        $tree = $resp->getPayload()['data'];
+
+        $this->assertSame(['ai'], array_column($tree, 'id'), 'Ostatní → Pošta bez položek se nevykreslí');
+        $this->assertSame('AI', $tree[0]['label']);
+        $this->assertSame(
+            ['viewer:core.ai.backends', 'viewer:core.ai.functions', 'viewer:core.ai.modelCatalog'],
+            array_column($tree[0]['children'], 'id'),
+        );
+        $this->assertSame(['Připojení', 'Funkce', 'Modely'], array_column($tree[0]['children'], 'label'));
+    }
+
+    public function testNavigationWithoutAiSectionDropsAiItemsSilently(): void
+    {
+        // Instalace bez sekce `ai` (hosting): položky zmizí, nic nespadne,
+        // prázdná sekce AI se nevykreslí.
+        $resp = $this->ctrl->navigation(
+            $this->aiConfig(), $this->resolver, 'cs', $this->aiRuntime(false), 'settings', $this->auth(),
+        );
+        $ids = $this->collectNavItemIds($resp->getPayload()['data']);
+
+        $this->assertSame([], $resp->getPayload()['data']);
+        $this->assertNotContains('viewer:core.ai.modelCatalog', $ids);
+    }
+
     // --- settings navigation: filtr adminOnly tabulek (hosting D9) ---
 
     /** Config s fixture modulem test.hosting (adminOnly tabulka v settings). */

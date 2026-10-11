@@ -41,6 +41,16 @@ class ViewerControllerGuardTest extends TestCase
 			moduleId: 'hosting.core',
 			icon: null,
 		));
+		// Viewer bez tabulky (konfigurační přehled, #85 D50): žádný guard,
+		// žádné SQL — detail bere záznam z loadRecord().
+		$this->registry->register(new ViewerDefinition(
+			id: 'test.configOnly',
+			name: 'Config only',
+			table: null,
+			class: ConfigOnlyViewer::class,
+			moduleId: 'test',
+			icon: 'chip',
+		));
 
 		$this->ctrl = new ViewerController();
 	}
@@ -142,5 +152,64 @@ class ViewerControllerGuardTest extends TestCase
 	{
 		$resp = $this->ctrl->meta('nonexistent', $this->nonAdmin(), $this->registry, [], $this->db);
 		$this->assertSame(404, $this->getStatus($resp));
+	}
+
+	// --- viewer bez tabulky ---------------------------------------------
+
+	public function testViewerWithoutTablePassesGuardForNonAdmin(): void
+	{
+		// DB vznikla bez konstruktoru — jakýkoli dotaz by spadl; viewer bez
+		// tabulky ji nesmí potřebovat ani v meta, ani v rows.
+		$meta = $this->ctrl->meta('test.configOnly', $this->nonAdmin(), $this->registry, [], $this->db);
+		$this->assertSame(200, $this->getStatus($meta));
+		$this->assertNull($meta->getPayload()['data']['table']);
+		$this->assertSame([], $meta->getPayload()['data']['toolbar']);
+
+		$rows = $this->ctrl->rows('test.configOnly', $this->req(), $this->nonAdmin(), $this->registry, [], $this->db);
+		$this->assertSame(200, $this->getStatus($rows));
+		$this->assertSame('Only', $rows->getPayload()['data']['rows'][0]['t1']);
+		$this->assertSame('chip', $rows->getPayload()['data']['rows'][0]['icon'], 'výchozí ikona z deklarace');
+	}
+
+	public function testViewerWithoutTableDetailUsesLoadRecord(): void
+	{
+		$found = $this->ctrl->detail('test.configOnly', 1, $this->nonAdmin(), $this->registry, [], $this->db);
+		$this->assertSame(200, $this->getStatus($found));
+		$this->assertSame(['toolbar' => [], 'detail' => ConfigOnlyViewer::DETAIL], $found->getPayload()['data']);
+
+		$missing = $this->ctrl->detail('test.configOnly', 2, $this->nonAdmin(), $this->registry, [], $this->db);
+		$this->assertSame(404, $this->getStatus($missing));
+		$this->assertSame('RECORD_NOT_FOUND', $missing->getPayload()['error']['code']);
+	}
+}
+
+/** Testovací viewer bez tabulky: jeden syntetický záznam s id 1. */
+final class ConfigOnlyViewer extends \Shipard\Core\Viewer\TableViewer
+{
+	public const DETAIL = ['tabs' => [['id' => 'overview', 'label' => 'Overview', 'content' => ['type' => 'properties', 'groups' => []]]]];
+
+	public function selectRows(?string $search, array $filters, int $pageNumber): array
+	{
+		return [['id' => 1, 'name' => 'Only']];
+	}
+
+	public function renderRow(array $rowData): array
+	{
+		return ['id' => 1, 't1' => 'Only'];
+	}
+
+	public function loadRecord(int $recordId): ?array
+	{
+		return $recordId === 1 ? ['id' => 1, 'name' => 'Only'] : null;
+	}
+
+	public function renderDetail(int $recordId): array
+	{
+		return self::DETAIL;
+	}
+
+	public function getToolbarActions(?array $selectedRow): array
+	{
+		return [];
 	}
 }

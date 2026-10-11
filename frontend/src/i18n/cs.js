@@ -379,7 +379,7 @@ export default {
   'error.MAIL_NOT_CONFIGURED': 'Odchozí pošta není nakonfigurovaná',
   'error.OIDC_TXN_INVALID': 'Přihlašovací požadavek je neplatný nebo vypršel — zkuste to znovu ze zdrojové aplikace',
   'error.LLM_ERROR': 'AI model vrátil chybu: {message}',
-  'error.AI_MODEL_NOT_SUPPORTED_FOR_CHAT': 'Asistent zatím neumí pracovat s modelem {value}. Správce nastaví jiný model u AI funkce Chat asistenta (Nastavení aplikace → Pošta → AI funkce)',
+  'error.AI_MODEL_NOT_SUPPORTED_FOR_CHAT': 'Asistent zatím neumí pracovat s modelem {value}. Správce nastaví jiný model u AI funkce Chat asistenta (Nastavení aplikace → AI → Funkce)',
   'error.AI_NOT_CONFIGURED': 'AI funkce asistenta není správně nastavená: {message}',
   'error.NO_BACKEND': 'Není nastavené žádné aktivní AI připojení s klíčem',
   'error.LLM_NOT_CONFIGURED': 'AI asistent není na tomto zdroji dat nakonfigurovaný',

@@ -30,9 +30,11 @@ class ViewerController
 			return Response::error('VIEWER_NOT_FOUND', "Viewer '{$viewerId}' not found", 404);
 		}
 
-		$guardErr = TableAccessGuard::guardTable($def->table, $auth, $tables[$def->table] ?? null);
-		if ($guardErr !== null) {
-			return $guardErr;
+		if ($def->table !== null) {
+			$guardErr = TableAccessGuard::guardTable($def->table, $auth, $tables[$def->table] ?? null);
+			if ($guardErr !== null) {
+				return $guardErr;
+			}
 		}
 
 		$viewer = $registry->createViewer($viewerId, $db, $config, $language);
@@ -87,9 +89,11 @@ class ViewerController
 			return Response::error('VIEWER_NOT_FOUND', "Viewer '{$viewerId}' not found", 404);
 		}
 
-		$guardErr = TableAccessGuard::guardTable($def->table, $auth, $tables[$def->table] ?? null);
-		if ($guardErr !== null) {
-			return $guardErr;
+		if ($def->table !== null) {
+			$guardErr = TableAccessGuard::guardTable($def->table, $auth, $tables[$def->table] ?? null);
+			if ($guardErr !== null) {
+				return $guardErr;
+			}
 		}
 
 		$viewer = $registry->createViewer($viewerId, $db, $config, $language);
@@ -192,9 +196,11 @@ class ViewerController
 			return Response::error('VIEWER_NOT_FOUND', "Viewer '{$viewerId}' not found", 404);
 		}
 
-		$guardErr = TableAccessGuard::guardTable($def->table, $auth, $tables[$def->table] ?? null);
-		if ($guardErr !== null) {
-			return $guardErr;
+		if ($def->table !== null) {
+			$guardErr = TableAccessGuard::guardTable($def->table, $auth, $tables[$def->table] ?? null);
+			if ($guardErr !== null) {
+				return $guardErr;
+			}
 		}
 
 		$viewer = $registry->createViewer($viewerId, $db, $config, $language);
@@ -202,13 +208,22 @@ class ViewerController
 			return Response::error('VIEWER_CLASS_NOT_FOUND', "Viewer class for '{$viewerId}' not found", 500);
 		}
 
-		$record = $db->fetchRow('SELECT * FROM `' . $def->table . '` WHERE `id` = %i', $recordId);
+		$record = $viewer->loadRecord($recordId);
 		if ($record === null) {
 			return Response::error('RECORD_NOT_FOUND', "Record {$recordId} not found", 404);
 		}
 
 		$toolbar = $viewer->getToolbarActions($record);
 		$detail  = $viewer->renderDetail($recordId);
+
+		// Viewer bez tabulky (konfigurační přehled, ViewerDefinition): zámky,
+		// tisky i Odeslaná pošta jsou vázané na tabulku záznamu — nic z toho.
+		if ($def->table === null) {
+			return Response::success([
+				'toolbar' => $toolbar,
+				'detail'  => $detail,
+			]);
+		}
 
 		// Zámek záznamu (documentLockProviders, #55 D24): banner v detailu
 		// a bez toolbar akce Otevřít — formulář by byl jen read-only.
