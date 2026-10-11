@@ -37,15 +37,15 @@ volání modelu (`ResolvedAiCall::$apiKey`, `toArray()` ho nevrací).
 
 | Sloupec | Typ | Popis |
 |---|---|---|
-| `provider` | varchar(30), NOT NULL, default `anthropic` | Platforma (popisek „Platforma“, #85 D39): klíč z cfgItemu `core.ai.platforms` — dialekt API a výchozí adresa. Zatím jen `anthropic`; hodnotu hlídá `AIBackendDocument::validate` (D45). ID modelu pro platformu bere resolver z katalogu (`platformIds`). |
+| `provider` | varchar(30), NOT NULL, default `anthropic` | Platforma (popisek „Platforma“, #85 D39): klíč z cfgItemu `core.ai.platforms` (`AiPlatforms`) — dialekt API, výchozí adresa, rodina ID modelů, prefix a násobitel ceny. `anthropic` a `bedrock-eu` (Amazon Bedrock (EU), zpracování v EU, `docs/ai.md` §5.8); hodnotu hlídá `AIBackendDocument::validate` (D45), formulář `AIBackendForm` ji nabízí jako výběr. ID modelu pro platformu skládá resolver přes `AiPlatform` (prefix + ID rodiny z `platformIds`). |
 | `model` | varchar(100), NULL | **Nepoužívá se od fáze 1b.** Zůstává v definici jako nullable, mimo formulář i viewer: v databázích byl NOT NULL bez výchozí hodnoty a `ds-upgrade` sloupce nemaže, takže by po vyjmutí z definice selhal INSERT nového připojení. Vyplněná hodnota = připojení ještě neprošlo převodem D41; `ds-upgrade` ji po převodu vynuluje (D46). Odstraní servisní výmaz. |
-| `base_url` | varchar(200), NULL | Vlastní adresa API — AI gateway hostingu (`…/_hosting/ai-gw`, `docs/hosting.md` §5.5); prázdné = výchozí adresa platformy z `core.ai.platforms`. |
+| `base_url` | varchar(200), NULL | Vlastní adresa API — AI gateway hostingu (`…/_hosting/ai-gw`, `docs/hosting.md` §5.5) nebo jiný region EU Bedrocku (`https://bedrock-runtime.<region>.amazonaws.com/anthropic`; klíč Bedrocku platí jen v regionu, kde vznikl); prázdné = výchozí adresa platformy z `core.ai.platforms` (detail připojení ji ukazuje). |
 
 ### Přístup (credentials)
 
 | Sloupec | Typ | Popis |
 |---|---|---|
-| `api_key` | encrypted_text | API klíč (nebo gateway token `shpd_gw_…`) šifrovaný `DsSecretCipher`. Ukládá `AIBackendDocument::beforeSave` při dirty change, nastavuje `ai-backend-set-key`. |
+| `api_key` | encrypted_text | API klíč Anthropicu, dlouhodobý API klíč Bedrocku nebo gateway token `shpd_gw_…`, šifrovaný `DsSecretCipher`. Ukládá `AIBackendDocument::beforeSave` při dirty change, nastavuje `ai-backend-set-key`. |
 
 ### Příznaky (flags)
 
@@ -90,8 +90,10 @@ a pak je vrátil na výchozí (D46). Odstraní servisní výmaz.
    vyřazené modely u profilů a funkcí (`[MODEL]`) a převedená připojení
    označí vynulováním `model` (D41, D46).
 2. **Nastavení klíče**: admin spustí `bin/shpd-ds ai-backend-set-key`
-   (skrytý vstup; `--base-url` pro gateway), který klíč zašifruje
-   a nastaví `is_active=true`.
+   (skrytý vstup; `--base-url` pro gateway nebo jiný region, `--base-url ''`
+   = výchozí adresa platformy), který klíč zašifruje a nastaví
+   `is_active=true`. Další připojení (jiný účet, zpracování v EU přes
+   Amazon Bedrock) zakládá správce v Nastavení → AI → Připojení.
 3. **Volání**: `AiFunctionResolver::resolve()` vybere připojení
    (přepsání volajícího → řádek funkce → výchozí), dešifruje klíč
    a vrátí `ResolvedAiCall`; plaintext žije jen v paměti po dobu volání.

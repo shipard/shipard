@@ -164,8 +164,9 @@ modely pro řadu 5 doplní evaluace (fáze 2).
 
 `core_ai_backends` je pool **připojení** k platformě: `provider`
 (popisek „Platforma“, hodnoty z cfgItemu `core.ai.platforms` — dialekt
-API a výchozí adresa; zatím jen `anthropic`), `base_url` (AI gateway
-hostingu), šifrovaný `api_key`, `is_default`, `is_active`. Model ani ladění
+API, výchozí adresa, rodina ID modelů a násobitel ceny; `anthropic`
+a `bedrock-eu`, §5.8), `base_url` (AI gateway hostingu, jiný region
+Bedrocku), šifrovaný `api_key`, `is_default`, `is_active`. Model ani ladění
 připojení **nenese** (D39); sloupec `model` zůstává v definici jako
 nullable mimo UI — v databázích byl NOT NULL a `ds-upgrade` sloupce
 nemaže. Detaily: [`core_ai_backends.md`](../modules/core/ai/tables/core_ai_backends.md).
@@ -194,9 +195,28 @@ nemaže. Detaily: [`core_ai_backends.md`](../modules/core/ai/tables/core_ai_back
   `_ai_analyzer` zrušeného externího analyzeru (#85 D21). `ds-reset`
   připojení s klíči, řádky funkcí i profily zachovává (`keepOnReset`),
   takže reset ani upgrade žádnou ruční AI akci nevyžadují.
-- **Platform scope:** v1 jen `anthropic`; `bedrock` (modely per platforma
-  v mapě úrovní) přijde ve fázi 3. Rozhraní `LlmClient` drží dveře pro
-  další dialekty otevřené.
+- **Platformy** (`core.ai.platforms`, `modules/core/ai/config/platforms.jsonc`,
+  #85 D39, D57, D60): mapu čte jediné místo — `Shipard\Core\Ai\AiPlatforms`
+  (položka = `AiPlatform`); resolver, dokument a formulář připojení,
+  viewery i `ai-test` jdou přes ni. Pole položky:
+
+  | Pole | Význam |
+  |------|--------|
+  | `name`, `order` | popis; `order` řadí nabídku ve formuláři připojení |
+  | `dialect` | dialekt API; dnes jen `anthropic-messages` — `AnthropicLlmClient` odmítá podle dialektu (`LlmChatParams::$dialect`), ne podle platformy |
+  | `baseUrl` | výchozí adresa API; prázdné `base_url` připojení = tato; klient za ni připojuje `/v1/messages` |
+  | `modelIds` | rodina ID z katalogu (klíč `platformIds`: `anthropic` / `bedrock`), která na platformě platí |
+  | `modelIdPrefix` | předřadí se před ID z katalogu (geografický profil Bedrocku `eu.`) |
+  | `priceMultiplier` | cena volání = ceník katalogu × násobitel (D60) |
+  | `keyHint`, `baseUrlHint` | lokalizované nápovědy formuláře připojení (kde vzít klíč, co znamená prázdná adresa) |
+
+  Bez compiled configu (před `ds-upgrade`) je mapa prázdná: platforma se
+  nehlídá a resolver použije `AiPlatform::fallback()` bez adresy (klient
+  má výchozí). Formulář připojení (`AIBackendForm`) nabízí platformu jako
+  výběr, po změně se přestaví (`triggers: reload`) — adresa dostane
+  placeholder výchozí adresy platformy, nápovědy ke klíči a adrese podle
+  platformy. **Nic se nepřepíná samo:** nová platforma mění chování
+  zdroje dat, až když správce založí připojení s ní.
 
 ### 5.2 Katalog modelů a mapa úrovní
 
@@ -206,16 +226,19 @@ Jedno místo v repu, kde Shipard ví, „jak s modelem mluvit“ (#85 fáze 1a,
 compiled config třídou `Shipard\Core\Ai\ModelCatalog` (položky =
 `ModelSpec`). Klíč položky je ID modelu na přímém API bez datové přípony
 (`claude-sonnet-4-6`); `find()` přijme i ID s příponou
-(`claude-sonnet-4-5-20250929`) a ID z Bedrocku (`anthropic.claude-sonnet-5-5`)
-— shoda je přesné ID nebo ID + `-YYYYMMDD`, vyhrává nejdelší kandidát,
-prefix sám nestačí (`claude-opus-4` nechytí `claude-opus-4-8`);
-`platformOf()` řekne, které platformě zadané ID patří.
+(`claude-sonnet-4-5-20250929`), ID z Bedrocku (`anthropic.claude-sonnet-5-5`)
+i ID Bedrocku s geografickým profilem (`eu.anthropic.claude-sonnet-5-5`;
+známé prefixy `ModelCatalog::GEO_PREFIXES`, D57) — shoda je přesné ID
+nebo ID + `-YYYYMMDD`, vyhrává nejdelší kandidát, prefix sám nestačí
+(`claude-opus-4` nechytí `claude-opus-4-8`); `platformOf()` vrací
+**rodinu ID** (klíč `platformIds`, ne platformu připojení),
+`geoPrefixOf()` geografický prefix (`''` bez něj).
 
 | Pole | Význam |
 |------|--------|
 | `name`, `vendor`, `dialect`, `order` | popis; `order` řadí výpisy |
 | `tier` | `fast` / `balanced` / `strong` / `null` (model nenabízíme, jen ceník); modely s úrovní jsou v nabídce formulářů funkce a profilu |
-| `platformIds` | ID per platforma (`anthropic`, `bedrock`); chybějící platforma = model tam není (`MODEL_NOT_ON_PLATFORM`) |
+| `platformIds` | ID per rodina platformových ID (`anthropic`, `bedrock`); kterou rodinu platforma připojení používá, říká `modelIds` v `core.ai.platforms` (§5.1); chybějící rodina = model na platformě není (`MODEL_NOT_ON_PLATFORM`) |
 | `capabilities.temperature` | přijímá nevýchozí teplotu (řada 4.7 a novější ne) |
 | `capabilities.thinkingModes`, `thinkingDefault` | přijímané hodnoty `thinking.type`; chování bez parametru `off` / `adaptive` |
 | `capabilities.effortLevels`, `thinkingOffMaxEffort` | přijímané úrovně (`[]` = parametr nezná); nejvyšší effort spolu s vypnutým thinkingem (`disabled` / `between_tools`) |
@@ -224,10 +247,16 @@ prefix sám nestačí (`claude-opus-4` nechytí `claude-opus-4-8`);
 | `lifecycle` | `status` `active` / `deprecated` / `retired`, `retiresAt`, `retiresNotBefore`, `replacedBy` (naše náhrada při `ds-upgrade`) |
 
 **Mapa úrovní** — cfgItem **`core.ai.tiers`** (`config/tiers.jsonc`, D37):
-`fast`, `balanced`, `strong` → `name`, `order`, `model`. Všechny tři
-zatím `claude-sonnet-4-6`. `ModelCatalog::defaultModel(úroveň)` ji čte;
-`ModelCatalogFileTest` hlídá, že každá úroveň ukazuje na aktivní model
-katalogu s úrovní. Model z mapy, který končí, hlídá repo — resolver ho jen
+`fast`, `balanced`, `strong` → `name`, `order`, `model`, volitelně
+`platformModels` (platforma → model úrovně pro platformu, která obecný
+model nenabízí; D58 — pro `bedrock-eu` všechny tři úrovně
+`claude-sonnet-5-5`, Sonnet 4.6 na Bedrocku není). Všechny tři obecně
+zatím `claude-sonnet-4-6`. `ModelCatalog::defaultModel(úroveň, platforma)`
+ji čte — položka pro platformu má přednost, bez ní platí `model`;
+`ModelCatalogFileTest` hlídá, že každá úroveň i každý model pro platformu
+ukazuje na aktivní model katalogu s úrovní a s ID pro rodinu platformy.
+Přehled modelů ukazuje „Výchozí pro … na platformě …“, seznam a formulář
+funkce model úrovně pro platformu efektivního připojení. Model z mapy, který končí, hlídá repo — resolver ho jen
 jednou za proces zaloguje (D42).
 
 **`null` (nebo chybějící pole) = nevíme → neomezovat**, hodnota se pošle
@@ -337,19 +366,29 @@ hlídá repo.
 které skládá parametry volání. Pořadí zdrojů **pro každou hodnotu
 zvlášť**: přepsání volajícího (`AiCallOverride`: profil pošty přes
 `fromRow()`, volby `booking-history --backend/--model/--model-like`) →
-řádek funkce → deklarace funkce / mapa úrovní. Připojení: přepsání →
-řádek → výchozí aktivní připojení. Model: zadané ID jde na platformu
-beze změny, pokud na ni patří (i s datovou příponou); ID jiné platformy
-se přeloží přes `platformIds`; vlastní ID mimo katalog odchází tak, jak
-je napsané, a tvaruje se podle `model_like`.
+řádek funkce → deklarace funkce / mapa úrovní (model úrovně pro
+platformu připojení, `platformModels`). Připojení: přepsání → řádek →
+výchozí aktivní připojení. Model: ID pro platformu skládá `AiPlatform`
+(`modelIdPrefix` + ID rodiny `modelIds` z `platformIds`:
+`eu.anthropic.claude-sonnet-5-5`); zadané ID, které na platformu patří
+(rodina i prefix sedí, `AiPlatform::ownsModelId()`), jde ven beze změny
+i s datovou příponou; ID jiné rodiny nebo s jiným geografickým prefixem
+(`anthropic.…` bez `eu.`, `us.…` na EU, ID Bedrocku na Anthropicu) se
+přeloží na ID platformy; vlastní ID mimo katalog odchází tak, jak je
+napsané, a tvaruje se podle `model_like`.
 
-`ResolvedAiCall` nese platformu, adresu (připojení, jinak výchozí adresa
-platformy), dešifrovaný klíč (jen v paměti; `toArray()` ho nevrací), ID
-modelu pro platformu, `shapeAs`, `catalogModel`, strop, teplotu, thinking,
-effort, `connectionId` / `connectionCode` a **původ každé hodnoty**
-(`origins`: `override` / `function` / `declaration` / `tier` / `default`
-— pro přehled v Nastavení). `chatParams(system, messages,
-tools, stallTimeout, timeout)` z něj složí `LlmChatParams`.
+`ResolvedAiCall` nese platformu (id, `dialect`, `priceMultiplier`),
+adresu (připojení, jinak výchozí adresa platformy), dešifrovaný klíč (jen
+v paměti; `toArray()` ho nevrací), ID modelu pro platformu, `shapeAs`,
+`catalogModel`, strop, teplotu, thinking, effort, `connectionId` /
+`connectionCode` a **původ každé hodnoty** (`origins`: `override` /
+`function` / `declaration` / `tier` / `default` — pro přehled
+v Nastavení). `chatParams(system, messages, tools, stallTimeout, timeout)`
+z něj složí `LlmChatParams`; `costUsd(katalog, in, out)` je **jediné
+místo výpočtu ceny** (D60): ceník katalogu pro `catalogModel` × násobitel
+platformy, null u vlastního ID — běh analýzy pošty i `ai-test` ji berou
+odsud, ne z ID modelu v odpovědi (Bedrock vrací základní ID místo
+profilu).
 
 Stejné rozhodnutí **bez klíče** dává `plan()` (`AiCallPlan`; klíč se jen
 ověří jako uložený) a `preview()` (`AiCallPreview`: plán + úpravy
@@ -410,8 +449,10 @@ model asistenta zůstává Sonnet 4.6 (mapa úrovní, evaluace #103).
   `between_tools` jen s effortem do `high`, `refusal`, o ~30 % víc tokenů
   na stejný text, odmítá `tool_choice` any/tool a prefill):
   `tasks/ai-models-phase0.md`. Katalog nepoužitelné hodnoty ladění vynechá
-  / nahradí (§5.2) — volání projde a úprava je v logu. Ceny bere
-  `ModelCatalog::costUsd()` z katalogu.
+  / nahradí (§5.2) — volání projde a úprava je v logu. Ceny počítá
+  `ResolvedAiCall::costUsd()` (ceník katalogu × násobitel platformy, §5.4).
+- **Zpracování v EU:** připojení s platformou Amazon Bedrock (EU) a funkce
+  (nebo výchozí připojení) na něm — §5.8.
 
 ### 5.6 Nastavení — sekce AI a přehled modelů (#85 D49, D50)
 
@@ -451,7 +492,11 @@ loguje jen `resolve()`, náhled ne.
 věty chyb resolveru s radou, kde to opravit (`error.<KÓD>` /
 `hint.<KÓD>`, varianty `.selected` a `.like` podle detailů), úpravy
 (`change.<kód>`), původ hodnot (`origin.<původ>`) a druhy chyb API
-(`api.<druh>`). Čte ho detail AI funkce, `ai-test`
+(`api.<druh>`; varianta `api.<druh>.<platforma>` s radou pro platformu
+připojení má přednost — pro `bedrock-eu` u 401 / 403 / 404 region klíče,
+povolený přístup k modelu a politika účtu; `AnthropicLlmClient` k tomu
+z těla chyby bez objektu `error` bere `message` / `Message`, jak je
+posílá AWS). Čte ho detail AI funkce, `ai-test`
 i `ChatController::aiFunctionError()`; frontend pro kódy
 `AI_NOT_CONFIGURED` a `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` vlastní text nemá
 (zobrazí větu serveru), `NO_BACKEND` si text drží, protože ho sdílí
@@ -474,12 +519,61 @@ a nástrojů, `thinking: disabled` jen u modelu se známými `thinkingModes`
 (shaper přepne na `between_tools` nebo vynechá; model s neznámými
 schopnostmi dostane hodnotu plánu), `effort: low`, timeouty 30 / 60 s —
 přes `AnthropicLlmClient` s katalogem, tedy tvarování jako v provozu.
-Výstup: připojení, model, čas, tokeny, cena z katalogu (`costUsd` pro
-`catalogModel`; vlastní ID „—“), `stop_reason` (i `max_tokens` je
+Výstup: připojení, model, čas, tokeny, cena (`ResolvedAiCall::costUsd()`:
+ceník katalogu pro `catalogModel` × násobitel platformy; vlastní ID „—“),
+`stop_reason` (i `max_tokens` je
 úspěch), nebo věta chyby z `AiTexts` v jazyce zdroje dat
 (`defaultLanguage`); `--json` = jeden objekt na stdout, lidské řádky na
 stderr. Exit 1, když kterákoli funkce selže. Stojí zlomky centu a na
 hostovaném zdroji dat jde do společného limitu gateway — nikdy z cronu.
+
+### 5.8 Zpracování v EU — platforma Amazon Bedrock (EU) (#85 fáze 3a, D57–D61)
+
+Někteří zákazníci trvají na zpracování dokladů modelem v datacentrech
+v EU. Přímé API Anthropicu takovou volbu nemá; Claude je dostupný přes
+**Amazon Bedrock** stejným Messages API a s geografickým profilem `eu.`
+běží požadavek jen v regionech EU. `tasks/ai-bedrock-eu.md`.
+
+**Co znamená „zpracování v EU“:** data požadavku (prompt, přílohy) a
+odpověď zpracovává infrastruktura AWS v regionech EU (ze zdrojového
+regionu Frankfurt: Frankfurt, Stockholm, Milán, Španělsko, Irsko,
+Paříž); poskytovatelem modelu zůstává americká společnost a smluvní
+rámec je ten AWS (Bedrock), ne Anthropicu. Netýká se hostovaných zdrojů
+dat přes AI gateway hostingu — ty jdou dál přímým API (fáze 3b, D61).
+
+**Platforma `bedrock-eu`** („Amazon Bedrock (EU)“, `platforms.jsonc`, D57):
+
+| | |
+|---|---|
+| Endpoint | Messages API na `bedrock-runtime`: výchozí `https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic` (klient připojí `/v1/messages`); jiný region EU správce zadá v `base_url` (`https://bedrock-runtime.<region>.amazonaws.com/anthropic`). `bedrock-mantle` je pro řadu 5.5 jen GovCloud |
+| ID modelu | `modelIds: bedrock` + `modelIdPrefix: eu.` → `eu.anthropic.claude-sonnet-5-5` (geografický profil EU; in-region zpracování Sonnet 5.5 na `bedrock-runtime` nenabízí). Odpověď (`message_start.model`) může nést základní `anthropic.…` — cena i tvarování jdou z rozhodnutí resolveru, ne z odpovědi |
+| Přihlášení | **dlouhodobý API klíč Bedrocku** (konzole AWS → Amazon Bedrock → API keys) uložený jako každý jiný klíč (`ai-backend-set-key`, D59); klient ho posílá v `x-api-key` jako klíč Anthropicu (ověřeno). Klíč platí **jen v regionu, kde vznikl** — adresa připojení musí mířit do téhož regionu (jinak „Credential should be scoped to a valid region“). Krátkodobé klíče (12 h, z přihlašovacích údajů AWS) a SigV4 jsou mimo rozsah |
+| Modely | přes Messages API jen řada 4.7 a novější a Haiku 4.5 (`platformIds.bedrock` v katalogu); Sonnet 4.6 ne — proto `platformModels` všech úrovní na `claude-sonnet-5-5` (D58). Přístup k modelu se v účtu AWS povoluje zvlášť (Model access) |
+| Cena | `priceMultiplier: 1.1` — regionální a geografické endpointy mají příplatek 10 % proti globálním (D60); vzniká na jednom místě `ResolvedAiCall::costUsd()` |
+| Chyby | 401 / 403 / 404 jsou chyby nastavení jako dnes; texty `api.<druh>.bedrock-eu` radí region klíče, přístup k modelu a politiku účtu. Tělo chyby AWS bez objektu `error` dává zprávu z `message` |
+
+**Pasti z ověřování (2026-10-11):** organizace AWS může mít **SCP**, která
+zakazuje `bedrock:CallWithBearerToken` — pak každé volání s API klíčem
+končí 403 „explicit deny in a service control policy“ a žádný klíč
+(dlouhodobý ani krátkodobý) nepomůže, dokud správce organizace politiku
+neupraví. Sonnet 5.5 na všech úrovních znamená thinking i u
+klasifikátorů (pomalejší a dražší než Sonnet 4.6, jiné chování štítků);
+ladění per funkce jde přepsat v Nastavení, výchozí hodnoty čekají na
+evaluaci (#103). Kvóty jsou na účet AWS a region, ne na připojení.
+
+**Jak zapnout (správce DS):** Nastavení → AI → Připojení → Přidat,
+platforma Amazon Bedrock (EU), adresa prázdná (Frankfurt) nebo jiný
+region EU; klíč `shpd-ds ai-backend-set-key --backend <kód>`; pak buď
+připojení označit jako výchozí (všechny funkce), nebo ho vybrat jen
+u některých funkcí (Nastavení → AI → Funkce); ověřit `shpd-ds ai-test`.
+Uživatelský postup: `help/nastaveni-ai.md` → Zpracování v EU.
+
+**Jak přidat další platformu** (jiný region, `us.`, Vertex…): položka
+v `platforms.jsonc` (dialekt, adresa, rodina ID, prefix, násobitel,
+nápovědy), případně `platformModels` v `tiers.jsonc` a texty
+`api.<druh>.<platforma>`; `AiPlatformsFileTest` + `ModelCatalogFileTest`
+hlídají konzistenci s katalogem; na zdrojích dat `ds-upgrade`. Jiný
+dialekt než Messages vyžaduje nový `LlmClient`.
 
 ---
 

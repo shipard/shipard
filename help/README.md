@@ -26,7 +26,7 @@ Tyhle stránky slouží dvěma čtenářům: tobě a vestavěnému AI asistentov
 | [Co Shipard dnes neumí](co-dnes-nejde.md) | Poctivý seznam chybějících funkcí a míst, kde ještě nemusí souhlasit čísla. |
 | [Co Shipard umí](co-shipard-umi.md) | Úplný přehled agend, které v aplikaci jsou — a u kterých z nich už je napsaný návod. |
 | [Instalace aplikace na telefon nebo počítač](instalace-aplikace.md) | Jak si Shipard přidat na plochu telefonu nebo nainstalovat jako aplikaci do počítače — a co to znamená. |
-| [AI — připojení, funkce a modely](nastaveni-ai.md) | Kde správce zadá klíč k AI, co je úroveň modelu, jak jedné AI funkci (třeba štítkům) nastavit jiný model, co znamenají Úpravy požadavku a Stav volání a jak si nastavení ověřit příkazem ai-test. |
+| [AI — připojení, funkce a modely](nastaveni-ai.md) | Kde správce zadá klíč k AI, co je úroveň modelu, jak jedné AI funkci (třeba štítkům) nastavit jiný model, jak nechat doklady zpracovávat v EU přes Amazon Bedrock, co znamenají Úpravy požadavku a Stav volání a jak si nastavení ověřit příkazem ai-test. |
 | [Informace o zdroji dat](o-zdroji-dat.md) | Kde zjistíš název a IČO vlastní firmy, adresu pro příjem pošty, plátcovství DPH, ID zdroje dat a kolik místa zabírají data a přílohy. |
 | [První nastavení zdroje dat](prvni-nastaveni.md) | Jak čerstvý zdroj dat nastavit přes kartu Dokončit nastavení — vlastní firma, DPH, bankovní účet, účtová osnova, fiskální rok a domácí měna. |
 | [Slovníček](slovnicek.md) | Co která věc v Shipardu znamená a jak se jmenuje v rozhraní. |

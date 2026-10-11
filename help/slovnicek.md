@@ -126,7 +126,7 @@ a čekají na tebe, zbytek je už vyřízený:
 
 | Když řekneš | V Shipardu | Co to je |
 |---|---|---|
-| klíč k AI, účet u Anthropic, kam se to připojuje | **Připojení** (v **Nastavení aplikace → AI**) | Kam a s jakým klíčem Shipard volá model. Od založení existuje jedno s kódem **default**; klíč zadá správce z konzole |
+| klíč k AI, účet u Anthropic, kam se to připojuje, Bedrock, AI v EU | **Připojení** (v **Nastavení aplikace → AI**) | Kam a s jakým klíčem Shipard volá model — **platforma** Anthropic (přímo, data v USA) nebo **Amazon Bedrock (EU)** (ten samý model v datacentrech AWS v Evropě, vlastní účet AWS). Od založení existuje jedno s kódem **default**; klíč zadá správce z konzole |
 | co AI dělá, vytěžení, štítky, asistent | **Funkce** (v **Nastavení aplikace → AI**) | Jedna řádka na každou práci AI — **Vytěžení došlé pošty**, **Klasifikace obsahových štítků**, **Shrnutí dashboardu**, **Chat asistenta**… Tady se funkci mění model, připojení a ladění |
 | jaký model, rychlý nebo chytrý | **Úroveň modelu** (**Rychlý**, **Vyvážený**, **Silný**) | Místo konkrétního modelu má funkce úroveň; který model úroveň znamená, drží Shipard a mění s novými verzemi |
 | seznam modelů, kolik to stojí | **Modely** (v **Nastavení aplikace → AI**) | Přehled modelů, které Shipard zná: úroveň, cena za milion tokenů, stav a které úrovně na model ukazují |

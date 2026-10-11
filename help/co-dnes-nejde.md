@@ -302,6 +302,12 @@ o ISDOC dodavatele požádat.
 
 ## Správa dat a provoz
 
+- **Zpracování AI v EU jen s vlastním účtem AWS.** Doklady nechá v EU
+  zpracovat připojení na platformě **Amazon Bedrock (EU)** s dlouhodobým
+  klíčem z tvého účtu AWS (viz [AI — připojení, funkce a modely](nastaveni-ai.md)).
+  Hostovaný Shipard s klíčem od provozovatele zatím volá Anthropic přímo
+  (data v USA); krátkodobé klíče Bedrocku ani přihlášení rolí AWS Shipard
+  neumí.
 - **Zálohu a obnovu svého datového zdroje si sám neuděláš.** Data
   zálohujeme my; obnova ze zálohy se dnes řeší přes podporu.
 - **Datový zdroj se nedá smazat z rozhraní.** Napiš na podporu.

@@ -1,7 +1,7 @@
 ---
 title: AI — připojení, funkce a modely
-summary: Kde správce zadá klíč k AI, co je úroveň modelu, jak jedné AI funkci (třeba štítkům) nastavit jiný model, co znamenají Úpravy požadavku a Stav volání a jak si nastavení ověřit příkazem ai-test.
-keywords: [nastavení AI, AI připojení, připojení k AI, klíč AI, API klíč, zadat klíč, kde vzít klíč, Anthropic, Claude, AI funkce, funkce AI, úroveň modelu, rychlý model, vyvážený model, silný model, model, jiný model, změnit model, nastavit model, přepnout model, model pro štítky, model pro vytěžení, model pro chat, model asistenta, modely, přehled modelů, katalog modelů, ceny modelů, cena za tokeny, model končí, model skončil, AI model brzy končí, tvarovat jako model, vlastní model, přemýšlení, úsilí, max. tokenů, úpravy požadavku, stav volání, chyba nastavení, teplota se neposílá, ověřit AI, otestovat AI, ai-test, test volání, AI nefunguje, nejde AI, AI neodpovídá]
+summary: Kde správce zadá klíč k AI, co je úroveň modelu, jak jedné AI funkci (třeba štítkům) nastavit jiný model, jak nechat doklady zpracovávat v EU přes Amazon Bedrock, co znamenají Úpravy požadavku a Stav volání a jak si nastavení ověřit příkazem ai-test.
+keywords: [nastavení AI, AI připojení, připojení k AI, klíč AI, API klíč, zadat klíč, kde vzít klíč, Anthropic, Claude, platforma, Amazon Bedrock, Bedrock, AWS, zpracování v EU, AI v EU, data v EU, data mimo EU, data v USA, GDPR, region, klíč Bedrocku, cena Bedrock, dražší AI, AI funkce, funkce AI, úroveň modelu, rychlý model, vyvážený model, silný model, model, jiný model, změnit model, nastavit model, přepnout model, model pro štítky, model pro vytěžení, model pro chat, model asistenta, modely, přehled modelů, katalog modelů, ceny modelů, cena za tokeny, model končí, model skončil, AI model brzy končí, tvarovat jako model, vlastní model, přemýšlení, úsilí, max. tokenů, úpravy požadavku, stav volání, chyba nastavení, teplota se neposílá, ověřit AI, otestovat AI, ai-test, test volání, AI nefunguje, nejde AI, AI neodpovídá]
 related: [prvni-nastaveni.md, posta/prijem-posty.md, posta/kdyz-ai-cte-spatne.md, polozky/obsahove-stitky.md, co-dnes-nejde.md, slovnicek.md]
 ---
 
@@ -103,7 +103,54 @@ klíčem se volá), **Funkce** (co se volá a na jakém modelu) a **Modely**
     (teplota, režimy přemýšlení, úrovně úsilí, strop výstupu) a ID na
     platformách.
 
+**Zpracování v EU (Amazon Bedrock)**
+
+12. Běžné připojení volá Claude přímo u Anthropic — data se zpracovávají
+    v USA. Pokud mají tvoje doklady zůstat v EU, založ připojení na
+    platformě **Amazon Bedrock (EU)**: ten samý model běží v datacentrech
+    AWS v Evropě (Frankfurt, Stockholm, Milán, Španělsko, Irsko, Paříž).
+    Potřebuješ k tomu vlastní účet AWS; poskytovatelem modelu zůstává
+    Anthropic, smlouvu a vyúčtování máš s AWS. Hostovaný Shipard s klíčem
+    od provozovatele tuhle volbu zatím nemá.
+13. V účtu AWS (konzole Amazon Bedrock) nejdřív povol přístup k modelu
+    **Claude Sonnet 5.5** (**Model access**) a vygeneruj **dlouhodobý API
+    klíč** (**API keys → Long-term API keys**). Klíč generuj **v regionu
+    Frankfurt (eu-central-1)** — platí jen v regionu, kde vznikl. Když ti
+    volání s klíčem zakazuje politika firemní organizace AWS (chyba
+    zmiňuje *service control policy*), musí ji nejdřív upravit správce
+    vaší organizace AWS.
+14. V **Nastavení aplikace → AI → Připojení** dej **Přidat**, zvol
+    platformu **Amazon Bedrock (EU)**, kód třeba `bedrock-eu`, adresu nech
+    prázdnou (Frankfurt). Jiný region EU zadáš do adresy podle nápovědy
+    u pole — klíč pak musí být z téhož regionu. Klíč zadá správce
+    z konzole stejně jako u Anthropic:
+
+    ```
+    shpd-ds ai-backend-set-key --backend bedrock-eu
+    ```
+
+15. Rozhodni, co má v EU běžet: buď připojení označ jako **Výchozí
+    připojení** (a u původního zrušíš) — pak v EU běží všechny AI
+    funkce — nebo ho vyber jen u některých funkcí v **Nastavení aplikace →
+    AI → Funkce** (třeba jen **Vytěžení došlé pošty**). Pole **Model**
+    nech prázdné: na Bedrocku je modelem úrovně **Claude Sonnet 5.5**
+    (Sonnet 4.6 tam není), v detailu funkce uvidíš
+    `eu.anthropic.claude-sonnet-5-5` — předpona `eu.` znamená zpracování
+    jen v EU. Ověř příkazem `shpd-ds ai-test`; v detailu funkce se ukáže
+    i **Cena: 1,1× ceník katalogu**.
+
 ## Na co narazíš
+
+- **Bedrock odmítá klíč nebo volání** (v detailu funkce nebo v `ai-test`
+  věta začínající *Amazon Bedrock odmítl…*): klíč je z jiného regionu než
+  adresa připojení, model nemá v účtu AWS povolený přístup, nebo volání
+  s API klíčem zakazuje politika organizace AWS. Věta říká, kterou z toho
+  zkontrolovat; Shipard z toho sám nic nespraví.
+- **AI přes Bedrock je o desetinu dražší** než stejný model přímo
+  u Anthropic (příplatek AWS za zpracování v jedné zeměpisné oblasti)
+  a běží na Sonnetu 5.5, který přemýšlí — klasifikace štítků je pomalejší
+  a dražší než na Sonnetu 4.6. Ladění funkce (**Přemýšlení**, **Úsilí**)
+  můžeš upravit v detailu funkce.
 
 - **Upozornění „AI model brzy končí“** se týká jen modelu, který máš
   u funkce vybraný ručně; modely podle úrovně Shipard vyměňuje sám.

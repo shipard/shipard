@@ -1,6 +1,6 @@
 # AI — zpracování v EU: platforma Amazon Bedrock (EU) (#85 fáze 3a)
 
-**Stav:** naplánováno — rozhodnutí D57–D61 potvrzena 2026-10-11 (#85), připraveno k implementaci
+**Stav:** částečně — kroky 1–5 hotové 2026-10-11 (5 commitů, celá sada 9 027 testů; `ds-upgrade` jen `4l3j`); zbývá ověření 1–7 s reálným klíčem: účet AWS má SCP, která zakazuje `bedrock:CallWithBearerToken` (403 na každém volání s API klíčem bez ohledu na region), čeká na úpravu politiky správcem organizace AWS; pak výsledek do #85
 
 ## Status / cíl
 
@@ -59,7 +59,10 @@ GitHub Issue: shipard/shipard#85 (D6, D57–D61; fáze 3a).
   Stockholm, Milán, Španělsko, Irsko, Paříž). Zpracování v jediném
   regionu AWS pro tento model na `bedrock-runtime` nenabízí.
 - **Přihlášení:** Bedrock API klíč jako bearer token; klient Anthropicu
-  ho posílá stejně jako vlastní klíč (`x-api-key`). **Dlouhodobý klíč**
+  ho posílá stejně jako vlastní klíč (`x-api-key`) — **ověřeno `curl`
+  2026-10-11**: hlavička `x-api-key` projde autentizací na
+  `bedrock-runtime` (`Authorization: Bearer` také), tělo chyby má tvar
+  Anthropicu (`{"type":"error","error":{…}}`). **Dlouhodobý klíč**
   má nastavitelnou platnost, patří IAM uživateli a **platí jen
   v regionu, kde vznikl** (jinak „Credential should be scoped to a valid
   region“); AWS ho doporučuje jen na zkoušení. **Krátkodobý klíč** platí
@@ -71,6 +74,11 @@ GitHub Issue: shipard/shipard#85 (D6, D57–D61; fáze 3a).
 - **Cena:** regionální a geografické endpointy mají příplatek 10 %
   proti globálním.
 - Kontrola prefixu thinking bloků platí i na Bedrocku — řeší D53.
+- **SCP organizace AWS** může zakázat `bedrock:CallWithBearerToken` —
+  pak každé volání s API klíčem končí 403 „explicit deny in a service
+  control policy“ ve všech regionech (zjištěno 2026-10-11 na testovacím
+  účtu; v `us-east-1` prošla autentizace i validace modelu, na akci padá
+  totéž). Řeší správce organizace AWS, ne Shipard.
 
 ## Rozhodnutí k designu (potvrzená)
 
@@ -129,6 +137,17 @@ Každý krok je samostatný commit.
 
 ### 1. Platforma a ID modelu
 
+Hotovo 2026-10-11 (commit `feat(ai): platforma Amazon Bedrock (EU)…`).
+Odchylky od zadání: mapu platforem čte jediné místo — nový readonly
+objekt `AiPlatform` + `AiPlatforms` (`src/Core/Ai/`), ne pět ad hoc
+čtení cfgItemu. **Klient se přece měnit musel:** `AnthropicLlmClient`
+odmítal `provider !== 'anthropic'`, takže by na `bedrock-eu` padlo každé
+volání — nově `LlmChatParams::$dialect`, kontrola podle dialektu;
+hlavičky a cesta beze změny. `platformOf()` vrací rodinu ID (klíč
+`platformIds`), nové `geoPrefixOf()`; zadané ID s jiným geografickým
+prefixem (`us.` na EU) se překládá na ID platformy jako každé jiné ID
+jiné rodiny (ne chyba — pravidlo „ID jiné platformy se přeloží“).
+
 - `platforms.jsonc`: položka `bedrock-eu`, nová pole `modelIds`,
   `modelIdPrefix`, `priceMultiplier` (i u `anthropic`).
 - `AiFunctionResolver::placeModel()`: ID pro platformu =
@@ -149,6 +168,11 @@ Každý krok je samostatný commit.
 
 ### 2. Modely úrovní per platforma
 
+Hotovo 2026-10-11. Navíc: `ModelOptions::catalogModels()` nechá
+v nabídce uloženou hodnotu, kterou katalog zná, ale není klíčem nabídky
+(ID platformy, datová přípona) — jinak by select hodnotu nezobrazil;
+formulář funkce se po změně připojení přestaví (`triggers: reload`).
+
 - `tiers.jsonc`: `platformModels` → `{"bedrock-eu": "claude-sonnet-5-5"}`
   u všech tří úrovní; `ModelCatalog::defaultModel($tier, $platform)`.
 - Přehled modelů a detail funkce: u modelu / funkce ukázat model úrovně
@@ -158,6 +182,10 @@ Každý krok je samostatný commit.
 
 ### 3. Cena
 
+Hotovo 2026-10-11. `AnalysisRunner` počítal cenu z ID modelu
+v odpovědi (`$result->model`) — nově z rozhodnutí resolveru
+(`ResolvedAiCall::costUsd()`), ID z odpovědi zůstává jen v auditu.
+
 - `ResolvedAiCall` nese `priceMultiplier`; jedno místo pro výpočet ceny
   (pomocník nad `ModelCatalog::costUsd()`), použité v `AnalysisRunner`
   a `AiTestCommand`.
@@ -165,6 +193,12 @@ Každý krok je samostatný commit.
   beze změny.
 
 ### 4. Chyby a formulář
+
+Hotovo 2026-10-11. Formulář připojení je PHP třída `AIBackendForm`
+(JSONC `forms/core_ai_backends.jsonc` zanikl); nápovědy ke klíči
+a adrese nese položka platformy (`keyHint` / `baseUrlHint`
+v `platforms.jsonc`, lokalizované), ne PHP. Varianty textů chyb API
+`api.<druh>.<platforma>` (401 / 403 / 404 pro `bedrock-eu`).
 
 - `AnthropicLlmClient::exceptionFromErrorResponse()`: tělo chyby bez
   objektu `error` (styl AWS: `{"message": "…"}` / `{"Message": "…"}`)
@@ -180,6 +214,10 @@ Každý krok je samostatný commit.
 
 ### 5. Dokumentace a uzavření
 
+Hotovo 2026-10-11 (`docs/ai.md` §5.1, §5.2, §5.4, §5.7 a nový §5.8;
+`help/nastaveni-ai.md` → Zpracování v EU; `help/co-dnes-nejde.md`,
+`help/slovnicek.md`, `core_ai_backends.md`, `CLAUDE.md`).
+
 - `docs/ai.md`: platformy (pole položky), Bedrock EU (endpoint,
   geografický profil, klíče, modely, cena), co znamená „zpracování
   v EU“ a co ne (poskytovatelem je americká společnost; data zůstávají
@@ -194,6 +232,13 @@ Každý krok je samostatný commit.
 
 Klíč Bedrocku nastaví uživatel sám (`ai-backend-set-key` se skrytým
 vstupem); do zadání, logů ani výpisů se nedostane.
+
+Stav 2026-10-11: na `4l3j` je připojení `bedrock-eu` („Bedrock EU
+(test)“, aktivní, ne výchozí) s uloženým klíčem; krok 1 hotový, krok 6
+(klíč zamítnutý politikou účtu → 403 s radou v `ai-test` i v detailu
+funkce) ověřen, funkce `exchange.contentTags` vrácena na výchozí
+připojení. Body 2–5 a 7 proběhnou po úpravě SCP: stačí funkci přepnout
+na toto připojení a spustit `ai-test`.
 
 1. Založit připojení „Bedrock EU“ (platforma `bedrock-eu`, výchozí
    adresa), nastavit klíč.
@@ -232,9 +277,14 @@ vstupem); do zadání, logů ani výpisů se nedostane.
 
 ## Hotovo když
 
-- [ ] Kroky 1–5 jako samostatné commity, `php -l`, cílené testy
+- [x] Kroky 1–5 jako samostatné commity, `php -l`, cílené testy
       (`--filter 'AiFunctionResolverTest|ModelCatalog|AnthropicLlmClientTest|AnalysisRunnerTest|AiTestCommandTest'`),
-      celá sada.
-- [ ] Bez připojení `bedrock-eu` se žádný požadavek nezměnil (testy).
-- [ ] Ověření 1–7 provedeno s reálným klíčem, výsledek do #85.
-- [ ] `**Stav:**` aktualizovaný, indexy tasků a nápovědy spuštěné.
+      celá sada (9 027 testů, 2026-10-11).
+- [x] Bez připojení `bedrock-eu` se žádný požadavek nezměnil (testy:
+      tělo požadavku výchozího připojení shodné, `AiFunctionResolverTest`
+      pro `anthropic` beze změny).
+- [ ] Ověření 1–7 provedeno s reálným klíčem, výsledek do #85 — **čeká
+      na úpravu SCP organizace AWS** (viz Pasti); kroky 1 (založení
+      připojení, klíč) a 6 (negativní test: 403 s radou) proběhly
+      na `4l3j`.
+- [x] `**Stav:**` aktualizovaný, indexy tasků a nápovědy spuštěné.
