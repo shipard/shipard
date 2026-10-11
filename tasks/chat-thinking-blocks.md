@@ -1,6 +1,6 @@
 # AI asistent — modely s thinkingem: thinking bloky v tool smyčce (#85 fáze 4)
 
-**Stav:** naplánováno — rozhodnutí D53–D56 potvrzena 2026-10-11 (#85); spustit po `ai-settings-section.md`
+**Stav:** hotovo — 2026-10-11 (5 commitů, ověření 1–7 na 4l3j; `ds-upgrade` jen 4l3j, zbývá alfa a komentář #85)
 
 ## Status / cíl
 
@@ -179,18 +179,36 @@ Každý krok je samostatný commit.
 
 ## Ověření (zdroj dat v režimu `volný`)
 
-1. Výchozí nastavení (Sonnet 4.6): asistent odpoví na dotaz se dvěma
-   voláními nástrojů jako dřív; v odpovědi žádný thinking blok.
-2. `chat.default` = `claude-sonnet-5-5`: dotaz, který vyžaduje aspoň dvě
-   volání nástrojů → odpověď doběhne, v logu žádné 400; UI ukázalo
-   „Přemýšlím…“.
-3. Tatáž konverzace, druhá otázka → doběhne (historie bez thinking bloků).
-4. Konverzace založená dřív než dnes (jiný den v system promptu) +
-   nová otázka → doběhne.
-5. Totéž s `thinking: between_tools` u funkce a s `claude-haiku-5-5`.
-6. V `core_chat_messages` není u nových zpráv žádný blok `thinking`.
-7. Vrátit `chat.default` na výchozí; zapsat tokeny a čas odpovědi na
-   4.6 a 5.5 pro stejný dotaz.
+Provedeno 2026-10-11 na 4l3j (dočasný admin `smoke-thinking`, po testu
+smazaný i s relacemi a konverzacemi; headless Chromium + `curl -sN`;
+otázka „najdi firmu v adresáři a spočítej vydané faktury“ = dva nástroje).
+
+1. ✓ Výchozí nastavení (Sonnet 4.6): dva nástroje v jednom tahu, odpověď
+   za 5,0 s, 12 044 / 190 tokenů, uložené zprávy bez thinking bloku.
+2. ✓ `chat.default` = `claude-sonnet-5-5`: `thinking` před nástroji, dva
+   nástroje, odpověď za 4,7 s, 14 783 / 367 tokenů, žádné 400; UI
+   ukázalo „Přemýšlím…“.
+3. ✓ Druhá otázka v téže konverzaci (`curl`): `thinking` → `tool-call` →
+   text → `message-complete`, 16 195 / 295 tokenů.
+4. ✓ Konverzace z 10. 10. (vedená na 4.6, jiný den v system promptu)
+   + nová otázka na 5.5: `thinking`, 2× `tool-call`, odpověď, 18 463 / 394
+   tokenů; konverzace vrácená původnímu uživateli vč. tokenů a `modified`.
+5. ✓ `thinking: between_tools` + Sonnet 5.5: odpověď za 6,2 s, model
+   žádnou úvahu mezi nástroji neudělal. `claude-haiku-5-5`: 2× `tool-call`
+   → `thinking` → text, 14 675 / 327 tokenů. Cesta „Přemýšlím…“ po čipech
+   nástrojů v UI potvrzená deterministicky podvrženým proudem (rámce po
+   250 ms; `MutationObserver` zachytil vložení indikátoru při jednom čipu
+   a jeho zhasnutí s prvním textem).
+6. ✓ `core_chat_messages`: v 26 zprávách šesti konverzací žádný
+   `thinking`, `redacted_thinking` ani `signature`.
+7. ✓ Vráceno na výchozí (model podle úrovně, thinking `default`). Stejný
+   dotaz: 4.6 = 5,0 s a 12 044 / 190 tokenů; 5.5 = 4,7 s a 14 783 / 367
+   tokenů (úvahy ≈ +180 výstupních tokenů, tahy s `tool_use` 288 místo 148).
+
+Neověřeno: měření spotřeby gateway hostingu na odpovědi s thinkingem
+(gn5c bez chatu s reálným tokenem). `GwUsageExtractor` čte
+`message_delta.usage.output_tokens`, kam API thinking počítá — kód se
+neměnil.
 
 ## Pasti
 
@@ -213,9 +231,36 @@ Každý krok je samostatný commit.
 
 ## Hotovo když
 
-- [ ] Kroky 1–5 jako samostatné commity, `php -l`, cílené testy
+- [x] Kroky 1–5 jako samostatné commity, `php -l`, cílené testy
       (`--filter 'AnthropicLlmClientTest|ChatControllerTest|AiFunctionResolverTest|ModelCatalog'`),
-      celá sada, `npm run build`.
-- [ ] Ověření 1–7 provedeno, výsledek do #85.
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py` a `help-index.py`
+      celá sada (9 001 testů), `npm run build`.
+- [x] Ověření 1–7 provedeno; výsledek do #85 po pushi.
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py` a `help-index.py`
       spuštěné.
+
+## Poznámky z implementace (2026-10-11)
+
+- Překlad `chat.thinking` („Přemýšlím…“) už existoval a `ChatThread` ho
+  ukazoval, dokud nepřišel první text. D56 je tedy stav `thinking` ve
+  store a indikátor i po čipech nástrojů (dřív bublina po `tool-call`
+  mlčela); nové překlady nejsou.
+- `onThinking` se volá i pro `redacted_thinking`. Neznámý typ bloku
+  zaloguje varování jednou za proces per typ
+  (`resetUnknownBlockTypeWarningsForTesting`).
+- Tah jen s thinking blokem (bez textu i nástroje) končí jako finální
+  odpověď a uloží se jako prázdný text; `buildAnthropicMessages()` ho
+  vynechá (API dva uživatelské tahy za sebou sloučí).
+- `AiFunction::requiresTools()` zůstal jako popisný accessor (symetrie
+  s `requiresPdf()`, používá ho test registru); resolver ho nevolá.
+- `ScriptedLlmClient` v `ChatControllerTest` volá `onThinking` per thinking
+  blok výsledku a drží všechna `calls`. `AiTestCommandTest`: pořadí funkcí
+  není mail / dashboard / chat — asserty nezávislé na pořadí.
+- Test varování: `ErrorLogger` každý zápis zrcadlí přes `error_log()`
+  (CLI = stderr) — v testu `ini_set('error_log', '/dev/null')`.
+- Headless smoke streamu: Svelte vykreslí mezistav jen když rámce přijdou
+  v různých chuncích; `route.fulfill` jedním tělem ho neukáže,
+  `route.continue({url})` na jiný port visí. Funguje mock `window.fetch`
+  v `addInitScript` s `ReadableStream` a prodlevou mezi rámci.
+- Chování modelů (pozorování, ne pravidlo): Sonnet 5.5 přemýšlí před
+  prvním nástrojem, po výsledcích často rovnou text; Haiku 5.5 úvaha až
+  po výsledcích; `between_tools` na Sonnetu 5.5 žádný thinking blok.

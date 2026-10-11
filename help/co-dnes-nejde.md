@@ -294,13 +294,6 @@ o ISDOC dodavatele požádat.
   neodešle. Poradí, najde, spočítá — provést to musíš ty.
 - **Neví o všem.** Když se ptáš na postup a asistent odpoví, že to neví,
   je to správná odpověď — lepší než vymyšlený návod.
-- **Nepracuje s každým modelem.** Modely, které přemýšlejí samy od sebe
-  (řada 5 — Sonnet 5.5, Haiku 5.5, Opus 5.5 a podobné), asistent zatím
-  neumí použít: místo odpovědi uvidíš hlášku, že správce má u AI funkce
-  **Chat asistenta** (Nastavení aplikace → AI → Funkce) nastavit
-  jiný model. Analýza pošty a štítky s těmito modely fungují. Jak
-  model u funkce změnit a jak si nastavení AI ověřit, říká
-  [AI — připojení, funkce a modely](nastaveni-ai.md).
 - **Test AI jen z konzole.** Tlačítko „Otestovat“ v Nastavení není —
   nastavení ověří správce příkazem `shpd-ds ai-test`; detail funkce
   ukazuje, jak by volání dopadlo, bez skutečného volání.

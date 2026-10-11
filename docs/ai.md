@@ -88,7 +88,7 @@ ano, „neuhrazeno" ne: stav úhrady žádný z dokladových nástrojů nevrací
 | Cesta | AI funkce | Kdo volá LLM | Režim | Nástroje |
 |-------|-----------|--------------|-------|----------|
 | **Analýza pošty** | `mail.extraction` (balanced, 32768, teplota 0, `pdf`) | PHP `AnalysisRunner` (CLI `shpd-ds mail-analyze`: spawn po příjmu / předzpracování / reanalýze + minutový sweep) přes `AnthropicLlmClient` | strukturovaný výstup (JSON dle `output_schema` profilu), streamovaně, timeouty 180 / 840 s, opakování přechodných chyb | — |
-| **Vnitřní chat** | `chat.default` (balanced, 4096, `tools`) | PHP `AnthropicLlmClient` (in-process) | streamovaně (SSE), tool-use smyčka | čtecí MCP nástroje |
+| **Vnitřní chat** | `chat.default` (balanced, 16000, `tools`) | PHP `AnthropicLlmClient` (in-process) | streamovaně (SSE), tool-use smyčka | čtecí MCP nástroje |
 | **Dashboard shrnutí** | `dashboard.summary` (fast, 2000) | PHP `AnthropicLlmClient` přes `DashboardSummaryService` | streamovaně (SSE), **bez tools** (délku drží prompt) | — |
 | **Klasifikace štítků** | `exchange.contentTags` (fast, 8000) | PHP `ContentTagClassifier` (obsahová eskalace řádků při analýze) | jedno volání na doklad | — |
 | **Historie účtování** | `exchange.bookingHistory` (balanced, 16000) | PHP `BookingHistoryClassifier` (CLI `booking-history`) | jedno volání na dávku textů | — |
@@ -157,7 +157,7 @@ Tři vrstvy nastavení (tasks/ai-functions.md, #85 D1, D3, D4, D36–D48):
 
 Nasazením fáze 1b se chování nezměnilo: všechny úrovně ukazují na
 `claude-sonnet-4-6`, výchozí ladění funkcí odpovídá dřívějšku (teplota 0
-jen u vytěžení, stropy 32768 / 4096 / 8000 / 16000 / 2000). Výchozí
+jen u vytěžení, stropy 32768 / 16000 / 8000 / 16000 / 2000). Výchozí
 modely pro řadu 5 doplní evaluace (fáze 2).
 
 ### 5.1 Připojení
@@ -220,7 +220,6 @@ prefix sám nestačí (`claude-opus-4` nechytí `claude-opus-4-8`);
 | `capabilities.thinkingModes`, `thinkingDefault` | přijímané hodnoty `thinking.type`; chování bez parametru `off` / `adaptive` |
 | `capabilities.effortLevels`, `thinkingOffMaxEffort` | přijímané úrovně (`[]` = parametr nezná); nejvyšší effort spolu s vypnutým thinkingem (`disabled` / `between_tools`) |
 | `capabilities.maxOutputTokens` | horní mez `max_tokens` |
-| `capabilities.chatToolLoop` | tool smyčka funguje bez vracení thinking bloků = model bez parametru nepřemýšlí; funkce s požadavkem `tools` model s `false` odmítne (`MODEL_NOT_SUPPORTED_FOR_FUNCTION`, zobecněná pojistka D35, zmizí s fází 4) |
 | `prices` | USD za milion tokenů `input` / `output`, volitelně `longPrompt {over, input, output}` (Haiku 5.5 nad 100 000 vstupních tokenů) |
 | `lifecycle` | `status` `active` / `deprecated` / `retired`, `retiresAt`, `retiresNotBefore`, `replacedBy` (naše náhrada při `ds-upgrade`) |
 
@@ -365,7 +364,6 @@ běhu:
 | `NO_CONNECTION` | žádné výchozí aktivní připojení, nebo zvolené chybí / je neaktivní | `NO_BACKEND` 503 | `NO_BACKEND` 409 |
 | `KEY_MISSING` | připojení bez klíče | `NO_BACKEND` 503 | `BACKEND_KEY_MISSING` 409 |
 | `SECRETS_UNAVAILABLE`, `KEY_CORRUPTED` | klíč nejde dešifrovat | `BACKEND_KEY_ERROR` 500 | `SECRETS_UNAVAILABLE` / `BACKEND_KEY_CORRUPTED` 500 |
-| `MODEL_NOT_SUPPORTED_FOR_FUNCTION` | funkce vyžaduje `tools`, model má `chatToolLoop: false` (D35) | `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` 503 | `BACKEND_CONFIG_INVALID` 409 |
 | `UNKNOWN_MODEL`, `MODEL_NOT_ON_PLATFORM`, `NO_MODEL`, `UNKNOWN_PLATFORM`, `UNKNOWN_FUNCTION` | vlastní ID bez `model_like`, model mimo platformu, chybí mapa úrovní / deklarace (compiled config před `ds-upgrade`) | `AI_NOT_CONFIGURED` 503 | `BACKEND_CONFIG_INVALID` 409 (D48) |
 
 Shrnutí dashboardu a klasifikátory na jakoukoli chybu resolveru tiše
@@ -374,12 +372,27 @@ chatu přišpendlená na neaktivní připojení padá na výchozí jako dřív.
 Klíč cache shrnutí dashboardu zahrnuje model (D48) — změna modelu funkce
 shrnutí přegeneruje.
 
-**Chat zůstává na Sonnetu 4.6 (#85 F0-D6):** tool smyčka na modelech
-s thinking vyžaduje vracet thinking bloky beze změny a historii jen
-přidávat — `AnthropicLlmClient::finalizeBlocks()` je dnes zahazuje.
-Pojistku dělá resolver (`requires: ["tools"]` × `chatToolLoop`); UI
-asistenta ukáže „Asistent zatím neumí pracovat s modelem …, správce
-nastaví jiný“. Pojistka zmizí s fází 4.
+**Asistent na modelech s thinkingem (#85 fáze 4, D53–D56,
+`tasks/chat-thinking-blocks.md`):** `AnthropicLlmClient` sbírá ze streamu
+bloky `thinking` (text + `signature`; na řadě 5.5 je text prázdný a úvahu
+nese jen `signature`) i `redacted_thinking` a vrací je v `contentBlocks`
+na jejich pozici. `ChatController::runAgenticLoop()` je **v rámci jedné
+otázky** posílá modelu zpět beze změny — řada 5 ověřuje prefix každého
+vráceného bloku (`system`, `tools` i všechny zprávy před ním musí být
+stejné jako při jeho vzniku), uvnitř smyčky se nic z toho nemění. **Do
+databáze se neukládají** (`LlmChatResult::contentWithoutThinking()`)
+a do dalších otázek se neposílají: `system` nese dnešní datum a seznam
+nástrojů se mění s nasazením, takže by kontrola prefixu přes otázky
+stejně selhala; cena je nová úvaha na každou otázku (jednotky procent
+výstupních tokenů). `buildAnthropicMessages()` obranně vynechá thinking
+bloky, prázdné textové bloky a tah bez bloků. Začátek bloku jde klientovi
+jako SSE `thinking` (UI „Přemýšlím…“); text úvah ani `signature` se
+nepřenáší, neukládá ani neloguje. Pojistka `chatToolLoop` ×
+`MODEL_NOT_SUPPORTED_FOR_FUNCTION` (D35) zanikla, `requires: ["tools"]`
+je jen popis; strop `chat.default` je 16 000, thinking se do `max_tokens`
+počítá (D55). Ostatní volající (`analysis`, klasifikátory, shrnutí) čtou
+jen `text` — thinking bloky v `contentBlocks` jim nic nemění. Výchozí
+model asistenta zůstává Sonnet 4.6 (mapa úrovní, evaluace #103).
 
 ### 5.5 Jak vyzkoušet jiný model
 

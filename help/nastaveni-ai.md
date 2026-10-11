@@ -100,18 +100,18 @@ klíčem se volá), **Funkce** (co se volá a na jakém modelu) a **Modely**
     u každého modelu úroveň, cena za milion tokenů na vstupu a výstupu,
     stav (**Končí** s datem, **Skončil**) a **Výchozí pro** — které
     úrovně na něj dnes ukazují. V detailu jsou schopnosti modelu
-    (teplota, režimy přemýšlení, úrovně úsilí, strop výstupu, zda zvládne
-    nástroje asistenta) a ID na platformách.
+    (teplota, režimy přemýšlení, úrovně úsilí, strop výstupu) a ID na
+    platformách.
 
 ## Na co narazíš
 
 - **Upozornění „AI model brzy končí“** se týká jen modelu, který máš
   u funkce vybraný ručně; modely podle úrovně Shipard vyměňuje sám.
   Vyber u funkce jiný model, nebo pole **Model** vyprázdni.
-- **Asistent neumí modely řady 5** (Sonnet 5.5, Haiku 5.5, Opus 5.5):
-  u funkce **Chat asistenta** nech model podle úrovně, nebo vyber Claude
-  Sonnet 4.6. Detail funkce to hlásí jako **Chyba nastavení**; ostatní
-  funkce s těmito modely fungují.
+- **Asistent na modelech, které přemýšlejí** (řada 5 — Sonnet 5.5,
+  Haiku 5.5, Opus 5.5): funguje; během úvahy ukáže **Přemýšlím…**, text
+  úvah neuvidíš. Úvahy se počítají do spotřeby a asistent si je u každé
+  otázky tvoří znovu — delší odpověď a víc tokenů než na Sonnetu 4.6.
 - **Vytěžení pošty má navíc AI profily** (**Nastavení aplikace →
   Ostatní → Pošta → AI profily**) — profil umí pro některé zprávy
   přepsat model funkce **Vytěžení došlé pošty**. Jde o výjimku pro

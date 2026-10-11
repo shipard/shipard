@@ -40,11 +40,15 @@ kterého běží smyčka (≤ `MAX_TOOL_ITERATIONS` = 8):
 
 1. **Zpráva uživatele se persistuje hned** (před voláním modelu) — odolnost vůči
    selhání.
-2. Sestav `messages` z historie + nabídni modelu **jen čtecí nástroje**
+2. Sestav `messages` z historie (bez thinking bloků a prázdných textů,
+   tah bez bloků se vynechá) + nabídni modelu **jen čtecí nástroje**
    (`isReadOnly()`), zavolej `LlmClient::streamChat()`; textové delty průběžně
-   posílej jako SSE `text-delta`.
+   posílej jako SSE `text-delta`, začátek thinking bloku jako SSE `thinking`.
 3. Vrátí-li model `tool_use`:
-   - persistuj asistentův tah (bloky `text` + `tool_use`),
+   - persistuj asistentův tah **bez thinking bloků**
+     (`LlmChatResult::contentWithoutThinking()`, bloky `text` + `tool_use`);
+     do dalšího kroku téže smyčky jde tah **celý** (thinking bloky beze
+     změny, na stejné pozici — [`ai.md`](ai.md) §5.4, #85 D53),
    - pro každý nástroj: SSE `tool-call`, spusť **in-process**
      (`registry->get(name)->call(args, ctx)`), výsledek zabal do `tool_result`,
    - persistuj syntetickou zprávu `role=user`/`kind=tool_results`, vrať modelu,
@@ -66,6 +70,9 @@ kterého běží smyčka (≤ `MAX_TOOL_ITERATIONS` = 8):
 event: text-delta
 data: {"text":"částečný text"}
 
+event: thinking
+data: []
+
 event: tool-call
 data: {"name":"persons_search","arguments":{...}}
 
@@ -77,7 +84,9 @@ data: {"code":"LLM_ERROR","message":"…"}
 ```
 
 Výsledek nástroje se samostatně nestreamuje — navazující text modelu doteče jako
-`text-delta`. `message-complete` může nést `note: "iteration_limit"` při dosažení
+`text-delta`. `thinking` = model začal thinking blok (#85 D56; bez textu, jednou
+na blok) — UI ukáže „Přemýšlím…“ do dalšího `text-delta`, `tool-call` nebo konce
+odpovědi. `message-complete` může nést `note: "iteration_limit"` při dosažení
 stropu.
 
 ---
@@ -85,7 +94,8 @@ stropu.
 ## 4. LLM klient
 
 `LlmClient` je rozhraní; `AnthropicLlmClient` jediná v1 implementace (Anthropic
-Messages API, streamovaně). `streamChat(LlmChatParams, $onTextDelta)`:
+Messages API, streamovaně). `streamChat(LlmChatParams, $onTextDelta,
+$onThinking = null)`:
 
 - tělo `{model, max_tokens, system, messages, stream:true}` + `tools` (když jsou);
   před odesláním normalizuje `tool_use.input` — prázdný vstup (`[]` po PHP
@@ -93,9 +103,13 @@ Messages API, streamovaně). `streamChat(LlmChatParams, $onTextDelta)`:
   JSON objekt `{}`, jinak API vrací 400 „input: Input should be an object"
   (model volající nástroj bez argumentů, např. `mail_list_pending`);
 - parsuje provider SSE: `text_delta` → `$onTextDelta`; `tool_use` bloky
-  (`content_block_start` + `input_json_delta`) → poskládá `input`;
-- vrací `LlmChatResult` s `text`, `contentBlocks` (celé bloky tahu v pořadí —
-  pro věrnou perzistenci a feed zpět), `toolUses`, usage, `stopReason`.
+  (`content_block_start` + `input_json_delta`) → poskládá `input`; `thinking`
+  bloky (`thinking_delta` + `signature_delta`, prázdný text zůstává)
+  a `redacted_thinking` přesně tak, jak přišly, `$onThinking` jednou při
+  začátku bloku; neznámý typ bloku zaloguje varování jednou za proces;
+- vrací `LlmChatResult` s `text`, `contentBlocks` (celé bloky tahu v pořadí
+  včetně thinking — pro feed zpět v rámci smyčky), `contentWithoutThinking()`
+  (tvar k uložení), `toolUses`, usage, `stopReason`.
 
 `temperature` se v1 vynechává (novější modely ho odmítají). Provider scope:
 jen `anthropic`; rozhraní drží dveře pro další.
@@ -106,12 +120,11 @@ jen `anthropic`; rozhraní drží dveře pro další.
 
 - **Volání modelu** (`resolveCall`): AI funkce `chat.default`
   (`AiFunctionResolver`, [`ai.md`](ai.md) §5.3–5.4) — připojení, klíč,
-  model, strop 4096 z deklarace a ladění přijdou hotové; chat nic
-  neskládá. `conversation.backend` (přišpendlené připojení) je přepsání;
-  když chybí nebo je neaktivní, platí výchozí připojení jako dřív. Chyby
-  resolveru → `NO_BACKEND` / `BACKEND_KEY_ERROR` /
-  `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` (model bez tool smyčky, D35) /
-  `AI_NOT_CONFIGURED`.
+  model, strop 16 000 z deklarace (#85 D55, thinking se počítá) a ladění
+  přijdou hotové; chat nic neskládá. `conversation.backend` (přišpendlené
+  připojení) je přepsání; když chybí nebo je neaktivní, platí výchozí
+  připojení jako dřív. Chyby resolveru → `NO_BACKEND` /
+  `BACKEND_KEY_ERROR` / `AI_NOT_CONFIGURED`.
 - **Systémový prompt** (`systemPrompt`): základ z cfgItem `core.chat.settings`
   (`module.jsonc`), s built-in fallbackem. K němu se **při každém požadavku
   přilepí aktuální datum** + instrukce „neodhaduj podle tréninkových dat, ověř

@@ -473,8 +473,8 @@ klíč, protože cfg položky se mezi moduly neslučují:
 Validace v `ModuleDefinition`: `id` ve tvaru `oblast.nazev` (unikátní
 v modulu), `tier` z trojice, `defaults.maxTokens` kladné celé číslo,
 `defaults.temperature` číslo nebo nic (jiné klíče v `defaults` = chyba),
-`requires` jen `tools` (tool smyčka — model musí mít `chatToolLoop`)
-a `pdf`. `thinking` a `effort` deklarace nemá (výchozí = neposílat).
+`requires` jen `tools` (tool smyčka chatu — popis pro detail funkce,
+model podle něj resolver neodmítá; #85 D54) a `pdf`. `thinking` a `effort` deklarace nemá (výchozí = neposílat).
 `ConfigCompiler` funkce všech aktivních modulů složí do cfgItemu
 **`core.ai.functions`** (klíč = `id`, pořadí deklarací; stejné `id` ve dvou
 modulech zastaví kompilaci, cfgItem nejde deklarovat v `config`). `core.ai`
