@@ -121,6 +121,7 @@ class HelpCommand extends Command
         $output->writeln('<comment>AI:</comment>');
         $output->writeln('  <info>ai-backend-set-key</info>      Set (or rotate) the API key of an AI backend — hidden prompt / STDIN, or --api-key; encrypts via DsSecretCipher');
         $output->writeln('  <info>ai-profile-reload</info>       Reload AI profile from JSONC template into the DB');
+        $output->writeln('  <info>ai-test</info>                 Test AI functions: resolver decision + a minimal live request per function (--function, --json; costs a fraction of a cent)');
         $output->writeln('  <info>mail-analysis-reap</info>      Release expired AI analysis claims and re-queue affected messages');
         $output->writeln('');
         $output->writeln('<comment>Dataset:</comment>');
@@ -145,6 +146,7 @@ class HelpCommand extends Command
         $output->writeln('  shpd-ds ds-state maintenance --on --reason=import');
         $output->writeln('  shpd-ds user-create --login=admin --password=...');
         $output->writeln('  shpd-ds ai-backend-set-key --backend default');
+        $output->writeln('  shpd-ds ai-test --function mail.extraction');
         $output->writeln('  shpd-ds ds-secrets-rotate --dry-run');
         $output->writeln('  shpd-ds dataset-dump /tmp/web-demo --zip');
         $output->writeln('  shpd-ds dataset-seed /tmp/web-demo.zip -y');
