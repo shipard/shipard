@@ -328,6 +328,16 @@ class ChatController
      * tool-free turn (message-complete), the iteration cap (graceful), or an
      * error (error event). The user message is already persisted by the caller.
      *
+     * Thinking blocks (tasks/chat-thinking-blocks.md D53): within this loop the
+     * assistant turn goes back to the model whole — every block, in order,
+     * thinking blocks included — because models of the 5 series verify them
+     * against the exact prefix they were produced with. `system` and `tools`
+     * do not change within one loop, so the check holds. The database gets
+     * the turn without thinking blocks, and so does every later question:
+     * the system prompt carries today's date and the tool list changes with
+     * deployments, so the prefix check would fail across questions anyway.
+     * The start of a thinking block is only signalled (`thinking` event, D56).
+     *
      * @param array<string, \Shipard\Api\Mcp\McpTool> $tools  read-only tools, keyed by name
      */
     private function runAgenticLoop(
@@ -348,9 +358,15 @@ class ChatController
 
             for ($iteration = 1; $iteration <= self::MAX_TOOL_ITERATIONS; $iteration++) {
                 $params = $this->withMessages($base, $messages);
-                $result = $llm->streamChat($params, function (string $delta): void {
-                    $this->sse('text-delta', ['text' => $delta]);
-                });
+                $result = $llm->streamChat(
+                    $params,
+                    function (string $delta): void {
+                        $this->sse('text-delta', ['text' => $delta]);
+                    },
+                    function (): void {
+                        $this->sse('thinking', []);
+                    },
+                );
 
                 $cumInput += $result->inputTokens ?? 0;
                 $cumOutput += $result->outputTokens ?? 0;
@@ -368,13 +384,20 @@ class ChatController
                     ]);
                 }
 
+                // Whole turn for the next step of this loop; stored without
+                // thinking blocks (a turn that was thinking only degrades to
+                // an empty text block — buildAnthropicMessages() skips it).
                 $content = $result->contentBlocks !== []
                     ? $result->contentBlocks
                     : [['type' => 'text', 'text' => $result->text]];
+                $stored = $result->contentWithoutThinking();
+                if ($stored === []) {
+                    $stored = [['type' => 'text', 'text' => $result->text]];
+                }
 
                 $messageId = $this->insertMessage(
                     $conversationId, $userId, 'assistant', 'assistant',
-                    $content, $this->nextSeq($conversationId), $result,
+                    $stored, $this->nextSeq($conversationId), $result,
                 );
 
                 // Final answer — no tools requested.
@@ -632,7 +655,11 @@ class ChatController
 
     /**
      * Builds the Anthropic `messages` array from the full conversation history.
-     * Stored `content` is already a list of Anthropic blocks.
+     * Stored `content` is already a list of Anthropic blocks. Defensively,
+     * thinking blocks (none are stored today, D53) and `text` blocks with an
+     * empty text are dropped — the API rejects an empty text block — and a
+     * turn left without blocks is not sent at all (consecutive turns of the
+     * same role are legal, the API merges them).
      *
      * @return array<int, array{role: string, content: mixed}>
      */
@@ -648,9 +675,16 @@ class ChatController
         foreach ($rows as $row) {
             $content = $row['content'] ?? '';
             $decoded = is_string($content) && $content !== '' ? json_decode($content, true) : [];
+            $blocks = array_values(array_filter(
+                LlmChatResult::stripThinking(is_array($decoded) ? $decoded : []),
+                static fn (array $block): bool => ($block['type'] ?? '') !== 'text' || (string) ($block['text'] ?? '') !== '',
+            ));
+            if ($blocks === []) {
+                continue;
+            }
             $messages[] = [
                 'role'    => (string) $row['role'],
-                'content' => is_array($decoded) ? $decoded : [],
+                'content' => $blocks,
             ];
         }
         return $messages;

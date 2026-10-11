@@ -416,10 +416,11 @@ class ChatControllerTest extends TestCase
      * for the conversations query and $backend for the backends query;
      * insertRow appends to $inserts.
      *
-     * @param array<int, array<string, mixed>> $inserts
-     * @param array<string, mixed>|null        $backend
+     * @param array<int, array<string, mixed>>      $inserts
+     * @param array<string, mixed>|null             $backend
+     * @param list<array{role: string, content: string}>|null $history uložené řádky konverzace (default: jedna uživatelská zpráva)
      */
-    private function streamDb(array &$inserts, ?array $backend, ?string $section = null): DataSourceConnection
+    private function streamDb(array &$inserts, ?array $backend, ?string $section = null, ?array $history = null): DataSourceConnection
     {
         $conv = ['id' => 5, 'user' => self::USER_ID, 'backend' => null, 'docState' => 10, 'section' => $section];
         $db = $this->createMock(DataSourceConnection::class);
@@ -427,7 +428,7 @@ class ChatControllerTest extends TestCase
             fn ($sql, ...$a) => str_contains((string) $sql, 'core_ai_backends') ? $backend : $conv,
         );
         $db->method('fetchSingle')->willReturn(null);
-        $db->method('fetchAll')->willReturn([
+        $db->method('fetchAll')->willReturn($history ?? [
             ['role' => 'user', 'content' => '[{"type":"text","text":"Ahoj"}]'],
         ]);
         $db->method('insertRow')->willReturnCallback(function ($table, array $data) use (&$inserts): int {
@@ -886,6 +887,103 @@ class ChatControllerTest extends TestCase
         $cap = json_decode((string) $inserts[17]['content'], true);
         $this->assertStringContainsString('limitu', $cap[0]['text']);
     }
+
+    // -------------------------------------------------------------------
+    // Thinking bloky v tool smyčce (tasks/chat-thinking-blocks.md D53, D56)
+    // -------------------------------------------------------------------
+
+    private const THINKING_A = ['type' => 'thinking', 'thinking' => '', 'signature' => 'ErUBCkYIChgC'];
+    private const THINKING_B = ['type' => 'thinking', 'thinking' => 'Mám výsledek.', 'signature' => 'EqQBCgIYAhIM'];
+
+    public function testLoopReturnsThinkingBlocksWithinTheTurnButStoresWithoutThem(): void
+    {
+        $inserts = [];
+        $db = $this->streamDb($inserts, self::BACKEND);
+        $read = new FakeReadTool('persons_search');
+        $toolUse = ['type' => 'tool_use', 'id' => 'tu1', 'name' => 'persons_search', 'input' => ['query' => 'Acme']];
+        $llm = new ScriptedLlmClient([
+            // Řada 5.5: tah = prázdný thinking blok (jen signature) + tool_use.
+            new LlmChatResult('', 10, 5, 'tool_use', 'claude-sonnet-5-5',
+                [['id' => 'tu1', 'name' => 'persons_search', 'input' => ['query' => 'Acme']]],
+                [self::THINKING_A, $toolUse]),
+            new LlmChatResult('Našel jsem Acme.', 8, 4, 'end_turn', 'claude-sonnet-5-5', [],
+                [self::THINKING_B, ['type' => 'text', 'text' => 'Našel jsem Acme.']]),
+        ]);
+        $ctrl = new ChatController($db, null, null, $llm, [], $this->registry($read), $this->functions(self::BACKEND));
+
+        $out = $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Najdi Acme'])));
+
+        // Událost thinking jednou na blok, před voláním nástroje i před textem.
+        $this->assertSame(2, substr_count($out, "event: thinking\n"));
+        $this->assertStringContainsString("event: thinking\ndata: []\n\nevent: tool-call", $out);
+        $this->assertStringContainsString('event: message-complete', $out);
+
+        // Druhý požadavek téže smyčky nese asistentův tah celý: thinking blok
+        // beze změny, na stejné pozici (před tool_use), pak výsledky nástroje.
+        $this->assertCount(2, $llm->calls);
+        $second = $llm->calls[1]->messages;
+        $this->assertSame(['user', 'assistant', 'user'], array_column($second, 'role'));
+        $this->assertSame([self::THINKING_A, $toolUse], $second[1]['content']);
+        $this->assertSame('tool_result', $second[2]['content'][0]['type']);
+        // První požadavek (historie z databáze) žádný thinking blok nemá.
+        $this->assertSame([['role' => 'user', 'content' => [['type' => 'text', 'text' => 'Ahoj']]]], $llm->calls[0]->messages);
+
+        // Uložené zprávy: tah jen s thinking a tool_use → tool_use; finální tah → text.
+        $this->assertCount(4, $inserts);
+        $this->assertSame([$toolUse], json_decode((string) $inserts[1]['content'], true));
+        $this->assertSame([['type' => 'text', 'text' => 'Našel jsem Acme.']], json_decode((string) $inserts[3]['content'], true));
+        foreach ($inserts as $row) {
+            $this->assertStringNotContainsString('thinking', (string) $row['content']);
+            $this->assertStringNotContainsString('ErUBCkYIChgC', (string) $row['content']);
+        }
+    }
+
+    public function testThinkingOnlyTurnCompletesAndIsStoredAsEmptyText(): void
+    {
+        // Model skončil jen úvahou (bez textu, bez nástroje): smyčka končí
+        // message-complete, uloží se prázdný text — historie ho pak vynechá.
+        $inserts = [];
+        $db = $this->streamDb($inserts, self::BACKEND);
+        $llm = new ScriptedLlmClient([
+            new LlmChatResult('', 10, 5, 'end_turn', 'claude-sonnet-5-5', [], [self::THINKING_A]),
+        ]);
+        $ctrl = new ChatController($db, null, null, $llm, [], null, $this->functions(self::BACKEND));
+
+        $out = $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'x'])));
+
+        $this->assertStringContainsString("event: thinking\n", $out);
+        $this->assertStringContainsString('event: message-complete', $out);
+        $this->assertCount(2, $inserts);
+        $this->assertSame([['type' => 'text', 'text' => '']], json_decode((string) $inserts[1]['content'], true));
+    }
+
+    public function testHistoryFromDatabaseDropsThinkingEmptyTextAndEmptyTurns(): void
+    {
+        // Obranný filtr: thinking bloky ve starých řádcích (dnes žádné),
+        // prázdné textové bloky a tah bez bloků se do požadavku nedostanou.
+        $inserts = [];
+        $history = [
+            ['role' => 'user', 'content' => '[{"type":"text","text":"Najdi Acme"}]'],
+            ['role' => 'assistant', 'content' => json_encode([self::THINKING_A, ['type' => 'text', 'text' => ''],
+                ['type' => 'tool_use', 'id' => 'tu1', 'name' => 'persons_search', 'input' => []]])],
+            ['role' => 'user', 'content' => '[{"type":"tool_result","tool_use_id":"tu1","content":"[]"}]'],
+            ['role' => 'assistant', 'content' => json_encode([self::THINKING_B])],
+            ['role' => 'assistant', 'content' => '[{"type":"text","text":""}]'],
+            ['role' => 'user', 'content' => '[{"type":"text","text":"A dál?"}]'],
+        ];
+        $db = $this->streamDb($inserts, self::BACKEND, null, $history);
+        $llm = new ScriptedLlmClient([$this->finalResult('Nic víc.')]);
+        $ctrl = new ChatController($db, null, null, $llm, [], null, $this->functions(self::BACKEND));
+
+        $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'A dál?'])));
+
+        $this->assertSame([
+            ['role' => 'user', 'content' => [['type' => 'text', 'text' => 'Najdi Acme']]],
+            ['role' => 'assistant', 'content' => [['type' => 'tool_use', 'id' => 'tu1', 'name' => 'persons_search', 'input' => []]]],
+            ['role' => 'user', 'content' => [['type' => 'tool_result', 'tool_use_id' => 'tu1', 'content' => '[]']]],
+            ['role' => 'user', 'content' => [['type' => 'text', 'text' => 'A dál?']]],
+        ], $llm->calls[0]->messages);
+    }
 }
 
 /**
@@ -917,12 +1015,16 @@ final class FakeLlmClient implements LlmClient
 /**
  * Scripted LlmClient: returns queued per-turn results in order; once the queue
  * is exhausted, repeats $whenExhausted (used for the iteration-cap test).
- * Emits each result's text as a single delta and records the last params seen.
+ * Emits each result's text as a single delta, calls $onThinking once per
+ * thinking block of the result (as the real client does) and records the
+ * params of every call.
  */
 final class ScriptedLlmClient implements LlmClient
 {
     private int $turn = 0;
     public ?LlmChatParams $lastParams = null;
+    /** @var list<LlmChatParams> */
+    public array $calls = [];
 
     /** @param LlmChatResult[] $turns */
     public function __construct(private array $turns, private ?LlmChatResult $whenExhausted = null) {}
@@ -930,10 +1032,16 @@ final class ScriptedLlmClient implements LlmClient
     public function streamChat(LlmChatParams $params, callable $onTextDelta, ?callable $onThinking = null): LlmChatResult
     {
         $this->lastParams = $params;
+        $this->calls[] = $params;
         $result = $this->turns[$this->turn] ?? $this->whenExhausted;
         $this->turn++;
         if ($result === null) {
             throw new \RuntimeException('ScriptedLlmClient: no scripted turn');
+        }
+        foreach ($result->contentBlocks as $block) {
+            if (in_array($block['type'] ?? '', LlmChatResult::THINKING_BLOCK_TYPES, true) && $onThinking !== null) {
+                $onThinking();
+            }
         }
         if ($result->text !== '') {
             $onTextDelta($result->text);
