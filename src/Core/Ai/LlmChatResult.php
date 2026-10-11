@@ -8,13 +8,18 @@ namespace Shipard\Core\Ai;
  * Aggregated result of a streaming chat turn: the full text plus usage
  * telemetry collected from the stream's message_start / message_delta events.
  *
- * `contentBlocks` is the assistant turn's full block list in order (text +
- * tool_use) — for faithful persistence and feeding the turn back to the model.
- * `toolUses` is the tool_use subset (`[{id, name, input}]`); empty means the
- * model produced a final answer.
+ * `contentBlocks` is the assistant turn's full block list in order (text,
+ * tool_use, thinking / redacted_thinking) — for feeding the turn back to the
+ * model unchanged within a tool loop. {@see contentWithoutThinking()} is the
+ * shape to persist (tasks/chat-thinking-blocks.md D53). `toolUses` is the
+ * tool_use subset (`[{id, name, input}]`); empty means the model produced a
+ * final answer.
  */
 final readonly class LlmChatResult
 {
+    /** Block types that carry the model's reasoning — never stored, never shown. */
+    public const array THINKING_BLOCK_TYPES = ['thinking', 'redacted_thinking'];
+
     /**
      * @param array<int, array{id: string, name: string, input: array}> $toolUses
      * @param array<int, array<string, mixed>>                           $contentBlocks
@@ -43,5 +48,30 @@ final readonly class LlmChatResult
     public function isComplete(): bool
     {
         return $this->stopReason === null || in_array($this->stopReason, self::COMPLETE_STOP_REASONS, true);
+    }
+
+    /**
+     * Content blocks without `thinking` / `redacted_thinking` — what the chat
+     * stores and sends with later questions (D53). `text` and `toolUses` are
+     * unaffected by thinking blocks either way.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function contentWithoutThinking(): array
+    {
+        return self::stripThinking($this->contentBlocks);
+    }
+
+    /**
+     * @param array<int, mixed> $blocks
+     * @return array<int, array<string, mixed>>
+     */
+    public static function stripThinking(array $blocks): array
+    {
+        return array_values(array_filter(
+            $blocks,
+            static fn ($block): bool => is_array($block)
+                && !in_array($block['type'] ?? '', self::THINKING_BLOCK_TYPES, true),
+        ));
     }
 }

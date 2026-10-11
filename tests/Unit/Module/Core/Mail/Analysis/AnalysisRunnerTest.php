@@ -43,7 +43,7 @@ final class ScriptedLlmClient implements LlmClient
     /** @param list<LlmChatResult|\Throwable> $script */
     public function __construct(private array $script) {}
 
-    public function streamChat(LlmChatParams $params, callable $onTextDelta): LlmChatResult
+    public function streamChat(LlmChatParams $params, callable $onTextDelta, ?callable $onThinking = null): LlmChatResult
     {
         $this->calls[] = $params;
         $next = array_shift($this->script);

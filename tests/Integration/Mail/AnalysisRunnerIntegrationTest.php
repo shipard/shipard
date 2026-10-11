@@ -30,7 +30,7 @@ final class FixedOutputLlmClient implements LlmClient
 
     public function __construct(private readonly string $text) {}
 
-    public function streamChat(LlmChatParams $params, callable $onTextDelta): LlmChatResult
+    public function streamChat(LlmChatParams $params, callable $onTextDelta, ?callable $onThinking = null): LlmChatResult
     {
         $this->calls[] = $params;
         $onTextDelta($this->text);

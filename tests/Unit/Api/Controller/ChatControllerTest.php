@@ -901,7 +901,7 @@ final class FakeLlmClient implements LlmClient
         private ?LlmChatResult $result = null,
     ) {}
 
-    public function streamChat(LlmChatParams $params, callable $onTextDelta): LlmChatResult
+    public function streamChat(LlmChatParams $params, callable $onTextDelta, ?callable $onThinking = null): LlmChatResult
     {
         foreach ($this->deltas as $delta) {
             $onTextDelta($delta);
@@ -927,7 +927,7 @@ final class ScriptedLlmClient implements LlmClient
     /** @param LlmChatResult[] $turns */
     public function __construct(private array $turns, private ?LlmChatResult $whenExhausted = null) {}
 
-    public function streamChat(LlmChatParams $params, callable $onTextDelta): LlmChatResult
+    public function streamChat(LlmChatParams $params, callable $onTextDelta, ?callable $onThinking = null): LlmChatResult
     {
         $this->lastParams = $params;
         $result = $this->turns[$this->turn] ?? $this->whenExhausted;

@@ -9,7 +9,7 @@ use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
 use Shipard\Core\Logging\ErrorLogger;
 
 /**
- * Anthropic Messages API client, streaming, with tool-use blocks.
+ * Anthropic Messages API client, streaming, with tool-use and thinking blocks.
  *
  * Raw HTTP (curl) on purpose — the project has no PHP Anthropic SDK dependency,
  * and the task specifies a thin streamed path.
@@ -25,6 +25,13 @@ use Shipard\Core\Logging\ErrorLogger;
  * its own code. Adjustments are logged once per call; a model outside the
  * catalog is sent as-is and warned about once per process. Without a
  * catalog (null, or an empty one before `ds-upgrade`) nothing is shaped.
+ *
+ * Thinking blocks (tasks/chat-thinking-blocks.md D53, D56): `thinking` and
+ * `redacted_thinking` blocks are collected from the stream exactly as they
+ * arrive (empty text and the opaque signature included) and returned in
+ * `contentBlocks` at their position, so a tool loop can send the turn back
+ * unchanged. Their text is never surfaced; `$onThinking` only signals that a
+ * block started. The signature is opaque — never log, store or display it.
  */
 class AnthropicLlmClient implements LlmClient
 {
@@ -37,12 +44,15 @@ class AnthropicLlmClient implements LlmClient
     /** @var array<string, true> models already reported as missing from the catalog */
     private static array $unknownModelsWarned = [];
 
+    /** @var array<string, true> content block types already reported as unknown */
+    private static array $unknownBlockTypesWarned = [];
+
     public function __construct(?ModelCatalog $catalog = null)
     {
         $this->catalog = $catalog;
     }
 
-    public function streamChat(LlmChatParams $params, callable $onTextDelta): LlmChatResult
+    public function streamChat(LlmChatParams $params, callable $onTextDelta, ?callable $onThinking = null): LlmChatResult
     {
         if ($params->provider !== 'anthropic') {
             throw new LlmUnsupportedProviderException($params->provider);
@@ -80,9 +90,9 @@ class AnthropicLlmClient implements LlmClient
 
         // Accumulator threaded through the SSE parser. `buf` holds the partial
         // line carried across chunk boundaries; `blocks` collects content blocks
-        // keyed by their stream index (text + tool_use, finalized below);
-        // `error` records an inline SSE error event (thrown after the stream
-        // drains, not from the callback).
+        // keyed by their stream index (text, tool_use, thinking — finalized
+        // below); `error` records an inline SSE error event (thrown after the
+        // stream drains, not from the callback).
         $acc = [
             'buf'    => '',
             'text'   => '',
@@ -96,8 +106,8 @@ class AnthropicLlmClient implements LlmClient
 
         $json = (string) json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        $this->sendStreamingRequest($params, $json, function (string $chunk) use (&$acc, $onTextDelta): void {
-            $this->feedSse($chunk, $acc, $onTextDelta);
+        $this->sendStreamingRequest($params, $json, function (string $chunk) use (&$acc, $onTextDelta, $onThinking): void {
+            $this->feedSse($chunk, $acc, $onTextDelta, $onThinking);
         });
 
         if ($acc['error'] !== null) {
@@ -160,6 +170,27 @@ class AnthropicLlmClient implements LlmClient
     }
 
     /**
+     * A content block type the parser does not know is dropped — and said so
+     * once per process per type, instead of silently (tasks/chat-thinking-blocks.md
+     * step 1). A new block type the API introduces thus shows up in the log.
+     */
+    private static function warnUnknownBlockType(string $type): void
+    {
+        $key = $type !== '' ? $type : '(none)';
+        if (isset(self::$unknownBlockTypesWarned[$key])) {
+            return;
+        }
+        self::$unknownBlockTypesWarned[$key] = true;
+        ErrorLogger::warn('AnthropicLlmClient: unknown content block type in the stream — block dropped', ['type' => $key]);
+    }
+
+    /** Forgets which unknown block types were already warned about (tests). */
+    public static function resetUnknownBlockTypeWarningsForTesting(): void
+    {
+        self::$unknownBlockTypesWarned = [];
+    }
+
+    /**
      * Anthropic requires `tool_use.input` to be a JSON object. The PHP
      * round-trip (json_decode assoc in finalizeBlocks → persistence in
      * ChatController → json_encode here) turns an empty object `{}` into
@@ -169,6 +200,10 @@ class AnthropicLlmClient implements LlmClient
      * encoding; non-empty associative arrays already encode as objects.
      * Only the top-level `input` is known to be an object — nested empty
      * arrays are left alone (a JSON list `[]` inside input is legitimate).
+     *
+     * Every other block — thinking blocks above all — passes through exactly
+     * as given: no re-typing, no dropping of empty fields. The API verifies
+     * a returned thinking block byte for byte (D53).
      *
      * @param array<int, array<string, mixed>> $messages
      * @return array<int, array<string, mixed>>
@@ -193,7 +228,9 @@ class AnthropicLlmClient implements LlmClient
 
     /**
      * Turns the index-keyed accumulator into ordered Anthropic content blocks
-     * and the tool_use subset.
+     * and the tool_use subset. Thinking blocks keep their position; a thinking
+     * block with empty text is a valid block and stays (the signature carries
+     * the reasoning on the 5.5 series).
      *
      * @param array<int, array<string, mixed>> $rawBlocks
      * @return array{0: array<int, array<string, mixed>>, 1: array<int, array{id: string, name: string, input: array}>}
@@ -221,6 +258,14 @@ class AnthropicLlmClient implements LlmClient
                     'name'  => (string) ($block['name'] ?? ''),
                     'input' => $input,
                 ];
+            } elseif (($block['type'] ?? '') === 'thinking') {
+                $contentBlocks[] = [
+                    'type'      => 'thinking',
+                    'thinking'  => (string) ($block['thinking'] ?? ''),
+                    'signature' => (string) ($block['signature'] ?? ''),
+                ];
+            } elseif (($block['type'] ?? '') === 'redacted_thinking') {
+                $contentBlocks[] = $block; // opaque, returned exactly as received
             }
         }
 
@@ -332,8 +377,9 @@ class AnthropicLlmClient implements LlmClient
      *
      * @param array<string, mixed>          $acc
      * @param callable(string $text): void  $onTextDelta
+     * @param (callable(): void)|null       $onThinking
      */
-    private function feedSse(string $chunk, array &$acc, callable $onTextDelta): void
+    private function feedSse(string $chunk, array &$acc, callable $onTextDelta, ?callable $onThinking): void
     {
         $acc['buf'] .= $chunk;
         while (($nl = strpos($acc['buf'], "\n")) !== false) {
@@ -349,7 +395,7 @@ class AnthropicLlmClient implements LlmClient
             }
             $data = json_decode($payload, true);
             if (is_array($data)) {
-                $this->dispatchEvent($data, $acc, $onTextDelta);
+                $this->dispatchEvent($data, $acc, $onTextDelta, $onThinking);
             }
         }
     }
@@ -358,8 +404,9 @@ class AnthropicLlmClient implements LlmClient
      * @param array<string, mixed>          $data
      * @param array<string, mixed>          $acc
      * @param callable(string $text): void  $onTextDelta
+     * @param (callable(): void)|null       $onThinking
      */
-    private function dispatchEvent(array $data, array &$acc, callable $onTextDelta): void
+    private function dispatchEvent(array $data, array &$acc, callable $onTextDelta, ?callable $onThinking): void
     {
         switch ($data['type'] ?? '') {
             case 'message_start':
@@ -373,16 +420,35 @@ class AnthropicLlmClient implements LlmClient
 
             case 'content_block_start':
                 $index = (int) ($data['index'] ?? 0);
-                $cb = $data['content_block'] ?? [];
-                if (($cb['type'] ?? '') === 'text') {
+                $cb = is_array($data['content_block'] ?? null) ? $data['content_block'] : [];
+                $type = (string) ($cb['type'] ?? '');
+                if ($type === 'text') {
                     $acc['blocks'][$index] = ['type' => 'text', 'text' => (string) ($cb['text'] ?? '')];
-                } elseif (($cb['type'] ?? '') === 'tool_use') {
+                } elseif ($type === 'tool_use') {
                     $acc['blocks'][$index] = [
                         'type' => 'tool_use',
                         'id'   => (string) ($cb['id'] ?? ''),
                         'name' => (string) ($cb['name'] ?? ''),
                         'json' => '',
                     ];
+                } elseif ($type === 'thinking') {
+                    // Text is empty by default on the 5.5 series; the signature
+                    // comes through signature_delta. Both are kept verbatim.
+                    $acc['blocks'][$index] = [
+                        'type'      => 'thinking',
+                        'thinking'  => (string) ($cb['thinking'] ?? ''),
+                        'signature' => (string) ($cb['signature'] ?? ''),
+                    ];
+                    if ($onThinking !== null) {
+                        $onThinking();
+                    }
+                } elseif ($type === 'redacted_thinking') {
+                    $acc['blocks'][$index] = $cb; // opaque `data`, returned as received
+                    if ($onThinking !== null) {
+                        $onThinking();
+                    }
+                } else {
+                    self::warnUnknownBlockType($type);
                 }
                 break;
 
@@ -401,6 +467,14 @@ class AnthropicLlmClient implements LlmClient
                 } elseif ($deltaType === 'input_json_delta') {
                     if (isset($acc['blocks'][$index]) && $acc['blocks'][$index]['type'] === 'tool_use') {
                         $acc['blocks'][$index]['json'] .= (string) ($data['delta']['partial_json'] ?? '');
+                    }
+                } elseif ($deltaType === 'thinking_delta') {
+                    if (isset($acc['blocks'][$index]) && $acc['blocks'][$index]['type'] === 'thinking') {
+                        $acc['blocks'][$index]['thinking'] .= (string) ($data['delta']['thinking'] ?? '');
+                    }
+                } elseif ($deltaType === 'signature_delta') {
+                    if (isset($acc['blocks'][$index]) && $acc['blocks'][$index]['type'] === 'thinking') {
+                        $acc['blocks'][$index]['signature'] .= (string) ($data['delta']['signature'] ?? '');
                     }
                 }
                 break;

@@ -388,6 +388,241 @@ class AnthropicLlmClientTest extends TestCase
     }
 
     // -------------------------------------------------------------------
+    // Thinking bloky (tasks/chat-thinking-blocks.md D53, D56)
+    // -------------------------------------------------------------------
+
+    /** @param list<string> $events `data:` payloady v pořadí */
+    private function stream(array $events): string
+    {
+        $lines = [];
+        foreach ($events as $json) {
+            $type = json_decode($json, true)['type'] ?? 'x';
+            $lines[] = "event: {$type}";
+            $lines[] = 'data: ' . $json;
+            $lines[] = '';
+        }
+        return implode("\n", $lines) . "\n";
+    }
+
+    public function testParsesThinkingBlockWithTextAndSignature(): void
+    {
+        $stream = $this->stream([
+            '{"type":"message_start","message":{"id":"msg_3","model":"claude-sonnet-5-5","usage":{"input_tokens":30,"output_tokens":1}}}',
+            '{"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":"","signature":""}}',
+            '{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"Nejdřív "}}',
+            '{"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"zjistím."}}',
+            '{"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"EqQBCgIYAhIM"}}',
+            '{"type":"content_block_stop","index":0}',
+            '{"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}}',
+            '{"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Ahoj"}}',
+            '{"type":"content_block_stop","index":1}',
+            '{"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":40}}',
+            '{"type":"message_stop"}',
+        ]);
+
+        $deltas = [];
+        $thinkingStarted = 0;
+        $result = $this->client(str_split($stream, 13))->streamChat(
+            $this->params(),
+            function (string $t) use (&$deltas): void { $deltas[] = $t; },
+            function () use (&$thinkingStarted): void { $thinkingStarted++; },
+        );
+
+        // Text úvah nejde do textu odpovědi ani do textových delt.
+        $this->assertSame(['Ahoj'], $deltas);
+        $this->assertSame('Ahoj', $result->text);
+        $this->assertSame(1, $thinkingStarted, 'onThinking jednou na blok');
+        $this->assertSame([
+            ['type' => 'thinking', 'thinking' => 'Nejdřív zjistím.', 'signature' => 'EqQBCgIYAhIM'],
+            ['type' => 'text', 'text' => 'Ahoj'],
+        ], $result->contentBlocks);
+        $this->assertSame([['type' => 'text', 'text' => 'Ahoj']], $result->contentWithoutThinking());
+        $this->assertSame([], $result->toolUses);
+    }
+
+    public function testEmptyThinkingBlockWithSignatureIsKept(): void
+    {
+        // Řada 5.5: text úvahy je ve výchozím stavu prázdný, úvahu nese jen
+        // signature. Blok je platný a při vracení povinný — nesmí vypadnout.
+        $stream = $this->stream([
+            '{"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":"","signature":""}}',
+            '{"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"ErUBCkYIChgC"}}',
+            '{"type":"content_block_stop","index":0}',
+            '{"type":"content_block_start","index":1,"content_block":{"type":"tool_use","id":"toolu_7","name":"persons_search","input":{}}}',
+            '{"type":"content_block_delta","index":1,"delta":{"type":"input_json_delta","partial_json":"{\"query\":\"Acme\"}"}}',
+            '{"type":"content_block_stop","index":1}',
+            '{"type":"message_delta","delta":{"stop_reason":"tool_use"},"usage":{"output_tokens":90}}',
+        ]);
+
+        $thinkingStarted = 0;
+        $result = $this->client([$stream])->streamChat(
+            $this->params(),
+            static function (): void {},
+            function () use (&$thinkingStarted): void { $thinkingStarted++; },
+        );
+
+        $this->assertSame(1, $thinkingStarted);
+        $this->assertSame('', $result->text);
+        $this->assertSame([
+            ['type' => 'thinking', 'thinking' => '', 'signature' => 'ErUBCkYIChgC'],
+            ['type' => 'tool_use', 'id' => 'toolu_7', 'name' => 'persons_search', 'input' => ['query' => 'Acme']],
+        ], $result->contentBlocks);
+        $this->assertCount(1, $result->toolUses);
+        $this->assertSame([
+            ['type' => 'tool_use', 'id' => 'toolu_7', 'name' => 'persons_search', 'input' => ['query' => 'Acme']],
+        ], $result->contentWithoutThinking());
+    }
+
+    public function testRedactedThinkingBlockIsKeptAsReceived(): void
+    {
+        $stream = $this->stream([
+            '{"type":"content_block_start","index":0,"content_block":{"type":"redacted_thinking","data":"EmwKAhgBEgy3va3pzix/LafPsn4aDFIT2Xlxh0L5L8rLIyIw"}}',
+            '{"type":"content_block_stop","index":0}',
+            '{"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}}',
+            '{"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Hotovo."}}',
+            '{"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":9}}',
+        ]);
+
+        $thinkingStarted = 0;
+        $result = $this->client(str_split($stream, 23))->streamChat(
+            $this->params(),
+            static function (): void {},
+            function () use (&$thinkingStarted): void { $thinkingStarted++; },
+        );
+
+        $this->assertSame(1, $thinkingStarted);
+        $this->assertSame([
+            ['type' => 'redacted_thinking', 'data' => 'EmwKAhgBEgy3va3pzix/LafPsn4aDFIT2Xlxh0L5L8rLIyIw'],
+            ['type' => 'text', 'text' => 'Hotovo.'],
+        ], $result->contentBlocks);
+        $this->assertSame([['type' => 'text', 'text' => 'Hotovo.']], $result->contentWithoutThinking());
+    }
+
+    public function testKeepsThinkingTextAndToolUseOrderingAcrossBlocks(): void
+    {
+        // Dva thinking bloky v jednom tahu (mezi textem a nástrojem) — pořadí
+        // podle indexu zůstává, onThinking jednou na každý blok.
+        $stream = $this->stream([
+            '{"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":"","signature":""}}',
+            '{"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"sigA"}}',
+            '{"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}}',
+            '{"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Hledám…"}}',
+            '{"type":"content_block_start","index":2,"content_block":{"type":"thinking","thinking":"","signature":""}}',
+            '{"type":"content_block_delta","index":2,"delta":{"type":"thinking_delta","thinking":"Zkusím nástroj."}}',
+            '{"type":"content_block_delta","index":2,"delta":{"type":"signature_delta","signature":"sigB"}}',
+            '{"type":"content_block_start","index":3,"content_block":{"type":"tool_use","id":"toolu_9","name":"documents_search","input":{}}}',
+            '{"type":"content_block_delta","index":3,"delta":{"type":"input_json_delta","partial_json":"{}"}}',
+            '{"type":"message_delta","delta":{"stop_reason":"tool_use"},"usage":{"output_tokens":5}}',
+        ]);
+
+        $thinkingStarted = 0;
+        $result = $this->client([$stream])->streamChat(
+            $this->params(),
+            static function (): void {},
+            function () use (&$thinkingStarted): void { $thinkingStarted++; },
+        );
+
+        $this->assertSame(2, $thinkingStarted);
+        $this->assertSame(['thinking', 'text', 'thinking', 'tool_use'], array_column($result->contentBlocks, 'type'));
+        $this->assertSame('sigA', $result->contentBlocks[0]['signature']);
+        $this->assertSame('Zkusím nástroj.', $result->contentBlocks[2]['thinking']);
+        $this->assertSame('Hledám…', $result->text);
+        $this->assertSame(['text', 'tool_use'], array_column($result->contentWithoutThinking(), 'type'));
+    }
+
+    public function testResponseWithoutThinkingIsUnchangedAndOnThinkingIsOptional(): void
+    {
+        $thinkingStarted = 0;
+        $result = $this->client([$this->sampleStream()])->streamChat(
+            $this->params(),
+            static function (): void {},
+            function () use (&$thinkingStarted): void { $thinkingStarted++; },
+        );
+        $this->assertSame(0, $thinkingStarted);
+        $this->assertSame([['type' => 'text', 'text' => 'Ahoj, světe']], $result->contentBlocks);
+        $this->assertSame($result->contentBlocks, $result->contentWithoutThinking());
+
+        // Bez onThinking (dnešní volající) thinking blok projde bez zavolání čehokoli.
+        $stream = $this->stream([
+            '{"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":"","signature":""}}',
+            '{"type":"content_block_delta","index":0,"delta":{"type":"signature_delta","signature":"sig"}}',
+            '{"type":"content_block_start","index":1,"content_block":{"type":"text","text":""}}',
+            '{"type":"content_block_delta","index":1,"delta":{"type":"text_delta","text":"Ok"}}',
+            '{"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":2}}',
+        ]);
+        $result = $this->client([$stream])->streamChat($this->params(), static function (): void {});
+        $this->assertSame('Ok', $result->text);
+        $this->assertSame('thinking', $result->contentBlocks[0]['type']);
+    }
+
+    public function testThinkingBlocksAreSentBackVerbatim(): void
+    {
+        // Druhý krok tool smyčky: asistentův tah s prázdným thinking blokem
+        // a redacted_thinking jde do požadavku přesně tak, jak přišel —
+        // žádné přetypování, žádné vynechání prázdných polí, stejné pořadí.
+        $params = new LlmChatParams(
+            provider: 'anthropic',
+            model: 'claude-sonnet-5-5',
+            apiKey: 'sk-test',
+            baseUrl: '',
+            system: null,
+            messages: [
+                ['role' => 'user', 'content' => [['type' => 'text', 'text' => 'Najdi Acme']]],
+                ['role' => 'assistant', 'content' => [
+                    ['type' => 'thinking', 'thinking' => '', 'signature' => 'ErUBCkYIChgC'],
+                    ['type' => 'redacted_thinking', 'data' => 'EmwKAhgB'],
+                    ['type' => 'tool_use', 'id' => 'toolu_1', 'name' => 'persons_search', 'input' => []],
+                ]],
+                ['role' => 'user', 'content' => [
+                    ['type' => 'tool_result', 'tool_use_id' => 'toolu_1', 'content' => '[]'],
+                ]],
+            ],
+            maxTokens: 256,
+        );
+
+        $body = $this->capturedBody($params);
+
+        $this->assertSame([
+            ['type' => 'thinking', 'thinking' => '', 'signature' => 'ErUBCkYIChgC'],
+            ['type' => 'redacted_thinking', 'data' => 'EmwKAhgB'],
+            ['type' => 'tool_use', 'id' => 'toolu_1', 'name' => 'persons_search', 'input' => []],
+        ], $body['messages'][1]['content']);
+        $this->assertStringContainsString('"thinking":""', json_encode($body['messages'][1]));
+    }
+
+    public function testUnknownBlockTypeIsDroppedAndWarnedOncePerType(): void
+    {
+        $log = tempnam(sys_get_temp_dir(), 'shpd-llm-');
+        ErrorLogger::resetForTesting();
+        ErrorLogger::setLogPath($log);
+        // ErrorLogger každý zápis zrcadlí přes error_log() — v CLI na stderr.
+        $previousErrorLog = ini_set('error_log', '/dev/null');
+        AnthropicLlmClient::resetUnknownBlockTypeWarningsForTesting();
+        try {
+            $stream = $this->stream([
+                '{"type":"content_block_start","index":0,"content_block":{"type":"server_tool_use","id":"srvtoolu_1","name":"web_search","input":{}}}',
+                '{"type":"content_block_stop","index":0}',
+                '{"type":"content_block_start","index":1,"content_block":{"type":"server_tool_use","id":"srvtoolu_2","name":"web_search","input":{}}}',
+                '{"type":"content_block_stop","index":1}',
+                '{"type":"content_block_start","index":2,"content_block":{"type":"text","text":""}}',
+                '{"type":"content_block_delta","index":2,"delta":{"type":"text_delta","text":"Ok"}}',
+                '{"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":2}}',
+            ]);
+            $result = $this->client([$stream])->streamChat($this->params(), static function (): void {});
+
+            $this->assertSame([['type' => 'text', 'text' => 'Ok']], $result->contentBlocks);
+            $written = (string) file_get_contents($log);
+            $this->assertSame(1, substr_count($written, 'unknown content block type'), 'varování jednou za proces per typ');
+            $this->assertStringContainsString('server_tool_use', $written);
+        } finally {
+            AnthropicLlmClient::resetUnknownBlockTypeWarningsForTesting();
+            ErrorLogger::resetForTesting();
+            ini_set('error_log', (string) $previousErrorLog);
+            @unlink($log);
+        }
+    }
+
+    // -------------------------------------------------------------------
     // Tvarování podle katalogu modelů (tasks/ai-model-catalog.md D32)
     // -------------------------------------------------------------------
 
