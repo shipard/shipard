@@ -95,9 +95,9 @@ final class ModelCatalogTest extends TestCase
         ErrorLogger::resetForTesting();
     }
 
-    /** Mapa úrovní jako v repu (D37): fast a balanced, strong záměrně bez výchozího. */
+    /** Mapa úrovní jako v repu (D37): fast a balanced, strong záměrně bez výchozího; balanced s modelem pro Bedrock EU (D58). */
     private const TIERS = [
-        'balanced' => ['name' => 'Balanced', 'order' => 20, 'model' => 'claude-sonnet-4-6'],
+        'balanced' => ['name' => 'Balanced', 'order' => 20, 'model' => 'claude-sonnet-4-6', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
         'fast' => ['name' => 'Fast', 'order' => 10, 'model' => 'claude-haiku-5-5'],
     ];
 
@@ -201,6 +201,34 @@ final class ModelCatalogTest extends TestCase
         $this->assertNull(ModelCatalog::empty()->defaultModel(ModelSpec::TIER_BALANCED));
         // Katalog bez mapy úrovní (compiled config před přidáním core.ai.tiers).
         $this->assertNull(ModelCatalog::fromArray(self::FIXTURE)->defaultModel(ModelSpec::TIER_BALANCED));
+    }
+
+    public function testDefaultModelPerPlatform(): void
+    {
+        // tasks/ai-bedrock-eu.md D58: položka pro platformu má přednost, bez ní obecný model.
+        $catalog = $this->catalog();
+
+        $this->assertSame('claude-sonnet-5-5', $catalog->defaultModel(ModelSpec::TIER_BALANCED, 'bedrock-eu'));
+        $this->assertSame('claude-sonnet-4-6', $catalog->defaultModel(ModelSpec::TIER_BALANCED, 'anthropic'));
+        $this->assertSame('claude-sonnet-4-6', $catalog->defaultModel(ModelSpec::TIER_BALANCED, null));
+        $this->assertSame('claude-haiku-5-5', $catalog->defaultModel(ModelSpec::TIER_FAST, 'bedrock-eu'), 'úroveň bez položky pro platformu');
+        $this->assertNull($catalog->defaultModel(ModelSpec::TIER_STRONG, 'bedrock-eu'));
+        $this->assertSame(['bedrock-eu' => 'claude-sonnet-5-5'], $catalog->tiers()['balanced']['platformModels']);
+        $this->assertSame([], $catalog->tiers()['fast']['platformModels']);
+
+        foreach ([
+            ['platformModels' => 'claude-sonnet-5-5'],
+            ['platformModels' => ['bedrock-eu' => '']],
+            ['platformModels' => ['' => 'claude-sonnet-5-5']],
+            ['platformModels' => [0 => 'claude-sonnet-5-5']],
+        ] as $extra) {
+            try {
+                ModelCatalog::fromArray(self::FIXTURE, ['fast' => ['model' => 'claude-haiku-5-5'] + $extra]);
+                $this->fail('nevalidní platformModels musí být chyba: ' . json_encode($extra));
+            } catch (\InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
     }
 
     public function testTiersAreOrderedAndValidated(): void

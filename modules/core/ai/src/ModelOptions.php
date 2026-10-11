@@ -19,8 +19,10 @@ final class ModelOptions
 {
     /**
      * Modely katalogu, které nabízíme (s úrovní), seřazené podle `order`.
-     * Vyřazené modely nesou datum konce; `$current` mimo katalog se přidá
-     * jako „vlastní“ položka, aby formulář uloženou hodnotu neztratil.
+     * Vyřazené modely nesou datum konce; `$current` mimo nabídku se přidá
+     * jako další položka, aby formulář uloženou hodnotu neztratil — ID
+     * platformy, které katalog zná (`eu.anthropic.…`), s názvem modelu,
+     * neznámé ID jako „vlastní ID“.
      *
      * @return list<array{value: string, label: string}>
      */
@@ -36,8 +38,9 @@ final class ModelOptions
             $seen[$spec->id] = true;
         }
         $current = $current !== null ? trim($current) : '';
-        if ($current !== '' && !isset($seen[$current]) && $catalog->find($current) === null) {
-            $options[] = ['value' => $current, 'label' => "{$current} (vlastní ID)"];
+        if ($current !== '' && !isset($seen[$current])) {
+            $spec = $catalog->find($current);
+            $options[] = ['value' => $current, 'label' => $spec !== null ? "{$current} ({$spec->name})" : "{$current} (vlastní ID)"];
         }
         return $options;
     }

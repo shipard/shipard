@@ -70,6 +70,7 @@ final class ModelCatalogViewerTest extends TestCase
 
     private const LABELS = [
         'badge.defaultFor' => ['name' => 'Výchozí pro: {tiers}'],
+        'badge.defaultForOn' => ['name' => 'Výchozí pro: {tiers} na platformě {platform}'],
         'badge.retiring' => ['name' => 'Končí {date}'],
         'row.prices' => ['name' => 'vstup {input} · výstup {output} / 1M tokenů'],
         'group.model' => ['name' => 'Model'],
@@ -81,6 +82,7 @@ final class ModelCatalogViewerTest extends TestCase
         'label.replacedBy' => ['name' => 'Náhrada'],
         'label.retiresNotBefore' => ['name' => 'Dostupný nejméně do'],
         'label.defaultFor' => ['name' => 'Výchozí model úrovní'],
+        'label.defaultForOn' => ['name' => 'Výchozí model úrovní na platformě {platform}'],
         'label.temperature' => ['name' => 'Přijímá teplotu'],
         'label.thinkingModes' => ['name' => 'Režimy přemýšlení'],
         'label.effortLevels' => ['name' => 'Úrovně úsilí'],
@@ -96,14 +98,15 @@ final class ModelCatalogViewerTest extends TestCase
         'value.longPrompt' => ['name' => 'nad {over} vstupních tokenů: vstup {input} · výstup {output} / 1M tokenů'],
     ];
 
-    private function viewer(bool $withLabels = true, ?string $language = 'cs'): ModelCatalogViewer
+    /** @param array<string, array<string, mixed>>|null $tiers mapa úrovní místo výchozí fixtury */
+    private function viewer(bool $withLabels = true, ?string $language = 'cs', ?array $tiers = null): ModelCatalogViewer
     {
         $items = [
             ModelCatalog::CFG_ITEM => self::MODELS,
-            ModelCatalog::TIERS_CFG_ITEM => self::TIERS,
+            ModelCatalog::TIERS_CFG_ITEM => $tiers ?? self::TIERS,
             'core.ai.thinkingModes' => ['adaptive' => ['name' => 'Adaptivní'], 'disabled' => ['name' => 'Vypnuté'], 'enabled' => ['name' => 'Zapnuté']],
             'core.ai.effortLevels' => ['low' => ['name' => 'Nízké'], 'medium' => ['name' => 'Střední'], 'high' => ['name' => 'Vysoké'], 'xhigh' => ['name' => 'Velmi vysoké'], 'max' => ['name' => 'Maximální']],
-            'core.ai.platforms' => ['anthropic' => ['name' => 'Anthropic']],
+            'core.ai.platforms' => ['anthropic' => ['name' => 'Anthropic'], 'bedrock-eu' => ['name' => 'Amazon Bedrock (EU)', 'modelIds' => 'bedrock', 'modelIdPrefix' => 'eu.']],
         ];
         if ($withLabels) {
             $items[AiViewerBase::LABELS_CFG_ITEM] = self::LABELS;
@@ -170,6 +173,34 @@ final class ModelCatalogViewerTest extends TestCase
         $haiku = $viewer->renderRow($rows[0]);
         $this->assertSame(['text' => 'vstup $0.10 · výstup $0.50 / 1M tokenů', 'class' => 'muted'], $haiku['t2']);
         $this->assertSame('Výchozí pro: Rychlý', $haiku['i1'][1]['text']);
+    }
+
+    public function testTierDefaultsPerPlatformShowAsBadgeAndDetailItem(): void
+    {
+        // tasks/ai-bedrock-eu.md D58: balanced a strong mají na Bedrocku EU Opus 5.5
+        // (jediný model fixtury s Bedrock ID); shoda s obecným modelem se neopakuje.
+        $tiers = self::TIERS;
+        $tiers['balanced']['platformModels'] = ['bedrock-eu' => 'claude-opus-5-5'];
+        $tiers['strong']['platformModels'] = ['bedrock-eu' => 'claude-opus-5-5'];
+        $tiers['fast']['platformModels'] = ['bedrock-eu' => 'claude-haiku-5-5'];
+        $viewer = $this->viewer(tiers: $tiers);
+        $rows = $viewer->selectRows(null, [], 0);
+
+        $opus = $viewer->renderRow($rows[3]);
+        $this->assertSame('claude-opus-5-5', $opus['t3']);
+        $this->assertSame([
+            ['text' => 'Silný', 'class' => 'muted'],
+            ['text' => 'Výchozí pro: Vyvážený, Silný na platformě Amazon Bedrock (EU)', 'class' => 'primary'],
+        ], $opus['i1']);
+        $this->assertSame(
+            ['Výchozí model úrovní' => 'Žádná', 'Výchozí model úrovní na platformě Amazon Bedrock (EU)' => 'Vyvážený, Silný'],
+            $this->items($viewer->renderDetail(4), 'Úrovně'),
+        );
+
+        // Haiku je výchozí pro Rychlý obecně i na Bedrocku — jen jeden badge.
+        $haiku = $viewer->renderRow($rows[0]);
+        $this->assertSame(['Výchozí pro: Rychlý'], array_column(array_slice($haiku['i1'], 1), 'text'));
+        $this->assertSame(['Výchozí model úrovní' => 'Rychlý'], $this->items($viewer->renderDetail(1), 'Úrovně'));
     }
 
     public function testSearchMatchesNameOrIdAndKeepsIds(): void

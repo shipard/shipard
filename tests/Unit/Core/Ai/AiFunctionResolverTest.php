@@ -62,10 +62,11 @@ final class AiFunctionResolverTest extends TestCase
         ],
     ];
 
+    /** Mapa úrovní: `fast` záměrně bez modelu pro Bedrock EU (D58). */
     private const TIERS = [
         'fast' => ['name' => 'Rychlý', 'order' => 10, 'model' => 'claude-sonnet-4-6'],
-        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6'],
-        'strong' => ['name' => 'Silný', 'order' => 30, 'model' => 'claude-sonnet-4-6'],
+        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
+        'strong' => ['name' => 'Silný', 'order' => 30, 'model' => 'claude-sonnet-4-6', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
     ];
 
     private const PLATFORMS = [
@@ -488,16 +489,24 @@ final class AiFunctionResolverTest extends TestCase
             keys: ['bedrock-eu' => 'bedrock-key'],
         );
 
-        // Model úrovně (Sonnet 4.6) na Bedrocku není → chyba nastavení už v plánu.
-        $preview = $resolver()->preview('mail.extraction');
+        // Model úrovně pro platformu (D58): balanced má pro bedrock-eu Sonnet 5.5, původ zůstává `tier`.
+        $call = $resolver()->resolve('mail.extraction');
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5', $call->model);
+        $this->assertSame('claude-sonnet-5-5', $call->catalogModel);
+        $this->assertSame(ResolvedAiCall::ORIGIN_TIER, $call->origins['model']);
+
+        // Úroveň bez modelu pro platformu (fast → Sonnet 4.6) na Bedrocku není → chyba nastavení už v plánu.
+        $preview = $resolver()->preview('dashboard.summary');
         $this->assertSame(AiFunctionException::MODEL_NOT_ON_PLATFORM, $preview->error?->errorCode);
         $this->assertSame('bedrock-eu', $preview->error?->details['platform']);
+        $this->assertSame('claude-sonnet-4-6', $preview->error?->details['model']);
 
         // Model z katalogu přes ID přímého API → ID s prefixem, dialekt a násobitel platformy, výchozí adresa.
         $call = $resolver()->resolve('mail.extraction', new AiCallOverride(model: 'claude-sonnet-5-5'));
         $this->assertSame('eu.anthropic.claude-sonnet-5-5', $call->model);
         $this->assertSame('claude-sonnet-5-5', $call->shapeAs);
         $this->assertSame('claude-sonnet-5-5', $call->catalogModel);
+        $this->assertSame(ResolvedAiCall::ORIGIN_OVERRIDE, $call->origins['model']);
         $this->assertSame('bedrock-eu', $call->platform);
         $this->assertSame('anthropic-messages', $call->dialect);
         $this->assertSame(1.1, $call->priceMultiplier);

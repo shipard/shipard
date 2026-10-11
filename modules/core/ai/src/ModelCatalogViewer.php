@@ -17,7 +17,7 @@ use Shipard\Core\Ai\ModelSpec;
  */
 class ModelCatalogViewer extends AiViewerBase
 {
-    /** @var list<array{id: int, spec: ModelSpec, tiers: list<string>}>|null */
+    /** @var list<array{id: int, spec: ModelSpec, tiers: list<string>, platformTiers: array<string, list<string>>}>|null */
     private ?array $rows = null;
 
     public function selectRows(?string $search, array $filters, int $pageNumber): array
@@ -54,6 +54,15 @@ class ModelCatalogViewer extends AiViewerBase
         if ($rowData['tiers'] !== []) {
             $badges[] = [
                 'text' => $this->text('badge.defaultFor', 'Default for {tiers}', ['tiers' => $this->tierNames($rowData['tiers'])]),
+                'class' => 'primary',
+            ];
+        }
+        // Model úrovně jen pro některou platformu (tasks/ai-bedrock-eu.md D58).
+        foreach ($rowData['platformTiers'] ?? [] as $platform => $tiers) {
+            $badges[] = [
+                'text' => $this->text('badge.defaultForOn', 'Default for {tiers} on {platform}', [
+                    'tiers' => $this->tierNames($tiers), 'platform' => $this->platformLabel((string) $platform),
+                ]),
                 'class' => 'primary',
             ];
         }
@@ -104,6 +113,13 @@ class ModelCatalogViewer extends AiViewerBase
             $this->text('label.defaultFor', 'Default model for tiers'),
             $record['tiers'] !== [] ? $this->tierNames($record['tiers']) : $this->text('value.none', 'None'),
         );
+        foreach ($record['platformTiers'] ?? [] as $platform => $platformTiers) {
+            $this->addItem(
+                $tiers,
+                $this->text('label.defaultForOn', 'Default model for tiers on {platform}', ['platform' => $this->platformLabel((string) $platform)]),
+                $this->tierNames($platformTiers),
+            );
+        }
 
         $prices = [];
         if ($spec->hasPrices()) {
@@ -176,9 +192,12 @@ class ModelCatalogViewer extends AiViewerBase
 
     /**
      * Modely s úrovní seřazené podle pořadí úrovně a `order`; id = pozice
-     * od 1. `tiers` = úrovně, které na model dnes ukazují.
+     * od 1. `tiers` = úrovně, které na model dnes ukazují obecně,
+     * `platformTiers` = platforma → úrovně, které na něj ukazují jen na
+     * této platformě (`platformModels`, D58; shoda s obecným modelem se
+     * neopakuje).
      *
-     * @return list<array{id: int, spec: ModelSpec, tiers: list<string>}>
+     * @return list<array{id: int, spec: ModelSpec, tiers: list<string>, platformTiers: array<string, list<string>>}>
      */
     private function rows(): array
     {
@@ -198,13 +217,24 @@ class ModelCatalogViewer extends AiViewerBase
         usort($specs, static fn (ModelSpec $a, ModelSpec $b): int => [$tierOrder($a), $a->order, $a->id] <=> [$tierOrder($b), $b->order, $b->id]);
 
         $pointing = [];
+        $platformPointing = [];
         foreach ($tierMap as $tier => $entry) {
             $pointing[$entry['model']][] = (string) $tier;
+            foreach ($entry['platformModels'] as $platform => $model) {
+                if ($model !== $entry['model']) {
+                    $platformPointing[$model][$platform][] = (string) $tier;
+                }
+            }
         }
 
         $rows = [];
         foreach ($specs as $i => $spec) {
-            $rows[] = ['id' => $i + 1, 'spec' => $spec, 'tiers' => $pointing[$spec->id] ?? []];
+            $rows[] = [
+                'id' => $i + 1,
+                'spec' => $spec,
+                'tiers' => $pointing[$spec->id] ?? [],
+                'platformTiers' => $platformPointing[$spec->id] ?? [],
+            ];
         }
         return $this->rows = $rows;
     }

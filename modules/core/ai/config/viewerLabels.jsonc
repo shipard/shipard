@@ -6,6 +6,7 @@
 
     // --- přehled modelů: řádek ---
     "badge.defaultFor":    { "name": "Default for {tiers}",   "name:cs": "Výchozí pro: {tiers}",   "name:en": "Default for {tiers}" },
+    "badge.defaultForOn":  { "name": "Default for {tiers} on {platform}", "name:cs": "Výchozí pro: {tiers} na platformě {platform}", "name:en": "Default for {tiers} on {platform}" },
     "badge.retiring":      { "name": "Retires {date}",        "name:cs": "Končí {date}",           "name:en": "Retires {date}" },
     "badge.retired":       { "name": "Retired",               "name:cs": "Skončil",                "name:en": "Retired" },
     "row.prices":          { "name": "in {input} · out {output} / 1M tokens", "name:cs": "vstup {input} · výstup {output} / 1M tokenů", "name:en": "in {input} · out {output} / 1M tokens" },
@@ -26,6 +27,7 @@
     "label.replacedBy":    { "name": "Replacement",           "name:cs": "Náhrada",                "name:en": "Replacement" },
     "label.retiresNotBefore": { "name": "Available at least until", "name:cs": "Dostupný nejméně do", "name:en": "Available at least until" },
     "label.defaultFor":    { "name": "Default model for tiers", "name:cs": "Výchozí model úrovní", "name:en": "Default model for tiers" },
+    "label.defaultForOn":  { "name": "Default model for tiers on {platform}", "name:cs": "Výchozí model úrovní na platformě {platform}", "name:en": "Default model for tiers on {platform}" },
     "label.priceInput":    { "name": "Input",                 "name:cs": "Vstup",                  "name:en": "Input" },
     "label.priceOutput":   { "name": "Output",                "name:cs": "Výstup",                 "name:en": "Output" },
     "label.longPrompt":    { "name": "Long prompt",           "name:cs": "Dlouhý vstup",           "name:en": "Long prompt" },

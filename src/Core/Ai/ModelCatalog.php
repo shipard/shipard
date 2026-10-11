@@ -17,7 +17,8 @@ use Shipard\Core\Logging\ErrorLogger;
  * Výchozí model úrovně (`fast` / `balanced` / `strong`) určuje mapa úrovní
  * — cfgItem `core.ai.tiers` (tasks/ai-functions.md D37), načtená spolu
  * s katalogem; {@see defaultModel()} ji čte, položky katalogu samy příznak
- * výchozího modelu nenesou.
+ * výchozího modelu nenesou. Úroveň může mít jiný model pro platformu
+ * připojení (`platformModels`, tasks/ai-bedrock-eu.md D58).
  *
  * {@see find()} přijme ID z kterékoli rodiny platformových ID i s datovou
  * příponou (`claude-sonnet-4-5-20250929`, `anthropic.claude-sonnet-5-5`)
@@ -47,8 +48,8 @@ final class ModelCatalog
     public const array GEO_PREFIXES = ['global.', 'us.', 'eu.', 'apac.', 'au.', 'jp.', 'us-gov.'];
 
     /**
-     * @param array<string, ModelSpec>                                      $models id → spec
-     * @param array<string, array{model: string, name: string, order: int}> $tiers  úroveň → výchozí model
+     * @param array<string, ModelSpec> $models id → spec
+     * @param array<string, array{model: string, name: string, order: int, platformModels: array<string, string>}> $tiers úroveň → výchozí model (+ per platforma)
      */
     private function __construct(
         private readonly array $models,
@@ -74,7 +75,7 @@ final class ModelCatalog
      * Katalog ze surových dat cfgItemů (testy, `ds-upgrade` před kompilací).
      *
      * @param array<string, array<string, mixed>> $items id → položka
-     * @param array<string, array<string, mixed>> $tiers úroveň → {model, name?, order?}
+     * @param array<string, array<string, mixed>> $tiers úroveň → {model, name?, order?, platformModels?}
      * @throws \InvalidArgumentException při nevalidní položce nebo úrovni
      */
     public static function fromArray(array $items, array $tiers = []): self
@@ -95,10 +96,23 @@ final class ModelCatalog
             if (!is_array($data) || !is_string($data['model'] ?? null) || trim($data['model']) === '') {
                 throw new \InvalidArgumentException("ModelCatalog: tier '{$tier}' must declare a model");
             }
+            $platformModels = [];
+            if (array_key_exists('platformModels', $data)) {
+                if (!is_array($data['platformModels'])) {
+                    throw new \InvalidArgumentException("ModelCatalog: tier '{$tier}': platformModels must map platform → model");
+                }
+                foreach ($data['platformModels'] as $platform => $model) {
+                    if (!is_string($platform) || $platform === '' || !is_string($model) || trim($model) === '') {
+                        throw new \InvalidArgumentException("ModelCatalog: tier '{$tier}': platformModels must map platform → model");
+                    }
+                    $platformModels[$platform] = trim($model);
+                }
+            }
             $tierMap[$tier] = [
                 'model' => trim($data['model']),
                 'name' => (string) ($data['name'] ?? $tier),
                 'order' => is_numeric($data['order'] ?? null) ? (int) $data['order'] : 1000,
+                'platformModels' => $platformModels,
             ];
         }
         uasort($tierMap, static fn (array $a, array $b): int => [$a['order'], $a['model']] <=> [$b['order'], $b['model']]);
@@ -149,19 +163,29 @@ final class ModelCatalog
 
     /**
      * ID výchozího modelu úrovně podle mapy úrovní `core.ai.tiers` (D37),
-     * null pro neznámou úroveň nebo katalog bez mapy. Vrací se, co mapa
-     * deklaruje — že model v katalogu existuje a je aktivní, hlídá test
-     * souboru v repu (ModelCatalogFileTest), ne běh.
+     * null pro neznámou úroveň nebo katalog bez mapy. S platformou připojení
+     * má přednost `platformModels[platforma]` (tasks/ai-bedrock-eu.md D58),
+     * bez položky platí obecný model. Vrací se, co mapa deklaruje — že
+     * model v katalogu existuje a je aktivní, hlídá test souboru v repu
+     * (ModelCatalogFileTest), ne běh.
      */
-    public function defaultModel(string $tier): ?string
+    public function defaultModel(string $tier, ?string $platform = null): ?string
     {
-        return $this->tiers[$tier]['model'] ?? null;
+        $entry = $this->tiers[$tier] ?? null;
+        if ($entry === null) {
+            return null;
+        }
+        if ($platform !== null && isset($entry['platformModels'][$platform])) {
+            return $entry['platformModels'][$platform];
+        }
+        return $entry['model'];
     }
 
     /**
-     * Mapa úrovní seřazená podle `order`: úroveň → {model, name, order}.
+     * Mapa úrovní seřazená podle `order`: úroveň → {model, name, order,
+     * platformModels}.
      *
-     * @return array<string, array{model: string, name: string, order: int}>
+     * @return array<string, array{model: string, name: string, order: int, platformModels: array<string, string>}>
      */
     public function tiers(): array
     {

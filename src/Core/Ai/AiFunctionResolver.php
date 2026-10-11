@@ -156,7 +156,7 @@ class AiFunctionResolver
         $baseUrl = trim((string) ($connection['base_url'] ?? '')) ?: $platform->baseUrl;
 
         // --- model -------------------------------------------------------
-        [$model, $origins['model']] = $this->pickModel($function, $override, $row);
+        [$model, $origins['model']] = $this->pickModel($function, $override, $row, $platform);
         $modelLike = $override->modelLike ?? self::text($row['model_like'] ?? null);
         [$platformModel, $shapeAs, $catalogModel] = $this->placeModel($function, $model, $modelLike, $platform, $origins['model']);
 
@@ -269,10 +269,13 @@ class AiFunctionResolver
     }
 
     /**
+     * Model úrovně z mapy úrovní platí pro platformu připojení
+     * (`platformModels`, tasks/ai-bedrock-eu.md D58) — původ zůstává `tier`.
+     *
      * @param array<string, mixed> $row
      * @return array{0: string, 1: string} zadané ID modelu + původ
      */
-    private function pickModel(AiFunction $function, AiCallOverride $override, array $row): array
+    private function pickModel(AiFunction $function, AiCallOverride $override, array $row, AiPlatform $platform): array
     {
         if ($override->model !== null) {
             return [$override->model, ResolvedAiCall::ORIGIN_OVERRIDE];
@@ -281,7 +284,7 @@ class AiFunctionResolver
         if ($rowModel !== null) {
             return [$rowModel, ResolvedAiCall::ORIGIN_FUNCTION];
         }
-        $tierModel = $this->catalog()->defaultModel($function->tier);
+        $tierModel = $this->catalog()->defaultModel($function->tier, $platform->id);
         if ($tierModel === null) {
             throw new AiFunctionException(
                 AiFunctionException::NO_MODEL,

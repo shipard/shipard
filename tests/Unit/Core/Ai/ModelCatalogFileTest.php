@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Core\Ai;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Ai\AiPlatform;
+use Shipard\Core\Ai\AiPlatforms;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Ai\ModelSpec;
 use Shipard\Core\Module\ModuleLoader;
@@ -19,7 +21,9 @@ use Shipard\Core\Utils\JsoncParser;
  * ukazuje na existující aktivní model, `thinkingModes` / `effortLevels`
  * obsahují jen hodnoty z cfgItemů `core.ai.thinkingModes` /
  * `core.ai.effortLevels` (kromě `enabled`, které naše parametry neposílají),
- * platformová ID sedí na klíč a na prefix Bedrocku.
+ * platformová ID sedí na klíč a na prefix Bedrocku, modely úrovní per
+ * platforma (`platformModels`, tasks/ai-bedrock-eu.md D58) jsou aktivní
+ * modely s ID pro danou platformu.
  */
 final class ModelCatalogFileTest extends TestCase
 {
@@ -106,6 +110,31 @@ final class ModelCatalogFileTest extends TestCase
         // úrovně na Sonnetu 4.6 — nasazení AI funkcí nemění chování.
         foreach (ModelSpec::TIERS as $tier) {
             $this->assertSame('claude-sonnet-4-6', $catalog->defaultModel($tier), "úroveň {$tier}");
+        }
+    }
+
+    public function testPlatformModelsOfTheTierMapPointToActiveModelsAvailableOnThePlatform(): void
+    {
+        $catalog = $this->catalog();
+        $platforms = AiPlatforms::fromArray(self::rawItem(AiPlatform::CFG_ITEM));
+
+        foreach ($catalog->tiers() as $tier => $entry) {
+            foreach ($entry['platformModels'] as $platformId => $model) {
+                $platform = $platforms->get($platformId);
+                $this->assertNotNull($platform, "úroveň {$tier}: platforma '{$platformId}' není v core.ai.platforms");
+                $spec = $catalog->find($model);
+                $this->assertNotNull($spec, "úroveň {$tier} / {$platformId}: model '{$model}' není v katalogu");
+                $this->assertSame($model, $spec->id, "úroveň {$tier} / {$platformId}: model musí být klíč katalogu");
+                $this->assertSame(ModelSpec::STATUS_ACTIVE, $spec->status, "úroveň {$tier} / {$platformId}: model není aktivní");
+                $this->assertNotNull($spec->tier, "úroveň {$tier} / {$platformId}: model bez úrovně (jen ceník)");
+                $this->assertNotNull($platform->modelIdFor($spec), "úroveň {$tier} / {$platformId}: model nemá ID pro rodinu '{$platform->modelIds}'");
+            }
+        }
+
+        // D58: na Bedrocku EU všechny tři úrovně na Sonnetu 5.5 (Sonnet 4.6 tam není).
+        foreach (ModelSpec::TIERS as $tier) {
+            $this->assertSame('claude-sonnet-5-5', $catalog->defaultModel($tier, 'bedrock-eu'), "úroveň {$tier} na bedrock-eu");
+            $this->assertSame('eu.anthropic.claude-sonnet-5-5', $platforms->get('bedrock-eu')?->modelIdFor($catalog->find('claude-sonnet-5-5')));
         }
     }
 

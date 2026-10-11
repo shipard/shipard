@@ -29,11 +29,14 @@ class AiFunctionsViewer extends AiViewerBase
 {
     private ?AiFunctionResolver $resolver = null;
 
+    /** Platforma výchozího aktivního připojení pro odhad v seznamu; `false` = ještě nenačteno. */
+    private string|false $defaultPlatform = false;
+
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT f.`id`, f.`function_id`, f.`connection`, f.`model`, f.`model_like`,'
             . ' f.`thinking`, f.`effort`, f.`max_tokens`,'
-            . ' b.`name` AS `connection_name`, b.`is_active` AS `connection_active`'
+            . ' b.`name` AS `connection_name`, b.`is_active` AS `connection_active`, b.`provider` AS `connection_provider`'
             . ' FROM `' . $this->table . '` f'
             . ' LEFT JOIN `core_ai_backends` b ON b.`id` = f.`connection`';
         $params = [];
@@ -306,7 +309,9 @@ class AiFunctionsViewer extends AiViewerBase
 
     /**
      * Levný odhad pro řádek seznamu (bez resolveru): model z řádku, jinak
-     * z mapy úrovní.
+     * z mapy úrovní pro platformu efektivního připojení (připojení řádku,
+     * jinak výchozí; `platformModels`, tasks/ai-bedrock-eu.md D58) —
+     * ID katalogu, ne ID platformy; to ukáže detail z plánu.
      *
      * @param array<string, mixed> $row
      * @return array{model: string, origin: 'row'|'tier'|'none'}
@@ -317,10 +322,29 @@ class AiFunctionsViewer extends AiViewerBase
         if ($model !== '') {
             return ['model' => $model, 'origin' => 'row'];
         }
-        $tierModel = $function !== null ? $this->catalog()->defaultModel($function->tier) : null;
+        $platform = ($row['connection'] ?? null) !== null
+            ? trim((string) ($row['connection_provider'] ?? ''))
+            : $this->defaultPlatform();
+        $tierModel = $function !== null
+            ? $this->catalog()->defaultModel($function->tier, $platform !== '' ? $platform : AiFunctionResolver::DEFAULT_PLATFORM)
+            : null;
         return $tierModel !== null
             ? ['model' => $tierModel, 'origin' => 'tier']
             : ['model' => '', 'origin' => 'none'];
+    }
+
+    /** Platforma výchozího aktivního připojení (jednou za viewer); bez něj `''`. */
+    private function defaultPlatform(): string
+    {
+        if ($this->defaultPlatform === false) {
+            $row = $this->db->fetchRow(
+                'SELECT `provider` FROM `core_ai_backends` WHERE `is_default` = %i AND `is_active` = %i LIMIT 1',
+                1,
+                1,
+            );
+            $this->defaultPlatform = trim((string) ($row['provider'] ?? ''));
+        }
+        return $this->defaultPlatform;
     }
 
     /** @param array<string, mixed> $row */

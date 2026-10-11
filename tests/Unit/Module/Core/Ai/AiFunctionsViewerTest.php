@@ -47,7 +47,7 @@ final class AiFunctionsViewerTest extends TestCase
     ];
 
     private const TIERS = [
-        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6'],
+        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
     ];
 
     private const CONNECTION = ['id' => 1, 'backend_id' => 'default', 'name' => 'Anthropic Claude', 'provider' => 'anthropic',
@@ -241,5 +241,19 @@ final class AiFunctionsViewerTest extends TestCase
             $row['i1'],
         );
         $this->assertSame('claude-sonnet-5-5 · výchozí připojení', $row['t2']['text']);
+    }
+
+    public function testRowEstimateUsesTheTierModelOfTheConnectionPlatform(): void
+    {
+        // tasks/ai-bedrock-eu.md D58: připojení řádku na Bedrocku EU → model úrovně pro platformu (ID katalogu).
+        $viewer = $this->viewer(['connection' => 7, 'connection_name' => 'Bedrock EU', 'connection_active' => 1, 'connection_provider' => 'bedrock-eu']);
+        $row = $viewer->renderRow($viewer->selectRows(null, [], 0)[0]);
+        $this->assertSame([['text' => 'Vyvážený', 'class' => 'muted']], $row['i1'], 'model podle úrovně není vlastní model');
+        $this->assertSame('claude-sonnet-5-5 · Bedrock EU', $row['t2']['text']);
+
+        // Bez připojení na řádku rozhoduje platforma výchozího připojení (tu mock DB nezná → Anthropic).
+        $viewer = $this->viewer([]);
+        $row = $viewer->renderRow($viewer->selectRows(null, [], 0)[0]);
+        $this->assertSame('claude-sonnet-4-6 · výchozí připojení', $row['t2']['text']);
     }
 }

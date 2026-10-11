@@ -34,7 +34,12 @@ final class ModelOptionsTest extends TestCase
         // hodnota z katalogu (i s datovou příponou) se nepřidává.
         $options = ModelOptions::catalogModels($catalog, 'claude-sonnet-6');
         $this->assertSame(['value' => 'claude-sonnet-6', 'label' => 'claude-sonnet-6 (vlastní ID)'], end($options));
-        $this->assertCount(3, ModelOptions::catalogModels($catalog, 'claude-sonnet-4-5-20250929'));
+        // ID, které katalog zná, ale není klíčem nabídky (datová přípona, ID platformy), zůstává
+        // vybratelné s názvem modelu — jinak by select uloženou hodnotu nezobrazil.
+        $options = ModelOptions::catalogModels($catalog, 'claude-sonnet-4-5-20250929');
+        $this->assertCount(4, $options);
+        $this->assertSame(['value' => 'claude-sonnet-4-5-20250929', 'label' => 'claude-sonnet-4-5-20250929 (Claude Sonnet 4.5)'], end($options));
+        $this->assertCount(3, ModelOptions::catalogModels($catalog, 'claude-sonnet-4-6'), 'klíč nabídky se nepřidává dvakrát');
         $this->assertCount(3, ModelOptions::catalogModels($catalog, ' '));
         $this->assertSame([], ModelOptions::catalogModels(ModelCatalog::empty()));
     }

@@ -11,26 +11,38 @@
     // evaluace (fáze 2).
     // Model musí být v katalogu `core.ai.models` s úrovní a statusem
     // `active` (hlídá ModelCatalogFileTest).
+    //
+    // `platformModels` (tasks/ai-bedrock-eu.md D58): model úrovně pro
+    // platformu připojení, která obecný model nenabízí — klíč = platforma
+    // z `core.ai.platforms`, hodnota = model katalogu s ID pro tuto
+    // platformu. Bez položky pro platformu platí `model`; když ho platforma
+    // nenabízí, resolver vrátí MODEL_NOT_ON_PLATFORM. Na Bedrocku je přes
+    // Messages API jen řada 4.7 a novější a Haiku 4.5 — Sonnet 4.6 ne,
+    // proto všechny tři úrovně na Sonnet 5.5 (jiný model řady 5 se zatím
+    // na vytěžení nehodnotil, #103).
 
     "fast": {
         "name": "Fast",
         "name:cs": "Rychlý",
         "name:en": "Fast",
         "order": 10,
-        "model": "claude-sonnet-4-6"
+        "model": "claude-sonnet-4-6",
+        "platformModels": { "bedrock-eu": "claude-sonnet-5-5" }
     },
     "balanced": {
         "name": "Balanced",
         "name:cs": "Vyvážený",
         "name:en": "Balanced",
         "order": 20,
-        "model": "claude-sonnet-4-6"
+        "model": "claude-sonnet-4-6",
+        "platformModels": { "bedrock-eu": "claude-sonnet-5-5" }
     },
     "strong": {
         "name": "Strong",
         "name:cs": "Silný",
         "name:en": "Strong",
         "order": 30,
-        "model": "claude-sonnet-4-6"
+        "model": "claude-sonnet-4-6",
+        "platformModels": { "bedrock-eu": "claude-sonnet-5-5" }
     }
 }
