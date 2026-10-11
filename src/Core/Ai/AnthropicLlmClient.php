@@ -361,16 +361,30 @@ class AnthropicLlmClient implements LlmClient
 
     /**
      * Error response body (`{"type":"error","error":{"type","message",
-     * "details":{"error_code"}}}`) → exception. A non-JSON body degrades to
-     * `api_error` / `HTTP <status>`; `error_code` is carried when present
-     * (exhausted spend limit — tasks/mail-analysis-inprocess.md D18).
+     * "details":{"error_code"}}}`) → exception. A body without the `error`
+     * object but with a top-level `message` / `Message` (AWS style on
+     * Amazon Bedrock — tasks/ai-bedrock-eu.md step 4) keeps that message;
+     * a non-JSON body degrades to `api_error` / `HTTP <status>`.
+     * `error_code` is carried when present (exhausted spend limit —
+     * tasks/mail-analysis-inprocess.md D18).
      */
     public static function exceptionFromErrorResponse(int $status, string $body): LlmApiException
     {
         $decoded = json_decode($body, true);
         $error = is_array($decoded) && is_array($decoded['error'] ?? null) ? $decoded['error'] : [];
         $type = (string) ($error['type'] ?? 'api_error');
-        $msg = (string) ($error['message'] ?? "HTTP {$status}");
+        $msg = trim((string) ($error['message'] ?? ''));
+        if ($msg === '' && is_array($decoded)) {
+            foreach (['message', 'Message'] as $key) {
+                if (is_string($decoded[$key] ?? null) && trim($decoded[$key]) !== '') {
+                    $msg = trim($decoded[$key]);
+                    break;
+                }
+            }
+        }
+        if ($msg === '') {
+            $msg = "HTTP {$status}";
+        }
         $details = is_array($error['details'] ?? null) ? $error['details'] : [];
         $code = isset($details['error_code']) && is_string($details['error_code']) && $details['error_code'] !== ''
             ? $details['error_code']

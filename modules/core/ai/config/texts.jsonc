@@ -8,7 +8,10 @@
     //   hint.<KÓD>[.varianta]   rada, kde to opravit
     //   change.<kód>            úprava požadavku (RequestChange)
     //   origin.<původ>          původ hodnoty (ResolvedAiCall::ORIGIN_*)
-    //   api.<druh>              druh chyby API (LlmApiException)
+    //   api.<druh>[.platforma]  druh chyby API (LlmApiException); varianta
+    //                           pro platformu připojení má přednost (Bedrock:
+    //                           klíč z jiného regionu, model bez povoleného
+    //                           přístupu, politika účtu — tasks/ai-bedrock-eu.md)
     //
     // Pole `text` je anglický originál (fallback kompilace), `text:cs` /
     // `text:en` překlady. Bez katalogu vrací AiTexts zprávu výjimky.
@@ -214,5 +217,22 @@
         "text": "The platform returned an error (HTTP {status}, {type}).",
         "text:cs": "Platforma vrátila chybu (HTTP {status}, {type}).",
         "text:en": "The platform returned an error (HTTP {status}, {type})."
+    },
+
+    // --- chyby API: Amazon Bedrock (EU) ---------------------------------------
+    "api.authentication.bedrock-eu": {
+        "text": "Amazon Bedrock rejected the API key (HTTP 401): {message} A long-term Bedrock key works only in the AWS region it was generated in — the connection address must point to the same region; an expired or deactivated key must be generated again.",
+        "text:cs": "Amazon Bedrock odmítl API klíč (HTTP 401): {message} Dlouhodobý klíč Bedrocku platí jen v regionu AWS, ve kterém vznikl — adresa připojení musí mířit do téhož regionu; prošlý nebo deaktivovaný klíč je třeba vygenerovat znovu.",
+        "text:en": "Amazon Bedrock rejected the API key (HTTP 401): {message} A long-term Bedrock key works only in the AWS region it was generated in — the connection address must point to the same region; an expired or deactivated key must be generated again."
+    },
+    "api.forbidden.bedrock-eu": {
+        "text": "Amazon Bedrock refused the call (HTTP 403): {message} Check in the AWS account that the key comes from the same region as the connection address, that access to the model is enabled (Model access) and that the account policy allows calls with API keys (bedrock:CallWithBearerToken).",
+        "text:cs": "Amazon Bedrock odmítl volání (HTTP 403): {message} Zkontroluj v účtu AWS, že klíč je z téhož regionu jako adresa připojení, že model má povolený přístup (Model access) a že politika účtu dovoluje volání s API klíčem (bedrock:CallWithBearerToken).",
+        "text:en": "Amazon Bedrock refused the call (HTTP 403): {message} Check in the AWS account that the key comes from the same region as the connection address, that access to the model is enabled (Model access) and that the account policy allows calls with API keys (bedrock:CallWithBearerToken)."
+    },
+    "api.notFound.bedrock-eu": {
+        "text": "Model {model} is not available on Amazon Bedrock in the region of the connection address (HTTP 404) — enable access to the model in the AWS account or check the address and the model ID (EU profile eu.anthropic.…).",
+        "text:cs": "Model {model} není na Amazon Bedrocku v regionu adresy připojení dostupný (HTTP 404) — povol v účtu AWS přístup k modelu, nebo zkontroluj adresu a ID modelu (EU profil eu.anthropic.…).",
+        "text:en": "Model {model} is not available on Amazon Bedrock in the region of the connection address (HTTP 404) — enable access to the model in the AWS account or check the address and the model ID (EU profile eu.anthropic.…)."
     }
 }

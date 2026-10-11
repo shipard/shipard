@@ -182,7 +182,7 @@ class AiTestCommand extends Command
         try {
             $result = $llm->streamChat($params, static function (string $delta): void {});
         } catch (LlmApiException $e) {
-            return $this->failure($id, 'API_' . ($e->statusCode > 0 ? $e->statusCode : $e->errorType), $texts->apiError($e, $call->model), [
+            return $this->failure($id, 'API_' . ($e->statusCode > 0 ? $e->statusCode : $e->errorType), $texts->apiError($e, $call->model, $call->platform), [
                 'elapsedMs' => (int) round((microtime(true) - $start) * 1000),
                 'apiStatus' => $e->statusCode,
                 'apiType' => $e->errorType,

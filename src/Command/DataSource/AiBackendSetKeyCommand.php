@@ -52,7 +52,7 @@ class AiBackendSetKeyCommand extends Command
              ->setDescription('Set (or rotate) the API key of an AI backend — hidden prompt or --api-key; encrypts via DsSecretCipher')
              ->addOption('backend', null, InputOption::VALUE_REQUIRED, 'Backend code (default: "default")', 'default')
              ->addOption('api-key', null, InputOption::VALUE_REQUIRED, 'Plaintext API key (otherwise read hidden from the prompt / STDIN)')
-             ->addOption('base-url', null, InputOption::VALUE_REQUIRED, 'Base URL of the API (empty string resets to direct Anthropic)');
+             ->addOption('base-url', null, InputOption::VALUE_REQUIRED, 'Base URL of the API (empty string resets to the default address of the connection platform)');
     }
 
     protected function getDataSourceDir(): string
@@ -111,8 +111,9 @@ class AiBackendSetKeyCommand extends Command
 
         $backendId = (int) $row['id'];
 
-        // --base-url: hodnota → nastavit (AI gateway, D5/D6); prázdný string
-        // → NULL = přímé Anthropic; nezadaná option → sloupec netknout.
+        // --base-url: hodnota → nastavit (AI gateway, D5/D6; jiný region
+        // Bedrocku); prázdný string → NULL = výchozí adresa platformy
+        // (core.ai.platforms); nezadaná option → sloupec netknout.
         $baseUrl = $input->getOption('base-url');
 
         $this->encryptAndStoreKey($dsConnection, $backendId, $cipher, (string) $apiKey, $baseUrl);
@@ -121,7 +122,7 @@ class AiBackendSetKeyCommand extends Command
         if ($baseUrl !== null) {
             $output->writeln($baseUrl !== ''
                 ? "Base URL set to: {$baseUrl}"
-                : 'Base URL cleared (direct Anthropic).');
+                : 'Base URL cleared (default address of the platform).');
         }
         $output->writeln('Backend is now active.');
 

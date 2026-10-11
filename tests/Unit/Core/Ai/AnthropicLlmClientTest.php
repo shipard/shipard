@@ -195,6 +195,25 @@ class AnthropicLlmClientTest extends TestCase
         $this->assertNull($garbage->errorCode);
     }
 
+    public function testErrorBodyWithoutErrorObjectKeepsItsMessage(): void
+    {
+        // Styl AWS na Bedrocku (tasks/ai-bedrock-eu.md krok 4): `{"message": …}` / `{"Message": …}`.
+        $aws = AnthropicLlmClient::exceptionFromErrorResponse(403, '{"message":"Credential should be scoped to a valid region, not \'us-east-1\'."}');
+        $this->assertSame(403, $aws->statusCode);
+        $this->assertSame('api_error', $aws->errorType);
+        $this->assertSame("Credential should be scoped to a valid region, not 'us-east-1'.", $aws->getMessage());
+        $this->assertTrue($aws->isConfigurationError());
+
+        $capital = AnthropicLlmClient::exceptionFromErrorResponse(404, '{"Message":"Model not found"}');
+        $this->assertSame('Model not found', $capital->getMessage());
+
+        // Prázdná zpráva v obou tvarech → holé HTTP; objekt `error` má přednost.
+        $this->assertSame('HTTP 500', AnthropicLlmClient::exceptionFromErrorResponse(500, '{"message":"  "}')->getMessage());
+        $both = AnthropicLlmClient::exceptionFromErrorResponse(401, '{"message":"outer","error":{"type":"authentication_error","message":"inner"}}');
+        $this->assertSame('inner', $both->getMessage());
+        $this->assertSame('authentication_error', $both->errorType);
+    }
+
     public function testIsTransientByStatusAndStreamErrorType(): void
     {
         $this->assertTrue(new LlmApiException(0, 'transport_error', 'curl')->isTransient());

@@ -18,6 +18,8 @@
     //   modelIdPrefix      — předřadí se před ID z katalogu (geografický
     //                        profil Bedrocku `eu.` → `eu.anthropic.claude-…`).
     //   priceMultiplier    — cena volání = ceník katalogu × násobitel (D60).
+    //   keyHint, baseUrlHint — nápovědy ve formuláři připojení (kde vzít
+    //                        klíč, co znamená prázdná adresa), lokalizované.
     //
     // Nová platforma nic nepřepíná: chování zdroje dat se mění, až když
     // správce založí připojení s touhle platformou.
@@ -31,7 +33,13 @@
         "baseUrl": "https://api.anthropic.com",
         "modelIds": "anthropic",
         "modelIdPrefix": "",
-        "priceMultiplier": 1
+        "priceMultiplier": 1,
+        "keyHint": "API key from the Anthropic account (API keys); an administrator sets it from the server console: shpd-ds ai-backend-set-key --backend <code>. Model and tuning are set per AI function.",
+        "keyHint:cs": "API klíč z účtu u Anthropic (sekce API keys); nastaví ho správce z konzole serveru: shpd-ds ai-backend-set-key --backend <kód>. Model a ladění jsou u AI funkcí.",
+        "keyHint:en": "API key from the Anthropic account (API keys); an administrator sets it from the server console: shpd-ds ai-backend-set-key --backend <code>. Model and tuning are set per AI function.",
+        "baseUrlHint": "Empty = the direct Anthropic API. The hosting AI gateway fills in its own address.",
+        "baseUrlHint:cs": "Prázdné = přímé API Anthropicu. AI gateway hostingu dosadí vlastní adresu.",
+        "baseUrlHint:en": "Empty = the direct Anthropic API. The hosting AI gateway fills in its own address."
     },
 
     // Amazon Bedrock, zpracování v EU (#85 fáze 3a): Messages API na
@@ -53,6 +61,12 @@
         "baseUrl": "https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic",
         "modelIds": "bedrock",
         "modelIdPrefix": "eu.",
-        "priceMultiplier": 1.1
+        "priceMultiplier": 1.1,
+        "keyHint": "Long-term Bedrock API key from the AWS console (Amazon Bedrock → API keys), generated in the region of the address; an administrator sets it from the server console: shpd-ds ai-backend-set-key --backend <code>. Access to the model must be enabled in the AWS account.",
+        "keyHint:cs": "Dlouhodobý API klíč Bedrocku z konzole AWS (Amazon Bedrock → API keys), vygenerovaný v regionu adresy; nastaví ho správce z konzole serveru: shpd-ds ai-backend-set-key --backend <kód>. Model musí mít v účtu AWS povolený přístup.",
+        "keyHint:en": "Long-term Bedrock API key from the AWS console (Amazon Bedrock → API keys), generated in the region of the address; an administrator sets it from the server console: shpd-ds ai-backend-set-key --backend <code>. Access to the model must be enabled in the AWS account.",
+        "baseUrlHint": "Empty = Frankfurt (eu-central-1). Another EU region: https://bedrock-runtime.<region>.amazonaws.com/anthropic — the key must come from the same region.",
+        "baseUrlHint:cs": "Prázdné = Frankfurt (eu-central-1). Jiný region EU: https://bedrock-runtime.<region>.amazonaws.com/anthropic — klíč musí být z téhož regionu.",
+        "baseUrlHint:en": "Empty = Frankfurt (eu-central-1). Another EU region: https://bedrock-runtime.<region>.amazonaws.com/anthropic — the key must come from the same region."
     }
 }

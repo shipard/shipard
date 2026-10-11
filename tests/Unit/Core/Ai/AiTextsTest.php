@@ -70,6 +70,10 @@ final class AiTextsTest extends TestCase
         foreach (['authentication', 'forbidden', 'notFound', 'spendLimit', 'rateLimit', 'transport', 'server', 'other'] as $kind) {
             $expected[] = 'api.' . $kind;
         }
+        // Varianty pro platformu Amazon Bedrock (EU) — tasks/ai-bedrock-eu.md krok 4.
+        foreach (['authentication', 'forbidden', 'notFound'] as $kind) {
+            $expected[] = 'api.' . $kind . '.bedrock-eu';
+        }
 
         foreach ($expected as $key) {
             $this->assertArrayHasKey($key, self::$catalog, $key);
@@ -175,6 +179,31 @@ final class AiTextsTest extends TestCase
         );
         $this->assertSame('Chyba na straně platformy (HTTP 529).', $texts->apiError(new LlmApiException(529, 'overloaded_error', 'x')));
         $this->assertSame('Platforma neodpověděla (síťová chyba nebo vypršel čas).', $texts->apiError(new LlmApiException(0, 'transport_error', 'x')));
+    }
+
+    public function testApiErrorPrefersThePlatformVariantWithItsAdvice(): void
+    {
+        // tasks/ai-bedrock-eu.md krok 4: na Bedrocku rada k regionu klíče, přístupu k modelu a politice účtu.
+        $texts = new AiTexts($this->config());
+
+        $forbidden = new LlmApiException(403, 'api_error', 'User: arn:aws:iam::1:user/k is not authorized to perform: bedrock:CallWithBearerToken');
+        $text = $texts->apiError($forbidden, 'eu.anthropic.claude-sonnet-5-5', 'bedrock-eu');
+        $this->assertStringStartsWith('Amazon Bedrock odmítl volání (HTTP 403): User: arn:aws:iam::1:user/k is not authorized', $text);
+        $this->assertStringContainsString('z téhož regionu jako adresa připojení', $text);
+        $this->assertStringContainsString('bedrock:CallWithBearerToken', $text);
+
+        $this->assertStringContainsString(
+            'Dlouhodobý klíč Bedrocku platí jen v regionu AWS',
+            $texts->apiError(new LlmApiException(401, 'api_error', 'bad token'), null, 'bedrock-eu'),
+        );
+        $this->assertStringStartsWith(
+            'Model eu.anthropic.claude-sonnet-5-5 není na Amazon Bedrocku',
+            $texts->apiError(new LlmApiException(404, 'api_error', 'x'), 'eu.anthropic.claude-sonnet-5-5', 'bedrock-eu'),
+        );
+
+        // Druh bez varianty pro platformu → obecná věta; jiná platforma → obecná věta.
+        $this->assertSame('Platforma požadavek odmítla kvůli limitu (HTTP 429) — zkus to později.', $texts->apiError(new LlmApiException(429, 'x', 'x'), null, 'bedrock-eu'));
+        $this->assertSame('Platforma odmítla přístup (HTTP 403) — klíč nemá oprávnění.', $texts->apiError($forbidden, null, 'anthropic'));
     }
 
     public function testWithoutCatalogEnglishOriginalsComeBack(): void

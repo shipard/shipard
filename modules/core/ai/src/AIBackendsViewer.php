@@ -113,8 +113,13 @@ class AIBackendsViewer extends TableViewer
         $this->addItem($identity, 'Název', $record['name'] ?? null);
 
         $provider = [];
-        $this->addItem($provider, 'Platforma', $this->platformLabel($record['provider'] ?? null));
-        $this->addItem($provider, 'Base URL', $record['base_url'] ?? null);
+        $platforms = AiPlatforms::fromConfig($this->config);
+        $platformId = trim((string) ($record['provider'] ?? ''));
+        $this->addItem($provider, 'Platforma', $platformId !== '' ? $platforms->label($platformId) : null);
+        $baseUrl = trim((string) ($record['base_url'] ?? ''));
+        $defaultUrl = $platformId !== '' ? $platforms->getOrFallback($platformId)->baseUrl : '';
+        // Prázdná adresa = výchozí adresa platformy — ukaž, kam se skutečně volá.
+        $this->addItem($provider, 'Base URL', $baseUrl !== '' ? $baseUrl : ($defaultUrl !== '' ? "{$defaultUrl} (výchozí platformy)" : null));
 
         $access = [];
         $this->addItem($access, 'API klíč', !empty($record['has_api_key']) ? 'nastaven' : 'nenastaven');

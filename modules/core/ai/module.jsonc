@@ -68,6 +68,12 @@
 
     "forms": [
         {
+            // Formulář připojení: výběr platformy z core.ai.platforms, výchozí
+            // adresa a nápovědy podle platformy (tasks/ai-bedrock-eu.md krok 4).
+            "table": "core_ai_backends",
+            "class": "Shipard\\Module\\Core\\Ai\\AIBackendForm"
+        },
+        {
             "table": "core_ai_function_settings",
             "class": "Shipard\\Module\\Core\\Ai\\AiFunctionSettingsForm"
         }

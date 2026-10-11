@@ -61,6 +61,11 @@ final class AiPlatformTest extends TestCase
         $this->assertSame('eu.', $platform->modelIdPrefix);
         $this->assertSame(1.1, $platform->priceMultiplier);
         $this->assertSame('bedrock', $platform->toArray()['modelIds']);
+        $this->assertSame('', $platform->keyHint, 'nápovědy formuláře jsou nepovinné');
+
+        $withHints = AiPlatform::fromArray('x', ['keyHint' => ' Klíč z konzole AWS. ', 'baseUrlHint' => 'Prázdné = Frankfurt.']);
+        $this->assertSame('Klíč z konzole AWS.', $withHints->keyHint);
+        $this->assertSame('Prázdné = Frankfurt.', $withHints->baseUrlHint);
     }
 
     public function testInvalidEntriesAreRejected(): void

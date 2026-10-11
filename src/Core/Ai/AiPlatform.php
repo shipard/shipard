@@ -30,6 +30,8 @@ final readonly class AiPlatform
         public string $modelIdPrefix,
         public float $priceMultiplier,
         public int $order,
+        public string $keyHint = '',
+        public string $baseUrlHint = '',
     ) {
         if ($id === '' || preg_match('/^[a-z0-9][a-z0-9-]*$/', $id) !== 1) {
             throw new \InvalidArgumentException("AiPlatform: invalid platform id '{$id}'");
@@ -56,7 +58,8 @@ final readonly class AiPlatform
 
     /**
      * Položka cfgItemu: `name`, `dialect`, `baseUrl`, `modelIds`,
-     * `modelIdPrefix`, `priceMultiplier`, `order`. Chybějící pole =
+     * `modelIdPrefix`, `priceMultiplier`, `order`, nápovědy formuláře
+     * připojení `keyHint` / `baseUrlHint` (lokalizované). Chybějící pole =
      * výchozí hodnoty platformy Anthropic (dialekt Messages, bez adresy,
      * rodina ID = id platformy, bez prefixu, násobitel 1).
      *
@@ -75,6 +78,8 @@ final readonly class AiPlatform
             modelIdPrefix: is_string($prefix) ? $prefix : '',
             priceMultiplier: is_numeric($multiplier) ? (float) $multiplier : 0.0,
             order: is_numeric($data['order'] ?? null) ? (int) $data['order'] : 1000,
+            keyHint: is_string($data['keyHint'] ?? null) ? trim($data['keyHint']) : '',
+            baseUrlHint: is_string($data['baseUrlHint'] ?? null) ? trim($data['baseUrlHint']) : '',
         );
     }
 
@@ -120,6 +125,8 @@ final readonly class AiPlatform
             'modelIdPrefix' => $this->modelIdPrefix,
             'priceMultiplier' => $this->priceMultiplier,
             'order' => $this->order,
+            'keyHint' => $this->keyHint,
+            'baseUrlHint' => $this->baseUrlHint,
         ];
     }
 }

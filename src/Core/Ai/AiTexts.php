@@ -96,9 +96,12 @@ final class AiTexts
 
     /**
      * Druh chyby API podle stavu / kódu (neplatný klíč, model na platformě
-     * není, vyčerpaný limit útraty…); bez katalogu `HTTP <stav> <typ>: <zpráva>`.
+     * není, vyčerpaný limit útraty…); s platformou připojení má přednost
+     * varianta `api.<druh>.<platforma>` s radou pro tu platformu (klíč
+     * Bedrocku z jiného regionu, model bez povoleného přístupu —
+     * tasks/ai-bedrock-eu.md krok 4). Bez katalogu `HTTP <stav> <typ>: <zpráva>`.
      */
-    public function apiError(LlmApiException $e, ?string $model = null): string
+    public function apiError(LlmApiException $e, ?string $model = null, ?string $platform = null): string
     {
         $key = match (true) {
             $e->isSpendLimitReached() => 'spendLimit',
@@ -111,7 +114,9 @@ final class AiTexts
             default => 'other',
         };
         $params = ['status' => $e->statusCode, 'type' => $e->errorType, 'model' => $model ?? '', 'message' => $e->getMessage()];
-        return $this->t('api.' . $key, $params)
+        $text = $platform !== null && $platform !== '' ? $this->t('api.' . $key . '.' . $platform, $params) : null;
+        return $text
+            ?? $this->t('api.' . $key, $params)
             ?? "HTTP {$e->statusCode} {$e->errorType}: {$e->getMessage()}";
     }
 
