@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 353 tasků: **naplánováno** 4 · **částečně** 23 · **hotovo** 326.
+Celkem 354 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 326.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -26,6 +26,7 @@ nevypisují — níže je jen to, co není dokončené.
 | Task | Stav | Poznámka |
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
+| `ai-settings-section.md` | naplánováno | rozhodnutí D49–D52 potvrzena 2026-10-11 (#85), připraveno k implementaci |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
@@ -381,6 +382,7 @@ Sdílené LLM backendy, MCP nástroje, vnitřní chat. Přehled
 | `ai-models-phase0.md` | Odchod ze Sonnetu 4.5 (končí 30. 11. 2026): přemostění přes Sonnet 4.6, volitelná teplota, thinking/effort, kontrola `stop_reason`, vyšší stropy `max_tokens`, oprava ceníku (#85 F0-D1–D9) |
 | `ai-model-catalog.md` | Katalog modelů (`core.ai.models`: úroveň, schopnosti, ceny, životní cyklus), tvarování požadavku podle schopností modelu, ceník a přepis vyřazených modelů z katalogu, pojistka chatu (#85 fáze 1a, D30–D35) |
 | `ai-functions.md` | Připojení vs. model, deklarace AI funkcí (`aiFunctions`), mapa úrovní, tabulka nastavení funkcí, `AiFunctionResolver`, převod pěti volajících a dat, přepsání v profilu pošty, upozornění „AI model brzy končí“, vlastní ID modelu (#85 fáze 1b, D36–D43) |
+| `ai-settings-section.md` | Sekce AI v Nastavení (připojení, funkce, přehled modelů), detail funkce s úpravami požadavku a stavem resolveru, příkaz `ai-test`, nápověda pro správce (#85 fáze 1c, D49–D52) |
 | `mcp-server-01-skeleton.md` | Skeleton MCP serveru + `persons_search` |
 | `mcp-server-02-read-tools.md` | Zbývající čtecí nástroje (`documents_search`, `mail_list_pending`, …) |
 | `mcp-server-03-draft-tool.md` | Draft nástroj `mail_draft_document` (první zápisový) |
