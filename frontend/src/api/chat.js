@@ -51,12 +51,15 @@ export function deleteConversation(id) {
  * @param {{
  *   onTextDelta?: (text: string) => void,
  *   onToolCall?: (call: {name: string, arguments: object}) => void,
+ *   onThinking?: () => void,
  *   onComplete?: (payload: object) => void,
  *   onError?: (err: {code: string, message: string}) => void,
  * }} handlers
+ *   `onThinking` = model začal přemýšlet (thinking blok, D56) — bez textu;
+ *   trvá do dalšího text-delta / tool-call / konce odpovědi.
  */
 export async function sendMessageStream(conversationId, text, handlers = {}) {
-  const { onTextDelta, onToolCall, onComplete, onError } = handlers;
+  const { onTextDelta, onToolCall, onThinking, onComplete, onError } = handlers;
   const token = localStorage.getItem(TOKEN_KEY);
 
   let res;
@@ -117,7 +120,7 @@ export async function sendMessageStream(conversationId, text, handlers = {}) {
         } catch {
           continue; // skip malformed frame, keep streaming
         }
-        dispatchFrame(frame.event, data, { onTextDelta, onToolCall, onComplete, onError, markTerminated });
+        dispatchFrame(frame.event, data, { onTextDelta, onToolCall, onThinking, onComplete, onError, markTerminated });
       }
     }
   } catch {
@@ -145,13 +148,16 @@ async function readJsonError(res) {
   }
 }
 
-function dispatchFrame(event, data, { onTextDelta, onToolCall, onComplete, onError, markTerminated }) {
+function dispatchFrame(event, data, { onTextDelta, onToolCall, onThinking, onComplete, onError, markTerminated }) {
   switch (event) {
     case 'text-delta':
       onTextDelta?.(data.text ?? '');
       break;
     case 'tool-call':
       onToolCall?.({ name: data.name, arguments: data.arguments ?? {} });
+      break;
+    case 'thinking':
+      onThinking?.();
       break;
     case 'message-complete':
       markTerminated?.();

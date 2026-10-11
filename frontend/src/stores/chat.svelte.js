@@ -27,6 +27,10 @@ let loadingThread = $state(false);
 let streaming = $state(false);
 let streamingText = $state('');
 let streamingTools = $state([]);
+// Model právě přemýšlí (SSE `thinking`, tasks/chat-thinking-blocks.md D56):
+// true od začátku thinking bloku do dalšího textu, volání nástroje nebo
+// konce odpovědi. Text úvah nechodí — jen indikace.
+let thinking = $state(false);
 let error = $state(null); // { code, message } | null
 // Scope draftu na sekci navigace (UI shells Fáze 5) — nastavuje se při
 // newConversation(), odešle se s lazy create v send(); ✕ na chipu ho
@@ -63,6 +67,7 @@ function newConversation(section = null) {
   error = null;
   streamingText = '';
   streamingTools = [];
+  thinking = false;
   pendingSection = section ?? null;
 }
 
@@ -78,6 +83,7 @@ async function send(text) {
   streaming = true;
   streamingText = '';
   streamingTools = [];
+  thinking = false;
 
   // Optimistic user bubble.
   messages = [
@@ -100,8 +106,9 @@ async function send(text) {
   }
 
   await sendMessageStream(id, trimmed, {
-    onTextDelta: (delta) => { streamingText += delta; },
-    onToolCall: (call) => { streamingTools = [...streamingTools, call]; },
+    onTextDelta: (delta) => { thinking = false; streamingText += delta; },
+    onToolCall: (call) => { thinking = false; streamingTools = [...streamingTools, call]; },
+    onThinking: () => { thinking = true; },
     onComplete: () => finalizeTurn(id),
     // openConversation() uvnitř finalizeTurn nuluje `error` — chybu nastavit
     // až PO refetchi, jinak zmizí dřív, než ji uživatel uvidí.
@@ -115,6 +122,7 @@ async function finalizeTurn(id) {
   await loadConversations(); // reorder list by `modified`
   streamingText = '';
   streamingTools = [];
+  thinking = false;
   streaming = false;
 }
 
@@ -142,6 +150,7 @@ export const chatStore = {
   get streaming() { return streaming; },
   get streamingText() { return streamingText; },
   get streamingTools() { return streamingTools; },
+  get thinking() { return thinking; },
   get error() { return error; },
   get pendingSection() { return pendingSection; },
   // Efektivní scope vlákna: draft → pendingSection; založená konverzace →

@@ -37,6 +37,13 @@
     chatStore.messages.length === 0 && !chatStore.streaming && !chatStore.loadingThread,
   );
 
+  // „Přemýšlím…“ (D56): dokud nic nepřišlo, a znovu vždy, když model začal
+  // thinking blok — i po čipech nástrojů, kde dřív bublina mlčela. Zhasne
+  // s dalším textem, voláním nástroje nebo koncem odpovědi (store).
+  const showThinking = $derived(
+    chatStore.thinking || (!chatStore.streamingText && chatStore.streamingTools.length === 0),
+  );
+
   // Scope na sekci (UI shells Fáze 5): draft → chip s ✕ (scope lze odebrat),
   // založená konverzace → statický chip. Label ze stromu navigace, fallback id.
   const scopeSection = $derived(chatStore.scopeSection);
@@ -68,8 +75,6 @@
         <div class="shpd-msg__bubble">
           {#if chatStore.streamingText}
             <Markdown text={chatStore.streamingText} />
-          {:else}
-            <span class="shpd-thread__typing">{t('chat.thinking')}</span>
           {/if}
           {#if chatStore.streamingTools.length}
             <div class="shpd-thread__tools">
@@ -77,6 +82,9 @@
                 <ToolCallChip name={call.name} state="running" />
               {/each}
             </div>
+          {/if}
+          {#if showThinking}
+            <span class="shpd-thread__typing">{t('chat.thinking')}</span>
           {/if}
         </div>
       </div>
@@ -129,6 +137,10 @@
   .shpd-thread__typing {
     color: var(--shpd-color-text-secondary);
     font-style: italic;
+  }
+  .shpd-thread__typing:not(:first-child) {
+    display: block;
+    margin-top: var(--shpd-space-sm);
   }
   .shpd-thread__tools {
     display: flex;
