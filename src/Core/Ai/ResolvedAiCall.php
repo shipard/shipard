@@ -42,6 +42,27 @@ final readonly class ResolvedAiCall
         public array $origins = [],
     ) {}
 
+    /** Plán ({@see AiFunctionResolver::plan()}) + dešifrovaný klíč = hotové volání. */
+    public static function fromPlan(AiCallPlan $plan, string $apiKey): self
+    {
+        return new self(
+            functionId: $plan->functionId,
+            platform: $plan->platform,
+            baseUrl: $plan->baseUrl,
+            apiKey: $apiKey,
+            model: $plan->model,
+            shapeAs: $plan->shapeAs,
+            catalogModel: $plan->catalogModel,
+            maxTokens: $plan->maxTokens,
+            temperature: $plan->temperature,
+            thinking: $plan->thinking,
+            effort: $plan->effort,
+            connectionId: $plan->connectionId,
+            connectionCode: $plan->connectionCode,
+            origins: $plan->origins,
+        );
+    }
+
     /** Vlastní ID modelu mimo katalog (D43): tvaruje se podle `shapeAs`, cena 0. */
     public function isCustomModel(): bool
     {

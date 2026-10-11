@@ -404,9 +404,11 @@ class ChatControllerTest extends TestCase
     // sendMessage — streamed chat turn (Fáze 2a), fake LlmClient
     // -------------------------------------------------------------------
 
+    // api_key = uložený (zašifrovaný) text: plán resolveru ověřuje jen
+    // přítomnost, dešifrování dává mock AiBackendResolver (`sk-test`).
     private const BACKEND = [
-        'id' => 1, 'provider' => 'anthropic', 'model' => 'claude-test',
-        'api_key' => null, 'base_url' => null, 'max_tokens' => 4096,
+        'id' => 1, 'backend_id' => 'default', 'provider' => 'anthropic', 'model' => 'claude-test',
+        'api_key' => 'enc', 'base_url' => null, 'max_tokens' => 4096,
     ];
 
     /**

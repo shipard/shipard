@@ -1,0 +1,228 @@
+{
+    // core.ai.texts — věty k AI volání pro uživatele (#85 D51, D52). Čte
+    // Shipard\Core\Ai\AiTexts: detail AI funkce v Nastavení, `ai-test`
+    // i chyba asistenta mají **jednu** větu, ne tři varianty.
+    //
+    //   error.<KÓD>[.varianta]  chyba resolveru (AiFunctionException), {param}
+    //                           z `details` výjimky + {function} = název funkce
+    //   hint.<KÓD>[.varianta]   rada, kde to opravit
+    //   change.<kód>            úprava požadavku (RequestChange)
+    //   origin.<původ>          původ hodnoty (ResolvedAiCall::ORIGIN_*)
+    //   api.<druh>              druh chyby API (LlmApiException)
+    //
+    // Pole `text` je anglický originál (fallback kompilace), `text:cs` /
+    // `text:en` překlady. Bez katalogu vrací AiTexts zprávu výjimky.
+
+    // --- chyby resolveru -------------------------------------------------
+    "error.UNKNOWN_FUNCTION": {
+        "text": "AI function {functionId} is not declared by any active module.",
+        "text:cs": "AI funkci {functionId} nedeklaruje žádný aktivní modul.",
+        "text:en": "AI function {functionId} is not declared by any active module."
+    },
+    "hint.UNKNOWN_FUNCTION": {
+        "text": "Run shpd-ds ds-upgrade; if the module no longer declares the function, delete its row.",
+        "text:cs": "Spusť shpd-ds ds-upgrade; pokud modul funkci už nemá, řádek smaž.",
+        "text:en": "Run shpd-ds ds-upgrade; if the module no longer declares the function, delete its row."
+    },
+    "error.NO_CONNECTION": {
+        "text": "No active default AI connection is configured.",
+        "text:cs": "Není nastavené žádné výchozí aktivní AI připojení.",
+        "text:en": "No active default AI connection is configured."
+    },
+    "hint.NO_CONNECTION": {
+        "text": "Settings → AI → Connections: mark a connection as default and active.",
+        "text:cs": "Nastavení → AI → Připojení: označ připojení jako výchozí a aktivní.",
+        "text:en": "Settings → AI → Connections: mark a connection as default and active."
+    },
+    "error.NO_CONNECTION.selected": {
+        "text": "AI connection #{connectionId} selected for the function {function} is missing or inactive.",
+        "text:cs": "AI připojení č. {connectionId} nastavené u funkce {function} neexistuje nebo není aktivní.",
+        "text:en": "AI connection #{connectionId} selected for the function {function} is missing or inactive."
+    },
+    "hint.NO_CONNECTION.selected": {
+        "text": "Settings → AI → Functions → {function}: pick another connection, or clear the field (default connection).",
+        "text:cs": "Nastavení → AI → Funkce → {function}: vyber jiné připojení, nebo pole vyprázdni (výchozí připojení).",
+        "text:en": "Settings → AI → Functions → {function}: pick another connection, or clear the field (default connection)."
+    },
+    "error.UNKNOWN_PLATFORM": {
+        "text": "AI connection {connectionCode} uses an unknown platform {platform}.",
+        "text:cs": "AI připojení {connectionCode} používá neznámou platformu {platform}.",
+        "text:en": "AI connection {connectionCode} uses an unknown platform {platform}."
+    },
+    "hint.UNKNOWN_PLATFORM": {
+        "text": "Settings → AI → Connections → {connectionCode}: fix the platform.",
+        "text:cs": "Nastavení → AI → Připojení → {connectionCode}: oprav platformu.",
+        "text:en": "Settings → AI → Connections → {connectionCode}: fix the platform."
+    },
+    "error.KEY_MISSING": {
+        "text": "AI connection {connectionCode} has no API key stored.",
+        "text:cs": "AI připojení {connectionCode} nemá uložený API klíč.",
+        "text:en": "AI connection {connectionCode} has no API key stored."
+    },
+    "hint.KEY_MISSING": {
+        "text": "An administrator sets it from the console: shpd-ds ai-backend-set-key --backend {connectionCode}",
+        "text:cs": "Správce ho zadá v konzoli: shpd-ds ai-backend-set-key --backend {connectionCode}",
+        "text:en": "An administrator sets it from the console: shpd-ds ai-backend-set-key --backend {connectionCode}"
+    },
+    "error.SECRETS_UNAVAILABLE": {
+        "text": "The server cannot decrypt the API key of AI connection {connectionCode}.",
+        "text:cs": "Server nemůže dešifrovat API klíč AI připojení {connectionCode}.",
+        "text:en": "The server cannot decrypt the API key of AI connection {connectionCode}."
+    },
+    "hint.SECRETS_UNAVAILABLE": {
+        "text": "Check the data source key file: shpd-ds ds-secrets-health",
+        "text:cs": "Zkontroluj klíčový soubor zdroje dat: shpd-ds ds-secrets-health",
+        "text:en": "Check the data source key file: shpd-ds ds-secrets-health"
+    },
+    "error.KEY_CORRUPTED": {
+        "text": "The stored API key of AI connection {connectionCode} cannot be decrypted (corrupted, or a different secrets.key).",
+        "text:cs": "Uložený API klíč AI připojení {connectionCode} nejde dešifrovat (poškozený, nebo jiný secrets.key).",
+        "text:en": "The stored API key of AI connection {connectionCode} cannot be decrypted (corrupted, or a different secrets.key)."
+    },
+    "hint.KEY_CORRUPTED": {
+        "text": "Enter the key again: shpd-ds ai-backend-set-key --backend {connectionCode}",
+        "text:cs": "Zadej klíč znovu: shpd-ds ai-backend-set-key --backend {connectionCode}",
+        "text:en": "Enter the key again: shpd-ds ai-backend-set-key --backend {connectionCode}"
+    },
+    "error.NO_MODEL": {
+        "text": "The tier map has no model for tier {tier} of the AI function {function}.",
+        "text:cs": "Pro úroveň {tier} AI funkce {function} není v mapě úrovní žádný model.",
+        "text:en": "The tier map has no model for tier {tier} of the AI function {function}."
+    },
+    "hint.NO_MODEL": {
+        "text": "Run shpd-ds ds-upgrade (the compiled configuration core.ai.tiers is missing).",
+        "text:cs": "Spusť shpd-ds ds-upgrade (chybí zkompilovaná konfigurace core.ai.tiers).",
+        "text:en": "Run shpd-ds ds-upgrade (the compiled configuration core.ai.tiers is missing)."
+    },
+    "error.UNKNOWN_MODEL": {
+        "text": "Model {model} of the AI function {function} is not in the model catalog and no catalog model to shape the request after is set.",
+        "text:cs": "Model {model} u AI funkce {function} není v katalogu modelů a není nastaveno, podle kterého modelu tvarovat požadavek.",
+        "text:en": "Model {model} of the AI function {function} is not in the model catalog and no catalog model to shape the request after is set."
+    },
+    "hint.UNKNOWN_MODEL": {
+        "text": "Settings → AI → Functions → {function}: pick a catalog model, or fill in “Shape as model” for a custom ID.",
+        "text:cs": "Nastavení → AI → Funkce → {function}: vyber model z katalogu, nebo u vlastního ID vyplň „Tvarovat jako model“.",
+        "text:en": "Settings → AI → Functions → {function}: pick a catalog model, or fill in “Shape as model” for a custom ID."
+    },
+    "error.UNKNOWN_MODEL.like": {
+        "text": "Model {modelLike}, after which requests of the AI function {function} are to be shaped, is not in the model catalog.",
+        "text:cs": "Model {modelLike}, podle kterého se má tvarovat požadavek AI funkce {function}, není v katalogu modelů.",
+        "text:en": "Model {modelLike}, after which requests of the AI function {function} are to be shaped, is not in the model catalog."
+    },
+    "hint.UNKNOWN_MODEL.like": {
+        "text": "Settings → AI → Functions → {function}: choose a catalog model in “Shape as model”.",
+        "text:cs": "Nastavení → AI → Funkce → {function}: v poli „Tvarovat jako model“ vyber model z katalogu.",
+        "text:en": "Settings → AI → Functions → {function}: choose a catalog model in “Shape as model”."
+    },
+    "error.MODEL_NOT_ON_PLATFORM": {
+        "text": "Model {model} of the AI function {function} is not available on platform {platform}.",
+        "text:cs": "Model {model} AI funkce {function} není dostupný na platformě {platform}.",
+        "text:en": "Model {model} of the AI function {function} is not available on platform {platform}."
+    },
+    "hint.MODEL_NOT_ON_PLATFORM": {
+        "text": "Settings → AI → Functions → {function}: pick a model available on the connection’s platform, or another connection.",
+        "text:cs": "Nastavení → AI → Funkce → {function}: vyber model dostupný na platformě připojení, nebo jiné připojení.",
+        "text:en": "Settings → AI → Functions → {function}: pick a model available on the connection’s platform, or another connection."
+    },
+    "error.MODEL_NOT_SUPPORTED_FOR_FUNCTION": {
+        "text": "Model {model} cannot serve the AI function {function} yet — it needs tools, which do not work with this model so far.",
+        "text:cs": "Model {model} zatím nemůže obsloužit AI funkci {function} — potřebuje nástroje, které s tímto modelem zatím nefungují.",
+        "text:en": "Model {model} cannot serve the AI function {function} yet — it needs tools, which do not work with this model so far."
+    },
+    "hint.MODEL_NOT_SUPPORTED_FOR_FUNCTION": {
+        "text": "Settings → AI → Functions → {function}: pick another model (e.g. Claude Sonnet 4.6), or clear the field (tier model).",
+        "text:cs": "Nastavení → AI → Funkce → {function}: vyber jiný model (např. Claude Sonnet 4.6), nebo pole vyprázdni (model podle úrovně).",
+        "text:en": "Settings → AI → Functions → {function}: pick another model (e.g. Claude Sonnet 4.6), or clear the field (tier model)."
+    },
+
+    // --- úpravy požadavku (RequestShaper → RequestChange) -------------------
+    "change.temperatureOmitted": {
+        "text": "Temperature {temperature} is not sent — the model rejects a non-default temperature.",
+        "text:cs": "Teplota {temperature} se neposílá — model nepřijímá jinou než výchozí teplotu.",
+        "text:en": "Temperature {temperature} is not sent — the model rejects a non-default temperature."
+    },
+    "change.thinkingReplaced": {
+        "text": "Thinking {from} is sent as {to} — the model accepts: {accepted}.",
+        "text:cs": "Přemýšlení {from} se posílá jako {to} — model přijímá: {accepted}.",
+        "text:en": "Thinking {from} is sent as {to} — the model accepts: {accepted}."
+    },
+    "change.thinkingOmitted": {
+        "text": "Thinking {thinking} is not sent — the model accepts only: {accepted}.",
+        "text:cs": "Přemýšlení {thinking} se neposílá — model přijímá jen: {accepted}.",
+        "text:en": "Thinking {thinking} is not sent — the model accepts only: {accepted}."
+    },
+    "change.thinkingUnsupported": {
+        "text": "Thinking {thinking} is not sent — the model has no thinking parameter.",
+        "text:cs": "Přemýšlení {thinking} se neposílá — model parametr přemýšlení nezná.",
+        "text:en": "Thinking {thinking} is not sent — the model has no thinking parameter."
+    },
+    "change.effortOmitted": {
+        "text": "Effort {effort} is not sent — the model has no effort parameter.",
+        "text:cs": "Úsilí {effort} se neposílá — model parametr úsilí nezná.",
+        "text:en": "Effort {effort} is not sent — the model has no effort parameter."
+    },
+    "change.effortLowered": {
+        "text": "Effort {from} is sent as {to} — the model accepts: {accepted}.",
+        "text:cs": "Úsilí {from} se posílá jako {to} — model přijímá: {accepted}.",
+        "text:en": "Effort {from} is sent as {to} — the model accepts: {accepted}."
+    },
+    "change.effortCapped": {
+        "text": "Effort {from} is sent as {to} — with thinking {thinking} the model accepts at most {to}.",
+        "text:cs": "Úsilí {from} se posílá jako {to} — s přemýšlením {thinking} model přijímá nejvýš {to}.",
+        "text:en": "Effort {from} is sent as {to} — with thinking {thinking} the model accepts at most {to}."
+    },
+    "change.maxTokensCapped": {
+        "text": "The limit of {from} tokens is lowered to {to} — the model’s output limit.",
+        "text:cs": "Strop {from} tokenů se snižuje na {to} — limit výstupu modelu.",
+        "text:en": "The limit of {from} tokens is lowered to {to} — the model’s output limit."
+    },
+
+    // --- původ hodnoty ------------------------------------------------------
+    "origin.override":    { "text": "overridden by the caller",     "text:cs": "přepsáno volajícím",         "text:en": "overridden by the caller" },
+    "origin.function":    { "text": "set on the function",          "text:cs": "nastaveno u funkce",         "text:en": "set on the function" },
+    "origin.declaration": { "text": "function declaration",         "text:cs": "podle deklarace funkce",     "text:en": "function declaration" },
+    "origin.tier":        { "text": "tier model",                   "text:cs": "podle úrovně modelu",        "text:en": "tier model" },
+    "origin.default":     { "text": "default connection",           "text:cs": "výchozí připojení",          "text:en": "default connection" },
+
+    // --- chyby API ----------------------------------------------------------
+    "api.authentication": {
+        "text": "The platform rejected the API key (HTTP 401) — the key is invalid or revoked.",
+        "text:cs": "Platforma odmítla API klíč (HTTP 401) — klíč je neplatný nebo zrušený.",
+        "text:en": "The platform rejected the API key (HTTP 401) — the key is invalid or revoked."
+    },
+    "api.forbidden": {
+        "text": "The platform refused access (HTTP 403) — the key lacks permission.",
+        "text:cs": "Platforma odmítla přístup (HTTP 403) — klíč nemá oprávnění.",
+        "text:en": "The platform refused access (HTTP 403) — the key lacks permission."
+    },
+    "api.notFound": {
+        "text": "Model {model} does not exist on the platform or has been retired (HTTP 404).",
+        "text:cs": "Model {model} na platformě neexistuje nebo už skončil (HTTP 404).",
+        "text:en": "Model {model} does not exist on the platform or has been retired (HTTP 404)."
+    },
+    "api.spendLimit": {
+        "text": "The account’s spend limit on the platform is exhausted — calls go through only after the limit is raised, or next month.",
+        "text:cs": "Vyčerpaný limit útraty účtu na platformě — volání projdou až po navýšení limitu, nebo v dalším měsíci.",
+        "text:en": "The account’s spend limit on the platform is exhausted — calls go through only after the limit is raised, or next month."
+    },
+    "api.rateLimit": {
+        "text": "The platform rejected the request because of a rate limit (HTTP 429) — try again later.",
+        "text:cs": "Platforma požadavek odmítla kvůli limitu (HTTP 429) — zkus to později.",
+        "text:en": "The platform rejected the request because of a rate limit (HTTP 429) — try again later."
+    },
+    "api.transport": {
+        "text": "The platform did not respond (network error or timeout).",
+        "text:cs": "Platforma neodpověděla (síťová chyba nebo vypršel čas).",
+        "text:en": "The platform did not respond (network error or timeout)."
+    },
+    "api.server": {
+        "text": "Error on the platform side (HTTP {status}).",
+        "text:cs": "Chyba na straně platformy (HTTP {status}).",
+        "text:en": "Error on the platform side (HTTP {status})."
+    },
+    "api.other": {
+        "text": "The platform returned an error (HTTP {status}, {type}).",
+        "text:cs": "Platforma vrátila chybu (HTTP {status}, {type}).",
+        "text:en": "The platform returned an error (HTTP {status}, {type})."
+    }
+}

@@ -266,14 +266,6 @@ class ModelCatalogViewer extends AiViewerBase
         };
     }
 
-    /** Název platformy z cfgItemu `core.ai.platforms`; bez konfigurace klíč. */
-    private function platformLabel(string $platform): string
-    {
-        $cfg = $this->config?->cfgItem('core.ai.platforms');
-        $entry = is_array($cfg) ? ($cfg[$platform] ?? null) : null;
-        return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $platform;
-    }
-
     private function perMillion(float $price): string
     {
         return $this->text('value.perMillion', '{price} / 1M tokens', ['price' => self::usd($price)]);

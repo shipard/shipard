@@ -3,7 +3,11 @@
 // Server returns `{code, message, details?}` on failure. We try to translate
 // `code` via the dictionary (`error.<CODE>` keys); if the code is unknown,
 // we fall back to the server's `message` (English by convention) so the
-// user still sees something rather than a raw key.
+// user still sees something rather than a raw key. Some codes deliberately
+// have no dictionary entry because the server already localizes the message
+// in the request language — the AI setup errors of the assistant
+// (AI_NOT_CONFIGURED, AI_MODEL_NOT_SUPPORTED_FOR_CHAT: the same sentence as
+// in Settings → AI → Functions, from the core.ai.texts catalog).
 //
 // Validation errors carry `details[]` — currently we surface only the first
 // detail's `field` / `value` as ICU params for translations that want them.

@@ -102,6 +102,13 @@
             // AiViewerBase::text(); PHP nenese cs/en větvení (#85 D50).
             "id": "core.ai.viewerLabels",
             "file": "config/viewerLabels.jsonc"
+        },
+        {
+            // Věty k AI volání (chyby resolveru s radou, úpravy požadavku,
+            // původ hodnot, chyby API) — jeden zdroj pro detail funkce,
+            // `ai-test` i chybu asistenta; čte Shipard\Core\Ai\AiTexts (#85 D51).
+            "id": "core.ai.texts",
+            "file": "config/texts.jsonc"
         }
     ],
 

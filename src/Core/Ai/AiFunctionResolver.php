@@ -67,11 +67,60 @@ class AiFunctionResolver
     }
 
     /**
+     * Plán volání **bez klíče** (tasks/ai-settings-section.md D51): tytéž
+     * kroky jako {@see resolve()}, klíč připojení se jen ověří jako uložený
+     * (jinak `KEY_MISSING`), nedešifruje — pro detail AI funkce v Nastavení
+     * a `ai-test`. `SECRETS_UNAVAILABLE` / `KEY_CORRUPTED` vzniknou až při
+     * dešifrování v `resolve()`.
+     *
+     * @throws AiFunctionException
+     */
+    public function plan(string $functionId, ?AiCallOverride $override = null): AiCallPlan
+    {
+        return $this->decide($functionId, $override ?? AiCallOverride::none())['plan'];
+    }
+
+    /**
+     * Hotové volání = plán + dešifrovaný klíč. Model z mapy úrovní, který
+     * končí, zaloguje jedno varování za proces (D42) — jen tady, náhled
+     * v Nastavení neloguje.
+     *
      * @throws AiFunctionException
      */
     public function resolve(string $functionId, ?AiCallOverride $override = null): ResolvedAiCall
     {
-        $override ??= AiCallOverride::none();
+        $decision = $this->decide($functionId, $override ?? AiCallOverride::none());
+        $this->warnRetiringTierModel($decision['plan'], $decision['function']);
+        return ResolvedAiCall::fromPlan($decision['plan'], $this->apiKey($decision['connection']));
+    }
+
+    /**
+     * „Co by se stalo“ (D51): plán + úpravy, které by {@see RequestShaper}
+     * pro efektivní model provedl, nebo zachycená chyba nastavení. Prázdný
+     * katalog / model mimo katalog = bez úprav (jako v klientovi). Čte
+     * detail AI funkce v Nastavení a `ai-test`.
+     */
+    public function preview(string $functionId, ?AiCallOverride $override = null): AiCallPreview
+    {
+        try {
+            $plan = $this->plan($functionId, $override);
+        } catch (AiFunctionException $e) {
+            return AiCallPreview::failed($e);
+        }
+        $spec = $this->catalog()->find($plan->shapeAs ?? $plan->model);
+        $changes = $spec !== null ? RequestShaper::shape($plan->previewParams(), $spec)[1] : [];
+        return AiCallPreview::ok($plan, $changes);
+    }
+
+    /**
+     * Rozhodnutí bez klíče + řádek připojení a deklarace funkce pro
+     * {@see resolve()}.
+     *
+     * @return array{plan: AiCallPlan, connection: array<string, mixed>, function: AiFunction}
+     * @throws AiFunctionException
+     */
+    private function decide(string $functionId, AiCallOverride $override): array
+    {
         $function = $this->registry()->get($functionId);
         if ($function === null) {
             throw new AiFunctionException(
@@ -91,7 +140,7 @@ class AiFunctionResolver
             throw new AiFunctionException(
                 AiFunctionException::UNKNOWN_PLATFORM,
                 "AI connection '{$connection['backend_id']}' uses unknown platform '{$platform}'",
-                ['platform' => $platform, 'connectionId' => (int) $connection['id']],
+                ['platform' => $platform, 'connectionId' => (int) $connection['id'], 'connectionCode' => (string) ($connection['backend_id'] ?? '')],
             );
         }
         $baseUrl = trim((string) ($connection['base_url'] ?? ''));
@@ -109,14 +158,13 @@ class AiFunctionResolver
         [$effort, $origins['effort']] = $this->pickTuning('effort', $override->effort, $row);
         [$maxTokens, $origins['maxTokens']] = $this->pickMaxTokens($function, $override, $row);
 
-        // --- klíč --------------------------------------------------------
-        $apiKey = $this->apiKey($connection);
+        // --- klíč: jen přítomnost, dešifruje až resolve() -----------------
+        $this->assertKeyStored($connection);
 
-        return new ResolvedAiCall(
+        $plan = new AiCallPlan(
             functionId: $functionId,
             platform: $platform,
             baseUrl: $baseUrl,
-            apiKey: $apiKey,
             model: $platformModel,
             shapeAs: $shapeAs,
             catalogModel: $catalogModel,
@@ -128,6 +176,29 @@ class AiFunctionResolver
             connectionCode: (string) ($connection['backend_id'] ?? ''),
             origins: $origins,
         );
+        return ['plan' => $plan, 'connection' => $connection, 'function' => $function];
+    }
+
+    /**
+     * Model z mapy úrovní, který končí, hlídá repo, ne zdroj dat (D42) —
+     * jedno varování za proces, jen při skutečném volání.
+     */
+    private function warnRetiringTierModel(AiCallPlan $plan, AiFunction $function): void
+    {
+        if (($plan->origins['model'] ?? null) !== ResolvedAiCall::ORIGIN_TIER || $plan->catalogModel === null) {
+            return;
+        }
+        $spec = $this->catalog()->find($plan->catalogModel);
+        if ($spec === null || !$spec->isRetiring() || isset(self::$retiringWarned[$spec->id])) {
+            return;
+        }
+        self::$retiringWarned[$spec->id] = true;
+        ErrorLogger::warn('AiFunctionResolver: tier model is being retired — update core.ai.tiers', [
+            'model' => $spec->id,
+            'tier' => $function->tier,
+            'retiresAt' => $spec->retiresAt,
+            'replacedBy' => $spec->replacedBy,
+        ]);
     }
 
     /** @return array<string, mixed> řádek `core_ai_function_settings`, prázdný před ds-upgrade */
@@ -262,19 +333,6 @@ class AiFunctionResolver
         }
         $this->assertSupported($function, $spec, $platformModel);
 
-        if ($origin === ResolvedAiCall::ORIGIN_TIER && $spec->isRetiring()
-            && !isset(self::$retiringWarned[$spec->id])
-        ) {
-            // Modely z mapy úrovní hlídá repo, ne zdroj dat (D42) — jen log.
-            self::$retiringWarned[$spec->id] = true;
-            ErrorLogger::warn('AiFunctionResolver: tier model is being retired — update core.ai.tiers', [
-                'model' => $spec->id,
-                'tier' => $function->tier,
-                'retiresAt' => $spec->retiresAt,
-                'replacedBy' => $spec->replacedBy,
-            ]);
-        }
-
         return [$platformModel, $spec->id, $spec->id];
     }
 
@@ -321,6 +379,25 @@ class AiFunctionResolver
             return [(int) $row['max_tokens'], ResolvedAiCall::ORIGIN_FUNCTION];
         }
         return [$function->maxTokens, ResolvedAiCall::ORIGIN_DECLARATION];
+    }
+
+    /**
+     * Klíč je uložený (zašifrovaný text v řádku připojení ze `SELECT *`) —
+     * bez dešifrování; totéž, co {@see apiKey()} hlásí po dešifrování.
+     *
+     * @param array<string, mixed> $connection
+     */
+    private function assertKeyStored(array $connection): void
+    {
+        $stored = $connection['api_key'] ?? null;
+        if ($stored === null || $stored === '') {
+            $code = (string) ($connection['backend_id'] ?? '');
+            throw new AiFunctionException(
+                AiFunctionException::KEY_MISSING,
+                "AI connection '{$code}' has no API key set. Run ai-backend-set-key.",
+                ['connectionId' => (int) ($connection['id'] ?? 0), 'connectionCode' => $code],
+            );
+        }
     }
 
     /** @param array<string, mixed> $connection */

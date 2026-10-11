@@ -62,6 +62,14 @@ abstract class AiViewerBase extends TableViewer
         return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $value;
     }
 
+    /** Název platformy z cfgItemu `core.ai.platforms`; bez konfigurace klíč. */
+    protected function platformLabel(string $platform): string
+    {
+        $cfg = $this->config?->cfgItem('core.ai.platforms');
+        $entry = is_array($cfg) ? ($cfg[$platform] ?? null) : null;
+        return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $platform;
+    }
+
     /** Datum `YYYY-MM-DD` pro uživatele: česky `30. 11. 2026`, jinak ISO. */
     protected function formatDate(?string $date): ?string
     {

@@ -367,8 +367,6 @@ export default {
   'error.MAIL_NOT_CONFIGURED': 'Outbound mail is not configured',
   'error.OIDC_TXN_INVALID': 'The sign-in request is invalid or has expired — try again from the source application',
   'error.LLM_ERROR': 'The AI model returned an error: {message}',
-  'error.AI_MODEL_NOT_SUPPORTED_FOR_CHAT': 'The assistant cannot work with model {value} yet. An administrator has to select another model for the Assistant chat AI function (Application settings → AI → Functions)',
-  'error.AI_NOT_CONFIGURED': 'The assistant AI function is not configured correctly: {message}',
   'error.NO_BACKEND': 'No active AI connection with an API key is configured',
   'error.LLM_NOT_CONFIGURED': 'The AI assistant is not configured on this data source',
   'error.STREAM_ERROR': 'The response stream failed ({message}) — the reply may not have been saved',

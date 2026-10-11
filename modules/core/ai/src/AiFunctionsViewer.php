@@ -4,21 +4,31 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Ai;
 
+use Shipard\Core\Ai\AiCallPlan;
+use Shipard\Core\Ai\AiCallPreview;
 use Shipard\Core\Ai\AiFunction;
 use Shipard\Core\Ai\AiFunctionRegistry;
-use Shipard\Core\Ai\ModelCatalog;
+use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\AiTexts;
+use Shipard\Core\Ai\RequestChange;
 use Shipard\Core\Database\SearchCondition;
-use Shipard\Core\Viewer\TableViewer;
 
 /**
- * Viewer „AI funkce“ (tasks/ai-functions.md D38): jeden řádek na
- * deklarovanou funkci, pořadí podle registru (deklarací modulů). Název
- * a popis funkce jdou z registru, ne z databáze; řádek ukazuje efektivní
- * model a připojení s původem hodnoty (přepsáno / podle úrovně).
- * Přidat se nenabízí — řádky zakládá ds-upgrade.
+ * Viewer „Funkce“ v Nastavení → AI (tasks/ai-functions.md D38,
+ * tasks/ai-settings-section.md D51): jeden řádek na deklarovanou funkci,
+ * pořadí podle registru (deklarací modulů). Název a popis funkce jdou
+ * z registru, ne z databáze; řádek ukazuje efektivní model a připojení.
+ *
+ * Detail říká, **co se modelu skutečně pošle**: plán z
+ * {@see AiFunctionResolver::preview()} (hodnoty s původem, bez
+ * dešifrování klíče), úpravy, které by {@see \Shipard\Core\Ai\RequestShaper}
+ * provedl, a stav volání — chybu, kterou by volání skončilo, s radou, kde
+ * to opravit ({@see AiTexts}). Přidat se nenabízí — řádky zakládá ds-upgrade.
  */
-class AiFunctionsViewer extends TableViewer
+class AiFunctionsViewer extends AiViewerBase
 {
+    private ?AiFunctionResolver $resolver = null;
+
     public function selectRows(?string $search, array $filters, int $pageNumber): array
     {
         $sql = 'SELECT f.`id`, f.`function_id`, f.`connection`, f.`model`, f.`model_like`,'
@@ -63,13 +73,13 @@ class AiFunctionsViewer extends TableViewer
         if ($function !== null) {
             $badges[] = ['text' => $this->tierLabel($function->tier), 'class' => 'muted'];
         } else {
-            $badges[] = ['text' => 'bez deklarace', 'class' => 'warning'];
+            $badges[] = ['text' => $this->text('badge.noDeclaration', 'no declaration'), 'class' => 'warning'];
         }
         if ($effective['origin'] === 'row') {
-            $badges[] = ['text' => 'vlastní model', 'class' => 'primary'];
+            $badges[] = ['text' => $this->text('badge.customModel', 'custom model'), 'class' => 'primary'];
         }
         if ($this->hasTuningOverride($rowData)) {
-            $badges[] = ['text' => 'vlastní ladění', 'class' => 'primary'];
+            $badges[] = ['text' => $this->text('badge.customTuning', 'custom tuning'), 'class' => 'primary'];
         }
         $row['i1'] = $badges;
 
@@ -98,55 +108,53 @@ class AiFunctionsViewer extends TableViewer
 
         $functionId = (string) ($record['function_id'] ?? '');
         $function = $this->registry()->get($functionId);
-        $effective = $this->effectiveModel($function, $record);
+        $preview = $this->resolver()->preview($functionId);
+        $texts = $this->texts();
 
         $functionItems = [];
-        $this->addItem($functionItems, 'Funkce', $function?->name ?? $functionId);
-        $this->addItem($functionItems, 'ID', $functionId);
-        $this->addItem($functionItems, 'Popis', $function?->description);
-        $this->addItem($functionItems, 'Úroveň', $function !== null ? $this->tierLabel($function->tier) : 'bez deklarace');
+        $this->addItem($functionItems, $this->text('label.function', 'Function'), $function?->name ?? $functionId);
+        $this->addItem($functionItems, $this->text('label.id', 'ID'), $functionId);
+        $this->addItem($functionItems, $this->text('label.description', 'Description'), $function?->description);
+        $this->addItem(
+            $functionItems,
+            $this->text('label.tier', 'Tier'),
+            $function !== null ? $this->tierLabel($function->tier) : $this->text('badge.noDeclaration', 'no declaration'),
+        );
         if ($function !== null && $function->requires !== []) {
-            $this->addItem($functionItems, 'Požadavky na model', implode(', ', $function->requires));
+            $this->addItem($functionItems, $this->text('label.requires', 'Model requirements'), implode(', ', $function->requires));
         }
 
-        $callItems = [];
-        $this->addItem($callItems, 'AI připojení', $this->connectionLabel($record)
-            . (($record['connection'] ?? null) !== null ? ' (přepsáno)' : ''));
-        $this->addItem($callItems, 'Model', $effective['model'] !== ''
-            ? $effective['model'] . ($effective['origin'] === 'row' ? ' (přepsáno)' : ' (podle úrovně)')
-            : null);
-        if (($record['model_like'] ?? null) !== null && $record['model_like'] !== '') {
-            $this->addItem($callItems, 'Tvarovat jako model', $record['model_like']);
-        }
+        [$callItems, $tuning] = $preview->plan !== null
+            ? $this->plannedCall($preview->plan, $texts)
+            : $this->storedCall($function, $record);
 
-        $tuning = [];
-        $this->addItem($tuning, 'Přemýšlení', $this->tuningLabel('core.ai.thinkingModes', $record['thinking'] ?? null));
-        $this->addItem($tuning, 'Úsilí', $this->tuningLabel('core.ai.effortLevels', $record['effort'] ?? null));
-        $maxTokens = (int) ($record['max_tokens'] ?? 0);
-        $this->addItem($tuning, 'Max. tokenů', $maxTokens > 0
-            ? "{$maxTokens} (přepsáno)"
-            : ($function !== null ? "{$function->maxTokens} (podle funkce)" : null));
-        if ($function?->temperature !== null) {
-            $this->addItem($tuning, 'Teplota', (string) $function->temperature . ' (podle funkce)');
+        $groups = [
+            ['title' => $this->text('group.function', 'Function'), 'items' => $functionItems],
+            ['title' => $this->text('group.call', 'Call'), 'items' => $callItems],
+            ['title' => $this->text('group.tuning', 'Tuning'), 'items' => $tuning],
+        ];
+        if ($preview->plan !== null) {
+            $groups[] = ['title' => $this->text('group.changes', 'Request adjustments'), 'items' => $this->changeItems($preview, $texts)];
         }
+        $groups[] = ['title' => $this->text('group.callStatus', 'Call status'), 'items' => $this->statusItems($preview, $functionId, $texts)];
 
-        $status = [];
-        $this->addItem($status, 'Vytvořeno', $record['created'] ?? null);
-        $this->addItem($status, 'Změněno', $record['modified'] ?? null);
+        $record_ = [];
+        $this->addItem($record_, $this->text('label.created', 'Created'), $record['created'] ?? null);
+        $this->addItem($record_, $this->text('label.modified', 'Modified'), $record['modified'] ?? null);
+        if ($record_ !== []) {
+            $groups[] = ['title' => $this->text('group.status', 'Record'), 'items' => $record_];
+        }
 
         return [
+            'title' => $function?->name ?? $functionId,
+            'subtitle' => $functionId,
+            'badges' => [$preview->isOk()
+                ? ['label' => $this->text('badge.callOk', 'OK'), 'style' => 'success']
+                : ['label' => $this->text('badge.callError', 'Setup error'), 'style' => 'danger']],
             'tabs' => [[
                 'id' => 'overview',
                 'label' => $this->defaultOverviewLabel(),
-                'content' => [
-                    'type' => 'properties',
-                    'groups' => [
-                        ['title' => 'Funkce', 'items' => $functionItems],
-                        ['title' => 'Volání', 'items' => $callItems],
-                        ['title' => 'Ladění', 'items' => $tuning],
-                        ['title' => 'Stav', 'items' => $status],
-                    ],
-                ],
+                'content' => ['type' => 'properties', 'groups' => $groups],
             ]],
         ];
     }
@@ -156,8 +164,19 @@ class AiFunctionsViewer extends TableViewer
     {
         return array_values(array_filter(
             parent::getToolbarActions($selectedRow),
-            static fn (array $action): bool => ($action['id'] ?? '') !== 'create',
+            static fn (array $action): bool => ($action['id'] !== 'create'),
         ));
+    }
+
+    /** Seam pro testy — resolver nad DB, compiled configem a konfigurací zdroje dat. */
+    protected function resolver(): AiFunctionResolver
+    {
+        return $this->resolver ??= new AiFunctionResolver($this->db, $this->config, $this->dsConfig);
+    }
+
+    protected function texts(): AiTexts
+    {
+        return new AiTexts($this->config, $this->registry());
     }
 
     private function registry(): AiFunctionRegistry
@@ -166,6 +185,129 @@ class AiFunctionsViewer extends TableViewer
     }
 
     /**
+     * Skupiny Volání a Ladění z plánu resolveru: efektivní hodnoty
+     * s původem (přepsáno volajícím / nastaveno u funkce / podle deklarace /
+     * podle úrovně / výchozí připojení).
+     *
+     * @return array{0: list<array{label: string, value: string}>, 1: list<array{label: string, value: string}>}
+     */
+    private function plannedCall(AiCallPlan $plan, AiTexts $texts): array
+    {
+        $origin = static fn (string $key): string => $texts->origin($plan->origins[$key] ?? '');
+
+        $call = [];
+        $this->addItem(
+            $call,
+            $this->text('label.connection', 'AI connection'),
+            $this->connectionName($plan) . ' — ' . $origin('connection'),
+        );
+        $this->addItem($call, $this->text('label.platform', 'Platform'), $this->platformLabel($plan->platform));
+        $this->addItem($call, $this->text('label.baseUrl', 'API address'), $plan->baseUrl);
+        $this->addItem($call, $this->text('label.model', 'Model'), $plan->model . ' — ' . $origin('model'));
+        if ($plan->isCustomModel() && $plan->shapeAs !== null) {
+            $this->addItem($call, $this->text('label.shapeAs', 'Shape as model'), $plan->shapeAs);
+        }
+
+        $notSent = $this->text('value.notSent', 'not sent');
+        $tuning = [];
+        $this->addItem(
+            $tuning,
+            $this->text('label.thinking', 'Thinking'),
+            ($plan->thinking !== null ? $this->tuningLabel('core.ai.thinkingModes', $plan->thinking) : $notSent) . ' — ' . $origin('thinking'),
+        );
+        $this->addItem(
+            $tuning,
+            $this->text('label.effort', 'Effort'),
+            ($plan->effort !== null ? $this->tuningLabel('core.ai.effortLevels', $plan->effort) : $notSent) . ' — ' . $origin('effort'),
+        );
+        $this->addItem($tuning, $this->text('label.maxTokens', 'Max. tokens'), $plan->maxTokens . ' — ' . $origin('maxTokens'));
+        $this->addItem(
+            $tuning,
+            $this->text('label.temperatureValue', 'Temperature'),
+            ($plan->temperature !== null ? (string) $plan->temperature : $notSent) . ' — ' . $texts->origin('declaration'),
+        );
+        return [$call, $tuning];
+    }
+
+    /**
+     * Bez plánu (chyba nastavení): co je u funkce uložené, bez tvrzení
+     * o efektivních hodnotách.
+     *
+     * @param array<string, mixed> $record
+     * @return array{0: list<array{label: string, value: string}>, 1: list<array{label: string, value: string}>}
+     */
+    private function storedCall(?AiFunction $function, array $record): array
+    {
+        $effective = $this->effectiveModel($function, $record);
+        $call = [];
+        $this->addItem($call, $this->text('label.connection', 'AI connection'), $this->connectionLabel($record));
+        $this->addItem($call, $this->text('label.model', 'Model'), $effective['model'] !== '' ? $effective['model'] : null);
+        if (($record['model_like'] ?? null) !== null && $record['model_like'] !== '') {
+            $this->addItem($call, $this->text('label.shapeAs', 'Shape as model'), $record['model_like']);
+        }
+
+        $tuning = [];
+        $this->addItem($tuning, $this->text('label.thinking', 'Thinking'), $this->tuningLabel('core.ai.thinkingModes', $record['thinking'] ?? null));
+        $this->addItem($tuning, $this->text('label.effort', 'Effort'), $this->tuningLabel('core.ai.effortLevels', $record['effort'] ?? null));
+        $maxTokens = (int) ($record['max_tokens'] ?? 0);
+        $this->addItem($tuning, $this->text('label.maxTokens', 'Max. tokens'), $maxTokens > 0 ? (string) $maxTokens : ($function?->maxTokens));
+        if ($function?->temperature !== null) {
+            $this->addItem($tuning, $this->text('label.temperatureValue', 'Temperature'), (string) $function->temperature);
+        }
+        return [$call, $tuning];
+    }
+
+    /** @return list<array{label: string, value: string}> */
+    private function changeItems(AiCallPreview $preview, AiTexts $texts): array
+    {
+        $items = [];
+        if ($preview->changes === []) {
+            $this->addItem($items, $this->text('label.result', 'Result'), $this->text('value.noChanges', 'None — the model accepts every value as set'));
+            return $items;
+        }
+        foreach ($preview->changes as $change) {
+            $this->addItem($items, $this->changeLabel($change), $texts->change($change));
+        }
+        return $items;
+    }
+
+    /** @return list<array{label: string, value: string}> */
+    private function statusItems(AiCallPreview $preview, string $functionId, AiTexts $texts): array
+    {
+        $items = [];
+        if ($preview->error === null) {
+            $this->addItem($items, $this->text('label.result', 'Result'), $this->text('value.callOk', 'OK — the connection has a key stored; ai-test checks whether it works'));
+        } else {
+            $this->addItem($items, $this->text('label.result', 'Result'), $texts->error($preview->error, withHint: false));
+            $this->addItem($items, $this->text('label.hint', 'Where to fix it'), $texts->hint($preview->error));
+        }
+        $this->addItem($items, $this->text('label.verify', 'Check from the console'), 'shpd-ds ai-test --function ' . $functionId);
+        return $items;
+    }
+
+    private function changeLabel(RequestChange $change): string
+    {
+        return match ($change->code) {
+            RequestChange::TEMPERATURE_OMITTED => $this->text('label.temperatureValue', 'Temperature'),
+            RequestChange::THINKING_REPLACED, RequestChange::THINKING_OMITTED, RequestChange::THINKING_UNSUPPORTED => $this->text('label.thinking', 'Thinking'),
+            RequestChange::EFFORT_OMITTED, RequestChange::EFFORT_LOWERED, RequestChange::EFFORT_CAPPED => $this->text('label.effort', 'Effort'),
+            default => $this->text('label.maxTokens', 'Max. tokens'),
+        };
+    }
+
+    /** Název připojení z plánu (jeden dotaz); bez řádku kód připojení. */
+    private function connectionName(AiCallPlan $plan): string
+    {
+        $row = $this->db->fetchRow('SELECT `name`, `is_active` FROM `core_ai_backends` WHERE `id` = %i', $plan->connectionId);
+        $name = trim((string) ($row['name'] ?? ''));
+        $label = $name !== '' ? "{$name} ({$plan->connectionCode})" : $plan->connectionCode;
+        return $label !== '' ? $label : '#' . $plan->connectionId;
+    }
+
+    /**
+     * Levný odhad pro řádek seznamu (bez resolveru): model z řádku, jinak
+     * z mapy úrovní.
+     *
      * @param array<string, mixed> $row
      * @return array{model: string, origin: 'row'|'tier'|'none'}
      */
@@ -175,7 +317,7 @@ class AiFunctionsViewer extends TableViewer
         if ($model !== '') {
             return ['model' => $model, 'origin' => 'row'];
         }
-        $tierModel = $function !== null ? ModelCatalog::fromConfig($this->config)->defaultModel($function->tier) : null;
+        $tierModel = $function !== null ? $this->catalog()->defaultModel($function->tier) : null;
         return $tierModel !== null
             ? ['model' => $tierModel, 'origin' => 'tier']
             : ['model' => '', 'origin' => 'none'];
@@ -185,13 +327,13 @@ class AiFunctionsViewer extends TableViewer
     private function connectionLabel(array $row): string
     {
         if (($row['connection'] ?? null) === null) {
-            return 'výchozí připojení';
+            return $this->text('value.defaultConnection', 'default connection');
         }
         $name = trim((string) ($row['connection_name'] ?? ''));
         if ($name === '') {
-            return 'připojení #' . (int) $row['connection'] . ' (neexistuje)';
+            return $this->text('value.connectionMissing', 'connection #{id} (missing)', ['id' => (int) $row['connection']]);
         }
-        return $name . (empty($row['connection_active']) ? ' (neaktivní)' : '');
+        return $name . (empty($row['connection_active']) ? ' (' . $this->text('value.inactive', 'inactive') . ')' : '');
     }
 
     /** @param array<string, mixed> $row */
@@ -200,31 +342,5 @@ class AiFunctionsViewer extends TableViewer
         return (string) ($row['thinking'] ?? 'default') !== 'default'
             || (string) ($row['effort'] ?? 'default') !== 'default'
             || (int) ($row['max_tokens'] ?? 0) > 0;
-    }
-
-    private function tierLabel(string $tier): string
-    {
-        $tiers = ModelCatalog::fromConfig($this->config)->tiers();
-        return $tiers[$tier]['name'] ?? $tier;
-    }
-
-    /** Popisek hodnoty z cfgItemu (`name` po lokalizaci); bez konfigurace surová hodnota. */
-    private function tuningLabel(string $cfgItemId, mixed $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        $value = (string) $value;
-        $cfg = $this->config?->cfgItem($cfgItemId);
-        $entry = is_array($cfg) ? ($cfg[$value] ?? null) : null;
-        return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $value;
-    }
-
-    /** @param array<int, array{label: string, value: string}> $items */
-    private function addItem(array &$items, string $label, mixed $value): void
-    {
-        if ($value !== null && $value !== '') {
-            $items[] = ['label' => $label, 'value' => (string) $value];
-        }
     }
 }

@@ -22,8 +22,9 @@ namespace Shipard\Core\Ai;
  *     s `thinkingOffMaxEffort` → effort nejvýš tato mez.
  *  4. `maxTokens` nad `maxOutputTokens` → snížit na mez.
  *
- * Čistá statická třída bez logování — úpravy loguje volající
- * ({@see AnthropicLlmClient}), aby byly vidět jednou za volání.
+ * Čistá statická třída bez logování — úpravy vrací jako {@see RequestChange}
+ * (kód + parametry); loguje je volající ({@see AnthropicLlmClient}) jednou
+ * za volání, detail AI funkce a `ai-test` je popisují z katalogu textů.
  */
 final class RequestShaper
 {
@@ -34,7 +35,7 @@ final class RequestShaper
     public const string THINKING_BETWEEN_TOOLS = 'between_tools';
 
     /**
-     * @return array{0: LlmChatParams, 1: list<string>} upravené parametry + popis úprav (prázdný = beze změny)
+     * @return array{0: LlmChatParams, 1: list<RequestChange>} upravené parametry + úpravy (prázdné = beze změny)
      */
     public static function shape(LlmChatParams $params, ModelSpec $spec): array
     {
@@ -46,7 +47,7 @@ final class RequestShaper
 
         // 1. teplota
         if ($temperature !== null && $spec->temperature === false) {
-            $changes[] = "temperature {$temperature} omitted (model rejects a non-default temperature)";
+            $changes[] = new RequestChange(RequestChange::TEMPERATURE_OMITTED, ['temperature' => $temperature]);
             $temperature = null;
         }
 
@@ -54,10 +55,15 @@ final class RequestShaper
         if ($thinking !== null && $spec->thinkingModes !== null && !in_array($thinking, $spec->thinkingModes, true)) {
             $replacement = self::thinkingReplacement($thinking, $spec->thinkingModes);
             if ($replacement !== null) {
-                $changes[] = "thinking {$thinking} → {$replacement} (model accepts " . implode(', ', $spec->thinkingModes) . ')';
+                $changes[] = new RequestChange(RequestChange::THINKING_REPLACED, [
+                    'from' => $thinking, 'to' => $replacement, 'accepted' => implode(', ', $spec->thinkingModes),
+                ]);
+            } elseif ($spec->thinkingModes === []) {
+                $changes[] = new RequestChange(RequestChange::THINKING_UNSUPPORTED, ['thinking' => $thinking]);
             } else {
-                $changes[] = "thinking {$thinking} omitted (model accepts "
-                    . ($spec->thinkingModes === [] ? 'no thinking parameter' : implode(', ', $spec->thinkingModes)) . ')';
+                $changes[] = new RequestChange(RequestChange::THINKING_OMITTED, [
+                    'thinking' => $thinking, 'accepted' => implode(', ', $spec->thinkingModes),
+                ]);
             }
             $thinking = $replacement;
         }
@@ -65,11 +71,13 @@ final class RequestShaper
         // 3. effort
         if ($effort !== null && $spec->effortLevels !== null && !in_array($effort, $spec->effortLevels, true)) {
             if ($spec->effortLevels === []) {
-                $changes[] = "effort {$effort} omitted (model has no effort parameter)";
+                $changes[] = new RequestChange(RequestChange::EFFORT_OMITTED, ['effort' => $effort]);
                 $effort = null;
             } else {
                 $nearest = self::nearestLowerEffort($effort, $spec->effortLevels);
-                $changes[] = "effort {$effort} → {$nearest} (model accepts " . implode(', ', $spec->effortLevels) . ')';
+                $changes[] = new RequestChange(RequestChange::EFFORT_LOWERED, [
+                    'from' => $effort, 'to' => $nearest, 'accepted' => implode(', ', $spec->effortLevels),
+                ]);
                 $effort = $nearest;
             }
         }
@@ -78,13 +86,15 @@ final class RequestShaper
             && in_array($thinking, [self::THINKING_DISABLED, self::THINKING_BETWEEN_TOOLS], true)
             && self::effortIndex($effort) > self::effortIndex($spec->thinkingOffMaxEffort)
         ) {
-            $changes[] = "effort {$effort} → {$spec->thinkingOffMaxEffort} (thinking {$thinking} allows at most {$spec->thinkingOffMaxEffort})";
+            $changes[] = new RequestChange(RequestChange::EFFORT_CAPPED, [
+                'from' => $effort, 'to' => $spec->thinkingOffMaxEffort, 'thinking' => $thinking,
+            ]);
             $effort = $spec->thinkingOffMaxEffort;
         }
 
         // 4. max_tokens
         if ($spec->maxOutputTokens !== null && $maxTokens > $spec->maxOutputTokens) {
-            $changes[] = "max_tokens {$maxTokens} → {$spec->maxOutputTokens} (model limit)";
+            $changes[] = new RequestChange(RequestChange::MAX_TOKENS_CAPPED, ['from' => $maxTokens, 'to' => $spec->maxOutputTokens]);
             $maxTokens = $spec->maxOutputTokens;
         }
 

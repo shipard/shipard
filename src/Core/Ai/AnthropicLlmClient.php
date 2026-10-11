@@ -147,7 +147,7 @@ class AnthropicLlmClient implements LlmClient
             ErrorLogger::info('AnthropicLlmClient: request shaped to the model capabilities', [
                 'model' => $params->model,
                 'catalogModel' => $spec->id,
-                'changes' => $changes,
+                'changes' => array_map('strval', $changes),
             ]);
         }
         return $shaped;

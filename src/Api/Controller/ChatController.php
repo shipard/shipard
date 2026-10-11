@@ -9,6 +9,7 @@ use Shipard\Api\Request;
 use Shipard\Api\Response;
 use Shipard\Core\Ai\AiCallOverride;
 use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\AiTexts;
 use Shipard\Core\Ai\Exception\AiFunctionException;
 use Shipard\Core\Ai\Exception\LlmException;
 use Shipard\Core\Ai\LlmChatParams;
@@ -603,29 +604,29 @@ class ChatController
      * Chyba resolveru → odpověď s dnešními kódy pro frontend: `NO_BACKEND`
      * (bez připojení nebo klíče), `BACKEND_KEY_ERROR` (klíč nejde přečíst),
      * `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` (model bez tool smyčky, D35),
-     * `AI_NOT_CONFIGURED` (ostatní chyby nastavení funkce).
+     * `AI_NOT_CONFIGURED` (ostatní chyby nastavení funkce). Zpráva je
+     * věta z `core.ai.texts` v jazyce požadavku (compiled config) s radou,
+     * kde to opravit — stejná jako v detailu AI funkce a v `ai-test`
+     * (tasks/ai-settings-section.md D51); frontend ji zobrazuje beze
+     * změny. Bez katalogu anglická zpráva výjimky.
      */
     private function aiFunctionError(AiFunctionException $e): Response
     {
+        $message = (new AiTexts($this->config, $this->functions()->registry()))->error($e);
         switch ($e->errorCode) {
             case AiFunctionException::NO_CONNECTION:
             case AiFunctionException::KEY_MISSING:
-                return Response::error('NO_BACKEND', 'No active AI connection with an API key is configured', 503);
+                return Response::error('NO_BACKEND', $message, 503);
             case AiFunctionException::SECRETS_UNAVAILABLE:
             case AiFunctionException::KEY_CORRUPTED:
                 ErrorLogger::warn('ChatController: AI connection key unavailable', ['code' => $e->errorCode, 'error' => $e->getMessage()]);
-                return Response::error('BACKEND_KEY_ERROR', 'Cannot read the AI connection API key', 500);
+                return Response::error('BACKEND_KEY_ERROR', $message, 500);
             case AiFunctionException::MODEL_NOT_SUPPORTED_FOR_FUNCTION:
                 $model = (string) ($e->details['model'] ?? '');
-                return Response::error(
-                    'AI_MODEL_NOT_SUPPORTED_FOR_CHAT',
-                    "The assistant cannot work with model {$model} yet; an administrator has to select another model for the AI function " . self::AI_FUNCTION,
-                    503,
-                    [['field' => 'model', 'value' => $model]],
-                );
+                return Response::error('AI_MODEL_NOT_SUPPORTED_FOR_CHAT', $message, 503, [['field' => 'model', 'value' => $model]]);
             default:
                 ErrorLogger::warn('ChatController: AI function cannot be resolved', ['code' => $e->errorCode, 'error' => $e->getMessage()]);
-                return Response::error('AI_NOT_CONFIGURED', $e->getMessage(), 503, [['field' => 'code', 'value' => $e->errorCode]]);
+                return Response::error('AI_NOT_CONFIGURED', $message, 503, [['field' => 'code', 'value' => $e->errorCode]]);
         }
     }
 

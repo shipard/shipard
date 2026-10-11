@@ -79,7 +79,7 @@ final class RequestShaperTest extends TestCase
 
         $this->assertNull($shaped->temperature);
         $this->assertCount(1, $changes);
-        $this->assertStringContainsString('temperature 0 omitted', $changes[0]);
+        $this->assertStringContainsString('temperature 0 omitted', (string) $changes[0]);
 
         // Model s teplotou: beze změny. Bez teploty: nic k vynechání.
         [, $changes] = RequestShaper::shape($this->params(['temperature' => 0.7]), $this->sonnet46());
@@ -93,12 +93,12 @@ final class RequestShaperTest extends TestCase
         // disabled na Sonnetu 5.5 → between_tools
         [$shaped, $changes] = RequestShaper::shape($this->params(['thinking' => 'disabled']), $this->sonnet55());
         $this->assertSame('between_tools', $shaped->thinking);
-        $this->assertStringContainsString('thinking disabled → between_tools', $changes[0]);
+        $this->assertStringContainsString('thinking disabled → between_tools', (string) $changes[0]);
 
         // between_tools na Sonnetu 4.6 → disabled
         [$shaped, $changes] = RequestShaper::shape($this->params(['thinking' => 'between_tools']), $this->sonnet46());
         $this->assertSame('disabled', $shaped->thinking);
-        $this->assertStringContainsString('thinking between_tools → disabled', $changes[0]);
+        $this->assertStringContainsString('thinking between_tools → disabled', (string) $changes[0]);
 
         // Přijímaná hodnota beze změny.
         [$shaped, $changes] = RequestShaper::shape($this->params(['thinking' => 'adaptive']), $this->sonnet55());
@@ -112,18 +112,18 @@ final class RequestShaperTest extends TestCase
         $opus55 = $this->spec(['thinkingModes' => ['adaptive']]);
         [$shaped, $changes] = RequestShaper::shape($this->params(['thinking' => 'disabled']), $opus55);
         $this->assertNull($shaped->thinking);
-        $this->assertStringContainsString('thinking disabled omitted', $changes[0]);
+        $this->assertStringContainsString('thinking disabled omitted', (string) $changes[0]);
 
         // Sonnet 4.5 nezná adaptive → vynechat (bez parametru nepřemýšlí).
         $sonnet45 = $this->spec(['thinkingModes' => ['disabled', 'enabled']]);
         [$shaped, $changes] = RequestShaper::shape($this->params(['thinking' => 'adaptive']), $sonnet45);
         $this->assertNull($shaped->thinking);
-        $this->assertStringContainsString('thinking adaptive omitted', $changes[0]);
+        $this->assertStringContainsString('thinking adaptive omitted', (string) $changes[0]);
 
         // Model bez thinking parametru.
         [$shaped, $changes] = RequestShaper::shape($this->params(['thinking' => 'adaptive']), $this->spec(['thinkingModes' => []]));
         $this->assertNull($shaped->thinking);
-        $this->assertStringContainsString('no thinking parameter', $changes[0]);
+        $this->assertStringContainsString('no thinking parameter', (string) $changes[0]);
     }
 
     public function testRule3EffortFallsToTheNearestLowerAcceptedLevel(): void
@@ -131,7 +131,7 @@ final class RequestShaperTest extends TestCase
         // xhigh na Sonnetu 4.6 (low, medium, high, max) → high
         [$shaped, $changes] = RequestShaper::shape($this->params(['effort' => 'xhigh']), $this->sonnet46());
         $this->assertSame('high', $shaped->effort);
-        $this->assertStringContainsString('effort xhigh → high', $changes[0]);
+        $this->assertStringContainsString('effort xhigh → high', (string) $changes[0]);
 
         // Pod nejnižší přijímanou → nejnižší přijímaná.
         $mediumPlus = $this->spec(['effortLevels' => ['medium', 'high']]);
@@ -153,7 +153,7 @@ final class RequestShaperTest extends TestCase
         [$shaped, $changes] = RequestShaper::shape($this->params(['effort' => 'high']), $sonnet45);
 
         $this->assertNull($shaped->effort);
-        $this->assertStringContainsString('effort high omitted (model has no effort parameter)', $changes[0]);
+        $this->assertStringContainsString('effort high omitted (model has no effort parameter)', (string) $changes[0]);
     }
 
     public function testRule3ThinkingOffCapsTheEffort(): void
@@ -163,7 +163,7 @@ final class RequestShaperTest extends TestCase
         $this->assertSame('between_tools', $shaped->thinking);
         $this->assertSame('high', $shaped->effort);
         $this->assertCount(1, $changes);
-        $this->assertStringContainsString('effort xhigh → high (thinking between_tools allows at most high)', $changes[0]);
+        $this->assertStringContainsString('effort xhigh → high (thinking between_tools allows at most high)', (string) $changes[0]);
 
         // Strop platí i po náhradě disabled → between_tools (dvě úpravy).
         [$shaped, $changes] = RequestShaper::shape($this->params(['thinking' => 'disabled', 'effort' => 'max']), $this->sonnet55());
@@ -190,7 +190,7 @@ final class RequestShaperTest extends TestCase
         $sonnet45 = $this->spec(['maxOutputTokens' => 64000]);
         [$shaped, $changes] = RequestShaper::shape($this->params(['maxTokens' => 100_000]), $sonnet45);
         $this->assertSame(64000, $shaped->maxTokens);
-        $this->assertStringContainsString('max_tokens 100000 → 64000', $changes[0]);
+        $this->assertStringContainsString('max_tokens 100000 → 64000', (string) $changes[0]);
 
         [, $changes] = RequestShaper::shape($this->params(['maxTokens' => 64000]), $sonnet45);
         $this->assertSame([], $changes);

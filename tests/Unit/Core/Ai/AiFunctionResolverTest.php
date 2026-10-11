@@ -11,6 +11,7 @@ use Shipard\Core\Ai\AiFunctionRegistry;
 use Shipard\Core\Ai\AiFunctionResolver;
 use Shipard\Core\Ai\Exception\AiFunctionException;
 use Shipard\Core\Ai\ModelCatalog;
+use Shipard\Core\Ai\RequestChange;
 use Shipard\Core\Ai\ResolvedAiCall;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Database\DataSourceConnection;
@@ -296,6 +297,92 @@ final class AiFunctionResolverTest extends TestCase
         // Bez cfgItemu platforem se platforma nehlídá a adresa zůstává prázdná (klient má výchozí).
         $call = $this->resolver(config: $this->config([AiFunctionResolver::PLATFORMS_CFG_ITEM => null]))->resolve('mail.extraction');
         $this->assertSame('', $call->baseUrl);
+    }
+
+    // ------------------------------------------------- plán a náhled (D51)
+
+    public function testPlanDecidesWithoutDecryptingTheKey(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(null);
+        $backends = $this->createMock(AiBackendResolver::class);
+        $backends->method('defaultBackend')->willReturn(self::DEFAULT_CONNECTION);
+        $backends->expects($this->never())->method('apiKey');
+        $resolver = new AiFunctionResolver($db, $this->config(), null, null, null, $backends);
+
+        $plan = $resolver->plan('mail.extraction');
+
+        $this->assertSame('claude-sonnet-4-6', $plan->model);
+        $this->assertSame('claude-sonnet-4-6', $plan->catalogModel);
+        $this->assertSame(32768, $plan->maxTokens);
+        $this->assertSame(0.0, $plan->temperature);
+        $this->assertSame('default', $plan->connectionCode);
+        $this->assertSame(ResolvedAiCall::ORIGIN_TIER, $plan->origins['model']);
+        $this->assertArrayNotHasKey('apiKey', $plan->toArray());
+        $this->assertNull($plan->previewParams()->apiKey);
+        $this->assertSame([], $plan->previewParams()->messages);
+
+        $call = ResolvedAiCall::fromPlan($plan, 'sk-x');
+        $this->assertSame('sk-x', $call->apiKey);
+        $this->assertSame($plan->toArray(), $call->toArray(), 'volání = plán + klíč');
+    }
+
+    public function testPlanReportsAMissingStoredKeyWithoutDecrypting(): void
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(null);
+        $backends = $this->createMock(AiBackendResolver::class);
+        $backends->method('defaultBackend')->willReturn(['api_key' => ''] + self::DEFAULT_CONNECTION);
+        $backends->expects($this->never())->method('apiKey');
+        $resolver = new AiFunctionResolver($db, $this->config(), null, null, null, $backends);
+
+        try {
+            $resolver->plan('mail.extraction');
+            $this->fail();
+        } catch (AiFunctionException $e) {
+            $this->assertSame(AiFunctionException::KEY_MISSING, $e->errorCode);
+            $this->assertSame('default', $e->details['connectionCode']);
+        }
+        $this->assertSame(AiFunctionException::KEY_MISSING, $resolver->preview('mail.extraction')->error?->errorCode);
+    }
+
+    public function testPreviewListsTheAdjustmentsForTheEffectiveModel(): void
+    {
+        $preview = $this->resolver()->preview('mail.extraction');
+        $this->assertTrue($preview->isOk());
+        $this->assertSame([], $preview->changes, 'Sonnet 4.6 přijme teplotu i strop deklarace');
+
+        // Řada 5 teplotu z deklarace odmítá — detail ukáže „teplota se neposílá“.
+        $row = ['function_id' => 'mail.extraction', 'model' => 'claude-sonnet-5-5', 'thinking' => 'disabled', 'effort' => 'max'];
+        $preview = $this->resolver(['mail.extraction' => $row])->preview('mail.extraction');
+        $this->assertSame('claude-sonnet-5-5', $preview->plan?->model);
+        $this->assertSame(
+            [RequestChange::TEMPERATURE_OMITTED, RequestChange::THINKING_REPLACED, RequestChange::EFFORT_CAPPED],
+            array_map(static fn (RequestChange $c): string => $c->code, $preview->changes),
+        );
+        $this->assertSame(['temperature' => 0.0], $preview->changes[0]->params);
+
+        // Vlastní ID tvarované podle Sonnetu 5.5 — úpravy podle model_like.
+        $row = ['function_id' => 'dashboard.summary', 'model' => 'claude-sonnet-6', 'model_like' => 'claude-sonnet-5-5', 'max_tokens' => 200000];
+        $preview = $this->resolver(['dashboard.summary' => $row])->preview('dashboard.summary');
+        $this->assertTrue($preview->plan?->isCustomModel());
+        $this->assertSame([RequestChange::MAX_TOKENS_CAPPED], array_map(static fn (RequestChange $c): string => $c->code, $preview->changes));
+        $this->assertSame(['from' => 200000, 'to' => 128000], $preview->changes[0]->params);
+    }
+
+    public function testPreviewCarriesTheSetupError(): void
+    {
+        $noConnection = $this->resolver(default: null)->preview('mail.extraction');
+        $this->assertFalse($noConnection->isOk());
+        $this->assertNull($noConnection->plan);
+        $this->assertSame([], $noConnection->changes);
+        $this->assertSame(AiFunctionException::NO_CONNECTION, $noConnection->error?->errorCode);
+
+        $row = ['function_id' => 'chat.default', 'model' => 'claude-sonnet-5-5'];
+        $chat = $this->resolver(['chat.default' => $row])->preview('chat.default');
+        $this->assertSame(AiFunctionException::MODEL_NOT_SUPPORTED_FOR_FUNCTION, $chat->error?->errorCode);
+
+        $this->assertSame(AiFunctionException::UNKNOWN_FUNCTION, $this->resolver()->preview('nope.nope')->error?->errorCode);
     }
 
     // -------------------------------------------------------------- klíč

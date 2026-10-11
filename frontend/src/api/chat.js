@@ -82,9 +82,11 @@ export async function sendMessageStream(conversationId, text, handlers = {}) {
       return;
     }
     // Server-side refusal before the stream starts (NO_BACKEND,
-    // AI_MODEL_NOT_SUPPORTED_FOR_CHAT, …) comes as a JSON error body —
-    // pass code/message/details on so translateError() can localize it;
-    // a body that is not JSON degrades to the generic STREAM_ERROR.
+    // AI_MODEL_NOT_SUPPORTED_FOR_CHAT, AI_NOT_CONFIGURED, …) comes as a JSON
+    // error body — pass code/message/details on. The AI setup codes carry
+    // a message already localized by the server (core.ai.texts, the same
+    // sentence as in Settings → AI → Functions), so translateError() falls
+    // back to it on purpose; a body that is not JSON degrades to STREAM_ERROR.
     const err = res.ok ? null : await readJsonError(res);
     onError?.(err ?? { code: 'STREAM_ERROR', message: `HTTP ${res.status}` });
     return;
