@@ -118,6 +118,7 @@ final class RequestShaper
                 thinking: $thinking,
                 effort: $effort,
                 shapeAs: $params->shapeAs,
+                dialect: $params->dialect,
             ),
             $changes,
         ];

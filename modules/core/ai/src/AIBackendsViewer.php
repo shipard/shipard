@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Ai;
 
+use Shipard\Core\Ai\AiPlatforms;
 use Shipard\Core\Document\DocStateConfig;
 use Shipard\Core\Viewer\TableViewer;
 
@@ -159,10 +160,7 @@ class AIBackendsViewer extends TableViewer
         if ($value === null || $value === '') {
             return null;
         }
-        $value = (string) $value;
-        $cfg = $this->config?->cfgItem('core.ai.platforms');
-        $entry = is_array($cfg) ? ($cfg[$value] ?? null) : null;
-        return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $value;
+        return AiPlatforms::fromConfig($this->config)->label((string) $value);
     }
 
     /** @param array<int, array{label: string, value: string}> $items */

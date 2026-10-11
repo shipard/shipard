@@ -513,6 +513,7 @@ class ChatController
             thinking: $base->thinking,
             effort: $base->effort,
             shapeAs: $base->shapeAs,
+            dialect: $base->dialect,
         );
     }
 

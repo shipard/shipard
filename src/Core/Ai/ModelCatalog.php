@@ -19,11 +19,15 @@ use Shipard\Core\Logging\ErrorLogger;
  * s katalogem; {@see defaultModel()} ji čte, položky katalogu samy příznak
  * výchozího modelu nenesou.
  *
- * {@see find()} přijme ID z kterékoli platformy i s datovou příponou
- * (`claude-sonnet-4-5-20250929`, `anthropic.claude-sonnet-5-5`): shoda je
- * přesné ID nebo ID + `-YYYYMMDD`, vyhrává nejdelší kandidát. Prefix sám
- * nestačí — `claude-opus-4` nechytí `claude-opus-4-8` ani `claude-sonnet-4-5`
- * model `claude-sonnet-4-50`.
+ * {@see find()} přijme ID z kterékoli rodiny platformových ID i s datovou
+ * příponou (`claude-sonnet-4-5-20250929`, `anthropic.claude-sonnet-5-5`)
+ * a ID Bedrocku s geografickým profilem (`eu.anthropic.claude-sonnet-5-5`,
+ * tasks/ai-bedrock-eu.md D57): shoda je přesné ID nebo ID + `-YYYYMMDD`,
+ * vyhrává nejdelší kandidát. Prefix sám nestačí — `claude-opus-4` nechytí
+ * `claude-opus-4-8` ani `claude-sonnet-4-5` model `claude-sonnet-4-50`.
+ * {@see platformOf()} vrací klíč `platformIds` (rodinu ID, ne platformu
+ * připojení — tu určuje {@see AiPlatform::$modelIds}), {@see geoPrefixOf()}
+ * geografický prefix (`''` bez prefixu).
  */
 final class ModelCatalog
 {
@@ -34,6 +38,13 @@ final class ModelCatalog
 
     public const string PLATFORM_ANTHROPIC = 'anthropic';
     public const string PLATFORM_BEDROCK   = 'bedrock';
+
+    /**
+     * Geografické profily Bedrocku (cross-region inference) před ID rodiny
+     * `bedrock`: `eu.anthropic.claude-sonnet-5-5`. Jen pro rozpoznání ID —
+     * kterou platformu připojení prefix znamená, říká `core.ai.platforms`.
+     */
+    public const array GEO_PREFIXES = ['global.', 'us.', 'eu.', 'apac.', 'au.', 'jp.', 'us-gov.'];
 
     /**
      * @param array<string, ModelSpec>                                      $models id → spec
@@ -118,10 +129,22 @@ final class ModelCatalog
         return $this->resolve($modelId)['spec'] ?? null;
     }
 
-    /** Platforma, jejíž ID `$modelId` je (`anthropic` / `bedrock`); null = mimo katalog. */
+    /**
+     * Rodina platformových ID, do které `$modelId` patří (klíč `platformIds`:
+     * `anthropic` / `bedrock`, i pod geografickým prefixem); null = mimo katalog.
+     */
     public function platformOf(string $modelId): ?string
     {
         return $this->resolve($modelId)['platform'] ?? null;
+    }
+
+    /**
+     * Geografický prefix ID Bedrocku (`eu.` v `eu.anthropic.claude-sonnet-5-5`),
+     * `''` bez prefixu; null = mimo katalog.
+     */
+    public function geoPrefixOf(string $modelId): ?string
+    {
+        return $this->resolve($modelId)['prefix'] ?? null;
     }
 
     /**
@@ -196,10 +219,11 @@ final class ModelCatalog
     }
 
     /**
-     * Nejdelší kandidát (ID na kterékoli platformě), který na `$modelId`
-     * sedí přesně nebo s datovou příponou `-YYYYMMDD`.
+     * Nejdelší kandidát (ID v kterékoli rodině), který na `$modelId` sedí
+     * přesně nebo s datovou příponou `-YYYYMMDD`; ID rodiny `bedrock` i pod
+     * geografickým prefixem ({@see GEO_PREFIXES}).
      *
-     * @return array{spec: ModelSpec, platform: string}|null
+     * @return array{spec: ModelSpec, platform: string, prefix: string}|null
      */
     private function resolve(string $modelId): ?array
     {
@@ -207,17 +231,40 @@ final class ModelCatalog
         if ($modelId === '') {
             return null;
         }
+        [$prefix, $bare] = self::splitGeoPrefix($modelId);
         $best = null;
         $bestLength = -1;
         foreach ($this->models as $spec) {
             foreach ($spec->platformIds as $platform => $candidate) {
-                if (strlen($candidate) > $bestLength && self::matches($modelId, $candidate)) {
-                    $best = ['spec' => $spec, 'platform' => (string) $platform];
+                if (strlen($candidate) <= $bestLength) {
+                    continue;
+                }
+                if (self::matches($modelId, $candidate)) {
+                    $best = ['spec' => $spec, 'platform' => (string) $platform, 'prefix' => ''];
+                    $bestLength = strlen($candidate);
+                } elseif ($prefix !== '' && $platform === self::PLATFORM_BEDROCK && self::matches($bare, $candidate)) {
+                    $best = ['spec' => $spec, 'platform' => (string) $platform, 'prefix' => $prefix];
                     $bestLength = strlen($candidate);
                 }
             }
         }
         return $best;
+    }
+
+    /**
+     * `eu.anthropic.claude-sonnet-5-5` → `['eu.', 'anthropic.claude-sonnet-5-5']`;
+     * bez známého prefixu `['', $modelId]`.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private static function splitGeoPrefix(string $modelId): array
+    {
+        foreach (self::GEO_PREFIXES as $prefix) {
+            if (str_starts_with($modelId, $prefix)) {
+                return [$prefix, substr($modelId, strlen($prefix))];
+            }
+        }
+        return ['', $modelId];
     }
 
     private static function matches(string $modelId, string $candidate): bool

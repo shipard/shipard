@@ -6,6 +6,7 @@ namespace Shipard\Core\Ai;
 
 /**
  * Hotové parametry volání AI funkce (tasks/ai-functions.md D40): platforma
+ * (id, dialekt, násobitel ceny — tasks/ai-bedrock-eu.md D57, D60)
  * a adresa, dešifrovaný klíč, ID modelu pro platformu, `shapeAs` (model
  * z katalogu, podle kterého se požadavek tvaruje — u vlastního ID jiný než
  * `model`), ladění, připojení a původ každé hodnoty (výpis v Nastavení).
@@ -40,6 +41,8 @@ final readonly class ResolvedAiCall
         public int $connectionId,
         public string $connectionCode,
         public array $origins = [],
+        public string $dialect = AiPlatform::DIALECT_ANTHROPIC_MESSAGES,
+        public float $priceMultiplier = 1.0,
     ) {}
 
     /** Plán ({@see AiFunctionResolver::plan()}) + dešifrovaný klíč = hotové volání. */
@@ -60,6 +63,8 @@ final readonly class ResolvedAiCall
             connectionId: $plan->connectionId,
             connectionCode: $plan->connectionCode,
             origins: $plan->origins,
+            dialect: $plan->dialect,
+            priceMultiplier: $plan->priceMultiplier,
         );
     }
 
@@ -95,6 +100,7 @@ final readonly class ResolvedAiCall
             thinking: $this->thinking,
             effort: $this->effort,
             shapeAs: $this->shapeAs,
+            dialect: $this->dialect,
         );
     }
 
@@ -108,6 +114,8 @@ final readonly class ResolvedAiCall
         return [
             'functionId' => $this->functionId,
             'platform' => $this->platform,
+            'dialect' => $this->dialect,
+            'priceMultiplier' => $this->priceMultiplier,
             'baseUrl' => $this->baseUrl,
             'model' => $this->model,
             'shapeAs' => $this->shapeAs,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Ai;
 
+use Shipard\Core\Ai\AiPlatforms;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Viewer\TableViewer;
 
@@ -18,6 +19,7 @@ abstract class AiViewerBase extends TableViewer
     public const string LABELS_CFG_ITEM = 'core.ai.viewerLabels';
 
     private ?ModelCatalog $catalog = null;
+    private ?AiPlatforms $platforms = null;
 
     /**
      * Popisek z cfgItem `core.ai.viewerLabels`; bez konfigurace anglický
@@ -62,12 +64,15 @@ abstract class AiViewerBase extends TableViewer
         return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $value;
     }
 
+    protected function platforms(): AiPlatforms
+    {
+        return $this->platforms ??= AiPlatforms::fromConfig($this->config);
+    }
+
     /** Název platformy z cfgItemu `core.ai.platforms`; bez konfigurace klíč. */
     protected function platformLabel(string $platform): string
     {
-        $cfg = $this->config?->cfgItem('core.ai.platforms');
-        $entry = is_array($cfg) ? ($cfg[$platform] ?? null) : null;
-        return is_array($entry) && isset($entry['name']) ? (string) $entry['name'] : $platform;
+        return $this->platforms()->label($platform);
     }
 
     /** Datum `YYYY-MM-DD` pro uživatele: česky `30. 11. 2026`, jinak ISO. */

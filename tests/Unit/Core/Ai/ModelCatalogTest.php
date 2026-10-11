@@ -155,6 +155,30 @@ final class ModelCatalogTest extends TestCase
         $this->assertNull($catalog->platformOf('gpt-5'));
     }
 
+    public function testFindAcceptsGeographicProfilePrefixesOfBedrock(): void
+    {
+        // tasks/ai-bedrock-eu.md D57: `eu.anthropic.…` je ID rodiny bedrock
+        // s geografickým profilem — kvůli ceně, tvarování a ručně zadanému ID.
+        $catalog = $this->catalog();
+
+        $this->assertSame('claude-sonnet-5-5', $catalog->find('eu.anthropic.claude-sonnet-5-5')?->id);
+        $this->assertSame('claude-opus-5-5', $catalog->find('global.anthropic.claude-opus-5-5-20260922')?->id, 'i s datovou příponou');
+        $this->assertSame('claude-haiku-5-5', $catalog->find('us.anthropic.claude-haiku-5-5')?->id);
+        $this->assertSame('bedrock', $catalog->platformOf('eu.anthropic.claude-sonnet-5-5'));
+        $this->assertSame('eu.', $catalog->geoPrefixOf('eu.anthropic.claude-sonnet-5-5'));
+        $this->assertSame('us.', $catalog->geoPrefixOf('us.anthropic.claude-haiku-5-5'));
+        $this->assertSame('', $catalog->geoPrefixOf('anthropic.claude-sonnet-5-5'));
+        $this->assertSame('', $catalog->geoPrefixOf('claude-sonnet-5-5'));
+        $this->assertNull($catalog->geoPrefixOf('gpt-5'));
+
+        // Prefix bez ID rodiny bedrock nic nechytí: model bez Bedrock ID, ID přímého API, neznámý prefix.
+        $this->assertNull($catalog->find('eu.anthropic.claude-sonnet-4-6'));
+        $this->assertNull($catalog->find('eu.claude-sonnet-5-5'));
+        $this->assertNull($catalog->find('mars.anthropic.claude-sonnet-5-5'));
+        // Náhrada vyřazeného modelu se ID s prefixem netýká (jen rodina anthropic).
+        $this->assertNull($catalog->retiredReplacement('eu.anthropic.claude-sonnet-4-5'));
+    }
+
     public function testFindUnknownOrEmptyIsNull(): void
     {
         $catalog = $this->catalog();

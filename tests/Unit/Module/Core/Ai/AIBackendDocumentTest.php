@@ -81,13 +81,19 @@ class AIBackendDocumentTest extends TestCase
     {
         $cfg = $this->createMock(\Shipard\Core\Config\ConfigRuntime::class);
         $cfg->method('cfgItem')->willReturnCallback(static fn (string $id): mixed => $id === 'core.ai.platforms'
-            ? ['anthropic' => ['name' => 'Anthropic', 'dialect' => 'anthropic-messages']]
+            ? [
+                'anthropic' => ['name' => 'Anthropic', 'dialect' => 'anthropic-messages'],
+                'bedrock-eu' => ['name' => 'Amazon Bedrock (EU)', 'dialect' => 'anthropic-messages', 'modelIds' => 'bedrock', 'modelIdPrefix' => 'eu.', 'priceMultiplier' => 1.1],
+            ]
             : null);
         $doc = $this->doc();
         $doc->setConfig($cfg);
 
         $data = ['backend_id' => 'default', 'name' => 'X', 'model' => 'claude-sonnet-4-6', 'provider' => 'anthropic'];
         $this->assertTrue($doc->validate($data)->isValid());
+
+        $data['provider'] = 'bedrock-eu';
+        $this->assertTrue($doc->validate($data)->isValid(), 'platforma Bedrock EU (tasks/ai-bedrock-eu.md D57)');
 
         $data['provider'] = 'openai';
         $result = $doc->validate($data);

@@ -23,8 +23,10 @@ use Shipard\Core\Security\Exception\SecretsKeyMissingException;
  * Pořadí zdrojů pro každou hodnotu zvlášť: přepsání → řádek funkce →
  * deklarace funkce / mapa úrovní. Připojení: přepsání → řádek → výchozí
  * aktivní připojení zdroje dat. Model: vlastní ID mimo katalog vyžaduje
- * `model_like` (D43); ID pro platformu bere z `platformIds`, zadané ID
- * jde ven beze změny, pokud na platformu patří (i s datovou příponou).
+ * `model_like` (D43); ID pro platformu skládá {@see AiPlatform} (prefix
+ * geografického profilu + ID rodiny `modelIds` z `platformIds`,
+ * tasks/ai-bedrock-eu.md D57), zadané ID jde ven beze změny, pokud na
+ * platformu patří (rodina i prefix sedí, i s datovou příponou).
  *
  * Chyby = {@see AiFunctionException} s kódem; všechno jsou chyby
  * nastavení, ne běhu. Bez compiled configu (prázdný katalog) se model
@@ -33,11 +35,12 @@ use Shipard\Core\Security\Exception\SecretsKeyMissingException;
 class AiFunctionResolver
 {
     public const string SETTINGS_TABLE = 'core_ai_function_settings';
-    public const string PLATFORMS_CFG_ITEM = 'core.ai.platforms';
+    public const string PLATFORMS_CFG_ITEM = AiPlatform::CFG_ITEM;
     public const string DEFAULT_PLATFORM = ModelCatalog::PLATFORM_ANTHROPIC;
 
     private ?AiFunctionRegistry $registry;
     private ?ModelCatalog $catalog;
+    private ?AiPlatforms $platforms = null;
     private AiBackendResolver $backends;
 
     /** @var array<string, true> modely úrovní, u kterých už padlo varování o konci */
@@ -64,6 +67,11 @@ class AiFunctionResolver
     public function catalog(): ModelCatalog
     {
         return $this->catalog ??= ModelCatalog::fromConfig($this->config);
+    }
+
+    public function platforms(): AiPlatforms
+    {
+        return $this->platforms ??= AiPlatforms::fromConfig($this->config);
     }
 
     /**
@@ -134,19 +142,18 @@ class AiFunctionResolver
 
         // --- připojení ---------------------------------------------------
         [$connection, $origins['connection']] = $this->resolveConnection($functionId, $override, $row);
-        $platform = trim((string) ($connection['provider'] ?? '')) ?: self::DEFAULT_PLATFORM;
-        $platforms = $this->config?->cfgItem(self::PLATFORMS_CFG_ITEM);
-        if (is_array($platforms) && $platforms !== [] && !isset($platforms[$platform])) {
+        $platformId = trim((string) ($connection['provider'] ?? '')) ?: self::DEFAULT_PLATFORM;
+        $platforms = $this->platforms();
+        if (!$platforms->isEmpty() && !$platforms->has($platformId)) {
             throw new AiFunctionException(
                 AiFunctionException::UNKNOWN_PLATFORM,
-                "AI connection '{$connection['backend_id']}' uses unknown platform '{$platform}'",
-                ['platform' => $platform, 'connectionId' => (int) $connection['id'], 'connectionCode' => (string) ($connection['backend_id'] ?? '')],
+                "AI connection '{$connection['backend_id']}' uses unknown platform '{$platformId}'",
+                ['platform' => $platformId, 'connectionId' => (int) $connection['id'], 'connectionCode' => (string) ($connection['backend_id'] ?? '')],
             );
         }
-        $baseUrl = trim((string) ($connection['base_url'] ?? ''));
-        if ($baseUrl === '' && is_array($platforms) && is_string($platforms[$platform]['baseUrl'] ?? null)) {
-            $baseUrl = trim($platforms[$platform]['baseUrl']);
-        }
+        // Bez cfgItemu platforem (před ds-upgrade) záložní platforma bez adresy — klient má výchozí.
+        $platform = $platforms->getOrFallback($platformId);
+        $baseUrl = trim((string) ($connection['base_url'] ?? '')) ?: $platform->baseUrl;
 
         // --- model -------------------------------------------------------
         [$model, $origins['model']] = $this->pickModel($function, $override, $row);
@@ -163,7 +170,7 @@ class AiFunctionResolver
 
         $plan = new AiCallPlan(
             functionId: $functionId,
-            platform: $platform,
+            platform: $platform->id,
             baseUrl: $baseUrl,
             model: $platformModel,
             shapeAs: $shapeAs,
@@ -175,6 +182,8 @@ class AiFunctionResolver
             connectionId: (int) $connection['id'],
             connectionCode: (string) ($connection['backend_id'] ?? ''),
             origins: $origins,
+            dialect: $platform->dialect,
+            priceMultiplier: $platform->priceMultiplier,
         );
         return ['plan' => $plan, 'connection' => $connection, 'function' => $function];
     }
@@ -287,11 +296,14 @@ class AiFunctionResolver
     /**
      * ID modelu pro platformu, model katalogu pro tvarování a položka
      * katalogu (null u vlastního ID). Prázdný katalog = beze změny a bez
-     * kontrol (chybu vrátí API, jako dřív).
+     * kontrol (chybu vrátí API, jako dřív). Zadané ID, které na platformu
+     * patří (rodina `modelIds` i prefix), odchází beze změny — i s datovou
+     * příponou; ID jiné rodiny nebo s jiným geografickým prefixem
+     * (`anthropic.…` bez `eu.`, `us.…` na EU) se přeloží na ID platformy.
      *
      * @return array{0: string, 1: ?string, 2: ?string} [platformModel, shapeAs, catalogModel]
      */
-    private function placeModel(AiFunction $function, string $model, ?string $modelLike, string $platform, string $origin): array
+    private function placeModel(AiFunction $function, string $model, ?string $modelLike, AiPlatform $platform, string $origin): array
     {
         $catalog = $this->catalog();
         if ($catalog->isEmpty()) {
@@ -319,16 +331,17 @@ class AiFunctionResolver
             return [$model, $likeSpec->id, null];
         }
 
-        if ($catalog->platformOf($model) === $platform) {
+        if ($platform->ownsModelId($model, $catalog)) {
             $platformModel = $model; // zadané ID na platformu patří — beze změny (i s datovou příponou)
-        } elseif (isset($spec->platformIds[$platform])) {
-            $platformModel = $spec->platformIds[$platform];
         } else {
-            throw new AiFunctionException(
-                AiFunctionException::MODEL_NOT_ON_PLATFORM,
-                "Model '{$spec->id}' of AI function '{$function->id}' is not available on platform '{$platform}'",
-                ['functionId' => $function->id, 'model' => $spec->id, 'platform' => $platform],
-            );
+            $platformModel = $platform->modelIdFor($spec);
+            if ($platformModel === null) {
+                throw new AiFunctionException(
+                    AiFunctionException::MODEL_NOT_ON_PLATFORM,
+                    "Model '{$spec->id}' of AI function '{$function->id}' is not available on platform '{$platform->id}'",
+                    ['functionId' => $function->id, 'model' => $spec->id, 'platform' => $platform->id],
+                );
+            }
         }
         return [$platformModel, $spec->id, $spec->id];
     }

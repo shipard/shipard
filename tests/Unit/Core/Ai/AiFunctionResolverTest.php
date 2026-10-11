@@ -69,8 +69,15 @@ final class AiFunctionResolverTest extends TestCase
     ];
 
     private const PLATFORMS = [
-        'anthropic' => ['name' => 'Anthropic', 'dialect' => 'anthropic-messages', 'baseUrl' => 'https://api.anthropic.com'],
+        'anthropic' => ['name' => 'Anthropic', 'dialect' => 'anthropic-messages', 'baseUrl' => 'https://api.anthropic.com',
+            'modelIds' => 'anthropic', 'modelIdPrefix' => '', 'priceMultiplier' => 1],
+        'bedrock-eu' => ['name' => 'Amazon Bedrock (EU)', 'dialect' => 'anthropic-messages',
+            'baseUrl' => 'https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic',
+            'modelIds' => 'bedrock', 'modelIdPrefix' => 'eu.', 'priceMultiplier' => 1.1],
     ];
+
+    private const BEDROCK_CONNECTION = ['id' => 3, 'backend_id' => 'bedrock-eu', 'name' => 'Bedrock EU', 'provider' => 'bedrock-eu',
+        'model' => null, 'base_url' => null, 'api_key' => 'enc3', 'is_default' => 0, 'is_active' => 1];
 
     private const DEFAULT_CONNECTION = ['id' => 1, 'backend_id' => 'default', 'name' => 'Anthropic Claude', 'provider' => 'anthropic',
         'model' => 'claude-sonnet-4-6', 'base_url' => null, 'api_key' => 'enc', 'is_default' => 1, 'is_active' => 1];
@@ -138,6 +145,8 @@ final class AiFunctionResolverTest extends TestCase
         $call = $this->resolver()->resolve('mail.extraction');
 
         $this->assertSame('anthropic', $call->platform);
+        $this->assertSame('anthropic-messages', $call->dialect);
+        $this->assertSame(1.0, $call->priceMultiplier);
         $this->assertSame('https://api.anthropic.com', $call->baseUrl, 'adresa platformy, připojení ji nemá');
         $this->assertSame('sk-default', $call->apiKey);
         $this->assertSame('claude-sonnet-4-6', $call->model);
@@ -467,6 +476,62 @@ final class AiFunctionResolverTest extends TestCase
         $call = $this->resolver(default: $bedrock, connections: [1 => $bedrock], config: $config)
             ->resolve('mail.extraction', new AiCallOverride(model: 'claude-sonnet-5-5'));
         $this->assertSame('anthropic.claude-sonnet-5-5', $call->model);
+    }
+
+    public function testBedrockEuPlacesModelIdsWithTheGeographicPrefix(): void
+    {
+        // tasks/ai-bedrock-eu.md D57: ID pro platformu = prefix + ID rodiny bedrock.
+        $resolver = fn (array $rows = []): AiFunctionResolver => $this->resolver(
+            $rows,
+            default: self::BEDROCK_CONNECTION,
+            connections: [3 => self::BEDROCK_CONNECTION],
+            keys: ['bedrock-eu' => 'bedrock-key'],
+        );
+
+        // Model úrovně (Sonnet 4.6) na Bedrocku není → chyba nastavení už v plánu.
+        $preview = $resolver()->preview('mail.extraction');
+        $this->assertSame(AiFunctionException::MODEL_NOT_ON_PLATFORM, $preview->error?->errorCode);
+        $this->assertSame('bedrock-eu', $preview->error?->details['platform']);
+
+        // Model z katalogu přes ID přímého API → ID s prefixem, dialekt a násobitel platformy, výchozí adresa.
+        $call = $resolver()->resolve('mail.extraction', new AiCallOverride(model: 'claude-sonnet-5-5'));
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5', $call->model);
+        $this->assertSame('claude-sonnet-5-5', $call->shapeAs);
+        $this->assertSame('claude-sonnet-5-5', $call->catalogModel);
+        $this->assertSame('bedrock-eu', $call->platform);
+        $this->assertSame('anthropic-messages', $call->dialect);
+        $this->assertSame(1.1, $call->priceMultiplier);
+        $this->assertSame('https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic', $call->baseUrl);
+        $this->assertSame('bedrock-key', $call->apiKey);
+        $params = $call->chatParams(null, []);
+        $this->assertSame('bedrock-eu', $params->provider);
+        $this->assertSame('anthropic-messages', $params->dialect);
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5', $params->model);
+
+        // Ručně zadané ID, které na platformu patří, jde ven beze změny — i s datovou příponou.
+        $row = ['function_id' => 'mail.extraction', 'model' => 'eu.anthropic.claude-haiku-5-5'];
+        $call = $resolver(['mail.extraction' => $row])->resolve('mail.extraction');
+        $this->assertSame('eu.anthropic.claude-haiku-5-5', $call->model);
+        $this->assertSame('claude-haiku-5-5', $call->catalogModel);
+        $call = $resolver()->resolve('mail.extraction', new AiCallOverride(model: 'eu.anthropic.claude-haiku-5-5-20260901'));
+        $this->assertSame('eu.anthropic.claude-haiku-5-5-20260901', $call->model);
+
+        // ID rodiny bedrock bez prefixu nebo s jiným geografickým profilem se přeloží na EU.
+        $call = $resolver()->resolve('mail.extraction', new AiCallOverride(model: 'anthropic.claude-haiku-5-5'));
+        $this->assertSame('eu.anthropic.claude-haiku-5-5', $call->model);
+        $call = $resolver()->resolve('mail.extraction', new AiCallOverride(model: 'us.anthropic.claude-sonnet-5-5'));
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5', $call->model);
+
+        // Vlastní adresa připojení (jiný region EU) má přednost před výchozí adresou platformy.
+        $paris = ['base_url' => 'https://bedrock-runtime.eu-west-3.amazonaws.com/anthropic'] + self::BEDROCK_CONNECTION;
+        $call = $this->resolver(default: $paris, connections: [3 => $paris], keys: ['bedrock-eu' => 'k'])
+            ->resolve('mail.extraction', new AiCallOverride(model: 'claude-sonnet-5-5'));
+        $this->assertSame('https://bedrock-runtime.eu-west-3.amazonaws.com/anthropic', $call->baseUrl);
+
+        // EU ID na připojení Anthropic → ID přímého API (beze změny proti dnešku pro `anthropic.`).
+        $call = $this->resolver()->resolve('mail.extraction', new AiCallOverride(model: 'eu.anthropic.claude-sonnet-5-5'));
+        $this->assertSame('claude-sonnet-5-5', $call->model);
+        $this->assertSame(1.0, $call->priceMultiplier);
     }
 
     public function testFunctionRequiringToolsAcceptsEveryCatalogModel(): void

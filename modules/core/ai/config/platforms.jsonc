@@ -1,12 +1,26 @@
 {
-    // core.ai.platforms — platformy AI připojení (tasks/ai-functions.md, #85 D39)
+    // core.ai.platforms — platformy AI připojení (tasks/ai-functions.md #85 D39,
+    // tasks/ai-bedrock-eu.md D57, D60)
     //
     // Sloupec `core_ai_backends.provider` (popisek „Platforma“) nese klíč
-    // z téhle mapy. Platforma určuje dialekt API (`dialect`, dnes jen
-    // Anthropic Messages) a výchozí adresu; připojení ji může přepsat
-    // v `base_url` (AI gateway hostingu). ID modelu pro platformu bere
-    // resolver z katalogu modelů (`platformIds`). Platforma `bedrock`
-    // přijde ve fázi 3.
+    // z téhle mapy. Čte ji Shipard\Core\Ai\AiPlatforms (položka = AiPlatform).
+    // Pole:
+    //
+    //   name, order        — popis; `order` řadí nabídku ve formuláři připojení.
+    //   dialect            — dialekt API; dnes jen `anthropic-messages`
+    //                        (AnthropicLlmClient odmítne jiný).
+    //   baseUrl            — výchozí adresa API; připojení ji může přepsat
+    //                        v `base_url` (AI gateway hostingu, jiný region).
+    //                        Klient za ni připojuje `/v1/messages`.
+    //   modelIds           — která rodina ID z katalogu modelů (klíč
+    //                        `platformIds`: `anthropic` / `bedrock`) na
+    //                        platformě platí.
+    //   modelIdPrefix      — předřadí se před ID z katalogu (geografický
+    //                        profil Bedrocku `eu.` → `eu.anthropic.claude-…`).
+    //   priceMultiplier    — cena volání = ceník katalogu × násobitel (D60).
+    //
+    // Nová platforma nic nepřepíná: chování zdroje dat se mění, až když
+    // správce založí připojení s touhle platformou.
 
     "anthropic": {
         "name": "Anthropic",
@@ -14,6 +28,31 @@
         "name:en": "Anthropic",
         "order": 10,
         "dialect": "anthropic-messages",
-        "baseUrl": "https://api.anthropic.com"
+        "baseUrl": "https://api.anthropic.com",
+        "modelIds": "anthropic",
+        "modelIdPrefix": "",
+        "priceMultiplier": 1
+    },
+
+    // Amazon Bedrock, zpracování v EU (#85 fáze 3a): Messages API na
+    // `bedrock-runtime` (`bedrock-mantle` je pro řadu 5.5 jen GovCloud),
+    // geografický profil `eu.` zpracuje požadavek jen v regionech EU.
+    // Dlouhodobý klíč Bedrocku platí jen v regionu, kde vznikl — adresa
+    // připojení musí mířit do téhož regionu (výchozí Frankfurt). Regionální
+    // a geografické endpointy mají příplatek 10 % proti globálním.
+    // Zdroje (2026-10-11):
+    //   https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html
+    //   https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html
+    //   https://platform.claude.com/docs/en/build-with-claude/claude-in-amazon-bedrock
+    "bedrock-eu": {
+        "name": "Amazon Bedrock (EU)",
+        "name:cs": "Amazon Bedrock (EU)",
+        "name:en": "Amazon Bedrock (EU)",
+        "order": 20,
+        "dialect": "anthropic-messages",
+        "baseUrl": "https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic",
+        "modelIds": "bedrock",
+        "modelIdPrefix": "eu.",
+        "priceMultiplier": 1.1
     }
 }

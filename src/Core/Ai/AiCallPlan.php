@@ -6,7 +6,8 @@ namespace Shipard\Core\Ai;
 
 /**
  * Rozhodnutí resolveru **bez klíče** (tasks/ai-settings-section.md D51):
- * všechno, co {@see ResolvedAiCall} nese, kromě dešifrovaného API klíče.
+ * všechno, co {@see ResolvedAiCall} nese, kromě dešifrovaného API klíče —
+ * včetně dialektu a násobitele ceny platformy (tasks/ai-bedrock-eu.md D57, D60).
  * Vrací ho {@see AiFunctionResolver::plan()} — klíč se při plánu
  * neotevírá, ověřuje se jen, že je uložený. Detail AI funkce v Nastavení
  * a `ai-test` z plánu čtou efektivní hodnoty s původem; skutečné volání
@@ -31,6 +32,8 @@ final readonly class AiCallPlan
         public int $connectionId,
         public string $connectionCode,
         public array $origins = [],
+        public string $dialect = AiPlatform::DIALECT_ANTHROPIC_MESSAGES,
+        public float $priceMultiplier = 1.0,
     ) {}
 
     /** Vlastní ID modelu mimo katalog (D43): tvaruje se podle `shapeAs`, cena 0. */
@@ -57,6 +60,7 @@ final readonly class AiCallPlan
             thinking: $this->thinking,
             effort: $this->effort,
             shapeAs: $this->shapeAs,
+            dialect: $this->dialect,
         );
     }
 
@@ -66,6 +70,8 @@ final readonly class AiCallPlan
         return [
             'functionId' => $this->functionId,
             'platform' => $this->platform,
+            'dialect' => $this->dialect,
+            'priceMultiplier' => $this->priceMultiplier,
             'baseUrl' => $this->baseUrl,
             'model' => $this->model,
             'shapeAs' => $this->shapeAs,

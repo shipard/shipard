@@ -174,6 +174,7 @@ class AiTestCommand extends Command
             thinking: $spec?->thinkingModes !== null ? RequestShaper::THINKING_DISABLED : $call->thinking,
             effort: self::EFFORT,
             shapeAs: $call->shapeAs,
+            dialect: $call->dialect,
         );
 
         $base = ['id' => $id, 'connection' => $call->connectionCode, 'model' => $call->model];

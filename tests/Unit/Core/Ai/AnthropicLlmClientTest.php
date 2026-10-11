@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Core\Ai;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Ai\AiPlatform;
 use Shipard\Core\Ai\AnthropicLlmClient;
 use Shipard\Core\Ai\Exception\LlmApiException;
 use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
@@ -20,7 +21,7 @@ use Shipard\Core\Utils\JsoncParser;
  */
 class AnthropicLlmClientTest extends TestCase
 {
-    private function params(string $provider = 'anthropic'): LlmChatParams
+    private function params(string $provider = 'anthropic', string $dialect = AiPlatform::DIALECT_ANTHROPIC_MESSAGES): LlmChatParams
     {
         return new LlmChatParams(
             provider: $provider,
@@ -31,6 +32,7 @@ class AnthropicLlmClientTest extends TestCase
             messages: [['role' => 'user', 'content' => [['type' => 'text', 'text' => 'hi']]]],
             maxTokens: 1024,
             temperature: null,
+            dialect: $dialect,
         );
     }
 
@@ -99,10 +101,36 @@ class AnthropicLlmClientTest extends TestCase
         $this->assertSame('claude-opus-4-8', $result->model);
     }
 
-    public function testUnsupportedProviderThrows(): void
+    public function testUnsupportedDialectThrowsWhileAnyPlatformWithTheMessagesDialectIsServed(): void
     {
-        $this->expectException(LlmUnsupportedProviderException::class);
-        $this->client([])->streamChat($this->params('openai'), function (): void {});
+        // Rozhoduje dialekt, ne platforma (tasks/ai-bedrock-eu.md D57):
+        // Bedrock mluví stejným Messages API jako přímé API.
+        $result = $this->client([$this->sampleStream()])->streamChat($this->params('bedrock-eu'), function (): void {});
+        $this->assertSame('Ahoj, světe', $result->text);
+
+        try {
+            $this->client([])->streamChat($this->params('openai', 'openai-responses'), function (): void {});
+            $this->fail('Expected LlmUnsupportedProviderException');
+        } catch (LlmUnsupportedProviderException $e) {
+            $this->assertSame('openai', $e->provider);
+            $this->assertSame('openai-responses', $e->dialect);
+            $this->assertStringContainsString('openai-responses', $e->getMessage());
+        }
+    }
+
+    public function testBedrockPlatformSendsTheSameBodyAsTheDirectApi(): void
+    {
+        // Jiná platforma, jiné ID modelu, stejné tělo: klient na platformě nic nemění.
+        $direct = $this->capturedBodyWith($this->catalog(), $this->tunedParams('claude-sonnet-5-5', null, 'adaptive', 'low'));
+        $bedrock = $this->capturedBodyWith($this->catalog(), new LlmChatParams(
+            provider: 'bedrock-eu', model: 'eu.anthropic.claude-sonnet-5-5', apiKey: 'bedrock-key',
+            baseUrl: 'https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic',
+            system: 'sys', messages: [['role' => 'user', 'content' => 'hi']], maxTokens: 1024,
+            thinking: 'adaptive', effort: 'low',
+        ));
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5', $bedrock['model']);
+        unset($direct['model'], $bedrock['model']);
+        $this->assertSame($direct, $bedrock);
     }
 
     public function testInlineErrorEventThrows(): void

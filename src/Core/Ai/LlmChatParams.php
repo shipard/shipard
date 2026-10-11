@@ -26,6 +26,11 @@ namespace Shipard\Core\Ai;
  * request is shaped after when `model` is a custom ID the catalog does not
  * know; null = shape after `model` itself. Resolved by AiFunctionResolver.
  *
+ * `dialect` (tasks/ai-bedrock-eu.md D57) names the API dialect of the
+ * platform — `anthropic-messages` for the direct API and for Amazon Bedrock
+ * alike; the client checks it instead of `provider`, which is the platform
+ * id of the connection (`anthropic`, `bedrock-eu`) and serves logs only.
+ *
  * `stallTimeoutSeconds` / `timeoutSeconds` bound the HTTP call (no bytes
  * received for N seconds / whole request longer than N seconds → transport
  * error, status 0). Null = no limit, today's behaviour; the mail analysis
@@ -54,5 +59,6 @@ final readonly class LlmChatParams
         public ?string $thinking = null,
         public ?string $effort = null,
         public ?string $shapeAs = null,
+        public string $dialect = AiPlatform::DIALECT_ANTHROPIC_MESSAGES,
     ) {}
 }

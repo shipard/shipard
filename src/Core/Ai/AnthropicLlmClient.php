@@ -26,6 +26,12 @@ use Shipard\Core\Logging\ErrorLogger;
  * catalog is sent as-is and warned about once per process. Without a
  * catalog (null, or an empty one before `ds-upgrade`) nothing is shaped.
  *
+ * Platforms (tasks/ai-bedrock-eu.md D57): the client serves every platform
+ * with the `anthropic-messages` dialect — the direct API and Amazon Bedrock
+ * (`{baseUrl}/v1/messages`, key in `x-api-key`, same request body and SSE
+ * stream). Only the dialect is checked; the platform id in `provider` is
+ * informational.
+ *
  * Thinking blocks (tasks/chat-thinking-blocks.md D53, D56): `thinking` and
  * `redacted_thinking` blocks are collected from the stream exactly as they
  * arrive (empty text and the opaque signature included) and returned in
@@ -54,8 +60,10 @@ class AnthropicLlmClient implements LlmClient
 
     public function streamChat(LlmChatParams $params, callable $onTextDelta, ?callable $onThinking = null): LlmChatResult
     {
-        if ($params->provider !== 'anthropic') {
-            throw new LlmUnsupportedProviderException($params->provider);
+        // The platform (`provider`) may be the direct API or Amazon Bedrock;
+        // both speak the Messages dialect, so the dialect decides (D57).
+        if ($params->dialect !== AiPlatform::DIALECT_ANTHROPIC_MESSAGES) {
+            throw new LlmUnsupportedProviderException($params->provider, $params->dialect);
         }
 
         $params = $this->shapeForModel($params);

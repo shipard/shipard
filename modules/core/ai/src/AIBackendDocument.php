@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Ai;
 
+use Shipard\Core\Ai\AiPlatforms;
 use Shipard\Core\Document\Document;
 use Shipard\Core\Document\ValidationResult;
 use Shipard\Core\Security\DsSecretCipher;
@@ -55,10 +56,10 @@ class AIBackendDocument extends Document
         // nebo neznámá platforma je chyba.
         if (array_key_exists('provider', $data)) {
             $platform = trim((string) ($data['provider'] ?? ''));
-            $platforms = $this->config?->cfgItem('core.ai.platforms');
+            $platforms = AiPlatforms::fromConfig($this->config);
             if ($platform === '') {
                 $result->addError('provider', 'Platforma je povinná', 'required');
-            } elseif (is_array($platforms) && $platforms !== [] && !isset($platforms[$platform])) {
+            } elseif (!$platforms->isEmpty() && !$platforms->has($platform)) {
                 $result->addError('provider', "Platforma '{$platform}' není podporovaná", 'unknown_platform');
             }
         }
