@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 355 tasků: **naplánováno** 4 · **částečně** 23 · **hotovo** 328.
+Celkem 356 tasků: **naplánováno** 5 · **částečně** 23 · **hotovo** 328.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,6 +25,7 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
+| `ai-bedrock-eu.md` | naplánováno | rozhodnutí D57–D61 potvrzena 2026-10-11 (#85), připraveno k implementaci |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
@@ -383,6 +384,7 @@ Sdílené LLM backendy, MCP nástroje, vnitřní chat. Přehled
 | `ai-functions.md` | Připojení vs. model, deklarace AI funkcí (`aiFunctions`), mapa úrovní, tabulka nastavení funkcí, `AiFunctionResolver`, převod pěti volajících a dat, přepsání v profilu pošty, upozornění „AI model brzy končí“, vlastní ID modelu (#85 fáze 1b, D36–D43) |
 | `ai-settings-section.md` | Sekce AI v Nastavení (připojení, funkce, přehled modelů), detail funkce s úpravami požadavku a stavem resolveru, příkaz `ai-test`, nápověda pro správce (#85 fáze 1c, D49–D52) |
 | `chat-thinking-blocks.md` | Asistent na modelech s thinkingem: sběr thinking bloků ze streamu, vracení v rámci jedné tool smyčky (do databáze se neukládají), zánik pojistky chatu a `chatToolLoop`, strop tokenů 16 000, indikace „Přemýšlím…“ (#85 fáze 4, D53–D56) |
+| `ai-bedrock-eu.md` | Zpracování v EU: platforma „Amazon Bedrock (EU)“ (`bedrock-runtime`, geografický profil `eu.`), modely úrovní per platforma, cena s násobitelem, čitelné chyby Bedrocku, nápověda (#85 fáze 3a, D57–D61) |
 | `mcp-server-01-skeleton.md` | Skeleton MCP serveru + `persons_search` |
 | `mcp-server-02-read-tools.md` | Zbývající čtecí nástroje (`documents_search`, `mail_list_pending`, …) |
 | `mcp-server-03-draft-tool.md` | Draft nástroj `mail_draft_document` (první zápisový) |
