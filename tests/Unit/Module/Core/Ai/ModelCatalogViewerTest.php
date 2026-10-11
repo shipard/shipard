@@ -24,7 +24,7 @@ final class ModelCatalogViewerTest extends TestCase
             'name' => 'Claude Opus 5.5', 'order' => 10, 'tier' => 'strong',
             'platformIds' => ['anthropic' => 'claude-opus-5-5', 'bedrock' => 'anthropic.claude-opus-5-5'],
             'capabilities' => ['temperature' => false, 'thinkingModes' => ['adaptive'], 'thinkingDefault' => 'adaptive',
-                'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'maxOutputTokens' => 128000, 'chatToolLoop' => false],
+                'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'maxOutputTokens' => 128000],
             'prices' => ['input' => 4, 'output' => 20],
             'lifecycle' => ['status' => 'active', 'retiresNotBefore' => '2027-09-22'],
         ],
@@ -32,7 +32,7 @@ final class ModelCatalogViewerTest extends TestCase
             'name' => 'Claude Sonnet 4.6', 'order' => 22, 'tier' => 'balanced',
             'platformIds' => ['anthropic' => 'claude-sonnet-4-6'],
             'capabilities' => ['temperature' => true, 'thinkingModes' => ['adaptive', 'disabled', 'enabled'], 'thinkingDefault' => 'off',
-                'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000, 'chatToolLoop' => true],
+                'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000],
             'prices' => ['input' => 3, 'output' => 15],
         ],
         'claude-sonnet-4-5' => [

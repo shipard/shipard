@@ -27,9 +27,6 @@
     //     thinkingOffMaxEffort nejvyšší effort přijímaný spolu s vypnutým
     //                          thinkingem (`disabled` / `between_tools`)
     //     maxOutputTokens      horní mez `max_tokens`
-    //     chatToolLoop         true/false — tool smyčka chatu funguje bez
-    //                          vracení thinking bloků (= model bez parametru
-    //                          nepřemýšlí; fáze 4 pojistku zruší)
     //   prices (D33)                   — USD za milion tokenů: `input`,
     //                                    `output`, volitelně `longPrompt`
     //                                    {over, input, output}.
@@ -66,8 +63,7 @@
             "thinkingDefault": "adaptive",
             "effortLevels": ["low", "medium", "high", "xhigh", "max"],
             "thinkingOffMaxEffort": null,
-            "maxOutputTokens": 128000,
-            "chatToolLoop": false
+            "maxOutputTokens": 128000
         },
         "prices": { "input": 4, "output": 20 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-09-22" }
@@ -85,8 +81,7 @@
             "thinkingDefault": "adaptive",
             "effortLevels": ["low", "medium", "high", "xhigh", "max"],
             "thinkingOffMaxEffort": "high",
-            "maxOutputTokens": 128000,
-            "chatToolLoop": false
+            "maxOutputTokens": 128000
         },
         "prices": { "input": 5, "output": 25 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-07-24" }
@@ -104,8 +99,7 @@
             "thinkingDefault": "off",
             "effortLevels": ["low", "medium", "high", "xhigh", "max"],
             "thinkingOffMaxEffort": null,
-            "maxOutputTokens": 128000,
-            "chatToolLoop": true
+            "maxOutputTokens": 128000
         },
         "prices": { "input": 5, "output": 25 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-05-28" }
@@ -126,8 +120,7 @@
             "thinkingDefault": "adaptive",
             "effortLevels": ["low", "medium", "high", "xhigh", "max"],
             "thinkingOffMaxEffort": "high",
-            "maxOutputTokens": 128000,
-            "chatToolLoop": false
+            "maxOutputTokens": 128000
         },
         "prices": { "input": 2, "output": 10 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-09-28" }
@@ -145,15 +138,14 @@
             "thinkingDefault": "adaptive",
             "effortLevels": ["low", "medium", "high", "xhigh", "max"],
             "thinkingOffMaxEffort": null,
-            "maxOutputTokens": 128000,
-            "chatToolLoop": false
+            "maxOutputTokens": 128000
         },
         "prices": { "input": 2, "output": 10 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-06-30" }
     },
     // Výchozí model (D34, přemostění F0-D8): stejná cena i tokenizer jako
-    // 4.5, přijímá teplotu, bez parametru nepřemýšlí → tool smyčka chatu
-    // funguje. Aktivní nejméně do 17. 2. 2027.
+    // 4.5, přijímá teplotu, bez parametru nepřemýšlí. Aktivní nejméně do
+    // 17. 2. 2027.
     "claude-sonnet-4-6": {
         "name": "Claude Sonnet 4.6",
         "vendor": "anthropic",
@@ -167,8 +159,7 @@
             "thinkingDefault": "off",
             "effortLevels": ["low", "medium", "high", "max"],
             "thinkingOffMaxEffort": null,
-            "maxOutputTokens": 128000,
-            "chatToolLoop": true
+            "maxOutputTokens": 128000
         },
         "prices": { "input": 3, "output": 15 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-02-17" }
@@ -188,8 +179,7 @@
             "thinkingDefault": "off",
             "effortLevels": [],
             "thinkingOffMaxEffort": null,
-            "maxOutputTokens": 64000,
-            "chatToolLoop": true
+            "maxOutputTokens": 64000
         },
         "prices": { "input": 3, "output": 15 },
         "lifecycle": { "status": "deprecated", "retiresAt": "2026-11-30", "replacedBy": "claude-sonnet-4-6" }
@@ -210,8 +200,7 @@
             "thinkingDefault": "adaptive",
             "effortLevels": ["low", "medium", "high", "xhigh", "max"],
             "thinkingOffMaxEffort": "high",
-            "maxOutputTokens": 128000,
-            "chatToolLoop": false
+            "maxOutputTokens": 128000
         },
         "prices": { "input": 0.10, "output": 0.50, "longPrompt": { "over": 100000, "input": 0.50, "output": 2.50 } },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-10-07" }
@@ -229,8 +218,7 @@
             "thinkingDefault": "off",
             "effortLevels": [],
             "thinkingOffMaxEffort": null,
-            "maxOutputTokens": 64000,
-            "chatToolLoop": true
+            "maxOutputTokens": 64000
         },
         "prices": { "input": 1, "output": 5 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2026-10-15" }

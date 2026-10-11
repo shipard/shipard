@@ -136,7 +136,9 @@
             "description:cs": "Vestavěný asistent s tool smyčkou nad čtecími nástroji zdroje dat.",
             "description:en": "Built-in assistant with the read-only tool loop over the data source.",
             "tier": "balanced",
-            "defaults": { "maxTokens": 4096 },
+            // 16 000 (tasks/chat-thinking-blocks.md D55): na modelech
+            // s thinkingem se úvahy počítají do stropu.
+            "defaults": { "maxTokens": 16000 },
             "requires": ["tools"]
         }
     ],

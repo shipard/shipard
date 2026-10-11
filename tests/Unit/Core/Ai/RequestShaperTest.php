@@ -30,7 +30,7 @@ final class RequestShaperTest extends TestCase
         return $this->spec([
             'temperature' => false, 'thinkingModes' => ['adaptive', 'between_tools'], 'thinkingDefault' => 'adaptive',
             'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high',
-            'maxOutputTokens' => 128000, 'chatToolLoop' => false,
+            'maxOutputTokens' => 128000,
         ]);
     }
 
@@ -38,7 +38,7 @@ final class RequestShaperTest extends TestCase
     {
         return $this->spec([
             'temperature' => true, 'thinkingModes' => ['adaptive', 'disabled', 'enabled'], 'thinkingDefault' => 'off',
-            'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000, 'chatToolLoop' => true,
+            'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000,
         ]);
     }
 

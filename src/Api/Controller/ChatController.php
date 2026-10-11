@@ -285,12 +285,12 @@ class ChatController
         $this->insertMessage($id, $userId, 'user', 'user_text', [['type' => 'text', 'text' => $text]], $this->nextSeq($id));
 
         // Model, připojení a ladění určuje AI funkce `chat.default`
-        // (tasks/ai-functions.md D40): deklarace (strop 4096, bez teploty)
-        // → řádek funkce v Nastavení → mapa úrovní. Konverzace přišpendlená
-        // na připojení ho přepisuje; chybějící nebo neaktivní připojení
-        // padá na výchozí (chování před resolverem). Model bez tool smyčky
-        // odmítne resolver (zobecněná pojistka D35, fáze 4 ji zruší).
-        // Uživatelská zpráva je už uložená, stejně jako dřív u NO_BACKEND.
+        // (tasks/ai-functions.md D40): deklarace (strop 16 000 — thinking
+        // se do něj počítá, D55; bez teploty) → řádek funkce v Nastavení →
+        // mapa úrovní. Konverzace přišpendlená na připojení ho přepisuje;
+        // chybějící nebo neaktivní připojení padá na výchozí (chování před
+        // resolverem). Uživatelská zpráva je už uložená, stejně jako dřív
+        // u NO_BACKEND.
         try {
             $call = $this->resolveCall($conversation);
         } catch (AiFunctionException $e) {
@@ -626,7 +626,6 @@ class ChatController
     /**
      * Chyba resolveru → odpověď s dnešními kódy pro frontend: `NO_BACKEND`
      * (bez připojení nebo klíče), `BACKEND_KEY_ERROR` (klíč nejde přečíst),
-     * `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` (model bez tool smyčky, D35),
      * `AI_NOT_CONFIGURED` (ostatní chyby nastavení funkce). Zpráva je
      * věta z `core.ai.texts` v jazyce požadavku (compiled config) s radou,
      * kde to opravit — stejná jako v detailu AI funkce a v `ai-test`
@@ -644,9 +643,6 @@ class ChatController
             case AiFunctionException::KEY_CORRUPTED:
                 ErrorLogger::warn('ChatController: AI connection key unavailable', ['code' => $e->errorCode, 'error' => $e->getMessage()]);
                 return Response::error('BACKEND_KEY_ERROR', $message, 500);
-            case AiFunctionException::MODEL_NOT_SUPPORTED_FOR_FUNCTION:
-                $model = (string) ($e->details['model'] ?? '');
-                return Response::error('AI_MODEL_NOT_SUPPORTED_FOR_CHAT', $message, 503, [['field' => 'model', 'value' => $model]]);
             default:
                 ErrorLogger::warn('ChatController: AI function cannot be resolved', ['code' => $e->errorCode, 'error' => $e->getMessage()]);
                 return Response::error('AI_NOT_CONFIGURED', $message, 503, [['field' => 'code', 'value' => $e->errorCode]]);

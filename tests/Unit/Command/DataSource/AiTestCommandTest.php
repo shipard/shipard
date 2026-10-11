@@ -66,13 +66,13 @@ final class AiTestCommandTest extends TestCase
         'claude-sonnet-5-5' => [
             'name' => 'Claude Sonnet 5.5', 'order' => 20, 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-5-5'],
             'capabilities' => ['temperature' => false, 'thinkingModes' => ['adaptive', 'between_tools'], 'thinkingDefault' => 'adaptive',
-                'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high', 'maxOutputTokens' => 128000, 'chatToolLoop' => false],
+                'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high', 'maxOutputTokens' => 128000],
             'prices' => ['input' => 2, 'output' => 10],
         ],
         'claude-sonnet-4-6' => [
             'name' => 'Claude Sonnet 4.6', 'order' => 22, 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-4-6'],
             'capabilities' => ['temperature' => true, 'thinkingModes' => ['adaptive', 'disabled'], 'thinkingDefault' => 'off',
-                'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000, 'chatToolLoop' => true],
+                'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000],
             'prices' => ['input' => 3, 'output' => 15],
         ],
         // Jen ceník — bez schopností (null): thinking se nevnucuje.
@@ -241,18 +241,22 @@ final class AiTestCommandTest extends TestCase
         );
     }
 
-    public function testChatOnASeries5ModelFailsOnlyThatFunction(): void
+    public function testChatOnASeries5ModelIsTestedLikeAnyOtherFunction(): void
     {
-        $llm = new ScriptedLlmClient([self::ok(), self::ok()]);
+        // Pojistka D35 zanikla (tasks/chat-thinking-blocks.md D54): chat na
+        // Sonnetu 5.5 se zavolá jako ostatní funkce.
+        $llm = new ScriptedLlmClient([self::ok(), self::ok(), self::ok('claude-sonnet-5-5')]);
         $row = ['function_id' => 'chat.default', 'model' => 'claude-sonnet-5-5'];
         $tester = $this->tester($llm, ['chat.default' => $row]);
 
         $exit = $tester->execute([]);
         $display = $tester->getDisplay();
 
-        $this->assertSame(1, $exit);
-        $this->assertCount(2, $llm->calls, 'mail.extraction a dashboard.summary se zavolaly, chat ne');
-        $this->assertStringContainsString('Model claude-sonnet-5-5 zatím nemůže obsloužit AI funkci Chat asistenta', $display);
+        $this->assertSame(0, $exit, $display);
+        $models = array_map(static fn (LlmChatParams $p): string => $p->model, $llm->calls);
+        sort($models);
+        $this->assertSame(['claude-sonnet-4-6', 'claude-sonnet-4-6', 'claude-sonnet-5-5'], $models);
+        $this->assertStringNotContainsString('FAIL', $display);
     }
 
     public function testApiErrorsAreReportedByKind(): void

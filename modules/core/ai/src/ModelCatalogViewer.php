@@ -139,7 +139,6 @@ class ModelCatalogViewer extends AiViewerBase
                 ? $this->text('value.tokens', '{n} tokens', ['n' => self::number($spec->maxOutputTokens)])
                 : $this->text('value.unknown', 'Unknown — sent unchanged'),
         );
-        $this->addItem($caps, $this->text('label.chatToolLoop', 'Assistant tool loop'), $this->yesNo($spec->chatToolLoop));
 
         $platforms = [];
         foreach ($spec->platformIds as $platform => $platformId) {

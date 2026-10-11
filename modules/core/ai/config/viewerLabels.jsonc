@@ -35,7 +35,6 @@
     "label.effortLevels":  { "name": "Effort levels",         "name:cs": "Úrovně úsilí",           "name:en": "Effort levels" },
     "label.thinkingOffMaxEffort": { "name": "Max. effort with thinking off", "name:cs": "Nejvyšší úsilí bez přemýšlení", "name:en": "Max. effort with thinking off" },
     "label.maxOutputTokens": { "name": "Output limit",        "name:cs": "Strop výstupu",          "name:en": "Output limit" },
-    "label.chatToolLoop":  { "name": "Assistant tool loop",   "name:cs": "Tool smyčka asistenta",  "name:en": "Assistant tool loop" },
 
     // --- AI funkce: řádek a detail ---
     "badge.customModel":   { "name": "custom model",          "name:cs": "vlastní model",          "name:en": "custom model" },

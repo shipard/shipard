@@ -40,13 +40,13 @@ final class AiFunctionResolverTest extends TestCase
             'name' => 'Claude Sonnet 5.5', 'order' => 20, 'tier' => 'balanced',
             'platformIds' => ['anthropic' => 'claude-sonnet-5-5', 'bedrock' => 'anthropic.claude-sonnet-5-5'],
             'capabilities' => ['temperature' => false, 'thinkingModes' => ['adaptive', 'between_tools'], 'thinkingDefault' => 'adaptive',
-                'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high', 'maxOutputTokens' => 128000, 'chatToolLoop' => false],
+                'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high', 'maxOutputTokens' => 128000],
             'prices' => ['input' => 2, 'output' => 10],
         ],
         'claude-sonnet-4-6' => [
             'name' => 'Claude Sonnet 4.6', 'order' => 22, 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-4-6'],
             'capabilities' => ['temperature' => true, 'thinkingModes' => ['adaptive', 'disabled'], 'thinkingDefault' => 'off',
-                'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000, 'chatToolLoop' => true],
+                'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000],
             'prices' => ['input' => 3, 'output' => 15],
         ],
         'claude-sonnet-4-5' => [
@@ -57,7 +57,7 @@ final class AiFunctionResolverTest extends TestCase
         'claude-haiku-5-5' => [
             'name' => 'Claude Haiku 5.5', 'order' => 30, 'tier' => 'fast',
             'platformIds' => ['anthropic' => 'claude-haiku-5-5', 'bedrock' => 'anthropic.claude-haiku-5-5'],
-            'capabilities' => ['chatToolLoop' => false],
+            'capabilities' => [],
             'prices' => ['input' => 0.1, 'output' => 0.5],
         ],
     ];
@@ -378,9 +378,11 @@ final class AiFunctionResolverTest extends TestCase
         $this->assertSame([], $noConnection->changes);
         $this->assertSame(AiFunctionException::NO_CONNECTION, $noConnection->error?->errorCode);
 
+        // Řada 5 pro chat (fáze 4, D54): žádná chyba nastavení.
         $row = ['function_id' => 'chat.default', 'model' => 'claude-sonnet-5-5'];
         $chat = $this->resolver(['chat.default' => $row])->preview('chat.default');
-        $this->assertSame(AiFunctionException::MODEL_NOT_SUPPORTED_FOR_FUNCTION, $chat->error?->errorCode);
+        $this->assertTrue($chat->isOk());
+        $this->assertSame('claude-sonnet-5-5', $chat->plan?->model);
 
         $this->assertSame(AiFunctionException::UNKNOWN_FUNCTION, $this->resolver()->preview('nope.nope')->error?->errorCode);
     }
@@ -467,26 +469,15 @@ final class AiFunctionResolverTest extends TestCase
         $this->assertSame('anthropic.claude-sonnet-5-5', $call->model);
     }
 
-    public function testFunctionRequiringToolsRejectsModelsWithoutToolLoop(): void
+    public function testFunctionRequiringToolsAcceptsEveryCatalogModel(): void
     {
+        // Pojistka D35 zanikla (tasks/chat-thinking-blocks.md D54): tool
+        // smyčka vrací thinking bloky, `requires: ["tools"]` je jen popis.
         $this->assertSame('claude-sonnet-4-6', $this->resolver()->resolve('chat.default')->model);
-
-        try {
-            $this->resolver()->resolve('chat.default', new AiCallOverride(model: 'claude-sonnet-5-5'));
-            $this->fail();
-        } catch (AiFunctionException $e) {
-            $this->assertSame(AiFunctionException::MODEL_NOT_SUPPORTED_FOR_FUNCTION, $e->errorCode);
-            $this->assertSame('claude-sonnet-5-5', $e->details['model']);
-        }
-        // Vlastní ID tvarované podle modelu bez tool smyčky — totéž.
-        try {
-            $this->resolver()->resolve('chat.default', new AiCallOverride(model: 'claude-x', modelLike: 'claude-haiku-5-5'));
-            $this->fail();
-        } catch (AiFunctionException $e) {
-            $this->assertSame(AiFunctionException::MODEL_NOT_SUPPORTED_FOR_FUNCTION, $e->errorCode);
-        }
-        // Funkce bez `tools` stejný model přijme.
-        $this->assertSame('claude-sonnet-5-5', $this->resolver()->resolve('mail.extraction', new AiCallOverride(model: 'claude-sonnet-5-5'))->model);
+        $this->assertSame('claude-sonnet-5-5', $this->resolver()->resolve('chat.default', new AiCallOverride(model: 'claude-sonnet-5-5'))->model);
+        $custom = $this->resolver()->resolve('chat.default', new AiCallOverride(model: 'claude-x', modelLike: 'claude-haiku-5-5'));
+        $this->assertSame('claude-x', $custom->model);
+        $this->assertSame('claude-haiku-5-5', $custom->shapeAs);
     }
 
     public function testUnknownFunctionAndMissingTierMap(): void

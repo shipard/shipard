@@ -35,13 +35,13 @@ final class AiFunctionsViewerTest extends TestCase
             'name' => 'Claude Sonnet 5.5', 'order' => 20, 'tier' => 'balanced',
             'platformIds' => ['anthropic' => 'claude-sonnet-5-5'],
             'capabilities' => ['temperature' => false, 'thinkingModes' => ['adaptive', 'between_tools'], 'thinkingDefault' => 'adaptive',
-                'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high', 'maxOutputTokens' => 128000, 'chatToolLoop' => false],
+                'effortLevels' => ['low', 'medium', 'high', 'xhigh', 'max'], 'thinkingOffMaxEffort' => 'high', 'maxOutputTokens' => 128000],
             'prices' => ['input' => 2, 'output' => 10],
         ],
         'claude-sonnet-4-6' => [
             'name' => 'Claude Sonnet 4.6', 'order' => 22, 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-4-6'],
             'capabilities' => ['temperature' => true, 'thinkingModes' => ['adaptive', 'disabled'], 'thinkingDefault' => 'off',
-                'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000, 'chatToolLoop' => true],
+                'effortLevels' => ['low', 'medium', 'high', 'max'], 'maxOutputTokens' => 128000],
             'prices' => ['input' => 3, 'output' => 15],
         ],
     ];
@@ -216,16 +216,17 @@ final class AiFunctionsViewerTest extends TestCase
         $this->assertSame('shpd-ds ai-test --function mail.extraction', $status['Ověření z konzole']);
     }
 
-    public function testChatFunctionOnASeries5ModelIsASetupError(): void
+    public function testChatFunctionOnASeries5ModelIsNoLongerASetupError(): void
     {
+        // Pojistka D35 zanikla (tasks/chat-thinking-blocks.md D54): asistent
+        // na řadě 5 je v pořádku, detail ukáže plán s modelem.
         $detail = $this->viewer(['function_id' => 'chat.default', 'model' => 'claude-sonnet-5-5'])->renderDetail(3);
 
+        $this->assertSame([['label' => 'V pořádku', 'style' => 'success']], $detail['badges']);
+        $this->assertSame('claude-sonnet-5-5 — nastaveno u funkce', $this->items($detail, 'Volání')['Model']);
         $status = $this->items($detail, 'Stav volání');
-        $this->assertSame(
-            'Model claude-sonnet-5-5 zatím nemůže obsloužit AI funkci Chat asistenta — potřebuje nástroje, které s tímto modelem zatím nefungují.',
-            $status['Výsledek'],
-        );
-        $this->assertStringStartsWith('Nastavení → AI → Funkce → Chat asistenta:', $status['Kde to opravit']);
+        $this->assertStringStartsWith('V pořádku — připojení má uložený klíč', $status['Výsledek']);
+        $this->assertArrayNotHasKey('Kde to opravit', $status);
     }
 
     public function testRowBadgesComeFromTheLabelCatalog(): void

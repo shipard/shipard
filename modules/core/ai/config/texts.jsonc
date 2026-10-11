@@ -124,16 +124,6 @@
         "text:cs": "Nastavení → AI → Funkce → {function}: vyber model dostupný na platformě připojení, nebo jiné připojení.",
         "text:en": "Settings → AI → Functions → {function}: pick a model available on the connection’s platform, or another connection."
     },
-    "error.MODEL_NOT_SUPPORTED_FOR_FUNCTION": {
-        "text": "Model {model} cannot serve the AI function {function} yet — it needs tools, which do not work with this model so far.",
-        "text:cs": "Model {model} zatím nemůže obsloužit AI funkci {function} — potřebuje nástroje, které s tímto modelem zatím nefungují.",
-        "text:en": "Model {model} cannot serve the AI function {function} yet — it needs tools, which do not work with this model so far."
-    },
-    "hint.MODEL_NOT_SUPPORTED_FOR_FUNCTION": {
-        "text": "Settings → AI → Functions → {function}: pick another model (e.g. Claude Sonnet 4.6), or clear the field (tier model).",
-        "text:cs": "Nastavení → AI → Funkce → {function}: vyber jiný model (např. Claude Sonnet 4.6), nebo pole vyprázdni (model podle úrovně).",
-        "text:en": "Settings → AI → Functions → {function}: pick another model (e.g. Claude Sonnet 4.6), or clear the field (tier model)."
-    },
 
     // --- úpravy požadavku (RequestShaper → RequestChange) -------------------
     "change.temperatureOmitted": {

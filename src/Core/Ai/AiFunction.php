@@ -12,8 +12,10 @@ namespace Shipard\Core\Ai;
  *
  * Nese úroveň modelu (`tier`, model určuje mapa úrovní `core.ai.tiers`),
  * výchozí ladění (`maxTokens`, volitelná `temperature`) a požadavky na
- * model (`requires`: `tools` = tool smyčka chatu, `pdf` = přílohy PDF).
- * `thinking` a `effort` deklarace nemá — výchozí stav je „neposílat“.
+ * model (`requires`: `tools` = tool smyčka chatu, `pdf` = přílohy PDF) —
+ * od fáze 4 (tasks/chat-thinking-blocks.md D54) jen popis pro detail
+ * funkce, resolver podle nich model neodmítá. `thinking` a `effort`
+ * deklarace nemá — výchozí stav je „neposílat“.
  *
  * Readonly hodnotový objekt, továrna {@see fromArray()}, validace tvaru
  * v konstruktoru; o pořadí zdrojů rozhoduje {@see AiFunctionResolver}.
@@ -78,7 +80,7 @@ final readonly class AiFunction
         );
     }
 
-    /** Funkce potřebuje tool smyčku (chat) — model musí mít `chatToolLoop` (pojistka D35). */
+    /** Funkce používá tool smyčku (chat) — od fáze 4 jen popis, model se podle toho neodmítá (D54). */
     public function requiresTools(): bool
     {
         return in_array(self::REQUIRES_TOOLS, $this->requires, true);

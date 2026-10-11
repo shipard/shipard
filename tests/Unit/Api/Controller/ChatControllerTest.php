@@ -460,7 +460,7 @@ class ChatControllerTest extends TestCase
         $configDir = dirname(__DIR__, 4) . '/modules/core/ai/config';
         $items = [
             AiFunctionRegistry::CFG_ITEM => [
-                'chat.default' => ['name' => 'Chat', 'tier' => 'balanced', 'defaults' => ['maxTokens' => 4096], 'requires' => ['tools']],
+                'chat.default' => ['name' => 'Chat', 'tier' => 'balanced', 'defaults' => ['maxTokens' => 16000], 'requires' => ['tools']],
             ],
             ModelCatalog::CFG_ITEM => JsoncParser::parseFile($configDir . '/models.jsonc'),
             ModelCatalog::TIERS_CFG_ITEM => JsoncParser::parseFile($configDir . '/tiers.jsonc'),
@@ -516,7 +516,7 @@ class ChatControllerTest extends TestCase
 
     public function testParamsComeFromTheAiFunction(): void
     {
-        // Deklarace chat.default (tasks/ai-functions.md D36): strop 4096,
+        // Deklarace chat.default (tasks/ai-functions.md D36, strop D55): 16000,
         // bez teploty a ladění, model z mapy úrovní (Sonnet 4.6) — stejné
         // tělo jako před resolverem.
         $inserts = [];
@@ -527,7 +527,7 @@ class ChatControllerTest extends TestCase
         $this->runProducer($ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj'])));
 
         $this->assertNotNull($llm->lastParams);
-        $this->assertSame(4096, $llm->lastParams->maxTokens);
+        $this->assertSame(16000, $llm->lastParams->maxTokens);
         $this->assertSame('claude-sonnet-4-6', $llm->lastParams->model);
         $this->assertSame('sk-test', $llm->lastParams->apiKey);
         $this->assertNull($llm->lastParams->temperature);
@@ -604,7 +604,8 @@ class ChatControllerTest extends TestCase
     }
 
     // -------------------------------------------------------------------
-    // Pojistka katalogu modelů (tasks/ai-model-catalog.md D35)
+    // Model z katalogu (tasks/ai-model-catalog.md; pojistka D35 zanikla
+    // s tasks/chat-thinking-blocks.md D54)
     // -------------------------------------------------------------------
 
     /** @return array<string, mixed> JSON payload odpovědi */
@@ -614,33 +615,14 @@ class ChatControllerTest extends TestCase
         return (array) $ref->getProperty('payload')->getValue($response);
     }
 
-    public function testSendMessageRefusesModelWithoutChatToolLoop(): void
-    {
-        $inserts = [];
-        $db = $this->streamDb($inserts, self::BACKEND);
-        // Kdyby se model zavolal, fake vyhodí výjimku — ale k volání nesmí dojít.
-        $llm = new FakeLlmClient([], new \LogicException('model must not be called'));
-        // Model Sonnet 5.5 nastavený u funkce chat.default (řádek funkce).
-        $ctrl = new ChatController($db, null, null, $llm, [], null, $this->functions(self::BACKEND, 'claude-sonnet-5-5'));
-
-        $response = $ctrl->sendMessage($this->auth(), 5, $this->request('POST', '/x', ['text' => 'Ahoj']));
-
-        $this->assertSame(503, $this->statusOf($response));
-        $payload = $this->payloadOf($response);
-        $this->assertSame('AI_MODEL_NOT_SUPPORTED_FOR_CHAT', $payload['error']['code']);
-        $this->assertStringContainsString('claude-sonnet-5-5', $payload['error']['message']);
-        $this->assertSame([['field' => 'model', 'value' => 'claude-sonnet-5-5']], $payload['error']['details']);
-        // Uživatelská zpráva zůstává uložená (jako u NO_BACKEND), asistent nic nenapsal.
-        $this->assertCount(1, $inserts);
-        $this->assertSame('user', $inserts[0]['role']);
-    }
-
-    public function testSendMessageAllowsModelsWithChatToolLoopUnknownOrOutsideCatalog(): void
+    public function testSendMessageAcceptsAnyCatalogModelIncludingTheFiveSeries(): void
     {
         foreach ([
-            'claude-sonnet-4-6'          => 'chatToolLoop true',
+            'claude-sonnet-5-5'          => 'řada 5 (thinking bez parametru) — od fáze 4 projde',
+            'claude-haiku-5-5'           => 'řada 5, úroveň fast',
+            'claude-sonnet-4-6'          => 'výchozí model',
             'claude-sonnet-4-6-20260217' => 'datová přípona',
-            'claude-opus-4-7'            => 'položka jen s cenami (chatToolLoop null)',
+            'claude-opus-4-7'            => 'položka jen s cenami',
         ] as $model => $why) {
             $inserts = [];
             $db = $this->streamDb($inserts, self::BACKEND);

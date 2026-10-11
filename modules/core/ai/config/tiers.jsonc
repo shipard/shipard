@@ -7,8 +7,8 @@
     // model u funkce přepsat (tabulka `core_ai_function_settings`).
     //
     // Všechny tři úrovně zatím ukazují na Sonnet 4.6: nasazení AI funkcí
-    // nemění chování (řada 5 přemýšlí bez parametru a chat ji neumí —
-    // #85 F0-D6, D35). Výchozí modely pro řadu 5 doplní evaluace (fáze 2).
+    // nemění chování (#85 F0-D6). Výchozí modely pro řadu 5 doplní
+    // evaluace (fáze 2).
     // Model musí být v katalogu `core.ai.models` s úrovní a statusem
     // `active` (hlídá ModelCatalogFileTest).
 

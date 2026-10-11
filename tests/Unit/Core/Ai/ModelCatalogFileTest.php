@@ -182,24 +182,16 @@ final class ModelCatalogFileTest extends TestCase
     public function testOfferedModelsCarryTheDecisionFields(): void
     {
         // Modely s úrovní nabízíme — u nich musí být vyplněno, podle čeho
-        // se chat (chatToolLoop) a provisioner (lifecycle) rozhodují.
+        // se tvarování požadavku a provisioner (lifecycle) rozhodují.
         foreach ($this->catalog()->all() as $spec) {
             if ($spec->tier === null) {
                 continue;
             }
-            $this->assertNotNull($spec->chatToolLoop, "{$spec->id}: chatToolLoop");
             $this->assertNotNull($spec->thinkingDefault, "{$spec->id}: thinkingDefault");
             $this->assertNotNull($spec->temperature, "{$spec->id}: temperature");
             $this->assertTrue(
                 $spec->isRetiring() ? $spec->retiresAt !== null : $spec->retiresNotBefore !== null,
                 "{$spec->id}: chybí datum životního cyklu",
-            );
-            // chatToolLoop = model bez parametru nepřemýšlí (thinking bloky
-            // by se musely vracet — fáze 4).
-            $this->assertSame(
-                $spec->thinkingDefault === ModelSpec::THINKING_DEFAULT_OFF,
-                $spec->chatToolLoop,
-                "{$spec->id}: chatToolLoop neodpovídá thinkingDefault",
             );
         }
     }

@@ -106,9 +106,9 @@ class AnalysisClaimServiceTest extends TestCase
             ],
             ModelCatalog::CFG_ITEM => [
                 'claude-sonnet-5-5' => ['name' => 'Claude Sonnet 5.5', 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-5-5'],
-                    'capabilities' => ['chatToolLoop' => false], 'prices' => ['input' => 2, 'output' => 10]],
+                    'capabilities' => [], 'prices' => ['input' => 2, 'output' => 10]],
                 'claude-sonnet-4-6' => ['name' => 'Claude Sonnet 4.6', 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-4-6'],
-                    'capabilities' => ['chatToolLoop' => true], 'prices' => ['input' => 3, 'output' => 15]],
+                    'capabilities' => [], 'prices' => ['input' => 3, 'output' => 15]],
                 'claude-haiku-5-5' => ['name' => 'Claude Haiku 5.5', 'tier' => 'fast', 'platformIds' => ['anthropic' => 'claude-haiku-5-5'],
                     'prices' => ['input' => 0.1, 'output' => 0.5]],
             ],

@@ -316,7 +316,6 @@ class AiFunctionResolver
                     ['functionId' => $function->id, 'model' => $model, 'modelLike' => $modelLike],
                 );
             }
-            $this->assertSupported($function, $likeSpec, $model);
             return [$model, $likeSpec->id, null];
         }
 
@@ -331,21 +330,7 @@ class AiFunctionResolver
                 ['functionId' => $function->id, 'model' => $spec->id, 'platform' => $platform],
             );
         }
-        $this->assertSupported($function, $spec, $platformModel);
-
         return [$platformModel, $spec->id, $spec->id];
-    }
-
-    /** Zobecněná pojistka D35: funkce s tool smyčkou a model, který ji bez thinking bloků neumí. */
-    private function assertSupported(AiFunction $function, ModelSpec $spec, string $model): void
-    {
-        if ($function->requiresTools() && $spec->chatToolLoop === false) {
-            throw new AiFunctionException(
-                AiFunctionException::MODEL_NOT_SUPPORTED_FOR_FUNCTION,
-                "Model '{$model}' cannot serve AI function '{$function->id}' yet (tool loop needs thinking blocks returned — phase 4)",
-                ['functionId' => $function->id, 'model' => $model, 'requires' => AiFunction::REQUIRES_TOOLS],
-            );
-        }
     }
 
     /**
