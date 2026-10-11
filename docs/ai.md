@@ -49,11 +49,11 @@ Externí Python daemon `ai_analyzer` s pull protokolem byl zrušen
 | Vrstva | Umístění | Co |
 |--------|----------|----|
 | AI připojení | `modules/core/ai/` | `core_ai_backends` + `AIBackendDocument`/`Lookup`/`Viewer`; platforma, adresa, šifrovaný klíč (§5) |
-| AI funkce | `modules/*/module.jsonc` (`aiFunctions`) + `modules/core/ai/` | deklarace funkcí (úroveň, výchozí ladění, požadavky), `core_ai_function_settings` + `AiFunctionSettingsDocument`/`Form`/`AiFunctionsViewer`, mapa úrovní `core.ai.tiers`, `AiFunctionProvisioner` (§5.2) |
+| AI funkce | `modules/*/module.jsonc` (`aiFunctions`) + `modules/core/ai/` | deklarace funkcí (úroveň, výchozí ladění, požadavky), `core_ai_function_settings` + `AiFunctionSettingsDocument`/`Form`/`AiFunctionsViewer`, mapa úrovní `core.ai.tiers`, `AiFunctionProvisioner` (§5.3); sekce AI v Nastavení a přehled modelů `ModelCatalogViewer` (§5.6) |
 | MCP server | `src/Api/Mcp/` + `src/Api/Controller/McpController.php`; routa `POST /api/v1/_mcp` | JSON-RPC 2.0 (`initialize`, `tools/list`, `tools/call`), registr nástrojů, mapování obálky |
 | Nástroje | `modules/*/*/src/Mcp/` | doménové operace (viz §3) |
 | Chat orchestrátor | `src/Api/Controller/ChatController.php` + `modules/core/chat/` | konverzace, SSE smyčka, in-process volání nástrojů |
-| LLM klient a resolver | `src/Core/Ai/` (`LlmClient`, `AnthropicLlmClient`, `LlmRetry`, `ModelCatalog` + `ModelSpec`, `RequestShaper`, `AiFunctionRegistry` + `AiFunction`, `AiFunctionResolver` + `ResolvedAiCall` + `AiCallOverride`, `AiBackendResolver`) | streamovaný Anthropic Messages API (+ tool-use, timeouty); opakování přechodných chyb; katalog modelů (schopnosti, ceny, životní cyklus, §5.1) a tvarování požadavku podle něj; **jeden resolver volání** — z funkce, jejího řádku, mapy úrovní, připojení a přepsání volajícího složí hotové parametry (§5.3) |
+| LLM klient a resolver | `src/Core/Ai/` (`LlmClient`, `AnthropicLlmClient`, `LlmRetry`, `ModelCatalog` + `ModelSpec`, `RequestShaper`, `AiFunctionRegistry` + `AiFunction`, `AiFunctionResolver` + `AiCallPlan` + `ResolvedAiCall` + `AiCallPreview` + `AiCallOverride`, `RequestChange`, `AiTexts`, `AiBackendResolver`) | streamovaný Anthropic Messages API (+ tool-use, timeouty); opakování přechodných chyb; katalog modelů (schopnosti, ceny, životní cyklus, §5.2) a tvarování požadavku podle něj; **jeden resolver volání** — z funkce, jejího řádku, mapy úrovní, připojení a přepsání volajícího složí hotové parametry (§5.4); plán bez klíče a náhled úprav pro Nastavení a `ai-test`, texty chyb z `core.ai.texts` (§5.7) |
 | Analýza pošty | `modules/core/mail/src/Analysis/` + `src/Command/DataSource/MailAnalyzeCommand.php` | služby fronty / claimu / zápisu výsledku (sdílené s pull endpointy), příprava příloh, prompt v Twig sandboxu, parser výstupu, runner a sloty souběhu — viz [`../modules/core/mail/docs/ai-analysis.md`](../modules/core/mail/docs/ai-analysis.md) § Analýza v procesu |
 | Dashboard shrnutí | `src/Core/Dashboard/DashboardSummaryService.php` + `modules/core/ai/tables/core_ai_dashboard_summary.jsonc` | generované shrnutí feedu (SSE, cache dle hashe digestu) — viz [`dashboard.md`](dashboard.md) §11 |
 | Frontend | `frontend/src/components/chat/` + `api/chat.js` | pohled „Chat", SSE konzumace přes `fetch` + reader |
@@ -93,8 +93,8 @@ ano, „neuhrazeno" ne: stav úhrady žádný z dokladových nástrojů nevrací
 | **Klasifikace štítků** | `exchange.contentTags` (fast, 8000) | PHP `ContentTagClassifier` (obsahová eskalace řádků při analýze) | jedno volání na doklad | — |
 | **Historie účtování** | `exchange.bookingHistory` (balanced, 16000) | PHP `BookingHistoryClassifier` (CLI `booking-history`) | jedno volání na dávku textů | — |
 
-Každá cesta volá jednu **AI funkci** (§5.2) a parametry volání dostává
-hotové z `AiFunctionResolver::resolve()` (§5.3) — připojení, klíč, model,
+Každá cesta volá jednu **AI funkci** (§5.3) a parametry volání dostává
+hotové z `AiFunctionResolver::resolve()` (§5.4) — připojení, klíč, model,
 strop tokenů, teplotu a ladění; sama už žádný parametr modelu neskládá.
 Analýza pošty resolver volá v claimu (`AnalysisClaimService`) s přepsáním
 z AI profilu, `booking-history` s přepsáním z voleb příkazu. Souběh analýz
@@ -112,7 +112,7 @@ délka odpovědi (#85 F0-D5). Na modelu bez thinking se spotřeba nemění.
 `0`); není to nastavení pro správce. **Thinking a effort** deklarace nemají
 (= neposílat, jako dosud); zdroj dat je nastaví u funkce nebo profilu —
 `auto` = výslovně neposílat, `default` = podle funkce (§5.2). **Hodnoty se
-před odesláním tvarují podle katalogu modelů** (§5.1, #85 D32): kombinaci,
+před odesláním tvarují podle katalogu modelů** (§5.2, #85 D32): kombinaci,
 kterou model nepřijímá (řada 5 s nevýchozí teplotou nebo `thinking:
 disabled`, `between_tools` s `xhigh` / `max`, `xhigh` na Sonnetu 4.6),
 `RequestShaper` v `AnthropicLlmClient` vynechá nebo nahradí nejbližší
@@ -349,8 +349,13 @@ platformy), dešifrovaný klíč (jen v paměti; `toArray()` ho nevrací), ID
 modelu pro platformu, `shapeAs`, `catalogModel`, strop, teplotu, thinking,
 effort, `connectionId` / `connectionCode` a **původ každé hodnoty**
 (`origins`: `override` / `function` / `declaration` / `tier` / `default`
-— pro přehled v Nastavení, fáze 1c). `chatParams(system, messages,
+— pro přehled v Nastavení). `chatParams(system, messages,
 tools, stallTimeout, timeout)` z něj složí `LlmChatParams`.
+
+Stejné rozhodnutí **bez klíče** dává `plan()` (`AiCallPlan`; klíč se jen
+ověří jako uložený) a `preview()` (`AiCallPreview`: plán + úpravy
+`RequestShaper` nebo zachycená chyba) — detail funkce v Nastavení
+a `ai-test`, §5.7.
 
 Chyby = `AiFunctionException` s kódem; všechno jsou chyby nastavení, ne
 běhu:
@@ -394,6 +399,74 @@ nastaví jiný“. Pojistka zmizí s fází 4.
   `tasks/ai-models-phase0.md`. Katalog nepoužitelné hodnoty ladění vynechá
   / nahradí (§5.2) — volání projde a úprava je v logu. Ceny bere
   `ModelCatalog::costUsd()` z katalogu.
+
+### 5.6 Nastavení — sekce AI a přehled modelů (#85 D49, D50)
+
+Nastavení aplikace má sekci **AI** (`install.base`
+`settingsSections.jsonc`, před Ostatní) s položkami **Připojení**
+(`core.ai.backends`), **Funkce** (`core.ai.functions`) a **Modely**
+(`core.ai.modelCatalog`); AI profily pošty zůstávají u Pošty (D8).
+Instalace bez `core.ai` (hosting) sekci nevykreslí — `SettingsController`
+prázdné sekce vynechává a položky s neznámou sekcí tiše zahazuje
+(`SettingsControllerTest`).
+
+**Modely** (`ModelCatalogViewer`) je první **viewer bez tabulky**
+(`ViewerDefinition::$table === null`, `docs/frontend.md` → Registrace
+vieweru): řádky jsou modely s úrovní z `core.ai.models` seřazené podle
+pořadí úrovně (`core.ai.tiers`) a `order`, id řádku = pozice od 1,
+`loadRecord()` vrací syntetický záznam; položky jen s ceníkem
+(`tier: null`) se neukazují. Řádek nese úroveň, stav (končí / skončil),
+které úrovně na model dnes ukazují a ceny; detail schopnosti a ID na
+platformách. Popisky viewerů AI jdou z cfgItemu `core.ai.viewerLabels`
+(`AiViewerBase::text()`), ne z PHP.
+
+### 5.7 Náhled volání, texty a `ai-test` (#85 D51, D52)
+
+`AiFunctionResolver::plan()` rozhoduje **bez dešifrování klíče** — ověří
+jen, že připojení má klíč uložený (jinak `KEY_MISSING`); `resolve()` =
+plán (`AiCallPlan`) + klíč (`ResolvedAiCall::fromPlan()`); `preview()`
+vrací `AiCallPreview` = plán + úpravy, které by `RequestShaper` pro
+efektivní model provedl (`RequestChange`: kód + parametry,
+`__toString()` = dnešní anglická věta logu), nebo zachycenou
+`AiFunctionException`. `SECRETS_UNAVAILABLE` / `KEY_CORRUPTED` tak
+vzniknou až při skutečném volání — detail funkce říká „klíč je
+uložený“, platnost ověří `ai-test`. Varování o končícím modelu úrovně
+loguje jen `resolve()`, náhled ne.
+
+**Jeden zdroj textů:** cfgItem `core.ai.texts`
+(`modules/core/ai/config/texts.jsonc`, `Shipard\Core\Ai\AiTexts`) nese
+věty chyb resolveru s radou, kde to opravit (`error.<KÓD>` /
+`hint.<KÓD>`, varianty `.selected` a `.like` podle detailů), úpravy
+(`change.<kód>`), původ hodnot (`origin.<původ>`) a druhy chyb API
+(`api.<druh>`). Čte ho detail AI funkce, `ai-test`
+i `ChatController::aiFunctionError()`; frontend pro kódy
+`AI_NOT_CONFIGURED` a `AI_MODEL_NOT_SUPPORTED_FOR_CHAT` vlastní text nemá
+(zobrazí větu serveru), `NO_BACKEND` si text drží, protože ho sdílí
+reanalýza pošty s anglickou zprávou. Bez katalogu (před `ds-upgrade`)
+vrací `AiTexts` anglický originál — žádný druhý anglický zdroj v PHP
+(`AiTextsTest` hlídá pokrytí všech kódů a `{param}`).
+
+**Detail funkce** (`AiFunctionsViewer::renderDetail()`): Volání a Ladění
+z plánu s původem každé hodnoty, Úpravy požadavku, Stav volání
+(V pořádku / věta chyby + Kde to opravit + příkaz `ai-test`), hlavička
+s badge V pořádku / Chyba nastavení. Bez plánu (chyba) ukazuje uložené
+hodnoty řádku. Akce „Otestovat“ v UI podle D52 není — vyžadovala by
+novou routu, dispatch v `index.php`, záznam v `ReadOnlyPolicy` a větev
+ve `Viewer.svelte`.
+
+**`shpd-ds ai-test [--function <id>] [--json]`** (`AiTestCommand`): pro
+každou funkci `preview()` (chyba = FAIL bez volání), `resolve()` a
+minimální požadavek — „Reply with OK.“, `max_tokens` 64, bez teploty
+a nástrojů, `thinking: disabled` jen u modelu se známými `thinkingModes`
+(shaper přepne na `between_tools` nebo vynechá; model s neznámými
+schopnostmi dostane hodnotu plánu), `effort: low`, timeouty 30 / 60 s —
+přes `AnthropicLlmClient` s katalogem, tedy tvarování jako v provozu.
+Výstup: připojení, model, čas, tokeny, cena z katalogu (`costUsd` pro
+`catalogModel`; vlastní ID „—“), `stop_reason` (i `max_tokens` je
+úspěch), nebo věta chyby z `AiTexts` v jazyce zdroje dat
+(`defaultLanguage`); `--json` = jeden objekt na stdout, lidské řádky na
+stderr. Exit 1, když kterákoli funkce selže. Stojí zlomky centu a na
+hostovaném zdroji dat jde do společného limitu gateway — nikdy z cronu.
 
 ---
 

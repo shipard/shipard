@@ -1,8 +1,8 @@
 ---
 title: Slovníček
 summary: Co která věc v Shipardu znamená a jak se jmenuje v rozhraní.
-keywords: [slovníček, pojmy, názvy, co to znamená, jak se to jmenuje, terminologie, DUZP, jistota, přeúčtovat, stavy, majetek, inventární číslo, drobný majetek, dlouhodobý majetek]
-related: [co-dnes-nejde.md]
+keywords: [slovníček, pojmy, názvy, co to znamená, jak se to jmenuje, terminologie, DUZP, jistota, přeúčtovat, stavy, majetek, inventární číslo, drobný majetek, dlouhodobý majetek, AI připojení, AI funkce, úroveň modelu, model končí]
+related: [co-dnes-nejde.md, nastaveni-ai.md]
 ---
 
 # Slovníček
@@ -12,7 +12,7 @@ jiné než on. Tady je oboje pohromadě: **první sloupec je to, co asi řekneš
 druhý to, jak se to jmenuje v aplikaci.**
 
 Slovníček roste s dokumentací. Zatím pokrývá orientaci v aplikaci, došlou
-poštu a přijaté faktury.
+poštu, doklady, účtárnu, majetek a nastavení AI.
 
 ---
 
@@ -120,7 +120,22 @@ a čekají na tebe, zbytek je už vyřízený:
 | vyřazený majetek, prodaný, zlikvidovaný | stav **V archívu** (akce **Ukončit platnost**) | Vyřazená karta s **Datem vyřazení**; v seznamu pod záložkou **Archív** |
 | účty pro majetek, kam se to účtuje | **Účetní skupina majetku** | Sada účtů (majetek, pořízení, oprávky, odpisy, vyřazení). Nastavíš v **Nastavení aplikace → Majetek** |
 
+---
+
+## AI
+
+| Když řekneš | V Shipardu | Co to je |
+|---|---|---|
+| klíč k AI, účet u Anthropic, kam se to připojuje | **Připojení** (v **Nastavení aplikace → AI**) | Kam a s jakým klíčem Shipard volá model. Od založení existuje jedno s kódem **default**; klíč zadá správce z konzole |
+| co AI dělá, vytěžení, štítky, asistent | **Funkce** (v **Nastavení aplikace → AI**) | Jedna řádka na každou práci AI — **Vytěžení došlé pošty**, **Klasifikace obsahových štítků**, **Shrnutí dashboardu**, **Chat asistenta**… Tady se funkci mění model, připojení a ladění |
+| jaký model, rychlý nebo chytrý | **Úroveň modelu** (**Rychlý**, **Vyvážený**, **Silný**) | Místo konkrétního modelu má funkce úroveň; který model úroveň znamená, drží Shipard a mění s novými verzemi |
+| seznam modelů, kolik to stojí | **Modely** (v **Nastavení aplikace → AI**) | Přehled modelů, které Shipard zná: úroveň, cena za milion tokenů, stav a které úrovně na model ukazují |
+| model je zastaralý, přestane fungovat | stav **Končí** / **Skončil**, upozornění **AI model brzy končí** | Poskytovatel model vypíná; u funkce s ručně vybraným modelem vyber jiný nebo pole vyprázdni |
+| co se posílá, proč se něco neposlalo | **Úpravy požadavku**, **Stav volání** (v detailu funkce) | Co Shipard před voláním změní, protože to model neumí, a jak by volání dopadlo |
+| otestovat AI, funguje to? | `shpd-ds ai-test` (v konzoli) | Kratičké volání každé funkce s výpisem času, tokenů a ceny, nebo chyby |
+
 ## Souvisí
 
+- [AI — připojení, funkce a modely](nastaveni-ai.md)
 - [Co Shipard dnes neumí](co-dnes-nejde.md)
 - [Pro testery](../TESTERS.md) — jak si říct o přístup a jak hlásit chyby

@@ -1,8 +1,8 @@
 ---
 title: První nastavení zdroje dat
 summary: Jak čerstvý zdroj dat nastavit přes kartu Dokončit nastavení — vlastní firma, DPH, bankovní účet, účtová osnova, fiskální rok a domácí měna.
-keywords: [první nastavení, dokončit nastavení, průvodce nastavením, nastavení zdroje dat, vlastní firma, vlastní osoba, sídlo firmy, agenda DPH, plátce DPH, registrace DPH, bankovní účet, účtová osnova, fiskální rok, domácí měna, checklist nastavení, chybějící nastavení]
-related: [zaciname.md, o-zdroji-dat.md, osoby/zalozeni-osoby.md]
+keywords: [první nastavení, dokončit nastavení, průvodce nastavením, nastavení zdroje dat, vlastní firma, vlastní osoba, sídlo firmy, agenda DPH, plátce DPH, registrace DPH, bankovní účet, účtová osnova, fiskální rok, domácí měna, checklist nastavení, chybějící nastavení, klíč AI, nastavení AI]
+related: [zaciname.md, o-zdroji-dat.md, osoby/zalozeni-osoby.md, nastaveni-ai.md]
 ---
 
 # První nastavení zdroje dat
@@ -77,6 +77,12 @@ i karta z Dashboardu a panel hlásí, že je vše potřebné nastavené.
   **Účetních položek** pro účtování přímo z řádku dokladu, ušitou na
   zvolenou účtovou osnovu. Nic z toho nechybí a nikde nesvítí, jen to
   šetří ruční práci.
+- **AI potřebuje klíč.** Vytěžení došlé pošty, štítky i asistent běží
+  přes AI připojení, které má od založení zdroje dat kód **default**,
+  ale bez klíče nic nedělá. Klíč zadá správce z konzole (`shpd-ds
+  ai-backend-set-key`); panel **Dokončit nastavení** to nehlídá. Postup
+  a ověření příkazem `ai-test`:
+  [AI — připojení, funkce a modely](nastaveni-ai.md).
 
 ## Souvisí
 
@@ -85,3 +91,5 @@ i karta z Dashboardu a panel hlásí, že je vše potřebné nastavené.
   zkontroluješ na jednom místě
 - [Založení osoby](osoby/zalozeni-osoby.md) — stejné natažení z registru
   pro dodavatele a odběratele
+- [AI — připojení, funkce a modely](nastaveni-ai.md) — klíč k AI
+  a ověření, že AI funguje

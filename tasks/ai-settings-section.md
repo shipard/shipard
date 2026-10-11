@@ -1,6 +1,9 @@
 # AI — sekce AI v Nastavení, přehled modelů, test volání, nápověda (#85 fáze 1c)
 
-**Stav:** naplánováno — rozhodnutí D49–D52 potvrzena 2026-10-11 (#85), připraveno k implementaci
+**Stav:** hotovo — implementováno 2026-10-11 (čtyři commity: sekce AI + Modely,
+detail funkce + `core.ai.texts`, `ai-test`, nápověda a docs); ověření 1–5 na
+4l3j, 6 přes vyhledávání nápovědy; D52 jen CLI (akce v UI by byla zásah do
+frameworku), viz Poznámky z implementace
 
 ## Status / cíl
 
@@ -171,8 +174,36 @@ Každý krok je samostatný commit.
 
 ## Hotovo když
 
-- [ ] Kroky 1–4 jako samostatné commity, `php -l`, cílené testy, celá
+- [x] Kroky 1–4 jako samostatné commity, `php -l`, cílené testy, celá
       sada, `npm run build` při změně frontendu.
-- [ ] Ověření 1–6 provedeno, výsledek do #85.
-- [ ] `**Stav:**` aktualizovaný, `tasks-index.py` a `help-index.py`
+- [x] Ověření 1–6 provedeno, výsledek do #85.
+- [x] `**Stav:**` aktualizovaný, `tasks-index.py` a `help-index.py`
       spuštěné.
+
+## Poznámky z implementace (2026-10-11)
+
+- **Viewer bez tabulky** — přehled Modely potřeboval malou změnu
+  frameworku: `ViewerDefinition::$table` nullable, hook
+  `TableViewer::loadRecord()`, `ViewerController` bez guardu, zámků,
+  tisků a Odeslané pošty pro takový viewer (`docs/frontend.md`
+  → Registrace vieweru).
+- **Názvy položek** podle D49: Připojení / Funkce / Modely (dřív
+  „AI připojení“ / „AI funkce“); cesty v alertu, docs a nápovědě
+  přepsané na „Nastavení → AI → …“.
+- **D52 — jen CLI.** Akce „Otestovat“ v detailu by vyžadovala novou routu,
+  dispatch v `index.php`, záznam v `ReadOnlyPolicy` a větev ve
+  `Viewer.svelte`; detail funkce ukazuje příkaz.
+- **Minimální požadavek `ai-test`:** strop 64 tokenů (ne „nejmenší, jaký
+  model přijme“ — katalog minimum nezná a adaptivní thinking by malý
+  strop spotřeboval dřív než text), bez teploty (řada 5 ji odmítá),
+  `thinking: disabled` jen u modelu se známými režimy, `effort: low`;
+  `max_tokens` jako `stop_reason` je úspěch.
+- **Jeden zdroj textů** (`AiTexts`, `core.ai.texts`): detail, `ai-test`
+  i chat; FE klíče `AI_NOT_CONFIGURED` / `AI_MODEL_NOT_SUPPORTED_FOR_CHAT`
+  zanikly, `NO_BACKEND` ve FE zůstává — sdílí ho reanalýza pošty
+  s anglickou zprávou serveru. Bez katalogu anglický originál, žádné PHP
+  fallbacky.
+- **Náhled nerozliší uložený × dešifrovatelný klíč** — detail říká „klíč
+  je uložený“, `SECRETS_UNAVAILABLE` / `KEY_CORRUPTED` ukáže až `ai-test`.
+- Ověření 5 (špatný klíč) proběhlo přes dočasné druhé připojení s falešným
+  klíčem (reálný klíč se nepřepisuje) — FAIL s větou o HTTP 401, exit 1.

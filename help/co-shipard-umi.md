@@ -24,7 +24,7 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 | Agenda | Co s ní uděláš | Návod |
 |---|---|---|
 | **Dashboard** | Domovská obrazovka. Ukazuje, co je právě potřeba udělat — nová pošta k vyřízení, upozornění z kontrol, rozdělané doklady. Většina práce začíná tady | [Začínáme](zaciname.md) · [První nastavení zdroje dat](prvni-nastaveni.md) · [Instalace aplikace](instalace-aplikace.md) |
-| **Chat** | Vestavěný AI asistent. Odpovídá na otázky o tvých datech i na to, jak se v Shipardu co dělá. Jen čte — nic nezaloží ani nezmění | — |
+| **Chat** | Vestavěný AI asistent. Odpovídá na otázky o tvých datech i na to, jak se v Shipardu co dělá. Jen čte — nic nezaloží ani nezmění | [AI — připojení, funkce a modely](nastaveni-ai.md) |
 | **Došlá pošta** | Faktury a dokumenty, které přišly na tvou adresu pro příjem pošty. AI zprávu přečte celou a připraví z ní nejvýše jeden návrh — doklad, nebo dokument do Spisovny; co našla navíc, ukáže jako poznámku | [Příjem pošty](posta/prijem-posty.md) · [Kontrola vytěženého dokladu](posta/kontrola-vytezeni.md) · [Když AI přečte fakturu špatně](posta/kdyz-ai-cte-spatne.md) |
 | **Odeslaná pošta** | Zprávy, které z Shipardu odešly e-mailem — dnes doklady poslané odběratelům. U každé je příjemce, text, přílohy a stav odeslání (**Odesláno**, **Ve frontě**, **Neodesláno**); zprávu jde odeslat znovu, archivovat a smazat, upravit ne. Zprávy vznikají jen odesláním dokladu — samostatný e-mail napsat nejde. Zprávy jednoho dokladu jsou i v jeho detailu | [Odeslaná pošta](posta/odeslana-posta.md) |
 | **Spisovna** | Evidence dokumentů, které nejsou doklady — smlouvy, pojistky, revize. Řadí se do **Šanonů**. AI je pozná v došlé poště a nabídne je na Dashboardu k zařazení stejně jako faktury; záznam zařazený z pošty dostane všechny přílohy zprávy. Zprávu zařadíš i ručně tlačítkem **Zařadit do Spisovny**. U dokumentů s platností Shipard hlídá datum **Platí do** a včas upozorní | — |
@@ -105,6 +105,8 @@ Položky, které jsou v menu samostatně, nad ostatními sekcemi.
 - [Slovníček](slovnicek.md) — jak se která věc v aplikaci jmenuje
 - [Informace o zdroji dat](o-zdroji-dat.md) — název firmy, ID zdroje dat,
   plátcovství DPH a velikost dat na jednom místě v **Nastavení aplikace**
+- [AI — připojení, funkce a modely](nastaveni-ai.md) — klíč k AI, model
+  per funkce, přehled modelů a ověření příkazem `ai-test`
 - [Pro testery](../TESTERS.md) — jak si říct o přístup a jak nahlásit chybu
 
 ---

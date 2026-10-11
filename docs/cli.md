@@ -1199,6 +1199,33 @@ D20–D21) — jedno vydání funguje s upozorněním na stderr. Příkazy
 `ai-analyzer-bootstrap` a `ai-analyzer-setup` zanikly; uživatele
 `_ai_analyzer` `ds-upgrade` deaktivuje (`[DEACTIVATE]`, viz výše).
 
+#### `ai-test`
+
+```bash
+sudo shpd-ds ai-test                                  # všechny AI funkce
+sudo shpd-ds ai-test --function mail.extraction       # jedna funkce
+sudo shpd-ds ai-test --json                           # strojově: jeden JSON objekt
+```
+
+Test AI funkcí (#85 D52, `docs/ai.md` §5.7): pro jednu nebo všechny
+deklarované funkce provede rozhodnutí resolveru a pošle modelu minimální
+požadavek („Reply with OK.“, strop 64 tokenů, bez teploty a nástrojů,
+thinking vypnutý, kde ho model umí vypnout, effort `low`). Vypíše řádek
+`OK` s připojením, modelem, časem, tokeny, cenou z katalogu
+a `stop_reason`, nebo `FAIL` se stejnou větou jako v detailu funkce
+v Nastavení (`core.ai.texts` v jazyce zdroje dat): chyba nastavení (bez
+volání modelu), nedešifrovatelný klíč, chyba API podle druhu (401 neplatný
+klíč, 404 model na platformě není, vyčerpaný limit útraty…). Exit 0, když
+všechny funkce prošly, jinak 1; FAILURE i bez compiled configu
+(`ds-upgrade`). **Stojí peníze** (zlomky centu na funkci) a na hostovaném
+zdroji dat jde přes gateway do společného limitu — jen ručně, nikdy
+z cronu.
+
+| Opce | Význam |
+|------|--------|
+| `--function <id>` | Jen tato funkce (`mail.extraction`, `chat.default`, …); neznámé id = FAIL |
+| `--json` | Stdout = jediný JSON objekt `{ok, functions: [{id, ok, connection, model, elapsedMs, inputTokens, outputTokens, costUsd, stopReason, reply}]}`, u selhání `{id, ok: false, code, error, …}`; lidské řádky jdou na stderr |
+
 #### `ai-profile-reload`
 
 ```bash
@@ -1830,7 +1857,7 @@ Detailní postup vč. backfillu existujících DS:
 |--------|--------|
 | `ds-*` | datový zdroj jako celek (`ds-create`, `ds-upgrade`, `ds-upgrade-all`, `ds-secrets-*`) |
 | `mail-*` | core.mail modul a router |
-| `ai-*` | AI připojení a profily |
+| `ai-*` | AI připojení, profily a test volání (`ai-test`) |
 | `seed-*` | testovací data |
 | `domain-*` | hostname → DS routing |
 | `*-bootstrap` | jednorázová idempotentní inicializace (system uživatel, default mailbox, default profil) |

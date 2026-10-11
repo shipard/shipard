@@ -254,6 +254,7 @@ dat:
 ```bash
 cd /opt/shipard/data-sources/<id>
 shpd-ds ai-backend-set-key --backend default   # klíč zadáš skrytě na výzvu
+shpd-ds ai-test                                # ověř: řádek OK s časem a cenou pro každou AI funkci
 ```
 
 Pak nahraj doklad (PDF, obrázek účtenky) na Dashboardu. Analýza běží jako
