@@ -18,6 +18,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  *   ds-state                                  show
  *   ds-state set <state> [--delete-after=<ISO>] [--yes]
  *   ds-state maintenance --on [--reason=<r>] | --off
+ *   ds-state cron --on | --off                (#115 D14 — přepínač periodických úloh)
  *
  * HTTP: suspended / maintenance / pending_deletion → 503; read_only →
  * ReadOnlyPolicy (403 na mutacích, docs/ds-state.md). Lokální CLI je pro
@@ -31,11 +32,11 @@ class DsStateCommand extends Command
     protected function configure(): void
     {
         $this->setName('ds-state')
-             ->setDescription('Show or change the data source state (config/state.json): show | set <state> | maintenance --on/--off')
-             ->addArgument('action', InputArgument::OPTIONAL, 'show | set | maintenance', 'show')
+             ->setDescription('Show or change the data source state (config/state.json): show | set <state> | maintenance --on/--off | cron --on/--off')
+             ->addArgument('action', InputArgument::OPTIONAL, 'show | set | maintenance | cron', 'show')
              ->addArgument('value', InputArgument::OPTIONAL, 'State for set: ' . implode(' | ', DataSourceState::STATES))
-             ->addOption('on', null, InputOption::VALUE_NONE, 'maintenance: switch on')
-             ->addOption('off', null, InputOption::VALUE_NONE, 'maintenance: switch off')
+             ->addOption('on', null, InputOption::VALUE_NONE, 'maintenance / cron: switch on')
+             ->addOption('off', null, InputOption::VALUE_NONE, 'maintenance / cron: switch off')
              ->addOption('reason', null, InputOption::VALUE_REQUIRED, 'maintenance --on: ' . implode(' | ', DataSourceState::MAINTENANCE_REASONS) . ' (default manual)')
              ->addOption('delete-after', null, InputOption::VALUE_REQUIRED, 'set pending_deletion: ISO 8601 date/time after which the DS may be physically deleted (required)')
              ->addOption('yes', 'y', InputOption::VALUE_NONE, 'Skip confirmation (set pending_deletion)');
@@ -66,7 +67,8 @@ class DsStateCommand extends Command
             'show' => $this->runShow($state, $dsDir, $output),
             'set' => $this->runSet($state, $dsDir, $input, $output),
             'maintenance' => $this->runMaintenance($state, $dsDir, $input, $output),
-            default => $this->fail($output, "Unknown action '{$action}'. Use: show | set <state> | maintenance --on|--off"),
+            'cron' => $this->runCron($state, $dsDir, $input, $output),
+            default => $this->fail($output, "Unknown action '{$action}'. Use: show | set <state> | maintenance --on|--off | cron --on|--off"),
         };
     }
 
@@ -89,6 +91,11 @@ class DsStateCommand extends Command
             ));
         } else {
             $output->writeln(sprintf('  %-18s off', 'Maintenance:'));
+        }
+        if ($state->isCronEnabled()) {
+            $output->writeln(sprintf('  %-18s on', 'Cron:'));
+        } else {
+            $output->writeln(sprintf('  %-18s <comment>off</comment> (periodic jobs are not running)', 'Cron:'));
         }
         if ($state->getDeleteAfter() !== null) {
             $output->writeln(sprintf('  %-18s %s', 'Delete after:', $state->getDeleteAfter()));
@@ -198,6 +205,41 @@ class DsStateCommand extends Command
         $output->writeln($on
             ? sprintf('Maintenance <info>on</info> (reason: %s).', $saved->getMaintenanceReason())
             : 'Maintenance <info>off</info>.');
+        $this->writeEffective($saved, $output);
+        return Command::SUCCESS;
+    }
+
+    /**
+     * Přepínač periodických úloh (#115 D14). Nezávislý na stavu i maintenance;
+     * cílový stav = stávající → nic nezapisuje. Poškozený soubor odmítá jako
+     * maintenance — oprava jde přes `set`.
+     */
+    private function runCron(DataSourceState $state, string $dsDir, InputInterface $input, OutputInterface $output): int
+    {
+        $on = (bool) $input->getOption('on');
+        $off = (bool) $input->getOption('off');
+        if ($on === $off) {
+            return $this->fail($output, 'Usage: ds-state cron --on | --off');
+        }
+
+        if ($state->isCorrupted()) {
+            return $this->fail($output, 'state.json is invalid — repair it first with: shpd-ds ds-state set <state>');
+        }
+
+        if ($state->isCronEnabled() === $on) {
+            $output->writeln(sprintf('<comment>Cron is already %s — nothing to do.</comment>', $on ? 'on' : 'off'));
+            return Command::SUCCESS;
+        }
+
+        try {
+            $saved = $state->withCron($on)->save($dsDir, self::CHANGED_BY, $this->now());
+        } catch (\RuntimeException $e) {
+            return $this->fail($output, $e->getMessage());
+        }
+
+        $output->writeln($saved->isCronEnabled()
+            ? 'Cron <info>on</info> — periodic jobs run for this data source again.'
+            : 'Cron <info>off</info> — the dispatcher skips this data source (queued mail, alerts, VAT periods, periodic invoicing).');
         $this->writeEffective($saved, $output);
         return Command::SUCCESS;
     }

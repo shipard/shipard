@@ -292,6 +292,20 @@ class DsResetCommandTest extends TestCase
         $this->assertFileExists($this->dsDir . '/att/x.bin');
     }
 
+    public function testResetKeepsStateJson(): void
+    {
+        // #115 D13: přepínač periodických úloh přežije cyklus reset → reimport.
+        $stateJson = '{"version":1,"state":"active","cron":false,"changedBy":"cli","changed":"2026-10-12T10:00:00Z"}';
+        file_put_contents($this->dsDir . '/config/state.json', $stateJson);
+
+        $executed = [];
+        $tester = $this->createCommandTester(['keep_me', 'drop_me', 'core_attachments_files'], $executed);
+        $exitCode = $tester->execute(['--yes' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame($stateJson, file_get_contents($this->dsDir . '/config/state.json'));
+    }
+
     private function rmdirRecursive(string $dir): void
     {
         if (!is_dir($dir)) {

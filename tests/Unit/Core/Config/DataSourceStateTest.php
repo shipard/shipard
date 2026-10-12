@@ -54,6 +54,7 @@ class DataSourceStateTest extends TestCase
         $this->assertFalse($s->blocksHttp());
         $this->assertFalse($s->isFromFile());
         $this->assertFalse($s->isCorrupted());
+        $this->assertTrue($s->isCronEnabled());
         $this->assertSame('', $this->logContents());
     }
 
@@ -118,6 +119,8 @@ class DataSourceStateTest extends TestCase
         yield 'missing version' => [json_encode(['state' => 'active'])];
         yield 'unknown reason' => [json_encode(['version' => 1, 'state' => 'active', 'maintenance' => ['reason' => 'vacation']])];
         yield 'maintenance not object' => [json_encode(['version' => 1, 'state' => 'active', 'maintenance' => 'import'])];
+        yield 'cron not boolean (string)' => [json_encode(['version' => 1, 'state' => 'active', 'cron' => 'no'])];
+        yield 'cron not boolean (int)' => [json_encode(['version' => 1, 'state' => 'active', 'cron' => 0])];
         yield 'empty file' => [''];
     }
 
@@ -223,5 +226,87 @@ class DataSourceStateTest extends TestCase
         $s = DataSourceState::load($this->dsDir);
         $this->expectException(\LogicException::class);
         $s->save($this->dsDir, 'cli');
+    }
+
+    // ── Přepínač periodických úloh (#115) ──────────────────────────────────
+
+    public function testCronKeyMissingMeansEnabled(): void
+    {
+        $this->writeState(json_encode(['version' => 1, 'state' => 'read_only']));
+        $s = DataSourceState::load($this->dsDir);
+        $this->assertTrue($s->isCronEnabled());
+        $this->assertArrayNotHasKey('cron', $s->toArray());
+    }
+
+    public function testCronFalseDisablesSwitchWithoutTouchingState(): void
+    {
+        $this->writeState(json_encode(['version' => 1, 'state' => 'active', 'cron' => false]));
+        $s = DataSourceState::load($this->dsDir);
+        $this->assertFalse($s->isCronEnabled());
+        $this->assertSame('active', $s->getEffectiveState());
+        $this->assertFalse($s->blocksHttp());
+        $this->assertFalse($s->isCorrupted());
+        $this->assertSame(false, $s->toArray()['cron']);
+    }
+
+    public function testCronTrueIsExplicitEnabledAndNotWrittenBack(): void
+    {
+        $this->writeState(json_encode(['version' => 1, 'state' => 'active', 'cron' => true]));
+        $s = DataSourceState::load($this->dsDir);
+        $this->assertTrue($s->isCronEnabled());
+        $this->assertArrayNotHasKey('cron', $s->toArray());
+    }
+
+    public function testCronNonBooleanFailsClosedWithReason(): void
+    {
+        $this->writeState(json_encode(['version' => 1, 'state' => 'active', 'cron' => 'off']));
+        $s = DataSourceState::load($this->dsDir);
+        $this->assertTrue($s->isCorrupted());
+        $this->assertSame('suspended', $s->getEffectiveState());
+        $this->assertStringContainsString('cron must be a boolean', $this->logContents());
+    }
+
+    public function testMutatorsPreserveCronSwitch(): void
+    {
+        $off = DataSourceState::active()->withCron(false);
+        $this->assertFalse($off->isCronEnabled());
+        $this->assertFalse($off->withState('read_only')->isCronEnabled());
+        $this->assertFalse($off->withMaintenance('import')->isCronEnabled());
+        $this->assertFalse($off->withMaintenance('import')->withoutMaintenance()->isCronEnabled());
+        $this->assertFalse($off->withState('pending_deletion')->withDeleteAfter(new \DateTimeImmutable('2026-10-01T00:00:00Z'))->isCronEnabled());
+        $this->assertTrue($off->withCron(true)->isCronEnabled());
+        // Mutátory nemění nic jiného.
+        $this->assertSame('active', $off->getState());
+        $this->assertFalse($off->isMaintenanceActive());
+    }
+
+    public function testSaveRoundTripKeepsCronOffAndWritesKeyOnlyWhenOff(): void
+    {
+        $now = new \DateTimeImmutable('2026-10-12T10:00:00Z');
+        DataSourceState::active()->withCron(false)->withMaintenance('import', $now)->save($this->dsDir, 'cli', $now);
+
+        $raw = json_decode((string) file_get_contents(DataSourceState::filePath($this->dsDir)), true);
+        $this->assertSame([
+            'version' => 1,
+            'state' => 'active',
+            'maintenance' => ['reason' => 'import', 'since' => '2026-10-12T10:00:00Z'],
+            'cron' => false,
+            'changedBy' => 'cli',
+            'changed' => '2026-10-12T10:00:00Z',
+        ], $raw);
+
+        $loaded = DataSourceState::load($this->dsDir);
+        $this->assertFalse($loaded->isCronEnabled());
+
+        // maintenance --off přes save přepínač nezapne
+        $reopened = $loaded->withoutMaintenance()->save($this->dsDir, 'cli', $now);
+        $this->assertFalse($reopened->isCronEnabled());
+        $this->assertFalse(DataSourceState::load($this->dsDir)->isCronEnabled());
+
+        // zapnutí klíč odstraní
+        $reopened->withCron(true)->save($this->dsDir, 'cli', $now);
+        $raw = json_decode((string) file_get_contents(DataSourceState::filePath($this->dsDir)), true);
+        $this->assertArrayNotHasKey('cron', $raw);
+        $this->assertTrue(DataSourceState::load($this->dsDir)->isCronEnabled());
     }
 }

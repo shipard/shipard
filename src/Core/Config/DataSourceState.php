@@ -18,6 +18,11 @@ use Shipard\Core\Logging\ErrorLogger;
  * (zpětná kompatibilita). Nečitelný / nevalidní soubor = fail-closed
  * `suspended` + error log — poškozený stavový soubor nesmí tiše otevřít DS,
  * který měl být zavřený.
+ *
+ * Třetí, nezávislá osa: přepínač periodických úloh `cron` (#115 D1, D3).
+ * Chybí nebo `true` = dispatcher pro DS úlohy spouští (D4), `false` = DS
+ * přeskočí celý. Stav ani maintenance ho nemění; jiný typ než boolean je
+ * fail-closed jako ostatní nevalidní hodnoty.
  */
 final class DataSourceState
 {
@@ -39,6 +44,8 @@ final class DataSourceState
         private readonly ?string $maintenanceReason,
         private readonly ?string $maintenanceSince,
         private readonly ?string $deleteAfter,
+        /** Přepínač periodických úloh (#115) — mutátory ho musí přenést, proto bez výchozí hodnoty. */
+        private readonly bool $cronEnabled,
         private readonly ?string $changedBy,
         private readonly ?string $changed,
         /** true = soubor chyběl nebo byl poškozený (stav odvozený, ne přečtený) */
@@ -54,7 +61,7 @@ final class DataSourceState
 
     public static function active(): self
     {
-        return new self(self::ACTIVE, null, null, null, null, null, false, false);
+        return new self(self::ACTIVE, null, null, null, true, null, null, false, false);
     }
 
     /**
@@ -102,10 +109,17 @@ final class DataSourceState
         }
 
         $deleteAfter = is_string($data['deleteAfter'] ?? null) ? $data['deleteAfter'] : null;
+
+        // Chybějící klíč = zapnuto (D4); starší soubory ho nemají.
+        $cron = $data['cron'] ?? true;
+        if (!is_bool($cron)) {
+            return self::failClosed($path, 'cron must be a boolean');
+        }
+
         $changedBy = is_string($data['changedBy'] ?? null) ? $data['changedBy'] : null;
         $changed = is_string($data['changed'] ?? null) ? $data['changed'] : null;
 
-        return new self($state, $reason, $since, $deleteAfter, $changedBy, $changed, true, false);
+        return new self($state, $reason, $since, $deleteAfter, $cron, $changedBy, $changed, true, false);
     }
 
     private static function failClosed(string $path, string $why): self
@@ -114,7 +128,7 @@ final class DataSourceState
             'path' => $path,
             'reason' => $why,
         ]);
-        return new self(self::SUSPENDED, null, null, null, null, null, true, true);
+        return new self(self::SUSPENDED, null, null, null, true, null, null, true, true);
     }
 
     // ── Gettery ──────────────────────────────────────────────────────────────
@@ -157,6 +171,12 @@ final class DataSourceState
         return $this->deleteAfter;
     }
 
+    /** Přepínač periodických úloh (#115): false = dispatcher DS přeskočí celý. */
+    public function isCronEnabled(): bool
+    {
+        return $this->cronEnabled;
+    }
+
     public function getChangedBy(): ?string
     {
         return $this->changedBy;
@@ -193,6 +213,7 @@ final class DataSourceState
             $this->maintenanceReason,
             $this->maintenanceSince,
             $state === self::PENDING_DELETION ? $this->deleteAfter : null,
+            $this->cronEnabled,
             $this->changedBy,
             $this->changed,
             $this->fromFile,
@@ -214,6 +235,7 @@ final class DataSourceState
             $reason,
             $sinceValue,
             $this->deleteAfter,
+            $this->cronEnabled,
             $this->changedBy,
             $this->changed,
             $this->fromFile,
@@ -228,6 +250,7 @@ final class DataSourceState
             null,
             null,
             $this->deleteAfter,
+            $this->cronEnabled,
             $this->changedBy,
             $this->changed,
             $this->fromFile,
@@ -242,6 +265,23 @@ final class DataSourceState
             $this->maintenanceReason,
             $this->maintenanceSince,
             $deleteAfter === null ? null : self::formatUtc($deleteAfter),
+            $this->cronEnabled,
+            $this->changedBy,
+            $this->changed,
+            $this->fromFile,
+            false,
+        );
+    }
+
+    /** Přepínač periodických úloh (#115) — stav i maintenance zůstávají. */
+    public function withCron(bool $enabled): self
+    {
+        return new self(
+            $this->state,
+            $this->maintenanceReason,
+            $this->maintenanceSince,
+            $this->deleteAfter,
+            $enabled,
             $this->changedBy,
             $this->changed,
             $this->fromFile,
@@ -268,6 +308,7 @@ final class DataSourceState
             $this->maintenanceReason,
             $this->maintenanceSince,
             $this->deleteAfter,
+            $this->cronEnabled,
             $changedBy,
             self::formatUtc($now ?? new \DateTimeImmutable()),
             true,
@@ -312,6 +353,10 @@ final class DataSourceState
         }
         if ($this->deleteAfter !== null) {
             $out['deleteAfter'] = $this->deleteAfter;
+        }
+        // Jen při vypnutí — soubor bez klíče zůstává čitelný starším kódem.
+        if (!$this->cronEnabled) {
+            $out['cron'] = false;
         }
         if ($this->changedBy !== null) {
             $out['changedBy'] = $this->changedBy;

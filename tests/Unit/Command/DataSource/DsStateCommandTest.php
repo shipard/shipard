@@ -253,4 +253,103 @@ class DsStateCommandTest extends TestCase
         $this->assertSame(1, $tester->execute(['action' => 'frobnicate']));
         $this->assertStringContainsString("Unknown action 'frobnicate'", $tester->getDisplay());
     }
+
+    // ── cron --on | --off (#115 D14) ────────────────────────────────────────
+
+    public function testCronOffWritesFileAndShowReportsIt(): void
+    {
+        $tester = $this->makeTester();
+        $this->assertSame(0, $tester->execute(['action' => 'cron', '--off' => true]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Cron off', $display);
+        $this->assertStringContainsString('Effective state: active', $display);
+
+        $this->assertSame([
+            'version' => 1,
+            'state' => 'active',
+            'cron' => false,
+            'changedBy' => 'cli',
+            'changed' => '2026-09-02T12:00:00Z',
+        ], $this->stateFile());
+
+        $tester = $this->makeTester();
+        $this->assertSame(0, $tester->execute([]));
+        $this->assertStringContainsString('Cron:              off (periodic jobs are not running)', $tester->getDisplay());
+        $this->assertStringContainsString('State:             active', $tester->getDisplay());
+    }
+
+    public function testShowWithoutFileReportsCronOn(): void
+    {
+        $tester = $this->makeTester();
+        $tester->execute([]);
+        $this->assertStringContainsString('Cron:              on', $tester->getDisplay());
+    }
+
+    public function testCronOnRestoresDefaultAndDropsKey(): void
+    {
+        $this->makeTester()->execute(['action' => 'cron', '--off' => true]);
+
+        $tester = $this->makeTester();
+        $this->assertSame(0, $tester->execute(['action' => 'cron', '--on' => true]));
+        $this->assertStringContainsString('Cron on', $tester->getDisplay());
+        $this->assertArrayNotHasKey('cron', $this->stateFile());
+        $this->assertTrue(DataSourceState::load($this->dsDir)->isCronEnabled());
+    }
+
+    public function testCronNoopDoesNotRewriteFile(): void
+    {
+        // Bez souboru je cron zapnutý — --on nic nezaloží.
+        $tester = $this->makeTester();
+        $this->assertSame(0, $tester->execute(['action' => 'cron', '--on' => true]));
+        $this->assertStringContainsString('already on', $tester->getDisplay());
+        $this->assertFileDoesNotExist(DataSourceState::filePath($this->dsDir));
+
+        $this->makeTester()->execute(['action' => 'cron', '--off' => true]);
+        $before = (string) file_get_contents(DataSourceState::filePath($this->dsDir));
+        file_put_contents(DataSourceState::filePath($this->dsDir), str_replace('2026-09-02T12:00:00Z', '2026-01-01T00:00:00Z', $before));
+        $marked = (string) file_get_contents(DataSourceState::filePath($this->dsDir));
+
+        $tester = $this->makeTester();
+        $this->assertSame(0, $tester->execute(['action' => 'cron', '--off' => true]));
+        $this->assertStringContainsString('already off', $tester->getDisplay());
+        $this->assertSame($marked, file_get_contents(DataSourceState::filePath($this->dsDir)));
+    }
+
+    public function testCronWithoutOnOrOffFails(): void
+    {
+        $tester = $this->makeTester();
+        $this->assertSame(1, $tester->execute(['action' => 'cron']));
+        $this->assertStringContainsString('Usage: ds-state cron --on | --off', $tester->getDisplay());
+        $this->assertSame(1, $this->makeTester()->execute(['action' => 'cron', '--on' => true, '--off' => true]));
+        $this->assertFileDoesNotExist(DataSourceState::filePath($this->dsDir));
+    }
+
+    public function testCronOnCorruptedFileRefuses(): void
+    {
+        file_put_contents(DataSourceState::filePath($this->dsDir), '{broken');
+        $tester = $this->makeTester();
+        $this->assertSame(1, $tester->execute(['action' => 'cron', '--off' => true]));
+        $this->assertStringContainsString('repair it first', $tester->getDisplay());
+        $this->assertSame('{broken', file_get_contents(DataSourceState::filePath($this->dsDir)));
+    }
+
+    public function testMaintenanceAndSetKeepCronSwitch(): void
+    {
+        $this->makeTester()->execute(['action' => 'cron', '--off' => true]);
+
+        $this->assertSame(0, $this->makeTester()->execute(['action' => 'maintenance', '--on' => true, '--reason' => 'import']));
+        $this->assertFalse($this->stateFile()['cron']);
+        $this->assertSame('import', $this->stateFile()['maintenance']['reason']);
+
+        $this->assertSame(0, $this->makeTester()->execute(['action' => 'maintenance', '--off' => true]));
+        $this->assertFalse($this->stateFile()['cron']);
+
+        $this->assertSame(0, $this->makeTester()->execute(['action' => 'set', 'value' => 'read_only']));
+        $this->assertFalse($this->stateFile()['cron']);
+        $this->assertSame('read_only', $this->stateFile()['state']);
+
+        // A naopak: cron --on nesahá na stav.
+        $this->assertSame(0, $this->makeTester()->execute(['action' => 'cron', '--on' => true]));
+        $this->assertSame('read_only', $this->stateFile()['state']);
+    }
 }
