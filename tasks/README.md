@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 357 tasků: **naplánováno** 4 · **částečně** 24 · **hotovo** 329.
+Celkem 359 tasků: **naplánováno** 6 · **částečně** 24 · **hotovo** 329.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,7 +27,9 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
+| `cron-dev-install.md` | naplánováno | PRD z 2026-10-12, upřesnění U1–U5 potvrzena; čeká na `tasks/ds-state-file-ownership.md` |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
+| `ds-state-file-ownership.md` | naplánováno | nález z přípravy #115 fáze 2 (2026-10-12); blokuje `tasks/cron-dev-install.md` |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
@@ -80,6 +82,8 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `ds-create-install-module.md` | `ds-create --module` + UI výběr instalačního modulu |
 | `ds-reset.md` | `ds-reset` — čistý stav DS pro opakované testování importů |
 | `cron-ds-switch.md` | Přepínač periodických úloh per zdroj dat: klíč `cron` v `state.json`, `ds-state cron`, `ds-create --no-cron`, `cron --ds`, `shpd-server ds-cron`, `doctor`, pruh v aplikaci (#115 fáze 1) |
+| `ds-state-file-ownership.md` | `state.json` zapsaný pod rootem patří vlastníkovi zdroje dat (`DataSourceState::save`), soubor v kontraktu práv (`PermissionSpec`) — jinak se zdroj dat fail-closed zavře (#56, #115) |
+| `cron-dev-install.md` | Cron ve vývojové instalaci: první `cron-install` mimo produkci vypne cron existujícím zdrojům dat, `cron-install --check`, `doctor` mimo produkci, `dev-bootstrap.sh`, `dev-update.sh`, rotace logů, návody (#115 fáze 2) |
 | `unified-logging.md` | Produkční `ErrorLogger` (JSON řádky, úrovně, deploy guide, migrace `error_log()`) |
 | `ds-encrypted-secrets.md` | Šifrování citlivých sloupců (`encrypted_text`, per-DS klíč, rotace) |
 | `secrets-openssl-cipher.md` | AES-256-GCM přes OpenSSL místo libsodium — podpora ARM, formát beze změny (#96 D12) |
