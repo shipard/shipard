@@ -1,6 +1,6 @@
 # AI — zpracování v EU: platforma Amazon Bedrock (EU) (#85 fáze 3a)
 
-**Stav:** částečně — kroky 1–5 hotové 2026-10-11 (5 commitů, celá sada 9 027 testů; `ds-upgrade` jen `4l3j`); zbývá ověření 1–7 s reálným klíčem: účet AWS má SCP, která zakazuje `bedrock:CallWithBearerToken` (403 na každém volání s API klíčem bez ohledu na region), čeká na úpravu politiky správcem organizace AWS; pak výsledek do #85
+**Stav:** částečně — kroky 1–5 hotové 2026-10-11 (5 commitů, celá sada 9 027 testů; `ds-upgrade` jen `4l3j`); ověření 1–7 s reálným klíčem odloženo: přihlášení klíčem i tvar chyb ověřeny, ale testovací účet AWS nemá přístup k žádnému modelu Anthropicu (403 „not available for this account“ i přímo v konzoli AWS) — řeší se na straně AWS; po zpřístupnění stačí `shpd-ds ai-test` a body 2–5, 7, výsledek do #85
 
 ## Status / cíl
 
@@ -79,6 +79,12 @@ GitHub Issue: shipard/shipard#85 (D6, D57–D61; fáze 3a).
   control policy“ ve všech regionech (zjištěno 2026-10-11 na testovacím
   účtu; v `us-east-1` prošla autentizace i validace modelu, na akci padá
   totéž). Řeší správce organizace AWS, ne Shipard.
+- **Účet bez přístupu k modelům Anthropicu** (zjištěno 2026-10-12 na
+  novém samostatném účtu): po ověření účtu vrací Bedrock 403
+  „<model> is not available for this account … contact AWS Sales“ pro
+  každý model Anthropicu, i z konzole AWS. Není to region ani klíč;
+  přístup k modelům třetích stran uděluje AWS účtu (platební metoda pro
+  AWS Marketplace, stáří a tarif účtu, případně žádost na podporu).
 
 ## Rozhodnutí k designu (potvrzená)
 
