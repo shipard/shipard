@@ -1,6 +1,6 @@
 # Periodické úlohy — přepínač per zdroj dat a jeho ovládání (#115 fáze 1)
 
-**Stav:** naplánováno — PRD z 2026-10-12, rozhodnutí D1–D14 zamčena v #115; musí být nasazeno dřív než fáze 2 (cron ve vývojové instalaci)
+**Stav:** hotovo — implementováno 2026-10-12 (6 commitů podle PRD), ruční ověření na volném zdroji dat (`vlm9-y`) vč. pruhu v headless prohlížeči; zbývá nasazení na alfě — musí být nasazeno dřív než fáze 2 (cron ve vývojové instalaci)
 
 > PRD pro Claude Code (6 commitů). Design: issue #115, komentáře
 > „Přehodnocení směru; zamčeno D1–D12“ a „D9 → D13, D14“. Navazuje na
@@ -311,24 +311,24 @@ dostane sloupec Cron (`on`, zvýrazněné `off`). Jen zobrazení.
 
 ## Hotovo když
 
-- [ ] `state.json` s `"cron": false` vypne zdroji dat všechny úlohy
+- [x] `state.json` s `"cron": false` vypne zdroji dat všechny úlohy
       dispatcheru; chybějící klíč = zapnuto; nevalidní hodnota =
       fail-closed
-- [ ] `maintenance --on/--off` a `set` přepínač nemění
-- [ ] heartbeat nese `cronDisabledDataSources`
-- [ ] `cron --slot=<slot> --ds=<id>` spustí úlohy i při vypnutém cronu,
+- [x] `maintenance --on/--off` a `set` přepínač nemění
+- [x] heartbeat nese `cronDisabledDataSources`
+- [x] `cron --slot=<slot> --ds=<id>` spustí úlohy i při vypnutém cronu,
       nezapíše heartbeat a vrátí `FAILURE` při selhané úloze
-- [ ] `ds-state cron --on|--off` a řádek `Cron` ve výpisu
-- [ ] `ds-create --no-cron` založí zdroj dat s vypnutým cronem
-- [ ] `ds-cron` vypíše přehled a přepíná jednotlivě i hromadně
-- [ ] `doctor`: varování na produkčním serveru, informační řádek jinde
-- [ ] vývojářský dashboard ukazuje sloupec Cron
-- [ ] pruh v aplikaci při vypnutém cronu, souběžně s pruhem „jen pro
+- [x] `ds-state cron --on|--off` a řádek `Cron` ve výpisu
+- [x] `ds-create --no-cron` založí zdroj dat s vypnutým cronem
+- [x] `ds-cron` vypíše přehled a přepíná jednotlivě i hromadně
+- [x] `doctor`: varování na produkčním serveru, informační řádek jinde
+- [x] vývojářský dashboard ukazuje sloupec Cron
+- [x] pruh v aplikaci při vypnutém cronu, souběžně s pruhem „jen pro
       čtení“ bez překryvu
-- [ ] ruční ověření na zdroji dat s režimem `volný` (viz výše)
-- [ ] dokumentace podle sekce 8, `php -l`, cílené testy, celá sada,
+- [x] ruční ověření na zdroji dat s režimem `volný` (viz výše)
+- [x] dokumentace podle sekce 8, `php -l`, cílené testy, celá sada,
       `npm run build`
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
 
 ## Rozhodnutí k designu (potvrzená)
 

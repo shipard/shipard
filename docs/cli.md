@@ -84,9 +84,13 @@ Read-only health check. Vypíše:
   sekce přeskočí.
 - **Data source DB connections** — pokus o `SELECT 1` na každý DS
 - **Data source states** — stavy z `config/state.json`
-  ([ds-state.md](ds-state.md)): počty per stav, `⚠` DS v maintenance déle
-  než 7 dní (zapomenutá? D8), `✗` poškozený `state.json` (DS fail-closed
-  zavřený — počítá se jako chyba), `·` ostatní ne-active DS
+  ([ds-state.md](ds-state.md)): počty per stav a `cron off N`, `⚠` DS
+  v maintenance déle než 7 dní (zapomenutá? D8), `✗` poškozený
+  `state.json` (DS fail-closed zavřený — počítá se jako chyba), `·` ostatní
+  ne-active DS; vypnutý přepínač periodických úloh ([ds-state.md](ds-state.md)
+  §8) na **produkčním** serveru `⚠ <id>: cron off — periodic jobs are not
+  running (shpd-ds ds-state cron --on)`, jinde `· <id>: cron off` — řádek
+  nezávislý na řádku o stavu, nikdy nezvyšuje počet chyb
 - **Outbound mail** — řádek `Mail safety` s režimem pojistky odchozí pošty
   ([mail/outbound.md](mail/outbound.md) § Pojistka): cíl přesměrování
   a zdroj režimu (`configured` / `default`); `✗` chybná sekce `mail.safety`
@@ -121,12 +125,13 @@ sudo shpd-server fix-permissions
 shpd-server doctor    # ověř že vše zelené
 ```
 
-### `ds-create --name <název> --language <cs|en> --country <cc> [--module <id>] [--ds-id <id>]`
+### `ds-create --name <název> --language <cs|en> --country <cc> [--module <id>] [--ds-id <id>] [--no-cron]`
 
 ```bash
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz --module=install.base
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz --ds-id ab12-cd34-ef56-gh78   # provisioning agent
+sudo shpd-server ds-create --name "Import" --language cs --country cz --no-cron                              # cíl importu: cron vypnutý
 ```
 
 Vytvoří nový datový zdroj:
@@ -149,6 +154,7 @@ aby se založilo schéma a načetla výchozí konfigurace modulů.
 | `--country <cc>` | **povinné** — země subjektu, ISO 3166-1 alpha-2 lower-case (např. `cz`, `sk`). Validuje se jen tvar (`^[a-z]{2}$`) — sémantika proti `world.base.countries` patří volajícím (formulář hostingu, dev dashboard), cfgItem v okamžiku `ds-create` ještě není zkompilovaný. |
 | `--module <id>` | volitelné (default: `install.base`) — install modul k aktivaci. Musí odpovídat adresáři `modules/install/<suffix>/`, jehož `module.jsonc` má id `install.<suffix>`. Seznam dostupných modulů: `ls modules/install/`. |
 | `--ds-id <id>` | volitelné — explicitní ID místo generovaného (formát `xxxx-xxxx-xxxx-xxxx`, a-z0-9). Používá agent `hosting-sync` (ID generuje hosting). Existující adresář = chyba. |
+| `--no-cron` | volitelné — hned po zápisu `main.json` zapíše `config/state.json` s `"cron": false` (`changedBy: ds-create`), takže DS nikdy neběží se zapnutým cronem ([ds-state.md](ds-state.md) §8). Pro cíl importu (#115 D14). Selhání zápisu je chyba příkazu s radou `shpd-ds ds-state cron --off`; souhrn hlásí `Cron: off`. Bez volby se `state.json` nezakládá. |
 
 Oba povinné přepínače se validují **před** jakoukoli mutací — chybějící
 nebo nevalidní hodnota nenechá po sobě adresář ani databázi.
@@ -229,10 +235,11 @@ Přímo pod shipard userem běží kroky bez sudo a doctor se přeskočí
 
 **Verbosity propagace:** `-v` se předává do vnitřního `ds-upgrade-all`.
 
-### `cron --slot=<slot>`
+### `cron --slot=<slot> [--ds=<id>]`
 
 ```bash
-shpd-server cron --slot=minute        # z /etc/cron.d/shipard, ručně jen při ladění
+shpd-server cron --slot=minute                          # z /etc/cron.d/shipard, ručně jen při ladění
+shpd-server cron --slot=daily --ds=ab12-cd34-ef56-gh78  # jeden tik pro jeden DS (ladění, dohnání)
 ```
 
 Dispatcher periodických úloh — volá ho generovaný `/etc/cron.d/shipard`
@@ -254,6 +261,22 @@ záznamu běží jen v `active`. V `suspended` / maintenance /
 `pending_deletion` neběží per-DS nic. Přeskočený DS se neloguje (minute
 slot by spamoval) — počet jde do heartbeatu.
 
+Před stavem se vyhodnocuje **přepínač periodických úloh** (`"cron": false`
+v `state.json`, [ds-state.md](ds-state.md) §8, #115 D1): vypnutý = DS se
+přeskočí celý včetně úklidových jobů a počítá se do
+`cronDisabledDataSources` (ne do `skippedDataSources`). Server-level joby
+se přepínačem neřídí. Přepínač čte jen dispatcher — příkaz spuštěný přímo
+(`shpd-ds alerts-run`) běží vždy (D7).
+
+**`--ds=<id>`** (D8) spustí joby slotu jen pro jmenovaný DS: přepínač
+ignoruje, stav DS platí dál (`suspended` / maintenance → nic,
+s vysvětlením). Nebere zámek slotu, **nezapisuje heartbeat** (ruční běh
+nesmí v `doctor` zakrýt neběžící cron) a nespouští server-level joby.
+Výstup: řádek per job (`ok` / `failed, exit N` / `timed out`, trvání),
+u selhaného jobu konec jeho výstupu. Exit **FAILURE** při selhaném jobu,
+neznámém ID nebo špatném tvaru ID (ověřuje se před složením cesty).
+Kontext logu `cli: cron --slot=<slot> --ds=<id>`.
+
 Kromě per-DS jobů má slot volitelně **server-level příkazy**
 (`CronCommand::SERVER_SLOT_JOBS`) — spouští se subprocesem
 `shpd-server <cmd>` **jednou za běh slotu**, ne per DS, a **neřídí se
@@ -270,8 +293,9 @@ Chování:
 - **Heartbeat** — po doběhnutí zapíše
   `/opt/shipard/run/cron-<slot>.heartbeat` (JSON: timestamp, verze, počty
   DS/jobů/selhání, `skippedDataSources` = DS přeskočené kvůli stavu,
+  `cronDisabledDataSources` = DS s vypnutým přepínačem periodických úloh,
   `corruptedStateFiles` = DS s nečitelným `state.json`, které jsou
-  fail-closed zavřené) — čte ho `doctor`.
+  fail-closed zavřené) — čte ho `doctor`. Běh s `--ds` heartbeat nepíše.
 - Loguje do centrálního `shipard.log`; stdout je minimální (cron redirect
   do `/opt/shipard/log/cron.log` je jen poslední záchrana).
 
@@ -282,6 +306,7 @@ slot, nečitelný seznam DS, nezapsatelný heartbeat).
 | Opce | Význam |
 |------|--------|
 | `--slot <slot>` | Povinné: `minute`, `two-minutes`, `five-minutes`, `daily`, `weekly` |
+| `--ds <id>` | Volitelné: jen tento DS (celé ID `xxxx-xxxx-xxxx-xxxx`); přepínač cronu ignoruje, stav respektuje, bez zámku, heartbeatu a server-level jobů; exit podle výsledku jobů |
 
 ### `cron-install`
 
@@ -407,6 +432,43 @@ poškozený `state.json` (DS fail-closed zavřený) vypíše jako `✗`. Server-
 job `daily` slotu — alert checky běží uvnitř DS a v maintenance jsou
 vypnuté, zapomenutou maintenance musí hlásit server. Exit vždy `0`
 (nález není chyba jobu; interaktivně totéž ukáže `doctor`).
+
+### `ds-cron [--on|--off] [--all | <id>…]`
+
+```bash
+shpd-server ds-cron                                   # přehled: ID | Name | Cron | State
+shpd-server ds-cron --off --all                       # vypnout periodické úlohy všem DS na stroji
+shpd-server ds-cron --off ab12-cd34-ef56-gh78 …       # vypnout vyjmenovaným
+shpd-server ds-cron --on ab12-cd34-ef56-gh78 …        # zapnout vyjmenovaným
+```
+
+Přepínač periodických úloh přes všechny DS na stroji, bez přechodu do
+adresáře DS ([ds-state.md](ds-state.md) §8, #115 D14). Per-DS varianta
+téhož je `shpd-ds ds-state cron`.
+
+**Přehled** (bez voleb): tabulka řazená podle ID — `Name` z `main.json`
+(nečitelný → `?`, příkaz kvůli tomu neselže), `Cron` `on` / `off`
+(poškozený `state.json` → `?`), `State` = efektivní stav, maintenance
+s důvodem, poškozený soubor jako `corrupted`. Pod tabulkou počet DS
+a počet s vypnutým cronem. Seznam bere `DataSourceStateScanner` (jen
+adresáře s `config/main.json`).
+
+**Přepnutí:** právě jedna z `--on` / `--off` a `--all`, nebo aspoň jedno ID
+(ne obojí) — jinak chyba s nápovědou a nic se nezapíše. Bez
+potvrzovacího dotazu (volá se ze skriptů; fáze 2 ho použije při první
+instalaci cronu, D10). `changedBy: cli`. Po přepnutí vypíše přehled.
+
+| Výsledek per DS | Význam |
+|---|---|
+| `✓ <id>: cron on/off` | zapsáno |
+| `· <id>: unchanged` | už v cílovém stavu, soubor se nepřepisuje |
+| `✗ <id>: …` | neznámé ID, špatný tvar ID, poškozený `state.json` (nepřepisuje se — oprava přes `ds-state set`), selhání zápisu; příkaz pokračuje dalšími |
+
+Exit code: SUCCESS; FAILURE při chybě aspoň jednoho DS nebo neplatné
+kombinaci voleb.
+
+> Na vývojářském stroji s kopiemi reálných dat spouštěj `--all` vědomě —
+> zapisuje do všech DS.
 
 ---
 
@@ -594,21 +656,26 @@ sudo shpd-ds ds-state set read_only                           # lifecycle stav
 sudo shpd-ds ds-state set pending_deletion --delete-after=2026-10-01   # + interaktivní potvrzení
 sudo shpd-ds ds-state maintenance --on --reason=import        # dočasně zavřít (reason default manual)
 sudo shpd-ds ds-state maintenance --off                       # znovu otevřít
+sudo shpd-ds ds-state cron --off                              # vypnout periodické úlohy (kopie reálných dat)
+sudo shpd-ds ds-state cron --on                               # zapnout zpět
 ```
 
 Ovládání `config/state.json` — stavový model viz [ds-state.md](ds-state.md).
 Dvě osy: lifecycle stav (`active` | `read_only` | `suspended` |
 `pending_deletion`) a maintenance overlay (`import` | `restore` |
 `migration` | `manual`). Aktivní maintenance má přednost — DS se chová
-jako `suspended`; `--off` vrátí přesně uložený lifecycle stav. Po každém
-zápisu příkaz vypíše **efektivní stav**.
+jako `suspended`; `--off` vrátí přesně uložený lifecycle stav. Třetí,
+nezávislá osa je **přepínač periodických úloh** `cron`
+([ds-state.md](ds-state.md) §8) — `set` ani `maintenance` ho nemění. Po
+každém zápisu příkaz vypíše **efektivní stav**.
 
 | Akce | Chování |
 |------|---------|
-| `show` (default) | lidsky čitelný výpis; poškozený `state.json` → exit 1 + nápověda k opravě (DS je fail-closed `suspended`) |
+| `show` (default) | lidsky čitelný výpis vč. řádku `Cron: on` / `off (periodic jobs are not running)`; poškozený `state.json` → exit 1 + nápověda k opravě (DS je fail-closed `suspended`) |
 | `set <state>` | zapíše lifecycle stav (`changedBy: cli`). `pending_deletion` vyžaduje `--delete-after=<ISO 8601>` v budoucnosti a potvrzení (`--yes` / `-y` pro skripty); přechod jinam `deleteAfter` zahodí. Přepíše i poškozený soubor |
 | `maintenance --on [--reason=<r>]` | zapne overlay; `since` se drží od prvního zapnutí i při změně reasonu |
 | `maintenance --off` | vypne overlay; bez aktivního maintenance no-op (exit 0) |
+| `cron --on` / `cron --off` | přepínač periodických úloh (#115 D14): zapíše `"cron": false` / klíč odstraní (`changedBy: cli`); DS už v cílovém stavu → „nothing to do", exit 0, soubor se nepřepisuje; bez volby nebo s oběma → chyba; poškozený soubor odmítá (oprava přes `set`). Hromadně přes `shpd-server ds-cron` |
 
 Exit code: SUCCESS; FAILURE při nevalidním stavu/reasonu/datu, odmítnutém
 potvrzení, selhání zápisu, nebo `show` nad poškozeným souborem.

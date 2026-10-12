@@ -319,7 +319,12 @@ Předpoklady, aby to fungovalo:
   (rotovaný stávajícím logrotate pravidlem pro `/opt/shipard/log/*.log`).
   Živost hlídá `shpd-server doctor` (sekce Cron: existence + verze
   souboru, stáří heartbeatů v `/opt/shipard/run/`). Sloty a per-DS
-  příkazy viz [`../cli.md`](../cli.md) § `cron`.
+  příkazy viz [`../cli.md`](../cli.md) § `cron`. Per DS jde cron vypnout
+  přepínačem `cron` v `config/state.json` (`shpd-ds ds-state cron --off`,
+  hromadně `shpd-server ds-cron`, [`../ds-state.md`](../ds-state.md) §8)
+  — na produkci je DS s vypnutým cronem v `doctor` varování (sekce Data
+  source states), protože ostrý DS má běžet celý; jeden tik pro jeden DS
+  spustí `shpd-server cron --slot=<slot> --ds=<id>`.
 
   Mail relay se konfiguruje klíčem `mail.relay` v `server.json` (per-DS
   override v `main.json`); stav fronty hlídá `shpd-server doctor` a alert

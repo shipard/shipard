@@ -5,6 +5,9 @@ Stavový model DS podle issue [shipard/shipard#56](https://github.com/shipard/sh
 503 pro zavřené DS, cron gating, CLI) a **fázi 2** (read-only vynucení na
 routách, MCP read-tier, stavová obrazovka SPA, hlídání zapomenuté
 maintenance — sekce 6). Fáze 3 (hosting orchestrace) je v závěru.
+**Přepínač periodických úloh** per zdroj dat (issue
+[shipard/shipard#115](https://github.com/shipard/shipard/issues/115), fáze 1)
+žije ve stejném souboru jako třetí, nezávislá osa — sekce 8.
 
 ## 1. Model — dvě osy
 
@@ -47,6 +50,10 @@ Registr cron jobů a jejich povolených stavů je
 spamoval); počet jde do heartbeat souboru slotu (`skippedDataSources`,
 `corruptedStateFiles`), viz [cli.md](cli.md) → `cron --slot`.
 
+Sloupec „cron per-DS joby" navíc podléhá **přepínači periodických úloh**
+(`cron: false`, sekce 8): vypnutý přepínač vyřadí DS z per-DS sloupce
+celý bez ohledu na stav — ani úklidové joby; server-level joby běží dál.
+
 ## 3. Zdroj pravdy — `config/state.json`
 
 Soubor v adresáři DS, **ne** DB (D2): musí fungovat, když DB neexistuje
@@ -62,14 +69,19 @@ Formát v1:
   "state": "active",
   "maintenance": { "reason": "import", "since": "2026-09-01T10:00:00Z" },
   "deleteAfter": "2026-10-01T00:00:00Z",
+  "cron": false,
   "changedBy": "cli",
   "changed": "2026-09-01T10:00:00Z"
 }
 ```
 
-`maintenance` a `deleteAfter` volitelné. `deleteAfter` má smysl jen u
-`pending_deletion` — přechod do jiného stavu ho zahodí. Časy UTC ISO 8601.
-`changedBy` je ve fázi 1 vždy `cli`; hosting-sync (fáze 3) zapíše vlastní
+`maintenance`, `deleteAfter` a `cron` volitelné. `deleteAfter` má smysl jen u
+`pending_deletion` — přechod do jiného stavu ho zahodí. `cron` je přepínač
+periodických úloh (sekce 8): chybí nebo `true` = zapnuto, `false` =
+vypnuto; zapisuje se **jen při vypnutí**, verze souboru zůstává 1 (starší
+kód neznámý klíč ignoruje, zvýšení verze by ho donutilo DS fail-closed
+zavřít). Časy UTC ISO 8601. `changedBy` je `cli` (`ds-state`, `ds-cron`)
+nebo `ds-create` (`--no-cron`); hosting-sync (fáze 3) zapíše vlastní
 identifikátor.
 
 ### Sémantika čtení (`DataSourceState::load`)
@@ -78,7 +90,7 @@ identifikátor.
 |---|---|
 | soubor neexistuje | `active` bez overlay — zpětná kompatibilita, existující DS nic nemění |
 | validní v1 | přečtený stav |
-| nečitelný soubor, nevalidní JSON, neznámá `version`, neznámý `state`, neznámý `reason` | **fail-closed**: efektivní `suspended` + `error` do logu |
+| nečitelný soubor, nevalidní JSON, neznámá `version`, neznámý `state`, neznámý `reason`, `cron` jiného typu než boolean | **fail-closed**: efektivní `suspended` + `error` do logu |
 
 Fail-closed je záměr: poškozený stavový soubor nesmí tiše otevřít DS,
 který měl být zavřený. `ds-state` (show) poškozený soubor ohlásí a poradí
@@ -100,11 +112,18 @@ shpd-ds ds-state set read_only
 shpd-ds ds-state maintenance --on --reason=import
 shpd-ds ds-state maintenance --off
 shpd-ds ds-state set pending_deletion --delete-after=2026-10-01 [--yes]
+shpd-ds ds-state cron --off | --on                      # přepínač periodických úloh (sekce 8)
+
+shpd-server ds-cron                                     # přehled všech DS: ID | Name | Cron | State
+shpd-server ds-cron --off --all | --on|--off <id>…      # přepínač hromadně, bez cd do adresáře DS
+shpd-server ds-create … --no-cron                       # založit DS rovnou s vypnutým cronem
+shpd-server cron --slot=<slot> --ds=<id>                # jeden tik pro jeden DS (přepínač ignoruje)
 ```
 
-Reference: [cli.md](cli.md) → `ds-state`. Na hostovaných DS drží desired
-state hosting (D6) — lokální CLI je pro nehostované DS a nouzové zásahy;
-orchestrace přes `hosting-sync` je fáze 3.
+Reference: [cli.md](cli.md) → `ds-state`, `ds-cron`, `ds-create`,
+`cron --slot`. Na hostovaných DS drží desired state hosting (D6) — lokální
+CLI je pro nehostované DS a nouzové zásahy; orchestrace přes `hosting-sync`
+je fáze 3.
 
 **Typické scénáře**
 
@@ -124,15 +143,16 @@ orchestrace přes `hosting-sync` je fáze 3.
 
 | Třída | Účel |
 |---|---|
-| `Core\Config\DataSourceState` | readonly stav; `load()` / `save()`, gettery `getEffectiveState()`, `blocksHttp()`, mutátory `withState()` / `withMaintenance()` / `withoutMaintenance()` / `withDeleteAfter()` |
+| `Core\Config\DataSourceState` | readonly stav; `load()` / `save()`, gettery `getEffectiveState()`, `blocksHttp()`, `isCronEnabled()`, mutátory `withState()` / `withMaintenance()` / `withoutMaintenance()` / `withDeleteAfter()` / `withCron()` — konstruktor nese přepínač bez výchozí hodnoty, aby ho žádný mutátor tiše nezapnul |
 | `Api\Exception\DataSourceUnavailableException` | hází resolver pro zavřený DS; nese `dsId`, `effectiveState`, `maintenanceReason`; `index.php` → 503 |
 | `Api\ResolvedDataSource::$state` / `isReadOnly()` | stav načtený resolverem cestuje pipeline (politika, `/_app/info`, MCP, navigace) — disk se čte jednou |
 | `Api\ReadOnlyPolicy` + `Api\ReadOnlyVerdict` | klasifikace rout pro `read_only` (sekce 6) |
 | `Api\Mcp\McpToolRegistry::readOnlyView()` | registr jen s `isReadOnly()` nástroji — sdílí chat i `/_mcp` v `read_only` |
-| `Core\Server\DataSourceStateScanner` + `DataSourceStateEntry` | sken `data-sources/*/config/state.json` pro doctor a `ds-state-check` (D8) |
-| `Command\Server\CronCommand::JOB_ALLOWED_STATES` | registr job → povolené lifecycle stavy |
+| `Core\Server\DataSourceStateScanner` + `DataSourceStateEntry` | sken `data-sources/*/config/state.json` pro doctor, `ds-state-check` (D8) a `ds-cron`; `countByState()['cronOff']`, `isCronOff()` |
+| `Command\Server\CronCommand::JOB_ALLOWED_STATES` | registr job → povolené lifecycle stavy; smyčka dispatcheru čte přepínač před stavem, `--ds` = `executeSingle()` |
 | `Command\Server\DsStateCheckCommand` | `shpd-server ds-state-check` — daily warning D8 |
-| `Command\DataSource\DsStateCommand` | `shpd-ds ds-state` |
+| `Command\Server\DsCronCommand` | `shpd-server ds-cron` — přehled a hromadné přepínání (sekce 8) |
+| `Command\DataSource\DsStateCommand` | `shpd-ds ds-state` vč. akce `cron` |
 
 ## 6. Fáze 2 — read-only vynucení, SPA, D8
 
@@ -230,3 +250,66 @@ je proto server-level. `DataSourceStateScanner` projde
   aplikace přes `hosting-sync`, rekonciliace actual state zpět,
   `pending_deletion` mazací job se zálohou (D10). Rozlišení maintenance
   reason ve stavové obrazovce (503 details nesou jen efektivní stav).
+- **Přepínač periodických úloh (#115):** fáze 1 = sekce 8 (task
+  `tasks/cron-ds-switch.md`); fáze 2 = cron ve vývojové instalaci, první
+  zapnutí přes `ds-cron --off --all` + seznam, návody v `docs/dev/`
+  a doplnění `migration-guide.md` (D6, D10, D12).
+
+## 8. Přepínač periodických úloh (#115 fáze 1)
+
+**Smysl.** Zdroj dat, který je kopií reálných dat (import ze starého
+Shipardu, později obnova ze zálohy), má zůstat v původním stavu — žádná
+úloha v něm nemá nic vystavovat, zakládat ani mazat. Kategorie úloh se
+nezavádějí (D1): cron pro DS buď běží celý, nebo vůbec. Výchozí stav je
+**zapnuto** (D4), na produkčním i vývojářském serveru; import nic
+nenastavuje (D13) — cíl importu řídí člověk přes CLI (`ds-create
+--no-cron`, `ds-state cron --off`).
+
+**Nezávislost.** Přepínač je třetí osa vedle lifecycle stavu
+a maintenance: `set` ani `maintenance --on/--off` ho nemění a on nemění je.
+Vypnutý cron nemá vliv na HTTP, poštu ani MCP — DS funguje běžně, jen
+bez plánovaných běhů. `ds-reset` nechává `state.json` být, přepínač tedy
+přežije cyklus reset → reimport.
+
+**Co při vypnutí neběží** — všechny per-DS úlohy dispatcheru
+(`CronCommand::SLOT_JOBS`) včetně úklidových: fronta odchozí pošty
+(`mail-outbox-run`), reaper a sweepy analýzy pošty, upozornění
+(`alerts-run`, `alerts-prune`), úklid idempotence pošty, instance tvrzení
+DPH (`vat-periods-ensure`), periodická fakturace
+(`work-orders-invoice-run`). Server-level joby (`hosting-sync`,
+`ds-state-check`) se přepínačem neřídí.
+
+**Co přepínač neřídí (D7).** Jen dispatcher. Příkazy spuštěné přímo
+(`shpd-ds work-orders-invoice-run`, `shpd-ds alerts-run`) i odpojené
+procesy po příjmu zprávy (analýza pošty) běží vždy — práce vyvolaná
+uživatelem nebo příchodem zprávy není cron.
+
+**Jeden tik pro jeden DS (D8).** `shpd-server cron --slot=<slot> --ds=<id>`
+spustí úlohy slotu jen pro jmenovaný DS a přepínač ignoruje; stav z #56
+platí dál (`suspended` / maintenance → nic, s vysvětlením). Nebere zámek
+slotu a **nezapisuje heartbeat** — ruční běh by jinak v `doctor` zakryl
+neběžící cron. Exit `FAILURE` při selhané úloze (plánovaný běh bez `--ds`
+vrací `SUCCESS` i při selhání — beze změny).
+
+**Heartbeat a log.** Přeskočený DS jde do samostatného čítače
+`cronDisabledDataSources` (vedle `skippedDataSources` za stav) — do
+heartbeatu slotu, logu `cron slot finished` i souhrnu na stdout. Přepínač
+se vyhodnocuje **před** stavem, DS se počítá jen jednou.
+
+**Viditelnost (D11).**
+
+| Místo | Chování |
+|---|---|
+| `shpd-ds ds-state` (show) | řádek `Cron: on` / `off (periodic jobs are not running)` |
+| `shpd-server ds-cron` | přehled `ID \| Name \| Cron \| State` + souhrn počtu vypnutých |
+| `shpd-server doctor`, sekce Data source states | souhrn `cron off N`; per DS na **produkci** `⚠ … cron off — periodic jobs are not running (shpd-ds ds-state cron --on)`, jinde `· … cron off`; nezávisle na řádku o stavu, bez vlivu na exit kód; „All data sources active ✓" jen bez vypnutého cronu |
+| vývojářský dashboard `/_dev/` | sloupec Cron (`on` / zvýrazněné `off`), `GET /_dev/api/data-sources` nese `cron` a `state`; jen zobrazení |
+| aplikace | `GET /_app/info` → `cronEnabled` (jen boolean, endpoint je veřejný) → `appInfoStore.cronDisabled` → trvalý `CronOffBanner` v `ContentArea` pro všechny přihlášené; s `ReadOnlyBanner` sdílí sticky kontejner `.shpd-content__banners`, pruhy se skládají pod sebe |
+
+**Ovládání.** `shpd-ds ds-state cron --on|--off` (per DS, z adresáře DS),
+`shpd-server ds-cron` (přehled; `--off --all`, `--on|--off <id>…` —
+hromadně, bez potvrzení, chyba jednoho DS nezastaví ostatní),
+`shpd-server ds-create --no-cron` (cíl importu nikdy neběží se zapnutým
+cronem; selhání zápisu `state.json` je chyba příkazu). Reference:
+[cli.md](cli.md). Mimo fázi 1: řízení z hostingu, přepínání z dashboardu
+a z UI, automatika při obnově ze zálohy (D12).
