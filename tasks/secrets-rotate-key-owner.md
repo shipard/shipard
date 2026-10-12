@@ -1,6 +1,6 @@
 # `ds-secrets-rotate` — vlastník nového klíče při běhu pod rootem
 
-**Stav:** hotovo — implementováno 2026-10-12 (2 commity); ověření pod `sudo` zůstává na člověku stejně jako u `tasks/ds-state-file-ownership.md` (postup níže); `.bak` opravu nepotřebuje, sjednocení `SecretsFileWriter::alignOwnership()` na `FileOwnership` jen sdílený `ownerSpec()`, zbytek follow-up
+**Stav:** hotovo — implementováno 2026-10-12 (2 commity), týž den ověřeno člověkem pod `sudo` na volném zdroji dat `060z-b` (`secrets.key` i `.bak` s vlastníkem zdroje dat `0600`, `ds-secrets-health` bez `sudo` prošel); `.bak` opravu nepotřebuje, sjednocení `SecretsFileWriter::alignOwnership()` na `FileOwnership` jen sdílený `ownerSpec()`, zbytek follow-up
 
 > Jednorázový task pro Claude Code. Nález z kroku 4 tasku
 > `tasks/ds-state-file-ownership.md` (2026-10-12). Souvisí:
@@ -72,7 +72,10 @@ a klíčů hostingu — mimo rozsah, follow-up.
 ## Ověření pod rootem — postup pro člověka
 
 `sudo` na vývojovém stroji chce heslo. Na **volném** zdroji dat
-(`060z-b`, `vlm9-y`), ne na kopii reálných dat:
+(`060z-b`, `vlm9-y`), ne na kopii reálných dat. **Provedeno 2026-10-12
+na `060z-b`:** rotace prošla (2 sloupce, 0 řádků), `secrets.key` i `.bak`
+patří uživateli a skupině zdroje dat s `0600`, `ds-secrets-health` bez
+`sudo` hlásí všechny kontroly ✓.
 
 ```bash
 cd /opt/shipard/data-sources/<volný-ds>
@@ -98,5 +101,6 @@ Před opravou by `secrets.key` byl `root:root` a `ds-secrets-health` bez
 - [x] tmp klíč dostane vlastníka zdroje dat před transakcí; selhání
       zastaví rotaci bez změny DB i klíče
 - [x] testy bez roota, `php -l`, cílené testy, celá sada
-- [ ] ověření pod `sudo` na volném zdroji dat — **čeká na člověka**
+- [x] ověření pod `sudo` na volném zdroji dat — člověk 2026-10-12 na
+      `060z-b`, viz výše
 - [x] dokumentace, `**Stav:**`, `python3 scripts/tasks-index.py`

@@ -1,6 +1,6 @@
 # `state.json` — vlastník souboru při zápisu pod rootem
 
-**Stav:** hotovo — implementováno 2026-10-12 (2 commity); reprodukce pod rootem zůstala na člověku (`sudo` na dev stroji chce heslo, postup v sekci Výsledek); přehled ostatních zápisů tamtéž — `ds-secrets-rotate` má stejnou díru (samostatný task), `hosting-sync` jen při ručním běhu pod rootem; odblokuje `tasks/cron-dev-install.md`
+**Stav:** hotovo — implementováno 2026-10-12 (2 commity), týž den ověřeno člověkem pod `sudo` v dočasném adresáři (soubor s vlastníkem adresáře, `0640`, čtení bez `sudo` exit 0); stav před opravou nereprodukován — díra zjištěna čtením kódu; přehled ostatních zápisů v sekci Výsledek — `ds-secrets-rotate` opraven v `tasks/secrets-rotate-key-owner.md`, `hosting-sync` jen při ručním běhu pod rootem; odblokuje `tasks/cron-dev-install.md`
 
 > Jednorázový task pro Claude Code (2 commity). Souvisí: #56
 > (`tasks/ds-state-phase1.md`), #115 (`tasks/cron-ds-switch.md`).
@@ -113,10 +113,11 @@ v tomto tasku** — nález napiš do `**Stav:**`.
 ## Hotovo když
 
 - [x] reprodukce před opravou zapsaná ve `**Stav:**` (nebo proč chybí) —
-      chybí, `sudo` chce heslo; postup pro člověka níže
-- [ ] `sudo shpd-ds ds-state cron --off` v dočasném adresáři zanechá
+      chybí, díra zjištěna čtením kódu; `sudo` v Claude Code chce heslo
+- [x] `sudo shpd-ds ds-state cron --off` v dočasném adresáři zanechá
       `state.json` s vlastníkem adresáře a `shpd-ds ds-state` bez `sudo`
-      ho přečte — **čeká na člověka** (postup níže)
+      ho přečte — ověřil člověk 2026-10-12 (postupem níže): soubor
+      `<uživatel>:<skupina> 0640`, výpis `Cron: off`, exit 0
 - [x] `doctor` hlásí `state.json` se špatným vlastníkem,
       `fix-permissions --dry-run` ho nabízí k opravě — jednotkové testy
       (`HealthCheckerTest`, `FixPermissionsCommandTest`); nad reálným
@@ -132,7 +133,10 @@ v tomto tasku** — nález napiš do `**Stav:**`.
 `sudo` na vývojovém stroji vyžaduje heslo, Claude Code krok neprovedl.
 Před opravou (commit `fix(ds-state)…` odložený stranou, nebo starší
 checkout) má soubor vlastníka `root:root` a výpis bez `sudo` hlásí
-nečitelný `state.json`; po opravě patří vlastníkovi adresáře:
+nečitelný `state.json`; po opravě patří vlastníkovi adresáře.
+**Ověřeno člověkem 2026-10-12 po opravě** (stav před opravou se
+nereprodukoval): zápis pod `sudo` prošel, soubor `0640` s vlastníkem
+a skupinou uživatele, čtení bez `sudo` vypsalo `Cron: off`, exit 0.
 
 ```bash
 DIR="$(mktemp -d /tmp/shpd-state-owner-XXXX)"; mkdir -p "$DIR/config"
