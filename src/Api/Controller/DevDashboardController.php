@@ -5,6 +5,7 @@ namespace Shipard\Api\Controller;
 
 use Shipard\Api\Request;
 use Shipard\Api\Response;
+use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Module\ModulePathResolver;
 
 class DevDashboardController
@@ -97,11 +98,15 @@ class DevDashboardController
 				continue;
 			}
 
+			// #115 D11: přepínač periodických úloh + efektivní stav, jen zobrazení.
+			$state = DataSourceState::load($dsDir);
 			$items[] = [
 				'id'            => $config['id'],
 				'name'          => $config['name'],
 				'created'       => $config['created'] ?? null,
 				'database_name' => $config['database_name'] ?? null,
+				'cron'          => $state->isCronEnabled(),
+				'state'         => $state->isCorrupted() ? 'corrupted' : $state->getEffectiveState(),
 			];
 		}
 
@@ -643,6 +648,8 @@ class DevDashboardController
 		tbody tr:nth-child(even) { background: #fafbfc; }
 		tbody tr:hover { background: #f1f5f9; }
 		td.mono { font-family: monospace; font-size: 13px; }
+		.cron-off { color: #b91c1c; font-weight: 600; }
+		.muted { color: #6b7280; }
 		.copy-btn {
 			background: none;
 			border: none;
@@ -696,11 +703,12 @@ class DevDashboardController
 						<th>Name</th>
 						<th>Created</th>
 						<th>Database</th>
+						<th>Cron</th>
 						<th></th>
 					</tr>
 				</thead>
 				<tbody id="dsBody">
-					<tr><td colspan="5" class="empty">Loading…</td></tr>
+					<tr><td colspan="6" class="empty">Loading…</td></tr>
 				</tbody>
 			</table>
 		</main>
@@ -715,7 +723,7 @@ class DevDashboardController
 			function setStatusRow(text, cls) {
 				var tr = document.createElement('tr');
 				var td = document.createElement('td');
-				td.colSpan = 5;
+				td.colSpan = 6;
 				td.className = cls || 'empty';
 				td.textContent = text;
 				tr.appendChild(td);
@@ -725,7 +733,7 @@ class DevDashboardController
 			function setEmptyRow() {
 				var tr = document.createElement('tr');
 				var td = document.createElement('td');
-				td.colSpan = 5;
+				td.colSpan = 6;
 				td.className = 'empty';
 				td.appendChild(document.createTextNode('No data sources yet. Create one with '));
 				var link = document.createElement('a');
@@ -775,6 +783,24 @@ class DevDashboardController
 				tdDb.className = 'mono';
 				tdDb.textContent = item.database_name || '—';
 				tr.appendChild(tdDb);
+
+				var tdCron = document.createElement('td');
+				if (item.cron === false) {
+					var off = document.createElement('span');
+					off.className = 'cron-off';
+					off.title = 'Periodic jobs are switched off for this data source (shpd-ds ds-state cron --on)';
+					off.textContent = 'off';
+					tdCron.appendChild(off);
+				} else {
+					tdCron.textContent = 'on';
+				}
+				if (item.state && item.state !== 'active') {
+					var st = document.createElement('span');
+					st.className = 'muted';
+					st.textContent = ' · ' + item.state;
+					tdCron.appendChild(st);
+				}
+				tr.appendChild(tdCron);
 
 				var tdAction = document.createElement('td');
 				var a = document.createElement('a');

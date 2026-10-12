@@ -65,14 +65,15 @@ final class DataSourceStateScanner
 
 	/**
 	 * Počty per efektivní stav + `maintenance` (overlay je započtený
-	 * v `suspended`, samostatně se počítá znovu — doctor obojí ukáže).
+	 * v `suspended`, samostatně se počítá znovu — doctor obojí ukáže)
+	 * + `cronOff` (přepínač periodických úloh, #115 D11; nezávislý na stavu).
 	 *
 	 * @param list<DataSourceStateEntry> $entries
 	 * @return array<string, int>
 	 */
 	public static function countByState(array $entries): array
 	{
-		$counts = array_fill_keys(DataSourceState::STATES, 0) + ['maintenance' => 0, 'corrupted' => 0];
+		$counts = array_fill_keys(DataSourceState::STATES, 0) + ['maintenance' => 0, 'corrupted' => 0, 'cronOff' => 0];
 		foreach ($entries as $e) {
 			$counts[$e->effectiveState()]++;
 			if ($e->state->isMaintenanceActive()) {
@@ -80,6 +81,9 @@ final class DataSourceStateScanner
 			}
 			if ($e->isCorrupted()) {
 				$counts['corrupted']++;
+			}
+			if ($e->isCronOff()) {
+				$counts['cronOff']++;
 			}
 		}
 		return $counts;

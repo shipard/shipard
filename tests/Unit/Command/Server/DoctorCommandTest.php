@@ -9,6 +9,7 @@ use Shipard\Command\Server\DoctorCommand;
 use Shipard\Core\Server\HealthChecker;
 use Shipard\Core\Server\PermissionSpec;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -96,6 +97,11 @@ class TestableDoctorCommand extends DoctorCommand
     public function checkCronPublic(OutputInterface $output, string $mode): int
     {
         return $this->checkCron($output, $mode);
+    }
+
+    public function checkDataSourceStatesPublic(PermissionSpec $spec, OutputInterface $output, string $mode): int
+    {
+        return $this->checkDataSourceStates($spec, $output, $mode);
     }
 
     public function checkHostingDomainsFilePublic(array $config, string $user, OutputInterface $output): void
@@ -268,11 +274,88 @@ class DoctorCommandTest extends TestCase
         // Jen sekce stavů — další sekce (Outbound mail) DS vypisují taky.
         $section = substr($display, strpos($display, 'Data source states'));
         $section = substr($section, 0, strpos($section, 'Outbound mail'));
-        $this->assertStringContainsString('active 1 · read_only 1 · suspended 2 (maintenance 1) · pending_deletion 0', $section);
+        $this->assertStringContainsString('active 1 · read_only 1 · suspended 2 (maintenance 1) · pending_deletion 0 · cron off 0', $section);
         $this->assertStringContainsString('⚠ aaaa-aaaa-aaaa-aaaa: maintenance (import) for 13 days', $section);
         $this->assertStringContainsString('✗ bbbb-bbbb-bbbb-bbbb: state.json unusable', $section);
         $this->assertStringContainsString('· cccc-cccc-cccc-cccc: read_only', $section);
         $this->assertStringNotContainsString('dddd-dddd-dddd-dddd', $section);
+    }
+
+    public function testDataSourceStatesCronOffIsInfoOutsideProductionAndWarningOnProduction(): void
+    {
+        // #115 D11: vypnutý cron je na produkci varování, jinde informační
+        // řádek; nikdy nezvyšuje počet chyb a je nezávislý na řádku o stavu.
+        $spec = $this->makeSpec();
+        $this->buildHealthyTree($spec);
+        $dsRoot = $spec->getDataSourcesDir();
+        foreach (['aaaa-aaaa-aaaa-aaaa', 'bbbb-bbbb-bbbb-bbbb', 'cccc-cccc-cccc-cccc'] as $id) {
+            @mkdir($dsRoot . '/' . $id . '/config', 0750, true);
+            file_put_contents($dsRoot . '/' . $id . '/config/main.json', '{}');
+        }
+        file_put_contents($dsRoot . '/aaaa-aaaa-aaaa-aaaa/config/state.json', '{"version":1,"state":"active","cron":false}');
+        file_put_contents($dsRoot . '/bbbb-bbbb-bbbb-bbbb/config/state.json',
+            '{"version":1,"state":"active","cron":false,"maintenance":{"reason":"manual","since":"2026-09-01T10:00:00Z"}}');
+
+        $this->writeServerJson('development');
+        $command = $this->makeTester($spec);
+        $command->fakeNow = new \DateTimeImmutable('2026-09-02T12:00:00Z');
+
+        $out = new BufferedOutput();
+        $this->assertSame(0, $command->checkDataSourceStatesPublic($spec, $out, 'development'));
+        $dev = $out->fetch();
+        $this->assertStringContainsString('active 2 · read_only 0 · suspended 1 (maintenance 1) · pending_deletion 0 · cron off 2', $dev);
+        $this->assertStringContainsString('· aaaa-aaaa-aaaa-aaaa: cron off', $dev);
+        $this->assertStringContainsString('· bbbb-bbbb-bbbb-bbbb: maintenance (manual), 1 day(s)', $dev);
+        $this->assertStringContainsString('· bbbb-bbbb-bbbb-bbbb: cron off', $dev);
+        $this->assertStringNotContainsString('cccc-cccc-cccc-cccc', $dev);
+        $this->assertStringNotContainsString('All data sources active', $dev);
+        $this->assertStringNotContainsString('⚠', $dev);
+
+        $out = new BufferedOutput();
+        $this->assertSame(0, $command->checkDataSourceStatesPublic($spec, $out, 'production'));
+        $prod = $out->fetch();
+        $this->assertStringContainsString('⚠ aaaa-aaaa-aaaa-aaaa: cron off — periodic jobs are not running (shpd-ds ds-state cron --on)', $prod);
+        $this->assertStringContainsString('⚠ bbbb-bbbb-bbbb-bbbb: cron off — periodic jobs are not running', $prod);
+
+        // Samý cron off bez jiných nálezů → žádné „All data sources active".
+        unlink($dsRoot . '/bbbb-bbbb-bbbb-bbbb/config/state.json');
+        $out = new BufferedOutput();
+        $command->checkDataSourceStatesPublic($spec, $out, 'development');
+        $this->assertStringNotContainsString('All data sources active', $out->fetch());
+
+        // Po zapnutí cronu všude je sekce zelená.
+        unlink($dsRoot . '/aaaa-aaaa-aaaa-aaaa/config/state.json');
+        $out = new BufferedOutput();
+        $command->checkDataSourceStatesPublic($spec, $out, 'production');
+        $this->assertStringContainsString('All data sources active ✓', $out->fetch());
+    }
+
+    public function testCronOffDoesNotChangeDoctorExitCode(): void
+    {
+        $this->writeServerJson('development');
+        $spec = $this->makeSpec();
+        $this->buildHealthyTree($spec);
+        $dsRoot = $spec->getDataSourcesDir();
+        @mkdir($dsRoot . '/aaaa-aaaa-aaaa-aaaa/config', 0750, true);
+        file_put_contents($dsRoot . '/aaaa-aaaa-aaaa-aaaa/config/main.json', '{}');
+
+        $command = $this->makeTester($spec);
+        $command->stubPoolUser = $this->testUser;
+        $tester = new CommandTester($command);
+        $baselineExit = $tester->execute([]);
+        preg_match('/Issues found: (\d+)/', $tester->getDisplay(), $m);
+        $baselineIssues = $m[1] ?? '0';
+
+        file_put_contents($dsRoot . '/aaaa-aaaa-aaaa-aaaa/config/state.json', '{"version":1,"state":"active","cron":false}');
+        $command = $this->makeTester($spec);
+        $command->stubPoolUser = $this->testUser;
+        $tester = new CommandTester($command);
+        $exit = $tester->execute([]);
+        preg_match('/Issues found: (\d+)/', $tester->getDisplay(), $m);
+
+        $this->assertSame($baselineExit, $exit);
+        $this->assertSame($baselineIssues, $m[1] ?? '0');
+        $this->assertStringContainsString('· aaaa-aaaa-aaaa-aaaa: cron off', $tester->getDisplay());
     }
 
     public function testReportsFailureWhenPoolUserMismatch(): void

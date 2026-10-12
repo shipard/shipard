@@ -138,7 +138,7 @@ class DoctorCommand extends Command
 
         $output->writeln('');
         $output->writeln('<info>Data source states</info>');
-        $stateErrors = $this->checkDataSourceStates($spec, $output);
+        $stateErrors = $this->checkDataSourceStates($spec, $output, $mode);
 
         $output->writeln('');
         $output->writeln('<info>Outbound mail</info>');
@@ -217,7 +217,15 @@ class DoctorCommand extends Command
      *
      * @return int number of errors (corrupted state files)
      */
-    protected function checkDataSourceStates(PermissionSpec $spec, OutputInterface $output): int
+    /**
+     * Stavy z config/state.json (#56 D8) + přepínač periodických úloh (#115
+     * D11): vypnutý cron je na produkci varování (DS má běžet celý), jinde
+     * informační řádek; nikdy nezvyšuje počet chyb. Řádek o cronu je
+     * nezávislý na řádku o stavu — DS v maintenance s vypnutým cronem má oba.
+     *
+     * @return int number of errors
+     */
+    protected function checkDataSourceStates(PermissionSpec $spec, OutputInterface $output, string $mode): int
     {
         $entries = (new DataSourceStateScanner($spec->getDataSourcesDir()))->scan($this->now());
         if (count($entries) === 0) {
@@ -227,8 +235,8 @@ class DoctorCommand extends Command
 
         $counts = DataSourceStateScanner::countByState($entries);
         $output->writeln(sprintf(
-            '  active %d · read_only %d · suspended %d (maintenance %d) · pending_deletion %d',
-            $counts['active'], $counts['read_only'], $counts['suspended'], $counts['maintenance'], $counts['pending_deletion'],
+            '  active %d · read_only %d · suspended %d (maintenance %d) · pending_deletion %d · cron off %d',
+            $counts['active'], $counts['read_only'], $counts['suspended'], $counts['maintenance'], $counts['pending_deletion'], $counts['cronOff'],
         ));
 
         $errors = 0;
@@ -247,13 +255,18 @@ class DoctorCommand extends Command
                 } else {
                     $output->writeln("  · {$e->dsId}: maintenance ({$reason}), " . ($days === null ? 'since unknown' : "{$days} day(s)"));
                 }
-                continue;
-            }
-            if ($e->effectiveState() !== DataSourceState::ACTIVE) {
+            } elseif ($e->effectiveState() !== DataSourceState::ACTIVE) {
                 $output->writeln("  · {$e->dsId}: {$e->effectiveState()}");
             }
+            if ($e->isCronOff()) {
+                if ($mode === 'production') {
+                    $output->writeln("  ⚠ {$e->dsId}: cron off — periodic jobs are not running (shpd-ds ds-state cron --on)");
+                } else {
+                    $output->writeln("  · {$e->dsId}: cron off");
+                }
+            }
         }
-        if ($errors === 0 && $counts['maintenance'] === 0 && $counts['active'] === count($entries)) {
+        if ($errors === 0 && $counts['maintenance'] === 0 && $counts['cronOff'] === 0 && $counts['active'] === count($entries)) {
             $output->writeln('  All data sources active ✓');
         }
         return $errors;

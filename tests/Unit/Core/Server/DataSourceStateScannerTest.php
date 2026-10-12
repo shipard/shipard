@@ -105,13 +105,32 @@ class DataSourceStateScannerTest extends TestCase
 		$this->ds('bbbb-bbbb-bbbb-bbbb', $this->maintenance('2026-09-01T00:00:00Z'));
 		$this->ds('cccc-cccc-cccc-cccc', '{broken');
 		$this->ds('dddd-dddd-dddd-dddd', json_encode(['version' => 1, 'state' => 'read_only']));
+		$this->ds('eeee-eeee-eeee-eeee', json_encode(['version' => 1, 'state' => 'active', 'cron' => false]));
 
 		$counts = DataSourceStateScanner::countByState((new DataSourceStateScanner($this->root))->scan($this->now));
-		$this->assertSame(1, $counts['active']);
+		$this->assertSame(2, $counts['active']);
 		$this->assertSame(1, $counts['read_only']);
 		$this->assertSame(2, $counts['suspended']); // maintenance + corrupted
 		$this->assertSame(0, $counts['pending_deletion']);
 		$this->assertSame(1, $counts['maintenance']);
 		$this->assertSame(1, $counts['corrupted']);
+		$this->assertSame(1, $counts['cronOff']); // #115 — corrupted se nepočítá
+	}
+
+	public function testIsCronOff(): void
+	{
+		$this->ds('aaaa-aaaa-aaaa-aaaa');
+		$this->ds('bbbb-bbbb-bbbb-bbbb', json_encode(['version' => 1, 'state' => 'read_only', 'cron' => false]));
+		$this->ds('cccc-cccc-cccc-cccc', '{broken');
+
+		$entries = (new DataSourceStateScanner($this->root))->scan($this->now);
+		$byId = [];
+		foreach ($entries as $e) {
+			$byId[$e->dsId] = $e;
+		}
+		$this->assertFalse($byId['aaaa-aaaa-aaaa-aaaa']->isCronOff());
+		$this->assertTrue($byId['bbbb-bbbb-bbbb-bbbb']->isCronOff());
+		$this->assertSame('read_only', $byId['bbbb-bbbb-bbbb-bbbb']->effectiveState());
+		$this->assertFalse($byId['cccc-cccc-cccc-cccc']->isCronOff());
 	}
 }

@@ -163,6 +163,42 @@ class DevDashboardControllerTest extends TestCase
 		$this->assertSame(['Alpha', 'Bravo', 'Charlie'], $names);
 	}
 
+	public function testListDataSourcesIncludesCronSwitchAndState(): void
+	{
+		// #115 D11: jen zobrazení — přepínač a efektivní stav z config/state.json.
+		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Alpha');
+		$this->createDs('bbbb-bbbb-bbbb-bbbb', 'Bravo');
+		file_put_contents($this->tmpDir . '/bbbb-bbbb-bbbb-bbbb/config/state.json', '{"version":1,"state":"active","cron":false}');
+		$this->createDs('cccc-cccc-cccc-cccc', 'Charlie');
+		file_put_contents($this->tmpDir . '/cccc-cccc-cccc-cccc/config/state.json',
+			'{"version":1,"state":"read_only","maintenance":{"reason":"import","since":"2026-10-01T00:00:00Z"}}');
+		$this->createDs('dddd-dddd-dddd-dddd', 'Delta');
+		file_put_contents($this->tmpDir . '/dddd-dddd-dddd-dddd/config/state.json', '{broken');
+
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/api/data-sources'));
+		$this->assertSame(200, $this->getStatus($resp));
+		$byName = [];
+		foreach ($this->getPayloadRaw($resp)['data'] as $item) {
+			$byName[$item['name']] = $item;
+		}
+		$this->assertTrue($byName['Alpha']['cron']);
+		$this->assertSame('active', $byName['Alpha']['state']);
+		$this->assertFalse($byName['Bravo']['cron']);
+		$this->assertSame('active', $byName['Bravo']['state']);
+		$this->assertTrue($byName['Charlie']['cron']);
+		$this->assertSame('suspended', $byName['Charlie']['state']);
+		$this->assertSame('corrupted', $byName['Delta']['state']);
+	}
+
+	public function testDashboardPageHasCronColumn(): void
+	{
+		$resp = $this->ctrl->dispatch($this->makeRequest('GET', '/_dev/'));
+		$body = (string) $this->getPayloadRaw($resp);
+		$this->assertStringContainsString('<th>Cron</th>', $body);
+		$this->assertStringContainsString('colspan="6"', $body);
+		$this->assertStringContainsString('cron-off', $body);
+	}
+
 	public function testListDataSourcesSkipsDirsWithoutMainJson(): void
 	{
 		$this->createDs('aaaa-aaaa-aaaa-aaaa', 'Alpha');
