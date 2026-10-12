@@ -11,6 +11,7 @@
   import PortalContent from '../portal/PortalContent.svelte';
   import ReportsPage from '../reports/ReportsPage.svelte';
   import ReadOnlyBanner from '../ui/ReadOnlyBanner.svelte';
+  import CronOffBanner from '../ui/CronOffBanner.svelte';
   import MailSafetyNotice from '../ui/MailSafetyNotice.svelte';
   import { appInfoStore } from '../../stores/appInfo.svelte.js';
   import { t } from '../../i18n/index.js';
@@ -35,8 +36,16 @@
 </script>
 
 <main class="shpd-content">
-  {#if appInfoStore.readOnly}
-    <ReadOnlyBanner />
+  {#if appInfoStore.readOnly || appInfoStore.cronDisabled}
+    <!-- Jeden sticky kontejner: oba stavové pruhy pod sebou, žádný překryv. -->
+    <div class="shpd-content__banners">
+      {#if appInfoStore.readOnly}
+        <ReadOnlyBanner />
+      {/if}
+      {#if appInfoStore.cronDisabled}
+        <CronOffBanner />
+      {/if}
+    </div>
   {/if}
   {#if isOutboundMailItem(activeItem)}
     <MailSafetyNotice banner />
@@ -71,6 +80,12 @@
     flex: 1;
     overflow-y: auto;
     background-color: var(--shpd-color-bg-secondary);
+  }
+
+  .shpd-content__banners {
+    position: sticky;
+    top: 0;
+    z-index: 5;
   }
 
   .shpd-content__empty {

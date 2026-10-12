@@ -95,6 +95,7 @@ export default {
   'dsState.unavailable.retry': 'Try again',
   'dsState.readOnly.banner': 'Data source is read-only — changes cannot be saved.',
   'dsState.readOnly.toast': 'Data source is read-only, changes cannot be saved.',
+  'dsState.cronOff.banner': 'Scheduled jobs are turned off for this data source — queued mail is not sent, alerts are not evaluated and automatic invoicing does not run.',
 
   // Record lock (documentLockProviders, #55 D24) — banner in form and detail
   'lock.banner.title': 'This record is locked — it cannot be changed, transitioned or deleted.',

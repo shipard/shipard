@@ -96,6 +96,20 @@ class AppControllerTest extends TestCase
         $this->assertSame('read_only', $data['dsState']);
     }
 
+    public function testInfoCronEnabledDefaultsToTrue(): void
+    {
+        $data = $this->makeController()->info()->getPayload()['data'];
+        $this->assertTrue($data['cronEnabled']);
+    }
+
+    public function testInfoPassesCronDisabled(): void
+    {
+        // #115 D11: jen boolean — endpoint je veřejný.
+        $data = $this->makeController()->info('active', false)->getPayload()['data'];
+        $this->assertFalse($data['cronEnabled']);
+        $this->assertSame('active', $data['dsState']);
+    }
+
     public function testInfoExposesOnlyMailSafetyMode(): void
     {
         $db = $this->createMock(DataSourceConnection::class);

@@ -27,6 +27,11 @@ const DEFAULT_NAME = 'Shipard';
 let unavailable = $state(null); // { state } | null
 let readOnly = $state(false);
 
+// Přepínač periodických úloh (#115 D11): `cronEnabled === false` → trvalý
+// CronOffBanner v ContentArea (fronta pošty, upozornění ani automatická
+// fakturace na tomto DS neběží). Chybějící klíč (starší server) = zapnuto.
+let cronDisabled = $state(false);
+
 // Režim pojistky odchozí pošty (#95 D7): `redirect` | `allowlist` | `drop`
 // = pošta nejde skutečným příjemcům → MailSafetyNotice; `off` / null nic.
 let mailSafetyMode = $state(null);
@@ -59,6 +64,7 @@ async function load() {
       themeStore.setDsDefault(info.theme);
       shellStore.setDsDefault(info.shell);
       readOnly = response.data.dsState === 'read_only';
+      cronDisabled = response.data.cronEnabled === false;
       mailSafetyMode = response.data.mailSafety?.mode ?? null;
       unavailable = null;
     } else if (response?.error?.code === 'DS_UNAVAILABLE') {
@@ -98,6 +104,7 @@ export const appInfoStore = {
   get auth()        { return info.auth; },
   get unavailable() { return unavailable; },
   get readOnly()    { return readOnly; },
+  get cronDisabled() { return cronDisabled; },
   get mailSafetyMode() { return mailSafetyMode; },
   load,
   apply,

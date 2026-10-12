@@ -354,7 +354,7 @@ function dispatch(
 		'ui'      => dispatchUi($route->action, $resolved->config, $modulePathResolver, resolveLanguage($request, $resolved->config), $configRuntime, $db, $auth, $tables, $resolved->isReadOnly()),
 		'dashboard' => dispatchDashboard($route, $db, $configRuntime, resolveLanguage($request, $resolved->config), $resolved->config, $alertCheckRegistry, $tables, $auth, $request, $resolved->isReadOnly()),
 		'settings' => dispatchSettings($route, $request, $auth, $resolved->config, $modulePathResolver, resolveLanguage($request, $resolved->config), $configRuntime, $db, $tables),
-		'app'     => dispatchApp($route, $auth, $db, $resolved->config, $tables, $resolved->isDevMode(), $resolved->state->getEffectiveState(), $serverConfig),
+		'app'     => dispatchApp($route, $auth, $db, $resolved->config, $tables, $resolved->isDevMode(), $resolved->state->getEffectiveState(), $serverConfig, $resolved->state->isCronEnabled()),
 		'form'    => dispatchForm($route, $request, $auth, $tables, $db, $formRegistry ?? new FormRegistry(), $configRuntime, $modulePathResolver, $documentRegistry ?? new \Shipard\Core\Document\DocumentRegistry(), resolveLanguage($request, $resolved->config), $resolved->config, $lookupRegistry ?? new LookupRegistry(), $documentEventDispatcher),
 		'lookup'  => dispatchLookup($route, $request, $auth, $tables, $db, $lookupRegistry ?? new LookupRegistry(), $configRuntime),
 		'viewer'  => dispatchViewer($route, $request, $auth, $viewerRegistry, $tables, $db, $configRuntime, resolveLanguage($request, $resolved->config), $documentRegistry, $resolved->config, $modulePathResolver),
@@ -1579,6 +1579,7 @@ function dispatchApp(
 	bool $devMode = false,
 	string $dsState = \Shipard\Core\Config\DataSourceState::ACTIVE,
 	?ServerConfig $serverConfig = null,
+	bool $cronEnabled = true,
 ): Response {
 	$ctrl = new \Shipard\Api\Controller\AppController(
 		$db, $config, $tables,
@@ -1586,7 +1587,7 @@ function dispatchApp(
 	);
 	$slot = (string) $route->table;
 	return match ($route->action) {
-		'info'           => $ctrl->info($dsState),
+		'info'           => $ctrl->info($dsState, $cronEnabled),
 		'manifest'       => $ctrl->manifest($devMode),
 		'brandingGet'    => $ctrl->brandingGet($slot),
 		'brandingUpload' => $ctrl->brandingUpload($slot, $auth),

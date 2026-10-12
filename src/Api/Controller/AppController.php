@@ -62,9 +62,10 @@ class AppController
      *
      * `$dsState` je efektivní stav DS (#56 R5) — endpoint je veřejný, sem
      * dojde jen `active` nebo `read_only` (blokované stavy skončí 503 už
-     * v resolveru), nic citlivého neprozrazuje.
+     * v resolveru), nic citlivého neprozrazuje. `$cronEnabled` je přepínač
+     * periodických úloh (#115 D11) — jen boolean, SPA z něj kreslí pruh.
      */
-    public function info(string $dsState = DataSourceState::ACTIVE): Response
+    public function info(string $dsState = DataSourceState::ACTIVE, bool $cronEnabled = true): Response
     {
         $values = $this->settings->getMany([
             'app.name',
@@ -93,6 +94,8 @@ class AppController
             'shell'       => is_array($values['app.shell']) ? $values['app.shell'] : null,
             // Stav DS pro SPA: `read_only` → banner + skrytý chat (fáze 2).
             'dsState'     => $dsState,
+            // Přepínač periodických úloh (#115 D11): false → pruh v aplikaci.
+            'cronEnabled' => $cronEnabled,
             // Pojistka odchozí pošty (#95 D7) — jen režim, SPA podle něj
             // upozorní, že pošta nejde skutečným příjemcům. Adresy
             // přesměrování ani povolené domény sem nepatří.
