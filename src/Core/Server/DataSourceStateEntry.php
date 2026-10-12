@@ -28,6 +28,12 @@ final readonly class DataSourceStateEntry
 		return $this->state->isCorrupted();
 	}
 
+	/** Přepínač periodických úloh vypnutý (#115) — u fail-closed souboru false (ten se hlásí jako corrupted). */
+	public function isCronOff(): bool
+	{
+		return !$this->state->isCronEnabled();
+	}
+
 	/** Maintenance běží déle než práh (D8) — pravděpodobně zapomenutá. */
 	public function isMaintenanceOverdue(int $thresholdDays): bool
 	{

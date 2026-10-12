@@ -59,6 +59,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>completion-install</info> Install bash completion for shpd-server and shpd-ds (idempotent)');
         $output->writeln('  <info>hosting-sync</info>    Sync with the hosting: reconcile local data sources and provision queued requests');
         $output->writeln('  <info>ds-state-check</info>  Warn about data sources stuck in maintenance > 7 days or with unusable state.json (daily cron job)');
+        $output->writeln('  <info>ds-cron</info>         List data sources with their periodic-jobs switch, or switch it on/off (--all or IDs)');
         $output->writeln('  <info>doctor</info>          Diagnose server configuration and permissions');
         $output->writeln('  <info>fix-permissions</info> Fix ownership and modes (requires sudo)');
         $output->writeln('');
@@ -66,15 +67,16 @@ class HelpCommand extends Command
         $output->writeln('  shpd-server <command> [options]');
         $output->writeln('');
         $output->writeln('<comment>Options:</comment>');
-        $output->writeln('  ds-create --name=<n> --language=<cs|en> --country=<cc> [--module=<id>]');
+        $output->writeln('  ds-create --name=<n> --language=<cs|en> --country=<cc> [--module=<id>] [--no-cron]');
         $output->writeln('                                           Create a new data source');
-        $output->writeln('                                           (--module defaults to install.base)');
+        $output->writeln('                                           (--module defaults to install.base, --no-cron = periodic jobs off)');
         $output->writeln('  ds-upgrade-all [--ds=<id>] [--stop-on-error] [--dry-run]');
         $output->writeln('                                           Upgrade all data sources');
         $output->writeln('  upgrade [--dry-run] [--full] [--skip-ds-upgrade]');
         $output->writeln('                                           Deploy a new version from git');
         $output->writeln('  domain-add --host <host> --ds <ds-id>    Map a hostname to a data source');
         $output->writeln('  cron --slot=<slot> [--ds=<id>]           Run slot jobs (--ds: one data source, ignores its cron switch)');
+        $output->writeln('  ds-cron [--on|--off] [--all | <id>…]     Overview, or switch periodic jobs per data source');
         $output->writeln('  domain-remove --host <host>              Remove a hostname mapping');
         $output->writeln('  doctor                                   Read-only health check (no options)');
         $output->writeln('  fix-permissions [--dry-run] [--force]    Fix /opt/shipard and /etc/shipard');

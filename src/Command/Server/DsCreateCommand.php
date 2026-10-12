@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Command\Server;
 
 use Shipard\Core\Config\DataSourceConfig;
+use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DatabaseManager;
 use Shipard\Core\Module\InstallModuleRegistry;
@@ -55,6 +56,12 @@ class DsCreateCommand extends Command
                  null,
                  InputOption::VALUE_REQUIRED,
                  'Explicit data source ID (xxxx-xxxx-xxxx-xxxx) — used by the hosting provisioning agent',
+             )
+             ->addOption(
+                 'no-cron',
+                 null,
+                 InputOption::VALUE_NONE,
+                 'Create the data source with periodic jobs switched off (config/state.json cron: false) — for import targets',
              );
     }
 
@@ -208,6 +215,20 @@ class DsCreateCommand extends Command
         file_put_contents($configFile, json_encode($mainConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
         chmod($configFile, 0600);
 
+        // --no-cron (#115 D14): state.json hned po main.json, před chown níže.
+        // Volba existuje, aby cíl importu nikdy neběžel se zapnutým cronem —
+        // selhání zápisu je proto chyba příkazu, ne varování.
+        $noCron = (bool) $input->getOption('no-cron');
+        if ($noCron) {
+            try {
+                DataSourceState::active()->withCron(false)->save($dataSourceDir, 'ds-create');
+            } catch (\RuntimeException $e) {
+                $output->writeln('<error>Failed to write config/state.json: ' . $e->getMessage() . '</error>');
+                $output->writeln('<comment>  Switch periodic jobs off manually: cd ' . $dataSourceDir . ' && shpd-ds ds-state cron --off</comment>');
+                return Command::FAILURE;
+            }
+        }
+
         // Generate per-DS secrets key for encrypted_text columns
         try {
             $warnings = DsSecretCipher::generateKey($dataSourceDir);
@@ -244,6 +265,9 @@ class DsCreateCommand extends Command
         $output->writeln("  Database:      <comment>{$dbName}</comment>");
         $output->writeln("  DB User:       <comment>{$dbUser}</comment>");
         $output->writeln("  Directory:     <comment>{$dataSourceDir}</comment>");
+        if ($noCron) {
+            $output->writeln('  Cron:          <comment>off</comment> (periodic jobs disabled — shpd-ds ds-state cron --on to enable)');
+        }
         $output->writeln('');
 
         return Command::SUCCESS;

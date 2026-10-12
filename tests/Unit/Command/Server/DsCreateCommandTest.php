@@ -191,6 +191,38 @@ class DsCreateCommandTest extends TestCase
         $this->assertSame(0600, fileperms($configFile) & 0777);
     }
 
+    public function testDsCreateNoCronWritesStateJson(): void
+    {
+        // #115 D14: cíl importu nesmí nikdy běžet se zapnutým cronem.
+        $tester = $this->createCommandTester();
+        $exitCode = $tester->execute(['--name' => 'Import', '--language' => 'cs', '--country' => 'cz', '--no-cron' => true]);
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringContainsString('Cron:          off', $tester->getDisplay());
+
+        $dirs = glob($this->tempDir . '/*', GLOB_ONLYDIR);
+        $this->assertCount(1, $dirs);
+        $stateFile = $dirs[0] . '/config/state.json';
+        $this->assertFileExists($stateFile);
+        $raw = json_decode((string) file_get_contents($stateFile), true);
+        $this->assertSame(1, $raw['version']);
+        $this->assertSame('active', $raw['state']);
+        $this->assertFalse($raw['cron']);
+        $this->assertSame('ds-create', $raw['changedBy']);
+        $this->assertFalse(\Shipard\Core\Config\DataSourceState::load($dirs[0])->isCronEnabled());
+    }
+
+    public function testDsCreateWithoutNoCronWritesNoStateJson(): void
+    {
+        $tester = $this->createCommandTester();
+        $tester->execute(['--name' => 'Plain', '--language' => 'cs', '--country' => 'cz']);
+
+        $dirs = glob($this->tempDir . '/*', GLOB_ONLYDIR);
+        $this->assertCount(1, $dirs);
+        $this->assertFileDoesNotExist($dirs[0] . '/config/state.json');
+        $this->assertStringNotContainsString('Cron:', $tester->getDisplay());
+    }
+
     public function testDsCreateIdFormat(): void
     {
         $tester = $this->createCommandTester();
