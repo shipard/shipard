@@ -74,6 +74,7 @@ class HelpCommand extends Command
         $output->writeln('  upgrade [--dry-run] [--full] [--skip-ds-upgrade]');
         $output->writeln('                                           Deploy a new version from git');
         $output->writeln('  domain-add --host <host> --ds <ds-id>    Map a hostname to a data source');
+        $output->writeln('  cron --slot=<slot> [--ds=<id>]           Run slot jobs (--ds: one data source, ignores its cron switch)');
         $output->writeln('  domain-remove --host <host>              Remove a hostname mapping');
         $output->writeln('  doctor                                   Read-only health check (no options)');
         $output->writeln('  fix-permissions [--dry-run] [--force]    Fix /opt/shipard and /etc/shipard');

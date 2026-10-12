@@ -8,6 +8,7 @@ use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Server\CronProvisioner;
+use Shipard\Core\Utils\IdGenerator;
 use Shipard\Core\Version;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,6 +24,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Exit kód: SUCCESS i při selhaných jobech (reportuje doctor/alerty),
  * FAILURE jen infra chyba (neznámý slot, nečitelný seznam DS, heartbeat
  * nelze zapsat).
+ *
+ * Přepínač periodických úloh per DS (`cron: false` v state.json, #115 D1,
+ * D7): dispatcher takový DS přeskočí celý včetně úklidu, serverové joby
+ * běží dál. Řídí jen tuto smyčku — přímo spuštěné příkazy ho nečtou.
+ *
+ * `--ds=<id>` (D8): jeden tik pro jeden DS — přepínač ignoruje, stav DS
+ * platí dál, bez zámku slotu, bez heartbeatu (ruční běh nesmí v doctoru
+ * zakrýt neběžící cron), bez serverových jobů; exit FAILURE při selhané
+ * úloze.
  */
 class CronCommand extends Command
 {
@@ -80,7 +90,8 @@ class CronCommand extends Command
     {
         $this->setName('cron')
              ->setDescription('Run scheduled per-DS jobs for the given slot (invoked from /etc/cron.d/shipard)')
-             ->addOption('slot', null, InputOption::VALUE_REQUIRED, 'Slot to run: ' . implode(', ', array_keys(self::SLOT_JOBS)));
+             ->addOption('slot', null, InputOption::VALUE_REQUIRED, 'Slot to run: ' . implode(', ', array_keys(self::SLOT_JOBS)))
+             ->addOption('ds', null, InputOption::VALUE_REQUIRED, 'Run the slot jobs for this data source only (ignores its cron switch; no lock, no heartbeat, no server-level jobs)');
     }
 
     protected function getDataSourcesDir(): string
@@ -133,6 +144,12 @@ class CronCommand extends Command
         }
 
         ErrorLogger::setLogPath($this->getLogPath());
+
+        $dsOption = $input->getOption('ds');
+        if (is_string($dsOption) && $dsOption !== '') {
+            return $this->executeSingle($slot, $dsOption, $output);
+        }
+
         ErrorLogger::setRequestContext('cli: cron --slot=' . $slot);
 
         // Lock per slot — překrývající se běh se tiše ukončí, aby se minute
@@ -181,6 +198,7 @@ class CronCommand extends Command
         $jobsRun = 0;
         $failures = [];
         $skippedDataSources = 0;
+        $cronDisabledDataSources = 0;
         $corruptedStateFiles = 0;
 
         // Server-level joby (shpd-server) — jednou za běh slotu, ne per DS.
@@ -218,6 +236,12 @@ class CronCommand extends Command
             if ($state->isCorrupted()) {
                 $corruptedStateFiles++;
             }
+            // Přepínač (#115 D1) před stavem — DS se počítá jen do jednoho
+            // čítače. Vypnuto = nic, ani úklidové joby.
+            if (!$state->isCronEnabled()) {
+                $cronDisabledDataSources++;
+                continue;
+            }
             $dsJobs = self::jobsForState($jobs, $state->getEffectiveState());
             if ($dsJobs === []) {
                 $skippedDataSources++;
@@ -253,6 +277,7 @@ class CronCommand extends Command
             'appVersion' => Version::VERSION,
             'dsCount' => count($candidates),
             'skippedDataSources' => $skippedDataSources,
+            'cronDisabledDataSources' => $cronDisabledDataSources,
             'corruptedStateFiles' => $corruptedStateFiles,
             'jobsRun' => $jobsRun,
             'failedCount' => count($failures),
@@ -269,15 +294,17 @@ class CronCommand extends Command
             'slot' => $slot,
             'dsCount' => count($candidates),
             'skippedDataSources' => $skippedDataSources,
+            'cronDisabledDataSources' => $cronDisabledDataSources,
             'jobsRun' => $jobsRun,
             'failedCount' => count($failures),
             'durationMs' => $durationMs,
         ]);
         $output->writeln(sprintf(
-            'Slot %s: %d data source(s), %d skipped by state, %d job(s) run, %d failed, %d ms',
+            'Slot %s: %d data source(s), %d skipped by state, %d cron off, %d job(s) run, %d failed, %d ms',
             $slot,
             count($candidates),
             $skippedDataSources,
+            $cronDisabledDataSources,
             $jobsRun,
             count($failures),
             $durationMs,
@@ -295,6 +322,88 @@ class CronCommand extends Command
         // Selhané joby nejsou infra chyba — cron nesmí spamovat MAILTO,
         // problémy per DS reportuje doctor a centrální log.
         return Command::SUCCESS;
+    }
+
+    /**
+     * `--ds=<id>` — jeden tik pro jeden DS (#115 D8). Přepínač ignoruje,
+     * stav z #56 platí; bez zámku, heartbeatu i serverových jobů. Formát ID
+     * se ověřuje před složením cesty.
+     */
+    private function executeSingle(string $slot, string $dsId, OutputInterface $output): int
+    {
+        if (!preg_match(IdGenerator::ID_PATTERN, $dsId)) {
+            $output->writeln('<error>Invalid --ds: ' . $dsId . ' (expected xxxx-xxxx-xxxx-xxxx)</error>');
+            return Command::FAILURE;
+        }
+        $dsDir = $this->getDataSourcesDir() . '/' . $dsId;
+        if (!is_file($dsDir . '/config/main.json')) {
+            $output->writeln('<error>Unknown data source: ' . $dsId . ' (no config/main.json in ' . $dsDir . ')</error>');
+            return Command::FAILURE;
+        }
+
+        ErrorLogger::setRequestContext(sprintf('cli: cron --slot=%s --ds=%s', $slot, $dsId));
+
+        $state = DataSourceState::load($dsDir);
+        $stateLabel = $state->isCorrupted()
+            ? 'suspended (state.json unusable — fail-closed)'
+            : ($state->isMaintenanceActive()
+                ? sprintf('suspended (maintenance: %s)', $state->getMaintenanceReason())
+                : $state->getEffectiveState());
+        $output->writeln(sprintf(
+            'Slot %s on %s — state %s%s',
+            $slot,
+            $dsId,
+            $stateLabel,
+            $state->isCronEnabled() ? '' : ', cron switch off (ignored by --ds)',
+        ));
+
+        $dsJobs = self::jobsForState(self::SLOT_JOBS[$slot], $state->getEffectiveState());
+        if ($dsJobs === []) {
+            $output->writeln('  No jobs of this slot run in the current data source state.');
+            return Command::SUCCESS;
+        }
+
+        $failed = 0;
+        foreach ($dsJobs as $job) {
+            $startedAt = microtime(true);
+            $result = $this->runJob($dsDir, $job);
+            $ms = (int) round((microtime(true) - $startedAt) * 1000);
+            if ($result['exitCode'] === 0 && !$result['timedOut']) {
+                $output->writeln(sprintf('  %s: ok (%d ms)', $job, $ms));
+                continue;
+            }
+            $failed++;
+            $output->writeln(sprintf(
+                '  <error>%s: %s (%d ms)</error>',
+                $job,
+                $result['timedOut'] ? 'timed out' : 'failed, exit ' . $result['exitCode'],
+                $ms,
+            ));
+            foreach (preg_split('/\R/', rtrim($result['output'])) ?: [] as $line) {
+                if ($line !== '') {
+                    $output->writeln('    ' . $line);
+                }
+            }
+            ErrorLogger::error('cron job failed', [
+                'slot' => $slot,
+                'ds' => $dsId,
+                'job' => $job,
+                'exitCode' => $result['exitCode'],
+                'timedOut' => $result['timedOut'],
+                'outputTail' => $result['output'],
+            ]);
+        }
+
+        // Ruční tik je vzácný — jeden info řádek per běh nevadí a ops vidí,
+        // kdo DS spustil mimo plán.
+        ErrorLogger::info('cron single data source run finished', [
+            'slot' => $slot,
+            'ds' => $dsId,
+            'jobsRun' => count($dsJobs),
+            'failedCount' => $failed,
+        ]);
+
+        return $failed === 0 ? Command::SUCCESS : Command::FAILURE;
     }
 
     /**

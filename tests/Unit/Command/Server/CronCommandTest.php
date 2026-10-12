@@ -331,6 +331,7 @@ class CronCommandTest extends TestCase
         $this->assertIsInt($hb['durationMs']);
         $this->assertSame([], $hb['failures']);
         $this->assertSame(0, $hb['skippedDataSources']);
+        $this->assertSame(0, $hb['cronDisabledDataSources']);
         $this->assertSame(0, $hb['corruptedStateFiles']);
     }
 
@@ -445,6 +446,202 @@ class CronCommandTest extends TestCase
         // Neznámý job = jen active (fail-closed).
         $this->assertSame(['x'], CronCommand::jobsForState(['x'], 'active'));
         $this->assertSame([], CronCommand::jobsForState(['x'], 'read_only'));
+    }
+
+    // ── Přepínač periodických úloh (#115 D1) ────────────────────────────────
+
+    public function testCronOffDsGetsNoJobsAndIsCountedSeparately(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', '{"version":1,"state":"active","cron":false}');
+        $this->createDs('bbbb-bbbb-bbbb-bbbb');
+
+        foreach (['minute', 'daily', 'weekly'] as $slot) {
+            [$cmd, $tester] = $this->makeTester();
+            $exit = $tester->execute(['--slot' => $slot]);
+
+            $this->assertSame(0, $exit, $slot);
+            // Ani úklidové joby (daily/weekly) — DS je přeskočený celý.
+            $forA = array_values(array_filter($cmd->callLog, static fn($c) => $c['ds'] === 'aaaa-aaaa-aaaa-aaaa'));
+            $this->assertSame([], $forA, $slot);
+            $forB = array_values(array_filter($cmd->callLog, static fn($c) => $c['ds'] === 'bbbb-bbbb-bbbb-bbbb'));
+            $this->assertCount(count(CronCommand::SLOT_JOBS[$slot]), $forB, $slot);
+
+            $hb = $this->readHeartbeat($slot);
+            $this->assertSame(2, $hb['dsCount'], $slot);
+            $this->assertSame(1, $hb['cronDisabledDataSources'], $slot);
+            $this->assertSame(0, $hb['skippedDataSources'], $slot);
+            $this->assertStringContainsString('1 cron off', $tester->getDisplay(), $slot);
+        }
+        $this->assertStringContainsString('"cronDisabledDataSources":1', (string) file_get_contents($this->logPath));
+    }
+
+    public function testCronOffWithMaintenanceCountsOnlyAsCronOff(): void
+    {
+        $this->createDs(
+            'aaaa-aaaa-aaaa-aaaa',
+            '{"version":1,"state":"active","cron":false,"maintenance":{"reason":"import","since":"2026-09-01T10:00:00Z"}}',
+        );
+
+        [$cmd, $tester] = $this->makeTester();
+        $tester->execute(['--slot' => 'minute']);
+
+        $this->assertSame([], $cmd->callLog);
+        $hb = $this->readHeartbeat('minute');
+        $this->assertSame(1, $hb['cronDisabledDataSources']);
+        $this->assertSame(0, $hb['skippedDataSources']);
+    }
+
+    public function testCronOffDoesNotStopServerJobs(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', '{"version":1,"state":"active","cron":false}');
+
+        [$cmd, $tester] = $this->makeTester();
+        $tester->execute(['--slot' => 'daily']);
+        $this->assertSame([['ds' => '(server)', 'job' => 'ds-state-check']], $cmd->callLog);
+    }
+
+    // ── --ds=<id> (#115 D8) ──────────────────────────────────────────────────
+
+    public function testDsOptionRunsOnlyThatDsAndIgnoresCronSwitch(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', '{"version":1,"state":"active","cron":false}');
+        $this->createDs('bbbb-bbbb-bbbb-bbbb');
+
+        [$cmd, $tester] = $this->makeTester();
+        $exit = $tester->execute(['--slot' => 'minute', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
+
+        $this->assertSame(0, $exit);
+        $this->assertSame([
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-outbox-run'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-analysis-reap'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-preprocess --sweep'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-analyze --sweep'],
+        ], $cmd->callLog);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('cron switch off (ignored by --ds)', $display);
+        $this->assertStringContainsString('mail-outbox-run: ok (', $display);
+        // Žádný heartbeat — ruční běh nesmí v doctoru zakrýt neběžící cron.
+        $this->assertFileDoesNotExist(CronProvisioner::heartbeatPath('minute', $this->runDir));
+        $this->assertStringContainsString('cron --slot=minute --ds=aaaa-aaaa-aaaa-aaaa', (string) file_get_contents($this->logPath));
+    }
+
+    public function testDsOptionRunsEvenWhenSlotLockIsHeld(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');
+        $heartbeatPath = CronProvisioner::heartbeatPath('five-minutes', $this->runDir);
+        file_put_contents($heartbeatPath, '{"old":true}');
+
+        $lock = fopen(CronProvisioner::lockPath('five-minutes', $this->runDir), 'c');
+        $this->assertNotFalse($lock);
+        $this->assertTrue(flock($lock, LOCK_EX | LOCK_NB));
+
+        [$cmd, $tester] = $this->makeTester();
+        $exit = $tester->execute(['--slot' => 'five-minutes', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
+
+        flock($lock, LOCK_UN);
+        fclose($lock);
+
+        $this->assertSame(0, $exit);
+        $this->assertSame([['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'alerts-run']], $cmd->callLog);
+        $this->assertSame('{"old":true}', file_get_contents($heartbeatPath));
+    }
+
+    public function testDsOptionRespectsDataSourceState(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', '{"version":1,"state":"suspended","cron":false}');
+        [$cmd, $tester] = $this->makeTester();
+        $exit = $tester->execute(['--slot' => 'minute', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
+        $this->assertSame(0, $exit);
+        $this->assertSame([], $cmd->callLog);
+        $this->assertStringContainsString('state suspended', $tester->getDisplay());
+        $this->assertStringContainsString('No jobs of this slot run in the current data source state', $tester->getDisplay());
+
+        $this->createDs(
+            'bbbb-bbbb-bbbb-bbbb',
+            '{"version":1,"state":"active","maintenance":{"reason":"import","since":"2026-09-01T10:00:00Z"}}',
+        );
+        [$cmd, $tester] = $this->makeTester();
+        $this->assertSame(0, $tester->execute(['--slot' => 'daily', '--ds' => 'bbbb-bbbb-bbbb-bbbb']));
+        $this->assertSame([], $cmd->callLog);
+        $this->assertStringContainsString('maintenance: import', $tester->getDisplay());
+
+        // read_only: jen úklidové joby, server job ds-state-check neběží.
+        $this->createDs('cccc-cccc-cccc-cccc', '{"version":1,"state":"read_only"}');
+        [$cmd, $tester] = $this->makeTester();
+        $this->assertSame(0, $tester->execute(['--slot' => 'daily', '--ds' => 'cccc-cccc-cccc-cccc']));
+        $this->assertSame([['ds' => 'cccc-cccc-cccc-cccc', 'job' => 'mail-idempotency-prune']], $cmd->callLog);
+    }
+
+    public function testDsOptionSkipsServerJobs(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');
+        [$cmd, $tester] = $this->makeTester();
+        $tester->execute(['--slot' => 'daily', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
+        $this->assertSame([
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'mail-idempotency-prune'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'vat-periods-ensure'],
+            ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'work-orders-invoice-run'],
+        ], $cmd->callLog);
+
+        [$cmd, $tester] = $this->makeTester();
+        $tester->execute(['--slot' => 'two-minutes', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
+        $this->assertSame([], $cmd->callLog);
+        $this->assertFileDoesNotExist(CronProvisioner::heartbeatPath('two-minutes', $this->runDir));
+    }
+
+    public function testDsOptionFailsOnFailedJobAndShowsOutputTail(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');
+        [$cmd, $tester] = $this->makeTester();
+        $cmd->setJobResults([
+            'aaaa-aaaa-aaaa-aaaa mail-analysis-reap' => ['exitCode' => 2, 'timedOut' => false, 'output' => "line one\nboom"],
+            'aaaa-aaaa-aaaa-aaaa mail-analyze --sweep' => ['exitCode' => -1, 'timedOut' => true, 'output' => ''],
+        ]);
+
+        $exit = $tester->execute(['--slot' => 'minute', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
+
+        $this->assertSame(1, $exit);
+        // Selhání jedné úlohy nezastaví ostatní.
+        $this->assertCount(4, $cmd->callLog);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('mail-analysis-reap: failed, exit 2', $display);
+        $this->assertStringContainsString('    boom', $display);
+        $this->assertStringContainsString('mail-analyze --sweep: timed out', $display);
+        $log = (string) file_get_contents($this->logPath);
+        $this->assertStringContainsString('cron job failed', $log);
+        $this->assertStringContainsString('boom', $log);
+        $this->assertFileDoesNotExist(CronProvisioner::heartbeatPath('minute', $this->runDir));
+    }
+
+    public function testDsOptionUnknownIdFails(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');
+        [$cmd, $tester] = $this->makeTester();
+        $exit = $tester->execute(['--slot' => 'minute', '--ds' => 'zzzz-zzzz-zzzz-zzzz']);
+        $this->assertSame(1, $exit);
+        $this->assertStringContainsString('Unknown data source: zzzz-zzzz-zzzz-zzzz', $tester->getDisplay());
+        $this->assertSame([], $cmd->callLog);
+    }
+
+    public function testDsOptionInvalidIdFormatFails(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');
+        foreach (['abcd', '../aaaa-aaaa-aaaa-aaaa', 'AAAA-AAAA-AAAA-AAAA', 'aaaa-aaaa-aaaa-aaaa/'] as $bad) {
+            [$cmd, $tester] = $this->makeTester();
+            $exit = $tester->execute(['--slot' => 'minute', '--ds' => $bad]);
+            $this->assertSame(1, $exit, $bad);
+            $this->assertStringContainsString('Invalid --ds', $tester->getDisplay(), $bad);
+            $this->assertSame([], $cmd->callLog, $bad);
+        }
+        $this->assertSame([], glob($this->runDir . '/*') ?: []);
+    }
+
+    public function testDsOptionStillRequiresValidSlot(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');
+        [$cmd, $tester] = $this->makeTester();
+        $this->assertSame(1, $tester->execute(['--slot' => 'hourly', '--ds' => 'aaaa-aaaa-aaaa-aaaa']));
+        $this->assertSame([], $cmd->callLog);
     }
 
     public function testRealRunJobTimesOut(): void
