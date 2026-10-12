@@ -120,8 +120,12 @@ podle vlastníka `config/main.json` (`Core\Server\FileOwnership`,
 [ds-state.md](../ds-state.md) §3); když to nejde, zápis skončí chybou
 a původní soubor zůstane. Soubory z doby před touto opravou srovná
 `fix-permissions`, `doctor` je hlásí jako `owner root, expected
-<shipard-user>`. Klíč `secrets/secrets.key` řeší stejný problém
-`SecretsFileWriter::alignOwnership()` ([secrets.md](secrets.md)).
+<shipard-user>`. Stejnou cestou jde nový klíč z `ds-secrets-rotate`
+(`sudo` je u něj dokumentované; selhání zastaví rotaci před změnou DB,
+[secrets.md](secrets.md) §3). Soubory zakládané `SecretsFileWriter`
+(`secrets.key` při `ds-create` / `ds-upgrade`, klíče hostingu) srovnává
+jeho `alignOwnership()` podle kořene zdroje dat — pod rootem chownuje,
+jinak jen varuje.
 
 ### Recursive ownership
 

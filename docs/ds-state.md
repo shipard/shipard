@@ -160,7 +160,7 @@ je fáze 3.
 | Třída | Účel |
 |---|---|
 | `Core\Config\DataSourceState` | readonly stav; `load()` / `save()`, gettery `getEffectiveState()`, `blocksHttp()`, `isCronEnabled()`, mutátory `withState()` / `withMaintenance()` / `withoutMaintenance()` / `withDeleteAfter()` / `withCron()` — konstruktor nese přepínač bez výchozí hodnoty, aby ho žádný mutátor tiše nezapnul |
-| `Core\Server\FileOwnership` | `matchTo(cesta, vzor)` — vlastník a skupina dočasného souboru podle `main.json` před `rename` (sekce 3, zápis pod rootem); chráněné `ownerOf` / `chown` / `chgrp` jsou šev pro testy bez roota (`tests/Fixtures/Core/Server/RecordingFileOwnership`) |
+| `Core\Server\FileOwnership` | `matchTo(cesta, vzor)` — vlastník a skupina dočasného souboru před `rename` (sekce 3, zápis pod rootem); vzor dává `dataSourceReference(dsDir)` = `config/main.json` → `config/` → adresář DS, stejné pravidlo používá `ds-secrets-rotate` ([operations/secrets.md](operations/secrets.md) §3); chráněné `ownerOf` / `chown` / `chgrp` jsou šev pro testy bez roota (`tests/Fixtures/Core/Server/RecordingFileOwnership`) |
 | `Api\Exception\DataSourceUnavailableException` | hází resolver pro zavřený DS; nese `dsId`, `effectiveState`, `maintenanceReason`; `index.php` → 503 |
 | `Api\ResolvedDataSource::$state` / `isReadOnly()` | stav načtený resolverem cestuje pipeline (politika, `/_app/info`, MCP, navigace) — disk se čte jednou |
 | `Api\ReadOnlyPolicy` + `Api\ReadOnlyVerdict` | klasifikace rout pro `read_only` (sekce 6) |

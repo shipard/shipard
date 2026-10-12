@@ -1140,6 +1140,10 @@ sudo shpd-ds ds-secrets-rotate --dry-run  # jen výpis, co by se přešifrovalo
 **Před spuštěním vždy backupnout DS** (DB dump + adresář). Příkaz vygeneruje
 nový `secrets.key`, projde všechny `encrypted_text` sloupce a každou hodnotu
 přešifruje pomocí nového klíče. Starý klíč se po úspěšné rotaci přepíše.
+Pod `sudo` dostane nový klíč vlastníka zdroje dat podle `config/main.json`,
+ne `root:root` — jinak by ho PHP-FPM nepřečetl a zdroj dat by nerozšifroval
+nic. Když vlastníka nastavit nejde, příkaz skončí `Refusing to rotate…`
+před jakoukoli změnou (DB i klíč netknuté).
 
 | Opce | Význam |
 |------|--------|

@@ -157,7 +157,7 @@ Jen čtení kódu, nic z toho se v tomto tasku neopravuje:
 
 | Místo | Nález |
 |---|---|
-| `DsSecretsRotateCommand` (`secrets/secrets.key`) | **stejná díra**: vlastní `writeTmpKeyFile` + `rename` bez `chown`, `docs/cli.md` příkaz uvádí se `sudo`. Nový klíč `root:root 0600` → DS nerozšifruje nic. `doctor` to odhalí přes rekurzivní kontrolu `secrets/`. Zaslouží samostatný task; nabízí se `FileOwnership::matchTo()` podle starého klíče |
+| `DsSecretsRotateCommand` (`secrets/secrets.key`) | **stejná díra**: vlastní `writeTmpKeyFile` + `rename` bez `chown`, `docs/cli.md` příkaz uvádí se `sudo`. Nový klíč `root:root 0600` → DS nerozšifruje nic. `doctor` to odhalí přes rekurzivní kontrolu `secrets/`. **Opraveno týž den** v `tasks/secrets-rotate-key-owner.md` (`FileOwnership::matchTo()` podle `main.json` před transakcí) |
 | `HostingSyncRunner::patchAuthProvider` (`config/main.json`) | **podmíněně**: tmp + `rename` + `chmod 0600` bez `chown`. Z cronu běží pod shipard-userem; ruční první běh (`docs/cli.md` § `hosting-sync`) pod `sudo` by `main.json` převedl na `root:root` a DS zavřel úplně. Dokumentace `sudo` neuvádí |
 | `SecretsFileWriter::write` (`secrets/*`) | v pořádku — vlastní `alignOwnership()` podle kořene DS (root chownuje, ne-root varuje). Sjednocení na `FileOwnership` jako follow-up |
 | `BrandingStorage::store` (`branding/`) | v pořádku — běží jen pod PHP-FPM (upload z UI) |

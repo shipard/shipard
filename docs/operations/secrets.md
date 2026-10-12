@@ -77,7 +77,12 @@ bin/shpd-ds ds-secrets-rotate
 Pořadí kroků:
 
 1. Vygeneruje nový klíč v paměti
-2. Pre-write `secrets.key.tmp` (0600) + fsync — ověří, že disk je writable
+2. Pre-write `secrets.key.tmp` (0600) + fsync — ověří, že disk je writable;
+   vlastník a skupina tmp souboru podle `config/main.json`
+   (`Core\Server\FileOwnership::matchTo()`), takže pod `sudo` nevznikne
+   klíč `root:root`, který by runtime (shipard-user) nepřečetl. Když
+   vlastníka nastavit nejde, rotace skončí **tady** — DB i `secrets.key`
+   zůstávají beze změny
 3. `BEGIN` DB tranzakce
 4. Pro každý `encrypted_text` sloupec: SELECT non-null řádky, decrypt
    starým klíčem, encrypt novým, UPDATE
@@ -89,7 +94,14 @@ Pokud krok 4 selže → DB rollback, soubor netknut, žádné změny.
 
 Pokud kroky 6 nebo 7 selžou po commitu (vzácné — disk full, perms),
 příkaz vypíše recovery návod. Stará `.bak` může být po ověření manuálně
-smazána.
+smazána. `.bak` vzniká přejmenováním starého klíče, vlastníka tedy dědí
+a žádnou opravu nepotřebuje.
+
+Rotace provedená starší verzí pod `sudo` (před 2026-10-12) zanechala
+`secrets.key` jako `root:root` — zdroj dat pak nerozšifruje nic
+(`SecretsKeyMissingException` nebo nečitelný klíč v logu). Opraví
+`sudo shpd-server fix-permissions` (rekurzivní kontrola `secrets/`,
+[permissions.md](permissions.md)), potom `ds-secrets-health`.
 
 Rotace by měla být dělána zřídka — typicky jen při suspected key
 compromise nebo provozní policy. Žádný scheduled task v MVP.
@@ -153,6 +165,8 @@ zadat všechny secrets.
 | `SecretsKeyInsecureException` perms 0640    | tým-přístup omylem              | `chmod 0600 secrets.key`            |
 | `InvalidCiphertextException` v `health`     | klíč nesedí na ciphertext       | restore správného `secrets.key`     |
 | `ds-secrets-rotate` vrací CRITICAL          | disk full / perms při rename    | viz output, manuální mv             |
+| `ds-secrets-rotate`: `Refusing to rotate…`  | běh pod jiným uživatelem než root a než vlastník DS — tmp klíč nelze předat vlastníkovi | spustit pod `sudo` nebo jako vlastník DS; nic se nezměnilo |
+| `secrets.key` je `root:root` po rotaci      | rotace starší verzí pod `sudo`  | `sudo shpd-server fix-permissions`, pak `ds-secrets-health` |
 | `AES-256-GCM is not available`              | PHP bez rozšíření OpenSSL       | doinstalovat / povolit `openssl`    |
 
 ## 6. Implementační reference
@@ -161,5 +175,11 @@ zadat všechny secrets.
 - `src/Core/Database/SchemaIntrospector.php` — vyhledávání `encrypted_text` sloupců
 - `src/Command/DataSource/DsSecretsHealthCommand.php`
 - `src/Command/DataSource/DsSecretsRotateCommand.php`
+- `src/Core/Security/SecretsFileWriter.php` — atomický zápis do `secrets/`
+  s vlastníkem podle kořene DS (`alignOwnership()`: root chownuje, ne-root
+  varuje) — `ds-create`, `ds-upgrade`, klíče hostingu
+- `src/Core/Server/FileOwnership.php` — vlastník tmp klíče při rotaci podle
+  `config/main.json` (`dataSourceReference()`), selhání = výjimka; totéž
+  pro `config/state.json` ([ds-state.md](../ds-state.md) §3)
 - `tests/Fixtures/Module/Test/Secrets/TestSecretDocument.php` — kanárkový vzor pro
   Document classes, které mají `encrypted_text` sloupec
