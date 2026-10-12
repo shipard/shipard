@@ -210,14 +210,6 @@ class DoctorCommand extends Command
     }
 
     /**
-     * Stavy DS (#56 D8): počty per efektivní stav, ⚠ pro maintenance déle
-     * než práh (zapomenutá?), ✗ pro fail-closed state.json (DS zavřený
-     * omylem — jediné místo, kde to admin uvidí bez čtení logu). Ne-active
-     * DS se vypisují všechny, aby read_only/suspended nebyly překvapení.
-     *
-     * @return int number of errors (corrupted state files)
-     */
-    /**
      * Stavy z config/state.json (#56 D8) + přepínač periodických úloh (#115
      * D11): vypnutý cron je na produkci varování (DS má běžet celý), jinde
      * informační řádek; nikdy nezvyšuje počet chyb. Řádek o cronu je

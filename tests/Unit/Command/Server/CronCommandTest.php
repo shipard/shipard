@@ -636,6 +636,23 @@ class CronCommandTest extends TestCase
         $this->assertSame([], glob($this->runDir . '/*') ?: []);
     }
 
+    public function testDsOptionEmptyValueFailsInsteadOfRunningWholeSlot(): void
+    {
+        // `--ds=` zadané s prázdnou hodnotou nesmí propadnout do běhu nad
+        // všemi DS — na dev stroji by to zasáhlo kopie reálných dat.
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');
+        $this->createDs('bbbb-bbbb-bbbb-bbbb');
+
+        [$cmd, $tester] = $this->makeTester();
+        $exit = $tester->execute(['--slot' => 'minute', '--ds' => '']);
+
+        $this->assertSame(1, $exit);
+        $this->assertStringContainsString('Invalid --ds: (empty)', $tester->getDisplay());
+        $this->assertSame([], $cmd->callLog);
+        $this->assertFileDoesNotExist(CronProvisioner::heartbeatPath('minute', $this->runDir));
+        $this->assertSame([], glob($this->runDir . '/*') ?: []);
+    }
+
     public function testDsOptionStillRequiresValidSlot(): void
     {
         $this->createDs('aaaa-aaaa-aaaa-aaaa');

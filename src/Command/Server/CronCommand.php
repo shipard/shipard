@@ -145,9 +145,12 @@ class CronCommand extends Command
 
         ErrorLogger::setLogPath($this->getLogPath());
 
+        // `--ds` zadané = cokoli jiného než null. Prázdná hodnota je chyba
+        // (neprojde přes formát ID), nikdy nesmí propadnout do běhu celého
+        // slotu nad všemi DS.
         $dsOption = $input->getOption('ds');
-        if (is_string($dsOption) && $dsOption !== '') {
-            return $this->executeSingle($slot, $dsOption, $output);
+        if ($dsOption !== null) {
+            return $this->executeSingle($slot, (string) $dsOption, $output);
         }
 
         ErrorLogger::setRequestContext('cli: cron --slot=' . $slot);
@@ -332,7 +335,7 @@ class CronCommand extends Command
     private function executeSingle(string $slot, string $dsId, OutputInterface $output): int
     {
         if (!preg_match(IdGenerator::ID_PATTERN, $dsId)) {
-            $output->writeln('<error>Invalid --ds: ' . $dsId . ' (expected xxxx-xxxx-xxxx-xxxx)</error>');
+            $output->writeln('<error>Invalid --ds: ' . ($dsId === '' ? '(empty)' : $dsId) . ' (expected xxxx-xxxx-xxxx-xxxx)</error>');
             return Command::FAILURE;
         }
         $dsDir = $this->getDataSourcesDir() . '/' . $dsId;
