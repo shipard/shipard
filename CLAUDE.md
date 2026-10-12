@@ -133,6 +133,19 @@ Formát hlavičky stránky a šablona: `docs/help-authoring.md`.
 - Server config: `/etc/shipard/server.json` (práva 0600)
 - Data sources: `/opt/shipard/data-sources/{id}/config/main.json` (práva 0600)
 
+### Soubory zapisované z CLI do adresáře zdroje dat
+- CLI příkazy běží i pod rootem (`sudo shpd-ds …`, `shpd-server …`,
+  `cron-install`). Soubor, který příkaz zapíše do adresáře zdroje dat, musí
+  dostat **vlastníka zdroje dat**: `FileOwnership::matchTo()` na dočasný
+  soubor před `rename`, vzor `FileOwnership::dataSourceReference()`. Jinak
+  ho PHP-FPM ani cron nepřečtou — `state.json` zavře zdroj dat fail-closed,
+  `secrets.key` nic nerozšifruje.
+- Nepovede-li se vlastníka nastavit, zápis končí chybou a původní soubor
+  zůstává — nikdy tichý úspěch.
+- Nový soubor patří i do `PermissionSpec::getDataSourceEntries()`, aby ho
+  hlídal `doctor` a opravil `fix-permissions`.
+- Viz `docs/operations/permissions.md` → Soubory zapisované pod rootem.
+
 ### ID zdroje dat
 - Formát: `xxxx-xxxx-xxxx-xxxx` (a-z0-9, 4 skupiny po 4)
 - DB name: pomlčky → podtržítka (`abcd_efgh_ijkl_mnop`)
