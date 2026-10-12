@@ -89,4 +89,23 @@ class PermissionSpecTest extends TestCase
         $this->assertFalse(PermissionSpec::ensureDsDir($this->tempRoot . '/att'));
         $this->assertFalse(PermissionSpec::ensureDsDir($this->tempRoot . '/att/2026'));
     }
+
+    public function testDataSourceEntriesIncludeOptionalStateFile(): void
+    {
+        // state.json se zapisuje i pod rootem — doctor musí špatného vlastníka
+        // hlásit a fix-permissions opravit (tasks/ds-state-file-ownership.md).
+        $dsDir = '/opt/shipard/data-sources/aaaa-bbbb-cccc-dddd';
+        $spec = new PermissionSpec('shipard');
+
+        $byPath = array_column($spec->getDataSourceEntries($dsDir), null, 'path');
+        $this->assertArrayHasKey($dsDir . '/config/state.json', $byPath);
+
+        $entry = $byPath[$dsDir . '/config/state.json'];
+        $this->assertSame('file', $entry['type']);
+        $this->assertSame('user', $entry['owner']);
+        $this->assertSame('user', $entry['group']);
+        $this->assertSame(0640, $entry['mode']);
+        $this->assertTrue($entry['optional'] ?? false, 'DS bez state.json je active — soubor nesmí být povinný');
+        $this->assertArrayNotHasKey('recurse', $entry);
+    }
 }

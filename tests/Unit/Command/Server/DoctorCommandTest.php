@@ -347,6 +347,9 @@ class DoctorCommandTest extends TestCase
         $baselineIssues = $m[1] ?? '0';
 
         file_put_contents($dsRoot . '/aaaa-aaaa-aaaa-aaaa/config/state.json', '{"version":1,"state":"active","cron":false}');
+        // Jako od DataSourceState::save() — state.json je v PermissionSpec (0640),
+        // soubor s módem podle umask by přidal nález a test by měřil něco jiného.
+        chmod($dsRoot . '/aaaa-aaaa-aaaa-aaaa/config/state.json', 0640);
         $command = $this->makeTester($spec);
         $command->stubPoolUser = $this->testUser;
         $tester = new CommandTester($command);

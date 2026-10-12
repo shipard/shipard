@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Config;
 
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\Server\FileOwnership;
 
 /**
  * Stav zdroje dat — `config/state.json` (issue shipard/shipard#56, docs/ds-state.md).
@@ -296,9 +297,20 @@ final class DataSourceState
      * resolver při každém requestu a cron každou minutu, roztržený zápis by
      * DS fail-closed zavřel. Selhání = výjimka, nikdy tichý úspěch.
      * Nastavuje `changed` (UTC) a `changedBy`.
+     *
+     * Vlastník: zápis běží i pod rootem (`sudo shpd-ds ds-state`, `ds-cron`,
+     * `cron-install`) a soubor `root:root 0640` by runtime zdroje dat
+     * nepřečetl — DS by skončil fail-closed `suspended`. Dočasný soubor proto
+     * před `rename` dostane vlastníka a skupinu podle `config/main.json`
+     * (bez něj podle adresáře `config/`); když to nejde, zápis skončí
+     * výjimkou a původní soubor zůstane. `$ownership` je šev pro testy.
      */
-    public function save(string $dataSourceDir, string $changedBy, ?\DateTimeImmutable $now = null): self
-    {
+    public function save(
+        string $dataSourceDir,
+        string $changedBy,
+        ?\DateTimeImmutable $now = null,
+        ?FileOwnership $ownership = null,
+    ): self {
         if ($this->corrupted) {
             throw new \LogicException('Refusing to save a fail-closed state derived from a corrupted file');
         }
@@ -330,12 +342,33 @@ final class DataSourceState
             throw new \RuntimeException(self::writeError("write {$tmp}", $dir));
         }
         @chmod($tmp, 0640);
+        try {
+            ($ownership ?? new FileOwnership())->matchTo($tmp, self::ownerReference($dir));
+        } catch (\RuntimeException $e) {
+            @unlink($tmp);
+            throw new \RuntimeException(
+                "Refusing to install {$path} with an owner the data source cannot read: " . $e->getMessage(),
+                0,
+                $e,
+            );
+        }
         if (!@rename($tmp, $path)) {
             @unlink($tmp);
             throw new \RuntimeException(self::writeError("rename {$tmp} to {$path}", $dir));
         }
 
         return $saved;
+    }
+
+    /**
+     * Soubor, podle kterého se řídí vlastník `state.json`: `main.json` zdroji
+     * dat prokazatelně patří (`0600`, zakládá ho ds-create a chownuje); když
+     * chybí, adresář `config/`.
+     */
+    private static function ownerReference(string $configDir): string
+    {
+        $main = $configDir . '/main.json';
+        return is_file($main) ? $main : $configDir;
     }
 
     /** @return array<string, mixed> */

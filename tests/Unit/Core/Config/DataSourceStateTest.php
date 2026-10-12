@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Tests\Fixtures\Core\Server\RecordingFileOwnership;
 
 class DataSourceStateTest extends TestCase
 {
@@ -308,5 +309,89 @@ class DataSourceStateTest extends TestCase
         $raw = json_decode((string) file_get_contents(DataSourceState::filePath($this->dsDir)), true);
         $this->assertArrayNotHasKey('cron', $raw);
         $this->assertTrue(DataSourceState::load($this->dsDir)->isCronEnabled());
+    }
+
+    // ── Vlastník souboru při zápisu (tasks/ds-state-file-ownership.md) ─────
+
+    private function writeMainJson(): string
+    {
+        $main = $this->dsDir . '/config/main.json';
+        file_put_contents($main, '{}');
+        chmod($main, 0600);
+        return $main;
+    }
+
+    public function testSaveLeavesOwnerAloneWhenItMatchesMainJson(): void
+    {
+        $main = $this->writeMainJson();
+        $ownership = new RecordingFileOwnership();
+
+        DataSourceState::active()->withCron(false)->save($this->dsDir, 'cli', null, $ownership);
+
+        $path = DataSourceState::filePath($this->dsDir);
+        $this->assertSame([], $ownership->calls);
+        $this->assertSame([$main, $path . '.tmp'], $ownership->lookups);
+        $this->assertFileExists($path);
+        $this->assertTrue(is_readable($path));
+        $this->assertSame(0640, fileperms($path) & 0777);
+        $this->assertFalse(DataSourceState::load($this->dsDir)->isCronEnabled());
+    }
+
+    public function testSaveAppliesOwnerOfMainJsonToTemporaryFileBeforeRename(): void
+    {
+        // Běh pod rootem: tmp vzniká jako root:root, main.json patří zdroji dat.
+        $main = $this->writeMainJson();
+        $ownership = new RecordingFileOwnership();
+        $ownership->owners[$main] = ['uid' => 12345, 'gid' => 54321];
+
+        DataSourceState::active()->save($this->dsDir, 'cli', null, $ownership);
+
+        $tmp = DataSourceState::filePath($this->dsDir) . '.tmp';
+        $this->assertSame([
+            ['chown', $tmp, 12345],
+            ['chgrp', $tmp, 54321],
+        ], $ownership->calls);
+        $this->assertFileDoesNotExist($tmp);
+        $this->assertSame('active', DataSourceState::load($this->dsDir)->getState());
+    }
+
+    public function testSaveFailsLoudlyAndKeepsOriginalWhenOwnerCannotBeSet(): void
+    {
+        $main = $this->writeMainJson();
+        $this->writeState(json_encode(['version' => 1, 'state' => 'read_only']));
+        $original = (string) file_get_contents(DataSourceState::filePath($this->dsDir));
+
+        $ownership = new RecordingFileOwnership();
+        $ownership->owners[$main] = ['uid' => 12345, 'gid' => 54321];
+        $ownership->chownResult = false;
+
+        try {
+            DataSourceState::load($this->dsDir)->withCron(false)->save($this->dsDir, 'cli', null, $ownership);
+            $this->fail('expected RuntimeException');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('Refusing to install', $e->getMessage());
+            $this->assertStringContainsString('Fix: chown ', $e->getMessage());
+        }
+
+        $path = DataSourceState::filePath($this->dsDir);
+        $this->assertFileDoesNotExist($path . '.tmp');
+        $this->assertSame($original, file_get_contents($path));
+        $this->assertSame('read_only', DataSourceState::load($this->dsDir)->getState());
+        $this->assertTrue(DataSourceState::load($this->dsDir)->isCronEnabled());
+    }
+
+    public function testSaveUsesConfigDirAsOwnerReferenceWithoutMainJson(): void
+    {
+        // setUp zakládá jen config/ — atrapa zdroje dat bez main.json.
+        $configDir = $this->dsDir . '/config';
+        $ownership = new RecordingFileOwnership();
+        $ownership->owners[$configDir] = ['uid' => 12345, 'gid' => (int) filegroup($configDir)];
+
+        DataSourceState::active()->save($this->dsDir, 'cli', null, $ownership);
+
+        $tmp = DataSourceState::filePath($this->dsDir) . '.tmp';
+        $this->assertSame($configDir, $ownership->lookups[0]);
+        $this->assertSame([['chown', $tmp, 12345]], $ownership->calls);
+        $this->assertFileExists(DataSourceState::filePath($this->dsDir));
     }
 }

@@ -183,6 +183,48 @@ class FixPermissionsCommandTest extends TestCase
         $this->assertSame(0600, $perms);
     }
 
+    public function testDryRunOffersStateFileModeFix(): void
+    {
+        // state.json vzniklý pod rootem — doctor hlásí, fix-permissions nabízí
+        // (tasks/ds-state-file-ownership.md). Bez roota lze ověřit jen mód.
+        $this->writeServerJson();
+        $spec = $this->makeSpec();
+        $dsDir = $this->buildTreeWithBrokenMode($spec);
+        file_put_contents($dsDir . '/config/state.json', '{"version":1,"state":"active"}');
+        chmod($dsDir . '/config/state.json', 0644);   // should be 0640
+
+        $command = new TestableFixPermissionsCommand($this->tempConfigPath, $spec);
+        $command->rootResult = false;
+
+        $tester = new CommandTester($command);
+        $exitCode = $tester->execute(['--dry-run' => true]);
+
+        $this->assertSame(0, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString($dsDir . '/config/state.json', $display);
+        $this->assertStringContainsString('mode 0644, expected 0640', $display);
+        $this->assertSame(0644, fileperms($dsDir . '/config/state.json') & 0777, '--dry-run nic nemění');
+    }
+
+    public function testFixesStateFileMode(): void
+    {
+        $this->writeServerJson();
+        $spec = $this->makeSpec();
+        $dsDir = $this->buildTreeWithBrokenMode($spec);
+        file_put_contents($dsDir . '/config/state.json', '{"version":1,"state":"active"}');
+        chmod($dsDir . '/config/state.json', 0644);
+
+        $command = new TestableFixPermissionsCommand($this->tempConfigPath, $spec);
+        $command->rootResult = true;
+
+        $tester = new CommandTester($command);
+        $exitCode = $tester->execute(['--force' => true]);
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringContainsString('chmod 0640 ' . $dsDir . '/config/state.json', $tester->getDisplay());
+        $this->assertSame(0640, fileperms($dsDir . '/config/state.json') & 0777);
+    }
+
     public function testFixesBrandingDirMode(): void
     {
         // Alfa incident: branding/ vzniklý pod rootem s 0755 —

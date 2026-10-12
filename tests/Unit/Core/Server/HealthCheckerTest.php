@@ -566,4 +566,69 @@ class HealthCheckerTest extends TestCase
         $this->assertStringContainsString('mode 0750 blocks nginx', $issues[0]['message']);
         $this->assertStringContainsString("chmod o+x {$home}", $issues[0]['message']);
     }
+
+    // ── config/state.json (tasks/ds-state-file-ownership.md) ───────────────
+
+    /**
+     * @param list<array{severity: string, path: string, message: string, fixable: bool}> $issues
+     * @return list<array{severity: string, path: string, message: string, fixable: bool}>
+     */
+    private function stateFileIssues(array $issues, string $dsDir): array
+    {
+        return array_values(array_filter(
+            $issues,
+            static fn($i) => $i['path'] === $dsDir . '/config/state.json',
+        ));
+    }
+
+    public function testMissingStateFileIsNotAnIssue(): void
+    {
+        $spec = $this->makeSpec();
+        $this->buildContractTree($spec);
+        $dsDir = $this->createDsTree($spec, 'aaaa-bbbb-cccc-dddd');
+
+        $issues = (new HealthChecker($spec))->checkAll();
+
+        $this->assertSame([], $this->stateFileIssues($issues, $dsDir));
+    }
+
+    public function testDetectsWrongModeOnStateFile(): void
+    {
+        $spec = $this->makeSpec();
+        $this->buildContractTree($spec);
+        $dsDir = $this->createDsTree($spec, 'aaaa-bbbb-cccc-dddd');
+        $this->writeFile($dsDir . '/config/state.json', '{"version":1,"state":"active"}', 0644);
+
+        $issues = $this->stateFileIssues((new HealthChecker($spec))->checkAll(), $dsDir);
+
+        $this->assertCount(1, $issues);
+        $this->assertSame('mode 0644, expected 0640', $issues[0]['message']);
+        $this->assertTrue($issues[0]['fixable']);
+    }
+
+    public function testDetectsWrongOwnerOnStateFile(): void
+    {
+        // Soubor zapsaný pod rootem bez opravy vlastníka: testovací uživatel
+        // nemůže chownovat, proto spec očekává jiného uživatele než vlastníka.
+        $fake = 'shipard-nonexistent-' . uniqid();
+        $spec = new PermissionSpec(
+            shipardUser: $fake,
+            dataSourcesDir: $this->tempRoot . '/opt/shipard/data-sources',
+            logDir: $this->tempRoot . '/opt/shipard/log',
+            configDir: $this->tempRoot . '/etc/shipard',
+            shipardRoot: $this->tempRoot . '/opt/shipard',
+        );
+        $this->buildContractTree($spec);
+        $dsDir = $this->createDsTree($spec, 'aaaa-bbbb-cccc-dddd');
+        $this->writeFile($dsDir . '/config/state.json', '{"version":1,"state":"active"}', 0640);
+
+        $issues = $this->stateFileIssues((new HealthChecker($spec))->checkAll(), $dsDir);
+        $messages = array_column($issues, 'message');
+
+        $this->assertContains("owner {$this->testUser}, expected {$fake}", $messages);
+        $this->assertContains("group {$this->testUser}, expected {$fake}", $messages);
+        foreach ($issues as $issue) {
+            $this->assertTrue($issue['fixable']);
+        }
+    }
 }
