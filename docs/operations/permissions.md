@@ -32,6 +32,7 @@ V dalším textu **shipard-user** = ten správný uživatel pro aktuální mód.
 | `/opt/shipard/data-sources/<id>/` | shipard-user | shipard-user | `0750` | per-DS root |
 | `/opt/shipard/data-sources/<id>/config/` | shipard-user | shipard-user | `0750` | |
 | `/opt/shipard/data-sources/<id>/config/main.json` | shipard-user | shipard-user | `0600` | obsahuje DB heslo |
+| `/opt/shipard/data-sources/<id>/config/state.json` | shipard-user | shipard-user | `0640` | (volitelné — bez souboru je DS `active`); stav DS ([ds-state.md](../ds-state.md) §3). Zapisuje se i pod rootem — špatný vlastník = DS fail-closed `suspended` |
 | `/opt/shipard/data-sources/<id>/config/configuration/` | shipard-user | shipard-user | `0750` | compiled configs |
 | `/opt/shipard/data-sources/<id>/secrets/` | shipard-user | shipard-user | `0700` | striktní |
 | `/opt/shipard/data-sources/<id>/secrets/secrets.key` | shipard-user | shipard-user | `0600` | encryption key pro `encrypted_text` |
@@ -108,6 +109,19 @@ srovná `fix-permissions`.
 Výjimkou je `cache/twig/`, kterou si zakládá knihovna Twig sama s módem
 podle umask; leží pod `cache/` (`0750`), takže se do ní nikdo další
 nedostane.
+
+### Soubory zapisované pod rootem
+
+Některé příkazy zapisují do adresáře zdroje dat pod rootem (`sudo shpd-ds
+ds-state …`, `shpd-server ds-cron`, `cron-install`). Adresáře zdroje dat
+nemají setgid, takže nový soubor by patřil `root:root` a shipard-user by
+ho nepřečetl. `config/state.json` proto zapisovatel před `rename` srovná
+podle vlastníka `config/main.json` (`Core\Server\FileOwnership`,
+[ds-state.md](../ds-state.md) §3); když to nejde, zápis skončí chybou
+a původní soubor zůstane. Soubory z doby před touto opravou srovná
+`fix-permissions`, `doctor` je hlásí jako `owner root, expected
+<shipard-user>`. Klíč `secrets/secrets.key` řeší stejný problém
+`SecretsFileWriter::alignOwnership()` ([secrets.md](secrets.md)).
 
 ### Recursive ownership
 

@@ -1,6 +1,6 @@
 # Periodické úlohy — cron ve vývojové instalaci (#115 fáze 2)
 
-**Stav:** naplánováno — PRD z 2026-10-12, upřesnění U1–U5 potvrzena; čeká na `tasks/ds-state-file-ownership.md`
+**Stav:** naplánováno — PRD z 2026-10-12, upřesnění U1–U5 potvrzena; `tasks/ds-state-file-ownership.md` hotový 2026-10-12 — lze začít
 
 > PRD pro Claude Code (4 commity). Design: issue #115 (D6, D10, D12),
 > navazuje na fázi 1 (`tasks/cron-ds-switch.md`). Souvisí: #96

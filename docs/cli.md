@@ -457,6 +457,8 @@ adresáře s `config/main.json`).
 (ne obojí) — jinak chyba s nápovědou a nic se nezapíše. Bez
 potvrzovacího dotazu (volá se ze skriptů; fáze 2 ho použije při první
 instalaci cronu, D10). `changedBy: cli`. Po přepnutí vypíše přehled.
+Pod rootem zapsaný `state.json` patří vlastníkovi zdroje dat (podle
+`config/main.json`), ne rootu — viz `ds-state`.
 
 | Výsledek per DS | Význam |
 |---|---|
@@ -679,6 +681,13 @@ každém zápisu příkaz vypíše **efektivní stav**.
 
 Exit code: SUCCESS; FAILURE při nevalidním stavu/reasonu/datu, odmítnutém
 potvrzení, selhání zápisu, nebo `show` nad poškozeným souborem.
+
+Zápis pod `sudo` zachová vlastníka zdroje dat: `state.json` dostane
+vlastníka a skupinu podle `config/main.json`, ne `root:root`
+([ds-state.md](ds-state.md) §3). Když to nejde (běh pod jiným uživatelem
+než root a než vlastník), příkaz skončí chybou s radou `chown` a původní
+soubor zůstane. Soubor vzniklý starší verzí pod rootem hlásí `shpd-server
+doctor` a opraví `sudo shpd-server fix-permissions`.
 
 HTTP: `suspended` / maintenance / `pending_deletion` → 503 `DS_UNAVAILABLE`
 + `Retry-After: 300` (i pro `/_mail/incoming` — mail-router frontuje);

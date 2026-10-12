@@ -1,6 +1,6 @@
 # `state.json` — vlastník souboru při zápisu pod rootem
 
-**Stav:** naplánováno — nález z přípravy #115 fáze 2 (2026-10-12); blokuje `tasks/cron-dev-install.md`
+**Stav:** hotovo — implementováno 2026-10-12 (2 commity); reprodukce pod rootem zůstala na člověku (`sudo` na dev stroji chce heslo, postup v sekci Výsledek); přehled ostatních zápisů tamtéž — `ds-secrets-rotate` má stejnou díru (samostatný task), `hosting-sync` jen při ručním běhu pod rootem; odblokuje `tasks/cron-dev-install.md`
 
 > Jednorázový task pro Claude Code (2 commity). Souvisí: #56
 > (`tasks/ds-state-phase1.md`), #115 (`tasks/cron-ds-switch.md`).
@@ -112,12 +112,61 @@ v tomto tasku** — nález napiš do `**Stav:**`.
 
 ## Hotovo když
 
-- [ ] reprodukce před opravou zapsaná ve `**Stav:**` (nebo proč chybí)
+- [x] reprodukce před opravou zapsaná ve `**Stav:**` (nebo proč chybí) —
+      chybí, `sudo` chce heslo; postup pro člověka níže
 - [ ] `sudo shpd-ds ds-state cron --off` v dočasném adresáři zanechá
       `state.json` s vlastníkem adresáře a `shpd-ds ds-state` bez `sudo`
-      ho přečte
-- [ ] `doctor` hlásí `state.json` se špatným vlastníkem,
-      `fix-permissions --dry-run` ho nabízí k opravě
-- [ ] přehled ostatních zápisů (krok 4) ve `**Stav:**`
-- [ ] `php -l`, cílené testy, celá sada
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
+      ho přečte — **čeká na člověka** (postup níže)
+- [x] `doctor` hlásí `state.json` se špatným vlastníkem,
+      `fix-permissions --dry-run` ho nabízí k opravě — jednotkové testy
+      (`HealthCheckerTest`, `FixPermissionsCommandTest`); nad reálným
+      souborem `root:root` ověřit spolu s reprodukcí
+- [x] přehled ostatních zápisů (krok 4) — sekce Výsledek
+- [x] `php -l`, cílené testy, celá sada (9095 testů)
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
+
+## Výsledek (2026-10-12)
+
+### Reprodukce a ověření pod rootem — postup pro člověka
+
+`sudo` na vývojovém stroji vyžaduje heslo, Claude Code krok neprovedl.
+Před opravou (commit `fix(ds-state)…` odložený stranou, nebo starší
+checkout) má soubor vlastníka `root:root` a výpis bez `sudo` hlásí
+nečitelný `state.json`; po opravě patří vlastníkovi adresáře:
+
+```bash
+DIR="$(mktemp -d /tmp/shpd-state-owner-XXXX)"; mkdir -p "$DIR/config"
+echo '{"id":"zzzz-zzzz-zzzz-zzzz","name":"repro"}' > "$DIR/config/main.json"
+chmod 0750 "$DIR/config"; chmod 0600 "$DIR/config/main.json"
+( cd "$DIR" && sudo php ~/sw/shpd/bin/shpd-ds ds-state cron --off )
+ls -l "$DIR/config/state.json"          # očekávaně <uživatel>:<skupina> 0640
+( cd "$DIR" && php ~/sw/shpd/bin/shpd-ds ds-state )   # Cron: off, exit 0
+sudo rm -rf "$DIR"
+```
+
+Stejný adresář poslouží k ověření `doctor` / `fix-permissions`: soubor
+ručně `sudo chown root:root`, `shpd-server doctor` ho má hlásit jako
+`owner root, expected <shipard-user>`, `sudo shpd-server fix-permissions
+--dry-run` nabídnout `chown` — jen u zdroje dat pod
+`/opt/shipard/data-sources`, dočasný adresář `doctor` nevidí; na dev
+stroji použij volný zdroj dat.
+
+### Krok 4 — ostatní atomické zápisy (`rename(`) do adresáře zdroje dat
+
+Jen čtení kódu, nic z toho se v tomto tasku neopravuje:
+
+| Místo | Nález |
+|---|---|
+| `DsSecretsRotateCommand` (`secrets/secrets.key`) | **stejná díra**: vlastní `writeTmpKeyFile` + `rename` bez `chown`, `docs/cli.md` příkaz uvádí se `sudo`. Nový klíč `root:root 0600` → DS nerozšifruje nic. `doctor` to odhalí přes rekurzivní kontrolu `secrets/`. Zaslouží samostatný task; nabízí se `FileOwnership::matchTo()` podle starého klíče |
+| `HostingSyncRunner::patchAuthProvider` (`config/main.json`) | **podmíněně**: tmp + `rename` + `chmod 0600` bez `chown`. Z cronu běží pod shipard-userem; ruční první běh (`docs/cli.md` § `hosting-sync`) pod `sudo` by `main.json` převedl na `root:root` a DS zavřel úplně. Dokumentace `sudo` neuvádí |
+| `SecretsFileWriter::write` (`secrets/*`) | v pořádku — vlastní `alignOwnership()` podle kořene DS (root chownuje, ne-root varuje). Sjednocení na `FileOwnership` jako follow-up |
+| `BrandingStorage::store` (`branding/`) | v pořádku — běží jen pod PHP-FPM (upload z UI) |
+| `CronCommand::writeHeartbeat` (`run/`) | mimo adresář DS; `--ds` heartbeat nepíše |
+| `DomainsFile`, `CompletionInstaller`, `CronInstallCommand` | systémové soubory (`/etc/…`), root je záměr |
+| `DsCreateCommand --no-cron` | v pořádku — `state.json` před rekurzivním `chown` na konci příkazu |
+
+Mimo rozsah přehledu (ne-atomické zápisy): `ConfigCompiler` zapisuje
+`config/configuration/compiled.*.json` přímo `file_put_contents`; pod
+`sudo shpd-ds ds-upgrade` vznikají jako `root:root` s módem podle umask
+(obvykle čitelné), `doctor` ho hlásí přes rekurzivní kontrolu
+`config/configuration/`.

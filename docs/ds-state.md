@@ -103,6 +103,22 @@ selhání = výjimka — soubor čte resolver při každém requestu a cron kaž
 minutu, roztržený zápis by DS fail-closed zavřel. Nastavuje `changed`
 a `changedBy`.
 
+**Vlastník souboru.** Zápis běží i pod rootem (`sudo shpd-ds ds-state …`,
+`shpd-server ds-cron`, `cron-install` ve fázi 2 #115). Adresář `config/`
+má `0750` bez setgid, takže soubor založený rootem by patřil `root:root`
+a PHP-FPM ani dispatcher periodických úloh (shipard-user) by ho
+nepřečetli — `load()` by vrátil fail-closed `suspended`, HTTP 503 a cron
+by DS přeskakoval. `save()` proto před `rename` srovná vlastníka
+a skupinu dočasného souboru podle `config/main.json` (bez něj podle
+adresáře `config/`) přes `Core\Server\FileOwnership::matchTo()`. Mění jen
+to, co se liší — běžný běh pod shipard-userem `chown` nevolá. Když
+vlastníka nastavit nejde (jiný uživatel než root), `save()` skončí
+výjimkou, dočasný soubor smaže a původní `state.json` nechá být; soubor,
+který by DS zavřel, se nesmí zapsat potichu. Mód zůstává `0640`. Soubor
+je zároveň v `PermissionSpec` (volitelný, `user:user 0640`), takže
+`doctor` špatného vlastníka nahlásí a `fix-permissions` opraví soubory
+vzniklé starší verzí ([operations/permissions.md](operations/permissions.md)).
+
 ## 4. Ovládání
 
 ```bash
@@ -144,6 +160,7 @@ je fáze 3.
 | Třída | Účel |
 |---|---|
 | `Core\Config\DataSourceState` | readonly stav; `load()` / `save()`, gettery `getEffectiveState()`, `blocksHttp()`, `isCronEnabled()`, mutátory `withState()` / `withMaintenance()` / `withoutMaintenance()` / `withDeleteAfter()` / `withCron()` — konstruktor nese přepínač bez výchozí hodnoty, aby ho žádný mutátor tiše nezapnul |
+| `Core\Server\FileOwnership` | `matchTo(cesta, vzor)` — vlastník a skupina dočasného souboru podle `main.json` před `rename` (sekce 3, zápis pod rootem); chráněné `ownerOf` / `chown` / `chgrp` jsou šev pro testy bez roota (`tests/Fixtures/Core/Server/RecordingFileOwnership`) |
 | `Api\Exception\DataSourceUnavailableException` | hází resolver pro zavřený DS; nese `dsId`, `effectiveState`, `maintenanceReason`; `index.php` → 503 |
 | `Api\ResolvedDataSource::$state` / `isReadOnly()` | stav načtený resolverem cestuje pipeline (politika, `/_app/info`, MCP, navigace) — disk se čte jednou |
 | `Api\ReadOnlyPolicy` + `Api\ReadOnlyVerdict` | klasifikace rout pro `read_only` (sekce 6) |
