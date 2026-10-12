@@ -28,7 +28,24 @@ class FileOwnershipTest extends TestCase
     {
         @unlink($this->reference);
         @unlink($this->target);
+        @unlink($this->dir . '/ds/config/main.json');
+        @rmdir($this->dir . '/ds/config');
+        @rmdir($this->dir . '/ds');
         @rmdir($this->dir);
+    }
+
+    public function testDataSourceReferencePrefersMainJsonThenConfigDirThenDsDir(): void
+    {
+        $ds = $this->dir . '/ds';
+        mkdir($ds);
+        $this->assertSame($ds, FileOwnership::dataSourceReference($ds));
+        $this->assertSame($ds, FileOwnership::dataSourceReference($ds . '/'), 'koncové lomítko se nepropisuje');
+
+        mkdir($ds . '/config');
+        $this->assertSame($ds . '/config', FileOwnership::dataSourceReference($ds));
+
+        file_put_contents($ds . '/config/main.json', '{}');
+        $this->assertSame($ds . '/config/main.json', FileOwnership::dataSourceReference($ds));
     }
 
     public function testSameOwnerMakesNoCall(): void

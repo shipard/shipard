@@ -48,6 +48,22 @@ class FileOwnership
     }
 
     /**
+     * Soubor, který zdroji dat prokazatelně patří a podle kterého se řídí
+     * vlastník nově zapsaných souborů: `config/main.json` (`0600`, zakládá
+     * a chownuje ho `ds-create`), bez něj adresář `config/`, bez něj adresář
+     * zdroje dat. Jedno pravidlo pro `state.json` i `secrets.key`.
+     */
+    public static function dataSourceReference(string $dataSourceDir): string
+    {
+        $dir = rtrim($dataSourceDir, '/');
+        $main = $dir . '/config/main.json';
+        if (is_file($main)) {
+            return $main;
+        }
+        return is_dir($dir . '/config') ? $dir . '/config' : $dir;
+    }
+
+    /**
      * @return array{uid: int, gid: int}|null null = soubor neexistuje nebo stat selhal
      */
     protected function ownerOf(string $path): ?array

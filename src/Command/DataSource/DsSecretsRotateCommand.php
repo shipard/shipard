@@ -11,6 +11,7 @@ use Shipard\Core\Database\SchemaIntrospector;
 use Shipard\Core\Database\SchemaLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Security\DsSecretCipher;
+use Shipard\Core\Server\FileOwnership;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,10 +19,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DsSecretsRotateCommand extends Command
 {
+    /**
+     * @param FileOwnership|null $ownership šev pro testy bez roota; výchozí
+     *   implementace volá chown/chgrp (tasks/secrets-rotate-key-owner.md)
+     */
     public function __construct(
         private readonly ?DataSourceConfig $dsConfig = null,
         private readonly ?DataSourceConnection $dsConnection = null,
         private readonly ?ServerConfig $serverConfig = null,
+        private readonly ?FileOwnership $ownership = null,
     ) {
         parent::__construct();
     }
@@ -128,6 +134,23 @@ class DsSecretsRotateCommand extends Command
 
         // Step 1: pre-write tmp file BEFORE DB commit so we know disk is writable.
         if (!$this->writeTmpKeyFile($tmpFile, $newKeyBytes, $output)) {
+            return Command::FAILURE;
+        }
+
+        // Step 1b: the command is documented with sudo, so the tmp file is
+        // typically root:root — the runtime (shipard-user) could not read the
+        // key after the swap and every encrypted_text column would be lost to
+        // it. Align the owner with the data source now, still before any DB
+        // change; failure aborts the rotation with nothing modified. The .bak
+        // keeps the old key's owner through rename and needs no fix-up.
+        try {
+            ($this->ownership ?? new FileOwnership())
+                ->matchTo($tmpFile, FileOwnership::dataSourceReference($dsDir));
+        } catch (\RuntimeException $e) {
+            @unlink($tmpFile);
+            $output->writeln('<error>Refusing to rotate: the new key would be unreadable for the data source owner.</error>');
+            $output->writeln('<error>  ' . $e->getMessage() . '</error>');
+            $output->writeln('<error>Nothing was changed (no DB update, secrets.key untouched).</error>');
             return Command::FAILURE;
         }
 

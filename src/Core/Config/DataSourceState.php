@@ -343,7 +343,7 @@ final class DataSourceState
         }
         @chmod($tmp, 0640);
         try {
-            ($ownership ?? new FileOwnership())->matchTo($tmp, self::ownerReference($dir));
+            ($ownership ?? new FileOwnership())->matchTo($tmp, FileOwnership::dataSourceReference($dataSourceDir));
         } catch (\RuntimeException $e) {
             @unlink($tmp);
             throw new \RuntimeException(
@@ -358,17 +358,6 @@ final class DataSourceState
         }
 
         return $saved;
-    }
-
-    /**
-     * Soubor, podle kterého se řídí vlastník `state.json`: `main.json` zdroji
-     * dat prokazatelně patří (`0600`, zakládá ho ds-create a chownuje); když
-     * chybí, adresář `config/`.
-     */
-    private static function ownerReference(string $configDir): string
-    {
-        $main = $configDir . '/main.json';
-        return is_file($main) ? $main : $configDir;
     }
 
     /** @return array<string, mixed> */

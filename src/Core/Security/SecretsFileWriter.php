@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Security;
 
 use SensitiveParameter;
+use Shipard\Core\Server\FileOwnership;
 
 /**
  * Atomický zápis souboru do {ds_path}/secrets/ se správným vlastníkem.
@@ -140,8 +141,6 @@ final class SecretsFileWriter
     /** Formats "user:group" for chown, falling back to numeric ids. */
     private static function ownerSpec(int $uid, int $gid): string
     {
-        $user = function_exists('posix_getpwuid') ? (posix_getpwuid($uid)['name'] ?? null) : null;
-        $group = function_exists('posix_getgrgid') ? (posix_getgrgid($gid)['name'] ?? null) : null;
-        return ($user ?? (string) $uid) . ':' . ($group ?? (string) $gid);
+        return FileOwnership::ownerSpec($uid, $gid);
     }
 }

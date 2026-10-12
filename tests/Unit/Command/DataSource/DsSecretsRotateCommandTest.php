@@ -11,6 +11,8 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Security\DsSecretCipher;
+use Shipard\Core\Server\FileOwnership;
+use Shipard\Tests\Fixtures\Core\Server\RecordingFileOwnership;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -22,8 +24,9 @@ class TestableDsSecretsRotateCommand extends DsSecretsRotateCommand
         ?DataSourceConnection $conn,
         private readonly string $modulesPath,
         private readonly string $dsDir,
+        ?FileOwnership $ownership = null,
     ) {
-        parent::__construct($cfg, $conn);
+        parent::__construct($cfg, $conn, null, $ownership);
     }
 
     protected function getDataSourceDir(): string
@@ -130,13 +133,14 @@ class DsSecretsRotateCommandTest extends TestCase
         );
     }
 
-    private function makeTester(): CommandTester
+    private function makeTester(?FileOwnership $ownership = null): CommandTester
     {
         $command = new TestableDsSecretsRotateCommand(
             $this->dsConfig,
             $this->dsConnection,
             $this->modulesPath,
             $this->dsDir,
+            $ownership,
         );
         $app = new Application();
         $app->add($command);
@@ -308,5 +312,66 @@ class DsSecretsRotateCommandTest extends TestCase
         $cipher = DsSecretCipher::forConfig($this->dsConfig);
         $this->assertSame('first', $cipher->decrypt($this->rowStorage[1]));
         $this->assertSame('second', $cipher->decrypt($this->rowStorage[2]));
+    }
+
+    // ── Vlastník nového klíče (tasks/secrets-rotate-key-owner.md) ──────────
+
+    public function testNewKeyGetsOwnerOfDataSourceBeforeAnyDbChange(): void
+    {
+        DsSecretCipher::generateKey($this->dsDir);
+        $this->seedStorage([1 => 'a', 2 => 'b']);
+        $main = $this->dsDir . '/config/main.json';
+        file_put_contents($main, '{}');
+
+        // Běh pod sudo: tmp klíč vzniká jako root:root, main.json patří zdroji dat.
+        $ownership = new RecordingFileOwnership();
+        $ownership->owners[$main] = ['uid' => 12345, 'gid' => 54321];
+
+        $tester = $this->makeTester($ownership);
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::SUCCESS, $exitCode);
+        $tmp = $this->dsDir . '/secrets/secrets.key.tmp';
+        $this->assertSame([
+            ['chown', $tmp, 12345],
+            ['chgrp', $tmp, 54321],
+        ], $ownership->calls);
+        $this->assertSame($main, $ownership->lookups[0]);
+        $this->assertNotContains('secrets.key.tmp', $this->listKeyFiles());
+
+        DsSecretCipher::resetCache();
+        $cipher = DsSecretCipher::forConfig($this->dsConfig);
+        $this->assertSame('a', $cipher->decrypt($this->rowStorage[1]));
+    }
+
+    public function testRefusesRotationBeforeDbChangesWhenOwnerCannotBeSet(): void
+    {
+        DsSecretCipher::generateKey($this->dsDir);
+        $oldKeyContent = file_get_contents($this->dsDir . '/secrets/secrets.key');
+        $this->seedStorage([1 => 'a', 2 => 'b']);
+        $originalStorage = $this->rowStorage;
+        $main = $this->dsDir . '/config/main.json';
+        file_put_contents($main, '{}');
+
+        $ownership = new RecordingFileOwnership();
+        $ownership->owners[$main] = ['uid' => 12345, 'gid' => 54321];
+        $ownership->chownResult = false;
+
+        $this->dsConnection->expects($this->never())->method('begin');
+        $this->dsConnection->expects($this->never())->method('updateWhere');
+
+        $tester = $this->makeTester($ownership);
+        $exitCode = $tester->execute([]);
+
+        $this->assertSame(Command::FAILURE, $exitCode);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Refusing to rotate', $display);
+        $this->assertStringContainsString('Fix: chown ', $display);
+        $this->assertStringContainsString('Nothing was changed', $display);
+
+        // Klíč netknutý, žádný .bak ani .tmp, řádky beze změny.
+        $this->assertSame(['secrets.key'], $this->listKeyFiles());
+        $this->assertSame($oldKeyContent, file_get_contents($this->dsDir . '/secrets/secrets.key'));
+        $this->assertSame($originalStorage, $this->rowStorage);
     }
 }
