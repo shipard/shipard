@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 356 tasků: **naplánováno** 4 · **částečně** 24 · **hotovo** 328.
+Celkem 357 tasků: **naplánováno** 5 · **částečně** 24 · **hotovo** 328.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -27,6 +27,7 @@ nevypisují — níže je jen to, co není dokončené.
 |------|------|----------|
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
+| `cron-ds-switch.md` | naplánováno | PRD z 2026-10-12, rozhodnutí D1–D14 zamčena v #115; musí být nasazeno dřív než fáze 2 (cron ve vývojové instalaci) |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
@@ -79,6 +80,7 @@ Nasazení, oprávnění, správa datových zdrojů, dev workflow, logování,
 | `ds-upgrade-skip-provisioning.md` | Vypnutelný provisioning přes `config/main.json` |
 | `ds-create-install-module.md` | `ds-create --module` + UI výběr instalačního modulu |
 | `ds-reset.md` | `ds-reset` — čistý stav DS pro opakované testování importů |
+| `cron-ds-switch.md` | Přepínač periodických úloh per zdroj dat: klíč `cron` v `state.json`, `ds-state cron`, `ds-create --no-cron`, `cron --ds`, `shpd-server ds-cron`, `doctor`, pruh v aplikaci (#115 fáze 1) |
 | `unified-logging.md` | Produkční `ErrorLogger` (JSON řádky, úrovně, deploy guide, migrace `error_log()`) |
 | `ds-encrypted-secrets.md` | Šifrování citlivých sloupců (`encrypted_text`, per-DS klíč, rotace) |
 | `secrets-openssl-cipher.md` | AES-256-GCM přes OpenSSL místo libsodium — podpora ARM, formát beze změny (#96 D12) |
