@@ -7,8 +7,29 @@ namespace Shipard\Tests\Unit\Command\Server;
 use PHPUnit\Framework\TestCase;
 use Shipard\Command\Server\CronCommand;
 use Shipard\Core\Logging\ErrorLogger;
+use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Server\CronProvisioner;
+use Shipard\Core\Server\DataSourceModules;
 use Symfony\Component\Console\Tester\CommandTester;
+
+/** Reálná rezoluce nad dočasným stromem modulů, jen s čítači volání švů. */
+class CountingDataSourceModules extends DataSourceModules
+{
+    public int $definitionLoads = 0;
+    public int $queries = 0;
+
+    public function activeIds(string $dsDir): ?array
+    {
+        $this->queries++;
+        return parent::activeIds($dsDir);
+    }
+
+    protected function loadDefinitions(): array
+    {
+        $this->definitionLoads++;
+        return parent::loadDefinitions();
+    }
+}
 
 class TestableCronCommand extends CronCommand
 {
@@ -17,6 +38,9 @@ class TestableCronCommand extends CronCommand
 
     /** @var list<array{ds: string, job: string}> */
     public array $callLog = [];
+
+    /** null = výchozí zjišťování (repo modules; main.json `{}` testů = nelze určit → všechny joby). */
+    public ?DataSourceModules $modules = null;
 
     public function __construct(
         private readonly string $dataSourcesDir,
@@ -45,6 +69,11 @@ class TestableCronCommand extends CronCommand
     protected function getLogPath(): ?string
     {
         return $this->logPath;
+    }
+
+    protected function createDataSourceModules(): DataSourceModules
+    {
+        return $this->modules ?? parent::createDataSourceModules();
     }
 
     protected function runJob(string $dsDir, string $job): array
@@ -112,22 +141,74 @@ class CronCommandTest extends TestCase
         ErrorLogger::resetForTesting();
     }
 
-    private function createDs(string $id, ?string $stateJson = null): string
+    /**
+     * Bez `$modules` je main.json `{}` — DataSourceConfig ho odmítne, moduly
+     * nelze určit a běží všechny joby (chování před D15). S `$modules` vznikne
+     * úplný main.json, moduly se rozvinou nad stromem z makeModuleTree().
+     *
+     * @param list<string>|null $modules
+     */
+    private function createDs(string $id, ?string $stateJson = null, ?array $modules = null): string
     {
         $dir = $this->dsDir . '/' . $id;
         mkdir($dir . '/config', 0755, true);
-        file_put_contents($dir . '/config/main.json', '{}');
+        $main = $modules === null ? '{}' : (string) json_encode([
+            'id' => $id,
+            'name' => 'Test ' . $id,
+            'modules' => $modules,
+            'database_name' => 'db',
+            'database_user' => 'user',
+            'database_password' => 'pw',
+            'created' => '2026-10-13T10:00:00+00:00',
+        ]);
+        file_put_contents($dir . '/config/main.json', $main);
         if ($stateJson !== null) {
             file_put_contents($dir . '/config/state.json', $stateJson);
         }
         return $dir;
     }
 
+    /**
+     * Dočasný strom modulů: install.mailless = jen core.system + core.alerts
+     * (jako install.hosting), install.full = vše, co mají joby v JOB_MODULES.
+     */
+    private function makeModuleTree(): ModulePathResolver
+    {
+        $root = $this->tmpDir . '/modules';
+        if (is_dir($root)) {
+            return new ModulePathResolver([$root]);
+        }
+        $defs = [
+            'core/system'        => ['core.system', []],
+            'core/alerts'        => ['core.alerts', ['core.system']],
+            'core/mail'          => ['core.mail', ['core.system']],
+            'economy/vat'        => ['economy.vat', ['core.system']],
+            'economy/workOrders' => ['economy.workOrders', ['core.system']],
+            'install/mailless'   => ['install.mailless', ['core.system', 'core.alerts']],
+            'install/full'       => ['install.full', ['core.system', 'core.alerts', 'core.mail', 'economy.vat', 'economy.workOrders']],
+        ];
+        foreach ($defs as $path => [$id, $deps]) {
+            mkdir($root . '/' . $path, 0755, true);
+            file_put_contents($root . '/' . $path . '/module.jsonc', json_encode([
+                'id' => $id,
+                'name' => $id,
+                'dependencies' => $deps,
+            ]));
+        }
+        return new ModulePathResolver([$root]);
+    }
+
     /** @return array{TestableCronCommand, CommandTester} */
-    private function makeTester(): array
+    private function makeTester(?DataSourceModules $modules = null): array
     {
         $cmd = new TestableCronCommand($this->dsDir, $this->runDir, $this->logPath);
+        $cmd->modules = $modules;
         return [$cmd, new CommandTester($cmd)];
+    }
+
+    private function makeModules(): CountingDataSourceModules
+    {
+        return new CountingDataSourceModules($this->makeModuleTree());
     }
 
     /** @return array<string, mixed> */
@@ -498,6 +579,171 @@ class CronCommandTest extends TestCase
         [$cmd, $tester] = $this->makeTester();
         $tester->execute(['--slot' => 'daily']);
         $this->assertSame([['ds' => '(server)', 'job' => 'ds-state-check']], $cmd->callLog);
+    }
+
+    // ── Aktivní moduly (#115 D15) ───────────────────────────────────────────
+
+    public function testDsWithoutJobModuleSkipsJobSilently(): void
+    {
+        // Jako testovací DS hostingu: core.alerts ano, core.mail / vat / zakázky ne.
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', null, ['install.mailless']);
+
+        [$cmd, $tester] = $this->makeTester($this->makeModules());
+        $exit = $tester->execute(['--slot' => 'minute']);
+        $this->assertSame(0, $exit);
+        $this->assertSame([], $cmd->callLog);
+        $hb = $this->readHeartbeat('minute');
+        // Vyřazená úloha není běh, selhání ani skip stavem.
+        $this->assertSame(0, $hb['jobsRun']);
+        $this->assertSame(0, $hb['failedCount']);
+        $this->assertSame([], $hb['failures']);
+        $this->assertSame(0, $hb['skippedDataSources']);
+        $this->assertSame(1, $hb['dsCount']);
+        $this->assertStringContainsString('0 skipped by state, 0 cron off, 0 job(s) run, 0 failed', $tester->getDisplay());
+
+        [$cmd, $tester] = $this->makeTester($this->makeModules());
+        $tester->execute(['--slot' => 'five-minutes']);
+        $this->assertSame([['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'alerts-run']], $cmd->callLog);
+
+        [$cmd, $tester] = $this->makeTester($this->makeModules());
+        $tester->execute(['--slot' => 'daily']);
+        $this->assertSame([['ds' => '(server)', 'job' => 'ds-state-check']], $cmd->callLog);
+        $this->assertSame(1, $this->readHeartbeat('daily')['jobsRun']);
+
+        [$cmd, $tester] = $this->makeTester($this->makeModules());
+        $tester->execute(['--slot' => 'weekly']);
+        $this->assertSame([['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'alerts-prune']], $cmd->callLog);
+
+        $this->assertStringNotContainsString('active modules unknown', (string) file_get_contents($this->logPath));
+    }
+
+    public function testDsWithAllJobModulesRunsEverything(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', null, ['install.full']);
+
+        foreach (['minute', 'five-minutes', 'daily', 'weekly'] as $slot) {
+            [$cmd, $tester] = $this->makeTester($this->makeModules());
+            $tester->execute(['--slot' => $slot]);
+            $perDs = array_values(array_filter($cmd->callLog, static fn($c) => $c['ds'] !== '(server)'));
+            $this->assertSame(
+                array_map(static fn(string $job) => ['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => $job], CronCommand::SLOT_JOBS[$slot]),
+                $perDs,
+                $slot,
+            );
+        }
+    }
+
+    public function testUnknownModulesRunAllJobsAsBefore(): void
+    {
+        // Nečitelný main.json i main.json bez modulů: chyba se má ukázat jako
+        // selhaná úloha, ne schovat tichým vynecháním.
+        $this->createDs('aaaa-aaaa-aaaa-aaaa');                 // `{}` — bez povinných polí
+        $broken = $this->createDs('bbbb-bbbb-bbbb-bbbb');
+        file_put_contents($broken . '/config/main.json', '{broken');
+        $this->createDs('cccc-cccc-cccc-cccc', null, []);       // modules: []
+
+        [$cmd, $tester] = $this->makeTester($this->makeModules());
+        $exit = $tester->execute(['--slot' => 'minute']);
+
+        $this->assertSame(0, $exit);
+        $this->assertCount(3 * count(CronCommand::SLOT_JOBS['minute']), $cmd->callLog);
+        $this->assertSame(12, $this->readHeartbeat('minute')['jobsRun']);
+        $log = (string) file_get_contents($this->logPath);
+        $this->assertSame(3, substr_count($log, 'active modules unknown'));
+    }
+
+    public function testModuleDefinitionsLoadOncePerRun(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', null, ['install.mailless']);
+        $this->createDs('bbbb-bbbb-bbbb-bbbb', null, ['install.full']);
+        $this->createDs('cccc-cccc-cccc-cccc', null, ['install.full']);
+
+        $modules = $this->makeModules();
+        [$cmd, $tester] = $this->makeTester($modules);
+        $tester->execute(['--slot' => 'minute']);
+
+        $this->assertSame(1, $modules->definitionLoads);
+        $this->assertSame(3, $modules->queries);
+        $this->assertCount(2 * count(CronCommand::SLOT_JOBS['minute']), $cmd->callLog);
+    }
+
+    public function testCronOffOrClosedDsDoesNotQueryModules(): void
+    {
+        // Pořadí kontrol: přepínač → stav → moduly. Zavřený DS se na moduly neptá.
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', '{"version":1,"state":"active","cron":false}', ['install.full']);
+        $this->createDs('bbbb-bbbb-bbbb-bbbb', '{"version":1,"state":"suspended"}', ['install.full']);
+        $this->createDs(
+            'cccc-cccc-cccc-cccc',
+            '{"version":1,"state":"active","maintenance":{"reason":"import","since":"2026-09-01T10:00:00Z"}}',
+            ['install.full'],
+        );
+        // read_only: minute slot nemá joby → ani dotaz na moduly.
+        $this->createDs('dddd-dddd-dddd-dddd', '{"version":1,"state":"read_only"}', ['install.full']);
+
+        $modules = $this->makeModules();
+        [$cmd, $tester] = $this->makeTester($modules);
+        $tester->execute(['--slot' => 'minute']);
+
+        $this->assertSame([], $cmd->callLog);
+        $this->assertSame(0, $modules->queries);
+        $this->assertSame(0, $modules->definitionLoads);
+        $hb = $this->readHeartbeat('minute');
+        $this->assertSame(1, $hb['cronDisabledDataSources']);
+        $this->assertSame(3, $hb['skippedDataSources']);
+    }
+
+    public function testDsOptionListsJobsSkippedByModule(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', null, ['install.mailless']);
+
+        [$cmd, $tester] = $this->makeTester($this->makeModules());
+        $exit = $tester->execute(['--slot' => 'minute', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
+
+        $this->assertSame(0, $exit);
+        $this->assertSame([], $cmd->callLog);
+        $display = $tester->getDisplay();
+        foreach (CronCommand::SLOT_JOBS['minute'] as $job) {
+            $this->assertStringContainsString("  · {$job}: skipped (module core.mail not active)", $display);
+        }
+        $this->assertFileDoesNotExist(CronProvisioner::heartbeatPath('minute', $this->runDir));
+
+        // Smíšený slot: vyřazená úloha ve výpisu, zbylá běží; selhání zbylé = FAILURE.
+        [$cmd, $tester] = $this->makeTester($this->makeModules());
+        $cmd->setJobResults([
+            'aaaa-aaaa-aaaa-aaaa alerts-prune' => ['exitCode' => 1, 'timedOut' => false, 'output' => 'boom'],
+        ]);
+        $exit = $tester->execute(['--slot' => 'weekly', '--ds' => 'aaaa-aaaa-aaaa-aaaa']);
+        $this->assertSame(1, $exit);
+        $this->assertSame([['ds' => 'aaaa-aaaa-aaaa-aaaa', 'job' => 'alerts-prune']], $cmd->callLog);
+        $this->assertStringContainsString('alerts-prune: failed, exit 1', $tester->getDisplay());
+
+        [$cmd, $tester] = $this->makeTester($this->makeModules());
+        $this->assertSame(0, $tester->execute(['--slot' => 'daily', '--ds' => 'aaaa-aaaa-aaaa-aaaa']));
+        $this->assertSame([], $cmd->callLog);
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('· mail-idempotency-prune: skipped (module core.mail not active)', $display);
+        $this->assertStringContainsString('· vat-periods-ensure: skipped (module economy.vat not active)', $display);
+        $this->assertStringContainsString('· work-orders-invoice-run: skipped (module economy.workOrders not active)', $display);
+    }
+
+    public function testJobModulesCoverAllSlotJobs(): void
+    {
+        foreach (CronCommand::SLOT_JOBS as $slot => $jobs) {
+            foreach ($jobs as $job) {
+                // Záznam i s hodnotou null je rozhodnutí; chybějící klíč = nová úloha bez rozhodnutí.
+                $this->assertArrayHasKey($job, CronCommand::JOB_MODULES, "{$slot}: {$job}");
+            }
+        }
+        foreach (CronCommand::JOB_MODULES as $job => $module) {
+            $this->assertTrue($module === null || (is_string($module) && str_contains($module, '.')), $job);
+        }
+
+        // null = moduly nelze určit → beze změny; job bez záznamu = běží všude.
+        $jobs = ['mail-outbox-run', 'alerts-run', 'x'];
+        $this->assertSame($jobs, CronCommand::jobsForModules($jobs, null));
+        $this->assertSame(['x'], CronCommand::jobsForModules($jobs, []));
+        $this->assertSame(['alerts-run', 'x'], CronCommand::jobsForModules($jobs, ['core.system', 'core.alerts']));
+        $this->assertSame($jobs, CronCommand::jobsForModules($jobs, ['core.mail', 'core.alerts']));
     }
 
     // ── --ds=<id> (#115 D8) ──────────────────────────────────────────────────

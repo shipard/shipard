@@ -8,6 +8,7 @@ use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Logging\ErrorLogger;
 use Shipard\Core\Server\CronProvisioner;
+use Shipard\Core\Server\DataSourceModules;
 use Shipard\Core\Utils\IdGenerator;
 use Shipard\Core\Version;
 use Symfony\Component\Console\Command\Command;
@@ -33,6 +34,15 @@ use Symfony\Component\Console\Output\OutputInterface;
  * platí dál, bez zámku slotu, bez heartbeatu (ruční běh nesmí v doctoru
  * zakrýt neběžící cron), bez serverových jobů; exit FAILURE při selhané
  * úloze.
+ *
+ * Aktivní moduly (D15): úloha běží jen na DS, který má aktivní její modul
+ * (JOB_MODULES; moduly z main.json přes resolver — `DataSourceModules`,
+ * definice jednou za běh). Pořadí kontrol: přepínač → stav → moduly;
+ * moduly se zjišťují až pro DS, kterému po stavu zbyla aspoň jedna úloha.
+ * Vyřazená úloha se nespouští ani nepočítá (není běh ani selhání, žádný
+ * čítač v heartbeatu). Nelze-li moduly určit, běží všechny úlohy jako
+ * dřív — chyba se ukáže jako selhaná úloha, tiché vynechání by ji schovalo.
+ * `--ds` vyřazené úlohy vypíše (`skipped (module <id> not active)`).
  */
 class CronCommand extends Command
 {
@@ -69,6 +79,26 @@ class CronCommand extends Command
         'vat-periods-ensure'      => [DataSourceState::ACTIVE],
         'work-orders-invoice-run' => [DataSourceState::ACTIVE],
         'alerts-prune'            => [DataSourceState::ACTIVE, DataSourceState::READ_ONLY],
+    ];
+
+    /**
+     * job → modul, bez kterého se úloha na DS nespouští (#115 D15): DS bez
+     * modulu nemá jeho tabulky a úloha by jen selhala. `null` = úloha bez
+     * vazby na modul, běží všude. Každá úloha ze SLOT_JOBS musí mít záznam
+     * (hlídá test) — nová úloha bez rozhodnutí o modulu neprojde. Serverových
+     * jobů (SERVER_SLOT_JOBS) se netýká. Registr se přesune do module.jsonc
+     * spolu se SLOT_JOBS.
+     */
+    public const JOB_MODULES = [
+        'mail-outbox-run'         => 'core.mail',
+        'mail-analysis-reap'      => 'core.mail',
+        'mail-preprocess --sweep' => 'core.mail',
+        'mail-analyze --sweep'    => 'core.mail',
+        'mail-idempotency-prune'  => 'core.mail',
+        'alerts-run'              => 'core.alerts',
+        'alerts-prune'            => 'core.alerts',
+        'vat-periods-ensure'      => 'economy.vat',
+        'work-orders-invoice-run' => 'economy.workOrders',
     ];
 
     /**
@@ -203,6 +233,9 @@ class CronCommand extends Command
         $skippedDataSources = 0;
         $cronDisabledDataSources = 0;
         $corruptedStateFiles = 0;
+        // Jedna instance na běh — definice modulů se načítají jednou, až
+        // pro první DS, kterému po stavu zbyla úloha.
+        $modules = $this->createDataSourceModules();
 
         // Server-level joby (shpd-server) — jednou za běh slotu, ne per DS.
         foreach ($serverJobs as $job) {
@@ -250,6 +283,9 @@ class CronCommand extends Command
                 $skippedDataSources++;
                 continue;
             }
+            // Moduly až po stavu (D15). Úloha bez aktivního modulu se
+            // nespouští a nepočítá — DS bez zbylé úlohy není skip stavem.
+            $dsJobs = self::jobsForModules($dsJobs, $modules->activeIds($d));
             foreach ($dsJobs as $job) {
                 $result = $this->runJob($d, $job);
                 $jobsRun++;
@@ -366,6 +402,14 @@ class CronCommand extends Command
             return Command::SUCCESS;
         }
 
+        // Moduly (D15): vyřazené úlohy se vypíší, na exit kód nemají vliv.
+        $activeModules = $this->createDataSourceModules()->activeIds($dsDir);
+        $runnable = self::jobsForModules($dsJobs, $activeModules);
+        foreach (array_diff($dsJobs, $runnable) as $job) {
+            $output->writeln(sprintf('  · %s: skipped (module %s not active)', $job, self::JOB_MODULES[$job]));
+        }
+        $dsJobs = $runnable;
+
         $failed = 0;
         foreach ($dsJobs as $job) {
             $startedAt = microtime(true);
@@ -426,6 +470,35 @@ class CronCommand extends Command
                 true,
             ),
         ));
+    }
+
+    /**
+     * Joby, jejichž modul (JOB_MODULES) je na DS aktivní; job bez vazby
+     * (null) projde vždy. `$activeModules === null` = moduly nelze určit →
+     * beze změny (fail-loud, D15).
+     *
+     * @param list<string> $jobs
+     * @param list<string>|null $activeModules
+     * @return list<string>
+     */
+    public static function jobsForModules(array $jobs, ?array $activeModules): array
+    {
+        if ($activeModules === null) {
+            return $jobs;
+        }
+        return array_values(array_filter(
+            $jobs,
+            static function (string $job) use ($activeModules): bool {
+                $module = self::JOB_MODULES[$job] ?? null;
+                return $module === null || in_array($module, $activeModules, true);
+            },
+        ));
+    }
+
+    /** Zjišťování aktivních modulů DS — protected seam pro testy. */
+    protected function createDataSourceModules(): DataSourceModules
+    {
+        return new DataSourceModules();
     }
 
     /**
