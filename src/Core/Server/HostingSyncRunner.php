@@ -50,14 +50,22 @@ class HostingSyncRunner
 
     private \Closure $log;
 
+    private FileOwnership $ownership;
+
+    /**
+     * @param FileOwnership|null $ownership šev pro testy bez roota; výchozí
+     *   implementace volá chown/chgrp (tasks/hosting-sync-main-json-owner.md)
+     */
     public function __construct(
         private readonly HostingConfig $hosting,
         private readonly string $dataSourcesDir,
         private readonly string $shpdServerPath,
         private readonly string $shpdDsPath,
         ?\Closure $log = null,
+        ?FileOwnership $ownership = null,
     ) {
         $this->log = $log ?? static function (string $message): void {};
+        $this->ownership = $ownership ?? new FileOwnership();
     }
 
     public function run(bool $dryRun = false, bool $forceStats = false): bool
@@ -513,7 +521,15 @@ class HostingSyncRunner
     /**
      * Merge providera do main.json — čistou transformaci dělá
      * MainConfigPatcher, tady jen read-modify-write (atomicky tmp + rename,
-     * chmod 0600).
+     * chmod 0600, vlastník podle zdroje dat).
+     *
+     * Ruční běh pod rootem (`sudo shpd-server hosting-sync`) by jinak nechal
+     * `main.json` jako `root:root` a PHP-FPM ani cron by zdroj dat
+     * nepřečetly. Vzorem vlastníka je adresář `config/`, ne přepisovaný
+     * `main.json` (ten může nést špatného vlastníka z dřívějšího běhu
+     * a chybu by jen přenesl dál); `FileOwnership::dataSourceReference()`
+     * se tu proto nepoužije. Selhání = krok failed, původní soubor zůstává
+     * (tasks/hosting-sync-main-json-owner.md).
      *
      * @param array<string, mixed> $provider
      */
@@ -537,6 +553,12 @@ class HostingSyncRunner
             return "auth.providers: cannot write {$tmp}";
         }
         @chmod($tmp, 0600);
+        try {
+            $this->ownership->matchTo($tmp, $dsDir . '/config');
+        } catch (\RuntimeException $e) {
+            @unlink($tmp);
+            return 'auth.providers: ' . $e->getMessage();
+        }
         if (!@rename($tmp, $file)) {
             @unlink($tmp);
             return "auth.providers: cannot replace {$file}";

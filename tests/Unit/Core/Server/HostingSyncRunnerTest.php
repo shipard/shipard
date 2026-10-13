@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Shipard\Tests\Unit\Core\Server;
 
 use PHPUnit\Framework\TestCase;
+use Shipard\Core\Server\FileOwnership;
 use Shipard\Core\Server\HostingConfig;
 use Shipard\Core\Server\HostingSyncRunner;
 use Shipard\Core\Version;
+use Shipard\Tests\Fixtures\Core\Server\RecordingFileOwnership;
 
 class StubHostingSyncRunner extends HostingSyncRunner
 {
@@ -91,13 +93,17 @@ class HostingSyncRunnerTest extends TestCase
         );
     }
 
-    private function makeRunner(string $url = 'http://127.0.0.1/gggg-gggg-gggg-gggg'): StubHostingSyncRunner
-    {
+    private function makeRunner(
+        string $url = 'http://127.0.0.1/gggg-gggg-gggg-gggg',
+        ?FileOwnership $ownership = null,
+    ): StubHostingSyncRunner {
         return new StubHostingSyncRunner(
             new HostingConfig($url, 1, 'shpd_hk_' . str_repeat('a', 43)),
             $this->dataSourcesDir,
             '/fake/bin/shpd-server',
             '/fake/bin/shpd-ds',
+            null,
+            $ownership,
         );
     }
 
@@ -327,6 +333,78 @@ class HostingSyncRunnerTest extends TestCase
 
         $this->assertFalse($runner->run());
         $this->assertSame([], $runner->httpCalls);
+    }
+
+    // -------------------------------------------------------------------------
+    // Krok d. — auth.providers v main.json: vlastník pod rootem
+    // (tasks/hosting-sync-main-json-owner.md)
+    // -------------------------------------------------------------------------
+
+    public function testAuthProviderTmpFileTakesOwnerOfConfigDirBeforeRename(): void
+    {
+        $this->createDs(self::NEW_DS, 'Nová firma', ['install.base']);
+        $dsDir = $this->dataSourcesDir . '/' . self::NEW_DS;
+        $configDir = $dsDir . '/config';
+        $mainFile = $configDir . '/main.json';
+        $tmpFile = $mainFile . '.tmp';
+
+        // Vzorem je adresář config/ (ne přepisovaný main.json): podvrhnout mu
+        // cizího vlastníka, tmp soubor čte fixture reálným stat — kdyby
+        // matchTo běžel až po rename, ownerOf(tmp) vrátí null a krok selže.
+        $ownership = new RecordingFileOwnership();
+        $ownership->owners[$configDir] = ['uid' => 12345, 'gid' => 54321];
+        $ownership->owners[$mainFile] = ['uid' => 0, 'gid' => 0]; // root:root z dřívějšího běhu — nesmí být vzorem
+
+        $runner = $this->makeRunner(ownership: $ownership);
+        $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItem()]);
+        $runner->onModuleCheck = static fn(): bool => false;
+
+        $this->assertTrue($runner->run());
+
+        $this->assertSame([
+            ['chown', $tmpFile, 12345],
+            ['chgrp', $tmpFile, 54321],
+        ], $ownership->calls);
+        $this->assertSame([$configDir, $tmpFile], $ownership->lookups);
+
+        $this->assertFileDoesNotExist($tmpFile);
+        $config = json_decode((string) file_get_contents($mainFile), true);
+        $this->assertSame('shipard-id', $config['auth']['providers'][0]['id']);
+        $this->assertSame(0600, fileperms($mainFile) & 0777);
+        $this->assertSame('ok', $runner->httpCalls[2]['body']['status']);
+    }
+
+    public function testAuthProviderOwnerFailureStopsProvisioningAndKeepsMainJson(): void
+    {
+        $this->createDs(self::NEW_DS, 'Nová firma', ['install.base']);
+        $dsDir = $this->dataSourcesDir . '/' . self::NEW_DS;
+        $mainFile = $dsDir . '/config/main.json';
+        $original = (string) file_get_contents($mainFile);
+
+        $ownership = new RecordingFileOwnership();
+        $ownership->owners[$dsDir . '/config'] = ['uid' => 12345, 'gid' => 54321];
+        $ownership->chownResult = false;
+
+        $runner = $this->makeRunner(ownership: $ownership);
+        $runner->httpResponses['queue'] = $this->queueResponse([$this->queueItem()]);
+        $runner->onModuleCheck = static fn(): bool => true;
+
+        $this->assertFalse($runner->run());
+
+        // Krok vrátí chybu s větou výjimky, provisioning se nahlásí jako failed.
+        $confirm = $runner->httpCalls[2];
+        $this->assertSame('failed', $confirm['body']['status']);
+        $this->assertStringStartsWith('auth.providers: ', $confirm['body']['error']);
+        $this->assertStringContainsString('Failed to set owner of ' . $mainFile . '.tmp', $confirm['body']['error']);
+        $this->assertArrayNotHasKey('mail_token', $confirm['body']);
+
+        // main.json má původní obsah, dočasný soubor neexistuje.
+        $this->assertSame($original, (string) file_get_contents($mainFile));
+        $this->assertFileDoesNotExist($mainFile . '.tmp');
+
+        // Další kroky (user-create, mail-router-setup) se nespustily.
+        $labels = array_map(static fn(array $c): string => $c['argv'][1], $runner->processCalls);
+        $this->assertSame(['ds-upgrade', 'domain-add'], $labels);
     }
 
     // -------------------------------------------------------------------------
