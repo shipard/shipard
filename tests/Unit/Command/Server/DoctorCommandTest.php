@@ -1052,15 +1052,71 @@ class DoctorCommandTest extends TestCase
         $this->assertStringContainsString('sudo shpd-server upgrade (or sudo shpd-server cron-install)', $display);
     }
 
-    public function testCronMissingFileIsSkippedInDevelopment(): void
+    public function testCronMissingFileIsWarningInDevelopment(): void
     {
+        // #115 D6: mimo produkci varování s radou, ne „skipped“ — a žádná chyba.
         [$command, $output] = $this->makeCronChecker();
         $command->fakeCronFilePath = $this->tempRoot . '/cron.d/missing';
 
         $errors = $command->checkCronPublic($output, 'development');
 
         $this->assertSame(0, $errors);
-        $this->assertStringContainsString('(cron not provisioned — skipped)', $output->fetch());
+        $display = $output->fetch();
+        $this->assertStringContainsString('⚠ ' . $command->fakeCronFilePath . ' missing — periodic jobs', $display);
+        $this->assertStringContainsString('→ Run: sudo shpd-server cron-install', $display);
+        $this->assertStringContainsString('first install switches periodic jobs off for existing data sources', $display);
+        $this->assertStringNotContainsString('✗', $display);
+    }
+
+    public function testCronOutdatedMarkerIsErrorInDevelopmentToo(): void
+    {
+        // #115 U5: zastaralá šablona je chyba i mimo produkci — oprava je jeden příkaz.
+        [$command, $output] = $this->makeCronChecker();
+        file_put_contents($command->fakeCronFilePath, "# hand-written, template version 0\n");
+        touch($command->fakeCronFilePath, time() - 3600);
+        foreach (\Shipard\Core\Server\CronProvisioner::SLOTS as $slot) {
+            $this->writeHeartbeat($command, $slot, 30);
+        }
+
+        $errors = $command->checkCronPublic($output, 'development');
+
+        $this->assertSame(1, $errors);
+        $this->assertStringContainsString('is outdated (template version 0, expected', $output->fetch());
+    }
+
+    public function testCronStaleMinuteHeartbeatIsWarnOnlyInDevelopment(): void
+    {
+        [$command, $output] = $this->makeCronChecker();
+        $this->writeCurrentCronFile($command);
+        $this->writeHeartbeat($command, 'minute', 1800);
+        $this->writeHeartbeat($command, 'two-minutes', 30);
+        $this->writeHeartbeat($command, 'five-minutes', 30);
+        $this->writeHeartbeat($command, 'daily', 30);
+        $this->writeHeartbeat($command, 'weekly', 30);
+
+        $errors = $command->checkCronPublic($output, 'development');
+
+        $this->assertSame(0, $errors);
+        $display = $output->fetch();
+        $this->assertStringContainsString('⚠ minute: heartbeat stale (30 min old) — cron daemon not running or dispatcher failing', $display);
+        $this->assertStringContainsString('Laptop asleep or VM stopped? Check: systemctl status cron', $display);
+        $this->assertStringNotContainsString('✗', $display);
+    }
+
+    public function testCronMissingMinuteHeartbeatOnOldInstallIsWarnOnlyInDevelopment(): void
+    {
+        [$command, $output] = $this->makeCronChecker();
+        $this->writeCurrentCronFile($command, mtimeAge: 7200);
+        $this->writeHeartbeat($command, 'two-minutes', 30);
+        $this->writeHeartbeat($command, 'five-minutes', 30);
+
+        $errors = $command->checkCronPublic($output, 'development');
+
+        $this->assertSame(0, $errors);
+        $display = $output->fetch();
+        $this->assertStringContainsString('⚠ minute: heartbeat missing — cron daemon not running or dispatcher failing', $display);
+        $this->assertStringContainsString('⚠ daily: not yet run', $display);
+        $this->assertStringNotContainsString('✗', $display);
     }
 
     public function testCronCurrentFileAndFreshHeartbeatsPass(): void
@@ -1192,7 +1248,12 @@ class DoctorCommandTest extends TestCase
 
         $display = $tester->getDisplay();
         $this->assertStringContainsString('Cron', $display);
-        $this->assertStringContainsString('(cron not provisioned — skipped)', $display);
+        $this->assertStringContainsString('missing — periodic jobs (mail outbox, alerts, invoicing) are not running', $display);
+        // Mimo produkci jen varování (#115 D6): v sekci Cron není žádný nález ✗.
+        preg_match('/^Cron\n(.*?)\n\n/ms', $display, $m);
+        $this->assertArrayHasKey(1, $m, 'Cron section found');
+        $this->assertStringContainsString('⚠', $m[1]);
+        $this->assertStringNotContainsString('✗', $m[1]);
     }
 
     // ── Hosting domains file (nález č. 3 z adopce) ─────────────────────────

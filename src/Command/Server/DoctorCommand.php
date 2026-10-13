@@ -476,20 +476,26 @@ class DoctorCommand extends Command
 
     /**
      * Systémový cron: soubor existuje a odpovídá aktuální verzi šablony,
-     * heartbeaty slotů nejsou zatuchlé. Zatuchlý minute/five-minutes = error
-     * (cron démon neběží nebo dispatcher padá), daily/weekly jen warn.
-     * Selhané joby v posledním běhu = warn (per-DS problém, ne infra).
+     * heartbeaty slotů nejsou zatuchlé. Na produkci je zatuchlý
+     * minute/two-minutes/five-minutes error (cron démon neběží nebo
+     * dispatcher padá), daily/weekly jen warn. Mimo produkci (#115 D6) je
+     * chybějící soubor i zatuchlý heartbeat jen varování — uspaný notebook,
+     * zastavená VM; zastaralá šablona zůstává chybou všude (oprava je jeden
+     * příkaz). Selhané joby v posledním běhu = warn (per-DS problém, ne infra).
      *
      * @return int number of cron issues
      */
     protected function checkCron(OutputInterface $output, string $mode): int
     {
+        $production = $mode === 'production';
         $hint = '    <comment>→ Run: sudo shpd-server upgrade (or sudo shpd-server cron-install)</comment>';
 
         $cronFile = $this->getCronFilePath();
         if (!is_file($cronFile)) {
-            if ($mode !== 'production') {
-                $output->writeln('  (cron not provisioned — skipped)');
+            if (!$production) {
+                $output->writeln("  ⚠ {$cronFile} missing — periodic jobs (mail outbox, alerts, invoicing) are not running");
+                $output->writeln('    <comment>→ Run: sudo shpd-server cron-install</comment>');
+                $output->writeln('    <comment>→ The first install switches periodic jobs off for existing data sources and lists them (shpd-server ds-cron --on <id>… to enable)</comment>');
                 return 0;
             }
             $output->writeln("  ✗ {$cronFile} missing — periodic jobs (mail outbox, alerts) are not running");
@@ -526,16 +532,22 @@ class DoctorCommand extends Command
             'daily'        => [2 * 86400, false],
             'weekly'       => [14 * 86400, false],
         ];
+        $strictWarnings = 0;
         foreach ($limits as $slot => [$maxAge, $strict]) {
+            // Mimo produkci jen varování (D6) — uspaný notebook nebo zastavená VM není chyba instalace.
+            $isError = $strict && $production;
             $hbPath = CronProvisioner::heartbeatPath($slot, $this->getRunDir());
             if (!is_file($hbPath)) {
                 if ($justInstalled || !$strict) {
                     $output->writeln("  ⚠ {$slot}: not yet run"
                         . ($justInstalled ? ' (cron installed recently)' : ''));
-                } else {
+                } elseif ($isError) {
                     $output->writeln("  ✗ {$slot}: heartbeat missing — cron daemon not running or dispatcher failing");
                     $output->writeln($hint);
                     $errors++;
+                } else {
+                    $output->writeln("  ⚠ {$slot}: heartbeat missing — cron daemon not running or dispatcher failing");
+                    $strictWarnings++;
                 }
                 continue;
             }
@@ -549,9 +561,12 @@ class DoctorCommand extends Command
             $ageText = $this->formatAge($age);
 
             if ($age > $maxAge) {
-                if ($strict) {
+                if ($isError) {
                     $output->writeln("  ✗ {$slot}: heartbeat stale ({$ageText} old) — cron daemon not running or dispatcher failing");
                     $errors++;
+                } elseif ($strict) {
+                    $output->writeln("  ⚠ {$slot}: heartbeat stale ({$ageText} old) — cron daemon not running or dispatcher failing");
+                    $strictWarnings++;
                 } else {
                     $output->writeln("  ⚠ {$slot}: heartbeat stale ({$ageText} old)");
                 }
@@ -564,6 +579,10 @@ class DoctorCommand extends Command
             } else {
                 $output->writeln("  ✓ {$slot}: last run {$ageText} ago");
             }
+        }
+
+        if ($strictWarnings > 0) {
+            $output->writeln('    <comment>→ Laptop asleep or VM stopped? Check: systemctl status cron</comment>');
         }
 
         return $errors;
