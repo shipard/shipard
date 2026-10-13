@@ -1,6 +1,14 @@
 # Periodické úlohy — dispatcher respektuje aktivní moduly (#115 D15)
 
-**Stav:** naplánováno — nález z prvního běhu cronu na vývojářském stroji (2026-10-13); D15 a upřesnění potvrzena
+**Stav:** hotovo — 2026-10-13, 2 commity; mapa `CronCommand::JOB_MODULES`,
+`Core\Server\DataSourceModules` (`activeIds()` / `isActive()`, šev
+`loadDefinitions()`), filtr po stavu v obou cestách dispatcheru, `--ds`
+vypisuje vyřazené úlohy; ověřeno na vývojářském stroji (heartbeat slotu
+`minute` bez selhání, `--ds` na testovacím zdroji hostingu vypsal čtyři
+vynechané úlohy). `HostingSyncRunner::isModuleActiveForDs()` **nepřeveden**:
+čte surový JSON bez validace `DataSourceConfig`, chyby resolveru ignoruje
+(částečný výsledek) a výjimku loguje do výstupu `hosting-sync` — převod by
+mu změnil chování v těchto okrajích; zůstává samostatně.
 
 > Jednorázový task pro Claude Code (2 commity). Design: issue #115 (D15).
 > Navazuje na `tasks/cron-ds-switch.md` a `tasks/cron-dev-install.md`.
@@ -140,14 +148,14 @@ každou minutu spouští kód v pracovním stromu, i rozpracovaný.
 
 ## Hotovo když
 
-- [ ] úloha se nespustí na zdroji dat bez jejího modulu a nepočítá se
+- [x] úloha se nespustí na zdroji dat bez jejího modulu a nepočítá se
       jako selhání
-- [ ] každá úloha ze `SLOT_JOBS` má záznam v mapě modulů (test)
-- [ ] neurčitelné moduly = chování jako dnes
-- [ ] `--ds` vypisuje vynechané úlohy
-- [ ] heartbeat slotu `minute` na vývojářském stroji bez selhání
-- [ ] dokumentace podle kroku 5, `php -l`, cílené testy, celá sada
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
+- [x] každá úloha ze `SLOT_JOBS` má záznam v mapě modulů (test)
+- [x] neurčitelné moduly = chování jako dnes
+- [x] `--ds` vypisuje vynechané úlohy
+- [x] heartbeat slotu `minute` na vývojářském stroji bez selhání
+- [x] dokumentace podle kroku 5, `php -l`, cílené testy, celá sada
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
 
 ## Rozhodnutí k designu (potvrzená)
 

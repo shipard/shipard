@@ -166,7 +166,8 @@ je fáze 3.
 | `Api\ReadOnlyPolicy` + `Api\ReadOnlyVerdict` | klasifikace rout pro `read_only` (sekce 6) |
 | `Api\Mcp\McpToolRegistry::readOnlyView()` | registr jen s `isReadOnly()` nástroji — sdílí chat i `/_mcp` v `read_only` |
 | `Core\Server\DataSourceStateScanner` + `DataSourceStateEntry` | sken `data-sources/*/config/state.json` pro doctor, `ds-state-check` (D8) a `ds-cron`; `countByState()['cronOff']`, `isCronOff()` |
-| `Command\Server\CronCommand::JOB_ALLOWED_STATES` | registr job → povolené lifecycle stavy; smyčka dispatcheru čte přepínač před stavem, `--ds` = `executeSingle()` |
+| `Command\Server\CronCommand::JOB_ALLOWED_STATES` / `JOB_MODULES` | registry job → povolené lifecycle stavy a job → modul (`null` = běží všude; každý job ze `SLOT_JOBS` má záznam — test); smyčka dispatcheru čte přepínač → stav → moduly, `--ds` = `executeSingle()` |
+| `Core\Server\DataSourceModules` | aktivní moduly DS pro server-level nástroje (`activeIds()` / `isActive()`): přímé moduly z `main.json` přes `ModuleResolver`, definice jednou na instanci; `null` = nelze určit (dispatcher pak pustí vše, #115 D15); `loadDefinitions()` je šev pro testy |
 | `Command\Server\DsStateCheckCommand` | `shpd-server ds-state-check` — daily warning D8 |
 | `Command\Server\DsCronCommand` | `shpd-server ds-cron` — přehled a hromadné přepínání (sekce 8) |
 | `Command\DataSource\DsStateCommand` | `shpd-ds ds-state` vč. akce `cron` |
@@ -312,6 +313,15 @@ vrací `SUCCESS` i při selhání — beze změny).
 `cronDisabledDataSources` (vedle `skippedDataSources` za stav) — do
 heartbeatu slotu, logu `cron slot finished` i souhrnu na stdout. Přepínač
 se vyhodnocuje **před** stavem, DS se počítá jen jednou.
+
+**Pořadí kontrol: přepínač → stav → moduly** (#115 D15). Po stavu
+dispatcher vyřadí úlohy, jejichž modul (`CronCommand::JOB_MODULES`) DS
+nemá aktivní — aktivní moduly čte `Core\Server\DataSourceModules`
+z `config/main.json` rozvinuté o závislosti, definice modulů jednou za běh,
+a ptá se až pro DS, kterému po stavu zbyla aspoň jedna úloha. Vyřazená
+úloha není běh, selhání ani skip stavem — žádný čítač v heartbeatu.
+Nelze-li moduly určit, běží všechny úlohy jako dřív (`warn` v logu); `--ds`
+vyřazené úlohy vypíše. Podrobně [cli.md](cli.md) § `cron --slot`.
 
 **Viditelnost (D11).**
 

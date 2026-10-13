@@ -256,18 +256,31 @@ Dispatcher periodických úloh — volá ho generovaný `/etc/cron.d/shipard`
 slotu subprocesem `shpd-ds <cmd>` s cwd v adresáři DS — **filtrované
 podle stavu DS** (`config/state.json`, [ds-state.md](ds-state.md)):
 
-| Slot | Kadence | Příkazy | Běží ve stavech |
-|------|---------|---------|-----------------|
-| `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep` | `active` |
-| `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) |
-| `five-minutes` | à 5 min | `alerts-run` (self-throttling přes `next_run_at`) | `active` |
-| `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) |
-| `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` |
+| Slot | Kadence | Příkazy | Běží ve stavech | Modul |
+|------|---------|---------|-----------------|-------|
+| `minute` | každou minutu | `mail-outbox-run`, `mail-analysis-reap`, `mail-preprocess --sweep`, `mail-analyze --sweep` | `active` | `core.mail` |
+| `two-minutes` | à 2 min | server-level: `hosting-sync` | vždy (server-level) | — |
+| `five-minutes` | à 5 min | `alerts-run` (self-throttling přes `next_run_at`) | `active` | `core.alerts` |
+| `daily` | denně 03:17 | `mail-idempotency-prune` (`active`, `read_only`), `vat-periods-ensure` (`active`), `work-orders-invoice-run` (`active`); server-level: `ds-state-check` | viz příkazy (server-level vždy) | `core.mail`, `economy.vat`, `economy.workOrders`; server-level — |
+| `weekly` | neděle 04:43 | `alerts-prune` | `active`, `read_only` | `core.alerts` |
 
 Registr povolených stavů je `CronCommand::JOB_ALLOWED_STATES`; job bez
 záznamu běží jen v `active`. V `suspended` / maintenance /
 `pending_deletion` neběží per-DS nic. Přeskočený DS se neloguje (minute
 slot by spamoval) — počet jde do heartbeatu.
+
+Po stavu se vyřadí **úlohy bez aktivního modulu** (sloupec Modul,
+`CronCommand::JOB_MODULES`, #115 D15): DS bez modulu nemá jeho tabulky
+a úloha by jen selhala. Aktivní moduly DS = přímé moduly z `config/main.json`
+rozvinuté o závislosti (`Core\Server\DataSourceModules`; definice modulů
+se načítají jednou za běh, moduly se zjišťují až pro DS, kterému po stavu
+zbyla aspoň jedna úloha). Vyřazená úloha se **nespouští ani nepočítá** —
+není běh, selhání ani skip stavem, v heartbeatu čítač nemá. Nelze-li
+moduly určit (nečitelný `main.json`, chyba resolveru), běží všechny úlohy
+jako dřív a do logu jde `warn` — chyba se ukáže jako selhaná úloha, tiché
+vynechání by ji schovalo. Úloha s hodnotou `null` v mapě běží všude;
+server-level jobů se moduly netýkají. Pořadí kontrol: přepínač → stav →
+moduly.
 
 Před stavem se vyhodnocuje **přepínač periodických úloh** (`"cron": false`
 v `state.json`, [ds-state.md](ds-state.md) §8, #115 D1): vypnutý = DS se
@@ -281,9 +294,11 @@ ignoruje, stav DS platí dál (`suspended` / maintenance → nic,
 s vysvětlením). Nebere zámek slotu, **nezapisuje heartbeat** (ruční běh
 nesmí v `doctor` zakrýt neběžící cron) a nespouští server-level joby.
 Výstup: řádek per job (`ok` / `failed, exit N` / `timed out`, trvání),
-u selhaného jobu konec jeho výstupu. Exit **FAILURE** při selhaném jobu,
-neznámém ID nebo špatném tvaru ID (ověřuje se před složením cesty).
-Kontext logu `cli: cron --slot=<slot> --ds=<id>`.
+u selhaného jobu konec jeho výstupu; úloha vyřazená kvůli modulu
+`· <job>: skipped (module <id> not active)` (na exit kód nemá vliv).
+Exit **FAILURE** při selhaném jobu, neznámém ID nebo špatném tvaru ID
+(ověřuje se před složením cesty). Kontext logu
+`cli: cron --slot=<slot> --ds=<id>`.
 
 Kromě per-DS jobů má slot volitelně **server-level příkazy**
 (`CronCommand::SERVER_SLOT_JOBS`) — spouští se subprocesem
@@ -314,7 +329,7 @@ slot, nečitelný seznam DS, nezapsatelný heartbeat).
 | Opce | Význam |
 |------|--------|
 | `--slot <slot>` | Povinné: `minute`, `two-minutes`, `five-minutes`, `daily`, `weekly` |
-| `--ds <id>` | Volitelné: jen tento DS (celé ID `xxxx-xxxx-xxxx-xxxx`); přepínač cronu ignoruje, stav respektuje, bez zámku, heartbeatu a server-level jobů; exit podle výsledku jobů |
+| `--ds <id>` | Volitelné: jen tento DS (celé ID `xxxx-xxxx-xxxx-xxxx`); přepínač cronu ignoruje, stav i moduly respektuje (vyřazené úlohy vypíše), bez zámku, heartbeatu a server-level jobů; exit podle výsledku spuštěných jobů |
 
 ### `cron-install [--dry-run | --check] [--keep-ds-cron]`
 
