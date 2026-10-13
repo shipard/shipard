@@ -76,6 +76,9 @@ class HelpCommand extends Command
         $output->writeln('                                           Deploy a new version from git');
         $output->writeln('  domain-add --host <host> --ds <ds-id>    Map a hostname to a data source');
         $output->writeln('  cron --slot=<slot> [--ds=<id>]           Run slot jobs (--ds: one data source, ignores its cron switch)');
+        $output->writeln('  cron-install [--dry-run | --check] [--keep-ds-cron]');
+        $output->writeln('                                           Generate /etc/cron.d/shipard; the first install outside production');
+        $output->writeln('                                           switches periodic jobs off for existing data sources (--check: exit 0/1, silent)');
         $output->writeln('  ds-cron [--on|--off] [--all | <id>…]     Overview, or switch periodic jobs per data source');
         $output->writeln('  domain-remove --host <host>              Remove a hostname mapping');
         $output->writeln('  doctor                                   Read-only health check (no options)');
