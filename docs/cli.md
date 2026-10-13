@@ -440,7 +440,10 @@ Jeden běh:
    `ds-create --ds-id --language --country` (existující adresář = skip,
    chybějící jazyk/země v payloadu = chyba požadavku) → `ds-upgrade` →
    `domain-add` → merge `auth.providers` do `main.json` (provider
-   `shipard-id`, `autoLinkEmail: false`, atomicky, 0600) → `user-create`
+   `shipard-id`, `autoLinkEmail: false`, atomicky, 0600, vlastník podle
+   adresáře `config/` — ruční běh pod `sudo` zachová vlastníka zdroje
+   dat; když vlastníka nejde nastavit, požadavek skončí `failed`
+   a `main.json` se nezmění) → `user-create`
    vlastníka (`--admin --if-not-exists` + předpropojená identita) →
    POST confirm `ok`/`failed` (chyba jednoho požadavku nezastaví další).
 3. **Stats push** (D7) — jen když reconcile response vrátí

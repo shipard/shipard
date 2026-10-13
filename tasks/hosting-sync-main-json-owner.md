@@ -1,6 +1,6 @@
 # `hosting-sync` — vlastník `main.json` při běhu pod rootem
 
-**Stav:** naplánováno — nález z `tasks/ds-state-file-ownership.md` krok 4 (2026-10-12)
+**Stav:** hotovo — implementováno 2026-10-13 (2 commity), ověřeno testy; pod rootem nespuštěno (běh agenta potřebuje napojený hosting), ruční ověření pod `sudo` na testovacím hostingu je na člověku; nález z `tasks/ds-state-file-ownership.md` krok 4 (2026-10-12)
 
 > Jednorázový task pro Claude Code (2 commity). Souvisí:
 > `tasks/ds-state-file-ownership.md`, `tasks/secrets-rotate-key-owner.md`
@@ -100,10 +100,10 @@ hostingu je na člověku a zapíše se do `**Stav:**`.
 
 ## Hotovo když
 
-- [ ] `main.json` přepsaný agentem pod rootem má vlastníka adresáře
+- [x] `main.json` přepsaný agentem pod rootem má vlastníka adresáře
       `config/` (test)
-- [ ] selhání nastavení vlastníka zastaví provisioning a `main.json`
+- [x] selhání nastavení vlastníka zastaví provisioning a `main.json`
       nezmění (test)
-- [ ] dokumentace podle kroku 3
-- [ ] `php -l`, cílené testy, celá sada
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
+- [x] dokumentace podle kroku 3
+- [x] `php -l`, cílené testy, celá sada
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`

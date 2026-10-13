@@ -238,8 +238,10 @@ Jeden běh (cron slot `two-minutes`; `--dry-run` = náhled fronty přes
    nezastaví další): `ds-create --ds-id --language --country`
    (existující adresář = skip) → `ds-upgrade` → `domain-add` → merge položky
    `{id: "shipard-id", label, issuer, clientId, clientSecret,
-   autoLinkEmail: false}` do `auth.providers` (atomicky, 0600; U2 —
-   identita se předpropojuje) → `user-create --admin --if-not-exists
+   autoLinkEmail: false}` do `auth.providers` (atomicky, 0600, vlastník
+   podle adresáře `config/` — ruční běh pod rootem zdroj dat nezavře,
+   selhání nastavení vlastníka = krok `failed` a `main.json` zůstává;
+   U2 — identita se předpropojuje) → `user-create --admin --if-not-exists
    --identity-provider shipard-id --identity-issuer … --identity-subject
    {sub}` → `POST /_hosting/server/confirm` `{request_id, ds_id,
    status: "ok"|"failed", error?}`. Confirm `ok` → `lifecycle = active`

@@ -122,7 +122,12 @@ a původní soubor zůstane. Soubory z doby před touto opravou srovná
 `fix-permissions`, `doctor` je hlásí jako `owner root, expected
 <shipard-user>`. Stejnou cestou jde nový klíč z `ds-secrets-rotate`
 (`sudo` je u něj dokumentované; selhání zastaví rotaci před změnou DB,
-[secrets.md](secrets.md) §3). Soubory zakládané `SecretsFileWriter`
+[secrets.md](secrets.md) §3) a `config/main.json` přepsaný agentem
+`hosting-sync` při doplnění `auth.providers` (ruční běh `sudo shpd-server
+hosting-sync`; vzorem je adresář `config/`, protože přepisovaný
+`main.json` může nést špatného vlastníka z dřívějšího běhu a nemůže být
+vzorem sám sobě; selhání = krok provisioningu `failed`, původní soubor
+zůstává, [hosting.md](../hosting.md) §5.2). Soubory zakládané `SecretsFileWriter`
 (`secrets.key` při `ds-create` / `ds-upgrade`, klíče hostingu) srovnává
 jeho `alignOwnership()` podle kořene zdroje dat — pod rootem chownuje,
 jinak jen varuje.
