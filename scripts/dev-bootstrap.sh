@@ -4,9 +4,9 @@
 #
 # Glues the steps of docs/dev/linux-install.md together, it does not replace
 # them — fixes belong to install-packages.sh and docs/dev/linux-install.md:
-#   checkout → install-packages.sh → dev-update.sh → server-init → git hooks
-#   → render service (--with-render) → SSH for remote-dev-bridge (--with-ssh)
-#   → doctor → summary with the dashboard address
+#   checkout → install-packages.sh → dev-update.sh → server-init → cron-install
+#   → git hooks → render service (--with-render) → SSH for remote-dev-bridge
+#   (--with-ssh) → doctor → summary with the dashboard address
 #
 # Idempotent. Run it as your own user, NOT via sudo: the script calls sudo
 # itself, so that install-packages.sh finds the developer in $SUDO_USER.
@@ -49,8 +49,9 @@ usage() {
 Použití: bash scripts/dev-bootstrap.sh [volby]
 
 Rozjede vývojové prostředí Shipardu na Ubuntu 24.04 / 26.04 (Multipass, WSL,
-běžný stroj): balíčky, závislosti, build frontendu, konfigurace serveru.
-Končí zeleným 'shpd-server doctor' a adresou vývojářského dashboardu.
+běžný stroj): balíčky, závislosti, build frontendu, konfigurace serveru,
+periodické úlohy (cron). Končí zeleným 'shpd-server doctor' a adresou
+vývojářského dashboardu.
 
 Spouštěj pod svým uživatelem, ne přes sudo. Opakované spuštění je bezpečné.
 
@@ -296,7 +297,7 @@ ensure_checkout() {
     TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
 }
 
-# ─── 7. Render service (--with-render) ───────────────────────────────────────
+# ─── 8. Render service (--with-render) ───────────────────────────────────────
 # Single-server setup from docs/operations/render-service.md.
 setup_render() {
     local unit_src="$TARGET_DIR/docs/render/shpd-render.service"
@@ -377,7 +378,7 @@ echo "    Do $path doplněn klíč render.\n";
 PHP
 }
 
-# ─── 8. SSH for remote-dev-bridge (--with-ssh) ───────────────────────────────
+# ─── 9. SSH for remote-dev-bridge (--with-ssh) ───────────────────────────────
 
 # Effective sshd configuration into a file. Needs root (host keys) and the
 # privilege separation directory, which exists only while ssh.service runs.
@@ -501,7 +502,7 @@ setup_ssh() {
     echo "    sshd naslouchá na portu $SSH_PORT, přihlášení jen klíčem."
 }
 
-# ─── 9. Doctor ───────────────────────────────────────────────────────────────
+# ─── 10. Doctor ──────────────────────────────────────────────────────────────
 run_doctor() {
     step "Verification (shpd-server doctor)"
 
@@ -516,7 +517,7 @@ run_doctor() {
     fi
 }
 
-# ─── 10. Summary ─────────────────────────────────────────────────────────────
+# ─── 11. Summary ─────────────────────────────────────────────────────────────
 print_summary() {
     local host="localhost" ips=""
 
@@ -544,6 +545,11 @@ print_summary() {
          $DOCS_URL
       3. Po 'git pull' se závislosti a frontend aktualizují samy (git hooky);
          po změně tabulek spusť 'shpd-server ds-upgrade-all'.
+      4. Periodické úlohy (cron) na stroji běží. Kterým zdrojům dat jsou
+         zapnuté, ukáže 'shpd-server ds-cron'; zapnutí:
+         'sudo shpd-server ds-cron --on <id>'. Pokud to byla první instalace
+         cronu, dosud existujícím zdrojům dat se vypnuly — seznam je ve
+         výpisu kroku „Periodic jobs" výše.
 EOF
 
     if [ "$WITH_SSH" = 1 ]; then
@@ -575,14 +581,23 @@ main() {
     sudo bash "$TARGET_DIR/scripts/install-packages.sh" --mode=development
 
     # ─── 4. composer, npm, frontend build — as the developer, not root ───────
+    # The cron reminder at the end of dev-update.sh is silenced here: cron is
+    # installed two steps below.
     step "Dependencies and frontend build (dev-update.sh)"
-    bash "$TARGET_DIR/scripts/dev-update.sh"
+    SHPD_DEV_UPDATE_NO_CRON_HINT=1 bash "$TARGET_DIR/scripts/dev-update.sh"
 
     # ─── 5. /etc/shipard/server.json (a no-op when it already exists) ────────
     step "Server config (shpd-server server-init)"
     sudo shpd-server server-init --mode=development
 
-    # ─── 6. pre-commit checks, dev-update.sh after git pull ──────────────────
+    # ─── 6. /etc/cron.d/shipard — periodic jobs (#115 D6). Idempotent. The
+    # first install on a machine switches periodic jobs off for every data
+    # source that already exists and lists them (D10); that output stays
+    # visible in the run, the summary points to `shpd-server ds-cron`.
+    step "Periodic jobs (shpd-server cron-install)"
+    sudo shpd-server cron-install
+
+    # ─── 7. pre-commit checks, dev-update.sh after git pull ──────────────────
     step "Git hooks"
     git -C "$TARGET_DIR" config core.hooksPath .githooks
     echo "    core.hooksPath = .githooks"
