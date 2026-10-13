@@ -78,10 +78,16 @@ Read-only health check. Vypíše:
   includují verzované `shipard-common.conf` / `shipard-fpm-common.conf`
   (viz [production.md §6](operations/production.md)); nikdy nemění exit code
 - **Cron** — `/etc/cron.d/shipard` existuje a marker odpovídá aktuální
-  verzi šablony; heartbeaty slotů nejsou zatuchlé (`minute` > 10 min,
-  `five-minutes` > 20 min = error; `daily`/`weekly` jen warning; selhané
-  joby z posledního běhu = warning). Na dev serveru bez cron souboru se
-  sekce přeskočí.
+  verzi šablony (zastaralá šablona = error v každém režimu, #115 U5);
+  heartbeaty slotů nejsou zatuchlé (`minute` > 10 min, `two-minutes`
+  > 15 min, `five-minutes` > 20 min; `daily`/`weekly` jen warning; selhané
+  joby z posledního běhu = warning). Na **produkci** je chybějící soubor
+  i zatuchlý nebo chybějící heartbeat krátkých slotů error. **Mimo
+  produkci** (#115 D6) jen varování bez vlivu na exit code: chybějící
+  soubor `⚠ … missing — periodic jobs … are not running` s radou
+  `sudo shpd-server cron-install` a větou, že první instalace vypne cron
+  existujícím zdrojům dat; zatuchlý heartbeat `⚠` s radou
+  `systemctl status cron` (uspaný notebook, zastavená VM).
 - **Data source DB connections** — pokus o `SELECT 1` na každý DS
 - **Data source states** — stavy z `config/state.json`
   ([ds-state.md](ds-state.md)): počty per stav a `cron off N`, `⚠` DS
@@ -206,7 +212,9 @@ Orchestruje nasazení nové verze: `git pull --ff-only` → `composer install
 --no-dev --optimize-autoloader` (jen při změně `composer.json`/`composer.lock`)
 → frontend build (jen při změně pod `frontend/`) → `ds-upgrade-all` →
 `cron-install` (vždy, jen pod rootem — idempotentní regenerace
-`/etc/cron.d/shipard`) → `completion-install` (vždy, jen pod rootem —
+`/etc/cron.d/shipard`; na stroji mimo produkci, kde cron soubor ještě
+neexistuje, je to první instalace a vypne cron existujícím zdrojům dat,
+#115 D10 / U1) → `completion-install` (vždy, jen pod rootem —
 bash completion obou binárek) → reload služeb (jen při změně verzovaných
 systémových confů: `docs/nginx/**` → `nginx -t && systemctl reload nginx`,
 `docs/php/**` → `systemctl reload php<ver>-fpm`; jen pod rootem, jinak
@@ -308,24 +316,40 @@ slot, nečitelný seznam DS, nezapsatelný heartbeat).
 | `--slot <slot>` | Povinné: `minute`, `two-minutes`, `five-minutes`, `daily`, `weekly` |
 | `--ds <id>` | Volitelné: jen tento DS (celé ID `xxxx-xxxx-xxxx-xxxx`); přepínač cronu ignoruje, stav respektuje, bez zámku, heartbeatu a server-level jobů; exit podle výsledku jobů |
 
-### `cron-install`
+### `cron-install [--dry-run | --check] [--keep-ds-cron]`
 
 ```bash
 sudo shpd-server cron-install            # zapíše /etc/cron.d/shipard + /opt/shipard/run
-shpd-server cron-install --dry-run       # náhled rendrovaného obsahu, lze bez sudo
+shpd-server cron-install --dry-run       # náhled obsahu (+ koho by první instalace vypnula), lze bez sudo
+shpd-server cron-install --check         # pro skripty: exit 0 = soubor odpovídá šabloně, 1 = chybí/liší se; bez výstupu
 ```
 
 Idempotentní generátor `/etc/cron.d/shipard` (marker s verzí šablony,
 přepis jen když se obsah liší, atomicky přes tmp + rename) a runtime
 adresáře `/opt/shipard/run` (0750, owner shipard — locky a heartbeaty).
-Volá ho `shpd-server upgrade` jako subproces; ručně je potřeba jen při
-prvním nasazení nebo když ho doctor ohlásí jako chybějící/zastaralý.
-Cron soubor neobsahuje žádné per-DS řádky — `ds-create`/`ds-delete`
-regeneraci nevyžadují.
+Volá ho `shpd-server upgrade` jako subproces a `scripts/dev-bootstrap.sh`;
+ručně je potřeba při prvním nasazení nebo když ho doctor ohlásí jako
+chybějící/zastaralý. Cron soubor neobsahuje žádné per-DS řádky —
+`ds-create`/`ds-delete` regeneraci nevyžadují.
+
+**První instalace mimo produkci** ([ds-state.md](ds-state.md) §8, #115 D10):
+když `/etc/cron.d/shipard` před během neexistuje a server není v režimu
+`production`, příkaz nejdřív **vypne periodické úlohy všem zdrojům dat na
+stroji** (tatáž logika jako `ds-cron --off --all` — `DataSourceCronSwitch`),
+vypíše je s názvem a poradí `sudo shpd-server ds-cron --on <id>…`, a teprve
+potom zapíše cron soubor; opačně by první tik stihl proběhnout nad kopiemi
+reálných dat. Selže-li vypnutí u kteréhokoli zdroje dat, cron soubor se
+nezapíše a příkaz skončí `FAILURE` s výpisem, co opravit. Poškozený
+`state.json` instalaci neblokuje (`·` řádek `skipped` — zdroj dat je
+fail-closed zavřený a žádnou úlohu nedostane). Stroj bez zdrojů dat: jen
+zápis souboru. Na produkci se na zdroje dat nesahá nikdy; přegenerování
+existujícího souboru (nová šablona, jiné cesty) je nemění.
 
 | Opce | Význam |
 |------|--------|
-| `--dry-run` | Vypíše cíl a rendrovaný obsah, nic nezapíše. Lze bez sudo. |
+| `--dry-run` | Vypíše cíl a rendrovaný obsah; u první instalace mimo produkci i seznam zdrojů dat (`cron on → off` / `cron off (unchanged)` / `state.json unusable — skipped`). Nic nezapíše. Lze bez sudo. |
+| `--check` | Pro skripty (`dev-update.sh`): exit `0` = soubor existuje a odpovídá šabloně, `1` = chybí nebo se liší. Bez výstupu, bez sudo; má přednost před `--dry-run`. |
+| `--keep-ds-cron` | První instalace mimo produkci nesáhne na zdroje dat (stroj jen s ukázkovými daty, skripty). |
 
 ### `completion-install`
 
@@ -455,8 +479,9 @@ adresáře s `config/main.json`).
 
 **Přepnutí:** právě jedna z `--on` / `--off` a `--all`, nebo aspoň jedno ID
 (ne obojí) — jinak chyba s nápovědou a nic se nezapíše. Bez
-potvrzovacího dotazu (volá se ze skriptů; fáze 2 ho použije při první
-instalaci cronu, D10). `changedBy: cli`. Po přepnutí vypíše přehled.
+potvrzovacího dotazu (volá se ze skriptů). Vlastní přepnutí dělá
+`DataSourceCronSwitch`, kterou používá i první instalace cronu
+v `cron-install` (D10). `changedBy: cli`. Po přepnutí vypíše přehled.
 Pod rootem zapsaný `state.json` patří vlastníkovi zdroje dat (podle
 `config/main.json`), ne rootu — viz `ds-state`.
 
@@ -1684,6 +1709,13 @@ Po `git pull` synchronizuje vývojové prostředí — `composer install`,
 pokud se nic nezměnilo, projdou během pár sekund. Skript lze spustit
 z libovolného CWD (sám si dohledá repo root).
 
+Na konci připomene, co sám neudělá (nevolá `sudo`): `ds-upgrade-all` po
+změně tabulek nebo cfgItems a — když `shpd-server cron-install --check`
+selže — `sudo shpd-server cron-install`; u chybějícího cron souboru
+s větou, že první instalace vypne cron existujícím zdrojům dat a vypíše je
+(#115 D6, U2). Připomínku potlačí proměnná `SHPD_DEV_UPDATE_NO_CRON_HINT=1`
+(nastavuje ji `dev-bootstrap.sh`, který cron instaluje sám o dva kroky dál).
+
 Pro automatizaci přes git hooks:
 
 ```bash
@@ -1707,6 +1739,8 @@ skončí chybou dřív, než cokoli nainstaluje.
 - PHP 8.5 (cli, fpm, mysql, xml, mbstring, curl, zip, intl) — na 24.04 z PPA
   `ondrej/php`, na 26.04 ze systémových repozitářů
 - MariaDB, nginx
+- `cron` a `logrotate` (na minimálních obrazech chybí); služba `cron`
+  zapnutá a spuštěná (#115 D6)
 - composer, git, unzip
 - Node.js 24 (LTS, z NodeSource) — už nainstalovaný Node ≥ 22 se ponechá
 
@@ -1721,6 +1755,12 @@ Dále zařídí:
 - Aktivaci nginx site `shipard.conf` (existující `development.conf`/`production.conf`
   se uloží jako `.disabled-TIMESTAMP`)
 - Symlinky `/usr/bin/shpd-server` a `/usr/bin/shpd-ds` — utility volatelné odkudkoliv
+- Pravidlo rotace logů `/etc/logrotate.d/shipard` podle [`logging.md`](logging.md)
+  (vlastník v řádku `create` = shipard user daného režimu), **jen když soubor
+  neexistuje** — ruční úpravu správce nepřepíše; ověří `logrotate -d`
+
+Cron soubor `/etc/cron.d/shipard` skript nezapisuje — to dělá
+`shpd-server cron-install` (`dev-bootstrap.sh`, nebo ručně).
 
 Po instalaci spusť `shpd-server doctor` pro ověření kontraktu.
 
@@ -1741,15 +1781,21 @@ curl -fsSL … | bash -s -- --with-ssh --ssh-pubkey-file <cesta>
 
 Vývojové prostředí jedním příkazem — skládá za sebe kroky z [`dev/linux-install.md`](dev/linux-install.md):
 checkout → `install-packages.sh --mode=development` → `dev-update.sh` →
-`server-init` → `git config core.hooksPath .githooks` → volitelné části →
-`shpd-server doctor` → souhrn s adresou dashboardu. Návod pro macOS
+`server-init` → `cron-install` → `git config core.hooksPath .githooks` →
+volitelné části → `shpd-server doctor` → souhrn s adresou dashboardu. Návod pro macOS
 (Multipass, cloud-init `scripts/multipass/shipard-dev.yaml`) a Windows (WSL):
 [`dev/local-dev.md`](dev/local-dev.md).
 
 - Běží **pod běžným uživatelem**, `sudo` volá sám (jako root skončí chybou —
   vývojář se určuje ze `$SUDO_USER`). Heslo chce jednou na začátku.
 - **Idempotentní.** Existující checkout nechá být (žádný `git pull`),
-  `server-init` na hotovém serveru nic nemění.
+  `server-init` na hotovém serveru nic nemění, `cron-install` existující
+  soubor jen ověří.
+- **První instalace cronu** na stroji vypne periodické úlohy všem
+  existujícím zdrojům dat a vypíše je (#115 D10) — výpis zůstává v průběhu
+  vidět, závěrečné shrnutí odkáže na `shpd-server ds-cron`. Volání
+  `dev-update.sh` z bootstrapu má připomínku o cronu potlačenou
+  (`SHPD_DEV_UPDATE_NO_CRON_HINT=1`).
 - Každé selhání končí nenulovým kódem a pojmenuje krok, ve kterém nastalo.
 - Podporované systémy jako u `install-packages.sh`; navíc vyžaduje běžící
   systemd (WSL 2).

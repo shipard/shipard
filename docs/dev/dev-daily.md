@@ -73,7 +73,9 @@ bash scripts/dev-update.sh
 
 Skript vždy spustí `composer install`, `npm install` (ve `frontend/`)
 a `npm run build`. Všechny kroky jsou idempotentní — pokud se nic
-nezměnilo, projdou během pár sekund.
+nezměnilo, projdou během pár sekund. Na konci připomene, co sám neudělá
+(nevolá `sudo`): upgrade datových zdrojů a instalaci cronu, pokud na stroji
+chybí nebo je zastaralý (oddíl 4).
 
 Pokud se měnily definice tabulek nebo cfgItems modulů, je potřeba
 zaktualizovat i datové zdroje:
@@ -97,7 +99,61 @@ Stačí spustit jednou v repu. Kdo prostředí rozjel skriptem
 
 ---
 
-## 4. Závislosti
+## 4. Periodické úlohy (cron)
+
+Část systému běží na pozadí z cronu: fronta odchozí pošty, upozornění,
+instance období DPH, periodická fakturace zakázek, úklid. Dispatcher
+`shpd-server cron --slot=<slot>` spouští sloty `minute`, `two-minutes`,
+`five-minutes`, `daily` a `weekly` z `/etc/cron.d/shipard` a projde všechny
+zdroje dat na stroji. Bez cronu tohle při vývoji tiše nefunguje — proto je
+cron součást vývojové instalace: `install-packages.sh` zajistí službu `cron`
+a rotaci logů, `dev-bootstrap.sh` nainstaluje cron soubor.
+
+**Instalace a kontrola.** Stačí jednou; soubor se přegeneruje jen při změně
+šablony:
+
+```bash
+sudo shpd-server cron-install
+shpd-server doctor               # sekce Cron: soubor + heartbeat slotů
+```
+
+Když cron chybí nebo je soubor zastaralý, připomene to `dev-update.sh` na
+konci každého běhu (i po `git pull` přes git hooky) a `doctor` to hlásí jako
+varování — mimo produkci nikdy jako chybu, uspaný notebook není porucha.
+
+**Kopie reálných dat mají mít cron vypnutý.** Zdroj dat importovaný ze
+starého Shipardu nebo obnovený ze zálohy má zůstat, jak je — žádná úloha
+v něm nemá nic vystavovat ani posílat. Proto **první instalace cronu na
+stroji vypne periodické úlohy všem zdrojům dat, které už existují**,
+a vypíše jejich seznam; zapni je jen těm, které chceš:
+
+```bash
+shpd-server ds-cron                            # přehled: ID | Name | Cron | State
+sudo shpd-server ds-cron --on <id> [<id>…]     # zapnout vyjmenovaným
+sudo shpd-server ds-cron --off <id>            # vypnout (např. cíl importu)
+```
+
+Zdroj dat založený až po instalaci cronu má cron zapnutý (výchozí stav);
+cíl importu zakládej s `ds-create --no-cron`. Vypnutý cron je vidět ve
+sloupci **Cron** vývojářského dashboardu, v `doctor` a jako pruh v aplikaci.
+V `CLAUDE.local.md` odpovídá vypnutému cronu režim `reálná kopie`
+([`../ai-workflow.md`](../ai-workflow.md#7-nastavení-pro-nového-člověka),
+kapitola 7).
+
+**Jeden tik ručně.** Úlohy slotu pro jediný zdroj dat, bez ohledu na
+přepínač (ladění, dohnání):
+
+```bash
+shpd-server cron --slot=daily --ds=<id>
+```
+
+**Logy.** Výstup slotů jde do `/opt/shipard/log/cron.log`, záznamy úloh do
+`shipard.log` (prohlížeč **Logs** v dashboardu). Oba soubory rotuje
+`logrotate` podle `/etc/logrotate.d/shipard`.
+
+---
+
+## 5. Závislosti
 
 `composer.lock` je verzovaný, `composer install` tak všude nainstaluje stejné
 verze balíků. Závislost přidávej přes `composer require <balík>`, verzi měň
@@ -107,7 +163,7 @@ a `composer.lock` patří vždy do stejného commitu.
 
 ---
 
-## 5. Až budeš chtít posílat změny
+## 6. Až budeš chtít posílat změny
 
 Checkout z návodů je stažený přes HTTPS — funguje i bez SSH klíče na
 GitHubu. Kdo bude pushovat, může klonovat rovnou přes SSH
@@ -120,7 +176,7 @@ Jak práci poslat — fork, větev a pull request — popisuje
 
 ---
 
-## 6. Příkazy
+## 7. Příkazy
 
 Přehled všech příkazů `shpd-server` a `shpd-ds` i pomocných skriptů je
 v [`cli.md`](../cli.md). Po základním setupu nepotřebuješ `sudo` pro běžné
@@ -128,7 +184,7 @@ shipard operace.
 
 ---
 
-## 7. Něco nefunguje?
+## 8. Něco nefunguje?
 
 Většinu potíží s rozchozením odhalí health check:
 

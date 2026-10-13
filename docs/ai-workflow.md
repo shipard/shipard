@@ -249,7 +249,11 @@ Každý zdroj dat v tabulce má **režim**, podle kterého se Claude chová:
 | `volný` | ukázková nebo seedovaná data | číst, resetovat, seedovat, zapisovat |
 | `reálná kopie` | kopie ostrých dat (např. import) | číst; mutace jen po schválení, jako na testovacím serveru (kapitola 3) |
 
-Zdroj, který v tabulce chybí, se bere jako `reálná kopie`.
+Zdroj, který v tabulce chybí, se bere jako `reálná kopie`. Zdroj dat
+v režimu `reálná kopie` má mít **vypnuté periodické úlohy** — žádná úloha
+v něm nemá nic vystavovat ani posílat; přehled a přepínání
+`shpd-server ds-cron` ([`dev/dev-daily.md`](dev/dev-daily.md#4-periodické-úlohy-cron),
+oddíl 4).
 
 Kdo to načte:
 - **Claude Code** automaticky; `@cesta` importy uvnitř (např. soubor ze

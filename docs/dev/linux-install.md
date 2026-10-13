@@ -31,7 +31,7 @@ cd ~/sw/shpd
 
 Klon přes HTTPS funguje i bez SSH klíče na GitHubu. Jak `remote` přepnout,
 až budeš chtít posílat změny, říká
-[`dev-daily.md`](dev-daily.md#5-až-budeš-chtít-posílat-změny) (oddíl 5).
+[`dev-daily.md`](dev-daily.md#6-až-budeš-chtít-posílat-změny) (oddíl 6).
 
 ---
 
@@ -92,13 +92,28 @@ přes group membership.
 
 ---
 
-## 5. Ověření
+## 5. Periodické úlohy (cron)
+
+```bash
+sudo shpd-server cron-install
+```
+
+Zapíše `/etc/cron.d/shipard` a runtime adresář `/opt/shipard/run`; službu
+`cron` a rotaci logů nainstaloval už `install-packages.sh`. Na stroji, kde už
+zdroje dat jsou, první instalace všem **vypne** periodické úlohy a vypíše je —
+zapni je těm, které chceš (`sudo shpd-server ds-cron --on <id>`). Podrobně
+[`dev-daily.md`](dev-daily.md#4-periodické-úlohy-cron), oddíl 4.
+
+---
+
+## 6. Ověření
 
 ```bash
 shpd-server doctor
 ```
 
-Vypíše report: mode, shipard-user, PHP-FPM pool user, kontrolu cest,
+Vypíše report: mode, shipard-user, PHP-FPM pool user, kontrolu cest, cron
+(soubor a heartbeat slotů — čerstvě po instalaci jen „not yet run“),
 DB connection per DS. Exit 0 = vše OK.
 
 Pokud něco nesouhlasí:

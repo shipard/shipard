@@ -224,7 +224,9 @@ Kód je v `~/sw/shpd`.
 Co dělat po `git pull`, kdy spustit `ds-upgrade-all` a kde je přehled
 příkazů, říká [`dev-daily.md`](dev-daily.md) — stejně pro Multipass, WSL
 i Linux server. Bootstrap zapnul git hooky, takže se závislosti a frontend
-po `git pull` aktualizují samy.
+po `git pull` aktualizují samy. Nainstaloval i periodické úlohy (cron) —
+co běží, jak je per zdroj dat vypnout a co udělala první instalace, říká
+[`dev-daily.md`](dev-daily.md#4-periodické-úlohy-cron), oddíl 4.
 
 Bootstrap jde kdykoli spustit znovu — hotové kroky jen ověří. Stejně se
 doplní volitelné části:
@@ -242,7 +244,7 @@ bash ~/sw/shpd/scripts/dev-bootstrap.sh --with-render
 ```
 
 Checkout je stažený přes HTTPS. Až budeš chtít posílat změny, přepni ho
-podle [`dev-daily.md`](dev-daily.md#5-až-budeš-chtít-posílat-změny) (oddíl 5).
+podle [`dev-daily.md`](dev-daily.md#6-až-budeš-chtít-posílat-změny) (oddíl 6).
 
 ### AI na lokální instalaci
 
@@ -260,10 +262,13 @@ shpd-ds ai-test                                # ověř: řádek OK s časem a c
 Pak nahraj doklad (PDF, obrázek účtenky) na Dashboardu. Analýza běží jako
 odpojený proces `shpd-ds mail-analyze` a zhruba do minuty je výsledek
 v detailu zprávy; víc dokladů naráz odbaví týž proces postupně (po
-dokončení zprávy bere další z fronty), cron k tomu není potřeba. Běhy
+dokončení zprávy bere další z fronty), cron k tomu není potřeba — na
+stroji ale běží (bootstrap ho nainstaloval, [`dev-daily.md`](dev-daily.md#4-periodické-úlohy-cron)
+oddíl 4) a jeho minutový sweep dobere, co by odpojený proces nestihl. Běhy
 s tokeny, cenou a trváním vidíš v tabu *Analýzy*. Bez klíče zpráva
 zůstane „Ve frontě“ — runner zapíše jedno varování do `analysis.log`
-a skončí; na stroji s cronem se varování sweepu opakuje každou minutu.
+a skončí; u zdroje dat se zapnutým cronem a bez klíče se varování sweepu
+opakuje každou minutu.
 Limit souběhu a vypnutí (`ai.analysis.maxConcurrent`) popisuje
 [`operations/production.md`](../operations/production.md) §10.
 
@@ -291,5 +296,5 @@ sleduj ji podle kroku 5 v kapitole 2.
 
 **Aplikace hlásí chybu, nebo to pořád nejde?** Zdravotní kontrola
 `shpd-server doctor`, oprava práv, logy a kam se obrátit —
-[`dev-daily.md`](dev-daily.md#7-něco-nefunguje) (oddíl 7). K hlášení
+[`dev-daily.md`](dev-daily.md#8-něco-nefunguje) (oddíl 8). K hlášení
 o bootstrapu přilož poslední řádky jeho výpisu.

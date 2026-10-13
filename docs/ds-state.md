@@ -328,5 +328,26 @@ se vyhodnocuje **před** stavem, DS se počítá jen jednou.
 hromadně, bez potvrzení, chyba jednoho DS nezastaví ostatní),
 `shpd-server ds-create --no-cron` (cíl importu nikdy neběží se zapnutým
 cronem; selhání zápisu `state.json` je chyba příkazu). Reference:
-[cli.md](cli.md). Mimo fázi 1: řízení z hostingu, přepínání z dashboardu
+[cli.md](cli.md). Mimo fáze 1 a 2: řízení z hostingu, přepínání z dashboardu
 a z UI, automatika při obnově ze zálohy (D12).
+
+**Cron ve vývojové instalaci a první instalace (fáze 2, D6 + D10).** Cron
+je součást vývojové instalace: `install-packages.sh` zajistí službu `cron`
+a rotaci logů, `dev-bootstrap.sh` volá `shpd-server cron-install`, `doctor`
+mimo produkci hlásí chybějící cron a zatuchlý heartbeat jen jako varování
+(zastaralá šablona zůstává chybou, U5) a `dev-update.sh` chybějící nebo
+zastaralý cron soubor připomene (`cron-install --check`, bez sudo). Když
+`/etc/cron.d/shipard` před během neexistuje a server není `production`,
+`cron-install` **nejdřív vypne přepínač všem zdrojům dat na stroji**
+(tatáž `DataSourceCronSwitch` jako `ds-cron --off --all`), vypíše je
+a teprve pak zapíše cron soubor — opačné pořadí by nechalo první tik
+proběhnout nad kopiemi reálných dat. Selhání u kteréhokoli DS = soubor
+nevznikne a `FAILURE`; poškozený `state.json` se jen přeskočí (DS je
+fail-closed zavřený). Systém původ DS nezná — vývojář zapne, co chce
+(`ds-cron --on`). `--keep-ds-cron` vypínání přeskočí; na produkci se na DS
+nesahá nikdy, přegenerování existujícího souboru DS nemění. Platí pro
+každou cestu k `cron-install` — bootstrap, ruční příkaz, `shpd-server
+upgrade` i rada z `doctor` (U1). Návod: [dev/dev-daily.md](dev/dev-daily.md)
+oddíl 4. Obnova ze zálohy na neprodukční server: ruční `ds-state cron
+--off` před `maintenance --off` ([migration-guide.md](migration-guide.md)),
+automatika až s nástroji obnovy (D12).

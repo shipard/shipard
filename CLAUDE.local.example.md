@@ -16,7 +16,8 @@ importuješ přes @cesta. Nepotřebné sekce smaž.
 
 Režim: `volný` = ukázková/seedovaná data, Claude smí resetovat a zapisovat;
 `reálná kopie` = čtení volné, mutace jen po schválení v chatu. Zdroj, který
-tu chybí, je `reálná kopie`.
+tu chybí, je `reálná kopie`. Zdroj v režimu `reálná kopie` má mít vypnuté
+periodické úlohy (`shpd-server ds-cron`).
 
 | DS ID | účel | původ | režim |
 |-------|------|-------|-------|

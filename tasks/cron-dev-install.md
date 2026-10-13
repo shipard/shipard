@@ -1,6 +1,6 @@
 # Periodické úlohy — cron ve vývojové instalaci (#115 fáze 2)
 
-**Stav:** naplánováno — PRD z 2026-10-12, upřesnění U1–U5 potvrzena; `tasks/ds-state-file-ownership.md` hotový 2026-10-12 — lze začít
+**Stav:** částečně — kód, testy, skripty a dokumentace hotové 2026-10-13 (4 commity podle PRD); ověřeno bez roota na vývojářském stroji (`cron-install --dry-run` vypsal dotčené zdroje dat, `--check` exit 1, `doctor` sekce Cron jako varování, `dev-update.sh` připomínka, `logrotate -d` nad pravidlem projde); zbývá člověk: čistá VM (bootstrap → zelený `doctor`, obnovující se heartbeat slotu `minute`), stroj se zdroji dat (první instalace všechny vypne a vypíše), `shellcheck` (na vývojářském stroji není)
 
 > PRD pro Claude Code (4 commity). Design: issue #115 (D6, D10, D12),
 > navazuje na fázi 1 (`tasks/cron-ds-switch.md`). Souvisí: #96
@@ -210,22 +210,23 @@ Skript `sudo` nevolá a cron sám neinstaluje (stejně jako
 
 ## Hotovo když
 
-- [ ] první `cron-install` mimo produkci vypne cron existujícím zdrojům
+- [x] první `cron-install` mimo produkci vypne cron existujícím zdrojům
       dat, vypíše je a teprve pak zapíše cron soubor
-- [ ] `--keep-ds-cron`, `--dry-run` a `--check` podle sekcí 1 a 2
-- [ ] produkční chování `cron-install` i `doctor` beze změny
-- [ ] `doctor` mimo produkci hlásí chybějící cron a zatuchlý heartbeat
+- [x] `--keep-ds-cron`, `--dry-run` a `--check` podle sekcí 1 a 2
+- [x] produkční chování `cron-install` i `doctor` beze změny
+- [x] `doctor` mimo produkci hlásí chybějící cron a zatuchlý heartbeat
       jako varování
-- [ ] `dev-bootstrap.sh` instaluje cron; `dev-update.sh` na chybějící
+- [x] `dev-bootstrap.sh` instaluje cron; `dev-update.sh` na chybějící
       nebo zastaralý cron upozorní
-- [ ] `install-packages.sh` zajistí `cron`, `logrotate` a pravidlo
+- [x] `install-packages.sh` zajistí `cron`, `logrotate` a pravidlo
       rotace
-- [ ] dokumentace podle sekce 5
-- [ ] `php -l`, `bash -n`, cílené testy, celá sada
+- [x] dokumentace podle sekce 5
+- [x] `php -l`, `bash -n`, cílené testy, celá sada (`shellcheck` na
+      stroji není)
 - [ ] čistá VM: bootstrap skončí zeleným `doctor` a heartbeat slotu
       `minute` se obnovuje (člověk)
 - [ ] stroj se zdroji dat: první instalace je všechny vypne (člověk)
-- [ ] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
+- [x] `**Stav:**` aktualizován, `python3 scripts/tasks-index.py`
 
 ## Rozhodnutí k designu (potvrzená)
 

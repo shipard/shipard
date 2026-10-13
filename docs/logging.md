@@ -161,7 +161,10 @@ nebo `stderr` (CLI).
 
 ### Logrotate
 
-Doporučená konfigurace `/etc/logrotate.d/shipard`:
+Pravidlo `/etc/logrotate.d/shipard` zapisuje `scripts/install-packages.sh`
+(oba režimy, balíček `logrotate` instaluje) — **jen když soubor neexistuje**,
+ruční úpravu správce nepřepíše; správnost ověří `logrotate -d`. Bez
+instalačního skriptu ho založ ručně s tímto obsahem:
 
 ```
 /opt/shipard/log/*.log {

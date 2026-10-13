@@ -78,7 +78,12 @@ bin/shpd-ds ds-state             # očekávej maintenance on (migration) — DS 
 bin/shpd-ds ds-upgrade           # idempotentní, dorovná schema pokud zaostává
 bin/shpd-ds ds-secrets-health    # ověří, že secrets.key sedí na ciphertext v DB
 
-# 6. Otevřít — až po úspěšném sanity checku a přepnutí DNS / domains.json
+# 6. Jen na neprodukčním serveru (vývojářský stroj, testovací kopie): vypnout
+#    periodické úlohy, dokud je DS zavřený — kopie nemá nic vystavovat ani
+#    posílat (#115 D12; automatiku přinesou až nástroje obnovy)
+bin/shpd-ds ds-state cron --off
+
+# 7. Otevřít — až po úspěšném sanity checku a přepnutí DNS / domains.json
 bin/shpd-ds ds-state maintenance --off
 ```
 
