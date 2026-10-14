@@ -1,6 +1,6 @@
 # Testování F1: korpus testovacích dokladů s očekávaným výsledkem
 
-**Stav:** naplánováno — design schválen 2026-10-14 (#103 D12–D18), čeká na implementaci
+**Stav:** hotovo — implementováno 2026-10-14 (7 commitů, 52 buněk, identity ověřené v ARES a VIES 2026-10-14); odchylky od zadání v oddílu *Odchylky při implementaci*
 
 ## Kontext / Cíl
 
@@ -341,7 +341,9 @@ generátor, PHPUnit strážce i porovnávač F4):
 
 **Rovnocenné tvary** (zapsat do `docs/test-corpus.md`, implementuje
 porovnávač F4): na straně výstupu `null` ≡ chybějící klíč;
-`totalRounding` `0` ≡ `null`; prázdné `rowExceptions` ≡ `null`.
+`totalRounding` `0` ≡ `null`; prázdné pole (`rowExceptions`, `vatRecap`)
+≡ `null`; objekt se všemi listy `null` (`contact`, `bankAccount`,
+`address`, `customer`) ≡ `null`.
 
 ## Tvary hodnot (D15)
 
@@ -443,22 +445,22 @@ knihovnu.
 
 ## Hotovo když
 
-- [ ] `python3 demo/invoices/build.py` dává stejné HTML jako před refaktoringem
-- [ ] `python3 tests/corpus/cz/build.py` projde; druhý běh bez `--force`
+- [x] `python3 demo/invoices/build.py` dává stejné HTML jako před refaktoringem
+- [x] `python3 tests/corpus/cz/build.py` projde; druhý běh bez `--force`
       nepřegeneruje žádné PDF
-- [ ] 20 datových souborů, 52 buněk matice s PDF a očekávaným výsledkem
-- [ ] identity ověřené v ARES a VIES, datum ve `verifiedAt`
-- [ ] PDF prohlédnutá: každá šablona, dlouhý doklad přes víc stran, účtenka
-- [ ] `python3 -m unittest` v `tools/invoice-generator/` zelený
-- [ ] `vendor/bin/phpunit --filter CorpusExpectedTest` zelený
-- [ ] `docs/test-corpus.md`: struktura, datový soubor, `vatTreatment`,
+- [x] 20 datových souborů, 52 buněk matice s PDF a očekávaným výsledkem
+- [x] identity ověřené v ARES a VIES, datum ve `verifiedAt`
+- [x] PDF prohlédnutá: každá šablona, dlouhý doklad přes víc stran, účtenka
+- [x] `python3 -m unittest` v `tools/invoice-generator/` zelený
+- [x] `vendor/bin/phpunit --filter CorpusExpectedTest` zelený
+- [x] `docs/test-corpus.md`: struktura, datový soubor, `vatTreatment`,
       matice s důvody vynechání, projekce, odvozená pole, rovnocenné tvary,
       tvary hodnot, postup „jak přidat doklad“
-- [ ] `docs/README.md` odkazuje na `docs/test-corpus.md`;
+- [x] `docs/README.md` odkazuje na `docs/test-corpus.md`;
       `demo/invoices/README.md` zmiňuje sdílený generátor
-- [ ] `docs/exchange-format.md` §5 a §6: příklady zemí malými písmeny
+- [x] `docs/exchange-format.md` §5 a §6: příklady zemí malými písmeny
       (`"cz"`) v souladu s promptem, `IsdocReader` a `CanonicalParty`
-- [ ] hlavička tasku aktualizovaná, `python3 scripts/tasks-index.py`
+- [x] hlavička tasku aktualizovaná, `python3 scripts/tasks-index.py`
 
 Doporučené, neblokující (člověk nebo Claude v chatu): jedno PDF z každé
 varianty projít analýzou na volném dev zdroji dat a porovnat očima
@@ -483,6 +485,28 @@ volání AI.
   daňový doklad jako samostatný typ dokumentu.
 - **Žádný `float` ve výpočtu.** Jen `Decimal`; na `float` se nepřevádí
   ani při zápisu JSON (vlastní serializace čísel).
+
+## Odchylky při implementaci
+
+- `vatRecap` u dokladu bez DPH je `[]`, ne `null` — schéma formátu
+  u polí `null` nedovolí (očekávání musí projít `SchemaValidator`);
+  rovnocenné tvary o to rozšířené. `null` jako celek smí být jen
+  `customer` (`nullableNodes` v projekci).
+- Moduly generátoru navíc k seznamu: `corpus.py` (datový soubor, přepisy,
+  matice) a `registries.py` (ARES / VIES) — aby byly testovatelné
+  z `tools/invoice-generator/tests/`.
+- `overrides` umí alias: hodnota = jméno jiného profilu přebírá jeho
+  přepis (`"association": "non-payer"`), jak říká matice.
+- `rows[].discountAmount` je vždy `null` (šablony tisknou slevu v %);
+  jednotky se tisknou doslova z dat (demo mapování `m2 → m²` zůstává demu);
+  `notes.onDocument` nese jen volnou poznámku, věta k DPH je blok šablony.
+- Tvary navíc k tabulce: `ean`, symboly (jen číslice), `sk` k `cz`
+  u PSČ a IČO; klíče jen pro generátor v identitách (`accent`,
+  `print.state` pro tisk americké adresy) do očekávání nejdou.
+- Varianta 10 je velkoobchod provozních potřeb (úklid 21 % + potraviny
+  12 % jako `people.catering`) — železářství by druhou sazbu nemělo.
+- Vícestránkový doklad: okraje přes `@page`, číslo strany v `@bottom-right`
+  (Chromium 149 to umí, ověřeno v PDF); účtenka s pevnou výškou 200 mm.
 
 ## Rozhodnutí k designu (potvrzená)
 

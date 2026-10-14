@@ -14,7 +14,7 @@ Stojí jako střední vrstva mezi:
   pro běh aplikace a referenční integritu.
 
 Hlavní rozlišovací znak: **externí reprezentace nepoužívá interní ID**.
-Místo `partner: 42` má `partner: { country: "CZ", companyId: "12345678" }`.
+Místo `partner: 42` má `partner: { country: "cz", companyId: "12345678" }`.
 Tím je formát samonosný — lze ho přenášet mezi DS, mezi firmami, do/z
 e-fakturace, exportovat a archivovat. Mapování na lokální entity (proces
 zvaný **resolve**) probíhá až při importu.
@@ -250,7 +250,7 @@ Top-level struktura:
                                    //   `vat_place_derived`. Bez DIČ (nebo
                                    //   s prefixem, který unie nezná) platí
                                    //   hodnota odtud.
-    "registrationCountry": "CZ",  // ISO země naší registrace DPH. U přijatých
+    "registrationCountry": "cz",  // ISO země naší registrace DPH. U přijatých
                                    //   dokladů (selfParty customer) ji applier
                                    //   IGNORUJE a bere první aktivní registraci
                                    //   zdroje (D2, info issue
@@ -531,7 +531,7 @@ strukturu.
 ```jsonc
 {
   "name":     "Dodavatel s.r.o.",
-  "country":  "CZ",                // ISO 3166-1 alpha-2, lowercase v canonical
+  "country":  "cz",                // ISO 3166-1 alpha-2, lowercase v canonical
                                     //   ("cz", "sk", "de", ...)
 
   // Identifiers — alespoň jeden silně doporučený, resolver je zkouší v pořadí
@@ -548,7 +548,7 @@ strukturu.
     "city":         "Praha",
     "cityPart":     "Nové Město",
     "zip":          "11000",
-    "country":      "CZ",
+    "country":      "cz",
     "registryCode": null,          // RÚIAN address code, CZ-specific
     "displayLine":  "Hlavní 1, 110 00 Praha 1"
   },

@@ -42,7 +42,9 @@ domény dodavatelů byly bez A záznamu. Detaily a rezervní IČO pro
 rozšiřování sady: komentáře v `suppliers.jsonc`.
 
 Tahle „volnost" je snapshot — při budoucí kolizi (IČO přiděleno, doména
-registrována) identitu vyměnit a PDF přegenerovat.
+registrována) identitu vyměnit a PDF přegenerovat. Identity korpusu
+testovacích dokladů (`tests/corpus/cz/identities.jsonc`) jsou záměrně jiné
+subjekty — demo a korpus se nesmí překrývat, build korpusu to kontroluje.
 
 **POZOR:** doména `hoblinka.cz` (vlastní firma) patří cizímu subjektu —
 e-mail ani web odběratele se na PDF nesmí objevit; šablony pro ně ani
