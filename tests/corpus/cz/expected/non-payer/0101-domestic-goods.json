@@ -1,0 +1,193 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "FV-2026-1180",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Dřevomat Haná s.r.o.",
+    "country": "cz",
+    "companyId": "43075894",
+    "taxId": "CZ43075894",
+    "vatId": "CZ43075894",
+    "courtRegistration": "Spisová značka C 77321 vedená u Krajského soudu v Ostravě",
+    "address": {
+      "street": "Pilařská",
+      "houseNumber": "1204/7",
+      "city": "Olomouc",
+      "zip": "77900",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "odbyt@drevomat-hana.example",
+      "phone": "+420585201304",
+      "web": "www.drevomat-hana.example"
+    },
+    "bankAccount": {
+      "accountNumber": "101968643/0100",
+      "iban": "CZ6801000000000101968643",
+      "bic": "KOMBCZPP"
+    }
+  },
+  "customer": {
+    "name": "Kreslírna Modrá s.r.o.",
+    "country": "cz",
+    "companyId": "68040725",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Náčrtková",
+      "houseNumber": "15",
+      "city": "Brno",
+      "zip": "60200",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-08-25",
+    "dueDate": "2026-09-08",
+    "taxPointDate": "2026-08-25",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "20261180",
+    "specificSymbol": null,
+    "constantSymbol": "0308"
+  },
+  "notes": {
+    "onDocument": "Zboží zůstává do úplného zaplacení majetkem dodavatele. Reklamace uplatněte do 14 dnů od převzetí."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "SP-SM-18",
+        "ean": null,
+        "name": "Spárovka smrková 18 mm, formát 2500×1250 mm",
+        "description": null
+      },
+      "unit": "m2",
+      "quantity": 12.5,
+      "unitPrice": 486.50,
+      "totalPrice": 6081.25,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "DD-AB-25",
+        "ean": null,
+        "name": "Deska dubová A/B 25 mm, průběžná lamela",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 4,
+      "unitPrice": 2340.00,
+      "totalPrice": 8892.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "HR-ABS-22",
+        "ean": null,
+        "name": "Hrana ABS dub 22×0,8 mm",
+        "description": null
+      },
+      "unit": "bm",
+      "quantity": 48,
+      "unitPrice": 18.90,
+      "totalPrice": 907.20,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Doprava a manipulace",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 650.00,
+      "totalPrice": 650.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 16530.45,
+      "tax": 3471.39,
+      "total": 20001.84
+    }
+  ],
+  "totals": {
+    "totalBase": 16530.45,
+    "totalVat": 3471.39,
+    "totalAmount": 20001.84,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "goods.stock",
+      "rowExceptions": [
+        {
+          "rowIndex": 3,
+          "tag": "services.shipping"
+        }
+      ]
+    }
+  }
+}

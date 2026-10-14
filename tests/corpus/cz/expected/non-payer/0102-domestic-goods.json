@@ -1,0 +1,214 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "FV-2026-1243",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Dřevomat Haná s.r.o.",
+    "country": "cz",
+    "companyId": "43075894",
+    "taxId": "CZ43075894",
+    "vatId": "CZ43075894",
+    "courtRegistration": "Spisová značka C 77321 vedená u Krajského soudu v Ostravě",
+    "address": {
+      "street": "Pilařská",
+      "houseNumber": "1204/7",
+      "city": "Olomouc",
+      "zip": "77900",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "odbyt@drevomat-hana.example",
+      "phone": "+420585201304",
+      "web": "www.drevomat-hana.example"
+    },
+    "bankAccount": {
+      "accountNumber": "101968643/0100",
+      "iban": "CZ6801000000000101968643",
+      "bic": "KOMBCZPP"
+    }
+  },
+  "customer": {
+    "name": "Kreslírna Modrá s.r.o.",
+    "country": "cz",
+    "companyId": "68040725",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Náčrtková",
+      "houseNumber": "15",
+      "city": "Brno",
+      "zip": "60200",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-10",
+    "dueDate": "2026-09-24",
+    "taxPointDate": "2026-09-09",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "20261243",
+    "specificSymbol": null,
+    "constantSymbol": "0308"
+  },
+  "notes": {
+    "onDocument": "Zboží zůstává do úplného zaplacení majetkem dodavatele."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "PR-BR-12",
+        "ean": null,
+        "name": "Překližka březová 12 mm, formát 1525×1525 mm",
+        "description": null
+      },
+      "unit": "m2",
+      "quantity": 8.4,
+      "unitPrice": 712.00,
+      "totalPrice": 5980.80,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "LI-DB-20",
+        "ean": null,
+        "name": "Lišta dubová 20×20 mm",
+        "description": null
+      },
+      "unit": "bm",
+      "quantity": 60,
+      "unitPrice": 24.50,
+      "totalPrice": 1323.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 10,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "VR-4-40",
+        "ean": null,
+        "name": "Vruty do dřeva 4×40 mm, zinek",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2000,
+      "unitPrice": 0.38,
+      "totalPrice": 760.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "LE-D3-5",
+        "ean": null,
+        "name": "Lepidlo na dřevo D3, 5 kg",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 489.00,
+      "totalPrice": 978.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Doprava a manipulace",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 650.00,
+      "totalPrice": 650.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 9691.80,
+      "tax": 2035.28,
+      "total": 11727.08
+    }
+  ],
+  "totals": {
+    "totalBase": 9691.80,
+    "totalVat": 2035.28,
+    "totalAmount": 11727.08,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "goods.stock",
+      "rowExceptions": [
+        {
+          "rowIndex": 4,
+          "tag": "services.shipping"
+        }
+      ]
+    }
+  }
+}

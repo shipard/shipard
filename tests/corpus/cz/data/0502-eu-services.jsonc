@@ -1,0 +1,22 @@
+// Varianta 5, podoba pdfIsdoc — služby z EU s reverse charge čl. 196 (en).
+{
+	"variant": "eu-services",
+	"form": "pdfIsdoc",
+	"supplier": "wolkenkraft",
+	"docNumber": "INV-2026-0421",
+	"paymentReference": null,
+	"dates": { "issue": "2026-10-01", "tax": "2026-09-30", "due": "2026-10-15", "periodFrom": "2026-09-01", "periodTo": "2026-09-30" },
+	"currency": "EUR",
+	"vatTreatment": "reverseCharge",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "it.hosting",
+	"rows": [
+		{ "text": "Managed Kubernetes cluster", "description": "Billing period 09/2026", "supplierCode": "MK8S-M", "qty": 1, "unit": "mo", "unitPrice": 412.00, "vatPct": 0, "supplyKind": "services" },
+		{ "text": "Object storage", "supplierCode": "OBJ-TB", "qty": 1.4, "unit": "TB", "unitPrice": 18.40, "vatPct": 0, "supplyKind": "services" },
+		{ "text": "Outbound traffic", "supplierCode": "NET-OUT", "qty": 320, "unit": "GB", "unitPrice": 0.08, "vatPct": 0, "supplyKind": "services" },
+	],
+	"rounding": "none",
+	"template": "en",
+	"notes": { "onDocument": "Please quote the invoice number with your payment." },
+	"skipProfiles": { "non-payer": "identifikovaná osoba — druhá vlna", "association": "identifikovaná osoba — druhá vlna" },
+}

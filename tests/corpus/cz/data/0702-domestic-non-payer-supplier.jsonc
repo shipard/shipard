@@ -1,0 +1,20 @@
+// Varianta 7, podoba pdfIsdoc — tuzemský dodavatel neplátce DPH (cs-b), cestovné jako výjimka štítku.
+{
+	"variant": "domestic-non-payer-supplier",
+	"form": "pdfIsdoc",
+	"supplier": "hraz",
+	"docNumber": "2026-11",
+	"paymentReference": "202611",
+	"dates": { "issue": "2026-09-29", "tax": null, "due": "2026-10-13" },
+	"currency": "CZK",
+	"vatTreatment": "noVat",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "services.training",
+	"rows": [
+		{ "text": "Kurz Excel pro pokročilé (2 dny)", "qty": 2, "unit": "os", "unitPrice": 2900.00, "vatPct": null },
+		{ "text": "Cestovné lektora", "qty": 1, "unit": "ks", "unitPrice": 640.00, "vatPct": null, "tag": "travel.fares" },
+	],
+	"rounding": "none",
+	"template": "cs-b",
+	"notes": { "onDocument": "Kurz proběhl 24.–25. 9. 2026." },
+}

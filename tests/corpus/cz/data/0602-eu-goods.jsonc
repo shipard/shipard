@@ -1,0 +1,32 @@
+// Varianta 6, podoba pdfIsdoc — zboží z EU, osvobozené dodání čl. 138 (en), sleva a doprava.
+{
+	"variant": "eu-goods",
+	"form": "pdfIsdoc",
+	"supplier": "nordlicht",
+	"docNumber": "RE-2026-08102",
+	"paymentReference": null,
+	"dates": { "issue": "2026-09-23", "tax": "2026-09-22", "due": "2026-10-07" },
+	"currency": "EUR",
+	"vatTreatment": "exemptIntraCommunity",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "it.hardware",
+	"rows": [
+		{ "text": "27\" 4K monitor, USB-C, height adjustable", "supplierCode": "MON-27-4K", "ean": "4260999100020", "qty": 4, "unit": "pcs", "unitPrice": 329.00, "vatPct": 0, "supplyKind": "goods" },
+		{ "text": "USB-C docking station, 2× DP, 100 W PD", "supplierCode": "DOCK-UC-100", "qty": 4, "unit": "pcs", "unitPrice": 149.00, "vatPct": 0, "supplyKind": "goods", "discountPct": 5 },
+		{ "text": "Shipping (parcel, insured)", "qty": 1, "unit": "pcs", "unitPrice": 45.00, "vatPct": 0, "supplyKind": "services", "tag": "services.shipping" },
+	],
+	"rounding": "none",
+	"template": "en",
+	"notes": { "onDocument": "Goods remain our property until paid in full." },
+	"overrides": {
+		"non-payer": {
+			"vatTreatment": "standard",
+			"rows": [
+				{ "text": "27\" 4K monitor, USB-C, height adjustable", "supplierCode": "MON-27-4K", "ean": "4260999100020", "qty": 4, "unit": "pcs", "unitPrice": 329.00, "vatPct": 19, "supplyKind": "goods" },
+				{ "text": "USB-C docking station, 2× DP, 100 W PD", "supplierCode": "DOCK-UC-100", "qty": 4, "unit": "pcs", "unitPrice": 149.00, "vatPct": 19, "supplyKind": "goods", "discountPct": 5 },
+				{ "text": "Shipping (parcel, insured)", "qty": 1, "unit": "pcs", "unitPrice": 45.00, "vatPct": 19, "supplyKind": "services", "tag": "services.shipping" },
+			],
+		},
+		"association": "non-payer",
+	},
+}

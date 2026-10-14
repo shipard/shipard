@@ -1,0 +1,21 @@
+// Varianta 9, podoba pdfIsdoc — účtenka z čerpací stanice (receipt), platba hotově,
+// občerstvení 12 % jako výjimka štítku.
+{
+	"variant": "receipt",
+	"form": "pdfIsdoc",
+	"supplier": "jetelka",
+	"docNumber": "0005108",
+	"paymentReference": null,
+	"dates": { "issue": "2026-09-21", "tax": "2026-09-21", "due": null },
+	"currency": "CZK",
+	"vatTreatment": "pricesWithVat",
+	"payment": { "method": "cash", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "vehicle.fuel",
+	"rows": [
+		{ "text": "Diesel", "qty": 41.37, "unit": "l", "unitPrice": 36.20, "vatPct": 21, "priceCalcMode": "fromTotal", "totalPrice": 1497.60 },
+		{ "text": "Káva s sebou 0,3 l", "qty": 1, "unit": "ks", "unitPrice": 45.00, "vatPct": 12, "tag": "people.catering" },
+	],
+	"rounding": "none",
+	"template": "receipt",
+	"notes": { "onDocument": null },
+}

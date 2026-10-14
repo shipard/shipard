@@ -1,0 +1,126 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "0004712",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Pumpa Jetelka s.r.o.",
+    "country": "cz",
+    "companyId": "40488004",
+    "taxId": "CZ40488004",
+    "vatId": "CZ40488004",
+    "courtRegistration": null,
+    "address": {
+      "street": "Výpadová",
+      "houseNumber": "1801/3",
+      "city": "Zlín",
+      "zip": "76302",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": "+420577911206",
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "customer": null,
+  "dates": {
+    "issueDate": "2026-09-03",
+    "dueDate": null,
+    "taxPointDate": "2026-09-03",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromTotal",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "card",
+    "paymentReference": null,
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": null
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Natural 95",
+        "description": null
+      },
+      "unit": "l",
+      "quantity": 38.56,
+      "unitPrice": 38.90,
+      "totalPrice": 1500.00,
+      "priceCalcMode": "fromTotal",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Kapalina do ostřikovačů zimní 3 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 89.90,
+      "totalPrice": 89.90,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 1313.97,
+      "tax": 275.93,
+      "total": 1589.90
+    }
+  ],
+  "totals": {
+    "totalBase": 1313.97,
+    "totalVat": 275.93,
+    "totalAmount": 1589.90,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "vehicle.fuel",
+      "rowExceptions": [
+        {
+          "rowIndex": 1,
+          "tag": "vehicle.consumables"
+        }
+      ]
+    }
+  }
+}

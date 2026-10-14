@@ -1,0 +1,144 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "2026-11",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Vzdělávací studio Hráz s.r.o.",
+    "country": "cz",
+    "companyId": "25052039",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": "Spisová značka C 90512 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Lektorská",
+      "houseNumber": "21",
+      "city": "Jihlava",
+      "zip": "58601",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "kurzy@studio-hraz.example",
+      "phone": "+420567309842",
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": "8360405366/0600",
+      "iban": "CZ0606000000008360405366",
+      "bic": null
+    }
+  },
+  "customer": {
+    "name": "Kreslírna Modrá s.r.o.",
+    "country": "cz",
+    "companyId": "68040725",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Náčrtková",
+      "houseNumber": "15",
+      "city": "Brno",
+      "zip": "60200",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-29",
+    "dueDate": "2026-10-13",
+    "taxPointDate": null,
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "none",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "202611",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Kurz proběhl 24.–25. 9. 2026."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Kurz Excel pro pokročilé (2 dny)",
+        "description": null
+      },
+      "unit": "os",
+      "quantity": 2,
+      "unitPrice": 2900.00,
+      "totalPrice": 5800.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": null,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Cestovné lektora",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 640.00,
+      "totalPrice": 640.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": null,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": null,
+  "totals": {
+    "totalBase": null,
+    "totalVat": null,
+    "totalAmount": 6440.00,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "services.training",
+      "rowExceptions": [
+        {
+          "rowIndex": 1,
+          "tag": "travel.fares"
+        }
+      ]
+    }
+  }
+}

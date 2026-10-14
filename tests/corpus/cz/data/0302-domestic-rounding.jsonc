@@ -1,0 +1,22 @@
+// Varianta 3, podoba pdfIsdoc — elektřina 21 % se zaokrouhlením nahoru (cs-c).
+// Součty: základ 3 577,28 / DPH 751,23 / zaokrouhlení +0,49 / celkem 4 329,00.
+{
+	"variant": "domestic-rounding",
+	"form": "pdfIsdoc",
+	"supplier": "vetrnik",
+	"docNumber": "2026082410",
+	"paymentReference": "2026082410",
+	"dates": { "issue": "2026-09-11", "tax": "2026-08-31", "due": "2026-09-25", "periodFrom": "2026-08-01", "periodTo": "2026-08-31" },
+	"currency": "CZK",
+	"vatTreatment": "standard",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": "0308" },
+	"contentTag": "premises.electricity",
+	"rows": [
+		{ "text": "Silová elektřina — produkt STANDARD, VT", "qty": 0.655, "unit": "MWh", "unitPrice": 3190.00, "vatPct": 21 },
+		{ "text": "Distribuce elektřiny vč. systémových služeb", "qty": 0.655, "unit": "MWh", "unitPrice": 2015.00, "vatPct": 21 },
+		{ "text": "Stálý plat za jistič nad 3×25 A do 3×32 A", "qty": 1, "unit": "měs", "unitPrice": 168.00, "vatPct": 21 },
+	],
+	"rounding": "czk",
+	"template": "cs-c",
+	"notes": { "onDocument": "Vyúčtování dodávky elektřiny za období 1. 8. 2026 – 31. 8. 2026. Odběrné místo: Lisovací 418/2, 760 01 Zlín." },
+}

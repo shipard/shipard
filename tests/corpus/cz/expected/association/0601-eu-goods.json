@@ -1,0 +1,167 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "RE-2026-07731",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Nordlicht Hardware GmbH",
+    "country": "de",
+    "companyId": null,
+    "taxId": "DE810932557",
+    "vatId": "DE810932557",
+    "courtRegistration": "Amtsgericht Hamburg, HRB 198765",
+    "address": {
+      "street": "Industriestraße",
+      "houseNumber": "42",
+      "city": "Hamburg",
+      "zip": "20457",
+      "country": "de"
+    },
+    "contact": {
+      "name": null,
+      "email": "sales@nordlicht-hardware.example",
+      "phone": "+494037005120",
+      "web": "www.nordlicht-hardware.example"
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": "DE39200505507423852329",
+      "bic": "NDLTDEHHXXX"
+    }
+  },
+  "customer": {
+    "name": "Spolek Zelený kopec, z. s.",
+    "country": "cz",
+    "companyId": "28647645",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Pod Strání",
+      "houseNumber": "92",
+      "city": "Říčany",
+      "zip": "25101",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-08-19",
+    "dueDate": "2026-09-02",
+    "taxPointDate": "2026-08-18",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "EUR",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "intracom",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": null,
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Goods remain our property until paid in full. Delivery: DAP Zlín, Czech Republic."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "SRV-2U-128",
+        "ean": "4260999100013",
+        "name": "Rack server 2U, 2× Xeon Silver, 128 GB RAM",
+        "description": null
+      },
+      "unit": "pcs",
+      "quantity": 1,
+      "unitPrice": 3890.00,
+      "totalPrice": 3890.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 19,
+        "supplyKind": "goods",
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "NIC-10G-2",
+        "ean": null,
+        "name": "10GbE network adapter, dual port SFP+",
+        "description": null
+      },
+      "unit": "pcs",
+      "quantity": 2,
+      "unitPrice": 245.00,
+      "totalPrice": 490.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 19,
+        "supplyKind": "goods",
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "RAIL-2U",
+        "ean": null,
+        "name": "Rack rail kit 2U",
+        "description": null
+      },
+      "unit": "pcs",
+      "quantity": 1,
+      "unitPrice": 89.00,
+      "totalPrice": 89.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 19,
+        "supplyKind": "goods",
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 19,
+      "base": 4469.00,
+      "tax": 849.11,
+      "total": 5318.11
+    }
+  ],
+  "totals": {
+    "totalBase": 4469.00,
+    "totalVat": 849.11,
+    "totalAmount": 5318.11,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "it.hardware",
+      "rowExceptions": []
+    }
+  }
+}

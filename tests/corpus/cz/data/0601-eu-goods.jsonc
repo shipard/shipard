@@ -1,0 +1,34 @@
+// Varianta 6, podoba pdf — zboží z EU, osvobozené dodání čl. 138 (en), EUR, EAN na řádku.
+// Pro neplátce (non-payer, association) účtuje dodavatel německou DPH 19 % bez textu čl. 138
+// a bez DIČ odběratele — přepis profilu.
+{
+	"variant": "eu-goods",
+	"form": "pdf",
+	"supplier": "nordlicht",
+	"docNumber": "RE-2026-07731",
+	"paymentReference": null,
+	"dates": { "issue": "2026-08-19", "tax": "2026-08-18", "due": "2026-09-02" },
+	"currency": "EUR",
+	"vatTreatment": "exemptIntraCommunity",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "it.hardware",
+	"rows": [
+		{ "text": "Rack server 2U, 2× Xeon Silver, 128 GB RAM", "supplierCode": "SRV-2U-128", "ean": "4260999100013", "qty": 1, "unit": "pcs", "unitPrice": 3890.00, "vatPct": 0, "supplyKind": "goods" },
+		{ "text": "10GbE network adapter, dual port SFP+", "supplierCode": "NIC-10G-2", "qty": 2, "unit": "pcs", "unitPrice": 245.00, "vatPct": 0, "supplyKind": "goods" },
+		{ "text": "Rack rail kit 2U", "supplierCode": "RAIL-2U", "qty": 1, "unit": "pcs", "unitPrice": 89.00, "vatPct": 0, "supplyKind": "goods" },
+	],
+	"rounding": "none",
+	"template": "en",
+	"notes": { "onDocument": "Goods remain our property until paid in full. Delivery: DAP Zlín, Czech Republic." },
+	"overrides": {
+		"non-payer": {
+			"vatTreatment": "standard",
+			"rows": [
+				{ "text": "Rack server 2U, 2× Xeon Silver, 128 GB RAM", "supplierCode": "SRV-2U-128", "ean": "4260999100013", "qty": 1, "unit": "pcs", "unitPrice": 3890.00, "vatPct": 19, "supplyKind": "goods" },
+				{ "text": "10GbE network adapter, dual port SFP+", "supplierCode": "NIC-10G-2", "qty": 2, "unit": "pcs", "unitPrice": 245.00, "vatPct": 19, "supplyKind": "goods" },
+				{ "text": "Rack rail kit 2U", "supplierCode": "RAIL-2U", "qty": 1, "unit": "pcs", "unitPrice": 89.00, "vatPct": 19, "supplyKind": "goods" },
+			],
+		},
+		"association": "non-payer",
+	},
+}

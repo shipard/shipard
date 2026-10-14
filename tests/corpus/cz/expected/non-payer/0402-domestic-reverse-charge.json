@@ -1,0 +1,167 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "2026-0163",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Stavby Klenba s.r.o.",
+    "country": "cz",
+    "companyId": "16612248",
+    "taxId": "CZ16612248",
+    "vatId": "CZ16612248",
+    "courtRegistration": "Spisová značka C 38840 vedená u Krajského soudu v Ústí nad Labem",
+    "address": {
+      "street": "Cihlová",
+      "houseNumber": "980/12",
+      "city": "Ústí nad Labem",
+      "zip": "40001",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "fakturace@stavby-klenba.example",
+      "phone": "+420475602318",
+      "web": "www.stavby-klenba.example"
+    },
+    "bankAccount": {
+      "accountNumber": "8108947067/2010",
+      "iban": "CZ7820100000008108947067",
+      "bic": "FIOBCZPP"
+    }
+  },
+  "customer": {
+    "name": "Kreslírna Modrá s.r.o.",
+    "country": "cz",
+    "companyId": "68040725",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Náčrtková",
+      "houseNumber": "15",
+      "city": "Brno",
+      "zip": "60200",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-18",
+    "dueDate": "2026-10-02",
+    "taxPointDate": "2026-09-17",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "20260163",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Fakturujeme provedené práce dle objednávky č. OBJ-2026-088."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Výměna oken dílny — montážní práce",
+        "description": null
+      },
+      "unit": "h",
+      "quantity": 36,
+      "unitPrice": 520.00,
+      "totalPrice": 18720.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Okno plastové 1200×1500 mm, trojsklo",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 6,
+      "unitPrice": 7850.00,
+      "totalPrice": 47100.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Likvidace původních výplní",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 1900.00,
+      "totalPrice": 1900.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 67720.00,
+      "tax": 14221.20,
+      "total": 81941.20
+    }
+  ],
+  "totals": {
+    "totalBase": 67720.00,
+    "totalVat": 14221.20,
+    "totalAmount": 81941.20,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "premises.maintenance",
+      "rowExceptions": []
+    }
+  }
+}

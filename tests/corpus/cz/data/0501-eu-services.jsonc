@@ -1,0 +1,22 @@
+// Varianta 5, podoba pdf — služby z EU s reverse charge čl. 196 (en), EUR, období plnění.
+// Jen pro plátce: neplátce by byl identifikovanou osobou (druhá vlna).
+{
+	"variant": "eu-services",
+	"form": "pdf",
+	"supplier": "wolkenkraft",
+	"docNumber": "INV-2026-0388",
+	"paymentReference": null,
+	"dates": { "issue": "2026-09-02", "tax": "2026-08-31", "due": "2026-09-16", "periodFrom": "2026-08-01", "periodTo": "2026-08-31" },
+	"currency": "EUR",
+	"vatTreatment": "reverseCharge",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "it.hosting",
+	"rows": [
+		{ "text": "Managed Kubernetes cluster", "description": "Billing period 08/2026", "supplierCode": "MK8S-M", "qty": 1, "unit": "mo", "unitPrice": 412.00, "vatPct": 0, "supplyKind": "services" },
+		{ "text": "Object storage", "supplierCode": "OBJ-TB", "qty": 1.25, "unit": "TB", "unitPrice": 18.40, "vatPct": 0, "supplyKind": "services", "discountPct": 10 },
+	],
+	"rounding": "none",
+	"template": "en",
+	"notes": { "onDocument": "Please quote the invoice number with your payment. Thank you for your business." },
+	"skipProfiles": { "non-payer": "identifikovaná osoba — druhá vlna", "association": "identifikovaná osoba — druhá vlna" },
+}

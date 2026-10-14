@@ -1,0 +1,32 @@
+// Varianta 4, podoba pdfIsdoc — montážní práce s přenesením daňové povinnosti (cs-a).
+{
+	"variant": "domestic-reverse-charge",
+	"form": "pdfIsdoc",
+	"supplier": "klenba",
+	"docNumber": "2026-0163",
+	"paymentReference": "20260163",
+	"dates": { "issue": "2026-09-18", "tax": "2026-09-17", "due": "2026-10-02" },
+	"currency": "CZK",
+	"vatTreatment": "reverseCharge",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "premises.maintenance",
+	"rows": [
+		{ "text": "Výměna oken dílny — montážní práce", "qty": 36, "unit": "h", "unitPrice": 520.00, "vatPct": 0, "reverseChargeCode": "4" },
+		{ "text": "Okno plastové 1200×1500 mm, trojsklo", "qty": 6, "unit": "ks", "unitPrice": 7850.00, "vatPct": 0, "reverseChargeCode": "4" },
+		{ "text": "Likvidace původních výplní", "qty": 1, "unit": "ks", "unitPrice": 1900.00, "vatPct": 0, "reverseChargeCode": "4" },
+	],
+	"rounding": "none",
+	"template": "cs-a",
+	"notes": { "onDocument": "Fakturujeme provedené práce dle objednávky č. OBJ-2026-088." },
+	"overrides": {
+		"non-payer": {
+			"vatTreatment": "standard",
+			"rows": [
+				{ "text": "Výměna oken dílny — montážní práce", "qty": 36, "unit": "h", "unitPrice": 520.00, "vatPct": 21 },
+				{ "text": "Okno plastové 1200×1500 mm, trojsklo", "qty": 6, "unit": "ks", "unitPrice": 7850.00, "vatPct": 21 },
+				{ "text": "Likvidace původních výplní", "qty": 1, "unit": "ks", "unitPrice": 1900.00, "vatPct": 21 },
+			],
+		},
+		"association": "non-payer",
+	},
+}

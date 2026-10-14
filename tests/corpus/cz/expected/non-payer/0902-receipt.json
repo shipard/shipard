@@ -1,0 +1,132 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "0005108",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Pumpa Jetelka s.r.o.",
+    "country": "cz",
+    "companyId": "40488004",
+    "taxId": "CZ40488004",
+    "vatId": "CZ40488004",
+    "courtRegistration": null,
+    "address": {
+      "street": "Výpadová",
+      "houseNumber": "1801/3",
+      "city": "Zlín",
+      "zip": "76302",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": "+420577911206",
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "customer": null,
+  "dates": {
+    "issueDate": "2026-09-21",
+    "dueDate": null,
+    "taxPointDate": "2026-09-21",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromTotal",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "cash",
+    "paymentReference": null,
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": null
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Diesel",
+        "description": null
+      },
+      "unit": "l",
+      "quantity": 41.37,
+      "unitPrice": 36.20,
+      "totalPrice": 1497.60,
+      "priceCalcMode": "fromTotal",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Káva s sebou 0,3 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 45.00,
+      "totalPrice": 45.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 1237.69,
+      "tax": 259.91,
+      "total": 1497.60
+    },
+    {
+      "vatPct": 12,
+      "base": 40.18,
+      "tax": 4.82,
+      "total": 45.00
+    }
+  ],
+  "totals": {
+    "totalBase": 1277.87,
+    "totalVat": 264.73,
+    "totalAmount": 1542.60,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "vehicle.fuel",
+      "rowExceptions": [
+        {
+          "rowIndex": 1,
+          "tag": "people.catering"
+        }
+      ]
+    }
+  }
+}

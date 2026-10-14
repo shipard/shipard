@@ -1,0 +1,22 @@
+// Varianta 8, podoba pdf — software ze třetí země (en), USD, bez zmínky o DPH, úhrada kartou.
+// Jen pro plátce: neplátce by byl identifikovanou osobou (druhá vlna).
+{
+	"variant": "third-country-services",
+	"form": "pdf",
+	"supplier": "quillstack",
+	"docNumber": "QS-204611",
+	"paymentReference": null,
+	"dates": { "issue": "2026-09-01", "tax": null, "due": "2026-09-01" },
+	"currency": "USD",
+	"vatTreatment": "noVat",
+	"payment": { "method": "card", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "it.software",
+	"rows": [
+		{ "text": "Quillstack Team plan", "description": "12 seats, 09/01/2026 – 09/30/2026", "qty": 12, "unit": "seat", "unitPrice": 14.00, "vatPct": null, "supplyKind": "services" },
+		{ "text": "Additional storage 100 GB", "qty": 1, "unit": "mo", "unitPrice": 9.00, "vatPct": null, "supplyKind": "services" },
+	],
+	"rounding": "none",
+	"template": "en",
+	"notes": { "onDocument": "Paid by card ending 4421 on Sep 1, 2026. This invoice serves as your receipt." },
+	"skipProfiles": { "non-payer": "identifikovaná osoba — druhá vlna", "association": "identifikovaná osoba — druhá vlna" },
+}

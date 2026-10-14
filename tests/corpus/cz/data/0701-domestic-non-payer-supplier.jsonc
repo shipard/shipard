@@ -1,0 +1,21 @@
+// Varianta 7, podoba pdf — tuzemský dodavatel neplátce DPH (cs-b): bez DIČ, bez sazeb
+// a rekapitulace, „Nejsem plátce DPH“.
+{
+	"variant": "domestic-non-payer-supplier",
+	"form": "pdf",
+	"supplier": "hraz",
+	"docNumber": "2026-07",
+	"paymentReference": "202607",
+	"dates": { "issue": "2026-09-04", "tax": null, "due": "2026-09-18" },
+	"currency": "CZK",
+	"vatTreatment": "noVat",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "services.training",
+	"rows": [
+		{ "text": "Školení první pomoci pro zaměstnance (8 hodin)", "qty": 1, "unit": "ks", "unitPrice": 4800.00, "vatPct": null },
+		{ "text": "Studijní materiály pro účastníky", "qty": 6, "unit": "ks", "unitPrice": 150.00, "vatPct": null },
+	],
+	"rounding": "none",
+	"template": "cs-b",
+	"notes": { "onDocument": "Školení proběhlo 2. 9. 2026 v sídle odběratele." },
+}

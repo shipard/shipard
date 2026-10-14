@@ -1,0 +1,167 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "2026082410",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Energetika Větrník a.s.",
+    "country": "cz",
+    "companyId": "01848739",
+    "taxId": "CZ01848739",
+    "vatId": "CZ01848739",
+    "courtRegistration": "Spisová značka B 14209 vedená u Krajského soudu v Ostravě",
+    "address": {
+      "street": "Rozvodná",
+      "houseNumber": "55/1",
+      "city": "Ostrava",
+      "zip": "70200",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "zakaznici@vetrnik-energie.example",
+      "phone": "+420596730111",
+      "web": "www.vetrnik-energie.example"
+    },
+    "bankAccount": {
+      "accountNumber": "2282321679/0300",
+      "iban": "CZ6703000000002282321679",
+      "bic": "CEKOCZPP"
+    }
+  },
+  "customer": {
+    "name": "Tvarokov s.r.o.",
+    "country": "cz",
+    "companyId": "27893286",
+    "taxId": "CZ27893286",
+    "vatId": "CZ27893286",
+    "courtRegistration": null,
+    "address": {
+      "street": "Lisovací",
+      "houseNumber": "418/2",
+      "city": "Zlín",
+      "zip": "76001",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-11",
+    "dueDate": "2026-09-25",
+    "taxPointDate": "2026-08-31",
+    "periodFrom": "2026-08-01",
+    "periodTo": "2026-08-31"
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "2026082410",
+    "specificSymbol": null,
+    "constantSymbol": "0308"
+  },
+  "notes": {
+    "onDocument": "Vyúčtování dodávky elektřiny za období 1. 8. 2026 – 31. 8. 2026. Odběrné místo: Lisovací 418/2, 760 01 Zlín."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Silová elektřina — produkt STANDARD, VT",
+        "description": null
+      },
+      "unit": "MWh",
+      "quantity": 0.655,
+      "unitPrice": 3190.00,
+      "totalPrice": 2089.45,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Distribuce elektřiny vč. systémových služeb",
+        "description": null
+      },
+      "unit": "MWh",
+      "quantity": 0.655,
+      "unitPrice": 2015.00,
+      "totalPrice": 1319.83,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Stálý plat za jistič nad 3×25 A do 3×32 A",
+        "description": null
+      },
+      "unit": "měs",
+      "quantity": 1,
+      "unitPrice": 168.00,
+      "totalPrice": 168.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 3577.28,
+      "tax": 751.23,
+      "total": 4328.51
+    }
+  ],
+  "totals": {
+    "totalBase": 3577.28,
+    "totalVat": 751.23,
+    "totalAmount": 4329.00,
+    "totalRounding": 0.49
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "premises.electricity",
+      "rowExceptions": []
+    }
+  }
+}

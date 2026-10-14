@@ -1,0 +1,1191 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "2026-FV-03402",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Velkoobchod Matice s.r.o.",
+    "country": "cz",
+    "companyId": "13113879",
+    "taxId": "CZ13113879",
+    "vatId": "CZ13113879",
+    "courtRegistration": "Spisová značka C 41177 vedená u Krajského soudu v Hradci Králové",
+    "address": {
+      "street": "Skladištní",
+      "houseNumber": "17",
+      "city": "Hradec Králové",
+      "zip": "50002",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "objednavky@matice-velkoobchod.example",
+      "phone": "+420495512780",
+      "web": "www.matice-velkoobchod.example"
+    },
+    "bankAccount": {
+      "accountNumber": "6427159018/0800",
+      "iban": "CZ9708000000006427159018",
+      "bic": "GIBACZPX"
+    }
+  },
+  "customer": {
+    "name": "Spolek Zelený kopec, z. s.",
+    "country": "cz",
+    "companyId": "28647645",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Pod Strání",
+      "houseNumber": "92",
+      "city": "Říčany",
+      "zip": "25101",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-30",
+    "dueDate": "2026-10-14",
+    "taxPointDate": "2026-09-29",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "26034020",
+    "specificSymbol": null,
+    "constantSymbol": "0008"
+  },
+  "notes": {
+    "onDocument": "Dodávka provozních potřeb dle rámcové smlouvy RS-2026-14."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "TP-64",
+        "ean": null,
+        "name": "Toaletní papír 2vrstvý, 64 rolí",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 12,
+      "unitPrice": 289.00,
+      "totalPrice": 3468.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "PU-6",
+        "ean": null,
+        "name": "Papírové utěrky v roli, 2vrstvé, 6 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 4,
+      "unitPrice": 199.00,
+      "totalPrice": 756.20,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "RZ-4000",
+        "ean": null,
+        "name": "Skládané ručníky Z-Z, 4000 ks",
+        "description": null
+      },
+      "unit": "krt",
+      "quantity": 5,
+      "unitPrice": 459.00,
+      "totalPrice": 2295.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "MY-5",
+        "ean": null,
+        "name": "Tekuté mýdlo 5 l, antibakteriální",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 189.00,
+      "totalPrice": 378.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "DEZ-500",
+        "ean": null,
+        "name": "Dezinfekce na ruce 500 ml s pumpičkou",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 8,
+      "unitPrice": 79.00,
+      "totalPrice": 632.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "DEZP-5",
+        "ean": null,
+        "name": "Dezinfekční prostředek na povrchy 5 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 4,
+      "unitPrice": 329.00,
+      "totalPrice": 1316.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "PO-120",
+        "ean": null,
+        "name": "Pytle na odpad 120 l, 25 ks, černé",
+        "description": null
+      },
+      "unit": "role",
+      "quantity": 1,
+      "unitPrice": 69.00,
+      "totalPrice": 69.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "PO-60",
+        "ean": null,
+        "name": "Pytle na odpad 60 l, 50 ks",
+        "description": null
+      },
+      "unit": "role",
+      "quantity": 12,
+      "unitPrice": 59.00,
+      "totalPrice": 708.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "SK-30",
+        "ean": null,
+        "name": "Sáčky do koše 30 l, 50 ks",
+        "description": null
+      },
+      "unit": "role",
+      "quantity": 3,
+      "unitPrice": 32.00,
+      "totalPrice": 96.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "HO-10",
+        "ean": null,
+        "name": "Houbičky na nádobí, 10 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 5,
+      "unitPrice": 39.00,
+      "totalPrice": 185.25,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "JA-1",
+        "ean": null,
+        "name": "Prostředek na nádobí 1 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 12,
+      "unitPrice": 54.00,
+      "totalPrice": 648.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "UM-5",
+        "ean": null,
+        "name": "Utěrky z mikrovlákna 40×40 cm, 5 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 10,
+      "unitPrice": 119.00,
+      "totalPrice": 1190.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "RN-M",
+        "ean": null,
+        "name": "Rukavice nitrilové M, 100 ks",
+        "description": null
+      },
+      "unit": "krt",
+      "quantity": 2,
+      "unitPrice": 169.00,
+      "totalPrice": 321.10,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "RN-L",
+        "ean": null,
+        "name": "Rukavice nitrilové L, 100 ks",
+        "description": null
+      },
+      "unit": "krt",
+      "quantity": 2,
+      "unitPrice": 169.00,
+      "totalPrice": 338.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "CS-750",
+        "ean": null,
+        "name": "Čistič skel 750 ml s rozprašovačem",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 8,
+      "unitPrice": 62.00,
+      "totalPrice": 496.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "UC-5",
+        "ean": null,
+        "name": "Univerzální čistič 5 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 3,
+      "unitPrice": 215.00,
+      "totalPrice": 645.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "WC-750",
+        "ean": null,
+        "name": "Čistič WC gel 750 ml",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 48.00,
+      "totalPrice": 96.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "OV-300",
+        "ean": null,
+        "name": "Osvěžovač vzduchu sprej 300 ml",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 72.00,
+      "totalPrice": 144.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "MP-1",
+        "ean": null,
+        "name": "Mop plochý s násadou",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 12,
+      "unitPrice": 349.00,
+      "totalPrice": 4188.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "MN-1",
+        "ean": null,
+        "name": "Náhradní návlek na mop",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 89.00,
+      "totalPrice": 89.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "KB-12",
+        "ean": null,
+        "name": "Kbelík 12 l s ždímačem",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 259.00,
+      "totalPrice": 518.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "SL-1",
+        "ean": null,
+        "name": "Smeták s lopatkou",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 129.00,
+      "totalPrice": 258.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "OK-25",
+        "ean": null,
+        "name": "Odpadkový koš 25 l, nerez",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 10,
+      "unitPrice": 690.00,
+      "totalPrice": 6900.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "PK-100",
+        "ean": null,
+        "name": "Papírové kapesníky 10×10 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 1,
+      "unitPrice": 35.00,
+      "totalPrice": 33.25,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "VU-72",
+        "ean": null,
+        "name": "Vlhčené ubrousky 72 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 3,
+      "unitPrice": 45.00,
+      "totalPrice": 135.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "KF-4",
+        "ean": null,
+        "name": "Kávové filtry č. 4, 100 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 2,
+      "unitPrice": 49.00,
+      "totalPrice": 98.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "KP-200",
+        "ean": null,
+        "name": "Kelímky papírové 200 ml, 100 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 2,
+      "unitPrice": 139.00,
+      "totalPrice": 264.10,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "MD-1000",
+        "ean": null,
+        "name": "Míchátka dřevěná, 1000 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 4,
+      "unitPrice": 99.00,
+      "totalPrice": 376.20,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 5,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "UB-33",
+        "ean": null,
+        "name": "Ubrousky papírové 33×33, 100 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 1,
+      "unitPrice": 42.00,
+      "totalPrice": 42.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "OD-1",
+        "ean": null,
+        "name": "Odvápňovač kávovaru 1 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 6,
+      "unitPrice": 159.00,
+      "totalPrice": 954.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 21,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "KZ-1",
+        "ean": null,
+        "name": "Káva zrnková 1 kg, 100% arabica",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 24,
+      "unitPrice": 389.00,
+      "totalPrice": 9336.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "KM-250",
+        "ean": null,
+        "name": "Káva mletá 250 g",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 3,
+      "unitPrice": 89.00,
+      "totalPrice": 267.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "CC-100",
+        "ean": null,
+        "name": "Čaj černý porcovaný, 100 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 6,
+      "unitPrice": 95.00,
+      "totalPrice": 570.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "CZ-50",
+        "ean": null,
+        "name": "Čaj zelený porcovaný, 50 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 4,
+      "unitPrice": 69.00,
+      "totalPrice": 276.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "CO-50",
+        "ean": null,
+        "name": "Čaj ovocný porcovaný, 50 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 12,
+      "unitPrice": 59.00,
+      "totalPrice": 708.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "CU-1",
+        "ean": null,
+        "name": "Cukr krystal 1 kg",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 24.90,
+      "totalPrice": 24.90,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "CP-500",
+        "ean": null,
+        "name": "Cukr porcovaný 500 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 12,
+      "unitPrice": 119.00,
+      "totalPrice": 1428.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "ML-1",
+        "ean": null,
+        "name": "Mléko trvanlivé 1,5 % 1 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 3,
+      "unitPrice": 21.90,
+      "totalPrice": 65.70,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "SM-240",
+        "ean": null,
+        "name": "Smetana do kávy 10 g, 240 ks",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 1,
+      "unitPrice": 169.00,
+      "totalPrice": 169.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "MV-15",
+        "ean": null,
+        "name": "Minerální voda neperlivá 1,5 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 16.90,
+      "totalPrice": 33.80,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "MVP-15",
+        "ean": null,
+        "name": "Minerální voda perlivá 1,5 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 6,
+      "unitPrice": 16.90,
+      "totalPrice": 101.40,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "DP-1",
+        "ean": null,
+        "name": "Džus pomerančový 1 l",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 10,
+      "unitPrice": 39.90,
+      "totalPrice": 399.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "SU-300",
+        "ean": null,
+        "name": "Sušenky máslové 300 g",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 12,
+      "unitPrice": 69.00,
+      "totalPrice": 828.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "OP-500",
+        "ean": null,
+        "name": "Oplatky mix 500 g",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 1,
+      "unitPrice": 89.00,
+      "totalPrice": 89.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "OR-500",
+        "ean": null,
+        "name": "Ořechy mix 500 g",
+        "description": null
+      },
+      "unit": "bal",
+      "quantity": 12,
+      "unitPrice": 149.00,
+      "totalPrice": 1788.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "ME-500",
+        "ean": null,
+        "name": "Med květový 500 g",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 10,
+      "unitPrice": 129.00,
+      "totalPrice": 1290.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "KA-400",
+        "ean": null,
+        "name": "Kakao instantní 400 g",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 79.00,
+      "totalPrice": 79.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "PE-200",
+        "ean": null,
+        "name": "Medové perníčky 200 g",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 2,
+      "unitPrice": 45.00,
+      "totalPrice": 90.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 12,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 21,
+      "base": 27637.10,
+      "tax": 5803.79,
+      "total": 33440.89
+    },
+    {
+      "vatPct": 12,
+      "base": 17542.80,
+      "tax": 2105.14,
+      "total": 19647.94
+    }
+  ],
+  "totals": {
+    "totalBase": 45179.90,
+    "totalVat": 7908.93,
+    "totalAmount": 53088.83,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "goods.stock",
+      "rowExceptions": [
+        {
+          "rowIndex": 30,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 31,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 32,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 33,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 34,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 35,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 36,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 37,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 38,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 39,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 40,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 41,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 42,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 43,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 44,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 45,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 46,
+          "tag": "people.catering"
+        },
+        {
+          "rowIndex": 47,
+          "tag": "people.catering"
+        }
+      ]
+    }
+  }
+}

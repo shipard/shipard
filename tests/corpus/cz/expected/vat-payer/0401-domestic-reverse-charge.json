@@ -1,0 +1,146 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "2026-0147",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Stavby Klenba s.r.o.",
+    "country": "cz",
+    "companyId": "16612248",
+    "taxId": "CZ16612248",
+    "vatId": "CZ16612248",
+    "courtRegistration": "Spisová značka C 38840 vedená u Krajského soudu v Ústí nad Labem",
+    "address": {
+      "street": "Cihlová",
+      "houseNumber": "980/12",
+      "city": "Ústí nad Labem",
+      "zip": "40001",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "fakturace@stavby-klenba.example",
+      "phone": "+420475602318",
+      "web": "www.stavby-klenba.example"
+    },
+    "bankAccount": {
+      "accountNumber": "8108947067/2010",
+      "iban": "CZ7820100000008108947067",
+      "bic": "FIOBCZPP"
+    }
+  },
+  "customer": {
+    "name": "Tvarokov s.r.o.",
+    "country": "cz",
+    "companyId": "27893286",
+    "taxId": "CZ27893286",
+    "vatId": "CZ27893286",
+    "courtRegistration": null,
+    "address": {
+      "street": "Lisovací",
+      "houseNumber": "418/2",
+      "city": "Zlín",
+      "zip": "76001",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-08-28",
+    "dueDate": "2026-09-11",
+    "taxPointDate": "2026-08-27",
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "domestic",
+    "reverseCharge": true
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "20260147",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Oprava střešní krytiny skladové haly — práce",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 48500.00,
+      "totalPrice": 48500.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 0,
+        "supplyKind": null,
+        "reverseChargeCode": "4"
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Materiál — krytina, lemování, spojovací prvky",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 21340.00,
+      "totalPrice": 21340.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 0,
+        "supplyKind": null,
+        "reverseChargeCode": "4"
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 0,
+      "base": 69840.00,
+      "tax": 0.00,
+      "total": 69840.00
+    }
+  ],
+  "totals": {
+    "totalBase": 69840.00,
+    "totalVat": 0.00,
+    "totalAmount": 69840.00,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "premises.maintenance",
+      "rowExceptions": []
+    }
+  }
+}

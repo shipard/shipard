@@ -1,0 +1,146 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "INV-2026-0388",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Wolkenkraft Hosting GmbH",
+    "country": "de",
+    "companyId": null,
+    "taxId": "DE383584058",
+    "vatId": "DE383584058",
+    "courtRegistration": "Amtsgericht Charlottenburg, HRB 234567 B",
+    "address": {
+      "street": "Rechenzentrumsweg",
+      "houseNumber": "7",
+      "city": "Berlin",
+      "zip": "10115",
+      "country": "de"
+    },
+    "contact": {
+      "name": null,
+      "email": "billing@wolkenkraft.example",
+      "phone": "+493028874410",
+      "web": "www.wolkenkraft.example"
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": "DE92100500006681230067",
+      "bic": "WLKRDEBBXXX"
+    }
+  },
+  "customer": {
+    "name": "Tvarokov s.r.o.",
+    "country": "cz",
+    "companyId": "27893286",
+    "taxId": "CZ27893286",
+    "vatId": "CZ27893286",
+    "courtRegistration": null,
+    "address": {
+      "street": "Lisovací",
+      "houseNumber": "418/2",
+      "city": "Zlín",
+      "zip": "76001",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-02",
+    "dueDate": "2026-09-16",
+    "taxPointDate": "2026-08-31",
+    "periodFrom": "2026-08-01",
+    "periodTo": "2026-08-31"
+  },
+  "currency": "EUR",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "fromBase",
+    "place": "intracom",
+    "reverseCharge": true
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": null,
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Please quote the invoice number with your payment. Thank you for your business."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "MK8S-M",
+        "ean": null,
+        "name": "Managed Kubernetes cluster",
+        "description": "Billing period 08/2026"
+      },
+      "unit": "mo",
+      "quantity": 1,
+      "unitPrice": 412.00,
+      "totalPrice": 412.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": 0,
+        "supplyKind": "services",
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": "OBJ-TB",
+        "ean": null,
+        "name": "Object storage",
+        "description": null
+      },
+      "unit": "TB",
+      "quantity": 1.25,
+      "unitPrice": 18.40,
+      "totalPrice": 20.70,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": 10,
+      "discountAmount": null,
+      "vat": {
+        "pct": 0,
+        "supplyKind": "services",
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": [
+    {
+      "vatPct": 0,
+      "base": 432.70,
+      "tax": 0.00,
+      "total": 432.70
+    }
+  ],
+  "totals": {
+    "totalBase": 432.70,
+    "totalVat": 0.00,
+    "totalAmount": 432.70,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "it.hosting",
+      "rowExceptions": []
+    }
+  }
+}

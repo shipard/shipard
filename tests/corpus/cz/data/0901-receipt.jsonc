@@ -1,0 +1,21 @@
+// Varianta 9, podoba pdf — účtenka z čerpací stanice (receipt): bez odběratele a splatnosti,
+// ceny s DPH (fromTotal), u PHM autoritativní celková cena řádku, platba kartou.
+{
+	"variant": "receipt",
+	"form": "pdf",
+	"supplier": "jetelka",
+	"docNumber": "0004712",
+	"paymentReference": null,
+	"dates": { "issue": "2026-09-03", "tax": "2026-09-03", "due": null },
+	"currency": "CZK",
+	"vatTreatment": "pricesWithVat",
+	"payment": { "method": "card", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "vehicle.fuel",
+	"rows": [
+		{ "text": "Natural 95", "qty": 38.56, "unit": "l", "unitPrice": 38.90, "vatPct": 21, "priceCalcMode": "fromTotal", "totalPrice": 1500.00 },
+		{ "text": "Kapalina do ostřikovačů zimní 3 l", "qty": 1, "unit": "ks", "unitPrice": 89.90, "vatPct": 21, "tag": "vehicle.consumables" },
+	],
+	"rounding": "none",
+	"template": "receipt",
+	"notes": { "onDocument": null },
+}

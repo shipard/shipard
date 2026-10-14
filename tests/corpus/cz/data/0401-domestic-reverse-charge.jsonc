@@ -1,0 +1,32 @@
+// Varianta 4, podoba pdf — stavební práce s přenesením daňové povinnosti (cs-a):
+// 0 % + „daň odvede zákazník“, reverseChargeCode 4. Pro neplátce (non-payer, association)
+// běžná faktura 21 % bez přenesení — přepis profilu.
+{
+	"variant": "domestic-reverse-charge",
+	"form": "pdf",
+	"supplier": "klenba",
+	"docNumber": "2026-0147",
+	"paymentReference": "20260147",
+	"dates": { "issue": "2026-08-28", "tax": "2026-08-27", "due": "2026-09-11" },
+	"currency": "CZK",
+	"vatTreatment": "reverseCharge",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "premises.maintenance",
+	"rows": [
+		{ "text": "Oprava střešní krytiny skladové haly — práce", "qty": 1, "unit": "ks", "unitPrice": 48500.00, "vatPct": 0, "reverseChargeCode": "4" },
+		{ "text": "Materiál — krytina, lemování, spojovací prvky", "qty": 1, "unit": "ks", "unitPrice": 21340.00, "vatPct": 0, "reverseChargeCode": "4" },
+	],
+	"rounding": "none",
+	"template": "cs-a",
+	"notes": { "onDocument": "Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031." },
+	"overrides": {
+		"non-payer": {
+			"vatTreatment": "standard",
+			"rows": [
+				{ "text": "Oprava střešní krytiny skladové haly — práce", "qty": 1, "unit": "ks", "unitPrice": 48500.00, "vatPct": 21 },
+				{ "text": "Materiál — krytina, lemování, spojovací prvky", "qty": 1, "unit": "ks", "unitPrice": 21340.00, "vatPct": 21 },
+			],
+		},
+		"association": "non-payer",
+	},
+}

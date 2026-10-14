@@ -1,0 +1,21 @@
+// Varianta 8, podoba pdfIsdoc — software ze třetí země (en), USD, úhrada kartou.
+{
+	"variant": "third-country-services",
+	"form": "pdfIsdoc",
+	"supplier": "quillstack",
+	"docNumber": "QS-211378",
+	"paymentReference": null,
+	"dates": { "issue": "2026-10-01", "tax": null, "due": "2026-10-01" },
+	"currency": "USD",
+	"vatTreatment": "noVat",
+	"payment": { "method": "card", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "it.software",
+	"rows": [
+		{ "text": "Quillstack Team plan", "description": "14 seats, 10/01/2026 – 10/31/2026", "qty": 14, "unit": "seat", "unitPrice": 14.00, "vatPct": null, "supplyKind": "services" },
+		{ "text": "Priority support add-on", "qty": 1, "unit": "mo", "unitPrice": 49.00, "vatPct": null, "supplyKind": "services" },
+	],
+	"rounding": "none",
+	"template": "en",
+	"notes": { "onDocument": "Paid by card ending 4421 on Oct 1, 2026. This invoice serves as your receipt." },
+	"skipProfiles": { "non-payer": "identifikovaná osoba — druhá vlna", "association": "identifikovaná osoba — druhá vlna" },
+}

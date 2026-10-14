@@ -1,0 +1,23 @@
+// Varianta 1, podoba pdfIsdoc — tuzemské zboží 21 % (cs-a), druhý doklad téhož dodavatele.
+{
+	"variant": "domestic-goods",
+	"form": "pdfIsdoc",
+	"supplier": "drevomat",
+	"docNumber": "FV-2026-1243",
+	"paymentReference": "20261243",
+	"dates": { "issue": "2026-09-10", "tax": "2026-09-09", "due": "2026-09-24" },
+	"currency": "CZK",
+	"vatTreatment": "standard",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": "0308" },
+	"contentTag": "goods.stock",
+	"rows": [
+		{ "text": "Překližka březová 12 mm, formát 1525×1525 mm", "supplierCode": "PR-BR-12", "qty": 8.4, "unit": "m2", "unitPrice": 712.00, "vatPct": 21 },
+		{ "text": "Lišta dubová 20×20 mm", "supplierCode": "LI-DB-20", "qty": 60, "unit": "bm", "unitPrice": 24.50, "vatPct": 21, "discountPct": 10 },
+		{ "text": "Vruty do dřeva 4×40 mm, zinek", "supplierCode": "VR-4-40", "qty": 2000, "unit": "ks", "unitPrice": 0.38, "vatPct": 21 },
+		{ "text": "Lepidlo na dřevo D3, 5 kg", "supplierCode": "LE-D3-5", "qty": 2, "unit": "ks", "unitPrice": 489.00, "vatPct": 21 },
+		{ "text": "Doprava a manipulace", "qty": 1, "unit": "ks", "unitPrice": 650.00, "vatPct": 21, "tag": "services.shipping" },
+	],
+	"rounding": "none",
+	"template": "cs-a",
+	"notes": { "onDocument": "Zboží zůstává do úplného zaplacení majetkem dodavatele." },
+}

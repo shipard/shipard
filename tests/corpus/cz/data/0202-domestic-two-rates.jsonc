@@ -1,0 +1,22 @@
+// Varianta 2, podoba pdfIsdoc — kancelářské potřeby 21 % + periodikum 12 % (cs-b).
+{
+	"variant": "domestic-two-rates",
+	"form": "pdfIsdoc",
+	"supplier": "kvadrat",
+	"docNumber": "2026/0951",
+	"paymentReference": "20260951",
+	"dates": { "issue": "2026-09-15", "tax": "2026-09-15", "due": "2026-09-29" },
+	"currency": "CZK",
+	"vatTreatment": "standard",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "office.supplies",
+	"rows": [
+		{ "text": "Pákový pořadač A4, 75 mm, modrý", "supplierCode": "POR-A4-75", "qty": 20, "unit": "ks", "unitPrice": 54.90, "vatPct": 21 },
+		{ "text": "Obálky C5 samolepicí, bílé", "supplierCode": "OB-C5", "qty": 1000, "unit": "ks", "unitPrice": 0.95, "vatPct": 21 },
+		{ "text": "Lepicí bloky 76×76 mm, žluté", "supplierCode": "LB-76", "qty": 12, "unit": "ks", "unitPrice": 19.50, "vatPct": 21 },
+		{ "text": "Předplatné časopisu Mzdová praxe 10–12/2026", "qty": 1, "unit": "ks", "unitPrice": 450.00, "vatPct": 12, "tag": "admin.memberships" },
+	],
+	"rounding": "none",
+	"template": "cs-b",
+	"notes": { "onDocument": "Děkujeme za objednávku." },
+}

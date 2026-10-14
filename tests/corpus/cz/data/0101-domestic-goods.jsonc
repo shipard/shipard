@@ -1,0 +1,23 @@
+// Varianta 1, podoba pdf — tuzemské zboží 21 % (cs-a): řádky s jednotkami m2 / ks / bm,
+// sleva na řádku, doprava jako výjimka štítku.
+{
+	"variant": "domestic-goods",
+	"form": "pdf",
+	"supplier": "drevomat",
+	"docNumber": "FV-2026-1180",
+	"paymentReference": "20261180",
+	"dates": { "issue": "2026-08-25", "tax": "2026-08-25", "due": "2026-09-08" },
+	"currency": "CZK",
+	"vatTreatment": "standard",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": "0308" },
+	"contentTag": "goods.stock",
+	"rows": [
+		{ "text": "Spárovka smrková 18 mm, formát 2500×1250 mm", "supplierCode": "SP-SM-18", "qty": 12.5, "unit": "m2", "unitPrice": 486.50, "vatPct": 21 },
+		{ "text": "Deska dubová A/B 25 mm, průběžná lamela", "supplierCode": "DD-AB-25", "qty": 4, "unit": "ks", "unitPrice": 2340.00, "vatPct": 21, "discountPct": 5 },
+		{ "text": "Hrana ABS dub 22×0,8 mm", "supplierCode": "HR-ABS-22", "qty": 48, "unit": "bm", "unitPrice": 18.90, "vatPct": 21 },
+		{ "text": "Doprava a manipulace", "qty": 1, "unit": "ks", "unitPrice": 650.00, "vatPct": 21, "tag": "services.shipping" },
+	],
+	"rounding": "none",
+	"template": "cs-a",
+	"notes": { "onDocument": "Zboží zůstává do úplného zaplacení majetkem dodavatele. Reklamace uplatněte do 14 dnů od převzetí." },
+}

@@ -1,0 +1,23 @@
+// Varianta 2, podoba pdf — kancelářské potřeby 21 % + periodika 12 % (cs-b):
+// rekapitulace po sazbách, řádky 12 % jako výjimky štítku admin.memberships.
+{
+	"variant": "domestic-two-rates",
+	"form": "pdf",
+	"supplier": "kvadrat",
+	"docNumber": "2026/0882",
+	"paymentReference": "20260882",
+	"dates": { "issue": "2026-08-20", "tax": "2026-08-20", "due": "2026-09-03" },
+	"currency": "CZK",
+	"vatTreatment": "standard",
+	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": null },
+	"contentTag": "office.supplies",
+	"rows": [
+		{ "text": "Kancelářský papír A4 80 g, 5× 500 listů", "supplierCode": "PAP-A4-80", "qty": 10, "unit": "bal", "unitPrice": 129.00, "vatPct": 21 },
+		{ "text": "Toner černý, kompatibilní s HP 85A", "supplierCode": "TON-85A", "qty": 2, "unit": "ks", "unitPrice": 1190.00, "vatPct": 21 },
+		{ "text": "Předplatné časopisu Daně a účetnictví 9–12/2026", "qty": 1, "unit": "ks", "unitPrice": 822.00, "vatPct": 12, "tag": "admin.memberships" },
+		{ "text": "Odborný čtvrtletník Mzdová praxe — předplatné 4 čísla", "qty": 1, "unit": "ks", "unitPrice": 390.00, "vatPct": 12, "tag": "admin.memberships" },
+	],
+	"rounding": "none",
+	"template": "cs-b",
+	"notes": { "onDocument": "Děkujeme za objednávku. Při platbě uvádějte variabilní symbol." },
+}

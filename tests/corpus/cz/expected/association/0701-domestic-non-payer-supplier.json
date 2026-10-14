@@ -1,0 +1,139 @@
+{
+  "format": "shpd.docs.document",
+  "formatVersion": "1.0",
+  "docType": "invoiceReceived",
+  "docNumber": "2026-07",
+  "selfParty": "customer",
+  "supplier": {
+    "name": "Vzdělávací studio Hráz s.r.o.",
+    "country": "cz",
+    "companyId": "25052039",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": "Spisová značka C 90512 vedená u Krajského soudu v Brně",
+    "address": {
+      "street": "Lektorská",
+      "houseNumber": "21",
+      "city": "Jihlava",
+      "zip": "58601",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": "kurzy@studio-hraz.example",
+      "phone": "+420567309842",
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": "8360405366/0600",
+      "iban": "CZ0606000000008360405366",
+      "bic": null
+    }
+  },
+  "customer": {
+    "name": "Spolek Zelený kopec, z. s.",
+    "country": "cz",
+    "companyId": "28647645",
+    "taxId": null,
+    "vatId": null,
+    "courtRegistration": null,
+    "address": {
+      "street": "Pod Strání",
+      "houseNumber": "92",
+      "city": "Říčany",
+      "zip": "25101",
+      "country": "cz"
+    },
+    "contact": {
+      "name": null,
+      "email": null,
+      "phone": null,
+      "web": null
+    },
+    "bankAccount": {
+      "accountNumber": null,
+      "iban": null,
+      "bic": null
+    }
+  },
+  "dates": {
+    "issueDate": "2026-09-04",
+    "dueDate": "2026-09-18",
+    "taxPointDate": null,
+    "periodFrom": null,
+    "periodTo": null
+  },
+  "currency": "CZK",
+  "exchangeRate": null,
+  "vat": {
+    "mode": "none",
+    "place": "domestic",
+    "reverseCharge": false
+  },
+  "payment": {
+    "method": "bankTransfer",
+    "paymentReference": "202607",
+    "specificSymbol": null,
+    "constantSymbol": null
+  },
+  "notes": {
+    "onDocument": "Školení proběhlo 2. 9. 2026 v sídle odběratele."
+  },
+  "rows": [
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Školení první pomoci pro zaměstnance (8 hodin)",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 1,
+      "unitPrice": 4800.00,
+      "totalPrice": 4800.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": null,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    },
+    {
+      "rowKind": "item",
+      "item": {
+        "supplierCode": null,
+        "ean": null,
+        "name": "Studijní materiály pro účastníky",
+        "description": null
+      },
+      "unit": "ks",
+      "quantity": 6,
+      "unitPrice": 150.00,
+      "totalPrice": 900.00,
+      "priceCalcMode": "fromUnitPrice",
+      "discountPct": null,
+      "discountAmount": null,
+      "vat": {
+        "pct": null,
+        "supplyKind": null,
+        "reverseChargeCode": null
+      }
+    }
+  ],
+  "vatRecap": null,
+  "totals": {
+    "totalBase": null,
+    "totalVat": null,
+    "totalAmount": 5700.00,
+    "totalRounding": 0
+  },
+  "_resolve": {
+    "contentTag": {
+      "tag": "services.training",
+      "rowExceptions": []
+    }
+  }
+}
