@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Faktura {{docNumber}}</title>
+<style>
+	* { margin: 0; padding: 0; box-sizing: border-box; }
+	html, body { width: 100%; }
+	body {
+		font-family: 'Noto Sans', sans-serif;
+		font-size: 10px;
+		color: #1f2933;
+		line-height: 1.45;
+	}
+	.accent-bar { height: 7mm; background: {{accent}}; }
+	.page { padding: 10mm 15mm 12mm 15mm; }
+	.num { font-variant-numeric: tabular-nums; }
+	.nw { white-space: nowrap; }
+
+	.head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 9mm; }
+	.head .supplier { flex: 1; padding-right: 8mm; }
+	.head .supplier h1 { font-size: 17px; color: {{accent}}; margin-bottom: 2mm; }
+	.head .supplier p { color: #52606d; }
+	.head .doc { flex: 0 0 auto; text-align: right; white-space: nowrap; }
+	.head .doc .doc-title { font-size: 16px; font-weight: 700; letter-spacing: 0.06em; }
+	.head .doc .doc-no { font-size: 14px; font-weight: 700; margin-top: 1mm; }
+
+	.boxes { display: flex; gap: 6mm; margin-bottom: 6mm; }
+	.box { flex: 1; border: 1px solid #d3dce6; border-radius: 2mm; padding: 3.5mm 4mm; }
+	.box h2 {
+		font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.12em;
+		color: {{accent}}; margin-bottom: 2mm;
+	}
+	.box .b-name { font-weight: 700; font-size: 11.5px; }
+	table.meta { border-collapse: collapse; }
+	table.meta td { padding: 0.4mm 0; vertical-align: top; }
+	table.meta td.l { color: #52606d; padding-right: 4mm; white-space: nowrap; }
+
+	.dates { background: #f5f7fa; border-radius: 2mm; padding: 2.5mm 4mm; margin-bottom: 7mm; }
+	.dates table.meta td.l { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.08em; padding-right: 8mm; }
+	.dates table.meta td.v { font-weight: 700; }
+
+	table.items { width: 100%; border-collapse: collapse; margin-bottom: 6mm; }
+	table.items thead th {
+		font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.08em;
+		color: #52606d; text-align: right; padding: 0 2mm 1.5mm 2mm;
+		border-bottom: 2px solid {{accent}};
+	}
+	table.items thead th.h-text { text-align: left; padding-left: 0; }
+	table.items thead th.h-unit { text-align: left; }
+	table.items td { padding: 2mm; border-bottom: 1px solid #e4e9f0; text-align: right; }
+	table.items td.c-text { text-align: left; padding-left: 0; }
+	table.items td.c-unit { text-align: left; color: #52606d; }
+	table.items td.c-total { font-weight: 700; }
+
+	.sum { display: flex; justify-content: space-between; align-items: flex-start; gap: 10mm; margin-bottom: 7mm; }
+	table.vat-recap { border-collapse: collapse; }
+	table.vat-recap th {
+		font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.08em;
+		color: #52606d; text-align: right; padding: 0 3mm 1mm 3mm;
+		border-bottom: 1px solid #d3dce6;
+	}
+	table.vat-recap td { text-align: right; padding: 1.2mm 3mm; border-bottom: 1px solid #e4e9f0; }
+	table.totals { border-collapse: collapse; min-width: 62mm; margin-left: auto; }
+	table.totals th { text-align: left; font-weight: 400; color: #52606d; padding: 1.2mm 6mm 1.2mm 0; }
+	table.totals td { text-align: right; padding: 1.2mm 0; }
+	table.totals tr.grand th, table.totals tr.grand td {
+		font-size: 14px; font-weight: 700; color: {{accent}};
+		border-top: 2px solid {{accent}}; padding-top: 2mm;
+	}
+
+	.clause { font-weight: 700; margin-bottom: 4mm; }
+	.note { background: #f5f7fa; border-radius: 2mm; padding: 3mm 4mm; color: #3e4c59; margin-bottom: 8mm; }
+	.foot { border-top: 1px solid #e4e9f0; padding-top: 2.5mm; color: #7b8794; font-size: 8.5px; }
+</style>
+</head>
+<body>
+<div class="accent-bar"></div>
+<div class="page">
+
+	<div class="head">
+		<div class="supplier">
+			<h1>{{supplierName}}</h1>
+			<p>{{supplierAddress}}</p>
+			<p>{{supplierIds}}</p>
+			<p>{{supplierContact}}</p>
+		</div>
+		<div class="doc">
+			<div class="doc-title">{{docTitle}}</div>
+			<div class="doc-no">č. {{docNumber}}</div>
+		</div>
+	</div>
+
+	<div class="boxes">
+		<div class="box">
+			<h2>{{customerLabel}}</h2>
+			<div class="b-name">{{customerName}}</div>
+			<p>{{customerAddress}}</p>
+			<p>{{customerIds}}</p>
+		</div>
+		<div class="box">
+			<h2>Platební údaje</h2>
+			<table class="meta">
+{{paymentRows}}
+			</table>
+		</div>
+	</div>
+
+	<div class="dates">
+		<table class="meta">
+{{dateRows}}
+		</table>
+	</div>
+
+	<table class="items">
+		<thead>
+			{{itemsHead}}
+		</thead>
+		<tbody>
+{{rows}}
+		</tbody>
+	</table>
+
+	<div class="sum">
+		{{vatRecapBlock}}
+		<table class="totals">
+			{{totalsRows}}
+		</table>
+	</div>
+
+	{{vatClause}}
+
+	{{noteBlock}}
+
+	<div class="foot">{{supplierCourtReg}}</div>
+
+</div>
+</body>
+</html>

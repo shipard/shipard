@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Faktura {{docNumber}}</title>
+<style>
+	/* Vícestránková šablona: okraje má @page (body padding by platil jen na první
+	   straně), hlavička tabulky se opakuje, číslo strany v okrajovém boxu. */
+	@page {
+		margin: 12mm 14mm 16mm 14mm;
+		@bottom-right {
+			content: "Strana " counter(page) " / " counter(pages);
+			font-family: 'Noto Serif', serif;
+			font-size: 8px;
+			color: #111;
+		}
+	}
+	* { margin: 0; padding: 0; box-sizing: border-box; }
+	body {
+		font-family: 'Noto Serif', serif;
+		font-size: 9.5px;
+		color: #111;
+		line-height: 1.35;
+	}
+	.num, .c-qty, .c-price, .c-disc, .c-vat, .c-total, .v-pct, .v-base, .v-tax, .v-total {
+		font-family: 'Noto Sans Mono', 'Courier New', monospace;
+	}
+
+	.nw { white-space: nowrap; }
+	.frame { border: 3px double #111; padding: 3mm 4mm; margin-bottom: 3mm; }
+	.title-row { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #111; padding-bottom: 1.5mm; margin-bottom: 2mm; }
+	.title { font-size: 13px; font-weight: 700; letter-spacing: 0.25em; }
+	.doc-no { font-size: 11px; font-weight: 700; }
+
+	.parties { display: flex; }
+	.party { flex: 1; padding-right: 5mm; }
+	.party + .party { border-left: 1px dashed #555; padding-left: 5mm; padding-right: 0; }
+	.p-label { font-size: 8px; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1mm; }
+	.p-name { font-weight: 700; font-size: 10.5px; }
+
+	.meta { display: flex; margin-bottom: 3mm; }
+	.meta table { flex: 1; border-collapse: collapse; }
+	.meta td { padding: 0.6mm 0; vertical-align: top; }
+	.meta td.l { text-transform: uppercase; font-size: 8px; letter-spacing: 0.08em; padding-right: 3mm; white-space: nowrap; }
+	.meta table + table { margin-left: 8mm; }
+
+	.sep { border-top: 1px dashed #555; margin: 2.5mm 0; }
+
+	table.items { width: 100%; border-collapse: collapse; margin-bottom: 3mm; }
+	table.items thead { display: table-header-group; }
+	table.items tr { break-inside: avoid; }
+	table.items thead th {
+		font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em;
+		text-align: right; padding: 1mm 1.5mm;
+		border-top: 1px solid #111; border-bottom: 1px solid #111;
+	}
+	table.items thead th.h-text { text-align: left; padding-left: 0; }
+	table.items td { padding: 1mm 1.5mm; text-align: right; border-bottom: 1px dotted #888; }
+	table.items td.c-text { text-align: left; padding-left: 0; }
+	table.items td.c-unit { text-align: center; }
+
+	.sum { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3mm; break-inside: avoid; }
+	table.vat-recap { border-collapse: collapse; }
+	table.vat-recap th {
+		font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em;
+		text-align: right; padding: 0.8mm 2.5mm; border-bottom: 1px solid #111;
+	}
+	table.vat-recap td { text-align: right; padding: 0.8mm 2.5mm; border-bottom: 1px dotted #888; }
+
+	table.totals { border-collapse: collapse; min-width: 60mm; margin-left: auto; }
+	table.totals th { text-align: left; font-weight: 400; font-size: 8px; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.8mm 5mm 0.8mm 0; }
+	table.totals td { text-align: right; padding: 0.8mm 0; font-family: 'Noto Sans Mono', 'Courier New', monospace; }
+	table.totals tr.grand th, table.totals tr.grand td {
+		font-size: 12px; font-weight: 700;
+		border-top: 3px double #111; padding-top: 1.5mm;
+	}
+
+	.clause { font-weight: 700; margin-bottom: 3mm; }
+	.note { border: 1px dashed #555; padding: 2mm 3mm; margin-bottom: 3mm; break-inside: avoid; }
+	.foot { font-size: 8px; text-align: center; border-top: 1px solid #111; padding-top: 1.5mm; }
+</style>
+</head>
+<body>
+
+	<div class="frame">
+		<div class="title-row">
+			<div class="title">{{docTitle}}</div>
+			<div class="doc-no num">č. {{docNumber}}</div>
+		</div>
+		<div class="parties">
+			<div class="party">
+				<div class="p-label">{{supplierLabel}}:</div>
+				<div class="p-name">{{supplierName}}</div>
+				<div>{{supplierAddress}}</div>
+				<div>{{supplierIds}}</div>
+				<div>{{supplierContact}}</div>
+			</div>
+			<div class="party">
+				<div class="p-label">{{customerLabel}}:</div>
+				<div class="p-name">{{customerName}}</div>
+				<div>{{customerAddress}}</div>
+				<div>{{customerIds}}</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="meta">
+		<table>
+{{paymentRows}}
+		</table>
+		<table>
+{{dateRows}}
+		</table>
+	</div>
+
+	<table class="items">
+		<thead>
+			{{itemsHead}}
+		</thead>
+		<tbody>
+{{rows}}
+		</tbody>
+	</table>
+
+	<div class="sum">
+		{{vatRecapBlock}}
+		<table class="totals">
+			{{totalsRows}}
+		</table>
+	</div>
+
+	<div class="sep"></div>
+
+	{{vatClause}}
+
+	{{noteBlock}}
+
+	<div class="foot">{{supplierCourtReg}}</div>
+
+</body>
+</html>

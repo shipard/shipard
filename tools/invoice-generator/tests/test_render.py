@@ -37,8 +37,9 @@ class FormatTest(unittest.TestCase):
         self.assertEqual("760 01", fmt_zip("76001", "cz"))
         self.assertEqual("10115", fmt_zip("10115", "de"))
         self.assertEqual("+420 577 123 456", fmt_phone("+420577123456"))
-        self.assertEqual("+49 301 234 567 8", fmt_phone("+493012345678"))
-        self.assertEqual("+1 415 555 013 2", fmt_phone("+14155550132"))
+        self.assertEqual("+49 301 234 5678", fmt_phone("+493012345678"))
+        self.assertEqual("+1 415 555 0132", fmt_phone("+14155550132"))
+        self.assertEqual("+420 603 111 22", fmt_phone("+42060311122"))
 
 
 class RenderTest(unittest.TestCase):

@@ -164,17 +164,17 @@
 			"contact": { "name": null, "email": null, "phone": "+420577911206", "web": null },
 			"bankAccount": { "accountNumber": null, "iban": null, "bic": null },
 		},
-		// varianta 10 — dlouhý doklad, železářství (cs-c)
+		// varianta 10 — dlouhý doklad, velkoobchod provozních potřeb (cs-c)
 		"matice": {
 			"vatPayer": true,
-			"name": "Železářství Matice s.r.o.",
+			"name": "Velkoobchod Matice s.r.o.",
 			"country": "cz",
 			"companyId": "13113879",
 			"taxId": "CZ13113879",
 			"vatId": "CZ13113879",
 			"courtRegistration": "Spisová značka C 41177 vedená u Krajského soudu v Hradci Králové",
-			"address": { "street": "Šroubová", "houseNumber": "17", "city": "Hradec Králové", "zip": "50002", "country": "cz" },
-			"contact": { "name": null, "email": "velkoobchod@zelezarstvi-matice.example", "phone": "+420495512780", "web": "www.zelezarstvi-matice.example" },
+			"address": { "street": "Skladištní", "houseNumber": "17", "city": "Hradec Králové", "zip": "50002", "country": "cz" },
+			"contact": { "name": null, "email": "objednavky@matice-velkoobchod.example", "phone": "+420495512780", "web": "www.matice-velkoobchod.example" },
 			"bankAccount": { "accountNumber": "6427159018/0800", "iban": "CZ9708000000006427159018", "bic": "GIBACZPX" },
 		},
 	},

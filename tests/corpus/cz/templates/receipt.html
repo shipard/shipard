@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<!-- pdf: paperWidth=80mm paperHeight=200mm marginTop=4mm marginBottom=4mm marginLeft=4mm marginRight=4mm -->
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Účtenka {{docNumber}}</title>
+<style>
+	/* Účtenka z pokladní tiskárny: 80 mm, jednosloupcový tisk, bez odběratele. */
+	* { margin: 0; padding: 0; box-sizing: border-box; }
+	body {
+		font-family: 'Noto Sans Mono', 'Courier New', monospace;
+		font-size: 7.5px;
+		color: #000;
+		line-height: 1.35;
+		width: 72mm;
+	}
+	.center { text-align: center; }
+	.nw { white-space: nowrap; }
+	.s-name { font-weight: 700; font-size: 9px; }
+	.rule { border-top: 1px dashed #000; margin: 1.5mm 0; }
+	.title { font-weight: 700; margin: 1mm 0; }
+	.doc-no { margin-bottom: 1mm; }
+
+	table { width: 100%; border-collapse: collapse; }
+	table.meta td { padding: 0.2mm 0; }
+	table.meta td.l { white-space: nowrap; padding-right: 2mm; }
+	table.meta td.v { text-align: right; }
+
+	table.items th { font-weight: 400; text-align: right; padding: 0.3mm 0.6mm; border-bottom: 1px solid #000; font-size: 6.5px; text-transform: uppercase; }
+	table.items th.h-text { text-align: left; padding-left: 0; }
+	table.items td { padding: 0.5mm 0.6mm; text-align: right; vertical-align: top; }
+	table.items td.c-text { text-align: left; padding-left: 0; width: 30%; }
+	table.items td.c-unit { text-align: left; }
+
+	table.vat-recap th { font-weight: 400; text-align: right; padding: 0.3mm 0.6mm; border-bottom: 1px solid #000; font-size: 6.5px; text-transform: uppercase; }
+	table.vat-recap td { text-align: right; padding: 0.4mm 0.6mm; }
+	table.vat-recap th:first-child, table.vat-recap td:first-child { text-align: left; padding-left: 0; }
+
+	table.totals th { text-align: left; font-weight: 400; padding: 0.4mm 0; }
+	table.totals td { text-align: right; padding: 0.4mm 0; }
+	table.totals tr.grand th, table.totals tr.grand td { font-weight: 700; font-size: 9.5px; padding-top: 1mm; }
+
+	.note { margin-top: 1.5mm; }
+	.foot { margin-top: 2mm; }
+</style>
+</head>
+<body>
+
+	<div class="center">
+		<div class="s-name">{{supplierName}}</div>
+		<div>{{supplierAddress}}</div>
+		<div>{{supplierIds}}</div>
+		<div>{{supplierContact}}</div>
+	</div>
+
+	<div class="rule"></div>
+
+	<div class="center title">{{docTitle}}</div>
+	<div class="center doc-no">Doklad č. {{docNumber}}</div>
+
+	<table class="meta">
+{{dateRows}}
+	</table>
+
+	<div class="rule"></div>
+
+	<table class="items">
+		<thead>
+			{{itemsHead}}
+		</thead>
+		<tbody>
+{{rows}}
+		</tbody>
+	</table>
+
+	<div class="rule"></div>
+
+	<table class="totals">
+		{{totalsRows}}
+	</table>
+
+	<div class="rule"></div>
+
+	{{vatRecapBlock}}
+
+	<div class="rule"></div>
+
+	<table class="meta">
+{{paymentRows}}
+	</table>
+
+	{{noteBlock}}
+
+	<div class="center foot">Děkujeme za návštěvu.</div>
+
+</body>
+</html>

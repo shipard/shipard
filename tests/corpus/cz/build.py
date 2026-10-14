@@ -72,7 +72,7 @@ LABELS = {
         "hTotal": "Celkem",
         "rPct": "Sazba", "rBase": "Základ", "rTax": "DPH", "rTotal": "Celkem",
         "tBase": "Základ daně", "tVat": "DPH celkem", "tRounding": "Zaokrouhlení",
-        "tGrand": "K úhradě celkem", "tGrandReceipt": "Celkem k úhradě", "tPaid": "Zaplaceno",
+        "tGrand": "K úhradě celkem", "tGrandReceipt": "Celkem k úhradě",
         "clauseReverseCharge": "Daň odvede zákazník (§ 92a zákona o DPH — režim přenesení daňové povinnosti).",
         "clauseNoVat": "Nejsem plátce DPH.",
     },
@@ -91,7 +91,7 @@ LABELS = {
         "hTotal": "Amount",
         "rPct": "VAT rate", "rBase": "Net", "rTax": "VAT", "rTotal": "Gross",
         "tBase": "Subtotal (net)", "tVat": "VAT", "tRounding": "Rounding",
-        "tGrand": "Total due", "tGrandReceipt": "Total", "tPaid": "Paid",
+        "tGrand": "Total due", "tGrandReceipt": "Total",
         "clauseReverseCharge": "Reverse charge — VAT to be accounted for by the recipient "
                                "(Art. 196 of Council Directive 2006/112/EC).",
         "clauseExempt": "Intra-Community supply of goods exempt from VAT "
@@ -122,15 +122,16 @@ def address_html(party: dict, locale: str, *, with_country: bool) -> str:
 def ids_html(party: dict, labels: dict) -> str:
     parts = []
     if party.get("companyId"):
-        parts.append(f'{labels["companyId"]}: <span class="num">{esc(party["companyId"])}</span>')
+        parts.append(f'<span class="nw">{labels["companyId"]}: <span class="num">{esc(party["companyId"])}</span></span>')
     if party.get("vatId"):
-        parts.append(f'{labels["vatId"]}: <span class="num">{esc(party["vatId"])}</span>')
+        parts.append(f'<span class="nw">{labels["vatId"]}: <span class="num">{esc(party["vatId"])}</span></span>')
     return " · ".join(parts)
 
 
 def contact_html(party: dict) -> str:
     c = party.get("contact") or {}
-    parts = [esc(x) for x in (c.get("email"), fmt_phone(c["phone"]) if c.get("phone") else None, c.get("web")) if x]
+    parts = [f'<span class="nw">{esc(x)}</span>'
+             for x in (c.get("email"), fmt_phone(c["phone"]) if c.get("phone") else None, c.get("web")) if x]
     return " · ".join(parts)
 
 
@@ -215,8 +216,6 @@ def build_values(cell: Cell, computed: dict) -> dict[str, str]:
             totals.append(f'<tr><th>{labels["tRounding"]}</th><td>{money(computed["totalRounding"], currency, locale)}</td></tr>')
     grand_label = labels["tGrandReceipt"] if cell.receipt else labels["tGrand"]
     totals.append(f'<tr class="grand"><th>{grand_label}</th><td>{money(computed["totalAmount"], currency, locale)}</td></tr>')
-    if cell.receipt:
-        totals.append(f'<tr><th>{labels["tPaid"]}</th><td>{labels[method]}</td></tr>')
 
     clause = ""
     if treatment == "reverseCharge":

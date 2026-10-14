@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Faktura {{docNumber}}</title>
+<style>
+	* { margin: 0; padding: 0; box-sizing: border-box; }
+	body {
+		font-family: 'Noto Sans', sans-serif;
+		font-size: 10px;
+		color: #000;
+		line-height: 1.4;
+		padding: 14mm 16mm;
+	}
+	.nw { white-space: nowrap; }
+	h1 { font-size: 14px; text-align: center; margin-bottom: 1mm; }
+	.doc-no { text-align: center; font-size: 12px; margin-bottom: 6mm; }
+
+	table { width: 100%; border-collapse: collapse; }
+	td, th { border: 1px solid #000; padding: 1.8mm 2.5mm; vertical-align: top; }
+	th { font-weight: 700; text-align: left; background: #ededed; }
+
+	.parties { margin-bottom: 4mm; }
+	.parties td { width: 50%; }
+	.parties .p-label { font-size: 8.5px; font-weight: 700; text-transform: uppercase; margin-bottom: 1.5mm; }
+	.parties .p-name { font-weight: 700; font-size: 11px; margin-bottom: 0.5mm; }
+
+	.meta-wrap { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 4mm; }
+	.meta-wrap > tbody > tr > td { border: none; padding: 0; vertical-align: top; width: 50%; }
+	.meta-wrap td.gap { width: 4mm; }
+	table.meta td.l { width: 48%; font-weight: 700; background: #ededed; }
+	table.meta td.v { white-space: nowrap; }
+
+	table.items { margin-bottom: 4mm; }
+	table.items th { text-align: right; font-size: 9px; }
+	table.items th.h-text, table.items td.c-text { text-align: left; width: 40%; }
+	table.items td { text-align: right; }
+	table.items td.c-unit { text-align: center; }
+
+	.bottom { width: 100%; border-collapse: separate; border-spacing: 0; }
+	.bottom > tbody > tr > td { border: none; padding: 0; vertical-align: top; }
+	.bottom td.gap { width: 8mm; }
+
+	table.vat-recap th, table.vat-recap td { text-align: right; font-size: 9px; }
+	table.vat-recap th:first-child, table.vat-recap td:first-child { text-align: left; }
+
+	table.totals th { width: 55%; }
+	table.totals td { text-align: right; }
+	table.totals tr.grand th, table.totals tr.grand td { font-size: 12px; font-weight: 700; }
+
+	.clause { border: 1px solid #000; background: #ededed; padding: 2mm 2.5mm; margin-top: 4mm; font-weight: 700; }
+	.note { border: 1px solid #000; padding: 2.5mm; margin-top: 4mm; }
+	.foot { margin-top: 5mm; font-size: 8.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+	<h1>{{docTitle}}</h1>
+	<div class="doc-no">číslo: {{docNumber}}</div>
+
+	<table class="parties">
+		<tr>
+			<td>
+				<div class="p-label">{{supplierLabel}}</div>
+				<div class="p-name">{{supplierName}}</div>
+				{{supplierAddress}}<br>
+				{{supplierIds}}<br>
+				{{supplierContact}}
+			</td>
+			<td>
+				<div class="p-label">{{customerLabel}}</div>
+				<div class="p-name">{{customerName}}</div>
+				{{customerAddress}}<br>
+				{{customerIds}}
+			</td>
+		</tr>
+	</table>
+
+	<table class="meta-wrap">
+		<tbody>
+			<tr>
+				<td>
+					<table class="meta">
+{{paymentRows}}
+					</table>
+				</td>
+				<td class="gap"></td>
+				<td>
+					<table class="meta">
+{{dateRows}}
+					</table>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<table class="items">
+		<thead>
+			{{itemsHead}}
+		</thead>
+		<tbody>
+{{rows}}
+		</tbody>
+	</table>
+
+	<table class="bottom">
+		<tbody>
+			<tr>
+				<td>
+					{{vatRecapBlock}}
+				</td>
+				<td class="gap"></td>
+				<td>
+					<table class="totals">
+						{{totalsRows}}
+					</table>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	{{vatClause}}
+
+	{{noteBlock}}
+
+	<div class="foot">{{supplierCourtReg}}</div>
+
+</body>
+</html>

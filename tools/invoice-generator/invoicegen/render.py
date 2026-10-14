@@ -75,6 +75,8 @@ def fmt_phone(phone: str) -> str:
     cc_len = 1 if digits.startswith("1") else 2 if digits[:2] in ("49", "43", "44", "33", "39", "31") else 3
     cc, rest = digits[:cc_len], digits[cc_len:]
     groups = [rest[i:i + 3] for i in range(0, len(rest), 3)]
+    if len(groups) > 1 and len(groups[-1]) == 1:
+        groups[-2:] = [groups[-2] + groups[-1]]
     return "+" + cc + " " + " ".join(groups)
 
 
