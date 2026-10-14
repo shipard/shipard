@@ -41,6 +41,8 @@ class PartyResolver
 {
     private const ACTIVE_STATES = [10, 40, 80];
     private const AMBIGUOUS_LIMIT = 5;
+    /** `base.persons.addressTypes`: 1 = sídlo. */
+    public const ADDRESS_TYPE_HEADQUARTERS = 1;
 
     public function __construct(
         private readonly Connection $db,
@@ -216,9 +218,18 @@ class PartyResolver
      * @param array<string, mixed> $party
      * @return array<string, mixed>
      */
+    /**
+     * Payload nové osoby pro `base_persons_persons` + klíč `addresses`
+     * (řádky `base_persons_addresses` — sídlo z `party.address`, #103 F3
+     * nález C), který side-create zapíše zvlášť; bez adresy klíč chybí.
+     *
+     * @param array<string, mixed> $party
+     * @return array<string, mixed>
+     */
     private function buildPersonCreatePayload(array $party, PersonType $type): array
     {
-        return [
+        $address = is_array($party['address'] ?? null) ? $this->buildAddressPayload($party['address']) : null;
+        return ($address !== null ? ['addresses' => [$address]] : []) + [
             'person_type'        => $type->value,
             'full_name'          => $this->normalize($party['name'] ?? null) ?? '',
             'company_id'         => $this->normalize($party['companyId'] ?? null) ?? '',
@@ -232,6 +243,30 @@ class PartyResolver
                                     ? $party['paymentTermDays']
                                     : null,
         ];
+    }
+
+    /**
+     * Sídlo (`address_type` 1) z canonical `Party.address`; jen vyplněné
+     * sloupce, bez jediného údaje `null`. Země malými jako v adresáři.
+     *
+     * @param array<string, mixed> $address
+     * @return array<string, mixed>|null
+     */
+    private function buildAddressPayload(array $address): ?array
+    {
+        $country = $this->normalize($address['country'] ?? null);
+        $payload = array_filter([
+            'street'       => $this->normalize($address['street'] ?? null),
+            'house_number' => $this->normalize($address['houseNumber'] ?? null),
+            'city'         => $this->normalize($address['city'] ?? null),
+            'city_part'    => $this->normalize($address['cityPart'] ?? null),
+            'zip'          => $this->normalize($address['zip'] ?? null),
+            'country'      => $country !== null ? strtolower($country) : null,
+        ], static fn (?string $v): bool => $v !== null);
+        if ($payload === []) {
+            return null;
+        }
+        return ['address_type' => self::ADDRESS_TYPE_HEADQUARTERS] + $payload;
     }
 
     private function normalize(mixed $value): ?string

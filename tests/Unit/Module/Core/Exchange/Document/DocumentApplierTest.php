@@ -1400,6 +1400,61 @@ class DocumentApplierTest extends TestCase
         );
     }
 
+    public function testSideCreatedPartyGetsItsAddress(): void
+    {
+        // #103 F3 nález C: dodavatel založený applierem má sídlo z canonicalu.
+        $resolvers = $this->buildAutoCreateResolvers([
+            'full_name' => 'X', 'company_id' => '12345678',
+            'addresses' => [['address_type' => 1, 'street' => 'Pilařská', 'house_number' => '1204/7', 'city' => 'Olomouc', 'zip' => '77900', 'country' => 'cz']],
+        ]);
+        $saved = null;
+        $persons = $this->createMock(TransactionlessTableGateway::class);
+        $persons->method('saveDocument')->willReturnCallback(static function (array $payload) use (&$saved) {
+            $saved = $payload;
+            return \Shipard\Core\Document\DocumentResult::ok(['id' => 99]);
+        });
+        $heads = $this->createMock(TransactionlessTableGateway::class);
+        $heads->method('saveDocument')->willReturn(\Shipard\Core\Document\DocumentResult::ok(['id' => 1234]));
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->method('getInsertId')->willReturn(0);
+
+        $applier = $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'], heads: $heads, persons: $persons,
+        );
+        $result = $applier->apply($this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'liberal']));
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+
+        $this->assertArrayNotHasKey('addresses', $saved, 'adresa není sloupec osoby');
+        $inserts = array_values(array_filter($applier->sqlCalls, static fn (array $c): bool => ($c[1] ?? null) === 'base_persons_addresses'));
+        $this->assertCount(1, $inserts);
+        $this->assertSame(
+            ['address_type' => 1, 'street' => 'Pilařská', 'house_number' => '1204/7', 'city' => 'Olomouc', 'zip' => '77900', 'country' => 'cz',
+                'person' => 99, 'order_pos' => 1, 'docState' => 40, 'docStateMain' => 2],
+            $inserts[0][3],
+        );
+    }
+
+    public function testBankAccountWithoutIdentifierIsNotAReference(): void
+    {
+        // #103 F3 nález A: účtenka nese bankAccount se samými null — žádné
+        // rozhodnutí o bankovním spojení, apply nesmí skončit unresolved_required.
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $bank = $this->createMock(BankAccountResolver::class);
+        $bank->expects($this->never())->method('resolvePartnerBank');
+
+        $applier = $this->buildApplier(
+            party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $bank,
+        );
+        $payload = $this->payloadWithCanCreateSupplier([]);
+        $payload['supplier']['bankAccount'] = ['accountNumber' => null, 'iban' => null, 'bic' => null];
+        $canonical = $applier->preview($payload)->canonical;
+
+        $this->assertArrayNotHasKey('supplierBank', $canonical['_resolve']);
+    }
+
     public function testIdempotentReplayReturnsExistingSavedDocId(): void
     {
         // Zpráva už nese docs target (target_table_id + target_row) —

@@ -838,7 +838,9 @@ class DocumentApplier
                 ? $supplierResult->matchedId
                 : null;
 
-            if (is_array($supplier['bankAccount'] ?? null) && $supplier['bankAccount'] !== []) {
+            // Objekt bez IBAN i čísla účtu = doklad bez bankovního spojení
+            // (účtenka, karta) — není to reference k rozhodnutí (#103 F3).
+            if (is_array($supplier['bankAccount'] ?? null) && BankAccountResolver::hasIdentifier($supplier['bankAccount'])) {
                 $supplierBankResult = $this->bankAccountResolver->resolvePartnerBank(
                     $supplier['bankAccount'],
                     $supplierPersonId,
@@ -1369,6 +1371,10 @@ class DocumentApplier
             if (!is_array($payload) || $payload === []) {
                 continue;
             }
+            // Adresy nejsou child tabulka osoby — zapisují se zvlášť po
+            // uložení (vzor PersonApplier::insertSubRecord, #103 F3 nález C).
+            $addresses = is_array($payload['addresses'] ?? null) ? $payload['addresses'] : [];
+            unset($payload['addresses']);
             $payload['docState'] = 40;
             $payload['docStateMain'] = 3;
             if (!isset($payload['person_type'])) {
@@ -1379,6 +1385,14 @@ class DocumentApplier
                 throw new \RuntimeException("Side-create person ({$partyKey}) failed: " . ($result->getErrorMessage() ?? ''));
             }
             $ids[$partyKey] = (int) $result->getData()['id'];
+            foreach (array_values($addresses) as $n => $address) {
+                if (!is_array($address) || $address === []) {
+                    continue;
+                }
+                $row = array_filter($address, static fn (mixed $v): bool => $v !== null)
+                    + ['person' => $ids[$partyKey], 'order_pos' => $n + 1, 'docState' => 40, 'docStateMain' => 2];
+                $this->executeSql('INSERT INTO %n', 'base_persons_addresses', '%v', $row);
+            }
         }
 
         if (is_array($plan['bankCreate'] ?? null)) {
@@ -1993,6 +2007,11 @@ class DocumentApplier
                 : [];
             $place = $ctx['place'];
             $reverseCharge = is_bool($vat['reverseCharge'] ?? null) ? $vat['reverseCharge'] : null;
+            // Doklad bez DPH (`vat.mode` none — dodavatel neplátce): řádky
+            // nemají sazbu a v tuzemsku jim patří kód bez daně (cz-112),
+            // ne chyba vat_code_unknown (#103 F3 nález B). Mimo tuzemsko
+            // zůstává samovyměření (služba ze třetí země bez DPH).
+            $noVat = ($vat['mode'] ?? null) === 'none';
             foreach ($rows as $idx => $row) {
                 if (!is_array($row)
                     || (string) ($row['rowKind'] ?? 'item') !== 'item'
@@ -2000,12 +2019,16 @@ class DocumentApplier
                     || !is_array($row['vat'] ?? null)) {
                     continue;
                 }
+                $rowVat = $row['vat'];
+                if ($noVat && !isset($rowVat['pct'])) {
+                    $rowVat['pct'] = 0;
+                }
                 $ctx['rows'][(int) $idx] = $this->decideRowVatCode(
                     (string) $ctx['ownCountry'],
                     $ctx['taxPointDate'],
                     $place,
                     $reverseCharge,
-                    $row['vat'],
+                    $rowVat,
                     $kinds['rows'][(int) $idx] ?? self::NO_SUPPLY_KIND,
                     $pins['rows'][(int) $idx] ?? null,
                     $ctx['codeOptions'],

@@ -12,6 +12,15 @@ use Shipard\Module\Core\Exchange\Resolve\ResolveStatus;
 
 class BankAccountResolverTest extends TestCase
 {
+    public function testHasIdentifierDistinguishesEmptyProjectionFromReference(): void
+    {
+        $this->assertFalse(BankAccountResolver::hasIdentifier(['accountNumber' => null, 'iban' => null, 'bic' => null]));
+        $this->assertFalse(BankAccountResolver::hasIdentifier(['iban' => ' ', 'bic' => 'KOMBCZPP']));
+        $this->assertFalse(BankAccountResolver::hasIdentifier([]));
+        $this->assertTrue(BankAccountResolver::hasIdentifier(['iban' => 'CZ65...']));
+        $this->assertTrue(BankAccountResolver::hasIdentifier(['accountNumber' => '123/0100', 'iban' => null]));
+    }
+
     public function testPartnerBankIbanMatchesExisting(): void
     {
         $db = $this->createMock(Connection::class);

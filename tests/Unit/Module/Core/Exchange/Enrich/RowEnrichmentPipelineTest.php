@@ -295,6 +295,31 @@ class RowEnrichmentPipelineTest extends TestCase
         $this->assertSame('FUEL', $result['rows'][0]['item']['ourCode']);
     }
 
+    public function testRuleKeepsPersistedRowExceptions(): void
+    {
+        // #103 F3 nález D: pravidlo IČO → štítek určuje štítek dokladu, výjimky
+        // řádků z LLM zůstávají — „Cestovné lektora“ nesmí dostat položku školení.
+        $pipeline = $this->pipeline(
+            items: [$this->taggedItem('TRAIN', ['services.training']), $this->taggedItem('FARES', ['travel.fares'], '512100', 12)],
+            rule: ['id' => 5, 'tag' => 'services.training', 'origin' => 'user'],
+            classifier: $this->neverCalledClassifier(),
+        );
+
+        $canonical = $this->canonical([$this->itemRow('Kurz Excel'), $this->itemRow('Cestovné lektora')]);
+        $canonical['_resolve']['contentTag'] = [
+            'tag' => 'it.software', 'tagSource' => 'llm', 'tagConfidence' => 0.9,
+            'rowExceptions' => [['rowIndex' => 1, 'tag' => 'travel.fares']],
+        ];
+        $result = $pipeline->enrichFresh($canonical);
+
+        $block = $result['_resolve']['contentTag'];
+        $this->assertSame('rule', $block['tagSource']);
+        $this->assertSame('services.training', $block['tag']);
+        $this->assertSame([['rowIndex' => 1, 'tag' => 'travel.fares']], $block['rowExceptions']);
+        $this->assertSame('TRAIN', $result['rows'][0]['item']['ourCode']);
+        $this->assertSame('FARES', $result['rows'][1]['item']['ourCode']);
+    }
+
     public function testFreshKeepsPersistedLlmTagWhenNoRule(): void
     {
         $pipeline = $this->pipeline(

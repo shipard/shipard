@@ -32,6 +32,24 @@ class BankAccountResolver
      * @param int|null $partnerPersonId  Resolved partner id (null = partner is
      *                                    pending side-create; Applier handles).
      */
+    /**
+     * Bankovní spojení nese identifikátor (IBAN nebo číslo účtu). Objekt se
+     * samými `null` (projekce dokladu bez účtu — účtenka, platba kartou) je
+     * „bez spojení“, ne reference k rozhodnutí (#103 F3 nález A).
+     *
+     * @param array<string, mixed> $bankAccount
+     */
+    public static function hasIdentifier(array $bankAccount): bool
+    {
+        foreach (['iban', 'accountNumber'] as $key) {
+            $value = $bankAccount[$key] ?? null;
+            if (is_string($value) && trim($value) !== '') {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function resolvePartnerBank(array $bankAccount, ?int $partnerPersonId): ResolveResult
     {
         $iban = $this->normalize($bankAccount['iban'] ?? null);

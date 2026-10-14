@@ -124,6 +124,32 @@ class PartyResolverTest extends TestCase
         $this->assertSame('99887766', $r->createPayload['company_id']);
         $this->assertSame('CZ99887766', $r->createPayload['tax_id']);
         $this->assertSame(PersonType::Company->value, $r->createPayload['person_type']);
+        $this->assertArrayNotHasKey('addresses', $r->createPayload, 'bez adresy v canonicalu klíč chybí');
+    }
+
+    public function testCanCreatePayloadCarriesHeadquartersAddress(): void
+    {
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturn(null);
+        $db->method('fetchAll')->willReturn([]);
+
+        $r = $this->buildResolver($db)->resolve([
+            'name'    => 'New Vendor s.r.o.',
+            'companyId' => '99887766',
+            'address' => ['street' => ' Pilařská ', 'houseNumber' => '1204/7', 'city' => 'Olomouc', 'zip' => '77900', 'country' => 'CZ', 'cityPart' => null],
+        ]);
+        $this->assertSame(ResolveStatus::CanCreate, $r->status);
+        $this->assertSame([[
+            'address_type' => PartyResolver::ADDRESS_TYPE_HEADQUARTERS,
+            'street'       => 'Pilařská',
+            'house_number' => '1204/7',
+            'city'         => 'Olomouc',
+            'zip'          => '77900',
+            'country'      => 'cz',
+        ]], $r->createPayload['addresses']);
+
+        $empty = $this->buildResolver($db)->resolve(['name' => 'X', 'address' => ['street' => null, 'city' => '']]);
+        $this->assertArrayNotHasKey('addresses', $empty->createPayload, 'adresa se samými null = bez adresy');
     }
 
     public function testNoMatchWithoutNameProducesNotFound(): void

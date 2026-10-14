@@ -196,19 +196,26 @@ final class RowEnrichmentPipeline
         $companyId = $this->supplierCompanyId($canonical);
         $rule = $companyId !== null ? $this->resolver->resolveTagByRule($companyId) : null;
 
+        $existing = $canonical['_resolve']['contentTag'] ?? null;
         if ($rule !== null) {
             if ($markHits) {
                 $this->resolver->markRuleHit($rule['id']);
             }
-            $canonical['_resolve']['contentTag'] = [
+            // Pravidlo určuje štítek dokladu; výjimky řádků (LLM / člověk)
+            // jsou poznatek o jednotlivých řádcích a zůstávají — jinak by
+            // „Cestovné lektora“ dostalo položku školení (#103 F3 nález D).
+            $block = [
                 'tag'       => $rule['tag'],
                 'tagSource' => 'rule',
                 'ruleId'    => $rule['id'],
             ];
+            if (is_array($existing) && is_array($existing['rowExceptions'] ?? null) && $existing['rowExceptions'] !== []) {
+                $block['rowExceptions'] = $existing['rowExceptions'];
+            }
+            $canonical['_resolve']['contentTag'] = $block;
             return $canonical;
         }
 
-        $existing = $canonical['_resolve']['contentTag'] ?? null;
         if (is_array($existing) && is_string($existing['tag'] ?? null) && $existing['tag'] !== '') {
             return $canonical; // persistnutý štítek (typicky LLM z /result)
         }
