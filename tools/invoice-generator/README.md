@@ -13,6 +13,8 @@ vstupními body:
 | `invoicegen/checks.py` | kontrolní součty IČO, mod 11 čísel účtů, IBAN; validace identit |
 | `invoicegen/compute.py` | výpočet řádků, rekapitulace DPH a součtů v `Decimal` (ROUND_HALF_UP) |
 | `invoicegen/render.py` | formátování pro tisk, HTML ze šablony `{{key}}`, PDF přes Gotenberg |
+| `invoicegen/expected.py` | očekávaný výsledek = papírová projekce canonicalu (`tests/corpus/projection.jsonc`), odvozená pole podle promptu, zapisovač JSON bez float |
+| `invoicegen/corpus.py` | datový soubor korpusu: validace, přepisy per profil (`overrides`, alias), vynechané buňky, matice doklad × profil |
 
 Vstupní body si přidávají `tools/invoice-generator` na `sys.path` a balík
 importují; žádná instalace. Gotenberg: env `GOTENBERG_URL`
