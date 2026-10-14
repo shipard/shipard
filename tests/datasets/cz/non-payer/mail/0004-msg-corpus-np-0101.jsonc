@@ -42,22 +42,22 @@
             "costUsd": 0.0,
             "created": "2026-08-26T08:01:00",
             "analysisJson": {
-                "overall_confidence": 1.0,
+                "overall_confidence": 1,
                 "message_classification": {
                     "primary_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "title": "Faktura FV-2026-1180 — Dřevomat Haná s.r.o., 20 001,84 Kč"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "extracted_json": {
                         "format": "shpd.docs.document",
                         "formatVersion": "1.0",
                         "source": {
                             "kind": "aiExtraction",
                             "extractedAt": "2026-08-26T08:01:00+00:00",
-                            "confidence": 1.0,
+                            "confidence": 1,
                             "promptVersion": "corpus"
                         },
                         "docType": "invoiceReceived",
@@ -170,8 +170,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 4,
-                                "unitPrice": 2340.0,
-                                "totalPrice": 8892.0,
+                                "unitPrice": 2340,
+                                "totalPrice": 8892,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": 5,
                                 "discountAmount": null,
@@ -212,8 +212,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 1,
-                                "unitPrice": 650.0,
-                                "totalPrice": 650.0,
+                                "unitPrice": 650,
+                                "totalPrice": 650,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -255,7 +255,7 @@
                 "source": {
                     "kind": "aiExtraction",
                     "extractedAt": "2026-08-26T08:01:00+00:00",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "promptVersion": "corpus"
                 },
                 "docType": "invoiceReceived",
@@ -368,8 +368,8 @@
                         },
                         "unit": "ks",
                         "quantity": 4,
-                        "unitPrice": 2340.0,
-                        "totalPrice": 8892.0,
+                        "unitPrice": 2340,
+                        "totalPrice": 8892,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": 5,
                         "discountAmount": null,
@@ -410,8 +410,8 @@
                         },
                         "unit": "ks",
                         "quantity": 1,
-                        "unitPrice": 650.0,
-                        "totalPrice": 650.0,
+                        "unitPrice": 650,
+                        "totalPrice": 650,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -448,7 +448,7 @@
                     "contentTag": {
                         "tag": "goods.stock",
                         "tagSource": "llm",
-                        "tagConfidence": 1.0,
+                        "tagConfidence": 1,
                         "rowExceptions": [
                             {
                                 "rowIndex": 3,

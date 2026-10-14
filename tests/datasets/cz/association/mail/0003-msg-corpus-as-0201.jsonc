@@ -42,22 +42,22 @@
             "costUsd": 0.0,
             "created": "2026-08-21T08:01:00",
             "analysisJson": {
-                "overall_confidence": 1.0,
+                "overall_confidence": 1,
                 "message_classification": {
                     "primary_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "title": "Faktura 2026/0882 — Papírnictví Kvadrát s.r.o., 5 798,14 Kč"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "extracted_json": {
                         "format": "shpd.docs.document",
                         "formatVersion": "1.0",
                         "source": {
                             "kind": "aiExtraction",
                             "extractedAt": "2026-08-21T08:01:00+00:00",
-                            "confidence": 1.0,
+                            "confidence": 1,
                             "promptVersion": "corpus"
                         },
                         "docType": "invoiceReceived",
@@ -149,8 +149,8 @@
                                 },
                                 "unit": "bal",
                                 "quantity": 10,
-                                "unitPrice": 129.0,
-                                "totalPrice": 1290.0,
+                                "unitPrice": 129,
+                                "totalPrice": 1290,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -170,8 +170,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 2,
-                                "unitPrice": 1190.0,
-                                "totalPrice": 2380.0,
+                                "unitPrice": 1190,
+                                "totalPrice": 2380,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -191,8 +191,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 1,
-                                "unitPrice": 822.0,
-                                "totalPrice": 822.0,
+                                "unitPrice": 822,
+                                "totalPrice": 822,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -212,8 +212,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 1,
-                                "unitPrice": 390.0,
-                                "totalPrice": 390.0,
+                                "unitPrice": 390,
+                                "totalPrice": 390,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -227,19 +227,19 @@
                         "vatRecap": [
                             {
                                 "vatPct": 21,
-                                "base": 3670.0,
+                                "base": 3670,
                                 "tax": 770.7,
                                 "total": 4440.7
                             },
                             {
                                 "vatPct": 12,
-                                "base": 1212.0,
+                                "base": 1212,
                                 "tax": 145.44,
                                 "total": 1357.44
                             }
                         ],
                         "totals": {
-                            "totalBase": 4882.0,
+                            "totalBase": 4882,
                             "totalVat": 916.14,
                             "totalAmount": 5798.14,
                             "totalRounding": 0
@@ -261,7 +261,7 @@
                 "source": {
                     "kind": "aiExtraction",
                     "extractedAt": "2026-08-21T08:01:00+00:00",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "promptVersion": "corpus"
                 },
                 "docType": "invoiceReceived",
@@ -353,8 +353,8 @@
                         },
                         "unit": "bal",
                         "quantity": 10,
-                        "unitPrice": 129.0,
-                        "totalPrice": 1290.0,
+                        "unitPrice": 129,
+                        "totalPrice": 1290,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -374,8 +374,8 @@
                         },
                         "unit": "ks",
                         "quantity": 2,
-                        "unitPrice": 1190.0,
-                        "totalPrice": 2380.0,
+                        "unitPrice": 1190,
+                        "totalPrice": 2380,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -395,8 +395,8 @@
                         },
                         "unit": "ks",
                         "quantity": 1,
-                        "unitPrice": 822.0,
-                        "totalPrice": 822.0,
+                        "unitPrice": 822,
+                        "totalPrice": 822,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -416,8 +416,8 @@
                         },
                         "unit": "ks",
                         "quantity": 1,
-                        "unitPrice": 390.0,
-                        "totalPrice": 390.0,
+                        "unitPrice": 390,
+                        "totalPrice": 390,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -431,19 +431,19 @@
                 "vatRecap": [
                     {
                         "vatPct": 21,
-                        "base": 3670.0,
+                        "base": 3670,
                         "tax": 770.7,
                         "total": 4440.7
                     },
                     {
                         "vatPct": 12,
-                        "base": 1212.0,
+                        "base": 1212,
                         "tax": 145.44,
                         "total": 1357.44
                     }
                 ],
                 "totals": {
-                    "totalBase": 4882.0,
+                    "totalBase": 4882,
                     "totalVat": 916.14,
                     "totalAmount": 5798.14,
                     "totalRounding": 0
@@ -460,7 +460,7 @@
                     "contentTag": {
                         "tag": "office.supplies",
                         "tagSource": "llm",
-                        "tagConfidence": 1.0,
+                        "tagConfidence": 1,
                         "rowExceptions": [
                             {
                                 "rowIndex": 2,

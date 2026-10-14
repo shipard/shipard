@@ -42,22 +42,22 @@
             "costUsd": 0.0,
             "created": "2026-09-02T08:01:00",
             "analysisJson": {
-                "overall_confidence": 1.0,
+                "overall_confidence": 1,
                 "message_classification": {
                     "primary_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "title": "Faktura QS-204611 — Quillstack Software Inc., 177,00 USD"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "extracted_json": {
                         "format": "shpd.docs.document",
                         "formatVersion": "1.0",
                         "source": {
                             "kind": "aiExtraction",
                             "extractedAt": "2026-09-02T08:01:00+00:00",
-                            "confidence": 1.0,
+                            "confidence": 1,
                             "promptVersion": "corpus"
                         },
                         "docType": "invoiceReceived",
@@ -149,8 +149,8 @@
                                 },
                                 "unit": "seat",
                                 "quantity": 12,
-                                "unitPrice": 14.0,
-                                "totalPrice": 168.0,
+                                "unitPrice": 14,
+                                "totalPrice": 168,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -170,8 +170,8 @@
                                 },
                                 "unit": "mo",
                                 "quantity": 1,
-                                "unitPrice": 9.0,
-                                "totalPrice": 9.0,
+                                "unitPrice": 9,
+                                "totalPrice": 9,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -186,7 +186,7 @@
                         "totals": {
                             "totalBase": null,
                             "totalVat": null,
-                            "totalAmount": 177.0,
+                            "totalAmount": 177,
                             "totalRounding": 0
                         },
                         "attachments": [
@@ -206,7 +206,7 @@
                 "source": {
                     "kind": "aiExtraction",
                     "extractedAt": "2026-09-02T08:01:00+00:00",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "promptVersion": "corpus"
                 },
                 "docType": "invoiceReceived",
@@ -298,8 +298,8 @@
                         },
                         "unit": "seat",
                         "quantity": 12,
-                        "unitPrice": 14.0,
-                        "totalPrice": 168.0,
+                        "unitPrice": 14,
+                        "totalPrice": 168,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -319,8 +319,8 @@
                         },
                         "unit": "mo",
                         "quantity": 1,
-                        "unitPrice": 9.0,
-                        "totalPrice": 9.0,
+                        "unitPrice": 9,
+                        "totalPrice": 9,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -335,7 +335,7 @@
                 "totals": {
                     "totalBase": null,
                     "totalVat": null,
-                    "totalAmount": 177.0,
+                    "totalAmount": 177,
                     "totalRounding": 0
                 },
                 "attachments": [
@@ -350,7 +350,7 @@
                     "contentTag": {
                         "tag": "it.software",
                         "tagSource": "llm",
-                        "tagConfidence": 1.0,
+                        "tagConfidence": 1,
                         "rowExceptions": []
                     }
                 }

@@ -5,9 +5,13 @@ očekávaný výsledek jako `canonicalJson`, bez volání AI).
 
 Sada je po seedu a `dataset-dump` bajtově shodná v sekci `mail/`, proto
 tvar souborů kopíruje PHP exportér (`MailExporter`, `DatasetWriter`):
-pořadí klíčů, 4 mezery, `null` vynechané v obálce zprávy, čísla tak, jak
-je zapíše `json_encode` (`486.50` → `486.5`), názvy souborů
-`NNNN-<slug(messageId)>.jsonc` v pořadí (`receivedAt`, `messageId`).
+pořadí klíčů, 4 mezery, `null` vynechané v obálce zprávy, názvy souborů
+`NNNN-<slug(messageId)>.jsonc` v pořadí (`receivedAt`, `messageId`)
+a čísla tak, jak projdou PHP: hodnoty sloupců přes `DatasetWriter`
+(`PRESERVE_ZERO_FRACTION`: `1.0` zůstává), bloby `analysisJson`
+a `canonicalJson` přes `json_decode` → `json_encode` v seedu (celé
+hodnoty jako int: `2340.00` → `2340`, `1.0` → `1`; ostatní nejkratší
+float: `486.50` → `486.5`).
 """
 
 from __future__ import annotations
@@ -72,14 +76,27 @@ def slug(text: str, max_length: int = 60, fallback: str = "record") -> str:
 # ── Zápis JSON jako DatasetWriter (PHP) ──────────────────────────────────────
 
 def _dump_decimal(value: Decimal) -> str:
-    """`JsoncParser` → `json_encode(PRESERVE_ZERO_FRACTION)`: číslo
-    s desetinnou tečkou je float (`486.50` → `486.5`, `2340.00` → `2340.0`),
-    bez ní int."""
+    """`DatasetWriter` (`PRESERVE_ZERO_FRACTION`): číslo s desetinnou
+    tečkou je float (`486.50` → `486.5`, `1.0` → `1.0`), bez ní int."""
     if value == 0:
         value = abs(value)
     if value.as_tuple().exponent >= 0:
         return str(int(value))
     return repr(float(value))
+
+
+def php_json_numbers(value):
+    """Čísla jako po `json_decode` → `json_encode` bez
+    `PRESERVE_ZERO_FRACTION` (MailSeeder ukládá bloby analýzy takto):
+    celá hodnota je int (`2340.00` → `2340`, `1.0` → `1`), ostatní float.
+    Vrací kopii; na bloby `analysisJson` / `canonicalJson`."""
+    if isinstance(value, Decimal):
+        return int(value) if value == value.to_integral_value() else value
+    if isinstance(value, dict):
+        return {k: php_json_numbers(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [php_json_numbers(v) for v in value]
+    return value
 
 
 def _dump_str(value: str) -> str:
@@ -390,8 +407,8 @@ def message_for_cell(cell: Cell, expected: dict, pdf: bytes) -> dict:
             "durationMs": 0,
             "costUsd": Decimal("0.0"),
             "created": analyzed_at,
-            "analysisJson": analysis_json(canonical, title),
-            "canonicalJson": canonical,
+            "analysisJson": php_json_numbers(analysis_json(canonical, title)),
+            "canonicalJson": php_json_numbers(canonical),
         }],
     }
 

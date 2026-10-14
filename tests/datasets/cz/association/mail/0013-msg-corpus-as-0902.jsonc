@@ -42,22 +42,22 @@
             "costUsd": 0.0,
             "created": "2026-09-22T08:01:00",
             "analysisJson": {
-                "overall_confidence": 1.0,
+                "overall_confidence": 1,
                 "message_classification": {
                     "primary_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "title": "Účtenka 0005108 — Pumpa Jetelka s.r.o., 1 542,60 Kč"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "extracted_json": {
                         "format": "shpd.docs.document",
                         "formatVersion": "1.0",
                         "source": {
                             "kind": "aiExtraction",
                             "extractedAt": "2026-09-22T08:01:00+00:00",
-                            "confidence": 1.0,
+                            "confidence": 1,
                             "promptVersion": "corpus"
                         },
                         "docType": "invoiceReceived",
@@ -145,8 +145,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 1,
-                                "unitPrice": 45.0,
-                                "totalPrice": 45.0,
+                                "unitPrice": 45,
+                                "totalPrice": 45,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -168,7 +168,7 @@
                                 "vatPct": 12,
                                 "base": 40.18,
                                 "tax": 4.82,
-                                "total": 45.0
+                                "total": 45
                             }
                         ],
                         "totals": {
@@ -194,7 +194,7 @@
                 "source": {
                     "kind": "aiExtraction",
                     "extractedAt": "2026-09-22T08:01:00+00:00",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "promptVersion": "corpus"
                 },
                 "docType": "invoiceReceived",
@@ -282,8 +282,8 @@
                         },
                         "unit": "ks",
                         "quantity": 1,
-                        "unitPrice": 45.0,
-                        "totalPrice": 45.0,
+                        "unitPrice": 45,
+                        "totalPrice": 45,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -305,7 +305,7 @@
                         "vatPct": 12,
                         "base": 40.18,
                         "tax": 4.82,
-                        "total": 45.0
+                        "total": 45
                     }
                 ],
                 "totals": {
@@ -326,7 +326,7 @@
                     "contentTag": {
                         "tag": "vehicle.fuel",
                         "tagSource": "llm",
-                        "tagConfidence": 1.0,
+                        "tagConfidence": 1,
                         "rowExceptions": [
                             {
                                 "rowIndex": 1,

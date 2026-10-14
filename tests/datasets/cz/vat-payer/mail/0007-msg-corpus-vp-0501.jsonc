@@ -42,22 +42,22 @@
             "costUsd": 0.0,
             "created": "2026-09-03T08:01:00",
             "analysisJson": {
-                "overall_confidence": 1.0,
+                "overall_confidence": 1,
                 "message_classification": {
                     "primary_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "title": "Faktura INV-2026-0388 — Wolkenkraft Hosting GmbH, 432,70 EUR"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "extracted_json": {
                         "format": "shpd.docs.document",
                         "formatVersion": "1.0",
                         "source": {
                             "kind": "aiExtraction",
                             "extractedAt": "2026-09-03T08:01:00+00:00",
-                            "confidence": 1.0,
+                            "confidence": 1,
                             "promptVersion": "corpus"
                         },
                         "docType": "invoiceReceived",
@@ -149,8 +149,8 @@
                                 },
                                 "unit": "mo",
                                 "quantity": 1,
-                                "unitPrice": 412.0,
-                                "totalPrice": 412.0,
+                                "unitPrice": 412,
+                                "totalPrice": 412,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -186,13 +186,13 @@
                             {
                                 "vatPct": 0,
                                 "base": 432.7,
-                                "tax": 0.0,
+                                "tax": 0,
                                 "total": 432.7
                             }
                         ],
                         "totals": {
                             "totalBase": 432.7,
-                            "totalVat": 0.0,
+                            "totalVat": 0,
                             "totalAmount": 432.7,
                             "totalRounding": 0
                         },
@@ -213,7 +213,7 @@
                 "source": {
                     "kind": "aiExtraction",
                     "extractedAt": "2026-09-03T08:01:00+00:00",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "promptVersion": "corpus"
                 },
                 "docType": "invoiceReceived",
@@ -305,8 +305,8 @@
                         },
                         "unit": "mo",
                         "quantity": 1,
-                        "unitPrice": 412.0,
-                        "totalPrice": 412.0,
+                        "unitPrice": 412,
+                        "totalPrice": 412,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -342,13 +342,13 @@
                     {
                         "vatPct": 0,
                         "base": 432.7,
-                        "tax": 0.0,
+                        "tax": 0,
                         "total": 432.7
                     }
                 ],
                 "totals": {
                     "totalBase": 432.7,
-                    "totalVat": 0.0,
+                    "totalVat": 0,
                     "totalAmount": 432.7,
                     "totalRounding": 0
                 },
@@ -364,7 +364,7 @@
                     "contentTag": {
                         "tag": "it.hosting",
                         "tagSource": "llm",
-                        "tagConfidence": 1.0,
+                        "tagConfidence": 1,
                         "rowExceptions": []
                     }
                 }

@@ -42,22 +42,22 @@
             "costUsd": 0.0,
             "created": "2026-08-20T08:01:00",
             "analysisJson": {
-                "overall_confidence": 1.0,
+                "overall_confidence": 1,
                 "message_classification": {
                     "primary_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "title": "Faktura RE-2026-07731 — Nordlicht Hardware GmbH, 4 469,00 EUR"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "extracted_json": {
                         "format": "shpd.docs.document",
                         "formatVersion": "1.0",
                         "source": {
                             "kind": "aiExtraction",
                             "extractedAt": "2026-08-20T08:01:00+00:00",
-                            "confidence": 1.0,
+                            "confidence": 1,
                             "promptVersion": "corpus"
                         },
                         "docType": "invoiceReceived",
@@ -149,8 +149,8 @@
                                 },
                                 "unit": "pcs",
                                 "quantity": 1,
-                                "unitPrice": 3890.0,
-                                "totalPrice": 3890.0,
+                                "unitPrice": 3890,
+                                "totalPrice": 3890,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -170,8 +170,8 @@
                                 },
                                 "unit": "pcs",
                                 "quantity": 2,
-                                "unitPrice": 245.0,
-                                "totalPrice": 490.0,
+                                "unitPrice": 245,
+                                "totalPrice": 490,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -191,8 +191,8 @@
                                 },
                                 "unit": "pcs",
                                 "quantity": 1,
-                                "unitPrice": 89.0,
-                                "totalPrice": 89.0,
+                                "unitPrice": 89,
+                                "totalPrice": 89,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -206,15 +206,15 @@
                         "vatRecap": [
                             {
                                 "vatPct": 0,
-                                "base": 4469.0,
-                                "tax": 0.0,
-                                "total": 4469.0
+                                "base": 4469,
+                                "tax": 0,
+                                "total": 4469
                             }
                         ],
                         "totals": {
-                            "totalBase": 4469.0,
-                            "totalVat": 0.0,
-                            "totalAmount": 4469.0,
+                            "totalBase": 4469,
+                            "totalVat": 0,
+                            "totalAmount": 4469,
                             "totalRounding": 0
                         },
                         "attachments": [
@@ -234,7 +234,7 @@
                 "source": {
                     "kind": "aiExtraction",
                     "extractedAt": "2026-08-20T08:01:00+00:00",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "promptVersion": "corpus"
                 },
                 "docType": "invoiceReceived",
@@ -326,8 +326,8 @@
                         },
                         "unit": "pcs",
                         "quantity": 1,
-                        "unitPrice": 3890.0,
-                        "totalPrice": 3890.0,
+                        "unitPrice": 3890,
+                        "totalPrice": 3890,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -347,8 +347,8 @@
                         },
                         "unit": "pcs",
                         "quantity": 2,
-                        "unitPrice": 245.0,
-                        "totalPrice": 490.0,
+                        "unitPrice": 245,
+                        "totalPrice": 490,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -368,8 +368,8 @@
                         },
                         "unit": "pcs",
                         "quantity": 1,
-                        "unitPrice": 89.0,
-                        "totalPrice": 89.0,
+                        "unitPrice": 89,
+                        "totalPrice": 89,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -383,15 +383,15 @@
                 "vatRecap": [
                     {
                         "vatPct": 0,
-                        "base": 4469.0,
-                        "tax": 0.0,
-                        "total": 4469.0
+                        "base": 4469,
+                        "tax": 0,
+                        "total": 4469
                     }
                 ],
                 "totals": {
-                    "totalBase": 4469.0,
-                    "totalVat": 0.0,
-                    "totalAmount": 4469.0,
+                    "totalBase": 4469,
+                    "totalVat": 0,
+                    "totalAmount": 4469,
                     "totalRounding": 0
                 },
                 "attachments": [
@@ -406,7 +406,7 @@
                     "contentTag": {
                         "tag": "it.hardware",
                         "tagSource": "llm",
-                        "tagConfidence": 1.0,
+                        "tagConfidence": 1,
                         "rowExceptions": []
                     }
                 }

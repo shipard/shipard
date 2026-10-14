@@ -11,13 +11,17 @@ from pathlib import Path
 from invoicegen.corpus import PROFILES, cells_for
 from invoicegen.dataset import (
     DatasetBuildError, Profile, analysis_json, build_dataset, dataset_canonical, dumps_dataset, load_profile,
-    message_for_cell, message_id, own_person, prune, slug, strip_dataset_additions,
+    message_for_cell, message_id, own_person, php_json_numbers, prune, slug, strip_dataset_additions,
 )
 from tests.fixtures import DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, IDENTITIES, data
 from tests.test_expected import expected_for
 
 D = Decimal
 PDF = b"%PDF-1.7\n%test\n"
+
+
+def self_expected_strip(canonical: dict) -> dict:
+    return strip_dataset_additions(canonical)
 
 
 def cell_for(doc: dict, stem: str, profile: str = "vat-payer"):
@@ -48,6 +52,13 @@ class DumpsDatasetTest(unittest.TestCase):
     def test_float_is_rejected(self) -> None:
         with self.assertRaises(TypeError):
             dumps_dataset({"x": 1.5})
+
+    def test_blob_numbers_follow_json_decode_encode(self) -> None:
+        blob = php_json_numbers({"a": D("2340.00"), "b": D("1.0"), "c": D("486.50"), "d": D("0"), "e": [D("12.5"), D("4")], "s": "x"})
+        self.assertEqual({"a": 2340, "b": 1, "c": D("486.50"), "d": 0, "e": [D("12.5"), 4], "s": "x"}, blob)
+        self.assertIs(int, type(blob["a"]))
+        self.assertEqual('{\n    "a": 2340,\n    "b": 1,\n    "c": 486.5,\n    "d": 0,\n    "e": [\n        12.5,\n        4\n    ],\n    "s": "x"\n}\n',
+                         dumps_dataset(blob))
 
     def test_roundtrips_through_json(self) -> None:
         doc = {"rows": [{"q": D("12.5"), "p": D("486.50"), "t": D("6081.25")}], "n": "ž"}
@@ -122,6 +133,11 @@ class MessageTest(unittest.TestCase):
                          (a["modelName"], a["promptVersion"], a["profile"], a["status"], a["confidence"], a["contentTag"]))
         self.assertEqual((0, 0, 0, D("0.0")), (a["tokensInput"], a["tokensOutput"], a["durationMs"], a["costUsd"]))
         self.assertNotIn("resolution", a)
+        # Bloby jako po průchodu PHP: celé hodnoty int, řádek analýzy drží 1.0 / 0.0.
+        self.assertEqual(1, a["canonicalJson"]["source"]["confidence"])
+        self.assertIs(int, type(a["analysisJson"]["overall_confidence"]))
+        self.assertEqual(D("486.50"), a["canonicalJson"]["rows"][0]["unitPrice"])
+        self.assertEqual(self_expected_strip(a["canonicalJson"]), expected_for(data(DATA_DOMESTIC)))
         self.assertEqual(["analyzedAt", "status", "modelName", "promptVersion", "profile", "confidence", "proposedType",
                           "contentTag", "tokensInput", "tokensOutput", "durationMs", "costUsd", "created", "analysisJson",
                           "canonicalJson"], list(a))

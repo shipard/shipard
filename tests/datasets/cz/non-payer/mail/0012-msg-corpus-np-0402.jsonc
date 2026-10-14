@@ -42,22 +42,22 @@
             "costUsd": 0.0,
             "created": "2026-09-19T08:01:00",
             "analysisJson": {
-                "overall_confidence": 1.0,
+                "overall_confidence": 1,
                 "message_classification": {
                     "primary_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "title": "Faktura 2026-0163 — Stavby Klenba s.r.o., 81 941,20 Kč"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "extracted_json": {
                         "format": "shpd.docs.document",
                         "formatVersion": "1.0",
                         "source": {
                             "kind": "aiExtraction",
                             "extractedAt": "2026-09-19T08:01:00+00:00",
-                            "confidence": 1.0,
+                            "confidence": 1,
                             "promptVersion": "corpus"
                         },
                         "docType": "invoiceReceived",
@@ -149,8 +149,8 @@
                                 },
                                 "unit": "h",
                                 "quantity": 36,
-                                "unitPrice": 520.0,
-                                "totalPrice": 18720.0,
+                                "unitPrice": 520,
+                                "totalPrice": 18720,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -170,8 +170,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 6,
-                                "unitPrice": 7850.0,
-                                "totalPrice": 47100.0,
+                                "unitPrice": 7850,
+                                "totalPrice": 47100,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -191,8 +191,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 1,
-                                "unitPrice": 1900.0,
-                                "totalPrice": 1900.0,
+                                "unitPrice": 1900,
+                                "totalPrice": 1900,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -206,13 +206,13 @@
                         "vatRecap": [
                             {
                                 "vatPct": 21,
-                                "base": 67720.0,
+                                "base": 67720,
                                 "tax": 14221.2,
                                 "total": 81941.2
                             }
                         ],
                         "totals": {
-                            "totalBase": 67720.0,
+                            "totalBase": 67720,
                             "totalVat": 14221.2,
                             "totalAmount": 81941.2,
                             "totalRounding": 0
@@ -234,7 +234,7 @@
                 "source": {
                     "kind": "aiExtraction",
                     "extractedAt": "2026-09-19T08:01:00+00:00",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "promptVersion": "corpus"
                 },
                 "docType": "invoiceReceived",
@@ -326,8 +326,8 @@
                         },
                         "unit": "h",
                         "quantity": 36,
-                        "unitPrice": 520.0,
-                        "totalPrice": 18720.0,
+                        "unitPrice": 520,
+                        "totalPrice": 18720,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -347,8 +347,8 @@
                         },
                         "unit": "ks",
                         "quantity": 6,
-                        "unitPrice": 7850.0,
-                        "totalPrice": 47100.0,
+                        "unitPrice": 7850,
+                        "totalPrice": 47100,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -368,8 +368,8 @@
                         },
                         "unit": "ks",
                         "quantity": 1,
-                        "unitPrice": 1900.0,
-                        "totalPrice": 1900.0,
+                        "unitPrice": 1900,
+                        "totalPrice": 1900,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -383,13 +383,13 @@
                 "vatRecap": [
                     {
                         "vatPct": 21,
-                        "base": 67720.0,
+                        "base": 67720,
                         "tax": 14221.2,
                         "total": 81941.2
                     }
                 ],
                 "totals": {
-                    "totalBase": 67720.0,
+                    "totalBase": 67720,
                     "totalVat": 14221.2,
                     "totalAmount": 81941.2,
                     "totalRounding": 0
@@ -406,7 +406,7 @@
                     "contentTag": {
                         "tag": "premises.maintenance",
                         "tagSource": "llm",
-                        "tagConfidence": 1.0,
+                        "tagConfidence": 1,
                         "rowExceptions": []
                     }
                 }

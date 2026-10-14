@@ -42,22 +42,22 @@
             "costUsd": 0.0,
             "created": "2026-09-05T08:01:00",
             "analysisJson": {
-                "overall_confidence": 1.0,
+                "overall_confidence": 1,
                 "message_classification": {
                     "primary_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "title": "Faktura 2026-07 — Vzdělávací studio Hráz s.r.o., 5 700,00 Kč"
                 },
                 "document": {
                     "doc_type": "invoiceReceived",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "extracted_json": {
                         "format": "shpd.docs.document",
                         "formatVersion": "1.0",
                         "source": {
                             "kind": "aiExtraction",
                             "extractedAt": "2026-09-05T08:01:00+00:00",
-                            "confidence": 1.0,
+                            "confidence": 1,
                             "promptVersion": "corpus"
                         },
                         "docType": "invoiceReceived",
@@ -149,8 +149,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 1,
-                                "unitPrice": 4800.0,
-                                "totalPrice": 4800.0,
+                                "unitPrice": 4800,
+                                "totalPrice": 4800,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -170,8 +170,8 @@
                                 },
                                 "unit": "ks",
                                 "quantity": 6,
-                                "unitPrice": 150.0,
-                                "totalPrice": 900.0,
+                                "unitPrice": 150,
+                                "totalPrice": 900,
                                 "priceCalcMode": "fromUnitPrice",
                                 "discountPct": null,
                                 "discountAmount": null,
@@ -186,7 +186,7 @@
                         "totals": {
                             "totalBase": null,
                             "totalVat": null,
-                            "totalAmount": 5700.0,
+                            "totalAmount": 5700,
                             "totalRounding": 0
                         },
                         "attachments": [
@@ -206,7 +206,7 @@
                 "source": {
                     "kind": "aiExtraction",
                     "extractedAt": "2026-09-05T08:01:00+00:00",
-                    "confidence": 1.0,
+                    "confidence": 1,
                     "promptVersion": "corpus"
                 },
                 "docType": "invoiceReceived",
@@ -298,8 +298,8 @@
                         },
                         "unit": "ks",
                         "quantity": 1,
-                        "unitPrice": 4800.0,
-                        "totalPrice": 4800.0,
+                        "unitPrice": 4800,
+                        "totalPrice": 4800,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -319,8 +319,8 @@
                         },
                         "unit": "ks",
                         "quantity": 6,
-                        "unitPrice": 150.0,
-                        "totalPrice": 900.0,
+                        "unitPrice": 150,
+                        "totalPrice": 900,
                         "priceCalcMode": "fromUnitPrice",
                         "discountPct": null,
                         "discountAmount": null,
@@ -335,7 +335,7 @@
                 "totals": {
                     "totalBase": null,
                     "totalVat": null,
-                    "totalAmount": 5700.0,
+                    "totalAmount": 5700,
                     "totalRounding": 0
                 },
                 "attachments": [
@@ -350,7 +350,7 @@
                     "contentTag": {
                         "tag": "services.training",
                         "tagSource": "llm",
-                        "tagConfidence": 1.0,
+                        "tagConfidence": 1,
                         "rowExceptions": []
                     }
                 }
