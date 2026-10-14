@@ -43,7 +43,7 @@ VAT_DERIVATION: dict[str, tuple[str, bool]] = {
     "noVat": ("none", False),
 }
 
-PARTY_IGNORED_KEYS = frozenset({"vatPayer", "accent"})
+PARTY_IGNORED_KEYS = frozenset({"vatPayer", "accent", "print"})  # jen pro generátor / tisk
 
 
 class ProjectionError(ValueError):

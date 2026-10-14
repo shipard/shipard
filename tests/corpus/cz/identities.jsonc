@@ -1,0 +1,181 @@
+// Identity korpusu testovacích dokladů (tasks/testing-phase1.md, docs/test-corpus.md).
+//
+// VŠECHNY subjekty jsou fiktivní a odlišné od demo identit (demo/invoices/suppliers.jsonc):
+//   - CZ IČO mají validní kontrolní součet, v ARES neexistují a názvy mají 0 zásahů,
+//   - DIČ zemí EU mají platné kontrolní číslo (DE: ISO 7064 MOD 11,10) a ve VIES jsou neplatná,
+//   - domény jen v TLD .example (RFC 2606) — nikdy nikomu nebudou patřit,
+//   - česká čísla účtů mají mod 11 a IBAN jim odpovídá; kódy bank jsou reálné, názvy bank
+//     se na dokladech neuvádí; zahraniční IBAN mají platné kontrolní číslice.
+// Kontrolní součty ověřuje každý build; ARES a VIES jen `build.py --verify-identities`
+// (síť, po změně identit) — datum posledního ověření je verifiedAt.
+//
+// Hodnoty jsou v KANONICKÉM tvaru (PSČ bez mezery, IBAN bez mezer, telefon jen + a číslice,
+// země malými) — na PDF je šablony tisknou jako skutečné doklady. Záznam dodavatele
+// obsahuje přesně to, co dodavatel na dokladu tiskne (null = netiskne); profil = vlastní
+// firma jako odběratel. `vatPayer: false` = na dokladu „Nejsem plátce DPH“, bez DIČ.
+{
+	"verifiedAt": "2026-10-14",
+
+	"profiles": {
+		"vat-payer": {
+			"name": "Tvarokov s.r.o.",
+			"country": "cz",
+			"companyId": "27893286",
+			"taxId": "CZ27893286",
+			"vatId": "CZ27893286",
+			"address": { "street": "Lisovací", "houseNumber": "418/2", "city": "Zlín", "zip": "76001", "country": "cz" },
+		},
+		"non-payer": {
+			"name": "Kreslírna Modrá s.r.o.",
+			"country": "cz",
+			"companyId": "68040725",
+			"taxId": null,
+			"vatId": null,
+			"address": { "street": "Náčrtková", "houseNumber": "15", "city": "Brno", "zip": "60200", "country": "cz" },
+		},
+		"association": {
+			"name": "Spolek Zelený kopec, z. s.",
+			"country": "cz",
+			"companyId": "28647645",
+			"taxId": null,
+			"vatId": null,
+			"address": { "street": "Pod Strání", "houseNumber": "92", "city": "Říčany", "zip": "25101", "country": "cz" },
+		},
+	},
+
+	"suppliers": {
+		// varianta 1 — tuzemské zboží (cs-a)
+		"drevomat": {
+			"vatPayer": true,
+			"name": "Dřevomat Haná s.r.o.",
+			"country": "cz",
+			"companyId": "43075894",
+			"taxId": "CZ43075894",
+			"vatId": "CZ43075894",
+			"courtRegistration": "Spisová značka C 77321 vedená u Krajského soudu v Ostravě",
+			"address": { "street": "Pilařská", "houseNumber": "1204/7", "city": "Olomouc", "zip": "77900", "country": "cz" },
+			"contact": { "name": null, "email": "odbyt@drevomat-hana.example", "phone": "+420585201304", "web": "www.drevomat-hana.example" },
+			"bankAccount": { "accountNumber": "101968643/0100", "iban": "CZ6801000000000101968643", "bic": "KOMBCZPP" },
+			"accent": "#0e7490",
+		},
+		// varianta 2 — dvě sazby (cs-b)
+		"kvadrat": {
+			"vatPayer": true,
+			"name": "Papírnictví Kvadrát s.r.o.",
+			"country": "cz",
+			"companyId": "56546939",
+			"taxId": "CZ56546939",
+			"vatId": "CZ56546939",
+			"courtRegistration": "Spisová značka C 301877 vedená u Městského soudu v Praze",
+			"address": { "street": "Sešitová", "houseNumber": "3", "city": "Praha 1", "zip": "11000", "country": "cz" },
+			"contact": { "name": null, "email": "objednavky@kvadrat-papir.example", "phone": "+420224815770", "web": "www.kvadrat-papir.example" },
+			"bankAccount": { "accountNumber": "9092871663/5500", "iban": "CZ8255000000009092871663", "bic": "RZBCCZPP" },
+		},
+		// varianta 3 — elektřina se zaokrouhlením (cs-c)
+		"vetrnik": {
+			"vatPayer": true,
+			"name": "Energetika Větrník a.s.",
+			"country": "cz",
+			"companyId": "01848739",
+			"taxId": "CZ01848739",
+			"vatId": "CZ01848739",
+			"courtRegistration": "Spisová značka B 14209 vedená u Krajského soudu v Ostravě",
+			"address": { "street": "Rozvodná", "houseNumber": "55/1", "city": "Ostrava", "zip": "70200", "country": "cz" },
+			"contact": { "name": null, "email": "zakaznici@vetrnik-energie.example", "phone": "+420596730111", "web": "www.vetrnik-energie.example" },
+			"bankAccount": { "accountNumber": "2282321679/0300", "iban": "CZ6703000000002282321679", "bic": "CEKOCZPP" },
+		},
+		// varianta 4 — stavební práce s přenesením daňové povinnosti (cs-a)
+		"klenba": {
+			"vatPayer": true,
+			"name": "Stavby Klenba s.r.o.",
+			"country": "cz",
+			"companyId": "16612248",
+			"taxId": "CZ16612248",
+			"vatId": "CZ16612248",
+			"courtRegistration": "Spisová značka C 38840 vedená u Krajského soudu v Ústí nad Labem",
+			"address": { "street": "Cihlová", "houseNumber": "980/12", "city": "Ústí nad Labem", "zip": "40001", "country": "cz" },
+			"contact": { "name": null, "email": "fakturace@stavby-klenba.example", "phone": "+420475602318", "web": "www.stavby-klenba.example" },
+			"bankAccount": { "accountNumber": "8108947067/2010", "iban": "CZ7820100000008108947067", "bic": "FIOBCZPP" },
+			"accent": "#7c2d5a",
+		},
+		// varianta 5 — služby z EU, reverse charge čl. 196 (en)
+		"wolkenkraft": {
+			"vatPayer": true,
+			"name": "Wolkenkraft Hosting GmbH",
+			"country": "de",
+			"companyId": null,
+			"taxId": "DE383584058",
+			"vatId": "DE383584058",
+			"courtRegistration": "Amtsgericht Charlottenburg, HRB 234567 B",
+			"address": { "street": "Rechenzentrumsweg", "houseNumber": "7", "city": "Berlin", "zip": "10115", "country": "de" },
+			"contact": { "name": null, "email": "billing@wolkenkraft.example", "phone": "+493028874410", "web": "www.wolkenkraft.example" },
+			"bankAccount": { "accountNumber": null, "iban": "DE92100500006681230067", "bic": "WLKRDEBBXXX" },
+		},
+		// varianta 6 — zboží z EU, osvobozené dodání čl. 138 (en)
+		"nordlicht": {
+			"vatPayer": true,
+			"name": "Nordlicht Hardware GmbH",
+			"country": "de",
+			"companyId": null,
+			"taxId": "DE810932557",
+			"vatId": "DE810932557",
+			"courtRegistration": "Amtsgericht Hamburg, HRB 198765",
+			"address": { "street": "Industriestraße", "houseNumber": "42", "city": "Hamburg", "zip": "20457", "country": "de" },
+			"contact": { "name": null, "email": "sales@nordlicht-hardware.example", "phone": "+494037005120", "web": "www.nordlicht-hardware.example" },
+			"bankAccount": { "accountNumber": null, "iban": "DE39200505507423852329", "bic": "NDLTDEHHXXX" },
+		},
+		// varianta 7 — tuzemský neplátce DPH (cs-b)
+		"hraz": {
+			"vatPayer": false,
+			"name": "Vzdělávací studio Hráz s.r.o.",
+			"country": "cz",
+			"companyId": "25052039",
+			"taxId": null,
+			"vatId": null,
+			"courtRegistration": "Spisová značka C 90512 vedená u Krajského soudu v Brně",
+			"address": { "street": "Lektorská", "houseNumber": "21", "city": "Jihlava", "zip": "58601", "country": "cz" },
+			"contact": { "name": null, "email": "kurzy@studio-hraz.example", "phone": "+420567309842", "web": null },
+			"bankAccount": { "accountNumber": "8360405366/0600", "iban": "CZ0606000000008360405366", "bic": null },
+		},
+		// varianta 8 — software ze třetí země, platba kartou (en)
+		"quillstack": {
+			"vatPayer": false,
+			"name": "Quillstack Software Inc.",
+			"country": "us",
+			"companyId": null,
+			"taxId": null,
+			"vatId": null,
+			"courtRegistration": null,
+			"address": { "street": "500 Market Street, Suite 200", "houseNumber": null, "city": "San Francisco", "zip": "94105", "country": "us" },
+			"print": { "state": "CA" }, // jen pro tisk adresy („San Francisco, CA 94105“), do očekávání nejde
+			"contact": { "name": null, "email": "billing@quillstack.example", "phone": "+14155550199", "web": "www.quillstack.example" },
+			"bankAccount": { "accountNumber": null, "iban": null, "bic": null },
+		},
+		// varianta 9 — účtenka z čerpací stanice (receipt)
+		"jetelka": {
+			"vatPayer": true,
+			"name": "Pumpa Jetelka s.r.o.",
+			"country": "cz",
+			"companyId": "40488004",
+			"taxId": "CZ40488004",
+			"vatId": "CZ40488004",
+			"courtRegistration": null,
+			"address": { "street": "Výpadová", "houseNumber": "1801/3", "city": "Zlín", "zip": "76302", "country": "cz" },
+			"contact": { "name": null, "email": null, "phone": "+420577911206", "web": null },
+			"bankAccount": { "accountNumber": null, "iban": null, "bic": null },
+		},
+		// varianta 10 — dlouhý doklad, železářství (cs-c)
+		"matice": {
+			"vatPayer": true,
+			"name": "Železářství Matice s.r.o.",
+			"country": "cz",
+			"companyId": "13113879",
+			"taxId": "CZ13113879",
+			"vatId": "CZ13113879",
+			"courtRegistration": "Spisová značka C 41177 vedená u Krajského soudu v Hradci Králové",
+			"address": { "street": "Šroubová", "houseNumber": "17", "city": "Hradec Králové", "zip": "50002", "country": "cz" },
+			"contact": { "name": null, "email": "velkoobchod@zelezarstvi-matice.example", "phone": "+420495512780", "web": "www.zelezarstvi-matice.example" },
+			"bankAccount": { "accountNumber": "6427159018/0800", "iban": "CZ9708000000006427159018", "bic": "GIBACZPX" },
+		},
+	},
+}
