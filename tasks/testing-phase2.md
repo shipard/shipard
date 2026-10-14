@@ -1,6 +1,6 @@
 # Testování F2: profily a datové sady z korpusu
 
-**Stav:** naplánováno — design schválen 2026-10-14 (#103 D19–D25), čeká na implementaci
+**Stav:** hotovo — implementováno 2026-10-14 (5 commitů, tři sady 20 / 16 / 16 zpráv, ověřeno na třech nových dev DS vč. byte-shody `mail/` s dumpem); odchylky od zadání v oddílu *Odchylky při implementaci*
 
 ## Kontext / Cíl
 
@@ -234,28 +234,38 @@ s očekáváním.
 
 ## Hotovo když
 
-- [ ] `python3 -m unittest` v `tools/invoice-generator/` zelený;
-      PHPUnit testy manifestu a seedu zelené (úzký `--filter`)
-- [ ] `python3 tests/corpus/cz/build.py` vyrobí tři sady; druhý běh nezmění
-      žádný soubor
-- [ ] pro každý profil na novém dev zdroji dat
-      (`ds-create --country cz --no-cron`): `dataset-seed` projde bez chyb;
-      zdroj dat má vlastní firmu, správnou osnovu (`npo` u spolku),
-      registraci DPH jen u plátce, fiskální rok 2026, účetní položky
-      z nabídky; zprávy 20 / 16 / 16 ve stavu Analyzováno s otevřeným
-      návrhem a PDF
-- [ ] `dataset-seed` na zdroj dat jiné země skončí v preflightu chybou
-      a nic nezmění
-- [ ] `dataset-dump` naseedovaného zdroje dat: sekce `mail/` je bajtově
-      shodná se sadou (odchylky vysvětlit v tasku)
-- [ ] ruční proklik u každého profilu: návrh tuzemské faktury, faktury
-      v EUR a účtenky se otevře bez chyb; tuzemský návrh jde Použít
-      (dodavatel se založí) a druhý doklad téhož dodavatele ho najde
-- [ ] `docs/datasets.md`: pole manifestu `country`, `profile`, `provision`,
-      fiskální roky a účetní položky v průběhu seedu
-- [ ] `docs/test-corpus.md`: profily, sestavení sad, ideální analýza,
-      jak sadu naseedovat (`ds-create` → `dataset-seed`)
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] `python3 -m unittest` v `tools/invoice-generator/` zelený (95 testů);
+      PHPUnit testy manifestu a seedu zelené (úzký `--filter` i celá sada)
+- [x] `python3 tests/corpus/cz/build.py` vyrobí tři sady; druhý běh nezmění
+      žádný soubor (ověřeno sha256 všech 117 souborů)
+- [x] pro každý profil na novém dev zdroji dat
+      (`ds-create --country cz --no-cron` → rovnou `dataset-seed`, bez
+      ručního `ds-upgrade`): seed prošel bez chyb; vlastní firma, osnova
+      `default` / `default` / `npo` (349 / 349 / 240 účtů), registrace DPH
+      jen u plátce, právě jeden fiskální rok 2026, účetní položky
+      57 / 57 / 31; zprávy 20 / 16 / 16 K řešení + Analyzováno, každá
+      s jedním PDF a jednou úspěšnou analýzou bez verdiktu, profil
+      `czech_general`
+- [x] `dataset-seed` na zdroj dat jiné země (`country: sk` dočasně
+      v `main.json`) skončil v preflightu chybou, počty i `modified` zpráv
+      beze změny
+- [x] `dataset-dump` naseedovaného zdroje dat: sekce `mail/` je **bajtově
+      shodná** se sadou (po opravě zápisu čísel v blobech, viz odchylky);
+      `persons/` a `setup/` se liší jen o pole doplněná DS (`personId`,
+      `documents`, `orderPos`, null sloupce rozšíření, dvě nastavení řad
+      z provisioningu) — mimo kritérium
+- [x] proklik přes API u plátce (přihlášený uživatel): náhled tuzemské
+      faktury, faktury v EUR i účtenky HTTP 200 bez chyb (dodavatel
+      `canCreate`); Použít tuzemské faktury založilo dodavatele a doklad
+      v Konceptu, zpráva přešla do Hotovo s vazbou; náhled druhého dokladu
+      téhož dodavatele ho našel (`matched`)
+- [x] `docs/datasets.md`: pole manifestu `country`, `profile`, `provision`,
+      průběh seedu (schéma na čerstvém DS, kontrola země, fiskální roky,
+      účetní položky), čísla v blobech
+- [x] `docs/test-corpus.md` § 16: profily, sestavení sad, ideální analýza,
+      byte-shoda s dumpem, jak sadu naseedovat; `docs/cli.md`,
+      `docs/ds-setup.md` D18, README generátoru, korpusu a `tests/datasets/`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Pasti
 
@@ -270,6 +280,51 @@ s očekáváním.
   sadu při každém běhu.
 - **Účetní položky nejsou provisioner.** Seed je vytvoří, protože o to
   sada požádala; `ds-upgrade` je nevrací ani nedoplňuje.
+
+## Odchylky při implementaci
+
+- **Byte-shoda `mail/` s dumpem si vyžádala pole navíc v sadě:** zpráva
+  nese `created` (= `receivedAt`; jinak seed razítkuje „teď“), `sourceType`
+  2, příloha `size` a `sha256`, analýza `created` (= `analyzedAt`),
+  `tokensInput` / `tokensOutput` / `durationMs` `0` a `costUsd` `0.0`
+  (pole se jmenují `tokensInput` / `tokensOutput`, ne `tokens`).
+- **Čísla v `canonicalJson` / `analysisJson` nejsou bajtově „doslova“
+  z očekávání.** `MailSeeder` ukládá bloby přes `json_encode` bez
+  `PRESERVE_ZERO_FRACTION`, takže `2340.00` je v DB i v dumpu `2340`
+  a `1.0` je `1`; `486.50` je `486.5`. Sestavení je zapisuje stejně
+  (`php_json_numbers`). Hodnoty, klíče, pořadí a `null` zůstávají shodné;
+  strážce i build porovnávají hodnoty, ne bajty. Hodnoty sloupců řádku
+  analýzy (`confidence 1.0`, `costUsd 0.0`) drží desetinnou část jako
+  `DatasetWriter`.
+- **Název souboru zprávy** je `NNNN-<slug(messageId)>.jsonc`
+  (`0001-msg-corpus-vp-0301.jsonc`), pořadí podle (`receivedAt`,
+  `messageId`) — přesně jako `MailExporter`; příloha v sidecaru nese název
+  dokladu (`0301-domestic-rounding.pdf`).
+- **Čerstvý DS po `ds-create` nemá schéma** (`ds-create` `ds-upgrade`
+  nespouští); `dataset-seed` si ho před zápisem nastavení doplní sám
+  (`runUpgrade`), aby `ds-create` → `dataset-seed` fungovalo bez mezikroku.
+- **Fiskální roky:** `FiscalYearsProvisioner::provision($date)` při
+  existujícím roce zakládá rok následující, proto přibyla metoda
+  `ensureYearForDate()`. Seed bere jen data, která určují rok dokladu
+  (`issueDate`, `accountingDate`, `taxPointDate`, `vatObligationDate`,
+  `receivedAt`) — splatnost a období plnění ne. Existující rok se počítá
+  jako `ok` (po resetu rok 2026 už je), nerozhodnutý první měsíc / měna
+  při datech v sadě je chyba (jinak by doklady vznikly s `fiscal_year =
+  null`).
+- **Účetní položky** jedou přes novou sdílenou orchestraci
+  `AccountingItemsGenerator` (brána osnovy, prerekvizity, smyčka), na
+  kterou přešel i `SetupController` beze změny HTTP kontraktu; režim
+  `"all"` castuje číselné klíče seedu (`568201` je v PHP int) na string.
+  Dva samostatné seedery (`FiscalYearsSeeder` v `economy.codebooks`,
+  `AccountingItemsSeeder` v `economy.items`) místo jednoho v `core.exchange`.
+- **`att:1` v `analysisJson`** seed nepřemapovává (jen v `canonicalJson`);
+  dump ho také nemění, shoda drží. Profil analýzy je `czech_general`
+  (neznámý kód by seed tiše zahodil jako NULL).
+- **Strážce navíc:** `CorpusExpectedTest::testDatasetsMatchCorpus` hlídá
+  soulad sad s korpusem (zapomenutý rebuild).
+- Ověřovací zdroje dat na dev stroji: `ob9b-7` (plátce; obsahuje
+  použitý návrh 0101 a admin účet `tester`), `ab5v-a` (neplátce),
+  `wp66-o` (spolek) — všechny `--no-cron`, volný režim.
 
 ## Rozhodnutí k designu (potvrzená)
 

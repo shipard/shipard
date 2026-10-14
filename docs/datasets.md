@@ -32,7 +32,10 @@ sada/
 - **JSON** deterministicky: pretty print, UTF-8 bez escapování, `\n` na
   konci, klíče v pořadí schématu, `null` a prázdná pole vynechaná.
   Výjimka: `analysisJson` / `canonicalJson` v analýzách zpráv se přenášejí
-  verbatim (i s `null` a `{}`).
+  verbatim (i s `null` a `{}`). Čísla v těchto blobech ukládá seed přes
+  `json_encode` bez `PRESERVE_ZERO_FRACTION` — `1.0` skončí v DB i v dumpu
+  jako `1`; sada psaná mimo PHP, která má být s dumpem byte-shodná, je
+  zapisuje rovnou tak (`docs/test-corpus.md` § 16).
 - **Žádná interní id.** Partner jako identifikátory (IČO/DIČ/VAT ID),
   položky přes `ourCode`, účty číslem, jednotky `system_code`, řada přes
   `numberSeriesCode`, vlastní bankovní účet přes `code` číselníku, mailbox a

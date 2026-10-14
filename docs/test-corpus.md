@@ -18,11 +18,13 @@ výsledek z něj vyrobí generátor (D13). Částky počítá generátor sám,
 v `Decimal`, nezávisle na výpočtu Shipardu (D5) — chyba výpočtu
 v Shipardu tak nemůže souhlasit sama se sebou.
 
-Fáze F1 (tento dokument) je jen obsah. Sestavení datových sad (profil ×
-korpus, seed s ideální analýzou) je F2, ověření zaúčtování F3,
-porovnávač a evaluace AI F4 — obě čtou `expected/` a `projection.jsonc`.
-Soubory ISDOC u podoby `pdfIsdoc` dodá generátor ISDOC (#119 fáze 1);
-normalizaci hodnot v produkční cestě převezme #118.
+Fáze F1 je obsah korpusu. F2 (§ 16, `tasks/testing-phase2.md`) z něj
+sestavuje datové sady `tests/datasets/cz/<profil>/` — zdroj dat se
+seedne s každým dokladem jako došlou zprávou s PDF a ideální analýzou.
+Ověření zaúčtování je F3, porovnávač a evaluace AI F4 — obě čtou
+`expected/` a `projection.jsonc`. Soubory ISDOC u podoby `pdfIsdoc` dodá
+generátor ISDOC (#119 fáze 1); normalizaci hodnot v produkční cestě
+převezme #118.
 
 ## 2. Struktura
 
@@ -38,9 +40,11 @@ tests/corpus/
     identities.jsonc                # profily + dodavatelé, datum ověření
     templates/*.html                # šablony korpusu (vlastní kopie, demo se nemění)
     data/NNNN-<slug>.jsonc          # zdroj dokladu — píše se ručně
+    profiles/<profil>/              # základ datové sady profilu — píše se ručně (§ 16)
     out/<profil>/NNNN-<slug>.pdf    # generované, commitované
     expected/<profil>/NNNN-<slug>.json  # generované, commitované, ručně se NEEDITUJÍ
     build-state.json                # sha256 renderu per výstup
+tests/datasets/cz/<profil>/         # datové sady z korpusu — generované, commitované (§ 16)
 ```
 
 Moduly generátoru: `tools/invoice-generator/README.md`. Vstupní body si
@@ -357,7 +361,7 @@ co má zachytit normalizace (#118).
 ## 12. Build
 
 ```bash
-python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities]
+python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--no-datasets]
 ```
 
 1. Validace identit (součty, disjunkce s demem), datových souborů
@@ -371,6 +375,9 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
 4. Výpis per buňka: součty, „PDF beze změny / přegenerováno“, u podoby
    `pdfIsdoc` řádek „ISDOC: čeká na generátor (#119)“, vynechané buňky
    s důvodem.
+5. Sestavení datových sad `tests/datasets/cz/<profil>/` (§ 16; vždy ze
+   všech datových souborů, i s `--only`; `--no-datasets` přeskočí) a řádek
+   per sada s počtem zpráv a vynechaných buněk.
 
 Gotenberg jako demo (`GOTENBERG_URL`, `docs/render.md`); volby papíru per
 šablona v hlavičce `<!-- pdf: paperWidth=80mm … -->` (účtenka). Šablona
@@ -408,6 +415,11 @@ tiskový tvar hodnot. Demo šablony a data se nemění.
   a bez duplicit; shoda s datovým souborem po sloučení přepisu profilu
   (číslo, měna, počet řádků, štítek, účtenka, podoba a varianta z názvu).
 
+- datové sady odpovídají korpusu (`testDatasetsMatchCorpus`, § 16): ke
+  každé buňce zpráva v `tests/datasets/cz/<profil>/mail/`, žádná navíc,
+  `canonicalJson` po odebrání doplněných polí shodný s očekáváním, PDF
+  v sidecaru = PDF korpusu, zpráva K řešení s otevřeným návrhem.
+
 Jeden doklad: `vendor/bin/phpunit --filter 'CorpusExpectedTest.*0101-domestic-goods'`.
 Problémy se sbírají do jednoho assertu s tečkovanými cestami
 (`rows[3].vat.pct`).
@@ -425,7 +437,8 @@ Problémy se sbírají do jednoho assertu s tečkovanými cestami
 5. `vendor/bin/phpunit --filter CorpusExpectedTest`,
    `cd tools/invoice-generator && python3 -m unittest`.
 6. Doplň matici v § 6 a commitni `data/`, `out/`, `expected/`,
-   `build-state.json` (a identity) v jednom commitu.
+   `build-state.json` (a identity) spolu s přegenerovanými
+   `tests/datasets/` v jednom commitu.
 
 Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
 (`build.py`); účtenkové šablony v `RECEIPT_TEMPLATES` (`corpus.py`).
@@ -447,8 +460,114 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
 - **DS ID** (`xxxx-xxxx-xxxx-xxxx`) nesmí v datech vzniknout —
   `scripts/check-sensitive.py`.
 
-Mimo rozsah F1: soubory ISDOC (#119), ISDOC vložený do PDF, nastavení
-profilů ve zdroji dat a sestavení sad (F2), ověření zaúčtování (F3),
-porovnávač a evaluace (F4), normalizace v produkci (#118), druhá vlna
-variant (dobropis, zálohová faktura s odpočtem zálohy, slovenské profily,
+Mimo rozsah F1 a F2: soubory ISDOC (#119), ISDOC vložený do PDF, apply
+návrhů a porovnání s očekáváním (F3), porovnávač a evaluace (F4),
+normalizace v produkci (#118), kurzy (#121), druhá vlna variant
+(dobropis, zálohová faktura s odpočtem zálohy, slovenské profily,
 identifikovaná osoba), soukromé sady s reálnými doklady.
+
+## 16. Datové sady z korpusu (F2)
+
+Zadání a rozhodnutí D19–D25: `tasks/testing-phase2.md`; formát sad, seed
+a manifest: `docs/datasets.md`. Pro každý profil jedna sada
+`tests/datasets/cz/<profil>/` (`shpd.dataset.v1`), kterou `dataset-seed`
+naplní do čistého zdroje dat. Každá buňka matice je v sadě **došlá
+zpráva s PDF a ideální analýzou**: očekávaný výsledek vložený jako
+snapshot analýzy (*snapshot mode*), zpráva **K řešení** / **Analyzováno**
+s otevřeným návrhem — bez volání AI. Slouží F3 (apply všech návrhů),
+testerovi (ruční proklik na realistických datech) a F4 (zprávy pro
+evaluaci).
+
+### Základ profilu (`profiles/<profil>/`, ručně)
+
+| Profil | Sada | `economy.accountChart` | `economy.vatAgenda` | Registrace DPH | Vlastní účet |
+|--------|------|------------------------|---------------------|----------------|--------------|
+| `vat-payer` | `cz-vat-payer` | `default` | `true` | CZ, měsíční, od 1. 1. 2026, DIČ z identity | ano |
+| `non-payer` | `cz-non-payer` | `default` | `false` | — | ano |
+| `association` | `cz-association` | `npo` | `false` | — | ano |
+
+`profile.jsonc` nese název, titulek, popis, **pevné** `created` (sada je
+deterministická) a `provision` (`{ "accountingItems": "all" }` — seed
+založí všechny položky nabídky podle osnovy). `setup/*.jsonc` jsou soubory
+sekce `setup/` sady (`shpd.dataset.setup.v1`): `settings` (čtyři parametry
+vrstvy C, `economy.homeCurrency czk`, `economy.fiscalYearStartMonth 1`),
+`vat_registrations` jen u plátce, `bank_accounts` (fiktivní účet s mod 11
+a odpovídajícím IBAN — build to kontroluje). Hodnoty sloupců se ověřují
+proti `dataset-dump` ručně nastaveného zdroje dat; základ nese jen to,
+co se liší od čerstvého DS (`mailboxes.jsonc` proto chybí — `default`
+stačí).
+
+### Sestavení (`invoicegen/dataset.py`)
+
+Spouští ho build korpusu po očekáváních a PDF; výsledek je deterministický
+(stejný korpus = bajtově stejné soubory). Sada obsahuje:
+
+- `manifest.jsonc` — `country: cz`, `profile`, `provision`, `counts`
+  jen pro `setup` / `persons` / `mail`;
+- `setup/` — kopie základu profilu v konvenci sad;
+- `persons/0001-<slug>.jsonc` — vlastní firma (`isOwn`, V pořádku,
+  sídlo z identity; banku nese číselník); dodavatelé v sadě **nejsou**
+  (D21), založí je Použít návrhu — `0V01` dodavatele založí, `0V02` ho najde;
+- `mail/NNNN-<slug(messageId)>.jsonc` + `.files/<doklad>.pdf` — zpráva
+  per buňka, `messageId` `MSG-CORPUS-<VP|NP|AS>-<NNNN>`, pořadí a názvy
+  souborů jako z `dataset-dump` (podle `receivedAt`, `messageId`).
+
+Zpráva: předmět podle jazyka šablony („Faktura <číslo>“ / „Invoice
+<číslo>“ / „Účtenka <datum>“), odesílatel = dodavatel; doklad bez e-mailu
+(účtenka) přijde jako sken poslaný sám sobě (`doklady@<profil>.example`,
+jméno vlastní firmy); `receivedAt` = den vystavení + 1 v 08:00;
+`sourceType` e-mail; `docState` 20, `analysisState` 30; `aiTitle` ve
+tvaru promptu („Faktura 2026/0882 — Dodavatel s.r.o., 5 798,14 Kč“).
+`analyses[0]`: `status` 2, `resolution` null, model `corpus-ideal`,
+`promptVersion corpus`, profil `czech_general` (profil analýzy čerstvého
+DS — neznámý kód by seed tiše zahodil), `confidence 1.0`, tokeny, čas
+i cena 0, `analyzedAt` = `receivedAt` + 1 min. `canonicalJson` =
+očekávání + pole, která nese skutečná analýza a projekce je nemá:
+`source` (`aiExtraction`, `extractedAt`, `confidence 1.0`,
+`promptVersion corpus`), `attachments` (`[{filename, mimeType, kind
+original, ref att:1}]`), `_resolve.contentTag.tagSource llm`
+a `tagConfidence 1.0`; nic jiného se nemění, `null` zůstává. `analysisJson`
+= syntetický výstup promptu (`overall_confidence`,
+`message_classification`, `document.extracted_json` = canonical bez
+`_resolve`).
+
+**Byte-shoda s dumpem.** `dataset-dump` naseedovaného DS dává v sekci
+`mail/` bajtově stejné soubory jako sada. Proto sada nese i pole, která
+by jinak doplnil seed nebo dump (`created` zprávy = `receivedAt`,
+`sourceType`, `size` a `sha256` přílohy, `created` analýzy, nulové tokeny
+a cena), a čísla zapisuje tak, jak projdou PHP: hodnoty sloupců jako
+`DatasetWriter` (`1.0` zůstává `1.0`), bloby `analysisJson`
+a `canonicalJson` jako `json_decode` → `json_encode` v seedu (celé
+hodnoty int: `2340.00` → `2340`, `1.0` → `1`; ostatní nejkratší float:
+`486.50` → `486.5`). „Doslova“ u canonicalu tedy znamená stejné klíče,
+pořadí, `null` a hodnoty — ne stejné bajty jako `expected/` (ty mají
+2 mezery a `486.50`). `att:1` v `analysisJson` seed nepřemapovává (jen
+v `canonicalJson`), dump ho také nemění.
+
+### Jak sadu naseedovat
+
+```bash
+php bin/shpd-server ds-create --name "Korpus plátce" --language cs --country cz --no-cron
+cd /opt/shipard/data-sources/<id>
+shpd-ds dataset-seed /cesta/k/repu/tests/datasets/cz/vat-payer -y
+```
+
+`dataset-seed` si na čerstvém DS doplní schéma (`ds-upgrade`), zapíše
+nastavení, resetuje DS, založí fiskální rok 2026 a účetní položky
+z nabídky (57 / 57 / 31) a naseeduje vlastní firmu a zprávy
+(20 / 16 / 16). Zdroj dat jiné země odmítne v preflightu. Doklady v cizí
+měně jdou v návrhu otevřít, ale bez kurzu se nepotvrdí (#121) — není to
+chyba sady. Po Použít tuzemského návrhu se naučí pravidlo IČO → štítek
+(`tagSource: llm`), stejně jako po skutečné analýze.
+
+### Pasti
+
+- **Sady se needitují ručně** — změna = základ profilu, korpus nebo
+  generátor a nový build; strážce `CorpusExpectedTest::testDatasetsMatchCorpus`
+  hlídá soulad s korpusem.
+- **`created` v manifestu je pevné** — razítko buildu by měnilo sadu při
+  každém běhu.
+- **Účetní položky nejsou provisioner.** Seed je vytvoří, protože o to
+  sada požádala; `ds-upgrade` je nevrací ani nedoplňuje.
+- Sekce `fiscalYears` a `accountingItems` v souhrnu seedu nemají soubory
+  ani `counts` — build je do manifestu nepíše.
