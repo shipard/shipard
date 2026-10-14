@@ -66,6 +66,10 @@ Všechny subjekty jsou fiktivní a odlišné od demo identit
 - domény jen v TLD `.example` (RFC 2606);
 - česká čísla účtů s mod 11, IBAN odpovídá účtu, reálné kódy bank bez
   názvů bank; zahraniční IBAN s platnými kontrolními číslicemi.
+- spisové značky (CZ) a čísla HRB (DE) s číslem 99xxxx — daleko nad
+  rozsahem, který rejstříkové soudy dnes přidělují, takže nepatří žádné
+  skutečné firmě; podle spisové značky ARES vyhledávat neumí, ověřit je
+  nejde.
 
 Hodnoty jsou v **kanonickém tvaru** (§ 11); šablony je na PDF tisknou jako
 skutečné doklady (PSČ s mezerou, IBAN po čtveřicích, telefon s mezerami).
