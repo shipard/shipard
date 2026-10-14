@@ -1,0 +1,31 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "companyId": "27893286",
+    "taxId": "CZ27893286",
+    "vatId": "CZ27893286",
+    "name": {
+        "fullName": "Tvarokov s.r.o."
+    },
+    "status": {
+        "isOwn": true,
+        "docState": 40
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Lisovací",
+            "houseNumber": "418/2",
+            "city": "Zlín",
+            "zip": "76001",
+            "country": "cz"
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

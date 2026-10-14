@@ -1,0 +1,341 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-NP-0902",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Účtenka 21. 9. 2026",
+    "senderEmail": "doklady@non-payer.example",
+    "senderName": "Kreslírna Modrá s.r.o.",
+    "partnerName": "Pumpa Jetelka s.r.o.",
+    "receivedAt": "2026-09-22T08:00:00",
+    "bodyPlain": "Sken účtenky z 21. 9. 2026.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Účtenka 0005108 — Pumpa Jetelka s.r.o., 1 542,60 Kč",
+    "created": "2026-09-22T08:00:00",
+    "attachments": [
+        {
+            "file": "0902-receipt.pdf",
+            "name": "0902-receipt.pdf",
+            "mimeType": "application/pdf",
+            "size": 26965,
+            "sha256": "d5f3e4216ce7a67eb48c3e7c452d347bb24c68495f36e31396550de0e217e862",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-09-22T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "vehicle.fuel",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-09-22T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Účtenka 0005108 — Pumpa Jetelka s.r.o., 1 542,60 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-09-22T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "0005108",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Pumpa Jetelka s.r.o.",
+                            "country": "cz",
+                            "companyId": "40488004",
+                            "taxId": "CZ40488004",
+                            "vatId": "CZ40488004",
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Výpadová",
+                                "houseNumber": "1801/3",
+                                "city": "Zlín",
+                                "zip": "76302",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": "+420577911206",
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "customer": null,
+                        "dates": {
+                            "issueDate": "2026-09-21",
+                            "dueDate": null,
+                            "taxPointDate": "2026-09-21",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromTotal",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "cash",
+                            "paymentReference": null,
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": null
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Diesel",
+                                    "description": null
+                                },
+                                "unit": "l",
+                                "quantity": 41.37,
+                                "unitPrice": 36.2,
+                                "totalPrice": 1497.6,
+                                "priceCalcMode": "fromTotal",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Káva s sebou 0,3 l",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 45.0,
+                                "totalPrice": 45.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 12,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 1237.69,
+                                "tax": 259.91,
+                                "total": 1497.6
+                            },
+                            {
+                                "vatPct": 12,
+                                "base": 40.18,
+                                "tax": 4.82,
+                                "total": 45.0
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 1277.87,
+                            "totalVat": 264.73,
+                            "totalAmount": 1542.6,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0902-receipt.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-09-22T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "0005108",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Pumpa Jetelka s.r.o.",
+                    "country": "cz",
+                    "companyId": "40488004",
+                    "taxId": "CZ40488004",
+                    "vatId": "CZ40488004",
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Výpadová",
+                        "houseNumber": "1801/3",
+                        "city": "Zlín",
+                        "zip": "76302",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": "+420577911206",
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "customer": null,
+                "dates": {
+                    "issueDate": "2026-09-21",
+                    "dueDate": null,
+                    "taxPointDate": "2026-09-21",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromTotal",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "cash",
+                    "paymentReference": null,
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": null
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Diesel",
+                            "description": null
+                        },
+                        "unit": "l",
+                        "quantity": 41.37,
+                        "unitPrice": 36.2,
+                        "totalPrice": 1497.6,
+                        "priceCalcMode": "fromTotal",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Káva s sebou 0,3 l",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 45.0,
+                        "totalPrice": 45.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 12,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 1237.69,
+                        "tax": 259.91,
+                        "total": 1497.6
+                    },
+                    {
+                        "vatPct": 12,
+                        "base": 40.18,
+                        "tax": 4.82,
+                        "total": 45.0
+                    }
+                ],
+                "totals": {
+                    "totalBase": 1277.87,
+                    "totalVat": 264.73,
+                    "totalAmount": 1542.6,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0902-receipt.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "vehicle.fuel",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": [
+                            {
+                                "rowIndex": 1,
+                                "tag": "people.catering"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

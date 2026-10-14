@@ -1,0 +1,29 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "companyId": "28647645",
+    "name": {
+        "fullName": "Spolek Zelený kopec, z. s."
+    },
+    "status": {
+        "isOwn": true,
+        "docState": 40
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Pod Strání",
+            "houseNumber": "92",
+            "city": "Říčany",
+            "zip": "25101",
+            "country": "cz"
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

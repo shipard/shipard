@@ -1,0 +1,416 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-VP-0402",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura 2026-0163",
+    "senderEmail": "fakturace@stavby-klenba.example",
+    "senderName": "Stavby Klenba s.r.o.",
+    "partnerName": "Stavby Klenba s.r.o.",
+    "receivedAt": "2026-09-19T08:00:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 2026-0163.\n\nStavby Klenba s.r.o.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura 2026-0163 — Stavby Klenba s.r.o., 67 720,00 Kč",
+    "created": "2026-09-19T08:00:00",
+    "attachments": [
+        {
+            "file": "0402-domestic-reverse-charge.pdf",
+            "name": "0402-domestic-reverse-charge.pdf",
+            "mimeType": "application/pdf",
+            "size": 34117,
+            "sha256": "840e505ac4a99443663449b4f48b920eef461ddc8f599e4c316c2b711b698bec",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-09-19T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "premises.maintenance",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-09-19T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Faktura 2026-0163 — Stavby Klenba s.r.o., 67 720,00 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-09-19T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "2026-0163",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Stavby Klenba s.r.o.",
+                            "country": "cz",
+                            "companyId": "16612248",
+                            "taxId": "CZ16612248",
+                            "vatId": "CZ16612248",
+                            "courtRegistration": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                            "address": {
+                                "street": "Cihlová",
+                                "houseNumber": "980/12",
+                                "city": "Ústí nad Labem",
+                                "zip": "40001",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@stavby-klenba.example",
+                                "phone": "+420475602318",
+                                "web": "www.stavby-klenba.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "8108947067/2010",
+                                "iban": "CZ7820100000008108947067",
+                                "bic": "FIOBCZPP"
+                            }
+                        },
+                        "customer": {
+                            "name": "Tvarokov s.r.o.",
+                            "country": "cz",
+                            "companyId": "27893286",
+                            "taxId": "CZ27893286",
+                            "vatId": "CZ27893286",
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Lisovací",
+                                "houseNumber": "418/2",
+                                "city": "Zlín",
+                                "zip": "76001",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-09-18",
+                            "dueDate": "2026-10-02",
+                            "taxPointDate": "2026-09-17",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": true
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "20260163",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Fakturujeme provedené práce dle objednávky č. OBJ-2026-088."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Výměna oken dílny — montážní práce",
+                                    "description": null
+                                },
+                                "unit": "h",
+                                "quantity": 36,
+                                "unitPrice": 520.0,
+                                "totalPrice": 18720.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": "4"
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Okno plastové 1200×1500 mm, trojsklo",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 6,
+                                "unitPrice": 7850.0,
+                                "totalPrice": 47100.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": "4"
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Likvidace původních výplní",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 1900.0,
+                                "totalPrice": 1900.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": "4"
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 0,
+                                "base": 67720.0,
+                                "tax": 0.0,
+                                "total": 67720.0
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 67720.0,
+                            "totalVat": 0.0,
+                            "totalAmount": 67720.0,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0402-domestic-reverse-charge.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-09-19T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "2026-0163",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Stavby Klenba s.r.o.",
+                    "country": "cz",
+                    "companyId": "16612248",
+                    "taxId": "CZ16612248",
+                    "vatId": "CZ16612248",
+                    "courtRegistration": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "address": {
+                        "street": "Cihlová",
+                        "houseNumber": "980/12",
+                        "city": "Ústí nad Labem",
+                        "zip": "40001",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@stavby-klenba.example",
+                        "phone": "+420475602318",
+                        "web": "www.stavby-klenba.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "8108947067/2010",
+                        "iban": "CZ7820100000008108947067",
+                        "bic": "FIOBCZPP"
+                    }
+                },
+                "customer": {
+                    "name": "Tvarokov s.r.o.",
+                    "country": "cz",
+                    "companyId": "27893286",
+                    "taxId": "CZ27893286",
+                    "vatId": "CZ27893286",
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Lisovací",
+                        "houseNumber": "418/2",
+                        "city": "Zlín",
+                        "zip": "76001",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-09-18",
+                    "dueDate": "2026-10-02",
+                    "taxPointDate": "2026-09-17",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": true
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "20260163",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Fakturujeme provedené práce dle objednávky č. OBJ-2026-088."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Výměna oken dílny — montážní práce",
+                            "description": null
+                        },
+                        "unit": "h",
+                        "quantity": 36,
+                        "unitPrice": 520.0,
+                        "totalPrice": 18720.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": null,
+                            "reverseChargeCode": "4"
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Okno plastové 1200×1500 mm, trojsklo",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 6,
+                        "unitPrice": 7850.0,
+                        "totalPrice": 47100.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": null,
+                            "reverseChargeCode": "4"
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Likvidace původních výplní",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 1900.0,
+                        "totalPrice": 1900.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": null,
+                            "reverseChargeCode": "4"
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 0,
+                        "base": 67720.0,
+                        "tax": 0.0,
+                        "total": 67720.0
+                    }
+                ],
+                "totals": {
+                    "totalBase": 67720.0,
+                    "totalVat": 0.0,
+                    "totalAmount": 67720.0,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0402-domestic-reverse-charge.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "premises.maintenance",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

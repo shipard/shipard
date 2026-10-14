@@ -1,9 +1,10 @@
 # Datové sady pro demo scénáře
 
 Zatím prázdné — sady sem přijdou ve formátu z
-[`docs/datasets.md`](../../docs/datasets.md), až bude hotová fáze 1
-zadání [`tasks/dataset-phase1.md`](../../tasks/dataset-phase1.md)
-(CLI `dataset-dump` / `dataset-seed`).
+[`docs/datasets.md`](../../docs/datasets.md) (CLI `dataset-dump` /
+`dataset-seed`, [`tasks/dataset-phase1.md`](../../tasks/dataset-phase1.md)).
+Testovací sady z korpusu dokladů (bez vazby na video) leží
+v [`tests/datasets/`](../../tests/datasets/).
 
 Do té doby běží scénáře v [`../scenarios/`](../scenarios/) nad tím, co na
 cílové instanci zrovna je. Pole `dataset` ve scénáři je proto prozatím

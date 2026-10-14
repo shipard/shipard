@@ -1,0 +1,365 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-AS-0702",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura 2026-11",
+    "senderEmail": "kurzy@studio-hraz.example",
+    "senderName": "Vzdělávací studio Hráz s.r.o.",
+    "partnerName": "Vzdělávací studio Hráz s.r.o.",
+    "receivedAt": "2026-09-30T08:00:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 2026-11.\n\nVzdělávací studio Hráz s.r.o.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura 2026-11 — Vzdělávací studio Hráz s.r.o., 6 440,00 Kč",
+    "created": "2026-09-30T08:00:00",
+    "attachments": [
+        {
+            "file": "0702-domestic-non-payer-supplier.pdf",
+            "name": "0702-domestic-non-payer-supplier.pdf",
+            "mimeType": "application/pdf",
+            "size": 26886,
+            "sha256": "8f18ed66af0ba31ef20402f2352777a3455cbddbb864d98cbc1c153b2f8d86e4",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-09-30T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "services.training",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-09-30T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Faktura 2026-11 — Vzdělávací studio Hráz s.r.o., 6 440,00 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-09-30T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "2026-11",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Vzdělávací studio Hráz s.r.o.",
+                            "country": "cz",
+                            "companyId": "25052039",
+                            "taxId": null,
+                            "vatId": null,
+                            "courtRegistration": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                            "address": {
+                                "street": "Lektorská",
+                                "houseNumber": "21",
+                                "city": "Jihlava",
+                                "zip": "58601",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "kurzy@studio-hraz.example",
+                                "phone": "+420567309842",
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": "8360405366/0600",
+                                "iban": "CZ0606000000008360405366",
+                                "bic": null
+                            }
+                        },
+                        "customer": {
+                            "name": "Spolek Zelený kopec, z. s.",
+                            "country": "cz",
+                            "companyId": "28647645",
+                            "taxId": null,
+                            "vatId": null,
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Pod Strání",
+                                "houseNumber": "92",
+                                "city": "Říčany",
+                                "zip": "25101",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-09-29",
+                            "dueDate": "2026-10-13",
+                            "taxPointDate": null,
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "none",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "202611",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Kurz proběhl 24.–25. 9. 2026."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Kurz Excel pro pokročilé (2 dny)",
+                                    "description": null
+                                },
+                                "unit": "os",
+                                "quantity": 2,
+                                "unitPrice": 2900.0,
+                                "totalPrice": 5800.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": null,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Cestovné lektora",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 640.0,
+                                "totalPrice": 640.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": null,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [],
+                        "totals": {
+                            "totalBase": null,
+                            "totalVat": null,
+                            "totalAmount": 6440.0,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0702-domestic-non-payer-supplier.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-09-30T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "2026-11",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Vzdělávací studio Hráz s.r.o.",
+                    "country": "cz",
+                    "companyId": "25052039",
+                    "taxId": null,
+                    "vatId": null,
+                    "courtRegistration": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "address": {
+                        "street": "Lektorská",
+                        "houseNumber": "21",
+                        "city": "Jihlava",
+                        "zip": "58601",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "kurzy@studio-hraz.example",
+                        "phone": "+420567309842",
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": "8360405366/0600",
+                        "iban": "CZ0606000000008360405366",
+                        "bic": null
+                    }
+                },
+                "customer": {
+                    "name": "Spolek Zelený kopec, z. s.",
+                    "country": "cz",
+                    "companyId": "28647645",
+                    "taxId": null,
+                    "vatId": null,
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Pod Strání",
+                        "houseNumber": "92",
+                        "city": "Říčany",
+                        "zip": "25101",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-09-29",
+                    "dueDate": "2026-10-13",
+                    "taxPointDate": null,
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "none",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "202611",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Kurz proběhl 24.–25. 9. 2026."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Kurz Excel pro pokročilé (2 dny)",
+                            "description": null
+                        },
+                        "unit": "os",
+                        "quantity": 2,
+                        "unitPrice": 2900.0,
+                        "totalPrice": 5800.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": null,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Cestovné lektora",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 640.0,
+                        "totalPrice": 640.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": null,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [],
+                "totals": {
+                    "totalBase": null,
+                    "totalVat": null,
+                    "totalAmount": 6440.0,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0702-domestic-non-payer-supplier.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "services.training",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": [
+                            {
+                                "rowIndex": 1,
+                                "tag": "travel.fares"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

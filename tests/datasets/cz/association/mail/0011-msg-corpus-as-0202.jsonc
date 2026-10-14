@@ -1,0 +1,475 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-AS-0202",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura 2026/0951",
+    "senderEmail": "objednavky@kvadrat-papir.example",
+    "senderName": "Papírnictví Kvadrát s.r.o.",
+    "partnerName": "Papírnictví Kvadrát s.r.o.",
+    "receivedAt": "2026-09-16T08:00:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 2026/0951.\n\nPapírnictví Kvadrát s.r.o.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura 2026/0951 — Papírnictví Kvadrát s.r.o., 3 265,22 Kč",
+    "created": "2026-09-16T08:00:00",
+    "attachments": [
+        {
+            "file": "0202-domestic-two-rates.pdf",
+            "name": "0202-domestic-two-rates.pdf",
+            "mimeType": "application/pdf",
+            "size": 29223,
+            "sha256": "92808c4b06455ffd903fe0f33c2ce4db76f931f3f1d4685ab65c59fea406a93e",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-09-16T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "office.supplies",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-09-16T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Faktura 2026/0951 — Papírnictví Kvadrát s.r.o., 3 265,22 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-09-16T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "2026/0951",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Papírnictví Kvadrát s.r.o.",
+                            "country": "cz",
+                            "companyId": "56546939",
+                            "taxId": "CZ56546939",
+                            "vatId": "CZ56546939",
+                            "courtRegistration": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                            "address": {
+                                "street": "Sešitová",
+                                "houseNumber": "3",
+                                "city": "Praha 1",
+                                "zip": "11000",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "objednavky@kvadrat-papir.example",
+                                "phone": "+420224815770",
+                                "web": "www.kvadrat-papir.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "9092871663/5500",
+                                "iban": "CZ8255000000009092871663",
+                                "bic": "RZBCCZPP"
+                            }
+                        },
+                        "customer": {
+                            "name": "Spolek Zelený kopec, z. s.",
+                            "country": "cz",
+                            "companyId": "28647645",
+                            "taxId": null,
+                            "vatId": null,
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Pod Strání",
+                                "houseNumber": "92",
+                                "city": "Říčany",
+                                "zip": "25101",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-09-15",
+                            "dueDate": "2026-09-29",
+                            "taxPointDate": "2026-09-15",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "20260951",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Děkujeme za objednávku."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "POR-A4-75",
+                                    "ean": null,
+                                    "name": "Pákový pořadač A4, 75 mm, modrý",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 20,
+                                "unitPrice": 54.9,
+                                "totalPrice": 1098.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "OB-C5",
+                                    "ean": null,
+                                    "name": "Obálky C5 samolepicí, bílé",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1000,
+                                "unitPrice": 0.95,
+                                "totalPrice": 950.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "LB-76",
+                                    "ean": null,
+                                    "name": "Lepicí bloky 76×76 mm, žluté",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 12,
+                                "unitPrice": 19.5,
+                                "totalPrice": 234.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Předplatné časopisu Mzdová praxe 10–12/2026",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 450.0,
+                                "totalPrice": 450.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 12,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 2282.0,
+                                "tax": 479.22,
+                                "total": 2761.22
+                            },
+                            {
+                                "vatPct": 12,
+                                "base": 450.0,
+                                "tax": 54.0,
+                                "total": 504.0
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 2732.0,
+                            "totalVat": 533.22,
+                            "totalAmount": 3265.22,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0202-domestic-two-rates.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-09-16T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "2026/0951",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Papírnictví Kvadrát s.r.o.",
+                    "country": "cz",
+                    "companyId": "56546939",
+                    "taxId": "CZ56546939",
+                    "vatId": "CZ56546939",
+                    "courtRegistration": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "address": {
+                        "street": "Sešitová",
+                        "houseNumber": "3",
+                        "city": "Praha 1",
+                        "zip": "11000",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "objednavky@kvadrat-papir.example",
+                        "phone": "+420224815770",
+                        "web": "www.kvadrat-papir.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "9092871663/5500",
+                        "iban": "CZ8255000000009092871663",
+                        "bic": "RZBCCZPP"
+                    }
+                },
+                "customer": {
+                    "name": "Spolek Zelený kopec, z. s.",
+                    "country": "cz",
+                    "companyId": "28647645",
+                    "taxId": null,
+                    "vatId": null,
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Pod Strání",
+                        "houseNumber": "92",
+                        "city": "Říčany",
+                        "zip": "25101",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-09-15",
+                    "dueDate": "2026-09-29",
+                    "taxPointDate": "2026-09-15",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "20260951",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Děkujeme za objednávku."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "POR-A4-75",
+                            "ean": null,
+                            "name": "Pákový pořadač A4, 75 mm, modrý",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 20,
+                        "unitPrice": 54.9,
+                        "totalPrice": 1098.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "OB-C5",
+                            "ean": null,
+                            "name": "Obálky C5 samolepicí, bílé",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1000,
+                        "unitPrice": 0.95,
+                        "totalPrice": 950.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "LB-76",
+                            "ean": null,
+                            "name": "Lepicí bloky 76×76 mm, žluté",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 12,
+                        "unitPrice": 19.5,
+                        "totalPrice": 234.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Předplatné časopisu Mzdová praxe 10–12/2026",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 450.0,
+                        "totalPrice": 450.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 12,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 2282.0,
+                        "tax": 479.22,
+                        "total": 2761.22
+                    },
+                    {
+                        "vatPct": 12,
+                        "base": 450.0,
+                        "tax": 54.0,
+                        "total": 504.0
+                    }
+                ],
+                "totals": {
+                    "totalBase": 2732.0,
+                    "totalVat": 533.22,
+                    "totalAmount": 3265.22,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0202-domestic-two-rates.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "office.supplies",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": [
+                            {
+                                "rowIndex": 3,
+                                "tag": "admin.memberships"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

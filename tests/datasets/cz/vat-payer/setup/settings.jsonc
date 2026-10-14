@@ -1,0 +1,22 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "settings",
+    "rows": [
+        {
+            "key": "economy.accountChart",
+            "value": "default"
+        },
+        {
+            "key": "economy.fiscalYearStartMonth",
+            "value": 1
+        },
+        {
+            "key": "economy.homeCurrency",
+            "value": "czk"
+        },
+        {
+            "key": "economy.vatAgenda",
+            "value": true
+        }
+    ]
+}

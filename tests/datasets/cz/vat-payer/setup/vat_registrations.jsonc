@@ -1,0 +1,18 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "vat_registrations",
+    "rows": [
+        {
+            "name": "Tvarokov s.r.o.",
+            "region": "eu",
+            "country": "cz",
+            "taxpayer_kind": 0,
+            "vat_id": "CZ27893286",
+            "tax_period_kind": 1,
+            "cs_period_kind": 1,
+            "rs_period_kind": 1,
+            "valid_from": "2026-01-01",
+            "docState": 40
+        }
+    ]
+}

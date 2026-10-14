@@ -1,0 +1,360 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-VP-0801",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Invoice QS-204611",
+    "senderEmail": "billing@quillstack.example",
+    "senderName": "Quillstack Software Inc.",
+    "partnerName": "Quillstack Software Inc.",
+    "receivedAt": "2026-09-02T08:00:00",
+    "bodyPlain": "Hello,\n\nplease find attached invoice QS-204611.\n\nQuillstack Software Inc.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura QS-204611 — Quillstack Software Inc., 177,00 USD",
+    "created": "2026-09-02T08:00:00",
+    "attachments": [
+        {
+            "file": "0801-third-country-services.pdf",
+            "name": "0801-third-country-services.pdf",
+            "mimeType": "application/pdf",
+            "size": 29413,
+            "sha256": "b6edb6099b37407cdf39ae549fa6059a8c609d7e808684342ad61ec5caa598ca",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-09-02T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "it.software",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-09-02T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Faktura QS-204611 — Quillstack Software Inc., 177,00 USD"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-09-02T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "QS-204611",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Quillstack Software Inc.",
+                            "country": "us",
+                            "companyId": null,
+                            "taxId": null,
+                            "vatId": null,
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "500 Market Street, Suite 200",
+                                "houseNumber": null,
+                                "city": "San Francisco",
+                                "zip": "94105",
+                                "country": "us"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "billing@quillstack.example",
+                                "phone": "+14155550199",
+                                "web": "www.quillstack.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "customer": {
+                            "name": "Tvarokov s.r.o.",
+                            "country": "cz",
+                            "companyId": "27893286",
+                            "taxId": "CZ27893286",
+                            "vatId": "CZ27893286",
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Lisovací",
+                                "houseNumber": "418/2",
+                                "city": "Zlín",
+                                "zip": "76001",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-09-01",
+                            "dueDate": "2026-09-01",
+                            "taxPointDate": null,
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "USD",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "none",
+                            "place": "thirdCountry",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "card",
+                            "paymentReference": null,
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Paid by card ending 4421 on Sep 1, 2026. This invoice serves as your receipt."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Quillstack Team plan",
+                                    "description": "12 seats, 09/01/2026 – 09/30/2026"
+                                },
+                                "unit": "seat",
+                                "quantity": 12,
+                                "unitPrice": 14.0,
+                                "totalPrice": 168.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": null,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Additional storage 100 GB",
+                                    "description": null
+                                },
+                                "unit": "mo",
+                                "quantity": 1,
+                                "unitPrice": 9.0,
+                                "totalPrice": 9.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": null,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [],
+                        "totals": {
+                            "totalBase": null,
+                            "totalVat": null,
+                            "totalAmount": 177.0,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0801-third-country-services.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-09-02T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "QS-204611",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Quillstack Software Inc.",
+                    "country": "us",
+                    "companyId": null,
+                    "taxId": null,
+                    "vatId": null,
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "500 Market Street, Suite 200",
+                        "houseNumber": null,
+                        "city": "San Francisco",
+                        "zip": "94105",
+                        "country": "us"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "billing@quillstack.example",
+                        "phone": "+14155550199",
+                        "web": "www.quillstack.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "customer": {
+                    "name": "Tvarokov s.r.o.",
+                    "country": "cz",
+                    "companyId": "27893286",
+                    "taxId": "CZ27893286",
+                    "vatId": "CZ27893286",
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Lisovací",
+                        "houseNumber": "418/2",
+                        "city": "Zlín",
+                        "zip": "76001",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-09-01",
+                    "dueDate": "2026-09-01",
+                    "taxPointDate": null,
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "USD",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "none",
+                    "place": "thirdCountry",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "card",
+                    "paymentReference": null,
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Paid by card ending 4421 on Sep 1, 2026. This invoice serves as your receipt."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Quillstack Team plan",
+                            "description": "12 seats, 09/01/2026 – 09/30/2026"
+                        },
+                        "unit": "seat",
+                        "quantity": 12,
+                        "unitPrice": 14.0,
+                        "totalPrice": 168.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": null,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Additional storage 100 GB",
+                            "description": null
+                        },
+                        "unit": "mo",
+                        "quantity": 1,
+                        "unitPrice": 9.0,
+                        "totalPrice": 9.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": null,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [],
+                "totals": {
+                    "totalBase": null,
+                    "totalVat": null,
+                    "totalAmount": 177.0,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0801-third-country-services.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "it.software",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

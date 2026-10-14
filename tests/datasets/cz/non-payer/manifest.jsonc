@@ -1,0 +1,18 @@
+{
+    "format": "shpd.dataset.v1",
+    "name": "cz-non-payer",
+    "title": "Testovací sada — neplátce DPH s.r.o.",
+    "description": "Korpus #103 F1: přijaté doklady s ideální analýzou. Vlastní firma je s.r.o., neplátce DPH.",
+    "dateMode": "fixed",
+    "created": "2026-10-14T00:00:00Z",
+    "country": "cz",
+    "profile": "non-payer",
+    "provision": {
+        "accountingItems": "all"
+    },
+    "counts": {
+        "setup": 2,
+        "persons": 1,
+        "mail": 16
+    }
+}

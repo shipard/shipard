@@ -1,0 +1,374 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-NP-0401",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura 2026-0147",
+    "senderEmail": "fakturace@stavby-klenba.example",
+    "senderName": "Stavby Klenba s.r.o.",
+    "partnerName": "Stavby Klenba s.r.o.",
+    "receivedAt": "2026-08-29T08:00:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 2026-0147.\n\nStavby Klenba s.r.o.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura 2026-0147 — Stavby Klenba s.r.o., 84 506,40 Kč",
+    "created": "2026-08-29T08:00:00",
+    "attachments": [
+        {
+            "file": "0401-domestic-reverse-charge.pdf",
+            "name": "0401-domestic-reverse-charge.pdf",
+            "mimeType": "application/pdf",
+            "size": 33008,
+            "sha256": "d4fe3e148c0d70bc19465c4ca3ac7b891cc76d8f5cc85642b2b2f7bb209166f9",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-08-29T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "premises.maintenance",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-08-29T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Faktura 2026-0147 — Stavby Klenba s.r.o., 84 506,40 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-08-29T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "2026-0147",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Stavby Klenba s.r.o.",
+                            "country": "cz",
+                            "companyId": "16612248",
+                            "taxId": "CZ16612248",
+                            "vatId": "CZ16612248",
+                            "courtRegistration": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                            "address": {
+                                "street": "Cihlová",
+                                "houseNumber": "980/12",
+                                "city": "Ústí nad Labem",
+                                "zip": "40001",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "fakturace@stavby-klenba.example",
+                                "phone": "+420475602318",
+                                "web": "www.stavby-klenba.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "8108947067/2010",
+                                "iban": "CZ7820100000008108947067",
+                                "bic": "FIOBCZPP"
+                            }
+                        },
+                        "customer": {
+                            "name": "Kreslírna Modrá s.r.o.",
+                            "country": "cz",
+                            "companyId": "68040725",
+                            "taxId": null,
+                            "vatId": null,
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Náčrtková",
+                                "houseNumber": "15",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-08-28",
+                            "dueDate": "2026-09-11",
+                            "taxPointDate": "2026-08-27",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "20260147",
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Oprava střešní krytiny skladové haly — práce",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 48500.0,
+                                "totalPrice": 48500.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Materiál — krytina, lemování, spojovací prvky",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 21340.0,
+                                "totalPrice": 21340.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 69840.0,
+                                "tax": 14666.4,
+                                "total": 84506.4
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 69840.0,
+                            "totalVat": 14666.4,
+                            "totalAmount": 84506.4,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0401-domestic-reverse-charge.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-08-29T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "2026-0147",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Stavby Klenba s.r.o.",
+                    "country": "cz",
+                    "companyId": "16612248",
+                    "taxId": "CZ16612248",
+                    "vatId": "CZ16612248",
+                    "courtRegistration": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "address": {
+                        "street": "Cihlová",
+                        "houseNumber": "980/12",
+                        "city": "Ústí nad Labem",
+                        "zip": "40001",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "fakturace@stavby-klenba.example",
+                        "phone": "+420475602318",
+                        "web": "www.stavby-klenba.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "8108947067/2010",
+                        "iban": "CZ7820100000008108947067",
+                        "bic": "FIOBCZPP"
+                    }
+                },
+                "customer": {
+                    "name": "Kreslírna Modrá s.r.o.",
+                    "country": "cz",
+                    "companyId": "68040725",
+                    "taxId": null,
+                    "vatId": null,
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Náčrtková",
+                        "houseNumber": "15",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-08-28",
+                    "dueDate": "2026-09-11",
+                    "taxPointDate": "2026-08-27",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "20260147",
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Oprava střešní krytiny skladové haly — práce",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 48500.0,
+                        "totalPrice": 48500.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Materiál — krytina, lemování, spojovací prvky",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 21340.0,
+                        "totalPrice": 21340.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 69840.0,
+                        "tax": 14666.4,
+                        "total": 84506.4
+                    }
+                ],
+                "totals": {
+                    "totalBase": 69840.0,
+                    "totalVat": 14666.4,
+                    "totalAmount": 84506.4,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0401-domestic-reverse-charge.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "premises.maintenance",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

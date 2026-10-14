@@ -1,0 +1,416 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-VP-0502",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Invoice INV-2026-0421",
+    "senderEmail": "billing@wolkenkraft.example",
+    "senderName": "Wolkenkraft Hosting GmbH",
+    "partnerName": "Wolkenkraft Hosting GmbH",
+    "receivedAt": "2026-10-02T08:00:00",
+    "bodyPlain": "Hello,\n\nplease find attached invoice INV-2026-0421.\n\nWolkenkraft Hosting GmbH",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura INV-2026-0421 — Wolkenkraft Hosting GmbH, 463,36 EUR",
+    "created": "2026-10-02T08:00:00",
+    "attachments": [
+        {
+            "file": "0502-eu-services.pdf",
+            "name": "0502-eu-services.pdf",
+            "mimeType": "application/pdf",
+            "size": 34331,
+            "sha256": "902bdcf82e3dbcd00ca5bbde9710b08d0164c1e6add4572ee9e69ae43dff20d1",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-10-02T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "it.hosting",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-10-02T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Faktura INV-2026-0421 — Wolkenkraft Hosting GmbH, 463,36 EUR"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-10-02T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "INV-2026-0421",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Wolkenkraft Hosting GmbH",
+                            "country": "de",
+                            "companyId": null,
+                            "taxId": "DE383584058",
+                            "vatId": "DE383584058",
+                            "courtRegistration": "Amtsgericht Charlottenburg, HRB 994567 B",
+                            "address": {
+                                "street": "Rechenzentrumsweg",
+                                "houseNumber": "7",
+                                "city": "Berlin",
+                                "zip": "10115",
+                                "country": "de"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "billing@wolkenkraft.example",
+                                "phone": "+493028874410",
+                                "web": "www.wolkenkraft.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": "DE92100500006681230067",
+                                "bic": "WLKRDEBBXXX"
+                            }
+                        },
+                        "customer": {
+                            "name": "Tvarokov s.r.o.",
+                            "country": "cz",
+                            "companyId": "27893286",
+                            "taxId": "CZ27893286",
+                            "vatId": "CZ27893286",
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Lisovací",
+                                "houseNumber": "418/2",
+                                "city": "Zlín",
+                                "zip": "76001",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-10-01",
+                            "dueDate": "2026-10-15",
+                            "taxPointDate": "2026-09-30",
+                            "periodFrom": "2026-09-01",
+                            "periodTo": "2026-09-30"
+                        },
+                        "currency": "EUR",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "intracom",
+                            "reverseCharge": true
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": null,
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Please quote the invoice number with your payment."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "MK8S-M",
+                                    "ean": null,
+                                    "name": "Managed Kubernetes cluster",
+                                    "description": "Billing period 09/2026"
+                                },
+                                "unit": "mo",
+                                "quantity": 1,
+                                "unitPrice": 412.0,
+                                "totalPrice": 412.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "OBJ-TB",
+                                    "ean": null,
+                                    "name": "Object storage",
+                                    "description": null
+                                },
+                                "unit": "TB",
+                                "quantity": 1.4,
+                                "unitPrice": 18.4,
+                                "totalPrice": 25.76,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "NET-OUT",
+                                    "ean": null,
+                                    "name": "Outbound traffic",
+                                    "description": null
+                                },
+                                "unit": "GB",
+                                "quantity": 320,
+                                "unitPrice": 0.08,
+                                "totalPrice": 25.6,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 0,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 0,
+                                "base": 463.36,
+                                "tax": 0.0,
+                                "total": 463.36
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 463.36,
+                            "totalVat": 0.0,
+                            "totalAmount": 463.36,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0502-eu-services.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-10-02T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "INV-2026-0421",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Wolkenkraft Hosting GmbH",
+                    "country": "de",
+                    "companyId": null,
+                    "taxId": "DE383584058",
+                    "vatId": "DE383584058",
+                    "courtRegistration": "Amtsgericht Charlottenburg, HRB 994567 B",
+                    "address": {
+                        "street": "Rechenzentrumsweg",
+                        "houseNumber": "7",
+                        "city": "Berlin",
+                        "zip": "10115",
+                        "country": "de"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "billing@wolkenkraft.example",
+                        "phone": "+493028874410",
+                        "web": "www.wolkenkraft.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": "DE92100500006681230067",
+                        "bic": "WLKRDEBBXXX"
+                    }
+                },
+                "customer": {
+                    "name": "Tvarokov s.r.o.",
+                    "country": "cz",
+                    "companyId": "27893286",
+                    "taxId": "CZ27893286",
+                    "vatId": "CZ27893286",
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Lisovací",
+                        "houseNumber": "418/2",
+                        "city": "Zlín",
+                        "zip": "76001",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-10-01",
+                    "dueDate": "2026-10-15",
+                    "taxPointDate": "2026-09-30",
+                    "periodFrom": "2026-09-01",
+                    "periodTo": "2026-09-30"
+                },
+                "currency": "EUR",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "intracom",
+                    "reverseCharge": true
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": null,
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Please quote the invoice number with your payment."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "MK8S-M",
+                            "ean": null,
+                            "name": "Managed Kubernetes cluster",
+                            "description": "Billing period 09/2026"
+                        },
+                        "unit": "mo",
+                        "quantity": 1,
+                        "unitPrice": 412.0,
+                        "totalPrice": 412.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "OBJ-TB",
+                            "ean": null,
+                            "name": "Object storage",
+                            "description": null
+                        },
+                        "unit": "TB",
+                        "quantity": 1.4,
+                        "unitPrice": 18.4,
+                        "totalPrice": 25.76,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "NET-OUT",
+                            "ean": null,
+                            "name": "Outbound traffic",
+                            "description": null
+                        },
+                        "unit": "GB",
+                        "quantity": 320,
+                        "unitPrice": 0.08,
+                        "totalPrice": 25.6,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 0,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 0,
+                        "base": 463.36,
+                        "tax": 0.0,
+                        "total": 463.36
+                    }
+                ],
+                "totals": {
+                    "totalBase": 463.36,
+                    "totalVat": 0.0,
+                    "totalAmount": 463.36,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0502-eu-services.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "it.hosting",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

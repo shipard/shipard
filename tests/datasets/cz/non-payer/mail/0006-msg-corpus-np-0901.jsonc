@@ -1,0 +1,329 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-NP-0901",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Účtenka 3. 9. 2026",
+    "senderEmail": "doklady@non-payer.example",
+    "senderName": "Kreslírna Modrá s.r.o.",
+    "partnerName": "Pumpa Jetelka s.r.o.",
+    "receivedAt": "2026-09-04T08:00:00",
+    "bodyPlain": "Sken účtenky z 3. 9. 2026.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Účtenka 0004712 — Pumpa Jetelka s.r.o., 1 589,90 Kč",
+    "created": "2026-09-04T08:00:00",
+    "attachments": [
+        {
+            "file": "0901-receipt.pdf",
+            "name": "0901-receipt.pdf",
+            "mimeType": "application/pdf",
+            "size": 26937,
+            "sha256": "11b67c7fb6fd634b3df0d7ffbfec9f9cec5916906f68555a9039c5c71394d71b",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-09-04T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "vehicle.fuel",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-09-04T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Účtenka 0004712 — Pumpa Jetelka s.r.o., 1 589,90 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-09-04T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "0004712",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Pumpa Jetelka s.r.o.",
+                            "country": "cz",
+                            "companyId": "40488004",
+                            "taxId": "CZ40488004",
+                            "vatId": "CZ40488004",
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Výpadová",
+                                "houseNumber": "1801/3",
+                                "city": "Zlín",
+                                "zip": "76302",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": "+420577911206",
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "customer": null,
+                        "dates": {
+                            "issueDate": "2026-09-03",
+                            "dueDate": null,
+                            "taxPointDate": "2026-09-03",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromTotal",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "card",
+                            "paymentReference": null,
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": null
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Natural 95",
+                                    "description": null
+                                },
+                                "unit": "l",
+                                "quantity": 38.56,
+                                "unitPrice": 38.9,
+                                "totalPrice": 1500.0,
+                                "priceCalcMode": "fromTotal",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Kapalina do ostřikovačů zimní 3 l",
+                                    "description": null
+                                },
+                                "unit": "ks",
+                                "quantity": 1,
+                                "unitPrice": 89.9,
+                                "totalPrice": 89.9,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 1313.97,
+                                "tax": 275.93,
+                                "total": 1589.9
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 1313.97,
+                            "totalVat": 275.93,
+                            "totalAmount": 1589.9,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0901-receipt.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-09-04T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "0004712",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Pumpa Jetelka s.r.o.",
+                    "country": "cz",
+                    "companyId": "40488004",
+                    "taxId": "CZ40488004",
+                    "vatId": "CZ40488004",
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Výpadová",
+                        "houseNumber": "1801/3",
+                        "city": "Zlín",
+                        "zip": "76302",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": "+420577911206",
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "customer": null,
+                "dates": {
+                    "issueDate": "2026-09-03",
+                    "dueDate": null,
+                    "taxPointDate": "2026-09-03",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromTotal",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "card",
+                    "paymentReference": null,
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": null
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Natural 95",
+                            "description": null
+                        },
+                        "unit": "l",
+                        "quantity": 38.56,
+                        "unitPrice": 38.9,
+                        "totalPrice": 1500.0,
+                        "priceCalcMode": "fromTotal",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Kapalina do ostřikovačů zimní 3 l",
+                            "description": null
+                        },
+                        "unit": "ks",
+                        "quantity": 1,
+                        "unitPrice": 89.9,
+                        "totalPrice": 89.9,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 1313.97,
+                        "tax": 275.93,
+                        "total": 1589.9
+                    }
+                ],
+                "totals": {
+                    "totalBase": 1313.97,
+                    "totalVat": 275.93,
+                    "totalAmount": 1589.9,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0901-receipt.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "vehicle.fuel",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": [
+                            {
+                                "rowIndex": 1,
+                                "tag": "vehicle.consumables"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

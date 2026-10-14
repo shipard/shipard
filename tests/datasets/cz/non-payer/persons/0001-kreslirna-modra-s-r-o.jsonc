@@ -1,0 +1,29 @@
+{
+    "format": "shpd.persons.person",
+    "formatVersion": "1.2",
+    "personType": "company",
+    "country": "cz",
+    "companyId": "68040725",
+    "name": {
+        "fullName": "Kreslírna Modrá s.r.o."
+    },
+    "status": {
+        "isOwn": true,
+        "docState": 40
+    },
+    "addresses": [
+        {
+            "addressType": 1,
+            "street": "Náčrtková",
+            "houseNumber": "15",
+            "city": "Brno",
+            "zip": "60200",
+            "country": "cz"
+        }
+    ],
+    "applyOptions": {
+        "mergeStrategy": "createOnly",
+        "matchStrategy": "identifiersOnly",
+        "targetDocState": 40
+    }
+}

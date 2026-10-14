@@ -1,0 +1,416 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-NP-0301",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Faktura 2026071245",
+    "senderEmail": "zakaznici@vetrnik-energie.example",
+    "senderName": "Energetika Větrník a.s.",
+    "partnerName": "Energetika Větrník a.s.",
+    "receivedAt": "2026-08-13T08:00:00",
+    "bodyPlain": "Dobrý den,\n\nv příloze zasíláme fakturu 2026071245.\n\nEnergetika Větrník a.s.",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura 2026071245 — Energetika Větrník a.s., 4 725,00 Kč",
+    "created": "2026-08-13T08:00:00",
+    "attachments": [
+        {
+            "file": "0301-domestic-rounding.pdf",
+            "name": "0301-domestic-rounding.pdf",
+            "mimeType": "application/pdf",
+            "size": 54070,
+            "sha256": "298167637a73b90c46577f6588ed50c081b6548b2132beed83cd68d195d6066f",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-08-13T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "premises.electricity",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-08-13T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Faktura 2026071245 — Energetika Větrník a.s., 4 725,00 Kč"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-08-13T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "2026071245",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Energetika Větrník a.s.",
+                            "country": "cz",
+                            "companyId": "01848739",
+                            "taxId": "CZ01848739",
+                            "vatId": "CZ01848739",
+                            "courtRegistration": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                            "address": {
+                                "street": "Rozvodná",
+                                "houseNumber": "55/1",
+                                "city": "Ostrava",
+                                "zip": "70200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "zakaznici@vetrnik-energie.example",
+                                "phone": "+420596730111",
+                                "web": "www.vetrnik-energie.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": "2282321679/0300",
+                                "iban": "CZ6703000000002282321679",
+                                "bic": "CEKOCZPP"
+                            }
+                        },
+                        "customer": {
+                            "name": "Kreslírna Modrá s.r.o.",
+                            "country": "cz",
+                            "companyId": "68040725",
+                            "taxId": null,
+                            "vatId": null,
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Náčrtková",
+                                "houseNumber": "15",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-08-12",
+                            "dueDate": "2026-08-26",
+                            "taxPointDate": "2026-07-31",
+                            "periodFrom": "2026-07-01",
+                            "periodTo": "2026-07-31"
+                        },
+                        "currency": "CZK",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "domestic",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": "2026071245",
+                            "specificSymbol": null,
+                            "constantSymbol": "0308"
+                        },
+                        "notes": {
+                            "onDocument": "Vyúčtování dodávky elektřiny za období 1. 7. 2026 – 31. 7. 2026. Odběrné místo: Lisovací 418/2, 760 01 Zlín."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Silová elektřina — produkt STANDARD, VT",
+                                    "description": null
+                                },
+                                "unit": "MWh",
+                                "quantity": 0.718,
+                                "unitPrice": 3190.0,
+                                "totalPrice": 2290.42,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Distribuce elektřiny vč. systémových služeb",
+                                    "description": null
+                                },
+                                "unit": "MWh",
+                                "quantity": 0.718,
+                                "unitPrice": 2015.0,
+                                "totalPrice": 1446.77,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Stálý plat za jistič nad 3×25 A do 3×32 A",
+                                    "description": null
+                                },
+                                "unit": "měs",
+                                "quantity": 1,
+                                "unitPrice": 168.0,
+                                "totalPrice": 168.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 21,
+                                    "supplyKind": null,
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 21,
+                                "base": 3905.19,
+                                "tax": 820.09,
+                                "total": 4725.28
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 3905.19,
+                            "totalVat": 820.09,
+                            "totalAmount": 4725.0,
+                            "totalRounding": -0.28
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0301-domestic-rounding.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-08-13T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "2026071245",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Energetika Větrník a.s.",
+                    "country": "cz",
+                    "companyId": "01848739",
+                    "taxId": "CZ01848739",
+                    "vatId": "CZ01848739",
+                    "courtRegistration": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "address": {
+                        "street": "Rozvodná",
+                        "houseNumber": "55/1",
+                        "city": "Ostrava",
+                        "zip": "70200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "zakaznici@vetrnik-energie.example",
+                        "phone": "+420596730111",
+                        "web": "www.vetrnik-energie.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": "2282321679/0300",
+                        "iban": "CZ6703000000002282321679",
+                        "bic": "CEKOCZPP"
+                    }
+                },
+                "customer": {
+                    "name": "Kreslírna Modrá s.r.o.",
+                    "country": "cz",
+                    "companyId": "68040725",
+                    "taxId": null,
+                    "vatId": null,
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Náčrtková",
+                        "houseNumber": "15",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-08-12",
+                    "dueDate": "2026-08-26",
+                    "taxPointDate": "2026-07-31",
+                    "periodFrom": "2026-07-01",
+                    "periodTo": "2026-07-31"
+                },
+                "currency": "CZK",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "domestic",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": "2026071245",
+                    "specificSymbol": null,
+                    "constantSymbol": "0308"
+                },
+                "notes": {
+                    "onDocument": "Vyúčtování dodávky elektřiny za období 1. 7. 2026 – 31. 7. 2026. Odběrné místo: Lisovací 418/2, 760 01 Zlín."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Silová elektřina — produkt STANDARD, VT",
+                            "description": null
+                        },
+                        "unit": "MWh",
+                        "quantity": 0.718,
+                        "unitPrice": 3190.0,
+                        "totalPrice": 2290.42,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Distribuce elektřiny vč. systémových služeb",
+                            "description": null
+                        },
+                        "unit": "MWh",
+                        "quantity": 0.718,
+                        "unitPrice": 2015.0,
+                        "totalPrice": 1446.77,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Stálý plat za jistič nad 3×25 A do 3×32 A",
+                            "description": null
+                        },
+                        "unit": "měs",
+                        "quantity": 1,
+                        "unitPrice": 168.0,
+                        "totalPrice": 168.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 21,
+                            "supplyKind": null,
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 21,
+                        "base": 3905.19,
+                        "tax": 820.09,
+                        "total": 4725.28
+                    }
+                ],
+                "totals": {
+                    "totalBase": 3905.19,
+                    "totalVat": 820.09,
+                    "totalAmount": 4725.0,
+                    "totalRounding": -0.28
+                },
+                "attachments": [
+                    {
+                        "filename": "0301-domestic-rounding.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "premises.electricity",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": []
+                    }
+                }
+            }
+        }
+    ]
+}

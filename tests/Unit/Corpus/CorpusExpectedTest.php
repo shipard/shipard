@@ -23,6 +23,10 @@ use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
  * z taxonomie, a ke každému existuje PDF.
  * Matice datový soubor × profil (bez `skipProfiles`) musí být úplná bez
  * sirotků. Projekce sama musí být podmnožinou schématu ve stejném pořadí.
+ * Datové sady `tests/datasets/<země>/<profil>/` (F2, tasks/testing-phase2.md)
+ * musí odpovídat korpusu: zpráva per buňka s `canonicalJson`, který je po
+ * odebrání doplněných polí (`source`, `attachments`, `tagSource`,
+ * `tagConfidence`) shodný s očekáváním, PDF v sidecaru = PDF korpusu.
  *
  * Oprava: očekávaný výsledek se needituje ručně — oprav datový soubor nebo
  * generátor (tools/invoice-generator/) a spusť `python3 tests/corpus/cz/build.py`;
@@ -321,6 +325,66 @@ final class CorpusExpectedTest extends TestCase
 
         $this->assertGreaterThan(0, count($cells));
         $this->assertSame([], $problems, count($cells) . " buněk\n" . implode("\n", $problems));
+    }
+
+    /**
+     * Sady jsou generované z korpusu (build.py) — tenhle test chytí
+     * zapomenutý rebuild: každá buňka má zprávu, žádná zpráva není navíc,
+     * ideální analýza = očekávání + doplněná pole, PDF stejné.
+     */
+    public function testDatasetsMatchCorpus(): void
+    {
+        $datasetsDir = self::repoRoot() . '/tests/datasets';
+        $problems = [];
+        $seen = [];
+        foreach (glob($datasetsDir . '/*/*/mail/*.jsonc') ?: [] as $file) {
+            $profile = basename(dirname($file, 2));
+            $country = basename(dirname($file, 3));
+            $label = "{$country}/{$profile}/" . basename($file);
+            $message = JsoncParser::parseFile($file);
+            $pdfName = (string) ($message['attachments'][0]['file'] ?? '');
+            $stem = basename($pdfName, '.pdf');
+            if ($pdfName === '' || count($message['attachments'] ?? []) !== 1) {
+                $problems[] = "{$label}: zpráva musí mít právě jednu přílohu";
+                continue;
+            }
+            $key = "{$country}/{$profile}/{$stem}";
+            if (isset($seen[$key])) {
+                $problems[] = "{$label}: druhá zpráva pro buňku {$key}";
+            }
+            $seen[$key] = true;
+            if (!is_file(self::expectedPath($country, $profile, $stem))) {
+                $problems[] = "{$label}: zpráva bez buňky matice {$key}";
+                continue;
+            }
+            $canonical = $message['analyses'][0]['canonicalJson'] ?? null;
+            if (!is_array($canonical) || ($message['analyses'][0]['status'] ?? null) !== 2
+                || array_key_exists('resolution', $message['analyses'][0])) {
+                $problems[] = "{$label}: chybí otevřený úspěšný návrh (analyses[0])";
+                continue;
+            }
+            unset($canonical['source'], $canonical['attachments']);
+            unset($canonical['_resolve']['contentTag']['tagSource'], $canonical['_resolve']['contentTag']['tagConfidence']);
+            if ($canonical != self::expectedDoc($country, $profile, $stem)) {
+                $problems[] = "{$label}: canonicalJson po odebrání doplněných polí ≠ expected/{$profile}/{$stem}.json";
+            }
+            $sidecar = substr($file, 0, -strlen('.jsonc')) . '.files/' . $pdfName;
+            $corpusPdf = self::corpusDir() . "/{$country}/out/{$profile}/{$stem}.pdf";
+            if (!is_file($sidecar) || !is_file($corpusPdf) || sha1_file($sidecar) !== sha1_file($corpusPdf)) {
+                $problems[] = "{$label}: PDF v sidecaru ≠ out/{$profile}/{$stem}.pdf";
+            }
+            if (($message['docState'] ?? null) !== 20 || ($message['analysisState'] ?? null) !== 30) {
+                $problems[] = "{$label}: zpráva má být K řešení (20) a Analyzováno (30)";
+            }
+        }
+        foreach (array_keys(self::expectedFiles()) as $key) {
+            if (!isset($seen[$key])) {
+                $problems[] = "{$key}: buňka bez zprávy v tests/datasets — spusť python3 tests/corpus/cz/build.py";
+            }
+        }
+
+        $this->assertNotEmpty($seen, 'tests/datasets/*/*/mail je prázdný — spusť python3 tests/corpus/cz/build.py');
+        $this->assertSame([], $problems, count($seen) . " zpráv\n" . implode("\n", $problems));
     }
 
     // ── Per soubor ──────────────────────────────────────────────────────────

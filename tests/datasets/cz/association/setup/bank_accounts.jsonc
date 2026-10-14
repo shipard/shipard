@@ -1,0 +1,18 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "bank_accounts",
+    "rows": [
+        {
+            "code": "BU1",
+            "name": "Běžný účet",
+            "account_number": "202728470/2010",
+            "iban": "CZ6320100000000202728470",
+            "bic": "FIOBCZPP",
+            "currency": "czk",
+            "is_default": true,
+            "valid_from": "2026-01-01",
+            "sort_order": 1,
+            "docState": 40
+        }
+    ]
+}

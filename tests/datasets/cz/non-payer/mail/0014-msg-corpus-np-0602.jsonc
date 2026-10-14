@@ -1,0 +1,421 @@
+{
+    "format": "shpd.mail.incomingMessage",
+    "formatVersion": "1.0",
+    "messageId": "MSG-CORPUS-NP-0602",
+    "mailbox": "default",
+    "primaryType": "invoiceReceived",
+    "primaryTypeSource": "ai",
+    "subject": "Invoice RE-2026-08102",
+    "senderEmail": "sales@nordlicht-hardware.example",
+    "senderName": "Nordlicht Hardware GmbH",
+    "partnerName": "Nordlicht Hardware GmbH",
+    "receivedAt": "2026-09-24T08:00:00",
+    "bodyPlain": "Hello,\n\nplease find attached invoice RE-2026-08102.\n\nNordlicht Hardware GmbH",
+    "sourceType": 2,
+    "docState": 20,
+    "analysisState": 30,
+    "aiTitle": "Faktura RE-2026-08102 — Nordlicht Hardware GmbH, 2 293,37 EUR",
+    "created": "2026-09-24T08:00:00",
+    "attachments": [
+        {
+            "file": "0602-eu-goods.pdf",
+            "name": "0602-eu-goods.pdf",
+            "mimeType": "application/pdf",
+            "size": 32646,
+            "sha256": "a511f8f49404413126a574dd2922b4ac76cbd7d8b22c14128b038bd6608fd0d5",
+            "order": 1
+        }
+    ],
+    "analyses": [
+        {
+            "analyzedAt": "2026-09-24T08:01:00",
+            "status": 2,
+            "modelName": "corpus-ideal",
+            "promptVersion": "corpus",
+            "profile": "czech_general",
+            "confidence": 1.0,
+            "proposedType": "invoiceReceived",
+            "contentTag": "it.hardware",
+            "tokensInput": 0,
+            "tokensOutput": 0,
+            "durationMs": 0,
+            "costUsd": 0.0,
+            "created": "2026-09-24T08:01:00",
+            "analysisJson": {
+                "overall_confidence": 1.0,
+                "message_classification": {
+                    "primary_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "title": "Faktura RE-2026-08102 — Nordlicht Hardware GmbH, 2 293,37 EUR"
+                },
+                "document": {
+                    "doc_type": "invoiceReceived",
+                    "confidence": 1.0,
+                    "extracted_json": {
+                        "format": "shpd.docs.document",
+                        "formatVersion": "1.0",
+                        "source": {
+                            "kind": "aiExtraction",
+                            "extractedAt": "2026-09-24T08:01:00+00:00",
+                            "confidence": 1.0,
+                            "promptVersion": "corpus"
+                        },
+                        "docType": "invoiceReceived",
+                        "docNumber": "RE-2026-08102",
+                        "selfParty": "customer",
+                        "supplier": {
+                            "name": "Nordlicht Hardware GmbH",
+                            "country": "de",
+                            "companyId": null,
+                            "taxId": "DE810932557",
+                            "vatId": "DE810932557",
+                            "courtRegistration": "Amtsgericht Hamburg, HRB 998765",
+                            "address": {
+                                "street": "Industriestraße",
+                                "houseNumber": "42",
+                                "city": "Hamburg",
+                                "zip": "20457",
+                                "country": "de"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": "sales@nordlicht-hardware.example",
+                                "phone": "+494037005120",
+                                "web": "www.nordlicht-hardware.example"
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": "DE39200505507423852329",
+                                "bic": "NDLTDEHHXXX"
+                            }
+                        },
+                        "customer": {
+                            "name": "Kreslírna Modrá s.r.o.",
+                            "country": "cz",
+                            "companyId": "68040725",
+                            "taxId": null,
+                            "vatId": null,
+                            "courtRegistration": null,
+                            "address": {
+                                "street": "Náčrtková",
+                                "houseNumber": "15",
+                                "city": "Brno",
+                                "zip": "60200",
+                                "country": "cz"
+                            },
+                            "contact": {
+                                "name": null,
+                                "email": null,
+                                "phone": null,
+                                "web": null
+                            },
+                            "bankAccount": {
+                                "accountNumber": null,
+                                "iban": null,
+                                "bic": null
+                            }
+                        },
+                        "dates": {
+                            "issueDate": "2026-09-23",
+                            "dueDate": "2026-10-07",
+                            "taxPointDate": "2026-09-22",
+                            "periodFrom": null,
+                            "periodTo": null
+                        },
+                        "currency": "EUR",
+                        "exchangeRate": null,
+                        "vat": {
+                            "mode": "fromBase",
+                            "place": "intracom",
+                            "reverseCharge": false
+                        },
+                        "payment": {
+                            "method": "bankTransfer",
+                            "paymentReference": null,
+                            "specificSymbol": null,
+                            "constantSymbol": null
+                        },
+                        "notes": {
+                            "onDocument": "Goods remain our property until paid in full."
+                        },
+                        "rows": [
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "MON-27-4K",
+                                    "ean": "4260999100020",
+                                    "name": "27\" 4K monitor, USB-C, height adjustable",
+                                    "description": null
+                                },
+                                "unit": "pcs",
+                                "quantity": 4,
+                                "unitPrice": 329.0,
+                                "totalPrice": 1316.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 19,
+                                    "supplyKind": "goods",
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": "DOCK-UC-100",
+                                    "ean": null,
+                                    "name": "USB-C docking station, 2× DP, 100 W PD",
+                                    "description": null
+                                },
+                                "unit": "pcs",
+                                "quantity": 4,
+                                "unitPrice": 149.0,
+                                "totalPrice": 566.2,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": 5,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 19,
+                                    "supplyKind": "goods",
+                                    "reverseChargeCode": null
+                                }
+                            },
+                            {
+                                "rowKind": "item",
+                                "item": {
+                                    "supplierCode": null,
+                                    "ean": null,
+                                    "name": "Shipping (parcel, insured)",
+                                    "description": null
+                                },
+                                "unit": "pcs",
+                                "quantity": 1,
+                                "unitPrice": 45.0,
+                                "totalPrice": 45.0,
+                                "priceCalcMode": "fromUnitPrice",
+                                "discountPct": null,
+                                "discountAmount": null,
+                                "vat": {
+                                    "pct": 19,
+                                    "supplyKind": "services",
+                                    "reverseChargeCode": null
+                                }
+                            }
+                        ],
+                        "vatRecap": [
+                            {
+                                "vatPct": 19,
+                                "base": 1927.2,
+                                "tax": 366.17,
+                                "total": 2293.37
+                            }
+                        ],
+                        "totals": {
+                            "totalBase": 1927.2,
+                            "totalVat": 366.17,
+                            "totalAmount": 2293.37,
+                            "totalRounding": 0
+                        },
+                        "attachments": [
+                            {
+                                "filename": "0602-eu-goods.pdf",
+                                "mimeType": "application/pdf",
+                                "kind": "original",
+                                "ref": "att:1"
+                            }
+                        ]
+                    }
+                }
+            },
+            "canonicalJson": {
+                "format": "shpd.docs.document",
+                "formatVersion": "1.0",
+                "source": {
+                    "kind": "aiExtraction",
+                    "extractedAt": "2026-09-24T08:01:00+00:00",
+                    "confidence": 1.0,
+                    "promptVersion": "corpus"
+                },
+                "docType": "invoiceReceived",
+                "docNumber": "RE-2026-08102",
+                "selfParty": "customer",
+                "supplier": {
+                    "name": "Nordlicht Hardware GmbH",
+                    "country": "de",
+                    "companyId": null,
+                    "taxId": "DE810932557",
+                    "vatId": "DE810932557",
+                    "courtRegistration": "Amtsgericht Hamburg, HRB 998765",
+                    "address": {
+                        "street": "Industriestraße",
+                        "houseNumber": "42",
+                        "city": "Hamburg",
+                        "zip": "20457",
+                        "country": "de"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": "sales@nordlicht-hardware.example",
+                        "phone": "+494037005120",
+                        "web": "www.nordlicht-hardware.example"
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": "DE39200505507423852329",
+                        "bic": "NDLTDEHHXXX"
+                    }
+                },
+                "customer": {
+                    "name": "Kreslírna Modrá s.r.o.",
+                    "country": "cz",
+                    "companyId": "68040725",
+                    "taxId": null,
+                    "vatId": null,
+                    "courtRegistration": null,
+                    "address": {
+                        "street": "Náčrtková",
+                        "houseNumber": "15",
+                        "city": "Brno",
+                        "zip": "60200",
+                        "country": "cz"
+                    },
+                    "contact": {
+                        "name": null,
+                        "email": null,
+                        "phone": null,
+                        "web": null
+                    },
+                    "bankAccount": {
+                        "accountNumber": null,
+                        "iban": null,
+                        "bic": null
+                    }
+                },
+                "dates": {
+                    "issueDate": "2026-09-23",
+                    "dueDate": "2026-10-07",
+                    "taxPointDate": "2026-09-22",
+                    "periodFrom": null,
+                    "periodTo": null
+                },
+                "currency": "EUR",
+                "exchangeRate": null,
+                "vat": {
+                    "mode": "fromBase",
+                    "place": "intracom",
+                    "reverseCharge": false
+                },
+                "payment": {
+                    "method": "bankTransfer",
+                    "paymentReference": null,
+                    "specificSymbol": null,
+                    "constantSymbol": null
+                },
+                "notes": {
+                    "onDocument": "Goods remain our property until paid in full."
+                },
+                "rows": [
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "MON-27-4K",
+                            "ean": "4260999100020",
+                            "name": "27\" 4K monitor, USB-C, height adjustable",
+                            "description": null
+                        },
+                        "unit": "pcs",
+                        "quantity": 4,
+                        "unitPrice": 329.0,
+                        "totalPrice": 1316.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 19,
+                            "supplyKind": "goods",
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": "DOCK-UC-100",
+                            "ean": null,
+                            "name": "USB-C docking station, 2× DP, 100 W PD",
+                            "description": null
+                        },
+                        "unit": "pcs",
+                        "quantity": 4,
+                        "unitPrice": 149.0,
+                        "totalPrice": 566.2,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": 5,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 19,
+                            "supplyKind": "goods",
+                            "reverseChargeCode": null
+                        }
+                    },
+                    {
+                        "rowKind": "item",
+                        "item": {
+                            "supplierCode": null,
+                            "ean": null,
+                            "name": "Shipping (parcel, insured)",
+                            "description": null
+                        },
+                        "unit": "pcs",
+                        "quantity": 1,
+                        "unitPrice": 45.0,
+                        "totalPrice": 45.0,
+                        "priceCalcMode": "fromUnitPrice",
+                        "discountPct": null,
+                        "discountAmount": null,
+                        "vat": {
+                            "pct": 19,
+                            "supplyKind": "services",
+                            "reverseChargeCode": null
+                        }
+                    }
+                ],
+                "vatRecap": [
+                    {
+                        "vatPct": 19,
+                        "base": 1927.2,
+                        "tax": 366.17,
+                        "total": 2293.37
+                    }
+                ],
+                "totals": {
+                    "totalBase": 1927.2,
+                    "totalVat": 366.17,
+                    "totalAmount": 2293.37,
+                    "totalRounding": 0
+                },
+                "attachments": [
+                    {
+                        "filename": "0602-eu-goods.pdf",
+                        "mimeType": "application/pdf",
+                        "kind": "original",
+                        "ref": "att:1"
+                    }
+                ],
+                "_resolve": {
+                    "contentTag": {
+                        "tag": "it.hardware",
+                        "tagSource": "llm",
+                        "tagConfidence": 1.0,
+                        "rowExceptions": [
+                            {
+                                "rowIndex": 2,
+                                "tag": "services.shipping"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
