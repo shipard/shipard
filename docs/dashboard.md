@@ -353,7 +353,7 @@ Mapování karet na sekce (#101 D8, D10):
 | `open_viewer` | navigace | `{viewerId, recordId?, viewGroup?, filters?}` — `viewGroup` chip cílového vieweru, `filters` `{filterId: value}` jeho custom filtrů (jednorázové hinty `pendingViewGroup` / `pendingFilters`, viz `docs/frontend.md`) |
 | `open_form` | otevři form | `{table, recordId?/id?}` |
 | `open_detail` | read-only detail záznamu v modalu (`ViewerDetailModal` → `GET /_ui/viewer/{viewerId}/detail/{id}`; `toolbar` z odpovědi se ignoruje, `tabId` ořeže detail na jediný tab) | `{viewerId, recordId, tabId?}` |
-| `materialize_content_tag` | založení účetní položky pro obsahový štítek — `POST /_exchange/content-tags/materialize`, toast s „Otevřít" (form položky) + refetch; labely akcí posílá server (passthrough — u goods.stock nesou čísla účtů z osnovy) | `{tag, account?}` |
+| `materialize_content_tag` | založení účetní položky pro obsahový štítek — `POST /_exchange/content-tags/materialize`, toast s „Otevřít" (form položky) + refetch; labely akcí posílá server (passthrough, vzor alertů); `account` jen pro štítek bez položky v nabídce | `{tag, account?}` |
 
 ## 5. Zdroje karet
 
@@ -618,13 +618,13 @@ podtitulek „{n} dokladů čeká · návrh: {starter} ({účet})",
 (passthrough vzor alertů — dynamická čísla účtů):
 
 - štítek s položkou v nabídce aktivní varianty osnovy → jediná primary
-  akce „Založit položku" (`materialize_content_tag`, `{tag}`);
-- `goods.stock` (bez mapování, D7) → dvě akce „Jako materiál (501…)" /
-  „Jako zboží (504…)" s čísly prvních aktivních analytik 501/504
-  (`{tag, account}`); bez 501/504 v osnově karta není;
-- štítek vědomě bez mapování (admin.other, people.benefits, NPO bez
-  protějšku) **nekartuje** — je „review by design", karta by neměla co
-  založit.
+  akce „Založit položku" (`materialize_content_tag`, `{tag}`); nabídka
+  pokrývá každý štítek kromě `admin.other` (ds-setup Task 12, #103 D31 —
+  `goods.stock` míří na Spotřebu materiálu 501100, dřívější volba „Jako
+  materiál / Jako zboží" z content-tag-ui D7 zanikla; D32 — nezisková
+  nabídka má stejné nákladové analytiky jako podnikatelská);
+- štítek bez položky v nabídce (`admin.other`) **nekartuje** — je „review
+  by design", karta by neměla co založit.
 
 Po založení se návrhy při dalším otevření povýší na plnou trojici bez
 reanalýzy (fresh resolution, D16). Sesterská settings stránka:

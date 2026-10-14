@@ -57,7 +57,7 @@ obrazovka správy štítků) je samostatný task `content-tag-ui.md` (vznikne).
 | D4 | Ortogonální osy mimo taxonomii: hranice drobného majetku = amountGuard v mapování; DPH režim = vatHint mapování; nepoznatelný záměr (catering) = default + pozdější mikrointerakce. |
 | D5 | Granularita v1: document-level `primaryTag` + `rowExceptions` pro odchylné řádky; moc výjimek → nízká confidence / nic. |
 | D6 | Taxonomie v1 fixní systémová; per-DS rozšíření až po ověření. |
-| D7 | Jeden štítek `goods.stock`; 501 vs. 504 rozhodne per-DS volba (mikrointerakce v UI tasku; do té doby bez mapování → review). |
+| D7 | Jeden štítek `goods.stock`; 501 vs. 504 rozhodne per-DS volba (mikrointerakce v UI tasku; do té doby bez mapování → review). *Nahrazeno `ds-setup-12` D31 (2026-10-14): mapuje se na 501100 Spotřeba materiálu v obou nabídkách, volba na kartě zanikla.* |
 | D8 | Validace taxonomie offline batchem nad starým Shipardem — samostatný task v `old_shipard`. |
 | D9 | Mapování = `content_tags` na `economy_items`; žádná mapovací tabulka. Trojice návrhu se čte z položky. |
 | D10 | Shipnutý default: štítky přímo na položkách nabídky (`accountingItemsDefault/Npo.jsonc`); fallback štítek → účet se derivuje z nabídky aktivní varianty; `contentTagDefaults.jsonc` nese jen vatHint + amountGuard. Žádná materializace při provisioningu. |
@@ -114,12 +114,12 @@ ověřit proti `accountChartDefault.jsonc` při implementaci):
 | `services.postage` | Poštovné | 518203 |
 | `services.banking` | Bankovní poplatky | 568201 |
 | `services.waste` | Odvoz odpadu | 518100 |
-| `goods.stock` | Zboží / materiál na sklad | — (D7: bez mapování do volby DS) |
+| `goods.stock` | Zboží / materiál na sklad | — (D7: bez mapování do volby DS) → `ds-setup-12` D31: 501100 |
 | `travel.accommodation` | Ubytování | 512100 |
 | `travel.fares` | Jízdné a letenky | 512100 |
 | `people.catering` | Občerstvení a pohoštění | 513900 + vatHint nonDeductible |
 | `people.gifts` | Dary a pozornosti | 513900 + vatHint nonDeductible (ověřit vs. 543) |
-| `people.benefits` | Zaměstnanecké benefity | — (osnova/nabídka nemá jasný cíl — bez mapování, review) |
+| `people.benefits` | Zaměstnanecké benefity | — (osnova/nabídka nemá jasný cíl — bez mapování, review) → `ds-setup-12`: 528100 |
 | `people.workwear` | Pracovní oděvy a OOPP | 501100 |
 | `admin.insurance` | Pojištění majetku a odpovědnosti | 548201 |
 | `admin.fees` | Správní a licenční poplatky | 538100 (sdílí s toll, ověřit) |

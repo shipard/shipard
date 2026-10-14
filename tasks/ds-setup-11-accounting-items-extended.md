@@ -53,7 +53,9 @@ NPO sada se skládá nově z ploché NPO osnovy.
 8. **D8 — daň z příjmů** zůstává jako závazkový účet 341100 (platba daně),
    nákladový 591x se nepřidává.
 9. **D9 — 518206** jen do podnikatelské osnovy; NPO drží jednu analytiku
-   služeb (518100), software tam jde na ni.
+   služeb (518100), software tam jde na ni. *Nahrazeno `ds-setup-12` D32
+   (2026-10-14): nezisková osnova i nabídka mají stejné nákladové
+   analytiky jako podnikatelská.*
 
 ## Před implementací přečti
 

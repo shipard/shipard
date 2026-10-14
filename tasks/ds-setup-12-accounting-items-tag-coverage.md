@@ -1,6 +1,6 @@
 # ds-setup — Task 12: Nabídka účetních položek pokrývá všechny obsahové štítky
 
-**Stav:** naplánováno — design schválen 2026-10-14 (#103 D31, D32), čeká na implementaci
+**Stav:** hotovo — implementováno 2026-10-14 (#103 D31, D32); zbývá nasazení na alfu (`ds-upgrade` doplní účty, nové položky nabízí sekce „Volitelné“)
 
 ## Kontext / Cíl
 
@@ -145,13 +145,44 @@ nový `tests/Unit/Module/Economy/Items/AccountingItemsOfferCoverageTest.php`):
 
 ## Hotovo když
 
-- [ ] strážce zelený (`--filter AccountingItemsOffer`), stávající testy nabídek a osnov zelené
-- [ ] `dataset-seed` obou sad bez přeskočených položek
-- [ ] Použít faktury `goods.stock` a `office.supplies` ve spolku nezaloží položku
-- [ ] `docs/ds-setup.md` (nabídky): pokrytí štítků jako pravidlo, výjimka `admin.other`,
+- [x] strážce zelený (`--filter AccountingItemsOffer`), stávající testy nabídek a osnov zelené
+- [x] `dataset-seed` obou sad bez přeskočených položek
+- [x] Použít faktury `goods.stock` a `office.supplies` ve spolku nezaloží položku
+- [x] `docs/ds-setup.md` (nabídky): pokrytí štítků jako pravidlo, výjimka `admin.other`,
       NNO se stejnými nákladovými analytikami, poznámka k existujícím zdrojům dat
-- [ ] `tasks/ds-setup-11-accounting-items-extended.md`: u D9 poznámka „nahrazeno ds-setup-12 D32“
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] `tasks/ds-setup-11-accounting-items-extended.md`: u D9 poznámka „nahrazeno ds-setup-12 D32“
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
+
+## Odchylky při implementaci (2026-10-14)
+
+- **Karta `goods.stock` na Dashboardu** (`ContentTagSuggestionsSource`,
+  content-tag-ui D7/D25) obcházela nabídku a nabízela volbu „Jako materiál
+  (501…)“ / „Jako zboží (504…)“. S položkou 501100 v nabídce by akce „Jako
+  zboží“ založila položku s kódem a názvem *Spotřeba materiálu*, pěti
+  štítky a účtem 504 — výjimka proto zanikla, karta má jedinou akci
+  „Založit položku“ jako ostatní štítky; kdo účtuje zboží na 504, změní
+  účet položky ve formuláři. Texty `contentTag.chooseStock` / `asMaterial`
+  / `asGoods` z katalogu `core.exchange.feedTexts` odstraněny. Endpoint
+  `materialize` dál bere `account` pro štítek bez položky v nabídce
+  (`admin.other`).
+- **Skupiny neziskové nabídky** zrcadlí podnikatelskou sadu 1:1 (8 skupin;
+  `sanctions` zanikla — pokuty jdou do `insurance`, dary do `operations`
+  jako 543900 v podnikatelské).
+- Osnova `npo` nechává účet 502100 s názvem „Spotřeba energie“; jen
+  položka nabídky se jmenuje „(elektřina)“.
+- Testy cesty „štítek bez položky v nabídce“ (materializer, controller)
+  přešly z `goods.stock` na `admin.other`.
+
+## Ověření (2026-10-14, dev)
+
+- `dataset-seed` po resetu: spolek (`wp66-o`, osnova `npo`) založil 50 položek,
+  plátce (`ob9b-7`, osnova `default`) 58 — bez `skipped`, žádná bez účtu.
+- Ve spolku přes API Použít zprávy se štítkem `goods.stock` (čtyři řádky
+  dřeva + doprava) a `office.supplies` (papír, toner, dvě předplatná):
+  počet položek zůstal 50, řádky mají položku i účet — 501100 Spotřeba
+  materiálu, 501100S Kancelářské potřeby, 518100 Ostatní služby pro
+  řádkové výjimky (doprava, předplatná).
+- Strážce i celá sada PHPUnit zelené (9394 testů).
 
 ## Rozhodnutí k designu (potvrzená)
 

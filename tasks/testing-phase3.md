@@ -1,6 +1,6 @@
 # Testování F3: ověření zaúčtování a DPH nad datovou sadou
 
-**Stav:** naplánováno — design schválen 2026-10-14 (#103 D26–D30), čeká na `ds-setup-12` a implementaci
+**Stav:** naplánováno — design schválen 2026-10-14 (#103 D26–D30), `ds-setup-12` hotový 2026-10-14, čeká na implementaci
 
 ## Kontext / Cíl
 
@@ -201,7 +201,7 @@ schválený snímek místo nezávislého výpočtu.
 
 ## Hotovo když
 
-- [ ] `ds-setup-12` hotový
+- [x] `ds-setup-12` hotový (2026-10-14)
 - [ ] unit testy porovnávače, generátoru a příkazu zelené (úzké `--filter`,
       `python3 -m unittest`)
 - [ ] tři dev zdroje dat z `CLAUDE.local.md` (režim volný) znovu naseedované;

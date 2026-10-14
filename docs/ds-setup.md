@@ -614,7 +614,27 @@ Všechny body, které §0 nechávala otevřené, jsou rozhodnuté:
   vynechání" z Tasku 10 — agenda v aplikaci není, ale účtuje se);
   daň z příjmů zůstává jen jako závazkový účet 341100. Podnikatelská
   osnova dostala nový účet `518206` Software a cloudové služby
-  (NPO drží jednu analytiku služeb 518100).
+  (NPO tehdy držela jednu analytiku služeb 518100 — nahrazeno D32 níže).
+  **Pokrytí štítků (Task 12, #103 D31, D32):** každý obsahový štítek
+  z `core.exchange.contentTags` kromě `admin.other` má v **každé** nabídce
+  **právě jednu** položku a účet každé položky existuje v osnově své
+  varianty — hlídá `AccountingItemsOfferCoverageTest`, výjimka je v něm
+  pojmenovaná konstanta („nezařazené — rozhoduje uživatel“). Bez pokrytí
+  Použít návrhu dokladu zakládalo přes `autoCreateMode` položky podle
+  řádků bez účtu. `goods.stock` míří na 501100 Spotřeba materiálu
+  (skladové položky se nezakládají; volba materiál / zboží na kartě
+  Dashboardu z content-tag-ui D7 zanikla), `people.benefits` na nový účet
+  528100. **Nezisková nabídka má stejné nákladové analytiky jako
+  podnikatelská** (D32, nahrazuje Task 11 D9): osnova `npo` dostala
+  501201/501202, 502200/502300, 511201/511202, 518201–518206, 518211,
+  518212 a pojištění 549201/549202 (548 je v NNO Manka a škody); skupiny
+  nabídky zrcadlí podnikatelskou sadu. Počty: 58 (podnikatelská) / 50 (NPO)
+  položek v 8 skupinách. Existující zdroje dat: `AccountChartProvisioner`
+  je create-only, nové účty dostanou při `ds-upgrade`; nabídka je
+  jednorázová (D18), nové položky nabízí sekce „Volitelné“ a staré položky
+  si štítky ponechají — u spolku pak staré 502100 nese vodu a plyn a nově
+  vygenerovaná 502200 vodu znovu: po vygenerování zkontrolovat štítky
+  u 502100 a 511100.
 - **Pořadí kroků průvodce** → bezpředmětné. Krokový průvodce se nestaví (D15),
   pořadí drží `SetupChecklist::ORDER` a řídí se závislostmi.
 
