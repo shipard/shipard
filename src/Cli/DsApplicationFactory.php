@@ -30,6 +30,7 @@ final class DsApplicationFactory
         $app->add(new \Shipard\Command\DataSource\ApiKeyRevokeCommand());
         $app->add(new \Shipard\Command\DataSource\DatasetDumpCommand());
         $app->add(new \Shipard\Command\DataSource\DatasetSeedCommand());
+        $app->add(new \Shipard\Command\DataSource\DatasetVerifyCommand());
         $app->add(new \Shipard\Command\DataSource\SeedPersonsCommand());
         $app->add(new \Shipard\Command\DataSource\SeedClearCommand());
         $app->add(new \Shipard\Command\DataSource\SeedMailCommand());
