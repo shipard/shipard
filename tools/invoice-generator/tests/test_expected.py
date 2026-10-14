@@ -36,7 +36,7 @@ class ProjectionFileTest(unittest.TestCase):
             if "regex" in shape:
                 re.compile(shape["regex"])
                 self.assertNotIn("~", shape["regex"], name)
-        self.assertEqual({"customer", "vatRecap"}, set(PROJECTION.nullable_nodes))
+        self.assertEqual({"customer"}, set(PROJECTION.nullable_nodes))
         self.assertEqual(["Party", "Row", "VatRecapEntry"], sorted(PROJECTION.defs))
 
     def test_document_key_order_matches_task(self) -> None:
@@ -144,7 +144,7 @@ class BuildExpectedTest(unittest.TestCase):
     def test_no_vat(self) -> None:
         doc = expected_for(DATA_NO_VAT)
         self.assertEqual({"mode": "none", "place": "domestic", "reverseCharge": False}, doc["vat"])
-        self.assertIsNone(doc["vatRecap"])
+        self.assertEqual([], doc["vatRecap"])
         self.assertEqual({"totalBase": None, "totalVat": None, "totalAmount": D("4800.00"), "totalRounding": D("0")},
                          doc["totals"])
         self.assertIsNone(doc["rows"][0]["vat"]["pct"])
@@ -202,8 +202,11 @@ class ApplyProjectionTest(unittest.TestCase):
     def test_nullable_nodes(self) -> None:
         doc = expected_for(DATA_DOMESTIC)
         doc["customer"] = None
-        doc["vatRecap"] = None
         apply_projection(doc, PROJECTION, taxonomy=TAXONOMY)
+        doc["vatRecap"] = None
+        with self.assertRaises(ProjectionError):
+            apply_projection(doc, PROJECTION, taxonomy=TAXONOMY)
+        doc["vatRecap"] = []
         doc["supplier"]["contact"] = None
         out = apply_projection(doc, PROJECTION, taxonomy=TAXONOMY)
         self.assertEqual({"name": None, "email": None, "phone": None, "web": None}, out["supplier"]["contact"])

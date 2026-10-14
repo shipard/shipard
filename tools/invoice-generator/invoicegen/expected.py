@@ -161,7 +161,7 @@ def build_expected(data: dict, supplier: dict, profile: dict | None, computed: d
             exceptions.append({"rowIndex": index, "tag": row["tag"]})
 
     if mode == "none":
-        recap = None
+        recap = []  # schéma chce pole; prázdné ≡ null (rovnocenné tvary)
     else:
         recap = [
             {"vatPct": pct, "base": _amount(r["base"]), "tax": _amount(r["tax"]), "total": _amount(r["total"])}

@@ -21,13 +21,13 @@
 //   "byCountry"  tvar podle hodnoty klíče "country" V TÉMŽE objektu; "*" = ostatní (povinný);
 //                hodnoty = jména tvarů bez byCountry
 // "nullableNodes": jediné uzly (objekt / pole), které smí být null jako celek — účtenka bez
-// odběratele, doklad bez rekapitulace DPH. Ostatní objekty projekce jsou vždy přítomné,
-// „na dokladu není“ vyjadřují null v listech.
+// odběratele. Ostatní objekty projekce jsou vždy přítomné, „na dokladu není“ vyjadřují null
+// v listech; pole bez prvků (vatRecap u dokladu bez DPH, rowExceptions) je prázdné pole.
 {
 	"format": "shpd.corpus.projection",
 	"formatVersion": "1",
 
-	"nullableNodes": ["customer", "vatRecap"],
+	"nullableNodes": ["customer"],
 
 	"document": {
 		"format": "docFormat",
