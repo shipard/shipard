@@ -32,9 +32,12 @@ final class DatasetPreflight
     }
 
     /**
+     * @param string|null $dsCountry země cílového DS (`DataSourceConfig::getCountry()`);
+     *        null / '' = neověřovat. Sada s `country` jiné země je chyba —
+     *        nic se nezmění (#103 D24).
      * @return array{errors: list<string>, warnings: list<string>}
      */
-    public function check(DatasetReader $reader): array
+    public function check(DatasetReader $reader, ?string $dsCountry = null): array
     {
         $errors = [];
         $warnings = [];
@@ -43,6 +46,12 @@ final class DatasetPreflight
             $manifest = $reader->getManifest();
         } catch (DatasetException $e) {
             return ['errors' => [$e->getMessage()], 'warnings' => []];
+        }
+
+        if ($manifest->country !== null && $dsCountry !== null && $dsCountry !== ''
+            && $manifest->country !== strtolower($dsCountry)) {
+            $errors[] = "manifest country '{$manifest->country}' ≠ země zdroje dat '" . strtolower($dsCountry)
+                . "' — sada patří jiné zemi";
         }
 
         $sections = [

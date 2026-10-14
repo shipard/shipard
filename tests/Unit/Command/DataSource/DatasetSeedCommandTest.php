@@ -29,10 +29,15 @@ use Symfony\Component\Console\Tester\CommandTester;
 class TestableDatasetSeedCommand extends DatasetSeedCommand
 {
     public int $resetRuns = 0;
+    public int $upgradeRuns = 0;
+    public int $upgradeResult = Command::SUCCESS;
+    public bool $settingsTable = true;
     public int $settingsApplied = -1;
     public int $settingsToReport = 3;
     public int $resetResult = Command::SUCCESS;
     public ?bool $lastMerge = null;
+    /** @var list<string> pořadí kroků upgrade / settings / reset */
+    public array $order = [];
     /** @var list<SectionSeeder> */
     public array $seeders = [];
 
@@ -54,15 +59,29 @@ class TestableDatasetSeedCommand extends DatasetSeedCommand
         return new ModulePathResolver([]);
     }
 
+    protected function hasSettingsTable(DataSourceConnection $dsConnection): bool
+    {
+        return $this->settingsTable;
+    }
+
+    protected function runUpgrade(OutputInterface $output): int
+    {
+        $this->upgradeRuns++;
+        $this->order[] = 'upgrade';
+        return $this->upgradeResult;
+    }
+
     protected function applySettingsBeforeReset(DatasetReader $reader, DataSourceConfig $dsConfig): int
     {
         $this->settingsApplied = $this->resetRuns; // musí být 0 = před resetem
+        $this->order[] = 'settings';
         return $this->settingsToReport;
     }
 
     protected function runReset(OutputInterface $output): int
     {
         $this->resetRuns++;
+        $this->order[] = 'reset';
         return $this->resetResult;
     }
 
@@ -106,20 +125,22 @@ class DatasetSeedCommandTest extends TestCase
         DatasetReader::removeTree($this->tmp);
     }
 
-    private function writeSet(bool $valid = true): string
+    private function writeSet(bool $valid = true, ?string $country = null): string
     {
-        $dir = $this->tmp . '/set' . ($valid ? '' : '-bad');
+        $dir = $this->tmp . '/set' . ($valid ? '' : '-bad') . ($country !== null ? "-{$country}" : '');
         $w = DatasetWriter::create($dir);
         $w->writeJsonc('persons/0001-acme.jsonc', $valid ? DatasetPreflightTest::person() : ['format' => 'shpd.persons.person']);
-        $w->writeManifest(new DatasetManifest('demo', 'Demo', null, 'fixed', '2026-08-26T10:00:00Z', ['persons' => 1]));
+        $w->writeManifest(new DatasetManifest('demo', 'Demo', null, 'fixed', '2026-08-26T10:00:00Z', ['persons' => 1], country: $country));
         return $dir;
     }
 
-    private function command(): TestableDatasetSeedCommand
+    private function command(string $dsCountry = 'cz'): TestableDatasetSeedCommand
     {
         $dsConfig = $this->createMock(DataSourceConfig::class);
         $dsConfig->method('getName')->willReturn('Test DS');
         $dsConfig->method('getDefaultLanguage')->willReturn('cs');
+        $dsConfig->method('getCountry')->willReturn($dsCountry);
+        $dsConfig->method('hasCountry')->willReturn(true);
         $dsConnection = $this->createMock(DataSourceConnection::class);
 
         $cmd = new TestableDatasetSeedCommand($dsConfig, $dsConnection, $this->dsDir);
@@ -168,8 +189,59 @@ class DatasetSeedCommandTest extends TestCase
         $this->assertStringContainsString('Applied 3 data source setting(s)', $display);
         $this->assertFalse($cmd->lastMerge);
         $this->assertStringContainsString('Dataset demo — Demo (persons 1)', $display);
-        $this->assertStringContainsString('persons:   ok 1', $display);
+        $this->assertStringContainsString('persons:          ok 1', $display);
         $this->assertStringContainsString('Seed complete.', $display);
+        $this->assertSame(0, $cmd->upgradeRuns, 'existing schema → no ds-upgrade before settings');
+        $this->assertSame(['settings', 'reset'], $cmd->order);
+    }
+
+    public function testFreshDataSourceGetsSchemaBeforeSettings(): void
+    {
+        $cmd = $this->contextAwareCommand();
+        $cmd->settingsTable = false;
+        $tester = new CommandTester($cmd);
+        $exit = $tester->execute(['path' => $this->setDir, '--yes' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
+        $this->assertSame(['upgrade', 'settings', 'reset'], $cmd->order);
+        $this->assertStringContainsString('Fresh data source', $tester->getDisplay());
+    }
+
+    public function testFreshDataSourceUpgradeFailureStopsBeforeSettings(): void
+    {
+        $cmd = $this->contextAwareCommand();
+        $cmd->settingsTable = false;
+        $cmd->upgradeResult = Command::FAILURE;
+        $tester = new CommandTester($cmd);
+        $exit = $tester->execute(['path' => $this->setDir, '--yes' => true]);
+
+        $this->assertSame(Command::FAILURE, $exit);
+        $this->assertSame(['upgrade'], $cmd->order);
+        $this->assertStringContainsString('ds-upgrade failed', $tester->getDisplay());
+    }
+
+    public function testCountryMismatchFailsInPreflightBeforeAnyChange(): void
+    {
+        $cmd = $this->command('cz');
+        $tester = new CommandTester($cmd);
+        $exit = $tester->execute(['path' => $this->writeSet(country: 'sk'), '--yes' => true]);
+
+        $display = $tester->getDisplay();
+        $this->assertSame(Command::FAILURE, $exit, $display);
+        $this->assertSame([], $cmd->order, 'no upgrade / settings / reset after a country mismatch');
+        $this->assertSame(-1, $cmd->settingsApplied);
+        $this->assertStringContainsString('preflight failed', $display);
+        $this->assertStringContainsString("country 'sk'", $display);
+    }
+
+    public function testMatchingCountrySeeds(): void
+    {
+        $cmd = $this->command('cz');
+        $tester = new CommandTester($cmd);
+        $exit = $tester->execute(['path' => $this->writeSet(country: 'cz'), '--yes' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
+        $this->assertSame(1, $cmd->resetRuns);
     }
 
     public function testNoResetSkipsResetAndSetsMerge(): void

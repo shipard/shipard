@@ -49,6 +49,9 @@ sada/
   "description": "…",                 // volitelné
   "dateMode": "fixed",                // fáze 1: jen fixed; jiná hodnota = „not implemented"
   "created": "2026-08-26T10:00:00Z",
+  "country": "cz",                    // volitelné — země vlastní firmy (#103 D24)
+  "profile": "vat-payer",             // volitelné, informativní (profil korpusu)
+  "provision": { "accountingItems": "all" },   // volitelné — jednorázové akce seedu (#103 D22)
   "counts": { "setup": 5, "persons": 12, "items": 8, "docs": 15, "registry": 4, "mail": 6 }
 }
 ```
@@ -56,6 +59,19 @@ sada/
 `counts` jsou informativní — počty **souborů** per sekce; nesoulad při seedu
 je varování, ne chyba. Třídy: `DatasetManifest`, `DatasetReader` (složka i
 zip, guard proti `..`), `DatasetWriter` (`modules/core/exchange/src/Dataset/`).
+
+Volitelná pole z #103 F2 (`tasks/testing-phase2.md`):
+
+- `country` — ISO 3166-1 alpha-2 malými. Seed porovná se zemí zdroje dat
+  (`DataSourceConfig::getCountry()`; DS bez klíče v `main.json` se bere
+  jako `cz`) **už v preflightu** — sada jiné země skončí chybou a nic se
+  nezmění. Bez `country` se nic neověřuje.
+- `profile` — klíč profilu, ze kterého sada vznikla; seed ho nečte.
+- `provision` — akce, o které sada žádá nad rámec záznamů. Známý je jen
+  klíč `accountingItems`: `"all"` = všechny položky nabídky účetních
+  položek podle osnovy DS, seznam řetězců = jen tyto kódy nabídky. Neznámý
+  klíč nebo jiný tvar = chyba manifestu. Nabídka zůstává jednorázová akce
+  (`docs/ds-setup.md` D18) — `ds-upgrade` položky nevrací ani nedoplňuje.
 
 ### Sekce `setup/` (R1)
 
@@ -130,23 +146,45 @@ dimenze s počtem dokladů.
 
 `shpd-ds dataset-seed <dir|zip> [--no-reset] [-y]`. Průběh:
 
-1. **Preflight** (`DatasetPreflight`): manifest, každý soubor proti schématu
-   (objektová forma — `{}` nesmí zdegenerovat na `[]`), sémantické validátory
+1. **Preflight** (`DatasetPreflight`): manifest, země sady vs. země DS
+   (`country`, #103 D24), každý soubor proti schématu (objektová forma —
+   `{}` nesmí zdegenerovat na `[]`), sémantické validátory
    (`PersonValidator`, `ItemValidator`, `DocumentValidator`), přítomnost
    příloh, `counts`. Chyba = nic se nemění.
 2. Potvrzení (bez `-y`).
-3. `setup/settings.jsonc` → `SettingsStore` (jen v reset režimu).
-4. `ds-reset --yes` delegací ve stejném procesu (respektuje `enableReset`).
+3. Čerstvý DS po `ds-create` nemá schéma (`core_system_settings` chybí) →
+   `ds-upgrade` ve stejném procesu, aby měl zápis nastavení kam (jen
+   v reset režimu). `ds-create --country cz --no-cron` → `dataset-seed`
+   tedy funguje bez ručního mezikroku.
+4. `setup/settings.jsonc` → `SettingsStore` (jen v reset režimu).
+5. `ds-reset --yes` delegací ve stejném procesu (respektuje `enableReset`).
    `--no-reset` krok přeskočí: osoby a položky jedou v `mergeAdd`, duplicitní
    číslo dokladu / kód zprávy je chyba záznamu.
-5. `DatasetSeeder` → seedery v pořadí sekcí (`SectionSeeder`):
-   `SetupSeeder`, `PersonSeeder`, `ItemSeeder`, `DocumentSeeder`
-   (applieři; `DocumentApplier` s `DocumentEventDispatcher` → doklady ve 40
-   se zaúčtují), `RegistrySeeder`, `MailSeeder` (zpráva + přílohy přes
+6. `DatasetSeeder` → seedery v pořadí sekcí (`SectionSeeder`):
+   `SetupSeeder`; **`FiscalYearsSeeder`** (#103 D23, `modules/economy/codebooks/src/Dataset/`):
+   projde data sady — `docs/*.jsonc` `dates.{issueDate, accountingDate,
+   taxPointDate, vatObligationDate}`, `mail/*.jsonc` `receivedAt` a tatáž
+   pole v `analyses[].canonicalJson.dates` (splatnost a období plnění rok
+   neurčují) — a pro každý dotčený fiskální rok zavolá
+   `FiscalYearsProvisioner::ensureYearForDate()` (zajistí právě rok
+   obsahující datum; `provision()` by při existujícím roce založil
+   následující). Existující i založený rok = `ok`; nerozhodnutý první
+   měsíc / domácí měna při datech v sadě = chyba (jinak by doklady vznikly
+   s `fiscal_year = null`). **`AccountingItemsSeeder`** (#103 D22,
+   `modules/economy/items/src/Dataset/`), jen když manifest nese
+   `provision.accountingItems`: tatáž orchestrace jako průvodce nastavením
+   (`AccountingItemsGenerator` — brána osnovy, prerekvizity, položky přes
+   `ItemDocument`); založená i existující položka = `ok`, účet mimo osnovu =
+   `skipped` s varováním, neznámý kód nebo nedostupná nabídka = chyba.
+   Oba kroky běží i s `--no-reset` (idempotentní). Pak `PersonSeeder`,
+   `ItemSeeder`, `DocumentSeeder` (applieři; `DocumentApplier`
+   s `DocumentEventDispatcher` → doklady ve 40 se zaúčtují),
+   `RegistrySeeder`, `MailSeeder` (zpráva + přílohy přes
    `AttachmentService` + analýzy + lineage `target_table_id/target_row` ↔
    `source_message`; jedna zpráva = jedna transakce).
-6. Souhrn ok / failed / skipped per sekce, varování, chyby; nenulový exit
-   code při jakékoli chybě záznamu.
+7. Souhrn ok / failed / skipped per sekce (sekce `fiscalYears`
+   a `accountingItems` nemají soubory ani `counts`), varování, chyby;
+   nenulový exit code při jakékoli chybě záznamu.
 
 Applieři cílí jen stavy 10/40 — stav 70/80 osob a položek seed po uložení
 dorovná přímým UPDATE. Varování applierů (např. `account_not_found`, když DS
@@ -173,6 +211,7 @@ Vědomé normalizace a limity fáze 1:
   nepřenáší (formát ho nemá) → warning při dumpu.
 - Vlastní bankovní účet bez `code` v číselníku nelze přenést → warning.
 - `app.icon` / `app.companyLogo` (soubory v `branding/`) se nepřenáší.
-- Fiskální roky po resetu zakládá provisioner jen pro aktuální rok.
+- Fiskální roky po resetu zakládá provisioner jen pro aktuální rok; roky
+  dat sady doplní `FiscalYearsSeeder` (§3).
 - Mimo rozsah: `dateMode: relative`, filtry dumpu, scénářové akce a
   expected výsledky, live mode AI, banka a saldokonto.

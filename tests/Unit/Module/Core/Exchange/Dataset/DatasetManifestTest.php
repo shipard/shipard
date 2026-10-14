@@ -151,4 +151,97 @@ class DatasetManifestTest extends TestCase
             DatasetManifest::SECTIONS,
         );
     }
+
+    // ── #103 F2: country / profile / provision ──────────────────────────────
+
+    /** @return array<string, mixed> */
+    private function corpus(): array
+    {
+        return $this->valid() + [
+            'country'   => 'cz',
+            'profile'   => 'vat-payer',
+            'provision' => ['accountingItems' => 'all'],
+        ];
+    }
+
+    public function testLegacyManifestHasNoCountryProfileOrProvision(): void
+    {
+        $m = DatasetManifest::fromArray($this->valid());
+
+        $this->assertNull($m->country);
+        $this->assertNull($m->profile);
+        $this->assertSame([], $m->provision);
+        $this->assertNull($m->accountingItemsRequest());
+        $this->assertArrayNotHasKey('country', $m->toArray());
+        $this->assertArrayNotHasKey('provision', $m->toArray());
+    }
+
+    public function testCorpusFieldsAreParsedAndSerializedInOrder(): void
+    {
+        $m = DatasetManifest::fromArray($this->corpus());
+
+        $this->assertSame('cz', $m->country);
+        $this->assertSame('vat-payer', $m->profile);
+        $this->assertSame('all', $m->accountingItemsRequest());
+        $this->assertSame(
+            ['format', 'name', 'title', 'description', 'dateMode', 'created', 'country', 'profile', 'provision', 'counts'],
+            array_keys($m->toArray()),
+        );
+    }
+
+    public function testAccountingItemsListIsNormalised(): void
+    {
+        $data = $this->corpus();
+        $data['provision'] = ['accountingItems' => ['568201', '548100Z']];
+
+        $this->assertSame(['568201', '548100Z'], DatasetManifest::fromArray($data)->accountingItemsRequest());
+    }
+
+    public function testEmptyProvisionObjectMeansNoActions(): void
+    {
+        $data = $this->corpus();
+        $data['provision'] = []; // `{}` z JsoncParseru
+
+        $m = DatasetManifest::fromArray($data);
+        $this->assertNull($m->accountingItemsRequest());
+        $this->assertArrayNotHasKey('provision', $m->toArray());
+    }
+
+    public function testWithCountsKeepsCorpusFields(): void
+    {
+        $m = DatasetManifest::fromArray($this->corpus())->withCounts(['mail' => 20]);
+
+        $this->assertSame('cz', $m->country);
+        $this->assertSame('vat-payer', $m->profile);
+        $this->assertSame(['accountingItems' => 'all'], $m->provision);
+        $this->assertSame(['mail' => 20], $m->counts);
+    }
+
+    /** @return iterable<string, array{array<string, mixed>, string}> */
+    public static function invalidCorpusFields(): iterable
+    {
+        yield 'upper-case country' => [['country' => 'CZ'], 'country'];
+        yield 'three-letter country' => [['country' => 'cze'], 'country'];
+        yield 'numeric country' => [['country' => 12], 'country must be a string'];
+        yield 'empty profile' => [['profile' => ''], 'profile'];
+        yield 'provision string' => [['provision' => 'all'], 'provision must be an object'];
+        yield 'unknown action' => [['provision' => ['foo' => 1]], 'provision.foo'];
+        yield 'accountingItems none' => [['provision' => ['accountingItems' => 'none']], 'accountingItems'];
+        yield 'accountingItems empty list' => [['provision' => ['accountingItems' => []]], 'accountingItems'];
+        yield 'accountingItems mixed list' => [['provision' => ['accountingItems' => ['568201', 5]]], 'accountingItems'];
+        yield 'accountingItems map' => [['provision' => ['accountingItems' => ['a' => 'b']]], 'accountingItems'];
+    }
+
+    /**
+     * @param array<string, mixed> $override
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidCorpusFields')]
+    public function testInvalidCorpusFieldsAreRejected(array $override, string $message): void
+    {
+        $data = array_merge($this->corpus(), $override);
+
+        $this->expectException(DatasetException::class);
+        $this->expectExceptionMessage($message);
+        DatasetManifest::fromArray($data);
+    }
 }

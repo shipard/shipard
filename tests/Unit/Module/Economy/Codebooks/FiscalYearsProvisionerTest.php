@@ -294,4 +294,45 @@ class FiscalYearsProvisionerTest extends TestCase
         $this->assertSame('2026-12-31', $regular[11]['date_end']);
         $this->assertSame(12, $regular[11]['calendar_month']);
     }
+
+    // ── ensureYearForDate (#103 D23) ───────────────────────────────────────
+
+    public function testEnsureYearForDateCreatesMissingYearWithMonths(): void
+    {
+        $store = $this->recordingDb();
+        $provisioner = new FiscalYearsProvisioner($store->db, $this->buildConfig(1), 1, 'eur');
+
+        $result = $provisioner->ensureYearForDate(new \DateTimeImmutable('2024-08-25'));
+
+        $this->assertSame(['created' => true, 'name' => '2024', 'dateBegin' => '2024-01-01'], $result);
+        $this->assertCount(1, $store->tables['economy_codebooks_fiscal_years']);
+        $this->assertSame('eur', $store->tables['economy_codebooks_fiscal_years'][0]['currency']);
+        $this->assertCount(14, $store->tables['economy_codebooks_fiscal_months']);
+    }
+
+    public function testEnsureYearForDateIsNoOpWhenYearExistsAndNeverCreatesNextYear(): void
+    {
+        $store = $this->recordingDb([
+            ['date_begin' => '2026-01-01', 'date_end' => '2026-12-31', 'name' => '2026'],
+        ]);
+        $provisioner = new FiscalYearsProvisioner($store->db, $this->buildConfig(1), 1, 'czk');
+
+        $result = $provisioner->ensureYearForDate(new \DateTimeImmutable('2026-10-14'));
+
+        $this->assertSame(['created' => false, 'name' => '2026', 'dateBegin' => '2026-01-01'], $result);
+        $this->assertCount(1, $store->tables['economy_codebooks_fiscal_years'], 'provision() would add 2027 here');
+        $this->assertCount(0, $store->tables['economy_codebooks_fiscal_months']);
+    }
+
+    public function testEnsureYearForDateHonoursYearStartMonth(): void
+    {
+        $store = $this->recordingDb();
+        $provisioner = new FiscalYearsProvisioner($store->db, $this->buildConfig(1), 7, 'czk');
+
+        $result = $provisioner->ensureYearForDate(new \DateTimeImmutable('2026-03-15'));
+
+        $this->assertSame('2025-2026', $result['name']);
+        $this->assertSame('2025-07-01', $result['dateBegin']);
+        $this->assertSame('2026-06-30', $store->tables['economy_codebooks_fiscal_years'][0]['date_end']);
+    }
 }

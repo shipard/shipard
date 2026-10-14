@@ -84,7 +84,7 @@ class DatasetPreflightTest extends TestCase
     /**
      * Sada v temp složce; `$mutate(DatasetWriter)` může přidat/přepsat soubory.
      */
-    public function writeSet(?callable $mutate = null, array $counts = []): string
+    public function writeSet(?callable $mutate = null, array $counts = [], ?string $country = null): string
     {
         $w = DatasetWriter::create($this->tmp . '/set');
         $w->writeJsonc('setup/binders.jsonc', ['format' => 'shpd.dataset.setup.v1', 'table' => 'binders', 'rows' => [['name' => 'Smlouvy', 'docState' => 40]]]);
@@ -99,8 +99,42 @@ class DatasetPreflightTest extends TestCase
             $mutate($w);
         }
         $w->writeManifest(new DatasetManifest('demo', 'Demo', null, 'fixed', '2026-08-26T10:00:00Z',
-            $counts ?: ['setup' => 1, 'persons' => 1, 'items' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1]));
+            $counts ?: ['setup' => 1, 'persons' => 1, 'items' => 1, 'docs' => 1, 'registry' => 1, 'mail' => 1],
+            country: $country));
         return $this->tmp . '/set';
+    }
+
+    // ── země sady vs. DS (#103 D24) ────────────────────────────────────────
+
+    public function testCountryMismatchIsAnError(): void
+    {
+        $result = (new DatasetPreflight())->check(DatasetReader::open($this->writeSet(country: 'sk')), 'cz');
+
+        $this->assertCount(1, $result['errors']);
+        $this->assertStringContainsString("country 'sk'", $result['errors'][0]);
+        $this->assertStringContainsString("'cz'", $result['errors'][0]);
+    }
+
+    public function testCountryMatchPasses(): void
+    {
+        $result = (new DatasetPreflight())->check(DatasetReader::open($this->writeSet(country: 'cz')), 'CZ');
+
+        $this->assertSame([], $result['errors']);
+    }
+
+    public function testCountryCheckIsSkippedWithoutManifestCountry(): void
+    {
+        $result = (new DatasetPreflight())->check(DatasetReader::open($this->writeSet()), 'sk');
+
+        $this->assertSame([], $result['errors']);
+    }
+
+    public function testCountryCheckIsSkippedWithoutDsCountry(): void
+    {
+        $set = $this->writeSet(country: 'sk');
+
+        $this->assertSame([], (new DatasetPreflight())->check(DatasetReader::open($set), null)['errors']);
+        $this->assertSame([], (new DatasetPreflight())->check(DatasetReader::open($set), '')['errors']);
     }
 
     public function testValidSetPassesWithoutErrorsOrWarnings(): void

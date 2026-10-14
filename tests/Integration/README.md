@@ -37,6 +37,12 @@ SHIPARD_INTEGRATION_DS_PATH=/opt/shipard/data-sources/abcd-efgh-ijkl-mnop \
   `att:` remapa, přílohy). Uklízí podle přirozených klíčů; přeskočí se bez
   aktivní řady `invni` nebo bez vlastní firmy.
 
+- `Dataset/DatasetProvisionSeedTest.php` — provisioning seedu (#103 D22/D23):
+  sada s daty v roce 2001 a jedním kódem nabídky osnovy → `FiscalYearsSeeder`
+  založí rok 2001 (14 měsíců), `AccountingItemsSeeder` položku; druhý běh
+  idempotentní. Uklízí podle `date_begin` a kódu; přeskočí se, když rok 2001
+  existuje nebo už na DS jsou všechny kódy nabídky.
+
 - `Mail/MailEndpointTest.php` — procedurální pokrytí `MailController::receiveIncoming`
   s reálnou DB + file storage:
   - happy path (raw_source + 2 přílohy)

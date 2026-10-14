@@ -13,6 +13,11 @@ namespace Shipard\Module\Core\Exchange\Dataset;
  *
  * Fáze 1 podporuje jen `dateMode: fixed`; jiná hodnota je platná syntaxe,
  * ale konstruktor ji odmítne jako „not implemented" (rozhodnutí D4 v #40).
+ *
+ * Volitelná pole z #103 F2 (tasks/testing-phase2.md D22/D24): `country`
+ * (země vlastní firmy — seed odmítne DS jiné země), `profile` (informativní
+ * klíč profilu korpusu) a `provision` (jednorázové akce seedu; dnes jen
+ * `accountingItems` = `"all"` | seznam kódů nabídky osnovy).
  */
 final class DatasetManifest
 {
@@ -25,8 +30,18 @@ final class DatasetManifest
 
     private const NAME_PATTERN = '/^[a-z0-9][a-z0-9._-]{0,63}$/';
 
+    /** ISO 3166-1 alpha-2 malými — stejný tvar jako `DataSourceConfig::getCountry()`. */
+    private const COUNTRY_PATTERN = '/^[a-z]{2}$/';
+
+    /** Známé klíče objektu `provision`; cokoli jiného je chyba manifestu. */
+    public const PROVISION_KEYS = ['accountingItems'];
+
+    /** `provision.accountingItems = "all"` = všechny položky nabídky podle osnovy DS. */
+    public const PROVISION_ALL = 'all';
+
     /**
      * @param array<string, int> $counts informativní počty záznamů per sekce
+     * @param array<string, mixed> $provision jen klíče z PROVISION_KEYS
      */
     public function __construct(
         public readonly string $name,
@@ -35,6 +50,9 @@ final class DatasetManifest
         public readonly string $dateMode,
         public readonly string $created,
         public readonly array $counts = [],
+        public readonly ?string $country = null,
+        public readonly ?string $profile = null,
+        public readonly array $provision = [],
     ) {
         if (preg_match(self::NAME_PATTERN, $name) !== 1) {
             throw DatasetException::invalidManifest(
@@ -65,6 +83,47 @@ final class DatasetManifest
                 throw DatasetException::invalidManifest("counts.{$section} must be a non-negative integer");
             }
         }
+        if ($country !== null && preg_match(self::COUNTRY_PATTERN, $country) !== 1) {
+            throw DatasetException::invalidManifest(
+                "country '{$country}' must be a two-letter lower-case ISO 3166-1 code",
+            );
+        }
+        if ($profile !== null && trim($profile) === '') {
+            throw DatasetException::invalidManifest('profile must be a non-empty string');
+        }
+        foreach ($provision as $key => $value) {
+            if (!is_string($key) || !in_array($key, self::PROVISION_KEYS, true)) {
+                throw DatasetException::invalidManifest(
+                    "provision." . (is_string($key) ? $key : (string) $key)
+                    . ' is not a known provisioning action (known: ' . implode(', ', self::PROVISION_KEYS) . ')',
+                );
+            }
+        }
+        if (array_key_exists('accountingItems', $provision)) {
+            $items = $provision['accountingItems'];
+            $isList = is_array($items) && $items !== [] && array_is_list($items)
+                && $items === array_filter($items, static fn(mixed $c): bool => is_string($c) && trim($c) !== '');
+            if ($items !== self::PROVISION_ALL && !$isList) {
+                throw DatasetException::invalidManifest(
+                    'provision.accountingItems must be "all" or a non-empty list of offer codes',
+                );
+            }
+        }
+    }
+
+    /**
+     * Požadavek na účetní položky z nabídky osnovy: `"all"`, seznam kódů,
+     * nebo null = sada o ně nežádá.
+     *
+     * @return list<string>|'all'|null
+     */
+    public function accountingItemsRequest(): array|string|null
+    {
+        $items = $this->provision['accountingItems'] ?? null;
+        if ($items === self::PROVISION_ALL) {
+            return self::PROVISION_ALL;
+        }
+        return is_array($items) ? array_values($items) : null;
     }
 
     /**
@@ -92,6 +151,16 @@ final class DatasetManifest
         if (!is_array($counts)) {
             throw DatasetException::invalidManifest('counts must be an object');
         }
+        foreach (['country', 'profile'] as $key) {
+            if (array_key_exists($key, $data) && $data[$key] !== null && !is_string($data[$key])) {
+                throw DatasetException::invalidManifest("{$key} must be a string or null");
+            }
+        }
+        // `{}` z JsoncParseru (assoc) je `[]` — žádná akce, ne chyba.
+        $provision = $data['provision'] ?? [];
+        if (!is_array($provision)) {
+            throw DatasetException::invalidManifest('provision must be an object');
+        }
 
         /** @var array<string, int> $counts */
         return new self(
@@ -101,6 +170,9 @@ final class DatasetManifest
             dateMode: $data['dateMode'],
             created: $data['created'],
             counts: $counts,
+            country: $data['country'] ?? null,
+            profile: $data['profile'] ?? null,
+            provision: $provision,
         );
     }
 
@@ -119,6 +191,15 @@ final class DatasetManifest
         }
         $out['dateMode'] = $this->dateMode;
         $out['created'] = $this->created;
+        if ($this->country !== null) {
+            $out['country'] = $this->country;
+        }
+        if ($this->profile !== null) {
+            $out['profile'] = $this->profile;
+        }
+        if ($this->provision !== []) {
+            $out['provision'] = $this->provision;
+        }
         $out['counts'] = $this->counts === [] ? new \stdClass() : $this->counts;
 
         return $out;
@@ -132,12 +213,15 @@ final class DatasetManifest
     public function withCounts(array $counts): self
     {
         return new self(
-            $this->name,
-            $this->title,
-            $this->description,
-            $this->dateMode,
-            $this->created,
-            $counts,
+            name: $this->name,
+            title: $this->title,
+            description: $this->description,
+            dateMode: $this->dateMode,
+            created: $this->created,
+            counts: $counts,
+            country: $this->country,
+            profile: $this->profile,
+            provision: $this->provision,
         );
     }
 }

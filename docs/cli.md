@@ -1637,17 +1637,23 @@ sudo shpd-ds dataset-seed /tmp/web-demo --no-reset
 
 Naplní DS obsahem sady. Výchozí režim **resetuje DS** (delegace na
 `ds-reset` — na produkci vyžaduje `enableReset: true` v `config/main.json`,
-stejně jako `ds-reset` sám) a poté importuje sekce v pořadí setup → persons
-→ items → docs → registry → mail. Osoby, položky a doklady jdou přes
-standardní appliery (čísla dokladů se zachovávají, doklady ve stavu
-V pořádku se zaúčtují), dokumenty spisovny a zprávy se zapisují přímo přes
-Document hooky; přílohy do `att/`, analýzy zpráv jako snapshot (žádné
-volání AI). Vazby zpráva ↔ doklad se obnoví podle čísla dokladu.
+stejně jako `ds-reset` sám) a poté importuje sekce v pořadí setup →
+fiskální roky → účetní položky → persons → items → docs → registry → mail.
+Osoby, položky a doklady jdou přes standardní appliery (čísla dokladů se
+zachovávají, doklady ve stavu V pořádku se zaúčtují), dokumenty spisovny
+a zprávy se zapisují přímo přes Document hooky; přílohy do `att/`, analýzy
+zpráv jako snapshot (žádné volání AI). Vazby zpráva ↔ doklad se obnoví
+podle čísla dokladu. Fiskální roky se založí pro roky, do kterých spadají
+data sady; účetní položky z nabídky osnovy jen když o ně manifest žádá
+(`provision.accountingItems`, `docs/datasets.md` §1 a §3).
 
-Před jakoukoli změnou proběhne **preflight** — manifest, každý soubor proti
-schématu a validátorům, přítomnost příloh. Chyba preflightu = nic se
-nesmaže. Na konci souhrn per sekce (ok / failed / skipped) a porovnání
-s `counts` z manifestu; jakákoli chyba záznamu = nenulový exit code.
+Před jakoukoli změnou proběhne **preflight** — manifest, země sady vs.
+země DS (`country` v manifestu), každý soubor proti schématu
+a validátorům, přítomnost příloh. Chyba preflightu = nic se nesmaže.
+Čerstvý DS hned po `ds-create` (bez schématu) si příkaz nejdřív
+upgraduje sám. Na konci souhrn per sekce (ok / failed / skipped)
+a porovnání s `counts` z manifestu; jakákoli chyba záznamu = nenulový
+exit code.
 
 | Opce | Význam |
 |------|--------|

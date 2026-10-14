@@ -24,7 +24,9 @@ use Shipard\Core\Settings\SetupChecklist;
 use Shipard\Core\Utils\JsoncParser;
 use Shipard\Module\Economy\Accounting\AccountChartProvisioner;
 use Shipard\Module\Economy\Items\AccountingItemMaterializer;
+use Shipard\Module\Economy\Items\AccountingItemsGenerator;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
+use Shipard\Module\Economy\Items\AccountingItemsUnavailableException;
 use Shipard\Module\Economy\Codebooks\FiscalYearsProvisioner;
 
 /**
@@ -358,7 +360,7 @@ class SetupController
         }
 
         $variant = $this->accountChartVariant();
-        $reason  = $this->accountingItemsUnavailableReason($variant);
+        $reason  = $this->itemsGenerator()->unavailableReason();
         if ($reason !== null) {
             return Response::success([
                 'available'         => false,
@@ -418,14 +420,16 @@ class SetupController
     }
 
     /**
-     * POST /_setup/accounting-items — body {"codes": ["UP-BANK", ...]}.
+     * POST /_setup/accounting-items — body {"codes": ["568201", ...]}.
      * Jednorázově vygeneruje vybrané účetní položky. Každá jde přes
      * ItemDocument (TableGateway) — item_type = 2 denormalizuje beforeSave
      * z druhu, kód i účet projdou stejnou validací jako u ručního pořízení.
      *
      * Existující kód → skipped (opakované generování je bezpečné); účet
      * ze seedu v osnově chybí → skipped s důvodem (položka s prázdným
-     * účtem by v acc.entry tiše nefungovala).
+     * účtem by v acc.entry tiše nefungovala). Orchestraci (brána,
+     * prerekvizity, smyčka) drží sdílený {@see AccountingItemsGenerator}
+     * — stejnou cestou jde `dataset-seed`; tady jen request a HTTP kódy.
      */
     public function generateAccountingItems(Request $request, AuthContext $auth): Response
     {
@@ -440,65 +444,47 @@ class SetupController
         }
         $codes = array_values(array_unique($codes));
 
-        $variant = $this->accountChartVariant();
-        $reason  = $this->accountingItemsUnavailableReason($variant);
-        if ($reason !== null) {
-            return Response::error('OFFER_UNAVAILABLE', "Accounting items offer is not available: {$reason}", 409);
+        try {
+            $result = $this->itemsGenerator()->generate($codes, stopOnFailure: true);
+        } catch (AccountingItemsUnavailableException $e) {
+            return match ($e->reason) {
+                AccountingItemsUnavailableException::SEED_MISSING => Response::error(
+                    'INTERNAL_ERROR',
+                    'Accounting items seed file not found',
+                    500,
+                ),
+                AccountingItemsUnavailableException::ITEM_KIND_MISSING => Response::error(
+                    'ITEM_KIND_MISSING',
+                    "Item kind with system_code 'accounting' not found — run ds-upgrade first",
+                    409,
+                ),
+                AccountingItemsUnavailableException::UNIT_MISSING => Response::error(
+                    'UNIT_MISSING',
+                    "Unit with system_code 'pcs' not found — run ds-upgrade first",
+                    409,
+                ),
+                default => Response::error(
+                    'OFFER_UNAVAILABLE',
+                    "Accounting items offer is not available: {$e->reason}",
+                    409,
+                ),
+            };
         }
 
-        $seed = $this->loadAccountingItemsSeed((string) $variant);
-        if ($seed === null) {
-            return Response::error('INTERNAL_ERROR', 'Accounting items seed file not found', 500);
-        }
-
-        // Generátor jedné položky je sdílená služba (content-tag-ui D26) —
-        // tady jen orchestrace requestu: prerekvizity hlasitě, per kód
-        // skip/created, save selhání fail-fast.
-        $materializer = $this->itemMaterializer();
-        $prereq = $materializer->missingPrerequisite();
-        if ($prereq === 'item_kind_missing') {
-            return Response::error(
-                'ITEM_KIND_MISSING',
-                "Item kind with system_code 'accounting' not found — run ds-upgrade first",
-                409,
-            );
-        }
-        if ($prereq === 'unit_missing') {
-            return Response::error(
-                'UNIT_MISSING',
-                "Unit with system_code 'pcs' not found — run ds-upgrade first",
-                409,
-            );
-        }
-
-        $created = [];
-        $skipped = [];
-        foreach ($codes as $code) {
-            $result = $materializer->materializeOfferCode($code);
-            if ($result['status'] === 'created') {
-                $created[] = ['id' => $result['id'], 'code' => $result['code'], 'name' => $result['name']];
-                continue;
-            }
-            if ($result['status'] === 'skipped') {
-                $skip = ['code' => $code, 'reason' => $result['reason']];
-                if (isset($result['accountNumber'])) {
-                    $skip['accountNumber'] = $result['accountNumber'];
-                }
-                $skipped[] = $skip;
-                continue;
-            }
+        if ($result['failed'] !== []) {
+            $first = $result['failed'][0];
             ErrorLogger::error('SetupController: accounting item generation failed', [
-                'code'    => $code,
-                'message' => $result['message'] ?? $result['reason'],
+                'code'    => $first['code'],
+                'message' => $first['message'],
             ]);
             return Response::error(
                 'SAVE_FAILED',
-                "Saving accounting item {$code} failed: " . ($result['message'] ?? $result['reason']),
+                "Saving accounting item {$first['code']} failed: {$first['message']}",
                 500,
             );
         }
 
-        return Response::success(['created' => $created, 'skipped' => $skipped]);
+        return Response::success(['created' => $result['created'], 'skipped' => $result['skipped']]);
     }
 
     /**
@@ -520,6 +506,12 @@ class SetupController
         );
     }
 
+    /** Sdílená orchestrace nabídky účetních položek nad seamem itemMaterializer(). */
+    private function itemsGenerator(): AccountingItemsGenerator
+    {
+        return new AccountingItemsGenerator($this->itemsOffer(), $this->itemMaterializer(), $this->tables);
+    }
+
     /** Hodnota economy.accountChart, nebo null = nerozhodnuto. */
     private function accountChartVariant(): ?string
     {
@@ -531,30 +523,6 @@ class SetupController
     {
         return $this->accountingItemsOfferCache
             ??= new AccountingItemsOffer($this->db, $this->modulePathResolver);
-    }
-
-    /**
-     * Proč nabídka účetních položek není dostupná; null = dostupná.
-     * accounting_inactive: sloupec accounting_account je extension
-     * z economy.accounting — bez aktivního modulu neexistuje a položky
-     * by neměly kam dostat účet.
-     */
-    private function accountingItemsUnavailableReason(?string $variant): ?string
-    {
-        if ($variant === null) {
-            return 'chart_undecided';
-        }
-        if ($variant === 'none') {
-            return 'chart_none';
-        }
-
-        $def = $this->tables[self::ITEMS_TABLE] ?? null;
-        foreach ($def?->columns ?? [] as $column) {
-            if ($column->id === 'accounting_account') {
-                return null;
-            }
-        }
-        return 'accounting_inactive';
     }
 
     /**

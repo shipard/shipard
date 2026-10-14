@@ -32,6 +32,9 @@ use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Mail\Dataset\MailSeeder;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
+use Shipard\Module\Economy\Codebooks\Dataset\FiscalYearsSeeder;
+use Shipard\Module\Economy\Items\AccountingItemsOffer;
+use Shipard\Module\Economy\Items\Dataset\AccountingItemsSeeder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -44,13 +47,15 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  * `shpd-ds dataset-seed <dir|zip>` — reset DS a naplnění obsahem datové sady
  * (tasks/dataset-phase1.md, #40).
  *
- * Průběh: otevření sady → preflight (schémata, validátory, přílohy — nic
- * se ještě nemění) → potvrzení → `ds-reset` (delegace, respektuje
- * `enableReset`; `--no-reset` přeskočí a doplňuje do existujícího DS) →
- * setup → persons → items → docs → registry → mail. Nenulový exit code
- * při jakékoli chybě záznamu. Testovatelné přes podtřídu (seamy
- * getDataSourceDir / buildResolver / runReset / createContext /
- * createSeeders / createPreflight).
+ * Průběh: otevření sady → preflight (schémata, validátory, přílohy, země
+ * sady vs. DS — nic se ještě nemění) → potvrzení → na čerstvém DS bez
+ * schématu `ds-upgrade` → nastavení ze sady → `ds-reset` (delegace,
+ * respektuje `enableReset`; `--no-reset` přeskočí a doplňuje do
+ * existujícího DS) → setup → fiskální roky → účetní položky → persons →
+ * items → docs → registry → mail. Nenulový exit code při jakékoli chybě
+ * záznamu. Testovatelné přes podtřídu (seamy getDataSourceDir /
+ * buildResolver / runReset / runUpgrade / hasSettingsTable /
+ * applySettingsBeforeReset / createContext / createSeeders / createPreflight).
  */
 class DatasetSeedCommand extends Command
 {
@@ -103,6 +108,26 @@ class DatasetSeedCommand extends Command
             return Command::FAILURE;
         }
         return $app->find('ds-reset')->run(new ArrayInput(['--yes' => true]), $output);
+    }
+
+    /**
+     * `ds-upgrade` ve stejném procesu — čerstvý DS po `ds-create` nemá
+     * schéma, takže by zápis nastavení před resetem neměl kam (#103 F2).
+     */
+    protected function runUpgrade(OutputInterface $output): int
+    {
+        $app = $this->getApplication();
+        if ($app === null) {
+            $output->writeln('<error>Cannot run ds-upgrade: no application context</error>');
+            return Command::FAILURE;
+        }
+        return $app->find('ds-upgrade')->run(new ArrayInput([]), $output);
+    }
+
+    /** Existuje `core_system_settings`? Ne = DS bez schématu. */
+    protected function hasSettingsTable(DataSourceConnection $dsConnection): bool
+    {
+        return in_array('core_system_settings', $dsConnection->getAllTableNames(), true);
     }
 
     /**
@@ -162,6 +187,16 @@ class DatasetSeedCommand extends Command
         $party = new PartyResolver($db, new OwnCompanyResolver($db));
         $seeders = [new SetupSeeder()];
 
+        // #103 D22/D23 — hned po setup/ (nastavení už platí), před záznamy.
+        if (isset($ctx->tables['economy_codebooks_fiscal_years'])) {
+            $seeders[] = new FiscalYearsSeeder();
+        }
+        // Podle manifestu, ne podle tabulky: DS bez účetnictví má skončit
+        // chybou accounting_inactive, ne tichým přeskočením.
+        if ($ctx->reader->getManifest()->accountingItemsRequest() !== null) {
+            $seeders[] = new AccountingItemsSeeder(new AccountingItemsOffer($ctx->dsConnection, $this->buildResolver()));
+        }
+
         $personApplier = null;
         if (isset($ctx->tables['base_persons_persons'])) {
             $personApplier = PersonApplier::create($db, $ctx->config, $ctx->dsConfig, $ctx->registry, $ctx->tables);
@@ -194,7 +229,8 @@ class DatasetSeedCommand extends Command
         }
         $merge = (bool) $input->getOption('no-reset');
 
-        // 1. Sada + preflight — před jakoukoli změnou DS.
+        // 1. Sada + preflight — před jakoukoli změnou DS. DataSourceConfig
+        // čte jen main.json, takže země DS je k dispozici už tady (D24).
         try {
             $reader = DatasetReader::open((string) $input->getArgument('path'));
             $manifest = $reader->getManifest();
@@ -203,7 +239,8 @@ class DatasetSeedCommand extends Command
             return Command::FAILURE;
         }
 
-        $check = $this->createPreflight()->check($reader);
+        $dsConfig = $this->dsConfig ?? new DataSourceConfig($dsDir);
+        $check = $this->createPreflight()->check($reader, $dsConfig->getCountry());
         foreach ($check['warnings'] as $w) {
             $output->writeln("  <comment>warning:</comment> {$w}");
         }
@@ -212,11 +249,13 @@ class DatasetSeedCommand extends Command
             foreach ($check['errors'] as $e) {
                 $output->writeln("  <error>{$e}</error>");
             }
+            if ($manifest->country !== null && !$dsConfig->hasCountry()) {
+                $output->writeln('  <comment>(main.json zdroje dat nemá country — bere se cz)</comment>');
+            }
             $reader->close();
             return Command::FAILURE;
         }
 
-        $dsConfig = $this->dsConfig ?? new DataSourceConfig($dsDir);
         $counts = [];
         foreach ($manifest->counts as $section => $n) {
             $counts[] = "{$section} {$n}";
@@ -243,8 +282,17 @@ class DatasetSeedCommand extends Command
             }
         }
 
-        // 3. Nastavení DS před resetem + reset.
+        // 3. Schéma na čerstvém DS, nastavení DS před resetem, reset.
+        $dsConnection = $this->dsConnection ?? new DataSourceConnection($dsConfig);
         if (!$merge) {
+            if (!$this->hasSettingsTable($dsConnection)) {
+                $output->writeln('<info>Fresh data source — running ds-upgrade to create the schema…</info>');
+                if ($this->runUpgrade($output) !== Command::SUCCESS) {
+                    $output->writeln('<error>ds-upgrade failed — dataset not seeded.</error>');
+                    $reader->close();
+                    return Command::FAILURE;
+                }
+            }
             try {
                 $n = $this->applySettingsBeforeReset($reader, $dsConfig);
                 if ($n > 0) {
@@ -264,7 +312,6 @@ class DatasetSeedCommand extends Command
         }
 
         // 4. Seed.
-        $dsConnection = $this->dsConnection ?? new DataSourceConnection($dsConfig);
         try {
             $ctx = $this->createContext($reader, $dsConfig, $dsConnection, $dsDir, $merge);
             $report = (new DatasetSeeder())->seed($ctx, $this->createSeeders($ctx));
@@ -278,7 +325,7 @@ class DatasetSeedCommand extends Command
 
         foreach ($report->counts() as $section => $c) {
             $output->writeln(sprintf(
-                '  %-10s ok %d%s%s',
+                '  %-17s ok %d%s%s',
                 $section . ':',
                 $c['ok'],
                 $c['failed'] > 0 ? ", <error>failed {$c['failed']}</error>" : '',

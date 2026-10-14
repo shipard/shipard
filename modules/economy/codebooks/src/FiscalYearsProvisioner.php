@@ -41,17 +41,7 @@ class FiscalYearsProvisioner
     public function provision(?\DateTimeImmutable $referenceDate = null): array
     {
         $referenceDate ??= new \DateTimeImmutable('today');
-
-        $yearStartMonth = $this->yearStartMonth;
-        if ($yearStartMonth === null) {
-            $cfg = $this->config->cfgItem('economy.codebooks.fiscalConfig');
-            $yearStartMonth = is_array($cfg) && isset($cfg['yearStartMonth'])
-                ? (int) $cfg['yearStartMonth']
-                : 1;
-        }
-        if ($yearStartMonth < 1 || $yearStartMonth > 12) {
-            $yearStartMonth = 1;
-        }
+        $yearStartMonth = $this->resolveYearStartMonth();
 
         $created = 0;
         $existing = 0;
@@ -75,6 +65,41 @@ class FiscalYearsProvisioner
         }
 
         return ['fiscalYears' => ['created' => $created, 'existing' => $existing]];
+    }
+
+    /**
+     * Zajistí fiskální rok obsahující datum. Na rozdíl od {@see provision()}
+     * nikdy nezakládá rok následující — „ať existuje rok X“ pro
+     * `dataset-seed` (tasks/testing-phase2.md D23): data sady z let, které
+     * po resetu nemá kdo založit.
+     *
+     * @return array{created: bool, name: string, dateBegin: string}
+     */
+    public function ensureYearForDate(\DateTimeImmutable $date): array
+    {
+        $year = $this->computeFiscalYear($date, $this->resolveYearStartMonth());
+        $dateBegin = $year['date_begin']->format('Y-m-d');
+        if ($this->yearExistsForBegin($year['date_begin'])) {
+            return ['created' => false, 'name' => $year['name'], 'dateBegin' => $dateBegin];
+        }
+        $this->createYearWithMonths($year);
+        return ['created' => true, 'name' => $year['name'], 'dateBegin' => $dateBegin];
+    }
+
+    /** Konstruktor → cfgItem `economy.codebooks.fiscalConfig` → 1; mimo 1–12 → 1. */
+    private function resolveYearStartMonth(): int
+    {
+        $yearStartMonth = $this->yearStartMonth;
+        if ($yearStartMonth === null) {
+            $cfg = $this->config->cfgItem('economy.codebooks.fiscalConfig');
+            $yearStartMonth = is_array($cfg) && isset($cfg['yearStartMonth'])
+                ? (int) $cfg['yearStartMonth']
+                : 1;
+        }
+        if ($yearStartMonth < 1 || $yearStartMonth > 12) {
+            $yearStartMonth = 1;
+        }
+        return $yearStartMonth;
     }
 
     /**
