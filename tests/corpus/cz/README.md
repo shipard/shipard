@@ -14,6 +14,11 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
 - `profiles/<profil>/` — základ profilu pro datovou sadu (`profile.jsonc`,
   `setup/*.jsonc`: nastavení, registrace DPH, vlastní účet), ručně psaný
   (`tasks/testing-phase2.md`),
+- `vat-reporting.jsonc` — mapování variant na řádky přiznání DPH a oddíly
+  kontrolního hlášení (`tasks/testing-phase3.md` D28, schválené) — z něj build
+  počítá `expected/vat.json` a `expected/costs.json` sad,
+- `profiles/<profil>/approved/general-ledger.json` — schválený snímek hlavní
+  knihy pro `dataset-verify` (vzniká z `--write-ledger-snapshot`, schvaluje člověk),
 - `out/<profil>/*.pdf`, `expected/<profil>/*.json`, `build-state.json` — výstupy buildu,
   commitované. **Očekávaný výsledek se nikdy needituje ručně** — změna = úprava
   datového souboru nebo generátoru (`tools/invoice-generator/`) a nový build.

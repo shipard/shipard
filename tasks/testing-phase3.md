@@ -1,6 +1,6 @@
 # Testování F3: ověření zaúčtování a DPH nad datovou sadou
 
-**Stav:** naplánováno — design schválen 2026-10-14 (#103 D26–D30), `ds-setup-12` hotový 2026-10-14, čeká na implementaci
+**Stav:** částečně — implementace, dokumentace a opravy nálezů A–D hotové 2026-10-14 (6 commitů); na třech dev zdrojích dat kontroly 1, 3, 4 `ok` a kontrola 2 s jediným rozdílem (nález E: účtenka hrazená hotově bez pokladny končí v deníku maskou `211???`); zbývá rozhodnout E, schválit snímky deníku (kontrola 5, krok 6) a alfa
 
 ## Kontext / Cíl
 
@@ -202,19 +202,24 @@ schválený snímek místo nezávislého výpočtu.
 ## Hotovo když
 
 - [x] `ds-setup-12` hotový (2026-10-14)
-- [ ] unit testy porovnávače, generátoru a příkazu zelené (úzké `--filter`,
-      `python3 -m unittest`)
+- [x] unit testy porovnávače, generátoru a příkazu zelené (úzké `--filter`,
+      `python3 -m unittest`) — 2026-10-14
 - [ ] tři dev zdroje dat z `CLAUDE.local.md` (režim volný) znovu naseedované;
       `dataset-verify` na každém: kontroly 1–4 `ok`, přeskočené jen doklady
-      v cizí měně (6 u plátce)
-- [ ] druhý běh (`--no-apply` i bez něj) dá stejný výsledek
-- [ ] preflight odmítne zdroj dat s daty mimo sadu (ověřit na volném zdroji
-      dat s ručně přidaným dokladem) a server v režimu `production`
-- [ ] schválené snímky deníku v základech profilů, kontrola 5 `ok`
-- [ ] výjimky věrnosti schválené a zdokumentované
-- [ ] `docs/test-corpus.md`: `dataset-verify`, kontroly, očekávání DPH
+      v cizí měně (6 u plátce) — 2026-10-14 reseed `ob9b` / `ab5v` / `wp66`:
+      kontroly 1, 3, 4 `ok`, přeskočeno 6 / 2 / 2; kontrola 2 má jediný
+      rozdíl, účtenka 0902 hrazená hotově (nález E níže)
+- [x] druhý běh (`--no-apply` i bez něj) dá stejný výsledek — 2026-10-14
+- [x] preflight odmítne zdroj dat s daty mimo sadu (ověřeno na `vlm9`
+      s cizími zprávami a doklady, exit 2) a server v režimu `production`
+      (unit test) — 2026-10-14
+- [ ] schválené snímky deníku v základech profilů, kontrola 5 `ok` — čeká
+      na rozhodnutí nálezu E (snímek s chybovou maskou nejde schválit)
+- [x] výjimky věrnosti schválené (2026-10-14) a zdokumentované
+      (`ApplyFidelityCheck::EXCEPTIONS*`, `docs/test-corpus.md` § 17)
+- [x] `docs/test-corpus.md`: `dataset-verify`, kontroly, očekávání DPH
       a nákladů, schvalování snímku; `docs/cli.md`: `dataset-verify`
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Pasti
 
@@ -227,6 +232,50 @@ schválený snímek místo nezávislého výpočtu.
 - **Zaokrouhlení** do nákladu nepatří (kontrola 4), v deníku ano (kontrola 5).
 - **Doklady z dřívějšího běhu** — kontroly je musí zahrnout, ne jen ty
   z aktuálního apply.
+
+## Odchylky při implementaci
+
+- `createMissingEntities` a `rejectOnIssues` `DocumentApplier` nečte (chyba
+  blokuje vždy, varování nikdy) a `MessageProposalApplier` je nepředává —
+  příkaz posílá jen `targetDocState` 40 a `autoCreateMode` liberal.
+- `expected/vat.json` nese i doklady v cizí měně (v měně dokladu), aby bylo
+  mapování úplné; vynechává je až verifikátor (D30).
+- Řádky přiznání určuje sazba, ne jen varianta (`regimes` v mapování):
+  účtenka 0902 s 12 % jde i na řádek 41.
+- `_resolve` z exportu porovnat nejde — štítek per řádek ověřuje kontrola 2
+  přes položku; kontrola 1 jde přes adaptér export → projekce
+  (`SavedDocumentProjection`), který ze zdroje dat doplní vlastní stranu,
+  text řádku, jednotku a papírovou podobu samovyměření / dokladu bez DPH.
+- Výjimky věrnosti jsou podmíněné dokladem a zdrojem dat
+  (`ApplyFidelityCheck::exceptionsFor`): účtenka bez splatnosti / VS,
+  doklad bez DPH, zdroj dat bez agendy DPH (#97). Dvě z nich (splatnost
+  a VS účtenky) přibyly po schválení seznamu — stejná povaha jako
+  schválené DUZP (výchozí hodnoty `DocDocument`).
+- Strážce očekávání sad je nová třída `DatasetExpectationsTest`, ne
+  rozšíření `CorpusExpectedTest`.
+
+## Nálezy z ověření (2026-10-14)
+
+První běh odhalil čtyři chyby applieru — opravené v rámci tasku, žádná
+neskončila ve výjimce:
+
+- **A** — `supplier.bankAccount` se samými `null` (účtenka) byl brán jako
+  reference → `unresolved_required`; `BankAccountResolver::hasIdentifier`.
+- **B** — faktura od tuzemského neplátce u plátce končila
+  `vat_code_unknown`; `vat.mode` none → řádky bez sazby dostanou `cz-112`.
+- **C** — dodavatel založený apply neměl adresu (`PartyResolver` fáze 1);
+  payload nese `addresses`, side-create zapíše sídlo.
+- **D** — pravidlo IČO → štítek přebilo LLM blok včetně `rowExceptions`
+  („Cestovné lektora“ → položka školení); výjimky řádků zůstávají.
+- **E (otevřený)** — účtenka hrazená hotově (`payment.method` cash, 0902)
+  jde v účetním předpisu na účet pokladny (`accountSrc: cashDesk`); bez
+  pokladny na hlavičce deník nese masku `211???` a hlášení „doplň
+  pokladnu“. Sada pokladnu nenese a applier ji přijatému dokladu
+  nepřiřazuje. Možnosti: (1) základ profilu dostane pokladnu
+  (`SetupExporter` + vazba `cash_desk` u hotově hrazených přijatých
+  dokladů v applieru — D-rozhodnutí), (2) korpus: 0902 kartou (ztratí
+  scénář hotovosti), (3) účtenka hotově jako pokladní doklad, ne faktura.
+  Do rozhodnutí blokuje schválení snímků deníku.
 
 ## Rozhodnutí k designu (potvrzená)
 

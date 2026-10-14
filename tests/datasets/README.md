@@ -24,3 +24,10 @@ cd /opt/shipard/data-sources/<id> && shpd-ds dataset-seed /cesta/k/repu/tests/da
 základu profilu (`tests/corpus/cz/profiles/<profil>/`), korpusu
 a generátoru (`tools/invoice-generator/invoicegen/dataset.py`); strážce
 `vendor/bin/phpunit --filter CorpusExpectedTest` hlídá soulad s korpusem.
+
+Složka `expected/` každé sady nese očekávání pro **ověření zaúčtování**
+(`shpd-ds dataset-verify <sada>`, #103 F3, `docs/test-corpus.md` § 17):
+kopii projekce, `vat.json` (přiznání a KH per zpráva — jen plátce),
+`costs.json` (náklad per zpráva) a po schválení snímek hlavní knihy.
+Staví ji build korpusu z mapování `tests/corpus/cz/vat-reporting.jsonc`;
+strážce `vendor/bin/phpunit --filter DatasetExpectationsTest`.

@@ -1664,6 +1664,43 @@ exit code.
 > Manifest s `dateMode` jiným než `fixed` seed odmítne („not implemented“ —
 > relativní datování je mimo rozsah fáze 1).
 
+#### `dataset-verify`
+
+```bash
+shpd-ds dataset-verify /cesta/k/repu/tests/datasets/cz/vat-payer
+shpd-ds dataset-verify /cesta/k/repu/tests/datasets/cz/vat-payer --no-apply
+shpd-ds dataset-verify /cesta/k/repu/tests/datasets/cz/vat-payer --json
+shpd-ds dataset-verify /cesta/k/repu/tests/datasets/cz/vat-payer --no-apply --write-ledger-snapshot=/tmp/general-ledger.json
+```
+
+Ověření zaúčtování a DPH nad zdrojem dat naseedovaným datovou sadou
+s očekáváními (`expected/`, #103 F3, `docs/test-corpus.md` § 17): použije
+všechny otevřené návrhy zpráv sady jako doklady **V pořádku** (jádro
+Použít, `MessageProposalApplier`; doklady v cizí měně se do #121 přeskočí)
+a spustí pět kontrol nad všemi doklady sady, i z dřívějšího běhu — druhý
+běh dá stejný výsledek: věrnost apply (export dokladu ≟ návrh na polích
+papírové projekce), položky a účty (Použít nezaložilo položku, řádky mají
+položku s účtem a štítkem, deník bez chyb), přiznání DPH a kontrolní
+hlášení proti nezávislému očekávání per období, náklady dokladů (deník
+třída 5 bez zaokrouhlení) a hlavní kniha proti schválenému snímku.
+
+**Preflight** (nic se nemění, exit 2): server mimo `production`, země sady
+= země zdroje dat a schémata sady (`DatasetPreflight`), každá zpráva ve
+zdroji dat je ze sady a každý doklad vznikl ze zprávy sady. Zdroj dat
+s jakýmikoli jinými daty příkaz nepustí, žádný `--force`.
+
+Výstup: per kontrola `ok` / `rozdíl` (seznam rozdílů) / `přeskočeno`
+(důvod) a souhrn; `--json` tentýž obsah strojově. Exit `0` vše v pořádku
+(přeskočené nevadí), `1` rozdíl nebo selhání apply, `2` chyba vstupu
+nebo odmítnutý preflight. Selhání apply jedné zprávy je výsledek, ne pád.
+
+| Opce | Význam |
+|------|--------|
+| `<path>` | Složka sady (s `expected/`) nebo `.zip` |
+| `--no-apply` | Jen kontroly — návrhy nepoužívat |
+| `--json` | Report jako JSON na stdout |
+| `--write-ledger-snapshot=<soubor>` | Zapsat aktuální hlavní knihu (`ReportResult` JSON) a vypsat obraty po účtech; kontrola deníku pak končí „přeskočeno“ — snímek schvaluje člověk a commituje do `tests/corpus/<země>/profiles/<profil>/approved/` |
+
 ### Seed (testovací data)
 
 > Seed příkazy jsou určené pro vývoj a demo. **Nepouštět na produkční DS.**
@@ -1992,6 +2029,9 @@ Detailní postup vč. backfillu existujících DS:
 
 - `0` — úspěch
 - `1` — chyba (chybějící povinný argument, neexistující DS, nevalidní stav, výjimka)
+- `2` — chyba vstupu nebo odmítnutý preflight u porovnávacích příkazů
+  (`report-diff`, `dataset-verify`), aby šel rozdíl (`1`) odlišit od
+  špatného zadání
 
 ### Výstupní tagy (Symfony Console)
 

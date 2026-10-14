@@ -21,6 +21,8 @@ sada/
   registry/NNNN-<slug>.files/<soubor> # přílohy dokumentu spisovny
   mail/NNNN-<slug>.jsonc              # shpd.mail.incomingMessage.v1
   mail/NNNN-<slug>.files/<soubor>     # přílohy zprávy (vč. raw .eml)
+  expected/…                          # volitelné: očekávání pro dataset-verify (#103 F3,
+                                      # docs/test-corpus.md § 17) — seed ji ignoruje, do counts nejde
 ```
 
 - **Názvy souborů** `NNNN-<slug>.jsonc` (čtyřmístné pořadí + ASCII slug

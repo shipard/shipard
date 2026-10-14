@@ -460,11 +460,12 @@ Nová šablona = soubor v `templates/` + jazyk v `TEMPLATE_LOCALE`
 - **DS ID** (`xxxx-xxxx-xxxx-xxxx`) nesmí v datech vzniknout —
   `scripts/check-sensitive.py`.
 
-Mimo rozsah F1 a F2: soubory ISDOC (#119), ISDOC vložený do PDF, apply
-návrhů a porovnání s očekáváním (F3), porovnávač a evaluace (F4),
-normalizace v produkci (#118), kurzy (#121), druhá vlna variant
-(dobropis, zálohová faktura s odpočtem zálohy, slovenské profily,
-identifikovaná osoba), soukromé sady s reálnými doklady.
+Mimo rozsah F1 a F2: soubory ISDOC (#119), ISDOC vložený do PDF,
+evaluace AI (F4; porovnávač vznikl ve F3, § 17), normalizace v produkci
+(#118), kurzy (#121), druhá vlna variant (dobropis, zálohová faktura
+s odpočtem zálohy, slovenské profily, identifikovaná osoba), soukromé
+sady s reálnými doklady. Apply návrhů a porovnání s očekáváním je F3
+(§ 17).
 
 ## 16. Datové sady z korpusu (F2)
 
@@ -510,7 +511,11 @@ Spouští ho build korpusu po očekáváních a PDF; výsledek je deterministick
   (D21), založí je Použít návrhu — `0V01` dodavatele založí, `0V02` ho najde;
 - `mail/NNNN-<slug(messageId)>.jsonc` + `.files/<doklad>.pdf` — zpráva
   per buňka, `messageId` `MSG-CORPUS-<VP|NP|AS>-<NNNN>`, pořadí a názvy
-  souborů jako z `dataset-dump` (podle `receivedAt`, `messageId`).
+  souborů jako z `dataset-dump` (podle `receivedAt`, `messageId`);
+- `expected/` — očekávání pro `dataset-verify` (F3, § 17): kopie
+  `projection.jsonc`, `vat.json` a `costs.json` z generátoru, schválený
+  snímek deníku `general-ledger.json` z `profiles/<profil>/approved/`.
+  Není to sekce sady — seed ji ignoruje, do `counts` nejde.
 
 Zpráva: předmět podle jazyka šablony („Faktura <číslo>“ / „Invoice
 <číslo>“ / „Účtenka <datum>“), odesílatel = dodavatel; doklad bez e-mailu
@@ -571,3 +576,134 @@ chyba sady. Po Použít tuzemského návrhu se naučí pravidlo IČO → štíte
   sada požádala; `ds-upgrade` je nevrací ani nedoplňuje.
 - Sekce `fiscalYears` a `accountingItems` v souhrnu seedu nemají soubory
   ani `counts` — build je do manifestu nepíše.
+
+## 17. Ověření zaúčtování (F3)
+
+Zadání a rozhodnutí D26–D30: `tasks/testing-phase3.md`, issue #103.
+Účetní polovina testování: nad zdrojem dat naseedovaným sadou (§ 16)
+příkaz `shpd-ds dataset-verify <sada>` (`docs/cli.md`) použije všechny
+otevřené návrhy jako doklady **V pořádku** a ověří, že hotový doklad
+odpovídá návrhu, Použít nezaložilo položku, přiznání DPH a kontrolní
+hlášení i náklady odpovídají očekávání spočtenému nezávisle na Shipardu
+a deník odpovídá schválenému snímku. Kontroly jedou nad všemi doklady
+sady, i z dřívějšího běhu — druhý běh (i `--no-apply`) dá totéž.
+Doklady v cizí měně se do #121 přeskočí (D30; 6 u plátce, 2 u neplátce
+i spolku) a do očekávání DPH a nákladů nejdou.
+
+### Očekávání v sadě (`expected/`)
+
+Staví je build korpusu (`invoicegen/reporting.py`, `dataset.py`), ze
+stejných hodnot jako očekávaný canonical (D5), v `Decimal`:
+
+- `projection.jsonc` — bajtová kopie papírové projekce; sada je soběstačná;
+- `vat.json` — jen u profilu s agendou DPH (`economy.vatAgenda` v základu
+  profilu), jinak `[]`. Záznam per zpráva: `messageId`, `variant`,
+  `currency`, `period` (`YYYY-MM` podle DUZP; `null` u dokladu bez DPH),
+  `return` `{řádek: {base, tax}}` a `controlStatement` `{section, supplierVatId,
+  documentNumber, taxPointDate, rates {sazba: {base, tax}}, reverseChargeCode}`
+  (`null` bez oddílu). Doklad v cizí měně má záznam v měně dokladu —
+  mapování je úplné, kurz doplní až #121.
+- `costs.json` — `{messageId, currency, cost}`: náklad = Σ MD třídy 5 bez
+  zaokrouhlení; plátce základ (doklad bez DPH celková částka), neplátce
+  a spolek základ + DPH (#97).
+- `general-ledger.json` — schválený snímek hlavní knihy, kopie
+  `profiles/<profil>/approved/general-ledger.json` (jen když existuje).
+
+**Mapování DPH** (`tests/corpus/cz/vat-reporting.jsonc`, D28, schválené
+2026-10-14): varianta → režim a oddíl KH; řádky přiznání určuje sazba
+(`regimes`: tuzemský odpočet 21 % → 40, 12 % → 41; samovyměření má řádek
+daně na výstupu i odpočtu, snížená sazba na sudých řádcích 4, 6, 11, 13,
+44 — v první vlně se nevyskytuje). Doklad se samovyměřením tiskne 0 %,
+českou sazbu dává `czRate` a daň = základ × sazba. `B2orB3` = B.2 nad
+práh `controlStatementThreshold` (celková částka vč. DPH), jinak B.3;
+účtenka vždy B.3; `none` = bez řádků i oddílu (dodavatel neplátce).
+
+Strážce `tests/Unit/Corpus/DatasetExpectationsTest.php`: projekce v sadě
+= korpus, právě jeden záznam per zpráva, mapování pokrývá všechny varianty
+a jen řádky formuláře DP3, částky záznamů přepočítané z `expected/<profil>/`
+nezávisle na generátoru.
+
+### Preflight a apply
+
+Preflight nic nemění a při nálezu končí exit 2: server mimo `production`,
+země sady = země zdroje dat a schémata (`DatasetPreflight`), každá zpráva
+ve zdroji dat je ze sady a každý doklad (i v Koši) vznikl ze zprávy sady.
+Je to pojistka proti ostrým datům — žádný `--force`.
+
+Apply: zprávy v pořadí přijetí (`0V01` založí dodavatele, `0V02` ho
+najde), `MessageProposalApplier::apply()` s `targetDocState` 40
+a `autoCreateMode` liberal. Zadání jmenuje i `createMissingEntities`
+a `rejectOnIssues` — `DocumentApplier` je nečte (chyba blokuje vždy,
+varování nikdy), neposílají se. Selhání apply jedné zprávy je výsledek
+(exit 1), ne pád.
+
+### Kontroly
+
+1. **Věrnost apply** (D27, `ApplyFidelityCheck`): export potvrzeného
+   dokladu (`DocumentExporter`) přes adaptér `SavedDocumentProjection`
+   ≟ `canonicalJson` použitého návrhu porovnávačem
+   `modules/core/exchange/src/Compare/` nad projekcí sady (ořez na klíče
+   projekce, tvary hodnot § 11, rovnocenné tvary § 10, tolerance 0,005,
+   řádky po pozicích). Porovnávač sdílí F4.
+2. **Položky a účty** (`ItemsAndAccountsCheck`, economy.items): žádná
+   položka mimo nabídku osnovy a mimo sekci `items/` sady (formulace
+   nezávislá na běhu), při apply počet položek před = po; každý řádek má
+   položku s účtem a se štítkem řádku z návrhu; deník dokladu bez
+   chybných řádků.
+3. **DPH** (`VatReportingCheck`, economy.vat): záznamy použitých dokladů
+   sečtené po obdobích ≟ `economy.vat.returnLive` a
+   `controlStatementLive` nad instancemi období, do kterých data spadají
+   (instance najde kontrola sama, i ty, kam Shipard zařadil doklad bez
+   očekávání); KH B.1 / B.2 / A.2 po dokladech (DIČ + evidenční číslo,
+   datum, pásma základ / daň, kód plnění), B.3 součty. Prázdné `vat.json`:
+   žádný doklad v období DPH a žádný pohyb na 343.
+4. **Náklady** (`CostsCheck`, economy.accounting): Σ MD účtů `5%` bez
+   `548` / `549` per doklad ≟ `costs.json`.
+5. **Deník** (D29, `LedgerSnapshotCheck`): `economy.accounting.generalLedger`
+   analyticky za nejmenší povolenou granularitu pokrývající měsíce
+   použitých dokladů (měsíc → čtvrtletí → pololetí → rok) ≟ snímek přes
+   `ReportDiff`; chybějící snímek = přeskočeno.
+
+### Výjimky věrnosti (schválené 2026-10-14)
+
+Pole, která apply mění záměrně — `ApplyFidelityCheck::EXCEPTIONS*`, každé
+s důvodem a odkazem na kód. **Další se nepřidává bez schválení**: kandidáti
+z běhu se sepíší a člověk rozhodne.
+
+| Cesta | Kdy | Proč |
+|-------|-----|------|
+| `rows[].item.supplierCode` | vždy | kód dodavatele se učí per položka a dodavatel, účetní položka sdílená více řádky nese jen první; export ho nenese |
+| `rows[].vat.reverseChargeCode` | vždy | nese ho kód DPH řádku (cz-115 ↔ 4); hlídá KH B.1 |
+| `dates.taxPointDate` | doklad bez DPH (`vat.mode` none) | `DocDocument::applyDateDefaults` doplní datum vystavení |
+| `dates.dueDate` | návrh bez splatnosti (účtenka) | tatáž metoda doplní vystavení + lhůtu |
+| `payment.paymentReference` | návrh bez VS (účtenka) | `applyPaymentReferenceDefault` doplní pořadové číslo řady |
+| `rows[].unitPrice`, `rows[].totalPrice`, `rows[].priceCalcMode`, `rows[].discountPct`, `rows[].vat`, `vat.mode`, `vatRecap`, `totals.totalBase`, `totals.totalVat` | zdroj dat bez agendy DPH | neplátce ukládá ceny s DPH, bez kódů a rekapitulace (#97); celková částka, data, strany a texty se porovnávají dál |
+
+Podstrom `_resolve` export nenese — štítky řádků hlídá kontrola 2.
+**Pravidla adaptéru** (rovnocenné tvary doplněné ze zdroje dat, ne
+výjimky): vlastní strana (`customer`) z vlastní firmy, text řádku místo
+názvu účetní položky, jednotka přes `UnitResolver` (a jednotka mimo
+číselník, kterou řádek nenese — `bal`, `krt`, `role`), papírová podoba
+samovyměření (0 %, bez oddaňovacího páru) a dokladu bez DPH (bez nulové
+rekapitulace, jen při nulové dani), `vat.reverseCharge` z kódů.
+
+### Schvalování snímku deníku
+
+Účty určuje nastavení Shipardu, ne zákon — proto snímek místo výpočtu.
+Postup: `dataset-verify … --no-apply --write-ledger-snapshot=<soubor>`
+vypíše obraty po účtech a skončí přeskočením; člověk je odsouhlasí,
+soubor commitne do `tests/corpus/cz/profiles/<profil>/approved/general-ledger.json`,
+přestaví sady (`build.py`) a další běh dá kontrolu 5 `ok`. Změna
+účtování = nový snímek se schválením, nikdy úprava snímku podle Shipardu.
+
+### Pasti
+
+- **Očekávání se neupravuje podle Shipardu.** Rozdíl je nález — chyba
+  Shipardu (issue), nebo chyba očekávání (oprava generátoru se schválením).
+  První běh F3 našel čtyři chyby applieru (účtenka bez bankovního spojení,
+  faktura od neplátce u plátce, dodavatel bez adresy, pravidlo přebíjející
+  výjimky řádků) — všechny opravené, žádná neskončila ve výjimce.
+- **Výstup nikdy přes `| head`** — SIGPIPE utne report, kontroly 2–5 chybí;
+  použij `--json > soubor`.
+- **Reseed** po změně korpusu nebo applieru: `dataset-seed … -y` na
+  ověřovací zdroj dat (reset), jinak kontroly běží nad starými doklady.
