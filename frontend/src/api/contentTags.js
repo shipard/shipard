@@ -11,7 +11,7 @@ import { get, post } from './client.js';
 
 /**
  * @param {string} tag  Content tag key (e.g. 'vehicle.fuel')
- * @param {string|null} [account]  Explicit account number (goods.stock)
+ * @param {string|null} [account]  Explicit account number (tag without an offer entry)
  * @returns {Promise<{success: boolean, data?: {itemId: number, code: string, name: string}, error?: object}>}
  */
 export async function materializeContentTag(tag, account = null) {

@@ -28,27 +28,10 @@
         "text:cs": "{waiting} · návrh: {starter} ({account})",
         "text:en": "{waiting} · suggestion: {starter} ({account})"
     },
-    // Podtitulek štítku goods.stock bez mapování (volba materiál / zboží).
-    "contentTag.chooseStock": {
-        "text": "{waiting} · choose posting: material or goods",
-        "text:cs": "{waiting} · zvolte účtování: materiál, nebo zboží",
-        "text:en": "{waiting} · choose posting: material or goods"
-    },
-    // Labely akcí (passthrough ze serveru — u goods.stock nesou číslo
-    // účtu z osnovy, frontend klíč nestačí).
+    // Label akce (passthrough ze serveru, vzor AlertsSource).
     "contentTag.create": {
         "text": "Create item",
         "text:cs": "Založit položku",
         "text:en": "Create item"
-    },
-    "contentTag.asMaterial": {
-        "text": "As material ({account})",
-        "text:cs": "Jako materiál ({account})",
-        "text:en": "As material ({account})"
-    },
-    "contentTag.asGoods": {
-        "text": "As goods ({account})",
-        "text:cs": "Jako zboží ({account})",
-        "text:en": "As goods ({account})"
     }
 }

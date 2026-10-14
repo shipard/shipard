@@ -55,19 +55,31 @@ class AccountingItemsOfferTest extends TestCase
 
     public function testDefaultAccountForTagUnmapped(): void
     {
-        // admin.other je vědomě bez mapování — ale prefix fallback najde
-        // admin.insurance/admin.fees; úplně nemapovaný je goods.*.
-        $this->assertNull($this->offer('default')->defaultAccountForTag('goods.stock'));
+        // Nabídka pokrývá každý štítek taxonomie kromě admin.other
+        // (ds-setup Task 12, AccountingItemsOfferCoverageTest) — i ten ale
+        // prefix fallback dovede na první admin.* položku. Opravdu bez účtu
+        // zůstává jen štítek s prefixem, který nabídka nezná.
+        $this->assertSame('518100', $this->offer('default')->defaultAccountForTag('admin.other'));
+        $this->assertNull($this->offer('default')->defaultAccountForTag('unknown.tag'));
+    }
+
+    public function testGoodsStockMapsToMaterials(): void
+    {
+        // #103 D31: goods.stock = Spotřeba materiálu, žádné skladové položky.
+        $this->assertSame('501100', $this->offer('default')->defaultAccountForTag('goods.stock'));
+        $this->assertSame('501100', $this->offer('npo')->defaultAccountForTag('goods.stock'));
+        $this->assertSame('501100', $this->offer('npo')->entryForTag('goods.stock')['code']);
     }
 
     public function testDefaultAccountForTagNpoVariant(): void
     {
         $this->assertSame('538100', $this->offer('npo')->defaultAccountForTag('vehicle.toll'));
-        // it.* nemá v NPO mapování ani prefix protějšek → review.
-        $this->assertNull($this->offer('npo')->defaultAccountForTag('it.software'));
-        // office.supplies přímé mapování nemá, prefix office.* vede na
-        // 501100 přes office.cleaning.
-        $this->assertSame('501100', $this->offer('npo')->defaultAccountForTag('office.supplies'));
+        // #103 D32: nezisková sada nese stejné nákladové analytiky jako
+        // podnikatelská — it.* a office.supplies mají přímé mapování.
+        $this->assertSame('518206', $this->offer('npo')->defaultAccountForTag('it.software'));
+        $this->assertSame('501100S', $this->offer('npo')->entryForTag('office.supplies')['code']);
+        // Pojištění jde v NNO pod 549, ne 548 (Manka a škody).
+        $this->assertSame('549201', $this->offer('npo')->defaultAccountForTag('admin.insurance'));
     }
 
     public function testUndecidedVariantYieldsNoAccount(): void

@@ -24,8 +24,8 @@ use Shipard\Module\Economy\Items\ContentTagBackfill;
  * Endpoints (tasks/content-tag-ui.md D26/D27):
  *   POST /_exchange/content-tags/materialize — {tag, account?} → založení
  *        účetní položky pro obsahový štítek (nabídka aktivní varianty
- *        osnovy / explicitní účet u goods.stock); živá otagovaná položka
- *        → 409 ALREADY_MAPPED.
+ *        osnovy / explicitní účet u štítku bez položky v nabídce); živá
+ *        otagovaná položka → 409 ALREADY_MAPPED.
  *   GET  /_exchange/content-tags/overview    — stav mapování taxonomie
  *        (otagované položky / default účet z nabídky / bez mapování)
  *        + reverzní návrhy účet→štítek pro neotagované položky (D15).

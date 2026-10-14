@@ -65,6 +65,8 @@ class ContentTagsControllerTest extends TestCase
             'services.banking' => ['name' => 'Bankovní poplatky', 'order' => 200],
             'goods.stock'      => ['name' => 'Zboží / materiál na sklad', 'order' => 310],
             'admin.other'      => ['name' => 'Ostatní (bez zařazení)', 'order' => 400],
+            // Štítek mimo nabídku i mimo její prefixy — jediná cesta ke stavu unmapped.
+            'misc.unknown'     => ['name' => 'Neznámý', 'order' => 500],
         ];
     }
 
@@ -257,26 +259,27 @@ class ContentTagsControllerTest extends TestCase
         $this->assertContains('vehicle.fuel', $this->savedItems[0]['content_tags']);
     }
 
-    public function testMaterializeGoodsStockRequiresAccount(): void
+    public function testMaterializeTagWithoutOfferEntryRequiresAccount(): void
     {
+        // admin.other je jediný štítek bez položky v nabídce (ds-setup Task 12).
         $ctrl = $this->makeController($this->makeDb());
-        $resp = $ctrl->materialize(self::postRequest(['tag' => 'goods.stock']), self::auth());
+        $resp = $ctrl->materialize(self::postRequest(['tag' => 'admin.other']), self::auth());
 
         $this->assertSame(422, $this->getStatus($resp));
         $this->assertSame('ACCOUNT_REQUIRED', $resp->getPayload()['error']['code']);
     }
 
-    public function testMaterializeGoodsStockWithAccount(): void
+    public function testMaterializeTagWithoutOfferEntryWithAccount(): void
     {
-        $ctrl = $this->makeController($this->makeDb(accountIdsByNumber: ['504100' => 88]));
+        $ctrl = $this->makeController($this->makeDb(accountIdsByNumber: ['548100' => 88]));
         $resp = $ctrl->materialize(
-            self::postRequest(['tag' => 'goods.stock', 'account' => '504100']),
+            self::postRequest(['tag' => 'admin.other', 'account' => '548100']),
             self::auth(),
         );
 
         $this->assertSame(200, $this->getStatus($resp));
-        $this->assertSame('504100', $resp->getPayload()['data']['code']);
-        $this->assertSame(['goods.stock'], $this->savedItems[0]['content_tags']);
+        $this->assertSame('548100', $resp->getPayload()['data']['code']);
+        $this->assertSame(['admin.other'], $this->savedItems[0]['content_tags']);
     }
 
     public function testMaterializeUnavailableWithoutAccounting(): void
@@ -317,9 +320,12 @@ class ContentTagsControllerTest extends TestCase
         // Bez položky, ale v nabídce → defaultAccount.
         $this->assertSame('defaultAccount', $byTag['services.banking']['state']);
         $this->assertSame('568201', $byTag['services.banking']['defaultAccount']);
-        // goods.stock bez mapování → unmapped.
-        $this->assertSame('unmapped', $byTag['goods.stock']['state']);
-        $this->assertNull($byTag['goods.stock']['defaultAccount']);
+        // goods.stock míří na Spotřebu materiálu (#103 D31, ds-setup Task 12).
+        $this->assertSame('defaultAccount', $byTag['goods.stock']['state']);
+        $this->assertSame('501100', $byTag['goods.stock']['defaultAccount']);
+        // Štítek bez položky i bez prefixového protějšku → unmapped.
+        $this->assertSame('unmapped', $byTag['misc.unknown']['state']);
+        $this->assertNull($byTag['misc.unknown']['defaultAccount']);
 
         // Reverzní návrhy: 568201 nese jediný štítek → návrh; 518100 nese
         // v nabídce víc štítků → kolize bez návrhu; účet mimo nabídku chybí.

@@ -35,9 +35,9 @@ položku i účet.
    bývá i karta **Dokončit nastavení** — obojí odblokuje další práci,
    proto je to nahoře.
 2. Klikni na **Založit položku** — položka vznikne rovnou otagovaná
-   a s účtem. U kategorie **Zboží / materiál na sklad** si místo toho
-   vybereš mezi **Jako materiál (501…)** a **Jako zboží (504…)** podle
-   toho, jak nakoupené věci účtuješ.
+   a s účtem. Kategorie **Zboží / materiál na sklad** dostane položku
+   *Spotřeba materiálu*; pokud nakoupené věci účtuješ jako zboží, změň
+   jí účet ve formuláři položky.
 3. Karta zmizí sama. Když teď otevřeš čekající návrh dokladu, řádky už
    nabízejí novou položku — bez opakované analýzy.
 

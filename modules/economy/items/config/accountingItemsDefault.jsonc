@@ -1,8 +1,8 @@
 // Nabídka účetních položek pro PODNIKATELSKOU osnovu (accountChartDefault).
 //
 // Jednorázová nabídka z panelu Nastavení zdroje dat (ds-setup Task 10 D18,
-// rozšířeno Taskem 11) — NENÍ to provisioner: smazané položky se uživateli
-// nevracejí. Generátor (SetupController, POST /_setup/accounting-items)
+// rozšířeno Taskem 11 a 12) — NENÍ to provisioner: smazané položky se
+// uživateli nevracejí. Generátor (SetupController, POST /_setup/accounting-items)
 // ke každému záznamu doplní:
 //   item_kind  = druh se system_code 'accounting' (item_type = 2)
 //   unit       = jednotka se system_code 'pcs'
@@ -20,7 +20,12 @@
 // Volitelné pole `contentTags`: klíče z cfgItem core.exchange.contentTags
 // (obsahová eskalace párování, tasks/content-tag-enrichment.md). Generátor
 // je propisuje do economy_items.content_tags; derivace fallback účtu pro
-// štítek čte tento soubor. Drift hlídá ContentTagsDriftTest.
+// štítek čte tento soubor. PRAVIDLO POKRYTÍ (ds-setup Task 12, #103 D31):
+// každý štítek taxonomie kromě `admin.other` má v této sadě právě jednu
+// položku — `goods.stock` míří na 501100 Spotřeba materiálu, skladové
+// položky podle řádků se nezakládají. Bez pokrytí by Použít návrhu dokladu
+// zakládalo položky podle řádků bez účtu. Drift hlídá ContentTagsDriftTest,
+// pokrytí AccountingItemsOfferCoverageTest.
 //
 // POZOR: čísla účtů zrcadlí accountChartDefault.jsonc a NESMÍ se sdílet
 // s neziskovou sadou (accountingItemsNpo.jsonc) — obě osnovy používají
@@ -62,7 +67,7 @@
         {"code": "518212",  "group": "services",   "name:cs": "Právní a notářské služby",                      "name:en": "Legal & notary services",                  "account": "518212", "contentTags": ["services.legal"]},
         {"code": "518301",  "group": "services",   "name:cs": "Finanční leasing vozidel",                      "name:en": "Vehicle finance lease",                    "account": "518301"},
         {"code": "518302",  "group": "services",   "name:cs": "Finanční leasing strojů",                       "name:en": "Machinery finance lease",                  "account": "518302"},
-        {"code": "501100",  "group": "materials",  "name:cs": "Spotřeba materiálu",                            "name:en": "Materials consumed",                       "account": "501100", "contentTags": ["vehicle.consumables", "vehicle.parts", "office.cleaning", "people.workwear"]},
+        {"code": "501100",  "group": "materials",  "name:cs": "Spotřeba materiálu",                            "name:en": "Materials consumed",                       "account": "501100", "contentTags": ["vehicle.consumables", "vehicle.parts", "office.cleaning", "people.workwear", "goods.stock"]},
         {"code": "501100S", "group": "materials",  "name:cs": "Kancelářské potřeby",                           "name:en": "Office supplies",                          "account": "501100", "contentTags": ["office.supplies"]},
         {"code": "502100",  "group": "materials",  "name:cs": "Spotřeba energie (elektřina)",                  "name:en": "Energy — electricity",                     "account": "502100", "contentTags": ["premises.electricity"]},
         {"code": "502200",  "group": "materials",  "name:cs": "Spotřeba energie (vodné a stočné)",             "name:en": "Energy — water & sewage",                  "account": "502200", "contentTags": ["premises.water"]},
@@ -86,6 +91,7 @@
         {"code": "523100",  "group": "payroll",    "name:cs": "Odměny členům orgánů společnosti a družstva",   "name:en": "Remuneration of company body members",     "account": "523100"},
         {"code": "524100",  "group": "payroll",    "name:cs": "Sociální zabezpečení",                          "name:en": "Social security",                          "account": "524100"},
         {"code": "524200",  "group": "payroll",    "name:cs": "Zdravotní pojištění",                           "name:en": "Health insurance",                         "account": "524200"},
+        {"code": "528100",  "group": "payroll",    "name:cs": "Ostatní sociální náklady",                      "name:en": "Other social costs",                       "account": "528100", "contentTags": ["people.benefits"]},
         {"code": "548301",  "group": "payroll",    "name:cs": "Zákonné úrazové pojištění pracovníků",          "name:en": "Statutory employee accident insurance",    "account": "548301"},
         {"code": "331100",  "group": "payroll",    "name:cs": "Hrubá mzda",                                    "name:en": "Gross wages",                              "account": "331100"},
         {"code": "331200",  "group": "payroll",    "name:cs": "Čistá mzda",                                    "name:en": "Net wages",                                "account": "331200"},

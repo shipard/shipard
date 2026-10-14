@@ -1,8 +1,8 @@
 // Nabídka účetních položek pro NEZISKOVOU osnovu (accountChartNpo).
 //
 // Jednorázová nabídka z panelu Nastavení zdroje dat (ds-setup Task 10 D18,
-// rozšířeno Taskem 11) — NENÍ to provisioner: smazané položky se uživateli
-// nevracejí. Generátor (SetupController, POST /_setup/accounting-items)
+// rozšířeno Taskem 11 a 12) — NENÍ to provisioner: smazané položky se
+// uživateli nevracejí. Generátor (SetupController, POST /_setup/accounting-items)
 // ke každému záznamu doplní:
 //   item_kind  = druh se system_code 'accounting' (item_type = 2)
 //   unit       = jednotka se system_code 'pcs'
@@ -11,12 +11,16 @@
 //
 // Formát: {groups, items}. Skupiny řídí sbalitelné sekce v UI nabídky
 // (řazení dle `order`), každá položka odkazuje `group` na id skupiny.
+// Skupiny i pořadí položek ve skupině zrcadlí podnikatelskou sadu
+// (accountingItemsDefault.jsonc).
 //
 // Kódy položek = čísla účtů. Když na jeden účet míří víc položek, dostane
-// druhá a další písmenný sufix (Z = zaokrouhlení, B = bankovní poplatky) —
-// tady 549100B/549100Z vedle 549100 a 649100Z; nezisková osnova dedikovaný
-// účet pro bankovní poplatky ani zaokrouhlení nemá (Jiné ostatní náklady).
-// Zaokrouhlení je KONVENCE, ne pravidlo: 549100/649100 je pragmatická volba.
+// druhá a další písmenný sufix (Z = zaokrouhlení, B = bankovní poplatky,
+// S = kancelářské potřeby/supplies, P = PHM) — tady 549100B/549100Z vedle
+// 549100, 501100S vedle 501100 a 503100P vedle 503100; nezisková osnova
+// dedikovaný účet pro bankovní poplatky ani zaokrouhlení nemá (Jiné ostatní
+// náklady). Zaokrouhlení je KONVENCE, ne pravidlo: 549100/649100 je
+// pragmatická volba.
 //
 // POZOR: čísla účtů zrcadlí accountChartNpo.jsonc a NESMÍ se sdílet
 // s podnikatelskou sadou (accountingItemsDefault.jsonc) — obě osnovy
@@ -25,24 +29,31 @@
 //
 // 538100 tady znamená „Ostatní daně a poplatky" (NPO osnova) — nemá nic
 // společného se zrušenou daní z převodu nemovitostí z podnikatelské sady.
+// Pojištění jde v NNO pod 549 (Jiné ostatní náklady) — syntetika 548 je
+// tu Manka a škody, ne ostatní provozní náklady.
 //
 // Volitelné pole `contentTags`: klíče z cfgItem core.exchange.contentTags
-// (obsahová eskalace párování, tasks/content-tag-enrichment.md). Otagované
-// jsou jen položky s jednoznačným protějškem v taxonomii — štítky bez
-// NPO mapování (office.supplies, it.*, vehicle.fuel…) zůstávají vědomě
-// bez defaultu → návrh spadne do review. Drift hlídá ContentTagsDriftTest.
+// (obsahová eskalace párování, tasks/content-tag-enrichment.md). Generátor
+// je propisuje do economy_items.content_tags; derivace fallback účtu pro
+// štítek čte tento soubor. PRAVIDLO POKRYTÍ (ds-setup Task 12, #103 D31,
+// D32): každý štítek taxonomie kromě `admin.other` má v této sadě právě
+// jednu položku — nezisková sada nese stejné nákladové analytiky jako
+// podnikatelská, u zapsaných spolků se tak účtuje běžně. Bez pokrytí by
+// Použít návrhu dokladu zakládalo položky podle řádků bez účtu. Drift
+// hlídá ContentTagsDriftTest, pokrytí AccountingItemsOfferCoverageTest.
 //
 // Mzdová agenda je záměrně UVNITŘ (revize rozhodnutí z Tasku 10): agenda
 // v aplikaci není, ale mzdy se účtují — položky stačí.
 {
     "groups": [
         {"id": "finance",    "name:cs": "Finanční operace",   "name:en": "Financial operations",  "order": 10},
-        {"id": "materials",  "name:cs": "Materiál a energie", "name:en": "Materials & energy",    "order": 20},
-        {"id": "operations", "name:cs": "Služby a provoz",    "name:en": "Services & operations", "order": 30},
-        {"id": "payroll",    "name:cs": "Mzdová agenda",      "name:en": "Payroll",               "order": 40},
-        {"id": "taxes",      "name:cs": "Daně",               "name:en": "Taxes",                 "order": 50},
-        {"id": "sanctions",  "name:cs": "Sankce a dary",      "name:en": "Penalties & gifts",     "order": 60},
-        {"id": "assets",     "name:cs": "Majetek",            "name:en": "Assets",                "order": 70}
+        {"id": "services",   "name:cs": "Služby",             "name:en": "Services",              "order": 20},
+        {"id": "materials",  "name:cs": "Materiál a energie", "name:en": "Materials & energy",    "order": 30},
+        {"id": "operations", "name:cs": "Provoz a opravy",    "name:en": "Operations & repairs",  "order": 40},
+        {"id": "insurance",  "name:cs": "Pojištění a sankce", "name:en": "Insurance & penalties", "order": 50},
+        {"id": "payroll",    "name:cs": "Mzdová agenda",      "name:en": "Payroll",               "order": 60},
+        {"id": "taxes",      "name:cs": "Daně",               "name:en": "Taxes",                 "order": 70},
+        {"id": "assets",     "name:cs": "Majetek",            "name:en": "Assets",                "order": 80}
     ],
     "items": [
         {"code": "549100B", "group": "finance",    "name:cs": "Bankovní poplatky",                             "name:en": "Bank fees",                                "account": "549100", "contentTags": ["services.banking"]},
@@ -52,17 +63,37 @@
         {"code": "645100",  "group": "finance",    "name:cs": "Kurzový zisk",                                  "name:en": "FX gain",                                  "account": "645100"},
         {"code": "549100Z", "group": "finance",    "name:cs": "Zaokrouhlení (náklad)",                         "name:en": "Rounding (expense)",                       "account": "549100"},
         {"code": "649100Z", "group": "finance",    "name:cs": "Zaokrouhlení (výnos)",                          "name:en": "Rounding (income)",                        "account": "649100"},
-        {"code": "501100",  "group": "materials",  "name:cs": "Spotřeba materiálu",                            "name:en": "Materials consumed",                       "account": "501100", "contentTags": ["vehicle.consumables", "vehicle.parts", "office.cleaning", "people.workwear"]},
-        {"code": "502100",  "group": "materials",  "name:cs": "Spotřeba energie",                              "name:en": "Energy consumed",                          "account": "502100", "contentTags": ["premises.electricity", "premises.gas", "premises.water"]},
+        {"code": "518100",  "group": "services",   "name:cs": "Ostatní služby",                                "name:en": "Other services",                           "account": "518100", "contentTags": ["vehicle.parking", "vehicle.washing", "premises.security", "services.training", "services.shipping", "services.waste", "admin.memberships"]},
+        {"code": "518201",  "group": "services",   "name:cs": "Telefonní poplatky",                            "name:en": "Telephone charges",                        "account": "518201", "contentTags": ["it.phone"]},
+        {"code": "518202",  "group": "services",   "name:cs": "Internetové služby",                            "name:en": "Internet services",                        "account": "518202", "contentTags": ["it.internet"]},
+        {"code": "518203",  "group": "services",   "name:cs": "Poštovné",                                      "name:en": "Postage",                                  "account": "518203", "contentTags": ["services.postage"]},
+        {"code": "518204",  "group": "services",   "name:cs": "Reklama",                                       "name:en": "Advertising",                              "account": "518204", "contentTags": ["services.marketing"]},
+        {"code": "518205",  "group": "services",   "name:cs": "Nájemné",                                       "name:en": "Rent",                                     "account": "518205", "contentTags": ["premises.rent"]},
+        {"code": "518206",  "group": "services",   "name:cs": "Software a cloudové služby",                    "name:en": "Software & cloud services",                "account": "518206", "contentTags": ["it.software", "it.hosting"]},
+        {"code": "518211",  "group": "services",   "name:cs": "Účetní a daňové služby",                        "name:en": "Accounting & tax services",                "account": "518211", "contentTags": ["services.accounting"]},
+        {"code": "518212",  "group": "services",   "name:cs": "Právní a notářské služby",                      "name:en": "Legal & notary services",                  "account": "518212", "contentTags": ["services.legal"]},
+        {"code": "501100",  "group": "materials",  "name:cs": "Spotřeba materiálu",                            "name:en": "Materials consumed",                       "account": "501100", "contentTags": ["vehicle.consumables", "vehicle.parts", "office.cleaning", "people.workwear", "goods.stock"]},
+        {"code": "501100S", "group": "materials",  "name:cs": "Kancelářské potřeby",                           "name:en": "Office supplies",                          "account": "501100", "contentTags": ["office.supplies"]},
+        {"code": "502100",  "group": "materials",  "name:cs": "Spotřeba energie (elektřina)",                  "name:en": "Energy — electricity",                     "account": "502100", "contentTags": ["premises.electricity"]},
+        {"code": "502200",  "group": "materials",  "name:cs": "Spotřeba energie (vodné a stočné)",             "name:en": "Energy — water & sewage",                  "account": "502200", "contentTags": ["premises.water"]},
+        {"code": "502300",  "group": "materials",  "name:cs": "Spotřeba energie (plyn)",                       "name:en": "Energy — gas",                             "account": "502300", "contentTags": ["premises.gas"]},
         {"code": "503100",  "group": "materials",  "name:cs": "Spotřeba ostatních neskladovatelných dodávek",  "name:en": "Other non-storable supplies",              "account": "503100"},
-        {"code": "518100",  "group": "operations", "name:cs": "Ostatní služby",                                "name:en": "Other services",                           "account": "518100", "contentTags": ["vehicle.parking", "vehicle.washing", "premises.security", "services.training", "services.shipping", "services.waste", "admin.memberships"]},
-        {"code": "511100",  "group": "operations", "name:cs": "Opravy a udržování",                            "name:en": "Repairs & maintenance",                    "account": "511100", "contentTags": ["vehicle.service", "premises.maintenance"]},
+        {"code": "503100P", "group": "materials",  "name:cs": "Spotřeba PHM",                                  "name:en": "Fuel consumed",                            "account": "503100", "contentTags": ["vehicle.fuel"]},
+        {"code": "511100",  "group": "operations", "name:cs": "Opravy a udržování",                            "name:en": "Repairs & maintenance",                    "account": "511100"},
+        {"code": "511201",  "group": "operations", "name:cs": "Opravy a údržba nemovitého majetku",            "name:en": "Real-estate repairs",                      "account": "511201", "contentTags": ["premises.maintenance"]},
+        {"code": "511202",  "group": "operations", "name:cs": "Servis vozidel",                                "name:en": "Vehicle servicing",                        "account": "511202", "contentTags": ["vehicle.service"]},
         {"code": "512100",  "group": "operations", "name:cs": "Cestovné",                                      "name:en": "Travel expenses",                          "account": "512100", "contentTags": ["travel.accommodation", "travel.fares"]},
         {"code": "513100",  "group": "operations", "name:cs": "Náklady na reprezentaci",                       "name:en": "Entertainment expenses",                   "account": "513100", "contentTags": ["people.catering"]},
+        {"code": "546100",  "group": "operations", "name:cs": "Poskytnuté dary",                               "name:en": "Gifts provided",                           "account": "546100", "contentTags": ["people.gifts"]},
         {"code": "549100",  "group": "operations", "name:cs": "Jiné ostatní náklady",                          "name:en": "Other miscellaneous expenses",             "account": "549100"},
+        {"code": "549201",  "group": "insurance",  "name:cs": "Pojištění majetku",                             "name:en": "Property insurance",                       "account": "549201", "contentTags": ["admin.insurance"]},
+        {"code": "549202",  "group": "insurance",  "name:cs": "Pojištění vozidel",                             "name:en": "Vehicle insurance",                        "account": "549202", "contentTags": ["vehicle.insurance"]},
+        {"code": "541100",  "group": "insurance",  "name:cs": "Smluvní pokuty a úroky z prodlení",             "name:en": "Contractual penalties & default interest", "account": "541100"},
+        {"code": "542100",  "group": "insurance",  "name:cs": "Ostatní pokuty a penále",                       "name:en": "Other fines & penalties",                  "account": "542100"},
         {"code": "521100",  "group": "payroll",    "name:cs": "Mzdové náklady",                                "name:en": "Wages",                                    "account": "521100"},
         {"code": "524100",  "group": "payroll",    "name:cs": "Zákonné sociální pojištění",                    "name:en": "Statutory social insurance",               "account": "524100"},
         {"code": "527100",  "group": "payroll",    "name:cs": "Zákonné sociální náklady",                      "name:en": "Statutory social costs",                   "account": "527100"},
+        {"code": "528100",  "group": "payroll",    "name:cs": "Ostatní sociální náklady",                      "name:en": "Other social costs",                       "account": "528100", "contentTags": ["people.benefits"]},
         {"code": "331100",  "group": "payroll",    "name:cs": "Hrubá mzda",                                    "name:en": "Gross wages",                              "account": "331100"},
         {"code": "331200",  "group": "payroll",    "name:cs": "Čistá mzda",                                    "name:en": "Net wages",                                "account": "331200"},
         {"code": "336100",  "group": "payroll",    "name:cs": "Zúčtování s institucí sociálního zabezpečení",  "name:en": "Social security institution settlement",   "account": "336100"},
@@ -72,9 +103,8 @@
         {"code": "531100",  "group": "taxes",      "name:cs": "Daň silniční",                                  "name:en": "Road tax",                                 "account": "531100"},
         {"code": "532100",  "group": "taxes",      "name:cs": "Daň z nemovitostí",                             "name:en": "Real-estate tax",                          "account": "532100"},
         {"code": "538100",  "group": "taxes",      "name:cs": "Ostatní daně a poplatky",                       "name:en": "Other taxes & fees",                       "account": "538100", "contentTags": ["vehicle.toll", "admin.fees"]},
-        {"code": "541100",  "group": "sanctions",  "name:cs": "Smluvní pokuty a úroky z prodlení",             "name:en": "Contractual penalties & default interest", "account": "541100"},
-        {"code": "542100",  "group": "sanctions",  "name:cs": "Ostatní pokuty a penále",                       "name:en": "Other fines & penalties",                  "account": "542100"},
-        {"code": "546100",  "group": "sanctions",  "name:cs": "Poskytnuté dary",                               "name:en": "Gifts provided",                           "account": "546100", "contentTags": ["people.gifts"]},
-        {"code": "042100",  "group": "assets",     "name:cs": "Pořízení dlouhodobého hmotného majetku",        "name:en": "Acquisition of tangible fixed assets",     "account": "042100"}
+        {"code": "042100",  "group": "assets",     "name:cs": "Pořízení dlouhodobého hmotného majetku",        "name:en": "Acquisition of tangible fixed assets",     "account": "042100"},
+        {"code": "501201",  "group": "assets",     "name:cs": "Evidovaný hmotný majetek",                      "name:en": "Registered tangible assets",               "account": "501201", "contentTags": ["office.equipment", "it.hardware"]},
+        {"code": "501202",  "group": "assets",     "name:cs": "Evidovaný nehmotný majetek",                    "name:en": "Registered intangible assets",             "account": "501202"}
     ]
 }

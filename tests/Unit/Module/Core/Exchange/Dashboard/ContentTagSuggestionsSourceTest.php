@@ -58,13 +58,6 @@ class ContentTagSuggestionsSourceTest extends TestCase
                 if (str_contains($sql, 'core_system_settings')) {
                     return json_encode('default');
                 }
-                if (str_contains($sql, 'economy_accounting_accounts')) {
-                    return match ((string) ($args[1] ?? '')) {
-                        '501' => '501100',
-                        '504' => '504100',
-                        default => null,
-                    };
-                }
                 return null;
             },
         );
@@ -148,20 +141,21 @@ class ContentTagSuggestionsSourceTest extends TestCase
         $this->assertSame([], $cards);
     }
 
-    public function testGoodsStockOffersMaterialOrGoodsAccounts(): void
+    public function testGoodsStockCardsAsMaterialsItem(): void
     {
+        // #103 D31 (ds-setup Task 12): goods.stock má v nabídce položku
+        // Spotřeba materiálu — dřívější volba materiál / zboží zanikla.
         $cards = (new ContentTagSuggestionsSource())->collectCards($this->context(
             analysisRows: self::open('goods.stock'),
         ));
 
         $this->assertCount(1, $cards);
-        $actions = $cards[0]['actions'];
-        $this->assertCount(2, $actions);
-        $this->assertSame('Jako materiál (501100)', $actions[0]['label']);
-        $this->assertSame(['tag' => 'goods.stock', 'account' => '501100'], $actions[0]['target']);
-        $this->assertSame('Jako zboží (504100)', $actions[1]['label']);
-        $this->assertSame(['tag' => 'goods.stock', 'account' => '504100'], $actions[1]['target']);
         $this->assertStringContainsString('1 doklad čeká', $cards[0]['subtitle']);
+        $this->assertStringContainsString('Spotřeba materiálu (501100)', $cards[0]['subtitle']);
+        $actions = $cards[0]['actions'];
+        $this->assertCount(1, $actions);
+        $this->assertSame('Založit položku', $actions[0]['label']);
+        $this->assertSame(['tag' => 'goods.stock'], $actions[0]['target']);
     }
 
     public function testTagWithoutOfferMappingDoesNotCard(): void
@@ -345,9 +339,8 @@ class ContentTagSuggestionsSourceTest extends TestCase
 
         $this->assertCount(2, $fromCatalog);
         $this->assertStringStartsWith('2 documents waiting · suggestion: ', $fromCatalog[0]['subtitle']);
-        $this->assertSame('1 document waiting · choose posting: material or goods', $fromCatalog[1]['subtitle']);
-        $this->assertSame('As material (501100)', $fromCatalog[1]['actions'][0]['label']);
-        $this->assertSame('As goods (504100)', $fromCatalog[1]['actions'][1]['label']);
+        $this->assertSame('1 document waiting · suggestion: Materials consumed (501100)', $fromCatalog[1]['subtitle']);
+        $this->assertSame('Create item', $fromCatalog[1]['actions'][0]['label']);
         foreach ($fromCatalog as $i => $card) {
             $this->assertSame($card['subtitle'], $fromFallback[$i]['subtitle']);
             $this->assertSame(array_column($card['actions'], 'label'), array_column($fromFallback[$i]['actions'], 'label'));

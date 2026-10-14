@@ -89,8 +89,10 @@ final class ContentTagResolver
      *  - `accountOnly` — žádná otagovaná položka, ale nabídka aktivní
      *                    varianty osnovy nese fallback účet; `suggested`
      *                    má jen {account},
-     *  - `unmapped`    — ani fallback účet (vědomé review — admin.other,
-     *                    goods.stock, NPO štítky bez mapování).
+     *  - `unmapped`    — ani fallback účet. Nabídka pokrývá každý štítek
+     *                    kromě admin.other (ds-setup Task 12) a ten dovede
+     *                    prefix `admin.*` na účet, takže sem reálně spadne
+     *                    jen štítek s prefixem, který nabídka nezná.
      *
      * @return array{status: string, suggested: array<string, string>,
      *               itemName?: string, sourceItemId?: int, candidates?: list<string>}

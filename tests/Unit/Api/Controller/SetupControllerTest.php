@@ -877,13 +877,13 @@ class SetupControllerTest extends TestCase
         $data = $resp->getPayload()['data'];
         $this->assertTrue($data['available']);
         $this->assertSame('default', $data['chartVariant']);
-        $this->assertCount(57, $data['candidates']);
+        $this->assertCount(58, $data['candidates']);
         $this->assertSame('548100', $this->findCandidate($resp, '548100Z')['accountNumber']);
         $this->assertSame('568201', $this->findCandidate($resp, '568201')['accountNumber']);
 
         $resp = $this->makeController($this->makeDb(['economy.accountChart' => 'npo']))
             ->accountingItemsOffer(self::auth());
-        $this->assertCount(31, $resp->getPayload()['data']['candidates']);
+        $this->assertCount(50, $resp->getPayload()['data']['candidates']);
         $this->assertSame('549100', $this->findCandidate($resp, '549100Z')['accountNumber']);
         $this->assertSame('549100', $this->findCandidate($resp, '549100B')['accountNumber']);
         $this->assertSame('549100', $this->findCandidate($resp, '549100')['accountNumber']);
@@ -930,15 +930,17 @@ class SetupControllerTest extends TestCase
         // Konzistence seed ↔ osnova: každý account existuje v příslušném
         // chart JSONC, každá položka odkazuje na deklarovanou skupinu,
         // počty dle Tasku 11 (default 54/8, NPO 31/7) + content tag
-        // enrichment (default +3: 501100S, 538200, 543900 → 57).
+        // enrichment (default +3: 501100S, 538200, 543900 → 57) + pokrytí
+        // štítků (ds-setup Task 12: default +1 528100 → 58, NPO zrcadlí
+        // skupiny i nákladové analytiky podnikatelské sady → 50/8).
         $modules = dirname(__DIR__, 4) . '/modules';
         $charts  = [
             'default' => "{$modules}/economy/accounting/config/accountChartDefault.jsonc",
             'npo'     => "{$modules}/economy/accounting/config/accountChartNpo.jsonc",
         ];
         $seeds = [
-            'default' => ["{$modules}/economy/items/config/accountingItemsDefault.jsonc", 57, 8],
-            'npo'     => ["{$modules}/economy/items/config/accountingItemsNpo.jsonc", 31, 7],
+            'default' => ["{$modules}/economy/items/config/accountingItemsDefault.jsonc", 58, 8],
+            'npo'     => ["{$modules}/economy/items/config/accountingItemsNpo.jsonc", 50, 8],
         ];
 
         foreach ($seeds as $variant => [$seedFile, $itemCount, $groupCount]) {

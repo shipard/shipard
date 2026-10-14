@@ -23,14 +23,13 @@ use Shipard\Module\Economy\Items\AccountingItemsOffer;
  * štítek nepotřebuje. Štítky dokladu = primární `content_tag` **i** štítky
  * řádkových výjimek (`_resolve.contentTag.rowExceptions`, elektřina na
  * faktuře za nájem — tasks/content-tag-row-exceptions.md D1); doklad se
- * do každé své karty počítá právě jednou. `goods.stock` nemá mapování
- * v nabídce (D7) — karta nabízí volbu účtu materiál (501…) / zboží (504…)
- * z aktivní osnovy. Štítky vědomě bez mapování (admin.other,
- * people.benefits) nekartují — jsou „review by design" a karta by neměla
- * co založit.
+ * do každé své karty počítá právě jednou. Nabídka pokrývá každý štítek
+ * kromě `admin.other` (ds-setup Task 12, #103 D31 — `goods.stock` míří na
+ * Spotřebu materiálu, dřívější volba materiál / zboží na kartě zanikla);
+ * štítek bez položky v nabídce nekartuje — je „review by design" a karta
+ * by neměla co založit.
  *
- * Akce nesou lokalizovaný `label` ze serveru (passthrough vzor AlertsSource)
- * — u goods.stock je v labelu číslo účtu z osnovy, frontend klíč nestačí.
+ * Akce nesou lokalizovaný `label` ze serveru (passthrough vzor AlertsSource).
  * Texty podtitulku a labelů jdou z katalogu `core.exchange.feedTexts` přes
  * `FeedTexts` (ICU plurály, #101 D11–D15), bez katalogu anglický fallback;
  * titulek je název štítku z taxonomie `core.exchange.contentTags`.
@@ -209,7 +208,7 @@ final class ContentTagSuggestionsSource implements FeedSource
             ['n' => $waiting],
         );
 
-        $entry = $tag === 'goods.stock' ? null : $offer->entryForTag($tag);
+        $entry = $offer->entryForTag($tag);
         if ($entry !== null) {
             $starterName = AccountingItemsOffer::localizedField(
                 $entry, 'name', $ctx->language, (string) $entry['code'],
@@ -227,29 +226,6 @@ final class ContentTagSuggestionsSource implements FeedSource
                 'target'  => ['tag' => $tag],
                 'primary' => true,
             ]];
-        } elseif ($tag === 'goods.stock') {
-            $material = $this->firstAccountByPrefix($ctx, '501');
-            $goods    = $this->firstAccountByPrefix($ctx, '504');
-            if ($material === null || $goods === null) {
-                return null; // osnova bez 501/504 — není z čeho volit
-            }
-            $subtitle = $texts->t('contentTag.chooseStock', '{waiting} · choose posting: material or goods',
-                ['waiting' => $waitingText]);
-            $actions = [
-                [
-                    'id'      => 'materializeMaterial',
-                    'kind'    => 'materialize_content_tag',
-                    'label'   => $texts->t('contentTag.asMaterial', 'As material ({account})', ['account' => $material]),
-                    'target'  => ['tag' => $tag, 'account' => $material],
-                    'primary' => true,
-                ],
-                [
-                    'id'     => 'materializeGoods',
-                    'kind'   => 'materialize_content_tag',
-                    'label'  => $texts->t('contentTag.asGoods', 'As goods ({account})', ['account' => $goods]),
-                    'target' => ['tag' => $tag, 'account' => $goods],
-                ],
-            ];
         } else {
             return null;
         }
@@ -283,23 +259,6 @@ final class ContentTagSuggestionsSource implements FeedSource
         $taxonomy = $ctx->config?->cfgItem('core.exchange.contentTags');
         $name = is_array($taxonomy) ? ($taxonomy[$tag]['name'] ?? null) : null;
         return is_string($name) && $name !== '' ? $name : $tag;
-    }
-
-    /**
-     * První aktivní analytický účet dle prefixu čísla (501 → 501100) —
-     * přímý dotaz jako exchange AccountResolver, bez závislosti na
-     * economy.accounting třídách.
-     */
-    private function firstAccountByPrefix(FeedContext $ctx, string $prefix): ?string
-    {
-        $number = $ctx->db->fetchSingle(
-            'SELECT `number` FROM `economy_accounting_accounts`'
-            . ' WHERE `number` LIKE %like~ AND `account_level` = 4 AND `docState` IN %in'
-            . ' ORDER BY `number` LIMIT 1',
-            $prefix,
-            self::ITEM_ACTIVE_STATES,
-        );
-        return is_string($number) && $number !== '' ? $number : null;
     }
 
     /** ATOM timestamp z DB hodnoty (DateTime|string|null) — vzor AlertsSource. */

@@ -155,10 +155,10 @@ class AccountingItemsGeneratorTest extends TestCase
         $codes = $g->offerCodes();
         $result = $g->generate('all');
 
-        $this->assertCount(57, $codes, 'podnikatelská nabídka (docs/ds-setup.md D18-rev)');
+        $this->assertCount(58, $codes, 'podnikatelská nabídka (docs/ds-setup.md D18-rev + ds-setup-12)');
         $this->assertContains('568201', $codes);
         $this->assertSame('string', gettype($codes[0]), 'numerické klíče seedu musí zpět na string');
-        $this->assertCount(57, $result['created']);
+        $this->assertCount(58, $result['created']);
         $this->assertSame([], $result['skipped']);
         $this->assertSame([], $result['failed']);
         $this->assertSame('568201', $result['created'][0]['code']);

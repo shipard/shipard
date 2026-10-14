@@ -68,7 +68,7 @@ class AccountingItemMaterializerTest extends TestCase
         $config = $this->createMock(ConfigRuntime::class);
         $config->method('cfgItem')->willReturnMap([
             ['core.exchange.contentTags', [
-                'goods.stock' => ['name' => 'Zboží / materiál na sklad', 'order' => 310],
+                'admin.other' => ['name' => 'Ostatní (bez zařazení)', 'order' => 410],
             ]],
         ]);
 
@@ -109,26 +109,43 @@ class AccountingItemMaterializerTest extends TestCase
         $this->assertContains('vehicle.fuel', $item['content_tags']);
     }
 
-    public function testGoodsStockWithoutAccountFails(): void
+    public function testGoodsStockCreatesMaterialsItemFromOffer(): void
     {
-        $result = $this->materializer()->materializeForTag('goods.stock');
+        // #103 D31 (ds-setup Task 12): goods.stock má v nabídce položku
+        // Spotřeba materiálu — bez explicitního účtu jde entry cestou.
+        $m = $this->materializer(accountIdsByNumber: ['501100' => 77]);
+        $result = $m->materializeForTag('goods.stock');
+
+        $this->assertSame('created', $result['status']);
+        $this->assertSame('501100', $result['code']);
+        $item = $this->savedItems[0];
+        $this->assertSame('Spotřeba materiálu', $item['name']);
+        $this->assertSame(77, $item['accounting_account']);
+        $this->assertContains('goods.stock', $item['content_tags']);
+    }
+
+    public function testTagWithoutOfferEntryRequiresAccount(): void
+    {
+        // admin.other je jediný štítek bez položky v nabídce
+        // (AccountingItemsOfferCoverageTest).
+        $result = $this->materializer()->materializeForTag('admin.other');
 
         $this->assertSame('failed', $result['status']);
         $this->assertSame('account_required', $result['reason']);
         $this->assertSame([], $this->savedItems);
     }
 
-    public function testGoodsStockWithAccountCreatesItemNamedByTagLabel(): void
+    public function testTagWithoutOfferEntryAndAccountCreatesItemNamedByTagLabel(): void
     {
-        $m = $this->materializer(accountIdsByNumber: ['501100' => 77]);
-        $result = $m->materializeForTag('goods.stock', '501100');
+        $m = $this->materializer(accountIdsByNumber: ['548100' => 77]);
+        $result = $m->materializeForTag('admin.other', '548100');
 
         $this->assertSame('created', $result['status']);
-        $this->assertSame('501100', $result['code']);
+        $this->assertSame('548100', $result['code']);
         $item = $this->savedItems[0];
-        $this->assertSame('Zboží / materiál na sklad', $item['name']);
+        $this->assertSame('Ostatní (bez zařazení)', $item['name']);
         $this->assertSame(77, $item['accounting_account']);
-        $this->assertSame(['goods.stock'], $item['content_tags']);
+        $this->assertSame(['admin.other'], $item['content_tags']);
     }
 
     public function testCodeCollisionAppendsLetterSuffix(): void
@@ -139,7 +156,7 @@ class AccountingItemMaterializerTest extends TestCase
             existingCodes: ['501100'],
             accountIdsByNumber: ['501100' => 77],
         );
-        $result = $m->materializeForTag('goods.stock', '501100');
+        $result = $m->materializeForTag('goods.stock');
 
         $this->assertSame('created', $result['status']);
         $this->assertSame('501100A', $result['code']);
@@ -160,7 +177,7 @@ class AccountingItemMaterializerTest extends TestCase
 
     public function testUnknownAccountFails(): void
     {
-        $result = $this->materializer()->materializeForTag('goods.stock', '999999');
+        $result = $this->materializer()->materializeForTag('admin.other', '999999');
 
         $this->assertSame('failed', $result['status']);
         $this->assertSame('account_not_found', $result['reason']);
