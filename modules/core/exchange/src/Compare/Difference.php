@@ -41,6 +41,7 @@ final class Difference
             $json = $json === false ? '[…]' : $json;
             return mb_strlen($json) > 80 ? mb_substr($json, 0, 77) . '…' : $json;
         }
-        return json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: 'null';
+        $json = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return $json === false ? 'null' : $json;   // ne `?:` — "0" je falsy
     }
 }
