@@ -28,6 +28,8 @@ VARIANTS = {
     "long-document": 10,
 }
 RECEIPT_TEMPLATES = frozenset({"receipt"})
+# Jazyk šablony — řídí jazyk tisku i předmět / tělo zprávy v datové sadě.
+TEMPLATE_LOCALE = {"cs-a": "cs", "cs-b": "cs", "cs-c": "cs", "receipt": "cs", "en": "en"}
 PAYMENT_METHODS = ("bankTransfer", "card", "cash")
 ROUNDINGS = ("none", "czk")
 

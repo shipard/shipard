@@ -8,11 +8,14 @@ deterministický) a vyrenderuje out/<profil>/NNNN-<slug>.pdf přes Gotenberg
 jen tehdy, když PDF chybí, hash HTML + voleb papíru se liší od
 build-state.json, nebo s --force (PDF z Chromia není bajtově deterministické).
 
-    python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities]
+    python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities] [--no-datasets]
 
 --verify-identities ověří identity v ARES a VIES (síť; po změně identit),
 při úspěchu zapíše dnešní datum do verifiedAt a pokračuje buildem; selhání
 = exit 1, nedostupný registr = exit 2 (identity se neoznačí jako ověřené).
+Po korpusu sestaví datové sady tests/datasets/cz/<profil>/ ze základů
+profilů profiles/<profil>/ (tasks/testing-phase2.md; --no-datasets přeskočí;
+sady se stavějí vždy ze všech datových souborů, i s --only).
 Env: GOTENBERG_URL (default http://10.199.6.210:3000). Exit != 0 = chyba.
 """
 
@@ -33,8 +36,10 @@ sys.path.insert(0, str(REPO_ROOT / "tools" / "invoice-generator"))
 from invoicegen.checks import validate_identities  # noqa: E402
 from invoicegen.compute import VAT_RATES, compute  # noqa: E402
 from invoicegen.corpus import (  # noqa: E402
-    PROFILES, Cell, DataFileError, SkippedCell, cells_for, validate_data_file, validate_variant_pairs,
+    PROFILES, TEMPLATE_LOCALE, Cell, DataFileError, SkippedCell, cells_for, validate_data_file,
+    validate_variant_pairs,
 )
+from invoicegen.dataset import DatasetBuildError, build_datasets  # noqa: E402
 from invoicegen.expected import apply_projection, build_expected, dumps_expected, load_projection  # noqa: E402
 from invoicegen.jsonc import load_jsonc  # noqa: E402
 from invoicegen.registries import (  # noqa: E402
@@ -48,7 +53,7 @@ from invoicegen.render import (  # noqa: E402
 STATE_FILE = BASE_DIR / "build-state.json"
 TAXONOMY_FILE = REPO_ROOT / "modules" / "core" / "exchange" / "config" / "contentTags.jsonc"
 DEMO_IDENTITIES = REPO_ROOT / "demo" / "invoices" / "suppliers.jsonc"
-TEMPLATE_LOCALE = {"cs-a": "cs", "cs-b": "cs", "cs-c": "cs", "receipt": "cs", "en": "en"}
+DATASETS_DIR = REPO_ROOT / "tests" / "datasets" / "cz"
 
 COUNTRY_NAMES = {
     "cs": {"cz": "Česká republika", "de": "Německo", "us": "USA"},
@@ -304,6 +309,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--force", action="store_true", help="přegenerovat všechna PDF")
     parser.add_argument("--verify-identities", action="store_true",
                         help="ověřit identity v ARES a VIES (síť) a zapsat verifiedAt")
+    parser.add_argument("--no-datasets", action="store_true", help="nesestavovat datové sady tests/datasets/cz/")
     args = parser.parse_args(argv)
 
     identities = load_jsonc(BASE_DIR / "identities.jsonc")
@@ -392,6 +398,16 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"OK: {counts['cells']} buněk ({counts['rendered']} PDF přegenerováno, "
           f"{counts['unchanged']} beze změny), {counts['skipped']} vynecháno")
+
+    if not args.no_datasets:
+        try:
+            summaries = build_datasets(BASE_DIR, DATASETS_DIR, identities, docs)
+        except DatasetBuildError as e:
+            print(f"datová sada: {e}", file=sys.stderr)
+            return 1
+        for s in summaries:
+            print(f"{s.name}: {s.messages} zpráv, {s.skipped} vynechaných buněk matice → "
+                  f"{s.out_dir.relative_to(REPO_ROOT)}")
     return 0
 
 

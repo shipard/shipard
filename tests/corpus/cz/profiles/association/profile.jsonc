@@ -1,0 +1,9 @@
+// Základ profilu association (tasks/testing-phase2.md, docs/test-corpus.md § Profily).
+// Sada se z něj a z korpusu sestavuje buildem — tests/datasets/cz/association/ se needituje.
+{
+	"name": "cz-association",
+	"title": "Testovací sada — spolek (z. s.), neplátce DPH",
+	"description": "Korpus #103 F1: přijaté doklady s ideální analýzou. Vlastní firma je zapsaný spolek s neziskovou osnovou, neplátce DPH.",
+	"created": "2026-10-14T00:00:00Z",   // pevné — sada je deterministická
+	"provision": { "accountingItems": "all" },
+}

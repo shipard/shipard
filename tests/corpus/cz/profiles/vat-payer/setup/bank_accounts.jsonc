@@ -1,0 +1,19 @@
+// Vlastní bankovní účet — fiktivní podle pravidel identit (mod 11, IBAN odpovídá účtu, reálný kód banky).
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "bank_accounts",
+	"rows": [
+		{
+			"code": "BU1",
+			"name": "Běžný účet",
+			"account_number": "591198601/0100",
+			"iban": "CZ6901000000000591198601",
+			"bic": "KOMBCZPP",
+			"currency": "czk",
+			"is_default": true,
+			"valid_from": "2026-01-01",
+			"sort_order": 1,
+			"docState": 40,
+		},
+	],
+}

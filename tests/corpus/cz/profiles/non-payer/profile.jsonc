@@ -1,0 +1,9 @@
+// Základ profilu non-payer (tasks/testing-phase2.md, docs/test-corpus.md § Profily).
+// Sada se z něj a z korpusu sestavuje buildem — tests/datasets/cz/non-payer/ se needituje.
+{
+	"name": "cz-non-payer",
+	"title": "Testovací sada — neplátce DPH s.r.o.",
+	"description": "Korpus #103 F1: přijaté doklady s ideální analýzou. Vlastní firma je s.r.o., neplátce DPH.",
+	"created": "2026-10-14T00:00:00Z",   // pevné — sada je deterministická
+	"provision": { "accountingItems": "all" },
+}

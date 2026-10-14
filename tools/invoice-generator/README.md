@@ -15,7 +15,8 @@ vstupními body:
 | `invoicegen/render.py` | formátování pro tisk, HTML ze šablony `{{key}}`, PDF přes Gotenberg |
 | `invoicegen/expected.py` | očekávaný výsledek = papírová projekce canonicalu (`tests/corpus/projection.jsonc`), odvozená pole podle promptu, zapisovač JSON bez float |
 | `invoicegen/registries.py` | ověření identit v ARES a VIES (síť, jen `build.py --verify-identities`), přepis `verifiedAt` |
-| `invoicegen/corpus.py` | datový soubor korpusu: validace, přepisy per profil (`overrides`, alias), vynechané buňky, matice doklad × profil |
+| `invoicegen/corpus.py` | datový soubor korpusu: validace, přepisy per profil (`overrides`, alias), vynechané buňky, matice doklad × profil, jazyk šablon (`TEMPLATE_LOCALE`) |
+| `invoicegen/dataset.py` | datové sady z korpusu (`tasks/testing-phase2.md`): základ profilu, vlastní firma, zpráva s ideální analýzou per buňka, zapisovač JSON jako PHP `DatasetWriter`, slug jako `Slug::make`, deterministické sestavení `tests/datasets/cz/<profil>/` |
 
 Vstupní body si přidávají `tools/invoice-generator` na `sys.path` a balík
 importují; žádná instalace. Gotenberg: env `GOTENBERG_URL`

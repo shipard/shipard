@@ -1,0 +1,11 @@
+// Parametry vrstvy C (docs/ds-setup.md) — jen to, co se liší od čerstvého zdroje dat.
+{
+	"format": "shpd.dataset.setup.v1",
+	"table": "settings",
+	"rows": [
+		{ "key": "economy.accountChart", "value": "npo" },
+		{ "key": "economy.fiscalYearStartMonth", "value": 1 },
+		{ "key": "economy.homeCurrency", "value": "czk" },
+		{ "key": "economy.vatAgenda", "value": false },
+	],
+}
