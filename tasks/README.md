@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 362 tasků: **naplánováno** 4 · **částečně** 25 · **hotovo** 333.
+Celkem 363 tasků: **naplánováno** 5 · **částečně** 25 · **hotovo** 333.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `testing-phase1.md` | naplánováno | design schválen 2026-10-14 (#103 D12–D18), čeká na implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -441,6 +442,18 @@ Vývojářský nástroj v development módu (`/_dev/`).
 | `dev-dashboard-create-ds.md` | Vytvoření DS přes UI |
 | `dev-dashboard-actions.md` | Server akce + per-DS upgrade |
 | `dev-dashboard-empty-state.md` | Prázdný seznam DS odkazuje na + New DS |
+
+## Testování a datové sady
+
+Datové sady (`dataset-dump` / `dataset-seed`, [`docs/datasets.md`](../docs/datasets.md))
+a nové testování podle issue #103 — korpus dokladů, profily, ověření
+zaúčtování a evaluace AI.
+
+| Task | Fáze | Co řeší |
+|------|------|---------|
+| `dataset-phase1.md` | — | Datové sady: `dataset-dump` / `dataset-seed`, snapshot mode došlé pošty (#40 D1–D5) |
+| `demo-invoices.md` | — | Generátor fiktivních přijatých faktur (PDF) pro demo video |
+| `testing-phase1.md` | F1 | Korpus testovacích dokladů: sdílený generátor, 10 variant × 2 podoby (PDF, PDF + ISDOC), tři profily vlastní firmy, očekávaný výsledek jako papírová projekce canonicalu, tvary hodnot (#103 D12–D18) |
 
 ## Drobné
 
