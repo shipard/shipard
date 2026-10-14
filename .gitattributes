@@ -1,0 +1,2 @@
+# Binární soubory — bez diffu, merge a převodu konců řádků (core.autocrlf na Windows/WSL).
+*.pdf binary
