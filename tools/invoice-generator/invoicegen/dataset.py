@@ -28,8 +28,10 @@ from pathlib import Path
 
 from .checks import account_valid, iban_matches_account
 from .corpus import PROFILES, TEMPLATE_LOCALE, Cell, SkippedCell, cells_for
+from .expected import dumps_expected
 from .jsonc import load_jsonc
 from .render import NNBSP, fmt_date, fmt_money
+from .reporting import VatReporting, cost_record, vat_record
 
 DATASET_FORMAT = "shpd.dataset.v1"
 SETUP_FORMAT = "shpd.dataset.setup.v1"
@@ -47,7 +49,8 @@ NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 CREATED_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 SETUP_TABLES = ("settings", "bank_accounts", "cost_centers", "vat_registrations", "binders", "mailboxes")
 PROVISION_KEYS = ("accountingItems",)
-MANAGED = ("manifest.jsonc", "setup", "persons", "mail")   # co build v cílové složce spravuje
+MANAGED = ("manifest.jsonc", "setup", "persons", "mail", "expected")   # co build v cílové složce spravuje
+LEDGER_SNAPSHOT = "general-ledger.json"   # profiles/<profil>/approved/ → expected/ (F3 D29)
 
 # Port Shipard\Core\Utils\Slug::make — stejná tabulka, stejný regex.
 _TRANSLIT = {
@@ -149,6 +152,15 @@ class Profile:
     created: str
     provision: dict
     setup: dict[str, dict]   # klíč tabulky → obsah setup/<klíč>.jsonc
+    ledger_snapshot: Path | None = None   # schválený snímek deníku (approved/general-ledger.json)
+
+    def vat_agenda(self) -> bool:
+        """Profil vede agendu DPH (`economy.vatAgenda` v setup/settings.jsonc)
+        — jen takový dostane očekávání přiznání a KH (F3 D28)."""
+        for row in (self.setup.get("settings") or {}).get("rows", []):
+            if row.get("key") == "economy.vatAgenda":
+                return bool(row.get("value"))
+        return False
 
 
 def load_profile(profile_dir: Path, key: str) -> Profile:
@@ -210,8 +222,9 @@ def load_profile(profile_dir: Path, key: str) -> Profile:
         setup[table] = {"format": SETUP_FORMAT, "table": table, "rows": rows}
     if problems:
         raise DatasetBuildError(f"{key}/profile: " + "; ".join(problems))
+    snapshot = profile_dir / "approved" / LEDGER_SNAPSHOT
     return Profile(key=key, name=name, title=title, description=description, created=created,
-                   provision=provision, setup=setup)
+                   provision=provision, setup=setup, ledger_snapshot=snapshot if snapshot.is_file() else None)
 
 
 # ── Vlastní firma ────────────────────────────────────────────────────────────
@@ -434,11 +447,16 @@ def _clear_managed(out_dir: Path) -> None:
 
 
 def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], identities: dict,
-                  corpus_dir: Path, out_dir: Path) -> DatasetSummary:
+                  corpus_dir: Path, out_dir: Path, *, reporting: VatReporting, projection_path: Path) -> DatasetSummary:
     """Jedna sada: setup/ ze základu, vlastní firma z identity, zpráva per
-    buňka matice profilu. Deterministické — stejný korpus = stejné bajty."""
+    buňka matice profilu a očekávání pro `dataset-verify` (F3: projekce,
+    DPH, náklady, schválený snímek deníku). Deterministické — stejný korpus
+    = stejné bajty."""
     messages: list[dict] = []
     files: dict[str, Path] = {}
+    vat_records: dict[str, dict] = {}
+    cost_records: dict[str, dict] = {}
+    vat_payer = profile.vat_agenda()
     skipped = 0
     for stem, doc in docs.items():
         for cell in cells_for(doc, stem, identities):
@@ -459,7 +477,11 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
             if strip_dataset_additions(canonical) != expected:
                 raise DatasetBuildError(f"{stem} [{profile.key}]: canonicalJson po odebrání doplněných polí neodpovídá očekávání")
             messages.append(message)
-            files[message["messageId"]] = pdf_path
+            msg_id = message["messageId"]
+            files[msg_id] = pdf_path
+            if vat_payer:
+                vat_records[msg_id] = vat_record(msg_id, cell.data["variant"], expected, reporting)
+            cost_records[msg_id] = cost_record(msg_id, expected, vat_payer=vat_payer)
 
     messages.sort(key=lambda m: (m["receivedAt"], m["messageId"]))
     ids = [m["messageId"] for m in messages]
@@ -483,6 +505,17 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
         sidecar.mkdir()
         shutil.copyfile(files[message["messageId"]], sidecar / message["attachments"][0]["file"])
 
+    # Očekávání pro dataset-verify (tasks/testing-phase3.md): záznamy v pořadí
+    # zpráv; neplátce a spolek mají vat.json prázdné (D28). Zapisovač
+    # očekávání (2 mezery, Decimal) — nejsou to soubory sady pro seed.
+    expected_dir = out_dir / "expected"
+    expected_dir.mkdir()
+    shutil.copyfile(projection_path, expected_dir / "projection.jsonc")
+    (expected_dir / "vat.json").write_text(dumps_expected([vat_records[m] for m in ids if m in vat_records]), encoding="utf-8")
+    (expected_dir / "costs.json").write_text(dumps_expected([cost_records[m] for m in ids]), encoding="utf-8")
+    if profile.ledger_snapshot is not None:
+        shutil.copyfile(profile.ledger_snapshot, expected_dir / LEDGER_SNAPSHOT)
+
     manifest: dict = {
         "format": DATASET_FORMAT,
         "name": profile.name,
@@ -502,10 +535,12 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     return DatasetSummary(profile=profile.key, name=profile.name, messages=len(messages), skipped=skipped, out_dir=out_dir)
 
 
-def build_datasets(corpus_dir: Path, out_root: Path, identities: dict, docs: dict[str, dict]) -> list[DatasetSummary]:
+def build_datasets(corpus_dir: Path, out_root: Path, identities: dict, docs: dict[str, dict], *,
+                   reporting: VatReporting, projection_path: Path) -> list[DatasetSummary]:
     """Všechny profily: `corpus_dir/profiles/<profil>/` → `out_root/<profil>/`."""
     summaries = []
     for key in PROFILES:
         profile = load_profile(corpus_dir / "profiles" / key, key)
-        summaries.append(build_dataset(profile, identities["profiles"][key], docs, identities, corpus_dir, out_root / key))
+        summaries.append(build_dataset(profile, identities["profiles"][key], docs, identities, corpus_dir, out_root / key,
+                                       reporting=reporting, projection_path=projection_path))
     return summaries

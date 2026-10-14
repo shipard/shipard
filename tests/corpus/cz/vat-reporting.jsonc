@@ -1,0 +1,32 @@
+// Mapování variant korpusu na přiznání DPH a kontrolní hlášení (tasks/testing-phase3.md,
+// #103 D28, schválené 2026-10-14). Čte ho generátor (invoicegen/reporting.py) a z očekávaného
+// canonicalu dokladu spočítá expected/vat.json datové sady plátce — nezávisle na Shipardu.
+//
+// Řádky přiznání určuje sazba: tuzemský odpočet 21 % → 40, 12 % → 41; samovyměření má řádek
+// daně na výstupu i odpočtu (snížená sazba jde na sudé řádky 4, 6, 11, 13, 44 — v korpusu
+// první vlny se nevyskytuje). Doklad se samovyměřením tiskne 0 %, českou sazbu dává czRate.
+// Kontrolní hlášení: B2orB3 = B.2 nad práh (celková částka vč. DPH), jinak B.3; účtenka vždy B.3.
+{
+	"format": "shpd.corpus.vatReporting",
+	"formatVersion": "1",
+	"controlStatementThreshold": 10000,
+	"regimes": {
+		"domesticDeduction":     { "21": { "deduction": 40 }, "12": { "deduction": 41 } },
+		"domesticReverseCharge": { "21": { "output": 10, "deduction": 43 }, "12": { "output": 11, "deduction": 44 } },
+		"intracomServices":      { "21": { "output": 5,  "deduction": 43 }, "12": { "output": 6,  "deduction": 44 } },
+		"intracomGoods":         { "21": { "output": 3,  "deduction": 43 }, "12": { "output": 4,  "deduction": 44 } },
+		"thirdCountryServices":  { "21": { "output": 12, "deduction": 43 }, "12": { "output": 13, "deduction": 44 } },
+	},
+	"variants": {
+		"domestic-goods":              { "regime": "domesticDeduction", "controlStatement": "B2orB3" },
+		"domestic-two-rates":          { "regime": "domesticDeduction", "controlStatement": "B2orB3" },
+		"domestic-rounding":           { "regime": "domesticDeduction", "controlStatement": "B2orB3" },
+		"long-document":               { "regime": "domesticDeduction", "controlStatement": "B2orB3" },
+		"receipt":                     { "regime": "domesticDeduction", "controlStatement": "B3" },
+		"domestic-reverse-charge":     { "regime": "domesticReverseCharge", "controlStatement": "B1", "czRate": 21 },
+		"eu-services":                 { "regime": "intracomServices",     "controlStatement": "A2", "czRate": 21 },
+		"eu-goods":                    { "regime": "intracomGoods",        "controlStatement": "A2", "czRate": 21 },
+		"third-country-services":      { "regime": "thirdCountryServices", "controlStatement": "A2", "czRate": 21 },
+		"domestic-non-payer-supplier": { "regime": "none", "controlStatement": null },
+	},
+}

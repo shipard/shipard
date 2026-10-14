@@ -1,0 +1,82 @@
+[
+  {
+    "messageId": "MSG-CORPUS-AS-0301",
+    "currency": "CZK",
+    "cost": 4725.28
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0601",
+    "currency": "EUR",
+    "cost": 5318.11
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0201",
+    "currency": "CZK",
+    "cost": 5798.14
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0101",
+    "currency": "CZK",
+    "cost": 20001.84
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0401",
+    "currency": "CZK",
+    "cost": 84506.40
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0901",
+    "currency": "CZK",
+    "cost": 1589.90
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0701",
+    "currency": "CZK",
+    "cost": 5700.00
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-1001",
+    "currency": "CZK",
+    "cost": 30051.21
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0102",
+    "currency": "CZK",
+    "cost": 11727.08
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0302",
+    "currency": "CZK",
+    "cost": 4328.51
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0202",
+    "currency": "CZK",
+    "cost": 3265.22
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0402",
+    "currency": "CZK",
+    "cost": 81941.20
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0902",
+    "currency": "CZK",
+    "cost": 1542.60
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0602",
+    "currency": "EUR",
+    "cost": 2293.37
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-0702",
+    "currency": "CZK",
+    "cost": 6440.00
+  },
+  {
+    "messageId": "MSG-CORPUS-AS-1002",
+    "currency": "CZK",
+    "cost": 53088.83
+  }
+]

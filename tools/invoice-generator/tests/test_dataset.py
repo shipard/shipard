@@ -13,8 +13,9 @@ from invoicegen.dataset import (
     DatasetBuildError, Profile, analysis_json, build_dataset, dataset_canonical, dumps_dataset, load_profile,
     message_for_cell, message_id, own_person, php_json_numbers, prune, slug, strip_dataset_additions,
 )
-from tests.fixtures import DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, IDENTITIES, data
+from tests.fixtures import DATA_DOMESTIC, DATA_EU_SERVICES, DATA_RECEIPT, IDENTITIES, PROJECTION_PATH, data
 from tests.test_expected import expected_for
+from tests.test_reporting import REPORTING
 
 D = Decimal
 PDF = b"%PDF-1.7\n%test\n"
@@ -242,11 +243,17 @@ class BuildDatasetTest(unittest.TestCase):
                 from invoicegen.expected import dumps_expected
                 (corpus / "expected" / profile / f"{stem}.json").write_text(dumps_expected(expected_for(doc, profile)), encoding="utf-8")
                 (corpus / "out" / profile / f"{stem}.pdf").write_bytes(PDF + stem.encode())
+        snapshot = root / "approved" / "general-ledger.json"
+        snapshot.parent.mkdir(exist_ok=True)
+        snapshot.write_text('{"reportId": "economy.accounting.generalLedger"}\n', encoding="utf-8")
         profile = Profile(key="vat-payer", name="cz-vat-payer", title="T", description=None, created="2026-10-14T00:00:00Z",
                           provision={"accountingItems": ["568201"]},
-                          setup={"settings": {"format": "shpd.dataset.setup.v1", "table": "settings", "rows": [{"key": "economy.accountChart", "value": "default"}]}})
+                          setup={"settings": {"format": "shpd.dataset.setup.v1", "table": "settings", "rows": [
+                              {"key": "economy.accountChart", "value": "default"}, {"key": "economy.vatAgenda", "value": True}]}},
+                          ledger_snapshot=snapshot)
         out = root / "datasets" / "vat-payer"
-        summary = build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], docs, IDENTITIES, corpus, out)
+        summary = build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], docs, IDENTITIES, corpus, out,
+                                reporting=REPORTING, projection_path=PROJECTION_PATH)
         return out, {"summary": summary, "docs": docs}
 
     @staticmethod
@@ -260,6 +267,10 @@ class BuildDatasetTest(unittest.TestCase):
             self.assertEqual(2, info["summary"].messages)
             self.assertEqual(0, info["summary"].skipped)
             self.assertEqual([
+                "expected/costs.json",
+                "expected/general-ledger.json",
+                "expected/projection.jsonc",
+                "expected/vat.json",
                 "mail/0001-msg-corpus-vp-0101.files/0101-domestic-goods.pdf",
                 "mail/0001-msg-corpus-vp-0101.jsonc",
                 "mail/0002-msg-corpus-vp-0502.files/0502-eu-services.pdf",
@@ -270,14 +281,49 @@ class BuildDatasetTest(unittest.TestCase):
             ], sorted(first))
             manifest = json.loads(first["manifest.jsonc"])
             self.assertEqual(["format", "name", "title", "dateMode", "created", "country", "profile", "provision", "counts"], list(manifest))
-            self.assertEqual({"setup": 1, "persons": 1, "mail": 2}, manifest["counts"])
+            self.assertEqual({"setup": 1, "persons": 1, "mail": 2}, manifest["counts"], "expected/ není sekce sady")
             self.assertEqual("cz", manifest["country"])
             self.assertEqual({"accountingItems": ["568201"]}, manifest["provision"])
             self.assertTrue(first["manifest.jsonc"].endswith(b"}\n"))
 
+            self.assertEqual(PROJECTION_PATH.read_bytes(), first["expected/projection.jsonc"])
+            self.assertEqual(b'{"reportId": "economy.accounting.generalLedger"}\n', first["expected/general-ledger.json"])
+            vat = json.loads(first["expected/vat.json"], parse_float=Decimal)
+            costs = json.loads(first["expected/costs.json"], parse_float=Decimal)
+            self.assertEqual(["MSG-CORPUS-VP-0101", "MSG-CORPUS-VP-0502"], [r["messageId"] for r in vat], "pořadí zpráv")
+            self.assertEqual(["MSG-CORPUS-VP-0101", "MSG-CORPUS-VP-0502"], [r["messageId"] for r in costs])
+            self.assertEqual(["40"], list(vat[0]["return"]))
+            self.assertEqual("EUR", vat[1]["currency"])
+            self.assertEqual(expected_for(info["docs"]["0101-domestic-goods"])["totals"]["totalBase"], costs[0]["cost"])
+            self.assertTrue(first["expected/vat.json"].startswith(b"[\n  {\n    \"messageId\""), "zapisovač očekávání (2 mezery)")
+
             (out / "mail" / "stale.jsonc").write_text("x", encoding="utf-8")
+            (out / "expected" / "stale.json").write_text("x", encoding="utf-8")
             out2, _ = self.build(Path(tmp))
             self.assertEqual(first, self.snapshot(out2), "druhý build = stejné bajty, cizí soubor ve spravované sekci zmizí")
+
+    def test_non_payer_has_empty_vat_expectations_and_gross_costs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build(root)
+            docs = {"0101-domestic-goods": data(DATA_DOMESTIC)}
+            corpus = root / "corpus"
+            (corpus / "expected" / "non-payer").mkdir(parents=True, exist_ok=True)
+            (corpus / "out" / "non-payer").mkdir(parents=True, exist_ok=True)
+            from invoicegen.expected import dumps_expected
+            expected = expected_for(docs["0101-domestic-goods"], "non-payer")
+            (corpus / "expected" / "non-payer" / "0101-domestic-goods.json").write_text(dumps_expected(expected), encoding="utf-8")
+            (corpus / "out" / "non-payer" / "0101-domestic-goods.pdf").write_bytes(PDF)
+            profile = Profile(key="non-payer", name="cz-non-payer", title="T", description=None, created="2026-10-14T00:00:00Z",
+                              provision={}, setup={"settings": {"format": "shpd.dataset.setup.v1", "table": "settings",
+                                                                "rows": [{"key": "economy.vatAgenda", "value": False}]}})
+            out = root / "datasets" / "non-payer"
+            build_dataset(profile, IDENTITIES["profiles"]["non-payer"], docs, IDENTITIES, corpus, out,
+                          reporting=REPORTING, projection_path=PROJECTION_PATH)
+            self.assertEqual(b"[]\n", (out / "expected" / "vat.json").read_bytes())
+            self.assertFalse((out / "expected" / "general-ledger.json").exists(), "bez schváleného snímku se nic nekopíruje")
+            costs = json.loads((out / "expected" / "costs.json").read_text(encoding="utf-8"), parse_float=Decimal)
+            self.assertEqual(expected["totals"]["totalBase"] + expected["totals"]["totalVat"], costs[0]["cost"])
 
     def test_missing_expected_is_an_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -286,4 +332,5 @@ class BuildDatasetTest(unittest.TestCase):
             profile = Profile(key="vat-payer", name="cz-vat-payer", title="T", description=None, created="2026-10-14T00:00:00Z",
                               provision={}, setup={})
             with self.assertRaises(DatasetBuildError):
-                build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], info["docs"], IDENTITIES, Path(tmp) / "corpus", out)
+                build_dataset(profile, IDENTITIES["profiles"]["vat-payer"], info["docs"], IDENTITIES, Path(tmp) / "corpus", out,
+                              reporting=REPORTING, projection_path=PROJECTION_PATH)

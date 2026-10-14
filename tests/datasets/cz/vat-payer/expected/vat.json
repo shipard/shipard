@@ -1,0 +1,512 @@
+[
+  {
+    "messageId": "MSG-CORPUS-VP-0301",
+    "variant": "domestic-rounding",
+    "currency": "CZK",
+    "period": "2026-07",
+    "return": {
+      "40": {
+        "base": 3905.19,
+        "tax": 820.09
+      }
+    },
+    "controlStatement": {
+      "section": "B.3",
+      "supplierVatId": "CZ01848739",
+      "documentNumber": "2026071245",
+      "taxPointDate": "2026-07-31",
+      "rates": {
+        "21": {
+          "base": 3905.19,
+          "tax": 820.09
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0601",
+    "variant": "eu-goods",
+    "currency": "EUR",
+    "period": "2026-08",
+    "return": {
+      "3": {
+        "base": 4469.00,
+        "tax": 938.49
+      },
+      "43": {
+        "base": 4469.00,
+        "tax": 938.49
+      }
+    },
+    "controlStatement": {
+      "section": "A.2",
+      "supplierVatId": "DE810932557",
+      "documentNumber": "RE-2026-07731",
+      "taxPointDate": "2026-08-18",
+      "rates": {
+        "21": {
+          "base": 4469.00,
+          "tax": 938.49
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0201",
+    "variant": "domestic-two-rates",
+    "currency": "CZK",
+    "period": "2026-08",
+    "return": {
+      "40": {
+        "base": 3670.00,
+        "tax": 770.70
+      },
+      "41": {
+        "base": 1212.00,
+        "tax": 145.44
+      }
+    },
+    "controlStatement": {
+      "section": "B.3",
+      "supplierVatId": "CZ56546939",
+      "documentNumber": "2026/0882",
+      "taxPointDate": "2026-08-20",
+      "rates": {
+        "21": {
+          "base": 3670.00,
+          "tax": 770.70
+        },
+        "12": {
+          "base": 1212.00,
+          "tax": 145.44
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0101",
+    "variant": "domestic-goods",
+    "currency": "CZK",
+    "period": "2026-08",
+    "return": {
+      "40": {
+        "base": 16530.45,
+        "tax": 3471.39
+      }
+    },
+    "controlStatement": {
+      "section": "B.2",
+      "supplierVatId": "CZ43075894",
+      "documentNumber": "FV-2026-1180",
+      "taxPointDate": "2026-08-25",
+      "rates": {
+        "21": {
+          "base": 16530.45,
+          "tax": 3471.39
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0401",
+    "variant": "domestic-reverse-charge",
+    "currency": "CZK",
+    "period": "2026-08",
+    "return": {
+      "10": {
+        "base": 69840.00,
+        "tax": 14666.40
+      },
+      "43": {
+        "base": 69840.00,
+        "tax": 14666.40
+      }
+    },
+    "controlStatement": {
+      "section": "B.1",
+      "supplierVatId": "CZ16612248",
+      "documentNumber": "2026-0147",
+      "taxPointDate": "2026-08-27",
+      "rates": {
+        "21": {
+          "base": 69840.00,
+          "tax": 14666.40
+        }
+      },
+      "reverseChargeCode": "4"
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0801",
+    "variant": "third-country-services",
+    "currency": "USD",
+    "period": null,
+    "return": {},
+    "controlStatement": {
+      "section": "A.2",
+      "supplierVatId": null,
+      "documentNumber": "QS-204611",
+      "taxPointDate": null,
+      "rates": {},
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0501",
+    "variant": "eu-services",
+    "currency": "EUR",
+    "period": "2026-08",
+    "return": {
+      "5": {
+        "base": 432.70,
+        "tax": 90.87
+      },
+      "43": {
+        "base": 432.70,
+        "tax": 90.87
+      }
+    },
+    "controlStatement": {
+      "section": "A.2",
+      "supplierVatId": "DE383584058",
+      "documentNumber": "INV-2026-0388",
+      "taxPointDate": "2026-08-31",
+      "rates": {
+        "21": {
+          "base": 432.70,
+          "tax": 90.87
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0901",
+    "variant": "receipt",
+    "currency": "CZK",
+    "period": "2026-09",
+    "return": {
+      "40": {
+        "base": 1313.97,
+        "tax": 275.93
+      }
+    },
+    "controlStatement": {
+      "section": "B.3",
+      "supplierVatId": "CZ40488004",
+      "documentNumber": "0004712",
+      "taxPointDate": "2026-09-03",
+      "rates": {
+        "21": {
+          "base": 1313.97,
+          "tax": 275.93
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0701",
+    "variant": "domestic-non-payer-supplier",
+    "currency": "CZK",
+    "period": null,
+    "return": {},
+    "controlStatement": null
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1001",
+    "variant": "long-document",
+    "currency": "CZK",
+    "period": "2026-09",
+    "return": {
+      "40": {
+        "base": 16616.30,
+        "tax": 3489.42
+      },
+      "41": {
+        "base": 8879.90,
+        "tax": 1065.59
+      }
+    },
+    "controlStatement": {
+      "section": "B.2",
+      "supplierVatId": "CZ13113879",
+      "documentNumber": "2026-FV-03317",
+      "taxPointDate": "2026-09-08",
+      "rates": {
+        "21": {
+          "base": 16616.30,
+          "tax": 3489.42
+        },
+        "12": {
+          "base": 8879.90,
+          "tax": 1065.59
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0102",
+    "variant": "domestic-goods",
+    "currency": "CZK",
+    "period": "2026-09",
+    "return": {
+      "40": {
+        "base": 9691.80,
+        "tax": 2035.28
+      }
+    },
+    "controlStatement": {
+      "section": "B.2",
+      "supplierVatId": "CZ43075894",
+      "documentNumber": "FV-2026-1243",
+      "taxPointDate": "2026-09-09",
+      "rates": {
+        "21": {
+          "base": 9691.80,
+          "tax": 2035.28
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0302",
+    "variant": "domestic-rounding",
+    "currency": "CZK",
+    "period": "2026-08",
+    "return": {
+      "40": {
+        "base": 3577.28,
+        "tax": 751.23
+      }
+    },
+    "controlStatement": {
+      "section": "B.3",
+      "supplierVatId": "CZ01848739",
+      "documentNumber": "2026082410",
+      "taxPointDate": "2026-08-31",
+      "rates": {
+        "21": {
+          "base": 3577.28,
+          "tax": 751.23
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0202",
+    "variant": "domestic-two-rates",
+    "currency": "CZK",
+    "period": "2026-09",
+    "return": {
+      "40": {
+        "base": 2282.00,
+        "tax": 479.22
+      },
+      "41": {
+        "base": 450.00,
+        "tax": 54.00
+      }
+    },
+    "controlStatement": {
+      "section": "B.3",
+      "supplierVatId": "CZ56546939",
+      "documentNumber": "2026/0951",
+      "taxPointDate": "2026-09-15",
+      "rates": {
+        "21": {
+          "base": 2282.00,
+          "tax": 479.22
+        },
+        "12": {
+          "base": 450.00,
+          "tax": 54.00
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0402",
+    "variant": "domestic-reverse-charge",
+    "currency": "CZK",
+    "period": "2026-09",
+    "return": {
+      "10": {
+        "base": 67720.00,
+        "tax": 14221.20
+      },
+      "43": {
+        "base": 67720.00,
+        "tax": 14221.20
+      }
+    },
+    "controlStatement": {
+      "section": "B.1",
+      "supplierVatId": "CZ16612248",
+      "documentNumber": "2026-0163",
+      "taxPointDate": "2026-09-17",
+      "rates": {
+        "21": {
+          "base": 67720.00,
+          "tax": 14221.20
+        }
+      },
+      "reverseChargeCode": "4"
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0902",
+    "variant": "receipt",
+    "currency": "CZK",
+    "period": "2026-09",
+    "return": {
+      "40": {
+        "base": 1237.69,
+        "tax": 259.91
+      },
+      "41": {
+        "base": 40.18,
+        "tax": 4.82
+      }
+    },
+    "controlStatement": {
+      "section": "B.3",
+      "supplierVatId": "CZ40488004",
+      "documentNumber": "0005108",
+      "taxPointDate": "2026-09-21",
+      "rates": {
+        "21": {
+          "base": 1237.69,
+          "tax": 259.91
+        },
+        "12": {
+          "base": 40.18,
+          "tax": 4.82
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0602",
+    "variant": "eu-goods",
+    "currency": "EUR",
+    "period": "2026-09",
+    "return": {
+      "3": {
+        "base": 1927.20,
+        "tax": 404.71
+      },
+      "43": {
+        "base": 1927.20,
+        "tax": 404.71
+      }
+    },
+    "controlStatement": {
+      "section": "A.2",
+      "supplierVatId": "DE810932557",
+      "documentNumber": "RE-2026-08102",
+      "taxPointDate": "2026-09-22",
+      "rates": {
+        "21": {
+          "base": 1927.20,
+          "tax": 404.71
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0702",
+    "variant": "domestic-non-payer-supplier",
+    "currency": "CZK",
+    "period": null,
+    "return": {},
+    "controlStatement": null
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1002",
+    "variant": "long-document",
+    "currency": "CZK",
+    "period": "2026-09",
+    "return": {
+      "40": {
+        "base": 27637.10,
+        "tax": 5803.79
+      },
+      "41": {
+        "base": 17542.80,
+        "tax": 2105.14
+      }
+    },
+    "controlStatement": {
+      "section": "B.2",
+      "supplierVatId": "CZ13113879",
+      "documentNumber": "2026-FV-03402",
+      "taxPointDate": "2026-09-29",
+      "rates": {
+        "21": {
+          "base": 27637.10,
+          "tax": 5803.79
+        },
+        "12": {
+          "base": 17542.80,
+          "tax": 2105.14
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0502",
+    "variant": "eu-services",
+    "currency": "EUR",
+    "period": "2026-09",
+    "return": {
+      "5": {
+        "base": 463.36,
+        "tax": 97.31
+      },
+      "43": {
+        "base": 463.36,
+        "tax": 97.31
+      }
+    },
+    "controlStatement": {
+      "section": "A.2",
+      "supplierVatId": "DE383584058",
+      "documentNumber": "INV-2026-0421",
+      "taxPointDate": "2026-09-30",
+      "rates": {
+        "21": {
+          "base": 463.36,
+          "tax": 97.31
+        }
+      },
+      "reverseChargeCode": null
+    }
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0802",
+    "variant": "third-country-services",
+    "currency": "USD",
+    "period": null,
+    "return": {},
+    "controlStatement": {
+      "section": "A.2",
+      "supplierVatId": null,
+      "documentNumber": "QS-211378",
+      "taxPointDate": null,
+      "rates": {},
+      "reverseChargeCode": null
+    }
+  }
+]

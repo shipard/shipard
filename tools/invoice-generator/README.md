@@ -16,7 +16,8 @@ vstupními body:
 | `invoicegen/expected.py` | očekávaný výsledek = papírová projekce canonicalu (`tests/corpus/projection.jsonc`), odvozená pole podle promptu, zapisovač JSON bez float |
 | `invoicegen/registries.py` | ověření identit v ARES a VIES (síť, jen `build.py --verify-identities`), přepis `verifiedAt` |
 | `invoicegen/corpus.py` | datový soubor korpusu: validace, přepisy per profil (`overrides`, alias), vynechané buňky, matice doklad × profil, jazyk šablon (`TEMPLATE_LOCALE`) |
-| `invoicegen/dataset.py` | datové sady z korpusu (`tasks/testing-phase2.md`): základ profilu, vlastní firma, zpráva s ideální analýzou per buňka, zapisovač JSON jako PHP `DatasetWriter`, slug jako `Slug::make`, deterministické sestavení `tests/datasets/cz/<profil>/` |
+| `invoicegen/dataset.py` | datové sady z korpusu (`tasks/testing-phase2.md`): základ profilu, vlastní firma, zpráva s ideální analýzou per buňka, zapisovač JSON jako PHP `DatasetWriter`, slug jako `Slug::make`, deterministické sestavení `tests/datasets/cz/<profil>/` vč. `expected/` pro `dataset-verify` |
+| `invoicegen/reporting.py` | očekávání pro ověření zaúčtování (`tasks/testing-phase3.md`): mapování variant na řádky přiznání DPH a oddíly KH (`tests/corpus/cz/vat-reporting.jsonc`), záznamy `expected/vat.json` a `expected/costs.json` v `Decimal` nezávisle na Shipardu |
 
 Vstupní body si přidávají `tools/invoice-generator` na `sys.path` a balík
 importují; žádná instalace. Gotenberg: env `GOTENBERG_URL`

@@ -36,7 +36,7 @@ sys.path.insert(0, str(REPO_ROOT / "tools" / "invoice-generator"))
 from invoicegen.checks import validate_identities  # noqa: E402
 from invoicegen.compute import VAT_RATES, compute  # noqa: E402
 from invoicegen.corpus import (  # noqa: E402
-    PROFILES, TEMPLATE_LOCALE, Cell, DataFileError, SkippedCell, cells_for, validate_data_file,
+    PROFILES, TEMPLATE_LOCALE, VARIANTS, Cell, DataFileError, SkippedCell, cells_for, validate_data_file,
     validate_variant_pairs,
 )
 from invoicegen.dataset import DatasetBuildError, build_datasets  # noqa: E402
@@ -45,12 +45,15 @@ from invoicegen.jsonc import load_jsonc  # noqa: E402
 from invoicegen.registries import (  # noqa: E402
     RegistryUnavailable, format_check, update_verified_at, verify_identities,
 )
+from invoicegen.reporting import ReportingError, load_vat_reporting  # noqa: E402
 from invoicegen.render import (  # noqa: E402
     NNBSP, esc, fmt_date, fmt_iban, fmt_money, fmt_phone, fmt_zip, pdf_options_from_html, render_hash,
     render_html, render_kv_rows, render_pdf, render_rows, render_vat_recap,
 )
 
 STATE_FILE = BASE_DIR / "build-state.json"
+PROJECTION_FILE = CORPUS_DIR / "projection.jsonc"
+VAT_REPORTING_FILE = BASE_DIR / "vat-reporting.jsonc"
 TAXONOMY_FILE = REPO_ROOT / "modules" / "core" / "exchange" / "config" / "contentTags.jsonc"
 DEMO_IDENTITIES = REPO_ROOT / "demo" / "invoices" / "suppliers.jsonc"
 DATASETS_DIR = REPO_ROOT / "tests" / "datasets" / "cz"
@@ -324,7 +327,12 @@ def main(argv: list[str] | None = None) -> int:
         if rc:
             return rc
 
-    projection = load_projection(CORPUS_DIR / "projection.jsonc")
+    projection = load_projection(PROJECTION_FILE)
+    try:
+        reporting = load_vat_reporting(VAT_REPORTING_FILE, required_variants=frozenset(VARIANTS))
+    except ReportingError as e:
+        print(f"mapování DPH: {e}", file=sys.stderr)
+        return 1
     taxonomy = set(load_jsonc(TAXONOMY_FILE))
     templates = {p.stem: p.read_text(encoding="utf-8") for p in sorted((BASE_DIR / "templates").glob("*.html"))}
 
@@ -401,8 +409,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.no_datasets:
         try:
-            summaries = build_datasets(BASE_DIR, DATASETS_DIR, identities, docs)
-        except DatasetBuildError as e:
+            summaries = build_datasets(BASE_DIR, DATASETS_DIR, identities, docs,
+                                       reporting=reporting, projection_path=PROJECTION_FILE)
+        except (DatasetBuildError, ReportingError) as e:
             print(f"datová sada: {e}", file=sys.stderr)
             return 1
         for s in summaries:

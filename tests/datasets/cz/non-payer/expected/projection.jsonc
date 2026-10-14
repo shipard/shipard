@@ -1,0 +1,170 @@
+// Papírová projekce canonicalu shpd.docs.document.v1 (tasks/testing-phase1.md, D14/D15).
+// Jediný zdroj pravdy pro generátor očekávaných výsledků
+// (tools/invoice-generator/invoicegen/expected.py), strážce korpusu
+// (tests/Unit/Corpus/CorpusExpectedTest.php) a porovnávač F4. Popis: docs/test-corpus.md.
+//
+// Čtení (PHP i Python stejně, dispatch jen podle typu JSON; pořadí klíčů je
+// významné — očekávaný výsledek je zapisuje v tomto pořadí):
+//   objekt bez "$ref"    strom klíčů — očekávání má PŘESNĚ tyto klíče, v tomto pořadí
+//   { "$ref": "Party" }  odkaz do "$defs" (jediný klíč objektu)
+//   [ <uzel> ]           pole; každý prvek proti uzlu
+//   "jméno"              list; tvar hodnoty ze "shapes"; hodnota null = na dokladu není
+//                        (tvar se nekontroluje; výjimka je "const")
+//   null                 list bez tvaru (platí jen JSON schéma formátu)
+// Tvar = objekt s právě jedním klíčem:
+//   "regex"      společná podmnožina PCRE a Python re: ^…$, [...], (?:…), {m,n}, |, \s \S,
+//                [0-9]; NE \d, \p{…}, (?>…), ++, \h, (?P<…>). PHP: preg_match('~'.$re.'~uD'),
+//                Python: re.fullmatch; regex nesmí obsahovat '~'
+//   "const"      přesná hodnota (===); kontroluje se i null → {"const": null} = „musí být null“
+//   "check"      kontrola v kódu: "number" | "amount" (číslo, nejvýš 2 desetinná místa)
+//                | "index" (celé číslo ≥ 0) | "tag" (klíč v modules/core/exchange/config/contentTags.jsonc)
+//   "byCountry"  tvar podle hodnoty klíče "country" V TÉMŽE objektu; "*" = ostatní (povinný);
+//                hodnoty = jména tvarů bez byCountry
+// "nullableNodes": jediné uzly (objekt / pole), které smí být null jako celek — účtenka bez
+// odběratele. Ostatní objekty projekce jsou vždy přítomné, „na dokladu není“ vyjadřují null
+// v listech; pole bez prvků (vatRecap u dokladu bez DPH, rowExceptions) je prázdné pole.
+{
+	"format": "shpd.corpus.projection",
+	"formatVersion": "1",
+
+	"nullableNodes": ["customer"],
+
+	"document": {
+		"format": "docFormat",
+		"formatVersion": "docFormatVersion",
+		"docType": "text",
+		"docNumber": "text",
+		"selfParty": "selfParty",
+		"supplier": { "$ref": "Party" },
+		"customer": { "$ref": "Party" },
+		"dates": {
+			"issueDate": "date",
+			"dueDate": "date",
+			"taxPointDate": "date",
+			"periodFrom": "date",
+			"periodTo": "date",
+		},
+		"currency": "currency",
+		"exchangeRate": "number",
+		"vat": {
+			"mode": "vatMode",
+			"place": "vatPlace",
+			"reverseCharge": null,
+		},
+		"payment": {
+			"method": "paymentMethod",
+			"paymentReference": "symbol",
+			"specificSymbol": "symbol",
+			"constantSymbol": "symbol",
+		},
+		"notes": {
+			"onDocument": "text",
+		},
+		"rows": [ { "$ref": "Row" } ],
+		"vatRecap": [ { "$ref": "VatRecapEntry" } ],
+		"totals": {
+			"totalBase": "amount",
+			"totalVat": "amount",
+			"totalAmount": "amount",
+			"totalRounding": "amount",
+		},
+		"_resolve": {
+			"contentTag": {
+				"tag": "tag",
+				"rowExceptions": [ { "rowIndex": "index", "tag": "tag" } ],
+			},
+		},
+	},
+
+	"$defs": {
+		"Party": {
+			"name": "text",
+			"country": "country",
+			"companyId": "companyId",
+			"taxId": "vatId",
+			"vatId": "vatId",
+			"courtRegistration": "text",
+			"address": {
+				"street": "text",
+				"houseNumber": "houseNumber",
+				"city": "text",
+				"zip": "zip",
+				"country": "country",
+			},
+			"contact": {
+				"name": "text",
+				"email": "email",
+				"phone": "phone",
+				"web": "web",
+			},
+			"bankAccount": {
+				"accountNumber": "accountNumber",
+				"iban": "iban",
+				"bic": "bic",
+			},
+		},
+		"Row": {
+			"rowKind": "rowKind",
+			"item": {
+				"supplierCode": "text",
+				"ean": "ean",
+				"name": "text",
+				"description": "text",
+			},
+			"unit": "text",
+			"quantity": "number",
+			"unitPrice": "amount",
+			"totalPrice": "amount",
+			"priceCalcMode": "priceCalcMode",
+			"discountPct": "number",
+			"discountAmount": "amount",
+			"vat": {
+				"pct": "number",
+				"supplyKind": "supplyKind",
+				"reverseChargeCode": "reverseChargeCode",
+			},
+		},
+		"VatRecapEntry": {
+			"vatPct": "number",
+			"base": "amount",
+			"tax": "amount",
+			"total": "amount",
+		},
+	},
+
+	"shapes": {
+		"docFormat":         { "const": "shpd.docs.document" },
+		"docFormatVersion":  { "const": "1.0" },
+		"selfParty":         { "const": "customer" },
+		"rowKind":           { "const": "item" },
+		"absent":            { "const": null },
+		"text":              { "regex": "^\\S(?:[\\s\\S]*\\S)?$" },
+		"country":           { "regex": "^[a-z]{2}$" },
+		"currency":          { "regex": "^[A-Z]{3}$" },
+		"date":              { "regex": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+		"digits5":           { "regex": "^[0-9]{5}$" },
+		"digits8":           { "regex": "^[0-9]{8}$" },
+		"zip":               { "byCountry": { "cz": "digits5", "sk": "digits5", "*": "text" } },
+		"companyId":         { "byCountry": { "cz": "digits8", "sk": "digits8", "*": "text" } },
+		"houseNumber":       { "byCountry": { "us": "absent", "*": "text" } },
+		"vatId":             { "regex": "^[A-Z]{2}[0-9A-Z]{2,13}$" },
+		"accountNumber":     { "regex": "^(?:[1-9][0-9]{0,5}-)?[1-9][0-9]{0,9}/[0-9]{4}$" },
+		"iban":              { "regex": "^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$" },
+		"bic":               { "regex": "^[A-Z]{6}[A-Z0-9]{2}(?:[A-Z0-9]{3})?$" },
+		"email":             { "regex": "^[^A-Z\\s@]+@[^A-Z\\s@]+\\.[a-z]+$" },
+		"phone":             { "regex": "^\\+[0-9]{7,15}$" },
+		"web":               { "regex": "^[a-z0-9.-]+(?:/[^\\s/A-Z]+)*$" },
+		"ean":               { "regex": "^(?:[0-9]{8}|[0-9]{13})$" },
+		"symbol":            { "regex": "^[0-9]{1,10}$" },
+		"vatMode":           { "regex": "^(?:fromBase|fromTotal|none)$" },
+		"vatPlace":          { "regex": "^(?:domestic|intracom|thirdCountry)$" },
+		"paymentMethod":     { "regex": "^(?:cash|bankTransfer|card)$" },
+		"supplyKind":        { "regex": "^(?:goods|services)$" },
+		"priceCalcMode":     { "regex": "^(?:fromUnitPrice|fromTotal)$" },
+		"reverseChargeCode": { "regex": "^[0-9]{1,2}$" },
+		"number":            { "check": "number" },
+		"amount":            { "check": "amount" },
+		"index":             { "check": "index" },
+		"tag":               { "check": "tag" },
+	},
+}

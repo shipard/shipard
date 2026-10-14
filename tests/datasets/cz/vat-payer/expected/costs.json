@@ -1,0 +1,102 @@
+[
+  {
+    "messageId": "MSG-CORPUS-VP-0301",
+    "currency": "CZK",
+    "cost": 3905.19
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0601",
+    "currency": "EUR",
+    "cost": 4469.00
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0201",
+    "currency": "CZK",
+    "cost": 4882.00
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0101",
+    "currency": "CZK",
+    "cost": 16530.45
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0401",
+    "currency": "CZK",
+    "cost": 69840.00
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0801",
+    "currency": "USD",
+    "cost": 177.00
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0501",
+    "currency": "EUR",
+    "cost": 432.70
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0901",
+    "currency": "CZK",
+    "cost": 1313.97
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0701",
+    "currency": "CZK",
+    "cost": 5700.00
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1001",
+    "currency": "CZK",
+    "cost": 25496.20
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0102",
+    "currency": "CZK",
+    "cost": 9691.80
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0302",
+    "currency": "CZK",
+    "cost": 3577.28
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0202",
+    "currency": "CZK",
+    "cost": 2732.00
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0402",
+    "currency": "CZK",
+    "cost": 67720.00
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0902",
+    "currency": "CZK",
+    "cost": 1277.87
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0602",
+    "currency": "EUR",
+    "cost": 1927.20
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0702",
+    "currency": "CZK",
+    "cost": 6440.00
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1002",
+    "currency": "CZK",
+    "cost": 45179.90
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0502",
+    "currency": "EUR",
+    "cost": 463.36
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0802",
+    "currency": "USD",
+    "cost": 245.00
+  }
+]
