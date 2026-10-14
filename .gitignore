@@ -17,3 +17,6 @@ tests/Fixtures/vat-xml/689089/*.xml
 /CLAUDE.local.md
 /.claude/*
 !/.claude/settings.json
+
+# Python bytecode (tools/invoice-generator, scripts)
+__pycache__/

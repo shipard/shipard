@@ -9,11 +9,16 @@ a demo datové sady. Zadání a rozhodnutí: [`tasks/demo-invoices.md`](../../ta
 python3 demo/invoices/build.py
 ```
 
-Pouze stdlib; PDF renderuje Gotenberg (Chromium) — env `GOTENBERG_URL`,
-default `http://10.199.6.210:3000` (dev render služba, `docs/render.md`).
-Skript spočítá per-řádek totály, rekapitulaci DPH po sazbách a celkové
-součty (Decimal, ROUND_HALF_UP), ověří kontrolní součty IČO, mod-11
-čísel účtů a IBAN check digits a uloží `out/NNNN-<slug>.pdf`.
+`build.py` je tenký vstupní bod nad sdíleným generátorem
+[`tools/invoice-generator/`](../../tools/invoice-generator/README.md)
+(balík `invoicegen`, jen stdlib): JSONC, kontrolní součty IČO, mod-11
+čísel účtů a IBAN check digits, per-řádek totály, rekapitulace DPH po
+sazbách a celkové součty (Decimal, ROUND_HALF_UP) i render přes Gotenberg
+(Chromium) — env `GOTENBERG_URL`, default `http://10.199.6.210:3000`
+(dev render služba, `docs/render.md`). Výstup je `out/NNNN-<slug>.pdf`.
+Tentýž generátor používá korpus testovacích dokladů `tests/corpus/cz/`
+(`docs/test-corpus.md`); výstup dema se jeho rozšiřováním nemění
+(regresní test `tools/invoice-generator/tests/test_demo_regression.py`).
 
 ## Struktura
 
@@ -22,6 +27,7 @@ součty (Decimal, ROUND_HALF_UP), ověří kontrolní součty IČO, mod-11
 | `suppliers.jsonc` | Identity — vlastní firma (odběratel) + 4 dodavatelé |
 | `data/NNNN-<slug>.jsonc` | Data faktur — struktura blízko canonical `shpd.docs.document.v1`, aby soubor mohl později sloužit jako expected result pro AI eval (#40) |
 | `templates/{a,b,c}.html` | HTML šablony, placeholdery `{{key}}`; **a** moderní, **b** strohý tabulkový, **c** „starší ekonomický systém" |
+| `../../tools/invoice-generator/` | Sdílený generátor (`invoicegen`): JSONC, kontrolní součty, výpočty, render — `build.py` ho jen importuje |
 | `out/*.pdf` | Vyrenderovaná PDF — **commitují se** (artefakt pro video, binárky v gitu vědomě, viz D13 v `shpd-web/docs/demo-vyroba.md`) |
 
 Bloky řádků a rekapitulace skládá `build.py` a vkládá přes `{{rows}}` /
