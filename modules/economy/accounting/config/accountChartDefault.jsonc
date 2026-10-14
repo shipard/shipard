@@ -3,7 +3,7 @@
 // Generováno ze Starého Shipardu:
 //   modules/install/data/countries/cz/debs/debs-accounts-default-{groups,vat,class0,class1,class2,class3,class4,class5,class6,class7}.json
 //   (z vat souboru jen dataset e10doc.debs.accounts).
-// Záznamů: 675. Každý záznam: number, name, short_name a volitelně
+// Záznamů: 678. Každý záznam: number, name, short_name a volitelně
 // account_kind / costs_type / results_type (číselné kódy dle cfgItems v §2 PRD).
 // account_level + g1/g2/g3 + is_system=1 + docState=40/3 doplní provisioner.
 [
@@ -456,7 +456,7 @@
     {"number":"502200","name":"Spotřeba energie (vodné+stočné)","short_name":"Spotřeba energie (vodné+stočné)","account_kind":2,"costs_type":1,"results_type":1},
     {"number":"502300","name":"Spotřeba energie (plyn)","short_name":"Spotřeba energie (plyn)","account_kind":2,"costs_type":1,"results_type":1},
     {"number":"503","name":"Spotřeba ostatních neskladovatelných dodávek","short_name":"Spotřeba ostatních neskladovatelných dodávek","account_kind":2,"results_type":1},
-    {"number":"503100","name":"Spořeba PHM","short_name":"Spořeba PHM","account_kind":2,"costs_type":1,"results_type":1},
+    {"number":"503100","name":"Spotřeba PHM","short_name":"Spotřeba PHM","account_kind":2,"costs_type":1,"results_type":1},
     {"number":"504","name":"Prodané zboží","short_name":"Prodané zboží","account_kind":2,"results_type":1},
     {"number":"504100","name":"Prodané zboží","short_name":"Prodané zboží","account_kind":2,"costs_type":1,"results_type":1},
     {"number":"51","name":"Služby","short_name":"Služby","account_kind":2,"results_type":1},
@@ -499,6 +499,7 @@
     {"number":"527","name":"Zákonné sociální náklady","short_name":"Zákonné sociální náklady","account_kind":2,"results_type":1},
     {"number":"527100","name":"Zákonné sociální náklady","short_name":"Zákonné sociální náklady","account_kind":2,"costs_type":1,"results_type":1},
     {"number":"528","name":"Ostatní sociální náklady","short_name":"Ostatní sociální náklady","account_kind":2,"results_type":1},
+    {"number":"528100","name":"Ostatní sociální náklady","short_name":"Ostatní sociální náklady","account_kind":2,"costs_type":1,"results_type":1},
     {"number":"528900","name":"Ostatní sociální náklady","short_name":"Ostatní sociální náklady","account_kind":2,"costs_type":2,"results_type":1},
     {"number":"53","name":"Daně a poplatky","short_name":"Daně a poplatky","account_kind":2,"results_type":1},
     {"number":"531","name":"Daň silniční","short_name":"Daň silniční","account_kind":2,"results_type":1},
