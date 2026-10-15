@@ -70,6 +70,11 @@ Našla to revize snímků deníku testovací sady spolku (#103 F3).
   se čte z parametrů vrstvy C stejně jako jinde.
 - Kategorie v přepisu, která v obecném `accounts` není = chyba při
   načtení (strážce), ne tichá nová kategorie.
+- **Implementace:** čistá funkce `AccountingRules::effective($rules,
+  $variant)` (přepis na místě prvního obecného záznamu kategorie,
+  `LogicException` na neznámou kategorii), `resolve()` ji volá s hodnotou
+  `economy.accountChart` ze `SettingsStore`. Oba enginy si efektivní
+  předpis memoizují per instanci — resolve jde do DB a volal se per řádek.
 
 ### 2. Masky pro NNO (D2)
 
@@ -83,14 +88,29 @@ Našla to revize snímků deníku testovací sady spolku (#103 F3).
 | `bank.interest.in` | 662 | 644 | 644100 Úroky |
 | `fx.loss` | 563 | 545 | 545100 Kurzové ztráty |
 | `fx.gain` | 663 | 645 | 645100 Kurzové zisky |
+| `costs` (`purchase.other`) | 548 | 549 | 549100 — doplněno při implementaci: strážce „žádná maska npo na 548“ odhalil, že tabulka ostatní nákup neměla; přepis nese celou kategorii `costs` (504 / 518 / 549) |
 
 Ostatní masky (311, 321, 314, 324, 343…, 2613xx, 75x, 799, 602, 604,
 504, 518) mají v obou osnovách stejný význam a zůstávají společné.
+Poskytnuté zálohy dostaly řetěz `["3149", "314"]` po vzoru přijatých
+(`["3249", "324"]`): seed osnovy NNO analytiku 3149xx nemá a strážce by
+na samotné `3149` spadl (schváleno 2026-10-15).
 
 ### 3. Jediná cesta k předpisu (D3)
 
 - `VatReturnAccountingService` čte předpis přes `AccountingRules::resolve()`,
   ne přímo z cfgItem.
+- **Země předpisu = účetní jurisdikce vlastní firmy** (sídlo), ne země
+  registrace DPH (služba ji dřív brala z registrace, s fallbackem `cz`).
+  Registrace řídí režim DPH: kódy, výkaz, správce daně, analytiky kódů
+  (343{CC}{NNN}); knihy vede firma podle své osnovy — český plátce
+  s německým DIČ účtuje německé přiznání v české osnově. Co bude potřeba
+  až s OSS (ne v tomto tasku): mapování výkazu per zemi registrace
+  (`VatOutputsMapping` je dnes jen české) a saldo účet přiznání per
+  registrace (343801 / 343802 jsou dnes jeden pro všechny registrace,
+  rozlišuje je partner správce daně). Rozhodnuto 2026-10-15.
+- Hláška builderu bere masky ze vstupu (`VatReturnAccountingInput
+  ::$categoryMasks`, plní služba z efektivního předpisu).
 - `VatReturnAccountingBuilder`: hláška o chybějícím účtu zaokrouhlení
   vezme masku z předpisu, ne natvrdo zapsanou 548 / 648.
 - Najdi a srovnej další přímá čtení `economy.accounting.rules` mimo
@@ -115,7 +135,9 @@ Ostatní masky (311, 321, 314, 324, 343…, 2613xx, 75x, 799, 602, 604,
 
 ### 5. Strážce (D4)
 
-Rozšířit `tests/Unit/Module/Economy/Accounting/AccountingRulesTest.php`:
+Strážce je samostatná třída `AccountingRulesChartVariantsTest` vedle
+strážců pokladny a podrozvahy (čte jsonc předpisu a seedů);
+`AccountingRulesTest` drží čisté testy `effective()` / `resolve()`:
 
 - pro každou variantu osnovy (`default`, `npo`) se každá maska efektivního
   předpisu (každý prvek řetězu) dohledá v seedu osnovy té varianty jako
@@ -136,6 +158,12 @@ deníku vzniklé z kategorie zaokrouhlení (`rounding.cost` /
 `rounding.revenue`). Podle toho, co deník nese, to bude kategorie,
 zdroj kroku nebo text „Zaokrouhlení dokladu“, ale vždy podle původu
 řádku, ne podle účtu.
+
+**Implementace:** deník kategorii nenese; řádek zaokrouhlení vzniká
+z hlavičkového kroku, má tedy `operation` NULL a text kroku
+„Zaokrouhlení dokladu“ (`CostsCheck::ROUNDING_TEXT`). Kontrola vyřadí
+řádky `operation IS NULL AND text = …`; `CostsCheckTest` hlídá, že text
+nesou všechny kroky `rounding.*` v předpisu a žádný jiný.
 
 ## Existující zdroje dat (D6)
 
@@ -166,14 +194,14 @@ zůstanou, dokud se nepřeúčtují (`doc-reaccount <docId>`).
 
 ## Hotovo když
 
-- [ ] unit testy předpisu, strážce a `CostsCheck` zelené (úzké `--filter`);
+- [x] unit testy předpisu, strážce a `CostsCheck` zelené (úzké `--filter`);
       `AccountingItemsOfferCoverageTest` dál zelený
 - [ ] spolek: `dataset-verify` kontroly 1–4 `ok`, deník bez 548 / 648,
       snímek připravený ke schválení
 - [ ] plátce a neplátce: kontroly 1–5 `ok` beze změny snímků
-- [ ] `docs/accounting.md` §4: sekce `chartOverrides`, sémantika přepisu,
-      tabulka D2; §5: řetěz masek u `bank.fee`
-- [ ] `docs/test-corpus.md`: `CostsCheck` vyřazuje zaokrouhlení podle původu řádku
+- [x] `docs/accounting.md` §4: sekce `chartOverrides`, sémantika přepisu,
+      tabulka D2; §5: řetěz masek u `bank.fee`, registrace × předpis
+- [x] `docs/test-corpus.md`: `CostsCheck` vyřazuje zaokrouhlení podle původu řádku
 - [ ] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Pasti
@@ -193,7 +221,8 @@ zůstanou, dokud se nepřeúčtují (`doc-reaccount <docId>`).
 - ✓ **D2 — Masky NNO:** zaokrouhlení 549 / 649, DPH bez nároku 549,
   úroky 544 / 644, kurzové rozdíly 545 / 645, bankovní poplatky podle D7.
 - ✓ **D3 — Jediná cesta k předpisu** (i zaúčtování přiznání DPH), hlášky
-  bez natvrdo zapsaných masek.
+  bez natvrdo zapsaných masek. Země předpisu = účetní jurisdikce vlastní
+  firmy, registrace DPH řídí jen režim DPH (viz Změny → 3; 2026-10-15).
 - ✓ **D4 — Strážce:** každá maska efektivního předpisu se dohledá v osnově
   své varianty, pro NNO test drží tabulku D2.
 - ✓ **D5 — `dataset-verify` vyřazuje zaokrouhlení podle původu řádku**,

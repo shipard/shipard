@@ -662,8 +662,12 @@ varování nikdy), neposílají se. Selhání apply jedné zprávy je výsledek
    očekávání); KH B.1 / B.2 / A.2 po dokladech (DIČ + evidenční číslo,
    datum, pásma základ / daň, kód plnění), B.3 součty. Prázdné `vat.json`:
    žádný doklad v období DPH a žádný pohyb na 343.
-4. **Náklady** (`CostsCheck`, economy.accounting): Σ MD účtů `5%` bez
-   `548` / `549` per doklad ≟ `costs.json`.
+4. **Náklady** (`CostsCheck`, economy.accounting): Σ MD účtů `5%` per
+   doklad bez řádků zaokrouhlení ≟ `costs.json`. Zaokrouhlení se vyřazuje
+   **podle původu řádku**, ne podle účtu (#122 D5): hlavičkový krok
+   předpisu `rounding.*` dává řádek bez operace s textem „Zaokrouhlení
+   dokladu“ (`CostsCheck::ROUNDING_TEXT`, strážce `CostsCheckTest`) — na
+   548 / 549 jsou i pojištění a bankovní poplatky, které do nákladu patří.
 5. **Deník** (D29, `LedgerSnapshotCheck`): `economy.accounting.generalLedger`
    analyticky za nejmenší povolenou granularitu pokrývající měsíce
    použitých dokladů (měsíc → čtvrtletí → pololetí → rok) ≟ snímek přes

@@ -347,8 +347,11 @@ pro masky účtů) — drží princip „účet se nikde nezadává".
     podrozvaze) zrcadlově → `advances.given` → 314 MD = předpis poskytnuté
     zálohy. Chybějící maska / účet → `account_not_found` jako u masky
     kategorie.
-  - `fee.out` → 568 (bankovní poplatky), `interest.in` → 662, `interest.out`
-    → 562, `tax.*` → … — reálný účet z kategorie předpisu (jako `acc.entry`).
+  - `fee.out` → `["568201", "568"]` (bankovní poplatky — vlastní analytika,
+    fallback syntetika; #122 D7), `interest.in` → 662, `interest.out` → 562,
+    `tax.*` → … — reálný účet z kategorie **efektivního** předpisu (jako
+    `acc.entry`); osnova NNO má přepisy (`["549301", "549"]`, 644, 544 —
+    `docs/accounting.md` §4 `chartOverrides`).
 - **Contributoři deníku (#79 D3b, `journalContributors`):** po sestavení
   obou řádků engine předá registrovaným contributorům kontext transakce
   (`bankTransaction`, id, datum, fiskální rok, měna) a pohledy na řádky
@@ -438,7 +441,7 @@ Příjem 1 210 Kč, nespárováno (`payment.in`):
 Bankovní poplatek 50 Kč (`fee.out`):
 
 ```
-568xxx  MD      50,00   (bankovní poplatky — kategorie bank.fee)
+568201  MD      50,00   (bankovní poplatky — kategorie bank.fee; fallback 568, NNO 549301)
 221xxx  DAL     50,00   (banka)
                          MD = DAL ✓
 ```

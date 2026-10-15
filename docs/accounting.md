@@ -380,7 +380,12 @@ Per-country JSONC konfigurace v modulu `economy.accounting`:
 `modules/economy/accounting/config/accountingRules.cz.jsonc`
 → cfgItem `economy.accounting.rules.cz`
 
-Výběr předpisu: podle země vlastní firmy (`OwnCompanyResolver`), fallback `cz`.
+Výběr předpisu: podle země vlastní firmy (`OwnCompanyResolver`), fallback `cz`;
+efektivní předpis pro variantu osnovy zdroje dat skládá
+`AccountingRules::resolve()` (sekce `chartOverrides` níže, #122 D1).
+**Země předpisu je účetní jurisdikce vlastní firmy** (sídlo), ne země
+registrace DPH — registrace řídí režim DPH dokladu (kódy, výkaz, správce
+daně, analytiky kódů), knihy vede firma podle své osnovy (#122 D3).
 
 ### Struktura
 
@@ -388,11 +393,70 @@ Tři sekce (zachováno ze starého `acc-default.json`, ale kategorie jsou
 sémantické stringy místo čísel účtů):
 
 ```
-documents   per docType seznam kroků — odkud vzít částku, na kterou stranu,
-            jaká kategorie
-accounts    kategorie → maska účtu (případně s podmínkou query)
-categories  jen názvy kategorií pro dokumentaci/UI
+documents       per docType seznam kroků — odkud vzít částku, na kterou stranu,
+                jaká kategorie
+accounts        kategorie → maska účtu (případně s podmínkou query)
+categories      jen názvy kategorií pro dokumentaci/UI
+chartOverrides  přepisy accounts per varianta osnovy (economy.accountChart)
 ```
+
+### Přepisy podle varianty osnovy (`chartOverrides`)
+
+Masky v `accounts` jsou psané pro podnikatelskou osnovu
+(`economy.accountChart = default`). V osnově pro neziskové organizace
+(`npo`) mají některé syntetiky jiný význam (548 Manka a škody, 648
+Zúčtování fondů) nebo neexistují (56x / 66x finanční náklady a výnosy).
+Předpis proto nese sekci (#122 D1):
+
+```jsonc
+"chartOverrides": {
+    "npo": {
+        "accounts": [
+            {"cat": "rounding.cost", "accountMask": "549"},
+            …
+        ]
+    }
+}
+```
+
+- **Sémantika:** pro variantu osnovy zdroje dat nahradí každá kategorie
+  uvedená v přepisu **všechny** obecné záznamy téže kategorie v `accounts`
+  (na místě prvního z nich). Kategorie s více záznamy (`costs` s `query`
+  per pohyb) se v přepisu uvádí celá, jinak by varianty zmizely. Ostatní
+  kategorie zůstávají. Varianta bez přepisů (`default`, `none`,
+  nerozhodnuto) dostane předpis beze změny.
+- **Kde:** `AccountingRules::resolve()` vrátí rovnou efektivní předpis
+  (přepisy aplikované, sekce `chartOverrides` odebraná; čistá funkce
+  `AccountingRules::effective($rules, $variant)`). Varianta osnovy se čte
+  z parametru vrstvy C `economy.accountChart` (`SettingsStore`). Všechny
+  cesty k předpisu (dokladový i bankovní engine, contributoři deníku,
+  zaúčtování přiznání DPH) jdou přes `resolve()` — nikdo nečte cfgItem
+  `economy.accounting.rules.*` přímo.
+- **Přepis kategorie, kterou obecný předpis nezná** = `LogicException`
+  při skládání, ne tichá nová kategorie. Strážce
+  `AccountingRulesChartVariantsTest` ohlídá, že se každá maska efektivního
+  předpisu obou variant dohledá v seedu osnovy své varianty, že `npo`
+  drží tabulku níže a že žádná maska `npo` nemíří na 548 / 648.
+
+Masky pro NNO (#122 D2, D7):
+
+| Kategorie | `default` | `npo` | Dohledá se v NNO |
+|-----------|-----------|-------|------------------|
+| `costs` (`purchase.other`) | 548 | 549 | 549100 Jiné ostatní náklady |
+| `rounding.cost` | 548 | 549 | 549100 |
+| `rounding.revenue` | 648 | 649 | 649100 Jiné ostatní výnosy |
+| `vat.nondeductible` | 548 | 549 | 549100 |
+| `bank.fee` | `["568201", "568"]` | `["549301", "549"]` | 549301 Bankovní poplatky |
+| `bank.interest.out` | 562 | 544 | 544100 Úroky |
+| `bank.interest.in` | 662 | 644 | 644100 Úroky |
+| `fx.loss` | 563 | 545 | 545100 Kurzové ztráty |
+| `fx.gain` | 663 | 645 | 645100 Kurzové zisky |
+
+Ostatní masky (311, 321, 314, 324, 343…, 2611xx–2613xx, 75x, 799, 602,
+604, 504, 518) mají v obou osnovách stejný význam a zůstávají společné.
+Bankovní poplatky mají v obou osnovách vlastní analytiku (568201 /
+549301, v nabídce účetních položek položka se štítkem `services.banking`),
+fallback na syntetiku kryje rozvrhy bez ní.
 
 ### Krok předpisu (step)
 
@@ -775,10 +839,16 @@ Pořadí:
    (`docState IN LINKABLE_STATES`, archivní 70 se dohledá). Chybějící
    pokladna nebo účet → chybový řádek `211???`, kód `cash_desk_account_missing`
    (dvě hlášky: „doklad nemá pokladnu" vs. „pokladna nemá účet").
-2. **`cat`** — v sekci `accounts` se najde **první** záznam se shodnou `cat`
-   a vyhovující `query` (porovnání rovností nad zdrojovým záznamem — u
+2. **`cat`** — v sekci `accounts` efektivního předpisu (přepisy podle
+   varianty osnovy už aplikované, §4) se najde **první** záznam se shodnou
+   `cat` a vyhovující `query` (porovnání rovností nad zdrojovým záznamem — u
    `src: rows` nad řádkem, u `src: head` nad hlavičkou). Výsledkem je
-   `accountMask`.
+   `accountMask`: řetězec, nebo **řetěz masek** po řadě — bere se první,
+   která se dohledá (`["568201", "568"]` u `bank.fee`: analytika bankovních
+   poplatků, fallback syntetika pro rozvrhy bez ní; `["3149", "314"]` /
+   `["3249", "324"]` u zdaněných záloh — seed osnovy NNO analytiky 3149xx /
+   3249xx nemá). Bez řádkového kontextu (`firstMaskForCategory`) dá řetěz
+   první masku.
 3. **Maska → účtový rozvrh** (`economy_accounting_accounts`):
 
 ```sql
@@ -847,10 +917,18 @@ podle `is_error`.
   `343???`, `is_error`, alert) — žádné tiché smíchání cizí DPH s tuzemskou.
   Hodnota `cz` je správně, dokud existuje jen `rules.cz`; každý budoucí
   country předpis dostane vlastní fallback se svou zemí.
+- **Registrace × předpis** (#122 D3): registrace DPH řídí **režim DPH**
+  dokladu a podání — kódy (`world.vat` per země), výkaz, správce daně,
+  analytiky kódů (343{CC}{NNN}). **Účty** dává vždy efektivní předpis
+  vlastní firmy (§4) — český plátce s německým DIČ vede české knihy.
+  Co bude potřeba až s OSS: mapování výkazu per zemi registrace
+  (`VatOutputsMapping` je dnes jen české) a saldo účet přiznání per
+  registrace (`vat.payable` / `vat.receivable` dávají jeden 343801 /
+  343802 pro všechny registrace, rozlišuje je jen partner správce daně).
 - **Krácené kódy** (118/119/341/342, koeficient odpočtu): doklad účtuje
   plnou daň na vlastní analytiku; neuplatnitelnou část (krácený sloupec
-  ř. 46 − odpočet ř. 52) přeúčtuje na náklad `vat.nondeductible` (548) až
-  účetní doklad přiznání.
+  ř. 46 − odpočet ř. 52) přeúčtuje na náklad `vat.nondeductible` (548,
+  v NNO 549) až účetní doklad přiznání.
 - **Uzavření analytik 343 přiznáním** (#55 F4b): podané přiznání dostane
   účetní doklad `cmnbkp` (`economy_vat_filings.acc_document`), který per
   kód DPH vynuluje analytiku proti saldu — kategorie `vat.payable` (343801,
@@ -858,7 +936,10 @@ podle `is_error`.
   správce daně registrace, VS/SS/KS + splatnost pro párování platby FÚ.
   Opravné a dodatečné podání účtují jen rozdíl proti kumulativnímu
   podanému stavu; zbytek ze zaokrouhlení na Kč jde na `rounding.cost` /
-  `rounding.revenue`. Řádky dokladu staví `Economy\Vat\Accounting
+  `rounding.revenue`. Předpis bere služba přes `AccountingRules::resolve()`
+  (efektivní, vč. přepisů NNO — 549 / 649; #122 D3), hlášky o chybějícím
+  účtu vypisují masku z předpisu (`categoryMasks` vstupu builderu), ne
+  natvrdo 548 / 648. Řádky dokladu staví `Economy\Vat\Accounting
   \VatReturnAccountingBuilder` ze snapshotu podání (ne z deníku), deník
   vznikne standardně uzavřením dokladu. Součet deníku na `343*` (mimo
   801/802) přes doklady instance a doklady jejích podání je pak nula —
