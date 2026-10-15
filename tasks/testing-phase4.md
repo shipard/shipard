@@ -1,6 +1,6 @@
 # Testování F4: evaluace AI analýzy nad datovými sadami
 
-**Stav:** hotovo — implementace 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`), první běh `baseline` nad `cz-vat-payer` 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-baseline.json` (§ 8); nálezy běhu jsou podklad pro ladění promptu a #118, ne úprava očekávání; nález „posunuté výjimky štítků řádků“ byl artefakt pozičního porovnání — porovnávač páruje `rowExceptions` podle `rowIndex` od 2026-10-15; druhý běh `sonnet-5-5` × 3 nad touž sadou 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-sonnet-5-5.json`, porovnání s baseline v § 9 (podklad pro M4)
+**Stav:** hotovo — implementace 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`), první běh `baseline` nad `cz-vat-payer` 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-baseline.json` (§ 8); nálezy běhu jsou podklad pro ladění promptu a #118, ne úprava očekávání; nález „posunuté výjimky štítků řádků“ byl artefakt pozičního porovnání — porovnávač páruje `rowExceptions` podle `rowIndex` od 2026-10-15; druhý běh `sonnet-5-5` × 3 nad touž sadou 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-sonnet-5-5.json`, porovnání s baseline v § 9 (podklad pro M4); třetí kolo 2026-10-15 po opravě párování výjimek: `baseline` × 3 (`2026-10-15-baseline-2.json`) a `sonnet-5-5-tags` × 3 se štítky na řadě 5 (`2026-10-15-sonnet-5-5-tags.json`), porovnání v § 10 — Sonnet 5.5 pro extrakci i štítky není horší, levnější a rychlejší; před přepnutím výchozího modelu opravit prompt (bankovní spojení, `reverseCharge` u EU zboží, adresa mimo ČR, štítek `goods.stock`)
 
 ## Kontext / Cíl
 
@@ -381,6 +381,167 @@ z EU. Před přepnutím výchozího modelu: (1) varianta s `contentTags.model`
   ptá jen na skutečném terminálu (`stream_isatty(STDIN)`), jinak exit 2
   bez dotazu; odpověď N dál exit 0.
 
+## 10. Třetí kolo: `baseline` × 3 a `sonnet-5-5-tags` × 3 po opravě párování (2026-10-15)
+
+Dva běhy nad touž sadou a týmž zdrojem dat `vg39-l` (žádný doklad použitý,
+bez přeseedování), oba po úpravě porovnávače `2318728f` (výjimky štítků
+řádků podle `rowIndex`) a vyhodnocené `ai-eval-compare` po `d9dc9a73`
+(součty a odchylky per uzel na jedno opakování, změna pole od 0,5 volání).
+Zavírají obě mezery § 9: štítky měří řadu 5 a výjimky štítků řádků jsou
+mezi běhy srovnatelné. Schválení útraty v chatu (~6,9 USD); skutečnost
+6,63 USD.
+
+- **A — `baseline` × 3** (`tests/eval/cz-vat-payer/2026-10-15-baseline-2.json`,
+  `git d9dc9a73`): Sonnet 4.6 z mapy úrovní pro extrakci i štítky, teplota 0,
+  bez thinking / effort. 60 volání, **58 úspěšných, 2× `schema_error`** —
+  `1002` (1) a (2) „output is not valid JSON“ po 11,1 k výstupních tokenů
+  (úspěšné opakování má 9,5 k), 0,41 USD za nic. Cena 3,76 USD (odhad 3,71
+  z posledního běhu, skutečnost 101 %), 1 712 s.
+- **B — `sonnet-5-5-tags` × 3** (`tests/eval/cz-vat-payer/2026-10-15-sonnet-5-5-tags.json`,
+  varianta `tests/eval/variants/sonnet-5-5-tags.jsonc`, `git d9dc9a73`):
+  `call.model` i `contentTags.model` = `claude-sonnet-5-5`
+  (`effective.contentTags.model` v souboru to potvrzuje), thinking / effort
+  `null` = výchozí deklarace (u řady 5 adaptivní thinking modelu), teplotu 0
+  tvarovač vynechal jako v § 9. 60 volání, **60 úspěšných**. Cena 2,87 USD
+  (odhad 3,19 z ceníku, skutečnost 90 %), 867 s.
+
+**Vliv opravy porovnávače (starý baseline × 1 § 8 → A):** celková shoda
+93,2 → 94,1 %; prakticky celý rozdíl je metrika výjimek štítků řádků
+56,5 → 88,6 % [87,7–89,3] (poziční artefakt § 8 zmizel: `rowExceptions`
+6 → 0 na opakování, nová cesta `rowExceptions[<rowIndex>]` 4,3), ostatní
+skupiny ±0,5 %. Odchylky per uzel na opakování jsou jinak shodné —
+Sonnet 4.6 s teplotou 0 je reprodukovatelný (78 z 85 uzlů stabilních,
+13 z 19 úspěšných dokladů se stejným počtem odchylek ve všech
+opakováních), jen `rows[].priceCalcMode` 1 → 2,3 (`fromTotal` na
+prodejkách 0901 / 0902) a `rows[].vat.pct` 1 → 2 kolísají. Čísla § 8 a § 9
+u výjimek štítků řádků tedy platí jen navzájem; proti § 10 ne.
+
+| Metrika | A baseline × 3 (průměr [min–max]) | B sonnet-5-5-tags × 3 | B − A |
+|---------|-----------------------------------|-----------------------|-------|
+| Volání | 60, úspěšných 58, 2× `schema_error` (1002) | 60, úspěšných 60 | |
+| Shoda polí celkem (match + po normalizaci) | 94,1 % [94,0–94,2] (po normalizaci 1,2 %) | 94,2 % [93,5–94,6] (1,0 %) | +0,1 v rámci šumu; **bez dokladu 1002** 94,0–94,2 → 94,8–94,9 = **+0,7 mimo šum** |
+| Hlavička / dodavatel / odběratel | 93,3 % / 90,0 % / 98,1 % | 94,1 % / 89,9 % / 99,0 % | +0,8 lepší / šum / +0,9 lepší |
+| DPH / řádky / rekapitulace / součty | 98,9 % / 92,5 % / 100 % / 100 % | 99,6 % / 92,9 % / 100 % / 100 % | +0,7 lepší / +0,4 šum / 0 / 0 |
+| Štítek dokladu | 93,2 % [90,0–94,7] (4 špatně z 58) | 90,0 % [90–90] (6 špatně z 60) | **stejné**: 1001 i 1002 obě řady `office.cleaning`; A má méně špatných jen o 2 selhaná volání 1002 (`documents.tagOk` 90 % u obou) |
+| Výjimky štítků řádků | 88,6 % [87,7–89,3] | 77,9 % [51,5–91,5] | jedna kaskáda 1002 (níže); mimo ni 91,5 % = lepší |
+| Klasifikace zprávy | 100 % | 100 % | 0 |
+| Doklady bez odchylky | 1,7 % [0–5] (0901 1×) | 10,0 % [10–10] (0901 a 0902 ve všech opakováních) | +8,3 lepší |
+| Správné částky / počet řádků sedí / klasifikace | 96,7 % / 96,7 % / 96,7 % | 100 % / 100 % / 100 % | rozdíl = 2 selhaná volání; všech 58 + 60 úspěšných správně |
+| Cena | 3,76 USD (0,0627 / doklad) | 2,87 USD (0,0479 / doklad) | −24 % na doklad |
+| Tokeny na doklad (vstup / výstup) | 9,3 k / 2,3 k | 11,1 k / 2,6 k | +20 % / +11 % (shodné s § 9 — tokenizace je deterministická) |
+| Čas na doklad | 28,5 s | 14,4 s | 2,0× rychlejší |
+
+**Štítek dokladu a výjimky štítků řádků (konečně srovnatelné):**
+
+- Štítek dokladu je u obou řad špatně jen u dlouhých dokladů 1001 a 1002
+  (`goods.stock` → `office.cleaning`; B u 1002 jednou `people.catering`).
+  Nezávisí na modelu — věc promptu / klasifikace štítků, ne výměny modelu.
+- Výjimky řádků, A (štítky 4.6): na opakování 6–7 sporných výjimek navíc,
+  vždy stejné — 1001 řádky 25–27 `people.catering` 3× (nález § 8), 0402
+  řádek 2 `services.waste` 3× (+ řádek 1 1×), 0701 řádek 1 `office.supplies`
+  3×, 0801 řádek 1 `it.hosting` 3×; 1002 řádky 25–29 v jediném úspěšném
+  opakování.
+- Výjimky řádků, B (štítky 5.5): 1001 řádky 25–27 3× (totožné), 0402
+  řádek 2 3× (totožné), **0701 a 0801 čisté ve všech opakováních**;
+  1002 ve dvou opakováních jako 4.6 (řádky 25–28 / 29), v jednom
+  **kaskáda**: štítek dokladu `people.catering` → všech 30 řádků mimo
+  občerstvení jako výjimka `office.cleaning` (`extra` 30) a 18 řádků
+  občerstvení bez výjimky (`missing` 18), 94 odchylek na doklad, metrika
+  výjimek v tom opakování 51,5 %. Jedna chyba štítku dokladu se u dlouhého
+  dokladu násobí počtem řádků — důvod, proč štítek dokladu u `goods.stock`
+  opravit v promptu dřív, než se přepne model.
+- Štítky řádků na 5.5 proti 4.6 jsou tedy o dvě sporné výjimky na
+  opakování lepší; cena štítkové funkce není v souboru rozepsaná, rozdíl
+  ceny a času mezi oběma běhy řady 5 (§ 9 × § 10) je do 2 %, resp. +1 s na
+  doklad.
+
+Odchylky per uzel **na opakování** (A → B; shodné zůstávají `supplier.contact.web`
+16, `supplier.courtRegistration` 12, `rows[].item.supplierCode` 10,
+`dates.periodFrom` / `periodTo` 4 / 4, `rows[].item.ean` 2,
+`payment.paymentReference` 2 — nižší hodnoty A 15,3 / 11,3 / 9,3 jsou jen
+dvě selhaná volání 1002):
+
+| Uzel | A | B | Změna |
+|------|---|---|-------|
+| `customer.taxId` / `supplier.taxId` | 6 / 3,7 | 2,7 / 2,7 | lepší (0502, 0601, 0602 teď `taxId` vyplní; 0501, 0802 stále) |
+| `dates.taxPointDate` | 4 | 0,7 | lepší (DUZP u `noVat` jen 0701 2×) |
+| `rows[].priceCalcMode` / `rows[].vat.pct` / `supplier.address.zip` | 2,3 / 2 / 1 | 0 / 0 / 0 | lepší |
+| `rows[].item.description` | 6 | 4 | lepší |
+| `supplier.bankAccount.iban` | 3,3 | 1,0 | lepší, ale jiné povahy — viz níže |
+| `_resolve.contentTag.rowExceptions[]` | 4,3 | 3,0 | lepší mimo kaskádu |
+| `vat.reverseCharge` / `rows[].vat.supplyKind` | 0 / 0,3 | 1,0 / 1,0 | **horší:** 0602 (`eu-goods`) 3× `true` a řádek 2 `services` → `goods`; 0601 tentokrát čistý (§ 9 měl 3× + 2×) |
+| `supplier.address.street` + `houseNumber` | 0 | 2 + 2 | **horší:** 0801 i 0802 ve všech opakováních (§ 9 1,3) — „500 Market Street, Suite 200“ rozdělí na číslo 500 a ulici |
+| `notes.onDocument` | 8 | 9,3 | horší o 0702 (poznámka „Nejsem plátce DPH“ navíc) |
+| `supplier.bankAccount.accountNumber` / `customer.vatId` | 0 / 0 | 0,7 / 0,7 | **nové:** oboje 0702 — viz níže |
+
+**IBAN a bankovní spojení (platební údaj):**
+
+- A (4.6, teplota 0): 10 špatných IBAN z 60 = 3,3 na opakování,
+  **systematicky** — 0101 3×, 0102 3×, 0201 3×, 0202 1×, pokaždé táž
+  vložená nula nebo vynechaná číslice. Deterministický model opakuje tutéž
+  chybu; opakování ani přegenerování nepomůže, pomůže jen kontrolní součet
+  IBAN v produkční cestě (kandidát z § 8 trvá).
+- B (5.5): 3 z 60 = 1,0 na opakování, všechny na **0702**
+  (`domestic-non-payer-supplier`): 1× špatný IBAN (vložené „00“), 2× IBAN
+  i `accountNumber` chybí úplně (+ 2× chybí `customer.vatId`). V § 9 stejný
+  doklad jednou selhal na `bankAccount` pod `payment`. Bankovní spojení
+  tohoto dokladu je tedy u řady 5 nestabilní ve 4 z 6 volání přes oba běhy
+  — buď je zahodí, přesune, nebo zkomolí; doklady 0101 / 0201, kde chybuje
+  4.6, má 5.5 ve všech opakováních správně. Do produkční cesty patří vedle
+  kontrolního součtu i upozornění „faktura bez bankovního spojení“.
+- Stabilita `supplier.bankAccount.iban` v B 60 % je převážně mezery v IBAN
+  (shoda po normalizaci 8,3 na opakování, A 2,7; `fieldStability` počítá
+  `match` ↔ `matchNormalized` jako nestabilitu), věcně nestabilní je jen
+  0702.
+
+**Selhání a nedeterminismus:** A má 2 z 60 volání mimo JSON (1002, 48 řádků,
+`pdfIsdoc`), B 0 z 60 (§ 9 u 5.5 1 z 60 mimo schéma). Obě řady tedy
+u dlouhých dokladů občas vyrobí nepoužitelný výstup — produkční runner
+s tím musí počítat (opakování volání), sledovat v dalších bězích.
+Reprodukovatelnost: 4.6 s teplotou 0 stabilní 78 z 85 uzlů, 13 z 19
+úspěšných dokladů se stejným počtem odchylek; 5.5 bez teploty 0 (tvarovač,
+adaptivní thinking) 74 z 85 uzlů, 9 z 20 dokladů — rozdíly jsou ±1
+odchylka, výjimkou je kaskáda 1002. Varianta s explicitním `thinking`
+/ `effort` (bod 1 závěru § 9) zůstává otevřená.
+
+Po variantách korpusu (A → B): `domestic-rounding` 93,7 → 96,2 %,
+`third-country-services` 92,4 → 94,8 %, `eu-services` 88,2 → 89,9 %,
+`receipt` 99,0 → 100 % (bez odchylky 16,7 → 100 %), `domestic-goods`
+95,2 → 95,9 %, `domestic-reverse-charge` 96,5 → 96,6 %,
+`domestic-two-rates` 96,1 → 96,2 %, `domestic-non-payer-supplier`
+96,3 → 96,2 % (0702), `eu-goods` 93,3 → 93,6 % (0602), `long-document`
+93,3 → 92,6 % (kaskáda; A bez dvou selhaných 1002). Po podobách `pdf`
+94,0 → 94,7 %, `pdfIsdoc` 94,2 → 93,7 % (1002 je `pdfIsdoc`). Vliv samotné
+štítkové funkce (§ 9 `sonnet-5-5` × B, extrakce stejná): metriky extrakce
+v rámci šumu (dodavatel 90,6 → 89,9 % je 0702), štítek dokladu totožný,
+výjimky řádků bez 0701 / 0801.
+
+**Závěr pro M4:** Sonnet 5.5 pro extrakci i štítky není horší než 4.6
+v hodnotovém jádru (částky, DPH, řádky, rekapitulace, klasifikace — všude
+rovno nebo lépe), celkem +0,7 % mimo šum bez kaskádového dokladu, šestkrát
+víc dokladů bez odchylky, o 24 % levnější, 2× rychlejší, v tomto běhu bez
+selhání (4.6 dvě). Systematické mezery (web, spisová značka, kód položky,
+období plnění, poznámka, `taxId` u EU dodavatele) jsou shodné — prompt, ne
+model. Před přepnutím výchozího modelu opravit v promptu tři věci, které
+řada 5 dělá jinak, a jednu společnou: (1) bankovní spojení 0702 (nikdy
+nevynechat, nikdy pod `payment`) + kontrolní součet IBAN a upozornění na
+chybějící spojení v produkční cestě, (2) `reverseCharge` u pořízení zboží
+z EU (§ 92a vs. pořízení z EU), (3) adresa mimo ČR (ulice s číslem, #118),
+(4) štítek `goods.stock` u dlouhých dokladů (u obou řad; u 5.5 se chyba
+štítku násobí řádky). Pak jeden běh × 3 nad opraveným promptem a přepnout.
+Očekávání sady se nemění.
+
+**Nálezy k nástrojům (follow-up):**
+
+- `fieldStability` počítá `match` ↔ `matchNormalized` (mezery v IBAN,
+  telefon) jako nestabilitu — formátovací šum zakrývá věcnou nestabilitu
+  (IBAN 60 % v B, věcně jen 1 doklad z 20).
+- Selhaná volání se do `fields.*` nepočítají (jen do `documents.*`
+  a `calls.*`), takže běh se selháním u nejhoršího dokladu má metriky polí
+  o něco lichotivější; porovnání dvou běhů s různými selháními číst s tím.
+- Odhad z posledního běhu téže varianty sedí na 1 % (A); odhad z ceníku je
+  o 10 % výš (B) — ceník nezná levnější výstup řady 5 na doklad.
+
 ## Kroky
 
 1. Serverové AI připojení (D40) + testy + `docs/ai.md`, `docs/cli.md`.
@@ -418,6 +579,10 @@ z EU. Před přepnutím výchozího modelu: (1) varianta s `contentTags.model`
 - [x] běh varianty řady 5 (`sonnet-5-5`, `--repeat 3`) po schválení (2026-10-15),
       výsledek v `tests/eval/cz-vat-payer/2026-10-15-sonnet-5-5.json`,
       `ai-eval-compare` proti baseline a shrnutí v § 9
+- [x] třetí kolo po opravě párování výjimek (2026-10-15): `baseline` × 3
+      (`2026-10-15-baseline-2.json`) a `sonnet-5-5-tags` × 3 se štítky na
+      řadě 5 (`2026-10-15-sonnet-5-5-tags.json`), `ai-eval-compare` na jedno
+      opakování, shrnutí a doporučení pro M4 v § 10
 - [x] `docs/test-corpus.md` § 18 (evaluace: varianty, metriky, soubor výsledků,
       porovnání, opakování), `docs/cli.md`, `docs/ai.md`, `CLAUDE.local.md`
       nedotčený (zdroje dat dopíše člověk)
