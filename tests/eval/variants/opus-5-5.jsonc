@@ -1,0 +1,15 @@
+// Varianta evaluace AI analýzy pro srovnání modelů řady 5 (tasks/testing-phase4b.md D45,
+// docs/roadmap.md M4): profil jako ve zdroji dat, model funkce mail.extraction i funkce
+// exchange.contentTags přepsaný na Claude Opus 5.5 (ID z katalogu modules/core/ai/config/models.jsonc,
+// úroveň strong). Thinking / effort null = výchozí hodnoty deklarace funkce; `connection`
+// = kód připojení nebo `server`. Vzor sonnet-5-5-tags.jsonc: štítek dokladu a výjimky
+// štítků řádků měří týž model jako extrakci.
+{
+	"format": "shpd.eval.variant.v1",
+	"name": "opus-5-5",
+	"description": "Profil czech_general, model mail.extraction i exchange.contentTags přepsaný na claude-opus-5-5",
+	"profile": "czech_general",                  // kód profilu pošty
+	"promptTemplateFile": null,                  // šablona promptu ze souboru (vyzkoušení bez zásahu do zdroje dat)
+	"call": { "connection": null, "model": "claude-opus-5-5", "thinking": null, "effort": null, "maxTokens": null },
+	"contentTags": { "model": "claude-opus-5-5", "thinking": null, "effort": null }, // přepis funkce exchange.contentTags
+}
