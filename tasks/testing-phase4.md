@@ -1,6 +1,6 @@
 # Testování F4: evaluace AI analýzy nad datovými sadami
 
-**Stav:** naplánováno — design schválen 2026-10-15 (#103 D34–D41), čeká na implementaci
+**Stav:** částečně — kroky 1–6 hotové 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`; unit testy zelené); zbývá první běh `baseline` nad `cz-vat-payer` po schválení v chatu (stojí peníze, potřebuje `sudo shpd-server dev-ai-key --set-key`) a shrnutí metrik
 
 ## Kontext / Cíl
 
@@ -215,22 +215,44 @@ různými sadami (hash).
 
 ## Hotovo když
 
-- [ ] `dev-ai-key`: klíč přes skrytý vstup / STDIN, `--status` bez obsahu,
-      odmítne server mimo `development`
-- [ ] zdroj dat s příznakem bez vlastního připojení použije serverové;
+- [x] `dev-ai-key`: klíč přes skrytý vstup / STDIN, `--status` bez obsahu,
+      odmítne server mimo `development` (`DevAiKeyCommandTest`)
+- [x] zdroj dat s příznakem bez vlastního připojení použije serverové;
       bez příznaku (obnovená kopie) ne; vlastní připojení má přednost;
-      `ai-test` ukáže původ
-- [ ] ostrá analýza beze změny chování (testy runneru a zápisu zelené);
-      nanečisto nic nezapíše (test)
-- [ ] unit testy porovnávače, `ai-eval`, `ai-eval-compare` zelené (úzké `--filter`)
-- [ ] preflight odmítne zdroj dat s použitým dokladem ze sady, cizí data
-      a server mimo `development`
+      `ai-test` ukáže původ (`AiBackendResolverTest`, `AiFunctionResolverTest`,
+      `connectionOrigin` v `--json`)
+- [x] ostrá analýza beze změny chování (testy runneru a zápisu zelené);
+      nanečisto nic nezapíše (`AnalysisComputationTest` — služba bez DB,
+      validátor jen `validateCanonical`)
+- [x] unit testy porovnávače, `ai-eval`, `ai-eval-compare` zelené (úzké `--filter`)
+- [x] preflight odmítne zdroj dat s použitým dokladem ze sady, cizí data
+      a server mimo `development` (`AiEvalCommandTest`; navíc pravidla IČO → štítek)
 - [ ] první běh `baseline` nad `cz-vat-payer` po schválení, výsledek
       v `tests/eval/cz-vat-payer/`, metriky shrnuté v tasku
-- [ ] `docs/test-corpus.md` (evaluace: varianty, metriky, soubor výsledků,
+- [x] `docs/test-corpus.md` § 18 (evaluace: varianty, metriky, soubor výsledků,
       porovnání, opakování), `docs/cli.md`, `docs/ai.md`, `CLAUDE.local.md`
       nedotčený (zdroje dat dopíše člověk)
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
+
+## Odchylky implementace od zadání (2026-10-15)
+
+- **Příznak zdroje dat žije v `config/main.json`** (`"ai": {"useServerConnection": true}`,
+  vedle `enableReset` / `skipProvisioning`), ne jako parametr vrstvy C —
+  `ds-create` schéma netvoří, do `core_system_settings` zapsat nemůže.
+  Rozhodnuto v chatu při plánování. `ds-create` dostal `--no-server-ai`
+  (vzor `--no-cron`) pro cíle importu reálných kopií.
+- **Klíč v `/etc/shipard/secrets/dev-ai-<platforma>.key`** (adresář 0700,
+  soubor 0600, vlastník shipard uživatel; `PermissionSpec` pro `doctor`
+  / `fix-permissions`); `shpd-server dev-ai-key` běží pod sudo.
+- **Preflight navíc odmítá pravidla IČO → štítek** (`core_exchange_tag_rules`)
+  — pravidlo přeskočí LLM klasifikaci štítků stejně jako historie.
+- **Podobnost textu jen u volného textu** (`CanonicalComparator::FREE_TEXT_NODES`:
+  názvy stran a položek, popisy řádků, poznámka, jména kontaktů, spisová
+  značka); číslo dokladu nebo adresa s překlepem jsou `wrong`.
+- **Nullable uzel `customer`** prázdný na obou stranách = jeden `match`;
+  objekt se samými `null` proti `null` = `matchNormalized`.
+- Soubor výsledků nese i `normalized` (cesty polí shodných až po
+  normalizaci) a `deviationsByField` — podklad pro #118 a porovnání.
 
 ## Pasti
 
