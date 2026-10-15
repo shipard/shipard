@@ -34,7 +34,13 @@ class VerifyExpectationsTest extends TestCase
         $this->assertSame(['customer'], $e->projection->nullableNodes());
         $this->assertArrayHasKey('MSG-CORPUS-VP-0101', $e->vatByMessage());
         $this->assertSame('CZK', $e->costsByMessage()['MSG-CORPUS-VP-0101']['currency']);
-        $this->assertNull($e->ledgerSnapshot, 'snímek deníku se schvaluje až po prvním běhu');
+        // Snímek deníku plátce je schválený (#103 F3, 2026-10-15) a načte se;
+        // spolek ho zatím nemá (schvaluje se až po #122) → null.
+        $this->assertIsArray($e->ledgerSnapshot, 'schválený snímek deníku plátce se načte');
+        $this->assertSame('economy.accounting.generalLedger', $e->ledgerSnapshot['reportId'] ?? null);
+
+        $association = VerifyExpectations::load(DatasetReader::open(dirname(__DIR__, 7) . '/tests/datasets/cz/association'));
+        $this->assertNull($association->ledgerSnapshot, 'snímek deníku spolku se schvaluje až po prvním běhu');
     }
 
     public function testLoadsEmptyVatForNonPayerAndOptionalSnapshot(): void
