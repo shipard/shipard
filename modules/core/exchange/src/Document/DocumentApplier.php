@@ -699,6 +699,21 @@ class DocumentApplier
                     'message'  => 'Pokladna má na faktuře smysl jen při platbě hotově — ignorováno.',
                 ];
                 $cashDeskId = null;
+            } elseif ($cashDeskId === null && ($canonical['payment']['method'] ?? null) === 'cash') {
+                // Doklad placený hotově bez `cashDesk` (návrh z AI pokladnu
+                // nezná): výchozí pokladna zdroje dat (`is_default`), aby se
+                // účtoval na 211 místo chybové masky `211???` (#103 F3 nález E).
+                // Bez výchozí pokladny zůstává prázdná — účtování pak ohlásí
+                // cash_desk_account_missing jako dnes.
+                $cashDeskId = $this->resolveDefaultCashDeskId();
+                if ($cashDeskId !== null) {
+                    $validatorIssues[] = [
+                        'severity' => 'info',
+                        'path'     => 'cashDesk',
+                        'code'     => 'cash_desk_defaulted',
+                        'message'  => 'Doklad placený hotově dostal výchozí pokladnu zdroje dat.',
+                    ];
+                }
             }
         }
         $plan['cashDeskId'] = $cashDeskId;
@@ -3944,6 +3959,21 @@ class DocumentApplier
              ORDER BY [id] LIMIT 1',
             $code,
             [...self::ACTIVE_STATES, self::ARCHIVED_STATE],
+        );
+        return $row !== null ? (int) $row['id'] : null;
+    }
+
+    /**
+     * Výchozí pokladna zdroje dat (`is_default`, ve stavu V pořádku / Koncept)
+     * pro doklad placený hotově bez `cashDesk` v canonicalu (#103 F3 nález E).
+     */
+    private function resolveDefaultCashDeskId(): ?int
+    {
+        $row = $this->db->fetch(
+            'SELECT [id] FROM [economy_codebooks_cash_desks]
+             WHERE [is_default] = 1 AND [docState] IN %in
+             ORDER BY [sort_order], [id] LIMIT 1',
+            self::ACTIVE_STATES,
         );
         return $row !== null ? (int) $row['id'] : null;
     }

@@ -18,7 +18,7 @@
     "properties": {
         "format": { "const": "shpd.dataset.setup.v1" },
         // settings = klíč/hodnota z core_system_settings (rows: [{key, value}]), aplikuje se před resetem
-        "table":  { "enum": ["settings", "bank_accounts", "cost_centers", "vat_registrations", "binders", "mailboxes"] },
+        "table":  { "enum": ["settings", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes"] },
         "rows": {
             "type": "array",
             "items": { "type": "object", "additionalProperties": true }

@@ -1,0 +1,16 @@
+{
+    "format": "shpd.dataset.setup.v1",
+    "table": "cash_desks",
+    "rows": [
+        {
+            "code": "POK",
+            "name": "Pokladna",
+            "currency": "czk",
+            "is_default": true,
+            "valid_from": "2026-01-01",
+            "sort_order": 1,
+            "accounting_account": "211100",
+            "docState": 40
+        }
+    ]
+}

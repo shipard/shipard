@@ -42,6 +42,9 @@ final class SetupExporter
     public const TABLES = [
         'settings'          => ['table' => 'core_system_settings',                'key' => ['key']],
         'bank_accounts'     => ['table' => 'economy_codebooks_bank_accounts',     'key' => ['code']],
+        // Pokladny (#103 F3 nález E) — výchozí pokladna pro hotově hrazené
+        // přijaté doklady; účet se přenáší číslem jako u ostatních FK na rozvrh.
+        'cash_desks'        => ['table' => 'economy_codebooks_cash_desks',        'key' => ['code']],
         // Dimenze Středisko na dokladech (#110 D20) — doklady v sadě nesou kód.
         'cost_centers'      => ['table' => 'economy_codebooks_cost_centers',      'key' => ['code']],
         'vat_registrations' => ['table' => 'economy_codebooks_vat_registrations', 'key' => ['country', 'name']],

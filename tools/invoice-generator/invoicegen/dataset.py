@@ -47,7 +47,7 @@ MAILBOX = "default"
 
 NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 CREATED_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
-SETUP_TABLES = ("settings", "bank_accounts", "cost_centers", "vat_registrations", "binders", "mailboxes")
+SETUP_TABLES = ("settings", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes")
 PROVISION_KEYS = ("accountingItems",)
 MANAGED = ("manifest.jsonc", "setup", "persons", "mail", "expected")   # co build v cílové složce spravuje
 LEDGER_SNAPSHOT = "general-ledger.json"   # profiles/<profil>/approved/ → expected/ (F3 D29)

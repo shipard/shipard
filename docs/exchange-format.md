@@ -516,7 +516,11 @@ proti 69,99). Platí pro AI extrakci i ISDOC
 - **`invoiceIssued` / `proformaIssued` / `invoiceReceived` / `proformaReceived` + `cashDesk`** —
   volitelný kód pokladny platí jen s `payment.method: "cash"` (faktura placená hotově →
   `cash_desk` hlavičky, účtuje se na pokladnu místo 311/321); s jinou
-  platbou se ignoruje s warningem `cash_desk_ignored`.
+  platbou se ignoruje s warningem `cash_desk_ignored`. Platba hotově **bez**
+  `cashDesk` (návrh z AI pokladnu nezná) dostane výchozí pokladnu zdroje
+  dat (`economy_codebooks_cash_desks.is_default`, info `cash_desk_defaulted`,
+  #103 F3); bez výchozí pokladny zůstává prázdná a účtování ohlásí
+  `cash_desk_account_missing` (deník s maskou `211???`).
 - **`creditNote*`** — bude rozšířeno o `relatedDocNumber` (originál).
 - **`order*`, `deliveryNote*`, `bankStatement*`** — budoucí rozšíření,
   držíme stejnou top-level kostru.
@@ -1329,6 +1333,7 @@ Errors blokují `/apply`, warningy jen informují v UI.
 | `dimension_unknown` | error | Klíč objektu `dimensions` není id deklarované dimenze deníku, nebo dimenze nemá `exchangeKey` (#110 T2). Path `dimensions.<id>` / `rows.N.dimensions.<id>`. Kontroluje `DocumentValidator` se znalostí sady dimenzí (apply, /validate); preflight sady bez DS ho nehlásí. |
 | `dimension_not_found` | error | Hodnota dimenze (přirozený klíč — kód střediska, inventární číslo) nemá záznam v cílové tabulce (`DimensionResolver`, koš se nepočítá). Path dle místa, např. `rows.3.dimensions.costCenter`. Klíč je autoritativní, bez userAction. |
 | `cash_desk_ignored` | warning | `cashDesk` na faktuře bez `payment.method: "cash"` — pokladna se nepropíše. |
+| `cash_desk_defaulted` | info | Platba hotově bez `cashDesk` — doklad dostal výchozí pokladnu zdroje dat (`is_default`, #103 F3). |
 | `replace_concept_requires_draft` | error | `applyOptions.replaceConcept` s `targetDocState` jiným než 10 — přegenerování ukládá vždy Koncept (#110 Q2). |
 | `replace_concept_with_import` | error | `applyOptions.replaceConcept` spolu s `importNumber` — koncept číslo nemá. |
 | `replace_author_ignored` | warning | `applyOptions.author` při přegenerování — autor původního konceptu zůstává, klíč se ignoruje. |

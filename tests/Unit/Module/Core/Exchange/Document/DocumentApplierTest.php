@@ -1436,6 +1436,43 @@ class DocumentApplierTest extends TestCase
         );
     }
 
+    public function testCashPaymentWithoutCashDeskGetsDefaultCashDesk(): void
+    {
+        // #103 F3 nález E: účtenka hotově bez cashDesk → výchozí pokladna zdroje
+        // dat (is_default), jinak by deník nesl masku 211???. Převodem nic.
+        $resolvers = $this->buildAutoCreateResolvers(['full_name' => 'X', 'company_id' => '12345678']);
+        $saved = null;
+        $heads = $this->createMock(TransactionlessTableGateway::class);
+        $heads->method('saveDocument')->willReturnCallback(static function (array $data) use (&$saved) {
+            $saved = $data;
+            return \Shipard\Core\Document\DocumentResult::ok(['id' => 1234]);
+        });
+        $persons = $this->createMock(TransactionlessTableGateway::class);
+        $persons->method('saveDocument')->willReturn(\Shipard\Core\Document\DocumentResult::ok(['id' => 99]));
+        $db = $this->createMock(Connection::class);
+        $db->method('fetch')->willReturnCallback(static fn (mixed ...$args): ?Row =>
+            str_contains((string) $args[0], 'economy_codebooks_cash_desks') && str_contains((string) $args[0], 'is_default')
+                ? new Row(['id' => 5])
+                : null);
+        $db->method('getInsertId')->willReturn(0);
+        $applier = $this->buildApplier(
+            db: $db, party: $resolvers['party'], item: $resolvers['item'], unit: $resolvers['unit'],
+            vat: $resolvers['vat'], bank: $resolvers['bank'], heads: $heads, persons: $persons,
+        );
+
+        $payload = $this->payloadWithCanCreateSupplier([], applyOptions: ['autoCreateMode' => 'liberal']);
+        $payload['payment']['method'] = 'cash';
+        $result = $applier->apply($payload);
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertSame(5, $saved['cash_desk']);
+        $this->assertContains('cash_desk_defaulted', array_column($result->canonical['_resolve']['issues'] ?? [], 'code'));
+
+        $payload['payment']['method'] = 'bankTransfer';
+        $result = $applier->apply($payload);
+        $this->assertTrue($result->success, (string) $result->errorMessage);
+        $this->assertNull($saved['cash_desk'] ?? null, 'převodem pokladna nepatří');
+    }
+
     public function testBankAccountWithoutIdentifierIsNotAReference(): void
     {
         // #103 F3 nález A: účtenka nese bankAccount se samými null — žádné

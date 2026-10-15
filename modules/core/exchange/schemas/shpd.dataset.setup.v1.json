@@ -17,6 +17,7 @@
             "enum": [
                 "settings",
                 "bank_accounts",
+                "cash_desks",
                 "cost_centers",
                 "vat_registrations",
                 "binders",

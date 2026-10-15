@@ -89,6 +89,7 @@ data. Sada proto nese (`SetupExporter::TABLES`):
 |--------|---------|------|----------|
 | `settings.jsonc` | `core_system_settings` | `key` | jen `economy.*` + `app.name/shortName/theme/shell`; aplikuje se **před** resetem (tabulka je `keepOnReset`, provisionery ji čtou) |
 | `bank_accounts.jsonc` | `economy_codebooks_bank_accounts` | `code` | vlastní účty (vydané faktury ve 40 ho vyžadují) |
+| `cash_desks.jsonc` | `economy_codebooks_cash_desks` | `code` | pokladny; výchozí (`is_default`) dostane v apply doklad placený hotově bez `cashDesk` (#103 F3) |
 | `cost_centers.jsonc` | `economy_codebooks_cost_centers` | `code` | střediska — doklady v sadě na ně odkazují kódem v objektu `dimensions` (#110 T2) |
 | `vat_registrations.jsonc` | `economy_codebooks_vat_registrations` | `country`, `name` | `DocDocument` vyžaduje při `vat_mode != 0` |
 | `binders.jsonc` | `base_registry_binders` | `name` | šanony spisovny |

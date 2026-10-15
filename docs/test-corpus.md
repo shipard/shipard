@@ -487,6 +487,11 @@ evaluaci).
 | `non-payer` | `cz-non-payer` | `default` | `false` | — | ano |
 | `association` | `cz-association` | `npo` | `false` | — | ano |
 
+Všechny profily nesou i výchozí pokladnu `POK` (`setup/cash_desks.jsonc`, účet
+211100, `is_default`): účtenku hrazenou hotově bez `cashDesk` dostane při
+apply výchozí pokladna a účtuje se na 211 místo chybové masky `211???`
+(F3 nález E, `docs/exchange-format.md` → `cash_desk_defaulted`).
+
 `profile.jsonc` nese název, titulek, popis, **pevné** `created` (sada je
 deterministická) a `provision` (`{ "accountingItems": "all" }` — seed
 založí všechny položky nabídky podle osnovy). `setup/*.jsonc` jsou soubory

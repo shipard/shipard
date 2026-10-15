@@ -12,7 +12,7 @@ python3 tests/corpus/cz/build.py [--only NNNN]... [--force] [--verify-identities
 - `data/NNNN-<slug>.jsonc` — datový soubor dokladu, **jediný ručně psaný vstup**,
 - `templates/*.html` — šablony korpusu (vlastní kopie, demo se nemění),
 - `profiles/<profil>/` — základ profilu pro datovou sadu (`profile.jsonc`,
-  `setup/*.jsonc`: nastavení, registrace DPH, vlastní účet), ručně psaný
+  `setup/*.jsonc`: nastavení, registrace DPH, vlastní účet, pokladna), ručně psaný
   (`tasks/testing-phase2.md`),
 - `vat-reporting.jsonc` — mapování variant na řádky přiznání DPH a oddíly
   kontrolního hlášení (`tasks/testing-phase3.md` D28, schválené) — z něj build
