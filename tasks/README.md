@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 369 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 339.
+Celkem 370 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 339.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -29,6 +29,7 @@ nevypisují — níže je jen to, co není dokončené.
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
 | `migration-check.md` | naplánováno | návrh, čeká na schválení rozhodnutí M1–M7, pak implementace |
+| `testing-phase4b.md` | naplánováno | design schválen 2026-10-15 (#103 D42–D46), čeká na implementaci |
 | `accbal-operation-first.md` | částečně | kód, testy a docs hotové 2026-09-22 (5 commitů); ověřeno na `btpg-p` po resetu + reimportu 2026-09-22 (rok 2026: 104 dluhů, přeplatky 0, uzávěrkové řádky 0, nastavení `legacy`; zbývajících 8 párů proti starému = proformy → #69 D21); zbývá `ds-upgrade` + reset/reimport a srovnání `e8w1-i` |
 | `accbal-payment-side.md` | částečně | generátor, viewer, testy a docs hotové 2026-09-22 (3 commity, bez změny schématu); zbývá `btpg-p` po `old_shipard` task 41 + reimportu: `accbal-regenerate --all`, kontrola Přijaté zálohy 2026 (bankovní 324 jako předpisy, `bal_side` 0, +) a Poskytnuté zálohy ≈ starý 17 / 178 078, výsledek do #69 |
 | `accbal-prefix-precedence.md` | částečně | generátor, testy a docs hotové 2026-09-22 (2 commity, bez změny schématu); lookup přednost neuplatňuje (skupinu nese `balance` v klíči, `docs/accbal.md` §5.1); zbývá `btpg-p`: přesun 325201/325202 do Přijatých záloh (nastavení, David) + `accbal-regenerate --all` + kontrola 13 / ≈86 a výsledek do #69 |
@@ -459,6 +460,7 @@ zaúčtování a evaluace AI.
 | `testing-phase2.md` | F2 | Profily a datové sady z korpusu: základ profilu, sady `tests/datasets/cz/` s ideální analýzou (snapshot), manifest `country` / `profile` / `provision`, seed zakládá fiskální roky a účetní položky z nabídky (#103 D19–D25) |
 | `testing-phase3.md` | F3 | Ověření zaúčtování a DPH: `dataset-verify` (apply + kontroly), porovnávač canonicalu v PHP, očekávání DPH a nákladů nezávisle na Shipardu, schválený snímek deníku (#103 D26–D30) |
 | `testing-phase4.md` | F4 | Evaluace AI analýzy: serverové AI připojení pro vývoj (opt-in), analýza nanečisto, varianty, `ai-eval` s opakováním, výsledky v `tests/eval/`, `ai-eval-compare` (#103 D34–D41) |
+| `testing-phase4b.md` | F4 | Oprava očekávání (štítek dlouhých dokladů), prompt v4.8.0, nástroje evaluace, srovnání Sonnet 4.6 / Sonnet 5.5 / Opus 5.5 / Haiku 5.5 / Fable 5.1 (#103 D42–D46) |
 
 ## Drobné
 
