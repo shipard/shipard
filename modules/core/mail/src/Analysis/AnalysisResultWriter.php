@@ -101,10 +101,14 @@ class AnalysisResultWriter
     /**
      * @param array<string, mixed> $body Tělo výsledku (kontrakt v4).
      * @param int|null $userId Kdo běh zapisuje (`created_by`); null = strojový kontext.
+     * @param ValidatedCanonical|null $validated Canonical už validovaný
+     *        a obohacený ({@see AnalysisComputation}, D34) — zápis validaci
+     *        neopakuje (LLM klasifikace štítků by běžela dvakrát); null =
+     *        validovat tady (REST `/result`).
      * @return int Id záznamu v `core_mail_message_analyses`.
      * @throws AnalysisResultException
      */
-    public function storeResult(int $messageId, int $claimId, array $body, ?int $userId): int
+    public function storeResult(int $messageId, int $claimId, array $body, ?int $userId, ?ValidatedCanonical $validated = null): int
     {
         $modelName = trim((string) ($body['model_name'] ?? ''));
         $promptVersion = trim((string) ($body['prompt_version'] ?? ''));
@@ -158,13 +162,18 @@ class AnalysisResultWriter
         if ($document !== null) {
             $proposedType = trim((string) ($document['doc_type'] ?? 'other'));
             $docConfidence = isset($document['confidence']) ? (float) $document['confidence'] : null;
-            $extractedJson = is_array($document['extracted_json'] ?? null)
-                ? $document['extracted_json']
-                : null;
-            [$canonicalJson, $documentValid] = $this->validateCanonical(
-                $extractedJson,
-                $proposedType,
-            );
+            if ($validated !== null) {
+                $canonicalJson = $validated->json;
+                $documentValid = $validated->valid;
+            } else {
+                $extractedJson = is_array($document['extracted_json'] ?? null)
+                    ? $document['extracted_json']
+                    : null;
+                [$canonicalJson, $documentValid] = $this->validateCanonical(
+                    $extractedJson,
+                    $proposedType,
+                );
+            }
         }
         $contentTag = $this->extractContentTag($canonicalJson, $documentValid);
         // Canonical jako pole pro zápis partnera (vrstva 1) — jen validní

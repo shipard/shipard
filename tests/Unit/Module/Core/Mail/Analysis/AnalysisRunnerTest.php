@@ -119,6 +119,10 @@ final class AnalysisRunnerTest extends TestCase
         $this->results = $this->createMock(AnalysisResultWriter::class);
         $this->results->method('storeResult')->willReturn(77);
         $this->results->method('countRecentFailures')->willReturn(0);
+        // Validaci canonicalu dělá AnalysisComputation (D34) — passthrough jako bez SchemaValidatoru.
+        $this->results->method('validateCanonical')->willReturnCallback(
+            static fn (?array $extracted, string $docType): array => [$extracted === null ? null : json_encode($extracted, JSON_UNESCAPED_UNICODE), $extracted !== null],
+        );
         $this->attachments = $this->createMock(AttachmentPreparer::class);
         $this->attachments->method('prepare')->willReturn([
             new PreparedAttachment(5, PreparedAttachment::KIND_PDF, 'invoice.pdf', 'application/pdf', base64_encode('%PDF')),

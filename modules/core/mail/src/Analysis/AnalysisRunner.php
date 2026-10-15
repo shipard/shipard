@@ -4,11 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Mail\Analysis;
 
-use Shipard\Core\Ai\Exception\LlmApiException;
-use Shipard\Core\Ai\Exception\LlmUnsupportedProviderException;
-use Shipard\Core\Ai\LlmChatResult;
 use Shipard\Core\Ai\LlmClient;
-use Shipard\Core\Ai\LlmRetry;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Logging\ErrorLogger;
@@ -22,11 +18,11 @@ use Shipard\Core\Logging\ErrorLogger;
  *   3. {@see AnalysisClaimService::claim()} 10 → 20, lease; profil + rozhodnutí
  *      o volání (připojení, model, ladění, strop, klíč — AI funkce
  *      `mail.extraction` s přepsáním z profilu, tasks/ai-functions.md D40)
- *   4. přílohy ({@see AttachmentPreparer}) → prompt ({@see PromptRenderer})
- *   5. model (streamovaně; opakování přechodných chyb, před každým pokusem
- *      prodloužení lease — vypršelá lease = konec bez zápisu)
- *   6. {@see OutputParser} — JSON + schéma profilu
- *   7. {@see AnalysisResultWriter} 20 → 30 / 10 / 70
+ *   4.–6. {@see AnalysisComputation} (sdílená s `ai-eval`, tasks/testing-phase4.md
+ *      D34): přílohy → prompt → model (streamovaně; opakování přechodných
+ *      chyb, před každým pokusem prodloužení lease — vypršelá lease = konec
+ *      bez zápisu) → parser → tělo v4 + validace canonicalu
+ *   7. {@see AnalysisResultWriter} 20 → 30 / 10 / 70 (s předanou validací)
  *
  * Mapování chyb: chyba claimu z konfigurace (`NO_PROFILE`, `NO_BACKEND`,
  * `BACKEND_KEY_*`, `SECRETS_UNAVAILABLE`, `BACKEND_CONFIG_INVALID`) = konec bez zápisu, zpráva
@@ -61,10 +57,10 @@ use Shipard\Core\Logging\ErrorLogger;
 class AnalysisRunner
 {
     public const LEASE_SECONDS = 900;
-    public const STALL_TIMEOUT_SECONDS = 180;
-    public const CALL_TIMEOUT_SECONDS = 840;
+    public const STALL_TIMEOUT_SECONDS = AnalysisComputation::STALL_TIMEOUT_SECONDS;
+    public const CALL_TIMEOUT_SECONDS = AnalysisComputation::CALL_TIMEOUT_SECONDS;
     /** Pauzy mezi pokusy při přechodné chybě (celkem tři pokusy). */
-    public const RETRY_DELAYS = [10, 60];
+    public const RETRY_DELAYS = AnalysisComputation::RETRY_DELAYS;
     /** Přechodná chyba vrací zprávu do fronty nejvýš tolikrát za hodinu. */
     public const MAX_FAILURES_PER_HOUR = 3;
     public const FAILURE_WINDOW_SECONDS = 3600;
@@ -88,22 +84,30 @@ class AnalysisRunner
      * @param AnalysisBackendProbe|null $probe Sonda použitelného připojení
      *        pro sweep; null = sonda bez serverového připojení pro vývoj
      *        (factory ji staví s konfigurací zdroje dat, D40).
+     * @param AnalysisComputation|null $computation Výpočet analýzy; null =
+     *        složit z příloh, promptu, parseru, klienta, katalogu a validátoru
+     *        (`services->results`).
      */
     public function __construct(
         private readonly DataSourceConnection $db,
         private readonly AnalysisServices $services,
-        private readonly AttachmentPreparer $attachments,
-        private readonly PromptRenderer $prompts,
-        private readonly OutputParser $parser,
-        private readonly LlmClient $llm,
+        AttachmentPreparer $attachments,
+        PromptRenderer $prompts,
+        OutputParser $parser,
+        LlmClient $llm,
         private readonly AnalysisSlots $slots,
         private readonly ?\Closure $spawn = null,
-        private readonly ?\Closure $sleep = null,
+        ?\Closure $sleep = null,
         private readonly ?string $analyzerId = null,
         private readonly ?\Closure $clock = null,
-        private readonly ?ModelCatalog $catalog = null,
+        ?ModelCatalog $catalog = null,
         private readonly ?AnalysisBackendProbe $probe = null,
-    ) {}
+        ?AnalysisComputation $computation = null,
+    ) {
+        $this->computation = $computation ?? new AnalysisComputation($attachments, $prompts, $parser, $llm, $services->results, $catalog, $sleep);
+    }
+
+    private readonly AnalysisComputation $computation;
 
     /**
      * @return array{
@@ -306,111 +310,61 @@ class AnalysisRunner
         }
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * Výpočet přes {@see AnalysisComputation} (hook prodlužuje lease —
+     * zaniklý claim = konec bez zápisu), pak zápis: selhání se stropem
+     * opakování pro přechodné chyby, úspěch `storeResult` s předanou
+     * validací canonicalu (neopakuje LLM klasifikaci štítků).
+     *
+     * @return array<string, mixed>
+     */
     private function analyze(int $messageId, AnalysisClaim $claim): array
     {
-        $maxTokens = $claim->call->maxTokens;
-        $result = null;
-        $cost = null;
+        $request = new AnalysisRequest(
+            messageId: $messageId,
+            message: $this->loadMessage($messageId),
+            profile: $claim->profile,
+            call: $claim->call,
+            beforeAttempt: function (int $attempt) use ($claim): void {
+                if (!$this->services->claims->extend($claim->claimId, self::LEASE_SECONDS)) {
+                    throw new AnalysisClaimLostException("claim {$claim->claimId} is no longer active (attempt {$attempt})");
+                }
+            },
+        );
 
         try {
-            $message = $this->loadMessage($messageId);
-            $schema = self::outputSchemaOf($claim->profile);
-            $attachments = $this->attachments->prepare($messageId, (int) ($message['raw_source_attachment'] ?? 0));
-            $prompt = $this->prompts->render((string) ($claim->profile['prompt_template'] ?? ''), $message, $attachments, $schema);
-            $params = $claim->call->chatParams(
-                system: null,
-                messages: [['role' => 'user', 'content' => self::contentBlocks($prompt, $attachments)]],
-                stallTimeoutSeconds: self::STALL_TIMEOUT_SECONDS,
-                timeoutSeconds: self::CALL_TIMEOUT_SECONDS,
-            );
-
-            $startedAt = 0.0;
-            $result = LlmRetry::run(
-                function () use ($params, &$startedAt): LlmChatResult {
-                    $startedAt = microtime(true);
-                    return $this->llm->streamChat($params, static function (string $delta): void {});
-                },
-                self::RETRY_DELAYS,
-                function (int $attempt) use ($claim): void {
-                    if (!$this->services->claims->extend($claim->claimId, self::LEASE_SECONDS)) {
-                        throw new AnalysisClaimLostException("claim {$claim->claimId} is no longer active (attempt {$attempt})");
-                    }
-                },
-                $this->sleep,
-            );
-            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
-            $tokensIn = $result->inputTokens ?? 0;
-            $tokensOut = $result->outputTokens ?? 0;
-            $modelName = $result->model ?? $claim->model();
-            // Cena z rozhodnutí resolveru (model katalogu × násobitel platformy,
-            // tasks/ai-bedrock-eu.md D60), ne z ID v odpovědi; vlastní ID = 0 (D43).
-            $cost = $claim->call->costUsd($this->catalog ?? ModelCatalog::empty(), $tokensIn, $tokensOut) ?? 0.0;
-
-            if (!$result->isComplete()) {
-                // Useknutý výstup = rozbitý JSON; opakování se stejným limitem
-                // dopadne stejně. Odmítnutí (`refusal`) a přetečení kontextu
-                // (`model_context_window_exceeded`) by jinak propadly do
-                // parsování a skončily zavádějící chybou schématu (F0-D4).
-                $note = $result->stopReason === 'max_tokens'
-                    ? "anthropic: output truncated at max_tokens={$maxTokens}"
-                    : "anthropic: stop_reason {$result->stopReason}";
-                return $this->fail($messageId, $claim, 'ai_error', $note, false, $tokensIn, $cost);
-            }
-            if ($result->stopReason !== null && $result->stopReason !== 'end_turn') {
-                ErrorLogger::warn('AnalysisRunner: unexpected stop_reason', ['message' => $messageId, 'stopReason' => $result->stopReason]);
-            }
-
-            $parsed = $this->parser->parse($result->text, $schema);
-            $body = self::resultBody($claim, $modelName, $parsed, $tokensIn, $tokensOut, $durationMs, $cost);
-
-            if (!$this->services->claims->isActive($claim->claimId)) {
-                return $this->lostClaim($messageId, $claim, 'before storing the result', $cost);
-            }
-            $analysisNdx = $this->services->results->storeResult($messageId, $claim->claimId, $body, null);
-
-            return [
-                'status' => 'done',
-                'message' => $messageId,
-                'analysisNdx' => $analysisNdx,
-                'hasDocument' => is_array($parsed['document'] ?? null),
-                'note' => sprintf('tokens %d/%d, %d ms, %.4f USD', $tokensIn, $tokensOut, $durationMs, $cost),
-            ];
+            $outcome = $this->computation->compute($request);
         } catch (AnalysisClaimLostException $e) {
-            return $this->lostClaim($messageId, $claim, $e->getMessage(), $cost);
-        } catch (PromptRenderException $e) {
-            return $this->fail($messageId, $claim, 'config_error', 'prompt template: ' . $e->getMessage(), false, null, $cost);
-        } catch (ProfileConfigException | LlmUnsupportedProviderException $e) {
-            return $this->fail($messageId, $claim, 'config_error', $e->getMessage(), false, null, $cost);
-        } catch (SchemaValidationException $e) {
-            return $this->fail($messageId, $claim, 'schema_error', $e->getMessage(), false, $result?->inputTokens, $cost);
-        } catch (LlmApiException $e) {
-            if ($e->isConfigurationError()) {
-                // Klíč, oprávnění, neznámý či vyřazený model, strop útraty
-                // organizace (D18) — opraví správce; hláška poskytovatele říká
-                // co (u stropu i kdy). Žádné opakování, žádná fronta.
-                $note = sprintf('anthropic: HTTP %d %s: %s', $e->statusCode, $e->errorType, $e->getMessage());
-                return $this->fail($messageId, $claim, 'config_error', $note, false, null, $cost);
-            }
-            $transient = $e->isTransient();
-            $retryable = $transient
+            return $this->lostClaim($messageId, $claim, $e->getMessage(), null);
+        }
+
+        if (!$outcome->ok) {
+            $retryable = $outcome->transient
                 && $this->services->results->countRecentFailures($messageId, self::FAILURE_WINDOW_SECONDS) < self::MAX_FAILURES_PER_HOUR;
-            $note = sprintf(
-                'anthropic %s: HTTP %d %s: %s',
-                $transient ? 'transient' : 'permanent',
-                $e->statusCode,
-                $e->errorType,
-                $e->getMessage(),
-            );
-            return $this->fail($messageId, $claim, 'ai_error', $note, $retryable, null, $cost);
+            return $this->fail($messageId, $claim, (string) $outcome->errorType, (string) $outcome->note, $retryable, $outcome->tokensIn, $outcome->costUsd);
+        }
+
+        if (!$this->services->claims->isActive($claim->claimId)) {
+            return $this->lostClaim($messageId, $claim, 'before storing the result', $outcome->costUsd);
+        }
+        try {
+            $analysisNdx = $this->services->results->storeResult($messageId, $claim->claimId, (array) $outcome->body, null, $outcome->validated);
         } catch (AnalysisResultException $e) {
             if ($e->errorCode !== AnalysisResultException::VALIDATION_ERROR) {
                 throw $e;
             }
             // Writer tělo odmítl (tvar kontraktu) — bez explicitního selhání
             // by claim jen vypršel a zpráva se točila dokola s cenou modelu.
-            return $this->fail($messageId, $claim, 'config_error', 'result rejected (' . $e->errorCode . '): ' . $e->getMessage(), false, $result?->inputTokens, $cost);
+            return $this->fail($messageId, $claim, 'config_error', 'result rejected (' . $e->errorCode . '): ' . $e->getMessage(), false, $outcome->tokensIn, $outcome->costUsd);
         }
+
+        return [
+            'status' => 'done',
+            'message' => $messageId,
+            'analysisNdx' => $analysisNdx,
+            'hasDocument' => $outcome->hasDocument(),
+            'note' => sprintf('tokens %d/%d, %d ms, %.4f USD', (int) $outcome->tokensIn, (int) $outcome->tokensOut, (int) $outcome->durationMs, (float) $outcome->costUsd),
+        ];
     }
 
     /**
@@ -508,101 +462,5 @@ class AnalysisRunner
     private function analyzerId(): string
     {
         return $this->analyzerId ?? ('internal:' . (gethostname() ?: 'unknown') . ':' . getmypid());
-    }
-
-    /** `output_schema` profilu jako objekt (`\stdClass` drží prázdné objekty). */
-    private static function outputSchemaOf(array $profile): \stdClass
-    {
-        $raw = $profile['output_schema'] ?? null;
-        if ($raw instanceof \stdClass) {
-            return $raw;
-        }
-        if (is_array($raw)) {
-            $raw = json_encode($raw, JSON_UNESCAPED_UNICODE);
-        }
-        $decoded = is_string($raw) && $raw !== '' ? json_decode($raw) : null;
-        if (!$decoded instanceof \stdClass) {
-            throw new ProfileConfigException('profile output_schema is not a JSON object');
-        }
-        return $decoded;
-    }
-
-    /**
-     * Jedna zpráva `user`: text promptu, pak za každou přílohu blok
-     * `document` (PDF, base64) / `image` / `text` (D18).
-     *
-     * @param list<PreparedAttachment> $attachments
-     * @return list<array<string, mixed>>
-     */
-    public static function contentBlocks(string $prompt, array $attachments): array
-    {
-        $blocks = [['type' => 'text', 'text' => $prompt]];
-        foreach ($attachments as $att) {
-            switch ($att->kind) {
-                case PreparedAttachment::KIND_PDF:
-                    $blocks[] = ['type' => 'document', 'source' => ['type' => 'base64', 'media_type' => 'application/pdf', 'data' => (string) $att->base64]];
-                    break;
-                case PreparedAttachment::KIND_IMAGE:
-                    $blocks[] = ['type' => 'image', 'source' => ['type' => 'base64', 'media_type' => $att->mimeType, 'data' => (string) $att->base64]];
-                    break;
-                case PreparedAttachment::KIND_TEXT:
-                    $blocks[] = ['type' => 'text', 'text' => "--- Attachment {$att->filename} (#{$att->ndx}) ---\n" . (string) $att->text];
-                    break;
-                default:
-                    ErrorLogger::warn('AnalysisRunner: unknown attachment kind — skipped', ['kind' => $att->kind, 'ndx' => $att->ndx]);
-            }
-        }
-        return $blocks;
-    }
-
-    /**
-     * Tělo výsledku pro {@see AnalysisResultWriter::storeResult()} (kontrakt
-     * v4, modules/core/mail/docs/ai-analysis.md → „Zápis výsledku běhu“):
-     * top-level pole z výstupu modelu, nic tvarově specifického navíc.
-     *
-     * @param array<string, mixed> $parsed
-     * @return array<string, mixed>
-     */
-    public static function resultBody(AnalysisClaim $claim, string $modelName, array $parsed, int $tokensIn, int $tokensOut, int $durationMs, float $cost): array
-    {
-        $body = [
-            'model_name' => $modelName,
-            'prompt_version' => (string) ($claim->profile['prompt_version'] ?? ''),
-            'profile_ndx' => $claim->profileNdx(),
-            'backend_ndx' => $claim->backendNdx(),
-            'tokens_input' => $tokensIn,
-            'tokens_output' => $tokensOut,
-            'duration_ms' => $durationMs,
-            'cost_usd' => $cost,
-            'overall_confidence' => (float) ($parsed['overall_confidence'] ?? 0.0),
-            'analysis_json' => $parsed,
-        ];
-
-        if (is_array($parsed['message_classification'] ?? null)) {
-            $body['message_classification'] = $parsed['message_classification'];
-        } else {
-            ErrorLogger::warn('AnalysisRunner: model output has no message_classification', [
-                'promptVersion' => $body['prompt_version'],
-            ]);
-        }
-
-        $document = $parsed['document'] ?? null;
-        if (is_array($document)) {
-            $body['document'] = [
-                'doc_type' => (string) (($document['doc_type'] ?? '') !== '' ? $document['doc_type'] : 'unknown'),
-                'extracted_json' => $document['extracted_json'] ?? [],
-                'confidence' => (float) ($document['confidence'] ?? 0.0),
-            ];
-        }
-
-        $findings = $parsed['secondary_findings'] ?? null;
-        if (is_array($findings)) {
-            $cleaned = array_values(array_filter($findings, 'is_array'));
-            if ($cleaned !== []) {
-                $body['secondary_findings'] = $cleaned;
-            }
-        }
-
-        return $body;
     }
 }

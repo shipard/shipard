@@ -217,10 +217,11 @@ mail-analyze --message N  (AnalysisRunner::drain)
    3. AnalysisClaimService::claim    10 → 20, lease 900 s; profil + volání (AiFunctionResolver:
                                      připojení, model, ladění, klíč)
                                      chybí profil / připojení / klíč, špatný model → konec (not_configured)
-   4. AttachmentPreparer → PromptRenderer
-   5. LLM (stream, opakování, před každým pokusem prodloužení lease)
-   6. OutputParser (JSON + output_schema profilu)
-   7. AnalysisResultWriter::storeResult / storeFailure   20 → 30 / 10 / 70
+   4.–6. AnalysisComputation (sdílená s `ai-eval`, bez zápisu):
+         AttachmentPreparer → PromptRenderer → LLM (stream, opakování, před
+         každým pokusem prodloužení lease) → OutputParser (JSON + output_schema
+         profilu) → tělo v4 + AnalysisResultWriter::validateCanonical
+   7. AnalysisResultWriter::storeResult (s předanou validací) / storeFailure   20 → 30 / 10 / 70
    8. další zpráva z fronty (AnalysisQueue::eligible, bez už zpracovaných)
       žádná → konec; rozpočet 10 min pryč → uvolnit slot, spawn nástupce;
       jinak → krok 2
@@ -370,10 +371,24 @@ má dražší pásmo nad 100 000 vstupních tokenů); model mimo katalog
 (vlastní ID, D43) nebo prázdný katalog = 0 a varování. Katalog předává `AnalysisRunnerFactory`
 z compiled configu (`docs/ai.md` §5.1).
 
+**Analýza nanečisto** (tasks/testing-phase4.md D34, `AnalysisComputation`):
+výpočetní část běhu — přílohy, prompt (šablona profilu, nebo ze souboru
+jen v paměti běhu), model s opakováním a hookem před pokusem, parser, tělo
+v4 a validace canonicalu (`validateCanonical()` jen čte: schéma, historie
+řádků, pravidla, LLM klasifikace štítků) — jako služba bez spojení do DB:
+`AnalysisRequest` → `AnalysisOutcome` (tělo, výstup modelu,
+`ValidatedCanonical`, cena, tokeny, čas, nebo typ chyby runneru, poznámka
+a příznak přechodné chyby). Ostrý runner jede přes ni a sám dělá claim,
+lease (hook), strop opakování a zápis — `storeResult` dostává validaci
+hotovou a neopakuje ji (LLM štítky by běžely dvakrát); REST `/result`
+validuje v zápisu jako dřív. `shpd-ds ai-eval` nad touž službou porovnává
+výstup s očekáváním korpusu, nic nezapisuje (`docs/test-corpus.md` § 18).
+
 **Třídy:** `modules/core/mail/src/Analysis/` — `AnalysisStates`,
 `AnalysisQueue`, `AnalysisClaimService` (+ `AnalysisClaim`,
-`AnalysisClaimException`), `AnalysisResultWriter` (+ `AnalysisResultException`),
-`AnalysisServices` (wiring), `AttachmentPreparer` (+ `RawAttachment`,
+`AnalysisClaimException`), `AnalysisResultWriter` (+ `AnalysisResultException`,
+`ValidatedCanonical`), `AnalysisComputation` (+ `AnalysisRequest`,
+`AnalysisOutcome`), `AnalysisServices` (wiring), `AttachmentPreparer` (+ `RawAttachment`,
 `PreparedAttachment`), `PromptRenderer` (+ `AnalysisPromptPolicy`,
 `PromptRenderException`), `OutputParser` (+ `SchemaValidationException`),
 `AnalysisSlots` (+ `AnalysisSlot`), `AnalysisRunner`, `AnalysisSpawner`,

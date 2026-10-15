@@ -18,6 +18,7 @@ use Shipard\Module\Core\Exchange\Schema\SchemaLoader;
 use Shipard\Module\Core\Exchange\Schema\SchemaValidator;
 use Shipard\Module\Core\Mail\Analysis\AnalysisResultException;
 use Shipard\Module\Core\Mail\Analysis\AnalysisResultWriter;
+use Shipard\Module\Core\Mail\Analysis\ValidatedCanonical;
 use Shipard\Module\Core\Mail\Analysis\AnalysisStates;
 
 /**
@@ -282,6 +283,36 @@ class AnalysisResultWriterTest extends TestCase
         $this->assertSame(['docNumber' => 'FV-1'], json_decode((string) $insertValues['canonical_json'], true));
         $this->assertSame(7, $insertValues['created_by']);
         $this->assertArrayNotHasKey('extracted_document_count', $insertValues);
+    }
+
+    public function testStoreResultUsesThePrecomputedValidationInsteadOfValidatingAgain(): void
+    {
+        // tasks/testing-phase4.md D34: runner validuje v AnalysisComputation;
+        // zápis dostane hotový canonical a validaci (vč. LLM štítků) neopakuje.
+        $inserts = [];
+        $updates = [];
+        $db = $this->dbCapturing($inserts, $updates, 124);
+
+        $body = $this->baseBody() + [
+            'document' => ['doc_type' => 'invoiceReceived', 'confidence' => 0.7, 'extracted_json' => ['docNumber' => 'RAW']],
+        ];
+        $validated = new ValidatedCanonical(json_encode(['docNumber' => 'ENRICHED', '_resolve' => ['contentTag' => ['tag' => 'it.hosting']]]), true);
+        $this->assertSame(124, $this->writer($db)->storeResult(42, 1, $body, null, $validated));
+
+        $insertValues = self::forTable($inserts, 'core_mail_message_analyses')[0];
+        $this->assertSame('ENRICHED', json_decode((string) $insertValues['canonical_json'], true)['docNumber']);
+        $this->assertSame('it.hosting', $insertValues['content_tag']);
+        $messageUpdates = self::forTable($updates, 'core_mail_incoming_messages');
+        $this->assertNotEmpty(array_filter($messageUpdates, static fn (array $u): bool => ($u['docState'] ?? null) === 20), 'validní dokument posouvá Novou na K řešení');
+
+        // Nevalidní předaná validace: forenzní wrapper se uloží, stav zprávy se nemění.
+        $inserts = [];
+        $updates = [];
+        $db = $this->dbCapturing($inserts, $updates, 125);
+        $invalid = new ValidatedCanonical(json_encode(['_validationError' => 'x', '_rawOutput' => ['docNumber' => 'RAW']]), false);
+        $this->assertSame(125, $this->writer($db)->storeResult(42, 1, $body, null, $invalid));
+        $this->assertNull(self::forTable($inserts, 'core_mail_message_analyses')[0]['content_tag']);
+        $this->assertSame([], array_filter(self::forTable($updates, 'core_mail_incoming_messages'), static fn (array $u): bool => isset($u['docState'])));
     }
 
     public function testStoreResultReleasesClaimAndAdvancesMessageStates(): void
