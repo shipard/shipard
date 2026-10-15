@@ -705,11 +705,11 @@ soubor commitne do `tests/corpus/cz/profiles/<profil>/approved/general-ledger.js
 přestaví sady (`build.py`) a další běh dá kontrolu 5 `ok`. Změna
 účtování = nový snímek se schválením, nikdy úprava snímku podle Shipardu.
 
-**Stav schválení (2026-10-15):** snímky `vat-payer` a `non-payer` jsou
-schválené **s výhradou účetní revize** (#123) — do ní hlídají regrese,
-ne věcnou správnost. Spolek (`association`): snímek schválený 2026-10-15
-po opravě předpisů pro osnovu NNO (#122) — zaokrouhlení jde na 549100 /
-649100, deník bez 548 / 648; kontrola 5 `ok`.
+**Stav schválení (2026-10-15):** snímky všech tří profilů (`vat-payer`,
+`non-payer`, `association`) jsou schválené **s výhradou účetní revize**
+(#123) — do ní hlídají regrese, ne věcnou správnost. Snímek spolku vznikl
+po opravě předpisů pro osnovu NNO (#122): zaokrouhlení jde na 549100 /
+649100, deník bez 548 / 648.
 
 ### Pasti
 
