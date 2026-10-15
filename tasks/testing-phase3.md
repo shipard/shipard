@@ -1,6 +1,6 @@
 # Testování F3: ověření zaúčtování a DPH nad datovou sadou
 
-**Stav:** částečně — implementace, dokumentace a opravy nálezů A–D hotové 2026-10-14 (6 commitů); na třech dev zdrojích dat kontroly 1, 3, 4 `ok` a kontrola 2 s jediným rozdílem (nález E: účtenka hrazená hotově bez pokladny končí v deníku maskou `211???`); zbývá rozhodnout E, schválit snímky deníku (kontrola 5, krok 6) a alfa
+**Stav:** částečně — implementace hotová 2026-10-15 (nálezy A–E opravené, D33); kontroly 1–5 `ok` u plátce a neplátce, snímky schválené s výhradou účetní revize (#123); zbývá snímek spolku (čeká na #122) a alfa
 
 ## Kontext / Cíl
 
@@ -267,15 +267,22 @@ neskončila ve výjimce:
   payload nese `addresses`, side-create zapíše sídlo.
 - **D** — pravidlo IČO → štítek přebilo LLM blok včetně `rowExceptions`
   („Cestovné lektora“ → položka školení); výjimky řádků zůstávají.
-- **E (otevřený)** — účtenka hrazená hotově (`payment.method` cash, 0902)
-  jde v účetním předpisu na účet pokladny (`accountSrc: cashDesk`); bez
-  pokladny na hlavičce deník nese masku `211???` a hlášení „doplň
-  pokladnu“. Sada pokladnu nenese a applier ji přijatému dokladu
-  nepřiřazuje. Možnosti: (1) základ profilu dostane pokladnu
-  (`SetupExporter` + vazba `cash_desk` u hotově hrazených přijatých
-  dokladů v applieru — D-rozhodnutí), (2) korpus: 0902 kartou (ztratí
-  scénář hotovosti), (3) účtenka hotově jako pokladní doklad, ne faktura.
-  Do rozhodnutí blokuje schválení snímků deníku.
+- **E** — účtenka hrazená hotově (`payment.method` cash, 0902) šla
+  v účetním předpisu na účet pokladny (`accountSrc: cashDesk`); bez
+  pokladny na hlavičce deník nesl masku `211???`. Opraveno (D33,
+  `79dd289e`): applier doplní výchozí pokladnu zdroje dat (info
+  `cash_desk_defaulted`), sady nesou `setup/cash_desks.jsonc` (pokladna
+  POK na 211100).
+
+## Revize snímků deníku (2026-10-15)
+
+- **Plátce a neplátce** schválené **s výhradou účetní revize** (#123).
+  Otevřená otázka pro revizi: pohoštění (`people.catering`) jde na
+  513900 Náklady na reprezentaci s odpočtem DPH — praxe u pracovního
+  oběda s obchodním partnerem, šedá zóna.
+- **Spolek** neschválen: účetní předpisy mají masky pro podnikatelskou
+  osnovu, v osnově NNO jde zaokrouhlení na 548 Manka a škody a 648
+  Zúčtování fondů (a další kategorie na účty, které v NNO nejsou) — #122.
 
 ## Rozhodnutí k designu (potvrzená)
 
@@ -288,3 +295,6 @@ neskončila ve výjimce:
 - ✓ **D29 — Deník proti schválenému snímku** per profil; náklady per
   doklad nezávisle (u neplátce včetně DPH, #97).
 - ✓ **D30 — Doklady v cizí měně se do #121 přeskočí** s důvodem.
+- ✓ **D33 — Výchozí pokladna pro doklad placený hotově.** Přijatý doklad
+  s `payment.method` cash bez pokladny dostane při Použít výchozí
+  pokladnu zdroje dat; bez ní zůstane prázdná jako dřív.
