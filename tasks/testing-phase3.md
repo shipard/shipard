@@ -1,6 +1,6 @@
 # Testování F3: ověření zaúčtování a DPH nad datovou sadou
 
-**Stav:** částečně — implementace hotová 2026-10-15 (nálezy A–E opravené, D33); kontroly 1–5 `ok` u plátce a neplátce, snímky schválené s výhradou účetní revize (#123); zbývá snímek spolku (čeká na #122) a alfa
+**Stav:** částečně — implementace hotová 2026-10-15 (nálezy A–E opravené, D33); kontroly 1–5 `ok` u plátce a neplátce, snímky schválené s výhradou účetní revize (#123); zbývá schválení snímku spolku (#122 hotové 2026-10-15, snímek vyrobený) a alfa
 
 ## Kontext / Cíl
 

@@ -707,9 +707,10 @@ přestaví sady (`build.py`) a další běh dá kontrolu 5 `ok`. Změna
 
 **Stav schválení (2026-10-15):** snímky `vat-payer` a `non-payer` jsou
 schválené **s výhradou účetní revize** (#123) — do ní hlídají regrese,
-ne věcnou správnost. Spolek (`association`) snímek nemá: čeká na opravu
-účetních předpisů pro osnovu NNO (#122), dnes účtuje zaokrouhlení na
-548 Manka a škody a 648 Zúčtování fondů.
+ne věcnou správnost. Spolek (`association`): předpisy pro osnovu NNO
+opravené (#122, 2026-10-15) — zaokrouhlení jde na 549100 / 649100, deník
+bez 548 / 648; snímek je vyrobený a čeká na schválení, kontrola 5 je do
+té doby přeskočená.
 
 ### Pasti
 
