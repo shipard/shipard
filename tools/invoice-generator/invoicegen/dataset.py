@@ -48,7 +48,7 @@ MAILBOX = "default"
 NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 CREATED_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 SETUP_TABLES = ("settings", "bank_accounts", "cash_desks", "cost_centers", "vat_registrations", "binders", "mailboxes")
-PROVISION_KEYS = ("accountingItems",)
+PROVISION_KEYS = ("accountingItems", "serverAi")   # serverAi: bool — serverové AI připojení pro vývoj (F4 D40)
 MANAGED = ("manifest.jsonc", "setup", "persons", "mail", "expected")   # co build v cílové složce spravuje
 LEDGER_SNAPSHOT = "general-ledger.json"   # profiles/<profil>/approved/ → expected/ (F3 D29)
 
@@ -191,6 +191,9 @@ def load_profile(profile_dir: Path, key: str) -> Profile:
     for pkey, pvalue in provision.items():
         if pkey not in PROVISION_KEYS:
             problems.append(f"provision.{pkey}: neznámá akce (známé: {', '.join(PROVISION_KEYS)})")
+        elif pkey == "serverAi":
+            if not isinstance(pvalue, bool):
+                problems.append("provision.serverAi: true nebo false")
         elif pvalue != "all" and not (isinstance(pvalue, list) and pvalue
                                       and all(isinstance(c, str) and c.strip() for c in pvalue)):
             problems.append(f"provision.{pkey}: \"all\" nebo neprázdný seznam kódů nabídky")
@@ -456,6 +459,7 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     files: dict[str, Path] = {}
     vat_records: dict[str, dict] = {}
     cost_records: dict[str, dict] = {}
+    message_records: dict[str, dict] = {}   # zpráva → buňka korpusu (F4: metriky po variantách, `--only`)
     vat_payer = profile.vat_agenda()
     skipped = 0
     for stem, doc in docs.items():
@@ -479,6 +483,7 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
             messages.append(message)
             msg_id = message["messageId"]
             files[msg_id] = pdf_path
+            message_records[msg_id] = {"messageId": msg_id, "stem": stem, "variant": cell.data["variant"], "form": cell.form}
             if vat_payer:
                 vat_records[msg_id] = vat_record(msg_id, cell.data["variant"], expected, reporting)
             cost_records[msg_id] = cost_record(msg_id, expected, vat_payer=vat_payer)
@@ -508,9 +513,11 @@ def build_dataset(profile: Profile, identity: dict, docs: dict[str, dict], ident
     # Očekávání pro dataset-verify (tasks/testing-phase3.md): záznamy v pořadí
     # zpráv; neplátce a spolek mají vat.json prázdné (D28). Zapisovač
     # očekávání (2 mezery, Decimal) — nejsou to soubory sady pro seed.
+    # messages.json = zpráva → buňka korpusu pro evaluaci AI (F4, tasks/testing-phase4.md).
     expected_dir = out_dir / "expected"
     expected_dir.mkdir()
     shutil.copyfile(projection_path, expected_dir / "projection.jsonc")
+    (expected_dir / "messages.json").write_text(dumps_expected([message_records[m] for m in ids]), encoding="utf-8")
     (expected_dir / "vat.json").write_text(dumps_expected([vat_records[m] for m in ids if m in vat_records]), encoding="utf-8")
     (expected_dir / "costs.json").write_text(dumps_expected([cost_records[m] for m in ids]), encoding="utf-8")
     if profile.ledger_snapshot is not None:

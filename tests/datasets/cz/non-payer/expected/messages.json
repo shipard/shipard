@@ -1,0 +1,98 @@
+[
+  {
+    "messageId": "MSG-CORPUS-NP-0301",
+    "stem": "0301-domestic-rounding",
+    "variant": "domestic-rounding",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0601",
+    "stem": "0601-eu-goods",
+    "variant": "eu-goods",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0201",
+    "stem": "0201-domestic-two-rates",
+    "variant": "domestic-two-rates",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0101",
+    "stem": "0101-domestic-goods",
+    "variant": "domestic-goods",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0401",
+    "stem": "0401-domestic-reverse-charge",
+    "variant": "domestic-reverse-charge",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0901",
+    "stem": "0901-receipt",
+    "variant": "receipt",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0701",
+    "stem": "0701-domestic-non-payer-supplier",
+    "variant": "domestic-non-payer-supplier",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1001",
+    "stem": "1001-long-document",
+    "variant": "long-document",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0102",
+    "stem": "0102-domestic-goods",
+    "variant": "domestic-goods",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0302",
+    "stem": "0302-domestic-rounding",
+    "variant": "domestic-rounding",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0202",
+    "stem": "0202-domestic-two-rates",
+    "variant": "domestic-two-rates",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0402",
+    "stem": "0402-domestic-reverse-charge",
+    "variant": "domestic-reverse-charge",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0902",
+    "stem": "0902-receipt",
+    "variant": "receipt",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0602",
+    "stem": "0602-eu-goods",
+    "variant": "eu-goods",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-0702",
+    "stem": "0702-domestic-non-payer-supplier",
+    "variant": "domestic-non-payer-supplier",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-NP-1002",
+    "stem": "1002-long-document",
+    "variant": "long-document",
+    "form": "pdfIsdoc"
+  }
+]

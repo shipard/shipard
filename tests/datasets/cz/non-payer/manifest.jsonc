@@ -8,7 +8,8 @@
     "country": "cz",
     "profile": "non-payer",
     "provision": {
-        "accountingItems": "all"
+        "accountingItems": "all",
+        "serverAi": true
     },
     "counts": {
         "setup": 3,

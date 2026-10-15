@@ -181,6 +181,31 @@ class DatasetExpectationsTest extends TestCase
         }
     }
 
+    /**
+     * `expected/messages.json` (F4, tasks/testing-phase4.md): zpráva → buňka
+     * korpusu (`stem`, `variant`, `form`) — právě jeden záznam per zpráva,
+     * stem = PDF zprávy a datový soubor korpusu, podoba jedna ze dvou.
+     */
+    #[DataProvider('datasets')]
+    public function testMessagesMapEveryMessageToACorpusCell(string $country, string $profile): void
+    {
+        $dir = self::datasetDir($country, $profile);
+        $messages = self::messages($dir);
+        $records = self::readList($dir . '/expected/messages.json');
+
+        $this->assertSame(array_column($messages, 'messageId'), array_column($records, 'messageId'), 'messages.json: právě jeden záznam per zpráva, v pořadí zpráv');
+        $byId = array_column($messages, 'stem', 'messageId');
+        foreach ($records as $record) {
+            $this->assertSame(['messageId', 'stem', 'variant', 'form'], array_keys($record));
+            $this->assertSame($byId[$record['messageId']], $record['stem'], 'stem = název PDF zprávy');
+            $this->assertFileExists(self::repoRoot() . "/tests/corpus/{$country}/data/{$record['stem']}.jsonc");
+            $data = JsoncParser::parseFile(self::repoRoot() . "/tests/corpus/{$country}/data/{$record['stem']}.jsonc");
+            $this->assertSame($data['variant'], $record['variant']);
+            $this->assertSame($data['form'], $record['form']);
+            $this->assertContains($record['form'], ['pdf', 'pdfIsdoc']);
+        }
+    }
+
     #[DataProvider('datasets')]
     public function testRecordsRecomputeFromCorpus(string $country, string $profile): void
     {

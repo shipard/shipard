@@ -5,5 +5,5 @@
 	"title": "Testovací sada — plátce DPH s.r.o.",
 	"description": "Korpus #103 F1: přijaté doklady s ideální analýzou. Vlastní firma je s.r.o., měsíční plátce DPH.",
 	"created": "2026-10-14T00:00:00Z",   // pevné — sada je deterministická
-	"provision": { "accountingItems": "all" },
+	"provision": { "accountingItems": "all", "serverAi": true },   // serverAi: evaluace AI (F4) na dev serveru
 }

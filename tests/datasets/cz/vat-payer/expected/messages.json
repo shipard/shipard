@@ -1,0 +1,122 @@
+[
+  {
+    "messageId": "MSG-CORPUS-VP-0301",
+    "stem": "0301-domestic-rounding",
+    "variant": "domestic-rounding",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0601",
+    "stem": "0601-eu-goods",
+    "variant": "eu-goods",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0201",
+    "stem": "0201-domestic-two-rates",
+    "variant": "domestic-two-rates",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0101",
+    "stem": "0101-domestic-goods",
+    "variant": "domestic-goods",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0401",
+    "stem": "0401-domestic-reverse-charge",
+    "variant": "domestic-reverse-charge",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0801",
+    "stem": "0801-third-country-services",
+    "variant": "third-country-services",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0501",
+    "stem": "0501-eu-services",
+    "variant": "eu-services",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0901",
+    "stem": "0901-receipt",
+    "variant": "receipt",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0701",
+    "stem": "0701-domestic-non-payer-supplier",
+    "variant": "domestic-non-payer-supplier",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1001",
+    "stem": "1001-long-document",
+    "variant": "long-document",
+    "form": "pdf"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0102",
+    "stem": "0102-domestic-goods",
+    "variant": "domestic-goods",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0302",
+    "stem": "0302-domestic-rounding",
+    "variant": "domestic-rounding",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0202",
+    "stem": "0202-domestic-two-rates",
+    "variant": "domestic-two-rates",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0402",
+    "stem": "0402-domestic-reverse-charge",
+    "variant": "domestic-reverse-charge",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0902",
+    "stem": "0902-receipt",
+    "variant": "receipt",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0602",
+    "stem": "0602-eu-goods",
+    "variant": "eu-goods",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0702",
+    "stem": "0702-domestic-non-payer-supplier",
+    "variant": "domestic-non-payer-supplier",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-1002",
+    "stem": "1002-long-document",
+    "variant": "long-document",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0502",
+    "stem": "0502-eu-services",
+    "variant": "eu-services",
+    "form": "pdfIsdoc"
+  },
+  {
+    "messageId": "MSG-CORPUS-VP-0802",
+    "stem": "0802-third-country-services",
+    "variant": "third-country-services",
+    "form": "pdfIsdoc"
+  }
+]

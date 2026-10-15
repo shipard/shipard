@@ -204,11 +204,14 @@ class ProfileTest(unittest.TestCase):
             self.assertEqual("cz-test", profile.name)
             self.assertEqual(["bank_accounts", "settings"], sorted(profile.setup))
             self.assertEqual({"accountingItems": "all"}, profile.provision)
+            with_ai = load_profile(self.write_profile(Path(tmp), provision={"accountingItems": "all", "serverAi": True}), "x")
+            self.assertEqual({"accountingItems": "all", "serverAi": True}, with_ai.provision)
 
     def test_invalid_profiles(self) -> None:
         cases = [
             {"name": "CZ Test"}, {"created": "2026-10-14"}, {"provision": {"foo": 1}},
             {"provision": {"accountingItems": []}}, {"extra": 1},
+            {"provision": {"serverAi": "yes"}}, {"provision": {"serverAi": 1}},
         ]
         for changes in cases:
             with tempfile.TemporaryDirectory() as tmp, self.assertRaises(DatasetBuildError, msg=str(changes)):
@@ -269,6 +272,7 @@ class BuildDatasetTest(unittest.TestCase):
             self.assertEqual([
                 "expected/costs.json",
                 "expected/general-ledger.json",
+                "expected/messages.json",
                 "expected/projection.jsonc",
                 "expected/vat.json",
                 "mail/0001-msg-corpus-vp-0101.files/0101-domestic-goods.pdf",
@@ -296,6 +300,10 @@ class BuildDatasetTest(unittest.TestCase):
             self.assertEqual("EUR", vat[1]["currency"])
             self.assertEqual(expected_for(info["docs"]["0101-domestic-goods"])["totals"]["totalBase"], costs[0]["cost"])
             self.assertTrue(first["expected/vat.json"].startswith(b"[\n  {\n    \"messageId\""), "zapisovač očekávání (2 mezery)")
+            self.assertEqual([
+                {"messageId": "MSG-CORPUS-VP-0101", "stem": "0101-domestic-goods", "variant": "domestic-goods", "form": "pdf"},
+                {"messageId": "MSG-CORPUS-VP-0502", "stem": "0502-eu-services", "variant": "eu-services", "form": "pdfIsdoc"},
+            ], json.loads(first["expected/messages.json"]), "messages.json: zpráva → buňka korpusu (F4)")
 
             (out / "mail" / "stale.jsonc").write_text("x", encoding="utf-8")
             (out / "expected" / "stale.json").write_text("x", encoding="utf-8")

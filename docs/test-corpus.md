@@ -493,8 +493,9 @@ apply výchozí pokladna a účtuje se na 211 místo chybové masky `211???`
 (F3 nález E, `docs/exchange-format.md` → `cash_desk_defaulted`).
 
 `profile.jsonc` nese název, titulek, popis, **pevné** `created` (sada je
-deterministická) a `provision` (`{ "accountingItems": "all" }` — seed
-založí všechny položky nabídky podle osnovy). `setup/*.jsonc` jsou soubory
+deterministická) a `provision` (`{ "accountingItems": "all", "serverAi": true }`
+— seed založí všechny položky nabídky podle osnovy a na vývojovém serveru
+zapne zdroji dat serverové AI připojení pro evaluaci, F4 D40). `setup/*.jsonc` jsou soubory
 sekce `setup/` sady (`shpd.dataset.setup.v1`): `settings` (čtyři parametry
 vrstvy C, `economy.homeCurrency czk`, `economy.fiscalYearStartMonth 1`),
 `vat_registrations` jen u plátce, `bank_accounts` (fiktivní účet s mod 11
@@ -519,8 +520,10 @@ Spouští ho build korpusu po očekáváních a PDF; výsledek je deterministick
   souborů jako z `dataset-dump` (podle `receivedAt`, `messageId`);
 - `expected/` — očekávání pro `dataset-verify` (F3, § 17): kopie
   `projection.jsonc`, `vat.json` a `costs.json` z generátoru, schválený
-  snímek deníku `general-ledger.json` z `profiles/<profil>/approved/`.
-  Není to sekce sady — seed ji ignoruje, do `counts` nejde.
+  snímek deníku `general-ledger.json` z `profiles/<profil>/approved/`;
+  pro evaluaci AI (F4, § 18) `messages.json` = zpráva → buňka korpusu
+  (`{messageId, stem, variant, form}` v pořadí zpráv). Není to sekce
+  sady — seed ji ignoruje, do `counts` nejde.
 
 Zpráva: předmět podle jazyka šablony („Faktura <číslo>“ / „Invoice
 <číslo>“ / „Účtenka <datum>“), odesílatel = dodavatel; doklad bez e-mailu
