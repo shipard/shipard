@@ -15,12 +15,13 @@
 // (accountingItemsDefault.jsonc).
 //
 // Kódy položek = čísla účtů. Když na jeden účet míří víc položek, dostane
-// druhá a další písmenný sufix (Z = zaokrouhlení, B = bankovní poplatky,
-// S = kancelářské potřeby/supplies, P = PHM) — tady 549100B/549100Z vedle
-// 549100, 501100S vedle 501100 a 503100P vedle 503100; nezisková osnova
-// dedikovaný účet pro bankovní poplatky ani zaokrouhlení nemá (Jiné ostatní
-// náklady). Zaokrouhlení je KONVENCE, ne pravidlo: 549100/649100 je
-// pragmatická volba.
+// druhá a další písmenný sufix (Z = zaokrouhlení, S = kancelářské
+// potřeby/supplies, P = PHM) — tady 549100Z vedle 549100, 501100S vedle
+// 501100 a 503100P vedle 503100. Bankovní poplatky mají vlastní analytiku
+// 549301 (#122 D7; dřív položka 549100B na 549100 — existující zdroje dat
+// si ji ponechají), dedikovaný účet pro zaokrouhlení nezisková osnova nemá
+// (Jiné ostatní náklady). Zaokrouhlení je KONVENCE, ne pravidlo:
+// 549100/649100 je pragmatická volba.
 //
 // POZOR: čísla účtů zrcadlí accountChartNpo.jsonc a NESMÍ se sdílet
 // s podnikatelskou sadou (accountingItemsDefault.jsonc) — obě osnovy
@@ -56,7 +57,7 @@
         {"id": "assets",     "name:cs": "Majetek",            "name:en": "Assets",                "order": 80}
     ],
     "items": [
-        {"code": "549100B", "group": "finance",    "name:cs": "Bankovní poplatky",                             "name:en": "Bank fees",                                "account": "549100", "contentTags": ["services.banking"]},
+        {"code": "549301",  "group": "finance",    "name:cs": "Bankovní poplatky",                             "name:en": "Bank fees",                                "account": "549301", "contentTags": ["services.banking"]},
         {"code": "544100",  "group": "finance",    "name:cs": "Úroky placené",                                 "name:en": "Interest paid",                            "account": "544100"},
         {"code": "644100",  "group": "finance",    "name:cs": "Úroky přijaté",                                 "name:en": "Interest received",                        "account": "644100"},
         {"code": "545100",  "group": "finance",    "name:cs": "Kurzová ztráta",                                "name:en": "FX loss",                                  "account": "545100"},

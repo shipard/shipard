@@ -356,6 +356,7 @@
     {"number":"549100","name":"Jiné ostatní náklady","short_name":"Jiné ostatní náklady","account_kind":2,"results_type":1},
     {"number":"549201","name":"Pojištění majetku","short_name":"Pojištění majetku","account_kind":2,"results_type":1},
     {"number":"549202","name":"Pojištění vozidel","short_name":"Pojištění vozidel","account_kind":2,"results_type":1},
+    {"number":"549301","name":"Bankovní poplatky","short_name":"Bankovní poplatky","account_kind":2,"results_type":1},
     {"number":"55","name":"Odpisy, prodaný majetek, tvorba rezerv a opravných položek","short_name":"Odpisy, prod. majetek, tvorba rezerv a opr. pol.","account_kind":2,"results_type":1},
     {"number":"551","name":"Odpisy dlouhodobého nehmotného a hmotného majetku","short_name":"Odpisy DNM a DHM","account_kind":2,"results_type":1},
     {"number":"551100","name":"Odpisy dlouhodobého nehmotného a hmotného majetku","short_name":"Odpisy DNM a DHM","account_kind":2,"results_type":1},

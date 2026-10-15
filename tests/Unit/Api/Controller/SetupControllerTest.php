@@ -871,7 +871,8 @@ class SetupControllerTest extends TestCase
     {
         // Regresní test na past se stejnými čísly: obě osnovy používají
         // stejná čísla pro JINÉ účty, sada se musí vybírat podle varianty
-        // (v NPO míří na 549100 tři položky s různými kódy).
+        // (v NPO míří na 549100 dvě položky s různými kódy, bankovní
+        // poplatky mají od #122 D7 vlastní analytiku 549301).
         $resp = $this->makeController($this->makeDb(['economy.accountChart' => 'default']))
             ->accountingItemsOffer(self::auth());
         $data = $resp->getPayload()['data'];
@@ -885,7 +886,7 @@ class SetupControllerTest extends TestCase
             ->accountingItemsOffer(self::auth());
         $this->assertCount(50, $resp->getPayload()['data']['candidates']);
         $this->assertSame('549100', $this->findCandidate($resp, '549100Z')['accountNumber']);
-        $this->assertSame('549100', $this->findCandidate($resp, '549100B')['accountNumber']);
+        $this->assertSame('549301', $this->findCandidate($resp, '549301')['accountNumber']);
         $this->assertSame('549100', $this->findCandidate($resp, '549100')['accountNumber']);
     }
 

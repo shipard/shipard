@@ -609,7 +609,8 @@ Všechny body, které §0 nechávala otevřené, jsou rozhodnuté:
   `{groups, items}`, offer navíc vrací `groups` a `group` u kandidáta,
   UI je člení do sbalitelných sekcí s tri-state checkboxem. Kódy položek =
   čísla účtů (víc položek na jednom účtu → písmenný sufix, `548100Z`
-  zaokrouhlení, NPO `549100B` bankovní poplatky); původní kódy `UP-*`
+  zaokrouhlení; NPO bankovní poplatky dřív `549100B`, od #122 D7 vlastní
+  analytika `549301`); původní kódy `UP-*`
   zanikly bez migrace. Mzdová agenda je nově zařazena (revize „vědomého
   vynechání" z Tasku 10 — agenda v aplikaci není, ale účtuje se);
   daň z příjmů zůstává jen jako závazkový účet 341100. Podnikatelská

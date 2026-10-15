@@ -105,11 +105,12 @@ class AccountTagMapTest extends TestCase
         $this->assertTrue($unknown->isEmpty(), 'neznámá varianta → prázdná mapa, ne výjimka');
         $this->assertNotSame($offer->tagsByAccount('default'), $offer->tagsByAccount('npo'));
 
-        // Bankovní poplatky: podnikatelská osnova 568201, nezisková 549100.
+        // Bankovní poplatky: podnikatelská osnova 568201, nezisková 549301 (#122 D7).
         $this->assertSame('services.banking', $default->resolve('568201')->tag);
-        $this->assertSame('services.banking', $npo->resolve('549100')->tag);
+        $this->assertSame('services.banking', $npo->resolve('549301')->tag);
         $this->assertNull($npo->resolve('568201')->tag);
-        $this->assertNull($default->resolve('549100')->tag);
+        $this->assertNull($npo->resolve('549100')->tag);
+        $this->assertNull($default->resolve('549301')->tag);
 
         // Účet s víc štítky v nabídce (501100 nese materiálové skupiny)
         // zůstává nejednoznačný — kurátorská volba nabídky, ne chyba reverzu.
