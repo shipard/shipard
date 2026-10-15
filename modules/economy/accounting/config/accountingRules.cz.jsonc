@@ -9,6 +9,9 @@
     //             vyhovující query vyhrává. Maska se dohledává v rozvrhu
     //             (number LIKE mask%, jen analytické účty, dle čísla).
     // categories: názvy kategorií pro dokumentaci/UI.
+    // chartOverrides: přepisy accounts per varianta osnovy zdroje dat
+    //             (economy.accountChart) — efektivní předpis skládá
+    //             AccountingRules::resolve(), viz sekce níže (#122 D1).
     //
     // Účet pokladny (211xxx) není kategorie: kroky s accountSrc: "cashDesk"
     // ho berou přímo z pokladny hlavičky (economy_codebooks_cash_desks
@@ -59,9 +62,10 @@
         // vs. x14100/x14900) — dohledává je maska nad rozvrhem DS.
         // Pořadí záznamů je významové: brutto s query první (loose
         // porovnání, vat_amount 0.00/NULL → brutto), jinak zdaněná.
-        // Pole = řetěz masek po řadě; některé rozvrhy nemají 3249xx → fallback 324.
+        // Pole = řetěz masek po řadě; některé rozvrhy (i seed osnovy NNO)
+        // nemají 3149xx / 3249xx → fallback 314 / 324.
         {"cat": "advances.given",    "accountMask": "314",  "query": {"vat_amount": 0}},
-        {"cat": "advances.given",    "accountMask": "3149"},
+        {"cat": "advances.given",    "accountMask": ["3149", "314"]},
         {"cat": "advances.received", "accountMask": "324",  "query": {"vat_amount": 0}},
         {"cat": "advances.received", "accountMask": ["3249", "324"]},
 
@@ -69,10 +73,13 @@
         // účty nespárovaných plateb — úhrada tam padá jen při miss dohledání
         // otevřeného předpisu (OpenItemLookup, #69 D3, docs/bank.md §6.3);
         // při zásahu jde přesně na účet předpisu (311xxx/321xxx), bez masky.
-        // Poplatky/úroky jdou na finanční náklady/výnosy.
+        // Poplatky/úroky jdou na finanční náklady/výnosy. Poplatek z výpisu
+        // má vlastní analytiku 568201 Bankovní poplatky jako poplatek
+        // z faktury (štítek services.banking, #122 D7); fallback 568 pro
+        // rozvrhy bez ní.
         {"cat": "bank.unmatched.in",  "accountMask": "261200"},
         {"cat": "bank.unmatched.out", "accountMask": "261300"},
-        {"cat": "bank.fee",           "accountMask": "568"},
+        {"cat": "bank.fee",           "accountMask": ["568201", "568"]},
         {"cat": "bank.interest.in",   "accountMask": "662"},
         {"cat": "bank.interest.out",  "accountMask": "562"},
 
@@ -182,6 +189,43 @@
         {"cat": "fx.loss", "accountMask": "563"},
         {"cat": "fx.gain", "accountMask": "663"}
     ],
+
+    // Přepisy podle varianty osnovy zdroje dat (#122 D1, D2): pro variantu
+    // economy.accountChart nahradí každá uvedená kategorie VŠECHNY obecné
+    // záznamy téže kategorie v accounts — kategorie s více záznamy (costs)
+    // se uvádí celá, jinak by varianty zmizely. Ostatní kategorie zůstávají.
+    // Efektivní předpis vrací AccountingRules::resolve(), sekce se v něm už
+    // neobjeví. Kategorie, kterou obecný předpis nezná, je chyba při načtení
+    // (strážce AccountingRulesChartVariantsTest). Varianta bez přepisů
+    // (default, none, nerozhodnuto) dostane předpis beze změny.
+    //
+    // npo: 548 je v NNO Manka a škody a 648 Zúčtování fondů, finanční
+    // účty 56x / 66x v NNO nejsou. Zaokrouhlení, DPH bez nároku a ostatní
+    // nákup jdou na 549 / 649 Jiné ostatní náklady / výnosy, úroky
+    // 544 / 644, kurzové rozdíly 545 / 645, bankovní poplatky na vlastní
+    // analytiku 549301 (D7) s fallbackem 549. Každá maska se dohledá
+    // v seedu osnovy své varianty — strážce.
+    "chartOverrides": {
+        "npo": {
+            "accounts": [
+                {"cat": "costs", "accountMask": "504", "query": {"operation": "purchase.goods"}},
+                {"cat": "costs", "accountMask": "518", "query": {"operation": "purchase.services"}},
+                {"cat": "costs", "accountMask": "549", "query": {"operation": "purchase.other"}},
+
+                {"cat": "bank.fee",          "accountMask": ["549301", "549"]},
+                {"cat": "bank.interest.in",  "accountMask": "644"},
+                {"cat": "bank.interest.out", "accountMask": "544"},
+
+                {"cat": "rounding.cost",    "accountMask": "549"},
+                {"cat": "rounding.revenue", "accountMask": "649"},
+
+                {"cat": "vat.nondeductible", "accountMask": "549"},
+
+                {"cat": "fx.loss", "accountMask": "545"},
+                {"cat": "fx.gain", "accountMask": "645"}
+            ]
+        }
+    },
 
     "documents": [
         {"docType": "invno",

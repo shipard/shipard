@@ -68,6 +68,9 @@ final class AccountingEngine
     /** Dimenze deníku aktivních modulů (cfgItem, docs/accounting.md „Dimenze deníku“). */
     private readonly JournalDimensionSet $dimensions;
 
+    /** @var array<string, mixed>|null|false false = předpis ještě nenačten */
+    private array|null|false $rulesCache = false;
+
     public function __construct(
         private readonly \Dibi\Connection $db,
         private readonly ?ConfigRuntime $config,
@@ -177,13 +180,18 @@ final class AccountingEngine
     }
 
     /**
-     * Předpis dle země vlastní firmy, fallback cz ({@see AccountingRules}).
+     * Efektivní předpis dle země vlastní firmy a varianty osnovy
+     * ({@see AccountingRules}); per instanci enginu, resolve jde do DB
+     * (vlastní firma, varianta osnovy) a volá se per řádek deníku.
      *
      * @return array<string, mixed>|null
      */
     private function resolveRules(): ?array
     {
-        return AccountingRules::resolve($this->config, $this->db);
+        if ($this->rulesCache === false) {
+            $this->rulesCache = AccountingRules::resolve($this->config, $this->db);
+        }
+        return $this->rulesCache;
     }
 
     // ── Kroky → kandidátní řádky ────────────────────────────────────────────

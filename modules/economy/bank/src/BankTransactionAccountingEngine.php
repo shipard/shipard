@@ -88,6 +88,9 @@ final class BankTransactionAccountingEngine
 
     private readonly JournalContributorSet $contributors;
 
+    /** @var array<string, mixed>|null null = předpis ještě nenačten */
+    private ?array $rulesCache = null;
+
     public function __construct(
         private readonly \Dibi\Connection $db,
         private readonly ?ConfigRuntime $config,
@@ -371,14 +374,15 @@ final class BankTransactionAccountingEngine
     }
 
     /**
-     * Účtovací předpis dle země vlastní firmy, fallback cz — stejný zdroj
-     * jako doklady ({@see AccountingRules::resolve}).
+     * Efektivní účtovací předpis dle země vlastní firmy a varianty osnovy —
+     * stejný zdroj jako doklady ({@see AccountingRules::resolve}); per
+     * instanci enginu, resolve jde do DB a volá se per řádek.
      *
      * @return array<string, mixed>
      */
     private function resolveRules(): array
     {
-        return AccountingRules::resolve($this->config, $this->db) ?? [];
+        return $this->rulesCache ??= (AccountingRules::resolve($this->config, $this->db) ?? []);
     }
 
     // ── Contributoři deníku (#79 D3b) ───────────────────────────────────────
