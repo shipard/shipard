@@ -17,7 +17,7 @@ jednotlivých subsystémů žijí v [`docs/`](../docs/README.md).
 
 ## Stav
 
-Celkem 366 tasků: **naplánováno** 4 · **částečně** 26 · **hotovo** 336.
+Celkem 367 tasků: **naplánováno** 5 · **částečně** 26 · **hotovo** 336.
 
 Zdroj pravdy je řádek `**Stav:**` v hlavičce každého tasku; tato
 tabulka je generovaná (`scripts/tasks-index.py`). Hotové tasky se
@@ -25,6 +25,7 @@ nevypisují — níže je jen to, co není dokončené.
 
 | Task | Stav | Poznámka |
 |------|------|----------|
+| `accounting-rules-chart-variants.md` | naplánováno | design schválen 2026-10-15 (#122 D1–D7), čeká na implementaci |
 | `ai-profile-sync-in-ds-upgrade.md` | naplánováno | sync není v `DsUpgradeCommand` |
 | `auth-phase0a-hardening.md` | naplánováno | rate limiting a evidence neúspěšných přihlášení chybí |
 | `dashboard-alert-grouping.md` | naplánováno | design schválen 2026-07-16, neimplementováno |
@@ -263,6 +264,7 @@ Automatické účtování dokladů ([`docs/accounting.md`](../docs/accounting.md
 | `accounting-phase2.md` | Deník + účtovací engine |
 | `accounting-phase3.md` | UI účtování |
 | `accounting-vat-analytics.md` | DPH analytiky per `vatCode` |
+| `accounting-rules-chart-variants.md` | Účetní předpisy podle varianty osnovy — přepisy masek pro NNO (`chartOverrides`), bankovní poplatky jako samostatná analytika (#122) |
 | `accounting-docs-phase1.md` | `cmnbkp` — schéma řádků + typ dokladu |
 | `accounting-docs-phase2.md` | `cmnbkp` — účetní backend (engine + předpis + subclass) |
 | `accounting-docs-phase2-balance-ops.md` | `cmnbkp` — saldokontní operace (operation-default účet) |
