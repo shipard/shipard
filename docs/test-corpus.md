@@ -766,8 +766,12 @@ varianty jako celek. Výchozí varianta `baseline` je v repu.
 
 ### Běh (`shpd-ds ai-eval`, D34)
 
-`docs/cli.md` § `ai-eval`. Preflight → odhad ceny a potvrzení (bez `--yes`
-jen na terminálu, neinteraktivně exit 2) → zprávy postupně, každá
+`docs/cli.md` § `ai-eval`. Preflight → odhad ceny (z posledního běhu téže
+varianty nad touž sadou; jinak z tokenů na doklad posledního běhu nad sadou
+s modelem **téže řady** — první číslo v ID katalogu, tokenizace je per
+generace — × ceník plánovaného modelu; jinak z ceníku a typické velikosti
+dokladu, D44) a potvrzení (bez `--yes` jen na terminálu, neinteraktivně
+exit 2) → zprávy postupně, každá
 `--repeat`krát: `EvalRunner` nad `AnalysisComputation`
 (`modules/core/mail/docs/ai-analysis.md` → Analýza nanečisto; přílohy,
 prompt, model, parser, validace canonicalu včetně LLM klasifikace štítků
@@ -820,9 +824,22 @@ doklad podíl bez jediné odchylky (`documents.clean`), správné částky
 klasifikace, štítek; selhání po typech; cena, tokeny, čas (součet
 a průměr na doklad); totéž po variantách a podobách korpusu
 (`expected/messages.json`). Opakování: podíly jako průměr přes opakování
-s rozpětím min–max (`range`), stabilita per pole = podíl zpráv se stejným
-stavem ve všech opakováních (`fieldStability`). `deviationsByField` =
-počet volání s odchylkou per uzel (nejčastější odchylky).
+s rozpětím min–max (`range`), stabilita per pole = podíl zpráv se stejnou
+**třídou** stavu ve všech opakováních (`fieldStability`; shoda = `match`
+i `matchNormalized` — mezery v IBAN nebo telefonu nejsou věcná
+nestabilita, D44), zvlášť formátová stabilita (`formatStability` = podíl
+zpráv se shodou ve všech opakováních, která je i stejného tvaru; jen uzly
+s takovou zprávou). `deviationsByField` = počet úspěšných volání
+s odchylkou per uzel (nejčastější odchylky).
+
+**Selhané volání** (`schema_error`, síť, nevalidní canonical) se do
+`fields.*` počítá jako `missing` všech neprázdných polí očekávání
+(`CanonicalComparator::evaluateAgainstNothing()`: listy očekávání proti
+prázdnému výstupu, `0` ≡ null se nepočítá) plus klasifikace zprávy —
+běh se selháním u nejhoršího dokladu tak nevychází lichotivěji (D44).
+`documents.*` a `calls.*` beze změny; stabilita a `deviationsByField`
+jen z úspěšných volání (selhání by zhoršilo každý uzel o 1 / opakování
+a je vidět v `calls.failed`).
 
 ### Soubor výsledků (`tests/eval/<název sady>/<YYYY-MM-DD>-<varianta>[-<n>].json`, D36)
 
@@ -831,10 +848,11 @@ profil, cesta, **hash obsahu** `mail/` včetně příloh a `expected/`, počet
 zpráv a výběr), `git` (commit, neuložené změny), `variant` (deklarace
 a `effective`: profil, verze a hash promptu, platforma, připojení s původem,
 model, thinking, effort, strop, ladění štítků), `startedAt` / `finishedAt`,
-`repeat`, `metrics`, `range`, `fieldStability`, `byVariant`, `byForm`,
-`deviationsByField` a `calls` — per zpráva a opakování stav, cena, tokeny,
-čas, klasifikace, štítek, počty `match` / `matchNormalized`, cesty polí
-shodných po normalizaci a **jen odchylky** `{path, state, expected, actual,
+`repeat`, `metrics`, `range`, `fieldStability`, `formatStability`,
+`byVariant`, `byForm`, `deviationsByField` a `calls` — per zpráva
+a opakování stav, cena, tokeny, čas, klasifikace, štítek, počty stavů polí
+(u selhaného volání jen počet chybějících), cesty polí shodných po
+normalizaci a **jen odchylky** `{path, state, expected, actual,
 similarity}`. Data korpusu jsou fiktivní, výsledky nad veřejnými sadami
 patří do veřejného repa; nad reálnými doklady jen do soukromého (D8).
 

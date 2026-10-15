@@ -11,8 +11,11 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  * Metriky běhu evaluace (#103 D37, D41) z výsledků volání:
  *
  *   - `fields.<skupina>.hit` podíl `match + matchNormalized` z listů
- *     skupiny (úspěšná volání), `.normalized` podíl shody až po normalizaci
- *     (podklad #118), počty `n` / `missing` / `extra` / `wrong`; `fields.all.*`;
+ *     skupiny, `.normalized` podíl shody až po normalizaci (podklad #118),
+ *     počty `n` / `missing` / `extra` / `wrong`; `fields.all.*`. Selhané
+ *     volání nese každý neprázdný list očekávání jako `missing` (D44,
+ *     {@see EvalRunner}) — běh se selháním u nejhoršího dokladu tak
+ *     nevychází lichotivěji;
  *   - `documents.clean` podíl volání bez jediné odchylky (selhané volání =
  *     ne), `.amountsCorrect` (řádky `totalPrice`, rekapitulace, součty bez
  *     odchylky), `.rowCountOk`, `.classificationOk`, `.tagOk`;
@@ -20,10 +23,17 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  *   - `cost.usd`, `cost.perDocument`, `tokens.*`, `time.*` (součet, průměr).
  *
  * Opakování (D41): podíly jako průměr přes opakování, součty jako součet;
- * `range` nese min–max per opakování, `fieldStability` podíl zpráv se
- * stejným stavem pole ve všech opakováních. `byVariant` / `byForm` podle
- * mapování zpráva → buňka korpusu. `deviationsByField` = počet volání
- * s odchylkou per uzel projekce (nejčastější odchylky, porovnání běhů).
+ * `range` nese min–max per opakování. `fieldStability` = podíl zpráv se
+ * stejnou **třídou** stavu pole ve všech opakováních — shoda je `match`
+ * i `matchNormalized` (D44: mezery v IBAN nebo telefonu nejsou věcná
+ * nestabilita), `missing` / `extra` / `wrong` každý zvlášť;
+ * `formatStability` = zvlášť podíl zpráv se shodou ve všech opakováních,
+ * která je i stejného tvaru (žádný mix `match` / `matchNormalized`), jen
+ * uzly s takovou zprávou. `byVariant` / `byForm` podle mapování zpráva →
+ * buňka korpusu. `deviationsByField` = počet volání s odchylkou per uzel
+ * projekce (nejčastější odchylky, porovnání běhů). Stabilita
+ * i `deviationsByField` jen z úspěšných volání — selhání by zhoršilo každý
+ * uzel o 1 / opakování a je vidět v `calls.failed`.
  */
 final class EvalMetrics
 {
@@ -37,7 +47,7 @@ final class EvalMetrics
     /**
      * @param list<EvalCallResult> $results
      * @param list<EvalMessage>    $messages
-     * @return array{metrics: array<string, int|float>, range?: array<string, array{min: int|float, max: int|float}>, fieldStability?: array<string, float>, byVariant: array<string, array<string, int|float>>, byForm: array<string, array<string, int|float>>, deviationsByField: array<string, int>}
+     * @return array{metrics: array<string, int|float>, range?: array<string, array{min: int|float, max: int|float}>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, array<string, int|float>>, byForm: array<string, array<string, int|float>>, deviationsByField: array<string, int>}
      */
     public static function compute(array $results, array $messages, int $repeat): array
     {
@@ -52,6 +62,7 @@ final class EvalMetrics
         if (count($slices) > 1) {
             $out['range'] = self::range($slices);
             $out['fieldStability'] = self::fieldStability($results);
+            $out['formatStability'] = self::formatStability($results);
         }
 
         $cells = [];
@@ -94,18 +105,9 @@ final class EvalMetrics
             $tokensIn += (int) ($r->tokensIn ?? 0);
             $tokensOut += (int) ($r->tokensOut ?? 0);
             $time += (int) ($r->durationMs ?? 0);
-            if (!$r->isOk()) {
-                $m['calls.failed']++;
-                $failed[(string) $r->errorType] = ($failed[(string) $r->errorType] ?? 0) + 1;
-                continue;
-            }
-            $m['calls.ok']++;
-            $clean += $r->isClean() ? 1 : 0;
-            $amountsOk = true;
-            $rowCountOk = true;
+            // Pole: i selhané volání (jeho outcomes = missing neprázdných polí očekávání, D44).
             foreach ($r->outcomes as $o) {
-                $node = $o->nodePath();
-                $group = EvalFieldGroups::groupOf($node);
+                $group = EvalFieldGroups::groupOf($o->nodePath());
                 $key = match ($o->state) {
                     FieldState::Match => 'hit',
                     FieldState::MatchNormalized => 'normalized',
@@ -117,6 +119,18 @@ final class EvalMetrics
                 $groups[$group][$key]++;
                 $all['n']++;
                 $all[$key]++;
+            }
+            if (!$r->isOk()) {
+                $m['calls.failed']++;
+                $failed[(string) $r->errorType] = ($failed[(string) $r->errorType] ?? 0) + 1;
+                continue;
+            }
+            $m['calls.ok']++;
+            $clean += $r->isClean() ? 1 : 0;
+            $amountsOk = true;
+            $rowCountOk = true;
+            foreach ($r->outcomes as $o) {
+                $node = $o->nodePath();
                 if (!$o->state->isHit()) {
                     if (EvalFieldGroups::isAmountNode($node)) {
                         $amountsOk = false;
@@ -224,28 +238,21 @@ final class EvalMetrics
     }
 
     /**
-     * Podíl zpráv, u kterých má pole ve všech opakováních stejný stav.
+     * Podíl zpráv, u kterých má pole ve všech opakováních stejnou třídu stavu
+     * (shoda = `match` i `matchNormalized`; jinak stav sám) — věcná stabilita
+     * bez formátového šumu (D44). Jen úspěšná volání.
      *
      * @param list<EvalCallResult> $results
      * @return array<string, float>
      */
     private static function fieldStability(array $results): array
     {
-        /** @var array<string, array<string, array<int, string>>> uzel → zpráva → opakování → stav */
-        $states = [];
-        foreach ($results as $r) {
-            if (!$r->isOk()) {
-                continue;
-            }
-            foreach ($r->outcomes as $o) {
-                $states[$o->nodePath()][$r->messageId][$r->repeat] = $o->state->value;
-            }
-        }
         $out = [];
-        foreach ($states as $node => $perMessage) {
+        foreach (self::statesByNode($results) as $node => $perMessage) {
             $stable = 0;
             foreach ($perMessage as $byRepeat) {
-                if (count(array_unique($byRepeat)) === 1) {
+                $classes = array_map(static fn (FieldState $s): string => $s->isHit() ? 'hit' : $s->value, $byRepeat);
+                if (count(array_unique($classes)) === 1) {
                     $stable++;
                 }
             }
@@ -253,6 +260,56 @@ final class EvalMetrics
         }
         ksort($out);
         return $out;
+    }
+
+    /**
+     * Podíl zpráv se shodou ve všech opakováních, u kterých je shoda i stejného
+     * tvaru (samé `match`, nebo samé `matchNormalized`) — formátová stabilita
+     * (mezery v IBAN, telefonu). Jmenovatel = zprávy se shodou ve všech
+     * opakováních; uzel bez takové zprávy se nevypisuje.
+     *
+     * @param list<EvalCallResult> $results
+     * @return array<string, float>
+     */
+    private static function formatStability(array $results): array
+    {
+        $out = [];
+        foreach (self::statesByNode($results) as $node => $perMessage) {
+            $hits = 0;
+            $sameShape = 0;
+            foreach ($perMessage as $byRepeat) {
+                if (array_filter($byRepeat, static fn (FieldState $s): bool => !$s->isHit()) !== []) {
+                    continue;
+                }
+                $hits++;
+                if (count(array_unique(array_map(static fn (FieldState $s): string => $s->value, $byRepeat))) === 1) {
+                    $sameShape++;
+                }
+            }
+            if ($hits > 0) {
+                $out[$node] = round($sameShape / $hits, 4);
+            }
+        }
+        ksort($out);
+        return $out;
+    }
+
+    /**
+     * @param list<EvalCallResult> $results
+     * @return array<string, array<string, array<int, FieldState>>> uzel → zpráva → opakování → stav (jen úspěšná volání)
+     */
+    private static function statesByNode(array $results): array
+    {
+        $states = [];
+        foreach ($results as $r) {
+            if (!$r->isOk()) {
+                continue;
+            }
+            foreach ($r->outcomes as $o) {
+                $states[$o->nodePath()][$r->messageId][$r->repeat] = $o->state;
+            }
+        }
+        return $states;
     }
 
     /**
@@ -290,12 +347,15 @@ final class EvalMetrics
 
     /**
      * @param list<EvalCallResult> $results
-     * @return array<string, int> uzel → počet volání s odchylkou, nejčastější první
+     * @return array<string, int> uzel → počet úspěšných volání s odchylkou, nejčastější první
      */
     public static function deviationsByField(array $results): array
     {
         $out = [];
         foreach ($results as $r) {
+            if (!$r->isOk()) {
+                continue;   // selhání = missing všeho; porovnání běhů by hlásilo každé pole
+            }
             $seen = [];
             foreach ($r->deviations() as $o) {
                 $seen[$o->nodePath()] = true;

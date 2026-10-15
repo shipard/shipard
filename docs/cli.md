@@ -1404,7 +1404,9 @@ aktivní; volání `mail.extraction` s přepsáním varianty jde sestavit.
 
 **Odhad a potvrzení:** před během vypíše počet volání (zprávy × opakování),
 model, připojení a odhad ceny (z posledního běhu téže varianty nad touž
-sadou, jinak z ceníku katalogu a typické velikosti dokladu). Bez `--yes`
+sadou; jinak z tokenů na doklad posledního běhu nad sadou s modelem téže
+řady — první číslo v ID katalogu — × ceník plánovaného modelu; jinak
+z ceníku katalogu a typické velikosti dokladu). Bez `--yes`
 se ptá jen na skutečném terminálu (STDIN je TTY); bez něj — `-n`,
 přesměrovaný nebo prázdný vstup (`< /dev/null`, roura) — končí bez dotazu
 exit 2, útrata je vědomý krok. Odpověď N na terminálu = `Aborted.`,

@@ -102,6 +102,19 @@ final class EvalRunnerTest extends TestCase
         $this->assertTrue($results[3]->isInfrastructureFailure());
         $this->assertStringContainsString('boom', (string) $results[3]->note);
 
+        // D44: selhané volání nese neprázdné listy očekávání jako missing + klasifikaci.
+        foreach ([$results[2], $results[3]] as $failed) {
+            $counts = $failed->counts();
+            $this->assertGreaterThan(50, $counts['missing'], $failed->errorType);
+            $this->assertSame(0, $counts['match'] + $counts['matchNormalized'] + $counts['extra'] + $counts['wrong']);
+            $this->assertFalse($failed->isClean());
+            $this->assertArrayHasKey('counts', $failed->toArray());
+            $this->assertArrayNotHasKey('deviations', $failed->toArray());
+        }
+        $classification = array_values(array_filter($results[2]->outcomes, static fn ($o): bool => $o->path === 'message_classification.primary_type'));
+        $this->assertSame(FieldState::Missing, $classification[0]->state);
+        $this->assertSame($m0201->expectedPrimaryType, $classification[0]->expected);
+
         $this->assertSame('RAW invoiceReceived', file_get_contents($raw . '/MSG-CORPUS-VP-0101-1.txt'));
         $this->assertSame('RAW other', file_get_contents($raw . '/MSG-CORPUS-VP-0101-2.txt'));
         $this->assertFileDoesNotExist($raw . '/MSG-CORPUS-VP-0201-2.txt');
@@ -120,6 +133,8 @@ final class EvalRunnerTest extends TestCase
         $this->assertSame('invalid_canonical', $result->errorType);
         $this->assertStringContainsString('rows type — not an array', (string) $result->note);
         $this->assertSame('invoiceReceived', $result->primaryType, 'klasifikace zůstává i bez validního dokladu');
+        $this->assertSame(1, $result->counts()['match'], 'klasifikace sedí, doklad chybí celý');
+        $this->assertGreaterThan(50, $result->counts()['missing']);
 
         $noDocument = AnalysisOutcome::success(['message_classification' => ['primary_type' => 'other']], [], null, 10, 5, 100, 0.001, 'raw', 'm', 'end_turn');
         $runner = new EvalRunner(new ScriptedComputation([$noDocument]), $comparator, $ds, [], self::call());

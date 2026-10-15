@@ -11,7 +11,9 @@ use Shipard\Module\Core\Exchange\Compare\FieldState;
  * Jedno volání evaluace (zpráva × opakování): stav, cena, tokeny, čas,
  * klasifikace a štítek z výstupu modelu a výsledky polí
  * ({@see FieldOutcome}, včetně virtuálního listu klasifikace). Do souboru
- * výsledků jdou jen odchylky, shody jako počty (D36).
+ * výsledků jdou jen odchylky, shody jako počty (D36); selhané volání nese
+ * neprázdné listy očekávání jako `missing` (D44) a do souboru jdou jen
+ * jejich počty — seznam by jen opisoval očekávání.
  */
 final readonly class EvalCallResult
 {
@@ -90,8 +92,8 @@ final readonly class EvalCallResult
             'primaryType' => $this->primaryType,
             'tag' => $this->tag,
         ];
+        $out['counts'] = $this->counts();
         if ($this->isOk()) {
-            $out['counts'] = $this->counts();
             $out['normalized'] = array_values(array_map(
                 static fn (FieldOutcome $o): string => $o->path,
                 array_filter($this->outcomes, static fn (FieldOutcome $o): bool => $o->state === FieldState::MatchNormalized),

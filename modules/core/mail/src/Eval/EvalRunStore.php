@@ -78,20 +78,18 @@ final class EvalRunStore
     }
 
     /**
-     * Běhy varianty nad touž sadou (podle hashe), nejnovější první.
+     * Všechny čitelné běhy ve složce (volitelně jen nad sadou s hashem),
+     * nejnovější první, každý s `_file`.
      *
      * @return list<array<string, mixed>>
      */
-    public function runsFor(string $variant, ?string $setHash = null): array
+    public function runs(?string $setHash = null): array
     {
         $runs = [];
         foreach (glob($this->dir . '/*.json') ?: [] as $file) {
             try {
                 $run = self::read($file);
             } catch (EvalException) {
-                continue;
-            }
-            if (($run['variant']['name'] ?? null) !== $variant) {
                 continue;
             }
             if ($setHash !== null && ($run['set']['hash'] ?? null) !== $setHash) {
@@ -102,6 +100,19 @@ final class EvalRunStore
         }
         usort($runs, static fn (array $a, array $b): int => strcmp((string) ($b['startedAt'] ?? ''), (string) ($a['startedAt'] ?? '')));
         return $runs;
+    }
+
+    /**
+     * Běhy varianty nad touž sadou (podle hashe), nejnovější první.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function runsFor(string $variant, ?string $setHash = null): array
+    {
+        return array_values(array_filter(
+            $this->runs($setHash),
+            static fn (array $run): bool => ($run['variant']['name'] ?? null) === $variant,
+        ));
     }
 
     /** sha256 nad relativními cestami a obsahem souborů v `mail/` (i přílohy) a `expected/`. */

@@ -127,6 +127,26 @@ final class CanonicalComparator
     }
 
     /**
+     * Režim evaluace pro selhané volání (#103 D44): stav listů očekávání
+     * proti prázdnému výstupu. Každý neprázdný list očekávání (po
+     * normalizaci — `0` ≡ null ani prázdný text se nepočítá) je `missing`
+     * na své cestě, pole po prvcích, nullable uzel prázdný v očekávání
+     * nedává nic; shody se nevracejí. Metriky polí tak selhání započítají
+     * jako chybějící pole dokladu, ne jako doklad, který neexistoval.
+     *
+     * @param array<string, mixed> $expected
+     * @return list<FieldOutcome> jen `missing`
+     */
+    public function evaluateAgainstNothing(array $expected): array
+    {
+        $blank = $this->projection->map($this->projection->project($expected), static fn (): mixed => null);
+        return array_values(array_filter(
+            $this->evaluate($expected, $blank),
+            static fn (FieldOutcome $o): bool => !$o->state->isHit(),
+        ));
+    }
+
+    /**
      * @param array<string, mixed>|null $parent syrový projektovaný rodič (pro `byCountry`)
      * @param list<FieldOutcome>        $out
      */

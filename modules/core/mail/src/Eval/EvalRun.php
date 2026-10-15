@@ -24,7 +24,7 @@ final class EvalRun
      * @param array<string, mixed>  $set
      * @param array{commit: ?string, dirty: ?bool} $git
      * @param array<string, mixed>  $profile řádek profilu pošty
-     * @param array{metrics: array<string, int|float>, range?: array<string, mixed>, fieldStability?: array<string, float>, byVariant: array<string, mixed>, byForm: array<string, mixed>, deviationsByField: array<string, int>} $metrics
+     * @param array{metrics: array<string, int|float>, range?: array<string, mixed>, fieldStability?: array<string, float>, formatStability?: array<string, float>, byVariant: array<string, mixed>, byForm: array<string, mixed>, deviationsByField: array<string, int>} $metrics
      * @param list<EvalCallResult>  $results
      * @return array<string, mixed>
      */
@@ -81,6 +81,7 @@ final class EvalRun
             'metrics' => $metrics['metrics'],
             'range' => $metrics['range'] ?? null,
             'fieldStability' => $metrics['fieldStability'] ?? null,
+            'formatStability' => $metrics['formatStability'] ?? null,
             'byVariant' => $metrics['byVariant'],
             'byForm' => $metrics['byForm'],
             'deviationsByField' => $metrics['deviationsByField'],

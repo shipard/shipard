@@ -100,6 +100,17 @@ final class EvalReport
             }
             $lines[] = 'Stabilita polí přes opakování: ' . ($parts === [] ? 'všechna pole stabilní' : 'nejméně stabilní ' . implode(', ', $parts));
         }
+        if ($repeat > 1 && !empty($run['formatStability'])) {
+            $unstable = array_filter($run['formatStability'], static fn (float $v): bool => $v < 1.0);
+            asort($unstable);
+            if ($unstable !== []) {
+                $parts = [];
+                foreach (array_slice($unstable, 0, 6, true) as $node => $v) {
+                    $parts[] = "{$node} " . self::pct($v);
+                }
+                $lines[] = 'Stabilita formátu (jen tvar shodné hodnoty, např. mezery): nejméně stabilní ' . implode(', ', $parts);
+            }
+        }
         foreach ($run['calls'] as $call) {
             if (($call['status'] ?? '') !== EvalCallResult::STATUS_OK) {
                 $lines[] = sprintf('<comment>✗ %s (%d): %s — %s</comment>', $call['messageId'], $call['repeat'], $call['errorType'], $call['note']);

@@ -9,6 +9,7 @@ use Shipard\Module\Core\Exchange\Compare\CanonicalComparator;
 use Shipard\Module\Core\Exchange\Compare\FieldOutcome;
 use Shipard\Module\Core\Exchange\Compare\FieldState;
 use Shipard\Module\Core\Mail\Analysis\AnalysisComputing;
+use Shipard\Module\Core\Mail\Analysis\AnalysisOutcome;
 use Shipard\Module\Core\Mail\Analysis\AnalysisRequest;
 
 /**
@@ -17,8 +18,9 @@ use Shipard\Module\Core\Mail\Analysis\AnalysisRequest;
  * porovnaný s očekáváním sady ({@see CanonicalComparator::evaluate()})
  * plus virtuální list klasifikace zprávy. Selhání volání (síť, parser,
  * nevalidní canonical) je výsledek zprávy, ne pád běhu; neočekávaná
- * výjimka výpočtu = `internal`. Syrový text modelu jde volitelně do
- * složky mimo repo (`--save-raw`).
+ * výjimka výpočtu = `internal`. Selhané volání nese každý neprázdný list
+ * očekávání jako `missing` (D44, {@see failed()}). Syrový text modelu jde
+ * volitelně do složky mimo repo (`--save-raw`).
  */
 final class EvalRunner
 {
@@ -77,15 +79,12 @@ final class EvalRunner
         try {
             $outcome = $this->computation->compute($request);
         } catch (\Throwable $e) {
-            return new EvalCallResult($message->messageId, $repeat, EvalCallResult::STATUS_FAILED, 'internal', get_class($e) . ': ' . $e->getMessage(), null, null, null, null, null, null, null);
+            return $this->failed($message, $repeat, 'internal', get_class($e) . ': ' . $e->getMessage(), null, null);
         }
         $this->saveRaw($message, $repeat, $outcome->rawText);
 
         if (!$outcome->ok) {
-            return new EvalCallResult(
-                $message->messageId, $repeat, EvalCallResult::STATUS_FAILED, $outcome->errorType, $outcome->note,
-                $outcome->costUsd, $outcome->tokensIn, $outcome->tokensOut, $outcome->durationMs, $outcome->modelName, null, null,
-            );
+            return $this->failed($message, $repeat, $outcome->errorType, $outcome->note, $outcome, null);
         }
 
         $classification = $outcome->body['message_classification'] ?? null;
@@ -95,10 +94,7 @@ final class EvalRunner
             $note = $outcome->validated === null
                 ? 'result without a document (document is null)'
                 : 'canonical failed schema validation: ' . self::validationIssues($outcome->validated->json);
-            return new EvalCallResult(
-                $message->messageId, $repeat, EvalCallResult::STATUS_FAILED, 'invalid_canonical', $note,
-                $outcome->costUsd, $outcome->tokensIn, $outcome->tokensOut, $outcome->durationMs, $outcome->modelName, $primaryType, null,
-            );
+            return $this->failed($message, $repeat, 'invalid_canonical', $note, $outcome, $primaryType);
         }
 
         $outcomes = $this->comparator->evaluate($message->expectedCanonical, $canonical);
@@ -108,6 +104,24 @@ final class EvalRunner
             $message->messageId, $repeat, EvalCallResult::STATUS_OK, null, null,
             $outcome->costUsd, $outcome->tokensIn, $outcome->tokensOut, $outcome->durationMs, $outcome->modelName,
             $primaryType, is_string($tag) ? $tag : null, $outcomes,
+        );
+    }
+
+    /**
+     * Selhané volání (D44): bez výstupu k porovnání nese každý neprázdný list
+     * očekávání jako `missing` ({@see CanonicalComparator::evaluateAgainstNothing()})
+     * plus virtuální list klasifikace — metriky polí selhání započítají,
+     * místo aby ho vynechaly. Cena a tokeny podle výsledku výpočtu, u pádu
+     * výpočtu (`internal`) nic.
+     */
+    private function failed(EvalMessage $message, int $repeat, ?string $errorType, ?string $note, ?AnalysisOutcome $outcome, ?string $primaryType): EvalCallResult
+    {
+        $outcomes = $this->comparator->evaluateAgainstNothing($message->expectedCanonical);
+        $outcomes[] = self::classificationOutcome($message->expectedPrimaryType, $primaryType);
+        return new EvalCallResult(
+            $message->messageId, $repeat, EvalCallResult::STATUS_FAILED, $errorType, $note,
+            $outcome?->costUsd, $outcome?->tokensIn, $outcome?->tokensOut, $outcome?->durationMs, $outcome?->modelName,
+            $primaryType, null, $outcomes,
         );
     }
 

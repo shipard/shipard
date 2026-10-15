@@ -12,18 +12,18 @@ use Shipard\Module\Core\Mail\Eval\EvalFieldGroups;
 use Shipard\Module\Core\Mail\Eval\EvalMessage;
 use Shipard\Module\Core\Mail\Eval\EvalMetrics;
 
-/** Metriky (D37) ze syntetických výsledků: skupiny, doklady, selhání, opakování (D41), varianty korpusu. */
+/** Metriky (D37) ze syntetických výsledků: skupiny, doklady, selhání (D44 — missing polí očekávání), opakování (D41 — stabilita bez formátu), varianty korpusu. */
 final class EvalMetricsTest extends TestCase
 {
-    /** @param array<string, string> $states cesta → stav */
+    /** @param array<string, string> $states cesta → stav (u selhaného volání missing polí očekávání, D44) */
     private static function callResult(string $id, int $repeat, array $states, float $cost = 0.01, ?string $error = null): EvalCallResult
     {
-        if ($error !== null) {
-            return new EvalCallResult($id, $repeat, EvalCallResult::STATUS_FAILED, $error, 'x', $cost, 100, 10, 1000, 'm', null, null);
-        }
         $outcomes = [];
         foreach ($states as $path => $state) {
             $outcomes[] = new FieldOutcome($path, FieldState::from($state), 'e', 'a');
+        }
+        if ($error !== null) {
+            return new EvalCallResult($id, $repeat, EvalCallResult::STATUS_FAILED, $error, 'x', $cost, 100, 10, 1000, 'm', null, null, $outcomes);
         }
         return new EvalCallResult($id, $repeat, EvalCallResult::STATUS_OK, null, null, $cost, 100, 10, 1000, 'm', 'invoiceReceived', 'it.hosting', $outcomes);
     }
@@ -125,5 +125,59 @@ final class EvalMetricsTest extends TestCase
         $this->assertSame(['min' => 0.5, 'max' => 0.75], $out['range']['fields.all.hit']);
         $this->assertSame(['min' => 0.04, 'max' => 0.06], $out['range']['cost.usd']);
         $this->assertSame(['docNumber' => 0.5, 'supplier.name' => 1.0], $out['fieldStability']);
+        $this->assertSame(['docNumber' => 1.0, 'supplier.name' => 1.0], $out['formatStability'], 'B docNumber a A supplier.name: shoda stejného tvaru; zbytek bez shody se nepočítá');
+    }
+
+    public function testStabilityIgnoresFormatAndReportsItSeparately(): void
+    {
+        // D44: match ↔ matchNormalized (mezery v IBAN) není věcná nestabilita; vykazuje se jako formatStability.
+        $results = [
+            self::callResult('A', 1, ['docNumber' => 'match', 'supplier.vatId' => 'match', 'supplier.bankAccount.iban' => 'matchNormalized']),
+            self::callResult('A', 2, ['docNumber' => 'wrong', 'supplier.vatId' => 'matchNormalized', 'supplier.bankAccount.iban' => 'matchNormalized']),
+            self::callResult('B', 1, ['docNumber' => 'match', 'supplier.vatId' => 'match', 'supplier.bankAccount.iban' => 'missing']),
+            self::callResult('B', 2, ['docNumber' => 'match', 'supplier.vatId' => 'match', 'supplier.bankAccount.iban' => 'match']),
+            self::callResult('C', 1, ['docNumber' => 'missing', 'supplier.vatId' => 'missing', 'supplier.bankAccount.iban' => 'missing'], 0.01, 'schema_error'),
+            self::callResult('C', 2, ['docNumber' => 'match', 'supplier.vatId' => 'wrong', 'supplier.bankAccount.iban' => 'match']),
+        ];
+        $out = EvalMetrics::compute($results, [self::message('A', 'x'), self::message('B', 'x'), self::message('C', 'x')], 2);
+
+        $this->assertSame(
+            ['docNumber' => 0.6667, 'supplier.bankAccount.iban' => 0.6667, 'supplier.vatId' => 1.0],
+            $out['fieldStability'],
+            'A docNumber match/wrong nestabilní; A vatId match/matchNormalized stabilní; B iban missing/match nestabilní; C jen z úspěšného opakování (stabilní)',
+        );
+        $this->assertSame(
+            ['docNumber' => 1.0, 'supplier.bankAccount.iban' => 1.0, 'supplier.vatId' => 0.5],
+            $out['formatStability'],
+            'jmenovatel = zprávy se shodou ve všech opakováních; A vatId mix tvarů',
+        );
+    }
+
+    public function testFailedCallCountsItsExpectedFieldsAsMissing(): void
+    {
+        // D44: selhané volání = missing všech neprázdných polí očekávání ve fields.*;
+        // documents.* a calls.* jako dřív, deviationsByField jen z úspěšných volání.
+        $results = [
+            self::callResult('A', 1, ['docNumber' => 'match', 'totals.totalAmount' => 'match', EvalFieldGroups::CLASSIFICATION_PATH => 'match'], 0.02),
+            self::callResult('C', 1, ['docNumber' => 'missing', 'totals.totalAmount' => 'missing', EvalFieldGroups::CLASSIFICATION_PATH => 'missing'], 0.01, 'schema_error'),
+        ];
+        $m = EvalMetrics::compute($results, [self::message('A', 'x'), self::message('C', 'y')], 1);
+
+        $this->assertSame(2, $m['metrics']['fields.header.n']);
+        $this->assertSame(1, $m['metrics']['fields.header.missing']);
+        $this->assertSame(0.5, $m['metrics']['fields.header.hit']);
+        $this->assertSame(0.5, $m['metrics']['fields.totals.hit']);
+        $this->assertSame(0.5, $m['metrics']['fields.classification.hit']);
+        $this->assertSame(6, $m['metrics']['fields.all.n']);
+        $this->assertSame(3, $m['metrics']['fields.all.missing']);
+        $this->assertSame(0.5, $m['metrics']['fields.all.hit']);
+        $this->assertSame(1, $m['metrics']['calls.failed.schema_error']);
+        $this->assertSame(0.5, $m['metrics']['documents.clean']);
+        $this->assertSame(0.5, $m['metrics']['documents.amountsCorrect']);
+        $this->assertSame(0.5, $m['metrics']['documents.classificationOk']);
+        $this->assertSame([], $m['deviationsByField'], 'selhání není odchylka pole — je v calls.failed');
+        $this->assertSame(0.0, $m['byVariant']['y']['fields.all.hit']);
+        $this->assertSame(['match' => 0, 'matchNormalized' => 0, 'missing' => 3, 'extra' => 0, 'wrong' => 0], $results[1]->toArray()['counts']);
+        $this->assertArrayNotHasKey('deviations', $results[1]->toArray(), 'seznam by jen opisoval očekávání');
     }
 }

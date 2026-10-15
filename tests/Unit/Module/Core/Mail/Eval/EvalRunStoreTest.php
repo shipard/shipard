@@ -9,7 +9,7 @@ use Shipard\Module\Core\Exchange\Dataset\DatasetReader;
 use Shipard\Module\Core\Mail\Eval\EvalException;
 use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 
-/** Soubory výsledků (D36): pojmenování s pořadovým číslem, čtení, výběr běhů varianty, hash sady. */
+/** Soubory výsledků (D36): pojmenování s pořadovým číslem, čtení, výběr běhů (všech i varianty), hash sady. */
 final class EvalRunStoreTest extends TestCase
 {
     private string $tmp;
@@ -58,6 +58,8 @@ final class EvalRunStoreTest extends TestCase
         $this->assertSame($b, $runs[0]['_file']);
         $this->assertCount(3, $store->runsFor('baseline'));
         $this->assertSame([], $store->runsFor('nope'));
+        $this->assertSame([0.4, 0.3, 0.2, 0.1], array_map(static fn (array $r): float => $r['metrics']['cost.usd'], $store->runs()), 'všechny varianty, nejnovější první');
+        $this->assertSame([0.4, 0.2, 0.1], array_map(static fn (array $r): float => $r['metrics']['cost.usd'], $store->runs('h1')));
 
         file_put_contents($this->tmp . '/cz-vat-payer/junk.json', '{"format": "other"}');
         $this->assertCount(3, $store->runsFor('baseline'), 'cizí soubor se přeskočí');

@@ -281,15 +281,17 @@ class AiEvalCommand extends Command
         $store = new EvalRunStore($this->runsDir($input->getOption('out'), $manifest->name));
         $setHash = EvalRunStore::datasetHash($reader);
         $lastRun = $store->runsFor($variant->name, $setHash)[0] ?? null;
+        $seriesRun = $lastRun === null ? EvalCostEstimator::seriesRun($store->runs(), $plan->catalogModel) : null;
         $calls = count($selected) * $repeat;
-        $estimate = EvalCostEstimator::estimate($calls, $lastRun, $plan, $tagPlan, $catalog);
+        $estimate = EvalCostEstimator::estimate($calls, $lastRun, $seriesRun, $plan, $tagPlan, $catalog);
 
         $human->writeln(sprintf(
             '<info>Evaluace AI</info> — sada %s: %d zpráv × %d opakování = %d volání, model %s (připojení %s — %s), profil %s',
             $manifest->name, count($selected), $repeat, $calls, $plan->model, $plan->connectionCode, $plan->origins['connection'] ?? '?', $variant->profile,
         ));
         $human->writeln(match ($estimate['basis']) {
-            'lastRun' => sprintf('Odhad ceny: ~%s USD (%s USD / volání podle posledního běhu %s)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', ''), basename((string) ($lastRun['_file'] ?? ''))),
+            'lastRun' => sprintf('Odhad ceny: ~%s USD (%s USD / volání podle posledního běhu %s)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', ''), (string) ($estimate['source']['file'] ?? '')),
+            'series' => sprintf('Odhad ceny: ~%s USD (%s USD / volání z ceníku a tokenů na doklad podle běhu %s — model %s téže řady)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', ''), (string) ($estimate['source']['file'] ?? ''), (string) ($estimate['source']['model'] ?? '?')),
             'catalog' => sprintf('Odhad ceny: ~%s USD (%s USD / volání z ceníku katalogu a typické velikosti dokladu)', number_format((float) $estimate['total'], 4, '.', ''), number_format((float) $estimate['perCall'], 4, '.', '')),
             default => 'Odhad ceny: neznámý (model mimo katalog)',
         });

@@ -287,6 +287,28 @@ final class AiEvalCommandTest extends TestCase
         $this->assertSame(0, $command->computationsCreated);
     }
 
+    public function testEstimateFallsBackToTokensOfARunWithAModelOfTheSameSeries(): void
+    {
+        // D44: bez běhu téže varianty tokeny na doklad z běhu jiné varianty (i nad jiným
+        // hashem) s modelem téže řady × ceník plánovaného modelu: 9267 × 3 + 2325 × 15
+        // = 62 676 / 1M = 0,062676 + štítky Haiku 0,0021 = 0,064776.
+        mkdir($this->tmp . '/runs/cz-vat-payer', 0750, true);
+        file_put_contents($this->tmp . '/runs/cz-vat-payer/2026-10-14-other.json', json_encode([
+            'format' => 'shpd.eval.run.v1',
+            'set' => ['name' => 'cz-vat-payer', 'hash' => 'old-hash'],
+            'variant' => ['name' => 'other', 'effective' => ['catalogModel' => 'claude-sonnet-4-6']],
+            'startedAt' => '2026-10-14T10:00:00+00:00',
+            'metrics' => ['cost.usd' => 3.76, 'calls.total' => 60, 'tokens.inputPerDocument' => 9267, 'tokens.outputPerDocument' => 2325],
+        ]));
+        $command = $this->command(self::ndxByCode());
+        $tester = self::execute($command, ['--only' => '0101']);
+
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Odhad ceny: ~0.0648 USD (0.0648 USD / volání z ceníku a tokenů na doklad podle běhu 2026-10-14-other.json — model claude-sonnet-4-6 téže řady)', $display);
+        $this->assertSame(0, $command->computationsCreated);
+    }
+
     public function testPromptNeedsARealTerminalEvenWhenInputCountsAsInteractive(): void
     {
         // stdin z /dev/null nebo z roury: Symfony 7 interakci nevypne, QuestionHelper by vrátil „ne“ a běh by skončil exit 0
@@ -361,7 +383,9 @@ final class AiEvalCommandTest extends TestCase
         $this->assertSame(0.5, $run['metrics']['documents.amountsCorrect']);
         $this->assertSame(['min' => 0.0, 'max' => 1.0], $run['range']['documents.clean']);
         $this->assertSame(0.0, $run['fieldStability']['totals.totalAmount'], 'jedna zpráva, dva různé stavy');
-        $this->assertSame(0.0, $run['fieldStability']['supplier.vatId'], 'match vs. matchNormalized je jiný stav');
+        $this->assertSame(1.0, $run['fieldStability']['supplier.vatId'], 'match vs. matchNormalized je táž shoda (D44)');
+        $this->assertSame(0.0, $run['formatStability']['supplier.vatId'], 'jiný tvar shodné hodnoty');
+        $this->assertArrayNotHasKey('totals.totalAmount', $run['formatStability'], 'bez shody v obou opakováních se formát neměří');
         $this->assertSame(1.0, $run['fieldStability']['docNumber']);
         $this->assertSame(['totals.totalAmount' => 1], $run['deviationsByField']);
         $this->assertCount(2, $run['calls']);

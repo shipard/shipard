@@ -172,6 +172,46 @@ class CanonicalComparatorTest extends TestCase
         return array_map(static fn (int $i): array => ['rowIndex' => $i, 'tag' => $tag], $rowIndexes);
     }
 
+    public function testEvaluateAgainstNothingMarksEveryNonEmptyExpectedLeafMissing(): void
+    {
+        // Selhané volání (#103 D44): každý neprázdný list očekávání je missing,
+        // prázdné (null, 0 ≡ null) a prázdný nullable uzel nic nedávají.
+        $doc = ProjectionTest::corpusDoc();
+        $doc['customer'] = null;
+        $doc['dates']['periodFrom'] = null;
+        $doc['totals']['totalRounding'] = 0;
+
+        $outcomes = $this->cmp->evaluateAgainstNothing($doc);
+        $this->assertNotEmpty($outcomes);
+        foreach ($outcomes as $o) {
+            $this->assertSame(FieldState::Missing, $o->state, $o->path);
+            $this->assertNull($o->actual, $o->path);
+            $this->assertNotNull($o->expected, $o->path);
+        }
+        $byPath = self::byPath($outcomes);
+        foreach (['docNumber', 'supplier.name', 'supplier.vatId', 'rows[0].totalPrice', 'rows[1].item.name', 'vatRecap[0].base', 'totals.totalAmount', '_resolve.contentTag.tag'] as $path) {
+            $this->assertArrayHasKey($path, $byPath);
+        }
+        foreach (['customer', 'customer.name', 'dates.periodFrom', 'totals.totalRounding'] as $path) {
+            $this->assertArrayNotHasKey($path, $byPath);
+        }
+        $nonEmpty = array_filter($this->cmp->evaluate($doc, $doc), static fn (FieldOutcome $o): bool => $o->expected !== null && $o->expected !== 0);
+        $this->assertSame(
+            array_values(array_map(static fn (FieldOutcome $o): string => $o->nodePath(), $nonEmpty)),
+            array_map(static fn (FieldOutcome $o): string => $o->nodePath(), $outcomes),
+            'přesně neprázdné listy, v pořadí projekce (uzly — výjimky štítků jsou bez klíče po pozicích)',
+        );
+
+        // Dlouhý doklad: výjimky štítků řádků po prvcích (klíč v prázdném výstupu chybí → po pozicích).
+        $long = self::byPath($this->cmp->evaluateAgainstNothing(self::longDocument()));
+        $this->assertArrayHasKey('rows[43].totalPrice', $long);
+        $this->assertArrayHasKey('_resolve.contentTag.rowExceptions[0].rowIndex', $long);
+        $this->assertArrayHasKey('_resolve.contentTag.rowExceptions[15].tag', $long);
+        $this->assertArrayNotHasKey('_resolve.contentTag.rowExceptions', $long, 'délka pole sedí, žádný výsledek za počet');
+
+        $this->assertSame([], $this->cmp->evaluateAgainstNothing([]), 'zpráva bez dokladu nic nečeká');
+    }
+
     public function testEvaluateRowExceptionsByRowIndexNotByPosition(): void
     {
         // Baseline 2026-10-15 (tasks/testing-phase4.md § 8): očekávání má výjimky
