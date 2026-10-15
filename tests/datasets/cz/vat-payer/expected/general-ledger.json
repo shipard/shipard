@@ -1,0 +1,934 @@
+{
+    "reportId": "economy.accounting.generalLedger",
+    "params": {
+        "period": {
+            "fiscalYear": "2026",
+            "monthFrom": 7,
+            "monthTo": 9
+        },
+        "detail": "analytic"
+    },
+    "generatedAt": "2026-10-15T07:25:56+00:00",
+    "dataSource": "ob9b-79rj-8ytg-45ii",
+    "status": "ok",
+    "messages": [],
+    "columns": [
+        {
+            "id": "opening",
+            "type": "money",
+            "label": "Počáteční stav",
+            "display": "balance"
+        },
+        {
+            "id": "turnover",
+            "type": "money",
+            "label": "Obraty za období",
+            "display": "sides"
+        },
+        {
+            "id": "closing",
+            "type": "money",
+            "label": "Konečný zůstatek",
+            "display": "balance"
+        }
+    ],
+    "rows": [
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "211100",
+            "label": "Pokladna",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 1542.6,
+                    "balance": -1542.6
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 1542.6,
+                    "balance": -1542.6
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "211",
+            "label": "Pokladna",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 1542.6,
+                    "balance": -1542.6
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 1542.6,
+                    "balance": -1542.6
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 2,
+            "account": "21",
+            "label": "Peníze",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 1542.6,
+                    "balance": -1542.6
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 1542.6,
+                    "balance": -1542.6
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 1,
+            "account": "2",
+            "label": "Krátkodobý finanční majetek a krátkodobé bankovní úvěry",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 1542.6,
+                    "balance": -1542.6
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 1542.6,
+                    "balance": -1542.6
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "321100",
+            "label": "Závazky z obchodních vztahů",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 284276.22,
+                    "balance": -284276.22
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 284276.22,
+                    "balance": -284276.22
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "321",
+            "label": "Závazky z obchodních vztahů",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 284276.22,
+                    "balance": -284276.22
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 284276.22,
+                    "balance": -284276.22
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 2,
+            "account": "32",
+            "label": "Závazky (krátkodobé)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 284276.22,
+                    "balance": -284276.22
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 284276.22,
+                    "balance": -284276.22
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343110",
+            "label": "Daň z přidané hodnoty (vstup - základní sazba)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 18156.96,
+                    "d": 0.0,
+                    "balance": 18156.96
+                },
+                "closing": {
+                    "md": 18156.96,
+                    "d": 0.0,
+                    "balance": 18156.96
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343111",
+            "label": "Daň z přidané hodnoty (vstup - snížená sazba)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 3374.99,
+                    "d": 0.0,
+                    "balance": 3374.99
+                },
+                "closing": {
+                    "md": 3374.99,
+                    "d": 0.0,
+                    "balance": 3374.99
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343115",
+            "label": "Daň z přidané hodnoty (vstup - základní sazba - PDP4)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 28887.6,
+                    "d": 0.0,
+                    "balance": 28887.6
+                },
+                "closing": {
+                    "md": 28887.6,
+                    "d": 0.0,
+                    "balance": 28887.6
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "343203",
+            "label": "Daň z přidané hodnoty (výstup - základní sazba - PDP)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 28887.6,
+                    "balance": -28887.6
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 28887.6,
+                    "balance": -28887.6
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "343",
+            "label": "Daň z přidané hodnoty",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 50419.55,
+                    "d": 28887.6,
+                    "balance": 21531.95
+                },
+                "closing": {
+                    "md": 50419.55,
+                    "d": 28887.6,
+                    "balance": 21531.95
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 2,
+            "account": "34",
+            "label": "Zúčtování daní a dotací",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 50419.55,
+                    "d": 28887.6,
+                    "balance": 21531.95
+                },
+                "closing": {
+                    "md": 50419.55,
+                    "d": 28887.6,
+                    "balance": 21531.95
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 1,
+            "account": "3",
+            "label": "Zúčtovací vztahy",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 50419.55,
+                    "d": 313163.82,
+                    "balance": -262744.27
+                },
+                "closing": {
+                    "md": 50419.55,
+                    "d": 313163.82,
+                    "balance": -262744.27
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "501100",
+            "label": "Spotřeba materiálu",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 75201.95,
+                    "d": 0.0,
+                    "balance": 75201.95
+                },
+                "closing": {
+                    "md": 75201.95,
+                    "d": 0.0,
+                    "balance": 75201.95
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "501",
+            "label": "Spotřeba materiálu",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 75201.95,
+                    "d": 0.0,
+                    "balance": 75201.95
+                },
+                "closing": {
+                    "md": 75201.95,
+                    "d": 0.0,
+                    "balance": 75201.95
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "502100",
+            "label": "Spotřeba energie (elektřina)",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 7482.47,
+                    "d": 0.0,
+                    "balance": 7482.47
+                },
+                "closing": {
+                    "md": 7482.47,
+                    "d": 0.0,
+                    "balance": 7482.47
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "502",
+            "label": "Spotřeba energie",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 7482.47,
+                    "d": 0.0,
+                    "balance": 7482.47
+                },
+                "closing": {
+                    "md": 7482.47,
+                    "d": 0.0,
+                    "balance": 7482.47
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "503100",
+            "label": "Spotřeba PHM",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 2477.36,
+                    "d": 0.0,
+                    "balance": 2477.36
+                },
+                "closing": {
+                    "md": 2477.36,
+                    "d": 0.0,
+                    "balance": 2477.36
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "503",
+            "label": "Spotřeba ostatních neskladovatelných dodávek",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 2477.36,
+                    "d": 0.0,
+                    "balance": 2477.36
+                },
+                "closing": {
+                    "md": 2477.36,
+                    "d": 0.0,
+                    "balance": 2477.36
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 2,
+            "account": "50",
+            "label": "Spotřebované nákupy",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 85161.78,
+                    "d": 0.0,
+                    "balance": 85161.78
+                },
+                "closing": {
+                    "md": 85161.78,
+                    "d": 0.0,
+                    "balance": 85161.78
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "511201",
+            "label": "Opravy a údržba nemovitého majetku",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 137560.0,
+                    "d": 0.0,
+                    "balance": 137560.0
+                },
+                "closing": {
+                    "md": 137560.0,
+                    "d": 0.0,
+                    "balance": 137560.0
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "511",
+            "label": "Opravy a udržování",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 137560.0,
+                    "d": 0.0,
+                    "balance": 137560.0
+                },
+                "closing": {
+                    "md": 137560.0,
+                    "d": 0.0,
+                    "balance": 137560.0
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "512100",
+            "label": "Cestovné",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 640.0,
+                    "d": 0.0,
+                    "balance": 640.0
+                },
+                "closing": {
+                    "md": 640.0,
+                    "d": 0.0,
+                    "balance": 640.0
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "512",
+            "label": "Cestovné",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 640.0,
+                    "d": 0.0,
+                    "balance": 640.0
+                },
+                "closing": {
+                    "md": 640.0,
+                    "d": 0.0,
+                    "balance": 640.0
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "513900",
+            "label": "Náklady na reprezentaci",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 26462.88,
+                    "d": 0.0,
+                    "balance": 26462.88
+                },
+                "closing": {
+                    "md": 26462.88,
+                    "d": 0.0,
+                    "balance": 26462.88
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "513",
+            "label": "Náklady na reprezentaci",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 26462.88,
+                    "d": 0.0,
+                    "balance": 26462.88
+                },
+                "closing": {
+                    "md": 26462.88,
+                    "d": 0.0,
+                    "balance": 26462.88
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "518100",
+            "label": "Ostatní služby",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 14462.0,
+                    "d": 0.0,
+                    "balance": 14462.0
+                },
+                "closing": {
+                    "md": 14462.0,
+                    "d": 0.0,
+                    "balance": 14462.0
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "518",
+            "label": "Ostatní služby",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 14462.0,
+                    "d": 0.0,
+                    "balance": 14462.0
+                },
+                "closing": {
+                    "md": 14462.0,
+                    "d": 0.0,
+                    "balance": 14462.0
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 2,
+            "account": "51",
+            "label": "Služby",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 179124.88,
+                    "d": 0.0,
+                    "balance": 179124.88
+                },
+                "closing": {
+                    "md": 179124.88,
+                    "d": 0.0,
+                    "balance": 179124.88
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "548100",
+            "label": "Ostatní provozní náklady",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.49,
+                    "d": 0.0,
+                    "balance": 0.49
+                },
+                "closing": {
+                    "md": 0.49,
+                    "d": 0.0,
+                    "balance": 0.49
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "548",
+            "label": "Ostatní provozní náklady",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.49,
+                    "d": 0.0,
+                    "balance": 0.49
+                },
+                "closing": {
+                    "md": 0.49,
+                    "d": 0.0,
+                    "balance": 0.49
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 2,
+            "account": "54",
+            "label": "Jiné provozní náklady",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.49,
+                    "d": 0.0,
+                    "balance": 0.49
+                },
+                "closing": {
+                    "md": 0.49,
+                    "d": 0.0,
+                    "balance": 0.49
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 1,
+            "account": "5",
+            "label": "Náklady",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 264287.15,
+                    "d": 0.0,
+                    "balance": 264287.15
+                },
+                "closing": {
+                    "md": 264287.15,
+                    "d": 0.0,
+                    "balance": 264287.15
+                }
+            }
+        },
+        {
+            "kind": "detail",
+            "level": 4,
+            "account": "648100",
+            "label": "Ostatní provozní výnosy",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 0.28,
+                    "balance": -0.28
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 0.28,
+                    "balance": -0.28
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 3,
+            "account": "648",
+            "label": "Ostatní provozní výnosy",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 0.28,
+                    "balance": -0.28
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 0.28,
+                    "balance": -0.28
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 2,
+            "account": "64",
+            "label": "Jiné provozní výnosy",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 0.28,
+                    "balance": -0.28
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 0.28,
+                    "balance": -0.28
+                }
+            }
+        },
+        {
+            "kind": "subtotal",
+            "level": 1,
+            "account": "6",
+            "label": "Výnosy",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 0.0,
+                    "d": 0.28,
+                    "balance": -0.28
+                },
+                "closing": {
+                    "md": 0.0,
+                    "d": 0.28,
+                    "balance": -0.28
+                }
+            }
+        },
+        {
+            "kind": "total",
+            "level": 0,
+            "account": null,
+            "label": "Celkem",
+            "values": {
+                "opening": {
+                    "md": 0.0,
+                    "d": 0.0,
+                    "balance": 0.0
+                },
+                "turnover": {
+                    "md": 314706.7,
+                    "d": 314706.7,
+                    "balance": 0.0
+                },
+                "closing": {
+                    "md": 314706.7,
+                    "d": 314706.7,
+                    "balance": 0.0
+                }
+            }
+        }
+    ]
+}

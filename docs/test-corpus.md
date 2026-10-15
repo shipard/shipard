@@ -701,6 +701,12 @@ soubor commitne do `tests/corpus/cz/profiles/<profil>/approved/general-ledger.js
 přestaví sady (`build.py`) a další běh dá kontrolu 5 `ok`. Změna
 účtování = nový snímek se schválením, nikdy úprava snímku podle Shipardu.
 
+**Stav schválení (2026-10-15):** snímky `vat-payer` a `non-payer` jsou
+schválené **s výhradou účetní revize** (#123) — do ní hlídají regrese,
+ne věcnou správnost. Spolek (`association`) snímek nemá: čeká na opravu
+účetních předpisů pro osnovu NNO (#122), dnes účtuje zaokrouhlení na
+548 Manka a škody a 648 Zúčtování fondů.
+
 ### Pasti
 
 - **Očekávání se neupravuje podle Shipardu.** Rozdíl je nález — chyba
