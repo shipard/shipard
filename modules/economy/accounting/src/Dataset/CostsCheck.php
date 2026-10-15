@@ -11,16 +11,23 @@ use Shipard\Module\Core\Exchange\Dataset\Verify\VerifyContext;
 
 /**
  * Kontrola 4 — náklady dokladů (tasks/testing-phase3.md, #97): per použitý
- * doklad součet MD na účtech třídy 5 z deníku bez zaokrouhlení
- * (548 / 549) ≟ `expected/costs.json` (plátce základ, neplátce vč. DPH;
- * spočteno generátorem nezávisle na Shipardu).
+ * doklad součet MD na účtech třídy 5 z deníku bez řádků zaokrouhlení
+ * ≟ `expected/costs.json` (plátce základ, neplátce vč. DPH; spočteno
+ * generátorem nezávisle na Shipardu).
+ *
+ * Zaokrouhlení se pozná podle původu řádku, ne podle účtu (#122 D5): řádek
+ * vzniká z hlavičkového kroku předpisu kategorie `rounding.cost` /
+ * `rounding.revenue`, tedy bez operace a s textem kroku (ROUNDING_TEXT —
+ * že ho nesou všechny kroky zaokrouhlení a žádný jiný, hlídá
+ * CostsCheckTest). Na účtech 548 / 549 jsou totiž i pojištění, bankovní
+ * poplatky a jiné náklady, které do nákladu dokladu patří.
  */
 final class CostsCheck implements VerifyCheck
 {
     public const ID = 'costs';
     public const TOLERANCE = 0.005;
-    /** Účty zaokrouhlovacích rozdílů — do nákladu dokladu nepatří. */
-    public const ROUNDING_PREFIXES = ['548', '549'];
+    /** Text hlavičkových kroků zaokrouhlení v předpisu (accountingRules.*.jsonc). */
+    public const ROUNDING_TEXT = 'Zaokrouhlení dokladu';
 
     public function id(): string
     {
@@ -75,16 +82,16 @@ final class CostsCheck implements VerifyCheck
         return CheckResult::fromDifferences(self::ID, $this->label(), $differences, $notes);
     }
 
-    /** Σ MD účtů třídy 5 dokladu bez zaokrouhlovacích účtů. */
+    /** Σ MD účtů třídy 5 dokladu bez řádků zaokrouhlení (podle původu řádku, ne účtu). */
     public static function journalCost(Connection $db, int $docId): float
     {
-        $sql = 'SELECT COALESCE(SUM([money_dr]), 0) FROM [economy_accounting_journal]'
-            . ' WHERE [doc_head] = %i AND [account_number] LIKE %like~';
-        $args = [$docId, '5'];
-        foreach (self::ROUNDING_PREFIXES as $prefix) {
-            $sql .= ' AND [account_number] NOT LIKE %like~';
-            $args[] = $prefix;
-        }
-        return (float) $db->fetchSingle($sql, ...$args);
+        return (float) $db->fetchSingle(
+            'SELECT COALESCE(SUM([money_dr]), 0) FROM [economy_accounting_journal]'
+            . ' WHERE [doc_head] = %i AND [account_number] LIKE %like~'
+            . ' AND NOT ([operation] IS NULL AND [text] = %s)',
+            $docId,
+            '5',
+            self::ROUNDING_TEXT,
+        );
     }
 }
