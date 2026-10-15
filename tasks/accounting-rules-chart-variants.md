@@ -1,6 +1,6 @@
 # Účetní předpisy podle varianty osnovy (NNO)
 
-**Stav:** hotovo — implementace 2026-10-15 (#122 D1–D7, 7 commitů); spolek `wp66-o` kontroly 1–4 `ok`, deník bez 548 / 648, snímek deníku připravený ke schválení (`tasks/testing-phase3.md`, #123); přeúčtování ostrých dat per zdroj dat až po schválení v chatu (D6) — reálné kopie na dev serveru mají osnovu `none` a žádný bankovní řádek na 568 mimo 568201, netýká se jich
+**Stav:** hotovo — implementace 2026-10-15 (#122 D1–D7, 7 commitů); spolek `wp66-o` kontroly 1–4 `ok`, deník bez 548 / 648, snímek deníku schválený 2026-10-15 a kontrola 5 `ok` (`tasks/testing-phase3.md`); přeúčtování ostrých dat per zdroj dat až po schválení v chatu (D6) — reálné kopie na dev serveru mají osnovu `none` a žádný bankovní řádek na 568 mimo 568201, netýká se jich
 
 ## Kontext / Cíl
 
@@ -197,8 +197,9 @@ zůstanou, dokud se nepřeúčtují (`doc-reaccount <docId>`).
 - [x] unit testy předpisu, strážce a `CostsCheck` zelené (úzké `--filter`);
       `AccountingItemsOfferCoverageTest` dál zelený
 - [x] spolek: `dataset-verify` kontroly 1–4 `ok`, deník bez 548 / 648
-      (zaokrouhlení 549100 / 649100), snímek připravený ke schválení
-      (2026-10-15, vyrobený přes `--write-ledger-snapshot` po přeseedování)
+      (zaokrouhlení 549100 / 649100), snímek vyrobený přes
+      `--write-ledger-snapshot` po přeseedování a schválený 2026-10-15
+      (`profiles/association/approved/`, kontrola 5 `ok`)
 - [x] plátce a neplátce: kontroly 1–5 `ok` beze změny snímků — ověřeno
       silněji než zadání: přeseedování a `dataset-verify` s apply
       (ob9b, ab5v), ne jen `--no-apply`

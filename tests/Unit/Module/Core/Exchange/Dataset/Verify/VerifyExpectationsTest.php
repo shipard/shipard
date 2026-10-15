@@ -34,13 +34,13 @@ class VerifyExpectationsTest extends TestCase
         $this->assertSame(['customer'], $e->projection->nullableNodes());
         $this->assertArrayHasKey('MSG-CORPUS-VP-0101', $e->vatByMessage());
         $this->assertSame('CZK', $e->costsByMessage()['MSG-CORPUS-VP-0101']['currency']);
-        // Snímek deníku plátce je schválený (#103 F3, 2026-10-15) a načte se;
-        // spolek ho zatím nemá (schvaluje se až po #122) → null.
-        $this->assertIsArray($e->ledgerSnapshot, 'schválený snímek deníku plátce se načte');
-        $this->assertSame('economy.accounting.generalLedger', $e->ledgerSnapshot['reportId'] ?? null);
-
-        $association = VerifyExpectations::load(DatasetReader::open(dirname(__DIR__, 7) . '/tests/datasets/cz/association'));
-        $this->assertNull($association->ledgerSnapshot, 'snímek deníku spolku se schvaluje až po prvním běhu');
+        // Schválené snímky deníku (#103 F3, 2026-10-15; spolek po #122) se načtou
+        // u všech tří sad — chybějící snímek kryje test volitelného snímku níže.
+        foreach (['vat-payer' => $e, 'non-payer' => null, 'association' => null] as $set => $loaded) {
+            $loaded ??= VerifyExpectations::load(DatasetReader::open(dirname(__DIR__, 7) . "/tests/datasets/cz/{$set}"));
+            $this->assertIsArray($loaded->ledgerSnapshot, "schválený snímek deníku sady {$set} se načte");
+            $this->assertSame('economy.accounting.generalLedger', $loaded->ledgerSnapshot['reportId'] ?? null, $set);
+        }
     }
 
     public function testLoadsEmptyVatForNonPayerAndOptionalSnapshot(): void
