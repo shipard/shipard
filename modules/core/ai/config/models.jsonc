@@ -233,6 +233,16 @@
         "order": 100,
         "tier": null,
         "platformIds": { "anthropic": "claude-fable-5-1", "bedrock": "anthropic.claude-fable-5-1" },
+        // Schopnosti jako u řady 5 (model teplotu odmítá — bez bloku šel
+        // požadavek s temperature 0 a API ho zamítlo, tasks/testing-phase4b.md D45).
+        "capabilities": {
+            "temperature": false,
+            "thinkingModes": ["adaptive"],
+            "thinkingDefault": "adaptive",
+            "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+            "thinkingOffMaxEffort": null,
+            "maxOutputTokens": 128000
+        },
         "prices": { "input": 10, "output": 50 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-09-01" }
     },
