@@ -1,6 +1,6 @@
 # Testování F4: evaluace AI analýzy nad datovými sadami
 
-**Stav:** částečně — kroky 1–6 hotové 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`; unit testy zelené); zbývá první běh `baseline` nad `cz-vat-payer` po schválení v chatu (stojí peníze, potřebuje `sudo shpd-server dev-ai-key --set-key`) a shrnutí metrik
+**Stav:** hotovo — implementace 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`), první běh `baseline` nad `cz-vat-payer` 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-baseline.json` (§ 8); nálezy běhu jsou podklad pro ladění promptu a #118, ne úprava očekávání
 
 ## Kontext / Cíl
 
@@ -196,6 +196,57 @@ některý běh `--repeat` > 1) označí jako „v rámci šumu“; pole, která 
 zlepšila / zhoršila (cesta, počet zpráv); cena a čas. Odmítne běhy nad
 různými sadami (hash).
 
+## 8. První běh `baseline` nad `cz-vat-payer` (2026-10-15)
+
+Zdroj dat `vg39-l` (nový, `ds-create --no-cron`, `dataset-seed`), serverové
+připojení (`server`), model `claude-sonnet-4-6` z mapy úrovní, profil
+`czech_general` v4.7.1, bez thinking / effort, 20 zpráv × 1. Soubor:
+`tests/eval/cz-vat-payer/2026-10-15-baseline.json` (commit `d33aa305`,
+čistý checkout).
+
+| Metrika | Hodnota |
+|---------|---------|
+| Volání | 20, úspěšných 20 (žádné selhání parseru ani nevalidní canonical) |
+| Shoda polí celkem (match + po normalizaci) | 93,2 % (po normalizaci 1,0 %) |
+| Hlavička / dodavatel / odběratel | 93,5 % / 90,0 % / 98,2 % |
+| DPH / řádky / rekapitulace / součty | 99,4 % / 92,4 % / 100 % / 100 % |
+| Štítek dokladu / výjimky štítků řádků / klasifikace zprávy | 90,0 % / 56,5 % / 100 % |
+| Doklady bez odchylky / správné částky / počet řádků sedí | 5,0 % / 100 % / 100 % |
+| Cena / tokeny / čas | 1,24 USD (0,062 na doklad) / 185 k vstup, 45 k výstup / 643 s (32 s na doklad) |
+| Odhad před během | 1,60 USD z ceníku a typické velikosti (skutečnost 77 %) |
+
+Částky, rekapitulace, počty řádků a klasifikace zprávy sedí u všech dvaceti
+dokladů; nízký podíl dokladů „bez odchylky“ dělá několik systematických
+mezer. Odchylky podle uzlu (počet polí; stav):
+
+| Uzel | Počet | Co se děje | Povaha |
+|------|-------|-----------|--------|
+| `rows[].item.supplierCode` | 114 missing | model kód dodavatele u řádku nikdy nevyplní | prompt / schéma extrakce |
+| `_resolve.contentTag.rowExceptions[].rowIndex` | 34 wrong | u `long-document` jsou indexy výjimek posunuté o −3 (očekáváno 28, výstup 25) | klasifikace štítků — ověřit číslování řádků v digestu `ContentTagClassifier` |
+| `supplier.contact.web` | 16 missing | web dodavatele model nevyplňuje | prompt |
+| `supplier.courtRegistration` | 12 wrong | bez úvodu „Spisová značka“, podobnost 0,73 | prompt, nebo rovnocenný tvar (#118 / projekce) |
+| `rows[].item.description` | 9 extra, 2 missing, 2 wrong | období plnění vložené do popisu řádku místo `dates.periodFrom/To` (viz níže) | prompt |
+| `notes.onDocument` | 8 wrong | místo volné poznámky bere text o DPH (čl. 138, § 92a) | prompt |
+| `customer.taxId`, `supplier.taxId` | 6 + 4 missing | vyplní `vatId`, `taxId` nechá prázdné | prompt / sémantika `taxId` vs. `vatId` (#118) |
+| `dates.periodFrom`, `dates.periodTo` | 4 + 4 missing | období plnění nenašel v hlavičce (skončilo v popisu řádku) | prompt |
+| `dates.taxPointDate` | 4 extra | u dokladu bez DPH (`noVat`) doplní DUZP | prompt / rovnocenný tvar u `vat.mode: none` |
+| `supplier.bankAccount.iban` | 3 wrong | IBAN s vynechanou nebo přehozenou číslicí (platební údaj!) | chyba modelu — kandidát na kontrolní součet IBAN v produkční cestě |
+| `_resolve.contentTag.tag` | 2 wrong | `long-document` (`goods.stock`) jako `office.cleaning` | klasifikace štítků |
+| `payment.paymentReference` | 2 extra | u EU faktury dosadí číslo faktury jako VS | prompt |
+| `rows[].vat.pct` | 2 extra | třetí země: 0 místo `null` | rovnocenný tvar (#118) |
+| ostatní | 1× `priceCalcMode`, `supplyKind`, `zip` („CA 94105“) | jednotlivosti | — |
+
+Shoda jen po normalizaci (podklad #118): telefon s mezerami 18×, PSČ
+s mezerou 10×, `totalRounding` 0 ≡ null 4×, IBAN s mezerami 3×.
+
+Závěr: baseline je použitelný etalon — hodnotové jádro dokladu (částky, DPH,
+řádky, klasifikace) sedí, systematické mezery jsou v identifikačních
+a textových polích a ve štítcích řádků. Další krok podle roadmapy M4: stejná
+sada s variantou pro model řady 5 (`call.model`) a `--repeat 3`, pak
+`ai-eval-compare` proti tomuto běhu. Nálezy k promptu a klasifikaci
+štítků řešit úpravou promptu / kódu se samostatnou evaluací, ne úpravou
+očekávání.
+
 ## Kroky
 
 1. Serverové AI připojení (D40) + testy + `docs/ai.md`, `docs/cli.md`.
@@ -227,8 +278,9 @@ různými sadami (hash).
 - [x] unit testy porovnávače, `ai-eval`, `ai-eval-compare` zelené (úzké `--filter`)
 - [x] preflight odmítne zdroj dat s použitým dokladem ze sady, cizí data
       a server mimo `development` (`AiEvalCommandTest`; navíc pravidla IČO → štítek)
-- [ ] první běh `baseline` nad `cz-vat-payer` po schválení, výsledek
-      v `tests/eval/cz-vat-payer/`, metriky shrnuté v tasku
+- [x] první běh `baseline` nad `cz-vat-payer` po schválení (2026-10-15),
+      výsledek v `tests/eval/cz-vat-payer/2026-10-15-baseline.json`,
+      metriky shrnuté v § 8
 - [x] `docs/test-corpus.md` § 18 (evaluace: varianty, metriky, soubor výsledků,
       porovnání, opakování), `docs/cli.md`, `docs/ai.md`, `CLAUDE.local.md`
       nedotčený (zdroje dat dopíše člověk)
