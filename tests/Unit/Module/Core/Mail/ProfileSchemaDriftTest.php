@@ -86,7 +86,7 @@ class ProfileSchemaDriftTest extends TestCase
         [$profile] = $this->loadProfile();
 
         $this->assertSame('czech_general', $profile['profile_id']);
-        $this->assertSame('v4.7.1', $profile['prompt_version']);
+        $this->assertSame('v4.8.0', $profile['prompt_version']);
         $this->assertContains('invoiceReceived', $profile['supported_doc_types']);
         foreach (['contract', 'insurance', 'quotation', 'certificate', 'official'] as $registryType) {
             $this->assertContains($registryType, $profile['supported_doc_types']);
@@ -110,6 +110,7 @@ class ProfileSchemaDriftTest extends TestCase
         $this->assertStringContainsString('120 znaků', $prompt);
         // Verze v promptu (source.promptVersion + ukázka) sleduje prompt_version profilu.
         $this->assertSame(2, substr_count($prompt, $profile['prompt_version']));
+        $this->assertStringNotContainsString('v4.7.1', $prompt);
         $this->assertStringNotContainsString('v4.7.0', $prompt);
         $this->assertStringNotContainsString('v4.6.2', $prompt);
         $this->assertStringNotContainsString('v4.6.1', $prompt);
@@ -175,6 +176,7 @@ class ProfileSchemaDriftTest extends TestCase
         }
 
         $this->assertStringContainsString('"' . $profile['prompt_version'] . '"', $prompt, 'prompt must pin its own version');
+        $this->assertStringNotContainsString('v4.7.1', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.7.0', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.6.2', $prompt, 'stale prompt version reference');
         $this->assertStringNotContainsString('v4.6.1', $prompt, 'stale prompt version reference');
@@ -220,5 +222,26 @@ class ProfileSchemaDriftTest extends TestCase
         // Ukázka: žádný konkrétní kód DPH, jinak ho model opisuje.
         $this->assertStringNotContainsString('"cz-110"', $prompt);
         $this->assertStringNotContainsString('isReversePair": false', $prompt);
+    }
+
+    public function testPromptRulesForBankAccountReverseChargeAndAddress(): void
+    {
+        // tasks/testing-phase4b.md D43 (nálezy tasks/testing-phase4.md § 10):
+        // bankovní spojení dodavatele vždy do supplier.bankAccount (pod
+        // payment = schema_error), reverseCharge jen při výslovném přenesení
+        // (čl. 138 je false), číslo domu odděleně jen tam, kde následuje za
+        // ulicí. Pravidla nesmí znát korpus (adresa z identities.jsonc).
+        [$profile] = $this->loadProfile();
+        $prompt = (string) $profile['prompt_template'];
+
+        $this->assertStringContainsString('"supplier".bankAccount', $prompt);
+        $this->assertStringContainsString('Nikdy ho nedávej pod "payment"', $prompt);
+        $this->assertStringContainsString('čl. 138', $prompt);
+        $this->assertStringContainsString('intra-Community supply', $prompt);
+        $this->assertStringContainsString('reverseCharge: true JEN', $prompt);
+        $this->assertStringContainsString('"address".houseNumber', $prompt);
+        $this->assertStringContainsString('"100 Main Street, Suite 5"', $prompt);
+        $this->assertStringNotContainsString('500 Market Street', $prompt, 'prompt nesmí znát adresu korpusu');
+        $this->assertStringNotContainsString('Suite 200', $prompt, 'prompt nesmí znát adresu korpusu');
     }
 }

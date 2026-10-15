@@ -24,7 +24,7 @@ Audit běhu: každý `core_mail_message_analyses` row si propíše `profile_ndx`
 `backend_ndx` a `prompt_version`, takže historie je auditovatelná i po pozdějších
 změnách profilu.
 
-## Default prompt (v4.7.1)
+## Default prompt (v4.8.0)
 
 Od `v4.0.0` je analýza **message-centrická**
 ([tasks/mail-message-centric.md](../../../../tasks/mail-message-centric.md)
@@ -64,7 +64,7 @@ Klíčové pokyny v promptu:
   ISO 3166-1 alpha-2 lowercase (`cz`).
 - `selfParty` vždy `"customer"` (jsme příjemce přijaté faktury).
 - `source.kind` vždy `"aiExtraction"`, `source.promptVersion` vždy
-  shodná s `prompt_version` profilu (`v4.6.2`).
+  shodná s `prompt_version` profilu (`v4.8.0`).
 - **Kód DPH určuje systém, ne model** (od v4.6.0): `rows[].vat.code`
   a `vatRecap[].vatCode` vždy null, `vat.registrationCountry` vynechat.
   Model vrací jen sémantické signály — `vat.place` (`domestic` /
@@ -86,6 +86,18 @@ Klíčové pokyny v promptu:
   `false`, pole se nevynechává). Server chybějící druh plnění stejně
   doplní ze štítku řádku (`supply_kind_derived`, § 8.4) — pravidlo
   jen zmenšuje počet návrhů s tímto warningem.
+- **Bankovní spojení dodavatele vždy do `supplier.bankAccount`** (od
+  v4.8.0) — i u dokladu bez DPH a od neplátce; nikdy pod `payment`
+  (schéma má `additionalProperties: false`, cizí klíč = `schema_error`
+  celé analýzy), nikdy nevynechat, když je na dokladu.
+- **`vat.reverseCharge` jen při výslovném přenesení** (od v4.8.0):
+  osvobozené dodání zboží do jiného členského státu (čl. 138,
+  „intra-Community supply“) je `false`; místo a druh plnění určí systém
+  z `vat.place` a `supplyKind`.
+- **Číslo domu odděleně jen tam, kde následuje za ulicí** (od v4.8.0):
+  u adres s číslem před ulicí (US, UK) celý řádek do `street`,
+  `houseNumber` null — tvar hodnot korpusu
+  ([`docs/test-corpus.md`](../../../../docs/test-corpus.md) § 11).
 - `totals.totalRounding` = zaokrouhlení celkové částky se znaménkem
   (dolů = záporné); zaokrouhlení nikdy nepatří jako položkový řádek
   do `rows`.
@@ -264,6 +276,31 @@ backendů (`default` Anthropic Claude Sonnet pro běžné případy, druhý back
 s Claude Opus pro náročné dokumenty) a přiřadit je různým profilům.
 
 ## Changelog promptu
+
+### v4.8.0 (2026-10-15)
+
+Tři věci, které modely řady 5 dělají jinak než očekávání korpusu
+([tasks/testing-phase4b.md](../../../../tasks/testing-phase4b.md) D43;
+nálezy [tasks/testing-phase4.md](../../../../tasks/testing-phase4.md)
+§ 10, #103): bankovní spojení dodavatele od neplátce model vynechal nebo
+dal pod `payment` (cizí klíč = `schema_error` celé analýzy), osvobozené
+dodání zboží z EU (čl. 138) označil jako přenesení daňové povinnosti
+a adresu s číslem před ulicí rozdělil na číslo a ulici.
+
+- PRAVIDLA: bankovní spojení dodavatele na dokladu VŽDY do
+  `"supplier".bankAccount` (`accountNumber`, `iban`, `bic`), i u dokladu
+  bez DPH a od neplátce; nikdy pod `"payment"`, nikdy nevynechat.
+- PRAVIDLA: `"vat".reverseCharge` `true` JEN při výslovném přenesení
+  (reverse charge, čl. 196, § 92a); osvobozené dodání zboží do jiného
+  členského státu („intra-Community supply“, „steuerfreie
+  innergemeinschaftliche Lieferung“, čl. 138) je `false` — místo a druh
+  plnění určí systém z `"vat".place` a `supplyKind`.
+- PRAVIDLA: číslo domu do `houseNumber` jen tam, kde následuje za ulicí
+  (CZ, SK, DE, AT, PL…); kde ulici předchází (US, UK, FR…), celý řádek do
+  `street` a `houseNumber` null.
+- Ukázka beze změny, schéma beze změny (minor). Pravidla jsou obecná —
+  bez čísel dokladů a adres korpusu, aby evaluace neměřila prompt, který
+  zná test.
 
 ### v4.7.1 (2026-10-07)
 
