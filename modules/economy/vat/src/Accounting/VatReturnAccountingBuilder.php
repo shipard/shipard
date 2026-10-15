@@ -24,14 +24,16 @@ use Shipard\Module\Economy\Vat\FilingSnapshotLoader;
  *    SS = prefix + RRRRMM konce období, KS z configu.
  * 3. **Neuplatnitelná část krácených kódů** — přesně: krácený sloupec
  *    ř. 46 minus odpočet ř. 52 (delta proti předchozímu); kladná = náklad
- *    MD 548, záporná (koeficient nahoru) DAL. Starý systém ji nerozlišoval
- *    a nechal ji v zaokrouhlení.
+ *    MD na účet kategorie `vat.nondeductible` (548, v NNO 549), záporná
+ *    (koeficient nahoru) DAL. Starý systém ji nerozlišoval a nechal ji
+ *    v zaokrouhlení.
  * 4. **Zaokrouhlení** — zbytek do Σ MD = Σ DAL na `rounding.cost` (MD) /
  *    `rounding.revenue` (DAL). Sanity: |zbytek| ≤ 0,5 × počet řádků DP3
  *    s daní + 0,01; větší znamená rozjetý snapshot nebo mapování → chyba.
  *
  * Prázdný výsledek (žádný řádek) je legitimní — info do zpráv, doklad se
- * nezakládá. Chybějící účet (analytika kódu, saldo, 548/648) = chyba;
+ * nezakládá. Chybějící účet (analytika kódu, saldo, zaokrouhlení) = chyba
+ * s maskou z předpisu v hlášce (`categoryMasks` vstupu, #122 D3);
  * uživatel účet doplní a akci spustí znovu — nevyrovnaný koncept by mu
  * nepomohl.
  */
@@ -216,7 +218,8 @@ final class VatReturnAccountingBuilder
             $this->message(
                 self::MSG_ACCOUNT_MISSING,
                 VatReturnAccountingPlan::SEVERITY_ERROR,
-                'Rozvrh nemá účet pro DPH bez nároku na odpočet (kategorie vat.nondeductible, 548)'
+                'Rozvrh nemá účet pro DPH bez nároku na odpočet (kategorie vat.nondeductible'
+                . self::maskHint($in, 'nondeductible') . ')'
                 . ' — doplňte účet a spusťte zaúčtování znovu.',
             );
             return $delta;
@@ -270,11 +273,11 @@ final class VatReturnAccountingBuilder
         $category = $revenue ? 'roundingRevenue' : 'roundingCost';
         $account  = $in->categoryAccounts[$category] ?? null;
         if ($account === null) {
-            $mask = $revenue ? '648' : '548';
             $this->message(
                 self::MSG_ACCOUNT_MISSING,
                 VatReturnAccountingPlan::SEVERITY_ERROR,
-                "Rozvrh nemá účet zaokrouhlení {$mask} (kategorie rounding." . ($revenue ? 'revenue' : 'cost') . ')'
+                'Rozvrh nemá účet zaokrouhlení (kategorie rounding.' . ($revenue ? 'revenue' : 'cost')
+                . self::maskHint($in, $category) . ')'
                 . ' — doplňte účet a spusťte zaúčtování znovu.',
             );
             return $remainder;
@@ -286,6 +289,21 @@ final class VatReturnAccountingBuilder
             "Zaokrouhlení DPH {$in->periodName}",
         );
         return $remainder;
+    }
+
+    /**
+     * Dodatek hlášky „, maska 548 / 548“ z masek předpisu pro kategorii
+     * (řetěz masek oddělený lomítkem); bez masek prázdný řetězec.
+     */
+    private static function maskHint(VatReturnAccountingInput $in, string $category): string
+    {
+        $masks = [];
+        foreach ($in->categoryMasks[$category] ?? [] as $mask) {
+            if ((string) $mask !== '') {
+                $masks[] = (string) $mask;
+            }
+        }
+        return $masks === [] ? '' : ', maska ' . implode(' / ', $masks);
     }
 
     /** Počet řádků DP3 s nenulovou daní (tohoto i předchozího podání) — každý se zaokrouhluje zvlášť. */

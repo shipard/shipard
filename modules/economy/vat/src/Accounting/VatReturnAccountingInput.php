@@ -38,6 +38,9 @@ final readonly class VatReturnAccountingInput
      *        `reportTypes.return.accounting` z `vat-reports-cz.jsonc`
      * @param string $vatId DIČ registrace (VS = číslice bez prefixu země)
      * @param ?int $taxOfficePerson správce daně z registrace — partner saldo řádku
+     * @param array<string, list<string>> $categoryMasks masky předpisu pro
+     *        `nondeductible`, `roundingCost`, `roundingRevenue` — jen do hlášek
+     *        o chybějícím účtu (#122 D3; 548 / 648, v NNO 549 / 649)
      */
     public function __construct(
         public string $kind,
@@ -55,5 +58,6 @@ final readonly class VatReturnAccountingInput
         public array $accounting,
         public string $vatId = '',
         public ?int $taxOfficePerson = null,
+        public array $categoryMasks = [],
     ) {}
 }

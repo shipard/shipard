@@ -424,6 +424,7 @@ final class VatReturnAccountingBuilderTest extends TestCase
         $categories['nondeductible'] = null;
         $plan = $this->build([
             'categoryAccounts' => $categories,
+            'categoryMasks'    => ['nondeductible' => ['549']],
             'taxByCode'        => ['cz-120' => 1000.00, 'cz-118' => 484.60],
             'exactRows'        => self::rows([
                 1 => 1000.00, 40 => ['taxReduced' => 484.60], 46 => ['taxReduced' => 484.60],
@@ -436,7 +437,28 @@ final class VatReturnAccountingBuilderTest extends TestCase
         ]);
 
         $this->assertFalse($plan->isOk());
-        $this->assertStringContainsString('vat.nondeductible', $plan->errors()[0]['message']);
+        $this->assertStringContainsString('vat.nondeductible, maska 549', $plan->errors()[0]['message']);
+    }
+
+    public function testMissingRoundingAccountMessageNamesMaskChainFromRules(): void
+    {
+        // Výchozí scénář potřebuje zaokrouhlení 0,22 na výnos; bez účtu je
+        // to chyba s maskou z předpisu (#122 D3, v NNO 649), bez masek jen
+        // kategorie — žádná natvrdo zapsaná 648.
+        $categories = self::categories();
+        $categories['roundingRevenue'] = null;
+
+        $plan = $this->build([
+            'categoryAccounts' => $categories,
+            'categoryMasks'    => ['roundingRevenue' => ['649100', '649']],
+        ]);
+        $this->assertFalse($plan->isOk());
+        $this->assertSame([VatReturnAccountingBuilder::MSG_ACCOUNT_MISSING], array_column($plan->errors(), 'code'));
+        $this->assertStringContainsString('rounding.revenue, maska 649100 / 649', $plan->errors()[0]['message']);
+
+        $plan = $this->build(['categoryAccounts' => $categories]);
+        $this->assertStringContainsString('(kategorie rounding.revenue)', $plan->errors()[0]['message']);
+        $this->assertStringNotContainsString('648', $plan->errors()[0]['message']);
     }
 
     public function testUnknownVatCodeIsWarningTreatedAsInput(): void

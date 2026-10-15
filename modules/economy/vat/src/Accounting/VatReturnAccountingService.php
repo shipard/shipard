@@ -14,6 +14,7 @@ use Shipard\Core\Document\DocumentResult;
 use Shipard\Core\Document\TableGateway;
 use Shipard\Core\Settings\SettingsStore;
 use Shipard\Module\Core\Exchange\Common\TransactionlessTableGateway;
+use Shipard\Module\Economy\Accounting\AccountingRules;
 use Shipard\Module\Economy\Accounting\AccountMaskResolver;
 use Shipard\Module\Economy\Vat\FilingDocument;
 use Shipard\Module\Economy\Vat\FilingSnapshotLoader;
@@ -222,8 +223,10 @@ final class VatReturnAccountingService
 
         $country  = strtolower((string) ($registration['country'] ?? '')) ?: 'cz';
         $vatCodes = (new VatRateResolver($this->config))->getVatCodes($country, null, null, true);
-        $rules    = $this->config->cfgItem("economy.accounting.rules.{$country}")
-            ?? $this->config->cfgItem('economy.accounting.rules.cz');
+        // Předpis = účetní jurisdikce vlastní firmy a varianta její osnovy
+        // (#122 D3), ne země registrace — ta řídí jen kódy, výkaz a správce
+        // daně; efektivní předpis (přepisy NNO) dává AccountingRules.
+        $rules        = AccountingRules::resolve($this->config, $this->db);
         $accountRules = is_array($rules) && is_array($rules['accounts'] ?? null) ? $rules['accounts'] : [];
         $resolver     = new AccountMaskResolver($this->db);
         $dateEnd      = (string) $period['date_end'];
@@ -257,6 +260,11 @@ final class VatReturnAccountingService
             accounting: $accounting,
             vatId: (string) ($registration['vat_id'] ?? ''),
             taxOfficePerson: !empty($registration['tax_office_person']) ? (int) $registration['tax_office_person'] : null,
+            categoryMasks: [
+                'nondeductible'   => $this->categoryMasks($accountRules, 'vat.nondeductible'),
+                'roundingCost'    => $this->categoryMasks($accountRules, 'rounding.cost'),
+                'roundingRevenue' => $this->categoryMasks($accountRules, 'rounding.revenue'),
+            ],
         );
 
         return [
