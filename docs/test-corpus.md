@@ -830,6 +830,16 @@ shodných po normalizaci a **jen odchylky** `{path, state, expected, actual,
 similarity}`. Data korpusu jsou fiktivní, výsledky nad veřejnými sadami
 patří do veřejného repa; nad reálnými doklady jen do soukromého (D8).
 
+### Porovnání běhů (`shpd-ds ai-eval-compare`, D38)
+
+`EvalRunComparison`: dva soubory výsledků nad touž sadou (hash obsahu;
+jiná sada = odmítnuto) — metriky vedle sebe s rozdílem B − A a směrem
+(u ceny, času a selhání je lepší nižší hodnota), rozdíl menší nebo rovný
+největšímu rozpětí opakování některého z běhů jako **v rámci šumu** (D41;
+bez opakování se šum neurčí a každý rozdíl se bere doslova), pole
+zlepšená / zhoršená podle počtu volání s odchylkou per uzel, upozornění
+na jiný výběr zpráv. UI evaluací je F6.
+
 ### Pasti
 
 - **Útrata.** Každé volání stojí peníze; odhad a `--yes` nejsou formalita.

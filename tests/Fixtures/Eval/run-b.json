@@ -1,0 +1,11 @@
+{
+    "format": "shpd.eval.run.v1",
+    "set": {"name": "cz-vat-payer", "country": "cz", "profile": "vat-payer", "hash": "aaaa1111", "messages": 2, "messagesInSet": 20, "only": ["0101", "0201"], "limit": null},
+    "git": {"commit": "def5678", "dirty": true},
+    "variant": {"name": "sonnet55", "effective": {"model": "claude-sonnet-5-5", "connection": "server", "promptHash": "p1"}},
+    "startedAt": "2026-10-16T10:00:00+02:00",
+    "finishedAt": "2026-10-16T10:04:00+02:00",
+    "repeat": 1,
+    "metrics": {"fields.all.hit": 0.93, "fields.all.normalized": 0.04, "fields.header.hit": 0.95, "documents.clean": 0.75, "documents.amountsCorrect": 0.5, "calls.total": 2, "calls.ok": 2, "calls.failed": 0, "cost.usd": 0.05, "cost.perDocument": 0.025, "tokens.input": 20000, "tokens.output": 4500, "time.ms": 15000, "time.perDocumentMs": 7500},
+    "deviationsByField": {"rows[].item.name": 1, "totals.totalAmount": 2}
+}

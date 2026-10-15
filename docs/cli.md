@@ -1426,6 +1426,24 @@ volání selhalo infrastrukturně (`ai_error`, `config_error`, `internal`),
 canonical) je výsledek zprávy, ne pád. Výstup nikdy přes `| head`
 (SIGPIPE) — `--json > soubor`.
 
+#### `ai-eval-compare`
+
+```bash
+shpd-ds ai-eval-compare tests/eval/cz-vat-payer/2026-10-15-baseline.json tests/eval/cz-vat-payer/2026-10-20-sonnet55.json
+shpd-ds ai-eval-compare A.json B.json --json
+```
+
+Dva soubory výsledků `ai-eval` vedle sebe (#103 D38): metriky s rozdílem
+B − A a směrem (`lepší` / `horší`; u ceny, času a selhání je lepší nižší
+hodnota), rozdíl menší nebo rovný největšímu rozpětí opakování některého
+z běhů označený **v rámci šumu** (jen má-li některý běh `--repeat > 1`),
+pole zlepšená / zhoršená (uzel projekce, počet volání s odchylkou A→B),
+jiný výběr zpráv (`--only` / `--limit`) jako varování. Běhy nad různými
+sadami (hash obsahu `mail/` + `expected/`) odmítne (exit 2). Nic nevolá
+ani nezapisuje; běží i mimo adresář zdroje dat. `--json` = porovnání
+jako JSON (`set`, `runs`, `metrics[{key, a, b, delta, noise, withinNoise,
+better}]`, `fields{improved, worsened}`, `sameSelection`).
+
 #### `ai-profile-reload`
 
 ```bash

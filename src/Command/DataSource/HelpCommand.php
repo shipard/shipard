@@ -123,6 +123,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>ai-profile-reload</info>       Reload AI profile from JSONC template into the DB');
         $output->writeln('  <info>ai-test</info>                 Test AI functions: resolver decision + a minimal live request per function (--function, --json; costs a fraction of a cent)');
         $output->writeln('  <info>ai-eval</info>                 Evaluate the AI analysis over a dataset: dry-run analysis vs. expected canonical, results file in tests/eval/ (--variant, --only, --limit, --repeat, --save-raw, --out, --yes, --json; costs money)');
+        $output->writeln('  <info>ai-eval-compare</info>         Compare two ai-eval results files side by side: metric deltas, repeat noise, fields improved / worsened (--json)');
         $output->writeln('  <info>mail-analysis-reap</info>      Release expired AI analysis claims and re-queue affected messages');
         $output->writeln('');
         $output->writeln('<comment>Dataset:</comment>');
@@ -151,6 +152,7 @@ class HelpCommand extends Command
         $output->writeln('  shpd-ds ai-backend-set-key --backend default');
         $output->writeln('  shpd-ds ai-test --function mail.extraction');
         $output->writeln('  shpd-ds ai-eval /path/to/repo/tests/datasets/cz/vat-payer --variant /path/to/repo/tests/eval/variants/baseline.jsonc --only 0101 --yes');
+        $output->writeln('  shpd-ds ai-eval-compare tests/eval/cz-vat-payer/A.json tests/eval/cz-vat-payer/B.json');
         $output->writeln('  shpd-ds ds-secrets-rotate --dry-run');
         $output->writeln('  shpd-ds dataset-dump /tmp/web-demo --zip');
         $output->writeln('  shpd-ds dataset-seed /tmp/web-demo.zip -y');

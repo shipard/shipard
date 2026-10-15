@@ -1,0 +1,9 @@
+{
+    "format": "shpd.eval.run.v1",
+    "set": {"name": "cz-non-payer", "hash": "bbbb2222", "messages": 2},
+    "variant": {"name": "baseline", "effective": {"model": "claude-sonnet-4-6", "connection": "server"}},
+    "startedAt": "2026-10-16T10:00:00+02:00",
+    "repeat": 1,
+    "metrics": {"fields.all.hit": 0.9, "calls.total": 2},
+    "deviationsByField": {}
+}
