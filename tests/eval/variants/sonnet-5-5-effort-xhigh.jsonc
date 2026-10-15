@@ -1,0 +1,16 @@
+// Varianta evaluace AI analýzy k otázce explicitního thinking / effort u Sonnet 5.5
+// (tasks/testing-phase4.md § 9 bod 1, tasks/testing-phase4b.md § 6): jako sonnet-5-5-tags.jsonc
+// (profil ze zdroje dat, model mail.extraction i exchange.contentTags = claude-sonnet-5-5),
+// ale thinking i effort poslané výslovně: `adaptive` + `xhigh`, tedy o stupeň víc úsilí než
+// výchozí `high` Sonnet 5.5 (katalog capabilities.effortLevels; bez parametru = high).
+// Varianta měří, jestli vyšší úsilí přinese víc shody nebo stability a za kolik
+// (thinking se u řady 5 účtuje jako výstup) proti běhu sonnet-5-5-tags-2 bez parametrů.
+{
+	"format": "shpd.eval.variant.v1",
+	"name": "sonnet-5-5-effort-xhigh",
+	"description": "Profil czech_general, mail.extraction i exchange.contentTags na claude-sonnet-5-5, thinking adaptive + effort xhigh výslovně",
+	"profile": "czech_general",                  // kód profilu pošty
+	"promptTemplateFile": null,                  // šablona promptu ze souboru (vyzkoušení bez zásahu do zdroje dat)
+	"call": { "connection": null, "model": "claude-sonnet-5-5", "thinking": "adaptive", "effort": "xhigh", "maxTokens": null },
+	"contentTags": { "model": "claude-sonnet-5-5", "thinking": "adaptive", "effort": "xhigh" }, // přepis funkce exchange.contentTags
+}

@@ -1,6 +1,6 @@
 # Testování F4b: oprava očekávání, prompt v4.8.0 a srovnání modelů řady 5
 
-**Stav:** hotovo — 2026-10-15 (#103 D42–D46; výsledky v § 5, M4 nepřepnuto — doporučení ano, rozhodnutí lidské)
+**Stav:** hotovo — 2026-10-15 (#103 D42–D46; výsledky v § 5, explicitní thinking / effort u Sonnet 5.5 v § 6 — do deklarace nepatří; M4 nepřepnuto — doporučení ano, rozhodnutí lidské)
 
 ## Kontext / Cíl
 
@@ -281,6 +281,119 @@ adaptivním thinking; a produkční cesta má dostat kontrolní součet IBAN
 a upozornění „bez bankovního spojení“ (#118), protože 4.6 IBAN komolí
 deterministicky a 5.5 ho jen jinak formátuje.
 
+## 6. Explicitní `thinking` / `effort` u Sonnet 5.5 × 3 (2026-10-15)
+
+Otevřený bod 1 závěru F4 § 9 (a poslední odstavec § 5): všechny běhy řady 5
+jely s výchozím adaptivním thinking a výchozím úsilím (deklarace funkce
+thinking / effort nemá, D36 — parametr se neposílá). Dva běhy nad touž sadou
+(hash `427e8322`), týmž zdrojem dat `vg39-l` (přeseedovaný, žádný doklad
+použitý), serverovým připojením a promptem v4.8.0, git `d2354a28`,
+20 zpráv × 3 = 60 volání na variantu, obě s `call.model`
+i `contentTags.model` = `claude-sonnet-5-5` jako `sonnet-5-5-tags`:
+
+- `sonnet-5-5-thinking-off` — thinking **`between_tools`**, effort
+  neposlán. Zadání chtělo `disabled`, ale Sonnet 5.5 ho odmítá (HTTP 400);
+  katalog (`models.jsonc`, `capabilities.thinkingModes`) má jako jediný
+  vypnutý režim `between_tools` a tvarovač by `disabled` sám nahradil —
+  varianta deklaruje rovnou platnou hodnotu. Bez nástrojů ve volání je to
+  volání bez přemýšlení; `thinkingOffMaxEffort: high` se nepoužije, effort
+  nejde.
+- `sonnet-5-5-effort-xhigh` — thinking `adaptive` + effort **`xhigh`**
+  výslovně, o stupeň víc než výchozí `high`. Původně zadané `effort: high`
+  = dokumentovaná výchozí hodnota Sonnet 5.5, takže by varianta měřila jen
+  šum mezi běhy; po schválení útraty přišlo zadání `xhigh`. Běh
+  `sonnet-5-5-effort-high` už mezitím jel — zastaven po 18 voláních
+  (0,69 USD, bez souboru výsledků, varianta smazaná).
+
+Schválení útraty v chatu ~6,6 USD; skutečnost **7,02 USD** (2,79 + 0,69
+zastavená část + 3,55). Srovnávací základ = `sonnet-5-5-tags-2` z § 5
+(táž sada, týž prompt, parametry neposlané).
+
+| Metrika | sonnet-5-5-tags-2 (výchozí) | sonnet-5-5-thinking-off | sonnet-5-5-effort-xhigh |
+|---------|-----------------------------|-------------------------|-------------------------|
+| Soubor `tests/eval/cz-vat-payer/2026-10-15-…` | `sonnet-5-5-tags-2` | `sonnet-5-5-thinking-off` | `sonnet-5-5-effort-xhigh` |
+| Thinking / effort (`effective`) | neposláno / neposláno | `between_tools` / neposláno | `adaptive` / `xhigh` |
+| Volání / úspěšných / selhání | 60 / 60 / 0 | 60 / 60 / 0 | 60 / 60 / 0 |
+| Shoda polí celkem (match + po normalizaci), průměr [min–max] | 94,8 % [94,8–94,9] (norm. 1,1 %) | 94,7 % [94,6–94,8] (1,2 %) | **94,9 %** [94,9–95,0] (1,1 %) |
+| Hlavička / dodavatel / odběratel | 93,9 / **92,0** / 99,6 % | 93,6 / 91,3 / 99,6 % | **94,6** / 91,6 / 99,5 % |
+| DPH / řádky / rekapitulace / součty | 99,8 / 92,9 / 100 / 100 % | 99,7 / 92,9 / 100 / 100 % | 99,8 / 93,0 / 100 / 100 % |
+| Štítek dokladu | 100 % | 100 % | 100 % |
+| Výjimky štítků řádků | 91,5 % | 91,0 % [90,3–91,3] | 91,3 % |
+| Klasifikace zprávy | 100 % | 100 % | 100 % |
+| Doklady bez odchylky | 10,0 % | 10,0 % | 10,0 % |
+| Správné částky / počet řádků / klasifikace / štítek | 100 / 100 / 100 / 100 % | 100 / 100 / 100 / 100 % | 100 / 100 / 100 / 100 % |
+| Cena běhu (na doklad) | 2,89 USD (0,0482) | **2,79 USD (0,0464)** | 3,55 USD (0,0591) |
+| Tokeny na doklad (vstup / výstup) | 11,5 k / 2,5 k | 11,5 k / **2,3 k** | 11,5 k / 3,6 k |
+| Čas na doklad (celý běh) | 13,9 s (13,9 min) | **12,1 s** (12,1 min) | 20,1 s (20,1 min) |
+| Stabilních uzlů z 85 (věcně, `fieldStability`) | 80 | 75 | **82** |
+| Formátově stabilních z 84 (`formatStability`) | 80 | 81 | 80 |
+| Doklady se stejným počtem odchylek ve všech 3 opakováních | 12 z 20 | 11 z 20 | **15 z 20** |
+| Odhad → skutečnost | 3,13 → 2,89 (92 %) | 3,30 → 2,79 (84 %) | 3,04 → 3,55 (117 %) |
+
+Odhad `thinking-off` šel z tokenů běhu `fable-5-1` (poslední běh téže řady
+před ním), odhad `xhigh` z právě hotového běhu `thinking-off` — nejlevnějšího
+výstupu řady 5, proto 117 %; obojí pod pojistkou 150 %.
+
+**`ai-eval-compare` proti `sonnet-5-5-tags-2`** (na jedno opakování; „mimo
+šum“ = rozdíl nad rozpětím opakování obou běhů):
+
+| Varianta | Celkem | Skupiny mimo šum | Pole zlepšená (odchylek / opak. A → B) | Pole zhoršená |
+|----------|--------|------------------|----------------------------------------|---------------|
+| `sonnet-5-5-thinking-off` | −0,1 % v rámci šumu | dodavatel −0,7 horší; cena −3,6 %, výstup −7 % tokenů, čas −13 % lepší | `payment.paymentReference` 2,7 → 2 | `supplier.taxId` 0,7 → 2,3, `dates.taxPointDate` 1 → 1,7, `notes.onDocument` 9 → 9,7, `supplier.bankAccount.iban` 0 → 0,7 |
+| `sonnet-5-5-effort-xhigh` | +0,1 % v rámci šumu | dodavatel −0,4 horší, řádky +0,1 lepší, výjimky řádků −0,2 horší (vše pod jedním voláním na opakování); cena +23 %, výstup +44 % tokenů, čas +45 % horší | `dates.taxPointDate` 1 → 0, `notes.onDocument` 9 → 8,3, `payment.paymentReference` 2,7 → 2 | `supplier.taxId` 0,7 → 2,3 |
+
+**Co je nastavení a co šum mezi běhy** (ověřeno nad všemi jedenácti soubory
+v `tests/eval/cz-vat-payer/`):
+
+- **`supplier.taxId` 0,7 → 2,3 v obou nových bězích** není vlastnost
+  nastavení — odchylka je DIČ dodavatele z EU (`0502`, `0601`, `0602`,
+  model vyplní jen `vatId`) a běh `tags-2` byl se 2 odchylkami ze 60
+  výjimka; každý jiný běh řady 5 i 4.6 jich má 7–12. Totéž „zrcadlově“
+  u výjimek štítků řádků: `0702` `travel.fares` na řádku 1 chybí 3× v obou
+  nových bězích (jako Opus a Fable 3×, Haiku 2×), `tags` i `tags-2` ho
+  měly 3× správně; `0402` `services.waste` navíc 3× v `tags-2`, 0× v obou
+  nových (a 0× u Opus). Štítkování řádků (`exchange.contentTags`) kolísá
+  mezi běhy nezávisle na směru nastavení — oba efekty se v metrice
+  vyruší (91,5 → 91,0 / 91,3 %).
+- **Thinking vypnutý:** jediný nový druh chyby je **IBAN komolený 2× ze 60**
+  (`0102`, opakování 1 a 3 — přeházené číslice, dva různé tvary; s thinking
+  0× v `tags-2` i `xhigh`, 1× v `tags`, 2× v prvním běhu § 9 na v4.7.1).
+  Na 60 voláních to nejde oddělit od náhody, ale je to tentýž typ chyby,
+  který u 4.6 řeší kontrolní součet IBAN (#118) — produkční pojistka je
+  nezávislá na modelu i nastavení. Dál jedno „rozsypané“ volání `0802`
+  (chybí `dueDate` a `reverseCharge`, město „San Francisco, CA“),
+  `dates.taxPointDate` navíc u `0801` 2×, `rows[].item.description`
+  stabilita 85 %, `1001` jednou výjimka `office.equipment` navíc. Stabilita
+  75 z 85 uzlů = nejhorší z běhů Sonnet 5.5; úspora 3,6 % ceny a 13 % času
+  (výstup bez bloků thinking).
+- **Effort xhigh:** žádný nový druh chyby, `dates.taxPointDate` navíc
+  u `0701` zmizelo (3 → 0), poznámka 8,3; `customer.taxId` 5× ze 60
+  (`tags-2` 4×, stabilita 72 vs. 83 %). Nejstabilnější běh (82 z 85 uzlů,
+  15 z 20 dokladů se stejným počtem odchylek, rozpětí 0,1 %), ale výstup
+  o 44 % tokenů delší, cena +23 %, čas +45 % — za +0,1 % v rámci šumu.
+- **Společné všem třem** (prompt / očekávání, podklad #118, beze změny
+  proti § 5): `supplier.contact.web` 16 / opak., `supplier.courtRegistration`
+  12, `rows[].item.supplierCode` 10, `notes.onDocument` 8–10 (text o DPH,
+  čl. 138 nebo „Nejsem plátce DPH“ místo volné poznámky), `dates.periodFrom`
+  / `periodTo` 4 / 4, `rows[].item.description` 4 (období fakturace
+  v popisu řádku `0501` / `0502` / `0801` / `0802`), `rows[].item.ean` 2,
+  `0602` řádek 2 `supplyKind` 3, `0501` / `0502` číslo faktury jako VS,
+  `1001` / `1002` výjimky `people.catering` na řádcích kuchyňky.
+  Formátová nestabilita je totožná: IBAN s mezerami (60 / 89 / 65 %), PSČ
+  (61–80 %), `totals.totalRounding` (85–90 %).
+
+**Doporučení:** výslovné `thinking` / `effort` do deklarace funkcí
+`mail.extraction` ani `exchange.contentTags` **nepatří** — výchozí
+adaptivní thinking a výchozí úsilí Sonnet 5.5 zůstávají (D36: deklarace
+parametr neposílá). Vypnutý thinking ušetří 3,6 % ceny a 13 % času za
+nejnižší stabilitu a jediný nový druh chyby (IBAN); `xhigh` je o 0,1 %
+v rámci šumu lepší a nejstabilnější za +23 % ceny a +45 % času. Kdo chce
+stabilitu za cenu, má cestu přes přepsání funkce v Nastavení → AI → Funkce
+(`core_ai_function_settings`), ne přes repo. Doporučení M4 z § 5 (balanced
+= Sonnet 5.5 bez parametrů) platí beze změny; otevřený bod 1 z F4 § 9 je
+uzavřený. Varianty zůstávají v `tests/eval/variants/` pro opakování po
+změně promptu.
+
 ## Kroky
 
 1. Oprava očekávání (D42), build, ověření snímků.
@@ -304,6 +417,9 @@ deterministicky a 5.5 ho jen jinak formátuje.
       `capabilities`), po opravě proběhl
 - [x] vyhodnocení v tasku: tabulka, porovnání proti baseline, nálezy,
       doporučení pro M4 (§ 5)
+- [x] varianta s explicitním `thinking` / `effort` (F4 § 9 bod 1): `sonnet-5-5-thinking-off`
+      a `sonnet-5-5-effort-xhigh` × 3 — 2026-10-15, 7,02 USD vč. zastavené části;
+      vyhodnocení a doporučení (výchozí hodnoty zůstávají) v § 6
 - [x] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Pasti

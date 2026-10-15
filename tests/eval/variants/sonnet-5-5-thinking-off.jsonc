@@ -1,0 +1,17 @@
+// Varianta evaluace AI analýzy k otázce explicitního thinking / effort u Sonnet 5.5
+// (tasks/testing-phase4.md § 9 bod 1, tasks/testing-phase4b.md § 6): jako sonnet-5-5-tags.jsonc
+// (profil ze zdroje dat, model mail.extraction i exchange.contentTags = claude-sonnet-5-5),
+// ale thinking vypnutý. Sonnet 5.5 hodnotu `disabled` odmítá (HTTP 400) — jediný vypnutý
+// režim v katalogu (modules/core/ai/config/models.jsonc, capabilities.thinkingModes) je
+// `between_tools`; tvarovač (RequestShaper) by `disabled` sám nahradil, deklarujeme rovnou
+// platnou hodnotu. Bez nástrojů ve volání je `between_tools` = bez přemýšlení. Effort null
+// = neposílat (výchozí modelu `high` = strop `thinkingOffMaxEffort`).
+{
+	"format": "shpd.eval.variant.v1",
+	"name": "sonnet-5-5-thinking-off",
+	"description": "Profil czech_general, mail.extraction i exchange.contentTags na claude-sonnet-5-5, thinking between_tools (vypnuto), effort výchozí",
+	"profile": "czech_general",                  // kód profilu pošty
+	"promptTemplateFile": null,                  // šablona promptu ze souboru (vyzkoušení bez zásahu do zdroje dat)
+	"call": { "connection": null, "model": "claude-sonnet-5-5", "thinking": "between_tools", "effort": null, "maxTokens": null },
+	"contentTags": { "model": "claude-sonnet-5-5", "thinking": "between_tools", "effort": null }, // přepis funkce exchange.contentTags
+}

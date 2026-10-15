@@ -1,0 +1,5650 @@
+{
+    "format": "shpd.eval.run.v1",
+    "set": {
+        "name": "cz-vat-payer",
+        "country": "cz",
+        "profile": "vat-payer",
+        "path": "/home/sebik/sw/shpd/tests/datasets/cz/vat-payer",
+        "hash": "427e832266d84f5a55e0c842102fca1d6dabf53784c904410ace9cc134193323",
+        "messages": 20,
+        "messagesInSet": 20,
+        "only": [],
+        "limit": null
+    },
+    "git": {
+        "commit": "d2354a28",
+        "dirty": false
+    },
+    "variant": {
+        "name": "sonnet-5-5-effort-xhigh",
+        "file": "sonnet-5-5-effort-xhigh.jsonc",
+        "declared": {
+            "name": "sonnet-5-5-effort-xhigh",
+            "description": "Profil czech_general, mail.extraction i exchange.contentTags na claude-sonnet-5-5, thinking adaptive + effort xhigh výslovně",
+            "profile": "czech_general",
+            "promptTemplateFile": null,
+            "call": {
+                "connection": null,
+                "model": "claude-sonnet-5-5",
+                "thinking": "adaptive",
+                "effort": "xhigh",
+                "maxTokens": null
+            },
+            "contentTags": {
+                "model": "claude-sonnet-5-5",
+                "thinking": "adaptive",
+                "effort": "xhigh"
+            }
+        },
+        "effective": {
+            "profile": "czech_general",
+            "profileNdx": 1,
+            "promptVersion": "v4.8.0",
+            "promptSource": "profile",
+            "promptHash": "3058626ccfc76411dab8ecec01eb2ae34d0fd15d42beebdd8d00cd03c505ee87",
+            "platform": "anthropic",
+            "connection": "server",
+            "connectionOrigin": "server",
+            "model": "claude-sonnet-5-5",
+            "catalogModel": "claude-sonnet-5-5",
+            "thinking": "adaptive",
+            "effort": "xhigh",
+            "maxTokens": 32768,
+            "temperature": 0.0,
+            "origins": {
+                "connection": "server",
+                "model": "override",
+                "thinking": "override",
+                "effort": "override",
+                "maxTokens": "declaration"
+            },
+            "contentTags": {
+                "connection": "server",
+                "model": "claude-sonnet-5-5",
+                "thinking": "adaptive",
+                "effort": "xhigh",
+                "maxTokens": 8000
+            }
+        }
+    },
+    "startedAt": "2026-10-15T22:57:58+00:00",
+    "finishedAt": "2026-10-15T23:20:46+00:00",
+    "repeat": 3,
+    "metrics": {
+        "calls.total": 60,
+        "calls.ok": 60,
+        "calls.failed": 0,
+        "fields.header.n": 1020,
+        "fields.header.hit": 0.9461,
+        "fields.header.normalized": 0.0,
+        "fields.header.missing": 25,
+        "fields.header.extra": 6,
+        "fields.header.wrong": 24,
+        "fields.supplier.n": 1080,
+        "fields.supplier.hit": 0.9158,
+        "fields.supplier.normalized": 0.0815,
+        "fields.supplier.missing": 55,
+        "fields.supplier.extra": 0,
+        "fields.supplier.wrong": 36,
+        "fields.customer.n": 978,
+        "fields.customer.hit": 0.9949,
+        "fields.customer.normalized": 0.0205,
+        "fields.customer.missing": 5,
+        "fields.customer.extra": 0,
+        "fields.customer.wrong": 0,
+        "fields.vat.n": 1467,
+        "fields.vat.hit": 0.998,
+        "fields.vat.normalized": 0.0,
+        "fields.vat.missing": 0,
+        "fields.vat.extra": 0,
+        "fields.vat.wrong": 3,
+        "fields.rows.n": 5148,
+        "fields.rows.hit": 0.9301,
+        "fields.rows.normalized": 0.0,
+        "fields.rows.missing": 360,
+        "fields.rows.extra": 0,
+        "fields.rows.wrong": 0,
+        "fields.vatRecap.n": 252,
+        "fields.vatRecap.hit": 1.0,
+        "fields.vatRecap.normalized": 0.0,
+        "fields.vatRecap.missing": 0,
+        "fields.vatRecap.extra": 0,
+        "fields.vatRecap.wrong": 0,
+        "fields.totals.n": 240,
+        "fields.totals.hit": 1.0,
+        "fields.totals.normalized": 0.0292,
+        "fields.totals.missing": 0,
+        "fields.totals.extra": 0,
+        "fields.totals.wrong": 0,
+        "fields.tag.n": 60,
+        "fields.tag.hit": 1.0,
+        "fields.tag.normalized": 0.0,
+        "fields.tag.missing": 0,
+        "fields.tag.extra": 0,
+        "fields.tag.wrong": 0,
+        "fields.rowExceptions.n": 276,
+        "fields.rowExceptions.hit": 0.913,
+        "fields.rowExceptions.normalized": 0.0,
+        "fields.rowExceptions.missing": 3,
+        "fields.rowExceptions.extra": 21,
+        "fields.rowExceptions.wrong": 0,
+        "fields.classification.n": 60,
+        "fields.classification.hit": 1.0,
+        "fields.classification.normalized": 0.0,
+        "fields.classification.missing": 0,
+        "fields.classification.extra": 0,
+        "fields.classification.wrong": 0,
+        "fields.all.n": 10581,
+        "fields.all.hit": 0.9491,
+        "fields.all.normalized": 0.0109,
+        "fields.all.missing": 448,
+        "fields.all.extra": 27,
+        "fields.all.wrong": 63,
+        "documents.clean": 0.1,
+        "documents.amountsCorrect": 1.0,
+        "documents.rowCountOk": 1.0,
+        "documents.classificationOk": 1.0,
+        "documents.tagOk": 1.0,
+        "cost.usd": 3.546318,
+        "cost.perDocument": 0.059105,
+        "tokens.input": 692019,
+        "tokens.output": 216228,
+        "tokens.inputPerDocument": 11534,
+        "tokens.outputPerDocument": 3604,
+        "time.ms": 1205217,
+        "time.perDocumentMs": 20087
+    },
+    "range": {
+        "calls.total": {
+            "min": 20,
+            "max": 20
+        },
+        "calls.ok": {
+            "min": 20,
+            "max": 20
+        },
+        "calls.failed": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.header.n": {
+            "min": 340,
+            "max": 340
+        },
+        "fields.header.hit": {
+            "min": 0.9441,
+            "max": 0.9471
+        },
+        "fields.header.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.header.missing": {
+            "min": 8,
+            "max": 9
+        },
+        "fields.header.extra": {
+            "min": 2,
+            "max": 2
+        },
+        "fields.header.wrong": {
+            "min": 8,
+            "max": 8
+        },
+        "fields.supplier.n": {
+            "min": 360,
+            "max": 360
+        },
+        "fields.supplier.hit": {
+            "min": 0.9139,
+            "max": 0.9167
+        },
+        "fields.supplier.normalized": {
+            "min": 0.075,
+            "max": 0.0861
+        },
+        "fields.supplier.missing": {
+            "min": 18,
+            "max": 19
+        },
+        "fields.supplier.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.supplier.wrong": {
+            "min": 12,
+            "max": 12
+        },
+        "fields.customer.n": {
+            "min": 326,
+            "max": 326
+        },
+        "fields.customer.hit": {
+            "min": 0.9908,
+            "max": 1.0
+        },
+        "fields.customer.normalized": {
+            "min": 0.0184,
+            "max": 0.0215
+        },
+        "fields.customer.missing": {
+            "min": 0,
+            "max": 3
+        },
+        "fields.customer.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.customer.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vat.n": {
+            "min": 489,
+            "max": 489
+        },
+        "fields.vat.hit": {
+            "min": 0.998,
+            "max": 0.998
+        },
+        "fields.vat.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.vat.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vat.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vat.wrong": {
+            "min": 1,
+            "max": 1
+        },
+        "fields.rows.n": {
+            "min": 1716,
+            "max": 1716
+        },
+        "fields.rows.hit": {
+            "min": 0.9301,
+            "max": 0.9301
+        },
+        "fields.rows.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.rows.missing": {
+            "min": 120,
+            "max": 120
+        },
+        "fields.rows.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rows.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vatRecap.n": {
+            "min": 84,
+            "max": 84
+        },
+        "fields.vatRecap.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.vatRecap.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.vatRecap.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vatRecap.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.vatRecap.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.totals.n": {
+            "min": 80,
+            "max": 80
+        },
+        "fields.totals.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.totals.normalized": {
+            "min": 0.025,
+            "max": 0.0375
+        },
+        "fields.totals.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.totals.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.totals.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.tag.n": {
+            "min": 20,
+            "max": 20
+        },
+        "fields.tag.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.tag.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.tag.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.tag.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.tag.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.rowExceptions.n": {
+            "min": 92,
+            "max": 92
+        },
+        "fields.rowExceptions.hit": {
+            "min": 0.913,
+            "max": 0.913
+        },
+        "fields.rowExceptions.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.rowExceptions.missing": {
+            "min": 1,
+            "max": 1
+        },
+        "fields.rowExceptions.extra": {
+            "min": 7,
+            "max": 7
+        },
+        "fields.rowExceptions.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.classification.n": {
+            "min": 20,
+            "max": 20
+        },
+        "fields.classification.hit": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "fields.classification.normalized": {
+            "min": 0.0,
+            "max": 0.0
+        },
+        "fields.classification.missing": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.classification.extra": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.classification.wrong": {
+            "min": 0,
+            "max": 0
+        },
+        "fields.all.n": {
+            "min": 3527,
+            "max": 3527
+        },
+        "fields.all.hit": {
+            "min": 0.9487,
+            "max": 0.9495
+        },
+        "fields.all.normalized": {
+            "min": 0.0099,
+            "max": 0.0116
+        },
+        "fields.all.missing": {
+            "min": 148,
+            "max": 151
+        },
+        "fields.all.extra": {
+            "min": 9,
+            "max": 9
+        },
+        "fields.all.wrong": {
+            "min": 21,
+            "max": 21
+        },
+        "documents.clean": {
+            "min": 0.1,
+            "max": 0.1
+        },
+        "documents.amountsCorrect": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "documents.rowCountOk": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "documents.classificationOk": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "documents.tagOk": {
+            "min": 1.0,
+            "max": 1.0
+        },
+        "cost.usd": {
+            "min": 1.174056,
+            "max": 1.192076
+        },
+        "cost.perDocument": {
+            "min": 0.058703,
+            "max": 0.059604
+        },
+        "tokens.input": {
+            "min": 230673,
+            "max": 230673
+        },
+        "tokens.output": {
+            "min": 71271,
+            "max": 73073
+        },
+        "tokens.inputPerDocument": {
+            "min": 11534,
+            "max": 11534
+        },
+        "tokens.outputPerDocument": {
+            "min": 3564,
+            "max": 3654
+        },
+        "time.ms": {
+            "min": 398612,
+            "max": 406541
+        },
+        "time.perDocumentMs": {
+            "min": 19931,
+            "max": 20327
+        }
+    },
+    "fieldStability": {
+        "_resolve.contentTag.rowExceptions[]": 1.0,
+        "_resolve.contentTag.rowExceptions[].rowIndex": 1.0,
+        "_resolve.contentTag.rowExceptions[].tag": 1.0,
+        "_resolve.contentTag.tag": 1.0,
+        "currency": 1.0,
+        "customer": 1.0,
+        "customer.address.city": 1.0,
+        "customer.address.country": 1.0,
+        "customer.address.houseNumber": 1.0,
+        "customer.address.street": 1.0,
+        "customer.address.zip": 1.0,
+        "customer.bankAccount.accountNumber": 1.0,
+        "customer.bankAccount.bic": 1.0,
+        "customer.bankAccount.iban": 1.0,
+        "customer.companyId": 1.0,
+        "customer.contact.email": 1.0,
+        "customer.contact.name": 1.0,
+        "customer.contact.phone": 1.0,
+        "customer.contact.web": 1.0,
+        "customer.country": 1.0,
+        "customer.courtRegistration": 1.0,
+        "customer.name": 1.0,
+        "customer.taxId": 0.7222,
+        "customer.vatId": 1.0,
+        "dates.dueDate": 1.0,
+        "dates.issueDate": 1.0,
+        "dates.periodFrom": 1.0,
+        "dates.periodTo": 1.0,
+        "dates.taxPointDate": 1.0,
+        "docNumber": 1.0,
+        "docType": 1.0,
+        "exchangeRate": 1.0,
+        "format": 1.0,
+        "formatVersion": 1.0,
+        "message_classification.primary_type": 1.0,
+        "notes.onDocument": 0.95,
+        "payment.constantSymbol": 1.0,
+        "payment.method": 1.0,
+        "payment.paymentReference": 1.0,
+        "payment.specificSymbol": 1.0,
+        "rows[].discountAmount": 1.0,
+        "rows[].discountPct": 1.0,
+        "rows[].item.description": 1.0,
+        "rows[].item.ean": 1.0,
+        "rows[].item.name": 1.0,
+        "rows[].item.supplierCode": 1.0,
+        "rows[].priceCalcMode": 1.0,
+        "rows[].quantity": 1.0,
+        "rows[].rowKind": 1.0,
+        "rows[].totalPrice": 1.0,
+        "rows[].unit": 1.0,
+        "rows[].unitPrice": 1.0,
+        "rows[].vat.pct": 1.0,
+        "rows[].vat.reverseChargeCode": 1.0,
+        "rows[].vat.supplyKind": 1.0,
+        "selfParty": 1.0,
+        "supplier.address.city": 1.0,
+        "supplier.address.country": 1.0,
+        "supplier.address.houseNumber": 1.0,
+        "supplier.address.street": 1.0,
+        "supplier.address.zip": 1.0,
+        "supplier.bankAccount.accountNumber": 1.0,
+        "supplier.bankAccount.bic": 1.0,
+        "supplier.bankAccount.iban": 1.0,
+        "supplier.companyId": 1.0,
+        "supplier.contact.email": 1.0,
+        "supplier.contact.name": 1.0,
+        "supplier.contact.phone": 1.0,
+        "supplier.contact.web": 1.0,
+        "supplier.country": 1.0,
+        "supplier.courtRegistration": 1.0,
+        "supplier.name": 1.0,
+        "supplier.taxId": 0.9,
+        "supplier.vatId": 1.0,
+        "totals.totalAmount": 1.0,
+        "totals.totalBase": 1.0,
+        "totals.totalRounding": 1.0,
+        "totals.totalVat": 1.0,
+        "vat.mode": 1.0,
+        "vat.place": 1.0,
+        "vat.reverseCharge": 1.0,
+        "vatRecap[].base": 1.0,
+        "vatRecap[].tax": 1.0,
+        "vatRecap[].total": 1.0,
+        "vatRecap[].vatPct": 1.0
+    },
+    "formatStability": {
+        "_resolve.contentTag.rowExceptions[].rowIndex": 1.0,
+        "_resolve.contentTag.rowExceptions[].tag": 1.0,
+        "_resolve.contentTag.tag": 1.0,
+        "currency": 1.0,
+        "customer": 1.0,
+        "customer.address.city": 1.0,
+        "customer.address.country": 1.0,
+        "customer.address.houseNumber": 1.0,
+        "customer.address.street": 1.0,
+        "customer.address.zip": 0.6667,
+        "customer.bankAccount.accountNumber": 1.0,
+        "customer.bankAccount.bic": 1.0,
+        "customer.bankAccount.iban": 1.0,
+        "customer.companyId": 1.0,
+        "customer.contact.email": 1.0,
+        "customer.contact.name": 1.0,
+        "customer.contact.phone": 1.0,
+        "customer.contact.web": 1.0,
+        "customer.country": 1.0,
+        "customer.courtRegistration": 1.0,
+        "customer.name": 1.0,
+        "customer.taxId": 1.0,
+        "customer.vatId": 1.0,
+        "dates.dueDate": 1.0,
+        "dates.issueDate": 1.0,
+        "dates.periodFrom": 1.0,
+        "dates.periodTo": 1.0,
+        "dates.taxPointDate": 1.0,
+        "docNumber": 1.0,
+        "docType": 1.0,
+        "exchangeRate": 1.0,
+        "format": 1.0,
+        "formatVersion": 1.0,
+        "message_classification.primary_type": 1.0,
+        "notes.onDocument": 1.0,
+        "payment.constantSymbol": 1.0,
+        "payment.method": 1.0,
+        "payment.paymentReference": 1.0,
+        "payment.specificSymbol": 1.0,
+        "rows[].discountAmount": 1.0,
+        "rows[].discountPct": 1.0,
+        "rows[].item.description": 1.0,
+        "rows[].item.ean": 1.0,
+        "rows[].item.name": 1.0,
+        "rows[].item.supplierCode": 1.0,
+        "rows[].priceCalcMode": 1.0,
+        "rows[].quantity": 1.0,
+        "rows[].rowKind": 1.0,
+        "rows[].totalPrice": 1.0,
+        "rows[].unit": 1.0,
+        "rows[].unitPrice": 1.0,
+        "rows[].vat.pct": 1.0,
+        "rows[].vat.reverseChargeCode": 1.0,
+        "rows[].vat.supplyKind": 1.0,
+        "selfParty": 1.0,
+        "supplier.address.city": 1.0,
+        "supplier.address.country": 1.0,
+        "supplier.address.houseNumber": 1.0,
+        "supplier.address.street": 1.0,
+        "supplier.address.zip": 0.7,
+        "supplier.bankAccount.accountNumber": 1.0,
+        "supplier.bankAccount.bic": 1.0,
+        "supplier.bankAccount.iban": 0.65,
+        "supplier.companyId": 1.0,
+        "supplier.contact.email": 1.0,
+        "supplier.contact.name": 1.0,
+        "supplier.contact.phone": 1.0,
+        "supplier.contact.web": 1.0,
+        "supplier.country": 1.0,
+        "supplier.courtRegistration": 1.0,
+        "supplier.name": 1.0,
+        "supplier.taxId": 1.0,
+        "supplier.vatId": 1.0,
+        "totals.totalAmount": 1.0,
+        "totals.totalBase": 1.0,
+        "totals.totalRounding": 0.85,
+        "totals.totalVat": 1.0,
+        "vat.mode": 1.0,
+        "vat.place": 1.0,
+        "vat.reverseCharge": 1.0,
+        "vatRecap[].base": 1.0,
+        "vatRecap[].tax": 1.0,
+        "vatRecap[].total": 1.0,
+        "vatRecap[].vatPct": 1.0
+    },
+    "byVariant": {
+        "domestic-goods": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.9594,
+            "fields.all.normalized": 0.0086,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.321548
+        },
+        "domestic-non-payer-supplier": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.973,
+            "fields.all.normalized": 0.027,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.28877
+        },
+        "domestic-reverse-charge": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.971,
+            "fields.all.normalized": 0.0161,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.302614
+        },
+        "domestic-rounding": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.964,
+            "fields.all.normalized": 0.0135,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.330654
+        },
+        "domestic-two-rates": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.9649,
+            "fields.all.normalized": 0.01,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.320988
+        },
+        "eu-goods": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.936,
+            "fields.all.normalized": 0.0268,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.29872
+        },
+        "eu-services": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.913,
+            "fields.all.normalized": 0.0274,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.298118
+        },
+        "long-document": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.9354,
+            "fields.all.normalized": 0.0013,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.881646
+        },
+        "receipt": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 1.0,
+            "fields.all.normalized": 0.0201,
+            "documents.clean": 1.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.243432
+        },
+        "third-country-services": {
+            "calls.total": 6,
+            "calls.ok": 6,
+            "fields.all.hit": 0.9746,
+            "fields.all.normalized": 0.0272,
+            "documents.clean": 0.0,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 0.259828
+        }
+    },
+    "byForm": {
+        "pdf": {
+            "calls.total": 30,
+            "calls.ok": 30,
+            "fields.all.hit": 0.9506,
+            "fields.all.normalized": 0.0119,
+            "documents.clean": 0.1,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 1.730342
+        },
+        "pdfIsdoc": {
+            "calls.total": 30,
+            "calls.ok": 30,
+            "fields.all.hit": 0.9478,
+            "fields.all.normalized": 0.0099,
+            "documents.clean": 0.1,
+            "documents.amountsCorrect": 1.0,
+            "documents.rowCountOk": 1.0,
+            "cost.usd": 1.815976
+        }
+    },
+    "deviationsByField": {
+        "supplier.contact.web": 48,
+        "supplier.courtRegistration": 36,
+        "rows[].item.supplierCode": 30,
+        "notes.onDocument": 25,
+        "dates.periodFrom": 12,
+        "dates.periodTo": 12,
+        "rows[].item.description": 12,
+        "_resolve.contentTag.rowExceptions[]": 9,
+        "supplier.taxId": 7,
+        "payment.paymentReference": 6,
+        "rows[].item.ean": 6,
+        "customer.taxId": 5,
+        "rows[].vat.supplyKind": 3
+    },
+    "calls": [
+        {
+            "messageId": "MSG-CORPUS-VP-0301",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.051844,
+            "tokensIn": 11497,
+            "tokensOut": 2885,
+            "durationMs": 18104,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "counts": {
+                "match": 106,
+                "matchNormalized": 1,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "actual": "B 994209 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.vetrnik-energie.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-07-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-07-31",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0301",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.056034,
+            "tokensIn": 11497,
+            "tokensOut": 3304,
+            "durationMs": 18923,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "counts": {
+                "match": 103,
+                "matchNormalized": 4,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.address.zip",
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "actual": "B 994209 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.vetrnik-energie.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-07-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-07-31",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0301",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.056424,
+            "tokensIn": 11497,
+            "tokensOut": 3343,
+            "durationMs": 20474,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "counts": {
+                "match": 106,
+                "matchNormalized": 1,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "actual": "B 994209 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.vetrnik-energie.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-07-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-07-31",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0601",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.04676,
+            "tokensIn": 11235,
+            "tokensOut": 2429,
+            "durationMs": 14239,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "counts": {
+                "match": 101,
+                "matchNormalized": 3,
+                "missing": 6,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.taxId",
+                    "state": "missing",
+                    "expected": "DE810932557",
+                    "actual": null
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.nordlicht-hardware.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Goods remain our property until paid in full. Delivery: DAP Zlín, Czech Republic.",
+                    "actual": "Intra-Community supply of goods exempt from VAT (Art. 138 of Council Directive 2006/112/EC). Goods remain our property until paid in full. Delivery: DAP Zlín, Czech Republic.",
+                    "similarity": 0.4655
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SRV-2U-128",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.ean",
+                    "state": "missing",
+                    "expected": "4260999100013",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "NIC-10G-2",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RAIL-2U",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0601",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.0451,
+            "tokensIn": 11235,
+            "tokensOut": 2263,
+            "durationMs": 13531,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "counts": {
+                "match": 100,
+                "matchNormalized": 3,
+                "missing": 7,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.taxId",
+                    "state": "missing",
+                    "expected": "DE810932557",
+                    "actual": null
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.nordlicht-hardware.example",
+                    "actual": null
+                },
+                {
+                    "path": "customer.taxId",
+                    "state": "missing",
+                    "expected": "CZ27893286",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Goods remain our property until paid in full. Delivery: DAP Zlín, Czech Republic.",
+                    "actual": "Intra-Community supply of goods exempt from VAT (Art. 138 of Council Directive 2006/112/EC). Goods remain our property until paid in full. Delivery: DAP Zlín, Czech Republic.",
+                    "similarity": 0.4655
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SRV-2U-128",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.ean",
+                    "state": "missing",
+                    "expected": "4260999100013",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "NIC-10G-2",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RAIL-2U",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0601",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.04876,
+            "tokensIn": 11235,
+            "tokensOut": 2629,
+            "durationMs": 15007,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "counts": {
+                "match": 102,
+                "matchNormalized": 3,
+                "missing": 5,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.nordlicht-hardware.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Goods remain our property until paid in full. Delivery: DAP Zlín, Czech Republic.",
+                    "actual": "Intra-Community supply of goods exempt from VAT (Art. 138 of Council Directive 2006/112/EC). Goods remain our property until paid in full. Delivery: DAP Zlín, Czech Republic.",
+                    "similarity": 0.4655
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SRV-2U-128",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.ean",
+                    "state": "missing",
+                    "expected": "4260999100013",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "NIC-10G-2",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RAIL-2U",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0201",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.05528,
+            "tokensIn": 11355,
+            "tokensOut": 3257,
+            "durationMs": 17063,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "counts": {
+                "match": 128,
+                "matchNormalized": 2,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "actual": "C 991877 vedená u Městského soudu v Praze",
+                    "similarity": 0.7321
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.kvadrat-papir.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PAP-A4-80",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TON-85A",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0201",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.05456,
+            "tokensIn": 11355,
+            "tokensOut": 3185,
+            "durationMs": 18292,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "counts": {
+                "match": 129,
+                "matchNormalized": 1,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "actual": "C 991877 vedená u Městského soudu v Praze",
+                    "similarity": 0.7321
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.kvadrat-papir.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PAP-A4-80",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TON-85A",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0201",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.05203,
+            "tokensIn": 11355,
+            "tokensOut": 2932,
+            "durationMs": 17325,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "counts": {
+                "match": 128,
+                "matchNormalized": 2,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "actual": "C 991877 vedená u Městského soudu v Praze",
+                    "similarity": 0.7321
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.kvadrat-papir.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PAP-A4-80",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TON-85A",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0101",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.052888,
+            "tokensIn": 11409,
+            "tokensOut": 3007,
+            "durationMs": 18800,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "counts": {
+                "match": 122,
+                "matchNormalized": 1,
+                "missing": 4,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                    "actual": "C 990321 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.drevomat-hana.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SP-SM-18",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DD-AB-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HR-ABS-22",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0101",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.053608,
+            "tokensIn": 11409,
+            "tokensOut": 3079,
+            "durationMs": 19570,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "counts": {
+                "match": 122,
+                "matchNormalized": 1,
+                "missing": 4,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                    "actual": "C 990321 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.drevomat-hana.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SP-SM-18",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DD-AB-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HR-ABS-22",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0101",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.051818,
+            "tokensIn": 11409,
+            "tokensOut": 2900,
+            "durationMs": 16275,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "counts": {
+                "match": 122,
+                "matchNormalized": 1,
+                "missing": 4,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                    "actual": "C 990321 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.drevomat-hana.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SP-SM-18",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DD-AB-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HR-ABS-22",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0401",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.05036,
+            "tokensIn": 11345,
+            "tokensOut": 2767,
+            "durationMs": 16543,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "counts": {
+                "match": 91,
+                "matchNormalized": 2,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "actual": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.stavby-klenba.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031.",
+                    "actual": "Daň odvede zákazník (§ 92a zákona o DPH — režim přenesení daňové povinnosti). Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031.",
+                    "similarity": 0.48
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0401",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.04903,
+            "tokensIn": 11345,
+            "tokensOut": 2634,
+            "durationMs": 15291,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "counts": {
+                "match": 92,
+                "matchNormalized": 1,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "actual": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.stavby-klenba.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031.",
+                    "actual": "Daň odvede zákazník (§ 92a zákona o DPH — režim přenesení daňové povinnosti). Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031.",
+                    "similarity": 0.48
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0401",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.0487,
+            "tokensIn": 11345,
+            "tokensOut": 2601,
+            "durationMs": 14954,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "counts": {
+                "match": 92,
+                "matchNormalized": 1,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "actual": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.stavby-klenba.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031.",
+                    "actual": "Daň odvede zákazník (§ 92a zákona o DPH — režim přenesení daňové povinnosti). Fakturujeme provedené stavební práce dle smlouvy o dílo č. SOD-2026-031.",
+                    "similarity": 0.48
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0801",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.041766,
+            "tokensIn": 10943,
+            "tokensOut": 1988,
+            "durationMs": 12190,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.software",
+            "counts": {
+                "match": 87,
+                "matchNormalized": 2,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.quillstack.example",
+                    "actual": null
+                },
+                {
+                    "path": "customer.taxId",
+                    "state": "missing",
+                    "expected": "CZ27893286",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "12 seats, 09/01/2026 – 09/30/2026",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0801",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.042526,
+            "tokensIn": 10943,
+            "tokensOut": 2064,
+            "durationMs": 12743,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.software",
+            "counts": {
+                "match": 87,
+                "matchNormalized": 3,
+                "missing": 2,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "customer.address.zip",
+                "totals.totalRounding"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.quillstack.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "12 seats, 09/01/2026 – 09/30/2026",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0801",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.044206,
+            "tokensIn": 10943,
+            "tokensOut": 2232,
+            "durationMs": 14011,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.software",
+            "counts": {
+                "match": 87,
+                "matchNormalized": 3,
+                "missing": 2,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "customer.address.zip",
+                "totals.totalRounding"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.quillstack.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "12 seats, 09/01/2026 – 09/30/2026",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0501",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.052012,
+            "tokensIn": 11196,
+            "tokensOut": 2962,
+            "durationMs": 17169,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hosting",
+            "counts": {
+                "match": 85,
+                "matchNormalized": 3,
+                "missing": 6,
+                "extra": 1,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.wolkenkraft.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-08-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-08-31",
+                    "actual": null
+                },
+                {
+                    "path": "payment.paymentReference",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": "INV-2026-0388"
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Please quote the invoice number with your payment. Thank you for your business.",
+                    "actual": "Reverse charge — VAT to be accounted for by the recipient (Art. 196 of Council Directive 2006/112/EC).",
+                    "similarity": 0.2549
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MK8S-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "Billing period 08/2026",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OBJ-TB",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0501",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.048352,
+            "tokensIn": 11196,
+            "tokensOut": 2596,
+            "durationMs": 15151,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hosting",
+            "counts": {
+                "match": 85,
+                "matchNormalized": 3,
+                "missing": 6,
+                "extra": 1,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.wolkenkraft.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-08-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-08-31",
+                    "actual": null
+                },
+                {
+                    "path": "payment.paymentReference",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": "INV-2026-0388"
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Please quote the invoice number with your payment. Thank you for your business.",
+                    "actual": "Reverse charge — VAT to be accounted for by the recipient (Art. 196 of Council Directive 2006/112/EC).",
+                    "similarity": 0.2549
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MK8S-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "Billing period 08/2026",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OBJ-TB",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0501",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.049562,
+            "tokensIn": 11196,
+            "tokensOut": 2717,
+            "durationMs": 15910,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hosting",
+            "counts": {
+                "match": 85,
+                "matchNormalized": 3,
+                "missing": 6,
+                "extra": 1,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.wolkenkraft.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-08-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-08-31",
+                    "actual": null
+                },
+                {
+                    "path": "payment.paymentReference",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": "INV-2026-0388"
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Please quote the invoice number with your payment. Thank you for your business.",
+                    "actual": "Reverse charge — VAT to be accounted for by the recipient (Art. 196 of Council Directive 2006/112/EC).",
+                    "similarity": 0.2549
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MK8S-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "Billing period 08/2026",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OBJ-TB",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0901",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.039312,
+            "tokensIn": 10706,
+            "tokensOut": 1790,
+            "durationMs": 11170,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "counts": {
+                "match": 79,
+                "matchNormalized": 2,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "totals.totalRounding"
+            ],
+            "deviations": []
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0901",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.039472,
+            "tokensIn": 10706,
+            "tokensOut": 1806,
+            "durationMs": 11138,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "counts": {
+                "match": 79,
+                "matchNormalized": 2,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.address.zip",
+                "supplier.contact.phone"
+            ],
+            "deviations": []
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0901",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.039472,
+            "tokensIn": 10706,
+            "tokensOut": 1806,
+            "durationMs": 11158,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "counts": {
+                "match": 80,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": []
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0701",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.04389,
+            "tokensIn": 11085,
+            "tokensOut": 2172,
+            "durationMs": 12966,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "counts": {
+                "match": 85,
+                "matchNormalized": 5,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.address.zip",
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip",
+                "totals.totalRounding"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "actual": "C 990512 vedená u Krajského soudu v Brně",
+                    "similarity": 0.7273
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Školení proběhlo 2. 9. 2026 v sídle odběratele.",
+                    "actual": "Nejsem plátce DPH. Školení proběhlo 2. 9. 2026 v sídle odběratele.",
+                    "similarity": 0.7121
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0701",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.04817,
+            "tokensIn": 11085,
+            "tokensOut": 2600,
+            "durationMs": 15916,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "counts": {
+                "match": 89,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "actual": "C 990512 vedená u Krajského soudu v Brně",
+                    "similarity": 0.7273
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Školení proběhlo 2. 9. 2026 v sídle odběratele.",
+                    "actual": "Nejsem plátce DPH. Školení proběhlo 2. 9. 2026 v sídle odběratele.",
+                    "similarity": 0.7121
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0701",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.04754,
+            "tokensIn": 11085,
+            "tokensOut": 2537,
+            "durationMs": 15473,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "counts": {
+                "match": 87,
+                "matchNormalized": 3,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.address.zip",
+                "supplier.contact.phone",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "actual": "C 990512 vedená u Krajského soudu v Brně",
+                    "similarity": 0.7273
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Školení proběhlo 2. 9. 2026 v sídle odběratele.",
+                    "actual": "Nejsem plátce DPH. Školení proběhlo 2. 9. 2026 v sídle odběratele.",
+                    "similarity": 0.7121
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-1001",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.141312,
+            "tokensIn": 14526,
+            "tokensOut": 11226,
+            "durationMs": 52872,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "counts": {
+                "match": 715,
+                "matchNormalized": 1,
+                "missing": 45,
+                "extra": 3,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "actual": "C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.matice-velkoobchod.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TP-64",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PU-6",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RZ-4000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MY-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[4].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZ-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[5].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZP-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[6].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-120",
+                    "actual": null
+                },
+                {
+                    "path": "rows[7].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-60",
+                    "actual": null
+                },
+                {
+                    "path": "rows[8].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SK-30",
+                    "actual": null
+                },
+                {
+                    "path": "rows[9].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HO-10",
+                    "actual": null
+                },
+                {
+                    "path": "rows[10].item.supplierCode",
+                    "state": "missing",
+                    "expected": "JA-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[11].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UM-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[12].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[13].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-L",
+                    "actual": null
+                },
+                {
+                    "path": "rows[14].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CS-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[15].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UC-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[16].item.supplierCode",
+                    "state": "missing",
+                    "expected": "WC-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[17].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OV-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[18].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[19].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MN-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[20].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KB-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[21].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SL-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[22].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OK-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[23].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PK-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[24].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VU-72",
+                    "actual": null
+                },
+                {
+                    "path": "rows[25].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KF-4",
+                    "actual": null
+                },
+                {
+                    "path": "rows[26].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KP-200",
+                    "actual": null
+                },
+                {
+                    "path": "rows[27].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MD-1000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[28].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KZ-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[29].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KM-250",
+                    "actual": null
+                },
+                {
+                    "path": "rows[30].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[31].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CZ-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[32].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CO-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[33].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CU-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[34].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[35].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ML-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[36].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SM-240",
+                    "actual": null
+                },
+                {
+                    "path": "rows[37].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MV-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[38].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MVP-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[39].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[40].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SU-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[41].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[42].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OR-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[43].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ME-500",
+                    "actual": null
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[25]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 25,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[26]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 26,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[27]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 27,
+                        "tag": "people.catering"
+                    }
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-1001",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.140012,
+            "tokensIn": 14526,
+            "tokensOut": 11096,
+            "durationMs": 52497,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "counts": {
+                "match": 715,
+                "matchNormalized": 1,
+                "missing": 45,
+                "extra": 3,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "actual": "C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.matice-velkoobchod.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TP-64",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PU-6",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RZ-4000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MY-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[4].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZ-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[5].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZP-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[6].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-120",
+                    "actual": null
+                },
+                {
+                    "path": "rows[7].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-60",
+                    "actual": null
+                },
+                {
+                    "path": "rows[8].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SK-30",
+                    "actual": null
+                },
+                {
+                    "path": "rows[9].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HO-10",
+                    "actual": null
+                },
+                {
+                    "path": "rows[10].item.supplierCode",
+                    "state": "missing",
+                    "expected": "JA-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[11].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UM-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[12].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[13].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-L",
+                    "actual": null
+                },
+                {
+                    "path": "rows[14].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CS-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[15].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UC-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[16].item.supplierCode",
+                    "state": "missing",
+                    "expected": "WC-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[17].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OV-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[18].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[19].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MN-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[20].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KB-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[21].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SL-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[22].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OK-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[23].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PK-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[24].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VU-72",
+                    "actual": null
+                },
+                {
+                    "path": "rows[25].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KF-4",
+                    "actual": null
+                },
+                {
+                    "path": "rows[26].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KP-200",
+                    "actual": null
+                },
+                {
+                    "path": "rows[27].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MD-1000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[28].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KZ-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[29].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KM-250",
+                    "actual": null
+                },
+                {
+                    "path": "rows[30].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[31].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CZ-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[32].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CO-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[33].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CU-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[34].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[35].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ML-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[36].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SM-240",
+                    "actual": null
+                },
+                {
+                    "path": "rows[37].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MV-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[38].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MVP-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[39].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[40].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SU-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[41].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[42].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OR-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[43].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ME-500",
+                    "actual": null
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[25]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 25,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[26]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 26,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[27]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 27,
+                        "tag": "people.catering"
+                    }
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-1001",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.139542,
+            "tokensIn": 14526,
+            "tokensOut": 11049,
+            "durationMs": 52280,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "counts": {
+                "match": 715,
+                "matchNormalized": 1,
+                "missing": 45,
+                "extra": 3,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "actual": "C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.matice-velkoobchod.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TP-64",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PU-6",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RZ-4000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MY-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[4].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZ-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[5].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZP-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[6].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-120",
+                    "actual": null
+                },
+                {
+                    "path": "rows[7].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-60",
+                    "actual": null
+                },
+                {
+                    "path": "rows[8].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SK-30",
+                    "actual": null
+                },
+                {
+                    "path": "rows[9].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HO-10",
+                    "actual": null
+                },
+                {
+                    "path": "rows[10].item.supplierCode",
+                    "state": "missing",
+                    "expected": "JA-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[11].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UM-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[12].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[13].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-L",
+                    "actual": null
+                },
+                {
+                    "path": "rows[14].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CS-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[15].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UC-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[16].item.supplierCode",
+                    "state": "missing",
+                    "expected": "WC-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[17].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OV-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[18].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[19].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MN-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[20].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KB-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[21].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SL-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[22].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OK-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[23].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PK-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[24].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VU-72",
+                    "actual": null
+                },
+                {
+                    "path": "rows[25].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KF-4",
+                    "actual": null
+                },
+                {
+                    "path": "rows[26].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KP-200",
+                    "actual": null
+                },
+                {
+                    "path": "rows[27].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MD-1000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[28].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KZ-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[29].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KM-250",
+                    "actual": null
+                },
+                {
+                    "path": "rows[30].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[31].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CZ-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[32].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CO-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[33].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CU-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[34].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[35].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ML-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[36].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SM-240",
+                    "actual": null
+                },
+                {
+                    "path": "rows[37].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MV-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[38].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MVP-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[39].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[40].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SU-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[41].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[42].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OR-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[43].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ME-500",
+                    "actual": null
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[25]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 25,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[26]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 26,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[27]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 27,
+                        "tag": "people.catering"
+                    }
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0102",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.054028,
+            "tokensIn": 11414,
+            "tokensOut": 3120,
+            "durationMs": 17940,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "counts": {
+                "match": 136,
+                "matchNormalized": 1,
+                "missing": 5,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                    "actual": "C 990321 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.drevomat-hana.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PR-BR-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LI-DB-20",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VR-4-40",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LE-D3-5",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0102",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.055238,
+            "tokensIn": 11414,
+            "tokensOut": 3241,
+            "durationMs": 18679,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "counts": {
+                "match": 135,
+                "matchNormalized": 2,
+                "missing": 5,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                    "actual": "C 990321 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.drevomat-hana.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PR-BR-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LI-DB-20",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VR-4-40",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LE-D3-5",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0102",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.053968,
+            "tokensIn": 11414,
+            "tokensOut": 3114,
+            "durationMs": 17656,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "goods.stock",
+            "counts": {
+                "match": 136,
+                "matchNormalized": 1,
+                "missing": 5,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990321 vedená u Krajského soudu v Ostravě",
+                    "actual": "C 990321 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.drevomat-hana.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PR-BR-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LI-DB-20",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VR-4-40",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LE-D3-5",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0302",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.056024,
+            "tokensIn": 11497,
+            "tokensOut": 3303,
+            "durationMs": 19827,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "counts": {
+                "match": 106,
+                "matchNormalized": 1,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "actual": "B 994209 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.vetrnik-energie.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-08-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-08-31",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0302",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.058114,
+            "tokensIn": 11497,
+            "tokensOut": 3512,
+            "durationMs": 21125,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "counts": {
+                "match": 106,
+                "matchNormalized": 1,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "actual": "B 994209 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.vetrnik-energie.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-08-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-08-31",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0302",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.052214,
+            "tokensIn": 11497,
+            "tokensOut": 2922,
+            "durationMs": 16535,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.electricity",
+            "counts": {
+                "match": 106,
+                "matchNormalized": 1,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka B 994209 vedená u Krajského soudu v Ostravě",
+                    "actual": "B 994209 vedená u Krajského soudu v Ostravě",
+                    "similarity": 0.7414
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.vetrnik-energie.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-08-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-08-31",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0202",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.056596,
+            "tokensIn": 11313,
+            "tokensOut": 3397,
+            "durationMs": 19871,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "counts": {
+                "match": 126,
+                "matchNormalized": 1,
+                "missing": 4,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "actual": "C 991877 vedená u Městského soudu v Praze",
+                    "similarity": 0.7321
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.kvadrat-papir.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "POR-A4-75",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OB-C5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LB-76",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0202",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.050776,
+            "tokensIn": 11313,
+            "tokensOut": 2815,
+            "durationMs": 16842,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "counts": {
+                "match": 126,
+                "matchNormalized": 1,
+                "missing": 4,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "actual": "C 991877 vedená u Městského soudu v Praze",
+                    "similarity": 0.7321
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.kvadrat-papir.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "POR-A4-75",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OB-C5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LB-76",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0202",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.051746,
+            "tokensIn": 11313,
+            "tokensOut": 2912,
+            "durationMs": 17254,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.supplies",
+            "counts": {
+                "match": 125,
+                "matchNormalized": 1,
+                "missing": 5,
+                "extra": 0,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991877 vedená u Městského soudu v Praze",
+                    "actual": "C 991877 vedená u Městského soudu v Praze",
+                    "similarity": 0.7321
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.kvadrat-papir.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "missing",
+                    "expected": "Děkujeme za objednávku.",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "POR-A4-75",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OB-C5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "LB-76",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0402",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.048938,
+            "tokensIn": 11364,
+            "tokensOut": 2621,
+            "durationMs": 15159,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "counts": {
+                "match": 106,
+                "matchNormalized": 2,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "actual": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.stavby-klenba.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Fakturujeme provedené práce dle objednávky č. OBJ-2026-088.",
+                    "actual": "Daň odvede zákazník (§ 92a zákona o DPH — režim přenesení daňové povinnosti). Fakturujeme provedené práce dle objednávky č. OBJ-2026-088.",
+                    "similarity": 0.4307
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0402",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.053498,
+            "tokensIn": 11364,
+            "tokensOut": 3077,
+            "durationMs": 18681,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "counts": {
+                "match": 105,
+                "matchNormalized": 3,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.address.zip",
+                "supplier.contact.phone",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "actual": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.stavby-klenba.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Fakturujeme provedené práce dle objednávky č. OBJ-2026-088.",
+                    "actual": "Daň odvede zákazník (§ 92a zákona o DPH — režim přenesení daňové povinnosti). Fakturujeme provedené práce dle objednávky č. OBJ-2026-088.",
+                    "similarity": 0.4307
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0402",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.052088,
+            "tokensIn": 11364,
+            "tokensOut": 2936,
+            "durationMs": 16824,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "premises.maintenance",
+            "counts": {
+                "match": 107,
+                "matchNormalized": 1,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "actual": "C 998840 vedená u Krajského soudu v Ústí nad Labem",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.stavby-klenba.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Fakturujeme provedené práce dle objednávky č. OBJ-2026-088.",
+                    "actual": "Daň odvede zákazník (§ 92a zákona o DPH — režim přenesení daňové povinnosti). Fakturujeme provedené práce dle objednávky č. OBJ-2026-088.",
+                    "similarity": 0.4307
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0902",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.043192,
+            "tokensIn": 10711,
+            "tokensOut": 2177,
+            "durationMs": 13457,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "counts": {
+                "match": 83,
+                "matchNormalized": 2,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.address.zip",
+                "supplier.contact.phone"
+            ],
+            "deviations": []
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0902",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.040202,
+            "tokensIn": 10711,
+            "tokensOut": 1878,
+            "durationMs": 11861,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "counts": {
+                "match": 84,
+                "matchNormalized": 1,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": []
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0902",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.041782,
+            "tokensIn": 10711,
+            "tokensOut": 2036,
+            "durationMs": 12934,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "vehicle.fuel",
+            "counts": {
+                "match": 83,
+                "matchNormalized": 2,
+                "missing": 0,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.address.zip",
+                "supplier.contact.phone"
+            ],
+            "deviations": []
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0602",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.05467,
+            "tokensIn": 11220,
+            "tokensOut": 3223,
+            "durationMs": 20099,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "counts": {
+                "match": 103,
+                "matchNormalized": 3,
+                "missing": 5,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.taxId",
+                    "state": "missing",
+                    "expected": "DE810932557",
+                    "actual": null
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.nordlicht-hardware.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Goods remain our property until paid in full.",
+                    "actual": "Intra-Community supply of goods exempt from VAT (Art. 138 of Council Directive 2006/112/EC). Goods remain our property until paid in full.",
+                    "similarity": 0.3261
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MON-27-4K",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.ean",
+                    "state": "missing",
+                    "expected": "4260999100020",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DOCK-UC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].vat.supplyKind",
+                    "state": "wrong",
+                    "expected": "services",
+                    "actual": "goods"
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0602",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.04672,
+            "tokensIn": 11220,
+            "tokensOut": 2428,
+            "durationMs": 13588,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "counts": {
+                "match": 102,
+                "matchNormalized": 3,
+                "missing": 6,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.taxId",
+                    "state": "missing",
+                    "expected": "DE810932557",
+                    "actual": null
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.nordlicht-hardware.example",
+                    "actual": null
+                },
+                {
+                    "path": "customer.taxId",
+                    "state": "missing",
+                    "expected": "CZ27893286",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Goods remain our property until paid in full.",
+                    "actual": "Intra-Community supply of goods exempt from VAT (Art. 138 of Council Directive 2006/112/EC). Goods remain our property until paid in full.",
+                    "similarity": 0.3261
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MON-27-4K",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.ean",
+                    "state": "missing",
+                    "expected": "4260999100020",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DOCK-UC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].vat.supplyKind",
+                    "state": "wrong",
+                    "expected": "services",
+                    "actual": "goods"
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0602",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.05671,
+            "tokensIn": 11220,
+            "tokensOut": 3427,
+            "durationMs": 19789,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hardware",
+            "counts": {
+                "match": 103,
+                "matchNormalized": 3,
+                "missing": 5,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.taxId",
+                    "state": "missing",
+                    "expected": "DE810932557",
+                    "actual": null
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.nordlicht-hardware.example",
+                    "actual": null
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Goods remain our property until paid in full.",
+                    "actual": "Intra-Community supply of goods exempt from VAT (Art. 138 of Council Directive 2006/112/EC). Goods remain our property until paid in full.",
+                    "similarity": 0.3261
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MON-27-4K",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.ean",
+                    "state": "missing",
+                    "expected": "4260999100020",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DOCK-UC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].vat.supplyKind",
+                    "state": "wrong",
+                    "expected": "services",
+                    "actual": "goods"
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0702",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.05089,
+            "tokensIn": 11070,
+            "tokensOut": 2875,
+            "durationMs": 17402,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "counts": {
+                "match": 88,
+                "matchNormalized": 2,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "actual": "C 990512 vedená u Krajského soudu v Brně",
+                    "similarity": 0.7273
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Kurz proběhl 24.–25. 9. 2026.",
+                    "actual": "Nejsem plátce DPH. Kurz proběhl 24.–25. 9. 2026.",
+                    "similarity": 0.6042
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[1]",
+                    "state": "missing",
+                    "expected": {
+                        "rowIndex": 1,
+                        "tag": "travel.fares"
+                    },
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0702",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.05219,
+            "tokensIn": 11070,
+            "tokensOut": 3005,
+            "durationMs": 18286,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "counts": {
+                "match": 87,
+                "matchNormalized": 3,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.address.zip",
+                "supplier.contact.phone",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "actual": "C 990512 vedená u Krajského soudu v Brně",
+                    "similarity": 0.7273
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Kurz proběhl 24.–25. 9. 2026.",
+                    "actual": "Nejsem plátce DPH. Kurz proběhl 24.–25. 9. 2026.",
+                    "similarity": 0.6042
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[1]",
+                    "state": "missing",
+                    "expected": {
+                        "rowIndex": 1,
+                        "tag": "travel.fares"
+                    },
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0702",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.04609,
+            "tokensIn": 11070,
+            "tokensOut": 2395,
+            "durationMs": 13968,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "services.training",
+            "counts": {
+                "match": 89,
+                "matchNormalized": 1,
+                "missing": 1,
+                "extra": 0,
+                "wrong": 2
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 990512 vedená u Krajského soudu v Brně",
+                    "actual": "C 990512 vedená u Krajského soudu v Brně",
+                    "similarity": 0.7273
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Kurz proběhl 24.–25. 9. 2026.",
+                    "actual": "Nejsem plátce DPH. Kurz proběhl 24.–25. 9. 2026.",
+                    "similarity": 0.6042
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[1]",
+                    "state": "missing",
+                    "expected": {
+                        "rowIndex": 1,
+                        "tag": "travel.fares"
+                    },
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-1002",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.14945,
+            "tokensIn": 14645,
+            "tokensOut": 12016,
+            "durationMs": 56949,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "counts": {
+                "match": 775,
+                "matchNormalized": 1,
+                "missing": 49,
+                "extra": 4,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "actual": "C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.matice-velkoobchod.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TP-64",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PU-6",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RZ-4000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MY-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[4].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZ-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[5].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZP-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[6].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-120",
+                    "actual": null
+                },
+                {
+                    "path": "rows[7].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-60",
+                    "actual": null
+                },
+                {
+                    "path": "rows[8].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SK-30",
+                    "actual": null
+                },
+                {
+                    "path": "rows[9].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HO-10",
+                    "actual": null
+                },
+                {
+                    "path": "rows[10].item.supplierCode",
+                    "state": "missing",
+                    "expected": "JA-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[11].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UM-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[12].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[13].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-L",
+                    "actual": null
+                },
+                {
+                    "path": "rows[14].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CS-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[15].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UC-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[16].item.supplierCode",
+                    "state": "missing",
+                    "expected": "WC-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[17].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OV-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[18].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[19].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MN-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[20].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KB-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[21].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SL-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[22].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OK-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[23].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PK-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[24].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VU-72",
+                    "actual": null
+                },
+                {
+                    "path": "rows[25].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KF-4",
+                    "actual": null
+                },
+                {
+                    "path": "rows[26].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KP-200",
+                    "actual": null
+                },
+                {
+                    "path": "rows[27].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MD-1000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[28].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UB-33",
+                    "actual": null
+                },
+                {
+                    "path": "rows[29].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OD-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[30].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KZ-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[31].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KM-250",
+                    "actual": null
+                },
+                {
+                    "path": "rows[32].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[33].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CZ-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[34].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CO-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[35].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CU-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[36].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[37].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ML-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[38].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SM-240",
+                    "actual": null
+                },
+                {
+                    "path": "rows[39].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MV-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[40].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MVP-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[41].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[42].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SU-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[43].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[44].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OR-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[45].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ME-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[46].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KA-400",
+                    "actual": null
+                },
+                {
+                    "path": "rows[47].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PE-200",
+                    "actual": null
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[25]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 25,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[26]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 26,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[27]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 27,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[28]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 28,
+                        "tag": "people.catering"
+                    }
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-1002",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.14904,
+            "tokensIn": 14645,
+            "tokensOut": 11975,
+            "durationMs": 57979,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "counts": {
+                "match": 775,
+                "matchNormalized": 1,
+                "missing": 49,
+                "extra": 4,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "actual": "C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.matice-velkoobchod.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TP-64",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PU-6",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RZ-4000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MY-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[4].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZ-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[5].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZP-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[6].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-120",
+                    "actual": null
+                },
+                {
+                    "path": "rows[7].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-60",
+                    "actual": null
+                },
+                {
+                    "path": "rows[8].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SK-30",
+                    "actual": null
+                },
+                {
+                    "path": "rows[9].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HO-10",
+                    "actual": null
+                },
+                {
+                    "path": "rows[10].item.supplierCode",
+                    "state": "missing",
+                    "expected": "JA-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[11].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UM-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[12].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[13].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-L",
+                    "actual": null
+                },
+                {
+                    "path": "rows[14].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CS-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[15].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UC-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[16].item.supplierCode",
+                    "state": "missing",
+                    "expected": "WC-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[17].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OV-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[18].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[19].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MN-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[20].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KB-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[21].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SL-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[22].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OK-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[23].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PK-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[24].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VU-72",
+                    "actual": null
+                },
+                {
+                    "path": "rows[25].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KF-4",
+                    "actual": null
+                },
+                {
+                    "path": "rows[26].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KP-200",
+                    "actual": null
+                },
+                {
+                    "path": "rows[27].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MD-1000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[28].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UB-33",
+                    "actual": null
+                },
+                {
+                    "path": "rows[29].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OD-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[30].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KZ-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[31].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KM-250",
+                    "actual": null
+                },
+                {
+                    "path": "rows[32].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[33].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CZ-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[34].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CO-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[35].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CU-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[36].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[37].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ML-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[38].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SM-240",
+                    "actual": null
+                },
+                {
+                    "path": "rows[39].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MV-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[40].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MVP-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[41].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[42].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SU-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[43].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[44].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OR-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[45].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ME-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[46].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KA-400",
+                    "actual": null
+                },
+                {
+                    "path": "rows[47].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PE-200",
+                    "actual": null
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[25]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 25,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[26]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 26,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[27]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 27,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[28]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 28,
+                        "tag": "people.catering"
+                    }
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-1002",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.16229,
+            "tokensIn": 14645,
+            "tokensOut": 13300,
+            "durationMs": 66517,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "office.cleaning",
+            "counts": {
+                "match": 775,
+                "matchNormalized": 1,
+                "missing": 49,
+                "extra": 4,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.courtRegistration",
+                    "state": "wrong",
+                    "expected": "Spisová značka C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "actual": "C 991177 vedená u Krajského soudu v Hradci Králové",
+                    "similarity": 0.7692
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.matice-velkoobchod.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "TP-64",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PU-6",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RZ-4000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[3].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MY-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[4].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZ-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[5].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DEZP-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[6].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-120",
+                    "actual": null
+                },
+                {
+                    "path": "rows[7].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PO-60",
+                    "actual": null
+                },
+                {
+                    "path": "rows[8].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SK-30",
+                    "actual": null
+                },
+                {
+                    "path": "rows[9].item.supplierCode",
+                    "state": "missing",
+                    "expected": "HO-10",
+                    "actual": null
+                },
+                {
+                    "path": "rows[10].item.supplierCode",
+                    "state": "missing",
+                    "expected": "JA-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[11].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UM-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[12].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[13].item.supplierCode",
+                    "state": "missing",
+                    "expected": "RN-L",
+                    "actual": null
+                },
+                {
+                    "path": "rows[14].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CS-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[15].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UC-5",
+                    "actual": null
+                },
+                {
+                    "path": "rows[16].item.supplierCode",
+                    "state": "missing",
+                    "expected": "WC-750",
+                    "actual": null
+                },
+                {
+                    "path": "rows[17].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OV-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[18].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[19].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MN-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[20].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KB-12",
+                    "actual": null
+                },
+                {
+                    "path": "rows[21].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SL-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[22].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OK-25",
+                    "actual": null
+                },
+                {
+                    "path": "rows[23].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PK-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[24].item.supplierCode",
+                    "state": "missing",
+                    "expected": "VU-72",
+                    "actual": null
+                },
+                {
+                    "path": "rows[25].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KF-4",
+                    "actual": null
+                },
+                {
+                    "path": "rows[26].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KP-200",
+                    "actual": null
+                },
+                {
+                    "path": "rows[27].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MD-1000",
+                    "actual": null
+                },
+                {
+                    "path": "rows[28].item.supplierCode",
+                    "state": "missing",
+                    "expected": "UB-33",
+                    "actual": null
+                },
+                {
+                    "path": "rows[29].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OD-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[30].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KZ-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[31].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KM-250",
+                    "actual": null
+                },
+                {
+                    "path": "rows[32].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CC-100",
+                    "actual": null
+                },
+                {
+                    "path": "rows[33].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CZ-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[34].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CO-50",
+                    "actual": null
+                },
+                {
+                    "path": "rows[35].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CU-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[36].item.supplierCode",
+                    "state": "missing",
+                    "expected": "CP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[37].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ML-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[38].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SM-240",
+                    "actual": null
+                },
+                {
+                    "path": "rows[39].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MV-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[40].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MVP-15",
+                    "actual": null
+                },
+                {
+                    "path": "rows[41].item.supplierCode",
+                    "state": "missing",
+                    "expected": "DP-1",
+                    "actual": null
+                },
+                {
+                    "path": "rows[42].item.supplierCode",
+                    "state": "missing",
+                    "expected": "SU-300",
+                    "actual": null
+                },
+                {
+                    "path": "rows[43].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OP-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[44].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OR-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[45].item.supplierCode",
+                    "state": "missing",
+                    "expected": "ME-500",
+                    "actual": null
+                },
+                {
+                    "path": "rows[46].item.supplierCode",
+                    "state": "missing",
+                    "expected": "KA-400",
+                    "actual": null
+                },
+                {
+                    "path": "rows[47].item.supplierCode",
+                    "state": "missing",
+                    "expected": "PE-200",
+                    "actual": null
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[25]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 25,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[26]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 26,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[27]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 27,
+                        "tag": "people.catering"
+                    }
+                },
+                {
+                    "path": "_resolve.contentTag.rowExceptions[28]",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": {
+                        "rowIndex": 28,
+                        "tag": "people.catering"
+                    }
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0502",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.049074,
+            "tokensIn": 11202,
+            "tokensOut": 2667,
+            "durationMs": 15640,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hosting",
+            "counts": {
+                "match": 98,
+                "matchNormalized": 3,
+                "missing": 8,
+                "extra": 1,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.wolkenkraft.example",
+                    "actual": null
+                },
+                {
+                    "path": "customer.taxId",
+                    "state": "missing",
+                    "expected": "CZ27893286",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-09-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-09-30",
+                    "actual": null
+                },
+                {
+                    "path": "payment.paymentReference",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": "INV-2026-0421"
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Please quote the invoice number with your payment.",
+                    "actual": "Reverse charge — VAT to be accounted for by the recipient (Art. 196 of Council Directive 2006/112/EC).",
+                    "similarity": 0.2255
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MK8S-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "Billing period 09/2026",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OBJ-TB",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "NET-OUT",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0502",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.048184,
+            "tokensIn": 11202,
+            "tokensOut": 2578,
+            "durationMs": 14866,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hosting",
+            "counts": {
+                "match": 99,
+                "matchNormalized": 2,
+                "missing": 8,
+                "extra": 1,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.taxId",
+                    "state": "missing",
+                    "expected": "DE383584058",
+                    "actual": null
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.wolkenkraft.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-09-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-09-30",
+                    "actual": null
+                },
+                {
+                    "path": "payment.paymentReference",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": "INV-2026-0421"
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Please quote the invoice number with your payment.",
+                    "actual": "Reverse charge — VAT to be accounted for by the recipient (Art. 196 of Council Directive 2006/112/EC).",
+                    "similarity": 0.2255
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MK8S-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "Billing period 09/2026",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OBJ-TB",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "NET-OUT",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0502",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.050934,
+            "tokensIn": 11202,
+            "tokensOut": 2853,
+            "durationMs": 16800,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.hosting",
+            "counts": {
+                "match": 98,
+                "matchNormalized": 3,
+                "missing": 8,
+                "extra": 1,
+                "wrong": 1
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "supplier.bankAccount.iban",
+                "customer.address.zip"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.taxId",
+                    "state": "missing",
+                    "expected": "DE383584058",
+                    "actual": null
+                },
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.wolkenkraft.example",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodFrom",
+                    "state": "missing",
+                    "expected": "2026-09-01",
+                    "actual": null
+                },
+                {
+                    "path": "dates.periodTo",
+                    "state": "missing",
+                    "expected": "2026-09-30",
+                    "actual": null
+                },
+                {
+                    "path": "payment.paymentReference",
+                    "state": "extra",
+                    "expected": null,
+                    "actual": "INV-2026-0421"
+                },
+                {
+                    "path": "notes.onDocument",
+                    "state": "wrong",
+                    "expected": "Please quote the invoice number with your payment.",
+                    "actual": "Reverse charge — VAT to be accounted for by the recipient (Art. 196 of Council Directive 2006/112/EC).",
+                    "similarity": 0.2255
+                },
+                {
+                    "path": "rows[0].item.supplierCode",
+                    "state": "missing",
+                    "expected": "MK8S-M",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "Billing period 09/2026",
+                    "actual": null
+                },
+                {
+                    "path": "rows[1].item.supplierCode",
+                    "state": "missing",
+                    "expected": "OBJ-TB",
+                    "actual": null
+                },
+                {
+                    "path": "rows[2].item.supplierCode",
+                    "state": "missing",
+                    "expected": "NET-OUT",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0802",
+            "repeat": 1,
+            "status": "ok",
+            "costUsd": 0.0419,
+            "tokensIn": 10940,
+            "tokensOut": 2002,
+            "durationMs": 12604,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.software",
+            "counts": {
+                "match": 87,
+                "matchNormalized": 3,
+                "missing": 2,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "customer.address.zip",
+                "totals.totalRounding"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.quillstack.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "14 seats, 10/01/2026 – 10/31/2026",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0802",
+            "repeat": 2,
+            "status": "ok",
+            "costUsd": 0.04323,
+            "tokensIn": 10940,
+            "tokensOut": 2135,
+            "durationMs": 13653,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.software",
+            "counts": {
+                "match": 87,
+                "matchNormalized": 2,
+                "missing": 3,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "totals.totalRounding"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.quillstack.example",
+                    "actual": null
+                },
+                {
+                    "path": "customer.taxId",
+                    "state": "missing",
+                    "expected": "CZ27893286",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "14 seats, 10/01/2026 – 10/31/2026",
+                    "actual": null
+                }
+            ]
+        },
+        {
+            "messageId": "MSG-CORPUS-VP-0802",
+            "repeat": 3,
+            "status": "ok",
+            "costUsd": 0.0462,
+            "tokensIn": 10940,
+            "tokensOut": 2432,
+            "durationMs": 15397,
+            "model": "claude-sonnet-5-5",
+            "primaryType": "invoiceReceived",
+            "tag": "it.software",
+            "counts": {
+                "match": 88,
+                "matchNormalized": 2,
+                "missing": 2,
+                "extra": 0,
+                "wrong": 0
+            },
+            "normalized": [
+                "supplier.contact.phone",
+                "totals.totalRounding"
+            ],
+            "deviations": [
+                {
+                    "path": "supplier.contact.web",
+                    "state": "missing",
+                    "expected": "www.quillstack.example",
+                    "actual": null
+                },
+                {
+                    "path": "rows[0].item.description",
+                    "state": "missing",
+                    "expected": "14 seats, 10/01/2026 – 10/31/2026",
+                    "actual": null
+                }
+            ]
+        }
+    ]
+}
