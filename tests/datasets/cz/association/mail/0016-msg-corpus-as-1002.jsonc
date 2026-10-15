@@ -35,7 +35,7 @@
             "profile": "czech_general",
             "confidence": 1.0,
             "proposedType": "invoiceReceived",
-            "contentTag": "goods.stock",
+            "contentTag": "office.cleaning",
             "tokensInput": 0,
             "tokensOutput": 0,
             "durationMs": 0,
@@ -2306,7 +2306,7 @@
                 ],
                 "_resolve": {
                     "contentTag": {
-                        "tag": "goods.stock",
+                        "tag": "office.cleaning",
                         "tagSource": "llm",
                         "tagConfidence": 1,
                         "rowExceptions": [

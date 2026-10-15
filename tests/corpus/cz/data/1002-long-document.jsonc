@@ -11,7 +11,7 @@
 	"currency": "CZK",
 	"vatTreatment": "standard",
 	"payment": { "method": "bankTransfer", "specificSymbol": null, "constantSymbol": "0008" },
-	"contentTag": "goods.stock",
+	"contentTag": "office.cleaning",
 	"rows": [
 		{ "text": "Toaletní papír 2vrstvý, 64 rolí", "supplierCode": "TP-64", "qty": 12, "unit": "bal", "unitPrice": 289.00, "vatPct": 21 },
 		{ "text": "Papírové utěrky v roli, 2vrstvé, 6 ks", "supplierCode": "PU-6", "qty": 4, "unit": "bal", "unitPrice": 199.00, "vatPct": 21, "discountPct": 5 },

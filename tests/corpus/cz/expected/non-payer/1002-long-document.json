@@ -1111,7 +1111,7 @@
   },
   "_resolve": {
     "contentTag": {
-      "tag": "goods.stock",
+      "tag": "office.cleaning",
       "rowExceptions": [
         {
           "rowIndex": 30,
