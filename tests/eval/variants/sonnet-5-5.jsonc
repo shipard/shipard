@@ -1,0 +1,13 @@
+// Varianta evaluace AI analýzy pro model řady 5 (docs/roadmap.md M4, tasks/testing-phase4.md § 9):
+// profil jako ve zdroji dat, model funkce mail.extraction přepsaný na Claude Sonnet 5.5
+// (ID z katalogu modules/core/ai/config/models.jsonc, úroveň balanced). Ostatní null = jak je
+// nastaveno ve zdroji dat; `connection` = kód připojení nebo `server`.
+{
+	"format": "shpd.eval.variant.v1",
+	"name": "sonnet-5-5",
+	"description": "Profil czech_general, model mail.extraction přepsaný na claude-sonnet-5-5",
+	"profile": "czech_general",                  // kód profilu pošty
+	"promptTemplateFile": null,                  // šablona promptu ze souboru (vyzkoušení bez zásahu do zdroje dat)
+	"call": { "connection": null, "model": "claude-sonnet-5-5", "thinking": null, "effort": null, "maxTokens": null },
+	"contentTags": { "model": null, "thinking": null, "effort": null }, // přepis funkce exchange.contentTags
+}

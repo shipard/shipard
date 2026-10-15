@@ -1,6 +1,6 @@
 # Testování F4: evaluace AI analýzy nad datovými sadami
 
-**Stav:** hotovo — implementace 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`), první běh `baseline` nad `cz-vat-payer` 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-baseline.json` (§ 8); nálezy běhu jsou podklad pro ladění promptu a #118, ne úprava očekávání; nález „posunuté výjimky štítků řádků“ byl artefakt pozičního porovnání — porovnávač páruje `rowExceptions` podle `rowIndex` od 2026-10-15
+**Stav:** hotovo — implementace 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`), první běh `baseline` nad `cz-vat-payer` 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-baseline.json` (§ 8); nálezy běhu jsou podklad pro ladění promptu a #118, ne úprava očekávání; nález „posunuté výjimky štítků řádků“ byl artefakt pozičního porovnání — porovnávač páruje `rowExceptions` podle `rowIndex` od 2026-10-15; druhý běh `sonnet-5-5` × 3 nad touž sadou 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-sonnet-5-5.json`, porovnání s baseline v § 9 (podklad pro M4)
 
 ## Kontext / Cíl
 
@@ -261,9 +261,115 @@ Závěr: baseline je použitelný etalon — hodnotové jádro dokladu (částky
 řádky, klasifikace) sedí, systematické mezery jsou v identifikačních
 a textových polích a ve štítcích řádků. Další krok podle roadmapy M4: stejná
 sada s variantou pro model řady 5 (`call.model`) a `--repeat 3`, pak
-`ai-eval-compare` proti tomuto běhu. Nálezy k promptu a klasifikaci
+`ai-eval-compare` proti tomuto běhu (hotovo 2026-10-15, § 9). Nálezy k promptu a klasifikaci
 štítků řešit úpravou promptu / kódu se samostatnou evaluací, ne úpravou
 očekávání.
+
+## 9. Druhý běh `sonnet-5-5` × 3 a porovnání s baseline (2026-10-15)
+
+Varianta `tests/eval/variants/sonnet-5-5.jsonc`: profil `czech_general`
+(v4.7.1, stejný hash promptu jako baseline), `call.model` =
+`claude-sonnet-5-5` (katalog, úroveň balanced), ostatní `null` — serverové
+připojení (`server`), bez thinking / effort, strop 32 768. Týž zdroj dat
+`vg39-l` (žádný doklad použitý, preflight prošel), 20 zpráv × 3 = 60 volání.
+Soubor: `tests/eval/cz-vat-payer/2026-10-15-sonnet-5-5.json` (commit
+`d322c724`, `dirty: true` — v témže checkoutu právě vznikala oprava
+porovnávače `2318728f`). Porovnání: `shpd-ds ai-eval-compare
+tests/eval/cz-vat-payer/2026-10-15-baseline.json
+tests/eval/cz-vat-payer/2026-10-15-sonnet-5-5.json`.
+
+**Co běh měřil a co ne — tři výhrady ke čtení čísel:**
+
+- **Výjimky štítků řádků jsou u obou běhů poziční.** Proces si porovnávač
+  načetl před úpravou `2318728f` (na opakování vychází 5× `extra` + 34×
+  `wrong` jako u baseline), takže metrika 56,5 % → 56,8 % je mezi § 8 a § 9
+  srovnatelná, ale s žádným dalším během už ne.
+- **Funkce `exchange.contentTags` zůstala na `claude-sonnet-4-6`**
+  (`contentTags.model: null` = mapa úrovní zdroje dat). Štítek dokladu
+  a výjimky štítků řádků tedy měří stejný model jako baseline; řada 5 je
+  jen v extrakci. Další varianta má nastavit i `contentTags.model`.
+- **Teplota.** Tvarovač požadavku u řady 5 vynechal `temperature: 0`
+  (model nevýchozí teplotu odmítá; log „temperature 0 omitted“) a Sonnet 5.5
+  má výchozí adaptivní thinking. Baseline jela s teplotou 0. Část rozptylu
+  mezi opakováními je tedy výchozí nedeterminismus modelu, ne vlastnost
+  sady.
+
+| Metrika | baseline (A) | sonnet-5-5 (B, průměr [min–max]) | B − A |
+|---------|--------------|----------------------------------|-------|
+| Volání | 20, úspěšných 20 | 60, úspěšných 59, 1× `schema_error` | |
+| Shoda polí celkem (match + po normalizaci) | 93,2 % (po normalizaci 1,0 %) | 93,7 % [93,6–93,8] (po normalizaci 0,9 %) | +0,5 % lepší, mimo šum |
+| Hlavička / dodavatel / odběratel | 93,5 % / 90,0 % / 98,2 % | 94,4 % [93,8–94,7] / 90,6 % / 99,1 % | +0,9 (v rámci šumu) / +0,6 lepší / +0,9 lepší |
+| DPH / řádky / rekapitulace / součty | 99,4 % / 92,4 % / 100 % / 100 % | 99,5 % / 92,9 % / 100 % / 100 % | +0,1 (šum) / +0,5 lepší / 0 / 0 |
+| Štítek dokladu / výjimky štítků řádků / klasifikace zprávy | 90,0 % / 56,5 % / 100 % | 89,8 % / 56,8 % / 100 % | šum / šum (poziční u obou, model 4.6) / 0 |
+| Doklady bez odchylky | 5,0 % | 10,0 % [10–10] | +5,0 lepší (obě prodejky čisté ve všech opakováních) |
+| Správné částky / počet řádků sedí / klasifikace / štítek | 100 % / 100 % / 100 % / 90,0 % | 98,3 % [95–100] / 98,3 % / 98,3 % / 88,3 % | −1,7 % = jediné selhané volání; všech 59 úspěšných má částky, počty řádků i klasifikaci správně |
+| Cena | 1,24 USD (0,062 / doklad) | 2,83 USD (0,047 / doklad) | −24 % na doklad |
+| Tokeny na doklad (vstup / výstup) | 9,3 k / 2,3 k | 11,1 k / 2,5 k | +20 % / +10 % (levnější ceník to převáží) |
+| Čas na doklad | 32,1 s | 13,4 s | 2,4× rychlejší |
+| Odhad před během | 1,60 USD (skutečnost 77 %) | 3,32 USD (skutečnost 85 %) | |
+
+`ai-eval-compare` vypisuje „pole zlepšená / zhoršená“ a součty (volání,
+tokeny, cena, čas) jako prosté počty volání, bez přepočtu na opakování — u B
+s trojnásobkem volání tak hlásí jako „zhoršené“ i uzly beze změny
+(`supplier.contact.web` 16 → 48) a součty jako „horší“. Níže počty
+odchylek **přepočtené na jedno opakování** (B / 3):
+
+| Uzel | A (20 volání) | B na opakování | Změna |
+|------|---------------|----------------|-------|
+| `supplier.contact.web` | 16 | 16,0 | beze změny |
+| `supplier.courtRegistration` | 12 | 11,7 | beze změny |
+| `rows[].item.supplierCode` | 10 | 10,0 | beze změny |
+| `notes.onDocument` | 8 | 8,3 | beze změny |
+| `dates.periodFrom` / `dates.periodTo` | 4 / 4 | 4,0 / 4,0 | beze změny |
+| `_resolve.contentTag.rowExceptions` (+ `[].rowIndex`) | 6 (+2) | 5,0 (+2,0) | poziční artefakt u obou, funkce štítků 4.6 |
+| `_resolve.contentTag.tag` / `rows[].item.ean` / `rows[].vat.supplyKind` | 2 / 2 / 1 | 2,0 / 2,0 / 1,0 | beze změny (1001 a 1002 dál `office.cleaning`) |
+| `rows[].item.description` | 6 | 4,0 | lepší |
+| `customer.taxId` / `supplier.taxId` | 6 / 4 | 3,0 / 2,3 | lepší (0502, 0802 stále 3×) |
+| `dates.taxPointDate` | 4 | 1,0 | lepší (0701 2×, 0802 1×) |
+| `supplier.bankAccount.iban` | 3 | 0,7 | lepší, ale 2 z 60 volání stále špatně (0101, 0701 — vložená / vynechaná číslice), stabilita pole 75 % — kontrolní součet IBAN v produkční cestě zůstává kandidátem |
+| `payment.paymentReference` | 2 | 1,3 | lepší (0502 3×, 0501 1×) |
+| `rows[].vat.pct` / `supplier.address.zip` / `rows[].priceCalcMode` | 1 / 1 / 1 | 0 / 0 / 0,3 | lepší |
+| `vat.reverseCharge` | 0 | 1,7 | **nové:** `eu-goods` 0601 (3×), 0602 (2×) — pořízení zboží z EU označí jako přenesení daňové povinnosti (`true`), očekáváno `false`; sémantika § 92a vs. pořízení z EU v promptu |
+| `supplier.address.street` + `houseNumber` | 0 | 1,3 + 1,3 | **nové:** `third-country` 0801 (3×), 0802 (1×) — „500 Market Street, Suite 200“ rozdělí na číslo 500 a ulici; prompt, nebo rovnocenný tvar adresy mimo ČR (#118) |
+
+**Selhání 0702 (3), `schema_error`:** model vložil `bankAccount` pod
+`payment` (schéma má `additionalProperties: false`) — v ostrém provozu by
+to byla selhaná analýza. Jediný případ z 60, u baseline žádný; sledovat
+v dalších bězích (tolerance neznámých vlastností v parseru, nebo prompt).
+
+Shoda jen po normalizaci (podklad #118), na opakování proti A: telefon
+s mezerami ≈ 20× (A 18), **IBAN s mezerami 7× (A 3)** — řada 5 píše IBAN
+po čtveřicích častěji, `totalRounding` 0 ≡ null 3,3× (A 4), PSČ odběratele
+1,3× (A 7), PSČ dodavatele 0× (A 3).
+
+Po variantách korpusu (shoda A → B): `eu-services` 88,4 → 90,8 %,
+`domestic-rounding` 93,7 → 96,1 %, `third-country-services` 93,5 → 94,9 %,
+`receipt` 99,4 → 100 % (bez odchylky 50 → 100 %), `domestic-goods` 95,2 →
+95,8 %, `long-document` 91,6 → 91,6 %, `eu-goods` 92,9 → 93,0 %. Po podobách
+`pdf` 93,3 → 93,8 %, `pdfIsdoc` 93,1 → 93,7 % (selhání bylo v `pdfIsdoc`).
+Stabilita přes opakování: 73 z 85 uzlů 100 %; nejméně stabilní
+`supplier.bankAccount.iban` 75 %, `customer.address.zip` 83 %,
+`customer.taxId` 89 %, `dates.taxPointDate` a `notes.onDocument` 90 %.
+
+**Závěr pro M4:** Sonnet 5.5 na téže sadě a témže promptu není horší —
+celková shoda +0,5 % mimo šum, lepší dodavatel, odběratel a řádky,
+dvojnásobek dokladů bez odchylky — a je o 24 % levnější na doklad a 2,4×
+rychlejší. Systematické mezery (web a spisová značka dodavatele, kód
+položky, poznámka, období plnění) jsou shodné, tedy věc promptu, ne modelu.
+Nová rizika: jeden výstup mimo schéma z 60 a `reverseCharge` u pořízení
+z EU. Před přepnutím výchozího modelu: (1) varianta s `contentTags.model`
+= řada 5 a explicitním `thinking` / `effort`, (2) oba běhy znovu po
+`2318728f`, aby výjimky štítků řádků byly srovnatelné, (3) prompt pro
+`reverseCharge` a adresu mimo ČR; očekávání sady se nemění.
+
+**Nálezy k nástrojům (follow-up, ne součást tohoto běhu):**
+
+- `ai-eval-compare` nepřepočítává počty odchylek ani součty na opakování
+  (D38 × D41) — porovnání běhu × 1 s během × 3 je v části „pole
+  zlepšená / zhoršená“ zavádějící.
+- `ai-eval` bez `--yes` s `stdin` z `/dev/null` skončil po „Aborted.“
+  exit 0, ne dokumentovaným exit 2 (`isInteractive()` zůstalo `true`,
+  `posix` načtený); útrata nehrozí, jen kód pro skripty.
 
 ## Kroky
 
@@ -299,6 +405,9 @@ očekávání.
 - [x] první běh `baseline` nad `cz-vat-payer` po schválení (2026-10-15),
       výsledek v `tests/eval/cz-vat-payer/2026-10-15-baseline.json`,
       metriky shrnuté v § 8
+- [x] běh varianty řady 5 (`sonnet-5-5`, `--repeat 3`) po schválení (2026-10-15),
+      výsledek v `tests/eval/cz-vat-payer/2026-10-15-sonnet-5-5.json`,
+      `ai-eval-compare` proti baseline a shrnutí v § 9
 - [x] `docs/test-corpus.md` § 18 (evaluace: varianty, metriky, soubor výsledků,
       porovnání, opakování), `docs/cli.md`, `docs/ai.md`, `CLAUDE.local.md`
       nedotčený (zdroje dat dopíše člověk)
