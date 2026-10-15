@@ -551,6 +551,15 @@ ceník katalogu pro `catalogModel` × násobitel platformy; vlastní ID „—�
 stderr. Exit 1, když kterákoli funkce selže. Stojí zlomky centu a na
 hostovaném zdroji dat jde do společného limitu gateway — nikdy z cronu.
 
+**`shpd-ds ai-eval`** (#103 F4, [test-corpus.md](test-corpus.md) § 18):
+evaluace funkce `mail.extraction` (a `exchange.contentTags`) nad datovou
+sadou korpusu — analýza nanečisto (`AnalysisComputation`, bez zápisu),
+porovnání s očekáváním po polích, soubor výsledků v repu; varianta
+(`tests/eval/variants/*.jsonc`) přepisuje profil, prompt ze souboru,
+připojení (`server` = serverové připojení pro vývoj, §5.1), model
+a ladění přes `AiCallOverride::merge()` nad přepsáním z profilu. Jediná
+podporovaná cesta, jak porovnat modely před změnou mapy úrovní.
+
 ### 5.8 Zpracování v EU — platforma Amazon Bedrock (EU) (#85 fáze 3a, D57–D61)
 
 Někteří zákazníci trvají na zpracování dokladů modelem v datacentrech

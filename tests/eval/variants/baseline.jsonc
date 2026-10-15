@@ -1,0 +1,12 @@
+// Výchozí varianta evaluace AI analýzy (tasks/testing-phase4.md D35, docs/test-corpus.md § 18):
+// profil a model funkce mail.extraction tak, jak je nastavený ve zdroji dat.
+// null = jak je nastaveno ve zdroji dat; `connection` = kód připojení nebo `server`.
+{
+	"format": "shpd.eval.variant.v1",
+	"name": "baseline",
+	"description": "Výchozí profil a model funkce mail.extraction",
+	"profile": "czech_general",                  // kód profilu pošty
+	"promptTemplateFile": null,                  // šablona promptu ze souboru (vyzkoušení bez zásahu do zdroje dat)
+	"call": { "connection": null, "model": null, "thinking": null, "effort": null, "maxTokens": null },
+	"contentTags": { "model": null, "thinking": null, "effort": null }, // přepis funkce exchange.contentTags
+}

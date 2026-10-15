@@ -39,7 +39,7 @@ use Shipard\Core\Logging\ErrorLogger;
  * (`isConfigurationError()`) = `config_error`; jiná chyba API = `ai_error`
  * s `transient` podle `isTransient()`.
  */
-final class AnalysisComputation
+final class AnalysisComputation implements AnalysisComputing
 {
     public const STALL_TIMEOUT_SECONDS = 180;
     public const CALL_TIMEOUT_SECONDS = 840;

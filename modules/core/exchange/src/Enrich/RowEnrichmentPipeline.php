@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Enrich;
 
+use Shipard\Core\Ai\AiCallOverride;
 use Shipard\Core\Ai\AiFunctionResolver;
+use Shipard\Core\Ai\LlmClient;
 use Shipard\Core\Ai\AnthropicLlmClient;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Config\ConfigRuntime;
@@ -56,6 +58,8 @@ final class RowEnrichmentPipeline
         DataSourceConnection $db,
         ?ConfigRuntime $configRuntime = null,
         ?DataSourceConfig $dsConfig = null,
+        ?AiCallOverride $contentTagsOverride = null,
+        ?LlmClient $llm = null,
     ): self {
         $dibi = $db->getDibiConnection();
         $settings = new SettingsStore($db);
@@ -70,9 +74,10 @@ final class RowEnrichmentPipeline
                 $configRuntime,
             ),
             new ContentTagClassifier(
-                new AnthropicLlmClient(ModelCatalog::fromConfig($configRuntime)),
+                $llm ?? new AnthropicLlmClient(ModelCatalog::fromConfig($configRuntime)),
                 new AiFunctionResolver($db, $configRuntime, $dsConfig),
                 $configRuntime,
+                $contentTagsOverride,
             ),
             $beforeDominance === null ? true : (bool) $beforeDominance,
         );

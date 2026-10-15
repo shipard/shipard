@@ -725,3 +725,118 @@ po opravě předpisů pro osnovu NNO (#122): zaokrouhlení jde na 549100 /
   použij `--json > soubor`.
 - **Reseed** po změně korpusu nebo applieru: `dataset-seed … -y` na
   ověřovací zdroj dat (reset), jinak kontroly běží nad starými doklady.
+
+## 18. Evaluace AI analýzy (F4)
+
+Zadání a rozhodnutí D34–D41: `tasks/testing-phase4.md`, issue #103. AI
+polovina testování (D3): zprávy sady (§ 16) projdou skutečnou AI analýzou
+**nanečisto** a výstup se porovná po polích s `canonicalJson` ideální
+analýzy ze souborů sady (ne ze zdroje dat). Výsledky běhů se ukládají do
+repa (`tests/eval/<název sady>/`), aby šly dlouhodobě porovnávat napříč
+modely, laděním a verzemi promptu (D8) — podklad pro přechod výchozího
+modelu na řadu 5 (`docs/roadmap.md` M4).
+
+### Předpoklady
+
+- **Vývojový server se serverovým AI klíčem** (D40, `docs/ai.md` § 5.1):
+  `sudo shpd-server dev-ai-key --set-key`; sady korpusu nesou
+  `provision.serverAi: true`, takže `dataset-seed` zapne zdroji dat
+  příznak `ai.useServerConnection` v `config/main.json` a zdroj dat bez
+  vlastního připojení jde přes serverový klíč (`ai-test --function
+  mail.extraction` ukáže připojení `server`).
+- **Čerstvě naseedovaný zdroj dat** (D39): `ai-eval` odmítne zdroj dat
+  s cizí zprávou, s jakýmkoli dokladem (i v Koši) nebo s pravidlem
+  IČO → štítek — historie řádků a pravidla by pokryly štítky dřív než AI
+  a běh by měřil něco jiného. Po `dataset-verify` se proto sada přeseeduje
+  (`dataset-seed … -y`).
+
+### Varianty (`tests/eval/variants/<název>.jsonc`, D35)
+
+Formát `shpd.eval.variant.v1` (`EvalVariant`): `name`, `description`,
+`profile` (kód profilu pošty, `czech_general`), `promptTemplateFile`
+(šablona promptu ze souboru, relativně k variantě — nahrazuje
+`prompt_template` profilu jen v paměti běhu; do výsledku jde její hash),
+`call` (`connection` = kód připojení zdroje dat nebo `server`, `model`,
+`thinking`, `effort`, `maxTokens`) a `contentTags` (`model`, `thinking`,
+`effort` funkce `exchange.contentTags`). `null` = jak je nastaveno ve
+zdroji dat; přepsání varianty se skládá nad přepsání z profilu
+(`AiCallOverride::merge()`), id připojení z profilu nahrazuje kód
+varianty jako celek. Výchozí varianta `baseline` je v repu.
+
+### Běh (`shpd-ds ai-eval`, D34)
+
+`docs/cli.md` § `ai-eval`. Preflight → odhad ceny a potvrzení (bez `--yes`
+jen na terminálu, neinteraktivně exit 2) → zprávy postupně, každá
+`--repeat`krát: `EvalRunner` nad `AnalysisComputation`
+(`modules/core/mail/docs/ai-analysis.md` → Analýza nanečisto; přílohy,
+prompt, model, parser, validace canonicalu včetně LLM klasifikace štítků
+— bez claimu, zápisu a změny stavu zprávy), porovnání
+`CanonicalComparator::evaluate()` nad projekcí sady, k tomu virtuální list
+`message_classification.primary_type` proti `primaryType` zprávy. Selhání
+volání (síť, parser, nevalidní canonical) je výsledek zprávy. `--only`
+(čísla buněk, stemy, varianty korpusu, messageId) a `--limit` na ladění;
+celá sada s `--repeat` jen vědomě. Syrové výstupy modelu jen lokálně
+(`--save-raw`), do repa nejdou.
+
+### Porovnávač v režimu evaluace (D37)
+
+`CanonicalComparator::evaluate()` (`modules/core/exchange/src/Compare/`)
+dává stav **každého listu** projekce (`FieldOutcome`, `FieldState`):
+
+| Stav | Význam |
+|------|--------|
+| `match` | shoda syrových hodnot po projekci |
+| `matchNormalized` | shoda až po tvarech hodnot (§ 11, D15 — podklad pro #118), rovnocenných tvarech (§ 10), toleranci čísel 0,005, sjednocení mezer, nebo podobnosti volného textu ≥ 0,9 |
+| `missing` | očekávaná hodnota, výstup `null` / chybí („model nenašel“) |
+| `extra` | očekáván `null` („na dokladu není“), výstup má hodnotu |
+| `wrong` | obě strany mají hodnotu, liší se |
+
+Podobnost (Levenshtein nad znaky, `TextSimilarity`) se měří jen u uzlů
+volného textu (`CanonicalComparator::FREE_TEXT_NODES`: názvy stran
+a položek, popisy řádků, poznámka na dokladu, jména kontaktů, spisová
+značka) — číslo dokladu, adresa nebo jednotka s překlepem jsou chyba.
+Pole po pozicích; rozdíl délky je jeden výsledek na cestě pole s počty
+prvků (známé omezení: vynechaný řádek posune zbytek — metrika „počet
+řádků sedí“ to odliší). Nullable uzel `customer` prázdný na obou stranách
+je jeden `match`.
+
+### Metriky (`EvalMetrics`, D37, D41)
+
+Skupiny polí (`EvalFieldGroups`): hlavička, dodavatel, odběratel, DPH
+(`vat.*`, `rows[].vat.*`), řádky, rekapitulace, součty, štítek dokladu,
+výjimky štítků řádků, klasifikace zprávy. Per skupina podíl
+`match + matchNormalized` (`fields.<skupina>.hit`), zvlášť podíl shody až
+po normalizaci (`.normalized`), počty `missing` / `extra` / `wrong`; per
+doklad podíl bez jediné odchylky (`documents.clean`), správné částky
+(`rows[].totalPrice`, rekapitulace, součty), počet řádků sedí,
+klasifikace, štítek; selhání po typech; cena, tokeny, čas (součet
+a průměr na doklad); totéž po variantách a podobách korpusu
+(`expected/messages.json`). Opakování: podíly jako průměr přes opakování
+s rozpětím min–max (`range`), stabilita per pole = podíl zpráv se stejným
+stavem ve všech opakováních (`fieldStability`). `deviationsByField` =
+počet volání s odchylkou per uzel (nejčastější odchylky).
+
+### Soubor výsledků (`tests/eval/<název sady>/<YYYY-MM-DD>-<varianta>[-<n>].json`, D36)
+
+`shpd.eval.run.v1` (`EvalRun`, `EvalRunStore`): `set` (název, země,
+profil, cesta, **hash obsahu** `mail/` včetně příloh a `expected/`, počet
+zpráv a výběr), `git` (commit, neuložené změny), `variant` (deklarace
+a `effective`: profil, verze a hash promptu, platforma, připojení s původem,
+model, thinking, effort, strop, ladění štítků), `startedAt` / `finishedAt`,
+`repeat`, `metrics`, `range`, `fieldStability`, `byVariant`, `byForm`,
+`deviationsByField` a `calls` — per zpráva a opakování stav, cena, tokeny,
+čas, klasifikace, štítek, počty `match` / `matchNormalized`, cesty polí
+shodných po normalizaci a **jen odchylky** `{path, state, expected, actual,
+similarity}`. Data korpusu jsou fiktivní, výsledky nad veřejnými sadami
+patří do veřejného repa; nad reálnými doklady jen do soukromého (D8).
+
+### Pasti
+
+- **Útrata.** Každé volání stojí peníze; odhad a `--yes` nejsou formalita.
+- **Reálná data.** Serverové připojení je opt-in právě proto, aby obnovená
+  reálná kopie nezačala analyzovat poštu; příznak `ai.useServerConnection`
+  se na reálných kopiích nenastavuje ručně.
+- **Očekávání se neupravuje podle modelu.** Rozdíl je výsledek měření;
+  chyba očekávání se opravuje v generátoru se schválením.
+- **Nedeterminismus.** Jeden běh nestačí na závěr „lepší / horší“ u malých
+  rozdílů — proto `--repeat` a rozpětí.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Module\Core\Exchange\Enrich;
 
+use Shipard\Core\Ai\AiCallOverride;
 use Shipard\Core\Ai\AiFunctionResolver;
 use Shipard\Core\Ai\Exception\AiFunctionException;
 use Shipard\Core\Ai\LlmClient;
@@ -48,10 +49,16 @@ class ContentTagClassifier
          "rowExceptions": [{"rowIndex": int, "tag": string}]}
         PROMPT;
 
+    /**
+     * @param AiCallOverride|null $override Přepsání volání funkce
+     *        `exchange.contentTags` (varianta evaluace `ai-eval`,
+     *        tasks/testing-phase4.md D35); null = nastavení zdroje dat.
+     */
     public function __construct(
         private readonly LlmClient $llm,
         private readonly AiFunctionResolver $functions,
         private readonly ?ConfigRuntime $config = null,
+        private readonly ?AiCallOverride $override = null,
     ) {}
 
     /**
@@ -83,7 +90,7 @@ class ContentTagClassifier
         }
 
         try {
-            $call = $this->functions->resolve(self::AI_FUNCTION);
+            $call = $this->functions->resolve(self::AI_FUNCTION, $this->override);
         } catch (AiFunctionException $e) {
             // Nenastavená AI (bez připojení / klíče, špatný model) — žádná
             // klasifikace, žádná chyba běhu (D17).

@@ -1375,6 +1375,57 @@ z cronu.
 | `--function <id>` | Jen tato funkce (`mail.extraction`, `chat.default`, …); neznámé id = FAIL |
 | `--json` | Stdout = jediný JSON objekt `{ok, functions: [{id, ok, connection, connectionOrigin, model, elapsedMs, inputTokens, outputTokens, costUsd, stopReason, reply}]}`, u selhání `{id, ok: false, code, error, …}`; lidské řádky jdou na stderr. `connectionOrigin` = původ připojení (`override` / `function` / `default` / `server` — serverové připojení pro vývoj, #103 D40; `connection` je pak `server`) |
 
+#### `ai-eval`
+
+```bash
+cd /opt/shipard/data-sources/<id>
+shpd-ds ai-eval /cesta/k/repu/tests/datasets/cz/vat-payer --variant /cesta/k/repu/tests/eval/variants/baseline.jsonc
+shpd-ds ai-eval … --variant … --only 0101,0902 --yes              # jen dvě buňky, bez dotazu
+shpd-ds ai-eval … --variant … --limit 3 --repeat 3 --save-raw /tmp/eval-raw
+shpd-ds ai-eval … --variant … --yes --json > /tmp/run.json       # soubor výsledků i na stdout
+```
+
+Evaluace AI analýzy nad datovou sadou (#103 F4, `docs/test-corpus.md`
+§ 18, `tasks/testing-phase4.md` D34–D41): zprávy sady projdou analýzou
+**nanečisto** (`AnalysisComputation` — stejný pipeline jako ostrá analýza,
+bez claimu, zápisu a změny stavu zprávy) a výstup se porovná po polích
+s `canonicalJson` ideální analýzy ze souborů sady (porovnávač v režimu
+evaluace: `match` / `matchNormalized` / `missing` / `extra` / `wrong`,
+řádky po pozicích). Výsledek jde do `tests/eval/<název sady>/<datum>-<varianta>[-n].json`
+(`shpd.eval.run.v1`: sada s hashem obsahu, git commit, varianta
+rozepsaná na skutečné hodnoty, metriky, per zpráva jen odchylky).
+
+**Preflight** (exit 2, nic se nemění): server jen v režimu `development`;
+země sady = země zdroje dat a schémata; zprávy zdroje dat jsou přesně
+zprávy sady; **žádný doklad** ze sady není použitý a **žádné pravidlo
+IČO → štítek** (historie řádků a pravidla by pokryly štítky dřív než AI
+— zdroj dat po `dataset-verify` se přeseeduje); profil varianty je
+aktivní; volání `mail.extraction` s přepsáním varianty jde sestavit.
+
+**Odhad a potvrzení:** před během vypíše počet volání (zprávy × opakování),
+model, připojení a odhad ceny (z posledního běhu téže varianty nad touž
+sadou, jinak z ceníku katalogu a typické velikosti dokladu). Bez `--yes`
+se ptá jen na terminálu; neinteraktivně bez `--yes` končí exit 2 — útrata
+je vědomý krok. **Stojí peníze.**
+
+| Opce | Význam |
+|------|--------|
+| `<path>` | Složka sady (s `expected/`) nebo `.zip` |
+| `--variant <soubor>` | **povinné** — varianta `shpd.eval.variant.v1` (`tests/eval/variants/baseline.jsonc`): profil pošty, šablona promptu ze souboru, přepsání volání (`connection` = kód připojení nebo `server`, model, thinking, effort, maxTokens), přepsání funkce `exchange.contentTags` |
+| `--only <seznam>` | Jen tyto doklady: čísla buněk (`0101`), stemy, varianty korpusu (`eu-goods`) nebo messageId, čárkami |
+| `--limit <n>` | Nejvýš tolik zpráv (po `--only`) |
+| `--repeat <n>` | Každou zprávu tolikrát (výchozí 1): metriky jako průměr a rozpětí, stabilita polí (D41) |
+| `--save-raw <adresář>` | Syrové výstupy modelu `<messageId>-<n>.txt` mimo repo |
+| `--out <adresář>` | Složka výsledků místo `tests/eval/<název sady>/` v repu |
+| `-y, --yes` | Bez potvrzení odhadu |
+| `--json` | Soubor výsledků (+ `file`) jako jediný JSON objekt na stdout, lidské řádky na stderr |
+
+Exit 0 = běh doběhl (i se špatnými výsledky — ty jsou měření), 1 = některé
+volání selhalo infrastrukturně (`ai_error`, `config_error`, `internal`),
+2 = preflight nebo vstup. Selhání jednoho volání (síť, parser, nevalidní
+canonical) je výsledek zprávy, ne pád. Výstup nikdy přes `| head`
+(SIGPIPE) — `--json > soubor`.
+
 #### `ai-profile-reload`
 
 ```bash
