@@ -8,8 +8,19 @@ namespace Shipard\Module\Core\Mail\Eval;
  * Porovnání dvou běhů evaluace (D38): metriky vedle sebe s rozdílem,
  * označení rozdílu „v rámci šumu“ (menší nebo rovný největšímu rozpětí
  * opakování některého z běhů — jen má-li některý běh `repeat > 1`), pole,
- * která se zlepšila / zhoršila (uzel projekce, počet volání s odchylkou
- * v A vs. B), cena a čas. Běhy nad různými sadami (hash obsahu) odmítne.
+ * která se zlepšila / zhoršila, cena a čas. Běhy nad různými sadami (hash
+ * obsahu) odmítne.
+ *
+ * Běhy s různým počtem opakování (D41, × 1 proti × 3) jsou souměřitelné jen
+ * na jedno opakování: součty přes volání (`calls.*`, `tokens.input`
+ * / `.output`, `cost.usd`, `time.ms`, počty polí `fields.*.n|missing|extra|wrong`)
+ * se dělí `repeat` — pak sedí i k `range`, které je per opakování; podíly
+ * (`fields.*.hit`, `documents.*`) a hodnoty na doklad (`cost.perDocument`,
+ * `tokens.*PerDocument`, `time.perDocumentMs`) už průměr jsou. Počet volání
+ * s odchylkou per uzel (`deviationsByField`) se dělí stejně; za zlepšení
+ * / zhoršení platí rozdíl aspoň {@see self::FIELD_CHANGE_THRESHOLD} volání
+ * na opakování (při × 1 každý rozdíl, při × 3 aspoň dvě volání ze tří) —
+ * jediné odlišné volání z opakovaného běhu není změna.
  */
 final class EvalRunComparison
 {
@@ -20,8 +31,12 @@ final class EvalRunComparison
         'fields.vatRecap.hit', 'fields.totals.hit', 'fields.tag.hit', 'fields.rowExceptions.hit', 'fields.classification.hit',
         'documents.clean', 'documents.amountsCorrect', 'documents.rowCountOk', 'documents.classificationOk', 'documents.tagOk',
         'calls.total', 'calls.ok', 'calls.failed',
-        'cost.usd', 'cost.perDocument', 'tokens.input', 'tokens.output', 'time.ms', 'time.perDocumentMs',
+        'cost.usd', 'cost.perDocument', 'tokens.input', 'tokens.output', 'tokens.inputPerDocument', 'tokens.outputPerDocument',
+        'time.ms', 'time.perDocumentMs',
     ];
+
+    /** Nejmenší rozdíl počtu volání s odchylkou na jedno opakování, který platí za zlepšení / zhoršení pole. */
+    public const float FIELD_CHANGE_THRESHOLD = 0.5;
 
     /** Metriky, u kterých je vyšší hodnota lepší; ostatní (cena, čas, selhání) naopak. */
     private const array HIGHER_IS_BETTER_PREFIXES = ['fields.', 'documents.', 'calls.ok'];
@@ -51,11 +66,14 @@ final class EvalRunComparison
     }
 
     /**
+     * Součty (`perRepetition: true`) jsou na jedno opakování běhu; `fields`
+     * nese počty volání s odchylkou per uzel na jedno opakování a práh změny.
+     *
      * @return array{
      *     set: array<string, mixed>,
      *     runs: array{a: array<string, mixed>, b: array<string, mixed>},
-     *     metrics: list<array{key: string, a: int|float|null, b: int|float|null, delta: int|float|null, noise: ?float, withinNoise: bool, better: ?bool}>,
-     *     fields: array{improved: list<array{node: string, a: int, b: int}>, worsened: list<array{node: string, a: int, b: int}>},
+     *     metrics: list<array{key: string, a: int|float|null, b: int|float|null, delta: int|float|null, noise: ?float, withinNoise: bool, better: ?bool, perRepetition: bool}>,
+     *     fields: array{basis: string, threshold: float, improved: list<array{node: string, a: int|float, b: int|float, delta: float}>, worsened: list<array{node: string, a: int|float, b: int|float, delta: float}>},
      *     sameSelection: bool
      * }
      */
@@ -65,6 +83,8 @@ final class EvalRunComparison
         $metricsB = (array) ($this->b['metrics'] ?? []);
         $rangeA = (array) ($this->a['range'] ?? []);
         $rangeB = (array) ($this->b['range'] ?? []);
+        $repeatA = self::repeatOf($this->a);
+        $repeatB = self::repeatOf($this->b);
 
         $keys = self::HEADLINE_METRICS;
         foreach (array_keys($metricsA + $metricsB) as $key) {
@@ -77,8 +97,13 @@ final class EvalRunComparison
             if (!array_key_exists($key, $metricsA) && !array_key_exists($key, $metricsB)) {
                 continue;
             }
+            $perRepetition = self::isPerRepetitionSum($key);
             $va = $metricsA[$key] ?? null;
             $vb = $metricsB[$key] ?? null;
+            if ($perRepetition) {
+                $va = is_int($va) || is_float($va) ? self::perRepetition($va, $repeatA, 6) : $va;
+                $vb = is_int($vb) || is_float($vb) ? self::perRepetition($vb, $repeatB, 6) : $vb;
+            }
             $delta = is_numeric($va) && is_numeric($vb) ? round($vb - $va, 6) : null;
             $noise = self::noise($rangeA[$key] ?? null, $rangeB[$key] ?? null);
             $better = null;
@@ -93,6 +118,7 @@ final class EvalRunComparison
                 'noise' => $noise,
                 'withinNoise' => $delta !== null && $noise !== null && abs($delta) <= $noise + 1e-9,
                 'better' => $better,
+                'perRepetition' => $perRepetition,
             ];
         }
 
@@ -101,22 +127,29 @@ final class EvalRunComparison
         $improved = [];
         $worsened = [];
         foreach (array_unique(array_merge(array_keys($devA), array_keys($devB))) as $node) {
-            $ca = (int) ($devA[$node] ?? 0);
-            $cb = (int) ($devB[$node] ?? 0);
-            if ($cb < $ca) {
-                $improved[] = ['node' => (string) $node, 'a' => $ca, 'b' => $cb];
-            } elseif ($cb > $ca) {
-                $worsened[] = ['node' => (string) $node, 'a' => $ca, 'b' => $cb];
+            $ca = self::perRepetition((int) ($devA[$node] ?? 0), $repeatA, 4);
+            $cb = self::perRepetition((int) ($devB[$node] ?? 0), $repeatB, 4);
+            $delta = round($cb - $ca, 4);
+            $entry = ['node' => (string) $node, 'a' => $ca, 'b' => $cb, 'delta' => $delta];
+            if ($delta <= -self::FIELD_CHANGE_THRESHOLD + 1e-9) {
+                $improved[] = $entry;
+            } elseif ($delta >= self::FIELD_CHANGE_THRESHOLD - 1e-9) {
+                $worsened[] = $entry;
             }
         }
-        usort($improved, static fn (array $x, array $y): int => [$y['a'] - $y['b'], $x['node']] <=> [$x['a'] - $x['b'], $y['node']]);
-        usort($worsened, static fn (array $x, array $y): int => [$y['b'] - $y['a'], $x['node']] <=> [$x['b'] - $x['a'], $y['node']]);
+        usort($improved, static fn (array $x, array $y): int => [$x['delta'], $x['node']] <=> [$y['delta'], $y['node']]);
+        usort($worsened, static fn (array $x, array $y): int => [$y['delta'], $x['node']] <=> [$x['delta'], $y['node']]);
 
         return [
             'set' => ['name' => $this->a['set']['name'] ?? null, 'hash' => $this->a['set']['hash'] ?? null],
             'runs' => ['a' => self::summary($this->a), 'b' => self::summary($this->b)],
             'metrics' => $rows,
-            'fields' => ['improved' => $improved, 'worsened' => $worsened],
+            'fields' => [
+                'basis' => 'perRepetition',
+                'threshold' => self::FIELD_CHANGE_THRESHOLD,
+                'improved' => $improved,
+                'worsened' => $worsened,
+            ],
             'sameSelection' => ($this->a['set']['messages'] ?? null) === ($this->b['set']['messages'] ?? null)
                 && ($this->a['set']['only'] ?? []) === ($this->b['set']['only'] ?? [])
                 && ($this->a['set']['limit'] ?? null) === ($this->b['set']['limit'] ?? null),
@@ -140,6 +173,9 @@ final class EvalRunComparison
         if (!$c['sameSelection']) {
             $lines[] = '<comment>Běhy mají jiný výběr zpráv (--only / --limit) — porovnávej s rezervou.</comment>';
         }
+        if (max($c['runs']['a']['repeat'], $c['runs']['b']['repeat']) > 1) {
+            $lines[] = '  Součty (volání, tokeny, cena, čas, počty polí) jsou přepočtené na jedno opakování.';
+        }
         $lines[] = sprintf('  %-32s %12s %12s %12s', 'metrika', 'A', 'B', 'rozdíl');
         foreach ($c['metrics'] as $row) {
             if (!in_array($row['key'], self::HEADLINE_METRICS, true)) {
@@ -154,8 +190,15 @@ final class EvalRunComparison
                 $row['delta'] === null || abs($row['delta']) < 1e-9 ? '' : ($row['withinNoise'] ? '  v rámci šumu' : ($row['better'] ? '  <info>lepší</info>' : '  <comment>horší</comment>')),
             );
         }
-        $format = static fn (array $items): string => implode(', ', array_map(static fn (array $f): string => "{$f['node']} {$f['a']}→{$f['b']}", $items));
-        $lines[] = 'Pole zlepšená (počet volání s odchylkou A→B): ' . ($c['fields']['improved'] === [] ? '—' : $format(array_slice($c['fields']['improved'], 0, 10)));
+        $format = static fn (array $items): string => implode(', ', array_map(
+            static fn (array $f): string => "{$f['node']} " . self::fmtCount($f['a']) . '→' . self::fmtCount($f['b']),
+            $items,
+        ));
+        $lines[] = sprintf(
+            'Pole zlepšená (počet volání s odchylkou na jedno opakování A→B; změna pod %s volání se nepočítá): %s',
+            self::fmtCount(self::FIELD_CHANGE_THRESHOLD),
+            $c['fields']['improved'] === [] ? '—' : $format(array_slice($c['fields']['improved'], 0, 10)),
+        );
         $lines[] = 'Pole zhoršená: ' . ($c['fields']['worsened'] === [] ? '—' : $format(array_slice($c['fields']['worsened'], 0, 10)));
         return $lines;
     }
@@ -171,11 +214,44 @@ final class EvalRunComparison
             'connection' => $effective['connection'] ?? null,
             'promptHash' => $effective['promptHash'] ?? null,
             'messages' => (int) ($run['set']['messages'] ?? 0),
-            'repeat' => (int) ($run['repeat'] ?? 1),
+            'repeat' => self::repeatOf($run),
             'startedAt' => $run['startedAt'] ?? null,
             'commit' => $run['git']['commit'] ?? null,
             'dirty' => (bool) ($run['git']['dirty'] ?? false),
         ];
+    }
+
+    /** @param array<string, mixed> $run */
+    private static function repeatOf(array $run): int
+    {
+        return max(1, (int) ($run['repeat'] ?? 1));
+    }
+
+    /**
+     * Součet přes všechna volání běhu (sčítá se přes opakování) — na rozdíl
+     * od podílů a hodnot na doklad, které jsou průměrem už v souboru.
+     */
+    private static function isPerRepetitionSum(string $key): bool
+    {
+        if (str_starts_with($key, 'documents.')) {
+            return false;
+        }
+        if (str_starts_with($key, 'fields.')) {
+            return (bool) preg_match('/\.(n|missing|extra|wrong)$/', $key);
+        }
+        return !str_contains(strtolower($key), 'perdocument');
+    }
+
+    /** Hodnota na jedno opakování; celé číslo zůstává celé, jde-li dělit beze zbytku. */
+    private static function perRepetition(int|float $value, int $repeat, int $precision): int|float
+    {
+        if ($repeat <= 1) {
+            return $value;
+        }
+        if (is_int($value) && $value % $repeat === 0) {
+            return intdiv($value, $repeat);
+        }
+        return round($value / $repeat, $precision);
     }
 
     /**
@@ -217,6 +293,15 @@ final class EvalRunComparison
         if ((str_starts_with($key, 'fields.') && !preg_match('/\.(n|missing|extra|wrong)$/', $key)) || str_starts_with($key, 'documents.')) {
             return number_format((float) $value * 100, 1, ',', ' ') . ' %';
         }
-        return is_float($value) ? number_format($value, 2, '.', '') : (string) $value;
+        if (str_starts_with($key, 'tokens.') || str_starts_with($key, 'time.')) {
+            return number_format((float) $value, 0, '.', '');
+        }
+        return is_float($value) && abs($value - round($value)) > 1e-9 ? number_format($value, 2, '.', '') : (string) (int) round($value);
+    }
+
+    /** Počet volání na opakování: celé číslo bez desetinných míst, jinak jedno. */
+    private static function fmtCount(int|float $value): string
+    {
+        return abs($value - round($value)) < 1e-9 ? (string) (int) round($value) : number_format((float) $value, 1, '.', '');
     }
 }

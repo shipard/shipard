@@ -1405,8 +1405,10 @@ aktivní; volání `mail.extraction` s přepsáním varianty jde sestavit.
 **Odhad a potvrzení:** před během vypíše počet volání (zprávy × opakování),
 model, připojení a odhad ceny (z posledního běhu téže varianty nad touž
 sadou, jinak z ceníku katalogu a typické velikosti dokladu). Bez `--yes`
-se ptá jen na terminálu; neinteraktivně bez `--yes` končí exit 2 — útrata
-je vědomý krok. **Stojí peníze.**
+se ptá jen na skutečném terminálu (STDIN je TTY); bez něj — `-n`,
+přesměrovaný nebo prázdný vstup (`< /dev/null`, roura) — končí bez dotazu
+exit 2, útrata je vědomý krok. Odpověď N na terminálu = `Aborted.`,
+exit 0. **Stojí peníze.**
 
 | Opce | Význam |
 |------|--------|
@@ -1438,11 +1440,29 @@ B − A a směrem (`lepší` / `horší`; u ceny, času a selhání je lepší n
 hodnota), rozdíl menší nebo rovný největšímu rozpětí opakování některého
 z běhů označený **v rámci šumu** (jen má-li některý běh `--repeat > 1`),
 pole zlepšená / zhoršená (uzel projekce, počet volání s odchylkou A→B),
-jiný výběr zpráv (`--only` / `--limit`) jako varování. Běhy nad různými
-sadami (hash obsahu `mail/` + `expected/`) odmítne (exit 2). Nic nevolá
-ani nezapisuje; běží i mimo adresář zdroje dat. `--json` = porovnání
-jako JSON (`set`, `runs`, `metrics[{key, a, b, delta, noise, withinNoise,
-better}]`, `fields{improved, worsened}`, `sameSelection`).
+jiný výběr zpráv (`--only` / `--limit`) jako varování.
+
+**Běhy s různým počtem opakování** (× 1 proti × 3, D41) jsou souměřitelné
+jen na jedno opakování: součty přes volání (`calls.*`, `tokens.input`
+/ `.output`, `cost.usd`, `time.ms`, počty polí `fields.*.n|missing|extra|wrong`)
+se dělí počtem opakování — pak sedí i k rozpětí, které je per opakování;
+podíly (`fields.*.hit`, `documents.*`) a hodnoty na doklad
+(`cost.perDocument`, `tokens.*PerDocument`, `time.perDocumentMs`) už průměr
+jsou. Stejně se dělí počet volání s odchylkou per uzel; za zlepšení
+/ zhoršení pole platí rozdíl aspoň **0,5 volání na opakování** (při × 1
+každý rozdíl, při × 3 aspoň dvě volání ze tří — jediné odlišné volání
+z opakovaného běhu není změna). Příklad nad `2026-10-15-baseline.json`
+(× 1) a `2026-10-15-sonnet-5-5.json` (× 3): `supplier.contact.web`
+16 → 48 volání je 16 → 16 na opakování, beze změny; `dates.taxPointDate`
+4 → 1 zlepšené; `vat.reverseCharge` 0 → 1,7 zhoršené.
+
+Běhy nad různými sadami (hash obsahu `mail/` + `expected/`) odmítne
+(exit 2). Nic nevolá ani nezapisuje; běží i mimo adresář zdroje dat.
+`--json` = porovnání jako JSON (`set`, `runs`, `metrics[{key, a, b, delta,
+noise, withinNoise, better, perRepetition}]` — `perRepetition: true`
+u součtů přepočtených na opakování, `fields{basis: "perRepetition",
+threshold, improved[{node, a, b, delta}], worsened[…]}` s počty na
+opakování, `sameSelection`).
 
 #### `ai-profile-reload`
 

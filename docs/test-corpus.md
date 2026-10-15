@@ -846,7 +846,14 @@ jiná sada = odmítnuto) — metriky vedle sebe s rozdílem B − A a směrem
 největšímu rozpětí opakování některého z běhů jako **v rámci šumu** (D41;
 bez opakování se šum neurčí a každý rozdíl se bere doslova), pole
 zlepšená / zhoršená podle počtu volání s odchylkou per uzel, upozornění
-na jiný výběr zpráv. UI evaluací je F6.
+na jiný výběr zpráv. **Vše na jedno opakování:** součty přes volání
+(volání, tokeny, cena, čas, počty polí) i počty odchylek per uzel se dělí
+`repeat`, takže běh × 1 a běh × 3 jsou souměřitelné a součty sedí
+k rozpětí; podíly a hodnoty na doklad jsou průměrem už v souboru. Změna
+pole platí od **0,5 volání na opakování** (při × 1 každý rozdíl, při × 3
+aspoň dvě volání ze tří) — uzel s 16 odchylkami při × 1 a 48 při × 3 je
+beze změny, jediné odlišné volání z opakovaného běhu také. UI evaluací
+je F6.
 
 ### Pasti
 

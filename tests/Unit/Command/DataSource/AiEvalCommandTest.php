@@ -36,6 +36,8 @@ class TestableAiEvalCommand extends AiEvalCommand
     public array $git = ['commit' => 'abc1234', 'dirty' => false];
     public ?AnalysisComputing $computation = null;
     public int $computationsCreated = 0;
+    /** Co má příkaz považovat za terminál na STDIN (test se skutečného STDIN nikdy nedotkne). */
+    public bool $terminal = false;
 
     public function __construct(
         DataSourceConfig $dsConfig,
@@ -56,6 +58,11 @@ class TestableAiEvalCommand extends AiEvalCommand
     protected function getServerMode(): string
     {
         return $this->serverMode;
+    }
+
+    protected function stdinIsTerminal(): bool
+    {
+        return $this->terminal;
     }
 
     protected function loadConfig(string $dsDir, string $language): ConfigRuntime
@@ -277,6 +284,36 @@ final class AiEvalCommandTest extends TestCase
         $this->assertStringContainsString('Odhad ceny: ~', $display);
         $this->assertStringContainsString('z ceníku katalogu', $display);
         $this->assertStringContainsString('stojí peníze', $display);
+        $this->assertSame(0, $command->computationsCreated);
+    }
+
+    public function testPromptNeedsARealTerminalEvenWhenInputCountsAsInteractive(): void
+    {
+        // stdin z /dev/null nebo z roury: Symfony 7 interakci nevypne, QuestionHelper by vrátil „ne“ a běh by skončil exit 0
+        $command = $this->command(self::ndxByCode());
+        $command->terminal = false;
+        $tester = self::execute($command, ['--only' => '0101'], interactive: true);
+
+        $this->assertSame(Command::INVALID, $tester->getStatusCode());
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('stojí peníze', $display);
+        $this->assertStringNotContainsString('Spustit?', $display, 'bez terminálu se neptá');
+        $this->assertStringNotContainsString('Aborted', $display);
+        $this->assertSame(0, $command->computationsCreated);
+    }
+
+    public function testAnsweringNoOnTheTerminalAbortsWithExitZero(): void
+    {
+        $command = $this->command(self::ndxByCode());
+        $command->terminal = true;
+        $tester = new CommandTester($command);
+        $tester->setInputs(['n']);
+        $tester->execute(['path' => self::datasetDir(), '--variant' => self::variantPath(), '--only' => '0101'], ['interactive' => true]);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Spustit? [y/N]', $display);
+        $this->assertStringContainsString('Aborted.', $display);
         $this->assertSame(0, $command->computationsCreated);
     }
 

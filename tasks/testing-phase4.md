@@ -366,10 +366,20 @@ z EU. Před přepnutím výchozího modelu: (1) varianta s `contentTags.model`
 
 - `ai-eval-compare` nepřepočítává počty odchylek ani součty na opakování
   (D38 × D41) — porovnání běhu × 1 s během × 3 je v části „pole
-  zlepšená / zhoršená“ zavádějící.
+  zlepšená / zhoršená“ zavádějící. **Opraveno 2026-10-15:** součty
+  i odchylky per uzel na jedno opakování, změna pole od 0,5 volání na
+  opakování; nad touto dvojicí `supplier.contact.web` beze změny,
+  `vat.reverseCharge` a `supplier.address.street` zhoršené,
+  `dates.taxPointDate`, `customer.taxId`, `supplier.bankAccount.iban`
+  zlepšené (unit test nad oběma soubory).
 - `ai-eval` bez `--yes` s `stdin` z `/dev/null` skončil po „Aborted.“
   exit 0, ne dokumentovaným exit 2 (`isInteractive()` zůstalo `true`,
-  `posix` načtený); útrata nehrozí, jen kód pro skripty.
+  `posix` načtený); útrata nehrozí, jen kód pro skripty. **Opraveno
+  2026-10-15:** příčina je Symfony Console 7 — `Application::configureIO`
+  už interakci z chybějícího TTY nevypíná (jen `-n` / `--quiet`)
+  a `QuestionHelper` na prázdném STDIN vrátí výchozí „ne“; příkaz se teď
+  ptá jen na skutečném terminálu (`stream_isatty(STDIN)`), jinak exit 2
+  bez dotazu; odpověď N dál exit 0.
 
 ## Kroky
 

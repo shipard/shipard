@@ -295,7 +295,7 @@ class AiEvalCommand extends Command
         });
 
         if (!$input->getOption('yes')) {
-            if (!$input->isInteractive()) {
+            if (!$input->isInteractive() || !$this->stdinIsTerminal()) {
                 $reader->close();
                 return $this->refuse($err, ['bez --yes se evaluace neinteraktivně nespouští — stojí peníze; potvrď odhad na terminálu nebo přidej --yes']);
             }
@@ -402,6 +402,19 @@ class AiEvalCommand extends Command
         } catch (AiFunctionException) {
             return null;
         }
+    }
+
+    /**
+     * Symfony Console 7 neinteraktivitu z chybějícího terminálu neodvozuje
+     * (`Application::configureIO` vypne interakci jen pro `-n` a `--quiet`)
+     * a `QuestionHelper` na prázdném nebo přesměrovaném STDIN vrátí výchozí
+     * odpověď potvrzení — běh by skončil „Aborted.“ s exit 0 místo odmítnutí
+     * (exit 2). Dotaz proto jde jen na skutečný terminál; protected kvůli
+     * test seamu.
+     */
+    protected function stdinIsTerminal(): bool
+    {
+        return function_exists('stream_isatty') && @stream_isatty(STDIN);
     }
 
     /** @param list<string> $problems */
