@@ -9,8 +9,9 @@ namespace Shipard\Module\Core\Exchange\Compare;
  * (#103 D27; tasks/testing-phase3.md). Obě strany projde stejnou cestou:
  * {@see Projection::project()} → {@see ValueShapes::normalize()} →
  * {@see EquivalentForms::collapse()}, pak porovná list po listu — čísla
- * s tolerancí, pole po pozicích, objekty po klíčích projekce. Výstup je
- * seznam rozdílů `{cesta, očekáváno, skutečnost}`.
+ * s tolerancí, pole po pozicích (klíčovaná pole podle klíče prvku,
+ * {@see KEYED_LISTS}), objekty po klíčích projekce. Výstup je seznam
+ * rozdílů `{cesta, očekáváno, skutečnost}`.
  *
  * Ve F3 hlídá věrnost apply (export potvrzeného dokladu ≟ návrh), ve F4
  * výstup analýzy ≟ očekávání korpusu. Výjimky věrnosti (pole, která apply
@@ -24,7 +25,10 @@ namespace Shipard\Module\Core\Exchange\Compare;
  * mezer nebo podobnosti textu ≥ {@see TEXT_SIMILARITY_MATCH}), `missing`,
  * `extra`, `wrong`. Podobnost textu jen u uzlů {@see FREE_TEXT_NODES};
  * sjednocení mezer u každého listu tvaru `text`. Pole po pozicích; rozdíl
- * délky je jeden výsledek na cestě pole s počty prvků. Nullable uzel
+ * délky je jeden výsledek na cestě pole s počty prvků. Výjimka: pole
+ * z {@see KEYED_LISTS} se párují hodnotou klíče prvku (výjimky štítků
+ * řádků podle `rowIndex`) — prvek jen na jedné straně je jeden `missing`
+ * / `extra` na cestě `pole[klíč]`, nic se neposouvá. Nullable uzel
  * (`customer`) prázdný na obou stranách je jeden `match` na cestě uzlu.
  */
 final class CanonicalComparator
@@ -44,6 +48,17 @@ final class CanonicalComparator
         'supplier.contact.name', 'customer.contact.name',
         'rows[].item.name', 'rows[].item.description', 'notes.onDocument',
     ];
+    /**
+     * Pole, jejichž prvek identifikuje hodnota klíče, ne pozice (uzel →
+     * klíč): výjimka štítku řádku patří k `rows[rowIndex]`. Po pozicích by
+     * výjimka navíc na nižším řádku posunula všechny další do `wrong`
+     * (baseline 2026-10-15: 3 výjimky navíc = 16× „rowIndex posunutý
+     * o −3“, tasks/testing-phase4.md § 8). V cestě výsledku je pak
+     * v hranaté závorce klíč (`rowExceptions[28].tag`), ne pozice. Prvek
+     * bez celočíselného klíče ≥ 0 nebo duplicitní klíč na jedné straně →
+     * celé pole po pozicích.
+     */
+    public const KEYED_LISTS = ['_resolve.contentTag.rowExceptions' => 'rowIndex'];
 
     public function __construct(
         private readonly Projection $projection,
@@ -126,13 +141,32 @@ final class CanonicalComparator
                 $out[] = new FieldOutcome($path, FieldState::Wrong, $rawE, $rawA);
                 return;
             }
+            $normListE = self::asList($normE) ?? [];
+            $normListA = self::asList($normA) ?? [];
+            $keyed = self::keyedPositions($path, $listE, $listA);
+            if ($keyed !== null) {
+                [$posE, $posA] = $keyed;
+                foreach ($posE + $posA as $key => $_) {
+                    $iE = $posE[$key] ?? null;
+                    $iA = $posA[$key] ?? null;
+                    $this->evaluateNode(
+                        $spec[0],
+                        $iE === null ? null : $listE[$iE],
+                        $iA === null ? null : $listA[$iA],
+                        $iE === null ? null : ($normListE[$iE] ?? null),
+                        $iA === null ? null : ($normListA[$iA] ?? null),
+                        "{$path}[{$key}]",
+                        null,
+                        $out,
+                    );
+                }
+                return;
+            }
             $countE = count($listE);
             $countA = count($listA);
             if ($countE !== $countA) {
                 $out[] = new FieldOutcome($path, $countE > $countA ? FieldState::Missing : FieldState::Extra, $countE, $countA);
             }
-            $normListE = self::asList($normE) ?? [];
-            $normListA = self::asList($normA) ?? [];
             for ($i = 0, $n = min($countE, $countA); $i < $n; $i++) {
                 $this->evaluateNode($spec[0], $listE[$i], $listA[$i], $normListE[$i] ?? null, $normListA[$i] ?? null, "{$path}[{$i}]", null, $out);
             }
@@ -232,6 +266,47 @@ final class CanonicalComparator
         return $name === self::TEXT_SHAPE;
     }
 
+    /**
+     * Párování klíčovaného pole ({@see KEYED_LISTS}): pro obě strany mapa
+     * klíč prvku → pozice v seznamu, v pořadí seznamu. Null = pole není
+     * klíčované, nebo některá strana nemá použitelné klíče → po pozicích.
+     *
+     * @param list<mixed> $listE
+     * @param list<mixed> $listA
+     * @return array{0: array<int, int>, 1: array<int, int>}|null
+     */
+    private static function keyedPositions(string $path, array $listE, array $listA): ?array
+    {
+        $keyField = self::KEYED_LISTS[Projection::nodePath($path)] ?? null;
+        if ($keyField === null) {
+            return null;
+        }
+        $posE = self::keyPositions($listE, $keyField);
+        $posA = self::keyPositions($listA, $keyField);
+        return $posE === null || $posA === null ? null : [$posE, $posA];
+    }
+
+    /**
+     * @param list<mixed> $list
+     * @return array<int, int>|null klíč → pozice; null = prvek bez celočíselného klíče ≥ 0 nebo duplicita
+     */
+    private static function keyPositions(array $list, string $keyField): ?array
+    {
+        $positions = [];
+        foreach ($list as $i => $entry) {
+            $key = is_array($entry) ? ($entry[$keyField] ?? null) : null;
+            if (!is_int($key) && !(is_numeric($key) && (string) (int) $key === (string) $key)) {
+                return null;
+            }
+            $key = (int) $key;
+            if ($key < 0 || isset($positions[$key])) {
+                return null;
+            }
+            $positions[$key] = $i;
+        }
+        return $positions;
+    }
+
     /** @return list<mixed>|null null = není seznam (null a `[]` jsou prázdný seznam) */
     private static function asList(mixed $value): ?array
     {
@@ -267,6 +342,19 @@ final class CanonicalComparator
             $aList = array_is_list($a);
             $bList = array_is_list($b);
             if ($aList && $bList) {
+                $keyed = self::keyedPositions($path, $a, $b);
+                if ($keyed !== null) {
+                    [$posA, $posB] = $keyed;
+                    foreach ($posA + $posB as $key => $_) {
+                        $this->diff(
+                            isset($posA[$key]) ? $a[$posA[$key]] : null,
+                            isset($posB[$key]) ? $b[$posB[$key]] : null,
+                            "{$path}[{$key}]",
+                            $out,
+                        );
+                    }
+                    return;
+                }
                 if (count($a) !== count($b)) {
                     $out[] = new Difference($path, count($a), count($b));
                 }

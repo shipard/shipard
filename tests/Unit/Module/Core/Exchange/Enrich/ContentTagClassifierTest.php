@@ -262,4 +262,33 @@ class ContentTagClassifierTest extends TestCase
         $this->assertStringContainsString('[0] Natural 95 — DPHM Množství (total 1210)', $captured);
         $this->assertStringContainsString('[1] Náplň do ostřikovačů (total 150)', $captured);
     }
+
+    public function testDigestIndexesAreCanonicalRowIndexesAndRowExceptionsPassThrough(): void
+    {
+        // Nález baseline 2026-10-15 (tasks/testing-phase4.md § 8, „rowIndex
+        // posunutý o −3“) padl na poziční porovnání v CanonicalComparator,
+        // ne sem: digest čísluje řádky indexem v canonical.rows (i u dlouhého
+        // dokladu pod stropem ořezu) a rowIndex z odpovědi se nepřepočítává.
+        $canonical = $this->canonical();
+        $canonical['rows'] = [];
+        for ($i = 0; $i < 44; $i++) {
+            $canonical['rows'][] = ['item' => ['name' => "Položka {$i}"], 'totalPrice' => 10.0 + $i];
+        }
+        $exceptions = [];
+        foreach (range(25, 43) as $i) {
+            $exceptions[] = ['rowIndex' => $i, 'tag' => 'vehicle.consumables'];
+        }
+        $out = json_encode(['primaryTag' => 'vehicle.fuel', 'confidence' => 0.8, 'rowExceptions' => $exceptions]);
+
+        $captured = null;
+        $result = $this->classifier($out, capturedPrompt: $captured)->classify($canonical);
+
+        $this->assertNotNull($captured);
+        $this->assertStringContainsString("\n    [0] Položka 0 (total 10)\n", $captured);
+        $this->assertStringContainsString("\n    [25] Položka 25 (total 35)\n", $captured);
+        $this->assertStringContainsString("\n    [43] Položka 43 (total 53)\n", $captured);
+        $this->assertStringNotContainsString('more rows omitted', $captured);
+        $this->assertNotNull($result);
+        $this->assertSame($exceptions, $result['rowExceptions']);
+    }
 }

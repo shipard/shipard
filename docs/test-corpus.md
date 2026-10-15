@@ -652,7 +652,8 @@ varování nikdy), neposílají se. Selhání apply jedné zprávy je výsledek
    ≟ `canonicalJson` použitého návrhu porovnávačem
    `modules/core/exchange/src/Compare/` nad projekcí sady (ořez na klíče
    projekce, tvary hodnot § 11, rovnocenné tvary § 10, tolerance 0,005,
-   řádky po pozicích). Porovnávač sdílí F4.
+   řádky po pozicích, výjimky štítků řádků podle `rowIndex`). Porovnávač
+   sdílí F4.
 2. **Položky a účty** (`ItemsAndAccountsCheck`, economy.items): žádná
    položka mimo nabídku osnovy a mimo sekci `items/` sady (formulace
    nezávislá na běhu), při apply počet položek před = po; každý řádek má
@@ -797,8 +798,15 @@ a položek, popisy řádků, poznámka na dokladu, jména kontaktů, spisová
 značka) — číslo dokladu, adresa nebo jednotka s překlepem jsou chyba.
 Pole po pozicích; rozdíl délky je jeden výsledek na cestě pole s počty
 prvků (známé omezení: vynechaný řádek posune zbytek — metrika „počet
-řádků sedí“ to odliší). Nullable uzel `customer` prázdný na obou stranách
-je jeden `match`.
+řádků sedí“ to odliší). Výjimka: `_resolve.contentTag.rowExceptions` se
+páruje podle `rowIndex` (`CanonicalComparator::KEYED_LISTS`) — výjimka
+identifikuje řádek, ne pozici v poli; výjimka jen na jedné straně je
+jeden `missing` / `extra` na cestě `rowExceptions[<rowIndex>]`, ostatní
+se neposouvají a pořadí nehraje roli (baseline 2026-10-15: tři výjimky
+navíc po pozicích vypadaly jako 16× špatný `rowIndex`,
+`tasks/testing-phase4.md` § 8). V cestě výsledku je u tohoto pole
+v hranaté závorce `rowIndex`. Nullable uzel `customer` prázdný na obou
+stranách je jeden `match`.
 
 ### Metriky (`EvalMetrics`, D37, D41)
 

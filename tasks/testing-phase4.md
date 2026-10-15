@@ -1,6 +1,6 @@
 # Testování F4: evaluace AI analýzy nad datovými sadami
 
-**Stav:** hotovo — implementace 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`), první běh `baseline` nad `cz-vat-payer` 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-baseline.json` (§ 8); nálezy běhu jsou podklad pro ladění promptu a #118, ne úprava očekávání
+**Stav:** hotovo — implementace 2026-10-15 (serverové AI připojení, `AnalysisComputation`, `expected/messages.json`, porovnávač v režimu evaluace, `ai-eval`, `ai-eval-compare`), první běh `baseline` nad `cz-vat-payer` 2026-10-15 v `tests/eval/cz-vat-payer/2026-10-15-baseline.json` (§ 8); nálezy běhu jsou podklad pro ladění promptu a #118, ne úprava očekávání; nález „posunuté výjimky štítků řádků“ byl artefakt pozičního porovnání — porovnávač páruje `rowExceptions` podle `rowIndex` od 2026-10-15
 
 ## Kontext / Cíl
 
@@ -210,7 +210,7 @@ připojení (`server`), model `claude-sonnet-4-6` z mapy úrovní, profil
 | Shoda polí celkem (match + po normalizaci) | 93,2 % (po normalizaci 1,0 %) |
 | Hlavička / dodavatel / odběratel | 93,5 % / 90,0 % / 98,2 % |
 | DPH / řádky / rekapitulace / součty | 99,4 % / 92,4 % / 100 % / 100 % |
-| Štítek dokladu / výjimky štítků řádků / klasifikace zprávy | 90,0 % / 56,5 % / 100 % |
+| Štítek dokladu / výjimky štítků řádků / klasifikace zprávy | 90,0 % / 56,5 % (artefakt pozičního porovnání, viz níže) / 100 % |
 | Doklady bez odchylky / správné částky / počet řádků sedí | 5,0 % / 100 % / 100 % |
 | Cena / tokeny / čas | 1,24 USD (0,062 na doklad) / 185 k vstup, 45 k výstup / 643 s (32 s na doklad) |
 | Odhad před během | 1,60 USD z ceníku a typické velikosti (skutečnost 77 %) |
@@ -222,7 +222,7 @@ mezer. Odchylky podle uzlu (počet polí; stav):
 | Uzel | Počet | Co se děje | Povaha |
 |------|-------|-----------|--------|
 | `rows[].item.supplierCode` | 114 missing | model kód dodavatele u řádku nikdy nevyplní | prompt / schéma extrakce |
-| `_resolve.contentTag.rowExceptions[].rowIndex` | 34 wrong | u `long-document` jsou indexy výjimek posunuté o −3 (očekáváno 28, výstup 25) | klasifikace štítků — ověřit číslování řádků v digestu `ContentTagClassifier` |
+| `_resolve.contentTag.rowExceptions[].rowIndex` | 34 wrong | u `long-document` vypadaly indexy výjimek posunuté o −3 (očekáváno 28, výstup 25) | **artefakt porovnávače, opraveno 2026-10-15** — viz níže; skutečný rozdíl je 3 + 5 výjimek navíc (`extra`) |
 | `supplier.contact.web` | 16 missing | web dodavatele model nevyplňuje | prompt |
 | `supplier.courtRegistration` | 12 wrong | bez úvodu „Spisová značka“, podobnost 0,73 | prompt, nebo rovnocenný tvar (#118 / projekce) |
 | `rows[].item.description` | 9 extra, 2 missing, 2 wrong | období plnění vložené do popisu řádku místo `dates.periodFrom/To` (viz níže) | prompt |
@@ -238,6 +238,24 @@ mezer. Odchylky podle uzlu (počet polí; stav):
 
 Shoda jen po normalizaci (podklad #118): telefon s mezerami 18×, PSČ
 s mezerou 10×, `totalRounding` 0 ≡ null 4×, IBAN s mezerami 3×.
+
+**Výjimky štítků řádků — nález prošetřen 2026-10-15.** Digest
+`ContentTagClassifier` čísluje řádky indexem v `canonical.rows` a `rowIndex`
+z odpovědi se nepřepočítává (test
+`testDigestIndexesAreCanonicalRowIndexesAndRowExceptionsPassThrough`);
+posun nebyl v klasifikaci. Model označil `people.catering` i řádky před
+kávou — u 1001 tři (kávové filtry, papírové kelímky, dřevěná míchátka),
+u 1002 pět (navíc papírové ubrousky, odvápňovač kávovaru) — a porovnávač
+srovnával `rowExceptions` **po pozicích**, takže výjimka navíc na nižším
+řádku posunula všech 16 / 18 dalších do `wrong` („−3“ u 1001, „−5“ u 1002
+= počet výjimek navíc). Oprava v `CanonicalComparator::KEYED_LISTS`: výjimky
+se párují podle `rowIndex`, prvek jen na jedné straně je jeden `missing` /
+`extra` na cestě `rowExceptions[<rowIndex>]`
+(`testEvaluateRowExceptionsByRowIndexNotByPosition`). Skutečný rozdíl
+běhu je tedy 8× `extra` (sporné pomůcky k občerstvení jako občerstvení)
+a 2× špatný štítek dokladu; čísla v tomto souboru výsledků zůstávají
+z původního porovnání — další běh se už porovná správně a metrika
+„výjimky štítků řádků“ (56,5 %) proti němu není srovnatelná.
 
 Závěr: baseline je použitelný etalon — hodnotové jádro dokladu (částky, DPH,
 řádky, klasifikace) sedí, systematické mezery jsou v identifikačních

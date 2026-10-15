@@ -1391,7 +1391,7 @@ Evaluace AI analýzy nad datovou sadou (#103 F4, `docs/test-corpus.md`
 bez claimu, zápisu a změny stavu zprávy) a výstup se porovná po polích
 s `canonicalJson` ideální analýzy ze souborů sady (porovnávač v režimu
 evaluace: `match` / `matchNormalized` / `missing` / `extra` / `wrong`,
-řádky po pozicích). Výsledek jde do `tests/eval/<název sady>/<datum>-<varianta>[-n].json`
+řádky po pozicích, výjimky štítků řádků podle `rowIndex`). Výsledek jde do `tests/eval/<název sady>/<datum>-<varianta>[-n].json`
 (`shpd.eval.run.v1`: sada s hashem obsahu, git commit, varianta
 rozepsaná na skutečné hodnoty, metriky, per zpráva jen odchylky).
 
