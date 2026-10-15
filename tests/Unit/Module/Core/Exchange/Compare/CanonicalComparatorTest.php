@@ -8,6 +8,8 @@ use PHPUnit\Framework\TestCase;
 use Shipard\Module\Core\Exchange\Compare\CanonicalComparator;
 use Shipard\Module\Core\Exchange\Compare\Difference;
 use Shipard\Module\Core\Exchange\Compare\EquivalentForms;
+use Shipard\Module\Core\Exchange\Compare\FieldOutcome;
+use Shipard\Module\Core\Exchange\Compare\FieldState;
 use Shipard\Module\Core\Exchange\Compare\Projection;
 
 class CanonicalComparatorTest extends TestCase
@@ -23,6 +25,138 @@ class CanonicalComparatorTest extends TestCase
     private static function paths(array $diffs): array
     {
         return array_map(static fn (Difference $d): string => $d->path, $diffs);
+    }
+
+    // ── režim evaluace (#103 D37, tasks/testing-phase4.md § 5) ─────────────
+
+    /** @param list<FieldOutcome> $outcomes @return array<string, FieldOutcome> cesta → výsledek */
+    private static function byPath(array $outcomes): array
+    {
+        $out = [];
+        foreach ($outcomes as $o) {
+            $out[$o->path] = $o;
+        }
+        return $out;
+    }
+
+    /** @param list<FieldOutcome> $outcomes @return array<string, string> cesta → stav mimo match */
+    private static function deviations(array $outcomes): array
+    {
+        $out = [];
+        foreach ($outcomes as $o) {
+            if ($o->state !== FieldState::Match) {
+                $out[$o->path] = $o->state->value;
+            }
+        }
+        return $out;
+    }
+
+    public function testEvaluateIdenticalDocumentIsAllMatchLeafByLeaf(): void
+    {
+        $doc = ProjectionTest::corpusDoc();
+        $outcomes = $this->cmp->evaluate($doc, $doc);
+
+        $this->assertSame([], self::deviations($outcomes));
+        $byPath = self::byPath($outcomes);
+        $this->assertArrayHasKey('docNumber', $byPath);
+        $this->assertArrayHasKey('rows[3].vat.pct', $byPath);
+        $this->assertArrayHasKey('_resolve.contentTag.rowExceptions[0].tag', $byPath);
+        $this->assertArrayNotHasKey('rows', $byPath, 'pole stejné délky nemá výsledek na cestě pole');
+        $this->assertSame(FieldState::Match, $byPath['supplier.contact.name']->state, 'null = null je shoda');
+        $this->assertSame('rows[].vat.pct', $byPath['rows[3].vat.pct']->nodePath());
+    }
+
+    public function testEvaluateMatchNormalizedKeepsRawValuesAndSimilarity(): void
+    {
+        $a = ProjectionTest::corpusDoc();
+        $b = $a;
+        $b['supplier']['vatId'] = 'cz 430 75894';            // tvar hodnoty (D15)
+        $b['totals']['totalAmount'] = 20001.844;              // tolerance čísel
+        $b['totals']['totalRounding'] = null;                 // 0 ≡ null
+        $b['supplier']['name'] = "  Dřevomat   Haná s.r.o. "; // jen mezery
+        $b['rows'][0]['item']['name'] = 'Spárovka smrková 18 mm, formát 2500x1250 mm'; // 1 znak ze 43
+
+        $byPath = self::byPath($this->cmp->evaluate($a, $b));
+        $this->assertSame([
+            'supplier.name' => 'matchNormalized',
+            'supplier.vatId' => 'matchNormalized',
+            'rows[0].item.name' => 'matchNormalized',
+            'totals.totalAmount' => 'matchNormalized',
+            'totals.totalRounding' => 'matchNormalized',
+        ], self::deviations($this->cmp->evaluate($a, $b)));
+        $this->assertSame('cz 430 75894', $byPath['supplier.vatId']->actual, 'syrová hodnota modelu');
+        $this->assertSame('CZ43075894', $byPath['supplier.vatId']->expected);
+        $this->assertSame(1.0, $byPath['supplier.name']->similarity);
+        $this->assertEqualsWithDelta(0.977, (float) $byPath['rows[0].item.name']->similarity, 0.001);
+        $this->assertNull($byPath['supplier.vatId']->similarity, 'podobnost jen u volného textu');
+    }
+
+    public function testEvaluateMissingExtraAndWrong(): void
+    {
+        $a = ProjectionTest::corpusDoc();
+        $b = $a;
+        $b['dates']['periodFrom'] = null;                      // očekáváno, model nenašel — hmm, v korpusu je null
+        $a['dates']['periodFrom'] = '2026-08-01';
+        $b['supplier']['contact']['name'] = 'Jan Novák';       // na dokladu není, model přidal
+        $b['docNumber'] = 'FV-2026-1181';                      // jiná hodnota
+        $b['rows'][1]['item']['name'] = 'Úplně jiný text položky'; // podobnost pod prahem
+        $b['supplier']['address']['zip'] = ['77900'];          // jiný typ
+
+        $byPath = self::byPath($this->cmp->evaluate($a, $b));
+        $this->assertSame([
+            'docNumber' => 'wrong',   // číslo dokladu není volný text — jedna číslice = chyba
+            'supplier.address.zip' => 'wrong',
+            'supplier.contact.name' => 'extra',
+            'dates.periodFrom' => 'missing',
+            'rows[1].item.name' => 'wrong',
+        ], self::deviations($this->cmp->evaluate($a, $b)));
+        $this->assertNull($byPath['docNumber']->similarity);
+        $this->assertLessThan(CanonicalComparator::TEXT_SIMILARITY_MATCH, (float) $byPath['rows[1].item.name']->similarity);
+        $this->assertSame(['path' => 'docNumber', 'state' => 'wrong', 'expected' => 'FV-2026-1180', 'actual' => 'FV-2026-1181'], $byPath['docNumber']->toArray());
+        $this->assertArrayHasKey('similarity', $byPath['rows[1].item.name']->toArray());
+    }
+
+    public function testEvaluateArraysByPositionWithCountOutcome(): void
+    {
+        $a = ProjectionTest::corpusDoc();
+        $b = $a;
+        array_pop($b['rows']);                                  // model vynechal poslední řádek
+        $b['vatRecap'][] = ['vatPct' => 12, 'base' => 1, 'tax' => 0.12, 'total' => 1.12];
+
+        $outcomes = $this->cmp->evaluate($a, $b);
+        $byPath = self::byPath($outcomes);
+        $this->assertSame(FieldState::Missing, $byPath['rows']->state);
+        $this->assertSame([4, 3], [$byPath['rows']->expected, $byPath['rows']->actual]);
+        $this->assertSame(FieldState::Extra, $byPath['vatRecap']->state);
+        $this->assertSame([1, 2], [$byPath['vatRecap']->expected, $byPath['vatRecap']->actual]);
+        $this->assertArrayHasKey('rows[2].totalPrice', $byPath);
+        $this->assertArrayNotHasKey('rows[3].totalPrice', $byPath, 'přesahující prvky se neporovnávají');
+        $this->assertArrayNotHasKey('vatRecap[1].base', $byPath);
+        $this->assertSame(['rows' => 'missing', 'vatRecap' => 'extra'], self::deviations($outcomes));
+
+        // Prázdné pole ≡ chybějící: žádný rozdíl délky.
+        $a['_resolve']['contentTag']['rowExceptions'] = [];
+        unset($b['_resolve']['contentTag']['rowExceptions']);
+        $this->assertArrayNotHasKey('_resolve.contentTag.rowExceptions', self::byPath($this->cmp->evaluate($a, $b)));
+    }
+
+    public function testEvaluateNullableNode(): void
+    {
+        $a = ProjectionTest::corpusDoc();
+        $b = $a;
+        $a['customer'] = null;
+        $b['customer'] = null;
+        $byPath = self::byPath($this->cmp->evaluate($a, $b));
+        $this->assertSame(FieldState::Match, $byPath['customer']->state, 'účtenka bez odběratele: jeden výsledek za uzel');
+        $this->assertArrayNotHasKey('customer.name', $byPath);
+
+        $b['customer'] = ['name' => null, 'address' => ['city' => null]];
+        $this->assertSame(FieldState::MatchNormalized, self::byPath($this->cmp->evaluate($a, $b))['customer']->state, 'samé null ≡ null');
+
+        $b['customer'] = ProjectionTest::corpusDoc()['customer'];
+        $this->assertSame(FieldState::Extra, self::byPath($this->cmp->evaluate($a, $b))['customer']->state);
+        $this->assertSame(FieldState::Missing, self::byPath($this->cmp->evaluate($b, $a))['customer']->state);
+        $this->assertArrayNotHasKey('customer.name', self::byPath($this->cmp->evaluate($b, $a)));
     }
 
     public function testIdenticalDocumentsHaveNoDifferences(): void
