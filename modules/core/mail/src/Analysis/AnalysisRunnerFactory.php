@@ -82,6 +82,7 @@ final class AnalysisRunnerFactory
                 $spawner->spawn($messageId);
             },
             catalog: $catalog,
+            probe: new AnalysisBackendProbe($db, $dsConfig),
         );
     }
 }

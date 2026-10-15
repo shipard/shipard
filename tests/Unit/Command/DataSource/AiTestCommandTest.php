@@ -331,6 +331,7 @@ final class AiTestCommandTest extends TestCase
         $this->assertSame('mail.extraction', $f['id']);
         $this->assertTrue($f['ok']);
         $this->assertSame('default', $f['connection']);
+        $this->assertSame('default', $f['connectionOrigin'], 'původ připojení (D40) — `server` u serverového připojení');
         $this->assertSame('claude-sonnet-4-6', $f['model']);
         $this->assertSame(12, $f['inputTokens']);
         $this->assertSame(3, $f['outputTokens']);

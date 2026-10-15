@@ -217,6 +217,30 @@ nemaže. Detaily: [`core_ai_backends.md`](../modules/core/ai/tables/core_ai_back
   placeholder výchozí adresy platformy, nápovědy ke klíči a adrese podle
   platformy. **Nic se nepřepíná samo:** nová platforma mění chování
   zdroje dat, až když správce založí připojení s ní.
+- **Serverové připojení pro vývoj** (#103 D10, `tasks/testing-phase4.md`
+  D40): na serveru v režimu `development` s klíčem
+  `/etc/shipard/secrets/dev-ai-<platforma>.key` (`shpd-server dev-ai-key
+  --set-key`, sekce `devAi` v `server.json` = platforma + volitelná
+  adresa, `Shipard\Core\Ai\DevAiConfig` / `DevAiKeyStore`) existuje
+  virtuální připojení s kódem **`server`** (`ServerAiConnection`, id 0,
+  řádek ve tvaru `core_ai_backends` s markerem). Použije ho jen zdroj dat
+  s příznakem `"ai": {"useServerConnection": true}` v `config/main.json`
+  (`DataSourceConfig::usesServerAiConnection()`; zapisuje `ds-create` ve
+  vývoji bez `--no-server-ai` a `dataset-seed` podle manifestu
+  `provision.serverAi`; obnovená reálná kopie příznak nemá — bez vlastního
+  připojení zůstane bez AI a fronta pošty se nespustí) a jen když nemá
+  vlastní aktivní připojení **s klíčem** (`AiBackendResolver::defaultBackend()`:
+  vlastní připojení má vždy přednost; řádek bez klíče bez příznaku dál
+  hlásí `KEY_MISSING`). Resolver pak nese původ připojení `server`
+  (`ResolvedAiCall::ORIGIN_SERVER`, text `origin.server`; `backend_ndx`
+  běhu analýzy je NULL), `ai-test` ukazuje `connection: server`
+  a `connectionOrigin: server`, sonda fronty (`AnalysisBackendProbe`
+  s konfigurací zdroje dat) ho vidí. Výslovná volba připojení kódem
+  (`AiCallOverride::$connectionCode`, varianty `ai-eval`): `server`, nebo
+  `backend_id` řádku; id má přednost. Mimo `development`
+  `ServerAiConnection::detect()` vrací null, takže se serverové připojení
+  nikdy nepoužije; nečitelný klíč = `SECRETS_UNAVAILABLE` s větou
+  `DevAiKeyException`.
 
 ### 5.2 Katalog modelů a mapa úrovní
 

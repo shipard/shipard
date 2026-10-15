@@ -76,6 +76,29 @@ class ServerConfigTest extends TestCase
         $config->getAiAnalysisMaxConcurrent();
     }
 
+    public function testGetDevAiDefaultsToAnthropicAndReadsTheSection(): void
+    {
+        // tasks/testing-phase4.md D40
+        $base = ['host' => 'h', 'port' => 3306, 'admin_user' => 'u', 'admin_password' => 'p', 'mode' => 'development'];
+
+        $config = new ServerConfig($this->createConfig($base));
+        $config->load();
+        $this->assertSame($this->tempDir, $config->getConfigDir());
+        $this->assertSame('anthropic', $config->getDevAi()->platform);
+        $this->assertNull($config->getDevAi()->baseUrl);
+
+        $config = new ServerConfig($this->createConfig($base + ['devAi' => ['platform' => 'bedrock-eu', 'baseUrl' => 'https://bedrock.example/anthropic/']]));
+        $config->load();
+        $this->assertSame('bedrock-eu', $config->getDevAi()->platform);
+        $this->assertSame('https://bedrock.example/anthropic', $config->getDevAi()->baseUrl);
+
+        $config = new ServerConfig($this->createConfig($base + ['devAi' => 'anthropic']));
+        $config->load();
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage("'devAi' must be an object");
+        $config->getDevAi();
+    }
+
     public function testGetDomainsFileCustomPath(): void
     {
         $path = $this->createConfig([

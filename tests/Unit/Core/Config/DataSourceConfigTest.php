@@ -230,6 +230,27 @@ class DataSourceConfigTest extends TestCase
         $this->assertTrue($config->allowsReset());
     }
 
+    public function testUsesServerAiConnectionReadsTheAiSection(): void
+    {
+        // tasks/testing-phase4.md D40: chybí = false, jen `true` zapíná.
+        $base = [
+            'id'                => 'abcd-efgh-ijkl-mnop',
+            'name'              => 'Test DS',
+            'database_name'     => 'abcd_efgh_ijkl_mnop',
+            'database_user'     => 'shpd_abcdefgh',
+            'database_password' => 'supersecret',
+            'created'           => '2026-03-12T10:00:00+01:00',
+        ];
+        $this->createConfig($base);
+        $this->assertFalse((new DataSourceConfig($this->tempDir))->usesServerAiConnection());
+
+        $this->createConfig($base + ['ai' => ['useServerConnection' => true]]);
+        $this->assertTrue((new DataSourceConfig($this->tempDir))->usesServerAiConnection());
+
+        $this->createConfig($base + ['ai' => ['useServerConnection' => 'yes']]);
+        $this->assertFalse((new DataSourceConfig($this->tempDir))->usesServerAiConnection());
+    }
+
     public function testMissingRequiredFieldThrowsException(): void
     {
         $this->createConfig([

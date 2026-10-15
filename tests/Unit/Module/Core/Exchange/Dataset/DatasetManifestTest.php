@@ -217,6 +217,21 @@ class DatasetManifestTest extends TestCase
         $this->assertSame(['mail' => 20], $m->counts);
     }
 
+    public function testServerAiProvisionIsParsed(): void
+    {
+        // tasks/testing-phase4.md D40: sada žádá o serverové AI připojení pro vývoj.
+        $data = $this->corpus();
+        $data['provision'] = ['accountingItems' => 'all', 'serverAi' => true];
+        $m = DatasetManifest::fromArray($data);
+        $this->assertTrue($m->wantsServerAi());
+        $this->assertSame('all', $m->accountingItemsRequest());
+        $this->assertSame(['accountingItems' => 'all', 'serverAi' => true], $m->toArray()['provision']);
+
+        $data['provision'] = ['serverAi' => false];
+        $this->assertFalse(DatasetManifest::fromArray($data)->wantsServerAi());
+        $this->assertFalse(DatasetManifest::fromArray($this->valid())->wantsServerAi());
+    }
+
     /** @return iterable<string, array{array<string, mixed>, string}> */
     public static function invalidCorpusFields(): iterable
     {
@@ -230,6 +245,8 @@ class DatasetManifestTest extends TestCase
         yield 'accountingItems empty list' => [['provision' => ['accountingItems' => []]], 'accountingItems'];
         yield 'accountingItems mixed list' => [['provision' => ['accountingItems' => ['568201', 5]]], 'accountingItems'];
         yield 'accountingItems map' => [['provision' => ['accountingItems' => ['a' => 'b']]], 'accountingItems'];
+        yield 'serverAi string' => [['provision' => ['serverAi' => 'yes']], 'serverAi'];
+        yield 'serverAi int' => [['provision' => ['serverAi' => 1]], 'serverAi'];
     }
 
     /**

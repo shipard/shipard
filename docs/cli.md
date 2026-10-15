@@ -131,13 +131,13 @@ sudo shpd-server fix-permissions
 shpd-server doctor    # ověř že vše zelené
 ```
 
-### `ds-create --name <název> --language <cs|en> --country <cc> [--module <id>] [--ds-id <id>] [--no-cron]`
+### `ds-create --name <název> --language <cs|en> --country <cc> [--module <id>] [--ds-id <id>] [--no-cron] [--no-server-ai]`
 
 ```bash
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz --module=install.base
 sudo shpd-server ds-create --name "Moje firma s.r.o." --language cs --country cz --ds-id ab12-cd34-ef56-gh78   # provisioning agent
-sudo shpd-server ds-create --name "Import" --language cs --country cz --no-cron                              # cíl importu: cron vypnutý
+sudo shpd-server ds-create --name "Import" --language cs --country cz --no-cron --no-server-ai               # cíl importu: cron vypnutý, bez serverového AI klíče
 ```
 
 Vytvoří nový datový zdroj:
@@ -161,6 +161,7 @@ aby se založilo schéma a načetla výchozí konfigurace modulů.
 | `--module <id>` | volitelné (default: `install.base`) — install modul k aktivaci. Musí odpovídat adresáři `modules/install/<suffix>/`, jehož `module.jsonc` má id `install.<suffix>`. Seznam dostupných modulů: `ls modules/install/`. |
 | `--ds-id <id>` | volitelné — explicitní ID místo generovaného (formát `xxxx-xxxx-xxxx-xxxx`, a-z0-9). Používá agent `hosting-sync` (ID generuje hosting). Existující adresář = chyba. |
 | `--no-cron` | volitelné — hned po zápisu `main.json` zapíše `config/state.json` s `"cron": false` (`changedBy: ds-create`), takže DS nikdy neběží se zapnutým cronem ([ds-state.md](ds-state.md) §8). Pro cíl importu (#115 D14). Selhání zápisu je chyba příkazu s radou `shpd-ds ds-state cron --off`; souhrn hlásí `Cron: off`. Bez volby se `state.json` nezakládá. |
+| `--no-server-ai` | volitelné, jen na serveru v režimu `development` — nezapisovat do `main.json` příznak `"ai": {"useServerConnection": true}`, kterým nový DS ve vývoji dostává právo používat serverový AI klíč (`dev-ai-key`, [ai.md](ai.md) §5.1, #103 D40). Pro cíl importu reálné kopie: DS bez vlastního připojení pak zůstane bez AI a frontu pošty nespustí. Souhrn hlásí `Server AI: on/off`; mimo `development` se příznak nezapisuje nikdy. |
 
 Oba povinné přepínače se validují **před** jakoukoli mutací — chybějící
 nebo nevalidní hodnota nenechá po sobě adresář ani databázi.
@@ -514,6 +515,31 @@ kombinaci voleb.
 
 > Na vývojářském stroji s kopiemi reálných dat spouštěj `--all` vědomě —
 > zapisuje do všech DS.
+
+### `dev-ai-key --set-key | --status`
+
+```bash
+sudo shpd-server dev-ai-key --set-key          # klíč skrytým vstupem (nebo ze STDIN bez TTY)
+sudo shpd-server dev-ai-key --status           # existence, mtime, práva — nikdy obsah
+echo "$KEY" | sudo shpd-server dev-ai-key --set-key
+```
+
+Serverový AI klíč pro vývojové zdroje dat (#103 D10, D40; [ai.md](ai.md)
+§5.1): `/etc/shipard/secrets/dev-ai-<platforma>.key` (0600, vlastník
+shipard-user; adresář `secrets/` 0700 — hlídá `doctor`, opraví
+`fix-permissions`). Platformu a volitelnou adresu určuje sekce `devAi`
+v `server.json` (`{"platform": "anthropic", "baseUrl": null}`; chybí =
+`anthropic` s výchozí adresou platformy). Klíč nikdy nejde argv (shell
+history); přepsání = rotace. Příkaz **odmítne server mimo režim
+`development`** — serverové připojení tam neexistuje.
+
+Použije ho jen zdroj dat s příznakem `ai.useServerConnection` v `config/main.json`
+(zapisuje `ds-create` ve vývoji a `dataset-seed` podle manifestu; obnovená
+reálná kopie ho nemá) a jen když nemá vlastní aktivní připojení s klíčem.
+Ověření: `cd /opt/shipard/data-sources/<id> && shpd-ds ai-test --function
+mail.extraction` ukáže připojení `server`. Exit 0; FAILURE mimo
+`development`, při špatné kombinaci voleb, prázdném klíči, chybě zápisu
+a u `--status` při jiných právech než 0600.
 
 ---
 
@@ -1347,7 +1373,7 @@ z cronu.
 | Opce | Význam |
 |------|--------|
 | `--function <id>` | Jen tato funkce (`mail.extraction`, `chat.default`, …); neznámé id = FAIL |
-| `--json` | Stdout = jediný JSON objekt `{ok, functions: [{id, ok, connection, model, elapsedMs, inputTokens, outputTokens, costUsd, stopReason, reply}]}`, u selhání `{id, ok: false, code, error, …}`; lidské řádky jdou na stderr |
+| `--json` | Stdout = jediný JSON objekt `{ok, functions: [{id, ok, connection, connectionOrigin, model, elapsedMs, inputTokens, outputTokens, costUsd, stopReason, reply}]}`, u selhání `{id, ok: false, code, error, …}`; lidské řádky jdou na stderr. `connectionOrigin` = původ připojení (`override` / `function` / `default` / `server` — serverové připojení pro vývoj, #103 D40; `connection` je pak `server`) |
 
 #### `ai-profile-reload`
 
@@ -1645,7 +1671,12 @@ a zprávy se zapisují přímo přes Document hooky; přílohy do `att/`, analý
 zpráv jako snapshot (žádné volání AI). Vazby zpráva ↔ doklad se obnoví
 podle čísla dokladu. Fiskální roky se založí pro roky, do kterých spadají
 data sady; účetní položky z nabídky osnovy jen když o ně manifest žádá
-(`provision.accountingItems`, `docs/datasets.md` §1 a §3).
+(`provision.accountingItems`, `docs/datasets.md` §1 a §3). Manifest
+s `provision.serverAi: true` (sady korpusu) na serveru v režimu
+`development` zapne zdroji dat příznak `ai.useServerConnection`
+v `config/main.json` — právo používat serverový AI klíč
+(`shpd-server dev-ai-key`, #103 D40); jinde jen poznámka. Zapisuje se
+před resetem (i s `--no-reset`), vlastník souboru zůstává zdroji dat.
 
 Před jakoukoli změnou proběhne **preflight** — manifest, země sady vs.
 země DS (`country` v manifestu), každý soubor proti schématu

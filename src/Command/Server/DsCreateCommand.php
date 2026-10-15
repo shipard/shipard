@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Command\Server;
 
+use Shipard\Core\Ai\ServerAiConnection;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\DataSourceState;
 use Shipard\Core\Config\ServerConfig;
@@ -62,6 +63,12 @@ class DsCreateCommand extends Command
                  null,
                  InputOption::VALUE_NONE,
                  'Create the data source with periodic jobs switched off (config/state.json cron: false) — for import targets',
+             )
+             ->addOption(
+                 'no-server-ai',
+                 null,
+                 InputOption::VALUE_NONE,
+                 'On a development server: do not opt the data source into the server AI key (main.json ai.useServerConnection) — for import targets',
              );
     }
 
@@ -210,6 +217,13 @@ class DsCreateCommand extends Command
             'database_password' => $password,
             'created'           => date('c'),
         ];
+        // Serverové AI připojení pro vývoj (tasks/testing-phase4.md D40): jen
+        // ve vývoji a jen opt-in nového zdroje dat; obnovená reálná kopie
+        // příznak nenese. `--no-server-ai` pro cíle importu.
+        $serverAi = $config->getMode() === ServerAiConnection::MODE_DEVELOPMENT && !(bool) $input->getOption('no-server-ai');
+        if ($serverAi) {
+            $mainConfig['ai'] = ['useServerConnection' => true];
+        }
 
         $configFile = $configDir . '/main.json';
         file_put_contents($configFile, json_encode($mainConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -267,6 +281,11 @@ class DsCreateCommand extends Command
         $output->writeln("  Directory:     <comment>{$dataSourceDir}</comment>");
         if ($noCron) {
             $output->writeln('  Cron:          <comment>off</comment> (periodic jobs disabled — shpd-ds ds-state cron --on to enable)');
+        }
+        if ($config->getMode() === ServerAiConnection::MODE_DEVELOPMENT) {
+            $output->writeln($serverAi
+                ? '  Server AI:     <comment>on</comment> (uses the server AI key without a connection of its own — shpd-server dev-ai-key)'
+                : '  Server AI:     <comment>off</comment> (--no-server-ai)');
         }
         $output->writeln('');
 

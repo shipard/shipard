@@ -64,7 +64,7 @@ final class AiTextsTest extends TestCase
         foreach (RequestChange::CODES as $code) {
             $expected[] = 'change.' . $code;
         }
-        foreach (['override', 'function', 'declaration', 'tier', 'default'] as $origin) {
+        foreach (['override', 'function', 'declaration', 'tier', 'default', 'server'] as $origin) {
             $expected[] = 'origin.' . $origin;
         }
         foreach (['authentication', 'forbidden', 'notFound', 'spendLimit', 'rateLimit', 'transport', 'server', 'other'] as $kind) {

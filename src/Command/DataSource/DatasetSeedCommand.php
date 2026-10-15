@@ -13,6 +13,8 @@ use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\ServerConfig;
 use Shipard\Core\Database\DataSourceConnection;
 use Shipard\Core\Module\ModulePathResolver;
+use Shipard\Core\Server\MainConfigFile;
+use Shipard\Core\Server\MainConfigPatcher;
 use Shipard\Module\Base\Registry\Dataset\RegistrySeeder;
 use Shipard\Module\Base\Registry\RegistryApplier;
 use Shipard\Module\Core\Attachments\AttachmentService;
@@ -55,7 +57,12 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  * items → docs → registry → mail. Nenulový exit code při jakékoli chybě
  * záznamu. Testovatelné přes podtřídu (seamy getDataSourceDir /
  * buildResolver / runReset / runUpgrade / hasSettingsTable /
- * applySettingsBeforeReset / createContext / createSeeders / createPreflight).
+ * applySettingsBeforeReset / createContext / createSeeders / createPreflight /
+ * getServerMode / enableServerAi).
+ *
+ * Manifest `provision.serverAi: true` (tasks/testing-phase4.md D40): na
+ * serveru v režimu `development` seed zapne příznak `ai.useServerConnection`
+ * v `config/main.json` (i s `--no-reset`), jinde jen vypíše poznámku.
  */
 class DatasetSeedCommand extends Command
 {
@@ -94,6 +101,29 @@ class DatasetSeedCommand extends Command
     protected function createPreflight(): DatasetPreflight
     {
         return new DatasetPreflight();
+    }
+
+    /** Režim serveru; `development` bez server.json (produkce ho má vždy). */
+    protected function getServerMode(): string
+    {
+        try {
+            $sc = new ServerConfig();
+            $sc->load();
+            return $sc->getMode();
+        } catch (\Throwable) {
+            return 'development';
+        }
+    }
+
+    /**
+     * `main.json` → `ai.useServerConnection: true` (atomicky, vlastník podle
+     * `config/`, i pod rootem).
+     *
+     * @throws \RuntimeException
+     */
+    protected function enableServerAi(string $dsDir): void
+    {
+        MainConfigFile::patch($dsDir, static fn (array $config): array => MainConfigPatcher::withServerAi($config, true));
     }
 
     /**
@@ -282,7 +312,22 @@ class DatasetSeedCommand extends Command
             }
         }
 
-        // 3. Schéma na čerstvém DS, nastavení DS před resetem, reset.
+        // 3. Příznak serverového AI připojení (D40) — jen ve vývoji; schéma
+        // na čerstvém DS, nastavení DS před resetem, reset.
+        if ($manifest->wantsServerAi()) {
+            if ($this->getServerMode() === 'development') {
+                try {
+                    $this->enableServerAi($dsDir);
+                    $output->writeln('Server AI connection enabled for this data source (config/main.json ai.useServerConnection).');
+                } catch (\RuntimeException $e) {
+                    $output->writeln("<error>Server AI flag failed: {$e->getMessage()}</error>");
+                    $reader->close();
+                    return Command::FAILURE;
+                }
+            } else {
+                $output->writeln('<comment>note:</comment> the dataset asks for the server AI connection (provision.serverAi) — available on development servers only, skipped.');
+            }
+        }
         $dsConnection = $this->dsConnection ?? new DataSourceConnection($dsConfig);
         if (!$merge) {
             if (!$this->hasSettingsTable($dsConnection)) {

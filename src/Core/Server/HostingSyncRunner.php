@@ -520,48 +520,22 @@ class HostingSyncRunner
 
     /**
      * Merge providera do main.json — čistou transformaci dělá
-     * MainConfigPatcher, tady jen read-modify-write (atomicky tmp + rename,
-     * chmod 0600, vlastník podle zdroje dat).
-     *
-     * Ruční běh pod rootem (`sudo shpd-server hosting-sync`) by jinak nechal
-     * `main.json` jako `root:root` a PHP-FPM ani cron by zdroj dat
-     * nepřečetly. Vzorem vlastníka je adresář `config/`, ne přepisovaný
-     * `main.json` (ten může nést špatného vlastníka z dřívějšího běhu
-     * a chybu by jen přenesl dál); `FileOwnership::dataSourceReference()`
-     * se tu proto nepoužije. Selhání = krok failed, původní soubor zůstává
-     * (tasks/hosting-sync-main-json-owner.md).
+     * MainConfigPatcher, read-modify-write se správným vlastníkem
+     * {@see MainConfigFile::patch()} (tasks/hosting-sync-main-json-owner.md).
+     * Selhání = krok failed, původní soubor zůstává.
      *
      * @param array<string, mixed> $provider
      */
     private function patchAuthProvider(string $dsDir, array $provider): ?string
     {
-        $file = $dsDir . '/config/main.json';
-        $content = @file_get_contents($file);
-        if ($content === false) {
-            return "auth.providers: cannot read {$file}";
-        }
-        $config = json_decode($content, true);
-        if (!is_array($config)) {
-            return "auth.providers: invalid JSON in {$file}";
-        }
-
-        $config = MainConfigPatcher::mergeAuthProvider($config, $provider);
-
-        $json = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $tmp = $file . '.tmp';
-        if (@file_put_contents($tmp, $json) === false) {
-            return "auth.providers: cannot write {$tmp}";
-        }
-        @chmod($tmp, 0600);
         try {
-            $this->ownership->matchTo($tmp, $dsDir . '/config');
+            MainConfigFile::patch(
+                $dsDir,
+                static fn (array $config): array => MainConfigPatcher::mergeAuthProvider($config, $provider),
+                $this->ownership,
+            );
         } catch (\RuntimeException $e) {
-            @unlink($tmp);
             return 'auth.providers: ' . $e->getMessage();
-        }
-        if (!@rename($tmp, $file)) {
-            @unlink($tmp);
-            return "auth.providers: cannot replace {$file}";
         }
         $this->logLine('  auth.providers merged (' . self::PROVIDER_ID . ').');
         return null;

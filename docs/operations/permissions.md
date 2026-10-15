@@ -27,6 +27,8 @@ V dalším textu **shipard-user** = ten správný uživatel pro aktuální mód.
 |-------|-------|-------|------|----------|
 | `/etc/shipard/` | `root` | shipard-user | `0750` | adresář |
 | `/etc/shipard/server.json` | `root` | shipard-user | `0640` | admin DB credentials |
+| `/etc/shipard/secrets/` | shipard-user | shipard-user | `0700` | (volitelné — jen vývojový server) serverové klíče pro vývoj; obsah nejvýš `0600` |
+| `/etc/shipard/secrets/dev-ai-<platforma>.key` | shipard-user | shipard-user | `0600` | serverový AI klíč pro vývojové DS (`shpd-server dev-ai-key`, #103 D40); čte ho runtime, proto shipard-user, ne root |
 | `/opt/shipard/` | shipard-user | shipard-user | `0751` | root datový adresář; `others=x` aby nginx mohl traversovat do `/opt/shipard/shpd/public` |
 | `/opt/shipard/data-sources/` | shipard-user | shipard-user | `0750` | parent všech DS |
 | `/opt/shipard/data-sources/<id>/` | shipard-user | shipard-user | `0750` | per-DS root |

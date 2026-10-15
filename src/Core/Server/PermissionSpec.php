@@ -42,6 +42,9 @@ final class PermissionSpec
         return [
             ['path' => $this->configDir,                  'type' => 'dir',  'owner' => 'root', 'group' => 'user', 'mode' => 0750],
             ['path' => $this->configDir . '/server.json', 'type' => 'file', 'owner' => 'root', 'group' => 'user', 'mode' => 0640],
+            // Serverové klíče pro vývoj (dev-ai-<platforma>.key, tasks/testing-phase4.md D40):
+            // čte je runtime, proto shipard-user; optional — produkce je nemá.
+            ['path' => $this->configDir . '/secrets',     'type' => 'dir',  'owner' => 'user', 'group' => 'user', 'mode' => 0700, 'optional' => true, 'recurse' => true, 'contentsMaxMode' => 0600],
             // /opt/shipard is 0751 (not 0750) so that nginx (www-data) can traverse
             // into /opt/shipard/shpd/public for SPA assets. Contents (data-sources,
             // log) keep 0750 so data is not readable by others.

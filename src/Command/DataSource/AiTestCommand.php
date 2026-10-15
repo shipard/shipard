@@ -177,7 +177,13 @@ class AiTestCommand extends Command
             dialect: $call->dialect,
         );
 
-        $base = ['id' => $id, 'connection' => $call->connectionCode, 'model' => $call->model];
+        $base = [
+            'id' => $id,
+            'connection' => $call->connectionCode,
+            // Původ připojení (D40): `server` = serverové připojení pro vývoj.
+            'connectionOrigin' => $call->origins['connection'] ?? null,
+            'model' => $call->model,
+        ];
         $start = microtime(true);
         try {
             $result = $llm->streamChat($params, static function (string $delta): void {});

@@ -11,7 +11,8 @@ use Shipard\Core\Server\FileOwnership;
  * Atomický zápis souboru do {ds_path}/secrets/ se správným vlastníkem.
  *
  * Jediné místo, kterým se secrets soubory zapisují (secrets.key,
- * oidc-op.key, ai-gw-anthropic.key). Zápis: adresář 0700, tmp soubor 0600,
+ * oidc-op.key, ai-gw-anthropic.key; serverový dev-ai-<platforma>.key přes
+ * {@see writeTo()}). Zápis: adresář 0700, tmp soubor 0600,
  * fwrite + fflush + fsync, rename do místa.
  *
  * Vlastnictví: CLI commandy typicky běží pod rootem, runtime (PHP-FPM) pod
@@ -40,7 +41,23 @@ final class SecretsFileWriter
         string $filename,
         #[SensitiveParameter] string $content,
     ): array {
-        $secretsDir = DsSecretCipher::secretsDirPath($dsPath);
+        return self::writeTo(DsSecretCipher::secretsDirPath($dsPath), $filename, $content, $dsPath);
+    }
+
+    /**
+     * Totéž do libovolného adresáře secrets (serverový `/etc/shipard/secrets`,
+     * tasks/testing-phase4.md D40): vlastník podle `$ownerReference`
+     * (soubor nebo adresář, který patří cílovému uživateli).
+     *
+     * @return list<string>
+     * @throws \RuntimeException on any write failure
+     */
+    public static function writeTo(
+        string $secretsDir,
+        string $filename,
+        #[SensitiveParameter] string $content,
+        string $ownerReference,
+    ): array {
         $targetFile = $secretsDir . '/' . $filename;
         $tmpFile = $targetFile . '.tmp';
 
@@ -85,18 +102,20 @@ final class SecretsFileWriter
         }
         @chmod($targetFile, 0600);
 
-        return self::alignOwnership($dsPath, [$secretsDir, $targetFile]);
+        return self::alignOwnership($ownerReference, [$secretsDir, $targetFile]);
     }
 
     /**
-     * Align (root) or report (non-root) ownership of $paths against the DS
-     * root directory owner.
+     * Align (root) or report (non-root) ownership of $paths against the
+     * owner of `$reference` (DS root directory, or `/opt/shipard` for
+     * server-level secrets).
      *
      * @param list<string> $paths
      * @return list<string>
      */
-    public static function alignOwnership(string $dsPath, array $paths): array
+    public static function alignOwnership(string $reference, array $paths): array
     {
+        $dsPath = $reference;
         $dsUid = @fileowner($dsPath);
         $dsGid = @filegroup($dsPath);
         if ($dsUid === false || $dsGid === false) {

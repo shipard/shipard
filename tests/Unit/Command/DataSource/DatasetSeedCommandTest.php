@@ -36,6 +36,10 @@ class TestableDatasetSeedCommand extends DatasetSeedCommand
     public int $settingsToReport = 3;
     public int $resetResult = Command::SUCCESS;
     public ?bool $lastMerge = null;
+    public string $serverMode = 'development';
+    /** @var list<string> zdroje dat, kterým seed zapnul serverové AI připojení */
+    public array $serverAiEnabled = [];
+    public ?string $serverAiError = null;
     /** @var list<string> pořadí kroků upgrade / settings / reset */
     public array $order = [];
     /** @var list<SectionSeeder> */
@@ -85,6 +89,19 @@ class TestableDatasetSeedCommand extends DatasetSeedCommand
         return $this->resetResult;
     }
 
+    protected function getServerMode(): string
+    {
+        return $this->serverMode;
+    }
+
+    protected function enableServerAi(string $dsDir): void
+    {
+        if ($this->serverAiError !== null) {
+            throw new \RuntimeException($this->serverAiError);
+        }
+        $this->serverAiEnabled[] = $dsDir;
+    }
+
     /** @var (\Closure(DatasetReader, DataSourceConfig, DataSourceConnection, string, bool): SeedContext)|null */
     public ?\Closure $contextFactory = null;
 
@@ -125,13 +142,58 @@ class DatasetSeedCommandTest extends TestCase
         DatasetReader::removeTree($this->tmp);
     }
 
-    private function writeSet(bool $valid = true, ?string $country = null): string
+    private function writeSet(bool $valid = true, ?string $country = null, bool $serverAi = false): string
     {
-        $dir = $this->tmp . '/set' . ($valid ? '' : '-bad') . ($country !== null ? "-{$country}" : '');
+        $dir = $this->tmp . '/set' . ($valid ? '' : '-bad') . ($country !== null ? "-{$country}" : '') . ($serverAi ? '-ai' : '');
         $w = DatasetWriter::create($dir);
         $w->writeJsonc('persons/0001-acme.jsonc', $valid ? DatasetPreflightTest::person() : ['format' => 'shpd.persons.person']);
-        $w->writeManifest(new DatasetManifest('demo', 'Demo', null, 'fixed', '2026-08-26T10:00:00Z', ['persons' => 1], country: $country));
+        $w->writeManifest(new DatasetManifest(
+            'demo', 'Demo', null, 'fixed', '2026-08-26T10:00:00Z', ['persons' => 1],
+            country: $country,
+            provision: $serverAi ? ['serverAi' => true] : [],
+        ));
         return $dir;
+    }
+
+    // ── serverové AI připojení (tasks/testing-phase4.md D40) ────────────────
+
+    public function testServerAiProvisionSetsTheFlagOnADevelopmentServer(): void
+    {
+        $cmd = $this->command();
+        $tester = new CommandTester($cmd);
+        $exit = $tester->execute(['path' => $this->writeSet(serverAi: true), '--yes' => true]);
+
+        $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
+        $this->assertSame([$this->dsDir], $cmd->serverAiEnabled);
+        $this->assertStringContainsString('Server AI connection enabled', $tester->getDisplay());
+        $this->assertSame(['settings', 'reset'], $cmd->order);
+    }
+
+    public function testServerAiProvisionIsSkippedOutsideDevelopmentAndAbsentWithoutTheRequest(): void
+    {
+        $cmd = $this->command();
+        $cmd->serverMode = 'production';
+        $tester = new CommandTester($cmd);
+        $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->writeSet(serverAi: true), '--yes' => true]));
+        $this->assertSame([], $cmd->serverAiEnabled);
+        $this->assertStringContainsString('development servers only', $tester->getDisplay());
+
+        $cmd = $this->command();
+        $tester = new CommandTester($cmd);
+        $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->setDir, '--yes' => true]));
+        $this->assertSame([], $cmd->serverAiEnabled, 'sada bez provision.serverAi main.json nemění');
+        $this->assertStringNotContainsString('Server AI', $tester->getDisplay());
+    }
+
+    public function testServerAiFlagFailureStopsBeforeReset(): void
+    {
+        $cmd = $this->command();
+        $cmd->serverAiError = 'cannot replace main.json';
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(Command::FAILURE, $tester->execute(['path' => $this->writeSet(serverAi: true), '--yes' => true]));
+        $this->assertStringContainsString('Server AI flag failed: cannot replace main.json', $tester->getDisplay());
+        $this->assertSame(0, $cmd->resetRuns);
     }
 
     private function command(string $dsCountry = 'cz'): TestableDatasetSeedCommand

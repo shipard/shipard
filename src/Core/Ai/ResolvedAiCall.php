@@ -22,6 +22,8 @@ final readonly class ResolvedAiCall
     public const string ORIGIN_DECLARATION = 'declaration';
     public const string ORIGIN_TIER = 'tier';
     public const string ORIGIN_DEFAULT = 'default';
+    /** Výchozí připojení spadlo na serverové připojení pro vývoj (tasks/testing-phase4.md D40). */
+    public const string ORIGIN_SERVER = 'server';
 
     /**
      * @param array<string, string> $origins klíč (connection, model, thinking, effort, maxTokens) → ORIGIN_*

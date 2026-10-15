@@ -170,4 +170,17 @@ class DataSourceConfig
     {
         return $this->data['enableReset'] ?? false;
     }
+
+    /**
+     * Serverové AI připojení pro vývoj (tasks/testing-phase4.md D40, #103 D10):
+     * volitelné `ai.useServerConnection` v main.json — nastavuje `ds-create`
+     * na serveru v režimu development (bez `--no-server-ai`) a `dataset-seed`
+     * (manifest `provision.serverAi`). Obnovená reálná kopie příznak nemá,
+     * takže bez vlastního připojení zůstane bez AI. Chybí = false.
+     */
+    public function usesServerAiConnection(): bool
+    {
+        $ai = $this->data['ai'] ?? null;
+        return is_array($ai) && ($ai['useServerConnection'] ?? false) === true;
+    }
 }

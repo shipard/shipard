@@ -60,6 +60,7 @@ class HelpCommand extends Command
         $output->writeln('  <info>hosting-sync</info>    Sync with the hosting: reconcile local data sources and provision queued requests');
         $output->writeln('  <info>ds-state-check</info>  Warn about data sources stuck in maintenance > 7 days or with unusable state.json (daily cron job)');
         $output->writeln('  <info>ds-cron</info>         List data sources with their periodic-jobs switch, or switch it on/off (--all or IDs)');
+        $output->writeln('  <info>dev-ai-key</info>      Store or check the server AI key for development data sources (--set-key | --status)');
         $output->writeln('  <info>doctor</info>          Diagnose server configuration and permissions');
         $output->writeln('  <info>fix-permissions</info> Fix ownership and modes (requires sudo)');
         $output->writeln('');
@@ -67,9 +68,10 @@ class HelpCommand extends Command
         $output->writeln('  shpd-server <command> [options]');
         $output->writeln('');
         $output->writeln('<comment>Options:</comment>');
-        $output->writeln('  ds-create --name=<n> --language=<cs|en> --country=<cc> [--module=<id>] [--no-cron]');
+        $output->writeln('  ds-create --name=<n> --language=<cs|en> --country=<cc> [--module=<id>] [--no-cron] [--no-server-ai]');
         $output->writeln('                                           Create a new data source');
-        $output->writeln('                                           (--module defaults to install.base, --no-cron = periodic jobs off)');
+        $output->writeln('                                           (--module defaults to install.base, --no-cron = periodic jobs off,');
+        $output->writeln('                                           --no-server-ai = do not opt into the server AI key on a development server)');
         $output->writeln('  ds-upgrade-all [--ds=<id>] [--stop-on-error] [--dry-run]');
         $output->writeln('                                           Upgrade all data sources');
         $output->writeln('  upgrade [--dry-run] [--full] [--skip-ds-upgrade]');
@@ -80,6 +82,7 @@ class HelpCommand extends Command
         $output->writeln('                                           Generate /etc/cron.d/shipard; the first install outside production');
         $output->writeln('                                           switches periodic jobs off for existing data sources (--check: exit 0/1, silent)');
         $output->writeln('  ds-cron [--on|--off] [--all | <id>…]     Overview, or switch periodic jobs per data source');
+        $output->writeln('  dev-ai-key --set-key | --status          Server AI key (/etc/shipard/secrets/dev-ai-<platform>.key, development only)');
         $output->writeln('  domain-remove --host <host>              Remove a hostname mapping');
         $output->writeln('  doctor                                   Read-only health check (no options)');
         $output->writeln('  fix-permissions [--dry-run] [--force]    Fix /opt/shipard and /etc/shipard');

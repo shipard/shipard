@@ -238,7 +238,10 @@ a `PreprocessRunnerFactory`; testy stavějí controllery bez něj. Záchrana:
 frontě bez aktivního claimu spustí runnery, nejvýš tolik, kolik je
 volných slotů; bez použitelného připojení (aktivní výchozí profil →
 aktivní připojení s klíčem, vybrané jako v resolveru: profil → řádek
-funkce `mail.extraction` → výchozí — `AnalysisBackendProbe`) nic a jedno
+funkce `mail.extraction` → výchozí — `AnalysisBackendProbe`; bez vlastního
+klíče a bez výslovného odkazu platí serverové připojení pro vývoj,
+`docs/ai.md` §5.1, jen když sonda dostane konfiguraci zdroje dat —
+runner z factory ano, alert check ne) nic a jedno
 varování. Druhý
 runner na tutéž zprávu skončí na `ALREADY_CLAIMED`.
 

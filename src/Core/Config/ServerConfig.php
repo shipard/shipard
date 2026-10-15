@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shipard\Core\Config;
 
+use Shipard\Core\Ai\DevAiConfig;
 use Shipard\Core\Mail\MailRelayConfig;
 use Shipard\Core\Mail\MailSafetyConfig;
 use Shipard\Core\Server\HostingConfig;
@@ -183,6 +184,27 @@ class ServerConfig
             throw new \RuntimeException("Server config 'render' must be an object");
         }
         return RenderConfig::fromArray($render);
+    }
+
+    /** Adresář konfigurace serveru (`/etc/shipard`) — vedle `server.json` leží `secrets/`. */
+    public function getConfigDir(): string
+    {
+        return dirname($this->configPath);
+    }
+
+    /**
+     * Serverové AI připojení pro vývoj (tasks/testing-phase4.md D40) —
+     * volitelná sekce `devAi` {platform, baseUrl}; chybí = platforma
+     * `anthropic` s výchozí adresou. Platí jen v režimu `development` —
+     * to hlídá {@see \Shipard\Core\Ai\ServerAiConnection::detect()}, ne config.
+     */
+    public function getDevAi(): DevAiConfig
+    {
+        $devAi = $this->data['devAi'] ?? null;
+        if ($devAi !== null && !is_array($devAi)) {
+            throw new \RuntimeException("Server config 'devAi' must be an object");
+        }
+        return DevAiConfig::fromArray($devAi);
     }
 
     /**

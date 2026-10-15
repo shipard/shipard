@@ -176,6 +176,7 @@
     "origin.declaration": { "text": "function declaration",         "text:cs": "podle deklarace funkce",     "text:en": "function declaration" },
     "origin.tier":        { "text": "tier model",                   "text:cs": "podle úrovně modelu",        "text:en": "tier model" },
     "origin.default":     { "text": "default connection",           "text:cs": "výchozí připojení",          "text:en": "default connection" },
+    "origin.server":      { "text": "server connection (development)", "text:cs": "serverové připojení (vývoj)", "text:en": "server connection (development)" },
 
     // --- chyby API ----------------------------------------------------------
     "api.authentication": {

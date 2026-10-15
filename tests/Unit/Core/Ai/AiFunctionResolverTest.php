@@ -10,6 +10,7 @@ use Shipard\Core\Ai\AiCallOverride;
 use Shipard\Core\Ai\AiFunctionRegistry;
 use Shipard\Core\Ai\AiFunctionResolver;
 use Shipard\Core\Ai\Exception\AiFunctionException;
+use Shipard\Core\Ai\Exception\DevAiKeyException;
 use Shipard\Core\Ai\ModelCatalog;
 use Shipard\Core\Ai\RequestChange;
 use Shipard\Core\Ai\ResolvedAiCall;
@@ -291,6 +292,109 @@ final class AiFunctionResolverTest extends TestCase
         } catch (AiFunctionException $e) {
             $this->assertSame(AiFunctionException::NO_CONNECTION, $e->errorCode);
             $this->assertSame(ResolvedAiCall::ORIGIN_OVERRIDE, $e->details['origin']);
+        }
+    }
+
+    private const SERVER_CONNECTION = ['id' => 0, 'backend_id' => 'server', 'name' => 'Server (development)', 'provider' => 'anthropic',
+        'model' => null, 'base_url' => null, 'api_key' => '(server)', 'is_default' => 0, 'is_active' => 1, '_server' => true];
+
+    /**
+     * Resolver s připojeními podle kódu (tasks/testing-phase4.md D35/D40).
+     *
+     * @param array<string, array<string, mixed>|null> $byCode
+     * @param array<string, string|\Throwable> $keys
+     */
+    private function resolverWithCodes(?array $default, array $byCode, array $keys): AiFunctionResolver
+    {
+        $db = $this->createMock(DataSourceConnection::class);
+        $db->method('fetchRow')->willReturn(null);
+        $backends = $this->createMock(AiBackendResolver::class);
+        $backends->method('defaultBackend')->willReturn($default);
+        $backends->method('backendByNdx')->willReturnCallback(static fn (int $ndx): ?array => $ndx === 2 ? self::SECOND_CONNECTION : null);
+        $backends->method('backendByCode')->willReturnCallback(static fn (string $code): ?array => $byCode[$code] ?? null);
+        $backends->method('apiKey')->willReturnCallback(static function (array $connection) use ($keys): ?string {
+            $key = $keys[(string) $connection['backend_id']] ?? null;
+            if ($key instanceof \Throwable) {
+                throw $key;
+            }
+            return $key;
+        });
+        return new AiFunctionResolver($db, $this->config(), null, null, null, $backends);
+    }
+
+    public function testConnectionCodeOverrideSelectsByCodeOrTheServerConnection(): void
+    {
+        $resolver = $this->resolverWithCodes(
+            self::DEFAULT_CONNECTION,
+            ['gateway' => self::SECOND_CONNECTION, 'server' => self::SERVER_CONNECTION],
+            ['default' => 'sk-default', 'gateway' => 'sk-gw', 'server' => 'sk-server'],
+        );
+
+        $call = $resolver->resolve('mail.extraction', new AiCallOverride(connectionCode: 'gateway'));
+        $this->assertSame(2, $call->connectionId);
+        $this->assertSame('gateway', $call->connectionCode);
+        $this->assertSame('sk-gw', $call->apiKey);
+        $this->assertSame('https://portal.example/_hosting/ai-gw', $call->baseUrl);
+        $this->assertSame(ResolvedAiCall::ORIGIN_OVERRIDE, $call->origins['connection']);
+
+        $call = $resolver->resolve('mail.extraction', new AiCallOverride(connectionCode: 'server'));
+        $this->assertSame(0, $call->connectionId);
+        $this->assertSame('server', $call->connectionCode);
+        $this->assertSame('sk-server', $call->apiKey);
+        $this->assertSame('anthropic', $call->platform);
+        $this->assertSame('https://api.anthropic.com', $call->baseUrl, 'adresa platformy, serverové připojení ji nenese');
+        $this->assertSame(ResolvedAiCall::ORIGIN_OVERRIDE, $call->origins['connection']);
+
+        // Id má přednost před kódem.
+        $call = $resolver->resolve('mail.extraction', new AiCallOverride(connectionId: 2, connectionCode: 'server'));
+        $this->assertSame(2, $call->connectionId);
+
+        try {
+            $resolver->resolve('mail.extraction', new AiCallOverride(connectionCode: 'nope'));
+            $this->fail();
+        } catch (AiFunctionException $e) {
+            $this->assertSame(AiFunctionException::NO_CONNECTION, $e->errorCode);
+            $this->assertSame('nope', $e->details['connectionCode']);
+            $this->assertSame(ResolvedAiCall::ORIGIN_OVERRIDE, $e->details['origin']);
+        }
+
+        // Serverové připojení není k dispozici (jiný režim, bez klíče, bez příznaku).
+        $resolver = $this->resolverWithCodes(self::DEFAULT_CONNECTION, [], ['default' => 'sk-default']);
+        try {
+            $resolver->resolve('mail.extraction', new AiCallOverride(connectionCode: 'server'));
+            $this->fail();
+        } catch (AiFunctionException $e) {
+            $this->assertSame(AiFunctionException::NO_CONNECTION, $e->errorCode);
+            $this->assertStringContainsString('server AI connection', $e->getMessage());
+        }
+    }
+
+    public function testDefaultFallingBackToTheServerConnectionHasOriginServer(): void
+    {
+        $resolver = $this->resolverWithCodes(self::SERVER_CONNECTION, [], ['server' => 'sk-server']);
+
+        $plan = $resolver->plan('mail.extraction');
+        $this->assertSame(ResolvedAiCall::ORIGIN_SERVER, $plan->origins['connection']);
+        $this->assertSame('server', $plan->connectionCode);
+        $this->assertSame(0, $plan->connectionId);
+
+        $call = $resolver->resolve('mail.extraction');
+        $this->assertSame('sk-server', $call->apiKey);
+        $this->assertSame(ResolvedAiCall::ORIGIN_SERVER, $call->origins['connection']);
+        $this->assertSame(ResolvedAiCall::ORIGIN_TIER, $call->origins['model']);
+    }
+
+    public function testServerKeyProblemsMapToSecretsUnavailable(): void
+    {
+        $resolver = $this->resolverWithCodes(self::SERVER_CONNECTION, [], [
+            'server' => new DevAiKeyException(DevAiKeyException::INSECURE, 'insecure permissions 0644'),
+        ]);
+        try {
+            $resolver->resolve('mail.extraction');
+            $this->fail();
+        } catch (AiFunctionException $e) {
+            $this->assertSame(AiFunctionException::SECRETS_UNAVAILABLE, $e->errorCode);
+            $this->assertStringContainsString('Server AI key cannot be read: insecure permissions 0644', $e->getMessage());
         }
     }
 

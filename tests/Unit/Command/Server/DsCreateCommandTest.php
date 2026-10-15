@@ -377,6 +377,45 @@ class DsCreateCommandTest extends TestCase
         $this->assertSame(DsSecretCipher::KEY_BYTES, filesize($keyFile));
     }
 
+    /** @return array<string, mixed> main.json jediného založeného zdroje dat */
+    private function createdMainJson(): array
+    {
+        $dirs = glob($this->tempDir . '/*', GLOB_ONLYDIR);
+        $this->assertCount(1, $dirs);
+        return json_decode((string) file_get_contents($dirs[0] . '/config/main.json'), true);
+    }
+
+    public function testDsCreateOnADevelopmentServerOptsIntoTheServerAiConnection(): void
+    {
+        // tasks/testing-phase4.md D40: nový zdroj dat ve vývoji smí používat serverový klíč.
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester();
+
+        $this->assertSame(0, $tester->execute(['--name' => 'Dev', '--language' => 'cs', '--country' => 'cz']));
+        $this->assertStringContainsString('Server AI:     on', $tester->getDisplay());
+        $this->assertSame(['useServerConnection' => true], $this->createdMainJson()['ai']);
+    }
+
+    public function testDsCreateNoServerAiLeavesTheFlagOut(): void
+    {
+        $this->serverConfig->method('getMode')->willReturn('development');
+        $tester = $this->createCommandTester();
+
+        $this->assertSame(0, $tester->execute(['--name' => 'Import', '--language' => 'cs', '--country' => 'cz', '--no-server-ai' => true]));
+        $this->assertStringContainsString('Server AI:     off', $tester->getDisplay());
+        $this->assertArrayNotHasKey('ai', $this->createdMainJson());
+    }
+
+    public function testDsCreateOutsideDevelopmentNeverSetsTheServerAiFlag(): void
+    {
+        $this->serverConfig->method('getMode')->willReturn('production');
+        $tester = $this->createCommandTester();
+
+        $this->assertSame(0, $tester->execute(['--name' => 'Prod', '--language' => 'cs', '--country' => 'cz']));
+        $this->assertStringNotContainsString('Server AI:', $tester->getDisplay());
+        $this->assertArrayNotHasKey('ai', $this->createdMainJson());
+    }
+
     private function rmdirRecursive(string $dir): void
     {
         if (!is_dir($dir)) {

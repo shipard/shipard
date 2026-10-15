@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Ai;
 
 use Shipard\Core\Ai\Exception\AiFunctionException;
+use Shipard\Core\Ai\Exception\DevAiKeyException;
 use Shipard\Core\Config\ConfigRuntime;
 use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Database\DataSourceConnection;
@@ -21,8 +22,11 @@ use Shipard\Core\Security\Exception\SecretsKeyMissingException;
  * volajícího ({@see AiCallOverride}) složí {@see ResolvedAiCall}.
  *
  * Pořadí zdrojů pro každou hodnotu zvlášť: přepsání → řádek funkce →
- * deklarace funkce / mapa úrovní. Připojení: přepsání → řádek → výchozí
- * aktivní připojení zdroje dat. Model: vlastní ID mimo katalog vyžaduje
+ * deklarace funkce / mapa úrovní. Připojení: přepsání (id, nebo kód —
+ * `server` = serverové připojení pro vývoj) → řádek → výchozí aktivní
+ * připojení zdroje dat (bez vlastního klíče serverové, má-li zdroj dat
+ * příznak — {@see AiBackendResolver::defaultBackend()}, původ `server`;
+ * tasks/testing-phase4.md D40). Model: vlastní ID mimo katalog vyžaduje
  * `model_like` (D43); ID pro platformu skládá {@see AiPlatform} (prefix
  * geografického profilu + ID rodiny `modelIds` z `platformIds`,
  * tasks/ai-bedrock-eu.md D57), zadané ID jde ven beze změny, pokud na
@@ -240,6 +244,19 @@ class AiFunctionResolver
         if ($override->connectionId !== null && $override->connectionId > 0) {
             $wanted = $override->connectionId;
             $origin = ResolvedAiCall::ORIGIN_OVERRIDE;
+        } elseif ($override->connectionCode !== null) {
+            $code = $override->connectionCode;
+            $connection = $this->backends->backendByCode($code);
+            if ($connection === null) {
+                throw new AiFunctionException(
+                    AiFunctionException::NO_CONNECTION,
+                    $code === ServerAiConnection::CODE
+                        ? "The server AI connection selected for '{$functionId}' (override) is not available — a development server with a dev-ai-key and a data source opted in (ai.useServerConnection) are required"
+                        : "AI connection '{$code}' selected for '{$functionId}' (override) is missing or inactive",
+                    ['functionId' => $functionId, 'connectionCode' => $code, 'origin' => ResolvedAiCall::ORIGIN_OVERRIDE],
+                );
+            }
+            return [$connection, ResolvedAiCall::ORIGIN_OVERRIDE];
         } elseif (is_numeric($row['connection'] ?? null) && (int) $row['connection'] > 0) {
             $wanted = (int) $row['connection'];
             $origin = ResolvedAiCall::ORIGIN_FUNCTION;
@@ -264,6 +281,9 @@ class AiFunctionResolver
                 'No active default AI connection is configured',
                 ['functionId' => $functionId],
             );
+        }
+        if (ServerAiConnection::isServerRow($connection)) {
+            $origin = ResolvedAiCall::ORIGIN_SERVER;
         }
         return [$connection, $origin];
     }
@@ -408,6 +428,14 @@ class AiFunctionResolver
         $details = ['connectionId' => (int) ($connection['id'] ?? 0), 'connectionCode' => $code];
         try {
             $key = $this->backends->apiKey($connection);
+        } catch (DevAiKeyException $e) {
+            // Serverové připojení pro vývoj (D40): klíč v /etc/shipard/secrets chybí nebo nejde číst.
+            throw new AiFunctionException(
+                AiFunctionException::SECRETS_UNAVAILABLE,
+                'Server AI key cannot be read: ' . $e->getMessage(),
+                $details,
+                $e,
+            );
         } catch (SecretsKeyMissingException | SecretsKeyInsecureException $e) {
             throw new AiFunctionException(
                 AiFunctionException::SECRETS_UNAVAILABLE,

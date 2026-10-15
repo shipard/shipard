@@ -49,4 +49,28 @@ final class MainConfigPatcher
 
         return $config;
     }
+
+    /**
+     * Příznak serverového AI připojení pro vývoj (`ai.useServerConnection`,
+     * tasks/testing-phase4.md D40) — `true` zapne, `false` klíč odebere
+     * (prázdnou sekci `ai` nechá zmizet). Ostatní klíče `ai` zůstávají.
+     *
+     * @param array<string, mixed> $config
+     * @return array<string, mixed>
+     */
+    public static function withServerAi(array $config, bool $enabled): array
+    {
+        $ai = is_array($config['ai'] ?? null) ? $config['ai'] : [];
+        if ($enabled) {
+            $ai['useServerConnection'] = true;
+        } else {
+            unset($ai['useServerConnection']);
+        }
+        if ($ai === []) {
+            unset($config['ai']);
+        } else {
+            $config['ai'] = $ai;
+        }
+        return $config;
+    }
 }

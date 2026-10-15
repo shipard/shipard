@@ -56,7 +56,7 @@ sada/
   "created": "2026-08-26T10:00:00Z",
   "country": "cz",                    // volitelné — země vlastní firmy (#103 D24)
   "profile": "vat-payer",             // volitelné, informativní (profil korpusu)
-  "provision": { "accountingItems": "all" },   // volitelné — jednorázové akce seedu (#103 D22)
+  "provision": { "accountingItems": "all", "serverAi": true },   // volitelné — jednorázové akce seedu (#103 D22, D40)
   "counts": { "setup": 5, "persons": 12, "items": 8, "docs": 15, "registry": 4, "mail": 6 }
 }
 ```
@@ -72,10 +72,14 @@ Volitelná pole z #103 F2 (`tasks/testing-phase2.md`):
   jako `cz`) **už v preflightu** — sada jiné země skončí chybou a nic se
   nezmění. Bez `country` se nic neověřuje.
 - `profile` — klíč profilu, ze kterého sada vznikla; seed ho nečte.
-- `provision` — akce, o které sada žádá nad rámec záznamů. Známý je jen
-  klíč `accountingItems`: `"all"` = všechny položky nabídky účetních
-  položek podle osnovy DS, seznam řetězců = jen tyto kódy nabídky. Neznámý
-  klíč nebo jiný tvar = chyba manifestu. Nabídka zůstává jednorázová akce
+- `provision` — akce, o které sada žádá nad rámec záznamů. Známé klíče:
+  `accountingItems`: `"all"` = všechny položky nabídky účetních položek
+  podle osnovy DS, seznam řetězců = jen tyto kódy nabídky; `serverAi`:
+  `true` = seed na serveru v režimu `development` zapne zdroji dat
+  příznak `ai.useServerConnection` v `config/main.json` (právo používat
+  serverový AI klíč, `shpd-server dev-ai-key`, #103 D40 — sady korpusu
+  pro evaluaci AI), jinde se jen vypíše poznámka. Neznámý klíč nebo jiný
+  tvar = chyba manifestu. Nabídka zůstává jednorázová akce
   (`docs/ds-setup.md` D18) — `ds-upgrade` položky nevrací ani nedoplňuje.
 
 ### Sekce `setup/` (R1)

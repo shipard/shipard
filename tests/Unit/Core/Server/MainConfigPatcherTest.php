@@ -94,4 +94,19 @@ class MainConfigPatcherTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         MainConfigPatcher::mergeAuthProvider($this->baseConfig(), $this->provider(['id' => 'Bad Id!']));
     }
+
+    public function testWithServerAiSetsAndClearsTheFlag(): void
+    {
+        // tasks/testing-phase4.md D40: `ai.useServerConnection` vedle ostatních klíčů `ai`.
+        $on = MainConfigPatcher::withServerAi($this->baseConfig(), true);
+        $this->assertSame(['useServerConnection' => true], $on['ai']);
+        $this->assertSame($this->baseConfig()['name'], $on['name']);
+
+        $off = MainConfigPatcher::withServerAi($on, false);
+        $this->assertArrayNotHasKey('ai', $off, 'prázdná sekce mizí');
+
+        $other = MainConfigPatcher::withServerAi(['ai' => ['other' => 1, 'useServerConnection' => true]] + $this->baseConfig(), false);
+        $this->assertSame(['other' => 1], $other['ai']);
+        $this->assertSame(['other' => 1, 'useServerConnection' => true], MainConfigPatcher::withServerAi($other, true)['ai']);
+    }
 }

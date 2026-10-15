@@ -85,6 +85,9 @@ class AnalysisRunner
      * @param ModelCatalog|null $catalog Ceník pro `cost_usd` (#85 D33,
      *        přes `ResolvedAiCall::costUsd()` s násobitelem platformy D60);
      *        null = prázdný katalog, cena 0 s varováním.
+     * @param AnalysisBackendProbe|null $probe Sonda použitelného připojení
+     *        pro sweep; null = sonda bez serverového připojení pro vývoj
+     *        (factory ji staví s konfigurací zdroje dat, D40).
      */
     public function __construct(
         private readonly DataSourceConnection $db,
@@ -99,6 +102,7 @@ class AnalysisRunner
         private readonly ?string $analyzerId = null,
         private readonly ?\Closure $clock = null,
         private readonly ?ModelCatalog $catalog = null,
+        private readonly ?AnalysisBackendProbe $probe = null,
     ) {}
 
     /**
@@ -422,7 +426,7 @@ class AnalysisRunner
         if ($this->slots->isDisabled()) {
             return ['spawned' => [], 'skipped' => 'in-process analysis is disabled (ai.analysis.maxConcurrent = 0)'];
         }
-        if (!new AnalysisBackendProbe($this->db)->hasUsableBackend()) {
+        if (!($this->probe ?? new AnalysisBackendProbe($this->db))->hasUsableBackend()) {
             ErrorLogger::warn('AnalysisRunner sweep: no usable AI backend (active default profile with an active backend holding an API key) — queue left as is');
             return ['spawned' => [], 'skipped' => 'no usable AI backend'];
         }
