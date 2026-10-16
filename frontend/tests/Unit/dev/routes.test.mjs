@@ -24,16 +24,16 @@ test('neznámá cesta a cesta mimo /_dev → notFound', () => {
   assert.equal(matchRoute('/abcd-1234-efgh-5678/app/').name, 'notFound');
 });
 
-test('registrované routy s parametry, dekódování segmentů', () => {
-  registerRoutes([
-    ['testing', 'testingDatasets'],
-    ['testing/:set/runs/:file', 'testingRun'],
-  ]);
+test('routy Testování s parametry, dekódování segmentů', () => {
   const r = matchRoute('/_dev/testing/cz-vat-payer/runs/2026-10-16-baseline.json/');
   assert.equal(r.name, 'testingRun');
   assert.deepEqual(r.params, { set: 'cz-vat-payer', file: '2026-10-16-baseline.json' });
   assert.equal(matchRoute('/_dev/testing/').name, 'testingDatasets');
   assert.equal(matchRoute('/_dev/testing/a%20b/runs/x/').params.set, 'a b');
+  assert.equal(matchRoute('/_dev/testing/cz-vat-payer/compare/', '?a=x.json&b=y.json').name, 'testingCompare');
+  assert.equal(matchRoute('/_dev/testing/cz-vat-payer/messages/MSG-1/').name, 'testingMessageRuns');
+  assert.equal(matchRoute('/_dev/testing/cz-vat-payer/runs/x.json/messages/MSG-1').name, 'testingMessage');
+  assert.equal(matchRoute('/_dev/testing/cz-vat-payer/nope/').name, 'notFound');
   // opakovaná registrace stejného vzoru nic nezdvojí
   registerRoutes([['testing', 'testingDatasets']]);
   assert.equal(matchRoute('/_dev/testing').name, 'testingDatasets');

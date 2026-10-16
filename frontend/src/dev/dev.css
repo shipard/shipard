@@ -388,3 +388,22 @@ code, .dev-code {
 @media (max-width: 1100px) {
   .dev-split { grid-template-columns: 1fr; }
 }
+
+/* ---- Počet odchylek podle úrovně (testing/metrics.js deviationLevel) ---- */
+.dev-lvl { font-variant-numeric: tabular-nums; font-weight: 600; text-decoration: none; }
+.dev-lvl--ok { color: var(--shpd-color-success); }
+.dev-lvl--warn { color: var(--shpd-color-warning); }
+.dev-lvl--bad { color: var(--shpd-color-danger); }
+.dev-lvl--failed { color: var(--shpd-color-danger); font-style: italic; }
+a.dev-lvl:hover { text-decoration: underline; }
+
+/* Buňka očekávání / výstupu v tabulkách polí */
+.dev-cell-expected { color: var(--shpd-color-text-secondary); }
+.dev-cell-actual { font-weight: 500; }
+tr.dev-row--match td { background: transparent; }
+tr.dev-row--missing td, tr.dev-row--extra td, tr.dev-row--wrong td { background: color-mix(in srgb, var(--shpd-color-state-cancelled-bg) 55%, transparent); }
+tr.dev-row--matchNormalized td { background: color-mix(in srgb, var(--shpd-color-primary-soft) 55%, transparent); }
+tr.dev-row--notCompared td { color: var(--shpd-color-text-secondary); font-style: italic; }
+td.dev-cellstate--missing, td.dev-cellstate--extra, td.dev-cellstate--wrong { background: color-mix(in srgb, var(--shpd-color-state-cancelled-bg) 70%, transparent) !important; }
+td.dev-cellstate--matchNormalized { background: color-mix(in srgb, var(--shpd-color-primary-soft) 70%, transparent) !important; }
+td.dev-cellstate--notCompared { color: var(--shpd-color-text-secondary); font-style: italic; }

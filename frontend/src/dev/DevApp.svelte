@@ -8,6 +8,7 @@
   import DsCreatePage from './pages/DsCreatePage.svelte';
   import LogsPage from './pages/LogsPage.svelte';
   import ActionPage from './pages/ActionPage.svelte';
+  import TestingPage from './pages/testing/TestingPage.svelte';
   import NotFoundPage from './pages/NotFoundPage.svelte';
 
   const route = $derived(router.route);
@@ -22,14 +23,17 @@
     upgradeAll: 'upgradeAll',
   };
 
+  const isTesting = $derived(route.name.startsWith('testing'));
+
   const navItems = $derived([
     { id: 'dataSources', label: 'Zdroje dat', href: router.href('dataSources') },
+    ...(devInfo.value?.testing ? [{ id: 'testing', label: 'Testování', href: router.href('testingDatasets') }] : []),
     { id: 'logs', label: 'Logy', href: router.href('logs') },
     { id: 'doctor', label: 'Doctor', href: router.href('doctor') },
     { id: 'upgradeAll', label: 'Upgrade všech', href: router.href('upgradeAll') },
   ]);
 
-  const activeNav = $derived(NAV_OF_ROUTE[route.name] ?? null);
+  const activeNav = $derived(isTesting ? 'testing' : (NAV_OF_ROUTE[route.name] ?? null));
 
   const TITLES = {
     dataSources: 'Zdroje dat',
@@ -42,7 +46,10 @@
   };
 
   $effect(() => {
-    document.title = `${TITLES[route.name] ?? 'Dashboard'} — Shipard dev`;
+    const title = isTesting
+      ? ['Testování', route.params.set, route.params.file, route.params.messageId].filter(Boolean).join(' · ')
+      : (TITLES[route.name] ?? 'Dashboard');
+    document.title = `${title} — Shipard dev`;
   });
 
   onMount(() => {
@@ -78,6 +85,8 @@
       <LogsPage />
     {:else if route.name === 'doctor' || route.name === 'upgradeAll' || route.name === 'dsUpgrade'}
       <ActionPage />
+    {:else if isTesting}
+      <TestingPage />
     {:else}
       <NotFoundPage />
     {/if}

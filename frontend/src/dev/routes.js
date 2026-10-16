@@ -19,6 +19,13 @@ const ROUTES = [
   ['doctor', 'doctor'],
   ['upgrade-all', 'upgradeAll'],
   ['ds-upgrade', 'dsUpgrade'],
+  // Testování (#103 D53) — sada, běhy, detail běhu, doklad v běhu, porovnání, doklad napříč běhy
+  ['testing', 'testingDatasets'],
+  ['testing/:set', 'testingRuns'],
+  ['testing/:set/compare', 'testingCompare'],
+  ['testing/:set/runs/:file', 'testingRun'],
+  ['testing/:set/runs/:file/messages/:messageId', 'testingMessage'],
+  ['testing/:set/messages/:messageId', 'testingMessageRuns'],
 ];
 
 const NOT_FOUND = 'notFound';
