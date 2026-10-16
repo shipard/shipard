@@ -155,10 +155,12 @@ Tři vrstvy nastavení (tasks/ai-functions.md, #85 D1, D3, D4, D36–D48):
 | **Katalog modelů + mapa úrovní** | jak s modelem mluvit (schopnosti, ceny, životní cyklus) a který model dnes znamená úroveň `fast` / `balanced` / `strong` | `core.ai.models`, `core.ai.tiers` (repo) | vývoj (evaluace) |
 | **AI funkce** | co se volá: úroveň modelu, výchozí strop a teplota, požadavky; per DS přepsání připojení, modelu a ladění | deklarace `aiFunctions` v `module.jsonc` → cfgItem `core.ai.functions`; řádky `core_ai_function_settings` (Nastavení → AI → Funkce); profil pošty pro `mail.extraction` | modul (deklarace), správce DS (přepsání) |
 
-Nasazením fáze 1b se chování nezměnilo: všechny úrovně ukazují na
-`claude-sonnet-4-6`, výchozí ladění funkcí odpovídá dřívějšku (teplota 0
-jen u vytěžení, stropy 32768 / 16000 / 8000 / 16000 / 2000). Výchozí
-modely pro řadu 5 doplní evaluace (fáze 2).
+Nasazením fáze 1b se chování nezměnilo (všechny úrovně tehdy ukazovaly
+na `claude-sonnet-4-6`); výchozí ladění funkcí odpovídá dřívějšku
+(teplota 0 jen u vytěžení, stropy 32768 / 16000 / 8000 / 16000 / 2000).
+Od 2026-10-16 jsou výchozí modely úrovní z řady 5 podle evaluace #103
+(`tasks/ai-tiers-series5.md`, §5.2): `fast` a `balanced` Sonnet 5.5,
+`strong` Opus 5.5 — teplotu 0 vytěžení tvarovač vynechá.
 
 ### 5.1 Připojení
 
@@ -273,12 +275,30 @@ nebo ID + `-YYYYMMDD`, vyhrává nejdelší kandidát, prefix sám nestačí
 **Mapa úrovní** — cfgItem **`core.ai.tiers`** (`config/tiers.jsonc`, D37):
 `fast`, `balanced`, `strong` → `name`, `order`, `model`, volitelně
 `platformModels` (platforma → model úrovně pro platformu, která obecný
-model nenabízí; D58 — pro `bedrock-eu` všechny tři úrovně
-`claude-sonnet-5-5`, Sonnet 4.6 na Bedrocku není). Všechny tři obecně
-zatím `claude-sonnet-4-6`. `ModelCatalog::defaultModel(úroveň, platforma)`
-ji čte — položka pro platformu má přednost, bez ní platí `model`;
-`ModelCatalogFileTest` hlídá, že každá úroveň i každý model pro platformu
-ukazuje na aktivní model katalogu s úrovní a s ID pro rodinu platformy.
+model nenabízí; D58). Od 2026-10-16 (`tasks/ai-tiers-series5.md`, #103
+D47–D50, M4) podle evaluace F4 / F4b (`tasks/testing-phase4b.md` § 5–6):
+
+| Úroveň | `model` | `platformModels.bedrock-eu` | Funkce |
+|--------|---------|-----------------------------|--------|
+| `fast` | `claude-sonnet-5-5` | `claude-sonnet-5-5` | `exchange.contentTags`, `dashboard.summary` |
+| `balanced` | `claude-sonnet-5-5` | `claude-sonnet-5-5` | `mail.extraction`, `exchange.bookingHistory`, `chat.default` |
+| `strong` | `claude-opus-5-5` | `claude-opus-5-5` | zatím žádná |
+
+Sonnet 5.5 vyšel v evaluaci nejlépe (shoda polí 94,8 % proti 94,1 %
+u Sonnetu 4.6, 2,25× rychlejší, o 22 % levnější); Opus 5.5 a Fable 5.1
+nepřinesly nic navíc, Haiku 5.5 se na vytěžení nehodí (pro štítky se
+teprve měří, D49). `effort` / `thinking` mapa nenese — platí výchozí
+hodnoty modelu (F4b § 6). Sonnet 4.6 zůstává v katalogu aktivní (nejméně
+do 17. 2. 2027) pro zdroje dat s výslovným přepisem; řádek nastavení
+funkce nese `model` jen, když se liší od modelu úrovně
+(`AiFunctionProvisioner`), takže zdroje dat bez přepisu se přepnuly samy.
+Položky `platformModels` jsou po přechodu nadbytečné (Bedrock všechny tři
+modely nabízí), zůstávají výslovně. `ModelCatalog::defaultModel(úroveň,
+platforma)` ji čte — položka pro platformu má přednost, bez ní platí
+`model`; `ModelCatalogFileTest` hlídá, že každá úroveň i každý model pro
+platformu ukazuje na aktivní model katalogu s úrovní a s ID pro rodinu
+platformy, `AiFunctionsTierFileTest`, které funkce kterou úroveň
+používají a že tvarovač na modelech úrovní vynechá jen teplotu vytěžení.
 Přehled modelů ukazuje „Výchozí pro … na platformě …“, seznam a formulář
 funkce model úrovně pro platformu efektivního připojení. Model z mapy, který končí, hlídá repo — resolver ho jen
 jednou za proces zaloguje (D42).
@@ -305,9 +325,10 @@ podle `shapeAs ?? model`):
 4. `max_tokens` nad `maxOutputTokens` → snížit.
 
 Úpravy jdou do logu jednou za volání (`info`, model + seznam úprav); model
-mimo katalog se netvaruje a varování padne jednou za proces. Pro výchozí
-nastavení (Sonnet 4.6, bez ladění) je tělo požadavku stejné jako před
-katalogem (test). Co z katalogu čtou ostatní: `ModelCatalog::costUsd()`
+mimo katalog se netvaruje a varování padne jednou za proces. Při přepisu
+na Sonnet 4.6 bez ladění je tělo požadavku stejné jako před katalogem
+(test); na modelech úrovní (řada 5) je jedinou úpravou z deklarací
+vynechaná teplota vytěžení (`AiFunctionsTierFileTest`). Co z katalogu čtou ostatní: `ModelCatalog::costUsd()`
 (cena běhu analýzy, `cost_usd`; vlastní ID modelu = 0 s varováním),
 `AiFunctionProvisioner` / `MailAiProvisioner` (`retiredReplacement()`
 u řádků funkcí a profilů při `ds-upgrade`), `ModelOptions` (nabídka
@@ -455,7 +476,8 @@ nepřenáší, neukládá ani neloguje. Pojistka `chatToolLoop` ×
 je jen popis; strop `chat.default` je 16 000, thinking se do `max_tokens`
 počítá (D55). Ostatní volající (`analysis`, klasifikátory, shrnutí) čtou
 jen `text` — thinking bloky v `contentBlocks` jim nic nemění. Výchozí
-model asistenta zůstává Sonnet 4.6 (mapa úrovní, evaluace #103).
+model asistenta je od 2026-10-16 Sonnet 5.5 (úroveň `balanced`,
+`tasks/ai-tiers-series5.md`).
 
 ### 5.5 Jak vyzkoušet jiný model
 
@@ -581,7 +603,7 @@ dat přes AI gateway hostingu — ty jdou dál přímým API (fáze 3b, D61).
 | Endpoint | Messages API na `bedrock-runtime`: výchozí `https://bedrock-runtime.eu-central-1.amazonaws.com/anthropic` (klient připojí `/v1/messages`); jiný region EU správce zadá v `base_url` (`https://bedrock-runtime.<region>.amazonaws.com/anthropic`). `bedrock-mantle` je pro řadu 5.5 jen GovCloud |
 | ID modelu | `modelIds: bedrock` + `modelIdPrefix: eu.` → `eu.anthropic.claude-sonnet-5-5` (geografický profil EU; in-region zpracování Sonnet 5.5 na `bedrock-runtime` nenabízí). Odpověď (`message_start.model`) může nést základní `anthropic.…` — cena i tvarování jdou z rozhodnutí resolveru, ne z odpovědi |
 | Přihlášení | **dlouhodobý API klíč Bedrocku** (konzole AWS → Amazon Bedrock → API keys) uložený jako každý jiný klíč (`ai-backend-set-key`, D59); klient ho posílá v `x-api-key` jako klíč Anthropicu (ověřeno). Klíč platí **jen v regionu, kde vznikl** — adresa připojení musí mířit do téhož regionu (jinak „Credential should be scoped to a valid region“). Krátkodobé klíče (12 h, z přihlašovacích údajů AWS) a SigV4 jsou mimo rozsah |
-| Modely | přes Messages API jen řada 4.7 a novější a Haiku 4.5 (`platformIds.bedrock` v katalogu); Sonnet 4.6 ne — proto `platformModels` všech úrovní na `claude-sonnet-5-5` (D58). Přístup k modelu se v účtu AWS povoluje zvlášť (Model access) |
+| Modely | přes Messages API jen řada 4.7 a novější a Haiku 4.5 (`platformIds.bedrock` v katalogu); Sonnet 4.6 ne (D58 — proto úrovně nesou `platformModels`); od přechodu na řadu 5 jsou modely úrovní na obou platformách stejné, `strong` Opus 5.5. Přístup k modelu se v účtu AWS povoluje zvlášť (Model access) |
 | Cena | `priceMultiplier: 1.1` — regionální a geografické endpointy mají příplatek 10 % proti globálním (D60); vzniká na jednom místě `ResolvedAiCall::costUsd()` |
 | Chyby | 401 / 403 / 404 jsou chyby nastavení jako dnes; texty `api.<druh>.bedrock-eu` radí region klíče, přístup k modelu a politiku účtu. Tělo chyby AWS bez objektu `error` dává zprávu z `message` |
 
@@ -589,10 +611,9 @@ dat přes AI gateway hostingu — ty jdou dál přímým API (fáze 3b, D61).
 zakazuje `bedrock:CallWithBearerToken` — pak každé volání s API klíčem
 končí 403 „explicit deny in a service control policy“ a žádný klíč
 (dlouhodobý ani krátkodobý) nepomůže, dokud správce organizace politiku
-neupraví. Sonnet 5.5 na všech úrovních znamená thinking i u
-klasifikátorů (pomalejší a dražší než Sonnet 4.6, jiné chování štítků);
-ladění per funkce jde přepsat v Nastavení, výchozí hodnoty čekají na
-evaluaci (#103). Kvóty jsou na účet AWS a region, ne na připojení.
+neupraví. Sonnet 5.5 znamená thinking i u klasifikátorů (od přechodu
+na řadu 5 stejně jako na přímém API); ladění per funkce jde přepsat
+v Nastavení, výchozí hodnoty potvrdila evaluace (#103, F4b § 6). Kvóty jsou na účet AWS a region, ne na připojení.
 
 **Jak zapnout (správce DS):** Nastavení → AI → Připojení → Přidat,
 platforma Amazon Bedrock (EU), adresa prázdná (Frankfurt) nebo jiný

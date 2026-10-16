@@ -113,7 +113,8 @@ klíčem se volá), **Funkce** (co se volá a na jakém modelu) a **Modely**
     Anthropic, smlouvu a vyúčtování máš s AWS. Hostovaný Shipard s klíčem
     od provozovatele tuhle volbu zatím nemá.
 13. V účtu AWS (konzole Amazon Bedrock) nejdřív povol přístup k modelu
-    **Claude Sonnet 5.5** (**Model access**) a vygeneruj **dlouhodobý API
+    **Claude Sonnet 5.5** (**Model access**; a ke každému dalšímu modelu,
+    který u funkce vybereš ručně) a vygeneruj **dlouhodobý API
     klíč** (**API keys → Long-term API keys**). Klíč generuj **v regionu
     Frankfurt (eu-central-1)** — platí jen v regionu, kde vznikl. Když ti
     volání s klíčem zakazuje politika firemní organizace AWS (chyba
@@ -133,8 +134,8 @@ klíčem se volá), **Funkce** (co se volá a na jakém modelu) a **Modely**
     připojení** (a u původního zrušíš) — pak v EU běží všechny AI
     funkce — nebo ho vyber jen u některých funkcí v **Nastavení aplikace →
     AI → Funkce** (třeba jen **Vytěžení došlé pošty**). Pole **Model**
-    nech prázdné: na Bedrocku je modelem úrovně **Claude Sonnet 5.5**
-    (Sonnet 4.6 tam není), v detailu funkce uvidíš
+    nech prázdné: modelem úrovně je na Bedrocku tentýž **Claude Sonnet
+    5.5** jako přímo u Anthropic, v detailu funkce uvidíš
     `eu.anthropic.claude-sonnet-5-5` — předpona `eu.` znamená zpracování
     jen v EU. Ověř příkazem `shpd-ds ai-test`; v detailu funkce se ukáže
     i **Cena: 1,1× ceník katalogu**.
@@ -147,18 +148,18 @@ klíčem se volá), **Funkce** (co se volá a na jakém modelu) a **Modely**
   s API klíčem zakazuje politika organizace AWS. Věta říká, kterou z toho
   zkontrolovat; Shipard z toho sám nic nespraví.
 - **AI přes Bedrock je o desetinu dražší** než stejný model přímo
-  u Anthropic (příplatek AWS za zpracování v jedné zeměpisné oblasti)
-  a běží na Sonnetu 5.5, který přemýšlí — klasifikace štítků je pomalejší
-  a dražší než na Sonnetu 4.6. Ladění funkce (**Přemýšlení**, **Úsilí**)
-  můžeš upravit v detailu funkce.
+  u Anthropic (příplatek AWS za zpracování v jedné zeměpisné oblasti).
+  Ladění funkce (**Přemýšlení**, **Úsilí**) můžeš upravit v detailu
+  funkce.
 
 - **Upozornění „AI model brzy končí“** se týká jen modelu, který máš
   u funkce vybraný ručně; modely podle úrovně Shipard vyměňuje sám.
   Vyber u funkce jiný model, nebo pole **Model** vyprázdni.
-- **Asistent na modelech, které přemýšlejí** (řada 5 — Sonnet 5.5,
-  Haiku 5.5, Opus 5.5): funguje; během úvahy ukáže **Přemýšlím…**, text
-  úvah neuvidíš. Úvahy se počítají do spotřeby a asistent si je u každé
-  otázky tvoří znovu — delší odpověď a víc tokenů než na Sonnetu 4.6.
+- **Asistent přemýšlí** (řada 5 — Sonnet 5.5 je dnes model úrovně
+  **Vyvážený**, stejně přemýšlí Haiku 5.5 a Opus 5.5): během úvahy ukáže
+  **Přemýšlím…**, text úvah neuvidíš. Úvahy se počítají do spotřeby
+  a asistent si je u každé otázky tvoří znovu — delší odpověď a víc
+  tokenů než na starším Sonnetu 4.6, který u funkce můžeš vybrat ručně.
 - **Vytěžení pošty má navíc AI profily** (**Nastavení aplikace →
   Ostatní → Pošta → AI profily**) — profil umí pro některé zprávy
   přepsat model funkce **Vytěžení došlé pošty**. Jde o výjimku pro

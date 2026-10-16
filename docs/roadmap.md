@@ -134,7 +134,7 @@ zatím nemá, a bez nich se firma za pár týdnů vrátí. Všechno níže je
 | Tisk / PDF dokladu — faktura vydaná, zálohová faktura, pokladní doklad, prodejka, Kontace, vodoznak storna a jazyky tisku `cs` / `en` / `sk` / `de` hotové (`docs/prints.md`), stejně jako vzhled hlavičky a vlastní texty na tiscích včetně textů e-mailu (#90 fáze 3, `docs/prints.md` §12); zbývá revize slovenských a německých formulací a nasazení fáze 3 (`ds-upgrade` na zdrojích dat) | `prints-phase1.md`, `prints-phase2.md`, `prints-languages.md`, `prints-phase3.md` |
 | Odeslání dokladu odběrateli e-mailem — ruční odeslání z detailu hotové: účely kontaktů, příjemci, odesílatel podle číselné řady, Odeslaná pošta s Odeslat znovu (`docs/prints.md` §9, `docs/mail/sent.md`); zbývá ověření proti skutečnému SMTP a nasazení, hromadné a automatické odesílání (D11); pojistka přesměrování pošty na dev a testovacích serverech je hotová (#95, `mail.safety`, `docs/mail/outbound.md`) — zbývá ji nastavit na testovacím serveru | `prints-phase4.md`, `mail-safety.md` |
 | Majetek — evidence a odpisy | — |
-| AI modely — odchod ze Sonnetu 4.5 (končí 30. 11. 2026) přemostěním přes Sonnet 4.6 a minimum pro řadu 5 hotové (#85 fáze 0); katalog modelů `core.ai.models` s tvarováním požadavku, cenami, přepisem vyřazených modelů a pojistkou chatu hotový (fáze 1a, `docs/ai.md` §5.1); zbývá fáze 1b (připojení vs. AI funkce), 1c (sekce AI v Nastavení) a fáze 4: thinking bloky v tool smyčce chatu a přechod výchozího modelu na řadu 5 po evaluaci — **termín: Sonnet 4.6 je aktivní nejméně do 17. 2. 2027** | `ai-models-phase0.md`, `ai-model-catalog.md` |
+| AI modely — odchod ze Sonnetu 4.5 (končí 30. 11. 2026) přemostěním přes Sonnet 4.6 (#85 fáze 0), katalog modelů `core.ai.models` s tvarováním požadavku, cenami a přepisem vyřazených modelů (fáze 1a), AI připojení vs. AI funkce (1b), sekce AI v Nastavení (1c), Amazon Bedrock (EU) (3a), thinking bloky v tool smyčce chatu (fáze 4) a **přechod výchozích modelů úrovní na řadu 5 po evaluaci #103** (16. 10. 2026: Sonnet 5.5 pro `fast` / `balanced`, Opus 5.5 pro `strong`, `docs/ai.md` §5.2) hotové — termín Sonnetu 4.6 (aktivní nejméně do 17. 2. 2027) už neblokuje; zbývá nasazení (`ds-upgrade` zdrojů dat) a ověřovací běhy (`baseline`, Haiku 5.5 pro štítky) | `ai-models-phase0.md`, `ai-model-catalog.md`, `ai-functions.md`, `ai-settings-section.md`, `ai-bedrock-eu.md`, `chat-thinking-blocks.md`, `ai-tiers-series5.md` |
 | Saldokonto — přehlednost: chip bar saldokont, položky v sidebaru, grid po partnerech | `accbal-ledger-viewgroup-chips.md`, `accbal-nav-items.md`, `accbal-ledger-grid.md` |
 
 **Hotovo když:** interní firmy vedou účetnictví výhradně v novém Shipardu
@@ -223,6 +223,9 @@ v každé diskuzi.
 
 ### Historie revizí
 
+- **16. 10. 2026:** M4 „AI modely“ — výchozí modely úrovní na řadě 5
+  po evaluaci #103 (`ai-tiers-series5.md`); termín Sonnetu 4.6 přestal
+  být blokátor.
 - **8. 10. 2026:** v M4 nahrazeny Prodejní smlouvy Zakázkami s periodickou
   fakturací (#110 D1, D19) — evidence zakázek se z Vědomě odložených
   přesunula do M4, odložené zůstávají projektové funkce zakázek.

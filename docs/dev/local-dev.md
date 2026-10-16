@@ -250,8 +250,8 @@ podle [`dev-daily.md`](dev-daily.md#6-až-budeš-chtít-posílat-změny) (oddíl
 
 K vytěžení dokladu z Dashboardu i k asistentovi stačí klíč AI připojení —
 žádný další runtime ani démon (model a ladění per AI funkce jsou
-v Nastavení → AI → Funkce, výchozí = Sonnet 4.6). Z adresáře zdroje
-dat:
+v Nastavení → AI → Funkce, výchozí podle úrovně = Sonnet 5.5). Z adresáře
+zdroje dat:
 
 ```bash
 cd /opt/shipard/data-sources/<id>

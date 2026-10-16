@@ -1,6 +1,6 @@
 # AI: výchozí modely úrovní na řadu 5 (M4)
 
-**Stav:** naplánováno — design schválen 2026-10-16 (#103 D47–D50), čeká na implementaci
+**Stav:** částečně — přepnutí úrovní, testy a dokumentace hotové 2026-10-16 (#103 D47–D50); čekají ověřovací běhy (§ 3) po schválení útraty
 
 ## Kontext / Cíl
 
@@ -44,10 +44,20 @@ jede na Sonnetu 5.5 ve všech úrovních, takže se přímé API srovná s EU ce
 | `balanced` | `claude-sonnet-4-6` → **`claude-sonnet-5-5`** | `claude-sonnet-5-5` (beze změny) |
 | `strong` | `claude-sonnet-4-6` → **`claude-opus-5-5`** | → **`claude-opus-5-5`**, pokud ho katalog pro `bedrock-eu` nabízí. Jinak beze změny a zapsat do tasku |
 
+Ověřeno 2026-10-16: katalog nabízí `claude-opus-5-5` i pro Bedrock
+(`platformIds.bedrock`), `strong` má na `bedrock-eu` Opus 5.5. Položky
+`platformModels` jsou po přepnutí nadbytečné (Bedrock všechny tři modely
+nabízí), zůstávají výslovně, aby je `ModelCatalogFileTest` dál hlídal.
+
 - **`effort` / `thinking`:** beze změny, platí výchozí hodnoty deklarace
   modelu. `xhigh` dal +0,1 % v rámci šumu za +23 % ceny (F4b § 6).
 - **Teplota:** deklarace funkcí mají `temperature 0` a tvarovač ji u řady 5
   vynechá. Ověř to unit testem pro každou funkci z tabulky výše.
+  *Ověřeno:* teplotu 0 deklaruje jen `mail.extraction`, ostatní čtyři
+  funkce jen `maxTokens` — `AiFunctionsTierFileTest` nad skutečnými
+  deklaracemi, katalogem a mapou hlídá tabulku úroveň → funkce, model
+  řady 5 na obou platformách, `TEMPERATURE_OMITTED` jen u vytěžení
+  a žádnou úpravu u ostatních.
 - **Haiku 5.5 pro štítky** zatím ne. Měřil se jen spolu s haiku extrakcí
   (bod 3).
 
@@ -64,7 +74,7 @@ jede na Sonnetu 5.5 ve všech úrovních, takže se přímé API srovná s EU ce
 
 ### 3. Ověřovací běhy (evaluace)
 
-Na eval zdroji dat `vg39-l5b3-seer-242c` (volný, bez použitých dokladů,
+Na eval zdroji dat `vg39-l` (volný, bez použitých dokladů,
 profil v4.8.0) po `ds-upgrade`:
 
 1. **`baseline` × 3.** Varianta bere model z úrovně, takže teď změří
@@ -96,14 +106,16 @@ doporučení pro `fast`.
 
 ## Hotovo když
 
-- [ ] `tiers.jsonc`: `fast` a `balanced` Sonnet 5.5, `strong` Opus 5.5
-      (`bedrock-eu` podle katalogu)
-- [ ] testy úrovní, resolveru, tvarovače, `ai-test` a `ai-eval` zelené
-      (úzké `--filter`)
+- [x] `tiers.jsonc`: `fast` a `balanced` Sonnet 5.5, `strong` Opus 5.5
+      (`bedrock-eu` podle katalogu — Opus 5.5) — 2026-10-16
+- [x] testy úrovní, resolveru, tvarovače, `ai-test` a `ai-eval` zelené
+      (úzké `--filter` i celá sada) — 2026-10-16, nový
+      `AiFunctionsTierFileTest`
 - [ ] `ai-test` na eval zdroji dat ukáže u funkcí z tabulky model řady 5
 - [ ] `baseline` × 3 v rámci šumu se `sonnet-5-5-tags-2`;
       `sonnet-5-5-haiku-tags` × 3 vyhodnocený
-- [ ] dokumentace (`docs/ai.md`, `docs/roadmap.md`, `ai-analysis.md`, `local-dev.md`)
+- [x] dokumentace (`docs/ai.md`, `docs/roadmap.md`, `ai-analysis.md`, `local-dev.md`,
+      navíc `help/nastaveni-ai.md` a komentáře v `models.jsonc` / `tiers.jsonc`) — 2026-10-16
 - [ ] hlavička tasku, `python3 scripts/tasks-index.py`
 
 ## Pasti

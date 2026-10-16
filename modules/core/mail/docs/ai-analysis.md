@@ -70,7 +70,7 @@ návrh.
 
 ```json
 {
-  "model_name": "claude-sonnet-4-6",
+  "model_name": "claude-sonnet-5-5",
   "model_version": "20260101",
   "prompt_version": "v4.0.0",
   "profile_ndx": 17,
