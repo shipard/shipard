@@ -135,6 +135,25 @@ final class EvalRunComparisonTest extends TestCase
         $this->assertMatchesRegularExpression('/calls\.total\s+20\s+20\s+0\n/', $lines, 'celý nulový rozdíl bez desetinných míst');
     }
 
+    /** Doklady vedle sebe pro prohlížeč (D53): průměr odchylek na úspěšné volání a selhání per běh. */
+    public function testMessagesSideBySide(): void
+    {
+        $c = EvalRunComparison::of(self::repoRun('2026-10-15-baseline'), self::repoRun('2026-10-15-sonnet-5-5'))->toArray();
+        $this->assertCount(20, $c['messages']);
+        $byId = array_column($c['messages'], null, 'messageId');
+        $m = $byId['MSG-CORPUS-VP-0301'];
+        $this->assertSame(['deviations', 'failed', 'calls'], array_keys($m['a']));
+        $this->assertSame([1, 3], [$m['a']['calls'], $m['b']['calls']], 'A × 1, B × 3');
+        $this->assertIsFloat($m['a']['deviations']);
+        $this->assertSame(round($m['b']['deviations'] - $m['a']['deviations'], 4), $m['delta']);
+        $this->assertSame(1, array_sum(array_column(array_column($c['messages'], 'b'), 'failed')), 'sonnet-5-5 má jedno selhané volání');
+        $deltas = array_map(static fn (array $x): float => $x['delta'] === null ? -1.0 : abs($x['delta']), $c['messages']);
+        $sorted = $deltas;
+        rsort($sorted);
+        $this->assertSame($sorted, $deltas, 'největší rozdíl první');
+        $this->assertSame([], EvalRunComparison::of(self::fixture('run-a'), self::fixture('run-b'))->toArray()['messages'], 'fixtury bez calls');
+    }
+
     public function testDifferentSetsAreRefused(): void
     {
         $this->expectException(EvalException::class);

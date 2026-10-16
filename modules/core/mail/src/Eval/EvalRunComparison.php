@@ -21,6 +21,9 @@ namespace Shipard\Module\Core\Mail\Eval;
  * / zhoršení platí rozdíl aspoň {@see self::FIELD_CHANGE_THRESHOLD} volání
  * na opakování (při × 1 každý rozdíl, při × 3 aspoň dvě volání ze tří) —
  * jediné odlišné volání z opakovaného běhu není změna.
+ *
+ * `messages` (D53): doklady vedle sebe — průměr odchylek na úspěšné volání
+ * a počet selhání v A a B, pro prohlížeč výsledků; CLI výpis je nevypisuje.
  */
 final class EvalRunComparison
 {
@@ -153,7 +156,71 @@ final class EvalRunComparison
             'sameSelection' => ($this->a['set']['messages'] ?? null) === ($this->b['set']['messages'] ?? null)
                 && ($this->a['set']['only'] ?? []) === ($this->b['set']['only'] ?? [])
                 && ($this->a['set']['limit'] ?? null) === ($this->b['set']['limit'] ?? null),
+            'messages' => self::perMessage($this->a, $this->b),
         ];
+    }
+
+    /**
+     * Doklady vedle sebe (#103 D53, prohlížeč výsledků): per `messageId`
+     * průměrný počet odchylek na úspěšné volání a počet selhání v A a B.
+     * Selhané volání odchylky nemá (počítá se jen do `failed`), doklad jen
+     * v jednom běhu má druhou stranu null. Řazeno podle velikosti rozdílu
+     * (největší první, bez rozdílu nakonec), pak podle id.
+     *
+     * @param array<string, mixed> $a
+     * @param array<string, mixed> $b
+     * @return list<array{messageId: string, a: array{deviations: ?float, failed: int, calls: int}, b: array{deviations: ?float, failed: int, calls: int}, delta: ?float}>
+     */
+    private static function perMessage(array $a, array $b): array
+    {
+        $sideA = self::deviationsByMessage($a);
+        $sideB = self::deviationsByMessage($b);
+        $empty = ['deviations' => null, 'failed' => 0, 'calls' => 0];
+        $out = [];
+        foreach (array_unique(array_merge(array_keys($sideA), array_keys($sideB))) as $messageId) {
+            $ra = $sideA[$messageId] ?? $empty;
+            $rb = $sideB[$messageId] ?? $empty;
+            $delta = $ra['deviations'] !== null && $rb['deviations'] !== null ? round($rb['deviations'] - $ra['deviations'], 4) : null;
+            $out[] = ['messageId' => (string) $messageId, 'a' => $ra, 'b' => $rb, 'delta' => $delta];
+        }
+        usort($out, static function (array $x, array $y): int {
+            $ax = $x['delta'] === null ? -1.0 : abs($x['delta']);
+            $ay = $y['delta'] === null ? -1.0 : abs($y['delta']);
+            return [$ay, $x['messageId']] <=> [$ax, $y['messageId']];
+        });
+        return $out;
+    }
+
+    /**
+     * @param array<string, mixed> $run
+     * @return array<string, array{deviations: ?float, failed: int, calls: int}>
+     */
+    private static function deviationsByMessage(array $run): array
+    {
+        $acc = [];
+        foreach ((array) ($run['calls'] ?? []) as $call) {
+            if (!is_array($call) || !is_string($call['messageId'] ?? null)) {
+                continue;
+            }
+            $id = $call['messageId'];
+            $acc[$id] ??= ['sum' => 0, 'ok' => 0, 'failed' => 0, 'calls' => 0];
+            $acc[$id]['calls']++;
+            if (($call['status'] ?? null) === EvalCallResult::STATUS_OK) {
+                $acc[$id]['ok']++;
+                $acc[$id]['sum'] += count((array) ($call['deviations'] ?? []));
+            } else {
+                $acc[$id]['failed']++;
+            }
+        }
+        $out = [];
+        foreach ($acc as $id => $v) {
+            $out[$id] = [
+                'deviations' => $v['ok'] > 0 ? round($v['sum'] / $v['ok'], 4) : null,
+                'failed' => $v['failed'],
+                'calls' => $v['calls'],
+            ];
+        }
+        return $out;
     }
 
     /** Lidský výpis. @return list<string> */

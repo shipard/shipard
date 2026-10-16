@@ -42,6 +42,11 @@ class DevDashboardController
 			return Response::redirect('/_dev/');
 		}
 
+		// Sekce Testování (#103 D51–D53) — jen čtení souborů v checkoutu.
+		if ($path === DevTestingController::PREFIX || str_starts_with($path, DevTestingController::PREFIX . '/')) {
+			return (new DevTestingController($this->repoRoot))->dispatch($request);
+		}
+
 		// JSON API a streamované akce — kontrakt beze změny (#103 D57).
 		if ($path === '/_dev/api/info' && $method === 'GET') {
 			return $this->getInfo();

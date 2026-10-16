@@ -60,6 +60,7 @@ final class EvalMessages
                 stem: $stem,
                 variant: is_string($cell['variant'] ?? null) ? $cell['variant'] : null,
                 form: is_string($cell['form'] ?? null) ? $cell['form'] : null,
+                file: $rel,
             );
         }
         usort($out, static fn (EvalMessage $a, EvalMessage $b): int => [$a->receivedAt, $a->messageId] <=> [$b->receivedAt, $b->messageId]);

@@ -20,5 +20,7 @@ final readonly class EvalMessage
         public ?string $stem,
         public ?string $variant,
         public ?string $form,
+        /** Relativní cesta záznamu v sadě (`mail/0001-….jsonc`) — pro přílohy v sidecar složce. */
+        public ?string $file = null,
     ) {}
 }
