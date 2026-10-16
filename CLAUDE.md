@@ -418,6 +418,18 @@ smí názvy nést — tam jsou potřeba k práci.
   v `icons.js`.
 - Detaily: `docs/dashboard.md`
 
+### Vývojářský dashboard (`/_dev/`)
+
+- Samostatná Svelte SPA (`frontend/dev.html`, `frontend/vite.dev.config.js`,
+  `frontend/src/dev/`), sestavená do `public/_dev/`; index servíruje
+  `DevDashboardController` jen v módu `development`, JSON API a streamy
+  `/_dev/api/*` beze změny kontraktu, sekce Testování čte jen soubory
+  (`DevTestingController`, `Eval/Browse/`). Texty jen česky přímo
+  v komponentách; sdílí jen `styles/`, `icons.js`, `Button`, `Icon`.
+  Nová stránka = routa v `frontend/src/dev/routes.js` **a** segment
+  v `DevDashboardController::SPA_PAGES`. Viz `docs/frontend.md`
+  → Vývojářský dashboard, `docs/dev/dev-daily.md` § 1.
+
 ### Frontend — Settings mód
 
 - Aplikace má tři navigační módy: `app` (běžná práce), `settings` (Nastavení
@@ -530,7 +542,7 @@ ve stejném commitu.
 
 1. `php -l` na změněných PHP souborech
 2. `vendor/bin/phpunit --filter 'ClassName'` cíleně, pak celá sada
-3. `cd frontend && npm run build` — pokud se měnil frontend
+3. `cd frontend && npm run build` — pokud se měnil frontend (staví aplikaci do `public/app/` i vývojářský dashboard do `public/_dev/`; `npm test` pro čisté funkce)
 4. **Aktualizovat `**Stav:**` v task filu** + `python3 scripts/tasks-index.py`
 
 ## Otevřené úkoly

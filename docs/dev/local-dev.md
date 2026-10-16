@@ -176,7 +176,8 @@ Na co si dát pozor:
 ## 4. První zdroj dat
 
 Zdroj dat je jedna firma — vlastní databáze a soubory. Založíš ho
-v dashboardu tlačítkem **+ New DS**; zaškrtni **Seed test data**, ať máš
+v dashboardu tlačítkem **Nový zdroj dat**; zaškrtni **Naseedovat testovací
+data**, ať máš
 rovnou s čím pracovat. Kroky jednotlivě a co dělat dál:
 [`dev-daily.md`](dev-daily.md#2-první-zdroj-dat) (oddíl 2).
 

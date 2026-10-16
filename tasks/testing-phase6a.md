@@ -1,6 +1,6 @@
 # Testování F6a: vývojářský dashboard ve Svelte a prohlížeč výsledků evaluací
 
-**Stav:** naplánováno — design schválen 2026-10-16 (#103 D51–D53, D57), čeká na implementaci
+**Stav:** částečně — implementace hotová 2026-10-16 (6 commitů), zbývá ověření rekonstrukce proti syrovému výstupu (jedno volání `ai-eval --save-raw` po schválení útraty)
 
 ## Kontext / Cíl
 
@@ -162,23 +162,63 @@ Výkon: sada má 20–60 zpráv a běh do 200 kB, nic nestránkovat.
 
 ## Hotovo když
 
-- [ ] `npm run build` staví aplikaci i dashboard; `dev-update.sh` beze změny funguje
-- [ ] port: seznam zdrojů dat (sloupce, Otevřít, Logy, Upgrade, kopírování ID,
+- [x] `npm run build` staví aplikaci i dashboard; `dev-update.sh` beze změny funguje
+- [x] port: seznam zdrojů dat (sloupce, Otevřít, Logy, Upgrade, kopírování ID,
       automatické obnovení), nový zdroj dat s živým průběhem až do odkazu na nový
       zdroj dat, logy (filtry, `tail -f`, detail), Doctor, Upgrade všech,
       Upgrade jednoho — vše funguje jako dřív, česky
-- [ ] produkce: `/_dev/` 404, posouzení statických souborů zapsané
-- [ ] PHPUnit API Testování zelené (úzký `--filter`); `ai-eval` zapisuje
+- [x] produkce: `/_dev/` 404, posouzení statických souborů zapsané
+- [x] PHPUnit API Testování zelené (úzký `--filter`); `ai-eval` zapisuje
       `{cesta, výstup}` u shody po normalizaci a čtení přijme oba tvary
-- [ ] prohlížeč nad 11 existujícími běhy: běhy sady, detail běhu, detail
+- [x] prohlížeč nad 13 existujícími běhy: běhy sady, detail běhu, detail
       dokladu s PDF (aspoň dlouhý doklad, účtenka a faktura v EUR), porovnání
       `baseline` (4.6) vs. `baseline` po přepnutí, doklad napříč běhy
 - [ ] rekonstruovaný výstup u jednoho dokladu ověřený proti syrovému výstupu
       (`ai-eval --only … --save-raw`, jedno volání, po schválení útraty;
       nebo proti existujícímu uloženému syrovému výstupu, pokud je)
-- [ ] `docs/dev/dev-daily.md` § 1 (nový dashboard, Testování),
+- [x] `docs/dev/dev-daily.md` § 1 (nový dashboard, Testování),
       `docs/test-corpus.md` (prohlížeč, tvar `normalized`)
-- [ ] hlavička tasku, `python3 scripts/tasks-index.py`
+- [x] hlavička tasku, `python3 scripts/tasks-index.py`
+
+## Hotovo 2026-10-16 — co je jinak než v zadání
+
+Šest commitů na `stable` (druhý vstup Vite → servírování SPA → tvar
+`normalized` → API Testování → obrazovky → dokumentace). Ověřeno
+v headless Chromiu: všech šest stránek portu vč. založení zdroje dat se
+seedem až po odkaz (smoke zdroj dat „F6a smoke“, lze smazat),
+Doctor a Upgrade jednoho zdroje; deset obrazovek Testování a interakce
+(filtr, přepínač opakování, výběr dvou běhů). PDF v `<iframe>` headless
+nevykreslí (endpoint vrací `application/pdf`) — vzhled PDF vedle polí
+zbývá na ruční proklik. Upgrade všech přes UI nespuštěný (mutace
+reálných kopií; stejná cesta kódu jako Upgrade jednoho).
+
+- **`normalized` nese `{path, actual, similarity?}`** — klíč `actual`
+  jako u odchylek, ne `output`.
+- **Skupiny polí v detailu dokladu = `EvalFieldGroups`** (shodné
+  s metrikami): platba a poznámka patří do hlavičky; řádky, rekapitulace
+  a výjimky štítků jsou tabulky (buňka = očekávání + výstup + barva),
+  výjimky klíčované `rowIndex`.
+- **Porovnání dvou běhů** má nově i doklady vedle sebe
+  (`EvalRunComparison::toArray()['messages']`: průměr odchylek na úspěšné
+  volání a selhání v A a B); CLI výpis se nemění. Při výběru dvou běhů
+  v tabulce je starší A.
+- **Detail dokladu ve dvou bězích** (`?b=<soubor>`) = jedna tabulka
+  s výstupem A i B u každého pole, ne dvě stránky vedle sebe.
+- **Nový `GET /_dev/api/info`** (hostname, adresář zdrojů dat, dostupnost
+  Testování) — údaje, které dřív PHP vkládalo do HTML.
+- Stránka `/_dev/ds-upgrade/` bez platného `?ds=` už nevrací 400/404
+  (SPA ji ukáže s chybou); validaci má klient a `POST /_dev/api/ds-upgrade`.
+- Bez sestaveného frontendu vrací `/_dev/` 503 s návodem; neznámá cesta
+  pod `/_dev/` dál 404 JSON.
+- Stream, který skončí bez `[DONE]` / `[ERROR]`, ukáže neutrální hlášku
+  (dřív nic); Logy z řádku zdroje dat se otevírají ve stejném tabu.
+- Produkce: `npm run build` staví i `public/_dev/` (inertní JS/CSS, API
+  404); `docs/nginx/production.conf` má navíc `location ^~ /_dev/ { return 404; }`.
+- `tests/eval/cz-vat-payer/` má běhy nad dvěma verzemi sady — prohlížeč
+  je označí „jiná verze sady“ (očekávání v detailu jsou z aktuální sady,
+  u dlouhého dokladu pak nesedí počty); porovnání napříč verzemi API
+  odmítne (409).
+- Roadmapa F6a výslovně neuváděla — doplněno k položce AI modely v M4.
 
 ## Pasti
 

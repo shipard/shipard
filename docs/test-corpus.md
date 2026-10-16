@@ -875,8 +875,28 @@ na jiný výběr zpráv. **Vše na jedno opakování:** součty přes volání
 k rozpětí; podíly a hodnoty na doklad jsou průměrem už v souboru. Změna
 pole platí od **0,5 volání na opakování** (při × 1 každý rozdíl, při × 3
 aspoň dvě volání ze tří) — uzel s 16 odchylkami při × 1 a 48 při × 3 je
-beze změny, jediné odlišné volání z opakovaného běhu také. UI evaluací
-je F6.
+beze změny, jediné odlišné volání z opakovaného běhu také.
+
+### Prohlížeč výsledků (vývojářský dashboard, F6a — D53)
+
+Sekce **Testování** vývojářského dashboardu (`/_dev/testing/`,
+`docs/dev/dev-daily.md` § 1) čte tytéž soubory: běhy sady se souhrnem
+(model extrakce a štítků, rozpětí opakování), detail běhu (metriky po
+skupinách, varianty a podoby, nejčastější odchylky, stabilita, doklady),
+detail dokladu s PDF vedle očekávání a výstupu modelu, porovnání dvou
+běhů toutéž logikou jako `ai-eval-compare` (navíc doklady vedle sebe)
+a doklad napříč běhy. **Výstup modelu se skládá** z očekávání sady
+a odchylek volání (`EvalOutputReconstruction`): list bez záznamu je shoda
+s hodnotou očekávání, `normalized` dává shodu po normalizaci (u starších
+běhů bez výstupní hodnoty), odchylky stav a obě strany; pole po pozicích
+(jiný počet prvků = jedna odchylka na uzlu, prvky výstupu navíc v souboru
+nejsou), výjimky štítků podle `rowIndex`, odchylka na uzlu objektu
+nahrazuje listy pod ním, selhané volání podle D44. Počty stavů
+z rekonstrukce sedí s `counts` volání (test přes celý běh). Běh nad jinou
+verzí sady (jiný hash) je označený — očekávání v detailu jsou z aktuální
+sady. API `/_dev/api/testing/…` (`DevTestingController`) vybírá sadu, běh
+i zprávu jen z výpisu souborů, nikdy neskládá cestu z URL. Spouštění
+evaluací z dashboardu je F6b (D54–D56).
 
 ### Pasti
 

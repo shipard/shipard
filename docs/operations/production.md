@@ -107,6 +107,15 @@ sudo -u shipard npm run build
 podle `package-lock.json`. Výstup skončí v `/opt/shipard/shpd/public/app/`
 (base cesta `/app/`).
 
+`npm run build` staví i **vývojářský dashboard** (`public/_dev/`, Svelte
+SPA pro `/_dev/`, `frontend/vite.dev.config.js`). V produkci je to mrtvý
+kód bez rizika: stránky `/_dev/…` obsluhuje PHP, které je mimo mód
+`development` nezná (404), a soubory v `public/_dev/assets/` jsou jen JS
+a CSS bez dat a tajemství — volají `/_dev/api/…`, které v produkci také
+vrací 404. Šablona `docs/nginx/production.conf` má navíc
+`location ^~ /_dev/ { return 404; }`, takže nginx nepodá ani ty soubory.
+Stavět zvlášť nic nemusíš; `public/_dev/` můžeš po buildu klidně smazat.
+
 ---
 
 ## 5. Inicializace server configu

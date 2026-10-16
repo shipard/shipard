@@ -9,9 +9,10 @@ zeleným `shpd-server doctor`.
 
 ## 1. Vývojářský dashboard
 
-V development módu běží na kořeni serveru jednoduchý webový dashboard,
-který shrnuje vše, co při testování potřebuješ — bez ručního skládání URL
-a hledání ID datových zdrojů v terminálu.
+V development módu běží na kořeni serveru webový dashboard (Svelte SPA
+sestavená do `public/_dev/`, zdroj `frontend/src/dev/`), který shrnuje
+vše, co při testování potřebuješ — bez ručního skládání URL a hledání ID
+zdrojů dat v terminálu.
 
 Otevři v prohlížeči:
 
@@ -21,26 +22,37 @@ http://<adresa-serveru>/_dev/
 
 Kořen `/` se v dev módu automaticky přesměruje na `/_dev/`, takže stačí
 zadat jen adresu serveru. V produkčním módu dashboard neexistuje —
-`/_dev/...` vrací 404.
+`/_dev/...` vrací 404. Bez sestaveného frontendu (`bash scripts/dev-update.sh`
+nebo `cd frontend && npm run build`) ukáže `/_dev/` jen stránku s návodem,
+jak build spustit.
 
-Co dashboard umí:
+Sekce v horní liště:
 
-- **Seznam datových zdrojů** — všechny DS s názvem, datem vytvoření a
-  databází. U každého tlačítka **Open** (otevře aplikaci `/{ds-id}/app/`
-  v novém tabu), **Logs** a **Upgrade**. ID lze jedním klikem zkopírovat
-  do schránky. Seznam se sám obnovuje.
-- **+ New DS** — vytvoření nového datového zdroje rovnou z formuláře
-  (výběr instalačního modulu, admin login a heslo, volitelně testovací
+- **Zdroje dat** — všechny zdroje dat s názvem, datem vytvoření, databází
+  a stavem periodických úloh (Cron). U každého **Otevřít** (aplikace
+  `/{ds-id}/app/` v novém tabu), **Logy** a **Upgrade**. ID lze jedním
+  klikem zkopírovat do schránky. Seznam se sám obnovuje (odpočet v hlavičce).
+- **Nový zdroj dat** — založení zdroje dat z formuláře (jazyk, země,
+  instalační modul, login a heslo administrátora, volitelně testovací
   data). Průběh (`ds-create` → `ds-upgrade` → `user-create` → příp. seed)
-  se streamuje živě do stránky; po dokončení vede odkaz přímo do nového DS.
-- **Logs** — prohlížeč logu (`/opt/shipard/log/shipard.log`) s filtrováním
-  podle úrovně, datového zdroje a fulltextu, auto-refresh ve stylu
-  `tail -f` a rozbalitelný detail záznamu včetně exception trace.
+  se vypisuje živě do stránky; po dokončení vede odkaz přímo do nového
+  zdroje dat.
+- **Testování** — prohlížeč výsledků evaluací AI nad testovacími sadami
+  (`tests/datasets`, `tests/eval`): sady, běhy sady, detail běhu, detail
+  dokladu s PDF vedle očekávání a výstupu modelu, porovnání dvou běhů,
+  doklad napříč běhy. Jen čte soubory v checkoutu, nic nespouští — běhy
+  vznikají z CLI `shpd-ds ai-eval` (`docs/test-corpus.md` § 18). Na serveru
+  bez `tests/` (instalace z balíčku) se sekce nenabídne.
+- **Logy** — prohlížeč logu (`/opt/shipard/log/shipard.log`) s filtrováním
+  podle úrovně, zdroje dat a fulltextu, obnovování ve stylu `tail -f`
+  (při rozbaleném záznamu se pozastaví) a detail záznamu včetně trace
+  výjimky.
 - **Doctor** — spustí `shpd-server doctor` a zobrazí report.
-- **Upgrade All** — spustí `shpd-server ds-upgrade-all` na všech DS.
+- **Upgrade všech** — spustí `shpd-server ds-upgrade-all` na všech zdrojích
+  dat; **Upgrade** u řádku zdroje dat spustí `shpd-ds ds-upgrade` jen pro něj.
 
 Dashboard je chráněný pouze kontrolou `mode: development` — počítá s tím,
-že **vývojový server běží v důvěryhodné síti**. Oranžový banner
+že **vývojový server běží v důvěryhodné síti**. Oranžový pruh
 „DEVELOPMENT MODE" nahoře je připomínka, ať se prostředí neplete
 s produkčním.
 
@@ -51,15 +63,15 @@ s produkčním.
 Zdroj dat je jedna firma — vlastní databáze a soubory. Založíš ho
 v dashboardu:
 
-1. Klikni na **+ New DS**.
-2. Vyplň **Name**, **Admin login** a **Admin password**; jazyk, zemi
-   a instalační modul můžeš nechat, jak jsou.
-3. Zaškrtni **Seed test data** — dostaneš ukázkové osoby a poštu.
-4. **Create Data Source**. Průběh se vypisuje do stránky; na konci je odkaz
-   **Open data source →**.
+1. Klikni na **Nový zdroj dat**.
+2. Vyplň **Název**, **Login administrátora** a **Heslo administrátora**;
+   jazyk, zemi a instalační modul můžeš nechat, jak jsou.
+3. Zaškrtni **Naseedovat testovací data** — dostaneš ukázkové osoby a poštu.
+4. **Vytvořit zdroj dat**. Průběh se vypisuje do stránky; na konci je odkaz
+   **Otevřít zdroj dat →**.
 5. Přihlas se loginem a heslem z kroku 2.
 
-Zdroj dat pak najdeš v seznamu na dashboardu pod tlačítkem **Open**.
+Zdroj dat pak najdeš v seznamu na dashboardu pod tlačítkem **Otevřít**.
 
 ---
 
@@ -203,12 +215,12 @@ sudo shpd-server fix-permissions              # oprav
 vzdálený nástroj, kde není kdo by odpověděl, použij `--dry-run`, případně
 `--force`.
 
-Logy aplikace najdeš ve vývojářském dashboardu pod **Logs**
+Logy aplikace najdeš ve vývojářském dashboardu pod **Logy**
 (`/_dev/logs/`) — s filtrováním podle úrovně a fulltextu — nebo přímo
 v souboru `/opt/shipard/log/shipard.log`.
 
 Když po `git pull` aplikace hlásí nesoulad schématu, „dojely" ti definice
-tabulek — spusť `shpd-server ds-upgrade-all` (nebo **Upgrade All**
+tabulek — spusť `shpd-server ds-upgrade-all` (nebo **Upgrade všech**
 v dashboardu).
 
 **Stovky řádků `Deprecation Notice` od composeru** na Ubuntu 24.04 jsou
