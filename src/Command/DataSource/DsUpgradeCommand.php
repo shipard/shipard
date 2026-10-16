@@ -21,6 +21,7 @@ use Shipard\Core\Module\ModuleLoader;
 use Shipard\Core\Module\ModulePathResolver;
 use Shipard\Core\Module\ModuleResolver;
 use Shipard\Core\Security\DsSecretCipher;
+use Shipard\Core\Server\DataSourceSecretsMigrator;
 use Shipard\Core\Server\PermissionSpec;
 use Shipard\Core\Settings\LayerCParameters;
 use Shipard\Core\Settings\SettingsStore;
@@ -96,10 +97,37 @@ class DsUpgradeCommand extends Command
         }
     }
 
+    /** Šev pro testy (vlastník `main.json` bez roota). */
+    protected function createSecretsMigrator(): DataSourceSecretsMigrator
+    {
+        return new DataSourceSecretsMigrator();
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $dsDir = $this->getDataSourceDir();
         $modulePathResolver = $this->getModulePathResolver();
+
+        // Step 0: tajemství z config/main.json do secrets/ (#126 D4) — jen
+        // soubory, před sestavením DataSourceConfig; výpis i bez -v. Chyba
+        // = konfigurace zůstává, jak byla. Migrátor zůstává natrvalo (obnova
+        // starší zálohy přinese starý main.json).
+        try {
+            $migration = $this->createSecretsMigrator()->migrate($dsDir);
+        } catch (\RuntimeException $e) {
+            $output->writeln('<error>  [ERROR] Secrets migration failed: ' . $e->getMessage() . '</error>');
+            return Command::FAILURE;
+        }
+        if ($migration->moved !== []) {
+            $output->writeln(sprintf(
+                '  [INFO] Moved %d secret(s) from config/main.json to secrets/: %s',
+                count($migration->moved),
+                implode(', ', $migration->moved),
+            ));
+        }
+        foreach ($migration->warnings as $warning) {
+            $output->writeln('<comment>  [WARN] ' . $warning . '</comment>');
+        }
 
         $dsConfig = $this->dsConfig ?? new DataSourceConfig($dsDir);
         $dsConnection = $this->dsConnection ?? new DataSourceConnection($dsConfig);

@@ -124,6 +124,9 @@ class DsUpgradeCommandTest extends TestCase
         $moduleDir = $this->modulesPath . '/test/unit';
         mkdir($moduleDir . '/tables', 0755, true);
         mkdir($this->dsDir . '/config/configuration', 0755, true);
+        // Krok 0 (migrace tajemství, #126 D4) čte skutečný main.json i když je
+        // DataSourceConfig injektovaný — bez tajemství je no-op.
+        $this->writeMainJson();
 
         // module.jsonc
         file_put_contents($moduleDir . '/module.jsonc', json_encode([
@@ -164,6 +167,19 @@ class DsUpgradeCommandTest extends TestCase
                 ],
             ],
         ]));
+    }
+
+    /** @param array<string, mixed> $extra */
+    private function writeMainJson(array $extra = []): void
+    {
+        file_put_contents($this->dsDir . '/config/main.json', json_encode([
+            'id'            => 'test-0001-test-0001',
+            'name'          => 'Test DS',
+            'modules'       => ['test.unit'],
+            'database_name' => 'test_db',
+            'database_user' => 'shpd_test0001',
+            'created'       => '2026-10-16T10:00:00+02:00',
+        ] + $extra, JSON_PRETTY_PRINT));
     }
 
     /**
@@ -1039,5 +1055,75 @@ class DsUpgradeCommandTest extends TestCase
             is_dir($path) ? $this->rmdirRecursive($path) : unlink($path);
         }
         rmdir($dir);
+    }
+
+    // ── krok 0: tajemství z main.json do secrets/ (#126 D4) ────────────────
+
+    public function testStepZeroMovesSecretsBeforeAnythingElse(): void
+    {
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        $this->writeMainJson([
+            'database_password' => 'db-pw-fake',
+            'mail' => ['relay' => ['host' => 'smtp.example', 'username' => 'u', 'password' => 'relay-pw-fake']],
+            'auth' => ['providers' => [['id' => 'shipard-id', 'issuer' => 'https://idp.example', 'clientId' => 'c', 'clientSecret' => 'oidc-fake']]],
+        ]);
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+
+        $display = $tester->getDisplay();
+        $info = '[INFO] Moved 3 secret(s) from config/main.json to secrets/: db.password, mail-relay.password, oidc-shipard-id.client-secret';
+        $this->assertStringContainsString($info, $display);
+        // Před krokem 1.5 (secrets.key) i vším ostatním.
+        $this->assertLessThan(strpos($display, 'Created secrets/secrets.key'), strpos($display, $info));
+        $this->assertStringNotContainsString('fake', $display);
+
+        $this->assertSame('db-pw-fake', file_get_contents($this->dsDir . '/secrets/db.password'));
+        $this->assertSame('relay-pw-fake', file_get_contents($this->dsDir . '/secrets/mail-relay.password'));
+        $this->assertSame('oidc-fake', file_get_contents($this->dsDir . '/secrets/oidc-shipard-id.client-secret'));
+        $config = json_decode((string) file_get_contents($this->dsDir . '/config/main.json'), true);
+        $this->assertArrayNotHasKey('database_password', $config);
+        $this->assertArrayNotHasKey('password', $config['mail']['relay']);
+        $this->assertArrayNotHasKey('clientSecret', $config['auth']['providers'][0]);
+    }
+
+    public function testStepZeroIsSilentWithoutSecretsInMainJson(): void
+    {
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $this->assertStringNotContainsString('Moved', $tester->getDisplay());
+        $this->assertFileDoesNotExist($this->dsDir . '/secrets/db.password');
+    }
+
+    public function testStepZeroWarningsAreShownWithoutVerbose(): void
+    {
+        $this->dsConnection->method('getTableColumns')->willReturn([]);
+        $this->dsConnection->method('getTableIndexes')->willReturn([]);
+        $this->dsConnection->method('executeSQL');
+        $this->writeMainJson(['database_password' => 'db-pw-fake']);
+        mkdir($this->dsDir . '/secrets', 0700);
+        file_put_contents($this->dsDir . '/secrets/db.password', 'older-fake');
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $this->assertStringContainsString('[WARN] secrets/db.password had a different value', $tester->getDisplay());
+        $this->assertSame('db-pw-fake', file_get_contents($this->dsDir . '/secrets/db.password'));
+    }
+
+    public function testStepZeroFailureStopsTheUpgradeBeforeTheDatabase(): void
+    {
+        $this->dsConnection->expects($this->never())->method('executeSQL');
+        file_put_contents($this->dsDir . '/config/main.json', '{not json');
+
+        $tester = $this->createCommandTester();
+        $this->assertSame(Command::FAILURE, $tester->execute([]));
+        $this->assertStringContainsString('[ERROR] Secrets migration failed: invalid JSON', $tester->getDisplay());
+        $this->assertSame('{not json', file_get_contents($this->dsDir . '/config/main.json'));
     }
 }
