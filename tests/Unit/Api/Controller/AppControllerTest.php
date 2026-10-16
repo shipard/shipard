@@ -234,6 +234,18 @@ class AppControllerTest extends TestCase
         $this->assertSame('public, max-age=3600', $headers['Cache-Control']);
     }
 
+    public function testInfoRealCopyDefaultsToFalseAndIsPassedThrough(): void
+    {
+        // #126 D12/U5: jen boolean — hodnota třídy ani režim serveru ven nejdou.
+        $data = $this->makeController()->info()->getPayload()['data'];
+        $this->assertFalse($data['realCopy']);
+
+        $data = $this->makeController()->info('active', true, true)->getPayload()['data'];
+        $this->assertTrue($data['realCopy']);
+        $this->assertTrue($data['cronEnabled']);
+        $this->assertStringNotContainsString('dataClass', json_encode($data));
+    }
+
     public function testInfoThemeNullWhenUnset(): void
     {
         $data = $this->makeController()->info()->getPayload()['data'];

@@ -105,6 +105,7 @@ export default {
   'dsState.readOnly.banner': 'Zdroj dat je jen pro čtení — změny nelze ukládat.',
   'dsState.readOnly.toast': 'Zdroj dat je jen pro čtení, změny nelze ukládat.',
   'dsState.cronOff.banner': 'Periodické úlohy jsou na tomto zdroji dat vypnuté — pošta ve frontě se neodesílá, upozornění se nevyhodnocují a automatická fakturace neběží.',
+  'dsState.realCopy.banner': 'Kopie reálných dat — i na vývojovém serveru jde o skutečné údaje, pracujte s nimi opatrně.',
 
   // Zámek záznamu (documentLockProviders, #55 D24) — banner ve formuláři a detailu
   'lock.banner.title': 'Záznam je uzamčený — nelze ho měnit, měnit stav ani smazat.',

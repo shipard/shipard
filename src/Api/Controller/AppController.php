@@ -64,8 +64,11 @@ class AppController
      * dojde jen `active` nebo `read_only` (blokované stavy skončí 503 už
      * v resolveru), nic citlivého neprozrazuje. `$cronEnabled` je přepínač
      * periodických úloh (#115 D11) — jen boolean, SPA z něj kreslí pruh.
+     * `$realCopy` (#126 D12, U5) = kopie reálných dat na serveru v režimu
+     * development — jen boolean, hodnota třídy ani režim serveru ven nejdou;
+     * volající ho v produkci drží na false.
      */
-    public function info(string $dsState = DataSourceState::ACTIVE, bool $cronEnabled = true): Response
+    public function info(string $dsState = DataSourceState::ACTIVE, bool $cronEnabled = true, bool $realCopy = false): Response
     {
         $values = $this->settings->getMany([
             'app.name',
@@ -96,6 +99,8 @@ class AppController
             'dsState'     => $dsState,
             // Přepínač periodických úloh (#115 D11): false → pruh v aplikaci.
             'cronEnabled' => $cronEnabled,
+            // Kopie reálných dat na vývojovém serveru (#126 D12): true → pruh.
+            'realCopy'    => $realCopy,
             // Pojistka odchozí pošty (#95 D7) — jen režim, SPA podle něj
             // upozorní, že pošta nejde skutečným příjemcům. Adresy
             // přesměrování ani povolené domény sem nepatří.

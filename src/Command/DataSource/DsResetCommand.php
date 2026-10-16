@@ -160,8 +160,14 @@ class DsResetCommand extends Command
         $dropList = array_values(array_filter($existing, fn(string $t) => !isset($keepSet[$t])));
         $keptList = array_values(array_filter($existing, fn(string $t) =>  isset($keepSet[$t])));
 
-        // 6. Report.
+        // 6. Report. Třída dat (#126 D11) i s --yes a --dry-run — u kopie
+        // reálných dat ji zopakuje dotaz; chování --yes se nemění.
         $output->writeln('<info>Data source: ' . $dsConfig->getName() . ' (' . $dsConfig->getId() . ')</info>');
+        $isFree = $dsConfig->isFree();
+        $purpose = $dsConfig->getPurpose();
+        $output->writeln($isFree
+            ? 'Data class: free'
+            : '<comment>Data class: realCopy — ' . ($purpose ?? 'no purpose set') . '</comment>');
         $output->writeln('Keeping ' . count($keptList) . ' table(s):');
         foreach ($keptList as $t) {
             $output->writeln('  <comment>[keep]</comment> ' . $t);
@@ -192,7 +198,8 @@ class DsResetCommand extends Command
         if (!$input->getOption('yes')) {
             $helper = $this->getHelper('question');
             $question = new ConfirmationQuestion(
-                'Drop ' . count($dropList) . ' table(s) and recreate? [y/N] ',
+                ($isFree ? '' : 'This data source is a REAL COPY (purpose: ' . ($purpose ?? 'none') . '). ')
+                . 'Drop ' . count($dropList) . ' table(s) and recreate? [y/N] ',
                 false,
             );
             if (!$helper->ask($input, $output, $question)) {

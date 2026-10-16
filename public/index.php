@@ -1637,9 +1637,13 @@ function dispatchApp(
 		$db, $config, $tables,
 		\Shipard\Core\Mail\MailSafetyConfig::forServer($serverConfig),
 	);
+	// Pruh „Kopie reálných dat“ (#126 D12): jen na serveru v režimu
+	// development (ServerConfig, ne $devMode — ten je adresování přes IP)
+	// u třídy realCopy vč. výchozí; v produkci nikdy. Jen boolean (U5).
+	$realCopy = $serverConfig?->getMode() === 'development' && !$config->isFree();
 	$slot = (string) $route->table;
 	return match ($route->action) {
-		'info'           => $ctrl->info($dsState, $cronEnabled),
+		'info'           => $ctrl->info($dsState, $cronEnabled, $realCopy),
 		'manifest'       => $ctrl->manifest($devMode),
 		'brandingGet'    => $ctrl->brandingGet($slot),
 		'brandingUpload' => $ctrl->brandingUpload($slot, $auth),

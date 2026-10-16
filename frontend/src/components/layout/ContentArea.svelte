@@ -12,6 +12,7 @@
   import ReportsPage from '../reports/ReportsPage.svelte';
   import CompanyOverview from '../overview/CompanyOverview.svelte';
   import ReadOnlyBanner from '../ui/ReadOnlyBanner.svelte';
+  import RealCopyBanner from '../ui/RealCopyBanner.svelte';
   import CronOffBanner from '../ui/CronOffBanner.svelte';
   import MailSafetyNotice from '../ui/MailSafetyNotice.svelte';
   import { appInfoStore } from '../../stores/appInfo.svelte.js';
@@ -38,11 +39,15 @@
 </script>
 
 <main class="shpd-content">
-  {#if appInfoStore.readOnly || appInfoStore.cronDisabled}
-    <!-- Jeden sticky kontejner: oba stavové pruhy pod sebou, žádný překryv. -->
+  {#if appInfoStore.readOnly || appInfoStore.realCopy || appInfoStore.cronDisabled}
+    <!-- Jeden sticky kontejner: stavové pruhy pod sebou (jen ke čtení →
+         kopie reálných dat → vypnutý cron), žádný překryv. -->
     <div class="shpd-content__banners">
       {#if appInfoStore.readOnly}
         <ReadOnlyBanner />
+      {/if}
+      {#if appInfoStore.realCopy}
+        <RealCopyBanner />
       {/if}
       {#if appInfoStore.cronDisabled}
         <CronOffBanner />

@@ -221,6 +221,55 @@ class DsResetCommandTest extends TestCase
         $this->assertStringContainsString('Aborted', $tester->getDisplay());
     }
 
+    public function testReportNamesTheDataClassOfARealCopyEvenWithDryRunAndYes(): void
+    {
+        // #126 D11: řádek třídy vždy; dotaz u kopie reálných dat třídu a účel zopakuje.
+        $this->dsConfig->method('getPurpose')->willReturn('Ověřování importu');
+
+        $executed = [];
+        $tester = $this->createCommandTester(['keep_me', 'drop_me'], $executed);
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--dry-run' => true]));
+        $this->assertStringContainsString('Data class: realCopy — Ověřování importu', $tester->getDisplay());
+
+        $tester = $this->createCommandTester(['keep_me', 'drop_me'], $executed);
+        $tester->setInputs(['n']);
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('This data source is a REAL COPY (purpose: Ověřování importu). Drop 1 table(s) and recreate? [y/N]', $display);
+        $this->assertStringContainsString('Aborted', $display);
+        $this->assertSame([], $executed);
+
+        $executed = [];
+        $tester = $this->createCommandTester(['keep_me', 'drop_me'], $executed);
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--yes' => true]));
+        $this->assertStringContainsString('Data class: realCopy — Ověřování importu', $tester->getDisplay());
+        $this->assertStringNotContainsString('REAL COPY', $tester->getDisplay(), '--yes se neptá, jen řádek');
+        $this->assertNotSame([], $executed, '--yes dál maže bez dotazu');
+    }
+
+    public function testReportForARealCopyWithoutPurposeAndForAFreeDataSource(): void
+    {
+        $executed = [];
+        $tester = $this->createCommandTester(['keep_me', 'drop_me'], $executed);
+        $this->assertSame(Command::SUCCESS, $tester->execute(['--dry-run' => true]));
+        $this->assertStringContainsString('Data class: realCopy — no purpose set', $tester->getDisplay());
+
+        $this->dsConfig = $this->createMock(DataSourceConfig::class);
+        $this->dsConfig->method('getModules')->willReturn(['test.unit']);
+        $this->dsConfig->method('getName')->willReturn('Test DS');
+        $this->dsConfig->method('getId')->willReturn('test-0001-test-0001');
+        $this->dsConfig->method('isFree')->willReturn(true);
+        $this->dsConnection = $this->createMock(DataSourceConnection::class);
+
+        $tester = $this->createCommandTester(['keep_me', 'drop_me'], $executed);
+        $tester->setInputs(['n']);
+        $this->assertSame(Command::SUCCESS, $tester->execute([]));
+        $display = $tester->getDisplay();
+        $this->assertStringContainsString('Data class: free', $display);
+        $this->assertStringNotContainsString('REAL COPY', $display);
+        $this->assertStringContainsString('Drop 1 table(s) and recreate? [y/N]', $display);
+    }
+
     public function testConfirmationAccepted(): void
     {
         $executed = [];

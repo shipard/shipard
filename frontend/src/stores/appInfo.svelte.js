@@ -32,6 +32,11 @@ let readOnly = $state(false);
 // fakturace na tomto DS neběží). Chybějící klíč (starší server) = zapnuto.
 let cronDisabled = $state(false);
 
+// Kopie reálných dat na vývojovém serveru (#126 D12): `realCopy === true`
+// → trvalý RealCopyBanner v ContentArea. Server posílá jen boolean a jen
+// v režimu development; chybějící klíč (starší server, produkce) = nic.
+let realCopy = $state(false);
+
 // Režim pojistky odchozí pošty (#95 D7): `redirect` | `allowlist` | `drop`
 // = pošta nejde skutečným příjemcům → MailSafetyNotice; `off` / null nic.
 let mailSafetyMode = $state(null);
@@ -65,6 +70,7 @@ async function load() {
       shellStore.setDsDefault(info.shell);
       readOnly = response.data.dsState === 'read_only';
       cronDisabled = response.data.cronEnabled === false;
+      realCopy = response.data.realCopy === true;
       mailSafetyMode = response.data.mailSafety?.mode ?? null;
       unavailable = null;
     } else if (response?.error?.code === 'DS_UNAVAILABLE') {
@@ -105,6 +111,7 @@ export const appInfoStore = {
   get unavailable() { return unavailable; },
   get readOnly()    { return readOnly; },
   get cronDisabled() { return cronDisabled; },
+  get realCopy()    { return realCopy; },
   get mailSafetyMode() { return mailSafetyMode; },
   load,
   apply,
