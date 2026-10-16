@@ -84,8 +84,8 @@ final class AiTestCommandTest extends TestCase
     ];
 
     private const TIERS = [
-        'fast' => ['name' => 'Rychlý', 'order' => 10, 'model' => 'claude-sonnet-4-6'],
-        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
+        'fast' => ['name' => 'Rychlý', 'order' => 10, 'model' => 'claude-sonnet-5-5'],
+        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-5-5', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
     ];
 
     private const PLATFORMS = [
@@ -185,7 +185,7 @@ final class AiTestCommandTest extends TestCase
         return new CommandTester($command);
     }
 
-    private static function ok(string $model = 'claude-sonnet-4-6', int $in = 12, int $out = 3, string $stop = 'end_turn'): LlmChatResult
+    private static function ok(string $model = 'claude-sonnet-5-5', int $in = 12, int $out = 3, string $stop = 'end_turn'): LlmChatResult
     {
         return new LlmChatResult('OK', $in, $out, $stop, $model);
     }
@@ -200,12 +200,12 @@ final class AiTestCommandTest extends TestCase
 
         $this->assertSame(0, $exit, $display);
         $this->assertCount(3, $llm->calls, 'všechny deklarované funkce v pořadí registru');
-        $this->assertMatchesRegularExpression('/OK\s+mail\.extraction\s+default · claude-sonnet-4-6\s+\d+\.\d s\s+in 12 \/ out 3\s+\$0\.000081\s+end_turn/', $display);
-        $this->assertMatchesRegularExpression('/OK\s+dashboard\.summary\s+.*in 100 \/ out 60\s+\$0\.001200\s+max_tokens/', $display, 'max_tokens je pořád úspěch');
+        $this->assertMatchesRegularExpression('/OK\s+mail\.extraction\s+default · claude-sonnet-5-5\s+\d+\.\d s\s+in 12 \/ out 3\s+\$0\.000054\s+end_turn/', $display);
+        $this->assertMatchesRegularExpression('/OK\s+dashboard\.summary\s+.*in 100 \/ out 60\s+\$0\.000800\s+max_tokens/', $display, 'max_tokens je pořád úspěch');
 
         $params = $llm->calls[0];
         $this->assertSame('sk-default', $params->apiKey);
-        $this->assertSame('claude-sonnet-4-6', $params->model);
+        $this->assertSame('claude-sonnet-5-5', $params->model);
         $this->assertSame('https://api.anthropic.com', $params->baseUrl);
         $this->assertSame([['role' => 'user', 'content' => AiTestCommand::PROMPT]], $params->messages);
         $this->assertNull($params->system);
@@ -216,7 +216,7 @@ final class AiTestCommandTest extends TestCase
         $this->assertSame(AiTestCommand::EFFORT, $params->effort);
         $this->assertSame(30, $params->stallTimeoutSeconds);
         $this->assertSame(60, $params->timeoutSeconds);
-        $this->assertSame('claude-sonnet-4-6', $params->shapeAs);
+        $this->assertSame('claude-sonnet-5-5', $params->shapeAs);
     }
 
     public function testBedrockEuConnectionTestsThePlatformModelWithTheSurcharge(): void
@@ -278,7 +278,8 @@ final class AiTestCommandTest extends TestCase
     public function testChatOnASeries5ModelIsTestedLikeAnyOtherFunction(): void
     {
         // Pojistka D35 zanikla (tasks/chat-thinking-blocks.md D54): chat na
-        // Sonnetu 5.5 se zavolá jako ostatní funkce.
+        // Sonnetu 5.5 (dnes model úrovně, tady i výslovně na řádku) se zavolá
+        // jako ostatní funkce.
         $llm = new ScriptedLlmClient([self::ok(), self::ok(), self::ok('claude-sonnet-5-5')]);
         $row = ['function_id' => 'chat.default', 'model' => 'claude-sonnet-5-5'];
         $tester = $this->tester($llm, ['chat.default' => $row]);
@@ -289,7 +290,7 @@ final class AiTestCommandTest extends TestCase
         $this->assertSame(0, $exit, $display);
         $models = array_map(static fn (LlmChatParams $p): string => $p->model, $llm->calls);
         sort($models);
-        $this->assertSame(['claude-sonnet-4-6', 'claude-sonnet-4-6', 'claude-sonnet-5-5'], $models);
+        $this->assertSame(['claude-sonnet-5-5', 'claude-sonnet-5-5', 'claude-sonnet-5-5'], $models);
         $this->assertStringNotContainsString('FAIL', $display);
     }
 
@@ -297,7 +298,7 @@ final class AiTestCommandTest extends TestCase
     {
         $llm = new ScriptedLlmClient([
             AnthropicLlmClient::exceptionFromErrorResponse(401, '{"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"}}'),
-            AnthropicLlmClient::exceptionFromErrorResponse(404, '{"type":"error","error":{"type":"not_found_error","message":"model: claude-sonnet-4-6"}}'),
+            AnthropicLlmClient::exceptionFromErrorResponse(404, '{"type":"error","error":{"type":"not_found_error","message":"model: claude-sonnet-5-5"}}'),
             AnthropicLlmClient::exceptionFromErrorResponse(429, '{"type":"error","error":{"type":"rate_limit_error","message":"limit","details":{"error_code":"enforced_spend_limit_reached"}}}'),
         ]);
         $tester = $this->tester($llm);
@@ -311,7 +312,7 @@ final class AiTestCommandTest extends TestCase
         $this->assertFalse($json['ok']);
         $errors = array_column($json['functions'], 'error', 'id');
         $this->assertSame('Platforma odmítla API klíč (HTTP 401) — klíč je neplatný nebo zrušený.', $errors['mail.extraction']);
-        $this->assertSame('Model claude-sonnet-4-6 na platformě neexistuje nebo už skončil (HTTP 404).', $errors['chat.default']);
+        $this->assertSame('Model claude-sonnet-5-5 na platformě neexistuje nebo už skončil (HTTP 404).', $errors['chat.default']);
         $this->assertStringStartsWith('Vyčerpaný limit útraty', $errors['dashboard.summary']);
         $this->assertSame(['API_401', 'API_404', 'API_429'], array_column($json['functions'], 'code'));
         $this->assertSame('invalid x-api-key', $json['functions'][0]['apiMessage']);
@@ -332,10 +333,10 @@ final class AiTestCommandTest extends TestCase
         $this->assertTrue($f['ok']);
         $this->assertSame('default', $f['connection']);
         $this->assertSame('default', $f['connectionOrigin'], 'původ připojení (D40) — `server` u serverového připojení');
-        $this->assertSame('claude-sonnet-4-6', $f['model']);
+        $this->assertSame('claude-sonnet-5-5', $f['model']);
         $this->assertSame(12, $f['inputTokens']);
         $this->assertSame(3, $f['outputTokens']);
-        $this->assertSame(0.000081, $f['costUsd']);
+        $this->assertSame(0.000054, $f['costUsd']);
         $this->assertSame('end_turn', $f['stopReason']);
         $this->assertSame('OK', $f['reply']);
         $this->assertIsInt($f['elapsedMs']);

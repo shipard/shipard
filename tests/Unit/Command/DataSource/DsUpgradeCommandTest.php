@@ -671,7 +671,7 @@ class DsUpgradeCommandTest extends TestCase
         $this->dsConnection->method('fetchAll')->willReturnCallback(static fn (string $sql): array => match (true) {
             str_contains($sql, 'JOIN core_ai_backends') => [[
                 'id' => 3, 'profile_id' => 'czech_general', 'backend' => 1, 'model' => null, 'thinking' => 'default', 'effort' => 'default',
-                'max_tokens' => 0, 'backend_id' => 'default', 'is_default' => 1, 'backend_model' => 'claude-sonnet-5-5',
+                'max_tokens' => 0, 'backend_id' => 'default', 'is_default' => 1, 'backend_model' => 'claude-sonnet-4-6',
                 'backend_thinking' => 'adaptive', 'backend_effort' => 'auto', 'backend_max_tokens' => 4096,
             ]],
             str_contains($sql, 'SELECT id, function_id, thinking, effort FROM') => [
@@ -690,7 +690,7 @@ class DsUpgradeCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertStringContainsString("[CONVERT] AI function 'mail.extraction': thinking adaptive (from default connection 'default')", $display);
         $this->assertStringContainsString("[CONVERT] AI function 'chat.default': thinking adaptive (from default connection 'default')", $display);
-        $this->assertStringContainsString("[CONVERT] profile 'czech_general': model claude-sonnet-5-5 (from connection 'default'); thinking adaptive (from connection 'default'); connection 'default' is the default → by function", $display);
+        $this->assertStringContainsString("[CONVERT] profile 'czech_general': model claude-sonnet-4-6 (from connection 'default'); thinking adaptive (from connection 'default'); connection 'default' is the default → by function", $display);
         $this->assertStringContainsString("[NOTE]   profile 'czech_general': extraction max_tokens 4096 (connection 'default') → 32768", $display);
         $this->assertStringContainsString("[CONVERT] connection 'default': legacy model and tuning cleared", $display);
         // Značka až po převodu profilů.

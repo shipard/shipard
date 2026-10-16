@@ -6,27 +6,34 @@
     // mapa v repu — `ModelCatalog::defaultModel(úroveň)`. Zdroj dat může
     // model u funkce přepsat (tabulka `core_ai_function_settings`).
     //
-    // Všechny tři úrovně zatím ukazují na Sonnet 4.6: nasazení AI funkcí
-    // nemění chování (#85 F0-D6). Výchozí modely pro řadu 5 doplní
-    // evaluace (fáze 2).
+    // Řada 5 od 2026-10-16 (tasks/ai-tiers-series5.md, #103 D47–D50, M4):
+    // evaluace F4 / F4b (tasks/testing-phase4b.md § 5–6) vybrala pro
+    // `balanced` i `fast` Sonnet 5.5 (nejvyšší shoda polí, 2,25× rychlejší
+    // a o 22 % levnější než Sonnet 4.6), `strong` dostal Opus 5.5 — úroveň
+    // dnes žádná funkce nepoužívá, ale „silný“ má znamenat nejsilnější
+    // praktický model. Haiku 5.5 pro štítky (`fast`) až po běhu kombinace
+    // se Sonnet 5.5 extrakcí (D49). Sonnet 4.6 zůstává v katalogu aktivní
+    // (nejméně do 17. 2. 2027) pro zdroje dat s výslovným přepisem.
+    //
     // Model musí být v katalogu `core.ai.models` s úrovní a statusem
-    // `active` (hlídá ModelCatalogFileTest).
+    // `active` (hlídá ModelCatalogFileTest). `effort` / `thinking` mapa
+    // nenese — platí výchozí hodnoty modelu (xhigh dal +0,1 % v rámci šumu
+    // za +23 % ceny, F4b § 6).
     //
     // `platformModels` (tasks/ai-bedrock-eu.md D58): model úrovně pro
     // platformu připojení, která obecný model nenabízí — klíč = platforma
     // z `core.ai.platforms`, hodnota = model katalogu s ID pro tuto
     // platformu. Bez položky pro platformu platí `model`; když ho platforma
-    // nenabízí, resolver vrátí MODEL_NOT_ON_PLATFORM. Na Bedrocku je přes
-    // Messages API jen řada 4.7 a novější a Haiku 4.5 — Sonnet 4.6 ne,
-    // proto všechny tři úrovně na Sonnet 5.5 (jiný model řady 5 se zatím
-    // na vytěžení nehodnotil, #103).
+    // nenabízí, resolver vrátí MODEL_NOT_ON_PLATFORM. Po přechodu na řadu 5
+    // nabízí Bedrock všechny tři modely úrovní, položky jsou tu výslovně,
+    // aby je ModelCatalogFileTest dál hlídal (ID `eu.anthropic.…`).
 
     "fast": {
         "name": "Fast",
         "name:cs": "Rychlý",
         "name:en": "Fast",
         "order": 10,
-        "model": "claude-sonnet-4-6",
+        "model": "claude-sonnet-5-5",
         "platformModels": { "bedrock-eu": "claude-sonnet-5-5" }
     },
     "balanced": {
@@ -34,7 +41,7 @@
         "name:cs": "Vyvážený",
         "name:en": "Balanced",
         "order": 20,
-        "model": "claude-sonnet-4-6",
+        "model": "claude-sonnet-5-5",
         "platformModels": { "bedrock-eu": "claude-sonnet-5-5" }
     },
     "strong": {
@@ -42,7 +49,7 @@
         "name:cs": "Silný",
         "name:en": "Strong",
         "order": 30,
-        "model": "claude-sonnet-4-6",
-        "platformModels": { "bedrock-eu": "claude-sonnet-5-5" }
+        "model": "claude-opus-5-5",
+        "platformModels": { "bedrock-eu": "claude-opus-5-5" }
     }
 }

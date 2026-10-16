@@ -517,8 +517,8 @@ class ChatControllerTest extends TestCase
     public function testParamsComeFromTheAiFunction(): void
     {
         // Deklarace chat.default (tasks/ai-functions.md D36, strop D55): 16000,
-        // bez teploty a ladění, model z mapy úrovní (Sonnet 4.6) — stejné
-        // tělo jako před resolverem.
+        // bez teploty a ladění, model z mapy úrovní (Sonnet 5.5 od
+        // tasks/ai-tiers-series5.md; tvarovač nemá co vynechat).
         $inserts = [];
         $db = $this->streamDb($inserts, self::BACKEND);
         $llm = new ScriptedLlmClient([$this->finalResult('Ahoj.')]);
@@ -528,7 +528,7 @@ class ChatControllerTest extends TestCase
 
         $this->assertNotNull($llm->lastParams);
         $this->assertSame(16000, $llm->lastParams->maxTokens);
-        $this->assertSame('claude-sonnet-4-6', $llm->lastParams->model);
+        $this->assertSame('claude-sonnet-5-5', $llm->lastParams->model);
         $this->assertSame('sk-test', $llm->lastParams->apiKey);
         $this->assertNull($llm->lastParams->temperature);
         $this->assertNull($llm->lastParams->thinking);
@@ -618,9 +618,9 @@ class ChatControllerTest extends TestCase
     public function testSendMessageAcceptsAnyCatalogModelIncludingTheFiveSeries(): void
     {
         foreach ([
-            'claude-sonnet-5-5'          => 'řada 5 (thinking bez parametru) — od fáze 4 projde',
+            'claude-sonnet-5-5'          => 'řada 5, model úrovně (thinking bez parametru) — od fáze 4 projde',
             'claude-haiku-5-5'           => 'řada 5, úroveň fast',
-            'claude-sonnet-4-6'          => 'výchozí model',
+            'claude-sonnet-4-6'          => 'přemostění s teplotou (přepis u funkce)',
             'claude-sonnet-4-6-20260217' => 'datová přípona',
             'claude-opus-4-7'            => 'položka jen s cenami',
         ] as $model => $why) {

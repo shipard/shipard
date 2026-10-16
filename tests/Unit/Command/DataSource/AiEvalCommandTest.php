@@ -126,12 +126,13 @@ final class AiEvalCommandTest extends TestCase
         'exchange.contentTags' => ['name' => 'Štítky', 'tier' => 'fast', 'defaults' => ['maxTokens' => 8000]],
     ];
     private const MODELS = [
+        'claude-sonnet-5-5' => ['name' => 'Claude Sonnet 5.5', 'order' => 20, 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-5-5'], 'prices' => ['input' => 2, 'output' => 10]],
         'claude-sonnet-4-6' => ['name' => 'Claude Sonnet 4.6', 'order' => 22, 'tier' => 'balanced', 'platformIds' => ['anthropic' => 'claude-sonnet-4-6'], 'prices' => ['input' => 3, 'output' => 15]],
         'claude-haiku-5-5' => ['name' => 'Claude Haiku 5.5', 'order' => 30, 'tier' => 'fast', 'platformIds' => ['anthropic' => 'claude-haiku-5-5'], 'prices' => ['input' => 1, 'output' => 5]],
     ];
     private const TIERS = [
         'fast' => ['name' => 'Rychlý', 'order' => 10, 'model' => 'claude-haiku-5-5'],
-        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6'],
+        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-5-5'],
     ];
     private const PLATFORMS = [
         'anthropic' => ['name' => 'Anthropic', 'dialect' => 'anthropic-messages', 'baseUrl' => 'https://api.anthropic.com', 'modelIds' => 'anthropic', 'modelIdPrefix' => '', 'priceMultiplier' => 1],
@@ -280,7 +281,7 @@ final class AiEvalCommandTest extends TestCase
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
         $display = $tester->getDisplay();
         $this->assertStringContainsString('1 zpráv × 1 opakování = 1 volání', $display);
-        $this->assertStringContainsString('model claude-sonnet-4-6 (připojení default — default)', $display);
+        $this->assertStringContainsString('model claude-sonnet-5-5 (připojení default — default)', $display);
         $this->assertStringContainsString('Odhad ceny: ~', $display);
         $this->assertStringContainsString('z ceníku katalogu', $display);
         $this->assertStringContainsString('stojí peníze', $display);
@@ -290,13 +291,13 @@ final class AiEvalCommandTest extends TestCase
     public function testEstimateFallsBackToTokensOfARunWithAModelOfTheSameSeries(): void
     {
         // D44: bez běhu téže varianty tokeny na doklad z běhu jiné varianty (i nad jiným
-        // hashem) s modelem téže řady × ceník plánovaného modelu: 9267 × 3 + 2325 × 15
-        // = 62 676 / 1M = 0,062676 + štítky Haiku 0,0021 = 0,064776.
+        // hashem) s modelem téže řady × ceník plánovaného modelu: 9267 × 2 + 2325 × 10
+        // = 41 784 / 1M = 0,041784 + štítky Haiku 0,0021 = 0,043884.
         mkdir($this->tmp . '/runs/cz-vat-payer', 0750, true);
         file_put_contents($this->tmp . '/runs/cz-vat-payer/2026-10-14-other.json', json_encode([
             'format' => 'shpd.eval.run.v1',
             'set' => ['name' => 'cz-vat-payer', 'hash' => 'old-hash'],
-            'variant' => ['name' => 'other', 'effective' => ['catalogModel' => 'claude-sonnet-4-6']],
+            'variant' => ['name' => 'other', 'effective' => ['catalogModel' => 'claude-sonnet-5-5']],
             'startedAt' => '2026-10-14T10:00:00+00:00',
             'metrics' => ['cost.usd' => 3.76, 'calls.total' => 60, 'tokens.inputPerDocument' => 9267, 'tokens.outputPerDocument' => 2325],
         ]));
@@ -305,7 +306,7 @@ final class AiEvalCommandTest extends TestCase
 
         $this->assertSame(Command::INVALID, $tester->getStatusCode());
         $display = $tester->getDisplay();
-        $this->assertStringContainsString('Odhad ceny: ~0.0648 USD (0.0648 USD / volání z ceníku a tokenů na doklad podle běhu 2026-10-14-other.json — model claude-sonnet-4-6 téže řady)', $display);
+        $this->assertStringContainsString('Odhad ceny: ~0.0439 USD (0.0439 USD / volání z ceníku a tokenů na doklad podle běhu 2026-10-14-other.json — model claude-sonnet-5-5 téže řady)', $display);
         $this->assertSame(0, $command->computationsCreated);
     }
 
@@ -373,7 +374,7 @@ final class AiEvalCommandTest extends TestCase
         $this->assertSame('baseline', $run['variant']['name']);
         $this->assertSame('default', $run['variant']['effective']['connection']);
         $this->assertSame('default', $run['variant']['effective']['connectionOrigin']);
-        $this->assertSame('claude-sonnet-4-6', $run['variant']['effective']['model']);
+        $this->assertSame('claude-sonnet-5-5', $run['variant']['effective']['model']);
         $this->assertSame('v4.7.1', $run['variant']['effective']['promptVersion']);
         $this->assertSame(hash('sha256', 'T'), $run['variant']['effective']['promptHash']);
         $this->assertSame('claude-haiku-5-5', $run['variant']['effective']['contentTags']['model']);

@@ -299,7 +299,7 @@ class MailAiProvisionerTest extends TestCase
         return $overrides + [
             'id' => 7, 'profile_id' => 'czech_general', 'backend' => 1, 'model' => null,
             'thinking' => 'default', 'effort' => 'default', 'max_tokens' => 0,
-            'backend_id' => 'default', 'is_default' => 1, 'backend_model' => 'claude-sonnet-4-6',
+            'backend_id' => 'default', 'is_default' => 1, 'backend_model' => 'claude-sonnet-5-5',
             'backend_thinking' => 'auto', 'backend_effort' => 'auto', 'backend_max_tokens' => 0,
         ];
     }
@@ -312,10 +312,10 @@ class MailAiProvisionerTest extends TestCase
         $db->method('fetchAll')->willReturnCallback(function (string $sql) use (&$captured): array {
             $captured = $sql;
             return [
-                // Výchozí připojení se Sonnetem 5.5 + ladění + strop 4096: model
-                // i ladění do profilu, vazba na výchozí připojení pryč, strop
-                // jen jako poznámka.
-                $this->legacyJoinRow(['backend_model' => 'claude-sonnet-5-5', 'backend_thinking' => 'between_tools',
+                // Výchozí připojení se Sonnetem 4.6 (jiný než model úrovně) + ladění
+                // + strop 4096: model i ladění do profilu, vazba na výchozí
+                // připojení pryč, strop jen jako poznámka.
+                $this->legacyJoinRow(['backend_model' => 'claude-sonnet-4-6', 'backend_thinking' => 'between_tools',
                     'backend_effort' => 'high', 'backend_max_tokens' => 4096]),
                 // Druhé připojení s modelem úrovně a bez ladění: model se nepřevádí,
                 // vazba na ne-výchozí připojení zůstává — nic k zápisu.
@@ -338,13 +338,13 @@ class MailAiProvisionerTest extends TestCase
         $this->assertStringContainsString('b.thinking AS backend_thinking', (string) $captured);
         $this->assertStringContainsString('WHERE b.model IS NOT NULL', (string) $captured);
         $this->assertSame([
-            ['core_mail_ai_profiles', 7, ['model' => 'claude-sonnet-5-5', 'thinking' => 'between_tools', 'effort' => 'high', 'backend' => null]],
+            ['core_mail_ai_profiles', 7, ['model' => 'claude-sonnet-4-6', 'thinking' => 'between_tools', 'effort' => 'high', 'backend' => null]],
         ], $updates);
         $this->assertSame([
             [
                 'profile_id' => 'czech_general',
                 'changes' => [
-                    "model claude-sonnet-5-5 (from connection 'default')",
+                    "model claude-sonnet-4-6 (from connection 'default')",
                     "thinking between_tools (from connection 'default')",
                     "effort high (from connection 'default')",
                     "connection 'default' is the default → by function",

@@ -106,11 +106,13 @@ final class ModelCatalogFileTest extends TestCase
             $this->assertNotEmpty($entry['name'], "úroveň {$tier}: chybí název");
         }
 
-        // Přemostění (tasks/ai-functions.md): do evaluace fáze 2 všechny
-        // úrovně na Sonnetu 4.6 — nasazení AI funkcí nemění chování.
-        foreach (ModelSpec::TIERS as $tier) {
-            $this->assertSame('claude-sonnet-4-6', $catalog->defaultModel($tier), "úroveň {$tier}");
-        }
+        // Řada 5 (tasks/ai-tiers-series5.md, #103 D47–D49): Sonnet 5.5 pro
+        // `fast` i `balanced` podle evaluace F4b, `strong` = Opus 5.5.
+        $this->assertSame([
+            ModelSpec::TIER_FAST => 'claude-sonnet-5-5',
+            ModelSpec::TIER_BALANCED => 'claude-sonnet-5-5',
+            ModelSpec::TIER_STRONG => 'claude-opus-5-5',
+        ], array_combine(ModelSpec::TIERS, array_map($catalog->defaultModel(...), ModelSpec::TIERS)));
     }
 
     public function testPlatformModelsOfTheTierMapPointToActiveModelsAvailableOnThePlatform(): void
@@ -131,11 +133,15 @@ final class ModelCatalogFileTest extends TestCase
             }
         }
 
-        // D58: na Bedrocku EU všechny tři úrovně na Sonnetu 5.5 (Sonnet 4.6 tam není).
-        foreach (ModelSpec::TIERS as $tier) {
-            $this->assertSame('claude-sonnet-5-5', $catalog->defaultModel($tier, 'bedrock-eu'), "úroveň {$tier} na bedrock-eu");
-            $this->assertSame('eu.anthropic.claude-sonnet-5-5', $platforms->get('bedrock-eu')?->modelIdFor($catalog->find('claude-sonnet-5-5')));
+        // D58 + tasks/ai-tiers-series5.md: Bedrock EU dnes nabízí tytéž modely
+        // úrovní jako přímé API (Sonnet 5.5, `strong` Opus 5.5), s profilem `eu.`.
+        $bedrock = $platforms->get('bedrock-eu');
+        $this->assertNotNull($bedrock);
+        foreach ([ModelSpec::TIER_FAST, ModelSpec::TIER_BALANCED, ModelSpec::TIER_STRONG] as $tier) {
+            $this->assertSame($catalog->defaultModel($tier), $catalog->defaultModel($tier, 'bedrock-eu'), "úroveň {$tier} na bedrock-eu");
         }
+        $this->assertSame('eu.anthropic.claude-sonnet-5-5', $bedrock->modelIdFor($catalog->find($catalog->defaultModel(ModelSpec::TIER_BALANCED, 'bedrock-eu'))));
+        $this->assertSame('eu.anthropic.claude-opus-5-5', $bedrock->modelIdFor($catalog->find($catalog->defaultModel(ModelSpec::TIER_STRONG, 'bedrock-eu'))));
     }
 
     public function testReplacedByPointsToAnActiveModelAndRetiringEntriesHaveOne(): void

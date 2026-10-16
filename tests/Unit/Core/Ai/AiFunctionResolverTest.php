@@ -63,11 +63,16 @@ final class AiFunctionResolverTest extends TestCase
         ],
     ];
 
-    /** Mapa úrovní: `fast` záměrně bez modelu pro Bedrock EU (D58). */
+    /**
+     * Mapa úrovní jako v repu po přechodu na řadu 5 (tasks/ai-tiers-series5.md):
+     * `balanced` a `strong` Sonnet 5.5; `fast` záměrně na Sonnetu 4.6, který
+     * Bedrock nemá — případ úrovně bez modelu pro platformu (D58). Skutečný
+     * soubor hlídají ModelCatalogFileTest a AiFunctionsTierFileTest.
+     */
     private const TIERS = [
         'fast' => ['name' => 'Rychlý', 'order' => 10, 'model' => 'claude-sonnet-4-6'],
-        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-4-6', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
-        'strong' => ['name' => 'Silný', 'order' => 30, 'model' => 'claude-sonnet-4-6', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
+        'balanced' => ['name' => 'Vyvážený', 'order' => 20, 'model' => 'claude-sonnet-5-5', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
+        'strong' => ['name' => 'Silný', 'order' => 30, 'model' => 'claude-sonnet-5-5', 'platformModels' => ['bedrock-eu' => 'claude-sonnet-5-5']],
     ];
 
     private const PLATFORMS = [
@@ -151,9 +156,9 @@ final class AiFunctionResolverTest extends TestCase
         $this->assertSame(1.0, $call->priceMultiplier);
         $this->assertSame('https://api.anthropic.com', $call->baseUrl, 'adresa platformy, připojení ji nemá');
         $this->assertSame('sk-default', $call->apiKey);
-        $this->assertSame('claude-sonnet-4-6', $call->model);
-        $this->assertSame('claude-sonnet-4-6', $call->shapeAs);
-        $this->assertSame('claude-sonnet-4-6', $call->catalogModel);
+        $this->assertSame('claude-sonnet-5-5', $call->model);
+        $this->assertSame('claude-sonnet-5-5', $call->shapeAs);
+        $this->assertSame('claude-sonnet-5-5', $call->catalogModel);
         $this->assertFalse($call->isCustomModel());
         $this->assertSame(32768, $call->maxTokens);
         $this->assertSame(0.0, $call->temperature);
@@ -187,13 +192,13 @@ final class AiFunctionResolverTest extends TestCase
         );
 
         $this->assertSame('anthropic', $params->provider);
-        $this->assertSame('claude-sonnet-4-6', $params->model);
+        $this->assertSame('claude-sonnet-5-5', $params->model);
         $this->assertSame('sk-default', $params->apiKey);
         $this->assertSame(32768, $params->maxTokens);
         $this->assertSame(0.0, $params->temperature);
         $this->assertNull($params->thinking);
         $this->assertNull($params->effort);
-        $this->assertSame('claude-sonnet-4-6', $params->shapeAs);
+        $this->assertSame('claude-sonnet-5-5', $params->shapeAs);
         $this->assertSame(180, $params->stallTimeoutSeconds);
         $this->assertSame(840, $params->timeoutSeconds);
         $this->assertSame([['role' => 'user', 'content' => 'hi']], $params->messages);
@@ -426,8 +431,8 @@ final class AiFunctionResolverTest extends TestCase
 
         $plan = $resolver->plan('mail.extraction');
 
-        $this->assertSame('claude-sonnet-4-6', $plan->model);
-        $this->assertSame('claude-sonnet-4-6', $plan->catalogModel);
+        $this->assertSame('claude-sonnet-5-5', $plan->model);
+        $this->assertSame('claude-sonnet-5-5', $plan->catalogModel);
         $this->assertSame(32768, $plan->maxTokens);
         $this->assertSame(0.0, $plan->temperature);
         $this->assertSame('default', $plan->connectionCode);
@@ -462,11 +467,17 @@ final class AiFunctionResolverTest extends TestCase
 
     public function testPreviewListsTheAdjustmentsForTheEffectiveModel(): void
     {
+        // Model úrovně (Sonnet 5.5) teplotu z deklarace odmítá — detail ukáže „teplota se neposílá“.
         $preview = $this->resolver()->preview('mail.extraction');
         $this->assertTrue($preview->isOk());
-        $this->assertSame([], $preview->changes, 'Sonnet 4.6 přijme teplotu i strop deklarace');
+        $this->assertSame([RequestChange::TEMPERATURE_OMITTED], array_map(static fn (RequestChange $c): string => $c->code, $preview->changes));
+        $this->assertSame(['temperature' => 0.0], $preview->changes[0]->params);
 
-        // Řada 5 teplotu z deklarace odmítá — detail ukáže „teplota se neposílá“.
+        // Přepis na Sonnet 4.6: přijme teplotu i strop deklarace — bez úprav.
+        $row = ['function_id' => 'mail.extraction', 'model' => 'claude-sonnet-4-6'];
+        $this->assertSame([], $this->resolver(['mail.extraction' => $row])->preview('mail.extraction')->changes, 'Sonnet 4.6 přijme teplotu i strop deklarace');
+
+        // Vypnutý thinking a effort nad mezí na řadě 5 — náhrada a strop.
         $row = ['function_id' => 'mail.extraction', 'model' => 'claude-sonnet-5-5', 'thinking' => 'disabled', 'effort' => 'max'];
         $preview = $this->resolver(['mail.extraction' => $row])->preview('mail.extraction');
         $this->assertSame('claude-sonnet-5-5', $preview->plan?->model);
@@ -568,11 +579,11 @@ final class AiFunctionResolverTest extends TestCase
         $call = $this->resolver()->resolve('mail.extraction', new AiCallOverride(model: 'anthropic.claude-sonnet-5-5'));
         $this->assertSame('claude-sonnet-5-5', $call->model);
 
-        // Model bez ID pro platformu bedrock.
+        // Model úrovně bez ID pro platformu bedrock (fast → Sonnet 4.6).
         $bedrock = ['provider' => 'bedrock'] + self::DEFAULT_CONNECTION;
         $config = $this->config([AiFunctionResolver::PLATFORMS_CFG_ITEM => self::PLATFORMS + ['bedrock' => ['name' => 'Bedrock']]]);
         try {
-            $this->resolver(default: $bedrock, connections: [1 => $bedrock], config: $config)->resolve('mail.extraction');
+            $this->resolver(default: $bedrock, connections: [1 => $bedrock], config: $config)->resolve('dashboard.summary');
             $this->fail();
         } catch (AiFunctionException $e) {
             $this->assertSame(AiFunctionException::MODEL_NOT_ON_PLATFORM, $e->errorCode);
@@ -666,8 +677,8 @@ final class AiFunctionResolverTest extends TestCase
     {
         // Pojistka D35 zanikla (tasks/chat-thinking-blocks.md D54): tool
         // smyčka vrací thinking bloky, `requires: ["tools"]` je jen popis.
-        $this->assertSame('claude-sonnet-4-6', $this->resolver()->resolve('chat.default')->model);
-        $this->assertSame('claude-sonnet-5-5', $this->resolver()->resolve('chat.default', new AiCallOverride(model: 'claude-sonnet-5-5'))->model);
+        $this->assertSame('claude-sonnet-5-5', $this->resolver()->resolve('chat.default')->model);
+        $this->assertSame('claude-sonnet-4-6', $this->resolver()->resolve('chat.default', new AiCallOverride(model: 'claude-sonnet-4-6'))->model);
         $custom = $this->resolver()->resolve('chat.default', new AiCallOverride(model: 'claude-x', modelLike: 'claude-haiku-5-5'));
         $this->assertSame('claude-x', $custom->model);
         $this->assertSame('claude-haiku-5-5', $custom->shapeAs);
@@ -713,7 +724,7 @@ final class AiFunctionResolverTest extends TestCase
         $resolver = new AiFunctionResolver($db, $this->config(), null, null, null, $backends);
 
         $call = $resolver->resolve('mail.extraction');
-        $this->assertSame('claude-sonnet-4-6', $call->model);
+        $this->assertSame('claude-sonnet-5-5', $call->model);
         $this->assertSame(32768, $call->maxTokens);
     }
 }

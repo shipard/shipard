@@ -143,9 +143,10 @@
         "prices": { "input": 2, "output": 10 },
         "lifecycle": { "status": "active", "retiresNotBefore": "2027-06-30" }
     },
-    // Výchozí model (D34, přemostění F0-D8): stejná cena i tokenizer jako
-    // 4.5, přijímá teplotu, bez parametru nepřemýšlí. Aktivní nejméně do
-    // 17. 2. 2027.
+    // Přemostění F0-D8 (D34) ze Sonnetu 4.5 do října 2026: stejná cena
+    // i tokenizer jako 4.5, přijímá teplotu, bez parametru nepřemýšlí.
+    // Od tasks/ai-tiers-series5.md už není modelem žádné úrovně, zůstává
+    // pro zdroje dat s výslovným přepisem; aktivní nejméně do 17. 2. 2027.
     "claude-sonnet-4-6": {
         "name": "Claude Sonnet 4.6",
         "vendor": "anthropic",
