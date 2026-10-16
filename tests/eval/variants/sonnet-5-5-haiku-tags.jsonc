@@ -1,0 +1,18 @@
+// Varianta evaluace AI analýzy po přechodu úrovní na řadu 5 (tasks/ai-tiers-series5.md
+// § 3 bod 2, #103 D49, D50): profil jako ve zdroji dat, model funkce mail.extraction
+// z mapy úrovní (balanced = Claude Sonnet 5.5), funkce exchange.contentTags přepsaná
+// na Claude Haiku 5.5 (ID z katalogu modules/core/ai/config/models.jsonc, úroveň fast,
+// dvacetkrát levnější než Sonnet 5.5). Měří, jestli Haiku stačí na štítek dokladu
+// a výjimky štítků řádků, když extrakci dělá Sonnet 5.5 — podklad pro budoucí
+// přepnutí úrovně `fast`. Thinking / effort null = výchozí hodnoty deklarace funkce;
+// `connection` = kód připojení nebo `server`. Srovnávat proti sonnet-5-5-tags
+// (štítky také na Sonnet 5.5) a baseline (po přepnutí = Sonnet 5.5 pro obojí).
+{
+	"format": "shpd.eval.variant.v1",
+	"name": "sonnet-5-5-haiku-tags",
+	"description": "Profil czech_general, model mail.extraction z úrovně (claude-sonnet-5-5), exchange.contentTags přepsaný na claude-haiku-5-5",
+	"profile": "czech_general",                  // kód profilu pošty
+	"promptTemplateFile": null,                  // šablona promptu ze souboru (vyzkoušení bez zásahu do zdroje dat)
+	"call": { "connection": null, "model": null, "thinking": null, "effort": null, "maxTokens": null },
+	"contentTags": { "model": "claude-haiku-5-5", "thinking": null, "effort": null }, // přepis funkce exchange.contentTags
+}
