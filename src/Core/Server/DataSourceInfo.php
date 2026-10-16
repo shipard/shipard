@@ -23,6 +23,7 @@ final readonly class DataSourceInfo
     /**
      * @param list<string> $modules přímé moduly z `main.json` (bez tranzitivních závislostí)
      * @param string $state efektivní stav, nebo `corrupted` u nečitelného `state.json`
+     * @param array{name: string, hash: string, seededAt: ?string}|null $dataset sada ve zdroji dat (`dataset-seed`, #103 F6b D59); null = nezaznamenaná
      */
     public function __construct(
         public string $id,
@@ -42,6 +43,7 @@ final readonly class DataSourceInfo
         public bool $cronEnabled,
         public bool $legacyServerAiFlag,
         public bool $readable,
+        public ?array $dataset = null,
     ) {}
 
     /**
@@ -56,7 +58,8 @@ final readonly class DataSourceInfo
 
     /**
      * Kontrakt `shpd-server ds-list --json` (čte ho Claude a skripty) —
-     * pořadí a názvy klíčů jsou stabilní.
+     * pořadí a názvy klíčů jsou stabilní. `dataset` = `{name, hash, seededAt}`
+     * nebo null (#103 F6b D59).
      *
      * @return array<string, mixed>
      */
@@ -72,6 +75,7 @@ final readonly class DataSourceInfo
             'purpose'           => $this->purpose,
             'origin'            => $this->origin,
             'dataClassChanged'  => $this->dataClassChanged,
+            'dataset'           => $this->dataset,
             'country'           => $this->country,
             'defaultLanguage'   => $this->defaultLanguage,
             'modules'           => $this->modules,

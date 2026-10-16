@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shipard\Core\Server;
 
 use Shipard\Core\Config\DataClass;
+use Shipard\Core\Config\DataSourceConfig;
 use Shipard\Core\Config\DataSourceState;
 
 /**
@@ -108,6 +109,7 @@ final class DataSourceInventory
             cronEnabled: $cronEnabled,
             legacyServerAiFlag: is_array($ai) && ($ai['useServerConnection'] ?? false) === true,
             readable: true,
+            dataset: DataSourceConfig::datasetFrom($config),
         );
     }
 

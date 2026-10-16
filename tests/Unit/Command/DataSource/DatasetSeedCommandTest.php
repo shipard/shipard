@@ -42,6 +42,9 @@ class TestableDatasetSeedCommand extends DatasetSeedCommand
     /** @var list<array{string, string, ?string}> volání markFree: adresář, původ, účel z titulku */
     public array $marked = [];
     public ?string $markError = null;
+    /** @var list<array{string, array{name: string, hash: string}|null}> volání markDataset (D59) */
+    public array $datasets = [];
+    public ?string $datasetError = null;
     /** @var list<string> pořadí kroků upgrade / settings / reset / markFree */
     public array $order = [];
     /** @var list<SectionSeeder> */
@@ -110,6 +113,15 @@ class TestableDatasetSeedCommand extends DatasetSeedCommand
         $this->marked[] = [$dsDir, $origin, $purpose];
     }
 
+    protected function markDataset(string $dsDir, ?array $dataset): void
+    {
+        if ($this->datasetError !== null) {
+            throw new \RuntimeException($this->datasetError);
+        }
+        $this->order[] = 'markDataset';
+        $this->datasets[] = [$dsDir, $dataset];
+    }
+
     /** @var (\Closure(DatasetReader, DataSourceConfig, DataSourceConnection, string, bool): SeedContext)|null */
     public ?\Closure $contextFactory = null;
 
@@ -174,8 +186,14 @@ class DatasetSeedCommandTest extends TestCase
         $display = $tester->getDisplay();
         $this->assertSame(Command::SUCCESS, $exit, $display);
         $this->assertSame([[$this->dsDir, 'dataset-seed demo', 'Demo']], $cmd->marked);
-        $this->assertSame(['settings', 'reset', 'markFree'], $cmd->order);
+        $this->assertSame(['settings', 'reset', 'markFree', 'markDataset'], $cmd->order);
         $this->assertStringContainsString('Data class: free (origin: dataset-seed demo)', $display);
+        // D59: po úspěšném seedu záznam sady s hashem obsahu (mail/ + expected/ — prázdné = hash prázdného seznamu).
+        $this->assertCount(1, $cmd->datasets);
+        $this->assertSame($this->dsDir, $cmd->datasets[0][0]);
+        $this->assertSame('demo', $cmd->datasets[0][1]['name']);
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $cmd->datasets[0][1]['hash']);
+        $this->assertStringContainsString('Dataset: demo (' . substr($cmd->datasets[0][1]['hash'], 0, 12) . ')', $display);
         $this->assertStringContainsString('Server AI: off (no server AI key — shpd-server dev-ai-key)', $display);
     }
 
@@ -220,6 +238,43 @@ class DatasetSeedCommandTest extends TestCase
         $this->assertSame(Command::SUCCESS, $tester->execute(['path' => $this->setDir, '--yes' => true, '--no-reset' => true]));
         $this->assertSame([], $cmd->marked);
         $this->assertStringNotContainsString('Data class: free (origin', $tester->getDisplay());
+        // D59: merge = zdroj dat už není čistá kopie jedné sady → záznam se odebere.
+        $this->assertSame([[$this->dsDir, null]], $cmd->datasets);
+        $this->assertStringContainsString('Dataset: not recorded', $tester->getDisplay());
+    }
+
+    public function testDatasetRecordFailureAfterSeedIsAnError(): void
+    {
+        $cmd = $this->command();
+        $cmd->datasetError = 'cannot replace main.json';
+        $tester = new CommandTester($cmd);
+
+        $this->assertSame(Command::FAILURE, $tester->execute(['path' => $this->setDir, '--yes' => true]));
+        $this->assertStringContainsString('Dataset record update failed after seed: cannot replace main.json', $tester->getDisplay());
+        $this->assertStringNotContainsString('Seed complete', $tester->getDisplay());
+    }
+
+    public function testRealMarkFreeClearsTheDatasetAndMarkDatasetWritesIt(): void
+    {
+        // Skutečné patchování main.json (bez seamu): reset smaže starý záznam, seed zapíše nový, merge odebere.
+        file_put_contents($this->dsDir . '/config/main.json', json_encode(['id' => 'x', 'dataset' => ['name' => 'old', 'hash' => 'h', 'seededAt' => 't']]));
+        $cmd = new class extends DatasetSeedCommand {
+            public function free(string $dir): void { $this->markFree($dir, 'dataset-seed demo', 'Demo'); }
+            public function record(string $dir, ?array $dataset): void { $this->markDataset($dir, $dataset); }
+            protected function now(): \DateTimeImmutable { return new \DateTimeImmutable('2026-10-16T12:00:00Z'); }
+        };
+        $read = fn (): array => json_decode((string) file_get_contents($this->dsDir . '/config/main.json'), true);
+
+        $cmd->free($this->dsDir);
+        $this->assertSame('free', $read()['dataClass']);
+        $this->assertArrayNotHasKey('dataset', $read(), 'reset smaže starý záznam sady');
+
+        $cmd->record($this->dsDir, ['name' => 'demo', 'hash' => str_repeat('a', 64)]);
+        $this->assertSame(['name' => 'demo', 'hash' => str_repeat('a', 64), 'seededAt' => '2026-10-16T12:00:00Z'], $read()['dataset']);
+        $this->assertSame('free', $read()['dataClass'], 'třída zůstává');
+
+        $cmd->record($this->dsDir, null);
+        $this->assertArrayNotHasKey('dataset', $read());
     }
 
     public function testMarkFreeFailureAfterResetIsAnError(): void
@@ -332,7 +387,7 @@ class DatasetSeedCommandTest extends TestCase
         $this->assertStringContainsString('persons:          ok 1', $display);
         $this->assertStringContainsString('Seed complete.', $display);
         $this->assertSame(0, $cmd->upgradeRuns, 'existing schema → no ds-upgrade before settings');
-        $this->assertSame(['settings', 'reset', 'markFree'], $cmd->order);
+        $this->assertSame(['settings', 'reset', 'markFree', 'markDataset'], $cmd->order);
     }
 
     public function testFreshDataSourceGetsSchemaBeforeSettings(): void
@@ -343,7 +398,7 @@ class DatasetSeedCommandTest extends TestCase
         $exit = $tester->execute(['path' => $this->setDir, '--yes' => true]);
 
         $this->assertSame(Command::SUCCESS, $exit, $tester->getDisplay());
-        $this->assertSame(['upgrade', 'settings', 'reset', 'markFree'], $cmd->order);
+        $this->assertSame(['upgrade', 'settings', 'reset', 'markFree', 'markDataset'], $cmd->order);
         $this->assertStringContainsString('Fresh data source', $tester->getDisplay());
     }
 

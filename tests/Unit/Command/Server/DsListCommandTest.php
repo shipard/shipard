@@ -163,7 +163,7 @@ class DsListCommandTest extends TestCase
         $alpha = $data['dataSources'][0];
         $this->assertSame(
             ['id', 'name', 'created', 'dataClass', 'dataClassExplicit', 'dataClassInvalid', 'purpose', 'origin',
-             'dataClassChanged', 'country', 'defaultLanguage', 'modules', 'databaseName', 'state', 'cron', 'serverAi', 'readable'],
+             'dataClassChanged', 'dataset', 'country', 'defaultLanguage', 'modules', 'databaseName', 'state', 'cron', 'serverAi', 'readable'],
             array_keys($alpha),
         );
         $this->assertSame('aaaa-aaaa-aaaa-aaaa', $alpha['id']);

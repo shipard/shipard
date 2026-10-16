@@ -606,6 +606,23 @@ class DataSourceConfigTest extends TestCase
         (new DataSourceConfig($this->tempDir))->getAuthPolicy();
     }
 
+    public function testGetDatasetReadsTheRecordLeniently(): void
+    {
+        $this->createConfig($this->baseDataWithoutSecrets() + ['dataset' => ['name' => ' cz-vat-payer ', 'hash' => 'abc', 'seededAt' => '2026-10-16T12:00:00Z']]);
+        $this->assertSame(['name' => 'cz-vat-payer', 'hash' => 'abc', 'seededAt' => '2026-10-16T12:00:00Z'], (new DataSourceConfig($this->tempDir))->getDataset());
+
+        $this->createConfig($this->baseDataWithoutSecrets());
+        $this->assertNull((new DataSourceConfig($this->tempDir))->getDataset(), 'seed před F6b');
+
+        $this->createConfig($this->baseDataWithoutSecrets() + ['dataset' => ['name' => 'x']]);
+        $this->assertNull((new DataSourceConfig($this->tempDir))->getDataset(), 'bez hashe = nezaznamenaná');
+
+        $this->createConfig($this->baseDataWithoutSecrets() + ['dataset' => 'cz-vat-payer']);
+        $this->assertNull((new DataSourceConfig($this->tempDir))->getDataset(), 'rozbitý tvar = null, ne pád');
+
+        $this->assertSame(['name' => 'a', 'hash' => 'b', 'seededAt' => null], DataSourceConfig::datasetFrom(['dataset' => ['name' => 'a', 'hash' => 'b', 'seededAt' => 7]]));
+    }
+
     public function testSecretSlotsDescribeWhatMainJsonNeedsWithoutValues(): void
     {
         $this->createConfig($this->baseData() + [

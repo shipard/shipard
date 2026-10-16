@@ -212,12 +212,26 @@ class DataSourceInventoryTest extends TestCase
 
         $this->assertSame(
             ['id', 'name', 'created', 'dataClass', 'dataClassExplicit', 'dataClassInvalid', 'purpose', 'origin',
-             'dataClassChanged', 'country', 'defaultLanguage', 'modules', 'databaseName', 'state', 'cron', 'serverAi', 'readable'],
+             'dataClassChanged', 'dataset', 'country', 'defaultLanguage', 'modules', 'databaseName', 'state', 'cron', 'serverAi', 'readable'],
             array_keys($array),
         );
         $this->assertSame('free', $array['dataClass']);
         $this->assertTrue($array['cron']);
         $this->assertFalse($array['serverAi']);
+        $this->assertNull($array['dataset'], 'seed před F6b bez pole dataset');
         $this->assertArrayNotHasKey('legacyServerAiFlag', $array, 'zaniklý příznak do kontraktu nepatří');
+    }
+
+    public function testDatasetRecordIsReadLeniently(): void
+    {
+        $this->createDs('aaaa-aaaa-aaaa-aaaa', $this->fullMainJson() + ['dataset' => ['name' => 'cz-vat-payer', 'hash' => 'abc', 'seededAt' => '2026-10-16T12:00:00Z']]);
+        $this->createDs('bbbb-bbbb-bbbb-bbbb', ['id' => 'bbbb-bbbb-bbbb-bbbb', 'name' => 'Bravo', 'dataset' => ['name' => 'x']]);
+        $this->createDs('cccc-cccc-cccc-cccc', ['id' => 'cccc-cccc-cccc-cccc', 'name' => 'Charlie', 'dataset' => 'nope']);
+
+        [$a, $b, $c] = (new DataSourceInventory($this->dsDir))->scan();
+        $this->assertSame(['name' => 'cz-vat-payer', 'hash' => 'abc', 'seededAt' => '2026-10-16T12:00:00Z'], $a->dataset);
+        $this->assertSame($a->dataset, $a->toArray(false)['dataset']);
+        $this->assertNull($b->dataset, 'bez hashe');
+        $this->assertNull($c->dataset, 'rozbitý tvar');
     }
 }

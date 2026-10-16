@@ -149,6 +149,17 @@ class MainConfigPatcherTest extends TestCase
         $this->assertArrayNotHasKey('purpose', MainConfigPatcher::withPurpose($this->baseConfig(), null));
     }
 
+    public function testWithDatasetSetsExactlyThreeKeysOrRemovesTheKey(): void
+    {
+        $config = ['id' => 'x', 'dataClass' => 'free', 'origin' => 'ds-class'];
+        $with = MainConfigPatcher::withDataset($config, ['name' => 'cz-vat-payer', 'hash' => 'abc', 'seededAt' => '2026-10-16T12:00:00Z', 'extra' => 1]);
+
+        $this->assertSame(['name' => 'cz-vat-payer', 'hash' => 'abc', 'seededAt' => '2026-10-16T12:00:00Z'], $with['dataset']);
+        $this->assertSame('ds-class', $with['origin'], 'na původ ani třídu nesahá');
+        $this->assertArrayNotHasKey('dataset', MainConfigPatcher::withDataset($with, null));
+        $this->assertSame($config, MainConfigPatcher::withDataset($config, null), 'bez klíče beze změny');
+    }
+
     public function testNormalizePurposeTrimsAndAcceptsTheLimit(): void
     {
         $this->assertSame('Ruční zkoušení UI', MainConfigPatcher::normalizePurpose("  Ruční zkoušení UI \n"));

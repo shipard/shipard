@@ -36,6 +36,7 @@ use Shipard\Module\Core\Exchange\Item\ItemApplier;
 use Shipard\Module\Core\Exchange\Person\PersonApplier;
 use Shipard\Module\Core\Exchange\Resolve\PartyResolver;
 use Shipard\Module\Core\Mail\Dataset\MailSeeder;
+use Shipard\Module\Core\Mail\Eval\EvalRunStore;
 use Shipard\Module\Docs\Core\OwnCompanyResolver;
 use Shipard\Module\Economy\Codebooks\Dataset\FiscalYearsSeeder;
 use Shipard\Module\Economy\Items\AccountingItemsOffer;
@@ -68,6 +69,13 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  * se třída mění, proto přechod z `realCopy` nechce interaktivní potvrzení;
  * účel z titulku sady jen když zdroj dat žádný nemá. `--no-reset` třídu
  * ani účel nemění. Serverové AI připojení ve vývoji plyne z třídy (D9).
+ *
+ * Která sada ve zdroji dat je (#103 F6b D59): po úspěšném seedu s resetem
+ * zapíše do `main.json` pole `dataset` `{name, hash, seededAt}` (hash =
+ * `EvalRunStore::datasetHash()`, tentýž jako v souboru výsledků `ai-eval`)
+ * — seam {@see markDataset()}. Na začátku resetu (v patchi `markFree`)
+ * se stará hodnota smaže, aby po pádu seedu `main.json` netvrdil aktuální
+ * sadu; `--no-reset` ji odebere — zdroj dat už není čistá kopie jedné sady.
  */
 class DatasetSeedCommand extends Command
 {
@@ -147,7 +155,27 @@ class DatasetSeedCommand extends Command
             if ($purpose !== null && (!is_string($current) || trim($current) === '')) {
                 $config = MainConfigPatcher::withPurpose($config, $purpose);
             }
-            return $config;
+            // Stará sada pryč — po pádu seedu nesmí main.json tvrdit aktuální sadu (D59).
+            return MainConfigPatcher::withDataset($config, null);
+        });
+    }
+
+    /**
+     * `main.json` → pole `dataset` (D59): null = odebrat (`--no-reset`),
+     * jinak `{name, hash, seededAt}` po úspěšném seedu. Atomicky, vlastník
+     * podle `config/`, i pod rootem.
+     *
+     * @param array{name: string, hash: string}|null $dataset
+     * @throws \RuntimeException
+     */
+    protected function markDataset(string $dsDir, ?array $dataset): void
+    {
+        $seededAt = DataSourceState::formatUtc($this->now());
+        MainConfigFile::patch($dsDir, static function (array $config) use ($dataset, $seededAt): array {
+            return MainConfigPatcher::withDataset(
+                $config,
+                $dataset === null ? null : ['name' => $dataset['name'], 'hash' => $dataset['hash'], 'seededAt' => $seededAt],
+            );
         });
     }
 
@@ -311,6 +339,10 @@ class DatasetSeedCommand extends Command
             return Command::FAILURE;
         }
 
+        // Hash obsahu sady (mail/ + expected/) ještě nad otevřeným readerem — u zipu
+        // close() smaže rozbalenou složku (D59).
+        $setHash = EvalRunStore::datasetHash($reader);
+
         $counts = [];
         foreach ($manifest->counts as $section => $n) {
             $counts[] = "{$section} {$n}";
@@ -430,6 +462,17 @@ class DatasetSeedCommand extends Command
             $output->writeln(sprintf('<error>Seed finished with %d error(s).</error>', count($report->errors())));
             return Command::FAILURE;
         }
+
+        // 5. Která sada ve zdroji dat je (D59): po resetu zapsat, při merge odebrat.
+        try {
+            $this->markDataset($dsDir, $merge ? null : ['name' => $manifest->name, 'hash' => $setHash]);
+        } catch (\RuntimeException $e) {
+            $output->writeln("<error>Dataset record update failed after seed: {$e->getMessage()}</error>");
+            return Command::FAILURE;
+        }
+        $output->writeln($merge
+            ? 'Dataset: <comment>not recorded</comment> (merge into existing content — the data source is no longer a clean copy of one set)'
+            : sprintf('Dataset: <info>%s</info> (%s)', $manifest->name, substr($setHash, 0, 12)));
         $output->writeln(sprintf('<info>Seed complete.</info> %d warning(s).', count($report->warnings())));
         return Command::SUCCESS;
     }

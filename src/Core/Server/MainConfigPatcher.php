@@ -110,6 +110,31 @@ final class MainConfigPatcher
     }
 
     /**
+     * Která sada ve zdroji dat je (`dataset`, #103 F6b D59): `null` klíč
+     * odebere, jinak zapíše přesně `{name, hash, seededAt}` — hash obsahu
+     * sady počítá `EvalRunStore::datasetHash()` (stejně jako v souboru
+     * výsledků `ai-eval`). Píše `dataset-seed` po úspěšném seedu, maže na
+     * začátku resetu a při `--no-reset`; na třídu dat ani `origin` nesahá.
+     *
+     * @param array<string, mixed> $config
+     * @param array{name: string, hash: string, seededAt: string}|null $dataset
+     * @return array<string, mixed>
+     */
+    public static function withDataset(array $config, ?array $dataset): array
+    {
+        if ($dataset === null) {
+            unset($config['dataset']);
+            return $config;
+        }
+        $config['dataset'] = [
+            'name' => (string) $dataset['name'],
+            'hash' => (string) $dataset['hash'],
+            'seededAt' => (string) $dataset['seededAt'],
+        ];
+        return $config;
+    }
+
+    /**
      * Jediná validace účelu pro `ds-create`, `ds-class` i vývojářský dashboard:
      * trim, jeden řádek bez řídicích znaků, nejvýš PURPOSE_MAX_LENGTH znaků.
      * Prázdný výsledek je dovolený (= bez účelu; volající ho přes

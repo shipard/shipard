@@ -286,6 +286,41 @@ class DataSourceConfig
     }
 
     /**
+     * Která sada ve zdroji dat je (`dataset`, #103 F6b D59): `{name, hash,
+     * seededAt}` zapsané `dataset-seed` po úspěšném seedu; null = klíč chybí
+     * nebo nemá řetězcové `name` a `hash` (seed před F6b, `--no-reset`).
+     *
+     * @return array{name: string, hash: string, seededAt: ?string}|null
+     */
+    public function getDataset(): ?array
+    {
+        return self::datasetFrom($this->data);
+    }
+
+    /**
+     * Lenientní čtení pole `dataset` z dekódovaného main.json — sdílí
+     * {@see getDataset()} a inventář {@see \Shipard\Core\Server\DataSourceInventory}.
+     *
+     * @param array<string, mixed> $config
+     * @return array{name: string, hash: string, seededAt: ?string}|null
+     */
+    public static function datasetFrom(array $config): ?array
+    {
+        $raw = $config['dataset'] ?? null;
+        if (!is_array($raw) || !is_string($raw['name'] ?? null) || trim($raw['name']) === ''
+            || !is_string($raw['hash'] ?? null) || trim($raw['hash']) === ''
+        ) {
+            return null;
+        }
+        $seededAt = $raw['seededAt'] ?? null;
+        return [
+            'name' => trim($raw['name']),
+            'hash' => trim($raw['hash']),
+            'seededAt' => is_string($seededAt) && trim($seededAt) !== '' ? trim($seededAt) : null,
+        ];
+    }
+
+    /**
      * Zaniklý příznak `ai.useServerConnection` (#126 D9). Na chování nemá
      * vliv — serverové AI připojení řídí třída dat (`isFree()`); čte se jen
      * pro varování `ds-upgrade`, výpis `ds-class show` a přehled `ds-list`.
