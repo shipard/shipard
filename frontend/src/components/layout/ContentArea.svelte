@@ -10,6 +10,7 @@
   import ContentTagsSettings from '../settings/ContentTagsSettings.svelte';
   import PortalContent from '../portal/PortalContent.svelte';
   import ReportsPage from '../reports/ReportsPage.svelte';
+  import CompanyOverview from '../overview/CompanyOverview.svelte';
   import ReadOnlyBanner from '../ui/ReadOnlyBanner.svelte';
   import CronOffBanner from '../ui/CronOffBanner.svelte';
   import MailSafetyNotice from '../ui/MailSafetyNotice.svelte';
@@ -28,6 +29,7 @@
     contentTags: ContentTagsSettings,
     hostingPortal: PortalContent,
     reports: ReportsPage,
+    companyOverview: CompanyOverview,
   };
 
   const PanelComponent = $derived(

@@ -821,6 +821,22 @@ export default {
   'setup.vat.nonPayer': 'Nevede (neplátce)',
 
   // ── O zdroji dat (Nastavení → O zdroji dat, panel dsAbout) ──────────────
+  // ── Přehled firmy (#120) ──────────────────────────────────────────────
+  'overview.title': 'Přehled firmy',
+  'overview.asOf': 'Stav k {date}',
+  'overview.refresh': 'Obnovit',
+  'overview.loading': 'Načítám přehled…',
+  'overview.error': 'Přehled firmy se nepodařilo načíst',
+  'overview.retry': 'Zkusit znovu',
+  'overview.empty': 'Zatím není co ukázat — žádný modul nedodal čísla.',
+  'overview.item.asOf': 'k {date}',
+  'overview.item.dueDate': 'termín {date}',
+  'overview.item.open': 'Otevřít zdroj',
+  'overview.state.stale': 'neaktuální',
+  'overview.state.missing': 'chybí',
+  'overview.section.unavailable': 'Nedostupné',
+  'overview.section.error': 'Chyba výpočtu',
+
   'dsAbout.title': 'O zdroji dat',
   'dsAbout.intro': 'Základní informace o tomto zdroji dat. Jen ke čtení — nastavení měníš v ostatních sekcích.',
   'dsAbout.error.loadFailed': 'Informace o zdroji dat se nepodařilo načíst',

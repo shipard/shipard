@@ -23,6 +23,7 @@
   import Icon from '../ui/Icon.svelte';
   import Button from '../ui/Button.svelte';
   import FeedRowCompact from './FeedRowCompact.svelte';
+  import { formatMoney } from '../../utils/formatNumber.js';
 
   let {
     cards = [],
@@ -43,14 +44,6 @@
       : cards.length,
   );
 
-  // „1 234,56 CZK" — stejný formát jako serverový number_format(x, 2, ',', ' ')
-  // v amountText karet (formatAmount v MailSuggestionsSource).
-  function formatAmount(total, currency) {
-    const [int, frac] = total.toFixed(2).split('.');
-    const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    return `${grouped},${frac} ${currency}`;
-  }
-
   // „Celkem 96 420,00 CZK + 120,00 EUR · jistota 91–98 %" — měny se nikdy
   // nesčítají napříč, jen se vypisují spojené „ + ". Registry pruh je bez
   // součtů (D11) — jeho karty částky nenesou, amounts je prázdné.
@@ -59,7 +52,7 @@
     const parts = [];
     const amounts = summary.amounts ?? [];
     if (amounts.length > 0) {
-      const joined = amounts.map((a) => formatAmount(a.total, a.currency)).join(' + ');
+      const joined = amounts.map((a) => formatMoney(a.total, a.currency)).join(' + ');
       parts.push(t('dashboard.feed.readyStrip.total', { amounts: joined }));
     }
     const min = summary.confidenceMin;

@@ -808,6 +808,22 @@ export default {
   'setup.vat.nonPayer': 'Does not (non-payer)',
 
   // ── About data source (Settings → About data source, panel dsAbout) ─────
+  // ── Company overview (#120) ───────────────────────────────────────────
+  'overview.title': 'Company overview',
+  'overview.asOf': 'As of {date}',
+  'overview.refresh': 'Refresh',
+  'overview.loading': 'Loading overview…',
+  'overview.error': 'The company overview could not be loaded',
+  'overview.retry': 'Retry',
+  'overview.empty': 'Nothing to show yet — no module provided figures.',
+  'overview.item.asOf': 'as of {date}',
+  'overview.item.dueDate': 'due {date}',
+  'overview.item.open': 'Open source',
+  'overview.state.stale': 'stale',
+  'overview.state.missing': 'missing',
+  'overview.section.unavailable': 'Unavailable',
+  'overview.section.error': 'Computation error',
+
   'dsAbout.title': 'About data source',
   'dsAbout.intro': 'Basic information about this data source. Read-only — settings are changed in the other sections.',
   'dsAbout.error.loadFailed': 'Failed to load data source information',

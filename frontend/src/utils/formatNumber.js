@@ -32,3 +32,18 @@ export function formatAmount(value, { thousands = false } = {}) {
   }
   return formatter(locale, 2).format(value);
 }
+
+/**
+ * Částka s kódem měny — „1 234,56 CZK" (cs) / „1,234.56 CZK" (en). Jedno
+ * místo pro feed i Přehled firmy (#120); měny se nikdy nesčítají, jen
+ * vypisují vedle sebe.
+ *
+ * @param {number} value
+ * @param {string} currency kód měny (libovolná velikost písmen)
+ * @returns {string}
+ */
+export function formatMoney(value, currency) {
+  const code = String(currency ?? '').toUpperCase();
+  const amount = formatAmount(Number(value ?? 0));
+  return code ? `${amount} ${code}` : amount;
+}

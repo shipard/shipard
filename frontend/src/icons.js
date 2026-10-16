@@ -35,6 +35,7 @@ import {
   faGears,
   faCalculator,
   faChartColumn,
+  faChartLine,
   faUser,
   faUsers,
   faBuilding,
@@ -158,6 +159,8 @@ export const iconLock = faLock;
 
 // ── Číselníky / moduly (sidebar, navigace) ──────────────────────
 export const iconChart = faChartColumn;
+// Přehled firmy — stav firmy v číslech (#120)
+export const iconOverview = faChartLine;
 export const iconCompany = faBuilding;
 export const iconInvoice = faFileInvoiceDollar;
 export const iconInvoiceIn = faFileArrowDown; // ⬇ — přijaté faktury (směrová metafora)
@@ -306,6 +309,7 @@ export const iconMap = {
   'lock': iconLock,
   'calculator': iconCalculator,
   'chart': iconChart,
+  'overview': iconOverview,
   'app-settings': iconAppSettings,
   'alert': iconAlert,
   'dashboard': iconDashboard,
